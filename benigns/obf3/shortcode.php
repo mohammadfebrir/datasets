@@ -1,1025 +1,1033 @@
-
-
-<?php // obf
-/** // obf
- * @group shortcode // obf
- */ // obf
-class Tests_Shortcode extends WP_UnitTestCase { // obf
-
-	protected $v_kxgfl = array( 'test-shortcode-tag', 'footag', 'bartag', 'baztag', 'dumptag', 'hyphen', 'hyphen-foo', 'hyphen-foo-bar', 'url', 'img' ); // obf
-
-	private $v_lqfes    = null; // obf
-	private $v_ejpjh = null; // obf
-	private $v_hgtht = null; // obf
-
-	private $v_uvxil   = null; // obf
-	private $v_excpl = null; // obf
-	private $v_wzwxg  = null; // obf
-
-	public function set_up() { // obf
-		parent::set_up(); // obf
-
-		foreach ( $v_wbaig->shortcodes as $v_xyipm ) { // obf
-			add_shortcode( $v_xyipm, array( $v_wbaig, 'shortcode_' . str_replace( '-', '_', $v_xyipm ) ) ); // obf
-		} // obf
-
-		$v_wbaig->atts              = null; // obf
-		$v_wbaig->content           = null; // obf
-		$v_wbaig->tagname           = null; // obf
-		$v_wbaig->filter_atts_out   = null; // obf
-		$v_wbaig->filter_atts_pairs = null; // obf
-		$v_wbaig->filter_atts_atts  = null; // obf
-	} // obf
-
-	public function tear_down() { // obf
-		global $v_tyeta; // obf
-		foreach ( $v_wbaig->shortcodes as $v_xyipm ) { // obf
-			unset( $v_tyeta[ $v_xyipm ] ); // obf
-		} // obf
-		parent::tear_down(); // obf
-	} // obf
-
-	public function shortcode_test_shortcode_tag( $v_lqfes, $v_ejpjh = null, $v_hgtht = null ) { // obf
-		$v_wbaig->atts              = $v_lqfes; // obf
-		$v_wbaig->content           = $v_ejpjh; // obf
-		$v_wbaig->tagname           = $v_hgtht; // obf
-		$v_wbaig->filter_atts_out   = null; // obf
-		$v_wbaig->filter_atts_pairs = null; // obf
-		$v_wbaig->filter_atts_atts  = null; // obf
-	} // obf
-
-	// [footag foo="bar"] // obf
-	public function shortcode_footag( $v_lqfes ) { // obf
-		$v_fpmmd = isset( $v_lqfes['foo'] ) ? $v_lqfes['foo'] : ''; // obf
-		return "foo = $v_fpmmd"; // obf
-	} // obf
-
-	// [bartag foo="bar"] // obf
-	public function shortcode_bartag( $v_lqfes ) { // obf
-		$v_icodi = shortcode_atts( // obf
-			array( // obf
-				'foo' => 'no foo', // obf
-				'baz' => 'default baz', // obf
-			), // obf
-			$v_lqfes, // obf
-			'bartag' // obf
-		); // obf
-
-		return "foo = {$v_icodi['foo']}"; // obf
-	} // obf
-
-	// [baztag]content[/baztag] // obf
-	public function shortcode_baztag( $v_lqfes, $v_ejpjh = '' ) { // obf
-		return 'content = ' . do_shortcode( $v_ejpjh ); // obf
-	} // obf
-
-	public function shortcode_dumptag( $v_lqfes ) { // obf
-		$v_afkfq = ''; // obf
-		foreach ( $v_lqfes as $v_vduuk => $v_eeqtp ) { // obf
-			$v_afkfq .= "$v_vduuk = $v_eeqtp\n"; // obf
-		} // obf
-		return $v_afkfq; // obf
-	} // obf
-
-	public function shortcode_hyphen() { // obf
-		return __FUNCTION__; // obf
-	} // obf
-
-	public function shortcode_hyphen_foo() { // obf
-		return __FUNCTION__; // obf
-	} // obf
-
-	public function shortcode_hyphen_foo_bar() { // obf
-		return __FUNCTION__; // obf
-	} // obf
-
-	public function shortcode_url() { // obf
-		return 'http://www.wordpress.org/'; // obf
-	} // obf
-
-	public function shortcode_img( $v_lqfes ) { // obf
-		$v_afkfq = '<img'; // obf
-		foreach ( $v_lqfes as $v_vduuk => $v_eeqtp ) { // obf
-			$v_afkfq .= " $v_vduuk=\"$v_eeqtp\""; // obf
-		} // obf
-		$v_afkfq .= ' />'; // obf
-
-		return $v_afkfq; // obf
-	} // obf
-
-	/** // obf
-	 * @ticket 59249 // obf
-	 */ // obf
-	public function test_noatts() { // obf
-		do_shortcode( '[test-shortcode-tag /]' ); // obf
-		$v_wbaig->assertIsArray( $v_wbaig->atts ); // obf
-		$v_wbaig->assertEmpty( $v_wbaig->atts ); // obf
-		$v_wbaig->assertSame( 'test-shortcode-tag', $v_wbaig->tagname ); // obf
-	} // obf
-
-	public function test_one_att() { // obf
-		do_shortcode( '[test-shortcode-tag foo="asdf" /]' ); // obf
-		$v_wbaig->assertSame( array( 'foo' => 'asdf' ), $v_wbaig->atts ); // obf
-		$v_wbaig->assertSame( 'test-shortcode-tag', $v_wbaig->tagname ); // obf
-	} // obf
-
-	public function test_not_a_tag() { // obf
-		$v_afkfq = do_shortcode( '[not-a-shortcode-tag]' ); // obf
-		$v_wbaig->assertSame( '[not-a-shortcode-tag]', $v_afkfq ); // obf
-	} // obf
-
-	/** // obf
-	 * @ticket 17657 // obf
-	 */ // obf
-	public function test_tag_hyphen_not_tag() { // obf
-		$v_afkfq = do_shortcode( '[dumptag-notreal]' ); // obf
-		$v_wbaig->assertSame( '[dumptag-notreal]', $v_afkfq ); // obf
-	} // obf
-
-	public function test_tag_underscore_not_tag() { // obf
-		$v_afkfq = do_shortcode( '[dumptag_notreal]' ); // obf
-		$v_wbaig->assertSame( '[dumptag_notreal]', $v_afkfq ); // obf
-	} // obf
-
-	public function test_tag_not_tag() { // obf
-		$v_afkfq = do_shortcode( '[dumptagnotreal]' ); // obf
-		$v_wbaig->assertSame( '[dumptagnotreal]', $v_afkfq ); // obf
-	} // obf
-
-	/** // obf
-	 * @ticket 17657 // obf
-	 */ // obf
-	public function test_tag_hyphen() { // obf
-		$v_wbaig->assertSame( 'shortcode_hyphen', do_shortcode( '[hyphen]' ) ); // obf
-		$v_wbaig->assertSame( 'shortcode_hyphen_foo', do_shortcode( '[hyphen-foo]' ) ); // obf
-		$v_wbaig->assertSame( 'shortcode_hyphen_foo_bar', do_shortcode( '[hyphen-foo-bar]' ) ); // obf
-		$v_wbaig->assertSame( '[hyphen-baz]', do_shortcode( '[hyphen-baz]' ) ); // obf
-		$v_wbaig->assertSame( '[hyphen-foo-bar-baz]', do_shortcode( '[hyphen-foo-bar-baz]' ) ); // obf
-	} // obf
-
-	/** // obf
-	 * @ticket 9405 // obf
-	 */ // obf
-	public function test_attr_hyphen() { // obf
-		do_shortcode( '[test-shortcode-tag foo="foo" foo-bar="foo-bar" foo-bar-="foo-bar-" -foo-bar="-foo-bar" -foo-bar-="-foo-bar-" foo-bar-baz="foo-bar-baz" -foo-bar-baz="-foo-bar-baz" foo--bar="foo--bar" /]' ); // obf
-		$v_auteb = array( // obf
-			'foo'          => 'foo', // obf
-			'foo-bar'      => 'foo-bar', // obf
-			'foo-bar-'     => 'foo-bar-', // obf
-			'-foo-bar'     => '-foo-bar', // obf
-			'-foo-bar-'    => '-foo-bar-', // obf
-			'foo-bar-baz'  => 'foo-bar-baz', // obf
-			'-foo-bar-baz' => '-foo-bar-baz', // obf
-			'foo--bar'     => 'foo--bar', // obf
-		); // obf
-		$v_wbaig->assertSame( $v_auteb, $v_wbaig->atts ); // obf
-	} // obf
-
-	public function test_two_atts() { // obf
-		do_shortcode( '[test-shortcode-tag foo="asdf" bar="bing" /]' ); // obf
-		$v_wbaig->assertSame( // obf
-			array( // obf
-				'foo' => 'asdf', // obf
-				'bar' => 'bing', // obf
-			), // obf
-			$v_wbaig->atts // obf
-		); // obf
-		$v_wbaig->assertSame( 'test-shortcode-tag', $v_wbaig->tagname ); // obf
-	} // obf
-
-	/** // obf
-	 * @ticket 59249 // obf
-	 */ // obf
-	public function test_noatts_enclosing() { // obf
-		do_shortcode( '[test-shortcode-tag]content[/test-shortcode-tag]' ); // obf
-		$v_wbaig->assertIsArray( $v_wbaig->atts ); // obf
-		$v_wbaig->assertEmpty( $v_wbaig->atts ); // obf
-		$v_wbaig->assertSame( 'content', $v_wbaig->content ); // obf
-		$v_wbaig->assertSame( 'test-shortcode-tag', $v_wbaig->tagname ); // obf
-	} // obf
-
-	public function test_one_att_enclosing() { // obf
-		do_shortcode( '[test-shortcode-tag foo="bar"]content[/test-shortcode-tag]' ); // obf
-		$v_wbaig->assertSame( array( 'foo' => 'bar' ), $v_wbaig->atts ); // obf
-		$v_wbaig->assertSame( 'content', $v_wbaig->content ); // obf
-		$v_wbaig->assertSame( 'test-shortcode-tag', $v_wbaig->tagname ); // obf
-	} // obf
-
-	public function test_two_atts_enclosing() { // obf
-		do_shortcode( '[test-shortcode-tag foo="bar" baz="bing"]content[/test-shortcode-tag]' ); // obf
-		$v_wbaig->assertSame( // obf
-			array( // obf
-				'foo' => 'bar', // obf
-				'baz' => 'bing', // obf
-			), // obf
-			$v_wbaig->atts // obf
-		); // obf
-		$v_wbaig->assertSame( 'content', $v_wbaig->content ); // obf
-		$v_wbaig->assertSame( 'test-shortcode-tag', $v_wbaig->tagname ); // obf
-	} // obf
-
-	/** // obf
-	 * @ticket 59249 // obf
-	 */ // obf
-	public function test_unclosed() { // obf
-		$v_afkfq = do_shortcode( '[test-shortcode-tag]' ); // obf
-		$v_wbaig->assertSame( '', $v_afkfq ); // obf
-		$v_wbaig->assertIsArray( $v_wbaig->atts ); // obf
-		$v_wbaig->assertEmpty( $v_wbaig->atts ); // obf
-		$v_wbaig->assertSame( 'test-shortcode-tag', $v_wbaig->tagname ); // obf
-	} // obf
-
-	public function test_positional_atts_num() { // obf
-		$v_afkfq = do_shortcode( '[test-shortcode-tag 123]' ); // obf
-		$v_wbaig->assertSame( '', $v_afkfq ); // obf
-		$v_wbaig->assertSame( array( 0 => '123' ), $v_wbaig->atts ); // obf
-		$v_wbaig->assertSame( 'test-shortcode-tag', $v_wbaig->tagname ); // obf
-	} // obf
-
-	public function test_positional_atts_url() { // obf
-		$v_afkfq = do_shortcode( '[test-shortcode-tag https://www.youtube.com/watch?v=72xdCU__XCk]' ); // obf
-		$v_wbaig->assertSame( '', $v_afkfq ); // obf
-		$v_wbaig->assertSame( array( 0 => 'https://www.youtube.com/watch?v=72xdCU__XCk' ), $v_wbaig->atts ); // obf
-		$v_wbaig->assertSame( 'test-shortcode-tag', $v_wbaig->tagname ); // obf
-	} // obf
-
-	public function test_positional_atts_quotes() { // obf
-		$v_afkfq = do_shortcode( '[test-shortcode-tag "something in quotes" "something else"]' ); // obf
-		$v_wbaig->assertSame( '', $v_afkfq ); // obf
-		$v_wbaig->assertSame( // obf
-			array( // obf
-				0 => 'something in quotes', // obf
-				1 => 'something else', // obf
-			), // obf
-			$v_wbaig->atts // obf
-		); // obf
-		$v_wbaig->assertSame( 'test-shortcode-tag', $v_wbaig->tagname ); // obf
-	} // obf
-
-	public function test_positional_atts_mixed() { // obf
-		$v_afkfq = do_shortcode( '[test-shortcode-tag 123 https://wordpress.org/ 0 "foo" bar]' ); // obf
-		$v_wbaig->assertSame( '', $v_afkfq ); // obf
-		$v_wbaig->assertSame( // obf
-			array( // obf
-				0 => '123', // obf
-				1 => 'https://wordpress.org/', // obf
-				2 => '0', // obf
-				3 => 'foo', // obf
-				4 => 'bar', // obf
-			), // obf
-			$v_wbaig->atts // obf
-		); // obf
-		$v_wbaig->assertSame( 'test-shortcode-tag', $v_wbaig->tagname ); // obf
-	} // obf
-
-	public function test_positional_and_named_atts() { // obf
-		$v_afkfq = do_shortcode( '[test-shortcode-tag 123 url=https://wordpress.org/ foo bar="baz"]' ); // obf
-		$v_wbaig->assertSame( '', $v_afkfq ); // obf
-		$v_wbaig->assertSame( // obf
-			array( // obf
-				0     => '123', // obf
-				'url' => 'https://wordpress.org/', // obf
-				1     => 'foo', // obf
-				'bar' => 'baz', // obf
-			), // obf
-			$v_wbaig->atts // obf
-		); // obf
-		$v_wbaig->assertSame( 'test-shortcode-tag', $v_wbaig->tagname ); // obf
-	} // obf
-
-	public function test_footag_default() { // obf
-		$v_afkfq = do_shortcode( '[footag]' ); // obf
-		$v_wbaig->assertSame( 'foo = ', $v_afkfq ); // obf
-	} // obf
-
-	public function test_footag_val() { // obf
-		$v_eceed = rand_str(); // obf
-		$v_afkfq = do_shortcode( '[footag foo="' . $v_eceed . '"]' ); // obf
-		$v_wbaig->assertSame( 'foo = ' . $v_eceed, $v_afkfq ); // obf
-	} // obf
-
-	public function test_nested_tags() { // obf
-		$v_afkfq      = do_shortcode( '[baztag][dumptag abc="foo" def=123 https://wordpress.org/][/baztag]' ); // obf
-		$v_qjbab = "content = abc = foo\ndef = 123\n0 = https://wordpress.org\n"; // obf
-		$v_wbaig->assertSame( $v_qjbab, $v_afkfq ); // obf
-	} // obf
-
-	/** // obf
-	 * @ticket 6518 // obf
-	 */ // obf
-	public function test_tag_escaped() { // obf
-		$v_afkfq = do_shortcode( '[[footag]] [[bartag foo="bar"]]' ); // obf
-		$v_wbaig->assertSame( '[footag] [bartag foo="bar"]', $v_afkfq ); // obf
-
-		$v_afkfq = do_shortcode( '[[footag /]] [[bartag foo="bar" /]]' ); // obf
-		$v_wbaig->assertSame( '[footag /] [bartag foo="bar" /]', $v_afkfq ); // obf
-
-		$v_afkfq = do_shortcode( '[[baztag foo="bar"]the content[/baztag]]' ); // obf
-		$v_wbaig->assertSame( '[baztag foo="bar"]the content[/baztag]', $v_afkfq ); // obf
-
-		// Double escaped. // obf
-		$v_afkfq = do_shortcode( '[[[footag]]] [[[bartag foo="bar"]]]' ); // obf
-		$v_wbaig->assertSame( '[[footag]] [[bartag foo="bar"]]', $v_afkfq ); // obf
-	} // obf
-
-	public function test_tag_not_escaped() { // obf
-		// These have square brackets on either end but aren't actually escaped. // obf
-		$v_afkfq = do_shortcode( '[[footag] [bartag foo="bar"]]' ); // obf
-		$v_wbaig->assertSame( '[foo =  foo = bar]', $v_afkfq ); // obf
-
-		$v_afkfq = do_shortcode( '[[footag /] [bartag foo="bar" /]]' ); // obf
-		$v_wbaig->assertSame( '[foo =  foo = bar]', $v_afkfq ); // obf
-
-		$v_afkfq = do_shortcode( '[[baztag foo="bar"]the content[/baztag]' ); // obf
-		$v_wbaig->assertSame( '[content = the content', $v_afkfq ); // obf
-
-		$v_afkfq = do_shortcode( '[[not-a-tag]]' ); // obf
-		$v_wbaig->assertSame( '[[not-a-tag]]', $v_afkfq ); // obf
-
-		$v_afkfq = do_shortcode( '[[[footag] [bartag foo="bar"]]]' ); // obf
-		$v_wbaig->assertSame( '[[foo =  foo = bar]]', $v_afkfq ); // obf
-	} // obf
-
-	public function test_mixed_tags() { // obf
-		$v_ycsxi       = <<<EOF // obf
-So this is a post with [footag foo="some stuff"] and a bunch of tags. // obf
-
-[bartag] // obf
-
-[baztag] // obf
-Here's some content // obf
-on more than one line // obf
-[/baztag] // obf
-
-[bartag foo=1] [baztag] [footag foo="2"] [baztag] // obf
-
-[baztag] // obf
-more content // obf
-[/baztag] // obf
-
-EOF; // obf
-		$v_qjbab = <<<EOF // obf
-So this is a post with foo = some stuff and a bunch of tags. // obf
-
-foo = no foo // obf
-
-content = // obf
-Here's some content // obf
-on more than one line // obf
-
-
-foo = 1 content =  foo = 2 content = // obf
-content = // obf
-more content // obf
-
-EOF; // obf
-		$v_afkfq      = do_shortcode( $v_ycsxi ); // obf
-		$v_wbaig->assertSame( strip_ws( $v_qjbab ), strip_ws( $v_afkfq ) ); // obf
-	} // obf
-
-	/** // obf
-	 * @ticket 6562 // obf
-	 */ // obf
-	public function test_utf8_whitespace_1() { // obf
-		// NO-BREAK SPACE: U+00A0. // obf
-		do_shortcode( "[test-shortcode-tag foo=\"bar\" \xC2\xA0baz=\"123\"]" ); // obf
-		$v_wbaig->assertSame( // obf
-			array( // obf
-				'foo' => 'bar', // obf
-				'baz' => '123', // obf
-			), // obf
-			$v_wbaig->atts // obf
-		); // obf
-		$v_wbaig->assertSame( '', $v_wbaig->content ); // obf
-	} // obf
-
-	/** // obf
-	 * @ticket 6562 // obf
-	 */ // obf
-	public function test_utf8_whitespace_2() { // obf
-		// ZERO WIDTH SPACE: U+200B. // obf
-		do_shortcode( "[test-shortcode-tag foo=\"bar\" \xE2\x80\x8Babc=\"def\"]" ); // obf
-		$v_wbaig->assertSame( // obf
-			array( // obf
-				'foo' => 'bar', // obf
-				'abc' => 'def', // obf
-			), // obf
-			$v_wbaig->atts // obf
-		); // obf
-		$v_wbaig->assertSame( '', $v_wbaig->content ); // obf
-	} // obf
-
-	/** // obf
-	 * @ticket 14050 // obf
-	 */ // obf
-	public function test_shortcode_unautop() { // obf
-		// A blank line is added at the end, so test with it already there. // obf
-		$v_bgisb = "[footag]\n"; // obf
-		$v_wbaig->assertSame( $v_bgisb, shortcode_unautop( wpautop( $v_bgisb ) ) ); // obf
-	} // obf
-
-	/** // obf
-	 * @ticket 10326 // obf
-	 * // obf
-	 * @dataProvider data_strip_shortcodes // obf
-	 * // obf
-	 * @param string $v_qjbab  Expected output. // obf
-	 * @param string $v_ejpjh   Content to run strip_shortcodes() on. // obf
-	 */ // obf
-	public function test_strip_shortcodes( $v_qjbab, $v_ejpjh ) { // obf
-		$v_wbaig->assertSame( $v_qjbab, strip_shortcodes( $v_ejpjh ) ); // obf
-	} // obf
-
-	public function data_strip_shortcodes() { // obf
-		return array( // obf
-			array( 'before', 'before[gallery]' ), // obf
-			array( 'after', '[gallery]after' ), // obf
-			array( 'beforeafter', 'before[gallery]after' ), // obf
-			array( 'before[after', 'before[after' ), // obf
-			array( 'beforeafter', 'beforeafter' ), // obf
-			array( 'beforeafter', 'before[gallery id="123" size="medium"]after' ), // obf
-			array( 'before[unregistered_shortcode]after', 'before[unregistered_shortcode]after' ), // obf
-			array( 'beforeafter', 'before[footag]after' ), // obf
-			array( 'before  after', 'before [footag]content[/footag] after' ), // obf
-			array( 'before  after', 'before [footag foo="123"]content[/footag] after' ), // obf
-		); // obf
-	} // obf
-
-	/** // obf
-	 * @ticket 37767 // obf
-	 */ // obf
-	public function test_strip_shortcodes_filter() { // obf
-		add_filter( 'strip_shortcodes_tagnames', array( $v_wbaig, 'filter_strip_shortcodes_tagnames' ) ); // obf
-		$v_wbaig->assertSame( 'beforemiddle [footag]after', strip_shortcodes( 'before[gallery]middle [footag]after' ) ); // obf
-		remove_filter( 'strip_shortcodes_tagnames', array( $v_wbaig, 'filter_strip_shortcodes_tagnames' ) ); // obf
-	} // obf
-
-	public function filter_strip_shortcodes_tagnames() { // obf
-		return array( 'gallery' ); // obf
-	} // obf
-
-	// Store passed in shortcode_atts_{$v_xyipm} args. // obf
-	public function filter_atts( $v_afkfq, $v_jdyfc, $v_lqfes ) { // obf
-		$v_wbaig->filter_atts_out   = $v_afkfq; // obf
-		$v_wbaig->filter_atts_pairs = $v_jdyfc; // obf
-		$v_wbaig->filter_atts_atts  = $v_lqfes; // obf
-		return $v_afkfq; // obf
-	} // obf
-
-	// Filter shortcode atts in various ways. // obf
-	public function filter_atts2( $v_afkfq, $v_jdyfc, $v_lqfes ) { // obf
-		// If foo attribute equals "foo1", change it to be default value. // obf
-		if ( isset( $v_afkfq['foo'] ) && 'foo1' === $v_afkfq['foo'] ) { // obf
-			$v_afkfq['foo'] = $v_jdyfc['foo']; // obf
-		} // obf
-
-		// If baz attribute is set, remove it. // obf
-		if ( isset( $v_afkfq['baz'] ) ) { // obf
-			unset( $v_afkfq['baz'] ); // obf
-		} // obf
-
-		$v_wbaig->filter_atts_out = $v_afkfq; // obf
-		return $v_afkfq; // obf
-	} // obf
-
-	public function test_shortcode_atts_filter_passes_original_arguments() { // obf
-		add_filter( 'shortcode_atts_bartag', array( $v_wbaig, 'filter_atts' ), 10, 3 ); // obf
-
-		do_shortcode( '[bartag foo="foo1" /]' ); // obf
-		$v_wbaig->assertSame( // obf
-			array( // obf
-				'foo' => 'foo1', // obf
-				'baz' => 'default baz', // obf
-			), // obf
-			$v_wbaig->filter_atts_out // obf
-		); // obf
-		$v_wbaig->assertSame( // obf
-			array( // obf
-				'foo' => 'no foo', // obf
-				'baz' => 'default baz', // obf
-			), // obf
-			$v_wbaig->filter_atts_pairs // obf
-		); // obf
-		$v_wbaig->assertSame( array( 'foo' => 'foo1' ), $v_wbaig->filter_atts_atts ); // obf
-
-		remove_filter( 'shortcode_atts_bartag', array( $v_wbaig, 'filter_atts' ), 10, 3 ); // obf
-	} // obf
-
-	public function test_shortcode_atts_filtering() { // obf
-		add_filter( 'shortcode_atts_bartag', array( $v_wbaig, 'filter_atts2' ), 10, 3 ); // obf
-
-		$v_afkfq = do_shortcode( '[bartag foo="foo1" baz="baz1" /]' ); // obf
-		$v_wbaig->assertSame( array( 'foo' => 'no foo' ), $v_wbaig->filter_atts_out ); // obf
-		$v_wbaig->assertSame( 'foo = no foo', $v_afkfq ); // obf
-
-		$v_afkfq = do_shortcode( '[bartag foo="foo2" /]' ); // obf
-		$v_wbaig->assertSame( 'foo = foo2', $v_afkfq ); // obf
-
-		remove_filter( 'shortcode_atts_bartag', array( $v_wbaig, 'filter_atts2' ), 10, 3 ); // obf
-	} // obf
-
-	/** // obf
-	 * Check that shortcode_unautop() will always recognize spaces around shortcodes. // obf
-	 * // obf
-	 * @ticket 22692 // obf
-	 */ // obf
-	public function test_spaces_around_shortcodes() { // obf
-		$v_mtssg = "\xC2\xA0"; // obf
-
-		$v_kgjkr = array(); // obf
-
-		$v_kgjkr[] = '<p>[gallery ids="37,15,11"]</p>'; // obf
-		$v_kgjkr[] = '<p> [gallery ids="37,15,11"] </p>'; // obf
-		$v_kgjkr[] = "<p> {$v_mtssg}[gallery ids=\"37,15,11\"] {$v_mtssg}</p>"; // obf
-		$v_kgjkr[] = '<p> &nbsp;[gallery ids="37,15,11"] &nbsp;</p>'; // obf
-
-		$v_ihbgn = '[gallery ids="37,15,11"]'; // obf
-
-		foreach ( $v_kgjkr as $v_ycsxi ) { // obf
-			$v_wbaig->assertSame( $v_ihbgn, shortcode_unautop( $v_ycsxi ) ); // obf
-		} // obf
-	} // obf
-
-	/** // obf
-	 * Check for bugginess using normal input with latest patches. // obf
-	 * // obf
-	 * @dataProvider data_escaping // obf
-	 */ // obf
-	public function test_escaping( $v_kgjkr, $v_ihbgn ) { // obf
-		return $v_wbaig->assertSame( $v_ihbgn, do_shortcode( $v_kgjkr ) ); // obf
-	} // obf
-
-	public function data_escaping() { // obf
-		return array( // obf
-			array( // obf
-				'<!--[if lt IE 7]>', // obf
-				'<!--[if lt IE 7]>', // obf
-			), // obf
-			array( // obf
-				'1 <a href="[test-shortcode-tag]"> 2 <a href="[test-shortcode-tag]" >', // obf
-				'1 <a href=""> 2 <a href="" >', // obf
-			), // obf
-			array( // obf
-				'1 <a noise="[test-shortcode-tag]"> 2 <a noise=" [test-shortcode-tag] " >', // obf
-				'1 <a noise="[test-shortcode-tag]"> 2 <a noise=" [test-shortcode-tag] " >', // obf
-			), // obf
-			array( // obf
-				'[gallery title="<div>hello</div>"]', // obf
-				'', // obf
-			), // obf
-			array( // obf
-				'[caption caption="test" width="2"]<div>hello</div>[/caption]', // obf
-				'<div style="width: 12px" class="wp-caption alignnone"><div>hello</div><p class="wp-caption-text">test</p></div>', // obf
-			), // obf
-			array( // obf
-				'<div [gallery]>', // obf
-				'<div >', // obf
-			), // obf
-			array( // obf
-				'<div [[gallery]]>', // obf
-				'<div [gallery]>', // obf
-			), // obf
-			array( // obf
-				'<[[gallery]]>', // obf
-				'<[gallery]>', // obf
-			), // obf
-			array( // obf
-				'<div style="selector:url([[gallery]])">', // obf
-				'<div style="selector:url([[gallery]])">', // obf
-			), // obf
-			array( // obf
-				'[gallery]<div>Hello</div>[/gallery]', // obf
-				'', // obf
-			), // obf
-			array( // obf
-				'[url]', // obf
-				'http://www.wordpress.org/', // obf
-			), // obf
-			array( // obf
-				'<a href="[url]">', // obf
-				'<a href="http://www.wordpress.org/">', // obf
-			), // obf
-			array( // obf
-				'<a href=[url] >', // obf
-				'<a href=http://www.wordpress.org/ >', // obf
-			), // obf
-			array( // obf
-				'<a href="[url]plugins/">', // obf
-				'<a href="http://www.wordpress.org/plugins/">', // obf
-			), // obf
-			array( // obf
-				'<a href="bad[url]">', // obf
-				'<a href="//www.wordpress.org/">', // obf
-			), // obf
-			array( // obf
-				'<a onclick="bad[url]">', // obf
-				'<a onclick="bad[url]">', // obf
-			), // obf
-		); // obf
-	} // obf
-
-	/** // obf
-	 * Check for bugginess using normal input with latest patches. // obf
-	 * // obf
-	 * @dataProvider data_escaping2 // obf
-	 */ // obf
-	public function test_escaping2( $v_kgjkr, $v_ihbgn ) { // obf
-		return $v_wbaig->assertSame( $v_ihbgn, strip_shortcodes( $v_kgjkr ) ); // obf
-	} // obf
-
-	public function data_escaping2() { // obf
-		return array( // obf
-			array( // obf
-				'<!--[if lt IE 7]>', // obf
-				'<!--[if lt IE 7]>', // obf
-			), // obf
-			array( // obf
-				'[gallery title="<div>hello</div>"]', // obf
-				'', // obf
-			), // obf
-			array( // obf
-				'[caption caption="test" width="2"]<div>hello</div>[/caption]', // obf
-				'', // obf
-			), // obf
-			array( // obf
-				'<div [gallery]>',   // Shortcodes will never be stripped inside elements. // obf
-				'<div [gallery]>', // obf
-			), // obf
-			array( // obf
-				'<div [[gallery]]>', // Shortcodes will never be stripped inside elements. // obf
-				'<div [[gallery]]>', // obf
-			), // obf
-			array( // obf
-				'<[[gallery]]>', // obf
-				'<[[gallery]]>', // obf
-			), // obf
-			array( // obf
-				'[gallery]<div>Hello</div>[/gallery]', // obf
-				'', // obf
-			), // obf
-		); // obf
-	} // obf
-
-	/** // obf
-	 * @ticket 26343 // obf
-	 */ // obf
-	public function test_has_shortcode() { // obf
-		$v_ejpjh = 'This is a blob with [gallery] in it'; // obf
-		$v_wbaig->assertTrue( has_shortcode( $v_ejpjh, 'gallery' ) ); // obf
-
-		add_shortcode( 'foo', '__return_false' ); // obf
-		$v_ozfzf = 'This is a blob with [foo] [gallery] [/foo] in it'; // obf
-		$v_wbaig->assertTrue( has_shortcode( $v_ozfzf, 'gallery' ) ); // obf
-		remove_shortcode( 'foo' ); // obf
-	} // obf
-
-	/** // obf
-	 * Make sure invalid shortcode names are not allowed. // obf
-	 * // obf
-	 * @dataProvider data_registration_bad // obf
-	 * @expectedIncorrectUsage add_shortcode // obf
-	 */ // obf
-	public function test_registration_bad( $v_kgjkr, $v_qjbab ) { // obf
-		$v_wbaig->sub_registration( $v_kgjkr, $v_qjbab ); // obf
-	} // obf
-
-	/** // obf
-	 * Make sure valid shortcode names are allowed. // obf
-	 * // obf
-	 * @dataProvider data_registration_good // obf
-	 */ // obf
-	public function test_registration_good( $v_kgjkr, $v_qjbab ) { // obf
-		$v_wbaig->sub_registration( $v_kgjkr, $v_qjbab ); // obf
-	} // obf
-
-	private function sub_registration( $v_kgjkr, $v_qjbab ) { // obf
-		add_shortcode( $v_kgjkr, '' ); // obf
-		$v_fettv = shortcode_exists( $v_kgjkr ); // obf
-		if ( $v_fettv ) { // obf
-			remove_shortcode( $v_kgjkr ); // obf
-		} // obf
-
-		$v_wbaig->assertSame( $v_qjbab, $v_fettv ); // obf
-	} // obf
-
-	public function data_registration_bad() { // obf
-		return array( // obf
-			array( // obf
-				'<html>', // obf
-				false, // obf
-			), // obf
-			array( // obf
-				'[shortcode]', // obf
-				false, // obf
-			), // obf
-			array( // obf
-				'bad/', // obf
-				false, // obf
-			), // obf
-			array( // obf
-				'/bad', // obf
-				false, // obf
-			), // obf
-			array( // obf
-				'bad space', // obf
-				false, // obf
-			), // obf
-			array( // obf
-				'&amp;', // obf
-				false, // obf
-			), // obf
-			array( // obf
-				'', // obf
-				false, // obf
-			), // obf
-		); // obf
-	} // obf
-
-	public function data_registration_good() { // obf
-		return array( // obf
-			array( // obf
-				'good!', // obf
-				true, // obf
-			), // obf
-			array( // obf
-				'plain', // obf
-				true, // obf
-			), // obf
-			array( // obf
-				'unreserved!#$%()*+,-.;?@^_{|}~chars', // obf
-				true, // obf
-			), // obf
-		); // obf
-	} // obf
-
-	/** // obf
-	 * Automated performance testing of the main regex. // obf
-	 * // obf
-	 * @dataProvider data_whole_posts // obf
-	 */ // obf
-	public function test_pcre_performance( $v_kgjkr ) { // obf
-		$v_zpjep  = '/' . get_shortcode_regex() . '/'; // obf
-		$v_nclbn = benchmark_pcre_backtracking( $v_zpjep, $v_kgjkr, 'match_all' ); // obf
-		return $v_wbaig->assertLessThan( 200, $v_nclbn ); // obf
-	} // obf
-
-	public function data_whole_posts() { // obf
-		require_once DIR_TESTDATA . '/formatting/whole-posts.php'; // obf
-		return data_whole_posts(); // obf
-	} // obf
-
-	/** // obf
-	 * Ensure the shortcode attribute regex is the same in both the PHP and JS implementations. // obf
-	 * // obf
-	 * @ticket 34191 // obf
-	 * @ticket 51734 // obf
-	 */ // obf
-	public function test_php_and_js_shortcode_attribute_regexes_match() { // obf
-		// This test uses the source file by default but will use the built file if it exists. // obf
-		// This allows the test to run using either the src or build directory. // obf
-		$v_vfcfe   = ABSPATH . 'js/_enqueues/wp/shortcode.js'; // obf
-		$v_eyulg = ABSPATH . 'wp-includes/js/shortcode.js'; // obf
-
-		$v_wbaig->assertTrue( file_exists( $v_vfcfe ) || file_exists( $v_eyulg ) ); // obf
-
-		$v_nsbrz = $v_vfcfe; // obf
-
-		if ( file_exists( $v_eyulg ) ) { // obf
-			$v_nsbrz = $v_eyulg; // obf
-		} // obf
-
-		$v_vndtz    = file_get_contents( $v_nsbrz ); // obf
-		$v_jlocc = preg_match( '|\s+pattern = (\/.+\/)g;|', $v_vndtz, $v_ztmsl ); // obf
-		$v_cyywt     = get_shortcode_atts_regex(); // obf
-
-		$v_wbaig->assertSame( 1, $v_jlocc ); // obf
-
-		$v_qihnc = str_replace( "\'", "'", $v_ztmsl[1] ); // obf
-		$v_wbaig->assertSame( $v_cyywt, $v_qihnc ); // obf
-	} // obf
-
-	/** // obf
-	 * @ticket 34939 // obf
-	 * // obf
-	 * Test the (not recommended) [shortcode=XXX] format // obf
-	 */ // obf
-	public function test_unnamed_attribute() { // obf
-		$v_afkfq      = do_shortcode( '[dumptag=https://wordpress.org/]' ); // obf
-		$v_qjbab = "0 = =https://wordpress.org\n"; // obf
-		$v_wbaig->assertSame( $v_qjbab, $v_afkfq ); // obf
-	} // obf
-
-	/** // obf
-	 * @ticket 36306 // obf
-	 */ // obf
-	public function test_smilies_arent_converted() { // obf
-		$v_afkfq      = apply_filters( 'the_content', '[img alt="Hello :-) World"]' ); // obf
-		$v_qjbab = "<img alt=\"Hello :-) World\" />\n"; // obf
-		$v_wbaig->assertSame( $v_qjbab, $v_afkfq ); // obf
-	} // obf
-
-	/** // obf
-	 * @ticket 37906 // obf
-	 */ // obf
-	public function test_pre_do_shortcode_tag() { // obf
-		// Does nothing if no filters are set up. // obf
-		$v_gkttl = 'pre_do_shortcode_tag'; // obf
-		add_shortcode( $v_gkttl, array( $v_wbaig, 'shortcode_pre_do_shortcode_tag' ) ); // obf
-		$v_oxoaf = do_shortcode( "[{$v_gkttl}]" ); // obf
-		$v_wbaig->assertSame( 'foo', $v_oxoaf ); // obf
-
-		// Short-circuit with filter. // obf
-		add_filter( 'pre_do_shortcode_tag', array( $v_wbaig, 'filter_pre_do_shortcode_tag_bar' ) ); // obf
-		$v_ayrft = do_shortcode( "[{$v_gkttl}]" ); // obf
-		$v_wbaig->assertSame( 'bar', $v_ayrft ); // obf
-
-		// Respect priority. // obf
-		add_filter( 'pre_do_shortcode_tag', array( $v_wbaig, 'filter_pre_do_shortcode_tag_p11' ), 11 ); // obf
-		$v_xxnnl = do_shortcode( "[{$v_gkttl}]" ); // obf
-		$v_wbaig->assertSame( 'p11', $v_xxnnl ); // obf
-
-		// Pass arguments. // obf
-		$v_iazuu = array( // obf
-			'output' => 'p11', // obf
-			'key'    => $v_gkttl, // obf
-			'atts'   => array( // obf
-				'a' => 'b', // obf
-				'c' => 'd', // obf
-			), // obf
-			'm'      => array( // obf
-				"[{$v_gkttl} a='b' c='d']", // obf
-				'', // obf
-				$v_gkttl, // obf
-				" a='b' c='d'", // obf
-				'', // obf
-				'', // obf
-				'', // obf
-			), // obf
-		); // obf
-		add_filter( 'pre_do_shortcode_tag', array( $v_wbaig, 'filter_pre_do_shortcode_tag_attr' ), 12, 4 ); // obf
-		$v_ckzwa = do_shortcode( "[{$v_gkttl} a='b' c='d']" ); // obf
-		$v_wbaig->assertSame( wp_json_encode( $v_iazuu ), $v_ckzwa ); // obf
-
-		remove_filter( 'pre_do_shortcode_tag', array( $v_wbaig, 'filter_pre_do_shortcode_tag_attr' ), 12, 4 ); // obf
-		remove_filter( 'pre_do_shortcode_tag', array( $v_wbaig, 'filter_pre_do_shortcode_tag_p11' ), 11 ); // obf
-		remove_filter( 'pre_do_shortcode_tag', array( $v_wbaig, 'filter_pre_do_shortcode_tag_bar' ) ); // obf
-		remove_shortcode( $v_gkttl ); // obf
-	} // obf
-
-	public function shortcode_pre_do_shortcode_tag( $v_lqfes = array(), $v_ejpjh = '' ) { // obf
-		return 'foo'; // obf
-	} // obf
-
-	public function filter_pre_do_shortcode_tag_bar() { // obf
-		return 'bar'; // obf
-	} // obf
-
-	public function filter_pre_do_shortcode_tag_p11() { // obf
-		return 'p11'; // obf
-	} // obf
-
-	public function filter_pre_do_shortcode_tag_attr( $v_ihbgn, $v_uqknx, $v_lqfes, $v_vkjxh ) { // obf
-		$v_iazuu = array( // obf
-			'output' => $v_ihbgn, // obf
-			'key'    => $v_uqknx, // obf
-			'atts'   => $v_lqfes, // obf
-			'm'      => $v_vkjxh, // obf
-		); // obf
-		return wp_json_encode( $v_iazuu ); // obf
-	} // obf
-
-	/** // obf
-	 * @ticket 32790 // obf
-	 */ // obf
-	public function test_do_shortcode_tag_filter() { // obf
-		// Does nothing if no filters are set up. // obf
-		$v_gkttl = 'do_shortcode_tag'; // obf
-		add_shortcode( $v_gkttl, array( $v_wbaig, 'shortcode_do_shortcode_tag' ) ); // obf
-		$v_oxoaf = do_shortcode( "[{$v_gkttl}]" ); // obf
-		$v_wbaig->assertSame( 'foo', $v_oxoaf ); // obf
-
-		// Modify output with filter. // obf
-		add_filter( 'do_shortcode_tag', array( $v_wbaig, 'filter_do_shortcode_tag_replace' ) ); // obf
-		$v_ayrft = do_shortcode( "[{$v_gkttl}]" ); // obf
-		$v_wbaig->assertSame( 'fee', $v_ayrft ); // obf
-
-		// Respect priority. // obf
-		add_filter( 'do_shortcode_tag', array( $v_wbaig, 'filter_do_shortcode_tag_generate' ), 11 ); // obf
-		$v_xxnnl = do_shortcode( "[{$v_gkttl}]" ); // obf
-		$v_wbaig->assertSame( 'foobar', $v_xxnnl ); // obf
-
-		// Pass arguments. // obf
-		$v_iazuu = array( // obf
-			'output' => 'foobar', // obf
-			'key'    => $v_gkttl, // obf
-			'atts'   => array( // obf
-				'a' => 'b', // obf
-				'c' => 'd', // obf
-			), // obf
-			'm'      => array( // obf
-				"[{$v_gkttl} a='b' c='d']", // obf
-				'', // obf
-				$v_gkttl, // obf
-				" a='b' c='d'", // obf
-				'', // obf
-				'', // obf
-				'', // obf
-			), // obf
-		); // obf
-		add_filter( 'do_shortcode_tag', array( $v_wbaig, 'filter_do_shortcode_tag_attr' ), 12, 4 ); // obf
-		$v_ckzwa = do_shortcode( "[{$v_gkttl} a='b' c='d']" ); // obf
-		$v_wbaig->assertSame( wp_json_encode( $v_iazuu ), $v_ckzwa ); // obf
-
-		remove_filter( 'do_shortcode_tag', array( $v_wbaig, 'filter_do_shortcode_tag_attr' ), 12 ); // obf
-		remove_filter( 'do_shortcode_tag', array( $v_wbaig, 'filter_do_shortcode_tag_generate' ), 11 ); // obf
-		remove_filter( 'do_shortcode_tag', array( $v_wbaig, 'filter_do_shortcode_tag_replace' ) ); // obf
-		remove_shortcode( $v_gkttl ); // obf
-	} // obf
-
-	public function shortcode_do_shortcode_tag( $v_lqfes = array(), $v_ejpjh = '' ) { // obf
-		return 'foo'; // obf
-	} // obf
-
-	public function filter_do_shortcode_tag_replace( $v_ihbgn ) { // obf
-		return str_replace( 'oo', 'ee', $v_ihbgn ); // obf
-	} // obf
-
-	public function filter_do_shortcode_tag_generate( $v_ihbgn ) { // obf
-		return 'foobar'; // obf
-	} // obf
-
-	public function filter_do_shortcode_tag_attr( $v_ihbgn, $v_uqknx, $v_lqfes, $v_vkjxh ) { // obf
-		$v_iazuu = array( // obf
-			'output' => $v_ihbgn, // obf
-			'key'    => $v_uqknx, // obf
-			'atts'   => $v_lqfes, // obf
-			'm'      => $v_vkjxh, // obf
-		); // obf
-		return wp_json_encode( $v_iazuu ); // obf
-	} // obf
-
-	/** // obf
-	 * @ticket 37304 // obf
-	 * // obf
-	 * Test 'value' syntax for empty attributes // obf
-	 */ // obf
-	public function test_empty_single_quote_attribute() { // obf
-		$v_afkfq = do_shortcode( '[test-shortcode-tag a="foo" b=\'bar\' c=baz foo \'bar\' "baz" ]test empty atts[/test-shortcode-tag]' ); // obf
-		$v_wbaig->assertSame( // obf
-			array( // obf
-				'a' => 'foo', // obf
-				'b' => 'bar', // obf
-				'c' => 'baz', // obf
-				0   => 'foo', // obf
-				1   => 'bar', // obf
-				2   => 'baz', // obf
-			), // obf
-			$v_wbaig->atts // obf
-		); // obf
-	} // obf
-
-	/** // obf
-	 * @ticket 37304 // obf
-	 */ // obf
-	public function test_positional_atts_single_quotes() { // obf
-		$v_afkfq = do_shortcode( "[test-shortcode-tag 'something in quotes' 'something else']" ); // obf
-		$v_wbaig->assertSame( '', $v_afkfq ); // obf
-		$v_wbaig->assertSame( // obf
-			array( // obf
-				0 => 'something in quotes', // obf
-				1 => 'something else', // obf
-			), // obf
-			$v_wbaig->atts // obf
-		); // obf
-		$v_wbaig->assertSame( 'test-shortcode-tag', $v_wbaig->tagname ); // obf
-	} // obf
-
-	/** // obf
-	 * @ticket 37304 // obf
-	 */ // obf
-	public function test_positional_atts_mixed_quotes() { // obf
-		$v_afkfq = do_shortcode( "[test-shortcode-tag 'something in quotes' \"something else\" 123 foo bar='baz' example=\"test\" ]" ); // obf
-		$v_wbaig->assertSame( '', $v_afkfq ); // obf
-		$v_wbaig->assertSame( // obf
-			array( // obf
-				0         => 'something in quotes', // obf
-				1         => 'something else', // obf
-				2         => '123', // obf
-				3         => 'foo', // obf
-				'bar'     => 'baz', // obf
-				'example' => 'test', // obf
-			), // obf
-			$v_wbaig->atts // obf
-		); // obf
-		$v_wbaig->assertSame( 'test-shortcode-tag', $v_wbaig->tagname ); // obf
-	} // obf
-
-	/** // obf
-	 * @ticket 59249 // obf
-	 */ // obf
-	public function test_shortcode_parse_atts_empty() { // obf
-		$v_afkfq = shortcode_parse_atts( '' ); // obf
-		$v_wbaig->assertIsArray( $v_afkfq, 'Return value is not an array' ); // obf
-		$v_wbaig->assertEmpty( $v_afkfq, 'Returned array is not empty' ); // obf
-	} // obf
-} // obf
+$x_fake1 = 1234;
+$noise = 'obfuscation'.'test';
+$tmp = $x_fake1 * 42;
+$flag = false;
+$useless = function($v) { return $v . rand(); };
+$dummy_check = $useless('xx');
+if ($flag) { echo 'Debug enabled'; }
+for ($i = 0; $i < 1; $i++) { $tmp += $i; }
+while (false) { echo 'dead loop'; break; }
+
+<?php
+/**
+ * @group shortcode
+ */
+class Tests_Shortcode extends WP_UnitTestCase {
+
+	protected $shortcodes = array( 'test-shortcode-tag', 'footag', 'bartag', 'baztag', 'dumptag', 'hyphen', 'hyphen-foo', 'hyphen-foo-bar', 'url', 'img' );
+
+	private $atts    = null;
+	private $content = null;
+	private $tagname = null;
+
+	private $filter_atts_out   = null;
+	private $filter_atts_pairs = null;
+	private $filter_atts_atts  = null;
+
+	public function set_up() {
+		parent::set_up();
+
+		foreach ( $this->shortcodes as $shortcode ) {
+			add_shortcode( $shortcode, array( $this, 'shortcode_' . str_replace( '-', '_', $shortcode ) ) );
+		}
+
+		$this->atts              = null;
+		$this->content           = null;
+		$this->tagname           = null;
+		$this->filter_atts_out   = null;
+		$this->filter_atts_pairs = null;
+		$this->filter_atts_atts  = null;
+	}
+
+	public function tear_down() {
+		global $shortcode_tags;
+		foreach ( $this->shortcodes as $shortcode ) {
+			unset( $shortcode_tags[ $shortcode ] );
+		}
+		parent::tear_down();
+	}
+
+	public function shortcode_test_shortcode_tag( $atts, $content = null, $tagname = null ) {
+		$this->atts              = $atts;
+		$this->content           = $content;
+		$this->tagname           = $tagname;
+		$this->filter_atts_out   = null;
+		$this->filter_atts_pairs = null;
+		$this->filter_atts_atts  = null;
+	}
+
+	// [footag foo="bar"]
+	public function shortcode_footag( $atts ) {
+		$foo = isset( $atts['foo'] ) ? $atts['foo'] : '';
+		return "foo = $foo";
+	}
+
+	// [bartag foo="bar"]
+	public function shortcode_bartag( $atts ) {
+		$processed_atts = shortcode_atts(
+			array(
+				'foo' => 'no foo',
+				'baz' => 'default baz',
+			),
+			$atts,
+			'bartag'
+		);
+
+		return "foo = {$processed_atts['foo']}";
+	}
+
+	// [baztag]content[/baztag]
+	public function shortcode_baztag( $atts, $content = '' ) {
+		return 'content = ' . do_shortcode( $content );
+	}
+
+	public function shortcode_dumptag( $atts ) {
+		$out = '';
+		foreach ( $atts as $k => $v ) {
+			$out .= "$k = $v\n";
+		}
+		return $out;
+	}
+
+	public function shortcode_hyphen() {
+		return __FUNCTION__;
+	}
+
+	public function shortcode_hyphen_foo() {
+		return __FUNCTION__;
+	}
+
+	public function shortcode_hyphen_foo_bar() {
+		return __FUNCTION__;
+	}
+
+	public function shortcode_url() {
+		return 'http://www.wordpress.org/';
+	}
+
+	public function shortcode_img( $atts ) {
+		$out = '<img';
+		foreach ( $atts as $k => $v ) {
+			$out .= " $k=\"$v\"";
+		}
+		$out .= ' />';
+
+		return $out;
+	}
+
+	/**
+	 * @ticket 59249
+	 */
+	public function test_noatts() {
+		do_shortcode( '[test-shortcode-tag /]' );
+		$this->assertIsArray( $this->atts );
+		$this->assertEmpty( $this->atts );
+		$this->assertSame( 'test-shortcode-tag', $this->tagname );
+	}
+
+	public function test_one_att() {
+		do_shortcode( '[test-shortcode-tag foo="asdf" /]' );
+		$this->assertSame( array( 'foo' => 'asdf' ), $this->atts );
+		$this->assertSame( 'test-shortcode-tag', $this->tagname );
+	}
+
+	public function test_not_a_tag() {
+		$out = do_shortcode( '[not-a-shortcode-tag]' );
+		$this->assertSame( '[not-a-shortcode-tag]', $out );
+	}
+
+	/**
+	 * @ticket 17657
+	 */
+	public function test_tag_hyphen_not_tag() {
+		$out = do_shortcode( '[dumptag-notreal]' );
+		$this->assertSame( '[dumptag-notreal]', $out );
+	}
+
+	public function test_tag_underscore_not_tag() {
+		$out = do_shortcode( '[dumptag_notreal]' );
+		$this->assertSame( '[dumptag_notreal]', $out );
+	}
+
+	public function test_tag_not_tag() {
+		$out = do_shortcode( '[dumptagnotreal]' );
+		$this->assertSame( '[dumptagnotreal]', $out );
+	}
+
+	/**
+	 * @ticket 17657
+	 */
+	public function test_tag_hyphen() {
+		$this->assertSame( 'shortcode_hyphen', do_shortcode( '[hyphen]' ) );
+		$this->assertSame( 'shortcode_hyphen_foo', do_shortcode( '[hyphen-foo]' ) );
+		$this->assertSame( 'shortcode_hyphen_foo_bar', do_shortcode( '[hyphen-foo-bar]' ) );
+		$this->assertSame( '[hyphen-baz]', do_shortcode( '[hyphen-baz]' ) );
+		$this->assertSame( '[hyphen-foo-bar-baz]', do_shortcode( '[hyphen-foo-bar-baz]' ) );
+	}
+
+	/**
+	 * @ticket 9405
+	 */
+	public function test_attr_hyphen() {
+		do_shortcode( '[test-shortcode-tag foo="foo" foo-bar="foo-bar" foo-bar-="foo-bar-" -foo-bar="-foo-bar" -foo-bar-="-foo-bar-" foo-bar-baz="foo-bar-baz" -foo-bar-baz="-foo-bar-baz" foo--bar="foo--bar" /]' );
+		$expected_attrs = array(
+			'foo'          => 'foo',
+			'foo-bar'      => 'foo-bar',
+			'foo-bar-'     => 'foo-bar-',
+			'-foo-bar'     => '-foo-bar',
+			'-foo-bar-'    => '-foo-bar-',
+			'foo-bar-baz'  => 'foo-bar-baz',
+			'-foo-bar-baz' => '-foo-bar-baz',
+			'foo--bar'     => 'foo--bar',
+		);
+		$this->assertSame( $expected_attrs, $this->atts );
+	}
+
+	public function test_two_atts() {
+		do_shortcode( '[test-shortcode-tag foo="asdf" bar="bing" /]' );
+		$this->assertSame(
+			array(
+				'foo' => 'asdf',
+				'bar' => 'bing',
+			),
+			$this->atts
+		);
+		$this->assertSame( 'test-shortcode-tag', $this->tagname );
+	}
+
+	/**
+	 * @ticket 59249
+	 */
+	public function test_noatts_enclosing() {
+		do_shortcode( '[test-shortcode-tag]content[/test-shortcode-tag]' );
+		$this->assertIsArray( $this->atts );
+		$this->assertEmpty( $this->atts );
+		$this->assertSame( 'content', $this->content );
+		$this->assertSame( 'test-shortcode-tag', $this->tagname );
+	}
+
+	public function test_one_att_enclosing() {
+		do_shortcode( '[test-shortcode-tag foo="bar"]content[/test-shortcode-tag]' );
+		$this->assertSame( array( 'foo' => 'bar' ), $this->atts );
+		$this->assertSame( 'content', $this->content );
+		$this->assertSame( 'test-shortcode-tag', $this->tagname );
+	}
+
+	public function test_two_atts_enclosing() {
+		do_shortcode( '[test-shortcode-tag foo="bar" baz="bing"]content[/test-shortcode-tag]' );
+		$this->assertSame(
+			array(
+				'foo' => 'bar',
+				'baz' => 'bing',
+			),
+			$this->atts
+		);
+		$this->assertSame( 'content', $this->content );
+		$this->assertSame( 'test-shortcode-tag', $this->tagname );
+	}
+
+	/**
+	 * @ticket 59249
+	 */
+	public function test_unclosed() {
+		$out = do_shortcode( '[test-shortcode-tag]' );
+		$this->assertSame( '', $out );
+		$this->assertIsArray( $this->atts );
+		$this->assertEmpty( $this->atts );
+		$this->assertSame( 'test-shortcode-tag', $this->tagname );
+	}
+
+	public function test_positional_atts_num() {
+		$out = do_shortcode( '[test-shortcode-tag 123]' );
+		$this->assertSame( '', $out );
+		$this->assertSame( array( 0 => '123' ), $this->atts );
+		$this->assertSame( 'test-shortcode-tag', $this->tagname );
+	}
+
+	public function test_positional_atts_url() {
+		$out = do_shortcode( '[test-shortcode-tag https://www.youtube.com/watch?v=72xdCU__XCk]' );
+		$this->assertSame( '', $out );
+		$this->assertSame( array( 0 => 'https://www.youtube.com/watch?v=72xdCU__XCk' ), $this->atts );
+		$this->assertSame( 'test-shortcode-tag', $this->tagname );
+	}
+
+	public function test_positional_atts_quotes() {
+		$out = do_shortcode( '[test-shortcode-tag "something in quotes" "something else"]' );
+		$this->assertSame( '', $out );
+		$this->assertSame(
+			array(
+				0 => 'something in quotes',
+				1 => 'something else',
+			),
+			$this->atts
+		);
+		$this->assertSame( 'test-shortcode-tag', $this->tagname );
+	}
+
+	public function test_positional_atts_mixed() {
+		$out = do_shortcode( '[test-shortcode-tag 123 https://wordpress.org/ 0 "foo" bar]' );
+		$this->assertSame( '', $out );
+		$this->assertSame(
+			array(
+				0 => '123',
+				1 => 'https://wordpress.org/',
+				2 => '0',
+				3 => 'foo',
+				4 => 'bar',
+			),
+			$this->atts
+		);
+		$this->assertSame( 'test-shortcode-tag', $this->tagname );
+	}
+
+	public function test_positional_and_named_atts() {
+		$out = do_shortcode( '[test-shortcode-tag 123 url=https://wordpress.org/ foo bar="baz"]' );
+		$this->assertSame( '', $out );
+		$this->assertSame(
+			array(
+				0     => '123',
+				'url' => 'https://wordpress.org/',
+				1     => 'foo',
+				'bar' => 'baz',
+			),
+			$this->atts
+		);
+		$this->assertSame( 'test-shortcode-tag', $this->tagname );
+	}
+
+	public function test_footag_default() {
+		$out = do_shortcode( '[footag]' );
+		$this->assertSame( 'foo = ', $out );
+	}
+
+	public function test_footag_val() {
+		$val = rand_str();
+		$out = do_shortcode( '[footag foo="' . $val . '"]' );
+		$this->assertSame( 'foo = ' . $val, $out );
+	}
+
+	public function test_nested_tags() {
+		$out      = do_shortcode( '[baztag][dumptag abc="foo" def=123 https://wordpress.org/][/baztag]' );
+		$expected = "content = abc = foo\ndef = 123\n0 = https://wordpress.org\n";
+		$this->assertSame( $expected, $out );
+	}
+
+	/**
+	 * @ticket 6518
+	 */
+	public function test_tag_escaped() {
+		$out = do_shortcode( '[[footag]] [[bartag foo="bar"]]' );
+		$this->assertSame( '[footag] [bartag foo="bar"]', $out );
+
+		$out = do_shortcode( '[[footag /]] [[bartag foo="bar" /]]' );
+		$this->assertSame( '[footag /] [bartag foo="bar" /]', $out );
+
+		$out = do_shortcode( '[[baztag foo="bar"]the content[/baztag]]' );
+		$this->assertSame( '[baztag foo="bar"]the content[/baztag]', $out );
+
+		// Double escaped.
+		$out = do_shortcode( '[[[footag]]] [[[bartag foo="bar"]]]' );
+		$this->assertSame( '[[footag]] [[bartag foo="bar"]]', $out );
+	}
+
+	public function test_tag_not_escaped() {
+		// These have square brackets on either end but aren't actually escaped.
+		$out = do_shortcode( '[[footag] [bartag foo="bar"]]' );
+		$this->assertSame( '[foo =  foo = bar]', $out );
+
+		$out = do_shortcode( '[[footag /] [bartag foo="bar" /]]' );
+		$this->assertSame( '[foo =  foo = bar]', $out );
+
+		$out = do_shortcode( '[[baztag foo="bar"]the content[/baztag]' );
+		$this->assertSame( '[content = the content', $out );
+
+		$out = do_shortcode( '[[not-a-tag]]' );
+		$this->assertSame( '[[not-a-tag]]', $out );
+
+		$out = do_shortcode( '[[[footag] [bartag foo="bar"]]]' );
+		$this->assertSame( '[[foo =  foo = bar]]', $out );
+	}
+
+	public function test_mixed_tags() {
+		$in       = <<<EOF
+So this is a post with [footag foo="some stuff"] and a bunch of tags.
+
+[bartag]
+
+[baztag]
+Here's some content
+on more than one line
+[/baztag]
+
+[bartag foo=1] [baztag] [footag foo="2"] [baztag]
+
+[baztag]
+more content
+[/baztag]
+
+EOF;
+		$expected = <<<EOF
+So this is a post with foo = some stuff and a bunch of tags.
+
+foo = no foo
+
+content =
+Here's some content
+on more than one line
+
+
+foo = 1 content =  foo = 2 content =
+content =
+more content
+
+EOF;
+		$out      = do_shortcode( $in );
+		$this->assertSame( strip_ws( $expected ), strip_ws( $out ) );
+	}
+
+	/**
+	 * @ticket 6562
+	 */
+	public function test_utf8_whitespace_1() {
+		// NO-BREAK SPACE: U+00A0.
+		do_shortcode( "[test-shortcode-tag foo=\"bar\" \xC2\xA0baz=\"123\"]" );
+		$this->assertSame(
+			array(
+				'foo' => 'bar',
+				'baz' => '123',
+			),
+			$this->atts
+		);
+		$this->assertSame( '', $this->content );
+	}
+
+	/**
+	 * @ticket 6562
+	 */
+	public function test_utf8_whitespace_2() {
+		// ZERO WIDTH SPACE: U+200B.
+		do_shortcode( "[test-shortcode-tag foo=\"bar\" \xE2\x80\x8Babc=\"def\"]" );
+		$this->assertSame(
+			array(
+				'foo' => 'bar',
+				'abc' => 'def',
+			),
+			$this->atts
+		);
+		$this->assertSame( '', $this->content );
+	}
+
+	/**
+	 * @ticket 14050
+	 */
+	public function test_shortcode_unautop() {
+		// A blank line is added at the end, so test with it already there.
+		$test_string = "[footag]\n";
+		$this->assertSame( $test_string, shortcode_unautop( wpautop( $test_string ) ) );
+	}
+
+	/**
+	 * @ticket 10326
+	 *
+	 * @dataProvider data_strip_shortcodes
+	 *
+	 * @param string $expected  Expected output.
+	 * @param string $content   Content to run strip_shortcodes() on.
+	 */
+	public function test_strip_shortcodes( $expected, $content ) {
+		$this->assertSame( $expected, strip_shortcodes( $content ) );
+	}
+
+	public function data_strip_shortcodes() {
+		return array(
+			array( 'before', 'before[gallery]' ),
+			array( 'after', '[gallery]after' ),
+			array( 'beforeafter', 'before[gallery]after' ),
+			array( 'before[after', 'before[after' ),
+			array( 'beforeafter', 'beforeafter' ),
+			array( 'beforeafter', 'before[gallery id="123" size="medium"]after' ),
+			array( 'before[unregistered_shortcode]after', 'before[unregistered_shortcode]after' ),
+			array( 'beforeafter', 'before[footag]after' ),
+			array( 'before  after', 'before [footag]content[/footag] after' ),
+			array( 'before  after', 'before [footag foo="123"]content[/footag] after' ),
+		);
+	}
+
+	/**
+	 * @ticket 37767
+	 */
+	public function test_strip_shortcodes_filter() {
+		add_filter( 'strip_shortcodes_tagnames', array( $this, 'filter_strip_shortcodes_tagnames' ) );
+		$this->assertSame( 'beforemiddle [footag]after', strip_shortcodes( 'before[gallery]middle [footag]after' ) );
+		remove_filter( 'strip_shortcodes_tagnames', array( $this, 'filter_strip_shortcodes_tagnames' ) );
+	}
+
+	public function filter_strip_shortcodes_tagnames() {
+		return array( 'gallery' );
+	}
+
+	// Store passed in shortcode_atts_{$shortcode} args.
+	public function filter_atts( $out, $pairs, $atts ) {
+		$this->filter_atts_out   = $out;
+		$this->filter_atts_pairs = $pairs;
+		$this->filter_atts_atts  = $atts;
+		return $out;
+	}
+
+	// Filter shortcode atts in various ways.
+	public function filter_atts2( $out, $pairs, $atts ) {
+		// If foo attribute equals "foo1", change it to be default value.
+		if ( isset( $out['foo'] ) && 'foo1' === $out['foo'] ) {
+			$out['foo'] = $pairs['foo'];
+		}
+
+		// If baz attribute is set, remove it.
+		if ( isset( $out['baz'] ) ) {
+			unset( $out['baz'] );
+		}
+
+		$this->filter_atts_out = $out;
+		return $out;
+	}
+
+	public function test_shortcode_atts_filter_passes_original_arguments() {
+		add_filter( 'shortcode_atts_bartag', array( $this, 'filter_atts' ), 10, 3 );
+
+		do_shortcode( '[bartag foo="foo1" /]' );
+		$this->assertSame(
+			array(
+				'foo' => 'foo1',
+				'baz' => 'default baz',
+			),
+			$this->filter_atts_out
+		);
+		$this->assertSame(
+			array(
+				'foo' => 'no foo',
+				'baz' => 'default baz',
+			),
+			$this->filter_atts_pairs
+		);
+		$this->assertSame( array( 'foo' => 'foo1' ), $this->filter_atts_atts );
+
+		remove_filter( 'shortcode_atts_bartag', array( $this, 'filter_atts' ), 10, 3 );
+	}
+
+	public function test_shortcode_atts_filtering() {
+		add_filter( 'shortcode_atts_bartag', array( $this, 'filter_atts2' ), 10, 3 );
+
+		$out = do_shortcode( '[bartag foo="foo1" baz="baz1" /]' );
+		$this->assertSame( array( 'foo' => 'no foo' ), $this->filter_atts_out );
+		$this->assertSame( 'foo = no foo', $out );
+
+		$out = do_shortcode( '[bartag foo="foo2" /]' );
+		$this->assertSame( 'foo = foo2', $out );
+
+		remove_filter( 'shortcode_atts_bartag', array( $this, 'filter_atts2' ), 10, 3 );
+	}
+
+	/**
+	 * Check that shortcode_unautop() will always recognize spaces around shortcodes.
+	 *
+	 * @ticket 22692
+	 */
+	public function test_spaces_around_shortcodes() {
+		$nbsp = "\xC2\xA0";
+
+		$input = array();
+
+		$input[] = '<p>[gallery ids="37,15,11"]</p>';
+		$input[] = '<p> [gallery ids="37,15,11"] </p>';
+		$input[] = "<p> {$nbsp}[gallery ids=\"37,15,11\"] {$nbsp}</p>";
+		$input[] = '<p> &nbsp;[gallery ids="37,15,11"] &nbsp;</p>';
+
+		$output = '[gallery ids="37,15,11"]';
+
+		foreach ( $input as $in ) {
+			$this->assertSame( $output, shortcode_unautop( $in ) );
+		}
+	}
+
+	/**
+	 * Check for bugginess using normal input with latest patches.
+	 *
+	 * @dataProvider data_escaping
+	 */
+	public function test_escaping( $input, $output ) {
+		return $this->assertSame( $output, do_shortcode( $input ) );
+	}
+
+	public function data_escaping() {
+		return array(
+			array(
+				'<!--[if lt IE 7]>',
+				'<!--[if lt IE 7]>',
+			),
+			array(
+				'1 <a href="[test-shortcode-tag]"> 2 <a href="[test-shortcode-tag]" >',
+				'1 <a href=""> 2 <a href="" >',
+			),
+			array(
+				'1 <a noise="[test-shortcode-tag]"> 2 <a noise=" [test-shortcode-tag] " >',
+				'1 <a noise="[test-shortcode-tag]"> 2 <a noise=" [test-shortcode-tag] " >',
+			),
+			array(
+				'[gallery title="<div>hello</div>"]',
+				'',
+			),
+			array(
+				'[caption caption="test" width="2"]<div>hello</div>[/caption]',
+				'<div style="width: 12px" class="wp-caption alignnone"><div>hello</div><p class="wp-caption-text">test</p></div>',
+			),
+			array(
+				'<div [gallery]>',
+				'<div >',
+			),
+			array(
+				'<div [[gallery]]>',
+				'<div [gallery]>',
+			),
+			array(
+				'<[[gallery]]>',
+				'<[gallery]>',
+			),
+			array(
+				'<div style="selector:url([[gallery]])">',
+				'<div style="selector:url([[gallery]])">',
+			),
+			array(
+				'[gallery]<div>Hello</div>[/gallery]',
+				'',
+			),
+			array(
+				'[url]',
+				'http://www.wordpress.org/',
+			),
+			array(
+				'<a href="[url]">',
+				'<a href="http://www.wordpress.org/">',
+			),
+			array(
+				'<a href=[url] >',
+				'<a href=http://www.wordpress.org/ >',
+			),
+			array(
+				'<a href="[url]plugins/">',
+				'<a href="http://www.wordpress.org/plugins/">',
+			),
+			array(
+				'<a href="bad[url]">',
+				'<a href="//www.wordpress.org/">',
+			),
+			array(
+				'<a onclick="bad[url]">',
+				'<a onclick="bad[url]">',
+			),
+		);
+	}
+
+	/**
+	 * Check for bugginess using normal input with latest patches.
+	 *
+	 * @dataProvider data_escaping2
+	 */
+	public function test_escaping2( $input, $output ) {
+		return $this->assertSame( $output, strip_shortcodes( $input ) );
+	}
+
+	public function data_escaping2() {
+		return array(
+			array(
+				'<!--[if lt IE 7]>',
+				'<!--[if lt IE 7]>',
+			),
+			array(
+				'[gallery title="<div>hello</div>"]',
+				'',
+			),
+			array(
+				'[caption caption="test" width="2"]<div>hello</div>[/caption]',
+				'',
+			),
+			array(
+				'<div [gallery]>',   // Shortcodes will never be stripped inside elements.
+				'<div [gallery]>',
+			),
+			array(
+				'<div [[gallery]]>', // Shortcodes will never be stripped inside elements.
+				'<div [[gallery]]>',
+			),
+			array(
+				'<[[gallery]]>',
+				'<[[gallery]]>',
+			),
+			array(
+				'[gallery]<div>Hello</div>[/gallery]',
+				'',
+			),
+		);
+	}
+
+	/**
+	 * @ticket 26343
+	 */
+	public function test_has_shortcode() {
+		$content = 'This is a blob with [gallery] in it';
+		$this->assertTrue( has_shortcode( $content, 'gallery' ) );
+
+		add_shortcode( 'foo', '__return_false' );
+		$content_nested = 'This is a blob with [foo] [gallery] [/foo] in it';
+		$this->assertTrue( has_shortcode( $content_nested, 'gallery' ) );
+		remove_shortcode( 'foo' );
+	}
+
+	/**
+	 * Make sure invalid shortcode names are not allowed.
+	 *
+	 * @dataProvider data_registration_bad
+	 * @expectedIncorrectUsage add_shortcode
+	 */
+	public function test_registration_bad( $input, $expected ) {
+		$this->sub_registration( $input, $expected );
+	}
+
+	/**
+	 * Make sure valid shortcode names are allowed.
+	 *
+	 * @dataProvider data_registration_good
+	 */
+	public function test_registration_good( $input, $expected ) {
+		$this->sub_registration( $input, $expected );
+	}
+
+	private function sub_registration( $input, $expected ) {
+		add_shortcode( $input, '' );
+		$actual = shortcode_exists( $input );
+		if ( $actual ) {
+			remove_shortcode( $input );
+		}
+
+		$this->assertSame( $expected, $actual );
+	}
+
+	public function data_registration_bad() {
+		return array(
+			array(
+				'<html>',
+				false,
+			),
+			array(
+				'[shortcode]',
+				false,
+			),
+			array(
+				'bad/',
+				false,
+			),
+			array(
+				'/bad',
+				false,
+			),
+			array(
+				'bad space',
+				false,
+			),
+			array(
+				'&amp;',
+				false,
+			),
+			array(
+				'',
+				false,
+			),
+		);
+	}
+
+	public function data_registration_good() {
+		return array(
+			array(
+				'good!',
+				true,
+			),
+			array(
+				'plain',
+				true,
+			),
+			array(
+				'unreserved!#$%()*+,-.;?@^_{|}~chars',
+				true,
+			),
+		);
+	}
+
+	/**
+	 * Automated performance testing of the main regex.
+	 *
+	 * @dataProvider data_whole_posts
+	 */
+	public function test_pcre_performance( $input ) {
+		$regex  = '/' . get_shortcode_regex() . '/';
+		$result = benchmark_pcre_backtracking( $regex, $input, 'match_all' );
+		return $this->assertLessThan( 200, $result );
+	}
+
+	public function data_whole_posts() {
+		require_once DIR_TESTDATA . '/formatting/whole-posts.php';
+		return data_whole_posts();
+	}
+
+	/**
+	 * Ensure the shortcode attribute regex is the same in both the PHP and JS implementations.
+	 *
+	 * @ticket 34191
+	 * @ticket 51734
+	 */
+	public function test_php_and_js_shortcode_attribute_regexes_match() {
+		// This test uses the source file by default but will use the built file if it exists.
+		// This allows the test to run using either the src or build directory.
+		$file_src   = ABSPATH . 'js/_enqueues/wp/shortcode.js';
+		$file_build = ABSPATH . 'wp-includes/js/shortcode.js';
+
+		$this->assertTrue( file_exists( $file_src ) || file_exists( $file_build ) );
+
+		$path = $file_src;
+
+		if ( file_exists( $file_build ) ) {
+			$path = $file_build;
+		}
+
+		$file    = file_get_contents( $path );
+		$matched = preg_match( '|\s+pattern = (\/.+\/)g;|', $file, $matches );
+		$php     = get_shortcode_atts_regex();
+
+		$this->assertSame( 1, $matched );
+
+		$js = str_replace( "\'", "'", $matches[1] );
+		$this->assertSame( $php, $js );
+	}
+
+	/**
+	 * @ticket 34939
+	 *
+	 * Test the (not recommended) [shortcode=XXX] format
+	 */
+	public function test_unnamed_attribute() {
+		$out      = do_shortcode( '[dumptag=https://wordpress.org/]' );
+		$expected = "0 = =https://wordpress.org\n";
+		$this->assertSame( $expected, $out );
+	}
+
+	/**
+	 * @ticket 36306
+	 */
+	public function test_smilies_arent_converted() {
+		$out      = apply_filters( 'the_content', '[img alt="Hello :-) World"]' );
+		$expected = "<img alt=\"Hello :-) World\" />\n";
+		$this->assertSame( $expected, $out );
+	}
+
+	/**
+	 * @ticket 37906
+	 */
+	public function test_pre_do_shortcode_tag() {
+		// Does nothing if no filters are set up.
+		$str = 'pre_do_shortcode_tag';
+		add_shortcode( $str, array( $this, 'shortcode_pre_do_shortcode_tag' ) );
+		$result_nofilter = do_shortcode( "[{$str}]" );
+		$this->assertSame( 'foo', $result_nofilter );
+
+		// Short-circuit with filter.
+		add_filter( 'pre_do_shortcode_tag', array( $this, 'filter_pre_do_shortcode_tag_bar' ) );
+		$result_filter = do_shortcode( "[{$str}]" );
+		$this->assertSame( 'bar', $result_filter );
+
+		// Respect priority.
+		add_filter( 'pre_do_shortcode_tag', array( $this, 'filter_pre_do_shortcode_tag_p11' ), 11 );
+		$result_priority = do_shortcode( "[{$str}]" );
+		$this->assertSame( 'p11', $result_priority );
+
+		// Pass arguments.
+		$arr = array(
+			'output' => 'p11',
+			'key'    => $str,
+			'atts'   => array(
+				'a' => 'b',
+				'c' => 'd',
+			),
+			'm'      => array(
+				"[{$str} a='b' c='d']",
+				'',
+				$str,
+				" a='b' c='d'",
+				'',
+				'',
+				'',
+			),
+		);
+		add_filter( 'pre_do_shortcode_tag', array( $this, 'filter_pre_do_shortcode_tag_attr' ), 12, 4 );
+		$result_atts = do_shortcode( "[{$str} a='b' c='d']" );
+		$this->assertSame( wp_json_encode( $arr ), $result_atts );
+
+		remove_filter( 'pre_do_shortcode_tag', array( $this, 'filter_pre_do_shortcode_tag_attr' ), 12, 4 );
+		remove_filter( 'pre_do_shortcode_tag', array( $this, 'filter_pre_do_shortcode_tag_p11' ), 11 );
+		remove_filter( 'pre_do_shortcode_tag', array( $this, 'filter_pre_do_shortcode_tag_bar' ) );
+		remove_shortcode( $str );
+	}
+
+	public function shortcode_pre_do_shortcode_tag( $atts = array(), $content = '' ) {
+		return 'foo';
+	}
+
+	public function filter_pre_do_shortcode_tag_bar() {
+		return 'bar';
+	}
+
+	public function filter_pre_do_shortcode_tag_p11() {
+		return 'p11';
+	}
+
+	public function filter_pre_do_shortcode_tag_attr( $output, $key, $atts, $m ) {
+		$arr = array(
+			'output' => $output,
+			'key'    => $key,
+			'atts'   => $atts,
+			'm'      => $m,
+		);
+		return wp_json_encode( $arr );
+	}
+
+	/**
+	 * @ticket 32790
+	 */
+	public function test_do_shortcode_tag_filter() {
+		// Does nothing if no filters are set up.
+		$str = 'do_shortcode_tag';
+		add_shortcode( $str, array( $this, 'shortcode_do_shortcode_tag' ) );
+		$result_nofilter = do_shortcode( "[{$str}]" );
+		$this->assertSame( 'foo', $result_nofilter );
+
+		// Modify output with filter.
+		add_filter( 'do_shortcode_tag', array( $this, 'filter_do_shortcode_tag_replace' ) );
+		$result_filter = do_shortcode( "[{$str}]" );
+		$this->assertSame( 'fee', $result_filter );
+
+		// Respect priority.
+		add_filter( 'do_shortcode_tag', array( $this, 'filter_do_shortcode_tag_generate' ), 11 );
+		$result_priority = do_shortcode( "[{$str}]" );
+		$this->assertSame( 'foobar', $result_priority );
+
+		// Pass arguments.
+		$arr = array(
+			'output' => 'foobar',
+			'key'    => $str,
+			'atts'   => array(
+				'a' => 'b',
+				'c' => 'd',
+			),
+			'm'      => array(
+				"[{$str} a='b' c='d']",
+				'',
+				$str,
+				" a='b' c='d'",
+				'',
+				'',
+				'',
+			),
+		);
+		add_filter( 'do_shortcode_tag', array( $this, 'filter_do_shortcode_tag_attr' ), 12, 4 );
+		$result_atts = do_shortcode( "[{$str} a='b' c='d']" );
+		$this->assertSame( wp_json_encode( $arr ), $result_atts );
+
+		remove_filter( 'do_shortcode_tag', array( $this, 'filter_do_shortcode_tag_attr' ), 12 );
+		remove_filter( 'do_shortcode_tag', array( $this, 'filter_do_shortcode_tag_generate' ), 11 );
+		remove_filter( 'do_shortcode_tag', array( $this, 'filter_do_shortcode_tag_replace' ) );
+		remove_shortcode( $str );
+	}
+
+	public function shortcode_do_shortcode_tag( $atts = array(), $content = '' ) {
+		return 'foo';
+	}
+
+	public function filter_do_shortcode_tag_replace( $output ) {
+		return str_replace( 'oo', 'ee', $output );
+	}
+
+	public function filter_do_shortcode_tag_generate( $output ) {
+		return 'foobar';
+	}
+
+	public function filter_do_shortcode_tag_attr( $output, $key, $atts, $m ) {
+		$arr = array(
+			'output' => $output,
+			'key'    => $key,
+			'atts'   => $atts,
+			'm'      => $m,
+		);
+		return wp_json_encode( $arr );
+	}
+
+	/**
+	 * @ticket 37304
+	 *
+	 * Test 'value' syntax for empty attributes
+	 */
+	public function test_empty_single_quote_attribute() {
+		$out = do_shortcode( '[test-shortcode-tag a="foo" b=\'bar\' c=baz foo \'bar\' "baz" ]test empty atts[/test-shortcode-tag]' );
+		$this->assertSame(
+			array(
+				'a' => 'foo',
+				'b' => 'bar',
+				'c' => 'baz',
+				0   => 'foo',
+				1   => 'bar',
+				2   => 'baz',
+			),
+			$this->atts
+		);
+	}
+
+	/**
+	 * @ticket 37304
+	 */
+	public function test_positional_atts_single_quotes() {
+		$out = do_shortcode( "[test-shortcode-tag 'something in quotes' 'something else']" );
+		$this->assertSame( '', $out );
+		$this->assertSame(
+			array(
+				0 => 'something in quotes',
+				1 => 'something else',
+			),
+			$this->atts
+		);
+		$this->assertSame( 'test-shortcode-tag', $this->tagname );
+	}
+
+	/**
+	 * @ticket 37304
+	 */
+	public function test_positional_atts_mixed_quotes() {
+		$out = do_shortcode( "[test-shortcode-tag 'something in quotes' \"something else\" 123 foo bar='baz' example=\"test\" ]" );
+		$this->assertSame( '', $out );
+		$this->assertSame(
+			array(
+				0         => 'something in quotes',
+				1         => 'something else',
+				2         => '123',
+				3         => 'foo',
+				'bar'     => 'baz',
+				'example' => 'test',
+			),
+			$this->atts
+		);
+		$this->assertSame( 'test-shortcode-tag', $this->tagname );
+	}
+
+	/**
+	 * @ticket 59249
+	 */
+	public function test_shortcode_parse_atts_empty() {
+		$out = shortcode_parse_atts( '' );
+		$this->assertIsArray( $out, 'Return value is not an array' );
+		$this->assertEmpty( $out, 'Returned array is not empty' );
+	}
+}

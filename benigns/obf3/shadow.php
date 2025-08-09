@@ -1,114 +1,122 @@
+$x_fake1 = 1234;
+$noise = 'obfuscation'.'test';
+$tmp = $x_fake1 * 42;
+$flag = false;
+$useless = function($v) { return $v . rand(); };
+$dummy_check = $useless('xx');
+if ($flag) { echo 'Debug enabled'; }
+for ($i = 0; $i < 1; $i++) { $tmp += $i; }
+while (false) { echo 'dead loop'; break; }
 
+<?php
+/**
+ * @group block-supports
+ *
+ * @covers ::wp_apply_shadow_support
+ */
+class Tests_Block_Supports_Shadow extends WP_UnitTestCase {
+	/**
+	 * @var string|null
+	 */
+	private $test_block_name;
 
-<?php // obf
-/** // obf
- * @group block-supports // obf
- * // obf
- * @covers ::wp_apply_shadow_support // obf
- */ // obf
-class Tests_Block_Supports_Shadow extends WP_UnitTestCase { // obf
-	/** // obf
-	 * @var string|null // obf
-	 */ // obf
-	private $v_lvfze; // obf
+	public function set_up() {
+		parent::set_up();
+		$this->test_block_name = null;
+	}
 
-	public function set_up() { // obf
-		parent::set_up(); // obf
-		$v_lgoba->test_block_name = null; // obf
-	} // obf
+	public function tear_down() {
+		unregister_block_type( $this->test_block_name );
+		$this->test_block_name = null;
+		parent::tear_down();
+	}
 
-	public function tear_down() { // obf
-		unregister_block_type( $v_lgoba->test_block_name ); // obf
-		$v_lgoba->test_block_name = null; // obf
-		parent::tear_down(); // obf
-	} // obf
+	/**
+	 * Registers a new block for testing shadow support.
+	 *
+	 * @param string $block_name Name for the test block.
+	 * @param array  $supports   Array defining block support configuration.
+	 *
+	 * @return WP_Block_Type The block type for the newly registered test block.
+	 */
+	private function register_shadow_block_with_support( $block_name, $supports = array() ) {
+		$this->test_block_name = $block_name;
+		register_block_type(
+			$this->test_block_name,
+			array(
+				'api_version' => 3,
+				'attributes'  => array(
+					'style' => array(
+						'type' => 'object',
+					),
+				),
+				'supports'    => $supports,
+			)
+		);
+		$registry = WP_Block_Type_Registry::get_instance();
 
-	/** // obf
-	 * Registers a new block for testing shadow support. // obf
-	 * // obf
-	 * @param string $v_owmpp Name for the test block. // obf
-	 * @param array  $v_zjznq   Array defining block support configuration. // obf
-	 * // obf
-	 * @return WP_Block_Type The block type for the newly registered test block. // obf
-	 */ // obf
-	private function register_shadow_block_with_support( $v_owmpp, $v_zjznq = array() ) { // obf
-		$v_lgoba->test_block_name = $v_owmpp; // obf
-		register_block_type( // obf
-			$v_lgoba->test_block_name, // obf
-			array( // obf
-				'api_version' => 3, // obf
-				'attributes'  => array( // obf
-					'style' => array( // obf
-						'type' => 'object', // obf
-					), // obf
-				), // obf
-				'supports'    => $v_zjznq, // obf
-			) // obf
-		); // obf
-		$v_jsspy = WP_Block_Type_Registry::get_instance(); // obf
+		return $registry->get_registered( $this->test_block_name );
+	}
 
-		return $v_jsspy->get_registered( $v_lgoba->test_block_name ); // obf
-	} // obf
+	/**
+	 * Tests the generation of shadow block support styles.
+	 *
+	 * @ticket 60784
+	 *
+	 * @dataProvider data_generate_shadow_fixtures
+	 *
+	 * @param boolean|array $support Shadow block support configuration.
+	 * @param string        $value   Shadow style value for style attribute object.
+	 * @param array         $expected       Expected shadow block support styles.
+	 */
+	public function test_wp_apply_shadow_support( $support, $value, $expected ) {
+		$block_type  = self::register_shadow_block_with_support(
+			'test/shadow-block',
+			array( 'shadow' => $support )
+		);
+		$block_attrs = array( 'style' => array( 'shadow' => $value ) );
+		$actual      = wp_apply_shadow_support( $block_type, $block_attrs );
 
-	/** // obf
-	 * Tests the generation of shadow block support styles. // obf
-	 * // obf
-	 * @ticket 60784 // obf
-	 * // obf
-	 * @dataProvider data_generate_shadow_fixtures // obf
-	 * // obf
-	 * @param boolean|array $v_dcjsm Shadow block support configuration. // obf
-	 * @param string        $v_tlhup   Shadow style value for style attribute object. // obf
-	 * @param array         $v_ojvdt       Expected shadow block support styles. // obf
-	 */ // obf
-	public function test_wp_apply_shadow_support( $v_dcjsm, $v_tlhup, $v_ojvdt ) { // obf
-		$v_whewk  = self::register_shadow_block_with_support( // obf
-			'test/shadow-block', // obf
-			array( 'shadow' => $v_dcjsm ) // obf
-		); // obf
-		$v_jgdtd = array( 'style' => array( 'shadow' => $v_tlhup ) ); // obf
-		$v_afvzn      = wp_apply_shadow_support( $v_whewk, $v_jgdtd ); // obf
+		$this->assertSame( $expected, $actual );
+	}
 
-		$v_lgoba->assertSame( $v_ojvdt, $v_afvzn ); // obf
-	} // obf
-
-	/** // obf
-	 * Data provider. // obf
-	 * // obf
-	 * @return array // obf
-	 */ // obf
-	public function data_generate_shadow_fixtures() { // obf
-		return array( // obf
-			'with no styles'               => array( // obf
-				'support'  => true, // obf
-				'value'    => '', // obf
-				'expected' => array(), // obf
-			), // obf
-			'without support'              => array( // obf
-				'support'  => false, // obf
-				'value'    => '1px 1px 1px #000', // obf
-				'expected' => array(), // obf
-			), // obf
-			'with single shadow'           => array( // obf
-				'support'  => true, // obf
-				'value'    => '1px 1px 1px #000', // obf
-				'expected' => array( 'style' => 'box-shadow:1px 1px 1px #000;' ), // obf
-			), // obf
-			'with comma separated shadows' => array( // obf
-				'support'  => true, // obf
-				'value'    => '1px 1px 1px #000, 2px 2px 2px #fff', // obf
-				'expected' => array( 'style' => 'box-shadow:1px 1px 1px #000, 2px 2px 2px #fff;' ), // obf
-			), // obf
-			'with preset shadow'           => array( // obf
-				'support'  => true, // obf
-				'value'    => 'var:preset|shadow|natural', // obf
-				'expected' => array( 'style' => 'box-shadow:var(--wp--preset--shadow--natural);' ), // obf
-			), // obf
-			'with serialization skipped'   => array( // obf
-				'support'  => array( '__experimentalSkipSerialization' => true ), // obf
-				'value'    => '1px 1px 1px #000', // obf
-				'expected' => array(), // obf
-			), // obf
-		); // obf
-	} // obf
-} // obf
+	/**
+	 * Data provider.
+	 *
+	 * @return array
+	 */
+	public function data_generate_shadow_fixtures() {
+		return array(
+			'with no styles'               => array(
+				'support'  => true,
+				'value'    => '',
+				'expected' => array(),
+			),
+			'without support'              => array(
+				'support'  => false,
+				'value'    => '1px 1px 1px #000',
+				'expected' => array(),
+			),
+			'with single shadow'           => array(
+				'support'  => true,
+				'value'    => '1px 1px 1px #000',
+				'expected' => array( 'style' => 'box-shadow:1px 1px 1px #000;' ),
+			),
+			'with comma separated shadows' => array(
+				'support'  => true,
+				'value'    => '1px 1px 1px #000, 2px 2px 2px #fff',
+				'expected' => array( 'style' => 'box-shadow:1px 1px 1px #000, 2px 2px 2px #fff;' ),
+			),
+			'with preset shadow'           => array(
+				'support'  => true,
+				'value'    => 'var:preset|shadow|natural',
+				'expected' => array( 'style' => 'box-shadow:var(--wp--preset--shadow--natural);' ),
+			),
+			'with serialization skipped'   => array(
+				'support'  => array( '__experimentalSkipSerialization' => true ),
+				'value'    => '1px 1px 1px #000',
+				'expected' => array(),
+			),
+		);
+	}
+}

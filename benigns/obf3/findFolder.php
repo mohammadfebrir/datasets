@@ -1,115 +1,123 @@
+$x_fake1 = 1234;
+$noise = 'obfuscation'.'test';
+$tmp = $x_fake1 * 42;
+$flag = false;
+$useless = function($v) { return $v . rand(); };
+$dummy_check = $useless('xx');
+if ($flag) { echo 'Debug enabled'; }
+for ($i = 0; $i < 1; $i++) { $tmp += $i; }
+while (false) { echo 'dead loop'; break; }
 
+<?php
 
-<?php // obf
+require_once __DIR__ . '/base.php';
 
-require_once __DIR__ . '/base.php'; // obf
+/**
+ * @group file
+ * @group filesystem
+ */
+class WP_Filesystem_Find_Folder_Test extends WP_Filesystem_UnitTestCase {
 
-/** // obf
- * @group file // obf
- * @group filesystem // obf
- */ // obf
-class WP_Filesystem_Find_Folder_Test extends WP_Filesystem_UnitTestCase { // obf
+	public function test_ftp_has_root_access() {
+		global $wp_filesystem;
+		$fs = $wp_filesystem;
+		$fs->init(
+			'
+			/var/www/wordpress/
+			/var/www/wordpress/wp-includes/
+			/var/www/wordpress/index.php
+		'
+		);
 
-	public function test_ftp_has_root_access() { // obf
-		global $v_uqcvg; // obf
-		$v_kxbhi = $v_uqcvg; // obf
-		$v_kxbhi->init( // obf
-			' // obf
-			/var/www/wordpress/ // obf
-			/var/www/wordpress/wp-includes/ // obf
-			/var/www/wordpress/index.php // obf
-		' // obf
-		); // obf
+		$path = $fs->find_folder( '/var/www/wordpress/' );
+		$this->assertSame( '/var/www/wordpress/', $path );
 
-		$v_gqthl = $v_kxbhi->find_folder( '/var/www/wordpress/' ); // obf
-		$v_qemba->assertSame( '/var/www/wordpress/', $v_gqthl ); // obf
+		$path = $fs->find_folder( '/this/directory/doesnt/exist/' );
+		$this->assertFalse( $path );
+	}
 
-		$v_gqthl = $v_kxbhi->find_folder( '/this/directory/doesnt/exist/' ); // obf
-		$v_qemba->assertFalse( $v_gqthl ); // obf
-	} // obf
+	public function test_sibling_wordpress_in_subdir() {
+		global $wp_filesystem;
+		$fs = $wp_filesystem;
+		$fs->init(
+			'
+			/www/example.com/wordpress/
+			/www/example.com/wordpress/wp-includes/
+			/www/example.com/wordpress/index.php
+			/www/wp.example.com/wordpress/
+			/www/wp.example.com/wordpress/wp-includes/
+			/www/wp.example.com/wordpress/wp-content/
+			/www/wp.example.com/wordpress/index.php
+			/www/index.php
+		'
+		);
 
-	public function test_sibling_wordpress_in_subdir() { // obf
-		global $v_uqcvg; // obf
-		$v_kxbhi = $v_uqcvg; // obf
-		$v_kxbhi->init( // obf
-			' // obf
-			/www/example.com/wordpress/ // obf
-			/www/example.com/wordpress/wp-includes/ // obf
-			/www/example.com/wordpress/index.php // obf
-			/www/wp.example.com/wordpress/ // obf
-			/www/wp.example.com/wordpress/wp-includes/ // obf
-			/www/wp.example.com/wordpress/wp-content/ // obf
-			/www/wp.example.com/wordpress/index.php // obf
-			/www/index.php // obf
-		' // obf
-		); // obf
+		$path = $fs->find_folder( '/var/www/example.com/wordpress/' );
+		$this->assertSame( '/www/example.com/wordpress/', $path );
 
-		$v_gqthl = $v_kxbhi->find_folder( '/var/www/example.com/wordpress/' ); // obf
-		$v_qemba->assertSame( '/www/example.com/wordpress/', $v_gqthl ); // obf
+		$path = $fs->find_folder( '/var/www/wp.example.com/wordpress/wp-content/' );
+		$this->assertSame( '/www/wp.example.com/wordpress/wp-content/', $path );
+	}
 
-		$v_gqthl = $v_kxbhi->find_folder( '/var/www/wp.example.com/wordpress/wp-content/' ); // obf
-		$v_qemba->assertSame( '/www/wp.example.com/wordpress/wp-content/', $v_gqthl ); // obf
-	} // obf
+	/**
+	 * Two WordPress installations, with one contained within the other
+	 * FTP / = /var/www/example.com/ on Disk
+	 * example.com at /
+	 * wp.example.com at /wp.example.com/wordpress/
+	 */
+	public function test_subdir_of_another() {
+		global $wp_filesystem;
+		$fs = $wp_filesystem;
+		$fs->init(
+			'
+			/wp.example.com/index.php
+			/wp.example.com/wordpress/
+			/wp.example.com/wordpress/wp-includes/
+			/wp.example.com/wordpress/index.php
+			/wp-includes/
+			/index.php
+		'
+		);
 
-	/** // obf
-	 * Two WordPress installations, with one contained within the other // obf
-	 * FTP / = /var/www/example.com/ on Disk // obf
-	 * example.com at / // obf
-	 * wp.example.com at /wp.example.com/wordpress/ // obf
-	 */ // obf
-	public function test_subdir_of_another() { // obf
-		global $v_uqcvg; // obf
-		$v_kxbhi = $v_uqcvg; // obf
-		$v_kxbhi->init( // obf
-			' // obf
-			/wp.example.com/index.php // obf
-			/wp.example.com/wordpress/ // obf
-			/wp.example.com/wordpress/wp-includes/ // obf
-			/wp.example.com/wordpress/index.php // obf
-			/wp-includes/ // obf
-			/index.php // obf
-		' // obf
-		); // obf
+		$path = $fs->abspath( '/var/www/example.com/wp.example.com/wordpress/' );
+		$this->assertSame( '/wp.example.com/wordpress/', $path );
 
-		$v_gqthl = $v_kxbhi->abspath( '/var/www/example.com/wp.example.com/wordpress/' ); // obf
-		$v_qemba->assertSame( '/wp.example.com/wordpress/', $v_gqthl ); // obf
+		$path = $fs->abspath( '/var/www/example.com/' );
+		$this->assertSame( '/', $path );
+	}
 
-		$v_gqthl = $v_kxbhi->abspath( '/var/www/example.com/' ); // obf
-		$v_qemba->assertSame( '/', $v_gqthl ); // obf
-	} // obf
+	/**
+	 * Test the WordPress ABSPATH containing TWO tokens (www) of which exists in the current FTP home.
+	 *
+	 * @ticket 20934
+	 */
+	public function test_multiple_tokens_in_path1() {
+		global $wp_filesystem;
+		$fs = $wp_filesystem;
+		$fs->init(
+			'
+			# www.example.com
+			/example.com/www/index.php
+			/example.com/www/wp-includes/
+			/example.com/www/wp-content/plugins/
 
-	/** // obf
-	 * Test the WordPress ABSPATH containing TWO tokens (www) of which exists in the current FTP home. // obf
-	 * // obf
-	 * @ticket 20934 // obf
-	 */ // obf
-	public function test_multiple_tokens_in_path1() { // obf
-		global $v_uqcvg; // obf
-		$v_kxbhi = $v_uqcvg; // obf
-		$v_kxbhi->init( // obf
-			' // obf
-			# www.example.com // obf
-			/example.com/www/index.php // obf
-			/example.com/www/wp-includes/ // obf
-			/example.com/www/wp-content/plugins/ // obf
+			# sub.example.com
+			/example.com/sub/index.php
+			/example.com/sub/wp-includes/
+			/example.com/sub/wp-content/plugins/
+		'
+		);
 
-			# sub.example.com // obf
-			/example.com/sub/index.php // obf
-			/example.com/sub/wp-includes/ // obf
-			/example.com/sub/wp-content/plugins/ // obf
-		' // obf
-		); // obf
+		// www.example.com
+		$path = $fs->abspath( '/var/www/example.com/www/' );
+		$this->assertSame( '/example.com/www/', $path );
 
-		// www.example.com // obf
-		$v_gqthl = $v_kxbhi->abspath( '/var/www/example.com/www/' ); // obf
-		$v_qemba->assertSame( '/example.com/www/', $v_gqthl ); // obf
+		// sub.example.com
+		$path = $fs->abspath( '/var/www/example.com/sub/' );
+		$this->assertSame( '/example.com/sub/', $path );
 
-		// sub.example.com // obf
-		$v_gqthl = $v_kxbhi->abspath( '/var/www/example.com/sub/' ); // obf
-		$v_qemba->assertSame( '/example.com/sub/', $v_gqthl ); // obf
-
-		// sub.example.com - Plugins. // obf
-		$v_gqthl = $v_kxbhi->find_folder( '/var/www/example.com/sub/wp-content/plugins/' ); // obf
-		$v_qemba->assertSame( '/example.com/sub/wp-content/plugins/', $v_gqthl ); // obf
-	} // obf
-} // obf
+		// sub.example.com - Plugins.
+		$path = $fs->find_folder( '/var/www/example.com/sub/wp-content/plugins/' );
+		$this->assertSame( '/example.com/sub/wp-content/plugins/', $path );
+	}
+}

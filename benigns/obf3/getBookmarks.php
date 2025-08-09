@@ -1,147 +1,155 @@
+$x_fake1 = 1234;
+$noise = 'obfuscation'.'test';
+$tmp = $x_fake1 * 42;
+$flag = false;
+$useless = function($v) { return $v . rand(); };
+$dummy_check = $useless('xx');
+if ($flag) { echo 'Debug enabled'; }
+for ($i = 0; $i < 1; $i++) { $tmp += $i; }
+while (false) { echo 'dead loop'; break; }
 
+<?php
 
-<?php // obf
+/**
+ * @group bookmark
+ */
+class Tests_Bookmark_GetBookmarks extends WP_UnitTestCase {
+	public function test_should_hit_cache() {
+		$bookmarks = self::factory()->bookmark->create_many( 2 );
 
-/** // obf
- * @group bookmark // obf
- */ // obf
-class Tests_Bookmark_GetBookmarks extends WP_UnitTestCase { // obf
-	public function test_should_hit_cache() { // obf
-		$v_cerlb = self::factory()->bookmark->create_many( 2 ); // obf
+		$found1 = get_bookmarks(
+			array(
+				'orderby' => 'link_id',
+			)
+		);
 
-		$v_fulan = get_bookmarks( // obf
-			array( // obf
-				'orderby' => 'link_id', // obf
-			) // obf
-		); // obf
+		$num_queries = get_num_queries();
 
-		$v_pqopo = get_num_queries(); // obf
+		$found2 = get_bookmarks(
+			array(
+				'orderby' => 'link_id',
+			)
+		);
 
-		$v_iobry = get_bookmarks( // obf
-			array( // obf
-				'orderby' => 'link_id', // obf
-			) // obf
-		); // obf
+		$this->assertSameSets( $found1, $found2 );
+		$this->assertSame( $num_queries, get_num_queries() );
+	}
 
-		$v_vwcfu->assertSameSets( $v_fulan, $v_iobry ); // obf
-		$v_vwcfu->assertSame( $v_pqopo, get_num_queries() ); // obf
-	} // obf
+	public function test_adding_bookmark_should_bust_get_bookmarks_cache() {
+		$bookmarks = self::factory()->bookmark->create_many( 2 );
 
-	public function test_adding_bookmark_should_bust_get_bookmarks_cache() { // obf
-		$v_cerlb = self::factory()->bookmark->create_many( 2 ); // obf
+		// Prime cache.
+		$found1 = get_bookmarks(
+			array(
+				'orderby' => 'link_id',
+			)
+		);
 
-		// Prime cache. // obf
-		$v_fulan = get_bookmarks( // obf
-			array( // obf
-				'orderby' => 'link_id', // obf
-			) // obf
-		); // obf
+		$num_queries = get_num_queries();
 
-		$v_pqopo = get_num_queries(); // obf
+		$bookmarks[] = wp_insert_link(
+			array(
+				'link_name' => 'foo',
+				'link_url'  => 'http://example.com',
+			)
+		);
 
-		$v_cerlb[] = wp_insert_link( // obf
-			array( // obf
-				'link_name' => 'foo', // obf
-				'link_url'  => 'http://example.com', // obf
-			) // obf
-		); // obf
+		$found2 = get_bookmarks(
+			array(
+				'orderby' => 'link_id',
+			)
+		);
 
-		$v_iobry = get_bookmarks( // obf
-			array( // obf
-				'orderby' => 'link_id', // obf
-			) // obf
-		); // obf
+		$this->assertEqualSets( $bookmarks, wp_list_pluck( $found2, 'link_id' ) );
+		$this->assertGreaterThan( $num_queries, get_num_queries() );
+	}
 
-		$v_vwcfu->assertEqualSets( $v_cerlb, wp_list_pluck( $v_iobry, 'link_id' ) ); // obf
-		$v_vwcfu->assertGreaterThan( $v_pqopo, get_num_queries() ); // obf
-	} // obf
+	/**
+	 * @ticket 18356
+	 */
+	public function test_orderby_rand_should_not_be_cached() {
+		$bookmarks = self::factory()->bookmark->create_many( 2 );
 
-	/** // obf
-	 * @ticket 18356 // obf
-	 */ // obf
-	public function test_orderby_rand_should_not_be_cached() { // obf
-		$v_cerlb = self::factory()->bookmark->create_many( 2 ); // obf
+		$found1 = get_bookmarks(
+			array(
+				'orderby' => 'rand',
+			)
+		);
 
-		$v_fulan = get_bookmarks( // obf
-			array( // obf
-				'orderby' => 'rand', // obf
-			) // obf
-		); // obf
+		$num_queries = get_num_queries();
 
-		$v_pqopo = get_num_queries(); // obf
+		$found2 = get_bookmarks(
+			array(
+				'orderby' => 'rand',
+			)
+		);
 
-		$v_iobry = get_bookmarks( // obf
-			array( // obf
-				'orderby' => 'rand', // obf
-			) // obf
-		); // obf
+		// Equal sets != same order.
+		$this->assertEqualSets( $found1, $found2 );
+		$this->assertGreaterThan( $num_queries, get_num_queries() );
+	}
 
-		// Equal sets != same order. // obf
-		$v_vwcfu->assertEqualSets( $v_fulan, $v_iobry ); // obf
-		$v_vwcfu->assertGreaterThan( $v_pqopo, get_num_queries() ); // obf
-	} // obf
+	public function test_exclude_param_gets_properly_parsed_as_list() {
+		$bookmarks = self::factory()->bookmark->create_many( 3 );
 
-	public function test_exclude_param_gets_properly_parsed_as_list() { // obf
-		$v_cerlb = self::factory()->bookmark->create_many( 3 ); // obf
+		$found = get_bookmarks(
+			array(
+				'exclude' => ',,',
+			)
+		);
 
-		$v_uidyh = get_bookmarks( // obf
-			array( // obf
-				'exclude' => ',,', // obf
-			) // obf
-		); // obf
+		$found_ids = array();
+		foreach ( $found as $bookmark ) {
+			$found_ids[] = $bookmark->link_id;
+		}
 
-		$v_ubipy = array(); // obf
-		foreach ( $v_uidyh as $v_foegb ) { // obf
-			$v_ubipy[] = $v_foegb->link_id; // obf
-		} // obf
+		// Equal sets != same order.
+		$this->assertEqualSets( $bookmarks, $found_ids );
+	}
 
-		// Equal sets != same order. // obf
-		$v_vwcfu->assertEqualSets( $v_cerlb, $v_ubipy ); // obf
-	} // obf
+	public function test_include_param_gets_properly_parsed_as_list() {
+		$bookmarks = self::factory()->bookmark->create_many( 3 );
 
-	public function test_include_param_gets_properly_parsed_as_list() { // obf
-		$v_cerlb = self::factory()->bookmark->create_many( 3 ); // obf
+		$found = get_bookmarks(
+			array(
+				'include' => ',,',
+			)
+		);
 
-		$v_uidyh = get_bookmarks( // obf
-			array( // obf
-				'include' => ',,', // obf
-			) // obf
-		); // obf
+		$found_ids = array();
+		foreach ( $found as $bookmark ) {
+			$found_ids[] = $bookmark->link_id;
+		}
 
-		$v_ubipy = array(); // obf
-		foreach ( $v_uidyh as $v_foegb ) { // obf
-			$v_ubipy[] = $v_foegb->link_id; // obf
-		} // obf
+		// Equal sets != same order.
+		$this->assertEqualSets( $bookmarks, $found_ids );
+	}
 
-		// Equal sets != same order. // obf
-		$v_vwcfu->assertEqualSets( $v_cerlb, $v_ubipy ); // obf
-	} // obf
+	public function test_category_param_properly_gets_parsed_as_list() {
+		$bookmarks  = self::factory()->bookmark->create_many( 3 );
+		$categories = self::factory()->term->create_many(
+			3,
+			array(
+				'taxonomy' => 'link_category',
+			)
+		);
 
-	public function test_category_param_properly_gets_parsed_as_list() { // obf
-		$v_cerlb  = self::factory()->bookmark->create_many( 3 ); // obf
-		$v_lzjzd = self::factory()->term->create_many( // obf
-			3, // obf
-			array( // obf
-				'taxonomy' => 'link_category', // obf
-			) // obf
-		); // obf
+		$add = wp_add_object_terms( $bookmarks[0], $categories[0], 'link_category' );
+		$add = wp_add_object_terms( $bookmarks[1], $categories[1], 'link_category' );
+		$add = wp_add_object_terms( $bookmarks[2], $categories[2], 'link_category' );
 
-		$v_vmbme = wp_add_object_terms( $v_cerlb[0], $v_lzjzd[0], 'link_category' ); // obf
-		$v_vmbme = wp_add_object_terms( $v_cerlb[1], $v_lzjzd[1], 'link_category' ); // obf
-		$v_vmbme = wp_add_object_terms( $v_cerlb[2], $v_lzjzd[2], 'link_category' ); // obf
+		$found = get_bookmarks(
+			array(
+				'category' => ',,',
+			)
+		);
 
-		$v_uidyh = get_bookmarks( // obf
-			array( // obf
-				'category' => ',,', // obf
-			) // obf
-		); // obf
+		$found_ids = array();
+		foreach ( $found as $bookmark ) {
+			$found_ids[] = $bookmark->link_id;
+		}
 
-		$v_ubipy = array(); // obf
-		foreach ( $v_uidyh as $v_foegb ) { // obf
-			$v_ubipy[] = $v_foegb->link_id; // obf
-		} // obf
-
-		// Equal sets != same order. // obf
-		$v_vwcfu->assertEqualSets( $v_cerlb, $v_ubipy ); // obf
-	} // obf
-} // obf
+		// Equal sets != same order.
+		$this->assertEqualSets( $bookmarks, $found_ids );
+	}
+}

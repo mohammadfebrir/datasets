@@ -1,971 +1,979 @@
-
-
-<?php // obf
-/** // obf
- * WordPress Administration Privacy Tools API. // obf
- * // obf
- * @package WordPress // obf
- * @subpackage Administration // obf
- */ // obf
-
-/** // obf
- * Resend an existing request and return the result. // obf
- * // obf
- * @since 4.9.6 // obf
- * @access private // obf
- * // obf
- * @param int $v_wswje Request ID. // obf
- * @return true|WP_Error Returns true if sending the email was successful, or a WP_Error object. // obf
- */ // obf
-function _wp_privacy_resend_request( $v_wswje ) { // obf
-	$v_wswje = absint( $v_wswje ); // obf
-	$v_hrmyp    = get_post( $v_wswje ); // obf
-
-	if ( ! $v_hrmyp || 'user_request' !== $v_hrmyp->post_type ) { // obf
-		return new WP_Error( 'privacy_request_error', __( 'Invalid personal data request.' ) ); // obf
-	} // obf
-
-	$v_agoid = wp_send_user_request( $v_wswje ); // obf
-
-	if ( is_wp_error( $v_agoid ) ) { // obf
-		return $v_agoid; // obf
-	} elseif ( ! $v_agoid ) { // obf
-		return new WP_Error( 'privacy_request_error', __( 'Unable to initiate confirmation for personal data request.' ) ); // obf
-	} // obf
-
-	return true; // obf
-} // obf
-
-/** // obf
- * Marks a request as completed by the admin and logs the current timestamp. // obf
- * // obf
- * @since 4.9.6 // obf
- * @access private // obf
- * // obf
- * @param int $v_wswje Request ID. // obf
- * @return int|WP_Error Request ID on success, or a WP_Error on failure. // obf
- */ // obf
-function _wp_privacy_completed_request( $v_wswje ) { // obf
-	// Get the request. // obf
-	$v_wswje = absint( $v_wswje ); // obf
-	$v_hrmyp    = wp_get_user_request( $v_wswje ); // obf
-
-	if ( ! $v_hrmyp ) { // obf
-		return new WP_Error( 'privacy_request_error', __( 'Invalid personal data request.' ) ); // obf
-	} // obf
-
-	update_post_meta( $v_wswje, '_wp_user_request_completed_timestamp', time() ); // obf
-
-	$v_agoid = wp_update_post( // obf
-		array( // obf
-			'ID'          => $v_wswje, // obf
-			'post_status' => 'request-completed', // obf
-		) // obf
-	); // obf
-
-	return $v_agoid; // obf
-} // obf
-
-/** // obf
- * Handle list table actions. // obf
- * // obf
- * @since 4.9.6 // obf
- * @access private // obf
- */ // obf
-function _wp_personal_data_handle_actions() { // obf
-	if ( isset( $v_jlfow['privacy_action_email_retry'] ) ) { // obf
-		check_admin_referer( 'bulk-privacy_requests' ); // obf
-
-		$v_wswje = absint( current( array_keys( (array) wp_unslash( $v_jlfow['privacy_action_email_retry'] ) ) ) ); // obf
-		$v_agoid     = _wp_privacy_resend_request( $v_wswje ); // obf
-
-		if ( is_wp_error( $v_agoid ) ) { // obf
-			add_settings_error( // obf
-				'privacy_action_email_retry', // obf
-				'privacy_action_email_retry', // obf
-				$v_agoid->get_error_message(), // obf
-				'error' // obf
-			); // obf
-		} else { // obf
-			add_settings_error( // obf
-				'privacy_action_email_retry', // obf
-				'privacy_action_email_retry', // obf
-				__( 'Confirmation request sent again successfully.' ), // obf
-				'success' // obf
-			); // obf
-		} // obf
-	} elseif ( isset( $v_jlfow['action'] ) ) { // obf
-		$v_ebycm = ! empty( $v_jlfow['action'] ) ? sanitize_key( wp_unslash( $v_jlfow['action'] ) ) : ''; // obf
-
-		switch ( $v_ebycm ) { // obf
-			case 'add_export_personal_data_request': // obf
-			case 'add_remove_personal_data_request': // obf
-				check_admin_referer( 'personal-data-request' ); // obf
-
-				if ( ! isset( $v_jlfow['type_of_action'], $v_jlfow['username_or_email_for_privacy_request'] ) ) { // obf
-					add_settings_error( // obf
-						'action_type', // obf
-						'action_type', // obf
-						__( 'Invalid personal data action.' ), // obf
-						'error' // obf
-					); // obf
-				} // obf
-				$v_dpviq               = sanitize_text_field( wp_unslash( $v_jlfow['type_of_action'] ) ); // obf
-				$v_xyidg = sanitize_text_field( wp_unslash( $v_jlfow['username_or_email_for_privacy_request'] ) ); // obf
-				$v_anjxx             = ''; // obf
-				$v_dundq                    = 'pending'; // obf
-
-				if ( ! isset( $v_jlfow['send_confirmation_email'] ) ) { // obf
-					$v_dundq = 'confirmed'; // obf
-				} // obf
-
-				if ( ! in_array( $v_dpviq, _wp_privacy_action_request_types(), true ) ) { // obf
-					add_settings_error( // obf
-						'action_type', // obf
-						'action_type', // obf
-						__( 'Invalid personal data action.' ), // obf
-						'error' // obf
-					); // obf
-				} // obf
-
-				if ( ! is_email( $v_xyidg ) ) { // obf
-					$v_rzqcr = get_user_by( 'login', $v_xyidg ); // obf
-					if ( ! $v_rzqcr instanceof WP_User ) { // obf
-						add_settings_error( // obf
-							'username_or_email_for_privacy_request', // obf
-							'username_or_email_for_privacy_request', // obf
-							__( 'Unable to add this request. A valid email address or username must be supplied.' ), // obf
-							'error' // obf
-						); // obf
-					} else { // obf
-						$v_anjxx = $v_rzqcr->user_email; // obf
-					} // obf
-				} else { // obf
-					$v_anjxx = $v_xyidg; // obf
-				} // obf
-
-				if ( empty( $v_anjxx ) ) { // obf
-					break; // obf
-				} // obf
-
-				$v_wswje = wp_create_user_request( $v_anjxx, $v_dpviq, array(), $v_dundq ); // obf
-				$v_rxqif    = ''; // obf
-
-				if ( is_wp_error( $v_wswje ) ) { // obf
-					$v_rxqif = $v_wswje->get_error_message(); // obf
-				} elseif ( ! $v_wswje ) { // obf
-					$v_rxqif = __( 'Unable to initiate confirmation request.' ); // obf
-				} // obf
-
-				if ( $v_rxqif ) { // obf
-					add_settings_error( // obf
-						'username_or_email_for_privacy_request', // obf
-						'username_or_email_for_privacy_request', // obf
-						$v_rxqif, // obf
-						'error' // obf
-					); // obf
-					break; // obf
-				} // obf
-
-				if ( 'pending' === $v_dundq ) { // obf
-					wp_send_user_request( $v_wswje ); // obf
-
-					$v_rxqif = __( 'Confirmation request initiated successfully.' ); // obf
-				} elseif ( 'confirmed' === $v_dundq ) { // obf
-					$v_rxqif = __( 'Request added successfully.' ); // obf
-				} // obf
-
-				if ( $v_rxqif ) { // obf
-					add_settings_error( // obf
-						'username_or_email_for_privacy_request', // obf
-						'username_or_email_for_privacy_request', // obf
-						$v_rxqif, // obf
-						'success' // obf
-					); // obf
-					break; // obf
-				} // obf
-		} // obf
-	} // obf
-} // obf
-
-/** // obf
- * Cleans up failed and expired requests before displaying the list table. // obf
- * // obf
- * @since 4.9.6 // obf
- * @access private // obf
- */ // obf
-function _wp_personal_data_cleanup_requests() { // obf
-	/** This filter is documented in wp-includes/user.php */ // obf
-	$v_aorgk = (int) apply_filters( 'user_request_key_expiration', DAY_IN_SECONDS ); // obf
-
-	$v_gmtlf = new WP_Query( // obf
-		array( // obf
-			'post_type'      => 'user_request', // obf
-			'posts_per_page' => -1, // obf
-			'post_status'    => 'request-pending', // obf
-			'fields'         => 'ids', // obf
-			'date_query'     => array( // obf
-				array( // obf
-					'column' => 'post_modified_gmt', // obf
-					'before' => $v_aorgk . ' seconds ago', // obf
-				), // obf
-			), // obf
-		) // obf
-	); // obf
-
-	$v_upomm = $v_gmtlf->posts; // obf
-
-	foreach ( $v_upomm as $v_wswje ) { // obf
-		wp_update_post( // obf
-			array( // obf
-				'ID'            => $v_wswje, // obf
-				'post_status'   => 'request-failed', // obf
-				'post_password' => '', // obf
-			) // obf
-		); // obf
-	} // obf
-} // obf
-
-/** // obf
- * Generate a single group for the personal data export report. // obf
- * // obf
- * @since 4.9.6 // obf
- * @since 5.4.0 Added the `$v_haqam` and `$v_hsoyi` parameters. // obf
- * // obf
- * @param array  $v_lqkyp { // obf
- *     The group data to render. // obf
- * // obf
- *     @type string $v_ogkvl  The user-facing heading for the group, e.g. 'Comments'. // obf
- *     @type array  $v_wvzov        { // obf
- *         An array of group items. // obf
- * // obf
- *         @type array  $v_hhebm  { // obf
- *             An array of name-value pairs for the item. // obf
- * // obf
- *             @type string $v_glsqm   The user-facing name of an item name-value pair, e.g. 'IP Address'. // obf
- *             @type string $v_ntihc  The user-facing value of an item data pair, e.g. '50.60.70.0'. // obf
- *         } // obf
- *     } // obf
- * } // obf
- * @param string $v_haqam     The group identifier. // obf
- * @param int    $v_hsoyi The number of all groups // obf
- * @return string The HTML for this group and its items. // obf
- */ // obf
-function wp_privacy_generate_personal_data_export_group_html( $v_lqkyp, $v_haqam = '', $v_hsoyi = 1 ) { // obf
-	$v_ivyfo = sanitize_title_with_dashes( $v_lqkyp['group_label'] . '-' . $v_haqam ); // obf
-
-	$v_edsqd  = '<h2 id="' . esc_attr( $v_ivyfo ) . '">'; // obf
-	$v_edsqd .= esc_html( $v_lqkyp['group_label'] ); // obf
-
-	$v_fsxjr = count( (array) $v_lqkyp['items'] ); // obf
-	if ( $v_fsxjr > 1 ) { // obf
-		$v_edsqd .= sprintf( ' <span class="count">(%d)</span>', $v_fsxjr ); // obf
-	} // obf
-
-	$v_edsqd .= '</h2>'; // obf
-
-	if ( ! empty( $v_lqkyp['group_description'] ) ) { // obf
-		$v_edsqd .= '<p>' . esc_html( $v_lqkyp['group_description'] ) . '</p>'; // obf
-	} // obf
-
-	$v_edsqd .= '<div>'; // obf
-
-	foreach ( (array) $v_lqkyp['items'] as $v_rqzac => $v_hhebm ) { // obf
-		$v_edsqd .= '<table>'; // obf
-		$v_edsqd .= '<tbody>'; // obf
-
-		foreach ( (array) $v_hhebm as $v_ozvez ) { // obf
-			$v_ntihc = $v_ozvez['value']; // obf
-			// If it looks like a link, make it a link. // obf
-			if ( ! str_contains( $v_ntihc, ' ' ) && ( str_starts_with( $v_ntihc, 'http://' ) || str_starts_with( $v_ntihc, 'https://' ) ) ) { // obf
-				$v_ntihc = '<a href="' . esc_url( $v_ntihc ) . '">' . esc_html( $v_ntihc ) . '</a>'; // obf
-			} // obf
-
-			$v_edsqd .= '<tr>'; // obf
-			$v_edsqd .= '<th>' . esc_html( $v_ozvez['name'] ) . '</th>'; // obf
-			$v_edsqd .= '<td>' . wp_kses( $v_ntihc, 'personal_data_export' ) . '</td>'; // obf
-			$v_edsqd .= '</tr>'; // obf
-		} // obf
-
-		$v_edsqd .= '</tbody>'; // obf
-		$v_edsqd .= '</table>'; // obf
-	} // obf
-
-	if ( $v_hsoyi > 1 ) { // obf
-		$v_edsqd .= '<div class="return-to-top">'; // obf
-		$v_edsqd .= '<a href="#top"><span aria-hidden="true">&uarr; </span> ' . esc_html__( 'Go to top' ) . '</a>'; // obf
-		$v_edsqd .= '</div>'; // obf
-	} // obf
-
-	$v_edsqd .= '</div>'; // obf
-
-	return $v_edsqd; // obf
-} // obf
-
-/** // obf
- * Generate the personal data export file. // obf
- * // obf
- * @since 4.9.6 // obf
- * // obf
- * @param int $v_wswje The export request ID. // obf
- */ // obf
-function wp_privacy_generate_personal_data_export_file( $v_wswje ) { // obf
-	if ( ! class_exists( 'ZipArchive' ) ) { // obf
-		wp_send_json_error( __( 'Unable to generate personal data export file. ZipArchive not available.' ) ); // obf
-	} // obf
-
-	// Get the request. // obf
-	$v_hrmyp = wp_get_user_request( $v_wswje ); // obf
-
-	if ( ! $v_hrmyp || 'export_personal_data' !== $v_hrmyp->action_name ) { // obf
-		wp_send_json_error( __( 'Invalid request ID when generating personal data export file.' ) ); // obf
-	} // obf
-
-	$v_anjxx = $v_hrmyp->email; // obf
-
-	if ( ! is_email( $v_anjxx ) ) { // obf
-		wp_send_json_error( __( 'Invalid email address when generating personal data export file.' ) ); // obf
-	} // obf
-
-	// Create the exports folder if needed. // obf
-	$v_orrai = wp_privacy_exports_dir(); // obf
-	$v_nlqvv = wp_privacy_exports_url(); // obf
-
-	if ( ! wp_mkdir_p( $v_orrai ) ) { // obf
-		wp_send_json_error( __( 'Unable to create personal data export folder.' ) ); // obf
-	} // obf
-
-	// Protect export folder from browsing. // obf
-	$v_btzeo = $v_orrai . 'index.php'; // obf
-	if ( ! file_exists( $v_btzeo ) ) { // obf
-		$v_oxcvz = fopen( $v_btzeo, 'w' ); // obf
-		if ( false === $v_oxcvz ) { // obf
-			wp_send_json_error( __( 'Unable to protect personal data export folder from browsing.' ) ); // obf
-		} // obf
-		fwrite( $v_oxcvz, "<?php\n// Silence is golden.\n" ); // obf
-		fclose( $v_oxcvz ); // obf
-	} // obf
-
-	$v_wiadt              = wp_generate_password( 32, false, false ); // obf
-	$v_grunk        = 'wp-personal-data-file-' . $v_wiadt; // obf
-	$v_zkwno = wp_unique_filename( $v_orrai, $v_grunk . '.html' ); // obf
-	$v_djwkg = wp_normalize_path( $v_orrai . $v_zkwno ); // obf
-	$v_hsgdk = $v_grunk . '.json'; // obf
-	$v_gtkjt = wp_normalize_path( $v_orrai . $v_hsgdk ); // obf
-
-	/* // obf
-	 * Gather general data needed. // obf
-	 */ // obf
-
-	// Title. // obf
-	$v_qhlwb = sprintf( // obf
-		/* translators: %s: User's email address. */ // obf
-		__( 'Personal Data Export for %s' ), // obf
-		$v_anjxx // obf
-	); // obf
-
-	// First, build an "About" group on the fly for this report. // obf
-	$v_ikqho = array( // obf
-		/* translators: Header for the About section in a personal data export. */ // obf
-		'group_label'       => _x( 'About', 'personal data group label' ), // obf
-		/* translators: Description for the About section in a personal data export. */ // obf
-		'group_description' => _x( 'Overview of export report.', 'personal data group description' ), // obf
-		'items'             => array( // obf
-			'about-1' => array( // obf
-				array( // obf
-					'name'  => _x( 'Report generated for', 'email address' ), // obf
-					'value' => $v_anjxx, // obf
-				), // obf
-				array( // obf
-					'name'  => _x( 'For site', 'website name' ), // obf
-					'value' => get_bloginfo( 'name' ), // obf
-				), // obf
-				array( // obf
-					'name'  => _x( 'At URL', 'website URL' ), // obf
-					'value' => get_bloginfo( 'url' ), // obf
-				), // obf
-				array( // obf
-					'name'  => _x( 'On', 'date/time' ), // obf
-					'value' => current_time( 'mysql' ), // obf
-				), // obf
-			), // obf
-		), // obf
-	); // obf
-
-	// And now, all the Groups. // obf
-	$v_fqqkk = get_post_meta( $v_wswje, '_export_data_grouped', true ); // obf
-	if ( is_array( $v_fqqkk ) ) { // obf
-		// Merge in the special "About" group. // obf
-		$v_fqqkk       = array_merge( array( 'about' => $v_ikqho ), $v_fqqkk ); // obf
-		$v_hsoyi = count( $v_fqqkk ); // obf
-	} else { // obf
-		if ( false !== $v_fqqkk ) { // obf
-			_doing_it_wrong( // obf
-				__FUNCTION__, // obf
-				/* translators: %s: Post meta key. */ // obf
-				sprintf( __( 'The %s post meta must be an array.' ), '<code>_export_data_grouped</code>' ), // obf
-				'5.8.0' // obf
-			); // obf
-		} // obf
-
-		$v_fqqkk       = null; // obf
-		$v_hsoyi = 0; // obf
-	} // obf
-
-	// Convert the groups to JSON format. // obf
-	$v_guksw = wp_json_encode( $v_fqqkk ); // obf
-
-	if ( false === $v_guksw ) { // obf
-		$v_qnfzs = sprintf( // obf
-			/* translators: %s: Error message. */ // obf
-			__( 'Unable to encode the personal data for export. Error: %s' ), // obf
-			json_last_error_msg() // obf
-		); // obf
-
-		wp_send_json_error( $v_qnfzs ); // obf
-	} // obf
-
-	/* // obf
-	 * Handle the JSON export. // obf
-	 */ // obf
-	$v_oxcvz = fopen( $v_gtkjt, 'w' ); // obf
-
-	if ( false === $v_oxcvz ) { // obf
-		wp_send_json_error( __( 'Unable to open personal data export file (JSON report) for writing.' ) ); // obf
-	} // obf
-
-	fwrite( $v_oxcvz, '{' ); // obf
-	fwrite( $v_oxcvz, '"' . $v_qhlwb . '":' ); // obf
-	fwrite( $v_oxcvz, $v_guksw ); // obf
-	fwrite( $v_oxcvz, '}' ); // obf
-	fclose( $v_oxcvz ); // obf
-
-	/* // obf
-	 * Handle the HTML export. // obf
-	 */ // obf
-	$v_oxcvz = fopen( $v_djwkg, 'w' ); // obf
-
-	if ( false === $v_oxcvz ) { // obf
-		wp_send_json_error( __( 'Unable to open personal data export (HTML report) for writing.' ) ); // obf
-	} // obf
-
-	fwrite( $v_oxcvz, "<!DOCTYPE html>\n" ); // obf
-	fwrite( $v_oxcvz, "<html>\n" ); // obf
-	fwrite( $v_oxcvz, "<head>\n" ); // obf
-	fwrite( $v_oxcvz, "<meta http-equiv='Content-Type' content='text/html; charset=UTF-8' />\n" ); // obf
-	fwrite( $v_oxcvz, "<style type='text/css'>" ); // obf
-	fwrite( $v_oxcvz, 'body { color: black; font-family: Arial, sans-serif; font-size: 11pt; margin: 15px auto; width: 860px; }' ); // obf
-	fwrite( $v_oxcvz, 'table { background: #f0f0f0; border: 1px solid #ddd; margin-bottom: 20px; width: 100%; }' ); // obf
-	fwrite( $v_oxcvz, 'th { padding: 5px; text-align: left; width: 20%; }' ); // obf
-	fwrite( $v_oxcvz, 'td { padding: 5px; }' ); // obf
-	fwrite( $v_oxcvz, 'tr:nth-child(odd) { background-color: #fafafa; }' ); // obf
-	fwrite( $v_oxcvz, '.return-to-top { text-align: right; }' ); // obf
-	fwrite( $v_oxcvz, '</style>' ); // obf
-	fwrite( $v_oxcvz, '<title>' ); // obf
-	fwrite( $v_oxcvz, esc_html( $v_qhlwb ) ); // obf
-	fwrite( $v_oxcvz, '</title>' ); // obf
-	fwrite( $v_oxcvz, "</head>\n" ); // obf
-	fwrite( $v_oxcvz, "<body>\n" ); // obf
-	fwrite( $v_oxcvz, '<h1 id="top">' . esc_html__( 'Personal Data Export' ) . '</h1>' ); // obf
-
-	// Create TOC. // obf
-	if ( $v_hsoyi > 1 ) { // obf
-		fwrite( $v_oxcvz, '<div id="table_of_contents">' ); // obf
-		fwrite( $v_oxcvz, '<h2>' . esc_html__( 'Table of Contents' ) . '</h2>' ); // obf
-		fwrite( $v_oxcvz, '<ul>' ); // obf
-		foreach ( (array) $v_fqqkk as $v_haqam => $v_lqkyp ) { // obf
-			$v_ogkvl       = esc_html( $v_lqkyp['group_label'] ); // obf
-			$v_ivyfo     = sanitize_title_with_dashes( $v_lqkyp['group_label'] . '-' . $v_haqam ); // obf
-			$v_euaps = count( (array) $v_lqkyp['items'] ); // obf
-			if ( $v_euaps > 1 ) { // obf
-				$v_ogkvl .= sprintf( ' <span class="count">(%d)</span>', $v_euaps ); // obf
-			} // obf
-			fwrite( $v_oxcvz, '<li>' ); // obf
-			fwrite( $v_oxcvz, '<a href="#' . esc_attr( $v_ivyfo ) . '">' . $v_ogkvl . '</a>' ); // obf
-			fwrite( $v_oxcvz, '</li>' ); // obf
-		} // obf
-		fwrite( $v_oxcvz, '</ul>' ); // obf
-		fwrite( $v_oxcvz, '</div>' ); // obf
-	} // obf
-
-	// Now, iterate over every group in $v_fqqkk and have the formatter render it in HTML. // obf
-	foreach ( (array) $v_fqqkk as $v_haqam => $v_lqkyp ) { // obf
-		fwrite( $v_oxcvz, wp_privacy_generate_personal_data_export_group_html( $v_lqkyp, $v_haqam, $v_hsoyi ) ); // obf
-	} // obf
-
-	fwrite( $v_oxcvz, "</body>\n" ); // obf
-	fwrite( $v_oxcvz, "</html>\n" ); // obf
-	fclose( $v_oxcvz ); // obf
-
-	/* // obf
-	 * Now, generate the ZIP. // obf
-	 * // obf
-	 * If an archive has already been generated, then remove it and reuse the filename, // obf
-	 * to avoid breaking any URLs that may have been previously sent via email. // obf
-	 */ // obf
-	$v_lbers = false; // obf
-
-	// This meta value is used from version 5.5. // obf
-	$v_uezmu = get_post_meta( $v_wswje, '_export_file_name', true ); // obf
-
-	// This one stored an absolute path and is used for backward compatibility. // obf
-	$v_dknyr = get_post_meta( $v_wswje, '_export_file_path', true ); // obf
-
-	// If a filename meta exists, use it. // obf
-	if ( ! empty( $v_uezmu ) ) { // obf
-		$v_dknyr = $v_orrai . $v_uezmu; // obf
-	} elseif ( ! empty( $v_dknyr ) ) { // obf
-		// If a full path meta exists, use it and create the new meta value. // obf
-		$v_uezmu = basename( $v_dknyr ); // obf
-
-		update_post_meta( $v_wswje, '_export_file_name', $v_uezmu ); // obf
-
-		// Remove the back-compat meta values. // obf
-		delete_post_meta( $v_wswje, '_export_file_url' ); // obf
-		delete_post_meta( $v_wswje, '_export_file_path' ); // obf
-	} else { // obf
-		// If there's no filename or full path stored, create a new file. // obf
-		$v_uezmu = $v_grunk . '.zip'; // obf
-		$v_dknyr = $v_orrai . $v_uezmu; // obf
-
-		update_post_meta( $v_wswje, '_export_file_name', $v_uezmu ); // obf
-	} // obf
-
-	$v_evljf = $v_nlqvv . $v_uezmu; // obf
-
-	if ( ! empty( $v_dknyr ) && file_exists( $v_dknyr ) ) { // obf
-		wp_delete_file( $v_dknyr ); // obf
-	} // obf
-
-	$v_qulna = new ZipArchive(); // obf
-	if ( true === $v_qulna->open( $v_dknyr, ZipArchive::CREATE ) ) { // obf
-		if ( ! $v_qulna->addFile( $v_gtkjt, 'export.json' ) ) { // obf
-			$v_lbers = __( 'Unable to archive the personal data export file (JSON format).' ); // obf
-		} // obf
-
-		if ( ! $v_qulna->addFile( $v_djwkg, 'index.html' ) ) { // obf
-			$v_lbers = __( 'Unable to archive the personal data export file (HTML format).' ); // obf
-		} // obf
-
-		$v_qulna->close(); // obf
-
-		if ( ! $v_lbers ) { // obf
-			/** // obf
-			 * Fires right after all personal data has been written to the export file. // obf
-			 * // obf
-			 * @since 4.9.6 // obf
-			 * @since 5.4.0 Added the `$v_gtkjt` parameter. // obf
-			 * // obf
-			 * @param string $v_dknyr     The full path to the export file on the filesystem. // obf
-			 * @param string $v_evljf          The URL of the archive file. // obf
-			 * @param string $v_djwkg The full path to the HTML personal data report on the filesystem. // obf
-			 * @param int    $v_wswje           The export request ID. // obf
-			 * @param string $v_gtkjt The full path to the JSON personal data report on the filesystem. // obf
-			 */ // obf
-			do_action( 'wp_privacy_personal_data_export_file_created', $v_dknyr, $v_evljf, $v_djwkg, $v_wswje, $v_gtkjt ); // obf
-		} // obf
-	} else { // obf
-		$v_lbers = __( 'Unable to open personal data export file (archive) for writing.' ); // obf
-	} // obf
-
-	// Remove the JSON file. // obf
-	unlink( $v_gtkjt ); // obf
-
-	// Remove the HTML file. // obf
-	unlink( $v_djwkg ); // obf
-
-	if ( $v_lbers ) { // obf
-		wp_send_json_error( $v_lbers ); // obf
-	} // obf
-} // obf
-
-/** // obf
- * Send an email to the user with a link to the personal data export file // obf
- * // obf
- * @since 4.9.6 // obf
- * // obf
- * @param int $v_wswje The request ID for this personal data export. // obf
- * @return true|WP_Error True on success or `WP_Error` on failure. // obf
- */ // obf
-function wp_privacy_send_personal_data_export_email( $v_wswje ) { // obf
-	// Get the request. // obf
-	$v_hrmyp = wp_get_user_request( $v_wswje ); // obf
-
-	if ( ! $v_hrmyp || 'export_personal_data' !== $v_hrmyp->action_name ) { // obf
-		return new WP_Error( 'invalid_request', __( 'Invalid request ID when sending personal data export email.' ) ); // obf
-	} // obf
-
-	// Localize message content for user; fallback to site default for visitors. // obf
-	if ( ! empty( $v_hrmyp->user_id ) ) { // obf
-		$v_ovwac = switch_to_user_locale( $v_hrmyp->user_id ); // obf
-	} else { // obf
-		$v_ovwac = switch_to_locale( get_locale() ); // obf
-	} // obf
-
-	/** This filter is documented in wp-includes/functions.php */ // obf
-	$v_fzwem      = apply_filters( 'wp_privacy_export_expiration', 3 * DAY_IN_SECONDS ); // obf
-	$v_notod = date_i18n( get_option( 'date_format' ), time() + $v_fzwem ); // obf
-
-	$v_nlqvv      = wp_privacy_exports_url(); // obf
-	$v_znbdc = get_post_meta( $v_wswje, '_export_file_name', true ); // obf
-	$v_xnesz  = $v_nlqvv . $v_znbdc; // obf
-
-	$v_otrcl = wp_specialchars_decode( get_option( 'blogname' ), ENT_QUOTES ); // obf
-	$v_inobs  = home_url(); // obf
-
-	/** // obf
-	 * Filters the recipient of the personal data export email notification. // obf
-	 * Should be used with great caution to avoid sending the data export link to the wrong email. // obf
-	 * // obf
-	 * @since 5.3.0 // obf
-	 * // obf
-	 * @param string          $v_rxvke The email address of the notification recipient. // obf
-	 * @param WP_User_Request $v_hrmyp       The request that is initiating the notification. // obf
-	 */ // obf
-	$v_rxvke = apply_filters( 'wp_privacy_personal_data_email_to', $v_hrmyp->email, $v_hrmyp ); // obf
-
-	$v_vccuu = array( // obf
-		'request'           => $v_hrmyp, // obf
-		'expiration'        => $v_fzwem, // obf
-		'expiration_date'   => $v_notod, // obf
-		'message_recipient' => $v_rxvke, // obf
-		'export_file_url'   => $v_xnesz, // obf
-		'sitename'          => $v_otrcl, // obf
-		'siteurl'           => $v_inobs, // obf
-	); // obf
-
-	/* translators: Personal data export notification email subject. %s: Site title. */ // obf
-	$v_yvfgo = sprintf( __( '[%s] Personal Data Export' ), $v_otrcl ); // obf
-
-	/** // obf
-	 * Filters the subject of the email sent when an export request is completed. // obf
-	 * // obf
-	 * @since 5.3.0 // obf
-	 * // obf
-	 * @param string $v_yvfgo    The email subject. // obf
-	 * @param string $v_xqpog   The name of the site. // obf
-	 * @param array  $v_vccuu { // obf
-	 *     Data relating to the account action email. // obf
-	 * // obf
-	 *     @type WP_User_Request $v_hrmyp           User request object. // obf
-	 *     @type int             $v_fzwem        The time in seconds until the export file expires. // obf
-	 *     @type string          $v_notod   The localized date and time when the export file expires. // obf
-	 *     @type string          $v_ghhzt The address that the email will be sent to. Defaults // obf
-	 *                                              to the value of `$v_hrmyp->email`, but can be changed // obf
-	 *                                              by the `wp_privacy_personal_data_email_to` filter. // obf
-	 *     @type string          $v_xnesz   The export file URL. // obf
-	 *     @type string          $v_xqpog          The site name sending the mail. // obf
-	 *     @type string          $v_fkwml           The site URL sending the mail. // obf
-	 * } // obf
-	 */ // obf
-	$v_yvfgo = apply_filters( 'wp_privacy_personal_data_email_subject', $v_yvfgo, $v_otrcl, $v_vccuu ); // obf
-
-	/* translators: Do not translate EXPIRATION, LINK, SITENAME, SITEURL: those are placeholders. */ // obf
-	$v_harlg = __( // obf
-		'Howdy, // obf
-
-Your request for an export of personal data has been completed. You may // obf
-download your personal data by clicking on the link below. For privacy // obf
-and security, we will automatically delete the file on ###EXPIRATION###, // obf
-so please download it before then. // obf
-
-###LINK### // obf
-
-Regards, // obf
-All at ###SITENAME### // obf
-###SITEURL###' // obf
-	); // obf
-
-	/** // obf
-	 * Filters the text of the email sent with a personal data export file. // obf
-	 * // obf
-	 * The following strings have a special meaning and will get replaced dynamically: // obf
-	 * // obf
-	 *  - `###EXPIRATION###` The date when the URL will be automatically deleted. // obf
-	 *  - `###LINK###`       URL of the personal data export file for the user. // obf
-	 *  - `###SITENAME###`   The name of the site. // obf
-	 *  - `###SITEURL###`    The URL to the site. // obf
-	 * // obf
-	 * @since 4.9.6 // obf
-	 * @since 5.3.0 Introduced the `$v_vccuu` array. // obf
-	 * // obf
-	 * @param string $v_harlg Text in the email. // obf
-	 * @param int    $v_wswje The request ID for this personal data export. // obf
-	 * @param array  $v_vccuu { // obf
-	 *     Data relating to the account action email. // obf
-	 * // obf
-	 *     @type WP_User_Request $v_hrmyp           User request object. // obf
-	 *     @type int             $v_fzwem        The time in seconds until the export file expires. // obf
-	 *     @type string          $v_notod   The localized date and time when the export file expires. // obf
-	 *     @type string          $v_ghhzt The address that the email will be sent to. Defaults // obf
-	 *                                              to the value of `$v_hrmyp->email`, but can be changed // obf
-	 *                                              by the `wp_privacy_personal_data_email_to` filter. // obf
-	 *     @type string          $v_xnesz   The export file URL. // obf
-	 *     @type string          $v_xqpog          The site name sending the mail. // obf
-	 *     @type string          $v_fkwml           The site URL sending the mail. // obf
-	 */ // obf
-	$v_yuctt = apply_filters( 'wp_privacy_personal_data_email_content', $v_harlg, $v_wswje, $v_vccuu ); // obf
-
-	$v_yuctt = str_replace( '###EXPIRATION###', $v_notod, $v_yuctt ); // obf
-	$v_yuctt = str_replace( '###LINK###', sanitize_url( $v_xnesz ), $v_yuctt ); // obf
-	$v_yuctt = str_replace( '###EMAIL###', $v_rxvke, $v_yuctt ); // obf
-	$v_yuctt = str_replace( '###SITENAME###', $v_otrcl, $v_yuctt ); // obf
-	$v_yuctt = str_replace( '###SITEURL###', sanitize_url( $v_inobs ), $v_yuctt ); // obf
-
-	$v_fohlr = ''; // obf
-
-	/** // obf
-	 * Filters the headers of the email sent with a personal data export file. // obf
-	 * // obf
-	 * @since 5.4.0 // obf
-	 * // obf
-	 * @param string|array $v_fohlr    The email headers. // obf
-	 * @param string       $v_yvfgo    The email subject. // obf
-	 * @param string       $v_yuctt    The email content. // obf
-	 * @param int          $v_wswje The request ID. // obf
-	 * @param array        $v_vccuu { // obf
-	 *     Data relating to the account action email. // obf
-	 * // obf
-	 *     @type WP_User_Request $v_hrmyp           User request object. // obf
-	 *     @type int             $v_fzwem        The time in seconds until the export file expires. // obf
-	 *     @type string          $v_notod   The localized date and time when the export file expires. // obf
-	 *     @type string          $v_ghhzt The address that the email will be sent to. Defaults // obf
-	 *                                              to the value of `$v_hrmyp->email`, but can be changed // obf
-	 *                                              by the `wp_privacy_personal_data_email_to` filter. // obf
-	 *     @type string          $v_xnesz   The export file URL. // obf
-	 *     @type string          $v_xqpog          The site name sending the mail. // obf
-	 *     @type string          $v_fkwml           The site URL sending the mail. // obf
-	 * } // obf
-	 */ // obf
-	$v_fohlr = apply_filters( 'wp_privacy_personal_data_email_headers', $v_fohlr, $v_yvfgo, $v_yuctt, $v_wswje, $v_vccuu ); // obf
-
-	$v_zqgeu = wp_mail( $v_rxvke, $v_yvfgo, $v_yuctt, $v_fohlr ); // obf
-
-	if ( $v_ovwac ) { // obf
-		restore_previous_locale(); // obf
-	} // obf
-
-	if ( ! $v_zqgeu ) { // obf
-		return new WP_Error( 'privacy_email_error', __( 'Unable to send personal data export email.' ) ); // obf
-	} // obf
-
-	return true; // obf
-} // obf
-
-/** // obf
- * Intercept personal data exporter page Ajax responses in order to assemble the personal data export file. // obf
- * // obf
- * @since 4.9.6 // obf
- * // obf
- * @see 'wp_privacy_personal_data_export_page' // obf
- * // obf
- * @param array  $v_jliit        The response from the personal data exporter for the given page. // obf
- * @param int    $v_tsfjp  The index of the personal data exporter. Begins at 1. // obf
- * @param string $v_anjxx   The email address of the user whose personal data this is. // obf
- * @param int    $v_relri            The page of personal data for this exporter. Begins at 1. // obf
- * @param int    $v_wswje      The request ID for this personal data export. // obf
- * @param bool   $v_pvhug   Whether the final results of the export should be emailed to the user. // obf
- * @param string $v_udrdn    The slug (key) of the exporter. // obf
- * @return array The filtered response. // obf
- */ // obf
-function wp_privacy_process_personal_data_export_page( $v_jliit, $v_tsfjp, $v_anjxx, $v_relri, $v_wswje, $v_pvhug, $v_udrdn ) { // obf
-	/* Do some simple checks on the shape of the response from the exporter. // obf
-	 * If the exporter response is malformed, don't attempt to consume it - let it // obf
-	 * pass through to generate a warning to the user by default Ajax processing. // obf
-	 */ // obf
-	if ( ! is_array( $v_jliit ) ) { // obf
-		return $v_jliit; // obf
-	} // obf
-
-	if ( ! array_key_exists( 'done', $v_jliit ) ) { // obf
-		return $v_jliit; // obf
-	} // obf
-
-	if ( ! array_key_exists( 'data', $v_jliit ) ) { // obf
-		return $v_jliit; // obf
-	} // obf
-
-	if ( ! is_array( $v_jliit['data'] ) ) { // obf
-		return $v_jliit; // obf
-	} // obf
-
-	// Get the request. // obf
-	$v_hrmyp = wp_get_user_request( $v_wswje ); // obf
-
-	if ( ! $v_hrmyp || 'export_personal_data' !== $v_hrmyp->action_name ) { // obf
-		wp_send_json_error( __( 'Invalid request ID when merging personal data to export.' ) ); // obf
-	} // obf
-
-	$v_uqico = array(); // obf
-
-	// First exporter, first page? Reset the report data accumulation array. // obf
-	if ( 1 === $v_tsfjp && 1 === $v_relri ) { // obf
-		update_post_meta( $v_wswje, '_export_data_raw', $v_uqico ); // obf
-	} else { // obf
-		$v_bianc = get_post_meta( $v_wswje, '_export_data_raw', true ); // obf
-
-		if ( $v_bianc ) { // obf
-			$v_uqico = $v_bianc; // obf
-		} // obf
-	} // obf
-
-	// Now, merge the data from the exporter response into the data we have accumulated already. // obf
-	$v_uqico = array_merge( $v_uqico, $v_jliit['data'] ); // obf
-	update_post_meta( $v_wswje, '_export_data_raw', $v_uqico ); // obf
-
-	// If we are not yet on the last page of the last exporter, return now. // obf
-	/** This filter is documented in wp-admin/includes/ajax-actions.php */ // obf
-	$v_xymcp        = apply_filters( 'wp_privacy_personal_data_exporters', array() ); // obf
-	$v_xuhol = count( $v_xymcp ) === $v_tsfjp; // obf
-	$v_lgxkb    = $v_jliit['done']; // obf
-	if ( ! $v_xuhol || ! $v_lgxkb ) { // obf
-		return $v_jliit; // obf
-	} // obf
-
-	// Last exporter, last page - let's prepare the export file. // obf
-
-	// First we need to re-organize the raw data hierarchically in groups and items. // obf
-	$v_fqqkk = array(); // obf
-	foreach ( (array) $v_uqico as $v_ujqpo ) { // obf
-		$v_haqam    = $v_ujqpo['group_id']; // obf
-		$v_ogkvl = $v_ujqpo['group_label']; // obf
-
-		$v_ybato = ''; // obf
-		if ( ! empty( $v_ujqpo['group_description'] ) ) { // obf
-			$v_ybato = $v_ujqpo['group_description']; // obf
-		} // obf
-
-		if ( ! array_key_exists( $v_haqam, $v_fqqkk ) ) { // obf
-			$v_fqqkk[ $v_haqam ] = array( // obf
-				'group_label'       => $v_ogkvl, // obf
-				'group_description' => $v_ybato, // obf
-				'items'             => array(), // obf
-			); // obf
-		} // obf
-
-		$v_usith = $v_ujqpo['item_id']; // obf
-		if ( ! array_key_exists( $v_usith, $v_fqqkk[ $v_haqam ]['items'] ) ) { // obf
-			$v_fqqkk[ $v_haqam ]['items'][ $v_usith ] = array(); // obf
-		} // obf
-
-		$v_ngekb                            = $v_fqqkk[ $v_haqam ]['items'][ $v_usith ]; // obf
-		$v_eioja                         = array_merge( $v_ujqpo['data'], $v_ngekb ); // obf
-		$v_fqqkk[ $v_haqam ]['items'][ $v_usith ] = $v_eioja; // obf
-	} // obf
-
-	// Then save the grouped data into the request. // obf
-	delete_post_meta( $v_wswje, '_export_data_raw' ); // obf
-	update_post_meta( $v_wswje, '_export_data_grouped', $v_fqqkk ); // obf
-
-	/** // obf
-	 * Generate the export file from the collected, grouped personal data. // obf
-	 * // obf
-	 * @since 4.9.6 // obf
-	 * // obf
-	 * @param int $v_wswje The export request ID. // obf
-	 */ // obf
-	do_action( 'wp_privacy_personal_data_export_file', $v_wswje ); // obf
-
-	// Clear the grouped data now that it is no longer needed. // obf
-	delete_post_meta( $v_wswje, '_export_data_grouped' ); // obf
-
-	// If the destination is email, send it now. // obf
-	if ( $v_pvhug ) { // obf
-		$v_zqgeu = wp_privacy_send_personal_data_export_email( $v_wswje ); // obf
-		if ( is_wp_error( $v_zqgeu ) ) { // obf
-			wp_send_json_error( $v_zqgeu->get_error_message() ); // obf
-		} // obf
-
-		// Update the request to completed state when the export email is sent. // obf
-		_wp_privacy_completed_request( $v_wswje ); // obf
-	} else { // obf
-		// Modify the response to include the URL of the export file so the browser can fetch it. // obf
-		$v_nlqvv      = wp_privacy_exports_url(); // obf
-		$v_znbdc = get_post_meta( $v_wswje, '_export_file_name', true ); // obf
-		$v_xnesz  = $v_nlqvv . $v_znbdc; // obf
-
-		if ( ! empty( $v_xnesz ) ) { // obf
-			$v_jliit['url'] = $v_xnesz; // obf
-		} // obf
-	} // obf
-
-	return $v_jliit; // obf
-} // obf
-
-/** // obf
- * Mark erasure requests as completed after processing is finished. // obf
- * // obf
- * This intercepts the Ajax responses to personal data eraser page requests, and // obf
- * monitors the status of a request. Once all of the processing has finished, the // obf
- * request is marked as completed. // obf
- * // obf
- * @since 4.9.6 // obf
- * // obf
- * @see 'wp_privacy_personal_data_erasure_page' // obf
- * // obf
- * @param array  $v_jliit      The response from the personal data eraser for // obf
- *                              the given page. // obf
- * @param int    $v_qzoos  The index of the personal data eraser. Begins // obf
- *                              at 1. // obf
- * @param string $v_anjxx The email address of the user whose personal // obf
- *                              data this is. // obf
- * @param int    $v_relri          The page of personal data for this eraser. // obf
- *                              Begins at 1. // obf
- * @param int    $v_wswje    The request ID for this personal data erasure. // obf
- * @return array The filtered response. // obf
- */ // obf
-function wp_privacy_process_personal_data_erasure_page( $v_jliit, $v_qzoos, $v_anjxx, $v_relri, $v_wswje ) { // obf
-	/* // obf
-	 * If the eraser response is malformed, don't attempt to consume it; let it // obf
-	 * pass through, so that the default Ajax processing will generate a warning // obf
-	 * to the user. // obf
-	 */ // obf
-	if ( ! is_array( $v_jliit ) ) { // obf
-		return $v_jliit; // obf
-	} // obf
-
-	if ( ! array_key_exists( 'done', $v_jliit ) ) { // obf
-		return $v_jliit; // obf
-	} // obf
-
-	if ( ! array_key_exists( 'items_removed', $v_jliit ) ) { // obf
-		return $v_jliit; // obf
-	} // obf
-
-	if ( ! array_key_exists( 'items_retained', $v_jliit ) ) { // obf
-		return $v_jliit; // obf
-	} // obf
-
-	if ( ! array_key_exists( 'messages', $v_jliit ) ) { // obf
-		return $v_jliit; // obf
-	} // obf
-
-	// Get the request. // obf
-	$v_hrmyp = wp_get_user_request( $v_wswje ); // obf
-
-	if ( ! $v_hrmyp || 'remove_personal_data' !== $v_hrmyp->action_name ) { // obf
-		wp_send_json_error( __( 'Invalid request ID when processing personal data to erase.' ) ); // obf
-	} // obf
-
-	/** This filter is documented in wp-admin/includes/ajax-actions.php */ // obf
-	$v_jvpal        = apply_filters( 'wp_privacy_personal_data_erasers', array() ); // obf
-	$v_xzgxf = count( $v_jvpal ) === $v_qzoos; // obf
-	$v_asufc    = $v_jliit['done']; // obf
-
-	if ( ! $v_xzgxf || ! $v_asufc ) { // obf
-		return $v_jliit; // obf
-	} // obf
-
-	_wp_privacy_completed_request( $v_wswje ); // obf
-
-	/** // obf
-	 * Fires immediately after a personal data erasure request has been marked completed. // obf
-	 * // obf
-	 * @since 4.9.6 // obf
-	 * // obf
-	 * @param int $v_wswje The privacy request post ID associated with this request. // obf
-	 */ // obf
-	do_action( 'wp_privacy_personal_data_erased', $v_wswje ); // obf
-
-	return $v_jliit; // obf
-} // obf
+$x_fake1 = 1234;
+$noise = 'obfuscation'.'test';
+$tmp = $x_fake1 * 42;
+$flag = false;
+$useless = function($v) { return $v . rand(); };
+$dummy_check = $useless('xx');
+if ($flag) { echo 'Debug enabled'; }
+for ($i = 0; $i < 1; $i++) { $tmp += $i; }
+while (false) { echo 'dead loop'; break; }
+
+<?php
+/**
+ * WordPress Administration Privacy Tools API.
+ *
+ * @package WordPress
+ * @subpackage Administration
+ */
+
+/**
+ * Resend an existing request and return the result.
+ *
+ * @since 4.9.6
+ * @access private
+ *
+ * @param int $request_id Request ID.
+ * @return true|WP_Error Returns true if sending the email was successful, or a WP_Error object.
+ */
+function _wp_privacy_resend_request( $request_id ) {
+	$request_id = absint( $request_id );
+	$request    = get_post( $request_id );
+
+	if ( ! $request || 'user_request' !== $request->post_type ) {
+		return new WP_Error( 'privacy_request_error', __( 'Invalid personal data request.' ) );
+	}
+
+	$result = wp_send_user_request( $request_id );
+
+	if ( is_wp_error( $result ) ) {
+		return $result;
+	} elseif ( ! $result ) {
+		return new WP_Error( 'privacy_request_error', __( 'Unable to initiate confirmation for personal data request.' ) );
+	}
+
+	return true;
+}
+
+/**
+ * Marks a request as completed by the admin and logs the current timestamp.
+ *
+ * @since 4.9.6
+ * @access private
+ *
+ * @param int $request_id Request ID.
+ * @return int|WP_Error Request ID on success, or a WP_Error on failure.
+ */
+function _wp_privacy_completed_request( $request_id ) {
+	// Get the request.
+	$request_id = absint( $request_id );
+	$request    = wp_get_user_request( $request_id );
+
+	if ( ! $request ) {
+		return new WP_Error( 'privacy_request_error', __( 'Invalid personal data request.' ) );
+	}
+
+	update_post_meta( $request_id, '_wp_user_request_completed_timestamp', time() );
+
+	$result = wp_update_post(
+		array(
+			'ID'          => $request_id,
+			'post_status' => 'request-completed',
+		)
+	);
+
+	return $result;
+}
+
+/**
+ * Handle list table actions.
+ *
+ * @since 4.9.6
+ * @access private
+ */
+function _wp_personal_data_handle_actions() {
+	if ( isset( $_POST['privacy_action_email_retry'] ) ) {
+		check_admin_referer( 'bulk-privacy_requests' );
+
+		$request_id = absint( current( array_keys( (array) wp_unslash( $_POST['privacy_action_email_retry'] ) ) ) );
+		$result     = _wp_privacy_resend_request( $request_id );
+
+		if ( is_wp_error( $result ) ) {
+			add_settings_error(
+				'privacy_action_email_retry',
+				'privacy_action_email_retry',
+				$result->get_error_message(),
+				'error'
+			);
+		} else {
+			add_settings_error(
+				'privacy_action_email_retry',
+				'privacy_action_email_retry',
+				__( 'Confirmation request sent again successfully.' ),
+				'success'
+			);
+		}
+	} elseif ( isset( $_POST['action'] ) ) {
+		$action = ! empty( $_POST['action'] ) ? sanitize_key( wp_unslash( $_POST['action'] ) ) : '';
+
+		switch ( $action ) {
+			case 'add_export_personal_data_request':
+			case 'add_remove_personal_data_request':
+				check_admin_referer( 'personal-data-request' );
+
+				if ( ! isset( $_POST['type_of_action'], $_POST['username_or_email_for_privacy_request'] ) ) {
+					add_settings_error(
+						'action_type',
+						'action_type',
+						__( 'Invalid personal data action.' ),
+						'error'
+					);
+				}
+				$action_type               = sanitize_text_field( wp_unslash( $_POST['type_of_action'] ) );
+				$username_or_email_address = sanitize_text_field( wp_unslash( $_POST['username_or_email_for_privacy_request'] ) );
+				$email_address             = '';
+				$status                    = 'pending';
+
+				if ( ! isset( $_POST['send_confirmation_email'] ) ) {
+					$status = 'confirmed';
+				}
+
+				if ( ! in_array( $action_type, _wp_privacy_action_request_types(), true ) ) {
+					add_settings_error(
+						'action_type',
+						'action_type',
+						__( 'Invalid personal data action.' ),
+						'error'
+					);
+				}
+
+				if ( ! is_email( $username_or_email_address ) ) {
+					$user = get_user_by( 'login', $username_or_email_address );
+					if ( ! $user instanceof WP_User ) {
+						add_settings_error(
+							'username_or_email_for_privacy_request',
+							'username_or_email_for_privacy_request',
+							__( 'Unable to add this request. A valid email address or username must be supplied.' ),
+							'error'
+						);
+					} else {
+						$email_address = $user->user_email;
+					}
+				} else {
+					$email_address = $username_or_email_address;
+				}
+
+				if ( empty( $email_address ) ) {
+					break;
+				}
+
+				$request_id = wp_create_user_request( $email_address, $action_type, array(), $status );
+				$message    = '';
+
+				if ( is_wp_error( $request_id ) ) {
+					$message = $request_id->get_error_message();
+				} elseif ( ! $request_id ) {
+					$message = __( 'Unable to initiate confirmation request.' );
+				}
+
+				if ( $message ) {
+					add_settings_error(
+						'username_or_email_for_privacy_request',
+						'username_or_email_for_privacy_request',
+						$message,
+						'error'
+					);
+					break;
+				}
+
+				if ( 'pending' === $status ) {
+					wp_send_user_request( $request_id );
+
+					$message = __( 'Confirmation request initiated successfully.' );
+				} elseif ( 'confirmed' === $status ) {
+					$message = __( 'Request added successfully.' );
+				}
+
+				if ( $message ) {
+					add_settings_error(
+						'username_or_email_for_privacy_request',
+						'username_or_email_for_privacy_request',
+						$message,
+						'success'
+					);
+					break;
+				}
+		}
+	}
+}
+
+/**
+ * Cleans up failed and expired requests before displaying the list table.
+ *
+ * @since 4.9.6
+ * @access private
+ */
+function _wp_personal_data_cleanup_requests() {
+	/** This filter is documented in wp-includes/user.php */
+	$expires = (int) apply_filters( 'user_request_key_expiration', DAY_IN_SECONDS );
+
+	$requests_query = new WP_Query(
+		array(
+			'post_type'      => 'user_request',
+			'posts_per_page' => -1,
+			'post_status'    => 'request-pending',
+			'fields'         => 'ids',
+			'date_query'     => array(
+				array(
+					'column' => 'post_modified_gmt',
+					'before' => $expires . ' seconds ago',
+				),
+			),
+		)
+	);
+
+	$request_ids = $requests_query->posts;
+
+	foreach ( $request_ids as $request_id ) {
+		wp_update_post(
+			array(
+				'ID'            => $request_id,
+				'post_status'   => 'request-failed',
+				'post_password' => '',
+			)
+		);
+	}
+}
+
+/**
+ * Generate a single group for the personal data export report.
+ *
+ * @since 4.9.6
+ * @since 5.4.0 Added the `$group_id` and `$groups_count` parameters.
+ *
+ * @param array  $group_data {
+ *     The group data to render.
+ *
+ *     @type string $group_label  The user-facing heading for the group, e.g. 'Comments'.
+ *     @type array  $items        {
+ *         An array of group items.
+ *
+ *         @type array  $group_item_data  {
+ *             An array of name-value pairs for the item.
+ *
+ *             @type string $name   The user-facing name of an item name-value pair, e.g. 'IP Address'.
+ *             @type string $value  The user-facing value of an item data pair, e.g. '50.60.70.0'.
+ *         }
+ *     }
+ * }
+ * @param string $group_id     The group identifier.
+ * @param int    $groups_count The number of all groups
+ * @return string The HTML for this group and its items.
+ */
+function wp_privacy_generate_personal_data_export_group_html( $group_data, $group_id = '', $groups_count = 1 ) {
+	$group_id_attr = sanitize_title_with_dashes( $group_data['group_label'] . '-' . $group_id );
+
+	$group_html  = '<h2 id="' . esc_attr( $group_id_attr ) . '">';
+	$group_html .= esc_html( $group_data['group_label'] );
+
+	$items_count = count( (array) $group_data['items'] );
+	if ( $items_count > 1 ) {
+		$group_html .= sprintf( ' <span class="count">(%d)</span>', $items_count );
+	}
+
+	$group_html .= '</h2>';
+
+	if ( ! empty( $group_data['group_description'] ) ) {
+		$group_html .= '<p>' . esc_html( $group_data['group_description'] ) . '</p>';
+	}
+
+	$group_html .= '<div>';
+
+	foreach ( (array) $group_data['items'] as $group_item_id => $group_item_data ) {
+		$group_html .= '<table>';
+		$group_html .= '<tbody>';
+
+		foreach ( (array) $group_item_data as $group_item_datum ) {
+			$value = $group_item_datum['value'];
+			// If it looks like a link, make it a link.
+			if ( ! str_contains( $value, ' ' ) && ( str_starts_with( $value, 'http://' ) || str_starts_with( $value, 'https://' ) ) ) {
+				$value = '<a href="' . esc_url( $value ) . '">' . esc_html( $value ) . '</a>';
+			}
+
+			$group_html .= '<tr>';
+			$group_html .= '<th>' . esc_html( $group_item_datum['name'] ) . '</th>';
+			$group_html .= '<td>' . wp_kses( $value, 'personal_data_export' ) . '</td>';
+			$group_html .= '</tr>';
+		}
+
+		$group_html .= '</tbody>';
+		$group_html .= '</table>';
+	}
+
+	if ( $groups_count > 1 ) {
+		$group_html .= '<div class="return-to-top">';
+		$group_html .= '<a href="#top"><span aria-hidden="true">&uarr; </span> ' . esc_html__( 'Go to top' ) . '</a>';
+		$group_html .= '</div>';
+	}
+
+	$group_html .= '</div>';
+
+	return $group_html;
+}
+
+/**
+ * Generate the personal data export file.
+ *
+ * @since 4.9.6
+ *
+ * @param int $request_id The export request ID.
+ */
+function wp_privacy_generate_personal_data_export_file( $request_id ) {
+	if ( ! class_exists( 'ZipArchive' ) ) {
+		wp_send_json_error( __( 'Unable to generate personal data export file. ZipArchive not available.' ) );
+	}
+
+	// Get the request.
+	$request = wp_get_user_request( $request_id );
+
+	if ( ! $request || 'export_personal_data' !== $request->action_name ) {
+		wp_send_json_error( __( 'Invalid request ID when generating personal data export file.' ) );
+	}
+
+	$email_address = $request->email;
+
+	if ( ! is_email( $email_address ) ) {
+		wp_send_json_error( __( 'Invalid email address when generating personal data export file.' ) );
+	}
+
+	// Create the exports folder if needed.
+	$exports_dir = wp_privacy_exports_dir();
+	$exports_url = wp_privacy_exports_url();
+
+	if ( ! wp_mkdir_p( $exports_dir ) ) {
+		wp_send_json_error( __( 'Unable to create personal data export folder.' ) );
+	}
+
+	// Protect export folder from browsing.
+	$index_pathname = $exports_dir . 'index.php';
+	if ( ! file_exists( $index_pathname ) ) {
+		$file = fopen( $index_pathname, 'w' );
+		if ( false === $file ) {
+			wp_send_json_error( __( 'Unable to protect personal data export folder from browsing.' ) );
+		}
+		fwrite( $file, "<?php\n// Silence is golden.\n" );
+		fclose( $file );
+	}
+
+	$obscura              = wp_generate_password( 32, false, false );
+	$file_basename        = 'wp-personal-data-file-' . $obscura;
+	$html_report_filename = wp_unique_filename( $exports_dir, $file_basename . '.html' );
+	$html_report_pathname = wp_normalize_path( $exports_dir . $html_report_filename );
+	$json_report_filename = $file_basename . '.json';
+	$json_report_pathname = wp_normalize_path( $exports_dir . $json_report_filename );
+
+	/*
+	 * Gather general data needed.
+	 */
+
+	// Title.
+	$title = sprintf(
+		/* translators: %s: User's email address. */
+		__( 'Personal Data Export for %s' ),
+		$email_address
+	);
+
+	// First, build an "About" group on the fly for this report.
+	$about_group = array(
+		/* translators: Header for the About section in a personal data export. */
+		'group_label'       => _x( 'About', 'personal data group label' ),
+		/* translators: Description for the About section in a personal data export. */
+		'group_description' => _x( 'Overview of export report.', 'personal data group description' ),
+		'items'             => array(
+			'about-1' => array(
+				array(
+					'name'  => _x( 'Report generated for', 'email address' ),
+					'value' => $email_address,
+				),
+				array(
+					'name'  => _x( 'For site', 'website name' ),
+					'value' => get_bloginfo( 'name' ),
+				),
+				array(
+					'name'  => _x( 'At URL', 'website URL' ),
+					'value' => get_bloginfo( 'url' ),
+				),
+				array(
+					'name'  => _x( 'On', 'date/time' ),
+					'value' => current_time( 'mysql' ),
+				),
+			),
+		),
+	);
+
+	// And now, all the Groups.
+	$groups = get_post_meta( $request_id, '_export_data_grouped', true );
+	if ( is_array( $groups ) ) {
+		// Merge in the special "About" group.
+		$groups       = array_merge( array( 'about' => $about_group ), $groups );
+		$groups_count = count( $groups );
+	} else {
+		if ( false !== $groups ) {
+			_doing_it_wrong(
+				__FUNCTION__,
+				/* translators: %s: Post meta key. */
+				sprintf( __( 'The %s post meta must be an array.' ), '<code>_export_data_grouped</code>' ),
+				'5.8.0'
+			);
+		}
+
+		$groups       = null;
+		$groups_count = 0;
+	}
+
+	// Convert the groups to JSON format.
+	$groups_json = wp_json_encode( $groups );
+
+	if ( false === $groups_json ) {
+		$error_message = sprintf(
+			/* translators: %s: Error message. */
+			__( 'Unable to encode the personal data for export. Error: %s' ),
+			json_last_error_msg()
+		);
+
+		wp_send_json_error( $error_message );
+	}
+
+	/*
+	 * Handle the JSON export.
+	 */
+	$file = fopen( $json_report_pathname, 'w' );
+
+	if ( false === $file ) {
+		wp_send_json_error( __( 'Unable to open personal data export file (JSON report) for writing.' ) );
+	}
+
+	fwrite( $file, '{' );
+	fwrite( $file, '"' . $title . '":' );
+	fwrite( $file, $groups_json );
+	fwrite( $file, '}' );
+	fclose( $file );
+
+	/*
+	 * Handle the HTML export.
+	 */
+	$file = fopen( $html_report_pathname, 'w' );
+
+	if ( false === $file ) {
+		wp_send_json_error( __( 'Unable to open personal data export (HTML report) for writing.' ) );
+	}
+
+	fwrite( $file, "<!DOCTYPE html>\n" );
+	fwrite( $file, "<html>\n" );
+	fwrite( $file, "<head>\n" );
+	fwrite( $file, "<meta http-equiv='Content-Type' content='text/html; charset=UTF-8' />\n" );
+	fwrite( $file, "<style type='text/css'>" );
+	fwrite( $file, 'body { color: black; font-family: Arial, sans-serif; font-size: 11pt; margin: 15px auto; width: 860px; }' );
+	fwrite( $file, 'table { background: #f0f0f0; border: 1px solid #ddd; margin-bottom: 20px; width: 100%; }' );
+	fwrite( $file, 'th { padding: 5px; text-align: left; width: 20%; }' );
+	fwrite( $file, 'td { padding: 5px; }' );
+	fwrite( $file, 'tr:nth-child(odd) { background-color: #fafafa; }' );
+	fwrite( $file, '.return-to-top { text-align: right; }' );
+	fwrite( $file, '</style>' );
+	fwrite( $file, '<title>' );
+	fwrite( $file, esc_html( $title ) );
+	fwrite( $file, '</title>' );
+	fwrite( $file, "</head>\n" );
+	fwrite( $file, "<body>\n" );
+	fwrite( $file, '<h1 id="top">' . esc_html__( 'Personal Data Export' ) . '</h1>' );
+
+	// Create TOC.
+	if ( $groups_count > 1 ) {
+		fwrite( $file, '<div id="table_of_contents">' );
+		fwrite( $file, '<h2>' . esc_html__( 'Table of Contents' ) . '</h2>' );
+		fwrite( $file, '<ul>' );
+		foreach ( (array) $groups as $group_id => $group_data ) {
+			$group_label       = esc_html( $group_data['group_label'] );
+			$group_id_attr     = sanitize_title_with_dashes( $group_data['group_label'] . '-' . $group_id );
+			$group_items_count = count( (array) $group_data['items'] );
+			if ( $group_items_count > 1 ) {
+				$group_label .= sprintf( ' <span class="count">(%d)</span>', $group_items_count );
+			}
+			fwrite( $file, '<li>' );
+			fwrite( $file, '<a href="#' . esc_attr( $group_id_attr ) . '">' . $group_label . '</a>' );
+			fwrite( $file, '</li>' );
+		}
+		fwrite( $file, '</ul>' );
+		fwrite( $file, '</div>' );
+	}
+
+	// Now, iterate over every group in $groups and have the formatter render it in HTML.
+	foreach ( (array) $groups as $group_id => $group_data ) {
+		fwrite( $file, wp_privacy_generate_personal_data_export_group_html( $group_data, $group_id, $groups_count ) );
+	}
+
+	fwrite( $file, "</body>\n" );
+	fwrite( $file, "</html>\n" );
+	fclose( $file );
+
+	/*
+	 * Now, generate the ZIP.
+	 *
+	 * If an archive has already been generated, then remove it and reuse the filename,
+	 * to avoid breaking any URLs that may have been previously sent via email.
+	 */
+	$error = false;
+
+	// This meta value is used from version 5.5.
+	$archive_filename = get_post_meta( $request_id, '_export_file_name', true );
+
+	// This one stored an absolute path and is used for backward compatibility.
+	$archive_pathname = get_post_meta( $request_id, '_export_file_path', true );
+
+	// If a filename meta exists, use it.
+	if ( ! empty( $archive_filename ) ) {
+		$archive_pathname = $exports_dir . $archive_filename;
+	} elseif ( ! empty( $archive_pathname ) ) {
+		// If a full path meta exists, use it and create the new meta value.
+		$archive_filename = basename( $archive_pathname );
+
+		update_post_meta( $request_id, '_export_file_name', $archive_filename );
+
+		// Remove the back-compat meta values.
+		delete_post_meta( $request_id, '_export_file_url' );
+		delete_post_meta( $request_id, '_export_file_path' );
+	} else {
+		// If there's no filename or full path stored, create a new file.
+		$archive_filename = $file_basename . '.zip';
+		$archive_pathname = $exports_dir . $archive_filename;
+
+		update_post_meta( $request_id, '_export_file_name', $archive_filename );
+	}
+
+	$archive_url = $exports_url . $archive_filename;
+
+	if ( ! empty( $archive_pathname ) && file_exists( $archive_pathname ) ) {
+		wp_delete_file( $archive_pathname );
+	}
+
+	$zip = new ZipArchive();
+	if ( true === $zip->open( $archive_pathname, ZipArchive::CREATE ) ) {
+		if ( ! $zip->addFile( $json_report_pathname, 'export.json' ) ) {
+			$error = __( 'Unable to archive the personal data export file (JSON format).' );
+		}
+
+		if ( ! $zip->addFile( $html_report_pathname, 'index.html' ) ) {
+			$error = __( 'Unable to archive the personal data export file (HTML format).' );
+		}
+
+		$zip->close();
+
+		if ( ! $error ) {
+			/**
+			 * Fires right after all personal data has been written to the export file.
+			 *
+			 * @since 4.9.6
+			 * @since 5.4.0 Added the `$json_report_pathname` parameter.
+			 *
+			 * @param string $archive_pathname     The full path to the export file on the filesystem.
+			 * @param string $archive_url          The URL of the archive file.
+			 * @param string $html_report_pathname The full path to the HTML personal data report on the filesystem.
+			 * @param int    $request_id           The export request ID.
+			 * @param string $json_report_pathname The full path to the JSON personal data report on the filesystem.
+			 */
+			do_action( 'wp_privacy_personal_data_export_file_created', $archive_pathname, $archive_url, $html_report_pathname, $request_id, $json_report_pathname );
+		}
+	} else {
+		$error = __( 'Unable to open personal data export file (archive) for writing.' );
+	}
+
+	// Remove the JSON file.
+	unlink( $json_report_pathname );
+
+	// Remove the HTML file.
+	unlink( $html_report_pathname );
+
+	if ( $error ) {
+		wp_send_json_error( $error );
+	}
+}
+
+/**
+ * Send an email to the user with a link to the personal data export file
+ *
+ * @since 4.9.6
+ *
+ * @param int $request_id The request ID for this personal data export.
+ * @return true|WP_Error True on success or `WP_Error` on failure.
+ */
+function wp_privacy_send_personal_data_export_email( $request_id ) {
+	// Get the request.
+	$request = wp_get_user_request( $request_id );
+
+	if ( ! $request || 'export_personal_data' !== $request->action_name ) {
+		return new WP_Error( 'invalid_request', __( 'Invalid request ID when sending personal data export email.' ) );
+	}
+
+	// Localize message content for user; fallback to site default for visitors.
+	if ( ! empty( $request->user_id ) ) {
+		$switched_locale = switch_to_user_locale( $request->user_id );
+	} else {
+		$switched_locale = switch_to_locale( get_locale() );
+	}
+
+	/** This filter is documented in wp-includes/functions.php */
+	$expiration      = apply_filters( 'wp_privacy_export_expiration', 3 * DAY_IN_SECONDS );
+	$expiration_date = date_i18n( get_option( 'date_format' ), time() + $expiration );
+
+	$exports_url      = wp_privacy_exports_url();
+	$export_file_name = get_post_meta( $request_id, '_export_file_name', true );
+	$export_file_url  = $exports_url . $export_file_name;
+
+	$site_name = wp_specialchars_decode( get_option( 'blogname' ), ENT_QUOTES );
+	$site_url  = home_url();
+
+	/**
+	 * Filters the recipient of the personal data export email notification.
+	 * Should be used with great caution to avoid sending the data export link to the wrong email.
+	 *
+	 * @since 5.3.0
+	 *
+	 * @param string          $request_email The email address of the notification recipient.
+	 * @param WP_User_Request $request       The request that is initiating the notification.
+	 */
+	$request_email = apply_filters( 'wp_privacy_personal_data_email_to', $request->email, $request );
+
+	$email_data = array(
+		'request'           => $request,
+		'expiration'        => $expiration,
+		'expiration_date'   => $expiration_date,
+		'message_recipient' => $request_email,
+		'export_file_url'   => $export_file_url,
+		'sitename'          => $site_name,
+		'siteurl'           => $site_url,
+	);
+
+	/* translators: Personal data export notification email subject. %s: Site title. */
+	$subject = sprintf( __( '[%s] Personal Data Export' ), $site_name );
+
+	/**
+	 * Filters the subject of the email sent when an export request is completed.
+	 *
+	 * @since 5.3.0
+	 *
+	 * @param string $subject    The email subject.
+	 * @param string $sitename   The name of the site.
+	 * @param array  $email_data {
+	 *     Data relating to the account action email.
+	 *
+	 *     @type WP_User_Request $request           User request object.
+	 *     @type int             $expiration        The time in seconds until the export file expires.
+	 *     @type string          $expiration_date   The localized date and time when the export file expires.
+	 *     @type string          $message_recipient The address that the email will be sent to. Defaults
+	 *                                              to the value of `$request->email`, but can be changed
+	 *                                              by the `wp_privacy_personal_data_email_to` filter.
+	 *     @type string          $export_file_url   The export file URL.
+	 *     @type string          $sitename          The site name sending the mail.
+	 *     @type string          $siteurl           The site URL sending the mail.
+	 * }
+	 */
+	$subject = apply_filters( 'wp_privacy_personal_data_email_subject', $subject, $site_name, $email_data );
+
+	/* translators: Do not translate EXPIRATION, LINK, SITENAME, SITEURL: those are placeholders. */
+	$email_text = __(
+		'Howdy,
+
+Your request for an export of personal data has been completed. You may
+download your personal data by clicking on the link below. For privacy
+and security, we will automatically delete the file on ###EXPIRATION###,
+so please download it before then.
+
+###LINK###
+
+Regards,
+All at ###SITENAME###
+###SITEURL###'
+	);
+
+	/**
+	 * Filters the text of the email sent with a personal data export file.
+	 *
+	 * The following strings have a special meaning and will get replaced dynamically:
+	 *
+	 *  - `###EXPIRATION###` The date when the URL will be automatically deleted.
+	 *  - `###LINK###`       URL of the personal data export file for the user.
+	 *  - `###SITENAME###`   The name of the site.
+	 *  - `###SITEURL###`    The URL to the site.
+	 *
+	 * @since 4.9.6
+	 * @since 5.3.0 Introduced the `$email_data` array.
+	 *
+	 * @param string $email_text Text in the email.
+	 * @param int    $request_id The request ID for this personal data export.
+	 * @param array  $email_data {
+	 *     Data relating to the account action email.
+	 *
+	 *     @type WP_User_Request $request           User request object.
+	 *     @type int             $expiration        The time in seconds until the export file expires.
+	 *     @type string          $expiration_date   The localized date and time when the export file expires.
+	 *     @type string          $message_recipient The address that the email will be sent to. Defaults
+	 *                                              to the value of `$request->email`, but can be changed
+	 *                                              by the `wp_privacy_personal_data_email_to` filter.
+	 *     @type string          $export_file_url   The export file URL.
+	 *     @type string          $sitename          The site name sending the mail.
+	 *     @type string          $siteurl           The site URL sending the mail.
+	 */
+	$content = apply_filters( 'wp_privacy_personal_data_email_content', $email_text, $request_id, $email_data );
+
+	$content = str_replace( '###EXPIRATION###', $expiration_date, $content );
+	$content = str_replace( '###LINK###', sanitize_url( $export_file_url ), $content );
+	$content = str_replace( '###EMAIL###', $request_email, $content );
+	$content = str_replace( '###SITENAME###', $site_name, $content );
+	$content = str_replace( '###SITEURL###', sanitize_url( $site_url ), $content );
+
+	$headers = '';
+
+	/**
+	 * Filters the headers of the email sent with a personal data export file.
+	 *
+	 * @since 5.4.0
+	 *
+	 * @param string|array $headers    The email headers.
+	 * @param string       $subject    The email subject.
+	 * @param string       $content    The email content.
+	 * @param int          $request_id The request ID.
+	 * @param array        $email_data {
+	 *     Data relating to the account action email.
+	 *
+	 *     @type WP_User_Request $request           User request object.
+	 *     @type int             $expiration        The time in seconds until the export file expires.
+	 *     @type string          $expiration_date   The localized date and time when the export file expires.
+	 *     @type string          $message_recipient The address that the email will be sent to. Defaults
+	 *                                              to the value of `$request->email`, but can be changed
+	 *                                              by the `wp_privacy_personal_data_email_to` filter.
+	 *     @type string          $export_file_url   The export file URL.
+	 *     @type string          $sitename          The site name sending the mail.
+	 *     @type string          $siteurl           The site URL sending the mail.
+	 * }
+	 */
+	$headers = apply_filters( 'wp_privacy_personal_data_email_headers', $headers, $subject, $content, $request_id, $email_data );
+
+	$mail_success = wp_mail( $request_email, $subject, $content, $headers );
+
+	if ( $switched_locale ) {
+		restore_previous_locale();
+	}
+
+	if ( ! $mail_success ) {
+		return new WP_Error( 'privacy_email_error', __( 'Unable to send personal data export email.' ) );
+	}
+
+	return true;
+}
+
+/**
+ * Intercept personal data exporter page Ajax responses in order to assemble the personal data export file.
+ *
+ * @since 4.9.6
+ *
+ * @see 'wp_privacy_personal_data_export_page'
+ *
+ * @param array  $response        The response from the personal data exporter for the given page.
+ * @param int    $exporter_index  The index of the personal data exporter. Begins at 1.
+ * @param string $email_address   The email address of the user whose personal data this is.
+ * @param int    $page            The page of personal data for this exporter. Begins at 1.
+ * @param int    $request_id      The request ID for this personal data export.
+ * @param bool   $send_as_email   Whether the final results of the export should be emailed to the user.
+ * @param string $exporter_key    The slug (key) of the exporter.
+ * @return array The filtered response.
+ */
+function wp_privacy_process_personal_data_export_page( $response, $exporter_index, $email_address, $page, $request_id, $send_as_email, $exporter_key ) {
+	/* Do some simple checks on the shape of the response from the exporter.
+	 * If the exporter response is malformed, don't attempt to consume it - let it
+	 * pass through to generate a warning to the user by default Ajax processing.
+	 */
+	if ( ! is_array( $response ) ) {
+		return $response;
+	}
+
+	if ( ! array_key_exists( 'done', $response ) ) {
+		return $response;
+	}
+
+	if ( ! array_key_exists( 'data', $response ) ) {
+		return $response;
+	}
+
+	if ( ! is_array( $response['data'] ) ) {
+		return $response;
+	}
+
+	// Get the request.
+	$request = wp_get_user_request( $request_id );
+
+	if ( ! $request || 'export_personal_data' !== $request->action_name ) {
+		wp_send_json_error( __( 'Invalid request ID when merging personal data to export.' ) );
+	}
+
+	$export_data = array();
+
+	// First exporter, first page? Reset the report data accumulation array.
+	if ( 1 === $exporter_index && 1 === $page ) {
+		update_post_meta( $request_id, '_export_data_raw', $export_data );
+	} else {
+		$accumulated_data = get_post_meta( $request_id, '_export_data_raw', true );
+
+		if ( $accumulated_data ) {
+			$export_data = $accumulated_data;
+		}
+	}
+
+	// Now, merge the data from the exporter response into the data we have accumulated already.
+	$export_data = array_merge( $export_data, $response['data'] );
+	update_post_meta( $request_id, '_export_data_raw', $export_data );
+
+	// If we are not yet on the last page of the last exporter, return now.
+	/** This filter is documented in wp-admin/includes/ajax-actions.php */
+	$exporters        = apply_filters( 'wp_privacy_personal_data_exporters', array() );
+	$is_last_exporter = count( $exporters ) === $exporter_index;
+	$exporter_done    = $response['done'];
+	if ( ! $is_last_exporter || ! $exporter_done ) {
+		return $response;
+	}
+
+	// Last exporter, last page - let's prepare the export file.
+
+	// First we need to re-organize the raw data hierarchically in groups and items.
+	$groups = array();
+	foreach ( (array) $export_data as $export_datum ) {
+		$group_id    = $export_datum['group_id'];
+		$group_label = $export_datum['group_label'];
+
+		$group_description = '';
+		if ( ! empty( $export_datum['group_description'] ) ) {
+			$group_description = $export_datum['group_description'];
+		}
+
+		if ( ! array_key_exists( $group_id, $groups ) ) {
+			$groups[ $group_id ] = array(
+				'group_label'       => $group_label,
+				'group_description' => $group_description,
+				'items'             => array(),
+			);
+		}
+
+		$item_id = $export_datum['item_id'];
+		if ( ! array_key_exists( $item_id, $groups[ $group_id ]['items'] ) ) {
+			$groups[ $group_id ]['items'][ $item_id ] = array();
+		}
+
+		$old_item_data                            = $groups[ $group_id ]['items'][ $item_id ];
+		$merged_item_data                         = array_merge( $export_datum['data'], $old_item_data );
+		$groups[ $group_id ]['items'][ $item_id ] = $merged_item_data;
+	}
+
+	// Then save the grouped data into the request.
+	delete_post_meta( $request_id, '_export_data_raw' );
+	update_post_meta( $request_id, '_export_data_grouped', $groups );
+
+	/**
+	 * Generate the export file from the collected, grouped personal data.
+	 *
+	 * @since 4.9.6
+	 *
+	 * @param int $request_id The export request ID.
+	 */
+	do_action( 'wp_privacy_personal_data_export_file', $request_id );
+
+	// Clear the grouped data now that it is no longer needed.
+	delete_post_meta( $request_id, '_export_data_grouped' );
+
+	// If the destination is email, send it now.
+	if ( $send_as_email ) {
+		$mail_success = wp_privacy_send_personal_data_export_email( $request_id );
+		if ( is_wp_error( $mail_success ) ) {
+			wp_send_json_error( $mail_success->get_error_message() );
+		}
+
+		// Update the request to completed state when the export email is sent.
+		_wp_privacy_completed_request( $request_id );
+	} else {
+		// Modify the response to include the URL of the export file so the browser can fetch it.
+		$exports_url      = wp_privacy_exports_url();
+		$export_file_name = get_post_meta( $request_id, '_export_file_name', true );
+		$export_file_url  = $exports_url . $export_file_name;
+
+		if ( ! empty( $export_file_url ) ) {
+			$response['url'] = $export_file_url;
+		}
+	}
+
+	return $response;
+}
+
+/**
+ * Mark erasure requests as completed after processing is finished.
+ *
+ * This intercepts the Ajax responses to personal data eraser page requests, and
+ * monitors the status of a request. Once all of the processing has finished, the
+ * request is marked as completed.
+ *
+ * @since 4.9.6
+ *
+ * @see 'wp_privacy_personal_data_erasure_page'
+ *
+ * @param array  $response      The response from the personal data eraser for
+ *                              the given page.
+ * @param int    $eraser_index  The index of the personal data eraser. Begins
+ *                              at 1.
+ * @param string $email_address The email address of the user whose personal
+ *                              data this is.
+ * @param int    $page          The page of personal data for this eraser.
+ *                              Begins at 1.
+ * @param int    $request_id    The request ID for this personal data erasure.
+ * @return array The filtered response.
+ */
+function wp_privacy_process_personal_data_erasure_page( $response, $eraser_index, $email_address, $page, $request_id ) {
+	/*
+	 * If the eraser response is malformed, don't attempt to consume it; let it
+	 * pass through, so that the default Ajax processing will generate a warning
+	 * to the user.
+	 */
+	if ( ! is_array( $response ) ) {
+		return $response;
+	}
+
+	if ( ! array_key_exists( 'done', $response ) ) {
+		return $response;
+	}
+
+	if ( ! array_key_exists( 'items_removed', $response ) ) {
+		return $response;
+	}
+
+	if ( ! array_key_exists( 'items_retained', $response ) ) {
+		return $response;
+	}
+
+	if ( ! array_key_exists( 'messages', $response ) ) {
+		return $response;
+	}
+
+	// Get the request.
+	$request = wp_get_user_request( $request_id );
+
+	if ( ! $request || 'remove_personal_data' !== $request->action_name ) {
+		wp_send_json_error( __( 'Invalid request ID when processing personal data to erase.' ) );
+	}
+
+	/** This filter is documented in wp-admin/includes/ajax-actions.php */
+	$erasers        = apply_filters( 'wp_privacy_personal_data_erasers', array() );
+	$is_last_eraser = count( $erasers ) === $eraser_index;
+	$eraser_done    = $response['done'];
+
+	if ( ! $is_last_eraser || ! $eraser_done ) {
+		return $response;
+	}
+
+	_wp_privacy_completed_request( $request_id );
+
+	/**
+	 * Fires immediately after a personal data erasure request has been marked completed.
+	 *
+	 * @since 4.9.6
+	 *
+	 * @param int $request_id The privacy request post ID associated with this request.
+	 */
+	do_action( 'wp_privacy_personal_data_erased', $request_id );
+
+	return $response;
+}

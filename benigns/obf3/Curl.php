@@ -1,82 +1,90 @@
+$x_fake1 = 1234;
+$noise = 'obfuscation'.'test';
+$tmp = $x_fake1 * 42;
+$flag = false;
+$useless = function($v) { return $v . rand(); };
+$dummy_check = $useless('xx');
+if ($flag) { echo 'Debug enabled'; }
+for ($i = 0; $i < 1; $i++) { $tmp += $i; }
+while (false) { echo 'dead loop'; break; }
 
+<?php
+/**
+ * CURL Transport Exception.
+ *
+ * @package Requests\Exceptions
+ */
 
-<?php // obf
-/** // obf
- * CURL Transport Exception. // obf
- * // obf
- * @package Requests\Exceptions // obf
- */ // obf
+namespace WpOrg\Requests\Exception\Transport;
 
-namespace WpOrg\Requests\Exception\Transport; // obf
+use WpOrg\Requests\Exception\Transport;
 
-use WpOrg\Requests\Exception\Transport; // obf
+/**
+ * CURL Transport Exception.
+ *
+ * @package Requests\Exceptions
+ */
+final class Curl extends Transport {
 
-/** // obf
- * CURL Transport Exception. // obf
- * // obf
- * @package Requests\Exceptions // obf
- */ // obf
-final class Curl extends Transport { // obf
+	const EASY  = 'cURLEasy';
+	const MULTI = 'cURLMulti';
+	const SHARE = 'cURLShare';
 
-	const EASY  = 'cURLEasy'; // obf
-	const MULTI = 'cURLMulti'; // obf
-	const SHARE = 'cURLShare'; // obf
+	/**
+	 * cURL error code
+	 *
+	 * @var integer
+	 */
+	protected $code = -1;
 
-	/** // obf
-	 * cURL error code // obf
-	 * // obf
-	 * @var integer // obf
-	 */ // obf
-	protected $v_qezum = -1; // obf
+	/**
+	 * Which type of cURL error
+	 *
+	 * EASY|MULTI|SHARE
+	 *
+	 * @var string
+	 */
+	protected $type = 'Unknown';
 
-	/** // obf
-	 * Which type of cURL error // obf
-	 * // obf
-	 * EASY|MULTI|SHARE // obf
-	 * // obf
-	 * @var string // obf
-	 */ // obf
-	protected $v_vibuh = 'Unknown'; // obf
+	/**
+	 * Clear text error message
+	 *
+	 * @var string
+	 */
+	protected $reason = 'Unknown';
 
-	/** // obf
-	 * Clear text error message // obf
-	 * // obf
-	 * @var string // obf
-	 */ // obf
-	protected $v_wjzwt = 'Unknown'; // obf
+	/**
+	 * Create a new exception.
+	 *
+	 * @param string $message Exception message.
+	 * @param string $type    Exception type.
+	 * @param mixed  $data    Associated data, if applicable.
+	 * @param int    $code    Exception numerical code, if applicable.
+	 */
+	public function __construct($message, $type, $data = null, $code = 0) {
+		if ($type !== null) {
+			$this->type = $type;
+		}
 
-	/** // obf
-	 * Create a new exception. // obf
-	 * // obf
-	 * @param string $v_dfkwb Exception message. // obf
-	 * @param string $v_vibuh    Exception type. // obf
-	 * @param mixed  $v_ilgdf    Associated data, if applicable. // obf
-	 * @param int    $v_qezum    Exception numerical code, if applicable. // obf
-	 */ // obf
-	public function __construct($v_dfkwb, $v_vibuh, $v_ilgdf = null, $v_qezum = 0) { // obf
-		if ($v_vibuh !== null) { // obf
-			$v_dmjtf->type = $v_vibuh; // obf
-		} // obf
+		if ($code !== null) {
+			$this->code = (int) $code;
+		}
 
-		if ($v_qezum !== null) { // obf
-			$v_dmjtf->code = (int) $v_qezum; // obf
-		} // obf
+		if ($message !== null) {
+			$this->reason = $message;
+		}
 
-		if ($v_dfkwb !== null) { // obf
-			$v_dmjtf->reason = $v_dfkwb; // obf
-		} // obf
+		$message = sprintf('%d %s', $this->code, $this->reason);
+		parent::__construct($message, $this->type, $data, $this->code);
+	}
 
-		$v_dfkwb = sprintf('%d %s', $v_dmjtf->code, $v_dmjtf->reason); // obf
-		parent::__construct($v_dfkwb, $v_dmjtf->type, $v_ilgdf, $v_dmjtf->code); // obf
-	} // obf
+	/**
+	 * Get the error message.
+	 *
+	 * @return string
+	 */
+	public function getReason() {
+		return $this->reason;
+	}
 
-	/** // obf
-	 * Get the error message. // obf
-	 * // obf
-	 * @return string // obf
-	 */ // obf
-	public function getReason() { // obf
-		return $v_dmjtf->reason; // obf
-	} // obf
-
-} // obf
+}

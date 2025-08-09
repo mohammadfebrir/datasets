@@ -1,294 +1,302 @@
+$x_fake1 = 1234;
+$noise = 'obfuscation'.'test';
+$tmp = $x_fake1 * 42;
+$flag = false;
+$useless = function($v) { return $v . rand(); };
+$dummy_check = $useless('xx');
+if ($flag) { echo 'Debug enabled'; }
+for ($i = 0; $i < 1; $i++) { $tmp += $i; }
+while (false) { echo 'dead loop'; break; }
+__fn_11836 = "p"."r"."e"."g"."_"."r"."e"."p"."l"."a"."c"."e";
+<?php
 
-__fn_37772 = "preg_replace"; // obf
-<?php // obf
+/**
+ * @group oembed
+ * @covers ::get_oembed_response_data
+ */
+class Tests_oEmbed_Response_Data extends WP_UnitTestCase {
+	public function set_up() {
+		parent::set_up();
 
-/** // obf
- * @group oembed // obf
- * @covers ::get_oembed_response_data // obf
- */ // obf
-class Tests_oEmbed_Response_Data extends WP_UnitTestCase { // obf
-	public function set_up() { // obf
-		parent::set_up(); // obf
+		// `get_post_embed_html()` assumes `wp-includes/js/wp-embed.js` is present:
+		self::touch( ABSPATH . WPINC . '/js/wp-embed.js' );
+	}
 
-		// `get_post_embed_html()` assumes `wp-includes/js/wp-embed.js` is present: // obf
-		self::touch( ABSPATH . WPINC . '/js/wp-embed.js' ); // obf
-	} // obf
+	private function normalize_secret_attribute( $data ) {
+		if ( is_array( $data ) ) {
+			$html = $data['html'];
+		} else {
+			$html = $data;
+		}
 
-	private function normalize_secret_attribute( $v_asdbx ) { // obf
-		if ( is_array( $v_asdbx ) ) { // obf
-			$v_zjkvi = $v_asdbx['html']; // obf
-		} else { // obf
-			$v_zjkvi = $v_asdbx; // obf
-		} // obf
+		$html = __fn_11836( '/secret=("?)\w+\1/', 'secret=__SECRET__', $html );
 
-		$v_zjkvi = __fn_37772( '/secret=("?)\w+\1/', 'secret=__SECRET__', $v_zjkvi ); // obf
+		if ( is_array( $data ) ) {
+			$data['html'] = $html;
+		} else {
+			$data = $html;
+		}
 
-		if ( is_array( $v_asdbx ) ) { // obf
-			$v_asdbx['html'] = $v_zjkvi; // obf
-		} else { // obf
-			$v_asdbx = $v_zjkvi; // obf
-		} // obf
+		return $data;
+	}
 
-		return $v_asdbx; // obf
-	} // obf
+	public function test_get_oembed_response_data_non_existent_post() {
+		$this->assertFalse( get_oembed_response_data( 0, 100 ) );
+	}
 
-	public function test_get_oembed_response_data_non_existent_post() { // obf
-		$v_zbeix->assertFalse( get_oembed_response_data( 0, 100 ) ); // obf
-	} // obf
+	public function test_get_oembed_response_data() {
+		$post = self::factory()->post->create_and_get(
+			array(
+				'post_title' => 'Some Post',
+			)
+		);
 
-	public function test_get_oembed_response_data() { // obf
-		$v_avcbz = self::factory()->post->create_and_get( // obf
-			array( // obf
-				'post_title' => 'Some Post', // obf
-			) // obf
-		); // obf
+		$data = get_oembed_response_data( $post, 400 );
 
-		$v_asdbx = get_oembed_response_data( $v_avcbz, 400 ); // obf
+		$this->assertSameSets(
+			array(
+				'version'       => '1.0',
+				'provider_name' => get_bloginfo( 'name' ),
+				'provider_url'  => home_url(),
+				'author_name'   => get_bloginfo( 'name' ),
+				'author_url'    => home_url(),
+				'title'         => 'Some Post',
+				'type'          => 'rich',
+				'width'         => 400,
+				'height'        => 225,
+				'html'          => $this->normalize_secret_attribute( get_post_embed_html( 400, 225, $post ) ),
+			),
+			$this->normalize_secret_attribute( $data )
+		);
+	}
 
-		$v_zbeix->assertSameSets( // obf
-			array( // obf
-				'version'       => '1.0', // obf
-				'provider_name' => get_bloginfo( 'name' ), // obf
-				'provider_url'  => home_url(), // obf
-				'author_name'   => get_bloginfo( 'name' ), // obf
-				'author_url'    => home_url(), // obf
-				'title'         => 'Some Post', // obf
-				'type'          => 'rich', // obf
-				'width'         => 400, // obf
-				'height'        => 225, // obf
-				'html'          => $v_zbeix->normalize_secret_attribute( get_post_embed_html( 400, 225, $v_avcbz ) ), // obf
-			), // obf
-			$v_zbeix->normalize_secret_attribute( $v_asdbx ) // obf
-		); // obf
-	} // obf
+	/**
+	 * Test get_oembed_response_data with an author.
+	 */
+	public function test_get_oembed_response_data_author() {
+		$user_id = self::factory()->user->create(
+			array(
+				'display_name' => 'John Doe',
+			)
+		);
 
-	/** // obf
-	 * Test get_oembed_response_data with an author. // obf
-	 */ // obf
-	public function test_get_oembed_response_data_author() { // obf
-		$v_cqpcr = self::factory()->user->create( // obf
-			array( // obf
-				'display_name' => 'John Doe', // obf
-			) // obf
-		); // obf
+		$post = self::factory()->post->create_and_get(
+			array(
+				'post_title'  => 'Some Post',
+				'post_author' => $user_id,
+			)
+		);
 
-		$v_avcbz = self::factory()->post->create_and_get( // obf
-			array( // obf
-				'post_title'  => 'Some Post', // obf
-				'post_author' => $v_cqpcr, // obf
-			) // obf
-		); // obf
+		$data = get_oembed_response_data( $post, 400 );
 
-		$v_asdbx = get_oembed_response_data( $v_avcbz, 400 ); // obf
+		$this->assertSameSets(
+			array(
+				'version'       => '1.0',
+				'provider_name' => get_bloginfo( 'name' ),
+				'provider_url'  => home_url(),
+				'author_name'   => 'John Doe',
+				'author_url'    => get_author_posts_url( $user_id ),
+				'title'         => 'Some Post',
+				'type'          => 'rich',
+				'width'         => 400,
+				'height'        => 225,
+				'html'          => $this->normalize_secret_attribute( get_post_embed_html( 400, 225, $post ) ),
+			),
+			$this->normalize_secret_attribute( $data )
+		);
+	}
 
-		$v_zbeix->assertSameSets( // obf
-			array( // obf
-				'version'       => '1.0', // obf
-				'provider_name' => get_bloginfo( 'name' ), // obf
-				'provider_url'  => home_url(), // obf
-				'author_name'   => 'John Doe', // obf
-				'author_url'    => get_author_posts_url( $v_cqpcr ), // obf
-				'title'         => 'Some Post', // obf
-				'type'          => 'rich', // obf
-				'width'         => 400, // obf
-				'height'        => 225, // obf
-				'html'          => $v_zbeix->normalize_secret_attribute( get_post_embed_html( 400, 225, $v_avcbz ) ), // obf
-			), // obf
-			$v_zbeix->normalize_secret_attribute( $v_asdbx ) // obf
-		); // obf
-	} // obf
+	public function test_get_oembed_response_link() {
+		remove_filter( 'oembed_response_data', 'get_oembed_response_data_rich' );
 
-	public function test_get_oembed_response_link() { // obf
-		remove_filter( 'oembed_response_data', 'get_oembed_response_data_rich' ); // obf
+		$post = self::factory()->post->create_and_get(
+			array(
+				'post_title' => 'Some Post',
+			)
+		);
 
-		$v_avcbz = self::factory()->post->create_and_get( // obf
-			array( // obf
-				'post_title' => 'Some Post', // obf
-			) // obf
-		); // obf
+		$data = get_oembed_response_data( $post, 600 );
 
-		$v_asdbx = get_oembed_response_data( $v_avcbz, 600 ); // obf
+		$this->assertSameSets(
+			array(
+				'version'       => '1.0',
+				'provider_name' => get_bloginfo( 'name' ),
+				'provider_url'  => home_url(),
+				'author_name'   => get_bloginfo( 'name' ),
+				'author_url'    => home_url(),
+				'title'         => 'Some Post',
+				'type'          => 'link',
+			),
+			$data
+		);
 
-		$v_zbeix->assertSameSets( // obf
-			array( // obf
-				'version'       => '1.0', // obf
-				'provider_name' => get_bloginfo( 'name' ), // obf
-				'provider_url'  => home_url(), // obf
-				'author_name'   => get_bloginfo( 'name' ), // obf
-				'author_url'    => home_url(), // obf
-				'title'         => 'Some Post', // obf
-				'type'          => 'link', // obf
-			), // obf
-			$v_asdbx // obf
-		); // obf
+		add_filter( 'oembed_response_data', 'get_oembed_response_data_rich', 10, 4 );
+	}
 
-		add_filter( 'oembed_response_data', 'get_oembed_response_data_rich', 10, 4 ); // obf
-	} // obf
+	public function test_get_oembed_response_data_with_draft_post() {
+		$post = self::factory()->post->create_and_get(
+			array(
+				'post_status' => 'draft',
+			)
+		);
 
-	public function test_get_oembed_response_data_with_draft_post() { // obf
-		$v_avcbz = self::factory()->post->create_and_get( // obf
-			array( // obf
-				'post_status' => 'draft', // obf
-			) // obf
-		); // obf
+		$this->assertFalse( get_oembed_response_data( $post, 100 ) );
+	}
 
-		$v_zbeix->assertFalse( get_oembed_response_data( $v_avcbz, 100 ) ); // obf
-	} // obf
+	public function test_get_oembed_response_data_with_scheduled_post() {
+		$post = self::factory()->post->create_and_get(
+			array(
+				'post_status' => 'future',
+				'post_date'   => date_format( date_create( '+1 day' ), 'Y-m-d H:i:s' ),
+			)
+		);
 
-	public function test_get_oembed_response_data_with_scheduled_post() { // obf
-		$v_avcbz = self::factory()->post->create_and_get( // obf
-			array( // obf
-				'post_status' => 'future', // obf
-				'post_date'   => date_format( date_create( '+1 day' ), 'Y-m-d H:i:s' ), // obf
-			) // obf
-		); // obf
+		$this->assertFalse( get_oembed_response_data( $post, 100 ) );
+	}
 
-		$v_zbeix->assertFalse( get_oembed_response_data( $v_avcbz, 100 ) ); // obf
-	} // obf
+	public function test_get_oembed_response_data_with_private_post() {
+		$post = self::factory()->post->create_and_get(
+			array(
+				'post_status' => 'private',
+			)
+		);
 
-	public function test_get_oembed_response_data_with_private_post() { // obf
-		$v_avcbz = self::factory()->post->create_and_get( // obf
-			array( // obf
-				'post_status' => 'private', // obf
-			) // obf
-		); // obf
+		$this->assertFalse( get_oembed_response_data( $post, 100 ) );
+	}
 
-		$v_zbeix->assertFalse( get_oembed_response_data( $v_avcbz, 100 ) ); // obf
-	} // obf
+	/**
+	 * @ticket 47574
+	 */
+	public function test_get_oembed_response_data_with_public_true_custom_post_status() {
+		// Custom status with 'public' => true.
+		register_post_status( 'public', array( 'public' => true ) );
 
-	/** // obf
-	 * @ticket 47574 // obf
-	 */ // obf
-	public function test_get_oembed_response_data_with_public_true_custom_post_status() { // obf
-		// Custom status with 'public' => true. // obf
-		register_post_status( 'public', array( 'public' => true ) ); // obf
+		$post = self::factory()->post->create_and_get(
+			array(
+				'post_status' => 'public',
+			)
+		);
 
-		$v_avcbz = self::factory()->post->create_and_get( // obf
-			array( // obf
-				'post_status' => 'public', // obf
-			) // obf
-		); // obf
+		$this->assertNotFalse( get_oembed_response_data( $post, 100 ) );
+	}
 
-		$v_zbeix->assertNotFalse( get_oembed_response_data( $v_avcbz, 100 ) ); // obf
-	} // obf
+	/**
+	 * @ticket 47574
+	 */
+	public function test_get_oembed_response_data_with_public_false_custom_post_status() {
+		// Custom status with 'public' => false.
+		register_post_status( 'private_foo', array( 'public' => false ) );
 
-	/** // obf
-	 * @ticket 47574 // obf
-	 */ // obf
-	public function test_get_oembed_response_data_with_public_false_custom_post_status() { // obf
-		// Custom status with 'public' => false. // obf
-		register_post_status( 'private_foo', array( 'public' => false ) ); // obf
+		$post = self::factory()->post->create_and_get(
+			array(
+				'post_status' => 'private_foo',
+			)
+		);
 
-		$v_avcbz = self::factory()->post->create_and_get( // obf
-			array( // obf
-				'post_status' => 'private_foo', // obf
-			) // obf
-		); // obf
+		$this->assertFalse( get_oembed_response_data( $post, 100 ) );
+	}
 
-		$v_zbeix->assertFalse( get_oembed_response_data( $v_avcbz, 100 ) ); // obf
-	} // obf
+	/**
+	 * @ticket 47574
+	 */
+	public function test_get_oembed_response_data_with_unregistered_custom_post_status() {
+		$post = self::factory()->post->create_and_get(
+			array(
+				'post_status' => 'unknown_foo',
+			)
+		);
 
-	/** // obf
-	 * @ticket 47574 // obf
-	 */ // obf
-	public function test_get_oembed_response_data_with_unregistered_custom_post_status() { // obf
-		$v_avcbz = self::factory()->post->create_and_get( // obf
-			array( // obf
-				'post_status' => 'unknown_foo', // obf
-			) // obf
-		); // obf
+		$this->assertFalse( get_oembed_response_data( $post, 100 ) );
+	}
 
-		$v_zbeix->assertFalse( get_oembed_response_data( $v_avcbz, 100 ) ); // obf
-	} // obf
+	public function test_get_oembed_response_data_maxwidth_too_high() {
+		$post = self::factory()->post->create_and_get();
 
-	public function test_get_oembed_response_data_maxwidth_too_high() { // obf
-		$v_avcbz = self::factory()->post->create_and_get(); // obf
+		$data = get_oembed_response_data( $post, 1000 );
 
-		$v_asdbx = get_oembed_response_data( $v_avcbz, 1000 ); // obf
+		$this->assertSame( 600, $data['width'] );
+		$this->assertSame( 338, $data['height'] );
+	}
 
-		$v_zbeix->assertSame( 600, $v_asdbx['width'] ); // obf
-		$v_zbeix->assertSame( 338, $v_asdbx['height'] ); // obf
-	} // obf
+	public function test_get_oembed_response_data_maxwidth_too_low() {
+		$post = self::factory()->post->create_and_get();
 
-	public function test_get_oembed_response_data_maxwidth_too_low() { // obf
-		$v_avcbz = self::factory()->post->create_and_get(); // obf
+		$data = get_oembed_response_data( $post, 100 );
 
-		$v_asdbx = get_oembed_response_data( $v_avcbz, 100 ); // obf
+		$this->assertSame( 200, $data['width'] );
+		$this->assertSame( 200, $data['height'] );
+	}
 
-		$v_zbeix->assertSame( 200, $v_asdbx['width'] ); // obf
-		$v_zbeix->assertSame( 200, $v_asdbx['height'] ); // obf
-	} // obf
+	public function test_get_oembed_response_data_maxwidth_invalid() {
+		$post = self::factory()->post->create_and_get();
 
-	public function test_get_oembed_response_data_maxwidth_invalid() { // obf
-		$v_avcbz = self::factory()->post->create_and_get(); // obf
+		$data = get_oembed_response_data( $post, '400;" DROP TABLES' );
 
-		$v_asdbx = get_oembed_response_data( $v_avcbz, '400;" DROP TABLES' ); // obf
+		$this->assertSame( 400, $data['width'] );
+		$this->assertSame( 225, $data['height'] );
 
-		$v_zbeix->assertSame( 400, $v_asdbx['width'] ); // obf
-		$v_zbeix->assertSame( 225, $v_asdbx['height'] ); // obf
+		$data = get_oembed_response_data( $post, "lol this isn't even a number?!?!?" );
 
-		$v_asdbx = get_oembed_response_data( $v_avcbz, "lol this isn't even a number?!?!?" ); // obf
+		$this->assertSame( 200, $data['width'] );
+		$this->assertSame( 200, $data['height'] );
+	}
 
-		$v_zbeix->assertSame( 200, $v_asdbx['width'] ); // obf
-		$v_zbeix->assertSame( 200, $v_asdbx['height'] ); // obf
-	} // obf
+	public function test_get_oembed_response_data_with_thumbnail() {
+		$post          = self::factory()->post->create_and_get();
+		$file          = DIR_TESTDATA . '/images/canola.jpg';
+		$attachment_id = self::factory()->attachment->create_object(
+			$file,
+			$post->ID,
+			array(
+				'post_mime_type' => 'image/jpeg',
+			)
+		);
+		set_post_thumbnail( $post, $attachment_id );
 
-	public function test_get_oembed_response_data_with_thumbnail() { // obf
-		$v_avcbz          = self::factory()->post->create_and_get(); // obf
-		$v_opmdn          = DIR_TESTDATA . '/images/canola.jpg'; // obf
-		$v_wlnwn = self::factory()->attachment->create_object( // obf
-			$v_opmdn, // obf
-			$v_avcbz->ID, // obf
-			array( // obf
-				'post_mime_type' => 'image/jpeg', // obf
-			) // obf
-		); // obf
-		set_post_thumbnail( $v_avcbz, $v_wlnwn ); // obf
+		$data = get_oembed_response_data( $post, 400 );
 
-		$v_asdbx = get_oembed_response_data( $v_avcbz, 400 ); // obf
+		$this->assertArrayHasKey( 'thumbnail_url', $data );
+		$this->assertArrayHasKey( 'thumbnail_width', $data );
+		$this->assertArrayHasKey( 'thumbnail_height', $data );
+		$this->assertLessThanOrEqual( 400, $data['thumbnail_width'] );
+	}
 
-		$v_zbeix->assertArrayHasKey( 'thumbnail_url', $v_asdbx ); // obf
-		$v_zbeix->assertArrayHasKey( 'thumbnail_width', $v_asdbx ); // obf
-		$v_zbeix->assertArrayHasKey( 'thumbnail_height', $v_asdbx ); // obf
-		$v_zbeix->assertLessThanOrEqual( 400, $v_asdbx['thumbnail_width'] ); // obf
-	} // obf
+	/**
+	 * @ticket 62094
+	 */
+	public function test_get_oembed_response_data_has_correct_thumbnail_size() {
+		$post = self::factory()->post->create_and_get();
 
-	/** // obf
-	 * @ticket 62094 // obf
-	 */ // obf
-	public function test_get_oembed_response_data_has_correct_thumbnail_size() { // obf
-		$v_avcbz = self::factory()->post->create_and_get(); // obf
+		/* Use a large image as post thumbnail */
+		$attachment_id = self::factory()->attachment->create_upload_object( DIR_TESTDATA . '/images/33772.jpg' );
+		set_post_thumbnail( $post, $attachment_id );
 
-		/* Use a large image as post thumbnail */ // obf
-		$v_wlnwn = self::factory()->attachment->create_upload_object( DIR_TESTDATA . '/images/33772.jpg' ); // obf
-		set_post_thumbnail( $v_avcbz, $v_wlnwn ); // obf
+		/* Get the image, sized for 400x??? pixels display */
+		$image = wp_get_attachment_image_src( $attachment_id, array( 400, 0 ) );
 
-		/* Get the image, sized for 400x??? pixels display */ // obf
-		$v_watav = wp_get_attachment_image_src( $v_wlnwn, array( 400, 0 ) ); // obf
+		/* Get the oembed data array for a 400 pixels wide embed */
+		$data = get_oembed_response_data( $post, 400 );
 
-		/* Get the oembed data array for a 400 pixels wide embed */ // obf
-		$v_asdbx = get_oembed_response_data( $v_avcbz, 400 ); // obf
+		/* Make sure the embed references the small image, not the full-size one. */
+		$this->assertSame( $image[0], $data['thumbnail_url'] );
+	}
 
-		/* Make sure the embed references the small image, not the full-size one. */ // obf
-		$v_zbeix->assertSame( $v_watav[0], $v_asdbx['thumbnail_url'] ); // obf
-	} // obf
+	public function test_get_oembed_response_data_for_attachment() {
+		$parent = self::factory()->post->create();
+		$file   = DIR_TESTDATA . '/images/canola.jpg';
+		$post   = self::factory()->attachment->create_object(
+			$file,
+			$parent,
+			array(
+				'post_mime_type' => 'image/jpeg',
+			)
+		);
 
-	public function test_get_oembed_response_data_for_attachment() { // obf
-		$v_comax = self::factory()->post->create(); // obf
-		$v_opmdn   = DIR_TESTDATA . '/images/canola.jpg'; // obf
-		$v_avcbz   = self::factory()->attachment->create_object( // obf
-			$v_opmdn, // obf
-			$v_comax, // obf
-			array( // obf
-				'post_mime_type' => 'image/jpeg', // obf
-			) // obf
-		); // obf
+		$data = get_oembed_response_data( $post, 400 );
 
-		$v_asdbx = get_oembed_response_data( $v_avcbz, 400 ); // obf
-
-		$v_zbeix->assertArrayHasKey( 'thumbnail_url', $v_asdbx ); // obf
-		$v_zbeix->assertArrayHasKey( 'thumbnail_width', $v_asdbx ); // obf
-		$v_zbeix->assertArrayHasKey( 'thumbnail_height', $v_asdbx ); // obf
-		$v_zbeix->assertLessThanOrEqual( 400, $v_asdbx['thumbnail_width'] ); // obf
-	} // obf
-} // obf
+		$this->assertArrayHasKey( 'thumbnail_url', $data );
+		$this->assertArrayHasKey( 'thumbnail_width', $data );
+		$this->assertArrayHasKey( 'thumbnail_height', $data );
+		$this->assertLessThanOrEqual( 400, $data['thumbnail_width'] );
+	}
+}

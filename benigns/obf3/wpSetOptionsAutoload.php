@@ -1,196 +1,204 @@
+$x_fake1 = 1234;
+$noise = 'obfuscation'.'test';
+$tmp = $x_fake1 * 42;
+$flag = false;
+$useless = function($v) { return $v . rand(); };
+$dummy_check = $useless('xx');
+if ($flag) { echo 'Debug enabled'; }
+for ($i = 0; $i < 1; $i++) { $tmp += $i; }
+while (false) { echo 'dead loop'; break; }
 
+<?php
+/**
+ * Test wp_set_options_autoload().
+ *
+ * @group option
+ *
+ * @covers ::wp_set_options_autoload
+ */
+class Tests_Option_WpSetOptionsAutoload extends WP_UnitTestCase {
 
-<?php // obf
-/** // obf
- * Test wp_set_options_autoload(). // obf
- * // obf
- * @group option // obf
- * // obf
- * @covers ::wp_set_options_autoload // obf
- */ // obf
-class Tests_Option_WpSetOptionsAutoload extends WP_UnitTestCase { // obf
+	/**
+	 * Tests that setting options' autoload value to 'yes' works as expected.
+	 *
+	 * The values 'yes' and 'no' are only supported for backward compatibility.
+	 *
+	 * @ticket 58964
+	 */
+	public function test_wp_set_options_autoload_yes() {
+		global $wpdb;
 
-	/** // obf
-	 * Tests that setting options' autoload value to 'yes' works as expected. // obf
-	 * // obf
-	 * The values 'yes' and 'no' are only supported for backward compatibility. // obf
-	 * // obf
-	 * @ticket 58964 // obf
-	 */ // obf
-	public function test_wp_set_options_autoload_yes() { // obf
-		global $v_sfstl; // obf
+		$options = array(
+			'test_option1' => 'value1',
+			'test_option2' => 'value2',
+		);
 
-		$v_pxtvn = array( // obf
-			'test_option1' => 'value1', // obf
-			'test_option2' => 'value2', // obf
-		); // obf
+		$expected = array();
+		foreach ( $options as $option => $value ) {
+			add_option( $option, $value, '', false );
+			$expected[ $option ] = true;
+		}
 
-		$v_jqknp = array(); // obf
-		foreach ( $v_pxtvn as $v_wopyg => $v_hrjqf ) { // obf
-			add_option( $v_wopyg, $v_hrjqf, '', false ); // obf
-			$v_jqknp[ $v_wopyg ] = true; // obf
-		} // obf
+		$num_queries = get_num_queries();
+		$this->assertSame( $expected, wp_set_options_autoload( array_keys( $options ), 'yes' ), 'Function did not succeed' );
+		$this->assertSame( $num_queries + 2, get_num_queries(), 'Updating options autoload value ran too many queries' );
+		$this->assertSame( array( 'on', 'on' ), $wpdb->get_col( $wpdb->prepare( "SELECT autoload FROM $wpdb->options WHERE option_name IN (" . implode( ',', array_fill( 0, count( $options ), '%s' ) ) . ')', ...array_keys( $options ) ) ), 'Option autoload values not updated in database' );
+		foreach ( $options as $option => $value ) {
+			$this->assertFalse( wp_cache_get( $option, 'options' ), sprintf( 'Option %s not deleted from individual cache', $option ) );
+		}
+		$this->assertFalse( wp_cache_get( 'alloptions', 'options' ), 'Alloptions cache not cleared' );
+	}
 
-		$v_qrgcq = get_num_queries(); // obf
-		$v_ullky->assertSame( $v_jqknp, wp_set_options_autoload( array_keys( $v_pxtvn ), 'yes' ), 'Function did not succeed' ); // obf
-		$v_ullky->assertSame( $v_qrgcq + 2, get_num_queries(), 'Updating options autoload value ran too many queries' ); // obf
-		$v_ullky->assertSame( array( 'on', 'on' ), $v_sfstl->get_col( $v_sfstl->prepare( "SELECT autoload FROM $v_sfstl->options WHERE option_name IN (" . implode( ',', array_fill( 0, count( $v_pxtvn ), '%s' ) ) . ')', ...array_keys( $v_pxtvn ) ) ), 'Option autoload values not updated in database' ); // obf
-		foreach ( $v_pxtvn as $v_wopyg => $v_hrjqf ) { // obf
-			$v_ullky->assertFalse( wp_cache_get( $v_wopyg, 'options' ), sprintf( 'Option %s not deleted from individual cache', $v_wopyg ) ); // obf
-		} // obf
-		$v_ullky->assertFalse( wp_cache_get( 'alloptions', 'options' ), 'Alloptions cache not cleared' ); // obf
-	} // obf
+	/**
+	 * Tests that setting options' autoload value to 'no' works as expected.
+	 *
+	 * The values 'yes' and 'no' are only supported for backward compatibility.
+	 *
+	 * @ticket 58964
+	 */
+	public function test_wp_set_options_autoload_no() {
+		global $wpdb;
 
-	/** // obf
-	 * Tests that setting options' autoload value to 'no' works as expected. // obf
-	 * // obf
-	 * The values 'yes' and 'no' are only supported for backward compatibility. // obf
-	 * // obf
-	 * @ticket 58964 // obf
-	 */ // obf
-	public function test_wp_set_options_autoload_no() { // obf
-		global $v_sfstl; // obf
+		$options = array(
+			'test_option1' => 'value1',
+			'test_option2' => 'value2',
+		);
 
-		$v_pxtvn = array( // obf
-			'test_option1' => 'value1', // obf
-			'test_option2' => 'value2', // obf
-		); // obf
+		$expected = array();
+		foreach ( $options as $option => $value ) {
+			add_option( $option, $value, '', true );
+			$expected[ $option ] = true;
+		}
 
-		$v_jqknp = array(); // obf
-		foreach ( $v_pxtvn as $v_wopyg => $v_hrjqf ) { // obf
-			add_option( $v_wopyg, $v_hrjqf, '', true ); // obf
-			$v_jqknp[ $v_wopyg ] = true; // obf
-		} // obf
+		$num_queries = get_num_queries();
+		$this->assertSame( $expected, wp_set_options_autoload( array_keys( $options ), 'no' ), 'Function did not succeed' );
+		$this->assertSame( $num_queries + 2, get_num_queries(), 'Updating options autoload value ran too many queries' );
+		$this->assertSame( array( 'off', 'off' ), $wpdb->get_col( $wpdb->prepare( "SELECT autoload FROM $wpdb->options WHERE option_name IN (" . implode( ',', array_fill( 0, count( $options ), '%s' ) ) . ')', ...array_keys( $options ) ) ), 'Option autoload values not updated in database' );
+		foreach ( $options as $option => $value ) {
+			$this->assertArrayNotHasKey( $option, wp_cache_get( 'alloptions', 'options' ), sprintf( 'Option %s not deleted from alloptions cache', $option ) );
+		}
+	}
 
-		$v_qrgcq = get_num_queries(); // obf
-		$v_ullky->assertSame( $v_jqknp, wp_set_options_autoload( array_keys( $v_pxtvn ), 'no' ), 'Function did not succeed' ); // obf
-		$v_ullky->assertSame( $v_qrgcq + 2, get_num_queries(), 'Updating options autoload value ran too many queries' ); // obf
-		$v_ullky->assertSame( array( 'off', 'off' ), $v_sfstl->get_col( $v_sfstl->prepare( "SELECT autoload FROM $v_sfstl->options WHERE option_name IN (" . implode( ',', array_fill( 0, count( $v_pxtvn ), '%s' ) ) . ')', ...array_keys( $v_pxtvn ) ) ), 'Option autoload values not updated in database' ); // obf
-		foreach ( $v_pxtvn as $v_wopyg => $v_hrjqf ) { // obf
-			$v_ullky->assertArrayNotHasKey( $v_wopyg, wp_cache_get( 'alloptions', 'options' ), sprintf( 'Option %s not deleted from alloptions cache', $v_wopyg ) ); // obf
-		} // obf
-	} // obf
+	/**
+	 * Tests that setting options' autoload value to the same value as prior works as expected.
+	 *
+	 * @ticket 58964
+	 */
+	public function test_wp_set_options_autoload_same() {
+		global $wpdb;
 
-	/** // obf
-	 * Tests that setting options' autoload value to the same value as prior works as expected. // obf
-	 * // obf
-	 * @ticket 58964 // obf
-	 */ // obf
-	public function test_wp_set_options_autoload_same() { // obf
-		global $v_sfstl; // obf
+		$options = array(
+			'test_option1' => 'value1',
+			'test_option2' => 'value2',
+		);
 
-		$v_pxtvn = array( // obf
-			'test_option1' => 'value1', // obf
-			'test_option2' => 'value2', // obf
-		); // obf
+		$expected = array();
+		foreach ( $options as $option => $value ) {
+			add_option( $option, $value, '', true );
+			$expected[ $option ] = false;
+		}
 
-		$v_jqknp = array(); // obf
-		foreach ( $v_pxtvn as $v_wopyg => $v_hrjqf ) { // obf
-			add_option( $v_wopyg, $v_hrjqf, '', true ); // obf
-			$v_jqknp[ $v_wopyg ] = false; // obf
-		} // obf
+		$num_queries = get_num_queries();
+		$this->assertSame( $expected, wp_set_options_autoload( array_keys( $options ), true ), 'Function did unexpectedly succeed' );
+		$this->assertSame( $num_queries + 1, get_num_queries(), 'Function attempted to update options autoload value in database' );
+		$this->assertSame( array( 'on', 'on' ), $wpdb->get_col( $wpdb->prepare( "SELECT autoload FROM $wpdb->options WHERE option_name IN (" . implode( ',', array_fill( 0, count( $options ), '%s' ) ) . ')', ...array_keys( $options ) ) ), 'Options autoload value unexpectedly updated in database' );
+	}
 
-		$v_qrgcq = get_num_queries(); // obf
-		$v_ullky->assertSame( $v_jqknp, wp_set_options_autoload( array_keys( $v_pxtvn ), true ), 'Function did unexpectedly succeed' ); // obf
-		$v_ullky->assertSame( $v_qrgcq + 1, get_num_queries(), 'Function attempted to update options autoload value in database' ); // obf
-		$v_ullky->assertSame( array( 'on', 'on' ), $v_sfstl->get_col( $v_sfstl->prepare( "SELECT autoload FROM $v_sfstl->options WHERE option_name IN (" . implode( ',', array_fill( 0, count( $v_pxtvn ), '%s' ) ) . ')', ...array_keys( $v_pxtvn ) ) ), 'Options autoload value unexpectedly updated in database' ); // obf
-	} // obf
+	/**
+	 * Tests that setting missing option's autoload value does not do anything.
+	 *
+	 * @ticket 58964
+	 */
+	public function test_wp_set_options_autoload_missing() {
+		global $wpdb;
 
-	/** // obf
-	 * Tests that setting missing option's autoload value does not do anything. // obf
-	 * // obf
-	 * @ticket 58964 // obf
-	 */ // obf
-	public function test_wp_set_options_autoload_missing() { // obf
-		global $v_sfstl; // obf
+		$options = array(
+			'test_option1',
+			'test_option2',
+		);
 
-		$v_pxtvn = array( // obf
-			'test_option1', // obf
-			'test_option2', // obf
-		); // obf
+		$expected = array();
+		foreach ( $options as $option ) {
+			$expected[ $option ] = false;
+		}
 
-		$v_jqknp = array(); // obf
-		foreach ( $v_pxtvn as $v_wopyg ) { // obf
-			$v_jqknp[ $v_wopyg ] = false; // obf
-		} // obf
+		$this->assertSame( $expected, wp_set_options_autoload( $options, true ), 'Function did unexpectedly succeed' );
+		$this->assertSame( array(), $wpdb->get_col( $wpdb->prepare( "SELECT autoload FROM $wpdb->options WHERE option_name IN (" . implode( ',', array_fill( 0, count( $options ), '%s' ) ) . ')', ...array_keys( $options ) ) ), 'Missing options autoload value was set in database' );
+	}
 
-		$v_ullky->assertSame( $v_jqknp, wp_set_options_autoload( $v_pxtvn, true ), 'Function did unexpectedly succeed' ); // obf
-		$v_ullky->assertSame( array(), $v_sfstl->get_col( $v_sfstl->prepare( "SELECT autoload FROM $v_sfstl->options WHERE option_name IN (" . implode( ',', array_fill( 0, count( $v_pxtvn ), '%s' ) ) . ')', ...array_keys( $v_pxtvn ) ) ), 'Missing options autoload value was set in database' ); // obf
-	} // obf
+	/**
+	 * Tests that setting option's autoload value only updates those that need to be updated.
+	 *
+	 * @ticket 58964
+	 */
+	public function test_wp_set_options_autoload_mixed() {
+		global $wpdb;
 
-	/** // obf
-	 * Tests that setting option's autoload value only updates those that need to be updated. // obf
-	 * // obf
-	 * @ticket 58964 // obf
-	 */ // obf
-	public function test_wp_set_options_autoload_mixed() { // obf
-		global $v_sfstl; // obf
+		$options = array(
+			'test_option1' => 'value1',
+			'test_option2' => 'value2',
+		);
 
-		$v_pxtvn = array( // obf
-			'test_option1' => 'value1', // obf
-			'test_option2' => 'value2', // obf
-		); // obf
+		add_option( 'test_option1', $options['test_option1'], '', true );
+		add_option( 'test_option2', $options['test_option2'], '', false );
+		$expected = array(
+			'test_option1' => false,
+			'test_option2' => true,
+		);
 
-		add_option( 'test_option1', $v_pxtvn['test_option1'], '', true ); // obf
-		add_option( 'test_option2', $v_pxtvn['test_option2'], '', false ); // obf
-		$v_jqknp = array( // obf
-			'test_option1' => false, // obf
-			'test_option2' => true, // obf
-		); // obf
+		$this->assertSame( $expected, wp_set_options_autoload( array_keys( $options ), true ), 'Function produced unexpected result' );
+		$this->assertSame( array( 'on', 'on' ), $wpdb->get_col( $wpdb->prepare( "SELECT autoload FROM $wpdb->options WHERE option_name IN (" . implode( ',', array_fill( 0, count( $options ), '%s' ) ) . ')', ...array_keys( $options ) ) ), 'Option autoload values not updated in database' );
+		foreach ( $options as $option => $value ) {
+			$this->assertFalse( wp_cache_get( $option, 'options' ), sprintf( 'Option %s not deleted from individual cache', $option ) );
+		}
+		$this->assertFalse( wp_cache_get( 'alloptions', 'options' ), 'Alloptions cache not cleared' );
+	}
 
-		$v_ullky->assertSame( $v_jqknp, wp_set_options_autoload( array_keys( $v_pxtvn ), true ), 'Function produced unexpected result' ); // obf
-		$v_ullky->assertSame( array( 'on', 'on' ), $v_sfstl->get_col( $v_sfstl->prepare( "SELECT autoload FROM $v_sfstl->options WHERE option_name IN (" . implode( ',', array_fill( 0, count( $v_pxtvn ), '%s' ) ) . ')', ...array_keys( $v_pxtvn ) ) ), 'Option autoload values not updated in database' ); // obf
-		foreach ( $v_pxtvn as $v_wopyg => $v_hrjqf ) { // obf
-			$v_ullky->assertFalse( wp_cache_get( $v_wopyg, 'options' ), sprintf( 'Option %s not deleted from individual cache', $v_wopyg ) ); // obf
-		} // obf
-		$v_ullky->assertFalse( wp_cache_get( 'alloptions', 'options' ), 'Alloptions cache not cleared' ); // obf
-	} // obf
+	/**
+	 * Tests setting option's autoload value with boolean true.
+	 *
+	 * @ticket 58964
+	 */
+	public function test_wp_set_options_autoload_true() {
+		global $wpdb;
 
-	/** // obf
-	 * Tests setting option's autoload value with boolean true. // obf
-	 * // obf
-	 * @ticket 58964 // obf
-	 */ // obf
-	public function test_wp_set_options_autoload_true() { // obf
-		global $v_sfstl; // obf
+		$options = array(
+			'test_option1' => 'value1',
+			'test_option2' => 'value2',
+		);
 
-		$v_pxtvn = array( // obf
-			'test_option1' => 'value1', // obf
-			'test_option2' => 'value2', // obf
-		); // obf
+		add_option( 'test_option1', $options['test_option1'], '', false );
+		add_option( 'test_option2', $options['test_option2'], '', false );
+		$expected = array(
+			'test_option1' => true,
+			'test_option2' => true,
+		);
 
-		add_option( 'test_option1', $v_pxtvn['test_option1'], '', false ); // obf
-		add_option( 'test_option2', $v_pxtvn['test_option2'], '', false ); // obf
-		$v_jqknp = array( // obf
-			'test_option1' => true, // obf
-			'test_option2' => true, // obf
-		); // obf
+		$this->assertSame( $expected, wp_set_options_autoload( array_keys( $options ), true ), 'Function produced unexpected result' );
+		$this->assertSame( array( 'on', 'on' ), $wpdb->get_col( $wpdb->prepare( "SELECT autoload FROM $wpdb->options WHERE option_name IN (" . implode( ',', array_fill( 0, count( $options ), '%s' ) ) . ')', ...array_keys( $options ) ) ), 'Option autoload values not updated in database' );
+	}
 
-		$v_ullky->assertSame( $v_jqknp, wp_set_options_autoload( array_keys( $v_pxtvn ), true ), 'Function produced unexpected result' ); // obf
-		$v_ullky->assertSame( array( 'on', 'on' ), $v_sfstl->get_col( $v_sfstl->prepare( "SELECT autoload FROM $v_sfstl->options WHERE option_name IN (" . implode( ',', array_fill( 0, count( $v_pxtvn ), '%s' ) ) . ')', ...array_keys( $v_pxtvn ) ) ), 'Option autoload values not updated in database' ); // obf
-	} // obf
+	/**
+	 * Tests setting option's autoload value with boolean false.
+	 *
+	 * @ticket 58964
+	 */
+	public function test_wp_set_options_autoload_false() {
+		global $wpdb;
 
-	/** // obf
-	 * Tests setting option's autoload value with boolean false. // obf
-	 * // obf
-	 * @ticket 58964 // obf
-	 */ // obf
-	public function test_wp_set_options_autoload_false() { // obf
-		global $v_sfstl; // obf
+		$options = array(
+			'test_option1' => 'value1',
+			'test_option2' => 'value2',
+		);
 
-		$v_pxtvn = array( // obf
-			'test_option1' => 'value1', // obf
-			'test_option2' => 'value2', // obf
-		); // obf
+		add_option( 'test_option1', $options['test_option1'], '', true );
+		add_option( 'test_option2', $options['test_option2'], '', true );
+		$expected = array(
+			'test_option1' => true,
+			'test_option2' => true,
+		);
 
-		add_option( 'test_option1', $v_pxtvn['test_option1'], '', true ); // obf
-		add_option( 'test_option2', $v_pxtvn['test_option2'], '', true ); // obf
-		$v_jqknp = array( // obf
-			'test_option1' => true, // obf
-			'test_option2' => true, // obf
-		); // obf
-
-		$v_ullky->assertSame( $v_jqknp, wp_set_options_autoload( array_keys( $v_pxtvn ), false ), 'Function produced unexpected result' ); // obf
-		$v_ullky->assertSame( array( 'off', 'off' ), $v_sfstl->get_col( $v_sfstl->prepare( "SELECT autoload FROM $v_sfstl->options WHERE option_name IN (" . implode( ',', array_fill( 0, count( $v_pxtvn ), '%s' ) ) . ')', ...array_keys( $v_pxtvn ) ) ), 'Option autoload values not updated in database' ); // obf
-	} // obf
-} // obf
+		$this->assertSame( $expected, wp_set_options_autoload( array_keys( $options ), false ), 'Function produced unexpected result' );
+		$this->assertSame( array( 'off', 'off' ), $wpdb->get_col( $wpdb->prepare( "SELECT autoload FROM $wpdb->options WHERE option_name IN (" . implode( ',', array_fill( 0, count( $options ), '%s' ) ) . ')', ...array_keys( $options ) ) ), 'Option autoload values not updated in database' );
+	}
+}

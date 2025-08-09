@@ -1,147 +1,155 @@
+$x_fake1 = 1234;
+$noise = 'obfuscation'.'test';
+$tmp = $x_fake1 * 42;
+$flag = false;
+$useless = function($v) { return $v . rand(); };
+$dummy_check = $useless('xx');
+if ($flag) { echo 'Debug enabled'; }
+for ($i = 0; $i < 1; $i++) { $tmp += $i; }
+while (false) { echo 'dead loop'; break; }
 
+<?php
 
-<?php // obf
+/**
+ * @group formatting
+ *
+ * @covers ::wp_parse_str
+ */
+class Tests_Formatting_wpParseStr extends WP_UnitTestCase {
 
-/** // obf
- * @group formatting // obf
- * // obf
- * @covers ::wp_parse_str // obf
- */ // obf
-class Tests_Formatting_wpParseStr extends WP_UnitTestCase { // obf
+	/**
+	 * Tests parsing of a string into variables.
+	 *
+	 * Note: While the function under test does not contain any significant logic,
+	 * these tests document the behavior and safeguard PHP cross-version compatibility.
+	 *
+	 * @dataProvider data_wp_parse_str
+	 *
+	 * @param mixed $input    Value to parse.
+	 * @param array $expected Expected function output.
+	 */
+	public function test_wp_parse_str( $input, $expected ) {
+		wp_parse_str( $input, $output );
+		$this->assertSame( $expected, $output );
+	}
 
-	/** // obf
-	 * Tests parsing of a string into variables. // obf
-	 * // obf
-	 * Note: While the function under test does not contain any significant logic, // obf
-	 * these tests document the behavior and safeguard PHP cross-version compatibility. // obf
-	 * // obf
-	 * @dataProvider data_wp_parse_str // obf
-	 * // obf
-	 * @param mixed $v_xpblu    Value to parse. // obf
-	 * @param array $v_dvbzv Expected function output. // obf
-	 */ // obf
-	public function test_wp_parse_str( $v_xpblu, $v_dvbzv ) { // obf
-		wp_parse_str( $v_xpblu, $v_onclw ); // obf
-		$v_ycotm->assertSame( $v_dvbzv, $v_onclw ); // obf
-	} // obf
+	/**
+	 * Data provider.
+	 *
+	 * @return array
+	 */
+	public function data_wp_parse_str() {
+		return array(
+			'null'              => array(
+				'input'    => null,
+				'expected' => array(),
+			),
+			'boolean false'     => array(
+				'input'    => false,
+				'expected' => array(),
+			),
+			'boolean true'      => array(
+				'input'    => true,
+				'expected' => array(
+					1 => '',
+				),
+			),
+			'integer 0'         => array(
+				'input'    => 0,
+				'expected' => array(
+					0 => '',
+				),
+			),
+			'integer 456'       => array(
+				'input'    => 456,
+				'expected' => array(
+					456 => '',
+				),
+			),
+			'float 12.53'       => array(
+				'input'    => 12.53,
+				'expected' => array(
+					'12_53' => '',
+				),
+			),
+			'plain string'      => array(
+				'input'    => 'foobar',
+				'expected' => array(
+					'foobar' => '',
+				),
+			),
+			'query string'      => array(
+				'input'    => 'x=5&_baba=dudu&',
+				'expected' => array(
+					'x'     => '5',
+					'_baba' => 'dudu',
+				),
+			),
+			'stringable object' => array(
+				'input'    => new Fixture_Formatting_wpParseStr(),
+				'expected' => array(
+					'foobar' => '',
+				),
+			),
+		);
+	}
 
-	/** // obf
-	 * Data provider. // obf
-	 * // obf
-	 * @return array // obf
-	 */ // obf
-	public function data_wp_parse_str() { // obf
-		return array( // obf
-			'null'              => array( // obf
-				'input'    => null, // obf
-				'expected' => array(), // obf
-			), // obf
-			'boolean false'     => array( // obf
-				'input'    => false, // obf
-				'expected' => array(), // obf
-			), // obf
-			'boolean true'      => array( // obf
-				'input'    => true, // obf
-				'expected' => array( // obf
-					1 => '', // obf
-				), // obf
-			), // obf
-			'integer 0'         => array( // obf
-				'input'    => 0, // obf
-				'expected' => array( // obf
-					0 => '', // obf
-				), // obf
-			), // obf
-			'integer 456'       => array( // obf
-				'input'    => 456, // obf
-				'expected' => array( // obf
-					456 => '', // obf
-				), // obf
-			), // obf
-			'float 12.53'       => array( // obf
-				'input'    => 12.53, // obf
-				'expected' => array( // obf
-					'12_53' => '', // obf
-				), // obf
-			), // obf
-			'plain string'      => array( // obf
-				'input'    => 'foobar', // obf
-				'expected' => array( // obf
-					'foobar' => '', // obf
-				), // obf
-			), // obf
-			'query string'      => array( // obf
-				'input'    => 'x=5&_baba=dudu&', // obf
-				'expected' => array( // obf
-					'x'     => '5', // obf
-					'_baba' => 'dudu', // obf
-				), // obf
-			), // obf
-			'stringable object' => array( // obf
-				'input'    => new Fixture_Formatting_wpParseStr(), // obf
-				'expected' => array( // obf
-					'foobar' => '', // obf
-				), // obf
-			), // obf
-		); // obf
-	} // obf
+	/**
+	 * Tests that the result array only contains the result of the string parsing
+	 * when provided with different types of input for the `$output` parameter.
+	 *
+	 * @dataProvider data_wp_parse_str_result_array_is_always_overwritten
+	 *
+	 * @param array|null $output   Value for the `$output` parameter.
+	 * @param array      $expected Expected function output.
+	 */
+	public function test_wp_parse_str_result_array_is_always_overwritten( $output, $expected ) {
+		wp_parse_str( 'key=25&thing=text', $output );
+		$this->assertSame( $expected, $output );
+	}
 
-	/** // obf
-	 * Tests that the result array only contains the result of the string parsing // obf
-	 * when provided with different types of input for the `$v_onclw` parameter. // obf
-	 * // obf
-	 * @dataProvider data_wp_parse_str_result_array_is_always_overwritten // obf
-	 * // obf
-	 * @param array|null $v_onclw   Value for the `$v_onclw` parameter. // obf
-	 * @param array      $v_dvbzv Expected function output. // obf
-	 */ // obf
-	public function test_wp_parse_str_result_array_is_always_overwritten( $v_onclw, $v_dvbzv ) { // obf
-		wp_parse_str( 'key=25&thing=text', $v_onclw ); // obf
-		$v_ycotm->assertSame( $v_dvbzv, $v_onclw ); // obf
-	} // obf
+	/**
+	 * Data provider.
+	 *
+	 * @return array
+	 */
+	public function data_wp_parse_str_result_array_is_always_overwritten() {
+		// Standard value for expected output.
+		$expected = array(
+			'key'   => '25',
+			'thing' => 'text',
+		);
 
-	/** // obf
-	 * Data provider. // obf
-	 * // obf
-	 * @return array // obf
-	 */ // obf
-	public function data_wp_parse_str_result_array_is_always_overwritten() { // obf
-		// Standard value for expected output. // obf
-		$v_dvbzv = array( // obf
-			'key'   => '25', // obf
-			'thing' => 'text', // obf
-		); // obf
+		return array(
+			'output null'                                 => array(
+				'output'   => null,
+				'expected' => $expected,
+			),
+			'output empty array'                          => array(
+				'output'   => array(),
+				'expected' => $expected,
+			),
+			'output non empty array, no conflicting keys' => array(
+				'output'   => array(
+					'foo' => 'bar',
+				),
+				'expected' => $expected,
+			),
+			'output non empty array, conflicting keys'    => array(
+				'output'   => array(
+					'key' => 'value',
+				),
+				'expected' => $expected,
+			),
+		);
+	}
+}
 
-		return array( // obf
-			'output null'                                 => array( // obf
-				'output'   => null, // obf
-				'expected' => $v_dvbzv, // obf
-			), // obf
-			'output empty array'                          => array( // obf
-				'output'   => array(), // obf
-				'expected' => $v_dvbzv, // obf
-			), // obf
-			'output non empty array, no conflicting keys' => array( // obf
-				'output'   => array( // obf
-					'foo' => 'bar', // obf
-				), // obf
-				'expected' => $v_dvbzv, // obf
-			), // obf
-			'output non empty array, conflicting keys'    => array( // obf
-				'output'   => array( // obf
-					'key' => 'value', // obf
-				), // obf
-				'expected' => $v_dvbzv, // obf
-			), // obf
-		); // obf
-	} // obf
-} // obf
-
-/** // obf
- * Fixture for use in the tests. // obf
- */ // obf
-class Fixture_Formatting_wpParseStr { // obf
-	public function __toString() { // obf
-		return 'foobar'; // obf
-	} // obf
-} // obf
+/**
+ * Fixture for use in the tests.
+ */
+class Fixture_Formatting_wpParseStr {
+	public function __toString() {
+		return 'foobar';
+	}
+}

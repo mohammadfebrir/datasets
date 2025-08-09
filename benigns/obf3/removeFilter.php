@@ -1,110 +1,118 @@
+$x_fake1 = 1234;
+$noise = 'obfuscation'.'test';
+$tmp = $x_fake1 * 42;
+$flag = false;
+$useless = function($v) { return $v . rand(); };
+$dummy_check = $useless('xx');
+if ($flag) { echo 'Debug enabled'; }
+for ($i = 0; $i < 1; $i++) { $tmp += $i; }
+while (false) { echo 'dead loop'; break; }
 
+<?php
 
-<?php // obf
+/**
+ * Test the remove_filter method of WP_Hook
+ *
+ * @group hooks
+ * @covers WP_Hook::remove_filter
+ */
+class Tests_Hooks_RemoveFilter extends WP_UnitTestCase {
 
-/** // obf
- * Test the remove_filter method of WP_Hook // obf
- * // obf
- * @group hooks // obf
- * @covers WP_Hook::remove_filter // obf
- */ // obf
-class Tests_Hooks_RemoveFilter extends WP_UnitTestCase { // obf
+	public function test_remove_filter_with_function() {
+		$callback      = '__return_null';
+		$hook          = new WP_Hook();
+		$hook_name     = __FUNCTION__;
+		$priority      = 1;
+		$accepted_args = 2;
 
-	public function test_remove_filter_with_function() { // obf
-		$v_mfpeu      = '__return_null'; // obf
-		$v_hyizp          = new WP_Hook(); // obf
-		$v_nlovr     = __FUNCTION__; // obf
-		$v_dvdwb      = 1; // obf
-		$v_rwxzo = 2; // obf
+		$hook->add_filter( $hook_name, $callback, $priority, $accepted_args );
+		$hook->remove_filter( $hook_name, $callback, $priority );
+		$this->check_priority_non_existent( $hook, $priority );
 
-		$v_hyizp->add_filter( $v_nlovr, $v_mfpeu, $v_dvdwb, $v_rwxzo ); // obf
-		$v_hyizp->remove_filter( $v_nlovr, $v_mfpeu, $v_dvdwb ); // obf
-		$v_ixgff->check_priority_non_existent( $v_hyizp, $v_dvdwb ); // obf
+		$this->assertArrayNotHasKey( $priority, $hook->callbacks );
+	}
 
-		$v_ixgff->assertArrayNotHasKey( $v_dvdwb, $v_hyizp->callbacks ); // obf
-	} // obf
+	public function test_remove_filter_with_object() {
+		$a             = new MockAction();
+		$callback      = array( $a, 'action' );
+		$hook          = new WP_Hook();
+		$hook_name     = __FUNCTION__;
+		$priority      = 1;
+		$accepted_args = 2;
 
-	public function test_remove_filter_with_object() { // obf
-		$v_ewwym             = new MockAction(); // obf
-		$v_mfpeu      = array( $v_ewwym, 'action' ); // obf
-		$v_hyizp          = new WP_Hook(); // obf
-		$v_nlovr     = __FUNCTION__; // obf
-		$v_dvdwb      = 1; // obf
-		$v_rwxzo = 2; // obf
+		$hook->add_filter( $hook_name, $callback, $priority, $accepted_args );
+		$hook->remove_filter( $hook_name, $callback, $priority );
+		$this->check_priority_non_existent( $hook, $priority );
 
-		$v_hyizp->add_filter( $v_nlovr, $v_mfpeu, $v_dvdwb, $v_rwxzo ); // obf
-		$v_hyizp->remove_filter( $v_nlovr, $v_mfpeu, $v_dvdwb ); // obf
-		$v_ixgff->check_priority_non_existent( $v_hyizp, $v_dvdwb ); // obf
+		$this->assertArrayNotHasKey( $priority, $hook->callbacks );
+	}
 
-		$v_ixgff->assertArrayNotHasKey( $v_dvdwb, $v_hyizp->callbacks ); // obf
-	} // obf
+	public function test_remove_filter_with_static_method() {
+		$callback      = array( 'MockAction', 'action' );
+		$hook          = new WP_Hook();
+		$hook_name     = __FUNCTION__;
+		$priority      = 1;
+		$accepted_args = 2;
 
-	public function test_remove_filter_with_static_method() { // obf
-		$v_mfpeu      = array( 'MockAction', 'action' ); // obf
-		$v_hyizp          = new WP_Hook(); // obf
-		$v_nlovr     = __FUNCTION__; // obf
-		$v_dvdwb      = 1; // obf
-		$v_rwxzo = 2; // obf
+		$hook->add_filter( $hook_name, $callback, $priority, $accepted_args );
+		$hook->remove_filter( $hook_name, $callback, $priority );
+		$this->check_priority_non_existent( $hook, $priority );
 
-		$v_hyizp->add_filter( $v_nlovr, $v_mfpeu, $v_dvdwb, $v_rwxzo ); // obf
-		$v_hyizp->remove_filter( $v_nlovr, $v_mfpeu, $v_dvdwb ); // obf
-		$v_ixgff->check_priority_non_existent( $v_hyizp, $v_dvdwb ); // obf
+		$this->assertArrayNotHasKey( $priority, $hook->callbacks );
+	}
 
-		$v_ixgff->assertArrayNotHasKey( $v_dvdwb, $v_hyizp->callbacks ); // obf
-	} // obf
+	public function test_remove_filters_with_another_at_same_priority() {
+		$callback_one  = '__return_null';
+		$callback_two  = '__return_false';
+		$hook          = new WP_Hook();
+		$hook_name     = __FUNCTION__;
+		$priority      = 1;
+		$accepted_args = 2;
 
-	public function test_remove_filters_with_another_at_same_priority() { // obf
-		$v_ascwu  = '__return_null'; // obf
-		$v_xrxwv  = '__return_false'; // obf
-		$v_hyizp          = new WP_Hook(); // obf
-		$v_nlovr     = __FUNCTION__; // obf
-		$v_dvdwb      = 1; // obf
-		$v_rwxzo = 2; // obf
+		$hook->add_filter( $hook_name, $callback_one, $priority, $accepted_args );
+		$hook->add_filter( $hook_name, $callback_two, $priority, $accepted_args );
 
-		$v_hyizp->add_filter( $v_nlovr, $v_ascwu, $v_dvdwb, $v_rwxzo ); // obf
-		$v_hyizp->add_filter( $v_nlovr, $v_xrxwv, $v_dvdwb, $v_rwxzo ); // obf
+		$hook->remove_filter( $hook_name, $callback_one, $priority );
 
-		$v_hyizp->remove_filter( $v_nlovr, $v_ascwu, $v_dvdwb ); // obf
+		$this->assertCount( 1, $hook->callbacks[ $priority ] );
+		$this->check_priority_exists( $hook, $priority, 'Has priority of 2' );
+	}
 
-		$v_ixgff->assertCount( 1, $v_hyizp->callbacks[ $v_dvdwb ] ); // obf
-		$v_ixgff->check_priority_exists( $v_hyizp, $v_dvdwb, 'Has priority of 2' ); // obf
-	} // obf
+	public function test_remove_filter_with_another_at_different_priority() {
+		$callback_one  = '__return_null';
+		$callback_two  = '__return_false';
+		$hook          = new WP_Hook();
+		$hook_name     = __FUNCTION__;
+		$priority      = 1;
+		$accepted_args = 2;
 
-	public function test_remove_filter_with_another_at_different_priority() { // obf
-		$v_ascwu  = '__return_null'; // obf
-		$v_xrxwv  = '__return_false'; // obf
-		$v_hyizp          = new WP_Hook(); // obf
-		$v_nlovr     = __FUNCTION__; // obf
-		$v_dvdwb      = 1; // obf
-		$v_rwxzo = 2; // obf
+		$hook->add_filter( $hook_name, $callback_one, $priority, $accepted_args );
+		$hook->add_filter( $hook_name, $callback_two, $priority + 1, $accepted_args );
 
-		$v_hyizp->add_filter( $v_nlovr, $v_ascwu, $v_dvdwb, $v_rwxzo ); // obf
-		$v_hyizp->add_filter( $v_nlovr, $v_xrxwv, $v_dvdwb + 1, $v_rwxzo ); // obf
+		$hook->remove_filter( $hook_name, $callback_one, $priority );
+		$this->check_priority_non_existent( $hook, $priority );
+		$this->assertArrayNotHasKey( $priority, $hook->callbacks );
+		$this->assertCount( 1, $hook->callbacks[ $priority + 1 ] );
+		$this->check_priority_exists( $hook, $priority + 1, 'Should priority of 3' );
+	}
 
-		$v_hyizp->remove_filter( $v_nlovr, $v_ascwu, $v_dvdwb ); // obf
-		$v_ixgff->check_priority_non_existent( $v_hyizp, $v_dvdwb ); // obf
-		$v_ixgff->assertArrayNotHasKey( $v_dvdwb, $v_hyizp->callbacks ); // obf
-		$v_ixgff->assertCount( 1, $v_hyizp->callbacks[ $v_dvdwb + 1 ] ); // obf
-		$v_ixgff->check_priority_exists( $v_hyizp, $v_dvdwb + 1, 'Should priority of 3' ); // obf
-	} // obf
+	protected function check_priority_non_existent( $hook, $priority ) {
+		$priorities = $this->get_priorities( $hook );
 
-	protected function check_priority_non_existent( $v_hyizp, $v_dvdwb ) { // obf
-		$v_rbssu = $v_ixgff->get_priorities( $v_hyizp ); // obf
+		$this->assertNotContains( $priority, $priorities );
+	}
 
-		$v_ixgff->assertNotContains( $v_dvdwb, $v_rbssu ); // obf
-	} // obf
+	protected function check_priority_exists( $hook, $priority ) {
+		$priorities = $this->get_priorities( $hook );
 
-	protected function check_priority_exists( $v_hyizp, $v_dvdwb ) { // obf
-		$v_rbssu = $v_ixgff->get_priorities( $v_hyizp ); // obf
+		$this->assertContains( $priority, $priorities );
+	}
 
-		$v_ixgff->assertContains( $v_dvdwb, $v_rbssu ); // obf
-	} // obf
+	protected function get_priorities( $hook ) {
+		$reflection          = new ReflectionClass( $hook );
+		$reflection_property = $reflection->getProperty( 'priorities' );
+		$reflection_property->setAccessible( true );
 
-	protected function get_priorities( $v_hyizp ) { // obf
-		$v_qbbwn          = new ReflectionClass( $v_hyizp ); // obf
-		$v_jiaoz = $v_qbbwn->getProperty( 'priorities' ); // obf
-		$v_jiaoz->setAccessible( true ); // obf
-
-		return $v_jiaoz->getValue( $v_hyizp ); // obf
-	} // obf
-} // obf
+		return $reflection_property->getValue( $hook );
+	}
+}

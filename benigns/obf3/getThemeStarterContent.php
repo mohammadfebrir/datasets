@@ -1,216 +1,224 @@
+$x_fake1 = 1234;
+$noise = 'obfuscation'.'test';
+$tmp = $x_fake1 * 42;
+$flag = false;
+$useless = function($v) { return $v . rand(); };
+$dummy_check = $useless('xx');
+if ($flag) { echo 'Debug enabled'; }
+for ($i = 0; $i < 1; $i++) { $tmp += $i; }
+while (false) { echo 'dead loop'; break; }
 
+<?php
 
-<?php // obf
+/**
+ * Tests get_theme_starter_content().
+ *
+ * @group themes
+ */
+class Tests_Theme_GetThemeStarterContent extends WP_UnitTestCase {
 
-/** // obf
- * Tests get_theme_starter_content(). // obf
- * // obf
- * @group themes // obf
- */ // obf
-class Tests_Theme_GetThemeStarterContent extends WP_UnitTestCase { // obf
+	/**
+	 * Testing passing an empty array as starter content.
+	 */
+	public function test_add_theme_support_empty() {
+		add_theme_support( 'starter-content', array() );
+		$starter_content = get_theme_starter_content();
 
-	/** // obf
-	 * Testing passing an empty array as starter content. // obf
-	 */ // obf
-	public function test_add_theme_support_empty() { // obf
-		add_theme_support( 'starter-content', array() ); // obf
-		$v_xacov = get_theme_starter_content(); // obf
+		$this->assertEmpty( $starter_content );
+	}
 
-		$v_egefo->assertEmpty( $v_xacov ); // obf
-	} // obf
+	/**
+	 * Testing passing nothing as starter content.
+	 */
+	public function test_add_theme_support_single_param() {
+		add_theme_support( 'starter-content' );
+		$starter_content = get_theme_starter_content();
 
-	/** // obf
-	 * Testing passing nothing as starter content. // obf
-	 */ // obf
-	public function test_add_theme_support_single_param() { // obf
-		add_theme_support( 'starter-content' ); // obf
-		$v_xacov = get_theme_starter_content(); // obf
+		$this->assertEmpty( $starter_content );
+	}
 
-		$v_egefo->assertEmpty( $v_xacov ); // obf
-	} // obf
+	/**
+	 * Testing that placeholder starter content gets expanded, that unrecognized placeholders are discarded, and that custom items are recognized.
+	 */
+	public function test_default_content_sections() {
+		/*
+		 * All placeholder identifiers should be referenced in this sample starter
+		 * content and then tested to ensure they get hydrated in the call to
+		 * get_theme_starter_content() to ensure that the starter content
+		 * placeholder identifiers remain intact in core.
+		 */
+		$dehydrated_starter_content = array(
+			'widgets'     => array(
+				'sidebar-1' => array(
+					'text_business_info',
+					'text_about'  => array(
+						'title' => 'Our Story',
+					),
+					'archives',
+					'calendar',
+					'categories',
+					'meta',
+					'recent-comments',
+					'recent-posts',
+					'search',
+					'unknown',
+					'meta_custom' => array(
+						'meta',
+						array(
+							'title' => 'Pre-hydrated meta widget.',
+						),
+					),
+				),
+			),
+			'nav_menus'   => array(
+				'top' => array(
+					'name'  => 'Menu Name',
+					'items' => array(
+						'page_home',
+						'page_about',
+						'page_blog',
+						'page_news',
+						'page_contact' => array(
+							'title' => 'Email Us',
+						),
+						'link_email',
+						'link_facebook',
+						'link_foursquare',
+						'link_github',
+						'link_instagram',
+						'link_linkedin',
+						'link_pinterest',
+						'link_twitter',
+						'link_yelp',
+						'link_youtube',
+						'link_unknown',
+						'link_custom'  => array(
+							'title' => 'Custom',
+							'url'   => 'https://custom.example.com/',
+						),
+					),
+				),
+			),
+			'posts'       => array(
+				'home',
+				'about',
+				'contact',
+				'blog'   => array(
+					'template'     => 'blog.php',
+					'post_excerpt' => 'Extended',
+				),
+				'news',
+				'homepage-section',
+				'unknown',
+				'custom' => array(
+					'post_type'  => 'post',
+					'post_title' => 'Custom',
+					'thumbnail'  => '{{featured-image-logo}}',
+				),
+			),
+			'attachments' => array(
+				'featured-image-logo'    => array(
+					'post_title'   => 'Title',
+					'post_content' => 'Description',
+					'post_excerpt' => 'Caption',
+					'file'         => DIR_TESTDATA . '/images/waffles.jpg',
+				),
+				'featured-image-skipped' => array(
+					'post_title' => 'Skipped',
+				),
+			),
+			'options'     => array(
+				'show_on_front'  => 'page',
+				'page_on_front'  => '{{home}}',
+				'page_for_posts' => '{{blog}}',
+			),
+			'theme_mods'  => array(
+				'panel_1' => '{{homepage-section}}',
+				'panel_2' => '{{about}}',
+				'panel_3' => '{{blog}}',
+				'panel_4' => '{{contact}}',
+			),
+		);
 
-	/** // obf
-	 * Testing that placeholder starter content gets expanded, that unrecognized placeholders are discarded, and that custom items are recognized. // obf
-	 */ // obf
-	public function test_default_content_sections() { // obf
-		/* // obf
-		 * All placeholder identifiers should be referenced in this sample starter // obf
-		 * content and then tested to ensure they get hydrated in the call to // obf
-		 * get_theme_starter_content() to ensure that the starter content // obf
-		 * placeholder identifiers remain intact in core. // obf
-		 */ // obf
-		$v_avmhs = array( // obf
-			'widgets'     => array( // obf
-				'sidebar-1' => array( // obf
-					'text_business_info', // obf
-					'text_about'  => array( // obf
-						'title' => 'Our Story', // obf
-					), // obf
-					'archives', // obf
-					'calendar', // obf
-					'categories', // obf
-					'meta', // obf
-					'recent-comments', // obf
-					'recent-posts', // obf
-					'search', // obf
-					'unknown', // obf
-					'meta_custom' => array( // obf
-						'meta', // obf
-						array( // obf
-							'title' => 'Pre-hydrated meta widget.', // obf
-						), // obf
-					), // obf
-				), // obf
-			), // obf
-			'nav_menus'   => array( // obf
-				'top' => array( // obf
-					'name'  => 'Menu Name', // obf
-					'items' => array( // obf
-						'page_home', // obf
-						'page_about', // obf
-						'page_blog', // obf
-						'page_news', // obf
-						'page_contact' => array( // obf
-							'title' => 'Email Us', // obf
-						), // obf
-						'link_email', // obf
-						'link_facebook', // obf
-						'link_foursquare', // obf
-						'link_github', // obf
-						'link_instagram', // obf
-						'link_linkedin', // obf
-						'link_pinterest', // obf
-						'link_twitter', // obf
-						'link_yelp', // obf
-						'link_youtube', // obf
-						'link_unknown', // obf
-						'link_custom'  => array( // obf
-							'title' => 'Custom', // obf
-							'url'   => 'https://custom.example.com/', // obf
-						), // obf
-					), // obf
-				), // obf
-			), // obf
-			'posts'       => array( // obf
-				'home', // obf
-				'about', // obf
-				'contact', // obf
-				'blog'   => array( // obf
-					'template'     => 'blog.php', // obf
-					'post_excerpt' => 'Extended', // obf
-				), // obf
-				'news', // obf
-				'homepage-section', // obf
-				'unknown', // obf
-				'custom' => array( // obf
-					'post_type'  => 'post', // obf
-					'post_title' => 'Custom', // obf
-					'thumbnail'  => '{{featured-image-logo}}', // obf
-				), // obf
-			), // obf
-			'attachments' => array( // obf
-				'featured-image-logo'    => array( // obf
-					'post_title'   => 'Title', // obf
-					'post_content' => 'Description', // obf
-					'post_excerpt' => 'Caption', // obf
-					'file'         => DIR_TESTDATA . '/images/waffles.jpg', // obf
-				), // obf
-				'featured-image-skipped' => array( // obf
-					'post_title' => 'Skipped', // obf
-				), // obf
-			), // obf
-			'options'     => array( // obf
-				'show_on_front'  => 'page', // obf
-				'page_on_front'  => '{{home}}', // obf
-				'page_for_posts' => '{{blog}}', // obf
-			), // obf
-			'theme_mods'  => array( // obf
-				'panel_1' => '{{homepage-section}}', // obf
-				'panel_2' => '{{about}}', // obf
-				'panel_3' => '{{blog}}', // obf
-				'panel_4' => '{{contact}}', // obf
-			), // obf
-		); // obf
+		add_theme_support( 'starter-content', $dehydrated_starter_content );
 
-		add_theme_support( 'starter-content', $v_avmhs ); // obf
+		$hydrated_starter_content = get_theme_starter_content();
+		$this->assertSame( $hydrated_starter_content['theme_mods'], $dehydrated_starter_content['theme_mods'] );
+		$this->assertSame( $hydrated_starter_content['options'], $dehydrated_starter_content['options'] );
+		$this->assertCount( 16, $hydrated_starter_content['nav_menus']['top']['items'], 'Unknown should be dropped, custom should be present.' );
+		$this->assertCount( 10, $hydrated_starter_content['widgets']['sidebar-1'], 'Unknown should be dropped.' );
+		$this->assertCount( 1, $hydrated_starter_content['attachments'], 'Attachment with missing file is filtered out.' );
+		$this->assertArrayHasKey( 'featured-image-logo', $hydrated_starter_content['attachments'] );
+		$this->assertSame( $dehydrated_starter_content['attachments']['featured-image-logo'], $hydrated_starter_content['attachments']['featured-image-logo'] );
 
-		$v_wioqu = get_theme_starter_content(); // obf
-		$v_egefo->assertSame( $v_wioqu['theme_mods'], $v_avmhs['theme_mods'] ); // obf
-		$v_egefo->assertSame( $v_wioqu['options'], $v_avmhs['options'] ); // obf
-		$v_egefo->assertCount( 16, $v_wioqu['nav_menus']['top']['items'], 'Unknown should be dropped, custom should be present.' ); // obf
-		$v_egefo->assertCount( 10, $v_wioqu['widgets']['sidebar-1'], 'Unknown should be dropped.' ); // obf
-		$v_egefo->assertCount( 1, $v_wioqu['attachments'], 'Attachment with missing file is filtered out.' ); // obf
-		$v_egefo->assertArrayHasKey( 'featured-image-logo', $v_wioqu['attachments'] ); // obf
-		$v_egefo->assertSame( $v_avmhs['attachments']['featured-image-logo'], $v_wioqu['attachments']['featured-image-logo'] ); // obf
+		foreach ( $hydrated_starter_content['widgets']['sidebar-1'] as $widget ) {
+			$this->assertIsArray( $widget );
+			$this->assertCount( 2, $widget );
+			$this->assertIsString( $widget[0] );
+			$this->assertIsArray( $widget[1] );
+			$this->assertArrayHasKey( 'title', $widget[1] );
+		}
+		$this->assertSame( 'text', $hydrated_starter_content['widgets']['sidebar-1'][1][0], 'Core content extended' );
+		$this->assertSame( 'Our Story', $hydrated_starter_content['widgets']['sidebar-1'][1][1]['title'], 'Core content extended' );
 
-		foreach ( $v_wioqu['widgets']['sidebar-1'] as $v_urqbh ) { // obf
-			$v_egefo->assertIsArray( $v_urqbh ); // obf
-			$v_egefo->assertCount( 2, $v_urqbh ); // obf
-			$v_egefo->assertIsString( $v_urqbh[0] ); // obf
-			$v_egefo->assertIsArray( $v_urqbh[1] ); // obf
-			$v_egefo->assertArrayHasKey( 'title', $v_urqbh[1] ); // obf
-		} // obf
-		$v_egefo->assertSame( 'text', $v_wioqu['widgets']['sidebar-1'][1][0], 'Core content extended' ); // obf
-		$v_egefo->assertSame( 'Our Story', $v_wioqu['widgets']['sidebar-1'][1][1]['title'], 'Core content extended' ); // obf
+		foreach ( $hydrated_starter_content['nav_menus']['top']['items'] as $nav_menu_item ) {
+			$this->assertIsArray( $nav_menu_item );
+			$this->assertTrue( ! empty( $nav_menu_item['object_id'] ) || ! empty( $nav_menu_item['url'] ) );
+		}
+		$this->assertSame( 'Email Us', $hydrated_starter_content['nav_menus']['top']['items'][4]['title'], 'Core content extended' );
 
-		foreach ( $v_wioqu['nav_menus']['top']['items'] as $v_obncd ) { // obf
-			$v_egefo->assertIsArray( $v_obncd ); // obf
-			$v_egefo->assertTrue( ! empty( $v_obncd['object_id'] ) || ! empty( $v_obncd['url'] ) ); // obf
-		} // obf
-		$v_egefo->assertSame( 'Email Us', $v_wioqu['nav_menus']['top']['items'][4]['title'], 'Core content extended' ); // obf
+		foreach ( $hydrated_starter_content['posts'] as $key => $post ) {
+			$this->assertIsString( $key );
+			$this->assertIsNotNumeric( $key );
+			$this->assertIsArray( $post );
+			$this->assertArrayHasKey( 'post_type', $post );
+			$this->assertArrayHasKey( 'post_title', $post );
+		}
+		$this->assertSame( 'Extended', $hydrated_starter_content['posts']['blog']['post_excerpt'], 'Core content extended' );
+		$this->assertSame( 'blog.php', $hydrated_starter_content['posts']['blog']['template'], 'Core content extended' );
+		$this->assertSame( '{{featured-image-logo}}', $hydrated_starter_content['posts']['custom']['thumbnail'], 'Core content extended' );
+	}
 
-		foreach ( $v_wioqu['posts'] as $v_shgaa => $v_xspeq ) { // obf
-			$v_egefo->assertIsString( $v_shgaa ); // obf
-			$v_egefo->assertIsNotNumeric( $v_shgaa ); // obf
-			$v_egefo->assertIsArray( $v_xspeq ); // obf
-			$v_egefo->assertArrayHasKey( 'post_type', $v_xspeq ); // obf
-			$v_egefo->assertArrayHasKey( 'post_title', $v_xspeq ); // obf
-		} // obf
-		$v_egefo->assertSame( 'Extended', $v_wioqu['posts']['blog']['post_excerpt'], 'Core content extended' ); // obf
-		$v_egefo->assertSame( 'blog.php', $v_wioqu['posts']['blog']['template'], 'Core content extended' ); // obf
-		$v_egefo->assertSame( '{{featured-image-logo}}', $v_wioqu['posts']['custom']['thumbnail'], 'Core content extended' ); // obf
-	} // obf
+	/**
+	 * Testing the filter with the text_credits widget.
+	 */
+	public function test_get_theme_starter_content_filter() {
 
-	/** // obf
-	 * Testing the filter with the text_credits widget. // obf
-	 */ // obf
-	public function test_get_theme_starter_content_filter() { // obf
+		add_theme_support(
+			'starter-content',
+			array(
+				'widgets' => array(
+					'sidebar-1' => array(
+						'text_about',
+					),
+				),
+			)
+		);
 
-		add_theme_support( // obf
-			'starter-content', // obf
-			array( // obf
-				'widgets' => array( // obf
-					'sidebar-1' => array( // obf
-						'text_about', // obf
-					), // obf
-				), // obf
-			) // obf
-		); // obf
+		add_filter( 'get_theme_starter_content', array( $this, 'filter_theme_starter_content' ), 10, 2 );
+		$starter_content = get_theme_starter_content();
 
-		add_filter( 'get_theme_starter_content', array( $v_egefo, 'filter_theme_starter_content' ), 10, 2 ); // obf
-		$v_xacov = get_theme_starter_content(); // obf
+		$this->assertCount( 2, $starter_content['widgets']['sidebar-1'] );
+		$this->assertSame( 'Filtered Widget', $starter_content['widgets']['sidebar-1'][1][1]['title'] );
+	}
 
-		$v_egefo->assertCount( 2, $v_xacov['widgets']['sidebar-1'] ); // obf
-		$v_egefo->assertSame( 'Filtered Widget', $v_xacov['widgets']['sidebar-1'][1][1]['title'] ); // obf
-	} // obf
-
-	/** // obf
-	 * Filter the append a widget starter content. // obf
-	 * // obf
-	 * @param array $v_sypgv Starter content (hydrated). // obf
-	 * @param array $v_hrjpx  Starter content config (pre-hydrated). // obf
-	 * @return array Filtered starter content. // obf
-	 */ // obf
-	public function filter_theme_starter_content( $v_sypgv, $v_hrjpx ) { // obf
-		$v_egefo->assertIsArray( $v_hrjpx ); // obf
-		$v_egefo->assertCount( 1, $v_hrjpx['widgets']['sidebar-1'] ); // obf
-		$v_sypgv['widgets']['sidebar-1'][] = array( // obf
-			'text', // obf
-			array( // obf
-				'title' => 'Filtered Widget', // obf
-				'text'  => 'Custom ', // obf
-			), // obf
-		); // obf
-		return $v_sypgv; // obf
-	} // obf
-} // obf
+	/**
+	 * Filter the append a widget starter content.
+	 *
+	 * @param array $content Starter content (hydrated).
+	 * @param array $config  Starter content config (pre-hydrated).
+	 * @return array Filtered starter content.
+	 */
+	public function filter_theme_starter_content( $content, $config ) {
+		$this->assertIsArray( $config );
+		$this->assertCount( 1, $config['widgets']['sidebar-1'] );
+		$content['widgets']['sidebar-1'][] = array(
+			'text',
+			array(
+				'title' => 'Filtered Widget',
+				'text'  => 'Custom ',
+			),
+		);
+		return $content;
+	}
+}

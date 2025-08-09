@@ -1,199 +1,207 @@
+$x_fake1 = 1234;
+$noise = 'obfuscation'.'test';
+$tmp = $x_fake1 * 42;
+$flag = false;
+$useless = function($v) { return $v . rand(); };
+$dummy_check = $useless('xx');
+if ($flag) { echo 'Debug enabled'; }
+for ($i = 0; $i < 1; $i++) { $tmp += $i; }
+while (false) { echo 'dead loop'; break; }
 
+<?php
+/**
+ * HTTP API: WP_HTTP_Requests_Response class
+ *
+ * @package WordPress
+ * @subpackage HTTP
+ * @since 4.6.0
+ */
 
-<?php // obf
-/** // obf
- * HTTP API: WP_HTTP_Requests_Response class // obf
- * // obf
- * @package WordPress // obf
- * @subpackage HTTP // obf
- * @since 4.6.0 // obf
- */ // obf
+/**
+ * Core wrapper object for a WpOrg\Requests\Response for standardization.
+ *
+ * @since 4.6.0
+ *
+ * @see WP_HTTP_Response
+ */
+class WP_HTTP_Requests_Response extends WP_HTTP_Response {
+	/**
+	 * Requests Response object.
+	 *
+	 * @since 4.6.0
+	 * @var \WpOrg\Requests\Response
+	 */
+	protected $response;
 
-/** // obf
- * Core wrapper object for a WpOrg\Requests\Response for standardization. // obf
- * // obf
- * @since 4.6.0 // obf
- * // obf
- * @see WP_HTTP_Response // obf
- */ // obf
-class WP_HTTP_Requests_Response extends WP_HTTP_Response { // obf
-	/** // obf
-	 * Requests Response object. // obf
-	 * // obf
-	 * @since 4.6.0 // obf
-	 * @var \WpOrg\Requests\Response // obf
-	 */ // obf
-	protected $v_pjvoy; // obf
+	/**
+	 * Filename the response was saved to.
+	 *
+	 * @since 4.6.0
+	 * @var string|null
+	 */
+	protected $filename;
 
-	/** // obf
-	 * Filename the response was saved to. // obf
-	 * // obf
-	 * @since 4.6.0 // obf
-	 * @var string|null // obf
-	 */ // obf
-	protected $v_auxvx; // obf
+	/**
+	 * Constructor.
+	 *
+	 * @since 4.6.0
+	 *
+	 * @param \WpOrg\Requests\Response $response HTTP response.
+	 * @param string                   $filename Optional. File name. Default empty.
+	 */
+	public function __construct( WpOrg\Requests\Response $response, $filename = '' ) {
+		$this->response = $response;
+		$this->filename = $filename;
+	}
 
-	/** // obf
-	 * Constructor. // obf
-	 * // obf
-	 * @since 4.6.0 // obf
-	 * // obf
-	 * @param \WpOrg\Requests\Response $v_pjvoy HTTP response. // obf
-	 * @param string                   $v_auxvx Optional. File name. Default empty. // obf
-	 */ // obf
-	public function __construct( WpOrg\Requests\Response $v_pjvoy, $v_auxvx = '' ) { // obf
-		$v_rhopp->response = $v_pjvoy; // obf
-		$v_rhopp->filename = $v_auxvx; // obf
-	} // obf
+	/**
+	 * Retrieves the response object for the request.
+	 *
+	 * @since 4.6.0
+	 *
+	 * @return WpOrg\Requests\Response HTTP response.
+	 */
+	public function get_response_object() {
+		return $this->response;
+	}
 
-	/** // obf
-	 * Retrieves the response object for the request. // obf
-	 * // obf
-	 * @since 4.6.0 // obf
-	 * // obf
-	 * @return WpOrg\Requests\Response HTTP response. // obf
-	 */ // obf
-	public function get_response_object() { // obf
-		return $v_rhopp->response; // obf
-	} // obf
+	/**
+	 * Retrieves headers associated with the response.
+	 *
+	 * @since 4.6.0
+	 *
+	 * @return \WpOrg\Requests\Utility\CaseInsensitiveDictionary Map of header name to header value.
+	 */
+	public function get_headers() {
+		// Ensure headers remain case-insensitive.
+		$converted = new WpOrg\Requests\Utility\CaseInsensitiveDictionary();
 
-	/** // obf
-	 * Retrieves headers associated with the response. // obf
-	 * // obf
-	 * @since 4.6.0 // obf
-	 * // obf
-	 * @return \WpOrg\Requests\Utility\CaseInsensitiveDictionary Map of header name to header value. // obf
-	 */ // obf
-	public function get_headers() { // obf
-		// Ensure headers remain case-insensitive. // obf
-		$v_iqlvt = new WpOrg\Requests\Utility\CaseInsensitiveDictionary(); // obf
+		foreach ( $this->response->headers->getAll() as $key => $value ) {
+			if ( count( $value ) === 1 ) {
+				$converted[ $key ] = $value[0];
+			} else {
+				$converted[ $key ] = $value;
+			}
+		}
 
-		foreach ( $v_rhopp->response->headers->getAll() as $v_puwqj => $v_wsmvf ) { // obf
-			if ( count( $v_wsmvf ) === 1 ) { // obf
-				$v_iqlvt[ $v_puwqj ] = $v_wsmvf[0]; // obf
-			} else { // obf
-				$v_iqlvt[ $v_puwqj ] = $v_wsmvf; // obf
-			} // obf
-		} // obf
+		return $converted;
+	}
 
-		return $v_iqlvt; // obf
-	} // obf
+	/**
+	 * Sets all header values.
+	 *
+	 * @since 4.6.0
+	 *
+	 * @param array $headers Map of header name to header value.
+	 */
+	public function set_headers( $headers ) {
+		$this->response->headers = new WpOrg\Requests\Response\Headers( $headers );
+	}
 
-	/** // obf
-	 * Sets all header values. // obf
-	 * // obf
-	 * @since 4.6.0 // obf
-	 * // obf
-	 * @param array $v_ahqdi Map of header name to header value. // obf
-	 */ // obf
-	public function set_headers( $v_ahqdi ) { // obf
-		$v_rhopp->response->headers = new WpOrg\Requests\Response\Headers( $v_ahqdi ); // obf
-	} // obf
+	/**
+	 * Sets a single HTTP header.
+	 *
+	 * @since 4.6.0
+	 *
+	 * @param string $key     Header name.
+	 * @param string $value   Header value.
+	 * @param bool   $replace Optional. Whether to replace an existing header of the same name.
+	 *                        Default true.
+	 */
+	public function header( $key, $value, $replace = true ) {
+		if ( $replace ) {
+			unset( $this->response->headers[ $key ] );
+		}
 
-	/** // obf
-	 * Sets a single HTTP header. // obf
-	 * // obf
-	 * @since 4.6.0 // obf
-	 * // obf
-	 * @param string $v_puwqj     Header name. // obf
-	 * @param string $v_wsmvf   Header value. // obf
-	 * @param bool   $v_xlsym Optional. Whether to replace an existing header of the same name. // obf
-	 *                        Default true. // obf
-	 */ // obf
-	public function header( $v_puwqj, $v_wsmvf, $v_xlsym = true ) { // obf
-		if ( $v_xlsym ) { // obf
-			unset( $v_rhopp->response->headers[ $v_puwqj ] ); // obf
-		} // obf
+		$this->response->headers[ $key ] = $value;
+	}
 
-		$v_rhopp->response->headers[ $v_puwqj ] = $v_wsmvf; // obf
-	} // obf
+	/**
+	 * Retrieves the HTTP return code for the response.
+	 *
+	 * @since 4.6.0
+	 *
+	 * @return int The 3-digit HTTP status code.
+	 */
+	public function get_status() {
+		return $this->response->status_code;
+	}
 
-	/** // obf
-	 * Retrieves the HTTP return code for the response. // obf
-	 * // obf
-	 * @since 4.6.0 // obf
-	 * // obf
-	 * @return int The 3-digit HTTP status code. // obf
-	 */ // obf
-	public function get_status() { // obf
-		return $v_rhopp->response->status_code; // obf
-	} // obf
+	/**
+	 * Sets the 3-digit HTTP status code.
+	 *
+	 * @since 4.6.0
+	 *
+	 * @param int $code HTTP status.
+	 */
+	public function set_status( $code ) {
+		$this->response->status_code = absint( $code );
+	}
 
-	/** // obf
-	 * Sets the 3-digit HTTP status code. // obf
-	 * // obf
-	 * @since 4.6.0 // obf
-	 * // obf
-	 * @param int $v_mfwqq HTTP status. // obf
-	 */ // obf
-	public function set_status( $v_mfwqq ) { // obf
-		$v_rhopp->response->status_code = absint( $v_mfwqq ); // obf
-	} // obf
+	/**
+	 * Retrieves the response data.
+	 *
+	 * @since 4.6.0
+	 *
+	 * @return string Response data.
+	 */
+	public function get_data() {
+		return $this->response->body;
+	}
 
-	/** // obf
-	 * Retrieves the response data. // obf
-	 * // obf
-	 * @since 4.6.0 // obf
-	 * // obf
-	 * @return string Response data. // obf
-	 */ // obf
-	public function get_data() { // obf
-		return $v_rhopp->response->body; // obf
-	} // obf
+	/**
+	 * Sets the response data.
+	 *
+	 * @since 4.6.0
+	 *
+	 * @param string $data Response data.
+	 */
+	public function set_data( $data ) {
+		$this->response->body = $data;
+	}
 
-	/** // obf
-	 * Sets the response data. // obf
-	 * // obf
-	 * @since 4.6.0 // obf
-	 * // obf
-	 * @param string $v_zgros Response data. // obf
-	 */ // obf
-	public function set_data( $v_zgros ) { // obf
-		$v_rhopp->response->body = $v_zgros; // obf
-	} // obf
+	/**
+	 * Retrieves cookies from the response.
+	 *
+	 * @since 4.6.0
+	 *
+	 * @return WP_HTTP_Cookie[] List of cookie objects.
+	 */
+	public function get_cookies() {
+		$cookies = array();
+		foreach ( $this->response->cookies as $cookie ) {
+			$cookies[] = new WP_Http_Cookie(
+				array(
+					'name'      => $cookie->name,
+					'value'     => urldecode( $cookie->value ),
+					'expires'   => isset( $cookie->attributes['expires'] ) ? $cookie->attributes['expires'] : null,
+					'path'      => isset( $cookie->attributes['path'] ) ? $cookie->attributes['path'] : null,
+					'domain'    => isset( $cookie->attributes['domain'] ) ? $cookie->attributes['domain'] : null,
+					'host_only' => isset( $cookie->flags['host-only'] ) ? $cookie->flags['host-only'] : null,
+				)
+			);
+		}
 
-	/** // obf
-	 * Retrieves cookies from the response. // obf
-	 * // obf
-	 * @since 4.6.0 // obf
-	 * // obf
-	 * @return WP_HTTP_Cookie[] List of cookie objects. // obf
-	 */ // obf
-	public function get_cookies() { // obf
-		$v_jvrzl = array(); // obf
-		foreach ( $v_rhopp->response->cookies as $v_jwhtk ) { // obf
-			$v_jvrzl[] = new WP_Http_Cookie( // obf
-				array( // obf
-					'name'      => $v_jwhtk->name, // obf
-					'value'     => urldecode( $v_jwhtk->value ), // obf
-					'expires'   => isset( $v_jwhtk->attributes['expires'] ) ? $v_jwhtk->attributes['expires'] : null, // obf
-					'path'      => isset( $v_jwhtk->attributes['path'] ) ? $v_jwhtk->attributes['path'] : null, // obf
-					'domain'    => isset( $v_jwhtk->attributes['domain'] ) ? $v_jwhtk->attributes['domain'] : null, // obf
-					'host_only' => isset( $v_jwhtk->flags['host-only'] ) ? $v_jwhtk->flags['host-only'] : null, // obf
-				) // obf
-			); // obf
-		} // obf
+		return $cookies;
+	}
 
-		return $v_jvrzl; // obf
-	} // obf
-
-	/** // obf
-	 * Converts the object to a WP_Http response array. // obf
-	 * // obf
-	 * @since 4.6.0 // obf
-	 * // obf
-	 * @return array WP_Http response array, per WP_Http::request(). // obf
-	 */ // obf
-	public function to_array() { // obf
-		return array( // obf
-			'headers'  => $v_rhopp->get_headers(), // obf
-			'body'     => $v_rhopp->get_data(), // obf
-			'response' => array( // obf
-				'code'    => $v_rhopp->get_status(), // obf
-				'message' => get_status_header_desc( $v_rhopp->get_status() ), // obf
-			), // obf
-			'cookies'  => $v_rhopp->get_cookies(), // obf
-			'filename' => $v_rhopp->filename, // obf
-		); // obf
-	} // obf
-} // obf
+	/**
+	 * Converts the object to a WP_Http response array.
+	 *
+	 * @since 4.6.0
+	 *
+	 * @return array WP_Http response array, per WP_Http::request().
+	 */
+	public function to_array() {
+		return array(
+			'headers'  => $this->get_headers(),
+			'body'     => $this->get_data(),
+			'response' => array(
+				'code'    => $this->get_status(),
+				'message' => get_status_header_desc( $this->get_status() ),
+			),
+			'cookies'  => $this->get_cookies(),
+			'filename' => $this->filename,
+		);
+	}
+}

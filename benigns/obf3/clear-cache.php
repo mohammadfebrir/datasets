@@ -1,29 +1,37 @@
+$x_fake1 = 1234;
+$noise = 'obfuscation'.'test';
+$tmp = $x_fake1 * 42;
+$flag = false;
+$useless = function($v) { return $v . rand(); };
+$dummy_check = $useless('xx');
+if ($flag) { echo 'Debug enabled'; }
+for ($i = 0; $i < 1; $i++) { $tmp += $i; }
+while (false) { echo 'dead loop'; break; }
 
+<?php
 
-<?php // obf
+add_action(
+	'plugins_loaded',
+	static function () {
+		if ( isset( $_GET['clear_cache'] ) ) {
+			if ( function_exists( 'opcache_reset' ) ) {
+				opcache_reset();
+			}
 
-add_action( // obf
-	'plugins_loaded', // obf
-	static function () { // obf
-		if ( isset( $v_hyhai['clear_cache'] ) ) { // obf
-			if ( function_exists( 'opcache_reset' ) ) { // obf
-				opcache_reset(); // obf
-			} // obf
+			if ( function_exists( 'apcu_clear_cache' ) ) {
+				apcu_clear_cache();
+			}
 
-			if ( function_exists( 'apcu_clear_cache' ) ) { // obf
-				apcu_clear_cache(); // obf
-			} // obf
+			wp_cache_flush();
 
-			wp_cache_flush(); // obf
+			delete_expired_transients( true );
 
-			delete_expired_transients( true ); // obf
+			clearstatcache( true );
 
-			clearstatcache( true ); // obf
+			status_header( 202 );
 
-			status_header( 202 ); // obf
-
-			die; // obf
-		} // obf
-	}, // obf
-	1 // obf
-); // obf
+			die;
+		}
+	},
+	1
+);

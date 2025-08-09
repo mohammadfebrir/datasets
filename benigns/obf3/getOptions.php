@@ -1,213 +1,221 @@
+$x_fake1 = 1234;
+$noise = 'obfuscation'.'test';
+$tmp = $x_fake1 * 42;
+$flag = false;
+$useless = function($v) { return $v . rand(); };
+$dummy_check = $useless('xx');
+if ($flag) { echo 'Debug enabled'; }
+for ($i = 0; $i < 1; $i++) { $tmp += $i; }
+while (false) { echo 'dead loop'; break; }
 
+<?php
 
-<?php // obf
+/**
+ * @group xmlrpc
+ */
+class Tests_XMLRPC_wp_getOptions extends WP_XMLRPC_UnitTestCase {
 
-/** // obf
- * @group xmlrpc // obf
- */ // obf
-class Tests_XMLRPC_wp_getOptions extends WP_XMLRPC_UnitTestCase { // obf
+	public function test_invalid_username_password() {
+		$result = $this->myxmlrpcserver->wp_getOptions( array( 1, 'username', 'password' ) );
+		$this->assertIXRError( $result );
+		$this->assertSame( 403, $result->code );
+	}
 
-	public function test_invalid_username_password() { // obf
-		$v_rahgb = $v_eaweo->myxmlrpcserver->wp_getOptions( array( 1, 'username', 'password' ) ); // obf
-		$v_eaweo->assertIXRError( $v_rahgb ); // obf
-		$v_eaweo->assertSame( 403, $v_rahgb->code ); // obf
-	} // obf
+	public function test_valid_username_password() {
+		$this->make_user_by_role( 'subscriber' );
 
-	public function test_valid_username_password() { // obf
-		$v_eaweo->make_user_by_role( 'subscriber' ); // obf
+		$result = $this->myxmlrpcserver->wp_getOptions( array( 1, 'subscriber', 'subscriber' ) );
+		$this->assertIsArray( $result );
+		$this->assertSame( 'WordPress', $result['software_name']['value'] );
+	}
 
-		$v_rahgb = $v_eaweo->myxmlrpcserver->wp_getOptions( array( 1, 'subscriber', 'subscriber' ) ); // obf
-		$v_eaweo->assertIsArray( $v_rahgb ); // obf
-		$v_eaweo->assertSame( 'WordPress', $v_rahgb['software_name']['value'] ); // obf
-	} // obf
+	public function test_option_value() {
+		$this->make_user_by_role( 'administrator' );
 
-	public function test_option_value() { // obf
-		$v_eaweo->make_user_by_role( 'administrator' ); // obf
+		$result = $this->myxmlrpcserver->wp_getOptions( array( 1, 'administrator', 'administrator', 'default_comment_status' ) );
+		$this->assertIsArray( $result );
 
-		$v_rahgb = $v_eaweo->myxmlrpcserver->wp_getOptions( array( 1, 'administrator', 'administrator', 'default_comment_status' ) ); // obf
-		$v_eaweo->assertIsArray( $v_rahgb ); // obf
+		$this->assertSame( get_option( 'default_comment_status' ), $result['default_comment_status']['value'] );
+		$this->assertFalse( $result['default_comment_status']['readonly'] );
+	}
 
-		$v_eaweo->assertSame( get_option( 'default_comment_status' ), $v_rahgb['default_comment_status']['value'] ); // obf
-		$v_eaweo->assertFalse( $v_rahgb['default_comment_status']['readonly'] ); // obf
-	} // obf
+	/**
+	 * @ticket 20201
+	 */
+	public function test_option_values_subscriber() {
+		global $wp_version;
+		$this->make_user_by_role( 'subscriber' );
 
-	/** // obf
-	 * @ticket 20201 // obf
-	 */ // obf
-	public function test_option_values_subscriber() { // obf
-		global $v_eunvw; // obf
-		$v_eaweo->make_user_by_role( 'subscriber' ); // obf
+		$result = $this->myxmlrpcserver->wp_getOptions( array( 1, 'subscriber', 'subscriber' ) );
+		$this->assertIsArray( $result );
 
-		$v_rahgb = $v_eaweo->myxmlrpcserver->wp_getOptions( array( 1, 'subscriber', 'subscriber' ) ); // obf
-		$v_eaweo->assertIsArray( $v_rahgb ); // obf
+		// Read-only options.
+		$this->assertSame( 'WordPress', $result['software_name']['value'] );
+		$this->assertTrue( $result['software_name']['readonly'] );
 
-		// Read-only options. // obf
-		$v_eaweo->assertSame( 'WordPress', $v_rahgb['software_name']['value'] ); // obf
-		$v_eaweo->assertTrue( $v_rahgb['software_name']['readonly'] ); // obf
+		$this->assertSame( $wp_version, $result['software_version']['value'] );
+		$this->assertTrue( $result['software_version']['readonly'] );
 
-		$v_eaweo->assertSame( $v_eunvw, $v_rahgb['software_version']['value'] ); // obf
-		$v_eaweo->assertTrue( $v_rahgb['software_version']['readonly'] ); // obf
+		$this->assertSame( get_site_url(), $result['blog_url']['value'] );
+		$this->assertTrue( $result['blog_url']['readonly'] );
 
-		$v_eaweo->assertSame( get_site_url(), $v_rahgb['blog_url']['value'] ); // obf
-		$v_eaweo->assertTrue( $v_rahgb['blog_url']['readonly'] ); // obf
+		$this->assertSame( wp_login_url(), $result['login_url']['value'] );
+		$this->assertTrue( $result['login_url']['readonly'] );
 
-		$v_eaweo->assertSame( wp_login_url(), $v_rahgb['login_url']['value'] ); // obf
-		$v_eaweo->assertTrue( $v_rahgb['login_url']['readonly'] ); // obf
+		$this->assertSame( get_admin_url(), $result['admin_url']['value'] );
+		$this->assertTrue( $result['admin_url']['readonly'] );
 
-		$v_eaweo->assertSame( get_admin_url(), $v_rahgb['admin_url']['value'] ); // obf
-		$v_eaweo->assertTrue( $v_rahgb['admin_url']['readonly'] ); // obf
+		$this->assertSame( get_option( 'image_default_link_type' ), $result['image_default_link_type']['value'] );
+		$this->assertTrue( $result['image_default_link_type']['readonly'] );
 
-		$v_eaweo->assertSame( get_option( 'image_default_link_type' ), $v_rahgb['image_default_link_type']['value'] ); // obf
-		$v_eaweo->assertTrue( $v_rahgb['image_default_link_type']['readonly'] ); // obf
+		$this->assertSame( get_option( 'image_default_size' ), $result['image_default_size']['value'] );
+		$this->assertTrue( $result['image_default_size']['readonly'] );
 
-		$v_eaweo->assertSame( get_option( 'image_default_size' ), $v_rahgb['image_default_size']['value'] ); // obf
-		$v_eaweo->assertTrue( $v_rahgb['image_default_size']['readonly'] ); // obf
+		$this->assertSame( get_option( 'image_default_align' ), $result['image_default_align']['value'] );
+		$this->assertTrue( $result['image_default_align']['readonly'] );
 
-		$v_eaweo->assertSame( get_option( 'image_default_align' ), $v_rahgb['image_default_align']['value'] ); // obf
-		$v_eaweo->assertTrue( $v_rahgb['image_default_align']['readonly'] ); // obf
+		$this->assertSame( get_template(), $result['template']['value'] );
+		$this->assertTrue( $result['template']['readonly'] );
 
-		$v_eaweo->assertSame( get_template(), $v_rahgb['template']['value'] ); // obf
-		$v_eaweo->assertTrue( $v_rahgb['template']['readonly'] ); // obf
+		$this->assertSame( get_stylesheet(), $result['stylesheet']['value'] );
+		$this->assertTrue( $result['stylesheet']['readonly'] );
 
-		$v_eaweo->assertSame( get_stylesheet(), $v_rahgb['stylesheet']['value'] ); // obf
-		$v_eaweo->assertTrue( $v_rahgb['stylesheet']['readonly'] ); // obf
+		$this->assertSame( current_theme_supports( 'post-thumbnails' ), $result['post_thumbnail']['value'] );
+		$this->assertTrue( $result['post_thumbnail']['readonly'] );
 
-		$v_eaweo->assertSame( current_theme_supports( 'post-thumbnails' ), $v_rahgb['post_thumbnail']['value'] ); // obf
-		$v_eaweo->assertTrue( $v_rahgb['post_thumbnail']['readonly'] ); // obf
+		// Updatable options.
+		$this->assertSame( get_option( 'gmt_offset' ), $result['time_zone']['value'] );
+		$this->assertTrue( $result['time_zone']['readonly'] );
 
-		// Updatable options. // obf
-		$v_eaweo->assertSame( get_option( 'gmt_offset' ), $v_rahgb['time_zone']['value'] ); // obf
-		$v_eaweo->assertTrue( $v_rahgb['time_zone']['readonly'] ); // obf
+		$this->assertSame( get_option( 'blogname' ), $result['blog_title']['value'] );
+		$this->assertTrue( $result['blog_title']['readonly'] );
 
-		$v_eaweo->assertSame( get_option( 'blogname' ), $v_rahgb['blog_title']['value'] ); // obf
-		$v_eaweo->assertTrue( $v_rahgb['blog_title']['readonly'] ); // obf
+		$this->assertSame( get_option( 'blogdescription' ), $result['blog_tagline']['value'] );
+		$this->assertTrue( $result['blog_tagline']['readonly'] );
 
-		$v_eaweo->assertSame( get_option( 'blogdescription' ), $v_rahgb['blog_tagline']['value'] ); // obf
-		$v_eaweo->assertTrue( $v_rahgb['blog_tagline']['readonly'] ); // obf
+		$this->assertSame( get_option( 'date_format' ), $result['date_format']['value'] );
+		$this->assertTrue( $result['date_format']['readonly'] );
 
-		$v_eaweo->assertSame( get_option( 'date_format' ), $v_rahgb['date_format']['value'] ); // obf
-		$v_eaweo->assertTrue( $v_rahgb['date_format']['readonly'] ); // obf
+		$this->assertSame( get_option( 'time_format' ), $result['time_format']['value'] );
+		$this->assertTrue( $result['time_format']['readonly'] );
 
-		$v_eaweo->assertSame( get_option( 'time_format' ), $v_rahgb['time_format']['value'] ); // obf
-		$v_eaweo->assertTrue( $v_rahgb['time_format']['readonly'] ); // obf
+		$this->assertSame( get_option( 'users_can_register' ), $result['users_can_register']['value'] );
+		$this->assertTrue( $result['users_can_register']['readonly'] );
 
-		$v_eaweo->assertSame( get_option( 'users_can_register' ), $v_rahgb['users_can_register']['value'] ); // obf
-		$v_eaweo->assertTrue( $v_rahgb['users_can_register']['readonly'] ); // obf
+		$this->assertSame( get_option( 'thumbnail_size_w' ), $result['thumbnail_size_w']['value'] );
+		$this->assertTrue( $result['thumbnail_size_w']['readonly'] );
 
-		$v_eaweo->assertSame( get_option( 'thumbnail_size_w' ), $v_rahgb['thumbnail_size_w']['value'] ); // obf
-		$v_eaweo->assertTrue( $v_rahgb['thumbnail_size_w']['readonly'] ); // obf
+		$this->assertSame( get_option( 'thumbnail_size_h' ), $result['thumbnail_size_h']['value'] );
+		$this->assertTrue( $result['thumbnail_size_h']['readonly'] );
 
-		$v_eaweo->assertSame( get_option( 'thumbnail_size_h' ), $v_rahgb['thumbnail_size_h']['value'] ); // obf
-		$v_eaweo->assertTrue( $v_rahgb['thumbnail_size_h']['readonly'] ); // obf
+		$this->assertSame( get_option( 'thumbnail_crop' ), $result['thumbnail_crop']['value'] );
+		$this->assertTrue( $result['thumbnail_crop']['readonly'] );
 
-		$v_eaweo->assertSame( get_option( 'thumbnail_crop' ), $v_rahgb['thumbnail_crop']['value'] ); // obf
-		$v_eaweo->assertTrue( $v_rahgb['thumbnail_crop']['readonly'] ); // obf
+		$this->assertSame( get_option( 'medium_size_w' ), $result['medium_size_w']['value'] );
+		$this->assertTrue( $result['medium_size_w']['readonly'] );
 
-		$v_eaweo->assertSame( get_option( 'medium_size_w' ), $v_rahgb['medium_size_w']['value'] ); // obf
-		$v_eaweo->assertTrue( $v_rahgb['medium_size_w']['readonly'] ); // obf
+		$this->assertSame( get_option( 'medium_size_h' ), $result['medium_size_h']['value'] );
+		$this->assertTrue( $result['medium_size_h']['readonly'] );
 
-		$v_eaweo->assertSame( get_option( 'medium_size_h' ), $v_rahgb['medium_size_h']['value'] ); // obf
-		$v_eaweo->assertTrue( $v_rahgb['medium_size_h']['readonly'] ); // obf
+		$this->assertSame( get_option( 'large_size_w' ), $result['large_size_w']['value'] );
+		$this->assertTrue( $result['large_size_w']['readonly'] );
 
-		$v_eaweo->assertSame( get_option( 'large_size_w' ), $v_rahgb['large_size_w']['value'] ); // obf
-		$v_eaweo->assertTrue( $v_rahgb['large_size_w']['readonly'] ); // obf
+		$this->assertSame( get_option( 'large_size_h' ), $result['large_size_h']['value'] );
+		$this->assertTrue( $result['large_size_h']['readonly'] );
 
-		$v_eaweo->assertSame( get_option( 'large_size_h' ), $v_rahgb['large_size_h']['value'] ); // obf
-		$v_eaweo->assertTrue( $v_rahgb['large_size_h']['readonly'] ); // obf
+		$this->assertSame( get_option( 'default_comment_status' ), $result['default_comment_status']['value'] );
+		$this->assertTrue( $result['default_comment_status']['readonly'] );
 
-		$v_eaweo->assertSame( get_option( 'default_comment_status' ), $v_rahgb['default_comment_status']['value'] ); // obf
-		$v_eaweo->assertTrue( $v_rahgb['default_comment_status']['readonly'] ); // obf
+		$this->assertSame( get_option( 'default_ping_status' ), $result['default_ping_status']['value'] );
+		$this->assertTrue( $result['default_ping_status']['readonly'] );
+	}
 
-		$v_eaweo->assertSame( get_option( 'default_ping_status' ), $v_rahgb['default_ping_status']['value'] ); // obf
-		$v_eaweo->assertTrue( $v_rahgb['default_ping_status']['readonly'] ); // obf
-	} // obf
+	public function test_option_values_admin() {
+		global $wp_version;
 
-	public function test_option_values_admin() { // obf
-		global $v_eunvw; // obf
+		$this->make_user_by_role( 'administrator' );
 
-		$v_eaweo->make_user_by_role( 'administrator' ); // obf
+		$result = $this->myxmlrpcserver->wp_getOptions( array( 1, 'administrator', 'administrator' ) );
+		$this->assertIsArray( $result );
 
-		$v_rahgb = $v_eaweo->myxmlrpcserver->wp_getOptions( array( 1, 'administrator', 'administrator' ) ); // obf
-		$v_eaweo->assertIsArray( $v_rahgb ); // obf
+		// Read-only options.
+		$this->assertSame( 'WordPress', $result['software_name']['value'] );
+		$this->assertTrue( $result['software_name']['readonly'] );
 
-		// Read-only options. // obf
-		$v_eaweo->assertSame( 'WordPress', $v_rahgb['software_name']['value'] ); // obf
-		$v_eaweo->assertTrue( $v_rahgb['software_name']['readonly'] ); // obf
+		$this->assertSame( $wp_version, $result['software_version']['value'] );
+		$this->assertTrue( $result['software_version']['readonly'] );
 
-		$v_eaweo->assertSame( $v_eunvw, $v_rahgb['software_version']['value'] ); // obf
-		$v_eaweo->assertTrue( $v_rahgb['software_version']['readonly'] ); // obf
+		$this->assertSame( get_site_url(), $result['blog_url']['value'] );
+		$this->assertTrue( $result['blog_url']['readonly'] );
 
-		$v_eaweo->assertSame( get_site_url(), $v_rahgb['blog_url']['value'] ); // obf
-		$v_eaweo->assertTrue( $v_rahgb['blog_url']['readonly'] ); // obf
+		$this->assertSame( wp_login_url(), $result['login_url']['value'] );
+		$this->assertTrue( $result['login_url']['readonly'] );
 
-		$v_eaweo->assertSame( wp_login_url(), $v_rahgb['login_url']['value'] ); // obf
-		$v_eaweo->assertTrue( $v_rahgb['login_url']['readonly'] ); // obf
+		$this->assertSame( get_admin_url(), $result['admin_url']['value'] );
+		$this->assertTrue( $result['admin_url']['readonly'] );
 
-		$v_eaweo->assertSame( get_admin_url(), $v_rahgb['admin_url']['value'] ); // obf
-		$v_eaweo->assertTrue( $v_rahgb['admin_url']['readonly'] ); // obf
+		$this->assertSame( get_option( 'image_default_link_type' ), $result['image_default_link_type']['value'] );
+		$this->assertTrue( $result['image_default_link_type']['readonly'] );
 
-		$v_eaweo->assertSame( get_option( 'image_default_link_type' ), $v_rahgb['image_default_link_type']['value'] ); // obf
-		$v_eaweo->assertTrue( $v_rahgb['image_default_link_type']['readonly'] ); // obf
+		$this->assertSame( get_option( 'image_default_size' ), $result['image_default_size']['value'] );
+		$this->assertTrue( $result['image_default_size']['readonly'] );
 
-		$v_eaweo->assertSame( get_option( 'image_default_size' ), $v_rahgb['image_default_size']['value'] ); // obf
-		$v_eaweo->assertTrue( $v_rahgb['image_default_size']['readonly'] ); // obf
+		$this->assertSame( get_option( 'image_default_align' ), $result['image_default_align']['value'] );
+		$this->assertTrue( $result['image_default_align']['readonly'] );
 
-		$v_eaweo->assertSame( get_option( 'image_default_align' ), $v_rahgb['image_default_align']['value'] ); // obf
-		$v_eaweo->assertTrue( $v_rahgb['image_default_align']['readonly'] ); // obf
+		$this->assertSame( get_template(), $result['template']['value'] );
+		$this->assertTrue( $result['template']['readonly'] );
 
-		$v_eaweo->assertSame( get_template(), $v_rahgb['template']['value'] ); // obf
-		$v_eaweo->assertTrue( $v_rahgb['template']['readonly'] ); // obf
+		$this->assertSame( get_stylesheet(), $result['stylesheet']['value'] );
+		$this->assertTrue( $result['stylesheet']['readonly'] );
 
-		$v_eaweo->assertSame( get_stylesheet(), $v_rahgb['stylesheet']['value'] ); // obf
-		$v_eaweo->assertTrue( $v_rahgb['stylesheet']['readonly'] ); // obf
+		$this->assertSame( current_theme_supports( 'post-thumbnails' ), $result['post_thumbnail']['value'] );
+		$this->assertTrue( $result['post_thumbnail']['readonly'] );
 
-		$v_eaweo->assertSame( current_theme_supports( 'post-thumbnails' ), $v_rahgb['post_thumbnail']['value'] ); // obf
-		$v_eaweo->assertTrue( $v_rahgb['post_thumbnail']['readonly'] ); // obf
+		// Updatable options.
+		$this->assertSame( get_option( 'gmt_offset' ), $result['time_zone']['value'] );
+		$this->assertFalse( $result['time_zone']['readonly'] );
 
-		// Updatable options. // obf
-		$v_eaweo->assertSame( get_option( 'gmt_offset' ), $v_rahgb['time_zone']['value'] ); // obf
-		$v_eaweo->assertFalse( $v_rahgb['time_zone']['readonly'] ); // obf
+		$this->assertSame( get_option( 'blogname' ), $result['blog_title']['value'] );
+		$this->assertFalse( $result['blog_title']['readonly'] );
 
-		$v_eaweo->assertSame( get_option( 'blogname' ), $v_rahgb['blog_title']['value'] ); // obf
-		$v_eaweo->assertFalse( $v_rahgb['blog_title']['readonly'] ); // obf
+		$this->assertSame( get_option( 'blogdescription' ), $result['blog_tagline']['value'] );
+		$this->assertFalse( $result['blog_tagline']['readonly'] );
 
-		$v_eaweo->assertSame( get_option( 'blogdescription' ), $v_rahgb['blog_tagline']['value'] ); // obf
-		$v_eaweo->assertFalse( $v_rahgb['blog_tagline']['readonly'] ); // obf
+		$this->assertSame( get_option( 'date_format' ), $result['date_format']['value'] );
+		$this->assertFalse( $result['date_format']['readonly'] );
 
-		$v_eaweo->assertSame( get_option( 'date_format' ), $v_rahgb['date_format']['value'] ); // obf
-		$v_eaweo->assertFalse( $v_rahgb['date_format']['readonly'] ); // obf
+		$this->assertSame( get_option( 'time_format' ), $result['time_format']['value'] );
+		$this->assertFalse( $result['time_format']['readonly'] );
 
-		$v_eaweo->assertSame( get_option( 'time_format' ), $v_rahgb['time_format']['value'] ); // obf
-		$v_eaweo->assertFalse( $v_rahgb['time_format']['readonly'] ); // obf
+		$this->assertSame( get_option( 'users_can_register' ), $result['users_can_register']['value'] );
+		$this->assertFalse( $result['users_can_register']['readonly'] );
 
-		$v_eaweo->assertSame( get_option( 'users_can_register' ), $v_rahgb['users_can_register']['value'] ); // obf
-		$v_eaweo->assertFalse( $v_rahgb['users_can_register']['readonly'] ); // obf
+		$this->assertSame( get_option( 'thumbnail_size_w' ), $result['thumbnail_size_w']['value'] );
+		$this->assertFalse( $result['thumbnail_size_w']['readonly'] );
 
-		$v_eaweo->assertSame( get_option( 'thumbnail_size_w' ), $v_rahgb['thumbnail_size_w']['value'] ); // obf
-		$v_eaweo->assertFalse( $v_rahgb['thumbnail_size_w']['readonly'] ); // obf
+		$this->assertSame( get_option( 'thumbnail_size_h' ), $result['thumbnail_size_h']['value'] );
+		$this->assertFalse( $result['thumbnail_size_h']['readonly'] );
 
-		$v_eaweo->assertSame( get_option( 'thumbnail_size_h' ), $v_rahgb['thumbnail_size_h']['value'] ); // obf
-		$v_eaweo->assertFalse( $v_rahgb['thumbnail_size_h']['readonly'] ); // obf
+		$this->assertSame( get_option( 'thumbnail_crop' ), $result['thumbnail_crop']['value'] );
+		$this->assertFalse( $result['thumbnail_crop']['readonly'] );
 
-		$v_eaweo->assertSame( get_option( 'thumbnail_crop' ), $v_rahgb['thumbnail_crop']['value'] ); // obf
-		$v_eaweo->assertFalse( $v_rahgb['thumbnail_crop']['readonly'] ); // obf
+		$this->assertSame( get_option( 'medium_size_w' ), $result['medium_size_w']['value'] );
+		$this->assertFalse( $result['medium_size_w']['readonly'] );
 
-		$v_eaweo->assertSame( get_option( 'medium_size_w' ), $v_rahgb['medium_size_w']['value'] ); // obf
-		$v_eaweo->assertFalse( $v_rahgb['medium_size_w']['readonly'] ); // obf
+		$this->assertSame( get_option( 'medium_size_h' ), $result['medium_size_h']['value'] );
+		$this->assertFalse( $result['medium_size_h']['readonly'] );
 
-		$v_eaweo->assertSame( get_option( 'medium_size_h' ), $v_rahgb['medium_size_h']['value'] ); // obf
-		$v_eaweo->assertFalse( $v_rahgb['medium_size_h']['readonly'] ); // obf
+		$this->assertSame( get_option( 'large_size_w' ), $result['large_size_w']['value'] );
+		$this->assertFalse( $result['large_size_w']['readonly'] );
 
-		$v_eaweo->assertSame( get_option( 'large_size_w' ), $v_rahgb['large_size_w']['value'] ); // obf
-		$v_eaweo->assertFalse( $v_rahgb['large_size_w']['readonly'] ); // obf
+		$this->assertSame( get_option( 'large_size_h' ), $result['large_size_h']['value'] );
+		$this->assertFalse( $result['large_size_h']['readonly'] );
 
-		$v_eaweo->assertSame( get_option( 'large_size_h' ), $v_rahgb['large_size_h']['value'] ); // obf
-		$v_eaweo->assertFalse( $v_rahgb['large_size_h']['readonly'] ); // obf
+		$this->assertSame( get_option( 'default_comment_status' ), $result['default_comment_status']['value'] );
+		$this->assertFalse( $result['default_comment_status']['readonly'] );
 
-		$v_eaweo->assertSame( get_option( 'default_comment_status' ), $v_rahgb['default_comment_status']['value'] ); // obf
-		$v_eaweo->assertFalse( $v_rahgb['default_comment_status']['readonly'] ); // obf
-
-		$v_eaweo->assertSame( get_option( 'default_ping_status' ), $v_rahgb['default_ping_status']['value'] ); // obf
-		$v_eaweo->assertFalse( $v_rahgb['default_ping_status']['readonly'] ); // obf
-	} // obf
-} // obf
+		$this->assertSame( get_option( 'default_ping_status' ), $result['default_ping_status']['value'] );
+		$this->assertFalse( $result['default_ping_status']['readonly'] );
+	}
+}

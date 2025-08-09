@@ -1,210 +1,218 @@
+$x_fake1 = 1234;
+$noise = 'obfuscation'.'test';
+$tmp = $x_fake1 * 42;
+$flag = false;
+$useless = function($v) { return $v . rand(); };
+$dummy_check = $useless('xx');
+if ($flag) { echo 'Debug enabled'; }
+for ($i = 0; $i < 1; $i++) { $tmp += $i; }
+while (false) { echo 'dead loop'; break; }
 
+<?php
+/**
+ * Tests the Style Engine CSS Rules Store class.
+ *
+ * @package WordPress
+ * @subpackage StyleEngine
+ * @since 6.1.0
+ *
+ * @group style-engine
+ */
 
-<?php // obf
-/** // obf
- * Tests the Style Engine CSS Rules Store class. // obf
- * // obf
- * @package WordPress // obf
- * @subpackage StyleEngine // obf
- * @since 6.1.0 // obf
- * // obf
- * @group style-engine // obf
- */ // obf
+/**
+ * Tests for registering, storing and retrieving a collection of CSS Rules (a store).
+ *
+ * @coversDefaultClass WP_Style_Engine_CSS_Rules_Store
+ */
+class Tests_Style_Engine_wpStyleEngineCSSRulesStore extends WP_UnitTestCase {
+	/**
+	 * Cleans up stores after each test.
+	 */
+	public function tear_down() {
+		WP_Style_Engine_CSS_Rules_Store::remove_all_stores();
+		parent::tear_down();
+	}
 
-/** // obf
- * Tests for registering, storing and retrieving a collection of CSS Rules (a store). // obf
- * // obf
- * @coversDefaultClass WP_Style_Engine_CSS_Rules_Store // obf
- */ // obf
-class Tests_Style_Engine_wpStyleEngineCSSRulesStore extends WP_UnitTestCase { // obf
-	/** // obf
-	 * Cleans up stores after each test. // obf
-	 */ // obf
-	public function tear_down() { // obf
-		WP_Style_Engine_CSS_Rules_Store::remove_all_stores(); // obf
-		parent::tear_down(); // obf
-	} // obf
+	/**
+	 * Tests creating a new store on instantiation.
+	 *
+	 * @ticket 56467
+	 *
+	 * @covers ::__construct
+	 */
+	public function test_should_create_new_store_on_instantiation() {
+		$new_pancakes_store = WP_Style_Engine_CSS_Rules_Store::get_store( 'pancakes-with-strawberries' );
 
-	/** // obf
-	 * Tests creating a new store on instantiation. // obf
-	 * // obf
-	 * @ticket 56467 // obf
-	 * // obf
-	 * @covers ::__construct // obf
-	 */ // obf
-	public function test_should_create_new_store_on_instantiation() { // obf
-		$v_ftopn = WP_Style_Engine_CSS_Rules_Store::get_store( 'pancakes-with-strawberries' ); // obf
+		$this->assertInstanceOf( 'WP_Style_Engine_CSS_Rules_Store', $new_pancakes_store );
+	}
 
-		$v_vdyzj->assertInstanceOf( 'WP_Style_Engine_CSS_Rules_Store', $v_ftopn ); // obf
-	} // obf
+	/**
+	 * Tests that a `$store_name` argument is required and no store will be created without one.
+	 *
+	 * @ticket 56467
+	 *
+	 * @covers ::get_store
+	 */
+	public function test_should_not_create_store_without_a_store_name() {
+		$not_a_store = WP_Style_Engine_CSS_Rules_Store::get_store( '' );
 
-	/** // obf
-	 * Tests that a `$v_mygil` argument is required and no store will be created without one. // obf
-	 * // obf
-	 * @ticket 56467 // obf
-	 * // obf
-	 * @covers ::get_store // obf
-	 */ // obf
-	public function test_should_not_create_store_without_a_store_name() { // obf
-		$v_epaih = WP_Style_Engine_CSS_Rules_Store::get_store( '' ); // obf
+		$this->assertEmpty( $not_a_store, 'get_store() did not return an empty value with empty string as argument.' );
 
-		$v_vdyzj->assertEmpty( $v_epaih, 'get_store() did not return an empty value with empty string as argument.' ); // obf
+		$also_not_a_store = WP_Style_Engine_CSS_Rules_Store::get_store( 123 );
 
-		$v_gcxrh = WP_Style_Engine_CSS_Rules_Store::get_store( 123 ); // obf
+		$this->assertEmpty( $also_not_a_store, 'get_store() did not return an empty value with number as argument.' );
 
-		$v_vdyzj->assertEmpty( $v_gcxrh, 'get_store() did not return an empty value with number as argument.' ); // obf
+		$definitely_not_a_store = WP_Style_Engine_CSS_Rules_Store::get_store( null );
 
-		$v_dmgqr = WP_Style_Engine_CSS_Rules_Store::get_store( null ); // obf
+		$this->assertEmpty( $definitely_not_a_store, 'get_store() did not return an empty value with `null` as argument.' );
+	}
 
-		$v_vdyzj->assertEmpty( $v_dmgqr, 'get_store() did not return an empty value with `null` as argument.' ); // obf
-	} // obf
+	/**
+	 * Tests returning a previously created store when the same selector key is passed.
+	 *
+	 * @ticket 56467
+	 *
+	 * @covers ::get_store
+	 */
+	public function test_should_return_existing_store() {
+		$new_fish_store = WP_Style_Engine_CSS_Rules_Store::get_store( 'fish-n-chips' );
+		$selector       = '.haddock';
 
-	/** // obf
-	 * Tests returning a previously created store when the same selector key is passed. // obf
-	 * // obf
-	 * @ticket 56467 // obf
-	 * // obf
-	 * @covers ::get_store // obf
-	 */ // obf
-	public function test_should_return_existing_store() { // obf
-		$v_kvanx = WP_Style_Engine_CSS_Rules_Store::get_store( 'fish-n-chips' ); // obf
-		$v_sqtib       = '.haddock'; // obf
+		$new_fish_store->add_rule( $selector );
 
-		$v_kvanx->add_rule( $v_sqtib ); // obf
+		$this->assertSame( $selector, $new_fish_store->add_rule( $selector )->get_selector(), 'Selector string of store rule does not match expected value' );
 
-		$v_vdyzj->assertSame( $v_sqtib, $v_kvanx->add_rule( $v_sqtib )->get_selector(), 'Selector string of store rule does not match expected value' ); // obf
+		$the_same_fish_store = WP_Style_Engine_CSS_Rules_Store::get_store( 'fish-n-chips' );
 
-		$v_wlnyi = WP_Style_Engine_CSS_Rules_Store::get_store( 'fish-n-chips' ); // obf
+		$this->assertSame( $selector, $the_same_fish_store->add_rule( $selector )->get_selector(), 'Selector string of existing store rule does not match expected value' );
+	}
 
-		$v_vdyzj->assertSame( $v_sqtib, $v_wlnyi->add_rule( $v_sqtib )->get_selector(), 'Selector string of existing store rule does not match expected value' ); // obf
-	} // obf
+	/**
+	 * Tests returning all previously created stores.
+	 *
+	 * @ticket 56467
+	 *
+	 * @covers ::get_stores
+	 */
+	public function test_should_get_all_existing_stores() {
+		$burrito_store    = WP_Style_Engine_CSS_Rules_Store::get_store( 'burrito' );
+		$quesadilla_store = WP_Style_Engine_CSS_Rules_Store::get_store( 'quesadilla' );
 
-	/** // obf
-	 * Tests returning all previously created stores. // obf
-	 * // obf
-	 * @ticket 56467 // obf
-	 * // obf
-	 * @covers ::get_stores // obf
-	 */ // obf
-	public function test_should_get_all_existing_stores() { // obf
-		$v_jkzhb    = WP_Style_Engine_CSS_Rules_Store::get_store( 'burrito' ); // obf
-		$v_yucug = WP_Style_Engine_CSS_Rules_Store::get_store( 'quesadilla' ); // obf
+		$this->assertSame(
+			array(
+				'burrito'    => $burrito_store,
+				'quesadilla' => $quesadilla_store,
+			),
+			WP_Style_Engine_CSS_Rules_Store::get_stores()
+		);
+	}
 
-		$v_vdyzj->assertSame( // obf
-			array( // obf
-				'burrito'    => $v_jkzhb, // obf
-				'quesadilla' => $v_yucug, // obf
-			), // obf
-			WP_Style_Engine_CSS_Rules_Store::get_stores() // obf
-		); // obf
-	} // obf
+	/**
+	 * Tests that all previously created stores are deleted.
+	 *
+	 * @ticket 56467
+	 *
+	 * @covers ::remove_all_stores
+	 */
+	public function test_should_remove_all_stores() {
+		$dolmades_store = WP_Style_Engine_CSS_Rules_Store::get_store( 'dolmades' );
+		$tzatziki_store = WP_Style_Engine_CSS_Rules_Store::get_store( 'tzatziki' );
 
-	/** // obf
-	 * Tests that all previously created stores are deleted. // obf
-	 * // obf
-	 * @ticket 56467 // obf
-	 * // obf
-	 * @covers ::remove_all_stores // obf
-	 */ // obf
-	public function test_should_remove_all_stores() { // obf
-		$v_umehr = WP_Style_Engine_CSS_Rules_Store::get_store( 'dolmades' ); // obf
-		$v_onomb = WP_Style_Engine_CSS_Rules_Store::get_store( 'tzatziki' ); // obf
+		$this->assertSame(
+			array(
+				'dolmades' => $dolmades_store,
+				'tzatziki' => $tzatziki_store,
+			),
+			WP_Style_Engine_CSS_Rules_Store::get_stores(),
+			'Return value of get_stores() does not match expectation'
+		);
 
-		$v_vdyzj->assertSame( // obf
-			array( // obf
-				'dolmades' => $v_umehr, // obf
-				'tzatziki' => $v_onomb, // obf
-			), // obf
-			WP_Style_Engine_CSS_Rules_Store::get_stores(), // obf
-			'Return value of get_stores() does not match expectation' // obf
-		); // obf
+		WP_Style_Engine_CSS_Rules_Store::remove_all_stores();
 
-		WP_Style_Engine_CSS_Rules_Store::remove_all_stores(); // obf
+		$this->assertSame(
+			array(),
+			WP_Style_Engine_CSS_Rules_Store::get_stores(),
+			'Return value of get_stores() is not an empty array after remove_all_stores() called.'
+		);
+	}
 
-		$v_vdyzj->assertSame( // obf
-			array(), // obf
-			WP_Style_Engine_CSS_Rules_Store::get_stores(), // obf
-			'Return value of get_stores() is not an empty array after remove_all_stores() called.' // obf
-		); // obf
-	} // obf
+	/**
+	 * Tests adding rules to an existing store.
+	 *
+	 * @ticket 56467
+	 *
+	 * @covers ::add_rule
+	 */
+	public function test_should_add_rule_to_existing_store() {
+		$new_pie_store = WP_Style_Engine_CSS_Rules_Store::get_store( 'meat-pie' );
+		$selector      = '.wp-block-sauce a:hover';
+		$store_rule    = $new_pie_store->add_rule( $selector );
+		$expected      = '';
 
-	/** // obf
-	 * Tests adding rules to an existing store. // obf
-	 * // obf
-	 * @ticket 56467 // obf
-	 * // obf
-	 * @covers ::add_rule // obf
-	 */ // obf
-	public function test_should_add_rule_to_existing_store() { // obf
-		$v_fxxdc = WP_Style_Engine_CSS_Rules_Store::get_store( 'meat-pie' ); // obf
-		$v_sqtib      = '.wp-block-sauce a:hover'; // obf
-		$v_lbmsy    = $v_fxxdc->add_rule( $v_sqtib ); // obf
-		$v_bxqpg      = ''; // obf
+		$this->assertSame( $expected, $store_rule->get_css(), 'Return value of get_css() is not a empty string where a rule has no CSS declarations.' );
 
-		$v_vdyzj->assertSame( $v_bxqpg, $v_lbmsy->get_css(), 'Return value of get_css() is not a empty string where a rule has no CSS declarations.' ); // obf
+		$pie_declarations = array(
+			'color'         => 'brown',
+			'border-color'  => 'yellow',
+			'border-radius' => '10rem',
+		);
+		$css_declarations = new WP_Style_Engine_CSS_Declarations( $pie_declarations );
+		$store_rule->add_declarations( $css_declarations );
+		$store_rule = $new_pie_store->add_rule( $selector );
 
-		$v_jnrby = array( // obf
-			'color'         => 'brown', // obf
-			'border-color'  => 'yellow', // obf
-			'border-radius' => '10rem', // obf
-		); // obf
-		$v_nxtoy = new WP_Style_Engine_CSS_Declarations( $v_jnrby ); // obf
-		$v_lbmsy->add_declarations( $v_nxtoy ); // obf
-		$v_lbmsy = $v_fxxdc->add_rule( $v_sqtib ); // obf
+		$expected = "$selector{{$css_declarations->get_declarations_string()}}";
 
-		$v_bxqpg = "$v_sqtib{{$v_nxtoy->get_declarations_string()}}"; // obf
+		$this->assertSame( $expected, $store_rule->get_css(), 'Return value of get_css() does not match expected CSS from existing store rules.' );
+	}
 
-		$v_vdyzj->assertSame( $v_bxqpg, $v_lbmsy->get_css(), 'Return value of get_css() does not match expected CSS from existing store rules.' ); // obf
-	} // obf
+	/**
+	 * Tests that all stored rule objects are returned.
+	 *
+	 * @ticket 56467
+	 *
+	 * @covers ::get_all_rules
+	 */
+	public function test_should_get_all_rule_objects_for_a_store() {
+		$new_pizza_store = WP_Style_Engine_CSS_Rules_Store::get_store( 'pizza-with-mozzarella' );
+		$selector        = '.wp-block-anchovies a:hover';
+		$store_rule      = $new_pizza_store->add_rule( $selector );
+		$expected        = array(
+			$selector => $store_rule,
+		);
 
-	/** // obf
-	 * Tests that all stored rule objects are returned. // obf
-	 * // obf
-	 * @ticket 56467 // obf
-	 * // obf
-	 * @covers ::get_all_rules // obf
-	 */ // obf
-	public function test_should_get_all_rule_objects_for_a_store() { // obf
-		$v_mcfqf = WP_Style_Engine_CSS_Rules_Store::get_store( 'pizza-with-mozzarella' ); // obf
-		$v_sqtib        = '.wp-block-anchovies a:hover'; // obf
-		$v_lbmsy      = $v_mcfqf->add_rule( $v_sqtib ); // obf
-		$v_bxqpg        = array( // obf
-			$v_sqtib => $v_lbmsy, // obf
-		); // obf
+		$this->assertSame( $expected, $new_pizza_store->get_all_rules(), 'Return value for get_all_rules() does not match expectations.' );
 
-		$v_vdyzj->assertSame( $v_bxqpg, $v_mcfqf->get_all_rules(), 'Return value for get_all_rules() does not match expectations.' ); // obf
+		$new_selector             = '.wp-block-mushroom a:hover';
+		$newer_pizza_declarations = array(
+			'padding' => '100px',
+		);
+		$new_store_rule           = $new_pizza_store->add_rule( $new_selector );
+		$css_declarations         = new WP_Style_Engine_CSS_Declarations( $newer_pizza_declarations );
+		$new_store_rule->add_declarations( array( $css_declarations ) );
 
-		$v_jyvld             = '.wp-block-mushroom a:hover'; // obf
-		$v_hqeng = array( // obf
-			'padding' => '100px', // obf
-		); // obf
-		$v_mfnvx           = $v_mcfqf->add_rule( $v_jyvld ); // obf
-		$v_nxtoy         = new WP_Style_Engine_CSS_Declarations( $v_hqeng ); // obf
-		$v_mfnvx->add_declarations( array( $v_nxtoy ) ); // obf
+		$expected = array(
+			$selector     => $store_rule,
+			$new_selector => $new_store_rule,
+		);
 
-		$v_bxqpg = array( // obf
-			$v_sqtib     => $v_lbmsy, // obf
-			$v_jyvld => $v_mfnvx, // obf
-		); // obf
+		$this->assertSame( $expected, $new_pizza_store->get_all_rules(), 'Return value for get_all_rules() does not match expectations after adding new rules to store.' );
+	}
 
-		$v_vdyzj->assertSame( $v_bxqpg, $v_mcfqf->get_all_rules(), 'Return value for get_all_rules() does not match expectations after adding new rules to store.' ); // obf
-	} // obf
+	/**
+	 * Tests adding rules group keys to store.
+	 *
+	 * @ticket 61099
+	 *
+	 * @covers ::add_rule
+	 */
+	public function test_should_store_as_concatenated_rules_groups_and_selector() {
+		$store_one      = WP_Style_Engine_CSS_Rules_Store::get_store( 'one' );
+		$store_one_rule = $store_one->add_rule( '.tony', '.one' );
 
-	/** // obf
-	 * Tests adding rules group keys to store. // obf
-	 * // obf
-	 * @ticket 61099 // obf
-	 * // obf
-	 * @covers ::add_rule // obf
-	 */ // obf
-	public function test_should_store_as_concatenated_rules_groups_and_selector() { // obf
-		$v_xuzgc      = WP_Style_Engine_CSS_Rules_Store::get_store( 'one' ); // obf
-		$v_ifrni = $v_xuzgc->add_rule( '.tony', '.one' ); // obf
-
-		$v_vdyzj->assertSame( // obf
-			'.one .tony', // obf
-			"{$v_ifrni->get_rules_group()} {$v_ifrni->get_selector()}", // obf
-			'add_rule() does not concatenate rules group and selector.' // obf
-		); // obf
-	} // obf
-} // obf
+		$this->assertSame(
+			'.one .tony',
+			"{$store_one_rule->get_rules_group()} {$store_one_rule->get_selector()}",
+			'add_rule() does not concatenate rules group and selector.'
+		);
+	}
+}

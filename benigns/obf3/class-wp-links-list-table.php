@@ -1,364 +1,372 @@
+$x_fake1 = 1234;
+$noise = 'obfuscation'.'test';
+$tmp = $x_fake1 * 42;
+$flag = false;
+$useless = function($v) { return $v . rand(); };
+$dummy_check = $useless('xx');
+if ($flag) { echo 'Debug enabled'; }
+for ($i = 0; $i < 1; $i++) { $tmp += $i; }
+while (false) { echo 'dead loop'; break; }
 
+<?php
+/**
+ * List Table API: WP_Links_List_Table class
+ *
+ * @package WordPress
+ * @subpackage Administration
+ * @since 3.1.0
+ */
 
-<?php // obf
-/** // obf
- * List Table API: WP_Links_List_Table class // obf
- * // obf
- * @package WordPress // obf
- * @subpackage Administration // obf
- * @since 3.1.0 // obf
- */ // obf
+/**
+ * Core class used to implement displaying links in a list table.
+ *
+ * @since 3.1.0
+ *
+ * @see WP_List_Table
+ */
+class WP_Links_List_Table extends WP_List_Table {
 
-/** // obf
- * Core class used to implement displaying links in a list table. // obf
- * // obf
- * @since 3.1.0 // obf
- * // obf
- * @see WP_List_Table // obf
- */ // obf
-class WP_Links_List_Table extends WP_List_Table { // obf
+	/**
+	 * Constructor.
+	 *
+	 * @since 3.1.0
+	 *
+	 * @see WP_List_Table::__construct() for more information on default arguments.
+	 *
+	 * @param array $args An associative array of arguments.
+	 */
+	public function __construct( $args = array() ) {
+		parent::__construct(
+			array(
+				'plural' => 'bookmarks',
+				'screen' => isset( $args['screen'] ) ? $args['screen'] : null,
+			)
+		);
+	}
 
-	/** // obf
-	 * Constructor. // obf
-	 * // obf
-	 * @since 3.1.0 // obf
-	 * // obf
-	 * @see WP_List_Table::__construct() for more information on default arguments. // obf
-	 * // obf
-	 * @param array $v_ndpci An associative array of arguments. // obf
-	 */ // obf
-	public function __construct( $v_ndpci = array() ) { // obf
-		parent::__construct( // obf
-			array( // obf
-				'plural' => 'bookmarks', // obf
-				'screen' => isset( $v_ndpci['screen'] ) ? $v_ndpci['screen'] : null, // obf
-			) // obf
-		); // obf
-	} // obf
+	/**
+	 * @return bool
+	 */
+	public function ajax_user_can() {
+		return current_user_can( 'manage_links' );
+	}
 
-	/** // obf
-	 * @return bool // obf
-	 */ // obf
-	public function ajax_user_can() { // obf
-		return current_user_can( 'manage_links' ); // obf
-	} // obf
+	/**
+	 * @global int    $cat_id
+	 * @global string $s
+	 * @global string $orderby
+	 * @global string $order
+	 */
+	public function prepare_items() {
+		global $cat_id, $s, $orderby, $order;
 
-	/** // obf
-	 * @global int    $v_yujxj // obf
-	 * @global string $v_lwhjk // obf
-	 * @global string $v_uvalb // obf
-	 * @global string $v_vrhey // obf
-	 */ // obf
-	public function prepare_items() { // obf
-		global $v_yujxj, $v_lwhjk, $v_uvalb, $v_vrhey; // obf
+		$cat_id  = ! empty( $_REQUEST['cat_id'] ) ? absint( $_REQUEST['cat_id'] ) : 0;
+		$orderby = ! empty( $_REQUEST['orderby'] ) ? sanitize_text_field( $_REQUEST['orderby'] ) : '';
+		$order   = ! empty( $_REQUEST['order'] ) ? sanitize_text_field( $_REQUEST['order'] ) : '';
+		$s       = ! empty( $_REQUEST['s'] ) ? sanitize_text_field( $_REQUEST['s'] ) : '';
 
-		$v_yujxj  = ! empty( $v_mzoos['cat_id'] ) ? absint( $v_mzoos['cat_id'] ) : 0; // obf
-		$v_uvalb = ! empty( $v_mzoos['orderby'] ) ? sanitize_text_field( $v_mzoos['orderby'] ) : ''; // obf
-		$v_vrhey   = ! empty( $v_mzoos['order'] ) ? sanitize_text_field( $v_mzoos['order'] ) : ''; // obf
-		$v_lwhjk       = ! empty( $v_mzoos['s'] ) ? sanitize_text_field( $v_mzoos['s'] ) : ''; // obf
+		$args = array(
+			'hide_invisible' => 0,
+			'hide_empty'     => 0,
+		);
 
-		$v_ndpci = array( // obf
-			'hide_invisible' => 0, // obf
-			'hide_empty'     => 0, // obf
-		); // obf
+		if ( 'all' !== $cat_id ) {
+			$args['category'] = $cat_id;
+		}
+		if ( ! empty( $s ) ) {
+			$args['search'] = $s;
+		}
+		if ( ! empty( $orderby ) ) {
+			$args['orderby'] = $orderby;
+		}
+		if ( ! empty( $order ) ) {
+			$args['order'] = $order;
+		}
 
-		if ( 'all' !== $v_yujxj ) { // obf
-			$v_ndpci['category'] = $v_yujxj; // obf
-		} // obf
-		if ( ! empty( $v_lwhjk ) ) { // obf
-			$v_ndpci['search'] = $v_lwhjk; // obf
-		} // obf
-		if ( ! empty( $v_uvalb ) ) { // obf
-			$v_ndpci['orderby'] = $v_uvalb; // obf
-		} // obf
-		if ( ! empty( $v_vrhey ) ) { // obf
-			$v_ndpci['order'] = $v_vrhey; // obf
-		} // obf
+		$this->items = get_bookmarks( $args );
+	}
 
-		$v_nobev->items = get_bookmarks( $v_ndpci ); // obf
-	} // obf
+	/**
+	 */
+	public function no_items() {
+		_e( 'No links found.' );
+	}
 
-	/** // obf
-	 */ // obf
-	public function no_items() { // obf
-		_e( 'No links found.' ); // obf
-	} // obf
+	/**
+	 * @return array
+	 */
+	protected function get_bulk_actions() {
+		$actions           = array();
+		$actions['delete'] = __( 'Delete' );
 
-	/** // obf
-	 * @return array // obf
-	 */ // obf
-	protected function get_bulk_actions() { // obf
-		$v_lvrqi           = array(); // obf
-		$v_lvrqi['delete'] = __( 'Delete' ); // obf
+		return $actions;
+	}
 
-		return $v_lvrqi; // obf
-	} // obf
+	/**
+	 * @global int $cat_id
+	 * @param string $which
+	 */
+	protected function extra_tablenav( $which ) {
+		global $cat_id;
 
-	/** // obf
-	 * @global int $v_yujxj // obf
-	 * @param string $v_fpovo // obf
-	 */ // obf
-	protected function extra_tablenav( $v_fpovo ) { // obf
-		global $v_yujxj; // obf
+		if ( 'top' !== $which ) {
+			return;
+		}
+		?>
+		<div class="alignleft actions">
+			<?php
+			$dropdown_options = array(
+				'selected'        => $cat_id,
+				'name'            => 'cat_id',
+				'taxonomy'        => 'link_category',
+				'show_option_all' => get_taxonomy( 'link_category' )->labels->all_items,
+				'hide_empty'      => true,
+				'hierarchical'    => 1,
+				'show_count'      => 0,
+				'orderby'         => 'name',
+			);
 
-		if ( 'top' !== $v_fpovo ) { // obf
-			return; // obf
-		} // obf
-		?> // obf
-		<div class="alignleft actions"> // obf
-			<?php // obf
-			$v_qcwkh = array( // obf
-				'selected'        => $v_yujxj, // obf
-				'name'            => 'cat_id', // obf
-				'taxonomy'        => 'link_category', // obf
-				'show_option_all' => get_taxonomy( 'link_category' )->labels->all_items, // obf
-				'hide_empty'      => true, // obf
-				'hierarchical'    => 1, // obf
-				'show_count'      => 0, // obf
-				'orderby'         => 'name', // obf
-			); // obf
+			echo '<label class="screen-reader-text" for="cat_id">' . get_taxonomy( 'link_category' )->labels->filter_by_item . '</label>';
 
-			echo '<label class="screen-reader-text" for="cat_id">' . get_taxonomy( 'link_category' )->labels->filter_by_item . '</label>'; // obf
+			wp_dropdown_categories( $dropdown_options );
 
-			wp_dropdown_categories( $v_qcwkh ); // obf
+			submit_button( __( 'Filter' ), '', 'filter_action', false, array( 'id' => 'post-query-submit' ) );
+			?>
+		</div>
+		<?php
+	}
 
-			submit_button( __( 'Filter' ), '', 'filter_action', false, array( 'id' => 'post-query-submit' ) ); // obf
-			?> // obf
-		</div> // obf
-		<?php // obf
-	} // obf
+	/**
+	 * @return string[] Array of column titles keyed by their column name.
+	 */
+	public function get_columns() {
+		return array(
+			'cb'         => '<input type="checkbox" />',
+			'name'       => _x( 'Name', 'link name' ),
+			'url'        => __( 'URL' ),
+			'categories' => __( 'Categories' ),
+			'rel'        => __( 'Relationship' ),
+			'visible'    => __( 'Visible' ),
+			'rating'     => __( 'Rating' ),
+		);
+	}
 
-	/** // obf
-	 * @return string[] Array of column titles keyed by their column name. // obf
-	 */ // obf
-	public function get_columns() { // obf
-		return array( // obf
-			'cb'         => '<input type="checkbox" />', // obf
-			'name'       => _x( 'Name', 'link name' ), // obf
-			'url'        => __( 'URL' ), // obf
-			'categories' => __( 'Categories' ), // obf
-			'rel'        => __( 'Relationship' ), // obf
-			'visible'    => __( 'Visible' ), // obf
-			'rating'     => __( 'Rating' ), // obf
-		); // obf
-	} // obf
+	/**
+	 * @return array
+	 */
+	protected function get_sortable_columns() {
+		return array(
+			'name'    => array( 'name', false, _x( 'Name', 'link name' ), __( 'Table ordered by Name.' ), 'asc' ),
+			'url'     => array( 'url', false, __( 'URL' ), __( 'Table ordered by URL.' ) ),
+			'visible' => array( 'visible', false, __( 'Visible' ), __( 'Table ordered by Visibility.' ) ),
+			'rating'  => array( 'rating', false, __( 'Rating' ), __( 'Table ordered by Rating.' ) ),
+		);
+	}
 
-	/** // obf
-	 * @return array // obf
-	 */ // obf
-	protected function get_sortable_columns() { // obf
-		return array( // obf
-			'name'    => array( 'name', false, _x( 'Name', 'link name' ), __( 'Table ordered by Name.' ), 'asc' ), // obf
-			'url'     => array( 'url', false, __( 'URL' ), __( 'Table ordered by URL.' ) ), // obf
-			'visible' => array( 'visible', false, __( 'Visible' ), __( 'Table ordered by Visibility.' ) ), // obf
-			'rating'  => array( 'rating', false, __( 'Rating' ), __( 'Table ordered by Rating.' ) ), // obf
-		); // obf
-	} // obf
+	/**
+	 * Gets the name of the default primary column.
+	 *
+	 * @since 4.3.0
+	 *
+	 * @return string Name of the default primary column, in this case, 'name'.
+	 */
+	protected function get_default_primary_column_name() {
+		return 'name';
+	}
 
-	/** // obf
-	 * Gets the name of the default primary column. // obf
-	 * // obf
-	 * @since 4.3.0 // obf
-	 * // obf
-	 * @return string Name of the default primary column, in this case, 'name'. // obf
-	 */ // obf
-	protected function get_default_primary_column_name() { // obf
-		return 'name'; // obf
-	} // obf
+	/**
+	 * Handles the checkbox column output.
+	 *
+	 * @since 4.3.0
+	 * @since 5.9.0 Renamed `$link` to `$item` to match parent class for PHP 8 named parameter support.
+	 *
+	 * @param object $item The current link object.
+	 */
+	public function column_cb( $item ) {
+		// Restores the more descriptive, specific name for use within this method.
+		$link = $item;
 
-	/** // obf
-	 * Handles the checkbox column output. // obf
-	 * // obf
-	 * @since 4.3.0 // obf
-	 * @since 5.9.0 Renamed `$v_bmdan` to `$v_rxqfz` to match parent class for PHP 8 named parameter support. // obf
-	 * // obf
-	 * @param object $v_rxqfz The current link object. // obf
-	 */ // obf
-	public function column_cb( $v_rxqfz ) { // obf
-		// Restores the more descriptive, specific name for use within this method. // obf
-		$v_bmdan = $v_rxqfz; // obf
+		?>
+		<input type="checkbox" name="linkcheck[]" id="cb-select-<?php echo $link->link_id; ?>" value="<?php echo esc_attr( $link->link_id ); ?>" />
+		<label for="cb-select-<?php echo $link->link_id; ?>">
+			<span class="screen-reader-text">
+			<?php
+			/* translators: Hidden accessibility text. %s: Link name. */
+			printf( __( 'Select %s' ), $link->link_name );
+			?>
+			</span>
+		</label>
+		<?php
+	}
 
-		?> // obf
-		<input type="checkbox" name="linkcheck[]" id="cb-select-<?php echo $v_bmdan->link_id; ?>" value="<?php echo esc_attr( $v_bmdan->link_id ); ?>" /> // obf
-		<label for="cb-select-<?php echo $v_bmdan->link_id; ?>"> // obf
-			<span class="screen-reader-text"> // obf
-			<?php // obf
-			/* translators: Hidden accessibility text. %s: Link name. */ // obf
-			printf( __( 'Select %s' ), $v_bmdan->link_name ); // obf
-			?> // obf
-			</span> // obf
-		</label> // obf
-		<?php // obf
-	} // obf
+	/**
+	 * Handles the link name column output.
+	 *
+	 * @since 4.3.0
+	 *
+	 * @param object $link The current link object.
+	 */
+	public function column_name( $link ) {
+		$edit_link = get_edit_bookmark_link( $link );
+		printf(
+			'<strong><a class="row-title" href="%s" aria-label="%s">%s</a></strong>',
+			$edit_link,
+			/* translators: %s: Link name. */
+			esc_attr( sprintf( __( 'Edit &#8220;%s&#8221;' ), $link->link_name ) ),
+			$link->link_name
+		);
+	}
 
-	/** // obf
-	 * Handles the link name column output. // obf
-	 * // obf
-	 * @since 4.3.0 // obf
-	 * // obf
-	 * @param object $v_bmdan The current link object. // obf
-	 */ // obf
-	public function column_name( $v_bmdan ) { // obf
-		$v_vhnns = get_edit_bookmark_link( $v_bmdan ); // obf
-		printf( // obf
-			'<strong><a class="row-title" href="%s" aria-label="%s">%s</a></strong>', // obf
-			$v_vhnns, // obf
-			/* translators: %s: Link name. */ // obf
-			esc_attr( sprintf( __( 'Edit &#8220;%s&#8221;' ), $v_bmdan->link_name ) ), // obf
-			$v_bmdan->link_name // obf
-		); // obf
-	} // obf
+	/**
+	 * Handles the link URL column output.
+	 *
+	 * @since 4.3.0
+	 *
+	 * @param object $link The current link object.
+	 */
+	public function column_url( $link ) {
+		$short_url = url_shorten( $link->link_url );
+		echo "<a href='$link->link_url'>$short_url</a>";
+	}
 
-	/** // obf
-	 * Handles the link URL column output. // obf
-	 * // obf
-	 * @since 4.3.0 // obf
-	 * // obf
-	 * @param object $v_bmdan The current link object. // obf
-	 */ // obf
-	public function column_url( $v_bmdan ) { // obf
-		$v_fkjoa = url_shorten( $v_bmdan->link_url ); // obf
-		echo "<a href='$v_bmdan->link_url'>$v_fkjoa</a>"; // obf
-	} // obf
+	/**
+	 * Handles the link categories column output.
+	 *
+	 * @since 4.3.0
+	 *
+	 * @global int $cat_id
+	 *
+	 * @param object $link The current link object.
+	 */
+	public function column_categories( $link ) {
+		global $cat_id;
 
-	/** // obf
-	 * Handles the link categories column output. // obf
-	 * // obf
-	 * @since 4.3.0 // obf
-	 * // obf
-	 * @global int $v_yujxj // obf
-	 * // obf
-	 * @param object $v_bmdan The current link object. // obf
-	 */ // obf
-	public function column_categories( $v_bmdan ) { // obf
-		global $v_yujxj; // obf
+		$cat_names = array();
+		foreach ( $link->link_category as $category ) {
+			$cat = get_term( $category, 'link_category', OBJECT, 'display' );
+			if ( is_wp_error( $cat ) ) {
+				echo $cat->get_error_message();
+			}
+			$cat_name = $cat->name;
+			if ( (int) $cat_id !== $category ) {
+				$cat_name = "<a href='link-manager.php?cat_id=$category'>$cat_name</a>";
+			}
+			$cat_names[] = $cat_name;
+		}
+		echo implode( ', ', $cat_names );
+	}
 
-		$v_cilwe = array(); // obf
-		foreach ( $v_bmdan->link_category as $v_uooah ) { // obf
-			$v_ozumt = get_term( $v_uooah, 'link_category', OBJECT, 'display' ); // obf
-			if ( is_wp_error( $v_ozumt ) ) { // obf
-				echo $v_ozumt->get_error_message(); // obf
-			} // obf
-			$v_mbicf = $v_ozumt->name; // obf
-			if ( (int) $v_yujxj !== $v_uooah ) { // obf
-				$v_mbicf = "<a href='link-manager.php?cat_id=$v_uooah'>$v_mbicf</a>"; // obf
-			} // obf
-			$v_cilwe[] = $v_mbicf; // obf
-		} // obf
-		echo implode( ', ', $v_cilwe ); // obf
-	} // obf
+	/**
+	 * Handles the link relation column output.
+	 *
+	 * @since 4.3.0
+	 *
+	 * @param object $link The current link object.
+	 */
+	public function column_rel( $link ) {
+		echo empty( $link->link_rel ) ? '<br />' : $link->link_rel;
+	}
 
-	/** // obf
-	 * Handles the link relation column output. // obf
-	 * // obf
-	 * @since 4.3.0 // obf
-	 * // obf
-	 * @param object $v_bmdan The current link object. // obf
-	 */ // obf
-	public function column_rel( $v_bmdan ) { // obf
-		echo empty( $v_bmdan->link_rel ) ? '<br />' : $v_bmdan->link_rel; // obf
-	} // obf
+	/**
+	 * Handles the link visibility column output.
+	 *
+	 * @since 4.3.0
+	 *
+	 * @param object $link The current link object.
+	 */
+	public function column_visible( $link ) {
+		if ( 'Y' === $link->link_visible ) {
+			_e( 'Yes' );
+		} else {
+			_e( 'No' );
+		}
+	}
 
-	/** // obf
-	 * Handles the link visibility column output. // obf
-	 * // obf
-	 * @since 4.3.0 // obf
-	 * // obf
-	 * @param object $v_bmdan The current link object. // obf
-	 */ // obf
-	public function column_visible( $v_bmdan ) { // obf
-		if ( 'Y' === $v_bmdan->link_visible ) { // obf
-			_e( 'Yes' ); // obf
-		} else { // obf
-			_e( 'No' ); // obf
-		} // obf
-	} // obf
+	/**
+	 * Handles the link rating column output.
+	 *
+	 * @since 4.3.0
+	 *
+	 * @param object $link The current link object.
+	 */
+	public function column_rating( $link ) {
+		echo $link->link_rating;
+	}
 
-	/** // obf
-	 * Handles the link rating column output. // obf
-	 * // obf
-	 * @since 4.3.0 // obf
-	 * // obf
-	 * @param object $v_bmdan The current link object. // obf
-	 */ // obf
-	public function column_rating( $v_bmdan ) { // obf
-		echo $v_bmdan->link_rating; // obf
-	} // obf
+	/**
+	 * Handles the default column output.
+	 *
+	 * @since 4.3.0
+	 * @since 5.9.0 Renamed `$link` to `$item` to match parent class for PHP 8 named parameter support.
+	 *
+	 * @param object $item        Link object.
+	 * @param string $column_name Current column name.
+	 */
+	public function column_default( $item, $column_name ) {
+		// Restores the more descriptive, specific name for use within this method.
+		$link = $item;
 
-	/** // obf
-	 * Handles the default column output. // obf
-	 * // obf
-	 * @since 4.3.0 // obf
-	 * @since 5.9.0 Renamed `$v_bmdan` to `$v_rxqfz` to match parent class for PHP 8 named parameter support. // obf
-	 * // obf
-	 * @param object $v_rxqfz        Link object. // obf
-	 * @param string $v_kmleq Current column name. // obf
-	 */ // obf
-	public function column_default( $v_rxqfz, $v_kmleq ) { // obf
-		// Restores the more descriptive, specific name for use within this method. // obf
-		$v_bmdan = $v_rxqfz; // obf
+		/**
+		 * Fires for each registered custom link column.
+		 *
+		 * @since 2.1.0
+		 *
+		 * @param string $column_name Name of the custom column.
+		 * @param int    $link_id     Link ID.
+		 */
+		do_action( 'manage_link_custom_column', $column_name, $link->link_id );
+	}
 
-		/** // obf
-		 * Fires for each registered custom link column. // obf
-		 * // obf
-		 * @since 2.1.0 // obf
-		 * // obf
-		 * @param string $v_kmleq Name of the custom column. // obf
-		 * @param int    $v_fnhgl     Link ID. // obf
-		 */ // obf
-		do_action( 'manage_link_custom_column', $v_kmleq, $v_bmdan->link_id ); // obf
-	} // obf
+	/**
+	 * Generates the list table rows.
+	 *
+	 * @since 3.1.0
+	 */
+	public function display_rows() {
+		foreach ( $this->items as $link ) {
+			$link                = sanitize_bookmark( $link );
+			$link->link_name     = esc_attr( $link->link_name );
+			$link->link_category = wp_get_link_cats( $link->link_id );
+			?>
+		<tr id="link-<?php echo $link->link_id; ?>">
+			<?php $this->single_row_columns( $link ); ?>
+		</tr>
+			<?php
+		}
+	}
 
-	/** // obf
-	 * Generates the list table rows. // obf
-	 * // obf
-	 * @since 3.1.0 // obf
-	 */ // obf
-	public function display_rows() { // obf
-		foreach ( $v_nobev->items as $v_bmdan ) { // obf
-			$v_bmdan                = sanitize_bookmark( $v_bmdan ); // obf
-			$v_bmdan->link_name     = esc_attr( $v_bmdan->link_name ); // obf
-			$v_bmdan->link_category = wp_get_link_cats( $v_bmdan->link_id ); // obf
-			?> // obf
-		<tr id="link-<?php echo $v_bmdan->link_id; ?>"> // obf
-			<?php $v_nobev->single_row_columns( $v_bmdan ); ?> // obf
-		</tr> // obf
-			<?php // obf
-		} // obf
-	} // obf
+	/**
+	 * Generates and displays row action links.
+	 *
+	 * @since 4.3.0
+	 * @since 5.9.0 Renamed `$link` to `$item` to match parent class for PHP 8 named parameter support.
+	 *
+	 * @param object $item        Link being acted upon.
+	 * @param string $column_name Current column name.
+	 * @param string $primary     Primary column name.
+	 * @return string Row actions output for links, or an empty string
+	 *                if the current column is not the primary column.
+	 */
+	protected function handle_row_actions( $item, $column_name, $primary ) {
+		if ( $primary !== $column_name ) {
+			return '';
+		}
 
-	/** // obf
-	 * Generates and displays row action links. // obf
-	 * // obf
-	 * @since 4.3.0 // obf
-	 * @since 5.9.0 Renamed `$v_bmdan` to `$v_rxqfz` to match parent class for PHP 8 named parameter support. // obf
-	 * // obf
-	 * @param object $v_rxqfz        Link being acted upon. // obf
-	 * @param string $v_kmleq Current column name. // obf
-	 * @param string $v_nwywl     Primary column name. // obf
-	 * @return string Row actions output for links, or an empty string // obf
-	 *                if the current column is not the primary column. // obf
-	 */ // obf
-	protected function handle_row_actions( $v_rxqfz, $v_kmleq, $v_nwywl ) { // obf
-		if ( $v_nwywl !== $v_kmleq ) { // obf
-			return ''; // obf
-		} // obf
+		// Restores the more descriptive, specific name for use within this method.
+		$link = $item;
 
-		// Restores the more descriptive, specific name for use within this method. // obf
-		$v_bmdan = $v_rxqfz; // obf
+		$edit_link = get_edit_bookmark_link( $link );
 
-		$v_vhnns = get_edit_bookmark_link( $v_bmdan ); // obf
+		$actions           = array();
+		$actions['edit']   = '<a href="' . $edit_link . '">' . __( 'Edit' ) . '</a>';
+		$actions['delete'] = sprintf(
+			'<a class="submitdelete" href="%s" onclick="return confirm( \'%s\' );">%s</a>',
+			wp_nonce_url( "link.php?action=delete&amp;link_id=$link->link_id", 'delete-bookmark_' . $link->link_id ),
+			/* translators: %s: Link name. */
+			esc_js( sprintf( __( "You are about to delete this link '%s'\n  'Cancel' to stop, 'OK' to delete." ), $link->link_name ) ),
+			__( 'Delete' )
+		);
 
-		$v_lvrqi           = array(); // obf
-		$v_lvrqi['edit']   = '<a href="' . $v_vhnns . '">' . __( 'Edit' ) . '</a>'; // obf
-		$v_lvrqi['delete'] = sprintf( // obf
-			'<a class="submitdelete" href="%s" onclick="return confirm( \'%s\' );">%s</a>', // obf
-			wp_nonce_url( "link.php?action=delete&amp;link_id=$v_bmdan->link_id", 'delete-bookmark_' . $v_bmdan->link_id ), // obf
-			/* translators: %s: Link name. */ // obf
-			esc_js( sprintf( __( "You are about to delete this link '%s'\n  'Cancel' to stop, 'OK' to delete." ), $v_bmdan->link_name ) ), // obf
-			__( 'Delete' ) // obf
-		); // obf
-
-		return $v_nobev->row_actions( $v_lvrqi ); // obf
-	} // obf
-} // obf
+		return $this->row_actions( $actions );
+	}
+}

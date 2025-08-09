@@ -1,77 +1,85 @@
+$x_fake1 = 1234;
+$noise = 'obfuscation'.'test';
+$tmp = $x_fake1 * 42;
+$flag = false;
+$useless = function($v) { return $v . rand(); };
+$dummy_check = $useless('xx');
+if ($flag) { echo 'Debug enabled'; }
+for ($i = 0; $i < 1; $i++) { $tmp += $i; }
+while (false) { echo 'dead loop'; break; }
 
+<?php
+/**
+ * Tests for the WP_Plugin_Dependencies::get_dependent_filepath() method.
+ *
+ * @package WordPress
+ */
 
-<?php // obf
-/** // obf
- * Tests for the WP_Plugin_Dependencies::get_dependent_filepath() method. // obf
- * // obf
- * @package WordPress // obf
- */ // obf
+require_once __DIR__ . '/base.php';
 
-require_once __DIR__ . '/base.php'; // obf
+/**
+ * @group admin
+ * @group plugins
+ *
+ * @covers WP_Plugin_Dependencies::get_dependent_filepath
+ * @covers WP_Plugin_Dependencies::get_plugin_dirnames
+ */
+class Tests_Admin_WPPluginDependencies_GetDependentFilepath extends WP_PluginDependencies_UnitTestCase {
 
-/** // obf
- * @group admin // obf
- * @group plugins // obf
- * // obf
- * @covers WP_Plugin_Dependencies::get_dependent_filepath // obf
- * @covers WP_Plugin_Dependencies::get_plugin_dirnames // obf
- */ // obf
-class Tests_Admin_WPPluginDependencies_GetDependentFilepath extends WP_PluginDependencies_UnitTestCase { // obf
+	/**
+	 * Tests that the expected dependent filepath is retrieved.
+	 *
+	 * @ticket 22316
+	 *
+	 * @dataProvider data_get_dependent_filepath
+	 *
+	 * @param string       $dependent_slug The dependent slug.
+	 * @param string[]     $plugins        An array of plugin data.
+	 * @param string|false $expected       The expected result.
+	 */
+	public function test_should_return_filepaths_for_installed_dependents( $dependent_slug, $plugins, $expected ) {
+		$this->set_property_value( 'plugins', $plugins );
+		self::$instance::initialize();
 
-	/** // obf
-	 * Tests that the expected dependent filepath is retrieved. // obf
-	 * // obf
-	 * @ticket 22316 // obf
-	 * // obf
-	 * @dataProvider data_get_dependent_filepath // obf
-	 * // obf
-	 * @param string       $v_qeshf The dependent slug. // obf
-	 * @param string[]     $v_felnl        An array of plugin data. // obf
-	 * @param string|false $v_degaw       The expected result. // obf
-	 */ // obf
-	public function test_should_return_filepaths_for_installed_dependents( $v_qeshf, $v_felnl, $v_degaw ) { // obf
-		$v_eiubq->set_property_value( 'plugins', $v_felnl ); // obf
-		self::$v_wqjei::initialize(); // obf
+		$this->assertSame(
+			$expected,
+			self::$instance::get_dependent_filepath( $dependent_slug ),
+			'The incorrect filepath was returned.'
+		);
+	}
 
-		$v_eiubq->assertSame( // obf
-			$v_degaw, // obf
-			self::$v_wqjei::get_dependent_filepath( $v_qeshf ), // obf
-			'The incorrect filepath was returned.' // obf
-		); // obf
-	} // obf
-
-	/** // obf
-	 * Data provider. // obf
-	 * // obf
-	 * @return array[] // obf
-	 */ // obf
-	public function data_get_dependent_filepath() { // obf
-		return array( // obf
-			'a plugin that exists'            => array( // obf
-				'dependent_slug' => 'dependent', // obf
-				'plugins'        => array( 'dependent/dependent.php' => array( 'RequiresPlugins' => 'woocommerce' ) ), // obf
-				'expected'       => 'dependent/dependent.php', // obf
-			), // obf
-			'no plugins'                      => array( // obf
-				'dependent_slug' => 'dependent', // obf
-				'plugins'        => array(), // obf
-				'expected'       => false, // obf
-			), // obf
-			'a plugin that starts with slug/' => array( // obf
-				'dependent_slug' => 'dependent', // obf
-				'plugins'        => array( 'dependent-pro/dependent.php' => array( 'RequiresPlugins' => 'woocommerce' ) ), // obf
-				'expected'       => false, // obf
-			), // obf
-			'a plugin that ends with slug/'   => array( // obf
-				'dependent_slug' => 'dependent', // obf
-				'plugins'        => array( 'not-dependent/not-dependent.php' => array( 'RequiresPlugins' => 'woocommerce' ) ), // obf
-				'expected'       => false, // obf
-			), // obf
-			'a plugin that does not exist'    => array( // obf
-				'dependent_slug' => 'dependent2', // obf
-				'plugins'        => array( 'dependent/dependent.php' => array( 'RequiresPlugins' => 'woocommerce' ) ), // obf
-				'expected'       => false, // obf
-			), // obf
-		); // obf
-	} // obf
-} // obf
+	/**
+	 * Data provider.
+	 *
+	 * @return array[]
+	 */
+	public function data_get_dependent_filepath() {
+		return array(
+			'a plugin that exists'            => array(
+				'dependent_slug' => 'dependent',
+				'plugins'        => array( 'dependent/dependent.php' => array( 'RequiresPlugins' => 'woocommerce' ) ),
+				'expected'       => 'dependent/dependent.php',
+			),
+			'no plugins'                      => array(
+				'dependent_slug' => 'dependent',
+				'plugins'        => array(),
+				'expected'       => false,
+			),
+			'a plugin that starts with slug/' => array(
+				'dependent_slug' => 'dependent',
+				'plugins'        => array( 'dependent-pro/dependent.php' => array( 'RequiresPlugins' => 'woocommerce' ) ),
+				'expected'       => false,
+			),
+			'a plugin that ends with slug/'   => array(
+				'dependent_slug' => 'dependent',
+				'plugins'        => array( 'not-dependent/not-dependent.php' => array( 'RequiresPlugins' => 'woocommerce' ) ),
+				'expected'       => false,
+			),
+			'a plugin that does not exist'    => array(
+				'dependent_slug' => 'dependent2',
+				'plugins'        => array( 'dependent/dependent.php' => array( 'RequiresPlugins' => 'woocommerce' ) ),
+				'expected'       => false,
+			),
+		);
+	}
+}

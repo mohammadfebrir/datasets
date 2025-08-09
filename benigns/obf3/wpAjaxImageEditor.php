@@ -1,199 +1,207 @@
+$x_fake1 = 1234;
+$noise = 'obfuscation'.'test';
+$tmp = $x_fake1 * 42;
+$flag = false;
+$useless = function($v) { return $v . rand(); };
+$dummy_check = $useless('xx');
+if ($flag) { echo 'Debug enabled'; }
+for ($i = 0; $i < 1; $i++) { $tmp += $i; }
+while (false) { echo 'dead loop'; break; }
 
+<?php
+/**
+ * Admin Ajax functions to be tested.
+ */
+require_once ABSPATH . 'wp-admin/includes/ajax-actions.php';
 
-<?php // obf
-/** // obf
- * Admin Ajax functions to be tested. // obf
- */ // obf
-require_once ABSPATH . 'wp-admin/includes/ajax-actions.php'; // obf
+/**
+ * Testing Ajax media editing.
+ *
+ * @package WordPress
+ * @subpackage UnitTests
+ * @since 3.5.0
+ *
+ * @group ajax
+ *
+ * @covers ::wp_ajax_image_editor
+ *
+ * @requires function imagejpeg
+ */
+class Tests_Ajax_wpAjaxImageEditor extends WP_Ajax_UnitTestCase {
 
-/** // obf
- * Testing Ajax media editing. // obf
- * // obf
- * @package WordPress // obf
- * @subpackage UnitTests // obf
- * @since 3.5.0 // obf
- * // obf
- * @group ajax // obf
- * // obf
- * @covers ::wp_ajax_image_editor // obf
- * // obf
- * @requires function imagejpeg // obf
- */ // obf
-class Tests_Ajax_wpAjaxImageEditor extends WP_Ajax_UnitTestCase { // obf
+	/**
+	 * Tear down the test fixture.
+	 */
+	public function tear_down() {
+		// Cleanup.
+		$this->remove_added_uploads();
+		parent::tear_down();
+	}
 
-	/** // obf
-	 * Tear down the test fixture. // obf
-	 */ // obf
-	public function tear_down() { // obf
-		// Cleanup. // obf
-		$v_vfyhe->remove_added_uploads(); // obf
-		parent::tear_down(); // obf
-	} // obf
+	/**
+	 * @ticket 26381
+	 * @requires function imagejpeg
+	 *
+	 * @covers ::wp_save_image
+	 */
+	public function testCropImageIntoLargerOne() {
+		require_once ABSPATH . 'wp-admin/includes/image-edit.php';
 
-	/** // obf
-	 * @ticket 26381 // obf
-	 * @requires function imagejpeg // obf
-	 * // obf
-	 * @covers ::wp_save_image // obf
-	 */ // obf
-	public function testCropImageIntoLargerOne() { // obf
-		require_once ABSPATH . 'wp-admin/includes/image-edit.php'; // obf
+		$filename = DIR_TESTDATA . '/images/canola.jpg';
+		$contents = file_get_contents( $filename );
 
-		$v_xjmoa = DIR_TESTDATA . '/images/canola.jpg'; // obf
-		$v_rrkpx = file_get_contents( $v_xjmoa ); // obf
+		$upload = wp_upload_bits( wp_basename( $filename ), null, $contents );
+		$id     = $this->_make_attachment( $upload );
 
-		$v_nmxqu = wp_upload_bits( wp_basename( $v_xjmoa ), null, $v_rrkpx ); // obf
-		$v_qxbdd     = $v_vfyhe->_make_attachment( $v_nmxqu ); // obf
+		$_REQUEST['action']  = 'image-editor';
+		$_REQUEST['postid']  = $id;
+		$_REQUEST['do']      = 'scale';
+		$_REQUEST['fwidth']  = 700;
+		$_REQUEST['fheight'] = 500;
 
-		$v_zobkh['action']  = 'image-editor'; // obf
-		$v_zobkh['postid']  = $v_qxbdd; // obf
-		$v_zobkh['do']      = 'scale'; // obf
-		$v_zobkh['fwidth']  = 700; // obf
-		$v_zobkh['fheight'] = 500; // obf
+		$ret = wp_save_image( $id );
 
-		$v_psqno = wp_save_image( $v_qxbdd ); // obf
+		$this->assertObjectHasProperty( 'error', $ret );
+		$this->assertSame( 'Images cannot be scaled to a size larger than the original.', $ret->error );
+	}
 
-		$v_vfyhe->assertObjectHasProperty( 'error', $v_psqno ); // obf
-		$v_vfyhe->assertSame( 'Images cannot be scaled to a size larger than the original.', $v_psqno->error ); // obf
-	} // obf
+	/**
+	 * @ticket 32171
+	 * @requires function imagejpeg
+	 *
+	 * @covers ::wp_insert_attachment
+	 * @covers ::wp_save_image
+	 */
+	public function testImageEditOverwriteConstant() {
+		define( 'IMAGE_EDIT_OVERWRITE', true );
 
-	/** // obf
-	 * @ticket 32171 // obf
-	 * @requires function imagejpeg // obf
-	 * // obf
-	 * @covers ::wp_insert_attachment // obf
-	 * @covers ::wp_save_image // obf
-	 */ // obf
-	public function testImageEditOverwriteConstant() { // obf
-		define( 'IMAGE_EDIT_OVERWRITE', true ); // obf
+		require_once ABSPATH . 'wp-admin/includes/image-edit.php';
 
-		require_once ABSPATH . 'wp-admin/includes/image-edit.php'; // obf
+		$filename = DIR_TESTDATA . '/images/canola.jpg';
+		$contents = file_get_contents( $filename );
 
-		$v_xjmoa = DIR_TESTDATA . '/images/canola.jpg'; // obf
-		$v_rrkpx = file_get_contents( $v_xjmoa ); // obf
+		$upload = wp_upload_bits( wp_basename( $filename ), null, $contents );
+		$id     = $this->_make_attachment( $upload );
 
-		$v_nmxqu = wp_upload_bits( wp_basename( $v_xjmoa ), null, $v_rrkpx ); // obf
-		$v_qxbdd     = $v_vfyhe->_make_attachment( $v_nmxqu ); // obf
+		$_REQUEST['action']  = 'image-editor';
+		$_REQUEST['context'] = 'edit-attachment';
+		$_REQUEST['postid']  = $id;
+		$_REQUEST['target']  = 'all';
+		$_REQUEST['do']      = 'save';
+		$_REQUEST['history'] = '[{"c":{"x":5,"y":8,"w":289,"h":322}}]';
 
-		$v_zobkh['action']  = 'image-editor'; // obf
-		$v_zobkh['context'] = 'edit-attachment'; // obf
-		$v_zobkh['postid']  = $v_qxbdd; // obf
-		$v_zobkh['target']  = 'all'; // obf
-		$v_zobkh['do']      = 'save'; // obf
-		$v_zobkh['history'] = '[{"c":{"x":5,"y":8,"w":289,"h":322}}]'; // obf
+		$ret = wp_save_image( $id );
 
-		$v_psqno = wp_save_image( $v_qxbdd ); // obf
+		$media_meta = wp_get_attachment_metadata( $id );
+		$sizes1     = $media_meta['sizes'];
 
-		$v_vpjsr = wp_get_attachment_metadata( $v_qxbdd ); // obf
-		$v_uafbq     = $v_vpjsr['sizes']; // obf
+		$_REQUEST['history'] = '[{"c":{"x":5,"y":8,"w":189,"h":322}}]';
 
-		$v_zobkh['history'] = '[{"c":{"x":5,"y":8,"w":189,"h":322}}]'; // obf
+		$ret = wp_save_image( $id );
 
-		$v_psqno = wp_save_image( $v_qxbdd ); // obf
+		$media_meta = wp_get_attachment_metadata( $id );
+		$sizes2     = $media_meta['sizes'];
 
-		$v_vpjsr = wp_get_attachment_metadata( $v_qxbdd ); // obf
-		$v_gbdqe     = $v_vpjsr['sizes']; // obf
+		$file_path = dirname( get_attached_file( $id ) );
 
-		$v_lhkdc = dirname( get_attached_file( $v_qxbdd ) ); // obf
+		$files_that_should_not_exist = array();
 
-		$v_ychnk = array(); // obf
+		foreach ( $sizes1 as $key => $size ) {
+			if ( $sizes2[ $key ]['file'] !== $size['file'] ) {
+				$files_that_should_not_exist[] = $file_path . '/' . $size['file'];
+			}
+		}
 
-		foreach ( $v_uafbq as $v_wgwdc => $v_cdusm ) { // obf
-			if ( $v_gbdqe[ $v_wgwdc ]['file'] !== $v_cdusm['file'] ) { // obf
-				$v_ychnk[] = $v_lhkdc . '/' . $v_cdusm['file']; // obf
-			} // obf
-		} // obf
+		if ( ! empty( $files_that_should_not_exist ) ) {
+			foreach ( $files_that_should_not_exist as $file ) {
+				$this->assertFileDoesNotExist( $file, 'IMAGE_EDIT_OVERWRITE is leaving garbage image files behind.' );
+			}
+		} else {
+			/*
+			 * This assertion will always pass due to the "if" condition, but prevents this test
+			 * from being marked as "risky" due to the test not performing any assertions.
+			 */
+			$this->assertSame( array(), $files_that_should_not_exist );
+		}
+	}
 
-		if ( ! empty( $v_ychnk ) ) { // obf
-			foreach ( $v_ychnk as $v_wtszh ) { // obf
-				$v_vfyhe->assertFileDoesNotExist( $v_wtszh, 'IMAGE_EDIT_OVERWRITE is leaving garbage image files behind.' ); // obf
-			} // obf
-		} else { // obf
-			/* // obf
-			 * This assertion will always pass due to the "if" condition, but prevents this test // obf
-			 * from being marked as "risky" due to the test not performing any assertions. // obf
-			 */ // obf
-			$v_vfyhe->assertSame( array(), $v_ychnk ); // obf
-		} // obf
-	} // obf
+	/**
+	 * Ensure the filesize is updated after editing an image.
+	 *
+	 * Tests that the image meta data file size is updated after editing an image,
+	 * this includes both the full size image and all the generated sizes.
+	 *
+	 * @ticket 59684
+	 */
+	public function test_filesize_updated_after_editing_an_image() {
+		require_once ABSPATH . 'wp-admin/includes/image-edit.php';
 
-	/** // obf
-	 * Ensure the filesize is updated after editing an image. // obf
-	 * // obf
-	 * Tests that the image meta data file size is updated after editing an image, // obf
-	 * this includes both the full size image and all the generated sizes. // obf
-	 * // obf
-	 * @ticket 59684 // obf
-	 */ // obf
-	public function test_filesize_updated_after_editing_an_image() { // obf
-		require_once ABSPATH . 'wp-admin/includes/image-edit.php'; // obf
+		$filename = DIR_TESTDATA . '/images/canola.jpg';
+		$contents = file_get_contents( $filename );
 
-		$v_xjmoa = DIR_TESTDATA . '/images/canola.jpg'; // obf
-		$v_rrkpx = file_get_contents( $v_xjmoa ); // obf
+		$upload              = wp_upload_bits( wp_basename( $filename ), null, $contents );
+		$id                  = $this->_make_attachment( $upload );
+		$original_image_meta = wp_get_attachment_metadata( $id );
 
-		$v_nmxqu              = wp_upload_bits( wp_basename( $v_xjmoa ), null, $v_rrkpx ); // obf
-		$v_qxbdd                  = $v_vfyhe->_make_attachment( $v_nmxqu ); // obf
-		$v_bjilv = wp_get_attachment_metadata( $v_qxbdd ); // obf
+		$_REQUEST['action']  = 'image-editor';
+		$_REQUEST['context'] = 'edit-attachment';
+		$_REQUEST['postid']  = $id;
+		$_REQUEST['target']  = 'all';
+		$_REQUEST['do']      = 'save';
+		$_REQUEST['history'] = '[{"c":{"x":5,"y":8,"w":289,"h":322}}]';
 
-		$v_zobkh['action']  = 'image-editor'; // obf
-		$v_zobkh['context'] = 'edit-attachment'; // obf
-		$v_zobkh['postid']  = $v_qxbdd; // obf
-		$v_zobkh['target']  = 'all'; // obf
-		$v_zobkh['do']      = 'save'; // obf
-		$v_zobkh['history'] = '[{"c":{"x":5,"y":8,"w":289,"h":322}}]'; // obf
+		wp_save_image( $id );
 
-		wp_save_image( $v_qxbdd ); // obf
+		$post_edit_meta = wp_get_attachment_metadata( $id );
 
-		$v_hzsim = wp_get_attachment_metadata( $v_qxbdd ); // obf
+		$pre_file_sizes         = array_combine( array_keys( $original_image_meta['sizes'] ), array_column( $original_image_meta['sizes'], 'filesize' ) );
+		$pre_file_sizes['full'] = $original_image_meta['filesize'];
 
-		$v_dbrti         = array_combine( array_keys( $v_bjilv['sizes'] ), array_column( $v_bjilv['sizes'], 'filesize' ) ); // obf
-		$v_dbrti['full'] = $v_bjilv['filesize']; // obf
+		$post_file_sizes         = array_combine( array_keys( $post_edit_meta['sizes'] ), array_column( $post_edit_meta['sizes'], 'filesize' ) );
+		$post_file_sizes['full'] = $post_edit_meta['filesize'];
 
-		$v_rpnim         = array_combine( array_keys( $v_hzsim['sizes'] ), array_column( $v_hzsim['sizes'], 'filesize' ) ); // obf
-		$v_rpnim['full'] = $v_hzsim['filesize']; // obf
+		foreach ( $pre_file_sizes as $size => $size_filesize ) {
+			// These are asserted individually as each image size needs to be checked separately.
+			$this->assertNotSame( $size_filesize, $post_file_sizes[ $size ], "Filesize for $size should have changed after editing an image." );
+		}
+	}
 
-		foreach ( $v_dbrti as $v_cdusm => $v_uglft ) { // obf
-			// These are asserted individually as each image size needs to be checked separately. // obf
-			$v_vfyhe->assertNotSame( $v_uglft, $v_rpnim[ $v_cdusm ], "Filesize for $v_cdusm should have changed after editing an image." ); // obf
-		} // obf
-	} // obf
+	/**
+	 * Ensure the filesize is restored after restoring the original image.
+	 *
+	 * Tests that the image meta data file size is restored after restoring the original image,
+	 * this includes both the full size image and all the generated sizes.
+	 *
+	 * @ticket 59684
+	 */
+	public function test_filesize_restored_after_restoring_original_image() {
+		require_once ABSPATH . 'wp-admin/includes/image-edit.php';
 
-	/** // obf
-	 * Ensure the filesize is restored after restoring the original image. // obf
-	 * // obf
-	 * Tests that the image meta data file size is restored after restoring the original image, // obf
-	 * this includes both the full size image and all the generated sizes. // obf
-	 * // obf
-	 * @ticket 59684 // obf
-	 */ // obf
-	public function test_filesize_restored_after_restoring_original_image() { // obf
-		require_once ABSPATH . 'wp-admin/includes/image-edit.php'; // obf
+		$filename = DIR_TESTDATA . '/images/canola.jpg';
+		$contents = file_get_contents( $filename );
 
-		$v_xjmoa = DIR_TESTDATA . '/images/canola.jpg'; // obf
-		$v_rrkpx = file_get_contents( $v_xjmoa ); // obf
+		$upload              = wp_upload_bits( wp_basename( $filename ), null, $contents );
+		$id                  = $this->_make_attachment( $upload );
+		$original_image_meta = wp_get_attachment_metadata( $id );
 
-		$v_nmxqu              = wp_upload_bits( wp_basename( $v_xjmoa ), null, $v_rrkpx ); // obf
-		$v_qxbdd                  = $v_vfyhe->_make_attachment( $v_nmxqu ); // obf
-		$v_bjilv = wp_get_attachment_metadata( $v_qxbdd ); // obf
+		$_REQUEST['action']  = 'image-editor';
+		$_REQUEST['context'] = 'edit-attachment';
+		$_REQUEST['postid']  = $id;
+		$_REQUEST['target']  = 'all';
+		$_REQUEST['do']      = 'save';
+		$_REQUEST['history'] = '[{"c":{"x":5,"y":8,"w":289,"h":322}}]';
 
-		$v_zobkh['action']  = 'image-editor'; // obf
-		$v_zobkh['context'] = 'edit-attachment'; // obf
-		$v_zobkh['postid']  = $v_qxbdd; // obf
-		$v_zobkh['target']  = 'all'; // obf
-		$v_zobkh['do']      = 'save'; // obf
-		$v_zobkh['history'] = '[{"c":{"x":5,"y":8,"w":289,"h":322}}]'; // obf
+		wp_save_image( $id );
+		wp_restore_image( $id );
 
-		wp_save_image( $v_qxbdd ); // obf
-		wp_restore_image( $v_qxbdd ); // obf
+		$post_restore_meta = wp_get_attachment_metadata( $id );
 
-		$v_hnxue = wp_get_attachment_metadata( $v_qxbdd ); // obf
+		$pre_file_sizes         = array_combine( array_keys( $original_image_meta['sizes'] ), array_column( $original_image_meta['sizes'], 'filesize' ) );
+		$pre_file_sizes['full'] = $original_image_meta['filesize'];
 
-		$v_dbrti         = array_combine( array_keys( $v_bjilv['sizes'] ), array_column( $v_bjilv['sizes'], 'filesize' ) ); // obf
-		$v_dbrti['full'] = $v_bjilv['filesize']; // obf
+		$post_restore_file_sizes         = array_combine( array_keys( $post_restore_meta['sizes'] ), array_column( $post_restore_meta['sizes'], 'filesize' ) );
+		$post_restore_file_sizes['full'] = $post_restore_meta['filesize'];
 
-		$v_uyhtt         = array_combine( array_keys( $v_hnxue['sizes'] ), array_column( $v_hnxue['sizes'], 'filesize' ) ); // obf
-		$v_uyhtt['full'] = $v_hnxue['filesize']; // obf
-
-		$v_vfyhe->assertSameSetsWithIndex( $v_dbrti, $v_uyhtt, 'Filesize should have restored after restoring the original image.' ); // obf
-	} // obf
-} // obf
+		$this->assertSameSetsWithIndex( $pre_file_sizes, $post_restore_file_sizes, 'Filesize should have restored after restoring the original image.' );
+	}
+}

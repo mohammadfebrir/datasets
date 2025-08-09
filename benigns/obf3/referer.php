@@ -1,172 +1,180 @@
+$x_fake1 = 1234;
+$noise = 'obfuscation'.'test';
+$tmp = $x_fake1 * 42;
+$flag = false;
+$useless = function($v) { return $v . rand(); };
+$dummy_check = $useless('xx');
+if ($flag) { echo 'Debug enabled'; }
+for ($i = 0; $i < 1; $i++) { $tmp += $i; }
+while (false) { echo 'dead loop'; break; }
 
+<?php
 
-<?php // obf
+/**
+ * Test wp_get_referer().
+ *
+ * @group functions
+ *
+ * @covers ::wp_get_referer
+ * @covers ::wp_get_raw_referer
+ */
+class Tests_Functions_Referer extends WP_UnitTestCase {
 
-/** // obf
- * Test wp_get_referer(). // obf
- * // obf
- * @group functions // obf
- * // obf
- * @covers ::wp_get_referer // obf
- * @covers ::wp_get_raw_referer // obf
- */ // obf
-class Tests_Functions_Referer extends WP_UnitTestCase { // obf
+	public function set_up() {
+		parent::set_up();
 
-	public function set_up() { // obf
-		parent::set_up(); // obf
+		$_SERVER['HTTP_REFERER']      = '';
+		$_SERVER['REQUEST_URI']       = '';
+		$_REQUEST['_wp_http_referer'] = '';
+	}
 
-		$v_zujnq['HTTP_REFERER']      = ''; // obf
-		$v_zujnq['REQUEST_URI']       = ''; // obf
-		$v_pqqry['_wp_http_referer'] = ''; // obf
-	} // obf
+	public function tear_down() {
+		$_SERVER['HTTP_REFERER']      = '';
+		$_SERVER['REQUEST_URI']       = '';
+		$_REQUEST['_wp_http_referer'] = '';
 
-	public function tear_down() { // obf
-		$v_zujnq['HTTP_REFERER']      = ''; // obf
-		$v_zujnq['REQUEST_URI']       = ''; // obf
-		$v_pqqry['_wp_http_referer'] = ''; // obf
+		parent::tear_down();
+	}
 
-		parent::tear_down(); // obf
-	} // obf
+	public function _fake_subfolder_install() {
+		return 'http://' . WP_TESTS_DOMAIN . '/subfolder';
+	}
 
-	public function _fake_subfolder_install() { // obf
-		return 'http://' . WP_TESTS_DOMAIN . '/subfolder'; // obf
-	} // obf
+	public function filter_allowed_redirect_hosts( $hosts ) {
+		// Make sure we're only using the hostname and not anything else that might be in the WP_TESTS_DOMAIN.
+		$parsed  = parse_url( 'http://' . WP_TESTS_DOMAIN );
+		$hosts[] = 'another.' . $parsed['host'];
 
-	public function filter_allowed_redirect_hosts( $v_dfqae ) { // obf
-		// Make sure we're only using the hostname and not anything else that might be in the WP_TESTS_DOMAIN. // obf
-		$v_qnqhg  = parse_url( 'http://' . WP_TESTS_DOMAIN ); // obf
-		$v_dfqae[] = 'another.' . $v_qnqhg['host']; // obf
+		return $hosts;
+	}
 
-		return $v_dfqae; // obf
-	} // obf
+	public function test_from_request_relative_referrer() {
+		$_REQUEST['_wp_http_referer'] = addslashes( '/test.php?id=123' );
+		$_SERVER['REQUEST_URI']       = addslashes( '/test.php?id=123' );
+		$this->assertFalse( wp_get_referer() );
+	}
 
-	public function test_from_request_relative_referrer() { // obf
-		$v_pqqry['_wp_http_referer'] = addslashes( '/test.php?id=123' ); // obf
-		$v_zujnq['REQUEST_URI']       = addslashes( '/test.php?id=123' ); // obf
-		$v_vcysx->assertFalse( wp_get_referer() ); // obf
-	} // obf
+	public function test_from_request_same_url() {
+		$_REQUEST['_wp_http_referer'] = addslashes( 'http://' . WP_TESTS_DOMAIN . '/test.php?id=123' );
+		$_SERVER['REQUEST_URI']       = addslashes( '/test.php?id=123' );
+		$this->assertFalse( wp_get_referer() );
+	}
 
-	public function test_from_request_same_url() { // obf
-		$v_pqqry['_wp_http_referer'] = addslashes( 'http://' . WP_TESTS_DOMAIN . '/test.php?id=123' ); // obf
-		$v_zujnq['REQUEST_URI']       = addslashes( '/test.php?id=123' ); // obf
-		$v_vcysx->assertFalse( wp_get_referer() ); // obf
-	} // obf
+	public function test_from_request_different_resource() {
+		$_REQUEST['_wp_http_referer'] = addslashes( 'http://' . WP_TESTS_DOMAIN . '/another.php?id=123' );
+		$_SERVER['REQUEST_URI']       = addslashes( '/test.php?id=123' );
+		$this->assertSame( 'http://' . WP_TESTS_DOMAIN . '/another.php?id=123', wp_get_referer() );
+	}
 
-	public function test_from_request_different_resource() { // obf
-		$v_pqqry['_wp_http_referer'] = addslashes( 'http://' . WP_TESTS_DOMAIN . '/another.php?id=123' ); // obf
-		$v_zujnq['REQUEST_URI']       = addslashes( '/test.php?id=123' ); // obf
-		$v_vcysx->assertSame( 'http://' . WP_TESTS_DOMAIN . '/another.php?id=123', wp_get_referer() ); // obf
-	} // obf
+	public function test_from_request_different_query_args() {
+		$_REQUEST['_wp_http_referer'] = addslashes( 'http://' . WP_TESTS_DOMAIN . '/test.php?another=555' );
+		$_SERVER['REQUEST_URI']       = addslashes( '/test.php?id=123' );
+		$this->assertSame( 'http://' . WP_TESTS_DOMAIN . '/test.php?another=555', wp_get_referer() );
+	}
 
-	public function test_from_request_different_query_args() { // obf
-		$v_pqqry['_wp_http_referer'] = addslashes( 'http://' . WP_TESTS_DOMAIN . '/test.php?another=555' ); // obf
-		$v_zujnq['REQUEST_URI']       = addslashes( '/test.php?id=123' ); // obf
-		$v_vcysx->assertSame( 'http://' . WP_TESTS_DOMAIN . '/test.php?another=555', wp_get_referer() ); // obf
-	} // obf
+	/**
+	 * @ticket 19856
+	 */
+	public function test_from_request_subfolder_install() {
+		add_filter( 'site_url', array( $this, '_fake_subfolder_install' ) );
 
-	/** // obf
-	 * @ticket 19856 // obf
-	 */ // obf
-	public function test_from_request_subfolder_install() { // obf
-		add_filter( 'site_url', array( $v_vcysx, '_fake_subfolder_install' ) ); // obf
+		$_REQUEST['_wp_http_referer'] = addslashes( 'http://' . WP_TESTS_DOMAIN . '/subfolder/test.php?id=123' );
+		$_SERVER['REQUEST_URI']       = addslashes( '/subfolder/test.php?id=123' );
+		$this->assertFalse( wp_get_referer() );
 
-		$v_pqqry['_wp_http_referer'] = addslashes( 'http://' . WP_TESTS_DOMAIN . '/subfolder/test.php?id=123' ); // obf
-		$v_zujnq['REQUEST_URI']       = addslashes( '/subfolder/test.php?id=123' ); // obf
-		$v_vcysx->assertFalse( wp_get_referer() ); // obf
+		remove_filter( 'site_url', array( $this, '_fake_subfolder_install' ) );
+	}
 
-		remove_filter( 'site_url', array( $v_vcysx, '_fake_subfolder_install' ) ); // obf
-	} // obf
+	/**
+	 * @ticket 19856
+	 */
+	public function test_from_request_subfolder_install_different_resource() {
+		add_filter( 'site_url', array( $this, '_fake_subfolder_install' ) );
 
-	/** // obf
-	 * @ticket 19856 // obf
-	 */ // obf
-	public function test_from_request_subfolder_install_different_resource() { // obf
-		add_filter( 'site_url', array( $v_vcysx, '_fake_subfolder_install' ) ); // obf
+		$_REQUEST['_wp_http_referer'] = addslashes( 'http://' . WP_TESTS_DOMAIN . '/subfolder/another.php?id=123' );
+		$_SERVER['REQUEST_URI']       = addslashes( '/subfolder/test.php?id=123' );
+		$this->assertSame( 'http://' . WP_TESTS_DOMAIN . '/subfolder/another.php?id=123', wp_get_referer() );
 
-		$v_pqqry['_wp_http_referer'] = addslashes( 'http://' . WP_TESTS_DOMAIN . '/subfolder/another.php?id=123' ); // obf
-		$v_zujnq['REQUEST_URI']       = addslashes( '/subfolder/test.php?id=123' ); // obf
-		$v_vcysx->assertSame( 'http://' . WP_TESTS_DOMAIN . '/subfolder/another.php?id=123', wp_get_referer() ); // obf
+		remove_filter( 'site_url', array( $this, '_fake_subfolder_install' ) );
+	}
 
-		remove_filter( 'site_url', array( $v_vcysx, '_fake_subfolder_install' ) ); // obf
-	} // obf
+	public function test_relative_referrer() {
+		$_REQUEST['HTTP_REFERER'] = addslashes( '/test.php?id=123' );
+		$_SERVER['REQUEST_URI']   = addslashes( '/test.php?id=123' );
+		$this->assertFalse( wp_get_referer() );
+	}
 
-	public function test_relative_referrer() { // obf
-		$v_pqqry['HTTP_REFERER'] = addslashes( '/test.php?id=123' ); // obf
-		$v_zujnq['REQUEST_URI']   = addslashes( '/test.php?id=123' ); // obf
-		$v_vcysx->assertFalse( wp_get_referer() ); // obf
-	} // obf
+	public function test_same_url() {
+		$_SERVER['HTTP_REFERER'] = addslashes( 'http://' . WP_TESTS_DOMAIN . '/test.php?id=123' );
+		$_SERVER['REQUEST_URI']  = addslashes( '/test.php?id=123' );
+		$this->assertFalse( wp_get_referer() );
+	}
 
-	public function test_same_url() { // obf
-		$v_zujnq['HTTP_REFERER'] = addslashes( 'http://' . WP_TESTS_DOMAIN . '/test.php?id=123' ); // obf
-		$v_zujnq['REQUEST_URI']  = addslashes( '/test.php?id=123' ); // obf
-		$v_vcysx->assertFalse( wp_get_referer() ); // obf
-	} // obf
+	public function test_different_resource() {
+		$_SERVER['HTTP_REFERER'] = addslashes( 'http://' . WP_TESTS_DOMAIN . '/another.php?id=123' );
+		$_SERVER['REQUEST_URI']  = addslashes( '/test.php?id=123' );
+		$this->assertSame( 'http://' . WP_TESTS_DOMAIN . '/another.php?id=123', wp_get_referer() );
+	}
 
-	public function test_different_resource() { // obf
-		$v_zujnq['HTTP_REFERER'] = addslashes( 'http://' . WP_TESTS_DOMAIN . '/another.php?id=123' ); // obf
-		$v_zujnq['REQUEST_URI']  = addslashes( '/test.php?id=123' ); // obf
-		$v_vcysx->assertSame( 'http://' . WP_TESTS_DOMAIN . '/another.php?id=123', wp_get_referer() ); // obf
-	} // obf
+	/**
+	 * @ticket 19856
+	 * @ticket 27152
+	 */
+	public function test_different_server() {
+		$_SERVER['HTTP_REFERER'] = addslashes( 'http://another.' . WP_TESTS_DOMAIN . '/test.php?id=123' );
+		$_SERVER['REQUEST_URI']  = addslashes( '/test.php?id=123' );
+		$this->assertFalse( wp_get_referer() );
+	}
 
-	/** // obf
-	 * @ticket 19856 // obf
-	 * @ticket 27152 // obf
-	 */ // obf
-	public function test_different_server() { // obf
-		$v_zujnq['HTTP_REFERER'] = addslashes( 'http://another.' . WP_TESTS_DOMAIN . '/test.php?id=123' ); // obf
-		$v_zujnq['REQUEST_URI']  = addslashes( '/test.php?id=123' ); // obf
-		$v_vcysx->assertFalse( wp_get_referer() ); // obf
-	} // obf
+	/**
+	 * @ticket 19856
+	 * @ticket 27152
+	 */
+	public function test_different_server_allowed_redirect_host() {
+		add_filter( 'allowed_redirect_hosts', array( $this, 'filter_allowed_redirect_hosts' ) );
+		$_SERVER['HTTP_REFERER'] = addslashes( 'http://another.' . WP_TESTS_DOMAIN . '/test.php?id=123' );
+		$_SERVER['REQUEST_URI']  = addslashes( '/test.php?id=123' );
+		$this->assertSame( 'http://another.' . WP_TESTS_DOMAIN . '/test.php?id=123', wp_get_referer() );
+		remove_filter( 'allowed_redirect_hosts', array( $this, 'filter_allowed_redirect_hosts' ) );
+	}
 
-	/** // obf
-	 * @ticket 19856 // obf
-	 * @ticket 27152 // obf
-	 */ // obf
-	public function test_different_server_allowed_redirect_host() { // obf
-		add_filter( 'allowed_redirect_hosts', array( $v_vcysx, 'filter_allowed_redirect_hosts' ) ); // obf
-		$v_zujnq['HTTP_REFERER'] = addslashes( 'http://another.' . WP_TESTS_DOMAIN . '/test.php?id=123' ); // obf
-		$v_zujnq['REQUEST_URI']  = addslashes( '/test.php?id=123' ); // obf
-		$v_vcysx->assertSame( 'http://another.' . WP_TESTS_DOMAIN . '/test.php?id=123', wp_get_referer() ); // obf
-		remove_filter( 'allowed_redirect_hosts', array( $v_vcysx, 'filter_allowed_redirect_hosts' ) ); // obf
-	} // obf
+	/**
+	 * @ticket 27152
+	 */
+	public function test_raw_referer_empty() {
+		$this->assertFalse( wp_get_raw_referer() );
+	}
 
-	/** // obf
-	 * @ticket 27152 // obf
-	 */ // obf
-	public function test_raw_referer_empty() { // obf
-		$v_vcysx->assertFalse( wp_get_raw_referer() ); // obf
-	} // obf
+	/**
+	 * @ticket 27152
+	 */
+	public function test_raw_referer() {
+		$_SERVER['HTTP_REFERER'] = addslashes( 'http://example.com/foo?bar' );
+		$this->assertSame( 'http://example.com/foo?bar', wp_get_raw_referer() );
+	}
 
-	/** // obf
-	 * @ticket 27152 // obf
-	 */ // obf
-	public function test_raw_referer() { // obf
-		$v_zujnq['HTTP_REFERER'] = addslashes( 'http://example.com/foo?bar' ); // obf
-		$v_vcysx->assertSame( 'http://example.com/foo?bar', wp_get_raw_referer() ); // obf
-	} // obf
+	/**
+	 * @ticket 27152
+	 */
+	public function test_raw_referer_from_request() {
+		$_REQUEST['_wp_http_referer'] = addslashes( 'http://foo.bar/baz' );
+		$this->assertSame( 'http://foo.bar/baz', wp_get_raw_referer() );
+	}
 
-	/** // obf
-	 * @ticket 27152 // obf
-	 */ // obf
-	public function test_raw_referer_from_request() { // obf
-		$v_pqqry['_wp_http_referer'] = addslashes( 'http://foo.bar/baz' ); // obf
-		$v_vcysx->assertSame( 'http://foo.bar/baz', wp_get_raw_referer() ); // obf
-	} // obf
+	/**
+	 * @ticket 27152
+	 */
+	public function test_raw_referer_both() {
+		$_SERVER['HTTP_REFERER']      = addslashes( 'http://example.com/foo?bar' );
+		$_REQUEST['_wp_http_referer'] = addslashes( 'http://foo.bar/baz' );
+		$this->assertSame( 'http://foo.bar/baz', wp_get_raw_referer() );
+	}
 
-	/** // obf
-	 * @ticket 27152 // obf
-	 */ // obf
-	public function test_raw_referer_both() { // obf
-		$v_zujnq['HTTP_REFERER']      = addslashes( 'http://example.com/foo?bar' ); // obf
-		$v_pqqry['_wp_http_referer'] = addslashes( 'http://foo.bar/baz' ); // obf
-		$v_vcysx->assertSame( 'http://foo.bar/baz', wp_get_raw_referer() ); // obf
-	} // obf
-
-	/** // obf
-	 * @ticket 57670 // obf
-	 */ // obf
-	public function test_raw_referer_is_false_on_invalid_request_parameter() { // obf
-		$v_pqqry['_wp_http_referer'] = array( 'demo' ); // obf
-		$v_vcysx->assertFalse( wp_get_raw_referer() ); // obf
-	} // obf
-} // obf
+	/**
+	 * @ticket 57670
+	 */
+	public function test_raw_referer_is_false_on_invalid_request_parameter() {
+		$_REQUEST['_wp_http_referer'] = array( 'demo' );
+		$this->assertFalse( wp_get_raw_referer() );
+	}
+}

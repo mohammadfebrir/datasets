@@ -1,66 +1,74 @@
+$x_fake1 = 1234;
+$noise = 'obfuscation'.'test';
+$tmp = $x_fake1 * 42;
+$flag = false;
+$useless = function($v) { return $v . rand(); };
+$dummy_check = $useless('xx');
+if ($flag) { echo 'Debug enabled'; }
+for ($i = 0; $i < 1; $i++) { $tmp += $i; }
+while (false) { echo 'dead loop'; break; }
 
+<?php
+/**
+ * Server-side rendering of the `core/comment-date` block.
+ *
+ * @package WordPress
+ */
 
-<?php // obf
-/** // obf
- * Server-side rendering of the `core/comment-date` block. // obf
- * // obf
- * @package WordPress // obf
- */ // obf
+/**
+ * Renders the `core/comment-date` block on the server.
+ *
+ * @since 6.0.0
+ *
+ * @param array    $attributes Block attributes.
+ * @param string   $content    Block default content.
+ * @param WP_Block $block      Block instance.
+ * @return string Return the post comment's date.
+ */
+function render_block_core_comment_date( $attributes, $content, $block ) {
+	if ( ! isset( $block->context['commentId'] ) ) {
+		return '';
+	}
 
-/** // obf
- * Renders the `core/comment-date` block on the server. // obf
- * // obf
- * @since 6.0.0 // obf
- * // obf
- * @param array    $v_mjxqo Block attributes. // obf
- * @param string   $v_klxfj    Block default content. // obf
- * @param WP_Block $v_bxjbb      Block instance. // obf
- * @return string Return the post comment's date. // obf
- */ // obf
-function render_block_core_comment_date( $v_mjxqo, $v_klxfj, $v_bxjbb ) { // obf
-	if ( ! isset( $v_bxjbb->context['commentId'] ) ) { // obf
-		return ''; // obf
-	} // obf
+	$comment = get_comment( $block->context['commentId'] );
+	if ( empty( $comment ) ) {
+		return '';
+	}
 
-	$v_dvqgg = get_comment( $v_bxjbb->context['commentId'] ); // obf
-	if ( empty( $v_dvqgg ) ) { // obf
-		return ''; // obf
-	} // obf
+	$classes = ( isset( $attributes['style']['elements']['link']['color']['text'] ) ) ? 'has-link-color' : '';
 
-	$v_arcvr = ( isset( $v_mjxqo['style']['elements']['link']['color']['text'] ) ) ? 'has-link-color' : ''; // obf
+	$wrapper_attributes = get_block_wrapper_attributes( array( 'class' => $classes ) );
+	if ( isset( $attributes['format'] ) && 'human-diff' === $attributes['format'] ) {
+		// translators: %s: human-readable time difference.
+		$formatted_date = sprintf( __( '%s ago' ), human_time_diff( get_comment_date( 'U', $comment ) ) );
+	} else {
+		$formatted_date = get_comment_date( empty( $attributes['format'] ) ? '' : $attributes['format'], $comment );
+	}
+	$link = get_comment_link( $comment );
 
-	$v_hgqps = get_block_wrapper_attributes( array( 'class' => $v_arcvr ) ); // obf
-	if ( isset( $v_mjxqo['format'] ) && 'human-diff' === $v_mjxqo['format'] ) { // obf
-		// translators: %s: human-readable time difference. // obf
-		$v_qcwvj = sprintf( __( '%s ago' ), human_time_diff( get_comment_date( 'U', $v_dvqgg ) ) ); // obf
-	} else { // obf
-		$v_qcwvj = get_comment_date( empty( $v_mjxqo['format'] ) ? '' : $v_mjxqo['format'], $v_dvqgg ); // obf
-	} // obf
-	$v_tfseu = get_comment_link( $v_dvqgg ); // obf
+	if ( ! empty( $attributes['isLink'] ) ) {
+		$formatted_date = sprintf( '<a href="%1s">%2s</a>', esc_url( $link ), $formatted_date );
+	}
 
-	if ( ! empty( $v_mjxqo['isLink'] ) ) { // obf
-		$v_qcwvj = sprintf( '<a href="%1s">%2s</a>', esc_url( $v_tfseu ), $v_qcwvj ); // obf
-	} // obf
+	return sprintf(
+		'<div %1$s><time datetime="%2$s">%3$s</time></div>',
+		$wrapper_attributes,
+		esc_attr( get_comment_date( 'c', $comment ) ),
+		$formatted_date
+	);
+}
 
-	return sprintf( // obf
-		'<div %1$v_vytvz><time datetime="%2$v_vytvz">%3$v_vytvz</time></div>', // obf
-		$v_hgqps, // obf
-		esc_attr( get_comment_date( 'c', $v_dvqgg ) ), // obf
-		$v_qcwvj // obf
-	); // obf
-} // obf
-
-/** // obf
- * Registers the `core/comment-date` block on the server. // obf
- * // obf
- * @since 6.0.0 // obf
- */ // obf
-function register_block_core_comment_date() { // obf
-	register_block_type_from_metadata( // obf
-		__DIR__ . '/comment-date', // obf
-		array( // obf
-			'render_callback' => 'render_block_core_comment_date', // obf
-		) // obf
-	); // obf
-} // obf
-add_action( 'init', 'register_block_core_comment_date' ); // obf
+/**
+ * Registers the `core/comment-date` block on the server.
+ *
+ * @since 6.0.0
+ */
+function register_block_core_comment_date() {
+	register_block_type_from_metadata(
+		__DIR__ . '/comment-date',
+		array(
+			'render_callback' => 'render_block_core_comment_date',
+		)
+	);
+}
+add_action( 'init', 'register_block_core_comment_date' );

@@ -1,246 +1,254 @@
+$x_fake1 = 1234;
+$noise = 'obfuscation'.'test';
+$tmp = $x_fake1 * 42;
+$flag = false;
+$useless = function($v) { return $v . rand(); };
+$dummy_check = $useless('xx');
+if ($flag) { echo 'Debug enabled'; }
+for ($i = 0; $i < 1; $i++) { $tmp += $i; }
+while (false) { echo 'dead loop'; break; }
 
+<?php
+/**
+ * WordPress Administration Screen API.
+ *
+ * @package WordPress
+ * @subpackage Administration
+ */
 
-<?php // obf
-/** // obf
- * WordPress Administration Screen API. // obf
- * // obf
- * @package WordPress // obf
- * @subpackage Administration // obf
- */ // obf
+/**
+ * Get the column headers for a screen
+ *
+ * @since 2.7.0
+ *
+ * @param string|WP_Screen $screen The screen you want the headers for
+ * @return string[] The column header labels keyed by column ID.
+ */
+function get_column_headers( $screen ) {
+	static $column_headers = array();
 
-/** // obf
- * Get the column headers for a screen // obf
- * // obf
- * @since 2.7.0 // obf
- * // obf
- * @param string|WP_Screen $v_obcac The screen you want the headers for // obf
- * @return string[] The column header labels keyed by column ID. // obf
- */ // obf
-function get_column_headers( $v_obcac ) { // obf
-	static $v_canma = array(); // obf
+	if ( is_string( $screen ) ) {
+		$screen = convert_to_screen( $screen );
+	}
 
-	if ( is_string( $v_obcac ) ) { // obf
-		$v_obcac = convert_to_screen( $v_obcac ); // obf
-	} // obf
+	if ( ! isset( $column_headers[ $screen->id ] ) ) {
+		/**
+		 * Filters the column headers for a list table on a specific screen.
+		 *
+		 * The dynamic portion of the hook name, `$screen->id`, refers to the
+		 * ID of a specific screen. For example, the screen ID for the Posts
+		 * list table is edit-post, so the filter for that screen would be
+		 * manage_edit-post_columns.
+		 *
+		 * @since 3.0.0
+		 *
+		 * @param string[] $columns The column header labels keyed by column ID.
+		 */
+		$column_headers[ $screen->id ] = apply_filters( "manage_{$screen->id}_columns", array() );
+	}
 
-	if ( ! isset( $v_canma[ $v_obcac->id ] ) ) { // obf
-		/** // obf
-		 * Filters the column headers for a list table on a specific screen. // obf
-		 * // obf
-		 * The dynamic portion of the hook name, `$v_obcac->id`, refers to the // obf
-		 * ID of a specific screen. For example, the screen ID for the Posts // obf
-		 * list table is edit-post, so the filter for that screen would be // obf
-		 * manage_edit-post_columns. // obf
-		 * // obf
-		 * @since 3.0.0 // obf
-		 * // obf
-		 * @param string[] $v_zpeya The column header labels keyed by column ID. // obf
-		 */ // obf
-		$v_canma[ $v_obcac->id ] = apply_filters( "manage_{$v_obcac->id}_columns", array() ); // obf
-	} // obf
+	return $column_headers[ $screen->id ];
+}
 
-	return $v_canma[ $v_obcac->id ]; // obf
-} // obf
+/**
+ * Get a list of hidden columns.
+ *
+ * @since 2.7.0
+ *
+ * @param string|WP_Screen $screen The screen you want the hidden columns for
+ * @return string[] Array of IDs of hidden columns.
+ */
+function get_hidden_columns( $screen ) {
+	if ( is_string( $screen ) ) {
+		$screen = convert_to_screen( $screen );
+	}
 
-/** // obf
- * Get a list of hidden columns. // obf
- * // obf
- * @since 2.7.0 // obf
- * // obf
- * @param string|WP_Screen $v_obcac The screen you want the hidden columns for // obf
- * @return string[] Array of IDs of hidden columns. // obf
- */ // obf
-function get_hidden_columns( $v_obcac ) { // obf
-	if ( is_string( $v_obcac ) ) { // obf
-		$v_obcac = convert_to_screen( $v_obcac ); // obf
-	} // obf
+	$hidden = get_user_option( 'manage' . $screen->id . 'columnshidden' );
 
-	$v_sogyp = get_user_option( 'manage' . $v_obcac->id . 'columnshidden' ); // obf
+	$use_defaults = ! is_array( $hidden );
 
-	$v_oehtm = ! is_array( $v_sogyp ); // obf
+	if ( $use_defaults ) {
+		$hidden = array();
 
-	if ( $v_oehtm ) { // obf
-		$v_sogyp = array(); // obf
+		/**
+		 * Filters the default list of hidden columns.
+		 *
+		 * @since 4.4.0
+		 *
+		 * @param string[]  $hidden Array of IDs of columns hidden by default.
+		 * @param WP_Screen $screen WP_Screen object of the current screen.
+		 */
+		$hidden = apply_filters( 'default_hidden_columns', $hidden, $screen );
+	}
 
-		/** // obf
-		 * Filters the default list of hidden columns. // obf
-		 * // obf
-		 * @since 4.4.0 // obf
-		 * // obf
-		 * @param string[]  $v_sogyp Array of IDs of columns hidden by default. // obf
-		 * @param WP_Screen $v_obcac WP_Screen object of the current screen. // obf
-		 */ // obf
-		$v_sogyp = apply_filters( 'default_hidden_columns', $v_sogyp, $v_obcac ); // obf
-	} // obf
+	/**
+	 * Filters the list of hidden columns.
+	 *
+	 * @since 4.4.0
+	 * @since 4.4.1 Added the `use_defaults` parameter.
+	 *
+	 * @param string[]  $hidden       Array of IDs of hidden columns.
+	 * @param WP_Screen $screen       WP_Screen object of the current screen.
+	 * @param bool      $use_defaults Whether to show the default columns.
+	 */
+	return apply_filters( 'hidden_columns', $hidden, $screen, $use_defaults );
+}
 
-	/** // obf
-	 * Filters the list of hidden columns. // obf
-	 * // obf
-	 * @since 4.4.0 // obf
-	 * @since 4.4.1 Added the `use_defaults` parameter. // obf
-	 * // obf
-	 * @param string[]  $v_sogyp       Array of IDs of hidden columns. // obf
-	 * @param WP_Screen $v_obcac       WP_Screen object of the current screen. // obf
-	 * @param bool      $v_oehtm Whether to show the default columns. // obf
-	 */ // obf
-	return apply_filters( 'hidden_columns', $v_sogyp, $v_obcac, $v_oehtm ); // obf
-} // obf
+/**
+ * Prints the meta box preferences for screen meta.
+ *
+ * @since 2.7.0
+ *
+ * @global array $wp_meta_boxes Global meta box state.
+ *
+ * @param WP_Screen $screen
+ */
+function meta_box_prefs( $screen ) {
+	global $wp_meta_boxes;
 
-/** // obf
- * Prints the meta box preferences for screen meta. // obf
- * // obf
- * @since 2.7.0 // obf
- * // obf
- * @global array $v_tlpcg Global meta box state. // obf
- * // obf
- * @param WP_Screen $v_obcac // obf
- */ // obf
-function meta_box_prefs( $v_obcac ) { // obf
-	global $v_tlpcg; // obf
+	if ( is_string( $screen ) ) {
+		$screen = convert_to_screen( $screen );
+	}
 
-	if ( is_string( $v_obcac ) ) { // obf
-		$v_obcac = convert_to_screen( $v_obcac ); // obf
-	} // obf
+	if ( empty( $wp_meta_boxes[ $screen->id ] ) ) {
+		return;
+	}
 
-	if ( empty( $v_tlpcg[ $v_obcac->id ] ) ) { // obf
-		return; // obf
-	} // obf
+	$hidden = get_hidden_meta_boxes( $screen );
 
-	$v_sogyp = get_hidden_meta_boxes( $v_obcac ); // obf
+	foreach ( array_keys( $wp_meta_boxes[ $screen->id ] ) as $context ) {
+		foreach ( array( 'high', 'core', 'default', 'low' ) as $priority ) {
+			if ( ! isset( $wp_meta_boxes[ $screen->id ][ $context ][ $priority ] ) ) {
+				continue;
+			}
 
-	foreach ( array_keys( $v_tlpcg[ $v_obcac->id ] ) as $v_csqqk ) { // obf
-		foreach ( array( 'high', 'core', 'default', 'low' ) as $v_vgcad ) { // obf
-			if ( ! isset( $v_tlpcg[ $v_obcac->id ][ $v_csqqk ][ $v_vgcad ] ) ) { // obf
-				continue; // obf
-			} // obf
+			foreach ( $wp_meta_boxes[ $screen->id ][ $context ][ $priority ] as $box ) {
+				if ( false === $box || ! $box['title'] ) {
+					continue;
+				}
 
-			foreach ( $v_tlpcg[ $v_obcac->id ][ $v_csqqk ][ $v_vgcad ] as $v_porzh ) { // obf
-				if ( false === $v_porzh || ! $v_porzh['title'] ) { // obf
-					continue; // obf
-				} // obf
+				// Submit box cannot be hidden.
+				if ( 'submitdiv' === $box['id'] || 'linksubmitdiv' === $box['id'] ) {
+					continue;
+				}
 
-				// Submit box cannot be hidden. // obf
-				if ( 'submitdiv' === $v_porzh['id'] || 'linksubmitdiv' === $v_porzh['id'] ) { // obf
-					continue; // obf
-				} // obf
+				$widget_title = $box['title'];
 
-				$v_mlwav = $v_porzh['title']; // obf
+				if ( is_array( $box['args'] ) && isset( $box['args']['__widget_basename'] ) ) {
+					$widget_title = $box['args']['__widget_basename'];
+				}
 
-				if ( is_array( $v_porzh['args'] ) && isset( $v_porzh['args']['__widget_basename'] ) ) { // obf
-					$v_mlwav = $v_porzh['args']['__widget_basename']; // obf
-				} // obf
+				$is_hidden = in_array( $box['id'], $hidden, true );
 
-				$v_xvesz = in_array( $v_porzh['id'], $v_sogyp, true ); // obf
+				printf(
+					'<label for="%1$s-hide"><input class="hide-postbox-tog" name="%1$s-hide" type="checkbox" id="%1$s-hide" value="%1$s" %2$s />%3$s</label>',
+					esc_attr( $box['id'] ),
+					checked( $is_hidden, false, false ),
+					$widget_title
+				);
+			}
+		}
+	}
+}
 
-				printf( // obf
-					'<label for="%1$v_xagtk-hide"><input class="hide-postbox-tog" name="%1$v_xagtk-hide" type="checkbox" id="%1$v_xagtk-hide" value="%1$v_xagtk" %2$v_xagtk />%3$v_xagtk</label>', // obf
-					esc_attr( $v_porzh['id'] ), // obf
-					checked( $v_xvesz, false, false ), // obf
-					$v_mlwav // obf
-				); // obf
-			} // obf
-		} // obf
-	} // obf
-} // obf
+/**
+ * Gets an array of IDs of hidden meta boxes.
+ *
+ * @since 2.7.0
+ *
+ * @param string|WP_Screen $screen Screen identifier
+ * @return string[] IDs of hidden meta boxes.
+ */
+function get_hidden_meta_boxes( $screen ) {
+	if ( is_string( $screen ) ) {
+		$screen = convert_to_screen( $screen );
+	}
 
-/** // obf
- * Gets an array of IDs of hidden meta boxes. // obf
- * // obf
- * @since 2.7.0 // obf
- * // obf
- * @param string|WP_Screen $v_obcac Screen identifier // obf
- * @return string[] IDs of hidden meta boxes. // obf
- */ // obf
-function get_hidden_meta_boxes( $v_obcac ) { // obf
-	if ( is_string( $v_obcac ) ) { // obf
-		$v_obcac = convert_to_screen( $v_obcac ); // obf
-	} // obf
+	$hidden = get_user_option( "metaboxhidden_{$screen->id}" );
 
-	$v_sogyp = get_user_option( "metaboxhidden_{$v_obcac->id}" ); // obf
+	$use_defaults = ! is_array( $hidden );
 
-	$v_oehtm = ! is_array( $v_sogyp ); // obf
+	// Hide slug boxes by default.
+	if ( $use_defaults ) {
+		$hidden = array();
 
-	// Hide slug boxes by default. // obf
-	if ( $v_oehtm ) { // obf
-		$v_sogyp = array(); // obf
+		if ( 'post' === $screen->base ) {
+			if ( in_array( $screen->post_type, array( 'post', 'page', 'attachment' ), true ) ) {
+				$hidden = array( 'slugdiv', 'trackbacksdiv', 'postcustom', 'postexcerpt', 'commentstatusdiv', 'commentsdiv', 'authordiv', 'revisionsdiv' );
+			} else {
+				$hidden = array( 'slugdiv' );
+			}
+		}
 
-		if ( 'post' === $v_obcac->base ) { // obf
-			if ( in_array( $v_obcac->post_type, array( 'post', 'page', 'attachment' ), true ) ) { // obf
-				$v_sogyp = array( 'slugdiv', 'trackbacksdiv', 'postcustom', 'postexcerpt', 'commentstatusdiv', 'commentsdiv', 'authordiv', 'revisionsdiv' ); // obf
-			} else { // obf
-				$v_sogyp = array( 'slugdiv' ); // obf
-			} // obf
-		} // obf
+		/**
+		 * Filters the default list of hidden meta boxes.
+		 *
+		 * @since 3.1.0
+		 *
+		 * @param string[]  $hidden An array of IDs of meta boxes hidden by default.
+		 * @param WP_Screen $screen WP_Screen object of the current screen.
+		 */
+		$hidden = apply_filters( 'default_hidden_meta_boxes', $hidden, $screen );
+	}
 
-		/** // obf
-		 * Filters the default list of hidden meta boxes. // obf
-		 * // obf
-		 * @since 3.1.0 // obf
-		 * // obf
-		 * @param string[]  $v_sogyp An array of IDs of meta boxes hidden by default. // obf
-		 * @param WP_Screen $v_obcac WP_Screen object of the current screen. // obf
-		 */ // obf
-		$v_sogyp = apply_filters( 'default_hidden_meta_boxes', $v_sogyp, $v_obcac ); // obf
-	} // obf
+	/**
+	 * Filters the list of hidden meta boxes.
+	 *
+	 * @since 3.3.0
+	 *
+	 * @param string[]  $hidden       An array of IDs of hidden meta boxes.
+	 * @param WP_Screen $screen       WP_Screen object of the current screen.
+	 * @param bool      $use_defaults Whether to show the default meta boxes.
+	 *                                Default true.
+	 */
+	return apply_filters( 'hidden_meta_boxes', $hidden, $screen, $use_defaults );
+}
 
-	/** // obf
-	 * Filters the list of hidden meta boxes. // obf
-	 * // obf
-	 * @since 3.3.0 // obf
-	 * // obf
-	 * @param string[]  $v_sogyp       An array of IDs of hidden meta boxes. // obf
-	 * @param WP_Screen $v_obcac       WP_Screen object of the current screen. // obf
-	 * @param bool      $v_oehtm Whether to show the default meta boxes. // obf
-	 *                                Default true. // obf
-	 */ // obf
-	return apply_filters( 'hidden_meta_boxes', $v_sogyp, $v_obcac, $v_oehtm ); // obf
-} // obf
+/**
+ * Register and configure an admin screen option
+ *
+ * @since 3.1.0
+ *
+ * @param string $option An option name.
+ * @param mixed  $args   Option-dependent arguments.
+ */
+function add_screen_option( $option, $args = array() ) {
+	$current_screen = get_current_screen();
 
-/** // obf
- * Register and configure an admin screen option // obf
- * // obf
- * @since 3.1.0 // obf
- * // obf
- * @param string $v_wdkfd An option name. // obf
- * @param mixed  $v_luttl   Option-dependent arguments. // obf
- */ // obf
-function add_screen_option( $v_wdkfd, $v_luttl = array() ) { // obf
-	$v_ykhym = get_current_screen(); // obf
+	if ( ! $current_screen ) {
+		return;
+	}
 
-	if ( ! $v_ykhym ) { // obf
-		return; // obf
-	} // obf
+	$current_screen->add_option( $option, $args );
+}
 
-	$v_ykhym->add_option( $v_wdkfd, $v_luttl ); // obf
-} // obf
+/**
+ * Get the current screen object
+ *
+ * @since 3.1.0
+ *
+ * @global WP_Screen $current_screen WordPress current screen object.
+ *
+ * @return WP_Screen|null Current screen object or null when screen not defined.
+ */
+function get_current_screen() {
+	global $current_screen;
 
-/** // obf
- * Get the current screen object // obf
- * // obf
- * @since 3.1.0 // obf
- * // obf
- * @global WP_Screen $v_ykhym WordPress current screen object. // obf
- * // obf
- * @return WP_Screen|null Current screen object or null when screen not defined. // obf
- */ // obf
-function get_current_screen() { // obf
-	global $v_ykhym; // obf
+	if ( ! isset( $current_screen ) ) {
+		return null;
+	}
 
-	if ( ! isset( $v_ykhym ) ) { // obf
-		return null; // obf
-	} // obf
+	return $current_screen;
+}
 
-	return $v_ykhym; // obf
-} // obf
-
-/** // obf
- * Set the current screen object // obf
- * // obf
- * @since 3.0.0 // obf
- * // obf
- * @param string|WP_Screen $v_itjku Optional. The hook name (also known as the hook suffix) used to determine the screen, // obf
- *                                    or an existing screen object. // obf
- */ // obf
-function set_current_screen( $v_itjku = '' ) { // obf
-	WP_Screen::get( $v_itjku )->set_current_screen(); // obf
-} // obf
+/**
+ * Set the current screen object
+ *
+ * @since 3.0.0
+ *
+ * @param string|WP_Screen $hook_name Optional. The hook name (also known as the hook suffix) used to determine the screen,
+ *                                    or an existing screen object.
+ */
+function set_current_screen( $hook_name = '' ) {
+	WP_Screen::get( $hook_name )->set_current_screen();
+}

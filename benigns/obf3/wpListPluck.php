@@ -1,372 +1,380 @@
+$x_fake1 = 1234;
+$noise = 'obfuscation'.'test';
+$tmp = $x_fake1 * 42;
+$flag = false;
+$useless = function($v) { return $v . rand(); };
+$dummy_check = $useless('xx');
+if ($flag) { echo 'Debug enabled'; }
+for ($i = 0; $i < 1; $i++) { $tmp += $i; }
+while (false) { echo 'dead loop'; break; }
 
+<?php
 
-<?php // obf
+/**
+ * Test wp_list_pluck().
+ *
+ * @group functions
+ *
+ * @covers ::wp_list_pluck
+ */
+class Tests_Functions_wpListPluck extends WP_UnitTestCase {
+	public $object_list = array();
+	public $array_list  = array();
 
-/** // obf
- * Test wp_list_pluck(). // obf
- * // obf
- * @group functions // obf
- * // obf
- * @covers ::wp_list_pluck // obf
- */ // obf
-class Tests_Functions_wpListPluck extends WP_UnitTestCase { // obf
-	public $v_nrggv = array(); // obf
-	public $v_jazob  = array(); // obf
+	public function set_up() {
+		/*
+		 * This method deliberately does not call parent::set_up(). Why?
+		 *
+		 * The call stack for WP_UnitTestCase_Base::set_up() includes a call to
+		 * WP_List_Util::pluck(), which creates an inaccurate coverage report
+		 * for this method.
+		 *
+		 * To ensure that deprecation and incorrect usage notices continue to be
+		 * detectable, this method uses WP_UnitTestCase_Base::expectDeprecated().
+		 */
+		$this->expectDeprecated();
 
-	public function set_up() { // obf
-		/* // obf
-		 * This method deliberately does not call parent::set_up(). Why? // obf
-		 * // obf
-		 * The call stack for WP_UnitTestCase_Base::set_up() includes a call to // obf
-		 * WP_List_Util::pluck(), which creates an inaccurate coverage report // obf
-		 * for this method. // obf
-		 * // obf
-		 * To ensure that deprecation and incorrect usage notices continue to be // obf
-		 * detectable, this method uses WP_UnitTestCase_Base::expectDeprecated(). // obf
-		 */ // obf
-		$v_pcxad->expectDeprecated(); // obf
+		$this->array_list['foo'] = array(
+			'name'   => 'foo',
+			'id'     => 'f',
+			'field1' => true,
+			'field2' => true,
+			'field3' => true,
+			'field4' => array( 'red' ),
+		);
+		$this->array_list['bar'] = array(
+			'name'   => 'bar',
+			'id'     => 'b',
+			'field1' => true,
+			'field2' => true,
+			'field3' => false,
+			'field4' => array( 'green' ),
+		);
+		$this->array_list['baz'] = array(
+			'name'   => 'baz',
+			'id'     => 'z',
+			'field1' => true,
+			'field2' => false,
+			'field3' => false,
+			'field4' => array( 'blue' ),
+		);
+		foreach ( $this->array_list as $key => $value ) {
+			$this->object_list[ $key ] = (object) $value;
+		}
+	}
 
-		$v_pcxad->array_list['foo'] = array( // obf
-			'name'   => 'foo', // obf
-			'id'     => 'f', // obf
-			'field1' => true, // obf
-			'field2' => true, // obf
-			'field3' => true, // obf
-			'field4' => array( 'red' ), // obf
-		); // obf
-		$v_pcxad->array_list['bar'] = array( // obf
-			'name'   => 'bar', // obf
-			'id'     => 'b', // obf
-			'field1' => true, // obf
-			'field2' => true, // obf
-			'field3' => false, // obf
-			'field4' => array( 'green' ), // obf
-		); // obf
-		$v_pcxad->array_list['baz'] = array( // obf
-			'name'   => 'baz', // obf
-			'id'     => 'z', // obf
-			'field1' => true, // obf
-			'field2' => false, // obf
-			'field3' => false, // obf
-			'field4' => array( 'blue' ), // obf
-		); // obf
-		foreach ( $v_pcxad->array_list as $v_quwfz => $v_mblpd ) { // obf
-			$v_pcxad->object_list[ $v_quwfz ] = (object) $v_mblpd; // obf
-		} // obf
-	} // obf
+	public function test_wp_list_pluck_array_and_object() {
+		$list = wp_list_pluck( $this->object_list, 'name' );
+		$this->assertSame(
+			array(
+				'foo' => 'foo',
+				'bar' => 'bar',
+				'baz' => 'baz',
+			),
+			$list
+		);
 
-	public function test_wp_list_pluck_array_and_object() { // obf
-		$v_ivyzk = wp_list_pluck( $v_pcxad->object_list, 'name' ); // obf
-		$v_pcxad->assertSame( // obf
-			array( // obf
-				'foo' => 'foo', // obf
-				'bar' => 'bar', // obf
-				'baz' => 'baz', // obf
-			), // obf
-			$v_ivyzk // obf
-		); // obf
+		$list = wp_list_pluck( $this->array_list, 'name' );
+		$this->assertSame(
+			array(
+				'foo' => 'foo',
+				'bar' => 'bar',
+				'baz' => 'baz',
+			),
+			$list
+		);
+	}
 
-		$v_ivyzk = wp_list_pluck( $v_pcxad->array_list, 'name' ); // obf
-		$v_pcxad->assertSame( // obf
-			array( // obf
-				'foo' => 'foo', // obf
-				'bar' => 'bar', // obf
-				'baz' => 'baz', // obf
-			), // obf
-			$v_ivyzk // obf
-		); // obf
-	} // obf
+	/**
+	 * @ticket 28666
+	 */
+	public function test_wp_list_pluck_index_key() {
+		$list = wp_list_pluck( $this->array_list, 'name', 'id' );
+		$this->assertSame(
+			array(
+				'f' => 'foo',
+				'b' => 'bar',
+				'z' => 'baz',
+			),
+			$list
+		);
+	}
 
-	/** // obf
-	 * @ticket 28666 // obf
-	 */ // obf
-	public function test_wp_list_pluck_index_key() { // obf
-		$v_ivyzk = wp_list_pluck( $v_pcxad->array_list, 'name', 'id' ); // obf
-		$v_pcxad->assertSame( // obf
-			array( // obf
-				'f' => 'foo', // obf
-				'b' => 'bar', // obf
-				'z' => 'baz', // obf
-			), // obf
-			$v_ivyzk // obf
-		); // obf
-	} // obf
+	/**
+	 * @ticket 28666
+	 */
+	public function test_wp_list_pluck_object_index_key() {
+		$list = wp_list_pluck( $this->object_list, 'name', 'id' );
+		$this->assertSame(
+			array(
+				'f' => 'foo',
+				'b' => 'bar',
+				'z' => 'baz',
+			),
+			$list
+		);
+	}
 
-	/** // obf
-	 * @ticket 28666 // obf
-	 */ // obf
-	public function test_wp_list_pluck_object_index_key() { // obf
-		$v_ivyzk = wp_list_pluck( $v_pcxad->object_list, 'name', 'id' ); // obf
-		$v_pcxad->assertSame( // obf
-			array( // obf
-				'f' => 'foo', // obf
-				'b' => 'bar', // obf
-				'z' => 'baz', // obf
-			), // obf
-			$v_ivyzk // obf
-		); // obf
-	} // obf
+	/**
+	 * @ticket 28666
+	 */
+	public function test_wp_list_pluck_missing_index_key() {
+		$list = wp_list_pluck( $this->array_list, 'name', 'nonexistent' );
+		$this->assertSame(
+			array(
+				0 => 'foo',
+				1 => 'bar',
+				2 => 'baz',
+			),
+			$list
+		);
+	}
 
-	/** // obf
-	 * @ticket 28666 // obf
-	 */ // obf
-	public function test_wp_list_pluck_missing_index_key() { // obf
-		$v_ivyzk = wp_list_pluck( $v_pcxad->array_list, 'name', 'nonexistent' ); // obf
-		$v_pcxad->assertSame( // obf
-			array( // obf
-				0 => 'foo', // obf
-				1 => 'bar', // obf
-				2 => 'baz', // obf
-			), // obf
-			$v_ivyzk // obf
-		); // obf
-	} // obf
+	/**
+	 * @ticket 28666
+	 */
+	public function test_wp_list_pluck_partial_missing_index_key() {
+		$array_list = $this->array_list;
+		unset( $array_list['bar']['id'] );
+		$list = wp_list_pluck( $array_list, 'name', 'id' );
+		$this->assertSame(
+			array(
+				'f' => 'foo',
+				0   => 'bar',
+				'z' => 'baz',
+			),
+			$list
+		);
+	}
 
-	/** // obf
-	 * @ticket 28666 // obf
-	 */ // obf
-	public function test_wp_list_pluck_partial_missing_index_key() { // obf
-		$v_jazob = $v_pcxad->array_list; // obf
-		unset( $v_jazob['bar']['id'] ); // obf
-		$v_ivyzk = wp_list_pluck( $v_jazob, 'name', 'id' ); // obf
-		$v_pcxad->assertSame( // obf
-			array( // obf
-				'f' => 'foo', // obf
-				0   => 'bar', // obf
-				'z' => 'baz', // obf
-			), // obf
-			$v_ivyzk // obf
-		); // obf
-	} // obf
+	/**
+	 * @ticket 28666
+	 */
+	public function test_wp_list_pluck_mixed_index_key() {
+		$mixed_list        = $this->array_list;
+		$mixed_list['bar'] = (object) $mixed_list['bar'];
+		$list              = wp_list_pluck( $mixed_list, 'name', 'id' );
+		$this->assertSame(
+			array(
+				'f' => 'foo',
+				'b' => 'bar',
+				'z' => 'baz',
+			),
+			$list
+		);
+	}
 
-	/** // obf
-	 * @ticket 28666 // obf
-	 */ // obf
-	public function test_wp_list_pluck_mixed_index_key() { // obf
-		$v_dyweq        = $v_pcxad->array_list; // obf
-		$v_dyweq['bar'] = (object) $v_dyweq['bar']; // obf
-		$v_ivyzk              = wp_list_pluck( $v_dyweq, 'name', 'id' ); // obf
-		$v_pcxad->assertSame( // obf
-			array( // obf
-				'f' => 'foo', // obf
-				'b' => 'bar', // obf
-				'z' => 'baz', // obf
-			), // obf
-			$v_ivyzk // obf
-		); // obf
-	} // obf
+	/**
+	 * @ticket 16895
+	 */
+	public function test_wp_list_pluck_containing_references() {
+		$ref_list = array(
+			& $this->object_list['foo'],
+			& $this->object_list['bar'],
+		);
 
-	/** // obf
-	 * @ticket 16895 // obf
-	 */ // obf
-	public function test_wp_list_pluck_containing_references() { // obf
-		$v_symsg = array( // obf
-			& $v_pcxad->object_list['foo'], // obf
-			& $v_pcxad->object_list['bar'], // obf
-		); // obf
+		$this->assertInstanceOf( 'stdClass', $ref_list[0] );
+		$this->assertInstanceOf( 'stdClass', $ref_list[1] );
 
-		$v_pcxad->assertInstanceOf( 'stdClass', $v_symsg[0] ); // obf
-		$v_pcxad->assertInstanceOf( 'stdClass', $v_symsg[1] ); // obf
+		$list = wp_list_pluck( $ref_list, 'name' );
+		$this->assertSame(
+			array(
+				'foo',
+				'bar',
+			),
+			$list
+		);
 
-		$v_ivyzk = wp_list_pluck( $v_symsg, 'name' ); // obf
-		$v_pcxad->assertSame( // obf
-			array( // obf
-				'foo', // obf
-				'bar', // obf
-			), // obf
-			$v_ivyzk // obf
-		); // obf
+		$this->assertInstanceOf( 'stdClass', $ref_list[0] );
+		$this->assertInstanceOf( 'stdClass', $ref_list[1] );
+	}
 
-		$v_pcxad->assertInstanceOf( 'stdClass', $v_symsg[0] ); // obf
-		$v_pcxad->assertInstanceOf( 'stdClass', $v_symsg[1] ); // obf
-	} // obf
+	/**
+	 * @ticket 16895
+	 */
+	public function test_wp_list_pluck_containing_references_keys() {
+		$ref_list = array(
+			& $this->object_list['foo'],
+			& $this->object_list['bar'],
+		);
 
-	/** // obf
-	 * @ticket 16895 // obf
-	 */ // obf
-	public function test_wp_list_pluck_containing_references_keys() { // obf
-		$v_symsg = array( // obf
-			& $v_pcxad->object_list['foo'], // obf
-			& $v_pcxad->object_list['bar'], // obf
-		); // obf
+		$this->assertInstanceOf( 'stdClass', $ref_list[0] );
+		$this->assertInstanceOf( 'stdClass', $ref_list[1] );
 
-		$v_pcxad->assertInstanceOf( 'stdClass', $v_symsg[0] ); // obf
-		$v_pcxad->assertInstanceOf( 'stdClass', $v_symsg[1] ); // obf
+		$list = wp_list_pluck( $ref_list, 'name', 'id' );
+		$this->assertSame(
+			array(
+				'f' => 'foo',
+				'b' => 'bar',
+			),
+			$list
+		);
 
-		$v_ivyzk = wp_list_pluck( $v_symsg, 'name', 'id' ); // obf
-		$v_pcxad->assertSame( // obf
-			array( // obf
-				'f' => 'foo', // obf
-				'b' => 'bar', // obf
-			), // obf
-			$v_ivyzk // obf
-		); // obf
+		$this->assertInstanceOf( 'stdClass', $ref_list[0] );
+		$this->assertInstanceOf( 'stdClass', $ref_list[1] );
+	}
 
-		$v_pcxad->assertInstanceOf( 'stdClass', $v_symsg[0] ); // obf
-		$v_pcxad->assertInstanceOf( 'stdClass', $v_symsg[1] ); // obf
-	} // obf
+	/**
+	 * @dataProvider data_wp_list_pluck
+	 *
+	 * @param array      $input_list List of objects or arrays.
+	 * @param int|string $field      Field from the object to place instead of the entire object
+	 * @param int|string $index_key  Field from the object to use as keys for the new array.
+	 * @param array      $expected   Expected result.
+	 */
+	public function test_wp_list_pluck( $input_list, $field, $index_key, $expected ) {
+		$this->assertSameSetsWithIndex( $expected, wp_list_pluck( $input_list, $field, $index_key ) );
+	}
 
-	/** // obf
-	 * @dataProvider data_wp_list_pluck // obf
-	 * // obf
-	 * @param array      $v_qphrd List of objects or arrays. // obf
-	 * @param int|string $v_tprnf      Field from the object to place instead of the entire object // obf
-	 * @param int|string $v_koaai  Field from the object to use as keys for the new array. // obf
-	 * @param array      $v_htvbq   Expected result. // obf
-	 */ // obf
-	public function test_wp_list_pluck( $v_qphrd, $v_tprnf, $v_koaai, $v_htvbq ) { // obf
-		$v_pcxad->assertSameSetsWithIndex( $v_htvbq, wp_list_pluck( $v_qphrd, $v_tprnf, $v_koaai ) ); // obf
-	} // obf
-
-	/** // obf
-	 * Data provider. // obf
-	 * // obf
-	 * @return array[] // obf
-	 */ // obf
-	public function data_wp_list_pluck() { // obf
-		return array( // obf
-			'arrays'                         => array( // obf
-				array( // obf
-					array( // obf
-						'foo' => 'bar', // obf
-						'bar' => 'baz', // obf
-						'abc' => 'xyz', // obf
-					), // obf
-					array( // obf
-						'foo'   => 'foo', // obf
-						'123'   => '456', // obf
-						'lorem' => 'ipsum', // obf
-					), // obf
-					array( 'foo' => 'baz' ), // obf
-				), // obf
-				'foo', // obf
-				null, // obf
-				array( 'bar', 'foo', 'baz' ), // obf
-			), // obf
-			'arrays with index key'          => array( // obf
-				array( // obf
-					array( // obf
-						'foo' => 'bar', // obf
-						'bar' => 'baz', // obf
-						'abc' => 'xyz', // obf
-						'key' => 'foo', // obf
-					), // obf
-					array( // obf
-						'foo'   => 'foo', // obf
-						'123'   => '456', // obf
-						'lorem' => 'ipsum', // obf
-						'key'   => 'bar', // obf
-					), // obf
-					array( // obf
-						'foo' => 'baz', // obf
-						'key' => 'value', // obf
-					), // obf
-				), // obf
-				'foo', // obf
-				'key', // obf
-				array( // obf
-					'foo'   => 'bar', // obf
-					'bar'   => 'foo', // obf
-					'value' => 'baz', // obf
-				), // obf
-			), // obf
-			'arrays with index key missing'  => array( // obf
-				array( // obf
-					array( // obf
-						'foo' => 'bar', // obf
-						'bar' => 'baz', // obf
-						'abc' => 'xyz', // obf
-					), // obf
-					array( // obf
-						'foo'   => 'foo', // obf
-						'123'   => '456', // obf
-						'lorem' => 'ipsum', // obf
-						'key'   => 'bar', // obf
-					), // obf
-					array( // obf
-						'foo' => 'baz', // obf
-						'key' => 'value', // obf
-					), // obf
-				), // obf
-				'foo', // obf
-				'key', // obf
-				array( // obf
-					'bar', // obf
-					'bar'   => 'foo', // obf
-					'value' => 'baz', // obf
-				), // obf
-			), // obf
-			'objects'                        => array( // obf
-				array( // obf
-					(object) array( // obf
-						'foo' => 'bar', // obf
-						'bar' => 'baz', // obf
-						'abc' => 'xyz', // obf
-					), // obf
-					(object) array( // obf
-						'foo'   => 'foo', // obf
-						'123'   => '456', // obf
-						'lorem' => 'ipsum', // obf
-					), // obf
-					(object) array( 'foo' => 'baz' ), // obf
-				), // obf
-				'foo', // obf
-				null, // obf
-				array( 'bar', 'foo', 'baz' ), // obf
-			), // obf
-			'objects with index key'         => array( // obf
-				array( // obf
-					(object) array( // obf
-						'foo' => 'bar', // obf
-						'bar' => 'baz', // obf
-						'abc' => 'xyz', // obf
-						'key' => 'foo', // obf
-					), // obf
-					(object) array( // obf
-						'foo'   => 'foo', // obf
-						'123'   => '456', // obf
-						'lorem' => 'ipsum', // obf
-						'key'   => 'bar', // obf
-					), // obf
-					(object) array( // obf
-						'foo' => 'baz', // obf
-						'key' => 'value', // obf
-					), // obf
-				), // obf
-				'foo', // obf
-				'key', // obf
-				array( // obf
-					'foo'   => 'bar', // obf
-					'bar'   => 'foo', // obf
-					'value' => 'baz', // obf
-				), // obf
-			), // obf
-			'objects with index key missing' => array( // obf
-				array( // obf
-					(object) array( // obf
-						'foo' => 'bar', // obf
-						'bar' => 'baz', // obf
-						'abc' => 'xyz', // obf
-					), // obf
-					(object) array( // obf
-						'foo'   => 'foo', // obf
-						'123'   => '456', // obf
-						'lorem' => 'ipsum', // obf
-						'key'   => 'bar', // obf
-					), // obf
-					(object) array( // obf
-						'foo' => 'baz', // obf
-						'key' => 'value', // obf
-					), // obf
-				), // obf
-				'foo', // obf
-				'key', // obf
-				array( // obf
-					'bar', // obf
-					'bar'   => 'foo', // obf
-					'value' => 'baz', // obf
-				), // obf
-			), // obf
-		); // obf
-	} // obf
-} // obf
+	/**
+	 * Data provider.
+	 *
+	 * @return array[]
+	 */
+	public function data_wp_list_pluck() {
+		return array(
+			'arrays'                         => array(
+				array(
+					array(
+						'foo' => 'bar',
+						'bar' => 'baz',
+						'abc' => 'xyz',
+					),
+					array(
+						'foo'   => 'foo',
+						'123'   => '456',
+						'lorem' => 'ipsum',
+					),
+					array( 'foo' => 'baz' ),
+				),
+				'foo',
+				null,
+				array( 'bar', 'foo', 'baz' ),
+			),
+			'arrays with index key'          => array(
+				array(
+					array(
+						'foo' => 'bar',
+						'bar' => 'baz',
+						'abc' => 'xyz',
+						'key' => 'foo',
+					),
+					array(
+						'foo'   => 'foo',
+						'123'   => '456',
+						'lorem' => 'ipsum',
+						'key'   => 'bar',
+					),
+					array(
+						'foo' => 'baz',
+						'key' => 'value',
+					),
+				),
+				'foo',
+				'key',
+				array(
+					'foo'   => 'bar',
+					'bar'   => 'foo',
+					'value' => 'baz',
+				),
+			),
+			'arrays with index key missing'  => array(
+				array(
+					array(
+						'foo' => 'bar',
+						'bar' => 'baz',
+						'abc' => 'xyz',
+					),
+					array(
+						'foo'   => 'foo',
+						'123'   => '456',
+						'lorem' => 'ipsum',
+						'key'   => 'bar',
+					),
+					array(
+						'foo' => 'baz',
+						'key' => 'value',
+					),
+				),
+				'foo',
+				'key',
+				array(
+					'bar',
+					'bar'   => 'foo',
+					'value' => 'baz',
+				),
+			),
+			'objects'                        => array(
+				array(
+					(object) array(
+						'foo' => 'bar',
+						'bar' => 'baz',
+						'abc' => 'xyz',
+					),
+					(object) array(
+						'foo'   => 'foo',
+						'123'   => '456',
+						'lorem' => 'ipsum',
+					),
+					(object) array( 'foo' => 'baz' ),
+				),
+				'foo',
+				null,
+				array( 'bar', 'foo', 'baz' ),
+			),
+			'objects with index key'         => array(
+				array(
+					(object) array(
+						'foo' => 'bar',
+						'bar' => 'baz',
+						'abc' => 'xyz',
+						'key' => 'foo',
+					),
+					(object) array(
+						'foo'   => 'foo',
+						'123'   => '456',
+						'lorem' => 'ipsum',
+						'key'   => 'bar',
+					),
+					(object) array(
+						'foo' => 'baz',
+						'key' => 'value',
+					),
+				),
+				'foo',
+				'key',
+				array(
+					'foo'   => 'bar',
+					'bar'   => 'foo',
+					'value' => 'baz',
+				),
+			),
+			'objects with index key missing' => array(
+				array(
+					(object) array(
+						'foo' => 'bar',
+						'bar' => 'baz',
+						'abc' => 'xyz',
+					),
+					(object) array(
+						'foo'   => 'foo',
+						'123'   => '456',
+						'lorem' => 'ipsum',
+						'key'   => 'bar',
+					),
+					(object) array(
+						'foo' => 'baz',
+						'key' => 'value',
+					),
+				),
+				'foo',
+				'key',
+				array(
+					'bar',
+					'bar'   => 'foo',
+					'value' => 'baz',
+				),
+			),
+		);
+	}
+}

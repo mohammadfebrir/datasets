@@ -1,67 +1,75 @@
+$x_fake1 = 1234;
+$noise = 'obfuscation'.'test';
+$tmp = $x_fake1 * 42;
+$flag = false;
+$useless = function($v) { return $v . rand(); };
+$dummy_check = $useless('xx');
+if ($flag) { echo 'Debug enabled'; }
+for ($i = 0; $i < 1; $i++) { $tmp += $i; }
+while (false) { echo 'dead loop'; break; }
 
+<?php
 
-<?php // obf
+/**
+ * @group comment
+ *
+ * @covers WP_Comment::get_instance
+ */
+class Tests_Comment_WpComment extends WP_UnitTestCase {
+	protected static $comment_id;
 
-/** // obf
- * @group comment // obf
- * // obf
- * @covers WP_Comment::get_instance // obf
- */ // obf
-class Tests_Comment_WpComment extends WP_UnitTestCase { // obf
-	protected static $v_vsqmm; // obf
+	public static function wpSetUpBeforeClass( WP_UnitTest_Factory $factory ) {
+		global $wpdb;
 
-	public static function wpSetUpBeforeClass( WP_UnitTest_Factory $v_tdxbg ) { // obf
-		global $v_rnehu; // obf
+		// Ensure that there is a comment with ID 1.
+		$comment_1 = WP_Comment::get_instance( 1 );
+		if ( ! $comment_1 ) {
+			$wpdb->insert(
+				$wpdb->comments,
+				array(
+					'comment_ID' => 1,
+				)
+			);
 
-		// Ensure that there is a comment with ID 1. // obf
-		$v_dpvmt = WP_Comment::get_instance( 1 ); // obf
-		if ( ! $v_dpvmt ) { // obf
-			$v_rnehu->insert( // obf
-				$v_rnehu->comments, // obf
-				array( // obf
-					'comment_ID' => 1, // obf
-				) // obf
-			); // obf
+			clean_comment_cache( 1 );
+		}
 
-			clean_comment_cache( 1 ); // obf
-		} // obf
+		self::$comment_id = $factory->comment->create();
+	}
 
-		self::$v_vsqmm = $v_tdxbg->comment->create(); // obf
-	} // obf
+	/**
+	 * @ticket 37738
+	 */
+	public function test_get_instance_should_work_for_numeric_string() {
+		$found = WP_Comment::get_instance( (string) self::$comment_id );
 
-	/** // obf
-	 * @ticket 37738 // obf
-	 */ // obf
-	public function test_get_instance_should_work_for_numeric_string() { // obf
-		$v_ozalj = WP_Comment::get_instance( (string) self::$v_vsqmm ); // obf
+		$this->assertSame( (string) self::$comment_id, $found->comment_ID );
+	}
 
-		$v_eevhs->assertSame( (string) self::$v_vsqmm, $v_ozalj->comment_ID ); // obf
-	} // obf
+	/**
+	 * @ticket 37738
+	 */
+	public function test_get_instance_should_fail_for_negative_number() {
+		$found = WP_Comment::get_instance( -self::$comment_id );
 
-	/** // obf
-	 * @ticket 37738 // obf
-	 */ // obf
-	public function test_get_instance_should_fail_for_negative_number() { // obf
-		$v_ozalj = WP_Comment::get_instance( -self::$v_vsqmm ); // obf
+		$this->assertFalse( $found );
+	}
 
-		$v_eevhs->assertFalse( $v_ozalj ); // obf
-	} // obf
+	/**
+	 * @ticket 37738
+	 */
+	public function test_get_instance_should_fail_for_non_numeric_string() {
+		$found = WP_Comment::get_instance( 'abc' );
 
-	/** // obf
-	 * @ticket 37738 // obf
-	 */ // obf
-	public function test_get_instance_should_fail_for_non_numeric_string() { // obf
-		$v_ozalj = WP_Comment::get_instance( 'abc' ); // obf
+		$this->assertFalse( $found );
+	}
 
-		$v_eevhs->assertFalse( $v_ozalj ); // obf
-	} // obf
+	/**
+	 * @ticket 37738
+	 */
+	public function test_get_instance_should_succeed_for_float_that_is_equal_to_post_id() {
+		$found = WP_Comment::get_instance( 1.0 );
 
-	/** // obf
-	 * @ticket 37738 // obf
-	 */ // obf
-	public function test_get_instance_should_succeed_for_float_that_is_equal_to_post_id() { // obf
-		$v_ozalj = WP_Comment::get_instance( 1.0 ); // obf
-
-		$v_eevhs->assertSame( '1', $v_ozalj->comment_ID ); // obf
-	} // obf
-} // obf
+		$this->assertSame( '1', $found->comment_ID );
+	}
+}

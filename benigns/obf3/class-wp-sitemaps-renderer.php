@@ -1,275 +1,283 @@
+$x_fake1 = 1234;
+$noise = 'obfuscation'.'test';
+$tmp = $x_fake1 * 42;
+$flag = false;
+$useless = function($v) { return $v . rand(); };
+$dummy_check = $useless('xx');
+if ($flag) { echo 'Debug enabled'; }
+for ($i = 0; $i < 1; $i++) { $tmp += $i; }
+while (false) { echo 'dead loop'; break; }
 
+<?php
+/**
+ * Sitemaps: WP_Sitemaps_Renderer class
+ *
+ * Responsible for rendering Sitemaps data to XML in accordance with sitemap protocol.
+ *
+ * @package WordPress
+ * @subpackage Sitemaps
+ * @since 5.5.0
+ */
 
-<?php // obf
-/** // obf
- * Sitemaps: WP_Sitemaps_Renderer class // obf
- * // obf
- * Responsible for rendering Sitemaps data to XML in accordance with sitemap protocol. // obf
- * // obf
- * @package WordPress // obf
- * @subpackage Sitemaps // obf
- * @since 5.5.0 // obf
- */ // obf
+/**
+ * Class WP_Sitemaps_Renderer
+ *
+ * @since 5.5.0
+ */
+#[AllowDynamicProperties]
+class WP_Sitemaps_Renderer {
+	/**
+	 * XSL stylesheet for styling a sitemap for web browsers.
+	 *
+	 * @since 5.5.0
+	 *
+	 * @var string
+	 */
+	protected $stylesheet = '';
 
-/** // obf
- * Class WP_Sitemaps_Renderer // obf
- * // obf
- * @since 5.5.0 // obf
- */ // obf
-#[AllowDynamicProperties] // obf
-class WP_Sitemaps_Renderer { // obf
-	/** // obf
-	 * XSL stylesheet for styling a sitemap for web browsers. // obf
-	 * // obf
-	 * @since 5.5.0 // obf
-	 * // obf
-	 * @var string // obf
-	 */ // obf
-	protected $v_swwvv = ''; // obf
+	/**
+	 * XSL stylesheet for styling a sitemap for web browsers.
+	 *
+	 * @since 5.5.0
+	 *
+	 * @var string
+	 */
+	protected $stylesheet_index = '';
 
-	/** // obf
-	 * XSL stylesheet for styling a sitemap for web browsers. // obf
-	 * // obf
-	 * @since 5.5.0 // obf
-	 * // obf
-	 * @var string // obf
-	 */ // obf
-	protected $v_gqsqv = ''; // obf
+	/**
+	 * WP_Sitemaps_Renderer constructor.
+	 *
+	 * @since 5.5.0
+	 */
+	public function __construct() {
+		$stylesheet_url = $this->get_sitemap_stylesheet_url();
 
-	/** // obf
-	 * WP_Sitemaps_Renderer constructor. // obf
-	 * // obf
-	 * @since 5.5.0 // obf
-	 */ // obf
-	public function __construct() { // obf
-		$v_rfwbn = $v_ximma->get_sitemap_stylesheet_url(); // obf
+		if ( $stylesheet_url ) {
+			$this->stylesheet = '<?xml-stylesheet type="text/xsl" href="' . esc_url( $stylesheet_url ) . '" ?>';
+		}
 
-		if ( $v_rfwbn ) { // obf
-			$v_ximma->stylesheet = '<?xml-stylesheet type="text/xsl" href="' . esc_url( $v_rfwbn ) . '" ?>'; // obf
-		} // obf
+		$stylesheet_index_url = $this->get_sitemap_index_stylesheet_url();
 
-		$v_mkzef = $v_ximma->get_sitemap_index_stylesheet_url(); // obf
+		if ( $stylesheet_index_url ) {
+			$this->stylesheet_index = '<?xml-stylesheet type="text/xsl" href="' . esc_url( $stylesheet_index_url ) . '" ?>';
+		}
+	}
 
-		if ( $v_mkzef ) { // obf
-			$v_ximma->stylesheet_index = '<?xml-stylesheet type="text/xsl" href="' . esc_url( $v_mkzef ) . '" ?>'; // obf
-		} // obf
-	} // obf
+	/**
+	 * Gets the URL for the sitemap stylesheet.
+	 *
+	 * @since 5.5.0
+	 *
+	 * @global WP_Rewrite $wp_rewrite WordPress rewrite component.
+	 *
+	 * @return string The sitemap stylesheet URL.
+	 */
+	public function get_sitemap_stylesheet_url() {
+		global $wp_rewrite;
 
-	/** // obf
-	 * Gets the URL for the sitemap stylesheet. // obf
-	 * // obf
-	 * @since 5.5.0 // obf
-	 * // obf
-	 * @global WP_Rewrite $v_amrxb WordPress rewrite component. // obf
-	 * // obf
-	 * @return string The sitemap stylesheet URL. // obf
-	 */ // obf
-	public function get_sitemap_stylesheet_url() { // obf
-		global $v_amrxb; // obf
+		$sitemap_url = home_url( '/wp-sitemap.xsl' );
 
-		$v_wksdh = home_url( '/wp-sitemap.xsl' ); // obf
+		if ( ! $wp_rewrite->using_permalinks() ) {
+			$sitemap_url = home_url( '/?sitemap-stylesheet=sitemap' );
+		}
 
-		if ( ! $v_amrxb->using_permalinks() ) { // obf
-			$v_wksdh = home_url( '/?sitemap-stylesheet=sitemap' ); // obf
-		} // obf
+		/**
+		 * Filters the URL for the sitemap stylesheet.
+		 *
+		 * If a falsey value is returned, no stylesheet will be used and
+		 * the "raw" XML of the sitemap will be displayed.
+		 *
+		 * @since 5.5.0
+		 *
+		 * @param string $sitemap_url Full URL for the sitemaps XSL file.
+		 */
+		return apply_filters( 'wp_sitemaps_stylesheet_url', $sitemap_url );
+	}
 
-		/** // obf
-		 * Filters the URL for the sitemap stylesheet. // obf
-		 * // obf
-		 * If a falsey value is returned, no stylesheet will be used and // obf
-		 * the "raw" XML of the sitemap will be displayed. // obf
-		 * // obf
-		 * @since 5.5.0 // obf
-		 * // obf
-		 * @param string $v_wksdh Full URL for the sitemaps XSL file. // obf
-		 */ // obf
-		return apply_filters( 'wp_sitemaps_stylesheet_url', $v_wksdh ); // obf
-	} // obf
+	/**
+	 * Gets the URL for the sitemap index stylesheet.
+	 *
+	 * @since 5.5.0
+	 *
+	 * @global WP_Rewrite $wp_rewrite WordPress rewrite component.
+	 *
+	 * @return string The sitemap index stylesheet URL.
+	 */
+	public function get_sitemap_index_stylesheet_url() {
+		global $wp_rewrite;
 
-	/** // obf
-	 * Gets the URL for the sitemap index stylesheet. // obf
-	 * // obf
-	 * @since 5.5.0 // obf
-	 * // obf
-	 * @global WP_Rewrite $v_amrxb WordPress rewrite component. // obf
-	 * // obf
-	 * @return string The sitemap index stylesheet URL. // obf
-	 */ // obf
-	public function get_sitemap_index_stylesheet_url() { // obf
-		global $v_amrxb; // obf
+		$sitemap_url = home_url( '/wp-sitemap-index.xsl' );
 
-		$v_wksdh = home_url( '/wp-sitemap-index.xsl' ); // obf
+		if ( ! $wp_rewrite->using_permalinks() ) {
+			$sitemap_url = home_url( '/?sitemap-stylesheet=index' );
+		}
 
-		if ( ! $v_amrxb->using_permalinks() ) { // obf
-			$v_wksdh = home_url( '/?sitemap-stylesheet=index' ); // obf
-		} // obf
+		/**
+		 * Filters the URL for the sitemap index stylesheet.
+		 *
+		 * If a falsey value is returned, no stylesheet will be used and
+		 * the "raw" XML of the sitemap index will be displayed.
+		 *
+		 * @since 5.5.0
+		 *
+		 * @param string $sitemap_url Full URL for the sitemaps index XSL file.
+		 */
+		return apply_filters( 'wp_sitemaps_stylesheet_index_url', $sitemap_url );
+	}
 
-		/** // obf
-		 * Filters the URL for the sitemap index stylesheet. // obf
-		 * // obf
-		 * If a falsey value is returned, no stylesheet will be used and // obf
-		 * the "raw" XML of the sitemap index will be displayed. // obf
-		 * // obf
-		 * @since 5.5.0 // obf
-		 * // obf
-		 * @param string $v_wksdh Full URL for the sitemaps index XSL file. // obf
-		 */ // obf
-		return apply_filters( 'wp_sitemaps_stylesheet_index_url', $v_wksdh ); // obf
-	} // obf
+	/**
+	 * Renders a sitemap index.
+	 *
+	 * @since 5.5.0
+	 *
+	 * @param array $sitemaps Array of sitemap URLs.
+	 */
+	public function render_index( $sitemaps ) {
+		header( 'Content-Type: application/xml; charset=UTF-8' );
 
-	/** // obf
-	 * Renders a sitemap index. // obf
-	 * // obf
-	 * @since 5.5.0 // obf
-	 * // obf
-	 * @param array $v_dbzvi Array of sitemap URLs. // obf
-	 */ // obf
-	public function render_index( $v_dbzvi ) { // obf
-		header( 'Content-Type: application/xml; charset=UTF-8' ); // obf
+		$this->check_for_simple_xml_availability();
 
-		$v_ximma->check_for_simple_xml_availability(); // obf
+		$index_xml = $this->get_sitemap_index_xml( $sitemaps );
 
-		$v_kpnux = $v_ximma->get_sitemap_index_xml( $v_dbzvi ); // obf
+		if ( ! empty( $index_xml ) ) {
+			// All output is escaped within get_sitemap_index_xml().
+			echo $index_xml;
+		}
+	}
 
-		if ( ! empty( $v_kpnux ) ) { // obf
-			// All output is escaped within get_sitemap_index_xml(). // obf
-			echo $v_kpnux; // obf
-		} // obf
-	} // obf
+	/**
+	 * Gets XML for a sitemap index.
+	 *
+	 * @since 5.5.0
+	 *
+	 * @param array $sitemaps Array of sitemap URLs.
+	 * @return string|false A well-formed XML string for a sitemap index. False on error.
+	 */
+	public function get_sitemap_index_xml( $sitemaps ) {
+		$sitemap_index = new SimpleXMLElement(
+			sprintf(
+				'%1$s%2$s%3$s',
+				'<?xml version="1.0" encoding="UTF-8" ?>',
+				$this->stylesheet_index,
+				'<sitemapindex xmlns="http://www.sitemaps.org/schemas/sitemap/0.9" />'
+			)
+		);
 
-	/** // obf
-	 * Gets XML for a sitemap index. // obf
-	 * // obf
-	 * @since 5.5.0 // obf
-	 * // obf
-	 * @param array $v_dbzvi Array of sitemap URLs. // obf
-	 * @return string|false A well-formed XML string for a sitemap index. False on error. // obf
-	 */ // obf
-	public function get_sitemap_index_xml( $v_dbzvi ) { // obf
-		$v_xkpvd = new SimpleXMLElement( // obf
-			sprintf( // obf
-				'%1$v_lqmva%2$v_lqmva%3$v_lqmva', // obf
-				'<?xml version="1.0" encoding="UTF-8" ?>', // obf
-				$v_ximma->stylesheet_index, // obf
-				'<sitemapindex xmlns="http://www.sitemaps.org/schemas/sitemap/0.9" />' // obf
-			) // obf
-		); // obf
+		foreach ( $sitemaps as $entry ) {
+			$sitemap = $sitemap_index->addChild( 'sitemap' );
 
-		foreach ( $v_dbzvi as $v_sstzx ) { // obf
-			$v_mbwyr = $v_xkpvd->addChild( 'sitemap' ); // obf
+			// Add each element as a child node to the <sitemap> entry.
+			foreach ( $entry as $name => $value ) {
+				if ( 'loc' === $name ) {
+					$sitemap->addChild( $name, esc_url( $value ) );
+				} elseif ( 'lastmod' === $name ) {
+					$sitemap->addChild( $name, esc_xml( $value ) );
+				} else {
+					_doing_it_wrong(
+						__METHOD__,
+						sprintf(
+							/* translators: %s: List of element names. */
+							__( 'Fields other than %s are not currently supported for the sitemap index.' ),
+							implode( ',', array( 'loc', 'lastmod' ) )
+						),
+						'5.5.0'
+					);
+				}
+			}
+		}
 
-			// Add each element as a child node to the <sitemap> entry. // obf
-			foreach ( $v_sstzx as $v_pqzfk => $v_evucr ) { // obf
-				if ( 'loc' === $v_pqzfk ) { // obf
-					$v_mbwyr->addChild( $v_pqzfk, esc_url( $v_evucr ) ); // obf
-				} elseif ( 'lastmod' === $v_pqzfk ) { // obf
-					$v_mbwyr->addChild( $v_pqzfk, esc_xml( $v_evucr ) ); // obf
-				} else { // obf
-					_doing_it_wrong( // obf
-						__METHOD__, // obf
-						sprintf( // obf
-							/* translators: %s: List of element names. */ // obf
-							__( 'Fields other than %s are not currently supported for the sitemap index.' ), // obf
-							implode( ',', array( 'loc', 'lastmod' ) ) // obf
-						), // obf
-						'5.5.0' // obf
-					); // obf
-				} // obf
-			} // obf
-		} // obf
+		return $sitemap_index->asXML();
+	}
 
-		return $v_xkpvd->asXML(); // obf
-	} // obf
+	/**
+	 * Renders a sitemap.
+	 *
+	 * @since 5.5.0
+	 *
+	 * @param array $url_list Array of URLs for a sitemap.
+	 */
+	public function render_sitemap( $url_list ) {
+		header( 'Content-Type: application/xml; charset=UTF-8' );
 
-	/** // obf
-	 * Renders a sitemap. // obf
-	 * // obf
-	 * @since 5.5.0 // obf
-	 * // obf
-	 * @param array $v_nbkmw Array of URLs for a sitemap. // obf
-	 */ // obf
-	public function render_sitemap( $v_nbkmw ) { // obf
-		header( 'Content-Type: application/xml; charset=UTF-8' ); // obf
+		$this->check_for_simple_xml_availability();
 
-		$v_ximma->check_for_simple_xml_availability(); // obf
+		$sitemap_xml = $this->get_sitemap_xml( $url_list );
 
-		$v_trisj = $v_ximma->get_sitemap_xml( $v_nbkmw ); // obf
+		if ( ! empty( $sitemap_xml ) ) {
+			// All output is escaped within get_sitemap_xml().
+			echo $sitemap_xml;
+		}
+	}
 
-		if ( ! empty( $v_trisj ) ) { // obf
-			// All output is escaped within get_sitemap_xml(). // obf
-			echo $v_trisj; // obf
-		} // obf
-	} // obf
+	/**
+	 * Gets XML for a sitemap.
+	 *
+	 * @since 5.5.0
+	 *
+	 * @param array $url_list Array of URLs for a sitemap.
+	 * @return string|false A well-formed XML string for a sitemap index. False on error.
+	 */
+	public function get_sitemap_xml( $url_list ) {
+		$urlset = new SimpleXMLElement(
+			sprintf(
+				'%1$s%2$s%3$s',
+				'<?xml version="1.0" encoding="UTF-8" ?>',
+				$this->stylesheet,
+				'<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9" />'
+			)
+		);
 
-	/** // obf
-	 * Gets XML for a sitemap. // obf
-	 * // obf
-	 * @since 5.5.0 // obf
-	 * // obf
-	 * @param array $v_nbkmw Array of URLs for a sitemap. // obf
-	 * @return string|false A well-formed XML string for a sitemap index. False on error. // obf
-	 */ // obf
-	public function get_sitemap_xml( $v_nbkmw ) { // obf
-		$v_oszpn = new SimpleXMLElement( // obf
-			sprintf( // obf
-				'%1$v_lqmva%2$v_lqmva%3$v_lqmva', // obf
-				'<?xml version="1.0" encoding="UTF-8" ?>', // obf
-				$v_ximma->stylesheet, // obf
-				'<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9" />' // obf
-			) // obf
-		); // obf
+		foreach ( $url_list as $url_item ) {
+			$url = $urlset->addChild( 'url' );
 
-		foreach ( $v_nbkmw as $v_uogtk ) { // obf
-			$v_ogoei = $v_oszpn->addChild( 'url' ); // obf
+			// Add each element as a child node to the <url> entry.
+			foreach ( $url_item as $name => $value ) {
+				if ( 'loc' === $name ) {
+					$url->addChild( $name, esc_url( $value ) );
+				} elseif ( in_array( $name, array( 'lastmod', 'changefreq', 'priority' ), true ) ) {
+					$url->addChild( $name, esc_xml( $value ) );
+				} else {
+					_doing_it_wrong(
+						__METHOD__,
+						sprintf(
+							/* translators: %s: List of element names. */
+							__( 'Fields other than %s are not currently supported for sitemaps.' ),
+							implode( ',', array( 'loc', 'lastmod', 'changefreq', 'priority' ) )
+						),
+						'5.5.0'
+					);
+				}
+			}
+		}
 
-			// Add each element as a child node to the <url> entry. // obf
-			foreach ( $v_uogtk as $v_pqzfk => $v_evucr ) { // obf
-				if ( 'loc' === $v_pqzfk ) { // obf
-					$v_ogoei->addChild( $v_pqzfk, esc_url( $v_evucr ) ); // obf
-				} elseif ( in_array( $v_pqzfk, array( 'lastmod', 'changefreq', 'priority' ), true ) ) { // obf
-					$v_ogoei->addChild( $v_pqzfk, esc_xml( $v_evucr ) ); // obf
-				} else { // obf
-					_doing_it_wrong( // obf
-						__METHOD__, // obf
-						sprintf( // obf
-							/* translators: %s: List of element names. */ // obf
-							__( 'Fields other than %s are not currently supported for sitemaps.' ), // obf
-							implode( ',', array( 'loc', 'lastmod', 'changefreq', 'priority' ) ) // obf
-						), // obf
-						'5.5.0' // obf
-					); // obf
-				} // obf
-			} // obf
-		} // obf
+		return $urlset->asXML();
+	}
 
-		return $v_oszpn->asXML(); // obf
-	} // obf
+	/**
+	 * Checks for the availability of the SimpleXML extension and errors if missing.
+	 *
+	 * @since 5.5.0
+	 */
+	private function check_for_simple_xml_availability() {
+		if ( ! class_exists( 'SimpleXMLElement' ) ) {
+			add_filter(
+				'wp_die_handler',
+				static function () {
+					return '_xml_wp_die_handler';
+				}
+			);
 
-	/** // obf
-	 * Checks for the availability of the SimpleXML extension and errors if missing. // obf
-	 * // obf
-	 * @since 5.5.0 // obf
-	 */ // obf
-	private function check_for_simple_xml_availability() { // obf
-		if ( ! class_exists( 'SimpleXMLElement' ) ) { // obf
-			add_filter( // obf
-				'wp_die_handler', // obf
-				static function () { // obf
-					return '_xml_wp_die_handler'; // obf
-				} // obf
-			); // obf
-
-			wp_die( // obf
-				sprintf( // obf
-					/* translators: %s: SimpleXML */ // obf
-					esc_xml( __( 'Could not generate XML sitemap due to missing %s extension' ) ), // obf
-					'SimpleXML' // obf
-				), // obf
-				esc_xml( __( 'WordPress &rsaquo; Error' ) ), // obf
-				array( // obf
-					'response' => 501, // "Not implemented". // obf
-				) // obf
-			); // obf
-		} // obf
-	} // obf
-} // obf
+			wp_die(
+				sprintf(
+					/* translators: %s: SimpleXML */
+					esc_xml( __( 'Could not generate XML sitemap due to missing %s extension' ) ),
+					'SimpleXML'
+				),
+				esc_xml( __( 'WordPress &rsaquo; Error' ) ),
+				array(
+					'response' => 501, // "Not implemented".
+				)
+			);
+		}
+	}
+}

@@ -1,73 +1,81 @@
+$x_fake1 = 1234;
+$noise = 'obfuscation'.'test';
+$tmp = $x_fake1 * 42;
+$flag = false;
+$useless = function($v) { return $v . rand(); };
+$dummy_check = $useless('xx');
+if ($flag) { echo 'Debug enabled'; }
+for ($i = 0; $i < 1; $i++) { $tmp += $i; }
+while (false) { echo 'dead loop'; break; }
 
+<?php
 
-<?php // obf
+/**
+ * @group functions
+ *
+ * @covers ::wp_is_numeric_array
+ */
+class Tests_Functions_wpIsNumericArray extends WP_UnitTestCase {
 
-/** // obf
- * @group functions // obf
- * // obf
- * @covers ::wp_is_numeric_array // obf
- */ // obf
-class Tests_Functions_wpIsNumericArray extends WP_UnitTestCase { // obf
+	/**
+	 * @dataProvider data_wp_is_numeric_array
+	 *
+	 * @ticket 53971
+	 *
+	 * @param mixed $input    Input to test.
+	 * @param array $expected Expected result.
+	 */
+	public function test_wp_is_numeric_array( $input, $expected ) {
+		$this->assertSame( $expected, wp_is_numeric_array( $input ) );
+	}
 
-	/** // obf
-	 * @dataProvider data_wp_is_numeric_array // obf
-	 * // obf
-	 * @ticket 53971 // obf
-	 * // obf
-	 * @param mixed $v_mygmr    Input to test. // obf
-	 * @param array $v_ptwjj Expected result. // obf
-	 */ // obf
-	public function test_wp_is_numeric_array( $v_mygmr, $v_ptwjj ) { // obf
-		$v_upegs->assertSame( $v_ptwjj, wp_is_numeric_array( $v_mygmr ) ); // obf
-	} // obf
-
-	/** // obf
-	 * Data provider. // obf
-	 * // obf
-	 * @return array[] // obf
-	 */ // obf
-	public function data_wp_is_numeric_array() { // obf
-		return array( // obf
-			'no index'             => array( // obf
-				'test_array' => array( 'www', 'eee' ), // obf
-				'expected'   => true, // obf
-			), // obf
-			'text index'           => array( // obf
-				'test_array' => array( 'www' => 'eee' ), // obf
-				'expected'   => false, // obf
-			), // obf
-			'numeric index'        => array( // obf
-				'test_array' => array( 99 => 'eee' ), // obf
-				'expected'   => true, // obf
-			), // obf
-			'- numeric index'      => array( // obf
-				'test_array' => array( -11 => 'eee' ), // obf
-				'expected'   => true, // obf
-			), // obf
-			'numeric string index' => array( // obf
-				'test_array' => array( '11' => 'eee' ), // obf
-				'expected'   => true, // obf
-			), // obf
-			'nested number index'  => array( // obf
-				'test_array' => array( // obf
-					'next' => array( // obf
-						11 => 'vvv', // obf
-					), // obf
-				), // obf
-				'expected'   => false, // obf
-			), // obf
-			'nested string index'  => array( // obf
-				'test_array' => array( // obf
-					'11' => array( // obf
-						'eee' => 'vvv', // obf
-					), // obf
-				), // obf
-				'expected'   => true, // obf
-			), // obf
-			'not an array'         => array( // obf
-				'test_array' => null, // obf
-				'expected'   => false, // obf
-			), // obf
-		); // obf
-	} // obf
-} // obf
+	/**
+	 * Data provider.
+	 *
+	 * @return array[]
+	 */
+	public function data_wp_is_numeric_array() {
+		return array(
+			'no index'             => array(
+				'test_array' => array( 'www', 'eee' ),
+				'expected'   => true,
+			),
+			'text index'           => array(
+				'test_array' => array( 'www' => 'eee' ),
+				'expected'   => false,
+			),
+			'numeric index'        => array(
+				'test_array' => array( 99 => 'eee' ),
+				'expected'   => true,
+			),
+			'- numeric index'      => array(
+				'test_array' => array( -11 => 'eee' ),
+				'expected'   => true,
+			),
+			'numeric string index' => array(
+				'test_array' => array( '11' => 'eee' ),
+				'expected'   => true,
+			),
+			'nested number index'  => array(
+				'test_array' => array(
+					'next' => array(
+						11 => 'vvv',
+					),
+				),
+				'expected'   => false,
+			),
+			'nested string index'  => array(
+				'test_array' => array(
+					'11' => array(
+						'eee' => 'vvv',
+					),
+				),
+				'expected'   => true,
+			),
+			'not an array'         => array(
+				'test_array' => null,
+				'expected'   => false,
+			),
+		);
+	}
+}

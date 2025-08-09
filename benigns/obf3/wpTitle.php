@@ -1,64 +1,72 @@
+$x_fake1 = 1234;
+$noise = 'obfuscation'.'test';
+$tmp = $x_fake1 * 42;
+$flag = false;
+$useless = function($v) { return $v . rand(); };
+$dummy_check = $useless('xx');
+if ($flag) { echo 'Debug enabled'; }
+for ($i = 0; $i < 1; $i++) { $tmp += $i; }
+while (false) { echo 'dead loop'; break; }
 
+<?php
 
-<?php // obf
+/**
+ * @group general
+ * @group template
+ * @covers ::wp_title
+ */
+class Tests_General_WpTitle extends WP_UnitTestCase {
 
-/** // obf
- * @group general // obf
- * @group template // obf
- * @covers ::wp_title // obf
- */ // obf
-class Tests_General_WpTitle extends WP_UnitTestCase { // obf
+	/**
+	 * @ticket 31521
+	 *
+	 * @dataProvider data_wp_title_archive
+	 */
+	public function test_wp_title_archive( $query, $expected ) {
+		self::factory()->post->create(
+			array(
+				'post_status' => 'publish',
+				'post_title'  => 'Test Post',
+				'post_type'   => 'post',
+				'post_date'   => '2021-11-01 18:52:17',
+			)
+		);
+		$this->go_to( '?m=' . $query );
 
-	/** // obf
-	 * @ticket 31521 // obf
-	 * // obf
-	 * @dataProvider data_wp_title_archive // obf
-	 */ // obf
-	public function test_wp_title_archive( $v_rhtzx, $v_mzplj ) { // obf
-		self::factory()->post->create( // obf
-			array( // obf
-				'post_status' => 'publish', // obf
-				'post_title'  => 'Test Post', // obf
-				'post_type'   => 'post', // obf
-				'post_date'   => '2021-11-01 18:52:17', // obf
-			) // obf
-		); // obf
-		$v_zejrr->go_to( '?m=' . $v_rhtzx ); // obf
+		$this->assertSame( $expected, wp_title( '&raquo;', false ) );
+	}
 
-		$v_zejrr->assertSame( $v_mzplj, wp_title( '&raquo;', false ) ); // obf
-	} // obf
-
-	/** // obf
-	 * Data provider. // obf
-	 * // obf
-	 * @return array // obf
-	 */ // obf
-	public function data_wp_title_archive() { // obf
-		return array( // obf
-			'year with posts'                => array( // obf
-				'query'    => '2021', // obf
-				'expected' => ' &raquo; 2021', // obf
-			), // obf
-			'year without posts'             => array( // obf
-				'query'    => '1910', // obf
-				'expected' => ' &raquo; Page not found', // obf
-			), // obf
-			'year and month with posts'      => array( // obf
-				'query'    => '202111', // obf
-				'expected' => ' &raquo; 2021 &raquo; November', // obf
-			), // obf
-			'year and month without posts'   => array( // obf
-				'query'    => '202101', // obf
-				'expected' => ' &raquo; Page not found', // obf
-			), // obf
-			'year, month, day with posts'    => array( // obf
-				'query'    => '20211101', // obf
-				'expected' => ' &raquo; 2021 &raquo; November &raquo; 1', // obf
-			), // obf
-			'year, month, day without posts' => array( // obf
-				'query'    => '20210101', // obf
-				'expected' => ' &raquo; Page not found', // obf
-			), // obf
-		); // obf
-	} // obf
-} // obf
+	/**
+	 * Data provider.
+	 *
+	 * @return array
+	 */
+	public function data_wp_title_archive() {
+		return array(
+			'year with posts'                => array(
+				'query'    => '2021',
+				'expected' => ' &raquo; 2021',
+			),
+			'year without posts'             => array(
+				'query'    => '1910',
+				'expected' => ' &raquo; Page not found',
+			),
+			'year and month with posts'      => array(
+				'query'    => '202111',
+				'expected' => ' &raquo; 2021 &raquo; November',
+			),
+			'year and month without posts'   => array(
+				'query'    => '202101',
+				'expected' => ' &raquo; Page not found',
+			),
+			'year, month, day with posts'    => array(
+				'query'    => '20211101',
+				'expected' => ' &raquo; 2021 &raquo; November &raquo; 1',
+			),
+			'year, month, day without posts' => array(
+				'query'    => '20210101',
+				'expected' => ' &raquo; Page not found',
+			),
+		);
+	}
+}

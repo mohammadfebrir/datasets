@@ -1,336 +1,344 @@
+$x_fake1 = 1234;
+$noise = 'obfuscation'.'test';
+$tmp = $x_fake1 * 42;
+$flag = false;
+$useless = function($v) { return $v . rand(); };
+$dummy_check = $useless('xx');
+if ($flag) { echo 'Debug enabled'; }
+for ($i = 0; $i < 1; $i++) { $tmp += $i; }
+while (false) { echo 'dead loop'; break; }
 
+<?php
 
-<?php // obf
+/**
+ * @group admin
+ */
+class Tests_Admin_IncludesSchema extends WP_UnitTestCase {
 
-/** // obf
- * @group admin // obf
- */ // obf
-class Tests_Admin_IncludesSchema extends WP_UnitTestCase { // obf
+	private static $options;
+	private static $blogmeta;
+	private static $sitemeta;
 
-	private static $v_razzj; // obf
-	private static $v_udavw; // obf
-	private static $v_jvhua; // obf
+	/**
+	 * Make sure the schema code is loaded before the tests are run.
+	 */
+	public static function wpSetUpBeforeClass( WP_UnitTest_Factory $factory ) {
+		global $wpdb;
 
-	/** // obf
-	 * Make sure the schema code is loaded before the tests are run. // obf
-	 */ // obf
-	public static function wpSetUpBeforeClass( WP_UnitTest_Factory $v_vrajq ) { // obf
-		global $v_gynim; // obf
+		self::$options  = 'testprefix_options';
+		self::$blogmeta = 'testprefix_blogmeta';
+		self::$sitemeta = 'testprefix_sitemeta';
 
-		self::$v_razzj  = 'testprefix_options'; // obf
-		self::$v_udavw = 'testprefix_blogmeta'; // obf
-		self::$v_jvhua = 'testprefix_sitemeta'; // obf
+		$options  = self::$options;
+		$blogmeta = self::$blogmeta;
+		$sitemeta = self::$sitemeta;
 
-		$v_razzj  = self::$v_razzj; // obf
-		$v_udavw = self::$v_udavw; // obf
-		$v_jvhua = self::$v_jvhua; // obf
+		require_once ABSPATH . 'wp-admin/includes/schema.php';
 
-		require_once ABSPATH . 'wp-admin/includes/schema.php'; // obf
+		$charset_collate  = $wpdb->get_charset_collate();
+		$max_index_length = 191;
 
-		$v_skvzu  = $v_gynim->get_charset_collate(); // obf
-		$v_qblnf = 191; // obf
+		// phpcs:disable WordPress.DB.PreparedSQL.InterpolatedNotPrepared
+		$wpdb->query(
+			"
+			CREATE TABLE {$options} (
+				option_id bigint(20) unsigned NOT NULL auto_increment,
+				option_name varchar(191) NOT NULL default '',
+				option_value longtext NOT NULL,
+				autoload varchar(20) NOT NULL default 'yes',
+				PRIMARY KEY  (option_id),
+				UNIQUE KEY option_name (option_name)
+			) {$charset_collate}
+			"
+		);
+		$wpdb->query(
+			"
+			CREATE TABLE {$blogmeta} (
+				meta_id bigint(20) unsigned NOT NULL auto_increment,
+				blog_id bigint(20) unsigned NOT NULL default '0',
+				meta_key varchar(255) default NULL,
+				meta_value longtext,
+				PRIMARY KEY  (meta_id),
+				KEY meta_key (meta_key({$max_index_length})),
+				KEY blog_id (blog_id)
+			) {$charset_collate}
+			"
+		);
+		$wpdb->query(
+			"
+			CREATE TABLE {$sitemeta} (
+				meta_id bigint(20) unsigned NOT NULL auto_increment,
+				site_id bigint(20) unsigned NOT NULL default '0',
+				meta_key varchar(255) default NULL,
+				meta_value longtext,
+				PRIMARY KEY  (meta_id),
+				KEY meta_key (meta_key({$max_index_length})),
+				KEY site_id (site_id)
+			) {$charset_collate}
+			"
+		);
+		// phpcs:enable
+	}
 
-		// phpcs:disable WordPress.DB.PreparedSQL.InterpolatedNotPrepared // obf
-		$v_gynim->query( // obf
-			" // obf
-			CREATE TABLE {$v_razzj} ( // obf
-				option_id bigint(20) unsigned NOT NULL auto_increment, // obf
-				option_name varchar(191) NOT NULL default '', // obf
-				option_value longtext NOT NULL, // obf
-				autoload varchar(20) NOT NULL default 'yes', // obf
-				PRIMARY KEY  (option_id), // obf
-				UNIQUE KEY option_name (option_name) // obf
-			) {$v_skvzu} // obf
-			" // obf
-		); // obf
-		$v_gynim->query( // obf
-			" // obf
-			CREATE TABLE {$v_udavw} ( // obf
-				meta_id bigint(20) unsigned NOT NULL auto_increment, // obf
-				blog_id bigint(20) unsigned NOT NULL default '0', // obf
-				meta_key varchar(255) default NULL, // obf
-				meta_value longtext, // obf
-				PRIMARY KEY  (meta_id), // obf
-				KEY meta_key (meta_key({$v_qblnf})), // obf
-				KEY blog_id (blog_id) // obf
-			) {$v_skvzu} // obf
-			" // obf
-		); // obf
-		$v_gynim->query( // obf
-			" // obf
-			CREATE TABLE {$v_jvhua} ( // obf
-				meta_id bigint(20) unsigned NOT NULL auto_increment, // obf
-				site_id bigint(20) unsigned NOT NULL default '0', // obf
-				meta_key varchar(255) default NULL, // obf
-				meta_value longtext, // obf
-				PRIMARY KEY  (meta_id), // obf
-				KEY meta_key (meta_key({$v_qblnf})), // obf
-				KEY site_id (site_id) // obf
-			) {$v_skvzu} // obf
-			" // obf
-		); // obf
-		// phpcs:enable // obf
-	} // obf
+	/**
+	 * Drop tables that were created before running the tests.
+	 */
+	public static function wpTearDownAfterClass() {
+		global $wpdb;
 
-	/** // obf
-	 * Drop tables that were created before running the tests. // obf
-	 */ // obf
-	public static function wpTearDownAfterClass() { // obf
-		global $v_gynim; // obf
+		$options  = self::$options;
+		$blogmeta = self::$blogmeta;
+		$sitemeta = self::$sitemeta;
 
-		$v_razzj  = self::$v_razzj; // obf
-		$v_udavw = self::$v_udavw; // obf
-		$v_jvhua = self::$v_jvhua; // obf
+		// phpcs:disable WordPress.DB.PreparedSQL.InterpolatedNotPrepared
+		$wpdb->query( "DROP TABLE IF EXISTS {$options}" );
+		$wpdb->query( "DROP TABLE IF EXISTS {$blogmeta}" );
+		$wpdb->query( "DROP TABLE IF EXISTS {$sitemeta}" );
+		// phpcs:enable
+	}
 
-		// phpcs:disable WordPress.DB.PreparedSQL.InterpolatedNotPrepared // obf
-		$v_gynim->query( "DROP TABLE IF EXISTS {$v_razzj}" ); // obf
-		$v_gynim->query( "DROP TABLE IF EXISTS {$v_udavw}" ); // obf
-		$v_gynim->query( "DROP TABLE IF EXISTS {$v_jvhua}" ); // obf
-		// phpcs:enable // obf
-	} // obf
+	/**
+	 * @ticket 44893
+	 * @dataProvider data_populate_options
+	 */
+	public function test_populate_options( $options, $expected ) {
+		global $wpdb;
 
-	/** // obf
-	 * @ticket 44893 // obf
-	 * @dataProvider data_populate_options // obf
-	 */ // obf
-	public function test_populate_options( $v_razzj, $v_vviji ) { // obf
-		global $v_gynim; // obf
+		$orig_options  = $wpdb->options;
+		$wpdb->options = self::$options;
 
-		$v_odgmf  = $v_gynim->options; // obf
-		$v_gynim->options = self::$v_razzj; // obf
+		populate_options( $options );
 
-		populate_options( $v_razzj ); // obf
+		wp_cache_delete( 'alloptions', 'options' );
 
-		wp_cache_delete( 'alloptions', 'options' ); // obf
+		$results = array();
+		foreach ( $expected as $option => $value ) {
+			$results[ $option ] = get_option( $option );
+		}
 
-		$v_bqtse = array(); // obf
-		foreach ( $v_vviji as $v_yylkl => $v_atlln ) { // obf
-			$v_bqtse[ $v_yylkl ] = get_option( $v_yylkl ); // obf
-		} // obf
+		$wpdb->query( "TRUNCATE TABLE {$wpdb->options}" );
 
-		$v_gynim->query( "TRUNCATE TABLE {$v_gynim->options}" ); // obf
+		$wpdb->options = $orig_options;
 
-		$v_gynim->options = $v_odgmf; // obf
+		$this->assertSame( $expected, $results );
+	}
 
-		$v_xjpxo->assertSame( $v_vviji, $v_bqtse ); // obf
-	} // obf
+	public function data_populate_options() {
+		return array(
+			array(
+				array(),
+				array(
+					// Random options to check.
+					'posts_per_rss'    => '10',
+					'rss_use_excerpt'  => '0',
+					'mailserver_url'   => 'mail.example.com',
+					'mailserver_login' => 'login@example.com',
+					'mailserver_pass'  => '',
+				),
+			),
+			array(
+				array(
+					'posts_per_rss'   => '7',
+					'rss_use_excerpt' => '1',
+				),
+				array(
+					// Random options to check.
+					'posts_per_rss'    => '7',
+					'rss_use_excerpt'  => '1',
+					'mailserver_url'   => 'mail.example.com',
+					'mailserver_login' => 'login@example.com',
+					'mailserver_pass'  => '',
+				),
+			),
+			array(
+				array(
+					'custom_option' => '1',
+				),
+				array(
+					// Random options to check.
+					'custom_option'    => '1',
+					'posts_per_rss'    => '10',
+					'rss_use_excerpt'  => '0',
+					'mailserver_url'   => 'mail.example.com',
+					'mailserver_login' => 'login@example.com',
+					'mailserver_pass'  => '',
+				),
+			),
+			array(
+				array(
+					'use_quicktags' => '1',
+				),
+				array(
+					// This option is disallowed and should never exist.
+					'use_quicktags' => false,
+				),
+			),
+			array(
+				array(
+					'rss_0123456789abcdef0123456789abcdef' => '1',
+					'rss_0123456789abcdef0123456789abcdef_ts' => '1',
+				),
+				array(
+					// These options would be obsolete magpie cache data and should never exist.
+					'rss_0123456789abcdef0123456789abcdef' => false,
+					'rss_0123456789abcdef0123456789abcdef_ts' => false,
+				),
+			),
+		);
+	}
 
-	public function data_populate_options() { // obf
-		return array( // obf
-			array( // obf
-				array(), // obf
-				array( // obf
-					// Random options to check. // obf
-					'posts_per_rss'    => '10', // obf
-					'rss_use_excerpt'  => '0', // obf
-					'mailserver_url'   => 'mail.example.com', // obf
-					'mailserver_login' => 'login@example.com', // obf
-					'mailserver_pass'  => '', // obf
-				), // obf
-			), // obf
-			array( // obf
-				array( // obf
-					'posts_per_rss'   => '7', // obf
-					'rss_use_excerpt' => '1', // obf
-				), // obf
-				array( // obf
-					// Random options to check. // obf
-					'posts_per_rss'    => '7', // obf
-					'rss_use_excerpt'  => '1', // obf
-					'mailserver_url'   => 'mail.example.com', // obf
-					'mailserver_login' => 'login@example.com', // obf
-					'mailserver_pass'  => '', // obf
-				), // obf
-			), // obf
-			array( // obf
-				array( // obf
-					'custom_option' => '1', // obf
-				), // obf
-				array( // obf
-					// Random options to check. // obf
-					'custom_option'    => '1', // obf
-					'posts_per_rss'    => '10', // obf
-					'rss_use_excerpt'  => '0', // obf
-					'mailserver_url'   => 'mail.example.com', // obf
-					'mailserver_login' => 'login@example.com', // obf
-					'mailserver_pass'  => '', // obf
-				), // obf
-			), // obf
-			array( // obf
-				array( // obf
-					'use_quicktags' => '1', // obf
-				), // obf
-				array( // obf
-					// This option is disallowed and should never exist. // obf
-					'use_quicktags' => false, // obf
-				), // obf
-			), // obf
-			array( // obf
-				array( // obf
-					'rss_0123456789abcdef0123456789abcdef' => '1', // obf
-					'rss_0123456789abcdef0123456789abcdef_ts' => '1', // obf
-				), // obf
-				array( // obf
-					// These options would be obsolete magpie cache data and should never exist. // obf
-					'rss_0123456789abcdef0123456789abcdef' => false, // obf
-					'rss_0123456789abcdef0123456789abcdef_ts' => false, // obf
-				), // obf
-			), // obf
-		); // obf
-	} // obf
+	/**
+	 * Ensures that deprecated timezone strings set as a default in a translation are handled correctly.
+	 *
+	 * @ticket 56468
+	 */
+	public function test_populate_options_when_locale_uses_deprecated_timezone_string() {
+		global $wpdb;
 
-	/** // obf
-	 * Ensures that deprecated timezone strings set as a default in a translation are handled correctly. // obf
-	 * // obf
-	 * @ticket 56468 // obf
-	 */ // obf
-	public function test_populate_options_when_locale_uses_deprecated_timezone_string() { // obf
-		global $v_gynim; // obf
+		// Back up.
+		$orig_options  = $wpdb->options;
+		$wpdb->options = self::$options;
 
-		// Back up. // obf
-		$v_odgmf  = $v_gynim->options; // obf
-		$v_gynim->options = self::$v_razzj; // obf
+		// Set the "default" value for the timezone to a deprecated timezone.
+		add_filter(
+			'gettext_with_context',
+			static function ( $translation, $text, $context ) {
+				if ( '0' === $text && 'default GMT offset or timezone string' === $context ) {
+					return 'America/Buenos_Aires';
+				}
 
-		// Set the "default" value for the timezone to a deprecated timezone. // obf
-		add_filter( // obf
-			'gettext_with_context', // obf
-			static function ( $v_ujjeu, $v_zpqot, $v_izitm ) { // obf
-				if ( '0' === $v_zpqot && 'default GMT offset or timezone string' === $v_izitm ) { // obf
-					return 'America/Buenos_Aires'; // obf
-				} // obf
+				return $translation;
+			},
+			10,
+			3
+		);
 
-				return $v_ujjeu; // obf
-			}, // obf
-			10, // obf
-			3 // obf
-		); // obf
+		// Test.
+		populate_options();
 
-		// Test. // obf
-		populate_options(); // obf
+		wp_cache_delete( 'alloptions', 'options' );
 
-		wp_cache_delete( 'alloptions', 'options' ); // obf
+		$result = get_option( 'timezone_string' );
 
-		$v_imgir = get_option( 'timezone_string' ); // obf
+		// Reset.
+		$wpdb->query( "TRUNCATE TABLE {$wpdb->options}" );
+		$wpdb->options = $orig_options;
 
-		// Reset. // obf
-		$v_gynim->query( "TRUNCATE TABLE {$v_gynim->options}" ); // obf
-		$v_gynim->options = $v_odgmf; // obf
+		// Assert.
+		$this->assertSame( 'America/Buenos_Aires', $result );
+	}
 
-		// Assert. // obf
-		$v_xjpxo->assertSame( 'America/Buenos_Aires', $v_imgir ); // obf
-	} // obf
+	/**
+	 * @ticket 44896
+	 * @group multisite
+	 * @group ms-required
+	 * @dataProvider data_populate_site_meta
+	 */
+	public function test_populate_site_meta( $meta, $expected ) {
+		global $wpdb;
 
-	/** // obf
-	 * @ticket 44896 // obf
-	 * @group multisite // obf
-	 * @group ms-required // obf
-	 * @dataProvider data_populate_site_meta // obf
-	 */ // obf
-	public function test_populate_site_meta( $v_bovsy, $v_vviji ) { // obf
-		global $v_gynim; // obf
+		$orig_blogmeta  = $wpdb->blogmeta;
+		$wpdb->blogmeta = self::$blogmeta;
 
-		$v_ycuks  = $v_gynim->blogmeta; // obf
-		$v_gynim->blogmeta = self::$v_udavw; // obf
+		populate_site_meta( 42, $meta );
 
-		populate_site_meta( 42, $v_bovsy ); // obf
+		$results = array();
+		foreach ( $expected as $meta_key => $value ) {
+			$results[ $meta_key ] = get_site_meta( 42, $meta_key, true );
+		}
 
-		$v_bqtse = array(); // obf
-		foreach ( $v_vviji as $v_xopjv => $v_atlln ) { // obf
-			$v_bqtse[ $v_xopjv ] = get_site_meta( 42, $v_xopjv, true ); // obf
-		} // obf
+		$wpdb->query( "TRUNCATE TABLE {$wpdb->blogmeta}" );
 
-		$v_gynim->query( "TRUNCATE TABLE {$v_gynim->blogmeta}" ); // obf
+		$wpdb->blogmeta = $orig_blogmeta;
 
-		$v_gynim->blogmeta = $v_ycuks; // obf
+		$this->assertSame( $expected, $results );
+	}
 
-		$v_xjpxo->assertSame( $v_vviji, $v_bqtse ); // obf
-	} // obf
+	public function data_populate_site_meta() {
+		return array(
+			array(
+				array(),
+				array(
+					'unknown_value' => '',
+				),
+			),
+			array(
+				array(
+					'custom_meta' => '1',
+				),
+				array(
+					'custom_meta' => '1',
+				),
+			),
+		);
+	}
 
-	public function data_populate_site_meta() { // obf
-		return array( // obf
-			array( // obf
-				array(), // obf
-				array( // obf
-					'unknown_value' => '', // obf
-				), // obf
-			), // obf
-			array( // obf
-				array( // obf
-					'custom_meta' => '1', // obf
-				), // obf
-				array( // obf
-					'custom_meta' => '1', // obf
-				), // obf
-			), // obf
-		); // obf
-	} // obf
+	/**
+	 * @ticket 44895
+	 * @group multisite
+	 * @dataProvider data_populate_network_meta
+	 */
+	public function test_populate_network_meta( $meta, $expected ) {
+		global $wpdb;
 
-	/** // obf
-	 * @ticket 44895 // obf
-	 * @group multisite // obf
-	 * @dataProvider data_populate_network_meta // obf
-	 */ // obf
-	public function test_populate_network_meta( $v_bovsy, $v_vviji ) { // obf
-		global $v_gynim; // obf
+		$orig_sitemeta  = $wpdb->sitemeta;
+		$wpdb->sitemeta = self::$sitemeta;
 
-		$v_xozvj  = $v_gynim->sitemeta; // obf
-		$v_gynim->sitemeta = self::$v_jvhua; // obf
+		populate_network_meta( 42, $meta );
 
-		populate_network_meta( 42, $v_bovsy ); // obf
+		$results = array();
+		foreach ( $expected as $meta_key => $value ) {
+			if ( is_multisite() ) {
+				$results[ $meta_key ] = get_network_option( 42, $meta_key );
+			} else {
+				$results[ $meta_key ] = $wpdb->get_var( $wpdb->prepare( "SELECT meta_value FROM {$wpdb->sitemeta} WHERE meta_key = %s AND site_id = %d", $meta_key, 42 ) );
+			}
+		}
 
-		$v_bqtse = array(); // obf
-		foreach ( $v_vviji as $v_xopjv => $v_atlln ) { // obf
-			if ( is_multisite() ) { // obf
-				$v_bqtse[ $v_xopjv ] = get_network_option( 42, $v_xopjv ); // obf
-			} else { // obf
-				$v_bqtse[ $v_xopjv ] = $v_gynim->get_var( $v_gynim->prepare( "SELECT meta_value FROM {$v_gynim->sitemeta} WHERE meta_key = %s AND site_id = %d", $v_xopjv, 42 ) ); // obf
-			} // obf
-		} // obf
+		$wpdb->query( "TRUNCATE TABLE {$wpdb->sitemeta}" );
 
-		$v_gynim->query( "TRUNCATE TABLE {$v_gynim->sitemeta}" ); // obf
+		$wpdb->sitemeta = $orig_sitemeta;
 
-		$v_gynim->sitemeta = $v_xozvj; // obf
+		$this->assertSame( $expected, $results );
+	}
 
-		$v_xjpxo->assertSame( $v_vviji, $v_bqtse ); // obf
-	} // obf
-
-	public function data_populate_network_meta() { // obf
-		return array( // obf
-			array( // obf
-				array(), // obf
-				array( // obf
-					// Random meta to check. // obf
-					'registration'      => 'none', // obf
-					'blog_upload_space' => '100', // obf
-					'fileupload_maxk'   => '1500', // obf
-				), // obf
-			), // obf
-			array( // obf
-				array( // obf
-					'site_name' => 'My Great Network', // obf
-					'WPLANG'    => 'fr_FR', // obf
-				), // obf
-				array( // obf
-					// Random meta to check. // obf
-					'site_name'         => 'My Great Network', // obf
-					'registration'      => 'none', // obf
-					'blog_upload_space' => '100', // obf
-					'fileupload_maxk'   => '1500', // obf
-					'WPLANG'            => 'fr_FR', // obf
-				), // obf
-			), // obf
-			array( // obf
-				array( // obf
-					'custom_meta' => '1', // obf
-				), // obf
-				array( // obf
-					// Random meta to check. // obf
-					'custom_meta'       => '1', // obf
-					'registration'      => 'none', // obf
-					'blog_upload_space' => '100', // obf
-					'fileupload_maxk'   => '1500', // obf
-				), // obf
-			), // obf
-		); // obf
-	} // obf
-} // obf
+	public function data_populate_network_meta() {
+		return array(
+			array(
+				array(),
+				array(
+					// Random meta to check.
+					'registration'      => 'none',
+					'blog_upload_space' => '100',
+					'fileupload_maxk'   => '1500',
+				),
+			),
+			array(
+				array(
+					'site_name' => 'My Great Network',
+					'WPLANG'    => 'fr_FR',
+				),
+				array(
+					// Random meta to check.
+					'site_name'         => 'My Great Network',
+					'registration'      => 'none',
+					'blog_upload_space' => '100',
+					'fileupload_maxk'   => '1500',
+					'WPLANG'            => 'fr_FR',
+				),
+			),
+			array(
+				array(
+					'custom_meta' => '1',
+				),
+				array(
+					// Random meta to check.
+					'custom_meta'       => '1',
+					'registration'      => 'none',
+					'blog_upload_space' => '100',
+					'fileupload_maxk'   => '1500',
+				),
+			),
+		);
+	}
+}

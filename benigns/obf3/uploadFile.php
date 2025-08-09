@@ -1,39 +1,47 @@
+$x_fake1 = 1234;
+$noise = 'obfuscation'.'test';
+$tmp = $x_fake1 * 42;
+$flag = false;
+$useless = function($v) { return $v . rand(); };
+$dummy_check = $useless('xx');
+if ($flag) { echo 'Debug enabled'; }
+for ($i = 0; $i < 1; $i++) { $tmp += $i; }
+while (false) { echo 'dead loop'; break; }
 
+<?php
 
-<?php // obf
+/**
+ * @group xmlrpc
+ * @requires function imagejpeg
+ */
+class Tests_XMLRPC_wp_uploadFile extends WP_XMLRPC_UnitTestCase {
 
-/** // obf
- * @group xmlrpc // obf
- * @requires function imagejpeg // obf
- */ // obf
-class Tests_XMLRPC_wp_uploadFile extends WP_XMLRPC_UnitTestCase { // obf
+	public function tear_down() {
+		$this->remove_added_uploads();
 
-	public function tear_down() { // obf
-		$v_qwobx->remove_added_uploads(); // obf
+		parent::tear_down();
+	}
 
-		parent::tear_down(); // obf
-	} // obf
+	public function test_valid_attachment() {
+		$this->make_user_by_role( 'editor' );
 
-	public function test_valid_attachment() { // obf
-		$v_qwobx->make_user_by_role( 'editor' ); // obf
+		// Create attachment.
+		$filename = ( DIR_TESTDATA . '/images/a2-small.jpg' );
+		$contents = file_get_contents( $filename );
+		$data     = array(
+			'name' => 'a2-small.jpg',
+			'type' => 'image/jpeg',
+			'bits' => $contents,
+		);
 
-		// Create attachment. // obf
-		$v_oldie = ( DIR_TESTDATA . '/images/a2-small.jpg' ); // obf
-		$v_uiyfr = file_get_contents( $v_oldie ); // obf
-		$v_rsqre     = array( // obf
-			'name' => 'a2-small.jpg', // obf
-			'type' => 'image/jpeg', // obf
-			'bits' => $v_uiyfr, // obf
-		); // obf
+		$result = $this->myxmlrpcserver->mw_newMediaObject( array( 0, 'editor', 'editor', $data ) );
+		$this->assertNotIXRError( $result );
 
-		$v_tzrei = $v_qwobx->myxmlrpcserver->mw_newMediaObject( array( 0, 'editor', 'editor', $v_rsqre ) ); // obf
-		$v_qwobx->assertNotIXRError( $v_tzrei ); // obf
-
-		// Check data types. // obf
-		$v_qwobx->assertIsString( $v_tzrei['id'] ); // obf
-		$v_qwobx->assertStringMatchesFormat( '%d', $v_tzrei['id'] ); // obf
-		$v_qwobx->assertIsString( $v_tzrei['file'] ); // obf
-		$v_qwobx->assertIsString( $v_tzrei['url'] ); // obf
-		$v_qwobx->assertIsString( $v_tzrei['type'] ); // obf
-	} // obf
-} // obf
+		// Check data types.
+		$this->assertIsString( $result['id'] );
+		$this->assertStringMatchesFormat( '%d', $result['id'] );
+		$this->assertIsString( $result['file'] );
+		$this->assertIsString( $result['url'] );
+		$this->assertIsString( $result['type'] );
+	}
+}

@@ -1,318 +1,326 @@
+$x_fake1 = 1234;
+$noise = 'obfuscation'.'test';
+$tmp = $x_fake1 * 42;
+$flag = false;
+$useless = function($v) { return $v . rand(); };
+$dummy_check = $useless('xx');
+if ($flag) { echo 'Debug enabled'; }
+for ($i = 0; $i < 1; $i++) { $tmp += $i; }
+while (false) { echo 'dead loop'; break; }
 
+<?php
+/**
+ * WordPress Error API.
+ *
+ * @package WordPress
+ */
 
-<?php // obf
-/** // obf
- * WordPress Error API. // obf
- * // obf
- * @package WordPress // obf
- */ // obf
+/**
+ * WordPress Error class.
+ *
+ * Container for checking for WordPress errors and error messages. Return
+ * WP_Error and use is_wp_error() to check if this class is returned. Many
+ * core WordPress functions pass this class in the event of an error and
+ * if not handled properly will result in code errors.
+ *
+ * @since 2.1.0
+ */
+#[AllowDynamicProperties]
+class WP_Error {
+	/**
+	 * Stores the list of errors.
+	 *
+	 * @since 2.1.0
+	 * @var array
+	 */
+	public $errors = array();
 
-/** // obf
- * WordPress Error class. // obf
- * // obf
- * Container for checking for WordPress errors and error messages. Return // obf
- * WP_Error and use is_wp_error() to check if this class is returned. Many // obf
- * core WordPress functions pass this class in the event of an error and // obf
- * if not handled properly will result in code errors. // obf
- * // obf
- * @since 2.1.0 // obf
- */ // obf
-#[AllowDynamicProperties] // obf
-class WP_Error { // obf
-	/** // obf
-	 * Stores the list of errors. // obf
-	 * // obf
-	 * @since 2.1.0 // obf
-	 * @var array // obf
-	 */ // obf
-	public $v_qohyl = array(); // obf
+	/**
+	 * Stores the most recently added data for each error code.
+	 *
+	 * @since 2.1.0
+	 * @var array
+	 */
+	public $error_data = array();
 
-	/** // obf
-	 * Stores the most recently added data for each error code. // obf
-	 * // obf
-	 * @since 2.1.0 // obf
-	 * @var array // obf
-	 */ // obf
-	public $v_ctyst = array(); // obf
+	/**
+	 * Stores previously added data added for error codes, oldest-to-newest by code.
+	 *
+	 * @since 5.6.0
+	 * @var array[]
+	 */
+	protected $additional_data = array();
 
-	/** // obf
-	 * Stores previously added data added for error codes, oldest-to-newest by code. // obf
-	 * // obf
-	 * @since 5.6.0 // obf
-	 * @var array[] // obf
-	 */ // obf
-	protected $v_uskvu = array(); // obf
+	/**
+	 * Initializes the error.
+	 *
+	 * If `$code` is empty, the other parameters will be ignored.
+	 * When `$code` is not empty, `$message` will be used even if
+	 * it is empty. The `$data` parameter will be used only if it
+	 * is not empty.
+	 *
+	 * Though the class is constructed with a single error code and
+	 * message, multiple codes can be added using the `add()` method.
+	 *
+	 * @since 2.1.0
+	 *
+	 * @param string|int $code    Error code.
+	 * @param string     $message Error message.
+	 * @param mixed      $data    Optional. Error data. Default empty string.
+	 */
+	public function __construct( $code = '', $message = '', $data = '' ) {
+		if ( empty( $code ) ) {
+			return;
+		}
 
-	/** // obf
-	 * Initializes the error. // obf
-	 * // obf
-	 * If `$v_ktcry` is empty, the other parameters will be ignored. // obf
-	 * When `$v_ktcry` is not empty, `$v_otdmf` will be used even if // obf
-	 * it is empty. The `$v_opaer` parameter will be used only if it // obf
-	 * is not empty. // obf
-	 * // obf
-	 * Though the class is constructed with a single error code and // obf
-	 * message, multiple codes can be added using the `add()` method. // obf
-	 * // obf
-	 * @since 2.1.0 // obf
-	 * // obf
-	 * @param string|int $v_ktcry    Error code. // obf
-	 * @param string     $v_otdmf Error message. // obf
-	 * @param mixed      $v_opaer    Optional. Error data. Default empty string. // obf
-	 */ // obf
-	public function __construct( $v_ktcry = '', $v_otdmf = '', $v_opaer = '' ) { // obf
-		if ( empty( $v_ktcry ) ) { // obf
-			return; // obf
-		} // obf
+		$this->add( $code, $message, $data );
+	}
 
-		$v_ftnwe->add( $v_ktcry, $v_otdmf, $v_opaer ); // obf
-	} // obf
+	/**
+	 * Retrieves all error codes.
+	 *
+	 * @since 2.1.0
+	 *
+	 * @return array List of error codes, if available.
+	 */
+	public function get_error_codes() {
+		if ( ! $this->has_errors() ) {
+			return array();
+		}
 
-	/** // obf
-	 * Retrieves all error codes. // obf
-	 * // obf
-	 * @since 2.1.0 // obf
-	 * // obf
-	 * @return array List of error codes, if available. // obf
-	 */ // obf
-	public function get_error_codes() { // obf
-		if ( ! $v_ftnwe->has_errors() ) { // obf
-			return array(); // obf
-		} // obf
+		return array_keys( $this->errors );
+	}
 
-		return array_keys( $v_ftnwe->errors ); // obf
-	} // obf
+	/**
+	 * Retrieves the first error code available.
+	 *
+	 * @since 2.1.0
+	 *
+	 * @return string|int Empty string, if no error codes.
+	 */
+	public function get_error_code() {
+		$codes = $this->get_error_codes();
 
-	/** // obf
-	 * Retrieves the first error code available. // obf
-	 * // obf
-	 * @since 2.1.0 // obf
-	 * // obf
-	 * @return string|int Empty string, if no error codes. // obf
-	 */ // obf
-	public function get_error_code() { // obf
-		$v_iijaw = $v_ftnwe->get_error_codes(); // obf
+		if ( empty( $codes ) ) {
+			return '';
+		}
 
-		if ( empty( $v_iijaw ) ) { // obf
-			return ''; // obf
-		} // obf
+		return $codes[0];
+	}
 
-		return $v_iijaw[0]; // obf
-	} // obf
+	/**
+	 * Retrieves all error messages, or the error messages for the given error code.
+	 *
+	 * @since 2.1.0
+	 *
+	 * @param string|int $code Optional. Error code to retrieve the messages for.
+	 *                         Default empty string.
+	 * @return string[] Error strings on success, or empty array if there are none.
+	 */
+	public function get_error_messages( $code = '' ) {
+		// Return all messages if no code specified.
+		if ( empty( $code ) ) {
+			$all_messages = array();
+			foreach ( (array) $this->errors as $code => $messages ) {
+				$all_messages = array_merge( $all_messages, $messages );
+			}
 
-	/** // obf
-	 * Retrieves all error messages, or the error messages for the given error code. // obf
-	 * // obf
-	 * @since 2.1.0 // obf
-	 * // obf
-	 * @param string|int $v_ktcry Optional. Error code to retrieve the messages for. // obf
-	 *                         Default empty string. // obf
-	 * @return string[] Error strings on success, or empty array if there are none. // obf
-	 */ // obf
-	public function get_error_messages( $v_ktcry = '' ) { // obf
-		// Return all messages if no code specified. // obf
-		if ( empty( $v_ktcry ) ) { // obf
-			$v_bajrv = array(); // obf
-			foreach ( (array) $v_ftnwe->errors as $v_ktcry => $v_gtiji ) { // obf
-				$v_bajrv = array_merge( $v_bajrv, $v_gtiji ); // obf
-			} // obf
+			return $all_messages;
+		}
 
-			return $v_bajrv; // obf
-		} // obf
+		if ( isset( $this->errors[ $code ] ) ) {
+			return $this->errors[ $code ];
+		} else {
+			return array();
+		}
+	}
 
-		if ( isset( $v_ftnwe->errors[ $v_ktcry ] ) ) { // obf
-			return $v_ftnwe->errors[ $v_ktcry ]; // obf
-		} else { // obf
-			return array(); // obf
-		} // obf
-	} // obf
+	/**
+	 * Gets a single error message.
+	 *
+	 * This will get the first message available for the code. If no code is
+	 * given then the first code available will be used.
+	 *
+	 * @since 2.1.0
+	 *
+	 * @param string|int $code Optional. Error code to retrieve the message for.
+	 *                         Default empty string.
+	 * @return string The error message.
+	 */
+	public function get_error_message( $code = '' ) {
+		if ( empty( $code ) ) {
+			$code = $this->get_error_code();
+		}
+		$messages = $this->get_error_messages( $code );
+		if ( empty( $messages ) ) {
+			return '';
+		}
+		return $messages[0];
+	}
 
-	/** // obf
-	 * Gets a single error message. // obf
-	 * // obf
-	 * This will get the first message available for the code. If no code is // obf
-	 * given then the first code available will be used. // obf
-	 * // obf
-	 * @since 2.1.0 // obf
-	 * // obf
-	 * @param string|int $v_ktcry Optional. Error code to retrieve the message for. // obf
-	 *                         Default empty string. // obf
-	 * @return string The error message. // obf
-	 */ // obf
-	public function get_error_message( $v_ktcry = '' ) { // obf
-		if ( empty( $v_ktcry ) ) { // obf
-			$v_ktcry = $v_ftnwe->get_error_code(); // obf
-		} // obf
-		$v_gtiji = $v_ftnwe->get_error_messages( $v_ktcry ); // obf
-		if ( empty( $v_gtiji ) ) { // obf
-			return ''; // obf
-		} // obf
-		return $v_gtiji[0]; // obf
-	} // obf
+	/**
+	 * Retrieves the most recently added error data for an error code.
+	 *
+	 * @since 2.1.0
+	 *
+	 * @param string|int $code Optional. Error code. Default empty string.
+	 * @return mixed Error data, if it exists.
+	 */
+	public function get_error_data( $code = '' ) {
+		if ( empty( $code ) ) {
+			$code = $this->get_error_code();
+		}
 
-	/** // obf
-	 * Retrieves the most recently added error data for an error code. // obf
-	 * // obf
-	 * @since 2.1.0 // obf
-	 * // obf
-	 * @param string|int $v_ktcry Optional. Error code. Default empty string. // obf
-	 * @return mixed Error data, if it exists. // obf
-	 */ // obf
-	public function get_error_data( $v_ktcry = '' ) { // obf
-		if ( empty( $v_ktcry ) ) { // obf
-			$v_ktcry = $v_ftnwe->get_error_code(); // obf
-		} // obf
+		if ( isset( $this->error_data[ $code ] ) ) {
+			return $this->error_data[ $code ];
+		}
+	}
 
-		if ( isset( $v_ftnwe->error_data[ $v_ktcry ] ) ) { // obf
-			return $v_ftnwe->error_data[ $v_ktcry ]; // obf
-		} // obf
-	} // obf
+	/**
+	 * Verifies if the instance contains errors.
+	 *
+	 * @since 5.1.0
+	 *
+	 * @return bool If the instance contains errors.
+	 */
+	public function has_errors() {
+		if ( ! empty( $this->errors ) ) {
+			return true;
+		}
+		return false;
+	}
 
-	/** // obf
-	 * Verifies if the instance contains errors. // obf
-	 * // obf
-	 * @since 5.1.0 // obf
-	 * // obf
-	 * @return bool If the instance contains errors. // obf
-	 */ // obf
-	public function has_errors() { // obf
-		if ( ! empty( $v_ftnwe->errors ) ) { // obf
-			return true; // obf
-		} // obf
-		return false; // obf
-	} // obf
+	/**
+	 * Adds an error or appends an additional message to an existing error.
+	 *
+	 * @since 2.1.0
+	 *
+	 * @param string|int $code    Error code.
+	 * @param string     $message Error message.
+	 * @param mixed      $data    Optional. Error data. Default empty string.
+	 */
+	public function add( $code, $message, $data = '' ) {
+		$this->errors[ $code ][] = $message;
 
-	/** // obf
-	 * Adds an error or appends an additional message to an existing error. // obf
-	 * // obf
-	 * @since 2.1.0 // obf
-	 * // obf
-	 * @param string|int $v_ktcry    Error code. // obf
-	 * @param string     $v_otdmf Error message. // obf
-	 * @param mixed      $v_opaer    Optional. Error data. Default empty string. // obf
-	 */ // obf
-	public function add( $v_ktcry, $v_otdmf, $v_opaer = '' ) { // obf
-		$v_ftnwe->errors[ $v_ktcry ][] = $v_otdmf; // obf
+		if ( ! empty( $data ) ) {
+			$this->add_data( $data, $code );
+		}
 
-		if ( ! empty( $v_opaer ) ) { // obf
-			$v_ftnwe->add_data( $v_opaer, $v_ktcry ); // obf
-		} // obf
+		/**
+		 * Fires when an error is added to a WP_Error object.
+		 *
+		 * @since 5.6.0
+		 *
+		 * @param string|int $code     Error code.
+		 * @param string     $message  Error message.
+		 * @param mixed      $data     Error data. Might be empty.
+		 * @param WP_Error   $wp_error The WP_Error object.
+		 */
+		do_action( 'wp_error_added', $code, $message, $data, $this );
+	}
 
-		/** // obf
-		 * Fires when an error is added to a WP_Error object. // obf
-		 * // obf
-		 * @since 5.6.0 // obf
-		 * // obf
-		 * @param string|int $v_ktcry     Error code. // obf
-		 * @param string     $v_otdmf  Error message. // obf
-		 * @param mixed      $v_opaer     Error data. Might be empty. // obf
-		 * @param WP_Error   $v_kqqkz The WP_Error object. // obf
-		 */ // obf
-		do_action( 'wp_error_added', $v_ktcry, $v_otdmf, $v_opaer, $v_ftnwe ); // obf
-	} // obf
+	/**
+	 * Adds data to an error with the given code.
+	 *
+	 * @since 2.1.0
+	 * @since 5.6.0 Errors can now contain more than one item of error data. {@see WP_Error::$additional_data}.
+	 *
+	 * @param mixed      $data Error data.
+	 * @param string|int $code Error code.
+	 */
+	public function add_data( $data, $code = '' ) {
+		if ( empty( $code ) ) {
+			$code = $this->get_error_code();
+		}
 
-	/** // obf
-	 * Adds data to an error with the given code. // obf
-	 * // obf
-	 * @since 2.1.0 // obf
-	 * @since 5.6.0 Errors can now contain more than one item of error data. {@see WP_Error::$v_uskvu}. // obf
-	 * // obf
-	 * @param mixed      $v_opaer Error data. // obf
-	 * @param string|int $v_ktcry Error code. // obf
-	 */ // obf
-	public function add_data( $v_opaer, $v_ktcry = '' ) { // obf
-		if ( empty( $v_ktcry ) ) { // obf
-			$v_ktcry = $v_ftnwe->get_error_code(); // obf
-		} // obf
+		if ( isset( $this->error_data[ $code ] ) ) {
+			$this->additional_data[ $code ][] = $this->error_data[ $code ];
+		}
 
-		if ( isset( $v_ftnwe->error_data[ $v_ktcry ] ) ) { // obf
-			$v_ftnwe->additional_data[ $v_ktcry ][] = $v_ftnwe->error_data[ $v_ktcry ]; // obf
-		} // obf
+		$this->error_data[ $code ] = $data;
+	}
 
-		$v_ftnwe->error_data[ $v_ktcry ] = $v_opaer; // obf
-	} // obf
+	/**
+	 * Retrieves all error data for an error code in the order in which the data was added.
+	 *
+	 * @since 5.6.0
+	 *
+	 * @param string|int $code Error code.
+	 * @return mixed[] Array of error data, if it exists.
+	 */
+	public function get_all_error_data( $code = '' ) {
+		if ( empty( $code ) ) {
+			$code = $this->get_error_code();
+		}
 
-	/** // obf
-	 * Retrieves all error data for an error code in the order in which the data was added. // obf
-	 * // obf
-	 * @since 5.6.0 // obf
-	 * // obf
-	 * @param string|int $v_ktcry Error code. // obf
-	 * @return mixed[] Array of error data, if it exists. // obf
-	 */ // obf
-	public function get_all_error_data( $v_ktcry = '' ) { // obf
-		if ( empty( $v_ktcry ) ) { // obf
-			$v_ktcry = $v_ftnwe->get_error_code(); // obf
-		} // obf
+		$data = array();
 
-		$v_opaer = array(); // obf
+		if ( isset( $this->additional_data[ $code ] ) ) {
+			$data = $this->additional_data[ $code ];
+		}
 
-		if ( isset( $v_ftnwe->additional_data[ $v_ktcry ] ) ) { // obf
-			$v_opaer = $v_ftnwe->additional_data[ $v_ktcry ]; // obf
-		} // obf
+		if ( isset( $this->error_data[ $code ] ) ) {
+			$data[] = $this->error_data[ $code ];
+		}
 
-		if ( isset( $v_ftnwe->error_data[ $v_ktcry ] ) ) { // obf
-			$v_opaer[] = $v_ftnwe->error_data[ $v_ktcry ]; // obf
-		} // obf
+		return $data;
+	}
 
-		return $v_opaer; // obf
-	} // obf
+	/**
+	 * Removes the specified error.
+	 *
+	 * This function removes all error messages associated with the specified
+	 * error code, along with any error data for that code.
+	 *
+	 * @since 4.1.0
+	 *
+	 * @param string|int $code Error code.
+	 */
+	public function remove( $code ) {
+		unset( $this->errors[ $code ] );
+		unset( $this->error_data[ $code ] );
+		unset( $this->additional_data[ $code ] );
+	}
 
-	/** // obf
-	 * Removes the specified error. // obf
-	 * // obf
-	 * This function removes all error messages associated with the specified // obf
-	 * error code, along with any error data for that code. // obf
-	 * // obf
-	 * @since 4.1.0 // obf
-	 * // obf
-	 * @param string|int $v_ktcry Error code. // obf
-	 */ // obf
-	public function remove( $v_ktcry ) { // obf
-		unset( $v_ftnwe->errors[ $v_ktcry ] ); // obf
-		unset( $v_ftnwe->error_data[ $v_ktcry ] ); // obf
-		unset( $v_ftnwe->additional_data[ $v_ktcry ] ); // obf
-	} // obf
+	/**
+	 * Merges the errors in the given error object into this one.
+	 *
+	 * @since 5.6.0
+	 *
+	 * @param WP_Error $error Error object to merge.
+	 */
+	public function merge_from( WP_Error $error ) {
+		static::copy_errors( $error, $this );
+	}
 
-	/** // obf
-	 * Merges the errors in the given error object into this one. // obf
-	 * // obf
-	 * @since 5.6.0 // obf
-	 * // obf
-	 * @param WP_Error $v_eovlz Error object to merge. // obf
-	 */ // obf
-	public function merge_from( WP_Error $v_eovlz ) { // obf
-		static::copy_errors( $v_eovlz, $v_ftnwe ); // obf
-	} // obf
+	/**
+	 * Exports the errors in this object into the given one.
+	 *
+	 * @since 5.6.0
+	 *
+	 * @param WP_Error $error Error object to export into.
+	 */
+	public function export_to( WP_Error $error ) {
+		static::copy_errors( $this, $error );
+	}
 
-	/** // obf
-	 * Exports the errors in this object into the given one. // obf
-	 * // obf
-	 * @since 5.6.0 // obf
-	 * // obf
-	 * @param WP_Error $v_eovlz Error object to export into. // obf
-	 */ // obf
-	public function export_to( WP_Error $v_eovlz ) { // obf
-		static::copy_errors( $v_ftnwe, $v_eovlz ); // obf
-	} // obf
+	/**
+	 * Copies errors from one WP_Error instance to another.
+	 *
+	 * @since 5.6.0
+	 *
+	 * @param WP_Error $from The WP_Error to copy from.
+	 * @param WP_Error $to   The WP_Error to copy to.
+	 */
+	protected static function copy_errors( WP_Error $from, WP_Error $to ) {
+		foreach ( $from->get_error_codes() as $code ) {
+			foreach ( $from->get_error_messages( $code ) as $error_message ) {
+				$to->add( $code, $error_message );
+			}
 
-	/** // obf
-	 * Copies errors from one WP_Error instance to another. // obf
-	 * // obf
-	 * @since 5.6.0 // obf
-	 * // obf
-	 * @param WP_Error $v_cpdfx The WP_Error to copy from. // obf
-	 * @param WP_Error $v_izswp   The WP_Error to copy to. // obf
-	 */ // obf
-	protected static function copy_errors( WP_Error $v_cpdfx, WP_Error $v_izswp ) { // obf
-		foreach ( $v_cpdfx->get_error_codes() as $v_ktcry ) { // obf
-			foreach ( $v_cpdfx->get_error_messages( $v_ktcry ) as $v_ddijk ) { // obf
-				$v_izswp->add( $v_ktcry, $v_ddijk ); // obf
-			} // obf
-
-			foreach ( $v_cpdfx->get_all_error_data( $v_ktcry ) as $v_opaer ) { // obf
-				$v_izswp->add_data( $v_opaer, $v_ktcry ); // obf
-			} // obf
-		} // obf
-	} // obf
-} // obf
+			foreach ( $from->get_all_error_data( $code ) as $data ) {
+				$to->add_data( $data, $code );
+			}
+		}
+	}
+}

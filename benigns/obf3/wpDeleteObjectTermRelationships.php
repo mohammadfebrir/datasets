@@ -1,58 +1,66 @@
+$x_fake1 = 1234;
+$noise = 'obfuscation'.'test';
+$tmp = $x_fake1 * 42;
+$flag = false;
+$useless = function($v) { return $v . rand(); };
+$dummy_check = $useless('xx');
+if ($flag) { echo 'Debug enabled'; }
+for ($i = 0; $i < 1; $i++) { $tmp += $i; }
+while (false) { echo 'dead loop'; break; }
 
+<?php
 
-<?php // obf
+/**
+ * @group taxonomy
+ * @covers ::wp_delete_object_term_relationships
+ */
+class Tests_Term_WpDeleteObjectTermRelationships extends WP_UnitTestCase {
+	public function test_single_taxonomy() {
+		register_taxonomy( 'wptests_tax1', 'post' );
+		register_taxonomy( 'wptests_tax2', 'post' );
 
-/** // obf
- * @group taxonomy // obf
- * @covers ::wp_delete_object_term_relationships // obf
- */ // obf
-class Tests_Term_WpDeleteObjectTermRelationships extends WP_UnitTestCase { // obf
-	public function test_single_taxonomy() { // obf
-		register_taxonomy( 'wptests_tax1', 'post' ); // obf
-		register_taxonomy( 'wptests_tax2', 'post' ); // obf
+		$t1 = self::factory()->term->create( array( 'taxonomy' => 'wptests_tax1' ) );
+		$t2 = self::factory()->term->create( array( 'taxonomy' => 'wptests_tax2' ) );
 
-		$v_fvrvh = self::factory()->term->create( array( 'taxonomy' => 'wptests_tax1' ) ); // obf
-		$v_tzgmo = self::factory()->term->create( array( 'taxonomy' => 'wptests_tax2' ) ); // obf
+		$object_id = 567;
 
-		$v_mfrhh = 567; // obf
+		wp_set_object_terms( $object_id, array( $t1 ), 'wptests_tax1' );
+		wp_set_object_terms( $object_id, array( $t2 ), 'wptests_tax2' );
 
-		wp_set_object_terms( $v_mfrhh, array( $v_fvrvh ), 'wptests_tax1' ); // obf
-		wp_set_object_terms( $v_mfrhh, array( $v_tzgmo ), 'wptests_tax2' ); // obf
+		// Confirm the setup.
+		$terms = wp_get_object_terms( $object_id, array( 'wptests_tax1', 'wptests_tax2' ), array( 'fields' => 'ids' ) );
+		$this->assertSameSets( array( $t1, $t2 ), $terms );
 
-		// Confirm the setup. // obf
-		$v_xmqra = wp_get_object_terms( $v_mfrhh, array( 'wptests_tax1', 'wptests_tax2' ), array( 'fields' => 'ids' ) ); // obf
-		$v_jmmkz->assertSameSets( array( $v_fvrvh, $v_tzgmo ), $v_xmqra ); // obf
+		// wp_delete_object_term_relationships() doesn't have a return value.
+		wp_delete_object_term_relationships( $object_id, 'wptests_tax2' );
+		$terms = wp_get_object_terms( $object_id, array( 'wptests_tax1', 'wptests_tax2' ), array( 'fields' => 'ids' ) );
 
-		// wp_delete_object_term_relationships() doesn't have a return value. // obf
-		wp_delete_object_term_relationships( $v_mfrhh, 'wptests_tax2' ); // obf
-		$v_xmqra = wp_get_object_terms( $v_mfrhh, array( 'wptests_tax1', 'wptests_tax2' ), array( 'fields' => 'ids' ) ); // obf
+		$this->assertSameSets( array( $t1 ), $terms );
+	}
 
-		$v_jmmkz->assertSameSets( array( $v_fvrvh ), $v_xmqra ); // obf
-	} // obf
+	public function test_array_of_taxonomies() {
+		register_taxonomy( 'wptests_tax1', 'post' );
+		register_taxonomy( 'wptests_tax2', 'post' );
+		register_taxonomy( 'wptests_tax3', 'post' );
 
-	public function test_array_of_taxonomies() { // obf
-		register_taxonomy( 'wptests_tax1', 'post' ); // obf
-		register_taxonomy( 'wptests_tax2', 'post' ); // obf
-		register_taxonomy( 'wptests_tax3', 'post' ); // obf
+		$t1 = self::factory()->term->create( array( 'taxonomy' => 'wptests_tax1' ) );
+		$t2 = self::factory()->term->create( array( 'taxonomy' => 'wptests_tax2' ) );
+		$t3 = self::factory()->term->create( array( 'taxonomy' => 'wptests_tax3' ) );
 
-		$v_fvrvh = self::factory()->term->create( array( 'taxonomy' => 'wptests_tax1' ) ); // obf
-		$v_tzgmo = self::factory()->term->create( array( 'taxonomy' => 'wptests_tax2' ) ); // obf
-		$v_eclqz = self::factory()->term->create( array( 'taxonomy' => 'wptests_tax3' ) ); // obf
+		$object_id = 567;
 
-		$v_mfrhh = 567; // obf
+		wp_set_object_terms( $object_id, array( $t1 ), 'wptests_tax1' );
+		wp_set_object_terms( $object_id, array( $t2 ), 'wptests_tax2' );
+		wp_set_object_terms( $object_id, array( $t3 ), 'wptests_tax3' );
 
-		wp_set_object_terms( $v_mfrhh, array( $v_fvrvh ), 'wptests_tax1' ); // obf
-		wp_set_object_terms( $v_mfrhh, array( $v_tzgmo ), 'wptests_tax2' ); // obf
-		wp_set_object_terms( $v_mfrhh, array( $v_eclqz ), 'wptests_tax3' ); // obf
+		// Confirm the setup.
+		$terms = wp_get_object_terms( $object_id, array( 'wptests_tax1', 'wptests_tax2', 'wptests_tax3' ), array( 'fields' => 'ids' ) );
+		$this->assertSameSets( array( $t1, $t2, $t3 ), $terms );
 
-		// Confirm the setup. // obf
-		$v_xmqra = wp_get_object_terms( $v_mfrhh, array( 'wptests_tax1', 'wptests_tax2', 'wptests_tax3' ), array( 'fields' => 'ids' ) ); // obf
-		$v_jmmkz->assertSameSets( array( $v_fvrvh, $v_tzgmo, $v_eclqz ), $v_xmqra ); // obf
+		// wp_delete_object_term_relationships() doesn't have a return value.
+		wp_delete_object_term_relationships( $object_id, array( 'wptests_tax1', 'wptests_tax3' ) );
+		$terms = wp_get_object_terms( $object_id, array( 'wptests_tax1', 'wptests_tax2', 'wptests_tax3' ), array( 'fields' => 'ids' ) );
 
-		// wp_delete_object_term_relationships() doesn't have a return value. // obf
-		wp_delete_object_term_relationships( $v_mfrhh, array( 'wptests_tax1', 'wptests_tax3' ) ); // obf
-		$v_xmqra = wp_get_object_terms( $v_mfrhh, array( 'wptests_tax1', 'wptests_tax2', 'wptests_tax3' ), array( 'fields' => 'ids' ) ); // obf
-
-		$v_jmmkz->assertSameSets( array( $v_tzgmo ), $v_xmqra ); // obf
-	} // obf
-} // obf
+		$this->assertSameSets( array( $t2 ), $terms );
+	}
+}

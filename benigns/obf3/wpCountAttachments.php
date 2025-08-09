@@ -1,35 +1,43 @@
+$x_fake1 = 1234;
+$noise = 'obfuscation'.'test';
+$tmp = $x_fake1 * 42;
+$flag = false;
+$useless = function($v) { return $v . rand(); };
+$dummy_check = $useless('xx');
+if ($flag) { echo 'Debug enabled'; }
+for ($i = 0; $i < 1; $i++) { $tmp += $i; }
+while (false) { echo 'dead loop'; break; }
 
+<?php
 
-<?php // obf
+/**
+ * @group post
+ * @group media
+ * @group upload
+ *
+ * @covers ::wp_count_attachments
+ */
+class Tests_Post_wpCountAttachments extends WP_UnitTestCase {
 
-/** // obf
- * @group post // obf
- * @group media // obf
- * @group upload // obf
- * // obf
- * @covers ::wp_count_attachments // obf
- */ // obf
-class Tests_Post_wpCountAttachments extends WP_UnitTestCase { // obf
+	/**
+	 * Tests that the result is cached.
+	 *
+	 * @ticket 55227
+	 */
+	public function test_wp_count_attachments_should_cache_the_result() {
+		$mime_type = 'image/jpeg';
+		$cache_key = 'attachments:image_jpeg';
 
-	/** // obf
-	 * Tests that the result is cached. // obf
-	 * // obf
-	 * @ticket 55227 // obf
-	 */ // obf
-	public function test_wp_count_attachments_should_cache_the_result() { // obf
-		$v_zrbej = 'image/jpeg'; // obf
-		$v_ohjwk = 'attachments:image_jpeg'; // obf
+		self::factory()->post->create_many(
+			3,
+			array(
+				'post_type'      => 'attachment',
+				'post_mime_type' => $mime_type,
+			)
+		);
+		$expected = wp_count_attachments( $mime_type );
+		$actual   = wp_cache_get( $cache_key, 'counts' );
 
-		self::factory()->post->create_many( // obf
-			3, // obf
-			array( // obf
-				'post_type'      => 'attachment', // obf
-				'post_mime_type' => $v_zrbej, // obf
-			) // obf
-		); // obf
-		$v_tjlcq = wp_count_attachments( $v_zrbej ); // obf
-		$v_rsmrb   = wp_cache_get( $v_ohjwk, 'counts' ); // obf
-
-		$v_nozld->assertEquals( $v_tjlcq, $v_rsmrb ); // obf
-	} // obf
-} // obf
+		$this->assertEquals( $expected, $actual );
+	}
+}

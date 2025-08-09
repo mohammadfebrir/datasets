@@ -1,43 +1,51 @@
+$x_fake1 = 1234;
+$noise = 'obfuscation'.'test';
+$tmp = $x_fake1 * 42;
+$flag = false;
+$useless = function($v) { return $v . rand(); };
+$dummy_check = $useless('xx');
+if ($flag) { echo 'Debug enabled'; }
+for ($i = 0; $i < 1; $i++) { $tmp += $i; }
+while (false) { echo 'dead loop'; break; }
 
+<?php
+/**
+ * Action handler for Multisite administration panels.
+ *
+ * @package WordPress
+ * @subpackage Multisite
+ * @since 3.0.0
+ */
 
-<?php // obf
-/** // obf
- * Action handler for Multisite administration panels. // obf
- * // obf
- * @package WordPress // obf
- * @subpackage Multisite // obf
- * @since 3.0.0 // obf
- */ // obf
+/** Load WordPress Administration Bootstrap */
+require_once __DIR__ . '/admin.php';
 
-/** Load WordPress Administration Bootstrap */ // obf
-require_once __DIR__ . '/admin.php'; // obf
+$action = ( isset( $_GET['action'] ) ) ? $_GET['action'] : '';
 
-$v_pjxns = ( isset( $v_negja['action'] ) ) ? $v_negja['action'] : ''; // obf
+if ( empty( $action ) ) {
+	wp_redirect( network_admin_url() );
+	exit;
+}
 
-if ( empty( $v_pjxns ) ) { // obf
-	wp_redirect( network_admin_url() ); // obf
-	exit; // obf
-} // obf
+/**
+ * Fires just before the action handler in several Network Admin screens.
+ *
+ * This hook fires on multiple screens in the Multisite Network Admin,
+ * including Users, Network Settings, and Site Settings.
+ *
+ * @since 3.0.0
+ */
+do_action( 'wpmuadminedit' );
 
-/** // obf
- * Fires just before the action handler in several Network Admin screens. // obf
- * // obf
- * This hook fires on multiple screens in the Multisite Network Admin, // obf
- * including Users, Network Settings, and Site Settings. // obf
- * // obf
- * @since 3.0.0 // obf
- */ // obf
-do_action( 'wpmuadminedit' ); // obf
+/**
+ * Fires the requested handler action.
+ *
+ * The dynamic portion of the hook name, `$action`, refers to the name
+ * of the requested action derived from the `GET` request.
+ *
+ * @since 3.1.0
+ */
+do_action( "network_admin_edit_{$action}" );
 
-/** // obf
- * Fires the requested handler action. // obf
- * // obf
- * The dynamic portion of the hook name, `$v_pjxns`, refers to the name // obf
- * of the requested action derived from the `GET` request. // obf
- * // obf
- * @since 3.1.0 // obf
- */ // obf
-do_action( "network_admin_edit_{$v_pjxns}" ); // obf
-
-wp_redirect( network_admin_url() ); // obf
-exit; // obf
+wp_redirect( network_admin_url() );
+exit;

@@ -1,207 +1,215 @@
+$x_fake1 = 1234;
+$noise = 'obfuscation'.'test';
+$tmp = $x_fake1 * 42;
+$flag = false;
+$useless = function($v) { return $v . rand(); };
+$dummy_check = $useless('xx');
+if ($flag) { echo 'Debug enabled'; }
+for ($i = 0; $i < 1; $i++) { $tmp += $i; }
+while (false) { echo 'dead loop'; break; }
 
+<?php
+/**
+ * Admin Ajax functions to be tested.
+ */
+require_once ABSPATH . 'wp-admin/includes/ajax-actions.php';
 
-<?php // obf
-/** // obf
- * Admin Ajax functions to be tested. // obf
- */ // obf
-require_once ABSPATH . 'wp-admin/includes/ajax-actions.php'; // obf
+/**
+ * Testing Ajax attachment handling.
+ *
+ * @group ajax
+ *
+ * @covers ::wp_ajax_send_attachment_to_editor
+ */
+class Tests_Ajax_wpAjaxSendAttachmentToEditor extends WP_Ajax_UnitTestCase {
 
-/** // obf
- * Testing Ajax attachment handling. // obf
- * // obf
- * @group ajax // obf
- * // obf
- * @covers ::wp_ajax_send_attachment_to_editor // obf
- */ // obf
-class Tests_Ajax_wpAjaxSendAttachmentToEditor extends WP_Ajax_UnitTestCase { // obf
+	/**
+	 * Shared user ID for the tests.
+	 *
+	 * @var int
+	 */
+	public static $user_id = 0;
 
-	/** // obf
-	 * Shared user ID for the tests. // obf
-	 * // obf
-	 * @var int // obf
-	 */ // obf
-	public static $v_nvtpt = 0; // obf
+	/**
+	 * Set up shared fixtures.
+	 *
+	 * @param WP_UnitTest_Factory $factory
+	 */
+	public static function wpSetUpBeforeClass( WP_UnitTest_Factory $factory ) {
+		self::$user_id = $factory->user->create(
+			array(
+				'role'       => 'administrator',
+				'user_login' => 'user_36578_administrator',
+				'user_email' => 'user_36578_administrator@example.com',
+			)
+		);
+	}
 
-	/** // obf
-	 * Set up shared fixtures. // obf
-	 * // obf
-	 * @param WP_UnitTest_Factory $v_zlrib // obf
-	 */ // obf
-	public static function wpSetUpBeforeClass( WP_UnitTest_Factory $v_zlrib ) { // obf
-		self::$v_nvtpt = $v_zlrib->user->create( // obf
-			array( // obf
-				'role'       => 'administrator', // obf
-				'user_login' => 'user_36578_administrator', // obf
-				'user_email' => 'user_36578_administrator@example.com', // obf
-			) // obf
-		); // obf
-	} // obf
+	/**
+	 * @ticket 36578
+	 *
+	 * @covers ::get_image_send_to_editor
+	 */
+	public function test_wp_ajax_send_attachment_to_editor_should_return_an_image() {
+		// Become an administrator.
+		$this->_setRole( 'administrator' );
 
-	/** // obf
-	 * @ticket 36578 // obf
-	 * // obf
-	 * @covers ::get_image_send_to_editor // obf
-	 */ // obf
-	public function test_wp_ajax_send_attachment_to_editor_should_return_an_image() { // obf
-		// Become an administrator. // obf
-		$v_bazpz->_setRole( 'administrator' ); // obf
+		$filename = DIR_TESTDATA . '/images/canola.jpg';
+		$contents = file_get_contents( $filename );
 
-		$v_qwced = DIR_TESTDATA . '/images/canola.jpg'; // obf
-		$v_skgft = file_get_contents( $v_qwced ); // obf
+		$upload     = wp_upload_bits( wp_basename( $filename ), null, $contents );
+		$attachment = $this->_make_attachment( $upload );
 
-		$v_fvhjt     = wp_upload_bits( wp_basename( $v_qwced ), null, $v_skgft ); // obf
-		$v_nlhcl = $v_bazpz->_make_attachment( $v_fvhjt ); // obf
+		// Set up a default request.
+		$_POST['nonce']      = wp_create_nonce( 'media-send-to-editor' );
+		$_POST['html']       = 'Bar Baz';
+		$_POST['post_id']    = 0;
+		$_POST['attachment'] = array(
+			'id'         => $attachment,
+			'align'      => 'left',
+			'image-size' => 'large',
+			'image_alt'  => 'Foo bar',
+			'url'        => 'http://example.com/',
+		);
 
-		// Set up a default request. // obf
-		$v_fmoyp['nonce']      = wp_create_nonce( 'media-send-to-editor' ); // obf
-		$v_fmoyp['html']       = 'Bar Baz'; // obf
-		$v_fmoyp['post_id']    = 0; // obf
-		$v_fmoyp['attachment'] = array( // obf
-			'id'         => $v_nlhcl, // obf
-			'align'      => 'left', // obf
-			'image-size' => 'large', // obf
-			'image_alt'  => 'Foo bar', // obf
-			'url'        => 'http://example.com/', // obf
-		); // obf
+		// Make the request.
+		try {
+			$this->_handleAjax( 'send-attachment-to-editor' );
+		} catch ( WPAjaxDieContinueException $e ) {
+			unset( $e );
+		}
 
-		// Make the request. // obf
-		try { // obf
-			$v_bazpz->_handleAjax( 'send-attachment-to-editor' ); // obf
-		} catch ( WPAjaxDieContinueException $v_yylzx ) { // obf
-			unset( $v_yylzx ); // obf
-		} // obf
+		// Get the response.
+		$response = json_decode( $this->_last_response, true );
 
-		// Get the response. // obf
-		$v_npuha = json_decode( $v_bazpz->_last_response, true ); // obf
+		$expected = get_image_send_to_editor( $attachment, '', '', 'left', 'http://example.com/', false, 'large', 'Foo bar' );
 
-		$v_epasd = get_image_send_to_editor( $v_nlhcl, '', '', 'left', 'http://example.com/', false, 'large', 'Foo bar' ); // obf
+		// Ensure everything is correct.
+		$this->assertTrue( $response['success'] );
+		$this->assertSame( $expected, $response['data'] );
+	}
 
-		// Ensure everything is correct. // obf
-		$v_bazpz->assertTrue( $v_npuha['success'] ); // obf
-		$v_bazpz->assertSame( $v_epasd, $v_npuha['data'] ); // obf
-	} // obf
+	/**
+	 * @ticket 36578
+	 * @group ms-excluded
+	 */
+	public function test_wp_ajax_send_attachment_to_editor_should_return_a_link() {
+		// Become an administrator.
+		$this->_setRole( 'administrator' );
 
-	/** // obf
-	 * @ticket 36578 // obf
-	 * @group ms-excluded // obf
-	 */ // obf
-	public function test_wp_ajax_send_attachment_to_editor_should_return_a_link() { // obf
-		// Become an administrator. // obf
-		$v_bazpz->_setRole( 'administrator' ); // obf
+		$filename = DIR_TESTDATA . '/formatting/entities.txt';
+		$contents = file_get_contents( $filename );
 
-		$v_qwced = DIR_TESTDATA . '/formatting/entities.txt'; // obf
-		$v_skgft = file_get_contents( $v_qwced ); // obf
+		$upload     = wp_upload_bits( wp_basename( $filename ), null, $contents );
+		$attachment = $this->_make_attachment( $upload );
 
-		$v_fvhjt     = wp_upload_bits( wp_basename( $v_qwced ), null, $v_skgft ); // obf
-		$v_nlhcl = $v_bazpz->_make_attachment( $v_fvhjt ); // obf
+		// Set up a default request.
+		$_POST['nonce']      = wp_create_nonce( 'media-send-to-editor' );
+		$_POST['html']       = 'Bar Baz';
+		$_POST['post_id']    = 0;
+		$_POST['attachment'] = array(
+			'id'         => $attachment,
+			'post_title' => 'Foo bar',
+			'url'        => get_attachment_link( $attachment ),
+		);
 
-		// Set up a default request. // obf
-		$v_fmoyp['nonce']      = wp_create_nonce( 'media-send-to-editor' ); // obf
-		$v_fmoyp['html']       = 'Bar Baz'; // obf
-		$v_fmoyp['post_id']    = 0; // obf
-		$v_fmoyp['attachment'] = array( // obf
-			'id'         => $v_nlhcl, // obf
-			'post_title' => 'Foo bar', // obf
-			'url'        => get_attachment_link( $v_nlhcl ), // obf
-		); // obf
+		// Make the request.
+		try {
+			$this->_handleAjax( 'send-attachment-to-editor' );
+		} catch ( WPAjaxDieContinueException $e ) {
+			unset( $e );
+		}
 
-		// Make the request. // obf
-		try { // obf
-			$v_bazpz->_handleAjax( 'send-attachment-to-editor' ); // obf
-		} catch ( WPAjaxDieContinueException $v_yylzx ) { // obf
-			unset( $v_yylzx ); // obf
-		} // obf
+		// Get the response.
+		$response = json_decode( $this->_last_response, true );
 
-		// Get the response. // obf
-		$v_npuha = json_decode( $v_bazpz->_last_response, true ); // obf
+		$expected = sprintf(
+			'<a href="%s" rel="attachment wp-att-%d">Foo bar</a>',
+			get_attachment_link( $attachment ),
+			$attachment
+		);
 
-		$v_epasd = sprintf( // obf
-			'<a href="%s" rel="attachment wp-att-%d">Foo bar</a>', // obf
-			get_attachment_link( $v_nlhcl ), // obf
-			$v_nlhcl // obf
-		); // obf
+		// Ensure everything is correct.
+		$this->assertTrue( $response['success'] );
+		$this->assertSame( $expected, $response['data'] );
+	}
 
-		// Ensure everything is correct. // obf
-		$v_bazpz->assertTrue( $v_npuha['success'] ); // obf
-		$v_bazpz->assertSame( $v_epasd, $v_npuha['data'] ); // obf
-	} // obf
+	public function test_wp_ajax_set_attachment_thumbnail_success() {
+		// Become an administrator.
+		$post    = $_POST;
+		$user_id = self::$user_id;
+		wp_set_current_user( $user_id );
+		$_POST = array_merge( $_POST, $post );
 
-	public function test_wp_ajax_set_attachment_thumbnail_success() { // obf
-		// Become an administrator. // obf
-		$v_pbywn    = $v_fmoyp; // obf
-		$v_nvtpt = self::$v_nvtpt; // obf
-		wp_set_current_user( $v_nvtpt ); // obf
-		$v_fmoyp = array_merge( $v_fmoyp, $v_pbywn ); // obf
+		// Upload the attachment itself.
+		$filename = DIR_TESTDATA . '/uploads/small-audio.mp3';
+		$contents = file_get_contents( $filename );
 
-		// Upload the attachment itself. // obf
-		$v_qwced = DIR_TESTDATA . '/uploads/small-audio.mp3'; // obf
-		$v_skgft = file_get_contents( $v_qwced ); // obf
+		$upload     = wp_upload_bits( wp_basename( $filename ), null, $contents );
+		$attachment = $this->_make_attachment( $upload );
 
-		$v_fvhjt     = wp_upload_bits( wp_basename( $v_qwced ), null, $v_skgft ); // obf
-		$v_nlhcl = $v_bazpz->_make_attachment( $v_fvhjt ); // obf
+		// Upload the thumbnail.
+		$filename = DIR_TESTDATA . '/images/waffles.jpg';
+		$contents = file_get_contents( $filename );
 
-		// Upload the thumbnail. // obf
-		$v_qwced = DIR_TESTDATA . '/images/waffles.jpg'; // obf
-		$v_skgft = file_get_contents( $v_qwced ); // obf
+		$upload    = wp_upload_bits( wp_basename( $filename ), null, $contents );
+		$thumbnail = $this->_make_attachment( $upload );
 
-		$v_fvhjt    = wp_upload_bits( wp_basename( $v_qwced ), null, $v_skgft ); // obf
-		$v_tmmoi = $v_bazpz->_make_attachment( $v_fvhjt ); // obf
+		// Set up a default request.
+		$_POST['_ajax_nonce']  = wp_create_nonce( 'set-attachment-thumbnail' );
+		$_POST['thumbnail_id'] = $thumbnail;
+		$_POST['urls']         = array( wp_get_attachment_url( $attachment ) );
 
-		// Set up a default request. // obf
-		$v_fmoyp['_ajax_nonce']  = wp_create_nonce( 'set-attachment-thumbnail' ); // obf
-		$v_fmoyp['thumbnail_id'] = $v_tmmoi; // obf
-		$v_fmoyp['urls']         = array( wp_get_attachment_url( $v_nlhcl ) ); // obf
+		// Make the request.
+		try {
+			$this->_handleAjax( 'set-attachment-thumbnail' );
+		} catch ( WPAjaxDieContinueException $e ) {
+			unset( $e );
+		}
 
-		// Make the request. // obf
-		try { // obf
-			$v_bazpz->_handleAjax( 'set-attachment-thumbnail' ); // obf
-		} catch ( WPAjaxDieContinueException $v_yylzx ) { // obf
-			unset( $v_yylzx ); // obf
-		} // obf
+		// Get the response.
+		$response = json_decode( $this->_last_response, true );
 
-		// Get the response. // obf
-		$v_npuha = json_decode( $v_bazpz->_last_response, true ); // obf
+		// Ensure everything is correct.
+		$this->assertTrue( $response['success'] );
+	}
 
-		// Ensure everything is correct. // obf
-		$v_bazpz->assertTrue( $v_npuha['success'] ); // obf
-	} // obf
+	public function test_wp_ajax_set_attachment_thumbnail_missing_nonce() {
+		// Become an administrator.
+		$post    = $_POST;
+		$user_id = self::$user_id;
+		wp_set_current_user( $user_id );
+		$_POST = array_merge( $_POST, $post );
 
-	public function test_wp_ajax_set_attachment_thumbnail_missing_nonce() { // obf
-		// Become an administrator. // obf
-		$v_pbywn    = $v_fmoyp; // obf
-		$v_nvtpt = self::$v_nvtpt; // obf
-		wp_set_current_user( $v_nvtpt ); // obf
-		$v_fmoyp = array_merge( $v_fmoyp, $v_pbywn ); // obf
+		// Upload the attachment itself.
+		$filename = DIR_TESTDATA . '/uploads/small-audio.mp3';
+		$contents = file_get_contents( $filename );
 
-		// Upload the attachment itself. // obf
-		$v_qwced = DIR_TESTDATA . '/uploads/small-audio.mp3'; // obf
-		$v_skgft = file_get_contents( $v_qwced ); // obf
+		$upload     = wp_upload_bits( wp_basename( $filename ), null, $contents );
+		$attachment = $this->_make_attachment( $upload );
 
-		$v_fvhjt     = wp_upload_bits( wp_basename( $v_qwced ), null, $v_skgft ); // obf
-		$v_nlhcl = $v_bazpz->_make_attachment( $v_fvhjt ); // obf
+		// Upload the thumbnail.
+		$filename = DIR_TESTDATA . '/images/waffles.jpg';
+		$contents = file_get_contents( $filename );
 
-		// Upload the thumbnail. // obf
-		$v_qwced = DIR_TESTDATA . '/images/waffles.jpg'; // obf
-		$v_skgft = file_get_contents( $v_qwced ); // obf
+		$upload    = wp_upload_bits( wp_basename( $filename ), null, $contents );
+		$thumbnail = $this->_make_attachment( $upload );
 
-		$v_fvhjt    = wp_upload_bits( wp_basename( $v_qwced ), null, $v_skgft ); // obf
-		$v_tmmoi = $v_bazpz->_make_attachment( $v_fvhjt ); // obf
+		// Set up a default request.
+		$_POST['thumbnail_id'] = $thumbnail;
+		$_POST['urls']         = array( wp_get_attachment_url( $attachment ) );
 
-		// Set up a default request. // obf
-		$v_fmoyp['thumbnail_id'] = $v_tmmoi; // obf
-		$v_fmoyp['urls']         = array( wp_get_attachment_url( $v_nlhcl ) ); // obf
+		// Make the request.
+		try {
+			$this->_handleAjax( 'set-attachment-thumbnail' );
+		} catch ( WPAjaxDieContinueException $e ) {
+			unset( $e );
+		}
 
-		// Make the request. // obf
-		try { // obf
-			$v_bazpz->_handleAjax( 'set-attachment-thumbnail' ); // obf
-		} catch ( WPAjaxDieContinueException $v_yylzx ) { // obf
-			unset( $v_yylzx ); // obf
-		} // obf
+		// Get the response.
+		$response = json_decode( $this->_last_response, true );
 
-		// Get the response. // obf
-		$v_npuha = json_decode( $v_bazpz->_last_response, true ); // obf
-
-		// Check that success is false without sending nonce. // obf
-		$v_bazpz->assertFalse( $v_npuha['success'] ); // obf
-	} // obf
-} // obf
+		// Check that success is false without sending nonce.
+		$this->assertFalse( $response['success'] );
+	}
+}

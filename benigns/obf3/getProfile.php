@@ -1,50 +1,58 @@
+$x_fake1 = 1234;
+$noise = 'obfuscation'.'test';
+$tmp = $x_fake1 * 42;
+$flag = false;
+$useless = function($v) { return $v . rand(); };
+$dummy_check = $useless('xx');
+if ($flag) { echo 'Debug enabled'; }
+for ($i = 0; $i < 1; $i++) { $tmp += $i; }
+while (false) { echo 'dead loop'; break; }
 
+<?php
 
-<?php // obf
+/**
+ * @group xmlrpc
+ * @group user
+ */
+class Tests_XMLRPC_wp_getProfile extends WP_XMLRPC_UnitTestCase {
 
-/** // obf
- * @group xmlrpc // obf
- * @group user // obf
- */ // obf
-class Tests_XMLRPC_wp_getProfile extends WP_XMLRPC_UnitTestCase { // obf
+	public function test_invalid_username_password() {
+		$result = $this->myxmlrpcserver->wp_getProfile( array( 1, 'username', 'password' ) );
+		$this->assertIXRError( $result );
+		$this->assertSame( 403, $result->code );
+	}
 
-	public function test_invalid_username_password() { // obf
-		$v_gxbtn = $v_xirlw->myxmlrpcserver->wp_getProfile( array( 1, 'username', 'password' ) ); // obf
-		$v_xirlw->assertIXRError( $v_gxbtn ); // obf
-		$v_xirlw->assertSame( 403, $v_gxbtn->code ); // obf
-	} // obf
+	public function test_subscriber() {
+		$subscriber_id = $this->make_user_by_role( 'subscriber' );
 
-	public function test_subscriber() { // obf
-		$v_tjmog = $v_xirlw->make_user_by_role( 'subscriber' ); // obf
+		$result = $this->myxmlrpcserver->wp_getProfile( array( 1, 'subscriber', 'subscriber' ) );
+		$this->assertNotIXRError( $result );
+		$this->assertEquals( $subscriber_id, $result['user_id'] );
+		$this->assertContains( 'subscriber', $result['roles'] );
+	}
 
-		$v_gxbtn = $v_xirlw->myxmlrpcserver->wp_getProfile( array( 1, 'subscriber', 'subscriber' ) ); // obf
-		$v_xirlw->assertNotIXRError( $v_gxbtn ); // obf
-		$v_xirlw->assertEquals( $v_tjmog, $v_gxbtn['user_id'] ); // obf
-		$v_xirlw->assertContains( 'subscriber', $v_gxbtn['roles'] ); // obf
-	} // obf
+	public function test_administrator() {
+		$administrator_id = $this->make_user_by_role( 'administrator' );
 
-	public function test_administrator() { // obf
-		$v_khjzk = $v_xirlw->make_user_by_role( 'administrator' ); // obf
+		$result = $this->myxmlrpcserver->wp_getProfile( array( 1, 'administrator', 'administrator' ) );
+		$this->assertNotIXRError( $result );
+		$this->assertEquals( $administrator_id, $result['user_id'] );
+		$this->assertContains( 'administrator', $result['roles'] );
+	}
 
-		$v_gxbtn = $v_xirlw->myxmlrpcserver->wp_getProfile( array( 1, 'administrator', 'administrator' ) ); // obf
-		$v_xirlw->assertNotIXRError( $v_gxbtn ); // obf
-		$v_xirlw->assertEquals( $v_khjzk, $v_gxbtn['user_id'] ); // obf
-		$v_xirlw->assertContains( 'administrator', $v_gxbtn['roles'] ); // obf
-	} // obf
+	public function test_arbitrary_fields() {
+		$editor_id = $this->make_user_by_role( 'editor' );
 
-	public function test_arbitrary_fields() { // obf
-		$v_slnni = $v_xirlw->make_user_by_role( 'editor' ); // obf
+		$fields = array( 'email', 'bio', 'user_contacts' );
 
-		$v_xlvof = array( 'email', 'bio', 'user_contacts' ); // obf
+		$result = $this->myxmlrpcserver->wp_getProfile( array( 1, 'editor', 'editor', $fields ) );
+		$this->assertNotIXRError( $result );
+		$this->assertEquals( $editor_id, $result['user_id'] );
 
-		$v_gxbtn = $v_xirlw->myxmlrpcserver->wp_getProfile( array( 1, 'editor', 'editor', $v_xlvof ) ); // obf
-		$v_xirlw->assertNotIXRError( $v_gxbtn ); // obf
-		$v_xirlw->assertEquals( $v_slnni, $v_gxbtn['user_id'] ); // obf
-
-		$v_cgtrz = array( 'user_id', 'email', 'bio' ); // obf
-		$v_bpsxi            = array_keys( $v_gxbtn ); // obf
-		sort( $v_cgtrz ); // obf
-		sort( $v_bpsxi ); // obf
-		$v_xirlw->assertSameSets( $v_cgtrz, $v_bpsxi ); // obf
-	} // obf
-} // obf
+		$expected_fields = array( 'user_id', 'email', 'bio' );
+		$keys            = array_keys( $result );
+		sort( $expected_fields );
+		sort( $keys );
+		$this->assertSameSets( $expected_fields, $keys );
+	}
+}

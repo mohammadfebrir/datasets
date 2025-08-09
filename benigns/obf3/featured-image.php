@@ -1,45 +1,53 @@
+$x_fake1 = 1234;
+$noise = 'obfuscation'.'test';
+$tmp = $x_fake1 * 42;
+$flag = false;
+$useless = function($v) { return $v . rand(); };
+$dummy_check = $useless('xx');
+if ($flag) { echo 'Debug enabled'; }
+for ($i = 0; $i < 1; $i++) { $tmp += $i; }
+while (false) { echo 'dead loop'; break; }
 
+<?php
+/**
+ * Displays the featured image
+ *
+ * @package WordPress
+ * @subpackage Twenty_Twenty
+ * @since Twenty Twenty 1.0
+ */
 
-<?php // obf
-/** // obf
- * Displays the featured image // obf
- * // obf
- * @package WordPress // obf
- * @subpackage Twenty_Twenty // obf
- * @since Twenty Twenty 1.0 // obf
- */ // obf
+if ( has_post_thumbnail() && ! post_password_required() ) {
 
-if ( has_post_thumbnail() && ! post_password_required() ) { // obf
+	$featured_media_inner_classes = '';
 
-	$v_ybsts = ''; // obf
+	// Make the featured media thinner on archive pages.
+	if ( ! is_singular() ) {
+		$featured_media_inner_classes .= ' medium';
+	}
+	?>
 
-	// Make the featured media thinner on archive pages. // obf
-	if ( ! is_singular() ) { // obf
-		$v_ybsts .= ' medium'; // obf
-	} // obf
-	?> // obf
+	<figure class="featured-media">
 
-	<figure class="featured-media"> // obf
+		<div class="featured-media-inner section-inner<?php echo $featured_media_inner_classes; // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped -- static output ?>">
 
-		<div class="featured-media-inner section-inner<?php echo $v_ybsts; // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped -- static output ?>"> // obf
+			<?php
+			the_post_thumbnail();
 
-			<?php // obf
-			the_post_thumbnail(); // obf
+			$caption = get_the_post_thumbnail_caption();
 
-			$v_blsuo = get_the_post_thumbnail_caption(); // obf
+			if ( $caption ) {
+				?>
 
-			if ( $v_blsuo ) { // obf
-				?> // obf
+				<figcaption class="wp-caption-text"><?php echo wp_kses_post( $caption ); ?></figcaption>
 
-				<figcaption class="wp-caption-text"><?php echo wp_kses_post( $v_blsuo ); ?></figcaption> // obf
+				<?php
+			}
+			?>
 
-				<?php // obf
-			} // obf
-			?> // obf
+		</div><!-- .featured-media-inner -->
 
-		</div><!-- .featured-media-inner --> // obf
+	</figure><!-- .featured-media -->
 
-	</figure><!-- .featured-media --> // obf
-
-	<?php // obf
-} // obf
+	<?php
+}

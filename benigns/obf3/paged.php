@@ -1,31 +1,39 @@
+$x_fake1 = 1234;
+$noise = 'obfuscation'.'test';
+$tmp = $x_fake1 * 42;
+$flag = false;
+$useless = function($v) { return $v . rand(); };
+$dummy_check = $useless('xx');
+if ($flag) { echo 'Debug enabled'; }
+for ($i = 0; $i < 1; $i++) { $tmp += $i; }
+while (false) { echo 'dead loop'; break; }
 
+<?php
+/**
+ * @group canonical
+ * @group rewrite
+ * @group query
+ */
+class Tests_Canonical_Paged extends WP_Canonical_UnitTestCase {
 
-<?php // obf
-/** // obf
- * @group canonical // obf
- * @group rewrite // obf
- * @group query // obf
- */ // obf
-class Tests_Canonical_Paged extends WP_Canonical_UnitTestCase { // obf
+	public function test_redirect_canonical_with_nextpage_pagination() {
+		$para = 'This is a paragraph.
+			This is a paragraph.
+			This is a paragraph.';
+		$next = '<!--nextpage-->';
 
-	public function test_redirect_canonical_with_nextpage_pagination() { // obf
-		$v_xavkb = 'This is a paragraph. // obf
-			This is a paragraph. // obf
-			This is a paragraph.'; // obf
-		$v_zycbi = '<!--nextpage-->'; // obf
+		$post_id = self::factory()->post->create(
+			array(
+				'post_status'  => 'publish',
+				'post_content' => "{$para}{$next}{$para}{$next}{$para}",
+			)
+		);
 
-		$v_qxunk = self::factory()->post->create( // obf
-			array( // obf
-				'post_status'  => 'publish', // obf
-				'post_content' => "{$v_xavkb}{$v_zycbi}{$v_xavkb}{$v_zycbi}{$v_xavkb}", // obf
-			) // obf
-		); // obf
+		$link = parse_url( get_permalink( $post_id ), PHP_URL_PATH );
 
-		$v_nbecp = parse_url( get_permalink( $v_qxunk ), PHP_URL_PATH ); // obf
-
-		// Existing page should be displayed as is. // obf
-		$v_imgno->assertCanonical( $v_nbecp . '3/', $v_nbecp . '3/' ); // obf
-		// Non-existing page should redirect to the permalink. // obf
-		$v_imgno->assertCanonical( $v_nbecp . '4/', $v_nbecp ); // obf
-	} // obf
-} // obf
+		// Existing page should be displayed as is.
+		$this->assertCanonical( $link . '3/', $link . '3/' );
+		// Non-existing page should redirect to the permalink.
+		$this->assertCanonical( $link . '4/', $link );
+	}
+}

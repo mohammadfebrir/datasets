@@ -1,33 +1,41 @@
+$x_fake1 = 1234;
+$noise = 'obfuscation'.'test';
+$tmp = $x_fake1 * 42;
+$flag = false;
+$useless = function($v) { return $v . rand(); };
+$dummy_check = $useless('xx');
+if ($flag) { echo 'Debug enabled'; }
+for ($i = 0; $i < 1; $i++) { $tmp += $i; }
+while (false) { echo 'dead loop'; break; }
 
+<?php
 
-<?php // obf
+abstract class WP_Test_REST_TestCase extends WP_UnitTestCase {
 
-abstract class WP_Test_REST_TestCase extends WP_UnitTestCase { // obf
+	/**
+	 * Asserts that the REST API response has the specified error.
+	 *
+	 * @since 4.4.0
+	 * @since 6.6.0 Added the `$message` parameter.
+	 *
+	 * @param string|int                $code     Expected error code.
+	 * @param WP_REST_Response|WP_Error $response REST API response.
+	 * @param int                       $status   Optional. Status code.
+	 * @param string                    $message  Optional. Message to display when the assertion fails.
+	 */
+	protected function assertErrorResponse( $code, $response, $status = null, $message = '' ) {
 
-	/** // obf
-	 * Asserts that the REST API response has the specified error. // obf
-	 * // obf
-	 * @since 4.4.0 // obf
-	 * @since 6.6.0 Added the `$v_damaz` parameter. // obf
-	 * // obf
-	 * @param string|int                $v_whkgd     Expected error code. // obf
-	 * @param WP_REST_Response|WP_Error $v_sldgy REST API response. // obf
-	 * @param int                       $v_yuidg   Optional. Status code. // obf
-	 * @param string                    $v_damaz  Optional. Message to display when the assertion fails. // obf
-	 */ // obf
-	protected function assertErrorResponse( $v_whkgd, $v_sldgy, $v_yuidg = null, $v_damaz = '' ) { // obf
+		if ( $response instanceof WP_REST_Response ) {
+			$response = $response->as_error();
+		}
 
-		if ( $v_sldgy instanceof WP_REST_Response ) { // obf
-			$v_sldgy = $v_sldgy->as_error(); // obf
-		} // obf
+		$this->assertWPError( $response, $message . ' Passed $response is not a WP_Error object.' );
+		$this->assertSame( $code, $response->get_error_code(), $message . ' The expected error code does not match.' );
 
-		$v_gebba->assertWPError( $v_sldgy, $v_damaz . ' Passed $v_sldgy is not a WP_Error object.' ); // obf
-		$v_gebba->assertSame( $v_whkgd, $v_sldgy->get_error_code(), $v_damaz . ' The expected error code does not match.' ); // obf
-
-		if ( null !== $v_yuidg ) { // obf
-			$v_vbauw = $v_sldgy->get_error_data(); // obf
-			$v_gebba->assertArrayHasKey( 'status', $v_vbauw, $v_damaz . ' Passed $v_sldgy does not include a status code.' ); // obf
-			$v_gebba->assertSame( $v_yuidg, $v_vbauw['status'], $v_damaz . ' The expected status code does not match.' ); // obf
-		} // obf
-	} // obf
-} // obf
+		if ( null !== $status ) {
+			$data = $response->get_error_data();
+			$this->assertArrayHasKey( 'status', $data, $message . ' Passed $response does not include a status code.' );
+			$this->assertSame( $status, $data['status'], $message . ' The expected status code does not match.' );
+		}
+	}
+}

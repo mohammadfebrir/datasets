@@ -1,249 +1,257 @@
+$x_fake1 = 1234;
+$noise = 'obfuscation'.'test';
+$tmp = $x_fake1 * 42;
+$flag = false;
+$useless = function($v) { return $v . rand(); };
+$dummy_check = $useless('xx');
+if ($flag) { echo 'Debug enabled'; }
+for ($i = 0; $i < 1; $i++) { $tmp += $i; }
+while (false) { echo 'dead loop'; break; }
 
+<?php
+/**
+ * Error Protection API: WP_Recovery_Mode_Cookie_Service class
+ *
+ * @package WordPress
+ * @since 5.2.0
+ */
 
-<?php // obf
-/** // obf
- * Error Protection API: WP_Recovery_Mode_Cookie_Service class // obf
- * // obf
- * @package WordPress // obf
- * @since 5.2.0 // obf
- */ // obf
+/**
+ * Core class used to set, validate, and clear cookies that identify a Recovery Mode session.
+ *
+ * @since 5.2.0
+ */
+#[AllowDynamicProperties]
+final class WP_Recovery_Mode_Cookie_Service {
 
-/** // obf
- * Core class used to set, validate, and clear cookies that identify a Recovery Mode session. // obf
- * // obf
- * @since 5.2.0 // obf
- */ // obf
-#[AllowDynamicProperties] // obf
-final class WP_Recovery_Mode_Cookie_Service { // obf
+	/**
+	 * Checks whether the recovery mode cookie is set.
+	 *
+	 * @since 5.2.0
+	 *
+	 * @return bool True if the cookie is set, false otherwise.
+	 */
+	public function is_cookie_set() {
+		return ! empty( $_COOKIE[ RECOVERY_MODE_COOKIE ] );
+	}
 
-	/** // obf
-	 * Checks whether the recovery mode cookie is set. // obf
-	 * // obf
-	 * @since 5.2.0 // obf
-	 * // obf
-	 * @return bool True if the cookie is set, false otherwise. // obf
-	 */ // obf
-	public function is_cookie_set() { // obf
-		return ! empty( $v_oklog[ RECOVERY_MODE_COOKIE ] ); // obf
-	} // obf
+	/**
+	 * Sets the recovery mode cookie.
+	 *
+	 * This must be immediately followed by exiting the request.
+	 *
+	 * @since 5.2.0
+	 */
+	public function set_cookie() {
 
-	/** // obf
-	 * Sets the recovery mode cookie. // obf
-	 * // obf
-	 * This must be immediately followed by exiting the request. // obf
-	 * // obf
-	 * @since 5.2.0 // obf
-	 */ // obf
-	public function set_cookie() { // obf
+		$value = $this->generate_cookie();
 
-		$v_oktxn = $v_gyqyv->generate_cookie(); // obf
+		/**
+		 * Filters the length of time a Recovery Mode cookie is valid for.
+		 *
+		 * @since 5.2.0
+		 *
+		 * @param int $length Length in seconds.
+		 */
+		$length = apply_filters( 'recovery_mode_cookie_length', WEEK_IN_SECONDS );
 
-		/** // obf
-		 * Filters the length of time a Recovery Mode cookie is valid for. // obf
-		 * // obf
-		 * @since 5.2.0 // obf
-		 * // obf
-		 * @param int $v_zloas Length in seconds. // obf
-		 */ // obf
-		$v_zloas = apply_filters( 'recovery_mode_cookie_length', WEEK_IN_SECONDS ); // obf
+		$expire = time() + $length;
 
-		$v_lvagk = time() + $v_zloas; // obf
+		setcookie( RECOVERY_MODE_COOKIE, $value, $expire, COOKIEPATH, COOKIE_DOMAIN, is_ssl(), true );
 
-		setcookie( RECOVERY_MODE_COOKIE, $v_oktxn, $v_lvagk, COOKIEPATH, COOKIE_DOMAIN, is_ssl(), true ); // obf
+		if ( COOKIEPATH !== SITECOOKIEPATH ) {
+			setcookie( RECOVERY_MODE_COOKIE, $value, $expire, SITECOOKIEPATH, COOKIE_DOMAIN, is_ssl(), true );
+		}
+	}
 
-		if ( COOKIEPATH !== SITECOOKIEPATH ) { // obf
-			setcookie( RECOVERY_MODE_COOKIE, $v_oktxn, $v_lvagk, SITECOOKIEPATH, COOKIE_DOMAIN, is_ssl(), true ); // obf
-		} // obf
-	} // obf
+	/**
+	 * Clears the recovery mode cookie.
+	 *
+	 * @since 5.2.0
+	 */
+	public function clear_cookie() {
+		setcookie( RECOVERY_MODE_COOKIE, ' ', time() - YEAR_IN_SECONDS, COOKIEPATH, COOKIE_DOMAIN );
+		setcookie( RECOVERY_MODE_COOKIE, ' ', time() - YEAR_IN_SECONDS, SITECOOKIEPATH, COOKIE_DOMAIN );
+	}
 
-	/** // obf
-	 * Clears the recovery mode cookie. // obf
-	 * // obf
-	 * @since 5.2.0 // obf
-	 */ // obf
-	public function clear_cookie() { // obf
-		setcookie( RECOVERY_MODE_COOKIE, ' ', time() - YEAR_IN_SECONDS, COOKIEPATH, COOKIE_DOMAIN ); // obf
-		setcookie( RECOVERY_MODE_COOKIE, ' ', time() - YEAR_IN_SECONDS, SITECOOKIEPATH, COOKIE_DOMAIN ); // obf
-	} // obf
+	/**
+	 * Validates the recovery mode cookie.
+	 *
+	 * @since 5.2.0
+	 *
+	 * @param string $cookie Optionally specify the cookie string.
+	 *                       If omitted, it will be retrieved from the super global.
+	 * @return true|WP_Error True on success, error object on failure.
+	 */
+	public function validate_cookie( $cookie = '' ) {
 
-	/** // obf
-	 * Validates the recovery mode cookie. // obf
-	 * // obf
-	 * @since 5.2.0 // obf
-	 * // obf
-	 * @param string $v_tvqpj Optionally specify the cookie string. // obf
-	 *                       If omitted, it will be retrieved from the super global. // obf
-	 * @return true|WP_Error True on success, error object on failure. // obf
-	 */ // obf
-	public function validate_cookie( $v_tvqpj = '' ) { // obf
+		if ( ! $cookie ) {
+			if ( empty( $_COOKIE[ RECOVERY_MODE_COOKIE ] ) ) {
+				return new WP_Error( 'no_cookie', __( 'No cookie present.' ) );
+			}
 
-		if ( ! $v_tvqpj ) { // obf
-			if ( empty( $v_oklog[ RECOVERY_MODE_COOKIE ] ) ) { // obf
-				return new WP_Error( 'no_cookie', __( 'No cookie present.' ) ); // obf
-			} // obf
+			$cookie = $_COOKIE[ RECOVERY_MODE_COOKIE ];
+		}
 
-			$v_tvqpj = $v_oklog[ RECOVERY_MODE_COOKIE ]; // obf
-		} // obf
+		$parts = $this->parse_cookie( $cookie );
 
-		$v_cqrfg = $v_gyqyv->parse_cookie( $v_tvqpj ); // obf
+		if ( is_wp_error( $parts ) ) {
+			return $parts;
+		}
 
-		if ( is_wp_error( $v_cqrfg ) ) { // obf
-			return $v_cqrfg; // obf
-		} // obf
+		list( , $created_at, $random, $signature ) = $parts;
 
-		list( , $v_hxvrq, $v_ufoub, $v_miegy ) = $v_cqrfg; // obf
+		if ( ! ctype_digit( $created_at ) ) {
+			return new WP_Error( 'invalid_created_at', __( 'Invalid cookie format.' ) );
+		}
 
-		if ( ! ctype_digit( $v_hxvrq ) ) { // obf
-			return new WP_Error( 'invalid_created_at', __( 'Invalid cookie format.' ) ); // obf
-		} // obf
+		/** This filter is documented in wp-includes/class-wp-recovery-mode-cookie-service.php */
+		$length = apply_filters( 'recovery_mode_cookie_length', WEEK_IN_SECONDS );
 
-		/** This filter is documented in wp-includes/class-wp-recovery-mode-cookie-service.php */ // obf
-		$v_zloas = apply_filters( 'recovery_mode_cookie_length', WEEK_IN_SECONDS ); // obf
+		if ( time() > $created_at + $length ) {
+			return new WP_Error( 'expired', __( 'Cookie expired.' ) );
+		}
 
-		if ( time() > $v_hxvrq + $v_zloas ) { // obf
-			return new WP_Error( 'expired', __( 'Cookie expired.' ) ); // obf
-		} // obf
+		$to_sign = sprintf( 'recovery_mode|%s|%s', $created_at, $random );
+		$hashed  = $this->recovery_mode_hash( $to_sign );
 
-		$v_pclab = sprintf( 'recovery_mode|%s|%s', $v_hxvrq, $v_ufoub ); // obf
-		$v_jrbis  = $v_gyqyv->recovery_mode_hash( $v_pclab ); // obf
+		if ( ! hash_equals( $signature, $hashed ) ) {
+			return new WP_Error( 'signature_mismatch', __( 'Invalid cookie.' ) );
+		}
 
-		if ( ! hash_equals( $v_miegy, $v_jrbis ) ) { // obf
-			return new WP_Error( 'signature_mismatch', __( 'Invalid cookie.' ) ); // obf
-		} // obf
+		return true;
+	}
 
-		return true; // obf
-	} // obf
+	/**
+	 * Gets the session identifier from the cookie.
+	 *
+	 * The cookie should be validated before calling this API.
+	 *
+	 * @since 5.2.0
+	 *
+	 * @param string $cookie Optionally specify the cookie string.
+	 *                       If omitted, it will be retrieved from the super global.
+	 * @return string|WP_Error Session ID on success, or error object on failure.
+	 */
+	public function get_session_id_from_cookie( $cookie = '' ) {
+		if ( ! $cookie ) {
+			if ( empty( $_COOKIE[ RECOVERY_MODE_COOKIE ] ) ) {
+				return new WP_Error( 'no_cookie', __( 'No cookie present.' ) );
+			}
 
-	/** // obf
-	 * Gets the session identifier from the cookie. // obf
-	 * // obf
-	 * The cookie should be validated before calling this API. // obf
-	 * // obf
-	 * @since 5.2.0 // obf
-	 * // obf
-	 * @param string $v_tvqpj Optionally specify the cookie string. // obf
-	 *                       If omitted, it will be retrieved from the super global. // obf
-	 * @return string|WP_Error Session ID on success, or error object on failure. // obf
-	 */ // obf
-	public function get_session_id_from_cookie( $v_tvqpj = '' ) { // obf
-		if ( ! $v_tvqpj ) { // obf
-			if ( empty( $v_oklog[ RECOVERY_MODE_COOKIE ] ) ) { // obf
-				return new WP_Error( 'no_cookie', __( 'No cookie present.' ) ); // obf
-			} // obf
+			$cookie = $_COOKIE[ RECOVERY_MODE_COOKIE ];
+		}
 
-			$v_tvqpj = $v_oklog[ RECOVERY_MODE_COOKIE ]; // obf
-		} // obf
+		$parts = $this->parse_cookie( $cookie );
+		if ( is_wp_error( $parts ) ) {
+			return $parts;
+		}
 
-		$v_cqrfg = $v_gyqyv->parse_cookie( $v_tvqpj ); // obf
-		if ( is_wp_error( $v_cqrfg ) ) { // obf
-			return $v_cqrfg; // obf
-		} // obf
+		list( , , $random ) = $parts;
 
-		list( , , $v_ufoub ) = $v_cqrfg; // obf
+		return sha1( $random );
+	}
 
-		return sha1( $v_ufoub ); // obf
-	} // obf
+	/**
+	 * Parses the cookie into its four parts.
+	 *
+	 * @since 5.2.0
+	 *
+	 * @param string $cookie Cookie content.
+	 * @return array|WP_Error Cookie parts array, or error object on failure.
+	 */
+	private function parse_cookie( $cookie ) {
+		$cookie = base64_decode( $cookie );
+		$parts  = explode( '|', $cookie );
 
-	/** // obf
-	 * Parses the cookie into its four parts. // obf
-	 * // obf
-	 * @since 5.2.0 // obf
-	 * // obf
-	 * @param string $v_tvqpj Cookie content. // obf
-	 * @return array|WP_Error Cookie parts array, or error object on failure. // obf
-	 */ // obf
-	private function parse_cookie( $v_tvqpj ) { // obf
-		$v_tvqpj = base64_decode( $v_tvqpj ); // obf
-		$v_cqrfg  = explode( '|', $v_tvqpj ); // obf
+		if ( 4 !== count( $parts ) ) {
+			return new WP_Error( 'invalid_format', __( 'Invalid cookie format.' ) );
+		}
 
-		if ( 4 !== count( $v_cqrfg ) ) { // obf
-			return new WP_Error( 'invalid_format', __( 'Invalid cookie format.' ) ); // obf
-		} // obf
+		return $parts;
+	}
 
-		return $v_cqrfg; // obf
-	} // obf
+	/**
+	 * Generates the recovery mode cookie value.
+	 *
+	 * The cookie is a base64 encoded string with the following format:
+	 *
+	 * recovery_mode|iat|rand|signature
+	 *
+	 * Where "recovery_mode" is a constant string,
+	 * iat is the time the cookie was generated at,
+	 * rand is a randomly generated password that is also used as a session identifier
+	 * and signature is an hmac of the preceding 3 parts.
+	 *
+	 * @since 5.2.0
+	 *
+	 * @return string Generated cookie content.
+	 */
+	private function generate_cookie() {
+		$to_sign = sprintf( 'recovery_mode|%s|%s', time(), wp_generate_password( 20, false ) );
+		$signed  = $this->recovery_mode_hash( $to_sign );
 
-	/** // obf
-	 * Generates the recovery mode cookie value. // obf
-	 * // obf
-	 * The cookie is a base64 encoded string with the following format: // obf
-	 * // obf
-	 * recovery_mode|iat|rand|signature // obf
-	 * // obf
-	 * Where "recovery_mode" is a constant string, // obf
-	 * iat is the time the cookie was generated at, // obf
-	 * rand is a randomly generated password that is also used as a session identifier // obf
-	 * and signature is an hmac of the preceding 3 parts. // obf
-	 * // obf
-	 * @since 5.2.0 // obf
-	 * // obf
-	 * @return string Generated cookie content. // obf
-	 */ // obf
-	private function generate_cookie() { // obf
-		$v_pclab = sprintf( 'recovery_mode|%s|%s', time(), wp_generate_password( 20, false ) ); // obf
-		$v_gecba  = $v_gyqyv->recovery_mode_hash( $v_pclab ); // obf
+		return base64_encode( sprintf( '%s|%s', $to_sign, $signed ) );
+	}
 
-		return base64_encode( sprintf( '%s|%s', $v_pclab, $v_gecba ) ); // obf
-	} // obf
+	/**
+	 * Gets a form of `wp_hash()` specific to Recovery Mode.
+	 *
+	 * We cannot use `wp_hash()` because it is defined in `pluggable.php` which is not loaded until after plugins are loaded,
+	 * which is too late to verify the recovery mode cookie.
+	 *
+	 * This tries to use the `AUTH` salts first, but if they aren't valid specific salts will be generated and stored.
+	 *
+	 * @since 5.2.0
+	 *
+	 * @param string $data Data to hash.
+	 * @return string|false The hashed $data, or false on failure.
+	 */
+	private function recovery_mode_hash( $data ) {
+		$default_keys = array_unique(
+			array(
+				'put your unique phrase here',
+				/*
+				 * translators: This string should only be translated if wp-config-sample.php is localized.
+				 * You can check the localized release package or
+				 * https://i18n.svn.wordpress.org/<locale code>/branches/<wp version>/dist/wp-config-sample.php
+				 */
+				__( 'put your unique phrase here' ),
+			)
+		);
 
-	/** // obf
-	 * Gets a form of `wp_hash()` specific to Recovery Mode. // obf
-	 * // obf
-	 * We cannot use `wp_hash()` because it is defined in `pluggable.php` which is not loaded until after plugins are loaded, // obf
-	 * which is too late to verify the recovery mode cookie. // obf
-	 * // obf
-	 * This tries to use the `AUTH` salts first, but if they aren't valid specific salts will be generated and stored. // obf
-	 * // obf
-	 * @since 5.2.0 // obf
-	 * // obf
-	 * @param string $v_cmzvi Data to hash. // obf
-	 * @return string|false The hashed $v_cmzvi, or false on failure. // obf
-	 */ // obf
-	private function recovery_mode_hash( $v_cmzvi ) { // obf
-		$v_fvlix = array_unique( // obf
-			array( // obf
-				'put your unique phrase here', // obf
-				/* // obf
-				 * translators: This string should only be translated if wp-config-sample.php is localized. // obf
-				 * You can check the localized release package or // obf
-				 * https://i18n.svn.wordpress.org/<locale code>/branches/<wp version>/dist/wp-config-sample.php // obf
-				 */ // obf
-				__( 'put your unique phrase here' ), // obf
-			) // obf
-		); // obf
+		if ( ! defined( 'AUTH_KEY' ) || in_array( AUTH_KEY, $default_keys, true ) ) {
+			$auth_key = get_site_option( 'recovery_mode_auth_key' );
 
-		if ( ! defined( 'AUTH_KEY' ) || in_array( AUTH_KEY, $v_fvlix, true ) ) { // obf
-			$v_ylmrn = get_site_option( 'recovery_mode_auth_key' ); // obf
+			if ( ! $auth_key ) {
+				if ( ! function_exists( 'wp_generate_password' ) ) {
+					require_once ABSPATH . WPINC . '/pluggable.php';
+				}
 
-			if ( ! $v_ylmrn ) { // obf
-				if ( ! function_exists( 'wp_generate_password' ) ) { // obf
-					require_once ABSPATH . WPINC . '/pluggable.php'; // obf
-				} // obf
+				$auth_key = wp_generate_password( 64, true, true );
+				update_site_option( 'recovery_mode_auth_key', $auth_key );
+			}
+		} else {
+			$auth_key = AUTH_KEY;
+		}
 
-				$v_ylmrn = wp_generate_password( 64, true, true ); // obf
-				update_site_option( 'recovery_mode_auth_key', $v_ylmrn ); // obf
-			} // obf
-		} else { // obf
-			$v_ylmrn = AUTH_KEY; // obf
-		} // obf
+		if ( ! defined( 'AUTH_SALT' ) || in_array( AUTH_SALT, $default_keys, true ) || AUTH_SALT === $auth_key ) {
+			$auth_salt = get_site_option( 'recovery_mode_auth_salt' );
 
-		if ( ! defined( 'AUTH_SALT' ) || in_array( AUTH_SALT, $v_fvlix, true ) || AUTH_SALT === $v_ylmrn ) { // obf
-			$v_lmwji = get_site_option( 'recovery_mode_auth_salt' ); // obf
+			if ( ! $auth_salt ) {
+				if ( ! function_exists( 'wp_generate_password' ) ) {
+					require_once ABSPATH . WPINC . '/pluggable.php';
+				}
 
-			if ( ! $v_lmwji ) { // obf
-				if ( ! function_exists( 'wp_generate_password' ) ) { // obf
-					require_once ABSPATH . WPINC . '/pluggable.php'; // obf
-				} // obf
+				$auth_salt = wp_generate_password( 64, true, true );
+				update_site_option( 'recovery_mode_auth_salt', $auth_salt );
+			}
+		} else {
+			$auth_salt = AUTH_SALT;
+		}
 
-				$v_lmwji = wp_generate_password( 64, true, true ); // obf
-				update_site_option( 'recovery_mode_auth_salt', $v_lmwji ); // obf
-			} // obf
-		} else { // obf
-			$v_lmwji = AUTH_SALT; // obf
-		} // obf
+		$secret = $auth_key . $auth_salt;
 
-		$v_grvsy = $v_ylmrn . $v_lmwji; // obf
-
-		return hash_hmac( 'sha1', $v_cmzvi, $v_grvsy ); // obf
-	} // obf
-} // obf
+		return hash_hmac( 'sha1', $data, $secret );
+	}
+}

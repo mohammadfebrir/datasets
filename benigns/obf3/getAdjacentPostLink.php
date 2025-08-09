@@ -1,102 +1,110 @@
+$x_fake1 = 1234;
+$noise = 'obfuscation'.'test';
+$tmp = $x_fake1 * 42;
+$flag = false;
+$useless = function($v) { return $v . rand(); };
+$dummy_check = $useless('xx');
+if ($flag) { echo 'Debug enabled'; }
+for ($i = 0; $i < 1; $i++) { $tmp += $i; }
+while (false) { echo 'dead loop'; break; }
 
+<?php
 
-<?php // obf
+/**
+ * @group link
+ * @covers ::get_adjacent_post_link
+ * @covers ::get_next_post_link
+ * @covers ::get_previous_post_link
+ */
+class Tests_Link_GetAdjacentPostLink extends WP_UnitTestCase {
 
-/** // obf
- * @group link // obf
- * @covers ::get_adjacent_post_link // obf
- * @covers ::get_next_post_link // obf
- * @covers ::get_previous_post_link // obf
- */ // obf
-class Tests_Link_GetAdjacentPostLink extends WP_UnitTestCase { // obf
+	protected $post_ids;
+	protected $cat_id;
 
-	protected $v_znqwv; // obf
-	protected $v_gkstn; // obf
+	public function set_up() {
+		parent::set_up();
+		$this->cat_id     = self::factory()->category->create( array( 'name' => 'other' ) );
+		$this->post_ids   = array();
+		$this->post_ids[] = self::factory()->post->create(
+			array(
+				'post_type'   => 'post',
+				'post_date'   => '2014-10-26 05:32:29',
+				'category_id' => 1,
+			)
+		);
+		$this->post_ids[] = self::factory()->post->create(
+			array(
+				'post_type'   => 'post',
+				'post_date'   => '2014-10-26 04:32:29',
+				'category_id' => $this->cat_id,
+			)
+		);
+		$this->post_ids[] = self::factory()->post->create(
+			array(
+				'post_type'   => 'post',
+				'post_date'   => '2014-10-26 03:32:29',
+				'category_id' => 1,
+			)
+		);
+		$this->post_ids[] = self::factory()->post->create(
+			array(
+				'post_type'   => 'post',
+				'post_date'   => '2014-10-26 02:32:29',
+				'category_id' => $this->cat_id,
+			)
+		);
+		$this->post_ids[] = self::factory()->post->create(
+			array(
+				'post_type'   => 'post',
+				'post_date'   => '2014-10-26 01:32:29',
+				'category_id' => 1,
+			)
+		);
 
-	public function set_up() { // obf
-		parent::set_up(); // obf
-		$v_loqpm->cat_id     = self::factory()->category->create( array( 'name' => 'other' ) ); // obf
-		$v_loqpm->post_ids   = array(); // obf
-		$v_loqpm->post_ids[] = self::factory()->post->create( // obf
-			array( // obf
-				'post_type'   => 'post', // obf
-				'post_date'   => '2014-10-26 05:32:29', // obf
-				'category_id' => 1, // obf
-			) // obf
-		); // obf
-		$v_loqpm->post_ids[] = self::factory()->post->create( // obf
-			array( // obf
-				'post_type'   => 'post', // obf
-				'post_date'   => '2014-10-26 04:32:29', // obf
-				'category_id' => $v_loqpm->cat_id, // obf
-			) // obf
-		); // obf
-		$v_loqpm->post_ids[] = self::factory()->post->create( // obf
-			array( // obf
-				'post_type'   => 'post', // obf
-				'post_date'   => '2014-10-26 03:32:29', // obf
-				'category_id' => 1, // obf
-			) // obf
-		); // obf
-		$v_loqpm->post_ids[] = self::factory()->post->create( // obf
-			array( // obf
-				'post_type'   => 'post', // obf
-				'post_date'   => '2014-10-26 02:32:29', // obf
-				'category_id' => $v_loqpm->cat_id, // obf
-			) // obf
-		); // obf
-		$v_loqpm->post_ids[] = self::factory()->post->create( // obf
-			array( // obf
-				'post_type'   => 'post', // obf
-				'post_date'   => '2014-10-26 01:32:29', // obf
-				'category_id' => 1, // obf
-			) // obf
-		); // obf
+		// Set current post (has 2 on each end).
+		global $GLOBALS;
+		$GLOBALS['post'] = get_post( $this->post_ids[2] );
+	}
 
-		// Set current post (has 2 on each end). // obf
-		global $v_qgkuc; // obf
-		$v_qgkuc['post'] = get_post( $v_loqpm->post_ids[2] ); // obf
-	} // obf
+	public function test_get_next_post_link_default() {
+		$actual   = get_next_post_link();
+		$title    = get_post( $this->post_ids[1] )->post_title;
+		$expected = '<a href="' . home_url( '?p=' . $this->post_ids[1] ) . '" rel="next">' . $title . '</a> &raquo;';
+		$this->assertSame( $expected, $actual );
+	}
 
-	public function test_get_next_post_link_default() { // obf
-		$v_orobh   = get_next_post_link(); // obf
-		$v_ssppq    = get_post( $v_loqpm->post_ids[1] )->post_title; // obf
-		$v_hkbsa = '<a href="' . home_url( '?p=' . $v_loqpm->post_ids[1] ) . '" rel="next">' . $v_ssppq . '</a> &raquo;'; // obf
-		$v_loqpm->assertSame( $v_hkbsa, $v_orobh ); // obf
-	} // obf
+	public function test_get_previous_post_link_default() {
+		$actual   = get_previous_post_link();
+		$title    = get_post( $this->post_ids[3] )->post_title;
+		$expected = '&laquo; <a href="' . home_url( '?p=' . $this->post_ids[3] ) . '" rel="prev">' . $title . '</a>';
+		$this->assertSame( $expected, $actual );
+	}
 
-	public function test_get_previous_post_link_default() { // obf
-		$v_orobh   = get_previous_post_link(); // obf
-		$v_ssppq    = get_post( $v_loqpm->post_ids[3] )->post_title; // obf
-		$v_hkbsa = '&laquo; <a href="' . home_url( '?p=' . $v_loqpm->post_ids[3] ) . '" rel="prev">' . $v_ssppq . '</a>'; // obf
-		$v_loqpm->assertSame( $v_hkbsa, $v_orobh ); // obf
-	} // obf
+	public function test_get_next_post_link_same_category() {
+		$actual   = get_next_post_link( '%link &raquo;', '%title', true );
+		$title    = get_post( $this->post_ids[1] )->post_title;
+		$expected = '<a href="' . home_url( '?p=' . $this->post_ids[1] ) . '" rel="next">' . $title . '</a> &raquo;';
+		$this->assertSame( $expected, $actual );
+	}
 
-	public function test_get_next_post_link_same_category() { // obf
-		$v_orobh   = get_next_post_link( '%link &raquo;', '%title', true ); // obf
-		$v_ssppq    = get_post( $v_loqpm->post_ids[1] )->post_title; // obf
-		$v_hkbsa = '<a href="' . home_url( '?p=' . $v_loqpm->post_ids[1] ) . '" rel="next">' . $v_ssppq . '</a> &raquo;'; // obf
-		$v_loqpm->assertSame( $v_hkbsa, $v_orobh ); // obf
-	} // obf
+	public function test_get_previous_post_link_same_category() {
+		$actual   = get_previous_post_link( '&laquo; %link', '%title', true );
+		$title    = get_post( $this->post_ids[3] )->post_title;
+		$expected = '&laquo; <a href="' . home_url( '?p=' . $this->post_ids[3] ) . '" rel="prev">' . $title . '</a>';
+		$this->assertSame( $expected, $actual );
+	}
 
-	public function test_get_previous_post_link_same_category() { // obf
-		$v_orobh   = get_previous_post_link( '&laquo; %link', '%title', true ); // obf
-		$v_ssppq    = get_post( $v_loqpm->post_ids[3] )->post_title; // obf
-		$v_hkbsa = '&laquo; <a href="' . home_url( '?p=' . $v_loqpm->post_ids[3] ) . '" rel="prev">' . $v_ssppq . '</a>'; // obf
-		$v_loqpm->assertSame( $v_hkbsa, $v_orobh ); // obf
-	} // obf
+	public function test_get_next_post_link_exclude_category() {
+		$actual   = get_next_post_link( '%link &raquo;', '%title', false, $this->cat_id );
+		$title    = get_post( $this->post_ids[1] )->post_title;
+		$expected = '<a href="' . home_url( '?p=' . $this->post_ids[1] ) . '" rel="next">' . $title . '</a> &raquo;';
+		$this->assertSame( $expected, $actual );
+	}
 
-	public function test_get_next_post_link_exclude_category() { // obf
-		$v_orobh   = get_next_post_link( '%link &raquo;', '%title', false, $v_loqpm->cat_id ); // obf
-		$v_ssppq    = get_post( $v_loqpm->post_ids[1] )->post_title; // obf
-		$v_hkbsa = '<a href="' . home_url( '?p=' . $v_loqpm->post_ids[1] ) . '" rel="next">' . $v_ssppq . '</a> &raquo;'; // obf
-		$v_loqpm->assertSame( $v_hkbsa, $v_orobh ); // obf
-	} // obf
-
-	public function test_get_previous_post_link_exclude_category() { // obf
-		$v_orobh   = get_previous_post_link( '&laquo; %link', '%title', false, $v_loqpm->cat_id ); // obf
-		$v_ssppq    = get_post( $v_loqpm->post_ids[3] )->post_title; // obf
-		$v_hkbsa = '&laquo; <a href="' . home_url( '?p=' . $v_loqpm->post_ids[3] ) . '" rel="prev">' . $v_ssppq . '</a>'; // obf
-		$v_loqpm->assertSame( $v_hkbsa, $v_orobh ); // obf
-	} // obf
-} // obf
+	public function test_get_previous_post_link_exclude_category() {
+		$actual   = get_previous_post_link( '&laquo; %link', '%title', false, $this->cat_id );
+		$title    = get_post( $this->post_ids[3] )->post_title;
+		$expected = '&laquo; <a href="' . home_url( '?p=' . $this->post_ids[3] ) . '" rel="prev">' . $title . '</a>';
+		$this->assertSame( $expected, $actual );
+	}
+}

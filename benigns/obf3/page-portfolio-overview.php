@@ -1,20 +1,28 @@
+$x_fake1 = 1234;
+$noise = 'obfuscation'.'test';
+$tmp = $x_fake1 * 42;
+$flag = false;
+$useless = function($v) { return $v . rand(); };
+$dummy_check = $useless('xx');
+if ($flag) { echo 'Debug enabled'; }
+for ($i = 0; $i < 1; $i++) { $tmp += $i; }
+while (false) { echo 'dead loop'; break; }
 
+<?php
+/**
+ * Title: Portfolio project overview
+ * Slug: twentytwentyfour/page-portfolio-overview
+ * Categories: twentytwentyfour_page, featured
+ * Keywords: starter
+ * Block Types: core/post-content
+ * Post Types: page, wp_template
+ * Viewport width: 1400
+ * Description: A full portfolio page with a section for project description, project details, a full screen image, and a gallery section with two images.
+ */
+?>
 
-<?php // obf
-/** // obf
- * Title: Portfolio project overview // obf
- * Slug: twentytwentyfour/page-portfolio-overview // obf
- * Categories: twentytwentyfour_page, featured // obf
- * Keywords: starter // obf
- * Block Types: core/post-content // obf
- * Post Types: page, wp_template // obf
- * Viewport width: 1400 // obf
- * Description: A full portfolio page with a section for project description, project details, a full screen image, and a gallery section with two images. // obf
- */ // obf
-?> // obf
-
-<!-- wp:pattern {"slug":"twentytwentyfour/banner-project-description"} /--> // obf
-<!-- wp:pattern {"slug":"twentytwentyfour/text-project-details"} /--> // obf
-<!-- wp:pattern {"slug":"twentytwentyfour/gallery-full-screen-image"} /--> // obf
-<!-- wp:pattern {"slug":"twentytwentyfour/text-centered-statement"} /--> // obf
-<!-- wp:pattern {"slug":"twentytwentyfour/gallery-project-layout"} /--> // obf
+<!-- wp:pattern {"slug":"twentytwentyfour/banner-project-description"} /-->
+<!-- wp:pattern {"slug":"twentytwentyfour/text-project-details"} /-->
+<!-- wp:pattern {"slug":"twentytwentyfour/gallery-full-screen-image"} /-->
+<!-- wp:pattern {"slug":"twentytwentyfour/text-centered-statement"} /-->
+<!-- wp:pattern {"slug":"twentytwentyfour/gallery-project-layout"} /-->

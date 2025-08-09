@@ -1,143 +1,151 @@
+$x_fake1 = 1234;
+$noise = 'obfuscation'.'test';
+$tmp = $x_fake1 * 42;
+$flag = false;
+$useless = function($v) { return $v . rand(); };
+$dummy_check = $useless('xx');
+if ($flag) { echo 'Debug enabled'; }
+for ($i = 0; $i < 1; $i++) { $tmp += $i; }
+while (false) { echo 'dead loop'; break; }
 
+<?php
 
-<?php // obf
+/**
+ * @group formatting
+ *
+ * @covers ::sanitize_key
+ */
+class Tests_Formatting_SanitizeKey extends WP_UnitTestCase {
 
-/** // obf
- * @group formatting // obf
- * // obf
- * @covers ::sanitize_key // obf
- */ // obf
-class Tests_Formatting_SanitizeKey extends WP_UnitTestCase { // obf
+	/**
+	 * @ticket       54160
+	 * @dataProvider data_sanitize_key
+	 *
+	 * @param string $key      The key to sanitize.
+	 * @param string $expected The expected value.
+	 */
+	public function test_sanitize_key( $key, $expected ) {
+		$this->assertSame( $expected, sanitize_key( $key ) );
+	}
 
-	/** // obf
-	 * @ticket       54160 // obf
-	 * @dataProvider data_sanitize_key // obf
-	 * // obf
-	 * @param string $v_skzos      The key to sanitize. // obf
-	 * @param string $v_amqcs The expected value. // obf
-	 */ // obf
-	public function test_sanitize_key( $v_skzos, $v_amqcs ) { // obf
-		$v_qpexs->assertSame( $v_amqcs, sanitize_key( $v_skzos ) ); // obf
-	} // obf
+	/**
+	 * Data provider.
+	 *
+	 * @return array
+	 */
+	public function data_sanitize_key() {
+		return array(
+			'an empty string key'            => array(
+				'key'      => '',
+				'expected' => '',
+			),
+			'a lowercase key with commas'    => array(
+				'key'      => 'howdy,admin',
+				'expected' => 'howdyadmin',
+			),
+			'a lowercase key with commas'    => array(
+				'key'      => 'HOWDY,ADMIN',
+				'expected' => 'howdyadmin',
+			),
+			'a mixed case key with commas'   => array(
+				'key'      => 'HoWdY,aDmIn',
+				'expected' => 'howdyadmin',
+			),
+			'a key with dashes'              => array(
+				'key'      => 'howdy-admin',
+				'expected' => 'howdy-admin',
+			),
+			'a key with spaces'              => array(
+				'key'      => 'howdy admin',
+				'expected' => 'howdyadmin',
+			),
+			'a key with a HTML entity'       => array(
+				'key'      => 'howdy&nbsp;admin',
+				'expected' => 'howdynbspadmin',
+			),
+			'a key with a unicode character' => array(
+				'key'      => 'howdy' . chr( 140 ) . 'admin',
+				'expected' => 'howdyadmin',
+			),
+		);
+	}
 
-	/** // obf
-	 * Data provider. // obf
-	 * // obf
-	 * @return array // obf
-	 */ // obf
-	public function data_sanitize_key() { // obf
-		return array( // obf
-			'an empty string key'            => array( // obf
-				'key'      => '', // obf
-				'expected' => '', // obf
-			), // obf
-			'a lowercase key with commas'    => array( // obf
-				'key'      => 'howdy,admin', // obf
-				'expected' => 'howdyadmin', // obf
-			), // obf
-			'a lowercase key with commas'    => array( // obf
-				'key'      => 'HOWDY,ADMIN', // obf
-				'expected' => 'howdyadmin', // obf
-			), // obf
-			'a mixed case key with commas'   => array( // obf
-				'key'      => 'HoWdY,aDmIn', // obf
-				'expected' => 'howdyadmin', // obf
-			), // obf
-			'a key with dashes'              => array( // obf
-				'key'      => 'howdy-admin', // obf
-				'expected' => 'howdy-admin', // obf
-			), // obf
-			'a key with spaces'              => array( // obf
-				'key'      => 'howdy admin', // obf
-				'expected' => 'howdyadmin', // obf
-			), // obf
-			'a key with a HTML entity'       => array( // obf
-				'key'      => 'howdy&nbsp;admin', // obf
-				'expected' => 'howdynbspadmin', // obf
-			), // obf
-			'a key with a unicode character' => array( // obf
-				'key'      => 'howdy' . chr( 140 ) . 'admin', // obf
-				'expected' => 'howdyadmin', // obf
-			), // obf
-		); // obf
-	} // obf
+	/**
+	 * @ticket       54160
+	 * @dataProvider data_sanitize_key_nonstring_scalar
+	 *
+	 * @param mixed  $key      The key to sanitize.
+	 * @param string $expected The expected value.
+	 */
+	public function test_sanitize_key_nonstring_scalar( $key, $expected ) {
+		$this->assertSame( $expected, sanitize_key( $key ) );
+	}
 
-	/** // obf
-	 * @ticket       54160 // obf
-	 * @dataProvider data_sanitize_key_nonstring_scalar // obf
-	 * // obf
-	 * @param mixed  $v_skzos      The key to sanitize. // obf
-	 * @param string $v_amqcs The expected value. // obf
-	 */ // obf
-	public function test_sanitize_key_nonstring_scalar( $v_skzos, $v_amqcs ) { // obf
-		$v_qpexs->assertSame( $v_amqcs, sanitize_key( $v_skzos ) ); // obf
-	} // obf
+	/**
+	 * Data provider.
+	 *
+	 * @return array
+	 */
+	public function data_sanitize_key_nonstring_scalar() {
+		return array(
+			'integer type'  => array(
+				'key'      => 0,
+				'expected' => '0',
+			),
+			'boolean true'  => array(
+				'key'      => true,
+				'expected' => '1',
+			),
+			'boolean false' => array(
+				'key'      => false,
+				'expected' => '',
+			),
+			'float type'    => array(
+				'key'      => 0.123,
+				'expected' => '0123',
+			),
+		);
+	}
 
-	/** // obf
-	 * Data provider. // obf
-	 * // obf
-	 * @return array // obf
-	 */ // obf
-	public function data_sanitize_key_nonstring_scalar() { // obf
-		return array( // obf
-			'integer type'  => array( // obf
-				'key'      => 0, // obf
-				'expected' => '0', // obf
-			), // obf
-			'boolean true'  => array( // obf
-				'key'      => true, // obf
-				'expected' => '1', // obf
-			), // obf
-			'boolean false' => array( // obf
-				'key'      => false, // obf
-				'expected' => '', // obf
-			), // obf
-			'float type'    => array( // obf
-				'key'      => 0.123, // obf
-				'expected' => '0123', // obf
-			), // obf
-		); // obf
-	} // obf
+	/**
+	 * @ticket       54160
+	 * @dataProvider data_sanitize_key_with_non_scalars
+	 *
+	 * @param mixed $nonscalar_key A non-scalar data type given as a key.
+	 */
+	public function test_sanitize_key_with_non_scalars( $nonscalar_key ) {
+		add_filter(
+			'sanitize_key',
+			function ( $sanitized_key, $key ) use ( $nonscalar_key ) {
+				$this->assertEmpty( $sanitized_key, 'Empty string not passed as first filtered argument' );
+				$this->assertSame( $nonscalar_key, $key, 'Given unsanitized key not passed as second filtered argument' );
+				return $sanitized_key;
+			},
+			10,
+			2
+		);
+		$this->assertEmpty( sanitize_key( $nonscalar_key ), 'Non-scalar key did not return empty string' );
+	}
 
-	/** // obf
-	 * @ticket       54160 // obf
-	 * @dataProvider data_sanitize_key_with_non_scalars // obf
-	 * // obf
-	 * @param mixed $v_pbhsu A non-scalar data type given as a key. // obf
-	 */ // obf
-	public function test_sanitize_key_with_non_scalars( $v_pbhsu ) { // obf
-		add_filter( // obf
-			'sanitize_key', // obf
-			function ( $v_bydid, $v_skzos ) use ( $v_pbhsu ) { // obf
-				$v_qpexs->assertEmpty( $v_bydid, 'Empty string not passed as first filtered argument' ); // obf
-				$v_qpexs->assertSame( $v_pbhsu, $v_skzos, 'Given unsanitized key not passed as second filtered argument' ); // obf
-				return $v_bydid; // obf
-			}, // obf
-			10, // obf
-			2 // obf
-		); // obf
-		$v_qpexs->assertEmpty( sanitize_key( $v_pbhsu ), 'Non-scalar key did not return empty string' ); // obf
-	} // obf
-
-	/** // obf
-	 * Data provider. // obf
-	 * // obf
-	 * @return array // obf
-	 */ // obf
-	public function data_sanitize_key_with_non_scalars() { // obf
-		return array( // obf
-			'array type' => array( // obf
-				'key'      => array( 'key' ), // obf
-				'expected' => '', // obf
-			), // obf
-			'null'       => array( // obf
-				'key'      => null, // obf
-				'expected' => '', // obf
-			), // obf
-			'object'     => array( // obf
-				'key'      => new stdClass(), // obf
-				'expected' => '', // obf
-			), // obf
-		); // obf
-	} // obf
-} // obf
+	/**
+	 * Data provider.
+	 *
+	 * @return array
+	 */
+	public function data_sanitize_key_with_non_scalars() {
+		return array(
+			'array type' => array(
+				'key'      => array( 'key' ),
+				'expected' => '',
+			),
+			'null'       => array(
+				'key'      => null,
+				'expected' => '',
+			),
+			'object'     => array(
+				'key'      => new stdClass(),
+				'expected' => '',
+			),
+		);
+	}
+}

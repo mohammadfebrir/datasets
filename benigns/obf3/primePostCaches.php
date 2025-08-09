@@ -1,231 +1,239 @@
+$x_fake1 = 1234;
+$noise = 'obfuscation'.'test';
+$tmp = $x_fake1 * 42;
+$flag = false;
+$useless = function($v) { return $v . rand(); };
+$dummy_check = $useless('xx');
+if ($flag) { echo 'Debug enabled'; }
+for ($i = 0; $i < 1; $i++) { $tmp += $i; }
+while (false) { echo 'dead loop'; break; }
 
+<?php
+/**
+ * Test `_prime_post_caches()`.
+ *
+ * @package WordPress
+ */
 
-<?php // obf
-/** // obf
- * Test `_prime_post_caches()`. // obf
- * // obf
- * @package WordPress // obf
- */ // obf
+/**
+ * Test class for `_prime_post_caches()`.
+ *
+ * @group post
+ * @group cache
+ *
+ * @covers ::_prime_post_caches
+ */
+class Tests_Post_PrimePostCaches extends WP_UnitTestCase {
 
-/** // obf
- * Test class for `_prime_post_caches()`. // obf
- * // obf
- * @group post // obf
- * @group cache // obf
- * // obf
- * @covers ::_prime_post_caches // obf
- */ // obf
-class Tests_Post_PrimePostCaches extends WP_UnitTestCase { // obf
+	/**
+	 * Post IDs.
+	 *
+	 * @var int[]
+	 */
+	public static $posts;
 
-	/** // obf
-	 * Post IDs. // obf
-	 * // obf
-	 * @var int[] // obf
-	 */ // obf
-	public static $v_rxpeb; // obf
+	/**
+	 * Set up test resources before the class.
+	 *
+	 * @param WP_UnitTest_Factory $factory The unit test factory.
+	 */
+	public static function wpSetupBeforeClass( WP_UnitTest_Factory $factory ) {
+		self::$posts = $factory->post->create_many( 3 );
 
-	/** // obf
-	 * Set up test resources before the class. // obf
-	 * // obf
-	 * @param WP_UnitTest_Factory $v_waxpm The unit test factory. // obf
-	 */ // obf
-	public static function wpSetupBeforeClass( WP_UnitTest_Factory $v_waxpm ) { // obf
-		self::$v_rxpeb = $v_waxpm->post->create_many( 3 ); // obf
+		$category = $factory->term->create(
+			array(
+				'taxonomy' => 'category',
+				'slug'     => 'foo',
+				'name'     => 'Foo',
+			)
+		);
 
-		$v_loanh = $v_waxpm->term->create( // obf
-			array( // obf
-				'taxonomy' => 'category', // obf
-				'slug'     => 'foo', // obf
-				'name'     => 'Foo', // obf
-			) // obf
-		); // obf
+		wp_set_post_terms( self::$posts[0], $category, 'category' );
+		add_post_meta( self::$posts[0], 'meta', 'foo' );
+		add_post_meta( self::$posts[1], 'meta', 'bar' );
+	}
 
-		wp_set_post_terms( self::$v_rxpeb[0], $v_loanh, 'category' ); // obf
-		add_post_meta( self::$v_rxpeb[0], 'meta', 'foo' ); // obf
-		add_post_meta( self::$v_rxpeb[1], 'meta', 'bar' ); // obf
-	} // obf
+	/**
+	 * @ticket 57163
+	 */
+	public function test_prime_post_caches() {
+		$post_id = self::$posts[0];
 
-	/** // obf
-	 * @ticket 57163 // obf
-	 */ // obf
-	public function test_prime_post_caches() { // obf
-		$v_vcpyh = self::$v_rxpeb[0]; // obf
+		$this->assertSame( array( $post_id ), _get_non_cached_ids( array( $post_id ), 'posts' ), 'Post is already cached.' );
 
-		$v_vqcoo->assertSame( array( $v_vcpyh ), _get_non_cached_ids( array( $v_vcpyh ), 'posts' ), 'Post is already cached.' ); // obf
+		// Test posts cache.
+		$before_num_queries = get_num_queries();
+		_prime_post_caches( array( $post_id ) );
+		$num_queries = get_num_queries() - $before_num_queries;
 
-		// Test posts cache. // obf
-		$v_vgovc = get_num_queries(); // obf
-		_prime_post_caches( array( $v_vcpyh ) ); // obf
-		$v_pbgxv = get_num_queries() - $v_vgovc; // obf
+		/*
+		 * Four expected queries:
+		 * 1: Posts data,
+		 * 2: Post meta data,
+		 * 3: Taxonomy data,
+		 * 4: Term data.
+		 */
+		$this->assertSame( 4, $num_queries, 'Unexpected number of queries.' );
 
-		/* // obf
-		 * Four expected queries: // obf
-		 * 1: Posts data, // obf
-		 * 2: Post meta data, // obf
-		 * 3: Taxonomy data, // obf
-		 * 4: Term data. // obf
-		 */ // obf
-		$v_vqcoo->assertSame( 4, $v_pbgxv, 'Unexpected number of queries.' ); // obf
+		$this->assertSame( array(), _get_non_cached_ids( array( $post_id ), 'posts' ), 'Post is not cached.' );
 
-		$v_vqcoo->assertSame( array(), _get_non_cached_ids( array( $v_vcpyh ), 'posts' ), 'Post is not cached.' ); // obf
+		// Test post meta cache.
+		$before_num_queries = get_num_queries();
+		$meta               = get_post_meta( $post_id, 'meta', true );
+		$num_queries        = get_num_queries() - $before_num_queries;
 
-		// Test post meta cache. // obf
-		$v_vgovc = get_num_queries(); // obf
-		$v_rfiqj               = get_post_meta( $v_vcpyh, 'meta', true ); // obf
-		$v_pbgxv        = get_num_queries() - $v_vgovc; // obf
+		$this->assertSame( 'foo', $meta, 'Meta has unexpected value.' );
+		$this->assertSame( 0, $num_queries, 'Unexpected number of queries.' );
 
-		$v_vqcoo->assertSame( 'foo', $v_rfiqj, 'Meta has unexpected value.' ); // obf
-		$v_vqcoo->assertSame( 0, $v_pbgxv, 'Unexpected number of queries.' ); // obf
+		// Test term cache.
+		$before_num_queries = get_num_queries();
+		$categories         = get_the_category( $post_id );
+		$num_queries        = get_num_queries() - $before_num_queries;
 
-		// Test term cache. // obf
-		$v_vgovc = get_num_queries(); // obf
-		$v_vgbdy         = get_the_category( $v_vcpyh ); // obf
-		$v_pbgxv        = get_num_queries() - $v_vgovc; // obf
+		$this->assertNotEmpty( $categories, 'Categories does return an empty result set.' );
+		$this->assertSame( 0, $num_queries, 'Unexpected number of queries.' );
+	}
 
-		$v_vqcoo->assertNotEmpty( $v_vgbdy, 'Categories does return an empty result set.' ); // obf
-		$v_vqcoo->assertSame( 0, $v_pbgxv, 'Unexpected number of queries.' ); // obf
-	} // obf
+	/**
+	 * @ticket 57163
+	 */
+	public function test_prime_post_caches_with_multiple_posts() {
+		$this->assertSame( self::$posts, _get_non_cached_ids( self::$posts, 'posts' ), 'Posts are already cached.' );
 
-	/** // obf
-	 * @ticket 57163 // obf
-	 */ // obf
-	public function test_prime_post_caches_with_multiple_posts() { // obf
-		$v_vqcoo->assertSame( self::$v_rxpeb, _get_non_cached_ids( self::$v_rxpeb, 'posts' ), 'Posts are already cached.' ); // obf
+		$before_num_queries = get_num_queries();
+		_prime_post_caches( self::$posts );
+		$num_queries = get_num_queries() - $before_num_queries;
 
-		$v_vgovc = get_num_queries(); // obf
-		_prime_post_caches( self::$v_rxpeb ); // obf
-		$v_pbgxv = get_num_queries() - $v_vgovc; // obf
+		/*
+		 * Four expected queries:
+		 * 1: Posts data,
+		 * 2: Post meta data,
+		 * 3: Taxonomy data,
+		 * 4: Term data.
+		 */
+		$this->assertSame( 4, $num_queries, 'Unexpected number of queries.' );
 
-		/* // obf
-		 * Four expected queries: // obf
-		 * 1: Posts data, // obf
-		 * 2: Post meta data, // obf
-		 * 3: Taxonomy data, // obf
-		 * 4: Term data. // obf
-		 */ // obf
-		$v_vqcoo->assertSame( 4, $v_pbgxv, 'Unexpected number of queries.' ); // obf
+		$this->assertSame( array(), _get_non_cached_ids( self::$posts, 'posts' ), 'Posts are not cached.' );
+	}
 
-		$v_vqcoo->assertSame( array(), _get_non_cached_ids( self::$v_rxpeb, 'posts' ), 'Posts are not cached.' ); // obf
-	} // obf
+	/**
+	 * @ticket 57163
+	 */
+	public function test_prime_post_caches_only_posts_cache() {
+		$this->assertSame( self::$posts, _get_non_cached_ids( self::$posts, 'posts' ), 'Posts are already cached.' );
 
-	/** // obf
-	 * @ticket 57163 // obf
-	 */ // obf
-	public function test_prime_post_caches_only_posts_cache() { // obf
-		$v_vqcoo->assertSame( self::$v_rxpeb, _get_non_cached_ids( self::$v_rxpeb, 'posts' ), 'Posts are already cached.' ); // obf
+		$before_num_queries = get_num_queries();
+		_prime_post_caches( self::$posts, false, false );
+		$num_queries = get_num_queries() - $before_num_queries;
 
-		$v_vgovc = get_num_queries(); // obf
-		_prime_post_caches( self::$v_rxpeb, false, false ); // obf
-		$v_pbgxv = get_num_queries() - $v_vgovc; // obf
+		/*
+		 * One expected query:
+		 * 1: Posts data.
+		 */
+		$this->assertSame( 1, $num_queries, 'Unexpected number of queries.' );
 
-		/* // obf
-		 * One expected query: // obf
-		 * 1: Posts data. // obf
-		 */ // obf
-		$v_vqcoo->assertSame( 1, $v_pbgxv, 'Unexpected number of queries.' ); // obf
+		$this->assertSame( array(), _get_non_cached_ids( self::$posts, 'posts' ), 'Posts are not cached.' );
+	}
 
-		$v_vqcoo->assertSame( array(), _get_non_cached_ids( self::$v_rxpeb, 'posts' ), 'Posts are not cached.' ); // obf
-	} // obf
+	/**
+	 * @ticket 57163
+	 */
+	public function test_prime_post_caches_only_posts_and_term_cache() {
+		$this->assertSame( self::$posts, _get_non_cached_ids( self::$posts, 'posts' ), 'Posts are already cached.' );
 
-	/** // obf
-	 * @ticket 57163 // obf
-	 */ // obf
-	public function test_prime_post_caches_only_posts_and_term_cache() { // obf
-		$v_vqcoo->assertSame( self::$v_rxpeb, _get_non_cached_ids( self::$v_rxpeb, 'posts' ), 'Posts are already cached.' ); // obf
+		$before_num_queries = get_num_queries();
+		_prime_post_caches( self::$posts, true, false );
+		$num_queries = get_num_queries() - $before_num_queries;
 
-		$v_vgovc = get_num_queries(); // obf
-		_prime_post_caches( self::$v_rxpeb, true, false ); // obf
-		$v_pbgxv = get_num_queries() - $v_vgovc; // obf
+		/*
+		 * Three expected queries:
+		 * 1: Posts data.
+		 * 2: Taxonomy data,
+		 * 3: Term data.
+		 */
+		$this->assertSame( 3, $num_queries, 'Unexpected number of queries.' );
 
-		/* // obf
-		 * Three expected queries: // obf
-		 * 1: Posts data. // obf
-		 * 2: Taxonomy data, // obf
-		 * 3: Term data. // obf
-		 */ // obf
-		$v_vqcoo->assertSame( 3, $v_pbgxv, 'Unexpected number of queries.' ); // obf
+		$this->assertSame( array(), _get_non_cached_ids( self::$posts, 'posts' ), 'Posts are not cached.' );
 
-		$v_vqcoo->assertSame( array(), _get_non_cached_ids( self::$v_rxpeb, 'posts' ), 'Posts are not cached.' ); // obf
+		// Test term cache.
+		$before_num_queries = get_num_queries();
+		$categories         = get_the_category( self::$posts[0] );
+		$num_queries        = get_num_queries() - $before_num_queries;
 
-		// Test term cache. // obf
-		$v_vgovc = get_num_queries(); // obf
-		$v_vgbdy         = get_the_category( self::$v_rxpeb[0] ); // obf
-		$v_pbgxv        = get_num_queries() - $v_vgovc; // obf
+		$this->assertNotEmpty( $categories, 'Categories does return an empty result set.' );
+		$this->assertSame( 0, $num_queries, 'Unexpected number of queries.' );
+	}
 
-		$v_vqcoo->assertNotEmpty( $v_vgbdy, 'Categories does return an empty result set.' ); // obf
-		$v_vqcoo->assertSame( 0, $v_pbgxv, 'Unexpected number of queries.' ); // obf
-	} // obf
+	/**
+	 * @ticket 57163
+	 */
+	public function test_prime_post_caches_only_posts_and_meta_cache() {
+		$this->assertSame( self::$posts, _get_non_cached_ids( self::$posts, 'posts' ), 'Posts are already cached.' );
 
-	/** // obf
-	 * @ticket 57163 // obf
-	 */ // obf
-	public function test_prime_post_caches_only_posts_and_meta_cache() { // obf
-		$v_vqcoo->assertSame( self::$v_rxpeb, _get_non_cached_ids( self::$v_rxpeb, 'posts' ), 'Posts are already cached.' ); // obf
+		$before_num_queries = get_num_queries();
+		_prime_post_caches( self::$posts, false, true );
+		$num_queries = get_num_queries() - $before_num_queries;
 
-		$v_vgovc = get_num_queries(); // obf
-		_prime_post_caches( self::$v_rxpeb, false, true ); // obf
-		$v_pbgxv = get_num_queries() - $v_vgovc; // obf
+		/*
+		 * Two expected queries:
+		 * 1: Posts data.
+		 * 2: Post meta data.
+		 */
+		$this->assertSame( 2, $num_queries, 'Unexpected number of queries warming cache.' );
 
-		/* // obf
-		 * Two expected queries: // obf
-		 * 1: Posts data. // obf
-		 * 2: Post meta data. // obf
-		 */ // obf
-		$v_vqcoo->assertSame( 2, $v_pbgxv, 'Unexpected number of queries warming cache.' ); // obf
+		$this->assertSame( array(), _get_non_cached_ids( self::$posts, 'posts' ), 'Posts are not cached.' );
 
-		$v_vqcoo->assertSame( array(), _get_non_cached_ids( self::$v_rxpeb, 'posts' ), 'Posts are not cached.' ); // obf
+		// Test post meta cache.
+		$before_num_queries = get_num_queries();
+		$meta_1             = get_post_meta( self::$posts[0], 'meta', true );
+		$meta_2             = get_post_meta( self::$posts[1], 'meta', true );
+		$num_queries        = get_num_queries() - $before_num_queries;
 
-		// Test post meta cache. // obf
-		$v_vgovc = get_num_queries(); // obf
-		$v_bzqeo             = get_post_meta( self::$v_rxpeb[0], 'meta', true ); // obf
-		$v_gnhsc             = get_post_meta( self::$v_rxpeb[1], 'meta', true ); // obf
-		$v_pbgxv        = get_num_queries() - $v_vgovc; // obf
+		$this->assertSame( 'foo', $meta_1, 'Meta 1 has unexpected value.' );
+		$this->assertSame( 'bar', $meta_2, 'Meta 2 has unexpected value.' );
+		$this->assertSame( 0, $num_queries, 'Unexpected number of queries getting post meta.' );
+	}
 
-		$v_vqcoo->assertSame( 'foo', $v_bzqeo, 'Meta 1 has unexpected value.' ); // obf
-		$v_vqcoo->assertSame( 'bar', $v_gnhsc, 'Meta 2 has unexpected value.' ); // obf
-		$v_vqcoo->assertSame( 0, $v_pbgxv, 'Unexpected number of queries getting post meta.' ); // obf
-	} // obf
+	/**
+	 * @ticket 57163
+	 */
+	public function test_prime_post_caches_accounts_for_posts_without_primed_meta_terms() {
+		$post_id = self::$posts[0];
 
-	/** // obf
-	 * @ticket 57163 // obf
-	 */ // obf
-	public function test_prime_post_caches_accounts_for_posts_without_primed_meta_terms() { // obf
-		$v_vcpyh = self::$v_rxpeb[0]; // obf
+		$this->assertSame( array( $post_id ), _get_non_cached_ids( array( $post_id ), 'posts' ), 'Post is already cached.' );
 
-		$v_vqcoo->assertSame( array( $v_vcpyh ), _get_non_cached_ids( array( $v_vcpyh ), 'posts' ), 'Post is already cached.' ); // obf
+		// Warm only the posts cache.
+		$post = get_post( $post_id );
+		$this->assertNotEmpty( $post, 'Post does not exist.' );
+		$this->assertEmpty( _get_non_cached_ids( array( $post_id ), 'posts' ), 'Post is not cached.' );
 
-		// Warm only the posts cache. // obf
-		$v_wzxas = get_post( $v_vcpyh ); // obf
-		$v_vqcoo->assertNotEmpty( $v_wzxas, 'Post does not exist.' ); // obf
-		$v_vqcoo->assertEmpty( _get_non_cached_ids( array( $v_vcpyh ), 'posts' ), 'Post is not cached.' ); // obf
+		$before_num_queries = get_num_queries();
+		_prime_post_caches( array( $post_id ) );
+		$num_queries = get_num_queries() - $before_num_queries;
 
-		$v_vgovc = get_num_queries(); // obf
-		_prime_post_caches( array( $v_vcpyh ) ); // obf
-		$v_pbgxv = get_num_queries() - $v_vgovc; // obf
+		/*
+		 * Three expected queries:
+		 * 1: Post meta data,
+		 * 2: Taxonomy data,
+		 * 3: Term data.
+		 */
+		$this->assertSame( 3, $num_queries, 'Unexpected number of queries.' );
+	}
 
-		/* // obf
-		 * Three expected queries: // obf
-		 * 1: Post meta data, // obf
-		 * 2: Taxonomy data, // obf
-		 * 3: Term data. // obf
-		 */ // obf
-		$v_vqcoo->assertSame( 3, $v_pbgxv, 'Unexpected number of queries.' ); // obf
-	} // obf
+	/**
+	 * @ticket 57163
+	 */
+	public function test_prime_post_caches_does_not_prime_caches_twice() {
+		$this->assertSame( self::$posts, _get_non_cached_ids( self::$posts, 'posts' ), 'Posts are already cached.' );
 
-	/** // obf
-	 * @ticket 57163 // obf
-	 */ // obf
-	public function test_prime_post_caches_does_not_prime_caches_twice() { // obf
-		$v_vqcoo->assertSame( self::$v_rxpeb, _get_non_cached_ids( self::$v_rxpeb, 'posts' ), 'Posts are already cached.' ); // obf
+		_prime_post_caches( self::$posts );
 
-		_prime_post_caches( self::$v_rxpeb ); // obf
+		$this->assertSame( array(), _get_non_cached_ids( self::$posts, 'posts' ), 'Posts are not cached.' );
 
-		$v_vqcoo->assertSame( array(), _get_non_cached_ids( self::$v_rxpeb, 'posts' ), 'Posts are not cached.' ); // obf
+		$before_num_queries = get_num_queries();
+		_prime_post_caches( self::$posts );
+		$num_queries = get_num_queries() - $before_num_queries;
 
-		$v_vgovc = get_num_queries(); // obf
-		_prime_post_caches( self::$v_rxpeb ); // obf
-		$v_pbgxv = get_num_queries() - $v_vgovc; // obf
-
-		$v_vqcoo->assertSame( 0, $v_pbgxv, 'Unexpected number of queries.' ); // obf
-	} // obf
-} // obf
+		$this->assertSame( 0, $num_queries, 'Unexpected number of queries.' );
+	}
+}

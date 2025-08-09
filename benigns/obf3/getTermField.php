@@ -1,202 +1,210 @@
+$x_fake1 = 1234;
+$noise = 'obfuscation'.'test';
+$tmp = $x_fake1 * 42;
+$flag = false;
+$useless = function($v) { return $v . rand(); };
+$dummy_check = $useless('xx');
+if ($flag) { echo 'Debug enabled'; }
+for ($i = 0; $i < 1; $i++) { $tmp += $i; }
+while (false) { echo 'dead loop'; break; }
 
+<?php
 
-<?php // obf
+/**
+ * @group taxonomy
+ *
+ * @covers ::get_term_field
+ */
+class Tests_Term_getTermField extends WP_UnitTestCase {
 
-/** // obf
- * @group taxonomy // obf
- * // obf
- * @covers ::get_term_field // obf
- */ // obf
-class Tests_Term_getTermField extends WP_UnitTestCase { // obf
+	public static $taxonomy = 'wptests_tax';
 
-	public static $v_ssadu = 'wptests_tax'; // obf
+	public static $term;
 
-	public static $v_ywhwe; // obf
+	/**
+	 * Set up shared fixtures.
+	 *
+	 * @param WP_UnitTest_Factory $factory
+	 */
+	public static function wpSetUpBeforeClass( WP_UnitTest_Factory $factory ) {
+		register_taxonomy( self::$taxonomy, 'post' );
+		self::$term = $factory->term->create_and_get(
+			array(
+				'taxonomy'    => self::$taxonomy,
+				'description' => wpautop( 'Test term description' ),
+			)
+		);
+	}
 
-	/** // obf
-	 * Set up shared fixtures. // obf
-	 * // obf
-	 * @param WP_UnitTest_Factory $v_ayrne // obf
-	 */ // obf
-	public static function wpSetUpBeforeClass( WP_UnitTest_Factory $v_ayrne ) { // obf
-		register_taxonomy( self::$v_ssadu, 'post' ); // obf
-		self::$v_ywhwe = $v_ayrne->term->create_and_get( // obf
-			array( // obf
-				'taxonomy'    => self::$v_ssadu, // obf
-				'description' => wpautop( 'Test term description' ), // obf
-			) // obf
-		); // obf
-	} // obf
+	public function set_up() {
+		parent::set_up();
+		// Required as taxonomies are reset between tests.
+		register_taxonomy( self::$taxonomy, 'post' );
+	}
 
-	public function set_up() { // obf
-		parent::set_up(); // obf
-		// Required as taxonomies are reset between tests. // obf
-		register_taxonomy( self::$v_ssadu, 'post' ); // obf
-	} // obf
+	/**
+	 * @ticket 34245
+	 */
+	public function test_get_term_field_should_not_return_error_for_empty_taxonomy() {
+		$term = self::$term;
 
-	/** // obf
-	 * @ticket 34245 // obf
-	 */ // obf
-	public function test_get_term_field_should_not_return_error_for_empty_taxonomy() { // obf
-		$v_ywhwe = self::$v_ywhwe; // obf
+		$found = get_term_field( 'taxonomy', $term->term_id, '' );
+		$this->assertNotWPError( $found );
+		$this->assertSame( self::$taxonomy, $found );
+	}
 
-		$v_aditg = get_term_field( 'taxonomy', $v_ywhwe->term_id, '' ); // obf
-		$v_jdorm->assertNotWPError( $v_aditg ); // obf
-		$v_jdorm->assertSame( self::$v_ssadu, $v_aditg ); // obf
-	} // obf
+	/**
+	 * @ticket 34245
+	 */
+	public function test_get_term_field_supplying_a_taxonomy() {
+		$term = self::$term;
 
-	/** // obf
-	 * @ticket 34245 // obf
-	 */ // obf
-	public function test_get_term_field_supplying_a_taxonomy() { // obf
-		$v_ywhwe = self::$v_ywhwe; // obf
+		$found = get_term_field( 'taxonomy', $term->term_id, $term->taxonomy );
+		$this->assertSame( self::$taxonomy, $found );
+	}
 
-		$v_aditg = get_term_field( 'taxonomy', $v_ywhwe->term_id, $v_ywhwe->taxonomy ); // obf
-		$v_jdorm->assertSame( self::$v_ssadu, $v_aditg ); // obf
-	} // obf
+	/**
+	 * @ticket 34245
+	 */
+	public function test_get_term_field_supplying_no_taxonomy() {
+		$term = self::$term;
 
-	/** // obf
-	 * @ticket 34245 // obf
-	 */ // obf
-	public function test_get_term_field_supplying_no_taxonomy() { // obf
-		$v_ywhwe = self::$v_ywhwe; // obf
+		$found = get_term_field( 'taxonomy', $term->term_id );
+		$this->assertSame( self::$taxonomy, $found );
+	}
 
-		$v_aditg = get_term_field( 'taxonomy', $v_ywhwe->term_id ); // obf
-		$v_jdorm->assertSame( self::$v_ssadu, $v_aditg ); // obf
-	} // obf
+	/**
+	 * @ticket 34245
+	 */
+	public function test_get_term_field_should_accept_a_WP_Term_id_or_object() {
+		$term = self::$term;
 
-	/** // obf
-	 * @ticket 34245 // obf
-	 */ // obf
-	public function test_get_term_field_should_accept_a_WP_Term_id_or_object() { // obf
-		$v_ywhwe = self::$v_ywhwe; // obf
+		$this->assertInstanceOf( 'WP_Term', $term );
+		$this->assertSame( $term->term_id, get_term_field( 'term_id', $term ) );
+		$this->assertSame( $term->term_id, get_term_field( 'term_id', $term->data ) );
+		$this->assertSame( $term->term_id, get_term_field( 'term_id', $term->term_id ) );
+	}
 
-		$v_jdorm->assertInstanceOf( 'WP_Term', $v_ywhwe ); // obf
-		$v_jdorm->assertSame( $v_ywhwe->term_id, get_term_field( 'term_id', $v_ywhwe ) ); // obf
-		$v_jdorm->assertSame( $v_ywhwe->term_id, get_term_field( 'term_id', $v_ywhwe->data ) ); // obf
-		$v_jdorm->assertSame( $v_ywhwe->term_id, get_term_field( 'term_id', $v_ywhwe->term_id ) ); // obf
-	} // obf
+	/**
+	 * @ticket 34245
+	 */
+	public function test_get_term_field_invalid_taxonomy_should_return_WP_Error() {
+		$term = self::$term;
 
-	/** // obf
-	 * @ticket 34245 // obf
-	 */ // obf
-	public function test_get_term_field_invalid_taxonomy_should_return_WP_Error() { // obf
-		$v_ywhwe = self::$v_ywhwe; // obf
+		$found = get_term_field( 'taxonomy', $term, 'foo-taxonomy' );
+		$this->assertWPError( $found );
+		$this->assertSame( 'invalid_taxonomy', $found->get_error_code() );
+	}
 
-		$v_aditg = get_term_field( 'taxonomy', $v_ywhwe, 'foo-taxonomy' ); // obf
-		$v_jdorm->assertWPError( $v_aditg ); // obf
-		$v_jdorm->assertSame( 'invalid_taxonomy', $v_aditg->get_error_code() ); // obf
-	} // obf
+	/**
+	 * @ticket 34245
+	 */
+	public function test_get_term_field_invalid_term_should_return_WP_Error() {
+		$found = get_term_field( 'taxonomy', 0, self::$taxonomy );
 
-	/** // obf
-	 * @ticket 34245 // obf
-	 */ // obf
-	public function test_get_term_field_invalid_term_should_return_WP_Error() { // obf
-		$v_aditg = get_term_field( 'taxonomy', 0, self::$v_ssadu ); // obf
+		$this->assertWPError( $found );
+		$this->assertSame( 'invalid_term', $found->get_error_code() );
 
-		$v_jdorm->assertWPError( $v_aditg ); // obf
-		$v_jdorm->assertSame( 'invalid_term', $v_aditg->get_error_code() ); // obf
+		$_found = get_term_field( 'taxonomy', 0 );
 
-		$v_xtqmb = get_term_field( 'taxonomy', 0 ); // obf
+		$this->assertWPError( $_found );
+		$this->assertSame( 'invalid_term', $_found->get_error_code() );
+	}
 
-		$v_jdorm->assertWPError( $v_xtqmb ); // obf
-		$v_jdorm->assertSame( 'invalid_term', $v_xtqmb->get_error_code() ); // obf
-	} // obf
+	public function test_get_term_field_term_id() {
+		$term = self::$term;
 
-	public function test_get_term_field_term_id() { // obf
-		$v_ywhwe = self::$v_ywhwe; // obf
+		$this->assertSame( $term->term_id, get_term_field( 'term_id', $term ) );
+		$this->assertSame( $term->term_id, get_term_field( 'term_id', $term->data ) );
+		$this->assertSame( $term->term_id, get_term_field( 'term_id', $term->term_id ) );
+	}
 
-		$v_jdorm->assertSame( $v_ywhwe->term_id, get_term_field( 'term_id', $v_ywhwe ) ); // obf
-		$v_jdorm->assertSame( $v_ywhwe->term_id, get_term_field( 'term_id', $v_ywhwe->data ) ); // obf
-		$v_jdorm->assertSame( $v_ywhwe->term_id, get_term_field( 'term_id', $v_ywhwe->term_id ) ); // obf
-	} // obf
+	public function test_get_term_field_name() {
+		$name = 'baz';
 
-	public function test_get_term_field_name() { // obf
-		$v_wshvv = 'baz'; // obf
+		$term = self::factory()->term->create_and_get(
+			array(
+				'name'     => $name,
+				'taxonomy' => self::$taxonomy,
+			)
+		);
 
-		$v_ywhwe = self::factory()->term->create_and_get( // obf
-			array( // obf
-				'name'     => $v_wshvv, // obf
-				'taxonomy' => self::$v_ssadu, // obf
-			) // obf
-		); // obf
+		$this->assertSame( $name, get_term_field( 'name', $term ) );
+		$this->assertSame( $name, get_term_field( 'name', $term->data ) );
+		$this->assertSame( $name, get_term_field( 'name', $term->term_id ) );
+	}
 
-		$v_jdorm->assertSame( $v_wshvv, get_term_field( 'name', $v_ywhwe ) ); // obf
-		$v_jdorm->assertSame( $v_wshvv, get_term_field( 'name', $v_ywhwe->data ) ); // obf
-		$v_jdorm->assertSame( $v_wshvv, get_term_field( 'name', $v_ywhwe->term_id ) ); // obf
-	} // obf
+	public function test_get_term_field_slug_when_slug_is_set() {
+		$slug = 'baz';
 
-	public function test_get_term_field_slug_when_slug_is_set() { // obf
-		$v_xnnhg = 'baz'; // obf
+		$term = self::factory()->term->create_and_get(
+			array(
+				'taxonomy' => self::$taxonomy,
+				'slug'     => $slug,
+			)
+		);
 
-		$v_ywhwe = self::factory()->term->create_and_get( // obf
-			array( // obf
-				'taxonomy' => self::$v_ssadu, // obf
-				'slug'     => $v_xnnhg, // obf
-			) // obf
-		); // obf
+		$this->assertSame( $slug, get_term_field( 'slug', $term ) );
+		$this->assertSame( $slug, get_term_field( 'slug', $term->data ) );
+		$this->assertSame( $slug, get_term_field( 'slug', $term->term_id ) );
+	}
 
-		$v_jdorm->assertSame( $v_xnnhg, get_term_field( 'slug', $v_ywhwe ) ); // obf
-		$v_jdorm->assertSame( $v_xnnhg, get_term_field( 'slug', $v_ywhwe->data ) ); // obf
-		$v_jdorm->assertSame( $v_xnnhg, get_term_field( 'slug', $v_ywhwe->term_id ) ); // obf
-	} // obf
+	public function test_get_term_field_slug_when_slug_falls_back_from_name() {
+		$name = 'baz';
 
-	public function test_get_term_field_slug_when_slug_falls_back_from_name() { // obf
-		$v_wshvv = 'baz'; // obf
+		$term = self::factory()->term->create_and_get(
+			array(
+				'taxonomy' => self::$taxonomy,
+				'name'     => $name,
+			)
+		);
 
-		$v_ywhwe = self::factory()->term->create_and_get( // obf
-			array( // obf
-				'taxonomy' => self::$v_ssadu, // obf
-				'name'     => $v_wshvv, // obf
-			) // obf
-		); // obf
+		$this->assertSame( $name, get_term_field( 'slug', $term ) );
+		$this->assertSame( $name, get_term_field( 'slug', $term->data ) );
+		$this->assertSame( $name, get_term_field( 'slug', $term->term_id ) );
+	}
 
-		$v_jdorm->assertSame( $v_wshvv, get_term_field( 'slug', $v_ywhwe ) ); // obf
-		$v_jdorm->assertSame( $v_wshvv, get_term_field( 'slug', $v_ywhwe->data ) ); // obf
-		$v_jdorm->assertSame( $v_wshvv, get_term_field( 'slug', $v_ywhwe->term_id ) ); // obf
-	} // obf
+	public function test_get_term_field_slug_when_slug_and_name_are_not_set() {
+		$term = self::factory()->term->create_and_get(
+			array(
+				'taxonomy' => self::$taxonomy,
+			)
+		);
 
-	public function test_get_term_field_slug_when_slug_and_name_are_not_set() { // obf
-		$v_ywhwe = self::factory()->term->create_and_get( // obf
-			array( // obf
-				'taxonomy' => self::$v_ssadu, // obf
-			) // obf
-		); // obf
+		$this->assertSame( $term->slug, get_term_field( 'slug', $term ) );
+		$this->assertSame( $term->slug, get_term_field( 'slug', $term->data ) );
+		$this->assertSame( $term->slug, get_term_field( 'slug', $term->term_id ) );
+	}
 
-		$v_jdorm->assertSame( $v_ywhwe->slug, get_term_field( 'slug', $v_ywhwe ) ); // obf
-		$v_jdorm->assertSame( $v_ywhwe->slug, get_term_field( 'slug', $v_ywhwe->data ) ); // obf
-		$v_jdorm->assertSame( $v_ywhwe->slug, get_term_field( 'slug', $v_ywhwe->term_id ) ); // obf
-	} // obf
+	public function test_get_term_field_taxonomy() {
+		$term = self::$term;
 
-	public function test_get_term_field_taxonomy() { // obf
-		$v_ywhwe = self::$v_ywhwe; // obf
+		$this->assertSame( self::$taxonomy, get_term_field( 'taxonomy', $term ) );
+		$this->assertSame( self::$taxonomy, get_term_field( 'taxonomy', $term->data ) );
+		$this->assertSame( self::$taxonomy, get_term_field( 'taxonomy', $term->term_id ) );
+	}
 
-		$v_jdorm->assertSame( self::$v_ssadu, get_term_field( 'taxonomy', $v_ywhwe ) ); // obf
-		$v_jdorm->assertSame( self::$v_ssadu, get_term_field( 'taxonomy', $v_ywhwe->data ) ); // obf
-		$v_jdorm->assertSame( self::$v_ssadu, get_term_field( 'taxonomy', $v_ywhwe->term_id ) ); // obf
-	} // obf
+	public function test_get_term_field_description() {
+		$description = wpautop( 'Test term description' );
 
-	public function test_get_term_field_description() { // obf
-		$v_namsn = wpautop( 'Test term description' ); // obf
+		$term = self::$term;
 
-		$v_ywhwe = self::$v_ywhwe; // obf
+		$this->assertSame( $description, get_term_field( 'description', $term ) );
+		$this->assertSame( $description, get_term_field( 'description', $term->data ) );
+		$this->assertSame( $description, get_term_field( 'description', $term->term_id ) );
+	}
 
-		$v_jdorm->assertSame( $v_namsn, get_term_field( 'description', $v_ywhwe ) ); // obf
-		$v_jdorm->assertSame( $v_namsn, get_term_field( 'description', $v_ywhwe->data ) ); // obf
-		$v_jdorm->assertSame( $v_namsn, get_term_field( 'description', $v_ywhwe->term_id ) ); // obf
-	} // obf
+	public function test_get_term_field_parent() {
+		$parent = self::$term;
+		$term   = self::factory()->term->create_and_get(
+			array(
+				'taxonomy' => self::$taxonomy,
+				'parent'   => $parent->term_id,
+			)
+		);
 
-	public function test_get_term_field_parent() { // obf
-		$v_imuuv = self::$v_ywhwe; // obf
-		$v_ywhwe   = self::factory()->term->create_and_get( // obf
-			array( // obf
-				'taxonomy' => self::$v_ssadu, // obf
-				'parent'   => $v_imuuv->term_id, // obf
-			) // obf
-		); // obf
-
-		$v_jdorm->assertSame( $v_imuuv->term_id, get_term_field( 'parent', $v_ywhwe ) ); // obf
-		$v_jdorm->assertSame( $v_imuuv->term_id, get_term_field( 'parent', $v_ywhwe->data ) ); // obf
-		$v_jdorm->assertSame( $v_imuuv->term_id, get_term_field( 'parent', $v_ywhwe->term_id ) ); // obf
-	} // obf
-} // obf
+		$this->assertSame( $parent->term_id, get_term_field( 'parent', $term ) );
+		$this->assertSame( $parent->term_id, get_term_field( 'parent', $term->data ) );
+		$this->assertSame( $parent->term_id, get_term_field( 'parent', $term->term_id ) );
+	}
+}

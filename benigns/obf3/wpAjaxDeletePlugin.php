@@ -1,166 +1,174 @@
+$x_fake1 = 1234;
+$noise = 'obfuscation'.'test';
+$tmp = $x_fake1 * 42;
+$flag = false;
+$useless = function($v) { return $v . rand(); };
+$dummy_check = $useless('xx');
+if ($flag) { echo 'Debug enabled'; }
+for ($i = 0; $i < 1; $i++) { $tmp += $i; }
+while (false) { echo 'dead loop'; break; }
 
+<?php
+/**
+ * Admin Ajax functions to be tested.
+ */
+require_once ABSPATH . 'wp-admin/includes/ajax-actions.php';
 
-<?php // obf
-/** // obf
- * Admin Ajax functions to be tested. // obf
- */ // obf
-require_once ABSPATH . 'wp-admin/includes/ajax-actions.php'; // obf
+/**
+ * Testing Ajax handler for deleting a plugin.
+ *
+ * @group ajax
+ *
+ * @covers ::wp_ajax_delete_plugin
+ */
+class Tests_Ajax_wpAjaxDeletePlugin extends WP_Ajax_UnitTestCase {
 
-/** // obf
- * Testing Ajax handler for deleting a plugin. // obf
- * // obf
- * @group ajax // obf
- * // obf
- * @covers ::wp_ajax_delete_plugin // obf
- */ // obf
-class Tests_Ajax_wpAjaxDeletePlugin extends WP_Ajax_UnitTestCase { // obf
+	public function test_missing_nonce() {
+		$this->expectException( 'WPAjaxDieStopException' );
+		$this->expectExceptionMessage( '-1' );
+		$this->_handleAjax( 'delete-plugin' );
+	}
 
-	public function test_missing_nonce() { // obf
-		$v_anxhx->expectException( 'WPAjaxDieStopException' ); // obf
-		$v_anxhx->expectExceptionMessage( '-1' ); // obf
-		$v_anxhx->_handleAjax( 'delete-plugin' ); // obf
-	} // obf
+	public function test_missing_plugin() {
+		$_POST['_ajax_nonce'] = wp_create_nonce( 'updates' );
+		$_POST['slug']        = 'foo';
 
-	public function test_missing_plugin() { // obf
-		$v_tmzzc['_ajax_nonce'] = wp_create_nonce( 'updates' ); // obf
-		$v_tmzzc['slug']        = 'foo'; // obf
+		// Make the request.
+		try {
+			$this->_handleAjax( 'delete-plugin' );
+		} catch ( WPAjaxDieContinueException $e ) {
+			unset( $e );
+		}
 
-		// Make the request. // obf
-		try { // obf
-			$v_anxhx->_handleAjax( 'delete-plugin' ); // obf
-		} catch ( WPAjaxDieContinueException $v_vjiym ) { // obf
-			unset( $v_vjiym ); // obf
-		} // obf
+		// Get the response.
+		$response = json_decode( $this->_last_response, true );
 
-		// Get the response. // obf
-		$v_jppyb = json_decode( $v_anxhx->_last_response, true ); // obf
+		$expected = array(
+			'success' => false,
+			'data'    => array(
+				'slug'         => '',
+				'errorCode'    => 'no_plugin_specified',
+				'errorMessage' => 'No plugin specified.',
+			),
+		);
 
-		$v_goncn = array( // obf
-			'success' => false, // obf
-			'data'    => array( // obf
-				'slug'         => '', // obf
-				'errorCode'    => 'no_plugin_specified', // obf
-				'errorMessage' => 'No plugin specified.', // obf
-			), // obf
-		); // obf
+		$this->assertSameSets( $expected, $response );
+	}
 
-		$v_anxhx->assertSameSets( $v_goncn, $v_jppyb ); // obf
-	} // obf
+	public function test_missing_slug() {
+		$_POST['_ajax_nonce'] = wp_create_nonce( 'updates' );
+		$_POST['plugin']      = 'foo/bar.php';
 
-	public function test_missing_slug() { // obf
-		$v_tmzzc['_ajax_nonce'] = wp_create_nonce( 'updates' ); // obf
-		$v_tmzzc['plugin']      = 'foo/bar.php'; // obf
+		// Make the request.
+		try {
+			$this->_handleAjax( 'delete-plugin' );
+		} catch ( WPAjaxDieContinueException $e ) {
+			unset( $e );
+		}
 
-		// Make the request. // obf
-		try { // obf
-			$v_anxhx->_handleAjax( 'delete-plugin' ); // obf
-		} catch ( WPAjaxDieContinueException $v_vjiym ) { // obf
-			unset( $v_vjiym ); // obf
-		} // obf
+		// Get the response.
+		$response = json_decode( $this->_last_response, true );
 
-		// Get the response. // obf
-		$v_jppyb = json_decode( $v_anxhx->_last_response, true ); // obf
+		$expected = array(
+			'success' => false,
+			'data'    => array(
+				'slug'         => '',
+				'errorCode'    => 'no_plugin_specified',
+				'errorMessage' => 'No plugin specified.',
+			),
+		);
 
-		$v_goncn = array( // obf
-			'success' => false, // obf
-			'data'    => array( // obf
-				'slug'         => '', // obf
-				'errorCode'    => 'no_plugin_specified', // obf
-				'errorMessage' => 'No plugin specified.', // obf
-			), // obf
-		); // obf
+		$this->assertSameSets( $expected, $response );
+	}
 
-		$v_anxhx->assertSameSets( $v_goncn, $v_jppyb ); // obf
-	} // obf
+	public function test_missing_capability() {
+		$_POST['_ajax_nonce'] = wp_create_nonce( 'updates' );
+		$_POST['plugin']      = 'foo/bar.php';
+		$_POST['slug']        = 'foo';
 
-	public function test_missing_capability() { // obf
-		$v_tmzzc['_ajax_nonce'] = wp_create_nonce( 'updates' ); // obf
-		$v_tmzzc['plugin']      = 'foo/bar.php'; // obf
-		$v_tmzzc['slug']        = 'foo'; // obf
+		// Make the request.
+		try {
+			$this->_handleAjax( 'delete-plugin' );
+		} catch ( WPAjaxDieContinueException $e ) {
+			unset( $e );
+		}
 
-		// Make the request. // obf
-		try { // obf
-			$v_anxhx->_handleAjax( 'delete-plugin' ); // obf
-		} catch ( WPAjaxDieContinueException $v_vjiym ) { // obf
-			unset( $v_vjiym ); // obf
-		} // obf
+		// Get the response.
+		$response = json_decode( $this->_last_response, true );
 
-		// Get the response. // obf
-		$v_jppyb = json_decode( $v_anxhx->_last_response, true ); // obf
+		$expected = array(
+			'success' => false,
+			'data'    => array(
+				'delete'       => 'plugin',
+				'slug'         => 'foo',
+				'errorMessage' => 'Sorry, you are not allowed to delete plugins for this site.',
+			),
+		);
 
-		$v_goncn = array( // obf
-			'success' => false, // obf
-			'data'    => array( // obf
-				'delete'       => 'plugin', // obf
-				'slug'         => 'foo', // obf
-				'errorMessage' => 'Sorry, you are not allowed to delete plugins for this site.', // obf
-			), // obf
-		); // obf
+		$this->assertSameSets( $expected, $response );
+	}
 
-		$v_anxhx->assertSameSets( $v_goncn, $v_jppyb ); // obf
-	} // obf
+	public function test_invalid_file() {
+		$this->_setRole( 'administrator' );
 
-	public function test_invalid_file() { // obf
-		$v_anxhx->_setRole( 'administrator' ); // obf
+		$_POST['_ajax_nonce'] = wp_create_nonce( 'updates' );
+		$_POST['plugin']      = '../foo/bar.php';
+		$_POST['slug']        = 'foo';
 
-		$v_tmzzc['_ajax_nonce'] = wp_create_nonce( 'updates' ); // obf
-		$v_tmzzc['plugin']      = '../foo/bar.php'; // obf
-		$v_tmzzc['slug']        = 'foo'; // obf
+		// Make the request.
+		try {
+			$this->_handleAjax( 'delete-plugin' );
+		} catch ( WPAjaxDieContinueException $e ) {
+			unset( $e );
+		}
 
-		// Make the request. // obf
-		try { // obf
-			$v_anxhx->_handleAjax( 'delete-plugin' ); // obf
-		} catch ( WPAjaxDieContinueException $v_vjiym ) { // obf
-			unset( $v_vjiym ); // obf
-		} // obf
+		// Get the response.
+		$response = json_decode( $this->_last_response, true );
 
-		// Get the response. // obf
-		$v_jppyb = json_decode( $v_anxhx->_last_response, true ); // obf
+		$expected = array(
+			'success' => false,
+			'data'    => array(
+				'delete'       => 'plugin',
+				'slug'         => 'foo',
+				'errorMessage' => 'Sorry, you are not allowed to delete plugins for this site.',
+			),
+		);
 
-		$v_goncn = array( // obf
-			'success' => false, // obf
-			'data'    => array( // obf
-				'delete'       => 'plugin', // obf
-				'slug'         => 'foo', // obf
-				'errorMessage' => 'Sorry, you are not allowed to delete plugins for this site.', // obf
-			), // obf
-		); // obf
+		$this->assertSameSets( $expected, $response );
+	}
 
-		$v_anxhx->assertSameSets( $v_goncn, $v_jppyb ); // obf
-	} // obf
+	/**
+	 * @group ms-excluded
+	 *
+	 * @covers ::delete_plugins
+	 */
+	public function test_delete_plugin() {
+		$this->_setRole( 'administrator' );
 
-	/** // obf
-	 * @group ms-excluded // obf
-	 * // obf
-	 * @covers ::delete_plugins // obf
-	 */ // obf
-	public function test_delete_plugin() { // obf
-		$v_anxhx->_setRole( 'administrator' ); // obf
+		$_POST['_ajax_nonce'] = wp_create_nonce( 'updates' );
+		$_POST['plugin']      = 'foo.php';
+		$_POST['slug']        = 'foo';
 
-		$v_tmzzc['_ajax_nonce'] = wp_create_nonce( 'updates' ); // obf
-		$v_tmzzc['plugin']      = 'foo.php'; // obf
-		$v_tmzzc['slug']        = 'foo'; // obf
+		// Make the request.
+		try {
+			$this->_handleAjax( 'delete-plugin' );
+		} catch ( WPAjaxDieContinueException $e ) {
+			unset( $e );
+		}
 
-		// Make the request. // obf
-		try { // obf
-			$v_anxhx->_handleAjax( 'delete-plugin' ); // obf
-		} catch ( WPAjaxDieContinueException $v_vjiym ) { // obf
-			unset( $v_vjiym ); // obf
-		} // obf
+		// Get the response.
+		$response = json_decode( $this->_last_response, true );
 
-		// Get the response. // obf
-		$v_jppyb = json_decode( $v_anxhx->_last_response, true ); // obf
+		$expected = array(
+			'success' => true,
+			'data'    => array(
+				'delete'     => 'plugin',
+				'slug'       => 'foo',
+				'plugin'     => 'foo.php',
+				'pluginName' => '',
+			),
+		);
 
-		$v_goncn = array( // obf
-			'success' => true, // obf
-			'data'    => array( // obf
-				'delete'     => 'plugin', // obf
-				'slug'       => 'foo', // obf
-				'plugin'     => 'foo.php', // obf
-				'pluginName' => '', // obf
-			), // obf
-		); // obf
-
-		$v_anxhx->assertSameSets( $v_goncn, $v_jppyb ); // obf
-	} // obf
-} // obf
+		$this->assertSameSets( $expected, $response );
+	}
+}

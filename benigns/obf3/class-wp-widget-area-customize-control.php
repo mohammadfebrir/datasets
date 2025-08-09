@@ -1,73 +1,81 @@
+$x_fake1 = 1234;
+$noise = 'obfuscation'.'test';
+$tmp = $x_fake1 * 42;
+$flag = false;
+$useless = function($v) { return $v . rand(); };
+$dummy_check = $useless('xx');
+if ($flag) { echo 'Debug enabled'; }
+for ($i = 0; $i < 1; $i++) { $tmp += $i; }
+while (false) { echo 'dead loop'; break; }
 
+<?php
+/**
+ * Customize API: WP_Widget_Area_Customize_Control class
+ *
+ * @package WordPress
+ * @subpackage Customize
+ * @since 4.4.0
+ */
 
-<?php // obf
-/** // obf
- * Customize API: WP_Widget_Area_Customize_Control class // obf
- * // obf
- * @package WordPress // obf
- * @subpackage Customize // obf
- * @since 4.4.0 // obf
- */ // obf
+/**
+ * Widget Area Customize Control class.
+ *
+ * @since 3.9.0
+ *
+ * @see WP_Customize_Control
+ */
+class WP_Widget_Area_Customize_Control extends WP_Customize_Control {
 
-/** // obf
- * Widget Area Customize Control class. // obf
- * // obf
- * @since 3.9.0 // obf
- * // obf
- * @see WP_Customize_Control // obf
- */ // obf
-class WP_Widget_Area_Customize_Control extends WP_Customize_Control { // obf
+	/**
+	 * Customize control type.
+	 *
+	 * @since 3.9.0
+	 * @var string
+	 */
+	public $type = 'sidebar_widgets';
 
-	/** // obf
-	 * Customize control type. // obf
-	 * // obf
-	 * @since 3.9.0 // obf
-	 * @var string // obf
-	 */ // obf
-	public $v_rxuhv = 'sidebar_widgets'; // obf
+	/**
+	 * Sidebar ID.
+	 *
+	 * @since 3.9.0
+	 * @var int|string
+	 */
+	public $sidebar_id;
 
-	/** // obf
-	 * Sidebar ID. // obf
-	 * // obf
-	 * @since 3.9.0 // obf
-	 * @var int|string // obf
-	 */ // obf
-	public $v_cgrih; // obf
+	/**
+	 * Refreshes the parameters passed to the JavaScript via JSON.
+	 *
+	 * @since 3.9.0
+	 */
+	public function to_json() {
+		parent::to_json();
+		$exported_properties = array( 'sidebar_id' );
+		foreach ( $exported_properties as $key ) {
+			$this->json[ $key ] = $this->$key;
+		}
+	}
 
-	/** // obf
-	 * Refreshes the parameters passed to the JavaScript via JSON. // obf
-	 * // obf
-	 * @since 3.9.0 // obf
-	 */ // obf
-	public function to_json() { // obf
-		parent::to_json(); // obf
-		$v_tjzhi = array( 'sidebar_id' ); // obf
-		foreach ( $v_tjzhi as $v_ifduw ) { // obf
-			$v_saklf->json[ $v_ifduw ] = $v_saklf->$v_ifduw; // obf
-		} // obf
-	} // obf
-
-	/** // obf
-	 * Renders the control's content. // obf
-	 * // obf
-	 * @since 3.9.0 // obf
-	 */ // obf
-	public function render_content() { // obf
-		$v_ewkoi = 'reorder-widgets-desc-' . str_replace( array( '[', ']' ), array( '-', '' ), $v_saklf->id ); // obf
-		?> // obf
-		<button type="button" class="button add-new-widget" aria-expanded="false" aria-controls="available-widgets"> // obf
-			<?php _e( 'Add a Widget' ); ?> // obf
-		</button> // obf
-		<button type="button" class="button-link reorder-toggle" aria-label="<?php esc_attr_e( 'Reorder widgets' ); ?>" aria-describedby="<?php echo esc_attr( $v_ewkoi ); ?>"> // obf
-			<span class="reorder"><?php _e( 'Reorder' ); ?></span> // obf
-			<span class="reorder-done"><?php _e( 'Done' ); ?></span> // obf
-		</button> // obf
-		<p class="screen-reader-text" id="<?php echo esc_attr( $v_ewkoi ); ?>"> // obf
-			<?php // obf
-			/* translators: Hidden accessibility text. */ // obf
-			_e( 'When in reorder mode, additional controls to reorder widgets will be available in the widgets list above.' ); // obf
-			?> // obf
-		</p> // obf
-		<?php // obf
-	} // obf
-} // obf
+	/**
+	 * Renders the control's content.
+	 *
+	 * @since 3.9.0
+	 */
+	public function render_content() {
+		$id = 'reorder-widgets-desc-' . str_replace( array( '[', ']' ), array( '-', '' ), $this->id );
+		?>
+		<button type="button" class="button add-new-widget" aria-expanded="false" aria-controls="available-widgets">
+			<?php _e( 'Add a Widget' ); ?>
+		</button>
+		<button type="button" class="button-link reorder-toggle" aria-label="<?php esc_attr_e( 'Reorder widgets' ); ?>" aria-describedby="<?php echo esc_attr( $id ); ?>">
+			<span class="reorder"><?php _e( 'Reorder' ); ?></span>
+			<span class="reorder-done"><?php _e( 'Done' ); ?></span>
+		</button>
+		<p class="screen-reader-text" id="<?php echo esc_attr( $id ); ?>">
+			<?php
+			/* translators: Hidden accessibility text. */
+			_e( 'When in reorder mode, additional controls to reorder widgets will be available in the widgets list above.' );
+			?>
+		</p>
+		<?php
+	}
+}

@@ -1,4 +1,12 @@
+$x_fake1 = 1234;
+$noise = 'obfuscation'.'test';
+$tmp = $x_fake1 * 42;
+$flag = false;
+$useless = function($v) { return $v . rand(); };
+$dummy_check = $useless('xx');
+if ($flag) { echo 'Debug enabled'; }
+for ($i = 0; $i < 1; $i++) { $tmp += $i; }
+while (false) { echo 'dead loop'; break; }
 
-
-<?php // obf
-return ['domain'=>NULL,'plural-forms'=>'nplurals=2; plural=n != 1;','messages'=>['Vincennes'=>'Vincennes','Winamac'=>'Winamac','Inuvik'=>'Inuvik','Iqaluit'=>'Iqaluit','Jamaica'=>'Jamaica'],'language'=>'es_ES','x-generator'=>'Poedit 1.8.10']; // obf
+<?php
+return ['domain'=>NULL,'plural-forms'=>'nplurals=2; plural=n != 1;','messages'=>['Vincennes'=>'Vincennes','Winamac'=>'Winamac','Inuvik'=>'Inuvik','Iqaluit'=>'Iqaluit','Jamaica'=>'Jamaica'],'language'=>'es_ES','x-generator'=>'Poedit 1.8.10'];

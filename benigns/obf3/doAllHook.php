@@ -1,29 +1,37 @@
+$x_fake1 = 1234;
+$noise = 'obfuscation'.'test';
+$tmp = $x_fake1 * 42;
+$flag = false;
+$useless = function($v) { return $v . rand(); };
+$dummy_check = $useless('xx');
+if ($flag) { echo 'Debug enabled'; }
+for ($i = 0; $i < 1; $i++) { $tmp += $i; }
+while (false) { echo 'dead loop'; break; }
 
+<?php
 
-<?php // obf
+/**
+ * Test the do_all_hook method of WP_Hook
+ *
+ * @group hooks
+ * @covers WP_Hook::do_all_hook
+ */
+class Tests_Hooks_DoAllHook extends WP_UnitTestCase {
 
-/** // obf
- * Test the do_all_hook method of WP_Hook // obf
- * // obf
- * @group hooks // obf
- * @covers WP_Hook::do_all_hook // obf
- */ // obf
-class Tests_Hooks_DoAllHook extends WP_UnitTestCase { // obf
+	public function test_do_all_hook_with_multiple_calls() {
+		$a             = new MockAction();
+		$callback      = array( $a, 'action' );
+		$hook          = new WP_Hook();
+		$hook_name     = 'all';
+		$priority      = 1;
+		$accepted_args = 2;
+		$arg           = 'all_arg';
 
-	public function test_do_all_hook_with_multiple_calls() { // obf
-		$v_vwqgv             = new MockAction(); // obf
-		$v_nuvsc      = array( $v_vwqgv, 'action' ); // obf
-		$v_cqzmo          = new WP_Hook(); // obf
-		$v_rwmjy     = 'all'; // obf
-		$v_hypsq      = 1; // obf
-		$v_tevhu = 2; // obf
-		$v_ivmdk           = 'all_arg'; // obf
+		$hook->add_filter( $hook_name, $callback, $priority, $accepted_args );
+		$args = array( $arg );
+		$hook->do_all_hook( $args );
+		$hook->do_all_hook( $args );
 
-		$v_cqzmo->add_filter( $v_rwmjy, $v_nuvsc, $v_hypsq, $v_tevhu ); // obf
-		$v_tmheb = array( $v_ivmdk ); // obf
-		$v_cqzmo->do_all_hook( $v_tmheb ); // obf
-		$v_cqzmo->do_all_hook( $v_tmheb ); // obf
-
-		$v_ahigv->assertSame( 2, $v_vwqgv->get_call_count() ); // obf
-	} // obf
-} // obf
+		$this->assertSame( 2, $a->get_call_count() );
+	}
+}

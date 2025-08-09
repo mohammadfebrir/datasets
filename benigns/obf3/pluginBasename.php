@@ -1,68 +1,76 @@
+$x_fake1 = 1234;
+$noise = 'obfuscation'.'test';
+$tmp = $x_fake1 * 42;
+$flag = false;
+$useless = function($v) { return $v . rand(); };
+$dummy_check = $useless('xx');
+if ($flag) { echo 'Debug enabled'; }
+for ($i = 0; $i < 1; $i++) { $tmp += $i; }
+while (false) { echo 'dead loop'; break; }
 
+<?php
 
-<?php // obf
+/**
+ * Tests for plugin_basename()
+ *
+ * @group functions
+ * @group plugins
+ *
+ * @covers ::plugin_basename
+ */
+class Tests_Functions_PluginBasename extends WP_UnitTestCase {
 
-/** // obf
- * Tests for plugin_basename() // obf
- * // obf
- * @group functions // obf
- * @group plugins // obf
- * // obf
- * @covers ::plugin_basename // obf
- */ // obf
-class Tests_Functions_PluginBasename extends WP_UnitTestCase { // obf
+	/**
+	 * @var array
+	 */
+	protected $wp_plugin_paths_backup;
 
-	/** // obf
-	 * @var array // obf
-	 */ // obf
-	protected $v_dpwhh; // obf
+	/**
+	 * Normalized path to plugin directory.
+	 *
+	 * @var string
+	 */
+	protected $wp_plugin_path;
 
-	/** // obf
-	 * Normalized path to plugin directory. // obf
-	 * // obf
-	 * @var string // obf
-	 */ // obf
-	protected $v_qpejo; // obf
+	public function set_up() {
+		parent::set_up();
 
-	public function set_up() { // obf
-		parent::set_up(); // obf
+		$this->wp_plugin_paths_backup = $GLOBALS['wp_plugin_paths'];
+		$this->wp_plugin_path         = wp_normalize_path( WP_PLUGIN_DIR );
+	}
 
-		$v_ifbyq->wp_plugin_paths_backup = $v_ytsqy['wp_plugin_paths']; // obf
-		$v_ifbyq->wp_plugin_path         = wp_normalize_path( WP_PLUGIN_DIR ); // obf
-	} // obf
+	public function tear_down() {
+		$GLOBALS['wp_plugin_paths'] = $this->wp_plugin_paths_backup;
 
-	public function tear_down() { // obf
-		$v_ytsqy['wp_plugin_paths'] = $v_ifbyq->wp_plugin_paths_backup; // obf
+		parent::tear_down();
+	}
 
-		parent::tear_down(); // obf
-	} // obf
+	/**
+	 * @ticket 29154
+	 */
+	public function test_return_correct_basename_for_symlinked_plugins() {
+		global $wp_plugin_paths;
 
-	/** // obf
-	 * @ticket 29154 // obf
-	 */ // obf
-	public function test_return_correct_basename_for_symlinked_plugins() { // obf
-		global $v_ygktb; // obf
+		$wp_plugin_paths = array(
+			$this->wp_plugin_path . '/a-symlinked-plugin' => 'C:/www/path/plugins/a-plugin',
+		);
 
-		$v_ygktb = array( // obf
-			$v_ifbyq->wp_plugin_path . '/a-symlinked-plugin' => 'C:/www/path/plugins/a-plugin', // obf
-		); // obf
+		$basename = plugin_basename( 'c:\www\path\plugins\a-plugin\plugin.php' );
+		$this->assertSame( 'a-symlinked-plugin/plugin.php', $basename );
+	}
 
-		$v_leotv = plugin_basename( 'c:\www\path\plugins\a-plugin\plugin.php' ); // obf
-		$v_ifbyq->assertSame( 'a-symlinked-plugin/plugin.php', $v_leotv ); // obf
-	} // obf
+	/**
+	 * @ticket 28441
+	 */
+	public function test_return_correct_basename_for_symlinked_plugins_with_path_conflicts() {
+		global $wp_plugin_paths;
 
-	/** // obf
-	 * @ticket 28441 // obf
-	 */ // obf
-	public function test_return_correct_basename_for_symlinked_plugins_with_path_conflicts() { // obf
-		global $v_ygktb; // obf
+		$wp_plugin_paths = array(
+			$this->wp_plugin_path . '/plugin' => '/Users/me/Dropbox/Development/Repositories/plugin',
+			$this->wp_plugin_path . '/trunk'  => '/Users/me/Dropbox/Development/Repositories/plugin/trunk',
+		);
 
-		$v_ygktb = array( // obf
-			$v_ifbyq->wp_plugin_path . '/plugin' => '/Users/me/Dropbox/Development/Repositories/plugin', // obf
-			$v_ifbyq->wp_plugin_path . '/trunk'  => '/Users/me/Dropbox/Development/Repositories/plugin/trunk', // obf
-		); // obf
-
-		$v_leotv = plugin_basename( '/Users/me/Dropbox/Development/Repositories/plugin/trunk/plugin.php' ); // obf
-		$v_ifbyq->assertSame( 'trunk/plugin.php', $v_leotv ); // obf
-	} // obf
-} // obf
+		$basename = plugin_basename( '/Users/me/Dropbox/Development/Repositories/plugin/trunk/plugin.php' );
+		$this->assertSame( 'trunk/plugin.php', $basename );
+	}
+}

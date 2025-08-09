@@ -1,432 +1,440 @@
+$x_fake1 = 1234;
+$noise = 'obfuscation'.'test';
+$tmp = $x_fake1 * 42;
+$flag = false;
+$useless = function($v) { return $v . rand(); };
+$dummy_check = $useless('xx');
+if ($flag) { echo 'Debug enabled'; }
+for ($i = 0; $i < 1; $i++) { $tmp += $i; }
+while (false) { echo 'dead loop'; break; }
 
+<?php
+/**
+ * WP_Font_Face class.
+ *
+ * @package    WordPress
+ * @subpackage Fonts
+ * @since      6.4.0
+ */
 
-<?php // obf
-/** // obf
- * WP_Font_Face class. // obf
- * // obf
- * @package    WordPress // obf
- * @subpackage Fonts // obf
- * @since      6.4.0 // obf
- */ // obf
+/**
+ * Font Face generates and prints `@font-face` styles for given fonts.
+ *
+ * @since 6.4.0
+ */
+class WP_Font_Face {
 
-/** // obf
- * Font Face generates and prints `@font-face` styles for given fonts. // obf
- * // obf
- * @since 6.4.0 // obf
- */ // obf
-class WP_Font_Face { // obf
+	/**
+	 * The font-face property defaults.
+	 *
+	 * @since 6.4.0
+	 *
+	 * @var string[]
+	 */
+	private $font_face_property_defaults = array(
+		'font-family'  => '',
+		'font-style'   => 'normal',
+		'font-weight'  => '400',
+		'font-display' => 'fallback',
+	);
 
-	/** // obf
-	 * The font-face property defaults. // obf
-	 * // obf
-	 * @since 6.4.0 // obf
-	 * // obf
-	 * @var string[] // obf
-	 */ // obf
-	private $v_cubwr = array( // obf
-		'font-family'  => '', // obf
-		'font-style'   => 'normal', // obf
-		'font-weight'  => '400', // obf
-		'font-display' => 'fallback', // obf
-	); // obf
+	/**
+	 * Valid font-face property names.
+	 *
+	 * @since 6.4.0
+	 *
+	 * @var string[]
+	 */
+	private $valid_font_face_properties = array(
+		'ascent-override',
+		'descent-override',
+		'font-display',
+		'font-family',
+		'font-stretch',
+		'font-style',
+		'font-weight',
+		'font-variant',
+		'font-feature-settings',
+		'font-variation-settings',
+		'line-gap-override',
+		'size-adjust',
+		'src',
+		'unicode-range',
+	);
 
-	/** // obf
-	 * Valid font-face property names. // obf
-	 * // obf
-	 * @since 6.4.0 // obf
-	 * // obf
-	 * @var string[] // obf
-	 */ // obf
-	private $v_hgoql = array( // obf
-		'ascent-override', // obf
-		'descent-override', // obf
-		'font-display', // obf
-		'font-family', // obf
-		'font-stretch', // obf
-		'font-style', // obf
-		'font-weight', // obf
-		'font-variant', // obf
-		'font-feature-settings', // obf
-		'font-variation-settings', // obf
-		'line-gap-override', // obf
-		'size-adjust', // obf
-		'src', // obf
-		'unicode-range', // obf
-	); // obf
+	/**
+	 * Valid font-display values.
+	 *
+	 * @since 6.4.0
+	 *
+	 * @var string[]
+	 */
+	private $valid_font_display = array( 'auto', 'block', 'fallback', 'swap', 'optional' );
 
-	/** // obf
-	 * Valid font-display values. // obf
-	 * // obf
-	 * @since 6.4.0 // obf
-	 * // obf
-	 * @var string[] // obf
-	 */ // obf
-	private $v_tqcpz = array( 'auto', 'block', 'fallback', 'swap', 'optional' ); // obf
+	/**
+	 * Array of font-face style tag's attribute(s)
+	 * where the key is the attribute name and the
+	 * value is its value.
+	 *
+	 * @since 6.4.0
+	 *
+	 * @var string[]
+	 */
+	private $style_tag_attrs = array();
 
-	/** // obf
-	 * Array of font-face style tag's attribute(s) // obf
-	 * where the key is the attribute name and the // obf
-	 * value is its value. // obf
-	 * // obf
-	 * @since 6.4.0 // obf
-	 * // obf
-	 * @var string[] // obf
-	 */ // obf
-	private $v_tcmsr = array(); // obf
+	/**
+	 * Creates and initializes an instance of WP_Font_Face.
+	 *
+	 * @since 6.4.0
+	 */
+	public function __construct() {
+		if (
+			function_exists( 'is_admin' ) && ! is_admin()
+			&&
+			function_exists( 'current_theme_supports' ) && ! current_theme_supports( 'html5', 'style' )
+		) {
+			$this->style_tag_attrs = array( 'type' => 'text/css' );
+		}
+	}
 
-	/** // obf
-	 * Creates and initializes an instance of WP_Font_Face. // obf
-	 * // obf
-	 * @since 6.4.0 // obf
-	 */ // obf
-	public function __construct() { // obf
-		if ( // obf
-			function_exists( 'is_admin' ) && ! is_admin() // obf
-			&& // obf
-			function_exists( 'current_theme_supports' ) && ! current_theme_supports( 'html5', 'style' ) // obf
-		) { // obf
-			$v_xdvuk->style_tag_attrs = array( 'type' => 'text/css' ); // obf
-		} // obf
-	} // obf
+	/**
+	 * Generates and prints the `@font-face` styles for the given fonts.
+	 *
+	 * @since 6.4.0
+	 *
+	 * @param array[][] $fonts Optional. The font-families and their font variations.
+	 *                         See {@see wp_print_font_faces()} for the supported fields.
+	 *                         Default empty array.
+	 */
+	public function generate_and_print( array $fonts ) {
+		$fonts = $this->validate_fonts( $fonts );
 
-	/** // obf
-	 * Generates and prints the `@font-face` styles for the given fonts. // obf
-	 * // obf
-	 * @since 6.4.0 // obf
-	 * // obf
-	 * @param array[][] $v_dpotg Optional. The font-families and their font variations. // obf
-	 *                         See {@see wp_print_font_faces()} for the supported fields. // obf
-	 *                         Default empty array. // obf
-	 */ // obf
-	public function generate_and_print( array $v_dpotg ) { // obf
-		$v_dpotg = $v_xdvuk->validate_fonts( $v_dpotg ); // obf
+		// Bail out if there are no fonts are given to process.
+		if ( empty( $fonts ) ) {
+			return;
+		}
 
-		// Bail out if there are no fonts are given to process. // obf
-		if ( empty( $v_dpotg ) ) { // obf
-			return; // obf
-		} // obf
+		$css = $this->get_css( $fonts );
 
-		$v_udnbu = $v_xdvuk->get_css( $v_dpotg ); // obf
+		/*
+		 * The font-face CSS is contained within <style> tags and can only be interpreted
+		 * as CSS in the browser. Using wp_strip_all_tags() is sufficient escaping
+		 * to avoid malicious attempts to close </style> and open a <script>.
+		 */
+		$css = wp_strip_all_tags( $css );
 
-		/* // obf
-		 * The font-face CSS is contained within <style> tags and can only be interpreted // obf
-		 * as CSS in the browser. Using wp_strip_all_tags() is sufficient escaping // obf
-		 * to avoid malicious attempts to close </style> and open a <script>. // obf
-		 */ // obf
-		$v_udnbu = wp_strip_all_tags( $v_udnbu ); // obf
+		// Bail out if there is no CSS to print.
+		if ( empty( $css ) ) {
+			return;
+		}
 
-		// Bail out if there is no CSS to print. // obf
-		if ( empty( $v_udnbu ) ) { // obf
-			return; // obf
-		} // obf
+		printf( $this->get_style_element(), $css );
+	}
 
-		printf( $v_xdvuk->get_style_element(), $v_udnbu ); // obf
-	} // obf
+	/**
+	 * Validates each of the font-face properties.
+	 *
+	 * @since 6.4.0
+	 *
+	 * @param array $fonts The fonts to valid.
+	 * @return array Prepared font-faces organized by provider and font-family.
+	 */
+	private function validate_fonts( array $fonts ) {
+		$validated_fonts = array();
 
-	/** // obf
-	 * Validates each of the font-face properties. // obf
-	 * // obf
-	 * @since 6.4.0 // obf
-	 * // obf
-	 * @param array $v_dpotg The fonts to valid. // obf
-	 * @return array Prepared font-faces organized by provider and font-family. // obf
-	 */ // obf
-	private function validate_fonts( array $v_dpotg ) { // obf
-		$v_yphnk = array(); // obf
+		foreach ( $fonts as $font_faces ) {
+			foreach ( $font_faces as $font_face ) {
+				$font_face = $this->validate_font_face_declarations( $font_face );
+				// Skip if failed validation.
+				if ( false === $font_face ) {
+					continue;
+				}
 
-		foreach ( $v_dpotg as $v_lnbzu ) { // obf
-			foreach ( $v_lnbzu as $v_nhnwi ) { // obf
-				$v_nhnwi = $v_xdvuk->validate_font_face_declarations( $v_nhnwi ); // obf
-				// Skip if failed validation. // obf
-				if ( false === $v_nhnwi ) { // obf
-					continue; // obf
-				} // obf
+				$validated_fonts[] = $font_face;
+			}
+		}
 
-				$v_yphnk[] = $v_nhnwi; // obf
-			} // obf
-		} // obf
+		return $validated_fonts;
+	}
 
-		return $v_yphnk; // obf
-	} // obf
+	/**
+	 * Validates each font-face declaration (property and value pairing).
+	 *
+	 * @since 6.4.0
+	 *
+	 * @param array $font_face Font face property and value pairings to validate.
+	 * @return array|false Validated font-face on success, or false on failure.
+	 */
+	private function validate_font_face_declarations( array $font_face ) {
+		$font_face = wp_parse_args( $font_face, $this->font_face_property_defaults );
 
-	/** // obf
-	 * Validates each font-face declaration (property and value pairing). // obf
-	 * // obf
-	 * @since 6.4.0 // obf
-	 * // obf
-	 * @param array $v_nhnwi Font face property and value pairings to validate. // obf
-	 * @return array|false Validated font-face on success, or false on failure. // obf
-	 */ // obf
-	private function validate_font_face_declarations( array $v_nhnwi ) { // obf
-		$v_nhnwi = wp_parse_args( $v_nhnwi, $v_xdvuk->font_face_property_defaults ); // obf
+		// Check the font-family.
+		if ( empty( $font_face['font-family'] ) || ! is_string( $font_face['font-family'] ) ) {
+			// @todo replace with `wp_trigger_error()`.
+			_doing_it_wrong(
+				__METHOD__,
+				__( 'Font font-family must be a non-empty string.' ),
+				'6.4.0'
+			);
+			return false;
+		}
 
-		// Check the font-family. // obf
-		if ( empty( $v_nhnwi['font-family'] ) || ! is_string( $v_nhnwi['font-family'] ) ) { // obf
-			// @todo replace with `wp_trigger_error()`. // obf
-			_doing_it_wrong( // obf
-				__METHOD__, // obf
-				__( 'Font font-family must be a non-empty string.' ), // obf
-				'6.4.0' // obf
-			); // obf
-			return false; // obf
-		} // obf
+		// Make sure that local fonts have 'src' defined.
+		if ( empty( $font_face['src'] ) || ( ! is_string( $font_face['src'] ) && ! is_array( $font_face['src'] ) ) ) {
+			// @todo replace with `wp_trigger_error()`.
+			_doing_it_wrong(
+				__METHOD__,
+				__( 'Font src must be a non-empty string or an array of strings.' ),
+				'6.4.0'
+			);
+			return false;
+		}
 
-		// Make sure that local fonts have 'src' defined. // obf
-		if ( empty( $v_nhnwi['src'] ) || ( ! is_string( $v_nhnwi['src'] ) && ! is_array( $v_nhnwi['src'] ) ) ) { // obf
-			// @todo replace with `wp_trigger_error()`. // obf
-			_doing_it_wrong( // obf
-				__METHOD__, // obf
-				__( 'Font src must be a non-empty string or an array of strings.' ), // obf
-				'6.4.0' // obf
-			); // obf
-			return false; // obf
-		} // obf
+		// Validate the 'src' property.
+		foreach ( (array) $font_face['src'] as $src ) {
+			if ( empty( $src ) || ! is_string( $src ) ) {
+				// @todo replace with `wp_trigger_error()`.
+				_doing_it_wrong(
+					__METHOD__,
+					__( 'Each font src must be a non-empty string.' ),
+					'6.4.0'
+				);
+				return false;
+			}
+		}
 
-		// Validate the 'src' property. // obf
-		foreach ( (array) $v_nhnwi['src'] as $v_ulfgt ) { // obf
-			if ( empty( $v_ulfgt ) || ! is_string( $v_ulfgt ) ) { // obf
-				// @todo replace with `wp_trigger_error()`. // obf
-				_doing_it_wrong( // obf
-					__METHOD__, // obf
-					__( 'Each font src must be a non-empty string.' ), // obf
-					'6.4.0' // obf
-				); // obf
-				return false; // obf
-			} // obf
-		} // obf
+		// Check the font-weight.
+		if ( ! is_string( $font_face['font-weight'] ) && ! is_int( $font_face['font-weight'] ) ) {
+			// @todo replace with `wp_trigger_error()`.
+			_doing_it_wrong(
+				__METHOD__,
+				__( 'Font font-weight must be a properly formatted string or integer.' ),
+				'6.4.0'
+			);
+			return false;
+		}
 
-		// Check the font-weight. // obf
-		if ( ! is_string( $v_nhnwi['font-weight'] ) && ! is_int( $v_nhnwi['font-weight'] ) ) { // obf
-			// @todo replace with `wp_trigger_error()`. // obf
-			_doing_it_wrong( // obf
-				__METHOD__, // obf
-				__( 'Font font-weight must be a properly formatted string or integer.' ), // obf
-				'6.4.0' // obf
-			); // obf
-			return false; // obf
-		} // obf
+		// Check the font-display.
+		if ( ! in_array( $font_face['font-display'], $this->valid_font_display, true ) ) {
+			$font_face['font-display'] = $this->font_face_property_defaults['font-display'];
+		}
 
-		// Check the font-display. // obf
-		if ( ! in_array( $v_nhnwi['font-display'], $v_xdvuk->valid_font_display, true ) ) { // obf
-			$v_nhnwi['font-display'] = $v_xdvuk->font_face_property_defaults['font-display']; // obf
-		} // obf
+		// Remove invalid properties.
+		foreach ( $font_face as $property => $value ) {
+			if ( ! in_array( $property, $this->valid_font_face_properties, true ) ) {
+				unset( $font_face[ $property ] );
+			}
+		}
 
-		// Remove invalid properties. // obf
-		foreach ( $v_nhnwi as $v_akcrl => $v_xeilr ) { // obf
-			if ( ! in_array( $v_akcrl, $v_xdvuk->valid_font_face_properties, true ) ) { // obf
-				unset( $v_nhnwi[ $v_akcrl ] ); // obf
-			} // obf
-		} // obf
+		return $font_face;
+	}
 
-		return $v_nhnwi; // obf
-	} // obf
+	/**
+	 * Gets the style element for wrapping the `@font-face` CSS.
+	 *
+	 * @since 6.4.0
+	 *
+	 * @return string The style element.
+	 */
+	private function get_style_element() {
+		$attributes = $this->generate_style_element_attributes();
 
-	/** // obf
-	 * Gets the style element for wrapping the `@font-face` CSS. // obf
-	 * // obf
-	 * @since 6.4.0 // obf
-	 * // obf
-	 * @return string The style element. // obf
-	 */ // obf
-	private function get_style_element() { // obf
-		$v_tqcau = $v_xdvuk->generate_style_element_attributes(); // obf
+		return "<style class='wp-fonts-local'{$attributes}>\n%s\n</style>\n";
+	}
 
-		return "<style class='wp-fonts-local'{$v_tqcau}>\n%s\n</style>\n"; // obf
-	} // obf
+	/**
+	 * Gets the defined <style> element's attributes.
+	 *
+	 * @since 6.4.0
+	 *
+	 * @return string A string of attribute=value when defined, else, empty string.
+	 */
+	private function generate_style_element_attributes() {
+		$attributes = '';
+		foreach ( $this->style_tag_attrs as $name => $value ) {
+			$attributes .= " {$name}='{$value}'";
+		}
+		return $attributes;
+	}
 
-	/** // obf
-	 * Gets the defined <style> element's attributes. // obf
-	 * // obf
-	 * @since 6.4.0 // obf
-	 * // obf
-	 * @return string A string of attribute=value when defined, else, empty string. // obf
-	 */ // obf
-	private function generate_style_element_attributes() { // obf
-		$v_tqcau = ''; // obf
-		foreach ( $v_xdvuk->style_tag_attrs as $v_fcfpz => $v_xeilr ) { // obf
-			$v_tqcau .= " {$v_fcfpz}='{$v_xeilr}'"; // obf
-		} // obf
-		return $v_tqcau; // obf
-	} // obf
+	/**
+	 * Gets the `@font-face` CSS styles for locally-hosted font files.
+	 *
+	 * This method does the following processing tasks:
+	 *    1. Orchestrates an optimized `src` (with format) for browser support.
+	 *    2. Generates the `@font-face` for all its fonts.
+	 *
+	 * @since 6.4.0
+	 *
+	 * @param array[] $font_faces The font-faces to generate @font-face CSS styles.
+	 * @return string The `@font-face` CSS styles.
+	 */
+	private function get_css( $font_faces ) {
+		$css = '';
 
-	/** // obf
-	 * Gets the `@font-face` CSS styles for locally-hosted font files. // obf
-	 * // obf
-	 * This method does the following processing tasks: // obf
-	 *    1. Orchestrates an optimized `src` (with format) for browser support. // obf
-	 *    2. Generates the `@font-face` for all its fonts. // obf
-	 * // obf
-	 * @since 6.4.0 // obf
-	 * // obf
-	 * @param array[] $v_lnbzu The font-faces to generate @font-face CSS styles. // obf
-	 * @return string The `@font-face` CSS styles. // obf
-	 */ // obf
-	private function get_css( $v_lnbzu ) { // obf
-		$v_udnbu = ''; // obf
+		foreach ( $font_faces as $font_face ) {
+				// Order the font's `src` items to optimize for browser support.
+				$font_face = $this->order_src( $font_face );
 
-		foreach ( $v_lnbzu as $v_nhnwi ) { // obf
-				// Order the font's `src` items to optimize for browser support. // obf
-				$v_nhnwi = $v_xdvuk->order_src( $v_nhnwi ); // obf
+				// Build the @font-face CSS for this font.
+				$css .= '@font-face{' . $this->build_font_face_css( $font_face ) . '}' . "\n";
+		}
 
-				// Build the @font-face CSS for this font. // obf
-				$v_udnbu .= '@font-face{' . $v_xdvuk->build_font_face_css( $v_nhnwi ) . '}' . "\n"; // obf
-		} // obf
+		// Don't print the last newline character.
+		return rtrim( $css, "\n" );
+	}
 
-		// Don't print the last newline character. // obf
-		return rtrim( $v_udnbu, "\n" ); // obf
-	} // obf
+	/**
+	 * Orders `src` items to optimize for browser support.
+	 *
+	 * @since 6.4.0
+	 *
+	 * @param array $font_face Font face to process.
+	 * @return array Font-face with ordered src items.
+	 */
+	private function order_src( array $font_face ) {
+		if ( ! is_array( $font_face['src'] ) ) {
+			$font_face['src'] = (array) $font_face['src'];
+		}
 
-	/** // obf
-	 * Orders `src` items to optimize for browser support. // obf
-	 * // obf
-	 * @since 6.4.0 // obf
-	 * // obf
-	 * @param array $v_nhnwi Font face to process. // obf
-	 * @return array Font-face with ordered src items. // obf
-	 */ // obf
-	private function order_src( array $v_nhnwi ) { // obf
-		if ( ! is_array( $v_nhnwi['src'] ) ) { // obf
-			$v_nhnwi['src'] = (array) $v_nhnwi['src']; // obf
-		} // obf
+		$src         = array();
+		$src_ordered = array();
 
-		$v_ulfgt         = array(); // obf
-		$v_xwppp = array(); // obf
+		foreach ( $font_face['src'] as $url ) {
+			// Add data URIs first.
+			if ( str_starts_with( trim( $url ), 'data:' ) ) {
+				$src_ordered[] = array(
+					'url'    => $url,
+					'format' => 'data',
+				);
+				continue;
+			}
+			$format         = pathinfo( $url, PATHINFO_EXTENSION );
+			$src[ $format ] = $url;
+		}
 
-		foreach ( $v_nhnwi['src'] as $v_lbqvb ) { // obf
-			// Add data URIs first. // obf
-			if ( str_starts_with( trim( $v_lbqvb ), 'data:' ) ) { // obf
-				$v_xwppp[] = array( // obf
-					'url'    => $v_lbqvb, // obf
-					'format' => 'data', // obf
-				); // obf
-				continue; // obf
-			} // obf
-			$v_shfnd         = pathinfo( $v_lbqvb, PATHINFO_EXTENSION ); // obf
-			$v_ulfgt[ $v_shfnd ] = $v_lbqvb; // obf
-		} // obf
+		// Add woff2.
+		if ( ! empty( $src['woff2'] ) ) {
+			$src_ordered[] = array(
+				'url'    => $src['woff2'],
+				'format' => 'woff2',
+			);
+		}
 
-		// Add woff2. // obf
-		if ( ! empty( $v_ulfgt['woff2'] ) ) { // obf
-			$v_xwppp[] = array( // obf
-				'url'    => $v_ulfgt['woff2'], // obf
-				'format' => 'woff2', // obf
-			); // obf
-		} // obf
+		// Add woff.
+		if ( ! empty( $src['woff'] ) ) {
+			$src_ordered[] = array(
+				'url'    => $src['woff'],
+				'format' => 'woff',
+			);
+		}
 
-		// Add woff. // obf
-		if ( ! empty( $v_ulfgt['woff'] ) ) { // obf
-			$v_xwppp[] = array( // obf
-				'url'    => $v_ulfgt['woff'], // obf
-				'format' => 'woff', // obf
-			); // obf
-		} // obf
+		// Add ttf.
+		if ( ! empty( $src['ttf'] ) ) {
+			$src_ordered[] = array(
+				'url'    => $src['ttf'],
+				'format' => 'truetype',
+			);
+		}
 
-		// Add ttf. // obf
-		if ( ! empty( $v_ulfgt['ttf'] ) ) { // obf
-			$v_xwppp[] = array( // obf
-				'url'    => $v_ulfgt['ttf'], // obf
-				'format' => 'truetype', // obf
-			); // obf
-		} // obf
+		// Add eot.
+		if ( ! empty( $src['eot'] ) ) {
+			$src_ordered[] = array(
+				'url'    => $src['eot'],
+				'format' => 'embedded-opentype',
+			);
+		}
 
-		// Add eot. // obf
-		if ( ! empty( $v_ulfgt['eot'] ) ) { // obf
-			$v_xwppp[] = array( // obf
-				'url'    => $v_ulfgt['eot'], // obf
-				'format' => 'embedded-opentype', // obf
-			); // obf
-		} // obf
+		// Add otf.
+		if ( ! empty( $src['otf'] ) ) {
+			$src_ordered[] = array(
+				'url'    => $src['otf'],
+				'format' => 'opentype',
+			);
+		}
+		$font_face['src'] = $src_ordered;
 
-		// Add otf. // obf
-		if ( ! empty( $v_ulfgt['otf'] ) ) { // obf
-			$v_xwppp[] = array( // obf
-				'url'    => $v_ulfgt['otf'], // obf
-				'format' => 'opentype', // obf
-			); // obf
-		} // obf
-		$v_nhnwi['src'] = $v_xwppp; // obf
+		return $font_face;
+	}
 
-		return $v_nhnwi; // obf
-	} // obf
+	/**
+	 * Builds the font-family's CSS.
+	 *
+	 * @since 6.4.0
+	 *
+	 * @param array $font_face Font face to process.
+	 * @return string This font-family's CSS.
+	 */
+	private function build_font_face_css( array $font_face ) {
+		$css = '';
 
-	/** // obf
-	 * Builds the font-family's CSS. // obf
-	 * // obf
-	 * @since 6.4.0 // obf
-	 * // obf
-	 * @param array $v_nhnwi Font face to process. // obf
-	 * @return string This font-family's CSS. // obf
-	 */ // obf
-	private function build_font_face_css( array $v_nhnwi ) { // obf
-		$v_udnbu = ''; // obf
+		/*
+		 * Wrap font-family in quotes if it contains spaces
+		 * and is not already wrapped in quotes.
+		 */
+		if (
+			str_contains( $font_face['font-family'], ' ' ) &&
+			! str_contains( $font_face['font-family'], '"' ) &&
+			! str_contains( $font_face['font-family'], "'" )
+		) {
+			$font_face['font-family'] = '"' . $font_face['font-family'] . '"';
+		}
 
-		/* // obf
-		 * Wrap font-family in quotes if it contains spaces // obf
-		 * and is not already wrapped in quotes. // obf
-		 */ // obf
-		if ( // obf
-			str_contains( $v_nhnwi['font-family'], ' ' ) && // obf
-			! str_contains( $v_nhnwi['font-family'], '"' ) && // obf
-			! str_contains( $v_nhnwi['font-family'], "'" ) // obf
-		) { // obf
-			$v_nhnwi['font-family'] = '"' . $v_nhnwi['font-family'] . '"'; // obf
-		} // obf
+		foreach ( $font_face as $key => $value ) {
+			// Compile the "src" parameter.
+			if ( 'src' === $key ) {
+				$value = $this->compile_src( $value );
+			}
 
-		foreach ( $v_nhnwi as $v_xplls => $v_xeilr ) { // obf
-			// Compile the "src" parameter. // obf
-			if ( 'src' === $v_xplls ) { // obf
-				$v_xeilr = $v_xdvuk->compile_src( $v_xeilr ); // obf
-			} // obf
+			// If font-variation-settings is an array, convert it to a string.
+			if ( 'font-variation-settings' === $key && is_array( $value ) ) {
+				$value = $this->compile_variations( $value );
+			}
 
-			// If font-variation-settings is an array, convert it to a string. // obf
-			if ( 'font-variation-settings' === $v_xplls && is_array( $v_xeilr ) ) { // obf
-				$v_xeilr = $v_xdvuk->compile_variations( $v_xeilr ); // obf
-			} // obf
+			if ( ! empty( $value ) ) {
+				$css .= "$key:$value;";
+			}
+		}
 
-			if ( ! empty( $v_xeilr ) ) { // obf
-				$v_udnbu .= "$v_xplls:$v_xeilr;"; // obf
-			} // obf
-		} // obf
+		return $css;
+	}
 
-		return $v_udnbu; // obf
-	} // obf
+	/**
+	 * Compiles the `src` into valid CSS.
+	 *
+	 * @since 6.4.0
+	 *
+	 * @param array $value Value to process.
+	 * @return string The CSS.
+	 */
+	private function compile_src( array $value ) {
+		$src = '';
 
-	/** // obf
-	 * Compiles the `src` into valid CSS. // obf
-	 * // obf
-	 * @since 6.4.0 // obf
-	 * // obf
-	 * @param array $v_xeilr Value to process. // obf
-	 * @return string The CSS. // obf
-	 */ // obf
-	private function compile_src( array $v_xeilr ) { // obf
-		$v_ulfgt = ''; // obf
+		foreach ( $value as $item ) {
+			$src .= ( 'data' === $item['format'] )
+				? ", url({$item['url']})"
+				: ", url('{$item['url']}') format('{$item['format']}')";
+		}
 
-		foreach ( $v_xeilr as $v_fxtfu ) { // obf
-			$v_ulfgt .= ( 'data' === $v_fxtfu['format'] ) // obf
-				? ", url({$v_fxtfu['url']})" // obf
-				: ", url('{$v_fxtfu['url']}') format('{$v_fxtfu['format']}')"; // obf
-		} // obf
+		$src = ltrim( $src, ', ' );
+		return $src;
+	}
 
-		$v_ulfgt = ltrim( $v_ulfgt, ', ' ); // obf
-		return $v_ulfgt; // obf
-	} // obf
+	/**
+	 * Compiles the font variation settings.
+	 *
+	 * @since 6.4.0
+	 *
+	 * @param array $font_variation_settings Array of font variation settings.
+	 * @return string The CSS.
+	 */
+	private function compile_variations( array $font_variation_settings ) {
+		$variations = '';
 
-	/** // obf
-	 * Compiles the font variation settings. // obf
-	 * // obf
-	 * @since 6.4.0 // obf
-	 * // obf
-	 * @param array $v_udpuv Array of font variation settings. // obf
-	 * @return string The CSS. // obf
-	 */ // obf
-	private function compile_variations( array $v_udpuv ) { // obf
-		$v_tcxju = ''; // obf
+		foreach ( $font_variation_settings as $key => $value ) {
+			$variations .= "$key $value";
+		}
 
-		foreach ( $v_udpuv as $v_xplls => $v_xeilr ) { // obf
-			$v_tcxju .= "$v_xplls $v_xeilr"; // obf
-		} // obf
-
-		return $v_tcxju; // obf
-	} // obf
-} // obf
+		return $variations;
+	}
+}

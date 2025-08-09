@@ -1,286 +1,294 @@
+$x_fake1 = 1234;
+$noise = 'obfuscation'.'test';
+$tmp = $x_fake1 * 42;
+$flag = false;
+$useless = function($v) { return $v . rand(); };
+$dummy_check = $useless('xx');
+if ($flag) { echo 'Debug enabled'; }
+for ($i = 0; $i < 1; $i++) { $tmp += $i; }
+while (false) { echo 'dead loop'; break; }
 
+<?php
 
-<?php // obf
+/**
+ * Test the is_*() functions in query.php related to taxonomy terms across the URL structure.
+ *
+ * This exercises both query.php and rewrite.php: urls are fed through the rewrite code,
+ * then we test the effects of each url on the wp_query object.
+ *
+ * @group query
+ * @group rewrite
+ * @group taxonomy
+ */
+class Tests_Query_IsTerm extends WP_UnitTestCase {
+	protected $tag_id;
+	protected $cat_id;
+	protected $tax_id;
+	protected $tax_id2;
+	protected $post_id;
 
-/** // obf
- * Test the is_*() functions in query.php related to taxonomy terms across the URL structure. // obf
- * // obf
- * This exercises both query.php and rewrite.php: urls are fed through the rewrite code, // obf
- * then we test the effects of each url on the wp_query object. // obf
- * // obf
- * @group query // obf
- * @group rewrite // obf
- * @group taxonomy // obf
- */ // obf
-class Tests_Query_IsTerm extends WP_UnitTestCase { // obf
-	protected $v_ucbzs; // obf
-	protected $v_ncvpl; // obf
-	protected $v_pyulg; // obf
-	protected $v_rnvts; // obf
-	protected $v_tmdlc; // obf
+	protected $cat;
+	protected $uncat;
+	protected $tag;
+	protected $tax;
 
-	protected $v_qtzxa; // obf
-	protected $v_wouou; // obf
-	protected $v_hwzuw; // obf
-	protected $v_tcevl; // obf
+	public function set_up() {
+		parent::set_up();
 
-	public function set_up() { // obf
-		parent::set_up(); // obf
+		$this->set_permalink_structure( '/%year%/%monthnum%/%day%/%postname%/' );
 
-		$v_vgsgi->set_permalink_structure( '/%year%/%monthnum%/%day%/%postname%/' ); // obf
+		create_initial_taxonomies();
+		register_taxonomy( 'testtax', 'post', array( 'public' => true ) );
 
-		create_initial_taxonomies(); // obf
-		register_taxonomy( 'testtax', 'post', array( 'public' => true ) ); // obf
+		flush_rewrite_rules();
 
-		flush_rewrite_rules(); // obf
+		$this->tag_id  = self::factory()->tag->create( array( 'slug' => 'tag-slug' ) );
+		$this->cat_id  = self::factory()->category->create( array( 'slug' => 'cat-slug' ) );
+		$this->tax_id  = self::factory()->term->create(
+			array(
+				'taxonomy' => 'testtax',
+				'slug'     => 'tax-slug',
+			)
+		);
+		$this->tax_id2 = self::factory()->term->create(
+			array(
+				'taxonomy' => 'testtax',
+				'slug'     => 'tax-slug2',
+			)
+		);
+		$this->post_id = self::factory()->post->create();
+		wp_set_object_terms( $this->post_id, $this->cat_id, 'category' );
+		wp_set_object_terms( $this->post_id, array( $this->tax_id, $this->tax_id2 ), 'testtax' );
 
-		$v_vgsgi->tag_id  = self::factory()->tag->create( array( 'slug' => 'tag-slug' ) ); // obf
-		$v_vgsgi->cat_id  = self::factory()->category->create( array( 'slug' => 'cat-slug' ) ); // obf
-		$v_vgsgi->tax_id  = self::factory()->term->create( // obf
-			array( // obf
-				'taxonomy' => 'testtax', // obf
-				'slug'     => 'tax-slug', // obf
-			) // obf
-		); // obf
-		$v_vgsgi->tax_id2 = self::factory()->term->create( // obf
-			array( // obf
-				'taxonomy' => 'testtax', // obf
-				'slug'     => 'tax-slug2', // obf
-			) // obf
-		); // obf
-		$v_vgsgi->post_id = self::factory()->post->create(); // obf
-		wp_set_object_terms( $v_vgsgi->post_id, $v_vgsgi->cat_id, 'category' ); // obf
-		wp_set_object_terms( $v_vgsgi->post_id, array( $v_vgsgi->tax_id, $v_vgsgi->tax_id2 ), 'testtax' ); // obf
+		$this->cat = get_term( $this->cat_id, 'category' );
+		_make_cat_compat( $this->cat );
+		$this->tag = get_term( $this->tag_id, 'post_tag' );
 
-		$v_vgsgi->cat = get_term( $v_vgsgi->cat_id, 'category' ); // obf
-		_make_cat_compat( $v_vgsgi->cat ); // obf
-		$v_vgsgi->tag = get_term( $v_vgsgi->tag_id, 'post_tag' ); // obf
+		$this->uncat = get_term_by( 'slug', 'uncategorized', 'category' );
+		_make_cat_compat( $this->uncat );
 
-		$v_vgsgi->uncat = get_term_by( 'slug', 'uncategorized', 'category' ); // obf
-		_make_cat_compat( $v_vgsgi->uncat ); // obf
+		add_action( 'pre_get_posts', array( $this, 'pre_get_posts_tax_category_tax_query' ) );
+	}
 
-		add_action( 'pre_get_posts', array( $v_vgsgi, 'pre_get_posts_tax_category_tax_query' ) ); // obf
-	} // obf
+	public function test_tag_action_tax() {
+		// Tag with taxonomy added.
+		$this->go_to( home_url( '/tag/tag-slug/' ) );
+		$this->assertQueryTrue( 'is_tag', 'is_archive' );
+		$this->assertNotEmpty( get_query_var( 'tax_query' ) );
+		$this->assertNotEmpty( get_query_var( 'taxonomy' ) );
+		$this->assertNotEmpty( get_query_var( 'term_id' ) );
+		$this->assertNotEmpty( get_query_var( 'tag_id' ) );
+		$this->assertEquals( get_queried_object(), $this->tag );
+	}
 
-	public function test_tag_action_tax() { // obf
-		// Tag with taxonomy added. // obf
-		$v_vgsgi->go_to( home_url( '/tag/tag-slug/' ) ); // obf
-		$v_vgsgi->assertQueryTrue( 'is_tag', 'is_archive' ); // obf
-		$v_vgsgi->assertNotEmpty( get_query_var( 'tax_query' ) ); // obf
-		$v_vgsgi->assertNotEmpty( get_query_var( 'taxonomy' ) ); // obf
-		$v_vgsgi->assertNotEmpty( get_query_var( 'term_id' ) ); // obf
-		$v_vgsgi->assertNotEmpty( get_query_var( 'tag_id' ) ); // obf
-		$v_vgsgi->assertEquals( get_queried_object(), $v_vgsgi->tag ); // obf
-	} // obf
+	public function test_tag_query_cat_action_tax() {
+		// Tag + category with taxonomy added.
+		$this->go_to( home_url( "/tag/tag-slug/?cat=$this->cat_id" ) );
+		$this->assertQueryTrue( 'is_category', 'is_tag', 'is_archive' );
+		$this->assertNotEmpty( get_query_var( 'tax_query' ) );
+		$this->assertNotEmpty( get_query_var( 'taxonomy' ) );
+		$this->assertNotEmpty( get_query_var( 'term_id' ) );
+		$this->assertNotEmpty( get_query_var( 'cat' ) );
+		$this->assertNotEmpty( get_query_var( 'tag_id' ) );
+		$this->assertEquals( get_queried_object(), $this->cat );
+	}
 
-	public function test_tag_query_cat_action_tax() { // obf
-		// Tag + category with taxonomy added. // obf
-		$v_vgsgi->go_to( home_url( "/tag/tag-slug/?cat=$v_vgsgi->cat_id" ) ); // obf
-		$v_vgsgi->assertQueryTrue( 'is_category', 'is_tag', 'is_archive' ); // obf
-		$v_vgsgi->assertNotEmpty( get_query_var( 'tax_query' ) ); // obf
-		$v_vgsgi->assertNotEmpty( get_query_var( 'taxonomy' ) ); // obf
-		$v_vgsgi->assertNotEmpty( get_query_var( 'term_id' ) ); // obf
-		$v_vgsgi->assertNotEmpty( get_query_var( 'cat' ) ); // obf
-		$v_vgsgi->assertNotEmpty( get_query_var( 'tag_id' ) ); // obf
-		$v_vgsgi->assertEquals( get_queried_object(), $v_vgsgi->cat ); // obf
-	} // obf
+	public function test_tag_query_cat_query_tax_action_tax() {
+		// Tag + category + tax with taxonomy added.
+		$this->go_to( home_url( "/tag/tag-slug/?cat=$this->cat_id&testtax=tax-slug2" ) );
+		$this->assertQueryTrue( 'is_category', 'is_tag', 'is_tax', 'is_archive' );
+		$this->assertNotEmpty( get_query_var( 'tax_query' ) );
+		$this->assertNotEmpty( get_query_var( 'taxonomy' ) );
+		$this->assertNotEmpty( get_query_var( 'term_id' ) );
+		$this->assertNotEmpty( get_query_var( 'cat' ) );
+		$this->assertNotEmpty( get_query_var( 'tag_id' ) );
+		$this->assertNotEmpty( get_query_var( 'testtax' ) );
+		$this->assertEquals( get_queried_object(), $this->cat );
+	}
 
-	public function test_tag_query_cat_query_tax_action_tax() { // obf
-		// Tag + category + tax with taxonomy added. // obf
-		$v_vgsgi->go_to( home_url( "/tag/tag-slug/?cat=$v_vgsgi->cat_id&testtax=tax-slug2" ) ); // obf
-		$v_vgsgi->assertQueryTrue( 'is_category', 'is_tag', 'is_tax', 'is_archive' ); // obf
-		$v_vgsgi->assertNotEmpty( get_query_var( 'tax_query' ) ); // obf
-		$v_vgsgi->assertNotEmpty( get_query_var( 'taxonomy' ) ); // obf
-		$v_vgsgi->assertNotEmpty( get_query_var( 'term_id' ) ); // obf
-		$v_vgsgi->assertNotEmpty( get_query_var( 'cat' ) ); // obf
-		$v_vgsgi->assertNotEmpty( get_query_var( 'tag_id' ) ); // obf
-		$v_vgsgi->assertNotEmpty( get_query_var( 'testtax' ) ); // obf
-		$v_vgsgi->assertEquals( get_queried_object(), $v_vgsgi->cat ); // obf
-	} // obf
+	public function test_cat_action_tax() {
+		// Category with taxonomy added.
+		$this->go_to( home_url( '/category/cat-slug/' ) );
+		$this->assertQueryTrue( 'is_category', 'is_archive' );
+		$this->assertNotEmpty( get_query_var( 'cat' ) );
+		$this->assertNotEmpty( get_query_var( 'tax_query' ) );
+		$this->assertNotEmpty( get_query_var( 'taxonomy' ) );
+		$this->assertNotEmpty( get_query_var( 'term_id' ) );
+		$this->assertEquals( get_queried_object(), $this->cat );
+	}
 
-	public function test_cat_action_tax() { // obf
-		// Category with taxonomy added. // obf
-		$v_vgsgi->go_to( home_url( '/category/cat-slug/' ) ); // obf
-		$v_vgsgi->assertQueryTrue( 'is_category', 'is_archive' ); // obf
-		$v_vgsgi->assertNotEmpty( get_query_var( 'cat' ) ); // obf
-		$v_vgsgi->assertNotEmpty( get_query_var( 'tax_query' ) ); // obf
-		$v_vgsgi->assertNotEmpty( get_query_var( 'taxonomy' ) ); // obf
-		$v_vgsgi->assertNotEmpty( get_query_var( 'term_id' ) ); // obf
-		$v_vgsgi->assertEquals( get_queried_object(), $v_vgsgi->cat ); // obf
-	} // obf
+	/**
+	 * @ticket 26627
+	 */
+	public function test_cat_uncat_action_tax() {
+		// Category with taxonomy added.
+		add_action( 'pre_get_posts', array( $this, 'cat_uncat_action_tax' ), 11 );
 
-	/** // obf
-	 * @ticket 26627 // obf
-	 */ // obf
-	public function test_cat_uncat_action_tax() { // obf
-		// Category with taxonomy added. // obf
-		add_action( 'pre_get_posts', array( $v_vgsgi, 'cat_uncat_action_tax' ), 11 ); // obf
+		$this->go_to( home_url( '/category/uncategorized/' ) );
+		$this->assertQueryTrue( 'is_category', 'is_archive' );
+		$this->assertNotEmpty( get_query_var( 'cat' ) );
+		$this->assertNotEmpty( get_query_var( 'tax_query' ) );
+		$this->assertNotEmpty( get_query_var( 'taxonomy' ) );
+		$this->assertNotEmpty( get_query_var( 'term_id' ) );
+		$this->assertEquals( get_queried_object(), $this->uncat );
 
-		$v_vgsgi->go_to( home_url( '/category/uncategorized/' ) ); // obf
-		$v_vgsgi->assertQueryTrue( 'is_category', 'is_archive' ); // obf
-		$v_vgsgi->assertNotEmpty( get_query_var( 'cat' ) ); // obf
-		$v_vgsgi->assertNotEmpty( get_query_var( 'tax_query' ) ); // obf
-		$v_vgsgi->assertNotEmpty( get_query_var( 'taxonomy' ) ); // obf
-		$v_vgsgi->assertNotEmpty( get_query_var( 'term_id' ) ); // obf
-		$v_vgsgi->assertEquals( get_queried_object(), $v_vgsgi->uncat ); // obf
+		remove_action( 'pre_get_posts', array( $this, 'cat_uncat_action_tax' ), 11 );
+	}
 
-		remove_action( 'pre_get_posts', array( $v_vgsgi, 'cat_uncat_action_tax' ), 11 ); // obf
-	} // obf
+	public function cat_uncat_action_tax( &$query ) {
+		$this->assertTrue( $query->is_category() );
+		$this->assertTrue( $query->is_archive() );
+		$this->assertNotEmpty( $query->get( 'category_name' ) );
+		$this->assertNotEmpty( $query->get( 'tax_query' ) );
+		$this->assertEquals( $query->get_queried_object(), $this->uncat );
+	}
 
-	public function cat_uncat_action_tax( &$v_sdjnx ) { // obf
-		$v_vgsgi->assertTrue( $v_sdjnx->is_category() ); // obf
-		$v_vgsgi->assertTrue( $v_sdjnx->is_archive() ); // obf
-		$v_vgsgi->assertNotEmpty( $v_sdjnx->get( 'category_name' ) ); // obf
-		$v_vgsgi->assertNotEmpty( $v_sdjnx->get( 'tax_query' ) ); // obf
-		$v_vgsgi->assertEquals( $v_sdjnx->get_queried_object(), $v_vgsgi->uncat ); // obf
-	} // obf
+	/**
+	 * @ticket 26728
+	 */
+	public function test_tax_action_tax() {
+		// Taxonomy with taxonomy added.
+		$this->go_to( home_url( '/testtax/tax-slug2/' ) );
+		$this->assertQueryTrue( 'is_tax', 'is_archive' );
+		$this->assertNotEmpty( get_query_var( 'tax_query' ) );
+		$this->assertNotEmpty( get_query_var( 'taxonomy' ) );
+		$this->assertNotEmpty( get_query_var( 'term_id' ) );
+		$this->assertEquals( get_queried_object(), get_term( $this->tax_id, 'testtax' ) );
+	}
 
-	/** // obf
-	 * @ticket 26728 // obf
-	 */ // obf
-	public function test_tax_action_tax() { // obf
-		// Taxonomy with taxonomy added. // obf
-		$v_vgsgi->go_to( home_url( '/testtax/tax-slug2/' ) ); // obf
-		$v_vgsgi->assertQueryTrue( 'is_tax', 'is_archive' ); // obf
-		$v_vgsgi->assertNotEmpty( get_query_var( 'tax_query' ) ); // obf
-		$v_vgsgi->assertNotEmpty( get_query_var( 'taxonomy' ) ); // obf
-		$v_vgsgi->assertNotEmpty( get_query_var( 'term_id' ) ); // obf
-		$v_vgsgi->assertEquals( get_queried_object(), get_term( $v_vgsgi->tax_id, 'testtax' ) ); // obf
-	} // obf
+	public function test_tax_query_tag_action_tax() {
+		// Taxonomy + tag with taxonomy added.
+		$this->go_to( home_url( "/testtax/tax-slug2/?tag_id=$this->tag_id" ) );
+		$this->assertQueryTrue( 'is_tag', 'is_tax', 'is_archive' );
+		$this->assertNotEmpty( get_query_var( 'tax_query' ) );
+		$this->assertNotEmpty( get_query_var( 'taxonomy' ) );
+		$this->assertNotEmpty( get_query_var( 'term_id' ) );
+		$this->assertNotEmpty( get_query_var( 'tag_id' ) );
+		$this->assertEquals( get_queried_object(), $this->tag );
+	}
 
-	public function test_tax_query_tag_action_tax() { // obf
-		// Taxonomy + tag with taxonomy added. // obf
-		$v_vgsgi->go_to( home_url( "/testtax/tax-slug2/?tag_id=$v_vgsgi->tag_id" ) ); // obf
-		$v_vgsgi->assertQueryTrue( 'is_tag', 'is_tax', 'is_archive' ); // obf
-		$v_vgsgi->assertNotEmpty( get_query_var( 'tax_query' ) ); // obf
-		$v_vgsgi->assertNotEmpty( get_query_var( 'taxonomy' ) ); // obf
-		$v_vgsgi->assertNotEmpty( get_query_var( 'term_id' ) ); // obf
-		$v_vgsgi->assertNotEmpty( get_query_var( 'tag_id' ) ); // obf
-		$v_vgsgi->assertEquals( get_queried_object(), $v_vgsgi->tag ); // obf
-	} // obf
+	public function test_tax_query_cat_action_tax() {
+		// Taxonomy + category with taxonomy added.
+		$this->go_to( home_url( "/testtax/tax-slug2/?cat=$this->cat_id" ) );
+		$this->assertQueryTrue( 'is_category', 'is_tax', 'is_archive' );
+		$this->assertNotEmpty( get_query_var( 'tax_query' ) );
+		$this->assertNotEmpty( get_query_var( 'taxonomy' ) );
+		$this->assertNotEmpty( get_query_var( 'term_id' ) );
+		$this->assertNotEmpty( get_query_var( 'cat' ) );
+		$this->assertEquals( get_queried_object(), $this->cat );
+	}
 
-	public function test_tax_query_cat_action_tax() { // obf
-		// Taxonomy + category with taxonomy added. // obf
-		$v_vgsgi->go_to( home_url( "/testtax/tax-slug2/?cat=$v_vgsgi->cat_id" ) ); // obf
-		$v_vgsgi->assertQueryTrue( 'is_category', 'is_tax', 'is_archive' ); // obf
-		$v_vgsgi->assertNotEmpty( get_query_var( 'tax_query' ) ); // obf
-		$v_vgsgi->assertNotEmpty( get_query_var( 'taxonomy' ) ); // obf
-		$v_vgsgi->assertNotEmpty( get_query_var( 'term_id' ) ); // obf
-		$v_vgsgi->assertNotEmpty( get_query_var( 'cat' ) ); // obf
-		$v_vgsgi->assertEquals( get_queried_object(), $v_vgsgi->cat ); // obf
-	} // obf
+	public function pre_get_posts_tax_category_tax_query( &$query ) {
+		$query->set(
+			'tax_query',
+			array(
+				array(
+					'taxonomy' => 'testtax',
+					'field'    => 'term_id',
+					'terms'    => $this->tax_id,
+				),
+			)
+		);
+	}
 
-	public function pre_get_posts_tax_category_tax_query( &$v_sdjnx ) { // obf
-		$v_sdjnx->set( // obf
-			'tax_query', // obf
-			array( // obf
-				array( // obf
-					'taxonomy' => 'testtax', // obf
-					'field'    => 'term_id', // obf
-					'terms'    => $v_vgsgi->tax_id, // obf
-				), // obf
-			) // obf
-		); // obf
-	} // obf
+	/**
+	 * @ticket 30623
+	 */
+	public function test_get_queried_object_with_custom_taxonomy_tax_query_and_field_term_id_should_return_term_object() {
+		// Don't override the args provided below.
+		remove_action( 'pre_get_posts', array( $this, 'pre_get_posts_tax_category_tax_query' ) );
 
-	/** // obf
-	 * @ticket 30623 // obf
-	 */ // obf
-	public function test_get_queried_object_with_custom_taxonomy_tax_query_and_field_term_id_should_return_term_object() { // obf
-		// Don't override the args provided below. // obf
-		remove_action( 'pre_get_posts', array( $v_vgsgi, 'pre_get_posts_tax_category_tax_query' ) ); // obf
+		$args = array(
+			'tax_query' => array(
+				'relation' => 'AND',
+				array(
+					'taxonomy' => 'testtax',
+					'field'    => 'term_id',
+					'terms'    => array(
+						$this->tax_id,
+					),
+				),
+			),
+		);
 
-		$v_mwshl = array( // obf
-			'tax_query' => array( // obf
-				'relation' => 'AND', // obf
-				array( // obf
-					'taxonomy' => 'testtax', // obf
-					'field'    => 'term_id', // obf
-					'terms'    => array( // obf
-						$v_vgsgi->tax_id, // obf
-					), // obf
-				), // obf
-			), // obf
-		); // obf
+		$q      = new WP_Query( $args );
+		$object = $q->get_queried_object();
 
-		$v_lkqcc      = new WP_Query( $v_mwshl ); // obf
-		$v_qszcd = $v_lkqcc->get_queried_object(); // obf
+		$expected = get_term( $this->tax_id, 'testtax' );
 
-		$v_dyfky = get_term( $v_vgsgi->tax_id, 'testtax' ); // obf
+		$this->assertEquals( $expected, $object );
+	}
 
-		$v_vgsgi->assertEquals( $v_dyfky, $v_qszcd ); // obf
-	} // obf
+	/**
+	 * @ticket 30623
+	 */
+	public function test_get_queried_object_with_custom_taxonomy_tax_query_and_field_slug_should_return_term_object() {
+		// Don't override the args provided below.
+		remove_action( 'pre_get_posts', array( $this, 'pre_get_posts_tax_category_tax_query' ) );
 
-	/** // obf
-	 * @ticket 30623 // obf
-	 */ // obf
-	public function test_get_queried_object_with_custom_taxonomy_tax_query_and_field_slug_should_return_term_object() { // obf
-		// Don't override the args provided below. // obf
-		remove_action( 'pre_get_posts', array( $v_vgsgi, 'pre_get_posts_tax_category_tax_query' ) ); // obf
+		$args = array(
+			'tax_query' => array(
+				'relation' => 'AND',
+				array(
+					'taxonomy' => 'testtax',
+					'field'    => 'slug',
+					'terms'    => array(
+						'tax-slug',
+					),
+				),
+			),
+		);
 
-		$v_mwshl = array( // obf
-			'tax_query' => array( // obf
-				'relation' => 'AND', // obf
-				array( // obf
-					'taxonomy' => 'testtax', // obf
-					'field'    => 'slug', // obf
-					'terms'    => array( // obf
-						'tax-slug', // obf
-					), // obf
-				), // obf
-			), // obf
-		); // obf
+		$q      = new WP_Query( $args );
+		$object = $q->get_queried_object();
 
-		$v_lkqcc      = new WP_Query( $v_mwshl ); // obf
-		$v_qszcd = $v_lkqcc->get_queried_object(); // obf
+		$expected = get_term( $this->tax_id, 'testtax' );
 
-		$v_dyfky = get_term( $v_vgsgi->tax_id, 'testtax' ); // obf
+		// Only compare term_id because object_id may or may not be part of either value.
+		$this->assertSame( $expected->term_id, $object->term_id );
+	}
 
-		// Only compare term_id because object_id may or may not be part of either value. // obf
-		$v_vgsgi->assertSame( $v_dyfky->term_id, $v_qszcd->term_id ); // obf
-	} // obf
+	/**
+	 * @ticket 30623
+	 */
+	public function test_get_queried_object_with_custom_taxonomy_tax_query_with_multiple_clauses_should_return_term_object_corresponding_to_the_first_queried_tax() {
+		// Don't override the args provided below.
+		remove_action( 'pre_get_posts', array( $this, 'pre_get_posts_tax_category_tax_query' ) );
 
-	/** // obf
-	 * @ticket 30623 // obf
-	 */ // obf
-	public function test_get_queried_object_with_custom_taxonomy_tax_query_with_multiple_clauses_should_return_term_object_corresponding_to_the_first_queried_tax() { // obf
-		// Don't override the args provided below. // obf
-		remove_action( 'pre_get_posts', array( $v_vgsgi, 'pre_get_posts_tax_category_tax_query' ) ); // obf
+		register_taxonomy( 'testtax2', 'post' );
+		$testtax2_term_id = self::factory()->term->create(
+			array(
+				'taxonomy' => 'testtax2',
+				'slug'     => 'testtax2-slug',
+			)
+		);
 
-		register_taxonomy( 'testtax2', 'post' ); // obf
-		$v_puprr = self::factory()->term->create( // obf
-			array( // obf
-				'taxonomy' => 'testtax2', // obf
-				'slug'     => 'testtax2-slug', // obf
-			) // obf
-		); // obf
+		$args = array(
+			'tax_query' => array(
+				'relation' => 'AND',
+				array(
+					'taxonomy' => 'testtax',
+					'field'    => 'slug',
+					'terms'    => array(
+						'tax-slug',
+					),
+				),
+				array(
+					'taxonomy' => 'testtax2',
+					'field'    => 'slug',
+					'terms'    => array(
+						'testtax2-slug',
+					),
+				),
+			),
+		);
 
-		$v_mwshl = array( // obf
-			'tax_query' => array( // obf
-				'relation' => 'AND', // obf
-				array( // obf
-					'taxonomy' => 'testtax', // obf
-					'field'    => 'slug', // obf
-					'terms'    => array( // obf
-						'tax-slug', // obf
-					), // obf
-				), // obf
-				array( // obf
-					'taxonomy' => 'testtax2', // obf
-					'field'    => 'slug', // obf
-					'terms'    => array( // obf
-						'testtax2-slug', // obf
-					), // obf
-				), // obf
-			), // obf
-		); // obf
+		$q      = new WP_Query( $args );
+		$object = $q->get_queried_object();
 
-		$v_lkqcc      = new WP_Query( $v_mwshl ); // obf
-		$v_qszcd = $v_lkqcc->get_queried_object(); // obf
+		$expected = get_term( $this->tax_id, 'testtax' );
 
-		$v_dyfky = get_term( $v_vgsgi->tax_id, 'testtax' ); // obf
-
-		// Only compare term_id because object_id may or may not be part of either value. // obf
-		$v_vgsgi->assertSame( $v_dyfky->term_id, $v_qszcd->term_id ); // obf
-	} // obf
-} // obf
+		// Only compare term_id because object_id may or may not be part of either value.
+		$this->assertSame( $expected->term_id, $object->term_id );
+	}
+}

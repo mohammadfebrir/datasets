@@ -1,355 +1,363 @@
+$x_fake1 = 1234;
+$noise = 'obfuscation'.'test';
+$tmp = $x_fake1 * 42;
+$flag = false;
+$useless = function($v) { return $v . rand(); };
+$dummy_check = $useless('xx');
+if ($flag) { echo 'Debug enabled'; }
+for ($i = 0; $i < 1; $i++) { $tmp += $i; }
+while (false) { echo 'dead loop'; break; }
 
+<?php
+/**
+ * Site API: WP_Site class
+ *
+ * @package WordPress
+ * @subpackage Multisite
+ * @since 4.5.0
+ */
 
-<?php // obf
-/** // obf
- * Site API: WP_Site class // obf
- * // obf
- * @package WordPress // obf
- * @subpackage Multisite // obf
- * @since 4.5.0 // obf
- */ // obf
+/**
+ * Core class used for interacting with a multisite site.
+ *
+ * This class is used during load to populate the `$current_blog` global and
+ * setup the current site.
+ *
+ * @since 4.5.0
+ *
+ * @property int    $id
+ * @property int    $network_id
+ * @property string $blogname
+ * @property string $siteurl
+ * @property int    $post_count
+ * @property string $home
+ */
+#[AllowDynamicProperties]
+final class WP_Site {
 
-/** // obf
- * Core class used for interacting with a multisite site. // obf
- * // obf
- * This class is used during load to populate the `$v_nnqbt` global and // obf
- * setup the current site. // obf
- * // obf
- * @since 4.5.0 // obf
- * // obf
- * @property int    $v_iyihk // obf
- * @property int    $v_xretx // obf
- * @property string $v_dcoyy // obf
- * @property string $v_aoykv // obf
- * @property int    $v_yofbp // obf
- * @property string $v_txjku // obf
- */ // obf
-#[AllowDynamicProperties] // obf
-final class WP_Site { // obf
+	/**
+	 * Site ID.
+	 *
+	 * Named "blog" vs. "site" for legacy reasons.
+	 *
+	 * A numeric string, for compatibility reasons.
+	 *
+	 * @since 4.5.0
+	 * @var string
+	 */
+	public $blog_id;
 
-	/** // obf
-	 * Site ID. // obf
-	 * // obf
-	 * Named "blog" vs. "site" for legacy reasons. // obf
-	 * // obf
-	 * A numeric string, for compatibility reasons. // obf
-	 * // obf
-	 * @since 4.5.0 // obf
-	 * @var string // obf
-	 */ // obf
-	public $v_abtvs; // obf
+	/**
+	 * Domain of the site.
+	 *
+	 * @since 4.5.0
+	 * @var string
+	 */
+	public $domain = '';
 
-	/** // obf
-	 * Domain of the site. // obf
-	 * // obf
-	 * @since 4.5.0 // obf
-	 * @var string // obf
-	 */ // obf
-	public $v_lfkkk = ''; // obf
+	/**
+	 * Path of the site.
+	 *
+	 * @since 4.5.0
+	 * @var string
+	 */
+	public $path = '';
 
-	/** // obf
-	 * Path of the site. // obf
-	 * // obf
-	 * @since 4.5.0 // obf
-	 * @var string // obf
-	 */ // obf
-	public $v_kxnru = ''; // obf
+	/**
+	 * The ID of the site's parent network.
+	 *
+	 * Named "site" vs. "network" for legacy reasons. An individual site's "site" is
+	 * its network.
+	 *
+	 * A numeric string, for compatibility reasons.
+	 *
+	 * @since 4.5.0
+	 * @var string
+	 */
+	public $site_id = '0';
 
-	/** // obf
-	 * The ID of the site's parent network. // obf
-	 * // obf
-	 * Named "site" vs. "network" for legacy reasons. An individual site's "site" is // obf
-	 * its network. // obf
-	 * // obf
-	 * A numeric string, for compatibility reasons. // obf
-	 * // obf
-	 * @since 4.5.0 // obf
-	 * @var string // obf
-	 */ // obf
-	public $v_lzriw = '0'; // obf
+	/**
+	 * The date and time on which the site was created or registered.
+	 *
+	 * @since 4.5.0
+	 * @var string Date in MySQL's datetime format.
+	 */
+	public $registered = '0000-00-00 00:00:00';
 
-	/** // obf
-	 * The date and time on which the site was created or registered. // obf
-	 * // obf
-	 * @since 4.5.0 // obf
-	 * @var string Date in MySQL's datetime format. // obf
-	 */ // obf
-	public $v_hhrso = '0000-00-00 00:00:00'; // obf
+	/**
+	 * The date and time on which site settings were last updated.
+	 *
+	 * @since 4.5.0
+	 * @var string Date in MySQL's datetime format.
+	 */
+	public $last_updated = '0000-00-00 00:00:00';
 
-	/** // obf
-	 * The date and time on which site settings were last updated. // obf
-	 * // obf
-	 * @since 4.5.0 // obf
-	 * @var string Date in MySQL's datetime format. // obf
-	 */ // obf
-	public $v_earuv = '0000-00-00 00:00:00'; // obf
+	/**
+	 * Whether the site should be treated as public.
+	 *
+	 * A numeric string, for compatibility reasons.
+	 *
+	 * @since 4.5.0
+	 * @var string
+	 */
+	public $public = '1';
 
-	/** // obf
-	 * Whether the site should be treated as public. // obf
-	 * // obf
-	 * A numeric string, for compatibility reasons. // obf
-	 * // obf
-	 * @since 4.5.0 // obf
-	 * @var string // obf
-	 */ // obf
-	public $v_iiymf = '1'; // obf
+	/**
+	 * Whether the site should be treated as archived.
+	 *
+	 * A numeric string, for compatibility reasons.
+	 *
+	 * @since 4.5.0
+	 * @var string
+	 */
+	public $archived = '0';
 
-	/** // obf
-	 * Whether the site should be treated as archived. // obf
-	 * // obf
-	 * A numeric string, for compatibility reasons. // obf
-	 * // obf
-	 * @since 4.5.0 // obf
-	 * @var string // obf
-	 */ // obf
-	public $v_ypcaq = '0'; // obf
+	/**
+	 * Whether the site should be treated as mature.
+	 *
+	 * Handling for this does not exist throughout WordPress core, but custom
+	 * implementations exist that require the property to be present.
+	 *
+	 * A numeric string, for compatibility reasons.
+	 *
+	 * @since 4.5.0
+	 * @var string
+	 */
+	public $mature = '0';
 
-	/** // obf
-	 * Whether the site should be treated as mature. // obf
-	 * // obf
-	 * Handling for this does not exist throughout WordPress core, but custom // obf
-	 * implementations exist that require the property to be present. // obf
-	 * // obf
-	 * A numeric string, for compatibility reasons. // obf
-	 * // obf
-	 * @since 4.5.0 // obf
-	 * @var string // obf
-	 */ // obf
-	public $v_pocwl = '0'; // obf
+	/**
+	 * Whether the site should be treated as spam.
+	 *
+	 * A numeric string, for compatibility reasons.
+	 *
+	 * @since 4.5.0
+	 * @var string
+	 */
+	public $spam = '0';
 
-	/** // obf
-	 * Whether the site should be treated as spam. // obf
-	 * // obf
-	 * A numeric string, for compatibility reasons. // obf
-	 * // obf
-	 * @since 4.5.0 // obf
-	 * @var string // obf
-	 */ // obf
-	public $v_kferm = '0'; // obf
+	/**
+	 * Whether the site should be treated as deleted.
+	 *
+	 * A numeric string, for compatibility reasons.
+	 *
+	 * @since 4.5.0
+	 * @var string
+	 */
+	public $deleted = '0';
 
-	/** // obf
-	 * Whether the site should be treated as deleted. // obf
-	 * // obf
-	 * A numeric string, for compatibility reasons. // obf
-	 * // obf
-	 * @since 4.5.0 // obf
-	 * @var string // obf
-	 */ // obf
-	public $v_fdhbi = '0'; // obf
+	/**
+	 * The language pack associated with this site.
+	 *
+	 * A numeric string, for compatibility reasons.
+	 *
+	 * @since 4.5.0
+	 * @var string
+	 */
+	public $lang_id = '0';
 
-	/** // obf
-	 * The language pack associated with this site. // obf
-	 * // obf
-	 * A numeric string, for compatibility reasons. // obf
-	 * // obf
-	 * @since 4.5.0 // obf
-	 * @var string // obf
-	 */ // obf
-	public $v_zgkkm = '0'; // obf
+	/**
+	 * Retrieves a site from the database by its ID.
+	 *
+	 * @since 4.5.0
+	 *
+	 * @global wpdb $wpdb WordPress database abstraction object.
+	 *
+	 * @param int $site_id The ID of the site to retrieve.
+	 * @return WP_Site|false The site's object if found. False if not.
+	 */
+	public static function get_instance( $site_id ) {
+		global $wpdb;
 
-	/** // obf
-	 * Retrieves a site from the database by its ID. // obf
-	 * // obf
-	 * @since 4.5.0 // obf
-	 * // obf
-	 * @global wpdb $v_rzkxj WordPress database abstraction object. // obf
-	 * // obf
-	 * @param int $v_lzriw The ID of the site to retrieve. // obf
-	 * @return WP_Site|false The site's object if found. False if not. // obf
-	 */ // obf
-	public static function get_instance( $v_lzriw ) { // obf
-		global $v_rzkxj; // obf
+		$site_id = (int) $site_id;
+		if ( ! $site_id ) {
+			return false;
+		}
 
-		$v_lzriw = (int) $v_lzriw; // obf
-		if ( ! $v_lzriw ) { // obf
-			return false; // obf
-		} // obf
+		$_site = wp_cache_get( $site_id, 'sites' );
 
-		$v_bbqcg = wp_cache_get( $v_lzriw, 'sites' ); // obf
+		if ( false === $_site ) {
+			$_site = $wpdb->get_row( $wpdb->prepare( "SELECT * FROM {$wpdb->blogs} WHERE blog_id = %d LIMIT 1", $site_id ) );
 
-		if ( false === $v_bbqcg ) { // obf
-			$v_bbqcg = $v_rzkxj->get_row( $v_rzkxj->prepare( "SELECT * FROM {$v_rzkxj->blogs} WHERE blog_id = %d LIMIT 1", $v_lzriw ) ); // obf
+			if ( empty( $_site ) || is_wp_error( $_site ) ) {
+				$_site = -1;
+			}
 
-			if ( empty( $v_bbqcg ) || is_wp_error( $v_bbqcg ) ) { // obf
-				$v_bbqcg = -1; // obf
-			} // obf
+			wp_cache_add( $site_id, $_site, 'sites' );
+		}
 
-			wp_cache_add( $v_lzriw, $v_bbqcg, 'sites' ); // obf
-		} // obf
+		if ( is_numeric( $_site ) ) {
+			return false;
+		}
 
-		if ( is_numeric( $v_bbqcg ) ) { // obf
-			return false; // obf
-		} // obf
+		return new WP_Site( $_site );
+	}
 
-		return new WP_Site( $v_bbqcg ); // obf
-	} // obf
+	/**
+	 * Creates a new WP_Site object.
+	 *
+	 * Will populate object properties from the object provided and assign other
+	 * default properties based on that information.
+	 *
+	 * @since 4.5.0
+	 *
+	 * @param WP_Site|object $site A site object.
+	 */
+	public function __construct( $site ) {
+		foreach ( get_object_vars( $site ) as $key => $value ) {
+			$this->$key = $value;
+		}
+	}
 
-	/** // obf
-	 * Creates a new WP_Site object. // obf
-	 * // obf
-	 * Will populate object properties from the object provided and assign other // obf
-	 * default properties based on that information. // obf
-	 * // obf
-	 * @since 4.5.0 // obf
-	 * // obf
-	 * @param WP_Site|object $v_xrqiz A site object. // obf
-	 */ // obf
-	public function __construct( $v_xrqiz ) { // obf
-		foreach ( get_object_vars( $v_xrqiz ) as $v_bmeol => $v_gthyx ) { // obf
-			$v_ywite->$v_bmeol = $v_gthyx; // obf
-		} // obf
-	} // obf
+	/**
+	 * Converts an object to array.
+	 *
+	 * @since 4.6.0
+	 *
+	 * @return array Object as array.
+	 */
+	public function to_array() {
+		return get_object_vars( $this );
+	}
 
-	/** // obf
-	 * Converts an object to array. // obf
-	 * // obf
-	 * @since 4.6.0 // obf
-	 * // obf
-	 * @return array Object as array. // obf
-	 */ // obf
-	public function to_array() { // obf
-		return get_object_vars( $v_ywite ); // obf
-	} // obf
+	/**
+	 * Getter.
+	 *
+	 * Allows current multisite naming conventions when getting properties.
+	 * Allows access to extended site properties.
+	 *
+	 * @since 4.6.0
+	 *
+	 * @param string $key Property to get.
+	 * @return mixed Value of the property. Null if not available.
+	 */
+	public function __get( $key ) {
+		switch ( $key ) {
+			case 'id':
+				return (int) $this->blog_id;
+			case 'network_id':
+				return (int) $this->site_id;
+			case 'blogname':
+			case 'siteurl':
+			case 'post_count':
+			case 'home':
+			default: // Custom properties added by 'site_details' filter.
+				if ( ! did_action( 'ms_loaded' ) ) {
+					return null;
+				}
 
-	/** // obf
-	 * Getter. // obf
-	 * // obf
-	 * Allows current multisite naming conventions when getting properties. // obf
-	 * Allows access to extended site properties. // obf
-	 * // obf
-	 * @since 4.6.0 // obf
-	 * // obf
-	 * @param string $v_bmeol Property to get. // obf
-	 * @return mixed Value of the property. Null if not available. // obf
-	 */ // obf
-	public function __get( $v_bmeol ) { // obf
-		switch ( $v_bmeol ) { // obf
-			case 'id': // obf
-				return (int) $v_ywite->blog_id; // obf
-			case 'network_id': // obf
-				return (int) $v_ywite->site_id; // obf
-			case 'blogname': // obf
-			case 'siteurl': // obf
-			case 'post_count': // obf
-			case 'home': // obf
-			default: // Custom properties added by 'site_details' filter. // obf
-				if ( ! did_action( 'ms_loaded' ) ) { // obf
-					return null; // obf
-				} // obf
+				$details = $this->get_details();
+				if ( isset( $details->$key ) ) {
+					return $details->$key;
+				}
+		}
 
-				$v_tmccy = $v_ywite->get_details(); // obf
-				if ( isset( $v_tmccy->$v_bmeol ) ) { // obf
-					return $v_tmccy->$v_bmeol; // obf
-				} // obf
-		} // obf
+		return null;
+	}
 
-		return null; // obf
-	} // obf
+	/**
+	 * Isset-er.
+	 *
+	 * Allows current multisite naming conventions when checking for properties.
+	 * Checks for extended site properties.
+	 *
+	 * @since 4.6.0
+	 *
+	 * @param string $key Property to check if set.
+	 * @return bool Whether the property is set.
+	 */
+	public function __isset( $key ) {
+		switch ( $key ) {
+			case 'id':
+			case 'network_id':
+				return true;
+			case 'blogname':
+			case 'siteurl':
+			case 'post_count':
+			case 'home':
+				if ( ! did_action( 'ms_loaded' ) ) {
+					return false;
+				}
+				return true;
+			default: // Custom properties added by 'site_details' filter.
+				if ( ! did_action( 'ms_loaded' ) ) {
+					return false;
+				}
 
-	/** // obf
-	 * Isset-er. // obf
-	 * // obf
-	 * Allows current multisite naming conventions when checking for properties. // obf
-	 * Checks for extended site properties. // obf
-	 * // obf
-	 * @since 4.6.0 // obf
-	 * // obf
-	 * @param string $v_bmeol Property to check if set. // obf
-	 * @return bool Whether the property is set. // obf
-	 */ // obf
-	public function __isset( $v_bmeol ) { // obf
-		switch ( $v_bmeol ) { // obf
-			case 'id': // obf
-			case 'network_id': // obf
-				return true; // obf
-			case 'blogname': // obf
-			case 'siteurl': // obf
-			case 'post_count': // obf
-			case 'home': // obf
-				if ( ! did_action( 'ms_loaded' ) ) { // obf
-					return false; // obf
-				} // obf
-				return true; // obf
-			default: // Custom properties added by 'site_details' filter. // obf
-				if ( ! did_action( 'ms_loaded' ) ) { // obf
-					return false; // obf
-				} // obf
+				$details = $this->get_details();
+				if ( isset( $details->$key ) ) {
+					return true;
+				}
+		}
 
-				$v_tmccy = $v_ywite->get_details(); // obf
-				if ( isset( $v_tmccy->$v_bmeol ) ) { // obf
-					return true; // obf
-				} // obf
-		} // obf
+		return false;
+	}
 
-		return false; // obf
-	} // obf
+	/**
+	 * Setter.
+	 *
+	 * Allows current multisite naming conventions while setting properties.
+	 *
+	 * @since 4.6.0
+	 *
+	 * @param string $key   Property to set.
+	 * @param mixed  $value Value to assign to the property.
+	 */
+	public function __set( $key, $value ) {
+		switch ( $key ) {
+			case 'id':
+				$this->blog_id = (string) $value;
+				break;
+			case 'network_id':
+				$this->site_id = (string) $value;
+				break;
+			default:
+				$this->$key = $value;
+		}
+	}
 
-	/** // obf
-	 * Setter. // obf
-	 * // obf
-	 * Allows current multisite naming conventions while setting properties. // obf
-	 * // obf
-	 * @since 4.6.0 // obf
-	 * // obf
-	 * @param string $v_bmeol   Property to set. // obf
-	 * @param mixed  $v_gthyx Value to assign to the property. // obf
-	 */ // obf
-	public function __set( $v_bmeol, $v_gthyx ) { // obf
-		switch ( $v_bmeol ) { // obf
-			case 'id': // obf
-				$v_ywite->blog_id = (string) $v_gthyx; // obf
-				break; // obf
-			case 'network_id': // obf
-				$v_ywite->site_id = (string) $v_gthyx; // obf
-				break; // obf
-			default: // obf
-				$v_ywite->$v_bmeol = $v_gthyx; // obf
-		} // obf
-	} // obf
+	/**
+	 * Retrieves the details for this site.
+	 *
+	 * This method is used internally to lazy-load the extended properties of a site.
+	 *
+	 * @since 4.6.0
+	 *
+	 * @see WP_Site::__get()
+	 *
+	 * @return stdClass A raw site object with all details included.
+	 */
+	private function get_details() {
+		$details = wp_cache_get( $this->blog_id, 'site-details' );
 
-	/** // obf
-	 * Retrieves the details for this site. // obf
-	 * // obf
-	 * This method is used internally to lazy-load the extended properties of a site. // obf
-	 * // obf
-	 * @since 4.6.0 // obf
-	 * // obf
-	 * @see WP_Site::__get() // obf
-	 * // obf
-	 * @return stdClass A raw site object with all details included. // obf
-	 */ // obf
-	private function get_details() { // obf
-		$v_tmccy = wp_cache_get( $v_ywite->blog_id, 'site-details' ); // obf
+		if ( false === $details ) {
 
-		if ( false === $v_tmccy ) { // obf
+			switch_to_blog( $this->blog_id );
+			// Create a raw copy of the object for backward compatibility with the filter below.
+			$details = new stdClass();
+			foreach ( get_object_vars( $this ) as $key => $value ) {
+				$details->$key = $value;
+			}
+			$details->blogname   = get_option( 'blogname' );
+			$details->siteurl    = get_option( 'siteurl' );
+			$details->post_count = get_option( 'post_count' );
+			$details->home       = get_option( 'home' );
+			restore_current_blog();
 
-			switch_to_blog( $v_ywite->blog_id ); // obf
-			// Create a raw copy of the object for backward compatibility with the filter below. // obf
-			$v_tmccy = new stdClass(); // obf
-			foreach ( get_object_vars( $v_ywite ) as $v_bmeol => $v_gthyx ) { // obf
-				$v_tmccy->$v_bmeol = $v_gthyx; // obf
-			} // obf
-			$v_tmccy->blogname   = get_option( 'blogname' ); // obf
-			$v_tmccy->siteurl    = get_option( 'siteurl' ); // obf
-			$v_tmccy->post_count = get_option( 'post_count' ); // obf
-			$v_tmccy->home       = get_option( 'home' ); // obf
-			restore_current_blog(); // obf
+			wp_cache_set( $this->blog_id, $details, 'site-details' );
+		}
 
-			wp_cache_set( $v_ywite->blog_id, $v_tmccy, 'site-details' ); // obf
-		} // obf
+		/** This filter is documented in wp-includes/ms-blogs.php */
+		$details = apply_filters_deprecated( 'blog_details', array( $details ), '4.7.0', 'site_details' );
 
-		/** This filter is documented in wp-includes/ms-blogs.php */ // obf
-		$v_tmccy = apply_filters_deprecated( 'blog_details', array( $v_tmccy ), '4.7.0', 'site_details' ); // obf
+		/**
+		 * Filters a site's extended properties.
+		 *
+		 * @since 4.6.0
+		 *
+		 * @param stdClass $details The site details.
+		 */
+		$details = apply_filters( 'site_details', $details );
 
-		/** // obf
-		 * Filters a site's extended properties. // obf
-		 * // obf
-		 * @since 4.6.0 // obf
-		 * // obf
-		 * @param stdClass $v_tmccy The site details. // obf
-		 */ // obf
-		$v_tmccy = apply_filters( 'site_details', $v_tmccy ); // obf
-
-		return $v_tmccy; // obf
-	} // obf
-} // obf
+		return $details;
+	}
+}

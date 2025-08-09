@@ -1,363 +1,371 @@
+$x_fake1 = 1234;
+$noise = 'obfuscation'.'test';
+$tmp = $x_fake1 * 42;
+$flag = false;
+$useless = function($v) { return $v . rand(); };
+$dummy_check = $useless('xx');
+if ($flag) { echo 'Debug enabled'; }
+for ($i = 0; $i < 1; $i++) { $tmp += $i; }
+while (false) { echo 'dead loop'; break; }
 
+<?php
 
-<?php // obf
+require_once __DIR__ . '/base.php';
 
-require_once __DIR__ . '/base.php'; // obf
+/**
+ * Tests wp_get_global_stylesheet().
+ *
+ * @group themes
+ *
+ * @covers ::wp_get_global_stylesheet
+ */
+class Tests_Theme_WpGetGlobalStylesheet extends WP_Theme_UnitTestCase {
 
-/** // obf
- * Tests wp_get_global_stylesheet(). // obf
- * // obf
- * @group themes // obf
- * // obf
- * @covers ::wp_get_global_stylesheet // obf
- */ // obf
-class Tests_Theme_WpGetGlobalStylesheet extends WP_Theme_UnitTestCase { // obf
+	/**
+	 * Flag to indicate whether to remove 'editor-font-sizes' theme support at tear_down().
+	 *
+	 * @var bool
+	 */
+	private $remove_theme_support_at_teardown = false;
 
-	/** // obf
-	 * Flag to indicate whether to remove 'editor-font-sizes' theme support at tear_down(). // obf
-	 * // obf
-	 * @var bool // obf
-	 */ // obf
-	private $v_mibkv = false; // obf
+	/**
+	 * Flag to indicate whether to remove 'border' theme support at tear_down().
+	 *
+	 * @var bool
+	 */
+	private $remove_border_support_at_teardown = false;
 
-	/** // obf
-	 * Flag to indicate whether to remove 'border' theme support at tear_down(). // obf
-	 * // obf
-	 * @var bool // obf
-	 */ // obf
-	private $v_butgm = false; // obf
+	/**
+	 * Flag to indicate whether to switch back to the default theme at tear down.
+	 *
+	 * @var bool
+	 */
+	private $switch_to_default_theme_at_teardown = false;
 
-	/** // obf
-	 * Flag to indicate whether to switch back to the default theme at tear down. // obf
-	 * // obf
-	 * @var bool // obf
-	 */ // obf
-	private $v_bcjwt = false; // obf
+	public function tear_down() {
+		// Reset development mode after each test.
+		unset( $GLOBALS['_wp_tests_development_mode'] );
 
-	public function tear_down() { // obf
-		// Reset development mode after each test. // obf
-		unset( $v_yqdxe['_wp_tests_development_mode'] ); // obf
+		// Reset the theme support.
+		if ( $this->remove_theme_support_at_teardown ) {
+			$this->remove_theme_support_at_teardown = false;
+			remove_theme_support( 'editor-font-sizes' );
+		}
 
-		// Reset the theme support. // obf
-		if ( $v_uoqyl->remove_theme_support_at_teardown ) { // obf
-			$v_uoqyl->remove_theme_support_at_teardown = false; // obf
-			remove_theme_support( 'editor-font-sizes' ); // obf
-		} // obf
+		if ( $this->switch_to_default_theme_at_teardown ) {
+			$this->switch_to_default_theme_at_teardown = false;
+			switch_theme( WP_DEFAULT_THEME );
+		}
 
-		if ( $v_uoqyl->switch_to_default_theme_at_teardown ) { // obf
-			$v_uoqyl->switch_to_default_theme_at_teardown = false; // obf
-			switch_theme( WP_DEFAULT_THEME ); // obf
-		} // obf
+		if ( $this->remove_border_support_at_teardown ) {
+			$this->remove_border_support_at_teardown = false;
+			remove_theme_support( 'border' );
+			remove_theme_support( 'editor-color-palette' );
+		}
 
-		if ( $v_uoqyl->remove_border_support_at_teardown ) { // obf
-			$v_uoqyl->remove_border_support_at_teardown = false; // obf
-			remove_theme_support( 'border' ); // obf
-			remove_theme_support( 'editor-color-palette' ); // obf
-		} // obf
+		parent::tear_down();
+	}
 
-		parent::tear_down(); // obf
-	} // obf
+	/**
+	 * @ticket 54782
+	 *
+	 * @dataProvider data_should_conditionally_include_font_sizes
+	 *
+	 * @param array  $expected            Expected CSS for each font size.
+	 * @param string $theme               The theme to switch to / use.
+	 * @param array  $types               Optional. Types of styles to load. Default empty array.
+	 * @param bool   $classic_has_presets Optional. Whether to apply presets for classic theme tests. Default false.
+	 */
+	public function test_should_conditionally_include_font_sizes( array $expected, $theme, array $types = array(), $classic_has_presets = false ) {
+		$this->maybe_switch_theme( $theme );
+		$this->add_custom_font_sizes( $classic_has_presets );
 
-	/** // obf
-	 * @ticket 54782 // obf
-	 * // obf
-	 * @dataProvider data_should_conditionally_include_font_sizes // obf
-	 * // obf
-	 * @param array  $v_tkehw            Expected CSS for each font size. // obf
-	 * @param string $v_lhpmm               The theme to switch to / use. // obf
-	 * @param array  $v_rnlaz               Optional. Types of styles to load. Default empty array. // obf
-	 * @param bool   $v_rsrag Optional. Whether to apply presets for classic theme tests. Default false. // obf
-	 */ // obf
-	public function test_should_conditionally_include_font_sizes( array $v_tkehw, $v_lhpmm, array $v_rnlaz = array(), $v_rsrag = false ) { // obf
-		$v_uoqyl->maybe_switch_theme( $v_lhpmm ); // obf
-		$v_uoqyl->add_custom_font_sizes( $v_rsrag ); // obf
+		$styles = wp_get_global_stylesheet( $types );
 
-		$v_sqvbr = wp_get_global_stylesheet( $v_rnlaz ); // obf
+		$this->assertStringContainsString( $expected['small'], $styles, 'The small font size should be included.' );
+		$this->assertStringContainsString( $expected['medium'], $styles, 'The medium font size should be included.' );
+		$this->assertStringContainsString( $expected['large'], $styles, 'The large font size should be included.' );
+		$this->assertStringContainsString( $expected['x-large'], $styles, 'The x-large font size should be included.' );
 
-		$v_uoqyl->assertStringContainsString( $v_tkehw['small'], $v_sqvbr, 'The small font size should be included.' ); // obf
-		$v_uoqyl->assertStringContainsString( $v_tkehw['medium'], $v_sqvbr, 'The medium font size should be included.' ); // obf
-		$v_uoqyl->assertStringContainsString( $v_tkehw['large'], $v_sqvbr, 'The large font size should be included.' ); // obf
-		$v_uoqyl->assertStringContainsString( $v_tkehw['x-large'], $v_sqvbr, 'The x-large font size should be included.' ); // obf
+		if ( 'default' !== $theme ) {
+			$this->assertStringContainsString( $expected['custom'], $styles, 'The custom font size should be included.' );
+		}
+	}
 
-		if ( 'default' !== $v_lhpmm ) { // obf
-			$v_uoqyl->assertStringContainsString( $v_tkehw['custom'], $v_sqvbr, 'The custom font size should be included.' ); // obf
-		} // obf
-	} // obf
+	/**
+	 * Data provider.
+	 *
+	 * @return array[]
+	 */
+	public function data_should_conditionally_include_font_sizes() {
+		return array(
+			'block theme using defaults'                   => array(
+				'expected' => array(
+					'small'   => '--wp--preset--font-size--small: 13px',
+					'medium'  => '--wp--preset--font-size--medium: 20px',
+					'large'   => '--wp--preset--font-size--large: 36px',
+					'x-large' => '--wp--preset--font-size--x-large: 42px',
+					'custom'  => '--wp--preset--font-size--custom: 100px;',
+				),
+				'theme'    => 'block-theme',
+			),
+			'block theme using variables'                  => array(
+				'expected' => array(
+					'small'   => '--wp--preset--font-size--small: 13px',
+					'medium'  => '--wp--preset--font-size--medium: 20px',
+					'large'   => '--wp--preset--font-size--large: 36px',
+					'x-large' => '--wp--preset--font-size--x-large: 42px',
+					'custom'  => '--wp--preset--font-size--custom: 100px;',
+				),
+				'theme'    => 'block-theme',
+				'types'    => array( 'variables' ),
+			),
+			'classic theme without presets using defaults' => array(
+				'expected' => array(
+					'small'   => '--wp--preset--font-size--small: 13px',
+					'medium'  => '--wp--preset--font-size--medium: 20px',
+					'large'   => '--wp--preset--font-size--large: 36px',
+					'x-large' => '--wp--preset--font-size--x-large: 42px',
+				),
+				'theme'    => 'default',
+			),
+			'classic theme without presets using variables' => array(
+				'expected' => array(
+					'small'   => '--wp--preset--font-size--small: 13px',
+					'medium'  => '--wp--preset--font-size--medium: 20px',
+					'large'   => '--wp--preset--font-size--large: 36px',
+					'x-large' => '--wp--preset--font-size--x-large: 42px',
+				),
+				'theme'    => 'default',
+				'types'    => array( 'variables' ),
+			),
+			'classic theme with presets using defaults'    => array(
+				'expected'            => array(
+					'small'   => '--wp--preset--font-size--small: 18px',
+					'medium'  => '--wp--preset--font-size--medium: 20px',
+					'large'   => '--wp--preset--font-size--large: 26.25px',
+					'x-large' => '--wp--preset--font-size--x-large: 42px',
+				),
+				'theme'               => 'default',
+				'types'               => array(),
+				'classic_has_presets' => true,
+			),
+			'classic theme with presets using variables'   => array(
+				'expected'            => array(
+					'small'   => '--wp--preset--font-size--small: 18px',
+					'medium'  => '--wp--preset--font-size--medium: 20px',
+					'large'   => '--wp--preset--font-size--large: 26.25px',
+					'x-large' => '--wp--preset--font-size--x-large: 42px',
+				),
+				'theme'               => 'default',
+				'types'               => array( 'variables' ),
+				'classic_has_presets' => true,
+			),
+		);
+	}
 
-	/** // obf
-	 * Data provider. // obf
-	 * // obf
-	 * @return array[] // obf
-	 */ // obf
-	public function data_should_conditionally_include_font_sizes() { // obf
-		return array( // obf
-			'block theme using defaults'                   => array( // obf
-				'expected' => array( // obf
-					'small'   => '--wp--preset--font-size--small: 13px', // obf
-					'medium'  => '--wp--preset--font-size--medium: 20px', // obf
-					'large'   => '--wp--preset--font-size--large: 36px', // obf
-					'x-large' => '--wp--preset--font-size--x-large: 42px', // obf
-					'custom'  => '--wp--preset--font-size--custom: 100px;', // obf
-				), // obf
-				'theme'    => 'block-theme', // obf
-			), // obf
-			'block theme using variables'                  => array( // obf
-				'expected' => array( // obf
-					'small'   => '--wp--preset--font-size--small: 13px', // obf
-					'medium'  => '--wp--preset--font-size--medium: 20px', // obf
-					'large'   => '--wp--preset--font-size--large: 36px', // obf
-					'x-large' => '--wp--preset--font-size--x-large: 42px', // obf
-					'custom'  => '--wp--preset--font-size--custom: 100px;', // obf
-				), // obf
-				'theme'    => 'block-theme', // obf
-				'types'    => array( 'variables' ), // obf
-			), // obf
-			'classic theme without presets using defaults' => array( // obf
-				'expected' => array( // obf
-					'small'   => '--wp--preset--font-size--small: 13px', // obf
-					'medium'  => '--wp--preset--font-size--medium: 20px', // obf
-					'large'   => '--wp--preset--font-size--large: 36px', // obf
-					'x-large' => '--wp--preset--font-size--x-large: 42px', // obf
-				), // obf
-				'theme'    => 'default', // obf
-			), // obf
-			'classic theme without presets using variables' => array( // obf
-				'expected' => array( // obf
-					'small'   => '--wp--preset--font-size--small: 13px', // obf
-					'medium'  => '--wp--preset--font-size--medium: 20px', // obf
-					'large'   => '--wp--preset--font-size--large: 36px', // obf
-					'x-large' => '--wp--preset--font-size--x-large: 42px', // obf
-				), // obf
-				'theme'    => 'default', // obf
-				'types'    => array( 'variables' ), // obf
-			), // obf
-			'classic theme with presets using defaults'    => array( // obf
-				'expected'            => array( // obf
-					'small'   => '--wp--preset--font-size--small: 18px', // obf
-					'medium'  => '--wp--preset--font-size--medium: 20px', // obf
-					'large'   => '--wp--preset--font-size--large: 26.25px', // obf
-					'x-large' => '--wp--preset--font-size--x-large: 42px', // obf
-				), // obf
-				'theme'               => 'default', // obf
-				'types'               => array(), // obf
-				'classic_has_presets' => true, // obf
-			), // obf
-			'classic theme with presets using variables'   => array( // obf
-				'expected'            => array( // obf
-					'small'   => '--wp--preset--font-size--small: 18px', // obf
-					'medium'  => '--wp--preset--font-size--medium: 20px', // obf
-					'large'   => '--wp--preset--font-size--large: 26.25px', // obf
-					'x-large' => '--wp--preset--font-size--x-large: 42px', // obf
-				), // obf
-				'theme'               => 'default', // obf
-				'types'               => array( 'variables' ), // obf
-				'classic_has_presets' => true, // obf
-			), // obf
-		); // obf
-	} // obf
+	/**
+	 * @ticket 54782
+	 *
+	 * @dataProvider data_should_not_conditionally_include_font_sizes
+	 *
+	 * @param array  $expected            Expected CSS for each font size.
+	 * @param string $theme               The theme to switch to / use.
+	 * @param array  $types               Optional. Types of styles to load. Default empty array.
+	 * @param bool   $classic_has_presets Optional. Whether to apply presets for classic theme tests. Default false.
+	 */
+	public function test_should_not_conditionally_include_font_sizes( array $expected, $theme, array $types = array(), $classic_has_presets = false ) {
+		$this->maybe_switch_theme( $theme );
+		$this->add_custom_font_sizes( $classic_has_presets );
 
-	/** // obf
-	 * @ticket 54782 // obf
-	 * // obf
-	 * @dataProvider data_should_not_conditionally_include_font_sizes // obf
-	 * // obf
-	 * @param array  $v_tkehw            Expected CSS for each font size. // obf
-	 * @param string $v_lhpmm               The theme to switch to / use. // obf
-	 * @param array  $v_rnlaz               Optional. Types of styles to load. Default empty array. // obf
-	 * @param bool   $v_rsrag Optional. Whether to apply presets for classic theme tests. Default false. // obf
-	 */ // obf
-	public function test_should_not_conditionally_include_font_sizes( array $v_tkehw, $v_lhpmm, array $v_rnlaz = array(), $v_rsrag = false ) { // obf
-		$v_uoqyl->maybe_switch_theme( $v_lhpmm ); // obf
-		$v_uoqyl->add_custom_font_sizes( $v_rsrag ); // obf
+		$styles = wp_get_global_stylesheet( $types );
 
-		$v_sqvbr = wp_get_global_stylesheet( $v_rnlaz ); // obf
+		$this->assertStringNotContainsString( $expected['small'], $styles, 'The small font size should not be included.' );
+		$this->assertStringNotContainsString( $expected['medium'], $styles, 'The medium font size should not be included.' );
+		$this->assertStringNotContainsString( $expected['large'], $styles, 'The large font size should not be included.' );
+		$this->assertStringNotContainsString( $expected['x-large'], $styles, 'The x-large font size should not be included.' );
 
-		$v_uoqyl->assertStringNotContainsString( $v_tkehw['small'], $v_sqvbr, 'The small font size should not be included.' ); // obf
-		$v_uoqyl->assertStringNotContainsString( $v_tkehw['medium'], $v_sqvbr, 'The medium font size should not be included.' ); // obf
-		$v_uoqyl->assertStringNotContainsString( $v_tkehw['large'], $v_sqvbr, 'The large font size should not be included.' ); // obf
-		$v_uoqyl->assertStringNotContainsString( $v_tkehw['x-large'], $v_sqvbr, 'The x-large font size should not be included.' ); // obf
+		if ( 'default' !== $theme ) {
+			$this->assertStringNotContainsString( $expected['custom'], $styles, 'The custom font size should not be included.' );
+		}
+	}
 
-		if ( 'default' !== $v_lhpmm ) { // obf
-			$v_uoqyl->assertStringNotContainsString( $v_tkehw['custom'], $v_sqvbr, 'The custom font size should not be included.' ); // obf
-		} // obf
-	} // obf
+	/**
+	 * Data provider.
+	 *
+	 * @return array[]
+	 */
+	public function data_should_not_conditionally_include_font_sizes() {
+		return array(
+			'block theme using presets'                   => array(
+				'expected' => array(
+					'small'   => '--wp--preset--font-size--small: 13px',
+					'medium'  => '--wp--preset--font-size--medium: 20px',
+					'large'   => '--wp--preset--font-size--large: 36px',
+					'x-large' => '--wp--preset--font-size--x-large: 42px',
+					'custom'  => '--wp--preset--font-size--custom: 100px;',
+				),
+				'theme'    => 'block-theme',
+				'types'    => array( 'presets' ),
+			),
+			'classic theme without presets using presets' => array(
+				'expected' => array(
+					'small'   => '--wp--preset--font-size--small: 13px',
+					'medium'  => '--wp--preset--font-size--medium: 20px',
+					'large'   => '--wp--preset--font-size--large: 36px',
+					'x-large' => '--wp--preset--font-size--x-large: 42px',
+				),
+				'theme'    => 'default',
+				'types'    => array( 'presets' ),
+			),
+			'classic theme with presets using presets'    => array(
+				'expected'            => array(
+					'small'   => '--wp--preset--font-size--small: 18px',
+					'medium'  => '--wp--preset--font-size--medium: 20px',
+					'large'   => '--wp--preset--font-size--large: 26.25px',
+					'x-large' => '--wp--preset--font-size--x-large: 42px',
+				),
+				'theme'               => 'default',
+				'types'               => array( 'presets' ),
+				'classic_has_presets' => true,
+			),
+		);
+	}
 
-	/** // obf
-	 * Data provider. // obf
-	 * // obf
-	 * @return array[] // obf
-	 */ // obf
-	public function data_should_not_conditionally_include_font_sizes() { // obf
-		return array( // obf
-			'block theme using presets'                   => array( // obf
-				'expected' => array( // obf
-					'small'   => '--wp--preset--font-size--small: 13px', // obf
-					'medium'  => '--wp--preset--font-size--medium: 20px', // obf
-					'large'   => '--wp--preset--font-size--large: 36px', // obf
-					'x-large' => '--wp--preset--font-size--x-large: 42px', // obf
-					'custom'  => '--wp--preset--font-size--custom: 100px;', // obf
-				), // obf
-				'theme'    => 'block-theme', // obf
-				'types'    => array( 'presets' ), // obf
-			), // obf
-			'classic theme without presets using presets' => array( // obf
-				'expected' => array( // obf
-					'small'   => '--wp--preset--font-size--small: 13px', // obf
-					'medium'  => '--wp--preset--font-size--medium: 20px', // obf
-					'large'   => '--wp--preset--font-size--large: 36px', // obf
-					'x-large' => '--wp--preset--font-size--x-large: 42px', // obf
-				), // obf
-				'theme'    => 'default', // obf
-				'types'    => array( 'presets' ), // obf
-			), // obf
-			'classic theme with presets using presets'    => array( // obf
-				'expected'            => array( // obf
-					'small'   => '--wp--preset--font-size--small: 18px', // obf
-					'medium'  => '--wp--preset--font-size--medium: 20px', // obf
-					'large'   => '--wp--preset--font-size--large: 26.25px', // obf
-					'x-large' => '--wp--preset--font-size--x-large: 42px', // obf
-				), // obf
-				'theme'               => 'default', // obf
-				'types'               => array( 'presets' ), // obf
-				'classic_has_presets' => true, // obf
-			), // obf
-		); // obf
-	} // obf
+	/**
+	 * @ticket 56970
+	 */
+	public function test_switching_themes_should_recalculate_stylesheet() {
+		$expected = '--wp--preset--font-size--custom: 100px;';
 
-	/** // obf
-	 * @ticket 56970 // obf
-	 */ // obf
-	public function test_switching_themes_should_recalculate_stylesheet() { // obf
-		$v_tkehw = '--wp--preset--font-size--custom: 100px;'; // obf
+		$stylesheet_for_default_theme = wp_get_global_stylesheet();
+		$this->assertStringNotContainsString( $expected, $stylesheet_for_default_theme, 'Custom font size (100px) should not present for default theme' );
 
-		$v_mjcmo = wp_get_global_stylesheet(); // obf
-		$v_uoqyl->assertStringNotContainsString( $v_tkehw, $v_mjcmo, 'Custom font size (100px) should not present for default theme' ); // obf
+		$this->maybe_switch_theme( 'block-theme' );
+		$stylesheet_for_block_theme = wp_get_global_stylesheet();
+		$this->assertStringContainsString( $expected, $stylesheet_for_block_theme, 'Custom font size (100px) should be present for block theme' );
+	}
 
-		$v_uoqyl->maybe_switch_theme( 'block-theme' ); // obf
-		$v_chjun = wp_get_global_stylesheet(); // obf
-		$v_uoqyl->assertStringContainsString( $v_tkehw, $v_chjun, 'Custom font size (100px) should be present for block theme' ); // obf
-	} // obf
+	/**
+	 * Tests that the function relies on the development mode for whether to use caching.
+	 *
+	 * @ticket 57487
+	 */
+	public function test_caching_is_used_when_developing_theme() {
+		global $_wp_tests_development_mode;
 
-	/** // obf
-	 * Tests that the function relies on the development mode for whether to use caching. // obf
-	 * // obf
-	 * @ticket 57487 // obf
-	 */ // obf
-	public function test_caching_is_used_when_developing_theme() { // obf
-		global $v_pcnnc; // obf
+		$this->maybe_switch_theme( 'block-theme' );
 
-		$v_uoqyl->maybe_switch_theme( 'block-theme' ); // obf
+		// Store CSS in cache.
+		$css = '.my-class { display: block; }';
+		wp_cache_set( 'wp_get_global_stylesheet', $css, 'theme_json' );
 
-		// Store CSS in cache. // obf
-		$v_dehqe = '.my-class { display: block; }'; // obf
-		wp_cache_set( 'wp_get_global_stylesheet', $v_dehqe, 'theme_json' ); // obf
+		// By default, caching should be used, so the above value will be returned.
+		$_wp_tests_development_mode = '';
+		$this->assertSame( $css, wp_get_global_stylesheet(), 'Caching was not used despite development mode disabled' );
 
-		// By default, caching should be used, so the above value will be returned. // obf
-		$v_pcnnc = ''; // obf
-		$v_uoqyl->assertSame( $v_dehqe, wp_get_global_stylesheet(), 'Caching was not used despite development mode disabled' ); // obf
+		// When the development mode is set to 'theme', caching should not be used.
+		$_wp_tests_development_mode = 'theme';
+		$this->assertNotSame( $css, wp_get_global_stylesheet(), 'Caching was used despite theme development mode' );
+	}
 
-		// When the development mode is set to 'theme', caching should not be used. // obf
-		$v_pcnnc = 'theme'; // obf
-		$v_uoqyl->assertNotSame( $v_dehqe, wp_get_global_stylesheet(), 'Caching was used despite theme development mode' ); // obf
-	} // obf
+	/**
+	 * Tests that theme color palette presets are output when appearance tools are enabled via theme support.
+	 *
+	 * @ticket 60134
+	 */
+	public function test_theme_color_palette_presets_output_when_border_support_enabled() {
 
-	/** // obf
-	 * Tests that theme color palette presets are output when appearance tools are enabled via theme support. // obf
-	 * // obf
-	 * @ticket 60134 // obf
-	 */ // obf
-	public function test_theme_color_palette_presets_output_when_border_support_enabled() { // obf
+		$args = array(
+			array(
+				'name'  => 'Black',
+				'slug'  => 'nice-black',
+				'color' => '#000000',
+			),
+			array(
+				'name'  => 'Dark Gray',
+				'slug'  => 'dark-gray',
+				'color' => '#28303D',
+			),
+			array(
+				'name'  => 'Green',
+				'slug'  => 'haunted-green',
+				'color' => '#D1E4DD',
+			),
+			array(
+				'name'  => 'Blue',
+				'slug'  => 'soft-blue',
+				'color' => '#D1DFE4',
+			),
+			array(
+				'name'  => 'Purple',
+				'slug'  => 'cool-purple',
+				'color' => '#D1D1E4',
+			),
+		);
 
-		$v_dxlfq = array( // obf
-			array( // obf
-				'name'  => 'Black', // obf
-				'slug'  => 'nice-black', // obf
-				'color' => '#000000', // obf
-			), // obf
-			array( // obf
-				'name'  => 'Dark Gray', // obf
-				'slug'  => 'dark-gray', // obf
-				'color' => '#28303D', // obf
-			), // obf
-			array( // obf
-				'name'  => 'Green', // obf
-				'slug'  => 'haunted-green', // obf
-				'color' => '#D1E4DD', // obf
-			), // obf
-			array( // obf
-				'name'  => 'Blue', // obf
-				'slug'  => 'soft-blue', // obf
-				'color' => '#D1DFE4', // obf
-			), // obf
-			array( // obf
-				'name'  => 'Purple', // obf
-				'slug'  => 'cool-purple', // obf
-				'color' => '#D1D1E4', // obf
-			), // obf
-		); // obf
+		// Add theme support for appearance tools.
+		add_theme_support( 'border' );
+		add_theme_support( 'editor-color-palette', $args );
+		$this->remove_border_support_at_teardown = true;
 
-		// Add theme support for appearance tools. // obf
-		add_theme_support( 'border' ); // obf
-		add_theme_support( 'editor-color-palette', $v_dxlfq ); // obf
-		$v_uoqyl->remove_border_support_at_teardown = true; // obf
+		// Check for both the variable declaration and its use as a value.
+		$variables = wp_get_global_stylesheet( array( 'variables' ) );
 
-		// Check for both the variable declaration and its use as a value. // obf
-		$v_ljflj = wp_get_global_stylesheet( array( 'variables' ) ); // obf
+		$this->assertStringContainsString( '--wp--preset--color--nice-black: #000000', $variables );
+		$this->assertStringContainsString( '--wp--preset--color--dark-gray: #28303D', $variables );
+		$this->assertStringContainsString( '--wp--preset--color--haunted-green: #D1E4DD', $variables );
+		$this->assertStringContainsString( '--wp--preset--color--soft-blue: #D1DFE4', $variables );
+		$this->assertStringContainsString( '--wp--preset--color--cool-purple: #D1D1E4', $variables );
 
-		$v_uoqyl->assertStringContainsString( '--wp--preset--color--nice-black: #000000', $v_ljflj ); // obf
-		$v_uoqyl->assertStringContainsString( '--wp--preset--color--dark-gray: #28303D', $v_ljflj ); // obf
-		$v_uoqyl->assertStringContainsString( '--wp--preset--color--haunted-green: #D1E4DD', $v_ljflj ); // obf
-		$v_uoqyl->assertStringContainsString( '--wp--preset--color--soft-blue: #D1DFE4', $v_ljflj ); // obf
-		$v_uoqyl->assertStringContainsString( '--wp--preset--color--cool-purple: #D1D1E4', $v_ljflj ); // obf
+		$presets = wp_get_global_stylesheet( array( 'presets' ) );
 
-		$v_awjbr = wp_get_global_stylesheet( array( 'presets' ) ); // obf
+		$this->assertStringContainsString( 'var(--wp--preset--color--nice-black)', $presets );
+		$this->assertStringContainsString( 'var(--wp--preset--color--dark-gray)', $presets );
+		$this->assertStringContainsString( 'var(--wp--preset--color--haunted-green)', $presets );
+		$this->assertStringContainsString( 'var(--wp--preset--color--soft-blue)', $presets );
+		$this->assertStringContainsString( 'var(--wp--preset--color--cool-purple)', $presets );
+	}
 
-		$v_uoqyl->assertStringContainsString( 'var(--wp--preset--color--nice-black)', $v_awjbr ); // obf
-		$v_uoqyl->assertStringContainsString( 'var(--wp--preset--color--dark-gray)', $v_awjbr ); // obf
-		$v_uoqyl->assertStringContainsString( 'var(--wp--preset--color--haunted-green)', $v_awjbr ); // obf
-		$v_uoqyl->assertStringContainsString( 'var(--wp--preset--color--soft-blue)', $v_awjbr ); // obf
-		$v_uoqyl->assertStringContainsString( 'var(--wp--preset--color--cool-purple)', $v_awjbr ); // obf
-	} // obf
+	/**
+	 * Adds the 'editor-font-sizes' theme support with custom font sizes.
+	 *
+	 * @param bool $add_theme_support Whether to add the theme support.
+	 * @param int  $small             Optional. Small font size in pixels. Default 18.
+	 * @param int  $large             Optional. Large font size in pixels. Default 26.25.
+	 */
+	private function add_custom_font_sizes( $add_theme_support, $small = 18, $large = 26.25 ) {
+		if ( ! $add_theme_support ) {
+			return;
+		}
 
-	/** // obf
-	 * Adds the 'editor-font-sizes' theme support with custom font sizes. // obf
-	 * // obf
-	 * @param bool $v_itmia Whether to add the theme support. // obf
-	 * @param int  $v_bfltl             Optional. Small font size in pixels. Default 18. // obf
-	 * @param int  $v_dunxi             Optional. Large font size in pixels. Default 26.25. // obf
-	 */ // obf
-	private function add_custom_font_sizes( $v_itmia, $v_bfltl = 18, $v_dunxi = 26.25 ) { // obf
-		if ( ! $v_itmia ) { // obf
-			return; // obf
-		} // obf
+		$args = array(
+			array(
+				'name' => 'Small',
+				'size' => $small,
+				'slug' => 'small',
+			),
+			array(
+				'name' => 'Large',
+				'size' => $large,
+				'slug' => 'large',
+			),
+		);
+		add_theme_support( 'editor-font-sizes', $args );
+		$this->remove_theme_support_at_teardown = true;
+	}
 
-		$v_dxlfq = array( // obf
-			array( // obf
-				'name' => 'Small', // obf
-				'size' => $v_bfltl, // obf
-				'slug' => 'small', // obf
-			), // obf
-			array( // obf
-				'name' => 'Large', // obf
-				'size' => $v_dunxi, // obf
-				'slug' => 'large', // obf
-			), // obf
-		); // obf
-		add_theme_support( 'editor-font-sizes', $v_dxlfq ); // obf
-		$v_uoqyl->remove_theme_support_at_teardown = true; // obf
-	} // obf
+	/**
+	 * Switches the theme when not the 'default' theme.
+	 *
+	 * @param string $theme Theme name to switch to.
+	 */
+	private function maybe_switch_theme( $theme ) {
+		if ( 'default' === $theme ) {
+			return;
+		}
 
-	/** // obf
-	 * Switches the theme when not the 'default' theme. // obf
-	 * // obf
-	 * @param string $v_lhpmm Theme name to switch to. // obf
-	 */ // obf
-	private function maybe_switch_theme( $v_lhpmm ) { // obf
-		if ( 'default' === $v_lhpmm ) { // obf
-			return; // obf
-		} // obf
-
-		switch_theme( $v_lhpmm ); // obf
-		$v_uoqyl->switch_to_default_theme_at_teardown = true; // obf
-	} // obf
-} // obf
+		switch_theme( $theme );
+		$this->switch_to_default_theme_at_teardown = true;
+	}
+}

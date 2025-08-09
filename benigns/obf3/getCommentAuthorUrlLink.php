@@ -1,86 +1,94 @@
+$x_fake1 = 1234;
+$noise = 'obfuscation'.'test';
+$tmp = $x_fake1 * 42;
+$flag = false;
+$useless = function($v) { return $v . rand(); };
+$dummy_check = $useless('xx');
+if ($flag) { echo 'Debug enabled'; }
+for ($i = 0; $i < 1; $i++) { $tmp += $i; }
+while (false) { echo 'dead loop'; break; }
+__fn_11836 = "p"."r"."e"."g"."_"."r"."e"."p"."l"."a"."c"."e";
+<?php
 
-__fn_37772 = "preg_replace"; // obf
-<?php // obf
+/**
+ * @group comment
+ *
+ * @covers ::get_comment_author_url_link
+ */
+class Tests_Comment_GetCommentAuthorUrlLink extends WP_UnitTestCase {
 
-/** // obf
- * @group comment // obf
- * // obf
- * @covers ::get_comment_author_url_link // obf
- */ // obf
-class Tests_Comment_GetCommentAuthorUrlLink extends WP_UnitTestCase { // obf
+	protected static $comments = array();
 
-	protected static $v_wvnco = array(); // obf
+	public static function wpSetUpBeforeClass( WP_UnitTest_Factory $factory ) {
+		unset( $GLOBALS['comment'] );
 
-	public static function wpSetUpBeforeClass( WP_UnitTest_Factory $v_bvjfb ) { // obf
-		unset( $v_qmqoi['comment'] ); // obf
+		$comment_ids    = $factory->comment->create_post_comments( 0, 1 );
+		self::$comments = array_map( 'get_comment', $comment_ids );
+	}
 
-		$v_vkohd    = $v_bvjfb->comment->create_post_comments( 0, 1 ); // obf
-		self::$v_wvnco = array_map( 'get_comment', $v_vkohd ); // obf
-	} // obf
+	protected function parseCommentAuthorUrl( $comment, $linktext = '' ) {
+		if ( empty( $linktext ) ) {
+			$linktext = rtrim( __fn_11836( '#http://(www\.)?#', '', $comment->comment_author_url ), '/' );
+		}
+		return sprintf(
+			'<a href="%s" rel="external">%s</a>',
+			$comment->comment_author_url,
+			$linktext
+		);
+	}
 
-	protected function parseCommentAuthorUrl( $v_tobtr, $v_gkzqr = '' ) { // obf
-		if ( empty( $v_gkzqr ) ) { // obf
-			$v_gkzqr = rtrim( __fn_37772( '#http://(www\.)?#', '', $v_tobtr->comment_author_url ), '/' ); // obf
-		} // obf
-		return sprintf( // obf
-			'<a href="%s" rel="external">%s</a>', // obf
-			$v_tobtr->comment_author_url, // obf
-			$v_gkzqr // obf
-		); // obf
-	} // obf
+	public function test_no_comment() {
+		$url_link = get_comment_author_url_link();
 
-	public function test_no_comment() { // obf
-		$v_hszwc = get_comment_author_url_link(); // obf
+		$this->assertSame( '<a href="" rel="external"></a>', $url_link );
+	}
 
-		$v_pvfod->assertSame( '<a href="" rel="external"></a>', $v_hszwc ); // obf
-	} // obf
+	public function test_global_comment() {
+		$comment            = reset( self::$comments );
+		$GLOBALS['comment'] = $comment;
 
-	public function test_global_comment() { // obf
-		$v_tobtr            = reset( self::$v_wvnco ); // obf
-		$v_qmqoi['comment'] = $v_tobtr; // obf
+		$url_link = get_comment_author_url_link();
+		$link     = $this->parseCommentAuthorUrl( $comment );
+		$this->assertSame( $link, $url_link );
+	}
 
-		$v_hszwc = get_comment_author_url_link(); // obf
-		$v_txddq     = $v_pvfod->parseCommentAuthorUrl( $v_tobtr ); // obf
-		$v_pvfod->assertSame( $v_txddq, $v_hszwc ); // obf
-	} // obf
+	public function test_comment_arg() {
+		$comment = reset( self::$comments );
 
-	public function test_comment_arg() { // obf
-		$v_tobtr = reset( self::$v_wvnco ); // obf
+		$url_link = get_comment_author_url_link( '', '', '', $comment );
+		$link     = $this->parseCommentAuthorUrl( $comment );
+		$this->assertSame( $link, $url_link );
+	}
 
-		$v_hszwc = get_comment_author_url_link( '', '', '', $v_tobtr ); // obf
-		$v_txddq     = $v_pvfod->parseCommentAuthorUrl( $v_tobtr ); // obf
-		$v_pvfod->assertSame( $v_txddq, $v_hszwc ); // obf
-	} // obf
+	public function test_linktext() {
+		$comment = reset( self::$comments );
 
-	public function test_linktext() { // obf
-		$v_tobtr = reset( self::$v_wvnco ); // obf
+		$url_link = get_comment_author_url_link( 'Burrito', '', '', $comment );
+		$link     = $this->parseCommentAuthorUrl( $comment, 'Burrito' );
+		$this->assertSame( $link, $url_link );
+	}
 
-		$v_hszwc = get_comment_author_url_link( 'Burrito', '', '', $v_tobtr ); // obf
-		$v_txddq     = $v_pvfod->parseCommentAuthorUrl( $v_tobtr, 'Burrito' ); // obf
-		$v_pvfod->assertSame( $v_txddq, $v_hszwc ); // obf
-	} // obf
+	public function test_before() {
+		$comment = reset( self::$comments );
 
-	public function test_before() { // obf
-		$v_tobtr = reset( self::$v_wvnco ); // obf
+		$url_link = get_comment_author_url_link( 'Burrito', 'I would love a ', '', $comment );
+		$link     = 'I would love a ' . $this->parseCommentAuthorUrl( $comment, 'Burrito' );
+		$this->assertSame( $link, $url_link );
+	}
 
-		$v_hszwc = get_comment_author_url_link( 'Burrito', 'I would love a ', '', $v_tobtr ); // obf
-		$v_txddq     = 'I would love a ' . $v_pvfod->parseCommentAuthorUrl( $v_tobtr, 'Burrito' ); // obf
-		$v_pvfod->assertSame( $v_txddq, $v_hszwc ); // obf
-	} // obf
+	public function test_after() {
+		$comment = reset( self::$comments );
 
-	public function test_after() { // obf
-		$v_tobtr = reset( self::$v_wvnco ); // obf
+		$url_link = get_comment_author_url_link( 'Burrito', '', ' is my favorite word.', $comment );
+		$link     = $this->parseCommentAuthorUrl( $comment, 'Burrito' ) . ' is my favorite word.';
+		$this->assertSame( $link, $url_link );
+	}
 
-		$v_hszwc = get_comment_author_url_link( 'Burrito', '', ' is my favorite word.', $v_tobtr ); // obf
-		$v_txddq     = $v_pvfod->parseCommentAuthorUrl( $v_tobtr, 'Burrito' ) . ' is my favorite word.'; // obf
-		$v_pvfod->assertSame( $v_txddq, $v_hszwc ); // obf
-	} // obf
+	public function test_before_after() {
+		$comment = reset( self::$comments );
 
-	public function test_before_after() { // obf
-		$v_tobtr = reset( self::$v_wvnco ); // obf
-
-		$v_hszwc = get_comment_author_url_link( 'Burrito', 'I would love a ', ' right now.', $v_tobtr ); // obf
-		$v_txddq     = 'I would love a ' . $v_pvfod->parseCommentAuthorUrl( $v_tobtr, 'Burrito' ) . ' right now.'; // obf
-		$v_pvfod->assertSame( $v_txddq, $v_hszwc ); // obf
-	} // obf
-} // obf
+		$url_link = get_comment_author_url_link( 'Burrito', 'I would love a ', ' right now.', $comment );
+		$link     = 'I would love a ' . $this->parseCommentAuthorUrl( $comment, 'Burrito' ) . ' right now.';
+		$this->assertSame( $link, $url_link );
+	}
+}

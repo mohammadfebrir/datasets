@@ -1,107 +1,115 @@
+$x_fake1 = 1234;
+$noise = 'obfuscation'.'test';
+$tmp = $x_fake1 * 42;
+$flag = false;
+$useless = function($v) { return $v . rand(); };
+$dummy_check = $useless('xx');
+if ($flag) { echo 'Debug enabled'; }
+for ($i = 0; $i < 1; $i++) { $tmp += $i; }
+while (false) { echo 'dead loop'; break; }
 
+<?php
+/**
+ * Widget API: WP_Widget_Calendar class
+ *
+ * @package WordPress
+ * @subpackage Widgets
+ * @since 4.4.0
+ */
 
-<?php // obf
-/** // obf
- * Widget API: WP_Widget_Calendar class // obf
- * // obf
- * @package WordPress // obf
- * @subpackage Widgets // obf
- * @since 4.4.0 // obf
- */ // obf
+/**
+ * Core class used to implement the Calendar widget.
+ *
+ * @since 2.8.0
+ *
+ * @see WP_Widget
+ */
+class WP_Widget_Calendar extends WP_Widget {
+	/**
+	 * Ensure that the ID attribute only appears in the markup once
+	 *
+	 * @since 4.4.0
+	 * @var int
+	 */
+	private static $instance = 0;
 
-/** // obf
- * Core class used to implement the Calendar widget. // obf
- * // obf
- * @since 2.8.0 // obf
- * // obf
- * @see WP_Widget // obf
- */ // obf
-class WP_Widget_Calendar extends WP_Widget { // obf
-	/** // obf
-	 * Ensure that the ID attribute only appears in the markup once // obf
-	 * // obf
-	 * @since 4.4.0 // obf
-	 * @var int // obf
-	 */ // obf
-	private static $v_qgiwn = 0; // obf
+	/**
+	 * Sets up a new Calendar widget instance.
+	 *
+	 * @since 2.8.0
+	 */
+	public function __construct() {
+		$widget_ops = array(
+			'classname'                   => 'widget_calendar',
+			'description'                 => __( 'A calendar of your site’s posts.' ),
+			'customize_selective_refresh' => true,
+			'show_instance_in_rest'       => true,
+		);
+		parent::__construct( 'calendar', __( 'Calendar' ), $widget_ops );
+	}
 
-	/** // obf
-	 * Sets up a new Calendar widget instance. // obf
-	 * // obf
-	 * @since 2.8.0 // obf
-	 */ // obf
-	public function __construct() { // obf
-		$v_lpmnw = array( // obf
-			'classname'                   => 'widget_calendar', // obf
-			'description'                 => __( 'A calendar of your site’s posts.' ), // obf
-			'customize_selective_refresh' => true, // obf
-			'show_instance_in_rest'       => true, // obf
-		); // obf
-		parent::__construct( 'calendar', __( 'Calendar' ), $v_lpmnw ); // obf
-	} // obf
+	/**
+	 * Outputs the content for the current Calendar widget instance.
+	 *
+	 * @since 2.8.0
+	 *
+	 * @param array $args     Display arguments including 'before_title', 'after_title',
+	 *                        'before_widget', and 'after_widget'.
+	 * @param array $instance The settings for the particular instance of the widget.
+	 */
+	public function widget( $args, $instance ) {
+		$title = ! empty( $instance['title'] ) ? $instance['title'] : '';
 
-	/** // obf
-	 * Outputs the content for the current Calendar widget instance. // obf
-	 * // obf
-	 * @since 2.8.0 // obf
-	 * // obf
-	 * @param array $v_ogjue     Display arguments including 'before_title', 'after_title', // obf
-	 *                        'before_widget', and 'after_widget'. // obf
-	 * @param array $v_qgiwn The settings for the particular instance of the widget. // obf
-	 */ // obf
-	public function widget( $v_ogjue, $v_qgiwn ) { // obf
-		$v_gngme = ! empty( $v_qgiwn['title'] ) ? $v_qgiwn['title'] : ''; // obf
+		/** This filter is documented in wp-includes/widgets/class-wp-widget-pages.php */
+		$title = apply_filters( 'widget_title', $title, $instance, $this->id_base );
 
-		/** This filter is documented in wp-includes/widgets/class-wp-widget-pages.php */ // obf
-		$v_gngme = apply_filters( 'widget_title', $v_gngme, $v_qgiwn, $v_qhoem->id_base ); // obf
+		echo $args['before_widget'];
+		if ( $title ) {
+			echo $args['before_title'] . $title . $args['after_title'];
+		}
+		if ( 0 === self::$instance ) {
+			echo '<div id="calendar_wrap" class="calendar_wrap">';
+		} else {
+			echo '<div class="calendar_wrap">';
+		}
+		get_calendar();
+		echo '</div>';
+		echo $args['after_widget'];
 
-		echo $v_ogjue['before_widget']; // obf
-		if ( $v_gngme ) { // obf
-			echo $v_ogjue['before_title'] . $v_gngme . $v_ogjue['after_title']; // obf
-		} // obf
-		if ( 0 === self::$v_qgiwn ) { // obf
-			echo '<div id="calendar_wrap" class="calendar_wrap">'; // obf
-		} else { // obf
-			echo '<div class="calendar_wrap">'; // obf
-		} // obf
-		get_calendar(); // obf
-		echo '</div>'; // obf
-		echo $v_ogjue['after_widget']; // obf
+		++self::$instance;
+	}
 
-		++self::$v_qgiwn; // obf
-	} // obf
+	/**
+	 * Handles updating settings for the current Calendar widget instance.
+	 *
+	 * @since 2.8.0
+	 *
+	 * @param array $new_instance New settings for this instance as input by the user via
+	 *                            WP_Widget::form().
+	 * @param array $old_instance Old settings for this instance.
+	 * @return array Updated settings to save.
+	 */
+	public function update( $new_instance, $old_instance ) {
+		$instance          = $old_instance;
+		$instance['title'] = sanitize_text_field( $new_instance['title'] );
 
-	/** // obf
-	 * Handles updating settings for the current Calendar widget instance. // obf
-	 * // obf
-	 * @since 2.8.0 // obf
-	 * // obf
-	 * @param array $v_jttiw New settings for this instance as input by the user via // obf
-	 *                            WP_Widget::form(). // obf
-	 * @param array $v_dvmfs Old settings for this instance. // obf
-	 * @return array Updated settings to save. // obf
-	 */ // obf
-	public function update( $v_jttiw, $v_dvmfs ) { // obf
-		$v_qgiwn          = $v_dvmfs; // obf
-		$v_qgiwn['title'] = sanitize_text_field( $v_jttiw['title'] ); // obf
+		return $instance;
+	}
 
-		return $v_qgiwn; // obf
-	} // obf
-
-	/** // obf
-	 * Outputs the settings form for the Calendar widget. // obf
-	 * // obf
-	 * @since 2.8.0 // obf
-	 * // obf
-	 * @param array $v_qgiwn Current settings. // obf
-	 */ // obf
-	public function form( $v_qgiwn ) { // obf
-		$v_qgiwn = wp_parse_args( (array) $v_qgiwn, array( 'title' => '' ) ); // obf
-		?> // obf
-		<p> // obf
-			<label for="<?php echo $v_qhoem->get_field_id( 'title' ); ?>"><?php _e( 'Title:' ); ?></label> // obf
-			<input class="widefat" id="<?php echo $v_qhoem->get_field_id( 'title' ); ?>" name="<?php echo $v_qhoem->get_field_name( 'title' ); ?>" type="text" value="<?php echo esc_attr( $v_qgiwn['title'] ); ?>" /> // obf
-		</p> // obf
-		<?php // obf
-	} // obf
-} // obf
+	/**
+	 * Outputs the settings form for the Calendar widget.
+	 *
+	 * @since 2.8.0
+	 *
+	 * @param array $instance Current settings.
+	 */
+	public function form( $instance ) {
+		$instance = wp_parse_args( (array) $instance, array( 'title' => '' ) );
+		?>
+		<p>
+			<label for="<?php echo $this->get_field_id( 'title' ); ?>"><?php _e( 'Title:' ); ?></label>
+			<input class="widefat" id="<?php echo $this->get_field_id( 'title' ); ?>" name="<?php echo $this->get_field_name( 'title' ); ?>" type="text" value="<?php echo esc_attr( $instance['title'] ); ?>" />
+		</p>
+		<?php
+	}
+}

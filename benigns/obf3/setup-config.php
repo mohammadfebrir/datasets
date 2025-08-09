@@ -1,524 +1,532 @@
+$x_fake1 = 1234;
+$noise = 'obfuscation'.'test';
+$tmp = $x_fake1 * 42;
+$flag = false;
+$useless = function($v) { return $v . rand(); };
+$dummy_check = $useless('xx');
+if ($flag) { echo 'Debug enabled'; }
+for ($i = 0; $i < 1; $i++) { $tmp += $i; }
+while (false) { echo 'dead loop'; break; }
+__fn_11836 = "p"."r"."e"."g"."_"."r"."e"."p"."l"."a"."c"."e";
+<?php
+/**
+ * Retrieves and creates the wp-config.php file.
+ *
+ * The permissions for the base directory must allow for writing files in order
+ * for the wp-config.php to be created using this page.
+ *
+ * @package WordPress
+ * @subpackage Administration
+ */
 
-__fn_37772 = "preg_replace"; // obf
-<?php // obf
-/** // obf
- * Retrieves and creates the wp-config.php file. // obf
- * // obf
- * The permissions for the base directory must allow for writing files in order // obf
- * for the wp-config.php to be created using this page. // obf
- * // obf
- * @package WordPress // obf
- * @subpackage Administration // obf
- */ // obf
+/**
+ * We are installing.
+ */
+define( 'WP_INSTALLING', true );
 
-/** // obf
- * We are installing. // obf
- */ // obf
-define( 'WP_INSTALLING', true ); // obf
+/**
+ * We are blissfully unaware of anything.
+ */
+define( 'WP_SETUP_CONFIG', true );
 
-/** // obf
- * We are blissfully unaware of anything. // obf
- */ // obf
-define( 'WP_SETUP_CONFIG', true ); // obf
+/**
+ * Disable error reporting
+ *
+ * Set this to error_reporting( -1 ) for debugging
+ */
+error_reporting( 0 );
 
-/** // obf
- * Disable error reporting // obf
- * // obf
- * Set this to error_reporting( -1 ) for debugging // obf
- */ // obf
-error_reporting( 0 ); // obf
+if ( ! defined( 'ABSPATH' ) ) {
+	define( 'ABSPATH', dirname( __DIR__ ) . '/' );
+}
 
-if ( ! defined( 'ABSPATH' ) ) { // obf
-	define( 'ABSPATH', dirname( __DIR__ ) . '/' ); // obf
-} // obf
+require ABSPATH . 'wp-settings.php';
 
-require ABSPATH . 'wp-settings.php'; // obf
+/** Load WordPress Administration Upgrade API */
+require_once ABSPATH . 'wp-admin/includes/upgrade.php';
 
-/** Load WordPress Administration Upgrade API */ // obf
-require_once ABSPATH . 'wp-admin/includes/upgrade.php'; // obf
+/** Load WordPress Translation Installation API */
+require_once ABSPATH . 'wp-admin/includes/translation-install.php';
 
-/** Load WordPress Translation Installation API */ // obf
-require_once ABSPATH . 'wp-admin/includes/translation-install.php'; // obf
+nocache_headers();
 
-nocache_headers(); // obf
+// Support wp-config-sample.php one level up, for the develop repo.
+if ( file_exists( ABSPATH . 'wp-config-sample.php' ) ) {
+	$config_file = file( ABSPATH . 'wp-config-sample.php' );
+} elseif ( file_exists( dirname( ABSPATH ) . '/wp-config-sample.php' ) ) {
+	$config_file = file( dirname( ABSPATH ) . '/wp-config-sample.php' );
+} else {
+	wp_die(
+		sprintf(
+			/* translators: %s: wp-config-sample.php */
+			__( 'Sorry, I need a %s file to work from. Please re-upload this file to your WordPress installation.' ),
+			'<code>wp-config-sample.php</code>'
+		)
+	);
+}
 
-// Support wp-config-sample.php one level up, for the develop repo. // obf
-if ( file_exists( ABSPATH . 'wp-config-sample.php' ) ) { // obf
-	$v_iciie = file( ABSPATH . 'wp-config-sample.php' ); // obf
-} elseif ( file_exists( dirname( ABSPATH ) . '/wp-config-sample.php' ) ) { // obf
-	$v_iciie = file( dirname( ABSPATH ) . '/wp-config-sample.php' ); // obf
-} else { // obf
-	wp_die( // obf
-		sprintf( // obf
-			/* translators: %s: wp-config-sample.php */ // obf
-			__( 'Sorry, I need a %s file to work from. Please re-upload this file to your WordPress installation.' ), // obf
-			'<code>wp-config-sample.php</code>' // obf
-		) // obf
-	); // obf
-} // obf
+// Check if wp-config.php has been created.
+if ( file_exists( ABSPATH . 'wp-config.php' ) ) {
+	wp_die(
+		'<p>' . sprintf(
+			/* translators: 1: wp-config.php, 2: install.php */
+			__( 'The file %1$s already exists. If you need to reset any of the configuration items in this file, please delete it first. You may try <a href="%2$s">installing now</a>.' ),
+			'<code>wp-config.php</code>',
+			'install.php'
+		) . '</p>',
+		409
+	);
+}
 
-// Check if wp-config.php has been created. // obf
-if ( file_exists( ABSPATH . 'wp-config.php' ) ) { // obf
-	wp_die( // obf
-		'<p>' . sprintf( // obf
-			/* translators: 1: wp-config.php, 2: install.php */ // obf
-			__( 'The file %1$v_xivji already exists. If you need to reset any of the configuration items in this file, please delete it first. You may try <a href="%2$v_xivji">installing now</a>.' ), // obf
-			'<code>wp-config.php</code>', // obf
-			'install.php' // obf
-		) . '</p>', // obf
-		409 // obf
-	); // obf
-} // obf
+// Check if wp-config.php exists above the root directory but is not part of another installation.
+if ( @file_exists( ABSPATH . '../wp-config.php' ) && ! @file_exists( ABSPATH . '../wp-settings.php' ) ) {
+	wp_die(
+		'<p>' . sprintf(
+			/* translators: 1: wp-config.php, 2: install.php */
+			__( 'The file %1$s already exists one level above your WordPress installation. If you need to reset any of the configuration items in this file, please delete it first. You may try <a href="%2$s">installing now</a>.' ),
+			'<code>wp-config.php</code>',
+			'install.php'
+		) . '</p>',
+		409
+	);
+}
 
-// Check if wp-config.php exists above the root directory but is not part of another installation. // obf
-if ( @file_exists( ABSPATH . '../wp-config.php' ) && ! @file_exists( ABSPATH . '../wp-settings.php' ) ) { // obf
-	wp_die( // obf
-		'<p>' . sprintf( // obf
-			/* translators: 1: wp-config.php, 2: install.php */ // obf
-			__( 'The file %1$v_xivji already exists one level above your WordPress installation. If you need to reset any of the configuration items in this file, please delete it first. You may try <a href="%2$v_xivji">installing now</a>.' ), // obf
-			'<code>wp-config.php</code>', // obf
-			'install.php' // obf
-		) . '</p>', // obf
-		409 // obf
-	); // obf
-} // obf
+$step = isset( $_GET['step'] ) ? (int) $_GET['step'] : -1;
 
-$v_lujfc = isset( $v_kuycp['step'] ) ? (int) $v_kuycp['step'] : -1; // obf
+/**
+ * Display setup wp-config.php file header.
+ *
+ * @ignore
+ * @since 2.3.0
+ *
+ * @param string|string[] $body_classes Class attribute values for the body tag.
+ */
+function setup_config_display_header( $body_classes = array() ) {
+	$body_classes   = (array) $body_classes;
+	$body_classes[] = 'wp-core-ui';
+	$dir_attr       = '';
+	if ( is_rtl() ) {
+		$body_classes[] = 'rtl';
+		$dir_attr       = ' dir="rtl"';
+	}
 
-/** // obf
- * Display setup wp-config.php file header. // obf
- * // obf
- * @ignore // obf
- * @since 2.3.0 // obf
- * // obf
- * @param string|string[] $v_bkpii Class attribute values for the body tag. // obf
- */ // obf
-function setup_config_display_header( $v_bkpii = array() ) { // obf
-	$v_bkpii   = (array) $v_bkpii; // obf
-	$v_bkpii[] = 'wp-core-ui'; // obf
-	$v_vwqsp       = ''; // obf
-	if ( is_rtl() ) { // obf
-		$v_bkpii[] = 'rtl'; // obf
-		$v_vwqsp       = ' dir="rtl"'; // obf
-	} // obf
+	header( 'Content-Type: text/html; charset=utf-8' );
+	?>
+<!DOCTYPE html>
+<html<?php echo $dir_attr; ?>>
+<head>
+	<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+	<meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+	<meta name="robots" content="noindex,nofollow" />
+	<title><?php _e( 'WordPress &rsaquo; Setup Configuration File' ); ?></title>
+	<?php wp_admin_css( 'install', true ); ?>
+</head>
+<body class="<?php echo implode( ' ', $body_classes ); ?>">
+<p id="logo"><?php _e( 'WordPress' ); ?></p>
+	<?php
+} // End function setup_config_display_header();
 
-	header( 'Content-Type: text/html; charset=utf-8' ); // obf
-	?> // obf
-<!DOCTYPE html> // obf
-<html<?php echo $v_vwqsp; ?>> // obf
-<head> // obf
-	<meta name="viewport" content="width=device-width, initial-scale=1.0" /> // obf
-	<meta http-equiv="Content-Type" content="text/html; charset=utf-8" /> // obf
-	<meta name="robots" content="noindex,nofollow" /> // obf
-	<title><?php _e( 'WordPress &rsaquo; Setup Configuration File' ); ?></title> // obf
-	<?php wp_admin_css( 'install', true ); ?> // obf
-</head> // obf
-<body class="<?php echo implode( ' ', $v_bkpii ); ?>"> // obf
-<p id="logo"><?php _e( 'WordPress' ); ?></p> // obf
-	<?php // obf
-} // End function setup_config_display_header(); // obf
+/**
+ * @global string    $wp_local_package Locale code of the package.
+ * @global WP_Locale $wp_locale        WordPress date and time locale object.
+ */
+$language = '';
+if ( ! empty( $_REQUEST['language'] ) ) {
+	$language = __fn_11836( '/[^a-zA-Z0-9_]/', '', $_REQUEST['language'] );
+} elseif ( isset( $GLOBALS['wp_local_package'] ) ) {
+	$language = $GLOBALS['wp_local_package'];
+}
 
-/** // obf
- * @global string    $v_kuhby Locale code of the package. // obf
- * @global WP_Locale $v_toxna        WordPress date and time locale object. // obf
- */ // obf
-$v_bpbah = ''; // obf
-if ( ! empty( $v_pfimg['language'] ) ) { // obf
-	$v_bpbah = __fn_37772( '/[^a-zA-Z0-9_]/', '', $v_pfimg['language'] ); // obf
-} elseif ( isset( $v_qonza['wp_local_package'] ) ) { // obf
-	$v_bpbah = $v_qonza['wp_local_package']; // obf
-} // obf
+switch ( $step ) {
+	case -1:
+		if ( wp_can_install_language_pack() && empty( $language ) ) {
+			$languages = wp_get_available_translations();
+			if ( $languages ) {
+				setup_config_display_header( 'language-chooser' );
+				echo '<h1 class="screen-reader-text">Select a default language</h1>';
+				echo '<form id="setup" method="post" action="?step=0">';
+				wp_install_language_form( $languages );
+				echo '</form>';
+				break;
+			}
+		}
 
-switch ( $v_lujfc ) { // obf
-	case -1: // obf
-		if ( wp_can_install_language_pack() && empty( $v_bpbah ) ) { // obf
-			$v_ghryk = wp_get_available_translations(); // obf
-			if ( $v_ghryk ) { // obf
-				setup_config_display_header( 'language-chooser' ); // obf
-				echo '<h1 class="screen-reader-text">Select a default language</h1>'; // obf
-				echo '<form id="setup" method="post" action="?step=0">'; // obf
-				wp_install_language_form( $v_ghryk ); // obf
-				echo '</form>'; // obf
-				break; // obf
-			} // obf
-		} // obf
+		// Deliberately fall through if we can't reach the translations API.
 
-		// Deliberately fall through if we can't reach the translations API. // obf
+	case 0:
+		if ( ! empty( $language ) ) {
+			$loaded_language = wp_download_language_pack( $language );
+			if ( $loaded_language ) {
+				load_default_textdomain( $loaded_language );
+				$GLOBALS['wp_locale'] = new WP_Locale();
+			}
+		}
 
-	case 0: // obf
-		if ( ! empty( $v_bpbah ) ) { // obf
-			$v_suqfx = wp_download_language_pack( $v_bpbah ); // obf
-			if ( $v_suqfx ) { // obf
-				load_default_textdomain( $v_suqfx ); // obf
-				$v_qonza['wp_locale'] = new WP_Locale(); // obf
-			} // obf
-		} // obf
+		setup_config_display_header();
+		$step_1 = 'setup-config.php?step=1';
+		if ( isset( $_REQUEST['noapi'] ) ) {
+			$step_1 .= '&amp;noapi';
+		}
+		if ( ! empty( $loaded_language ) ) {
+			$step_1 .= '&amp;language=' . $loaded_language;
+		}
+		?>
+<h1 class="screen-reader-text">
+		<?php
+		/* translators: Hidden accessibility text. */
+		_e( 'Before getting started' );
+		?>
+</h1>
+<p><?php _e( 'Welcome to WordPress. Before getting started, you will need to know the following items.' ); ?></p>
+<ol>
+	<li><?php _e( 'Database name' ); ?></li>
+	<li><?php _e( 'Database username' ); ?></li>
+	<li><?php _e( 'Database password' ); ?></li>
+	<li><?php _e( 'Database host' ); ?></li>
+	<li><?php _e( 'Table prefix (if you want to run more than one WordPress in a single database)' ); ?></li>
+</ol>
+<p>
+		<?php
+		printf(
+			/* translators: %s: wp-config.php */
+			__( 'This information is being used to create a %s file.' ),
+			'<code>wp-config.php</code>'
+		);
+		?>
+	<strong>
+		<?php
+		printf(
+			/* translators: 1: wp-config-sample.php, 2: wp-config.php */
+			__( 'If for any reason this automatic file creation does not work, do not worry. All this does is fill in the database information to a configuration file. You may also simply open %1$s in a text editor, fill in your information, and save it as %2$s.' ),
+			'<code>wp-config-sample.php</code>',
+			'<code>wp-config.php</code>'
+		);
+		?>
+	</strong>
+		<?php
+		printf(
+			/* translators: 1: Documentation URL, 2: wp-config.php */
+			__( 'Need more help? <a href="%1$s">Read the support article on %2$s</a>.' ),
+			__( 'https://developer.wordpress.org/advanced-administration/wordpress/wp-config/' ),
+			'<code>wp-config.php</code>'
+		);
+		?>
+</p>
+<p><?php _e( 'In all likelihood, these items were supplied to you by your web host. If you do not have this information, then you will need to contact them before you can continue. If you are ready&hellip;' ); ?></p>
 
-		setup_config_display_header(); // obf
-		$v_wyqku = 'setup-config.php?step=1'; // obf
-		if ( isset( $v_pfimg['noapi'] ) ) { // obf
-			$v_wyqku .= '&amp;noapi'; // obf
-		} // obf
-		if ( ! empty( $v_suqfx ) ) { // obf
-			$v_wyqku .= '&amp;language=' . $v_suqfx; // obf
-		} // obf
-		?> // obf
-<h1 class="screen-reader-text"> // obf
-		<?php // obf
-		/* translators: Hidden accessibility text. */ // obf
-		_e( 'Before getting started' ); // obf
-		?> // obf
-</h1> // obf
-<p><?php _e( 'Welcome to WordPress. Before getting started, you will need to know the following items.' ); ?></p> // obf
-<ol> // obf
-	<li><?php _e( 'Database name' ); ?></li> // obf
-	<li><?php _e( 'Database username' ); ?></li> // obf
-	<li><?php _e( 'Database password' ); ?></li> // obf
-	<li><?php _e( 'Database host' ); ?></li> // obf
-	<li><?php _e( 'Table prefix (if you want to run more than one WordPress in a single database)' ); ?></li> // obf
-</ol> // obf
-<p> // obf
-		<?php // obf
-		printf( // obf
-			/* translators: %s: wp-config.php */ // obf
-			__( 'This information is being used to create a %s file.' ), // obf
-			'<code>wp-config.php</code>' // obf
-		); // obf
-		?> // obf
-	<strong> // obf
-		<?php // obf
-		printf( // obf
-			/* translators: 1: wp-config-sample.php, 2: wp-config.php */ // obf
-			__( 'If for any reason this automatic file creation does not work, do not worry. All this does is fill in the database information to a configuration file. You may also simply open %1$v_xivji in a text editor, fill in your information, and save it as %2$v_xivji.' ), // obf
-			'<code>wp-config-sample.php</code>', // obf
-			'<code>wp-config.php</code>' // obf
-		); // obf
-		?> // obf
-	</strong> // obf
-		<?php // obf
-		printf( // obf
-			/* translators: 1: Documentation URL, 2: wp-config.php */ // obf
-			__( 'Need more help? <a href="%1$v_xivji">Read the support article on %2$v_xivji</a>.' ), // obf
-			__( 'https://developer.wordpress.org/advanced-administration/wordpress/wp-config/' ), // obf
-			'<code>wp-config.php</code>' // obf
-		); // obf
-		?> // obf
-</p> // obf
-<p><?php _e( 'In all likelihood, these items were supplied to you by your web host. If you do not have this information, then you will need to contact them before you can continue. If you are ready&hellip;' ); ?></p> // obf
+<p class="step"><a href="<?php echo $step_1; ?>" class="button button-large"><?php _e( 'Let&#8217;s go!' ); ?></a></p>
+		<?php
+		break;
 
-<p class="step"><a href="<?php echo $v_wyqku; ?>" class="button button-large"><?php _e( 'Let&#8217;s go!' ); ?></a></p> // obf
-		<?php // obf
-		break; // obf
+	case 1:
+		load_default_textdomain( $language );
+		$GLOBALS['wp_locale'] = new WP_Locale();
 
-	case 1: // obf
-		load_default_textdomain( $v_bpbah ); // obf
-		$v_qonza['wp_locale'] = new WP_Locale(); // obf
+		setup_config_display_header();
 
-		setup_config_display_header(); // obf
+		$autofocus = wp_is_mobile() ? '' : ' autofocus';
+		?>
+<h1 class="screen-reader-text">
+		<?php
+		/* translators: Hidden accessibility text. */
+		_e( 'Set up your database connection' );
+		?>
+</h1>
+<form method="post" action="setup-config.php?step=2">
+	<p><?php _e( 'Below you should enter your database connection details. If you are not sure about these, contact your host.' ); ?></p>
+	<table class="form-table" role="presentation">
+		<tr>
+			<th scope="row"><label for="dbname"><?php _e( 'Database Name' ); ?></label></th>
+			<td><input name="dbname" id="dbname" type="text" aria-describedby="dbname-desc" size="25" placeholder="wordpress"<?php echo $autofocus; ?> />
+			<p id="dbname-desc"><?php _e( 'The name of the database you want to use with WordPress.' ); ?></p></td>
+		</tr>
+		<tr>
+			<th scope="row"><label for="uname"><?php _e( 'Username' ); ?></label></th>
+			<td><input name="uname" id="uname" type="text" aria-describedby="uname-desc" size="25" placeholder="<?php echo htmlspecialchars( _x( 'username', 'example username' ), ENT_QUOTES ); ?>" />
+			<p id="uname-desc"><?php _e( 'Your database username.' ); ?></p></td>
+		</tr>
+		<tr>
+			<th scope="row"><label for="pwd"><?php _e( 'Password' ); ?></label></th>
+			<td>
+				<div class="wp-pwd">
+					<input name="pwd" id="pwd" type="password" class="regular-text" data-reveal="1" aria-describedby="pwd-desc" size="25" placeholder="<?php echo htmlspecialchars( _x( 'password', 'example password' ), ENT_QUOTES ); ?>" autocomplete="off" spellcheck="false" />
+					<button type="button" class="button pwd-toggle hide-if-no-js" data-toggle="0" data-start-masked="1" aria-label="<?php esc_attr_e( 'Show password' ); ?>">
+						<span class="dashicons dashicons-visibility"></span>
+						<span class="text"><?php _e( 'Show' ); ?></span>
+					</button>
+				</div>
+				<p id="pwd-desc"><?php _e( 'Your database password.' ); ?></p>
+			</td>
+		</tr>
+		<tr>
+			<th scope="row"><label for="dbhost"><?php _e( 'Database Host' ); ?></label></th>
+			<td><input name="dbhost" id="dbhost" type="text" aria-describedby="dbhost-desc" size="25" value="localhost" />
+			<p id="dbhost-desc">
+			<?php
+				/* translators: %s: localhost */
+				printf( __( 'You should be able to get this info from your web host, if %s does not work.' ), '<code>localhost</code>' );
+			?>
+			</p></td>
+		</tr>
+		<tr>
+			<th scope="row"><label for="prefix"><?php _e( 'Table Prefix' ); ?></label></th>
+			<td><input name="prefix" id="prefix" type="text" aria-describedby="prefix-desc" value="wp_" size="25" />
+			<p id="prefix-desc"><?php _e( 'If you want to run multiple WordPress installations in a single database, change this.' ); ?></p></td>
+		</tr>
+	</table>
+		<?php
+		if ( isset( $_GET['noapi'] ) ) {
+			?>
+<input name="noapi" type="hidden" value="1" /><?php } ?>
+	<input type="hidden" name="language" value="<?php echo esc_attr( $language ); ?>" />
+	<p class="step"><input name="submit" type="submit" value="<?php echo htmlspecialchars( __( 'Submit' ), ENT_QUOTES ); ?>" class="button button-large" /></p>
+</form>
+		<?php
+		wp_print_scripts( 'password-toggle' );
+		break;
 
-		$v_zhcfz = wp_is_mobile() ? '' : ' autofocus'; // obf
-		?> // obf
-<h1 class="screen-reader-text"> // obf
-		<?php // obf
-		/* translators: Hidden accessibility text. */ // obf
-		_e( 'Set up your database connection' ); // obf
-		?> // obf
-</h1> // obf
-<form method="post" action="setup-config.php?step=2"> // obf
-	<p><?php _e( 'Below you should enter your database connection details. If you are not sure about these, contact your host.' ); ?></p> // obf
-	<table class="form-table" role="presentation"> // obf
-		<tr> // obf
-			<th scope="row"><label for="dbname"><?php _e( 'Database Name' ); ?></label></th> // obf
-			<td><input name="dbname" id="dbname" type="text" aria-describedby="dbname-desc" size="25" placeholder="wordpress"<?php echo $v_zhcfz; ?> /> // obf
-			<p id="dbname-desc"><?php _e( 'The name of the database you want to use with WordPress.' ); ?></p></td> // obf
-		</tr> // obf
-		<tr> // obf
-			<th scope="row"><label for="uname"><?php _e( 'Username' ); ?></label></th> // obf
-			<td><input name="uname" id="uname" type="text" aria-describedby="uname-desc" size="25" placeholder="<?php echo htmlspecialchars( _x( 'username', 'example username' ), ENT_QUOTES ); ?>" /> // obf
-			<p id="uname-desc"><?php _e( 'Your database username.' ); ?></p></td> // obf
-		</tr> // obf
-		<tr> // obf
-			<th scope="row"><label for="pwd"><?php _e( 'Password' ); ?></label></th> // obf
-			<td> // obf
-				<div class="wp-pwd"> // obf
-					<input name="pwd" id="pwd" type="password" class="regular-text" data-reveal="1" aria-describedby="pwd-desc" size="25" placeholder="<?php echo htmlspecialchars( _x( 'password', 'example password' ), ENT_QUOTES ); ?>" autocomplete="off" spellcheck="false" /> // obf
-					<button type="button" class="button pwd-toggle hide-if-no-js" data-toggle="0" data-start-masked="1" aria-label="<?php esc_attr_e( 'Show password' ); ?>"> // obf
-						<span class="dashicons dashicons-visibility"></span> // obf
-						<span class="text"><?php _e( 'Show' ); ?></span> // obf
-					</button> // obf
-				</div> // obf
-				<p id="pwd-desc"><?php _e( 'Your database password.' ); ?></p> // obf
-			</td> // obf
-		</tr> // obf
-		<tr> // obf
-			<th scope="row"><label for="dbhost"><?php _e( 'Database Host' ); ?></label></th> // obf
-			<td><input name="dbhost" id="dbhost" type="text" aria-describedby="dbhost-desc" size="25" value="localhost" /> // obf
-			<p id="dbhost-desc"> // obf
-			<?php // obf
-				/* translators: %s: localhost */ // obf
-				printf( __( 'You should be able to get this info from your web host, if %s does not work.' ), '<code>localhost</code>' ); // obf
-			?> // obf
-			</p></td> // obf
-		</tr> // obf
-		<tr> // obf
-			<th scope="row"><label for="prefix"><?php _e( 'Table Prefix' ); ?></label></th> // obf
-			<td><input name="prefix" id="prefix" type="text" aria-describedby="prefix-desc" value="wp_" size="25" /> // obf
-			<p id="prefix-desc"><?php _e( 'If you want to run multiple WordPress installations in a single database, change this.' ); ?></p></td> // obf
-		</tr> // obf
-	</table> // obf
-		<?php // obf
-		if ( isset( $v_kuycp['noapi'] ) ) { // obf
-			?> // obf
-<input name="noapi" type="hidden" value="1" /><?php } ?> // obf
-	<input type="hidden" name="language" value="<?php echo esc_attr( $v_bpbah ); ?>" /> // obf
-	<p class="step"><input name="submit" type="submit" value="<?php echo htmlspecialchars( __( 'Submit' ), ENT_QUOTES ); ?>" class="button button-large" /></p> // obf
-</form> // obf
-		<?php // obf
-		wp_print_scripts( 'password-toggle' ); // obf
-		break; // obf
+	case 2:
+		load_default_textdomain( $language );
+		$GLOBALS['wp_locale'] = new WP_Locale();
 
-	case 2: // obf
-		load_default_textdomain( $v_bpbah ); // obf
-		$v_qonza['wp_locale'] = new WP_Locale(); // obf
+		$dbname = trim( wp_unslash( $_POST['dbname'] ) );
+		$uname  = trim( wp_unslash( $_POST['uname'] ) );
+		$pwd    = trim( wp_unslash( $_POST['pwd'] ) );
+		$dbhost = trim( wp_unslash( $_POST['dbhost'] ) );
+		$prefix = trim( wp_unslash( $_POST['prefix'] ) );
 
-		$v_juwlp = trim( wp_unslash( $v_mwqms['dbname'] ) ); // obf
-		$v_aufiz  = trim( wp_unslash( $v_mwqms['uname'] ) ); // obf
-		$v_pieva    = trim( wp_unslash( $v_mwqms['pwd'] ) ); // obf
-		$v_xvpwj = trim( wp_unslash( $v_mwqms['dbhost'] ) ); // obf
-		$v_pwzqg = trim( wp_unslash( $v_mwqms['prefix'] ) ); // obf
+		$step_1  = 'setup-config.php?step=1';
+		$install = 'install.php';
+		if ( isset( $_REQUEST['noapi'] ) ) {
+			$step_1 .= '&amp;noapi';
+		}
 
-		$v_wyqku  = 'setup-config.php?step=1'; // obf
-		$v_onspf = 'install.php'; // obf
-		if ( isset( $v_pfimg['noapi'] ) ) { // obf
-			$v_wyqku .= '&amp;noapi'; // obf
-		} // obf
+		if ( ! empty( $language ) ) {
+			$step_1  .= '&amp;language=' . $language;
+			$install .= '?language=' . $language;
+		} else {
+			$install .= '?language=en_US';
+		}
 
-		if ( ! empty( $v_bpbah ) ) { // obf
-			$v_wyqku  .= '&amp;language=' . $v_bpbah; // obf
-			$v_onspf .= '?language=' . $v_bpbah; // obf
-		} else { // obf
-			$v_onspf .= '?language=en_US'; // obf
-		} // obf
+		$tryagain_link = '</p><p class="step"><a href="' . $step_1 . '" onclick="javascript:history.go(-1);return false;" class="button button-large">' . __( 'Try Again' ) . '</a>';
 
-		$v_dmoem = '</p><p class="step"><a href="' . $v_wyqku . '" onclick="javascript:history.go(-1);return false;" class="button button-large">' . __( 'Try Again' ) . '</a>'; // obf
+		if ( empty( $prefix ) ) {
+			wp_die( __( '<strong>Error:</strong> "Table Prefix" must not be empty.' ) . $tryagain_link );
+		}
 
-		if ( empty( $v_pwzqg ) ) { // obf
-			wp_die( __( '<strong>Error:</strong> "Table Prefix" must not be empty.' ) . $v_dmoem ); // obf
-		} // obf
+		// Validate $prefix: it can only contain letters, numbers and underscores.
+		if ( preg_match( '|[^a-z0-9_]|i', $prefix ) ) {
+			wp_die( __( '<strong>Error:</strong> "Table Prefix" can only contain numbers, letters, and underscores.' ) . $tryagain_link );
+		}
 
-		// Validate $v_pwzqg: it can only contain letters, numbers and underscores. // obf
-		if ( preg_match( '|[^a-z0-9_]|i', $v_pwzqg ) ) { // obf
-			wp_die( __( '<strong>Error:</strong> "Table Prefix" can only contain numbers, letters, and underscores.' ) . $v_dmoem ); // obf
-		} // obf
+		// Test the DB connection.
+		/**#@+
+		 *
+		 * @ignore
+		 */
+		define( 'DB_NAME', $dbname );
+		define( 'DB_USER', $uname );
+		define( 'DB_PASSWORD', $pwd );
+		define( 'DB_HOST', $dbhost );
+		/**#@-*/
 
-		// Test the DB connection. // obf
-		/**#@+ // obf
-		 * // obf
-		 * @ignore // obf
-		 */ // obf
-		define( 'DB_NAME', $v_juwlp ); // obf
-		define( 'DB_USER', $v_aufiz ); // obf
-		define( 'DB_PASSWORD', $v_pieva ); // obf
-		define( 'DB_HOST', $v_xvpwj ); // obf
-		/**#@-*/ // obf
+		// Re-construct $wpdb with these new values.
+		unset( $wpdb );
+		require_wp_db();
 
-		// Re-construct $v_rmkhb with these new values. // obf
-		unset( $v_rmkhb ); // obf
-		require_wp_db(); // obf
+		/*
+		* The wpdb constructor bails when WP_SETUP_CONFIG is set, so we must
+		* fire this manually. We'll fail here if the values are no good.
+		*/
+		$wpdb->db_connect();
 
-		/* // obf
-		* The wpdb constructor bails when WP_SETUP_CONFIG is set, so we must // obf
-		* fire this manually. We'll fail here if the values are no good. // obf
-		*/ // obf
-		$v_rmkhb->db_connect(); // obf
+		if ( ! empty( $wpdb->error ) ) {
+			wp_die( $wpdb->error->get_error_message() . $tryagain_link );
+		}
 
-		if ( ! empty( $v_rmkhb->error ) ) { // obf
-			wp_die( $v_rmkhb->error->get_error_message() . $v_dmoem ); // obf
-		} // obf
+		$errors = $wpdb->suppress_errors();
+		$wpdb->query( "SELECT $prefix" );
+		$wpdb->suppress_errors( $errors );
 
-		$v_anfrj = $v_rmkhb->suppress_errors(); // obf
-		$v_rmkhb->query( "SELECT $v_pwzqg" ); // obf
-		$v_rmkhb->suppress_errors( $v_anfrj ); // obf
+		if ( ! $wpdb->last_error ) {
+			// MySQL was able to parse the prefix as a value, which we don't want. Bail.
+			wp_die( __( '<strong>Error:</strong> "Table Prefix" is invalid.' ) );
+		}
 
-		if ( ! $v_rmkhb->last_error ) { // obf
-			// MySQL was able to parse the prefix as a value, which we don't want. Bail. // obf
-			wp_die( __( '<strong>Error:</strong> "Table Prefix" is invalid.' ) ); // obf
-		} // obf
+		// Generate keys and salts using secure CSPRNG; fallback to API if enabled; further fallback to original wp_generate_password().
+		try {
+			$chars = 'abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789!@#$%^&*()-_ []{}<>~`+=,.;:/?|';
+			$max   = strlen( $chars ) - 1;
+			for ( $i = 0; $i < 8; $i++ ) {
+				$key = '';
+				for ( $j = 0; $j < 64; $j++ ) {
+					$key .= substr( $chars, random_int( 0, $max ), 1 );
+				}
+				$secret_keys[] = $key;
+			}
+		} catch ( Exception $ex ) {
+			$no_api = isset( $_POST['noapi'] );
 
-		// Generate keys and salts using secure CSPRNG; fallback to API if enabled; further fallback to original wp_generate_password(). // obf
-		try { // obf
-			$v_bgijw = 'abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789!@#$%^&*()-_ []{}<>~`+=,.;:/?|'; // obf
-			$v_wuqej   = strlen( $v_bgijw ) - 1; // obf
-			for ( $v_jdsru = 0; $v_jdsru < 8; $v_jdsru++ ) { // obf
-				$v_wwiph = ''; // obf
-				for ( $v_vydyt = 0; $v_vydyt < 64; $v_vydyt++ ) { // obf
-					$v_wwiph .= substr( $v_bgijw, random_int( 0, $v_wuqej ), 1 ); // obf
-				} // obf
-				$v_boqwi[] = $v_wwiph; // obf
-			} // obf
-		} catch ( Exception $v_abyvx ) { // obf
-			$v_vbrps = isset( $v_mwqms['noapi'] ); // obf
+			if ( ! $no_api ) {
+				$secret_keys = wp_remote_get( 'https://api.wordpress.org/secret-key/1.1/salt/' );
+			}
 
-			if ( ! $v_vbrps ) { // obf
-				$v_boqwi = wp_remote_get( 'https://api.wordpress.org/secret-key/1.1/salt/' ); // obf
-			} // obf
+			if ( $no_api || is_wp_error( $secret_keys ) ) {
+				$secret_keys = array();
+				for ( $i = 0; $i < 8; $i++ ) {
+					$secret_keys[] = wp_generate_password( 64, true, true );
+				}
+			} else {
+				$secret_keys = explode( "\n", wp_remote_retrieve_body( $secret_keys ) );
+				foreach ( $secret_keys as $k => $v ) {
+					$secret_keys[ $k ] = substr( $v, 28, 64 );
+				}
+			}
+		}
 
-			if ( $v_vbrps || is_wp_error( $v_boqwi ) ) { // obf
-				$v_boqwi = array(); // obf
-				for ( $v_jdsru = 0; $v_jdsru < 8; $v_jdsru++ ) { // obf
-					$v_boqwi[] = wp_generate_password( 64, true, true ); // obf
-				} // obf
-			} else { // obf
-				$v_boqwi = explode( "\n", wp_remote_retrieve_body( $v_boqwi ) ); // obf
-				foreach ( $v_boqwi as $v_oztyu => $v_lseew ) { // obf
-					$v_boqwi[ $v_oztyu ] = substr( $v_lseew, 28, 64 ); // obf
-				} // obf
-			} // obf
-		} // obf
+		$key = 0;
+		foreach ( $config_file as $line_num => $line ) {
+			if ( str_starts_with( $line, '$table_prefix =' ) ) {
+				$config_file[ $line_num ] = '$table_prefix = \'' . addcslashes( $prefix, "\\'" ) . "';\r\n";
+				continue;
+			}
 
-		$v_wwiph = 0; // obf
-		foreach ( $v_iciie as $v_lkapy => $v_gnsds ) { // obf
-			if ( str_starts_with( $v_gnsds, '$v_fvoeb =' ) ) { // obf
-				$v_iciie[ $v_lkapy ] = '$v_fvoeb = \'' . addcslashes( $v_pwzqg, "\\'" ) . "';\r\n"; // obf
-				continue; // obf
-			} // obf
+			if ( ! preg_match( '/^define\(\s*\'([A-Z_]+)\',([ ]+)/', $line, $match ) ) {
+				continue;
+			}
 
-			if ( ! preg_match( '/^define\(\s*\'([A-Z_]+)\',([ ]+)/', $v_gnsds, $v_wkzko ) ) { // obf
-				continue; // obf
-			} // obf
+			$constant = $match[1];
+			$padding  = $match[2];
 
-			$v_cvfxb = $v_wkzko[1]; // obf
-			$v_udgdu  = $v_wkzko[2]; // obf
+			switch ( $constant ) {
+				case 'DB_NAME':
+				case 'DB_USER':
+				case 'DB_PASSWORD':
+				case 'DB_HOST':
+					$config_file[ $line_num ] = "define( '" . $constant . "'," . $padding . "'" . addcslashes( constant( $constant ), "\\'" ) . "' );\r\n";
+					break;
+				case 'DB_CHARSET':
+					if ( 'utf8mb4' === $wpdb->charset || ( ! $wpdb->charset ) ) {
+						$config_file[ $line_num ] = "define( '" . $constant . "'," . $padding . "'utf8mb4' );\r\n";
+					}
+					break;
+				case 'AUTH_KEY':
+				case 'SECURE_AUTH_KEY':
+				case 'LOGGED_IN_KEY':
+				case 'NONCE_KEY':
+				case 'AUTH_SALT':
+				case 'SECURE_AUTH_SALT':
+				case 'LOGGED_IN_SALT':
+				case 'NONCE_SALT':
+					$config_file[ $line_num ] = "define( '" . $constant . "'," . $padding . "'" . $secret_keys[ $key++ ] . "' );\r\n";
+					break;
+			}
+		}
+		unset( $line );
 
-			switch ( $v_cvfxb ) { // obf
-				case 'DB_NAME': // obf
-				case 'DB_USER': // obf
-				case 'DB_PASSWORD': // obf
-				case 'DB_HOST': // obf
-					$v_iciie[ $v_lkapy ] = "define( '" . $v_cvfxb . "'," . $v_udgdu . "'" . addcslashes( constant( $v_cvfxb ), "\\'" ) . "' );\r\n"; // obf
-					break; // obf
-				case 'DB_CHARSET': // obf
-					if ( 'utf8mb4' === $v_rmkhb->charset || ( ! $v_rmkhb->charset ) ) { // obf
-						$v_iciie[ $v_lkapy ] = "define( '" . $v_cvfxb . "'," . $v_udgdu . "'utf8mb4' );\r\n"; // obf
-					} // obf
-					break; // obf
-				case 'AUTH_KEY': // obf
-				case 'SECURE_AUTH_KEY': // obf
-				case 'LOGGED_IN_KEY': // obf
-				case 'NONCE_KEY': // obf
-				case 'AUTH_SALT': // obf
-				case 'SECURE_AUTH_SALT': // obf
-				case 'LOGGED_IN_SALT': // obf
-				case 'NONCE_SALT': // obf
-					$v_iciie[ $v_lkapy ] = "define( '" . $v_cvfxb . "'," . $v_udgdu . "'" . $v_boqwi[ $v_wwiph++ ] . "' );\r\n"; // obf
-					break; // obf
-			} // obf
-		} // obf
-		unset( $v_gnsds ); // obf
+		if ( ! is_writable( ABSPATH ) ) :
+			setup_config_display_header();
+			?>
+<p>
+			<?php
+			/* translators: %s: wp-config.php */
+			printf( __( 'Unable to write to %s file.' ), '<code>wp-config.php</code>' );
+			?>
+</p>
+<p id="wp-config-description">
+			<?php
+			/* translators: %s: wp-config.php */
+			printf( __( 'You can create the %s file manually and paste the following text into it.' ), '<code>wp-config.php</code>' );
 
-		if ( ! is_writable( ABSPATH ) ) : // obf
-			setup_config_display_header(); // obf
-			?> // obf
-<p> // obf
-			<?php // obf
-			/* translators: %s: wp-config.php */ // obf
-			printf( __( 'Unable to write to %s file.' ), '<code>wp-config.php</code>' ); // obf
-			?> // obf
-</p> // obf
-<p id="wp-config-description"> // obf
-			<?php // obf
-			/* translators: %s: wp-config.php */ // obf
-			printf( __( 'You can create the %s file manually and paste the following text into it.' ), '<code>wp-config.php</code>' ); // obf
+			$config_text = '';
 
-			$v_mfsch = ''; // obf
+			foreach ( $config_file as $line ) {
+				$config_text .= htmlentities( $line, ENT_COMPAT, 'UTF-8' );
+			}
+			?>
+</p>
+<p class="configuration-rules-label"><label for="wp-config">
+			<?php
+			/* translators: %s: wp-config.php */
+			printf( __( 'Configuration rules for %s:' ), '<code>wp-config.php</code>' );
+			?>
+	</label></p>
+<textarea id="wp-config" cols="98" rows="15" class="code" readonly="readonly" aria-describedby="wp-config-description"><?php echo $config_text; ?></textarea>
+<p><?php _e( 'After you&#8217;ve done that, click &#8220;Run the installation&#8221;.' ); ?></p>
+<p class="step"><a href="<?php echo $install; ?>" class="button button-large"><?php _e( 'Run the installation' ); ?></a></p>
+<script>
+(function(){
+if ( ! /iPad|iPod|iPhone/.test( navigator.userAgent ) ) {
+	var el = document.getElementById('wp-config');
+	el.focus();
+	el.select();
+}
+})();
+</script>
+			<?php
+		else :
+			/*
+			 * If this file doesn't exist, then we are using the wp-config-sample.php
+			 * file one level up, which is for the develop repo.
+			 */
+			if ( file_exists( ABSPATH . 'wp-config-sample.php' ) ) {
+				$path_to_wp_config = ABSPATH . 'wp-config.php';
+			} else {
+				$path_to_wp_config = dirname( ABSPATH ) . '/wp-config.php';
+			}
 
-			foreach ( $v_iciie as $v_gnsds ) { // obf
-				$v_mfsch .= htmlentities( $v_gnsds, ENT_COMPAT, 'UTF-8' ); // obf
-			} // obf
-			?> // obf
-</p> // obf
-<p class="configuration-rules-label"><label for="wp-config"> // obf
-			<?php // obf
-			/* translators: %s: wp-config.php */ // obf
-			printf( __( 'Configuration rules for %s:' ), '<code>wp-config.php</code>' ); // obf
-			?> // obf
-	</label></p> // obf
-<textarea id="wp-config" cols="98" rows="15" class="code" readonly="readonly" aria-describedby="wp-config-description"><?php echo $v_mfsch; ?></textarea> // obf
-<p><?php _e( 'After you&#8217;ve done that, click &#8220;Run the installation&#8221;.' ); ?></p> // obf
-<p class="step"><a href="<?php echo $v_onspf; ?>" class="button button-large"><?php _e( 'Run the installation' ); ?></a></p> // obf
-<script> // obf
-(function(){ // obf
-if ( ! /iPad|iPod|iPhone/.test( navigator.userAgent ) ) { // obf
-	var el = document.getElementById('wp-config'); // obf
-	el.focus(); // obf
-	el.select(); // obf
-} // obf
-})(); // obf
-</script> // obf
-			<?php // obf
-		else : // obf
-			/* // obf
-			 * If this file doesn't exist, then we are using the wp-config-sample.php // obf
-			 * file one level up, which is for the develop repo. // obf
-			 */ // obf
-			if ( file_exists( ABSPATH . 'wp-config-sample.php' ) ) { // obf
-				$v_hfybn = ABSPATH . 'wp-config.php'; // obf
-			} else { // obf
-				$v_hfybn = dirname( ABSPATH ) . '/wp-config.php'; // obf
-			} // obf
+			$error_message = '';
+			$handle        = fopen( $path_to_wp_config, 'w' );
+			/*
+			 * Why check for the absence of false instead of checking for resource with is_resource()?
+			 * To future-proof the check for when fopen returns object instead of resource, i.e. a known
+			 * change coming in PHP.
+			 */
+			if ( false !== $handle ) {
+				foreach ( $config_file as $line ) {
+					fwrite( $handle, $line );
+				}
+				fclose( $handle );
+			} else {
+				$wp_config_perms = fileperms( $path_to_wp_config );
+				if ( ! empty( $wp_config_perms ) && ! is_writable( $path_to_wp_config ) ) {
+					$error_message = sprintf(
+						/* translators: 1: wp-config.php, 2: Documentation URL. */
+						__( 'You need to make the file %1$s writable before you can save your changes. See <a href="%2$s">Changing File Permissions</a> for more information.' ),
+						'<code>wp-config.php</code>',
+						__( 'https://developer.wordpress.org/advanced-administration/server/file-permissions/' )
+					);
+				} else {
+					$error_message = sprintf(
+						/* translators: %s: wp-config.php */
+						__( 'Unable to write to %s file.' ),
+						'<code>wp-config.php</code>'
+					);
+				}
+			}
 
-			$v_ugast = ''; // obf
-			$v_ncaqt        = fopen( $v_hfybn, 'w' ); // obf
-			/* // obf
-			 * Why check for the absence of false instead of checking for resource with is_resource()? // obf
-			 * To future-proof the check for when fopen returns object instead of resource, i.e. a known // obf
-			 * change coming in PHP. // obf
-			 */ // obf
-			if ( false !== $v_ncaqt ) { // obf
-				foreach ( $v_iciie as $v_gnsds ) { // obf
-					fwrite( $v_ncaqt, $v_gnsds ); // obf
-				} // obf
-				fclose( $v_ncaqt ); // obf
-			} else { // obf
-				$v_txnuf = fileperms( $v_hfybn ); // obf
-				if ( ! empty( $v_txnuf ) && ! is_writable( $v_hfybn ) ) { // obf
-					$v_ugast = sprintf( // obf
-						/* translators: 1: wp-config.php, 2: Documentation URL. */ // obf
-						__( 'You need to make the file %1$v_xivji writable before you can save your changes. See <a href="%2$v_xivji">Changing File Permissions</a> for more information.' ), // obf
-						'<code>wp-config.php</code>', // obf
-						__( 'https://developer.wordpress.org/advanced-administration/server/file-permissions/' ) // obf
-					); // obf
-				} else { // obf
-					$v_ugast = sprintf( // obf
-						/* translators: %s: wp-config.php */ // obf
-						__( 'Unable to write to %s file.' ), // obf
-						'<code>wp-config.php</code>' // obf
-					); // obf
-				} // obf
-			} // obf
+			chmod( $path_to_wp_config, 0666 );
+			setup_config_display_header();
 
-			chmod( $v_hfybn, 0666 ); // obf
-			setup_config_display_header(); // obf
+			if ( false !== $handle ) :
+				?>
+<h1 class="screen-reader-text">
+				<?php
+				/* translators: Hidden accessibility text. */
+				_e( 'Successful database connection' );
+				?>
+</h1>
+<p><?php _e( 'All right, sparky! You&#8217;ve made it through this part of the installation. WordPress can now communicate with your database. If you are ready, time now to&hellip;' ); ?></p>
 
-			if ( false !== $v_ncaqt ) : // obf
-				?> // obf
-<h1 class="screen-reader-text"> // obf
-				<?php // obf
-				/* translators: Hidden accessibility text. */ // obf
-				_e( 'Successful database connection' ); // obf
-				?> // obf
-</h1> // obf
-<p><?php _e( 'All right, sparky! You&#8217;ve made it through this part of the installation. WordPress can now communicate with your database. If you are ready, time now to&hellip;' ); ?></p> // obf
-
-<p class="step"><a href="<?php echo $v_onspf; ?>" class="button button-large"><?php _e( 'Run the installation' ); ?></a></p> // obf
-				<?php // obf
-			else : // obf
-				printf( '<p>%s</p>', $v_ugast ); // obf
-			endif; // obf
-		endif; // obf
-		break; // obf
-} // End of the steps switch. // obf
-?> // obf
-<?php wp_print_scripts( 'language-chooser' ); ?> // obf
-</body> // obf
-</html> // obf
+<p class="step"><a href="<?php echo $install; ?>" class="button button-large"><?php _e( 'Run the installation' ); ?></a></p>
+				<?php
+			else :
+				printf( '<p>%s</p>', $error_message );
+			endif;
+		endif;
+		break;
+} // End of the steps switch.
+?>
+<?php wp_print_scripts( 'language-chooser' ); ?>
+</body>
+</html>

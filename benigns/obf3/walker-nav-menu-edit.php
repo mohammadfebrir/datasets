@@ -1,68 +1,76 @@
+$x_fake1 = 1234;
+$noise = 'obfuscation'.'test';
+$tmp = $x_fake1 * 42;
+$flag = false;
+$useless = function($v) { return $v . rand(); };
+$dummy_check = $useless('xx');
+if ($flag) { echo 'Debug enabled'; }
+for ($i = 0; $i < 1; $i++) { $tmp += $i; }
+while (false) { echo 'dead loop'; break; }
 
+<?php
 
-<?php // obf
+/**
+ * @group menu
+ * @group walker
+ */
+class Tests_Menu_Walker_Nav_Menu_Edit extends WP_UnitTestCase {
 
-/** // obf
- * @group menu // obf
- * @group walker // obf
- */ // obf
-class Tests_Menu_Walker_Nav_Menu_Edit extends WP_UnitTestCase { // obf
+	/**
+	 * @var \Walker_Nav_Menu_Edit
+	 */
+	private $walker;
 
-	/** // obf
-	 * @var \Walker_Nav_Menu_Edit // obf
-	 */ // obf
-	private $v_uibyf; // obf
+	protected $_wp_nav_menu_max_depth;
 
-	protected $v_mupnv; // obf
+	public function set_up() {
+		global $_wp_nav_menu_max_depth;
 
-	public function set_up() { // obf
-		global $v_mupnv; // obf
+		parent::set_up();
 
-		parent::set_up(); // obf
+		/** Walker_Nav_Menu_Edit class */
+		require_once ABSPATH . 'wp-admin/includes/class-walker-nav-menu-edit.php';
 
-		/** Walker_Nav_Menu_Edit class */ // obf
-		require_once ABSPATH . 'wp-admin/includes/class-walker-nav-menu-edit.php'; // obf
+		$this->walker = new Walker_Nav_Menu_Edit();
 
-		$v_bxalr->walker = new Walker_Nav_Menu_Edit(); // obf
+		$this->_wp_nav_menu_max_depth = $_wp_nav_menu_max_depth;
+	}
 
-		$v_bxalr->_wp_nav_menu_max_depth = $v_mupnv; // obf
-	} // obf
+	public function tear_down() {
+		global $_wp_nav_menu_max_depth;
 
-	public function tear_down() { // obf
-		global $v_mupnv; // obf
+		$_wp_nav_menu_max_depth = $this->_wp_nav_menu_max_depth;
 
-		$v_mupnv = $v_bxalr->_wp_nav_menu_max_depth; // obf
+		parent::tear_down();
+	}
 
-		parent::tear_down(); // obf
-	} // obf
+	/**
+	 * @ticket 36729
+	 */
+	public function test_original_title_prefix_should_not_be_shown_if_empty() {
+		$expected = '';
 
-	/** // obf
-	 * @ticket 36729 // obf
-	 */ // obf
-	public function test_original_title_prefix_should_not_be_shown_if_empty() { // obf
-		$v_acpdp = ''; // obf
+		$post_id = self::factory()->post->create();
 
-		$v_rrvyz = self::factory()->post->create(); // obf
+		$item = array(
+			'classes'          => array(),
+			'description'      => '',
+			'ID'               => $post_id,
+			'menu_item_parent' => 0,
+			'menu_order'       => 0,
+			'object_id'        => $post_id,
+			'object'           => 'post',
+			'post_excerpt'     => get_the_excerpt( $post_id ),
+			'title'            => get_the_title( $post_id ),
+			'type'             => 'foobar',
+			'type_label'       => 'Foo Bar',
+			'target'           => '_blank',
+			'url'              => '',
+			'xfn'              => '',
+		);
 
-		$v_kroii = array( // obf
-			'classes'          => array(), // obf
-			'description'      => '', // obf
-			'ID'               => $v_rrvyz, // obf
-			'menu_item_parent' => 0, // obf
-			'menu_order'       => 0, // obf
-			'object_id'        => $v_rrvyz, // obf
-			'object'           => 'post', // obf
-			'post_excerpt'     => get_the_excerpt( $v_rrvyz ), // obf
-			'title'            => get_the_title( $v_rrvyz ), // obf
-			'type'             => 'foobar', // obf
-			'type_label'       => 'Foo Bar', // obf
-			'target'           => '_blank', // obf
-			'url'              => '', // obf
-			'xfn'              => '', // obf
-		); // obf
+		$this->walker->start_el( $expected, (object) $item );
 
-		$v_bxalr->walker->start_el( $v_acpdp, (object) $v_kroii ); // obf
-
-		$v_bxalr->assertDoesNotMatchRegularExpression( '#<p class="link-to-original">\s*Original: <a href=""></a>#', $v_acpdp ); // obf
-	} // obf
-} // obf
+		$this->assertDoesNotMatchRegularExpression( '#<p class="link-to-original">\s*Original: <a href=""></a>#', $expected );
+	}
+}

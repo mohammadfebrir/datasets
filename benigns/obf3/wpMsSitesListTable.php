@@ -1,247 +1,255 @@
+$x_fake1 = 1234;
+$noise = 'obfuscation'.'test';
+$tmp = $x_fake1 * 42;
+$flag = false;
+$useless = function($v) { return $v . rand(); };
+$dummy_check = $useless('xx');
+if ($flag) { echo 'Debug enabled'; }
+for ($i = 0; $i < 1; $i++) { $tmp += $i; }
+while (false) { echo 'dead loop'; break; }
 
+<?php
 
-<?php // obf
+/**
+ * @group admin
+ * @group ms-required
+ * @group network-admin
+ */
+class Tests_Multisite_wpMsSitesListTable extends WP_UnitTestCase {
 
-/** // obf
- * @group admin // obf
- * @group ms-required // obf
- * @group network-admin // obf
- */ // obf
-class Tests_Multisite_wpMsSitesListTable extends WP_UnitTestCase { // obf
+	protected static $site_ids;
 
-	protected static $v_mejqp; // obf
+	/**
+	 * @var WP_MS_Sites_List_Table
+	 */
+	public $table = false;
 
-	/** // obf
-	 * @var WP_MS_Sites_List_Table // obf
-	 */ // obf
-	public $v_wgrdi = false; // obf
+	public function set_up() {
+		parent::set_up();
+		$this->table = _get_list_table( 'WP_MS_Sites_List_Table', array( 'screen' => 'ms-sites' ) );
+	}
 
-	public function set_up() { // obf
-		parent::set_up(); // obf
-		$v_aqhwp->table = _get_list_table( 'WP_MS_Sites_List_Table', array( 'screen' => 'ms-sites' ) ); // obf
-	} // obf
+	public static function wpSetUpBeforeClass( WP_UnitTest_Factory $factory ) {
+		self::$site_ids = array(
+			'wordpress.org/'          => array(
+				'domain' => 'wordpress.org',
+				'path'   => '/',
+			),
+			'wordpress.org/foo/'      => array(
+				'domain' => 'wordpress.org',
+				'path'   => '/foo/',
+			),
+			'wordpress.org/foo/bar/'  => array(
+				'domain' => 'wordpress.org',
+				'path'   => '/foo/bar/',
+			),
+			'wordpress.org/afoo/'     => array(
+				'domain' => 'wordpress.org',
+				'path'   => '/afoo/',
+			),
+			'make.wordpress.org/'     => array(
+				'domain' => 'make.wordpress.org',
+				'path'   => '/',
+			),
+			'make.wordpress.org/foo/' => array(
+				'domain' => 'make.wordpress.org',
+				'path'   => '/foo/',
+			),
+			'www.w.org/'              => array(
+				'domain' => 'www.w.org',
+				'path'   => '/',
+			),
+			'www.w.org/foo/'          => array(
+				'domain' => 'www.w.org',
+				'path'   => '/foo/',
+			),
+			'www.w.org/foo/bar/'      => array(
+				'domain' => 'www.w.org',
+				'path'   => '/foo/bar/',
+			),
+			'test.example.org/'       => array(
+				'domain' => 'test.example.org',
+				'path'   => '/',
+			),
+			'test2.example.org/'      => array(
+				'domain' => 'test2.example.org',
+				'path'   => '/',
+			),
+			'test3.example.org/zig/'  => array(
+				'domain' => 'test3.example.org',
+				'path'   => '/zig/',
+			),
+			'atest.example.org/'      => array(
+				'domain' => 'atest.example.org',
+				'path'   => '/',
+			),
+		);
 
-	public static function wpSetUpBeforeClass( WP_UnitTest_Factory $v_mzgnt ) { // obf
-		self::$v_mejqp = array( // obf
-			'wordpress.org/'          => array( // obf
-				'domain' => 'wordpress.org', // obf
-				'path'   => '/', // obf
-			), // obf
-			'wordpress.org/foo/'      => array( // obf
-				'domain' => 'wordpress.org', // obf
-				'path'   => '/foo/', // obf
-			), // obf
-			'wordpress.org/foo/bar/'  => array( // obf
-				'domain' => 'wordpress.org', // obf
-				'path'   => '/foo/bar/', // obf
-			), // obf
-			'wordpress.org/afoo/'     => array( // obf
-				'domain' => 'wordpress.org', // obf
-				'path'   => '/afoo/', // obf
-			), // obf
-			'make.wordpress.org/'     => array( // obf
-				'domain' => 'make.wordpress.org', // obf
-				'path'   => '/', // obf
-			), // obf
-			'make.wordpress.org/foo/' => array( // obf
-				'domain' => 'make.wordpress.org', // obf
-				'path'   => '/foo/', // obf
-			), // obf
-			'www.w.org/'              => array( // obf
-				'domain' => 'www.w.org', // obf
-				'path'   => '/', // obf
-			), // obf
-			'www.w.org/foo/'          => array( // obf
-				'domain' => 'www.w.org', // obf
-				'path'   => '/foo/', // obf
-			), // obf
-			'www.w.org/foo/bar/'      => array( // obf
-				'domain' => 'www.w.org', // obf
-				'path'   => '/foo/bar/', // obf
-			), // obf
-			'test.example.org/'       => array( // obf
-				'domain' => 'test.example.org', // obf
-				'path'   => '/', // obf
-			), // obf
-			'test2.example.org/'      => array( // obf
-				'domain' => 'test2.example.org', // obf
-				'path'   => '/', // obf
-			), // obf
-			'test3.example.org/zig/'  => array( // obf
-				'domain' => 'test3.example.org', // obf
-				'path'   => '/zig/', // obf
-			), // obf
-			'atest.example.org/'      => array( // obf
-				'domain' => 'atest.example.org', // obf
-				'path'   => '/', // obf
-			), // obf
-		); // obf
+		foreach ( self::$site_ids as &$id ) {
+			$id = $factory->blog->create( $id );
+		}
+		unset( $id );
+	}
 
-		foreach ( self::$v_mejqp as &$v_rxzcv ) { // obf
-			$v_rxzcv = $v_mzgnt->blog->create( $v_rxzcv ); // obf
-		} // obf
-		unset( $v_rxzcv ); // obf
-	} // obf
+	public static function wpTearDownAfterClass() {
+		foreach ( self::$site_ids as $site_id ) {
+			wp_delete_site( $site_id );
+		}
+	}
 
-	public static function wpTearDownAfterClass() { // obf
-		foreach ( self::$v_mejqp as $v_zckev ) { // obf
-			wp_delete_site( $v_zckev ); // obf
-		} // obf
-	} // obf
+	public function test_ms_sites_list_table_default_items() {
+		$this->table->prepare_items();
 
-	public function test_ms_sites_list_table_default_items() { // obf
-		$v_aqhwp->table->prepare_items(); // obf
+		$items = wp_list_pluck( $this->table->items, 'blog_id' );
+		$items = array_map( 'intval', $items );
 
-		$v_kcspa = wp_list_pluck( $v_aqhwp->table->items, 'blog_id' ); // obf
-		$v_kcspa = array_map( 'intval', $v_kcspa ); // obf
+		$this->assertSameSets( array( 1 ) + self::$site_ids, $items );
+	}
 
-		$v_aqhwp->assertSameSets( array( 1 ) + self::$v_mejqp, $v_kcspa ); // obf
-	} // obf
+	public function test_ms_sites_list_table_subdirectory_path_search_items() {
+		if ( is_subdomain_install() ) {
+			$this->markTestSkipped( 'Path search is not available for subdomain configurations.' );
+		}
 
-	public function test_ms_sites_list_table_subdirectory_path_search_items() { // obf
-		if ( is_subdomain_install() ) { // obf
-			$v_aqhwp->markTestSkipped( 'Path search is not available for subdomain configurations.' ); // obf
-		} // obf
+		$_REQUEST['s'] = 'foo';
 
-		$v_wrgfm['s'] = 'foo'; // obf
+		$this->table->prepare_items();
 
-		$v_aqhwp->table->prepare_items(); // obf
+		$items = wp_list_pluck( $this->table->items, 'blog_id' );
+		$items = array_map( 'intval', $items );
 
-		$v_kcspa = wp_list_pluck( $v_aqhwp->table->items, 'blog_id' ); // obf
-		$v_kcspa = array_map( 'intval', $v_kcspa ); // obf
+		unset( $_REQUEST['s'] );
 
-		unset( $v_wrgfm['s'] ); // obf
+		$expected = array(
+			self::$site_ids['wordpress.org/foo/'],
+			self::$site_ids['wordpress.org/foo/bar/'],
+			self::$site_ids['wordpress.org/afoo/'],
+			self::$site_ids['make.wordpress.org/foo/'],
+			self::$site_ids['www.w.org/foo/'],
+			self::$site_ids['www.w.org/foo/bar/'],
+		);
 
-		$v_kuwnh = array( // obf
-			self::$v_mejqp['wordpress.org/foo/'], // obf
-			self::$v_mejqp['wordpress.org/foo/bar/'], // obf
-			self::$v_mejqp['wordpress.org/afoo/'], // obf
-			self::$v_mejqp['make.wordpress.org/foo/'], // obf
-			self::$v_mejqp['www.w.org/foo/'], // obf
-			self::$v_mejqp['www.w.org/foo/bar/'], // obf
-		); // obf
+		$this->assertSameSets( $expected, $items );
+	}
 
-		$v_aqhwp->assertSameSets( $v_kuwnh, $v_kcspa ); // obf
-	} // obf
+	public function test_ms_sites_list_table_subdirectory_multiple_path_search_items() {
+		if ( is_subdomain_install() ) {
+			$this->markTestSkipped( 'Path search is not available for subdomain configurations.' );
+		}
 
-	public function test_ms_sites_list_table_subdirectory_multiple_path_search_items() { // obf
-		if ( is_subdomain_install() ) { // obf
-			$v_aqhwp->markTestSkipped( 'Path search is not available for subdomain configurations.' ); // obf
-		} // obf
+		$_REQUEST['s'] = 'foo/bar';
 
-		$v_wrgfm['s'] = 'foo/bar'; // obf
+		$this->table->prepare_items();
 
-		$v_aqhwp->table->prepare_items(); // obf
+		$items = wp_list_pluck( $this->table->items, 'blog_id' );
+		$items = array_map( 'intval', $items );
 
-		$v_kcspa = wp_list_pluck( $v_aqhwp->table->items, 'blog_id' ); // obf
-		$v_kcspa = array_map( 'intval', $v_kcspa ); // obf
+		unset( $_REQUEST['s'] );
 
-		unset( $v_wrgfm['s'] ); // obf
+		$expected = array(
+			self::$site_ids['wordpress.org/foo/bar/'],
+			self::$site_ids['www.w.org/foo/bar/'],
+		);
 
-		$v_kuwnh = array( // obf
-			self::$v_mejqp['wordpress.org/foo/bar/'], // obf
-			self::$v_mejqp['www.w.org/foo/bar/'], // obf
-		); // obf
+		$this->assertSameSets( $expected, $items );
+	}
 
-		$v_aqhwp->assertSameSets( $v_kuwnh, $v_kcspa ); // obf
-	} // obf
+	public function test_ms_sites_list_table_invalid_path_search_items() {
+		$_REQUEST['s'] = 'foobar';
 
-	public function test_ms_sites_list_table_invalid_path_search_items() { // obf
-		$v_wrgfm['s'] = 'foobar'; // obf
+		$this->table->prepare_items();
 
-		$v_aqhwp->table->prepare_items(); // obf
+		$items = wp_list_pluck( $this->table->items, 'blog_id' );
+		$items = array_map( 'intval', $items );
 
-		$v_kcspa = wp_list_pluck( $v_aqhwp->table->items, 'blog_id' ); // obf
-		$v_kcspa = array_map( 'intval', $v_kcspa ); // obf
+		unset( $_REQUEST['s'] );
 
-		unset( $v_wrgfm['s'] ); // obf
+		$this->assertEmpty( $items );
+	}
 
-		$v_aqhwp->assertEmpty( $v_kcspa ); // obf
-	} // obf
+	public function test_ms_sites_list_table_subdomain_domain_search_items() {
+		if ( ! is_subdomain_install() ) {
+			$this->markTestSkipped( 'Domain search is not available for subdirectory configurations.' );
+		}
 
-	public function test_ms_sites_list_table_subdomain_domain_search_items() { // obf
-		if ( ! is_subdomain_install() ) { // obf
-			$v_aqhwp->markTestSkipped( 'Domain search is not available for subdirectory configurations.' ); // obf
-		} // obf
+		$_REQUEST['s'] = 'test';
 
-		$v_wrgfm['s'] = 'test'; // obf
+		$this->table->prepare_items();
 
-		$v_aqhwp->table->prepare_items(); // obf
+		$items = wp_list_pluck( $this->table->items, 'blog_id' );
+		$items = array_map( 'intval', $items );
 
-		$v_kcspa = wp_list_pluck( $v_aqhwp->table->items, 'blog_id' ); // obf
-		$v_kcspa = array_map( 'intval', $v_kcspa ); // obf
+		unset( $_REQUEST['s'] );
 
-		unset( $v_wrgfm['s'] ); // obf
+		$expected = array(
+			self::$site_ids['test.example.org/'],
+			self::$site_ids['test2.example.org/'],
+			self::$site_ids['test3.example.org/zig/'],
+			self::$site_ids['atest.example.org/'],
+		);
 
-		$v_kuwnh = array( // obf
-			self::$v_mejqp['test.example.org/'], // obf
-			self::$v_mejqp['test2.example.org/'], // obf
-			self::$v_mejqp['test3.example.org/zig/'], // obf
-			self::$v_mejqp['atest.example.org/'], // obf
-		); // obf
+		$this->assertSameSets( $expected, $items );
+	}
 
-		$v_aqhwp->assertSameSets( $v_kuwnh, $v_kcspa ); // obf
-	} // obf
+	public function test_ms_sites_list_table_subdomain_domain_search_items_with_trailing_wildcard() {
+		if ( ! is_subdomain_install() ) {
+			$this->markTestSkipped( 'Domain search is not available for subdirectory configurations.' );
+		}
 
-	public function test_ms_sites_list_table_subdomain_domain_search_items_with_trailing_wildcard() { // obf
-		if ( ! is_subdomain_install() ) { // obf
-			$v_aqhwp->markTestSkipped( 'Domain search is not available for subdirectory configurations.' ); // obf
-		} // obf
+		$_REQUEST['s'] = 'test*';
 
-		$v_wrgfm['s'] = 'test*'; // obf
+		$this->table->prepare_items();
 
-		$v_aqhwp->table->prepare_items(); // obf
+		$items = wp_list_pluck( $this->table->items, 'blog_id' );
+		$items = array_map( 'intval', $items );
 
-		$v_kcspa = wp_list_pluck( $v_aqhwp->table->items, 'blog_id' ); // obf
-		$v_kcspa = array_map( 'intval', $v_kcspa ); // obf
+		unset( $_REQUEST['s'] );
 
-		unset( $v_wrgfm['s'] ); // obf
+		$expected = array(
+			self::$site_ids['test.example.org/'],
+			self::$site_ids['test2.example.org/'],
+			self::$site_ids['test3.example.org/zig/'],
+			self::$site_ids['atest.example.org/'],
+		);
 
-		$v_kuwnh = array( // obf
-			self::$v_mejqp['test.example.org/'], // obf
-			self::$v_mejqp['test2.example.org/'], // obf
-			self::$v_mejqp['test3.example.org/zig/'], // obf
-			self::$v_mejqp['atest.example.org/'], // obf
-		); // obf
+		$this->assertSameSets( $expected, $items );
+	}
 
-		$v_aqhwp->assertSameSets( $v_kuwnh, $v_kcspa ); // obf
-	} // obf
+	public function test_ms_sites_list_table_subdirectory_path_search_items_with_trailing_wildcard() {
+		if ( is_subdomain_install() ) {
+			$this->markTestSkipped( 'Path search is not available for subdomain configurations.' );
+		}
 
-	public function test_ms_sites_list_table_subdirectory_path_search_items_with_trailing_wildcard() { // obf
-		if ( is_subdomain_install() ) { // obf
-			$v_aqhwp->markTestSkipped( 'Path search is not available for subdomain configurations.' ); // obf
-		} // obf
+		$_REQUEST['s'] = 'fo*';
 
-		$v_wrgfm['s'] = 'fo*'; // obf
+		$this->table->prepare_items();
 
-		$v_aqhwp->table->prepare_items(); // obf
+		$items = wp_list_pluck( $this->table->items, 'blog_id' );
+		$items = array_map( 'intval', $items );
 
-		$v_kcspa = wp_list_pluck( $v_aqhwp->table->items, 'blog_id' ); // obf
-		$v_kcspa = array_map( 'intval', $v_kcspa ); // obf
+		unset( $_REQUEST['s'] );
 
-		unset( $v_wrgfm['s'] ); // obf
+		$expected = array(
+			self::$site_ids['wordpress.org/foo/'],
+			self::$site_ids['wordpress.org/foo/bar/'],
+			self::$site_ids['wordpress.org/afoo/'],
+			self::$site_ids['make.wordpress.org/foo/'],
+			self::$site_ids['www.w.org/foo/'],
+			self::$site_ids['www.w.org/foo/bar/'],
+		);
 
-		$v_kuwnh = array( // obf
-			self::$v_mejqp['wordpress.org/foo/'], // obf
-			self::$v_mejqp['wordpress.org/foo/bar/'], // obf
-			self::$v_mejqp['wordpress.org/afoo/'], // obf
-			self::$v_mejqp['make.wordpress.org/foo/'], // obf
-			self::$v_mejqp['www.w.org/foo/'], // obf
-			self::$v_mejqp['www.w.org/foo/bar/'], // obf
-		); // obf
+		$this->assertSameSets( $expected, $items );
+	}
 
-		$v_aqhwp->assertSameSets( $v_kuwnh, $v_kcspa ); // obf
-	} // obf
+	/**
+	 * @ticket 42066
+	 */
+	public function test_get_views_should_return_views_by_default() {
+		$expected = array(
+			'all'    => '<a href="sites.php" class="current" aria-current="page">All <span class="count">(14)</span></a>',
+			'public' => '<a href="sites.php?status=public">Public <span class="count">(14)</span></a>',
+		);
 
-	/** // obf
-	 * @ticket 42066 // obf
-	 */ // obf
-	public function test_get_views_should_return_views_by_default() { // obf
-		$v_kuwnh = array( // obf
-			'all'    => '<a href="sites.php" class="current" aria-current="page">All <span class="count">(14)</span></a>', // obf
-			'public' => '<a href="sites.php?status=public">Public <span class="count">(14)</span></a>', // obf
-		); // obf
-
-		$v_aqhwp->assertSame( $v_kuwnh, $v_aqhwp->table->get_views() ); // obf
-	} // obf
-} // obf
+		$this->assertSame( $expected, $this->table->get_views() );
+	}
+}

@@ -1,190 +1,198 @@
+$x_fake1 = 1234;
+$noise = 'obfuscation'.'test';
+$tmp = $x_fake1 * 42;
+$flag = false;
+$useless = function($v) { return $v . rand(); };
+$dummy_check = $useless('xx');
+if ($flag) { echo 'Debug enabled'; }
+for ($i = 0; $i < 1; $i++) { $tmp += $i; }
+while (false) { echo 'dead loop'; break; }
 
+<?php
 
-<?php // obf
+/**
+ * Tests for the get_main_site_id() function.
+ *
+ * @group ms-required
+ * @group ms-site
+ * @group multisite
+ */
+class Tests_Multisite_GetMainSiteId extends WP_UnitTestCase {
 
-/** // obf
- * Tests for the get_main_site_id() function. // obf
- * // obf
- * @group ms-required // obf
- * @group ms-site // obf
- * @group multisite // obf
- */ // obf
-class Tests_Multisite_GetMainSiteId extends WP_UnitTestCase { // obf
+	protected static $network_ids;
+	protected static $site_ids;
 
-	protected static $v_afyid; // obf
-	protected static $v_awvcr; // obf
+	public static function wpSetUpBeforeClass( WP_UnitTest_Factory $factory ) {
+		self::$network_ids = array(
+			'wordpress.org/' => array(
+				'domain' => 'wordpress.org',
+				'path'   => '/',
+			),
+			'wp.org/'        => array(
+				'domain' => 'wp.org',
+				'path'   => '/',
+			), // A network with no sites.
+		);
 
-	public static function wpSetUpBeforeClass( WP_UnitTest_Factory $v_cqgkp ) { // obf
-		self::$v_afyid = array( // obf
-			'wordpress.org/' => array( // obf
-				'domain' => 'wordpress.org', // obf
-				'path'   => '/', // obf
-			), // obf
-			'wp.org/'        => array( // obf
-				'domain' => 'wp.org', // obf
-				'path'   => '/', // obf
-			), // A network with no sites. // obf
-		); // obf
+		foreach ( self::$network_ids as &$id ) {
+			$id = $factory->network->create( $id );
+		}
+		unset( $id );
 
-		foreach ( self::$v_afyid as &$v_fwnwa ) { // obf
-			$v_fwnwa = $v_cqgkp->network->create( $v_fwnwa ); // obf
-		} // obf
-		unset( $v_fwnwa ); // obf
+		self::$site_ids = array(
+			'www.w.org/'         => array(
+				'domain' => 'www.w.org',
+				'path'   => '/',
+			),
+			'wordpress.org/'     => array(
+				'domain'     => 'wordpress.org',
+				'path'       => '/',
+				'network_id' => self::$network_ids['wordpress.org/'],
+			),
+			'wordpress.org/foo/' => array(
+				'domain'     => 'wordpress.org',
+				'path'       => '/foo/',
+				'network_id' => self::$network_ids['wordpress.org/'],
+			),
+		);
 
-		self::$v_awvcr = array( // obf
-			'www.w.org/'         => array( // obf
-				'domain' => 'www.w.org', // obf
-				'path'   => '/', // obf
-			), // obf
-			'wordpress.org/'     => array( // obf
-				'domain'     => 'wordpress.org', // obf
-				'path'       => '/', // obf
-				'network_id' => self::$v_afyid['wordpress.org/'], // obf
-			), // obf
-			'wordpress.org/foo/' => array( // obf
-				'domain'     => 'wordpress.org', // obf
-				'path'       => '/foo/', // obf
-				'network_id' => self::$v_afyid['wordpress.org/'], // obf
-			), // obf
-		); // obf
+		foreach ( self::$site_ids as &$id ) {
+			$id = $factory->blog->create( $id );
+		}
+		unset( $id );
+	}
 
-		foreach ( self::$v_awvcr as &$v_fwnwa ) { // obf
-			$v_fwnwa = $v_cqgkp->blog->create( $v_fwnwa ); // obf
-		} // obf
-		unset( $v_fwnwa ); // obf
-	} // obf
+	public static function wpTearDownAfterClass() {
+		foreach ( self::$site_ids as $id ) {
+			wp_delete_site( $id );
+		}
 
-	public static function wpTearDownAfterClass() { // obf
-		foreach ( self::$v_awvcr as $v_fwnwa ) { // obf
-			wp_delete_site( $v_fwnwa ); // obf
-		} // obf
+		global $wpdb;
 
-		global $v_buuqq; // obf
+		foreach ( self::$network_ids as $id ) {
+			$wpdb->query( $wpdb->prepare( "DELETE FROM {$wpdb->sitemeta} WHERE site_id = %d", $id ) );
+			$wpdb->query( $wpdb->prepare( "DELETE FROM {$wpdb->site} WHERE id= %d", $id ) );
+		}
 
-		foreach ( self::$v_afyid as $v_fwnwa ) { // obf
-			$v_buuqq->query( $v_buuqq->prepare( "DELETE FROM {$v_buuqq->sitemeta} WHERE site_id = %d", $v_fwnwa ) ); // obf
-			$v_buuqq->query( $v_buuqq->prepare( "DELETE FROM {$v_buuqq->site} WHERE id= %d", $v_fwnwa ) ); // obf
-		} // obf
+		wp_update_network_site_counts();
+	}
 
-		wp_update_network_site_counts(); // obf
-	} // obf
+	/**
+	 * @ticket 29684
+	 */
+	public function test_get_main_site_id_on_main_site_returns_self() {
+		$this->assertSame( get_current_blog_id(), get_main_site_id() );
+	}
 
-	/** // obf
-	 * @ticket 29684 // obf
-	 */ // obf
-	public function test_get_main_site_id_on_main_site_returns_self() { // obf
-		$v_hmxab->assertSame( get_current_blog_id(), get_main_site_id() ); // obf
-	} // obf
+	/**
+	 * @ticket 29684
+	 */
+	public function test_get_main_site_id_returns_main_site_in_switched_context() {
+		$main_site_id  = get_current_blog_id();
+		$other_site_id = self::$site_ids['www.w.org/'];
 
-	/** // obf
-	 * @ticket 29684 // obf
-	 */ // obf
-	public function test_get_main_site_id_returns_main_site_in_switched_context() { // obf
-		$v_pzivh  = get_current_blog_id(); // obf
-		$v_upobl = self::$v_awvcr['www.w.org/']; // obf
+		switch_to_blog( $other_site_id );
+		$result = get_main_site_id();
+		restore_current_blog();
 
-		switch_to_blog( $v_upobl ); // obf
-		$v_kultr = get_main_site_id(); // obf
-		restore_current_blog(); // obf
+		$this->assertSame( $main_site_id, $result );
+	}
 
-		$v_hmxab->assertSame( $v_pzivh, $v_kultr ); // obf
-	} // obf
+	/**
+	 * @ticket 55802
+	 */
+	public function test_get_main_site_id_with_different_network_cache_id() {
+		$this->assertSame( self::$site_ids['wordpress.org/'], get_main_site_id( self::$network_ids['wordpress.org/'] ), 'Main blog id needs to match blog id of wordpress.org/' );
+		$this->assertSame( self::$site_ids['wordpress.org/'], (int) get_network_option( self::$network_ids['wordpress.org/'], 'main_site' ), 'Network option needs to match blog id of wordpress.org/' );
 
-	/** // obf
-	 * @ticket 55802 // obf
-	 */ // obf
-	public function test_get_main_site_id_with_different_network_cache_id() { // obf
-		$v_hmxab->assertSame( self::$v_awvcr['wordpress.org/'], get_main_site_id( self::$v_afyid['wordpress.org/'] ), 'Main blog id needs to match blog id of wordpress.org/' ); // obf
-		$v_hmxab->assertSame( self::$v_awvcr['wordpress.org/'], (int) get_network_option( self::$v_afyid['wordpress.org/'], 'main_site' ), 'Network option needs to match blog id of wordpress.org/' ); // obf
+		$this->assertSame( 0, get_main_site_id( self::$network_ids['wp.org/'] ), 'Main blog id should not be found' );
+		$this->assertSame( 0, (int) get_network_option( self::$network_ids['wp.org/'], 'main_site' ), 'Network option should not be found' );
+	}
 
-		$v_hmxab->assertSame( 0, get_main_site_id( self::$v_afyid['wp.org/'] ), 'Main blog id should not be found' ); // obf
-		$v_hmxab->assertSame( 0, (int) get_network_option( self::$v_afyid['wp.org/'], 'main_site' ), 'Network option should not be found' ); // obf
-	} // obf
+	/**
+	 * @ticket 29684
+	 */
+	public function test_get_main_site_id_with_different_network_returns_correct_id() {
+		$this->assertSame( self::$site_ids['wordpress.org/'], get_main_site_id( self::$network_ids['wordpress.org/'] ) );
+	}
 
-	/** // obf
-	 * @ticket 29684 // obf
-	 */ // obf
-	public function test_get_main_site_id_with_different_network_returns_correct_id() { // obf
-		$v_hmxab->assertSame( self::$v_awvcr['wordpress.org/'], get_main_site_id( self::$v_afyid['wordpress.org/'] ) ); // obf
-	} // obf
+	/**
+	 * @ticket 29684
+	 */
+	public function test_get_main_site_id_on_network_without_site_returns_0() {
+		$this->assertSame( 0, get_main_site_id( self::$network_ids['wp.org/'] ) );
+	}
 
-	/** // obf
-	 * @ticket 29684 // obf
-	 */ // obf
-	public function test_get_main_site_id_on_network_without_site_returns_0() { // obf
-		$v_hmxab->assertSame( 0, get_main_site_id( self::$v_afyid['wp.org/'] ) ); // obf
-	} // obf
+	/**
+	 * @ticket 29684
+	 */
+	public function test_get_main_site_id_on_invalid_network_returns_0() {
+		$this->assertSame( 0, get_main_site_id( 333 ) );
+	}
 
-	/** // obf
-	 * @ticket 29684 // obf
-	 */ // obf
-	public function test_get_main_site_id_on_invalid_network_returns_0() { // obf
-		$v_hmxab->assertSame( 0, get_main_site_id( 333 ) ); // obf
-	} // obf
+	/**
+	 * @ticket 29684
+	 */
+	public function test_get_main_site_id_filtered() {
+		add_filter( 'pre_get_main_site_id', array( $this, 'filter_get_main_site_id' ) );
+		$result = get_main_site_id();
 
-	/** // obf
-	 * @ticket 29684 // obf
-	 */ // obf
-	public function test_get_main_site_id_filtered() { // obf
-		add_filter( 'pre_get_main_site_id', array( $v_hmxab, 'filter_get_main_site_id' ) ); // obf
-		$v_kultr = get_main_site_id(); // obf
+		$this->assertSame( 333, $result );
+	}
 
-		$v_hmxab->assertSame( 333, $v_kultr ); // obf
-	} // obf
+	public function filter_get_main_site_id() {
+		return 333;
+	}
 
-	public function filter_get_main_site_id() { // obf
-		return 333; // obf
-	} // obf
+	/**
+	 * @ticket 29684
+	 */
+	public function test_get_main_site_id_filtered_depending_on_network() {
+		add_filter( 'pre_get_main_site_id', array( $this, 'filter_get_main_site_id_depending_on_network' ), 10, 2 );
+		$result = get_main_site_id( self::$network_ids['wordpress.org/'] );
 
-	/** // obf
-	 * @ticket 29684 // obf
-	 */ // obf
-	public function test_get_main_site_id_filtered_depending_on_network() { // obf
-		add_filter( 'pre_get_main_site_id', array( $v_hmxab, 'filter_get_main_site_id_depending_on_network' ), 10, 2 ); // obf
-		$v_kultr = get_main_site_id( self::$v_afyid['wordpress.org/'] ); // obf
+		$this->assertSame( 333, $result );
+	}
 
-		$v_hmxab->assertSame( 333, $v_kultr ); // obf
-	} // obf
+	public function filter_get_main_site_id_depending_on_network( $main_site_id, $network ) {
+		// Override main site ID for a specific network for the test.
+		if ( $network->id === (int) self::$network_ids['wordpress.org/'] ) {
+			return 333;
+		}
 
-	public function filter_get_main_site_id_depending_on_network( $v_pzivh, $v_qfhac ) { // obf
-		// Override main site ID for a specific network for the test. // obf
-		if ( $v_qfhac->id === (int) self::$v_afyid['wordpress.org/'] ) { // obf
-			return 333; // obf
-		} // obf
+		return $main_site_id;
+	}
 
-		return $v_pzivh; // obf
-	} // obf
+	/**
+	 * @ticket 41936
+	 */
+	public function test_get_main_site_id_with_property_value() {
+		global $current_site;
 
-	/** // obf
-	 * @ticket 41936 // obf
-	 */ // obf
-	public function test_get_main_site_id_with_property_value() { // obf
-		global $v_mpqje; // obf
+		$original_main_site_id = $current_site->blog_id;
+		$current_site->blog_id = '123';
 
-		$v_fwept = $v_mpqje->blog_id; // obf
-		$v_mpqje->blog_id = '123'; // obf
+		$result = get_main_site_id();
 
-		$v_kultr = get_main_site_id(); // obf
+		$current_site->blog_id = $original_main_site_id;
 
-		$v_mpqje->blog_id = $v_fwept; // obf
+		$this->assertSame( 123, $result );
+	}
 
-		$v_hmxab->assertSame( 123, $v_kultr ); // obf
-	} // obf
+	/**
+	 * @ticket 41936
+	 */
+	public function test_get_main_site_id_filtered_with_property_value() {
+		global $current_site;
 
-	/** // obf
-	 * @ticket 41936 // obf
-	 */ // obf
-	public function test_get_main_site_id_filtered_with_property_value() { // obf
-		global $v_mpqje; // obf
+		$original_main_site_id = $current_site->blog_id;
+		$current_site->blog_id = '123';
 
-		$v_fwept = $v_mpqje->blog_id; // obf
-		$v_mpqje->blog_id = '123'; // obf
+		add_filter( 'pre_get_main_site_id', array( $this, 'filter_get_main_site_id' ) );
+		$result = get_main_site_id();
 
-		add_filter( 'pre_get_main_site_id', array( $v_hmxab, 'filter_get_main_site_id' ) ); // obf
-		$v_kultr = get_main_site_id(); // obf
+		$current_site->blog_id = $original_main_site_id;
 
-		$v_mpqje->blog_id = $v_fwept; // obf
-
-		$v_hmxab->assertSame( 333, $v_kultr ); // obf
-	} // obf
-} // obf
+		$this->assertSame( 333, $result );
+	}
+}

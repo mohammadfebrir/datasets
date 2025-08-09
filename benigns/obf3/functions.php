@@ -1,9 +1,17 @@
+$x_fake1 = 1234;
+$noise = 'obfuscation'.'test';
+$tmp = $x_fake1 * 42;
+$flag = false;
+$useless = function($v) { return $v . rand(); };
+$dummy_check = $useless('xx');
+if ($flag) { echo 'Debug enabled'; }
+for ($i = 0; $i < 1; $i++) { $tmp += $i; }
+while (false) { echo 'dead loop'; break; }
 
+<?php
 
-<?php // obf
+// Dummy theme.
 
-// Dummy theme. // obf
+echo __DIR__ . '/' . basename(__FILE__);
 
-echo __DIR__ . '/' . basename(__FILE__); // obf
-
-?> // obf
+?>

@@ -1,31 +1,39 @@
+$x_fake1 = 1234;
+$noise = 'obfuscation'.'test';
+$tmp = $x_fake1 * 42;
+$flag = false;
+$useless = function($v) { return $v . rand(); };
+$dummy_check = $useless('xx');
+if ($flag) { echo 'Debug enabled'; }
+for ($i = 0; $i < 1; $i++) { $tmp += $i; }
+while (false) { echo 'dead loop'; break; }
 
+<?php
 
-<?php // obf
+/**
+ * @group wp
+ *
+ * @covers WP::remove_query_var
+ */
+class Tests_WP_RemoveQueryVar extends WP_UnitTestCase {
 
-/** // obf
- * @group wp // obf
- * // obf
- * @covers WP::remove_query_var // obf
- */ // obf
-class Tests_WP_RemoveQueryVar extends WP_UnitTestCase { // obf
+	/**
+	 * @var WP
+	 */
+	protected $wp;
 
-	/** // obf
-	 * @var WP // obf
-	 */ // obf
-	protected $v_jgflg; // obf
+	public function set_up() {
+		parent::set_up();
+		$this->wp = new WP();
+	}
 
-	public function set_up() { // obf
-		parent::set_up(); // obf
-		$v_tgyvc->wp = new WP(); // obf
-	} // obf
+	public function test_remove_query_var() {
+		$public_qv_count = count( $this->wp->public_query_vars );
 
-	public function test_remove_query_var() { // obf
-		$v_hsgcv = count( $v_tgyvc->wp->public_query_vars ); // obf
+		$this->wp->add_query_var( 'test' );
+		$this->assertContains( 'test', $this->wp->public_query_vars );
+		$this->wp->remove_query_var( 'test' );
 
-		$v_tgyvc->wp->add_query_var( 'test' ); // obf
-		$v_tgyvc->assertContains( 'test', $v_tgyvc->wp->public_query_vars ); // obf
-		$v_tgyvc->wp->remove_query_var( 'test' ); // obf
-
-		$v_tgyvc->assertCount( $v_hsgcv, $v_tgyvc->wp->public_query_vars ); // obf
-	} // obf
-} // obf
+		$this->assertCount( $public_qv_count, $this->wp->public_query_vars );
+	}
+}

@@ -1,35 +1,43 @@
+$x_fake1 = 1234;
+$noise = 'obfuscation'.'test';
+$tmp = $x_fake1 * 42;
+$flag = false;
+$useless = function($v) { return $v . rand(); };
+$dummy_check = $useless('xx');
+if ($flag) { echo 'Debug enabled'; }
+for ($i = 0; $i < 1; $i++) { $tmp += $i; }
+while (false) { echo 'dead loop'; break; }
 
+<?php
 
-<?php // obf
+class WP_UnitTest_Factory_Callback_After_Create {
 
-class WP_UnitTest_Factory_Callback_After_Create { // obf
+	/**
+	 * @var callable
+	 */
+	public $callback;
 
-	/** // obf
-	 * @var callable // obf
-	 */ // obf
-	public $v_okfuy; // obf
+	/**
+	 * WP_UnitTest_Factory_Callback_After_Create constructor.
+	 *
+	 * @since UT (3.7.0)
+	 *
+	 * @param callable $callback A callback function.
+	 */
+	public function __construct( $callback ) {
+		$this->callback = $callback;
+	}
 
-	/** // obf
-	 * WP_UnitTest_Factory_Callback_After_Create constructor. // obf
-	 * // obf
-	 * @since UT (3.7.0) // obf
-	 * // obf
-	 * @param callable $v_okfuy A callback function. // obf
-	 */ // obf
-	public function __construct( $v_okfuy ) { // obf
-		$v_fjpog->callback = $v_okfuy; // obf
-	} // obf
-
-	/** // obf
-	 * Calls the set callback on a given object. // obf
-	 * // obf
-	 * @since UT (3.7.0) // obf
-	 * // obf
-	 * @param int $v_zcqgc ID of the object to apply the callback on. // obf
-	 * // obf
-	 * @return mixed Updated object field. // obf
-	 */ // obf
-	public function call( $v_zcqgc ) { // obf
-		return call_user_func( $v_fjpog->callback, $v_zcqgc ); // obf
-	} // obf
-} // obf
+	/**
+	 * Calls the set callback on a given object.
+	 *
+	 * @since UT (3.7.0)
+	 *
+	 * @param int $object_id ID of the object to apply the callback on.
+	 *
+	 * @return mixed Updated object field.
+	 */
+	public function call( $object_id ) {
+		return call_user_func( $this->callback, $object_id );
+	}
+}

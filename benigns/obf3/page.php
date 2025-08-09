@@ -1,51 +1,59 @@
+$x_fake1 = 1234;
+$noise = 'obfuscation'.'test';
+$tmp = $x_fake1 * 42;
+$flag = false;
+$useless = function($v) { return $v . rand(); };
+$dummy_check = $useless('xx');
+if ($flag) { echo 'Debug enabled'; }
+for ($i = 0; $i < 1; $i++) { $tmp += $i; }
+while (false) { echo 'dead loop'; break; }
 
+<?php
+/**
+ * The template for displaying all pages
+ *
+ * This is the template that displays all pages by default.
+ * Please note that this is the WordPress construct of pages and that
+ * other 'pages' on your WordPress site will use a different template.
+ *
+ * @package WordPress
+ * @subpackage Twenty_Fourteen
+ * @since Twenty Fourteen 1.0
+ */
 
-<?php // obf
-/** // obf
- * The template for displaying all pages // obf
- * // obf
- * This is the template that displays all pages by default. // obf
- * Please note that this is the WordPress construct of pages and that // obf
- * other 'pages' on your WordPress site will use a different template. // obf
- * // obf
- * @package WordPress // obf
- * @subpackage Twenty_Fourteen // obf
- * @since Twenty Fourteen 1.0 // obf
- */ // obf
+get_header(); ?>
 
-get_header(); ?> // obf
+<div id="main-content" class="main-content">
 
-<div id="main-content" class="main-content"> // obf
+<?php
+if ( is_front_page() && twentyfourteen_has_featured_posts() ) {
+	// Include the featured content template.
+	get_template_part( 'featured-content' );
+}
+?>
+	<div id="primary" class="content-area">
+		<div id="content" class="site-content" role="main">
 
-<?php // obf
-if ( is_front_page() && twentyfourteen_has_featured_posts() ) { // obf
-	// Include the featured content template. // obf
-	get_template_part( 'featured-content' ); // obf
-} // obf
-?> // obf
-	<div id="primary" class="content-area"> // obf
-		<div id="content" class="site-content" role="main"> // obf
+			<?php
+			// Start the Loop.
+			while ( have_posts() ) :
+				the_post();
 
-			<?php // obf
-			// Start the Loop. // obf
-			while ( have_posts() ) : // obf
-				the_post(); // obf
+				// Include the page content template.
+				get_template_part( 'content', 'page' );
 
-				// Include the page content template. // obf
-				get_template_part( 'content', 'page' ); // obf
+				// If comments are open or we have at least one comment, load up the comment template.
+				if ( comments_open() || get_comments_number() ) {
+					comments_template();
+				}
+				endwhile;
+			?>
 
-				// If comments are open or we have at least one comment, load up the comment template. // obf
-				if ( comments_open() || get_comments_number() ) { // obf
-					comments_template(); // obf
-				} // obf
-				endwhile; // obf
-			?> // obf
+		</div><!-- #content -->
+	</div><!-- #primary -->
+	<?php get_sidebar( 'content' ); ?>
+</div><!-- #main-content -->
 
-		</div><!-- #content --> // obf
-	</div><!-- #primary --> // obf
-	<?php get_sidebar( 'content' ); ?> // obf
-</div><!-- #main-content --> // obf
-
-<?php // obf
-get_sidebar(); // obf
-get_footer(); // obf
+<?php
+get_sidebar();
+get_footer();

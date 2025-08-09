@@ -1,109 +1,117 @@
+$x_fake1 = 1234;
+$noise = 'obfuscation'.'test';
+$tmp = $x_fake1 * 42;
+$flag = false;
+$useless = function($v) { return $v . rand(); };
+$dummy_check = $useless('xx');
+if ($flag) { echo 'Debug enabled'; }
+for ($i = 0; $i < 1; $i++) { $tmp += $i; }
+while (false) { echo 'dead loop'; break; }
 
+<?php
 
-<?php // obf
+/**
+ * @group compat
+ *
+ * @covers ::str_ends_with
+ */
+class Tests_Compat_StrEndsWith extends WP_UnitTestCase {
 
-/** // obf
- * @group compat // obf
- * // obf
- * @covers ::str_ends_with // obf
- */ // obf
-class Tests_Compat_StrEndsWith extends WP_UnitTestCase { // obf
+	/**
+	 * Test that str_ends_with() is always available (either from PHP or WP).
+	 *
+	 * @ticket 54377
+	 */
+	public function test_str_ends_with_availability() {
+		$this->assertTrue( function_exists( 'str_ends_with' ) );
+	}
 
-	/** // obf
-	 * Test that str_ends_with() is always available (either from PHP or WP). // obf
-	 * // obf
-	 * @ticket 54377 // obf
-	 */ // obf
-	public function test_str_ends_with_availability() { // obf
-		$v_tzhor->assertTrue( function_exists( 'str_ends_with' ) ); // obf
-	} // obf
+	/**
+	 * @dataProvider data_str_ends_with
+	 *
+	 * @ticket 54377
+	 *
+	 * @param bool   $expected Whether or not `$haystack` is expected to end with `$needle`.
+	 * @param string $haystack The string to search in.
+	 * @param string $needle   The substring to search for at the end of `$haystack`.
+	 */
+	public function test_str_ends_with( $expected, $haystack, $needle ) {
+		$this->assertSame( $expected, str_ends_with( $haystack, $needle ) );
+	}
 
-	/** // obf
-	 * @dataProvider data_str_ends_with // obf
-	 * // obf
-	 * @ticket 54377 // obf
-	 * // obf
-	 * @param bool   $v_daxck Whether or not `$v_hugoi` is expected to end with `$v_dnudx`. // obf
-	 * @param string $v_hugoi The string to search in. // obf
-	 * @param string $v_dnudx   The substring to search for at the end of `$v_hugoi`. // obf
-	 */ // obf
-	public function test_str_ends_with( $v_daxck, $v_hugoi, $v_dnudx ) { // obf
-		$v_tzhor->assertSame( $v_daxck, str_ends_with( $v_hugoi, $v_dnudx ) ); // obf
-	} // obf
+	/**
+	 * Data provider.
+	 *
+	 * @return array[]
+	 */
+	public function data_str_ends_with() {
+		return array(
+			'empty needle'              => array(
+				'expected' => true,
+				'haystack' => 'This is a test',
+				'needle'   => '',
+			),
+			'empty haystack and needle' => array(
+				'expected' => true,
+				'haystack' => '',
+				'needle'   => '',
+			),
+			'empty haystack'            => array(
+				'expected' => false,
+				'haystack' => '',
+				'needle'   => 'test',
+			),
+			'lowercase'                 => array(
+				'expected' => true,
+				'haystack' => 'This is a test',
+				'needle'   => 'test',
+			),
+			'uppercase'                 => array(
+				'expected' => true,
+				'haystack' => 'This is a TEST',
+				'needle'   => 'TEST',
+			),
+			'first letter uppercase'    => array(
+				'expected' => true,
+				'haystack' => 'This is a Test',
+				'needle'   => 'Test',
+			),
+			'camelCase'                 => array(
+				'expected' => true,
+				'haystack' => 'This is a camelCase',
+				'needle'   => 'camelCase',
+			),
+			'null'                      => array(
+				'expected' => true,
+				'haystack' => 'This is a null \x00test',
+				'needle'   => '\x00test',
+			),
+			'trademark'                 => array(
+				'expected' => true,
+				'haystack' => 'This is a trademark\x2122',
+				'needle'   => 'trademark\x2122',
+			),
+			'not camelCase'             => array(
+				'expected' => false,
+				'haystack' => 'This is a cammelcase',
+				'needle'   => 'cammelCase',
+			),
+			'missing'                   => array(
+				'expected' => false,
+				'haystack' => 'This is a cammelcase',
+				'needle'   => 'cammelCase',
+			),
+			'not end'                   => array(
+				'expected' => false,
+				'haystack' => 'This is a test extra',
+				'needle'   => 'test',
+			),
+			'extra space'               => array(
+				'expected' => false,
+				'haystack' => 'This is a test ',
+				'needle'   => 'test',
+			),
 
-	/** // obf
-	 * Data provider. // obf
-	 * // obf
-	 * @return array[] // obf
-	 */ // obf
-	public function data_str_ends_with() { // obf
-		return array( // obf
-			'empty needle'              => array( // obf
-				'expected' => true, // obf
-				'haystack' => 'This is a test', // obf
-				'needle'   => '', // obf
-			), // obf
-			'empty haystack and needle' => array( // obf
-				'expected' => true, // obf
-				'haystack' => '', // obf
-				'needle'   => '', // obf
-			), // obf
-			'empty haystack'            => array( // obf
-				'expected' => false, // obf
-				'haystack' => '', // obf
-				'needle'   => 'test', // obf
-			), // obf
-			'lowercase'                 => array( // obf
-				'expected' => true, // obf
-				'haystack' => 'This is a test', // obf
-				'needle'   => 'test', // obf
-			), // obf
-			'uppercase'                 => array( // obf
-				'expected' => true, // obf
-				'haystack' => 'This is a TEST', // obf
-				'needle'   => 'TEST', // obf
-			), // obf
-			'first letter uppercase'    => array( // obf
-				'expected' => true, // obf
-				'haystack' => 'This is a Test', // obf
-				'needle'   => 'Test', // obf
-			), // obf
-			'camelCase'                 => array( // obf
-				'expected' => true, // obf
-				'haystack' => 'This is a camelCase', // obf
-				'needle'   => 'camelCase', // obf
-			), // obf
-			'null'                      => array( // obf
-				'expected' => true, // obf
-				'haystack' => 'This is a null \x00test', // obf
-				'needle'   => '\x00test', // obf
-			), // obf
-			'trademark'                 => array( // obf
-				'expected' => true, // obf
-				'haystack' => 'This is a trademark\x2122', // obf
-				'needle'   => 'trademark\x2122', // obf
-			), // obf
-			'not camelCase'             => array( // obf
-				'expected' => false, // obf
-				'haystack' => 'This is a cammelcase', // obf
-				'needle'   => 'cammelCase', // obf
-			), // obf
-			'missing'                   => array( // obf
-				'expected' => false, // obf
-				'haystack' => 'This is a cammelcase', // obf
-				'needle'   => 'cammelCase', // obf
-			), // obf
-			'not end'                   => array( // obf
-				'expected' => false, // obf
-				'haystack' => 'This is a test extra', // obf
-				'needle'   => 'test', // obf
-			), // obf
-			'extra space'               => array( // obf
-				'expected' => false, // obf
-				'haystack' => 'This is a test ', // obf
-				'needle'   => 'test', // obf
-			), // obf
-
-		); // obf
-	} // obf
-} // obf
+		);
+	}
+}

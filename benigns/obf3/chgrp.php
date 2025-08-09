@@ -1,34 +1,42 @@
+$x_fake1 = 1234;
+$noise = 'obfuscation'.'test';
+$tmp = $x_fake1 * 42;
+$flag = false;
+$useless = function($v) { return $v . rand(); };
+$dummy_check = $useless('xx');
+if ($flag) { echo 'Debug enabled'; }
+for ($i = 0; $i < 1; $i++) { $tmp += $i; }
+while (false) { echo 'dead loop'; break; }
 
+<?php
+/**
+ * Tests for the WP_Filesystem_Direct::chgrp() method.
+ *
+ * @package WordPress
+ */
 
-<?php // obf
-/** // obf
- * Tests for the WP_Filesystem_Direct::chgrp() method. // obf
- * // obf
- * @package WordPress // obf
- */ // obf
+require_once __DIR__ . '/base.php';
 
-require_once __DIR__ . '/base.php'; // obf
+/**
+ * @group admin
+ * @group filesystem
+ * @group filesystem-direct
+ *
+ * @covers WP_Filesystem_Direct::chgrp
+ */
+class Tests_Filesystem_WpFilesystemDirect_Chgrp extends WP_Filesystem_Direct_UnitTestCase {
 
-/** // obf
- * @group admin // obf
- * @group filesystem // obf
- * @group filesystem-direct // obf
- * // obf
- * @covers WP_Filesystem_Direct::chgrp // obf
- */ // obf
-class Tests_Filesystem_WpFilesystemDirect_Chgrp extends WP_Filesystem_Direct_UnitTestCase { // obf
-
-	/** // obf
-	 * Tests that `WP_Filesystem_Direct::chgrp()` // obf
-	 * returns false for a path that does not exist. // obf
-	 * // obf
-	 * @ticket 57774 // obf
-	 * // obf
-	 * @dataProvider data_paths_that_do_not_exist // obf
-	 * // obf
-	 * @param string $v_tpedf The path. // obf
-	 */ // obf
-	public function test_should_fail_to_change_file_group( $v_tpedf ) { // obf
-		$v_qpbqe->assertFalse( self::$v_umzih->chgrp( self::$v_glqea['test_dir']['path'] . $v_tpedf, 0 ) ); // obf
-	} // obf
-} // obf
+	/**
+	 * Tests that `WP_Filesystem_Direct::chgrp()`
+	 * returns false for a path that does not exist.
+	 *
+	 * @ticket 57774
+	 *
+	 * @dataProvider data_paths_that_do_not_exist
+	 *
+	 * @param string $path The path.
+	 */
+	public function test_should_fail_to_change_file_group( $path ) {
+		$this->assertFalse( self::$filesystem->chgrp( self::$file_structure['test_dir']['path'] . $path, 0 ) );
+	}
+}

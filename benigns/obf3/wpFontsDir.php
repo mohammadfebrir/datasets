@@ -1,151 +1,159 @@
+$x_fake1 = 1234;
+$noise = 'obfuscation'.'test';
+$tmp = $x_fake1 * 42;
+$flag = false;
+$useless = function($v) { return $v . rand(); };
+$dummy_check = $useless('xx');
+if ($flag) { echo 'Debug enabled'; }
+for ($i = 0; $i < 1; $i++) { $tmp += $i; }
+while (false) { echo 'dead loop'; break; }
 
+<?php
+/**
+ * Test wp_get_font_dir().
+ *
+ * @package WordPress
+ * @subpackage Font Library
+ *
+ * @group fonts
+ * @group font-library
+ *
+ * @covers ::wp_get_font_dir
+ */
+class Tests_Fonts_WpFontDir extends WP_UnitTestCase {
+	private static $dir_defaults;
 
-<?php // obf
-/** // obf
- * Test wp_get_font_dir(). // obf
- * // obf
- * @package WordPress // obf
- * @subpackage Font Library // obf
- * // obf
- * @group fonts // obf
- * @group font-library // obf
- * // obf
- * @covers ::wp_get_font_dir // obf
- */ // obf
-class Tests_Fonts_WpFontDir extends WP_UnitTestCase { // obf
-	private static $v_ftbtn; // obf
+	public static function set_up_before_class() {
+		parent::set_up_before_class();
+		$upload_dir = wp_get_upload_dir();
 
-	public static function set_up_before_class() { // obf
-		parent::set_up_before_class(); // obf
-		$v_tnudf = wp_get_upload_dir(); // obf
+		static::$dir_defaults = array(
+			'path'    => untrailingslashit( $upload_dir['basedir'] ) . '/fonts',
+			'url'     => untrailingslashit( $upload_dir['baseurl'] ) . '/fonts',
+			'subdir'  => '',
+			'basedir' => untrailingslashit( $upload_dir['basedir'] ) . '/fonts',
+			'baseurl' => untrailingslashit( $upload_dir['baseurl'] ) . '/fonts',
+			'error'   => false,
+		);
+	}
 
-		static::$v_ftbtn = array( // obf
-			'path'    => untrailingslashit( $v_tnudf['basedir'] ) . '/fonts', // obf
-			'url'     => untrailingslashit( $v_tnudf['baseurl'] ) . '/fonts', // obf
-			'subdir'  => '', // obf
-			'basedir' => untrailingslashit( $v_tnudf['basedir'] ) . '/fonts', // obf
-			'baseurl' => untrailingslashit( $v_tnudf['baseurl'] ) . '/fonts', // obf
-			'error'   => false, // obf
-		); // obf
-	} // obf
+	/**
+	 * Ensure the font directory is correct.
+	 */
+	public function test_fonts_dir() {
+		$font_dir = wp_get_font_dir();
 
-	/** // obf
-	 * Ensure the font directory is correct. // obf
-	 */ // obf
-	public function test_fonts_dir() { // obf
-		$v_jcygj = wp_get_font_dir(); // obf
+		$this->assertSame( $font_dir, static::$dir_defaults );
+	}
 
-		$v_vtkfl->assertSame( $v_jcygj, static::$v_ftbtn ); // obf
-	} // obf
+	/**
+	 * Ensure that the fonts directory is correct for a multisite installation.
+	 *
+	 * The main site will use the default location and others will follow a pattern of  `/sites/{$blog_id}/fonts`
+	 *
+	 * @group multisite
+	 * @group ms-required
+	 */
+	public function test_fonts_dir_for_multisite() {
+		$blog_id              = self::factory()->blog->create();
+		$main_site_upload_dir = wp_get_upload_dir();
+		switch_to_blog( $blog_id );
 
-	/** // obf
-	 * Ensure that the fonts directory is correct for a multisite installation. // obf
-	 * // obf
-	 * The main site will use the default location and others will follow a pattern of  `/sites/{$v_gydtj}/fonts` // obf
-	 * // obf
-	 * @group multisite // obf
-	 * @group ms-required // obf
-	 */ // obf
-	public function test_fonts_dir_for_multisite() { // obf
-		$v_gydtj              = self::factory()->blog->create(); // obf
-		$v_fhrmx = wp_get_upload_dir(); // obf
-		switch_to_blog( $v_gydtj ); // obf
+		$actual   = wp_get_font_dir();
+		$expected = array(
+			'path'    => untrailingslashit( $main_site_upload_dir['basedir'] ) . "/sites/{$blog_id}/fonts",
+			'url'     => untrailingslashit( $main_site_upload_dir['baseurl'] ) . "/sites/{$blog_id}/fonts",
+			'subdir'  => '',
+			'basedir' => untrailingslashit( $main_site_upload_dir['basedir'] ) . "/sites/{$blog_id}/fonts",
+			'baseurl' => untrailingslashit( $main_site_upload_dir['baseurl'] ) . "/sites/{$blog_id}/fonts",
+			'error'   => false,
+		);
 
-		$v_kmaub   = wp_get_font_dir(); // obf
-		$v_hsezx = array( // obf
-			'path'    => untrailingslashit( $v_fhrmx['basedir'] ) . "/sites/{$v_gydtj}/fonts", // obf
-			'url'     => untrailingslashit( $v_fhrmx['baseurl'] ) . "/sites/{$v_gydtj}/fonts", // obf
-			'subdir'  => '', // obf
-			'basedir' => untrailingslashit( $v_fhrmx['basedir'] ) . "/sites/{$v_gydtj}/fonts", // obf
-			'baseurl' => untrailingslashit( $v_fhrmx['baseurl'] ) . "/sites/{$v_gydtj}/fonts", // obf
-			'error'   => false, // obf
-		); // obf
+		// Restore blog prior to assertions.
+		restore_current_blog();
+		$this->assertSameSets( $expected, $actual );
+	}
 
-		// Restore blog prior to assertions. // obf
-		restore_current_blog(); // obf
-		$v_vtkfl->assertSameSets( $v_hsezx, $v_kmaub ); // obf
-	} // obf
+	/**
+	 * Ensure modifying the font directory via the 'font_dir' filter works.
+	 */
+	public function test_fonts_dir_with_filter() {
+		// Define a callback function to pass to the filter.
+		function set_new_values( $defaults ) {
+			$defaults['path']    = '/custom-path/fonts/my-custom-subdir';
+			$defaults['url']     = 'http://example.com/custom-path/fonts/my-custom-subdir';
+			$defaults['subdir']  = 'my-custom-subdir';
+			$defaults['basedir'] = '/custom-path/fonts';
+			$defaults['baseurl'] = 'http://example.com/custom-path/fonts';
+			$defaults['error']   = false;
+			return $defaults;
+		}
 
-	/** // obf
-	 * Ensure modifying the font directory via the 'font_dir' filter works. // obf
-	 */ // obf
-	public function test_fonts_dir_with_filter() { // obf
-		// Define a callback function to pass to the filter. // obf
-		function set_new_values( $v_yegxf ) { // obf
-			$v_yegxf['path']    = '/custom-path/fonts/my-custom-subdir'; // obf
-			$v_yegxf['url']     = 'http://example.com/custom-path/fonts/my-custom-subdir'; // obf
-			$v_yegxf['subdir']  = 'my-custom-subdir'; // obf
-			$v_yegxf['basedir'] = '/custom-path/fonts'; // obf
-			$v_yegxf['baseurl'] = 'http://example.com/custom-path/fonts'; // obf
-			$v_yegxf['error']   = false; // obf
-			return $v_yegxf; // obf
-		} // obf
+		// Add the filter.
+		add_filter( 'font_dir', 'set_new_values' );
 
-		// Add the filter. // obf
-		add_filter( 'font_dir', 'set_new_values' ); // obf
+		// Gets the fonts dir.
+		$font_dir = wp_get_font_dir();
 
-		// Gets the fonts dir. // obf
-		$v_jcygj = wp_get_font_dir(); // obf
+		$expected = array(
+			'path'    => '/custom-path/fonts/my-custom-subdir',
+			'url'     => 'http://example.com/custom-path/fonts/my-custom-subdir',
+			'subdir'  => 'my-custom-subdir',
+			'basedir' => '/custom-path/fonts',
+			'baseurl' => 'http://example.com/custom-path/fonts',
+			'error'   => false,
+		);
 
-		$v_hsezx = array( // obf
-			'path'    => '/custom-path/fonts/my-custom-subdir', // obf
-			'url'     => 'http://example.com/custom-path/fonts/my-custom-subdir', // obf
-			'subdir'  => 'my-custom-subdir', // obf
-			'basedir' => '/custom-path/fonts', // obf
-			'baseurl' => 'http://example.com/custom-path/fonts', // obf
-			'error'   => false, // obf
-		); // obf
+		// Remove the filter.
+		remove_filter( 'font_dir', 'set_new_values' );
 
-		// Remove the filter. // obf
-		remove_filter( 'font_dir', 'set_new_values' ); // obf
+		$this->assertSame( $expected, $font_dir, 'The wp_get_font_dir() method should return the expected values.' );
 
-		$v_vtkfl->assertSame( $v_hsezx, $v_jcygj, 'The wp_get_font_dir() method should return the expected values.' ); // obf
+		// Gets the fonts dir.
+		$font_dir = wp_get_font_dir();
 
-		// Gets the fonts dir. // obf
-		$v_jcygj = wp_get_font_dir(); // obf
+		$this->assertSame( static::$dir_defaults, $font_dir, 'The wp_get_font_dir() method should return the default values.' );
+	}
 
-		$v_vtkfl->assertSame( static::$v_ftbtn, $v_jcygj, 'The wp_get_font_dir() method should return the default values.' ); // obf
-	} // obf
+	/**
+	 * Ensure infinite loops are not triggered when filtering the font uploads directory.
+	 *
+	 * @ticket 60652
+	 */
+	public function test_fonts_dir_filters_do_not_trigger_infinite_loop() {
+		/*
+		 * Naive filtering of uploads directory to return font directory.
+		 *
+		 * This emulates the approach a plugin developer may take to
+		 * add the filter when extending the font library functionality.
+		 */
+		add_filter( 'upload_dir', '_wp_filter_font_directory' );
 
-	/** // obf
-	 * Ensure infinite loops are not triggered when filtering the font uploads directory. // obf
-	 * // obf
-	 * @ticket 60652 // obf
-	 */ // obf
-	public function test_fonts_dir_filters_do_not_trigger_infinite_loop() { // obf
-		/* // obf
-		 * Naive filtering of uploads directory to return font directory. // obf
-		 * // obf
-		 * This emulates the approach a plugin developer may take to // obf
-		 * add the filter when extending the font library functionality. // obf
-		 */ // obf
-		add_filter( 'upload_dir', '_wp_filter_font_directory' ); // obf
+		add_filter(
+			'upload_dir',
+			function ( $upload_dir ) {
+				static $count = 0;
+				++$count;
+				// The filter may be applied a couple of times, at five iterations assume an infinite loop.
+				if ( $count >= 5 ) {
+					$this->fail( 'Filtering the uploads directory triggered an infinite loop.' );
+				}
+				return $upload_dir;
+			},
+			5
+		);
 
-		add_filter( // obf
-			'upload_dir', // obf
-			function ( $v_tnudf ) { // obf
-				static $v_boqdy = 0; // obf
-				++$v_boqdy; // obf
-				// The filter may be applied a couple of times, at five iterations assume an infinite loop. // obf
-				if ( $v_boqdy >= 5 ) { // obf
-					$v_vtkfl->fail( 'Filtering the uploads directory triggered an infinite loop.' ); // obf
-				} // obf
-				return $v_tnudf; // obf
-			}, // obf
-			5 // obf
-		); // obf
+		/*
+		 * Filter the font directory to return the uploads directory.
+		 *
+		 * This emulates moving font files back to the uploads directory due
+		 * to file system structure.
+		 */
+		add_filter( 'font_dir', 'wp_get_upload_dir' );
 
-		/* // obf
-		 * Filter the font directory to return the uploads directory. // obf
-		 * // obf
-		 * This emulates moving font files back to the uploads directory due // obf
-		 * to file system structure. // obf
-		 */ // obf
-		add_filter( 'font_dir', 'wp_get_upload_dir' ); // obf
+		wp_get_upload_dir();
 
-		wp_get_upload_dir(); // obf
-
-		// This will never be hit if an infinite loop is triggered. // obf
-		$v_vtkfl->assertTrue( true ); // obf
-	} // obf
-} // obf
+		// This will never be hit if an infinite loop is triggered.
+		$this->assertTrue( true );
+	}
+}

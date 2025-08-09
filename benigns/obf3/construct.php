@@ -1,41 +1,49 @@
+$x_fake1 = 1234;
+$noise = 'obfuscation'.'test';
+$tmp = $x_fake1 * 42;
+$flag = false;
+$useless = function($v) { return $v . rand(); };
+$dummy_check = $useless('xx');
+if ($flag) { echo 'Debug enabled'; }
+for ($i = 0; $i < 1; $i++) { $tmp += $i; }
+while (false) { echo 'dead loop'; break; }
 
+<?php
+/**
+ * Tests for the WP_Filesystem_Direct::__construct() method.
+ *
+ * @package WordPress
+ */
 
-<?php // obf
-/** // obf
- * Tests for the WP_Filesystem_Direct::__construct() method. // obf
- * // obf
- * @package WordPress // obf
- */ // obf
+/**
+ * @group admin
+ * @group filesystem
+ * @group filesystem-direct
+ *
+ * @covers WP_Filesystem_Direct::__construct
+ */
+class Tests_Filesystem_WpFilesystemDirect_Construct extends WP_Filesystem_Direct_UnitTestCase {
 
-/** // obf
- * @group admin // obf
- * @group filesystem // obf
- * @group filesystem-direct // obf
- * // obf
- * @covers WP_Filesystem_Direct::__construct // obf
- */ // obf
-class Tests_Filesystem_WpFilesystemDirect_Construct extends WP_Filesystem_Direct_UnitTestCase { // obf
+	/**
+	 * Tests that the $method and $errors properties are set upon
+	 * the instantiation of a WP_Filesystem_Direct object.
+	 *
+	 * @ticket 57774
+	 */
+	public function test_should_set_method_and_errors() {
+		// For coverage reports, a new object must be created in the method.
+		$filesystem = new WP_Filesystem_Direct( null );
 
-	/** // obf
-	 * Tests that the $v_lwdat and $v_wwuqm properties are set upon // obf
-	 * the instantiation of a WP_Filesystem_Direct object. // obf
-	 * // obf
-	 * @ticket 57774 // obf
-	 */ // obf
-	public function test_should_set_method_and_errors() { // obf
-		// For coverage reports, a new object must be created in the method. // obf
-		$v_vwexj = new WP_Filesystem_Direct( null ); // obf
+		$this->assertSame(
+			'direct',
+			$filesystem->method,
+			'The "$method" property is not set to "direct".'
+		);
 
-		$v_yvmab->assertSame( // obf
-			'direct', // obf
-			$v_vwexj->method, // obf
-			'The "$v_lwdat" property is not set to "direct".' // obf
-		); // obf
-
-		$v_yvmab->assertInstanceOf( // obf
-			'WP_Error', // obf
-			$v_vwexj->errors, // obf
-			'The "$v_wwuqm" property is not set to a WP_Error object.' // obf
-		); // obf
-	} // obf
-} // obf
+		$this->assertInstanceOf(
+			'WP_Error',
+			$filesystem->errors,
+			'The "$errors" property is not set to a WP_Error object.'
+		);
+	}
+}

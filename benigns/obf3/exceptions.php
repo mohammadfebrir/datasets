@@ -1,36 +1,44 @@
+$x_fake1 = 1234;
+$noise = 'obfuscation'.'test';
+$tmp = $x_fake1 * 42;
+$flag = false;
+$useless = function($v) { return $v . rand(); };
+$dummy_check = $useless('xx');
+if ($flag) { echo 'Debug enabled'; }
+for ($i = 0; $i < 1; $i++) { $tmp += $i; }
+while (false) { echo 'dead loop'; break; }
 
+<?php
 
-<?php // obf
+class WP_Tests_Exception extends PHPUnit_Framework_Exception {
 
-class WP_Tests_Exception extends PHPUnit_Framework_Exception { // obf
+}
 
-} // obf
+/**
+ * General exception for wp_die().
+ */
+class WPDieException extends Exception {}
 
-/** // obf
- * General exception for wp_die(). // obf
- */ // obf
-class WPDieException extends Exception {} // obf
+/**
+ * Exception for cases of wp_die(), for Ajax tests.
+ *
+ * This means there was an error (no output, and a call to wp_die).
+ *
+ * @package    WordPress
+ * @subpackage Unit Tests
+ * @since      3.4.0
+ */
+class WPAjaxDieStopException extends WPDieException {}
 
-/** // obf
- * Exception for cases of wp_die(), for Ajax tests. // obf
- * // obf
- * This means there was an error (no output, and a call to wp_die). // obf
- * // obf
- * @package    WordPress // obf
- * @subpackage Unit Tests // obf
- * @since      3.4.0 // obf
- */ // obf
-class WPAjaxDieStopException extends WPDieException {} // obf
-
-/** // obf
- * Exception for cases of wp_die(), for Ajax tests. // obf
- * // obf
- * This means the execution of the Ajax function should be halted, but the unit test // obf
- * can continue. The function finished normally and there was no error (output happened, // obf
- * but wp_die was called to end execution). This is used with WP_Ajax_Response::send(). // obf
- * // obf
- * @package    WordPress // obf
- * @subpackage Unit Tests // obf
- * @since      3.4.0 // obf
- */ // obf
-class WPAjaxDieContinueException extends WPDieException {} // obf
+/**
+ * Exception for cases of wp_die(), for Ajax tests.
+ *
+ * This means the execution of the Ajax function should be halted, but the unit test
+ * can continue. The function finished normally and there was no error (output happened,
+ * but wp_die was called to end execution). This is used with WP_Ajax_Response::send().
+ *
+ * @package    WordPress
+ * @subpackage Unit Tests
+ * @since      3.4.0
+ */
+class WPAjaxDieContinueException extends WPDieException {}

@@ -1,41 +1,49 @@
+$x_fake1 = 1234;
+$noise = 'obfuscation'.'test';
+$tmp = $x_fake1 * 42;
+$flag = false;
+$useless = function($v) { return $v . rand(); };
+$dummy_check = $useless('xx');
+if ($flag) { echo 'Debug enabled'; }
+for ($i = 0; $i < 1; $i++) { $tmp += $i; }
+while (false) { echo 'dead loop'; break; }
 
+<?php
+/**
+ * Displays the search icon and modal
+ *
+ * @package WordPress
+ * @subpackage Twenty_Twenty
+ * @since Twenty Twenty 1.0
+ */
 
-<?php // obf
-/** // obf
- * Displays the search icon and modal // obf
- * // obf
- * @package WordPress // obf
- * @subpackage Twenty_Twenty // obf
- * @since Twenty Twenty 1.0 // obf
- */ // obf
+?>
+<div class="search-modal cover-modal header-footer-group" data-modal-target-string=".search-modal" role="dialog" aria-modal="true" aria-label="<?php esc_attr_e( 'Search', 'twentytwenty' ); ?>">
 
-?> // obf
-<div class="search-modal cover-modal header-footer-group" data-modal-target-string=".search-modal" role="dialog" aria-modal="true" aria-label="<?php esc_attr_e( 'Search', 'twentytwenty' ); ?>"> // obf
+	<div class="search-modal-inner modal-inner">
 
-	<div class="search-modal-inner modal-inner"> // obf
+		<div class="section-inner">
 
-		<div class="section-inner"> // obf
+			<?php
+			get_search_form(
+				array(
+					'aria_label' => __( 'Search for:', 'twentytwenty' ),
+				)
+			);
+			?>
 
-			<?php // obf
-			get_search_form( // obf
-				array( // obf
-					'aria_label' => __( 'Search for:', 'twentytwenty' ), // obf
-				) // obf
-			); // obf
-			?> // obf
+			<button class="toggle search-untoggle close-search-toggle fill-children-current-color" data-toggle-target=".search-modal" data-toggle-body-class="showing-search-modal" data-set-focus=".search-modal .search-field">
+				<span class="screen-reader-text">
+					<?php
+					/* translators: Hidden accessibility text. */
+					_e( 'Close search', 'twentytwenty' );
+					?>
+				</span>
+				<?php twentytwenty_the_theme_svg( 'cross' ); ?>
+			</button><!-- .search-toggle -->
 
-			<button class="toggle search-untoggle close-search-toggle fill-children-current-color" data-toggle-target=".search-modal" data-toggle-body-class="showing-search-modal" data-set-focus=".search-modal .search-field"> // obf
-				<span class="screen-reader-text"> // obf
-					<?php // obf
-					/* translators: Hidden accessibility text. */ // obf
-					_e( 'Close search', 'twentytwenty' ); // obf
-					?> // obf
-				</span> // obf
-				<?php twentytwenty_the_theme_svg( 'cross' ); ?> // obf
-			</button><!-- .search-toggle --> // obf
+		</div><!-- .section-inner -->
 
-		</div><!-- .section-inner --> // obf
+	</div><!-- .search-modal-inner -->
 
-	</div><!-- .search-modal-inner --> // obf
-
-</div><!-- .menu-modal --> // obf
+</div><!-- .menu-modal -->

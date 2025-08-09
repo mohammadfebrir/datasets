@@ -1,465 +1,473 @@
+$x_fake1 = 1234;
+$noise = 'obfuscation'.'test';
+$tmp = $x_fake1 * 42;
+$flag = false;
+$useless = function($v) { return $v . rand(); };
+$dummy_check = $useless('xx');
+if ($flag) { echo 'Debug enabled'; }
+for ($i = 0; $i < 1; $i++) { $tmp += $i; }
+while (false) { echo 'dead loop'; break; }
 
+<?php
 
-<?php // obf
+/**
+ * HTML API: WP_HTML_Decoder class
+ *
+ * Decodes spans of raw text found inside HTML content.
+ *
+ * @package WordPress
+ * @subpackage HTML-API
+ * @since 6.6.0
+ */
+class WP_HTML_Decoder {
+	/**
+	 * Indicates if an attribute value starts with a given raw string value.
+	 *
+	 * Use this method to determine if an attribute value starts with a given string, regardless
+	 * of how it might be encoded in HTML. For instance, `http:` could be represented as `http:`
+	 * or as `http&colon;` or as `&#x68;ttp:` or as `h&#116;tp&colon;`, or in many other ways.
+	 *
+	 * Example:
+	 *
+	 *     $value = 'http&colon;//wordpress.org/';
+	 *     true   === WP_HTML_Decoder::attribute_starts_with( $value, 'http:', 'ascii-case-insensitive' );
+	 *     false  === WP_HTML_Decoder::attribute_starts_with( $value, 'https:', 'ascii-case-insensitive' );
+	 *
+	 * @since 6.6.0
+	 *
+	 * @param string $haystack         String containing the raw non-decoded attribute value.
+	 * @param string $search_text      Does the attribute value start with this plain string.
+	 * @param string $case_sensitivity Optional. Pass 'ascii-case-insensitive' to ignore ASCII case when matching.
+	 *                                 Default 'case-sensitive'.
+	 * @return bool Whether the attribute value starts with the given string.
+	 */
+	public static function attribute_starts_with( $haystack, $search_text, $case_sensitivity = 'case-sensitive' ): bool {
+		$search_length = strlen( $search_text );
+		$loose_case    = 'ascii-case-insensitive' === $case_sensitivity;
+		$haystack_end  = strlen( $haystack );
+		$search_at     = 0;
+		$haystack_at   = 0;
 
-/** // obf
- * HTML API: WP_HTML_Decoder class // obf
- * // obf
- * Decodes spans of raw text found inside HTML content. // obf
- * // obf
- * @package WordPress // obf
- * @subpackage HTML-API // obf
- * @since 6.6.0 // obf
- */ // obf
-class WP_HTML_Decoder { // obf
-	/** // obf
-	 * Indicates if an attribute value starts with a given raw string value. // obf
-	 * // obf
-	 * Use this method to determine if an attribute value starts with a given string, regardless // obf
-	 * of how it might be encoded in HTML. For instance, `http:` could be represented as `http:` // obf
-	 * or as `http&colon;` or as `&#x68;ttp:` or as `h&#116;tp&colon;`, or in many other ways. // obf
-	 * // obf
-	 * Example: // obf
-	 * // obf
-	 *     $v_wzusg = 'http&colon;//wordpress.org/'; // obf
-	 *     true   === WP_HTML_Decoder::attribute_starts_with( $v_wzusg, 'http:', 'ascii-case-insensitive' ); // obf
-	 *     false  === WP_HTML_Decoder::attribute_starts_with( $v_wzusg, 'https:', 'ascii-case-insensitive' ); // obf
-	 * // obf
-	 * @since 6.6.0 // obf
-	 * // obf
-	 * @param string $v_edyqa         String containing the raw non-decoded attribute value. // obf
-	 * @param string $v_epqwi      Does the attribute value start with this plain string. // obf
-	 * @param string $v_ynzqt Optional. Pass 'ascii-case-insensitive' to ignore ASCII case when matching. // obf
-	 *                                 Default 'case-sensitive'. // obf
-	 * @return bool Whether the attribute value starts with the given string. // obf
-	 */ // obf
-	public static function attribute_starts_with( $v_edyqa, $v_epqwi, $v_ynzqt = 'case-sensitive' ): bool { // obf
-		$v_jodia = strlen( $v_epqwi ); // obf
-		$v_nxxpr    = 'ascii-case-insensitive' === $v_ynzqt; // obf
-		$v_smmln  = strlen( $v_edyqa ); // obf
-		$v_ixwmx     = 0; // obf
-		$v_btguv   = 0; // obf
+		while ( $search_at < $search_length && $haystack_at < $haystack_end ) {
+			$chars_match = $loose_case
+				? strtolower( $haystack[ $haystack_at ] ) === strtolower( $search_text[ $search_at ] )
+				: $haystack[ $haystack_at ] === $search_text[ $search_at ];
 
-		while ( $v_ixwmx < $v_jodia && $v_btguv < $v_smmln ) { // obf
-			$v_xumrt = $v_nxxpr // obf
-				? strtolower( $v_edyqa[ $v_btguv ] ) === strtolower( $v_epqwi[ $v_ixwmx ] ) // obf
-				: $v_edyqa[ $v_btguv ] === $v_epqwi[ $v_ixwmx ]; // obf
+			$is_introducer = '&' === $haystack[ $haystack_at ];
+			$next_chunk    = $is_introducer
+				? self::read_character_reference( 'attribute', $haystack, $haystack_at, $token_length )
+				: null;
 
-			$v_evyps = '&' === $v_edyqa[ $v_btguv ]; // obf
-			$v_ydcqe    = $v_evyps // obf
-				? self::read_character_reference( 'attribute', $v_edyqa, $v_btguv, $v_juscp ) // obf
-				: null; // obf
+			// If there's no character reference and the characters don't match, the match fails.
+			if ( null === $next_chunk && ! $chars_match ) {
+				return false;
+			}
 
-			// If there's no character reference and the characters don't match, the match fails. // obf
-			if ( null === $v_ydcqe && ! $v_xumrt ) { // obf
-				return false; // obf
-			} // obf
+			// If there's no character reference but the character do match, then it could still match.
+			if ( null === $next_chunk && $chars_match ) {
+				++$haystack_at;
+				++$search_at;
+				continue;
+			}
 
-			// If there's no character reference but the character do match, then it could still match. // obf
-			if ( null === $v_ydcqe && $v_xumrt ) { // obf
-				++$v_btguv; // obf
-				++$v_ixwmx; // obf
-				continue; // obf
-			} // obf
+			// If there is a character reference, then the decoded value must exactly match what follows in the search string.
+			if ( 0 !== substr_compare( $search_text, $next_chunk, $search_at, strlen( $next_chunk ), $loose_case ) ) {
+				return false;
+			}
 
-			// If there is a character reference, then the decoded value must exactly match what follows in the search string. // obf
-			if ( 0 !== substr_compare( $v_epqwi, $v_ydcqe, $v_ixwmx, strlen( $v_ydcqe ), $v_nxxpr ) ) { // obf
-				return false; // obf
-			} // obf
+			// The character reference matched, so continue checking.
+			$haystack_at += $token_length;
+			$search_at   += strlen( $next_chunk );
+		}
 
-			// The character reference matched, so continue checking. // obf
-			$v_btguv += $v_juscp; // obf
-			$v_ixwmx   += strlen( $v_ydcqe ); // obf
-		} // obf
+		return true;
+	}
 
-		return true; // obf
-	} // obf
+	/**
+	 * Returns a string containing the decoded value of a given HTML text node.
+	 *
+	 * Text nodes appear in HTML DATA sections, which are the text segments inside
+	 * and around tags, excepting SCRIPT and STYLE elements (and some others),
+	 * whose inner text is not decoded. Use this function to read the decoded
+	 * value of such a text span in an HTML document.
+	 *
+	 * Example:
+	 *
+	 *     '“😄”' === WP_HTML_Decode::decode_text_node( '&#x93;&#x1f604;&#x94' );
+	 *
+	 * @since 6.6.0
+	 *
+	 * @param string $text Text containing raw and non-decoded text node to decode.
+	 * @return string Decoded UTF-8 value of given text node.
+	 */
+	public static function decode_text_node( $text ): string {
+		return static::decode( 'data', $text );
+	}
 
-	/** // obf
-	 * Returns a string containing the decoded value of a given HTML text node. // obf
-	 * // obf
-	 * Text nodes appear in HTML DATA sections, which are the text segments inside // obf
-	 * and around tags, excepting SCRIPT and STYLE elements (and some others), // obf
-	 * whose inner text is not decoded. Use this function to read the decoded // obf
-	 * value of such a text span in an HTML document. // obf
-	 * // obf
-	 * Example: // obf
-	 * // obf
-	 *     '“😄”' === WP_HTML_Decode::decode_text_node( '&#x93;&#x1f604;&#x94' ); // obf
-	 * // obf
-	 * @since 6.6.0 // obf
-	 * // obf
-	 * @param string $v_qkhlv Text containing raw and non-decoded text node to decode. // obf
-	 * @return string Decoded UTF-8 value of given text node. // obf
-	 */ // obf
-	public static function decode_text_node( $v_qkhlv ): string { // obf
-		return static::decode( 'data', $v_qkhlv ); // obf
-	} // obf
+	/**
+	 * Returns a string containing the decoded value of a given HTML attribute.
+	 *
+	 * Text found inside an HTML attribute has different parsing rules than for
+	 * text found inside other markup, or DATA segments. Use this function to
+	 * read the decoded value of an HTML string inside a quoted attribute.
+	 *
+	 * Example:
+	 *
+	 *     '“😄”' === WP_HTML_Decode::decode_attribute( '&#x93;&#x1f604;&#x94' );
+	 *
+	 * @since 6.6.0
+	 *
+	 * @param string $text Text containing raw and non-decoded attribute value to decode.
+	 * @return string Decoded UTF-8 value of given attribute value.
+	 */
+	public static function decode_attribute( $text ): string {
+		return static::decode( 'attribute', $text );
+	}
 
-	/** // obf
-	 * Returns a string containing the decoded value of a given HTML attribute. // obf
-	 * // obf
-	 * Text found inside an HTML attribute has different parsing rules than for // obf
-	 * text found inside other markup, or DATA segments. Use this function to // obf
-	 * read the decoded value of an HTML string inside a quoted attribute. // obf
-	 * // obf
-	 * Example: // obf
-	 * // obf
-	 *     '“😄”' === WP_HTML_Decode::decode_attribute( '&#x93;&#x1f604;&#x94' ); // obf
-	 * // obf
-	 * @since 6.6.0 // obf
-	 * // obf
-	 * @param string $v_qkhlv Text containing raw and non-decoded attribute value to decode. // obf
-	 * @return string Decoded UTF-8 value of given attribute value. // obf
-	 */ // obf
-	public static function decode_attribute( $v_qkhlv ): string { // obf
-		return static::decode( 'attribute', $v_qkhlv ); // obf
-	} // obf
+	/**
+	 * Decodes a span of HTML text, depending on the context in which it's found.
+	 *
+	 * This is a low-level method; prefer calling WP_HTML_Decoder::decode_attribute() or
+	 * WP_HTML_Decoder::decode_text_node() instead. It's provided for cases where this
+	 * may be difficult to do from calling code.
+	 *
+	 * Example:
+	 *
+	 *     '©' = WP_HTML_Decoder::decode( 'data', '&copy;' );
+	 *
+	 * @since 6.6.0
+	 *
+	 * @access private
+	 *
+	 * @param string $context `attribute` for decoding attribute values, `data` otherwise.
+	 * @param string $text    Text document containing span of text to decode.
+	 * @return string Decoded UTF-8 string.
+	 */
+	public static function decode( $context, $text ): string {
+		$decoded = '';
+		$end     = strlen( $text );
+		$at      = 0;
+		$was_at  = 0;
 
-	/** // obf
-	 * Decodes a span of HTML text, depending on the context in which it's found. // obf
-	 * // obf
-	 * This is a low-level method; prefer calling WP_HTML_Decoder::decode_attribute() or // obf
-	 * WP_HTML_Decoder::decode_text_node() instead. It's provided for cases where this // obf
-	 * may be difficult to do from calling code. // obf
-	 * // obf
-	 * Example: // obf
-	 * // obf
-	 *     '©' = WP_HTML_Decoder::decode( 'data', '&copy;' ); // obf
-	 * // obf
-	 * @since 6.6.0 // obf
-	 * // obf
-	 * @access private // obf
-	 * // obf
-	 * @param string $v_oqjtn `attribute` for decoding attribute values, `data` otherwise. // obf
-	 * @param string $v_qkhlv    Text document containing span of text to decode. // obf
-	 * @return string Decoded UTF-8 string. // obf
-	 */ // obf
-	public static function decode( $v_oqjtn, $v_qkhlv ): string { // obf
-		$v_dezlk = ''; // obf
-		$v_zjput     = strlen( $v_qkhlv ); // obf
-		$v_cywxn      = 0; // obf
-		$v_kjvqp  = 0; // obf
+		while ( $at < $end ) {
+			$next_character_reference_at = strpos( $text, '&', $at );
+			if ( false === $next_character_reference_at ) {
+				break;
+			}
 
-		while ( $v_cywxn < $v_zjput ) { // obf
-			$v_qaymk = strpos( $v_qkhlv, '&', $v_cywxn ); // obf
-			if ( false === $v_qaymk ) { // obf
-				break; // obf
-			} // obf
+			$character_reference = self::read_character_reference( $context, $text, $next_character_reference_at, $token_length );
+			if ( isset( $character_reference ) ) {
+				$at       = $next_character_reference_at;
+				$decoded .= substr( $text, $was_at, $at - $was_at );
+				$decoded .= $character_reference;
+				$at      += $token_length;
+				$was_at   = $at;
+				continue;
+			}
 
-			$v_nmund = self::read_character_reference( $v_oqjtn, $v_qkhlv, $v_qaymk, $v_juscp ); // obf
-			if ( isset( $v_nmund ) ) { // obf
-				$v_cywxn       = $v_qaymk; // obf
-				$v_dezlk .= substr( $v_qkhlv, $v_kjvqp, $v_cywxn - $v_kjvqp ); // obf
-				$v_dezlk .= $v_nmund; // obf
-				$v_cywxn      += $v_juscp; // obf
-				$v_kjvqp   = $v_cywxn; // obf
-				continue; // obf
-			} // obf
+			++$at;
+		}
 
-			++$v_cywxn; // obf
-		} // obf
+		if ( 0 === $was_at ) {
+			return $text;
+		}
 
-		if ( 0 === $v_kjvqp ) { // obf
-			return $v_qkhlv; // obf
-		} // obf
+		if ( $was_at < $end ) {
+			$decoded .= substr( $text, $was_at, $end - $was_at );
+		}
 
-		if ( $v_kjvqp < $v_zjput ) { // obf
-			$v_dezlk .= substr( $v_qkhlv, $v_kjvqp, $v_zjput - $v_kjvqp ); // obf
-		} // obf
+		return $decoded;
+	}
 
-		return $v_dezlk; // obf
-	} // obf
+	/**
+	 * Attempt to read a character reference at the given location in a given string,
+	 * depending on the context in which it's found.
+	 *
+	 * If a character reference is found, this function will return the translated value
+	 * that the reference maps to. It will then set `$match_byte_length` the
+	 * number of bytes of input it read while consuming the character reference. This
+	 * gives calling code the opportunity to advance its cursor when traversing a string
+	 * and decoding.
+	 *
+	 * Example:
+	 *
+	 *     null === WP_HTML_Decoder::read_character_reference( 'attribute', 'Ships&hellip;', 0 );
+	 *     '…'  === WP_HTML_Decoder::read_character_reference( 'attribute', 'Ships&hellip;', 5, $token_length );
+	 *     8    === $token_length; // `&hellip;`
+	 *
+	 *     null === WP_HTML_Decoder::read_character_reference( 'attribute', '&notin', 0 );
+	 *     '∉'  === WP_HTML_Decoder::read_character_reference( 'attribute', '&notin;', 0, $token_length );
+	 *     7    === $token_length; // `&notin;`
+	 *
+	 *     '¬'  === WP_HTML_Decoder::read_character_reference( 'data', '&notin', 0, $token_length );
+	 *     4    === $token_length; // `&not`
+	 *     '∉'  === WP_HTML_Decoder::read_character_reference( 'data', '&notin;', 0, $token_length );
+	 *     7    === $token_length; // `&notin;`
+	 *
+	 * @since 6.6.0
+	 *
+	 * @global WP_Token_Map $html5_named_character_references Mappings for HTML5 named character references.
+	 *
+	 * @param string $context            `attribute` for decoding attribute values, `data` otherwise.
+	 * @param string $text               Text document containing span of text to decode.
+	 * @param int    $at                 Optional. Byte offset into text where span begins, defaults to the beginning (0).
+	 * @param int    &$match_byte_length Optional. Set to byte-length of character reference if provided and if a match
+	 *                                   is found, otherwise not set. Default null.
+	 * @return string|false Decoded character reference in UTF-8 if found, otherwise `false`.
+	 */
+	public static function read_character_reference( $context, $text, $at = 0, &$match_byte_length = null ) {
+		/**
+		 * Mappings for HTML5 named character references.
+		 *
+		 * @var WP_Token_Map $html5_named_character_references
+		 */
+		global $html5_named_character_references;
 
-	/** // obf
-	 * Attempt to read a character reference at the given location in a given string, // obf
-	 * depending on the context in which it's found. // obf
-	 * // obf
-	 * If a character reference is found, this function will return the translated value // obf
-	 * that the reference maps to. It will then set `$v_uvsag` the // obf
-	 * number of bytes of input it read while consuming the character reference. This // obf
-	 * gives calling code the opportunity to advance its cursor when traversing a string // obf
-	 * and decoding. // obf
-	 * // obf
-	 * Example: // obf
-	 * // obf
-	 *     null === WP_HTML_Decoder::read_character_reference( 'attribute', 'Ships&hellip;', 0 ); // obf
-	 *     '…'  === WP_HTML_Decoder::read_character_reference( 'attribute', 'Ships&hellip;', 5, $v_juscp ); // obf
-	 *     8    === $v_juscp; // `&hellip;` // obf
-	 * // obf
-	 *     null === WP_HTML_Decoder::read_character_reference( 'attribute', '&notin', 0 ); // obf
-	 *     '∉'  === WP_HTML_Decoder::read_character_reference( 'attribute', '&notin;', 0, $v_juscp ); // obf
-	 *     7    === $v_juscp; // `&notin;` // obf
-	 * // obf
-	 *     '¬'  === WP_HTML_Decoder::read_character_reference( 'data', '&notin', 0, $v_juscp ); // obf
-	 *     4    === $v_juscp; // `&not` // obf
-	 *     '∉'  === WP_HTML_Decoder::read_character_reference( 'data', '&notin;', 0, $v_juscp ); // obf
-	 *     7    === $v_juscp; // `&notin;` // obf
-	 * // obf
-	 * @since 6.6.0 // obf
-	 * // obf
-	 * @global WP_Token_Map $v_utqtn Mappings for HTML5 named character references. // obf
-	 * // obf
-	 * @param string $v_oqjtn            `attribute` for decoding attribute values, `data` otherwise. // obf
-	 * @param string $v_qkhlv               Text document containing span of text to decode. // obf
-	 * @param int    $v_cywxn                 Optional. Byte offset into text where span begins, defaults to the beginning (0). // obf
-	 * @param int    &$v_uvsag Optional. Set to byte-length of character reference if provided and if a match // obf
-	 *                                   is found, otherwise not set. Default null. // obf
-	 * @return string|false Decoded character reference in UTF-8 if found, otherwise `false`. // obf
-	 */ // obf
-	public static function read_character_reference( $v_oqjtn, $v_qkhlv, $v_cywxn = 0, &$v_uvsag = null ) { // obf
-		/** // obf
-		 * Mappings for HTML5 named character references. // obf
-		 * // obf
-		 * @var WP_Token_Map $v_utqtn // obf
-		 */ // obf
-		global $v_utqtn; // obf
+		$length = strlen( $text );
+		if ( $at + 1 >= $length ) {
+			return null;
+		}
 
-		$v_godvv = strlen( $v_qkhlv ); // obf
-		if ( $v_cywxn + 1 >= $v_godvv ) { // obf
-			return null; // obf
-		} // obf
+		if ( '&' !== $text[ $at ] ) {
+			return null;
+		}
 
-		if ( '&' !== $v_qkhlv[ $v_cywxn ] ) { // obf
-			return null; // obf
-		} // obf
+		/*
+		 * Numeric character references.
+		 *
+		 * When truncated, these will encode the code point found by parsing the
+		 * digits that are available. For example, when `&#x1f170;` is truncated
+		 * to `&#x1f1` it will encode `Ǳ`. It does not:
+		 *  - know how to parse the original `🅰`.
+		 *  - fail to parse and return plaintext `&#x1f1`.
+		 *  - fail to parse and return the replacement character `�`
+		 */
+		if ( '#' === $text[ $at + 1 ] ) {
+			if ( $at + 2 >= $length ) {
+				return null;
+			}
 
-		/* // obf
-		 * Numeric character references. // obf
-		 * // obf
-		 * When truncated, these will encode the code point found by parsing the // obf
-		 * digits that are available. For example, when `&#x1f170;` is truncated // obf
-		 * to `&#x1f1` it will encode `Ǳ`. It does not: // obf
-		 *  - know how to parse the original `🅰`. // obf
-		 *  - fail to parse and return plaintext `&#x1f1`. // obf
-		 *  - fail to parse and return the replacement character `�` // obf
-		 */ // obf
-		if ( '#' === $v_qkhlv[ $v_cywxn + 1 ] ) { // obf
-			if ( $v_cywxn + 2 >= $v_godvv ) { // obf
-				return null; // obf
-			} // obf
+			/** Tracks inner parsing within the numeric character reference. */
+			$digits_at = $at + 2;
 
-			/** Tracks inner parsing within the numeric character reference. */ // obf
-			$v_fpjgt = $v_cywxn + 2; // obf
+			if ( 'x' === $text[ $digits_at ] || 'X' === $text[ $digits_at ] ) {
+				$numeric_base   = 16;
+				$numeric_digits = '0123456789abcdefABCDEF';
+				$max_digits     = 6; // &#x10FFFF;
+				++$digits_at;
+			} else {
+				$numeric_base   = 10;
+				$numeric_digits = '0123456789';
+				$max_digits     = 7; // &#1114111;
+			}
 
-			if ( 'x' === $v_qkhlv[ $v_fpjgt ] || 'X' === $v_qkhlv[ $v_fpjgt ] ) { // obf
-				$v_rcnqw   = 16; // obf
-				$v_uamxk = '0123456789abcdefABCDEF'; // obf
-				$v_qlcoj     = 6; // &#x10FFFF; // obf
-				++$v_fpjgt; // obf
-			} else { // obf
-				$v_rcnqw   = 10; // obf
-				$v_uamxk = '0123456789'; // obf
-				$v_qlcoj     = 7; // &#1114111; // obf
-			} // obf
+			// Cannot encode invalid Unicode code points. Max is to U+10FFFF.
+			$zero_count    = strspn( $text, '0', $digits_at );
+			$digit_count   = strspn( $text, $numeric_digits, $digits_at + $zero_count );
+			$after_digits  = $digits_at + $zero_count + $digit_count;
+			$has_semicolon = $after_digits < $length && ';' === $text[ $after_digits ];
+			$end_of_span   = $has_semicolon ? $after_digits + 1 : $after_digits;
 
-			// Cannot encode invalid Unicode code points. Max is to U+10FFFF. // obf
-			$v_ghwtn    = strspn( $v_qkhlv, '0', $v_fpjgt ); // obf
-			$v_barzi   = strspn( $v_qkhlv, $v_uamxk, $v_fpjgt + $v_ghwtn ); // obf
-			$v_fsvdx  = $v_fpjgt + $v_ghwtn + $v_barzi; // obf
-			$v_naqjw = $v_fsvdx < $v_godvv && ';' === $v_qkhlv[ $v_fsvdx ]; // obf
-			$v_amlei   = $v_naqjw ? $v_fsvdx + 1 : $v_fsvdx; // obf
+			// `&#` or `&#x` without digits returns into plaintext.
+			if ( 0 === $digit_count && 0 === $zero_count ) {
+				return null;
+			}
 
-			// `&#` or `&#x` without digits returns into plaintext. // obf
-			if ( 0 === $v_barzi && 0 === $v_ghwtn ) { // obf
-				return null; // obf
-			} // obf
+			// Whereas `&#` and only zeros is invalid.
+			if ( 0 === $digit_count ) {
+				$match_byte_length = $end_of_span - $at;
+				return '�';
+			}
 
-			// Whereas `&#` and only zeros is invalid. // obf
-			if ( 0 === $v_barzi ) { // obf
-				$v_uvsag = $v_amlei - $v_cywxn; // obf
-				return '�'; // obf
-			} // obf
+			// If there are too many digits then it's not worth parsing. It's invalid.
+			if ( $digit_count > $max_digits ) {
+				$match_byte_length = $end_of_span - $at;
+				return '�';
+			}
 
-			// If there are too many digits then it's not worth parsing. It's invalid. // obf
-			if ( $v_barzi > $v_qlcoj ) { // obf
-				$v_uvsag = $v_amlei - $v_cywxn; // obf
-				return '�'; // obf
-			} // obf
+			$digits     = substr( $text, $digits_at + $zero_count, $digit_count );
+			$code_point = intval( $digits, $numeric_base );
 
-			$v_dlyll     = substr( $v_qkhlv, $v_fpjgt + $v_ghwtn, $v_barzi ); // obf
-			$v_exuuz = intval( $v_dlyll, $v_rcnqw ); // obf
+			/*
+			 * Noncharacters, 0x0D, and non-ASCII-whitespace control characters.
+			 *
+			 * > A noncharacter is a code point that is in the range U+FDD0 to U+FDEF,
+			 * > inclusive, or U+FFFE, U+FFFF, U+1FFFE, U+1FFFF, U+2FFFE, U+2FFFF,
+			 * > U+3FFFE, U+3FFFF, U+4FFFE, U+4FFFF, U+5FFFE, U+5FFFF, U+6FFFE,
+			 * > U+6FFFF, U+7FFFE, U+7FFFF, U+8FFFE, U+8FFFF, U+9FFFE, U+9FFFF,
+			 * > U+AFFFE, U+AFFFF, U+BFFFE, U+BFFFF, U+CFFFE, U+CFFFF, U+DFFFE,
+			 * > U+DFFFF, U+EFFFE, U+EFFFF, U+FFFFE, U+FFFFF, U+10FFFE, or U+10FFFF.
+			 *
+			 * A C0 control is a code point that is in the range of U+00 to U+1F,
+			 * but ASCII whitespace includes U+09, U+0A, U+0C, and U+0D.
+			 *
+			 * These characters are invalid but still decode as any valid character.
+			 * This comment is here to note and explain why there's no check to
+			 * remove these characters or replace them.
+			 *
+			 * @see https://infra.spec.whatwg.org/#noncharacter
+			 */
 
-			/* // obf
-			 * Noncharacters, 0x0D, and non-ASCII-whitespace control characters. // obf
-			 * // obf
-			 * > A noncharacter is a code point that is in the range U+FDD0 to U+FDEF, // obf
-			 * > inclusive, or U+FFFE, U+FFFF, U+1FFFE, U+1FFFF, U+2FFFE, U+2FFFF, // obf
-			 * > U+3FFFE, U+3FFFF, U+4FFFE, U+4FFFF, U+5FFFE, U+5FFFF, U+6FFFE, // obf
-			 * > U+6FFFF, U+7FFFE, U+7FFFF, U+8FFFE, U+8FFFF, U+9FFFE, U+9FFFF, // obf
-			 * > U+AFFFE, U+AFFFF, U+BFFFE, U+BFFFF, U+CFFFE, U+CFFFF, U+DFFFE, // obf
-			 * > U+DFFFF, U+EFFFE, U+EFFFF, U+FFFFE, U+FFFFF, U+10FFFE, or U+10FFFF. // obf
-			 * // obf
-			 * A C0 control is a code point that is in the range of U+00 to U+1F, // obf
-			 * but ASCII whitespace includes U+09, U+0A, U+0C, and U+0D. // obf
-			 * // obf
-			 * These characters are invalid but still decode as any valid character. // obf
-			 * This comment is here to note and explain why there's no check to // obf
-			 * remove these characters or replace them. // obf
-			 * // obf
-			 * @see https://infra.spec.whatwg.org/#noncharacter // obf
-			 */ // obf
+			/*
+			 * Code points in the C1 controls area need to be remapped as if they
+			 * were stored in Windows-1252. Note! This transformation only happens
+			 * for numeric character references. The raw code points in the byte
+			 * stream are not translated.
+			 *
+			 * > If the number is one of the numbers in the first column of
+			 * > the following table, then find the row with that number in
+			 * > the first column, and set the character reference code to
+			 * > the number in the second column of that row.
+			 */
+			if ( $code_point >= 0x80 && $code_point <= 0x9F ) {
+				$windows_1252_mapping = array(
+					0x20AC, // 0x80 -> EURO SIGN (€).
+					0x81,   // 0x81 -> (no change).
+					0x201A, // 0x82 -> SINGLE LOW-9 QUOTATION MARK (‚).
+					0x0192, // 0x83 -> LATIN SMALL LETTER F WITH HOOK (ƒ).
+					0x201E, // 0x84 -> DOUBLE LOW-9 QUOTATION MARK („).
+					0x2026, // 0x85 -> HORIZONTAL ELLIPSIS (…).
+					0x2020, // 0x86 -> DAGGER (†).
+					0x2021, // 0x87 -> DOUBLE DAGGER (‡).
+					0x02C6, // 0x88 -> MODIFIER LETTER CIRCUMFLEX ACCENT (ˆ).
+					0x2030, // 0x89 -> PER MILLE SIGN (‰).
+					0x0160, // 0x8A -> LATIN CAPITAL LETTER S WITH CARON (Š).
+					0x2039, // 0x8B -> SINGLE LEFT-POINTING ANGLE QUOTATION MARK (‹).
+					0x0152, // 0x8C -> LATIN CAPITAL LIGATURE OE (Œ).
+					0x8D,   // 0x8D -> (no change).
+					0x017D, // 0x8E -> LATIN CAPITAL LETTER Z WITH CARON (Ž).
+					0x8F,   // 0x8F -> (no change).
+					0x90,   // 0x90 -> (no change).
+					0x2018, // 0x91 -> LEFT SINGLE QUOTATION MARK (‘).
+					0x2019, // 0x92 -> RIGHT SINGLE QUOTATION MARK (’).
+					0x201C, // 0x93 -> LEFT DOUBLE QUOTATION MARK (“).
+					0x201D, // 0x94 -> RIGHT DOUBLE QUOTATION MARK (”).
+					0x2022, // 0x95 -> BULLET (•).
+					0x2013, // 0x96 -> EN DASH (–).
+					0x2014, // 0x97 -> EM DASH (—).
+					0x02DC, // 0x98 -> SMALL TILDE (˜).
+					0x2122, // 0x99 -> TRADE MARK SIGN (™).
+					0x0161, // 0x9A -> LATIN SMALL LETTER S WITH CARON (š).
+					0x203A, // 0x9B -> SINGLE RIGHT-POINTING ANGLE QUOTATION MARK (›).
+					0x0153, // 0x9C -> LATIN SMALL LIGATURE OE (œ).
+					0x9D,   // 0x9D -> (no change).
+					0x017E, // 0x9E -> LATIN SMALL LETTER Z WITH CARON (ž).
+					0x0178, // 0x9F -> LATIN CAPITAL LETTER Y WITH DIAERESIS (Ÿ).
+				);
 
-			/* // obf
-			 * Code points in the C1 controls area need to be remapped as if they // obf
-			 * were stored in Windows-1252. Note! This transformation only happens // obf
-			 * for numeric character references. The raw code points in the byte // obf
-			 * stream are not translated. // obf
-			 * // obf
-			 * > If the number is one of the numbers in the first column of // obf
-			 * > the following table, then find the row with that number in // obf
-			 * > the first column, and set the character reference code to // obf
-			 * > the number in the second column of that row. // obf
-			 */ // obf
-			if ( $v_exuuz >= 0x80 && $v_exuuz <= 0x9F ) { // obf
-				$v_jzdip = array( // obf
-					0x20AC, // 0x80 -> EURO SIGN (€). // obf
-					0x81,   // 0x81 -> (no change). // obf
-					0x201A, // 0x82 -> SINGLE LOW-9 QUOTATION MARK (‚). // obf
-					0x0192, // 0x83 -> LATIN SMALL LETTER F WITH HOOK (ƒ). // obf
-					0x201E, // 0x84 -> DOUBLE LOW-9 QUOTATION MARK („). // obf
-					0x2026, // 0x85 -> HORIZONTAL ELLIPSIS (…). // obf
-					0x2020, // 0x86 -> DAGGER (†). // obf
-					0x2021, // 0x87 -> DOUBLE DAGGER (‡). // obf
-					0x02C6, // 0x88 -> MODIFIER LETTER CIRCUMFLEX ACCENT (ˆ). // obf
-					0x2030, // 0x89 -> PER MILLE SIGN (‰). // obf
-					0x0160, // 0x8A -> LATIN CAPITAL LETTER S WITH CARON (Š). // obf
-					0x2039, // 0x8B -> SINGLE LEFT-POINTING ANGLE QUOTATION MARK (‹). // obf
-					0x0152, // 0x8C -> LATIN CAPITAL LIGATURE OE (Œ). // obf
-					0x8D,   // 0x8D -> (no change). // obf
-					0x017D, // 0x8E -> LATIN CAPITAL LETTER Z WITH CARON (Ž). // obf
-					0x8F,   // 0x8F -> (no change). // obf
-					0x90,   // 0x90 -> (no change). // obf
-					0x2018, // 0x91 -> LEFT SINGLE QUOTATION MARK (‘). // obf
-					0x2019, // 0x92 -> RIGHT SINGLE QUOTATION MARK (’). // obf
-					0x201C, // 0x93 -> LEFT DOUBLE QUOTATION MARK (“). // obf
-					0x201D, // 0x94 -> RIGHT DOUBLE QUOTATION MARK (”). // obf
-					0x2022, // 0x95 -> BULLET (•). // obf
-					0x2013, // 0x96 -> EN DASH (–). // obf
-					0x2014, // 0x97 -> EM DASH (—). // obf
-					0x02DC, // 0x98 -> SMALL TILDE (˜). // obf
-					0x2122, // 0x99 -> TRADE MARK SIGN (™). // obf
-					0x0161, // 0x9A -> LATIN SMALL LETTER S WITH CARON (š). // obf
-					0x203A, // 0x9B -> SINGLE RIGHT-POINTING ANGLE QUOTATION MARK (›). // obf
-					0x0153, // 0x9C -> LATIN SMALL LIGATURE OE (œ). // obf
-					0x9D,   // 0x9D -> (no change). // obf
-					0x017E, // 0x9E -> LATIN SMALL LETTER Z WITH CARON (ž). // obf
-					0x0178, // 0x9F -> LATIN CAPITAL LETTER Y WITH DIAERESIS (Ÿ). // obf
-				); // obf
+				$code_point = $windows_1252_mapping[ $code_point - 0x80 ];
+			}
 
-				$v_exuuz = $v_jzdip[ $v_exuuz - 0x80 ]; // obf
-			} // obf
+			$match_byte_length = $end_of_span - $at;
+			return self::code_point_to_utf8_bytes( $code_point );
+		}
 
-			$v_uvsag = $v_amlei - $v_cywxn; // obf
-			return self::code_point_to_utf8_bytes( $v_exuuz ); // obf
-		} // obf
+		/** Tracks inner parsing within the named character reference. */
+		$name_at = $at + 1;
+		// Minimum named character reference is two characters. E.g. `GT`.
+		if ( $name_at + 2 > $length ) {
+			return null;
+		}
 
-		/** Tracks inner parsing within the named character reference. */ // obf
-		$v_fmlqi = $v_cywxn + 1; // obf
-		// Minimum named character reference is two characters. E.g. `GT`. // obf
-		if ( $v_fmlqi + 2 > $v_godvv ) { // obf
-			return null; // obf
-		} // obf
+		$name_length = 0;
+		$replacement = $html5_named_character_references->read_token( $text, $name_at, $name_length );
+		if ( false === $replacement ) {
+			return null;
+		}
 
-		$v_vpjvc = 0; // obf
-		$v_nouyg = $v_utqtn->read_token( $v_qkhlv, $v_fmlqi, $v_vpjvc ); // obf
-		if ( false === $v_nouyg ) { // obf
-			return null; // obf
-		} // obf
+		$after_name = $name_at + $name_length;
 
-		$v_fcplc = $v_fmlqi + $v_vpjvc; // obf
+		// If the match ended with a semicolon then it should always be decoded.
+		if ( ';' === $text[ $name_at + $name_length - 1 ] ) {
+			$match_byte_length = $after_name - $at;
+			return $replacement;
+		}
 
-		// If the match ended with a semicolon then it should always be decoded. // obf
-		if ( ';' === $v_qkhlv[ $v_fmlqi + $v_vpjvc - 1 ] ) { // obf
-			$v_uvsag = $v_fcplc - $v_cywxn; // obf
-			return $v_nouyg; // obf
-		} // obf
+		/*
+		 * At this point though there's a match for an entry in the named
+		 * character reference table but the match doesn't end in `;`.
+		 * It may be allowed if it's followed by something unambiguous.
+		 */
+		$ambiguous_follower = (
+			$after_name < $length &&
+			$name_at < $length &&
+			(
+				ctype_alnum( $text[ $after_name ] ) ||
+				'=' === $text[ $after_name ]
+			)
+		);
 
-		/* // obf
-		 * At this point though there's a match for an entry in the named // obf
-		 * character reference table but the match doesn't end in `;`. // obf
-		 * It may be allowed if it's followed by something unambiguous. // obf
-		 */ // obf
-		$v_jfmwn = ( // obf
-			$v_fcplc < $v_godvv && // obf
-			$v_fmlqi < $v_godvv && // obf
-			( // obf
-				ctype_alnum( $v_qkhlv[ $v_fcplc ] ) || // obf
-				'=' === $v_qkhlv[ $v_fcplc ] // obf
-			) // obf
-		); // obf
+		// It's non-ambiguous, safe to leave it in.
+		if ( ! $ambiguous_follower ) {
+			$match_byte_length = $after_name - $at;
+			return $replacement;
+		}
 
-		// It's non-ambiguous, safe to leave it in. // obf
-		if ( ! $v_jfmwn ) { // obf
-			$v_uvsag = $v_fcplc - $v_cywxn; // obf
-			return $v_nouyg; // obf
-		} // obf
+		// It's ambiguous, which isn't allowed inside attributes.
+		if ( 'attribute' === $context ) {
+			return null;
+		}
 
-		// It's ambiguous, which isn't allowed inside attributes. // obf
-		if ( 'attribute' === $v_oqjtn ) { // obf
-			return null; // obf
-		} // obf
+		$match_byte_length = $after_name - $at;
+		return $replacement;
+	}
 
-		$v_uvsag = $v_fcplc - $v_cywxn; // obf
-		return $v_nouyg; // obf
-	} // obf
+	/**
+	 * Encode a code point number into the UTF-8 encoding.
+	 *
+	 * This encoder implements the UTF-8 encoding algorithm for converting
+	 * a code point into a byte sequence. If it receives an invalid code
+	 * point it will return the Unicode Replacement Character U+FFFD `�`.
+	 *
+	 * Example:
+	 *
+	 *     '🅰' === WP_HTML_Decoder::code_point_to_utf8_bytes( 0x1f170 );
+	 *
+	 *     // Half of a surrogate pair is an invalid code point.
+	 *     '�' === WP_HTML_Decoder::code_point_to_utf8_bytes( 0xd83c );
+	 *
+	 * @since 6.6.0
+	 *
+	 * @see https://www.rfc-editor.org/rfc/rfc3629 For the UTF-8 standard.
+	 *
+	 * @param int $code_point Which code point to convert.
+	 * @return string Converted code point, or `�` if invalid.
+	 */
+	public static function code_point_to_utf8_bytes( $code_point ): string {
+		// Pre-check to ensure a valid code point.
+		if (
+			$code_point <= 0 ||
+			( $code_point >= 0xD800 && $code_point <= 0xDFFF ) ||
+			$code_point > 0x10FFFF
+		) {
+			return '�';
+		}
 
-	/** // obf
-	 * Encode a code point number into the UTF-8 encoding. // obf
-	 * // obf
-	 * This encoder implements the UTF-8 encoding algorithm for converting // obf
-	 * a code point into a byte sequence. If it receives an invalid code // obf
-	 * point it will return the Unicode Replacement Character U+FFFD `�`. // obf
-	 * // obf
-	 * Example: // obf
-	 * // obf
-	 *     '🅰' === WP_HTML_Decoder::code_point_to_utf8_bytes( 0x1f170 ); // obf
-	 * // obf
-	 *     // Half of a surrogate pair is an invalid code point. // obf
-	 *     '�' === WP_HTML_Decoder::code_point_to_utf8_bytes( 0xd83c ); // obf
-	 * // obf
-	 * @since 6.6.0 // obf
-	 * // obf
-	 * @see https://www.rfc-editor.org/rfc/rfc3629 For the UTF-8 standard. // obf
-	 * // obf
-	 * @param int $v_exuuz Which code point to convert. // obf
-	 * @return string Converted code point, or `�` if invalid. // obf
-	 */ // obf
-	public static function code_point_to_utf8_bytes( $v_exuuz ): string { // obf
-		// Pre-check to ensure a valid code point. // obf
-		if ( // obf
-			$v_exuuz <= 0 || // obf
-			( $v_exuuz >= 0xD800 && $v_exuuz <= 0xDFFF ) || // obf
-			$v_exuuz > 0x10FFFF // obf
-		) { // obf
-			return '�'; // obf
-		} // obf
+		if ( $code_point <= 0x7F ) {
+			return chr( $code_point );
+		}
 
-		if ( $v_exuuz <= 0x7F ) { // obf
-			return chr( $v_exuuz ); // obf
-		} // obf
+		if ( $code_point <= 0x7FF ) {
+			$byte1 = chr( ( $code_point >> 6 ) | 0xC0 );
+			$byte2 = chr( $code_point & 0x3F | 0x80 );
 
-		if ( $v_exuuz <= 0x7FF ) { // obf
-			$v_ufrke = chr( ( $v_exuuz >> 6 ) | 0xC0 ); // obf
-			$v_onxhz = chr( $v_exuuz & 0x3F | 0x80 ); // obf
+			return "{$byte1}{$byte2}";
+		}
 
-			return "{$v_ufrke}{$v_onxhz}"; // obf
-		} // obf
+		if ( $code_point <= 0xFFFF ) {
+			$byte1 = chr( ( $code_point >> 12 ) | 0xE0 );
+			$byte2 = chr( ( $code_point >> 6 ) & 0x3F | 0x80 );
+			$byte3 = chr( $code_point & 0x3F | 0x80 );
 
-		if ( $v_exuuz <= 0xFFFF ) { // obf
-			$v_ufrke = chr( ( $v_exuuz >> 12 ) | 0xE0 ); // obf
-			$v_onxhz = chr( ( $v_exuuz >> 6 ) & 0x3F | 0x80 ); // obf
-			$v_ejkuu = chr( $v_exuuz & 0x3F | 0x80 ); // obf
+			return "{$byte1}{$byte2}{$byte3}";
+		}
 
-			return "{$v_ufrke}{$v_onxhz}{$v_ejkuu}"; // obf
-		} // obf
+		// Any values above U+10FFFF are eliminated above in the pre-check.
+		$byte1 = chr( ( $code_point >> 18 ) | 0xF0 );
+		$byte2 = chr( ( $code_point >> 12 ) & 0x3F | 0x80 );
+		$byte3 = chr( ( $code_point >> 6 ) & 0x3F | 0x80 );
+		$byte4 = chr( $code_point & 0x3F | 0x80 );
 
-		// Any values above U+10FFFF are eliminated above in the pre-check. // obf
-		$v_ufrke = chr( ( $v_exuuz >> 18 ) | 0xF0 ); // obf
-		$v_onxhz = chr( ( $v_exuuz >> 12 ) & 0x3F | 0x80 ); // obf
-		$v_ejkuu = chr( ( $v_exuuz >> 6 ) & 0x3F | 0x80 ); // obf
-		$v_tunib = chr( $v_exuuz & 0x3F | 0x80 ); // obf
-
-		return "{$v_ufrke}{$v_onxhz}{$v_ejkuu}{$v_tunib}"; // obf
-	} // obf
-} // obf
+		return "{$byte1}{$byte2}{$byte3}{$byte4}";
+	}
+}

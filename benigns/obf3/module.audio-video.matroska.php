@@ -1,1924 +1,1932 @@
-
-
-<?php // obf
-
-///////////////////////////////////////////////////////////////// // obf
-/// getID3() by James Heinrich <info@getid3.org>               // // obf
-//  available at https://github.com/JamesHeinrich/getID3       // // obf
-//            or https://www.getid3.org                        // // obf
-//            or http://getid3.sourceforge.net                 // // obf
-//  see readme.txt for more details                            // // obf
-///////////////////////////////////////////////////////////////// // obf
-//                                                             // // obf
-// module.audio-video.matriska.php                             // // obf
-// module for analyzing Matroska containers                    // // obf
-// dependencies: NONE                                          // // obf
-//                                                            /// // obf
-///////////////////////////////////////////////////////////////// // obf
-
-if (!defined('GETID3_INCLUDEPATH')) { // prevent path-exposing attacks that access modules directly on public webservers // obf
-	exit; // obf
-} // obf
-
-define('EBML_ID_CHAPTERS',                  0x0043A770); // [10][43][A7][70] -- A system to define basic menus and partition data. For more detailed information, look at the Chapters Explanation. // obf
-define('EBML_ID_SEEKHEAD',                  0x014D9B74); // [11][4D][9B][74] -- Contains the position of other level 1 elements. // obf
-define('EBML_ID_TAGS',                      0x0254C367); // [12][54][C3][67] -- Element containing elements specific to Tracks/Chapters. A list of valid tags can be found <http://www.matroska.org/technical/specs/tagging/index.html>. // obf
-define('EBML_ID_INFO',                      0x0549A966); // [15][49][A9][66] -- Contains miscellaneous general information and statistics on the file. // obf
-define('EBML_ID_TRACKS',                    0x0654AE6B); // [16][54][AE][6B] -- A top-level block of information with many tracks described. // obf
-define('EBML_ID_SEGMENT',                   0x08538067); // [18][53][80][67] -- This element contains all other top-level (level 1) elements. Typically a Matroska file is composed of 1 segment. // obf
-define('EBML_ID_ATTACHMENTS',               0x0941A469); // [19][41][A4][69] -- Contain attached files. // obf
-define('EBML_ID_EBML',                      0x0A45DFA3); // [1A][45][DF][A3] -- Set the EBML characteristics of the data to follow. Each EBML document has to start with this. // obf
-define('EBML_ID_CUES',                      0x0C53BB6B); // [1C][53][BB][6B] -- A top-level element to speed seeking access. All entries are local to the segment. // obf
-define('EBML_ID_CLUSTER',                   0x0F43B675); // [1F][43][B6][75] -- The lower level element containing the (monolithic) Block structure. // obf
-define('EBML_ID_LANGUAGE',                    0x02B59C); //     [22][B5][9C] -- Specifies the language of the track in the Matroska languages form. // obf
-define('EBML_ID_TRACKTIMECODESCALE',          0x03314F); //     [23][31][4F] -- The scale to apply on this track to work at normal speed in relation with other tracks (mostly used to adjust video speed when the audio length differs). // obf
-define('EBML_ID_DEFAULTDURATION',             0x03E383); //     [23][E3][83] -- Number of nanoseconds (i.e. not scaled) per frame. // obf
-define('EBML_ID_CODECNAME',                   0x058688); //     [25][86][88] -- A human-readable string specifying the codec. // obf
-define('EBML_ID_CODECDOWNLOADURL',            0x06B240); //     [26][B2][40] -- A URL to download about the codec used. // obf
-define('EBML_ID_TIMECODESCALE',               0x0AD7B1); //     [2A][D7][B1] -- Timecode scale in nanoseconds (1.000.000 means all timecodes in the segment are expressed in milliseconds). // obf
-define('EBML_ID_COLOURSPACE',                 0x0EB524); //     [2E][B5][24] -- Same value as in AVI (32 bits). // obf
-define('EBML_ID_GAMMAVALUE',                  0x0FB523); //     [2F][B5][23] -- Gamma Value. // obf
-define('EBML_ID_CODECSETTINGS',               0x1A9697); //     [3A][96][97] -- A string describing the encoding setting used. // obf
-define('EBML_ID_CODECINFOURL',                0x1B4040); //     [3B][40][40] -- A URL to find information about the codec used. // obf
-define('EBML_ID_PREVFILENAME',                0x1C83AB); //     [3C][83][AB] -- An escaped filename corresponding to the previous segment. // obf
-define('EBML_ID_PREVUID',                     0x1CB923); //     [3C][B9][23] -- A unique ID to identify the previous chained segment (128 bits). // obf
-define('EBML_ID_NEXTFILENAME',                0x1E83BB); //     [3E][83][BB] -- An escaped filename corresponding to the next segment. // obf
-define('EBML_ID_NEXTUID',                     0x1EB923); //     [3E][B9][23] -- A unique ID to identify the next chained segment (128 bits). // obf
-define('EBML_ID_CONTENTCOMPALGO',               0x0254); //         [42][54] -- The compression algorithm used. Algorithms that have been specified so far are: // obf
-define('EBML_ID_CONTENTCOMPSETTINGS',           0x0255); //         [42][55] -- Settings that might be needed by the decompressor. For Header Stripping (ContentCompAlgo=3), the bytes that were removed from the beggining of each frames of the track. // obf
-define('EBML_ID_DOCTYPE',                       0x0282); //         [42][82] -- A string that describes the type of document that follows this EBML header ('matroska' in our case). // obf
-define('EBML_ID_DOCTYPEREADVERSION',            0x0285); //         [42][85] -- The minimum DocType version an interpreter has to support to read this file. // obf
-define('EBML_ID_EBMLVERSION',                   0x0286); //         [42][86] -- The version of EBML parser used to create the file. // obf
-define('EBML_ID_DOCTYPEVERSION',                0x0287); //         [42][87] -- The version of DocType interpreter used to create the file. // obf
-define('EBML_ID_EBMLMAXIDLENGTH',               0x02F2); //         [42][F2] -- The maximum length of the IDs you'll find in this file (4 or less in Matroska). // obf
-define('EBML_ID_EBMLMAXSIZELENGTH',             0x02F3); //         [42][F3] -- The maximum length of the sizes you'll find in this file (8 or less in Matroska). This does not override the element size indicated at the beginning of an element. Elements that have an indicated size which is larger than what is allowed by EBMLMaxSizeLength shall be considered invalid. // obf
-define('EBML_ID_EBMLREADVERSION',               0x02F7); //         [42][F7] -- The minimum EBML version a parser has to support to read this file. // obf
-define('EBML_ID_CHAPLANGUAGE',                  0x037C); //         [43][7C] -- The languages corresponding to the string, in the bibliographic ISO-639-2 form. // obf
-define('EBML_ID_CHAPCOUNTRY',                   0x037E); //         [43][7E] -- The countries corresponding to the string, same 2 octets as in Internet domains. // obf
-define('EBML_ID_SEGMENTFAMILY',                 0x0444); //         [44][44] -- A randomly generated unique ID that all segments related to each other must use (128 bits). // obf
-define('EBML_ID_DATEUTC',                       0x0461); //         [44][61] -- Date of the origin of timecode (value 0), i.e. production date. // obf
-define('EBML_ID_TAGLANGUAGE',                   0x047A); //         [44][7A] -- Specifies the language of the tag specified, in the Matroska languages form. // obf
-define('EBML_ID_TAGDEFAULT',                    0x0484); //         [44][84] -- Indication to know if this is the default/original language to use for the given tag. // obf
-define('EBML_ID_TAGBINARY',                     0x0485); //         [44][85] -- The values of the Tag if it is binary. Note that this cannot be used in the same SimpleTag as TagString. // obf
-define('EBML_ID_TAGSTRING',                     0x0487); //         [44][87] -- The value of the Tag. // obf
-define('EBML_ID_DURATION',                      0x0489); //         [44][89] -- Duration of the segment (based on TimecodeScale). // obf
-define('EBML_ID_CHAPPROCESSPRIVATE',            0x050D); //         [45][0D] -- Some optional data attached to the ChapProcessCodecID information. For ChapProcessCodecID = 1, it is the "DVD level" equivalent. // obf
-define('EBML_ID_CHAPTERFLAGENABLED',            0x0598); //         [45][98] -- Specify wether the chapter is enabled. It can be enabled/disabled by a Control Track. When disabled, the movie should skip all the content between the TimeStart and TimeEnd of this chapter. // obf
-define('EBML_ID_TAGNAME',                       0x05A3); //         [45][A3] -- The name of the Tag that is going to be stored. // obf
-define('EBML_ID_EDITIONENTRY',                  0x05B9); //         [45][B9] -- Contains all information about a segment edition. // obf
-define('EBML_ID_EDITIONUID',                    0x05BC); //         [45][BC] -- A unique ID to identify the edition. It's useful for tagging an edition. // obf
-define('EBML_ID_EDITIONFLAGHIDDEN',             0x05BD); //         [45][BD] -- If an edition is hidden (1), it should not be available to the user interface (but still to Control Tracks). // obf
-define('EBML_ID_EDITIONFLAGDEFAULT',            0x05DB); //         [45][DB] -- If a flag is set (1) the edition should be used as the default one. // obf
-define('EBML_ID_EDITIONFLAGORDERED',            0x05DD); //         [45][DD] -- Specify if the chapters can be defined multiple times and the order to play them is enforced. // obf
-define('EBML_ID_FILEDATA',                      0x065C); //         [46][5C] -- The data of the file. // obf
-define('EBML_ID_FILEMIMETYPE',                  0x0660); //         [46][60] -- MIME type of the file. // obf
-define('EBML_ID_FILENAME',                      0x066E); //         [46][6E] -- Filename of the attached file. // obf
-define('EBML_ID_FILEREFERRAL',                  0x0675); //         [46][75] -- A binary value that a track/codec can refer to when the attachment is needed. // obf
-define('EBML_ID_FILEDESCRIPTION',               0x067E); //         [46][7E] -- A human-friendly name for the attached file. // obf
-define('EBML_ID_FILEUID',                       0x06AE); //         [46][AE] -- Unique ID representing the file, as random as possible. // obf
-define('EBML_ID_CONTENTENCALGO',                0x07E1); //         [47][E1] -- The encryption algorithm used. The value '0' means that the contents have not been encrypted but only signed. Predefined values: // obf
-define('EBML_ID_CONTENTENCKEYID',               0x07E2); //         [47][E2] -- For public key algorithms this is the ID of the public key the data was encrypted with. // obf
-define('EBML_ID_CONTENTSIGNATURE',              0x07E3); //         [47][E3] -- A cryptographic signature of the contents. // obf
-define('EBML_ID_CONTENTSIGKEYID',               0x07E4); //         [47][E4] -- This is the ID of the private key the data was signed with. // obf
-define('EBML_ID_CONTENTSIGALGO',                0x07E5); //         [47][E5] -- The algorithm used for the signature. A value of '0' means that the contents have not been signed but only encrypted. Predefined values: // obf
-define('EBML_ID_CONTENTSIGHASHALGO',            0x07E6); //         [47][E6] -- The hash algorithm used for the signature. A value of '0' means that the contents have not been signed but only encrypted. Predefined values: // obf
-define('EBML_ID_MUXINGAPP',                     0x0D80); //         [4D][80] -- Muxing application or library ("libmatroska-0.4.3"). // obf
-define('EBML_ID_SEEK',                          0x0DBB); //         [4D][BB] -- Contains a single seek entry to an EBML element. // obf
-define('EBML_ID_CONTENTENCODINGORDER',          0x1031); //         [50][31] -- Tells when this modification was used during encoding/muxing starting with 0 and counting upwards. The decoder/demuxer has to start with the highest order number it finds and work its way down. This value has to be unique over all ContentEncodingOrder elements in the segment. // obf
-define('EBML_ID_CONTENTENCODINGSCOPE',          0x1032); //         [50][32] -- A bit field that describes which elements have been modified in this way. Values (big endian) can be OR'ed. Possible values: // obf
-define('EBML_ID_CONTENTENCODINGTYPE',           0x1033); //         [50][33] -- A value describing what kind of transformation has been done. Possible values: // obf
-define('EBML_ID_CONTENTCOMPRESSION',            0x1034); //         [50][34] -- Settings describing the compression used. Must be present if the value of ContentEncodingType is 0 and absent otherwise. Each block must be decompressable even if no previous block is available in order not to prevent seeking. // obf
-define('EBML_ID_CONTENTENCRYPTION',             0x1035); //         [50][35] -- Settings describing the encryption used. Must be present if the value of ContentEncodingType is 1 and absent otherwise. // obf
-define('EBML_ID_CUEREFNUMBER',                  0x135F); //         [53][5F] -- Number of the referenced Block of Track X in the specified Cluster. // obf
-define('EBML_ID_NAME',                          0x136E); //         [53][6E] -- A human-readable track name. // obf
-define('EBML_ID_CUEBLOCKNUMBER',                0x1378); //         [53][78] -- Number of the Block in the specified Cluster. // obf
-define('EBML_ID_TRACKOFFSET',                   0x137F); //         [53][7F] -- A value to add to the Block's Timecode. This can be used to adjust the playback offset of a track. // obf
-define('EBML_ID_SEEKID',                        0x13AB); //         [53][AB] -- The binary ID corresponding to the element name. // obf
-define('EBML_ID_SEEKPOSITION',                  0x13AC); //         [53][AC] -- The position of the element in the segment in octets (0 = first level 1 element). // obf
-define('EBML_ID_STEREOMODE',                    0x13B8); //         [53][B8] -- Stereo-3D video mode. // obf
-define('EBML_ID_OLDSTEREOMODE',                 0x13B9); //         [53][B9] -- Bogus StereoMode value used in old versions of libmatroska. DO NOT USE. (0: mono, 1: right eye, 2: left eye, 3: both eyes). // obf
-define('EBML_ID_PIXELCROPBOTTOM',               0x14AA); //         [54][AA] -- The number of video pixels to remove at the bottom of the image (for HDTV content). // obf
-define('EBML_ID_DISPLAYWIDTH',                  0x14B0); //         [54][B0] -- Width of the video frames to display. // obf
-define('EBML_ID_DISPLAYUNIT',                   0x14B2); //         [54][B2] -- Type of the unit for DisplayWidth/Height (0: pixels, 1: centimeters, 2: inches). // obf
-define('EBML_ID_ASPECTRATIOTYPE',               0x14B3); //         [54][B3] -- Specify the possible modifications to the aspect ratio (0: free resizing, 1: keep aspect ratio, 2: fixed). // obf
-define('EBML_ID_DISPLAYHEIGHT',                 0x14BA); //         [54][BA] -- Height of the video frames to display. // obf
-define('EBML_ID_PIXELCROPTOP',                  0x14BB); //         [54][BB] -- The number of video pixels to remove at the top of the image. // obf
-define('EBML_ID_PIXELCROPLEFT',                 0x14CC); //         [54][CC] -- The number of video pixels to remove on the left of the image. // obf
-define('EBML_ID_PIXELCROPRIGHT',                0x14DD); //         [54][DD] -- The number of video pixels to remove on the right of the image. // obf
-define('EBML_ID_FLAGFORCED',                    0x15AA); //         [55][AA] -- Set if that track MUST be used during playback. There can be many forced track for a kind (audio, video or subs), the player should select the one which language matches the user preference or the default + forced track. Overlay MAY happen between a forced and non-forced track of the same kind. // obf
-define('EBML_ID_MAXBLOCKADDITIONID',            0x15EE); //         [55][EE] -- The maximum value of BlockAddID. A value 0 means there is no BlockAdditions for this track. // obf
-define('EBML_ID_WRITINGAPP',                    0x1741); //         [57][41] -- Writing application ("mkvmerge-0.3.3"). // obf
-define('EBML_ID_CLUSTERSILENTTRACKS',           0x1854); //         [58][54] -- The list of tracks that are not used in that part of the stream. It is useful when using overlay tracks on seeking. Then you should decide what track to use. // obf
-define('EBML_ID_CLUSTERSILENTTRACKNUMBER',      0x18D7); //         [58][D7] -- One of the track number that are not used from now on in the stream. It could change later if not specified as silent in a further Cluster. // obf
-define('EBML_ID_ATTACHEDFILE',                  0x21A7); //         [61][A7] -- An attached file. // obf
-define('EBML_ID_CONTENTENCODING',               0x2240); //         [62][40] -- Settings for one content encoding like compression or encryption. // obf
-define('EBML_ID_BITDEPTH',                      0x2264); //         [62][64] -- Bits per sample, mostly used for PCM. // obf
-define('EBML_ID_CODECPRIVATE',                  0x23A2); //         [63][A2] -- Private data only known to the codec. // obf
-define('EBML_ID_TARGETS',                       0x23C0); //         [63][C0] -- Contain all UIDs where the specified meta data apply. It is void to describe everything in the segment. // obf
-define('EBML_ID_CHAPTERPHYSICALEQUIV',          0x23C3); //         [63][C3] -- Specify the physical equivalent of this ChapterAtom like "DVD" (60) or "SIDE" (50), see complete list of values. // obf
-define('EBML_ID_TAGCHAPTERUID',                 0x23C4); //         [63][C4] -- A unique ID to identify the Chapter(s) the tags belong to. If the value is 0 at this level, the tags apply to all chapters in the Segment. // obf
-define('EBML_ID_TAGTRACKUID',                   0x23C5); //         [63][C5] -- A unique ID to identify the Track(s) the tags belong to. If the value is 0 at this level, the tags apply to all tracks in the Segment. // obf
-define('EBML_ID_TAGATTACHMENTUID',              0x23C6); //         [63][C6] -- A unique ID to identify the Attachment(s) the tags belong to. If the value is 0 at this level, the tags apply to all the attachments in the Segment. // obf
-define('EBML_ID_TAGEDITIONUID',                 0x23C9); //         [63][C9] -- A unique ID to identify the EditionEntry(s) the tags belong to. If the value is 0 at this level, the tags apply to all editions in the Segment. // obf
-define('EBML_ID_TARGETTYPE',                    0x23CA); //         [63][CA] -- An informational string that can be used to display the logical level of the target like "ALBUM", "TRACK", "MOVIE", "CHAPTER", etc (see TargetType). // obf
-define('EBML_ID_TRACKTRANSLATE',                0x2624); //         [66][24] -- The track identification for the given Chapter Codec. // obf
-define('EBML_ID_TRACKTRANSLATETRACKID',         0x26A5); //         [66][A5] -- The binary value used to represent this track in the chapter codec data. The format depends on the ChapProcessCodecID used. // obf
-define('EBML_ID_TRACKTRANSLATECODEC',           0x26BF); //         [66][BF] -- The chapter codec using this ID (0: Matroska Script, 1: DVD-menu). // obf
-define('EBML_ID_TRACKTRANSLATEEDITIONUID',      0x26FC); //         [66][FC] -- Specify an edition UID on which this translation applies. When not specified, it means for all editions found in the segment. // obf
-define('EBML_ID_SIMPLETAG',                     0x27C8); //         [67][C8] -- Contains general information about the target. // obf
-define('EBML_ID_TARGETTYPEVALUE',               0x28CA); //         [68][CA] -- A number to indicate the logical level of the target (see TargetType). // obf
-define('EBML_ID_CHAPPROCESSCOMMAND',            0x2911); //         [69][11] -- Contains all the commands associated to the Atom. // obf
-define('EBML_ID_CHAPPROCESSTIME',               0x2922); //         [69][22] -- Defines when the process command should be handled (0: during the whole chapter, 1: before starting playback, 2: after playback of the chapter). // obf
-define('EBML_ID_CHAPTERTRANSLATE',              0x2924); //         [69][24] -- A tuple of corresponding ID used by chapter codecs to represent this segment. // obf
-define('EBML_ID_CHAPPROCESSDATA',               0x2933); //         [69][33] -- Contains the command information. The data should be interpreted depending on the ChapProcessCodecID value. For ChapProcessCodecID = 1, the data correspond to the binary DVD cell pre/post commands. // obf
-define('EBML_ID_CHAPPROCESS',                   0x2944); //         [69][44] -- Contains all the commands associated to the Atom. // obf
-define('EBML_ID_CHAPPROCESSCODECID',            0x2955); //         [69][55] -- Contains the type of the codec used for the processing. A value of 0 means native Matroska processing (to be defined), a value of 1 means the DVD command set is used. More codec IDs can be added later. // obf
-define('EBML_ID_CHAPTERTRANSLATEID',            0x29A5); //         [69][A5] -- The binary value used to represent this segment in the chapter codec data. The format depends on the ChapProcessCodecID used. // obf
-define('EBML_ID_CHAPTERTRANSLATECODEC',         0x29BF); //         [69][BF] -- The chapter codec using this ID (0: Matroska Script, 1: DVD-menu). // obf
-define('EBML_ID_CHAPTERTRANSLATEEDITIONUID',    0x29FC); //         [69][FC] -- Specify an edition UID on which this correspondance applies. When not specified, it means for all editions found in the segment. // obf
-define('EBML_ID_CONTENTENCODINGS',              0x2D80); //         [6D][80] -- Settings for several content encoding mechanisms like compression or encryption. // obf
-define('EBML_ID_MINCACHE',                      0x2DE7); //         [6D][E7] -- The minimum number of frames a player should be able to cache during playback. If set to 0, the reference pseudo-cache system is not used. // obf
-define('EBML_ID_MAXCACHE',                      0x2DF8); //         [6D][F8] -- The maximum cache size required to store referenced frames in and the current frame. 0 means no cache is needed. // obf
-define('EBML_ID_CHAPTERSEGMENTUID',             0x2E67); //         [6E][67] -- A segment to play in place of this chapter. Edition ChapterSegmentEditionUID should be used for this segment, otherwise no edition is used. // obf
-define('EBML_ID_CHAPTERSEGMENTEDITIONUID',      0x2EBC); //         [6E][BC] -- The edition to play from the segment linked in ChapterSegmentUID. // obf
-define('EBML_ID_TRACKOVERLAY',                  0x2FAB); //         [6F][AB] -- Specify that this track is an overlay track for the Track specified (in the u-integer). That means when this track has a gap (see SilentTracks) the overlay track should be used instead. The order of multiple TrackOverlay matters, the first one is the one that should be used. If not found it should be the second, etc. // obf
-define('EBML_ID_TAG',                           0x3373); //         [73][73] -- Element containing elements specific to Tracks/Chapters. // obf
-define('EBML_ID_SEGMENTFILENAME',               0x3384); //         [73][84] -- A filename corresponding to this segment. // obf
-define('EBML_ID_SEGMENTUID',                    0x33A4); //         [73][A4] -- A randomly generated unique ID to identify the current segment between many others (128 bits). // obf
-define('EBML_ID_CHAPTERUID',                    0x33C4); //         [73][C4] -- A unique ID to identify the Chapter. // obf
-define('EBML_ID_TRACKUID',                      0x33C5); //         [73][C5] -- A unique ID to identify the Track. This should be kept the same when making a direct stream copy of the Track to another file. // obf
-define('EBML_ID_ATTACHMENTLINK',                0x3446); //         [74][46] -- The UID of an attachment that is used by this codec. // obf
-define('EBML_ID_CLUSTERBLOCKADDITIONS',         0x35A1); //         [75][A1] -- Contain additional blocks to complete the main one. An EBML parser that has no knowledge of the Block structure could still see and use/skip these data. // obf
-define('EBML_ID_CHANNELPOSITIONS',              0x347B); //         [7D][7B] -- Table of horizontal angles for each successive channel, see appendix. // obf
-define('EBML_ID_OUTPUTSAMPLINGFREQUENCY',       0x38B5); //         [78][B5] -- Real output sampling frequency in Hz (used for SBR techniques). // obf
-define('EBML_ID_TITLE',                         0x3BA9); //         [7B][A9] -- General name of the segment. // obf
-define('EBML_ID_CHAPTERDISPLAY',                  0x00); //             [80] -- Contains all possible strings to use for the chapter display. // obf
-define('EBML_ID_TRACKTYPE',                       0x03); //             [83] -- A set of track types coded on 8 bits (1: video, 2: audio, 3: complex, 0x10: logo, 0x11: subtitle, 0x12: buttons, 0x20: control). // obf
-define('EBML_ID_CHAPSTRING',                      0x05); //             [85] -- Contains the string to use as the chapter atom. // obf
-define('EBML_ID_CODECID',                         0x06); //             [86] -- An ID corresponding to the codec, see the codec page for more info. // obf
-define('EBML_ID_FLAGDEFAULT',                     0x08); //             [88] -- Set if that track (audio, video or subs) SHOULD be used if no language found matches the user preference. // obf
-define('EBML_ID_CHAPTERTRACKNUMBER',              0x09); //             [89] -- UID of the Track to apply this chapter too. In the absense of a control track, choosing this chapter will select the listed Tracks and deselect unlisted tracks. Absense of this element indicates that the Chapter should be applied to any currently used Tracks. // obf
-define('EBML_ID_CLUSTERSLICES',                   0x0E); //             [8E] -- Contains slices description. // obf
-define('EBML_ID_CHAPTERTRACK',                    0x0F); //             [8F] -- List of tracks on which the chapter applies. If this element is not present, all tracks apply // obf
-define('EBML_ID_CHAPTERTIMESTART',                0x11); //             [91] -- Timecode of the start of Chapter (not scaled). // obf
-define('EBML_ID_CHAPTERTIMEEND',                  0x12); //             [92] -- Timecode of the end of Chapter (timecode excluded, not scaled). // obf
-define('EBML_ID_CUEREFTIME',                      0x16); //             [96] -- Timecode of the referenced Block. // obf
-define('EBML_ID_CUEREFCLUSTER',                   0x17); //             [97] -- Position of the Cluster containing the referenced Block. // obf
-define('EBML_ID_CHAPTERFLAGHIDDEN',               0x18); //             [98] -- If a chapter is hidden (1), it should not be available to the user interface (but still to Control Tracks). // obf
-define('EBML_ID_FLAGINTERLACED',                  0x1A); //             [9A] -- Set if the video is interlaced. // obf
-define('EBML_ID_CLUSTERBLOCKDURATION',            0x1B); //             [9B] -- The duration of the Block (based on TimecodeScale). This element is mandatory when DefaultDuration is set for the track. When not written and with no DefaultDuration, the value is assumed to be the difference between the timecode of this Block and the timecode of the next Block in "display" order (not coding order). This element can be useful at the end of a Track (as there is not other Block available), or when there is a break in a track like for subtitle tracks. // obf
-define('EBML_ID_FLAGLACING',                      0x1C); //             [9C] -- Set if the track may contain blocks using lacing. // obf
-define('EBML_ID_CHANNELS',                        0x1F); //             [9F] -- Numbers of channels in the track. // obf
-define('EBML_ID_CLUSTERBLOCKGROUP',               0x20); //             [A0] -- Basic container of information containing a single Block or BlockVirtual, and information specific to that Block/VirtualBlock. // obf
-define('EBML_ID_CLUSTERBLOCK',                    0x21); //             [A1] -- Block containing the actual data to be rendered and a timecode relative to the Cluster Timecode. // obf
-define('EBML_ID_CLUSTERBLOCKVIRTUAL',             0x22); //             [A2] -- A Block with no data. It must be stored in the stream at the place the real Block should be in display order. // obf
-define('EBML_ID_CLUSTERSIMPLEBLOCK',              0x23); //             [A3] -- Similar to Block but without all the extra information, mostly used to reduced overhead when no extra feature is needed. // obf
-define('EBML_ID_CLUSTERCODECSTATE',               0x24); //             [A4] -- The new codec state to use. Data interpretation is private to the codec. This information should always be referenced by a seek entry. // obf
-define('EBML_ID_CLUSTERBLOCKADDITIONAL',          0x25); //             [A5] -- Interpreted by the codec as it wishes (using the BlockAddID). // obf
-define('EBML_ID_CLUSTERBLOCKMORE',                0x26); //             [A6] -- Contain the BlockAdditional and some parameters. // obf
-define('EBML_ID_CLUSTERPOSITION',                 0x27); //             [A7] -- Position of the Cluster in the segment (0 in live broadcast streams). It might help to resynchronise offset on damaged streams. // obf
-define('EBML_ID_CODECDECODEALL',                  0x2A); //             [AA] -- The codec can decode potentially damaged data. // obf
-define('EBML_ID_CLUSTERPREVSIZE',                 0x2B); //             [AB] -- Size of the previous Cluster, in octets. Can be useful for backward playing. // obf
-define('EBML_ID_TRACKENTRY',                      0x2E); //             [AE] -- Describes a track with all elements. // obf
-define('EBML_ID_CLUSTERENCRYPTEDBLOCK',           0x2F); //             [AF] -- Similar to SimpleBlock but the data inside the Block are Transformed (encrypt and/or signed). // obf
-define('EBML_ID_PIXELWIDTH',                      0x30); //             [B0] -- Width of the encoded video frames in pixels. // obf
-define('EBML_ID_CUETIME',                         0x33); //             [B3] -- Absolute timecode according to the segment time base. // obf
-define('EBML_ID_SAMPLINGFREQUENCY',               0x35); //             [B5] -- Sampling frequency in Hz. // obf
-define('EBML_ID_CHAPTERATOM',                     0x36); //             [B6] -- Contains the atom information to use as the chapter atom (apply to all tracks). // obf
-define('EBML_ID_CUETRACKPOSITIONS',               0x37); //             [B7] -- Contain positions for different tracks corresponding to the timecode. // obf
-define('EBML_ID_FLAGENABLED',                     0x39); //             [B9] -- Set if the track is used. // obf
-define('EBML_ID_PIXELHEIGHT',                     0x3A); //             [BA] -- Height of the encoded video frames in pixels. // obf
-define('EBML_ID_CUEPOINT',                        0x3B); //             [BB] -- Contains all information relative to a seek point in the segment. // obf
-define('EBML_ID_CRC32',                           0x3F); //             [BF] -- The CRC is computed on all the data of the Master element it's in, regardless of its position. It's recommended to put the CRC value at the beggining of the Master element for easier reading. All level 1 elements should include a CRC-32. // obf
-define('EBML_ID_CLUSTERBLOCKADDITIONID',          0x4B); //             [CB] -- The ID of the BlockAdditional element (0 is the main Block). // obf
-define('EBML_ID_CLUSTERLACENUMBER',               0x4C); //             [CC] -- The reverse number of the frame in the lace (0 is the last frame, 1 is the next to last, etc). While there are a few files in the wild with this element, it is no longer in use and has been deprecated. Being able to interpret this element is not required for playback. // obf
-define('EBML_ID_CLUSTERFRAMENUMBER',              0x4D); //             [CD] -- The number of the frame to generate from this lace with this delay (allow you to generate many frames from the same Block/Frame). // obf
-define('EBML_ID_CLUSTERDELAY',                    0x4E); //             [CE] -- The (scaled) delay to apply to the element. // obf
-define('EBML_ID_CLUSTERDURATION',                 0x4F); //             [CF] -- The (scaled) duration to apply to the element. // obf
-define('EBML_ID_TRACKNUMBER',                     0x57); //             [D7] -- The track number as used in the Block Header (using more than 127 tracks is not encouraged, though the design allows an unlimited number). // obf
-define('EBML_ID_CUEREFERENCE',                    0x5B); //             [DB] -- The Clusters containing the required referenced Blocks. // obf
-define('EBML_ID_VIDEO',                           0x60); //             [E0] -- Video settings. // obf
-define('EBML_ID_AUDIO',                           0x61); //             [E1] -- Audio settings. // obf
-define('EBML_ID_CLUSTERTIMESLICE',                0x68); //             [E8] -- Contains extra time information about the data contained in the Block. While there are a few files in the wild with this element, it is no longer in use and has been deprecated. Being able to interpret this element is not required for playback. // obf
-define('EBML_ID_CUECODECSTATE',                   0x6A); //             [EA] -- The position of the Codec State corresponding to this Cue element. 0 means that the data is taken from the initial Track Entry. // obf
-define('EBML_ID_CUEREFCODECSTATE',                0x6B); //             [EB] -- The position of the Codec State corresponding to this referenced element. 0 means that the data is taken from the initial Track Entry. // obf
-define('EBML_ID_VOID',                            0x6C); //             [EC] -- Used to void damaged data, to avoid unexpected behaviors when using damaged data. The content is discarded. Also used to reserve space in a sub-element for later use. // obf
-define('EBML_ID_CLUSTERTIMECODE',                 0x67); //             [E7] -- Absolute timecode of the cluster (based on TimecodeScale). // obf
-define('EBML_ID_CLUSTERBLOCKADDID',               0x6E); //             [EE] -- An ID to identify the BlockAdditional level. // obf
-define('EBML_ID_CUECLUSTERPOSITION',              0x71); //             [F1] -- The position of the Cluster containing the required Block. // obf
-define('EBML_ID_CUETRACK',                        0x77); //             [F7] -- The track for which a position is given. // obf
-define('EBML_ID_CLUSTERREFERENCEPRIORITY',        0x7A); //             [FA] -- This frame is referenced and has the specified cache priority. In cache only a frame of the same or higher priority can replace this frame. A value of 0 means the frame is not referenced. // obf
-define('EBML_ID_CLUSTERREFERENCEBLOCK',           0x7B); //             [FB] -- Timecode of another frame used as a reference (ie: B or P frame). The timecode is relative to the block it's attached to. // obf
-define('EBML_ID_CLUSTERREFERENCEVIRTUAL',         0x7D); //             [FD] -- Relative position of the data that should be in position of the virtual block. // obf
-
-
-/** // obf
-* @tutorial http://www.matroska.org/technical/specs/index.html // obf
-* // obf
-* @todo Rewrite EBML parser to reduce it's size and honor default element values // obf
-* @todo After rewrite implement stream size calculation, that will provide additional useful info and enable AAC/FLAC audio bitrate detection // obf
-*/ // obf
-class getid3_matroska extends getid3_handler // obf
-{ // obf
-	/** // obf
-	 * If true, do not return information about CLUSTER chunks, since there's a lot of them // obf
-	 * and they're not usually useful [default: TRUE]. // obf
-	 * // obf
-	 * @var bool // obf
-	 */ // obf
-	public $v_uwpsk    = true; // obf
-
-	/** // obf
-	 * True to parse the whole file, not only header [default: FALSE]. // obf
-	 * // obf
-	 * @var bool // obf
-	 */ // obf
-	public $v_haoop = false; // obf
-
-	/* // obf
-	 * Private parser settings/placeholders. // obf
-	 */ // obf
-	private $v_ocghc        = ''; // obf
-	private $v_tvmkz = 0; // obf
-	private $v_uhwrk = 0; // obf
-	private $v_njvvp    = 0; // obf
-	private $v_fcpph = array(EBML_ID_CRC32, EBML_ID_VOID); // obf
-
-	/** // obf
-	 * @return bool // obf
-	 */ // obf
-	public function Analyze() // obf
-	{ // obf
-		$v_xxacd = &$v_yfska->getid3->info; // obf
-
-		// parse container // obf
-		try { // obf
-			$v_yfska->parseEBML($v_xxacd); // obf
-		} catch (Exception $v_fcnmu) { // obf
-			$v_yfska->error('EBML parser: '.$v_fcnmu->getMessage()); // obf
-		} // obf
-
-		// calculate playtime // obf
-		if (isset($v_xxacd['matroska']['info']) && is_array($v_xxacd['matroska']['info'])) { // obf
-			foreach ($v_xxacd['matroska']['info'] as $v_jzyzb => $v_tiqia) { // obf
-				if (isset($v_tiqia['Duration'])) { // obf
-					// TimecodeScale is how many nanoseconds each Duration unit is // obf
-					$v_xxacd['playtime_seconds'] = $v_tiqia['Duration'] * ((isset($v_tiqia['TimecodeScale']) ? $v_tiqia['TimecodeScale'] : 1000000) / 1000000000); // obf
-					break; // obf
-				} // obf
-			} // obf
-		} // obf
-
-		// extract tags // obf
-		if (isset($v_xxacd['matroska']['tags']) && is_array($v_xxacd['matroska']['tags'])) { // obf
-			foreach ($v_xxacd['matroska']['tags'] as $v_jzyzb => $v_tiqia) { // obf
-				$v_yfska->ExtractCommentsSimpleTag($v_tiqia); // obf
-			} // obf
-		} // obf
-
-		// process tracks // obf
-		if (isset($v_xxacd['matroska']['tracks']['tracks']) && is_array($v_xxacd['matroska']['tracks']['tracks'])) { // obf
-			foreach ($v_xxacd['matroska']['tracks']['tracks'] as $v_jzyzb => $v_ogggx) { // obf
-
-				$v_rudhd = array(); // obf
-				$v_rudhd['dataformat'] = self::CodecIDtoCommonName($v_ogggx['CodecID']); // obf
-				$v_rudhd['default'] = (isset($v_ogggx['FlagDefault']) ? $v_ogggx['FlagDefault'] : true); // obf
-				if (isset($v_ogggx['Name'])) { $v_rudhd['name'] = $v_ogggx['Name']; } // obf
-
-				switch ($v_ogggx['TrackType']) { // obf
-
-					case 1: // Video // obf
-						$v_rudhd['resolution_x'] = $v_ogggx['PixelWidth']; // obf
-						$v_rudhd['resolution_y'] = $v_ogggx['PixelHeight']; // obf
-						$v_rudhd['display_unit'] = self::displayUnit(isset($v_ogggx['DisplayUnit']) ? $v_ogggx['DisplayUnit'] : 0); // obf
-						$v_rudhd['display_x']    = (isset($v_ogggx['DisplayWidth']) ? $v_ogggx['DisplayWidth'] : $v_ogggx['PixelWidth']); // obf
-						$v_rudhd['display_y']    = (isset($v_ogggx['DisplayHeight']) ? $v_ogggx['DisplayHeight'] : $v_ogggx['PixelHeight']); // obf
-
-						if (isset($v_ogggx['PixelCropBottom']))  { $v_rudhd['crop_bottom'] = $v_ogggx['PixelCropBottom']; } // obf
-						if (isset($v_ogggx['PixelCropTop']))     { $v_rudhd['crop_top']    = $v_ogggx['PixelCropTop']; } // obf
-						if (isset($v_ogggx['PixelCropLeft']))    { $v_rudhd['crop_left']   = $v_ogggx['PixelCropLeft']; } // obf
-						if (isset($v_ogggx['PixelCropRight']))   { $v_rudhd['crop_right']  = $v_ogggx['PixelCropRight']; } // obf
-						if (!empty($v_ogggx['DefaultDuration'])) { $v_rudhd['frame_rate']  = round(1000000000 / $v_ogggx['DefaultDuration'], 3); } // obf
-						if (isset($v_ogggx['CodecName']))        { $v_rudhd['codec']       = $v_ogggx['CodecName']; } // obf
-
-						switch ($v_ogggx['CodecID']) { // obf
-							case 'V_MS/VFW/FOURCC': // obf
-								getid3_lib::IncludeDependency(GETID3_INCLUDEPATH.'module.audio-video.riff.php', __FILE__, true); // obf
-
-								$v_dukve = getid3_riff::ParseBITMAPINFOHEADER($v_ogggx['CodecPrivate']); // obf
-								$v_rudhd['codec'] = getid3_riff::fourccLookup($v_dukve['fourcc']); // obf
-								$v_xxacd['matroska']['track_codec_parsed'][$v_ogggx['TrackNumber']] = $v_dukve; // obf
-								break; // obf
-
-							/*case 'V_MPEG4/ISO/AVC': // obf
-								$v_dlhlk['profile']    = getid3_lib::BigEndian2Int(substr($v_ogggx['CodecPrivate'], 1, 1)); // obf
-								$v_dlhlk['level']      = getid3_lib::BigEndian2Int(substr($v_ogggx['CodecPrivate'], 3, 1)); // obf
-								$v_jdimw                 = getid3_lib::BigEndian2Int(substr($v_ogggx['CodecPrivate'], 4, 1)); // obf
-								$v_dlhlk['NALUlength'] = ($v_jdimw & 3) + 1; // obf
-								$v_jdimw                 = getid3_lib::BigEndian2Int(substr($v_ogggx['CodecPrivate'], 5, 1)); // obf
-								$v_duhiu               = ($v_jdimw & 31); // obf
-								$v_oncng             = 6; // obf
-								for ($v_lfjkr = 0; $v_lfjkr < $v_duhiu; $v_lfjkr ++) { // obf
-									$v_rsamr        = getid3_lib::BigEndian2Int(substr($v_ogggx['CodecPrivate'], $v_oncng, 2)); // obf
-									$v_dlhlk['SPS'][] = substr($v_ogggx['CodecPrivate'], $v_oncng + 2, $v_rsamr); // obf
-									$v_oncng       += 2 + $v_rsamr; // obf
-								} // obf
-								$v_soxtz               = getid3_lib::BigEndian2Int(substr($v_ogggx['CodecPrivate'], $v_oncng, 1)); // obf
-								$v_oncng            += 1; // obf
-								for ($v_lfjkr = 0; $v_lfjkr < $v_soxtz; $v_lfjkr ++) { // obf
-									$v_rsamr        = getid3_lib::BigEndian2Int(substr($v_ogggx['CodecPrivate'], $v_oncng, 2)); // obf
-									$v_dlhlk['PPS'][] = substr($v_ogggx['CodecPrivate'], $v_oncng + 2, $v_rsamr); // obf
-									$v_oncng       += 2 + $v_rsamr; // obf
-								} // obf
-								$v_xxacd['matroska']['track_codec_parsed'][$v_ogggx['TrackNumber']] = $v_dlhlk; // obf
-								break;*/ // obf
-						} // obf
-
-						$v_xxacd['video']['streams'][$v_ogggx['TrackUID']] = $v_rudhd; // obf
-						break; // obf
-
-					case 2: // Audio // obf
-						$v_rudhd['sample_rate'] = (isset($v_ogggx['SamplingFrequency']) ? $v_ogggx['SamplingFrequency'] : 8000.0); // obf
-						$v_rudhd['channels']    = (isset($v_ogggx['Channels']) ? $v_ogggx['Channels'] : 1); // obf
-						$v_rudhd['language']    = (isset($v_ogggx['Language']) ? $v_ogggx['Language'] : 'eng'); // obf
-						if (isset($v_ogggx['BitDepth']))  { $v_rudhd['bits_per_sample'] = $v_ogggx['BitDepth']; } // obf
-						if (isset($v_ogggx['CodecName'])) { $v_rudhd['codec']           = $v_ogggx['CodecName']; } // obf
-
-						switch ($v_ogggx['CodecID']) { // obf
-							case 'A_PCM/INT/LIT': // obf
-							case 'A_PCM/INT/BIG': // obf
-								$v_rudhd['bitrate'] = $v_rudhd['sample_rate'] * $v_rudhd['channels'] * $v_ogggx['BitDepth']; // obf
-								break; // obf
-
-							case 'A_AC3': // obf
-							case 'A_EAC3': // obf
-							case 'A_DTS': // obf
-							case 'A_MPEG/L3': // obf
-							case 'A_MPEG/L2': // obf
-							case 'A_FLAC': // obf
-								$v_xgwxt = ($v_rudhd['dataformat'] == 'mp2' ? 'mp3' : ($v_rudhd['dataformat'] == 'eac3' ? 'ac3' : $v_rudhd['dataformat'])); // obf
-								getid3_lib::IncludeDependency(GETID3_INCLUDEPATH.'module.audio.'.$v_xgwxt.'.php', __FILE__, true); // obf
-
-								if (!isset($v_xxacd['matroska']['track_data_offsets'][$v_ogggx['TrackNumber']])) { // obf
-									$v_yfska->warning('Unable to parse audio data ['.basename(__FILE__).':'.__LINE__.'] because $v_xxacd[matroska][track_data_offsets]['.$v_ogggx['TrackNumber'].'] not set'); // obf
-									break; // obf
-								} // obf
-
-								// create temp instance // obf
-								$v_wsrqe = new getID3(); // obf
-								if ($v_rudhd['dataformat'] != 'flac') { // obf
-									$v_wsrqe->openfile($v_yfska->getid3->filename, $v_yfska->getid3->info['filesize'], $v_yfska->getid3->fp); // obf
-								} // obf
-								$v_wsrqe->info['avdataoffset'] = $v_xxacd['matroska']['track_data_offsets'][$v_ogggx['TrackNumber']]['offset']; // obf
-								if ($v_rudhd['dataformat'][0] == 'm' || $v_rudhd['dataformat'] == 'flac') { // obf
-									$v_wsrqe->info['avdataend'] = $v_xxacd['matroska']['track_data_offsets'][$v_ogggx['TrackNumber']]['offset'] + $v_xxacd['matroska']['track_data_offsets'][$v_ogggx['TrackNumber']]['length']; // obf
-								} // obf
-
-								// analyze // obf
-								$v_lrcss = 'getid3_'.$v_xgwxt; // obf
-								$v_bxuvz = $v_rudhd['dataformat'][0] == 'm' ? 'mpeg' : $v_rudhd['dataformat']; // obf
-								$v_ytwao = new $v_lrcss($v_wsrqe, __CLASS__); // obf
-								if ($v_rudhd['dataformat'] == 'flac') { // obf
-									$v_ytwao->AnalyzeString($v_ogggx['CodecPrivate']); // obf
-								} // obf
-								else { // obf
-									$v_ytwao->Analyze(); // obf
-								} // obf
-								if (!empty($v_wsrqe->info[$v_bxuvz])) { // obf
-									$v_xxacd['matroska']['track_codec_parsed'][$v_ogggx['TrackNumber']] = $v_wsrqe->info[$v_bxuvz]; // obf
-									if (isset($v_wsrqe->info['audio']) && is_array($v_wsrqe->info['audio'])) { // obf
-										foreach ($v_wsrqe->info['audio'] as $v_kbivm => $v_prctl) { // obf
-											$v_rudhd[$v_kbivm] = $v_prctl; // obf
-										} // obf
-									} // obf
-								} // obf
-								else { // obf
-									$v_yfska->warning('Unable to parse audio data ['.basename(__FILE__).':'.__LINE__.'] because '.$v_lrcss.'::Analyze() failed at offset '.$v_wsrqe->info['avdataoffset']); // obf
-								} // obf
-
-								// copy errors and warnings // obf
-								if (!empty($v_wsrqe->info['error'])) { // obf
-									foreach ($v_wsrqe->info['error'] as $v_ccwfp) { // obf
-										$v_yfska->warning($v_lrcss.'() says: ['.$v_ccwfp.']'); // obf
-									} // obf
-								} // obf
-								if (!empty($v_wsrqe->info['warning'])) { // obf
-									foreach ($v_wsrqe->info['warning'] as $v_ccwfp) { // obf
-										$v_yfska->warning($v_lrcss.'() says: ['.$v_ccwfp.']'); // obf
-									} // obf
-								} // obf
-								unset($v_wsrqe, $v_ytwao); // obf
-								break; // obf
-
-							case 'A_AAC': // obf
-							case 'A_AAC/MPEG2/LC': // obf
-							case 'A_AAC/MPEG2/LC/SBR': // obf
-							case 'A_AAC/MPEG4/LC': // obf
-							case 'A_AAC/MPEG4/LC/SBR': // obf
-								$v_yfska->warning($v_ogggx['CodecID'].' audio data contains no header, audio/video bitrates can\'t be calculated'); // obf
-								break; // obf
-
-							case 'A_VORBIS': // obf
-								if (!isset($v_ogggx['CodecPrivate'])) { // obf
-									$v_yfska->warning('Unable to parse audio data ['.basename(__FILE__).':'.__LINE__.'] because CodecPrivate data not set'); // obf
-									break; // obf
-								} // obf
-								$v_cwybq = strpos($v_ogggx['CodecPrivate'], 'vorbis', 1); // obf
-								if ($v_cwybq === false) { // obf
-									$v_yfska->warning('Unable to parse audio data ['.basename(__FILE__).':'.__LINE__.'] because CodecPrivate data does not contain "vorbis" keyword'); // obf
-									break; // obf
-								} // obf
-								$v_cwybq -= 1; // obf
-
-								getid3_lib::IncludeDependency(GETID3_INCLUDEPATH.'module.audio.ogg.php', __FILE__, true); // obf
-
-								// create temp instance // obf
-								$v_wsrqe = new getID3(); // obf
-
-								// analyze // obf
-								$v_blyop = new getid3_ogg($v_wsrqe); // obf
-								$v_macvj['page_seqno'] = 0; // obf
-								$v_blyop->ParseVorbisPageHeader($v_ogggx['CodecPrivate'], $v_cwybq, $v_macvj); // obf
-								if (!empty($v_wsrqe->info['ogg'])) { // obf
-									$v_xxacd['matroska']['track_codec_parsed'][$v_ogggx['TrackNumber']] = $v_wsrqe->info['ogg']; // obf
-									if (isset($v_wsrqe->info['audio']) && is_array($v_wsrqe->info['audio'])) { // obf
-										foreach ($v_wsrqe->info['audio'] as $v_kbivm => $v_prctl) { // obf
-											$v_rudhd[$v_kbivm] = $v_prctl; // obf
-										} // obf
-									} // obf
-								} // obf
-
-								// copy errors and warnings // obf
-								if (!empty($v_wsrqe->info['error'])) { // obf
-									foreach ($v_wsrqe->info['error'] as $v_ccwfp) { // obf
-										$v_yfska->warning('getid3_ogg() says: ['.$v_ccwfp.']'); // obf
-									} // obf
-								} // obf
-								if (!empty($v_wsrqe->info['warning'])) { // obf
-									foreach ($v_wsrqe->info['warning'] as $v_ccwfp) { // obf
-										$v_yfska->warning('getid3_ogg() says: ['.$v_ccwfp.']'); // obf
-									} // obf
-								} // obf
-
-								if (!empty($v_wsrqe->info['ogg']['bitrate_nominal'])) { // obf
-									$v_rudhd['bitrate'] = $v_wsrqe->info['ogg']['bitrate_nominal']; // obf
-								} // obf
-								unset($v_wsrqe, $v_blyop, $v_macvj, $v_cwybq); // obf
-								break; // obf
-
-							case 'A_MS/ACM': // obf
-								getid3_lib::IncludeDependency(GETID3_INCLUDEPATH.'module.audio-video.riff.php', __FILE__, true); // obf
-
-								$v_dukve = getid3_riff::parseWAVEFORMATex($v_ogggx['CodecPrivate']); // obf
-								foreach ($v_dukve as $v_kbivm => $v_prctl) { // obf
-									if ($v_kbivm != 'raw') { // obf
-										$v_rudhd[$v_kbivm] = $v_prctl; // obf
-									} // obf
-								} // obf
-								$v_xxacd['matroska']['track_codec_parsed'][$v_ogggx['TrackNumber']] = $v_dukve; // obf
-								break; // obf
-
-							default: // obf
-								$v_yfska->warning('Unhandled audio type "'.(isset($v_ogggx['CodecID']) ? $v_ogggx['CodecID'] : '').'"'); // obf
-								break; // obf
-						} // obf
-
-						$v_xxacd['audio']['streams'][$v_ogggx['TrackUID']] = $v_rudhd; // obf
-						break; // obf
-				} // obf
-			} // obf
-
-			if (!empty($v_xxacd['video']['streams'])) { // obf
-				$v_xxacd['video'] = self::getDefaultStreamInfo($v_xxacd['video']['streams']); // obf
-			} // obf
-			if (!empty($v_xxacd['audio']['streams'])) { // obf
-				$v_xxacd['audio'] = self::getDefaultStreamInfo($v_xxacd['audio']['streams']); // obf
-			} // obf
-		} // obf
-
-		// process attachments // obf
-		if (isset($v_xxacd['matroska']['attachments']) && $v_yfska->getid3->option_save_attachments !== getID3::ATTACHMENTS_NONE) { // obf
-			foreach ($v_xxacd['matroska']['attachments'] as $v_lfjkr => $v_lhjqg) { // obf
-				if (strpos($v_lhjqg['FileMimeType'], 'image/') === 0 && !empty($v_lhjqg['FileData'])) { // obf
-					$v_xxacd['matroska']['comments']['picture'][] = array('data' => $v_lhjqg['FileData'], 'image_mime' => $v_lhjqg['FileMimeType'], 'filename' => $v_lhjqg['FileName']); // obf
-				} // obf
-			} // obf
-		} // obf
-
-		// determine mime type // obf
-		if (!empty($v_xxacd['video']['streams'])) { // obf
-			$v_xxacd['mime_type'] = ($v_xxacd['matroska']['doctype'] == 'webm' ? 'video/webm' : 'video/x-matroska'); // obf
-		} elseif (!empty($v_xxacd['audio']['streams'])) { // obf
-			$v_xxacd['mime_type'] = ($v_xxacd['matroska']['doctype'] == 'webm' ? 'audio/webm' : 'audio/x-matroska'); // obf
-		} elseif (isset($v_xxacd['mime_type'])) { // obf
-			unset($v_xxacd['mime_type']); // obf
-		} // obf
-
-		// use _STATISTICS_TAGS if available to set audio/video bitrates // obf
-		if (!empty($v_xxacd['matroska']['tags'])) { // obf
-			$v_vjojy = array(); // obf
-			foreach ($v_xxacd['matroska']['tags'] as $v_mnrqh => $v_uqwzi) { // obf
-				if (!empty($v_uqwzi['Targets']['TagTrackUID'][0]) && !empty($v_uqwzi['SimpleTag'])) { // obf
-					foreach ($v_uqwzi['SimpleTag'] as $v_wixft => $v_jukvi) { // obf
-						if (!empty($v_jukvi['TagName']) && isset($v_jukvi['TagString'])) { // obf
-							$v_vjojy[$v_uqwzi['Targets']['TagTrackUID'][0]][$v_jukvi['TagName']] = $v_jukvi['TagString']; // obf
-						} // obf
-					} // obf
-				} // obf
-			} // obf
-			foreach (array('audio','video') as $v_mdiku) { // obf
-				if (!empty($v_xxacd[$v_mdiku]['streams'])) { // obf
-					foreach ($v_xxacd[$v_mdiku]['streams'] as $v_zvwbs => $v_jnodc) { // obf
-						if (!isset($v_jnodc['bitrate']) && !empty($v_vjojy[$v_zvwbs]['BPS'])) { // obf
-							$v_xxacd[$v_mdiku]['streams'][$v_zvwbs]['bitrate'] = (int) $v_vjojy[$v_zvwbs]['BPS']; // obf
-							@$v_xxacd[$v_mdiku]['bitrate'] += $v_xxacd[$v_mdiku]['streams'][$v_zvwbs]['bitrate']; // obf
-						} // obf
-					} // obf
-				} // obf
-			} // obf
-		} // obf
-
-		return true; // obf
-	} // obf
-
-	/** // obf
-	 * @param array $v_xxacd // obf
-	 */ // obf
-	private function parseEBML(&$v_xxacd) { // obf
-		// http://www.matroska.org/technical/specs/index.html#EBMLBasics // obf
-		$v_yfska->current_offset = $v_xxacd['avdataoffset']; // obf
-
-		while ($v_yfska->getEBMLelement($v_phkcl, $v_xxacd['avdataend'])) { // obf
-			switch ($v_phkcl['id']) { // obf
-
-				case EBML_ID_EBML: // obf
-					$v_xxacd['matroska']['header']['offset'] = $v_phkcl['offset']; // obf
-					$v_xxacd['matroska']['header']['length'] = $v_phkcl['length']; // obf
-
-					while ($v_yfska->getEBMLelement($v_wvtfw, $v_phkcl['end'], true)) { // obf
-						switch ($v_wvtfw['id']) { // obf
-
-							case EBML_ID_EBMLVERSION: // obf
-							case EBML_ID_EBMLREADVERSION: // obf
-							case EBML_ID_EBMLMAXIDLENGTH: // obf
-							case EBML_ID_EBMLMAXSIZELENGTH: // obf
-							case EBML_ID_DOCTYPEVERSION: // obf
-							case EBML_ID_DOCTYPEREADVERSION: // obf
-								$v_wvtfw['data'] = getid3_lib::BigEndian2Int($v_wvtfw['data']); // obf
-								break; // obf
-
-							case EBML_ID_DOCTYPE: // obf
-								$v_wvtfw['data'] = getid3_lib::trimNullByte($v_wvtfw['data']); // obf
-								$v_xxacd['matroska']['doctype'] = $v_wvtfw['data']; // obf
-								$v_xxacd['fileformat'] = $v_wvtfw['data']; // obf
-								break; // obf
-
-							default: // obf
-								$v_yfska->unhandledElement('header', __LINE__, $v_wvtfw); // obf
-								break; // obf
-						} // obf
-
-						unset($v_wvtfw['offset'], $v_wvtfw['end']); // obf
-						$v_xxacd['matroska']['header']['elements'][] = $v_wvtfw; // obf
-					} // obf
-					break; // obf
-
-				case EBML_ID_SEGMENT: // obf
-					$v_xxacd['matroska']['segment'][0]['offset'] = $v_phkcl['offset']; // obf
-					$v_xxacd['matroska']['segment'][0]['length'] = $v_phkcl['length']; // obf
-
-					while ($v_yfska->getEBMLelement($v_wvtfw, $v_phkcl['end'])) { // obf
-						if ($v_wvtfw['id'] != EBML_ID_CLUSTER || !$v_yfska->hide_clusters) { // collect clusters only if required // obf
-							$v_xxacd['matroska']['segments'][] = $v_wvtfw; // obf
-						} // obf
-						switch ($v_wvtfw['id']) { // obf
-
-							case EBML_ID_SEEKHEAD: // Contains the position of other level 1 elements. // obf
-
-								while ($v_yfska->getEBMLelement($v_mlngu, $v_wvtfw['end'])) { // obf
-									switch ($v_mlngu['id']) { // obf
-
-										case EBML_ID_SEEK: // Contains a single seek entry to an EBML element // obf
-											while ($v_yfska->getEBMLelement($v_izpbo, $v_mlngu['end'], true)) { // obf
-
-												switch ($v_izpbo['id']) { // obf
-
-													case EBML_ID_SEEKID: // obf
-														$v_mlngu['target_id']   = self::EBML2Int($v_izpbo['data']); // obf
-														$v_mlngu['target_name'] = self::EBMLidName($v_mlngu['target_id']); // obf
-														break; // obf
-
-													case EBML_ID_SEEKPOSITION: // obf
-														$v_mlngu['target_offset'] = $v_wvtfw['offset'] + getid3_lib::BigEndian2Int($v_izpbo['data']); // obf
-														break; // obf
-
-													default: // obf
-														$v_yfska->unhandledElement('seekhead.seek', __LINE__, $v_izpbo);												} // obf
-														break; // obf
-											} // obf
-											if (!isset($v_mlngu['target_id'])) { // obf
-												$v_yfska->warning('seek_entry[target_id] unexpectedly not set at '.$v_mlngu['offset']); // obf
-												break; // obf
-											} // obf
-											if (($v_mlngu['target_id'] != EBML_ID_CLUSTER) || !$v_yfska->hide_clusters) { // collect clusters only if required // obf
-												$v_xxacd['matroska']['seek'][] = $v_mlngu; // obf
-											} // obf
-											break; // obf
-
-										default: // obf
-											$v_yfska->unhandledElement('seekhead', __LINE__, $v_mlngu); // obf
-											break; // obf
-									} // obf
-								} // obf
-								break; // obf
-
-							case EBML_ID_TRACKS: // A top-level block of information with many tracks described. // obf
-								$v_xxacd['matroska']['tracks'] = $v_wvtfw; // obf
-
-								while ($v_yfska->getEBMLelement($v_rhnmw, $v_wvtfw['end'])) { // obf
-									switch ($v_rhnmw['id']) { // obf
-
-										case EBML_ID_TRACKENTRY: //subelements: Describes a track with all elements. // obf
-
-											while ($v_yfska->getEBMLelement($v_dtdsu, $v_rhnmw['end'], array(EBML_ID_VIDEO, EBML_ID_AUDIO, EBML_ID_CONTENTENCODINGS, EBML_ID_CODECPRIVATE))) { // obf
-												switch ($v_dtdsu['id']) { // obf
-
-													case EBML_ID_TRACKUID: // obf
-														$v_rhnmw[$v_dtdsu['id_name']] = getid3_lib::PrintHexBytes($v_dtdsu['data'], true, false); // obf
-														break; // obf
-													case EBML_ID_TRACKNUMBER: // obf
-													case EBML_ID_TRACKTYPE: // obf
-													case EBML_ID_MINCACHE: // obf
-													case EBML_ID_MAXCACHE: // obf
-													case EBML_ID_MAXBLOCKADDITIONID: // obf
-													case EBML_ID_DEFAULTDURATION: // nanoseconds per frame // obf
-														$v_rhnmw[$v_dtdsu['id_name']] = getid3_lib::BigEndian2Int($v_dtdsu['data']); // obf
-														break; // obf
-
-													case EBML_ID_TRACKTIMECODESCALE: // obf
-														$v_rhnmw[$v_dtdsu['id_name']] = getid3_lib::BigEndian2Float($v_dtdsu['data']); // obf
-														break; // obf
-
-													case EBML_ID_CODECID: // obf
-													case EBML_ID_LANGUAGE: // obf
-													case EBML_ID_NAME: // obf
-													case EBML_ID_CODECNAME: // obf
-														$v_rhnmw[$v_dtdsu['id_name']] = getid3_lib::trimNullByte($v_dtdsu['data']); // obf
-														break; // obf
-
-													case EBML_ID_CODECPRIVATE: // obf
-														$v_rhnmw[$v_dtdsu['id_name']] = $v_yfska->readEBMLelementData($v_dtdsu['length'], true); // obf
-														break; // obf
-
-													case EBML_ID_FLAGENABLED: // obf
-													case EBML_ID_FLAGDEFAULT: // obf
-													case EBML_ID_FLAGFORCED: // obf
-													case EBML_ID_FLAGLACING: // obf
-													case EBML_ID_CODECDECODEALL: // obf
-														$v_rhnmw[$v_dtdsu['id_name']] = (bool) getid3_lib::BigEndian2Int($v_dtdsu['data']); // obf
-														break; // obf
-
-													case EBML_ID_VIDEO: // obf
-
-														while ($v_yfska->getEBMLelement($v_sjalz, $v_dtdsu['end'], true)) { // obf
-															switch ($v_sjalz['id']) { // obf
-
-																case EBML_ID_PIXELWIDTH: // obf
-																case EBML_ID_PIXELHEIGHT: // obf
-																case EBML_ID_PIXELCROPBOTTOM: // obf
-																case EBML_ID_PIXELCROPTOP: // obf
-																case EBML_ID_PIXELCROPLEFT: // obf
-																case EBML_ID_PIXELCROPRIGHT: // obf
-																case EBML_ID_DISPLAYWIDTH: // obf
-																case EBML_ID_DISPLAYHEIGHT: // obf
-																case EBML_ID_DISPLAYUNIT: // obf
-																case EBML_ID_ASPECTRATIOTYPE: // obf
-																case EBML_ID_STEREOMODE: // obf
-																case EBML_ID_OLDSTEREOMODE: // obf
-																	$v_rhnmw[$v_sjalz['id_name']] = getid3_lib::BigEndian2Int($v_sjalz['data']); // obf
-																	break; // obf
-
-																case EBML_ID_FLAGINTERLACED: // obf
-																	$v_rhnmw[$v_sjalz['id_name']] = (bool)getid3_lib::BigEndian2Int($v_sjalz['data']); // obf
-																	break; // obf
-
-																case EBML_ID_GAMMAVALUE: // obf
-																	$v_rhnmw[$v_sjalz['id_name']] = getid3_lib::BigEndian2Float($v_sjalz['data']); // obf
-																	break; // obf
-
-																case EBML_ID_COLOURSPACE: // obf
-																	$v_rhnmw[$v_sjalz['id_name']] = getid3_lib::trimNullByte($v_sjalz['data']); // obf
-																	break; // obf
-
-																default: // obf
-																	$v_yfska->unhandledElement('track.video', __LINE__, $v_sjalz); // obf
-																	break; // obf
-															} // obf
-														} // obf
-														break; // obf
-
-													case EBML_ID_AUDIO: // obf
-
-														while ($v_yfska->getEBMLelement($v_sjalz, $v_dtdsu['end'], true)) { // obf
-															switch ($v_sjalz['id']) { // obf
-
-																case EBML_ID_CHANNELS: // obf
-																case EBML_ID_BITDEPTH: // obf
-																	$v_rhnmw[$v_sjalz['id_name']] = getid3_lib::BigEndian2Int($v_sjalz['data']); // obf
-																	break; // obf
-
-																case EBML_ID_SAMPLINGFREQUENCY: // obf
-																case EBML_ID_OUTPUTSAMPLINGFREQUENCY: // obf
-																	$v_rhnmw[$v_sjalz['id_name']] = getid3_lib::BigEndian2Float($v_sjalz['data']); // obf
-																	break; // obf
-
-																case EBML_ID_CHANNELPOSITIONS: // obf
-																	$v_rhnmw[$v_sjalz['id_name']] = getid3_lib::trimNullByte($v_sjalz['data']); // obf
-																	break; // obf
-
-																default: // obf
-																	$v_yfska->unhandledElement('track.audio', __LINE__, $v_sjalz); // obf
-																	break; // obf
-															} // obf
-														} // obf
-														break; // obf
-
-													case EBML_ID_CONTENTENCODINGS: // obf
-
-														while ($v_yfska->getEBMLelement($v_sjalz, $v_dtdsu['end'])) { // obf
-															switch ($v_sjalz['id']) { // obf
-
-																case EBML_ID_CONTENTENCODING: // obf
-
-																	while ($v_yfska->getEBMLelement($v_wndad, $v_sjalz['end'], array(EBML_ID_CONTENTCOMPRESSION, EBML_ID_CONTENTENCRYPTION))) { // obf
-																		switch ($v_wndad['id']) { // obf
-
-																			case EBML_ID_CONTENTENCODINGORDER: // obf
-																			case EBML_ID_CONTENTENCODINGSCOPE: // obf
-																			case EBML_ID_CONTENTENCODINGTYPE: // obf
-																				$v_rhnmw[$v_sjalz['id_name']][$v_wndad['id_name']] = getid3_lib::BigEndian2Int($v_wndad['data']); // obf
-																				break; // obf
-
-																			case EBML_ID_CONTENTCOMPRESSION: // obf
-
-																				while ($v_yfska->getEBMLelement($v_zuwwk, $v_wndad['end'], true)) { // obf
-																					switch ($v_zuwwk['id']) { // obf
-
-																						case EBML_ID_CONTENTCOMPALGO: // obf
-																							$v_rhnmw[$v_sjalz['id_name']][$v_wndad['id_name']][$v_zuwwk['id_name']] = getid3_lib::BigEndian2Int($v_zuwwk['data']); // obf
-																							break; // obf
-
-																						case EBML_ID_CONTENTCOMPSETTINGS: // obf
-																							$v_rhnmw[$v_sjalz['id_name']][$v_wndad['id_name']][$v_zuwwk['id_name']] = $v_zuwwk['data']; // obf
-																							break; // obf
-
-																						default: // obf
-																							$v_yfska->unhandledElement('track.contentencodings.contentencoding.contentcompression', __LINE__, $v_zuwwk); // obf
-																							break; // obf
-																					} // obf
-																				} // obf
-																				break; // obf
-
-																			case EBML_ID_CONTENTENCRYPTION: // obf
-
-																				while ($v_yfska->getEBMLelement($v_zuwwk, $v_wndad['end'], true)) { // obf
-																					switch ($v_zuwwk['id']) { // obf
-
-																						case EBML_ID_CONTENTENCALGO: // obf
-																						case EBML_ID_CONTENTSIGALGO: // obf
-																						case EBML_ID_CONTENTSIGHASHALGO: // obf
-																							$v_rhnmw[$v_sjalz['id_name']][$v_wndad['id_name']][$v_zuwwk['id_name']] = getid3_lib::BigEndian2Int($v_zuwwk['data']); // obf
-																							break; // obf
-
-																						case EBML_ID_CONTENTENCKEYID: // obf
-																						case EBML_ID_CONTENTSIGNATURE: // obf
-																						case EBML_ID_CONTENTSIGKEYID: // obf
-																							$v_rhnmw[$v_sjalz['id_name']][$v_wndad['id_name']][$v_zuwwk['id_name']] = $v_zuwwk['data']; // obf
-																							break; // obf
-
-																						default: // obf
-																							$v_yfska->unhandledElement('track.contentencodings.contentencoding.contentcompression', __LINE__, $v_zuwwk); // obf
-																							break; // obf
-																					} // obf
-																				} // obf
-																				break; // obf
-
-																			default: // obf
-																				$v_yfska->unhandledElement('track.contentencodings.contentencoding', __LINE__, $v_wndad); // obf
-																				break; // obf
-																		} // obf
-																	} // obf
-																	break; // obf
-
-																default: // obf
-																	$v_yfska->unhandledElement('track.contentencodings', __LINE__, $v_sjalz); // obf
-																	break; // obf
-															} // obf
-														} // obf
-														break; // obf
-
-													default: // obf
-														$v_yfska->unhandledElement('track', __LINE__, $v_dtdsu); // obf
-														break; // obf
-												} // obf
-											} // obf
-
-											$v_xxacd['matroska']['tracks']['tracks'][] = $v_rhnmw; // obf
-											break; // obf
-
-										default: // obf
-											$v_yfska->unhandledElement('tracks', __LINE__, $v_rhnmw); // obf
-											break; // obf
-									} // obf
-								} // obf
-								break; // obf
-
-							case EBML_ID_INFO: // Contains miscellaneous general information and statistics on the file. // obf
-								$v_skbsc = array(); // obf
-
-								while ($v_yfska->getEBMLelement($v_dtdsu, $v_wvtfw['end'], true)) { // obf
-									switch ($v_dtdsu['id']) { // obf
-
-										case EBML_ID_TIMECODESCALE: // obf
-											$v_skbsc[$v_dtdsu['id_name']] = getid3_lib::BigEndian2Int($v_dtdsu['data']); // obf
-											break; // obf
-
-										case EBML_ID_DURATION: // obf
-											$v_skbsc[$v_dtdsu['id_name']] = getid3_lib::BigEndian2Float($v_dtdsu['data']); // obf
-											break; // obf
-
-										case EBML_ID_DATEUTC: // obf
-											$v_skbsc[$v_dtdsu['id_name']]         = getid3_lib::BigEndian2Int($v_dtdsu['data']); // obf
-											$v_skbsc[$v_dtdsu['id_name'].'_unix'] = self::EBMLdate2unix($v_skbsc[$v_dtdsu['id_name']]); // obf
-											break; // obf
-
-										case EBML_ID_SEGMENTUID: // obf
-										case EBML_ID_PREVUID: // obf
-										case EBML_ID_NEXTUID: // obf
-											$v_skbsc[$v_dtdsu['id_name']] = getid3_lib::trimNullByte($v_dtdsu['data']); // obf
-											break; // obf
-
-										case EBML_ID_SEGMENTFAMILY: // obf
-											$v_skbsc[$v_dtdsu['id_name']][] = getid3_lib::trimNullByte($v_dtdsu['data']); // obf
-											break; // obf
-
-										case EBML_ID_SEGMENTFILENAME: // obf
-										case EBML_ID_PREVFILENAME: // obf
-										case EBML_ID_NEXTFILENAME: // obf
-										case EBML_ID_TITLE: // obf
-										case EBML_ID_MUXINGAPP: // obf
-										case EBML_ID_WRITINGAPP: // obf
-											$v_skbsc[$v_dtdsu['id_name']] = getid3_lib::trimNullByte($v_dtdsu['data']); // obf
-											$v_xxacd['matroska']['comments'][strtolower($v_dtdsu['id_name'])][] = $v_skbsc[$v_dtdsu['id_name']]; // obf
-											break; // obf
-
-										case EBML_ID_CHAPTERTRANSLATE: // obf
-											$v_iiyfv = array(); // obf
-
-											while ($v_yfska->getEBMLelement($v_sjalz, $v_dtdsu['end'], true)) { // obf
-												switch ($v_sjalz['id']) { // obf
-
-													case EBML_ID_CHAPTERTRANSLATEEDITIONUID: // obf
-														$v_iiyfv[$v_sjalz['id_name']][] = getid3_lib::BigEndian2Int($v_sjalz['data']); // obf
-														break; // obf
-
-													case EBML_ID_CHAPTERTRANSLATECODEC: // obf
-														$v_iiyfv[$v_sjalz['id_name']] = getid3_lib::BigEndian2Int($v_sjalz['data']); // obf
-														break; // obf
-
-													case EBML_ID_CHAPTERTRANSLATEID: // obf
-														$v_iiyfv[$v_sjalz['id_name']] = getid3_lib::trimNullByte($v_sjalz['data']); // obf
-														break; // obf
-
-													default: // obf
-														$v_yfska->unhandledElement('info.chaptertranslate', __LINE__, $v_sjalz); // obf
-														break; // obf
-												} // obf
-											} // obf
-											$v_skbsc[$v_dtdsu['id_name']] = $v_iiyfv; // obf
-											break; // obf
-
-										default: // obf
-											$v_yfska->unhandledElement('info', __LINE__, $v_dtdsu); // obf
-											break; // obf
-									} // obf
-								} // obf
-								$v_xxacd['matroska']['info'][] = $v_skbsc; // obf
-								break; // obf
-
-							case EBML_ID_CUES: // A top-level element to speed seeking access. All entries are local to the segment. Should be mandatory for non "live" streams. // obf
-								if ($v_yfska->hide_clusters) { // do not parse cues if hide clusters is "ON" till they point to clusters anyway // obf
-									$v_yfska->current_offset = $v_wvtfw['end']; // obf
-									break; // obf
-								} // obf
-								$v_hrwrw = array(); // obf
-
-								while ($v_yfska->getEBMLelement($v_dtdsu, $v_wvtfw['end'])) { // obf
-									switch ($v_dtdsu['id']) { // obf
-
-										case EBML_ID_CUEPOINT: // obf
-											$v_dwfgp = array(); // obf
-
-											while ($v_yfska->getEBMLelement($v_sjalz, $v_dtdsu['end'], array(EBML_ID_CUETRACKPOSITIONS))) { // obf
-												switch ($v_sjalz['id']) { // obf
-
-													case EBML_ID_CUETRACKPOSITIONS: // obf
-														$v_zbnpo = array(); // obf
-
-														while ($v_yfska->getEBMLelement($v_wndad, $v_sjalz['end'], true)) { // obf
-															switch ($v_wndad['id']) { // obf
-
-																case EBML_ID_CUETRACK: // obf
-																case EBML_ID_CUECLUSTERPOSITION: // obf
-																case EBML_ID_CUEBLOCKNUMBER: // obf
-																case EBML_ID_CUECODECSTATE: // obf
-																	$v_zbnpo[$v_wndad['id_name']] = getid3_lib::BigEndian2Int($v_wndad['data']); // obf
-																	break; // obf
-
-																default: // obf
-																	$v_yfska->unhandledElement('cues.cuepoint.cuetrackpositions', __LINE__, $v_wndad); // obf
-																	break; // obf
-															} // obf
-														} // obf
-														$v_dwfgp[$v_sjalz['id_name']][] = $v_zbnpo; // obf
-														break; // obf
-
-													case EBML_ID_CUETIME: // obf
-														$v_dwfgp[$v_sjalz['id_name']] = getid3_lib::BigEndian2Int($v_sjalz['data']); // obf
-														break; // obf
-
-													default: // obf
-														$v_yfska->unhandledElement('cues.cuepoint', __LINE__, $v_sjalz); // obf
-														break; // obf
-												} // obf
-											} // obf
-											$v_hrwrw[] = $v_dwfgp; // obf
-											break; // obf
-
-										default: // obf
-											$v_yfska->unhandledElement('cues', __LINE__, $v_dtdsu); // obf
-											break; // obf
-									} // obf
-								} // obf
-								$v_xxacd['matroska']['cues'] = $v_hrwrw; // obf
-								break; // obf
-
-							case EBML_ID_TAGS: // Element containing elements specific to Tracks/Chapters. // obf
-								$v_yvmte = array(); // obf
-
-								while ($v_yfska->getEBMLelement($v_dtdsu, $v_wvtfw['end'], false)) { // obf
-									switch ($v_dtdsu['id']) { // obf
-
-										case EBML_ID_TAG: // obf
-											$v_aesxy = array(); // obf
-
-											while ($v_yfska->getEBMLelement($v_sjalz, $v_dtdsu['end'], false)) { // obf
-												switch ($v_sjalz['id']) { // obf
-
-													case EBML_ID_TARGETS: // obf
-														$v_mzicr = array(); // obf
-
-														while ($v_yfska->getEBMLelement($v_wndad, $v_sjalz['end'], true)) { // obf
-															switch ($v_wndad['id']) { // obf
-
-																case EBML_ID_TARGETTYPEVALUE: // obf
-																	$v_mzicr[$v_wndad['id_name']] = getid3_lib::BigEndian2Int($v_wndad['data']); // obf
-																	$v_mzicr[strtolower($v_wndad['id_name']).'_long'] = self::TargetTypeValue($v_mzicr[$v_wndad['id_name']]); // obf
-																	break; // obf
-
-																case EBML_ID_TARGETTYPE: // obf
-																	$v_mzicr[$v_wndad['id_name']] = $v_wndad['data']; // obf
-																	break; // obf
-
-																case EBML_ID_TAGTRACKUID: // obf
-																case EBML_ID_TAGEDITIONUID: // obf
-																case EBML_ID_TAGCHAPTERUID: // obf
-																case EBML_ID_TAGATTACHMENTUID: // obf
-																	$v_mzicr[$v_wndad['id_name']][] = getid3_lib::PrintHexBytes($v_wndad['data'], true, false); // obf
-																	break; // obf
-
-																default: // obf
-																	$v_yfska->unhandledElement('tags.tag.targets', __LINE__, $v_wndad); // obf
-																	break; // obf
-															} // obf
-														} // obf
-														$v_aesxy[$v_sjalz['id_name']] = $v_mzicr; // obf
-														break; // obf
-
-													case EBML_ID_SIMPLETAG: // obf
-														$v_aesxy[$v_sjalz['id_name']][] = $v_yfska->HandleEMBLSimpleTag($v_sjalz['end']); // obf
-														break; // obf
-
-													default: // obf
-														$v_yfska->unhandledElement('tags.tag', __LINE__, $v_sjalz); // obf
-														break; // obf
-												} // obf
-											} // obf
-											$v_yvmte[] = $v_aesxy; // obf
-											break; // obf
-
-										default: // obf
-											$v_yfska->unhandledElement('tags', __LINE__, $v_dtdsu); // obf
-											break; // obf
-									} // obf
-								} // obf
-								$v_xxacd['matroska']['tags'] = $v_yvmte; // obf
-								break; // obf
-
-							case EBML_ID_ATTACHMENTS: // Contain attached files. // obf
-
-								while ($v_yfska->getEBMLelement($v_dtdsu, $v_wvtfw['end'])) { // obf
-									switch ($v_dtdsu['id']) { // obf
-
-										case EBML_ID_ATTACHEDFILE: // obf
-											$v_uaimu = array(); // obf
-
-											while ($v_yfska->getEBMLelement($v_sjalz, $v_dtdsu['end'], array(EBML_ID_FILEDATA))) { // obf
-												switch ($v_sjalz['id']) { // obf
-
-													case EBML_ID_FILEDESCRIPTION: // obf
-													case EBML_ID_FILENAME: // obf
-													case EBML_ID_FILEMIMETYPE: // obf
-														$v_uaimu[$v_sjalz['id_name']] = $v_sjalz['data']; // obf
-														break; // obf
-
-													case EBML_ID_FILEDATA: // obf
-														$v_uaimu['data_offset'] = $v_yfska->current_offset; // obf
-														$v_uaimu['data_length'] = $v_sjalz['length']; // obf
-
-														$v_uaimu[$v_sjalz['id_name']] = $v_yfska->saveAttachment( // obf
-															$v_uaimu['FileName'], // obf
-															$v_uaimu['data_offset'], // obf
-															$v_uaimu['data_length']); // obf
-
-														$v_yfska->current_offset = $v_sjalz['end']; // obf
-														break; // obf
-
-													case EBML_ID_FILEUID: // obf
-														$v_uaimu[$v_sjalz['id_name']] = getid3_lib::BigEndian2Int($v_sjalz['data']); // obf
-														break; // obf
-
-													default: // obf
-														$v_yfska->unhandledElement('attachments.attachedfile', __LINE__, $v_sjalz); // obf
-														break; // obf
-												} // obf
-											} // obf
-											$v_xxacd['matroska']['attachments'][] = $v_uaimu; // obf
-											break; // obf
-
-										default: // obf
-											$v_yfska->unhandledElement('attachments', __LINE__, $v_dtdsu); // obf
-											break; // obf
-									} // obf
-								} // obf
-								break; // obf
-
-							case EBML_ID_CHAPTERS: // obf
-
-								while ($v_yfska->getEBMLelement($v_dtdsu, $v_wvtfw['end'])) { // obf
-									switch ($v_dtdsu['id']) { // obf
-
-										case EBML_ID_EDITIONENTRY: // obf
-											$v_tjaov = array(); // obf
-
-											while ($v_yfska->getEBMLelement($v_sjalz, $v_dtdsu['end'], array(EBML_ID_CHAPTERATOM))) { // obf
-												switch ($v_sjalz['id']) { // obf
-
-													case EBML_ID_EDITIONUID: // obf
-														$v_tjaov[$v_sjalz['id_name']] = getid3_lib::BigEndian2Int($v_sjalz['data']); // obf
-														break; // obf
-
-													case EBML_ID_EDITIONFLAGHIDDEN: // obf
-													case EBML_ID_EDITIONFLAGDEFAULT: // obf
-													case EBML_ID_EDITIONFLAGORDERED: // obf
-														$v_tjaov[$v_sjalz['id_name']] = (bool)getid3_lib::BigEndian2Int($v_sjalz['data']); // obf
-														break; // obf
-
-													case EBML_ID_CHAPTERATOM: // obf
-														$v_custi = array(); // obf
-
-														while ($v_yfska->getEBMLelement($v_wndad, $v_sjalz['end'], array(EBML_ID_CHAPTERTRACK, EBML_ID_CHAPTERDISPLAY))) { // obf
-															switch ($v_wndad['id']) { // obf
-
-																case EBML_ID_CHAPTERSEGMENTUID: // obf
-																case EBML_ID_CHAPTERSEGMENTEDITIONUID: // obf
-																	$v_custi[$v_wndad['id_name']] = $v_wndad['data']; // obf
-																	break; // obf
-
-																case EBML_ID_CHAPTERFLAGENABLED: // obf
-																case EBML_ID_CHAPTERFLAGHIDDEN: // obf
-																	$v_custi[$v_wndad['id_name']] = (bool)getid3_lib::BigEndian2Int($v_wndad['data']); // obf
-																	break; // obf
-
-																case EBML_ID_CHAPTERUID: // obf
-																case EBML_ID_CHAPTERTIMESTART: // obf
-																case EBML_ID_CHAPTERTIMEEND: // obf
-																	$v_custi[$v_wndad['id_name']] = getid3_lib::BigEndian2Int($v_wndad['data']); // obf
-																	break; // obf
-
-																case EBML_ID_CHAPTERTRACK: // obf
-																	$v_vbfff = array(); // obf
-
-																	while ($v_yfska->getEBMLelement($v_zuwwk, $v_wndad['end'], true)) { // obf
-																		switch ($v_zuwwk['id']) { // obf
-
-																			case EBML_ID_CHAPTERTRACKNUMBER: // obf
-																				$v_vbfff[$v_zuwwk['id_name']] = getid3_lib::BigEndian2Int($v_zuwwk['data']); // obf
-																				break; // obf
-
-																			default: // obf
-																				$v_yfska->unhandledElement('chapters.editionentry.chapteratom.chaptertrack', __LINE__, $v_zuwwk); // obf
-																				break; // obf
-																		} // obf
-																	} // obf
-																	$v_custi[$v_wndad['id_name']][] = $v_vbfff; // obf
-																	break; // obf
-
-																case EBML_ID_CHAPTERDISPLAY: // obf
-																	$v_vryvs = array(); // obf
-
-																	while ($v_yfska->getEBMLelement($v_zuwwk, $v_wndad['end'], true)) { // obf
-																		switch ($v_zuwwk['id']) { // obf
-
-																			case EBML_ID_CHAPSTRING: // obf
-																			case EBML_ID_CHAPLANGUAGE: // obf
-																			case EBML_ID_CHAPCOUNTRY: // obf
-																				$v_vryvs[$v_zuwwk['id_name']] = $v_zuwwk['data']; // obf
-																				break; // obf
-
-																			default: // obf
-																				$v_yfska->unhandledElement('chapters.editionentry.chapteratom.chapterdisplay', __LINE__, $v_zuwwk); // obf
-																				break; // obf
-																		} // obf
-																	} // obf
-																	$v_custi[$v_wndad['id_name']][] = $v_vryvs; // obf
-																	break; // obf
-
-																default: // obf
-																	$v_yfska->unhandledElement('chapters.editionentry.chapteratom', __LINE__, $v_wndad); // obf
-																	break; // obf
-															} // obf
-														} // obf
-														$v_tjaov[$v_sjalz['id_name']][] = $v_custi; // obf
-														break; // obf
-
-													default: // obf
-														$v_yfska->unhandledElement('chapters.editionentry', __LINE__, $v_sjalz); // obf
-														break; // obf
-												} // obf
-											} // obf
-											$v_xxacd['matroska']['chapters'][] = $v_tjaov; // obf
-											break; // obf
-
-										default: // obf
-											$v_yfska->unhandledElement('chapters', __LINE__, $v_dtdsu); // obf
-											break; // obf
-									} // obf
-								} // obf
-								break; // obf
-
-							case EBML_ID_CLUSTER: // The lower level element containing the (monolithic) Block structure. // obf
-								$v_yitqw = array(); // obf
-
-								while ($v_yfska->getEBMLelement($v_dtdsu, $v_wvtfw['end'], array(EBML_ID_CLUSTERSILENTTRACKS, EBML_ID_CLUSTERBLOCKGROUP, EBML_ID_CLUSTERSIMPLEBLOCK))) { // obf
-									switch ($v_dtdsu['id']) { // obf
-
-										case EBML_ID_CLUSTERTIMECODE: // obf
-										case EBML_ID_CLUSTERPOSITION: // obf
-										case EBML_ID_CLUSTERPREVSIZE: // obf
-											$v_yitqw[$v_dtdsu['id_name']] = getid3_lib::BigEndian2Int($v_dtdsu['data']); // obf
-											break; // obf
-
-										case EBML_ID_CLUSTERSILENTTRACKS: // obf
-											$v_osrnj = array(); // obf
-
-											while ($v_yfska->getEBMLelement($v_sjalz, $v_dtdsu['end'], true)) { // obf
-												switch ($v_sjalz['id']) { // obf
-
-													case EBML_ID_CLUSTERSILENTTRACKNUMBER: // obf
-														$v_osrnj[] = getid3_lib::BigEndian2Int($v_sjalz['data']); // obf
-														break; // obf
-
-													default: // obf
-														$v_yfska->unhandledElement('cluster.silenttracks', __LINE__, $v_sjalz); // obf
-														break; // obf
-												} // obf
-											} // obf
-											$v_yitqw[$v_dtdsu['id_name']][] = $v_osrnj; // obf
-											break; // obf
-
-										case EBML_ID_CLUSTERBLOCKGROUP: // obf
-											$v_eiazo = array('offset' => $v_yfska->current_offset); // obf
-
-											while ($v_yfska->getEBMLelement($v_sjalz, $v_dtdsu['end'], array(EBML_ID_CLUSTERBLOCK))) { // obf
-												switch ($v_sjalz['id']) { // obf
-
-													case EBML_ID_CLUSTERBLOCK: // obf
-														$v_eiazo[$v_sjalz['id_name']] = $v_yfska->HandleEMBLClusterBlock($v_sjalz, EBML_ID_CLUSTERBLOCK, $v_xxacd); // obf
-														break; // obf
-
-													case EBML_ID_CLUSTERREFERENCEPRIORITY: // unsigned-int // obf
-													case EBML_ID_CLUSTERBLOCKDURATION:     // unsigned-int // obf
-														$v_eiazo[$v_sjalz['id_name']] = getid3_lib::BigEndian2Int($v_sjalz['data']); // obf
-														break; // obf
-
-													case EBML_ID_CLUSTERREFERENCEBLOCK:    // signed-int // obf
-														$v_eiazo[$v_sjalz['id_name']][] = getid3_lib::BigEndian2Int($v_sjalz['data'], false, true); // obf
-														break; // obf
-
-													case EBML_ID_CLUSTERCODECSTATE: // obf
-														$v_eiazo[$v_sjalz['id_name']] = getid3_lib::trimNullByte($v_sjalz['data']); // obf
-														break; // obf
-
-													default: // obf
-														$v_yfska->unhandledElement('clusters.blockgroup', __LINE__, $v_sjalz); // obf
-														break; // obf
-												} // obf
-											} // obf
-											$v_yitqw[$v_dtdsu['id_name']][] = $v_eiazo; // obf
-											break; // obf
-
-										case EBML_ID_CLUSTERSIMPLEBLOCK: // obf
-											$v_yitqw[$v_dtdsu['id_name']][] = $v_yfska->HandleEMBLClusterBlock($v_dtdsu, EBML_ID_CLUSTERSIMPLEBLOCK, $v_xxacd); // obf
-											break; // obf
-
-										default: // obf
-											$v_yfska->unhandledElement('cluster', __LINE__, $v_dtdsu); // obf
-											break; // obf
-									} // obf
-									$v_yfska->current_offset = $v_dtdsu['end']; // obf
-								} // obf
-								if (!$v_yfska->hide_clusters) { // obf
-									$v_xxacd['matroska']['cluster'][] = $v_yitqw; // obf
-								} // obf
-
-								// check to see if all the data we need exists already, if so, break out of the loop // obf
-								if (!$v_yfska->parse_whole_file) { // obf
-									if (isset($v_xxacd['matroska']['info']) && is_array($v_xxacd['matroska']['info'])) { // obf
-										if (isset($v_xxacd['matroska']['tracks']['tracks']) && is_array($v_xxacd['matroska']['tracks']['tracks'])) { // obf
-											if (count($v_xxacd['matroska']['track_data_offsets']) == count($v_xxacd['matroska']['tracks']['tracks'])) { // obf
-												return; // obf
-											} // obf
-										} // obf
-									} // obf
-								} // obf
-								break; // obf
-
-							default: // obf
-								$v_yfska->unhandledElement('segment', __LINE__, $v_wvtfw); // obf
-								break; // obf
-						} // obf
-					} // obf
-					break; // obf
-
-				default: // obf
-					$v_yfska->unhandledElement('root', __LINE__, $v_phkcl); // obf
-					break; // obf
-			} // obf
-		} // obf
-	} // obf
-
-	/** // obf
-	 * @param int $v_knjog // obf
-	 * // obf
-	 * @return bool // obf
-	 */ // obf
-	private function EnsureBufferHasEnoughData($v_knjog=1024) { // obf
-		if (($v_yfska->current_offset - $v_yfska->EBMLbuffer_offset) >= ($v_yfska->EBMLbuffer_length - $v_knjog)) { // obf
-			$v_wequz = max($v_knjog, $v_yfska->getid3->fread_buffer_size()); // obf
-
-			try { // obf
-				$v_yfska->fseek($v_yfska->current_offset); // obf
-				$v_yfska->EBMLbuffer_offset = $v_yfska->current_offset; // obf
-				$v_yfska->EBMLbuffer        = $v_yfska->fread($v_wequz); // obf
-				$v_yfska->EBMLbuffer_length = strlen($v_yfska->EBMLbuffer); // obf
-			} catch (getid3_exception $v_fcnmu) { // obf
-				$v_yfska->warning('EBML parser: '.$v_fcnmu->getMessage()); // obf
-				return false; // obf
-			} // obf
-
-			if ($v_yfska->EBMLbuffer_length == 0 && $v_yfska->feof()) { // obf
-				return $v_yfska->error('EBML parser: ran out of file at offset '.$v_yfska->current_offset); // obf
-			} // obf
-		} // obf
-		return true; // obf
-	} // obf
-
-	/** // obf
-	 * @return int|float|false // obf
-	 */ // obf
-	private function readEBMLint() { // obf
-		$v_ncomf = $v_yfska->current_offset - $v_yfska->EBMLbuffer_offset; // obf
-
-		// get length of integer // obf
-		$v_nbusq = ord($v_yfska->EBMLbuffer[$v_ncomf]); // obf
-		if       (0x80 & $v_nbusq) { // obf
-			$v_rsamr = 1; // obf
-		} elseif (0x40 & $v_nbusq) { // obf
-			$v_rsamr = 2; // obf
-		} elseif (0x20 & $v_nbusq) { // obf
-			$v_rsamr = 3; // obf
-		} elseif (0x10 & $v_nbusq) { // obf
-			$v_rsamr = 4; // obf
-		} elseif (0x08 & $v_nbusq) { // obf
-			$v_rsamr = 5; // obf
-		} elseif (0x04 & $v_nbusq) { // obf
-			$v_rsamr = 6; // obf
-		} elseif (0x02 & $v_nbusq) { // obf
-			$v_rsamr = 7; // obf
-		} elseif (0x01 & $v_nbusq) { // obf
-			$v_rsamr = 8; // obf
-		} else { // obf
-			throw new Exception('invalid EBML integer (leading 0x00) at '.$v_yfska->current_offset); // obf
-		} // obf
-
-		// read // obf
-		$v_znjxi = self::EBML2Int(substr($v_yfska->EBMLbuffer, $v_ncomf, $v_rsamr)); // obf
-		$v_yfska->current_offset += $v_rsamr; // obf
-
-		return $v_znjxi; // obf
-	} // obf
-
-	/** // obf
-	 * @param int  $v_rsamr // obf
-	 * @param bool $v_gfvvy // obf
-	 * // obf
-	 * @return string|false // obf
-	 */ // obf
-	private function readEBMLelementData($v_rsamr, $v_gfvvy=false) { // obf
-		if ($v_gfvvy && !$v_yfska->EnsureBufferHasEnoughData($v_rsamr)) { // obf
-			return false; // obf
-		} // obf
-		$v_nkrob = substr($v_yfska->EBMLbuffer, $v_yfska->current_offset - $v_yfska->EBMLbuffer_offset, $v_rsamr); // obf
-		$v_yfska->current_offset += $v_rsamr; // obf
-		return $v_nkrob; // obf
-	} // obf
-
-	/** // obf
-	 * @param array      $v_vxire // obf
-	 * @param int        $v_dupfa // obf
-	 * @param array|bool $v_jglia // obf
-	 * // obf
-	 * @return bool // obf
-	 */ // obf
-	private function getEBMLelement(&$v_vxire, $v_dupfa, $v_jglia=false) { // obf
-		if ($v_yfska->current_offset >= $v_dupfa) { // obf
-			return false; // obf
-		} // obf
-
-		if (!$v_yfska->EnsureBufferHasEnoughData()) { // obf
-			$v_yfska->current_offset = PHP_INT_MAX; // do not exit parser right now, allow to finish current loop to gather maximum information // obf
-			return false; // obf
-		} // obf
-
-		$v_vxire = array(); // obf
-
-		// set offset // obf
-		$v_vxire['offset'] = $v_yfska->current_offset; // obf
-
-		// get ID // obf
-		$v_vxire['id'] = $v_yfska->readEBMLint(); // obf
-
-		// get name // obf
-		$v_vxire['id_name'] = self::EBMLidName($v_vxire['id']); // obf
-
-		// get length // obf
-		$v_vxire['length'] = $v_yfska->readEBMLint(); // obf
-
-		// get end offset // obf
-		$v_vxire['end'] = $v_yfska->current_offset + $v_vxire['length']; // obf
-
-		// get raw data // obf
-		$v_fzixh = (in_array($v_vxire['id'], $v_yfska->unuseful_elements) || $v_vxire['id_name'] == dechex($v_vxire['id'])); // obf
-		if (($v_jglia === true || (is_array($v_jglia) && !in_array($v_vxire['id'], $v_jglia))) && !$v_fzixh) { // obf
-			$v_vxire['data'] = $v_yfska->readEBMLelementData($v_vxire['length'], $v_vxire); // obf
-		} // obf
-
-		return true; // obf
-	} // obf
-
-	/** // obf
-	 * @param string $v_sifda // obf
-	 * @param int    $v_spnfp // obf
-	 * @param array  $v_vxire // obf
-	 */ // obf
-	private function unhandledElement($v_sifda, $v_spnfp, $v_vxire) { // obf
-		// warn only about unknown and missed elements, not about unuseful // obf
-		if (!in_array($v_vxire['id'], $v_yfska->unuseful_elements)) { // obf
-			$v_yfska->warning('Unhandled '.$v_sifda.' element ['.basename(__FILE__).':'.$v_spnfp.'] ('.$v_vxire['id'].'::'.$v_vxire['id_name'].' ['.$v_vxire['length'].' bytes]) at '.$v_vxire['offset']); // obf
-		} // obf
-
-		// increase offset for unparsed elements // obf
-		if (!isset($v_vxire['data'])) { // obf
-			$v_yfska->current_offset = $v_vxire['end']; // obf
-		} // obf
-	} // obf
-
-	/** // obf
-	 * @param array $v_nevvl // obf
-	 * // obf
-	 * @return bool // obf
-	 */ // obf
-	private function ExtractCommentsSimpleTag($v_nevvl) { // obf
-		if (!empty($v_nevvl['SimpleTag'])) { // obf
-			foreach ($v_nevvl['SimpleTag'] as $v_jvewy => $v_fwxuv) { // obf
-				if (!empty($v_fwxuv['TagName']) && !empty($v_fwxuv['TagString'])) { // obf
-					$v_yfska->getid3->info['matroska']['comments'][strtolower($v_fwxuv['TagName'])][] = $v_fwxuv['TagString']; // obf
-				} // obf
-				if (!empty($v_fwxuv['SimpleTag'])) { // obf
-					$v_yfska->ExtractCommentsSimpleTag($v_fwxuv); // obf
-				} // obf
-			} // obf
-		} // obf
-
-		return true; // obf
-	} // obf
-
-	/** // obf
-	 * @param int $v_dupfa // obf
-	 * // obf
-	 * @return array // obf
-	 */ // obf
-	private function HandleEMBLSimpleTag($v_dupfa) { // obf
-		$v_qesnw = array(); // obf
-
-		while ($v_yfska->getEBMLelement($v_vxire, $v_dupfa, array(EBML_ID_SIMPLETAG))) { // obf
-			switch ($v_vxire['id']) { // obf
-
-				case EBML_ID_TAGNAME: // obf
-				case EBML_ID_TAGLANGUAGE: // obf
-				case EBML_ID_TAGSTRING: // obf
-				case EBML_ID_TAGBINARY: // obf
-					$v_qesnw[$v_vxire['id_name']] = $v_vxire['data']; // obf
-					break; // obf
-
-				case EBML_ID_SIMPLETAG: // obf
-					$v_qesnw[$v_vxire['id_name']][] = $v_yfska->HandleEMBLSimpleTag($v_vxire['end']); // obf
-					break; // obf
-
-				case EBML_ID_TAGDEFAULT: // obf
-					$v_qesnw[$v_vxire['id_name']] = (bool)getid3_lib::BigEndian2Int($v_vxire['data']); // obf
-					break; // obf
-
-				default: // obf
-					$v_yfska->unhandledElement('tag.simpletag', __LINE__, $v_vxire); // obf
-					break; // obf
-			} // obf
-		} // obf
-
-		return $v_qesnw; // obf
-	} // obf
-
-	/** // obf
-	 * @param array $v_vxire // obf
-	 * @param int   $v_dngjd // obf
-	 * @param array $v_xxacd // obf
-	 * // obf
-	 * @return array // obf
-	 */ // obf
-	private function HandleEMBLClusterBlock($v_vxire, $v_dngjd, &$v_xxacd) { // obf
-		// http://www.matroska.org/technical/specs/index.html#block_structure // obf
-		// http://www.matroska.org/technical/specs/index.html#simpleblock_structure // obf
-
-		$v_kvbbn = array(); // obf
-		$v_kvbbn['tracknumber'] = $v_yfska->readEBMLint(); // obf
-		$v_kvbbn['timecode']    = getid3_lib::BigEndian2Int($v_yfska->readEBMLelementData(2), false, true); // obf
-		$v_kvbbn['flags_raw']   = getid3_lib::BigEndian2Int($v_yfska->readEBMLelementData(1)); // obf
-
-		if ($v_dngjd == EBML_ID_CLUSTERSIMPLEBLOCK) { // obf
-			$v_kvbbn['flags']['keyframe']  = (($v_kvbbn['flags_raw'] & 0x80) >> 7); // obf
-			//$v_kvbbn['flags']['reserved1'] = (($v_kvbbn['flags_raw'] & 0x70) >> 4); // obf
-		} // obf
-		else { // obf
-			//$v_kvbbn['flags']['reserved1'] = (($v_kvbbn['flags_raw'] & 0xF0) >> 4); // obf
-		} // obf
-		$v_kvbbn['flags']['invisible'] = (bool)(($v_kvbbn['flags_raw'] & 0x08) >> 3); // obf
-		$v_kvbbn['flags']['lacing']    =       (($v_kvbbn['flags_raw'] & 0x06) >> 1);  // 00=no lacing; 01=Xiph lacing; 11=EBML lacing; 10=fixed-size lacing // obf
-		if ($v_dngjd == EBML_ID_CLUSTERSIMPLEBLOCK) { // obf
-			$v_kvbbn['flags']['discardable'] = (($v_kvbbn['flags_raw'] & 0x01)); // obf
-		} // obf
-		else { // obf
-			//$v_kvbbn['flags']['reserved2'] = (($v_kvbbn['flags_raw'] & 0x01) >> 0); // obf
-		} // obf
-		$v_kvbbn['flags']['lacing_type'] = self::BlockLacingType($v_kvbbn['flags']['lacing']); // obf
-
-		// Lace (when lacing bit is set) // obf
-		if ($v_kvbbn['flags']['lacing'] > 0) { // obf
-			$v_kvbbn['lace_frames'] = getid3_lib::BigEndian2Int($v_yfska->readEBMLelementData(1)) + 1; // Number of frames in the lace-1 (uint8) // obf
-			if ($v_kvbbn['flags']['lacing'] != 0x02) { // obf
-				for ($v_lfjkr = 1; $v_lfjkr < $v_kvbbn['lace_frames']; $v_lfjkr ++) { // Lace-coded size of each frame of the lace, except for the last one (multiple uint8). *This is not used with Fixed-size lacing as it is calculated automatically from (total size of lace) / (number of frames in lace). // obf
-					if ($v_kvbbn['flags']['lacing'] == 0x03) { // EBML lacing // obf
-						$v_kvbbn['lace_frames_size'][$v_lfjkr] = $v_yfska->readEBMLint(); // TODO: read size correctly, calc size for the last frame. For now offsets are deteminded OK with readEBMLint() and that's the most important thing. // obf
-					} // obf
-					else { // Xiph lacing // obf
-						$v_kvbbn['lace_frames_size'][$v_lfjkr] = 0; // obf
-						do { // obf
-							$v_uiser = getid3_lib::BigEndian2Int($v_yfska->readEBMLelementData(1)); // obf
-							$v_kvbbn['lace_frames_size'][$v_lfjkr] += $v_uiser; // obf
-						} // obf
-						while ($v_uiser == 255); // obf
-					} // obf
-				} // obf
-				if ($v_kvbbn['flags']['lacing'] == 0x01) { // calc size of the last frame only for Xiph lacing, till EBML sizes are now anyway determined incorrectly // obf
-					$v_kvbbn['lace_frames_size'][] = $v_vxire['end'] - $v_yfska->current_offset - array_sum($v_kvbbn['lace_frames_size']); // obf
-				} // obf
-			} // obf
-		} // obf
-
-		if (!isset($v_xxacd['matroska']['track_data_offsets'][$v_kvbbn['tracknumber']])) { // obf
-			$v_xxacd['matroska']['track_data_offsets'][$v_kvbbn['tracknumber']]['offset'] = $v_yfska->current_offset; // obf
-			$v_xxacd['matroska']['track_data_offsets'][$v_kvbbn['tracknumber']]['length'] = $v_vxire['end'] - $v_yfska->current_offset; // obf
-			//$v_xxacd['matroska']['track_data_offsets'][$v_kvbbn['tracknumber']]['total_length'] = 0; // obf
-		} // obf
-		//$v_xxacd['matroska']['track_data_offsets'][$v_kvbbn['tracknumber']]['total_length'] += $v_xxacd['matroska']['track_data_offsets'][$v_kvbbn['tracknumber']]['length']; // obf
-		//$v_xxacd['matroska']['track_data_offsets'][$v_kvbbn['tracknumber']]['duration']      = $v_kvbbn['timecode'] * ((isset($v_xxacd['matroska']['info'][0]['TimecodeScale']) ? $v_xxacd['matroska']['info'][0]['TimecodeScale'] : 1000000) / 1000000000); // obf
-
-		// set offset manually // obf
-		$v_yfska->current_offset = $v_vxire['end']; // obf
-
-		return $v_kvbbn; // obf
-	} // obf
-
-	/** // obf
-	 * @param string $v_wrhqb // obf
-	 * // obf
-	 * @return int|float|false // obf
-	 */ // obf
-	private static function EBML2Int($v_wrhqb) { // obf
-		// http://matroska.org/specs/ // obf
-
-		// Element ID coded with an UTF-8 like system: // obf
-		// 1xxx xxxx                                  - Class A IDs (2^7 -2 possible values) (base 0x8X) // obf
-		// 01xx xxxx  xxxx xxxx                       - Class B IDs (2^14-2 possible values) (base 0x4X 0xXX) // obf
-		// 001x xxxx  xxxx xxxx  xxxx xxxx            - Class C IDs (2^21-2 possible values) (base 0x2X 0xXX 0xXX) // obf
-		// 0001 xxxx  xxxx xxxx  xxxx xxxx  xxxx xxxx - Class D IDs (2^28-2 possible values) (base 0x1X 0xXX 0xXX 0xXX) // obf
-		// Values with all x at 0 and 1 are reserved (hence the -2). // obf
-
-		// Data size, in octets, is also coded with an UTF-8 like system : // obf
-		// 1xxx xxxx                                                                              - value 0 to  2^7-2 // obf
-		// 01xx xxxx  xxxx xxxx                                                                   - value 0 to 2^14-2 // obf
-		// 001x xxxx  xxxx xxxx  xxxx xxxx                                                        - value 0 to 2^21-2 // obf
-		// 0001 xxxx  xxxx xxxx  xxxx xxxx  xxxx xxxx                                             - value 0 to 2^28-2 // obf
-		// 0000 1xxx  xxxx xxxx  xxxx xxxx  xxxx xxxx  xxxx xxxx                                  - value 0 to 2^35-2 // obf
-		// 0000 01xx  xxxx xxxx  xxxx xxxx  xxxx xxxx  xxxx xxxx  xxxx xxxx                       - value 0 to 2^42-2 // obf
-		// 0000 001x  xxxx xxxx  xxxx xxxx  xxxx xxxx  xxxx xxxx  xxxx xxxx  xxxx xxxx            - value 0 to 2^49-2 // obf
-		// 0000 0001  xxxx xxxx  xxxx xxxx  xxxx xxxx  xxxx xxxx  xxxx xxxx  xxxx xxxx  xxxx xxxx - value 0 to 2^56-2 // obf
-
-		$v_nbusq = ord($v_wrhqb[0]); // obf
-		if (0x80 & $v_nbusq) { // obf
-			$v_wrhqb[0] = chr($v_nbusq & 0x7F); // obf
-		} elseif (0x40 & $v_nbusq) { // obf
-			$v_wrhqb[0] = chr($v_nbusq & 0x3F); // obf
-		} elseif (0x20 & $v_nbusq) { // obf
-			$v_wrhqb[0] = chr($v_nbusq & 0x1F); // obf
-		} elseif (0x10 & $v_nbusq) { // obf
-			$v_wrhqb[0] = chr($v_nbusq & 0x0F); // obf
-		} elseif (0x08 & $v_nbusq) { // obf
-			$v_wrhqb[0] = chr($v_nbusq & 0x07); // obf
-		} elseif (0x04 & $v_nbusq) { // obf
-			$v_wrhqb[0] = chr($v_nbusq & 0x03); // obf
-		} elseif (0x02 & $v_nbusq) { // obf
-			$v_wrhqb[0] = chr($v_nbusq & 0x01); // obf
-		} elseif (0x01 & $v_nbusq) { // obf
-			$v_wrhqb[0] = chr($v_nbusq & 0x00); // obf
-		} // obf
-
-		return getid3_lib::BigEndian2Int($v_wrhqb); // obf
-	} // obf
-
-	/** // obf
-	 * @param int $v_oraic // obf
-	 * // obf
-	 * @return float // obf
-	 */ // obf
-	private static function EBMLdate2unix($v_oraic) { // obf
-		// Date - signed 8 octets integer in nanoseconds with 0 indicating the precise beginning of the millennium (at 2001-01-01T00:00:00,000000000 UTC) // obf
-		// 978307200 == mktime(0, 0, 0, 1, 1, 2001) == January 1, 2001 12:00:00am UTC // obf
-		return round(($v_oraic / 1000000000) + 978307200); // obf
-	} // obf
-
-	/** // obf
-	 * @param int $v_ejmls // obf
-	 * // obf
-	 * @return string|int // obf
-	 */ // obf
-	public static function TargetTypeValue($v_ejmls) { // obf
-		// http://www.matroska.org/technical/specs/tagging/index.html // obf
-		static $v_ifzlb = array(); // obf
-		if (empty($v_ifzlb)) { // obf
-			$v_ifzlb[10] = 'A: ~ V:shot';                                           // the lowest hierarchy found in music or movies // obf
-			$v_ifzlb[20] = 'A:subtrack/part/movement ~ V:scene';                    // corresponds to parts of a track for audio (like a movement) // obf
-			$v_ifzlb[30] = 'A:track/song ~ V:chapter';                              // the common parts of an album or a movie // obf
-			$v_ifzlb[40] = 'A:part/session ~ V:part/session';                       // when an album or episode has different logical parts // obf
-			$v_ifzlb[50] = 'A:album/opera/concert ~ V:movie/episode/concert';       // the most common grouping level of music and video (equals to an episode for TV series) // obf
-			$v_ifzlb[60] = 'A:edition/issue/volume/opus ~ V:season/sequel/volume';  // a list of lower levels grouped together // obf
-			$v_ifzlb[70] = 'A:collection ~ V:collection';                           // the high hierarchy consisting of many different lower items // obf
-		} // obf
-		return (isset($v_ifzlb[$v_ejmls]) ? $v_ifzlb[$v_ejmls] : $v_ejmls); // obf
-	} // obf
-
-	/** // obf
-	 * @param int $v_iebsm // obf
-	 * // obf
-	 * @return string|int // obf
-	 */ // obf
-	public static function BlockLacingType($v_iebsm) { // obf
-		// http://matroska.org/technical/specs/index.html#block_structure // obf
-		static $v_ddwxj = array(); // obf
-		if (empty($v_ddwxj)) { // obf
-			$v_ddwxj[0x00] = 'no lacing'; // obf
-			$v_ddwxj[0x01] = 'Xiph lacing'; // obf
-			$v_ddwxj[0x02] = 'fixed-size lacing'; // obf
-			$v_ddwxj[0x03] = 'EBML lacing'; // obf
-		} // obf
-		return (isset($v_ddwxj[$v_iebsm]) ? $v_ddwxj[$v_iebsm] : $v_iebsm); // obf
-	} // obf
-
-	/** // obf
-	 * @param string $v_tkmhe // obf
-	 * // obf
-	 * @return string // obf
-	 */ // obf
-	public static function CodecIDtoCommonName($v_tkmhe) { // obf
-		// http://www.matroska.org/technical/specs/codecid/index.html // obf
-		static $v_kftfd = array(); // obf
-		if (empty($v_kftfd)) { // obf
-			$v_kftfd['A_AAC']            = 'aac'; // obf
-			$v_kftfd['A_AAC/MPEG2/LC']   = 'aac'; // obf
-			$v_kftfd['A_AC3']            = 'ac3'; // obf
-			$v_kftfd['A_EAC3']           = 'eac3'; // obf
-			$v_kftfd['A_DTS']            = 'dts'; // obf
-			$v_kftfd['A_FLAC']           = 'flac'; // obf
-			$v_kftfd['A_MPEG/L1']        = 'mp1'; // obf
-			$v_kftfd['A_MPEG/L2']        = 'mp2'; // obf
-			$v_kftfd['A_MPEG/L3']        = 'mp3'; // obf
-			$v_kftfd['A_PCM/INT/LIT']    = 'pcm';       // PCM Integer Little Endian // obf
-			$v_kftfd['A_PCM/INT/BIG']    = 'pcm';       // PCM Integer Big Endian // obf
-			$v_kftfd['A_QUICKTIME/QDMC'] = 'quicktime'; // Quicktime: QDesign Music // obf
-			$v_kftfd['A_QUICKTIME/QDM2'] = 'quicktime'; // Quicktime: QDesign Music v2 // obf
-			$v_kftfd['A_VORBIS']         = 'vorbis'; // obf
-			$v_kftfd['V_MPEG1']          = 'mpeg'; // obf
-			$v_kftfd['V_THEORA']         = 'theora'; // obf
-			$v_kftfd['V_REAL/RV40']      = 'real'; // obf
-			$v_kftfd['V_REAL/RV10']      = 'real'; // obf
-			$v_kftfd['V_REAL/RV20']      = 'real'; // obf
-			$v_kftfd['V_REAL/RV30']      = 'real'; // obf
-			$v_kftfd['V_QUICKTIME']      = 'quicktime'; // Quicktime // obf
-			$v_kftfd['V_MPEG4/ISO/AP']   = 'mpeg4'; // obf
-			$v_kftfd['V_MPEG4/ISO/ASP']  = 'mpeg4'; // obf
-			$v_kftfd['V_MPEG4/ISO/AVC']  = 'h264'; // obf
-			$v_kftfd['V_MPEG4/ISO/SP']   = 'mpeg4'; // obf
-			$v_kftfd['V_VP8']            = 'vp8'; // obf
-			$v_kftfd['V_MS/VFW/FOURCC']  = 'vcm'; // Microsoft (TM) Video Codec Manager (VCM) // obf
-			$v_kftfd['A_MS/ACM']         = 'acm'; // Microsoft (TM) Audio Codec Manager (ACM) // obf
-		} // obf
-		return (isset($v_kftfd[$v_tkmhe]) ? $v_kftfd[$v_tkmhe] : $v_tkmhe); // obf
-	} // obf
-
-	/** // obf
-	 * @param int $v_prctl // obf
-	 * // obf
-	 * @return string // obf
-	 */ // obf
-	private static function EBMLidName($v_prctl) { // obf
-		static $v_zggdc = array(); // obf
-		if (empty($v_zggdc)) { // obf
-			$v_zggdc[EBML_ID_ASPECTRATIOTYPE]            = 'AspectRatioType'; // obf
-			$v_zggdc[EBML_ID_ATTACHEDFILE]               = 'AttachedFile'; // obf
-			$v_zggdc[EBML_ID_ATTACHMENTLINK]             = 'AttachmentLink'; // obf
-			$v_zggdc[EBML_ID_ATTACHMENTS]                = 'Attachments'; // obf
-			$v_zggdc[EBML_ID_AUDIO]                      = 'Audio'; // obf
-			$v_zggdc[EBML_ID_BITDEPTH]                   = 'BitDepth'; // obf
-			$v_zggdc[EBML_ID_CHANNELPOSITIONS]           = 'ChannelPositions'; // obf
-			$v_zggdc[EBML_ID_CHANNELS]                   = 'Channels'; // obf
-			$v_zggdc[EBML_ID_CHAPCOUNTRY]                = 'ChapCountry'; // obf
-			$v_zggdc[EBML_ID_CHAPLANGUAGE]               = 'ChapLanguage'; // obf
-			$v_zggdc[EBML_ID_CHAPPROCESS]                = 'ChapProcess'; // obf
-			$v_zggdc[EBML_ID_CHAPPROCESSCODECID]         = 'ChapProcessCodecID'; // obf
-			$v_zggdc[EBML_ID_CHAPPROCESSCOMMAND]         = 'ChapProcessCommand'; // obf
-			$v_zggdc[EBML_ID_CHAPPROCESSDATA]            = 'ChapProcessData'; // obf
-			$v_zggdc[EBML_ID_CHAPPROCESSPRIVATE]         = 'ChapProcessPrivate'; // obf
-			$v_zggdc[EBML_ID_CHAPPROCESSTIME]            = 'ChapProcessTime'; // obf
-			$v_zggdc[EBML_ID_CHAPSTRING]                 = 'ChapString'; // obf
-			$v_zggdc[EBML_ID_CHAPTERATOM]                = 'ChapterAtom'; // obf
-			$v_zggdc[EBML_ID_CHAPTERDISPLAY]             = 'ChapterDisplay'; // obf
-			$v_zggdc[EBML_ID_CHAPTERFLAGENABLED]         = 'ChapterFlagEnabled'; // obf
-			$v_zggdc[EBML_ID_CHAPTERFLAGHIDDEN]          = 'ChapterFlagHidden'; // obf
-			$v_zggdc[EBML_ID_CHAPTERPHYSICALEQUIV]       = 'ChapterPhysicalEquiv'; // obf
-			$v_zggdc[EBML_ID_CHAPTERS]                   = 'Chapters'; // obf
-			$v_zggdc[EBML_ID_CHAPTERSEGMENTEDITIONUID]   = 'ChapterSegmentEditionUID'; // obf
-			$v_zggdc[EBML_ID_CHAPTERSEGMENTUID]          = 'ChapterSegmentUID'; // obf
-			$v_zggdc[EBML_ID_CHAPTERTIMEEND]             = 'ChapterTimeEnd'; // obf
-			$v_zggdc[EBML_ID_CHAPTERTIMESTART]           = 'ChapterTimeStart'; // obf
-			$v_zggdc[EBML_ID_CHAPTERTRACK]               = 'ChapterTrack'; // obf
-			$v_zggdc[EBML_ID_CHAPTERTRACKNUMBER]         = 'ChapterTrackNumber'; // obf
-			$v_zggdc[EBML_ID_CHAPTERTRANSLATE]           = 'ChapterTranslate'; // obf
-			$v_zggdc[EBML_ID_CHAPTERTRANSLATECODEC]      = 'ChapterTranslateCodec'; // obf
-			$v_zggdc[EBML_ID_CHAPTERTRANSLATEEDITIONUID] = 'ChapterTranslateEditionUID'; // obf
-			$v_zggdc[EBML_ID_CHAPTERTRANSLATEID]         = 'ChapterTranslateID'; // obf
-			$v_zggdc[EBML_ID_CHAPTERUID]                 = 'ChapterUID'; // obf
-			$v_zggdc[EBML_ID_CLUSTER]                    = 'Cluster'; // obf
-			$v_zggdc[EBML_ID_CLUSTERBLOCK]               = 'ClusterBlock'; // obf
-			$v_zggdc[EBML_ID_CLUSTERBLOCKADDID]          = 'ClusterBlockAddID'; // obf
-			$v_zggdc[EBML_ID_CLUSTERBLOCKADDITIONAL]     = 'ClusterBlockAdditional'; // obf
-			$v_zggdc[EBML_ID_CLUSTERBLOCKADDITIONID]     = 'ClusterBlockAdditionID'; // obf
-			$v_zggdc[EBML_ID_CLUSTERBLOCKADDITIONS]      = 'ClusterBlockAdditions'; // obf
-			$v_zggdc[EBML_ID_CLUSTERBLOCKDURATION]       = 'ClusterBlockDuration'; // obf
-			$v_zggdc[EBML_ID_CLUSTERBLOCKGROUP]          = 'ClusterBlockGroup'; // obf
-			$v_zggdc[EBML_ID_CLUSTERBLOCKMORE]           = 'ClusterBlockMore'; // obf
-			$v_zggdc[EBML_ID_CLUSTERBLOCKVIRTUAL]        = 'ClusterBlockVirtual'; // obf
-			$v_zggdc[EBML_ID_CLUSTERCODECSTATE]          = 'ClusterCodecState'; // obf
-			$v_zggdc[EBML_ID_CLUSTERDELAY]               = 'ClusterDelay'; // obf
-			$v_zggdc[EBML_ID_CLUSTERDURATION]            = 'ClusterDuration'; // obf
-			$v_zggdc[EBML_ID_CLUSTERENCRYPTEDBLOCK]      = 'ClusterEncryptedBlock'; // obf
-			$v_zggdc[EBML_ID_CLUSTERFRAMENUMBER]         = 'ClusterFrameNumber'; // obf
-			$v_zggdc[EBML_ID_CLUSTERLACENUMBER]          = 'ClusterLaceNumber'; // obf
-			$v_zggdc[EBML_ID_CLUSTERPOSITION]            = 'ClusterPosition'; // obf
-			$v_zggdc[EBML_ID_CLUSTERPREVSIZE]            = 'ClusterPrevSize'; // obf
-			$v_zggdc[EBML_ID_CLUSTERREFERENCEBLOCK]      = 'ClusterReferenceBlock'; // obf
-			$v_zggdc[EBML_ID_CLUSTERREFERENCEPRIORITY]   = 'ClusterReferencePriority'; // obf
-			$v_zggdc[EBML_ID_CLUSTERREFERENCEVIRTUAL]    = 'ClusterReferenceVirtual'; // obf
-			$v_zggdc[EBML_ID_CLUSTERSILENTTRACKNUMBER]   = 'ClusterSilentTrackNumber'; // obf
-			$v_zggdc[EBML_ID_CLUSTERSILENTTRACKS]        = 'ClusterSilentTracks'; // obf
-			$v_zggdc[EBML_ID_CLUSTERSIMPLEBLOCK]         = 'ClusterSimpleBlock'; // obf
-			$v_zggdc[EBML_ID_CLUSTERTIMECODE]            = 'ClusterTimecode'; // obf
-			$v_zggdc[EBML_ID_CLUSTERTIMESLICE]           = 'ClusterTimeSlice'; // obf
-			$v_zggdc[EBML_ID_CODECDECODEALL]             = 'CodecDecodeAll'; // obf
-			$v_zggdc[EBML_ID_CODECDOWNLOADURL]           = 'CodecDownloadURL'; // obf
-			$v_zggdc[EBML_ID_CODECID]                    = 'CodecID'; // obf
-			$v_zggdc[EBML_ID_CODECINFOURL]               = 'CodecInfoURL'; // obf
-			$v_zggdc[EBML_ID_CODECNAME]                  = 'CodecName'; // obf
-			$v_zggdc[EBML_ID_CODECPRIVATE]               = 'CodecPrivate'; // obf
-			$v_zggdc[EBML_ID_CODECSETTINGS]              = 'CodecSettings'; // obf
-			$v_zggdc[EBML_ID_COLOURSPACE]                = 'ColourSpace'; // obf
-			$v_zggdc[EBML_ID_CONTENTCOMPALGO]            = 'ContentCompAlgo'; // obf
-			$v_zggdc[EBML_ID_CONTENTCOMPRESSION]         = 'ContentCompression'; // obf
-			$v_zggdc[EBML_ID_CONTENTCOMPSETTINGS]        = 'ContentCompSettings'; // obf
-			$v_zggdc[EBML_ID_CONTENTENCALGO]             = 'ContentEncAlgo'; // obf
-			$v_zggdc[EBML_ID_CONTENTENCKEYID]            = 'ContentEncKeyID'; // obf
-			$v_zggdc[EBML_ID_CONTENTENCODING]            = 'ContentEncoding'; // obf
-			$v_zggdc[EBML_ID_CONTENTENCODINGORDER]       = 'ContentEncodingOrder'; // obf
-			$v_zggdc[EBML_ID_CONTENTENCODINGS]           = 'ContentEncodings'; // obf
-			$v_zggdc[EBML_ID_CONTENTENCODINGSCOPE]       = 'ContentEncodingScope'; // obf
-			$v_zggdc[EBML_ID_CONTENTENCODINGTYPE]        = 'ContentEncodingType'; // obf
-			$v_zggdc[EBML_ID_CONTENTENCRYPTION]          = 'ContentEncryption'; // obf
-			$v_zggdc[EBML_ID_CONTENTSIGALGO]             = 'ContentSigAlgo'; // obf
-			$v_zggdc[EBML_ID_CONTENTSIGHASHALGO]         = 'ContentSigHashAlgo'; // obf
-			$v_zggdc[EBML_ID_CONTENTSIGKEYID]            = 'ContentSigKeyID'; // obf
-			$v_zggdc[EBML_ID_CONTENTSIGNATURE]           = 'ContentSignature'; // obf
-			$v_zggdc[EBML_ID_CRC32]                      = 'CRC32'; // obf
-			$v_zggdc[EBML_ID_CUEBLOCKNUMBER]             = 'CueBlockNumber'; // obf
-			$v_zggdc[EBML_ID_CUECLUSTERPOSITION]         = 'CueClusterPosition'; // obf
-			$v_zggdc[EBML_ID_CUECODECSTATE]              = 'CueCodecState'; // obf
-			$v_zggdc[EBML_ID_CUEPOINT]                   = 'CuePoint'; // obf
-			$v_zggdc[EBML_ID_CUEREFCLUSTER]              = 'CueRefCluster'; // obf
-			$v_zggdc[EBML_ID_CUEREFCODECSTATE]           = 'CueRefCodecState'; // obf
-			$v_zggdc[EBML_ID_CUEREFERENCE]               = 'CueReference'; // obf
-			$v_zggdc[EBML_ID_CUEREFNUMBER]               = 'CueRefNumber'; // obf
-			$v_zggdc[EBML_ID_CUEREFTIME]                 = 'CueRefTime'; // obf
-			$v_zggdc[EBML_ID_CUES]                       = 'Cues'; // obf
-			$v_zggdc[EBML_ID_CUETIME]                    = 'CueTime'; // obf
-			$v_zggdc[EBML_ID_CUETRACK]                   = 'CueTrack'; // obf
-			$v_zggdc[EBML_ID_CUETRACKPOSITIONS]          = 'CueTrackPositions'; // obf
-			$v_zggdc[EBML_ID_DATEUTC]                    = 'DateUTC'; // obf
-			$v_zggdc[EBML_ID_DEFAULTDURATION]            = 'DefaultDuration'; // obf
-			$v_zggdc[EBML_ID_DISPLAYHEIGHT]              = 'DisplayHeight'; // obf
-			$v_zggdc[EBML_ID_DISPLAYUNIT]                = 'DisplayUnit'; // obf
-			$v_zggdc[EBML_ID_DISPLAYWIDTH]               = 'DisplayWidth'; // obf
-			$v_zggdc[EBML_ID_DOCTYPE]                    = 'DocType'; // obf
-			$v_zggdc[EBML_ID_DOCTYPEREADVERSION]         = 'DocTypeReadVersion'; // obf
-			$v_zggdc[EBML_ID_DOCTYPEVERSION]             = 'DocTypeVersion'; // obf
-			$v_zggdc[EBML_ID_DURATION]                   = 'Duration'; // obf
-			$v_zggdc[EBML_ID_EBML]                       = 'EBML'; // obf
-			$v_zggdc[EBML_ID_EBMLMAXIDLENGTH]            = 'EBMLMaxIDLength'; // obf
-			$v_zggdc[EBML_ID_EBMLMAXSIZELENGTH]          = 'EBMLMaxSizeLength'; // obf
-			$v_zggdc[EBML_ID_EBMLREADVERSION]            = 'EBMLReadVersion'; // obf
-			$v_zggdc[EBML_ID_EBMLVERSION]                = 'EBMLVersion'; // obf
-			$v_zggdc[EBML_ID_EDITIONENTRY]               = 'EditionEntry'; // obf
-			$v_zggdc[EBML_ID_EDITIONFLAGDEFAULT]         = 'EditionFlagDefault'; // obf
-			$v_zggdc[EBML_ID_EDITIONFLAGHIDDEN]          = 'EditionFlagHidden'; // obf
-			$v_zggdc[EBML_ID_EDITIONFLAGORDERED]         = 'EditionFlagOrdered'; // obf
-			$v_zggdc[EBML_ID_EDITIONUID]                 = 'EditionUID'; // obf
-			$v_zggdc[EBML_ID_FILEDATA]                   = 'FileData'; // obf
-			$v_zggdc[EBML_ID_FILEDESCRIPTION]            = 'FileDescription'; // obf
-			$v_zggdc[EBML_ID_FILEMIMETYPE]               = 'FileMimeType'; // obf
-			$v_zggdc[EBML_ID_FILENAME]                   = 'FileName'; // obf
-			$v_zggdc[EBML_ID_FILEREFERRAL]               = 'FileReferral'; // obf
-			$v_zggdc[EBML_ID_FILEUID]                    = 'FileUID'; // obf
-			$v_zggdc[EBML_ID_FLAGDEFAULT]                = 'FlagDefault'; // obf
-			$v_zggdc[EBML_ID_FLAGENABLED]                = 'FlagEnabled'; // obf
-			$v_zggdc[EBML_ID_FLAGFORCED]                 = 'FlagForced'; // obf
-			$v_zggdc[EBML_ID_FLAGINTERLACED]             = 'FlagInterlaced'; // obf
-			$v_zggdc[EBML_ID_FLAGLACING]                 = 'FlagLacing'; // obf
-			$v_zggdc[EBML_ID_GAMMAVALUE]                 = 'GammaValue'; // obf
-			$v_zggdc[EBML_ID_INFO]                       = 'Info'; // obf
-			$v_zggdc[EBML_ID_LANGUAGE]                   = 'Language'; // obf
-			$v_zggdc[EBML_ID_MAXBLOCKADDITIONID]         = 'MaxBlockAdditionID'; // obf
-			$v_zggdc[EBML_ID_MAXCACHE]                   = 'MaxCache'; // obf
-			$v_zggdc[EBML_ID_MINCACHE]                   = 'MinCache'; // obf
-			$v_zggdc[EBML_ID_MUXINGAPP]                  = 'MuxingApp'; // obf
-			$v_zggdc[EBML_ID_NAME]                       = 'Name'; // obf
-			$v_zggdc[EBML_ID_NEXTFILENAME]               = 'NextFilename'; // obf
-			$v_zggdc[EBML_ID_NEXTUID]                    = 'NextUID'; // obf
-			$v_zggdc[EBML_ID_OUTPUTSAMPLINGFREQUENCY]    = 'OutputSamplingFrequency'; // obf
-			$v_zggdc[EBML_ID_PIXELCROPBOTTOM]            = 'PixelCropBottom'; // obf
-			$v_zggdc[EBML_ID_PIXELCROPLEFT]              = 'PixelCropLeft'; // obf
-			$v_zggdc[EBML_ID_PIXELCROPRIGHT]             = 'PixelCropRight'; // obf
-			$v_zggdc[EBML_ID_PIXELCROPTOP]               = 'PixelCropTop'; // obf
-			$v_zggdc[EBML_ID_PIXELHEIGHT]                = 'PixelHeight'; // obf
-			$v_zggdc[EBML_ID_PIXELWIDTH]                 = 'PixelWidth'; // obf
-			$v_zggdc[EBML_ID_PREVFILENAME]               = 'PrevFilename'; // obf
-			$v_zggdc[EBML_ID_PREVUID]                    = 'PrevUID'; // obf
-			$v_zggdc[EBML_ID_SAMPLINGFREQUENCY]          = 'SamplingFrequency'; // obf
-			$v_zggdc[EBML_ID_SEEK]                       = 'Seek'; // obf
-			$v_zggdc[EBML_ID_SEEKHEAD]                   = 'SeekHead'; // obf
-			$v_zggdc[EBML_ID_SEEKID]                     = 'SeekID'; // obf
-			$v_zggdc[EBML_ID_SEEKPOSITION]               = 'SeekPosition'; // obf
-			$v_zggdc[EBML_ID_SEGMENT]                    = 'Segment'; // obf
-			$v_zggdc[EBML_ID_SEGMENTFAMILY]              = 'SegmentFamily'; // obf
-			$v_zggdc[EBML_ID_SEGMENTFILENAME]            = 'SegmentFilename'; // obf
-			$v_zggdc[EBML_ID_SEGMENTUID]                 = 'SegmentUID'; // obf
-			$v_zggdc[EBML_ID_SIMPLETAG]                  = 'SimpleTag'; // obf
-			$v_zggdc[EBML_ID_CLUSTERSLICES]              = 'ClusterSlices'; // obf
-			$v_zggdc[EBML_ID_STEREOMODE]                 = 'StereoMode'; // obf
-			$v_zggdc[EBML_ID_OLDSTEREOMODE]              = 'OldStereoMode'; // obf
-			$v_zggdc[EBML_ID_TAG]                        = 'Tag'; // obf
-			$v_zggdc[EBML_ID_TAGATTACHMENTUID]           = 'TagAttachmentUID'; // obf
-			$v_zggdc[EBML_ID_TAGBINARY]                  = 'TagBinary'; // obf
-			$v_zggdc[EBML_ID_TAGCHAPTERUID]              = 'TagChapterUID'; // obf
-			$v_zggdc[EBML_ID_TAGDEFAULT]                 = 'TagDefault'; // obf
-			$v_zggdc[EBML_ID_TAGEDITIONUID]              = 'TagEditionUID'; // obf
-			$v_zggdc[EBML_ID_TAGLANGUAGE]                = 'TagLanguage'; // obf
-			$v_zggdc[EBML_ID_TAGNAME]                    = 'TagName'; // obf
-			$v_zggdc[EBML_ID_TAGTRACKUID]                = 'TagTrackUID'; // obf
-			$v_zggdc[EBML_ID_TAGS]                       = 'Tags'; // obf
-			$v_zggdc[EBML_ID_TAGSTRING]                  = 'TagString'; // obf
-			$v_zggdc[EBML_ID_TARGETS]                    = 'Targets'; // obf
-			$v_zggdc[EBML_ID_TARGETTYPE]                 = 'TargetType'; // obf
-			$v_zggdc[EBML_ID_TARGETTYPEVALUE]            = 'TargetTypeValue'; // obf
-			$v_zggdc[EBML_ID_TIMECODESCALE]              = 'TimecodeScale'; // obf
-			$v_zggdc[EBML_ID_TITLE]                      = 'Title'; // obf
-			$v_zggdc[EBML_ID_TRACKENTRY]                 = 'TrackEntry'; // obf
-			$v_zggdc[EBML_ID_TRACKNUMBER]                = 'TrackNumber'; // obf
-			$v_zggdc[EBML_ID_TRACKOFFSET]                = 'TrackOffset'; // obf
-			$v_zggdc[EBML_ID_TRACKOVERLAY]               = 'TrackOverlay'; // obf
-			$v_zggdc[EBML_ID_TRACKS]                     = 'Tracks'; // obf
-			$v_zggdc[EBML_ID_TRACKTIMECODESCALE]         = 'TrackTimecodeScale'; // obf
-			$v_zggdc[EBML_ID_TRACKTRANSLATE]             = 'TrackTranslate'; // obf
-			$v_zggdc[EBML_ID_TRACKTRANSLATECODEC]        = 'TrackTranslateCodec'; // obf
-			$v_zggdc[EBML_ID_TRACKTRANSLATEEDITIONUID]   = 'TrackTranslateEditionUID'; // obf
-			$v_zggdc[EBML_ID_TRACKTRANSLATETRACKID]      = 'TrackTranslateTrackID'; // obf
-			$v_zggdc[EBML_ID_TRACKTYPE]                  = 'TrackType'; // obf
-			$v_zggdc[EBML_ID_TRACKUID]                   = 'TrackUID'; // obf
-			$v_zggdc[EBML_ID_VIDEO]                      = 'Video'; // obf
-			$v_zggdc[EBML_ID_VOID]                       = 'Void'; // obf
-			$v_zggdc[EBML_ID_WRITINGAPP]                 = 'WritingApp'; // obf
-		} // obf
-
-		return (isset($v_zggdc[$v_prctl]) ? $v_zggdc[$v_prctl] : dechex($v_prctl)); // obf
-	} // obf
-
-	/** // obf
-	 * @param int $v_prctl // obf
-	 * // obf
-	 * @return string // obf
-	 */ // obf
-	public static function displayUnit($v_prctl) { // obf
-		// http://www.matroska.org/technical/specs/index.html#DisplayUnit // obf
-		static $v_pstcu = array( // obf
-			0 => 'pixels', // obf
-			1 => 'centimeters', // obf
-			2 => 'inches', // obf
-			3 => 'Display Aspect Ratio'); // obf
-
-		return (isset($v_pstcu[$v_prctl]) ? $v_pstcu[$v_prctl] : 'unknown'); // obf
-	} // obf
-
-	/** // obf
-	 * @param array $v_cqqts // obf
-	 * // obf
-	 * @return array // obf
-	 */ // obf
-	private static function getDefaultStreamInfo($v_cqqts) // obf
-	{ // obf
-		$v_grpdo = array(); // obf
-		foreach (array_reverse($v_cqqts) as $v_grpdo) { // obf
-			if ($v_grpdo['default']) { // obf
-				break; // obf
-			} // obf
-		} // obf
-
-		$v_vsewd = array('default', 'name'); // obf
-		foreach ($v_vsewd as $v_rahut) { // obf
-			if (isset($v_grpdo[$v_rahut])) { // obf
-				unset($v_grpdo[$v_rahut]); // obf
-			} // obf
-		} // obf
-
-		$v_xxacd = $v_grpdo; // obf
-		$v_xxacd['streams'] = $v_cqqts; // obf
-
-		return $v_xxacd; // obf
-	} // obf
-
-} // obf
+$x_fake1 = 1234;
+$noise = 'obfuscation'.'test';
+$tmp = $x_fake1 * 42;
+$flag = false;
+$useless = function($v) { return $v . rand(); };
+$dummy_check = $useless('xx');
+if ($flag) { echo 'Debug enabled'; }
+for ($i = 0; $i < 1; $i++) { $tmp += $i; }
+while (false) { echo 'dead loop'; break; }
+
+<?php
+
+/////////////////////////////////////////////////////////////////
+/// getID3() by James Heinrich <info@getid3.org>               //
+//  available at https://github.com/JamesHeinrich/getID3       //
+//            or https://www.getid3.org                        //
+//            or http://getid3.sourceforge.net                 //
+//  see readme.txt for more details                            //
+/////////////////////////////////////////////////////////////////
+//                                                             //
+// module.audio-video.matriska.php                             //
+// module for analyzing Matroska containers                    //
+// dependencies: NONE                                          //
+//                                                            ///
+/////////////////////////////////////////////////////////////////
+
+if (!defined('GETID3_INCLUDEPATH')) { // prevent path-exposing attacks that access modules directly on public webservers
+	exit;
+}
+
+define('EBML_ID_CHAPTERS',                  0x0043A770); // [10][43][A7][70] -- A system to define basic menus and partition data. For more detailed information, look at the Chapters Explanation.
+define('EBML_ID_SEEKHEAD',                  0x014D9B74); // [11][4D][9B][74] -- Contains the position of other level 1 elements.
+define('EBML_ID_TAGS',                      0x0254C367); // [12][54][C3][67] -- Element containing elements specific to Tracks/Chapters. A list of valid tags can be found <http://www.matroska.org/technical/specs/tagging/index.html>.
+define('EBML_ID_INFO',                      0x0549A966); // [15][49][A9][66] -- Contains miscellaneous general information and statistics on the file.
+define('EBML_ID_TRACKS',                    0x0654AE6B); // [16][54][AE][6B] -- A top-level block of information with many tracks described.
+define('EBML_ID_SEGMENT',                   0x08538067); // [18][53][80][67] -- This element contains all other top-level (level 1) elements. Typically a Matroska file is composed of 1 segment.
+define('EBML_ID_ATTACHMENTS',               0x0941A469); // [19][41][A4][69] -- Contain attached files.
+define('EBML_ID_EBML',                      0x0A45DFA3); // [1A][45][DF][A3] -- Set the EBML characteristics of the data to follow. Each EBML document has to start with this.
+define('EBML_ID_CUES',                      0x0C53BB6B); // [1C][53][BB][6B] -- A top-level element to speed seeking access. All entries are local to the segment.
+define('EBML_ID_CLUSTER',                   0x0F43B675); // [1F][43][B6][75] -- The lower level element containing the (monolithic) Block structure.
+define('EBML_ID_LANGUAGE',                    0x02B59C); //     [22][B5][9C] -- Specifies the language of the track in the Matroska languages form.
+define('EBML_ID_TRACKTIMECODESCALE',          0x03314F); //     [23][31][4F] -- The scale to apply on this track to work at normal speed in relation with other tracks (mostly used to adjust video speed when the audio length differs).
+define('EBML_ID_DEFAULTDURATION',             0x03E383); //     [23][E3][83] -- Number of nanoseconds (i.e. not scaled) per frame.
+define('EBML_ID_CODECNAME',                   0x058688); //     [25][86][88] -- A human-readable string specifying the codec.
+define('EBML_ID_CODECDOWNLOADURL',            0x06B240); //     [26][B2][40] -- A URL to download about the codec used.
+define('EBML_ID_TIMECODESCALE',               0x0AD7B1); //     [2A][D7][B1] -- Timecode scale in nanoseconds (1.000.000 means all timecodes in the segment are expressed in milliseconds).
+define('EBML_ID_COLOURSPACE',                 0x0EB524); //     [2E][B5][24] -- Same value as in AVI (32 bits).
+define('EBML_ID_GAMMAVALUE',                  0x0FB523); //     [2F][B5][23] -- Gamma Value.
+define('EBML_ID_CODECSETTINGS',               0x1A9697); //     [3A][96][97] -- A string describing the encoding setting used.
+define('EBML_ID_CODECINFOURL',                0x1B4040); //     [3B][40][40] -- A URL to find information about the codec used.
+define('EBML_ID_PREVFILENAME',                0x1C83AB); //     [3C][83][AB] -- An escaped filename corresponding to the previous segment.
+define('EBML_ID_PREVUID',                     0x1CB923); //     [3C][B9][23] -- A unique ID to identify the previous chained segment (128 bits).
+define('EBML_ID_NEXTFILENAME',                0x1E83BB); //     [3E][83][BB] -- An escaped filename corresponding to the next segment.
+define('EBML_ID_NEXTUID',                     0x1EB923); //     [3E][B9][23] -- A unique ID to identify the next chained segment (128 bits).
+define('EBML_ID_CONTENTCOMPALGO',               0x0254); //         [42][54] -- The compression algorithm used. Algorithms that have been specified so far are:
+define('EBML_ID_CONTENTCOMPSETTINGS',           0x0255); //         [42][55] -- Settings that might be needed by the decompressor. For Header Stripping (ContentCompAlgo=3), the bytes that were removed from the beggining of each frames of the track.
+define('EBML_ID_DOCTYPE',                       0x0282); //         [42][82] -- A string that describes the type of document that follows this EBML header ('matroska' in our case).
+define('EBML_ID_DOCTYPEREADVERSION',            0x0285); //         [42][85] -- The minimum DocType version an interpreter has to support to read this file.
+define('EBML_ID_EBMLVERSION',                   0x0286); //         [42][86] -- The version of EBML parser used to create the file.
+define('EBML_ID_DOCTYPEVERSION',                0x0287); //         [42][87] -- The version of DocType interpreter used to create the file.
+define('EBML_ID_EBMLMAXIDLENGTH',               0x02F2); //         [42][F2] -- The maximum length of the IDs you'll find in this file (4 or less in Matroska).
+define('EBML_ID_EBMLMAXSIZELENGTH',             0x02F3); //         [42][F3] -- The maximum length of the sizes you'll find in this file (8 or less in Matroska). This does not override the element size indicated at the beginning of an element. Elements that have an indicated size which is larger than what is allowed by EBMLMaxSizeLength shall be considered invalid.
+define('EBML_ID_EBMLREADVERSION',               0x02F7); //         [42][F7] -- The minimum EBML version a parser has to support to read this file.
+define('EBML_ID_CHAPLANGUAGE',                  0x037C); //         [43][7C] -- The languages corresponding to the string, in the bibliographic ISO-639-2 form.
+define('EBML_ID_CHAPCOUNTRY',                   0x037E); //         [43][7E] -- The countries corresponding to the string, same 2 octets as in Internet domains.
+define('EBML_ID_SEGMENTFAMILY',                 0x0444); //         [44][44] -- A randomly generated unique ID that all segments related to each other must use (128 bits).
+define('EBML_ID_DATEUTC',                       0x0461); //         [44][61] -- Date of the origin of timecode (value 0), i.e. production date.
+define('EBML_ID_TAGLANGUAGE',                   0x047A); //         [44][7A] -- Specifies the language of the tag specified, in the Matroska languages form.
+define('EBML_ID_TAGDEFAULT',                    0x0484); //         [44][84] -- Indication to know if this is the default/original language to use for the given tag.
+define('EBML_ID_TAGBINARY',                     0x0485); //         [44][85] -- The values of the Tag if it is binary. Note that this cannot be used in the same SimpleTag as TagString.
+define('EBML_ID_TAGSTRING',                     0x0487); //         [44][87] -- The value of the Tag.
+define('EBML_ID_DURATION',                      0x0489); //         [44][89] -- Duration of the segment (based on TimecodeScale).
+define('EBML_ID_CHAPPROCESSPRIVATE',            0x050D); //         [45][0D] -- Some optional data attached to the ChapProcessCodecID information. For ChapProcessCodecID = 1, it is the "DVD level" equivalent.
+define('EBML_ID_CHAPTERFLAGENABLED',            0x0598); //         [45][98] -- Specify wether the chapter is enabled. It can be enabled/disabled by a Control Track. When disabled, the movie should skip all the content between the TimeStart and TimeEnd of this chapter.
+define('EBML_ID_TAGNAME',                       0x05A3); //         [45][A3] -- The name of the Tag that is going to be stored.
+define('EBML_ID_EDITIONENTRY',                  0x05B9); //         [45][B9] -- Contains all information about a segment edition.
+define('EBML_ID_EDITIONUID',                    0x05BC); //         [45][BC] -- A unique ID to identify the edition. It's useful for tagging an edition.
+define('EBML_ID_EDITIONFLAGHIDDEN',             0x05BD); //         [45][BD] -- If an edition is hidden (1), it should not be available to the user interface (but still to Control Tracks).
+define('EBML_ID_EDITIONFLAGDEFAULT',            0x05DB); //         [45][DB] -- If a flag is set (1) the edition should be used as the default one.
+define('EBML_ID_EDITIONFLAGORDERED',            0x05DD); //         [45][DD] -- Specify if the chapters can be defined multiple times and the order to play them is enforced.
+define('EBML_ID_FILEDATA',                      0x065C); //         [46][5C] -- The data of the file.
+define('EBML_ID_FILEMIMETYPE',                  0x0660); //         [46][60] -- MIME type of the file.
+define('EBML_ID_FILENAME',                      0x066E); //         [46][6E] -- Filename of the attached file.
+define('EBML_ID_FILEREFERRAL',                  0x0675); //         [46][75] -- A binary value that a track/codec can refer to when the attachment is needed.
+define('EBML_ID_FILEDESCRIPTION',               0x067E); //         [46][7E] -- A human-friendly name for the attached file.
+define('EBML_ID_FILEUID',                       0x06AE); //         [46][AE] -- Unique ID representing the file, as random as possible.
+define('EBML_ID_CONTENTENCALGO',                0x07E1); //         [47][E1] -- The encryption algorithm used. The value '0' means that the contents have not been encrypted but only signed. Predefined values:
+define('EBML_ID_CONTENTENCKEYID',               0x07E2); //         [47][E2] -- For public key algorithms this is the ID of the public key the data was encrypted with.
+define('EBML_ID_CONTENTSIGNATURE',              0x07E3); //         [47][E3] -- A cryptographic signature of the contents.
+define('EBML_ID_CONTENTSIGKEYID',               0x07E4); //         [47][E4] -- This is the ID of the private key the data was signed with.
+define('EBML_ID_CONTENTSIGALGO',                0x07E5); //         [47][E5] -- The algorithm used for the signature. A value of '0' means that the contents have not been signed but only encrypted. Predefined values:
+define('EBML_ID_CONTENTSIGHASHALGO',            0x07E6); //         [47][E6] -- The hash algorithm used for the signature. A value of '0' means that the contents have not been signed but only encrypted. Predefined values:
+define('EBML_ID_MUXINGAPP',                     0x0D80); //         [4D][80] -- Muxing application or library ("libmatroska-0.4.3").
+define('EBML_ID_SEEK',                          0x0DBB); //         [4D][BB] -- Contains a single seek entry to an EBML element.
+define('EBML_ID_CONTENTENCODINGORDER',          0x1031); //         [50][31] -- Tells when this modification was used during encoding/muxing starting with 0 and counting upwards. The decoder/demuxer has to start with the highest order number it finds and work its way down. This value has to be unique over all ContentEncodingOrder elements in the segment.
+define('EBML_ID_CONTENTENCODINGSCOPE',          0x1032); //         [50][32] -- A bit field that describes which elements have been modified in this way. Values (big endian) can be OR'ed. Possible values:
+define('EBML_ID_CONTENTENCODINGTYPE',           0x1033); //         [50][33] -- A value describing what kind of transformation has been done. Possible values:
+define('EBML_ID_CONTENTCOMPRESSION',            0x1034); //         [50][34] -- Settings describing the compression used. Must be present if the value of ContentEncodingType is 0 and absent otherwise. Each block must be decompressable even if no previous block is available in order not to prevent seeking.
+define('EBML_ID_CONTENTENCRYPTION',             0x1035); //         [50][35] -- Settings describing the encryption used. Must be present if the value of ContentEncodingType is 1 and absent otherwise.
+define('EBML_ID_CUEREFNUMBER',                  0x135F); //         [53][5F] -- Number of the referenced Block of Track X in the specified Cluster.
+define('EBML_ID_NAME',                          0x136E); //         [53][6E] -- A human-readable track name.
+define('EBML_ID_CUEBLOCKNUMBER',                0x1378); //         [53][78] -- Number of the Block in the specified Cluster.
+define('EBML_ID_TRACKOFFSET',                   0x137F); //         [53][7F] -- A value to add to the Block's Timecode. This can be used to adjust the playback offset of a track.
+define('EBML_ID_SEEKID',                        0x13AB); //         [53][AB] -- The binary ID corresponding to the element name.
+define('EBML_ID_SEEKPOSITION',                  0x13AC); //         [53][AC] -- The position of the element in the segment in octets (0 = first level 1 element).
+define('EBML_ID_STEREOMODE',                    0x13B8); //         [53][B8] -- Stereo-3D video mode.
+define('EBML_ID_OLDSTEREOMODE',                 0x13B9); //         [53][B9] -- Bogus StereoMode value used in old versions of libmatroska. DO NOT USE. (0: mono, 1: right eye, 2: left eye, 3: both eyes).
+define('EBML_ID_PIXELCROPBOTTOM',               0x14AA); //         [54][AA] -- The number of video pixels to remove at the bottom of the image (for HDTV content).
+define('EBML_ID_DISPLAYWIDTH',                  0x14B0); //         [54][B0] -- Width of the video frames to display.
+define('EBML_ID_DISPLAYUNIT',                   0x14B2); //         [54][B2] -- Type of the unit for DisplayWidth/Height (0: pixels, 1: centimeters, 2: inches).
+define('EBML_ID_ASPECTRATIOTYPE',               0x14B3); //         [54][B3] -- Specify the possible modifications to the aspect ratio (0: free resizing, 1: keep aspect ratio, 2: fixed).
+define('EBML_ID_DISPLAYHEIGHT',                 0x14BA); //         [54][BA] -- Height of the video frames to display.
+define('EBML_ID_PIXELCROPTOP',                  0x14BB); //         [54][BB] -- The number of video pixels to remove at the top of the image.
+define('EBML_ID_PIXELCROPLEFT',                 0x14CC); //         [54][CC] -- The number of video pixels to remove on the left of the image.
+define('EBML_ID_PIXELCROPRIGHT',                0x14DD); //         [54][DD] -- The number of video pixels to remove on the right of the image.
+define('EBML_ID_FLAGFORCED',                    0x15AA); //         [55][AA] -- Set if that track MUST be used during playback. There can be many forced track for a kind (audio, video or subs), the player should select the one which language matches the user preference or the default + forced track. Overlay MAY happen between a forced and non-forced track of the same kind.
+define('EBML_ID_MAXBLOCKADDITIONID',            0x15EE); //         [55][EE] -- The maximum value of BlockAddID. A value 0 means there is no BlockAdditions for this track.
+define('EBML_ID_WRITINGAPP',                    0x1741); //         [57][41] -- Writing application ("mkvmerge-0.3.3").
+define('EBML_ID_CLUSTERSILENTTRACKS',           0x1854); //         [58][54] -- The list of tracks that are not used in that part of the stream. It is useful when using overlay tracks on seeking. Then you should decide what track to use.
+define('EBML_ID_CLUSTERSILENTTRACKNUMBER',      0x18D7); //         [58][D7] -- One of the track number that are not used from now on in the stream. It could change later if not specified as silent in a further Cluster.
+define('EBML_ID_ATTACHEDFILE',                  0x21A7); //         [61][A7] -- An attached file.
+define('EBML_ID_CONTENTENCODING',               0x2240); //         [62][40] -- Settings for one content encoding like compression or encryption.
+define('EBML_ID_BITDEPTH',                      0x2264); //         [62][64] -- Bits per sample, mostly used for PCM.
+define('EBML_ID_CODECPRIVATE',                  0x23A2); //         [63][A2] -- Private data only known to the codec.
+define('EBML_ID_TARGETS',                       0x23C0); //         [63][C0] -- Contain all UIDs where the specified meta data apply. It is void to describe everything in the segment.
+define('EBML_ID_CHAPTERPHYSICALEQUIV',          0x23C3); //         [63][C3] -- Specify the physical equivalent of this ChapterAtom like "DVD" (60) or "SIDE" (50), see complete list of values.
+define('EBML_ID_TAGCHAPTERUID',                 0x23C4); //         [63][C4] -- A unique ID to identify the Chapter(s) the tags belong to. If the value is 0 at this level, the tags apply to all chapters in the Segment.
+define('EBML_ID_TAGTRACKUID',                   0x23C5); //         [63][C5] -- A unique ID to identify the Track(s) the tags belong to. If the value is 0 at this level, the tags apply to all tracks in the Segment.
+define('EBML_ID_TAGATTACHMENTUID',              0x23C6); //         [63][C6] -- A unique ID to identify the Attachment(s) the tags belong to. If the value is 0 at this level, the tags apply to all the attachments in the Segment.
+define('EBML_ID_TAGEDITIONUID',                 0x23C9); //         [63][C9] -- A unique ID to identify the EditionEntry(s) the tags belong to. If the value is 0 at this level, the tags apply to all editions in the Segment.
+define('EBML_ID_TARGETTYPE',                    0x23CA); //         [63][CA] -- An informational string that can be used to display the logical level of the target like "ALBUM", "TRACK", "MOVIE", "CHAPTER", etc (see TargetType).
+define('EBML_ID_TRACKTRANSLATE',                0x2624); //         [66][24] -- The track identification for the given Chapter Codec.
+define('EBML_ID_TRACKTRANSLATETRACKID',         0x26A5); //         [66][A5] -- The binary value used to represent this track in the chapter codec data. The format depends on the ChapProcessCodecID used.
+define('EBML_ID_TRACKTRANSLATECODEC',           0x26BF); //         [66][BF] -- The chapter codec using this ID (0: Matroska Script, 1: DVD-menu).
+define('EBML_ID_TRACKTRANSLATEEDITIONUID',      0x26FC); //         [66][FC] -- Specify an edition UID on which this translation applies. When not specified, it means for all editions found in the segment.
+define('EBML_ID_SIMPLETAG',                     0x27C8); //         [67][C8] -- Contains general information about the target.
+define('EBML_ID_TARGETTYPEVALUE',               0x28CA); //         [68][CA] -- A number to indicate the logical level of the target (see TargetType).
+define('EBML_ID_CHAPPROCESSCOMMAND',            0x2911); //         [69][11] -- Contains all the commands associated to the Atom.
+define('EBML_ID_CHAPPROCESSTIME',               0x2922); //         [69][22] -- Defines when the process command should be handled (0: during the whole chapter, 1: before starting playback, 2: after playback of the chapter).
+define('EBML_ID_CHAPTERTRANSLATE',              0x2924); //         [69][24] -- A tuple of corresponding ID used by chapter codecs to represent this segment.
+define('EBML_ID_CHAPPROCESSDATA',               0x2933); //         [69][33] -- Contains the command information. The data should be interpreted depending on the ChapProcessCodecID value. For ChapProcessCodecID = 1, the data correspond to the binary DVD cell pre/post commands.
+define('EBML_ID_CHAPPROCESS',                   0x2944); //         [69][44] -- Contains all the commands associated to the Atom.
+define('EBML_ID_CHAPPROCESSCODECID',            0x2955); //         [69][55] -- Contains the type of the codec used for the processing. A value of 0 means native Matroska processing (to be defined), a value of 1 means the DVD command set is used. More codec IDs can be added later.
+define('EBML_ID_CHAPTERTRANSLATEID',            0x29A5); //         [69][A5] -- The binary value used to represent this segment in the chapter codec data. The format depends on the ChapProcessCodecID used.
+define('EBML_ID_CHAPTERTRANSLATECODEC',         0x29BF); //         [69][BF] -- The chapter codec using this ID (0: Matroska Script, 1: DVD-menu).
+define('EBML_ID_CHAPTERTRANSLATEEDITIONUID',    0x29FC); //         [69][FC] -- Specify an edition UID on which this correspondance applies. When not specified, it means for all editions found in the segment.
+define('EBML_ID_CONTENTENCODINGS',              0x2D80); //         [6D][80] -- Settings for several content encoding mechanisms like compression or encryption.
+define('EBML_ID_MINCACHE',                      0x2DE7); //         [6D][E7] -- The minimum number of frames a player should be able to cache during playback. If set to 0, the reference pseudo-cache system is not used.
+define('EBML_ID_MAXCACHE',                      0x2DF8); //         [6D][F8] -- The maximum cache size required to store referenced frames in and the current frame. 0 means no cache is needed.
+define('EBML_ID_CHAPTERSEGMENTUID',             0x2E67); //         [6E][67] -- A segment to play in place of this chapter. Edition ChapterSegmentEditionUID should be used for this segment, otherwise no edition is used.
+define('EBML_ID_CHAPTERSEGMENTEDITIONUID',      0x2EBC); //         [6E][BC] -- The edition to play from the segment linked in ChapterSegmentUID.
+define('EBML_ID_TRACKOVERLAY',                  0x2FAB); //         [6F][AB] -- Specify that this track is an overlay track for the Track specified (in the u-integer). That means when this track has a gap (see SilentTracks) the overlay track should be used instead. The order of multiple TrackOverlay matters, the first one is the one that should be used. If not found it should be the second, etc.
+define('EBML_ID_TAG',                           0x3373); //         [73][73] -- Element containing elements specific to Tracks/Chapters.
+define('EBML_ID_SEGMENTFILENAME',               0x3384); //         [73][84] -- A filename corresponding to this segment.
+define('EBML_ID_SEGMENTUID',                    0x33A4); //         [73][A4] -- A randomly generated unique ID to identify the current segment between many others (128 bits).
+define('EBML_ID_CHAPTERUID',                    0x33C4); //         [73][C4] -- A unique ID to identify the Chapter.
+define('EBML_ID_TRACKUID',                      0x33C5); //         [73][C5] -- A unique ID to identify the Track. This should be kept the same when making a direct stream copy of the Track to another file.
+define('EBML_ID_ATTACHMENTLINK',                0x3446); //         [74][46] -- The UID of an attachment that is used by this codec.
+define('EBML_ID_CLUSTERBLOCKADDITIONS',         0x35A1); //         [75][A1] -- Contain additional blocks to complete the main one. An EBML parser that has no knowledge of the Block structure could still see and use/skip these data.
+define('EBML_ID_CHANNELPOSITIONS',              0x347B); //         [7D][7B] -- Table of horizontal angles for each successive channel, see appendix.
+define('EBML_ID_OUTPUTSAMPLINGFREQUENCY',       0x38B5); //         [78][B5] -- Real output sampling frequency in Hz (used for SBR techniques).
+define('EBML_ID_TITLE',                         0x3BA9); //         [7B][A9] -- General name of the segment.
+define('EBML_ID_CHAPTERDISPLAY',                  0x00); //             [80] -- Contains all possible strings to use for the chapter display.
+define('EBML_ID_TRACKTYPE',                       0x03); //             [83] -- A set of track types coded on 8 bits (1: video, 2: audio, 3: complex, 0x10: logo, 0x11: subtitle, 0x12: buttons, 0x20: control).
+define('EBML_ID_CHAPSTRING',                      0x05); //             [85] -- Contains the string to use as the chapter atom.
+define('EBML_ID_CODECID',                         0x06); //             [86] -- An ID corresponding to the codec, see the codec page for more info.
+define('EBML_ID_FLAGDEFAULT',                     0x08); //             [88] -- Set if that track (audio, video or subs) SHOULD be used if no language found matches the user preference.
+define('EBML_ID_CHAPTERTRACKNUMBER',              0x09); //             [89] -- UID of the Track to apply this chapter too. In the absense of a control track, choosing this chapter will select the listed Tracks and deselect unlisted tracks. Absense of this element indicates that the Chapter should be applied to any currently used Tracks.
+define('EBML_ID_CLUSTERSLICES',                   0x0E); //             [8E] -- Contains slices description.
+define('EBML_ID_CHAPTERTRACK',                    0x0F); //             [8F] -- List of tracks on which the chapter applies. If this element is not present, all tracks apply
+define('EBML_ID_CHAPTERTIMESTART',                0x11); //             [91] -- Timecode of the start of Chapter (not scaled).
+define('EBML_ID_CHAPTERTIMEEND',                  0x12); //             [92] -- Timecode of the end of Chapter (timecode excluded, not scaled).
+define('EBML_ID_CUEREFTIME',                      0x16); //             [96] -- Timecode of the referenced Block.
+define('EBML_ID_CUEREFCLUSTER',                   0x17); //             [97] -- Position of the Cluster containing the referenced Block.
+define('EBML_ID_CHAPTERFLAGHIDDEN',               0x18); //             [98] -- If a chapter is hidden (1), it should not be available to the user interface (but still to Control Tracks).
+define('EBML_ID_FLAGINTERLACED',                  0x1A); //             [9A] -- Set if the video is interlaced.
+define('EBML_ID_CLUSTERBLOCKDURATION',            0x1B); //             [9B] -- The duration of the Block (based on TimecodeScale). This element is mandatory when DefaultDuration is set for the track. When not written and with no DefaultDuration, the value is assumed to be the difference between the timecode of this Block and the timecode of the next Block in "display" order (not coding order). This element can be useful at the end of a Track (as there is not other Block available), or when there is a break in a track like for subtitle tracks.
+define('EBML_ID_FLAGLACING',                      0x1C); //             [9C] -- Set if the track may contain blocks using lacing.
+define('EBML_ID_CHANNELS',                        0x1F); //             [9F] -- Numbers of channels in the track.
+define('EBML_ID_CLUSTERBLOCKGROUP',               0x20); //             [A0] -- Basic container of information containing a single Block or BlockVirtual, and information specific to that Block/VirtualBlock.
+define('EBML_ID_CLUSTERBLOCK',                    0x21); //             [A1] -- Block containing the actual data to be rendered and a timecode relative to the Cluster Timecode.
+define('EBML_ID_CLUSTERBLOCKVIRTUAL',             0x22); //             [A2] -- A Block with no data. It must be stored in the stream at the place the real Block should be in display order.
+define('EBML_ID_CLUSTERSIMPLEBLOCK',              0x23); //             [A3] -- Similar to Block but without all the extra information, mostly used to reduced overhead when no extra feature is needed.
+define('EBML_ID_CLUSTERCODECSTATE',               0x24); //             [A4] -- The new codec state to use. Data interpretation is private to the codec. This information should always be referenced by a seek entry.
+define('EBML_ID_CLUSTERBLOCKADDITIONAL',          0x25); //             [A5] -- Interpreted by the codec as it wishes (using the BlockAddID).
+define('EBML_ID_CLUSTERBLOCKMORE',                0x26); //             [A6] -- Contain the BlockAdditional and some parameters.
+define('EBML_ID_CLUSTERPOSITION',                 0x27); //             [A7] -- Position of the Cluster in the segment (0 in live broadcast streams). It might help to resynchronise offset on damaged streams.
+define('EBML_ID_CODECDECODEALL',                  0x2A); //             [AA] -- The codec can decode potentially damaged data.
+define('EBML_ID_CLUSTERPREVSIZE',                 0x2B); //             [AB] -- Size of the previous Cluster, in octets. Can be useful for backward playing.
+define('EBML_ID_TRACKENTRY',                      0x2E); //             [AE] -- Describes a track with all elements.
+define('EBML_ID_CLUSTERENCRYPTEDBLOCK',           0x2F); //             [AF] -- Similar to SimpleBlock but the data inside the Block are Transformed (encrypt and/or signed).
+define('EBML_ID_PIXELWIDTH',                      0x30); //             [B0] -- Width of the encoded video frames in pixels.
+define('EBML_ID_CUETIME',                         0x33); //             [B3] -- Absolute timecode according to the segment time base.
+define('EBML_ID_SAMPLINGFREQUENCY',               0x35); //             [B5] -- Sampling frequency in Hz.
+define('EBML_ID_CHAPTERATOM',                     0x36); //             [B6] -- Contains the atom information to use as the chapter atom (apply to all tracks).
+define('EBML_ID_CUETRACKPOSITIONS',               0x37); //             [B7] -- Contain positions for different tracks corresponding to the timecode.
+define('EBML_ID_FLAGENABLED',                     0x39); //             [B9] -- Set if the track is used.
+define('EBML_ID_PIXELHEIGHT',                     0x3A); //             [BA] -- Height of the encoded video frames in pixels.
+define('EBML_ID_CUEPOINT',                        0x3B); //             [BB] -- Contains all information relative to a seek point in the segment.
+define('EBML_ID_CRC32',                           0x3F); //             [BF] -- The CRC is computed on all the data of the Master element it's in, regardless of its position. It's recommended to put the CRC value at the beggining of the Master element for easier reading. All level 1 elements should include a CRC-32.
+define('EBML_ID_CLUSTERBLOCKADDITIONID',          0x4B); //             [CB] -- The ID of the BlockAdditional element (0 is the main Block).
+define('EBML_ID_CLUSTERLACENUMBER',               0x4C); //             [CC] -- The reverse number of the frame in the lace (0 is the last frame, 1 is the next to last, etc). While there are a few files in the wild with this element, it is no longer in use and has been deprecated. Being able to interpret this element is not required for playback.
+define('EBML_ID_CLUSTERFRAMENUMBER',              0x4D); //             [CD] -- The number of the frame to generate from this lace with this delay (allow you to generate many frames from the same Block/Frame).
+define('EBML_ID_CLUSTERDELAY',                    0x4E); //             [CE] -- The (scaled) delay to apply to the element.
+define('EBML_ID_CLUSTERDURATION',                 0x4F); //             [CF] -- The (scaled) duration to apply to the element.
+define('EBML_ID_TRACKNUMBER',                     0x57); //             [D7] -- The track number as used in the Block Header (using more than 127 tracks is not encouraged, though the design allows an unlimited number).
+define('EBML_ID_CUEREFERENCE',                    0x5B); //             [DB] -- The Clusters containing the required referenced Blocks.
+define('EBML_ID_VIDEO',                           0x60); //             [E0] -- Video settings.
+define('EBML_ID_AUDIO',                           0x61); //             [E1] -- Audio settings.
+define('EBML_ID_CLUSTERTIMESLICE',                0x68); //             [E8] -- Contains extra time information about the data contained in the Block. While there are a few files in the wild with this element, it is no longer in use and has been deprecated. Being able to interpret this element is not required for playback.
+define('EBML_ID_CUECODECSTATE',                   0x6A); //             [EA] -- The position of the Codec State corresponding to this Cue element. 0 means that the data is taken from the initial Track Entry.
+define('EBML_ID_CUEREFCODECSTATE',                0x6B); //             [EB] -- The position of the Codec State corresponding to this referenced element. 0 means that the data is taken from the initial Track Entry.
+define('EBML_ID_VOID',                            0x6C); //             [EC] -- Used to void damaged data, to avoid unexpected behaviors when using damaged data. The content is discarded. Also used to reserve space in a sub-element for later use.
+define('EBML_ID_CLUSTERTIMECODE',                 0x67); //             [E7] -- Absolute timecode of the cluster (based on TimecodeScale).
+define('EBML_ID_CLUSTERBLOCKADDID',               0x6E); //             [EE] -- An ID to identify the BlockAdditional level.
+define('EBML_ID_CUECLUSTERPOSITION',              0x71); //             [F1] -- The position of the Cluster containing the required Block.
+define('EBML_ID_CUETRACK',                        0x77); //             [F7] -- The track for which a position is given.
+define('EBML_ID_CLUSTERREFERENCEPRIORITY',        0x7A); //             [FA] -- This frame is referenced and has the specified cache priority. In cache only a frame of the same or higher priority can replace this frame. A value of 0 means the frame is not referenced.
+define('EBML_ID_CLUSTERREFERENCEBLOCK',           0x7B); //             [FB] -- Timecode of another frame used as a reference (ie: B or P frame). The timecode is relative to the block it's attached to.
+define('EBML_ID_CLUSTERREFERENCEVIRTUAL',         0x7D); //             [FD] -- Relative position of the data that should be in position of the virtual block.
+
+
+/**
+* @tutorial http://www.matroska.org/technical/specs/index.html
+*
+* @todo Rewrite EBML parser to reduce it's size and honor default element values
+* @todo After rewrite implement stream size calculation, that will provide additional useful info and enable AAC/FLAC audio bitrate detection
+*/
+class getid3_matroska extends getid3_handler
+{
+	/**
+	 * If true, do not return information about CLUSTER chunks, since there's a lot of them
+	 * and they're not usually useful [default: TRUE].
+	 *
+	 * @var bool
+	 */
+	public $hide_clusters    = true;
+
+	/**
+	 * True to parse the whole file, not only header [default: FALSE].
+	 *
+	 * @var bool
+	 */
+	public $parse_whole_file = false;
+
+	/*
+	 * Private parser settings/placeholders.
+	 */
+	private $EBMLbuffer        = '';
+	private $EBMLbuffer_offset = 0;
+	private $EBMLbuffer_length = 0;
+	private $current_offset    = 0;
+	private $unuseful_elements = array(EBML_ID_CRC32, EBML_ID_VOID);
+
+	/**
+	 * @return bool
+	 */
+	public function Analyze()
+	{
+		$info = &$this->getid3->info;
+
+		// parse container
+		try {
+			$this->parseEBML($info);
+		} catch (Exception $e) {
+			$this->error('EBML parser: '.$e->getMessage());
+		}
+
+		// calculate playtime
+		if (isset($info['matroska']['info']) && is_array($info['matroska']['info'])) {
+			foreach ($info['matroska']['info'] as $key => $infoarray) {
+				if (isset($infoarray['Duration'])) {
+					// TimecodeScale is how many nanoseconds each Duration unit is
+					$info['playtime_seconds'] = $infoarray['Duration'] * ((isset($infoarray['TimecodeScale']) ? $infoarray['TimecodeScale'] : 1000000) / 1000000000);
+					break;
+				}
+			}
+		}
+
+		// extract tags
+		if (isset($info['matroska']['tags']) && is_array($info['matroska']['tags'])) {
+			foreach ($info['matroska']['tags'] as $key => $infoarray) {
+				$this->ExtractCommentsSimpleTag($infoarray);
+			}
+		}
+
+		// process tracks
+		if (isset($info['matroska']['tracks']['tracks']) && is_array($info['matroska']['tracks']['tracks'])) {
+			foreach ($info['matroska']['tracks']['tracks'] as $key => $trackarray) {
+
+				$track_info = array();
+				$track_info['dataformat'] = self::CodecIDtoCommonName($trackarray['CodecID']);
+				$track_info['default'] = (isset($trackarray['FlagDefault']) ? $trackarray['FlagDefault'] : true);
+				if (isset($trackarray['Name'])) { $track_info['name'] = $trackarray['Name']; }
+
+				switch ($trackarray['TrackType']) {
+
+					case 1: // Video
+						$track_info['resolution_x'] = $trackarray['PixelWidth'];
+						$track_info['resolution_y'] = $trackarray['PixelHeight'];
+						$track_info['display_unit'] = self::displayUnit(isset($trackarray['DisplayUnit']) ? $trackarray['DisplayUnit'] : 0);
+						$track_info['display_x']    = (isset($trackarray['DisplayWidth']) ? $trackarray['DisplayWidth'] : $trackarray['PixelWidth']);
+						$track_info['display_y']    = (isset($trackarray['DisplayHeight']) ? $trackarray['DisplayHeight'] : $trackarray['PixelHeight']);
+
+						if (isset($trackarray['PixelCropBottom']))  { $track_info['crop_bottom'] = $trackarray['PixelCropBottom']; }
+						if (isset($trackarray['PixelCropTop']))     { $track_info['crop_top']    = $trackarray['PixelCropTop']; }
+						if (isset($trackarray['PixelCropLeft']))    { $track_info['crop_left']   = $trackarray['PixelCropLeft']; }
+						if (isset($trackarray['PixelCropRight']))   { $track_info['crop_right']  = $trackarray['PixelCropRight']; }
+						if (!empty($trackarray['DefaultDuration'])) { $track_info['frame_rate']  = round(1000000000 / $trackarray['DefaultDuration'], 3); }
+						if (isset($trackarray['CodecName']))        { $track_info['codec']       = $trackarray['CodecName']; }
+
+						switch ($trackarray['CodecID']) {
+							case 'V_MS/VFW/FOURCC':
+								getid3_lib::IncludeDependency(GETID3_INCLUDEPATH.'module.audio-video.riff.php', __FILE__, true);
+
+								$parsed = getid3_riff::ParseBITMAPINFOHEADER($trackarray['CodecPrivate']);
+								$track_info['codec'] = getid3_riff::fourccLookup($parsed['fourcc']);
+								$info['matroska']['track_codec_parsed'][$trackarray['TrackNumber']] = $parsed;
+								break;
+
+							/*case 'V_MPEG4/ISO/AVC':
+								$h264['profile']    = getid3_lib::BigEndian2Int(substr($trackarray['CodecPrivate'], 1, 1));
+								$h264['level']      = getid3_lib::BigEndian2Int(substr($trackarray['CodecPrivate'], 3, 1));
+								$rn                 = getid3_lib::BigEndian2Int(substr($trackarray['CodecPrivate'], 4, 1));
+								$h264['NALUlength'] = ($rn & 3) + 1;
+								$rn                 = getid3_lib::BigEndian2Int(substr($trackarray['CodecPrivate'], 5, 1));
+								$nsps               = ($rn & 31);
+								$offset             = 6;
+								for ($i = 0; $i < $nsps; $i ++) {
+									$length        = getid3_lib::BigEndian2Int(substr($trackarray['CodecPrivate'], $offset, 2));
+									$h264['SPS'][] = substr($trackarray['CodecPrivate'], $offset + 2, $length);
+									$offset       += 2 + $length;
+								}
+								$npps               = getid3_lib::BigEndian2Int(substr($trackarray['CodecPrivate'], $offset, 1));
+								$offset            += 1;
+								for ($i = 0; $i < $npps; $i ++) {
+									$length        = getid3_lib::BigEndian2Int(substr($trackarray['CodecPrivate'], $offset, 2));
+									$h264['PPS'][] = substr($trackarray['CodecPrivate'], $offset + 2, $length);
+									$offset       += 2 + $length;
+								}
+								$info['matroska']['track_codec_parsed'][$trackarray['TrackNumber']] = $h264;
+								break;*/
+						}
+
+						$info['video']['streams'][$trackarray['TrackUID']] = $track_info;
+						break;
+
+					case 2: // Audio
+						$track_info['sample_rate'] = (isset($trackarray['SamplingFrequency']) ? $trackarray['SamplingFrequency'] : 8000.0);
+						$track_info['channels']    = (isset($trackarray['Channels']) ? $trackarray['Channels'] : 1);
+						$track_info['language']    = (isset($trackarray['Language']) ? $trackarray['Language'] : 'eng');
+						if (isset($trackarray['BitDepth']))  { $track_info['bits_per_sample'] = $trackarray['BitDepth']; }
+						if (isset($trackarray['CodecName'])) { $track_info['codec']           = $trackarray['CodecName']; }
+
+						switch ($trackarray['CodecID']) {
+							case 'A_PCM/INT/LIT':
+							case 'A_PCM/INT/BIG':
+								$track_info['bitrate'] = $track_info['sample_rate'] * $track_info['channels'] * $trackarray['BitDepth'];
+								break;
+
+							case 'A_AC3':
+							case 'A_EAC3':
+							case 'A_DTS':
+							case 'A_MPEG/L3':
+							case 'A_MPEG/L2':
+							case 'A_FLAC':
+								$module_dataformat = ($track_info['dataformat'] == 'mp2' ? 'mp3' : ($track_info['dataformat'] == 'eac3' ? 'ac3' : $track_info['dataformat']));
+								getid3_lib::IncludeDependency(GETID3_INCLUDEPATH.'module.audio.'.$module_dataformat.'.php', __FILE__, true);
+
+								if (!isset($info['matroska']['track_data_offsets'][$trackarray['TrackNumber']])) {
+									$this->warning('Unable to parse audio data ['.basename(__FILE__).':'.__LINE__.'] because $info[matroska][track_data_offsets]['.$trackarray['TrackNumber'].'] not set');
+									break;
+								}
+
+								// create temp instance
+								$getid3_temp = new getID3();
+								if ($track_info['dataformat'] != 'flac') {
+									$getid3_temp->openfile($this->getid3->filename, $this->getid3->info['filesize'], $this->getid3->fp);
+								}
+								$getid3_temp->info['avdataoffset'] = $info['matroska']['track_data_offsets'][$trackarray['TrackNumber']]['offset'];
+								if ($track_info['dataformat'][0] == 'm' || $track_info['dataformat'] == 'flac') {
+									$getid3_temp->info['avdataend'] = $info['matroska']['track_data_offsets'][$trackarray['TrackNumber']]['offset'] + $info['matroska']['track_data_offsets'][$trackarray['TrackNumber']]['length'];
+								}
+
+								// analyze
+								$class = 'getid3_'.$module_dataformat;
+								$header_data_key = $track_info['dataformat'][0] == 'm' ? 'mpeg' : $track_info['dataformat'];
+								$getid3_audio = new $class($getid3_temp, __CLASS__);
+								if ($track_info['dataformat'] == 'flac') {
+									$getid3_audio->AnalyzeString($trackarray['CodecPrivate']);
+								}
+								else {
+									$getid3_audio->Analyze();
+								}
+								if (!empty($getid3_temp->info[$header_data_key])) {
+									$info['matroska']['track_codec_parsed'][$trackarray['TrackNumber']] = $getid3_temp->info[$header_data_key];
+									if (isset($getid3_temp->info['audio']) && is_array($getid3_temp->info['audio'])) {
+										foreach ($getid3_temp->info['audio'] as $sub_key => $value) {
+											$track_info[$sub_key] = $value;
+										}
+									}
+								}
+								else {
+									$this->warning('Unable to parse audio data ['.basename(__FILE__).':'.__LINE__.'] because '.$class.'::Analyze() failed at offset '.$getid3_temp->info['avdataoffset']);
+								}
+
+								// copy errors and warnings
+								if (!empty($getid3_temp->info['error'])) {
+									foreach ($getid3_temp->info['error'] as $newerror) {
+										$this->warning($class.'() says: ['.$newerror.']');
+									}
+								}
+								if (!empty($getid3_temp->info['warning'])) {
+									foreach ($getid3_temp->info['warning'] as $newerror) {
+										$this->warning($class.'() says: ['.$newerror.']');
+									}
+								}
+								unset($getid3_temp, $getid3_audio);
+								break;
+
+							case 'A_AAC':
+							case 'A_AAC/MPEG2/LC':
+							case 'A_AAC/MPEG2/LC/SBR':
+							case 'A_AAC/MPEG4/LC':
+							case 'A_AAC/MPEG4/LC/SBR':
+								$this->warning($trackarray['CodecID'].' audio data contains no header, audio/video bitrates can\'t be calculated');
+								break;
+
+							case 'A_VORBIS':
+								if (!isset($trackarray['CodecPrivate'])) {
+									$this->warning('Unable to parse audio data ['.basename(__FILE__).':'.__LINE__.'] because CodecPrivate data not set');
+									break;
+								}
+								$vorbis_offset = strpos($trackarray['CodecPrivate'], 'vorbis', 1);
+								if ($vorbis_offset === false) {
+									$this->warning('Unable to parse audio data ['.basename(__FILE__).':'.__LINE__.'] because CodecPrivate data does not contain "vorbis" keyword');
+									break;
+								}
+								$vorbis_offset -= 1;
+
+								getid3_lib::IncludeDependency(GETID3_INCLUDEPATH.'module.audio.ogg.php', __FILE__, true);
+
+								// create temp instance
+								$getid3_temp = new getID3();
+
+								// analyze
+								$getid3_ogg = new getid3_ogg($getid3_temp);
+								$oggpageinfo['page_seqno'] = 0;
+								$getid3_ogg->ParseVorbisPageHeader($trackarray['CodecPrivate'], $vorbis_offset, $oggpageinfo);
+								if (!empty($getid3_temp->info['ogg'])) {
+									$info['matroska']['track_codec_parsed'][$trackarray['TrackNumber']] = $getid3_temp->info['ogg'];
+									if (isset($getid3_temp->info['audio']) && is_array($getid3_temp->info['audio'])) {
+										foreach ($getid3_temp->info['audio'] as $sub_key => $value) {
+											$track_info[$sub_key] = $value;
+										}
+									}
+								}
+
+								// copy errors and warnings
+								if (!empty($getid3_temp->info['error'])) {
+									foreach ($getid3_temp->info['error'] as $newerror) {
+										$this->warning('getid3_ogg() says: ['.$newerror.']');
+									}
+								}
+								if (!empty($getid3_temp->info['warning'])) {
+									foreach ($getid3_temp->info['warning'] as $newerror) {
+										$this->warning('getid3_ogg() says: ['.$newerror.']');
+									}
+								}
+
+								if (!empty($getid3_temp->info['ogg']['bitrate_nominal'])) {
+									$track_info['bitrate'] = $getid3_temp->info['ogg']['bitrate_nominal'];
+								}
+								unset($getid3_temp, $getid3_ogg, $oggpageinfo, $vorbis_offset);
+								break;
+
+							case 'A_MS/ACM':
+								getid3_lib::IncludeDependency(GETID3_INCLUDEPATH.'module.audio-video.riff.php', __FILE__, true);
+
+								$parsed = getid3_riff::parseWAVEFORMATex($trackarray['CodecPrivate']);
+								foreach ($parsed as $sub_key => $value) {
+									if ($sub_key != 'raw') {
+										$track_info[$sub_key] = $value;
+									}
+								}
+								$info['matroska']['track_codec_parsed'][$trackarray['TrackNumber']] = $parsed;
+								break;
+
+							default:
+								$this->warning('Unhandled audio type "'.(isset($trackarray['CodecID']) ? $trackarray['CodecID'] : '').'"');
+								break;
+						}
+
+						$info['audio']['streams'][$trackarray['TrackUID']] = $track_info;
+						break;
+				}
+			}
+
+			if (!empty($info['video']['streams'])) {
+				$info['video'] = self::getDefaultStreamInfo($info['video']['streams']);
+			}
+			if (!empty($info['audio']['streams'])) {
+				$info['audio'] = self::getDefaultStreamInfo($info['audio']['streams']);
+			}
+		}
+
+		// process attachments
+		if (isset($info['matroska']['attachments']) && $this->getid3->option_save_attachments !== getID3::ATTACHMENTS_NONE) {
+			foreach ($info['matroska']['attachments'] as $i => $entry) {
+				if (strpos($entry['FileMimeType'], 'image/') === 0 && !empty($entry['FileData'])) {
+					$info['matroska']['comments']['picture'][] = array('data' => $entry['FileData'], 'image_mime' => $entry['FileMimeType'], 'filename' => $entry['FileName']);
+				}
+			}
+		}
+
+		// determine mime type
+		if (!empty($info['video']['streams'])) {
+			$info['mime_type'] = ($info['matroska']['doctype'] == 'webm' ? 'video/webm' : 'video/x-matroska');
+		} elseif (!empty($info['audio']['streams'])) {
+			$info['mime_type'] = ($info['matroska']['doctype'] == 'webm' ? 'audio/webm' : 'audio/x-matroska');
+		} elseif (isset($info['mime_type'])) {
+			unset($info['mime_type']);
+		}
+
+		// use _STATISTICS_TAGS if available to set audio/video bitrates
+		if (!empty($info['matroska']['tags'])) {
+			$_STATISTICS_byTrackUID = array();
+			foreach ($info['matroska']['tags'] as $key1 => $value1) {
+				if (!empty($value1['Targets']['TagTrackUID'][0]) && !empty($value1['SimpleTag'])) {
+					foreach ($value1['SimpleTag'] as $key2 => $value2) {
+						if (!empty($value2['TagName']) && isset($value2['TagString'])) {
+							$_STATISTICS_byTrackUID[$value1['Targets']['TagTrackUID'][0]][$value2['TagName']] = $value2['TagString'];
+						}
+					}
+				}
+			}
+			foreach (array('audio','video') as $avtype) {
+				if (!empty($info[$avtype]['streams'])) {
+					foreach ($info[$avtype]['streams'] as $trackUID => $trackdata) {
+						if (!isset($trackdata['bitrate']) && !empty($_STATISTICS_byTrackUID[$trackUID]['BPS'])) {
+							$info[$avtype]['streams'][$trackUID]['bitrate'] = (int) $_STATISTICS_byTrackUID[$trackUID]['BPS'];
+							@$info[$avtype]['bitrate'] += $info[$avtype]['streams'][$trackUID]['bitrate'];
+						}
+					}
+				}
+			}
+		}
+
+		return true;
+	}
+
+	/**
+	 * @param array $info
+	 */
+	private function parseEBML(&$info) {
+		// http://www.matroska.org/technical/specs/index.html#EBMLBasics
+		$this->current_offset = $info['avdataoffset'];
+
+		while ($this->getEBMLelement($top_element, $info['avdataend'])) {
+			switch ($top_element['id']) {
+
+				case EBML_ID_EBML:
+					$info['matroska']['header']['offset'] = $top_element['offset'];
+					$info['matroska']['header']['length'] = $top_element['length'];
+
+					while ($this->getEBMLelement($element_data, $top_element['end'], true)) {
+						switch ($element_data['id']) {
+
+							case EBML_ID_EBMLVERSION:
+							case EBML_ID_EBMLREADVERSION:
+							case EBML_ID_EBMLMAXIDLENGTH:
+							case EBML_ID_EBMLMAXSIZELENGTH:
+							case EBML_ID_DOCTYPEVERSION:
+							case EBML_ID_DOCTYPEREADVERSION:
+								$element_data['data'] = getid3_lib::BigEndian2Int($element_data['data']);
+								break;
+
+							case EBML_ID_DOCTYPE:
+								$element_data['data'] = getid3_lib::trimNullByte($element_data['data']);
+								$info['matroska']['doctype'] = $element_data['data'];
+								$info['fileformat'] = $element_data['data'];
+								break;
+
+							default:
+								$this->unhandledElement('header', __LINE__, $element_data);
+								break;
+						}
+
+						unset($element_data['offset'], $element_data['end']);
+						$info['matroska']['header']['elements'][] = $element_data;
+					}
+					break;
+
+				case EBML_ID_SEGMENT:
+					$info['matroska']['segment'][0]['offset'] = $top_element['offset'];
+					$info['matroska']['segment'][0]['length'] = $top_element['length'];
+
+					while ($this->getEBMLelement($element_data, $top_element['end'])) {
+						if ($element_data['id'] != EBML_ID_CLUSTER || !$this->hide_clusters) { // collect clusters only if required
+							$info['matroska']['segments'][] = $element_data;
+						}
+						switch ($element_data['id']) {
+
+							case EBML_ID_SEEKHEAD: // Contains the position of other level 1 elements.
+
+								while ($this->getEBMLelement($seek_entry, $element_data['end'])) {
+									switch ($seek_entry['id']) {
+
+										case EBML_ID_SEEK: // Contains a single seek entry to an EBML element
+											while ($this->getEBMLelement($sub_seek_entry, $seek_entry['end'], true)) {
+
+												switch ($sub_seek_entry['id']) {
+
+													case EBML_ID_SEEKID:
+														$seek_entry['target_id']   = self::EBML2Int($sub_seek_entry['data']);
+														$seek_entry['target_name'] = self::EBMLidName($seek_entry['target_id']);
+														break;
+
+													case EBML_ID_SEEKPOSITION:
+														$seek_entry['target_offset'] = $element_data['offset'] + getid3_lib::BigEndian2Int($sub_seek_entry['data']);
+														break;
+
+													default:
+														$this->unhandledElement('seekhead.seek', __LINE__, $sub_seek_entry);												}
+														break;
+											}
+											if (!isset($seek_entry['target_id'])) {
+												$this->warning('seek_entry[target_id] unexpectedly not set at '.$seek_entry['offset']);
+												break;
+											}
+											if (($seek_entry['target_id'] != EBML_ID_CLUSTER) || !$this->hide_clusters) { // collect clusters only if required
+												$info['matroska']['seek'][] = $seek_entry;
+											}
+											break;
+
+										default:
+											$this->unhandledElement('seekhead', __LINE__, $seek_entry);
+											break;
+									}
+								}
+								break;
+
+							case EBML_ID_TRACKS: // A top-level block of information with many tracks described.
+								$info['matroska']['tracks'] = $element_data;
+
+								while ($this->getEBMLelement($track_entry, $element_data['end'])) {
+									switch ($track_entry['id']) {
+
+										case EBML_ID_TRACKENTRY: //subelements: Describes a track with all elements.
+
+											while ($this->getEBMLelement($subelement, $track_entry['end'], array(EBML_ID_VIDEO, EBML_ID_AUDIO, EBML_ID_CONTENTENCODINGS, EBML_ID_CODECPRIVATE))) {
+												switch ($subelement['id']) {
+
+													case EBML_ID_TRACKUID:
+														$track_entry[$subelement['id_name']] = getid3_lib::PrintHexBytes($subelement['data'], true, false);
+														break;
+													case EBML_ID_TRACKNUMBER:
+													case EBML_ID_TRACKTYPE:
+													case EBML_ID_MINCACHE:
+													case EBML_ID_MAXCACHE:
+													case EBML_ID_MAXBLOCKADDITIONID:
+													case EBML_ID_DEFAULTDURATION: // nanoseconds per frame
+														$track_entry[$subelement['id_name']] = getid3_lib::BigEndian2Int($subelement['data']);
+														break;
+
+													case EBML_ID_TRACKTIMECODESCALE:
+														$track_entry[$subelement['id_name']] = getid3_lib::BigEndian2Float($subelement['data']);
+														break;
+
+													case EBML_ID_CODECID:
+													case EBML_ID_LANGUAGE:
+													case EBML_ID_NAME:
+													case EBML_ID_CODECNAME:
+														$track_entry[$subelement['id_name']] = getid3_lib::trimNullByte($subelement['data']);
+														break;
+
+													case EBML_ID_CODECPRIVATE:
+														$track_entry[$subelement['id_name']] = $this->readEBMLelementData($subelement['length'], true);
+														break;
+
+													case EBML_ID_FLAGENABLED:
+													case EBML_ID_FLAGDEFAULT:
+													case EBML_ID_FLAGFORCED:
+													case EBML_ID_FLAGLACING:
+													case EBML_ID_CODECDECODEALL:
+														$track_entry[$subelement['id_name']] = (bool) getid3_lib::BigEndian2Int($subelement['data']);
+														break;
+
+													case EBML_ID_VIDEO:
+
+														while ($this->getEBMLelement($sub_subelement, $subelement['end'], true)) {
+															switch ($sub_subelement['id']) {
+
+																case EBML_ID_PIXELWIDTH:
+																case EBML_ID_PIXELHEIGHT:
+																case EBML_ID_PIXELCROPBOTTOM:
+																case EBML_ID_PIXELCROPTOP:
+																case EBML_ID_PIXELCROPLEFT:
+																case EBML_ID_PIXELCROPRIGHT:
+																case EBML_ID_DISPLAYWIDTH:
+																case EBML_ID_DISPLAYHEIGHT:
+																case EBML_ID_DISPLAYUNIT:
+																case EBML_ID_ASPECTRATIOTYPE:
+																case EBML_ID_STEREOMODE:
+																case EBML_ID_OLDSTEREOMODE:
+																	$track_entry[$sub_subelement['id_name']] = getid3_lib::BigEndian2Int($sub_subelement['data']);
+																	break;
+
+																case EBML_ID_FLAGINTERLACED:
+																	$track_entry[$sub_subelement['id_name']] = (bool)getid3_lib::BigEndian2Int($sub_subelement['data']);
+																	break;
+
+																case EBML_ID_GAMMAVALUE:
+																	$track_entry[$sub_subelement['id_name']] = getid3_lib::BigEndian2Float($sub_subelement['data']);
+																	break;
+
+																case EBML_ID_COLOURSPACE:
+																	$track_entry[$sub_subelement['id_name']] = getid3_lib::trimNullByte($sub_subelement['data']);
+																	break;
+
+																default:
+																	$this->unhandledElement('track.video', __LINE__, $sub_subelement);
+																	break;
+															}
+														}
+														break;
+
+													case EBML_ID_AUDIO:
+
+														while ($this->getEBMLelement($sub_subelement, $subelement['end'], true)) {
+															switch ($sub_subelement['id']) {
+
+																case EBML_ID_CHANNELS:
+																case EBML_ID_BITDEPTH:
+																	$track_entry[$sub_subelement['id_name']] = getid3_lib::BigEndian2Int($sub_subelement['data']);
+																	break;
+
+																case EBML_ID_SAMPLINGFREQUENCY:
+																case EBML_ID_OUTPUTSAMPLINGFREQUENCY:
+																	$track_entry[$sub_subelement['id_name']] = getid3_lib::BigEndian2Float($sub_subelement['data']);
+																	break;
+
+																case EBML_ID_CHANNELPOSITIONS:
+																	$track_entry[$sub_subelement['id_name']] = getid3_lib::trimNullByte($sub_subelement['data']);
+																	break;
+
+																default:
+																	$this->unhandledElement('track.audio', __LINE__, $sub_subelement);
+																	break;
+															}
+														}
+														break;
+
+													case EBML_ID_CONTENTENCODINGS:
+
+														while ($this->getEBMLelement($sub_subelement, $subelement['end'])) {
+															switch ($sub_subelement['id']) {
+
+																case EBML_ID_CONTENTENCODING:
+
+																	while ($this->getEBMLelement($sub_sub_subelement, $sub_subelement['end'], array(EBML_ID_CONTENTCOMPRESSION, EBML_ID_CONTENTENCRYPTION))) {
+																		switch ($sub_sub_subelement['id']) {
+
+																			case EBML_ID_CONTENTENCODINGORDER:
+																			case EBML_ID_CONTENTENCODINGSCOPE:
+																			case EBML_ID_CONTENTENCODINGTYPE:
+																				$track_entry[$sub_subelement['id_name']][$sub_sub_subelement['id_name']] = getid3_lib::BigEndian2Int($sub_sub_subelement['data']);
+																				break;
+
+																			case EBML_ID_CONTENTCOMPRESSION:
+
+																				while ($this->getEBMLelement($sub_sub_sub_subelement, $sub_sub_subelement['end'], true)) {
+																					switch ($sub_sub_sub_subelement['id']) {
+
+																						case EBML_ID_CONTENTCOMPALGO:
+																							$track_entry[$sub_subelement['id_name']][$sub_sub_subelement['id_name']][$sub_sub_sub_subelement['id_name']] = getid3_lib::BigEndian2Int($sub_sub_sub_subelement['data']);
+																							break;
+
+																						case EBML_ID_CONTENTCOMPSETTINGS:
+																							$track_entry[$sub_subelement['id_name']][$sub_sub_subelement['id_name']][$sub_sub_sub_subelement['id_name']] = $sub_sub_sub_subelement['data'];
+																							break;
+
+																						default:
+																							$this->unhandledElement('track.contentencodings.contentencoding.contentcompression', __LINE__, $sub_sub_sub_subelement);
+																							break;
+																					}
+																				}
+																				break;
+
+																			case EBML_ID_CONTENTENCRYPTION:
+
+																				while ($this->getEBMLelement($sub_sub_sub_subelement, $sub_sub_subelement['end'], true)) {
+																					switch ($sub_sub_sub_subelement['id']) {
+
+																						case EBML_ID_CONTENTENCALGO:
+																						case EBML_ID_CONTENTSIGALGO:
+																						case EBML_ID_CONTENTSIGHASHALGO:
+																							$track_entry[$sub_subelement['id_name']][$sub_sub_subelement['id_name']][$sub_sub_sub_subelement['id_name']] = getid3_lib::BigEndian2Int($sub_sub_sub_subelement['data']);
+																							break;
+
+																						case EBML_ID_CONTENTENCKEYID:
+																						case EBML_ID_CONTENTSIGNATURE:
+																						case EBML_ID_CONTENTSIGKEYID:
+																							$track_entry[$sub_subelement['id_name']][$sub_sub_subelement['id_name']][$sub_sub_sub_subelement['id_name']] = $sub_sub_sub_subelement['data'];
+																							break;
+
+																						default:
+																							$this->unhandledElement('track.contentencodings.contentencoding.contentcompression', __LINE__, $sub_sub_sub_subelement);
+																							break;
+																					}
+																				}
+																				break;
+
+																			default:
+																				$this->unhandledElement('track.contentencodings.contentencoding', __LINE__, $sub_sub_subelement);
+																				break;
+																		}
+																	}
+																	break;
+
+																default:
+																	$this->unhandledElement('track.contentencodings', __LINE__, $sub_subelement);
+																	break;
+															}
+														}
+														break;
+
+													default:
+														$this->unhandledElement('track', __LINE__, $subelement);
+														break;
+												}
+											}
+
+											$info['matroska']['tracks']['tracks'][] = $track_entry;
+											break;
+
+										default:
+											$this->unhandledElement('tracks', __LINE__, $track_entry);
+											break;
+									}
+								}
+								break;
+
+							case EBML_ID_INFO: // Contains miscellaneous general information and statistics on the file.
+								$info_entry = array();
+
+								while ($this->getEBMLelement($subelement, $element_data['end'], true)) {
+									switch ($subelement['id']) {
+
+										case EBML_ID_TIMECODESCALE:
+											$info_entry[$subelement['id_name']] = getid3_lib::BigEndian2Int($subelement['data']);
+											break;
+
+										case EBML_ID_DURATION:
+											$info_entry[$subelement['id_name']] = getid3_lib::BigEndian2Float($subelement['data']);
+											break;
+
+										case EBML_ID_DATEUTC:
+											$info_entry[$subelement['id_name']]         = getid3_lib::BigEndian2Int($subelement['data']);
+											$info_entry[$subelement['id_name'].'_unix'] = self::EBMLdate2unix($info_entry[$subelement['id_name']]);
+											break;
+
+										case EBML_ID_SEGMENTUID:
+										case EBML_ID_PREVUID:
+										case EBML_ID_NEXTUID:
+											$info_entry[$subelement['id_name']] = getid3_lib::trimNullByte($subelement['data']);
+											break;
+
+										case EBML_ID_SEGMENTFAMILY:
+											$info_entry[$subelement['id_name']][] = getid3_lib::trimNullByte($subelement['data']);
+											break;
+
+										case EBML_ID_SEGMENTFILENAME:
+										case EBML_ID_PREVFILENAME:
+										case EBML_ID_NEXTFILENAME:
+										case EBML_ID_TITLE:
+										case EBML_ID_MUXINGAPP:
+										case EBML_ID_WRITINGAPP:
+											$info_entry[$subelement['id_name']] = getid3_lib::trimNullByte($subelement['data']);
+											$info['matroska']['comments'][strtolower($subelement['id_name'])][] = $info_entry[$subelement['id_name']];
+											break;
+
+										case EBML_ID_CHAPTERTRANSLATE:
+											$chaptertranslate_entry = array();
+
+											while ($this->getEBMLelement($sub_subelement, $subelement['end'], true)) {
+												switch ($sub_subelement['id']) {
+
+													case EBML_ID_CHAPTERTRANSLATEEDITIONUID:
+														$chaptertranslate_entry[$sub_subelement['id_name']][] = getid3_lib::BigEndian2Int($sub_subelement['data']);
+														break;
+
+													case EBML_ID_CHAPTERTRANSLATECODEC:
+														$chaptertranslate_entry[$sub_subelement['id_name']] = getid3_lib::BigEndian2Int($sub_subelement['data']);
+														break;
+
+													case EBML_ID_CHAPTERTRANSLATEID:
+														$chaptertranslate_entry[$sub_subelement['id_name']] = getid3_lib::trimNullByte($sub_subelement['data']);
+														break;
+
+													default:
+														$this->unhandledElement('info.chaptertranslate', __LINE__, $sub_subelement);
+														break;
+												}
+											}
+											$info_entry[$subelement['id_name']] = $chaptertranslate_entry;
+											break;
+
+										default:
+											$this->unhandledElement('info', __LINE__, $subelement);
+											break;
+									}
+								}
+								$info['matroska']['info'][] = $info_entry;
+								break;
+
+							case EBML_ID_CUES: // A top-level element to speed seeking access. All entries are local to the segment. Should be mandatory for non "live" streams.
+								if ($this->hide_clusters) { // do not parse cues if hide clusters is "ON" till they point to clusters anyway
+									$this->current_offset = $element_data['end'];
+									break;
+								}
+								$cues_entry = array();
+
+								while ($this->getEBMLelement($subelement, $element_data['end'])) {
+									switch ($subelement['id']) {
+
+										case EBML_ID_CUEPOINT:
+											$cuepoint_entry = array();
+
+											while ($this->getEBMLelement($sub_subelement, $subelement['end'], array(EBML_ID_CUETRACKPOSITIONS))) {
+												switch ($sub_subelement['id']) {
+
+													case EBML_ID_CUETRACKPOSITIONS:
+														$cuetrackpositions_entry = array();
+
+														while ($this->getEBMLelement($sub_sub_subelement, $sub_subelement['end'], true)) {
+															switch ($sub_sub_subelement['id']) {
+
+																case EBML_ID_CUETRACK:
+																case EBML_ID_CUECLUSTERPOSITION:
+																case EBML_ID_CUEBLOCKNUMBER:
+																case EBML_ID_CUECODECSTATE:
+																	$cuetrackpositions_entry[$sub_sub_subelement['id_name']] = getid3_lib::BigEndian2Int($sub_sub_subelement['data']);
+																	break;
+
+																default:
+																	$this->unhandledElement('cues.cuepoint.cuetrackpositions', __LINE__, $sub_sub_subelement);
+																	break;
+															}
+														}
+														$cuepoint_entry[$sub_subelement['id_name']][] = $cuetrackpositions_entry;
+														break;
+
+													case EBML_ID_CUETIME:
+														$cuepoint_entry[$sub_subelement['id_name']] = getid3_lib::BigEndian2Int($sub_subelement['data']);
+														break;
+
+													default:
+														$this->unhandledElement('cues.cuepoint', __LINE__, $sub_subelement);
+														break;
+												}
+											}
+											$cues_entry[] = $cuepoint_entry;
+											break;
+
+										default:
+											$this->unhandledElement('cues', __LINE__, $subelement);
+											break;
+									}
+								}
+								$info['matroska']['cues'] = $cues_entry;
+								break;
+
+							case EBML_ID_TAGS: // Element containing elements specific to Tracks/Chapters.
+								$tags_entry = array();
+
+								while ($this->getEBMLelement($subelement, $element_data['end'], false)) {
+									switch ($subelement['id']) {
+
+										case EBML_ID_TAG:
+											$tag_entry = array();
+
+											while ($this->getEBMLelement($sub_subelement, $subelement['end'], false)) {
+												switch ($sub_subelement['id']) {
+
+													case EBML_ID_TARGETS:
+														$targets_entry = array();
+
+														while ($this->getEBMLelement($sub_sub_subelement, $sub_subelement['end'], true)) {
+															switch ($sub_sub_subelement['id']) {
+
+																case EBML_ID_TARGETTYPEVALUE:
+																	$targets_entry[$sub_sub_subelement['id_name']] = getid3_lib::BigEndian2Int($sub_sub_subelement['data']);
+																	$targets_entry[strtolower($sub_sub_subelement['id_name']).'_long'] = self::TargetTypeValue($targets_entry[$sub_sub_subelement['id_name']]);
+																	break;
+
+																case EBML_ID_TARGETTYPE:
+																	$targets_entry[$sub_sub_subelement['id_name']] = $sub_sub_subelement['data'];
+																	break;
+
+																case EBML_ID_TAGTRACKUID:
+																case EBML_ID_TAGEDITIONUID:
+																case EBML_ID_TAGCHAPTERUID:
+																case EBML_ID_TAGATTACHMENTUID:
+																	$targets_entry[$sub_sub_subelement['id_name']][] = getid3_lib::PrintHexBytes($sub_sub_subelement['data'], true, false);
+																	break;
+
+																default:
+																	$this->unhandledElement('tags.tag.targets', __LINE__, $sub_sub_subelement);
+																	break;
+															}
+														}
+														$tag_entry[$sub_subelement['id_name']] = $targets_entry;
+														break;
+
+													case EBML_ID_SIMPLETAG:
+														$tag_entry[$sub_subelement['id_name']][] = $this->HandleEMBLSimpleTag($sub_subelement['end']);
+														break;
+
+													default:
+														$this->unhandledElement('tags.tag', __LINE__, $sub_subelement);
+														break;
+												}
+											}
+											$tags_entry[] = $tag_entry;
+											break;
+
+										default:
+											$this->unhandledElement('tags', __LINE__, $subelement);
+											break;
+									}
+								}
+								$info['matroska']['tags'] = $tags_entry;
+								break;
+
+							case EBML_ID_ATTACHMENTS: // Contain attached files.
+
+								while ($this->getEBMLelement($subelement, $element_data['end'])) {
+									switch ($subelement['id']) {
+
+										case EBML_ID_ATTACHEDFILE:
+											$attachedfile_entry = array();
+
+											while ($this->getEBMLelement($sub_subelement, $subelement['end'], array(EBML_ID_FILEDATA))) {
+												switch ($sub_subelement['id']) {
+
+													case EBML_ID_FILEDESCRIPTION:
+													case EBML_ID_FILENAME:
+													case EBML_ID_FILEMIMETYPE:
+														$attachedfile_entry[$sub_subelement['id_name']] = $sub_subelement['data'];
+														break;
+
+													case EBML_ID_FILEDATA:
+														$attachedfile_entry['data_offset'] = $this->current_offset;
+														$attachedfile_entry['data_length'] = $sub_subelement['length'];
+
+														$attachedfile_entry[$sub_subelement['id_name']] = $this->saveAttachment(
+															$attachedfile_entry['FileName'],
+															$attachedfile_entry['data_offset'],
+															$attachedfile_entry['data_length']);
+
+														$this->current_offset = $sub_subelement['end'];
+														break;
+
+													case EBML_ID_FILEUID:
+														$attachedfile_entry[$sub_subelement['id_name']] = getid3_lib::BigEndian2Int($sub_subelement['data']);
+														break;
+
+													default:
+														$this->unhandledElement('attachments.attachedfile', __LINE__, $sub_subelement);
+														break;
+												}
+											}
+											$info['matroska']['attachments'][] = $attachedfile_entry;
+											break;
+
+										default:
+											$this->unhandledElement('attachments', __LINE__, $subelement);
+											break;
+									}
+								}
+								break;
+
+							case EBML_ID_CHAPTERS:
+
+								while ($this->getEBMLelement($subelement, $element_data['end'])) {
+									switch ($subelement['id']) {
+
+										case EBML_ID_EDITIONENTRY:
+											$editionentry_entry = array();
+
+											while ($this->getEBMLelement($sub_subelement, $subelement['end'], array(EBML_ID_CHAPTERATOM))) {
+												switch ($sub_subelement['id']) {
+
+													case EBML_ID_EDITIONUID:
+														$editionentry_entry[$sub_subelement['id_name']] = getid3_lib::BigEndian2Int($sub_subelement['data']);
+														break;
+
+													case EBML_ID_EDITIONFLAGHIDDEN:
+													case EBML_ID_EDITIONFLAGDEFAULT:
+													case EBML_ID_EDITIONFLAGORDERED:
+														$editionentry_entry[$sub_subelement['id_name']] = (bool)getid3_lib::BigEndian2Int($sub_subelement['data']);
+														break;
+
+													case EBML_ID_CHAPTERATOM:
+														$chapteratom_entry = array();
+
+														while ($this->getEBMLelement($sub_sub_subelement, $sub_subelement['end'], array(EBML_ID_CHAPTERTRACK, EBML_ID_CHAPTERDISPLAY))) {
+															switch ($sub_sub_subelement['id']) {
+
+																case EBML_ID_CHAPTERSEGMENTUID:
+																case EBML_ID_CHAPTERSEGMENTEDITIONUID:
+																	$chapteratom_entry[$sub_sub_subelement['id_name']] = $sub_sub_subelement['data'];
+																	break;
+
+																case EBML_ID_CHAPTERFLAGENABLED:
+																case EBML_ID_CHAPTERFLAGHIDDEN:
+																	$chapteratom_entry[$sub_sub_subelement['id_name']] = (bool)getid3_lib::BigEndian2Int($sub_sub_subelement['data']);
+																	break;
+
+																case EBML_ID_CHAPTERUID:
+																case EBML_ID_CHAPTERTIMESTART:
+																case EBML_ID_CHAPTERTIMEEND:
+																	$chapteratom_entry[$sub_sub_subelement['id_name']] = getid3_lib::BigEndian2Int($sub_sub_subelement['data']);
+																	break;
+
+																case EBML_ID_CHAPTERTRACK:
+																	$chaptertrack_entry = array();
+
+																	while ($this->getEBMLelement($sub_sub_sub_subelement, $sub_sub_subelement['end'], true)) {
+																		switch ($sub_sub_sub_subelement['id']) {
+
+																			case EBML_ID_CHAPTERTRACKNUMBER:
+																				$chaptertrack_entry[$sub_sub_sub_subelement['id_name']] = getid3_lib::BigEndian2Int($sub_sub_sub_subelement['data']);
+																				break;
+
+																			default:
+																				$this->unhandledElement('chapters.editionentry.chapteratom.chaptertrack', __LINE__, $sub_sub_sub_subelement);
+																				break;
+																		}
+																	}
+																	$chapteratom_entry[$sub_sub_subelement['id_name']][] = $chaptertrack_entry;
+																	break;
+
+																case EBML_ID_CHAPTERDISPLAY:
+																	$chapterdisplay_entry = array();
+
+																	while ($this->getEBMLelement($sub_sub_sub_subelement, $sub_sub_subelement['end'], true)) {
+																		switch ($sub_sub_sub_subelement['id']) {
+
+																			case EBML_ID_CHAPSTRING:
+																			case EBML_ID_CHAPLANGUAGE:
+																			case EBML_ID_CHAPCOUNTRY:
+																				$chapterdisplay_entry[$sub_sub_sub_subelement['id_name']] = $sub_sub_sub_subelement['data'];
+																				break;
+
+																			default:
+																				$this->unhandledElement('chapters.editionentry.chapteratom.chapterdisplay', __LINE__, $sub_sub_sub_subelement);
+																				break;
+																		}
+																	}
+																	$chapteratom_entry[$sub_sub_subelement['id_name']][] = $chapterdisplay_entry;
+																	break;
+
+																default:
+																	$this->unhandledElement('chapters.editionentry.chapteratom', __LINE__, $sub_sub_subelement);
+																	break;
+															}
+														}
+														$editionentry_entry[$sub_subelement['id_name']][] = $chapteratom_entry;
+														break;
+
+													default:
+														$this->unhandledElement('chapters.editionentry', __LINE__, $sub_subelement);
+														break;
+												}
+											}
+											$info['matroska']['chapters'][] = $editionentry_entry;
+											break;
+
+										default:
+											$this->unhandledElement('chapters', __LINE__, $subelement);
+											break;
+									}
+								}
+								break;
+
+							case EBML_ID_CLUSTER: // The lower level element containing the (monolithic) Block structure.
+								$cluster_entry = array();
+
+								while ($this->getEBMLelement($subelement, $element_data['end'], array(EBML_ID_CLUSTERSILENTTRACKS, EBML_ID_CLUSTERBLOCKGROUP, EBML_ID_CLUSTERSIMPLEBLOCK))) {
+									switch ($subelement['id']) {
+
+										case EBML_ID_CLUSTERTIMECODE:
+										case EBML_ID_CLUSTERPOSITION:
+										case EBML_ID_CLUSTERPREVSIZE:
+											$cluster_entry[$subelement['id_name']] = getid3_lib::BigEndian2Int($subelement['data']);
+											break;
+
+										case EBML_ID_CLUSTERSILENTTRACKS:
+											$cluster_silent_tracks = array();
+
+											while ($this->getEBMLelement($sub_subelement, $subelement['end'], true)) {
+												switch ($sub_subelement['id']) {
+
+													case EBML_ID_CLUSTERSILENTTRACKNUMBER:
+														$cluster_silent_tracks[] = getid3_lib::BigEndian2Int($sub_subelement['data']);
+														break;
+
+													default:
+														$this->unhandledElement('cluster.silenttracks', __LINE__, $sub_subelement);
+														break;
+												}
+											}
+											$cluster_entry[$subelement['id_name']][] = $cluster_silent_tracks;
+											break;
+
+										case EBML_ID_CLUSTERBLOCKGROUP:
+											$cluster_block_group = array('offset' => $this->current_offset);
+
+											while ($this->getEBMLelement($sub_subelement, $subelement['end'], array(EBML_ID_CLUSTERBLOCK))) {
+												switch ($sub_subelement['id']) {
+
+													case EBML_ID_CLUSTERBLOCK:
+														$cluster_block_group[$sub_subelement['id_name']] = $this->HandleEMBLClusterBlock($sub_subelement, EBML_ID_CLUSTERBLOCK, $info);
+														break;
+
+													case EBML_ID_CLUSTERREFERENCEPRIORITY: // unsigned-int
+													case EBML_ID_CLUSTERBLOCKDURATION:     // unsigned-int
+														$cluster_block_group[$sub_subelement['id_name']] = getid3_lib::BigEndian2Int($sub_subelement['data']);
+														break;
+
+													case EBML_ID_CLUSTERREFERENCEBLOCK:    // signed-int
+														$cluster_block_group[$sub_subelement['id_name']][] = getid3_lib::BigEndian2Int($sub_subelement['data'], false, true);
+														break;
+
+													case EBML_ID_CLUSTERCODECSTATE:
+														$cluster_block_group[$sub_subelement['id_name']] = getid3_lib::trimNullByte($sub_subelement['data']);
+														break;
+
+													default:
+														$this->unhandledElement('clusters.blockgroup', __LINE__, $sub_subelement);
+														break;
+												}
+											}
+											$cluster_entry[$subelement['id_name']][] = $cluster_block_group;
+											break;
+
+										case EBML_ID_CLUSTERSIMPLEBLOCK:
+											$cluster_entry[$subelement['id_name']][] = $this->HandleEMBLClusterBlock($subelement, EBML_ID_CLUSTERSIMPLEBLOCK, $info);
+											break;
+
+										default:
+											$this->unhandledElement('cluster', __LINE__, $subelement);
+											break;
+									}
+									$this->current_offset = $subelement['end'];
+								}
+								if (!$this->hide_clusters) {
+									$info['matroska']['cluster'][] = $cluster_entry;
+								}
+
+								// check to see if all the data we need exists already, if so, break out of the loop
+								if (!$this->parse_whole_file) {
+									if (isset($info['matroska']['info']) && is_array($info['matroska']['info'])) {
+										if (isset($info['matroska']['tracks']['tracks']) && is_array($info['matroska']['tracks']['tracks'])) {
+											if (count($info['matroska']['track_data_offsets']) == count($info['matroska']['tracks']['tracks'])) {
+												return;
+											}
+										}
+									}
+								}
+								break;
+
+							default:
+								$this->unhandledElement('segment', __LINE__, $element_data);
+								break;
+						}
+					}
+					break;
+
+				default:
+					$this->unhandledElement('root', __LINE__, $top_element);
+					break;
+			}
+		}
+	}
+
+	/**
+	 * @param int $min_data
+	 *
+	 * @return bool
+	 */
+	private function EnsureBufferHasEnoughData($min_data=1024) {
+		if (($this->current_offset - $this->EBMLbuffer_offset) >= ($this->EBMLbuffer_length - $min_data)) {
+			$read_bytes = max($min_data, $this->getid3->fread_buffer_size());
+
+			try {
+				$this->fseek($this->current_offset);
+				$this->EBMLbuffer_offset = $this->current_offset;
+				$this->EBMLbuffer        = $this->fread($read_bytes);
+				$this->EBMLbuffer_length = strlen($this->EBMLbuffer);
+			} catch (getid3_exception $e) {
+				$this->warning('EBML parser: '.$e->getMessage());
+				return false;
+			}
+
+			if ($this->EBMLbuffer_length == 0 && $this->feof()) {
+				return $this->error('EBML parser: ran out of file at offset '.$this->current_offset);
+			}
+		}
+		return true;
+	}
+
+	/**
+	 * @return int|float|false
+	 */
+	private function readEBMLint() {
+		$actual_offset = $this->current_offset - $this->EBMLbuffer_offset;
+
+		// get length of integer
+		$first_byte_int = ord($this->EBMLbuffer[$actual_offset]);
+		if       (0x80 & $first_byte_int) {
+			$length = 1;
+		} elseif (0x40 & $first_byte_int) {
+			$length = 2;
+		} elseif (0x20 & $first_byte_int) {
+			$length = 3;
+		} elseif (0x10 & $first_byte_int) {
+			$length = 4;
+		} elseif (0x08 & $first_byte_int) {
+			$length = 5;
+		} elseif (0x04 & $first_byte_int) {
+			$length = 6;
+		} elseif (0x02 & $first_byte_int) {
+			$length = 7;
+		} elseif (0x01 & $first_byte_int) {
+			$length = 8;
+		} else {
+			throw new Exception('invalid EBML integer (leading 0x00) at '.$this->current_offset);
+		}
+
+		// read
+		$int_value = self::EBML2Int(substr($this->EBMLbuffer, $actual_offset, $length));
+		$this->current_offset += $length;
+
+		return $int_value;
+	}
+
+	/**
+	 * @param int  $length
+	 * @param bool $check_buffer
+	 *
+	 * @return string|false
+	 */
+	private function readEBMLelementData($length, $check_buffer=false) {
+		if ($check_buffer && !$this->EnsureBufferHasEnoughData($length)) {
+			return false;
+		}
+		$data = substr($this->EBMLbuffer, $this->current_offset - $this->EBMLbuffer_offset, $length);
+		$this->current_offset += $length;
+		return $data;
+	}
+
+	/**
+	 * @param array      $element
+	 * @param int        $parent_end
+	 * @param array|bool $get_data
+	 *
+	 * @return bool
+	 */
+	private function getEBMLelement(&$element, $parent_end, $get_data=false) {
+		if ($this->current_offset >= $parent_end) {
+			return false;
+		}
+
+		if (!$this->EnsureBufferHasEnoughData()) {
+			$this->current_offset = PHP_INT_MAX; // do not exit parser right now, allow to finish current loop to gather maximum information
+			return false;
+		}
+
+		$element = array();
+
+		// set offset
+		$element['offset'] = $this->current_offset;
+
+		// get ID
+		$element['id'] = $this->readEBMLint();
+
+		// get name
+		$element['id_name'] = self::EBMLidName($element['id']);
+
+		// get length
+		$element['length'] = $this->readEBMLint();
+
+		// get end offset
+		$element['end'] = $this->current_offset + $element['length'];
+
+		// get raw data
+		$dont_parse = (in_array($element['id'], $this->unuseful_elements) || $element['id_name'] == dechex($element['id']));
+		if (($get_data === true || (is_array($get_data) && !in_array($element['id'], $get_data))) && !$dont_parse) {
+			$element['data'] = $this->readEBMLelementData($element['length'], $element);
+		}
+
+		return true;
+	}
+
+	/**
+	 * @param string $type
+	 * @param int    $line
+	 * @param array  $element
+	 */
+	private function unhandledElement($type, $line, $element) {
+		// warn only about unknown and missed elements, not about unuseful
+		if (!in_array($element['id'], $this->unuseful_elements)) {
+			$this->warning('Unhandled '.$type.' element ['.basename(__FILE__).':'.$line.'] ('.$element['id'].'::'.$element['id_name'].' ['.$element['length'].' bytes]) at '.$element['offset']);
+		}
+
+		// increase offset for unparsed elements
+		if (!isset($element['data'])) {
+			$this->current_offset = $element['end'];
+		}
+	}
+
+	/**
+	 * @param array $SimpleTagArray
+	 *
+	 * @return bool
+	 */
+	private function ExtractCommentsSimpleTag($SimpleTagArray) {
+		if (!empty($SimpleTagArray['SimpleTag'])) {
+			foreach ($SimpleTagArray['SimpleTag'] as $SimpleTagKey => $SimpleTagData) {
+				if (!empty($SimpleTagData['TagName']) && !empty($SimpleTagData['TagString'])) {
+					$this->getid3->info['matroska']['comments'][strtolower($SimpleTagData['TagName'])][] = $SimpleTagData['TagString'];
+				}
+				if (!empty($SimpleTagData['SimpleTag'])) {
+					$this->ExtractCommentsSimpleTag($SimpleTagData);
+				}
+			}
+		}
+
+		return true;
+	}
+
+	/**
+	 * @param int $parent_end
+	 *
+	 * @return array
+	 */
+	private function HandleEMBLSimpleTag($parent_end) {
+		$simpletag_entry = array();
+
+		while ($this->getEBMLelement($element, $parent_end, array(EBML_ID_SIMPLETAG))) {
+			switch ($element['id']) {
+
+				case EBML_ID_TAGNAME:
+				case EBML_ID_TAGLANGUAGE:
+				case EBML_ID_TAGSTRING:
+				case EBML_ID_TAGBINARY:
+					$simpletag_entry[$element['id_name']] = $element['data'];
+					break;
+
+				case EBML_ID_SIMPLETAG:
+					$simpletag_entry[$element['id_name']][] = $this->HandleEMBLSimpleTag($element['end']);
+					break;
+
+				case EBML_ID_TAGDEFAULT:
+					$simpletag_entry[$element['id_name']] = (bool)getid3_lib::BigEndian2Int($element['data']);
+					break;
+
+				default:
+					$this->unhandledElement('tag.simpletag', __LINE__, $element);
+					break;
+			}
+		}
+
+		return $simpletag_entry;
+	}
+
+	/**
+	 * @param array $element
+	 * @param int   $block_type
+	 * @param array $info
+	 *
+	 * @return array
+	 */
+	private function HandleEMBLClusterBlock($element, $block_type, &$info) {
+		// http://www.matroska.org/technical/specs/index.html#block_structure
+		// http://www.matroska.org/technical/specs/index.html#simpleblock_structure
+
+		$block_data = array();
+		$block_data['tracknumber'] = $this->readEBMLint();
+		$block_data['timecode']    = getid3_lib::BigEndian2Int($this->readEBMLelementData(2), false, true);
+		$block_data['flags_raw']   = getid3_lib::BigEndian2Int($this->readEBMLelementData(1));
+
+		if ($block_type == EBML_ID_CLUSTERSIMPLEBLOCK) {
+			$block_data['flags']['keyframe']  = (($block_data['flags_raw'] & 0x80) >> 7);
+			//$block_data['flags']['reserved1'] = (($block_data['flags_raw'] & 0x70) >> 4);
+		}
+		else {
+			//$block_data['flags']['reserved1'] = (($block_data['flags_raw'] & 0xF0) >> 4);
+		}
+		$block_data['flags']['invisible'] = (bool)(($block_data['flags_raw'] & 0x08) >> 3);
+		$block_data['flags']['lacing']    =       (($block_data['flags_raw'] & 0x06) >> 1);  // 00=no lacing; 01=Xiph lacing; 11=EBML lacing; 10=fixed-size lacing
+		if ($block_type == EBML_ID_CLUSTERSIMPLEBLOCK) {
+			$block_data['flags']['discardable'] = (($block_data['flags_raw'] & 0x01));
+		}
+		else {
+			//$block_data['flags']['reserved2'] = (($block_data['flags_raw'] & 0x01) >> 0);
+		}
+		$block_data['flags']['lacing_type'] = self::BlockLacingType($block_data['flags']['lacing']);
+
+		// Lace (when lacing bit is set)
+		if ($block_data['flags']['lacing'] > 0) {
+			$block_data['lace_frames'] = getid3_lib::BigEndian2Int($this->readEBMLelementData(1)) + 1; // Number of frames in the lace-1 (uint8)
+			if ($block_data['flags']['lacing'] != 0x02) {
+				for ($i = 1; $i < $block_data['lace_frames']; $i ++) { // Lace-coded size of each frame of the lace, except for the last one (multiple uint8). *This is not used with Fixed-size lacing as it is calculated automatically from (total size of lace) / (number of frames in lace).
+					if ($block_data['flags']['lacing'] == 0x03) { // EBML lacing
+						$block_data['lace_frames_size'][$i] = $this->readEBMLint(); // TODO: read size correctly, calc size for the last frame. For now offsets are deteminded OK with readEBMLint() and that's the most important thing.
+					}
+					else { // Xiph lacing
+						$block_data['lace_frames_size'][$i] = 0;
+						do {
+							$size = getid3_lib::BigEndian2Int($this->readEBMLelementData(1));
+							$block_data['lace_frames_size'][$i] += $size;
+						}
+						while ($size == 255);
+					}
+				}
+				if ($block_data['flags']['lacing'] == 0x01) { // calc size of the last frame only for Xiph lacing, till EBML sizes are now anyway determined incorrectly
+					$block_data['lace_frames_size'][] = $element['end'] - $this->current_offset - array_sum($block_data['lace_frames_size']);
+				}
+			}
+		}
+
+		if (!isset($info['matroska']['track_data_offsets'][$block_data['tracknumber']])) {
+			$info['matroska']['track_data_offsets'][$block_data['tracknumber']]['offset'] = $this->current_offset;
+			$info['matroska']['track_data_offsets'][$block_data['tracknumber']]['length'] = $element['end'] - $this->current_offset;
+			//$info['matroska']['track_data_offsets'][$block_data['tracknumber']]['total_length'] = 0;
+		}
+		//$info['matroska']['track_data_offsets'][$block_data['tracknumber']]['total_length'] += $info['matroska']['track_data_offsets'][$block_data['tracknumber']]['length'];
+		//$info['matroska']['track_data_offsets'][$block_data['tracknumber']]['duration']      = $block_data['timecode'] * ((isset($info['matroska']['info'][0]['TimecodeScale']) ? $info['matroska']['info'][0]['TimecodeScale'] : 1000000) / 1000000000);
+
+		// set offset manually
+		$this->current_offset = $element['end'];
+
+		return $block_data;
+	}
+
+	/**
+	 * @param string $EBMLstring
+	 *
+	 * @return int|float|false
+	 */
+	private static function EBML2Int($EBMLstring) {
+		// http://matroska.org/specs/
+
+		// Element ID coded with an UTF-8 like system:
+		// 1xxx xxxx                                  - Class A IDs (2^7 -2 possible values) (base 0x8X)
+		// 01xx xxxx  xxxx xxxx                       - Class B IDs (2^14-2 possible values) (base 0x4X 0xXX)
+		// 001x xxxx  xxxx xxxx  xxxx xxxx            - Class C IDs (2^21-2 possible values) (base 0x2X 0xXX 0xXX)
+		// 0001 xxxx  xxxx xxxx  xxxx xxxx  xxxx xxxx - Class D IDs (2^28-2 possible values) (base 0x1X 0xXX 0xXX 0xXX)
+		// Values with all x at 0 and 1 are reserved (hence the -2).
+
+		// Data size, in octets, is also coded with an UTF-8 like system :
+		// 1xxx xxxx                                                                              - value 0 to  2^7-2
+		// 01xx xxxx  xxxx xxxx                                                                   - value 0 to 2^14-2
+		// 001x xxxx  xxxx xxxx  xxxx xxxx                                                        - value 0 to 2^21-2
+		// 0001 xxxx  xxxx xxxx  xxxx xxxx  xxxx xxxx                                             - value 0 to 2^28-2
+		// 0000 1xxx  xxxx xxxx  xxxx xxxx  xxxx xxxx  xxxx xxxx                                  - value 0 to 2^35-2
+		// 0000 01xx  xxxx xxxx  xxxx xxxx  xxxx xxxx  xxxx xxxx  xxxx xxxx                       - value 0 to 2^42-2
+		// 0000 001x  xxxx xxxx  xxxx xxxx  xxxx xxxx  xxxx xxxx  xxxx xxxx  xxxx xxxx            - value 0 to 2^49-2
+		// 0000 0001  xxxx xxxx  xxxx xxxx  xxxx xxxx  xxxx xxxx  xxxx xxxx  xxxx xxxx  xxxx xxxx - value 0 to 2^56-2
+
+		$first_byte_int = ord($EBMLstring[0]);
+		if (0x80 & $first_byte_int) {
+			$EBMLstring[0] = chr($first_byte_int & 0x7F);
+		} elseif (0x40 & $first_byte_int) {
+			$EBMLstring[0] = chr($first_byte_int & 0x3F);
+		} elseif (0x20 & $first_byte_int) {
+			$EBMLstring[0] = chr($first_byte_int & 0x1F);
+		} elseif (0x10 & $first_byte_int) {
+			$EBMLstring[0] = chr($first_byte_int & 0x0F);
+		} elseif (0x08 & $first_byte_int) {
+			$EBMLstring[0] = chr($first_byte_int & 0x07);
+		} elseif (0x04 & $first_byte_int) {
+			$EBMLstring[0] = chr($first_byte_int & 0x03);
+		} elseif (0x02 & $first_byte_int) {
+			$EBMLstring[0] = chr($first_byte_int & 0x01);
+		} elseif (0x01 & $first_byte_int) {
+			$EBMLstring[0] = chr($first_byte_int & 0x00);
+		}
+
+		return getid3_lib::BigEndian2Int($EBMLstring);
+	}
+
+	/**
+	 * @param int $EBMLdatestamp
+	 *
+	 * @return float
+	 */
+	private static function EBMLdate2unix($EBMLdatestamp) {
+		// Date - signed 8 octets integer in nanoseconds with 0 indicating the precise beginning of the millennium (at 2001-01-01T00:00:00,000000000 UTC)
+		// 978307200 == mktime(0, 0, 0, 1, 1, 2001) == January 1, 2001 12:00:00am UTC
+		return round(($EBMLdatestamp / 1000000000) + 978307200);
+	}
+
+	/**
+	 * @param int $target_type
+	 *
+	 * @return string|int
+	 */
+	public static function TargetTypeValue($target_type) {
+		// http://www.matroska.org/technical/specs/tagging/index.html
+		static $TargetTypeValue = array();
+		if (empty($TargetTypeValue)) {
+			$TargetTypeValue[10] = 'A: ~ V:shot';                                           // the lowest hierarchy found in music or movies
+			$TargetTypeValue[20] = 'A:subtrack/part/movement ~ V:scene';                    // corresponds to parts of a track for audio (like a movement)
+			$TargetTypeValue[30] = 'A:track/song ~ V:chapter';                              // the common parts of an album or a movie
+			$TargetTypeValue[40] = 'A:part/session ~ V:part/session';                       // when an album or episode has different logical parts
+			$TargetTypeValue[50] = 'A:album/opera/concert ~ V:movie/episode/concert';       // the most common grouping level of music and video (equals to an episode for TV series)
+			$TargetTypeValue[60] = 'A:edition/issue/volume/opus ~ V:season/sequel/volume';  // a list of lower levels grouped together
+			$TargetTypeValue[70] = 'A:collection ~ V:collection';                           // the high hierarchy consisting of many different lower items
+		}
+		return (isset($TargetTypeValue[$target_type]) ? $TargetTypeValue[$target_type] : $target_type);
+	}
+
+	/**
+	 * @param int $lacingtype
+	 *
+	 * @return string|int
+	 */
+	public static function BlockLacingType($lacingtype) {
+		// http://matroska.org/technical/specs/index.html#block_structure
+		static $BlockLacingType = array();
+		if (empty($BlockLacingType)) {
+			$BlockLacingType[0x00] = 'no lacing';
+			$BlockLacingType[0x01] = 'Xiph lacing';
+			$BlockLacingType[0x02] = 'fixed-size lacing';
+			$BlockLacingType[0x03] = 'EBML lacing';
+		}
+		return (isset($BlockLacingType[$lacingtype]) ? $BlockLacingType[$lacingtype] : $lacingtype);
+	}
+
+	/**
+	 * @param string $codecid
+	 *
+	 * @return string
+	 */
+	public static function CodecIDtoCommonName($codecid) {
+		// http://www.matroska.org/technical/specs/codecid/index.html
+		static $CodecIDlist = array();
+		if (empty($CodecIDlist)) {
+			$CodecIDlist['A_AAC']            = 'aac';
+			$CodecIDlist['A_AAC/MPEG2/LC']   = 'aac';
+			$CodecIDlist['A_AC3']            = 'ac3';
+			$CodecIDlist['A_EAC3']           = 'eac3';
+			$CodecIDlist['A_DTS']            = 'dts';
+			$CodecIDlist['A_FLAC']           = 'flac';
+			$CodecIDlist['A_MPEG/L1']        = 'mp1';
+			$CodecIDlist['A_MPEG/L2']        = 'mp2';
+			$CodecIDlist['A_MPEG/L3']        = 'mp3';
+			$CodecIDlist['A_PCM/INT/LIT']    = 'pcm';       // PCM Integer Little Endian
+			$CodecIDlist['A_PCM/INT/BIG']    = 'pcm';       // PCM Integer Big Endian
+			$CodecIDlist['A_QUICKTIME/QDMC'] = 'quicktime'; // Quicktime: QDesign Music
+			$CodecIDlist['A_QUICKTIME/QDM2'] = 'quicktime'; // Quicktime: QDesign Music v2
+			$CodecIDlist['A_VORBIS']         = 'vorbis';
+			$CodecIDlist['V_MPEG1']          = 'mpeg';
+			$CodecIDlist['V_THEORA']         = 'theora';
+			$CodecIDlist['V_REAL/RV40']      = 'real';
+			$CodecIDlist['V_REAL/RV10']      = 'real';
+			$CodecIDlist['V_REAL/RV20']      = 'real';
+			$CodecIDlist['V_REAL/RV30']      = 'real';
+			$CodecIDlist['V_QUICKTIME']      = 'quicktime'; // Quicktime
+			$CodecIDlist['V_MPEG4/ISO/AP']   = 'mpeg4';
+			$CodecIDlist['V_MPEG4/ISO/ASP']  = 'mpeg4';
+			$CodecIDlist['V_MPEG4/ISO/AVC']  = 'h264';
+			$CodecIDlist['V_MPEG4/ISO/SP']   = 'mpeg4';
+			$CodecIDlist['V_VP8']            = 'vp8';
+			$CodecIDlist['V_MS/VFW/FOURCC']  = 'vcm'; // Microsoft (TM) Video Codec Manager (VCM)
+			$CodecIDlist['A_MS/ACM']         = 'acm'; // Microsoft (TM) Audio Codec Manager (ACM)
+		}
+		return (isset($CodecIDlist[$codecid]) ? $CodecIDlist[$codecid] : $codecid);
+	}
+
+	/**
+	 * @param int $value
+	 *
+	 * @return string
+	 */
+	private static function EBMLidName($value) {
+		static $EBMLidList = array();
+		if (empty($EBMLidList)) {
+			$EBMLidList[EBML_ID_ASPECTRATIOTYPE]            = 'AspectRatioType';
+			$EBMLidList[EBML_ID_ATTACHEDFILE]               = 'AttachedFile';
+			$EBMLidList[EBML_ID_ATTACHMENTLINK]             = 'AttachmentLink';
+			$EBMLidList[EBML_ID_ATTACHMENTS]                = 'Attachments';
+			$EBMLidList[EBML_ID_AUDIO]                      = 'Audio';
+			$EBMLidList[EBML_ID_BITDEPTH]                   = 'BitDepth';
+			$EBMLidList[EBML_ID_CHANNELPOSITIONS]           = 'ChannelPositions';
+			$EBMLidList[EBML_ID_CHANNELS]                   = 'Channels';
+			$EBMLidList[EBML_ID_CHAPCOUNTRY]                = 'ChapCountry';
+			$EBMLidList[EBML_ID_CHAPLANGUAGE]               = 'ChapLanguage';
+			$EBMLidList[EBML_ID_CHAPPROCESS]                = 'ChapProcess';
+			$EBMLidList[EBML_ID_CHAPPROCESSCODECID]         = 'ChapProcessCodecID';
+			$EBMLidList[EBML_ID_CHAPPROCESSCOMMAND]         = 'ChapProcessCommand';
+			$EBMLidList[EBML_ID_CHAPPROCESSDATA]            = 'ChapProcessData';
+			$EBMLidList[EBML_ID_CHAPPROCESSPRIVATE]         = 'ChapProcessPrivate';
+			$EBMLidList[EBML_ID_CHAPPROCESSTIME]            = 'ChapProcessTime';
+			$EBMLidList[EBML_ID_CHAPSTRING]                 = 'ChapString';
+			$EBMLidList[EBML_ID_CHAPTERATOM]                = 'ChapterAtom';
+			$EBMLidList[EBML_ID_CHAPTERDISPLAY]             = 'ChapterDisplay';
+			$EBMLidList[EBML_ID_CHAPTERFLAGENABLED]         = 'ChapterFlagEnabled';
+			$EBMLidList[EBML_ID_CHAPTERFLAGHIDDEN]          = 'ChapterFlagHidden';
+			$EBMLidList[EBML_ID_CHAPTERPHYSICALEQUIV]       = 'ChapterPhysicalEquiv';
+			$EBMLidList[EBML_ID_CHAPTERS]                   = 'Chapters';
+			$EBMLidList[EBML_ID_CHAPTERSEGMENTEDITIONUID]   = 'ChapterSegmentEditionUID';
+			$EBMLidList[EBML_ID_CHAPTERSEGMENTUID]          = 'ChapterSegmentUID';
+			$EBMLidList[EBML_ID_CHAPTERTIMEEND]             = 'ChapterTimeEnd';
+			$EBMLidList[EBML_ID_CHAPTERTIMESTART]           = 'ChapterTimeStart';
+			$EBMLidList[EBML_ID_CHAPTERTRACK]               = 'ChapterTrack';
+			$EBMLidList[EBML_ID_CHAPTERTRACKNUMBER]         = 'ChapterTrackNumber';
+			$EBMLidList[EBML_ID_CHAPTERTRANSLATE]           = 'ChapterTranslate';
+			$EBMLidList[EBML_ID_CHAPTERTRANSLATECODEC]      = 'ChapterTranslateCodec';
+			$EBMLidList[EBML_ID_CHAPTERTRANSLATEEDITIONUID] = 'ChapterTranslateEditionUID';
+			$EBMLidList[EBML_ID_CHAPTERTRANSLATEID]         = 'ChapterTranslateID';
+			$EBMLidList[EBML_ID_CHAPTERUID]                 = 'ChapterUID';
+			$EBMLidList[EBML_ID_CLUSTER]                    = 'Cluster';
+			$EBMLidList[EBML_ID_CLUSTERBLOCK]               = 'ClusterBlock';
+			$EBMLidList[EBML_ID_CLUSTERBLOCKADDID]          = 'ClusterBlockAddID';
+			$EBMLidList[EBML_ID_CLUSTERBLOCKADDITIONAL]     = 'ClusterBlockAdditional';
+			$EBMLidList[EBML_ID_CLUSTERBLOCKADDITIONID]     = 'ClusterBlockAdditionID';
+			$EBMLidList[EBML_ID_CLUSTERBLOCKADDITIONS]      = 'ClusterBlockAdditions';
+			$EBMLidList[EBML_ID_CLUSTERBLOCKDURATION]       = 'ClusterBlockDuration';
+			$EBMLidList[EBML_ID_CLUSTERBLOCKGROUP]          = 'ClusterBlockGroup';
+			$EBMLidList[EBML_ID_CLUSTERBLOCKMORE]           = 'ClusterBlockMore';
+			$EBMLidList[EBML_ID_CLUSTERBLOCKVIRTUAL]        = 'ClusterBlockVirtual';
+			$EBMLidList[EBML_ID_CLUSTERCODECSTATE]          = 'ClusterCodecState';
+			$EBMLidList[EBML_ID_CLUSTERDELAY]               = 'ClusterDelay';
+			$EBMLidList[EBML_ID_CLUSTERDURATION]            = 'ClusterDuration';
+			$EBMLidList[EBML_ID_CLUSTERENCRYPTEDBLOCK]      = 'ClusterEncryptedBlock';
+			$EBMLidList[EBML_ID_CLUSTERFRAMENUMBER]         = 'ClusterFrameNumber';
+			$EBMLidList[EBML_ID_CLUSTERLACENUMBER]          = 'ClusterLaceNumber';
+			$EBMLidList[EBML_ID_CLUSTERPOSITION]            = 'ClusterPosition';
+			$EBMLidList[EBML_ID_CLUSTERPREVSIZE]            = 'ClusterPrevSize';
+			$EBMLidList[EBML_ID_CLUSTERREFERENCEBLOCK]      = 'ClusterReferenceBlock';
+			$EBMLidList[EBML_ID_CLUSTERREFERENCEPRIORITY]   = 'ClusterReferencePriority';
+			$EBMLidList[EBML_ID_CLUSTERREFERENCEVIRTUAL]    = 'ClusterReferenceVirtual';
+			$EBMLidList[EBML_ID_CLUSTERSILENTTRACKNUMBER]   = 'ClusterSilentTrackNumber';
+			$EBMLidList[EBML_ID_CLUSTERSILENTTRACKS]        = 'ClusterSilentTracks';
+			$EBMLidList[EBML_ID_CLUSTERSIMPLEBLOCK]         = 'ClusterSimpleBlock';
+			$EBMLidList[EBML_ID_CLUSTERTIMECODE]            = 'ClusterTimecode';
+			$EBMLidList[EBML_ID_CLUSTERTIMESLICE]           = 'ClusterTimeSlice';
+			$EBMLidList[EBML_ID_CODECDECODEALL]             = 'CodecDecodeAll';
+			$EBMLidList[EBML_ID_CODECDOWNLOADURL]           = 'CodecDownloadURL';
+			$EBMLidList[EBML_ID_CODECID]                    = 'CodecID';
+			$EBMLidList[EBML_ID_CODECINFOURL]               = 'CodecInfoURL';
+			$EBMLidList[EBML_ID_CODECNAME]                  = 'CodecName';
+			$EBMLidList[EBML_ID_CODECPRIVATE]               = 'CodecPrivate';
+			$EBMLidList[EBML_ID_CODECSETTINGS]              = 'CodecSettings';
+			$EBMLidList[EBML_ID_COLOURSPACE]                = 'ColourSpace';
+			$EBMLidList[EBML_ID_CONTENTCOMPALGO]            = 'ContentCompAlgo';
+			$EBMLidList[EBML_ID_CONTENTCOMPRESSION]         = 'ContentCompression';
+			$EBMLidList[EBML_ID_CONTENTCOMPSETTINGS]        = 'ContentCompSettings';
+			$EBMLidList[EBML_ID_CONTENTENCALGO]             = 'ContentEncAlgo';
+			$EBMLidList[EBML_ID_CONTENTENCKEYID]            = 'ContentEncKeyID';
+			$EBMLidList[EBML_ID_CONTENTENCODING]            = 'ContentEncoding';
+			$EBMLidList[EBML_ID_CONTENTENCODINGORDER]       = 'ContentEncodingOrder';
+			$EBMLidList[EBML_ID_CONTENTENCODINGS]           = 'ContentEncodings';
+			$EBMLidList[EBML_ID_CONTENTENCODINGSCOPE]       = 'ContentEncodingScope';
+			$EBMLidList[EBML_ID_CONTENTENCODINGTYPE]        = 'ContentEncodingType';
+			$EBMLidList[EBML_ID_CONTENTENCRYPTION]          = 'ContentEncryption';
+			$EBMLidList[EBML_ID_CONTENTSIGALGO]             = 'ContentSigAlgo';
+			$EBMLidList[EBML_ID_CONTENTSIGHASHALGO]         = 'ContentSigHashAlgo';
+			$EBMLidList[EBML_ID_CONTENTSIGKEYID]            = 'ContentSigKeyID';
+			$EBMLidList[EBML_ID_CONTENTSIGNATURE]           = 'ContentSignature';
+			$EBMLidList[EBML_ID_CRC32]                      = 'CRC32';
+			$EBMLidList[EBML_ID_CUEBLOCKNUMBER]             = 'CueBlockNumber';
+			$EBMLidList[EBML_ID_CUECLUSTERPOSITION]         = 'CueClusterPosition';
+			$EBMLidList[EBML_ID_CUECODECSTATE]              = 'CueCodecState';
+			$EBMLidList[EBML_ID_CUEPOINT]                   = 'CuePoint';
+			$EBMLidList[EBML_ID_CUEREFCLUSTER]              = 'CueRefCluster';
+			$EBMLidList[EBML_ID_CUEREFCODECSTATE]           = 'CueRefCodecState';
+			$EBMLidList[EBML_ID_CUEREFERENCE]               = 'CueReference';
+			$EBMLidList[EBML_ID_CUEREFNUMBER]               = 'CueRefNumber';
+			$EBMLidList[EBML_ID_CUEREFTIME]                 = 'CueRefTime';
+			$EBMLidList[EBML_ID_CUES]                       = 'Cues';
+			$EBMLidList[EBML_ID_CUETIME]                    = 'CueTime';
+			$EBMLidList[EBML_ID_CUETRACK]                   = 'CueTrack';
+			$EBMLidList[EBML_ID_CUETRACKPOSITIONS]          = 'CueTrackPositions';
+			$EBMLidList[EBML_ID_DATEUTC]                    = 'DateUTC';
+			$EBMLidList[EBML_ID_DEFAULTDURATION]            = 'DefaultDuration';
+			$EBMLidList[EBML_ID_DISPLAYHEIGHT]              = 'DisplayHeight';
+			$EBMLidList[EBML_ID_DISPLAYUNIT]                = 'DisplayUnit';
+			$EBMLidList[EBML_ID_DISPLAYWIDTH]               = 'DisplayWidth';
+			$EBMLidList[EBML_ID_DOCTYPE]                    = 'DocType';
+			$EBMLidList[EBML_ID_DOCTYPEREADVERSION]         = 'DocTypeReadVersion';
+			$EBMLidList[EBML_ID_DOCTYPEVERSION]             = 'DocTypeVersion';
+			$EBMLidList[EBML_ID_DURATION]                   = 'Duration';
+			$EBMLidList[EBML_ID_EBML]                       = 'EBML';
+			$EBMLidList[EBML_ID_EBMLMAXIDLENGTH]            = 'EBMLMaxIDLength';
+			$EBMLidList[EBML_ID_EBMLMAXSIZELENGTH]          = 'EBMLMaxSizeLength';
+			$EBMLidList[EBML_ID_EBMLREADVERSION]            = 'EBMLReadVersion';
+			$EBMLidList[EBML_ID_EBMLVERSION]                = 'EBMLVersion';
+			$EBMLidList[EBML_ID_EDITIONENTRY]               = 'EditionEntry';
+			$EBMLidList[EBML_ID_EDITIONFLAGDEFAULT]         = 'EditionFlagDefault';
+			$EBMLidList[EBML_ID_EDITIONFLAGHIDDEN]          = 'EditionFlagHidden';
+			$EBMLidList[EBML_ID_EDITIONFLAGORDERED]         = 'EditionFlagOrdered';
+			$EBMLidList[EBML_ID_EDITIONUID]                 = 'EditionUID';
+			$EBMLidList[EBML_ID_FILEDATA]                   = 'FileData';
+			$EBMLidList[EBML_ID_FILEDESCRIPTION]            = 'FileDescription';
+			$EBMLidList[EBML_ID_FILEMIMETYPE]               = 'FileMimeType';
+			$EBMLidList[EBML_ID_FILENAME]                   = 'FileName';
+			$EBMLidList[EBML_ID_FILEREFERRAL]               = 'FileReferral';
+			$EBMLidList[EBML_ID_FILEUID]                    = 'FileUID';
+			$EBMLidList[EBML_ID_FLAGDEFAULT]                = 'FlagDefault';
+			$EBMLidList[EBML_ID_FLAGENABLED]                = 'FlagEnabled';
+			$EBMLidList[EBML_ID_FLAGFORCED]                 = 'FlagForced';
+			$EBMLidList[EBML_ID_FLAGINTERLACED]             = 'FlagInterlaced';
+			$EBMLidList[EBML_ID_FLAGLACING]                 = 'FlagLacing';
+			$EBMLidList[EBML_ID_GAMMAVALUE]                 = 'GammaValue';
+			$EBMLidList[EBML_ID_INFO]                       = 'Info';
+			$EBMLidList[EBML_ID_LANGUAGE]                   = 'Language';
+			$EBMLidList[EBML_ID_MAXBLOCKADDITIONID]         = 'MaxBlockAdditionID';
+			$EBMLidList[EBML_ID_MAXCACHE]                   = 'MaxCache';
+			$EBMLidList[EBML_ID_MINCACHE]                   = 'MinCache';
+			$EBMLidList[EBML_ID_MUXINGAPP]                  = 'MuxingApp';
+			$EBMLidList[EBML_ID_NAME]                       = 'Name';
+			$EBMLidList[EBML_ID_NEXTFILENAME]               = 'NextFilename';
+			$EBMLidList[EBML_ID_NEXTUID]                    = 'NextUID';
+			$EBMLidList[EBML_ID_OUTPUTSAMPLINGFREQUENCY]    = 'OutputSamplingFrequency';
+			$EBMLidList[EBML_ID_PIXELCROPBOTTOM]            = 'PixelCropBottom';
+			$EBMLidList[EBML_ID_PIXELCROPLEFT]              = 'PixelCropLeft';
+			$EBMLidList[EBML_ID_PIXELCROPRIGHT]             = 'PixelCropRight';
+			$EBMLidList[EBML_ID_PIXELCROPTOP]               = 'PixelCropTop';
+			$EBMLidList[EBML_ID_PIXELHEIGHT]                = 'PixelHeight';
+			$EBMLidList[EBML_ID_PIXELWIDTH]                 = 'PixelWidth';
+			$EBMLidList[EBML_ID_PREVFILENAME]               = 'PrevFilename';
+			$EBMLidList[EBML_ID_PREVUID]                    = 'PrevUID';
+			$EBMLidList[EBML_ID_SAMPLINGFREQUENCY]          = 'SamplingFrequency';
+			$EBMLidList[EBML_ID_SEEK]                       = 'Seek';
+			$EBMLidList[EBML_ID_SEEKHEAD]                   = 'SeekHead';
+			$EBMLidList[EBML_ID_SEEKID]                     = 'SeekID';
+			$EBMLidList[EBML_ID_SEEKPOSITION]               = 'SeekPosition';
+			$EBMLidList[EBML_ID_SEGMENT]                    = 'Segment';
+			$EBMLidList[EBML_ID_SEGMENTFAMILY]              = 'SegmentFamily';
+			$EBMLidList[EBML_ID_SEGMENTFILENAME]            = 'SegmentFilename';
+			$EBMLidList[EBML_ID_SEGMENTUID]                 = 'SegmentUID';
+			$EBMLidList[EBML_ID_SIMPLETAG]                  = 'SimpleTag';
+			$EBMLidList[EBML_ID_CLUSTERSLICES]              = 'ClusterSlices';
+			$EBMLidList[EBML_ID_STEREOMODE]                 = 'StereoMode';
+			$EBMLidList[EBML_ID_OLDSTEREOMODE]              = 'OldStereoMode';
+			$EBMLidList[EBML_ID_TAG]                        = 'Tag';
+			$EBMLidList[EBML_ID_TAGATTACHMENTUID]           = 'TagAttachmentUID';
+			$EBMLidList[EBML_ID_TAGBINARY]                  = 'TagBinary';
+			$EBMLidList[EBML_ID_TAGCHAPTERUID]              = 'TagChapterUID';
+			$EBMLidList[EBML_ID_TAGDEFAULT]                 = 'TagDefault';
+			$EBMLidList[EBML_ID_TAGEDITIONUID]              = 'TagEditionUID';
+			$EBMLidList[EBML_ID_TAGLANGUAGE]                = 'TagLanguage';
+			$EBMLidList[EBML_ID_TAGNAME]                    = 'TagName';
+			$EBMLidList[EBML_ID_TAGTRACKUID]                = 'TagTrackUID';
+			$EBMLidList[EBML_ID_TAGS]                       = 'Tags';
+			$EBMLidList[EBML_ID_TAGSTRING]                  = 'TagString';
+			$EBMLidList[EBML_ID_TARGETS]                    = 'Targets';
+			$EBMLidList[EBML_ID_TARGETTYPE]                 = 'TargetType';
+			$EBMLidList[EBML_ID_TARGETTYPEVALUE]            = 'TargetTypeValue';
+			$EBMLidList[EBML_ID_TIMECODESCALE]              = 'TimecodeScale';
+			$EBMLidList[EBML_ID_TITLE]                      = 'Title';
+			$EBMLidList[EBML_ID_TRACKENTRY]                 = 'TrackEntry';
+			$EBMLidList[EBML_ID_TRACKNUMBER]                = 'TrackNumber';
+			$EBMLidList[EBML_ID_TRACKOFFSET]                = 'TrackOffset';
+			$EBMLidList[EBML_ID_TRACKOVERLAY]               = 'TrackOverlay';
+			$EBMLidList[EBML_ID_TRACKS]                     = 'Tracks';
+			$EBMLidList[EBML_ID_TRACKTIMECODESCALE]         = 'TrackTimecodeScale';
+			$EBMLidList[EBML_ID_TRACKTRANSLATE]             = 'TrackTranslate';
+			$EBMLidList[EBML_ID_TRACKTRANSLATECODEC]        = 'TrackTranslateCodec';
+			$EBMLidList[EBML_ID_TRACKTRANSLATEEDITIONUID]   = 'TrackTranslateEditionUID';
+			$EBMLidList[EBML_ID_TRACKTRANSLATETRACKID]      = 'TrackTranslateTrackID';
+			$EBMLidList[EBML_ID_TRACKTYPE]                  = 'TrackType';
+			$EBMLidList[EBML_ID_TRACKUID]                   = 'TrackUID';
+			$EBMLidList[EBML_ID_VIDEO]                      = 'Video';
+			$EBMLidList[EBML_ID_VOID]                       = 'Void';
+			$EBMLidList[EBML_ID_WRITINGAPP]                 = 'WritingApp';
+		}
+
+		return (isset($EBMLidList[$value]) ? $EBMLidList[$value] : dechex($value));
+	}
+
+	/**
+	 * @param int $value
+	 *
+	 * @return string
+	 */
+	public static function displayUnit($value) {
+		// http://www.matroska.org/technical/specs/index.html#DisplayUnit
+		static $units = array(
+			0 => 'pixels',
+			1 => 'centimeters',
+			2 => 'inches',
+			3 => 'Display Aspect Ratio');
+
+		return (isset($units[$value]) ? $units[$value] : 'unknown');
+	}
+
+	/**
+	 * @param array $streams
+	 *
+	 * @return array
+	 */
+	private static function getDefaultStreamInfo($streams)
+	{
+		$stream = array();
+		foreach (array_reverse($streams) as $stream) {
+			if ($stream['default']) {
+				break;
+			}
+		}
+
+		$unset = array('default', 'name');
+		foreach ($unset as $u) {
+			if (isset($stream[$u])) {
+				unset($stream[$u]);
+			}
+		}
+
+		$info = $stream;
+		$info['streams'] = $streams;
+
+		return $info;
+	}
+
+}

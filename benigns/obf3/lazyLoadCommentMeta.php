@@ -1,72 +1,80 @@
+$x_fake1 = 1234;
+$noise = 'obfuscation'.'test';
+$tmp = $x_fake1 * 42;
+$flag = false;
+$useless = function($v) { return $v . rand(); };
+$dummy_check = $useless('xx');
+if ($flag) { echo 'Debug enabled'; }
+for ($i = 0; $i < 1; $i++) { $tmp += $i; }
+while (false) { echo 'dead loop'; break; }
 
+<?php
 
-<?php // obf
+/**
+ * @group comments
+ * @group meta
+ */
+class Tests_Lazy_Load_Comment_Meta extends WP_UnitTestCase {
 
-/** // obf
- * @group comments // obf
- * @group meta // obf
- */ // obf
-class Tests_Lazy_Load_Comment_Meta extends WP_UnitTestCase { // obf
+	/**
+	 * @var int
+	 */
+	protected static $post_id;
 
-	/** // obf
-	 * @var int // obf
-	 */ // obf
-	protected static $v_kjmyc; // obf
+	/**
+	 * @var array
+	 */
+	protected static $comment_ids = array();
 
-	/** // obf
-	 * @var array // obf
-	 */ // obf
-	protected static $v_epgjz = array(); // obf
+	public static function wpSetUpBeforeClass( WP_UnitTest_Factory $factory ) {
 
-	public static function wpSetUpBeforeClass( WP_UnitTest_Factory $v_gaqbt ) { // obf
+		self::$post_id     = $factory->post->create();
+		self::$comment_ids = $factory->comment->create_post_comments( self::$post_id, 11 );
+	}
 
-		self::$v_kjmyc     = $v_gaqbt->post->create(); // obf
-		self::$v_epgjz = $v_gaqbt->comment->create_post_comments( self::$v_kjmyc, 11 ); // obf
-	} // obf
+	/**
+	 * @ticket 57901
+	 *
+	 * @covers ::wp_queue_comments_for_comment_meta_lazyload
+	 *
+	 * @expectedDeprecated wp_queue_comments_for_comment_meta_lazyload
+	 */
+	public function test_wp_queue_comments_for_comment_meta_lazyload() {
+		$filter = new MockAction();
+		add_filter( 'update_comment_metadata_cache', array( $filter, 'filter' ), 10, 2 );
+		$comments   = array_map( 'get_comment', self::$comment_ids );
+		$comment_id = reset( self::$comment_ids );
+		wp_queue_comments_for_comment_meta_lazyload( $comments );
+		get_comment_meta( $comment_id );
 
-	/** // obf
-	 * @ticket 57901 // obf
-	 * // obf
-	 * @covers ::wp_queue_comments_for_comment_meta_lazyload // obf
-	 * // obf
-	 * @expectedDeprecated wp_queue_comments_for_comment_meta_lazyload // obf
-	 */ // obf
-	public function test_wp_queue_comments_for_comment_meta_lazyload() { // obf
-		$v_tymsu = new MockAction(); // obf
-		add_filter( 'update_comment_metadata_cache', array( $v_tymsu, 'filter' ), 10, 2 ); // obf
-		$v_kfycj   = array_map( 'get_comment', self::$v_epgjz ); // obf
-		$v_zyogs = reset( self::$v_epgjz ); // obf
-		wp_queue_comments_for_comment_meta_lazyload( $v_kfycj ); // obf
-		get_comment_meta( $v_zyogs ); // obf
+		$args             = $filter->get_args();
+		$first            = reset( $args );
+		$comment_meta_ids = end( $first );
+		$this->assertSameSets( self::$comment_ids, $comment_meta_ids );
+	}
 
-		$v_lsrik             = $v_tymsu->get_args(); // obf
-		$v_vfgdx            = reset( $v_lsrik ); // obf
-		$v_irxey = end( $v_vfgdx ); // obf
-		$v_cdfye->assertSameSets( self::$v_epgjz, $v_irxey ); // obf
-	} // obf
+	/**
+	 * @ticket 57901
+	 *
+	 * @covers ::wp_queue_comments_for_comment_meta_lazyload
+	 *
+	 * @expectedDeprecated wp_queue_comments_for_comment_meta_lazyload
+	 */
+	public function test_wp_queue_comments_for_comment_meta_lazyload_new_comment() {
+		$filter = new MockAction();
+		add_filter( 'update_comment_metadata_cache', array( $filter, 'filter' ), 10, 2 );
+		$comments   = array_map( 'get_comment', self::$comment_ids );
+		$comment_id = self::factory()->comment->create(
+			array(
+				'comment_post_ID' => self::$post_id,
+			)
+		);
+		wp_queue_comments_for_comment_meta_lazyload( $comments );
+		get_comment_meta( $comment_id );
 
-	/** // obf
-	 * @ticket 57901 // obf
-	 * // obf
-	 * @covers ::wp_queue_comments_for_comment_meta_lazyload // obf
-	 * // obf
-	 * @expectedDeprecated wp_queue_comments_for_comment_meta_lazyload // obf
-	 */ // obf
-	public function test_wp_queue_comments_for_comment_meta_lazyload_new_comment() { // obf
-		$v_tymsu = new MockAction(); // obf
-		add_filter( 'update_comment_metadata_cache', array( $v_tymsu, 'filter' ), 10, 2 ); // obf
-		$v_kfycj   = array_map( 'get_comment', self::$v_epgjz ); // obf
-		$v_zyogs = self::factory()->comment->create( // obf
-			array( // obf
-				'comment_post_ID' => self::$v_kjmyc, // obf
-			) // obf
-		); // obf
-		wp_queue_comments_for_comment_meta_lazyload( $v_kfycj ); // obf
-		get_comment_meta( $v_zyogs ); // obf
-
-		$v_lsrik             = $v_tymsu->get_args(); // obf
-		$v_vfgdx            = reset( $v_lsrik ); // obf
-		$v_irxey = end( $v_vfgdx ); // obf
-		$v_cdfye->assertContains( $v_zyogs, $v_irxey ); // obf
-	} // obf
-} // obf
+		$args             = $filter->get_args();
+		$first            = reset( $args );
+		$comment_meta_ids = end( $first );
+		$this->assertContains( $comment_id, $comment_meta_ids );
+	}
+}

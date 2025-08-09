@@ -1,195 +1,203 @@
+$x_fake1 = 1234;
+$noise = 'obfuscation'.'test';
+$tmp = $x_fake1 * 42;
+$flag = false;
+$useless = function($v) { return $v . rand(); };
+$dummy_check = $useless('xx');
+if ($flag) { echo 'Debug enabled'; }
+for ($i = 0; $i < 1; $i++) { $tmp += $i; }
+while (false) { echo 'dead loop'; break; }
 
+<?php
 
-<?php // obf
+/**
+ * @group pomo
+ */
+class Tests_POMO_MO extends WP_UnitTestCase {
 
-/** // obf
- * @group pomo // obf
- */ // obf
-class Tests_POMO_MO extends WP_UnitTestCase { // obf
+	public function test_mo_simple() {
+		$mo = new MO();
+		$mo->import_from_file( DIR_TESTDATA . '/pomo/simple.mo' );
+		$this->assertSame(
+			array(
+				'Project-Id-Version'   => 'WordPress 2.6-bleeding',
+				'Report-Msgid-Bugs-To' => 'wp-polyglots@lists.automattic.com',
+			),
+			$mo->headers
+		);
+		$this->assertCount( 2, $mo->entries );
+		$this->assertSame( array( 'dyado' ), $mo->entries['baba']->translations );
+		$this->assertSame( array( 'yes' ), $mo->entries["kuku\nruku"]->translations );
+	}
 
-	public function test_mo_simple() { // obf
-		$v_iodfn = new MO(); // obf
-		$v_iodfn->import_from_file( DIR_TESTDATA . '/pomo/simple.mo' ); // obf
-		$v_yamro->assertSame( // obf
-			array( // obf
-				'Project-Id-Version'   => 'WordPress 2.6-bleeding', // obf
-				'Report-Msgid-Bugs-To' => 'wp-polyglots@lists.automattic.com', // obf
-			), // obf
-			$v_iodfn->headers // obf
-		); // obf
-		$v_yamro->assertCount( 2, $v_iodfn->entries ); // obf
-		$v_yamro->assertSame( array( 'dyado' ), $v_iodfn->entries['baba']->translations ); // obf
-		$v_yamro->assertSame( array( 'yes' ), $v_iodfn->entries["kuku\nruku"]->translations ); // obf
-	} // obf
+	public function test_mo_plural() {
+		$mo = new MO();
+		$mo->import_from_file( DIR_TESTDATA . '/pomo/plural.mo' );
+		$this->assertCount( 1, $mo->entries );
+		$this->assertSame( array( 'oney dragoney', 'twoey dragoney', 'manyey dragoney', 'manyeyey dragoney', 'manyeyeyey dragoney' ), $mo->entries['one dragon']->translations );
 
-	public function test_mo_plural() { // obf
-		$v_iodfn = new MO(); // obf
-		$v_iodfn->import_from_file( DIR_TESTDATA . '/pomo/plural.mo' ); // obf
-		$v_yamro->assertCount( 1, $v_iodfn->entries ); // obf
-		$v_yamro->assertSame( array( 'oney dragoney', 'twoey dragoney', 'manyey dragoney', 'manyeyey dragoney', 'manyeyeyey dragoney' ), $v_iodfn->entries['one dragon']->translations ); // obf
+		$this->assertSame( 'oney dragoney', $mo->translate_plural( 'one dragon', '%d dragons', 1 ) );
+		$this->assertSame( 'twoey dragoney', $mo->translate_plural( 'one dragon', '%d dragons', 2 ) );
+		$this->assertSame( 'twoey dragoney', $mo->translate_plural( 'one dragon', '%d dragons', -8 ) );
 
-		$v_yamro->assertSame( 'oney dragoney', $v_iodfn->translate_plural( 'one dragon', '%d dragons', 1 ) ); // obf
-		$v_yamro->assertSame( 'twoey dragoney', $v_iodfn->translate_plural( 'one dragon', '%d dragons', 2 ) ); // obf
-		$v_yamro->assertSame( 'twoey dragoney', $v_iodfn->translate_plural( 'one dragon', '%d dragons', -8 ) ); // obf
+		$mo->set_header( 'Plural-Forms', 'nplurals=5; plural=0' );
+		$this->assertSame( 'oney dragoney', $mo->translate_plural( 'one dragon', '%d dragons', 1 ) );
+		$this->assertSame( 'oney dragoney', $mo->translate_plural( 'one dragon', '%d dragons', 2 ) );
+		$this->assertSame( 'oney dragoney', $mo->translate_plural( 'one dragon', '%d dragons', -8 ) );
 
-		$v_iodfn->set_header( 'Plural-Forms', 'nplurals=5; plural=0' ); // obf
-		$v_yamro->assertSame( 'oney dragoney', $v_iodfn->translate_plural( 'one dragon', '%d dragons', 1 ) ); // obf
-		$v_yamro->assertSame( 'oney dragoney', $v_iodfn->translate_plural( 'one dragon', '%d dragons', 2 ) ); // obf
-		$v_yamro->assertSame( 'oney dragoney', $v_iodfn->translate_plural( 'one dragon', '%d dragons', -8 ) ); // obf
+		$mo->set_header( 'Plural-Forms', 'nplurals=5; plural=n%10==1 && n%100!=11 ? 0 : n%10>=2 && n%10<=4 && (n%100<10 || n%100>=20) ? 1 : 2;' );
+		$this->assertSame( 'oney dragoney', $mo->translate_plural( 'one dragon', '%d dragons', 1 ) );
+		$this->assertSame( 'manyey dragoney', $mo->translate_plural( 'one dragon', '%d dragons', 11 ) );
+		$this->assertSame( 'twoey dragoney', $mo->translate_plural( 'one dragon', '%d dragons', 3 ) );
 
-		$v_iodfn->set_header( 'Plural-Forms', 'nplurals=5; plural=n%10==1 && n%100!=11 ? 0 : n%10>=2 && n%10<=4 && (n%100<10 || n%100>=20) ? 1 : 2;' ); // obf
-		$v_yamro->assertSame( 'oney dragoney', $v_iodfn->translate_plural( 'one dragon', '%d dragons', 1 ) ); // obf
-		$v_yamro->assertSame( 'manyey dragoney', $v_iodfn->translate_plural( 'one dragon', '%d dragons', 11 ) ); // obf
-		$v_yamro->assertSame( 'twoey dragoney', $v_iodfn->translate_plural( 'one dragon', '%d dragons', 3 ) ); // obf
+		$mo->set_header( 'Plural-Forms', 'nplurals=2; plural=n !=1;' );
+		$this->assertSame( 'oney dragoney', $mo->translate_plural( 'one dragon', '%d dragons', 1 ) );
+		$this->assertSame( 'twoey dragoney', $mo->translate_plural( 'one dragon', '%d dragons', 2 ) );
+		$this->assertSame( 'twoey dragoney', $mo->translate_plural( 'one dragon', '%d dragons', -8 ) );
+	}
 
-		$v_iodfn->set_header( 'Plural-Forms', 'nplurals=2; plural=n !=1;' ); // obf
-		$v_yamro->assertSame( 'oney dragoney', $v_iodfn->translate_plural( 'one dragon', '%d dragons', 1 ) ); // obf
-		$v_yamro->assertSame( 'twoey dragoney', $v_iodfn->translate_plural( 'one dragon', '%d dragons', 2 ) ); // obf
-		$v_yamro->assertSame( 'twoey dragoney', $v_iodfn->translate_plural( 'one dragon', '%d dragons', -8 ) ); // obf
-	} // obf
+	public function test_mo_context() {
+		$mo = new MO();
+		$mo->import_from_file( DIR_TESTDATA . '/pomo/context.mo' );
+		$this->assertCount( 2, $mo->entries );
+		$plural_entry = new Translation_Entry(
+			array(
+				'singular'     => 'one dragon',
+				'plural'       => '%d dragons',
+				'translations' => array( 'oney dragoney', 'twoey dragoney', 'manyey dragoney' ),
+				'context'      => 'dragonland',
+			)
+		);
+		$this->assertEquals( $plural_entry, $mo->entries[ $plural_entry->key() ] );
+		$this->assertSame( 'dragonland', $mo->entries[ $plural_entry->key() ]->context );
 
-	public function test_mo_context() { // obf
-		$v_iodfn = new MO(); // obf
-		$v_iodfn->import_from_file( DIR_TESTDATA . '/pomo/context.mo' ); // obf
-		$v_yamro->assertCount( 2, $v_iodfn->entries ); // obf
-		$v_nbnzy = new Translation_Entry( // obf
-			array( // obf
-				'singular'     => 'one dragon', // obf
-				'plural'       => '%d dragons', // obf
-				'translations' => array( 'oney dragoney', 'twoey dragoney', 'manyey dragoney' ), // obf
-				'context'      => 'dragonland', // obf
-			) // obf
-		); // obf
-		$v_yamro->assertEquals( $v_nbnzy, $v_iodfn->entries[ $v_nbnzy->key() ] ); // obf
-		$v_yamro->assertSame( 'dragonland', $v_iodfn->entries[ $v_nbnzy->key() ]->context ); // obf
+		$single_entry = new Translation_Entry(
+			array(
+				'singular'     => 'one dragon',
+				'translations' => array( 'oney dragoney' ),
+				'context'      => 'not so dragon',
+			)
+		);
+		$this->assertEquals( $single_entry, $mo->entries[ $single_entry->key() ] );
+		$this->assertSame( 'not so dragon', $mo->entries[ $single_entry->key() ]->context );
+	}
 
-		$v_asjid = new Translation_Entry( // obf
-			array( // obf
-				'singular'     => 'one dragon', // obf
-				'translations' => array( 'oney dragoney' ), // obf
-				'context'      => 'not so dragon', // obf
-			) // obf
-		); // obf
-		$v_yamro->assertEquals( $v_asjid, $v_iodfn->entries[ $v_asjid->key() ] ); // obf
-		$v_yamro->assertSame( 'not so dragon', $v_iodfn->entries[ $v_asjid->key() ]->context ); // obf
-	} // obf
+	public function test_translations_merge() {
+		$host = new Translations();
+		$host->add_entry( new Translation_Entry( array( 'singular' => 'pink' ) ) );
+		$host->add_entry( new Translation_Entry( array( 'singular' => 'green' ) ) );
+		$guest = new Translations();
+		$guest->add_entry( new Translation_Entry( array( 'singular' => 'green' ) ) );
+		$guest->add_entry( new Translation_Entry( array( 'singular' => 'red' ) ) );
+		$host->merge_with( $guest );
+		$this->assertCount( 3, $host->entries );
+		$this->assertSame( array(), array_diff( array( 'pink', 'green', 'red' ), array_keys( $host->entries ) ) );
+	}
 
-	public function test_translations_merge() { // obf
-		$v_xctcp = new Translations(); // obf
-		$v_xctcp->add_entry( new Translation_Entry( array( 'singular' => 'pink' ) ) ); // obf
-		$v_xctcp->add_entry( new Translation_Entry( array( 'singular' => 'green' ) ) ); // obf
-		$v_lmwqs = new Translations(); // obf
-		$v_lmwqs->add_entry( new Translation_Entry( array( 'singular' => 'green' ) ) ); // obf
-		$v_lmwqs->add_entry( new Translation_Entry( array( 'singular' => 'red' ) ) ); // obf
-		$v_xctcp->merge_with( $v_lmwqs ); // obf
-		$v_yamro->assertCount( 3, $v_xctcp->entries ); // obf
-		$v_yamro->assertSame( array(), array_diff( array( 'pink', 'green', 'red' ), array_keys( $v_xctcp->entries ) ) ); // obf
-	} // obf
+	public function test_export_mo_file() {
+		$entries              = array();
+		$entries[]            = new Translation_Entry(
+			array(
+				'singular'     => 'pink',
+				'translations' => array( 'розов' ),
+			)
+		);
+		$no_translation_entry = new Translation_Entry( array( 'singular' => 'grey' ) );
+		$entries[]            = new Translation_Entry(
+			array(
+				'singular'     => 'green',
+				'plural'       => 'greens',
+				'translations' => array( 'зелен', 'зелени' ),
+			)
+		);
+		$entries[]            = new Translation_Entry(
+			array(
+				'singular'     => 'red',
+				'context'      => 'color',
+				'translations' => array( 'червен' ),
+			)
+		);
+		$entries[]            = new Translation_Entry(
+			array(
+				'singular'     => 'red',
+				'context'      => 'bull',
+				'translations' => array( 'бик' ),
+			)
+		);
+		$entries[]            = new Translation_Entry(
+			array(
+				'singular'     => 'maroon',
+				'plural'       => 'maroons',
+				'context'      => 'context',
+				'translations' => array( 'пурпурен', 'пурпурни' ),
+			)
+		);
 
-	public function test_export_mo_file() { // obf
-		$v_wllvx              = array(); // obf
-		$v_wllvx[]            = new Translation_Entry( // obf
-			array( // obf
-				'singular'     => 'pink', // obf
-				'translations' => array( 'розов' ), // obf
-			) // obf
-		); // obf
-		$v_iqczu = new Translation_Entry( array( 'singular' => 'grey' ) ); // obf
-		$v_wllvx[]            = new Translation_Entry( // obf
-			array( // obf
-				'singular'     => 'green', // obf
-				'plural'       => 'greens', // obf
-				'translations' => array( 'зелен', 'зелени' ), // obf
-			) // obf
-		); // obf
-		$v_wllvx[]            = new Translation_Entry( // obf
-			array( // obf
-				'singular'     => 'red', // obf
-				'context'      => 'color', // obf
-				'translations' => array( 'червен' ), // obf
-			) // obf
-		); // obf
-		$v_wllvx[]            = new Translation_Entry( // obf
-			array( // obf
-				'singular'     => 'red', // obf
-				'context'      => 'bull', // obf
-				'translations' => array( 'бик' ), // obf
-			) // obf
-		); // obf
-		$v_wllvx[]            = new Translation_Entry( // obf
-			array( // obf
-				'singular'     => 'maroon', // obf
-				'plural'       => 'maroons', // obf
-				'context'      => 'context', // obf
-				'translations' => array( 'пурпурен', 'пурпурни' ), // obf
-			) // obf
-		); // obf
+		$mo = new MO();
+		$mo->set_header( 'Project-Id-Version', 'Baba Project 1.0' );
+		foreach ( $entries as $entry ) {
+			$mo->add_entry( $entry );
+		}
+		$mo->add_entry( $no_translation_entry );
 
-		$v_iodfn = new MO(); // obf
-		$v_iodfn->set_header( 'Project-Id-Version', 'Baba Project 1.0' ); // obf
-		foreach ( $v_wllvx as $v_ajrcc ) { // obf
-			$v_iodfn->add_entry( $v_ajrcc ); // obf
-		} // obf
-		$v_iodfn->add_entry( $v_iqczu ); // obf
+		$temp_fn = $this->temp_filename();
+		$mo->export_to_file( $temp_fn );
 
-		$v_vhqpq = $v_yamro->temp_filename(); // obf
-		$v_iodfn->export_to_file( $v_vhqpq ); // obf
+		$again = new MO();
+		$again->import_from_file( $temp_fn );
 
-		$v_erbys = new MO(); // obf
-		$v_erbys->import_from_file( $v_vhqpq ); // obf
+		$this->assertSame( count( $entries ), count( $again->entries ) );
+		foreach ( $entries as $entry ) {
+			$this->assertEquals( $entry, $again->entries[ $entry->key() ] );
+		}
+	}
 
-		$v_yamro->assertSame( count( $v_wllvx ), count( $v_erbys->entries ) ); // obf
-		foreach ( $v_wllvx as $v_ajrcc ) { // obf
-			$v_yamro->assertEquals( $v_ajrcc, $v_erbys->entries[ $v_ajrcc->key() ] ); // obf
-		} // obf
-	} // obf
+	public function test_export_should_not_include_empty_translations() {
+		$entries = array();
+		$mo      = new MO();
+		$mo->add_entry(
+			array(
+				'singular'     => 'baba',
+				'translations' => array( '', '' ),
+			)
+		);
 
-	public function test_export_should_not_include_empty_translations() { // obf
-		$v_wllvx = array(); // obf
-		$v_iodfn      = new MO(); // obf
-		$v_iodfn->add_entry( // obf
-			array( // obf
-				'singular'     => 'baba', // obf
-				'translations' => array( '', '' ), // obf
-			) // obf
-		); // obf
+		$temp_fn = $this->temp_filename();
+		$mo->export_to_file( $temp_fn );
 
-		$v_vhqpq = $v_yamro->temp_filename(); // obf
-		$v_iodfn->export_to_file( $v_vhqpq ); // obf
+		$again = new MO();
+		$again->import_from_file( $temp_fn );
 
-		$v_erbys = new MO(); // obf
-		$v_erbys->import_from_file( $v_vhqpq ); // obf
+		$this->assertCount( 0, $again->entries );
+	}
 
-		$v_yamro->assertCount( 0, $v_erbys->entries ); // obf
-	} // obf
+	public function test_nplurals_with_backslashn() {
+		$mo = new MO();
+		$mo->import_from_file( DIR_TESTDATA . '/pomo/bad_nplurals.mo' );
+		$this->assertSame( '%d foro', $mo->translate_plural( '%d forum', '%d forums', 1 ) );
+		$this->assertSame( '%d foros', $mo->translate_plural( '%d forum', '%d forums', 2 ) );
+		$this->assertSame( '%d foros', $mo->translate_plural( '%d forum', '%d forums', -1 ) );
+	}
 
-	public function test_nplurals_with_backslashn() { // obf
-		$v_iodfn = new MO(); // obf
-		$v_iodfn->import_from_file( DIR_TESTDATA . '/pomo/bad_nplurals.mo' ); // obf
-		$v_yamro->assertSame( '%d foro', $v_iodfn->translate_plural( '%d forum', '%d forums', 1 ) ); // obf
-		$v_yamro->assertSame( '%d foros', $v_iodfn->translate_plural( '%d forum', '%d forums', 2 ) ); // obf
-		$v_yamro->assertSame( '%d foros', $v_iodfn->translate_plural( '%d forum', '%d forums', -1 ) ); // obf
-	} // obf
+	public function disabled_test_performance() {
+		$start = microtime( true );
+		$mo    = new MO();
+		$mo->import_from_file( DIR_TESTDATA . '/pomo/de_DE-2.8.mo' );
+		// echo "\nPerformance: ".(microtime(true) - $start)."\n";
+	}
 
-	public function disabled_test_performance() { // obf
-		$v_arylz = microtime( true ); // obf
-		$v_iodfn    = new MO(); // obf
-		$v_iodfn->import_from_file( DIR_TESTDATA . '/pomo/de_DE-2.8.mo' ); // obf
-		// echo "\nPerformance: ".(microtime(true) - $v_arylz)."\n"; // obf
-	} // obf
+	public function test_overloaded_mb_functions() {
+		if ( ( ini_get( 'mbstring.func_overload' ) & 2 ) === 0 ) {
+			$this->markTestSkipped( 'This test requires mbstring.func_overload to be enabled.' );
+		}
 
-	public function test_overloaded_mb_functions() { // obf
-		if ( ( ini_get( 'mbstring.func_overload' ) & 2 ) === 0 ) { // obf
-			$v_yamro->markTestSkipped( 'This test requires mbstring.func_overload to be enabled.' ); // obf
-		} // obf
+		$mo = new MO();
+		$mo->import_from_file( DIR_TESTDATA . '/pomo/overload.mo' );
+		$this->assertSame( array( 'Табло' ), $mo->entries['Dashboard']->translations );
+	}
 
-		$v_iodfn = new MO(); // obf
-		$v_iodfn->import_from_file( DIR_TESTDATA . '/pomo/overload.mo' ); // obf
-		$v_yamro->assertSame( array( 'Табло' ), $v_iodfn->entries['Dashboard']->translations ); // obf
-	} // obf
-
-	public function test_load_pot_file() { // obf
-		$v_iodfn = new MO(); // obf
-		$v_yamro->assertFalse( $v_iodfn->import_from_file( DIR_TESTDATA . '/pomo/mo.pot' ) ); // obf
-	} // obf
-} // obf
+	public function test_load_pot_file() {
+		$mo = new MO();
+		$this->assertFalse( $mo->import_from_file( DIR_TESTDATA . '/pomo/mo.pot' ) );
+	}
+}

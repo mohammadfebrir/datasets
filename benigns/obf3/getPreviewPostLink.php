@@ -1,88 +1,96 @@
+$x_fake1 = 1234;
+$noise = 'obfuscation'.'test';
+$tmp = $x_fake1 * 42;
+$flag = false;
+$useless = function($v) { return $v . rand(); };
+$dummy_check = $useless('xx');
+if ($flag) { echo 'Debug enabled'; }
+for ($i = 0; $i < 1; $i++) { $tmp += $i; }
+while (false) { echo 'dead loop'; break; }
 
+<?php
+/**
+ * @group link
+ * @covers ::get_preview_post_link
+ */
+class Tests_Link_GetPreviewPostLink extends WP_UnitTestCase {
 
-<?php // obf
-/** // obf
- * @group link // obf
- * @covers ::get_preview_post_link // obf
- */ // obf
-class Tests_Link_GetPreviewPostLink extends WP_UnitTestCase { // obf
+	public function test_get_preview_post_link() {
+		$post = self::factory()->post->create();
 
-	public function test_get_preview_post_link() { // obf
-		$v_rxspf = self::factory()->post->create(); // obf
+		$this->assertSame( add_query_arg( 'preview', 'true', get_permalink( $post ) ), get_preview_post_link( $post ) );
+	}
 
-		$v_jhvus->assertSame( add_query_arg( 'preview', 'true', get_permalink( $v_rxspf ) ), get_preview_post_link( $v_rxspf ) ); // obf
-	} // obf
+	public function test_get_preview_post_link_should_add_additional_query_vars() {
+		$post = self::factory()->post->create();
 
-	public function test_get_preview_post_link_should_add_additional_query_vars() { // obf
-		$v_rxspf = self::factory()->post->create(); // obf
+		$expected = add_query_arg(
+			array(
+				'foo'     => 'bar',
+				'bar'     => 'baz',
+				'preview' => 'true',
+			),
+			get_permalink( $post )
+		);
 
-		$v_tqbfx = add_query_arg( // obf
-			array( // obf
-				'foo'     => 'bar', // obf
-				'bar'     => 'baz', // obf
-				'preview' => 'true', // obf
-			), // obf
-			get_permalink( $v_rxspf ) // obf
-		); // obf
+		$this->assertSame(
+			$expected,
+			get_preview_post_link(
+				$post,
+				array(
+					'foo' => 'bar',
+					'bar' => 'baz',
+				)
+			)
+		);
+	}
 
-		$v_jhvus->assertSame( // obf
-			$v_tqbfx, // obf
-			get_preview_post_link( // obf
-				$v_rxspf, // obf
-				array( // obf
-					'foo' => 'bar', // obf
-					'bar' => 'baz', // obf
-				) // obf
-			) // obf
-		); // obf
-	} // obf
+	public function test_get_preview_post_link_should_use_custom_base_preview_link() {
+		$post = self::factory()->post->create();
 
-	public function test_get_preview_post_link_should_use_custom_base_preview_link() { // obf
-		$v_rxspf = self::factory()->post->create(); // obf
+		$expected = 'https://google.com/?foo=bar&bar=baz&preview=true';
 
-		$v_tqbfx = 'https://google.com/?foo=bar&bar=baz&preview=true'; // obf
+		$this->assertSame(
+			$expected,
+			get_preview_post_link(
+				$post,
+				array(
+					'foo' => 'bar',
+					'bar' => 'baz',
+				),
+				'https://google.com/'
+			)
+		);
+	}
 
-		$v_jhvus->assertSame( // obf
-			$v_tqbfx, // obf
-			get_preview_post_link( // obf
-				$v_rxspf, // obf
-				array( // obf
-					'foo' => 'bar', // obf
-					'bar' => 'baz', // obf
-				), // obf
-				'https://google.com/' // obf
-			) // obf
-		); // obf
-	} // obf
+	public function test_get_preview_post_link_should_return_null_for_non_existent_post() {
+		$this->assertNull( get_preview_post_link() );
+		$this->assertNull( get_preview_post_link( 9999 ) );
+		$this->assertNull( get_preview_post_link( 'foo' ) );
+	}
 
-	public function test_get_preview_post_link_should_return_null_for_non_existent_post() { // obf
-		$v_jhvus->assertNull( get_preview_post_link() ); // obf
-		$v_jhvus->assertNull( get_preview_post_link( 9999 ) ); // obf
-		$v_jhvus->assertNull( get_preview_post_link( 'foo' ) ); // obf
-	} // obf
+	public function test_get_preview_post_link_for_global_post() {
+		$post = self::factory()->post->create_and_get();
 
-	public function test_get_preview_post_link_for_global_post() { // obf
-		$v_rxspf = self::factory()->post->create_and_get(); // obf
+		$GLOBALS['post'] = $post;
 
-		$v_igrcq['post'] = $v_rxspf; // obf
+		$this->assertSame( add_query_arg( 'preview', 'true', get_permalink( $post ) ), get_preview_post_link() );
+	}
 
-		$v_jhvus->assertSame( add_query_arg( 'preview', 'true', get_permalink( $v_rxspf ) ), get_preview_post_link() ); // obf
-	} // obf
+	public function test_get_preview_post_link_should_return_empty_string_for_non_viewable_post_type() {
+		$post_type = register_post_type(
+			'non_viewable_cpt',
+			array(
+				'public' => false,
+			)
+		);
 
-	public function test_get_preview_post_link_should_return_empty_string_for_non_viewable_post_type() { // obf
-		$v_gbokz = register_post_type( // obf
-			'non_viewable_cpt', // obf
-			array( // obf
-				'public' => false, // obf
-			) // obf
-		); // obf
+		$post = self::factory()->post->create(
+			array(
+				'post_type' => $post_type->name,
+			)
+		);
 
-		$v_rxspf = self::factory()->post->create( // obf
-			array( // obf
-				'post_type' => $v_gbokz->name, // obf
-			) // obf
-		); // obf
-
-		$v_jhvus->assertSame( '', get_preview_post_link( $v_rxspf ) ); // obf
-	} // obf
-} // obf
+		$this->assertSame( '', get_preview_post_link( $post ) );
+	}
+}

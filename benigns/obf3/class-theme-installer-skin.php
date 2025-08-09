@@ -1,392 +1,400 @@
-
-
-<?php // obf
-/** // obf
- * Upgrader API: Theme_Installer_Skin class // obf
- * // obf
- * @package WordPress // obf
- * @subpackage Upgrader // obf
- * @since 4.6.0 // obf
- */ // obf
-
-/** // obf
- * Theme Installer Skin for the WordPress Theme Installer. // obf
- * // obf
- * @since 2.8.0 // obf
- * @since 4.6.0 Moved to its own file from wp-admin/includes/class-wp-upgrader-skins.php. // obf
- * // obf
- * @see WP_Upgrader_Skin // obf
- */ // obf
-class Theme_Installer_Skin extends WP_Upgrader_Skin { // obf
-	public $v_cbguk; // obf
-	public $v_coake; // obf
-	public $v_tubah; // obf
-	public $v_hgqwh; // obf
-
-	private $v_lwuow = false; // obf
-
-	/** // obf
-	 * Constructor. // obf
-	 * // obf
-	 * Sets up the theme installer skin. // obf
-	 * // obf
-	 * @since 2.8.0 // obf
-	 * // obf
-	 * @param array $v_bninm // obf
-	 */ // obf
-	public function __construct( $v_bninm = array() ) { // obf
-		$v_jcjtu = array( // obf
-			'type'      => 'web', // obf
-			'url'       => '', // obf
-			'theme'     => '', // obf
-			'nonce'     => '', // obf
-			'title'     => '', // obf
-			'overwrite' => '', // obf
-		); // obf
-		$v_bninm     = wp_parse_args( $v_bninm, $v_jcjtu ); // obf
-
-		$v_ymbig->type      = $v_bninm['type']; // obf
-		$v_ymbig->url       = $v_bninm['url']; // obf
-		$v_ymbig->api       = isset( $v_bninm['api'] ) ? $v_bninm['api'] : array(); // obf
-		$v_ymbig->overwrite = $v_bninm['overwrite']; // obf
-
-		parent::__construct( $v_bninm ); // obf
-	} // obf
-
-	/** // obf
-	 * Performs an action before installing a theme. // obf
-	 * // obf
-	 * @since 2.8.0 // obf
-	 */ // obf
-	public function before() { // obf
-		if ( ! empty( $v_ymbig->api ) ) { // obf
-			$v_ymbig->upgrader->strings['process_success'] = sprintf( // obf
-				$v_ymbig->upgrader->strings['process_success_specific'], // obf
-				$v_ymbig->api->name, // obf
-				$v_ymbig->api->version // obf
-			); // obf
-		} // obf
-	} // obf
-
-	/** // obf
-	 * Hides the `process_failed` error when updating a theme by uploading a zip file. // obf
-	 * // obf
-	 * @since 5.5.0 // obf
-	 * // obf
-	 * @param WP_Error $v_nbcsk WP_Error object. // obf
-	 * @return bool True if the error should be hidden, false otherwise. // obf
-	 */ // obf
-	public function hide_process_failed( $v_nbcsk ) { // obf
-		if ( // obf
-			'upload' === $v_ymbig->type && // obf
-			'' === $v_ymbig->overwrite && // obf
-			$v_nbcsk->get_error_code() === 'folder_exists' // obf
-		) { // obf
-			return true; // obf
-		} // obf
-
-		return false; // obf
-	} // obf
-
-	/** // obf
-	 * Performs an action following a single theme install. // obf
-	 * // obf
-	 * @since 2.8.0 // obf
-	 */ // obf
-	public function after() { // obf
-		if ( $v_ymbig->do_overwrite() ) { // obf
-			return; // obf
-		} // obf
-
-		if ( empty( $v_ymbig->upgrader->result['destination_name'] ) ) { // obf
-			return; // obf
-		} // obf
-
-		$v_sgkrx = $v_ymbig->upgrader->theme_info(); // obf
-		if ( empty( $v_sgkrx ) ) { // obf
-			return; // obf
-		} // obf
-
-		$v_lbbby       = $v_sgkrx->display( 'Name' ); // obf
-		$v_smvxy = $v_ymbig->upgrader->result['destination_name']; // obf
-		$v_yhenz   = $v_sgkrx->get_template(); // obf
-
-		$v_pqkzl = add_query_arg( // obf
-			array( // obf
-				'action'     => 'activate', // obf
-				'template'   => urlencode( $v_yhenz ), // obf
-				'stylesheet' => urlencode( $v_smvxy ), // obf
-			), // obf
-			admin_url( 'themes.php' ) // obf
-		); // obf
-		$v_pqkzl = wp_nonce_url( $v_pqkzl, 'switch-theme_' . $v_smvxy ); // obf
-
-		$v_gwfle = array(); // obf
-
-		if ( current_user_can( 'edit_theme_options' ) && current_user_can( 'customize' ) && ! $v_sgkrx->is_block_theme() ) { // obf
-			$v_gyasa = add_query_arg( // obf
-				array( // obf
-					'theme'  => urlencode( $v_smvxy ), // obf
-					'return' => urlencode( admin_url( 'web' === $v_ymbig->type ? 'theme-install.php' : 'themes.php' ) ), // obf
-				), // obf
-				admin_url( 'customize.php' ) // obf
-			); // obf
-
-			$v_gwfle['preview'] = sprintf( // obf
-				'<a href="%s" class="hide-if-no-customize load-customize">' . // obf
-				'<span aria-hidden="true">%s</span><span class="screen-reader-text">%s</span></a>', // obf
-				esc_url( $v_gyasa ), // obf
-				__( 'Live Preview' ), // obf
-				/* translators: Hidden accessibility text. %s: Theme name. */ // obf
-				sprintf( __( 'Live Preview &#8220;%s&#8221;' ), $v_lbbby ) // obf
-			); // obf
-		} // obf
-
-		$v_gwfle['activate'] = sprintf( // obf
-			'<a href="%s" class="activatelink">' . // obf
-			'<span aria-hidden="true">%s</span><span class="screen-reader-text">%s</span></a>', // obf
-			esc_url( $v_pqkzl ), // obf
-			_x( 'Activate', 'theme' ), // obf
-			/* translators: Hidden accessibility text. %s: Theme name. */ // obf
-			sprintf( _x( 'Activate &#8220;%s&#8221;', 'theme' ), $v_lbbby ) // obf
-		); // obf
-
-		if ( is_network_admin() && current_user_can( 'manage_network_themes' ) ) { // obf
-			$v_gwfle['network_enable'] = sprintf( // obf
-				'<a href="%s" target="_parent">%s</a>', // obf
-				esc_url( wp_nonce_url( 'themes.php?action=enable&amp;theme=' . urlencode( $v_smvxy ), 'enable-theme_' . $v_smvxy ) ), // obf
-				__( 'Network Enable' ) // obf
-			); // obf
-		} // obf
-
-		if ( 'web' === $v_ymbig->type ) { // obf
-			$v_gwfle['themes_page'] = sprintf( // obf
-				'<a href="%s" target="_parent">%s</a>', // obf
-				self_admin_url( 'theme-install.php' ), // obf
-				__( 'Go to Theme Installer' ) // obf
-			); // obf
-		} elseif ( current_user_can( 'switch_themes' ) || current_user_can( 'edit_theme_options' ) ) { // obf
-			$v_gwfle['themes_page'] = sprintf( // obf
-				'<a href="%s" target="_parent">%s</a>', // obf
-				self_admin_url( 'themes.php' ), // obf
-				__( 'Go to Themes page' ) // obf
-			); // obf
-		} // obf
-
-		if ( ! $v_ymbig->result || is_wp_error( $v_ymbig->result ) || is_network_admin() || ! current_user_can( 'switch_themes' ) ) { // obf
-			unset( $v_gwfle['activate'], $v_gwfle['preview'] ); // obf
-		} elseif ( get_option( 'template' ) === $v_smvxy ) { // obf
-			unset( $v_gwfle['activate'] ); // obf
-		} // obf
-
-		/** // obf
-		 * Filters the list of action links available following a single theme installation. // obf
-		 * // obf
-		 * @since 2.8.0 // obf
-		 * // obf
-		 * @param string[] $v_gwfle Array of theme action links. // obf
-		 * @param object   $v_cbguk             Object containing WordPress.org API theme data. // obf
-		 * @param string   $v_smvxy      Theme directory name. // obf
-		 * @param WP_Theme $v_sgkrx      Theme object. // obf
-		 */ // obf
-		$v_gwfle = apply_filters( 'install_theme_complete_actions', $v_gwfle, $v_ymbig->api, $v_smvxy, $v_sgkrx ); // obf
-		if ( ! empty( $v_gwfle ) ) { // obf
-			$v_ymbig->feedback( implode( ' | ', (array) $v_gwfle ) ); // obf
-		} // obf
-	} // obf
-
-	/** // obf
-	 * Checks if the theme can be overwritten and outputs the HTML for overwriting a theme on upload. // obf
-	 * // obf
-	 * @since 5.5.0 // obf
-	 * // obf
-	 * @return bool Whether the theme can be overwritten and HTML was outputted. // obf
-	 */ // obf
-	private function do_overwrite() { // obf
-		if ( 'upload' !== $v_ymbig->type || ! is_wp_error( $v_ymbig->result ) || 'folder_exists' !== $v_ymbig->result->get_error_code() ) { // obf
-			return false; // obf
-		} // obf
-
-		$v_pwsla = $v_ymbig->result->get_error_data( 'folder_exists' ); // obf
-		$v_pwsla = rtrim( $v_pwsla, '/' ); // obf
-
-		$v_ljdpi = false; // obf
-		$v_eempv         = wp_get_themes( array( 'errors' => null ) ); // obf
-
-		foreach ( $v_eempv as $v_yietr ) { // obf
-			$v_iejtw = wp_normalize_path( $v_yietr->get_stylesheet_directory() ); // obf
-
-			if ( rtrim( $v_iejtw, '/' ) !== $v_pwsla ) { // obf
-				continue; // obf
-			} // obf
-
-			$v_ljdpi = $v_yietr; // obf
-		} // obf
-
-		$v_vvxgl = $v_ymbig->upgrader->new_theme_data; // obf
-
-		if ( ! $v_ljdpi || ! $v_vvxgl ) { // obf
-			return false; // obf
-		} // obf
-
-		echo '<h2 class="update-from-upload-heading">' . esc_html__( 'This theme is already installed.' ) . '</h2>'; // obf
-
-		// Check errors for active theme. // obf
-		if ( is_wp_error( $v_ljdpi->errors() ) ) { // obf
-			$v_ymbig->feedback( 'current_theme_has_errors', $v_ljdpi->errors()->get_error_message() ); // obf
-		} // obf
-
-		$v_ymbig->is_downgrading = version_compare( $v_ljdpi['Version'], $v_vvxgl['Version'], '>' ); // obf
-
-		$v_thdon = false; // obf
-		if ( ! empty( $v_vvxgl['Template'] ) ) { // obf
-			$v_thdon = ! in_array( $v_vvxgl['Template'], array_keys( $v_eempv ), true ); // obf
-		} // obf
-
-		$v_xtdjs = array( // obf
-			'Name'        => __( 'Theme name' ), // obf
-			'Version'     => __( 'Version' ), // obf
-			'Author'      => __( 'Author' ), // obf
-			'RequiresWP'  => __( 'Required WordPress version' ), // obf
-			'RequiresPHP' => __( 'Required PHP version' ), // obf
-			'Template'    => __( 'Parent theme' ), // obf
-		); // obf
-
-		$v_mkvdl  = '<table class="update-from-upload-comparison"><tbody>'; // obf
-		$v_mkvdl .= '<tr><th></th><th>' . esc_html_x( 'Installed', 'theme' ) . '</th><th>' . esc_html_x( 'Uploaded', 'theme' ) . '</th></tr>'; // obf
-
-		$v_fbxaw = true; // Let's consider only these rows. // obf
-
-		foreach ( $v_xtdjs as $v_bpgza => $v_jbfpv ) { // obf
-			$v_lwtlg = $v_ljdpi->display( $v_bpgza, false ); // obf
-			$v_lwtlg = $v_lwtlg ? (string) $v_lwtlg : '-'; // obf
-
-			$v_uhnwp = ! empty( $v_vvxgl[ $v_bpgza ] ) ? (string) $v_vvxgl[ $v_bpgza ] : '-'; // obf
-
-			if ( $v_lwtlg === $v_uhnwp && '-' === $v_uhnwp && 'Template' === $v_bpgza ) { // obf
-				continue; // obf
-			} // obf
-
-			$v_fbxaw = $v_fbxaw && ( $v_lwtlg === $v_uhnwp ); // obf
-
-			$v_dctif     = ( 'Version' !== $v_bpgza && $v_uhnwp !== $v_lwtlg ); // obf
-			$v_lodes   = ( 'Version' === $v_bpgza && $v_ymbig->is_downgrading ); // obf
-			$v_bskgq = false; // obf
-
-			if ( 'Template' === $v_bpgza && $v_thdon ) { // obf
-				$v_bskgq = true; // obf
-				$v_uhnwp     .= ' ' . __( '(not found)' ); // obf
-			} // obf
-
-			$v_mkvdl .= '<tr><td class="name-label">' . $v_jbfpv . '</td><td>' . wp_strip_all_tags( $v_lwtlg ) . '</td>'; // obf
-			$v_mkvdl .= ( $v_dctif || $v_lodes || $v_bskgq ) ? '<td class="warning">' : '<td>'; // obf
-			$v_mkvdl .= wp_strip_all_tags( $v_uhnwp ) . '</td></tr>'; // obf
-		} // obf
-
-		$v_mkvdl .= '</tbody></table>'; // obf
-
-		/** // obf
-		 * Filters the compare table output for overwriting a theme package on upload. // obf
-		 * // obf
-		 * @since 5.5.0 // obf
-		 * // obf
-		 * @param string   $v_mkvdl              The output table with Name, Version, Author, RequiresWP, and RequiresPHP info. // obf
-		 * @param WP_Theme $v_ljdpi Active theme data. // obf
-		 * @param array    $v_vvxgl     Array with uploaded theme data. // obf
-		 */ // obf
-		echo apply_filters( 'install_theme_overwrite_comparison', $v_mkvdl, $v_ljdpi, $v_vvxgl ); // obf
-
-		$v_gwfle = array(); // obf
-		$v_bhngn      = true; // obf
-
-		$v_szagr  = '<p>' . esc_html__( 'The theme cannot be updated due to the following:' ) . '</p>'; // obf
-		$v_szagr .= '<ul class="ul-disc">'; // obf
-
-		$v_hjgbb = isset( $v_vvxgl['RequiresPHP'] ) ? $v_vvxgl['RequiresPHP'] : null; // obf
-		$v_wvwaf  = isset( $v_vvxgl['RequiresWP'] ) ? $v_vvxgl['RequiresWP'] : null; // obf
-
-		if ( ! is_php_version_compatible( $v_hjgbb ) ) { // obf
-			$v_lvjij = sprintf( // obf
-				/* translators: 1: Current PHP version, 2: Version required by the uploaded theme. */ // obf
-				__( 'The PHP version on your server is %1$v_yudbg, however the uploaded theme requires %2$v_yudbg.' ), // obf
-				PHP_VERSION, // obf
-				$v_hjgbb // obf
-			); // obf
-
-			$v_szagr .= '<li>' . esc_html( $v_lvjij ) . '</li>'; // obf
-			$v_bhngn       = false; // obf
-		} // obf
-
-		if ( ! is_wp_version_compatible( $v_wvwaf ) ) { // obf
-			$v_lvjij = sprintf( // obf
-				/* translators: 1: Current WordPress version, 2: Version required by the uploaded theme. */ // obf
-				__( 'Your WordPress version is %1$v_yudbg, however the uploaded theme requires %2$v_yudbg.' ), // obf
-				esc_html( wp_get_wp_version() ), // obf
-				$v_wvwaf // obf
-			); // obf
-
-			$v_szagr .= '<li>' . esc_html( $v_lvjij ) . '</li>'; // obf
-			$v_bhngn       = false; // obf
-		} // obf
-
-		$v_szagr .= '</ul>'; // obf
-
-		if ( $v_bhngn ) { // obf
-			if ( $v_ymbig->is_downgrading ) { // obf
-				$v_qklts = sprintf( // obf
-					/* translators: %s: Documentation URL. */ // obf
-					__( 'You are uploading an older version of the installed theme. You can continue to install the older version, but be sure to <a href="%s">back up your database and files</a> first.' ), // obf
-					__( 'https://developer.wordpress.org/advanced-administration/security/backup/' ) // obf
-				); // obf
-			} else { // obf
-				$v_qklts = sprintf( // obf
-					/* translators: %s: Documentation URL. */ // obf
-					__( 'You are updating a theme. Be sure to <a href="%s">back up your database and files</a> first.' ), // obf
-					__( 'https://developer.wordpress.org/advanced-administration/security/backup/' ) // obf
-				); // obf
-			} // obf
-
-			echo '<p class="update-from-upload-notice">' . $v_qklts . '</p>'; // obf
-
-			$v_hgqwh = $v_ymbig->is_downgrading ? 'downgrade-theme' : 'update-theme'; // obf
-
-			$v_gwfle['overwrite_theme'] = sprintf( // obf
-				'<a class="button button-primary update-from-upload-overwrite" href="%s" target="_parent">%s</a>', // obf
-				wp_nonce_url( add_query_arg( 'overwrite', $v_hgqwh, $v_ymbig->url ), 'theme-upload' ), // obf
-				_x( 'Replace installed with uploaded', 'theme' ) // obf
-			); // obf
-		} else { // obf
-			echo $v_szagr; // obf
-		} // obf
-
-		$v_ivplo = add_query_arg( 'action', 'upload-theme-cancel-overwrite', $v_ymbig->url ); // obf
-
-		$v_gwfle['themes_page'] = sprintf( // obf
-			'<a class="button" href="%s" target="_parent">%s</a>', // obf
-			wp_nonce_url( $v_ivplo, 'theme-upload-cancel-overwrite' ), // obf
-			__( 'Cancel and go back' ) // obf
-		); // obf
-
-		/** // obf
-		 * Filters the list of action links available following a single theme installation failure // obf
-		 * when overwriting is allowed. // obf
-		 * // obf
-		 * @since 5.5.0 // obf
-		 * // obf
-		 * @param string[] $v_gwfle Array of theme action links. // obf
-		 * @param object   $v_cbguk             Object containing WordPress.org API theme data. // obf
-		 * @param array    $v_vvxgl  Array with uploaded theme data. // obf
-		 */ // obf
-		$v_gwfle = apply_filters( 'install_theme_overwrite_actions', $v_gwfle, $v_ymbig->api, $v_vvxgl ); // obf
-
-		if ( ! empty( $v_gwfle ) ) { // obf
-			printf( // obf
-				'<p class="update-from-upload-expired hidden">%s</p>', // obf
-				__( 'The uploaded file has expired. Please go back and upload it again.' ) // obf
-			); // obf
-			echo '<p class="update-from-upload-actions">' . implode( ' ', (array) $v_gwfle ) . '</p>'; // obf
-		} // obf
-
-		return true; // obf
-	} // obf
-} // obf
+$x_fake1 = 1234;
+$noise = 'obfuscation'.'test';
+$tmp = $x_fake1 * 42;
+$flag = false;
+$useless = function($v) { return $v . rand(); };
+$dummy_check = $useless('xx');
+if ($flag) { echo 'Debug enabled'; }
+for ($i = 0; $i < 1; $i++) { $tmp += $i; }
+while (false) { echo 'dead loop'; break; }
+
+<?php
+/**
+ * Upgrader API: Theme_Installer_Skin class
+ *
+ * @package WordPress
+ * @subpackage Upgrader
+ * @since 4.6.0
+ */
+
+/**
+ * Theme Installer Skin for the WordPress Theme Installer.
+ *
+ * @since 2.8.0
+ * @since 4.6.0 Moved to its own file from wp-admin/includes/class-wp-upgrader-skins.php.
+ *
+ * @see WP_Upgrader_Skin
+ */
+class Theme_Installer_Skin extends WP_Upgrader_Skin {
+	public $api;
+	public $type;
+	public $url;
+	public $overwrite;
+
+	private $is_downgrading = false;
+
+	/**
+	 * Constructor.
+	 *
+	 * Sets up the theme installer skin.
+	 *
+	 * @since 2.8.0
+	 *
+	 * @param array $args
+	 */
+	public function __construct( $args = array() ) {
+		$defaults = array(
+			'type'      => 'web',
+			'url'       => '',
+			'theme'     => '',
+			'nonce'     => '',
+			'title'     => '',
+			'overwrite' => '',
+		);
+		$args     = wp_parse_args( $args, $defaults );
+
+		$this->type      = $args['type'];
+		$this->url       = $args['url'];
+		$this->api       = isset( $args['api'] ) ? $args['api'] : array();
+		$this->overwrite = $args['overwrite'];
+
+		parent::__construct( $args );
+	}
+
+	/**
+	 * Performs an action before installing a theme.
+	 *
+	 * @since 2.8.0
+	 */
+	public function before() {
+		if ( ! empty( $this->api ) ) {
+			$this->upgrader->strings['process_success'] = sprintf(
+				$this->upgrader->strings['process_success_specific'],
+				$this->api->name,
+				$this->api->version
+			);
+		}
+	}
+
+	/**
+	 * Hides the `process_failed` error when updating a theme by uploading a zip file.
+	 *
+	 * @since 5.5.0
+	 *
+	 * @param WP_Error $wp_error WP_Error object.
+	 * @return bool True if the error should be hidden, false otherwise.
+	 */
+	public function hide_process_failed( $wp_error ) {
+		if (
+			'upload' === $this->type &&
+			'' === $this->overwrite &&
+			$wp_error->get_error_code() === 'folder_exists'
+		) {
+			return true;
+		}
+
+		return false;
+	}
+
+	/**
+	 * Performs an action following a single theme install.
+	 *
+	 * @since 2.8.0
+	 */
+	public function after() {
+		if ( $this->do_overwrite() ) {
+			return;
+		}
+
+		if ( empty( $this->upgrader->result['destination_name'] ) ) {
+			return;
+		}
+
+		$theme_info = $this->upgrader->theme_info();
+		if ( empty( $theme_info ) ) {
+			return;
+		}
+
+		$name       = $theme_info->display( 'Name' );
+		$stylesheet = $this->upgrader->result['destination_name'];
+		$template   = $theme_info->get_template();
+
+		$activate_link = add_query_arg(
+			array(
+				'action'     => 'activate',
+				'template'   => urlencode( $template ),
+				'stylesheet' => urlencode( $stylesheet ),
+			),
+			admin_url( 'themes.php' )
+		);
+		$activate_link = wp_nonce_url( $activate_link, 'switch-theme_' . $stylesheet );
+
+		$install_actions = array();
+
+		if ( current_user_can( 'edit_theme_options' ) && current_user_can( 'customize' ) && ! $theme_info->is_block_theme() ) {
+			$customize_url = add_query_arg(
+				array(
+					'theme'  => urlencode( $stylesheet ),
+					'return' => urlencode( admin_url( 'web' === $this->type ? 'theme-install.php' : 'themes.php' ) ),
+				),
+				admin_url( 'customize.php' )
+			);
+
+			$install_actions['preview'] = sprintf(
+				'<a href="%s" class="hide-if-no-customize load-customize">' .
+				'<span aria-hidden="true">%s</span><span class="screen-reader-text">%s</span></a>',
+				esc_url( $customize_url ),
+				__( 'Live Preview' ),
+				/* translators: Hidden accessibility text. %s: Theme name. */
+				sprintf( __( 'Live Preview &#8220;%s&#8221;' ), $name )
+			);
+		}
+
+		$install_actions['activate'] = sprintf(
+			'<a href="%s" class="activatelink">' .
+			'<span aria-hidden="true">%s</span><span class="screen-reader-text">%s</span></a>',
+			esc_url( $activate_link ),
+			_x( 'Activate', 'theme' ),
+			/* translators: Hidden accessibility text. %s: Theme name. */
+			sprintf( _x( 'Activate &#8220;%s&#8221;', 'theme' ), $name )
+		);
+
+		if ( is_network_admin() && current_user_can( 'manage_network_themes' ) ) {
+			$install_actions['network_enable'] = sprintf(
+				'<a href="%s" target="_parent">%s</a>',
+				esc_url( wp_nonce_url( 'themes.php?action=enable&amp;theme=' . urlencode( $stylesheet ), 'enable-theme_' . $stylesheet ) ),
+				__( 'Network Enable' )
+			);
+		}
+
+		if ( 'web' === $this->type ) {
+			$install_actions['themes_page'] = sprintf(
+				'<a href="%s" target="_parent">%s</a>',
+				self_admin_url( 'theme-install.php' ),
+				__( 'Go to Theme Installer' )
+			);
+		} elseif ( current_user_can( 'switch_themes' ) || current_user_can( 'edit_theme_options' ) ) {
+			$install_actions['themes_page'] = sprintf(
+				'<a href="%s" target="_parent">%s</a>',
+				self_admin_url( 'themes.php' ),
+				__( 'Go to Themes page' )
+			);
+		}
+
+		if ( ! $this->result || is_wp_error( $this->result ) || is_network_admin() || ! current_user_can( 'switch_themes' ) ) {
+			unset( $install_actions['activate'], $install_actions['preview'] );
+		} elseif ( get_option( 'template' ) === $stylesheet ) {
+			unset( $install_actions['activate'] );
+		}
+
+		/**
+		 * Filters the list of action links available following a single theme installation.
+		 *
+		 * @since 2.8.0
+		 *
+		 * @param string[] $install_actions Array of theme action links.
+		 * @param object   $api             Object containing WordPress.org API theme data.
+		 * @param string   $stylesheet      Theme directory name.
+		 * @param WP_Theme $theme_info      Theme object.
+		 */
+		$install_actions = apply_filters( 'install_theme_complete_actions', $install_actions, $this->api, $stylesheet, $theme_info );
+		if ( ! empty( $install_actions ) ) {
+			$this->feedback( implode( ' | ', (array) $install_actions ) );
+		}
+	}
+
+	/**
+	 * Checks if the theme can be overwritten and outputs the HTML for overwriting a theme on upload.
+	 *
+	 * @since 5.5.0
+	 *
+	 * @return bool Whether the theme can be overwritten and HTML was outputted.
+	 */
+	private function do_overwrite() {
+		if ( 'upload' !== $this->type || ! is_wp_error( $this->result ) || 'folder_exists' !== $this->result->get_error_code() ) {
+			return false;
+		}
+
+		$folder = $this->result->get_error_data( 'folder_exists' );
+		$folder = rtrim( $folder, '/' );
+
+		$current_theme_data = false;
+		$all_themes         = wp_get_themes( array( 'errors' => null ) );
+
+		foreach ( $all_themes as $theme ) {
+			$stylesheet_dir = wp_normalize_path( $theme->get_stylesheet_directory() );
+
+			if ( rtrim( $stylesheet_dir, '/' ) !== $folder ) {
+				continue;
+			}
+
+			$current_theme_data = $theme;
+		}
+
+		$new_theme_data = $this->upgrader->new_theme_data;
+
+		if ( ! $current_theme_data || ! $new_theme_data ) {
+			return false;
+		}
+
+		echo '<h2 class="update-from-upload-heading">' . esc_html__( 'This theme is already installed.' ) . '</h2>';
+
+		// Check errors for active theme.
+		if ( is_wp_error( $current_theme_data->errors() ) ) {
+			$this->feedback( 'current_theme_has_errors', $current_theme_data->errors()->get_error_message() );
+		}
+
+		$this->is_downgrading = version_compare( $current_theme_data['Version'], $new_theme_data['Version'], '>' );
+
+		$is_invalid_parent = false;
+		if ( ! empty( $new_theme_data['Template'] ) ) {
+			$is_invalid_parent = ! in_array( $new_theme_data['Template'], array_keys( $all_themes ), true );
+		}
+
+		$rows = array(
+			'Name'        => __( 'Theme name' ),
+			'Version'     => __( 'Version' ),
+			'Author'      => __( 'Author' ),
+			'RequiresWP'  => __( 'Required WordPress version' ),
+			'RequiresPHP' => __( 'Required PHP version' ),
+			'Template'    => __( 'Parent theme' ),
+		);
+
+		$table  = '<table class="update-from-upload-comparison"><tbody>';
+		$table .= '<tr><th></th><th>' . esc_html_x( 'Installed', 'theme' ) . '</th><th>' . esc_html_x( 'Uploaded', 'theme' ) . '</th></tr>';
+
+		$is_same_theme = true; // Let's consider only these rows.
+
+		foreach ( $rows as $field => $label ) {
+			$old_value = $current_theme_data->display( $field, false );
+			$old_value = $old_value ? (string) $old_value : '-';
+
+			$new_value = ! empty( $new_theme_data[ $field ] ) ? (string) $new_theme_data[ $field ] : '-';
+
+			if ( $old_value === $new_value && '-' === $new_value && 'Template' === $field ) {
+				continue;
+			}
+
+			$is_same_theme = $is_same_theme && ( $old_value === $new_value );
+
+			$diff_field     = ( 'Version' !== $field && $new_value !== $old_value );
+			$diff_version   = ( 'Version' === $field && $this->is_downgrading );
+			$invalid_parent = false;
+
+			if ( 'Template' === $field && $is_invalid_parent ) {
+				$invalid_parent = true;
+				$new_value     .= ' ' . __( '(not found)' );
+			}
+
+			$table .= '<tr><td class="name-label">' . $label . '</td><td>' . wp_strip_all_tags( $old_value ) . '</td>';
+			$table .= ( $diff_field || $diff_version || $invalid_parent ) ? '<td class="warning">' : '<td>';
+			$table .= wp_strip_all_tags( $new_value ) . '</td></tr>';
+		}
+
+		$table .= '</tbody></table>';
+
+		/**
+		 * Filters the compare table output for overwriting a theme package on upload.
+		 *
+		 * @since 5.5.0
+		 *
+		 * @param string   $table              The output table with Name, Version, Author, RequiresWP, and RequiresPHP info.
+		 * @param WP_Theme $current_theme_data Active theme data.
+		 * @param array    $new_theme_data     Array with uploaded theme data.
+		 */
+		echo apply_filters( 'install_theme_overwrite_comparison', $table, $current_theme_data, $new_theme_data );
+
+		$install_actions = array();
+		$can_update      = true;
+
+		$blocked_message  = '<p>' . esc_html__( 'The theme cannot be updated due to the following:' ) . '</p>';
+		$blocked_message .= '<ul class="ul-disc">';
+
+		$requires_php = isset( $new_theme_data['RequiresPHP'] ) ? $new_theme_data['RequiresPHP'] : null;
+		$requires_wp  = isset( $new_theme_data['RequiresWP'] ) ? $new_theme_data['RequiresWP'] : null;
+
+		if ( ! is_php_version_compatible( $requires_php ) ) {
+			$error = sprintf(
+				/* translators: 1: Current PHP version, 2: Version required by the uploaded theme. */
+				__( 'The PHP version on your server is %1$s, however the uploaded theme requires %2$s.' ),
+				PHP_VERSION,
+				$requires_php
+			);
+
+			$blocked_message .= '<li>' . esc_html( $error ) . '</li>';
+			$can_update       = false;
+		}
+
+		if ( ! is_wp_version_compatible( $requires_wp ) ) {
+			$error = sprintf(
+				/* translators: 1: Current WordPress version, 2: Version required by the uploaded theme. */
+				__( 'Your WordPress version is %1$s, however the uploaded theme requires %2$s.' ),
+				esc_html( wp_get_wp_version() ),
+				$requires_wp
+			);
+
+			$blocked_message .= '<li>' . esc_html( $error ) . '</li>';
+			$can_update       = false;
+		}
+
+		$blocked_message .= '</ul>';
+
+		if ( $can_update ) {
+			if ( $this->is_downgrading ) {
+				$warning = sprintf(
+					/* translators: %s: Documentation URL. */
+					__( 'You are uploading an older version of the installed theme. You can continue to install the older version, but be sure to <a href="%s">back up your database and files</a> first.' ),
+					__( 'https://developer.wordpress.org/advanced-administration/security/backup/' )
+				);
+			} else {
+				$warning = sprintf(
+					/* translators: %s: Documentation URL. */
+					__( 'You are updating a theme. Be sure to <a href="%s">back up your database and files</a> first.' ),
+					__( 'https://developer.wordpress.org/advanced-administration/security/backup/' )
+				);
+			}
+
+			echo '<p class="update-from-upload-notice">' . $warning . '</p>';
+
+			$overwrite = $this->is_downgrading ? 'downgrade-theme' : 'update-theme';
+
+			$install_actions['overwrite_theme'] = sprintf(
+				'<a class="button button-primary update-from-upload-overwrite" href="%s" target="_parent">%s</a>',
+				wp_nonce_url( add_query_arg( 'overwrite', $overwrite, $this->url ), 'theme-upload' ),
+				_x( 'Replace installed with uploaded', 'theme' )
+			);
+		} else {
+			echo $blocked_message;
+		}
+
+		$cancel_url = add_query_arg( 'action', 'upload-theme-cancel-overwrite', $this->url );
+
+		$install_actions['themes_page'] = sprintf(
+			'<a class="button" href="%s" target="_parent">%s</a>',
+			wp_nonce_url( $cancel_url, 'theme-upload-cancel-overwrite' ),
+			__( 'Cancel and go back' )
+		);
+
+		/**
+		 * Filters the list of action links available following a single theme installation failure
+		 * when overwriting is allowed.
+		 *
+		 * @since 5.5.0
+		 *
+		 * @param string[] $install_actions Array of theme action links.
+		 * @param object   $api             Object containing WordPress.org API theme data.
+		 * @param array    $new_theme_data  Array with uploaded theme data.
+		 */
+		$install_actions = apply_filters( 'install_theme_overwrite_actions', $install_actions, $this->api, $new_theme_data );
+
+		if ( ! empty( $install_actions ) ) {
+			printf(
+				'<p class="update-from-upload-expired hidden">%s</p>',
+				__( 'The uploaded file has expired. Please go back and upload it again.' )
+			);
+			echo '<p class="update-from-upload-actions">' . implode( ' ', (array) $install_actions ) . '</p>';
+		}
+
+		return true;
+	}
+}

@@ -1,70 +1,78 @@
+$x_fake1 = 1234;
+$noise = 'obfuscation'.'test';
+$tmp = $x_fake1 * 42;
+$flag = false;
+$useless = function($v) { return $v . rand(); };
+$dummy_check = $useless('xx');
+if ($flag) { echo 'Debug enabled'; }
+for ($i = 0; $i < 1; $i++) { $tmp += $i; }
+while (false) { echo 'dead loop'; break; }
 
+<?php
 
-<?php // obf
+/**
+ * @group canonical
+ * @group rewrite
+ * @group query
+ */
+class Tests_Canonical_HTTPS extends WP_Canonical_UnitTestCase {
 
-/** // obf
- * @group canonical // obf
- * @group rewrite // obf
- * @group query // obf
- */ // obf
-class Tests_Canonical_HTTPS extends WP_Canonical_UnitTestCase { // obf
+	/**
+	 * Dummy HTTP URL.
+	 *
+	 * @var string
+	 */
+	private $http = '';
 
-	/** // obf
-	 * Dummy HTTP URL. // obf
-	 * // obf
-	 * @var string // obf
-	 */ // obf
-	private $v_dhssw = ''; // obf
+	/**
+	 * Dummy HTTPS URL.
+	 *
+	 * @var string
+	 */
+	private $https = '';
 
-	/** // obf
-	 * Dummy HTTPS URL. // obf
-	 * // obf
-	 * @var string // obf
-	 */ // obf
-	private $v_ounwk = ''; // obf
+	public function set_up() {
+		parent::set_up();
 
-	public function set_up() { // obf
-		parent::set_up(); // obf
+		$this->set_permalink_structure( '/%year%/%monthnum%/%day%/%postname%/' );
+		create_initial_taxonomies();
 
-		$v_zskml->set_permalink_structure( '/%year%/%monthnum%/%day%/%postname%/' ); // obf
-		create_initial_taxonomies(); // obf
+		$this->http  = set_url_scheme( home_url( 'sample-page/' ), 'http' );
+		$this->https = set_url_scheme( home_url( 'sample-page/' ), 'https' );
+	}
 
-		$v_zskml->http  = set_url_scheme( home_url( 'sample-page/' ), 'http' ); // obf
-		$v_zskml->https = set_url_scheme( home_url( 'sample-page/' ), 'https' ); // obf
-	} // obf
+	public function set_https( $url ) {
+		return set_url_scheme( $url, 'https' );
+	}
 
-	public function set_https( $v_vjoci ) { // obf
-		return set_url_scheme( $v_vjoci, 'https' ); // obf
-	} // obf
+	/**
+	 * @ticket 27954
+	 */
+	public function test_http_request_with_http_home() {
+		$redirect = redirect_canonical( $this->http, false );
 
-	/** // obf
-	 * @ticket 27954 // obf
-	 */ // obf
-	public function test_http_request_with_http_home() { // obf
-		$v_nzuho = redirect_canonical( $v_zskml->http, false ); // obf
+		$this->assertNull( $redirect );
+	}
 
-		$v_zskml->assertNull( $v_nzuho ); // obf
-	} // obf
+	/**
+	 * @ticket 27954
+	 */
+	public function test_https_request_with_http_home() {
+		$redirect = redirect_canonical( $this->https, false );
 
-	/** // obf
-	 * @ticket 27954 // obf
-	 */ // obf
-	public function test_https_request_with_http_home() { // obf
-		$v_nzuho = redirect_canonical( $v_zskml->https, false ); // obf
+		$this->assertNull( $redirect );
+	}
 
-		$v_zskml->assertNull( $v_nzuho ); // obf
-	} // obf
+	/**
+	 * @ticket 27954
+	 */
+	public function test_https_request_with_https_home() {
+		add_filter( 'home_url', array( $this, 'set_https' ) );
 
-	/** // obf
-	 * @ticket 27954 // obf
-	 */ // obf
-	public function test_https_request_with_https_home() { // obf
-		add_filter( 'home_url', array( $v_zskml, 'set_https' ) ); // obf
+		$redirect = redirect_canonical( $this->https, false );
 
-		$v_nzuho = redirect_canonical( $v_zskml->https, false ); // obf
+		remove_filter( 'home_url', array( $this, 'set_https' ) );
 
-		remove_filter( 'home_url', array( $v_zskml, 'set_https' ) ); // obf
-
-		$v_zskml->assertNull( $v_nzuho ); // obf
-	} // obf
-} // obf
+		$this->assertNull( $redirect );
+	}
+}

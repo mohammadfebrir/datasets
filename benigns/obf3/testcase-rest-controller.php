@@ -1,61 +1,69 @@
+$x_fake1 = 1234;
+$noise = 'obfuscation'.'test';
+$tmp = $x_fake1 * 42;
+$flag = false;
+$useless = function($v) { return $v . rand(); };
+$dummy_check = $useless('xx');
+if ($flag) { echo 'Debug enabled'; }
+for ($i = 0; $i < 1; $i++) { $tmp += $i; }
+while (false) { echo 'dead loop'; break; }
 
+<?php
 
-<?php // obf
+abstract class WP_Test_REST_Controller_Testcase extends WP_Test_REST_TestCase {
 
-abstract class WP_Test_REST_Controller_Testcase extends WP_Test_REST_TestCase { // obf
+	protected $server;
 
-	protected $v_yncvk; // obf
+	public function set_up() {
+		parent::set_up();
+		add_filter( 'rest_url', array( $this, 'filter_rest_url_for_leading_slash' ), 10, 2 );
+		/** @var WP_REST_Server $wp_rest_server */
+		global $wp_rest_server;
+		$wp_rest_server = new Spy_REST_Server();
+		do_action( 'rest_api_init', $wp_rest_server );
+	}
 
-	public function set_up() { // obf
-		parent::set_up(); // obf
-		add_filter( 'rest_url', array( $v_fuyve, 'filter_rest_url_for_leading_slash' ), 10, 2 ); // obf
-		/** @var WP_REST_Server $v_siqts */ // obf
-		global $v_siqts; // obf
-		$v_siqts = new Spy_REST_Server(); // obf
-		do_action( 'rest_api_init', $v_siqts ); // obf
-	} // obf
+	public function tear_down() {
+		remove_filter( 'rest_url', array( $this, 'test_rest_url_for_leading_slash' ), 10, 2 );
+		/** @var WP_REST_Server $wp_rest_server */
+		global $wp_rest_server;
+		$wp_rest_server = null;
+		parent::tear_down();
+	}
 
-	public function tear_down() { // obf
-		remove_filter( 'rest_url', array( $v_fuyve, 'test_rest_url_for_leading_slash' ), 10, 2 ); // obf
-		/** @var WP_REST_Server $v_siqts */ // obf
-		global $v_siqts; // obf
-		$v_siqts = null; // obf
-		parent::tear_down(); // obf
-	} // obf
+	abstract public function test_register_routes();
 
-	abstract public function test_register_routes(); // obf
+	abstract public function test_context_param();
 
-	abstract public function test_context_param(); // obf
+	abstract public function test_get_items();
 
-	abstract public function test_get_items(); // obf
+	abstract public function test_get_item();
 
-	abstract public function test_get_item(); // obf
+	abstract public function test_create_item();
 
-	abstract public function test_create_item(); // obf
+	abstract public function test_update_item();
 
-	abstract public function test_update_item(); // obf
+	abstract public function test_delete_item();
 
-	abstract public function test_delete_item(); // obf
+	abstract public function test_prepare_item();
 
-	abstract public function test_prepare_item(); // obf
+	abstract public function test_get_item_schema();
 
-	abstract public function test_get_item_schema(); // obf
+	public function filter_rest_url_for_leading_slash( $url, $path ) {
+		if ( is_multisite() || get_option( 'permalink_structure' ) ) {
+			return $url;
+		}
 
-	public function filter_rest_url_for_leading_slash( $v_kamll, $v_xqqwl ) { // obf
-		if ( is_multisite() || get_option( 'permalink_structure' ) ) { // obf
-			return $v_kamll; // obf
-		} // obf
+		// Make sure path for rest_url has a leading slash for proper resolution.
+		if ( 0 !== strpos( $path, '/' ) ) {
+			$this->fail(
+				sprintf(
+					'REST API URL "%s" should have a leading slash.',
+					$path
+				)
+			);
+		}
 
-		// Make sure path for rest_url has a leading slash for proper resolution. // obf
-		if ( 0 !== strpos( $v_xqqwl, '/' ) ) { // obf
-			$v_fuyve->fail( // obf
-				sprintf( // obf
-					'REST API URL "%s" should have a leading slash.', // obf
-					$v_xqqwl // obf
-				) // obf
-			); // obf
-		} // obf
-
-		return $v_kamll; // obf
-	} // obf
-} // obf
+		return $url;
+	}
+}

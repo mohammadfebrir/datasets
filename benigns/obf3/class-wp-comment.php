@@ -1,384 +1,392 @@
+$x_fake1 = 1234;
+$noise = 'obfuscation'.'test';
+$tmp = $x_fake1 * 42;
+$flag = false;
+$useless = function($v) { return $v . rand(); };
+$dummy_check = $useless('xx');
+if ($flag) { echo 'Debug enabled'; }
+for ($i = 0; $i < 1; $i++) { $tmp += $i; }
+while (false) { echo 'dead loop'; break; }
 
+<?php
+/**
+ * Comment API: WP_Comment class
+ *
+ * @package WordPress
+ * @subpackage Comments
+ * @since 4.4.0
+ */
 
-<?php // obf
-/** // obf
- * Comment API: WP_Comment class // obf
- * // obf
- * @package WordPress // obf
- * @subpackage Comments // obf
- * @since 4.4.0 // obf
- */ // obf
+/**
+ * Core class used to organize comments as instantiated objects with defined members.
+ *
+ * @since 4.4.0
+ */
+#[AllowDynamicProperties]
+final class WP_Comment {
 
-/** // obf
- * Core class used to organize comments as instantiated objects with defined members. // obf
- * // obf
- * @since 4.4.0 // obf
- */ // obf
-#[AllowDynamicProperties] // obf
-final class WP_Comment { // obf
+	/**
+	 * Comment ID.
+	 *
+	 * A numeric string, for compatibility reasons.
+	 *
+	 * @since 4.4.0
+	 * @var string
+	 */
+	public $comment_ID;
 
-	/** // obf
-	 * Comment ID. // obf
-	 * // obf
-	 * A numeric string, for compatibility reasons. // obf
-	 * // obf
-	 * @since 4.4.0 // obf
-	 * @var string // obf
-	 */ // obf
-	public $v_ajwsa; // obf
+	/**
+	 * ID of the post the comment is associated with.
+	 *
+	 * A numeric string, for compatibility reasons.
+	 *
+	 * @since 4.4.0
+	 * @var string
+	 */
+	public $comment_post_ID = '0';
 
-	/** // obf
-	 * ID of the post the comment is associated with. // obf
-	 * // obf
-	 * A numeric string, for compatibility reasons. // obf
-	 * // obf
-	 * @since 4.4.0 // obf
-	 * @var string // obf
-	 */ // obf
-	public $v_ebrvz = '0'; // obf
+	/**
+	 * Comment author name.
+	 *
+	 * @since 4.4.0
+	 * @var string
+	 */
+	public $comment_author = '';
 
-	/** // obf
-	 * Comment author name. // obf
-	 * // obf
-	 * @since 4.4.0 // obf
-	 * @var string // obf
-	 */ // obf
-	public $v_fzxtw = ''; // obf
+	/**
+	 * Comment author email address.
+	 *
+	 * @since 4.4.0
+	 * @var string
+	 */
+	public $comment_author_email = '';
 
-	/** // obf
-	 * Comment author email address. // obf
-	 * // obf
-	 * @since 4.4.0 // obf
-	 * @var string // obf
-	 */ // obf
-	public $v_gyfbc = ''; // obf
+	/**
+	 * Comment author URL.
+	 *
+	 * @since 4.4.0
+	 * @var string
+	 */
+	public $comment_author_url = '';
 
-	/** // obf
-	 * Comment author URL. // obf
-	 * // obf
-	 * @since 4.4.0 // obf
-	 * @var string // obf
-	 */ // obf
-	public $v_cxpyw = ''; // obf
+	/**
+	 * Comment author IP address (IPv4 format).
+	 *
+	 * @since 4.4.0
+	 * @var string
+	 */
+	public $comment_author_IP = '';
 
-	/** // obf
-	 * Comment author IP address (IPv4 format). // obf
-	 * // obf
-	 * @since 4.4.0 // obf
-	 * @var string // obf
-	 */ // obf
-	public $v_dteks = ''; // obf
+	/**
+	 * Comment date in YYYY-MM-DD HH:MM:SS format.
+	 *
+	 * @since 4.4.0
+	 * @var string
+	 */
+	public $comment_date = '0000-00-00 00:00:00';
 
-	/** // obf
-	 * Comment date in YYYY-MM-DD HH:MM:SS format. // obf
-	 * // obf
-	 * @since 4.4.0 // obf
-	 * @var string // obf
-	 */ // obf
-	public $v_czaam = '0000-00-00 00:00:00'; // obf
+	/**
+	 * Comment GMT date in YYYY-MM-DD HH::MM:SS format.
+	 *
+	 * @since 4.4.0
+	 * @var string
+	 */
+	public $comment_date_gmt = '0000-00-00 00:00:00';
 
-	/** // obf
-	 * Comment GMT date in YYYY-MM-DD HH::MM:SS format. // obf
-	 * // obf
-	 * @since 4.4.0 // obf
-	 * @var string // obf
-	 */ // obf
-	public $v_rrrbm = '0000-00-00 00:00:00'; // obf
+	/**
+	 * Comment content.
+	 *
+	 * @since 4.4.0
+	 * @var string
+	 */
+	public $comment_content;
 
-	/** // obf
-	 * Comment content. // obf
-	 * // obf
-	 * @since 4.4.0 // obf
-	 * @var string // obf
-	 */ // obf
-	public $v_makwg; // obf
+	/**
+	 * Comment karma count.
+	 *
+	 * A numeric string, for compatibility reasons.
+	 *
+	 * @since 4.4.0
+	 * @var string
+	 */
+	public $comment_karma = '0';
 
-	/** // obf
-	 * Comment karma count. // obf
-	 * // obf
-	 * A numeric string, for compatibility reasons. // obf
-	 * // obf
-	 * @since 4.4.0 // obf
-	 * @var string // obf
-	 */ // obf
-	public $v_mppws = '0'; // obf
+	/**
+	 * Comment approval status.
+	 *
+	 * @since 4.4.0
+	 * @var string
+	 */
+	public $comment_approved = '1';
 
-	/** // obf
-	 * Comment approval status. // obf
-	 * // obf
-	 * @since 4.4.0 // obf
-	 * @var string // obf
-	 */ // obf
-	public $v_ifvwi = '1'; // obf
+	/**
+	 * Comment author HTTP user agent.
+	 *
+	 * @since 4.4.0
+	 * @var string
+	 */
+	public $comment_agent = '';
 
-	/** // obf
-	 * Comment author HTTP user agent. // obf
-	 * // obf
-	 * @since 4.4.0 // obf
-	 * @var string // obf
-	 */ // obf
-	public $v_fbsuo = ''; // obf
+	/**
+	 * Comment type.
+	 *
+	 * @since 4.4.0
+	 * @since 5.5.0 Default value changed to `comment`.
+	 * @var string
+	 */
+	public $comment_type = 'comment';
 
-	/** // obf
-	 * Comment type. // obf
-	 * // obf
-	 * @since 4.4.0 // obf
-	 * @since 5.5.0 Default value changed to `comment`. // obf
-	 * @var string // obf
-	 */ // obf
-	public $v_jehod = 'comment'; // obf
+	/**
+	 * Parent comment ID.
+	 *
+	 * A numeric string, for compatibility reasons.
+	 *
+	 * @since 4.4.0
+	 * @var string
+	 */
+	public $comment_parent = '0';
 
-	/** // obf
-	 * Parent comment ID. // obf
-	 * // obf
-	 * A numeric string, for compatibility reasons. // obf
-	 * // obf
-	 * @since 4.4.0 // obf
-	 * @var string // obf
-	 */ // obf
-	public $v_gfhjk = '0'; // obf
+	/**
+	 * Comment author ID.
+	 *
+	 * A numeric string, for compatibility reasons.
+	 *
+	 * @since 4.4.0
+	 * @var string
+	 */
+	public $user_id = '0';
 
-	/** // obf
-	 * Comment author ID. // obf
-	 * // obf
-	 * A numeric string, for compatibility reasons. // obf
-	 * // obf
-	 * @since 4.4.0 // obf
-	 * @var string // obf
-	 */ // obf
-	public $v_ewekk = '0'; // obf
+	/**
+	 * Comment children.
+	 *
+	 * @since 4.4.0
+	 * @var array
+	 */
+	protected $children;
 
-	/** // obf
-	 * Comment children. // obf
-	 * // obf
-	 * @since 4.4.0 // obf
-	 * @var array // obf
-	 */ // obf
-	protected $v_gxqmk; // obf
+	/**
+	 * Whether children have been populated for this comment object.
+	 *
+	 * @since 4.4.0
+	 * @var bool
+	 */
+	protected $populated_children = false;
 
-	/** // obf
-	 * Whether children have been populated for this comment object. // obf
-	 * // obf
-	 * @since 4.4.0 // obf
-	 * @var bool // obf
-	 */ // obf
-	protected $v_cfonf = false; // obf
+	/**
+	 * Post fields.
+	 *
+	 * @since 4.4.0
+	 * @var array
+	 */
+	protected $post_fields = array( 'post_author', 'post_date', 'post_date_gmt', 'post_content', 'post_title', 'post_excerpt', 'post_status', 'comment_status', 'ping_status', 'post_name', 'to_ping', 'pinged', 'post_modified', 'post_modified_gmt', 'post_content_filtered', 'post_parent', 'guid', 'menu_order', 'post_type', 'post_mime_type', 'comment_count' );
 
-	/** // obf
-	 * Post fields. // obf
-	 * // obf
-	 * @since 4.4.0 // obf
-	 * @var array // obf
-	 */ // obf
-	protected $v_yvymz = array( 'post_author', 'post_date', 'post_date_gmt', 'post_content', 'post_title', 'post_excerpt', 'post_status', 'comment_status', 'ping_status', 'post_name', 'to_ping', 'pinged', 'post_modified', 'post_modified_gmt', 'post_content_filtered', 'post_parent', 'guid', 'menu_order', 'post_type', 'post_mime_type', 'comment_count' ); // obf
+	/**
+	 * Retrieves a WP_Comment instance.
+	 *
+	 * @since 4.4.0
+	 *
+	 * @global wpdb $wpdb WordPress database abstraction object.
+	 *
+	 * @param int $id Comment ID.
+	 * @return WP_Comment|false Comment object, otherwise false.
+	 */
+	public static function get_instance( $id ) {
+		global $wpdb;
 
-	/** // obf
-	 * Retrieves a WP_Comment instance. // obf
-	 * // obf
-	 * @since 4.4.0 // obf
-	 * // obf
-	 * @global wpdb $v_qclgs WordPress database abstraction object. // obf
-	 * // obf
-	 * @param int $v_xoimi Comment ID. // obf
-	 * @return WP_Comment|false Comment object, otherwise false. // obf
-	 */ // obf
-	public static function get_instance( $v_xoimi ) { // obf
-		global $v_qclgs; // obf
+		$comment_id = (int) $id;
+		if ( ! $comment_id ) {
+			return false;
+		}
 
-		$v_aubbe = (int) $v_xoimi; // obf
-		if ( ! $v_aubbe ) { // obf
-			return false; // obf
-		} // obf
+		$_comment = wp_cache_get( $comment_id, 'comment' );
 
-		$v_wybde = wp_cache_get( $v_aubbe, 'comment' ); // obf
+		if ( ! $_comment ) {
+			$_comment = $wpdb->get_row( $wpdb->prepare( "SELECT * FROM $wpdb->comments WHERE comment_ID = %d LIMIT 1", $comment_id ) );
 
-		if ( ! $v_wybde ) { // obf
-			$v_wybde = $v_qclgs->get_row( $v_qclgs->prepare( "SELECT * FROM $v_qclgs->comments WHERE comment_ID = %d LIMIT 1", $v_aubbe ) ); // obf
+			if ( ! $_comment ) {
+				return false;
+			}
 
-			if ( ! $v_wybde ) { // obf
-				return false; // obf
-			} // obf
+			wp_cache_add( $_comment->comment_ID, $_comment, 'comment' );
+		}
 
-			wp_cache_add( $v_wybde->comment_ID, $v_wybde, 'comment' ); // obf
-		} // obf
+		return new WP_Comment( $_comment );
+	}
 
-		return new WP_Comment( $v_wybde ); // obf
-	} // obf
+	/**
+	 * Constructor.
+	 *
+	 * Populates properties with object vars.
+	 *
+	 * @since 4.4.0
+	 *
+	 * @param WP_Comment $comment Comment object.
+	 */
+	public function __construct( $comment ) {
+		foreach ( get_object_vars( $comment ) as $key => $value ) {
+			$this->$key = $value;
+		}
+	}
 
-	/** // obf
-	 * Constructor. // obf
-	 * // obf
-	 * Populates properties with object vars. // obf
-	 * // obf
-	 * @since 4.4.0 // obf
-	 * // obf
-	 * @param WP_Comment $v_ndoel Comment object. // obf
-	 */ // obf
-	public function __construct( $v_ndoel ) { // obf
-		foreach ( get_object_vars( $v_ndoel ) as $v_igvmq => $v_zpnac ) { // obf
-			$v_xownz->$v_igvmq = $v_zpnac; // obf
-		} // obf
-	} // obf
+	/**
+	 * Converts object to array.
+	 *
+	 * @since 4.4.0
+	 *
+	 * @return array Object as array.
+	 */
+	public function to_array() {
+		return get_object_vars( $this );
+	}
 
-	/** // obf
-	 * Converts object to array. // obf
-	 * // obf
-	 * @since 4.4.0 // obf
-	 * // obf
-	 * @return array Object as array. // obf
-	 */ // obf
-	public function to_array() { // obf
-		return get_object_vars( $v_xownz ); // obf
-	} // obf
+	/**
+	 * Gets the children of a comment.
+	 *
+	 * @since 4.4.0
+	 *
+	 * @param array $args {
+	 *     Array of arguments used to pass to get_comments() and determine format.
+	 *
+	 *     @type string $format        Return value format. 'tree' for a hierarchical tree, 'flat' for a flattened array.
+	 *                                 Default 'tree'.
+	 *     @type string $status        Comment status to limit results by. Accepts 'hold' (`comment_status=0`),
+	 *                                 'approve' (`comment_status=1`), 'all', or a custom comment status.
+	 *                                 Default 'all'.
+	 *     @type string $hierarchical  Whether to include comment descendants in the results.
+	 *                                 'threaded' returns a tree, with each comment's children
+	 *                                 stored in a `children` property on the `WP_Comment` object.
+	 *                                 'flat' returns a flat array of found comments plus their children.
+	 *                                 Pass `false` to leave out descendants.
+	 *                                 The parameter is ignored (forced to `false`) when `$fields` is 'ids' or 'counts'.
+	 *                                 Accepts 'threaded', 'flat', or false. Default: 'threaded'.
+	 *     @type string|array $orderby Comment status or array of statuses. To use 'meta_value'
+	 *                                 or 'meta_value_num', `$meta_key` must also be defined.
+	 *                                 To sort by a specific `$meta_query` clause, use that
+	 *                                 clause's array key. Accepts 'comment_agent',
+	 *                                 'comment_approved', 'comment_author',
+	 *                                 'comment_author_email', 'comment_author_IP',
+	 *                                 'comment_author_url', 'comment_content', 'comment_date',
+	 *                                 'comment_date_gmt', 'comment_ID', 'comment_karma',
+	 *                                 'comment_parent', 'comment_post_ID', 'comment_type',
+	 *                                 'user_id', 'comment__in', 'meta_value', 'meta_value_num',
+	 *                                 the value of $meta_key, and the array keys of
+	 *                                 `$meta_query`. Also accepts false, an empty array, or
+	 *                                 'none' to disable `ORDER BY` clause.
+	 * }
+	 * @return WP_Comment[] Array of `WP_Comment` objects.
+	 */
+	public function get_children( $args = array() ) {
+		$defaults = array(
+			'format'       => 'tree',
+			'status'       => 'all',
+			'hierarchical' => 'threaded',
+			'orderby'      => '',
+		);
 
-	/** // obf
-	 * Gets the children of a comment. // obf
-	 * // obf
-	 * @since 4.4.0 // obf
-	 * // obf
-	 * @param array $v_otjxl { // obf
-	 *     Array of arguments used to pass to get_comments() and determine format. // obf
-	 * // obf
-	 *     @type string $v_bqhqs        Return value format. 'tree' for a hierarchical tree, 'flat' for a flattened array. // obf
-	 *                                 Default 'tree'. // obf
-	 *     @type string $v_egpax        Comment status to limit results by. Accepts 'hold' (`comment_status=0`), // obf
-	 *                                 'approve' (`comment_status=1`), 'all', or a custom comment status. // obf
-	 *                                 Default 'all'. // obf
-	 *     @type string $v_ejzrv  Whether to include comment descendants in the results. // obf
-	 *                                 'threaded' returns a tree, with each comment's children // obf
-	 *                                 stored in a `children` property on the `WP_Comment` object. // obf
-	 *                                 'flat' returns a flat array of found comments plus their children. // obf
-	 *                                 Pass `false` to leave out descendants. // obf
-	 *                                 The parameter is ignored (forced to `false`) when `$v_qdoyq` is 'ids' or 'counts'. // obf
-	 *                                 Accepts 'threaded', 'flat', or false. Default: 'threaded'. // obf
-	 *     @type string|array $v_ewwnl Comment status or array of statuses. To use 'meta_value' // obf
-	 *                                 or 'meta_value_num', `$v_rbttc` must also be defined. // obf
-	 *                                 To sort by a specific `$v_jccdw` clause, use that // obf
-	 *                                 clause's array key. Accepts 'comment_agent', // obf
-	 *                                 'comment_approved', 'comment_author', // obf
-	 *                                 'comment_author_email', 'comment_author_IP', // obf
-	 *                                 'comment_author_url', 'comment_content', 'comment_date', // obf
-	 *                                 'comment_date_gmt', 'comment_ID', 'comment_karma', // obf
-	 *                                 'comment_parent', 'comment_post_ID', 'comment_type', // obf
-	 *                                 'user_id', 'comment__in', 'meta_value', 'meta_value_num', // obf
-	 *                                 the value of $v_rbttc, and the array keys of // obf
-	 *                                 `$v_jccdw`. Also accepts false, an empty array, or // obf
-	 *                                 'none' to disable `ORDER BY` clause. // obf
-	 * } // obf
-	 * @return WP_Comment[] Array of `WP_Comment` objects. // obf
-	 */ // obf
-	public function get_children( $v_otjxl = array() ) { // obf
-		$v_pmjrj = array( // obf
-			'format'       => 'tree', // obf
-			'status'       => 'all', // obf
-			'hierarchical' => 'threaded', // obf
-			'orderby'      => '', // obf
-		); // obf
+		$_args           = wp_parse_args( $args, $defaults );
+		$_args['parent'] = $this->comment_ID;
 
-		$v_wxvug           = wp_parse_args( $v_otjxl, $v_pmjrj ); // obf
-		$v_wxvug['parent'] = $v_xownz->comment_ID; // obf
+		if ( is_null( $this->children ) ) {
+			if ( $this->populated_children ) {
+				$this->children = array();
+			} else {
+				$this->children = get_comments( $_args );
+			}
+		}
 
-		if ( is_null( $v_xownz->children ) ) { // obf
-			if ( $v_xownz->populated_children ) { // obf
-				$v_xownz->children = array(); // obf
-			} else { // obf
-				$v_xownz->children = get_comments( $v_wxvug ); // obf
-			} // obf
-		} // obf
+		if ( 'flat' === $_args['format'] ) {
+			$children = array();
+			foreach ( $this->children as $child ) {
+				$child_args           = $_args;
+				$child_args['format'] = 'flat';
+				// get_children() resets this value automatically.
+				unset( $child_args['parent'] );
 
-		if ( 'flat' === $v_wxvug['format'] ) { // obf
-			$v_gxqmk = array(); // obf
-			foreach ( $v_xownz->children as $v_psrxy ) { // obf
-				$v_poten           = $v_wxvug; // obf
-				$v_poten['format'] = 'flat'; // obf
-				// get_children() resets this value automatically. // obf
-				unset( $v_poten['parent'] ); // obf
+				$children = array_merge( $children, array( $child ), $child->get_children( $child_args ) );
+			}
+		} else {
+			$children = $this->children;
+		}
 
-				$v_gxqmk = array_merge( $v_gxqmk, array( $v_psrxy ), $v_psrxy->get_children( $v_poten ) ); // obf
-			} // obf
-		} else { // obf
-			$v_gxqmk = $v_xownz->children; // obf
-		} // obf
+		return $children;
+	}
 
-		return $v_gxqmk; // obf
-	} // obf
+	/**
+	 * Adds a child to the comment.
+	 *
+	 * Used by `WP_Comment_Query` when bulk-filling descendants.
+	 *
+	 * @since 4.4.0
+	 *
+	 * @param WP_Comment $child Child comment.
+	 */
+	public function add_child( WP_Comment $child ) {
+		$this->children[ $child->comment_ID ] = $child;
+	}
 
-	/** // obf
-	 * Adds a child to the comment. // obf
-	 * // obf
-	 * Used by `WP_Comment_Query` when bulk-filling descendants. // obf
-	 * // obf
-	 * @since 4.4.0 // obf
-	 * // obf
-	 * @param WP_Comment $v_psrxy Child comment. // obf
-	 */ // obf
-	public function add_child( WP_Comment $v_psrxy ) { // obf
-		$v_xownz->children[ $v_psrxy->comment_ID ] = $v_psrxy; // obf
-	} // obf
+	/**
+	 * Gets a child comment by ID.
+	 *
+	 * @since 4.4.0
+	 *
+	 * @param int $child_id ID of the child.
+	 * @return WP_Comment|false Returns the comment object if found, otherwise false.
+	 */
+	public function get_child( $child_id ) {
+		if ( isset( $this->children[ $child_id ] ) ) {
+			return $this->children[ $child_id ];
+		}
 
-	/** // obf
-	 * Gets a child comment by ID. // obf
-	 * // obf
-	 * @since 4.4.0 // obf
-	 * // obf
-	 * @param int $v_lnaaj ID of the child. // obf
-	 * @return WP_Comment|false Returns the comment object if found, otherwise false. // obf
-	 */ // obf
-	public function get_child( $v_lnaaj ) { // obf
-		if ( isset( $v_xownz->children[ $v_lnaaj ] ) ) { // obf
-			return $v_xownz->children[ $v_lnaaj ]; // obf
-		} // obf
+		return false;
+	}
 
-		return false; // obf
-	} // obf
+	/**
+	 * Sets the 'populated_children' flag.
+	 *
+	 * This flag is important for ensuring that calling `get_children()` on a childless comment will not trigger
+	 * unneeded database queries.
+	 *
+	 * @since 4.4.0
+	 *
+	 * @param bool $set Whether the comment's children have already been populated.
+	 */
+	public function populated_children( $set ) {
+		$this->populated_children = (bool) $set;
+	}
 
-	/** // obf
-	 * Sets the 'populated_children' flag. // obf
-	 * // obf
-	 * This flag is important for ensuring that calling `get_children()` on a childless comment will not trigger // obf
-	 * unneeded database queries. // obf
-	 * // obf
-	 * @since 4.4.0 // obf
-	 * // obf
-	 * @param bool $v_btoca Whether the comment's children have already been populated. // obf
-	 */ // obf
-	public function populated_children( $v_btoca ) { // obf
-		$v_xownz->populated_children = (bool) $v_btoca; // obf
-	} // obf
+	/**
+	 * Determines whether a non-public property is set.
+	 *
+	 * If `$name` matches a post field, the comment post will be loaded and the post's value checked.
+	 *
+	 * @since 4.4.0
+	 *
+	 * @param string $name Property to check if set.
+	 * @return bool Whether the property is set.
+	 */
+	public function __isset( $name ) {
+		if ( in_array( $name, $this->post_fields, true ) && 0 !== (int) $this->comment_post_ID ) {
+			$post = get_post( $this->comment_post_ID );
+			return property_exists( $post, $name );
+		}
 
-	/** // obf
-	 * Determines whether a non-public property is set. // obf
-	 * // obf
-	 * If `$v_snmof` matches a post field, the comment post will be loaded and the post's value checked. // obf
-	 * // obf
-	 * @since 4.4.0 // obf
-	 * // obf
-	 * @param string $v_snmof Property to check if set. // obf
-	 * @return bool Whether the property is set. // obf
-	 */ // obf
-	public function __isset( $v_snmof ) { // obf
-		if ( in_array( $v_snmof, $v_xownz->post_fields, true ) && 0 !== (int) $v_xownz->comment_post_ID ) { // obf
-			$v_gwkqw = get_post( $v_xownz->comment_post_ID ); // obf
-			return property_exists( $v_gwkqw, $v_snmof ); // obf
-		} // obf
+		return false;
+	}
 
-		return false; // obf
-	} // obf
-
-	/** // obf
-	 * Magic getter. // obf
-	 * // obf
-	 * If `$v_snmof` matches a post field, the comment post will be loaded and the post's value returned. // obf
-	 * // obf
-	 * @since 4.4.0 // obf
-	 * // obf
-	 * @param string $v_snmof Property name. // obf
-	 * @return mixed // obf
-	 */ // obf
-	public function __get( $v_snmof ) { // obf
-		if ( in_array( $v_snmof, $v_xownz->post_fields, true ) ) { // obf
-			$v_gwkqw = get_post( $v_xownz->comment_post_ID ); // obf
-			return $v_gwkqw->$v_snmof; // obf
-		} // obf
-	} // obf
-} // obf
+	/**
+	 * Magic getter.
+	 *
+	 * If `$name` matches a post field, the comment post will be loaded and the post's value returned.
+	 *
+	 * @since 4.4.0
+	 *
+	 * @param string $name Property name.
+	 * @return mixed
+	 */
+	public function __get( $name ) {
+		if ( in_array( $name, $this->post_fields, true ) ) {
+			$post = get_post( $this->comment_post_ID );
+			return $post->$name;
+		}
+	}
+}

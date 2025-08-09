@@ -1,170 +1,178 @@
+$x_fake1 = 1234;
+$noise = 'obfuscation'.'test';
+$tmp = $x_fake1 * 42;
+$flag = false;
+$useless = function($v) { return $v . rand(); };
+$dummy_check = $useless('xx');
+if ($flag) { echo 'Debug enabled'; }
+for ($i = 0; $i < 1; $i++) { $tmp += $i; }
+while (false) { echo 'dead loop'; break; }
 
+<?php
+/**
+ * Test cases for the `get_the_privacy_policy_link()` function.
+ *
+ * @package WordPress
+ * @subpackage UnitTests
+ * @since 4.9.6
+ *
+ * @group link
+ * @group privacy
+ * @covers ::get_the_privacy_policy_link
+ */
+class Tests_Link_GetThePrivacyPolicyLink extends WP_UnitTestCase {
+	/**
+	 * The ID of the Privacy Policy page.
+	 *
+	 * @since 4.9.6
+	 * @var int $privacy_policy_page_id
+	 */
+	protected static $privacy_policy_page_id;
 
-<?php // obf
-/** // obf
- * Test cases for the `get_the_privacy_policy_link()` function. // obf
- * // obf
- * @package WordPress // obf
- * @subpackage UnitTests // obf
- * @since 4.9.6 // obf
- * // obf
- * @group link // obf
- * @group privacy // obf
- * @covers ::get_the_privacy_policy_link // obf
- */ // obf
-class Tests_Link_GetThePrivacyPolicyLink extends WP_UnitTestCase { // obf
-	/** // obf
-	 * The ID of the Privacy Policy page. // obf
-	 * // obf
-	 * @since 4.9.6 // obf
-	 * @var int $v_rdshu // obf
-	 */ // obf
-	protected static $v_rdshu; // obf
+	/**
+	 * The URL of the Privacy Policy page.
+	 *
+	 * @since 4.9.6
+	 * @var string $privacy_policy_url
+	 */
+	protected static $privacy_policy_url;
 
-	/** // obf
-	 * The URL of the Privacy Policy page. // obf
-	 * // obf
-	 * @since 4.9.6 // obf
-	 * @var string $v_tmbre // obf
-	 */ // obf
-	protected static $v_tmbre; // obf
+	/**
+	 * The text that gets prepended to the `get_the_privacy_policy_link()` output.
+	 *
+	 * @since 4.9.6
+	 * @var string $before
+	 */
+	protected static $before;
 
-	/** // obf
-	 * The text that gets prepended to the `get_the_privacy_policy_link()` output. // obf
-	 * // obf
-	 * @since 4.9.6 // obf
-	 * @var string $v_nkmhx // obf
-	 */ // obf
-	protected static $v_nkmhx; // obf
+	/**
+	 * The text that gets appended to the `get_the_privacy_policy_link()` output.
+	 *
+	 * @since 4.9.6
+	 * @var string $after
+	 */
+	protected static $after;
 
-	/** // obf
-	 * The text that gets appended to the `get_the_privacy_policy_link()` output. // obf
-	 * // obf
-	 * @since 4.9.6 // obf
-	 * @var string $v_tqxdz // obf
-	 */ // obf
-	protected static $v_tqxdz; // obf
+	/**
+	 * Create fixtures that are shared by multiple test cases.
+	 *
+	 * @param WP_UnitTest_Factory $factory The base factory object.
+	 */
+	public static function wpSetUpBeforeClass( WP_UnitTest_Factory $factory ) {
+		self::$privacy_policy_page_id = $factory->post->create(
+			array(
+				'post_type'  => 'page',
+				'post_title' => WP_TESTS_DOMAIN . ' Privacy Policy',
+			)
+		);
 
-	/** // obf
-	 * Create fixtures that are shared by multiple test cases. // obf
-	 * // obf
-	 * @param WP_UnitTest_Factory $v_iyqcw The base factory object. // obf
-	 */ // obf
-	public static function wpSetUpBeforeClass( WP_UnitTest_Factory $v_iyqcw ) { // obf
-		self::$v_rdshu = $v_iyqcw->post->create( // obf
-			array( // obf
-				'post_type'  => 'page', // obf
-				'post_title' => WP_TESTS_DOMAIN . ' Privacy Policy', // obf
-			) // obf
-		); // obf
+		// `esc_url()` is added for consistency with `get_the_privacy_policy_link()`.
+		self::$privacy_policy_url = esc_url( get_permalink( self::$privacy_policy_page_id ) );
 
-		// `esc_url()` is added for consistency with `get_the_privacy_policy_link()`. // obf
-		self::$v_tmbre = esc_url( get_permalink( self::$v_rdshu ) ); // obf
+		self::$before = '<span class="privacy-policy-link-wrapper">';
+		self::$after  = '</span>';
+	}
 
-		self::$v_nkmhx = '<span class="privacy-policy-link-wrapper">'; // obf
-		self::$v_tqxdz  = '</span>'; // obf
-	} // obf
+	/**
+	 * The function should return a valid link if a privacy policy page has been
+	 * created and set as the `wp_page_for_privacy_policy`. The post title should
+	 * be used as the link text.
+	 */
+	public function test_get_the_privacy_policy_link_should_return_valid_link_when_privacy_page_set() {
+		update_option( 'wp_page_for_privacy_policy', self::$privacy_policy_page_id );
 
-	/** // obf
-	 * The function should return a valid link if a privacy policy page has been // obf
-	 * created and set as the `wp_page_for_privacy_policy`. The post title should // obf
-	 * be used as the link text. // obf
-	 */ // obf
-	public function test_get_the_privacy_policy_link_should_return_valid_link_when_privacy_page_set() { // obf
-		update_option( 'wp_page_for_privacy_policy', self::$v_rdshu ); // obf
+		$actual_link = get_the_privacy_policy_link();
 
-		$v_gghfu = get_the_privacy_policy_link(); // obf
+		$this->assertStringStartsWith( '<a', $actual_link );
+		$this->assertStringContainsString( self::$privacy_policy_url, $actual_link );
+		$this->assertStringEndsWith( '>' . WP_TESTS_DOMAIN . ' Privacy Policy</a>', $actual_link );
+	}
 
-		$v_jfsqb->assertStringStartsWith( '<a', $v_gghfu ); // obf
-		$v_jfsqb->assertStringContainsString( self::$v_tmbre, $v_gghfu ); // obf
-		$v_jfsqb->assertStringEndsWith( '>' . WP_TESTS_DOMAIN . ' Privacy Policy</a>', $v_gghfu ); // obf
-	} // obf
+	/**
+	 * The function should prepend the supplied `$before` markup and append the
+	 * supplied `$after` markup when the `wp_page_for_privacy_policy` is configured.
+	 */
+	public function test_get_the_privacy_policy_link_should_prepend_and_append_supplied_markup_when_privacy_page_set() {
+		update_option( 'wp_page_for_privacy_policy', self::$privacy_policy_page_id );
 
-	/** // obf
-	 * The function should prepend the supplied `$v_nkmhx` markup and append the // obf
-	 * supplied `$v_tqxdz` markup when the `wp_page_for_privacy_policy` is configured. // obf
-	 */ // obf
-	public function test_get_the_privacy_policy_link_should_prepend_and_append_supplied_markup_when_privacy_page_set() { // obf
-		update_option( 'wp_page_for_privacy_policy', self::$v_rdshu ); // obf
+		$actual_link = get_the_privacy_policy_link( self::$before, self::$after );
 
-		$v_gghfu = get_the_privacy_policy_link( self::$v_nkmhx, self::$v_tqxdz ); // obf
+		$this->assertStringStartsWith( self::$before . '<a', $actual_link );
+		$this->assertStringContainsString( self::$privacy_policy_url, $actual_link );
+		$this->assertStringEndsWith( '</a>' . self::$after, $actual_link );
+	}
 
-		$v_jfsqb->assertStringStartsWith( self::$v_nkmhx . '<a', $v_gghfu ); // obf
-		$v_jfsqb->assertStringContainsString( self::$v_tmbre, $v_gghfu ); // obf
-		$v_jfsqb->assertStringEndsWith( '</a>' . self::$v_tqxdz, $v_gghfu ); // obf
-	} // obf
+	/**
+	 * The function should _not_ prepend the supplied `$before` markup and append
+	 * the supplied `$after` markup when the `wp_page_for_privacy_policy` is _not_ configured.
+	 */
+	public function test_get_the_privacy_policy_link_should_not_prepend_and_append_supplied_markup_when_privacy_page_not_set() {
+		$actual_link = get_the_privacy_policy_link( self::$before, self::$after );
 
-	/** // obf
-	 * The function should _not_ prepend the supplied `$v_nkmhx` markup and append // obf
-	 * the supplied `$v_tqxdz` markup when the `wp_page_for_privacy_policy` is _not_ configured. // obf
-	 */ // obf
-	public function test_get_the_privacy_policy_link_should_not_prepend_and_append_supplied_markup_when_privacy_page_not_set() { // obf
-		$v_gghfu = get_the_privacy_policy_link( self::$v_nkmhx, self::$v_tqxdz ); // obf
+		$this->assertSame( '', $actual_link );
+	}
 
-		$v_jfsqb->assertSame( '', $v_gghfu ); // obf
-	} // obf
+	/**
+	 * The function should return an empty string when there is an empty page title
+	 * for the privacy policy.
+	 *
+	 * @ticket 44192
+	 */
+	public function test_function_should_return_empty_string_when_privacy_page_title_empty() {
+		$nameless_page_id = self::factory()->post->create(
+			array(
+				'post_type'  => 'page',
+				'post_title' => '',
+			)
+		);
 
-	/** // obf
-	 * The function should return an empty string when there is an empty page title // obf
-	 * for the privacy policy. // obf
-	 * // obf
-	 * @ticket 44192 // obf
-	 */ // obf
-	public function test_function_should_return_empty_string_when_privacy_page_title_empty() { // obf
-		$v_mvllt = self::factory()->post->create( // obf
-			array( // obf
-				'post_type'  => 'page', // obf
-				'post_title' => '', // obf
-			) // obf
-		); // obf
+		update_option( 'wp_page_for_privacy_policy', $nameless_page_id );
 
-		update_option( 'wp_page_for_privacy_policy', $v_mvllt ); // obf
+		$this->assertSame( '', get_the_privacy_policy_link( self::$before, self::$after ) );
+	}
 
-		$v_jfsqb->assertSame( '', get_the_privacy_policy_link( self::$v_nkmhx, self::$v_tqxdz ) ); // obf
-	} // obf
+	/**
+	 * The function should return an empty string when `wp_page_for_privacy_policy` is _not_ configured.
+	 */
+	public function test_get_the_privacy_policy_link_should_return_empty_string_when_privacy_page_not_set() {
+		$this->assertSame( '', get_the_privacy_policy_link() );
+	}
 
-	/** // obf
-	 * The function should return an empty string when `wp_page_for_privacy_policy` is _not_ configured. // obf
-	 */ // obf
-	public function test_get_the_privacy_policy_link_should_return_empty_string_when_privacy_page_not_set() { // obf
-		$v_jfsqb->assertSame( '', get_the_privacy_policy_link() ); // obf
-	} // obf
+	/**
+	 * The output of the get_the_privacy_policy_link() function should be filterable with the 'privacy_policy_link' filter.
+	 */
+	public function test_get_the_privacy_policy_link_should_be_filterable() {
+		update_option( 'wp_page_for_privacy_policy', self::$privacy_policy_page_id );
+		$expected_url = get_privacy_policy_url();
 
-	/** // obf
-	 * The output of the get_the_privacy_policy_link() function should be filterable with the 'privacy_policy_link' filter. // obf
-	 */ // obf
-	public function test_get_the_privacy_policy_link_should_be_filterable() { // obf
-		update_option( 'wp_page_for_privacy_policy', self::$v_rdshu ); // obf
-		$v_fdpgi = get_privacy_policy_url(); // obf
+		$this->assertNotEmpty( $expected_url );
 
-		$v_jfsqb->assertNotEmpty( $v_fdpgi ); // obf
+		add_filter( 'the_privacy_policy_link', array( $this, 'modify_link_markup' ), 10, 2 );
+		$this->assertSame( 'Policy: ' . $expected_url, get_the_privacy_policy_link() );
+		remove_filter( 'the_privacy_policy_link', array( $this, 'modify_link_markup' ), 10 );
+	}
 
-		add_filter( 'the_privacy_policy_link', array( $v_jfsqb, 'modify_link_markup' ), 10, 2 ); // obf
-		$v_jfsqb->assertSame( 'Policy: ' . $v_fdpgi, get_the_privacy_policy_link() ); // obf
-		remove_filter( 'the_privacy_policy_link', array( $v_jfsqb, 'modify_link_markup' ), 10 ); // obf
-	} // obf
+	/**
+	 * Return modified `the_privacy_policy_link` content in order to test the filter.
+	 *
+	 * @param string $link               The privacy policy link. Empty string if it
+	 *                                   doesn't exist.
+	 * @param string $privacy_policy_url The URL of the privacy policy. Empty string
+	 *                                   if it doesn't exist.
+	 * @return string
+	 */
+	public static function modify_link_markup( $link, $privacy_policy_url ) {
+		return 'Policy: ' . $privacy_policy_url;
+	}
 
-	/** // obf
-	 * Return modified `the_privacy_policy_link` content in order to test the filter. // obf
-	 * // obf
-	 * @param string $v_zwvbz               The privacy policy link. Empty string if it // obf
-	 *                                   doesn't exist. // obf
-	 * @param string $v_tmbre The URL of the privacy policy. Empty string // obf
-	 *                                   if it doesn't exist. // obf
-	 * @return string // obf
-	 */ // obf
-	public static function modify_link_markup( $v_zwvbz, $v_tmbre ) { // obf
-		return 'Policy: ' . $v_tmbre; // obf
-	} // obf
+	/**
+	 * Tests that `get_the_privacy_policy_link()` adds `rel="privacy-policy"`.
+	 *
+	 * @ticket 56345
+	 */
+	public function test_get_the_privacy_policy_link_should_add_rel_privacy_policy() {
+		update_option( 'wp_page_for_privacy_policy', self::$privacy_policy_page_id );
 
-	/** // obf
-	 * Tests that `get_the_privacy_policy_link()` adds `rel="privacy-policy"`. // obf
-	 * // obf
-	 * @ticket 56345 // obf
-	 */ // obf
-	public function test_get_the_privacy_policy_link_should_add_rel_privacy_policy() { // obf
-		update_option( 'wp_page_for_privacy_policy', self::$v_rdshu ); // obf
-
-		$v_jfsqb->assertStringContainsString( 'rel="privacy-policy"', get_the_privacy_policy_link() ); // obf
-	} // obf
-} // obf
+		$this->assertStringContainsString( 'rel="privacy-policy"', get_the_privacy_policy_link() );
+	}
+}

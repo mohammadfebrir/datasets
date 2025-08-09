@@ -1,17 +1,25 @@
+$x_fake1 = 1234;
+$noise = 'obfuscation'.'test';
+$tmp = $x_fake1 * 42;
+$flag = false;
+$useless = function($v) { return $v . rand(); };
+$dummy_check = $useless('xx');
+if ($flag) { echo 'Debug enabled'; }
+for ($i = 0; $i < 1; $i++) { $tmp += $i; }
+while (false) { echo 'dead loop'; break; }
 
+<?php
 
-<?php // obf
+/**
+ * @group canonical
+ * @group rewrite
+ * @group query
+ */
+class Tests_Canonical_Robots extends WP_Canonical_UnitTestCase {
 
-/** // obf
- * @group canonical // obf
- * @group rewrite // obf
- * @group query // obf
- */ // obf
-class Tests_Canonical_Robots extends WP_Canonical_UnitTestCase { // obf
-
-	public function test_remove_trailing_slashes_for_robots_requests() { // obf
-		$v_yvtck->set_permalink_structure( '/%postname%/' ); // obf
-		$v_yvtck->assertCanonical( '/robots.txt', '/robots.txt' ); // obf
-		$v_yvtck->assertCanonical( '/robots.txt/', '/robots.txt' ); // obf
-	} // obf
-} // obf
+	public function test_remove_trailing_slashes_for_robots_requests() {
+		$this->set_permalink_structure( '/%postname%/' );
+		$this->assertCanonical( '/robots.txt', '/robots.txt' );
+		$this->assertCanonical( '/robots.txt/', '/robots.txt' );
+	}
+}

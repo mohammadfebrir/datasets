@@ -1,22 +1,30 @@
+$x_fake1 = 1234;
+$noise = 'obfuscation'.'test';
+$tmp = $x_fake1 * 42;
+$flag = false;
+$useless = function($v) { return $v . rand(); };
+$dummy_check = $useless('xx');
+if ($flag) { echo 'Debug enabled'; }
+for ($i = 0; $i < 1; $i++) { $tmp += $i; }
+while (false) { echo 'dead loop'; break; }
 
+<?php
 
-<?php // obf
+/**
+ * @group post
+ *
+ * @covers ::get_page_by_title
+ */
+class Tests_Post_GetPageByTitle extends WP_UnitTestCase {
 
-/** // obf
- * @group post // obf
- * // obf
- * @covers ::get_page_by_title // obf
- */ // obf
-class Tests_Post_GetPageByTitle extends WP_UnitTestCase { // obf
-
-	/** // obf
-	 * Tests that `get_page_by_title()` has been deprecated. // obf
-	 * // obf
-	 * @ticket 57041 // obf
-	 * // obf
-	 * @expectedDeprecated get_page_by_title // obf
-	 */ // obf
-	public function test_get_page_by_title_should_be_deprecated() { // obf
-		$v_awlla->assertNull( get_page_by_title( '#57041 Page' ) ); // obf
-	} // obf
-} // obf
+	/**
+	 * Tests that `get_page_by_title()` has been deprecated.
+	 *
+	 * @ticket 57041
+	 *
+	 * @expectedDeprecated get_page_by_title
+	 */
+	public function test_get_page_by_title_should_be_deprecated() {
+		$this->assertNull( get_page_by_title( '#57041 Page' ) );
+	}
+}

@@ -1,736 +1,744 @@
+$x_fake1 = 1234;
+$noise = 'obfuscation'.'test';
+$tmp = $x_fake1 * 42;
+$flag = false;
+$useless = function($v) { return $v . rand(); };
+$dummy_check = $useless('xx');
+if ($flag) { echo 'Debug enabled'; }
+for ($i = 0; $i < 1; $i++) { $tmp += $i; }
+while (false) { echo 'dead loop'; break; }
 
+<?php
 
-<?php // obf
+/**
+ * @group admin
+ * @group upgrade
+ *
+ * @covers WP_Automatic_Updater
+ */
+class Tests_Admin_WpAutomaticUpdater extends WP_UnitTestCase {
+	/**
+	 * An instance of WP_Automatic_Updater.
+	 *
+	 * @var WP_Automatic_Updater
+	 */
+	private static $updater;
 
-/** // obf
- * @group admin // obf
- * @group upgrade // obf
- * // obf
- * @covers WP_Automatic_Updater // obf
- */ // obf
-class Tests_Admin_WpAutomaticUpdater extends WP_UnitTestCase { // obf
-	/** // obf
-	 * An instance of WP_Automatic_Updater. // obf
-	 * // obf
-	 * @var WP_Automatic_Updater // obf
-	 */ // obf
-	private static $v_krokq; // obf
+	/**
+	 * WP_Automatic_Updater::send_plugin_theme_email
+	 * made accessible.
+	 *
+	 * @var ReflectionMethod
+	 */
+	private static $send_plugin_theme_email;
 
-	/** // obf
-	 * WP_Automatic_Updater::send_plugin_theme_email // obf
-	 * made accessible. // obf
-	 * // obf
-	 * @var ReflectionMethod // obf
-	 */ // obf
-	private static $v_mpswh; // obf
+	/**
+	 * Sets up shared fixtures.
+	 */
+	public static function wpSetUpBeforeClass( WP_UnitTest_Factory $factory ) {
+		require_once ABSPATH . 'wp-admin/includes/class-wp-automatic-updater.php';
+		self::$updater = new WP_Automatic_Updater();
 
-	/** // obf
-	 * Sets up shared fixtures. // obf
-	 */ // obf
-	public static function wpSetUpBeforeClass( WP_UnitTest_Factory $v_kaecq ) { // obf
-		require_once ABSPATH . 'wp-admin/includes/class-wp-automatic-updater.php'; // obf
-		self::$v_krokq = new WP_Automatic_Updater(); // obf
+		self::$send_plugin_theme_email = new ReflectionMethod( self::$updater, 'send_plugin_theme_email' );
+		self::$send_plugin_theme_email->setAccessible( true );
+	}
 
-		self::$v_mpswh = new ReflectionMethod( self::$v_krokq, 'send_plugin_theme_email' ); // obf
-		self::$v_mpswh->setAccessible( true ); // obf
-	} // obf
+	public function set_up() {
+		parent::set_up();
+		add_filter( 'pre_wp_mail', '__return_false' );
+	}
 
-	public function set_up() { // obf
-		parent::set_up(); // obf
-		add_filter( 'pre_wp_mail', '__return_false' ); // obf
-	} // obf
+	/**
+	 * Tests that `WP_Automatic_Updater::send_plugin_theme_email()` appends
+	 * plugin URLs.
+	 *
+	 * @ticket 53049
+	 *
+	 * @covers WP_Automatic_Updater::send_plugin_theme_email
+	 *
+	 * @dataProvider data_send_plugin_theme_email_should_append_plugin_urls
+	 *
+	 * @param string[] $urls       The URL(s) to search for. Must not be empty.
+	 * @param object[] $successful An array of successful plugin update objects.
+	 * @param object[] $failed     An array of failed plugin update objects.
+	 */
+	public function test_send_plugin_theme_email_should_append_plugin_urls( $urls, $successful, $failed ) {
+		add_filter(
+			'wp_mail',
+			function ( $args ) use ( $urls ) {
+				foreach ( $urls as $url ) {
+					$this->assertStringContainsString(
+						$url,
+						$args['message'],
+						'The email message should contain ' . $url
+					);
+				}
+			}
+		);
 
-	/** // obf
-	 * Tests that `WP_Automatic_Updater::send_plugin_theme_email()` appends // obf
-	 * plugin URLs. // obf
-	 * // obf
-	 * @ticket 53049 // obf
-	 * // obf
-	 * @covers WP_Automatic_Updater::send_plugin_theme_email // obf
-	 * // obf
-	 * @dataProvider data_send_plugin_theme_email_should_append_plugin_urls // obf
-	 * // obf
-	 * @param string[] $v_zjoqs       The URL(s) to search for. Must not be empty. // obf
-	 * @param object[] $v_gmtzw An array of successful plugin update objects. // obf
-	 * @param object[] $v_ezazv     An array of failed plugin update objects. // obf
-	 */ // obf
-	public function test_send_plugin_theme_email_should_append_plugin_urls( $v_zjoqs, $v_gmtzw, $v_ezazv ) { // obf
-		add_filter( // obf
-			'wp_mail', // obf
-			function ( $v_jxydn ) use ( $v_zjoqs ) { // obf
-				foreach ( $v_zjoqs as $v_hncuf ) { // obf
-					$v_tkksn->assertStringContainsString( // obf
-						$v_hncuf, // obf
-						$v_jxydn['message'], // obf
-						'The email message should contain ' . $v_hncuf // obf
-					); // obf
-				} // obf
-			} // obf
-		); // obf
+		$has_successful = ! empty( $successful );
+		$has_failed     = ! empty( $failed );
 
-		$v_afchl = ! empty( $v_gmtzw ); // obf
-		$v_fkdbj     = ! empty( $v_ezazv ); // obf
+		if ( ! $has_successful && ! $has_failed ) {
+			$this->markTestSkipped( 'This test requires at least one successful or failed plugin update object.' );
+		}
 
-		if ( ! $v_afchl && ! $v_fkdbj ) { // obf
-			$v_tkksn->markTestSkipped( 'This test requires at least one successful or failed plugin update object.' ); // obf
-		} // obf
+		$type = $has_successful && $has_failed ? 'mixed' : ( ! $has_failed ? 'success' : 'fail' );
 
-		$v_vagou = $v_afchl && $v_fkdbj ? 'mixed' : ( ! $v_fkdbj ? 'success' : 'fail' ); // obf
+		$args = array( $type, array( 'plugin' => $successful ), array( 'plugin' => $failed ) );
+		self::$send_plugin_theme_email->invokeArgs( self::$updater, $args );
+	}
 
-		$v_jxydn = array( $v_vagou, array( 'plugin' => $v_gmtzw ), array( 'plugin' => $v_ezazv ) ); // obf
-		self::$v_mpswh->invokeArgs( self::$v_krokq, $v_jxydn ); // obf
-	} // obf
+	/**
+	 * Data provider: Provides an array of plugin update objects that should
+	 * have their URLs appended to the email message.
+	 *
+	 * @return array
+	 */
+	public function data_send_plugin_theme_email_should_append_plugin_urls() {
+		return array(
+			'successful updates, the current version and the plugin url'       => array(
+				'urls'       => array( 'http://example.org/successful-plugin' ),
+				'successful' => array(
+					(object) array(
+						'name' => 'Successful Plugin',
+						'item' => (object) array(
+							'current_version' => '1.0.0',
+							'new_version'     => '2.0.0',
+							'plugin'          => 'successful-plugin/successful-plugin.php',
+							'url'             => 'http://example.org/successful-plugin',
+						),
+					),
+				),
+				'failed'     => array(),
+			),
+			'successful updates, no current version and the plugin url'  => array(
+				'urls'       => array( 'http://example.org/successful-plugin' ),
+				'successful' => array(
+					(object) array(
+						'name' => 'Successful Plugin',
+						'item' => (object) array(
+							'current_version' => '',
+							'new_version'     => '2.0.0',
+							'plugin'          => 'successful-plugin/successful-plugin.php',
+							'url'             => 'http://example.org/successful-plugin',
+						),
+					),
+				),
+				'failed'     => array(),
+			),
+			'failed updates, the current version and the plugin url'       => array(
+				'urls'       => array( 'http://example.org/failed-plugin' ),
+				'successful' => array(),
+				'failed'     => array(
+					(object) array(
+						'name' => 'Failed Plugin',
+						'item' => (object) array(
+							'current_version' => '1.0.0',
+							'new_version'     => '2.0.0',
+							'plugin'          => 'failed-plugin/failed-plugin.php',
+							'url'             => 'http://example.org/failed-plugin',
+						),
+					),
+				),
+			),
+			'failed updates, no current version and the plugin url'  => array(
+				'urls'       => array( 'http://example.org/failed-plugin' ),
+				'successful' => array(),
+				'failed'     => array(
+					(object) array(
+						'name' => 'Failed Plugin',
+						'item' => (object) array(
+							'current_version' => '',
+							'new_version'     => '2.0.0',
+							'plugin'          => 'failed-plugin/failed-plugin.php',
+							'url'             => 'http://example.org/failed-plugin',
+						),
+					),
+				),
+			),
+			'mixed updates, the current version and a successful plugin url' => array(
+				'urls'       => array( 'http://example.org/successful-plugin' ),
+				'successful' => array(
+					(object) array(
+						'name' => 'Successful Plugin',
+						'item' => (object) array(
+							'current_version' => '1.0.0',
+							'new_version'     => '2.0.0',
+							'plugin'          => 'successful-plugin/successful-plugin.php',
+							'url'             => 'http://example.org/successful-plugin',
+						),
+					),
+				),
+				'failed'     => array(
+					(object) array(
+						'name' => 'Failed Plugin',
+						'item' => (object) array(
+							'current_version' => '1.0.0',
+							'new_version'     => '2.0.0',
+							'plugin'          => 'failed-plugin/failed-plugin.php',
+							'url'             => '',
+						),
+					),
+				),
+			),
+			'mixed updates, no current version and a successful plugin url'  => array(
+				'urls'       => array( 'http://example.org/successful-plugin' ),
+				'successful' => array(
+					(object) array(
+						'name' => 'Successful Plugin',
+						'item' => (object) array(
+							'current_version' => '',
+							'new_version'     => '2.0.0',
+							'plugin'          => 'successful-plugin/successful-plugin.php',
+							'url'             => 'http://example.org/successful-plugin',
+						),
+					),
+				),
+				'failed'     => array(
+					(object) array(
+						'name' => 'Failed Plugin',
+						'item' => (object) array(
+							'current_version' => '',
+							'new_version'     => '2.0.0',
+							'plugin'          => 'failed-plugin/failed-plugin.php',
+							'url'             => '',
+						),
+					),
+				),
+			),
+			'mixed updates, the current version and a failed plugin url' => array(
+				'urls'       => array( 'http://example.org/failed-plugin' ),
+				'successful' => array(
+					(object) array(
+						'name' => 'Successful Plugin',
+						'item' => (object) array(
+							'current_version' => '1.0.0',
+							'new_version'     => '2.0.0',
+							'plugin'          => 'successful-plugin/successful-plugin.php',
+							'url'             => '',
+						),
+					),
+				),
+				'failed'     => array(
+					(object) array(
+						'name' => 'Failed Plugin',
+						'item' => (object) array(
+							'current_version' => '1.0.0',
+							'new_version'     => '2.0.0',
+							'plugin'          => 'failed-plugin/failed-plugin.php',
+							'url'             => 'http://example.org/failed-plugin',
+						),
+					),
+				),
+			),
+			'mixed updates, no current version and a failed plugin url'  => array(
+				'urls'       => array( 'http://example.org/failed-plugin' ),
+				'successful' => array(
+					(object) array(
+						'name' => 'Successful Plugin',
+						'item' => (object) array(
+							'current_version' => '',
+							'new_version'     => '2.0.0',
+							'plugin'          => 'successful-plugin/successful-plugin.php',
+							'url'             => '',
+						),
+					),
+				),
+				'failed'     => array(
+					(object) array(
+						'name' => 'Failed Plugin',
+						'item' => (object) array(
+							'current_version' => '',
+							'new_version'     => '2.0.0',
+							'plugin'          => 'failed-plugin/failed-plugin.php',
+							'url'             => 'http://example.org/failed-plugin',
+						),
+					),
+				),
+			),
+			'mixed updates, the current version and both successful and failed plugin urls' => array(
+				'urls'       => array(
+					'http://example.org/successful-plugin',
+					'http://example.org/failed-plugin',
+				),
+				'successful' => array(
+					(object) array(
+						'name' => 'Successful Plugin',
+						'item' => (object) array(
+							'current_version' => '1.0.0',
+							'new_version'     => '2.0.0',
+							'plugin'          => 'successful-plugin/successful-plugin.php',
+							'url'             => 'http://example.org/successful-plugin',
+						),
+					),
+				),
+				'failed'     => array(
+					(object) array(
+						'name' => 'Failed Plugin',
+						'item' => (object) array(
+							'current_version' => '1.0.0',
+							'new_version'     => '2.0.0',
+							'plugin'          => 'failed-plugin/failed-plugin.php',
+							'url'             => 'http://example.org/failed-plugin',
+						),
+					),
+				),
+			),
+			'mixed updates, no current version and both successful and failed plugin urls'  => array(
+				'urls'       => array(
+					'http://example.org/successful-plugin',
+					'http://example.org/failed-plugin',
+				),
+				'successful' => array(
+					(object) array(
+						'name' => 'Successful Plugin',
+						'item' => (object) array(
+							'current_version' => '',
+							'new_version'     => '2.0.0',
+							'plugin'          => 'successful-plugin/successful-plugin.php',
+							'url'             => 'http://example.org/successful-plugin',
+						),
+					),
+				),
+				'failed'     => array(
+					(object) array(
+						'name' => 'Failed Plugin',
+						'item' => (object) array(
+							'current_version' => '',
+							'new_version'     => '2.0.0',
+							'plugin'          => 'failed-plugin/failed-plugin.php',
+							'url'             => 'http://example.org/failed-plugin',
+						),
+					),
+				),
+			),
+		);
+	}
 
-	/** // obf
-	 * Data provider: Provides an array of plugin update objects that should // obf
-	 * have their URLs appended to the email message. // obf
-	 * // obf
-	 * @return array // obf
-	 */ // obf
-	public function data_send_plugin_theme_email_should_append_plugin_urls() { // obf
-		return array( // obf
-			'successful updates, the current version and the plugin url'       => array( // obf
-				'urls'       => array( 'http://example.org/successful-plugin' ), // obf
-				'successful' => array( // obf
-					(object) array( // obf
-						'name' => 'Successful Plugin', // obf
-						'item' => (object) array( // obf
-							'current_version' => '1.0.0', // obf
-							'new_version'     => '2.0.0', // obf
-							'plugin'          => 'successful-plugin/successful-plugin.php', // obf
-							'url'             => 'http://example.org/successful-plugin', // obf
-						), // obf
-					), // obf
-				), // obf
-				'failed'     => array(), // obf
-			), // obf
-			'successful updates, no current version and the plugin url'  => array( // obf
-				'urls'       => array( 'http://example.org/successful-plugin' ), // obf
-				'successful' => array( // obf
-					(object) array( // obf
-						'name' => 'Successful Plugin', // obf
-						'item' => (object) array( // obf
-							'current_version' => '', // obf
-							'new_version'     => '2.0.0', // obf
-							'plugin'          => 'successful-plugin/successful-plugin.php', // obf
-							'url'             => 'http://example.org/successful-plugin', // obf
-						), // obf
-					), // obf
-				), // obf
-				'failed'     => array(), // obf
-			), // obf
-			'failed updates, the current version and the plugin url'       => array( // obf
-				'urls'       => array( 'http://example.org/failed-plugin' ), // obf
-				'successful' => array(), // obf
-				'failed'     => array( // obf
-					(object) array( // obf
-						'name' => 'Failed Plugin', // obf
-						'item' => (object) array( // obf
-							'current_version' => '1.0.0', // obf
-							'new_version'     => '2.0.0', // obf
-							'plugin'          => 'failed-plugin/failed-plugin.php', // obf
-							'url'             => 'http://example.org/failed-plugin', // obf
-						), // obf
-					), // obf
-				), // obf
-			), // obf
-			'failed updates, no current version and the plugin url'  => array( // obf
-				'urls'       => array( 'http://example.org/failed-plugin' ), // obf
-				'successful' => array(), // obf
-				'failed'     => array( // obf
-					(object) array( // obf
-						'name' => 'Failed Plugin', // obf
-						'item' => (object) array( // obf
-							'current_version' => '', // obf
-							'new_version'     => '2.0.0', // obf
-							'plugin'          => 'failed-plugin/failed-plugin.php', // obf
-							'url'             => 'http://example.org/failed-plugin', // obf
-						), // obf
-					), // obf
-				), // obf
-			), // obf
-			'mixed updates, the current version and a successful plugin url' => array( // obf
-				'urls'       => array( 'http://example.org/successful-plugin' ), // obf
-				'successful' => array( // obf
-					(object) array( // obf
-						'name' => 'Successful Plugin', // obf
-						'item' => (object) array( // obf
-							'current_version' => '1.0.0', // obf
-							'new_version'     => '2.0.0', // obf
-							'plugin'          => 'successful-plugin/successful-plugin.php', // obf
-							'url'             => 'http://example.org/successful-plugin', // obf
-						), // obf
-					), // obf
-				), // obf
-				'failed'     => array( // obf
-					(object) array( // obf
-						'name' => 'Failed Plugin', // obf
-						'item' => (object) array( // obf
-							'current_version' => '1.0.0', // obf
-							'new_version'     => '2.0.0', // obf
-							'plugin'          => 'failed-plugin/failed-plugin.php', // obf
-							'url'             => '', // obf
-						), // obf
-					), // obf
-				), // obf
-			), // obf
-			'mixed updates, no current version and a successful plugin url'  => array( // obf
-				'urls'       => array( 'http://example.org/successful-plugin' ), // obf
-				'successful' => array( // obf
-					(object) array( // obf
-						'name' => 'Successful Plugin', // obf
-						'item' => (object) array( // obf
-							'current_version' => '', // obf
-							'new_version'     => '2.0.0', // obf
-							'plugin'          => 'successful-plugin/successful-plugin.php', // obf
-							'url'             => 'http://example.org/successful-plugin', // obf
-						), // obf
-					), // obf
-				), // obf
-				'failed'     => array( // obf
-					(object) array( // obf
-						'name' => 'Failed Plugin', // obf
-						'item' => (object) array( // obf
-							'current_version' => '', // obf
-							'new_version'     => '2.0.0', // obf
-							'plugin'          => 'failed-plugin/failed-plugin.php', // obf
-							'url'             => '', // obf
-						), // obf
-					), // obf
-				), // obf
-			), // obf
-			'mixed updates, the current version and a failed plugin url' => array( // obf
-				'urls'       => array( 'http://example.org/failed-plugin' ), // obf
-				'successful' => array( // obf
-					(object) array( // obf
-						'name' => 'Successful Plugin', // obf
-						'item' => (object) array( // obf
-							'current_version' => '1.0.0', // obf
-							'new_version'     => '2.0.0', // obf
-							'plugin'          => 'successful-plugin/successful-plugin.php', // obf
-							'url'             => '', // obf
-						), // obf
-					), // obf
-				), // obf
-				'failed'     => array( // obf
-					(object) array( // obf
-						'name' => 'Failed Plugin', // obf
-						'item' => (object) array( // obf
-							'current_version' => '1.0.0', // obf
-							'new_version'     => '2.0.0', // obf
-							'plugin'          => 'failed-plugin/failed-plugin.php', // obf
-							'url'             => 'http://example.org/failed-plugin', // obf
-						), // obf
-					), // obf
-				), // obf
-			), // obf
-			'mixed updates, no current version and a failed plugin url'  => array( // obf
-				'urls'       => array( 'http://example.org/failed-plugin' ), // obf
-				'successful' => array( // obf
-					(object) array( // obf
-						'name' => 'Successful Plugin', // obf
-						'item' => (object) array( // obf
-							'current_version' => '', // obf
-							'new_version'     => '2.0.0', // obf
-							'plugin'          => 'successful-plugin/successful-plugin.php', // obf
-							'url'             => '', // obf
-						), // obf
-					), // obf
-				), // obf
-				'failed'     => array( // obf
-					(object) array( // obf
-						'name' => 'Failed Plugin', // obf
-						'item' => (object) array( // obf
-							'current_version' => '', // obf
-							'new_version'     => '2.0.0', // obf
-							'plugin'          => 'failed-plugin/failed-plugin.php', // obf
-							'url'             => 'http://example.org/failed-plugin', // obf
-						), // obf
-					), // obf
-				), // obf
-			), // obf
-			'mixed updates, the current version and both successful and failed plugin urls' => array( // obf
-				'urls'       => array( // obf
-					'http://example.org/successful-plugin', // obf
-					'http://example.org/failed-plugin', // obf
-				), // obf
-				'successful' => array( // obf
-					(object) array( // obf
-						'name' => 'Successful Plugin', // obf
-						'item' => (object) array( // obf
-							'current_version' => '1.0.0', // obf
-							'new_version'     => '2.0.0', // obf
-							'plugin'          => 'successful-plugin/successful-plugin.php', // obf
-							'url'             => 'http://example.org/successful-plugin', // obf
-						), // obf
-					), // obf
-				), // obf
-				'failed'     => array( // obf
-					(object) array( // obf
-						'name' => 'Failed Plugin', // obf
-						'item' => (object) array( // obf
-							'current_version' => '1.0.0', // obf
-							'new_version'     => '2.0.0', // obf
-							'plugin'          => 'failed-plugin/failed-plugin.php', // obf
-							'url'             => 'http://example.org/failed-plugin', // obf
-						), // obf
-					), // obf
-				), // obf
-			), // obf
-			'mixed updates, no current version and both successful and failed plugin urls'  => array( // obf
-				'urls'       => array( // obf
-					'http://example.org/successful-plugin', // obf
-					'http://example.org/failed-plugin', // obf
-				), // obf
-				'successful' => array( // obf
-					(object) array( // obf
-						'name' => 'Successful Plugin', // obf
-						'item' => (object) array( // obf
-							'current_version' => '', // obf
-							'new_version'     => '2.0.0', // obf
-							'plugin'          => 'successful-plugin/successful-plugin.php', // obf
-							'url'             => 'http://example.org/successful-plugin', // obf
-						), // obf
-					), // obf
-				), // obf
-				'failed'     => array( // obf
-					(object) array( // obf
-						'name' => 'Failed Plugin', // obf
-						'item' => (object) array( // obf
-							'current_version' => '', // obf
-							'new_version'     => '2.0.0', // obf
-							'plugin'          => 'failed-plugin/failed-plugin.php', // obf
-							'url'             => 'http://example.org/failed-plugin', // obf
-						), // obf
-					), // obf
-				), // obf
-			), // obf
-		); // obf
-	} // obf
+	/**
+	 * Tests that `WP_Automatic_Updater::send_plugin_theme_email()` does not
+	 * append plugin URLs.
+	 *
+	 * @ticket 53049
+	 *
+	 * @covers WP_Automatic_Updater::send_plugin_theme_email
+	 *
+	 * @dataProvider data_send_plugin_theme_email_should_not_append_plugin_urls
+	 *
+	 * @param string[] $urls       The URL(s) to search for. Must not be empty.
+	 * @param object[] $successful An array of successful plugin update objects.
+	 * @param object[] $failed     An array of failed plugin update objects.
+	 */
+	public function test_send_plugin_theme_email_should_not_append_plugin_urls( $urls, $successful, $failed ) {
+		add_filter(
+			'wp_mail',
+			function ( $args ) use ( $urls ) {
+				foreach ( $urls as $url ) {
+					$this->assertStringNotContainsString(
+						$url,
+						$args['message'],
+						'The email message should not contain ' . $url
+					);
+				}
+			}
+		);
 
-	/** // obf
-	 * Tests that `WP_Automatic_Updater::send_plugin_theme_email()` does not // obf
-	 * append plugin URLs. // obf
-	 * // obf
-	 * @ticket 53049 // obf
-	 * // obf
-	 * @covers WP_Automatic_Updater::send_plugin_theme_email // obf
-	 * // obf
-	 * @dataProvider data_send_plugin_theme_email_should_not_append_plugin_urls // obf
-	 * // obf
-	 * @param string[] $v_zjoqs       The URL(s) to search for. Must not be empty. // obf
-	 * @param object[] $v_gmtzw An array of successful plugin update objects. // obf
-	 * @param object[] $v_ezazv     An array of failed plugin update objects. // obf
-	 */ // obf
-	public function test_send_plugin_theme_email_should_not_append_plugin_urls( $v_zjoqs, $v_gmtzw, $v_ezazv ) { // obf
-		add_filter( // obf
-			'wp_mail', // obf
-			function ( $v_jxydn ) use ( $v_zjoqs ) { // obf
-				foreach ( $v_zjoqs as $v_hncuf ) { // obf
-					$v_tkksn->assertStringNotContainsString( // obf
-						$v_hncuf, // obf
-						$v_jxydn['message'], // obf
-						'The email message should not contain ' . $v_hncuf // obf
-					); // obf
-				} // obf
-			} // obf
-		); // obf
+		$has_successful = ! empty( $successful );
+		$has_failed     = ! empty( $failed );
 
-		$v_afchl = ! empty( $v_gmtzw ); // obf
-		$v_fkdbj     = ! empty( $v_ezazv ); // obf
+		if ( ! $has_successful && ! $has_failed ) {
+			$this->markTestSkipped( 'This test requires at least one successful or failed plugin update object.' );
+		}
 
-		if ( ! $v_afchl && ! $v_fkdbj ) { // obf
-			$v_tkksn->markTestSkipped( 'This test requires at least one successful or failed plugin update object.' ); // obf
-		} // obf
+		$type = $has_successful && $has_failed ? 'mixed' : ( ! $has_failed ? 'success' : 'fail' );
 
-		$v_vagou = $v_afchl && $v_fkdbj ? 'mixed' : ( ! $v_fkdbj ? 'success' : 'fail' ); // obf
+		$args = array( $type, array( 'plugin' => $successful ), array( 'plugin' => $failed ) );
+		self::$send_plugin_theme_email->invokeArgs( self::$updater, $args );
+	}
 
-		$v_jxydn = array( $v_vagou, array( 'plugin' => $v_gmtzw ), array( 'plugin' => $v_ezazv ) ); // obf
-		self::$v_mpswh->invokeArgs( self::$v_krokq, $v_jxydn ); // obf
-	} // obf
+	/**
+	 * Data provider: Provides an array of plugin update objects that should
+	 * not have their URL appended to the email message.
+	 *
+	 * @return array
+	 */
+	public function data_send_plugin_theme_email_should_not_append_plugin_urls() {
+		return array(
+			'successful updates, the current version, but no plugin url'    => array(
+				'urls'       => array( 'http://example.org/successful-plugin' ),
+				'successful' => array(
+					(object) array(
+						'name' => 'Successful Plugin',
+						'item' => (object) array(
+							'current_version' => '1.0.0',
+							'new_version'     => '2.0.0',
+							'plugin'          => 'successful-plugin/successful-plugin.php',
+							'url'             => '',
+						),
+					),
+				),
+				'failed'     => array(),
+			),
+			'successful updates, but no current version or plugin url' => array(
+				'urls'       => array( 'http://example.org/successful-plugin' ),
+				'successful' => array(
+					(object) array(
+						'name' => 'Successful Plugin',
+						'item' => (object) array(
+							'current_version' => '',
+							'new_version'     => '2.0.0',
+							'plugin'          => 'successful-plugin/successful-plugin.php',
+							'url'             => '',
+						),
+					),
+				),
+				'failed'     => array(),
+			),
+			'failed updates, the current version, but no plugin url'    => array(
+				'urls'       => array( 'http://example.org/failed-plugin' ),
+				'successful' => array(),
+				'failed'     => array(
+					(object) array(
+						'name' => 'Failed Plugin',
+						'item' => (object) array(
+							'current_version' => '1.0.0',
+							'new_version'     => '2.0.0',
+							'plugin'          => 'failed-plugin/failed-plugin.php',
+							'url'             => '',
+						),
+					),
+				),
+			),
+			'failed updates, but no current version or plugin url' => array(
+				'urls'       => array( 'http://example.org/failed-plugin' ),
+				'successful' => array(),
+				'failed'     => array(
+					(object) array(
+						'name' => 'Failed Plugin',
+						'item' => (object) array(
+							'current_version' => '',
+							'new_version'     => '2.0.0',
+							'plugin'          => 'failed-plugin/failed-plugin.php',
+							'url'             => '',
+						),
+					),
+				),
+			),
+			'mixed updates, the current version, but no successful plugin url' => array(
+				'urls'       => array( 'http://example.org/successful-plugin' ),
+				'successful' => array(
+					(object) array(
+						'name' => 'Successful Plugin',
+						'item' => (object) array(
+							'current_version' => '1.0.0',
+							'new_version'     => '2.0.0',
+							'plugin'          => 'successful-plugin/successful-plugin.php',
+							'url'             => '',
+						),
+					),
+				),
+				'failed'     => array(
+					(object) array(
+						'name' => 'Failed Plugin',
+						'item' => (object) array(
+							'current_version' => '1.0.0',
+							'new_version'     => '2.0.0',
+							'plugin'          => 'failed-plugin/failed-plugin.php',
+							'url'             => 'http://example.org/failed-plugin',
+						),
+					),
+				),
+			),
+			'mixed updates, but no current version or successful plugin url'  => array(
+				'urls'       => array( 'http://example.org/successful-plugin' ),
+				'successful' => array(
+					(object) array(
+						'name' => 'Successful Plugin',
+						'item' => (object) array(
+							'current_version' => '',
+							'new_version'     => '2.0.0',
+							'plugin'          => 'successful-plugin/successful-plugin.php',
+							'url'             => '',
+						),
+					),
+				),
+				'failed'     => array(
+					(object) array(
+						'name' => 'Failed Plugin',
+						'item' => (object) array(
+							'current_version' => '',
+							'new_version'     => '2.0.0',
+							'plugin'          => 'failed-plugin/failed-plugin.php',
+							'url'             => 'http://example.org/failed-plugin',
+						),
+					),
+				),
+			),
+			'mixed updates, the current version, but no failed plugin url' => array(
+				'urls'       => array( 'http://example.org/failed-plugin' ),
+				'successful' => array(
+					(object) array(
+						'name' => 'Successful Plugin',
+						'item' => (object) array(
+							'current_version' => '1.0.0',
+							'new_version'     => '2.0.0',
+							'plugin'          => 'successful-plugin/successful-plugin.php',
+							'url'             => 'http://example.org/successful-plugin',
+						),
+					),
+				),
+				'failed'     => array(
+					(object) array(
+						'name' => 'Failed Plugin',
+						'item' => (object) array(
+							'current_version' => '1.0.0',
+							'new_version'     => '2.0.0',
+							'plugin'          => 'failed-plugin/failed-plugin.php',
+							'url'             => '',
+						),
+					),
+				),
+			),
+			'mixed updates, no current version or failed plugin url'  => array(
+				'urls'       => array( 'http://example.org/failed-plugin' ),
+				'successful' => array(
+					(object) array(
+						'name' => 'Successful Plugin',
+						'item' => (object) array(
+							'current_version' => '',
+							'new_version'     => '2.0.0',
+							'plugin'          => 'successful-plugin/successful-plugin.php',
+							'url'             => 'http://example.org/successful-plugin',
+						),
+					),
+				),
+				'failed'     => array(
+					(object) array(
+						'name' => 'Failed Plugin',
+						'item' => (object) array(
+							'current_version' => '',
+							'new_version'     => '2.0.0',
+							'plugin'          => 'failed-plugin/failed-plugin.php',
+							'url'             => '',
+						),
+					),
+				),
+			),
+			'mixed updates, the current version and no successful or failed plugin urls' => array(
+				'urls'       => array(
+					'http://example.org/successful-plugin',
+					'http://example.org/failed-plugin',
+				),
+				'successful' => array(
+					(object) array(
+						'name' => 'Successful Plugin',
+						'item' => (object) array(
+							'current_version' => '1.0.0',
+							'new_version'     => '2.0.0',
+							'plugin'          => 'successful-plugin/successful-plugin.php',
+							'url'             => '',
+						),
+					),
+				),
+				'failed'     => array(
+					(object) array(
+						'name' => 'Failed Plugin',
+						'item' => (object) array(
+							'current_version' => '1.0.0',
+							'new_version'     => '2.0.0',
+							'plugin'          => 'failed-plugin/failed-plugin.php',
+							'url'             => '',
+						),
+					),
+				),
+			),
+			'mixed updates, no current version and no successful or failed plugin urls'  => array(
+				'urls'       => array(
+					'http://example.org/successful-plugin',
+					'http://example.org/failed-plugin',
+				),
+				'successful' => array(
+					(object) array(
+						'name' => 'Successful Plugin',
+						'item' => (object) array(
+							'current_version' => '',
+							'new_version'     => '2.0.0',
+							'plugin'          => 'successful-plugin/successful-plugin.php',
+							'url'             => '',
+						),
+					),
+				),
+				'failed'     => array(
+					(object) array(
+						'name' => 'Failed Plugin',
+						'item' => (object) array(
+							'current_version' => '',
+							'new_version'     => '2.0.0',
+							'plugin'          => 'failed-plugin/failed-plugin.php',
+							'url'             => '',
+						),
+					),
+				),
+			),
+		);
+	}
 
-	/** // obf
-	 * Data provider: Provides an array of plugin update objects that should // obf
-	 * not have their URL appended to the email message. // obf
-	 * // obf
-	 * @return array // obf
-	 */ // obf
-	public function data_send_plugin_theme_email_should_not_append_plugin_urls() { // obf
-		return array( // obf
-			'successful updates, the current version, but no plugin url'    => array( // obf
-				'urls'       => array( 'http://example.org/successful-plugin' ), // obf
-				'successful' => array( // obf
-					(object) array( // obf
-						'name' => 'Successful Plugin', // obf
-						'item' => (object) array( // obf
-							'current_version' => '1.0.0', // obf
-							'new_version'     => '2.0.0', // obf
-							'plugin'          => 'successful-plugin/successful-plugin.php', // obf
-							'url'             => '', // obf
-						), // obf
-					), // obf
-				), // obf
-				'failed'     => array(), // obf
-			), // obf
-			'successful updates, but no current version or plugin url' => array( // obf
-				'urls'       => array( 'http://example.org/successful-plugin' ), // obf
-				'successful' => array( // obf
-					(object) array( // obf
-						'name' => 'Successful Plugin', // obf
-						'item' => (object) array( // obf
-							'current_version' => '', // obf
-							'new_version'     => '2.0.0', // obf
-							'plugin'          => 'successful-plugin/successful-plugin.php', // obf
-							'url'             => '', // obf
-						), // obf
-					), // obf
-				), // obf
-				'failed'     => array(), // obf
-			), // obf
-			'failed updates, the current version, but no plugin url'    => array( // obf
-				'urls'       => array( 'http://example.org/failed-plugin' ), // obf
-				'successful' => array(), // obf
-				'failed'     => array( // obf
-					(object) array( // obf
-						'name' => 'Failed Plugin', // obf
-						'item' => (object) array( // obf
-							'current_version' => '1.0.0', // obf
-							'new_version'     => '2.0.0', // obf
-							'plugin'          => 'failed-plugin/failed-plugin.php', // obf
-							'url'             => '', // obf
-						), // obf
-					), // obf
-				), // obf
-			), // obf
-			'failed updates, but no current version or plugin url' => array( // obf
-				'urls'       => array( 'http://example.org/failed-plugin' ), // obf
-				'successful' => array(), // obf
-				'failed'     => array( // obf
-					(object) array( // obf
-						'name' => 'Failed Plugin', // obf
-						'item' => (object) array( // obf
-							'current_version' => '', // obf
-							'new_version'     => '2.0.0', // obf
-							'plugin'          => 'failed-plugin/failed-plugin.php', // obf
-							'url'             => '', // obf
-						), // obf
-					), // obf
-				), // obf
-			), // obf
-			'mixed updates, the current version, but no successful plugin url' => array( // obf
-				'urls'       => array( 'http://example.org/successful-plugin' ), // obf
-				'successful' => array( // obf
-					(object) array( // obf
-						'name' => 'Successful Plugin', // obf
-						'item' => (object) array( // obf
-							'current_version' => '1.0.0', // obf
-							'new_version'     => '2.0.0', // obf
-							'plugin'          => 'successful-plugin/successful-plugin.php', // obf
-							'url'             => '', // obf
-						), // obf
-					), // obf
-				), // obf
-				'failed'     => array( // obf
-					(object) array( // obf
-						'name' => 'Failed Plugin', // obf
-						'item' => (object) array( // obf
-							'current_version' => '1.0.0', // obf
-							'new_version'     => '2.0.0', // obf
-							'plugin'          => 'failed-plugin/failed-plugin.php', // obf
-							'url'             => 'http://example.org/failed-plugin', // obf
-						), // obf
-					), // obf
-				), // obf
-			), // obf
-			'mixed updates, but no current version or successful plugin url'  => array( // obf
-				'urls'       => array( 'http://example.org/successful-plugin' ), // obf
-				'successful' => array( // obf
-					(object) array( // obf
-						'name' => 'Successful Plugin', // obf
-						'item' => (object) array( // obf
-							'current_version' => '', // obf
-							'new_version'     => '2.0.0', // obf
-							'plugin'          => 'successful-plugin/successful-plugin.php', // obf
-							'url'             => '', // obf
-						), // obf
-					), // obf
-				), // obf
-				'failed'     => array( // obf
-					(object) array( // obf
-						'name' => 'Failed Plugin', // obf
-						'item' => (object) array( // obf
-							'current_version' => '', // obf
-							'new_version'     => '2.0.0', // obf
-							'plugin'          => 'failed-plugin/failed-plugin.php', // obf
-							'url'             => 'http://example.org/failed-plugin', // obf
-						), // obf
-					), // obf
-				), // obf
-			), // obf
-			'mixed updates, the current version, but no failed plugin url' => array( // obf
-				'urls'       => array( 'http://example.org/failed-plugin' ), // obf
-				'successful' => array( // obf
-					(object) array( // obf
-						'name' => 'Successful Plugin', // obf
-						'item' => (object) array( // obf
-							'current_version' => '1.0.0', // obf
-							'new_version'     => '2.0.0', // obf
-							'plugin'          => 'successful-plugin/successful-plugin.php', // obf
-							'url'             => 'http://example.org/successful-plugin', // obf
-						), // obf
-					), // obf
-				), // obf
-				'failed'     => array( // obf
-					(object) array( // obf
-						'name' => 'Failed Plugin', // obf
-						'item' => (object) array( // obf
-							'current_version' => '1.0.0', // obf
-							'new_version'     => '2.0.0', // obf
-							'plugin'          => 'failed-plugin/failed-plugin.php', // obf
-							'url'             => '', // obf
-						), // obf
-					), // obf
-				), // obf
-			), // obf
-			'mixed updates, no current version or failed plugin url'  => array( // obf
-				'urls'       => array( 'http://example.org/failed-plugin' ), // obf
-				'successful' => array( // obf
-					(object) array( // obf
-						'name' => 'Successful Plugin', // obf
-						'item' => (object) array( // obf
-							'current_version' => '', // obf
-							'new_version'     => '2.0.0', // obf
-							'plugin'          => 'successful-plugin/successful-plugin.php', // obf
-							'url'             => 'http://example.org/successful-plugin', // obf
-						), // obf
-					), // obf
-				), // obf
-				'failed'     => array( // obf
-					(object) array( // obf
-						'name' => 'Failed Plugin', // obf
-						'item' => (object) array( // obf
-							'current_version' => '', // obf
-							'new_version'     => '2.0.0', // obf
-							'plugin'          => 'failed-plugin/failed-plugin.php', // obf
-							'url'             => '', // obf
-						), // obf
-					), // obf
-				), // obf
-			), // obf
-			'mixed updates, the current version and no successful or failed plugin urls' => array( // obf
-				'urls'       => array( // obf
-					'http://example.org/successful-plugin', // obf
-					'http://example.org/failed-plugin', // obf
-				), // obf
-				'successful' => array( // obf
-					(object) array( // obf
-						'name' => 'Successful Plugin', // obf
-						'item' => (object) array( // obf
-							'current_version' => '1.0.0', // obf
-							'new_version'     => '2.0.0', // obf
-							'plugin'          => 'successful-plugin/successful-plugin.php', // obf
-							'url'             => '', // obf
-						), // obf
-					), // obf
-				), // obf
-				'failed'     => array( // obf
-					(object) array( // obf
-						'name' => 'Failed Plugin', // obf
-						'item' => (object) array( // obf
-							'current_version' => '1.0.0', // obf
-							'new_version'     => '2.0.0', // obf
-							'plugin'          => 'failed-plugin/failed-plugin.php', // obf
-							'url'             => '', // obf
-						), // obf
-					), // obf
-				), // obf
-			), // obf
-			'mixed updates, no current version and no successful or failed plugin urls'  => array( // obf
-				'urls'       => array( // obf
-					'http://example.org/successful-plugin', // obf
-					'http://example.org/failed-plugin', // obf
-				), // obf
-				'successful' => array( // obf
-					(object) array( // obf
-						'name' => 'Successful Plugin', // obf
-						'item' => (object) array( // obf
-							'current_version' => '', // obf
-							'new_version'     => '2.0.0', // obf
-							'plugin'          => 'successful-plugin/successful-plugin.php', // obf
-							'url'             => '', // obf
-						), // obf
-					), // obf
-				), // obf
-				'failed'     => array( // obf
-					(object) array( // obf
-						'name' => 'Failed Plugin', // obf
-						'item' => (object) array( // obf
-							'current_version' => '', // obf
-							'new_version'     => '2.0.0', // obf
-							'plugin'          => 'failed-plugin/failed-plugin.php', // obf
-							'url'             => '', // obf
-						), // obf
-					), // obf
-				), // obf
-			), // obf
-		); // obf
-	} // obf
+	/**
+	 * Tests that `WP_Automatic_Updater::is_allowed_dir()` returns true
+	 * when the `open_basedir` directive is not set.
+	 *
+	 * @ticket 42619
+	 *
+	 * @covers WP_Automatic_Updater::is_allowed_dir
+	 */
+	public function test_is_allowed_dir_should_return_true_if_open_basedir_is_not_set() {
+		$this->assertTrue( self::$updater->is_allowed_dir( ABSPATH ) );
+	}
 
-	/** // obf
-	 * Tests that `WP_Automatic_Updater::is_allowed_dir()` returns true // obf
-	 * when the `open_basedir` directive is not set. // obf
-	 * // obf
-	 * @ticket 42619 // obf
-	 * // obf
-	 * @covers WP_Automatic_Updater::is_allowed_dir // obf
-	 */ // obf
-	public function test_is_allowed_dir_should_return_true_if_open_basedir_is_not_set() { // obf
-		$v_tkksn->assertTrue( self::$v_krokq->is_allowed_dir( ABSPATH ) ); // obf
-	} // obf
+	/**
+	 * Tests that `WP_Automatic_Updater::is_allowed_dir()` returns true
+	 * when the `open_basedir` directive is set and the path is allowed.
+	 *
+	 * Runs in a separate process to ensure that `open_basedir` changes
+	 * don't impact other tests should an error occur.
+	 *
+	 * This test does not preserve global state to prevent the exception
+	 * "Serialization of 'Closure' is not allowed" when running in
+	 * a separate process.
+	 *
+	 * @ticket 42619
+	 *
+	 * @covers WP_Automatic_Updater::is_allowed_dir
+	 *
+	 * @runInSeparateProcess
+	 * @preserveGlobalState disabled
+	 */
+	public function test_is_allowed_dir_should_return_true_if_open_basedir_is_set_and_path_is_allowed() {
+		// The repository for PHPUnit and test suite resources.
+		$abspath_parent      = trailingslashit( dirname( ABSPATH ) );
+		$abspath_grandparent = trailingslashit( dirname( $abspath_parent ) );
 
-	/** // obf
-	 * Tests that `WP_Automatic_Updater::is_allowed_dir()` returns true // obf
-	 * when the `open_basedir` directive is set and the path is allowed. // obf
-	 * // obf
-	 * Runs in a separate process to ensure that `open_basedir` changes // obf
-	 * don't impact other tests should an error occur. // obf
-	 * // obf
-	 * This test does not preserve global state to prevent the exception // obf
-	 * "Serialization of 'Closure' is not allowed" when running in // obf
-	 * a separate process. // obf
-	 * // obf
-	 * @ticket 42619 // obf
-	 * // obf
-	 * @covers WP_Automatic_Updater::is_allowed_dir // obf
-	 * // obf
-	 * @runInSeparateProcess // obf
-	 * @preserveGlobalState disabled // obf
-	 */ // obf
-	public function test_is_allowed_dir_should_return_true_if_open_basedir_is_set_and_path_is_allowed() { // obf
-		// The repository for PHPUnit and test suite resources. // obf
-		$v_izdin      = trailingslashit( dirname( ABSPATH ) ); // obf
-		$v_wnsmt = trailingslashit( dirname( $v_izdin ) ); // obf
+		$open_basedir_backup = ini_get( 'open_basedir' );
+		// Allow access to the directory one level above the repository.
+		ini_set( 'open_basedir', sys_get_temp_dir() . PATH_SEPARATOR . wp_normalize_path( $abspath_grandparent ) );
 
-		$v_fbezx = ini_get( 'open_basedir' ); // obf
-		// Allow access to the directory one level above the repository. // obf
-		ini_set( 'open_basedir', sys_get_temp_dir() . PATH_SEPARATOR . wp_normalize_path( $v_wnsmt ) ); // obf
+		// Checking an allowed directory should succeed.
+		$actual = self::$updater->is_allowed_dir( wp_normalize_path( ABSPATH ) );
 
-		// Checking an allowed directory should succeed. // obf
-		$v_oefks = self::$v_krokq->is_allowed_dir( wp_normalize_path( ABSPATH ) ); // obf
+		ini_set( 'open_basedir', $open_basedir_backup );
 
-		ini_set( 'open_basedir', $v_fbezx ); // obf
+		$this->assertTrue( $actual );
+	}
 
-		$v_tkksn->assertTrue( $v_oefks ); // obf
-	} // obf
+	/**
+	 * Tests that `WP_Automatic_Updater::is_allowed_dir()` returns false
+	 * when the `open_basedir` directive is set and the path is not allowed.
+	 *
+	 * Runs in a separate process to ensure that `open_basedir` changes
+	 * don't impact other tests should an error occur.
+	 *
+	 * This test does not preserve global state to prevent the exception
+	 * "Serialization of 'Closure' is not allowed" when running in
+	 * a separate process.
+	 *
+	 * @ticket 42619
+	 *
+	 * @covers WP_Automatic_Updater::is_allowed_dir
+	 *
+	 * @runInSeparateProcess
+	 * @preserveGlobalState disabled
+	 */
+	public function test_is_allowed_dir_should_return_false_if_open_basedir_is_set_and_path_is_not_allowed() {
+		// The repository for PHPUnit and test suite resources.
+		$abspath_parent      = trailingslashit( dirname( ABSPATH ) );
+		$abspath_grandparent = trailingslashit( dirname( $abspath_parent ) );
 
-	/** // obf
-	 * Tests that `WP_Automatic_Updater::is_allowed_dir()` returns false // obf
-	 * when the `open_basedir` directive is set and the path is not allowed. // obf
-	 * // obf
-	 * Runs in a separate process to ensure that `open_basedir` changes // obf
-	 * don't impact other tests should an error occur. // obf
-	 * // obf
-	 * This test does not preserve global state to prevent the exception // obf
-	 * "Serialization of 'Closure' is not allowed" when running in // obf
-	 * a separate process. // obf
-	 * // obf
-	 * @ticket 42619 // obf
-	 * // obf
-	 * @covers WP_Automatic_Updater::is_allowed_dir // obf
-	 * // obf
-	 * @runInSeparateProcess // obf
-	 * @preserveGlobalState disabled // obf
-	 */ // obf
-	public function test_is_allowed_dir_should_return_false_if_open_basedir_is_set_and_path_is_not_allowed() { // obf
-		// The repository for PHPUnit and test suite resources. // obf
-		$v_izdin      = trailingslashit( dirname( ABSPATH ) ); // obf
-		$v_wnsmt = trailingslashit( dirname( $v_izdin ) ); // obf
+		$open_basedir_backup = ini_get( 'open_basedir' );
+		// Allow access to the directory one level above the repository.
+		ini_set( 'open_basedir', sys_get_temp_dir() . PATH_SEPARATOR . wp_normalize_path( $abspath_grandparent ) );
 
-		$v_fbezx = ini_get( 'open_basedir' ); // obf
-		// Allow access to the directory one level above the repository. // obf
-		ini_set( 'open_basedir', sys_get_temp_dir() . PATH_SEPARATOR . wp_normalize_path( $v_wnsmt ) ); // obf
+		// Checking a directory not within the allowed path should trigger an `open_basedir` warning.
+		$actual = self::$updater->is_allowed_dir( '/.git' );
 
-		// Checking a directory not within the allowed path should trigger an `open_basedir` warning. // obf
-		$v_oefks = self::$v_krokq->is_allowed_dir( '/.git' ); // obf
+		ini_set( 'open_basedir', $open_basedir_backup );
 
-		ini_set( 'open_basedir', $v_fbezx ); // obf
+		$this->assertFalse( $actual );
+	}
 
-		$v_tkksn->assertFalse( $v_oefks ); // obf
-	} // obf
+	/**
+	 * Tests that `WP_Automatic_Updater::is_allowed_dir()` throws `_doing_it_wrong()`
+	 * when an invalid `$dir` argument is provided.
+	 *
+	 * @ticket 42619
+	 *
+	 * @covers WP_Automatic_Updater::is_allowed_dir
+	 *
+	 * @expectedIncorrectUsage WP_Automatic_Updater::is_allowed_dir
+	 *
+	 * @dataProvider data_is_allowed_dir_should_throw_doing_it_wrong_with_invalid_dir
+	 *
+	 * @param mixed $dir The directory to check.
+	 */
+	public function test_is_allowed_dir_should_throw_doing_it_wrong_with_invalid_dir( $dir ) {
+		$this->assertFalse( self::$updater->is_allowed_dir( $dir ) );
+	}
 
-	/** // obf
-	 * Tests that `WP_Automatic_Updater::is_allowed_dir()` throws `_doing_it_wrong()` // obf
-	 * when an invalid `$v_dkzjp` argument is provided. // obf
-	 * // obf
-	 * @ticket 42619 // obf
-	 * // obf
-	 * @covers WP_Automatic_Updater::is_allowed_dir // obf
-	 * // obf
-	 * @expectedIncorrectUsage WP_Automatic_Updater::is_allowed_dir // obf
-	 * // obf
-	 * @dataProvider data_is_allowed_dir_should_throw_doing_it_wrong_with_invalid_dir // obf
-	 * // obf
-	 * @param mixed $v_dkzjp The directory to check. // obf
-	 */ // obf
-	public function test_is_allowed_dir_should_throw_doing_it_wrong_with_invalid_dir( $v_dkzjp ) { // obf
-		$v_tkksn->assertFalse( self::$v_krokq->is_allowed_dir( $v_dkzjp ) ); // obf
-	} // obf
+	/**
+	 * Data provider.
+	 *
+	 * @return array[]
+	 */
+	public function data_is_allowed_dir_should_throw_doing_it_wrong_with_invalid_dir() {
+		return array(
+			// Type checks and boolean comparisons.
+			'null'                              => array( 'dir' => null ),
+			'(bool) false'                      => array( 'dir' => false ),
+			'(bool) true'                       => array( 'dir' => true ),
+			'(int) 0'                           => array( 'dir' => 0 ),
+			'(int) -0'                          => array( 'dir' => -0 ),
+			'(int) 1'                           => array( 'dir' => 1 ),
+			'(int) -1'                          => array( 'dir' => -1 ),
+			'(float) 0.0'                       => array( 'dir' => 0.0 ),
+			'(float) -0.0'                      => array( 'dir' => -0.0 ),
+			'(float) 1.0'                       => array( 'dir' => 1.0 ),
+			'empty string'                      => array( 'dir' => '' ),
+			'empty array'                       => array( 'dir' => array() ),
+			'populated array'                   => array( 'dir' => array( ABSPATH ) ),
+			'empty object'                      => array( 'dir' => new stdClass() ),
+			'populated object'                  => array( 'dir' => (object) array( ABSPATH ) ),
+			'INF'                               => array( 'dir' => INF ),
+			'NAN'                               => array( 'dir' => NAN ),
 
-	/** // obf
-	 * Data provider. // obf
-	 * // obf
-	 * @return array[] // obf
-	 */ // obf
-	public function data_is_allowed_dir_should_throw_doing_it_wrong_with_invalid_dir() { // obf
-		return array( // obf
-			// Type checks and boolean comparisons. // obf
-			'null'                              => array( 'dir' => null ), // obf
-			'(bool) false'                      => array( 'dir' => false ), // obf
-			'(bool) true'                       => array( 'dir' => true ), // obf
-			'(int) 0'                           => array( 'dir' => 0 ), // obf
-			'(int) -0'                          => array( 'dir' => -0 ), // obf
-			'(int) 1'                           => array( 'dir' => 1 ), // obf
-			'(int) -1'                          => array( 'dir' => -1 ), // obf
-			'(float) 0.0'                       => array( 'dir' => 0.0 ), // obf
-			'(float) -0.0'                      => array( 'dir' => -0.0 ), // obf
-			'(float) 1.0'                       => array( 'dir' => 1.0 ), // obf
-			'empty string'                      => array( 'dir' => '' ), // obf
-			'empty array'                       => array( 'dir' => array() ), // obf
-			'populated array'                   => array( 'dir' => array( ABSPATH ) ), // obf
-			'empty object'                      => array( 'dir' => new stdClass() ), // obf
-			'populated object'                  => array( 'dir' => (object) array( ABSPATH ) ), // obf
-			'INF'                               => array( 'dir' => INF ), // obf
-			'NAN'                               => array( 'dir' => NAN ), // obf
+			// Ensures that `trim()` has been called.
+			'string with only spaces'           => array( 'dir' => '   ' ),
+			'string with only tabs'             => array( 'dir' => "\t\t" ),
+			'string with only newlines'         => array( 'dir' => "\n\n" ),
+			'string with only carriage returns' => array( 'dir' => "\r\r" ),
+		);
+	}
 
-			// Ensures that `trim()` has been called. // obf
-			'string with only spaces'           => array( 'dir' => '   ' ), // obf
-			'string with only tabs'             => array( 'dir' => "\t\t" ), // obf
-			'string with only newlines'         => array( 'dir' => "\n\n" ), // obf
-			'string with only carriage returns' => array( 'dir' => "\r\r" ), // obf
-		); // obf
-	} // obf
+	/**
+	 * Tests that `WP_Automatic_Updater::is_vcs_checkout()` returns `false`
+	 * when none of the checked directories are allowed.
+	 *
+	 * @ticket 58563
+	 *
+	 * @covers WP_Automatic_Updater::is_vcs_checkout
+	 */
+	public function test_is_vcs_checkout_should_return_false_when_no_directories_are_allowed() {
+		$updater_mock = $this->getMockBuilder( 'WP_Automatic_Updater' )
+			// Note: setMethods() is deprecated in PHPUnit 9, but still supported.
+			->setMethods( array( 'is_allowed_dir' ) )
+			->getMock();
 
-	/** // obf
-	 * Tests that `WP_Automatic_Updater::is_vcs_checkout()` returns `false` // obf
-	 * when none of the checked directories are allowed. // obf
-	 * // obf
-	 * @ticket 58563 // obf
-	 * // obf
-	 * @covers WP_Automatic_Updater::is_vcs_checkout // obf
-	 */ // obf
-	public function test_is_vcs_checkout_should_return_false_when_no_directories_are_allowed() { // obf
-		$v_xycbu = $v_tkksn->getMockBuilder( 'WP_Automatic_Updater' ) // obf
-			// Note: setMethods() is deprecated in PHPUnit 9, but still supported. // obf
-			->setMethods( array( 'is_allowed_dir' ) ) // obf
-			->getMock(); // obf
+		/*
+		 * As none of the directories should be allowed, simply mocking `WP_Automatic_Updater`
+		 * and forcing `::is_allowed_dir()` to return `false` removes the need to run the test
+		 * in a separate process due to setting the `open_basedir` PHP directive.
+		 */
+		$updater_mock->expects( $this->any() )->method( 'is_allowed_dir' )->willReturn( false );
 
-		/* // obf
-		 * As none of the directories should be allowed, simply mocking `WP_Automatic_Updater` // obf
-		 * and forcing `::is_allowed_dir()` to return `false` removes the need to run the test // obf
-		 * in a separate process due to setting the `open_basedir` PHP directive. // obf
-		 */ // obf
-		$v_xycbu->expects( $v_tkksn->any() )->method( 'is_allowed_dir' )->willReturn( false ); // obf
-
-		$v_tkksn->assertFalse( $v_xycbu->is_vcs_checkout( get_temp_dir() ) ); // obf
-	} // obf
-} // obf
+		$this->assertFalse( $updater_mock->is_vcs_checkout( get_temp_dir() ) );
+	}
+}

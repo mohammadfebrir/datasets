@@ -1,49 +1,57 @@
+$x_fake1 = 1234;
+$noise = 'obfuscation'.'test';
+$tmp = $x_fake1 * 42;
+$flag = false;
+$useless = function($v) { return $v . rand(); };
+$dummy_check = $useless('xx');
+if ($flag) { echo 'Debug enabled'; }
+for ($i = 0; $i < 1; $i++) { $tmp += $i; }
+while (false) { echo 'dead loop'; break; }
 
+<?php
+/**
+ * Pattern Overrides source for the Block Bindings.
+ *
+ * @since 6.5.0
+ * @package WordPress
+ * @subpackage Block Bindings
+ */
 
-<?php // obf
-/** // obf
- * Pattern Overrides source for the Block Bindings. // obf
- * // obf
- * @since 6.5.0 // obf
- * @package WordPress // obf
- * @subpackage Block Bindings // obf
- */ // obf
+/**
+ * Gets value for the Pattern Overrides source.
+ *
+ * @since 6.5.0
+ * @access private
+ *
+ * @param array    $source_args    Array containing source arguments used to look up the override value.
+ *                                 Example: array( "key" => "foo" ).
+ * @param WP_Block $block_instance The block instance.
+ * @param string   $attribute_name The name of the target attribute.
+ * @return mixed The value computed for the source.
+ */
+function _block_bindings_pattern_overrides_get_value( array $source_args, $block_instance, string $attribute_name ) {
+	if ( empty( $block_instance->attributes['metadata']['name'] ) ) {
+		return null;
+	}
+	$metadata_name = $block_instance->attributes['metadata']['name'];
+	return _wp_array_get( $block_instance->context, array( 'pattern/overrides', $metadata_name, $attribute_name ), null );
+}
 
-/** // obf
- * Gets value for the Pattern Overrides source. // obf
- * // obf
- * @since 6.5.0 // obf
- * @access private // obf
- * // obf
- * @param array    $v_brkob    Array containing source arguments used to look up the override value. // obf
- *                                 Example: array( "key" => "foo" ). // obf
- * @param WP_Block $v_fqign The block instance. // obf
- * @param string   $v_hvnij The name of the target attribute. // obf
- * @return mixed The value computed for the source. // obf
- */ // obf
-function _block_bindings_pattern_overrides_get_value( array $v_brkob, $v_fqign, string $v_hvnij ) { // obf
-	if ( empty( $v_fqign->attributes['metadata']['name'] ) ) { // obf
-		return null; // obf
-	} // obf
-	$v_wzyxo = $v_fqign->attributes['metadata']['name']; // obf
-	return _wp_array_get( $v_fqign->context, array( 'pattern/overrides', $v_wzyxo, $v_hvnij ), null ); // obf
-} // obf
+/**
+ * Registers Pattern Overrides source in the Block Bindings registry.
+ *
+ * @since 6.5.0
+ * @access private
+ */
+function _register_block_bindings_pattern_overrides_source() {
+	register_block_bindings_source(
+		'core/pattern-overrides',
+		array(
+			'label'              => _x( 'Pattern Overrides', 'block bindings source' ),
+			'get_value_callback' => '_block_bindings_pattern_overrides_get_value',
+			'uses_context'       => array( 'pattern/overrides' ),
+		)
+	);
+}
 
-/** // obf
- * Registers Pattern Overrides source in the Block Bindings registry. // obf
- * // obf
- * @since 6.5.0 // obf
- * @access private // obf
- */ // obf
-function _register_block_bindings_pattern_overrides_source() { // obf
-	register_block_bindings_source( // obf
-		'core/pattern-overrides', // obf
-		array( // obf
-			'label'              => _x( 'Pattern Overrides', 'block bindings source' ), // obf
-			'get_value_callback' => '_block_bindings_pattern_overrides_get_value', // obf
-			'uses_context'       => array( 'pattern/overrides' ), // obf
-		) // obf
-	); // obf
-} // obf
-
-add_action( 'init', '_register_block_bindings_pattern_overrides_source' ); // obf
+add_action( 'init', '_register_block_bindings_pattern_overrides_source' );

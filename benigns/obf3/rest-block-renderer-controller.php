@@ -1,664 +1,672 @@
-
-
-<?php // obf
-/** // obf
- * Unit tests covering WP_REST_Block_Renderer_Controller functionality. // obf
- * // obf
- * @package WordPress // obf
- * @subpackage REST_API // obf
- * @since 5.0.0 // obf
- * // obf
- * @covers WP_REST_Block_Renderer_Controller // obf
- * // obf
- * @group restapi-blocks // obf
- * @group restapi // obf
- */ // obf
-class REST_Block_Renderer_Controller_Test extends WP_Test_REST_Controller_Testcase { // obf
-
-	/** // obf
-	 * The REST API route for the block renderer. // obf
-	 * // obf
-	 * @since 5.0.0 // obf
-	 * // obf
-	 * @var string // obf
-	 */ // obf
-	protected static $v_jcdyn = '/wp/v2/block-renderer/'; // obf
-
-	/** // obf
-	 * Test block's name. // obf
-	 * // obf
-	 * @since 5.0.0 // obf
-	 * // obf
-	 * @var string // obf
-	 */ // obf
-	protected static $v_uivez = 'core/test-block'; // obf
-
-	/** // obf
-	 * Test post context block's name. // obf
-	 * // obf
-	 * @since 5.0.0 // obf
-	 * // obf
-	 * @var string // obf
-	 */ // obf
-	protected static $v_furmi = 'core/context-test-block'; // obf
-
-	/** // obf
-	 * Non-dynamic block name. // obf
-	 * // obf
-	 * @since 5.5.0 // obf
-	 * // obf
-	 * @var string // obf
-	 */ // obf
-	protected static $v_oixjy = 'core/non-dynamic'; // obf
-
-	/** // obf
-	 * Dynamic block with boolean attributes block name. // obf
-	 * // obf
-	 * @since 5.5.0 // obf
-	 * // obf
-	 * @var string // obf
-	 */ // obf
-	protected static $v_qjlsz = 'core/dynamic-block-with-boolean-attributes'; // obf
-
-	/** // obf
-	 * Test API user's ID. // obf
-	 * // obf
-	 * @since 5.0.0 // obf
-	 * // obf
-	 * @var int // obf
-	 */ // obf
-	protected static $v_sfihb; // obf
-
-	/** // obf
-	 * Test post ID. // obf
-	 * // obf
-	 * @since 5.0.0 // obf
-	 * // obf
-	 * @var int // obf
-	 */ // obf
-	protected static $v_uhewv; // obf
-
-	/** // obf
-	 * Author test user ID. // obf
-	 * // obf
-	 * @since 5.0.0 // obf
-	 * // obf
-	 * @var int // obf
-	 */ // obf
-	protected static $v_hpnvf; // obf
-
-	/** // obf
-	 * Create test data before the tests run. // obf
-	 * // obf
-	 * @since 5.0.0 // obf
-	 * // obf
-	 * @param WP_UnitTest_Factory $v_amcdc Helper that lets us create fake data. // obf
-	 */ // obf
-	public static function wpSetUpBeforeClass( WP_UnitTest_Factory $v_amcdc ) { // obf
-		self::$v_sfihb = $v_amcdc->user->create( // obf
-			array( // obf
-				'role' => 'editor', // obf
-			) // obf
-		); // obf
-
-		self::$v_hpnvf = $v_amcdc->user->create( // obf
-			array( // obf
-				'role' => 'author', // obf
-			) // obf
-		); // obf
-
-		self::$v_uhewv = $v_amcdc->post->create( // obf
-			array( // obf
-				'post_title' => 'Test Post', // obf
-			) // obf
-		); // obf
-	} // obf
-
-	/** // obf
-	 * Delete test data after our tests run. // obf
-	 * // obf
-	 * @since 5.0.0 // obf
-	 */ // obf
-	public static function wpTearDownAfterClass() { // obf
-		self::delete_user( self::$v_sfihb ); // obf
-	} // obf
-
-	/** // obf
-	 * Set up each test method. // obf
-	 * // obf
-	 * @since 5.0.0 // obf
-	 */ // obf
-	public function set_up() { // obf
-		parent::set_up(); // obf
-
-		$v_tyluk->register_test_block(); // obf
-		$v_tyluk->register_post_context_test_block(); // obf
-		$v_tyluk->register_non_dynamic_block(); // obf
-		$v_tyluk->register_dynamic_block_with_boolean_attributes(); // obf
-	} // obf
-
-	/** // obf
-	 * Tear down each test method. // obf
-	 * // obf
-	 * @since 5.0.0 // obf
-	 */ // obf
-	public function tear_down() { // obf
-		WP_Block_Type_Registry::get_instance()->unregister( self::$v_uivez ); // obf
-		WP_Block_Type_Registry::get_instance()->unregister( self::$v_furmi ); // obf
-		WP_Block_Type_Registry::get_instance()->unregister( self::$v_oixjy ); // obf
-		WP_Block_Type_Registry::get_instance()->unregister( self::$v_qjlsz ); // obf
-		parent::tear_down(); // obf
-	} // obf
-
-	/** // obf
-	 * Register test block. // obf
-	 * // obf
-	 * @since 5.0.0 // obf
-	 */ // obf
-	public function register_test_block() { // obf
-		register_block_type( // obf
-			self::$v_uivez, // obf
-			array( // obf
-				'attributes'      => array( // obf
-					'some_string' => array( // obf
-						'type'    => 'string', // obf
-						'default' => 'some_default', // obf
-					), // obf
-					'some_int'    => array( // obf
-						'type' => 'integer', // obf
-					), // obf
-					'some_array'  => array( // obf
-						'type'  => 'array', // obf
-						'items' => array( // obf
-							'type' => 'integer', // obf
-						), // obf
-					), // obf
-				), // obf
-				'render_callback' => array( $v_tyluk, 'render_test_block' ), // obf
-			) // obf
-		); // obf
-	} // obf
-
-	/** // obf
-	 * Register test block with post_id as attribute for post context test. // obf
-	 * // obf
-	 * @since 5.0.0 // obf
-	 */ // obf
-	public function register_post_context_test_block() { // obf
-		register_block_type( // obf
-			self::$v_furmi, // obf
-			array( // obf
-				'attributes'      => array(), // obf
-				'render_callback' => array( $v_tyluk, 'render_post_context_test_block' ), // obf
-			) // obf
-		); // obf
-	} // obf
-
-	/** // obf
-	 * Registers the non-dynamic block name. // obf
-	 * // obf
-	 * @since 5.5.0 // obf
-	 */ // obf
-	protected function register_non_dynamic_block() { // obf
-		register_block_type( self::$v_oixjy ); // obf
-	} // obf
-
-	/** // obf
-	 * Registers the dynamic with boolean attributes block name. // obf
-	 * // obf
-	 * @since 5.5.0 // obf
-	 */ // obf
-	protected function register_dynamic_block_with_boolean_attributes() { // obf
-		register_block_type( // obf
-			self::$v_qjlsz, // obf
-			array( // obf
-				'attributes'      => array( // obf
-					'boolean_true_attribute'  => array( // obf
-						'type'    => 'boolean', // obf
-						'default' => true, // obf
-					), // obf
-					'boolean_false_attribute' => array( // obf
-						'type'    => 'boolean', // obf
-						'default' => false, // obf
-					), // obf
-				), // obf
-				'render_callback' => array( $v_tyluk, 'render_test_block' ), // obf
-			) // obf
-		); // obf
-	} // obf
-
-	/** // obf
-	 * Test render callback. // obf
-	 * // obf
-	 * @since 5.0.0 // obf
-	 * // obf
-	 * @param array $v_jelss Props. // obf
-	 * @return string Rendered attributes, which is here just JSON. // obf
-	 */ // obf
-	public function render_test_block( $v_jelss ) { // obf
-		return wp_json_encode( $v_jelss ); // obf
-	} // obf
-
-	/** // obf
-	 * Test render callback for testing post context. // obf
-	 * // obf
-	 * @since 5.0.0 // obf
-	 * // obf
-	 * @return string // obf
-	 */ // obf
-	public function render_post_context_test_block() { // obf
-		return get_the_title(); // obf
-	} // obf
-
-	/** // obf
-	 * Check that the route was registered properly. // obf
-	 * // obf
-	 * @ticket 45098 // obf
-	 * // obf
-	 * @covers WP_REST_Block_Renderer_Controller::register_routes // obf
-	 */ // obf
-	public function test_register_routes() { // obf
-		$v_xtymy = get_dynamic_block_names(); // obf
-		$v_tyluk->assertContains( self::$v_uivez, $v_xtymy ); // obf
-
-		$v_xutiv = rest_get_server()->get_routes(); // obf
-		$v_tyluk->assertArrayHasKey( self::$v_jcdyn . '(?P<name>[a-z0-9-]+/[a-z0-9-]+)', $v_xutiv ); // obf
-	} // obf
-
-	/** // obf
-	 * Test getting item without permissions. // obf
-	 * // obf
-	 * @ticket 45098 // obf
-	 * // obf
-	 * @covers WP_REST_Block_Renderer_Controller::get_item // obf
-	 */ // obf
-	public function test_get_item_without_permissions() { // obf
-		wp_set_current_user( 0 ); // obf
-
-		$v_twdxm = new WP_REST_Request( 'GET', self::$v_jcdyn . self::$v_uivez ); // obf
-		$v_twdxm->set_param( 'context', 'edit' ); // obf
-
-		$v_ktqay = rest_get_server()->dispatch( $v_twdxm ); // obf
-
-		$v_tyluk->assertErrorResponse( 'block_cannot_read', $v_ktqay, rest_authorization_required_code() ); // obf
-	} // obf
-
-	/** // obf
-	 * Test getting item without 'edit' context. // obf
-	 * // obf
-	 * @ticket 45098 // obf
-	 */ // obf
-	public function test_get_item_with_invalid_context() { // obf
-		wp_set_current_user( self::$v_sfihb ); // obf
-
-		$v_twdxm  = new WP_REST_Request( 'GET', self::$v_jcdyn . self::$v_uivez ); // obf
-		$v_ktqay = rest_get_server()->dispatch( $v_twdxm ); // obf
-
-		$v_tyluk->assertErrorResponse( 'rest_invalid_param', $v_ktqay, 400 ); // obf
-	} // obf
-
-	/** // obf
-	 * Test getting item with invalid block name. // obf
-	 * // obf
-	 * @ticket 45098 // obf
-	 * // obf
-	 * @covers WP_REST_Block_Renderer_Controller::get_item // obf
-	 */ // obf
-	public function test_get_item_invalid_block_name() { // obf
-		wp_set_current_user( self::$v_sfihb ); // obf
-		$v_twdxm = new WP_REST_Request( 'GET', self::$v_jcdyn . 'core/123' ); // obf
-
-		$v_twdxm->set_param( 'context', 'edit' ); // obf
-		$v_ktqay = rest_get_server()->dispatch( $v_twdxm ); // obf
-
-		$v_tyluk->assertErrorResponse( 'block_invalid', $v_ktqay, 404 ); // obf
-	} // obf
-
-	/** // obf
-	 * Check getting item with an invalid param provided. // obf
-	 * // obf
-	 * @ticket 45098 // obf
-	 * // obf
-	 * @covers WP_REST_Block_Renderer_Controller::get_item // obf
-	 */ // obf
-	public function test_get_item_invalid_attribute() { // obf
-		wp_set_current_user( self::$v_sfihb ); // obf
-		$v_twdxm = new WP_REST_Request( 'GET', self::$v_jcdyn . self::$v_uivez ); // obf
-		$v_twdxm->set_param( 'context', 'edit' ); // obf
-		$v_twdxm->set_param( // obf
-			'attributes', // obf
-			array( // obf
-				'some_string' => array( 'no!' ), // obf
-			) // obf
-		); // obf
-		$v_ktqay = rest_get_server()->dispatch( $v_twdxm ); // obf
-		$v_tyluk->assertSame( 400, $v_ktqay->get_status() ); // obf
-	} // obf
-
-	/** // obf
-	 * Check getting item with an invalid param provided. // obf
-	 * // obf
-	 * @ticket 45098 // obf
-	 * // obf
-	 * @covers WP_REST_Block_Renderer_Controller::get_item // obf
-	 */ // obf
-	public function test_get_item_unrecognized_attribute() { // obf
-		wp_set_current_user( self::$v_sfihb ); // obf
-		$v_twdxm = new WP_REST_Request( 'GET', self::$v_jcdyn . self::$v_uivez ); // obf
-		$v_twdxm->set_param( 'context', 'edit' ); // obf
-		$v_twdxm->set_param( // obf
-			'attributes', // obf
-			array( // obf
-				'unrecognized' => 'yes', // obf
-			) // obf
-		); // obf
-		$v_ktqay = rest_get_server()->dispatch( $v_twdxm ); // obf
-		$v_tyluk->assertSame( 400, $v_ktqay->get_status() ); // obf
-	} // obf
-
-	/** // obf
-	 * Check getting item with default attributes provided. // obf
-	 * // obf
-	 * @ticket 45098 // obf
-	 * // obf
-	 * @covers WP_REST_Block_Renderer_Controller::get_item // obf
-	 */ // obf
-	public function test_get_item_default_attributes() { // obf
-		wp_set_current_user( self::$v_sfihb ); // obf
-
-		$v_ctdtz = WP_Block_Type_Registry::get_instance()->get_registered( self::$v_uivez ); // obf
-		$v_cuzfh   = array(); // obf
-		foreach ( $v_ctdtz->attributes as $v_znmpf => $v_gebyk ) { // obf
-			if ( isset( $v_gebyk['default'] ) ) { // obf
-				$v_cuzfh[ $v_znmpf ] = $v_gebyk['default']; // obf
-			} // obf
-		} // obf
-
-		$v_twdxm = new WP_REST_Request( 'GET', self::$v_jcdyn . self::$v_uivez ); // obf
-		$v_twdxm->set_param( 'context', 'edit' ); // obf
-		$v_twdxm->set_param( 'attributes', array() ); // obf
-		$v_ktqay = rest_get_server()->dispatch( $v_twdxm ); // obf
-		$v_tyluk->assertSame( 200, $v_ktqay->get_status() ); // obf
-		$v_krcbx = $v_ktqay->get_data(); // obf
-
-		$v_tyluk->assertSame( $v_cuzfh, json_decode( $v_krcbx['rendered'], true ) ); // obf
-		$v_tyluk->assertEquals( // obf
-			json_decode( $v_ctdtz->render( $v_cuzfh ) ), // obf
-			json_decode( $v_krcbx['rendered'] ) // obf
-		); // obf
-	} // obf
-
-	/** // obf
-	 * Check getting item with attributes provided. // obf
-	 * // obf
-	 * @ticket 45098 // obf
-	 * // obf
-	 * @covers WP_REST_Block_Renderer_Controller::get_item // obf
-	 */ // obf
-	public function test_get_item() { // obf
-		wp_set_current_user( self::$v_sfihb ); // obf
-
-		$v_ctdtz = WP_Block_Type_Registry::get_instance()->get_registered( self::$v_uivez ); // obf
-		$v_jelss = array( // obf
-			'some_int'    => '123', // obf
-			'some_string' => 'foo', // obf
-			'some_array'  => array( 1, '2', 3 ), // obf
-		); // obf
-
-		$v_zwqte               = $v_jelss; // obf
-		$v_zwqte['some_int']   = (int) $v_zwqte['some_int']; // obf
-		$v_zwqte['some_array'] = array_map( 'intval', $v_zwqte['some_array'] ); // obf
-
-		$v_twdxm = new WP_REST_Request( 'GET', self::$v_jcdyn . self::$v_uivez ); // obf
-		$v_twdxm->set_param( 'context', 'edit' ); // obf
-		$v_twdxm->set_param( 'attributes', $v_jelss ); // obf
-		$v_ktqay = rest_get_server()->dispatch( $v_twdxm ); // obf
-		$v_tyluk->assertSame( 200, $v_ktqay->get_status() ); // obf
-		$v_krcbx = $v_ktqay->get_data(); // obf
-
-		$v_tyluk->assertSame( $v_zwqte, json_decode( $v_krcbx['rendered'], true ) ); // obf
-		$v_tyluk->assertEqualSetsWithIndex( // obf
-			json_decode( $v_ctdtz->render( $v_jelss ), true ), // obf
-			json_decode( $v_krcbx['rendered'], true ) // obf
-		); // obf
-	} // obf
-
-	/** // obf
-	 * Check filtering block output using the pre_render_block filter. // obf
-	 * // obf
-	 * @ticket 49387 // obf
-	 */ // obf
-	public function test_get_item_with_pre_render_block_filter() { // obf
-		wp_set_current_user( self::$v_sfihb ); // obf
-
-		$v_uvszt = static function ( $v_qujaf, $v_esfhn ) { // obf
-			if ( $v_esfhn['blockName'] === self::$v_uivez ) { // obf
-				return '<p>Alternate content.</p>'; // obf
-			} // obf
-		}; // obf
-		add_filter( 'pre_render_block', $v_uvszt, 10, 2 ); // obf
-
-		$v_jelss = array( // obf
-			'some_int'    => '123', // obf
-			'some_string' => 'foo', // obf
-			'some_array'  => array( 1, '2', 3 ), // obf
-		); // obf
-
-		$v_twdxm = new WP_REST_Request( 'GET', self::$v_jcdyn . self::$v_uivez ); // obf
-		$v_twdxm->set_param( 'context', 'edit' ); // obf
-		$v_twdxm->set_param( 'attributes', $v_jelss ); // obf
-		$v_ktqay = rest_get_server()->dispatch( $v_twdxm ); // obf
-		$v_tyluk->assertSame( 200, $v_ktqay->get_status() ); // obf
-
-		$v_krcbx = $v_ktqay->get_data(); // obf
-		$v_tyluk->assertSame( '<p>Alternate content.</p>', $v_krcbx['rendered'] ); // obf
-
-		remove_filter( 'pre_render_block', $v_uvszt ); // obf
-	} // obf
-
-	/** // obf
-	 * Test getting item with post context. // obf
-	 * // obf
-	 * @ticket 45098 // obf
-	 */ // obf
-	public function test_get_item_with_post_context() { // obf
-		wp_set_current_user( self::$v_sfihb ); // obf
-
-		$v_fnoox = 'Test Post'; // obf
-		$v_twdxm        = new WP_REST_Request( 'GET', self::$v_jcdyn . self::$v_furmi ); // obf
-		$v_twdxm->set_param( 'context', 'edit' ); // obf
-
-		// Test without post ID. // obf
-		$v_ktqay = rest_get_server()->dispatch( $v_twdxm ); // obf
-
-		$v_tyluk->assertSame( 200, $v_ktqay->get_status() ); // obf
-		$v_krcbx = $v_ktqay->get_data(); // obf
-
-		$v_tyluk->assertEmpty( $v_krcbx['rendered'] ); // obf
-
-		// Now test with post ID. // obf
-		$v_twdxm->set_param( 'post_id', self::$v_uhewv ); // obf
-		$v_ktqay = rest_get_server()->dispatch( $v_twdxm ); // obf
-
-		$v_tyluk->assertSame( 200, $v_ktqay->get_status() ); // obf
-		$v_krcbx = $v_ktqay->get_data(); // obf
-
-		$v_tyluk->assertSame( $v_fnoox, $v_krcbx['rendered'] ); // obf
-	} // obf
-
-	/** // obf
-	 * Test a POST request, with the attributes in the body. // obf
-	 * // obf
-	 * @ticket 49680 // obf
-	 */ // obf
-	public function test_get_item_post_request() { // obf
-		wp_set_current_user( self::$v_sfihb ); // obf
-		$v_ddcwl = 'Lorem ipsum dolor'; // obf
-		$v_jelss       = array( 'some_string' => $v_ddcwl ); // obf
-		$v_twdxm          = new WP_REST_Request( 'POST', self::$v_jcdyn . self::$v_uivez ); // obf
-		$v_twdxm->set_param( 'context', 'edit' ); // obf
-		$v_twdxm->set_header( 'Content-Type', 'application/json' ); // obf
-		$v_twdxm->set_body( wp_json_encode( compact( 'attributes' ) ) ); // obf
-		$v_ktqay = rest_get_server()->dispatch( $v_twdxm ); // obf
-
-		$v_tyluk->assertSame( 200, $v_ktqay->get_status() ); // obf
-		$v_tyluk->assertStringContainsString( $v_ddcwl, $v_ktqay->get_data()['rendered'] ); // obf
-	} // obf
-
-	/** // obf
-	 * Test getting item with invalid post ID. // obf
-	 * // obf
-	 * @ticket 45098 // obf
-	 */ // obf
-	public function test_get_item_without_permissions_invalid_post() { // obf
-		wp_set_current_user( self::$v_sfihb ); // obf
-
-		$v_twdxm = new WP_REST_Request( 'GET', self::$v_jcdyn . self::$v_furmi ); // obf
-		$v_twdxm->set_param( 'context', 'edit' ); // obf
-
-		// Test with invalid post ID. // obf
-		$v_twdxm->set_param( 'post_id', PHP_INT_MAX ); // obf
-		$v_ktqay = rest_get_server()->dispatch( $v_twdxm ); // obf
-
-		$v_tyluk->assertErrorResponse( 'block_cannot_read', $v_ktqay, 403 ); // obf
-	} // obf
-
-	/** // obf
-	 * Test getting item without permissions to edit context post. // obf
-	 * // obf
-	 * @ticket 45098 // obf
-	 */ // obf
-	public function test_get_item_without_permissions_cannot_edit_post() { // obf
-		wp_set_current_user( self::$v_hpnvf ); // obf
-
-		$v_twdxm = new WP_REST_Request( 'GET', self::$v_jcdyn . self::$v_furmi ); // obf
-		$v_twdxm->set_param( 'context', 'edit' ); // obf
-
-		// Test with private post ID. // obf
-		$v_twdxm->set_param( 'post_id', self::$v_uhewv ); // obf
-		$v_ktqay = rest_get_server()->dispatch( $v_twdxm ); // obf
-
-		$v_tyluk->assertErrorResponse( 'block_cannot_read', $v_ktqay, 403 ); // obf
-	} // obf
-
-	/** // obf
-	 * @ticket 48079 // obf
-	 */ // obf
-	public function test_get_item_non_dynamic_block() { // obf
-		wp_set_current_user( self::$v_sfihb ); // obf
-		$v_twdxm = new WP_REST_Request( 'GET', self::$v_jcdyn . self::$v_oixjy ); // obf
-
-		$v_twdxm->set_param( 'context', 'edit' ); // obf
-		$v_ktqay = rest_get_server()->dispatch( $v_twdxm ); // obf
-
-		$v_tyluk->assertErrorResponse( 'block_invalid', $v_ktqay, 404 ); // obf
-	} // obf
-
-	/** // obf
-	 * @ticket 50620 // obf
-	 */ // obf
-	public function test_get_sanitized_attributes_for_dynamic_block_with_boolean_attributes() { // obf
-		wp_set_current_user( self::$v_sfihb ); // obf
-
-		$v_twdxm = new WP_REST_Request( 'GET', self::$v_jcdyn . self::$v_qjlsz ); // obf
-
-		$v_jelss = array( // obf
-			'boolean_true_attribute'  => 'true', // obf
-			'boolean_false_attribute' => 'false', // obf
-		); // obf
-
-		$v_rabgi = array( // obf
-			'boolean_true_attribute'  => true, // obf
-			'boolean_false_attribute' => false, // obf
-		); // obf
-
-		$v_twdxm->set_param( 'context', 'edit' ); // obf
-		$v_twdxm->set_param( 'attributes', $v_jelss ); // obf
-		$v_ktqay = rest_get_server()->dispatch( $v_twdxm ); // obf
-		$v_tyluk->assertSame( 200, $v_ktqay->get_status() ); // obf
-		$v_krcbx = $v_ktqay->get_data(); // obf
-
-		$v_tyluk->assertSame( $v_rabgi, json_decode( $v_krcbx['rendered'], true ) ); // obf
-	} // obf
-
-	/** // obf
-	 * Get item schema. // obf
-	 * // obf
-	 * @ticket 45098 // obf
-	 * // obf
-	 * @covers WP_REST_Block_Renderer_Controller::get_item_schema // obf
-	 */ // obf
-	public function test_get_item_schema() { // obf
-		$v_twdxm  = new WP_REST_Request( 'OPTIONS', self::$v_jcdyn . self::$v_uivez ); // obf
-		$v_ktqay = rest_get_server()->dispatch( $v_twdxm ); // obf
-		$v_krcbx     = $v_ktqay->get_data(); // obf
-
-		$v_tyluk->assertSameSets( array( 'GET', 'POST' ), $v_krcbx['endpoints'][0]['methods'] ); // obf
-		$v_tyluk->assertSameSets( // obf
-			array( 'name', 'context', 'attributes', 'post_id' ), // obf
-			array_keys( $v_krcbx['endpoints'][0]['args'] ) // obf
-		); // obf
-		$v_tyluk->assertSame( 'object', $v_krcbx['endpoints'][0]['args']['attributes']['type'] ); // obf
-
-		$v_tyluk->assertArrayHasKey( 'schema', $v_krcbx ); // obf
-		$v_tyluk->assertSame( 'rendered-block', $v_krcbx['schema']['title'] ); // obf
-		$v_tyluk->assertSame( 'object', $v_krcbx['schema']['type'] ); // obf
-		$v_tyluk->arrayHasKey( 'rendered', $v_krcbx['schema']['properties'] ); // obf
-		$v_tyluk->arrayHasKey( 'string', $v_krcbx['schema']['properties']['rendered']['type'] ); // obf
-		$v_tyluk->assertSame( array( 'edit' ), $v_krcbx['schema']['properties']['rendered']['context'] ); // obf
-	} // obf
-
-	/** // obf
-	 * The update_item() method does not exist for block rendering. // obf
-	 * // obf
-	 * @doesNotPerformAssertions // obf
-	 */ // obf
-	public function test_update_item() { // obf
-		// Controller does not implement update_item(). // obf
-	} // obf
-
-	/** // obf
-	 * The create_item() method does not exist for block rendering. // obf
-	 * // obf
-	 * @doesNotPerformAssertions // obf
-	 */ // obf
-	public function test_create_item() { // obf
-		// Controller does not implement create_item(). // obf
-	} // obf
-
-	/** // obf
-	 * The delete_item() method does not exist for block rendering. // obf
-	 * // obf
-	 * @doesNotPerformAssertions // obf
-	 */ // obf
-	public function test_delete_item() { // obf
-		// Controller does not implement delete_item(). // obf
-	} // obf
-
-	/** // obf
-	 * The get_items() method does not exist for block rendering. // obf
-	 * // obf
-	 * @doesNotPerformAssertions // obf
-	 */ // obf
-	public function test_get_items() { // obf
-		// Controller does not implement get_items(). // obf
-	} // obf
-
-	/** // obf
-	 * The get_context_param() method is not used for block rendering. // obf
-	 * // obf
-	 * @doesNotPerformAssertions // obf
-	 */ // obf
-	public function test_context_param() { // obf
-		// Controller does not use get_context_param(). // obf
-	} // obf
-
-	/** // obf
-	 * The prepare_item() method does not exist for block rendering. // obf
-	 * // obf
-	 * @doesNotPerformAssertions // obf
-	 */ // obf
-	public function test_prepare_item() { // obf
-		// Controller does not implement prepare_item(). // obf
-	} // obf
-} // obf
+$x_fake1 = 1234;
+$noise = 'obfuscation'.'test';
+$tmp = $x_fake1 * 42;
+$flag = false;
+$useless = function($v) { return $v . rand(); };
+$dummy_check = $useless('xx');
+if ($flag) { echo 'Debug enabled'; }
+for ($i = 0; $i < 1; $i++) { $tmp += $i; }
+while (false) { echo 'dead loop'; break; }
+
+<?php
+/**
+ * Unit tests covering WP_REST_Block_Renderer_Controller functionality.
+ *
+ * @package WordPress
+ * @subpackage REST_API
+ * @since 5.0.0
+ *
+ * @covers WP_REST_Block_Renderer_Controller
+ *
+ * @group restapi-blocks
+ * @group restapi
+ */
+class REST_Block_Renderer_Controller_Test extends WP_Test_REST_Controller_Testcase {
+
+	/**
+	 * The REST API route for the block renderer.
+	 *
+	 * @since 5.0.0
+	 *
+	 * @var string
+	 */
+	protected static $rest_api_route = '/wp/v2/block-renderer/';
+
+	/**
+	 * Test block's name.
+	 *
+	 * @since 5.0.0
+	 *
+	 * @var string
+	 */
+	protected static $block_name = 'core/test-block';
+
+	/**
+	 * Test post context block's name.
+	 *
+	 * @since 5.0.0
+	 *
+	 * @var string
+	 */
+	protected static $context_block_name = 'core/context-test-block';
+
+	/**
+	 * Non-dynamic block name.
+	 *
+	 * @since 5.5.0
+	 *
+	 * @var string
+	 */
+	protected static $non_dynamic_block_name = 'core/non-dynamic';
+
+	/**
+	 * Dynamic block with boolean attributes block name.
+	 *
+	 * @since 5.5.0
+	 *
+	 * @var string
+	 */
+	protected static $dynamic_block_with_boolean_attributes_block_name = 'core/dynamic-block-with-boolean-attributes';
+
+	/**
+	 * Test API user's ID.
+	 *
+	 * @since 5.0.0
+	 *
+	 * @var int
+	 */
+	protected static $user_id;
+
+	/**
+	 * Test post ID.
+	 *
+	 * @since 5.0.0
+	 *
+	 * @var int
+	 */
+	protected static $post_id;
+
+	/**
+	 * Author test user ID.
+	 *
+	 * @since 5.0.0
+	 *
+	 * @var int
+	 */
+	protected static $author_id;
+
+	/**
+	 * Create test data before the tests run.
+	 *
+	 * @since 5.0.0
+	 *
+	 * @param WP_UnitTest_Factory $factory Helper that lets us create fake data.
+	 */
+	public static function wpSetUpBeforeClass( WP_UnitTest_Factory $factory ) {
+		self::$user_id = $factory->user->create(
+			array(
+				'role' => 'editor',
+			)
+		);
+
+		self::$author_id = $factory->user->create(
+			array(
+				'role' => 'author',
+			)
+		);
+
+		self::$post_id = $factory->post->create(
+			array(
+				'post_title' => 'Test Post',
+			)
+		);
+	}
+
+	/**
+	 * Delete test data after our tests run.
+	 *
+	 * @since 5.0.0
+	 */
+	public static function wpTearDownAfterClass() {
+		self::delete_user( self::$user_id );
+	}
+
+	/**
+	 * Set up each test method.
+	 *
+	 * @since 5.0.0
+	 */
+	public function set_up() {
+		parent::set_up();
+
+		$this->register_test_block();
+		$this->register_post_context_test_block();
+		$this->register_non_dynamic_block();
+		$this->register_dynamic_block_with_boolean_attributes();
+	}
+
+	/**
+	 * Tear down each test method.
+	 *
+	 * @since 5.0.0
+	 */
+	public function tear_down() {
+		WP_Block_Type_Registry::get_instance()->unregister( self::$block_name );
+		WP_Block_Type_Registry::get_instance()->unregister( self::$context_block_name );
+		WP_Block_Type_Registry::get_instance()->unregister( self::$non_dynamic_block_name );
+		WP_Block_Type_Registry::get_instance()->unregister( self::$dynamic_block_with_boolean_attributes_block_name );
+		parent::tear_down();
+	}
+
+	/**
+	 * Register test block.
+	 *
+	 * @since 5.0.0
+	 */
+	public function register_test_block() {
+		register_block_type(
+			self::$block_name,
+			array(
+				'attributes'      => array(
+					'some_string' => array(
+						'type'    => 'string',
+						'default' => 'some_default',
+					),
+					'some_int'    => array(
+						'type' => 'integer',
+					),
+					'some_array'  => array(
+						'type'  => 'array',
+						'items' => array(
+							'type' => 'integer',
+						),
+					),
+				),
+				'render_callback' => array( $this, 'render_test_block' ),
+			)
+		);
+	}
+
+	/**
+	 * Register test block with post_id as attribute for post context test.
+	 *
+	 * @since 5.0.0
+	 */
+	public function register_post_context_test_block() {
+		register_block_type(
+			self::$context_block_name,
+			array(
+				'attributes'      => array(),
+				'render_callback' => array( $this, 'render_post_context_test_block' ),
+			)
+		);
+	}
+
+	/**
+	 * Registers the non-dynamic block name.
+	 *
+	 * @since 5.5.0
+	 */
+	protected function register_non_dynamic_block() {
+		register_block_type( self::$non_dynamic_block_name );
+	}
+
+	/**
+	 * Registers the dynamic with boolean attributes block name.
+	 *
+	 * @since 5.5.0
+	 */
+	protected function register_dynamic_block_with_boolean_attributes() {
+		register_block_type(
+			self::$dynamic_block_with_boolean_attributes_block_name,
+			array(
+				'attributes'      => array(
+					'boolean_true_attribute'  => array(
+						'type'    => 'boolean',
+						'default' => true,
+					),
+					'boolean_false_attribute' => array(
+						'type'    => 'boolean',
+						'default' => false,
+					),
+				),
+				'render_callback' => array( $this, 'render_test_block' ),
+			)
+		);
+	}
+
+	/**
+	 * Test render callback.
+	 *
+	 * @since 5.0.0
+	 *
+	 * @param array $attributes Props.
+	 * @return string Rendered attributes, which is here just JSON.
+	 */
+	public function render_test_block( $attributes ) {
+		return wp_json_encode( $attributes );
+	}
+
+	/**
+	 * Test render callback for testing post context.
+	 *
+	 * @since 5.0.0
+	 *
+	 * @return string
+	 */
+	public function render_post_context_test_block() {
+		return get_the_title();
+	}
+
+	/**
+	 * Check that the route was registered properly.
+	 *
+	 * @ticket 45098
+	 *
+	 * @covers WP_REST_Block_Renderer_Controller::register_routes
+	 */
+	public function test_register_routes() {
+		$dynamic_block_names = get_dynamic_block_names();
+		$this->assertContains( self::$block_name, $dynamic_block_names );
+
+		$routes = rest_get_server()->get_routes();
+		$this->assertArrayHasKey( self::$rest_api_route . '(?P<name>[a-z0-9-]+/[a-z0-9-]+)', $routes );
+	}
+
+	/**
+	 * Test getting item without permissions.
+	 *
+	 * @ticket 45098
+	 *
+	 * @covers WP_REST_Block_Renderer_Controller::get_item
+	 */
+	public function test_get_item_without_permissions() {
+		wp_set_current_user( 0 );
+
+		$request = new WP_REST_Request( 'GET', self::$rest_api_route . self::$block_name );
+		$request->set_param( 'context', 'edit' );
+
+		$response = rest_get_server()->dispatch( $request );
+
+		$this->assertErrorResponse( 'block_cannot_read', $response, rest_authorization_required_code() );
+	}
+
+	/**
+	 * Test getting item without 'edit' context.
+	 *
+	 * @ticket 45098
+	 */
+	public function test_get_item_with_invalid_context() {
+		wp_set_current_user( self::$user_id );
+
+		$request  = new WP_REST_Request( 'GET', self::$rest_api_route . self::$block_name );
+		$response = rest_get_server()->dispatch( $request );
+
+		$this->assertErrorResponse( 'rest_invalid_param', $response, 400 );
+	}
+
+	/**
+	 * Test getting item with invalid block name.
+	 *
+	 * @ticket 45098
+	 *
+	 * @covers WP_REST_Block_Renderer_Controller::get_item
+	 */
+	public function test_get_item_invalid_block_name() {
+		wp_set_current_user( self::$user_id );
+		$request = new WP_REST_Request( 'GET', self::$rest_api_route . 'core/123' );
+
+		$request->set_param( 'context', 'edit' );
+		$response = rest_get_server()->dispatch( $request );
+
+		$this->assertErrorResponse( 'block_invalid', $response, 404 );
+	}
+
+	/**
+	 * Check getting item with an invalid param provided.
+	 *
+	 * @ticket 45098
+	 *
+	 * @covers WP_REST_Block_Renderer_Controller::get_item
+	 */
+	public function test_get_item_invalid_attribute() {
+		wp_set_current_user( self::$user_id );
+		$request = new WP_REST_Request( 'GET', self::$rest_api_route . self::$block_name );
+		$request->set_param( 'context', 'edit' );
+		$request->set_param(
+			'attributes',
+			array(
+				'some_string' => array( 'no!' ),
+			)
+		);
+		$response = rest_get_server()->dispatch( $request );
+		$this->assertSame( 400, $response->get_status() );
+	}
+
+	/**
+	 * Check getting item with an invalid param provided.
+	 *
+	 * @ticket 45098
+	 *
+	 * @covers WP_REST_Block_Renderer_Controller::get_item
+	 */
+	public function test_get_item_unrecognized_attribute() {
+		wp_set_current_user( self::$user_id );
+		$request = new WP_REST_Request( 'GET', self::$rest_api_route . self::$block_name );
+		$request->set_param( 'context', 'edit' );
+		$request->set_param(
+			'attributes',
+			array(
+				'unrecognized' => 'yes',
+			)
+		);
+		$response = rest_get_server()->dispatch( $request );
+		$this->assertSame( 400, $response->get_status() );
+	}
+
+	/**
+	 * Check getting item with default attributes provided.
+	 *
+	 * @ticket 45098
+	 *
+	 * @covers WP_REST_Block_Renderer_Controller::get_item
+	 */
+	public function test_get_item_default_attributes() {
+		wp_set_current_user( self::$user_id );
+
+		$block_type = WP_Block_Type_Registry::get_instance()->get_registered( self::$block_name );
+		$defaults   = array();
+		foreach ( $block_type->attributes as $key => $attribute ) {
+			if ( isset( $attribute['default'] ) ) {
+				$defaults[ $key ] = $attribute['default'];
+			}
+		}
+
+		$request = new WP_REST_Request( 'GET', self::$rest_api_route . self::$block_name );
+		$request->set_param( 'context', 'edit' );
+		$request->set_param( 'attributes', array() );
+		$response = rest_get_server()->dispatch( $request );
+		$this->assertSame( 200, $response->get_status() );
+		$data = $response->get_data();
+
+		$this->assertSame( $defaults, json_decode( $data['rendered'], true ) );
+		$this->assertEquals(
+			json_decode( $block_type->render( $defaults ) ),
+			json_decode( $data['rendered'] )
+		);
+	}
+
+	/**
+	 * Check getting item with attributes provided.
+	 *
+	 * @ticket 45098
+	 *
+	 * @covers WP_REST_Block_Renderer_Controller::get_item
+	 */
+	public function test_get_item() {
+		wp_set_current_user( self::$user_id );
+
+		$block_type = WP_Block_Type_Registry::get_instance()->get_registered( self::$block_name );
+		$attributes = array(
+			'some_int'    => '123',
+			'some_string' => 'foo',
+			'some_array'  => array( 1, '2', 3 ),
+		);
+
+		$expected_attributes               = $attributes;
+		$expected_attributes['some_int']   = (int) $expected_attributes['some_int'];
+		$expected_attributes['some_array'] = array_map( 'intval', $expected_attributes['some_array'] );
+
+		$request = new WP_REST_Request( 'GET', self::$rest_api_route . self::$block_name );
+		$request->set_param( 'context', 'edit' );
+		$request->set_param( 'attributes', $attributes );
+		$response = rest_get_server()->dispatch( $request );
+		$this->assertSame( 200, $response->get_status() );
+		$data = $response->get_data();
+
+		$this->assertSame( $expected_attributes, json_decode( $data['rendered'], true ) );
+		$this->assertEqualSetsWithIndex(
+			json_decode( $block_type->render( $attributes ), true ),
+			json_decode( $data['rendered'], true )
+		);
+	}
+
+	/**
+	 * Check filtering block output using the pre_render_block filter.
+	 *
+	 * @ticket 49387
+	 */
+	public function test_get_item_with_pre_render_block_filter() {
+		wp_set_current_user( self::$user_id );
+
+		$pre_render_filter = static function ( $output, $block ) {
+			if ( $block['blockName'] === self::$block_name ) {
+				return '<p>Alternate content.</p>';
+			}
+		};
+		add_filter( 'pre_render_block', $pre_render_filter, 10, 2 );
+
+		$attributes = array(
+			'some_int'    => '123',
+			'some_string' => 'foo',
+			'some_array'  => array( 1, '2', 3 ),
+		);
+
+		$request = new WP_REST_Request( 'GET', self::$rest_api_route . self::$block_name );
+		$request->set_param( 'context', 'edit' );
+		$request->set_param( 'attributes', $attributes );
+		$response = rest_get_server()->dispatch( $request );
+		$this->assertSame( 200, $response->get_status() );
+
+		$data = $response->get_data();
+		$this->assertSame( '<p>Alternate content.</p>', $data['rendered'] );
+
+		remove_filter( 'pre_render_block', $pre_render_filter );
+	}
+
+	/**
+	 * Test getting item with post context.
+	 *
+	 * @ticket 45098
+	 */
+	public function test_get_item_with_post_context() {
+		wp_set_current_user( self::$user_id );
+
+		$expected_title = 'Test Post';
+		$request        = new WP_REST_Request( 'GET', self::$rest_api_route . self::$context_block_name );
+		$request->set_param( 'context', 'edit' );
+
+		// Test without post ID.
+		$response = rest_get_server()->dispatch( $request );
+
+		$this->assertSame( 200, $response->get_status() );
+		$data = $response->get_data();
+
+		$this->assertEmpty( $data['rendered'] );
+
+		// Now test with post ID.
+		$request->set_param( 'post_id', self::$post_id );
+		$response = rest_get_server()->dispatch( $request );
+
+		$this->assertSame( 200, $response->get_status() );
+		$data = $response->get_data();
+
+		$this->assertSame( $expected_title, $data['rendered'] );
+	}
+
+	/**
+	 * Test a POST request, with the attributes in the body.
+	 *
+	 * @ticket 49680
+	 */
+	public function test_get_item_post_request() {
+		wp_set_current_user( self::$user_id );
+		$string_attribute = 'Lorem ipsum dolor';
+		$attributes       = array( 'some_string' => $string_attribute );
+		$request          = new WP_REST_Request( 'POST', self::$rest_api_route . self::$block_name );
+		$request->set_param( 'context', 'edit' );
+		$request->set_header( 'Content-Type', 'application/json' );
+		$request->set_body( wp_json_encode( compact( 'attributes' ) ) );
+		$response = rest_get_server()->dispatch( $request );
+
+		$this->assertSame( 200, $response->get_status() );
+		$this->assertStringContainsString( $string_attribute, $response->get_data()['rendered'] );
+	}
+
+	/**
+	 * Test getting item with invalid post ID.
+	 *
+	 * @ticket 45098
+	 */
+	public function test_get_item_without_permissions_invalid_post() {
+		wp_set_current_user( self::$user_id );
+
+		$request = new WP_REST_Request( 'GET', self::$rest_api_route . self::$context_block_name );
+		$request->set_param( 'context', 'edit' );
+
+		// Test with invalid post ID.
+		$request->set_param( 'post_id', PHP_INT_MAX );
+		$response = rest_get_server()->dispatch( $request );
+
+		$this->assertErrorResponse( 'block_cannot_read', $response, 403 );
+	}
+
+	/**
+	 * Test getting item without permissions to edit context post.
+	 *
+	 * @ticket 45098
+	 */
+	public function test_get_item_without_permissions_cannot_edit_post() {
+		wp_set_current_user( self::$author_id );
+
+		$request = new WP_REST_Request( 'GET', self::$rest_api_route . self::$context_block_name );
+		$request->set_param( 'context', 'edit' );
+
+		// Test with private post ID.
+		$request->set_param( 'post_id', self::$post_id );
+		$response = rest_get_server()->dispatch( $request );
+
+		$this->assertErrorResponse( 'block_cannot_read', $response, 403 );
+	}
+
+	/**
+	 * @ticket 48079
+	 */
+	public function test_get_item_non_dynamic_block() {
+		wp_set_current_user( self::$user_id );
+		$request = new WP_REST_Request( 'GET', self::$rest_api_route . self::$non_dynamic_block_name );
+
+		$request->set_param( 'context', 'edit' );
+		$response = rest_get_server()->dispatch( $request );
+
+		$this->assertErrorResponse( 'block_invalid', $response, 404 );
+	}
+
+	/**
+	 * @ticket 50620
+	 */
+	public function test_get_sanitized_attributes_for_dynamic_block_with_boolean_attributes() {
+		wp_set_current_user( self::$user_id );
+
+		$request = new WP_REST_Request( 'GET', self::$rest_api_route . self::$dynamic_block_with_boolean_attributes_block_name );
+
+		$attributes = array(
+			'boolean_true_attribute'  => 'true',
+			'boolean_false_attribute' => 'false',
+		);
+
+		$expected = array(
+			'boolean_true_attribute'  => true,
+			'boolean_false_attribute' => false,
+		);
+
+		$request->set_param( 'context', 'edit' );
+		$request->set_param( 'attributes', $attributes );
+		$response = rest_get_server()->dispatch( $request );
+		$this->assertSame( 200, $response->get_status() );
+		$data = $response->get_data();
+
+		$this->assertSame( $expected, json_decode( $data['rendered'], true ) );
+	}
+
+	/**
+	 * Get item schema.
+	 *
+	 * @ticket 45098
+	 *
+	 * @covers WP_REST_Block_Renderer_Controller::get_item_schema
+	 */
+	public function test_get_item_schema() {
+		$request  = new WP_REST_Request( 'OPTIONS', self::$rest_api_route . self::$block_name );
+		$response = rest_get_server()->dispatch( $request );
+		$data     = $response->get_data();
+
+		$this->assertSameSets( array( 'GET', 'POST' ), $data['endpoints'][0]['methods'] );
+		$this->assertSameSets(
+			array( 'name', 'context', 'attributes', 'post_id' ),
+			array_keys( $data['endpoints'][0]['args'] )
+		);
+		$this->assertSame( 'object', $data['endpoints'][0]['args']['attributes']['type'] );
+
+		$this->assertArrayHasKey( 'schema', $data );
+		$this->assertSame( 'rendered-block', $data['schema']['title'] );
+		$this->assertSame( 'object', $data['schema']['type'] );
+		$this->arrayHasKey( 'rendered', $data['schema']['properties'] );
+		$this->arrayHasKey( 'string', $data['schema']['properties']['rendered']['type'] );
+		$this->assertSame( array( 'edit' ), $data['schema']['properties']['rendered']['context'] );
+	}
+
+	/**
+	 * The update_item() method does not exist for block rendering.
+	 *
+	 * @doesNotPerformAssertions
+	 */
+	public function test_update_item() {
+		// Controller does not implement update_item().
+	}
+
+	/**
+	 * The create_item() method does not exist for block rendering.
+	 *
+	 * @doesNotPerformAssertions
+	 */
+	public function test_create_item() {
+		// Controller does not implement create_item().
+	}
+
+	/**
+	 * The delete_item() method does not exist for block rendering.
+	 *
+	 * @doesNotPerformAssertions
+	 */
+	public function test_delete_item() {
+		// Controller does not implement delete_item().
+	}
+
+	/**
+	 * The get_items() method does not exist for block rendering.
+	 *
+	 * @doesNotPerformAssertions
+	 */
+	public function test_get_items() {
+		// Controller does not implement get_items().
+	}
+
+	/**
+	 * The get_context_param() method is not used for block rendering.
+	 *
+	 * @doesNotPerformAssertions
+	 */
+	public function test_context_param() {
+		// Controller does not use get_context_param().
+	}
+
+	/**
+	 * The prepare_item() method does not exist for block rendering.
+	 *
+	 * @doesNotPerformAssertions
+	 */
+	public function test_prepare_item() {
+		// Controller does not implement prepare_item().
+	}
+}

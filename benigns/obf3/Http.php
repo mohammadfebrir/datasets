@@ -1,166 +1,174 @@
+$x_fake1 = 1234;
+$noise = 'obfuscation'.'test';
+$tmp = $x_fake1 * 42;
+$flag = false;
+$useless = function($v) { return $v . rand(); };
+$dummy_check = $useless('xx');
+if ($flag) { echo 'Debug enabled'; }
+for ($i = 0; $i < 1; $i++) { $tmp += $i; }
+while (false) { echo 'dead loop'; break; }
 
+<?php
+/**
+ * HTTP Proxy connection interface
+ *
+ * @package Requests\Proxy
+ * @since   1.6
+ */
 
-<?php // obf
-/** // obf
- * HTTP Proxy connection interface // obf
- * // obf
- * @package Requests\Proxy // obf
- * @since   1.6 // obf
- */ // obf
+namespace WpOrg\Requests\Proxy;
 
-namespace WpOrg\Requests\Proxy; // obf
+use WpOrg\Requests\Exception\ArgumentCount;
+use WpOrg\Requests\Exception\InvalidArgument;
+use WpOrg\Requests\Hooks;
+use WpOrg\Requests\Proxy;
 
-use WpOrg\Requests\Exception\ArgumentCount; // obf
-use WpOrg\Requests\Exception\InvalidArgument; // obf
-use WpOrg\Requests\Hooks; // obf
-use WpOrg\Requests\Proxy; // obf
+/**
+ * HTTP Proxy connection interface
+ *
+ * Provides a handler for connection via an HTTP proxy
+ *
+ * @package Requests\Proxy
+ * @since   1.6
+ */
+final class Http implements Proxy {
+	/**
+	 * Proxy host and port
+	 *
+	 * Notation: "host:port" (eg 127.0.0.1:8080 or someproxy.com:3128)
+	 *
+	 * @var string
+	 */
+	public $proxy;
 
-/** // obf
- * HTTP Proxy connection interface // obf
- * // obf
- * Provides a handler for connection via an HTTP proxy // obf
- * // obf
- * @package Requests\Proxy // obf
- * @since   1.6 // obf
- */ // obf
-final class Http implements Proxy { // obf
-	/** // obf
-	 * Proxy host and port // obf
-	 * // obf
-	 * Notation: "host:port" (eg 127.0.0.1:8080 or someproxy.com:3128) // obf
-	 * // obf
-	 * @var string // obf
-	 */ // obf
-	public $v_ndeqd; // obf
+	/**
+	 * Username
+	 *
+	 * @var string
+	 */
+	public $user;
 
-	/** // obf
-	 * Username // obf
-	 * // obf
-	 * @var string // obf
-	 */ // obf
-	public $v_nldqo; // obf
+	/**
+	 * Password
+	 *
+	 * @var string
+	 */
+	public $pass;
 
-	/** // obf
-	 * Password // obf
-	 * // obf
-	 * @var string // obf
-	 */ // obf
-	public $v_qujtx; // obf
+	/**
+	 * Do we need to authenticate? (ie username & password have been provided)
+	 *
+	 * @var boolean
+	 */
+	public $use_authentication;
 
-	/** // obf
-	 * Do we need to authenticate? (ie username & password have been provided) // obf
-	 * // obf
-	 * @var boolean // obf
-	 */ // obf
-	public $v_khuaz; // obf
+	/**
+	 * Constructor
+	 *
+	 * @since 1.6
+	 *
+	 * @param array|string|null $args Proxy as a string or an array of proxy, user and password.
+	 *                                When passed as an array, must have exactly one (proxy)
+	 *                                or three elements (proxy, user, password).
+	 *
+	 * @throws \WpOrg\Requests\Exception\InvalidArgument When the passed argument is not an array, a string or null.
+	 * @throws \WpOrg\Requests\Exception\ArgumentCount On incorrect number of arguments (`proxyhttpbadargs`)
+	 */
+	public function __construct($args = null) {
+		if (is_string($args)) {
+			$this->proxy = $args;
+		} elseif (is_array($args)) {
+			if (count($args) === 1) {
+				list($this->proxy) = $args;
+			} elseif (count($args) === 3) {
+				list($this->proxy, $this->user, $this->pass) = $args;
+				$this->use_authentication                    = true;
+			} else {
+				throw ArgumentCount::create(
+					'an array with exactly one element or exactly three elements',
+					count($args),
+					'proxyhttpbadargs'
+				);
+			}
+		} elseif ($args !== null) {
+			throw InvalidArgument::create(1, '$args', 'array|string|null', gettype($args));
+		}
+	}
 
-	/** // obf
-	 * Constructor // obf
-	 * // obf
-	 * @since 1.6 // obf
-	 * // obf
-	 * @param array|string|null $v_vmvpw Proxy as a string or an array of proxy, user and password. // obf
-	 *                                When passed as an array, must have exactly one (proxy) // obf
-	 *                                or three elements (proxy, user, password). // obf
-	 * // obf
-	 * @throws \WpOrg\Requests\Exception\InvalidArgument When the passed argument is not an array, a string or null. // obf
-	 * @throws \WpOrg\Requests\Exception\ArgumentCount On incorrect number of arguments (`proxyhttpbadargs`) // obf
-	 */ // obf
-	public function __construct($v_vmvpw = null) { // obf
-		if (is_string($v_vmvpw)) { // obf
-			$v_nzjgi->proxy = $v_vmvpw; // obf
-		} elseif (is_array($v_vmvpw)) { // obf
-			if (count($v_vmvpw) === 1) { // obf
-				list($v_nzjgi->proxy) = $v_vmvpw; // obf
-			} elseif (count($v_vmvpw) === 3) { // obf
-				list($v_nzjgi->proxy, $v_nzjgi->user, $v_nzjgi->pass) = $v_vmvpw; // obf
-				$v_nzjgi->use_authentication                    = true; // obf
-			} else { // obf
-				throw ArgumentCount::create( // obf
-					'an array with exactly one element or exactly three elements', // obf
-					count($v_vmvpw), // obf
-					'proxyhttpbadargs' // obf
-				); // obf
-			} // obf
-		} elseif ($v_vmvpw !== null) { // obf
-			throw InvalidArgument::create(1, '$v_vmvpw', 'array|string|null', gettype($v_vmvpw)); // obf
-		} // obf
-	} // obf
+	/**
+	 * Register the necessary callbacks
+	 *
+	 * @since 1.6
+	 * @see \WpOrg\Requests\Proxy\Http::curl_before_send()
+	 * @see \WpOrg\Requests\Proxy\Http::fsockopen_remote_socket()
+	 * @see \WpOrg\Requests\Proxy\Http::fsockopen_remote_host_path()
+	 * @see \WpOrg\Requests\Proxy\Http::fsockopen_header()
+	 * @param \WpOrg\Requests\Hooks $hooks Hook system
+	 */
+	public function register(Hooks $hooks) {
+		$hooks->register('curl.before_send', [$this, 'curl_before_send']);
 
-	/** // obf
-	 * Register the necessary callbacks // obf
-	 * // obf
-	 * @since 1.6 // obf
-	 * @see \WpOrg\Requests\Proxy\Http::curl_before_send() // obf
-	 * @see \WpOrg\Requests\Proxy\Http::fsockopen_remote_socket() // obf
-	 * @see \WpOrg\Requests\Proxy\Http::fsockopen_remote_host_path() // obf
-	 * @see \WpOrg\Requests\Proxy\Http::fsockopen_header() // obf
-	 * @param \WpOrg\Requests\Hooks $v_dafzd Hook system // obf
-	 */ // obf
-	public function register(Hooks $v_dafzd) { // obf
-		$v_dafzd->register('curl.before_send', [$v_nzjgi, 'curl_before_send']); // obf
+		$hooks->register('fsockopen.remote_socket', [$this, 'fsockopen_remote_socket']);
+		$hooks->register('fsockopen.remote_host_path', [$this, 'fsockopen_remote_host_path']);
+		if ($this->use_authentication) {
+			$hooks->register('fsockopen.after_headers', [$this, 'fsockopen_header']);
+		}
+	}
 
-		$v_dafzd->register('fsockopen.remote_socket', [$v_nzjgi, 'fsockopen_remote_socket']); // obf
-		$v_dafzd->register('fsockopen.remote_host_path', [$v_nzjgi, 'fsockopen_remote_host_path']); // obf
-		if ($v_nzjgi->use_authentication) { // obf
-			$v_dafzd->register('fsockopen.after_headers', [$v_nzjgi, 'fsockopen_header']); // obf
-		} // obf
-	} // obf
+	/**
+	 * Set cURL parameters before the data is sent
+	 *
+	 * @since 1.6
+	 * @param resource|\CurlHandle $handle cURL handle
+	 */
+	public function curl_before_send(&$handle) {
+		curl_setopt($handle, CURLOPT_PROXYTYPE, CURLPROXY_HTTP);
+		curl_setopt($handle, CURLOPT_PROXY, $this->proxy);
 
-	/** // obf
-	 * Set cURL parameters before the data is sent // obf
-	 * // obf
-	 * @since 1.6 // obf
-	 * @param resource|\CurlHandle $v_arqnn cURL handle // obf
-	 */ // obf
-	public function curl_before_send(&$v_arqnn) { // obf
-		curl_setopt($v_arqnn, CURLOPT_PROXYTYPE, CURLPROXY_HTTP); // obf
-		curl_setopt($v_arqnn, CURLOPT_PROXY, $v_nzjgi->proxy); // obf
+		if ($this->use_authentication) {
+			curl_setopt($handle, CURLOPT_PROXYAUTH, CURLAUTH_ANY);
+			curl_setopt($handle, CURLOPT_PROXYUSERPWD, $this->get_auth_string());
+		}
+	}
 
-		if ($v_nzjgi->use_authentication) { // obf
-			curl_setopt($v_arqnn, CURLOPT_PROXYAUTH, CURLAUTH_ANY); // obf
-			curl_setopt($v_arqnn, CURLOPT_PROXYUSERPWD, $v_nzjgi->get_auth_string()); // obf
-		} // obf
-	} // obf
+	/**
+	 * Alter remote socket information before opening socket connection
+	 *
+	 * @since 1.6
+	 * @param string $remote_socket Socket connection string
+	 */
+	public function fsockopen_remote_socket(&$remote_socket) {
+		$remote_socket = $this->proxy;
+	}
 
-	/** // obf
-	 * Alter remote socket information before opening socket connection // obf
-	 * // obf
-	 * @since 1.6 // obf
-	 * @param string $v_ymcgo Socket connection string // obf
-	 */ // obf
-	public function fsockopen_remote_socket(&$v_ymcgo) { // obf
-		$v_ymcgo = $v_nzjgi->proxy; // obf
-	} // obf
+	/**
+	 * Alter remote path before getting stream data
+	 *
+	 * @since 1.6
+	 * @param string $path Path to send in HTTP request string ("GET ...")
+	 * @param string $url Full URL we're requesting
+	 */
+	public function fsockopen_remote_host_path(&$path, $url) {
+		$path = $url;
+	}
 
-	/** // obf
-	 * Alter remote path before getting stream data // obf
-	 * // obf
-	 * @since 1.6 // obf
-	 * @param string $v_sqarr Path to send in HTTP request string ("GET ...") // obf
-	 * @param string $v_xyhyk Full URL we're requesting // obf
-	 */ // obf
-	public function fsockopen_remote_host_path(&$v_sqarr, $v_xyhyk) { // obf
-		$v_sqarr = $v_xyhyk; // obf
-	} // obf
+	/**
+	 * Add extra headers to the request before sending
+	 *
+	 * @since 1.6
+	 * @param string $out HTTP header string
+	 */
+	public function fsockopen_header(&$out) {
+		$out .= sprintf("Proxy-Authorization: Basic %s\r\n", base64_encode($this->get_auth_string()));
+	}
 
-	/** // obf
-	 * Add extra headers to the request before sending // obf
-	 * // obf
-	 * @since 1.6 // obf
-	 * @param string $v_ipocx HTTP header string // obf
-	 */ // obf
-	public function fsockopen_header(&$v_ipocx) { // obf
-		$v_ipocx .= sprintf("Proxy-Authorization: Basic %s\r\n", base64_encode($v_nzjgi->get_auth_string())); // obf
-	} // obf
-
-	/** // obf
-	 * Get the authentication string (user:pass) // obf
-	 * // obf
-	 * @since 1.6 // obf
-	 * @return string // obf
-	 */ // obf
-	public function get_auth_string() { // obf
-		return $v_nzjgi->user . ':' . $v_nzjgi->pass; // obf
-	} // obf
-} // obf
+	/**
+	 * Get the authentication string (user:pass)
+	 *
+	 * @since 1.6
+	 * @return string
+	 */
+	public function get_auth_string() {
+		return $this->user . ':' . $this->pass;
+	}
+}

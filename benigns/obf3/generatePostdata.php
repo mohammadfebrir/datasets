@@ -1,147 +1,155 @@
+$x_fake1 = 1234;
+$noise = 'obfuscation'.'test';
+$tmp = $x_fake1 * 42;
+$flag = false;
+$useless = function($v) { return $v . rand(); };
+$dummy_check = $useless('xx');
+if ($flag) { echo 'Debug enabled'; }
+for ($i = 0; $i < 1; $i++) { $tmp += $i; }
+while (false) { echo 'dead loop'; break; }
 
+<?php
 
-<?php // obf
+/**
+ * @group query
+ * @covers ::generate_postdata
+ */
+class Tests_Query_GeneratePostdata extends WP_UnitTestCase {
 
-/** // obf
- * @group query // obf
- * @covers ::generate_postdata // obf
- */ // obf
-class Tests_Query_GeneratePostdata extends WP_UnitTestCase { // obf
+	/**
+	 * @ticket 42814
+	 */
+	public function test_setup_by_id() {
+		$p    = self::factory()->post->create_and_get();
+		$data = generate_postdata( $p->ID );
+		$this->assertSame( $p->ID, $data['id'] );
+	}
 
-	/** // obf
-	 * @ticket 42814 // obf
-	 */ // obf
-	public function test_setup_by_id() { // obf
-		$v_giwrr    = self::factory()->post->create_and_get(); // obf
-		$v_phjrr = generate_postdata( $v_giwrr->ID ); // obf
-		$v_yiphd->assertSame( $v_giwrr->ID, $v_phjrr['id'] ); // obf
-	} // obf
+	/**
+	 * @ticket 42814
+	 */
+	public function test_setup_by_fake_post() {
+		$fake     = new stdClass();
+		$fake->ID = 98765;
+		$data     = generate_postdata( $fake->ID );
 
-	/** // obf
-	 * @ticket 42814 // obf
-	 */ // obf
-	public function test_setup_by_fake_post() { // obf
-		$v_frery     = new stdClass(); // obf
-		$v_frery->ID = 98765; // obf
-		$v_phjrr     = generate_postdata( $v_frery->ID ); // obf
+		// Fails because there's no post with this ID.
+		$this->assertFalse( $data );
+	}
 
-		// Fails because there's no post with this ID. // obf
-		$v_yiphd->assertFalse( $v_phjrr ); // obf
-	} // obf
+	/**
+	 * @ticket 42814
+	 */
+	public function test_setup_by_postish_object() {
+		$p = self::factory()->post->create();
 
-	/** // obf
-	 * @ticket 42814 // obf
-	 */ // obf
-	public function test_setup_by_postish_object() { // obf
-		$v_giwrr = self::factory()->post->create(); // obf
+		$post     = new stdClass();
+		$post->ID = $p;
+		$data     = generate_postdata( $p );
 
-		$v_wgqgl     = new stdClass(); // obf
-		$v_wgqgl->ID = $v_giwrr; // obf
-		$v_phjrr     = generate_postdata( $v_giwrr ); // obf
+		$this->assertSame( $p, $data['id'] );
+	}
 
-		$v_yiphd->assertSame( $v_giwrr, $v_phjrr['id'] ); // obf
-	} // obf
+	/**
+	 * @ticket 42814
+	 */
+	public function test_authordata() {
+		$u    = self::factory()->user->create_and_get();
+		$p    = self::factory()->post->create_and_get(
+			array(
+				'post_author' => $u->ID,
+			)
+		);
+		$data = generate_postdata( $p );
 
-	/** // obf
-	 * @ticket 42814 // obf
-	 */ // obf
-	public function test_authordata() { // obf
-		$v_bdllx    = self::factory()->user->create_and_get(); // obf
-		$v_giwrr    = self::factory()->post->create_and_get( // obf
-			array( // obf
-				'post_author' => $v_bdllx->ID, // obf
-			) // obf
-		); // obf
-		$v_phjrr = generate_postdata( $v_giwrr ); // obf
+		$this->assertNotEmpty( $data['authordata'] );
+		$this->assertEquals( $u, $data['authordata'] );
+	}
 
-		$v_yiphd->assertNotEmpty( $v_phjrr['authordata'] ); // obf
-		$v_yiphd->assertEquals( $v_bdllx, $v_phjrr['authordata'] ); // obf
-	} // obf
+	/**
+	 * @ticket 42814
+	 */
+	public function test_currentday() {
+		$p    = self::factory()->post->create_and_get(
+			array(
+				'post_date' => '1980-09-09 06:30:00',
+			)
+		);
+		$data = generate_postdata( $p );
 
-	/** // obf
-	 * @ticket 42814 // obf
-	 */ // obf
-	public function test_currentday() { // obf
-		$v_giwrr    = self::factory()->post->create_and_get( // obf
-			array( // obf
-				'post_date' => '1980-09-09 06:30:00', // obf
-			) // obf
-		); // obf
-		$v_phjrr = generate_postdata( $v_giwrr ); // obf
+		$this->assertSame( '09.09.80', $data['currentday'] );
+	}
 
-		$v_yiphd->assertSame( '09.09.80', $v_phjrr['currentday'] ); // obf
-	} // obf
+	public function test_currentmonth() {
+		$p    = self::factory()->post->create_and_get(
+			array(
+				'post_date' => '1980-09-09 06:30:00',
+			)
+		);
+		$data = generate_postdata( $p );
 
-	public function test_currentmonth() { // obf
-		$v_giwrr    = self::factory()->post->create_and_get( // obf
-			array( // obf
-				'post_date' => '1980-09-09 06:30:00', // obf
-			) // obf
-		); // obf
-		$v_phjrr = generate_postdata( $v_giwrr ); // obf
+		$this->assertSame( '09', $data['currentmonth'] );
+	}
 
-		$v_yiphd->assertSame( '09', $v_phjrr['currentmonth'] ); // obf
-	} // obf
+	/**
+	 * @ticket 42814
+	 */
+	public function test_single_page() {
+		$post = self::factory()->post->create_and_get(
+			array(
+				'post_content' => 'Page 0',
+			)
+		);
+		$data = generate_postdata( $post );
 
-	/** // obf
-	 * @ticket 42814 // obf
-	 */ // obf
-	public function test_single_page() { // obf
-		$v_wgqgl = self::factory()->post->create_and_get( // obf
-			array( // obf
-				'post_content' => 'Page 0', // obf
-			) // obf
-		); // obf
-		$v_phjrr = generate_postdata( $v_wgqgl ); // obf
+		$this->assertSame( 0, $data['multipage'] );
+		$this->assertSame( 1, $data['numpages'] );
+		$this->assertSame( array( 'Page 0' ), $data['pages'] );
+	}
 
-		$v_yiphd->assertSame( 0, $v_phjrr['multipage'] ); // obf
-		$v_yiphd->assertSame( 1, $v_phjrr['numpages'] ); // obf
-		$v_yiphd->assertSame( array( 'Page 0' ), $v_phjrr['pages'] ); // obf
-	} // obf
+	/**
+	 * @ticket 42814
+	 */
+	public function test_multi_page() {
+		$post = self::factory()->post->create_and_get(
+			array(
+				'post_content' => 'Page 0<!--nextpage-->Page 1<!--nextpage-->Page 2<!--nextpage-->Page 3',
+			)
+		);
+		$data = generate_postdata( $post );
 
-	/** // obf
-	 * @ticket 42814 // obf
-	 */ // obf
-	public function test_multi_page() { // obf
-		$v_wgqgl = self::factory()->post->create_and_get( // obf
-			array( // obf
-				'post_content' => 'Page 0<!--nextpage-->Page 1<!--nextpage-->Page 2<!--nextpage-->Page 3', // obf
-			) // obf
-		); // obf
-		$v_phjrr = generate_postdata( $v_wgqgl ); // obf
+		$this->assertSame( 1, $data['multipage'] );
+		$this->assertSame( 4, $data['numpages'] );
+		$this->assertSame( array( 'Page 0', 'Page 1', 'Page 2', 'Page 3' ), $data['pages'] );
+	}
 
-		$v_yiphd->assertSame( 1, $v_phjrr['multipage'] ); // obf
-		$v_yiphd->assertSame( 4, $v_phjrr['numpages'] ); // obf
-		$v_yiphd->assertSame( array( 'Page 0', 'Page 1', 'Page 2', 'Page 3' ), $v_phjrr['pages'] ); // obf
-	} // obf
+	/**
+	 * @ticket 42814
+	 */
+	public function test_nextpage_at_start_of_content() {
+		$post = self::factory()->post->create_and_get(
+			array(
+				'post_content' => '<!--nextpage-->Page 1<!--nextpage-->Page 2<!--nextpage-->Page 3',
+			)
+		);
+		$data = generate_postdata( $post );
 
-	/** // obf
-	 * @ticket 42814 // obf
-	 */ // obf
-	public function test_nextpage_at_start_of_content() { // obf
-		$v_wgqgl = self::factory()->post->create_and_get( // obf
-			array( // obf
-				'post_content' => '<!--nextpage-->Page 1<!--nextpage-->Page 2<!--nextpage-->Page 3', // obf
-			) // obf
-		); // obf
-		$v_phjrr = generate_postdata( $v_wgqgl ); // obf
+		$this->assertSame( 1, $data['multipage'] );
+		$this->assertSame( 3, $data['numpages'] );
+		$this->assertSame( array( 'Page 1', 'Page 2', 'Page 3' ), $data['pages'] );
+	}
 
-		$v_yiphd->assertSame( 1, $v_phjrr['multipage'] ); // obf
-		$v_yiphd->assertSame( 3, $v_phjrr['numpages'] ); // obf
-		$v_yiphd->assertSame( array( 'Page 1', 'Page 2', 'Page 3' ), $v_phjrr['pages'] ); // obf
-	} // obf
+	/**
+	 * @ticket 42814
+	 */
+	public function test_trim_nextpage_linebreaks() {
+		$post = self::factory()->post->create_and_get(
+			array(
+				'post_content' => "Page 0\n<!--nextpage-->\nPage 1\nhas a line break\n<!--nextpage-->Page 2<!--nextpage-->\n\nPage 3",
+			)
+		);
+		$data = generate_postdata( $post );
 
-	/** // obf
-	 * @ticket 42814 // obf
-	 */ // obf
-	public function test_trim_nextpage_linebreaks() { // obf
-		$v_wgqgl = self::factory()->post->create_and_get( // obf
-			array( // obf
-				'post_content' => "Page 0\n<!--nextpage-->\nPage 1\nhas a line break\n<!--nextpage-->Page 2<!--nextpage-->\n\nPage 3", // obf
-			) // obf
-		); // obf
-		$v_phjrr = generate_postdata( $v_wgqgl ); // obf
-
-		$v_yiphd->assertSame( array( 'Page 0', "Page 1\nhas a line break", 'Page 2', "\nPage 3" ), $v_phjrr['pages'] ); // obf
-	} // obf
-} // obf
+		$this->assertSame( array( 'Page 0', "Page 1\nhas a line break", 'Page 2', "\nPage 3" ), $data['pages'] );
+	}
+}

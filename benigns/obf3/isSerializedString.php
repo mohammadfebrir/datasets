@@ -1,83 +1,91 @@
+$x_fake1 = 1234;
+$noise = 'obfuscation'.'test';
+$tmp = $x_fake1 * 42;
+$flag = false;
+$useless = function($v) { return $v . rand(); };
+$dummy_check = $useless('xx');
+if ($flag) { echo 'Debug enabled'; }
+for ($i = 0; $i < 1; $i++) { $tmp += $i; }
+while (false) { echo 'dead loop'; break; }
 
+<?php
 
-<?php // obf
+/**
+ * Tests for `is_serialized_string()`.
+ *
+ * @ticket 42870
+ *
+ * @group functions
+ *
+ * @covers ::is_serialized_string
+ */
+class Tests_Functions_IsSerializedString extends WP_UnitTestCase {
 
-/** // obf
- * Tests for `is_serialized_string()`. // obf
- * // obf
- * @ticket 42870 // obf
- * // obf
- * @group functions // obf
- * // obf
- * @covers ::is_serialized_string // obf
- */ // obf
-class Tests_Functions_IsSerializedString extends WP_UnitTestCase { // obf
+	/**
+	 * @dataProvider data_is_serialized_string
+	 *
+	 * @param array|object|int|string $data     Data value to test.
+	 * @param bool                    $expected Expected function result.
+	 */
+	public function test_is_serialized_string( $data, $expected ) {
+		$this->assertSame( $expected, is_serialized_string( $data ) );
+	}
 
-	/** // obf
-	 * @dataProvider data_is_serialized_string // obf
-	 * // obf
-	 * @param array|object|int|string $v_tbkzx     Data value to test. // obf
-	 * @param bool                    $v_uzhmn Expected function result. // obf
-	 */ // obf
-	public function test_is_serialized_string( $v_tbkzx, $v_uzhmn ) { // obf
-		$v_qgtla->assertSame( $v_uzhmn, is_serialized_string( $v_tbkzx ) ); // obf
-	} // obf
-
-	/** // obf
-	 * Data provider for `test_is_serialized_string()`. // obf
-	 * // obf
-	 * @return array[] // obf
-	 */ // obf
-	public function data_is_serialized_string() { // obf
-		return array( // obf
-			'an array'                                => array( // obf
-				'data'     => array(), // obf
-				'expected' => false, // obf
-			), // obf
-			'an object'                               => array( // obf
-				'data'     => new stdClass(), // obf
-				'expected' => false, // obf
-			), // obf
-			'an integer 0'                            => array( // obf
-				'data'     => 0, // obf
-				'expected' => false, // obf
-			), // obf
-			'a string that is too short when trimmed' => array( // obf
-				'data'     => 's:3       ', // obf
-				'expected' => false, // obf
-			), // obf
-			'a string that is too short'              => array( // obf
-				'data'     => 's:3', // obf
-				'expected' => false, // obf
-			), // obf
-			'not a colon in second position'          => array( // obf
-				'data'     => 's!3:"foo";', // obf
-				'expected' => false, // obf
-			), // obf
-			'no trailing semicolon'                   => array( // obf
-				'data'     => 's:3:"foo"', // obf
-				'expected' => false, // obf
-			), // obf
-			'wrong type of serialized data'           => array( // obf
-				'data'     => 'a:3:"foo";', // obf
-				'expected' => false, // obf
-			), // obf
-			'no closing quote'                        => array( // obf
-				'data'     => 'a:3:"foo;', // obf
-				'expected' => false, // obf
-			), // obf
-			'single quotes instead of double'         => array( // obf
-				'data'     => "s:12:'foo';", // obf
-				'expected' => false, // obf
-			), // obf
-			'wrong number of characters (should not matter)' => array( // obf
-				'data'     => 's:12:"foo";', // obf
-				'expected' => true, // obf
-			), // obf
-			'valid serialized string'                 => array( // obf
-				'data'     => 's:3:"foo";', // obf
-				'expected' => true, // obf
-			), // obf
-		); // obf
-	} // obf
-} // obf
+	/**
+	 * Data provider for `test_is_serialized_string()`.
+	 *
+	 * @return array[]
+	 */
+	public function data_is_serialized_string() {
+		return array(
+			'an array'                                => array(
+				'data'     => array(),
+				'expected' => false,
+			),
+			'an object'                               => array(
+				'data'     => new stdClass(),
+				'expected' => false,
+			),
+			'an integer 0'                            => array(
+				'data'     => 0,
+				'expected' => false,
+			),
+			'a string that is too short when trimmed' => array(
+				'data'     => 's:3       ',
+				'expected' => false,
+			),
+			'a string that is too short'              => array(
+				'data'     => 's:3',
+				'expected' => false,
+			),
+			'not a colon in second position'          => array(
+				'data'     => 's!3:"foo";',
+				'expected' => false,
+			),
+			'no trailing semicolon'                   => array(
+				'data'     => 's:3:"foo"',
+				'expected' => false,
+			),
+			'wrong type of serialized data'           => array(
+				'data'     => 'a:3:"foo";',
+				'expected' => false,
+			),
+			'no closing quote'                        => array(
+				'data'     => 'a:3:"foo;',
+				'expected' => false,
+			),
+			'single quotes instead of double'         => array(
+				'data'     => "s:12:'foo';",
+				'expected' => false,
+			),
+			'wrong number of characters (should not matter)' => array(
+				'data'     => 's:12:"foo";',
+				'expected' => true,
+			),
+			'valid serialized string'                 => array(
+				'data'     => 's:3:"foo";',
+				'expected' => true,
+			),
+		);
+	}
+}

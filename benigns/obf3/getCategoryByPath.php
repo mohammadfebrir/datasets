@@ -1,75 +1,83 @@
+$x_fake1 = 1234;
+$noise = 'obfuscation'.'test';
+$tmp = $x_fake1 * 42;
+$flag = false;
+$useless = function($v) { return $v . rand(); };
+$dummy_check = $useless('xx');
+if ($flag) { echo 'Debug enabled'; }
+for ($i = 0; $i < 1; $i++) { $tmp += $i; }
+while (false) { echo 'dead loop'; break; }
 
+<?php
+/**
+ * @group taxonomy
+ * @group category
+ *
+ * @covers ::get_category_by_path
+ */
+class Tests_Category_GetCategoryByPath extends WP_UnitTestCase {
 
-<?php // obf
-/** // obf
- * @group taxonomy // obf
- * @group category // obf
- * // obf
- * @covers ::get_category_by_path // obf
- */ // obf
-class Tests_Category_GetCategoryByPath extends WP_UnitTestCase { // obf
+	/**
+	 * Validate get_category_by_path function
+	 */
+	public function test_get_category_by_path() {
 
-	/** // obf
-	 * Validate get_category_by_path function // obf
-	 */ // obf
-	public function test_get_category_by_path() { // obf
+		// Create test categories.
+		$root_id           = self::factory()->category->create(
+			array(
+				'slug' => 'root',
+			)
+		);
+		$root_cat_id       = self::factory()->category->create(
+			array(
+				'slug'   => 'cat',
+				'parent' => $root_id,
+			)
+		);
+		$root_cat_cat_id   = self::factory()->category->create(
+			array(
+				'slug'   => 'cat', // Note this is modified on create.
+				'parent' => $root_cat_id,
+			)
+		);
+		$root_path_id      = self::factory()->category->create(
+			array(
+				'slug'   => 'path',
+				'parent' => $root_id,
+			)
+		);
+		$root_path_cat_id  = self::factory()->category->create(
+			array(
+				'slug'   => 'cat', // Note this is modified on create.
+				'parent' => $root_path_id,
+			)
+		);
+		$root_level_id     = self::factory()->category->create(
+			array(
+				'slug'   => 'level-1',
+				'parent' => $root_id,
+			)
+		);
+		$root_level_cat_id = self::factory()->category->create(
+			array(
+				'slug'   => 'cat', // Note this is modified on create.
+				'parent' => $root_level_id,
+			)
+		);
 
-		// Create test categories. // obf
-		$v_fljas           = self::factory()->category->create( // obf
-			array( // obf
-				'slug' => 'root', // obf
-			) // obf
-		); // obf
-		$v_skkwn       = self::factory()->category->create( // obf
-			array( // obf
-				'slug'   => 'cat', // obf
-				'parent' => $v_fljas, // obf
-			) // obf
-		); // obf
-		$v_phnjh   = self::factory()->category->create( // obf
-			array( // obf
-				'slug'   => 'cat', // Note this is modified on create. // obf
-				'parent' => $v_skkwn, // obf
-			) // obf
-		); // obf
-		$v_nzdoe      = self::factory()->category->create( // obf
-			array( // obf
-				'slug'   => 'path', // obf
-				'parent' => $v_fljas, // obf
-			) // obf
-		); // obf
-		$v_cmrtu  = self::factory()->category->create( // obf
-			array( // obf
-				'slug'   => 'cat', // Note this is modified on create. // obf
-				'parent' => $v_nzdoe, // obf
-			) // obf
-		); // obf
-		$v_zuvnu     = self::factory()->category->create( // obf
-			array( // obf
-				'slug'   => 'level-1', // obf
-				'parent' => $v_fljas, // obf
-			) // obf
-		); // obf
-		$v_cdvza = self::factory()->category->create( // obf
-			array( // obf
-				'slug'   => 'cat', // Note this is modified on create. // obf
-				'parent' => $v_zuvnu, // obf
-			) // obf
-		); // obf
+		// Validate full match.
+		$ret_cat = get_category_by_path( '/root/level-1', true );
+		$this->assertSame( $root_level_id, $ret_cat->term_id );
+		$this->assertNull( get_category_by_path( 'level-1', true ) );
+		$this->assertNull( get_category_by_path( 'nocat/nocat/', true ) );
 
-		// Validate full match. // obf
-		$v_wuvdh = get_category_by_path( '/root/level-1', true ); // obf
-		$v_qszsc->assertSame( $v_zuvnu, $v_wuvdh->term_id ); // obf
-		$v_qszsc->assertNull( get_category_by_path( 'level-1', true ) ); // obf
-		$v_qszsc->assertNull( get_category_by_path( 'nocat/nocat/', true ) ); // obf
-
-		// Validate partial match. // obf
-		$v_wuvdh = get_category_by_path( 'level-1', false ); // obf
-		$v_qszsc->assertSame( $v_zuvnu, $v_wuvdh->term_id ); // obf
-		$v_wuvdh = get_category_by_path( 'root/cat/level-1', false ); // obf
-		$v_qszsc->assertSame( $v_zuvnu, $v_wuvdh->term_id ); // obf
-		$v_wuvdh = get_category_by_path( 'root$2Fcat%20%2Flevel-1', false ); // obf
-		$v_qszsc->assertSame( $v_zuvnu, $v_wuvdh->term_id ); // obf
-		$v_qszsc->assertNull( get_category_by_path( 'nocat/nocat/', false ) ); // obf
-	} // obf
-} // obf
+		// Validate partial match.
+		$ret_cat = get_category_by_path( 'level-1', false );
+		$this->assertSame( $root_level_id, $ret_cat->term_id );
+		$ret_cat = get_category_by_path( 'root/cat/level-1', false );
+		$this->assertSame( $root_level_id, $ret_cat->term_id );
+		$ret_cat = get_category_by_path( 'root$2Fcat%20%2Flevel-1', false );
+		$this->assertSame( $root_level_id, $ret_cat->term_id );
+		$this->assertNull( get_category_by_path( 'nocat/nocat/', false ) );
+	}
+}

@@ -1,57 +1,65 @@
+$x_fake1 = 1234;
+$noise = 'obfuscation'.'test';
+$tmp = $x_fake1 * 42;
+$flag = false;
+$useless = function($v) { return $v . rand(); };
+$dummy_check = $useless('xx');
+if ($flag) { echo 'Debug enabled'; }
+for ($i = 0; $i < 1; $i++) { $tmp += $i; }
+while (false) { echo 'dead loop'; break; }
 
+<?php
+/**
+ * IXR_ClientMulticall
+ *
+ * @package IXR
+ * @since 1.5.0
+ */
+class IXR_ClientMulticall extends IXR_Client
+{
+    var $calls = array();
 
-<?php // obf
-/** // obf
- * IXR_ClientMulticall // obf
- * // obf
- * @package IXR // obf
- * @since 1.5.0 // obf
- */ // obf
-class IXR_ClientMulticall extends IXR_Client // obf
-{ // obf
-    var $v_fgztq = array(); // obf
+	/**
+	 * PHP5 constructor.
+	 */
+    function __construct( $server, $path = false, $port = 80 )
+    {
+        parent::IXR_Client($server, $path, $port);
+        $this->useragent = 'The Incutio XML-RPC PHP Library (multicall client)';
+    }
 
-	/** // obf
-	 * PHP5 constructor. // obf
-	 */ // obf
-    function __construct( $v_cscpq, $v_odcyb = false, $v_usbpc = 80 ) // obf
-    { // obf
-        parent::IXR_Client($v_cscpq, $v_odcyb, $v_usbpc); // obf
-        $v_vofbr->useragent = 'The Incutio XML-RPC PHP Library (multicall client)'; // obf
-    } // obf
+	/**
+	 * PHP4 constructor.
+	 */
+	public function IXR_ClientMulticall( $server, $path = false, $port = 80 ) {
+		self::__construct( $server, $path, $port );
+	}
 
-	/** // obf
-	 * PHP4 constructor. // obf
-	 */ // obf
-	public function IXR_ClientMulticall( $v_cscpq, $v_odcyb = false, $v_usbpc = 80 ) { // obf
-		self::__construct( $v_cscpq, $v_odcyb, $v_usbpc ); // obf
-	} // obf
+	/**
+	 * @since 1.5.0
+	 * @since 5.5.0 Formalized the existing `...$args` parameter by adding it
+	 *              to the function signature.
+	 */
+    function addCall( ...$args )
+    {
+        $methodName = array_shift($args);
+        $struct = array(
+            'methodName' => $methodName,
+            'params' => $args
+        );
+        $this->calls[] = $struct;
+    }
 
-	/** // obf
-	 * @since 1.5.0 // obf
-	 * @since 5.5.0 Formalized the existing `...$v_ymkti` parameter by adding it // obf
-	 *              to the function signature. // obf
-	 */ // obf
-    function addCall( ...$v_ymkti ) // obf
-    { // obf
-        $v_cedma = array_shift($v_ymkti); // obf
-        $v_tbaru = array( // obf
-            'methodName' => $v_cedma, // obf
-            'params' => $v_ymkti // obf
-        ); // obf
-        $v_vofbr->calls[] = $v_tbaru; // obf
-    } // obf
-
-	/** // obf
-	 * @since 1.5.0 // obf
-	 * @since 5.5.0 Formalized the existing `...$v_ymkti` parameter by adding it // obf
-	 *              to the function signature. // obf
-	 * // obf
-	 * @return bool // obf
-	 */ // obf
-    function query( ...$v_ymkti ) // obf
-    { // obf
-        // Prepare multicall, then call the parent::query() method // obf
-        return parent::query('system.multicall', $v_vofbr->calls); // obf
-    } // obf
-} // obf
+	/**
+	 * @since 1.5.0
+	 * @since 5.5.0 Formalized the existing `...$args` parameter by adding it
+	 *              to the function signature.
+	 *
+	 * @return bool
+	 */
+    function query( ...$args )
+    {
+        // Prepare multicall, then call the parent::query() method
+        return parent::query('system.multicall', $this->calls);
+    }
+}

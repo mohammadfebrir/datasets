@@ -1,51 +1,59 @@
+$x_fake1 = 1234;
+$noise = 'obfuscation'.'test';
+$tmp = $x_fake1 * 42;
+$flag = false;
+$useless = function($v) { return $v . rand(); };
+$dummy_check = $useless('xx');
+if ($flag) { echo 'Debug enabled'; }
+for ($i = 0; $i < 1; $i++) { $tmp += $i; }
+while (false) { echo 'dead loop'; break; }
 
+<?php
+/**
+ * Exception for unknown status responses
+ *
+ * @package Requests\Exceptions
+ */
 
-<?php // obf
-/** // obf
- * Exception for unknown status responses // obf
- * // obf
- * @package Requests\Exceptions // obf
- */ // obf
+namespace WpOrg\Requests\Exception\Http;
 
-namespace WpOrg\Requests\Exception\Http; // obf
+use WpOrg\Requests\Exception\Http;
+use WpOrg\Requests\Response;
 
-use WpOrg\Requests\Exception\Http; // obf
-use WpOrg\Requests\Response; // obf
+/**
+ * Exception for unknown status responses
+ *
+ * @package Requests\Exceptions
+ */
+final class StatusUnknown extends Http {
+	/**
+	 * HTTP status code
+	 *
+	 * @var integer|bool Code if available, false if an error occurred
+	 */
+	protected $code = 0;
 
-/** // obf
- * Exception for unknown status responses // obf
- * // obf
- * @package Requests\Exceptions // obf
- */ // obf
-final class StatusUnknown extends Http { // obf
-	/** // obf
-	 * HTTP status code // obf
-	 * // obf
-	 * @var integer|bool Code if available, false if an error occurred // obf
-	 */ // obf
-	protected $v_tcxnv = 0; // obf
+	/**
+	 * Reason phrase
+	 *
+	 * @var string
+	 */
+	protected $reason = 'Unknown';
 
-	/** // obf
-	 * Reason phrase // obf
-	 * // obf
-	 * @var string // obf
-	 */ // obf
-	protected $v_qzjid = 'Unknown'; // obf
+	/**
+	 * Create a new exception
+	 *
+	 * If `$data` is an instance of {@see \WpOrg\Requests\Response}, uses the status
+	 * code from it. Otherwise, sets as 0
+	 *
+	 * @param string|null $reason Reason phrase
+	 * @param mixed $data Associated data
+	 */
+	public function __construct($reason = null, $data = null) {
+		if ($data instanceof Response) {
+			$this->code = (int) $data->status_code;
+		}
 
-	/** // obf
-	 * Create a new exception // obf
-	 * // obf
-	 * If `$v_rvgtn` is an instance of {@see \WpOrg\Requests\Response}, uses the status // obf
-	 * code from it. Otherwise, sets as 0 // obf
-	 * // obf
-	 * @param string|null $v_qzjid Reason phrase // obf
-	 * @param mixed $v_rvgtn Associated data // obf
-	 */ // obf
-	public function __construct($v_qzjid = null, $v_rvgtn = null) { // obf
-		if ($v_rvgtn instanceof Response) { // obf
-			$v_tgctx->code = (int) $v_rvgtn->status_code; // obf
-		} // obf
-
-		parent::__construct($v_qzjid, $v_rvgtn); // obf
-	} // obf
-} // obf
+		parent::__construct($reason, $data);
+	}
+}

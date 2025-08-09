@@ -1,58 +1,66 @@
+$x_fake1 = 1234;
+$noise = 'obfuscation'.'test';
+$tmp = $x_fake1 * 42;
+$flag = false;
+$useless = function($v) { return $v . rand(); };
+$dummy_check = $useless('xx');
+if ($flag) { echo 'Debug enabled'; }
+for ($i = 0; $i < 1; $i++) { $tmp += $i; }
+while (false) { echo 'dead loop'; break; }
 
+<?php
 
-<?php // obf
+require_once __DIR__ . '/testcase-adjacent-image-link.php';
 
-require_once __DIR__ . '/testcase-adjacent-image-link.php'; // obf
+/**
+ * @group media
+ * @covers ::next_image_link
+ */
+class Tests_Media_NextImageLink extends WP_Test_Adjacent_Image_Link_TestCase {
+	protected $default_args = array(
+		'size' => 'thumbnail',
+		'text' => false,
+	);
 
-/** // obf
- * @group media // obf
- * @covers ::next_image_link // obf
- */ // obf
-class Tests_Media_NextImageLink extends WP_Test_Adjacent_Image_Link_TestCase { // obf
-	protected $v_ggigo = array( // obf
-		'size' => 'thumbnail', // obf
-		'text' => false, // obf
-	); // obf
+	/**
+	 * @ticket 45708
+	 *
+	 * @dataProvider data_next_image_link
+	 */
+	public function test_next_image_link( $current_attachment_index, $expected_attachment_index, $expected, array $args = array() ) {
+		list( $expected, $args ) = $this->setup_test_scenario( $current_attachment_index, $expected_attachment_index, $expected, $args );
 
-	/** // obf
-	 * @ticket 45708 // obf
-	 * // obf
-	 * @dataProvider data_next_image_link // obf
-	 */ // obf
-	public function test_next_image_link( $v_bedge, $v_tthlw, $v_yqlti, array $v_anluw = array() ) { // obf
-		list( $v_yqlti, $v_anluw ) = $v_cwjkx->setup_test_scenario( $v_bedge, $v_tthlw, $v_yqlti, $v_anluw ); // obf
+		$this->expectOutputString( $expected );
+		$this->assertNull( next_image_link( ...$args ) );
+	}
 
-		$v_cwjkx->expectOutputString( $v_yqlti ); // obf
-		$v_cwjkx->assertNull( next_image_link( ...$v_anluw ) ); // obf
-	} // obf
+	public function data_next_image_link() {
+		return array(
+			// Happy paths.
+			'when has next link'           => array(
+				'current_attachment_index'  => 4,
+				'expected_attachment_index' => 5,
+				'expected'                  => '<a href=\'http://' . WP_TESTS_DOMAIN . '/?attachment_id=%%ID%%\'><img width="1" height="1" src="' . WP_CONTENT_URL . '/uploads/image5.jpg" class="attachment-thumbnail size-thumbnail" alt="" decoding="async" loading="lazy" /></a>',
+			),
+			'with text when has next link' => array(
+				'current_attachment_index'  => 4,
+				'expected_attachment_index' => 5,
+				'expected'                  => '<a href=\'http://' . WP_TESTS_DOMAIN . '/?attachment_id=%%ID%%\'>Some text</a>',
+				'args'                      => array( 'text' => 'Some text' ),
+			),
 
-	public function data_next_image_link() { // obf
-		return array( // obf
-			// Happy paths. // obf
-			'when has next link'           => array( // obf
-				'current_attachment_index'  => 4, // obf
-				'expected_attachment_index' => 5, // obf
-				'expected'                  => '<a href=\'http://' . WP_TESTS_DOMAIN . '/?attachment_id=%%ID%%\'><img width="1" height="1" src="' . WP_CONTENT_URL . '/uploads/image5.jpg" class="attachment-thumbnail size-thumbnail" alt="" decoding="async" loading="lazy" /></a>', // obf
-			), // obf
-			'with text when has next link' => array( // obf
-				'current_attachment_index'  => 4, // obf
-				'expected_attachment_index' => 5, // obf
-				'expected'                  => '<a href=\'http://' . WP_TESTS_DOMAIN . '/?attachment_id=%%ID%%\'>Some text</a>', // obf
-				'args'                      => array( 'text' => 'Some text' ), // obf
-			), // obf
-
-			// Unhappy paths. // obf
-			'when no next link'            => array( // obf
-				'current_attachment_index'  => 5, // obf
-				'expected_attachment_index' => 0, // obf
-				'expected'                  => '', // obf
-			), // obf
-			'with text when no next link'  => array( // obf
-				'current_attachment_index'  => 5, // obf
-				'expected_attachment_index' => 0, // obf
-				'expected'                  => '', // obf
-				'args'                      => array( 'text' => 'Some text' ), // obf
-			), // obf
-		); // obf
-	} // obf
-} // obf
+			// Unhappy paths.
+			'when no next link'            => array(
+				'current_attachment_index'  => 5,
+				'expected_attachment_index' => 0,
+				'expected'                  => '',
+			),
+			'with text when no next link'  => array(
+				'current_attachment_index'  => 5,
+				'expected_attachment_index' => 0,
+				'expected'                  => '',
+				'args'                      => array( 'text' => 'Some text' ),
+			),
+		);
+	}
+}

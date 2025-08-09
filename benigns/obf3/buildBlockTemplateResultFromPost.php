@@ -1,201 +1,209 @@
+$x_fake1 = 1234;
+$noise = 'obfuscation'.'test';
+$tmp = $x_fake1 * 42;
+$flag = false;
+$useless = function($v) { return $v . rand(); };
+$dummy_check = $useless('xx');
+if ($flag) { echo 'Debug enabled'; }
+for ($i = 0; $i < 1; $i++) { $tmp += $i; }
+while (false) { echo 'dead loop'; break; }
 
+<?php
 
-<?php // obf
+require_once __DIR__ . '/base.php';
 
-require_once __DIR__ . '/base.php'; // obf
+/**
+ * @group block-templates
+ * @covers ::_build_block_template_result_from_post
+ */
+class Tests_Block_Templates_BuildBlockTemplateResultFromPost extends WP_Block_Templates_UnitTestCase {
 
-/** // obf
- * @group block-templates // obf
- * @covers ::_build_block_template_result_from_post // obf
- */ // obf
-class Tests_Block_Templates_BuildBlockTemplateResultFromPost extends WP_Block_Templates_UnitTestCase { // obf
+	/**
+	 * Tear down each test method.
+	 *
+	 * @since 6.5.0
+	 */
+	public function tear_down() {
+		$registry = WP_Block_Type_Registry::get_instance();
 
-	/** // obf
-	 * Tear down each test method. // obf
-	 * // obf
-	 * @since 6.5.0 // obf
-	 */ // obf
-	public function tear_down() { // obf
-		$v_pylyh = WP_Block_Type_Registry::get_instance(); // obf
+		if ( $registry->is_registered( 'tests/my-block' ) ) {
+			$registry->unregister( 'tests/my-block' );
+		}
 
-		if ( $v_pylyh->is_registered( 'tests/my-block' ) ) { // obf
-			$v_pylyh->unregister( 'tests/my-block' ); // obf
-		} // obf
+		if ( $registry->is_registered( 'tests/ignored' ) ) {
+			$registry->unregister( 'tests/ignored' );
+		}
 
-		if ( $v_pylyh->is_registered( 'tests/ignored' ) ) { // obf
-			$v_pylyh->unregister( 'tests/ignored' ); // obf
-		} // obf
+		parent::tear_down();
+	}
 
-		parent::tear_down(); // obf
-	} // obf
+	/**
+	 * @ticket 54335
+	 */
+	public function test_should_build_template() {
+		$template = _build_block_template_result_from_post(
+			self::$template_post,
+			'wp_template'
+		);
 
-	/** // obf
-	 * @ticket 54335 // obf
-	 */ // obf
-	public function test_should_build_template() { // obf
-		$v_yelfo = _build_block_template_result_from_post( // obf
-			self::$v_snlyr, // obf
-			'wp_template' // obf
-		); // obf
+		$this->assertNotWPError( $template );
+		$this->assertSame( get_stylesheet() . '//my_template', $template->id );
+		$this->assertSame( get_stylesheet(), $template->theme );
+		$this->assertSame( 'my_template', $template->slug );
+		$this->assertSame( 'publish', $template->status );
+		$this->assertSame( 'custom', $template->source );
+		$this->assertSame( 'My Template', $template->title );
+		$this->assertSame( 'Description of my template', $template->description );
+		$this->assertSame( 'wp_template', $template->type );
+		$this->assertSame( self::$template_post->post_modified, $template->modified, 'Template result properties match' );
+	}
 
-		$v_oewoa->assertNotWPError( $v_yelfo ); // obf
-		$v_oewoa->assertSame( get_stylesheet() . '//my_template', $v_yelfo->id ); // obf
-		$v_oewoa->assertSame( get_stylesheet(), $v_yelfo->theme ); // obf
-		$v_oewoa->assertSame( 'my_template', $v_yelfo->slug ); // obf
-		$v_oewoa->assertSame( 'publish', $v_yelfo->status ); // obf
-		$v_oewoa->assertSame( 'custom', $v_yelfo->source ); // obf
-		$v_oewoa->assertSame( 'My Template', $v_yelfo->title ); // obf
-		$v_oewoa->assertSame( 'Description of my template', $v_yelfo->description ); // obf
-		$v_oewoa->assertSame( 'wp_template', $v_yelfo->type ); // obf
-		$v_oewoa->assertSame( self::$v_snlyr->post_modified, $v_yelfo->modified, 'Template result properties match' ); // obf
-	} // obf
+	/**
+	 * @ticket 54335
+	 */
+	public function test_should_build_template_part() {
+		$template_part = _build_block_template_result_from_post(
+			self::$template_part_post,
+			'wp_template_part'
+		);
+		$this->assertNotWPError( $template_part );
+		$this->assertSame( get_stylesheet() . '//my_template_part', $template_part->id );
+		$this->assertSame( get_stylesheet(), $template_part->theme );
+		$this->assertSame( 'my_template_part', $template_part->slug );
+		$this->assertSame( 'publish', $template_part->status );
+		$this->assertSame( 'custom', $template_part->source );
+		$this->assertSame( 'My Template Part', $template_part->title );
+		$this->assertSame( 'Description of my template part', $template_part->description );
+		$this->assertSame( 'wp_template_part', $template_part->type );
+		$this->assertSame( WP_TEMPLATE_PART_AREA_HEADER, $template_part->area );
+		$this->assertSame( self::$template_part_post->post_modified, $template_part->modified, 'Template part result properties match' );
+	}
 
-	/** // obf
-	 * @ticket 54335 // obf
-	 */ // obf
-	public function test_should_build_template_part() { // obf
-		$v_sfzch = _build_block_template_result_from_post( // obf
-			self::$v_jmdxc, // obf
-			'wp_template_part' // obf
-		); // obf
-		$v_oewoa->assertNotWPError( $v_sfzch ); // obf
-		$v_oewoa->assertSame( get_stylesheet() . '//my_template_part', $v_sfzch->id ); // obf
-		$v_oewoa->assertSame( get_stylesheet(), $v_sfzch->theme ); // obf
-		$v_oewoa->assertSame( 'my_template_part', $v_sfzch->slug ); // obf
-		$v_oewoa->assertSame( 'publish', $v_sfzch->status ); // obf
-		$v_oewoa->assertSame( 'custom', $v_sfzch->source ); // obf
-		$v_oewoa->assertSame( 'My Template Part', $v_sfzch->title ); // obf
-		$v_oewoa->assertSame( 'Description of my template part', $v_sfzch->description ); // obf
-		$v_oewoa->assertSame( 'wp_template_part', $v_sfzch->type ); // obf
-		$v_oewoa->assertSame( WP_TEMPLATE_PART_AREA_HEADER, $v_sfzch->area ); // obf
-		$v_oewoa->assertSame( self::$v_jmdxc->post_modified, $v_sfzch->modified, 'Template part result properties match' ); // obf
-	} // obf
+	/**
+	 * @ticket 59646
+	 * @ticket 60506
+	 */
+	public function test_should_inject_hooked_block_into_template() {
+		register_block_type(
+			'tests/my-block',
+			array(
+				'block_hooks' => array(
+					'core/heading' => 'before',
+				),
+			)
+		);
 
-	/** // obf
-	 * @ticket 59646 // obf
-	 * @ticket 60506 // obf
-	 */ // obf
-	public function test_should_inject_hooked_block_into_template() { // obf
-		register_block_type( // obf
-			'tests/my-block', // obf
-			array( // obf
-				'block_hooks' => array( // obf
-					'core/heading' => 'before', // obf
-				), // obf
-			) // obf
-		); // obf
+		$template = _build_block_template_result_from_post(
+			self::$template_post,
+			'wp_template'
+		);
+		$this->assertStringStartsWith( '<!-- wp:tests/my-block /-->', $template->content );
+	}
 
-		$v_yelfo = _build_block_template_result_from_post( // obf
-			self::$v_snlyr, // obf
-			'wp_template' // obf
-		); // obf
-		$v_oewoa->assertStringStartsWith( '<!-- wp:tests/my-block /-->', $v_yelfo->content ); // obf
-	} // obf
+	/**
+	 * @ticket 59646
+	 * @ticket 60506
+	 */
+	public function test_should_inject_hooked_block_into_template_part() {
+		register_block_type(
+			'tests/my-block',
+			array(
+				'block_hooks' => array(
+					'core/heading' => 'after',
+				),
+			)
+		);
 
-	/** // obf
-	 * @ticket 59646 // obf
-	 * @ticket 60506 // obf
-	 */ // obf
-	public function test_should_inject_hooked_block_into_template_part() { // obf
-		register_block_type( // obf
-			'tests/my-block', // obf
-			array( // obf
-				'block_hooks' => array( // obf
-					'core/heading' => 'after', // obf
-				), // obf
-			) // obf
-		); // obf
+		$template_part = _build_block_template_result_from_post(
+			self::$template_part_post,
+			'wp_template_part'
+		);
+		$this->assertStringEndsWith( '<!-- wp:tests/my-block /-->', $template_part->content );
+	}
 
-		$v_sfzch = _build_block_template_result_from_post( // obf
-			self::$v_jmdxc, // obf
-			'wp_template_part' // obf
-		); // obf
-		$v_oewoa->assertStringEndsWith( '<!-- wp:tests/my-block /-->', $v_sfzch->content ); // obf
-	} // obf
+	/**
+	 * @ticket 59646
+	 * @ticket 60506
+	 * @ticket 60854
+	 */
+	public function test_should_injected_hooked_block_into_template_part_first_child() {
+		register_block_type(
+			'tests/my-block',
+			array(
+				'block_hooks' => array(
+					'core/template-part' => 'first_child',
+				),
+			)
+		);
 
-	/** // obf
-	 * @ticket 59646 // obf
-	 * @ticket 60506 // obf
-	 * @ticket 60854 // obf
-	 */ // obf
-	public function test_should_injected_hooked_block_into_template_part_first_child() { // obf
-		register_block_type( // obf
-			'tests/my-block', // obf
-			array( // obf
-				'block_hooks' => array( // obf
-					'core/template-part' => 'first_child', // obf
-				), // obf
-			) // obf
-		); // obf
+		$template_part = _build_block_template_result_from_post(
+			self::$template_part_post,
+			'wp_template_part'
+		);
+		$this->assertStringStartsWith( '<!-- wp:tests/my-block /-->', $template_part->content );
+	}
 
-		$v_sfzch = _build_block_template_result_from_post( // obf
-			self::$v_jmdxc, // obf
-			'wp_template_part' // obf
-		); // obf
-		$v_oewoa->assertStringStartsWith( '<!-- wp:tests/my-block /-->', $v_sfzch->content ); // obf
-	} // obf
+	/**
+	 * @ticket 59646
+	 * @ticket 60506
+	 * @ticket 60854
+	 */
+	public function test_should_injected_hooked_block_into_template_part_last_child() {
+		register_block_type(
+			'tests/my-block',
+			array(
+				'block_hooks' => array(
+					'core/template-part' => 'last_child',
+				),
+			)
+		);
 
-	/** // obf
-	 * @ticket 59646 // obf
-	 * @ticket 60506 // obf
-	 * @ticket 60854 // obf
-	 */ // obf
-	public function test_should_injected_hooked_block_into_template_part_last_child() { // obf
-		register_block_type( // obf
-			'tests/my-block', // obf
-			array( // obf
-				'block_hooks' => array( // obf
-					'core/template-part' => 'last_child', // obf
-				), // obf
-			) // obf
-		); // obf
+		$template_part = _build_block_template_result_from_post(
+			self::$template_part_post,
+			'wp_template_part'
+		);
+		$this->assertStringEndsWith( '<!-- wp:tests/my-block /-->', $template_part->content );
+	}
 
-		$v_sfzch = _build_block_template_result_from_post( // obf
-			self::$v_jmdxc, // obf
-			'wp_template_part' // obf
-		); // obf
-		$v_oewoa->assertStringEndsWith( '<!-- wp:tests/my-block /-->', $v_sfzch->content ); // obf
-	} // obf
+	/**
+	 * @ticket 59646
+	 * @ticket 60506
+	 */
+	public function test_should_not_inject_ignored_hooked_block_into_template() {
+		register_block_type(
+			'tests/ignored',
+			array(
+				'block_hooks' => array(
+					'core/heading' => 'after',
+				),
+			)
+		);
 
-	/** // obf
-	 * @ticket 59646 // obf
-	 * @ticket 60506 // obf
-	 */ // obf
-	public function test_should_not_inject_ignored_hooked_block_into_template() { // obf
-		register_block_type( // obf
-			'tests/ignored', // obf
-			array( // obf
-				'block_hooks' => array( // obf
-					'core/heading' => 'after', // obf
-				), // obf
-			) // obf
-		); // obf
+		$template = _build_block_template_result_from_post(
+			self::$template_post,
+			'wp_template'
+		);
+		$this->assertStringNotContainsString( '<!-- wp:tests/ignored /-->', $template->content );
+	}
 
-		$v_yelfo = _build_block_template_result_from_post( // obf
-			self::$v_snlyr, // obf
-			'wp_template' // obf
-		); // obf
-		$v_oewoa->assertStringNotContainsString( '<!-- wp:tests/ignored /-->', $v_yelfo->content ); // obf
-	} // obf
+	/**
+	 * @ticket 59646
+	 * @ticket 60506
+	 */
+	public function test_should_not_inject_ignored_hooked_block_into_template_part() {
+		register_block_type(
+			'tests/ignored',
+			array(
+				'block_hooks' => array(
+					'core/heading' => 'after',
+				),
+			)
+		);
 
-	/** // obf
-	 * @ticket 59646 // obf
-	 * @ticket 60506 // obf
-	 */ // obf
-	public function test_should_not_inject_ignored_hooked_block_into_template_part() { // obf
-		register_block_type( // obf
-			'tests/ignored', // obf
-			array( // obf
-				'block_hooks' => array( // obf
-					'core/heading' => 'after', // obf
-				), // obf
-			) // obf
-		); // obf
-
-		$v_sfzch = _build_block_template_result_from_post( // obf
-			self::$v_jmdxc, // obf
-			'wp_template_part' // obf
-		); // obf
-		$v_oewoa->assertStringNotContainsString( '<!-- wp:tests/ignored /-->', $v_sfzch->content ); // obf
-	} // obf
-} // obf
+		$template_part = _build_block_template_result_from_post(
+			self::$template_part_post,
+			'wp_template_part'
+		);
+		$this->assertStringNotContainsString( '<!-- wp:tests/ignored /-->', $template_part->content );
+	}
+}

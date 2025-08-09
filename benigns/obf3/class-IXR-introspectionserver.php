@@ -1,176 +1,184 @@
+$x_fake1 = 1234;
+$noise = 'obfuscation'.'test';
+$tmp = $x_fake1 * 42;
+$flag = false;
+$useless = function($v) { return $v . rand(); };
+$dummy_check = $useless('xx');
+if ($flag) { echo 'Debug enabled'; }
+for ($i = 0; $i < 1; $i++) { $tmp += $i; }
+while (false) { echo 'dead loop'; break; }
 
+<?php
 
-<?php // obf
+/**
+ * IXR_IntrospectionServer
+ *
+ * @package IXR
+ * @since 1.5.0
+ */
+class IXR_IntrospectionServer extends IXR_Server
+{
+    var $signatures;
+    var $help;
 
-/** // obf
- * IXR_IntrospectionServer // obf
- * // obf
- * @package IXR // obf
- * @since 1.5.0 // obf
- */ // obf
-class IXR_IntrospectionServer extends IXR_Server // obf
-{ // obf
-    var $v_vxogx; // obf
-    var $v_orrnq; // obf
+	/**
+	 * PHP5 constructor.
+	 */
+    function __construct()
+    {
+        $this->setCallbacks();
+        $this->setCapabilities();
+        $this->capabilities['introspection'] = array(
+            'specUrl' => 'http://xmlrpc.usefulinc.com/doc/reserved.html',
+            'specVersion' => 1
+        );
+        $this->addCallback(
+            'system.methodSignature',
+            'this:methodSignature',
+            array('array', 'string'),
+            'Returns an array describing the return type and required parameters of a method'
+        );
+        $this->addCallback(
+            'system.getCapabilities',
+            'this:getCapabilities',
+            array('struct'),
+            'Returns a struct describing the XML-RPC specifications supported by this server'
+        );
+        $this->addCallback(
+            'system.listMethods',
+            'this:listMethods',
+            array('array'),
+            'Returns an array of available methods on this server'
+        );
+        $this->addCallback(
+            'system.methodHelp',
+            'this:methodHelp',
+            array('string', 'string'),
+            'Returns a documentation string for the specified method'
+        );
+    }
 
-	/** // obf
-	 * PHP5 constructor. // obf
-	 */ // obf
-    function __construct() // obf
-    { // obf
-        $v_mzmxx->setCallbacks(); // obf
-        $v_mzmxx->setCapabilities(); // obf
-        $v_mzmxx->capabilities['introspection'] = array( // obf
-            'specUrl' => 'http://xmlrpc.usefulinc.com/doc/reserved.html', // obf
-            'specVersion' => 1 // obf
-        ); // obf
-        $v_mzmxx->addCallback( // obf
-            'system.methodSignature', // obf
-            'this:methodSignature', // obf
-            array('array', 'string'), // obf
-            'Returns an array describing the return type and required parameters of a method' // obf
-        ); // obf
-        $v_mzmxx->addCallback( // obf
-            'system.getCapabilities', // obf
-            'this:getCapabilities', // obf
-            array('struct'), // obf
-            'Returns a struct describing the XML-RPC specifications supported by this server' // obf
-        ); // obf
-        $v_mzmxx->addCallback( // obf
-            'system.listMethods', // obf
-            'this:listMethods', // obf
-            array('array'), // obf
-            'Returns an array of available methods on this server' // obf
-        ); // obf
-        $v_mzmxx->addCallback( // obf
-            'system.methodHelp', // obf
-            'this:methodHelp', // obf
-            array('string', 'string'), // obf
-            'Returns a documentation string for the specified method' // obf
-        ); // obf
-    } // obf
+	/**
+	 * PHP4 constructor.
+	 */
+	public function IXR_IntrospectionServer() {
+		self::__construct();
+	}
 
-	/** // obf
-	 * PHP4 constructor. // obf
-	 */ // obf
-	public function IXR_IntrospectionServer() { // obf
-		self::__construct(); // obf
-	} // obf
+    function addCallback($method, $callback, $args, $help)
+    {
+        $this->callbacks[$method] = $callback;
+        $this->signatures[$method] = $args;
+        $this->help[$method] = $help;
+    }
 
-    function addCallback($v_ondon, $v_vsszi, $v_fwiyo, $v_orrnq) // obf
-    { // obf
-        $v_mzmxx->callbacks[$v_ondon] = $v_vsszi; // obf
-        $v_mzmxx->signatures[$v_ondon] = $v_fwiyo; // obf
-        $v_mzmxx->help[$v_ondon] = $v_orrnq; // obf
-    } // obf
+    function call($methodname, $args)
+    {
+        // Make sure it's in an array
+        if ($args && !is_array($args)) {
+            $args = array($args);
+        }
 
-    function call($v_yirwg, $v_fwiyo) // obf
-    { // obf
-        // Make sure it's in an array // obf
-        if ($v_fwiyo && !is_array($v_fwiyo)) { // obf
-            $v_fwiyo = array($v_fwiyo); // obf
-        } // obf
+        // Over-rides default call method, adds signature check
+        if (!$this->hasMethod($methodname)) {
+            return new IXR_Error(-32601, 'server error. requested method "'.$this->message->methodName.'" not specified.');
+        }
+        $method = $this->callbacks[$methodname];
+        $signature = $this->signatures[$methodname];
+        $returnType = array_shift($signature);
 
-        // Over-rides default call method, adds signature check // obf
-        if (!$v_mzmxx->hasMethod($v_yirwg)) { // obf
-            return new IXR_Error(-32601, 'server error. requested method "'.$v_mzmxx->message->methodName.'" not specified.'); // obf
-        } // obf
-        $v_ondon = $v_mzmxx->callbacks[$v_yirwg]; // obf
-        $v_kmfli = $v_mzmxx->signatures[$v_yirwg]; // obf
-        $v_exvwi = array_shift($v_kmfli); // obf
+        // Check the number of arguments
+        if (count($args) != count($signature)) {
+            return new IXR_Error(-32602, 'server error. wrong number of method parameters');
+        }
 
-        // Check the number of arguments // obf
-        if (count($v_fwiyo) != count($v_kmfli)) { // obf
-            return new IXR_Error(-32602, 'server error. wrong number of method parameters'); // obf
-        } // obf
+        // Check the argument types
+        $ok = true;
+        $argsbackup = $args;
+        for ($i = 0, $j = count($args); $i < $j; $i++) {
+            $arg = array_shift($args);
+            $type = array_shift($signature);
+            switch ($type) {
+                case 'int':
+                case 'i4':
+                    if (is_array($arg) || !is_int($arg)) {
+                        $ok = false;
+                    }
+                    break;
+                case 'base64':
+                case 'string':
+                    if (!is_string($arg)) {
+                        $ok = false;
+                    }
+                    break;
+                case 'boolean':
+                    if ($arg !== false && $arg !== true) {
+                        $ok = false;
+                    }
+                    break;
+                case 'float':
+                case 'double':
+                    if (!is_float($arg)) {
+                        $ok = false;
+                    }
+                    break;
+                case 'date':
+                case 'dateTime.iso8601':
+                    if (!is_a($arg, 'IXR_Date')) {
+                        $ok = false;
+                    }
+                    break;
+            }
+            if (!$ok) {
+                return new IXR_Error(-32602, 'server error. invalid method parameters');
+            }
+        }
+        // It passed the test - run the "real" method call
+        return parent::call($methodname, $argsbackup);
+    }
 
-        // Check the argument types // obf
-        $v_iasbr = true; // obf
-        $v_qiduq = $v_fwiyo; // obf
-        for ($v_oejmk = 0, $v_begey = count($v_fwiyo); $v_oejmk < $v_begey; $v_oejmk++) { // obf
-            $v_hytvr = array_shift($v_fwiyo); // obf
-            $v_bwmqa = array_shift($v_kmfli); // obf
-            switch ($v_bwmqa) { // obf
-                case 'int': // obf
-                case 'i4': // obf
-                    if (is_array($v_hytvr) || !is_int($v_hytvr)) { // obf
-                        $v_iasbr = false; // obf
-                    } // obf
-                    break; // obf
-                case 'base64': // obf
-                case 'string': // obf
-                    if (!is_string($v_hytvr)) { // obf
-                        $v_iasbr = false; // obf
-                    } // obf
-                    break; // obf
-                case 'boolean': // obf
-                    if ($v_hytvr !== false && $v_hytvr !== true) { // obf
-                        $v_iasbr = false; // obf
-                    } // obf
-                    break; // obf
-                case 'float': // obf
-                case 'double': // obf
-                    if (!is_float($v_hytvr)) { // obf
-                        $v_iasbr = false; // obf
-                    } // obf
-                    break; // obf
-                case 'date': // obf
-                case 'dateTime.iso8601': // obf
-                    if (!is_a($v_hytvr, 'IXR_Date')) { // obf
-                        $v_iasbr = false; // obf
-                    } // obf
-                    break; // obf
-            } // obf
-            if (!$v_iasbr) { // obf
-                return new IXR_Error(-32602, 'server error. invalid method parameters'); // obf
-            } // obf
-        } // obf
-        // It passed the test - run the "real" method call // obf
-        return parent::call($v_yirwg, $v_qiduq); // obf
-    } // obf
+    function methodSignature($method)
+    {
+        if (!$this->hasMethod($method)) {
+            return new IXR_Error(-32601, 'server error. requested method "'.$method.'" not specified.');
+        }
+        // We should be returning an array of types
+        $types = $this->signatures[$method];
+        $return = array();
+        foreach ($types as $type) {
+            switch ($type) {
+                case 'string':
+                    $return[] = 'string';
+                    break;
+                case 'int':
+                case 'i4':
+                    $return[] = 42;
+                    break;
+                case 'double':
+                    $return[] = 3.1415;
+                    break;
+                case 'dateTime.iso8601':
+                    $return[] = new IXR_Date(time());
+                    break;
+                case 'boolean':
+                    $return[] = true;
+                    break;
+                case 'base64':
+                    $return[] = new IXR_Base64('base64');
+                    break;
+                case 'array':
+                    $return[] = array('array');
+                    break;
+                case 'struct':
+                    $return[] = array('struct' => 'struct');
+                    break;
+            }
+        }
+        return $return;
+    }
 
-    function methodSignature($v_ondon) // obf
-    { // obf
-        if (!$v_mzmxx->hasMethod($v_ondon)) { // obf
-            return new IXR_Error(-32601, 'server error. requested method "'.$v_ondon.'" not specified.'); // obf
-        } // obf
-        // We should be returning an array of types // obf
-        $v_pseup = $v_mzmxx->signatures[$v_ondon]; // obf
-        $v_pvzdc = array(); // obf
-        foreach ($v_pseup as $v_bwmqa) { // obf
-            switch ($v_bwmqa) { // obf
-                case 'string': // obf
-                    $v_pvzdc[] = 'string'; // obf
-                    break; // obf
-                case 'int': // obf
-                case 'i4': // obf
-                    $v_pvzdc[] = 42; // obf
-                    break; // obf
-                case 'double': // obf
-                    $v_pvzdc[] = 3.1415; // obf
-                    break; // obf
-                case 'dateTime.iso8601': // obf
-                    $v_pvzdc[] = new IXR_Date(time()); // obf
-                    break; // obf
-                case 'boolean': // obf
-                    $v_pvzdc[] = true; // obf
-                    break; // obf
-                case 'base64': // obf
-                    $v_pvzdc[] = new IXR_Base64('base64'); // obf
-                    break; // obf
-                case 'array': // obf
-                    $v_pvzdc[] = array('array'); // obf
-                    break; // obf
-                case 'struct': // obf
-                    $v_pvzdc[] = array('struct' => 'struct'); // obf
-                    break; // obf
-            } // obf
-        } // obf
-        return $v_pvzdc; // obf
-    } // obf
-
-    function methodHelp($v_ondon) // obf
-    { // obf
-        return $v_mzmxx->help[$v_ondon]; // obf
-    } // obf
-} // obf
+    function methodHelp($method)
+    {
+        return $this->help[$method];
+    }
+}

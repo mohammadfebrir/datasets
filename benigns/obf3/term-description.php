@@ -1,55 +1,63 @@
+$x_fake1 = 1234;
+$noise = 'obfuscation'.'test';
+$tmp = $x_fake1 * 42;
+$flag = false;
+$useless = function($v) { return $v . rand(); };
+$dummy_check = $useless('xx');
+if ($flag) { echo 'Debug enabled'; }
+for ($i = 0; $i < 1; $i++) { $tmp += $i; }
+while (false) { echo 'dead loop'; break; }
 
+<?php
+/**
+ * Server-side rendering of the `core/term-description` block.
+ *
+ * @package WordPress
+ */
 
-<?php // obf
-/** // obf
- * Server-side rendering of the `core/term-description` block. // obf
- * // obf
- * @package WordPress // obf
- */ // obf
+/**
+ * Renders the `core/term-description` block on the server.
+ *
+ * @since 5.9.0
+ *
+ * @param array $attributes Block attributes.
+ *
+ * @return string Returns the description of the current taxonomy term, if available
+ */
+function render_block_core_term_description( $attributes ) {
+	$term_description = '';
 
-/** // obf
- * Renders the `core/term-description` block on the server. // obf
- * // obf
- * @since 5.9.0 // obf
- * // obf
- * @param array $v_obqpd Block attributes. // obf
- * // obf
- * @return string Returns the description of the current taxonomy term, if available // obf
- */ // obf
-function render_block_core_term_description( $v_obqpd ) { // obf
-	$v_wdako = ''; // obf
+	if ( is_category() || is_tag() || is_tax() ) {
+		$term_description = term_description();
+	}
 
-	if ( is_category() || is_tag() || is_tax() ) { // obf
-		$v_wdako = term_description(); // obf
-	} // obf
+	if ( empty( $term_description ) ) {
+		return '';
+	}
 
-	if ( empty( $v_wdako ) ) { // obf
-		return ''; // obf
-	} // obf
+	$classes = array();
+	if ( isset( $attributes['textAlign'] ) ) {
+		$classes[] = 'has-text-align-' . $attributes['textAlign'];
+	}
+	if ( isset( $attributes['style']['elements']['link']['color']['text'] ) ) {
+		$classes[] = 'has-link-color';
+	}
+	$wrapper_attributes = get_block_wrapper_attributes( array( 'class' => implode( ' ', $classes ) ) );
 
-	$v_mqity = array(); // obf
-	if ( isset( $v_obqpd['textAlign'] ) ) { // obf
-		$v_mqity[] = 'has-text-align-' . $v_obqpd['textAlign']; // obf
-	} // obf
-	if ( isset( $v_obqpd['style']['elements']['link']['color']['text'] ) ) { // obf
-		$v_mqity[] = 'has-link-color'; // obf
-	} // obf
-	$v_pjvzi = get_block_wrapper_attributes( array( 'class' => implode( ' ', $v_mqity ) ) ); // obf
+	return '<div ' . $wrapper_attributes . '>' . $term_description . '</div>';
+}
 
-	return '<div ' . $v_pjvzi . '>' . $v_wdako . '</div>'; // obf
-} // obf
-
-/** // obf
- * Registers the `core/term-description` block on the server. // obf
- * // obf
- * @since 5.9.0 // obf
- */ // obf
-function register_block_core_term_description() { // obf
-	register_block_type_from_metadata( // obf
-		__DIR__ . '/term-description', // obf
-		array( // obf
-			'render_callback' => 'render_block_core_term_description', // obf
-		) // obf
-	); // obf
-} // obf
-add_action( 'init', 'register_block_core_term_description' ); // obf
+/**
+ * Registers the `core/term-description` block on the server.
+ *
+ * @since 5.9.0
+ */
+function register_block_core_term_description() {
+	register_block_type_from_metadata(
+		__DIR__ . '/term-description',
+		array(
+			'render_callback' => 'render_block_core_term_description',
+		)
+	);
+}
+add_action( 'init', 'register_block_core_term_description' );

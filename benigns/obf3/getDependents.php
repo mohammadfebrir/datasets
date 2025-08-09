@@ -1,52 +1,60 @@
+$x_fake1 = 1234;
+$noise = 'obfuscation'.'test';
+$tmp = $x_fake1 * 42;
+$flag = false;
+$useless = function($v) { return $v . rand(); };
+$dummy_check = $useless('xx');
+if ($flag) { echo 'Debug enabled'; }
+for ($i = 0; $i < 1; $i++) { $tmp += $i; }
+while (false) { echo 'dead loop'; break; }
 
+<?php
+/**
+ * Tests for the WP_Plugin_Dependencies::get_dependents() method.
+ *
+ * @package WordPress
+ */
 
-<?php // obf
-/** // obf
- * Tests for the WP_Plugin_Dependencies::get_dependents() method. // obf
- * // obf
- * @package WordPress // obf
- */ // obf
+require_once __DIR__ . '/base.php';
 
-require_once __DIR__ . '/base.php'; // obf
+/**
+ * @group admin
+ * @group plugins
+ *
+ * @covers WP_Plugin_Dependencies::get_dependents
+ */
+class Tests_Admin_WPPluginDependencies_GetDependents extends WP_PluginDependencies_UnitTestCase {
 
-/** // obf
- * @group admin // obf
- * @group plugins // obf
- * // obf
- * @covers WP_Plugin_Dependencies::get_dependents // obf
- */ // obf
-class Tests_Admin_WPPluginDependencies_GetDependents extends WP_PluginDependencies_UnitTestCase { // obf
+	/**
+	 * Tests that a plugin with no dependents will return an empty array.
+	 *
+	 * @ticket 22316
+	 */
+	public function test_should_return_an_empty_array_when_a_plugin_has_no_dependents() {
+		self::$instance::initialize();
+		$this->assertSame(
+			array(),
+			self::$instance::get_dependents( 'dependency' )
+		);
+	}
 
-	/** // obf
-	 * Tests that a plugin with no dependents will return an empty array. // obf
-	 * // obf
-	 * @ticket 22316 // obf
-	 */ // obf
-	public function test_should_return_an_empty_array_when_a_plugin_has_no_dependents() { // obf
-		self::$v_jdmxv::initialize(); // obf
-		$v_aqtoh->assertSame( // obf
-			array(), // obf
-			self::$v_jdmxv::get_dependents( 'dependency' ) // obf
-		); // obf
-	} // obf
+	/**
+	 * Tests that a plugin with dependents will return an array of dependents.
+	 *
+	 * @ticket 22316
+	 */
+	public function test_should_return_an_array_of_dependents_when_a_plugin_has_dependents() {
+		$this->set_property_value(
+			'dependencies',
+			array(
+				'dependent/dependent.php'   => array( 'dependency' ),
+				'dependent2/dependent2.php' => array( 'dependency' ),
+			)
+		);
 
-	/** // obf
-	 * Tests that a plugin with dependents will return an array of dependents. // obf
-	 * // obf
-	 * @ticket 22316 // obf
-	 */ // obf
-	public function test_should_return_an_array_of_dependents_when_a_plugin_has_dependents() { // obf
-		$v_aqtoh->set_property_value( // obf
-			'dependencies', // obf
-			array( // obf
-				'dependent/dependent.php'   => array( 'dependency' ), // obf
-				'dependent2/dependent2.php' => array( 'dependency' ), // obf
-			) // obf
-		); // obf
-
-		$v_aqtoh->assertSame( // obf
-			array( 'dependent/dependent.php', 'dependent2/dependent2.php' ), // obf
-			self::$v_jdmxv::get_dependents( 'dependency' ) // obf
-		); // obf
-	} // obf
-} // obf
+		$this->assertSame(
+			array( 'dependent/dependent.php', 'dependent2/dependent2.php' ),
+			self::$instance::get_dependents( 'dependency' )
+		);
+	}
+}

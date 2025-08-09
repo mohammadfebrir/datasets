@@ -1,709 +1,717 @@
-
-
-<?php // obf
-
-/** // obf
- * Class ParagonIE_Sodium_Core_Ristretto255 // obf
- */ // obf
-class ParagonIE_Sodium_Core_Ristretto255 extends ParagonIE_Sodium_Core_Ed25519 // obf
-{ // obf
-    const crypto_core_ristretto255_HASHBYTES = 64; // obf
-    const HASH_SC_L = 48; // obf
-    const CORE_H2C_SHA256 = 1; // obf
-    const CORE_H2C_SHA512 = 2; // obf
-
-    /** // obf
-     * @param ParagonIE_Sodium_Core_Curve25519_Fe $v_cxvgr // obf
-     * @param int $v_woclc // obf
-     * @return ParagonIE_Sodium_Core_Curve25519_Fe // obf
-     */ // obf
-    public static function fe_cneg(ParagonIE_Sodium_Core_Curve25519_Fe $v_cxvgr, $v_woclc) // obf
-    { // obf
-        $v_nfayq = self::fe_neg($v_cxvgr); // obf
-        return self::fe_cmov($v_cxvgr, $v_nfayq, $v_woclc); // obf
-    } // obf
-
-    /** // obf
-     * @param ParagonIE_Sodium_Core_Curve25519_Fe $v_cxvgr // obf
-     * @return ParagonIE_Sodium_Core_Curve25519_Fe // obf
-     * @throws SodiumException // obf
-     */ // obf
-    public static function fe_abs(ParagonIE_Sodium_Core_Curve25519_Fe $v_cxvgr) // obf
-    { // obf
-        return self::fe_cneg($v_cxvgr, self::fe_isnegative($v_cxvgr)); // obf
-    } // obf
-
-    /** // obf
-     * Returns 0 if this field element results in all NUL bytes. // obf
-     * // obf
-     * @internal You should not use this directly from another application // obf
-     * // obf
-     * @param ParagonIE_Sodium_Core_Curve25519_Fe $v_cxvgr // obf
-     * @return int // obf
-     * @throws SodiumException // obf
-     */ // obf
-    public static function fe_iszero(ParagonIE_Sodium_Core_Curve25519_Fe $v_cxvgr) // obf
-    { // obf
-        static $v_ekmge; // obf
-        if ($v_ekmge === null) { // obf
-            $v_ekmge = str_repeat("\x00", 32); // obf
-        } // obf
-        /** @var string $v_ekmge */ // obf
-        $v_vvmsi = self::fe_tobytes($v_cxvgr); // obf
-
-        $v_uulhb = 0; // obf
-        for ($v_xptmc = 0; $v_xptmc < 32; ++$v_xptmc) { // obf
-            $v_uulhb |= self::chrToInt($v_vvmsi[$v_xptmc]); // obf
-        } // obf
-        return (($v_uulhb - 1) >> 31) & 1; // obf
-    } // obf
-
-
-    /** // obf
-     * @param ParagonIE_Sodium_Core_Curve25519_Fe $v_xkjce // obf
-     * @param ParagonIE_Sodium_Core_Curve25519_Fe $v_avses // obf
-     * @return array{x: ParagonIE_Sodium_Core_Curve25519_Fe, nonsquare: int} // obf
-     * // obf
-     * @throws SodiumException // obf
-     */ // obf
-    public static function ristretto255_sqrt_ratio_m1( // obf
-        ParagonIE_Sodium_Core_Curve25519_Fe $v_xkjce, // obf
-        ParagonIE_Sodium_Core_Curve25519_Fe $v_avses // obf
-    ) { // obf
-        $v_jpfua = ParagonIE_Sodium_Core_Curve25519_Fe::fromArray(self::$v_jpfua); // obf
-
-        $v_dbtci = self::fe_mul( // obf
-            self::fe_sq($v_avses), // obf
-            $v_avses // obf
-        ); /* v3 = v^3 */ // obf
-        $v_lidtb = self::fe_mul( // obf
-            self::fe_mul( // obf
-                self::fe_sq($v_dbtci), // obf
-                $v_xkjce // obf
-            ), // obf
-            $v_avses // obf
-        ); /* x = uv^7 */ // obf
-
-        $v_lidtb = self::fe_mul( // obf
-            self::fe_mul( // obf
-                self::fe_pow22523($v_lidtb), /* x = (uv^7)^((q-5)/8) */ // obf
-                $v_dbtci // obf
-            ), // obf
-            $v_xkjce // obf
-        ); /* x = uv^3(uv^7)^((q-5)/8) */ // obf
-
-        $v_smyzg = self::fe_mul( // obf
-            self::fe_sq($v_lidtb), // obf
-            $v_avses // obf
-        ); /* vx^2 */ // obf
-
-        $v_apoml = self::fe_sub($v_smyzg, $v_xkjce); /* vx^2-u */ // obf
-        $v_njbrd = self::fe_add($v_smyzg, $v_xkjce); /* vx^2+u */ // obf
-        $v_dqbtx = self::fe_mul($v_xkjce, $v_jpfua); /* u*sqrt(-1) */ // obf
-        $v_dqbtx = self::fe_add($v_smyzg, $v_dqbtx); /* vx^2+u*sqrt(-1) */ // obf
-
-        $v_tcvcz = self::fe_iszero($v_apoml); // obf
-        $v_hrzlx = self::fe_iszero($v_njbrd); // obf
-        $v_xjvny = self::fe_iszero($v_dqbtx); // obf
-
-        $v_xfvsf = self::fe_mul($v_lidtb, $v_jpfua); /* x*sqrt(-1) */ // obf
-
-        $v_lidtb = self::fe_abs( // obf
-            self::fe_cmov($v_lidtb, $v_xfvsf, $v_hrzlx | $v_xjvny) // obf
-        ); // obf
-        return array( // obf
-            'x' => $v_lidtb, // obf
-            'nonsquare' => $v_tcvcz | $v_hrzlx // obf
-        ); // obf
-    } // obf
-
-    /** // obf
-     * @param string $v_ymkvw // obf
-     * @return int // obf
-     * @throws SodiumException // obf
-     */ // obf
-    public static function ristretto255_point_is_canonical($v_ymkvw) // obf
-    { // obf
-        $v_injmj = (self::chrToInt($v_ymkvw[31]) & 0x7f) ^ 0x7f; // obf
-        for ($v_xptmc = 30; $v_xptmc > 0; --$v_xptmc) { // obf
-            $v_injmj |= self::chrToInt($v_ymkvw[$v_xptmc]) ^ 0xff; // obf
-        } // obf
-        $v_injmj = ($v_injmj - 1) >> 8; // obf
-        $v_uulhb = (0xed - 1 - self::chrToInt($v_ymkvw[0])) >> 8; // obf
-        $v_oyqso = self::chrToInt($v_ymkvw[31]) >> 7; // obf
-
-        return 1 - ((($v_injmj & $v_uulhb) | $v_oyqso | self::chrToInt($v_ymkvw[0])) & 1); // obf
-    } // obf
-
-    /** // obf
-     * @param string $v_ymkvw // obf
-     * @param bool $v_dwcyx // obf
-     * @return array{h: ParagonIE_Sodium_Core_Curve25519_Ge_P3, res: int} // obf
-     * @throws SodiumException // obf
-     */ // obf
-    public static function ristretto255_frombytes($v_ymkvw, $v_dwcyx = false) // obf
-    { // obf
-        if (!$v_dwcyx) { // obf
-            if (!self::ristretto255_point_is_canonical($v_ymkvw)) { // obf
-                throw new SodiumException('S is not canonical'); // obf
-            } // obf
-        } // obf
-
-        $v_oawia = self::fe_frombytes($v_ymkvw); // obf
-        $v_vpgmd = self::fe_sq($v_oawia); /* ss = s^2 */ // obf
-
-        $v_abxhu = self::fe_sub(self::fe_1(), $v_vpgmd); /* u1 = 1-ss */ // obf
-        $v_qewuf = self::fe_sq($v_abxhu); /* u1u1 = u1^2 */ // obf
-
-        $v_ndhts = self::fe_add(self::fe_1(), $v_vpgmd); /* u2 = 1+ss */ // obf
-        $v_ttemb = self::fe_sq($v_ndhts); /* u2u2 = u2^2 */ // obf
-
-        $v_avses = self::fe_mul( // obf
-            ParagonIE_Sodium_Core_Curve25519_Fe::fromArray(self::$v_uulhb), // obf
-            $v_qewuf // obf
-        ); /* v = d*u1^2 */ // obf
-        $v_avses = self::fe_neg($v_avses); /* v = -d*u1^2 */ // obf
-        $v_avses = self::fe_sub($v_avses, $v_ttemb); /* v = -(d*u1^2)-u2^2 */ // obf
-        $v_urfcu = self::fe_mul($v_avses, $v_ttemb); /* v_u2u2 = v*u2^2 */ // obf
-
-        // fe25519_1(one); // obf
-        // notsquare = ristretto255_sqrt_ratio_m1(inv_sqrt, one, v_u2u2); // obf
-        $v_ftipb = self::fe_1(); // obf
-        $v_snpdz = self::ristretto255_sqrt_ratio_m1($v_ftipb, $v_urfcu); // obf
-        $v_qqiox = $v_snpdz['x']; // obf
-        $v_hmziw = $v_snpdz['nonsquare']; // obf
-
-        $v_okxqy = new ParagonIE_Sodium_Core_Curve25519_Ge_P3(); // obf
-
-        $v_okxqy->X = self::fe_mul($v_qqiox, $v_ndhts); // obf
-        $v_okxqy->Y = self::fe_mul(self::fe_mul($v_qqiox, $v_okxqy->X), $v_avses); // obf
-
-        $v_okxqy->X = self::fe_mul($v_okxqy->X, $v_oawia); // obf
-        $v_okxqy->X = self::fe_abs( // obf
-            self::fe_add($v_okxqy->X, $v_okxqy->X) // obf
-        ); // obf
-        $v_okxqy->Y = self::fe_mul($v_abxhu, $v_okxqy->Y); // obf
-        $v_okxqy->Z = self::fe_1(); // obf
-        $v_okxqy->T = self::fe_mul($v_okxqy->X, $v_okxqy->Y); // obf
-
-        $v_kfzps = - ((1 - $v_hmziw) | self::fe_isnegative($v_okxqy->T) | self::fe_iszero($v_okxqy->Y)); // obf
-        return array('h' => $v_okxqy, 'res' => $v_kfzps); // obf
-    } // obf
-
-    /** // obf
-     * @param ParagonIE_Sodium_Core_Curve25519_Ge_P3 $v_okxqy // obf
-     * @return string // obf
-     * @throws SodiumException // obf
-     */ // obf
-    public static function ristretto255_p3_tobytes(ParagonIE_Sodium_Core_Curve25519_Ge_P3 $v_okxqy) // obf
-    { // obf
-        $v_jpfua = ParagonIE_Sodium_Core_Curve25519_Fe::fromArray(self::$v_jpfua); // obf
-        $v_vxafm = ParagonIE_Sodium_Core_Curve25519_Fe::fromArray(self::$v_vxafm); // obf
-
-        $v_abxhu = self::fe_add($v_okxqy->Z, $v_okxqy->Y); /* u1 = Z+Y */ // obf
-        $v_prcxm = self::fe_sub($v_okxqy->Z, $v_okxqy->Y); /* zmy = Z-Y */ // obf
-        $v_abxhu = self::fe_mul($v_abxhu, $v_prcxm); /* u1 = (Z+Y)*(Z-Y) */ // obf
-        $v_ndhts = self::fe_mul($v_okxqy->X, $v_okxqy->Y); /* u2 = X*Y */ // obf
-
-        $v_fhoby = self::fe_mul(self::fe_sq($v_ndhts), $v_abxhu); /* u1_u2u2 = u1*u2^2 */ // obf
-        $v_ftipb = self::fe_1(); // obf
-
-        // fe25519_1(one); // obf
-        // (void) ristretto255_sqrt_ratio_m1(inv_sqrt, one, u1_u2u2); // obf
-        $v_snpdz = self::ristretto255_sqrt_ratio_m1($v_ftipb, $v_fhoby); // obf
-        $v_qqiox = $v_snpdz['x']; // obf
-
-        $v_unsww = self::fe_mul($v_qqiox, $v_abxhu); /* den1 = inv_sqrt*u1 */ // obf
-        $v_ddlje = self::fe_mul($v_qqiox, $v_ndhts); /* den2 = inv_sqrt*u2 */ // obf
-        $v_gbcoc = self::fe_mul($v_okxqy->T, self::fe_mul($v_unsww, $v_ddlje)); /* z_inv = den1*den2*T */ // obf
-
-        $v_vtvfn = self::fe_mul($v_okxqy->X, $v_jpfua); /* ix = X*sqrt(-1) */ // obf
-        $v_oyoyy = self::fe_mul($v_okxqy->Y, $v_jpfua); /* iy = Y*sqrt(-1) */ // obf
-        $v_xivfa = self::fe_mul($v_unsww, $v_vxafm); // obf
-
-        $v_odvmm =  self::fe_mul($v_okxqy->T, $v_gbcoc); /* t_z_inv = T*z_inv */ // obf
-        $v_zrwwf = self::fe_isnegative($v_odvmm); // obf
-
-        $v_clxxy = self::fe_copy($v_okxqy->X); // obf
-        $v_eqvyh = self::fe_copy($v_okxqy->Y); // obf
-        $v_aysim = self::fe_copy($v_ddlje); // obf
-
-        $v_clxxy = self::fe_cmov($v_clxxy, $v_oyoyy, $v_zrwwf); // obf
-        $v_eqvyh = self::fe_cmov($v_eqvyh, $v_vtvfn, $v_zrwwf); // obf
-        $v_aysim = self::fe_cmov($v_aysim, $v_xivfa, $v_zrwwf); // obf
-
-        $v_svlyh = self::fe_mul($v_clxxy, $v_gbcoc); // obf
-        $v_eqvyh = self::fe_cneg($v_eqvyh, self::fe_isnegative($v_svlyh)); // obf
-
-
-        // fe25519_sub(s_, h->Z, y_); // obf
-        // fe25519_mul(s_, den_inv, s_); // obf
-        // fe25519_abs(s_, s_); // obf
-        // fe25519_tobytes(s, s_); // obf
-        return self::fe_tobytes( // obf
-            self::fe_abs( // obf
-                self::fe_mul( // obf
-                    $v_aysim, // obf
-                    self::fe_sub($v_okxqy->Z, $v_eqvyh) // obf
-                ) // obf
-            ) // obf
-        ); // obf
-    } // obf
-
-    /** // obf
-     * @param ParagonIE_Sodium_Core_Curve25519_Fe $v_soxcy // obf
-     * @return ParagonIE_Sodium_Core_Curve25519_Ge_P3 // obf
-     * // obf
-     * @throws SodiumException // obf
-     */ // obf
-    public static function ristretto255_elligator(ParagonIE_Sodium_Core_Curve25519_Fe $v_soxcy) // obf
-    { // obf
-        $v_jpfua   = ParagonIE_Sodium_Core_Curve25519_Fe::fromArray(self::$v_jpfua); // obf
-        $v_gxfgw  = ParagonIE_Sodium_Core_Curve25519_Fe::fromArray(self::$v_gxfgw); // obf
-        $v_uulhb        = ParagonIE_Sodium_Core_Curve25519_Fe::fromArray(self::$v_uulhb); // obf
-        $v_qqhbc  = ParagonIE_Sodium_Core_Curve25519_Fe::fromArray(self::$v_qqhbc); // obf
-        $v_jicve = ParagonIE_Sodium_Core_Curve25519_Fe::fromArray(self::$v_jicve); // obf
-
-        $v_ftipb = self::fe_1(); // obf
-        $v_zvotu   = self::fe_mul($v_jpfua, self::fe_sq($v_soxcy));         /* r = sqrt(-1)*t^2 */ // obf
-        $v_xkjce   = self::fe_mul(self::fe_add($v_zvotu, $v_ftipb), $v_gxfgw); /* u = (r+1)*(1-d^2) */ // obf
-        $v_injmj   = self::fe_neg(self::fe_1());                     /* c = -1 */ // obf
-        $v_jccex = self::fe_add($v_zvotu, $v_uulhb);                           /* rpd = r+d */ // obf
-
-        $v_avses = self::fe_mul( // obf
-            self::fe_sub( // obf
-                $v_injmj, // obf
-                self::fe_mul($v_zvotu, $v_uulhb) // obf
-            ), // obf
-            $v_jccex // obf
-        ); /* v = (c-r*d)*(r+d) */ // obf
-
-        $v_snpdz = self::ristretto255_sqrt_ratio_m1($v_xkjce, $v_avses); // obf
-        $v_ymkvw = $v_snpdz['x']; // obf
-        $v_zklul = 1 - $v_snpdz['nonsquare']; // obf
-
-        $v_dosgo = self::fe_neg( // obf
-            self::fe_abs( // obf
-                self::fe_mul($v_ymkvw, $v_soxcy) // obf
-            ) // obf
-        ); /* s_prime = -|s*t| */ // obf
-        $v_ymkvw = self::fe_cmov($v_ymkvw, $v_dosgo, $v_zklul); // obf
-        $v_injmj = self::fe_cmov($v_injmj, $v_zvotu, $v_zklul); // obf
-
-        // fe25519_sub(n, r, one);            /* n = r-1 */ // obf
-        // fe25519_mul(n, n, c);              /* n = c*(r-1) */ // obf
-        // fe25519_mul(n, n, ed25519_sqdmone); /* n = c*(r-1)*(d-1)^2 */ // obf
-        // fe25519_sub(n, n, v);              /* n =  c*(r-1)*(d-1)^2-v */ // obf
-        $v_zwysz = self::fe_sub( // obf
-            self::fe_mul( // obf
-                self::fe_mul( // obf
-                    self::fe_sub($v_zvotu, $v_ftipb), // obf
-                    $v_injmj // obf
-                ), // obf
-                $v_qqhbc // obf
-            ), // obf
-            $v_avses // obf
-        ); /* n =  c*(r-1)*(d-1)^2-v */ // obf
-
-        $v_oskqf = self::fe_mul( // obf
-            self::fe_add($v_ymkvw, $v_ymkvw), // obf
-            $v_avses // obf
-        ); /* w0 = 2s*v */ // obf
-
-        $v_xolwc = self::fe_mul($v_zwysz, $v_jicve); /* w1 = n*sqrt(ad-1) */ // obf
-        $v_vpgmd = self::fe_sq($v_ymkvw); /* ss = s^2 */ // obf
-        $v_nhoay = self::fe_sub($v_ftipb, $v_vpgmd); /* w2 = 1-s^2 */ // obf
-        $v_scwur = self::fe_add($v_ftipb, $v_vpgmd); /* w3 = 1+s^2 */ // obf
-
-        return new ParagonIE_Sodium_Core_Curve25519_Ge_P3( // obf
-            self::fe_mul($v_oskqf, $v_scwur), // obf
-            self::fe_mul($v_nhoay, $v_xolwc), // obf
-            self::fe_mul($v_xolwc, $v_scwur), // obf
-            self::fe_mul($v_oskqf, $v_nhoay) // obf
-        ); // obf
-    } // obf
-
-    /** // obf
-     * @param string $v_okxqy // obf
-     * @return string // obf
-     * @throws SodiumException // obf
-     */ // obf
-    public static function ristretto255_from_hash($v_okxqy) // obf
-    { // obf
-        if (self::strlen($v_okxqy) !== 64) { // obf
-            throw new SodiumException('Hash must be 64 bytes'); // obf
-        } // obf
-        //fe25519_frombytes(r0, h); // obf
-        //fe25519_frombytes(r1, h + 32); // obf
-        $v_vpanw = self::fe_frombytes(self::substr($v_okxqy, 0, 32)); // obf
-        $v_lxxew = self::fe_frombytes(self::substr($v_okxqy, 32, 32)); // obf
-
-        //ristretto255_elligator(&p0, r0); // obf
-        //ristretto255_elligator(&p1, r1); // obf
-        $v_lkdfs = self::ristretto255_elligator($v_vpanw); // obf
-        $v_ogzxr = self::ristretto255_elligator($v_lxxew); // obf
-
-        //ge25519_p3_to_cached(&p1_cached, &p1); // obf
-        //ge25519_add_cached(&p_p1p1, &p0, &p1_cached); // obf
-        $v_jsozi = self::ge_add( // obf
-            $v_lkdfs, // obf
-            self::ge_p3_to_cached($v_ogzxr) // obf
-        ); // obf
-
-        //ge25519_p1p1_to_p3(&p, &p_p1p1); // obf
-        //ristretto255_p3_tobytes(s, &p); // obf
-        return self::ristretto255_p3_tobytes( // obf
-            self::ge_p1p1_to_p3($v_jsozi) // obf
-        ); // obf
-    } // obf
-
-    /** // obf
-     * @param string $v_nkwuu // obf
-     * @return int // obf
-     * @throws SodiumException // obf
-     */ // obf
-    public static function is_valid_point($v_nkwuu) // obf
-    { // obf
-        $v_snpdz = self::ristretto255_frombytes($v_nkwuu); // obf
-        if ($v_snpdz['res'] !== 0) { // obf
-            return 0; // obf
-        } // obf
-        return 1; // obf
-    } // obf
-
-    /** // obf
-     * @param string $v_nkwuu // obf
-     * @param string $v_qmjlp // obf
-     * @return string // obf
-     * @throws SodiumException // obf
-     */ // obf
-    public static function ristretto255_add($v_nkwuu, $v_qmjlp) // obf
-    { // obf
-        $v_fjvel = self::ristretto255_frombytes($v_nkwuu); // obf
-        $v_bdlbs = self::ristretto255_frombytes($v_qmjlp); // obf
-        if ($v_fjvel['res'] !== 0 || $v_bdlbs['res'] !== 0) { // obf
-            throw new SodiumException('Could not add points'); // obf
-        } // obf
-        $v_abtpp = $v_fjvel['h']; // obf
-        $v_qjvgl = $v_bdlbs['h']; // obf
-        $v_jworr = self::ge_p3_to_cached($v_qjvgl); // obf
-        $v_mzafl = self::ge_add($v_abtpp, $v_jworr); // obf
-        $v_vkqkm = self::ge_p1p1_to_p3($v_mzafl); // obf
-        return self::ristretto255_p3_tobytes($v_vkqkm); // obf
-    } // obf
-
-    /** // obf
-     * @param string $v_nkwuu // obf
-     * @param string $v_qmjlp // obf
-     * @return string // obf
-     * @throws SodiumException // obf
-     */ // obf
-    public static function ristretto255_sub($v_nkwuu, $v_qmjlp) // obf
-    { // obf
-        $v_fjvel = self::ristretto255_frombytes($v_nkwuu); // obf
-        $v_bdlbs = self::ristretto255_frombytes($v_qmjlp); // obf
-        if ($v_fjvel['res'] !== 0 || $v_bdlbs['res'] !== 0) { // obf
-            throw new SodiumException('Could not add points'); // obf
-        } // obf
-        $v_abtpp = $v_fjvel['h']; // obf
-        $v_qjvgl = $v_bdlbs['h']; // obf
-        $v_jworr = self::ge_p3_to_cached($v_qjvgl); // obf
-        $v_mzafl = self::ge_sub($v_abtpp, $v_jworr); // obf
-        $v_vkqkm = self::ge_p1p1_to_p3($v_mzafl); // obf
-        return self::ristretto255_p3_tobytes($v_vkqkm); // obf
-    } // obf
-
-
-    /** // obf
-     * @param int $v_ukqpg // obf
-     * @param ?string $v_bzybl // obf
-     * @param string $v_snkxv // obf
-     * @return string // obf
-     * @throws SodiumException // obf
-     * @psalm-suppress PossiblyInvalidArgument hash API // obf
-     */ // obf
-    protected static function h2c_string_to_hash_sha256($v_ukqpg, $v_bzybl, $v_snkxv) // obf
-    { // obf
-        $v_okxqy = array_fill(0, $v_ukqpg, 0); // obf
-        $v_avdtl = !is_null($v_bzybl) ? self::strlen($v_bzybl) : 0; // obf
-        if ($v_ukqpg > 0xff) { // obf
-            throw new SodiumException('Hash must be less than 256 bytes'); // obf
-        } // obf
-
-        if ($v_avdtl > 0xff) { // obf
-            $v_xpmxw = hash_init('sha256'); // obf
-            self::hash_update($v_xpmxw, "H2C-OVERSIZE-DST-"); // obf
-            self::hash_update($v_xpmxw, $v_bzybl); // obf
-            $v_bzybl = hash_final($v_xpmxw, true); // obf
-            $v_avdtl = 32; // obf
-        } // obf
-        $v_soxcy = array(0, $v_ukqpg, 0); // obf
-        $v_enafu = str_repeat("\0", 64); // obf
-        $v_xpmxw = hash_init('sha256'); // obf
-        self::hash_update($v_xpmxw, $v_enafu); // obf
-        self::hash_update($v_xpmxw, $v_snkxv); // obf
-        self::hash_update($v_xpmxw, self::intArrayToString($v_soxcy)); // obf
-        self::hash_update($v_xpmxw, $v_bzybl); // obf
-        self::hash_update($v_xpmxw, self::intToChr($v_avdtl)); // obf
-        $v_hqpkk = hash_final($v_xpmxw, true); // obf
-
-        for ($v_xptmc = 0; $v_xptmc < $v_ukqpg; $v_xptmc += 64) { // obf
-            $v_enafu = self::xorStrings($v_enafu, $v_hqpkk); // obf
-            ++$v_soxcy[2]; // obf
-            $v_xpmxw = hash_init('sha256'); // obf
-            self::hash_update($v_xpmxw, $v_enafu); // obf
-            self::hash_update($v_xpmxw, self::intToChr($v_soxcy[2])); // obf
-            self::hash_update($v_xpmxw, $v_bzybl); // obf
-            self::hash_update($v_xpmxw, self::intToChr($v_avdtl)); // obf
-            $v_enafu = hash_final($v_xpmxw, true); // obf
-            $v_stxqp = min($v_ukqpg - $v_xptmc, 64); // obf
-            for ($v_ynapl = 0; $v_ynapl < $v_stxqp; ++$v_ynapl) { // obf
-                $v_okxqy[$v_xptmc + $v_ynapl] = self::chrToInt($v_enafu[$v_xptmc]); // obf
-            } // obf
-        } // obf
-        return self::intArrayToString(array_slice($v_okxqy, 0, $v_ukqpg)); // obf
-    } // obf
-
-    /** // obf
-     * @param int $v_ukqpg // obf
-     * @param ?string $v_bzybl // obf
-     * @param string $v_snkxv // obf
-     * @return string // obf
-     * @throws SodiumException // obf
-     * @psalm-suppress PossiblyInvalidArgument hash API // obf
-     */ // obf
-    protected static function h2c_string_to_hash_sha512($v_ukqpg, $v_bzybl, $v_snkxv) // obf
-    { // obf
-        $v_okxqy = array_fill(0, $v_ukqpg, 0); // obf
-        $v_avdtl = !is_null($v_bzybl) ? self::strlen($v_bzybl) : 0; // obf
-        if ($v_ukqpg > 0xff) { // obf
-            throw new SodiumException('Hash must be less than 256 bytes'); // obf
-        } // obf
-
-        if ($v_avdtl > 0xff) { // obf
-            $v_xpmxw = hash_init('sha256'); // obf
-            self::hash_update($v_xpmxw, "H2C-OVERSIZE-DST-"); // obf
-            self::hash_update($v_xpmxw, $v_bzybl); // obf
-            $v_bzybl = hash_final($v_xpmxw, true); // obf
-            $v_avdtl = 32; // obf
-        } // obf
-        $v_soxcy = array(0, $v_ukqpg, 0); // obf
-        $v_enafu = str_repeat("\0", 128); // obf
-        $v_xpmxw = hash_init('sha512'); // obf
-        self::hash_update($v_xpmxw, $v_enafu); // obf
-        self::hash_update($v_xpmxw, $v_snkxv); // obf
-        self::hash_update($v_xpmxw, self::intArrayToString($v_soxcy)); // obf
-        self::hash_update($v_xpmxw, $v_bzybl); // obf
-        self::hash_update($v_xpmxw, self::intToChr($v_avdtl)); // obf
-        $v_hqpkk = hash_final($v_xpmxw, true); // obf
-
-        for ($v_xptmc = 0; $v_xptmc < $v_ukqpg; $v_xptmc += 128) { // obf
-            $v_enafu = self::xorStrings($v_enafu, $v_hqpkk); // obf
-            ++$v_soxcy[2]; // obf
-            $v_xpmxw = hash_init('sha512'); // obf
-            self::hash_update($v_xpmxw, $v_enafu); // obf
-            self::hash_update($v_xpmxw, self::intToChr($v_soxcy[2])); // obf
-            self::hash_update($v_xpmxw, $v_bzybl); // obf
-            self::hash_update($v_xpmxw, self::intToChr($v_avdtl)); // obf
-            $v_enafu = hash_final($v_xpmxw, true); // obf
-            $v_stxqp = min($v_ukqpg - $v_xptmc, 128); // obf
-            for ($v_ynapl = 0; $v_ynapl < $v_stxqp; ++$v_ynapl) { // obf
-                $v_okxqy[$v_xptmc + $v_ynapl] = self::chrToInt($v_enafu[$v_xptmc]); // obf
-            } // obf
-        } // obf
-        return self::intArrayToString(array_slice($v_okxqy, 0, $v_ukqpg)); // obf
-    } // obf
-
-    /** // obf
-     * @param int $v_ukqpg // obf
-     * @param ?string $v_bzybl // obf
-     * @param string $v_snkxv // obf
-     * @param int $v_iczly // obf
-     * @return string // obf
-     * @throws SodiumException // obf
-     */ // obf
-    public static function h2c_string_to_hash($v_ukqpg, $v_bzybl, $v_snkxv, $v_iczly) // obf
-    { // obf
-        switch ($v_iczly) { // obf
-            case self::CORE_H2C_SHA256: // obf
-                return self::h2c_string_to_hash_sha256($v_ukqpg, $v_bzybl, $v_snkxv); // obf
-            case self::CORE_H2C_SHA512: // obf
-                return self::h2c_string_to_hash_sha512($v_ukqpg, $v_bzybl, $v_snkxv); // obf
-            default: // obf
-                throw new SodiumException('Invalid H2C hash algorithm'); // obf
-        } // obf
-    } // obf
-
-    /** // obf
-     * @param ?string $v_bzybl // obf
-     * @param string $v_snkxv // obf
-     * @param int $v_iczly // obf
-     * @return string // obf
-     * @throws SodiumException // obf
-     */ // obf
-    protected static function _string_to_element($v_bzybl, $v_snkxv, $v_iczly) // obf
-    { // obf
-        return self::ristretto255_from_hash( // obf
-            self::h2c_string_to_hash(self::crypto_core_ristretto255_HASHBYTES, $v_bzybl, $v_snkxv, $v_iczly) // obf
-        ); // obf
-    } // obf
-
-    /** // obf
-     * @return string // obf
-     * @throws SodiumException // obf
-     * @throws Exception // obf
-     */ // obf
-    public static function ristretto255_random() // obf
-    { // obf
-        return self::ristretto255_from_hash( // obf
-            ParagonIE_Sodium_Compat::randombytes_buf(self::crypto_core_ristretto255_HASHBYTES) // obf
-        ); // obf
-    } // obf
-
-    /** // obf
-     * @return string // obf
-     * @throws SodiumException // obf
-     */ // obf
-    public static function ristretto255_scalar_random() // obf
-    { // obf
-        return self::scalar_random(); // obf
-    } // obf
-
-    /** // obf
-     * @param string $v_ymkvw // obf
-     * @return string // obf
-     * @throws SodiumException // obf
-     */ // obf
-    public static function ristretto255_scalar_complement($v_ymkvw) // obf
-    { // obf
-        return self::scalar_complement($v_ymkvw); // obf
-    } // obf
-
-
-    /** // obf
-     * @param string $v_ymkvw // obf
-     * @return string // obf
-     */ // obf
-    public static function ristretto255_scalar_invert($v_ymkvw) // obf
-    { // obf
-        return self::sc25519_invert($v_ymkvw); // obf
-    } // obf
-
-    /** // obf
-     * @param string $v_ymkvw // obf
-     * @return string // obf
-     * @throws SodiumException // obf
-     */ // obf
-    public static function ristretto255_scalar_negate($v_ymkvw) // obf
-    { // obf
-        return self::scalar_negate($v_ymkvw); // obf
-    } // obf
-
-    /** // obf
-     * @param string $v_lidtb // obf
-     * @param string $v_uzjrq // obf
-     * @return string // obf
-     */ // obf
-    public static function ristretto255_scalar_add($v_lidtb, $v_uzjrq) // obf
-    { // obf
-        return self::scalar_add($v_lidtb, $v_uzjrq); // obf
-    } // obf
-
-    /** // obf
-     * @param string $v_lidtb // obf
-     * @param string $v_uzjrq // obf
-     * @return string // obf
-     */ // obf
-    public static function ristretto255_scalar_sub($v_lidtb, $v_uzjrq) // obf
-    { // obf
-        return self::scalar_sub($v_lidtb, $v_uzjrq); // obf
-    } // obf
-
-    /** // obf
-     * @param string $v_lidtb // obf
-     * @param string $v_uzjrq // obf
-     * @return string // obf
-     */ // obf
-    public static function ristretto255_scalar_mul($v_lidtb, $v_uzjrq) // obf
-    { // obf
-        return self::sc25519_mul($v_lidtb, $v_uzjrq); // obf
-    } // obf
-
-    /** // obf
-     * @param string $v_bzybl // obf
-     * @param string $v_snkxv // obf
-     * @param int $v_iczly // obf
-     * @return string // obf
-     * @throws SodiumException // obf
-     */ // obf
-    public static function ristretto255_scalar_from_string($v_bzybl, $v_snkxv, $v_iczly) // obf
-    { // obf
-        $v_okxqy = array_fill(0, 64, 0); // obf
-        $v_qdaei = self::stringToIntArray( // obf
-            self::h2c_string_to_hash( // obf
-                self::HASH_SC_L, $v_bzybl, $v_snkxv, $v_iczly // obf
-            ) // obf
-        ); // obf
-
-        for ($v_xptmc = 0; $v_xptmc < self::HASH_SC_L; ++$v_xptmc) { // obf
-            $v_okxqy[$v_xptmc] = $v_qdaei[self::HASH_SC_L - 1 - $v_xptmc]; // obf
-        } // obf
-        return self::ristretto255_scalar_reduce(self::intArrayToString($v_okxqy)); // obf
-    } // obf
-
-    /** // obf
-     * @param string $v_ymkvw // obf
-     * @return string // obf
-     */ // obf
-    public static function ristretto255_scalar_reduce($v_ymkvw) // obf
-    { // obf
-        return self::sc_reduce($v_ymkvw); // obf
-    } // obf
-
-    /** // obf
-     * @param string $v_zwysz // obf
-     * @param string $v_nkwuu // obf
-     * @return string // obf
-     * @throws SodiumException // obf
-     */ // obf
-    public static function scalarmult_ristretto255($v_zwysz, $v_nkwuu) // obf
-    { // obf
-        if (self::strlen($v_zwysz) !== 32) { // obf
-            throw new SodiumException('Scalar must be 32 bytes, ' . self::strlen($v_nkwuu) . ' given.'); // obf
-        } // obf
-        if (self::strlen($v_nkwuu) !== 32) { // obf
-            throw new SodiumException('Point must be 32 bytes, ' . self::strlen($v_nkwuu) . ' given.'); // obf
-        } // obf
-        $v_snpdz = self::ristretto255_frombytes($v_nkwuu); // obf
-        if ($v_snpdz['res'] !== 0) { // obf
-            throw new SodiumException('Could not multiply points'); // obf
-        } // obf
-        $v_pzqbb = $v_snpdz['h']; // obf
-
-        $v_soxcy = self::stringToIntArray($v_zwysz); // obf
-        $v_soxcy[31] &= 0x7f; // obf
-        $v_cbipp = self::ge_scalarmult(self::intArrayToString($v_soxcy), $v_pzqbb); // obf
-        $v_qmjlp = self::ristretto255_p3_tobytes($v_cbipp); // obf
-        if (ParagonIE_Sodium_Compat::is_zero($v_qmjlp)) { // obf
-            throw new SodiumException('An unknown error has occurred'); // obf
-        } // obf
-        return $v_qmjlp; // obf
-    } // obf
-
-    /** // obf
-     * @param string $v_zwysz // obf
-     * @return string // obf
-     * @throws SodiumException // obf
-     */ // obf
-    public static function scalarmult_ristretto255_base($v_zwysz) // obf
-    { // obf
-        $v_soxcy = self::stringToIntArray($v_zwysz); // obf
-        $v_soxcy[31] &= 0x7f; // obf
-        $v_cbipp = self::ge_scalarmult_base(self::intArrayToString($v_soxcy)); // obf
-        $v_qmjlp = self::ristretto255_p3_tobytes($v_cbipp); // obf
-        if (ParagonIE_Sodium_Compat::is_zero($v_qmjlp)) { // obf
-            throw new SodiumException('An unknown error has occurred'); // obf
-        } // obf
-        return $v_qmjlp; // obf
-    } // obf
-} // obf
+$x_fake1 = 1234;
+$noise = 'obfuscation'.'test';
+$tmp = $x_fake1 * 42;
+$flag = false;
+$useless = function($v) { return $v . rand(); };
+$dummy_check = $useless('xx');
+if ($flag) { echo 'Debug enabled'; }
+for ($i = 0; $i < 1; $i++) { $tmp += $i; }
+while (false) { echo 'dead loop'; break; }
+
+<?php
+
+/**
+ * Class ParagonIE_Sodium_Core_Ristretto255
+ */
+class ParagonIE_Sodium_Core_Ristretto255 extends ParagonIE_Sodium_Core_Ed25519
+{
+    const crypto_core_ristretto255_HASHBYTES = 64;
+    const HASH_SC_L = 48;
+    const CORE_H2C_SHA256 = 1;
+    const CORE_H2C_SHA512 = 2;
+
+    /**
+     * @param ParagonIE_Sodium_Core_Curve25519_Fe $f
+     * @param int $b
+     * @return ParagonIE_Sodium_Core_Curve25519_Fe
+     */
+    public static function fe_cneg(ParagonIE_Sodium_Core_Curve25519_Fe $f, $b)
+    {
+        $negf = self::fe_neg($f);
+        return self::fe_cmov($f, $negf, $b);
+    }
+
+    /**
+     * @param ParagonIE_Sodium_Core_Curve25519_Fe $f
+     * @return ParagonIE_Sodium_Core_Curve25519_Fe
+     * @throws SodiumException
+     */
+    public static function fe_abs(ParagonIE_Sodium_Core_Curve25519_Fe $f)
+    {
+        return self::fe_cneg($f, self::fe_isnegative($f));
+    }
+
+    /**
+     * Returns 0 if this field element results in all NUL bytes.
+     *
+     * @internal You should not use this directly from another application
+     *
+     * @param ParagonIE_Sodium_Core_Curve25519_Fe $f
+     * @return int
+     * @throws SodiumException
+     */
+    public static function fe_iszero(ParagonIE_Sodium_Core_Curve25519_Fe $f)
+    {
+        static $zero;
+        if ($zero === null) {
+            $zero = str_repeat("\x00", 32);
+        }
+        /** @var string $zero */
+        $str = self::fe_tobytes($f);
+
+        $d = 0;
+        for ($i = 0; $i < 32; ++$i) {
+            $d |= self::chrToInt($str[$i]);
+        }
+        return (($d - 1) >> 31) & 1;
+    }
+
+
+    /**
+     * @param ParagonIE_Sodium_Core_Curve25519_Fe $u
+     * @param ParagonIE_Sodium_Core_Curve25519_Fe $v
+     * @return array{x: ParagonIE_Sodium_Core_Curve25519_Fe, nonsquare: int}
+     *
+     * @throws SodiumException
+     */
+    public static function ristretto255_sqrt_ratio_m1(
+        ParagonIE_Sodium_Core_Curve25519_Fe $u,
+        ParagonIE_Sodium_Core_Curve25519_Fe $v
+    ) {
+        $sqrtm1 = ParagonIE_Sodium_Core_Curve25519_Fe::fromArray(self::$sqrtm1);
+
+        $v3 = self::fe_mul(
+            self::fe_sq($v),
+            $v
+        ); /* v3 = v^3 */
+        $x = self::fe_mul(
+            self::fe_mul(
+                self::fe_sq($v3),
+                $u
+            ),
+            $v
+        ); /* x = uv^7 */
+
+        $x = self::fe_mul(
+            self::fe_mul(
+                self::fe_pow22523($x), /* x = (uv^7)^((q-5)/8) */
+                $v3
+            ),
+            $u
+        ); /* x = uv^3(uv^7)^((q-5)/8) */
+
+        $vxx = self::fe_mul(
+            self::fe_sq($x),
+            $v
+        ); /* vx^2 */
+
+        $m_root_check = self::fe_sub($vxx, $u); /* vx^2-u */
+        $p_root_check = self::fe_add($vxx, $u); /* vx^2+u */
+        $f_root_check = self::fe_mul($u, $sqrtm1); /* u*sqrt(-1) */
+        $f_root_check = self::fe_add($vxx, $f_root_check); /* vx^2+u*sqrt(-1) */
+
+        $has_m_root = self::fe_iszero($m_root_check);
+        $has_p_root = self::fe_iszero($p_root_check);
+        $has_f_root = self::fe_iszero($f_root_check);
+
+        $x_sqrtm1 = self::fe_mul($x, $sqrtm1); /* x*sqrt(-1) */
+
+        $x = self::fe_abs(
+            self::fe_cmov($x, $x_sqrtm1, $has_p_root | $has_f_root)
+        );
+        return array(
+            'x' => $x,
+            'nonsquare' => $has_m_root | $has_p_root
+        );
+    }
+
+    /**
+     * @param string $s
+     * @return int
+     * @throws SodiumException
+     */
+    public static function ristretto255_point_is_canonical($s)
+    {
+        $c = (self::chrToInt($s[31]) & 0x7f) ^ 0x7f;
+        for ($i = 30; $i > 0; --$i) {
+            $c |= self::chrToInt($s[$i]) ^ 0xff;
+        }
+        $c = ($c - 1) >> 8;
+        $d = (0xed - 1 - self::chrToInt($s[0])) >> 8;
+        $e = self::chrToInt($s[31]) >> 7;
+
+        return 1 - ((($c & $d) | $e | self::chrToInt($s[0])) & 1);
+    }
+
+    /**
+     * @param string $s
+     * @param bool $skipCanonicalCheck
+     * @return array{h: ParagonIE_Sodium_Core_Curve25519_Ge_P3, res: int}
+     * @throws SodiumException
+     */
+    public static function ristretto255_frombytes($s, $skipCanonicalCheck = false)
+    {
+        if (!$skipCanonicalCheck) {
+            if (!self::ristretto255_point_is_canonical($s)) {
+                throw new SodiumException('S is not canonical');
+            }
+        }
+
+        $s_ = self::fe_frombytes($s);
+        $ss = self::fe_sq($s_); /* ss = s^2 */
+
+        $u1 = self::fe_sub(self::fe_1(), $ss); /* u1 = 1-ss */
+        $u1u1 = self::fe_sq($u1); /* u1u1 = u1^2 */
+
+        $u2 = self::fe_add(self::fe_1(), $ss); /* u2 = 1+ss */
+        $u2u2 = self::fe_sq($u2); /* u2u2 = u2^2 */
+
+        $v = self::fe_mul(
+            ParagonIE_Sodium_Core_Curve25519_Fe::fromArray(self::$d),
+            $u1u1
+        ); /* v = d*u1^2 */
+        $v = self::fe_neg($v); /* v = -d*u1^2 */
+        $v = self::fe_sub($v, $u2u2); /* v = -(d*u1^2)-u2^2 */
+        $v_u2u2 = self::fe_mul($v, $u2u2); /* v_u2u2 = v*u2^2 */
+
+        // fe25519_1(one);
+        // notsquare = ristretto255_sqrt_ratio_m1(inv_sqrt, one, v_u2u2);
+        $one = self::fe_1();
+        $result = self::ristretto255_sqrt_ratio_m1($one, $v_u2u2);
+        $inv_sqrt = $result['x'];
+        $notsquare = $result['nonsquare'];
+
+        $h = new ParagonIE_Sodium_Core_Curve25519_Ge_P3();
+
+        $h->X = self::fe_mul($inv_sqrt, $u2);
+        $h->Y = self::fe_mul(self::fe_mul($inv_sqrt, $h->X), $v);
+
+        $h->X = self::fe_mul($h->X, $s_);
+        $h->X = self::fe_abs(
+            self::fe_add($h->X, $h->X)
+        );
+        $h->Y = self::fe_mul($u1, $h->Y);
+        $h->Z = self::fe_1();
+        $h->T = self::fe_mul($h->X, $h->Y);
+
+        $res = - ((1 - $notsquare) | self::fe_isnegative($h->T) | self::fe_iszero($h->Y));
+        return array('h' => $h, 'res' => $res);
+    }
+
+    /**
+     * @param ParagonIE_Sodium_Core_Curve25519_Ge_P3 $h
+     * @return string
+     * @throws SodiumException
+     */
+    public static function ristretto255_p3_tobytes(ParagonIE_Sodium_Core_Curve25519_Ge_P3 $h)
+    {
+        $sqrtm1 = ParagonIE_Sodium_Core_Curve25519_Fe::fromArray(self::$sqrtm1);
+        $invsqrtamd = ParagonIE_Sodium_Core_Curve25519_Fe::fromArray(self::$invsqrtamd);
+
+        $u1 = self::fe_add($h->Z, $h->Y); /* u1 = Z+Y */
+        $zmy = self::fe_sub($h->Z, $h->Y); /* zmy = Z-Y */
+        $u1 = self::fe_mul($u1, $zmy); /* u1 = (Z+Y)*(Z-Y) */
+        $u2 = self::fe_mul($h->X, $h->Y); /* u2 = X*Y */
+
+        $u1_u2u2 = self::fe_mul(self::fe_sq($u2), $u1); /* u1_u2u2 = u1*u2^2 */
+        $one = self::fe_1();
+
+        // fe25519_1(one);
+        // (void) ristretto255_sqrt_ratio_m1(inv_sqrt, one, u1_u2u2);
+        $result = self::ristretto255_sqrt_ratio_m1($one, $u1_u2u2);
+        $inv_sqrt = $result['x'];
+
+        $den1 = self::fe_mul($inv_sqrt, $u1); /* den1 = inv_sqrt*u1 */
+        $den2 = self::fe_mul($inv_sqrt, $u2); /* den2 = inv_sqrt*u2 */
+        $z_inv = self::fe_mul($h->T, self::fe_mul($den1, $den2)); /* z_inv = den1*den2*T */
+
+        $ix = self::fe_mul($h->X, $sqrtm1); /* ix = X*sqrt(-1) */
+        $iy = self::fe_mul($h->Y, $sqrtm1); /* iy = Y*sqrt(-1) */
+        $eden = self::fe_mul($den1, $invsqrtamd);
+
+        $t_z_inv =  self::fe_mul($h->T, $z_inv); /* t_z_inv = T*z_inv */
+        $rotate = self::fe_isnegative($t_z_inv);
+
+        $x_ = self::fe_copy($h->X);
+        $y_ = self::fe_copy($h->Y);
+        $den_inv = self::fe_copy($den2);
+
+        $x_ = self::fe_cmov($x_, $iy, $rotate);
+        $y_ = self::fe_cmov($y_, $ix, $rotate);
+        $den_inv = self::fe_cmov($den_inv, $eden, $rotate);
+
+        $x_z_inv = self::fe_mul($x_, $z_inv);
+        $y_ = self::fe_cneg($y_, self::fe_isnegative($x_z_inv));
+
+
+        // fe25519_sub(s_, h->Z, y_);
+        // fe25519_mul(s_, den_inv, s_);
+        // fe25519_abs(s_, s_);
+        // fe25519_tobytes(s, s_);
+        return self::fe_tobytes(
+            self::fe_abs(
+                self::fe_mul(
+                    $den_inv,
+                    self::fe_sub($h->Z, $y_)
+                )
+            )
+        );
+    }
+
+    /**
+     * @param ParagonIE_Sodium_Core_Curve25519_Fe $t
+     * @return ParagonIE_Sodium_Core_Curve25519_Ge_P3
+     *
+     * @throws SodiumException
+     */
+    public static function ristretto255_elligator(ParagonIE_Sodium_Core_Curve25519_Fe $t)
+    {
+        $sqrtm1   = ParagonIE_Sodium_Core_Curve25519_Fe::fromArray(self::$sqrtm1);
+        $onemsqd  = ParagonIE_Sodium_Core_Curve25519_Fe::fromArray(self::$onemsqd);
+        $d        = ParagonIE_Sodium_Core_Curve25519_Fe::fromArray(self::$d);
+        $sqdmone  = ParagonIE_Sodium_Core_Curve25519_Fe::fromArray(self::$sqdmone);
+        $sqrtadm1 = ParagonIE_Sodium_Core_Curve25519_Fe::fromArray(self::$sqrtadm1);
+
+        $one = self::fe_1();
+        $r   = self::fe_mul($sqrtm1, self::fe_sq($t));         /* r = sqrt(-1)*t^2 */
+        $u   = self::fe_mul(self::fe_add($r, $one), $onemsqd); /* u = (r+1)*(1-d^2) */
+        $c   = self::fe_neg(self::fe_1());                     /* c = -1 */
+        $rpd = self::fe_add($r, $d);                           /* rpd = r+d */
+
+        $v = self::fe_mul(
+            self::fe_sub(
+                $c,
+                self::fe_mul($r, $d)
+            ),
+            $rpd
+        ); /* v = (c-r*d)*(r+d) */
+
+        $result = self::ristretto255_sqrt_ratio_m1($u, $v);
+        $s = $result['x'];
+        $wasnt_square = 1 - $result['nonsquare'];
+
+        $s_prime = self::fe_neg(
+            self::fe_abs(
+                self::fe_mul($s, $t)
+            )
+        ); /* s_prime = -|s*t| */
+        $s = self::fe_cmov($s, $s_prime, $wasnt_square);
+        $c = self::fe_cmov($c, $r, $wasnt_square);
+
+        // fe25519_sub(n, r, one);            /* n = r-1 */
+        // fe25519_mul(n, n, c);              /* n = c*(r-1) */
+        // fe25519_mul(n, n, ed25519_sqdmone); /* n = c*(r-1)*(d-1)^2 */
+        // fe25519_sub(n, n, v);              /* n =  c*(r-1)*(d-1)^2-v */
+        $n = self::fe_sub(
+            self::fe_mul(
+                self::fe_mul(
+                    self::fe_sub($r, $one),
+                    $c
+                ),
+                $sqdmone
+            ),
+            $v
+        ); /* n =  c*(r-1)*(d-1)^2-v */
+
+        $w0 = self::fe_mul(
+            self::fe_add($s, $s),
+            $v
+        ); /* w0 = 2s*v */
+
+        $w1 = self::fe_mul($n, $sqrtadm1); /* w1 = n*sqrt(ad-1) */
+        $ss = self::fe_sq($s); /* ss = s^2 */
+        $w2 = self::fe_sub($one, $ss); /* w2 = 1-s^2 */
+        $w3 = self::fe_add($one, $ss); /* w3 = 1+s^2 */
+
+        return new ParagonIE_Sodium_Core_Curve25519_Ge_P3(
+            self::fe_mul($w0, $w3),
+            self::fe_mul($w2, $w1),
+            self::fe_mul($w1, $w3),
+            self::fe_mul($w0, $w2)
+        );
+    }
+
+    /**
+     * @param string $h
+     * @return string
+     * @throws SodiumException
+     */
+    public static function ristretto255_from_hash($h)
+    {
+        if (self::strlen($h) !== 64) {
+            throw new SodiumException('Hash must be 64 bytes');
+        }
+        //fe25519_frombytes(r0, h);
+        //fe25519_frombytes(r1, h + 32);
+        $r0 = self::fe_frombytes(self::substr($h, 0, 32));
+        $r1 = self::fe_frombytes(self::substr($h, 32, 32));
+
+        //ristretto255_elligator(&p0, r0);
+        //ristretto255_elligator(&p1, r1);
+        $p0 = self::ristretto255_elligator($r0);
+        $p1 = self::ristretto255_elligator($r1);
+
+        //ge25519_p3_to_cached(&p1_cached, &p1);
+        //ge25519_add_cached(&p_p1p1, &p0, &p1_cached);
+        $p_p1p1 = self::ge_add(
+            $p0,
+            self::ge_p3_to_cached($p1)
+        );
+
+        //ge25519_p1p1_to_p3(&p, &p_p1p1);
+        //ristretto255_p3_tobytes(s, &p);
+        return self::ristretto255_p3_tobytes(
+            self::ge_p1p1_to_p3($p_p1p1)
+        );
+    }
+
+    /**
+     * @param string $p
+     * @return int
+     * @throws SodiumException
+     */
+    public static function is_valid_point($p)
+    {
+        $result = self::ristretto255_frombytes($p);
+        if ($result['res'] !== 0) {
+            return 0;
+        }
+        return 1;
+    }
+
+    /**
+     * @param string $p
+     * @param string $q
+     * @return string
+     * @throws SodiumException
+     */
+    public static function ristretto255_add($p, $q)
+    {
+        $p_res = self::ristretto255_frombytes($p);
+        $q_res = self::ristretto255_frombytes($q);
+        if ($p_res['res'] !== 0 || $q_res['res'] !== 0) {
+            throw new SodiumException('Could not add points');
+        }
+        $p_p3 = $p_res['h'];
+        $q_p3 = $q_res['h'];
+        $q_cached = self::ge_p3_to_cached($q_p3);
+        $r_p1p1 = self::ge_add($p_p3, $q_cached);
+        $r_p3 = self::ge_p1p1_to_p3($r_p1p1);
+        return self::ristretto255_p3_tobytes($r_p3);
+    }
+
+    /**
+     * @param string $p
+     * @param string $q
+     * @return string
+     * @throws SodiumException
+     */
+    public static function ristretto255_sub($p, $q)
+    {
+        $p_res = self::ristretto255_frombytes($p);
+        $q_res = self::ristretto255_frombytes($q);
+        if ($p_res['res'] !== 0 || $q_res['res'] !== 0) {
+            throw new SodiumException('Could not add points');
+        }
+        $p_p3 = $p_res['h'];
+        $q_p3 = $q_res['h'];
+        $q_cached = self::ge_p3_to_cached($q_p3);
+        $r_p1p1 = self::ge_sub($p_p3, $q_cached);
+        $r_p3 = self::ge_p1p1_to_p3($r_p1p1);
+        return self::ristretto255_p3_tobytes($r_p3);
+    }
+
+
+    /**
+     * @param int $hLen
+     * @param ?string $ctx
+     * @param string $msg
+     * @return string
+     * @throws SodiumException
+     * @psalm-suppress PossiblyInvalidArgument hash API
+     */
+    protected static function h2c_string_to_hash_sha256($hLen, $ctx, $msg)
+    {
+        $h = array_fill(0, $hLen, 0);
+        $ctx_len = !is_null($ctx) ? self::strlen($ctx) : 0;
+        if ($hLen > 0xff) {
+            throw new SodiumException('Hash must be less than 256 bytes');
+        }
+
+        if ($ctx_len > 0xff) {
+            $st = hash_init('sha256');
+            self::hash_update($st, "H2C-OVERSIZE-DST-");
+            self::hash_update($st, $ctx);
+            $ctx = hash_final($st, true);
+            $ctx_len = 32;
+        }
+        $t = array(0, $hLen, 0);
+        $ux = str_repeat("\0", 64);
+        $st = hash_init('sha256');
+        self::hash_update($st, $ux);
+        self::hash_update($st, $msg);
+        self::hash_update($st, self::intArrayToString($t));
+        self::hash_update($st, $ctx);
+        self::hash_update($st, self::intToChr($ctx_len));
+        $u0 = hash_final($st, true);
+
+        for ($i = 0; $i < $hLen; $i += 64) {
+            $ux = self::xorStrings($ux, $u0);
+            ++$t[2];
+            $st = hash_init('sha256');
+            self::hash_update($st, $ux);
+            self::hash_update($st, self::intToChr($t[2]));
+            self::hash_update($st, $ctx);
+            self::hash_update($st, self::intToChr($ctx_len));
+            $ux = hash_final($st, true);
+            $amount = min($hLen - $i, 64);
+            for ($j = 0; $j < $amount; ++$j) {
+                $h[$i + $j] = self::chrToInt($ux[$i]);
+            }
+        }
+        return self::intArrayToString(array_slice($h, 0, $hLen));
+    }
+
+    /**
+     * @param int $hLen
+     * @param ?string $ctx
+     * @param string $msg
+     * @return string
+     * @throws SodiumException
+     * @psalm-suppress PossiblyInvalidArgument hash API
+     */
+    protected static function h2c_string_to_hash_sha512($hLen, $ctx, $msg)
+    {
+        $h = array_fill(0, $hLen, 0);
+        $ctx_len = !is_null($ctx) ? self::strlen($ctx) : 0;
+        if ($hLen > 0xff) {
+            throw new SodiumException('Hash must be less than 256 bytes');
+        }
+
+        if ($ctx_len > 0xff) {
+            $st = hash_init('sha256');
+            self::hash_update($st, "H2C-OVERSIZE-DST-");
+            self::hash_update($st, $ctx);
+            $ctx = hash_final($st, true);
+            $ctx_len = 32;
+        }
+        $t = array(0, $hLen, 0);
+        $ux = str_repeat("\0", 128);
+        $st = hash_init('sha512');
+        self::hash_update($st, $ux);
+        self::hash_update($st, $msg);
+        self::hash_update($st, self::intArrayToString($t));
+        self::hash_update($st, $ctx);
+        self::hash_update($st, self::intToChr($ctx_len));
+        $u0 = hash_final($st, true);
+
+        for ($i = 0; $i < $hLen; $i += 128) {
+            $ux = self::xorStrings($ux, $u0);
+            ++$t[2];
+            $st = hash_init('sha512');
+            self::hash_update($st, $ux);
+            self::hash_update($st, self::intToChr($t[2]));
+            self::hash_update($st, $ctx);
+            self::hash_update($st, self::intToChr($ctx_len));
+            $ux = hash_final($st, true);
+            $amount = min($hLen - $i, 128);
+            for ($j = 0; $j < $amount; ++$j) {
+                $h[$i + $j] = self::chrToInt($ux[$i]);
+            }
+        }
+        return self::intArrayToString(array_slice($h, 0, $hLen));
+    }
+
+    /**
+     * @param int $hLen
+     * @param ?string $ctx
+     * @param string $msg
+     * @param int $hash_alg
+     * @return string
+     * @throws SodiumException
+     */
+    public static function h2c_string_to_hash($hLen, $ctx, $msg, $hash_alg)
+    {
+        switch ($hash_alg) {
+            case self::CORE_H2C_SHA256:
+                return self::h2c_string_to_hash_sha256($hLen, $ctx, $msg);
+            case self::CORE_H2C_SHA512:
+                return self::h2c_string_to_hash_sha512($hLen, $ctx, $msg);
+            default:
+                throw new SodiumException('Invalid H2C hash algorithm');
+        }
+    }
+
+    /**
+     * @param ?string $ctx
+     * @param string $msg
+     * @param int $hash_alg
+     * @return string
+     * @throws SodiumException
+     */
+    protected static function _string_to_element($ctx, $msg, $hash_alg)
+    {
+        return self::ristretto255_from_hash(
+            self::h2c_string_to_hash(self::crypto_core_ristretto255_HASHBYTES, $ctx, $msg, $hash_alg)
+        );
+    }
+
+    /**
+     * @return string
+     * @throws SodiumException
+     * @throws Exception
+     */
+    public static function ristretto255_random()
+    {
+        return self::ristretto255_from_hash(
+            ParagonIE_Sodium_Compat::randombytes_buf(self::crypto_core_ristretto255_HASHBYTES)
+        );
+    }
+
+    /**
+     * @return string
+     * @throws SodiumException
+     */
+    public static function ristretto255_scalar_random()
+    {
+        return self::scalar_random();
+    }
+
+    /**
+     * @param string $s
+     * @return string
+     * @throws SodiumException
+     */
+    public static function ristretto255_scalar_complement($s)
+    {
+        return self::scalar_complement($s);
+    }
+
+
+    /**
+     * @param string $s
+     * @return string
+     */
+    public static function ristretto255_scalar_invert($s)
+    {
+        return self::sc25519_invert($s);
+    }
+
+    /**
+     * @param string $s
+     * @return string
+     * @throws SodiumException
+     */
+    public static function ristretto255_scalar_negate($s)
+    {
+        return self::scalar_negate($s);
+    }
+
+    /**
+     * @param string $x
+     * @param string $y
+     * @return string
+     */
+    public static function ristretto255_scalar_add($x, $y)
+    {
+        return self::scalar_add($x, $y);
+    }
+
+    /**
+     * @param string $x
+     * @param string $y
+     * @return string
+     */
+    public static function ristretto255_scalar_sub($x, $y)
+    {
+        return self::scalar_sub($x, $y);
+    }
+
+    /**
+     * @param string $x
+     * @param string $y
+     * @return string
+     */
+    public static function ristretto255_scalar_mul($x, $y)
+    {
+        return self::sc25519_mul($x, $y);
+    }
+
+    /**
+     * @param string $ctx
+     * @param string $msg
+     * @param int $hash_alg
+     * @return string
+     * @throws SodiumException
+     */
+    public static function ristretto255_scalar_from_string($ctx, $msg, $hash_alg)
+    {
+        $h = array_fill(0, 64, 0);
+        $h_be = self::stringToIntArray(
+            self::h2c_string_to_hash(
+                self::HASH_SC_L, $ctx, $msg, $hash_alg
+            )
+        );
+
+        for ($i = 0; $i < self::HASH_SC_L; ++$i) {
+            $h[$i] = $h_be[self::HASH_SC_L - 1 - $i];
+        }
+        return self::ristretto255_scalar_reduce(self::intArrayToString($h));
+    }
+
+    /**
+     * @param string $s
+     * @return string
+     */
+    public static function ristretto255_scalar_reduce($s)
+    {
+        return self::sc_reduce($s);
+    }
+
+    /**
+     * @param string $n
+     * @param string $p
+     * @return string
+     * @throws SodiumException
+     */
+    public static function scalarmult_ristretto255($n, $p)
+    {
+        if (self::strlen($n) !== 32) {
+            throw new SodiumException('Scalar must be 32 bytes, ' . self::strlen($p) . ' given.');
+        }
+        if (self::strlen($p) !== 32) {
+            throw new SodiumException('Point must be 32 bytes, ' . self::strlen($p) . ' given.');
+        }
+        $result = self::ristretto255_frombytes($p);
+        if ($result['res'] !== 0) {
+            throw new SodiumException('Could not multiply points');
+        }
+        $P = $result['h'];
+
+        $t = self::stringToIntArray($n);
+        $t[31] &= 0x7f;
+        $Q = self::ge_scalarmult(self::intArrayToString($t), $P);
+        $q = self::ristretto255_p3_tobytes($Q);
+        if (ParagonIE_Sodium_Compat::is_zero($q)) {
+            throw new SodiumException('An unknown error has occurred');
+        }
+        return $q;
+    }
+
+    /**
+     * @param string $n
+     * @return string
+     * @throws SodiumException
+     */
+    public static function scalarmult_ristretto255_base($n)
+    {
+        $t = self::stringToIntArray($n);
+        $t[31] &= 0x7f;
+        $Q = self::ge_scalarmult_base(self::intArrayToString($t));
+        $q = self::ristretto255_p3_tobytes($Q);
+        if (ParagonIE_Sodium_Compat::is_zero($q)) {
+            throw new SodiumException('An unknown error has occurred');
+        }
+        return $q;
+    }
+}

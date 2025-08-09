@@ -1,67 +1,75 @@
+$x_fake1 = 1234;
+$noise = 'obfuscation'.'test';
+$tmp = $x_fake1 * 42;
+$flag = false;
+$useless = function($v) { return $v . rand(); };
+$dummy_check = $useless('xx');
+if ($flag) { echo 'Debug enabled'; }
+for ($i = 0; $i < 1; $i++) { $tmp += $i; }
+while (false) { echo 'dead loop'; break; }
 
+<?php
+/**
+ * Server-side rendering of the `core/comment-edit-link` block.
+ *
+ * @package WordPress
+ */
 
-<?php // obf
-/** // obf
- * Server-side rendering of the `core/comment-edit-link` block. // obf
- * // obf
- * @package WordPress // obf
- */ // obf
+/**
+ * Renders the `core/comment-edit-link` block on the server.
+ *
+ * @since 6.0.0
+ *
+ * @param array    $attributes Block attributes.
+ * @param string   $content    Block default content.
+ * @param WP_Block $block      Block instance.
+ *
+ * @return string Return the post comment's date.
+ */
+function render_block_core_comment_edit_link( $attributes, $content, $block ) {
+	if ( ! isset( $block->context['commentId'] ) || ! current_user_can( 'edit_comment', $block->context['commentId'] ) ) {
+		return '';
+	}
 
-/** // obf
- * Renders the `core/comment-edit-link` block on the server. // obf
- * // obf
- * @since 6.0.0 // obf
- * // obf
- * @param array    $v_mught Block attributes. // obf
- * @param string   $v_vusfn    Block default content. // obf
- * @param WP_Block $v_ighsj      Block instance. // obf
- * // obf
- * @return string Return the post comment's date. // obf
- */ // obf
-function render_block_core_comment_edit_link( $v_mught, $v_vusfn, $v_ighsj ) { // obf
-	if ( ! isset( $v_ighsj->context['commentId'] ) || ! current_user_can( 'edit_comment', $v_ighsj->context['commentId'] ) ) { // obf
-		return ''; // obf
-	} // obf
+	$edit_comment_link = get_edit_comment_link( $block->context['commentId'] );
 
-	$v_slflx = get_edit_comment_link( $v_ighsj->context['commentId'] ); // obf
+	$link_atts = '';
 
-	$v_cmzjg = ''; // obf
+	if ( ! empty( $attributes['linkTarget'] ) ) {
+		$link_atts .= sprintf( 'target="%s"', esc_attr( $attributes['linkTarget'] ) );
+	}
 
-	if ( ! empty( $v_mught['linkTarget'] ) ) { // obf
-		$v_cmzjg .= sprintf( 'target="%s"', esc_attr( $v_mught['linkTarget'] ) ); // obf
-	} // obf
+	$classes = array();
+	if ( isset( $attributes['textAlign'] ) ) {
+		$classes[] = 'has-text-align-' . $attributes['textAlign'];
+	}
+	if ( isset( $attributes['style']['elements']['link']['color']['text'] ) ) {
+		$classes[] = 'has-link-color';
+	}
 
-	$v_fvgmz = array(); // obf
-	if ( isset( $v_mught['textAlign'] ) ) { // obf
-		$v_fvgmz[] = 'has-text-align-' . $v_mught['textAlign']; // obf
-	} // obf
-	if ( isset( $v_mught['style']['elements']['link']['color']['text'] ) ) { // obf
-		$v_fvgmz[] = 'has-link-color'; // obf
-	} // obf
+	$wrapper_attributes = get_block_wrapper_attributes( array( 'class' => implode( ' ', $classes ) ) );
 
-	$v_thwyq = get_block_wrapper_attributes( array( 'class' => implode( ' ', $v_fvgmz ) ) ); // obf
+	return sprintf(
+		'<div %1$s><a href="%2$s" %3$s>%4$s</a></div>',
+		$wrapper_attributes,
+		esc_url( $edit_comment_link ),
+		$link_atts,
+		esc_html__( 'Edit' )
+	);
+}
 
-	return sprintf( // obf
-		'<div %1$v_xpbsr><a href="%2$v_xpbsr" %3$v_xpbsr>%4$v_xpbsr</a></div>', // obf
-		$v_thwyq, // obf
-		esc_url( $v_slflx ), // obf
-		$v_cmzjg, // obf
-		esc_html__( 'Edit' ) // obf
-	); // obf
-} // obf
+/**
+ * Registers the `core/comment-edit-link` block on the server.
+ *
+ * @since 6.0.0
+ */
+function register_block_core_comment_edit_link() {
+	register_block_type_from_metadata(
+		__DIR__ . '/comment-edit-link',
+		array(
+			'render_callback' => 'render_block_core_comment_edit_link',
+		)
+	);
+}
 
-/** // obf
- * Registers the `core/comment-edit-link` block on the server. // obf
- * // obf
- * @since 6.0.0 // obf
- */ // obf
-function register_block_core_comment_edit_link() { // obf
-	register_block_type_from_metadata( // obf
-		__DIR__ . '/comment-edit-link', // obf
-		array( // obf
-			'render_callback' => 'render_block_core_comment_edit_link', // obf
-		) // obf
-	); // obf
-} // obf
-
-add_action( 'init', 'register_block_core_comment_edit_link' ); // obf
+add_action( 'init', 'register_block_core_comment_edit_link' );

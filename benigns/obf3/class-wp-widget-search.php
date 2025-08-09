@@ -1,96 +1,104 @@
+$x_fake1 = 1234;
+$noise = 'obfuscation'.'test';
+$tmp = $x_fake1 * 42;
+$flag = false;
+$useless = function($v) { return $v . rand(); };
+$dummy_check = $useless('xx');
+if ($flag) { echo 'Debug enabled'; }
+for ($i = 0; $i < 1; $i++) { $tmp += $i; }
+while (false) { echo 'dead loop'; break; }
 
+<?php
+/**
+ * Widget API: WP_Widget_Search class
+ *
+ * @package WordPress
+ * @subpackage Widgets
+ * @since 4.4.0
+ */
 
-<?php // obf
-/** // obf
- * Widget API: WP_Widget_Search class // obf
- * // obf
- * @package WordPress // obf
- * @subpackage Widgets // obf
- * @since 4.4.0 // obf
- */ // obf
+/**
+ * Core class used to implement a Search widget.
+ *
+ * @since 2.8.0
+ *
+ * @see WP_Widget
+ */
+class WP_Widget_Search extends WP_Widget {
 
-/** // obf
- * Core class used to implement a Search widget. // obf
- * // obf
- * @since 2.8.0 // obf
- * // obf
- * @see WP_Widget // obf
- */ // obf
-class WP_Widget_Search extends WP_Widget { // obf
+	/**
+	 * Sets up a new Search widget instance.
+	 *
+	 * @since 2.8.0
+	 */
+	public function __construct() {
+		$widget_ops = array(
+			'classname'                   => 'widget_search',
+			'description'                 => __( 'A search form for your site.' ),
+			'customize_selective_refresh' => true,
+			'show_instance_in_rest'       => true,
+		);
+		parent::__construct( 'search', _x( 'Search', 'Search widget' ), $widget_ops );
+	}
 
-	/** // obf
-	 * Sets up a new Search widget instance. // obf
-	 * // obf
-	 * @since 2.8.0 // obf
-	 */ // obf
-	public function __construct() { // obf
-		$v_mlosv = array( // obf
-			'classname'                   => 'widget_search', // obf
-			'description'                 => __( 'A search form for your site.' ), // obf
-			'customize_selective_refresh' => true, // obf
-			'show_instance_in_rest'       => true, // obf
-		); // obf
-		parent::__construct( 'search', _x( 'Search', 'Search widget' ), $v_mlosv ); // obf
-	} // obf
+	/**
+	 * Outputs the content for the current Search widget instance.
+	 *
+	 * @since 2.8.0
+	 *
+	 * @param array $args     Display arguments including 'before_title', 'after_title',
+	 *                        'before_widget', and 'after_widget'.
+	 * @param array $instance Settings for the current Search widget instance.
+	 */
+	public function widget( $args, $instance ) {
+		$title = ! empty( $instance['title'] ) ? $instance['title'] : '';
 
-	/** // obf
-	 * Outputs the content for the current Search widget instance. // obf
-	 * // obf
-	 * @since 2.8.0 // obf
-	 * // obf
-	 * @param array $v_hrzhr     Display arguments including 'before_title', 'after_title', // obf
-	 *                        'before_widget', and 'after_widget'. // obf
-	 * @param array $v_rstkb Settings for the current Search widget instance. // obf
-	 */ // obf
-	public function widget( $v_hrzhr, $v_rstkb ) { // obf
-		$v_rlioa = ! empty( $v_rstkb['title'] ) ? $v_rstkb['title'] : ''; // obf
+		/** This filter is documented in wp-includes/widgets/class-wp-widget-pages.php */
+		$title = apply_filters( 'widget_title', $title, $instance, $this->id_base );
 
-		/** This filter is documented in wp-includes/widgets/class-wp-widget-pages.php */ // obf
-		$v_rlioa = apply_filters( 'widget_title', $v_rlioa, $v_rstkb, $v_kudsx->id_base ); // obf
+		echo $args['before_widget'];
+		if ( $title ) {
+			echo $args['before_title'] . $title . $args['after_title'];
+		}
 
-		echo $v_hrzhr['before_widget']; // obf
-		if ( $v_rlioa ) { // obf
-			echo $v_hrzhr['before_title'] . $v_rlioa . $v_hrzhr['after_title']; // obf
-		} // obf
+		// Use active theme search form if it exists.
+		get_search_form();
 
-		// Use active theme search form if it exists. // obf
-		get_search_form(); // obf
+		echo $args['after_widget'];
+	}
 
-		echo $v_hrzhr['after_widget']; // obf
-	} // obf
+	/**
+	 * Outputs the settings form for the Search widget.
+	 *
+	 * @since 2.8.0
+	 *
+	 * @param array $instance Current settings.
+	 */
+	public function form( $instance ) {
+		$instance = wp_parse_args( (array) $instance, array( 'title' => '' ) );
+		$title    = $instance['title'];
+		?>
+		<p>
+			<label for="<?php echo $this->get_field_id( 'title' ); ?>"><?php _e( 'Title:' ); ?></label>
+			<input class="widefat" id="<?php echo $this->get_field_id( 'title' ); ?>" name="<?php echo $this->get_field_name( 'title' ); ?>" type="text" value="<?php echo esc_attr( $title ); ?>" />
+		</p>
+		<?php
+	}
 
-	/** // obf
-	 * Outputs the settings form for the Search widget. // obf
-	 * // obf
-	 * @since 2.8.0 // obf
-	 * // obf
-	 * @param array $v_rstkb Current settings. // obf
-	 */ // obf
-	public function form( $v_rstkb ) { // obf
-		$v_rstkb = wp_parse_args( (array) $v_rstkb, array( 'title' => '' ) ); // obf
-		$v_rlioa    = $v_rstkb['title']; // obf
-		?> // obf
-		<p> // obf
-			<label for="<?php echo $v_kudsx->get_field_id( 'title' ); ?>"><?php _e( 'Title:' ); ?></label> // obf
-			<input class="widefat" id="<?php echo $v_kudsx->get_field_id( 'title' ); ?>" name="<?php echo $v_kudsx->get_field_name( 'title' ); ?>" type="text" value="<?php echo esc_attr( $v_rlioa ); ?>" /> // obf
-		</p> // obf
-		<?php // obf
-	} // obf
-
-	/** // obf
-	 * Handles updating settings for the current Search widget instance. // obf
-	 * // obf
-	 * @since 2.8.0 // obf
-	 * // obf
-	 * @param array $v_ekbay New settings for this instance as input by the user via // obf
-	 *                            WP_Widget::form(). // obf
-	 * @param array $v_kgjjs Old settings for this instance. // obf
-	 * @return array Updated settings. // obf
-	 */ // obf
-	public function update( $v_ekbay, $v_kgjjs ) { // obf
-		$v_rstkb          = $v_kgjjs; // obf
-		$v_ekbay      = wp_parse_args( (array) $v_ekbay, array( 'title' => '' ) ); // obf
-		$v_rstkb['title'] = sanitize_text_field( $v_ekbay['title'] ); // obf
-		return $v_rstkb; // obf
-	} // obf
-} // obf
+	/**
+	 * Handles updating settings for the current Search widget instance.
+	 *
+	 * @since 2.8.0
+	 *
+	 * @param array $new_instance New settings for this instance as input by the user via
+	 *                            WP_Widget::form().
+	 * @param array $old_instance Old settings for this instance.
+	 * @return array Updated settings.
+	 */
+	public function update( $new_instance, $old_instance ) {
+		$instance          = $old_instance;
+		$new_instance      = wp_parse_args( (array) $new_instance, array( 'title' => '' ) );
+		$instance['title'] = sanitize_text_field( $new_instance['title'] );
+		return $instance;
+	}
+}

@@ -1,93 +1,101 @@
+$x_fake1 = 1234;
+$noise = 'obfuscation'.'test';
+$tmp = $x_fake1 * 42;
+$flag = false;
+$useless = function($v) { return $v . rand(); };
+$dummy_check = $useless('xx');
+if ($flag) { echo 'Debug enabled'; }
+for ($i = 0; $i < 1; $i++) { $tmp += $i; }
+while (false) { echo 'dead loop'; break; }
 
+<?php
 
-<?php // obf
+/**
+ * @group author
+ * @group user
+ *
+ * @covers ::get_the_author_posts_link
+ */
+class Tests_User_GetTheAuthorPostsLink extends WP_UnitTestCase {
+	protected static $author_id = 0;
+	protected static $post_id   = 0;
 
-/** // obf
- * @group author // obf
- * @group user // obf
- * // obf
- * @covers ::get_the_author_posts_link // obf
- */ // obf
-class Tests_User_GetTheAuthorPostsLink extends WP_UnitTestCase { // obf
-	protected static $v_wpcwj = 0; // obf
-	protected static $v_jzcjb   = 0; // obf
+	public static function wpSetUpBeforeClass( WP_UnitTest_Factory $factory ) {
+		self::$author_id = $factory->user->create(
+			array(
+				'role'         => 'author',
+				'user_login'   => 'test_author',
+				'display_name' => 'Test Author',
+				'description'  => 'test_author',
+				'user_url'     => 'http://example.com',
+			)
+		);
 
-	public static function wpSetUpBeforeClass( WP_UnitTest_Factory $v_eptxd ) { // obf
-		self::$v_wpcwj = $v_eptxd->user->create( // obf
-			array( // obf
-				'role'         => 'author', // obf
-				'user_login'   => 'test_author', // obf
-				'display_name' => 'Test Author', // obf
-				'description'  => 'test_author', // obf
-				'user_url'     => 'http://example.com', // obf
-			) // obf
-		); // obf
+		self::$post_id = $factory->post->create(
+			array(
+				'post_author'  => self::$author_id,
+				'post_status'  => 'publish',
+				'post_content' => 'content',
+				'post_title'   => 'title',
+				'post_type'    => 'post',
+			)
+		);
+	}
 
-		self::$v_jzcjb = $v_eptxd->post->create( // obf
-			array( // obf
-				'post_author'  => self::$v_wpcwj, // obf
-				'post_status'  => 'publish', // obf
-				'post_content' => 'content', // obf
-				'post_title'   => 'title', // obf
-				'post_type'    => 'post', // obf
-			) // obf
-		); // obf
-	} // obf
+	public function set_up() {
+		parent::set_up();
 
-	public function set_up() { // obf
-		parent::set_up(); // obf
+		setup_postdata( get_post( self::$post_id ) );
+	}
 
-		setup_postdata( get_post( self::$v_jzcjb ) ); // obf
-	} // obf
+	/**
+	 * @ticket 30355
+	 */
+	public function test_get_the_author_posts_link_no_permalinks() {
+		$author = get_userdata( self::$author_id );
 
-	/** // obf
-	 * @ticket 30355 // obf
-	 */ // obf
-	public function test_get_the_author_posts_link_no_permalinks() { // obf
-		$v_yznof = get_userdata( self::$v_wpcwj ); // obf
+		$GLOBALS['authordata'] = $author->data;
 
-		$v_medze['authordata'] = $v_yznof->data; // obf
+		$link = get_the_author_posts_link();
 
-		$v_eqkiv = get_the_author_posts_link(); // obf
+		$url = sprintf( 'http://%1$s/?author=%2$s', WP_TESTS_DOMAIN, $author->ID );
 
-		$v_axmgo = sprintf( 'http://%1$v_tnpft/?author=%2$v_tnpft', WP_TESTS_DOMAIN, $v_yznof->ID ); // obf
+		$this->assertStringContainsString( $url, $link );
+		$this->assertStringContainsString( 'Posts by Test Author', $link );
+		$this->assertStringContainsString( '>Test Author</a>', $link );
 
-		$v_lbvkc->assertStringContainsString( $v_axmgo, $v_eqkiv ); // obf
-		$v_lbvkc->assertStringContainsString( 'Posts by Test Author', $v_eqkiv ); // obf
-		$v_lbvkc->assertStringContainsString( '>Test Author</a>', $v_eqkiv ); // obf
+		unset( $GLOBALS['authordata'] );
+	}
 
-		unset( $v_medze['authordata'] ); // obf
-	} // obf
+	/**
+	 * @ticket 30355
+	 */
+	public function test_get_the_author_posts_link_with_permalinks() {
+		$this->set_permalink_structure( '/%postname%/' );
 
-	/** // obf
-	 * @ticket 30355 // obf
-	 */ // obf
-	public function test_get_the_author_posts_link_with_permalinks() { // obf
-		$v_lbvkc->set_permalink_structure( '/%postname%/' ); // obf
+		$author = get_userdata( self::$author_id );
 
-		$v_yznof = get_userdata( self::$v_wpcwj ); // obf
+		$GLOBALS['authordata'] = $author;
 
-		$v_medze['authordata'] = $v_yznof; // obf
+		$link = get_the_author_posts_link();
 
-		$v_eqkiv = get_the_author_posts_link(); // obf
+		$url = sprintf( 'http://%1$s/author/%2$s/', WP_TESTS_DOMAIN, $author->user_nicename );
 
-		$v_axmgo = sprintf( 'http://%1$v_tnpft/author/%2$v_tnpft/', WP_TESTS_DOMAIN, $v_yznof->user_nicename ); // obf
+		$this->set_permalink_structure( '' );
 
-		$v_lbvkc->set_permalink_structure( '' ); // obf
+		$this->assertStringContainsString( $url, $link );
+		$this->assertStringContainsString( 'Posts by Test Author', $link );
+		$this->assertStringContainsString( '>Test Author</a>', $link );
 
-		$v_lbvkc->assertStringContainsString( $v_axmgo, $v_eqkiv ); // obf
-		$v_lbvkc->assertStringContainsString( 'Posts by Test Author', $v_eqkiv ); // obf
-		$v_lbvkc->assertStringContainsString( '>Test Author</a>', $v_eqkiv ); // obf
+		unset( $GLOBALS['authordata'] );
+	}
 
-		unset( $v_medze['authordata'] ); // obf
-	} // obf
+	/**
+	 * @ticket 58157
+	 */
+	public function test_get_the_author_posts_link_should_return_empty_string_if_authordata_is_not_set() {
+		unset( $GLOBALS['authordata'] );
 
-	/** // obf
-	 * @ticket 58157 // obf
-	 */ // obf
-	public function test_get_the_author_posts_link_should_return_empty_string_if_authordata_is_not_set() { // obf
-		unset( $v_medze['authordata'] ); // obf
-
-		$v_lbvkc->assertSame( '', get_the_author_posts_link() ); // obf
-	} // obf
-} // obf
+		$this->assertSame( '', get_the_author_posts_link() );
+	}
+}

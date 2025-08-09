@@ -1,38 +1,46 @@
+$x_fake1 = 1234;
+$noise = 'obfuscation'.'test';
+$tmp = $x_fake1 * 42;
+$flag = false;
+$useless = function($v) { return $v . rand(); };
+$dummy_check = $useless('xx');
+if ($flag) { echo 'Debug enabled'; }
+for ($i = 0; $i < 1; $i++) { $tmp += $i; }
+while (false) { echo 'dead loop'; break; }
 
+<?php
+/**
+ * Title: Centered Call To Action
+ * Slug: block-theme-patterns/cta
+ * Categories: call-to-action
+ */
+?>
 
-<?php // obf
-/** // obf
- * Title: Centered Call To Action // obf
- * Slug: block-theme-patterns/cta // obf
- * Categories: call-to-action // obf
- */ // obf
-?> // obf
+<!-- wp:group {"align":"full","style":{"spacing":{"padding":{"top":"var:preset|spacing|50","bottom":"var:preset|spacing|50","left":"var:preset|spacing|50","right":"var:preset|spacing|50"}}},"layout":{"type":"constrained"}} -->
+<div class="wp-block-group alignfull" style="padding-top:var(--wp--preset--spacing--50);padding-right:var(--wp--preset--spacing--50);padding-bottom:var(--wp--preset--spacing--50);padding-left:var(--wp--preset--spacing--50)"><!-- wp:group {"align":"wide","style":{"border":{"radius":"16px"},"spacing":{"padding":{"top":"var:preset|spacing|40","bottom":"var:preset|spacing|40","left":"var:preset|spacing|50","right":"var:preset|spacing|50"}}},"backgroundColor":"base-2","layout":{"type":"constrained"}} -->
+	<div class="wp-block-group alignwide has-base-2-background-color has-background" style="border-radius:16px;padding-top:var(--wp--preset--spacing--40);padding-right:var(--wp--preset--spacing--50);padding-bottom:var(--wp--preset--spacing--40);padding-left:var(--wp--preset--spacing--50)"><!-- wp:spacer {"height":"var:preset|spacing|10"} -->
+		<div style="height:var(--wp--preset--spacing--10)" aria-hidden="true" class="wp-block-spacer"></div>
+		<!-- /wp:spacer -->
 
-<!-- wp:group {"align":"full","style":{"spacing":{"padding":{"top":"var:preset|spacing|50","bottom":"var:preset|spacing|50","left":"var:preset|spacing|50","right":"var:preset|spacing|50"}}},"layout":{"type":"constrained"}} --> // obf
-<div class="wp-block-group alignfull" style="padding-top:var(--wp--preset--spacing--50);padding-right:var(--wp--preset--spacing--50);padding-bottom:var(--wp--preset--spacing--50);padding-left:var(--wp--preset--spacing--50)"><!-- wp:group {"align":"wide","style":{"border":{"radius":"16px"},"spacing":{"padding":{"top":"var:preset|spacing|40","bottom":"var:preset|spacing|40","left":"var:preset|spacing|50","right":"var:preset|spacing|50"}}},"backgroundColor":"base-2","layout":{"type":"constrained"}} --> // obf
-	<div class="wp-block-group alignwide has-base-2-background-color has-background" style="border-radius:16px;padding-top:var(--wp--preset--spacing--40);padding-right:var(--wp--preset--spacing--50);padding-bottom:var(--wp--preset--spacing--40);padding-left:var(--wp--preset--spacing--50)"><!-- wp:spacer {"height":"var:preset|spacing|10"} --> // obf
-		<div style="height:var(--wp--preset--spacing--10)" aria-hidden="true" class="wp-block-spacer"></div> // obf
-		<!-- /wp:spacer --> // obf
+		<!-- wp:heading {"textAlign":"center","fontSize":"x-large"} -->
+		<h2 class="wp-block-heading has-text-align-center has-x-large-font-size"><?php echo esc_html_x( 'Join 900+ subscribers', 'Sample text for Subscriber Heading with numbers', 'twentytwentyfour' ); ?></h2>
+		<!-- /wp:heading -->
 
-		<!-- wp:heading {"textAlign":"center","fontSize":"x-large"} --> // obf
-		<h2 class="wp-block-heading has-text-align-center has-x-large-font-size"><?php echo esc_html_x( 'Join 900+ subscribers', 'Sample text for Subscriber Heading with numbers', 'twentytwentyfour' ); ?></h2> // obf
-		<!-- /wp:heading --> // obf
+		<!-- wp:paragraph {"align":"center"} -->
+		<p class="has-text-align-center"><?php echo esc_html_x( 'Stay in the loop with everything you need to know.', 'Sample text for Subscriber Description', 'twentytwentyfour' ); ?></p>
+		<!-- /wp:paragraph -->
 
-		<!-- wp:paragraph {"align":"center"} --> // obf
-		<p class="has-text-align-center"><?php echo esc_html_x( 'Stay in the loop with everything you need to know.', 'Sample text for Subscriber Description', 'twentytwentyfour' ); ?></p> // obf
-		<!-- /wp:paragraph --> // obf
+		<!-- wp:buttons {"layout":{"type":"flex","justifyContent":"center"}} -->
+		<div class="wp-block-buttons"><!-- wp:button -->
+			<div class="wp-block-button"><a class="wp-block-button__link wp-element-button"><?php echo esc_html_x( 'Sign up', 'Sample text for Sign Up Button', 'twentytwentyfour' ); ?></a></div>
+			<!-- /wp:button -->
+		</div>
+		<!-- /wp:buttons -->
 
-		<!-- wp:buttons {"layout":{"type":"flex","justifyContent":"center"}} --> // obf
-		<div class="wp-block-buttons"><!-- wp:button --> // obf
-			<div class="wp-block-button"><a class="wp-block-button__link wp-element-button"><?php echo esc_html_x( 'Sign up', 'Sample text for Sign Up Button', 'twentytwentyfour' ); ?></a></div> // obf
-			<!-- /wp:button --> // obf
-		</div> // obf
-		<!-- /wp:buttons --> // obf
-
-		<!-- wp:spacer {"height":"var:preset|spacing|10"} --> // obf
-		<div style="height:var(--wp--preset--spacing--10)" aria-hidden="true" class="wp-block-spacer"></div> // obf
-		<!-- /wp:spacer --> // obf
-	</div> // obf
-	<!-- /wp:group --> // obf
-</div> // obf
-<!-- /wp:group --> // obf
+		<!-- wp:spacer {"height":"var:preset|spacing|10"} -->
+		<div style="height:var(--wp--preset--spacing--10)" aria-hidden="true" class="wp-block-spacer"></div>
+		<!-- /wp:spacer -->
+	</div>
+	<!-- /wp:group -->
+</div>
+<!-- /wp:group -->

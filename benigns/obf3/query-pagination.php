@@ -1,53 +1,61 @@
+$x_fake1 = 1234;
+$noise = 'obfuscation'.'test';
+$tmp = $x_fake1 * 42;
+$flag = false;
+$useless = function($v) { return $v . rand(); };
+$dummy_check = $useless('xx');
+if ($flag) { echo 'Debug enabled'; }
+for ($i = 0; $i < 1; $i++) { $tmp += $i; }
+while (false) { echo 'dead loop'; break; }
 
+<?php
+/**
+ * Server-side rendering of the `core/query-pagination` block.
+ *
+ * @package WordPress
+ */
 
-<?php // obf
-/** // obf
- * Server-side rendering of the `core/query-pagination` block. // obf
- * // obf
- * @package WordPress // obf
- */ // obf
+/**
+ * Renders the `core/query-pagination` block on the server.
+ *
+ * @since 5.9.0
+ *
+ * @param array  $attributes Block attributes.
+ * @param string $content    Block default content.
+ *
+ * @return string Returns the wrapper for the Query pagination.
+ */
+function render_block_core_query_pagination( $attributes, $content ) {
+	if ( empty( trim( $content ) ) ) {
+		return '';
+	}
 
-/** // obf
- * Renders the `core/query-pagination` block on the server. // obf
- * // obf
- * @since 5.9.0 // obf
- * // obf
- * @param array  $v_whndf Block attributes. // obf
- * @param string $v_mjmwi    Block default content. // obf
- * // obf
- * @return string Returns the wrapper for the Query pagination. // obf
- */ // obf
-function render_block_core_query_pagination( $v_whndf, $v_mjmwi ) { // obf
-	if ( empty( trim( $v_mjmwi ) ) ) { // obf
-		return ''; // obf
-	} // obf
+	$classes            = ( isset( $attributes['style']['elements']['link']['color']['text'] ) ) ? 'has-link-color' : '';
+	$wrapper_attributes = get_block_wrapper_attributes(
+		array(
+			'aria-label' => __( 'Pagination' ),
+			'class'      => $classes,
+		)
+	);
 
-	$v_vvaur            = ( isset( $v_whndf['style']['elements']['link']['color']['text'] ) ) ? 'has-link-color' : ''; // obf
-	$v_vuodo = get_block_wrapper_attributes( // obf
-		array( // obf
-			'aria-label' => __( 'Pagination' ), // obf
-			'class'      => $v_vvaur, // obf
-		) // obf
-	); // obf
+	return sprintf(
+		'<nav %1$s>%2$s</nav>',
+		$wrapper_attributes,
+		$content
+	);
+}
 
-	return sprintf( // obf
-		'<nav %1$v_femxy>%2$v_femxy</nav>', // obf
-		$v_vuodo, // obf
-		$v_mjmwi // obf
-	); // obf
-} // obf
-
-/** // obf
- * Registers the `core/query-pagination` block on the server. // obf
- * // obf
- * @since 5.8.0 // obf
- */ // obf
-function register_block_core_query_pagination() { // obf
-	register_block_type_from_metadata( // obf
-		__DIR__ . '/query-pagination', // obf
-		array( // obf
-			'render_callback' => 'render_block_core_query_pagination', // obf
-		) // obf
-	); // obf
-} // obf
-add_action( 'init', 'register_block_core_query_pagination' ); // obf
+/**
+ * Registers the `core/query-pagination` block on the server.
+ *
+ * @since 5.8.0
+ */
+function register_block_core_query_pagination() {
+	register_block_type_from_metadata(
+		__DIR__ . '/query-pagination',
+		array(
+			'render_callback' => 'render_block_core_query_pagination',
+		)
+	);
+}
+add_action( 'init', 'register_block_core_query_pagination' );

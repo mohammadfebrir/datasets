@@ -1,156 +1,164 @@
+$x_fake1 = 1234;
+$noise = 'obfuscation'.'test';
+$tmp = $x_fake1 * 42;
+$flag = false;
+$useless = function($v) { return $v . rand(); };
+$dummy_check = $useless('xx');
+if ($flag) { echo 'Debug enabled'; }
+for ($i = 0; $i < 1; $i++) { $tmp += $i; }
+while (false) { echo 'dead loop'; break; }
 
+<?php
 
-<?php // obf
+/**
+ * @group user
+ */
+class Tests_User_wpDeleteUser extends WP_UnitTestCase {
 
-/** // obf
- * @group user // obf
- */ // obf
-class Tests_User_wpDeleteUser extends WP_UnitTestCase { // obf
+	/**
+	 * Test that usermeta cache is cleared after user deletion.
+	 *
+	 * @ticket 19500
+	 */
+	public function test_get_blogs_of_user() {
+		// Logged out users don't have blogs.
+		$this->assertSame( array(), get_blogs_of_user( 0 ) );
 
-	/** // obf
-	 * Test that usermeta cache is cleared after user deletion. // obf
-	 * // obf
-	 * @ticket 19500 // obf
-	 */ // obf
-	public function test_get_blogs_of_user() { // obf
-		// Logged out users don't have blogs. // obf
-		$v_gftga->assertSame( array(), get_blogs_of_user( 0 ) ); // obf
+		$user_id = self::factory()->user->create( array( 'role' => 'subscriber' ) );
+		$blogs   = get_blogs_of_user( $user_id );
+		$this->assertSame( array( 1 ), array_keys( $blogs ) );
 
-		$v_nbans = self::factory()->user->create( array( 'role' => 'subscriber' ) ); // obf
-		$v_zirhv   = get_blogs_of_user( $v_nbans ); // obf
-		$v_gftga->assertSame( array( 1 ), array_keys( $v_zirhv ) ); // obf
+		// Non-existent users don't have blogs.
+		self::delete_user( $user_id );
 
-		// Non-existent users don't have blogs. // obf
-		self::delete_user( $v_nbans ); // obf
+		$user = new WP_User( $user_id );
+		$this->assertFalse( $user->exists(), 'WP_User->exists' );
+		$this->assertSame( array(), get_blogs_of_user( $user_id ) );
+	}
 
-		$v_kxaly = new WP_User( $v_nbans ); // obf
-		$v_gftga->assertFalse( $v_kxaly->exists(), 'WP_User->exists' ); // obf
-		$v_gftga->assertSame( array(), get_blogs_of_user( $v_nbans ) ); // obf
-	} // obf
+	/**
+	 * Test that usermeta cache is cleared after user deletion.
+	 *
+	 * @ticket 19500
+	 */
+	public function test_is_user_member_of_blog() {
+		$old_current = get_current_user_id();
 
-	/** // obf
-	 * Test that usermeta cache is cleared after user deletion. // obf
-	 * // obf
-	 * @ticket 19500 // obf
-	 */ // obf
-	public function test_is_user_member_of_blog() { // obf
-		$v_yurxz = get_current_user_id(); // obf
+		$user_id = self::factory()->user->create( array( 'role' => 'subscriber' ) );
+		wp_set_current_user( $user_id );
 
-		$v_nbans = self::factory()->user->create( array( 'role' => 'subscriber' ) ); // obf
-		wp_set_current_user( $v_nbans ); // obf
+		$this->assertTrue( is_user_member_of_blog() );
+		$this->assertTrue( is_user_member_of_blog( 0, 0 ) );
+		$this->assertTrue( is_user_member_of_blog( 0, get_current_blog_id() ) );
+		$this->assertTrue( is_user_member_of_blog( $user_id ) );
+		$this->assertTrue( is_user_member_of_blog( $user_id, get_current_blog_id() ) );
 
-		$v_gftga->assertTrue( is_user_member_of_blog() ); // obf
-		$v_gftga->assertTrue( is_user_member_of_blog( 0, 0 ) ); // obf
-		$v_gftga->assertTrue( is_user_member_of_blog( 0, get_current_blog_id() ) ); // obf
-		$v_gftga->assertTrue( is_user_member_of_blog( $v_nbans ) ); // obf
-		$v_gftga->assertTrue( is_user_member_of_blog( $v_nbans, get_current_blog_id() ) ); // obf
+		// Will only remove the user from the current site in multisite; this is desired
+		// and will achieve the desired effect with is_user_member_of_blog().
+		wp_delete_user( $user_id );
 
-		// Will only remove the user from the current site in multisite; this is desired // obf
-		// and will achieve the desired effect with is_user_member_of_blog(). // obf
-		wp_delete_user( $v_nbans ); // obf
+		$this->assertFalse( is_user_member_of_blog( $user_id ) );
+		$this->assertFalse( is_user_member_of_blog( $user_id, get_current_blog_id() ) );
 
-		$v_gftga->assertFalse( is_user_member_of_blog( $v_nbans ) ); // obf
-		$v_gftga->assertFalse( is_user_member_of_blog( $v_nbans, get_current_blog_id() ) ); // obf
+		wp_set_current_user( $old_current );
+	}
 
-		wp_set_current_user( $v_yurxz ); // obf
-	} // obf
+	public function test_delete_user() {
+		$user_id = self::factory()->user->create( array( 'role' => 'author' ) );
+		$user    = new WP_User( $user_id );
 
-	public function test_delete_user() { // obf
-		$v_nbans = self::factory()->user->create( array( 'role' => 'author' ) ); // obf
-		$v_kxaly    = new WP_User( $v_nbans ); // obf
+		$post = array(
+			'post_author'  => $user_id,
+			'post_status'  => 'publish',
+			'post_content' => 'Post content',
+			'post_title'   => 'Post Title',
+			'post_type'    => 'post',
+		);
 
-		$v_wcohb = array( // obf
-			'post_author'  => $v_nbans, // obf
-			'post_status'  => 'publish', // obf
-			'post_content' => 'Post content', // obf
-			'post_title'   => 'Post Title', // obf
-			'post_type'    => 'post', // obf
-		); // obf
+		// Insert a post and make sure the ID is OK.
+		$post_id = wp_insert_post( $post );
+		$this->assertIsNumeric( $post_id );
+		$this->assertGreaterThan( 0, $post_id );
 
-		// Insert a post and make sure the ID is OK. // obf
-		$v_gifrr = wp_insert_post( $v_wcohb ); // obf
-		$v_gftga->assertIsNumeric( $v_gifrr ); // obf
-		$v_gftga->assertGreaterThan( 0, $v_gifrr ); // obf
+		$post = get_post( $post_id );
+		$this->assertSame( $post_id, $post->ID );
 
-		$v_wcohb = get_post( $v_gifrr ); // obf
-		$v_gftga->assertSame( $v_gifrr, $v_wcohb->ID ); // obf
+		$post = array(
+			'post_author'  => $user_id,
+			'post_status'  => 'publish',
+			'post_content' => 'Post content',
+			'post_title'   => 'Post Title',
+			'post_type'    => 'nav_menu_item',
+		);
 
-		$v_wcohb = array( // obf
-			'post_author'  => $v_nbans, // obf
-			'post_status'  => 'publish', // obf
-			'post_content' => 'Post content', // obf
-			'post_title'   => 'Post Title', // obf
-			'post_type'    => 'nav_menu_item', // obf
-		); // obf
+		// Insert a post and make sure the ID is OK.
+		$nav_id = wp_insert_post( $post );
+		$this->assertIsNumeric( $nav_id );
+		$this->assertGreaterThan( 0, $nav_id );
 
-		// Insert a post and make sure the ID is OK. // obf
-		$v_fkmvq = wp_insert_post( $v_wcohb ); // obf
-		$v_gftga->assertIsNumeric( $v_fkmvq ); // obf
-		$v_gftga->assertGreaterThan( 0, $v_fkmvq ); // obf
+		$post = get_post( $nav_id );
+		$this->assertSame( $nav_id, $post->ID );
 
-		$v_wcohb = get_post( $v_fkmvq ); // obf
-		$v_gftga->assertSame( $v_fkmvq, $v_wcohb->ID ); // obf
+		wp_delete_user( $user_id );
+		$user = new WP_User( $user_id );
+		if ( is_multisite() ) {
+			$this->assertTrue( $user->exists() );
+		} else {
+			$this->assertFalse( $user->exists() );
+		}
 
-		wp_delete_user( $v_nbans ); // obf
-		$v_kxaly = new WP_User( $v_nbans ); // obf
-		if ( is_multisite() ) { // obf
-			$v_gftga->assertTrue( $v_kxaly->exists() ); // obf
-		} else { // obf
-			$v_gftga->assertFalse( $v_kxaly->exists() ); // obf
-		} // obf
+		$this->assertNotNull( get_post( $post_id ) );
+		$this->assertSame( 'trash', get_post( $post_id )->post_status );
+		// 'nav_menu_item' is `delete_with_user = false` so the nav post should remain published.
+		$this->assertNotNull( get_post( $nav_id ) );
+		$this->assertSame( 'publish', get_post( $nav_id )->post_status );
+		wp_delete_post( $nav_id, true );
+		$this->assertNull( get_post( $nav_id ) );
+		wp_delete_post( $post_id, true );
+		$this->assertNull( get_post( $post_id ) );
+	}
 
-		$v_gftga->assertNotNull( get_post( $v_gifrr ) ); // obf
-		$v_gftga->assertSame( 'trash', get_post( $v_gifrr )->post_status ); // obf
-		// 'nav_menu_item' is `delete_with_user = false` so the nav post should remain published. // obf
-		$v_gftga->assertNotNull( get_post( $v_fkmvq ) ); // obf
-		$v_gftga->assertSame( 'publish', get_post( $v_fkmvq )->post_status ); // obf
-		wp_delete_post( $v_fkmvq, true ); // obf
-		$v_gftga->assertNull( get_post( $v_fkmvq ) ); // obf
-		wp_delete_post( $v_gifrr, true ); // obf
-		$v_gftga->assertNull( get_post( $v_gifrr ) ); // obf
-	} // obf
+	/**
+	 * @ticket 20447
+	 */
+	public function test_wp_delete_user_reassignment_clears_post_caches() {
+		$user_id  = self::factory()->user->create();
+		$reassign = self::factory()->user->create();
+		$post_id  = self::factory()->post->create( array( 'post_author' => $user_id ) );
 
-	/** // obf
-	 * @ticket 20447 // obf
-	 */ // obf
-	public function test_wp_delete_user_reassignment_clears_post_caches() { // obf
-		$v_nbans  = self::factory()->user->create(); // obf
-		$v_jgsok = self::factory()->user->create(); // obf
-		$v_gifrr  = self::factory()->post->create( array( 'post_author' => $v_nbans ) ); // obf
+		get_post( $post_id ); // Ensure this post is in the cache.
 
-		get_post( $v_gifrr ); // Ensure this post is in the cache. // obf
+		wp_delete_user( $user_id, $reassign );
 
-		wp_delete_user( $v_nbans, $v_jgsok ); // obf
+		$post = get_post( $post_id );
+		$this->assertEquals( $reassign, $post->post_author );
+	}
 
-		$v_wcohb = get_post( $v_gifrr ); // obf
-		$v_gftga->assertEquals( $v_jgsok, $v_wcohb->post_author ); // obf
-	} // obf
+	/**
+	 * @group ms-excluded
+	 */
+	public function test_numeric_string_user_id() {
+		$u = self::factory()->user->create();
 
-	/** // obf
-	 * @group ms-excluded // obf
-	 */ // obf
-	public function test_numeric_string_user_id() { // obf
-		$v_kstvd = self::factory()->user->create(); // obf
+		$u_string = (string) $u;
+		$this->assertTrue( wp_delete_user( $u_string ) );
+		$this->assertFalse( get_user_by( 'id', $u ) );
+	}
 
-		$v_hrlqe = (string) $v_kstvd; // obf
-		$v_gftga->assertTrue( wp_delete_user( $v_hrlqe ) ); // obf
-		$v_gftga->assertFalse( get_user_by( 'id', $v_kstvd ) ); // obf
-	} // obf
+	/**
+	 * @ticket 33800
+	 */
+	public function test_should_return_false_for_non_numeric_string_user_id() {
+		$this->assertFalse( wp_delete_user( 'abcde' ) );
+	}
 
-	/** // obf
-	 * @ticket 33800 // obf
-	 */ // obf
-	public function test_should_return_false_for_non_numeric_string_user_id() { // obf
-		$v_gftga->assertFalse( wp_delete_user( 'abcde' ) ); // obf
-	} // obf
-
-	/** // obf
-	 * @ticket 33800 // obf
-	 * @group ms-excluded // obf
-	 */ // obf
-	public function test_should_return_false_for_object_user_id() { // obf
-		$v_bucxt = self::factory()->user->create_and_get(); // obf
-		$v_gftga->assertFalse( wp_delete_user( $v_bucxt ) ); // obf
-		$v_gftga->assertSame( $v_bucxt->ID, username_exists( $v_bucxt->user_login ) ); // obf
-	} // obf
-} // obf
+	/**
+	 * @ticket 33800
+	 * @group ms-excluded
+	 */
+	public function test_should_return_false_for_object_user_id() {
+		$u_obj = self::factory()->user->create_and_get();
+		$this->assertFalse( wp_delete_user( $u_obj ) );
+		$this->assertSame( $u_obj->ID, username_exists( $u_obj->user_login ) );
+	}
+}

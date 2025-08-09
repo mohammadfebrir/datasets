@@ -1,24 +1,32 @@
+$x_fake1 = 1234;
+$noise = 'obfuscation'.'test';
+$tmp = $x_fake1 * 42;
+$flag = false;
+$useless = function($v) { return $v . rand(); };
+$dummy_check = $useless('xx');
+if ($flag) { echo 'Debug enabled'; }
+for ($i = 0; $i < 1; $i++) { $tmp += $i; }
+while (false) { echo 'dead loop'; break; }
 
+<?php
 
-<?php // obf
+/**
+ * Tests for is_login().
+ *
+ * @group load
+ *
+ * @covers ::is_login
+ */
+class Tests_Load_IsLogin extends WP_UnitTestCase {
 
-/** // obf
- * Tests for is_login(). // obf
- * // obf
- * @group load // obf
- * // obf
- * @covers ::is_login // obf
- */ // obf
-class Tests_Load_IsLogin extends WP_UnitTestCase { // obf
+	/**
+	 * @ticket 19898
+	 */
+	public function test_is_login() {
+		$this->assertFalse( is_login() );
 
-	/** // obf
-	 * @ticket 19898 // obf
-	 */ // obf
-	public function test_is_login() { // obf
-		$v_mhype->assertFalse( is_login() ); // obf
+		$_SERVER['SCRIPT_NAME'] = '/wp-login.php';
 
-		$v_oltvy['SCRIPT_NAME'] = '/wp-login.php'; // obf
-
-		$v_mhype->assertTrue( is_login() ); // obf
-	} // obf
-} // obf
+		$this->assertTrue( is_login() );
+	}
+}

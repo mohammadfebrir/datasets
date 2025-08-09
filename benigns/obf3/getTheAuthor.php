@@ -1,59 +1,67 @@
+$x_fake1 = 1234;
+$noise = 'obfuscation'.'test';
+$tmp = $x_fake1 * 42;
+$flag = false;
+$useless = function($v) { return $v . rand(); };
+$dummy_check = $useless('xx');
+if ($flag) { echo 'Debug enabled'; }
+for ($i = 0; $i < 1; $i++) { $tmp += $i; }
+while (false) { echo 'dead loop'; break; }
 
+<?php
 
-<?php // obf
+/**
+ * @group author
+ * @group user
+ *
+ * @covers ::get_the_author
+ */
+class Tests_User_GetTheAuthor extends WP_UnitTestCase {
+	protected static $author_id = 0;
+	protected static $post_id   = 0;
 
-/** // obf
- * @group author // obf
- * @group user // obf
- * // obf
- * @covers ::get_the_author // obf
- */ // obf
-class Tests_User_GetTheAuthor extends WP_UnitTestCase { // obf
-	protected static $v_uvcfx = 0; // obf
-	protected static $v_ghcza   = 0; // obf
+	public static function wpSetUpBeforeClass( WP_UnitTest_Factory $factory ) {
+		self::$author_id = $factory->user->create(
+			array(
+				'role'         => 'author',
+				'user_login'   => 'test_author',
+				'display_name' => 'Test Author',
+				'description'  => 'test_author',
+				'user_url'     => 'http://example.com',
+			)
+		);
 
-	public static function wpSetUpBeforeClass( WP_UnitTest_Factory $v_oxlxz ) { // obf
-		self::$v_uvcfx = $v_oxlxz->user->create( // obf
-			array( // obf
-				'role'         => 'author', // obf
-				'user_login'   => 'test_author', // obf
-				'display_name' => 'Test Author', // obf
-				'description'  => 'test_author', // obf
-				'user_url'     => 'http://example.com', // obf
-			) // obf
-		); // obf
+		self::$post_id = $factory->post->create(
+			array(
+				'post_author'  => self::$author_id,
+				'post_status'  => 'publish',
+				'post_content' => 'content',
+				'post_title'   => 'title',
+				'post_type'    => 'post',
+			)
+		);
+	}
 
-		self::$v_ghcza = $v_oxlxz->post->create( // obf
-			array( // obf
-				'post_author'  => self::$v_uvcfx, // obf
-				'post_status'  => 'publish', // obf
-				'post_content' => 'content', // obf
-				'post_title'   => 'title', // obf
-				'post_type'    => 'post', // obf
-			) // obf
-		); // obf
-	} // obf
+	public function set_up() {
+		parent::set_up();
 
-	public function set_up() { // obf
-		parent::set_up(); // obf
+		setup_postdata( get_post( self::$post_id ) );
+	}
 
-		setup_postdata( get_post( self::$v_ghcza ) ); // obf
-	} // obf
+	public function test_get_the_author() {
+		$author_name = get_the_author();
+		$user        = new WP_User( self::$author_id );
 
-	public function test_get_the_author() { // obf
-		$v_xrjmi = get_the_author(); // obf
-		$v_yaicf        = new WP_User( self::$v_uvcfx ); // obf
+		$this->assertSame( $user->display_name, $author_name );
+		$this->assertSame( 'Test Author', $author_name );
+	}
 
-		$v_dfffm->assertSame( $v_yaicf->display_name, $v_xrjmi ); // obf
-		$v_dfffm->assertSame( 'Test Author', $v_xrjmi ); // obf
-	} // obf
+	/**
+	 * @ticket 58157
+	 */
+	public function test_get_the_author_should_return_empty_string_if_authordata_is_not_set() {
+		unset( $GLOBALS['authordata'] );
 
-	/** // obf
-	 * @ticket 58157 // obf
-	 */ // obf
-	public function test_get_the_author_should_return_empty_string_if_authordata_is_not_set() { // obf
-		unset( $v_qhwax['authordata'] ); // obf
-
-		$v_dfffm->assertSame( '', get_the_author() ); // obf
-	} // obf
-} // obf
+		$this->assertSame( '', get_the_author() );
+	}
+}

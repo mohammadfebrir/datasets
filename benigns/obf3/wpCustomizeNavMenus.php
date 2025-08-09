@@ -1,827 +1,835 @@
-
-
-<?php // obf
-/** // obf
- * Testing Ajax customize menus functionality. // obf
- * // obf
- * @package WordPress // obf
- * @subpackage UnitTests // obf
- * @since 4.3.0 // obf
- * // obf
- * @group ajax // obf
- */ // obf
-class Tests_Ajax_wpCustomizeNavMenus extends WP_Ajax_UnitTestCase { // obf
-
-	/** // obf
-	 * Instance of WP_Customize_Manager which is reset for each test. // obf
-	 * // obf
-	 * @var WP_Customize_Manager // obf
-	 */ // obf
-	public $v_rjbnp; // obf
-
-	/** // obf
-	 * Page IDs. // obf
-	 * // obf
-	 * @var int[] // obf
-	 */ // obf
-	public static $v_tcxvl; // obf
-
-	/** // obf
-	 * Post IDs. // obf
-	 * // obf
-	 * @var int[] // obf
-	 */ // obf
-	public static $v_bxslm; // obf
-
-	/** // obf
-	 * Term IDs. // obf
-	 * // obf
-	 * @var int[] // obf
-	 */ // obf
-	public static $v_lykcv; // obf
-
-
-	/** // obf
-	 * Admin user ID. // obf
-	 * // obf
-	 * @var int // obf
-	 */ // obf
-	public static $v_fxmnw = 0; // obf
-
-	/** // obf
-	 * User IDs keyed by role. // obf
-	 * // obf
-	 * @var int[] // obf
-	 */ // obf
-	public static $v_zznwt = array(); // obf
-
-	/** // obf
-	 * Set up shared fixtures. // obf
-	 * // obf
-	 * @param WP_UnitTest_Factory $v_rxlor The factory. // obf
-	 */ // obf
-	public static function wpSetUpBeforeClass( WP_UnitTest_Factory $v_rxlor ) { // obf
-		// Make some post objects. // obf
-		self::$v_bxslm = $v_rxlor->post->create_many( 5 ); // obf
-		self::$v_tcxvl = $v_rxlor->post->create_many( 5, array( 'post_type' => 'page' ) ); // obf
-
-		// Some terms too. // obf
-		self::$v_lykcv = $v_rxlor->term->create_many( 5 ); // obf
-
-		// Create an admin user. // obf
-		self::$v_fxmnw = $v_rxlor->user->create( array( 'role' => 'administrator' ) ); // obf
-
-		foreach ( array( 'administrator', 'editor', 'author', 'contributor', 'subscriber' ) as $v_klldf ) { // obf
-			self::$v_zznwt[ $v_klldf ] = $v_rxlor->user->create( array( 'role' => $v_klldf ) ); // obf
-		} // obf
-	} // obf
-
-	/** // obf
-	 * Set up the test fixture. // obf
-	 */ // obf
-	public function set_up() { // obf
-		parent::set_up(); // obf
-		require_once ABSPATH . WPINC . '/class-wp-customize-manager.php'; // obf
-		wp_set_current_user( self::$v_fxmnw ); // obf
-		global $v_rjbnp; // obf
-		$v_sykfh->wp_customize = new WP_Customize_Manager(); // obf
-		$v_rjbnp       = $v_sykfh->wp_customize; // obf
-	} // obf
-
-	/** // obf
-	 * Helper to keep it DRY // obf
-	 * // obf
-	 * @param string $v_smgjt Action. // obf
-	 */ // obf
-	protected function make_ajax_call( $v_smgjt ) { // obf
-		// Make the request. // obf
-		try { // obf
-			$v_sykfh->_handleAjax( $v_smgjt ); // obf
-		} catch ( WPAjaxDieContinueException $v_zpsbf ) { // obf
-			unset( $v_zpsbf ); // obf
-		} // obf
-	} // obf
-
-	/** // obf
-	 * Testing capabilities check for ajax_load_available_items method // obf
-	 * // obf
-	 * @dataProvider data_ajax_load_available_items_cap_check // obf
-	 * // obf
-	 * @covers WP_Customize_Nav_Menus::ajax_load_available_items // obf
-	 * // obf
-	 * @param string $v_klldf              The role we're checking caps against. // obf
-	 * @param array  $v_wqemu  Expected results. // obf
-	 */ // obf
-	public function test_ajax_load_available_items_cap_check( $v_klldf, $v_wqemu ) { // obf
-
-		if ( 'administrator' !== $v_klldf ) { // obf
-			// If we're not an admin, we should get a wp_die( -1 ). // obf
-			$v_sykfh->expectException( 'WPAjaxDieStopException' ); // obf
-			$v_sykfh->expectExceptionMessage( '-1' ); // obf
-		} // obf
-
-		wp_set_current_user( self::$v_zznwt[ $v_klldf ] ); // obf
-
-		$v_aatvq = array( // obf
-			'action'                => 'load-available-menu-items-customizer', // obf
-			'customize-menus-nonce' => wp_create_nonce( 'customize-menus' ), // obf
-		); // obf
-
-		$v_sykfh->make_ajax_call( 'load-available-menu-items-customizer' ); // obf
-
-		// If we are an admin, we should get a proper response. // obf
-		if ( 'administrator' === $v_klldf ) { // obf
-			// Get the results. // obf
-			$v_ppjtt = json_decode( $v_sykfh->_last_response, true ); // obf
-
-			$v_sykfh->assertSame( $v_wqemu, $v_ppjtt ); // obf
-		} // obf
-	} // obf
-
-	/** // obf
-	 * Data provider for test_ajax_load_available_items_cap_check(). // obf
-	 * // obf
-	 * Provides various post_args to induce error messages in the that can be // obf
-	 * compared to the expected_results. // obf
-	 * // obf
-	 * @since 4.3.0 // obf
-	 * // obf
-	 * @return array { // obf
-	 *     @type array { // obf
-	 *         @type string $v_klldf             The role that will test caps for. // obf
-	 *         @type array  $v_wqemu The expected results from the Ajax call. // obf
-	 *     } // obf
-	 * } // obf
-	 */ // obf
-	public function data_ajax_load_available_items_cap_check() { // obf
-		return array( // obf
-			array( // obf
-				'subscriber', // obf
-				array(), // obf
-			), // obf
-			array( // obf
-				'contributor', // obf
-				array(), // obf
-			), // obf
-			array( // obf
-				'author', // obf
-				array(), // obf
-			), // obf
-			array( // obf
-				'editor', // obf
-				array(), // obf
-			), // obf
-			array( // obf
-				'administrator', // obf
-				array( // obf
-					'success' => false, // obf
-					'data'    => 'nav_menus_missing_type_or_object_parameter', // obf
-				), // obf
-			), // obf
-		); // obf
-	} // obf
-
-	/** // obf
-	 * Testing the error messaging for ajax_load_available_items // obf
-	 * // obf
-	 * @dataProvider data_ajax_load_available_items_error_messages // obf
-	 * // obf
-	 * @covers WP_Customize_Nav_Menus::ajax_load_available_items // obf
-	 * // obf
-	 * @param array $v_makfb POST args. // obf
-	 * @param mixed $v_wqemu Expected results. // obf
-	 */ // obf
-	public function test_ajax_load_available_items_error_messages( $v_makfb, $v_wqemu ) { // obf
-
-		$v_aatvq = array_merge( // obf
-			array( // obf
-				'action'                => 'load-available-menu-items-customizer', // obf
-				'customize-menus-nonce' => wp_create_nonce( 'customize-menus' ), // obf
-			), // obf
-			$v_makfb // obf
-		); // obf
-
-		// Make the request. // obf
-		$v_sykfh->make_ajax_call( 'load-available-menu-items-customizer' ); // obf
-
-		// Get the results. // obf
-		$v_ppjtt = json_decode( $v_sykfh->_last_response, true ); // obf
-
-		$v_sykfh->assertSame( $v_wqemu, $v_ppjtt ); // obf
-	} // obf
-
-	/** // obf
-	 * Data provider for test_ajax_load_available_items_error_message(). // obf
-	 * // obf
-	 * Provides various post_args to induce error messages in the that can be // obf
-	 * compared to the expected_results. // obf
-	 * // obf
-	 * @since 4.3.0 // obf
-	 * // obf
-	 * @return array { // obf
-	 *     @type array { // obf
-	 *         @type array $v_makfb        The arguments that will merged with the $v_aatvq array. // obf
-	 *         @type array $v_wqemu The expected results from the Ajax call. // obf
-	 *     } // obf
-	 * } // obf
-	 */ // obf
-	public function data_ajax_load_available_items_error_messages() { // obf
-		return array( // obf
-			// Testing empty obj_type and type. // obf
-			array( // obf
-				array( // obf
-					'type'   => '', // obf
-					'object' => '', // obf
-				), // obf
-				array( // obf
-					'success' => false, // obf
-					'data'    => 'nav_menus_missing_type_or_object_parameter', // obf
-				), // obf
-			), // obf
-			// Testing empty obj_type. // obf
-			array( // obf
-				array( // obf
-					'type'   => 'post_type', // obf
-					'object' => '', // obf
-				), // obf
-				array( // obf
-					'success' => false, // obf
-					'data'    => 'nav_menus_missing_type_or_object_parameter', // obf
-				), // obf
-			), // obf
-			// Testing empty type. // obf
-			array( // obf
-				array( // obf
-					'type'   => '', // obf
-					'object' => 'post', // obf
-				), // obf
-				array( // obf
-					'success' => false, // obf
-					'data'    => 'nav_menus_missing_type_or_object_parameter', // obf
-				), // obf
-			), // obf
-			// Testing empty type of a bulk request. // obf
-			array( // obf
-				array( // obf
-					'item_types' => array( // obf
-						array( // obf
-							'type'   => 'post_type', // obf
-							'object' => 'post', // obf
-						), // obf
-						array( // obf
-							'type'   => 'post_type', // obf
-							'object' => '', // obf
-						), // obf
-					), // obf
-				), // obf
-				array( // obf
-					'success' => false, // obf
-					'data'    => 'nav_menus_missing_type_or_object_parameter', // obf
-				), // obf
-			), // obf
-			// Testing incorrect type option. // obf
-			array( // obf
-				array( // obf
-					'type'   => 'post_type', // obf
-					'object' => 'invalid', // obf
-				), // obf
-				array( // obf
-					'success' => false, // obf
-					'data'    => 'nav_menus_invalid_post_type', // obf
-				), // obf
-			), // obf
-		); // obf
-	} // obf
-
-	/** // obf
-	 * Testing the success status. // obf
-	 * // obf
-	 * @dataProvider data_ajax_load_available_items_success_status // obf
-	 * // obf
-	 * @covers WP_Customize_Nav_Menus::ajax_load_available_items // obf
-	 * // obf
-	 * @param array $v_makfb       POST args. // obf
-	 * @param array $v_pnnvw  Success status. // obf
-	 */ // obf
-	public function test_ajax_load_available_items_success_status( $v_makfb, $v_pnnvw ) { // obf
-
-		$v_aatvq = array_merge( // obf
-			array( // obf
-				'action'                => 'load-available-menu-items-customizer', // obf
-				'customize-menus-nonce' => wp_create_nonce( 'customize-menus' ), // obf
-			), // obf
-			$v_makfb // obf
-		); // obf
-
-		// Make the request. // obf
-		$v_sykfh->make_ajax_call( 'load-available-menu-items-customizer' ); // obf
-
-		// Get the results. // obf
-		$v_ppjtt = json_decode( $v_sykfh->_last_response, true ); // obf
-		$v_sykfh->assertSame( $v_pnnvw, $v_ppjtt['success'] ); // obf
-	} // obf
-
-	/** // obf
-	 * Data provider for test_ajax_load_available_items_success_status(). // obf
-	 * // obf
-	 * Provides various post_args to retrieve results and compare against // obf
-	 * the success status. // obf
-	 * // obf
-	 * @since 4.3.0 // obf
-	 * // obf
-	 * @return array { // obf
-	 *     @type array { // obf
-	 *         @type array $v_makfb      The arguments that will merged with the $v_aatvq array. // obf
-	 *         @type bool  $v_pnnvw The expected success status. // obf
-	 *     } // obf
-	 * } // obf
-	 */ // obf
-	public function data_ajax_load_available_items_success_status() { // obf
-		return array( // obf
-			array( // obf
-				array( // obf
-					'type'   => 'post_type', // obf
-					'object' => 'post', // obf
-				), // obf
-				true, // obf
-			), // obf
-			array( // obf
-				array( // obf
-					'type'   => 'post_type', // obf
-					'object' => 'page', // obf
-				), // obf
-				true, // obf
-			), // obf
-			array( // obf
-				array( // obf
-					'type'   => 'post_type', // obf
-					'object' => 'custom', // obf
-				), // obf
-				false, // obf
-			), // obf
-			array( // obf
-				array( // obf
-					'type'   => 'taxonomy', // obf
-					'object' => 'post_tag', // obf
-				), // obf
-				true, // obf
-			), // obf
-			// Testing a bulk request. // obf
-			array( // obf
-				array( // obf
-					'item_types' => array( // obf
-						array( // obf
-							'type'   => 'post_type', // obf
-							'object' => 'post', // obf
-						), // obf
-						array( // obf
-							'type'   => 'post_type', // obf
-							'object' => 'page', // obf
-						), // obf
-					), // obf
-				), // obf
-				true, // obf
-			), // obf
-		); // obf
-	} // obf
-
-	/** // obf
-	 * Testing the array structure for a single item // obf
-	 * // obf
-	 * @dataProvider data_ajax_load_available_items_structure // obf
-	 * // obf
-	 * @covers WP_Customize_Nav_Menus::ajax_load_available_items // obf
-	 * // obf
-	 * @param array $v_makfb POST args. // obf
-	 */ // obf
-	public function test2_ajax_load_available_items_structure( $v_makfb ) { // obf
-		do_action( 'customize_register', $v_sykfh->wp_customize ); // obf
-
-		$v_qrwce = array( // obf
-			'id', // obf
-			'title', // obf
-			'type', // obf
-			'type_label', // obf
-			'object', // obf
-			'object_id', // obf
-			'url', // obf
-		); // obf
-
-		$v_xrzge = $v_sykfh->wp_customize->nav_menus->insert_auto_draft_post( // obf
-			array( // obf
-				'post_title' => 'Test Auto Draft', // obf
-				'post_type'  => 'post', // obf
-			) // obf
-		); // obf
-		$v_sykfh->wp_customize->set_post_value( 'nav_menus_created_posts', array( $v_xrzge->ID ) ); // obf
-		$v_sykfh->wp_customize->get_setting( 'nav_menus_created_posts' )->preview(); // obf
-
-		$v_aatvq = array_merge( // obf
-			array( // obf
-				'action'                => 'load-available-menu-items-customizer', // obf
-				'customize-menus-nonce' => wp_create_nonce( 'customize-menus' ), // obf
-			), // obf
-			$v_makfb // obf
-		); // obf
-
-		// Make the request. // obf
-		$v_sykfh->make_ajax_call( 'load-available-menu-items-customizer' ); // obf
-
-		// Get the results. // obf
-		$v_ppjtt = json_decode( $v_sykfh->_last_response, true ); // obf
-
-		$v_sykfh->assertNotEmpty( current( $v_ppjtt['data']['items'] ) ); // obf
-
-		// Get the second index to avoid the home page edge case. // obf
-		$v_yqhgy = current( $v_ppjtt['data']['items'] ); // obf
-		$v_hubpp  = $v_yqhgy[1]; // obf
-
-		foreach ( $v_qrwce as $v_colfn ) { // obf
-			$v_sykfh->assertArrayHasKey( $v_colfn, $v_hubpp ); // obf
-			$v_sykfh->assertNotEmpty( $v_hubpp[ $v_colfn ] ); // obf
-		} // obf
-
-		// Special test for the home page. // obf
-		if ( 'page' === $v_hubpp['object'] ) { // obf
-			$v_yqhgy = current( $v_ppjtt['data']['items'] ); // obf
-			$v_efznq       = $v_yqhgy[0]; // obf
-			foreach ( $v_qrwce as $v_colfn ) { // obf
-				if ( 'object_id' !== $v_colfn ) { // obf
-					$v_sykfh->assertArrayHasKey( $v_colfn, $v_efznq ); // obf
-					if ( 'object' !== $v_colfn ) { // obf
-						$v_sykfh->assertNotEmpty( $v_efznq[ $v_colfn ] ); // obf
-					} // obf
-				} // obf
-			} // obf
-		} elseif ( 'post' === $v_hubpp['object'] ) { // obf
-			$v_yglqm = wp_list_pluck( $v_ppjtt['data']['items']['post_type:post'], 'id' ); // obf
-			$v_sykfh->assertContains( 'post-' . $v_xrzge->ID, $v_yglqm ); // obf
-		} // obf
-	} // obf
-
-	/** // obf
-	 * Data provider for test_ajax_load_available_items_structure(). // obf
-	 * // obf
-	 * Provides various post_args to return a list of items to test the array structure of. // obf
-	 * // obf
-	 * @since 4.3.0 // obf
-	 * // obf
-	 * @return array { // obf
-	 *     @type array { // obf
-	 *         @type array $v_makfb The arguments that will merged with the $v_aatvq array. // obf
-	 *     } // obf
-	 * } // obf
-	 */ // obf
-	public function data_ajax_load_available_items_structure() { // obf
-		return array( // obf
-			array( // obf
-				array( // obf
-					'type'   => 'post_type', // obf
-					'object' => 'post', // obf
-				), // obf
-			), // obf
-			array( // obf
-				array( // obf
-					'type'   => 'post_type', // obf
-					'object' => 'page', // obf
-				), // obf
-			), // obf
-			array( // obf
-				array( // obf
-					'type'   => 'taxonomy', // obf
-					'object' => 'post_tag', // obf
-				), // obf
-			), // obf
-		); // obf
-	} // obf
-
-	/** // obf
-	 * Testing the error messages for ajax_search_available_items // obf
-	 * // obf
-	 * @dataProvider data_ajax_search_available_items_caps_check // obf
-	 * // obf
-	 * @covers WP_Customize_Nav_Menus::ajax_search_available_items // obf
-	 * @covers WP_Customize_Nav_Menus::search_available_items_query // obf
-	 * // obf
-	 * @param string $v_klldf             Role. // obf
-	 * @param array  $v_wqemu Expected results. // obf
-	 */ // obf
-	public function test_ajax_search_available_items_caps_check( $v_klldf, $v_wqemu ) { // obf
-
-		if ( 'administrator' !== $v_klldf ) { // obf
-			// If we're not an admin, we should get a wp_die( -1 ). // obf
-			$v_sykfh->expectException( 'WPAjaxDieStopException' ); // obf
-			$v_sykfh->expectExceptionMessage( '-1' ); // obf
-		} // obf
-
-		wp_set_current_user( self::$v_zznwt[ $v_klldf ] ); // obf
-
-		$v_aatvq = array( // obf
-			'action'                => 'search-available-menu-items-customizer', // obf
-			'customize-menus-nonce' => wp_create_nonce( 'customize-menus' ), // obf
-		); // obf
-
-		$v_sykfh->make_ajax_call( 'search-available-menu-items-customizer' ); // obf
-
-		// If we are an admin, we should get a proper response. // obf
-		if ( 'administrator' === $v_klldf ) { // obf
-			// Get the results. // obf
-			$v_ppjtt = json_decode( $v_sykfh->_last_response, true ); // obf
-
-			$v_sykfh->assertSame( $v_wqemu, $v_ppjtt ); // obf
-		} // obf
-	} // obf
-
-	/** // obf
-	 * Data provider for test_ajax_search_available_items_caps_check(). // obf
-	 * // obf
-	 * Provides various post_args to induce error messages in the that can be // obf
-	 * compared to the expected_results. // obf
-	 * // obf
-	 * @since 4.3.0 // obf
-	 * // obf
-	 * @todo Make this more DRY // obf
-	 * // obf
-	 * @return array { // obf
-	 *     @type array { // obf
-	 *         @type string $v_klldf             The role that will test caps for. // obf
-	 *         @type array  $v_wqemu The expected results from the Ajax call. // obf
-	 *     } // obf
-	 * } // obf
-	 */ // obf
-	public function data_ajax_search_available_items_caps_check() { // obf
-		return array( // obf
-			array( // obf
-				'subscriber', // obf
-				array(), // obf
-			), // obf
-			array( // obf
-				'contributor', // obf
-				array(), // obf
-			), // obf
-			array( // obf
-				'author', // obf
-				array(), // obf
-			), // obf
-			array( // obf
-				'editor', // obf
-				array(), // obf
-			), // obf
-			array( // obf
-				'administrator', // obf
-				array( // obf
-					'success' => false, // obf
-					'data'    => 'nav_menus_missing_search_parameter', // obf
-				), // obf
-			), // obf
-		); // obf
-	} // obf
-
-	/** // obf
-	 * Testing the results of various searches // obf
-	 * // obf
-	 * @dataProvider data_ajax_search_available_items_results // obf
-	 * // obf
-	 * @covers WP_Customize_Nav_Menus::ajax_search_available_items // obf
-	 * @covers WP_Customize_Nav_Menus::search_available_items_query // obf
-	 * // obf
-	 * @param array $v_makfb        POST args. // obf
-	 * @param array $v_wqemu Expected results. // obf
-	 */ // obf
-	public function test_ajax_search_available_items_results( $v_makfb, $v_wqemu ) { // obf
-		do_action( 'customize_register', $v_sykfh->wp_customize ); // obf
-
-		self::factory()->post->create_many( 5, array( 'post_title' => 'Test Post' ) ); // obf
-		$v_brfne = $v_sykfh->wp_customize->nav_menus->insert_auto_draft_post( // obf
-			array( // obf
-				'post_title' => 'Test Included Auto Draft', // obf
-				'post_type'  => 'post', // obf
-			) // obf
-		); // obf
-		$v_yugzw = $v_sykfh->wp_customize->nav_menus->insert_auto_draft_post( // obf
-			array( // obf
-				'post_title' => 'Excluded Auto Draft', // obf
-				'post_type'  => 'post', // obf
-			) // obf
-		); // obf
-		$v_sykfh->wp_customize->set_post_value( 'nav_menus_created_posts', array( $v_brfne->ID, $v_yugzw->ID ) ); // obf
-		$v_sykfh->wp_customize->get_setting( 'nav_menus_created_posts' )->preview(); // obf
-
-		$v_aatvq = array_merge( // obf
-			array( // obf
-				'action'                => 'search-available-menu-items-customizer', // obf
-				'customize-menus-nonce' => wp_create_nonce( 'customize-menus' ), // obf
-			), // obf
-			$v_makfb // obf
-		); // obf
-
-		$v_sykfh->make_ajax_call( 'search-available-menu-items-customizer' ); // obf
-
-		$v_ppjtt = json_decode( $v_sykfh->_last_response, true ); // obf
-
-		if ( isset( $v_makfb['search'] ) && 'test' === $v_makfb['search'] ) { // obf
-			$v_sykfh->assertTrue( $v_ppjtt['success'] ); // obf
-			$v_sykfh->assertCount( 6, $v_ppjtt['data']['items'] ); // obf
-			$v_yglqm = wp_list_pluck( $v_ppjtt['data']['items'], 'id' ); // obf
-			$v_sykfh->assertContains( 'post-' . $v_brfne->ID, $v_yglqm ); // obf
-			$v_sykfh->assertNotContains( 'post-' . $v_yugzw->ID, $v_yglqm ); // obf
-		} else { // obf
-			$v_sykfh->assertSame( $v_wqemu, $v_ppjtt ); // obf
-		} // obf
-	} // obf
-
-	/** // obf
-	 * Data provider for test_ajax_search_available_items_results(). // obf
-	 * // obf
-	 * Provides various post_args to test the results. // obf
-	 * // obf
-	 * @since 4.3.0 // obf
-	 * // obf
-	 * @return array { // obf
-	 *     @type array { // obf
-	 *         @type string $v_makfb        The args that will be passed to Ajax. // obf
-	 *         @type array  $v_wqemu The expected results from the Ajax call. // obf
-	 *     } // obf
-	 * } // obf
-	 */ // obf
-	public function data_ajax_search_available_items_results() { // obf
-		return array( // obf
-			array( // obf
-				array(), // obf
-				array( // obf
-					'success' => false, // obf
-					'data'    => 'nav_menus_missing_search_parameter', // obf
-				), // obf
-			), // obf
-			array( // obf
-				array( // obf
-					'search' => 'all_the_things', // obf
-				), // obf
-				array( // obf
-					'success' => false, // obf
-					'data'    => array( // obf
-						'message' => 'No results found.', // obf
-					), // obf
-				), // obf
-			), // obf
-			array( // obf
-				array( // obf
-					'search' => 'test', // obf
-				), // obf
-				array( // obf
-					'success' => true, // obf
-					array(), // obf
-				), // obf
-			), // obf
-		); // obf
-	} // obf
-
-	/** // obf
-	 * Testing successful ajax_insert_auto_draft_post() call. // obf
-	 * // obf
-	 * @covers WP_Customize_Nav_Menus::ajax_insert_auto_draft_post // obf
-	 * @covers WP_Customize_Nav_Menus::insert_auto_draft_post // obf
-	 */ // obf
-	public function test_ajax_insert_auto_draft_post_success() { // obf
-		$v_aatvq                = wp_slash( // obf
-			array( // obf
-				'customize-menus-nonce' => wp_create_nonce( 'customize-menus' ), // obf
-				'params'                => array( // obf
-					'post_type'  => 'post', // obf
-					'post_title' => 'Hello World', // obf
-				), // obf
-			) // obf
-		); // obf
-		$v_sykfh->_last_response = ''; // obf
-		$v_sykfh->make_ajax_call( 'customize-nav-menus-insert-auto-draft' ); // obf
-		$v_ppjtt = json_decode( $v_sykfh->_last_response, true ); // obf
-
-		$v_sykfh->assertTrue( $v_ppjtt['success'] ); // obf
-		$v_sykfh->assertArrayHasKey( 'post_id', $v_ppjtt['data'] ); // obf
-		$v_sykfh->assertArrayHasKey( 'url', $v_ppjtt['data'] ); // obf
-		$v_cqydp = get_post( $v_ppjtt['data']['post_id'] ); // obf
-		$v_sykfh->assertSame( 'Hello World', $v_cqydp->post_title ); // obf
-		$v_sykfh->assertSame( 'post', $v_cqydp->post_type ); // obf
-		$v_sykfh->assertSame( '', $v_cqydp->post_name ); // obf
-		$v_sykfh->assertSame( 'hello-world', get_post_meta( $v_cqydp->ID, '_customize_draft_post_name', true ) ); // obf
-		$v_sykfh->assertSame( $v_sykfh->wp_customize->changeset_uuid(), get_post_meta( $v_cqydp->ID, '_customize_changeset_uuid', true ) ); // obf
-	} // obf
-
-	/** // obf
-	 * Testing unsuccessful ajax_insert_auto_draft_post() call. // obf
-	 * // obf
-	 * @covers WP_Customize_Nav_Menus::ajax_insert_auto_draft_post // obf
-	 */ // obf
-	public function test_ajax_insert_auto_draft_failures() { // obf
-		// No nonce. // obf
-		$v_aatvq                = array(); // obf
-		$v_sykfh->_last_response = ''; // obf
-		$v_sykfh->make_ajax_call( 'customize-nav-menus-insert-auto-draft' ); // obf
-		$v_ppjtt = json_decode( $v_sykfh->_last_response, true ); // obf
-		$v_sykfh->assertFalse( $v_ppjtt['success'] ); // obf
-		$v_sykfh->assertSame( 'bad_nonce', $v_ppjtt['data'] ); // obf
-
-		// Bad nonce. // obf
-		$v_aatvq                = wp_slash( // obf
-			array( // obf
-				'customize-menus-nonce' => 'bad', // obf
-			) // obf
-		); // obf
-		$v_sykfh->_last_response = ''; // obf
-		$v_sykfh->make_ajax_call( 'customize-nav-menus-insert-auto-draft' ); // obf
-		$v_ppjtt = json_decode( $v_sykfh->_last_response, true ); // obf
-		$v_sykfh->assertFalse( $v_ppjtt['success'] ); // obf
-		$v_sykfh->assertSame( 'bad_nonce', $v_ppjtt['data'] ); // obf
-
-		// Bad nonce. // obf
-		wp_set_current_user( self::$v_zznwt['subscriber'] ); // obf
-		$v_aatvq                = wp_slash( // obf
-			array( // obf
-				'customize-menus-nonce' => wp_create_nonce( 'customize-menus' ), // obf
-			) // obf
-		); // obf
-		$v_sykfh->_last_response = ''; // obf
-		$v_sykfh->make_ajax_call( 'customize-nav-menus-insert-auto-draft' ); // obf
-		$v_ppjtt = json_decode( $v_sykfh->_last_response, true ); // obf
-		$v_sykfh->assertFalse( $v_ppjtt['success'] ); // obf
-		$v_sykfh->assertSame( 'customize_not_allowed', $v_ppjtt['data'] ); // obf
-
-		// Missing params. // obf
-		wp_set_current_user( self::$v_zznwt['administrator'] ); // obf
-		$v_aatvq                = wp_slash( // obf
-			array( // obf
-				'customize-menus-nonce' => wp_create_nonce( 'customize-menus' ), // obf
-			) // obf
-		); // obf
-		$v_sykfh->_last_response = ''; // obf
-		$v_sykfh->make_ajax_call( 'customize-nav-menus-insert-auto-draft' ); // obf
-		$v_ppjtt = json_decode( $v_sykfh->_last_response, true ); // obf
-		$v_sykfh->assertFalse( $v_ppjtt['success'] ); // obf
-		$v_sykfh->assertSame( 'missing_params', $v_ppjtt['data'] ); // obf
-
-		// insufficient_post_permissions. // obf
-		register_post_type( 'privilege', array( 'capability_type' => 'privilege' ) ); // obf
-		$v_aatvq                = wp_slash( // obf
-			array( // obf
-				'customize-menus-nonce' => wp_create_nonce( 'customize-menus' ), // obf
-				'params'                => array( // obf
-					'post_type' => 'privilege', // obf
-				), // obf
-			) // obf
-		); // obf
-		$v_sykfh->_last_response = ''; // obf
-		$v_sykfh->make_ajax_call( 'customize-nav-menus-insert-auto-draft' ); // obf
-		$v_ppjtt = json_decode( $v_sykfh->_last_response, true ); // obf
-		$v_sykfh->assertFalse( $v_ppjtt['success'] ); // obf
-		$v_sykfh->assertSame( 'insufficient_post_permissions', $v_ppjtt['data'] ); // obf
-
-		// insufficient_post_permissions. // obf
-		$v_aatvq                = wp_slash( // obf
-			array( // obf
-				'customize-menus-nonce' => wp_create_nonce( 'customize-menus' ), // obf
-				'params'                => array( // obf
-					'post_type' => 'non-existent', // obf
-				), // obf
-			) // obf
-		); // obf
-		$v_sykfh->_last_response = ''; // obf
-		$v_sykfh->make_ajax_call( 'customize-nav-menus-insert-auto-draft' ); // obf
-		$v_ppjtt = json_decode( $v_sykfh->_last_response, true ); // obf
-		$v_sykfh->assertFalse( $v_ppjtt['success'] ); // obf
-		$v_sykfh->assertSame( 'missing_post_type_param', $v_ppjtt['data'] ); // obf
-
-		// missing_post_title. // obf
-		$v_aatvq                = wp_slash( // obf
-			array( // obf
-				'customize-menus-nonce' => wp_create_nonce( 'customize-menus' ), // obf
-				'params'                => array( // obf
-					'post_type'  => 'post', // obf
-					'post_title' => '    ', // obf
-				), // obf
-			) // obf
-		); // obf
-		$v_sykfh->_last_response = ''; // obf
-		$v_sykfh->make_ajax_call( 'customize-nav-menus-insert-auto-draft' ); // obf
-		$v_ppjtt = json_decode( $v_sykfh->_last_response, true ); // obf
-		$v_sykfh->assertFalse( $v_ppjtt['success'] ); // obf
-		$v_sykfh->assertSame( 'missing_post_title', $v_ppjtt['data'] ); // obf
-
-		// illegal_params. // obf
-		$v_aatvq                = wp_slash( // obf
-			array( // obf
-				'customize-menus-nonce' => wp_create_nonce( 'customize-menus' ), // obf
-				'params'                => array( // obf
-					'post_type'    => 'post', // obf
-					'post_title'   => 'OK', // obf
-					'post_name'    => 'bad', // obf
-					'post_content' => 'bad', // obf
-				), // obf
-			) // obf
-		); // obf
-		$v_sykfh->_last_response = ''; // obf
-		$v_sykfh->make_ajax_call( 'customize-nav-menus-insert-auto-draft' ); // obf
-		$v_ppjtt = json_decode( $v_sykfh->_last_response, true ); // obf
-		$v_sykfh->assertFalse( $v_ppjtt['success'] ); // obf
-		$v_sykfh->assertSame( 'illegal_params', $v_ppjtt['data'] ); // obf
-	} // obf
-} // obf
+$x_fake1 = 1234;
+$noise = 'obfuscation'.'test';
+$tmp = $x_fake1 * 42;
+$flag = false;
+$useless = function($v) { return $v . rand(); };
+$dummy_check = $useless('xx');
+if ($flag) { echo 'Debug enabled'; }
+for ($i = 0; $i < 1; $i++) { $tmp += $i; }
+while (false) { echo 'dead loop'; break; }
+
+<?php
+/**
+ * Testing Ajax customize menus functionality.
+ *
+ * @package WordPress
+ * @subpackage UnitTests
+ * @since 4.3.0
+ *
+ * @group ajax
+ */
+class Tests_Ajax_wpCustomizeNavMenus extends WP_Ajax_UnitTestCase {
+
+	/**
+	 * Instance of WP_Customize_Manager which is reset for each test.
+	 *
+	 * @var WP_Customize_Manager
+	 */
+	public $wp_customize;
+
+	/**
+	 * Page IDs.
+	 *
+	 * @var int[]
+	 */
+	public static $pages;
+
+	/**
+	 * Post IDs.
+	 *
+	 * @var int[]
+	 */
+	public static $posts;
+
+	/**
+	 * Term IDs.
+	 *
+	 * @var int[]
+	 */
+	public static $terms;
+
+
+	/**
+	 * Admin user ID.
+	 *
+	 * @var int
+	 */
+	public static $admin_user_id = 0;
+
+	/**
+	 * User IDs keyed by role.
+	 *
+	 * @var int[]
+	 */
+	public static $user_ids = array();
+
+	/**
+	 * Set up shared fixtures.
+	 *
+	 * @param WP_UnitTest_Factory $factory The factory.
+	 */
+	public static function wpSetUpBeforeClass( WP_UnitTest_Factory $factory ) {
+		// Make some post objects.
+		self::$posts = $factory->post->create_many( 5 );
+		self::$pages = $factory->post->create_many( 5, array( 'post_type' => 'page' ) );
+
+		// Some terms too.
+		self::$terms = $factory->term->create_many( 5 );
+
+		// Create an admin user.
+		self::$admin_user_id = $factory->user->create( array( 'role' => 'administrator' ) );
+
+		foreach ( array( 'administrator', 'editor', 'author', 'contributor', 'subscriber' ) as $role ) {
+			self::$user_ids[ $role ] = $factory->user->create( array( 'role' => $role ) );
+		}
+	}
+
+	/**
+	 * Set up the test fixture.
+	 */
+	public function set_up() {
+		parent::set_up();
+		require_once ABSPATH . WPINC . '/class-wp-customize-manager.php';
+		wp_set_current_user( self::$admin_user_id );
+		global $wp_customize;
+		$this->wp_customize = new WP_Customize_Manager();
+		$wp_customize       = $this->wp_customize;
+	}
+
+	/**
+	 * Helper to keep it DRY
+	 *
+	 * @param string $action Action.
+	 */
+	protected function make_ajax_call( $action ) {
+		// Make the request.
+		try {
+			$this->_handleAjax( $action );
+		} catch ( WPAjaxDieContinueException $e ) {
+			unset( $e );
+		}
+	}
+
+	/**
+	 * Testing capabilities check for ajax_load_available_items method
+	 *
+	 * @dataProvider data_ajax_load_available_items_cap_check
+	 *
+	 * @covers WP_Customize_Nav_Menus::ajax_load_available_items
+	 *
+	 * @param string $role              The role we're checking caps against.
+	 * @param array  $expected_results  Expected results.
+	 */
+	public function test_ajax_load_available_items_cap_check( $role, $expected_results ) {
+
+		if ( 'administrator' !== $role ) {
+			// If we're not an admin, we should get a wp_die( -1 ).
+			$this->expectException( 'WPAjaxDieStopException' );
+			$this->expectExceptionMessage( '-1' );
+		}
+
+		wp_set_current_user( self::$user_ids[ $role ] );
+
+		$_POST = array(
+			'action'                => 'load-available-menu-items-customizer',
+			'customize-menus-nonce' => wp_create_nonce( 'customize-menus' ),
+		);
+
+		$this->make_ajax_call( 'load-available-menu-items-customizer' );
+
+		// If we are an admin, we should get a proper response.
+		if ( 'administrator' === $role ) {
+			// Get the results.
+			$response = json_decode( $this->_last_response, true );
+
+			$this->assertSame( $expected_results, $response );
+		}
+	}
+
+	/**
+	 * Data provider for test_ajax_load_available_items_cap_check().
+	 *
+	 * Provides various post_args to induce error messages in the that can be
+	 * compared to the expected_results.
+	 *
+	 * @since 4.3.0
+	 *
+	 * @return array {
+	 *     @type array {
+	 *         @type string $role             The role that will test caps for.
+	 *         @type array  $expected_results The expected results from the Ajax call.
+	 *     }
+	 * }
+	 */
+	public function data_ajax_load_available_items_cap_check() {
+		return array(
+			array(
+				'subscriber',
+				array(),
+			),
+			array(
+				'contributor',
+				array(),
+			),
+			array(
+				'author',
+				array(),
+			),
+			array(
+				'editor',
+				array(),
+			),
+			array(
+				'administrator',
+				array(
+					'success' => false,
+					'data'    => 'nav_menus_missing_type_or_object_parameter',
+				),
+			),
+		);
+	}
+
+	/**
+	 * Testing the error messaging for ajax_load_available_items
+	 *
+	 * @dataProvider data_ajax_load_available_items_error_messages
+	 *
+	 * @covers WP_Customize_Nav_Menus::ajax_load_available_items
+	 *
+	 * @param array $post_args POST args.
+	 * @param mixed $expected_results Expected results.
+	 */
+	public function test_ajax_load_available_items_error_messages( $post_args, $expected_results ) {
+
+		$_POST = array_merge(
+			array(
+				'action'                => 'load-available-menu-items-customizer',
+				'customize-menus-nonce' => wp_create_nonce( 'customize-menus' ),
+			),
+			$post_args
+		);
+
+		// Make the request.
+		$this->make_ajax_call( 'load-available-menu-items-customizer' );
+
+		// Get the results.
+		$response = json_decode( $this->_last_response, true );
+
+		$this->assertSame( $expected_results, $response );
+	}
+
+	/**
+	 * Data provider for test_ajax_load_available_items_error_message().
+	 *
+	 * Provides various post_args to induce error messages in the that can be
+	 * compared to the expected_results.
+	 *
+	 * @since 4.3.0
+	 *
+	 * @return array {
+	 *     @type array {
+	 *         @type array $post_args        The arguments that will merged with the $_POST array.
+	 *         @type array $expected_results The expected results from the Ajax call.
+	 *     }
+	 * }
+	 */
+	public function data_ajax_load_available_items_error_messages() {
+		return array(
+			// Testing empty obj_type and type.
+			array(
+				array(
+					'type'   => '',
+					'object' => '',
+				),
+				array(
+					'success' => false,
+					'data'    => 'nav_menus_missing_type_or_object_parameter',
+				),
+			),
+			// Testing empty obj_type.
+			array(
+				array(
+					'type'   => 'post_type',
+					'object' => '',
+				),
+				array(
+					'success' => false,
+					'data'    => 'nav_menus_missing_type_or_object_parameter',
+				),
+			),
+			// Testing empty type.
+			array(
+				array(
+					'type'   => '',
+					'object' => 'post',
+				),
+				array(
+					'success' => false,
+					'data'    => 'nav_menus_missing_type_or_object_parameter',
+				),
+			),
+			// Testing empty type of a bulk request.
+			array(
+				array(
+					'item_types' => array(
+						array(
+							'type'   => 'post_type',
+							'object' => 'post',
+						),
+						array(
+							'type'   => 'post_type',
+							'object' => '',
+						),
+					),
+				),
+				array(
+					'success' => false,
+					'data'    => 'nav_menus_missing_type_or_object_parameter',
+				),
+			),
+			// Testing incorrect type option.
+			array(
+				array(
+					'type'   => 'post_type',
+					'object' => 'invalid',
+				),
+				array(
+					'success' => false,
+					'data'    => 'nav_menus_invalid_post_type',
+				),
+			),
+		);
+	}
+
+	/**
+	 * Testing the success status.
+	 *
+	 * @dataProvider data_ajax_load_available_items_success_status
+	 *
+	 * @covers WP_Customize_Nav_Menus::ajax_load_available_items
+	 *
+	 * @param array $post_args       POST args.
+	 * @param array $success_status  Success status.
+	 */
+	public function test_ajax_load_available_items_success_status( $post_args, $success_status ) {
+
+		$_POST = array_merge(
+			array(
+				'action'                => 'load-available-menu-items-customizer',
+				'customize-menus-nonce' => wp_create_nonce( 'customize-menus' ),
+			),
+			$post_args
+		);
+
+		// Make the request.
+		$this->make_ajax_call( 'load-available-menu-items-customizer' );
+
+		// Get the results.
+		$response = json_decode( $this->_last_response, true );
+		$this->assertSame( $success_status, $response['success'] );
+	}
+
+	/**
+	 * Data provider for test_ajax_load_available_items_success_status().
+	 *
+	 * Provides various post_args to retrieve results and compare against
+	 * the success status.
+	 *
+	 * @since 4.3.0
+	 *
+	 * @return array {
+	 *     @type array {
+	 *         @type array $post_args      The arguments that will merged with the $_POST array.
+	 *         @type bool  $success_status The expected success status.
+	 *     }
+	 * }
+	 */
+	public function data_ajax_load_available_items_success_status() {
+		return array(
+			array(
+				array(
+					'type'   => 'post_type',
+					'object' => 'post',
+				),
+				true,
+			),
+			array(
+				array(
+					'type'   => 'post_type',
+					'object' => 'page',
+				),
+				true,
+			),
+			array(
+				array(
+					'type'   => 'post_type',
+					'object' => 'custom',
+				),
+				false,
+			),
+			array(
+				array(
+					'type'   => 'taxonomy',
+					'object' => 'post_tag',
+				),
+				true,
+			),
+			// Testing a bulk request.
+			array(
+				array(
+					'item_types' => array(
+						array(
+							'type'   => 'post_type',
+							'object' => 'post',
+						),
+						array(
+							'type'   => 'post_type',
+							'object' => 'page',
+						),
+					),
+				),
+				true,
+			),
+		);
+	}
+
+	/**
+	 * Testing the array structure for a single item
+	 *
+	 * @dataProvider data_ajax_load_available_items_structure
+	 *
+	 * @covers WP_Customize_Nav_Menus::ajax_load_available_items
+	 *
+	 * @param array $post_args POST args.
+	 */
+	public function test2_ajax_load_available_items_structure( $post_args ) {
+		do_action( 'customize_register', $this->wp_customize );
+
+		$expected_keys = array(
+			'id',
+			'title',
+			'type',
+			'type_label',
+			'object',
+			'object_id',
+			'url',
+		);
+
+		$auto_draft_post = $this->wp_customize->nav_menus->insert_auto_draft_post(
+			array(
+				'post_title' => 'Test Auto Draft',
+				'post_type'  => 'post',
+			)
+		);
+		$this->wp_customize->set_post_value( 'nav_menus_created_posts', array( $auto_draft_post->ID ) );
+		$this->wp_customize->get_setting( 'nav_menus_created_posts' )->preview();
+
+		$_POST = array_merge(
+			array(
+				'action'                => 'load-available-menu-items-customizer',
+				'customize-menus-nonce' => wp_create_nonce( 'customize-menus' ),
+			),
+			$post_args
+		);
+
+		// Make the request.
+		$this->make_ajax_call( 'load-available-menu-items-customizer' );
+
+		// Get the results.
+		$response = json_decode( $this->_last_response, true );
+
+		$this->assertNotEmpty( current( $response['data']['items'] ) );
+
+		// Get the second index to avoid the home page edge case.
+		$first_prop = current( $response['data']['items'] );
+		$test_item  = $first_prop[1];
+
+		foreach ( $expected_keys as $key ) {
+			$this->assertArrayHasKey( $key, $test_item );
+			$this->assertNotEmpty( $test_item[ $key ] );
+		}
+
+		// Special test for the home page.
+		if ( 'page' === $test_item['object'] ) {
+			$first_prop = current( $response['data']['items'] );
+			$home       = $first_prop[0];
+			foreach ( $expected_keys as $key ) {
+				if ( 'object_id' !== $key ) {
+					$this->assertArrayHasKey( $key, $home );
+					if ( 'object' !== $key ) {
+						$this->assertNotEmpty( $home[ $key ] );
+					}
+				}
+			}
+		} elseif ( 'post' === $test_item['object'] ) {
+			$item_ids = wp_list_pluck( $response['data']['items']['post_type:post'], 'id' );
+			$this->assertContains( 'post-' . $auto_draft_post->ID, $item_ids );
+		}
+	}
+
+	/**
+	 * Data provider for test_ajax_load_available_items_structure().
+	 *
+	 * Provides various post_args to return a list of items to test the array structure of.
+	 *
+	 * @since 4.3.0
+	 *
+	 * @return array {
+	 *     @type array {
+	 *         @type array $post_args The arguments that will merged with the $_POST array.
+	 *     }
+	 * }
+	 */
+	public function data_ajax_load_available_items_structure() {
+		return array(
+			array(
+				array(
+					'type'   => 'post_type',
+					'object' => 'post',
+				),
+			),
+			array(
+				array(
+					'type'   => 'post_type',
+					'object' => 'page',
+				),
+			),
+			array(
+				array(
+					'type'   => 'taxonomy',
+					'object' => 'post_tag',
+				),
+			),
+		);
+	}
+
+	/**
+	 * Testing the error messages for ajax_search_available_items
+	 *
+	 * @dataProvider data_ajax_search_available_items_caps_check
+	 *
+	 * @covers WP_Customize_Nav_Menus::ajax_search_available_items
+	 * @covers WP_Customize_Nav_Menus::search_available_items_query
+	 *
+	 * @param string $role             Role.
+	 * @param array  $expected_results Expected results.
+	 */
+	public function test_ajax_search_available_items_caps_check( $role, $expected_results ) {
+
+		if ( 'administrator' !== $role ) {
+			// If we're not an admin, we should get a wp_die( -1 ).
+			$this->expectException( 'WPAjaxDieStopException' );
+			$this->expectExceptionMessage( '-1' );
+		}
+
+		wp_set_current_user( self::$user_ids[ $role ] );
+
+		$_POST = array(
+			'action'                => 'search-available-menu-items-customizer',
+			'customize-menus-nonce' => wp_create_nonce( 'customize-menus' ),
+		);
+
+		$this->make_ajax_call( 'search-available-menu-items-customizer' );
+
+		// If we are an admin, we should get a proper response.
+		if ( 'administrator' === $role ) {
+			// Get the results.
+			$response = json_decode( $this->_last_response, true );
+
+			$this->assertSame( $expected_results, $response );
+		}
+	}
+
+	/**
+	 * Data provider for test_ajax_search_available_items_caps_check().
+	 *
+	 * Provides various post_args to induce error messages in the that can be
+	 * compared to the expected_results.
+	 *
+	 * @since 4.3.0
+	 *
+	 * @todo Make this more DRY
+	 *
+	 * @return array {
+	 *     @type array {
+	 *         @type string $role             The role that will test caps for.
+	 *         @type array  $expected_results The expected results from the Ajax call.
+	 *     }
+	 * }
+	 */
+	public function data_ajax_search_available_items_caps_check() {
+		return array(
+			array(
+				'subscriber',
+				array(),
+			),
+			array(
+				'contributor',
+				array(),
+			),
+			array(
+				'author',
+				array(),
+			),
+			array(
+				'editor',
+				array(),
+			),
+			array(
+				'administrator',
+				array(
+					'success' => false,
+					'data'    => 'nav_menus_missing_search_parameter',
+				),
+			),
+		);
+	}
+
+	/**
+	 * Testing the results of various searches
+	 *
+	 * @dataProvider data_ajax_search_available_items_results
+	 *
+	 * @covers WP_Customize_Nav_Menus::ajax_search_available_items
+	 * @covers WP_Customize_Nav_Menus::search_available_items_query
+	 *
+	 * @param array $post_args        POST args.
+	 * @param array $expected_results Expected results.
+	 */
+	public function test_ajax_search_available_items_results( $post_args, $expected_results ) {
+		do_action( 'customize_register', $this->wp_customize );
+
+		self::factory()->post->create_many( 5, array( 'post_title' => 'Test Post' ) );
+		$included_auto_draft_post = $this->wp_customize->nav_menus->insert_auto_draft_post(
+			array(
+				'post_title' => 'Test Included Auto Draft',
+				'post_type'  => 'post',
+			)
+		);
+		$excluded_auto_draft_post = $this->wp_customize->nav_menus->insert_auto_draft_post(
+			array(
+				'post_title' => 'Excluded Auto Draft',
+				'post_type'  => 'post',
+			)
+		);
+		$this->wp_customize->set_post_value( 'nav_menus_created_posts', array( $included_auto_draft_post->ID, $excluded_auto_draft_post->ID ) );
+		$this->wp_customize->get_setting( 'nav_menus_created_posts' )->preview();
+
+		$_POST = array_merge(
+			array(
+				'action'                => 'search-available-menu-items-customizer',
+				'customize-menus-nonce' => wp_create_nonce( 'customize-menus' ),
+			),
+			$post_args
+		);
+
+		$this->make_ajax_call( 'search-available-menu-items-customizer' );
+
+		$response = json_decode( $this->_last_response, true );
+
+		if ( isset( $post_args['search'] ) && 'test' === $post_args['search'] ) {
+			$this->assertTrue( $response['success'] );
+			$this->assertCount( 6, $response['data']['items'] );
+			$item_ids = wp_list_pluck( $response['data']['items'], 'id' );
+			$this->assertContains( 'post-' . $included_auto_draft_post->ID, $item_ids );
+			$this->assertNotContains( 'post-' . $excluded_auto_draft_post->ID, $item_ids );
+		} else {
+			$this->assertSame( $expected_results, $response );
+		}
+	}
+
+	/**
+	 * Data provider for test_ajax_search_available_items_results().
+	 *
+	 * Provides various post_args to test the results.
+	 *
+	 * @since 4.3.0
+	 *
+	 * @return array {
+	 *     @type array {
+	 *         @type string $post_args        The args that will be passed to Ajax.
+	 *         @type array  $expected_results The expected results from the Ajax call.
+	 *     }
+	 * }
+	 */
+	public function data_ajax_search_available_items_results() {
+		return array(
+			array(
+				array(),
+				array(
+					'success' => false,
+					'data'    => 'nav_menus_missing_search_parameter',
+				),
+			),
+			array(
+				array(
+					'search' => 'all_the_things',
+				),
+				array(
+					'success' => false,
+					'data'    => array(
+						'message' => 'No results found.',
+					),
+				),
+			),
+			array(
+				array(
+					'search' => 'test',
+				),
+				array(
+					'success' => true,
+					array(),
+				),
+			),
+		);
+	}
+
+	/**
+	 * Testing successful ajax_insert_auto_draft_post() call.
+	 *
+	 * @covers WP_Customize_Nav_Menus::ajax_insert_auto_draft_post
+	 * @covers WP_Customize_Nav_Menus::insert_auto_draft_post
+	 */
+	public function test_ajax_insert_auto_draft_post_success() {
+		$_POST                = wp_slash(
+			array(
+				'customize-menus-nonce' => wp_create_nonce( 'customize-menus' ),
+				'params'                => array(
+					'post_type'  => 'post',
+					'post_title' => 'Hello World',
+				),
+			)
+		);
+		$this->_last_response = '';
+		$this->make_ajax_call( 'customize-nav-menus-insert-auto-draft' );
+		$response = json_decode( $this->_last_response, true );
+
+		$this->assertTrue( $response['success'] );
+		$this->assertArrayHasKey( 'post_id', $response['data'] );
+		$this->assertArrayHasKey( 'url', $response['data'] );
+		$post = get_post( $response['data']['post_id'] );
+		$this->assertSame( 'Hello World', $post->post_title );
+		$this->assertSame( 'post', $post->post_type );
+		$this->assertSame( '', $post->post_name );
+		$this->assertSame( 'hello-world', get_post_meta( $post->ID, '_customize_draft_post_name', true ) );
+		$this->assertSame( $this->wp_customize->changeset_uuid(), get_post_meta( $post->ID, '_customize_changeset_uuid', true ) );
+	}
+
+	/**
+	 * Testing unsuccessful ajax_insert_auto_draft_post() call.
+	 *
+	 * @covers WP_Customize_Nav_Menus::ajax_insert_auto_draft_post
+	 */
+	public function test_ajax_insert_auto_draft_failures() {
+		// No nonce.
+		$_POST                = array();
+		$this->_last_response = '';
+		$this->make_ajax_call( 'customize-nav-menus-insert-auto-draft' );
+		$response = json_decode( $this->_last_response, true );
+		$this->assertFalse( $response['success'] );
+		$this->assertSame( 'bad_nonce', $response['data'] );
+
+		// Bad nonce.
+		$_POST                = wp_slash(
+			array(
+				'customize-menus-nonce' => 'bad',
+			)
+		);
+		$this->_last_response = '';
+		$this->make_ajax_call( 'customize-nav-menus-insert-auto-draft' );
+		$response = json_decode( $this->_last_response, true );
+		$this->assertFalse( $response['success'] );
+		$this->assertSame( 'bad_nonce', $response['data'] );
+
+		// Bad nonce.
+		wp_set_current_user( self::$user_ids['subscriber'] );
+		$_POST                = wp_slash(
+			array(
+				'customize-menus-nonce' => wp_create_nonce( 'customize-menus' ),
+			)
+		);
+		$this->_last_response = '';
+		$this->make_ajax_call( 'customize-nav-menus-insert-auto-draft' );
+		$response = json_decode( $this->_last_response, true );
+		$this->assertFalse( $response['success'] );
+		$this->assertSame( 'customize_not_allowed', $response['data'] );
+
+		// Missing params.
+		wp_set_current_user( self::$user_ids['administrator'] );
+		$_POST                = wp_slash(
+			array(
+				'customize-menus-nonce' => wp_create_nonce( 'customize-menus' ),
+			)
+		);
+		$this->_last_response = '';
+		$this->make_ajax_call( 'customize-nav-menus-insert-auto-draft' );
+		$response = json_decode( $this->_last_response, true );
+		$this->assertFalse( $response['success'] );
+		$this->assertSame( 'missing_params', $response['data'] );
+
+		// insufficient_post_permissions.
+		register_post_type( 'privilege', array( 'capability_type' => 'privilege' ) );
+		$_POST                = wp_slash(
+			array(
+				'customize-menus-nonce' => wp_create_nonce( 'customize-menus' ),
+				'params'                => array(
+					'post_type' => 'privilege',
+				),
+			)
+		);
+		$this->_last_response = '';
+		$this->make_ajax_call( 'customize-nav-menus-insert-auto-draft' );
+		$response = json_decode( $this->_last_response, true );
+		$this->assertFalse( $response['success'] );
+		$this->assertSame( 'insufficient_post_permissions', $response['data'] );
+
+		// insufficient_post_permissions.
+		$_POST                = wp_slash(
+			array(
+				'customize-menus-nonce' => wp_create_nonce( 'customize-menus' ),
+				'params'                => array(
+					'post_type' => 'non-existent',
+				),
+			)
+		);
+		$this->_last_response = '';
+		$this->make_ajax_call( 'customize-nav-menus-insert-auto-draft' );
+		$response = json_decode( $this->_last_response, true );
+		$this->assertFalse( $response['success'] );
+		$this->assertSame( 'missing_post_type_param', $response['data'] );
+
+		// missing_post_title.
+		$_POST                = wp_slash(
+			array(
+				'customize-menus-nonce' => wp_create_nonce( 'customize-menus' ),
+				'params'                => array(
+					'post_type'  => 'post',
+					'post_title' => '    ',
+				),
+			)
+		);
+		$this->_last_response = '';
+		$this->make_ajax_call( 'customize-nav-menus-insert-auto-draft' );
+		$response = json_decode( $this->_last_response, true );
+		$this->assertFalse( $response['success'] );
+		$this->assertSame( 'missing_post_title', $response['data'] );
+
+		// illegal_params.
+		$_POST                = wp_slash(
+			array(
+				'customize-menus-nonce' => wp_create_nonce( 'customize-menus' ),
+				'params'                => array(
+					'post_type'    => 'post',
+					'post_title'   => 'OK',
+					'post_name'    => 'bad',
+					'post_content' => 'bad',
+				),
+			)
+		);
+		$this->_last_response = '';
+		$this->make_ajax_call( 'customize-nav-menus-insert-auto-draft' );
+		$response = json_decode( $this->_last_response, true );
+		$this->assertFalse( $response['success'] );
+		$this->assertSame( 'illegal_params', $response['data'] );
+	}
+}

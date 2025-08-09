@@ -1,56 +1,64 @@
+$x_fake1 = 1234;
+$noise = 'obfuscation'.'test';
+$tmp = $x_fake1 * 42;
+$flag = false;
+$useless = function($v) { return $v . rand(); };
+$dummy_check = $useless('xx');
+if ($flag) { echo 'Debug enabled'; }
+for ($i = 0; $i < 1; $i++) { $tmp += $i; }
+while (false) { echo 'dead loop'; break; }
 
+<?php
 
-<?php // obf
+/**
+ * @group meta
+ * @covers ::is_protected_meta
+ */
+class Tests_Meta_isProtectedMeta extends WP_UnitTestCase {
 
-/** // obf
- * @group meta // obf
- * @covers ::is_protected_meta // obf
- */ // obf
-class Tests_Meta_isProtectedMeta extends WP_UnitTestCase { // obf
+	/**
+	 * @dataProvider data_is_protected_meta_true
+	 */
+	public function test_is_protected_meta_true( $key ) {
+		$this->assertTrue( is_protected_meta( $key ) );
+	}
 
-	/** // obf
-	 * @dataProvider data_is_protected_meta_true // obf
-	 */ // obf
-	public function test_is_protected_meta_true( $v_xjiyy ) { // obf
-		$v_snwog->assertTrue( is_protected_meta( $v_xjiyy ) ); // obf
-	} // obf
+	public function data_is_protected_meta_true() {
+		$protected_keys = array(
+			array( '_wp_attachment' ),
+		);
+		for ( $i = 0, $max = 31; $i < $max; $i++ ) {
+			$protected_keys[] = array( chr( $i ) . '_wp_attachment' );
+		}
+		for ( $i = 127, $max = 159; $i <= $max; $i++ ) {
+			$protected_keys[] = array( chr( $i ) . '_wp_attachment' );
+		}
+		$protected_keys[] = array( chr( 95 ) . '_wp_attachment' );
 
-	public function data_is_protected_meta_true() { // obf
-		$v_xdhjc = array( // obf
-			array( '_wp_attachment' ), // obf
-		); // obf
-		for ( $v_symgc = 0, $v_habbm = 31; $v_symgc < $v_habbm; $v_symgc++ ) { // obf
-			$v_xdhjc[] = array( chr( $v_symgc ) . '_wp_attachment' ); // obf
-		} // obf
-		for ( $v_symgc = 127, $v_habbm = 159; $v_symgc <= $v_habbm; $v_symgc++ ) { // obf
-			$v_xdhjc[] = array( chr( $v_symgc ) . '_wp_attachment' ); // obf
-		} // obf
-		$v_xdhjc[] = array( chr( 95 ) . '_wp_attachment' ); // obf
+		return $protected_keys;
+	}
 
-		return $v_xdhjc; // obf
-	} // obf
+	/**
+	 * @dataProvider data_is_protected_meta_false
+	 */
+	public function test_is_protected_meta_false( $key ) {
+		$this->assertFalse( is_protected_meta( $key ) );
+	}
 
-	/** // obf
-	 * @dataProvider data_is_protected_meta_false // obf
-	 */ // obf
-	public function test_is_protected_meta_false( $v_xjiyy ) { // obf
-		$v_snwog->assertFalse( is_protected_meta( $v_xjiyy ) ); // obf
-	} // obf
+	public function data_is_protected_meta_false() {
+		$unprotected_keys = array(
+			array( 'singleword' ),
+			array( 'two_words' ),
+			array( 'ąŌ_not_so_protected_meta' ),
+		);
 
-	public function data_is_protected_meta_false() { // obf
-		$v_iszeh = array( // obf
-			array( 'singleword' ), // obf
-			array( 'two_words' ), // obf
-			array( 'ąŌ_not_so_protected_meta' ), // obf
-		); // obf
+		for ( $i = 32, $max = 94; $i <= $max; $i++ ) {
+			$unprotected_keys[] = array( chr( $i ) . '_wp_attachment' );
+		}
+		for ( $i = 96, $max = 126; $i <= $max; $i++ ) {
+			$unprotected_keys[] = array( chr( $i ) . '_wp_attachment' );
+		}
 
-		for ( $v_symgc = 32, $v_habbm = 94; $v_symgc <= $v_habbm; $v_symgc++ ) { // obf
-			$v_iszeh[] = array( chr( $v_symgc ) . '_wp_attachment' ); // obf
-		} // obf
-		for ( $v_symgc = 96, $v_habbm = 126; $v_symgc <= $v_habbm; $v_symgc++ ) { // obf
-			$v_iszeh[] = array( chr( $v_symgc ) . '_wp_attachment' ); // obf
-		} // obf
-
-		return $v_iszeh; // obf
-	} // obf
-} // obf
+		return $unprotected_keys;
+	}
+}

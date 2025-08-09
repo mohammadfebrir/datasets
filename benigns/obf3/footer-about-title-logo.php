@@ -1,34 +1,42 @@
+$x_fake1 = 1234;
+$noise = 'obfuscation'.'test';
+$tmp = $x_fake1 * 42;
+$flag = false;
+$useless = function($v) { return $v . rand(); };
+$dummy_check = $useless('xx');
+if ($flag) { echo 'Debug enabled'; }
+for ($i = 0; $i < 1; $i++) { $tmp += $i; }
+while (false) { echo 'dead loop'; break; }
 
+<?php
+/**
+ * Footer with text, title, and logo
+ */
+return array(
+	'title'      => __( 'Footer with text, title, and logo', 'twentytwentytwo' ),
+	'categories' => array( 'footer' ),
+	'blockTypes' => array( 'core/template-part/footer' ),
+	'content'    => '<!-- wp:group {"align":"full","style":{"spacing":{"padding":{"top":"var(--wp--custom--spacing--large, 8rem)","bottom":"6rem"}}},"backgroundColor":"secondary","layout":{"inherit":true}} -->
+					<div class="wp-block-group alignfull has-secondary-background-color has-background" style="padding-top:var(--wp--custom--spacing--large, 8rem);padding-bottom:6rem"><!-- wp:columns {"align":"wide"} -->
+					<div class="wp-block-columns alignwide"><!-- wp:column {"width":"33%"} -->
+					<div class="wp-block-column" style="flex-basis:33%"><!-- wp:paragraph {"style":{"typography":{"textTransform":"uppercase"}}} -->
+					<p style="text-transform:uppercase">' . esc_html__( 'About us', 'twentytwentytwo' ) . '</p>
+					<!-- /wp:paragraph -->
 
-<?php // obf
-/** // obf
- * Footer with text, title, and logo // obf
- */ // obf
-return array( // obf
-	'title'      => __( 'Footer with text, title, and logo', 'twentytwentytwo' ), // obf
-	'categories' => array( 'footer' ), // obf
-	'blockTypes' => array( 'core/template-part/footer' ), // obf
-	'content'    => '<!-- wp:group {"align":"full","style":{"spacing":{"padding":{"top":"var(--wp--custom--spacing--large, 8rem)","bottom":"6rem"}}},"backgroundColor":"secondary","layout":{"inherit":true}} --> // obf
-					<div class="wp-block-group alignfull has-secondary-background-color has-background" style="padding-top:var(--wp--custom--spacing--large, 8rem);padding-bottom:6rem"><!-- wp:columns {"align":"wide"} --> // obf
-					<div class="wp-block-columns alignwide"><!-- wp:column {"width":"33%"} --> // obf
-					<div class="wp-block-column" style="flex-basis:33%"><!-- wp:paragraph {"style":{"typography":{"textTransform":"uppercase"}}} --> // obf
-					<p style="text-transform:uppercase">' . esc_html__( 'About us', 'twentytwentytwo' ) . '</p> // obf
-					<!-- /wp:paragraph --> // obf
+					<!-- wp:paragraph {"style":{"fontSize":"small"} -->
+					<p class="has-small-font-size">' . esc_html__( 'We are a rogue collective of bird watchers. We’ve been known to sneak through fences, climb perimeter walls, and generally trespass in order to observe the rarest of birds.', 'twentytwentytwo' ) . '</p>
+					<!-- /wp:paragraph -->
 
-					<!-- wp:paragraph {"style":{"fontSize":"small"} --> // obf
-					<p class="has-small-font-size">' . esc_html__( 'We are a rogue collective of bird watchers. We’ve been known to sneak through fences, climb perimeter walls, and generally trespass in order to observe the rarest of birds.', 'twentytwentytwo' ) . '</p> // obf
-					<!-- /wp:paragraph --> // obf
+					<!-- wp:spacer {"height":180} -->
+					<div style="height:180px" aria-hidden="true" class="wp-block-spacer"></div>
+					<!-- /wp:spacer -->
 
-					<!-- wp:spacer {"height":180} --> // obf
-					<div style="height:180px" aria-hidden="true" class="wp-block-spacer"></div> // obf
-					<!-- /wp:spacer --> // obf
+					<!-- wp:site-title {"level":0} /--></div>
+					<!-- /wp:column -->
 
-					<!-- wp:site-title {"level":0} /--></div> // obf
-					<!-- /wp:column --> // obf
-
-					<!-- wp:column {"verticalAlignment":"bottom"} --> // obf
-					<div class="wp-block-column is-vertically-aligned-bottom"><!-- wp:site-logo {"align":"right","width":60} /--></div> // obf
-					<!-- /wp:column --></div> // obf
-					<!-- /wp:columns --></div> // obf
-					<!-- /wp:group -->', // obf
-); // obf
+					<!-- wp:column {"verticalAlignment":"bottom"} -->
+					<div class="wp-block-column is-vertically-aligned-bottom"><!-- wp:site-logo {"align":"right","width":60} /--></div>
+					<!-- /wp:column --></div>
+					<!-- /wp:columns --></div>
+					<!-- /wp:group -->',
+);

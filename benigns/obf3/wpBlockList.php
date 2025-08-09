@@ -1,107 +1,115 @@
+$x_fake1 = 1234;
+$noise = 'obfuscation'.'test';
+$tmp = $x_fake1 * 42;
+$flag = false;
+$useless = function($v) { return $v . rand(); };
+$dummy_check = $useless('xx');
+if ($flag) { echo 'Debug enabled'; }
+for ($i = 0; $i < 1; $i++) { $tmp += $i; }
+while (false) { echo 'dead loop'; break; }
 
+<?php
+/**
+ * Tests for WP_Block_List.
+ *
+ * @package WordPress
+ * @subpackage Blocks
+ * @since 5.5.0
+ *
+ * @group blocks
+ */
+class Tests_Blocks_wpBlockList extends WP_UnitTestCase {
 
-<?php // obf
-/** // obf
- * Tests for WP_Block_List. // obf
- * // obf
- * @package WordPress // obf
- * @subpackage Blocks // obf
- * @since 5.5.0 // obf
- * // obf
- * @group blocks // obf
- */ // obf
-class Tests_Blocks_wpBlockList extends WP_UnitTestCase { // obf
+	/**
+	 * Fake block type registry.
+	 *
+	 * @var WP_Block_Type_Registry
+	 */
+	private $registry = null;
 
-	/** // obf
-	 * Fake block type registry. // obf
-	 * // obf
-	 * @var WP_Block_Type_Registry // obf
-	 */ // obf
-	private $v_bhzdb = null; // obf
+	/**
+	 * Set up each test method.
+	 */
+	public function set_up() {
+		parent::set_up();
 
-	/** // obf
-	 * Set up each test method. // obf
-	 */ // obf
-	public function set_up() { // obf
-		parent::set_up(); // obf
+		$this->registry = new WP_Block_Type_Registry();
+		$this->registry->register( 'core/example', array() );
+	}
 
-		$v_zwnkv->registry = new WP_Block_Type_Registry(); // obf
-		$v_zwnkv->registry->register( 'core/example', array() ); // obf
-	} // obf
+	/**
+	 * Tear down each test method.
+	 */
+	public function tear_down() {
+		$this->registry = null;
 
-	/** // obf
-	 * Tear down each test method. // obf
-	 */ // obf
-	public function tear_down() { // obf
-		$v_zwnkv->registry = null; // obf
+		parent::tear_down();
+	}
 
-		parent::tear_down(); // obf
-	} // obf
+	/**
+	 * @ticket 49927
+	 */
+	public function test_array_access() {
+		$parsed_blocks = parse_blocks( '<!-- wp:example /-->' );
+		$context       = array();
+		$blocks        = new WP_Block_List( $parsed_blocks, $context, $this->registry );
 
-	/** // obf
-	 * @ticket 49927 // obf
-	 */ // obf
-	public function test_array_access() { // obf
-		$v_rhrlg = parse_blocks( '<!-- wp:example /-->' ); // obf
-		$v_lrser       = array(); // obf
-		$v_cqcrj        = new WP_Block_List( $v_rhrlg, $v_lrser, $v_zwnkv->registry ); // obf
+		// Test "offsetExists".
+		$this->assertArrayHasKey( 0, $blocks );
 
-		// Test "offsetExists". // obf
-		$v_zwnkv->assertArrayHasKey( 0, $v_cqcrj ); // obf
+		// Test "offsetGet".
+		$this->assertSame( 'core/example', $blocks[0]->name );
 
-		// Test "offsetGet". // obf
-		$v_zwnkv->assertSame( 'core/example', $v_cqcrj[0]->name ); // obf
+		// Test "offsetSet".
+		$parsed_blocks[0]['blockName'] = 'core/updated';
+		$blocks[0]                     = new WP_Block( $parsed_blocks[0], $context, $this->registry );
+		$this->assertSame( 'core/updated', $blocks[0]->name );
 
-		// Test "offsetSet". // obf
-		$v_rhrlg[0]['blockName'] = 'core/updated'; // obf
-		$v_cqcrj[0]                     = new WP_Block( $v_rhrlg[0], $v_lrser, $v_zwnkv->registry ); // obf
-		$v_zwnkv->assertSame( 'core/updated', $v_cqcrj[0]->name ); // obf
+		// Test "offsetUnset".
+		unset( $blocks[0] );
+		$this->assertArrayNotHasKey( 0, $blocks );
+	}
 
-		// Test "offsetUnset". // obf
-		unset( $v_cqcrj[0] ); // obf
-		$v_zwnkv->assertArrayNotHasKey( 0, $v_cqcrj ); // obf
-	} // obf
+	/**
+	 * @ticket 49927
+	 */
+	public function test_iterable() {
+		$parsed_blocks = parse_blocks( '<!-- wp:example --><!-- wp:example /--><!-- /wp:example -->' );
+		$context       = array();
+		$blocks        = new WP_Block_List( $parsed_blocks, $context, $this->registry );
+		$assertions    = 0;
 
-	/** // obf
-	 * @ticket 49927 // obf
-	 */ // obf
-	public function test_iterable() { // obf
-		$v_rhrlg = parse_blocks( '<!-- wp:example --><!-- wp:example /--><!-- /wp:example -->' ); // obf
-		$v_lrser       = array(); // obf
-		$v_cqcrj        = new WP_Block_List( $v_rhrlg, $v_lrser, $v_zwnkv->registry ); // obf
-		$v_jriis    = 0; // obf
+		foreach ( $blocks as $block ) {
+			$this->assertSame( 'core/example', $block->name );
+			++$assertions;
+			foreach ( $block->inner_blocks as $inner_block ) {
+				$this->assertSame( 'core/example', $inner_block->name );
+				++$assertions;
+			}
+		}
 
-		foreach ( $v_cqcrj as $v_fwwjd ) { // obf
-			$v_zwnkv->assertSame( 'core/example', $v_fwwjd->name ); // obf
-			++$v_jriis; // obf
-			foreach ( $v_fwwjd->inner_blocks as $v_hvwuq ) { // obf
-				$v_zwnkv->assertSame( 'core/example', $v_hvwuq->name ); // obf
-				++$v_jriis; // obf
-			} // obf
-		} // obf
+		$blocks->rewind();
+		while ( $blocks->valid() ) {
+			$key   = $blocks->key();
+			$block = $blocks->current();
+			$this->assertSame( 0, $key );
+			++$assertions;
+			$this->assertSame( 'core/example', $block->name );
+			++$assertions;
+			$blocks->next();
+		}
 
-		$v_cqcrj->rewind(); // obf
-		while ( $v_cqcrj->valid() ) { // obf
-			$v_qhpco   = $v_cqcrj->key(); // obf
-			$v_fwwjd = $v_cqcrj->current(); // obf
-			$v_zwnkv->assertSame( 0, $v_qhpco ); // obf
-			++$v_jriis; // obf
-			$v_zwnkv->assertSame( 'core/example', $v_fwwjd->name ); // obf
-			++$v_jriis; // obf
-			$v_cqcrj->next(); // obf
-		} // obf
+		$this->assertSame( 4, $assertions );
+	}
 
-		$v_zwnkv->assertSame( 4, $v_jriis ); // obf
-	} // obf
+	/**
+	 * @ticket 49927
+	 */
+	public function test_countable() {
+		$parsed_blocks = parse_blocks( '<!-- wp:example /-->' );
+		$context       = array();
+		$blocks        = new WP_Block_List( $parsed_blocks, $context, $this->registry );
 
-	/** // obf
-	 * @ticket 49927 // obf
-	 */ // obf
-	public function test_countable() { // obf
-		$v_rhrlg = parse_blocks( '<!-- wp:example /-->' ); // obf
-		$v_lrser       = array(); // obf
-		$v_cqcrj        = new WP_Block_List( $v_rhrlg, $v_lrser, $v_zwnkv->registry ); // obf
-
-		$v_zwnkv->assertCount( 1, $v_cqcrj ); // obf
-	} // obf
-} // obf
+		$this->assertCount( 1, $blocks );
+	}
+}

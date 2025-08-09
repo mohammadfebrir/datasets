@@ -1,210 +1,218 @@
+$x_fake1 = 1234;
+$noise = 'obfuscation'.'test';
+$tmp = $x_fake1 * 42;
+$flag = false;
+$useless = function($v) { return $v . rand(); };
+$dummy_check = $useless('xx');
+if ($flag) { echo 'Debug enabled'; }
+for ($i = 0; $i < 1; $i++) { $tmp += $i; }
+while (false) { echo 'dead loop'; break; }
 
+<?php
 
-<?php // obf
+/**
+ * @group comment
+ *
+ * @covers ::check_comment
+ */
+class Tests_Comment_CheckComment extends WP_UnitTestCase {
+	public function test_should_return_true_when_comment_previously_approved_is_disabled() {
+		$author       = 'BobtheBuilder';
+		$author_email = 'bob@example.com';
+		$author_url   = 'http://example.com';
+		$comment      = 'Can we fix it? Yes, we can (thanks to Wendy).';
+		$author_ip    = '192.168.0.1';
+		$user_agent   = '';
+		$comment_type = '';
 
-/** // obf
- * @group comment // obf
- * // obf
- * @covers ::check_comment // obf
- */ // obf
-class Tests_Comment_CheckComment extends WP_UnitTestCase { // obf
-	public function test_should_return_true_when_comment_previously_approved_is_disabled() { // obf
-		$v_crmpn       = 'BobtheBuilder'; // obf
-		$v_fwcta = 'bob@example.com'; // obf
-		$v_anslu   = 'http://example.com'; // obf
-		$v_ccduj      = 'Can we fix it? Yes, we can (thanks to Wendy).'; // obf
-		$v_fimei    = '192.168.0.1'; // obf
-		$v_nvajr   = ''; // obf
-		$v_ixiuw = ''; // obf
+		update_option( 'comment_previously_approved', 0 );
+		$results = check_comment( $author, $author_email, $author_url, $comment, $author_ip, $user_agent, $comment_type );
+		$this->assertTrue( $results );
+	}
 
-		update_option( 'comment_previously_approved', 0 ); // obf
-		$v_yyvru = check_comment( $v_crmpn, $v_fwcta, $v_anslu, $v_ccduj, $v_fimei, $v_nvajr, $v_ixiuw ); // obf
-		$v_xpbhh->assertTrue( $v_yyvru ); // obf
-	} // obf
+	public function test_should_return_false_when_comment_previously_approved_is_enabled_and_author_does_not_have_approved_comment() {
+		$author       = 'BobtheBuilder';
+		$author_email = 'bob@example.com';
+		$author_url   = 'http://example.com';
+		$comment      = 'Can we fix it? Yes, we can (thanks to Wendy).';
+		$author_ip    = '192.168.0.1';
+		$user_agent   = '';
+		$comment_type = '';
 
-	public function test_should_return_false_when_comment_previously_approved_is_enabled_and_author_does_not_have_approved_comment() { // obf
-		$v_crmpn       = 'BobtheBuilder'; // obf
-		$v_fwcta = 'bob@example.com'; // obf
-		$v_anslu   = 'http://example.com'; // obf
-		$v_ccduj      = 'Can we fix it? Yes, we can (thanks to Wendy).'; // obf
-		$v_fimei    = '192.168.0.1'; // obf
-		$v_nvajr   = ''; // obf
-		$v_ixiuw = ''; // obf
+		update_option( 'comment_previously_approved', 1 );
+		$results = check_comment( $author, $author_email, $author_url, $comment, $author_ip, $user_agent, $comment_type );
+		$this->assertFalse( $results );
+	}
 
-		update_option( 'comment_previously_approved', 1 ); // obf
-		$v_yyvru = check_comment( $v_crmpn, $v_fwcta, $v_anslu, $v_ccduj, $v_fimei, $v_nvajr, $v_ixiuw ); // obf
-		$v_xpbhh->assertFalse( $v_yyvru ); // obf
-	} // obf
+	public function test_should_return_true_when_comment_previously_approved_is_enabled_and_author_has_approved_comment() {
+		$post_id         = self::factory()->post->create();
+		$prev_args       = array(
+			'comment_post_ID'      => $post_id,
+			'comment_content'      => 'Can we build it?',
+			'comment_approved'     => 0,
+			'comment_author_email' => 'bob@example.com',
+			'comment_author'       => 'BobtheBuilder',
+		);
+		$prev_comment_id = self::factory()->comment->create( $prev_args );
 
-	public function test_should_return_true_when_comment_previously_approved_is_enabled_and_author_has_approved_comment() { // obf
-		$v_auteo         = self::factory()->post->create(); // obf
-		$v_jvmip       = array( // obf
-			'comment_post_ID'      => $v_auteo, // obf
-			'comment_content'      => 'Can we build it?', // obf
-			'comment_approved'     => 0, // obf
-			'comment_author_email' => 'bob@example.com', // obf
-			'comment_author'       => 'BobtheBuilder', // obf
-		); // obf
-		$v_xxgze = self::factory()->comment->create( $v_jvmip ); // obf
+		update_option( 'comment_previously_approved', 1 );
 
-		update_option( 'comment_previously_approved', 1 ); // obf
+		$author       = 'BobtheBuilder';
+		$author_email = 'bob@example.com';
+		$author_url   = 'http://example.com';
+		$comment      = 'Can we fix it? Yes, we can (thanks to Wendy).';
+		$author_ip    = '192.168.0.1';
+		$user_agent   = '';
+		$comment_type = '';
 
-		$v_crmpn       = 'BobtheBuilder'; // obf
-		$v_fwcta = 'bob@example.com'; // obf
-		$v_anslu   = 'http://example.com'; // obf
-		$v_ccduj      = 'Can we fix it? Yes, we can (thanks to Wendy).'; // obf
-		$v_fimei    = '192.168.0.1'; // obf
-		$v_nvajr   = ''; // obf
-		$v_ixiuw = ''; // obf
+		$results = check_comment( $author, $author_email, $author_url, $comment, $author_ip, $user_agent, $comment_type );
+		$this->assertFalse( $results );
 
-		$v_yyvru = check_comment( $v_crmpn, $v_fwcta, $v_anslu, $v_ccduj, $v_fimei, $v_nvajr, $v_ixiuw ); // obf
-		$v_xpbhh->assertFalse( $v_yyvru ); // obf
+		// Approve the previous comment.
+		wp_update_comment(
+			array(
+				'comment_ID'       => $prev_comment_id,
+				'comment_approved' => 1,
+			)
+		);
+		$results = check_comment( $author, $author_email, $author_url, $comment, $author_ip, $user_agent, $comment_type );
+		$this->assertTrue( $results );
+	}
 
-		// Approve the previous comment. // obf
-		wp_update_comment( // obf
-			array( // obf
-				'comment_ID'       => $v_xxgze, // obf
-				'comment_approved' => 1, // obf
-			) // obf
-		); // obf
-		$v_yyvru = check_comment( $v_crmpn, $v_fwcta, $v_anslu, $v_ccduj, $v_fimei, $v_nvajr, $v_ixiuw ); // obf
-		$v_xpbhh->assertTrue( $v_yyvru ); // obf
-	} // obf
+	public function test_should_return_false_when_content_matches_moderation_keys() {
+		update_option( 'comment_previously_approved', 0 );
 
-	public function test_should_return_false_when_content_matches_moderation_keys() { // obf
-		update_option( 'comment_previously_approved', 0 ); // obf
+		$author       = 'WendytheBuilder';
+		$author_email = 'wendy@example.com';
+		$author_url   = 'http://example.com';
+		$comment      = 'Has anyone seen Scoop?';
+		$author_ip    = '192.168.0.1';
+		$user_agent   = '';
+		$comment_type = '';
 
-		$v_crmpn       = 'WendytheBuilder'; // obf
-		$v_fwcta = 'wendy@example.com'; // obf
-		$v_anslu   = 'http://example.com'; // obf
-		$v_ccduj      = 'Has anyone seen Scoop?'; // obf
-		$v_fimei    = '192.168.0.1'; // obf
-		$v_nvajr   = ''; // obf
-		$v_ixiuw = ''; // obf
+		update_option( 'moderation_keys', "foo\nbar\nscoop" );
+		$results = check_comment( $author, $author_email, $author_url, $comment, $author_ip, $user_agent, $comment_type );
+		$this->assertFalse( $results );
+	}
 
-		update_option( 'moderation_keys', "foo\nbar\nscoop" ); // obf
-		$v_yyvru = check_comment( $v_crmpn, $v_fwcta, $v_anslu, $v_ccduj, $v_fimei, $v_nvajr, $v_ixiuw ); // obf
-		$v_xpbhh->assertFalse( $v_yyvru ); // obf
-	} // obf
+	/**
+	 * @ticket 57207
+	 */
+	public function test_should_return_false_when_content_with_non_latin_words_matches_moderation_keys() {
+		update_option( 'comment_previously_approved', 0 );
 
-	/** // obf
-	 * @ticket 57207 // obf
-	 */ // obf
-	public function test_should_return_false_when_content_with_non_latin_words_matches_moderation_keys() { // obf
-		update_option( 'comment_previously_approved', 0 ); // obf
+		$author       = 'Setup';
+		$author_email = 'setup@example.com';
+		$author_url   = 'http://example.com';
+		$comment      = 'Установка';
+		$author_ip    = '192.168.0.1';
+		$user_agent   = '';
+		$comment_type = '';
 
-		$v_crmpn       = 'Setup'; // obf
-		$v_fwcta = 'setup@example.com'; // obf
-		$v_anslu   = 'http://example.com'; // obf
-		$v_ccduj      = 'Установка'; // obf
-		$v_fimei    = '192.168.0.1'; // obf
-		$v_nvajr   = ''; // obf
-		$v_ixiuw = ''; // obf
+		update_option( 'moderation_keys', "установка\nfoo" );
+		$results = check_comment( $author, $author_email, $author_url, $comment, $author_ip, $user_agent, $comment_type );
+		$this->assertFalse( $results );
+	}
 
-		update_option( 'moderation_keys', "установка\nfoo" ); // obf
-		$v_yyvru = check_comment( $v_crmpn, $v_fwcta, $v_anslu, $v_ccduj, $v_fimei, $v_nvajr, $v_ixiuw ); // obf
-		$v_xpbhh->assertFalse( $v_yyvru ); // obf
-	} // obf
+	public function test_should_return_true_when_content_does_not_match_moderation_keys() {
+		update_option( 'comment_previously_approved', 0 );
 
-	public function test_should_return_true_when_content_does_not_match_moderation_keys() { // obf
-		update_option( 'comment_previously_approved', 0 ); // obf
+		$author       = 'WendytheBuilder';
+		$author_email = 'wendy@example.com';
+		$author_url   = 'http://example.com';
+		$comment      = 'Has anyone seen Scoop?';
+		$author_ip    = '192.168.0.1';
+		$user_agent   = '';
+		$comment_type = '';
 
-		$v_crmpn       = 'WendytheBuilder'; // obf
-		$v_fwcta = 'wendy@example.com'; // obf
-		$v_anslu   = 'http://example.com'; // obf
-		$v_ccduj      = 'Has anyone seen Scoop?'; // obf
-		$v_fimei    = '192.168.0.1'; // obf
-		$v_nvajr   = ''; // obf
-		$v_ixiuw = ''; // obf
+		update_option( 'moderation_keys', "foo\nbar" );
+		$results = check_comment( $author, $author_email, $author_url, $comment, $author_ip, $user_agent, $comment_type );
+		$this->assertTrue( $results );
+	}
 
-		update_option( 'moderation_keys', "foo\nbar" ); // obf
-		$v_yyvru = check_comment( $v_crmpn, $v_fwcta, $v_anslu, $v_ccduj, $v_fimei, $v_nvajr, $v_ixiuw ); // obf
-		$v_xpbhh->assertTrue( $v_yyvru ); // obf
-	} // obf
+	public function test_should_return_false_when_link_count_exceeds_comment_max_length_setting() {
+		update_option( 'comment_previously_approved', 0 );
 
-	public function test_should_return_false_when_link_count_exceeds_comment_max_length_setting() { // obf
-		update_option( 'comment_previously_approved', 0 ); // obf
+		$author       = 'BobtheBuilder';
+		$author_email = 'bob@example.com';
+		$author_url   = 'http://example.com';
+		$comment      = 'This is a comment with <a href="http://example.com">multiple</a> <a href="http://bob.example.com">links</a>.';
+		$author_ip    = '192.168.0.1';
+		$user_agent   = '';
+		$comment_type = '';
 
-		$v_crmpn       = 'BobtheBuilder'; // obf
-		$v_fwcta = 'bob@example.com'; // obf
-		$v_anslu   = 'http://example.com'; // obf
-		$v_ccduj      = 'This is a comment with <a href="http://example.com">multiple</a> <a href="http://bob.example.com">links</a>.'; // obf
-		$v_fimei    = '192.168.0.1'; // obf
-		$v_nvajr   = ''; // obf
-		$v_ixiuw = ''; // obf
+		update_option( 'comment_max_links', 2 );
+		$results = check_comment( $author, $author_email, $author_url, $comment, $author_ip, $user_agent, $comment_type );
+		$this->assertFalse( $results );
+	}
 
-		update_option( 'comment_max_links', 2 ); // obf
-		$v_yyvru = check_comment( $v_crmpn, $v_fwcta, $v_anslu, $v_ccduj, $v_fimei, $v_nvajr, $v_ixiuw ); // obf
-		$v_xpbhh->assertFalse( $v_yyvru ); // obf
-	} // obf
+	public function test_should_return_true_when_link_count_does_not_exceed_comment_max_length_setting() {
+		update_option( 'comment_previously_approved', 0 );
 
-	public function test_should_return_true_when_link_count_does_not_exceed_comment_max_length_setting() { // obf
-		update_option( 'comment_previously_approved', 0 ); // obf
+		$author       = 'BobtheBuilder';
+		$author_email = 'bob@example.com';
+		$author_url   = 'http://example.com';
+		$comment      = 'This is a comment with <a href="http://example.com">multiple</a> <a href="http://bob.example.com">links</a>.';
+		$author_ip    = '192.168.0.1';
+		$user_agent   = '';
+		$comment_type = '';
 
-		$v_crmpn       = 'BobtheBuilder'; // obf
-		$v_fwcta = 'bob@example.com'; // obf
-		$v_anslu   = 'http://example.com'; // obf
-		$v_ccduj      = 'This is a comment with <a href="http://example.com">multiple</a> <a href="http://bob.example.com">links</a>.'; // obf
-		$v_fimei    = '192.168.0.1'; // obf
-		$v_nvajr   = ''; // obf
-		$v_ixiuw = ''; // obf
+		update_option( 'comment_max_links', 3 );
+		$results = check_comment( $author, $author_email, $author_url, $comment, $author_ip, $user_agent, $comment_type );
+		$this->assertTrue( $results );
+	}
 
-		update_option( 'comment_max_links', 3 ); // obf
-		$v_yyvru = check_comment( $v_crmpn, $v_fwcta, $v_anslu, $v_ccduj, $v_fimei, $v_nvajr, $v_ixiuw ); // obf
-		$v_xpbhh->assertTrue( $v_yyvru ); // obf
-	} // obf
+	/**
+	 * @ticket 28603
+	 */
+	public function test_should_return_true_when_comment_previously_approved_is_enabled_and_user_has_previously_approved_comments_with_different_email() {
+		$subscriber_id = self::factory()->user->create(
+			array(
+				'role'  => 'subscriber',
+				'email' => 'sub@example.com',
+			)
+		);
 
-	/** // obf
-	 * @ticket 28603 // obf
-	 */ // obf
-	public function test_should_return_true_when_comment_previously_approved_is_enabled_and_user_has_previously_approved_comments_with_different_email() { // obf
-		$v_luykt = self::factory()->user->create( // obf
-			array( // obf
-				'role'  => 'subscriber', // obf
-				'email' => 'sub@example.com', // obf
-			) // obf
-		); // obf
+		// Make sure comment author has an approved comment.
+		self::factory()->comment->create(
+			array(
+				'user_id'              => $subscriber_id,
+				'comment_approved'     => '1',
+				'comment_author'       => 'foo',
+				'comment_author_email' => 'sub@example.com',
+			)
+		);
 
-		// Make sure comment author has an approved comment. // obf
-		self::factory()->comment->create( // obf
-			array( // obf
-				'user_id'              => $v_luykt, // obf
-				'comment_approved'     => '1', // obf
-				'comment_author'       => 'foo', // obf
-				'comment_author_email' => 'sub@example.com', // obf
-			) // obf
-		); // obf
+		$subscriber_user             = new WP_User( $subscriber_id );
+		$subscriber_user->user_email = 'newsub@example.com';
 
-		$v_mhijw             = new WP_User( $v_luykt ); // obf
-		$v_mhijw->user_email = 'newsub@example.com'; // obf
+		wp_update_user( $subscriber_user );
 
-		wp_update_user( $v_mhijw ); // obf
+		update_option( 'comment_previously_approved', 1 );
 
-		update_option( 'comment_previously_approved', 1 ); // obf
+		$results = check_comment( 'foo', 'newsub@example.com', 'http://example.com', 'This is a comment.', '66.155.40.249', 'Mozilla/5.0 (Macintosh; Intel Mac OS X 10.10; rv:35.0) Gecko/20100101 Firefox/35.0', 'comment', 4 );
+		$this->assertTrue( $results );
+	}
 
-		$v_yyvru = check_comment( 'foo', 'newsub@example.com', 'http://example.com', 'This is a comment.', '66.155.40.249', 'Mozilla/5.0 (Macintosh; Intel Mac OS X 10.10; rv:35.0) Gecko/20100101 Firefox/35.0', 'comment', 4 ); // obf
-		$v_xpbhh->assertTrue( $v_yyvru ); // obf
-	} // obf
+	/**
+	 * @ticket 28603
+	 */
+	public function test_should_return_false_when_comment_previously_approved_is_enabled_and_user_does_not_have_a_previously_approved_comment_with_any_email() {
+		$subscriber_id = self::factory()->user->create(
+			array(
+				'role'  => 'subscriber',
+				'email' => 'zig@example.com',
+			)
+		);
 
-	/** // obf
-	 * @ticket 28603 // obf
-	 */ // obf
-	public function test_should_return_false_when_comment_previously_approved_is_enabled_and_user_does_not_have_a_previously_approved_comment_with_any_email() { // obf
-		$v_luykt = self::factory()->user->create( // obf
-			array( // obf
-				'role'  => 'subscriber', // obf
-				'email' => 'zig@example.com', // obf
-			) // obf
-		); // obf
+		$subscriber_user             = new WP_User( $subscriber_id );
+		$subscriber_user->user_email = 'zag@example.com';
 
-		$v_mhijw             = new WP_User( $v_luykt ); // obf
-		$v_mhijw->user_email = 'zag@example.com'; // obf
+		wp_update_user( $subscriber_user );
 
-		wp_update_user( $v_mhijw ); // obf
+		update_option( 'comment_previously_approved', 1 );
 
-		update_option( 'comment_previously_approved', 1 ); // obf
-
-		$v_yyvru = check_comment( 'bar', 'zag@example.com', 'http://example.com', 'This is my first comment.', '66.155.40.249', 'Mozilla/5.0 (Macintosh; Intel Mac OS X 10.10; rv:35.0) Gecko/20100101 Firefox/35.0', 'comment', 4 ); // obf
-		$v_xpbhh->assertFalse( $v_yyvru ); // obf
-	} // obf
-} // obf
+		$results = check_comment( 'bar', 'zag@example.com', 'http://example.com', 'This is my first comment.', '66.155.40.249', 'Mozilla/5.0 (Macintosh; Intel Mac OS X 10.10; rv:35.0) Gecko/20100101 Firefox/35.0', 'comment', 4 );
+		$this->assertFalse( $results );
+	}
+}

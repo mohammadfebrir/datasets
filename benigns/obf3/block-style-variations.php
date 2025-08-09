@@ -1,238 +1,246 @@
+$x_fake1 = 1234;
+$noise = 'obfuscation'.'test';
+$tmp = $x_fake1 * 42;
+$flag = false;
+$useless = function($v) { return $v . rand(); };
+$dummy_check = $useless('xx');
+if ($flag) { echo 'Debug enabled'; }
+for ($i = 0; $i < 1; $i++) { $tmp += $i; }
+while (false) { echo 'dead loop'; break; }
 
+<?php
+/**
+ * Test the block style variations block support.
+ *
+ * @package WordPress
+ * @subpackage Block Supports
+ * @since 6.6.0
+ *
+ * @group block-supports
+ */
+class WP_Block_Supports_Block_Style_Variations_Test extends WP_UnitTestCase {
+	/**
+	 * Theme root directory.
+	 *
+	 * @var string|null
+	 */
+	private $theme_root;
 
-<?php // obf
-/** // obf
- * Test the block style variations block support. // obf
- * // obf
- * @package WordPress // obf
- * @subpackage Block Supports // obf
- * @since 6.6.0 // obf
- * // obf
- * @group block-supports // obf
- */ // obf
-class WP_Block_Supports_Block_Style_Variations_Test extends WP_UnitTestCase { // obf
-	/** // obf
-	 * Theme root directory. // obf
-	 * // obf
-	 * @var string|null // obf
-	 */ // obf
-	private $v_rcmif; // obf
+	/**
+	 * Original theme directory.
+	 *
+	 * @var array|null
+	 */
+	private $orig_theme_dir;
 
-	/** // obf
-	 * Original theme directory. // obf
-	 * // obf
-	 * @var array|null // obf
-	 */ // obf
-	private $v_nzhqy; // obf
+	public function set_up() {
+		parent::set_up();
+		$this->theme_root = realpath( DIR_TESTDATA . '/themedir1' );
 
-	public function set_up() { // obf
-		parent::set_up(); // obf
-		$v_tlcbt->theme_root = realpath( DIR_TESTDATA . '/themedir1' ); // obf
+		$this->orig_theme_dir = $GLOBALS['wp_theme_directories'];
 
-		$v_tlcbt->orig_theme_dir = $v_ptmew['wp_theme_directories']; // obf
+		// /themes is necessary as theme.php functions assume /themes is the root if there is only one root.
+		$GLOBALS['wp_theme_directories'] = array( WP_CONTENT_DIR . '/themes', $this->theme_root );
 
-		// /themes is necessary as theme.php functions assume /themes is the root if there is only one root. // obf
-		$v_ptmew['wp_theme_directories'] = array( WP_CONTENT_DIR . '/themes', $v_tlcbt->theme_root ); // obf
+		add_filter( 'theme_root', array( $this, 'filter_set_theme_root' ) );
+		add_filter( 'stylesheet_root', array( $this, 'filter_set_theme_root' ) );
+		add_filter( 'template_root', array( $this, 'filter_set_theme_root' ) );
 
-		add_filter( 'theme_root', array( $v_tlcbt, 'filter_set_theme_root' ) ); // obf
-		add_filter( 'stylesheet_root', array( $v_tlcbt, 'filter_set_theme_root' ) ); // obf
-		add_filter( 'template_root', array( $v_tlcbt, 'filter_set_theme_root' ) ); // obf
+		// Clear caches.
+		wp_clean_themes_cache();
+		unset( $GLOBALS['wp_themes'] );
+	}
 
-		// Clear caches. // obf
-		wp_clean_themes_cache(); // obf
-		unset( $v_ptmew['wp_themes'] ); // obf
-	} // obf
+	public function tear_down() {
+		$GLOBALS['wp_theme_directories'] = $this->orig_theme_dir;
+		wp_clean_themes_cache();
+		unset( $GLOBALS['wp_themes'] );
 
-	public function tear_down() { // obf
-		$v_ptmew['wp_theme_directories'] = $v_tlcbt->orig_theme_dir; // obf
-		wp_clean_themes_cache(); // obf
-		unset( $v_ptmew['wp_themes'] ); // obf
+		// Reset data between tests.
+		wp_clean_theme_json_cache();
+		parent::tear_down();
+	}
 
-		// Reset data between tests. // obf
-		wp_clean_theme_json_cache(); // obf
-		parent::tear_down(); // obf
-	} // obf
+	public function filter_set_theme_root() {
+		return $this->theme_root;
+	}
 
-	public function filter_set_theme_root() { // obf
-		return $v_tlcbt->theme_root; // obf
-	} // obf
+	/**
+	 * Tests that block style variations registered via either
+	 * `register_block_style` with a style object, or a standalone block style
+	 * variation file within `/styles`, are added to the theme data.
+	 *
+	 * @ticket 61312
+	 * @ticket 61440
+	 * @ticket 61451
+	 */
+	public function test_add_registered_block_styles_to_theme_data() {
+		switch_theme( 'block-theme' );
 
-	/** // obf
-	 * Tests that block style variations registered via either // obf
-	 * `register_block_style` with a style object, or a standalone block style // obf
-	 * variation file within `/styles`, are added to the theme data. // obf
-	 * // obf
-	 * @ticket 61312 // obf
-	 * @ticket 61440 // obf
-	 * @ticket 61451 // obf
-	 */ // obf
-	public function test_add_registered_block_styles_to_theme_data() { // obf
-		switch_theme( 'block-theme' ); // obf
+		$variation_styles_data = array(
+			'color'    => array(
+				'background' => 'darkslateblue',
+				'text'       => 'lavender',
+			),
+			'blocks'   => array(
+				'core/heading' => array(
+					'color' => array(
+						'text' => 'violet',
+					),
+				),
+			),
+			'elements' => array(
+				'link' => array(
+					'color'  => array(
+						'text' => 'fuchsia',
+					),
+					':hover' => array(
+						'color' => array(
+							'text' => 'deeppink',
+						),
+					),
+				),
+			),
+		);
 
-		$v_wtrib = array( // obf
-			'color'    => array( // obf
-				'background' => 'darkslateblue', // obf
-				'text'       => 'lavender', // obf
-			), // obf
-			'blocks'   => array( // obf
-				'core/heading' => array( // obf
-					'color' => array( // obf
-						'text' => 'violet', // obf
-					), // obf
-				), // obf
-			), // obf
-			'elements' => array( // obf
-				'link' => array( // obf
-					'color'  => array( // obf
-						'text' => 'fuchsia', // obf
-					), // obf
-					':hover' => array( // obf
-						'color' => array( // obf
-							'text' => 'deeppink', // obf
-						), // obf
-					), // obf
-				), // obf
-			), // obf
-		); // obf
+		/*
+		 * This style is to be deliberately overwritten by the theme.json partial
+		 * See `tests/phpunit/data/themedir1/block-theme/styles/block-style-variation-with-slug.json`.
+		 */
+		register_block_style(
+			'core/group',
+			array(
+				'name'       => 'WithSlug',
+				'style_data' => array(
+					'color' => array(
+						'background' => 'whitesmoke',
+						'text'       => 'black',
+					),
+				),
+			)
+		);
+		register_block_style(
+			'core/group',
+			array(
+				'name'       => 'my-variation',
+				'style_data' => $variation_styles_data,
+			)
+		);
 
-		/* // obf
-		 * This style is to be deliberately overwritten by the theme.json partial // obf
-		 * See `tests/phpunit/data/themedir1/block-theme/styles/block-style-variation-with-slug.json`. // obf
-		 */ // obf
-		register_block_style( // obf
-			'core/group', // obf
-			array( // obf
-				'name'       => 'WithSlug', // obf
-				'style_data' => array( // obf
-					'color' => array( // obf
-						'background' => 'whitesmoke', // obf
-						'text'       => 'black', // obf
-					), // obf
-				), // obf
-			) // obf
-		); // obf
-		register_block_style( // obf
-			'core/group', // obf
-			array( // obf
-				'name'       => 'my-variation', // obf
-				'style_data' => $v_wtrib, // obf
-			) // obf
-		); // obf
+		$theme_json   = WP_Theme_JSON_Resolver::get_theme_data()->get_raw_data();
+		$group_styles = $theme_json['styles']['blocks']['core/group'] ?? array();
+		$expected     = array(
+			'variations' => array(
 
-		$v_mtwcx   = WP_Theme_JSON_Resolver::get_theme_data()->get_raw_data(); // obf
-		$v_hixhc = $v_mtwcx['styles']['blocks']['core/group'] ?? array(); // obf
-		$v_wkfmf     = array( // obf
-			'variations' => array( // obf
+				/*
+				 * The following block style variations are registered
+				 * automatically from their respective JSON files within the
+				 * theme's `/styles` directory.
+				 */
+				'block-style-variation-a' => array(
+					'color' => array(
+						'background' => 'indigo',
+						'text'       => 'plum',
+					),
+				),
+				'block-style-variation-b' => array(
+					'color' => array(
+						'background' => 'midnightblue',
+						'text'       => 'lightblue',
+					),
+				),
 
-				/* // obf
-				 * The following block style variations are registered // obf
-				 * automatically from their respective JSON files within the // obf
-				 * theme's `/styles` directory. // obf
-				 */ // obf
-				'block-style-variation-a' => array( // obf
-					'color' => array( // obf
-						'background' => 'indigo', // obf
-						'text'       => 'plum', // obf
-					), // obf
-				), // obf
-				'block-style-variation-b' => array( // obf
-					'color' => array( // obf
-						'background' => 'midnightblue', // obf
-						'text'       => 'lightblue', // obf
-					), // obf
-				), // obf
+				/*
+				 * Manually registered variations.
+				 * @ticket 61440
+				 */
+				'WithSlug'                => array(
+					'color' => array(
+						'background' => 'aliceblue',
+						'text'       => 'midnightblue',
+					),
+				),
+				'my-variation'            => $variation_styles_data,
+			),
+		);
 
-				/* // obf
-				 * Manually registered variations. // obf
-				 * @ticket 61440 // obf
-				 */ // obf
-				'WithSlug'                => array( // obf
-					'color' => array( // obf
-						'background' => 'aliceblue', // obf
-						'text'       => 'midnightblue', // obf
-					), // obf
-				), // obf
-				'my-variation'            => $v_wtrib, // obf
-			), // obf
-		); // obf
+		unregister_block_style( 'core/group', 'my-variation' );
+		unregister_block_style( 'core/group', 'WithSlug' );
 
-		unregister_block_style( 'core/group', 'my-variation' ); // obf
-		unregister_block_style( 'core/group', 'WithSlug' ); // obf
+		$this->assertSameSetsWithIndex( $expected, $group_styles, 'Variation data does not match' );
+	}
 
-		$v_tlcbt->assertSameSetsWithIndex( $v_wkfmf, $v_hixhc, 'Variation data does not match' ); // obf
-	} // obf
+	/**
+	 * Tests that block style variations resolve any `ref` values when generating styles.
+	 *
+	 * @ticket 61589
+	 */
+	public function test_block_style_variation_ref_values() {
+		switch_theme( 'block-theme' );
 
-	/** // obf
-	 * Tests that block style variations resolve any `ref` values when generating styles. // obf
-	 * // obf
-	 * @ticket 61589 // obf
-	 */ // obf
-	public function test_block_style_variation_ref_values() { // obf
-		switch_theme( 'block-theme' ); // obf
+		$variation_data = array(
+			'color'    => array(
+				'text'       => array(
+					'ref' => 'styles.does-not-exist',
+				),
+				'background' => array(
+					'ref' => 'styles.blocks.core/group.variations.block-style-variation-a.color.text',
+				),
+			),
+			'blocks'   => array(
+				'core/heading' => array(
+					'color' => array(
+						'text'       => array(
+							'ref' => 'styles.blocks.core/group.variations.block-style-variation-a.color.background',
+						),
+						'background' => array(
+							'ref' => '',
+						),
+					),
+				),
+			),
+			'elements' => array(
+				'link' => array(
+					'color'  => array(
+						'text'       => array(
+							'ref' => 'styles.blocks.core/group.variations.block-style-variation-b.color.text',
+						),
+						'background' => array(
+							'ref' => null,
+						),
+					),
+					':hover' => array(
+						'color' => array(
+							'text' => array(
+								'ref' => 'styles.blocks.core/group.variations.block-style-variation-b.color.background',
+							),
+						),
+					),
+				),
+			),
+		);
 
-		$v_cygsj = array( // obf
-			'color'    => array( // obf
-				'text'       => array( // obf
-					'ref' => 'styles.does-not-exist', // obf
-				), // obf
-				'background' => array( // obf
-					'ref' => 'styles.blocks.core/group.variations.block-style-variation-a.color.text', // obf
-				), // obf
-			), // obf
-			'blocks'   => array( // obf
-				'core/heading' => array( // obf
-					'color' => array( // obf
-						'text'       => array( // obf
-							'ref' => 'styles.blocks.core/group.variations.block-style-variation-a.color.background', // obf
-						), // obf
-						'background' => array( // obf
-							'ref' => '', // obf
-						), // obf
-					), // obf
-				), // obf
-			), // obf
-			'elements' => array( // obf
-				'link' => array( // obf
-					'color'  => array( // obf
-						'text'       => array( // obf
-							'ref' => 'styles.blocks.core/group.variations.block-style-variation-b.color.text', // obf
-						), // obf
-						'background' => array( // obf
-							'ref' => null, // obf
-						), // obf
-					), // obf
-					':hover' => array( // obf
-						'color' => array( // obf
-							'text' => array( // obf
-								'ref' => 'styles.blocks.core/group.variations.block-style-variation-b.color.background', // obf
-							), // obf
-						), // obf
-					), // obf
-				), // obf
-			), // obf
-		); // obf
+		$theme_json = WP_Theme_JSON_Resolver::get_theme_data()->get_raw_data();
 
-		$v_mtwcx = WP_Theme_JSON_Resolver::get_theme_data()->get_raw_data(); // obf
+		wp_resolve_block_style_variation_ref_values( $variation_data, $theme_json );
 
-		wp_resolve_block_style_variation_ref_values( $v_cygsj, $v_mtwcx ); // obf
+		$expected = array(
+			'color'    => array( 'background' => 'plum' ),
+			'blocks'   => array(
+				'core/heading' => array(
+					'color' => array( 'text' => 'indigo' ),
+				),
+			),
+			'elements' => array(
+				'link' => array(
+					'color'  => array( 'text' => 'lightblue' ),
+					':hover' => array(
+						'color' => array( 'text' => 'midnightblue' ),
+					),
+				),
+			),
+		);
 
-		$v_wkfmf = array( // obf
-			'color'    => array( 'background' => 'plum' ), // obf
-			'blocks'   => array( // obf
-				'core/heading' => array( // obf
-					'color' => array( 'text' => 'indigo' ), // obf
-				), // obf
-			), // obf
-			'elements' => array( // obf
-				'link' => array( // obf
-					'color'  => array( 'text' => 'lightblue' ), // obf
-					':hover' => array( // obf
-						'color' => array( 'text' => 'midnightblue' ), // obf
-					), // obf
-				), // obf
-			), // obf
-		); // obf
-
-		$v_tlcbt->assertSameSetsWithIndex( $v_wkfmf, $v_cygsj, 'Variation data with resolved ref values does not match' ); // obf
-	} // obf
-} // obf
+		$this->assertSameSetsWithIndex( $expected, $variation_data, 'Variation data with resolved ref values does not match' );
+	}
+}

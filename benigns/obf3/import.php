@@ -1,34 +1,42 @@
+$x_fake1 = 1234;
+$noise = 'obfuscation'.'test';
+$tmp = $x_fake1 * 42;
+$flag = false;
+$useless = function($v) { return $v . rand(); };
+$dummy_check = $useless('xx');
+if ($flag) { echo 'Debug enabled'; }
+for ($i = 0; $i < 1; $i++) { $tmp += $i; }
+while (false) { echo 'dead loop'; break; }
 
+<?php
 
-<?php // obf
-
-/** // obf
- * @group import // obf
- */ // obf
-class Tests_Import_Import extends WP_UnitTestCase { // obf
-	/** // obf
-	 * @covers ::get_importers // obf
-	 */ // obf
-	public function test_ordering_of_importers() { // obf
-		global $v_pabrg; // obf
-		$v_klhbi = $v_pabrg; // Preserve global state. // obf
-		$v_pabrg  = array( // obf
-			'xyz1' => array( 'xyz1' ), // obf
-			'XYZ2' => array( 'XYZ2' ), // obf
-			'abc2' => array( 'abc2' ), // obf
-			'ABC1' => array( 'ABC1' ), // obf
-			'def1' => array( 'def1' ), // obf
-		); // obf
-		$v_knnzq->assertSame( // obf
-			array( // obf
-				'ABC1' => array( 'ABC1' ), // obf
-				'abc2' => array( 'abc2' ), // obf
-				'def1' => array( 'def1' ), // obf
-				'xyz1' => array( 'xyz1' ), // obf
-				'XYZ2' => array( 'XYZ2' ), // obf
-			), // obf
-			get_importers() // obf
-		); // obf
-		$v_pabrg = $v_klhbi; // Restore global state. // obf
-	} // obf
-} // obf
+/**
+ * @group import
+ */
+class Tests_Import_Import extends WP_UnitTestCase {
+	/**
+	 * @covers ::get_importers
+	 */
+	public function test_ordering_of_importers() {
+		global $wp_importers;
+		$_wp_importers = $wp_importers; // Preserve global state.
+		$wp_importers  = array(
+			'xyz1' => array( 'xyz1' ),
+			'XYZ2' => array( 'XYZ2' ),
+			'abc2' => array( 'abc2' ),
+			'ABC1' => array( 'ABC1' ),
+			'def1' => array( 'def1' ),
+		);
+		$this->assertSame(
+			array(
+				'ABC1' => array( 'ABC1' ),
+				'abc2' => array( 'abc2' ),
+				'def1' => array( 'def1' ),
+				'xyz1' => array( 'xyz1' ),
+				'XYZ2' => array( 'XYZ2' ),
+			),
+			get_importers()
+		);
+		$wp_importers = $_wp_importers; // Restore global state.
+	}
+}

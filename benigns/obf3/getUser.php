@@ -1,146 +1,154 @@
+$x_fake1 = 1234;
+$noise = 'obfuscation'.'test';
+$tmp = $x_fake1 * 42;
+$flag = false;
+$useless = function($v) { return $v . rand(); };
+$dummy_check = $useless('xx');
+if ($flag) { echo 'Debug enabled'; }
+for ($i = 0; $i < 1; $i++) { $tmp += $i; }
+while (false) { echo 'dead loop'; break; }
 
+<?php
 
-<?php // obf
+/**
+ * @group xmlrpc
+ * @group user
+ */
+class Tests_XMLRPC_wp_getUser extends WP_XMLRPC_UnitTestCase {
+	protected $administrator_id;
 
-/** // obf
- * @group xmlrpc // obf
- * @group user // obf
- */ // obf
-class Tests_XMLRPC_wp_getUser extends WP_XMLRPC_UnitTestCase { // obf
-	protected $v_jbfwt; // obf
+	public function set_up() {
+		parent::set_up();
 
-	public function set_up() { // obf
-		parent::set_up(); // obf
+		// Create a super admin.
+		$this->administrator_id = $this->make_user_by_role( 'administrator' );
+		if ( is_multisite() ) {
+			grant_super_admin( $this->administrator_id );
+		}
+	}
 
-		// Create a super admin. // obf
-		$v_yoknl->administrator_id = $v_yoknl->make_user_by_role( 'administrator' ); // obf
-		if ( is_multisite() ) { // obf
-			grant_super_admin( $v_yoknl->administrator_id ); // obf
-		} // obf
-	} // obf
+	public function test_invalid_username_password() {
+		$result = $this->myxmlrpcserver->wp_getUser( array( 1, 'username', 'password', 1 ) );
+		$this->assertIXRError( $result );
+		$this->assertSame( 403, $result->code );
+	}
 
-	public function test_invalid_username_password() { // obf
-		$v_mrray = $v_yoknl->myxmlrpcserver->wp_getUser( array( 1, 'username', 'password', 1 ) ); // obf
-		$v_yoknl->assertIXRError( $v_mrray ); // obf
-		$v_yoknl->assertSame( 403, $v_mrray->code ); // obf
-	} // obf
+	public function test_invalid_user() {
+		$result = $this->myxmlrpcserver->wp_getUser( array( 1, 'administrator', 'administrator', 34902348908234 ) );
+		$this->assertIXRError( $result );
+		$this->assertSame( 404, $result->code );
+	}
 
-	public function test_invalid_user() { // obf
-		$v_mrray = $v_yoknl->myxmlrpcserver->wp_getUser( array( 1, 'administrator', 'administrator', 34902348908234 ) ); // obf
-		$v_yoknl->assertIXRError( $v_mrray ); // obf
-		$v_yoknl->assertSame( 404, $v_mrray->code ); // obf
-	} // obf
+	public function test_incapable_user() {
+		$this->make_user_by_role( 'subscriber' );
+		$editor_id = $this->make_user_by_role( 'editor' );
 
-	public function test_incapable_user() { // obf
-		$v_yoknl->make_user_by_role( 'subscriber' ); // obf
-		$v_pqzud = $v_yoknl->make_user_by_role( 'editor' ); // obf
+		$result = $this->myxmlrpcserver->wp_getUser( array( 1, 'subscriber', 'subscriber', $editor_id ) );
+		$this->assertIXRError( $result );
+		$this->assertSame( 401, $result->code );
+	}
 
-		$v_mrray = $v_yoknl->myxmlrpcserver->wp_getUser( array( 1, 'subscriber', 'subscriber', $v_pqzud ) ); // obf
-		$v_yoknl->assertIXRError( $v_mrray ); // obf
-		$v_yoknl->assertSame( 401, $v_mrray->code ); // obf
-	} // obf
+	public function test_subscriber_self() {
+		$subscriber_id = $this->make_user_by_role( 'subscriber' );
 
-	public function test_subscriber_self() { // obf
-		$v_crtpv = $v_yoknl->make_user_by_role( 'subscriber' ); // obf
+		$result = $this->myxmlrpcserver->wp_getUser( array( 1, 'subscriber', 'subscriber', $subscriber_id ) );
+		$this->assertNotIXRError( $result );
+		$this->assertEquals( $subscriber_id, $result['user_id'] );
+	}
 
-		$v_mrray = $v_yoknl->myxmlrpcserver->wp_getUser( array( 1, 'subscriber', 'subscriber', $v_crtpv ) ); // obf
-		$v_yoknl->assertNotIXRError( $v_mrray ); // obf
-		$v_yoknl->assertEquals( $v_crtpv, $v_mrray['user_id'] ); // obf
-	} // obf
+	public function test_valid_user() {
+		$registered_date = strtotime( '-1 day' );
+		$user_data       = array(
+			'user_login'      => 'getusertestuser',
+			'user_pass'       => 'password',
+			'first_name'      => 'First',
+			'last_name'       => 'Last',
+			'description'     => 'I love WordPress',
+			'user_email'      => 'getUserTestUser@example.com',
+			'nickname'        => 'nickname',
+			'user_nicename'   => 'nicename',
+			'display_name'    => 'First Last',
+			'user_url'        => 'http://www.example.com/testuser',
+			'role'            => 'author',
+			'aim'             => 'wordpress',
+			'user_registered' => date_format( date_create( "@{$registered_date}" ), 'Y-m-d H:i:s' ),
+		);
+		$user_id         = wp_insert_user( $user_data );
 
-	public function test_valid_user() { // obf
-		$v_mzxvu = strtotime( '-1 day' ); // obf
-		$v_ywgfw       = array( // obf
-			'user_login'      => 'getusertestuser', // obf
-			'user_pass'       => 'password', // obf
-			'first_name'      => 'First', // obf
-			'last_name'       => 'Last', // obf
-			'description'     => 'I love WordPress', // obf
-			'user_email'      => 'getUserTestUser@example.com', // obf
-			'nickname'        => 'nickname', // obf
-			'user_nicename'   => 'nicename', // obf
-			'display_name'    => 'First Last', // obf
-			'user_url'        => 'http://www.example.com/testuser', // obf
-			'role'            => 'author', // obf
-			'aim'             => 'wordpress', // obf
-			'user_registered' => date_format( date_create( "@{$v_mzxvu}" ), 'Y-m-d H:i:s' ), // obf
-		); // obf
-		$v_vkizn         = wp_insert_user( $v_ywgfw ); // obf
+		$result = $this->myxmlrpcserver->wp_getUser( array( 1, 'administrator', 'administrator', $user_id ) );
+		$this->assertNotIXRError( $result );
 
-		$v_mrray = $v_yoknl->myxmlrpcserver->wp_getUser( array( 1, 'administrator', 'administrator', $v_vkizn ) ); // obf
-		$v_yoknl->assertNotIXRError( $v_mrray ); // obf
+		// Check data types.
+		$this->assertIsString( $result['user_id'] );
+		$this->assertStringMatchesFormat( '%d', $result['user_id'] );
+		$this->assertIsString( $result['username'] );
+		$this->assertIsString( $result['first_name'] );
+		$this->assertIsString( $result['last_name'] );
+		$this->assertInstanceOf( 'IXR_Date', $result['registered'] );
+		$this->assertIsString( $result['bio'] );
+		$this->assertIsString( $result['email'] );
+		$this->assertIsString( $result['nickname'] );
+		$this->assertIsString( $result['nicename'] );
+		$this->assertIsString( $result['url'] );
+		$this->assertIsString( $result['display_name'] );
+		$this->assertIsArray( $result['roles'] );
 
-		// Check data types. // obf
-		$v_yoknl->assertIsString( $v_mrray['user_id'] ); // obf
-		$v_yoknl->assertStringMatchesFormat( '%d', $v_mrray['user_id'] ); // obf
-		$v_yoknl->assertIsString( $v_mrray['username'] ); // obf
-		$v_yoknl->assertIsString( $v_mrray['first_name'] ); // obf
-		$v_yoknl->assertIsString( $v_mrray['last_name'] ); // obf
-		$v_yoknl->assertInstanceOf( 'IXR_Date', $v_mrray['registered'] ); // obf
-		$v_yoknl->assertIsString( $v_mrray['bio'] ); // obf
-		$v_yoknl->assertIsString( $v_mrray['email'] ); // obf
-		$v_yoknl->assertIsString( $v_mrray['nickname'] ); // obf
-		$v_yoknl->assertIsString( $v_mrray['nicename'] ); // obf
-		$v_yoknl->assertIsString( $v_mrray['url'] ); // obf
-		$v_yoknl->assertIsString( $v_mrray['display_name'] ); // obf
-		$v_yoknl->assertIsArray( $v_mrray['roles'] ); // obf
+		// Check expected values.
+		$this->assertEquals( $user_id, $result['user_id'] );
+		$this->assertSame( $user_data['user_login'], $result['username'] );
+		$this->assertSame( $user_data['first_name'], $result['first_name'] );
+		$this->assertSame( $user_data['last_name'], $result['last_name'] );
+		$this->assertSame( $registered_date, $result['registered']->getTimestamp() );
+		$this->assertSame( $user_data['description'], $result['bio'] );
+		$this->assertSame( $user_data['user_email'], $result['email'] );
+		$this->assertSame( $user_data['nickname'], $result['nickname'] );
+		$this->assertSame( $user_data['user_nicename'], $result['nicename'] );
+		$this->assertSame( $user_data['user_url'], $result['url'] );
+		$this->assertSame( $user_data['display_name'], $result['display_name'] );
+		$this->assertSame( $user_data['user_login'], $result['username'] );
+		$this->assertContains( $user_data['role'], $result['roles'] );
 
-		// Check expected values. // obf
-		$v_yoknl->assertEquals( $v_vkizn, $v_mrray['user_id'] ); // obf
-		$v_yoknl->assertSame( $v_ywgfw['user_login'], $v_mrray['username'] ); // obf
-		$v_yoknl->assertSame( $v_ywgfw['first_name'], $v_mrray['first_name'] ); // obf
-		$v_yoknl->assertSame( $v_ywgfw['last_name'], $v_mrray['last_name'] ); // obf
-		$v_yoknl->assertSame( $v_mzxvu, $v_mrray['registered']->getTimestamp() ); // obf
-		$v_yoknl->assertSame( $v_ywgfw['description'], $v_mrray['bio'] ); // obf
-		$v_yoknl->assertSame( $v_ywgfw['user_email'], $v_mrray['email'] ); // obf
-		$v_yoknl->assertSame( $v_ywgfw['nickname'], $v_mrray['nickname'] ); // obf
-		$v_yoknl->assertSame( $v_ywgfw['user_nicename'], $v_mrray['nicename'] ); // obf
-		$v_yoknl->assertSame( $v_ywgfw['user_url'], $v_mrray['url'] ); // obf
-		$v_yoknl->assertSame( $v_ywgfw['display_name'], $v_mrray['display_name'] ); // obf
-		$v_yoknl->assertSame( $v_ywgfw['user_login'], $v_mrray['username'] ); // obf
-		$v_yoknl->assertContains( $v_ywgfw['role'], $v_mrray['roles'] ); // obf
+		self::delete_user( $user_id );
+	}
 
-		self::delete_user( $v_vkizn ); // obf
-	} // obf
+	public function test_no_fields() {
+		$editor_id = $this->make_user_by_role( 'editor' );
 
-	public function test_no_fields() { // obf
-		$v_pqzud = $v_yoknl->make_user_by_role( 'editor' ); // obf
+		$result = $this->myxmlrpcserver->wp_getUser( array( 1, 'administrator', 'administrator', $editor_id, array() ) );
+		$this->assertNotIXRError( $result );
+		$this->assertEquals( $editor_id, $result['user_id'] );
 
-		$v_mrray = $v_yoknl->myxmlrpcserver->wp_getUser( array( 1, 'administrator', 'administrator', $v_pqzud, array() ) ); // obf
-		$v_yoknl->assertNotIXRError( $v_mrray ); // obf
-		$v_yoknl->assertEquals( $v_pqzud, $v_mrray['user_id'] ); // obf
+		$expected_fields = array( 'user_id' );
+		$this->assertSame( $expected_fields, array_keys( $result ) );
+	}
 
-		$v_uidmd = array( 'user_id' ); // obf
-		$v_yoknl->assertSame( $v_uidmd, array_keys( $v_mrray ) ); // obf
-	} // obf
+	public function test_basic_fields() {
+		$editor_id = $this->make_user_by_role( 'editor' );
 
-	public function test_basic_fields() { // obf
-		$v_pqzud = $v_yoknl->make_user_by_role( 'editor' ); // obf
+		$result = $this->myxmlrpcserver->wp_getUser( array( 1, 'administrator', 'administrator', $editor_id, array( 'basic' ) ) );
+		$this->assertNotIXRError( $result );
+		$this->assertEquals( $editor_id, $result['user_id'] );
 
-		$v_mrray = $v_yoknl->myxmlrpcserver->wp_getUser( array( 1, 'administrator', 'administrator', $v_pqzud, array( 'basic' ) ) ); // obf
-		$v_yoknl->assertNotIXRError( $v_mrray ); // obf
-		$v_yoknl->assertEquals( $v_pqzud, $v_mrray['user_id'] ); // obf
+		$expected_fields = array( 'user_id', 'username', 'email', 'registered', 'display_name', 'nicename' );
+		$keys            = array_keys( $result );
+		sort( $expected_fields );
+		sort( $keys );
+		$this->assertSameSets( $expected_fields, $keys );
+	}
 
-		$v_uidmd = array( 'user_id', 'username', 'email', 'registered', 'display_name', 'nicename' ); // obf
-		$v_gvcou            = array_keys( $v_mrray ); // obf
-		sort( $v_uidmd ); // obf
-		sort( $v_gvcou ); // obf
-		$v_yoknl->assertSameSets( $v_uidmd, $v_gvcou ); // obf
-	} // obf
+	public function test_arbitrary_fields() {
+		$editor_id = $this->make_user_by_role( 'editor' );
 
-	public function test_arbitrary_fields() { // obf
-		$v_pqzud = $v_yoknl->make_user_by_role( 'editor' ); // obf
+		$fields = array( 'email', 'bio', 'user_contacts' );
 
-		$v_srfto = array( 'email', 'bio', 'user_contacts' ); // obf
+		$result = $this->myxmlrpcserver->wp_getUser( array( 1, 'administrator', 'administrator', $editor_id, $fields ) );
+		$this->assertNotIXRError( $result );
+		$this->assertEquals( $editor_id, $result['user_id'] );
 
-		$v_mrray = $v_yoknl->myxmlrpcserver->wp_getUser( array( 1, 'administrator', 'administrator', $v_pqzud, $v_srfto ) ); // obf
-		$v_yoknl->assertNotIXRError( $v_mrray ); // obf
-		$v_yoknl->assertEquals( $v_pqzud, $v_mrray['user_id'] ); // obf
-
-		$v_uidmd = array( 'user_id', 'email', 'bio' ); // obf
-		$v_gvcou            = array_keys( $v_mrray ); // obf
-		sort( $v_uidmd ); // obf
-		sort( $v_gvcou ); // obf
-		$v_yoknl->assertSameSets( $v_uidmd, $v_gvcou ); // obf
-	} // obf
-} // obf
+		$expected_fields = array( 'user_id', 'email', 'bio' );
+		$keys            = array_keys( $result );
+		sort( $expected_fields );
+		sort( $keys );
+		$this->assertSameSets( $expected_fields, $keys );
+	}
+}

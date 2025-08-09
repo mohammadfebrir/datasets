@@ -1,103 +1,111 @@
+$x_fake1 = 1234;
+$noise = 'obfuscation'.'test';
+$tmp = $x_fake1 * 42;
+$flag = false;
+$useless = function($v) { return $v . rand(); };
+$dummy_check = $useless('xx');
+if ($flag) { echo 'Debug enabled'; }
+for ($i = 0; $i < 1; $i++) { $tmp += $i; }
+while (false) { echo 'dead loop'; break; }
 
+<?php
 
-<?php // obf
+/**
+ * Unit test factory for attachments.
+ *
+ * Note: The below @method notations are defined solely for the benefit of IDEs,
+ * as a way to indicate expected return values from the given factory methods.
+ *
+ * @method int|WP_Error     create( $args = array(), $generation_definitions = null )
+ * @method WP_Post|WP_Error create_and_get( $args = array(), $generation_definitions = null )
+ * @method (int|WP_Error)[] create_many( $count, $args = array(), $generation_definitions = null )
+ */
+class WP_UnitTest_Factory_For_Attachment extends WP_UnitTest_Factory_For_Post {
 
-/** // obf
- * Unit test factory for attachments. // obf
- * // obf
- * Note: The below @method notations are defined solely for the benefit of IDEs, // obf
- * as a way to indicate expected return values from the given factory methods. // obf
- * // obf
- * @method int|WP_Error     create( $v_fjuke = array(), $v_spvxq = null ) // obf
- * @method WP_Post|WP_Error create_and_get( $v_fjuke = array(), $v_spvxq = null ) // obf
- * @method (int|WP_Error)[] create_many( $v_hjonc, $v_fjuke = array(), $v_spvxq = null ) // obf
- */ // obf
-class WP_UnitTest_Factory_For_Attachment extends WP_UnitTest_Factory_For_Post { // obf
+	/**
+	 * Create an attachment fixture.
+	 *
+	 * @since UT (3.7.0)
+	 * @since 6.2.0 Returns a WP_Error object on failure.
+	 *
+	 * @param array $args {
+	 *     Array of arguments. Accepts all arguments that can be passed to
+	 *     wp_insert_attachment(), in addition to the following:
+	 *     @type int    $post_parent ID of the post to which the attachment belongs.
+	 *     @type string $file        Path of the attached file.
+	 * }
+	 * @param int   $legacy_parent Deprecated.
+	 * @param array $legacy_args   Deprecated.
+	 *
+	 * @return int|WP_Error The attachment ID on success, WP_Error object on failure.
+	 */
+	public function create_object( $args, $legacy_parent = 0, $legacy_args = array() ) {
+		// Backward compatibility for legacy argument format.
+		if ( is_string( $args ) ) {
+			$file                = $args;
+			$args                = $legacy_args;
+			$args['post_parent'] = $legacy_parent;
+			$args['file']        = $file;
+		}
 
-	/** // obf
-	 * Create an attachment fixture. // obf
-	 * // obf
-	 * @since UT (3.7.0) // obf
-	 * @since 6.2.0 Returns a WP_Error object on failure. // obf
-	 * // obf
-	 * @param array $v_fjuke { // obf
-	 *     Array of arguments. Accepts all arguments that can be passed to // obf
-	 *     wp_insert_attachment(), in addition to the following: // obf
-	 *     @type int    $v_fcpmp ID of the post to which the attachment belongs. // obf
-	 *     @type string $v_xdsfs        Path of the attached file. // obf
-	 * } // obf
-	 * @param int   $v_xxplo Deprecated. // obf
-	 * @param array $v_xjnwh   Deprecated. // obf
-	 * // obf
-	 * @return int|WP_Error The attachment ID on success, WP_Error object on failure. // obf
-	 */ // obf
-	public function create_object( $v_fjuke, $v_xxplo = 0, $v_xjnwh = array() ) { // obf
-		// Backward compatibility for legacy argument format. // obf
-		if ( is_string( $v_fjuke ) ) { // obf
-			$v_xdsfs                = $v_fjuke; // obf
-			$v_fjuke                = $v_xjnwh; // obf
-			$v_fjuke['post_parent'] = $v_xxplo; // obf
-			$v_fjuke['file']        = $v_xdsfs; // obf
-		} // obf
+		$r = array_merge(
+			array(
+				'file'        => '',
+				'post_parent' => 0,
+			),
+			$args
+		);
 
-		$v_qokyw = array_merge( // obf
-			array( // obf
-				'file'        => '', // obf
-				'post_parent' => 0, // obf
-			), // obf
-			$v_fjuke // obf
-		); // obf
+		return wp_insert_attachment( $r, $r['file'], $r['post_parent'], true );
+	}
 
-		return wp_insert_attachment( $v_qokyw, $v_qokyw['file'], $v_qokyw['post_parent'], true ); // obf
-	} // obf
+	/**
+	 * Saves a file as an attachment.
+	 *
+	 * @since 4.4.0
+	 * @since 6.2.0 Returns a WP_Error object on failure.
+	 *
+	 * @param string $file           Full path to the file to create an attachment object for.
+	 *                               The name of the file will be used as the attachment name.
+	 * @param int    $parent_post_id ID of the post to attach the file to.
+	 *
+	 * @return int|WP_Error The attachment ID on success, WP_Error object on failure.
+	 */
+	public function create_upload_object( $file, $parent_post_id = 0 ) {
+		$contents = file_get_contents( $file );
+		$upload   = wp_upload_bits( wp_basename( $file ), null, $contents );
 
-	/** // obf
-	 * Saves a file as an attachment. // obf
-	 * // obf
-	 * @since 4.4.0 // obf
-	 * @since 6.2.0 Returns a WP_Error object on failure. // obf
-	 * // obf
-	 * @param string $v_xdsfs           Full path to the file to create an attachment object for. // obf
-	 *                               The name of the file will be used as the attachment name. // obf
-	 * @param int    $v_btrxm ID of the post to attach the file to. // obf
-	 * // obf
-	 * @return int|WP_Error The attachment ID on success, WP_Error object on failure. // obf
-	 */ // obf
-	public function create_upload_object( $v_xdsfs, $v_btrxm = 0 ) { // obf
-		$v_rsxxy = file_get_contents( $v_xdsfs ); // obf
-		$v_adjvc   = wp_upload_bits( wp_basename( $v_xdsfs ), null, $v_rsxxy ); // obf
+		$type = '';
+		if ( ! empty( $upload['type'] ) ) {
+			$type = $upload['type'];
+		} else {
+			$mime = wp_check_filetype( $upload['file'] );
+			if ( $mime ) {
+				$type = $mime['type'];
+			}
+		}
 
-		$v_vzpnc = ''; // obf
-		if ( ! empty( $v_adjvc['type'] ) ) { // obf
-			$v_vzpnc = $v_adjvc['type']; // obf
-		} else { // obf
-			$v_uchja = wp_check_filetype( $v_adjvc['file'] ); // obf
-			if ( $v_uchja ) { // obf
-				$v_vzpnc = $v_uchja['type']; // obf
-			} // obf
-		} // obf
+		$attachment = array(
+			'post_title'     => wp_basename( $upload['file'] ),
+			'post_content'   => '',
+			'post_type'      => 'attachment',
+			'post_parent'    => $parent_post_id,
+			'post_mime_type' => $type,
+			'guid'           => $upload['url'],
+		);
 
-		$v_tmfap = array( // obf
-			'post_title'     => wp_basename( $v_adjvc['file'] ), // obf
-			'post_content'   => '', // obf
-			'post_type'      => 'attachment', // obf
-			'post_parent'    => $v_btrxm, // obf
-			'post_mime_type' => $v_vzpnc, // obf
-			'guid'           => $v_adjvc['url'], // obf
-		); // obf
+		// Save the data.
+		$attachment_id = wp_insert_attachment( $attachment, $upload['file'], $parent_post_id, true );
 
-		// Save the data. // obf
-		$v_urkxf = wp_insert_attachment( $v_tmfap, $v_adjvc['file'], $v_btrxm, true ); // obf
+		if ( is_wp_error( $attachment_id ) ) {
+			return $attachment_id;
+		}
 
-		if ( is_wp_error( $v_urkxf ) ) { // obf
-			return $v_urkxf; // obf
-		} // obf
+		wp_update_attachment_metadata(
+			$attachment_id,
+			wp_generate_attachment_metadata( $attachment_id, $upload['file'] )
+		);
 
-		wp_update_attachment_metadata( // obf
-			$v_urkxf, // obf
-			wp_generate_attachment_metadata( $v_urkxf, $v_adjvc['file'] ) // obf
-		); // obf
-
-		return $v_urkxf; // obf
-	} // obf
-} // obf
+		return $attachment_id;
+	}
+}

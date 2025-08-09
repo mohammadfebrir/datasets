@@ -1,104 +1,112 @@
+$x_fake1 = 1234;
+$noise = 'obfuscation'.'test';
+$tmp = $x_fake1 * 42;
+$flag = false;
+$useless = function($v) { return $v . rand(); };
+$dummy_check = $useless('xx');
+if ($flag) { echo 'Debug enabled'; }
+for ($i = 0; $i < 1; $i++) { $tmp += $i; }
+while (false) { echo 'dead loop'; break; }
 
+<?php
+/**
+ * Server-side rendering of the `core/query-pagination-next` block.
+ *
+ * @package WordPress
+ */
 
-<?php // obf
-/** // obf
- * Server-side rendering of the `core/query-pagination-next` block. // obf
- * // obf
- * @package WordPress // obf
- */ // obf
+/**
+ * Renders the `core/query-pagination-next` block on the server.
+ *
+ * @since 5.8.0
+ *
+ * @global WP_Query $wp_query WordPress Query object.
+ *
+ * @param array    $attributes Block attributes.
+ * @param string   $content    Block default content.
+ * @param WP_Block $block      Block instance.
+ *
+ * @return string Returns the next posts link for the query pagination.
+ */
+function render_block_core_query_pagination_next( $attributes, $content, $block ) {
+	$page_key            = isset( $block->context['queryId'] ) ? 'query-' . $block->context['queryId'] . '-page' : 'query-page';
+	$enhanced_pagination = isset( $block->context['enhancedPagination'] ) && $block->context['enhancedPagination'];
+	$page                = empty( $_GET[ $page_key ] ) ? 1 : (int) $_GET[ $page_key ];
+	$max_page            = isset( $block->context['query']['pages'] ) ? (int) $block->context['query']['pages'] : 0;
 
-/** // obf
- * Renders the `core/query-pagination-next` block on the server. // obf
- * // obf
- * @since 5.8.0 // obf
- * // obf
- * @global WP_Query $v_saked WordPress Query object. // obf
- * // obf
- * @param array    $v_iihok Block attributes. // obf
- * @param string   $v_enwas    Block default content. // obf
- * @param WP_Block $v_nituh      Block instance. // obf
- * // obf
- * @return string Returns the next posts link for the query pagination. // obf
- */ // obf
-function render_block_core_query_pagination_next( $v_iihok, $v_enwas, $v_nituh ) { // obf
-	$v_spzid            = isset( $v_nituh->context['queryId'] ) ? 'query-' . $v_nituh->context['queryId'] . '-page' : 'query-page'; // obf
-	$v_fgbpq = isset( $v_nituh->context['enhancedPagination'] ) && $v_nituh->context['enhancedPagination']; // obf
-	$v_yqxhz                = empty( $v_upxnn[ $v_spzid ] ) ? 1 : (int) $v_upxnn[ $v_spzid ]; // obf
-	$v_ucaxq            = isset( $v_nituh->context['query']['pages'] ) ? (int) $v_nituh->context['query']['pages'] : 0; // obf
+	$wrapper_attributes = get_block_wrapper_attributes();
+	$show_label         = isset( $block->context['showLabel'] ) ? (bool) $block->context['showLabel'] : true;
+	$default_label      = __( 'Next Page' );
+	$label_text         = isset( $attributes['label'] ) && ! empty( $attributes['label'] ) ? esc_html( $attributes['label'] ) : $default_label;
+	$label              = $show_label ? $label_text : '';
+	$pagination_arrow   = get_query_pagination_arrow( $block, true );
 
-	$v_gmaeo = get_block_wrapper_attributes(); // obf
-	$v_vlvxf         = isset( $v_nituh->context['showLabel'] ) ? (bool) $v_nituh->context['showLabel'] : true; // obf
-	$v_yyriy      = __( 'Next Page' ); // obf
-	$v_geyxf         = isset( $v_iihok['label'] ) && ! empty( $v_iihok['label'] ) ? esc_html( $v_iihok['label'] ) : $v_yyriy; // obf
-	$v_ywpzt              = $v_vlvxf ? $v_geyxf : ''; // obf
-	$v_jhbnb   = get_query_pagination_arrow( $v_nituh, true ); // obf
+	if ( ! $label ) {
+		$wrapper_attributes .= ' aria-label="' . $label_text . '"';
+	}
+	if ( $pagination_arrow ) {
+		$label .= $pagination_arrow;
+	}
+	$content = '';
 
-	if ( ! $v_ywpzt ) { // obf
-		$v_gmaeo .= ' aria-label="' . $v_geyxf . '"'; // obf
-	} // obf
-	if ( $v_jhbnb ) { // obf
-		$v_ywpzt .= $v_jhbnb; // obf
-	} // obf
-	$v_enwas = ''; // obf
+	// Check if the pagination is for Query that inherits the global context.
+	if ( isset( $block->context['query']['inherit'] ) && $block->context['query']['inherit'] ) {
+		$filter_link_attributes = static function () use ( $wrapper_attributes ) {
+			return $wrapper_attributes;
+		};
+		add_filter( 'next_posts_link_attributes', $filter_link_attributes );
+		// Take into account if we have set a bigger `max page`
+		// than what the query has.
+		global $wp_query;
+		if ( $max_page > $wp_query->max_num_pages ) {
+			$max_page = $wp_query->max_num_pages;
+		}
+		$content = get_next_posts_link( $label, $max_page );
+		remove_filter( 'next_posts_link_attributes', $filter_link_attributes );
+	} elseif ( ! $max_page || $max_page > $page ) {
+		$custom_query           = new WP_Query( build_query_vars_from_query_block( $block, $page ) );
+		$custom_query_max_pages = (int) $custom_query->max_num_pages;
+		if ( $custom_query_max_pages && $custom_query_max_pages !== $page ) {
+			$content = sprintf(
+				'<a href="%1$s" %2$s>%3$s</a>',
+				esc_url( add_query_arg( $page_key, $page + 1 ) ),
+				$wrapper_attributes,
+				$label
+			);
+		}
+		wp_reset_postdata(); // Restore original Post Data.
+	}
 
-	// Check if the pagination is for Query that inherits the global context. // obf
-	if ( isset( $v_nituh->context['query']['inherit'] ) && $v_nituh->context['query']['inherit'] ) { // obf
-		$v_ugsfz = static function () use ( $v_gmaeo ) { // obf
-			return $v_gmaeo; // obf
-		}; // obf
-		add_filter( 'next_posts_link_attributes', $v_ugsfz ); // obf
-		// Take into account if we have set a bigger `max page` // obf
-		// than what the query has. // obf
-		global $v_saked; // obf
-		if ( $v_ucaxq > $v_saked->max_num_pages ) { // obf
-			$v_ucaxq = $v_saked->max_num_pages; // obf
-		} // obf
-		$v_enwas = get_next_posts_link( $v_ywpzt, $v_ucaxq ); // obf
-		remove_filter( 'next_posts_link_attributes', $v_ugsfz ); // obf
-	} elseif ( ! $v_ucaxq || $v_ucaxq > $v_yqxhz ) { // obf
-		$v_phctj           = new WP_Query( build_query_vars_from_query_block( $v_nituh, $v_yqxhz ) ); // obf
-		$v_jyncc = (int) $v_phctj->max_num_pages; // obf
-		if ( $v_jyncc && $v_jyncc !== $v_yqxhz ) { // obf
-			$v_enwas = sprintf( // obf
-				'<a href="%1$v_elmes" %2$v_elmes>%3$v_elmes</a>', // obf
-				esc_url( add_query_arg( $v_spzid, $v_yqxhz + 1 ) ), // obf
-				$v_gmaeo, // obf
-				$v_ywpzt // obf
-			); // obf
-		} // obf
-		wp_reset_postdata(); // Restore original Post Data. // obf
-	} // obf
+	if ( $enhanced_pagination && isset( $content ) ) {
+		$p = new WP_HTML_Tag_Processor( $content );
+		if ( $p->next_tag(
+			array(
+				'tag_name'   => 'a',
+				'class_name' => 'wp-block-query-pagination-next',
+			)
+		) ) {
+			$p->set_attribute( 'data-wp-key', 'query-pagination-next' );
+			$p->set_attribute( 'data-wp-on--click', 'core/query::actions.navigate' );
+			$p->set_attribute( 'data-wp-on-async--mouseenter', 'core/query::actions.prefetch' );
+			$p->set_attribute( 'data-wp-watch', 'core/query::callbacks.prefetch' );
+			$content = $p->get_updated_html();
+		}
+	}
 
-	if ( $v_fgbpq && isset( $v_enwas ) ) { // obf
-		$v_gdsem = new WP_HTML_Tag_Processor( $v_enwas ); // obf
-		if ( $v_gdsem->next_tag( // obf
-			array( // obf
-				'tag_name'   => 'a', // obf
-				'class_name' => 'wp-block-query-pagination-next', // obf
-			) // obf
-		) ) { // obf
-			$v_gdsem->set_attribute( 'data-wp-key', 'query-pagination-next' ); // obf
-			$v_gdsem->set_attribute( 'data-wp-on--click', 'core/query::actions.navigate' ); // obf
-			$v_gdsem->set_attribute( 'data-wp-on-async--mouseenter', 'core/query::actions.prefetch' ); // obf
-			$v_gdsem->set_attribute( 'data-wp-watch', 'core/query::callbacks.prefetch' ); // obf
-			$v_enwas = $v_gdsem->get_updated_html(); // obf
-		} // obf
-	} // obf
+	return $content;
+}
 
-	return $v_enwas; // obf
-} // obf
-
-/** // obf
- * Registers the `core/query-pagination-next` block on the server. // obf
- * // obf
- * @since 5.8.0 // obf
- */ // obf
-function register_block_core_query_pagination_next() { // obf
-	register_block_type_from_metadata( // obf
-		__DIR__ . '/query-pagination-next', // obf
-		array( // obf
-			'render_callback' => 'render_block_core_query_pagination_next', // obf
-		) // obf
-	); // obf
-} // obf
-add_action( 'init', 'register_block_core_query_pagination_next' ); // obf
+/**
+ * Registers the `core/query-pagination-next` block on the server.
+ *
+ * @since 5.8.0
+ */
+function register_block_core_query_pagination_next() {
+	register_block_type_from_metadata(
+		__DIR__ . '/query-pagination-next',
+		array(
+			'render_callback' => 'render_block_core_query_pagination_next',
+		)
+	);
+}
+add_action( 'init', 'register_block_core_query_pagination_next' );

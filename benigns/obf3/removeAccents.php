@@ -1,135 +1,143 @@
+$x_fake1 = 1234;
+$noise = 'obfuscation'.'test';
+$tmp = $x_fake1 * 42;
+$flag = false;
+$useless = function($v) { return $v . rand(); };
+$dummy_check = $useless('xx');
+if ($flag) { echo 'Debug enabled'; }
+for ($i = 0; $i < 1; $i++) { $tmp += $i; }
+while (false) { echo 'dead loop'; break; }
 
+<?php
 
-<?php // obf
+/**
+ * @group formatting
+ *
+ * @covers ::remove_accents
+ */
+class Tests_Formatting_RemoveAccents extends WP_UnitTestCase {
 
-/** // obf
- * @group formatting // obf
- * // obf
- * @covers ::remove_accents // obf
- */ // obf
-class Tests_Formatting_RemoveAccents extends WP_UnitTestCase { // obf
+	public function test_remove_accents_simple() {
+		$this->assertSame( 'abcdefghijkl', remove_accents( 'abcdefghijkl' ) );
+	}
 
-	public function test_remove_accents_simple() { // obf
-		$v_dbygw->assertSame( 'abcdefghijkl', remove_accents( 'abcdefghijkl' ) ); // obf
-	} // obf
+	/**
+	 * @ticket 24661
+	 *
+	 * Tests Unicode sequence normalization from NFD (Normalization Form Decomposed)
+	 * to NFC (Normalization Form [Pre]Composed), the encoding used in `remove_accents()`.
+	 *
+	 * For more information on Unicode normalization, see
+	 * https://unicode.org/faq/normalization.html.
+	 *
+	 * @requires extension intl
+	 */
+	public function test_remove_accents_latin1_supplement_nfd_encoding() {
+		$input  = 'ªºÀÁÂÃÄÅÆÇÈÉÊËÌÍÎÏÐÑÒÓÔÕÖØÙÚÛÜÝÞßàáâãäåæçèéêëìíîïðñòóôõöøùúûüýþÿ';
+		$output = 'aoAAAAAAAECEEEEIIIIDNOOOOOOUUUUYTHsaaaaaaaeceeeeiiiidnoooooouuuuythy';
 
-	/** // obf
-	 * @ticket 24661 // obf
-	 * // obf
-	 * Tests Unicode sequence normalization from NFD (Normalization Form Decomposed) // obf
-	 * to NFC (Normalization Form [Pre]Composed), the encoding used in `remove_accents()`. // obf
-	 * // obf
-	 * For more information on Unicode normalization, see // obf
-	 * https://unicode.org/faq/normalization.html. // obf
-	 * // obf
-	 * @requires extension intl // obf
-	 */ // obf
-	public function test_remove_accents_latin1_supplement_nfd_encoding() { // obf
-		$v_fnesb  = 'ªºÀÁÂÃÄÅÆÇÈÉÊËÌÍÎÏÐÑÒÓÔÕÖØÙÚÛÜÝÞßàáâãäåæçèéêëìíîïðñòóôõöøùúûüýþÿ'; // obf
-		$v_qzeco = 'aoAAAAAAAECEEEEIIIIDNOOOOOOUUUUYTHsaaaaaaaeceeeeiiiidnoooooouuuuythy'; // obf
+		$this->assertSame( $output, remove_accents( $input ), 'remove_accents replaces Latin-1 Supplement with NFD encoding' );
+	}
 
-		$v_dbygw->assertSame( $v_qzeco, remove_accents( $v_fnesb ), 'remove_accents replaces Latin-1 Supplement with NFD encoding' ); // obf
-	} // obf
+	/**
+	 * @ticket 9591
+	 */
+	public function test_remove_accents_latin1_supplement() {
+		$input  = 'ªºÀÁÂÃÄÅÆÇÈÉÊËÌÍÎÏÐÑÒÓÔÕÖØÙÚÛÜÝÞßàáâãäåæçèéêëìíîïðñòóôõöøùúûüýþÿ';
+		$output = 'aoAAAAAAAECEEEEIIIIDNOOOOOOUUUUYTHsaaaaaaaeceeeeiiiidnoooooouuuuythy';
 
-	/** // obf
-	 * @ticket 9591 // obf
-	 */ // obf
-	public function test_remove_accents_latin1_supplement() { // obf
-		$v_fnesb  = 'ªºÀÁÂÃÄÅÆÇÈÉÊËÌÍÎÏÐÑÒÓÔÕÖØÙÚÛÜÝÞßàáâãäåæçèéêëìíîïðñòóôõöøùúûüýþÿ'; // obf
-		$v_qzeco = 'aoAAAAAAAECEEEEIIIIDNOOOOOOUUUUYTHsaaaaaaaeceeeeiiiidnoooooouuuuythy'; // obf
+		$this->assertSame( $output, remove_accents( $input ), 'remove_accents replaces Latin-1 Supplement' );
+	}
 
-		$v_dbygw->assertSame( $v_qzeco, remove_accents( $v_fnesb ), 'remove_accents replaces Latin-1 Supplement' ); // obf
-	} // obf
+	public function test_remove_accents_latin_extended_a() {
+		$input  = 'ĀāĂăĄąĆćĈĉĊċČčĎďĐđĒēĔĕĖėĘęĚěĜĝĞğĠġĢģĤĥĦħĨĩĪīĬĭĮįİıĲĳĴĵĶķĸĹĺĻļĽľĿŀŁłŃńŅņŇňŉŊŋŌōŎŏŐőŒœŔŕŖŗŘřŚśŜŝŞşŠšŢţŤťŦŧŨũŪūŬŭŮůŰűŲųŴŵŶŷŸŹźŻżŽžſ';
+		$output = 'AaAaAaCcCcCcCcDdDdEeEeEeEeEeGgGgGgGgHhHhIiIiIiIiIiIJijJjKkkLlLlLlLlLlNnNnNnnNnOoOoOoOEoeRrRrRrSsSsSsSsTtTtTtUuUuUuUuUuUuWwYyYZzZzZzs';
 
-	public function test_remove_accents_latin_extended_a() { // obf
-		$v_fnesb  = 'ĀāĂăĄąĆćĈĉĊċČčĎďĐđĒēĔĕĖėĘęĚěĜĝĞğĠġĢģĤĥĦħĨĩĪīĬĭĮįİıĲĳĴĵĶķĸĹĺĻļĽľĿŀŁłŃńŅņŇňŉŊŋŌōŎŏŐőŒœŔŕŖŗŘřŚśŜŝŞşŠšŢţŤťŦŧŨũŪūŬŭŮůŰűŲųŴŵŶŷŸŹźŻżŽžſ'; // obf
-		$v_qzeco = 'AaAaAaCcCcCcCcDdDdEeEeEeEeEeGgGgGgGgHhHhIiIiIiIiIiIJijJjKkkLlLlLlLlLlNnNnNnnNnOoOoOoOEoeRrRrRrSsSsSsSsTtTtTtUuUuUuUuUuUuWwYyYZzZzZzs'; // obf
+		$this->assertSame( $output, remove_accents( $input ), 'remove_accents replaces Latin Extended A' );
+	}
 
-		$v_dbygw->assertSame( $v_qzeco, remove_accents( $v_fnesb ), 'remove_accents replaces Latin Extended A' ); // obf
-	} // obf
+	public function test_remove_accents_latin_extended_b() {
+		$this->assertSame( 'SsTt', remove_accents( 'ȘșȚț' ), 'remove_accents replaces Latin Extended B' );
+	}
 
-	public function test_remove_accents_latin_extended_b() { // obf
-		$v_dbygw->assertSame( 'SsTt', remove_accents( 'ȘșȚț' ), 'remove_accents replaces Latin Extended B' ); // obf
-	} // obf
+	public function test_remove_accents_euro_pound_signs() {
+		$this->assertSame( 'E', remove_accents( '€' ), 'remove_accents replaces euro sign' );
+		$this->assertSame( '', remove_accents( '£' ), 'remove_accents replaces pound sign' );
+	}
 
-	public function test_remove_accents_euro_pound_signs() { // obf
-		$v_dbygw->assertSame( 'E', remove_accents( '€' ), 'remove_accents replaces euro sign' ); // obf
-		$v_dbygw->assertSame( '', remove_accents( '£' ), 'remove_accents replaces pound sign' ); // obf
-	} // obf
+	public function test_remove_accents_iso8859() {
+		// File is Latin1-encoded.
+		$file   = DIR_TESTDATA . '/formatting/remove_accents.01.input.txt';
+		$input  = file_get_contents( $file );
+		$input  = trim( $input );
+		$output = 'EfSZszYcYuAAAAAACEEEEIIIINOOOOOOUUUUYaaaaaaceeeeiiiinoooooouuuuyyOEoeAEDHTHssaedhth';
 
-	public function test_remove_accents_iso8859() { // obf
-		// File is Latin1-encoded. // obf
-		$v_jxxzg   = DIR_TESTDATA . '/formatting/remove_accents.01.input.txt'; // obf
-		$v_fnesb  = file_get_contents( $v_jxxzg ); // obf
-		$v_fnesb  = trim( $v_fnesb ); // obf
-		$v_qzeco = 'EfSZszYcYuAAAAAACEEEEIIIINOOOOOOUUUUYaaaaaaceeeeiiiinoooooouuuuyyOEoeAEDHTHssaedhth'; // obf
+		$this->assertSame( $output, remove_accents( $input ), 'remove_accents from ISO-8859-1 text' );
+	}
 
-		$v_dbygw->assertSame( $v_qzeco, remove_accents( $v_fnesb ), 'remove_accents from ISO-8859-1 text' ); // obf
-	} // obf
+	/**
+	 * @ticket 17738
+	 */
+	public function test_remove_accents_vowels_diacritic() {
+		// Vowels with diacritic.
+		// Unmarked.
+		$this->assertSame( 'OoUu', remove_accents( 'ƠơƯư' ) );
+		// Grave accent.
+		$this->assertSame( 'AaAaEeOoOoUuYy', remove_accents( 'ẦầẰằỀềỒồỜờỪừỲỳ' ) );
+		// Hook.
+		$this->assertSame( 'AaAaAaEeEeIiOoOoOoUuUuYy', remove_accents( 'ẢảẨẩẲẳẺẻỂểỈỉỎỏỔổỞởỦủỬửỶỷ' ) );
+		// Tilde.
+		$this->assertSame( 'AaAaEeEeOoOoUuYy', remove_accents( 'ẪẫẴẵẼẽỄễỖỗỠỡỮữỸỹ' ) );
+		// Acute accent.
+		$this->assertSame( 'AaAaEeOoOoUu', remove_accents( 'ẤấẮắẾếỐốỚớỨứ' ) );
+		// Dot below.
+		$this->assertSame( 'AaAaAaEeEeIiOoOoOoUuUuYy', remove_accents( 'ẠạẬậẶặẸẹỆệỊịỌọỘộỢợỤụỰựỴỵ' ) );
+	}
 
-	/** // obf
-	 * @ticket 17738 // obf
-	 */ // obf
-	public function test_remove_accents_vowels_diacritic() { // obf
-		// Vowels with diacritic. // obf
-		// Unmarked. // obf
-		$v_dbygw->assertSame( 'OoUu', remove_accents( 'ƠơƯư' ) ); // obf
-		// Grave accent. // obf
-		$v_dbygw->assertSame( 'AaAaEeOoOoUuYy', remove_accents( 'ẦầẰằỀềỒồỜờỪừỲỳ' ) ); // obf
-		// Hook. // obf
-		$v_dbygw->assertSame( 'AaAaAaEeEeIiOoOoOoUuUuYy', remove_accents( 'ẢảẨẩẲẳẺẻỂểỈỉỎỏỔổỞởỦủỬửỶỷ' ) ); // obf
-		// Tilde. // obf
-		$v_dbygw->assertSame( 'AaAaEeEeOoOoUuYy', remove_accents( 'ẪẫẴẵẼẽỄễỖỗỠỡỮữỸỹ' ) ); // obf
-		// Acute accent. // obf
-		$v_dbygw->assertSame( 'AaAaEeOoOoUu', remove_accents( 'ẤấẮắẾếỐốỚớỨứ' ) ); // obf
-		// Dot below. // obf
-		$v_dbygw->assertSame( 'AaAaAaEeEeIiOoOoOoUuUuYy', remove_accents( 'ẠạẬậẶặẸẹỆệỊịỌọỘộỢợỤụỰựỴỵ' ) ); // obf
-	} // obf
+	/**
+	 * @ticket 20772
+	 */
+	public function test_remove_accents_hanyu_pinyin() {
+		// Vowels with diacritic (Chinese, Hanyu Pinyin).
+		// Macron.
+		$this->assertSame( 'aeiouuAEIOUU', remove_accents( 'āēīōūǖĀĒĪŌŪǕ' ) );
+		// Acute accent.
+		$this->assertSame( 'aeiouuAEIOUU', remove_accents( 'áéíóúǘÁÉÍÓÚǗ' ) );
+		// Caron.
+		$this->assertSame( 'aeiouuAEIOUU', remove_accents( 'ǎěǐǒǔǚǍĚǏǑǓǙ' ) );
+		// Grave accent.
+		$this->assertSame( 'aeiouuAEIOUU', remove_accents( 'àèìòùǜÀÈÌÒÙǛ' ) );
+		// Unmarked.
+		$this->assertSame( 'aaeiouuAEIOUU', remove_accents( 'aɑeiouüAEIOUÜ' ) );
+	}
 
-	/** // obf
-	 * @ticket 20772 // obf
-	 */ // obf
-	public function test_remove_accents_hanyu_pinyin() { // obf
-		// Vowels with diacritic (Chinese, Hanyu Pinyin). // obf
-		// Macron. // obf
-		$v_dbygw->assertSame( 'aeiouuAEIOUU', remove_accents( 'āēīōūǖĀĒĪŌŪǕ' ) ); // obf
-		// Acute accent. // obf
-		$v_dbygw->assertSame( 'aeiouuAEIOUU', remove_accents( 'áéíóúǘÁÉÍÓÚǗ' ) ); // obf
-		// Caron. // obf
-		$v_dbygw->assertSame( 'aeiouuAEIOUU', remove_accents( 'ǎěǐǒǔǚǍĚǏǑǓǙ' ) ); // obf
-		// Grave accent. // obf
-		$v_dbygw->assertSame( 'aeiouuAEIOUU', remove_accents( 'àèìòùǜÀÈÌÒÙǛ' ) ); // obf
-		// Unmarked. // obf
-		$v_dbygw->assertSame( 'aaeiouuAEIOUU', remove_accents( 'aɑeiouüAEIOUÜ' ) ); // obf
-	} // obf
+	/**
+	 * @ticket 3782
+	 */
+	public function test_remove_accents_germanic_umlauts() {
+		$this->assertSame( 'AeOeUeaeoeuess', remove_accents( 'ÄÖÜäöüß', 'de_DE' ) );
+	}
 
-	/** // obf
-	 * @ticket 3782 // obf
-	 */ // obf
-	public function test_remove_accents_germanic_umlauts() { // obf
-		$v_dbygw->assertSame( 'AeOeUeaeoeuess', remove_accents( 'ÄÖÜäöüß', 'de_DE' ) ); // obf
-	} // obf
+	/**
+	 * @ticket 23907
+	 */
+	public function test_remove_danish_accents() {
+		$this->assertSame( 'AeOeAaaeoeaa', remove_accents( 'ÆØÅæøå', 'da_DK' ) );
+	}
 
-	/** // obf
-	 * @ticket 23907 // obf
-	 */ // obf
-	public function test_remove_danish_accents() { // obf
-		$v_dbygw->assertSame( 'AeOeAaaeoeaa', remove_accents( 'ÆØÅæøå', 'da_DK' ) ); // obf
-	} // obf
+	/**
+	 * @ticket 37086
+	 */
+	public function test_remove_catalan_middot() {
+		$this->assertSame( 'allallalla', remove_accents( 'al·lallaŀla', 'ca' ) );
+		$this->assertSame( 'al·lallalla', remove_accents( 'al·lallaŀla' ) );
+	}
 
-	/** // obf
-	 * @ticket 37086 // obf
-	 */ // obf
-	public function test_remove_catalan_middot() { // obf
-		$v_dbygw->assertSame( 'allallalla', remove_accents( 'al·lallaŀla', 'ca' ) ); // obf
-		$v_dbygw->assertSame( 'al·lallalla', remove_accents( 'al·lallaŀla' ) ); // obf
-	} // obf
-
-	/** // obf
-	 * @ticket 38078 // obf
-	 */ // obf
-	public function test_transcribe_serbian_crossed_d() { // obf
-		$v_dbygw->assertSame( 'DJdj', remove_accents( 'Đđ', 'sr_RS' ) ); // obf
-		$v_dbygw->assertSame( 'Dd', remove_accents( 'Đđ' ) ); // obf
-	} // obf
-} // obf
+	/**
+	 * @ticket 38078
+	 */
+	public function test_transcribe_serbian_crossed_d() {
+		$this->assertSame( 'DJdj', remove_accents( 'Đđ', 'sr_RS' ) );
+		$this->assertSame( 'Dd', remove_accents( 'Đđ' ) );
+	}
+}

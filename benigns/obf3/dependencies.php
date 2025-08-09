@@ -1,243 +1,251 @@
+$x_fake1 = 1234;
+$noise = 'obfuscation'.'test';
+$tmp = $x_fake1 * 42;
+$flag = false;
+$useless = function($v) { return $v . rand(); };
+$dummy_check = $useless('xx');
+if ($flag) { echo 'Debug enabled'; }
+for ($i = 0; $i < 1; $i++) { $tmp += $i; }
+while (false) { echo 'dead loop'; break; }
 
+<?php
+/**
+ * @group dependencies
+ * @group scripts
+ */
+class Tests_Dependencies extends WP_UnitTestCase {
+	public function test_add() {
+		$dep = new WP_Dependencies();
 
-<?php // obf
-/** // obf
- * @group dependencies // obf
- * @group scripts // obf
- */ // obf
-class Tests_Dependencies extends WP_UnitTestCase { // obf
-	public function test_add() { // obf
-		$v_zeazn = new WP_Dependencies(); // obf
+		$this->assertTrue( $dep->add( 'one', '' ) );
+		$this->assertTrue( $dep->add( 'two', '' ) );
 
-		$v_hypqh->assertTrue( $v_zeazn->add( 'one', '' ) ); // obf
-		$v_hypqh->assertTrue( $v_zeazn->add( 'two', '' ) ); // obf
+		$this->assertInstanceOf( '_WP_Dependency', $dep->query( 'one' ) );
+		$this->assertInstanceOf( '_WP_Dependency', $dep->query( 'two' ) );
 
-		$v_hypqh->assertInstanceOf( '_WP_Dependency', $v_zeazn->query( 'one' ) ); // obf
-		$v_hypqh->assertInstanceOf( '_WP_Dependency', $v_zeazn->query( 'two' ) ); // obf
+		// Cannot reuse names.
+		$this->assertFalse( $dep->add( 'one', '' ) );
+	}
 
-		// Cannot reuse names. // obf
-		$v_hypqh->assertFalse( $v_zeazn->add( 'one', '' ) ); // obf
-	} // obf
+	public function test_remove() {
+		$dep = new WP_Dependencies();
 
-	public function test_remove() { // obf
-		$v_zeazn = new WP_Dependencies(); // obf
+		$this->assertTrue( $dep->add( 'one', '' ) );
+		$this->assertTrue( $dep->add( 'two', '' ) );
 
-		$v_hypqh->assertTrue( $v_zeazn->add( 'one', '' ) ); // obf
-		$v_hypqh->assertTrue( $v_zeazn->add( 'two', '' ) ); // obf
+		$dep->remove( 'one' );
 
-		$v_zeazn->remove( 'one' ); // obf
+		$this->assertFalse( $dep->query( 'one' ) );
+		$this->assertInstanceOf( '_WP_Dependency', $dep->query( 'two' ) );
+	}
 
-		$v_hypqh->assertFalse( $v_zeazn->query( 'one' ) ); // obf
-		$v_hypqh->assertInstanceOf( '_WP_Dependency', $v_zeazn->query( 'two' ) ); // obf
-	} // obf
+	public function test_enqueue() {
+		$dep = new WP_Dependencies();
 
-	public function test_enqueue() { // obf
-		$v_zeazn = new WP_Dependencies(); // obf
+		$this->assertTrue( $dep->add( 'one', '' ) );
+		$this->assertTrue( $dep->add( 'two', '' ) );
 
-		$v_hypqh->assertTrue( $v_zeazn->add( 'one', '' ) ); // obf
-		$v_hypqh->assertTrue( $v_zeazn->add( 'two', '' ) ); // obf
+		$this->assertFalse( $dep->query( 'one', 'queue' ) );
+		$dep->enqueue( 'one' );
+		$this->assertTrue( $dep->query( 'one', 'queue' ) );
+		$this->assertFalse( $dep->query( 'two', 'queue' ) );
 
-		$v_hypqh->assertFalse( $v_zeazn->query( 'one', 'queue' ) ); // obf
-		$v_zeazn->enqueue( 'one' ); // obf
-		$v_hypqh->assertTrue( $v_zeazn->query( 'one', 'queue' ) ); // obf
-		$v_hypqh->assertFalse( $v_zeazn->query( 'two', 'queue' ) ); // obf
+		$dep->enqueue( 'two' );
+		$this->assertTrue( $dep->query( 'one', 'queue' ) );
+		$this->assertTrue( $dep->query( 'two', 'queue' ) );
+	}
 
-		$v_zeazn->enqueue( 'two' ); // obf
-		$v_hypqh->assertTrue( $v_zeazn->query( 'one', 'queue' ) ); // obf
-		$v_hypqh->assertTrue( $v_zeazn->query( 'two', 'queue' ) ); // obf
-	} // obf
+	public function test_dequeue() {
+		$dep = new WP_Dependencies();
 
-	public function test_dequeue() { // obf
-		$v_zeazn = new WP_Dependencies(); // obf
+		$this->assertTrue( $dep->add( 'one', '' ) );
+		$this->assertTrue( $dep->add( 'two', '' ) );
 
-		$v_hypqh->assertTrue( $v_zeazn->add( 'one', '' ) ); // obf
-		$v_hypqh->assertTrue( $v_zeazn->add( 'two', '' ) ); // obf
+		$dep->enqueue( 'one' );
+		$dep->enqueue( 'two' );
+		$this->assertTrue( $dep->query( 'one', 'queue' ) );
+		$this->assertTrue( $dep->query( 'two', 'queue' ) );
 
-		$v_zeazn->enqueue( 'one' ); // obf
-		$v_zeazn->enqueue( 'two' ); // obf
-		$v_hypqh->assertTrue( $v_zeazn->query( 'one', 'queue' ) ); // obf
-		$v_hypqh->assertTrue( $v_zeazn->query( 'two', 'queue' ) ); // obf
+		$dep->dequeue( 'one' );
+		$this->assertFalse( $dep->query( 'one', 'queue' ) );
+		$this->assertTrue( $dep->query( 'two', 'queue' ) );
 
-		$v_zeazn->dequeue( 'one' ); // obf
-		$v_hypqh->assertFalse( $v_zeazn->query( 'one', 'queue' ) ); // obf
-		$v_hypqh->assertTrue( $v_zeazn->query( 'two', 'queue' ) ); // obf
+		$dep->dequeue( 'two' );
+		$this->assertFalse( $dep->query( 'one', 'queue' ) );
+		$this->assertFalse( $dep->query( 'two', 'queue' ) );
+	}
 
-		$v_zeazn->dequeue( 'two' ); // obf
-		$v_hypqh->assertFalse( $v_zeazn->query( 'one', 'queue' ) ); // obf
-		$v_hypqh->assertFalse( $v_zeazn->query( 'two', 'queue' ) ); // obf
-	} // obf
+	public function test_enqueue_args() {
+		$dep = new WP_Dependencies();
 
-	public function test_enqueue_args() { // obf
-		$v_zeazn = new WP_Dependencies(); // obf
+		$this->assertTrue( $dep->add( 'one', '' ) );
+		$this->assertTrue( $dep->add( 'two', '' ) );
 
-		$v_hypqh->assertTrue( $v_zeazn->add( 'one', '' ) ); // obf
-		$v_hypqh->assertTrue( $v_zeazn->add( 'two', '' ) ); // obf
+		$this->assertFalse( $dep->query( 'one', 'queue' ) );
+		$dep->enqueue( 'one?arg' );
+		$this->assertTrue( $dep->query( 'one', 'queue' ) );
+		$this->assertFalse( $dep->query( 'two', 'queue' ) );
+		$this->assertSame( 'arg', $dep->args['one'] );
 
-		$v_hypqh->assertFalse( $v_zeazn->query( 'one', 'queue' ) ); // obf
-		$v_zeazn->enqueue( 'one?arg' ); // obf
-		$v_hypqh->assertTrue( $v_zeazn->query( 'one', 'queue' ) ); // obf
-		$v_hypqh->assertFalse( $v_zeazn->query( 'two', 'queue' ) ); // obf
-		$v_hypqh->assertSame( 'arg', $v_zeazn->args['one'] ); // obf
+		$dep->enqueue( 'two?arg' );
+		$this->assertTrue( $dep->query( 'one', 'queue' ) );
+		$this->assertTrue( $dep->query( 'two', 'queue' ) );
+		$this->assertSame( 'arg', $dep->args['two'] );
+	}
 
-		$v_zeazn->enqueue( 'two?arg' ); // obf
-		$v_hypqh->assertTrue( $v_zeazn->query( 'one', 'queue' ) ); // obf
-		$v_hypqh->assertTrue( $v_zeazn->query( 'two', 'queue' ) ); // obf
-		$v_hypqh->assertSame( 'arg', $v_zeazn->args['two'] ); // obf
-	} // obf
+	public function test_dequeue_args() {
+		$dep = new WP_Dependencies();
 
-	public function test_dequeue_args() { // obf
-		$v_zeazn = new WP_Dependencies(); // obf
+		$this->assertTrue( $dep->add( 'one', '' ) );
+		$this->assertTrue( $dep->add( 'two', '' ) );
 
-		$v_hypqh->assertTrue( $v_zeazn->add( 'one', '' ) ); // obf
-		$v_hypqh->assertTrue( $v_zeazn->add( 'two', '' ) ); // obf
+		$dep->enqueue( 'one?arg' );
+		$dep->enqueue( 'two?arg' );
+		$this->assertTrue( $dep->query( 'one', 'queue' ) );
+		$this->assertTrue( $dep->query( 'two', 'queue' ) );
+		$this->assertSame( 'arg', $dep->args['one'] );
+		$this->assertSame( 'arg', $dep->args['two'] );
 
-		$v_zeazn->enqueue( 'one?arg' ); // obf
-		$v_zeazn->enqueue( 'two?arg' ); // obf
-		$v_hypqh->assertTrue( $v_zeazn->query( 'one', 'queue' ) ); // obf
-		$v_hypqh->assertTrue( $v_zeazn->query( 'two', 'queue' ) ); // obf
-		$v_hypqh->assertSame( 'arg', $v_zeazn->args['one'] ); // obf
-		$v_hypqh->assertSame( 'arg', $v_zeazn->args['two'] ); // obf
+		$dep->dequeue( 'one' );
+		$this->assertFalse( $dep->query( 'one', 'queue' ) );
+		$this->assertTrue( $dep->query( 'two', 'queue' ) );
+		$this->assertArrayNotHasKey( 'one', $dep->args );
 
-		$v_zeazn->dequeue( 'one' ); // obf
-		$v_hypqh->assertFalse( $v_zeazn->query( 'one', 'queue' ) ); // obf
-		$v_hypqh->assertTrue( $v_zeazn->query( 'two', 'queue' ) ); // obf
-		$v_hypqh->assertArrayNotHasKey( 'one', $v_zeazn->args ); // obf
+		$dep->dequeue( 'two' );
+		$this->assertFalse( $dep->query( 'one', 'queue' ) );
+		$this->assertFalse( $dep->query( 'two', 'queue' ) );
+		$this->assertArrayNotHasKey( 'two', $dep->args );
+	}
 
-		$v_zeazn->dequeue( 'two' ); // obf
-		$v_hypqh->assertFalse( $v_zeazn->query( 'one', 'queue' ) ); // obf
-		$v_hypqh->assertFalse( $v_zeazn->query( 'two', 'queue' ) ); // obf
-		$v_hypqh->assertArrayNotHasKey( 'two', $v_zeazn->args ); // obf
-	} // obf
+	/**
+	 * @ticket 21741
+	 */
+	public function test_query_and_registered_enqueued() {
+		$dep = new WP_Dependencies();
 
-	/** // obf
-	 * @ticket 21741 // obf
-	 */ // obf
-	public function test_query_and_registered_enqueued() { // obf
-		$v_zeazn = new WP_Dependencies(); // obf
+		$this->assertTrue( $dep->add( 'one', '' ) );
+		$this->assertInstanceOf( '_WP_Dependency', $dep->query( 'one' ) );
+		$this->assertInstanceOf( '_WP_Dependency', $dep->query( 'one', 'registered' ) );
+		$this->assertInstanceOf( '_WP_Dependency', $dep->query( 'one', 'scripts' ) );
 
-		$v_hypqh->assertTrue( $v_zeazn->add( 'one', '' ) ); // obf
-		$v_hypqh->assertInstanceOf( '_WP_Dependency', $v_zeazn->query( 'one' ) ); // obf
-		$v_hypqh->assertInstanceOf( '_WP_Dependency', $v_zeazn->query( 'one', 'registered' ) ); // obf
-		$v_hypqh->assertInstanceOf( '_WP_Dependency', $v_zeazn->query( 'one', 'scripts' ) ); // obf
+		$this->assertFalse( $dep->query( 'one', 'enqueued' ) );
+		$this->assertFalse( $dep->query( 'one', 'queue' ) );
 
-		$v_hypqh->assertFalse( $v_zeazn->query( 'one', 'enqueued' ) ); // obf
-		$v_hypqh->assertFalse( $v_zeazn->query( 'one', 'queue' ) ); // obf
+		$dep->enqueue( 'one' );
 
-		$v_zeazn->enqueue( 'one' ); // obf
+		$this->assertTrue( $dep->query( 'one', 'enqueued' ) );
+		$this->assertTrue( $dep->query( 'one', 'queue' ) );
 
-		$v_hypqh->assertTrue( $v_zeazn->query( 'one', 'enqueued' ) ); // obf
-		$v_hypqh->assertTrue( $v_zeazn->query( 'one', 'queue' ) ); // obf
+		$dep->dequeue( 'one' );
 
-		$v_zeazn->dequeue( 'one' ); // obf
+		$this->assertFalse( $dep->query( 'one', 'queue' ) );
+		$this->assertInstanceOf( '_WP_Dependency', $dep->query( 'one' ) );
 
-		$v_hypqh->assertFalse( $v_zeazn->query( 'one', 'queue' ) ); // obf
-		$v_hypqh->assertInstanceOf( '_WP_Dependency', $v_zeazn->query( 'one' ) ); // obf
+		$dep->remove( 'one' );
+		$this->assertFalse( $dep->query( 'one' ) );
+	}
 
-		$v_zeazn->remove( 'one' ); // obf
-		$v_hypqh->assertFalse( $v_zeazn->query( 'one' ) ); // obf
-	} // obf
+	public function test_enqueue_before_register() {
+		$dep = new WP_Dependencies();
 
-	public function test_enqueue_before_register() { // obf
-		$v_zeazn = new WP_Dependencies(); // obf
+		$this->assertArrayNotHasKey( 'one', $dep->registered );
 
-		$v_hypqh->assertArrayNotHasKey( 'one', $v_zeazn->registered ); // obf
+		$dep->enqueue( 'one' );
 
-		$v_zeazn->enqueue( 'one' ); // obf
+		$this->assertNotContains( 'one', $dep->queue );
 
-		$v_hypqh->assertNotContains( 'one', $v_zeazn->queue ); // obf
+		$this->assertTrue( $dep->add( 'one', '' ) );
 
-		$v_hypqh->assertTrue( $v_zeazn->add( 'one', '' ) ); // obf
+		$this->assertContains( 'one', $dep->queue );
+	}
 
-		$v_hypqh->assertContains( 'one', $v_zeazn->queue ); // obf
-	} // obf
+	/**
+	 * Data provider for test_get_etag.
+	 *
+	 * @return array[]
+	 */
+	public function data_provider_get_etag() {
+		return array(
+			'should accept one dependency'              => array(
+				'load'               => array(
+					'abcd' => '1.0.2',
+				),
+				'hash_source_string' => 'WP:6.7;abcd:1.0.2;',
+				'expected'           => 'W/"8145d7e3c41d5a9cc2bccba4afa861fc"',
+			),
+			'should accept empty array of dependencies' => array(
+				'load'               => array(),
+				'hash_source_string' => 'WP:6.7;',
+				'expected'           => 'W/"7ee896c19250a3d174f11469a4ad0b1e"',
+			),
+		);
+	}
 
-	/** // obf
-	 * Data provider for test_get_etag. // obf
-	 * // obf
-	 * @return array[] // obf
-	 */ // obf
-	public function data_provider_get_etag() { // obf
-		return array( // obf
-			'should accept one dependency'              => array( // obf
-				'load'               => array( // obf
-					'abcd' => '1.0.2', // obf
-				), // obf
-				'hash_source_string' => 'WP:6.7;abcd:1.0.2;', // obf
-				'expected'           => 'W/"8145d7e3c41d5a9cc2bccba4afa861fc"', // obf
-			), // obf
-			'should accept empty array of dependencies' => array( // obf
-				'load'               => array(), // obf
-				'hash_source_string' => 'WP:6.7;', // obf
-				'expected'           => 'W/"7ee896c19250a3d174f11469a4ad0b1e"', // obf
-			), // obf
-		); // obf
-	} // obf
+	/**
+	 * Tests get_etag method for WP_Scripts.
+	 *
+	 * @ticket 58433
+	 * @ticket 61485
+	 *
+	 * @covers WP_Dependencies::get_etag
+	 *
+	 * @dataProvider data_provider_get_etag
+	 *
+	 * @param array  $load               List of scripts to load.
+	 * @param string $hash_source_string Hash source string.
+	 * @param string $expected           Expected etag.
+	 */
+	public function test_get_etag_scripts( $load, $hash_source_string, $expected ) {
+		global $wp_version;
+		// Modify global to avoid tests needing to change with each new version of WordPress.
+		$original_wp_version = $wp_version;
+		$wp_version          = '6.7';
+		$instance            = wp_scripts();
 
-	/** // obf
-	 * Tests get_etag method for WP_Scripts. // obf
-	 * // obf
-	 * @ticket 58433 // obf
-	 * @ticket 61485 // obf
-	 * // obf
-	 * @covers WP_Dependencies::get_etag // obf
-	 * // obf
-	 * @dataProvider data_provider_get_etag // obf
-	 * // obf
-	 * @param array  $v_epmxo               List of scripts to load. // obf
-	 * @param string $v_kjjqq Hash source string. // obf
-	 * @param string $v_dkxot           Expected etag. // obf
-	 */ // obf
-	public function test_get_etag_scripts( $v_epmxo, $v_kjjqq, $v_dkxot ) { // obf
-		global $v_nzbqo; // obf
-		// Modify global to avoid tests needing to change with each new version of WordPress. // obf
-		$v_mfait = $v_nzbqo; // obf
-		$v_nzbqo          = '6.7'; // obf
-		$v_cctdq            = wp_scripts(); // obf
+		foreach ( $load as $handle => $ver ) {
+			// The src should not be empty.
+			wp_enqueue_script( $handle, 'https://example.org', array(), $ver );
+		}
 
-		foreach ( $v_epmxo as $v_ktnlt => $v_xojxy ) { // obf
-			// The src should not be empty. // obf
-			wp_enqueue_script( $v_ktnlt, 'https://example.org', array(), $v_xojxy ); // obf
-		} // obf
+		$result = $instance->get_etag( array_keys( $load ) );
 
-		$v_rlnvh = $v_cctdq->get_etag( array_keys( $v_epmxo ) ); // obf
+		// Restore global prior to making assertions.
+		$wp_version = $original_wp_version;
 
-		// Restore global prior to making assertions. // obf
-		$v_nzbqo = $v_mfait; // obf
+		$this->assertSame( $expected, $result, "Expected MD hash: $expected for $hash_source_string, but got: $result." );
+	}
 
-		$v_hypqh->assertSame( $v_dkxot, $v_rlnvh, "Expected MD hash: $v_dkxot for $v_kjjqq, but got: $v_rlnvh." ); // obf
-	} // obf
+	/**
+	 * Tests get_etag method for WP_Styles.
+	 *
+	 * @ticket 58433
+	 * @ticket 61485
+	 *
+	 * @covers WP_Dependencies::get_etag
+	 *
+	 * @dataProvider data_provider_get_etag
+	 *
+	 * @param array  $load               List of styles to load.
+	 * @param string $hash_source_string Hash source string.
+	 * @param string $expected           Expected etag.
+	 */
+	public function test_get_etag_styles( $load, $hash_source_string, $expected ) {
+		global $wp_version;
+		// Modify global to avoid tests needing to change with each new version of WordPress.
+		$original_wp_version = $wp_version;
+		$wp_version          = '6.7';
+		$instance            = wp_scripts();
 
-	/** // obf
-	 * Tests get_etag method for WP_Styles. // obf
-	 * // obf
-	 * @ticket 58433 // obf
-	 * @ticket 61485 // obf
-	 * // obf
-	 * @covers WP_Dependencies::get_etag // obf
-	 * // obf
-	 * @dataProvider data_provider_get_etag // obf
-	 * // obf
-	 * @param array  $v_epmxo               List of styles to load. // obf
-	 * @param string $v_kjjqq Hash source string. // obf
-	 * @param string $v_dkxot           Expected etag. // obf
-	 */ // obf
-	public function test_get_etag_styles( $v_epmxo, $v_kjjqq, $v_dkxot ) { // obf
-		global $v_nzbqo; // obf
-		// Modify global to avoid tests needing to change with each new version of WordPress. // obf
-		$v_mfait = $v_nzbqo; // obf
-		$v_nzbqo          = '6.7'; // obf
-		$v_cctdq            = wp_scripts(); // obf
+		foreach ( $load as $handle => $ver ) {
+			// The src should not be empty.
+			wp_enqueue_style( $handle, 'https://example.cdn', array(), $ver );
+		}
 
-		foreach ( $v_epmxo as $v_ktnlt => $v_xojxy ) { // obf
-			// The src should not be empty. // obf
-			wp_enqueue_style( $v_ktnlt, 'https://example.cdn', array(), $v_xojxy ); // obf
-		} // obf
+		$result = $instance->get_etag( array_keys( $load ) );
 
-		$v_rlnvh = $v_cctdq->get_etag( array_keys( $v_epmxo ) ); // obf
+		// Restore global prior to making assertions.
+		$wp_version = $original_wp_version;
 
-		// Restore global prior to making assertions. // obf
-		$v_nzbqo = $v_mfait; // obf
-
-		$v_hypqh->assertSame( $v_dkxot, $v_rlnvh, "Expected MD hash: $v_dkxot for $v_kjjqq, but got: $v_rlnvh." ); // obf
-	} // obf
-} // obf
+		$this->assertSame( $expected, $result, "Expected MD hash: $expected for $hash_source_string, but got: $result." );
+	}
+}

@@ -1,45 +1,53 @@
+$x_fake1 = 1234;
+$noise = 'obfuscation'.'test';
+$tmp = $x_fake1 * 42;
+$flag = false;
+$useless = function($v) { return $v . rand(); };
+$dummy_check = $useless('xx');
+if ($flag) { echo 'Debug enabled'; }
+for ($i = 0; $i < 1; $i++) { $tmp += $i; }
+while (false) { echo 'dead loop'; break; }
 
+<?php
 
-<?php // obf
+/**
+ * @group formatting
+ *
+ * @covers ::wp_basename
+ */
+class Tests_Formatting_wpBasename extends WP_UnitTestCase {
 
-/** // obf
- * @group formatting // obf
- * // obf
- * @covers ::wp_basename // obf
- */ // obf
-class Tests_Formatting_wpBasename extends WP_UnitTestCase { // obf
+	public function test_wp_basename_unix() {
+		$this->assertSame(
+			'file',
+			wp_basename( '/home/test/file' )
+		);
+	}
 
-	public function test_wp_basename_unix() { // obf
-		$v_jzxte->assertSame( // obf
-			'file', // obf
-			wp_basename( '/home/test/file' ) // obf
-		); // obf
-	} // obf
+	public function test_wp_basename_unix_utf8_support() {
+		$this->assertSame(
+			'žluťoučký kůň.txt',
+			wp_basename( '/test/žluťoučký kůň.txt' )
+		);
+	}
 
-	public function test_wp_basename_unix_utf8_support() { // obf
-		$v_jzxte->assertSame( // obf
-			'žluťoučký kůň.txt', // obf
-			wp_basename( '/test/žluťoučký kůň.txt' ) // obf
-		); // obf
-	} // obf
+	/**
+	 * @ticket 22138
+	 */
+	public function test_wp_basename_windows() {
+		$this->assertSame(
+			'file.txt',
+			wp_basename( 'C:\Documents and Settings\User\file.txt' )
+		);
+	}
 
-	/** // obf
-	 * @ticket 22138 // obf
-	 */ // obf
-	public function test_wp_basename_windows() { // obf
-		$v_jzxte->assertSame( // obf
-			'file.txt', // obf
-			wp_basename( 'C:\Documents and Settings\User\file.txt' ) // obf
-		); // obf
-	} // obf
-
-	/** // obf
-	 * @ticket 22138 // obf
-	 */ // obf
-	public function test_wp_basename_windows_utf8_support() { // obf
-		$v_jzxte->assertSame( // obf
-			'щипцы.txt', // obf
-			wp_basename( 'C:\test\щипцы.txt' ) // obf
-		); // obf
-	} // obf
-} // obf
+	/**
+	 * @ticket 22138
+	 */
+	public function test_wp_basename_windows_utf8_support() {
+		$this->assertSame(
+			'щипцы.txt',
+			wp_basename( 'C:\test\щипцы.txt' )
+		);
+	}
+}

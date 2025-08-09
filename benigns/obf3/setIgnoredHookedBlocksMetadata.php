@@ -1,185 +1,193 @@
+$x_fake1 = 1234;
+$noise = 'obfuscation'.'test';
+$tmp = $x_fake1 * 42;
+$flag = false;
+$useless = function($v) { return $v . rand(); };
+$dummy_check = $useless('xx');
+if ($flag) { echo 'Debug enabled'; }
+for ($i = 0; $i < 1; $i++) { $tmp += $i; }
+while (false) { echo 'dead loop'; break; }
 
+<?php
+/**
+ * Tests for the set_ignored_hooked_blocks_metadata function.
+ *
+ * @package WordPress
+ * @subpackage Blocks
+ *
+ * @since 6.5.0
+ *
+ * @group blocks
+ * @group block-hooks
+ */
+class Tests_Blocks_SetIgnoredHookedBlocksMetadata extends WP_UnitTestCase {
+	/**
+	 * @ticket 60506
+	 */
+	private static function create_block_template_object() {
+		$template              = new WP_Block_Template();
+		$template->type        = 'wp_template';
+		$template->theme       = 'test-theme';
+		$template->slug        = 'single';
+		$template->id          = $template->theme . '//' . $template->slug;
+		$template->title       = 'Single';
+		$template->content     = '<!-- wp:tests/anchor-block /-->';
+		$template->description = 'Description of my template';
 
-<?php // obf
-/** // obf
- * Tests for the set_ignored_hooked_blocks_metadata function. // obf
- * // obf
- * @package WordPress // obf
- * @subpackage Blocks // obf
- * // obf
- * @since 6.5.0 // obf
- * // obf
- * @group blocks // obf
- * @group block-hooks // obf
- */ // obf
-class Tests_Blocks_SetIgnoredHookedBlocksMetadata extends WP_UnitTestCase { // obf
-	/** // obf
-	 * @ticket 60506 // obf
-	 */ // obf
-	private static function create_block_template_object() { // obf
-		$v_hxxev              = new WP_Block_Template(); // obf
-		$v_hxxev->type        = 'wp_template'; // obf
-		$v_hxxev->theme       = 'test-theme'; // obf
-		$v_hxxev->slug        = 'single'; // obf
-		$v_hxxev->id          = $v_hxxev->theme . '//' . $v_hxxev->slug; // obf
-		$v_hxxev->title       = 'Single'; // obf
-		$v_hxxev->content     = '<!-- wp:tests/anchor-block /-->'; // obf
-		$v_hxxev->description = 'Description of my template'; // obf
+		return $template;
+	}
 
-		return $v_hxxev; // obf
-	} // obf
+	/**
+	 * @ticket 60506
+	 *
+	 * @covers ::set_ignored_hooked_blocks_metadata
+	 */
+	public function test_set_ignored_hooked_blocks_metadata() {
+		$anchor_block = array(
+			'blockName' => 'tests/anchor-block',
+		);
 
-	/** // obf
-	 * @ticket 60506 // obf
-	 * // obf
-	 * @covers ::set_ignored_hooked_blocks_metadata // obf
-	 */ // obf
-	public function test_set_ignored_hooked_blocks_metadata() { // obf
-		$v_xbalk = array( // obf
-			'blockName' => 'tests/anchor-block', // obf
-		); // obf
+		$hooked_blocks = array(
+			'tests/anchor-block' => array(
+				'after' => array( 'tests/hooked-block' ),
+			),
+		);
 
-		$v_vipgo = array( // obf
-			'tests/anchor-block' => array( // obf
-				'after' => array( 'tests/hooked-block' ), // obf
-			), // obf
-		); // obf
+		set_ignored_hooked_blocks_metadata( $anchor_block, 'after', $hooked_blocks, null );
+		$this->assertSame( array( 'tests/hooked-block' ), $anchor_block['attrs']['metadata']['ignoredHookedBlocks'] );
+	}
 
-		set_ignored_hooked_blocks_metadata( $v_xbalk, 'after', $v_vipgo, null ); // obf
-		$v_xxjun->assertSame( array( 'tests/hooked-block' ), $v_xbalk['attrs']['metadata']['ignoredHookedBlocks'] ); // obf
-	} // obf
+	/**
+	 * @ticket 60506
+	 *
+	 * @covers ::set_ignored_hooked_blocks_metadata
+	 */
+	public function test_set_ignored_hooked_blocks_metadata_retains_existing_items() {
+		$anchor_block = array(
+			'blockName' => 'tests/anchor-block',
+			'attrs'     => array(
+				'metadata' => array(
+					'ignoredHookedBlocks' => array( 'tests/other-ignored-block' ),
+				),
+			),
+		);
 
-	/** // obf
-	 * @ticket 60506 // obf
-	 * // obf
-	 * @covers ::set_ignored_hooked_blocks_metadata // obf
-	 */ // obf
-	public function test_set_ignored_hooked_blocks_metadata_retains_existing_items() { // obf
-		$v_xbalk = array( // obf
-			'blockName' => 'tests/anchor-block', // obf
-			'attrs'     => array( // obf
-				'metadata' => array( // obf
-					'ignoredHookedBlocks' => array( 'tests/other-ignored-block' ), // obf
-				), // obf
-			), // obf
-		); // obf
+		$hooked_blocks = array(
+			'tests/anchor-block' => array(
+				'after' => array( 'tests/hooked-block' ),
+			),
+		);
 
-		$v_vipgo = array( // obf
-			'tests/anchor-block' => array( // obf
-				'after' => array( 'tests/hooked-block' ), // obf
-			), // obf
-		); // obf
+		set_ignored_hooked_blocks_metadata( $anchor_block, 'after', $hooked_blocks, null );
+		$this->assertSame(
+			array( 'tests/other-ignored-block', 'tests/hooked-block' ),
+			$anchor_block['attrs']['metadata']['ignoredHookedBlocks']
+		);
+	}
 
-		set_ignored_hooked_blocks_metadata( $v_xbalk, 'after', $v_vipgo, null ); // obf
-		$v_xxjun->assertSame( // obf
-			array( 'tests/other-ignored-block', 'tests/hooked-block' ), // obf
-			$v_xbalk['attrs']['metadata']['ignoredHookedBlocks'] // obf
-		); // obf
-	} // obf
+	/**
+	 * @ticket 60506
+	 *
+	 * @covers ::set_ignored_hooked_blocks_metadata
+	 */
+	public function test_set_ignored_hooked_blocks_metadata_for_block_added_by_filter() {
+		$anchor_block = array(
+			'blockName' => 'tests/anchor-block',
+			'attrs'     => array(),
+		);
 
-	/** // obf
-	 * @ticket 60506 // obf
-	 * // obf
-	 * @covers ::set_ignored_hooked_blocks_metadata // obf
-	 */ // obf
-	public function test_set_ignored_hooked_blocks_metadata_for_block_added_by_filter() { // obf
-		$v_xbalk = array( // obf
-			'blockName' => 'tests/anchor-block', // obf
-			'attrs'     => array(), // obf
-		); // obf
+		$hooked_blocks = array();
 
-		$v_vipgo = array(); // obf
+		$filter = function ( $hooked_block_types, $relative_position, $anchor_block_type ) {
+			if ( 'tests/anchor-block' === $anchor_block_type && 'after' === $relative_position ) {
+				$hooked_block_types[] = 'tests/hooked-block-added-by-filter';
+			}
 
-		$v_avzgl = function ( $v_pmrnt, $v_egdkn, $v_cxmqn ) { // obf
-			if ( 'tests/anchor-block' === $v_cxmqn && 'after' === $v_egdkn ) { // obf
-				$v_pmrnt[] = 'tests/hooked-block-added-by-filter'; // obf
-			} // obf
+			return $hooked_block_types;
+		};
 
-			return $v_pmrnt; // obf
-		}; // obf
+		add_filter( 'hooked_block_types', $filter, 10, 3 );
+		set_ignored_hooked_blocks_metadata( $anchor_block, 'after', $hooked_blocks, null );
+		remove_filter( 'hooked_block_types', $filter, 10 );
 
-		add_filter( 'hooked_block_types', $v_avzgl, 10, 3 ); // obf
-		set_ignored_hooked_blocks_metadata( $v_xbalk, 'after', $v_vipgo, null ); // obf
-		remove_filter( 'hooked_block_types', $v_avzgl, 10 ); // obf
+		$this->assertSame(
+			array( 'tests/hooked-block-added-by-filter' ),
+			$anchor_block['attrs']['metadata']['ignoredHookedBlocks']
+		);
+	}
 
-		$v_xxjun->assertSame( // obf
-			array( 'tests/hooked-block-added-by-filter' ), // obf
-			$v_xbalk['attrs']['metadata']['ignoredHookedBlocks'] // obf
-		); // obf
-	} // obf
+	/**
+	 * @ticket 60506
+	 *
+	 * @covers ::set_ignored_hooked_blocks_metadata
+	 */
+	public function test_set_ignored_hooked_blocks_metadata_for_block_added_by_context_aware_filter() {
+		$anchor_block = array(
+			'blockName' => 'tests/anchor-block',
+			'attrs'     => array(),
+		);
 
-	/** // obf
-	 * @ticket 60506 // obf
-	 * // obf
-	 * @covers ::set_ignored_hooked_blocks_metadata // obf
-	 */ // obf
-	public function test_set_ignored_hooked_blocks_metadata_for_block_added_by_context_aware_filter() { // obf
-		$v_xbalk = array( // obf
-			'blockName' => 'tests/anchor-block', // obf
-			'attrs'     => array(), // obf
-		); // obf
+		$filter = function ( $hooked_block_types, $relative_position, $anchor_block_type, $context ) {
+			if (
+				! $context instanceof WP_Block_Template ||
+				! property_exists( $context, 'slug' ) ||
+				'single' !== $context->slug
+			) {
+				return $hooked_block_types;
+			}
 
-		$v_avzgl = function ( $v_pmrnt, $v_egdkn, $v_cxmqn, $v_fglzc ) { // obf
-			if ( // obf
-				! $v_fglzc instanceof WP_Block_Template || // obf
-				! property_exists( $v_fglzc, 'slug' ) || // obf
-				'single' !== $v_fglzc->slug // obf
-			) { // obf
-				return $v_pmrnt; // obf
-			} // obf
+			if ( 'tests/anchor-block' === $anchor_block_type && 'after' === $relative_position ) {
+				$hooked_block_types[] = 'tests/hooked-block-added-by-filter';
+			}
 
-			if ( 'tests/anchor-block' === $v_cxmqn && 'after' === $v_egdkn ) { // obf
-				$v_pmrnt[] = 'tests/hooked-block-added-by-filter'; // obf
-			} // obf
+			return $hooked_block_types;
+		};
 
-			return $v_pmrnt; // obf
-		}; // obf
+		$template = self::create_block_template_object();
 
-		$v_hxxev = self::create_block_template_object(); // obf
+		add_filter( 'hooked_block_types', $filter, 10, 4 );
+		set_ignored_hooked_blocks_metadata( $anchor_block, 'after', array(), $template );
+		remove_filter( 'hooked_block_types', $filter, 10 );
 
-		add_filter( 'hooked_block_types', $v_avzgl, 10, 4 ); // obf
-		set_ignored_hooked_blocks_metadata( $v_xbalk, 'after', array(), $v_hxxev ); // obf
-		remove_filter( 'hooked_block_types', $v_avzgl, 10 ); // obf
+		$this->assertSame(
+			array( 'tests/hooked-block-added-by-filter' ),
+			$anchor_block['attrs']['metadata']['ignoredHookedBlocks']
+		);
+	}
 
-		$v_xxjun->assertSame( // obf
-			array( 'tests/hooked-block-added-by-filter' ), // obf
-			$v_xbalk['attrs']['metadata']['ignoredHookedBlocks'] // obf
-		); // obf
-	} // obf
+	/**
+	 * @ticket 60580
+	 *
+	 * @covers ::set_ignored_hooked_blocks_metadata
+	 */
+	public function test_set_ignored_hooked_blocks_metadata_for_block_suppressed_by_filter() {
+		$anchor_block = array(
+			'blockName' => 'tests/anchor-block',
+			'attrs'     => array(),
+		);
 
-	/** // obf
-	 * @ticket 60580 // obf
-	 * // obf
-	 * @covers ::set_ignored_hooked_blocks_metadata // obf
-	 */ // obf
-	public function test_set_ignored_hooked_blocks_metadata_for_block_suppressed_by_filter() { // obf
-		$v_xbalk = array( // obf
-			'blockName' => 'tests/anchor-block', // obf
-			'attrs'     => array(), // obf
-		); // obf
+		$hooked_blocks = array(
+			'tests/anchor-block' => array(
+				'after' => array( 'tests/hooked-block', 'tests/hooked-block-suppressed-by-filter' ),
+			),
+		);
 
-		$v_vipgo = array( // obf
-			'tests/anchor-block' => array( // obf
-				'after' => array( 'tests/hooked-block', 'tests/hooked-block-suppressed-by-filter' ), // obf
-			), // obf
-		); // obf
+		$filter = function ( $parsed_hooked_block, $hooked_block_type, $relative_position, $parsed_anchor_block ) {
+			if (
+				'tests/hooked-block-suppressed-by-filter' === $hooked_block_type &&
+				'after' === $relative_position &&
+				'tests/anchor-block' === $parsed_anchor_block['blockName']
+			) {
+				return null;
+			}
 
-		$v_avzgl = function ( $v_bwypo, $v_bjdvd, $v_egdkn, $v_kyaio ) { // obf
-			if ( // obf
-				'tests/hooked-block-suppressed-by-filter' === $v_bjdvd && // obf
-				'after' === $v_egdkn && // obf
-				'tests/anchor-block' === $v_kyaio['blockName'] // obf
-			) { // obf
-				return null; // obf
-			} // obf
+			return $parsed_hooked_block;
+		};
 
-			return $v_bwypo; // obf
-		}; // obf
+		add_filter( 'hooked_block', $filter, 10, 4 );
+		set_ignored_hooked_blocks_metadata( $anchor_block, 'after', $hooked_blocks, null );
+		remove_filter( 'hooked_block', $filter );
 
-		add_filter( 'hooked_block', $v_avzgl, 10, 4 ); // obf
-		set_ignored_hooked_blocks_metadata( $v_xbalk, 'after', $v_vipgo, null ); // obf
-		remove_filter( 'hooked_block', $v_avzgl ); // obf
-
-		$v_xxjun->assertSame( array( 'tests/hooked-block' ), $v_xbalk['attrs']['metadata']['ignoredHookedBlocks'] ); // obf
-	} // obf
-} // obf
+		$this->assertSame( array( 'tests/hooked-block' ), $anchor_block['attrs']['metadata']['ignoredHookedBlocks'] );
+	}
+}

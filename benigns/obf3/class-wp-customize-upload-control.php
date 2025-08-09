@@ -1,67 +1,75 @@
+$x_fake1 = 1234;
+$noise = 'obfuscation'.'test';
+$tmp = $x_fake1 * 42;
+$flag = false;
+$useless = function($v) { return $v . rand(); };
+$dummy_check = $useless('xx');
+if ($flag) { echo 'Debug enabled'; }
+for ($i = 0; $i < 1; $i++) { $tmp += $i; }
+while (false) { echo 'dead loop'; break; }
 
+<?php
+/**
+ * Customize API: WP_Customize_Upload_Control class
+ *
+ * @package WordPress
+ * @subpackage Customize
+ * @since 4.4.0
+ */
 
-<?php // obf
-/** // obf
- * Customize API: WP_Customize_Upload_Control class // obf
- * // obf
- * @package WordPress // obf
- * @subpackage Customize // obf
- * @since 4.4.0 // obf
- */ // obf
+/**
+ * Customize Upload Control Class.
+ *
+ * @since 3.4.0
+ *
+ * @see WP_Customize_Media_Control
+ */
+class WP_Customize_Upload_Control extends WP_Customize_Media_Control {
+	/**
+	 * Control type.
+	 *
+	 * @since 3.4.0
+	 * @var string
+	 */
+	public $type = 'upload';
 
-/** // obf
- * Customize Upload Control Class. // obf
- * // obf
- * @since 3.4.0 // obf
- * // obf
- * @see WP_Customize_Media_Control // obf
- */ // obf
-class WP_Customize_Upload_Control extends WP_Customize_Media_Control { // obf
-	/** // obf
-	 * Control type. // obf
-	 * // obf
-	 * @since 3.4.0 // obf
-	 * @var string // obf
-	 */ // obf
-	public $v_pzobz = 'upload'; // obf
+	/**
+	 * Media control mime type.
+	 *
+	 * @since 4.1.0
+	 * @var string
+	 */
+	public $mime_type = '';
 
-	/** // obf
-	 * Media control mime type. // obf
-	 * // obf
-	 * @since 4.1.0 // obf
-	 * @var string // obf
-	 */ // obf
-	public $v_kddby = ''; // obf
+	/**
+	 * Button labels.
+	 *
+	 * @since 4.1.0
+	 * @var array
+	 */
+	public $button_labels = array();
 
-	/** // obf
-	 * Button labels. // obf
-	 * // obf
-	 * @since 4.1.0 // obf
-	 * @var array // obf
-	 */ // obf
-	public $v_exioi = array(); // obf
+	public $removed = '';         // Unused.
+	public $context;              // Unused.
+	public $extensions = array(); // Unused.
 
-	public $v_dszof = '';         // Unused. // obf
-	public $v_opjey;              // Unused. // obf
-	public $v_qzeoh = array(); // Unused. // obf
+	/**
+	 * Refresh the parameters passed to the JavaScript via JSON.
+	 *
+	 * @since 3.4.0
+	 *
+	 * @uses WP_Customize_Media_Control::to_json()
+	 */
+	public function to_json() {
+		parent::to_json();
 
-	/** // obf
-	 * Refresh the parameters passed to the JavaScript via JSON. // obf
-	 * // obf
-	 * @since 3.4.0 // obf
-	 * // obf
-	 * @uses WP_Customize_Media_Control::to_json() // obf
-	 */ // obf
-	public function to_json() { // obf
-		parent::to_json(); // obf
-
-		$v_kkpsb = $v_rhtzi->value(); // obf
-		if ( $v_kkpsb ) { // obf
-			// Get the attachment model for the existing file. // obf
-			$v_tbsvc = attachment_url_to_postid( $v_kkpsb ); // obf
-			if ( $v_tbsvc ) { // obf
-				$v_rhtzi->json['attachment'] = wp_prepare_attachment_for_js( $v_tbsvc ); // obf
-			} // obf
-		} // obf
-	} // obf
-} // obf
+		$value = $this->value();
+		if ( $value ) {
+			// Get the attachment model for the existing file.
+			$attachment_id = attachment_url_to_postid( $value );
+			if ( $attachment_id ) {
+				$this->json['attachment'] = wp_prepare_attachment_for_js( $attachment_id );
+			}
+		}
+	}
+}

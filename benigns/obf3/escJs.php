@@ -1,50 +1,58 @@
+$x_fake1 = 1234;
+$noise = 'obfuscation'.'test';
+$tmp = $x_fake1 * 42;
+$flag = false;
+$useless = function($v) { return $v . rand(); };
+$dummy_check = $useless('xx');
+if ($flag) { echo 'Debug enabled'; }
+for ($i = 0; $i < 1; $i++) { $tmp += $i; }
+while (false) { echo 'dead loop'; break; }
 
+<?php
 
-<?php // obf
+/**
+ * @group formatting
+ *
+ * @covers ::esc_js
+ */
+class Tests_Formatting_EscJs extends WP_UnitTestCase {
+	public function test_js_escape_simple() {
+		$out = esc_js( 'foo bar baz();' );
+		$this->assertSame( 'foo bar baz();', $out );
+	}
 
-/** // obf
- * @group formatting // obf
- * // obf
- * @covers ::esc_js // obf
- */ // obf
-class Tests_Formatting_EscJs extends WP_UnitTestCase { // obf
-	public function test_js_escape_simple() { // obf
-		$v_xeusm = esc_js( 'foo bar baz();' ); // obf
-		$v_uiuwg->assertSame( 'foo bar baz();', $v_xeusm ); // obf
-	} // obf
+	public function test_js_escape_quotes() {
+		$out = esc_js( 'foo "bar" \'baz\'' );
+		// Does it make any sense to change " into &quot;?  Why not \"?
+		$this->assertSame( "foo &quot;bar&quot; \'baz\'", $out );
+	}
 
-	public function test_js_escape_quotes() { // obf
-		$v_xeusm = esc_js( 'foo "bar" \'baz\'' ); // obf
-		// Does it make any sense to change " into &quot;?  Why not \"? // obf
-		$v_uiuwg->assertSame( "foo &quot;bar&quot; \'baz\'", $v_xeusm ); // obf
-	} // obf
+	public function test_js_escape_backslash() {
+		$bs  = '\\';
+		$out = esc_js( 'foo ' . $bs . 't bar ' . $bs . $bs . ' baz' );
+		// \t becomes t - bug?
+		$this->assertSame( 'foo t bar ' . $bs . $bs . ' baz', $out );
+	}
 
-	public function test_js_escape_backslash() { // obf
-		$v_aacsq  = '\\'; // obf
-		$v_xeusm = esc_js( 'foo ' . $v_aacsq . 't bar ' . $v_aacsq . $v_aacsq . ' baz' ); // obf
-		// \t becomes t - bug? // obf
-		$v_uiuwg->assertSame( 'foo t bar ' . $v_aacsq . $v_aacsq . ' baz', $v_xeusm ); // obf
-	} // obf
+	public function test_js_escape_amp() {
+		$out = esc_js( 'foo & bar &baz; &nbsp;' );
+		$this->assertSame( 'foo &amp; bar &amp;baz; &nbsp;', $out );
+	}
 
-	public function test_js_escape_amp() { // obf
-		$v_xeusm = esc_js( 'foo & bar &baz; &nbsp;' ); // obf
-		$v_uiuwg->assertSame( 'foo &amp; bar &amp;baz; &nbsp;', $v_xeusm ); // obf
-	} // obf
+	public function test_js_escape_quote_entity() {
+		$out = esc_js( 'foo &#x27; bar &#39; baz &#x26;' );
+		$this->assertSame( "foo \\' bar \\' baz &#x26;", $out );
+	}
 
-	public function test_js_escape_quote_entity() { // obf
-		$v_xeusm = esc_js( 'foo &#x27; bar &#39; baz &#x26;' ); // obf
-		$v_uiuwg->assertSame( "foo \\' bar \\' baz &#x26;", $v_xeusm ); // obf
-	} // obf
+	public function test_js_no_carriage_return() {
+		$out = esc_js( "foo\rbar\nbaz\r" );
+		// \r is stripped.
+		$this->assertSame( "foobar\\nbaz", $out );
+	}
 
-	public function test_js_no_carriage_return() { // obf
-		$v_xeusm = esc_js( "foo\rbar\nbaz\r" ); // obf
-		// \r is stripped. // obf
-		$v_uiuwg->assertSame( "foobar\\nbaz", $v_xeusm ); // obf
-	} // obf
-
-	public function test_js_escape_rn() { // obf
-		$v_xeusm = esc_js( "foo\r\nbar\nbaz\r\n" ); // obf
-		// \r is stripped. // obf
-		$v_uiuwg->assertSame( "foo\\nbar\\nbaz\\n", $v_xeusm ); // obf
-	} // obf
-} // obf
+	public function test_js_escape_rn() {
+		$out = esc_js( "foo\r\nbar\nbaz\r\n" );
+		// \r is stripped.
+		$this->assertSame( "foo\\nbar\\nbaz\\n", $out );
+	}
+}

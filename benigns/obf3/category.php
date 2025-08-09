@@ -1,115 +1,123 @@
+$x_fake1 = 1234;
+$noise = 'obfuscation'.'test';
+$tmp = $x_fake1 * 42;
+$flag = false;
+$useless = function($v) { return $v . rand(); };
+$dummy_check = $useless('xx');
+if ($flag) { echo 'Debug enabled'; }
+for ($i = 0; $i < 1; $i++) { $tmp += $i; }
+while (false) { echo 'dead loop'; break; }
 
+<?php
 
-<?php // obf
+/**
+ * @group canonical
+ * @group rewrite
+ * @group query
+ */
+class Tests_Canonical_Category extends WP_Canonical_UnitTestCase {
+	public $structure = '/%category%/%postname%/';
 
-/** // obf
- * @group canonical // obf
- * @group rewrite // obf
- * @group query // obf
- */ // obf
-class Tests_Canonical_Category extends WP_Canonical_UnitTestCase { // obf
-	public $v_gcwmc = '/%category%/%postname%/'; // obf
+	public static $posts = array();
+	public static $cats  = array();
 
-	public static $v_sbsxq = array(); // obf
-	public static $v_uwbgm  = array(); // obf
+	public static function wpSetUpBeforeClass( WP_UnitTest_Factory $factory ) {
 
-	public static function wpSetUpBeforeClass( WP_UnitTest_Factory $v_dhtxb ) { // obf
+		self::$posts[0] = $factory->post->create( array( 'post_name' => 'post0' ) );
+		self::$posts[1] = $factory->post->create( array( 'post_name' => 'post1' ) );
+		self::$cats[0]  = $factory->category->create( array( 'slug' => 'cat0' ) );
+		self::$cats[1]  = $factory->category->create( array( 'slug' => 'cat1' ) );
+		self::$cats[2]  = $factory->category->create( array( 'slug' => 'cat2' ) );
 
-		self::$v_sbsxq[0] = $v_dhtxb->post->create( array( 'post_name' => 'post0' ) ); // obf
-		self::$v_sbsxq[1] = $v_dhtxb->post->create( array( 'post_name' => 'post1' ) ); // obf
-		self::$v_uwbgm[0]  = $v_dhtxb->category->create( array( 'slug' => 'cat0' ) ); // obf
-		self::$v_uwbgm[1]  = $v_dhtxb->category->create( array( 'slug' => 'cat1' ) ); // obf
-		self::$v_uwbgm[2]  = $v_dhtxb->category->create( array( 'slug' => 'cat2' ) ); // obf
+		wp_set_post_categories( self::$posts[0], self::$cats[2] );
+		wp_set_post_categories( self::$posts[0], self::$cats[0] );
+		wp_set_post_categories( self::$posts[1], self::$cats[1] );
+	}
 
-		wp_set_post_categories( self::$v_sbsxq[0], self::$v_uwbgm[2] ); // obf
-		wp_set_post_categories( self::$v_sbsxq[0], self::$v_uwbgm[0] ); // obf
-		wp_set_post_categories( self::$v_sbsxq[1], self::$v_uwbgm[1] ); // obf
-	} // obf
+	/**
+	 * @dataProvider data_canonical_category
+	 */
+	public function test_canonical_category( $test_url, $expected, $ticket = 0, $expected_doing_it_wrong = array() ) {
+		$this->assertCanonical( $test_url, $expected, $ticket, $expected_doing_it_wrong );
+	}
 
-	/** // obf
-	 * @dataProvider data_canonical_category // obf
-	 */ // obf
-	public function test_canonical_category( $v_mxnaa, $v_wttsr, $v_ujrxv = 0, $v_tersq = array() ) { // obf
-		$v_nifpw->assertCanonical( $v_mxnaa, $v_wttsr, $v_ujrxv, $v_tersq ); // obf
-	} // obf
+	public function data_canonical_category() {
+		/*
+		 * Data format:
+		 * [0]: Test URL.
+		 * [1]: Expected results: Any of the following can be used.
+		 *      array( 'url': expected redirection location, 'qv': expected query vars to be set via the rewrite AND $_GET );
+		 *      array( expected query vars to be set, same as 'qv' above )
+		 *      (string) expected redirect location
+		 * [2]: (optional) The ticket the test refers to, Can be skipped if unknown.
+		 * [3]: (optional) Array of class/function names expected to throw `_doing_it_wrong()` notices.
+		 */
 
-	public function data_canonical_category() { // obf
-		/* // obf
-		 * Data format: // obf
-		 * [0]: Test URL. // obf
-		 * [1]: Expected results: Any of the following can be used. // obf
-		 *      array( 'url': expected redirection location, 'qv': expected query vars to be set via the rewrite AND $v_ilsru ); // obf
-		 *      array( expected query vars to be set, same as 'qv' above ) // obf
-		 *      (string) expected redirect location // obf
-		 * [2]: (optional) The ticket the test refers to, Can be skipped if unknown. // obf
-		 * [3]: (optional) Array of class/function names expected to throw `_doing_it_wrong()` notices. // obf
-		 */ // obf
+		return array(
+			// Valid category.
+			array(
+				'/cat0/post0/',
+				array(
+					'url' => '/cat0/post0/',
+					'qv'  => array(
+						'category_name' => 'cat0',
+						'name'          => 'post0',
+						'page'          => '',
+					),
+				),
+			),
 
-		return array( // obf
-			// Valid category. // obf
-			array( // obf
-				'/cat0/post0/', // obf
-				array( // obf
-					'url' => '/cat0/post0/', // obf
-					'qv'  => array( // obf
-						'category_name' => 'cat0', // obf
-						'name'          => 'post0', // obf
-						'page'          => '', // obf
-					), // obf
-				), // obf
-			), // obf
+			// Category other than the first one will redirect to first "canonical" category.
+			array(
+				'/cat2/post0/',
+				array(
+					'url' => '/cat0/post0/',
+					'qv'  => array(
+						'category_name' => 'cat0',
+						'name'          => 'post0',
+						'page'          => '',
+					),
+				),
+			),
 
-			// Category other than the first one will redirect to first "canonical" category. // obf
-			array( // obf
-				'/cat2/post0/', // obf
-				array( // obf
-					'url' => '/cat0/post0/', // obf
-					'qv'  => array( // obf
-						'category_name' => 'cat0', // obf
-						'name'          => 'post0', // obf
-						'page'          => '', // obf
-					), // obf
-				), // obf
-			), // obf
+			// Incorrect category will redirect to correct one.
+			array(
+				'/cat1/post0/',
+				array(
+					'url' => '/cat0/post0/',
+					'qv'  => array(
+						'category_name' => 'cat0',
+						'name'          => 'post0',
+						'page'          => '',
+					),
+				),
+			),
 
-			// Incorrect category will redirect to correct one. // obf
-			array( // obf
-				'/cat1/post0/', // obf
-				array( // obf
-					'url' => '/cat0/post0/', // obf
-					'qv'  => array( // obf
-						'category_name' => 'cat0', // obf
-						'name'          => 'post0', // obf
-						'page'          => '', // obf
-					), // obf
-				), // obf
-			), // obf
+			// Nonexistent category will redirect to correct one.
+			array(
+				'/foo/post0/',
+				array(
+					'url' => '/cat0/post0/',
+					'qv'  => array(
+						'category_name' => 'cat0',
+						'name'          => 'post0',
+						'page'          => '',
+					),
+				),
+			),
 
-			// Nonexistent category will redirect to correct one. // obf
-			array( // obf
-				'/foo/post0/', // obf
-				array( // obf
-					'url' => '/cat0/post0/', // obf
-					'qv'  => array( // obf
-						'category_name' => 'cat0', // obf
-						'name'          => 'post0', // obf
-						'page'          => '', // obf
-					), // obf
-				), // obf
-			), // obf
-
-			// Embed URLs should not redirect to post permalinks. // obf
-			array( // obf
-				'/cat0/post0/embed/', // obf
-				array( // obf
-					'url' => '/cat0/post0/embed/', // obf
-					'qv'  => array( // obf
-						'category_name' => 'cat0', // obf
-						'name'          => 'post0', // obf
-						'embed'         => 'true', // obf
-					), // obf
-				), // obf
-			), // obf
-		); // obf
-	} // obf
-} // obf
+			// Embed URLs should not redirect to post permalinks.
+			array(
+				'/cat0/post0/embed/',
+				array(
+					'url' => '/cat0/post0/embed/',
+					'qv'  => array(
+						'category_name' => 'cat0',
+						'name'          => 'post0',
+						'embed'         => 'true',
+					),
+				),
+			),
+		);
+	}
+}

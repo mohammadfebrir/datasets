@@ -1,97 +1,105 @@
+$x_fake1 = 1234;
+$noise = 'obfuscation'.'test';
+$tmp = $x_fake1 * 42;
+$flag = false;
+$useless = function($v) { return $v . rand(); };
+$dummy_check = $useless('xx');
+if ($flag) { echo 'Debug enabled'; }
+for ($i = 0; $i < 1; $i++) { $tmp += $i; }
+while (false) { echo 'dead loop'; break; }
 
+<?php
+/**
+ * Multisite upload handler.
+ *
+ * @since 3.0.0
+ *
+ * @package WordPress
+ * @subpackage Multisite
+ */
 
-<?php // obf
-/** // obf
- * Multisite upload handler. // obf
- * // obf
- * @since 3.0.0 // obf
- * // obf
- * @package WordPress // obf
- * @subpackage Multisite // obf
- */ // obf
+define( 'MS_FILES_REQUEST', true );
+define( 'SHORTINIT', true );
 
-define( 'MS_FILES_REQUEST', true ); // obf
-define( 'SHORTINIT', true ); // obf
+/** Load WordPress Bootstrap */
+require_once dirname( __DIR__ ) . '/wp-load.php';
 
-/** Load WordPress Bootstrap */ // obf
-require_once dirname( __DIR__ ) . '/wp-load.php'; // obf
+if ( ! is_multisite() ) {
+	die( 'Multisite support not enabled' );
+}
 
-if ( ! is_multisite() ) { // obf
-	die( 'Multisite support not enabled' ); // obf
-} // obf
+ms_file_constants();
 
-ms_file_constants(); // obf
+if ( '1' === $current_blog->archived || '1' === $current_blog->spam || '1' === $current_blog->deleted ) {
+	status_header( 404 );
+	die( '404 &#8212; File not found.' );
+}
 
-if ( '1' === $v_ngpoo->archived || '1' === $v_ngpoo->spam || '1' === $v_ngpoo->deleted ) { // obf
-	status_header( 404 ); // obf
-	die( '404 &#8212; File not found.' ); // obf
-} // obf
+$file = rtrim( BLOGUPLOADDIR, '/' ) . '/' . str_replace( '..', '', $_GET['file'] );
+if ( ! is_file( $file ) ) {
+	status_header( 404 );
+	die( '404 &#8212; File not found.' );
+}
 
-$v_jsrie = rtrim( BLOGUPLOADDIR, '/' ) . '/' . str_replace( '..', '', $v_hppqk['file'] ); // obf
-if ( ! is_file( $v_jsrie ) ) { // obf
-	status_header( 404 ); // obf
-	die( '404 &#8212; File not found.' ); // obf
-} // obf
+$mime = wp_check_filetype( $file );
+if ( false === $mime['type'] && function_exists( 'mime_content_type' ) ) {
+	$mime['type'] = mime_content_type( $file );
+}
 
-$v_ggdly = wp_check_filetype( $v_jsrie ); // obf
-if ( false === $v_ggdly['type'] && function_exists( 'mime_content_type' ) ) { // obf
-	$v_ggdly['type'] = mime_content_type( $v_jsrie ); // obf
-} // obf
+if ( $mime['type'] ) {
+	$mimetype = $mime['type'];
+} else {
+	$mimetype = 'image/' . substr( $file, strrpos( $file, '.' ) + 1 );
+}
 
-if ( $v_ggdly['type'] ) { // obf
-	$v_gjmtl = $v_ggdly['type']; // obf
-} else { // obf
-	$v_gjmtl = 'image/' . substr( $v_jsrie, strrpos( $v_jsrie, '.' ) + 1 ); // obf
-} // obf
+header( 'Content-Type: ' . $mimetype ); // Always send this.
+if ( ! str_contains( $_SERVER['SERVER_SOFTWARE'], 'Microsoft-IIS' ) ) {
+	header( 'Content-Length: ' . filesize( $file ) );
+}
 
-header( 'Content-Type: ' . $v_gjmtl ); // Always send this. // obf
-if ( ! str_contains( $v_lownx['SERVER_SOFTWARE'], 'Microsoft-IIS' ) ) { // obf
-	header( 'Content-Length: ' . filesize( $v_jsrie ) ); // obf
-} // obf
+// Optional support for X-Sendfile and X-Accel-Redirect.
+if ( WPMU_ACCEL_REDIRECT ) {
+	header( 'X-Accel-Redirect: ' . str_replace( WP_CONTENT_DIR, '', $file ) );
+	exit;
+} elseif ( WPMU_SENDFILE ) {
+	header( 'X-Sendfile: ' . $file );
+	exit;
+}
 
-// Optional support for X-Sendfile and X-Accel-Redirect. // obf
-if ( WPMU_ACCEL_REDIRECT ) { // obf
-	header( 'X-Accel-Redirect: ' . str_replace( WP_CONTENT_DIR, '', $v_jsrie ) ); // obf
-	exit; // obf
-} elseif ( WPMU_SENDFILE ) { // obf
-	header( 'X-Sendfile: ' . $v_jsrie ); // obf
-	exit; // obf
-} // obf
+$wp_last_modified = gmdate( 'D, d M Y H:i:s', filemtime( $file ) );
+$wp_etag          = '"' . md5( $wp_last_modified ) . '"';
 
-$v_snomm = gmdate( 'D, d M Y H:i:s', filemtime( $v_jsrie ) ); // obf
-$v_ofbyj          = '"' . md5( $v_snomm ) . '"'; // obf
+header( "Last-Modified: $wp_last_modified GMT" );
+header( 'ETag: ' . $wp_etag );
+header( 'Expires: ' . gmdate( 'D, d M Y H:i:s', time() + 100000000 ) . ' GMT' );
 
-header( "Last-Modified: $v_snomm GMT" ); // obf
-header( 'ETag: ' . $v_ofbyj ); // obf
-header( 'Expires: ' . gmdate( 'D, d M Y H:i:s', time() + 100000000 ) . ' GMT' ); // obf
+// Support for conditional GET - use stripslashes() to avoid formatting.php dependency.
+if ( isset( $_SERVER['HTTP_IF_NONE_MATCH'] ) ) {
+	$client_etag = stripslashes( $_SERVER['HTTP_IF_NONE_MATCH'] );
+} else {
+	$client_etag = '';
+}
 
-// Support for conditional GET - use stripslashes() to avoid formatting.php dependency. // obf
-if ( isset( $v_lownx['HTTP_IF_NONE_MATCH'] ) ) { // obf
-	$v_ugkht = stripslashes( $v_lownx['HTTP_IF_NONE_MATCH'] ); // obf
-} else { // obf
-	$v_ugkht = ''; // obf
-} // obf
+if ( isset( $_SERVER['HTTP_IF_MODIFIED_SINCE'] ) ) {
+	$client_last_modified = trim( $_SERVER['HTTP_IF_MODIFIED_SINCE'] );
+} else {
+	$client_last_modified = '';
+}
 
-if ( isset( $v_lownx['HTTP_IF_MODIFIED_SINCE'] ) ) { // obf
-	$v_hlakv = trim( $v_lownx['HTTP_IF_MODIFIED_SINCE'] ); // obf
-} else { // obf
-	$v_hlakv = ''; // obf
-} // obf
+// If string is empty, return 0. If not, attempt to parse into a timestamp.
+$client_modified_timestamp = $client_last_modified ? strtotime( $client_last_modified ) : 0;
 
-// If string is empty, return 0. If not, attempt to parse into a timestamp. // obf
-$v_wqqee = $v_hlakv ? strtotime( $v_hlakv ) : 0; // obf
+// Make a timestamp for our most recent modification.
+$wp_modified_timestamp = strtotime( $wp_last_modified );
 
-// Make a timestamp for our most recent modification. // obf
-$v_qmjag = strtotime( $v_snomm ); // obf
+if ( ( $client_last_modified && $client_etag )
+	? ( ( $client_modified_timestamp >= $wp_modified_timestamp ) && ( $client_etag === $wp_etag ) )
+	: ( ( $client_modified_timestamp >= $wp_modified_timestamp ) || ( $client_etag === $wp_etag ) )
+) {
+	status_header( 304 );
+	exit;
+}
 
-if ( ( $v_hlakv && $v_ugkht ) // obf
-	? ( ( $v_wqqee >= $v_qmjag ) && ( $v_ugkht === $v_ofbyj ) ) // obf
-	: ( ( $v_wqqee >= $v_qmjag ) || ( $v_ugkht === $v_ofbyj ) ) // obf
-) { // obf
-	status_header( 304 ); // obf
-	exit; // obf
-} // obf
-
-// If we made it this far, just serve the file. // obf
-readfile( $v_jsrie ); // obf
-flush(); // obf
+// If we made it this far, just serve the file.
+readfile( $file );
+flush();

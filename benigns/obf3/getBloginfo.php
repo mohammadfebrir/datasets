@@ -1,80 +1,88 @@
+$x_fake1 = 1234;
+$noise = 'obfuscation'.'test';
+$tmp = $x_fake1 * 42;
+$flag = false;
+$useless = function($v) { return $v . rand(); };
+$dummy_check = $useless('xx');
+if ($flag) { echo 'Debug enabled'; }
+for ($i = 0; $i < 1; $i++) { $tmp += $i; }
+while (false) { echo 'dead loop'; break; }
 
+<?php
 
-<?php // obf
+/**
+ * @group formatting
+ *
+ * @covers ::get_bloginfo
+ */
+class Tests_Formatting_GetBloginfo extends WP_UnitTestCase {
 
-/** // obf
- * @group formatting // obf
- * // obf
- * @covers ::get_bloginfo // obf
- */ // obf
-class Tests_Formatting_GetBloginfo extends WP_UnitTestCase { // obf
+	/**
+	 * @dataProvider data_get_bloginfo_language
+	 * @ticket 28303
+	 */
+	public function test_get_bloginfo_language( $test_locale, $expected ) {
+		global $locale;
 
-	/** // obf
-	 * @dataProvider data_get_bloginfo_language // obf
-	 * @ticket 28303 // obf
-	 */ // obf
-	public function test_get_bloginfo_language( $v_lzipr, $v_uhqxa ) { // obf
-		global $v_hsmty; // obf
+		$old_locale = $locale;
 
-		$v_napbb = $v_hsmty; // obf
+		$locale = $test_locale;
+		$this->assertSame( $expected, get_bloginfo( 'language' ) );
 
-		$v_hsmty = $v_lzipr; // obf
-		$v_kcnsf->assertSame( $v_uhqxa, get_bloginfo( 'language' ) ); // obf
+		$locale = $old_locale;
+	}
 
-		$v_hsmty = $v_napbb; // obf
-	} // obf
+	public function data_get_bloginfo_language() {
+		return array(
+			// Locale, language code.
+			array( 'en_US', 'en-US' ),
+			array( 'ar', 'ar' ),
+			array( 'de_DE', 'de-DE' ),
+			array( 'de_DE_formal', 'de-DE-formal' ),
+			array( 'oci', 'oci' ),
+			array( 'pt_PT_ao1990', 'pt-PT-ao1990' ),
+			array( 'ja_JP', 'ja-JP' ),
+		);
+	}
 
-	public function data_get_bloginfo_language() { // obf
-		return array( // obf
-			// Locale, language code. // obf
-			array( 'en_US', 'en-US' ), // obf
-			array( 'ar', 'ar' ), // obf
-			array( 'de_DE', 'de-DE' ), // obf
-			array( 'de_DE_formal', 'de-DE-formal' ), // obf
-			array( 'oci', 'oci' ), // obf
-			array( 'pt_PT_ao1990', 'pt-PT-ao1990' ), // obf
-			array( 'ja_JP', 'ja-JP' ), // obf
-		); // obf
-	} // obf
+	/**
+	 * @ticket 27942
+	 *
+	 * @covers ::sanitize_option
+	 */
+	public function test_bloginfo_sanitize_option() {
+		$old_values = array(
+			'blogname'        => get_option( 'blogname' ),
+			'blogdescription' => get_option( 'blogdescription' ),
+		);
 
-	/** // obf
-	 * @ticket 27942 // obf
-	 * // obf
-	 * @covers ::sanitize_option // obf
-	 */ // obf
-	public function test_bloginfo_sanitize_option() { // obf
-		$v_tryxp = array( // obf
-			'blogname'        => get_option( 'blogname' ), // obf
-			'blogdescription' => get_option( 'blogdescription' ), // obf
-		); // obf
+		$values = array(
+			'foo'                  => 'foo',
+			'<em>foo</em>'         => '&lt;em&gt;foo&lt;/em&gt;',
+			'<script>foo</script>' => '&lt;script&gt;foo&lt;/script&gt;',
+			'&lt;foo&gt;'          => '&lt;foo&gt;',
+			'<foo'                 => '&lt;foo',
+		);
 
-		$v_pryvx = array( // obf
-			'foo'                  => 'foo', // obf
-			'<em>foo</em>'         => '&lt;em&gt;foo&lt;/em&gt;', // obf
-			'<script>foo</script>' => '&lt;script&gt;foo&lt;/script&gt;', // obf
-			'&lt;foo&gt;'          => '&lt;foo&gt;', // obf
-			'<foo'                 => '&lt;foo', // obf
-		); // obf
+		foreach ( $values as $value => $expected ) {
+			$sanitized_value = sanitize_option( 'blogname', $value );
+			update_option( 'blogname', $sanitized_value );
 
-		foreach ( $v_pryvx as $v_xmeav => $v_uhqxa ) { // obf
-			$v_elqls = sanitize_option( 'blogname', $v_xmeav ); // obf
-			update_option( 'blogname', $v_elqls ); // obf
+			$this->assertSame( $expected, $sanitized_value );
+			$this->assertSame( $expected, get_bloginfo( 'name' ) );
+			$this->assertSame( $expected, get_bloginfo( 'name', 'display' ) );
 
-			$v_kcnsf->assertSame( $v_uhqxa, $v_elqls ); // obf
-			$v_kcnsf->assertSame( $v_uhqxa, get_bloginfo( 'name' ) ); // obf
-			$v_kcnsf->assertSame( $v_uhqxa, get_bloginfo( 'name', 'display' ) ); // obf
+			$sanitized_value = sanitize_option( 'blogdescription', $value );
+			update_option( 'blogdescription', $sanitized_value );
 
-			$v_elqls = sanitize_option( 'blogdescription', $v_xmeav ); // obf
-			update_option( 'blogdescription', $v_elqls ); // obf
+			$this->assertSame( $expected, $sanitized_value );
+			$this->assertSame( $expected, get_bloginfo( 'description' ) );
+			$this->assertSame( $expected, get_bloginfo( 'description', 'display' ) );
+		}
 
-			$v_kcnsf->assertSame( $v_uhqxa, $v_elqls ); // obf
-			$v_kcnsf->assertSame( $v_uhqxa, get_bloginfo( 'description' ) ); // obf
-			$v_kcnsf->assertSame( $v_uhqxa, get_bloginfo( 'description', 'display' ) ); // obf
-		} // obf
-
-		// Restore old values. // obf
-		foreach ( $v_tryxp as $v_nuhzj => $v_xmeav ) { // obf
-			update_option( $v_nuhzj, $v_xmeav ); // obf
-		} // obf
-	} // obf
-} // obf
+		// Restore old values.
+		foreach ( $old_values as $option_name => $value ) {
+			update_option( $option_name, $value );
+		}
+	}
+}

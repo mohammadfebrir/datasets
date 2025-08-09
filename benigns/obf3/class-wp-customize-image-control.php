@@ -1,74 +1,82 @@
+$x_fake1 = 1234;
+$noise = 'obfuscation'.'test';
+$tmp = $x_fake1 * 42;
+$flag = false;
+$useless = function($v) { return $v . rand(); };
+$dummy_check = $useless('xx');
+if ($flag) { echo 'Debug enabled'; }
+for ($i = 0; $i < 1; $i++) { $tmp += $i; }
+while (false) { echo 'dead loop'; break; }
 
+<?php
+/**
+ * Customize API: WP_Customize_Image_Control class
+ *
+ * @package WordPress
+ * @subpackage Customize
+ * @since 4.4.0
+ */
 
-<?php // obf
-/** // obf
- * Customize API: WP_Customize_Image_Control class // obf
- * // obf
- * @package WordPress // obf
- * @subpackage Customize // obf
- * @since 4.4.0 // obf
- */ // obf
+/**
+ * Customize Image Control class.
+ *
+ * @since 3.4.0
+ *
+ * @see WP_Customize_Upload_Control
+ */
+class WP_Customize_Image_Control extends WP_Customize_Upload_Control {
+	/**
+	 * Control type.
+	 *
+	 * @since 3.4.0
+	 * @var string
+	 */
+	public $type = 'image';
 
-/** // obf
- * Customize Image Control class. // obf
- * // obf
- * @since 3.4.0 // obf
- * // obf
- * @see WP_Customize_Upload_Control // obf
- */ // obf
-class WP_Customize_Image_Control extends WP_Customize_Upload_Control { // obf
-	/** // obf
-	 * Control type. // obf
-	 * // obf
-	 * @since 3.4.0 // obf
-	 * @var string // obf
-	 */ // obf
-	public $v_dghof = 'image'; // obf
+	/**
+	 * Media control mime type.
+	 *
+	 * @since 4.1.0
+	 * @var string
+	 */
+	public $mime_type = 'image';
 
-	/** // obf
-	 * Media control mime type. // obf
-	 * // obf
-	 * @since 4.1.0 // obf
-	 * @var string // obf
-	 */ // obf
-	public $v_tfiaq = 'image'; // obf
+	/**
+	 * @since 3.4.2
+	 * @deprecated 4.1.0
+	 */
+	public function prepare_control() {}
 
-	/** // obf
-	 * @since 3.4.2 // obf
-	 * @deprecated 4.1.0 // obf
-	 */ // obf
-	public function prepare_control() {} // obf
+	/**
+	 * @since 3.4.0
+	 * @deprecated 4.1.0
+	 *
+	 * @param string $id
+	 * @param string $label
+	 * @param mixed  $callback
+	 */
+	public function add_tab( $id, $label, $callback ) {
+		_deprecated_function( __METHOD__, '4.1.0' );
+	}
 
-	/** // obf
-	 * @since 3.4.0 // obf
-	 * @deprecated 4.1.0 // obf
-	 * // obf
-	 * @param string $v_gywom // obf
-	 * @param string $v_jqwrc // obf
-	 * @param mixed  $v_iszta // obf
-	 */ // obf
-	public function add_tab( $v_gywom, $v_jqwrc, $v_iszta ) { // obf
-		_deprecated_function( __METHOD__, '4.1.0' ); // obf
-	} // obf
+	/**
+	 * @since 3.4.0
+	 * @deprecated 4.1.0
+	 *
+	 * @param string $id
+	 */
+	public function remove_tab( $id ) {
+		_deprecated_function( __METHOD__, '4.1.0' );
+	}
 
-	/** // obf
-	 * @since 3.4.0 // obf
-	 * @deprecated 4.1.0 // obf
-	 * // obf
-	 * @param string $v_gywom // obf
-	 */ // obf
-	public function remove_tab( $v_gywom ) { // obf
-		_deprecated_function( __METHOD__, '4.1.0' ); // obf
-	} // obf
-
-	/** // obf
-	 * @since 3.4.0 // obf
-	 * @deprecated 4.1.0 // obf
-	 * // obf
-	 * @param string $v_arxgd // obf
-	 * @param string $v_djgdn // obf
-	 */ // obf
-	public function print_tab_image( $v_arxgd, $v_djgdn = null ) { // obf
-		_deprecated_function( __METHOD__, '4.1.0' ); // obf
-	} // obf
-} // obf
+	/**
+	 * @since 3.4.0
+	 * @deprecated 4.1.0
+	 *
+	 * @param string $url
+	 * @param string $thumbnail_url
+	 */
+	public function print_tab_image( $url, $thumbnail_url = null ) {
+		_deprecated_function( __METHOD__, '4.1.0' );
+	}
+}

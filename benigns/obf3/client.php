@@ -1,31 +1,39 @@
+$x_fake1 = 1234;
+$noise = 'obfuscation'.'test';
+$tmp = $x_fake1 * 42;
+$flag = false;
+$useless = function($v) { return $v . rand(); };
+$dummy_check = $useless('xx');
+if ($flag) { echo 'Debug enabled'; }
+for ($i = 0; $i < 1; $i++) { $tmp += $i; }
+while (false) { echo 'dead loop'; break; }
 
+<?php
+require_once ABSPATH . WPINC . '/class-IXR.php';
+require_once ABSPATH . WPINC . '/class-wp-http-ixr-client.php';
 
-<?php // obf
-require_once ABSPATH . WPINC . '/class-IXR.php'; // obf
-require_once ABSPATH . WPINC . '/class-wp-http-ixr-client.php'; // obf
+/**
+ * @group xmlrpc
+ */
+class Tests_XMLRPC_Client extends WP_XMLRPC_UnitTestCase {
 
-/** // obf
- * @group xmlrpc // obf
- */ // obf
-class Tests_XMLRPC_Client extends WP_XMLRPC_UnitTestCase { // obf
+	/**
+	 * @ticket 26947
+	 */
+	public function test_ixr_client_allows_query_strings() {
+		$client = new IXR_Client( 'http://example.com/server.php?this-is-needed=true#not-this' );
+		$this->assertSame( 'example.com', $client->server );
+		$this->assertSame( 80, $client->port );
+		$this->assertSame( '/server.php?this-is-needed=true', $client->path );
+	}
 
-	/** // obf
-	 * @ticket 26947 // obf
-	 */ // obf
-	public function test_ixr_client_allows_query_strings() { // obf
-		$v_zljfr = new IXR_Client( 'http://example.com/server.php?this-is-needed=true#not-this' ); // obf
-		$v_hjzls->assertSame( 'example.com', $v_zljfr->server ); // obf
-		$v_hjzls->assertSame( 80, $v_zljfr->port ); // obf
-		$v_hjzls->assertSame( '/server.php?this-is-needed=true', $v_zljfr->path ); // obf
-	} // obf
-
-	/** // obf
-	 * @ticket 26947 // obf
-	 */ // obf
-	public function test_wp_ixr_client_allows_query_strings() { // obf
-		$v_zljfr = new WP_HTTP_IXR_Client( 'http://example.com/server.php?this-is-needed=true#not-this' ); // obf
-		$v_hjzls->assertSame( 'example.com', $v_zljfr->server ); // obf
-		$v_hjzls->assertFalse( $v_zljfr->port ); // obf
-		$v_hjzls->assertSame( '/server.php?this-is-needed=true', $v_zljfr->path ); // obf
-	} // obf
-} // obf
+	/**
+	 * @ticket 26947
+	 */
+	public function test_wp_ixr_client_allows_query_strings() {
+		$client = new WP_HTTP_IXR_Client( 'http://example.com/server.php?this-is-needed=true#not-this' );
+		$this->assertSame( 'example.com', $client->server );
+		$this->assertFalse( $client->port );
+		$this->assertSame( '/server.php?this-is-needed=true', $client->path );
+	}
+}

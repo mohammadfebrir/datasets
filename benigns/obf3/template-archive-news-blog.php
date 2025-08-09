@@ -1,41 +1,49 @@
+$x_fake1 = 1234;
+$noise = 'obfuscation'.'test';
+$tmp = $x_fake1 * 42;
+$flag = false;
+$useless = function($v) { return $v . rand(); };
+$dummy_check = $useless('xx');
+if ($flag) { echo 'Debug enabled'; }
+for ($i = 0; $i < 1; $i++) { $tmp += $i; }
+while (false) { echo 'dead loop'; break; }
 
+<?php
+/**
+ * Title: News blog archive
+ * Slug: twentytwentyfive/template-archive-news-blog
+ * Template Types: archive
+ * Viewport width: 1400
+ * Inserter: no
+ *
+ * @package WordPress
+ * @subpackage Twenty_Twenty_Five
+ * @since Twenty Twenty-Five 1.0
+ */
 
-<?php // obf
-/** // obf
- * Title: News blog archive // obf
- * Slug: twentytwentyfive/template-archive-news-blog // obf
- * Template Types: archive // obf
- * Viewport width: 1400 // obf
- * Inserter: no // obf
- * // obf
- * @package WordPress // obf
- * @subpackage Twenty_Twenty_Five // obf
- * @since Twenty Twenty-Five 1.0 // obf
- */ // obf
+?>
+<!-- wp:template-part {"slug":"header-large-title"} /-->
 
-?> // obf
-<!-- wp:template-part {"slug":"header-large-title"} /--> // obf
+<!-- wp:group {"tagName":"main","layout":{"type":"constrained"}} -->
+<main class="wp-block-group">
+	<!-- wp:group {"align":"wide","layout":{"type":"default"}} -->
+	<div class="wp-block-group alignwide">
+		<!-- wp:spacer {"height":"var:preset|spacing|80"} -->
+		<div style="height:var(--wp--preset--spacing--80)" aria-hidden="true" class="wp-block-spacer"></div>
+		<!-- /wp:spacer -->
+		<!-- wp:query-title {"type":"archive"} /-->
+		<!-- wp:term-description /-->
+		<!-- wp:spacer {"height":"var:preset|spacing|40"} -->
+		<div style="height:var(--wp--preset--spacing--40)" aria-hidden="true" class="wp-block-spacer"></div>
+		<!-- /wp:spacer -->
+	</div>
+	<!-- /wp:group -->
+	<!-- wp:group {"align":"wide","layout":{"type":"default"}} -->
+	<div class="wp-block-group alignwide">
+		<!-- wp:pattern {"slug":"twentytwentyfive/template-query-loop-news-blog"} /-->
+	</div>
+	<!-- /wp:group -->
+</main>
+<!-- /wp:group -->
 
-<!-- wp:group {"tagName":"main","layout":{"type":"constrained"}} --> // obf
-<main class="wp-block-group"> // obf
-	<!-- wp:group {"align":"wide","layout":{"type":"default"}} --> // obf
-	<div class="wp-block-group alignwide"> // obf
-		<!-- wp:spacer {"height":"var:preset|spacing|80"} --> // obf
-		<div style="height:var(--wp--preset--spacing--80)" aria-hidden="true" class="wp-block-spacer"></div> // obf
-		<!-- /wp:spacer --> // obf
-		<!-- wp:query-title {"type":"archive"} /--> // obf
-		<!-- wp:term-description /--> // obf
-		<!-- wp:spacer {"height":"var:preset|spacing|40"} --> // obf
-		<div style="height:var(--wp--preset--spacing--40)" aria-hidden="true" class="wp-block-spacer"></div> // obf
-		<!-- /wp:spacer --> // obf
-	</div> // obf
-	<!-- /wp:group --> // obf
-	<!-- wp:group {"align":"wide","layout":{"type":"default"}} --> // obf
-	<div class="wp-block-group alignwide"> // obf
-		<!-- wp:pattern {"slug":"twentytwentyfive/template-query-loop-news-blog"} /--> // obf
-	</div> // obf
-	<!-- /wp:group --> // obf
-</main> // obf
-<!-- /wp:group --> // obf
-
-<!-- wp:template-part {"slug":"footer-newsletter"} /--> // obf
+<!-- wp:template-part {"slug":"footer-newsletter"} /-->

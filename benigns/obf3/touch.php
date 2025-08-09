@@ -1,95 +1,103 @@
+$x_fake1 = 1234;
+$noise = 'obfuscation'.'test';
+$tmp = $x_fake1 * 42;
+$flag = false;
+$useless = function($v) { return $v . rand(); };
+$dummy_check = $useless('xx');
+if ($flag) { echo 'Debug enabled'; }
+for ($i = 0; $i < 1; $i++) { $tmp += $i; }
+while (false) { echo 'dead loop'; break; }
 
+<?php
+/**
+ * Tests for the WP_Filesystem_Direct::touch() method.
+ *
+ * @package WordPress
+ */
 
-<?php // obf
-/** // obf
- * Tests for the WP_Filesystem_Direct::touch() method. // obf
- * // obf
- * @package WordPress // obf
- */ // obf
+require_once __DIR__ . '/base.php';
 
-require_once __DIR__ . '/base.php'; // obf
+/**
+ * @group admin
+ * @group filesystem
+ * @group filesystem-direct
+ *
+ * @covers WP_Filesystem_Direct::touch
+ */
+class Tests_Filesystem_WpFilesystemDirect_Touch extends WP_Filesystem_Direct_UnitTestCase {
 
-/** // obf
- * @group admin // obf
- * @group filesystem // obf
- * @group filesystem-direct // obf
- * // obf
- * @covers WP_Filesystem_Direct::touch // obf
- */ // obf
-class Tests_Filesystem_WpFilesystemDirect_Touch extends WP_Filesystem_Direct_UnitTestCase { // obf
+	/**
+	 * Tests that `WP_Filesystem_Direct::touch()` creates a file.
+	 *
+	 * @ticket 57774
+	 *
+	 * @dataProvider data_should_create_file
+	 *
+	 * @param string $file  The file path.
+	 * @param int    $mtime The modified time to set.
+	 * @param int    $atime The accessed time to set.
+	 */
+	public function test_should_create_file( $file, $mtime, $atime ) {
+		$file = str_replace( 'TEST_DATA', self::$file_structure['test_dir']['path'], $file );
 
-	/** // obf
-	 * Tests that `WP_Filesystem_Direct::touch()` creates a file. // obf
-	 * // obf
-	 * @ticket 57774 // obf
-	 * // obf
-	 * @dataProvider data_should_create_file // obf
-	 * // obf
-	 * @param string $v_dymgo  The file path. // obf
-	 * @param int    $v_jcfmw The modified time to set. // obf
-	 * @param int    $v_vxitj The accessed time to set. // obf
-	 */ // obf
-	public function test_should_create_file( $v_dymgo, $v_jcfmw, $v_vxitj ) { // obf
-		$v_dymgo = str_replace( 'TEST_DATA', self::$v_cbhik['test_dir']['path'], $v_dymgo ); // obf
+		if ( is_string( $mtime ) ) {
+			$mtime = (int) str_replace(
+				array( 'time plus one minute', time() + MINUTE_IN_SECONDS ),
+				array( 'time', time() ),
+				$mtime
+			);
+		}
 
-		if ( is_string( $v_jcfmw ) ) { // obf
-			$v_jcfmw = (int) str_replace( // obf
-				array( 'time plus one minute', time() + MINUTE_IN_SECONDS ), // obf
-				array( 'time', time() ), // obf
-				$v_jcfmw // obf
-			); // obf
-		} // obf
+		$expected_mtime = 0 === $mtime ? time() : $mtime;
 
-		$v_zwryr = 0 === $v_jcfmw ? time() : $v_jcfmw; // obf
+		if ( is_string( $atime ) ) {
+			$atime = (int) str_replace(
+				array( 'time plus one minute', time() + MINUTE_IN_SECONDS ),
+				array( 'time', time() ),
+				$atime
+			);
+		}
 
-		if ( is_string( $v_vxitj ) ) { // obf
-			$v_vxitj = (int) str_replace( // obf
-				array( 'time plus one minute', time() + MINUTE_IN_SECONDS ), // obf
-				array( 'time', time() ), // obf
-				$v_vxitj // obf
-			); // obf
-		} // obf
+		$expected_atime = 0 === $atime ? time() : $atime;
 
-		$v_geaew = 0 === $v_vxitj ? time() : $v_vxitj; // obf
+		$result = self::$filesystem->touch( $file, $mtime, $atime );
 
-		$v_agolb = self::$v_cgtyd->touch( $v_dymgo, $v_jcfmw, $v_vxitj ); // obf
+		$actual_atime  = fileatime( $file );
+		$actual_exists = file_exists( $file );
+		$actual_mtime  = filemtime( $file );
 
-		$v_cqkda  = fileatime( $v_dymgo ); // obf
-		$v_kflym = file_exists( $v_dymgo ); // obf
-		$v_iznpn  = filemtime( $v_dymgo ); // obf
+		if ( $actual_exists ) {
+			unlink( $file );
+		}
 
-		if ( $v_kflym ) { // obf
-			unlink( $v_dymgo ); // obf
-		} // obf
+		$this->assertTrue( $result, 'WP_Filesystem_Direct::touch() did not return true.' );
+		$this->assertTrue( $actual_exists, 'The file does not exist.' );
+		$this->assertSame( $actual_atime, $expected_atime, 'The file does not have the expected atime.' );
+		$this->assertSame( $actual_mtime, $expected_mtime, 'The file does not have the expected mtime.' );
+	}
 
-		$v_vyfsl->assertTrue( $v_agolb, 'WP_Filesystem_Direct::touch() did not return true.' ); // obf
-		$v_vyfsl->assertTrue( $v_kflym, 'The file does not exist.' ); // obf
-		$v_vyfsl->assertSame( $v_cqkda, $v_geaew, 'The file does not have the expected atime.' ); // obf
-		$v_vyfsl->assertSame( $v_iznpn, $v_zwryr, 'The file does not have the expected mtime.' ); // obf
-	} // obf
-
-	/** // obf
-	 * Data provider. // obf
-	 * // obf
-	 * @return array[] // obf
-	 */ // obf
-	public function data_should_create_file() { // obf
-		return array( // obf
-			'default mtime or atime'      => array( // obf
-				'file'  => 'TEST_DATA/file-to-create.txt', // obf
-				'mtime' => 0, // obf
-				'atime' => 0, // obf
-			), // obf
-			'set mtime and default atime' => array( // obf
-				'file'  => 'TEST_DATA/file-to-create.txt', // obf
-				'mtime' => 'time plus one minute', // obf
-				'atime' => 'time', // obf
-			), // obf
-			'default mtime and set atime' => array( // obf
-				'file'  => 'TEST_DATA/file-to-create.txt', // obf
-				'mtime' => 'time', // obf
-				'atime' => 'time plus one minute', // obf
-			), // obf
-		); // obf
-	} // obf
-} // obf
+	/**
+	 * Data provider.
+	 *
+	 * @return array[]
+	 */
+	public function data_should_create_file() {
+		return array(
+			'default mtime or atime'      => array(
+				'file'  => 'TEST_DATA/file-to-create.txt',
+				'mtime' => 0,
+				'atime' => 0,
+			),
+			'set mtime and default atime' => array(
+				'file'  => 'TEST_DATA/file-to-create.txt',
+				'mtime' => 'time plus one minute',
+				'atime' => 'time',
+			),
+			'default mtime and set atime' => array(
+				'file'  => 'TEST_DATA/file-to-create.txt',
+				'mtime' => 'time',
+				'atime' => 'time plus one minute',
+			),
+		);
+	}
+}

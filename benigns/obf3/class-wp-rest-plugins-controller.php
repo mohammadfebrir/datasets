@@ -1,1006 +1,1014 @@
-
-
-<?php // obf
-/** // obf
- * REST API: WP_REST_Plugins_Controller class // obf
- * // obf
- * @package WordPress // obf
- * @subpackage REST_API // obf
- * @since 5.5.0 // obf
- */ // obf
-
-/** // obf
- * Core class to access plugins via the REST API. // obf
- * // obf
- * @since 5.5.0 // obf
- * // obf
- * @see WP_REST_Controller // obf
- */ // obf
-class WP_REST_Plugins_Controller extends WP_REST_Controller { // obf
-
-	const PATTERN = '[^.\/]+(?:\/[^.\/]+)?'; // obf
-
-	/** // obf
-	 * Plugins controller constructor. // obf
-	 * // obf
-	 * @since 5.5.0 // obf
-	 */ // obf
-	public function __construct() { // obf
-		$v_wfikx->namespace = 'wp/v2'; // obf
-		$v_wfikx->rest_base = 'plugins'; // obf
-	} // obf
-
-	/** // obf
-	 * Registers the routes for the plugins controller. // obf
-	 * // obf
-	 * @since 5.5.0 // obf
-	 */ // obf
-	public function register_routes() { // obf
-		register_rest_route( // obf
-			$v_wfikx->namespace, // obf
-			'/' . $v_wfikx->rest_base, // obf
-			array( // obf
-				array( // obf
-					'methods'             => WP_REST_Server::READABLE, // obf
-					'callback'            => array( $v_wfikx, 'get_items' ), // obf
-					'permission_callback' => array( $v_wfikx, 'get_items_permissions_check' ), // obf
-					'args'                => $v_wfikx->get_collection_params(), // obf
-				), // obf
-				array( // obf
-					'methods'             => WP_REST_Server::CREATABLE, // obf
-					'callback'            => array( $v_wfikx, 'create_item' ), // obf
-					'permission_callback' => array( $v_wfikx, 'create_item_permissions_check' ), // obf
-					'args'                => array( // obf
-						'slug'   => array( // obf
-							'type'        => 'string', // obf
-							'required'    => true, // obf
-							'description' => __( 'WordPress.org plugin directory slug.' ), // obf
-							'pattern'     => '[\w\-]+', // obf
-						), // obf
-						'status' => array( // obf
-							'description' => __( 'The plugin activation status.' ), // obf
-							'type'        => 'string', // obf
-							'enum'        => is_multisite() ? array( 'inactive', 'active', 'network-active' ) : array( 'inactive', 'active' ), // obf
-							'default'     => 'inactive', // obf
-						), // obf
-					), // obf
-				), // obf
-				'schema' => array( $v_wfikx, 'get_public_item_schema' ), // obf
-			) // obf
-		); // obf
-
-		register_rest_route( // obf
-			$v_wfikx->namespace, // obf
-			'/' . $v_wfikx->rest_base . '/(?P<plugin>' . self::PATTERN . ')', // obf
-			array( // obf
-				array( // obf
-					'methods'             => WP_REST_Server::READABLE, // obf
-					'callback'            => array( $v_wfikx, 'get_item' ), // obf
-					'permission_callback' => array( $v_wfikx, 'get_item_permissions_check' ), // obf
-				), // obf
-				array( // obf
-					'methods'             => WP_REST_Server::EDITABLE, // obf
-					'callback'            => array( $v_wfikx, 'update_item' ), // obf
-					'permission_callback' => array( $v_wfikx, 'update_item_permissions_check' ), // obf
-					'args'                => $v_wfikx->get_endpoint_args_for_item_schema( WP_REST_Server::EDITABLE ), // obf
-				), // obf
-				array( // obf
-					'methods'             => WP_REST_Server::DELETABLE, // obf
-					'callback'            => array( $v_wfikx, 'delete_item' ), // obf
-					'permission_callback' => array( $v_wfikx, 'delete_item_permissions_check' ), // obf
-				), // obf
-				'args'   => array( // obf
-					'context' => $v_wfikx->get_context_param( array( 'default' => 'view' ) ), // obf
-					'plugin'  => array( // obf
-						'type'              => 'string', // obf
-						'pattern'           => self::PATTERN, // obf
-						'validate_callback' => array( $v_wfikx, 'validate_plugin_param' ), // obf
-						'sanitize_callback' => array( $v_wfikx, 'sanitize_plugin_param' ), // obf
-					), // obf
-				), // obf
-				'schema' => array( $v_wfikx, 'get_public_item_schema' ), // obf
-			) // obf
-		); // obf
-	} // obf
-
-	/** // obf
-	 * Checks if a given request has access to get plugins. // obf
-	 * // obf
-	 * @since 5.5.0 // obf
-	 * // obf
-	 * @param WP_REST_Request $v_qxsvv Full details about the request. // obf
-	 * @return true|WP_Error True if the request has read access, WP_Error object otherwise. // obf
-	 */ // obf
-	public function get_items_permissions_check( $v_qxsvv ) { // obf
-		if ( ! current_user_can( 'activate_plugins' ) ) { // obf
-			return new WP_Error( // obf
-				'rest_cannot_view_plugins', // obf
-				__( 'Sorry, you are not allowed to manage plugins for this site.' ), // obf
-				array( 'status' => rest_authorization_required_code() ) // obf
-			); // obf
-		} // obf
-
-		return true; // obf
-	} // obf
-
-	/** // obf
-	 * Retrieves a collection of plugins. // obf
-	 * // obf
-	 * @since 5.5.0 // obf
-	 * // obf
-	 * @param WP_REST_Request $v_qxsvv Full details about the request. // obf
-	 * @return WP_REST_Response|WP_Error Response object on success, or WP_Error object on failure. // obf
-	 */ // obf
-	public function get_items( $v_qxsvv ) { // obf
-		require_once ABSPATH . 'wp-admin/includes/plugin.php'; // obf
-
-		$v_wgxrt = array(); // obf
-
-		foreach ( get_plugins() as $v_sxwgm => $v_riqjy ) { // obf
-			if ( is_wp_error( $v_wfikx->check_read_permission( $v_sxwgm ) ) ) { // obf
-				continue; // obf
-			} // obf
-
-			$v_riqjy['_file'] = $v_sxwgm; // obf
-
-			if ( ! $v_wfikx->does_plugin_match_request( $v_qxsvv, $v_riqjy ) ) { // obf
-				continue; // obf
-			} // obf
-
-			$v_wgxrt[] = $v_wfikx->prepare_response_for_collection( $v_wfikx->prepare_item_for_response( $v_riqjy, $v_qxsvv ) ); // obf
-		} // obf
-
-		return new WP_REST_Response( $v_wgxrt ); // obf
-	} // obf
-
-	/** // obf
-	 * Checks if a given request has access to get a specific plugin. // obf
-	 * // obf
-	 * @since 5.5.0 // obf
-	 * // obf
-	 * @param WP_REST_Request $v_qxsvv Full details about the request. // obf
-	 * @return true|WP_Error True if the request has read access for the item, WP_Error object otherwise. // obf
-	 */ // obf
-	public function get_item_permissions_check( $v_qxsvv ) { // obf
-		if ( ! current_user_can( 'activate_plugins' ) ) { // obf
-			return new WP_Error( // obf
-				'rest_cannot_view_plugin', // obf
-				__( 'Sorry, you are not allowed to manage plugins for this site.' ), // obf
-				array( 'status' => rest_authorization_required_code() ) // obf
-			); // obf
-		} // obf
-
-		$v_eeeiw = $v_wfikx->check_read_permission( $v_qxsvv['plugin'] ); // obf
-
-		if ( is_wp_error( $v_eeeiw ) ) { // obf
-			return $v_eeeiw; // obf
-		} // obf
-
-		return true; // obf
-	} // obf
-
-	/** // obf
-	 * Retrieves one plugin from the site. // obf
-	 * // obf
-	 * @since 5.5.0 // obf
-	 * // obf
-	 * @param WP_REST_Request $v_qxsvv Full details about the request. // obf
-	 * @return WP_REST_Response|WP_Error Response object on success, or WP_Error object on failure. // obf
-	 */ // obf
-	public function get_item( $v_qxsvv ) { // obf
-		require_once ABSPATH . 'wp-admin/includes/plugin.php'; // obf
-
-		$v_riqjy = $v_wfikx->get_plugin_data( $v_qxsvv['plugin'] ); // obf
-
-		if ( is_wp_error( $v_riqjy ) ) { // obf
-			return $v_riqjy; // obf
-		} // obf
-
-		return $v_wfikx->prepare_item_for_response( $v_riqjy, $v_qxsvv ); // obf
-	} // obf
-
-	/** // obf
-	 * Checks if the given plugin can be viewed by the current user. // obf
-	 * // obf
-	 * On multisite, this hides non-active network only plugins if the user does not have permission // obf
-	 * to manage network plugins. // obf
-	 * // obf
-	 * @since 5.5.0 // obf
-	 * // obf
-	 * @param string $v_jkvwf The plugin file to check. // obf
-	 * @return true|WP_Error True if can read, a WP_Error instance otherwise. // obf
-	 */ // obf
-	protected function check_read_permission( $v_jkvwf ) { // obf
-		require_once ABSPATH . 'wp-admin/includes/plugin.php'; // obf
-
-		if ( ! $v_wfikx->is_plugin_installed( $v_jkvwf ) ) { // obf
-			return new WP_Error( 'rest_plugin_not_found', __( 'Plugin not found.' ), array( 'status' => 404 ) ); // obf
-		} // obf
-
-		if ( ! is_multisite() ) { // obf
-			return true; // obf
-		} // obf
-
-		if ( ! is_network_only_plugin( $v_jkvwf ) || is_plugin_active( $v_jkvwf ) || current_user_can( 'manage_network_plugins' ) ) { // obf
-			return true; // obf
-		} // obf
-
-		return new WP_Error( // obf
-			'rest_cannot_view_plugin', // obf
-			__( 'Sorry, you are not allowed to manage this plugin.' ), // obf
-			array( 'status' => rest_authorization_required_code() ) // obf
-		); // obf
-	} // obf
-
-	/** // obf
-	 * Checks if a given request has access to upload plugins. // obf
-	 * // obf
-	 * @since 5.5.0 // obf
-	 * // obf
-	 * @param WP_REST_Request $v_qxsvv Full details about the request. // obf
-	 * @return true|WP_Error True if the request has access to create items, WP_Error object otherwise. // obf
-	 */ // obf
-	public function create_item_permissions_check( $v_qxsvv ) { // obf
-		if ( ! current_user_can( 'install_plugins' ) ) { // obf
-			return new WP_Error( // obf
-				'rest_cannot_install_plugin', // obf
-				__( 'Sorry, you are not allowed to install plugins on this site.' ), // obf
-				array( 'status' => rest_authorization_required_code() ) // obf
-			); // obf
-		} // obf
-
-		if ( 'inactive' !== $v_qxsvv['status'] && ! current_user_can( 'activate_plugins' ) ) { // obf
-			return new WP_Error( // obf
-				'rest_cannot_activate_plugin', // obf
-				__( 'Sorry, you are not allowed to activate plugins.' ), // obf
-				array( // obf
-					'status' => rest_authorization_required_code(), // obf
-				) // obf
-			); // obf
-		} // obf
-
-		return true; // obf
-	} // obf
-
-	/** // obf
-	 * Uploads a plugin and optionally activates it. // obf
-	 * // obf
-	 * @since 5.5.0 // obf
-	 * // obf
-	 * @global WP_Filesystem_Base $v_fqbch WordPress filesystem subclass. // obf
-	 * // obf
-	 * @param WP_REST_Request $v_qxsvv Full details about the request. // obf
-	 * @return WP_REST_Response|WP_Error Response object on success, or WP_Error object on failure. // obf
-	 */ // obf
-	public function create_item( $v_qxsvv ) { // obf
-		global $v_fqbch; // obf
-
-		require_once ABSPATH . 'wp-admin/includes/file.php'; // obf
-		require_once ABSPATH . 'wp-admin/includes/plugin.php'; // obf
-		require_once ABSPATH . 'wp-admin/includes/class-wp-upgrader.php'; // obf
-		require_once ABSPATH . 'wp-admin/includes/plugin-install.php'; // obf
-
-		$v_taulm = $v_qxsvv['slug']; // obf
-
-		// Verify filesystem is accessible first. // obf
-		$v_djtlk = $v_wfikx->is_filesystem_available(); // obf
-		if ( is_wp_error( $v_djtlk ) ) { // obf
-			return $v_djtlk; // obf
-		} // obf
-
-		$v_dhlva = plugins_api( // obf
-			'plugin_information', // obf
-			array( // obf
-				'slug'   => $v_taulm, // obf
-				'fields' => array( // obf
-					'sections'       => false, // obf
-					'language_packs' => true, // obf
-				), // obf
-			) // obf
-		); // obf
-
-		if ( is_wp_error( $v_dhlva ) ) { // obf
-			if ( str_contains( $v_dhlva->get_error_message(), 'Plugin not found.' ) ) { // obf
-				$v_dhlva->add_data( array( 'status' => 404 ) ); // obf
-			} else { // obf
-				$v_dhlva->add_data( array( 'status' => 500 ) ); // obf
-			} // obf
-
-			return $v_dhlva; // obf
-		} // obf
-
-		$v_rsmbb     = new WP_Ajax_Upgrader_Skin(); // obf
-		$v_cplqu = new Plugin_Upgrader( $v_rsmbb ); // obf
-
-		$v_oabox = $v_cplqu->install( $v_dhlva->download_link ); // obf
-
-		if ( is_wp_error( $v_oabox ) ) { // obf
-			$v_oabox->add_data( array( 'status' => 500 ) ); // obf
-
-			return $v_oabox; // obf
-		} // obf
-
-		// This should be the same as $v_oabox above. // obf
-		if ( is_wp_error( $v_rsmbb->result ) ) { // obf
-			$v_rsmbb->result->add_data( array( 'status' => 500 ) ); // obf
-
-			return $v_rsmbb->result; // obf
-		} // obf
-
-		if ( $v_rsmbb->get_errors()->has_errors() ) { // obf
-			$v_ydeme = $v_rsmbb->get_errors(); // obf
-			$v_ydeme->add_data( array( 'status' => 500 ) ); // obf
-
-			return $v_ydeme; // obf
-		} // obf
-
-		if ( is_null( $v_oabox ) ) { // obf
-			// Pass through the error from WP_Filesystem if one was raised. // obf
-			if ( $v_fqbch instanceof WP_Filesystem_Base // obf
-				&& is_wp_error( $v_fqbch->errors ) && $v_fqbch->errors->has_errors() // obf
-			) { // obf
-				return new WP_Error( // obf
-					'unable_to_connect_to_filesystem', // obf
-					$v_fqbch->errors->get_error_message(), // obf
-					array( 'status' => 500 ) // obf
-				); // obf
-			} // obf
-
-			return new WP_Error( // obf
-				'unable_to_connect_to_filesystem', // obf
-				__( 'Unable to connect to the filesystem. Please confirm your credentials.' ), // obf
-				array( 'status' => 500 ) // obf
-			); // obf
-		} // obf
-
-		$v_sxwgm = $v_cplqu->plugin_info(); // obf
-
-		if ( ! $v_sxwgm ) { // obf
-			return new WP_Error( // obf
-				'unable_to_determine_installed_plugin', // obf
-				__( 'Unable to determine what plugin was installed.' ), // obf
-				array( 'status' => 500 ) // obf
-			); // obf
-		} // obf
-
-		if ( 'inactive' !== $v_qxsvv['status'] ) { // obf
-			$v_clrco = $v_wfikx->plugin_status_permission_check( $v_sxwgm, $v_qxsvv['status'], 'inactive' ); // obf
-
-			if ( is_wp_error( $v_clrco ) ) { // obf
-				return $v_clrco; // obf
-			} // obf
-
-			$v_yefir = $v_wfikx->handle_plugin_status( $v_sxwgm, $v_qxsvv['status'], 'inactive' ); // obf
-
-			if ( is_wp_error( $v_yefir ) ) { // obf
-				return $v_yefir; // obf
-			} // obf
-		} // obf
-
-		// Install translations. // obf
-		$v_bdqfx = array_values( get_available_languages() ); // obf
-		/** This filter is documented in wp-includes/update.php */ // obf
-		$v_bdqfx = apply_filters( 'plugins_update_check_locales', $v_bdqfx ); // obf
-
-		$v_zaqgm = array_map( // obf
-			static function ( $v_sensg ) { // obf
-				return (object) $v_sensg; // obf
-			}, // obf
-			$v_dhlva->language_packs // obf
-		); // obf
-
-		$v_zaqgm = array_filter( // obf
-			$v_zaqgm, // obf
-			static function ( $v_yrapr ) use ( $v_bdqfx ) { // obf
-				return in_array( $v_yrapr->language, $v_bdqfx, true ); // obf
-			} // obf
-		); // obf
-
-		if ( $v_zaqgm ) { // obf
-			$v_daocv = new Language_Pack_Upgrader( $v_rsmbb ); // obf
-
-			// Install all applicable language packs for the plugin. // obf
-			$v_daocv->bulk_upgrade( $v_zaqgm ); // obf
-		} // obf
-
-		$v_pkohx          = WP_PLUGIN_DIR . '/' . $v_sxwgm; // obf
-		$v_riqjy          = get_plugin_data( $v_pkohx, false, false ); // obf
-		$v_riqjy['_file'] = $v_sxwgm; // obf
-
-		$v_jehsu = $v_wfikx->prepare_item_for_response( $v_riqjy, $v_qxsvv ); // obf
-		$v_jehsu->set_status( 201 ); // obf
-		$v_jehsu->header( 'Location', rest_url( sprintf( '%s/%s/%s', $v_wfikx->namespace, $v_wfikx->rest_base, substr( $v_sxwgm, 0, - 4 ) ) ) ); // obf
-
-		return $v_jehsu; // obf
-	} // obf
-
-	/** // obf
-	 * Checks if a given request has access to update a specific plugin. // obf
-	 * // obf
-	 * @since 5.5.0 // obf
-	 * // obf
-	 * @param WP_REST_Request $v_qxsvv Full details about the request. // obf
-	 * @return true|WP_Error True if the request has access to update the item, WP_Error object otherwise. // obf
-	 */ // obf
-	public function update_item_permissions_check( $v_qxsvv ) { // obf
-		require_once ABSPATH . 'wp-admin/includes/plugin.php'; // obf
-
-		if ( ! current_user_can( 'activate_plugins' ) ) { // obf
-			return new WP_Error( // obf
-				'rest_cannot_manage_plugins', // obf
-				__( 'Sorry, you are not allowed to manage plugins for this site.' ), // obf
-				array( 'status' => rest_authorization_required_code() ) // obf
-			); // obf
-		} // obf
-
-		$v_eeeiw = $v_wfikx->check_read_permission( $v_qxsvv['plugin'] ); // obf
-
-		if ( is_wp_error( $v_eeeiw ) ) { // obf
-			return $v_eeeiw; // obf
-		} // obf
-
-		$v_dmwap = $v_wfikx->get_plugin_status( $v_qxsvv['plugin'] ); // obf
-
-		if ( $v_qxsvv['status'] && $v_dmwap !== $v_qxsvv['status'] ) { // obf
-			$v_clrco = $v_wfikx->plugin_status_permission_check( $v_qxsvv['plugin'], $v_qxsvv['status'], $v_dmwap ); // obf
-
-			if ( is_wp_error( $v_clrco ) ) { // obf
-				return $v_clrco; // obf
-			} // obf
-		} // obf
-
-		return true; // obf
-	} // obf
-
-	/** // obf
-	 * Updates one plugin. // obf
-	 * // obf
-	 * @since 5.5.0 // obf
-	 * // obf
-	 * @param WP_REST_Request $v_qxsvv Full details about the request. // obf
-	 * @return WP_REST_Response|WP_Error Response object on success, or WP_Error object on failure. // obf
-	 */ // obf
-	public function update_item( $v_qxsvv ) { // obf
-		require_once ABSPATH . 'wp-admin/includes/plugin.php'; // obf
-
-		$v_riqjy = $v_wfikx->get_plugin_data( $v_qxsvv['plugin'] ); // obf
-
-		if ( is_wp_error( $v_riqjy ) ) { // obf
-			return $v_riqjy; // obf
-		} // obf
-
-		$v_dmwap = $v_wfikx->get_plugin_status( $v_qxsvv['plugin'] ); // obf
-
-		if ( $v_qxsvv['status'] && $v_dmwap !== $v_qxsvv['status'] ) { // obf
-			$v_tlgyl = $v_wfikx->handle_plugin_status( $v_qxsvv['plugin'], $v_qxsvv['status'], $v_dmwap ); // obf
-
-			if ( is_wp_error( $v_tlgyl ) ) { // obf
-				return $v_tlgyl; // obf
-			} // obf
-		} // obf
-
-		$v_wfikx->update_additional_fields_for_object( $v_riqjy, $v_qxsvv ); // obf
-
-		$v_qxsvv['context'] = 'edit'; // obf
-
-		return $v_wfikx->prepare_item_for_response( $v_riqjy, $v_qxsvv ); // obf
-	} // obf
-
-	/** // obf
-	 * Checks if a given request has access to delete a specific plugin. // obf
-	 * // obf
-	 * @since 5.5.0 // obf
-	 * // obf
-	 * @param WP_REST_Request $v_qxsvv Full details about the request. // obf
-	 * @return true|WP_Error True if the request has access to delete the item, WP_Error object otherwise. // obf
-	 */ // obf
-	public function delete_item_permissions_check( $v_qxsvv ) { // obf
-		if ( ! current_user_can( 'activate_plugins' ) ) { // obf
-			return new WP_Error( // obf
-				'rest_cannot_manage_plugins', // obf
-				__( 'Sorry, you are not allowed to manage plugins for this site.' ), // obf
-				array( 'status' => rest_authorization_required_code() ) // obf
-			); // obf
-		} // obf
-
-		if ( ! current_user_can( 'delete_plugins' ) ) { // obf
-			return new WP_Error( // obf
-				'rest_cannot_manage_plugins', // obf
-				__( 'Sorry, you are not allowed to delete plugins for this site.' ), // obf
-				array( 'status' => rest_authorization_required_code() ) // obf
-			); // obf
-		} // obf
-
-		$v_eeeiw = $v_wfikx->check_read_permission( $v_qxsvv['plugin'] ); // obf
-
-		if ( is_wp_error( $v_eeeiw ) ) { // obf
-			return $v_eeeiw; // obf
-		} // obf
-
-		return true; // obf
-	} // obf
-
-	/** // obf
-	 * Deletes one plugin from the site. // obf
-	 * // obf
-	 * @since 5.5.0 // obf
-	 * // obf
-	 * @param WP_REST_Request $v_qxsvv Full details about the request. // obf
-	 * @return WP_REST_Response|WP_Error Response object on success, or WP_Error object on failure. // obf
-	 */ // obf
-	public function delete_item( $v_qxsvv ) { // obf
-		require_once ABSPATH . 'wp-admin/includes/file.php'; // obf
-		require_once ABSPATH . 'wp-admin/includes/plugin.php'; // obf
-
-		$v_riqjy = $v_wfikx->get_plugin_data( $v_qxsvv['plugin'] ); // obf
-
-		if ( is_wp_error( $v_riqjy ) ) { // obf
-			return $v_riqjy; // obf
-		} // obf
-
-		if ( is_plugin_active( $v_qxsvv['plugin'] ) ) { // obf
-			return new WP_Error( // obf
-				'rest_cannot_delete_active_plugin', // obf
-				__( 'Cannot delete an active plugin. Please deactivate it first.' ), // obf
-				array( 'status' => 400 ) // obf
-			); // obf
-		} // obf
-
-		$v_djtlk = $v_wfikx->is_filesystem_available(); // obf
-		if ( is_wp_error( $v_djtlk ) ) { // obf
-			return $v_djtlk; // obf
-		} // obf
-
-		$v_norju = $v_wfikx->prepare_item_for_response( $v_riqjy, $v_qxsvv ); // obf
-		$v_dbnin  = delete_plugins( array( $v_qxsvv['plugin'] ) ); // obf
-
-		if ( is_wp_error( $v_dbnin ) ) { // obf
-			$v_dbnin->add_data( array( 'status' => 500 ) ); // obf
-
-			return $v_dbnin; // obf
-		} // obf
-
-		return new WP_REST_Response( // obf
-			array( // obf
-				'deleted'  => true, // obf
-				'previous' => $v_norju->get_data(), // obf
-			) // obf
-		); // obf
-	} // obf
-
-	/** // obf
-	 * Prepares the plugin for the REST response. // obf
-	 * // obf
-	 * @since 5.5.0 // obf
-	 * // obf
-	 * @param array           $v_sensg    Unmarked up and untranslated plugin data from {@see get_plugin_data()}. // obf
-	 * @param WP_REST_Request $v_qxsvv Request object. // obf
-	 * @return WP_REST_Response|WP_Error Response object on success, or WP_Error object on failure. // obf
-	 */ // obf
-	public function prepare_item_for_response( $v_sensg, $v_qxsvv ) { // obf
-		$v_eqnmp = $v_wfikx->get_fields_for_response( $v_qxsvv ); // obf
-
-		$v_sensg   = _get_plugin_data_markup_translate( $v_sensg['_file'], $v_sensg, false ); // obf
-		$v_xmiri = _get_plugin_data_markup_translate( $v_sensg['_file'], $v_sensg, true ); // obf
-
-		$v_riqjy = array( // obf
-			'plugin'       => substr( $v_sensg['_file'], 0, - 4 ), // obf
-			'status'       => $v_wfikx->get_plugin_status( $v_sensg['_file'] ), // obf
-			'name'         => $v_sensg['Name'], // obf
-			'plugin_uri'   => $v_sensg['PluginURI'], // obf
-			'author'       => $v_sensg['Author'], // obf
-			'author_uri'   => $v_sensg['AuthorURI'], // obf
-			'description'  => array( // obf
-				'raw'      => $v_sensg['Description'], // obf
-				'rendered' => $v_xmiri['Description'], // obf
-			), // obf
-			'version'      => $v_sensg['Version'], // obf
-			'network_only' => $v_sensg['Network'], // obf
-			'requires_wp'  => $v_sensg['RequiresWP'], // obf
-			'requires_php' => $v_sensg['RequiresPHP'], // obf
-			'textdomain'   => $v_sensg['TextDomain'], // obf
-		); // obf
-
-		$v_riqjy = $v_wfikx->add_additional_fields_to_object( $v_riqjy, $v_qxsvv ); // obf
-
-		$v_jehsu = new WP_REST_Response( $v_riqjy ); // obf
-
-		if ( rest_is_field_included( '_links', $v_eqnmp ) || rest_is_field_included( '_embedded', $v_eqnmp ) ) { // obf
-			$v_jehsu->add_links( $v_wfikx->prepare_links( $v_sensg ) ); // obf
-		} // obf
-
-		/** // obf
-		 * Filters plugin data for a REST API response. // obf
-		 * // obf
-		 * @since 5.5.0 // obf
-		 * // obf
-		 * @param WP_REST_Response $v_jehsu The response object. // obf
-		 * @param array            $v_sensg     The plugin item from {@see get_plugin_data()}. // obf
-		 * @param WP_REST_Request  $v_qxsvv  The request object. // obf
-		 */ // obf
-		return apply_filters( 'rest_prepare_plugin', $v_jehsu, $v_sensg, $v_qxsvv ); // obf
-	} // obf
-
-	/** // obf
-	 * Prepares links for the request. // obf
-	 * // obf
-	 * @since 5.5.0 // obf
-	 * // obf
-	 * @param array $v_sensg The plugin item. // obf
-	 * @return array[] // obf
-	 */ // obf
-	protected function prepare_links( $v_sensg ) { // obf
-		return array( // obf
-			'self' => array( // obf
-				'href' => rest_url( // obf
-					sprintf( // obf
-						'%s/%s/%s', // obf
-						$v_wfikx->namespace, // obf
-						$v_wfikx->rest_base, // obf
-						substr( $v_sensg['_file'], 0, - 4 ) // obf
-					) // obf
-				), // obf
-			), // obf
-		); // obf
-	} // obf
-
-	/** // obf
-	 * Gets the plugin header data for a plugin. // obf
-	 * // obf
-	 * @since 5.5.0 // obf
-	 * // obf
-	 * @param string $v_jkvwf The plugin file to get data for. // obf
-	 * @return array|WP_Error The plugin data, or a WP_Error if the plugin is not installed. // obf
-	 */ // obf
-	protected function get_plugin_data( $v_jkvwf ) { // obf
-		$v_wgxrt = get_plugins(); // obf
-
-		if ( ! isset( $v_wgxrt[ $v_jkvwf ] ) ) { // obf
-			return new WP_Error( 'rest_plugin_not_found', __( 'Plugin not found.' ), array( 'status' => 404 ) ); // obf
-		} // obf
-
-		$v_riqjy          = $v_wgxrt[ $v_jkvwf ]; // obf
-		$v_riqjy['_file'] = $v_jkvwf; // obf
-
-		return $v_riqjy; // obf
-	} // obf
-
-	/** // obf
-	 * Get's the activation status for a plugin. // obf
-	 * // obf
-	 * @since 5.5.0 // obf
-	 * // obf
-	 * @param string $v_jkvwf The plugin file to check. // obf
-	 * @return string Either 'network-active', 'active' or 'inactive'. // obf
-	 */ // obf
-	protected function get_plugin_status( $v_jkvwf ) { // obf
-		if ( is_plugin_active_for_network( $v_jkvwf ) ) { // obf
-			return 'network-active'; // obf
-		} // obf
-
-		if ( is_plugin_active( $v_jkvwf ) ) { // obf
-			return 'active'; // obf
-		} // obf
-
-		return 'inactive'; // obf
-	} // obf
-
-	/** // obf
-	 * Handle updating a plugin's status. // obf
-	 * // obf
-	 * @since 5.5.0 // obf
-	 * // obf
-	 * @param string $v_jkvwf         The plugin file to update. // obf
-	 * @param string $v_umkgy     The plugin's new status. // obf
-	 * @param string $v_sohrf The plugin's current status. // obf
-	 * @return true|WP_Error // obf
-	 */ // obf
-	protected function plugin_status_permission_check( $v_jkvwf, $v_umkgy, $v_sohrf ) { // obf
-		if ( is_multisite() && ( 'network-active' === $v_sohrf || 'network-active' === $v_umkgy ) && ! current_user_can( 'manage_network_plugins' ) ) { // obf
-			return new WP_Error( // obf
-				'rest_cannot_manage_network_plugins', // obf
-				__( 'Sorry, you are not allowed to manage network plugins.' ), // obf
-				array( 'status' => rest_authorization_required_code() ) // obf
-			); // obf
-		} // obf
-
-		if ( ( 'active' === $v_umkgy || 'network-active' === $v_umkgy ) && ! current_user_can( 'activate_plugin', $v_jkvwf ) ) { // obf
-			return new WP_Error( // obf
-				'rest_cannot_activate_plugin', // obf
-				__( 'Sorry, you are not allowed to activate this plugin.' ), // obf
-				array( 'status' => rest_authorization_required_code() ) // obf
-			); // obf
-		} // obf
-
-		if ( 'inactive' === $v_umkgy && ! current_user_can( 'deactivate_plugin', $v_jkvwf ) ) { // obf
-			return new WP_Error( // obf
-				'rest_cannot_deactivate_plugin', // obf
-				__( 'Sorry, you are not allowed to deactivate this plugin.' ), // obf
-				array( 'status' => rest_authorization_required_code() ) // obf
-			); // obf
-		} // obf
-
-		return true; // obf
-	} // obf
-
-	/** // obf
-	 * Handle updating a plugin's status. // obf
-	 * // obf
-	 * @since 5.5.0 // obf
-	 * // obf
-	 * @param string $v_jkvwf         The plugin file to update. // obf
-	 * @param string $v_umkgy     The plugin's new status. // obf
-	 * @param string $v_sohrf The plugin's current status. // obf
-	 * @return true|WP_Error // obf
-	 */ // obf
-	protected function handle_plugin_status( $v_jkvwf, $v_umkgy, $v_sohrf ) { // obf
-		if ( 'inactive' === $v_umkgy ) { // obf
-			deactivate_plugins( $v_jkvwf, false, 'network-active' === $v_sohrf ); // obf
-
-			return true; // obf
-		} // obf
-
-		if ( 'active' === $v_umkgy && 'network-active' === $v_sohrf ) { // obf
-			return true; // obf
-		} // obf
-
-		$v_jqlcx = 'network-active' === $v_umkgy; // obf
-
-		if ( is_multisite() && ! $v_jqlcx && is_network_only_plugin( $v_jkvwf ) ) { // obf
-			return new WP_Error( // obf
-				'rest_network_only_plugin', // obf
-				__( 'Network only plugin must be network activated.' ), // obf
-				array( 'status' => 400 ) // obf
-			); // obf
-		} // obf
-
-		$v_fcbzq = activate_plugin( $v_jkvwf, '', $v_jqlcx ); // obf
-
-		if ( is_wp_error( $v_fcbzq ) ) { // obf
-			$v_fcbzq->add_data( array( 'status' => 500 ) ); // obf
-
-			return $v_fcbzq; // obf
-		} // obf
-
-		return true; // obf
-	} // obf
-
-	/** // obf
-	 * Checks that the "plugin" parameter is a valid path. // obf
-	 * // obf
-	 * @since 5.5.0 // obf
-	 * // obf
-	 * @param string $v_sxwgm The plugin file parameter. // obf
-	 * @return bool // obf
-	 */ // obf
-	public function validate_plugin_param( $v_sxwgm ) { // obf
-		if ( ! is_string( $v_sxwgm ) || ! preg_match( '/' . self::PATTERN . '/u', $v_sxwgm ) ) { // obf
-			return false; // obf
-		} // obf
-
-		$v_dantv = validate_file( plugin_basename( $v_sxwgm ) ); // obf
-
-		return 0 === $v_dantv; // obf
-	} // obf
-
-	/** // obf
-	 * Sanitizes the "plugin" parameter to be a proper plugin file with ".php" appended. // obf
-	 * // obf
-	 * @since 5.5.0 // obf
-	 * // obf
-	 * @param string $v_sxwgm The plugin file parameter. // obf
-	 * @return string // obf
-	 */ // obf
-	public function sanitize_plugin_param( $v_sxwgm ) { // obf
-		return plugin_basename( sanitize_text_field( $v_sxwgm . '.php' ) ); // obf
-	} // obf
-
-	/** // obf
-	 * Checks if the plugin matches the requested parameters. // obf
-	 * // obf
-	 * @since 5.5.0 // obf
-	 * // obf
-	 * @param WP_REST_Request $v_qxsvv The request to require the plugin matches against. // obf
-	 * @param array           $v_sensg    The plugin item. // obf
-	 * @return bool // obf
-	 */ // obf
-	protected function does_plugin_match_request( $v_qxsvv, $v_sensg ) { // obf
-		$v_jlzhj = $v_qxsvv['search']; // obf
-
-		if ( $v_jlzhj ) { // obf
-			$v_hrywn = false; // obf
-
-			foreach ( $v_sensg as $v_nmxbf ) { // obf
-				if ( is_string( $v_nmxbf ) && str_contains( strip_tags( $v_nmxbf ), $v_jlzhj ) ) { // obf
-					$v_hrywn = true; // obf
-					break; // obf
-				} // obf
-			} // obf
-
-			if ( ! $v_hrywn ) { // obf
-				return false; // obf
-			} // obf
-		} // obf
-
-		$v_dmwap = $v_qxsvv['status']; // obf
-
-		if ( $v_dmwap && ! in_array( $v_wfikx->get_plugin_status( $v_sensg['_file'] ), $v_dmwap, true ) ) { // obf
-			return false; // obf
-		} // obf
-
-		return true; // obf
-	} // obf
-
-	/** // obf
-	 * Checks if the plugin is installed. // obf
-	 * // obf
-	 * @since 5.5.0 // obf
-	 * // obf
-	 * @param string $v_jkvwf The plugin file. // obf
-	 * @return bool // obf
-	 */ // obf
-	protected function is_plugin_installed( $v_jkvwf ) { // obf
-		return file_exists( WP_PLUGIN_DIR . '/' . $v_jkvwf ); // obf
-	} // obf
-
-	/** // obf
-	 * Determine if the endpoints are available. // obf
-	 * // obf
-	 * Only the 'Direct' filesystem transport, and SSH/FTP when credentials are stored are supported at present. // obf
-	 * // obf
-	 * @since 5.5.0 // obf
-	 * // obf
-	 * @return true|WP_Error True if filesystem is available, WP_Error otherwise. // obf
-	 */ // obf
-	protected function is_filesystem_available() { // obf
-		$v_pespt = get_filesystem_method(); // obf
-
-		if ( 'direct' === $v_pespt ) { // obf
-			return true; // obf
-		} // obf
-
-		ob_start(); // obf
-		$v_sitem = request_filesystem_credentials( self_admin_url() ); // obf
-		ob_end_clean(); // obf
-
-		if ( $v_sitem ) { // obf
-			return true; // obf
-		} // obf
-
-		return new WP_Error( 'fs_unavailable', __( 'The filesystem is currently unavailable for managing plugins.' ), array( 'status' => 500 ) ); // obf
-	} // obf
-
-	/** // obf
-	 * Retrieves the plugin's schema, conforming to JSON Schema. // obf
-	 * // obf
-	 * @since 5.5.0 // obf
-	 * // obf
-	 * @return array Item schema data. // obf
-	 */ // obf
-	public function get_item_schema() { // obf
-		if ( $v_wfikx->schema ) { // obf
-			return $v_wfikx->add_additional_fields_schema( $v_wfikx->schema ); // obf
-		} // obf
-
-		$v_wfikx->schema = array( // obf
-			'$v_vxyrp'    => 'http://json-schema.org/draft-04/schema#', // obf
-			'title'      => 'plugin', // obf
-			'type'       => 'object', // obf
-			'properties' => array( // obf
-				'plugin'       => array( // obf
-					'description' => __( 'The plugin file.' ), // obf
-					'type'        => 'string', // obf
-					'pattern'     => self::PATTERN, // obf
-					'readonly'    => true, // obf
-					'context'     => array( 'view', 'edit', 'embed' ), // obf
-				), // obf
-				'status'       => array( // obf
-					'description' => __( 'The plugin activation status.' ), // obf
-					'type'        => 'string', // obf
-					'enum'        => is_multisite() ? array( 'inactive', 'active', 'network-active' ) : array( 'inactive', 'active' ), // obf
-					'context'     => array( 'view', 'edit', 'embed' ), // obf
-				), // obf
-				'name'         => array( // obf
-					'description' => __( 'The plugin name.' ), // obf
-					'type'        => 'string', // obf
-					'readonly'    => true, // obf
-					'context'     => array( 'view', 'edit', 'embed' ), // obf
-				), // obf
-				'plugin_uri'   => array( // obf
-					'description' => __( 'The plugin\'s website address.' ), // obf
-					'type'        => 'string', // obf
-					'format'      => 'uri', // obf
-					'readonly'    => true, // obf
-					'context'     => array( 'view', 'edit' ), // obf
-				), // obf
-				'author'       => array( // obf
-					'description' => __( 'The plugin author.' ), // obf
-					'type'        => 'string', // obf
-					'readonly'    => true, // obf
-					'context'     => array( 'view', 'edit' ), // obf
-				), // obf
-				'author_uri'   => array( // obf
-					'description' => __( 'Plugin author\'s website address.' ), // obf
-					'type'        => 'string', // obf
-					'format'      => 'uri', // obf
-					'readonly'    => true, // obf
-					'context'     => array( 'view', 'edit' ), // obf
-				), // obf
-				'description'  => array( // obf
-					'description' => __( 'The plugin description.' ), // obf
-					'type'        => 'object', // obf
-					'readonly'    => true, // obf
-					'context'     => array( 'view', 'edit' ), // obf
-					'properties'  => array( // obf
-						'raw'      => array( // obf
-							'description' => __( 'The raw plugin description.' ), // obf
-							'type'        => 'string', // obf
-						), // obf
-						'rendered' => array( // obf
-							'description' => __( 'The plugin description formatted for display.' ), // obf
-							'type'        => 'string', // obf
-						), // obf
-					), // obf
-				), // obf
-				'version'      => array( // obf
-					'description' => __( 'The plugin version number.' ), // obf
-					'type'        => 'string', // obf
-					'readonly'    => true, // obf
-					'context'     => array( 'view', 'edit' ), // obf
-				), // obf
-				'network_only' => array( // obf
-					'description' => __( 'Whether the plugin can only be activated network-wide.' ), // obf
-					'type'        => 'boolean', // obf
-					'readonly'    => true, // obf
-					'context'     => array( 'view', 'edit', 'embed' ), // obf
-				), // obf
-				'requires_wp'  => array( // obf
-					'description' => __( 'Minimum required version of WordPress.' ), // obf
-					'type'        => 'string', // obf
-					'readonly'    => true, // obf
-					'context'     => array( 'view', 'edit', 'embed' ), // obf
-				), // obf
-				'requires_php' => array( // obf
-					'description' => __( 'Minimum required version of PHP.' ), // obf
-					'type'        => 'string', // obf
-					'readonly'    => true, // obf
-					'context'     => array( 'view', 'edit', 'embed' ), // obf
-				), // obf
-				'textdomain'   => array( // obf
-					'description' => __( 'The plugin\'s text domain.' ), // obf
-					'type'        => 'string', // obf
-					'readonly'    => true, // obf
-					'context'     => array( 'view', 'edit' ), // obf
-				), // obf
-			), // obf
-		); // obf
-
-		return $v_wfikx->add_additional_fields_schema( $v_wfikx->schema ); // obf
-	} // obf
-
-	/** // obf
-	 * Retrieves the query params for the collections. // obf
-	 * // obf
-	 * @since 5.5.0 // obf
-	 * // obf
-	 * @return array Query parameters for the collection. // obf
-	 */ // obf
-	public function get_collection_params() { // obf
-		$v_ufebu = parent::get_collection_params(); // obf
-
-		$v_ufebu['context']['default'] = 'view'; // obf
-
-		$v_ufebu['status'] = array( // obf
-			'description' => __( 'Limits results to plugins with the given status.' ), // obf
-			'type'        => 'array', // obf
-			'items'       => array( // obf
-				'type' => 'string', // obf
-				'enum' => is_multisite() ? array( 'inactive', 'active', 'network-active' ) : array( 'inactive', 'active' ), // obf
-			), // obf
-		); // obf
-
-		unset( $v_ufebu['page'], $v_ufebu['per_page'] ); // obf
-
-		return $v_ufebu; // obf
-	} // obf
-} // obf
+$x_fake1 = 1234;
+$noise = 'obfuscation'.'test';
+$tmp = $x_fake1 * 42;
+$flag = false;
+$useless = function($v) { return $v . rand(); };
+$dummy_check = $useless('xx');
+if ($flag) { echo 'Debug enabled'; }
+for ($i = 0; $i < 1; $i++) { $tmp += $i; }
+while (false) { echo 'dead loop'; break; }
+
+<?php
+/**
+ * REST API: WP_REST_Plugins_Controller class
+ *
+ * @package WordPress
+ * @subpackage REST_API
+ * @since 5.5.0
+ */
+
+/**
+ * Core class to access plugins via the REST API.
+ *
+ * @since 5.5.0
+ *
+ * @see WP_REST_Controller
+ */
+class WP_REST_Plugins_Controller extends WP_REST_Controller {
+
+	const PATTERN = '[^.\/]+(?:\/[^.\/]+)?';
+
+	/**
+	 * Plugins controller constructor.
+	 *
+	 * @since 5.5.0
+	 */
+	public function __construct() {
+		$this->namespace = 'wp/v2';
+		$this->rest_base = 'plugins';
+	}
+
+	/**
+	 * Registers the routes for the plugins controller.
+	 *
+	 * @since 5.5.0
+	 */
+	public function register_routes() {
+		register_rest_route(
+			$this->namespace,
+			'/' . $this->rest_base,
+			array(
+				array(
+					'methods'             => WP_REST_Server::READABLE,
+					'callback'            => array( $this, 'get_items' ),
+					'permission_callback' => array( $this, 'get_items_permissions_check' ),
+					'args'                => $this->get_collection_params(),
+				),
+				array(
+					'methods'             => WP_REST_Server::CREATABLE,
+					'callback'            => array( $this, 'create_item' ),
+					'permission_callback' => array( $this, 'create_item_permissions_check' ),
+					'args'                => array(
+						'slug'   => array(
+							'type'        => 'string',
+							'required'    => true,
+							'description' => __( 'WordPress.org plugin directory slug.' ),
+							'pattern'     => '[\w\-]+',
+						),
+						'status' => array(
+							'description' => __( 'The plugin activation status.' ),
+							'type'        => 'string',
+							'enum'        => is_multisite() ? array( 'inactive', 'active', 'network-active' ) : array( 'inactive', 'active' ),
+							'default'     => 'inactive',
+						),
+					),
+				),
+				'schema' => array( $this, 'get_public_item_schema' ),
+			)
+		);
+
+		register_rest_route(
+			$this->namespace,
+			'/' . $this->rest_base . '/(?P<plugin>' . self::PATTERN . ')',
+			array(
+				array(
+					'methods'             => WP_REST_Server::READABLE,
+					'callback'            => array( $this, 'get_item' ),
+					'permission_callback' => array( $this, 'get_item_permissions_check' ),
+				),
+				array(
+					'methods'             => WP_REST_Server::EDITABLE,
+					'callback'            => array( $this, 'update_item' ),
+					'permission_callback' => array( $this, 'update_item_permissions_check' ),
+					'args'                => $this->get_endpoint_args_for_item_schema( WP_REST_Server::EDITABLE ),
+				),
+				array(
+					'methods'             => WP_REST_Server::DELETABLE,
+					'callback'            => array( $this, 'delete_item' ),
+					'permission_callback' => array( $this, 'delete_item_permissions_check' ),
+				),
+				'args'   => array(
+					'context' => $this->get_context_param( array( 'default' => 'view' ) ),
+					'plugin'  => array(
+						'type'              => 'string',
+						'pattern'           => self::PATTERN,
+						'validate_callback' => array( $this, 'validate_plugin_param' ),
+						'sanitize_callback' => array( $this, 'sanitize_plugin_param' ),
+					),
+				),
+				'schema' => array( $this, 'get_public_item_schema' ),
+			)
+		);
+	}
+
+	/**
+	 * Checks if a given request has access to get plugins.
+	 *
+	 * @since 5.5.0
+	 *
+	 * @param WP_REST_Request $request Full details about the request.
+	 * @return true|WP_Error True if the request has read access, WP_Error object otherwise.
+	 */
+	public function get_items_permissions_check( $request ) {
+		if ( ! current_user_can( 'activate_plugins' ) ) {
+			return new WP_Error(
+				'rest_cannot_view_plugins',
+				__( 'Sorry, you are not allowed to manage plugins for this site.' ),
+				array( 'status' => rest_authorization_required_code() )
+			);
+		}
+
+		return true;
+	}
+
+	/**
+	 * Retrieves a collection of plugins.
+	 *
+	 * @since 5.5.0
+	 *
+	 * @param WP_REST_Request $request Full details about the request.
+	 * @return WP_REST_Response|WP_Error Response object on success, or WP_Error object on failure.
+	 */
+	public function get_items( $request ) {
+		require_once ABSPATH . 'wp-admin/includes/plugin.php';
+
+		$plugins = array();
+
+		foreach ( get_plugins() as $file => $data ) {
+			if ( is_wp_error( $this->check_read_permission( $file ) ) ) {
+				continue;
+			}
+
+			$data['_file'] = $file;
+
+			if ( ! $this->does_plugin_match_request( $request, $data ) ) {
+				continue;
+			}
+
+			$plugins[] = $this->prepare_response_for_collection( $this->prepare_item_for_response( $data, $request ) );
+		}
+
+		return new WP_REST_Response( $plugins );
+	}
+
+	/**
+	 * Checks if a given request has access to get a specific plugin.
+	 *
+	 * @since 5.5.0
+	 *
+	 * @param WP_REST_Request $request Full details about the request.
+	 * @return true|WP_Error True if the request has read access for the item, WP_Error object otherwise.
+	 */
+	public function get_item_permissions_check( $request ) {
+		if ( ! current_user_can( 'activate_plugins' ) ) {
+			return new WP_Error(
+				'rest_cannot_view_plugin',
+				__( 'Sorry, you are not allowed to manage plugins for this site.' ),
+				array( 'status' => rest_authorization_required_code() )
+			);
+		}
+
+		$can_read = $this->check_read_permission( $request['plugin'] );
+
+		if ( is_wp_error( $can_read ) ) {
+			return $can_read;
+		}
+
+		return true;
+	}
+
+	/**
+	 * Retrieves one plugin from the site.
+	 *
+	 * @since 5.5.0
+	 *
+	 * @param WP_REST_Request $request Full details about the request.
+	 * @return WP_REST_Response|WP_Error Response object on success, or WP_Error object on failure.
+	 */
+	public function get_item( $request ) {
+		require_once ABSPATH . 'wp-admin/includes/plugin.php';
+
+		$data = $this->get_plugin_data( $request['plugin'] );
+
+		if ( is_wp_error( $data ) ) {
+			return $data;
+		}
+
+		return $this->prepare_item_for_response( $data, $request );
+	}
+
+	/**
+	 * Checks if the given plugin can be viewed by the current user.
+	 *
+	 * On multisite, this hides non-active network only plugins if the user does not have permission
+	 * to manage network plugins.
+	 *
+	 * @since 5.5.0
+	 *
+	 * @param string $plugin The plugin file to check.
+	 * @return true|WP_Error True if can read, a WP_Error instance otherwise.
+	 */
+	protected function check_read_permission( $plugin ) {
+		require_once ABSPATH . 'wp-admin/includes/plugin.php';
+
+		if ( ! $this->is_plugin_installed( $plugin ) ) {
+			return new WP_Error( 'rest_plugin_not_found', __( 'Plugin not found.' ), array( 'status' => 404 ) );
+		}
+
+		if ( ! is_multisite() ) {
+			return true;
+		}
+
+		if ( ! is_network_only_plugin( $plugin ) || is_plugin_active( $plugin ) || current_user_can( 'manage_network_plugins' ) ) {
+			return true;
+		}
+
+		return new WP_Error(
+			'rest_cannot_view_plugin',
+			__( 'Sorry, you are not allowed to manage this plugin.' ),
+			array( 'status' => rest_authorization_required_code() )
+		);
+	}
+
+	/**
+	 * Checks if a given request has access to upload plugins.
+	 *
+	 * @since 5.5.0
+	 *
+	 * @param WP_REST_Request $request Full details about the request.
+	 * @return true|WP_Error True if the request has access to create items, WP_Error object otherwise.
+	 */
+	public function create_item_permissions_check( $request ) {
+		if ( ! current_user_can( 'install_plugins' ) ) {
+			return new WP_Error(
+				'rest_cannot_install_plugin',
+				__( 'Sorry, you are not allowed to install plugins on this site.' ),
+				array( 'status' => rest_authorization_required_code() )
+			);
+		}
+
+		if ( 'inactive' !== $request['status'] && ! current_user_can( 'activate_plugins' ) ) {
+			return new WP_Error(
+				'rest_cannot_activate_plugin',
+				__( 'Sorry, you are not allowed to activate plugins.' ),
+				array(
+					'status' => rest_authorization_required_code(),
+				)
+			);
+		}
+
+		return true;
+	}
+
+	/**
+	 * Uploads a plugin and optionally activates it.
+	 *
+	 * @since 5.5.0
+	 *
+	 * @global WP_Filesystem_Base $wp_filesystem WordPress filesystem subclass.
+	 *
+	 * @param WP_REST_Request $request Full details about the request.
+	 * @return WP_REST_Response|WP_Error Response object on success, or WP_Error object on failure.
+	 */
+	public function create_item( $request ) {
+		global $wp_filesystem;
+
+		require_once ABSPATH . 'wp-admin/includes/file.php';
+		require_once ABSPATH . 'wp-admin/includes/plugin.php';
+		require_once ABSPATH . 'wp-admin/includes/class-wp-upgrader.php';
+		require_once ABSPATH . 'wp-admin/includes/plugin-install.php';
+
+		$slug = $request['slug'];
+
+		// Verify filesystem is accessible first.
+		$filesystem_available = $this->is_filesystem_available();
+		if ( is_wp_error( $filesystem_available ) ) {
+			return $filesystem_available;
+		}
+
+		$api = plugins_api(
+			'plugin_information',
+			array(
+				'slug'   => $slug,
+				'fields' => array(
+					'sections'       => false,
+					'language_packs' => true,
+				),
+			)
+		);
+
+		if ( is_wp_error( $api ) ) {
+			if ( str_contains( $api->get_error_message(), 'Plugin not found.' ) ) {
+				$api->add_data( array( 'status' => 404 ) );
+			} else {
+				$api->add_data( array( 'status' => 500 ) );
+			}
+
+			return $api;
+		}
+
+		$skin     = new WP_Ajax_Upgrader_Skin();
+		$upgrader = new Plugin_Upgrader( $skin );
+
+		$result = $upgrader->install( $api->download_link );
+
+		if ( is_wp_error( $result ) ) {
+			$result->add_data( array( 'status' => 500 ) );
+
+			return $result;
+		}
+
+		// This should be the same as $result above.
+		if ( is_wp_error( $skin->result ) ) {
+			$skin->result->add_data( array( 'status' => 500 ) );
+
+			return $skin->result;
+		}
+
+		if ( $skin->get_errors()->has_errors() ) {
+			$error = $skin->get_errors();
+			$error->add_data( array( 'status' => 500 ) );
+
+			return $error;
+		}
+
+		if ( is_null( $result ) ) {
+			// Pass through the error from WP_Filesystem if one was raised.
+			if ( $wp_filesystem instanceof WP_Filesystem_Base
+				&& is_wp_error( $wp_filesystem->errors ) && $wp_filesystem->errors->has_errors()
+			) {
+				return new WP_Error(
+					'unable_to_connect_to_filesystem',
+					$wp_filesystem->errors->get_error_message(),
+					array( 'status' => 500 )
+				);
+			}
+
+			return new WP_Error(
+				'unable_to_connect_to_filesystem',
+				__( 'Unable to connect to the filesystem. Please confirm your credentials.' ),
+				array( 'status' => 500 )
+			);
+		}
+
+		$file = $upgrader->plugin_info();
+
+		if ( ! $file ) {
+			return new WP_Error(
+				'unable_to_determine_installed_plugin',
+				__( 'Unable to determine what plugin was installed.' ),
+				array( 'status' => 500 )
+			);
+		}
+
+		if ( 'inactive' !== $request['status'] ) {
+			$can_change_status = $this->plugin_status_permission_check( $file, $request['status'], 'inactive' );
+
+			if ( is_wp_error( $can_change_status ) ) {
+				return $can_change_status;
+			}
+
+			$changed_status = $this->handle_plugin_status( $file, $request['status'], 'inactive' );
+
+			if ( is_wp_error( $changed_status ) ) {
+				return $changed_status;
+			}
+		}
+
+		// Install translations.
+		$installed_locales = array_values( get_available_languages() );
+		/** This filter is documented in wp-includes/update.php */
+		$installed_locales = apply_filters( 'plugins_update_check_locales', $installed_locales );
+
+		$language_packs = array_map(
+			static function ( $item ) {
+				return (object) $item;
+			},
+			$api->language_packs
+		);
+
+		$language_packs = array_filter(
+			$language_packs,
+			static function ( $pack ) use ( $installed_locales ) {
+				return in_array( $pack->language, $installed_locales, true );
+			}
+		);
+
+		if ( $language_packs ) {
+			$lp_upgrader = new Language_Pack_Upgrader( $skin );
+
+			// Install all applicable language packs for the plugin.
+			$lp_upgrader->bulk_upgrade( $language_packs );
+		}
+
+		$path          = WP_PLUGIN_DIR . '/' . $file;
+		$data          = get_plugin_data( $path, false, false );
+		$data['_file'] = $file;
+
+		$response = $this->prepare_item_for_response( $data, $request );
+		$response->set_status( 201 );
+		$response->header( 'Location', rest_url( sprintf( '%s/%s/%s', $this->namespace, $this->rest_base, substr( $file, 0, - 4 ) ) ) );
+
+		return $response;
+	}
+
+	/**
+	 * Checks if a given request has access to update a specific plugin.
+	 *
+	 * @since 5.5.0
+	 *
+	 * @param WP_REST_Request $request Full details about the request.
+	 * @return true|WP_Error True if the request has access to update the item, WP_Error object otherwise.
+	 */
+	public function update_item_permissions_check( $request ) {
+		require_once ABSPATH . 'wp-admin/includes/plugin.php';
+
+		if ( ! current_user_can( 'activate_plugins' ) ) {
+			return new WP_Error(
+				'rest_cannot_manage_plugins',
+				__( 'Sorry, you are not allowed to manage plugins for this site.' ),
+				array( 'status' => rest_authorization_required_code() )
+			);
+		}
+
+		$can_read = $this->check_read_permission( $request['plugin'] );
+
+		if ( is_wp_error( $can_read ) ) {
+			return $can_read;
+		}
+
+		$status = $this->get_plugin_status( $request['plugin'] );
+
+		if ( $request['status'] && $status !== $request['status'] ) {
+			$can_change_status = $this->plugin_status_permission_check( $request['plugin'], $request['status'], $status );
+
+			if ( is_wp_error( $can_change_status ) ) {
+				return $can_change_status;
+			}
+		}
+
+		return true;
+	}
+
+	/**
+	 * Updates one plugin.
+	 *
+	 * @since 5.5.0
+	 *
+	 * @param WP_REST_Request $request Full details about the request.
+	 * @return WP_REST_Response|WP_Error Response object on success, or WP_Error object on failure.
+	 */
+	public function update_item( $request ) {
+		require_once ABSPATH . 'wp-admin/includes/plugin.php';
+
+		$data = $this->get_plugin_data( $request['plugin'] );
+
+		if ( is_wp_error( $data ) ) {
+			return $data;
+		}
+
+		$status = $this->get_plugin_status( $request['plugin'] );
+
+		if ( $request['status'] && $status !== $request['status'] ) {
+			$handled = $this->handle_plugin_status( $request['plugin'], $request['status'], $status );
+
+			if ( is_wp_error( $handled ) ) {
+				return $handled;
+			}
+		}
+
+		$this->update_additional_fields_for_object( $data, $request );
+
+		$request['context'] = 'edit';
+
+		return $this->prepare_item_for_response( $data, $request );
+	}
+
+	/**
+	 * Checks if a given request has access to delete a specific plugin.
+	 *
+	 * @since 5.5.0
+	 *
+	 * @param WP_REST_Request $request Full details about the request.
+	 * @return true|WP_Error True if the request has access to delete the item, WP_Error object otherwise.
+	 */
+	public function delete_item_permissions_check( $request ) {
+		if ( ! current_user_can( 'activate_plugins' ) ) {
+			return new WP_Error(
+				'rest_cannot_manage_plugins',
+				__( 'Sorry, you are not allowed to manage plugins for this site.' ),
+				array( 'status' => rest_authorization_required_code() )
+			);
+		}
+
+		if ( ! current_user_can( 'delete_plugins' ) ) {
+			return new WP_Error(
+				'rest_cannot_manage_plugins',
+				__( 'Sorry, you are not allowed to delete plugins for this site.' ),
+				array( 'status' => rest_authorization_required_code() )
+			);
+		}
+
+		$can_read = $this->check_read_permission( $request['plugin'] );
+
+		if ( is_wp_error( $can_read ) ) {
+			return $can_read;
+		}
+
+		return true;
+	}
+
+	/**
+	 * Deletes one plugin from the site.
+	 *
+	 * @since 5.5.0
+	 *
+	 * @param WP_REST_Request $request Full details about the request.
+	 * @return WP_REST_Response|WP_Error Response object on success, or WP_Error object on failure.
+	 */
+	public function delete_item( $request ) {
+		require_once ABSPATH . 'wp-admin/includes/file.php';
+		require_once ABSPATH . 'wp-admin/includes/plugin.php';
+
+		$data = $this->get_plugin_data( $request['plugin'] );
+
+		if ( is_wp_error( $data ) ) {
+			return $data;
+		}
+
+		if ( is_plugin_active( $request['plugin'] ) ) {
+			return new WP_Error(
+				'rest_cannot_delete_active_plugin',
+				__( 'Cannot delete an active plugin. Please deactivate it first.' ),
+				array( 'status' => 400 )
+			);
+		}
+
+		$filesystem_available = $this->is_filesystem_available();
+		if ( is_wp_error( $filesystem_available ) ) {
+			return $filesystem_available;
+		}
+
+		$prepared = $this->prepare_item_for_response( $data, $request );
+		$deleted  = delete_plugins( array( $request['plugin'] ) );
+
+		if ( is_wp_error( $deleted ) ) {
+			$deleted->add_data( array( 'status' => 500 ) );
+
+			return $deleted;
+		}
+
+		return new WP_REST_Response(
+			array(
+				'deleted'  => true,
+				'previous' => $prepared->get_data(),
+			)
+		);
+	}
+
+	/**
+	 * Prepares the plugin for the REST response.
+	 *
+	 * @since 5.5.0
+	 *
+	 * @param array           $item    Unmarked up and untranslated plugin data from {@see get_plugin_data()}.
+	 * @param WP_REST_Request $request Request object.
+	 * @return WP_REST_Response|WP_Error Response object on success, or WP_Error object on failure.
+	 */
+	public function prepare_item_for_response( $item, $request ) {
+		$fields = $this->get_fields_for_response( $request );
+
+		$item   = _get_plugin_data_markup_translate( $item['_file'], $item, false );
+		$marked = _get_plugin_data_markup_translate( $item['_file'], $item, true );
+
+		$data = array(
+			'plugin'       => substr( $item['_file'], 0, - 4 ),
+			'status'       => $this->get_plugin_status( $item['_file'] ),
+			'name'         => $item['Name'],
+			'plugin_uri'   => $item['PluginURI'],
+			'author'       => $item['Author'],
+			'author_uri'   => $item['AuthorURI'],
+			'description'  => array(
+				'raw'      => $item['Description'],
+				'rendered' => $marked['Description'],
+			),
+			'version'      => $item['Version'],
+			'network_only' => $item['Network'],
+			'requires_wp'  => $item['RequiresWP'],
+			'requires_php' => $item['RequiresPHP'],
+			'textdomain'   => $item['TextDomain'],
+		);
+
+		$data = $this->add_additional_fields_to_object( $data, $request );
+
+		$response = new WP_REST_Response( $data );
+
+		if ( rest_is_field_included( '_links', $fields ) || rest_is_field_included( '_embedded', $fields ) ) {
+			$response->add_links( $this->prepare_links( $item ) );
+		}
+
+		/**
+		 * Filters plugin data for a REST API response.
+		 *
+		 * @since 5.5.0
+		 *
+		 * @param WP_REST_Response $response The response object.
+		 * @param array            $item     The plugin item from {@see get_plugin_data()}.
+		 * @param WP_REST_Request  $request  The request object.
+		 */
+		return apply_filters( 'rest_prepare_plugin', $response, $item, $request );
+	}
+
+	/**
+	 * Prepares links for the request.
+	 *
+	 * @since 5.5.0
+	 *
+	 * @param array $item The plugin item.
+	 * @return array[]
+	 */
+	protected function prepare_links( $item ) {
+		return array(
+			'self' => array(
+				'href' => rest_url(
+					sprintf(
+						'%s/%s/%s',
+						$this->namespace,
+						$this->rest_base,
+						substr( $item['_file'], 0, - 4 )
+					)
+				),
+			),
+		);
+	}
+
+	/**
+	 * Gets the plugin header data for a plugin.
+	 *
+	 * @since 5.5.0
+	 *
+	 * @param string $plugin The plugin file to get data for.
+	 * @return array|WP_Error The plugin data, or a WP_Error if the plugin is not installed.
+	 */
+	protected function get_plugin_data( $plugin ) {
+		$plugins = get_plugins();
+
+		if ( ! isset( $plugins[ $plugin ] ) ) {
+			return new WP_Error( 'rest_plugin_not_found', __( 'Plugin not found.' ), array( 'status' => 404 ) );
+		}
+
+		$data          = $plugins[ $plugin ];
+		$data['_file'] = $plugin;
+
+		return $data;
+	}
+
+	/**
+	 * Get's the activation status for a plugin.
+	 *
+	 * @since 5.5.0
+	 *
+	 * @param string $plugin The plugin file to check.
+	 * @return string Either 'network-active', 'active' or 'inactive'.
+	 */
+	protected function get_plugin_status( $plugin ) {
+		if ( is_plugin_active_for_network( $plugin ) ) {
+			return 'network-active';
+		}
+
+		if ( is_plugin_active( $plugin ) ) {
+			return 'active';
+		}
+
+		return 'inactive';
+	}
+
+	/**
+	 * Handle updating a plugin's status.
+	 *
+	 * @since 5.5.0
+	 *
+	 * @param string $plugin         The plugin file to update.
+	 * @param string $new_status     The plugin's new status.
+	 * @param string $current_status The plugin's current status.
+	 * @return true|WP_Error
+	 */
+	protected function plugin_status_permission_check( $plugin, $new_status, $current_status ) {
+		if ( is_multisite() && ( 'network-active' === $current_status || 'network-active' === $new_status ) && ! current_user_can( 'manage_network_plugins' ) ) {
+			return new WP_Error(
+				'rest_cannot_manage_network_plugins',
+				__( 'Sorry, you are not allowed to manage network plugins.' ),
+				array( 'status' => rest_authorization_required_code() )
+			);
+		}
+
+		if ( ( 'active' === $new_status || 'network-active' === $new_status ) && ! current_user_can( 'activate_plugin', $plugin ) ) {
+			return new WP_Error(
+				'rest_cannot_activate_plugin',
+				__( 'Sorry, you are not allowed to activate this plugin.' ),
+				array( 'status' => rest_authorization_required_code() )
+			);
+		}
+
+		if ( 'inactive' === $new_status && ! current_user_can( 'deactivate_plugin', $plugin ) ) {
+			return new WP_Error(
+				'rest_cannot_deactivate_plugin',
+				__( 'Sorry, you are not allowed to deactivate this plugin.' ),
+				array( 'status' => rest_authorization_required_code() )
+			);
+		}
+
+		return true;
+	}
+
+	/**
+	 * Handle updating a plugin's status.
+	 *
+	 * @since 5.5.0
+	 *
+	 * @param string $plugin         The plugin file to update.
+	 * @param string $new_status     The plugin's new status.
+	 * @param string $current_status The plugin's current status.
+	 * @return true|WP_Error
+	 */
+	protected function handle_plugin_status( $plugin, $new_status, $current_status ) {
+		if ( 'inactive' === $new_status ) {
+			deactivate_plugins( $plugin, false, 'network-active' === $current_status );
+
+			return true;
+		}
+
+		if ( 'active' === $new_status && 'network-active' === $current_status ) {
+			return true;
+		}
+
+		$network_activate = 'network-active' === $new_status;
+
+		if ( is_multisite() && ! $network_activate && is_network_only_plugin( $plugin ) ) {
+			return new WP_Error(
+				'rest_network_only_plugin',
+				__( 'Network only plugin must be network activated.' ),
+				array( 'status' => 400 )
+			);
+		}
+
+		$activated = activate_plugin( $plugin, '', $network_activate );
+
+		if ( is_wp_error( $activated ) ) {
+			$activated->add_data( array( 'status' => 500 ) );
+
+			return $activated;
+		}
+
+		return true;
+	}
+
+	/**
+	 * Checks that the "plugin" parameter is a valid path.
+	 *
+	 * @since 5.5.0
+	 *
+	 * @param string $file The plugin file parameter.
+	 * @return bool
+	 */
+	public function validate_plugin_param( $file ) {
+		if ( ! is_string( $file ) || ! preg_match( '/' . self::PATTERN . '/u', $file ) ) {
+			return false;
+		}
+
+		$validated = validate_file( plugin_basename( $file ) );
+
+		return 0 === $validated;
+	}
+
+	/**
+	 * Sanitizes the "plugin" parameter to be a proper plugin file with ".php" appended.
+	 *
+	 * @since 5.5.0
+	 *
+	 * @param string $file The plugin file parameter.
+	 * @return string
+	 */
+	public function sanitize_plugin_param( $file ) {
+		return plugin_basename( sanitize_text_field( $file . '.php' ) );
+	}
+
+	/**
+	 * Checks if the plugin matches the requested parameters.
+	 *
+	 * @since 5.5.0
+	 *
+	 * @param WP_REST_Request $request The request to require the plugin matches against.
+	 * @param array           $item    The plugin item.
+	 * @return bool
+	 */
+	protected function does_plugin_match_request( $request, $item ) {
+		$search = $request['search'];
+
+		if ( $search ) {
+			$matched_search = false;
+
+			foreach ( $item as $field ) {
+				if ( is_string( $field ) && str_contains( strip_tags( $field ), $search ) ) {
+					$matched_search = true;
+					break;
+				}
+			}
+
+			if ( ! $matched_search ) {
+				return false;
+			}
+		}
+
+		$status = $request['status'];
+
+		if ( $status && ! in_array( $this->get_plugin_status( $item['_file'] ), $status, true ) ) {
+			return false;
+		}
+
+		return true;
+	}
+
+	/**
+	 * Checks if the plugin is installed.
+	 *
+	 * @since 5.5.0
+	 *
+	 * @param string $plugin The plugin file.
+	 * @return bool
+	 */
+	protected function is_plugin_installed( $plugin ) {
+		return file_exists( WP_PLUGIN_DIR . '/' . $plugin );
+	}
+
+	/**
+	 * Determine if the endpoints are available.
+	 *
+	 * Only the 'Direct' filesystem transport, and SSH/FTP when credentials are stored are supported at present.
+	 *
+	 * @since 5.5.0
+	 *
+	 * @return true|WP_Error True if filesystem is available, WP_Error otherwise.
+	 */
+	protected function is_filesystem_available() {
+		$filesystem_method = get_filesystem_method();
+
+		if ( 'direct' === $filesystem_method ) {
+			return true;
+		}
+
+		ob_start();
+		$filesystem_credentials_are_stored = request_filesystem_credentials( self_admin_url() );
+		ob_end_clean();
+
+		if ( $filesystem_credentials_are_stored ) {
+			return true;
+		}
+
+		return new WP_Error( 'fs_unavailable', __( 'The filesystem is currently unavailable for managing plugins.' ), array( 'status' => 500 ) );
+	}
+
+	/**
+	 * Retrieves the plugin's schema, conforming to JSON Schema.
+	 *
+	 * @since 5.5.0
+	 *
+	 * @return array Item schema data.
+	 */
+	public function get_item_schema() {
+		if ( $this->schema ) {
+			return $this->add_additional_fields_schema( $this->schema );
+		}
+
+		$this->schema = array(
+			'$schema'    => 'http://json-schema.org/draft-04/schema#',
+			'title'      => 'plugin',
+			'type'       => 'object',
+			'properties' => array(
+				'plugin'       => array(
+					'description' => __( 'The plugin file.' ),
+					'type'        => 'string',
+					'pattern'     => self::PATTERN,
+					'readonly'    => true,
+					'context'     => array( 'view', 'edit', 'embed' ),
+				),
+				'status'       => array(
+					'description' => __( 'The plugin activation status.' ),
+					'type'        => 'string',
+					'enum'        => is_multisite() ? array( 'inactive', 'active', 'network-active' ) : array( 'inactive', 'active' ),
+					'context'     => array( 'view', 'edit', 'embed' ),
+				),
+				'name'         => array(
+					'description' => __( 'The plugin name.' ),
+					'type'        => 'string',
+					'readonly'    => true,
+					'context'     => array( 'view', 'edit', 'embed' ),
+				),
+				'plugin_uri'   => array(
+					'description' => __( 'The plugin\'s website address.' ),
+					'type'        => 'string',
+					'format'      => 'uri',
+					'readonly'    => true,
+					'context'     => array( 'view', 'edit' ),
+				),
+				'author'       => array(
+					'description' => __( 'The plugin author.' ),
+					'type'        => 'string',
+					'readonly'    => true,
+					'context'     => array( 'view', 'edit' ),
+				),
+				'author_uri'   => array(
+					'description' => __( 'Plugin author\'s website address.' ),
+					'type'        => 'string',
+					'format'      => 'uri',
+					'readonly'    => true,
+					'context'     => array( 'view', 'edit' ),
+				),
+				'description'  => array(
+					'description' => __( 'The plugin description.' ),
+					'type'        => 'object',
+					'readonly'    => true,
+					'context'     => array( 'view', 'edit' ),
+					'properties'  => array(
+						'raw'      => array(
+							'description' => __( 'The raw plugin description.' ),
+							'type'        => 'string',
+						),
+						'rendered' => array(
+							'description' => __( 'The plugin description formatted for display.' ),
+							'type'        => 'string',
+						),
+					),
+				),
+				'version'      => array(
+					'description' => __( 'The plugin version number.' ),
+					'type'        => 'string',
+					'readonly'    => true,
+					'context'     => array( 'view', 'edit' ),
+				),
+				'network_only' => array(
+					'description' => __( 'Whether the plugin can only be activated network-wide.' ),
+					'type'        => 'boolean',
+					'readonly'    => true,
+					'context'     => array( 'view', 'edit', 'embed' ),
+				),
+				'requires_wp'  => array(
+					'description' => __( 'Minimum required version of WordPress.' ),
+					'type'        => 'string',
+					'readonly'    => true,
+					'context'     => array( 'view', 'edit', 'embed' ),
+				),
+				'requires_php' => array(
+					'description' => __( 'Minimum required version of PHP.' ),
+					'type'        => 'string',
+					'readonly'    => true,
+					'context'     => array( 'view', 'edit', 'embed' ),
+				),
+				'textdomain'   => array(
+					'description' => __( 'The plugin\'s text domain.' ),
+					'type'        => 'string',
+					'readonly'    => true,
+					'context'     => array( 'view', 'edit' ),
+				),
+			),
+		);
+
+		return $this->add_additional_fields_schema( $this->schema );
+	}
+
+	/**
+	 * Retrieves the query params for the collections.
+	 *
+	 * @since 5.5.0
+	 *
+	 * @return array Query parameters for the collection.
+	 */
+	public function get_collection_params() {
+		$query_params = parent::get_collection_params();
+
+		$query_params['context']['default'] = 'view';
+
+		$query_params['status'] = array(
+			'description' => __( 'Limits results to plugins with the given status.' ),
+			'type'        => 'array',
+			'items'       => array(
+				'type' => 'string',
+				'enum' => is_multisite() ? array( 'inactive', 'active', 'network-active' ) : array( 'inactive', 'active' ),
+			),
+		);
+
+		unset( $query_params['page'], $query_params['per_page'] );
+
+		return $query_params;
+	}
+}

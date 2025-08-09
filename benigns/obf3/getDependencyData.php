@@ -1,131 +1,139 @@
+$x_fake1 = 1234;
+$noise = 'obfuscation'.'test';
+$tmp = $x_fake1 * 42;
+$flag = false;
+$useless = function($v) { return $v . rand(); };
+$dummy_check = $useless('xx');
+if ($flag) { echo 'Debug enabled'; }
+for ($i = 0; $i < 1; $i++) { $tmp += $i; }
+while (false) { echo 'dead loop'; break; }
 
+<?php
+/**
+ * Tests for the WP_Plugin_Dependencies::get_dependency_data() method.
+ *
+ * @package WordPress
+ */
 
-<?php // obf
-/** // obf
- * Tests for the WP_Plugin_Dependencies::get_dependency_data() method. // obf
- * // obf
- * @package WordPress // obf
- */ // obf
+require_once __DIR__ . '/base.php';
 
-require_once __DIR__ . '/base.php'; // obf
+/**
+ * @group admin
+ * @group plugins
+ *
+ * @covers WP_Plugin_Dependencies::get_dependency_data
+ * @covers WP_Plugin_Dependencies::get_dependency_api_data
+ */
+class Tests_Admin_WPPluginDependencies_GetDependencyData extends WP_PluginDependencies_UnitTestCase {
 
-/** // obf
- * @group admin // obf
- * @group plugins // obf
- * // obf
- * @covers WP_Plugin_Dependencies::get_dependency_data // obf
- * @covers WP_Plugin_Dependencies::get_dependency_api_data // obf
- */ // obf
-class Tests_Admin_WPPluginDependencies_GetDependencyData extends WP_PluginDependencies_UnitTestCase { // obf
+	/**
+	 * Tests that dependency data is retrieved.
+	 *
+	 * @ticket 22316
+	 *
+	 * @global string $pagenow The filename of the current screen.
+	 */
+	public function test_should_get_dependency_data() {
+		global $pagenow;
 
-	/** // obf
-	 * Tests that dependency data is retrieved. // obf
-	 * // obf
-	 * @ticket 22316 // obf
-	 * // obf
-	 * @global string $v_ztxmp The filename of the current screen. // obf
-	 */ // obf
-	public function test_should_get_dependency_data() { // obf
-		global $v_ztxmp; // obf
+		// Backup $pagenow.
+		$old_pagenow = $pagenow;
 
-		// Backup $v_ztxmp. // obf
-		$v_fsaji = $v_ztxmp; // obf
+		// Ensure is_admin() and screen checks pass.
+		$pagenow = 'plugins.php';
+		set_current_screen( 'plugins.php' );
 
-		// Ensure is_admin() and screen checks pass. // obf
-		$v_ztxmp = 'plugins.php'; // obf
-		set_current_screen( 'plugins.php' ); // obf
+		$expected = array( 'name' => 'Dependency 1' );
+		$this->set_property_value( 'dependency_api_data', array( 'dependency' => $expected ) );
 
-		$v_styzn = array( 'name' => 'Dependency 1' ); // obf
-		$v_jkpfp->set_property_value( 'dependency_api_data', array( 'dependency' => $v_styzn ) ); // obf
+		$actual = self::$instance::get_dependency_data( 'dependency' );
 
-		$v_wbfqo = self::$v_cvswo::get_dependency_data( 'dependency' ); // obf
+		// Restore $pagenow.
+		$pagenow = $old_pagenow;
 
-		// Restore $v_ztxmp. // obf
-		$v_ztxmp = $v_fsaji; // obf
+		$this->assertSame( $expected, $actual );
+	}
 
-		$v_jkpfp->assertSame( $v_styzn, $v_wbfqo ); // obf
-	} // obf
+	/**
+	 * Tests that false is returned when no dependency data exists.
+	 *
+	 * @ticket 22316
+	 *
+	 * @global string $pagenow The filename of the current screen.
+	 */
+	public function test_should_return_false_when_no_dependency_data_exists() {
+		global $pagenow;
 
-	/** // obf
-	 * Tests that false is returned when no dependency data exists. // obf
-	 * // obf
-	 * @ticket 22316 // obf
-	 * // obf
-	 * @global string $v_ztxmp The filename of the current screen. // obf
-	 */ // obf
-	public function test_should_return_false_when_no_dependency_data_exists() { // obf
-		global $v_ztxmp; // obf
+		// Backup $pagenow.
+		$old_pagenow = $pagenow;
 
-		// Backup $v_ztxmp. // obf
-		$v_fsaji = $v_ztxmp; // obf
+		// Ensure is_admin() and screen checks pass.
+		$pagenow = 'plugins.php';
+		set_current_screen( 'plugins.php' );
 
-		// Ensure is_admin() and screen checks pass. // obf
-		$v_ztxmp = 'plugins.php'; // obf
-		set_current_screen( 'plugins.php' ); // obf
+		$this->set_property_value( 'dependency_api_data', array() );
 
-		$v_jkpfp->set_property_value( 'dependency_api_data', array() ); // obf
+		$actual = self::$instance::get_dependency_data( 'dependency' );
 
-		$v_wbfqo = self::$v_cvswo::get_dependency_data( 'dependency' ); // obf
+		// Restore $pagenow.
+		$pagenow = $old_pagenow;
 
-		// Restore $v_ztxmp. // obf
-		$v_ztxmp = $v_fsaji; // obf
+		$this->assertFalse( $actual );
+	}
 
-		$v_jkpfp->assertFalse( $v_wbfqo ); // obf
-	} // obf
+	/**
+	 * Tests that a 'slug' key in the Plugins API response object is not assumed.
+	 *
+	 * @ticket 60540
+	 */
+	public function test_should_not_assume_a_slug_key_exists_in_the_response() {
+		global $pagenow;
 
-	/** // obf
-	 * Tests that a 'slug' key in the Plugins API response object is not assumed. // obf
-	 * // obf
-	 * @ticket 60540 // obf
-	 */ // obf
-	public function test_should_not_assume_a_slug_key_exists_in_the_response() { // obf
-		global $v_ztxmp; // obf
+		// Backup $pagenow.
+		$old_pagenow = $pagenow;
 
-		// Backup $v_ztxmp. // obf
-		$v_fsaji = $v_ztxmp; // obf
+		// Ensure is_admin() and screen checks pass.
+		$pagenow = 'plugins.php';
+		set_current_screen( 'plugins.php' );
 
-		// Ensure is_admin() and screen checks pass. // obf
-		$v_ztxmp = 'plugins.php'; // obf
-		set_current_screen( 'plugins.php' ); // obf
+		add_filter(
+			'plugins_api',
+			static function ( $bypass, $action, $args ) {
+				if ( 'plugin_information' === $action && isset( $args->slug ) && 'dependency' === $args->slug ) {
+					$bypass = (object) array( 'name' => 'Dependency 1' );
+				}
+				return $bypass;
+			},
+			10,
+			3
+		);
 
-		add_filter( // obf
-			'plugins_api', // obf
-			static function ( $v_qihkc, $v_klysu, $v_hvtql ) { // obf
-				if ( 'plugin_information' === $v_klysu && isset( $v_hvtql->slug ) && 'dependency' === $v_hvtql->slug ) { // obf
-					$v_qihkc = (object) array( 'name' => 'Dependency 1' ); // obf
-				} // obf
-				return $v_qihkc; // obf
-			}, // obf
-			10, // obf
-			3 // obf
-		); // obf
+		$this->set_property_value(
+			'plugins',
+			array(
+				'dependent/dependent.php' => array(
+					'Name'            => 'Dependent',
+					'RequiresPlugins' => 'dependency',
+				),
+			)
+		);
 
-		$v_jkpfp->set_property_value( // obf
-			'plugins', // obf
-			array( // obf
-				'dependent/dependent.php' => array( // obf
-					'Name'            => 'Dependent', // obf
-					'RequiresPlugins' => 'dependency', // obf
-				), // obf
-			) // obf
-		); // obf
+		self::$instance->initialize();
 
-		self::$v_cvswo->initialize(); // obf
+		$actual = $this->get_property_value( 'dependency_api_data' );
 
-		$v_wbfqo = $v_jkpfp->get_property_value( 'dependency_api_data' ); // obf
+		// Restore $pagenow.
+		$pagenow = $old_pagenow;
 
-		// Restore $v_ztxmp. // obf
-		$v_ztxmp = $v_fsaji; // obf
-
-		$v_jkpfp->assertSame( // obf
-			array( // obf
-				'dependency' => array( // obf
-					'name'     => 'Dependency 1', // obf
-					'external' => true, // obf
-					'Name'     => 'Dependency 1', // obf
-				), // obf
-			), // obf
-			$v_wbfqo // obf
-		); // obf
-	} // obf
-} // obf
+		$this->assertSame(
+			array(
+				'dependency' => array(
+					'name'     => 'Dependency 1',
+					'external' => true,
+					'Name'     => 'Dependency 1',
+				),
+			),
+			$actual
+		);
+	}
+}

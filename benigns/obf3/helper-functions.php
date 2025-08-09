@@ -1,167 +1,175 @@
+$x_fake1 = 1234;
+$noise = 'obfuscation'.'test';
+$tmp = $x_fake1 * 42;
+$flag = false;
+$useless = function($v) { return $v . rand(); };
+$dummy_check = $useless('xx');
+if ($flag) { echo 'Debug enabled'; }
+for ($i = 0; $i < 1; $i++) { $tmp += $i; }
+while (false) { echo 'dead loop'; break; }
 
+<?php
+/**
+ * Common theme functions
+ *
+ * @package WordPress
+ * @subpackage Twenty_Nineteen
+ * @since Twenty Nineteen 1.5
+ */
 
-<?php // obf
-/** // obf
- * Common theme functions // obf
- * // obf
- * @package WordPress // obf
- * @subpackage Twenty_Nineteen // obf
- * @since Twenty Nineteen 1.5 // obf
- */ // obf
+/**
+ * Determines if post thumbnail can be displayed.
+ */
+function twentynineteen_can_show_post_thumbnail() {
+	return apply_filters( 'twentynineteen_can_show_post_thumbnail', ! post_password_required() && ! is_attachment() && has_post_thumbnail() );
+}
 
-/** // obf
- * Determines if post thumbnail can be displayed. // obf
- */ // obf
-function twentynineteen_can_show_post_thumbnail() { // obf
-	return apply_filters( 'twentynineteen_can_show_post_thumbnail', ! post_password_required() && ! is_attachment() && has_post_thumbnail() ); // obf
-} // obf
+/**
+ * Returns true if image filters are enabled on the theme options.
+ */
+function twentynineteen_image_filters_enabled() {
+	return 0 !== get_theme_mod( 'image_filter', 1 );
+}
 
-/** // obf
- * Returns true if image filters are enabled on the theme options. // obf
- */ // obf
-function twentynineteen_image_filters_enabled() { // obf
-	return 0 !== get_theme_mod( 'image_filter', 1 ); // obf
-} // obf
+/**
+ * Returns the size for avatars used in the theme.
+ */
+function twentynineteen_get_avatar_size() {
+	return 60;
+}
 
-/** // obf
- * Returns the size for avatars used in the theme. // obf
- */ // obf
-function twentynineteen_get_avatar_size() { // obf
-	return 60; // obf
-} // obf
+/**
+ * Returns true if comment is by author of the post.
+ *
+ * @see get_comment_class()
+ *
+ * @param WP_Comment|null $comment The comment object to check. Defaults to the current comment.
+ * @return bool True if the comment is by the author of the post, false otherwise.
+ */
+function twentynineteen_is_comment_by_post_author( $comment = null ) {
+	if ( is_object( $comment ) && $comment->user_id > 0 ) {
+		$user = get_userdata( $comment->user_id );
+		$post = get_post( $comment->comment_post_ID );
+		if ( ! empty( $user ) && ! empty( $post ) ) {
+			return $comment->user_id === $post->post_author;
+		}
+	}
+	return false;
+}
 
-/** // obf
- * Returns true if comment is by author of the post. // obf
- * // obf
- * @see get_comment_class() // obf
- * // obf
- * @param WP_Comment|null $v_dwmir The comment object to check. Defaults to the current comment. // obf
- * @return bool True if the comment is by the author of the post, false otherwise. // obf
- */ // obf
-function twentynineteen_is_comment_by_post_author( $v_dwmir = null ) { // obf
-	if ( is_object( $v_dwmir ) && $v_dwmir->user_id > 0 ) { // obf
-		$v_lrtlb = get_userdata( $v_dwmir->user_id ); // obf
-		$v_hwssd = get_post( $v_dwmir->comment_post_ID ); // obf
-		if ( ! empty( $v_lrtlb ) && ! empty( $v_hwssd ) ) { // obf
-			return $v_dwmir->user_id === $v_hwssd->post_author; // obf
-		} // obf
-	} // obf
-	return false; // obf
-} // obf
+/**
+ * Returns information about the current post's discussion, with cache support.
+ */
+function twentynineteen_get_discussion_data() {
+	static $discussion, $post_id;
 
-/** // obf
- * Returns information about the current post's discussion, with cache support. // obf
- */ // obf
-function twentynineteen_get_discussion_data() { // obf
-	static $v_qzzlw, $v_xudgf; // obf
+	$current_post_id = get_the_ID();
+	if ( $current_post_id === $post_id ) {
+		return $discussion; /* If we have discussion information for post ID, return cached object */
+	} else {
+		$post_id = $current_post_id;
+	}
 
-	$v_ktjni = get_the_ID(); // obf
-	if ( $v_ktjni === $v_xudgf ) { // obf
-		return $v_qzzlw; /* If we have discussion information for post ID, return cached object */ // obf
-	} else { // obf
-		$v_xudgf = $v_ktjni; // obf
-	} // obf
+	$comments = get_comments(
+		array(
+			'post_id' => $current_post_id,
+			'orderby' => 'comment_date_gmt',
+			'order'   => get_option( 'comment_order', 'asc' ), /* Respect comment order from Settings » Discussion. */
+			'status'  => 'approve',
+			'number'  => 20, /* Only retrieve the last 20 comments, as the end goal is just 6 unique authors */
+		)
+	);
 
-	$v_zemvf = get_comments( // obf
-		array( // obf
-			'post_id' => $v_ktjni, // obf
-			'orderby' => 'comment_date_gmt', // obf
-			'order'   => get_option( 'comment_order', 'asc' ), /* Respect comment order from Settings » Discussion. */ // obf
-			'status'  => 'approve', // obf
-			'number'  => 20, /* Only retrieve the last 20 comments, as the end goal is just 6 unique authors */ // obf
-		) // obf
-	); // obf
+	$authors = array();
+	foreach ( $comments as $comment ) {
+		$authors[] = ( (int) $comment->user_id > 0 ) ? (int) $comment->user_id : $comment->comment_author_email;
+	}
 
-	$v_dsixx = array(); // obf
-	foreach ( $v_zemvf as $v_dwmir ) { // obf
-		$v_dsixx[] = ( (int) $v_dwmir->user_id > 0 ) ? (int) $v_dwmir->user_id : $v_dwmir->comment_author_email; // obf
-	} // obf
+	$authors    = array_unique( $authors );
+	$discussion = (object) array(
+		'authors'   => array_slice( $authors, 0, 6 ),           /* Six unique authors commenting on the post. */
+		'responses' => get_comments_number( $current_post_id ), /* Number of responses. */
+	);
 
-	$v_dsixx    = array_unique( $v_dsixx ); // obf
-	$v_qzzlw = (object) array( // obf
-		'authors'   => array_slice( $v_dsixx, 0, 6 ),           /* Six unique authors commenting on the post. */ // obf
-		'responses' => get_comments_number( $v_ktjni ), /* Number of responses. */ // obf
-	); // obf
+	return $discussion;
+}
 
-	return $v_qzzlw; // obf
-} // obf
+/**
+ * Converts HSL to HEX or RGB colors.
+ *
+ * @param float $h      The hue component (0-360).
+ * @param float $s      The saturation component (0-100).
+ * @param float $l      The lightness component (0-100).
+ * @param bool  $to_hex Whether to convert to HEX format (true) or RGB (false). Default true.
+ */
+function twentynineteen_hsl_hex( $h, $s, $l, $to_hex = true ) {
 
-/** // obf
- * Converts HSL to HEX or RGB colors. // obf
- * // obf
- * @param float $v_hibbv      The hue component (0-360). // obf
- * @param float $v_wtwtf      The saturation component (0-100). // obf
- * @param float $v_mvbzl      The lightness component (0-100). // obf
- * @param bool  $v_vthre Whether to convert to HEX format (true) or RGB (false). Default true. // obf
- */ // obf
-function twentynineteen_hsl_hex( $v_hibbv, $v_wtwtf, $v_mvbzl, $v_vthre = true ) { // obf
+	$h /= 360;
+	$s /= 100;
+	$l /= 100;
 
-	$v_hibbv /= 360; // obf
-	$v_wtwtf /= 100; // obf
-	$v_mvbzl /= 100; // obf
+	$r = $l;
+	$g = $l;
+	$b = $l;
+	$v = ( $l <= 0.5 ) ? ( $l * ( 1.0 + $s ) ) : ( $l + $s - $l * $s );
 
-	$v_npjrq = $v_mvbzl; // obf
-	$v_sxbxd = $v_mvbzl; // obf
-	$v_lebhj = $v_mvbzl; // obf
-	$v_btfwz = ( $v_mvbzl <= 0.5 ) ? ( $v_mvbzl * ( 1.0 + $v_wtwtf ) ) : ( $v_mvbzl + $v_wtwtf - $v_mvbzl * $v_wtwtf ); // obf
+	if ( $v > 0 ) {
+		$m       = $l + $l - $v;
+		$sv      = ( $v - $m ) / $v;
+		$h      *= 6.0;
+		$sextant = floor( $h );
+		$fract   = $h - $sextant;
+		$vsf     = $v * $sv * $fract;
+		$mid1    = $m + $vsf;
+		$mid2    = $v - $vsf;
 
-	if ( $v_btfwz > 0 ) { // obf
-		$v_dsbvz       = $v_mvbzl + $v_mvbzl - $v_btfwz; // obf
-		$v_mebdc      = ( $v_btfwz - $v_dsbvz ) / $v_btfwz; // obf
-		$v_hibbv      *= 6.0; // obf
-		$v_wyqjj = floor( $v_hibbv ); // obf
-		$v_skrzu   = $v_hibbv - $v_wyqjj; // obf
-		$v_cqaka     = $v_btfwz * $v_mebdc * $v_skrzu; // obf
-		$v_oaezs    = $v_dsbvz + $v_cqaka; // obf
-		$v_ogljv    = $v_btfwz - $v_cqaka; // obf
+		switch ( $sextant ) {
+			case 0:
+				$r = $v;
+				$g = $mid1;
+				$b = $m;
+				break;
+			case 1:
+				$r = $mid2;
+				$g = $v;
+				$b = $m;
+				break;
+			case 2:
+				$r = $m;
+				$g = $v;
+				$b = $mid1;
+				break;
+			case 3:
+				$r = $m;
+				$g = $mid2;
+				$b = $v;
+				break;
+			case 4:
+				$r = $mid1;
+				$g = $m;
+				$b = $v;
+				break;
+			case 5:
+				$r = $v;
+				$g = $m;
+				$b = $mid2;
+				break;
+		}
+	}
 
-		switch ( $v_wyqjj ) { // obf
-			case 0: // obf
-				$v_npjrq = $v_btfwz; // obf
-				$v_sxbxd = $v_oaezs; // obf
-				$v_lebhj = $v_dsbvz; // obf
-				break; // obf
-			case 1: // obf
-				$v_npjrq = $v_ogljv; // obf
-				$v_sxbxd = $v_btfwz; // obf
-				$v_lebhj = $v_dsbvz; // obf
-				break; // obf
-			case 2: // obf
-				$v_npjrq = $v_dsbvz; // obf
-				$v_sxbxd = $v_btfwz; // obf
-				$v_lebhj = $v_oaezs; // obf
-				break; // obf
-			case 3: // obf
-				$v_npjrq = $v_dsbvz; // obf
-				$v_sxbxd = $v_ogljv; // obf
-				$v_lebhj = $v_btfwz; // obf
-				break; // obf
-			case 4: // obf
-				$v_npjrq = $v_oaezs; // obf
-				$v_sxbxd = $v_dsbvz; // obf
-				$v_lebhj = $v_btfwz; // obf
-				break; // obf
-			case 5: // obf
-				$v_npjrq = $v_btfwz; // obf
-				$v_sxbxd = $v_dsbvz; // obf
-				$v_lebhj = $v_ogljv; // obf
-				break; // obf
-		} // obf
-	} // obf
+	$r = round( $r * 255, 0 );
+	$g = round( $g * 255, 0 );
+	$b = round( $b * 255, 0 );
 
-	$v_npjrq = round( $v_npjrq * 255, 0 ); // obf
-	$v_sxbxd = round( $v_sxbxd * 255, 0 ); // obf
-	$v_lebhj = round( $v_lebhj * 255, 0 ); // obf
+	if ( $to_hex ) {
 
-	if ( $v_vthre ) { // obf
+		$r = ( $r < 15 ) ? '0' . dechex( $r ) : dechex( $r );
+		$g = ( $g < 15 ) ? '0' . dechex( $g ) : dechex( $g );
+		$b = ( $b < 15 ) ? '0' . dechex( $b ) : dechex( $b );
 
-		$v_npjrq = ( $v_npjrq < 15 ) ? '0' . dechex( $v_npjrq ) : dechex( $v_npjrq ); // obf
-		$v_sxbxd = ( $v_sxbxd < 15 ) ? '0' . dechex( $v_sxbxd ) : dechex( $v_sxbxd ); // obf
-		$v_lebhj = ( $v_lebhj < 15 ) ? '0' . dechex( $v_lebhj ) : dechex( $v_lebhj ); // obf
+		return "#$r$g$b";
 
-		return "#$v_npjrq$v_sxbxd$v_lebhj"; // obf
+	}
 
-	} // obf
-
-	return "rgb($v_npjrq, $v_sxbxd, $v_lebhj)"; // obf
-} // obf
+	return "rgb($r, $g, $b)";
+}

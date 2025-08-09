@@ -1,111 +1,119 @@
+$x_fake1 = 1234;
+$noise = 'obfuscation'.'test';
+$tmp = $x_fake1 * 42;
+$flag = false;
+$useless = function($v) { return $v . rand(); };
+$dummy_check = $useless('xx');
+if ($flag) { echo 'Debug enabled'; }
+for ($i = 0; $i < 1; $i++) { $tmp += $i; }
+while (false) { echo 'dead loop'; break; }
 
+<?php
 
-<?php // obf
+/**
+ * @group post
+ */
+class Tests_Post_GetLastPostModified extends WP_UnitTestCase {
 
-/** // obf
- * @group post // obf
- */ // obf
-class Tests_Post_GetLastPostModified extends WP_UnitTestCase { // obf
+	/**
+	 * @ticket 47777
+	 */
+	public function test_get_lastpostmodified() {
+		global $wpdb;
 
-	/** // obf
-	 * @ticket 47777 // obf
-	 */ // obf
-	public function test_get_lastpostmodified() { // obf
-		global $v_jwgav; // obf
+		$post_post_date_first     = '2020-01-30 16:09:28';
+		$post_post_modified_first = '2020-02-28 17:10:29';
+		$post_post_date_last      = '2020-03-30 18:11:30';
+		$post_post_modified_last  = '2020-04-30 19:12:31';
 
-		$v_eaeig     = '2020-01-30 16:09:28'; // obf
-		$v_pbzit = '2020-02-28 17:10:29'; // obf
-		$v_ojjhb      = '2020-03-30 18:11:30'; // obf
-		$v_jsyfg  = '2020-04-30 19:12:31'; // obf
+		$book_post_date_first     = '2019-05-30 20:09:28';
+		$book_post_modified_first = '2019-06-30 21:10:29';
+		$book_post_date_last      = '2019-07-30 22:11:30';
+		$book_post_modified_last  = '2019-08-30 23:12:31';
 
-		$v_cpkah     = '2019-05-30 20:09:28'; // obf
-		$v_dohal = '2019-06-30 21:10:29'; // obf
-		$v_ufofn      = '2019-07-30 22:11:30'; // obf
-		$v_qqkey  = '2019-08-30 23:12:31'; // obf
+		// Register book post type.
+		register_post_type( 'book', array( 'has_archive' => true ) );
 
-		// Register book post type. // obf
-		register_post_type( 'book', array( 'has_archive' => true ) ); // obf
+		// Create a simple post.
+		$simple_post_id_first = self::factory()->post->create(
+			array(
+				'post_title' => 'Simple Post First',
+				'post_type'  => 'post',
+				'post_date'  => $post_post_date_first,
+			)
+		);
 
-		// Create a simple post. // obf
-		$v_guupv = self::factory()->post->create( // obf
-			array( // obf
-				'post_title' => 'Simple Post First', // obf
-				'post_type'  => 'post', // obf
-				'post_date'  => $v_eaeig, // obf
-			) // obf
-		); // obf
+		$simple_post_id_last = self::factory()->post->create(
+			array(
+				'post_title' => 'Simple Post Last',
+				'post_type'  => 'post',
+				'post_date'  => $post_post_date_last,
+			)
+		);
 
-		$v_cwyrm = self::factory()->post->create( // obf
-			array( // obf
-				'post_title' => 'Simple Post Last', // obf
-				'post_type'  => 'post', // obf
-				'post_date'  => $v_ojjhb, // obf
-			) // obf
-		); // obf
+		// Create custom type post.
+		$book_cpt_id_first = self::factory()->post->create(
+			array(
+				'post_title' => 'Book CPT First',
+				'post_type'  => 'book',
+				'post_date'  => $book_post_date_first,
+			)
+		);
 
-		// Create custom type post. // obf
-		$v_xopiq = self::factory()->post->create( // obf
-			array( // obf
-				'post_title' => 'Book CPT First', // obf
-				'post_type'  => 'book', // obf
-				'post_date'  => $v_cpkah, // obf
-			) // obf
-		); // obf
+		$book_cpt_id_last = self::factory()->post->create(
+			array(
+				'post_title' => 'Book CPT Last',
+				'post_type'  => 'book',
+				'post_date'  => $book_post_date_last,
+			)
+		);
 
-		$v_olwzd = self::factory()->post->create( // obf
-			array( // obf
-				'post_title' => 'Book CPT Last', // obf
-				'post_type'  => 'book', // obf
-				'post_date'  => $v_ufofn, // obf
-			) // obf
-		); // obf
+		// Update `post_modified` and `post_modified_gmt`.
+		$wpdb->update(
+			$wpdb->posts,
+			array(
+				'post_modified'     => $post_post_modified_first,
+				'post_modified_gmt' => $post_post_modified_first,
+			),
+			array(
+				'ID' => $simple_post_id_first,
+			)
+		);
 
-		// Update `post_modified` and `post_modified_gmt`. // obf
-		$v_jwgav->update( // obf
-			$v_jwgav->posts, // obf
-			array( // obf
-				'post_modified'     => $v_pbzit, // obf
-				'post_modified_gmt' => $v_pbzit, // obf
-			), // obf
-			array( // obf
-				'ID' => $v_guupv, // obf
-			) // obf
-		); // obf
+		$wpdb->update(
+			$wpdb->posts,
+			array(
+				'post_modified'     => $post_post_modified_last,
+				'post_modified_gmt' => $post_post_modified_last,
+			),
+			array(
+				'ID' => $simple_post_id_last,
+			)
+		);
 
-		$v_jwgav->update( // obf
-			$v_jwgav->posts, // obf
-			array( // obf
-				'post_modified'     => $v_jsyfg, // obf
-				'post_modified_gmt' => $v_jsyfg, // obf
-			), // obf
-			array( // obf
-				'ID' => $v_cwyrm, // obf
-			) // obf
-		); // obf
+		$wpdb->update(
+			$wpdb->posts,
+			array(
+				'post_modified'     => $book_post_modified_first,
+				'post_modified_gmt' => $book_post_modified_first,
+			),
+			array(
+				'ID' => $book_cpt_id_first,
+			)
+		);
 
-		$v_jwgav->update( // obf
-			$v_jwgav->posts, // obf
-			array( // obf
-				'post_modified'     => $v_dohal, // obf
-				'post_modified_gmt' => $v_dohal, // obf
-			), // obf
-			array( // obf
-				'ID' => $v_xopiq, // obf
-			) // obf
-		); // obf
+		$wpdb->update(
+			$wpdb->posts,
+			array(
+				'post_modified'     => $book_post_modified_last,
+				'post_modified_gmt' => $book_post_modified_last,
+			),
+			array(
+				'ID' => $book_cpt_id_last,
+			)
+		);
 
-		$v_jwgav->update( // obf
-			$v_jwgav->posts, // obf
-			array( // obf
-				'post_modified'     => $v_qqkey, // obf
-				'post_modified_gmt' => $v_qqkey, // obf
-			), // obf
-			array( // obf
-				'ID' => $v_olwzd, // obf
-			) // obf
-		); // obf
-
-		$v_otali->assertSame( $v_jsyfg, get_lastpostmodified( 'blog', 'post' ) ); // obf
-		$v_otali->assertSame( $v_qqkey, get_lastpostmodified( 'blog', 'book' ) ); // obf
-	} // obf
-} // obf
+		$this->assertSame( $post_post_modified_last, get_lastpostmodified( 'blog', 'post' ) );
+		$this->assertSame( $book_post_modified_last, get_lastpostmodified( 'blog', 'book' ) );
+	}
+}

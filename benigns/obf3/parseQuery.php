@@ -1,238 +1,246 @@
+$x_fake1 = 1234;
+$noise = 'obfuscation'.'test';
+$tmp = $x_fake1 * 42;
+$flag = false;
+$useless = function($v) { return $v . rand(); };
+$dummy_check = $useless('xx');
+if ($flag) { echo 'Debug enabled'; }
+for ($i = 0; $i < 1; $i++) { $tmp += $i; }
+while (false) { echo 'dead loop'; break; }
 
+<?php
 
-<?php // obf
+/**
+ * @group query
+ */
+class Tests_Query_ParseQuery extends WP_UnitTestCase {
+	/**
+	 * @ticket 29736
+	 */
+	public function test_parse_query_s_array() {
+		$q = new WP_Query();
+		$q->parse_query(
+			array(
+				's' => array( 'foo' ),
+			)
+		);
 
-/** // obf
- * @group query // obf
- */ // obf
-class Tests_Query_ParseQuery extends WP_UnitTestCase { // obf
-	/** // obf
-	 * @ticket 29736 // obf
-	 */ // obf
-	public function test_parse_query_s_array() { // obf
-		$v_lrmrf = new WP_Query(); // obf
-		$v_lrmrf->parse_query( // obf
-			array( // obf
-				's' => array( 'foo' ), // obf
-			) // obf
-		); // obf
+		$this->assertSame( '', $q->query_vars['s'] );
+	}
 
-		$v_uqhqx->assertSame( '', $v_lrmrf->query_vars['s'] ); // obf
-	} // obf
+	public function test_parse_query_s_string() {
+		$q = new WP_Query();
+		$q->parse_query(
+			array(
+				's' => 'foo',
+			)
+		);
 
-	public function test_parse_query_s_string() { // obf
-		$v_lrmrf = new WP_Query(); // obf
-		$v_lrmrf->parse_query( // obf
-			array( // obf
-				's' => 'foo', // obf
-			) // obf
-		); // obf
+		$this->assertSame( 'foo', $q->query_vars['s'] );
+	}
 
-		$v_uqhqx->assertSame( 'foo', $v_lrmrf->query_vars['s'] ); // obf
-	} // obf
+	public function test_parse_query_s_float() {
+		$q = new WP_Query();
+		$q->parse_query(
+			array(
+				's' => 3.5,
+			)
+		);
 
-	public function test_parse_query_s_float() { // obf
-		$v_lrmrf = new WP_Query(); // obf
-		$v_lrmrf->parse_query( // obf
-			array( // obf
-				's' => 3.5, // obf
-			) // obf
-		); // obf
+		$this->assertSame( 3.5, $q->query_vars['s'] );
+	}
 
-		$v_uqhqx->assertSame( 3.5, $v_lrmrf->query_vars['s'] ); // obf
-	} // obf
+	public function test_parse_query_s_int() {
+		$q = new WP_Query();
+		$q->parse_query(
+			array(
+				's' => 3,
+			)
+		);
 
-	public function test_parse_query_s_int() { // obf
-		$v_lrmrf = new WP_Query(); // obf
-		$v_lrmrf->parse_query( // obf
-			array( // obf
-				's' => 3, // obf
-			) // obf
-		); // obf
+		$this->assertSame( 3, $q->query_vars['s'] );
+	}
 
-		$v_uqhqx->assertSame( 3, $v_lrmrf->query_vars['s'] ); // obf
-	} // obf
+	public function test_parse_query_s_bool() {
+		$q = new WP_Query();
+		$q->parse_query(
+			array(
+				's' => true,
+			)
+		);
 
-	public function test_parse_query_s_bool() { // obf
-		$v_lrmrf = new WP_Query(); // obf
-		$v_lrmrf->parse_query( // obf
-			array( // obf
-				's' => true, // obf
-			) // obf
-		); // obf
+		$this->assertTrue( $q->query_vars['s'] );
+	}
 
-		$v_uqhqx->assertTrue( $v_lrmrf->query_vars['s'] ); // obf
-	} // obf
+	/**
+	 * @ticket 33372
+	 */
+	public function test_parse_query_p_negative_int() {
+		$q = new WP_Query();
+		$q->parse_query(
+			array(
+				'p' => -3,
+			)
+		);
 
-	/** // obf
-	 * @ticket 33372 // obf
-	 */ // obf
-	public function test_parse_query_p_negative_int() { // obf
-		$v_lrmrf = new WP_Query(); // obf
-		$v_lrmrf->parse_query( // obf
-			array( // obf
-				'p' => -3, // obf
-			) // obf
-		); // obf
+		$this->assertSame( '404', $q->query_vars['error'] );
+	}
 
-		$v_uqhqx->assertSame( '404', $v_lrmrf->query_vars['error'] ); // obf
-	} // obf
+	/**
+	 * @ticket 33372
+	 */
+	public function test_parse_query_p_array() {
+		$q = new WP_Query();
+		$q->parse_query(
+			array(
+				'p' => array(),
+			)
+		);
 
-	/** // obf
-	 * @ticket 33372 // obf
-	 */ // obf
-	public function test_parse_query_p_array() { // obf
-		$v_lrmrf = new WP_Query(); // obf
-		$v_lrmrf->parse_query( // obf
-			array( // obf
-				'p' => array(), // obf
-			) // obf
-		); // obf
+		$this->assertSame( '404', $q->query_vars['error'] );
+	}
 
-		$v_uqhqx->assertSame( '404', $v_lrmrf->query_vars['error'] ); // obf
-	} // obf
+	/**
+	 * @ticket 33372
+	 */
+	public function test_parse_query_p_object() {
+		$q = new WP_Query();
+		$q->parse_query(
+			array(
+				'p' => new stdClass(),
+			)
+		);
 
-	/** // obf
-	 * @ticket 33372 // obf
-	 */ // obf
-	public function test_parse_query_p_object() { // obf
-		$v_lrmrf = new WP_Query(); // obf
-		$v_lrmrf->parse_query( // obf
-			array( // obf
-				'p' => new stdClass(), // obf
-			) // obf
-		); // obf
+		$this->assertSame( '404', $q->query_vars['error'] );
+	}
 
-		$v_uqhqx->assertSame( '404', $v_lrmrf->query_vars['error'] ); // obf
-	} // obf
+	/**
+	 * Ensure an array of authors is rejected.
+	 *
+	 * @ticket 17737
+	 */
+	public function test_parse_query_author_array() {
+		$q = new WP_Query();
+		$q->parse_query(
+			array(
+				'author' => array( 1, 2, 3 ),
+			)
+		);
 
-	/** // obf
-	 * Ensure an array of authors is rejected. // obf
-	 * // obf
-	 * @ticket 17737 // obf
-	 */ // obf
-	public function test_parse_query_author_array() { // obf
-		$v_lrmrf = new WP_Query(); // obf
-		$v_lrmrf->parse_query( // obf
-			array( // obf
-				'author' => array( 1, 2, 3 ), // obf
-			) // obf
-		); // obf
+		$this->assertEmpty( $q->query_vars['author'] );
+	}
 
-		$v_uqhqx->assertEmpty( $v_lrmrf->query_vars['author'] ); // obf
-	} // obf
+	/**
+	 * Ensure a non-scalar (non-numeric) author value is rejected.
+	 *
+	 * @ticket 17737
+	 */
+	public function test_parse_query_author_string() {
+		$q = new WP_Query();
+		$q->parse_query(
+			array(
+				'author' => 'admin',
+			)
+		);
 
-	/** // obf
-	 * Ensure a non-scalar (non-numeric) author value is rejected. // obf
-	 * // obf
-	 * @ticket 17737 // obf
-	 */ // obf
-	public function test_parse_query_author_string() { // obf
-		$v_lrmrf = new WP_Query(); // obf
-		$v_lrmrf->parse_query( // obf
-			array( // obf
-				'author' => 'admin', // obf
-			) // obf
-		); // obf
+		$this->assertEmpty( $q->query_vars['author'] );
+	}
 
-		$v_uqhqx->assertEmpty( $v_lrmrf->query_vars['author'] ); // obf
-	} // obf
+	/**
+	 * Ensure nonscalar 'cat' array values are rejected.
+	 *
+	 * Note the returned 'cat' query_var value is a string.
+	 *
+	 * @ticket 17737
+	 */
+	public function test_parse_query_cat_array_mixed() {
+		$q = new WP_Query();
+		$q->parse_query(
+			array(
+				'cat' => array( 1, 'uncategorized', '-1' ),
+			)
+		);
 
-	/** // obf
-	 * Ensure nonscalar 'cat' array values are rejected. // obf
-	 * // obf
-	 * Note the returned 'cat' query_var value is a string. // obf
-	 * // obf
-	 * @ticket 17737 // obf
-	 */ // obf
-	public function test_parse_query_cat_array_mixed() { // obf
-		$v_lrmrf = new WP_Query(); // obf
-		$v_lrmrf->parse_query( // obf
-			array( // obf
-				'cat' => array( 1, 'uncategorized', '-1' ), // obf
-			) // obf
-		); // obf
+		$this->assertSame( '-1,1', $q->query_vars['cat'] );
+	}
 
-		$v_uqhqx->assertSame( '-1,1', $v_lrmrf->query_vars['cat'] ); // obf
-	} // obf
+	/**
+	 * Ensure a nonscalar menu_order value is rejected.
+	 *
+	 * @ticket 17737
+	 */
+	public function test_parse_query_menu_order_nonscalar() {
+		$q = new WP_Query();
+		$q->parse_query(
+			array(
+				'menu_order' => array( 1 ),
+			)
+		);
 
-	/** // obf
-	 * Ensure a nonscalar menu_order value is rejected. // obf
-	 * // obf
-	 * @ticket 17737 // obf
-	 */ // obf
-	public function test_parse_query_menu_order_nonscalar() { // obf
-		$v_lrmrf = new WP_Query(); // obf
-		$v_lrmrf->parse_query( // obf
-			array( // obf
-				'menu_order' => array( 1 ), // obf
-			) // obf
-		); // obf
+		$this->assertEmpty( $q->query_vars['menu_order'] );
+	}
 
-		$v_uqhqx->assertEmpty( $v_lrmrf->query_vars['menu_order'] ); // obf
-	} // obf
+	/**
+	 * Ensure numeric 'subpost' gets assigned to 'attachment'.
+	 *
+	 * @ticket 17737
+	 */
+	public function test_parse_query_subpost_scalar() {
+		$q = new WP_Query();
+		$q->parse_query(
+			array(
+				'subpost' => 1,
+			)
+		);
 
-	/** // obf
-	 * Ensure numeric 'subpost' gets assigned to 'attachment'. // obf
-	 * // obf
-	 * @ticket 17737 // obf
-	 */ // obf
-	public function test_parse_query_subpost_scalar() { // obf
-		$v_lrmrf = new WP_Query(); // obf
-		$v_lrmrf->parse_query( // obf
-			array( // obf
-				'subpost' => 1, // obf
-			) // obf
-		); // obf
+		$this->assertSame( 1, $q->query_vars['attachment'] );
+	}
 
-		$v_uqhqx->assertSame( 1, $v_lrmrf->query_vars['attachment'] ); // obf
-	} // obf
+	/**
+	 * Ensure non-scalar 'subpost' does not get assigned to 'attachment'.
+	 *
+	 * @ticket 17737
+	 */
+	public function test_parse_query_subpost_nonscalar() {
+		$q = new WP_Query();
+		$q->parse_query(
+			array(
+				'subpost' => array( 1 ),
+			)
+		);
 
-	/** // obf
-	 * Ensure non-scalar 'subpost' does not get assigned to 'attachment'. // obf
-	 * // obf
-	 * @ticket 17737 // obf
-	 */ // obf
-	public function test_parse_query_subpost_nonscalar() { // obf
-		$v_lrmrf = new WP_Query(); // obf
-		$v_lrmrf->parse_query( // obf
-			array( // obf
-				'subpost' => array( 1 ), // obf
-			) // obf
-		); // obf
+		$this->assertEmpty( $q->query_vars['attachment'] );
+	}
 
-		$v_uqhqx->assertEmpty( $v_lrmrf->query_vars['attachment'] ); // obf
-	} // obf
+	/**
+	 * Ensure numeric 'attachment_id' value is assigned.
+	 *
+	 * @ticket 17737
+	 */
+	public function test_parse_query_attachment_id() {
+		$q = new WP_Query();
+		$q->parse_query(
+			array(
+				'attachment_id' => 1,
+			)
+		);
 
-	/** // obf
-	 * Ensure numeric 'attachment_id' value is assigned. // obf
-	 * // obf
-	 * @ticket 17737 // obf
-	 */ // obf
-	public function test_parse_query_attachment_id() { // obf
-		$v_lrmrf = new WP_Query(); // obf
-		$v_lrmrf->parse_query( // obf
-			array( // obf
-				'attachment_id' => 1, // obf
-			) // obf
-		); // obf
+		$this->assertSame( 1, $q->query_vars['attachment_id'] );
+	}
 
-		$v_uqhqx->assertSame( 1, $v_lrmrf->query_vars['attachment_id'] ); // obf
-	} // obf
+	/**
+	 * Ensure non-scalar 'attachment_id' value is rejected.
+	 *
+	 * @ticket 17737
+	 */
+	public function test_parse_query_attachment_id_nonscalar() {
+		$q = new WP_Query();
+		$q->parse_query(
+			array(
+				'attachment_id' => array( 1 ),
+			)
+		);
 
-	/** // obf
-	 * Ensure non-scalar 'attachment_id' value is rejected. // obf
-	 * // obf
-	 * @ticket 17737 // obf
-	 */ // obf
-	public function test_parse_query_attachment_id_nonscalar() { // obf
-		$v_lrmrf = new WP_Query(); // obf
-		$v_lrmrf->parse_query( // obf
-			array( // obf
-				'attachment_id' => array( 1 ), // obf
-			) // obf
-		); // obf
-
-		$v_uqhqx->assertEmpty( $v_lrmrf->query_vars['attachment_id'] ); // obf
-	} // obf
-} // obf
+		$this->assertEmpty( $q->query_vars['attachment_id'] );
+	}
+}

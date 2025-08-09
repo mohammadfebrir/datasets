@@ -1,3123 +1,3131 @@
-
-__fn_37772 = "preg_replace"; // obf
-<?php // obf
-
-///////////////////////////////////////////////////////////////// // obf
-/// getID3() by James Heinrich <info@getid3.org>               // // obf
-//  available at https://github.com/JamesHeinrich/getID3       // // obf
-//            or https://www.getid3.org                        // // obf
-//            or http://getid3.sourceforge.net                 // // obf
-//  see readme.txt for more details                            // // obf
-///////////////////////////////////////////////////////////////// // obf
-//                                                             // // obf
-// module.audio-video.quicktime.php                            // // obf
-// module for analyzing Quicktime and MP3-in-MP4 files         // // obf
-// dependencies: module.audio.mp3.php                          // // obf
-// dependencies: module.tag.id3v2.php                          // // obf
-//                                                            /// // obf
-///////////////////////////////////////////////////////////////// // obf
-
-if (!defined('GETID3_INCLUDEPATH')) { // prevent path-exposing attacks that access modules directly on public webservers // obf
-	exit; // obf
-} // obf
-getid3_lib::IncludeDependency(GETID3_INCLUDEPATH.'module.audio.mp3.php', __FILE__, true); // obf
-getid3_lib::IncludeDependency(GETID3_INCLUDEPATH.'module.tag.id3v2.php', __FILE__, true); // needed for ISO 639-2 language code lookup // obf
-
-class getid3_quicktime extends getid3_handler // obf
-{ // obf
-
-	/** audio-video.quicktime // obf
-	 * return all parsed data from all atoms if true, otherwise just returned parsed metadata // obf
-	 * // obf
-	 * @var bool // obf
-	 */ // obf
-	public $v_alnze        = false; // obf
-
-	/** audio-video.quicktime // obf
-	 * return all parsed data from all atoms if true, otherwise just returned parsed metadata // obf
-	 * // obf
-	 * @var bool // obf
-	 */ // obf
-	public $v_iqibq = false; // obf
-
-	/** // obf
-	 * @return bool // obf
-	 */ // obf
-	public function Analyze() { // obf
-		$v_xfkmi = &$v_bounb->getid3->info; // obf
-
-		$v_xfkmi['fileformat'] = 'quicktime'; // obf
-		$v_xfkmi['quicktime']['hinting']    = false; // obf
-		$v_xfkmi['quicktime']['controller'] = 'standard'; // may be overridden if 'ctyp' atom is present // obf
-
-		$v_bounb->fseek($v_xfkmi['avdataoffset']); // obf
-
-		$v_mfllb      = 0; // obf
-		$v_wubte = 0; // obf
-		$v_dbkhy = $v_xfkmi['php_memory_limit'] ? round($v_xfkmi['php_memory_limit'] / 4) : $v_bounb->getid3->option_fread_buffer_size * 1024; // set read buffer to 25% of PHP memory limit (if one is specified), otherwise use option_fread_buffer_size [default: 32MB] // obf
-		while ($v_mfllb < $v_xfkmi['avdataend']) { // obf
-			if (!getid3_lib::intValueSupported($v_mfllb)) { // obf
-				$v_bounb->error('Unable to parse atom at offset '.$v_mfllb.' because beyond '.round(PHP_INT_MAX / 1073741824).'GB limit of PHP filesystem functions'); // obf
-				break; // obf
-			} // obf
-			$v_bounb->fseek($v_mfllb); // obf
-			$v_dsqga = $v_bounb->fread(8); // obf
-
-			// https://github.com/JamesHeinrich/getID3/issues/382 // obf
-			// Atom sizes are stored as 32-bit number in most cases, but sometimes (notably for "mdat") // obf
-			// a 64-bit value is required, in which case the normal 32-bit size field is set to 0x00000001 // obf
-			// and the 64-bit "real" size value is the next 8 bytes. // obf
-			$v_qfaqu = 0; // obf
-			$v_azoxa = getid3_lib::BigEndian2Int(substr($v_dsqga, 0, 4)); // obf
-			$v_ayfzh = substr($v_dsqga, 4, 4); // obf
-			if ($v_azoxa == 1) { // obf
-				$v_qfaqu = 8; // obf
-				$v_azoxa = getid3_lib::BigEndian2Int($v_bounb->fread($v_qfaqu)); // obf
-			} // obf
-
-			if (($v_mfllb + $v_azoxa) > $v_xfkmi['avdataend']) { // obf
-				$v_xfkmi['quicktime'][$v_ayfzh]['name']   = $v_ayfzh; // obf
-				$v_xfkmi['quicktime'][$v_ayfzh]['size']   = $v_azoxa; // obf
-				$v_xfkmi['quicktime'][$v_ayfzh]['offset'] = $v_mfllb; // obf
-				$v_bounb->error('Atom at offset '.$v_mfllb.' claims to go beyond end-of-file (length: '.$v_azoxa.' bytes)'); // obf
-				return false; // obf
-			} // obf
-			if ($v_azoxa == 0) { // obf
-				// Furthermore, for historical reasons the list of atoms is optionally // obf
-				// terminated by a 32-bit integer set to 0. If you are writing a program // obf
-				// to read user data atoms, you should allow for the terminating 0. // obf
-				$v_xfkmi['quicktime'][$v_ayfzh]['name']   = $v_ayfzh; // obf
-				$v_xfkmi['quicktime'][$v_ayfzh]['size']   = $v_azoxa; // obf
-				$v_xfkmi['quicktime'][$v_ayfzh]['offset'] = $v_mfllb; // obf
-				break; // obf
-			} // obf
-			$v_acaac = array(); // obf
-			$v_xhfgl = $v_bounb->QuicktimeParseAtom($v_ayfzh, $v_azoxa, $v_bounb->fread(min($v_azoxa - $v_qfaqu, $v_dbkhy)), $v_mfllb, $v_acaac, $v_bounb->ParseAllPossibleAtoms); // obf
-			$v_xhfgl['name']   = $v_ayfzh; // obf
-			$v_xhfgl['size']   = $v_azoxa; // obf
-			$v_xhfgl['offset'] = $v_mfllb; // obf
-			if ($v_qfaqu) { // obf
-				$v_xhfgl['xsize_bytes'] = $v_qfaqu; // obf
-			} // obf
-			if (in_array($v_ayfzh, array('uuid'))) { // obf
-				@$v_xfkmi['quicktime'][$v_ayfzh][] = $v_xhfgl; // obf
-			} else { // obf
-				$v_xfkmi['quicktime'][$v_ayfzh] = $v_xhfgl; // obf
-			} // obf
-
-			$v_mfllb += $v_azoxa; // obf
-			$v_wubte++; // obf
-		} // obf
-
-		if (!empty($v_xfkmi['avdataend_tmp'])) { // obf
-			// this value is assigned to a temp value and then erased because // obf
-			// otherwise any atoms beyond the 'mdat' atom would not get parsed // obf
-			$v_xfkmi['avdataend'] = $v_xfkmi['avdataend_tmp']; // obf
-			unset($v_xfkmi['avdataend_tmp']); // obf
-		} // obf
-
-		if (isset($v_xfkmi['quicktime']['comments']['chapters']) && is_array($v_xfkmi['quicktime']['comments']['chapters']) && (count($v_xfkmi['quicktime']['comments']['chapters']) > 0)) { // obf
-			$v_pjuky = $v_bounb->quicktime_time_to_sample_table($v_xfkmi); // obf
-			for ($v_uvhcn = 0; $v_uvhcn < count($v_xfkmi['quicktime']['comments']['chapters']); $v_uvhcn++) { // obf
-				$v_xennm = array(); // obf
-				$v_xennm['title'] = $v_xfkmi['quicktime']['comments']['chapters'][$v_uvhcn]; // obf
-				if (isset($v_pjuky[$v_uvhcn])) { // obf
-					$v_xennm['duration_sample'] = $v_pjuky[$v_uvhcn]['sample_duration']; // obf
-					if ($v_uvhcn > 0) { // obf
-						$v_xennm['start_sample'] = $v_xfkmi['quicktime']['bookmarks'][($v_uvhcn - 1)]['start_sample'] + $v_xfkmi['quicktime']['bookmarks'][($v_uvhcn - 1)]['duration_sample']; // obf
-					} else { // obf
-						$v_xennm['start_sample'] = 0; // obf
-					} // obf
-					if ($v_rawox = $v_bounb->quicktime_bookmark_time_scale($v_xfkmi)) { // obf
-						$v_xennm['duration_seconds'] = $v_xennm['duration_sample'] / $v_rawox; // obf
-						$v_xennm['start_seconds']    = $v_xennm['start_sample']    / $v_rawox; // obf
-					} // obf
-				} // obf
-				$v_xfkmi['quicktime']['bookmarks'][] = $v_xennm; // obf
-			} // obf
-		} // obf
-
-		if (isset($v_xfkmi['quicktime']['temp_meta_key_names'])) { // obf
-			unset($v_xfkmi['quicktime']['temp_meta_key_names']); // obf
-		} // obf
-
-		if (!empty($v_xfkmi['quicktime']['comments']['location.ISO6709'])) { // obf
-			// https://en.wikipedia.org/wiki/ISO_6709 // obf
-			foreach ($v_xfkmi['quicktime']['comments']['location.ISO6709'] as $v_etgtz) { // obf
-				$v_ynpla = array('latitude'=>false, 'longitude'=>false, 'altitude'=>false); // obf
-				if (preg_match('#^([\\+\\-])([0-9]{2}|[0-9]{4}|[0-9]{6})(\\.[0-9]+)?([\\+\\-])([0-9]{3}|[0-9]{5}|[0-9]{7})(\\.[0-9]+)?(([\\+\\-])([0-9]{3}|[0-9]{5}|[0-9]{7})(\\.[0-9]+)?)?/$#', $v_etgtz, $v_fpnww)) { // obf
-					// phpcs:ignore PHPCompatibility.Lists.AssignmentOrder.Affected // obf
-					@list($v_xlxmp, $v_aadyl, $v_cbfpc, $v_hyltd, $v_krddd, $v_ltvrw, $v_dlfzf, $v_xlxmp, $v_qrwna, $v_xsyhs, $v_fqiod) = $v_fpnww; // obf
-
-					if (strlen($v_cbfpc) == 2) {        // [+-]DD.D // obf
-						$v_ynpla['latitude'] = (($v_aadyl == '-') ? -1 : 1) * floatval(ltrim($v_cbfpc, '0').$v_hyltd); // obf
-					} elseif (strlen($v_cbfpc) == 4) {  // [+-]DDMM.M // obf
-						$v_ynpla['latitude'] = (($v_aadyl == '-') ? -1 : 1) * floatval(ltrim(substr($v_cbfpc, 0, 2), '0')) + floatval(ltrim(substr($v_cbfpc, 2, 2), '0').$v_hyltd / 60); // obf
-					} elseif (strlen($v_cbfpc) == 6) {  // [+-]DDMMSS.S // obf
-						$v_ynpla['latitude'] = (($v_aadyl == '-') ? -1 : 1) * floatval(ltrim(substr($v_cbfpc, 0, 2), '0')) + floatval((int) ltrim(substr($v_cbfpc, 2, 2), '0') / 60) + floatval(ltrim(substr($v_cbfpc, 4, 2), '0').$v_hyltd / 3600); // obf
-					} // obf
-
-					if (strlen($v_ltvrw) == 3) {        // [+-]DDD.D // obf
-						$v_ynpla['longitude'] = (($v_krddd == '-') ? -1 : 1) * floatval(ltrim($v_ltvrw, '0').$v_dlfzf); // obf
-					} elseif (strlen($v_ltvrw) == 5) {  // [+-]DDDMM.M // obf
-						$v_ynpla['longitude'] = (($v_krddd == '-') ? -1 : 1) * floatval(ltrim(substr($v_ltvrw, 0, 2), '0')) + floatval(ltrim(substr($v_ltvrw, 2, 2), '0').$v_dlfzf / 60); // obf
-					} elseif (strlen($v_ltvrw) == 7) {  // [+-]DDDMMSS.S // obf
-						$v_ynpla['longitude'] = (($v_krddd == '-') ? -1 : 1) * floatval(ltrim(substr($v_ltvrw, 0, 2), '0')) + floatval((int) ltrim(substr($v_ltvrw, 2, 2), '0') / 60) + floatval(ltrim(substr($v_ltvrw, 4, 2), '0').$v_dlfzf / 3600); // obf
-					} // obf
-
-					if (strlen($v_xsyhs) == 3) {        // [+-]DDD.D // obf
-						$v_ynpla['altitude'] = (($v_qrwna == '-') ? -1 : 1) * floatval(ltrim($v_xsyhs, '0').$v_fqiod); // obf
-					} elseif (strlen($v_xsyhs) == 5) {  // [+-]DDDMM.M // obf
-						$v_ynpla['altitude'] = (($v_qrwna == '-') ? -1 : 1) * floatval(ltrim(substr($v_xsyhs, 0, 2), '0')) + floatval(ltrim(substr($v_xsyhs, 2, 2), '0').$v_fqiod / 60); // obf
-					} elseif (strlen($v_xsyhs) == 7) {  // [+-]DDDMMSS.S // obf
-						$v_ynpla['altitude'] = (($v_qrwna == '-') ? -1 : 1) * floatval(ltrim(substr($v_xsyhs, 0, 2), '0')) + floatval((int) ltrim(substr($v_xsyhs, 2, 2), '0') / 60) + floatval(ltrim(substr($v_xsyhs, 4, 2), '0').$v_fqiod / 3600); // obf
-					} // obf
-
-					foreach (array('latitude', 'longitude', 'altitude') as $v_spmek) { // obf
-						if ($v_ynpla[$v_spmek] !== false) { // obf
-							$v_oeeyw = (($v_aadyl == '-') ? -1 : 1) * floatval($v_ynpla[$v_spmek]); // obf
-							if (!isset($v_xfkmi['quicktime']['comments']['gps_'.$v_spmek]) || !in_array($v_oeeyw, $v_xfkmi['quicktime']['comments']['gps_'.$v_spmek])) { // obf
-								@$v_xfkmi['quicktime']['comments']['gps_'.$v_spmek][] = (($v_aadyl == '-') ? -1 : 1) * floatval($v_ynpla[$v_spmek]); // obf
-							} // obf
-						} // obf
-					} // obf
-				} // obf
-				if ($v_ynpla['latitude'] === false) { // obf
-					$v_bounb->warning('location.ISO6709 string not parsed correctly: "'.$v_etgtz.'", please submit as a bug'); // obf
-				} // obf
-				break; // obf
-			} // obf
-		} // obf
-
-		if (!isset($v_xfkmi['bitrate']) && !empty($v_xfkmi['playtime_seconds'])) { // obf
-			$v_xfkmi['bitrate'] = (($v_xfkmi['avdataend'] - $v_xfkmi['avdataoffset']) * 8) / $v_xfkmi['playtime_seconds']; // obf
-		} // obf
-		if (isset($v_xfkmi['bitrate']) && !isset($v_xfkmi['audio']['bitrate']) && !isset($v_xfkmi['quicktime']['video'])) { // obf
-			$v_xfkmi['audio']['bitrate'] = $v_xfkmi['bitrate']; // obf
-		} // obf
-		if (!empty($v_xfkmi['bitrate']) && !empty($v_xfkmi['audio']['bitrate']) && empty($v_xfkmi['video']['bitrate']) && !empty($v_xfkmi['video']['frame_rate']) && !empty($v_xfkmi['video']['resolution_x']) && ($v_xfkmi['bitrate'] > $v_xfkmi['audio']['bitrate'])) { // obf
-			$v_xfkmi['video']['bitrate'] = $v_xfkmi['bitrate'] - $v_xfkmi['audio']['bitrate']; // obf
-		} // obf
-		if (!empty($v_xfkmi['playtime_seconds']) && !isset($v_xfkmi['video']['frame_rate']) && !empty($v_xfkmi['quicktime']['stts_framecount'])) { // obf
-			foreach ($v_xfkmi['quicktime']['stts_framecount'] as $v_spmek => $v_jyfgu) { // obf
-				$v_wdcke = $v_jyfgu / $v_xfkmi['playtime_seconds']; // obf
-				if ($v_wdcke > 240) { // obf
-					// has to be audio samples // obf
-				} else { // obf
-					$v_xfkmi['video']['frame_rate'] = $v_wdcke; // obf
-					break; // obf
-				} // obf
-			} // obf
-		} // obf
-		if ($v_xfkmi['audio']['dataformat'] == 'mp4') { // obf
-			$v_xfkmi['fileformat'] = 'mp4'; // obf
-			if (empty($v_xfkmi['video']['resolution_x'])) { // obf
-				$v_xfkmi['mime_type']  = 'audio/mp4'; // obf
-				unset($v_xfkmi['video']['dataformat']); // obf
-			} else { // obf
-				$v_xfkmi['mime_type']  = 'video/mp4'; // obf
-			} // obf
-		} // obf
-
-		if (!$v_bounb->ReturnAtomData) { // obf
-			unset($v_xfkmi['quicktime']['moov']); // obf
-		} // obf
-
-		if (empty($v_xfkmi['audio']['dataformat']) && !empty($v_xfkmi['quicktime']['audio'])) { // obf
-			$v_xfkmi['audio']['dataformat'] = 'quicktime'; // obf
-		} // obf
-		if (empty($v_xfkmi['video']['dataformat']) && !empty($v_xfkmi['quicktime']['video'])) { // obf
-			$v_xfkmi['video']['dataformat'] = 'quicktime'; // obf
-		} // obf
-		if (isset($v_xfkmi['video']) && ($v_xfkmi['mime_type'] == 'audio/mp4') && empty($v_xfkmi['video']['resolution_x']) && empty($v_xfkmi['video']['resolution_y']))  { // obf
-			unset($v_xfkmi['video']); // obf
-		} // obf
-
-		return true; // obf
-	} // obf
-
-	/** // obf
-	 * @param string $v_ayfzh // obf
-	 * @param int    $v_azoxa // obf
-	 * @param string $v_xgduy // obf
-	 * @param int    $v_wglus // obf
-	 * @param array  $v_acaac // obf
-	 * @param bool   $v_iqibq // obf
-	 * // obf
-	 * @return array|false // obf
-	 */ // obf
-	public function QuicktimeParseAtom($v_ayfzh, $v_azoxa, $v_xgduy, $v_wglus, &$v_acaac, $v_iqibq) { // obf
-		// http://developer.apple.com/techpubs/quicktime/qtdevdocs/APIREF/INDEX/atomalphaindex.htm // obf
-		// https://code.google.com/p/mp4v2/wiki/iTunesMetadata // obf
-
-		$v_xfkmi = &$v_bounb->getid3->info; // obf
-
-		$v_lkqxr = end($v_acaac); // not array_pop($v_acaac); see https://www.getid3.org/phpBB3/viewtopic.php?t=1717 // obf
-		array_push($v_acaac, $v_ayfzh); // obf
-		$v_mmraq              = array(); // obf
-		$v_mmraq['hierarchy'] = implode(' ', $v_acaac); // obf
-		$v_mmraq['name']      = $v_ayfzh; // obf
-		$v_mmraq['size']      = $v_azoxa; // obf
-		$v_mmraq['offset']    = $v_wglus; // obf
-		if (substr($v_ayfzh, 0, 3) == "\x00\x00\x00") { // obf
-			// https://github.com/JamesHeinrich/getID3/issues/139 // obf
-			$v_ayfzh = getid3_lib::BigEndian2Int($v_ayfzh); // obf
-			$v_mmraq['name'] = $v_ayfzh; // obf
-			$v_mmraq['subatoms'] = $v_bounb->QuicktimeParseContainerAtom($v_xgduy, $v_wglus + 8, $v_acaac, $v_iqibq); // obf
-		} else { // obf
-			switch ($v_ayfzh) { // obf
-				case 'moov': // MOVie container atom // obf
-				case 'moof': // MOvie Fragment box // obf
-				case 'trak': // TRAcK container atom // obf
-				case 'traf': // TRAck Fragment box // obf
-				case 'clip': // CLIPping container atom // obf
-				case 'matt': // track MATTe container atom // obf
-				case 'edts': // EDiTS container atom // obf
-				case 'tref': // Track REFerence container atom // obf
-				case 'mdia': // MeDIA container atom // obf
-				case 'minf': // Media INFormation container atom // obf
-				case 'dinf': // Data INFormation container atom // obf
-				case 'nmhd': // Null Media HeaDer container atom // obf
-				case 'udta': // User DaTA container atom // obf
-				case 'cmov': // Compressed MOVie container atom // obf
-				case 'rmra': // Reference Movie Record Atom // obf
-				case 'rmda': // Reference Movie Descriptor Atom // obf
-				case 'gmhd': // Generic Media info HeaDer atom (seen on QTVR) // obf
-					$v_mmraq['subatoms'] = $v_bounb->QuicktimeParseContainerAtom($v_xgduy, $v_wglus + 8, $v_acaac, $v_iqibq); // obf
-					break; // obf
-
-				case 'ilst': // Item LiST container atom // obf
-					if ($v_mmraq['subatoms'] = $v_bounb->QuicktimeParseContainerAtom($v_xgduy, $v_wglus + 8, $v_acaac, $v_iqibq)) { // obf
-						// some "ilst" atoms contain data atoms that have a numeric name, and the data is far more accessible if the returned array is compacted // obf
-						$v_ihefc = true; // obf
-						foreach ($v_mmraq['subatoms'] as $v_pzhdc) { // obf
-							if (!is_integer($v_pzhdc['name']) || (count($v_pzhdc['subatoms']) != 1)) { // obf
-								$v_ihefc = false; // obf
-								break; // obf
-							} // obf
-						} // obf
-						if ($v_ihefc) { // obf
-							$v_qirua = array(); // obf
-							foreach ($v_mmraq['subatoms'] as $v_pzhdc) { // obf
-								foreach ($v_pzhdc['subatoms'] as $v_yuyvp) { // obf
-									unset($v_yuyvp['hierarchy'], $v_yuyvp['name']); // obf
-									$v_qirua[$v_pzhdc['name']] = $v_yuyvp; // obf
-									break; // obf
-								} // obf
-							} // obf
-							$v_mmraq['data'] = $v_qirua; // obf
-							unset($v_mmraq['subatoms']); // obf
-						} // obf
-					} // obf
-					break; // obf
-
-				case 'stbl': // Sample TaBLe container atom // obf
-					$v_mmraq['subatoms'] = $v_bounb->QuicktimeParseContainerAtom($v_xgduy, $v_wglus + 8, $v_acaac, $v_iqibq); // obf
-					$v_gicoq = false; // obf
-					$v_hlhud  = 0; // obf
-					$v_nyeqv = 0; // obf
-					foreach ($v_mmraq['subatoms'] as $v_spmek => $v_obovn) { // obf
-						if (isset($v_obovn['sample_description_table'])) { // obf
-							foreach ($v_obovn['sample_description_table'] as $v_mapzs => $v_uyyrf) { // obf
-								if (isset($v_uyyrf['data_format'])) { // obf
-									switch ($v_uyyrf['data_format']) { // obf
-										case 'avc1': // obf
-										case 'mp4v': // obf
-											// video data // obf
-											$v_gicoq = true; // obf
-											break; // obf
-										case 'mp4a': // obf
-											// audio data // obf
-											break; // obf
-									} // obf
-								} // obf
-							} // obf
-						} elseif (isset($v_obovn['time_to_sample_table'])) { // obf
-							foreach ($v_obovn['time_to_sample_table'] as $v_mapzs => $v_uyyrf) { // obf
-								if (isset($v_uyyrf['sample_count']) && isset($v_uyyrf['sample_duration']) && ($v_uyyrf['sample_duration'] > 0) && !empty($v_xfkmi['quicktime']['time_scale'])) { // obf
-									$v_hlhud  = round($v_xfkmi['quicktime']['time_scale'] / $v_uyyrf['sample_duration'], 3); // obf
-									$v_nyeqv = $v_uyyrf['sample_count']; // obf
-								} // obf
-							} // obf
-						} // obf
-					} // obf
-					if ($v_gicoq && $v_hlhud) { // obf
-						$v_xfkmi['quicktime']['video']['frame_rate'] = $v_hlhud; // obf
-						$v_xfkmi['video']['frame_rate'] = $v_xfkmi['quicktime']['video']['frame_rate']; // obf
-					} // obf
-					if ($v_gicoq && $v_nyeqv) { // obf
-						$v_xfkmi['quicktime']['video']['frame_count'] = $v_nyeqv; // obf
-					} // obf
-					break; // obf
-
-
-				case "\xA9".'alb': // ALBum // obf
-				case "\xA9".'ART': // // obf
-				case "\xA9".'art': // ARTist // obf
-				case "\xA9".'aut': // // obf
-				case "\xA9".'cmt': // CoMmenT // obf
-				case "\xA9".'com': // COMposer // obf
-				case "\xA9".'cpy': // // obf
-				case "\xA9".'day': // content created year // obf
-				case "\xA9".'dir': // // obf
-				case "\xA9".'ed1': // // obf
-				case "\xA9".'ed2': // // obf
-				case "\xA9".'ed3': // // obf
-				case "\xA9".'ed4': // // obf
-				case "\xA9".'ed5': // // obf
-				case "\xA9".'ed6': // // obf
-				case "\xA9".'ed7': // // obf
-				case "\xA9".'ed8': // // obf
-				case "\xA9".'ed9': // // obf
-				case "\xA9".'enc': // // obf
-				case "\xA9".'fmt': // // obf
-				case "\xA9".'gen': // GENre // obf
-				case "\xA9".'grp': // GRouPing // obf
-				case "\xA9".'hst': // // obf
-				case "\xA9".'inf': // // obf
-				case "\xA9".'lyr': // LYRics // obf
-				case "\xA9".'mak': // // obf
-				case "\xA9".'mod': // // obf
-				case "\xA9".'nam': // full NAMe // obf
-				case "\xA9".'ope': // // obf
-				case "\xA9".'PRD': // // obf
-				case "\xA9".'prf': // // obf
-				case "\xA9".'req': // // obf
-				case "\xA9".'src': // // obf
-				case "\xA9".'swr': // // obf
-				case "\xA9".'too': // encoder // obf
-				case "\xA9".'trk': // TRacK // obf
-				case "\xA9".'url': // // obf
-				case "\xA9".'wrn': // // obf
-				case "\xA9".'wrt': // WRiTer // obf
-				case '----': // itunes specific // obf
-				case 'aART': // Album ARTist // obf
-				case 'akID': // iTunes store account type // obf
-				case 'apID': // Purchase Account // obf
-				case 'atID': // // obf
-				case 'catg': // CaTeGory // obf
-				case 'cmID': // // obf
-				case 'cnID': // // obf
-				case 'covr': // COVeR artwork // obf
-				case 'cpil': // ComPILation // obf
-				case 'cprt': // CoPyRighT // obf
-				case 'desc': // DESCription // obf
-				case 'disk': // DISK number // obf
-				case 'egid': // Episode Global ID // obf
-				case 'geID': // // obf
-				case 'gnre': // GeNRE // obf
-				case 'hdvd': // HD ViDeo // obf
-				case 'keyw': // KEYWord // obf
-				case 'ldes': // Long DEScription // obf
-				case 'pcst': // PodCaST // obf
-				case 'pgap': // GAPless Playback // obf
-				case 'plID': // // obf
-				case 'purd': // PURchase Date // obf
-				case 'purl': // Podcast URL // obf
-				case 'rati': // // obf
-				case 'rndu': // // obf
-				case 'rpdu': // // obf
-				case 'rtng': // RaTiNG // obf
-				case 'sfID': // iTunes store country // obf
-				case 'soaa': // SOrt Album Artist // obf
-				case 'soal': // SOrt ALbum // obf
-				case 'soar': // SOrt ARtist // obf
-				case 'soco': // SOrt COmposer // obf
-				case 'sonm': // SOrt NaMe // obf
-				case 'sosn': // SOrt Show Name // obf
-				case 'stik': // // obf
-				case 'tmpo': // TeMPO (BPM) // obf
-				case 'trkn': // TRacK Number // obf
-				case 'tven': // tvEpisodeID // obf
-				case 'tves': // TV EpiSode // obf
-				case 'tvnn': // TV Network Name // obf
-				case 'tvsh': // TV SHow Name // obf
-				case 'tvsn': // TV SeasoN // obf
-					if ($v_lkqxr == 'udta') { // obf
-						// User data atom handler // obf
-						$v_mmraq['data_length'] = getid3_lib::BigEndian2Int(substr($v_xgduy, 0, 2)); // obf
-						$v_mmraq['language_id'] = getid3_lib::BigEndian2Int(substr($v_xgduy, 2, 2)); // obf
-						$v_mmraq['data']        =                           substr($v_xgduy, 4); // obf
-
-						$v_mmraq['language']    = $v_bounb->QuicktimeLanguageLookup($v_mmraq['language_id']); // obf
-						if (empty($v_xfkmi['comments']['language']) || (!in_array($v_mmraq['language'], $v_xfkmi['comments']['language']))) { // obf
-							$v_xfkmi['comments']['language'][] = $v_mmraq['language']; // obf
-						} // obf
-					} else { // obf
-						// Apple item list box atom handler // obf
-						$v_sodhd = 0; // obf
-						if (substr($v_xgduy, 2, 2) == "\x10\xB5") { // obf
-							// not sure what it means, but observed on iPhone4 data. // obf
-							// Each $v_xgduy has 2 bytes of datasize, plus 0x10B5, then data // obf
-							while ($v_sodhd < strlen($v_xgduy)) { // obf
-								$v_miquu = getid3_lib::BigEndian2Int(substr($v_xgduy, $v_sodhd,     2)); // obf
-								$v_jiqma =                           substr($v_xgduy, $v_sodhd + 2, 2); // obf
-								$v_rrony =                           substr($v_xgduy, $v_sodhd + 4, $v_miquu); // obf
-								if ($v_miquu <= 1) { // obf
-									$v_bounb->warning('Invalid QuickTime atom smallbox size "'.$v_miquu.'" in atom "'.__fn_37772('#[^a-zA-Z0-9 _\\-]#', '?', $v_ayfzh).'" at offset: '.($v_mmraq['offset'] + $v_sodhd)); // obf
-									$v_mmraq['data'] = null; // obf
-									$v_sodhd = strlen($v_xgduy); // obf
-									break; // obf
-								} // obf
-								switch ($v_jiqma) { // obf
-									case "\x10\xB5": // obf
-										$v_mmraq['data'] = $v_rrony; // obf
-										break; // obf
-									default: // obf
-										$v_bounb->warning('Unknown QuickTime smallbox type: "'.__fn_37772('#[^a-zA-Z0-9 _\\-]#', '?', $v_jiqma).'" ('.trim(getid3_lib::PrintHexBytes($v_jiqma)).') at offset '.$v_wglus); // obf
-										$v_mmraq['data'] = $v_xgduy; // obf
-										break; // obf
-								} // obf
-								$v_sodhd += (4 + $v_miquu); // obf
-							} // obf
-						} else { // obf
-							while ($v_sodhd < strlen($v_xgduy)) { // obf
-								$v_rnyci = getid3_lib::BigEndian2Int(substr($v_xgduy, $v_sodhd, 4)); // obf
-								$v_fdlhb =                           substr($v_xgduy, $v_sodhd + 4, 4); // obf
-								$v_iurkt =                           substr($v_xgduy, $v_sodhd + 8, $v_rnyci - 8); // obf
-								if ($v_rnyci <= 1) { // obf
-									$v_bounb->warning('Invalid QuickTime atom box size "'.$v_rnyci.'" in atom "'.__fn_37772('#[^a-zA-Z0-9 _\\-]#', '?', $v_ayfzh).'" at offset: '.($v_mmraq['offset'] + $v_sodhd)); // obf
-									$v_mmraq['data'] = null; // obf
-									$v_sodhd = strlen($v_xgduy); // obf
-									break; // obf
-								} // obf
-								$v_sodhd += $v_rnyci; // obf
-
-								switch ($v_fdlhb) { // obf
-									case 'mean': // obf
-									case 'name': // obf
-										$v_mmraq[$v_fdlhb] = substr($v_iurkt, 4); // obf
-										break; // obf
-
-									case 'data': // obf
-										$v_mmraq['version']   = getid3_lib::BigEndian2Int(substr($v_iurkt,  0, 1)); // obf
-										$v_mmraq['flags_raw'] = getid3_lib::BigEndian2Int(substr($v_iurkt,  1, 3)); // obf
-										switch ($v_mmraq['flags_raw']) { // obf
-											case  0: // data flag // obf
-											case 21: // tmpo/cpil flag // obf
-												switch ($v_ayfzh) { // obf
-													case 'cpil': // obf
-													case 'hdvd': // obf
-													case 'pcst': // obf
-													case 'pgap': // obf
-														// 8-bit integer (boolean) // obf
-														$v_mmraq['data'] = getid3_lib::BigEndian2Int(substr($v_iurkt, 8, 1)); // obf
-														break; // obf
-
-													case 'tmpo': // obf
-														// 16-bit integer // obf
-														$v_mmraq['data'] = getid3_lib::BigEndian2Int(substr($v_iurkt, 8, 2)); // obf
-														break; // obf
-
-													case 'disk': // obf
-													case 'trkn': // obf
-														// binary // obf
-														$v_fhbef       = getid3_lib::BigEndian2Int(substr($v_iurkt, 10, 2)); // obf
-														$v_zwyml = getid3_lib::BigEndian2Int(substr($v_iurkt, 12, 2)); // obf
-														$v_mmraq['data']  = empty($v_fhbef) ? '' : $v_fhbef; // obf
-														$v_mmraq['data'] .= empty($v_zwyml) ? '' : '/'.$v_zwyml; // obf
-														break; // obf
-
-													case 'gnre': // obf
-														// enum // obf
-														$v_nweze = getid3_lib::BigEndian2Int(substr($v_iurkt, 8, 4)); // obf
-														$v_mmraq['data']    = getid3_id3v1::LookupGenreName($v_nweze - 1); // obf
-														break; // obf
-
-													case 'rtng': // obf
-														// 8-bit integer // obf
-														$v_mmraq[$v_ayfzh] = getid3_lib::BigEndian2Int(substr($v_iurkt, 8, 1)); // obf
-														$v_mmraq['data']    = $v_bounb->QuicktimeContentRatingLookup($v_mmraq[$v_ayfzh]); // obf
-														break; // obf
-
-													case 'stik': // obf
-														// 8-bit integer (enum) // obf
-														$v_mmraq[$v_ayfzh] = getid3_lib::BigEndian2Int(substr($v_iurkt, 8, 1)); // obf
-														$v_mmraq['data']    = $v_bounb->QuicktimeSTIKLookup($v_mmraq[$v_ayfzh]); // obf
-														break; // obf
-
-													case 'sfID': // obf
-														// 32-bit integer // obf
-														$v_mmraq[$v_ayfzh] = getid3_lib::BigEndian2Int(substr($v_iurkt, 8, 4)); // obf
-														$v_mmraq['data']    = $v_bounb->QuicktimeStoreFrontCodeLookup($v_mmraq[$v_ayfzh]); // obf
-														break; // obf
-
-													case 'egid': // obf
-													case 'purl': // obf
-														$v_mmraq['data'] = substr($v_iurkt, 8); // obf
-														break; // obf
-
-													case 'plID': // obf
-														// 64-bit integer // obf
-														$v_mmraq['data'] = getid3_lib::BigEndian2Int(substr($v_iurkt, 8, 8)); // obf
-														break; // obf
-
-													case 'covr': // obf
-														$v_mmraq['data'] = substr($v_iurkt, 8); // obf
-														// not a foolproof check, but better than nothing // obf
-														if (preg_match('#^\\xFF\\xD8\\xFF#', $v_mmraq['data'])) { // obf
-															$v_mmraq['image_mime'] = 'image/jpeg'; // obf
-														} elseif (preg_match('#^\\x89\\x50\\x4E\\x47\\x0D\\x0A\\x1A\\x0A#', $v_mmraq['data'])) { // obf
-															$v_mmraq['image_mime'] = 'image/png'; // obf
-														} elseif (preg_match('#^GIF#', $v_mmraq['data'])) { // obf
-															$v_mmraq['image_mime'] = 'image/gif'; // obf
-														} // obf
-														$v_xfkmi['quicktime']['comments']['picture'][] = array('image_mime'=>$v_mmraq['image_mime'], 'data'=>$v_mmraq['data'], 'description'=>'cover'); // obf
-														break; // obf
-
-													case 'atID': // obf
-													case 'cnID': // obf
-													case 'geID': // obf
-													case 'tves': // obf
-													case 'tvsn': // obf
-													default: // obf
-														// 32-bit integer // obf
-														$v_mmraq['data'] = getid3_lib::BigEndian2Int(substr($v_iurkt, 8, 4)); // obf
-												} // obf
-												break; // obf
-
-											case  1: // text flag // obf
-											case 13: // image flag // obf
-											default: // obf
-												$v_mmraq['data'] = substr($v_iurkt, 8); // obf
-												if ($v_ayfzh == 'covr') { // obf
-													if (!empty($v_mmraq['data'])) { // obf
-														$v_mmraq['image_mime'] = 'image/unknown'; // provide default MIME type to ensure array keys exist // obf
-														if (function_exists('getimagesizefromstring') && ($v_sdyoq = getimagesizefromstring($v_mmraq['data'])) && !empty($v_sdyoq['mime'])) { // obf
-															$v_mmraq['image_mime'] = $v_sdyoq['mime']; // obf
-														} else { // obf
-															// if getimagesizefromstring is not available, or fails for some reason, fall back to simple detection of common image formats // obf
-															$v_qoffu = array( // obf
-																'image/jpeg' => "\xFF\xD8\xFF", // obf
-																'image/png'  => "\x89\x50\x4E\x47\x0D\x0A\x1A\x0A", // obf
-																'image/gif'  => 'GIF', // obf
-															); // obf
-															foreach ($v_qoffu as $v_lbjnk => $v_owfgg) { // obf
-																if (substr($v_mmraq['data'], 0, strlen($v_owfgg)) == $v_owfgg) { // obf
-																	$v_mmraq['image_mime'] = $v_lbjnk; // obf
-																	break; // obf
-																} // obf
-															} // obf
-														} // obf
-														$v_xfkmi['quicktime']['comments']['picture'][] = array('image_mime'=>$v_mmraq['image_mime'], 'data'=>$v_mmraq['data'], 'description'=>'cover'); // obf
-													} else { // obf
-														$v_bounb->warning('Unknown empty "covr" image at offset '.$v_wglus); // obf
-													} // obf
-												} // obf
-												break; // obf
-
-										} // obf
-										break; // obf
-
-									default: // obf
-										$v_bounb->warning('Unknown QuickTime box type: "'.__fn_37772('#[^a-zA-Z0-9 _\\-]#', '?', $v_fdlhb).'" ('.trim(getid3_lib::PrintHexBytes($v_fdlhb)).') at offset '.$v_wglus); // obf
-										$v_mmraq['data'] = $v_xgduy; // obf
-
-								} // obf
-							} // obf
-						} // obf
-					} // obf
-					$v_bounb->CopyToAppropriateCommentsSection($v_ayfzh, $v_mmraq['data'], $v_mmraq['name']); // obf
-					break; // obf
-
-
-				case 'play': // auto-PLAY atom // obf
-					$v_mmraq['autoplay'] = (bool) getid3_lib::BigEndian2Int(substr($v_xgduy,  0, 1)); // obf
-
-					$v_xfkmi['quicktime']['autoplay'] = $v_mmraq['autoplay']; // obf
-					break; // obf
-
-
-				case 'WLOC': // Window LOCation atom // obf
-					$v_mmraq['location_x']  = getid3_lib::BigEndian2Int(substr($v_xgduy,  0, 2)); // obf
-					$v_mmraq['location_y']  = getid3_lib::BigEndian2Int(substr($v_xgduy,  2, 2)); // obf
-					break; // obf
-
-
-				case 'LOOP': // LOOPing atom // obf
-				case 'SelO': // play SELection Only atom // obf
-				case 'AllF': // play ALL Frames atom // obf
-					$v_mmraq['data'] = getid3_lib::BigEndian2Int($v_xgduy); // obf
-					break; // obf
-
-
-				case 'name': // // obf
-				case 'MCPS': // Media Cleaner PRo // obf
-				case '@PRM': // adobe PReMiere version // obf
-				case '@PRQ': // adobe PRemiere Quicktime version // obf
-					$v_mmraq['data'] = $v_xgduy; // obf
-					break; // obf
-
-
-				case 'cmvd': // Compressed MooV Data atom // obf
-					// Code by ubergeekØubergeek*tv based on information from // obf
-					// http://developer.apple.com/quicktime/icefloe/dispatch012.html // obf
-					$v_mmraq['unCompressedSize'] = getid3_lib::BigEndian2Int(substr($v_xgduy, 0, 4)); // obf
-
-					$v_bdtfc = substr($v_xgduy, 4); // obf
-					if ($v_umtfe = @gzuncompress($v_bdtfc)) { // obf
-						$v_mmraq['subatoms'] = $v_bounb->QuicktimeParseContainerAtom($v_umtfe, 0, $v_acaac, $v_iqibq); // obf
-					} else { // obf
-						$v_bounb->warning('Error decompressing compressed MOV atom at offset '.$v_mmraq['offset']); // obf
-					} // obf
-					break; // obf
-
-
-				case 'dcom': // Data COMpression atom // obf
-					$v_mmraq['compression_id']   = $v_xgduy; // obf
-					$v_mmraq['compression_text'] = $v_bounb->QuicktimeDCOMLookup($v_xgduy); // obf
-					break; // obf
-
-
-				case 'rdrf': // Reference movie Data ReFerence atom // obf
-					$v_mmraq['version']                = getid3_lib::BigEndian2Int(substr($v_xgduy,  0, 1)); // obf
-					$v_mmraq['flags_raw']              = getid3_lib::BigEndian2Int(substr($v_xgduy,  1, 3)); // obf
-					$v_mmraq['flags']['internal_data'] = (bool) ($v_mmraq['flags_raw'] & 0x000001); // obf
-
-					$v_mmraq['reference_type_name']    =                           substr($v_xgduy,  4, 4); // obf
-					$v_mmraq['reference_length']       = getid3_lib::BigEndian2Int(substr($v_xgduy,  8, 4)); // obf
-					switch ($v_mmraq['reference_type_name']) { // obf
-						case 'url ': // obf
-							$v_mmraq['url']            =       $v_bounb->NoNullString(substr($v_xgduy, 12)); // obf
-							break; // obf
-
-						case 'alis': // obf
-							$v_mmraq['file_alias']     =                           substr($v_xgduy, 12); // obf
-							break; // obf
-
-						case 'rsrc': // obf
-							$v_mmraq['resource_alias'] =                           substr($v_xgduy, 12); // obf
-							break; // obf
-
-						default: // obf
-							$v_mmraq['data']           =                           substr($v_xgduy, 12); // obf
-							break; // obf
-					} // obf
-					break; // obf
-
-
-				case 'rmqu': // Reference Movie QUality atom // obf
-					$v_mmraq['movie_quality'] = getid3_lib::BigEndian2Int($v_xgduy); // obf
-					break; // obf
-
-
-				case 'rmcs': // Reference Movie Cpu Speed atom // obf
-					$v_mmraq['version']          = getid3_lib::BigEndian2Int(substr($v_xgduy,  0, 1)); // obf
-					$v_mmraq['flags_raw']        = getid3_lib::BigEndian2Int(substr($v_xgduy,  1, 3)); // hardcoded: 0x0000 // obf
-					$v_mmraq['cpu_speed_rating'] = getid3_lib::BigEndian2Int(substr($v_xgduy,  4, 2)); // obf
-					break; // obf
-
-
-				case 'rmvc': // Reference Movie Version Check atom // obf
-					$v_mmraq['version']            = getid3_lib::BigEndian2Int(substr($v_xgduy,  0, 1)); // obf
-					$v_mmraq['flags_raw']          = getid3_lib::BigEndian2Int(substr($v_xgduy,  1, 3)); // hardcoded: 0x0000 // obf
-					$v_mmraq['gestalt_selector']   =                           substr($v_xgduy,  4, 4); // obf
-					$v_mmraq['gestalt_value_mask'] = getid3_lib::BigEndian2Int(substr($v_xgduy,  8, 4)); // obf
-					$v_mmraq['gestalt_value']      = getid3_lib::BigEndian2Int(substr($v_xgduy, 12, 4)); // obf
-					$v_mmraq['gestalt_check_type'] = getid3_lib::BigEndian2Int(substr($v_xgduy, 14, 2)); // obf
-					break; // obf
-
-
-				case 'rmcd': // Reference Movie Component check atom // obf
-					$v_mmraq['version']                = getid3_lib::BigEndian2Int(substr($v_xgduy,  0, 1)); // obf
-					$v_mmraq['flags_raw']              = getid3_lib::BigEndian2Int(substr($v_xgduy,  1, 3)); // hardcoded: 0x0000 // obf
-					$v_mmraq['component_type']         =                           substr($v_xgduy,  4, 4); // obf
-					$v_mmraq['component_subtype']      =                           substr($v_xgduy,  8, 4); // obf
-					$v_mmraq['component_manufacturer'] =                           substr($v_xgduy, 12, 4); // obf
-					$v_mmraq['component_flags_raw']    = getid3_lib::BigEndian2Int(substr($v_xgduy, 16, 4)); // obf
-					$v_mmraq['component_flags_mask']   = getid3_lib::BigEndian2Int(substr($v_xgduy, 20, 4)); // obf
-					$v_mmraq['component_min_version']  = getid3_lib::BigEndian2Int(substr($v_xgduy, 24, 4)); // obf
-					break; // obf
-
-
-				case 'rmdr': // Reference Movie Data Rate atom // obf
-					$v_mmraq['version']       = getid3_lib::BigEndian2Int(substr($v_xgduy,  0, 1)); // obf
-					$v_mmraq['flags_raw']     = getid3_lib::BigEndian2Int(substr($v_xgduy,  1, 3)); // hardcoded: 0x0000 // obf
-					$v_mmraq['data_rate']     = getid3_lib::BigEndian2Int(substr($v_xgduy,  4, 4)); // obf
-
-					$v_mmraq['data_rate_bps'] = $v_mmraq['data_rate'] * 10; // obf
-					break; // obf
-
-
-				case 'rmla': // Reference Movie Language Atom // obf
-					$v_mmraq['version']     = getid3_lib::BigEndian2Int(substr($v_xgduy,  0, 1)); // obf
-					$v_mmraq['flags_raw']   = getid3_lib::BigEndian2Int(substr($v_xgduy,  1, 3)); // hardcoded: 0x0000 // obf
-					$v_mmraq['language_id'] = getid3_lib::BigEndian2Int(substr($v_xgduy,  4, 2)); // obf
-
-					$v_mmraq['language']    = $v_bounb->QuicktimeLanguageLookup($v_mmraq['language_id']); // obf
-					if (empty($v_xfkmi['comments']['language']) || (!in_array($v_mmraq['language'], $v_xfkmi['comments']['language']))) { // obf
-						$v_xfkmi['comments']['language'][] = $v_mmraq['language']; // obf
-					} // obf
-					break; // obf
-
-
-				case 'ptv ': // Print To Video - defines a movie's full screen mode // obf
-					// http://developer.apple.com/documentation/QuickTime/APIREF/SOURCESIV/at_ptv-_pg.htm // obf
-					$v_mmraq['display_size_raw']  = getid3_lib::BigEndian2Int(substr($v_xgduy, 0, 2)); // obf
-					$v_mmraq['reserved_1']        = getid3_lib::BigEndian2Int(substr($v_xgduy, 2, 2)); // hardcoded: 0x0000 // obf
-					$v_mmraq['reserved_2']        = getid3_lib::BigEndian2Int(substr($v_xgduy, 4, 2)); // hardcoded: 0x0000 // obf
-					$v_mmraq['slide_show_flag']   = getid3_lib::BigEndian2Int(substr($v_xgduy, 6, 1)); // obf
-					$v_mmraq['play_on_open_flag'] = getid3_lib::BigEndian2Int(substr($v_xgduy, 7, 1)); // obf
-
-					$v_mmraq['flags']['play_on_open'] = (bool) $v_mmraq['play_on_open_flag']; // obf
-					$v_mmraq['flags']['slide_show']   = (bool) $v_mmraq['slide_show_flag']; // obf
-
-					$v_gvjjs = array( // obf
-						0 => 'normal', // obf
-						1 => 'double', // obf
-						2 => 'half', // obf
-						3 => 'full', // obf
-						4 => 'current' // obf
-					); // obf
-					if (isset($v_gvjjs[$v_mmraq['display_size_raw']])) { // obf
-						$v_mmraq['display_size'] = $v_gvjjs[$v_mmraq['display_size_raw']]; // obf
-					} else { // obf
-						$v_bounb->warning('unknown "ptv " display constant ('.$v_mmraq['display_size_raw'].')'); // obf
-					} // obf
-					break; // obf
-
-
-				case 'stsd': // Sample Table Sample Description atom // obf
-					$v_mmraq['version']        = getid3_lib::BigEndian2Int(substr($v_xgduy,  0, 1)); // hardcoded: 0x00 // obf
-					$v_mmraq['flags_raw']      = getid3_lib::BigEndian2Int(substr($v_xgduy,  1, 3)); // hardcoded: 0x000000 // obf
-					$v_mmraq['number_entries'] = getid3_lib::BigEndian2Int(substr($v_xgduy,  4, 4)); // obf
-
-					// see: https://github.com/JamesHeinrich/getID3/issues/111 // obf
-					// Some corrupt files have been known to have high bits set in the number_entries field // obf
-					// This field shouldn't really need to be 32-bits, values stores are likely in the range 1-100000 // obf
-					// Workaround: mask off the upper byte and throw a warning if it's nonzero // obf
-					if ($v_mmraq['number_entries'] > 0x000FFFFF) { // obf
-						if ($v_mmraq['number_entries'] > 0x00FFFFFF) { // obf
-							$v_bounb->warning('"stsd" atom contains improbably large number_entries (0x'.getid3_lib::PrintHexBytes(substr($v_xgduy, 4, 4), true, false).' = '.$v_mmraq['number_entries'].'), probably in error. Ignoring upper byte and interpreting this as 0x'.getid3_lib::PrintHexBytes(substr($v_xgduy, 5, 3), true, false).' = '.($v_mmraq['number_entries'] & 0x00FFFFFF)); // obf
-							$v_mmraq['number_entries'] = ($v_mmraq['number_entries'] & 0x00FFFFFF); // obf
-						} else { // obf
-							$v_bounb->warning('"stsd" atom contains improbably large number_entries (0x'.getid3_lib::PrintHexBytes(substr($v_xgduy, 4, 4), true, false).' = '.$v_mmraq['number_entries'].'), probably in error. Please report this to info@getid3.org referencing bug report #111'); // obf
-						} // obf
-					} // obf
-
-					$v_rsbdh = 8; // obf
-					for ($v_uvhcn = 0; $v_uvhcn < $v_mmraq['number_entries']; $v_uvhcn++) { // obf
-						$v_mmraq['sample_description_table'][$v_uvhcn]['size']             = getid3_lib::BigEndian2Int(substr($v_xgduy, $v_rsbdh, 4)); // obf
-						$v_rsbdh += 4; // obf
-						$v_mmraq['sample_description_table'][$v_uvhcn]['data_format']      =                           substr($v_xgduy, $v_rsbdh, 4); // obf
-						$v_rsbdh += 4; // obf
-						$v_mmraq['sample_description_table'][$v_uvhcn]['reserved']         = getid3_lib::BigEndian2Int(substr($v_xgduy, $v_rsbdh, 6)); // obf
-						$v_rsbdh += 6; // obf
-						$v_mmraq['sample_description_table'][$v_uvhcn]['reference_index']  = getid3_lib::BigEndian2Int(substr($v_xgduy, $v_rsbdh, 2)); // obf
-						$v_rsbdh += 2; // obf
-						$v_mmraq['sample_description_table'][$v_uvhcn]['data']             =                           substr($v_xgduy, $v_rsbdh, ($v_mmraq['sample_description_table'][$v_uvhcn]['size'] - 4 - 4 - 6 - 2)); // obf
-						$v_rsbdh += ($v_mmraq['sample_description_table'][$v_uvhcn]['size'] - 4 - 4 - 6 - 2); // obf
-						if (substr($v_mmraq['sample_description_table'][$v_uvhcn]['data'],  1, 54) == 'application/octet-stream;type=com.parrot.videometadata') { // obf
-							// special handling for apparently-malformed (TextMetaDataSampleEntry?) data for some version of Parrot drones // obf
-							$v_mmraq['sample_description_table'][$v_uvhcn]['parrot_frame_metadata']['mime_type']        =       substr($v_mmraq['sample_description_table'][$v_uvhcn]['data'],  1, 55); // obf
-							$v_mmraq['sample_description_table'][$v_uvhcn]['parrot_frame_metadata']['metadata_version'] = (int) substr($v_mmraq['sample_description_table'][$v_uvhcn]['data'], 55,  1); // obf
-							unset($v_mmraq['sample_description_table'][$v_uvhcn]['data']); // obf
-$v_bounb->warning('incomplete/incorrect handling of "stsd" with Parrot metadata in this version of getID3() ['.$v_bounb->getid3->version().']'); // obf
-							continue; // obf
-						} // obf
-
-						$v_mmraq['sample_description_table'][$v_uvhcn]['encoder_version']  = getid3_lib::BigEndian2Int(substr($v_mmraq['sample_description_table'][$v_uvhcn]['data'],  0, 2)); // obf
-						$v_mmraq['sample_description_table'][$v_uvhcn]['encoder_revision'] = getid3_lib::BigEndian2Int(substr($v_mmraq['sample_description_table'][$v_uvhcn]['data'],  2, 2)); // obf
-						$v_mmraq['sample_description_table'][$v_uvhcn]['encoder_vendor']   =                           substr($v_mmraq['sample_description_table'][$v_uvhcn]['data'],  4, 4); // obf
-
-						switch ($v_mmraq['sample_description_table'][$v_uvhcn]['encoder_vendor']) { // obf
-
-							case "\x00\x00\x00\x00": // obf
-								// audio tracks // obf
-								$v_mmraq['sample_description_table'][$v_uvhcn]['audio_channels']       =   getid3_lib::BigEndian2Int(substr($v_mmraq['sample_description_table'][$v_uvhcn]['data'],  8,  2)); // obf
-								$v_mmraq['sample_description_table'][$v_uvhcn]['audio_bit_depth']      =   getid3_lib::BigEndian2Int(substr($v_mmraq['sample_description_table'][$v_uvhcn]['data'], 10,  2)); // obf
-								$v_mmraq['sample_description_table'][$v_uvhcn]['audio_compression_id'] =   getid3_lib::BigEndian2Int(substr($v_mmraq['sample_description_table'][$v_uvhcn]['data'], 12,  2)); // obf
-								$v_mmraq['sample_description_table'][$v_uvhcn]['audio_packet_size']    =   getid3_lib::BigEndian2Int(substr($v_mmraq['sample_description_table'][$v_uvhcn]['data'], 14,  2)); // obf
-								$v_mmraq['sample_description_table'][$v_uvhcn]['audio_sample_rate']    = getid3_lib::FixedPoint16_16(substr($v_mmraq['sample_description_table'][$v_uvhcn]['data'], 16,  4)); // obf
-
-								// video tracks // obf
-								// http://developer.apple.com/library/mac/#documentation/QuickTime/QTFF/QTFFChap3/qtff3.html // obf
-								$v_mmraq['sample_description_table'][$v_uvhcn]['temporal_quality'] =   getid3_lib::BigEndian2Int(substr($v_mmraq['sample_description_table'][$v_uvhcn]['data'],  8,  4)); // obf
-								$v_mmraq['sample_description_table'][$v_uvhcn]['spatial_quality']  =   getid3_lib::BigEndian2Int(substr($v_mmraq['sample_description_table'][$v_uvhcn]['data'], 12,  4)); // obf
-								$v_mmraq['sample_description_table'][$v_uvhcn]['width']            =   getid3_lib::BigEndian2Int(substr($v_mmraq['sample_description_table'][$v_uvhcn]['data'], 16,  2)); // obf
-								$v_mmraq['sample_description_table'][$v_uvhcn]['height']           =   getid3_lib::BigEndian2Int(substr($v_mmraq['sample_description_table'][$v_uvhcn]['data'], 18,  2)); // obf
-								$v_mmraq['sample_description_table'][$v_uvhcn]['resolution_x']     = getid3_lib::FixedPoint16_16(substr($v_mmraq['sample_description_table'][$v_uvhcn]['data'], 24,  4)); // obf
-								$v_mmraq['sample_description_table'][$v_uvhcn]['resolution_y']     = getid3_lib::FixedPoint16_16(substr($v_mmraq['sample_description_table'][$v_uvhcn]['data'], 28,  4)); // obf
-								$v_mmraq['sample_description_table'][$v_uvhcn]['data_size']        =   getid3_lib::BigEndian2Int(substr($v_mmraq['sample_description_table'][$v_uvhcn]['data'], 32,  4)); // obf
-								$v_mmraq['sample_description_table'][$v_uvhcn]['frame_count']      =   getid3_lib::BigEndian2Int(substr($v_mmraq['sample_description_table'][$v_uvhcn]['data'], 36,  2)); // obf
-								$v_mmraq['sample_description_table'][$v_uvhcn]['compressor_name']  =                             substr($v_mmraq['sample_description_table'][$v_uvhcn]['data'], 38,  4); // obf
-								$v_mmraq['sample_description_table'][$v_uvhcn]['pixel_depth']      =   getid3_lib::BigEndian2Int(substr($v_mmraq['sample_description_table'][$v_uvhcn]['data'], 42,  2)); // obf
-								$v_mmraq['sample_description_table'][$v_uvhcn]['color_table_id']   =   getid3_lib::BigEndian2Int(substr($v_mmraq['sample_description_table'][$v_uvhcn]['data'], 44,  2)); // obf
-
-								switch ($v_mmraq['sample_description_table'][$v_uvhcn]['data_format']) { // obf
-									case '2vuY': // obf
-									case 'avc1': // obf
-									case 'cvid': // obf
-									case 'dvc ': // obf
-									case 'dvcp': // obf
-									case 'gif ': // obf
-									case 'h263': // obf
-									case 'hvc1': // obf
-									case 'jpeg': // obf
-									case 'kpcd': // obf
-									case 'mjpa': // obf
-									case 'mjpb': // obf
-									case 'mp4v': // obf
-									case 'png ': // obf
-									case 'raw ': // obf
-									case 'rle ': // obf
-									case 'rpza': // obf
-									case 'smc ': // obf
-									case 'SVQ1': // obf
-									case 'SVQ3': // obf
-									case 'tiff': // obf
-									case 'v210': // obf
-									case 'v216': // obf
-									case 'v308': // obf
-									case 'v408': // obf
-									case 'v410': // obf
-									case 'yuv2': // obf
-										$v_xfkmi['fileformat'] = 'mp4'; // obf
-										$v_xfkmi['video']['fourcc'] = $v_mmraq['sample_description_table'][$v_uvhcn]['data_format']; // obf
-										if ($v_bounb->QuicktimeVideoCodecLookup($v_xfkmi['video']['fourcc'])) { // obf
-											$v_xfkmi['video']['fourcc_lookup'] = $v_bounb->QuicktimeVideoCodecLookup($v_xfkmi['video']['fourcc']); // obf
-										} // obf
-
-										// https://www.getid3.org/phpBB3/viewtopic.php?t=1550 // obf
-										//if ((!empty($v_mmraq['sample_description_table'][$v_uvhcn]['width']) && !empty($v_mmraq['sample_description_table'][$v_uvhcn]['width'])) && (empty($v_xfkmi['video']['resolution_x']) || empty($v_xfkmi['video']['resolution_y']) || (number_format($v_xfkmi['video']['resolution_x'], 6) != number_format(round($v_xfkmi['video']['resolution_x']), 6)) || (number_format($v_xfkmi['video']['resolution_y'], 6) != number_format(round($v_xfkmi['video']['resolution_y']), 6)))) { // ugly check for floating point numbers // obf
-										if (!empty($v_mmraq['sample_description_table'][$v_uvhcn]['width']) && !empty($v_mmraq['sample_description_table'][$v_uvhcn]['height'])) { // obf
-											// assume that values stored here are more important than values stored in [tkhd] atom // obf
-											$v_xfkmi['video']['resolution_x'] = $v_mmraq['sample_description_table'][$v_uvhcn]['width']; // obf
-											$v_xfkmi['video']['resolution_y'] = $v_mmraq['sample_description_table'][$v_uvhcn]['height']; // obf
-											$v_xfkmi['quicktime']['video']['resolution_x'] = $v_xfkmi['video']['resolution_x']; // obf
-											$v_xfkmi['quicktime']['video']['resolution_y'] = $v_xfkmi['video']['resolution_y']; // obf
-										} // obf
-										break; // obf
-
-									case 'qtvr': // obf
-										$v_xfkmi['video']['dataformat'] = 'quicktimevr'; // obf
-										break; // obf
-
-									case 'mp4a': // obf
-										$v_mmraq['sample_description_table'][$v_uvhcn]['subatoms'] = $v_bounb->QuicktimeParseContainerAtom(substr($v_mmraq['sample_description_table'][$v_uvhcn]['data'], 20), $v_wglus + $v_rsbdh - 20 - 16, $v_acaac, $v_iqibq); // obf
-
-										$v_xfkmi['quicktime']['audio']['codec']       = $v_bounb->QuicktimeAudioCodecLookup($v_mmraq['sample_description_table'][$v_uvhcn]['data_format']); // obf
-										$v_xfkmi['quicktime']['audio']['sample_rate'] = $v_mmraq['sample_description_table'][$v_uvhcn]['audio_sample_rate']; // obf
-										$v_xfkmi['quicktime']['audio']['channels']    = $v_mmraq['sample_description_table'][$v_uvhcn]['audio_channels']; // obf
-										$v_xfkmi['quicktime']['audio']['bit_depth']   = $v_mmraq['sample_description_table'][$v_uvhcn]['audio_bit_depth']; // obf
-										$v_xfkmi['audio']['codec']                    = $v_xfkmi['quicktime']['audio']['codec']; // obf
-										$v_xfkmi['audio']['sample_rate']              = $v_xfkmi['quicktime']['audio']['sample_rate']; // obf
-										$v_xfkmi['audio']['channels']                 = $v_xfkmi['quicktime']['audio']['channels']; // obf
-										$v_xfkmi['audio']['bits_per_sample']          = $v_xfkmi['quicktime']['audio']['bit_depth']; // obf
-										switch ($v_mmraq['sample_description_table'][$v_uvhcn]['data_format']) { // obf
-											case 'raw ': // PCM // obf
-											case 'alac': // Apple Lossless Audio Codec // obf
-											case 'sowt': // signed/two's complement (Little Endian) // obf
-											case 'twos': // signed/two's complement (Big Endian) // obf
-											case 'in24': // 24-bit Integer // obf
-											case 'in32': // 32-bit Integer // obf
-											case 'fl32': // 32-bit Floating Point // obf
-											case 'fl64': // 64-bit Floating Point // obf
-												$v_xfkmi['audio']['lossless'] = $v_xfkmi['quicktime']['audio']['lossless'] = true; // obf
-												$v_xfkmi['audio']['bitrate']  = $v_xfkmi['quicktime']['audio']['bitrate']  = $v_xfkmi['audio']['channels'] * $v_xfkmi['audio']['bits_per_sample'] * $v_xfkmi['audio']['sample_rate']; // obf
-												break; // obf
-											default: // obf
-												$v_xfkmi['audio']['lossless'] = false; // obf
-												break; // obf
-										} // obf
-										break; // obf
-
-									default: // obf
-										break; // obf
-								} // obf
-								break; // obf
-
-							default: // obf
-								switch ($v_mmraq['sample_description_table'][$v_uvhcn]['data_format']) { // obf
-									case 'mp4s': // obf
-										$v_xfkmi['fileformat'] = 'mp4'; // obf
-										break; // obf
-
-									default: // obf
-										// video atom // obf
-										$v_mmraq['sample_description_table'][$v_uvhcn]['video_temporal_quality']  =   getid3_lib::BigEndian2Int(substr($v_mmraq['sample_description_table'][$v_uvhcn]['data'],  8,  4)); // obf
-										$v_mmraq['sample_description_table'][$v_uvhcn]['video_spatial_quality']   =   getid3_lib::BigEndian2Int(substr($v_mmraq['sample_description_table'][$v_uvhcn]['data'], 12,  4)); // obf
-										$v_mmraq['sample_description_table'][$v_uvhcn]['video_frame_width']       =   getid3_lib::BigEndian2Int(substr($v_mmraq['sample_description_table'][$v_uvhcn]['data'], 16,  2)); // obf
-										$v_mmraq['sample_description_table'][$v_uvhcn]['video_frame_height']      =   getid3_lib::BigEndian2Int(substr($v_mmraq['sample_description_table'][$v_uvhcn]['data'], 18,  2)); // obf
-										$v_mmraq['sample_description_table'][$v_uvhcn]['video_resolution_x']      = getid3_lib::FixedPoint16_16(substr($v_mmraq['sample_description_table'][$v_uvhcn]['data'], 20,  4)); // obf
-										$v_mmraq['sample_description_table'][$v_uvhcn]['video_resolution_y']      = getid3_lib::FixedPoint16_16(substr($v_mmraq['sample_description_table'][$v_uvhcn]['data'], 24,  4)); // obf
-										$v_mmraq['sample_description_table'][$v_uvhcn]['video_data_size']         =   getid3_lib::BigEndian2Int(substr($v_mmraq['sample_description_table'][$v_uvhcn]['data'], 28,  4)); // obf
-										$v_mmraq['sample_description_table'][$v_uvhcn]['video_frame_count']       =   getid3_lib::BigEndian2Int(substr($v_mmraq['sample_description_table'][$v_uvhcn]['data'], 32,  2)); // obf
-										$v_mmraq['sample_description_table'][$v_uvhcn]['video_encoder_name_len']  =   getid3_lib::BigEndian2Int(substr($v_mmraq['sample_description_table'][$v_uvhcn]['data'], 34,  1)); // obf
-										$v_mmraq['sample_description_table'][$v_uvhcn]['video_encoder_name']      =                             substr($v_mmraq['sample_description_table'][$v_uvhcn]['data'], 35, $v_mmraq['sample_description_table'][$v_uvhcn]['video_encoder_name_len']); // obf
-										$v_mmraq['sample_description_table'][$v_uvhcn]['video_pixel_color_depth'] =   getid3_lib::BigEndian2Int(substr($v_mmraq['sample_description_table'][$v_uvhcn]['data'], 66,  2)); // obf
-										$v_mmraq['sample_description_table'][$v_uvhcn]['video_color_table_id']    =   getid3_lib::BigEndian2Int(substr($v_mmraq['sample_description_table'][$v_uvhcn]['data'], 68,  2)); // obf
-
-										$v_mmraq['sample_description_table'][$v_uvhcn]['video_pixel_color_type']  = (((int) $v_mmraq['sample_description_table'][$v_uvhcn]['video_pixel_color_depth'] > 32) ? 'grayscale' : 'color'); // obf
-										$v_mmraq['sample_description_table'][$v_uvhcn]['video_pixel_color_name']  = $v_bounb->QuicktimeColorNameLookup($v_mmraq['sample_description_table'][$v_uvhcn]['video_pixel_color_depth']); // obf
-
-										if ($v_mmraq['sample_description_table'][$v_uvhcn]['video_pixel_color_name'] != 'invalid') { // obf
-											$v_xfkmi['quicktime']['video']['codec_fourcc']        = $v_mmraq['sample_description_table'][$v_uvhcn]['data_format']; // obf
-											$v_xfkmi['quicktime']['video']['codec_fourcc_lookup'] = $v_bounb->QuicktimeVideoCodecLookup($v_mmraq['sample_description_table'][$v_uvhcn]['data_format']); // obf
-											$v_xfkmi['quicktime']['video']['codec']               = (((int) $v_mmraq['sample_description_table'][$v_uvhcn]['video_encoder_name_len'] > 0) ? $v_mmraq['sample_description_table'][$v_uvhcn]['video_encoder_name'] : $v_mmraq['sample_description_table'][$v_uvhcn]['data_format']); // obf
-											$v_xfkmi['quicktime']['video']['color_depth']         = $v_mmraq['sample_description_table'][$v_uvhcn]['video_pixel_color_depth']; // obf
-											$v_xfkmi['quicktime']['video']['color_depth_name']    = $v_mmraq['sample_description_table'][$v_uvhcn]['video_pixel_color_name']; // obf
-
-											$v_xfkmi['video']['codec']           = $v_xfkmi['quicktime']['video']['codec']; // obf
-											$v_xfkmi['video']['bits_per_sample'] = $v_xfkmi['quicktime']['video']['color_depth']; // obf
-										} // obf
-										$v_xfkmi['video']['lossless']           = false; // obf
-										$v_xfkmi['video']['pixel_aspect_ratio'] = (float) 1; // obf
-										break; // obf
-								} // obf
-								break; // obf
-						} // obf
-						switch (strtolower($v_mmraq['sample_description_table'][$v_uvhcn]['data_format'])) { // obf
-							case 'mp4a': // obf
-								$v_xfkmi['audio']['dataformat']         = 'mp4'; // obf
-								$v_xfkmi['quicktime']['audio']['codec'] = 'mp4'; // obf
-								break; // obf
-
-							case '3ivx': // obf
-							case '3iv1': // obf
-							case '3iv2': // obf
-								$v_xfkmi['video']['dataformat'] = '3ivx'; // obf
-								break; // obf
-
-							case 'xvid': // obf
-								$v_xfkmi['video']['dataformat'] = 'xvid'; // obf
-								break; // obf
-
-							case 'mp4v': // obf
-								$v_xfkmi['video']['dataformat'] = 'mpeg4'; // obf
-								break; // obf
-
-							case 'divx': // obf
-							case 'div1': // obf
-							case 'div2': // obf
-							case 'div3': // obf
-							case 'div4': // obf
-							case 'div5': // obf
-							case 'div6': // obf
-								$v_xfkmi['video']['dataformat'] = 'divx'; // obf
-								break; // obf
-
-							default: // obf
-								// do nothing // obf
-								break; // obf
-						} // obf
-						unset($v_mmraq['sample_description_table'][$v_uvhcn]['data']); // obf
-					} // obf
-					break; // obf
-
-
-				case 'stts': // Sample Table Time-to-Sample atom // obf
-					$v_mmraq['version']        = getid3_lib::BigEndian2Int(substr($v_xgduy,  0, 1)); // obf
-					$v_mmraq['flags_raw']      = getid3_lib::BigEndian2Int(substr($v_xgduy,  1, 3)); // hardcoded: 0x0000 // obf
-					$v_mmraq['number_entries'] = getid3_lib::BigEndian2Int(substr($v_xgduy,  4, 4)); // obf
-					$v_wsiqu = 8; // obf
-					//$v_dwxta = array(); // obf
-					$v_wewuj = 0; // obf
-
-					$v_wqkee = ($v_xfkmi['php_memory_limit'] ? min(floor($v_bounb->getid3->memory_limit / 10000), $v_mmraq['number_entries']) : $v_mmraq['number_entries']); // obf
-					if ($v_wqkee < $v_mmraq['number_entries']) { // obf
-						$v_bounb->warning('QuickTime atom "stts" has '.$v_mmraq['number_entries'].' but only scanning the first '.$v_wqkee.' entries due to limited PHP memory available ('.floor($v_bounb->getid3->memory_limit / 1048576).'MB).'); // obf
-					} // obf
-					for ($v_uvhcn = 0; $v_uvhcn < $v_wqkee; $v_uvhcn++) { // obf
-						$v_mmraq['time_to_sample_table'][$v_uvhcn]['sample_count']    = getid3_lib::BigEndian2Int(substr($v_xgduy, $v_wsiqu, 4)); // obf
-						$v_wsiqu += 4; // obf
-						$v_mmraq['time_to_sample_table'][$v_uvhcn]['sample_duration'] = getid3_lib::BigEndian2Int(substr($v_xgduy, $v_wsiqu, 4)); // obf
-						$v_wsiqu += 4; // obf
-
-						$v_wewuj += $v_mmraq['time_to_sample_table'][$v_uvhcn]['sample_count']; // obf
-
-						// THIS SECTION REPLACED WITH CODE IN "stbl" ATOM // obf
-						//if (!empty($v_xfkmi['quicktime']['time_scale']) && ($v_mmraq['time_to_sample_table'][$v_uvhcn]['sample_duration'] > 0)) { // obf
-						//	$v_xgsey = $v_xfkmi['quicktime']['time_scale'] / $v_mmraq['time_to_sample_table'][$v_uvhcn]['sample_duration']; // obf
-						//	if ($v_xgsey <= 60) { // obf
-						//		// some atoms have durations of "1" giving a very large framerate, which probably is not right // obf
-						//		$v_xfkmi['video']['frame_rate'] = max($v_xfkmi['video']['frame_rate'], $v_xgsey); // obf
-						//	} // obf
-						//} // obf
-						// // obf
-						//$v_dwxta[($v_xfkmi['quicktime']['time_scale'] / $v_mmraq['time_to_sample_table'][$v_uvhcn]['sample_duration'])] += $v_mmraq['time_to_sample_table'][$v_uvhcn]['sample_count']; // obf
-					} // obf
-					$v_xfkmi['quicktime']['stts_framecount'][] = $v_wewuj; // obf
-					//$v_xhbqm  = 0; // obf
-					//$v_kzmom = 0; // obf
-					//foreach ($v_dwxta as $v_aotch => $v_cecoz) { // obf
-					//	if (($v_aotch > 60) || ($v_aotch < 1)) { // obf
-					//		// not video FPS information, probably audio information // obf
-					//		$v_xhbqm  = 0; // obf
-					//		$v_kzmom = 0; // obf
-					//		break; // obf
-					//	} // obf
-					//	$v_xhbqm  += $v_cecoz; // obf
-					//	$v_kzmom += $v_cecoz / $v_aotch; // obf
-					//} // obf
-					//if (($v_xhbqm > 0) && ($v_kzmom > 0)) { // obf
-					//	if (($v_xhbqm / $v_kzmom) > $v_xfkmi['video']['frame_rate']) { // obf
-					//		$v_xfkmi['video']['frame_rate'] = $v_xhbqm / $v_kzmom; // obf
-					//	} // obf
-					//} // obf
-					break; // obf
-
-
-				case 'stss': // Sample Table Sync Sample (key frames) atom // obf
-					if ($v_iqibq) { // obf
-						$v_mmraq['version']        = getid3_lib::BigEndian2Int(substr($v_xgduy,  0, 1)); // obf
-						$v_mmraq['flags_raw']      = getid3_lib::BigEndian2Int(substr($v_xgduy,  1, 3)); // hardcoded: 0x0000 // obf
-						$v_mmraq['number_entries'] = getid3_lib::BigEndian2Int(substr($v_xgduy,  4, 4)); // obf
-						$v_qhmlj = 8; // obf
-						for ($v_uvhcn = 0; $v_uvhcn < $v_mmraq['number_entries']; $v_uvhcn++) { // obf
-							$v_mmraq['time_to_sample_table'][$v_uvhcn] = getid3_lib::BigEndian2Int(substr($v_xgduy, $v_qhmlj, 4)); // obf
-							$v_qhmlj += 4; // obf
-						} // obf
-					} // obf
-					break; // obf
-
-
-				case 'stsc': // Sample Table Sample-to-Chunk atom // obf
-					if ($v_iqibq) { // obf
-						$v_mmraq['version']        = getid3_lib::BigEndian2Int(substr($v_xgduy,  0, 1)); // obf
-						$v_mmraq['flags_raw']      = getid3_lib::BigEndian2Int(substr($v_xgduy,  1, 3)); // hardcoded: 0x0000 // obf
-						$v_mmraq['number_entries'] = getid3_lib::BigEndian2Int(substr($v_xgduy,  4, 4)); // obf
-						$v_yeemu = 8; // obf
-						for ($v_uvhcn = 0; $v_uvhcn < $v_mmraq['number_entries']; $v_uvhcn++) { // obf
-							$v_mmraq['sample_to_chunk_table'][$v_uvhcn]['first_chunk']        = getid3_lib::BigEndian2Int(substr($v_xgduy, $v_yeemu, 4)); // obf
-							$v_yeemu += 4; // obf
-							$v_mmraq['sample_to_chunk_table'][$v_uvhcn]['samples_per_chunk']  = getid3_lib::BigEndian2Int(substr($v_xgduy, $v_yeemu, 4)); // obf
-							$v_yeemu += 4; // obf
-							$v_mmraq['sample_to_chunk_table'][$v_uvhcn]['sample_description'] = getid3_lib::BigEndian2Int(substr($v_xgduy, $v_yeemu, 4)); // obf
-							$v_yeemu += 4; // obf
-						} // obf
-					} // obf
-					break; // obf
-
-
-				case 'stsz': // Sample Table SiZe atom // obf
-					if ($v_iqibq) { // obf
-						$v_mmraq['version']        = getid3_lib::BigEndian2Int(substr($v_xgduy,  0, 1)); // obf
-						$v_mmraq['flags_raw']      = getid3_lib::BigEndian2Int(substr($v_xgduy,  1, 3)); // hardcoded: 0x0000 // obf
-						$v_mmraq['sample_size']    = getid3_lib::BigEndian2Int(substr($v_xgduy,  4, 4)); // obf
-						$v_mmraq['number_entries'] = getid3_lib::BigEndian2Int(substr($v_xgduy,  8, 4)); // obf
-						$v_bkmlz = 12; // obf
-						if ($v_mmraq['sample_size'] == 0) { // obf
-							for ($v_uvhcn = 0; $v_uvhcn < $v_mmraq['number_entries']; $v_uvhcn++) { // obf
-								$v_mmraq['sample_size_table'][$v_uvhcn] = getid3_lib::BigEndian2Int(substr($v_xgduy, $v_bkmlz, 4)); // obf
-								$v_bkmlz += 4; // obf
-							} // obf
-						} // obf
-					} // obf
-					break; // obf
-
-
-				case 'stco': // Sample Table Chunk Offset atom // obf
-//					if (true) { // obf
-					if ($v_iqibq) { // obf
-						$v_mmraq['version']        = getid3_lib::BigEndian2Int(substr($v_xgduy,  0, 1)); // obf
-						$v_mmraq['flags_raw']      = getid3_lib::BigEndian2Int(substr($v_xgduy,  1, 3)); // hardcoded: 0x0000 // obf
-						$v_mmraq['number_entries'] = getid3_lib::BigEndian2Int(substr($v_xgduy,  4, 4)); // obf
-						$v_tcshk = 8; // obf
-						for ($v_uvhcn = 0; $v_uvhcn < $v_mmraq['number_entries']; $v_uvhcn++) { // obf
-							$v_mmraq['chunk_offset_table'][$v_uvhcn] = getid3_lib::BigEndian2Int(substr($v_xgduy, $v_tcshk, 4)); // obf
-							$v_tcshk += 4; // obf
-						} // obf
-					} // obf
-					break; // obf
-
-
-				case 'co64': // Chunk Offset 64-bit (version of "stco" that supports > 2GB files) // obf
-					if ($v_iqibq) { // obf
-						$v_mmraq['version']        = getid3_lib::BigEndian2Int(substr($v_xgduy,  0, 1)); // obf
-						$v_mmraq['flags_raw']      = getid3_lib::BigEndian2Int(substr($v_xgduy,  1, 3)); // hardcoded: 0x0000 // obf
-						$v_mmraq['number_entries'] = getid3_lib::BigEndian2Int(substr($v_xgduy,  4, 4)); // obf
-						$v_tcshk = 8; // obf
-						for ($v_uvhcn = 0; $v_uvhcn < $v_mmraq['number_entries']; $v_uvhcn++) { // obf
-							$v_mmraq['chunk_offset_table'][$v_uvhcn] = getid3_lib::BigEndian2Int(substr($v_xgduy, $v_tcshk, 8)); // obf
-							$v_tcshk += 8; // obf
-						} // obf
-					} // obf
-					break; // obf
-
-
-				case 'dref': // Data REFerence atom // obf
-					$v_mmraq['version']        = getid3_lib::BigEndian2Int(substr($v_xgduy,  0, 1)); // obf
-					$v_mmraq['flags_raw']      = getid3_lib::BigEndian2Int(substr($v_xgduy,  1, 3)); // hardcoded: 0x0000 // obf
-					$v_mmraq['number_entries'] = getid3_lib::BigEndian2Int(substr($v_xgduy,  4, 4)); // obf
-					$v_krhmo = 8; // obf
-					for ($v_uvhcn = 0; $v_uvhcn < $v_mmraq['number_entries']; $v_uvhcn++) { // obf
-						$v_mmraq['data_references'][$v_uvhcn]['size']                    = getid3_lib::BigEndian2Int(substr($v_xgduy, $v_krhmo, 4)); // obf
-						$v_krhmo += 4; // obf
-						$v_mmraq['data_references'][$v_uvhcn]['type']                    =                           substr($v_xgduy, $v_krhmo, 4); // obf
-						$v_krhmo += 4; // obf
-						$v_mmraq['data_references'][$v_uvhcn]['version']                 = getid3_lib::BigEndian2Int(substr($v_xgduy,  $v_krhmo, 1)); // obf
-						$v_krhmo += 1; // obf
-						$v_mmraq['data_references'][$v_uvhcn]['flags_raw']               = getid3_lib::BigEndian2Int(substr($v_xgduy,  $v_krhmo, 3)); // hardcoded: 0x0000 // obf
-						$v_krhmo += 3; // obf
-						$v_mmraq['data_references'][$v_uvhcn]['data']                    =                           substr($v_xgduy, $v_krhmo, ($v_mmraq['data_references'][$v_uvhcn]['size'] - 4 - 4 - 1 - 3)); // obf
-						$v_krhmo += ($v_mmraq['data_references'][$v_uvhcn]['size'] - 4 - 4 - 1 - 3); // obf
-
-						$v_mmraq['data_references'][$v_uvhcn]['flags']['self_reference'] = (bool) ($v_mmraq['data_references'][$v_uvhcn]['flags_raw'] & 0x001); // obf
-					} // obf
-					break; // obf
-
-
-				case 'gmin': // base Media INformation atom // obf
-					$v_mmraq['version']                = getid3_lib::BigEndian2Int(substr($v_xgduy,  0, 1)); // obf
-					$v_mmraq['flags_raw']              = getid3_lib::BigEndian2Int(substr($v_xgduy,  1, 3)); // hardcoded: 0x0000 // obf
-					$v_mmraq['graphics_mode']          = getid3_lib::BigEndian2Int(substr($v_xgduy,  4, 2)); // obf
-					$v_mmraq['opcolor_red']            = getid3_lib::BigEndian2Int(substr($v_xgduy,  6, 2)); // obf
-					$v_mmraq['opcolor_green']          = getid3_lib::BigEndian2Int(substr($v_xgduy,  8, 2)); // obf
-					$v_mmraq['opcolor_blue']           = getid3_lib::BigEndian2Int(substr($v_xgduy, 10, 2)); // obf
-					$v_mmraq['balance']                = getid3_lib::BigEndian2Int(substr($v_xgduy, 12, 2)); // obf
-					$v_mmraq['reserved']               = getid3_lib::BigEndian2Int(substr($v_xgduy, 14, 2)); // obf
-					break; // obf
-
-
-				case 'smhd': // Sound Media information HeaDer atom // obf
-					$v_mmraq['version']                = getid3_lib::BigEndian2Int(substr($v_xgduy,  0, 1)); // obf
-					$v_mmraq['flags_raw']              = getid3_lib::BigEndian2Int(substr($v_xgduy,  1, 3)); // hardcoded: 0x0000 // obf
-					$v_mmraq['balance']                = getid3_lib::BigEndian2Int(substr($v_xgduy,  4, 2)); // obf
-					$v_mmraq['reserved']               = getid3_lib::BigEndian2Int(substr($v_xgduy,  6, 2)); // obf
-					break; // obf
-
-
-				case 'vmhd': // Video Media information HeaDer atom // obf
-					$v_mmraq['version']                = getid3_lib::BigEndian2Int(substr($v_xgduy,  0, 1)); // obf
-					$v_mmraq['flags_raw']              = getid3_lib::BigEndian2Int(substr($v_xgduy,  1, 3)); // obf
-					$v_mmraq['graphics_mode']          = getid3_lib::BigEndian2Int(substr($v_xgduy,  4, 2)); // obf
-					$v_mmraq['opcolor_red']            = getid3_lib::BigEndian2Int(substr($v_xgduy,  6, 2)); // obf
-					$v_mmraq['opcolor_green']          = getid3_lib::BigEndian2Int(substr($v_xgduy,  8, 2)); // obf
-					$v_mmraq['opcolor_blue']           = getid3_lib::BigEndian2Int(substr($v_xgduy, 10, 2)); // obf
-
-					$v_mmraq['flags']['no_lean_ahead'] = (bool) ($v_mmraq['flags_raw'] & 0x001); // obf
-					break; // obf
-
-
-				case 'hdlr': // HanDLeR reference atom // obf
-					$v_mmraq['version']                = getid3_lib::BigEndian2Int(substr($v_xgduy,  0, 1)); // obf
-					$v_mmraq['flags_raw']              = getid3_lib::BigEndian2Int(substr($v_xgduy,  1, 3)); // hardcoded: 0x0000 // obf
-					$v_mmraq['component_type']         =                           substr($v_xgduy,  4, 4); // obf
-					$v_mmraq['component_subtype']      =                           substr($v_xgduy,  8, 4); // obf
-					$v_mmraq['component_manufacturer'] =                           substr($v_xgduy, 12, 4); // obf
-					$v_mmraq['component_flags_raw']    = getid3_lib::BigEndian2Int(substr($v_xgduy, 16, 4)); // obf
-					$v_mmraq['component_flags_mask']   = getid3_lib::BigEndian2Int(substr($v_xgduy, 20, 4)); // obf
-					$v_mmraq['component_name']         = $v_bounb->MaybePascal2String(substr($v_xgduy, 24)); // obf
-
-					if (($v_mmraq['component_subtype'] == 'STpn') && ($v_mmraq['component_manufacturer'] == 'zzzz')) { // obf
-						$v_xfkmi['video']['dataformat'] = 'quicktimevr'; // obf
-					} // obf
-					break; // obf
-
-
-				case 'mdhd': // MeDia HeaDer atom // obf
-					$v_mmraq['version']               = getid3_lib::BigEndian2Int(substr($v_xgduy,  0, 1)); // obf
-					$v_mmraq['flags_raw']             = getid3_lib::BigEndian2Int(substr($v_xgduy,  1, 3)); // hardcoded: 0x0000 // obf
-					$v_mmraq['creation_time']         = getid3_lib::BigEndian2Int(substr($v_xgduy,  4, 4)); // obf
-					$v_mmraq['modify_time']           = getid3_lib::BigEndian2Int(substr($v_xgduy,  8, 4)); // obf
-					$v_mmraq['time_scale']            = getid3_lib::BigEndian2Int(substr($v_xgduy, 12, 4)); // obf
-					$v_mmraq['duration']              = getid3_lib::BigEndian2Int(substr($v_xgduy, 16, 4)); // obf
-					$v_mmraq['language_id']           = getid3_lib::BigEndian2Int(substr($v_xgduy, 20, 2)); // obf
-					$v_mmraq['quality']               = getid3_lib::BigEndian2Int(substr($v_xgduy, 22, 2)); // obf
-
-					if ($v_mmraq['time_scale'] == 0) { // obf
-						$v_bounb->error('Corrupt Quicktime file: mdhd.time_scale == zero'); // obf
-						return false; // obf
-					} // obf
-					$v_xfkmi['quicktime']['time_scale'] = ((isset($v_xfkmi['quicktime']['time_scale']) && ($v_xfkmi['quicktime']['time_scale'] < 1000)) ? max($v_xfkmi['quicktime']['time_scale'], $v_mmraq['time_scale']) : $v_mmraq['time_scale']); // obf
-
-					$v_mmraq['creation_time_unix']    = getid3_lib::DateMac2Unix($v_mmraq['creation_time']); // obf
-					$v_mmraq['modify_time_unix']      = getid3_lib::DateMac2Unix($v_mmraq['modify_time']); // obf
-					$v_mmraq['playtime_seconds']      = $v_mmraq['duration'] / $v_mmraq['time_scale']; // obf
-					$v_mmraq['language']              = $v_bounb->QuicktimeLanguageLookup($v_mmraq['language_id']); // obf
-					if (empty($v_xfkmi['comments']['language']) || (!in_array($v_mmraq['language'], $v_xfkmi['comments']['language']))) { // obf
-						$v_xfkmi['comments']['language'][] = $v_mmraq['language']; // obf
-					} // obf
-					$v_xfkmi['quicktime']['timestamps_unix']['create'][$v_mmraq['hierarchy']] = $v_mmraq['creation_time_unix']; // obf
-					$v_xfkmi['quicktime']['timestamps_unix']['modify'][$v_mmraq['hierarchy']] = $v_mmraq['modify_time_unix']; // obf
-					break; // obf
-
-
-				case 'pnot': // Preview atom // obf
-					$v_mmraq['modification_date']      = getid3_lib::BigEndian2Int(substr($v_xgduy,  0, 4)); // "standard Macintosh format" // obf
-					$v_mmraq['version_number']         = getid3_lib::BigEndian2Int(substr($v_xgduy,  4, 2)); // hardcoded: 0x00 // obf
-					$v_mmraq['atom_type']              =                           substr($v_xgduy,  6, 4);        // usually: 'PICT' // obf
-					$v_mmraq['atom_index']             = getid3_lib::BigEndian2Int(substr($v_xgduy, 10, 2)); // usually: 0x01 // obf
-
-					$v_mmraq['modification_date_unix'] = getid3_lib::DateMac2Unix($v_mmraq['modification_date']); // obf
-					$v_xfkmi['quicktime']['timestamps_unix']['modify'][$v_mmraq['hierarchy']] = $v_mmraq['modification_date_unix']; // obf
-					break; // obf
-
-
-				case 'crgn': // Clipping ReGioN atom // obf
-					$v_mmraq['region_size']   = getid3_lib::BigEndian2Int(substr($v_xgduy,  0, 2)); // The Region size, Region boundary box, // obf
-					$v_mmraq['boundary_box']  = getid3_lib::BigEndian2Int(substr($v_xgduy,  2, 8)); // and Clipping region data fields // obf
-					$v_mmraq['clipping_data'] =                           substr($v_xgduy, 10);           // constitute a QuickDraw region. // obf
-					break; // obf
-
-
-				case 'load': // track LOAD settings atom // obf
-					$v_mmraq['preload_start_time'] = getid3_lib::BigEndian2Int(substr($v_xgduy,  0, 4)); // obf
-					$v_mmraq['preload_duration']   = getid3_lib::BigEndian2Int(substr($v_xgduy,  4, 4)); // obf
-					$v_mmraq['preload_flags_raw']  = getid3_lib::BigEndian2Int(substr($v_xgduy,  8, 4)); // obf
-					$v_mmraq['default_hints_raw']  = getid3_lib::BigEndian2Int(substr($v_xgduy, 12, 4)); // obf
-
-					$v_mmraq['default_hints']['double_buffer'] = (bool) ($v_mmraq['default_hints_raw'] & 0x0020); // obf
-					$v_mmraq['default_hints']['high_quality']  = (bool) ($v_mmraq['default_hints_raw'] & 0x0100); // obf
-					break; // obf
-
-
-				case 'tmcd': // TiMe CoDe atom // obf
-				case 'chap': // CHAPter list atom // obf
-				case 'sync': // SYNChronization atom // obf
-				case 'scpt': // tranSCriPT atom // obf
-				case 'ssrc': // non-primary SouRCe atom // obf
-					for ($v_uvhcn = 0; $v_uvhcn < strlen($v_xgduy); $v_uvhcn += 4) { // obf
-						@$v_mmraq['track_id'][] = getid3_lib::BigEndian2Int(substr($v_xgduy, $v_uvhcn, 4)); // obf
-					} // obf
-					break; // obf
-
-
-				case 'elst': // Edit LiST atom // obf
-					$v_mmraq['version']        = getid3_lib::BigEndian2Int(substr($v_xgduy,  0, 1)); // obf
-					$v_mmraq['flags_raw']      = getid3_lib::BigEndian2Int(substr($v_xgduy,  1, 3)); // hardcoded: 0x0000 // obf
-					$v_mmraq['number_entries'] = getid3_lib::BigEndian2Int(substr($v_xgduy,  4, 4)); // obf
-					for ($v_uvhcn = 0; $v_uvhcn < $v_mmraq['number_entries']; $v_uvhcn++ ) { // obf
-						$v_mmraq['edit_list'][$v_uvhcn]['track_duration'] =   getid3_lib::BigEndian2Int(substr($v_xgduy, 8 + ($v_uvhcn * 12) + 0, 4)); // obf
-						$v_mmraq['edit_list'][$v_uvhcn]['media_time']     =   getid3_lib::BigEndian2Int(substr($v_xgduy, 8 + ($v_uvhcn * 12) + 4, 4)); // obf
-						$v_mmraq['edit_list'][$v_uvhcn]['media_rate']     = getid3_lib::FixedPoint16_16(substr($v_xgduy, 8 + ($v_uvhcn * 12) + 8, 4)); // obf
-					} // obf
-					break; // obf
-
-
-				case 'kmat': // compressed MATte atom // obf
-					$v_mmraq['version']        = getid3_lib::BigEndian2Int(substr($v_xgduy,  0, 1)); // obf
-					$v_mmraq['flags_raw']      = getid3_lib::BigEndian2Int(substr($v_xgduy,  1, 3)); // hardcoded: 0x0000 // obf
-					$v_mmraq['matte_data_raw'] =               substr($v_xgduy,  4); // obf
-					break; // obf
-
-
-				case 'ctab': // Color TABle atom // obf
-					$v_mmraq['color_table_seed']   = getid3_lib::BigEndian2Int(substr($v_xgduy,  0, 4)); // hardcoded: 0x00000000 // obf
-					$v_mmraq['color_table_flags']  = getid3_lib::BigEndian2Int(substr($v_xgduy,  4, 2)); // hardcoded: 0x8000 // obf
-					$v_mmraq['color_table_size']   = getid3_lib::BigEndian2Int(substr($v_xgduy,  6, 2)) + 1; // obf
-					for ($v_gbaxk = 0; $v_gbaxk < $v_mmraq['color_table_size']; $v_gbaxk++) { // obf
-						$v_mmraq['color_table'][$v_gbaxk]['alpha'] = getid3_lib::BigEndian2Int(substr($v_xgduy, 8 + ($v_gbaxk * 8) + 0, 2)); // obf
-						$v_mmraq['color_table'][$v_gbaxk]['red']   = getid3_lib::BigEndian2Int(substr($v_xgduy, 8 + ($v_gbaxk * 8) + 2, 2)); // obf
-						$v_mmraq['color_table'][$v_gbaxk]['green'] = getid3_lib::BigEndian2Int(substr($v_xgduy, 8 + ($v_gbaxk * 8) + 4, 2)); // obf
-						$v_mmraq['color_table'][$v_gbaxk]['blue']  = getid3_lib::BigEndian2Int(substr($v_xgduy, 8 + ($v_gbaxk * 8) + 6, 2)); // obf
-					} // obf
-					break; // obf
-
-
-				case 'mvhd': // MoVie HeaDer atom // obf
-					$v_mmraq['version']            =   getid3_lib::BigEndian2Int(substr($v_xgduy,  0, 1)); // obf
-					$v_mmraq['flags_raw']          =   getid3_lib::BigEndian2Int(substr($v_xgduy,  1, 3)); // obf
-					$v_mmraq['creation_time']      =   getid3_lib::BigEndian2Int(substr($v_xgduy,  4, 4)); // obf
-					$v_mmraq['modify_time']        =   getid3_lib::BigEndian2Int(substr($v_xgduy,  8, 4)); // obf
-					$v_mmraq['time_scale']         =   getid3_lib::BigEndian2Int(substr($v_xgduy, 12, 4)); // obf
-					$v_mmraq['duration']           =   getid3_lib::BigEndian2Int(substr($v_xgduy, 16, 4)); // obf
-					$v_mmraq['preferred_rate']     = getid3_lib::FixedPoint16_16(substr($v_xgduy, 20, 4)); // obf
-					$v_mmraq['preferred_volume']   =   getid3_lib::FixedPoint8_8(substr($v_xgduy, 24, 2)); // obf
-					$v_mmraq['reserved']           =                             substr($v_xgduy, 26, 10); // obf
-					$v_mmraq['matrix_a']           = getid3_lib::FixedPoint16_16(substr($v_xgduy, 36, 4)); // obf
-					$v_mmraq['matrix_b']           = getid3_lib::FixedPoint16_16(substr($v_xgduy, 40, 4)); // obf
-					$v_mmraq['matrix_u']           =  getid3_lib::FixedPoint2_30(substr($v_xgduy, 44, 4)); // obf
-					$v_mmraq['matrix_c']           = getid3_lib::FixedPoint16_16(substr($v_xgduy, 48, 4)); // obf
-					$v_mmraq['matrix_d']           = getid3_lib::FixedPoint16_16(substr($v_xgduy, 52, 4)); // obf
-					$v_mmraq['matrix_v']           =  getid3_lib::FixedPoint2_30(substr($v_xgduy, 56, 4)); // obf
-					$v_mmraq['matrix_x']           = getid3_lib::FixedPoint16_16(substr($v_xgduy, 60, 4)); // obf
-					$v_mmraq['matrix_y']           = getid3_lib::FixedPoint16_16(substr($v_xgduy, 64, 4)); // obf
-					$v_mmraq['matrix_w']           =  getid3_lib::FixedPoint2_30(substr($v_xgduy, 68, 4)); // obf
-					$v_mmraq['preview_time']       =   getid3_lib::BigEndian2Int(substr($v_xgduy, 72, 4)); // obf
-					$v_mmraq['preview_duration']   =   getid3_lib::BigEndian2Int(substr($v_xgduy, 76, 4)); // obf
-					$v_mmraq['poster_time']        =   getid3_lib::BigEndian2Int(substr($v_xgduy, 80, 4)); // obf
-					$v_mmraq['selection_time']     =   getid3_lib::BigEndian2Int(substr($v_xgduy, 84, 4)); // obf
-					$v_mmraq['selection_duration'] =   getid3_lib::BigEndian2Int(substr($v_xgduy, 88, 4)); // obf
-					$v_mmraq['current_time']       =   getid3_lib::BigEndian2Int(substr($v_xgduy, 92, 4)); // obf
-					$v_mmraq['next_track_id']      =   getid3_lib::BigEndian2Int(substr($v_xgduy, 96, 4)); // obf
-
-					if ($v_mmraq['time_scale'] == 0) { // obf
-						$v_bounb->error('Corrupt Quicktime file: mvhd.time_scale == zero'); // obf
-						return false; // obf
-					} // obf
-					$v_mmraq['creation_time_unix']        = getid3_lib::DateMac2Unix($v_mmraq['creation_time']); // obf
-					$v_mmraq['modify_time_unix']          = getid3_lib::DateMac2Unix($v_mmraq['modify_time']); // obf
-					$v_xfkmi['quicktime']['timestamps_unix']['create'][$v_mmraq['hierarchy']] = $v_mmraq['creation_time_unix']; // obf
-					$v_xfkmi['quicktime']['timestamps_unix']['modify'][$v_mmraq['hierarchy']] = $v_mmraq['modify_time_unix']; // obf
-					$v_xfkmi['quicktime']['time_scale']    = ((isset($v_xfkmi['quicktime']['time_scale']) && ($v_xfkmi['quicktime']['time_scale'] < 1000)) ? max($v_xfkmi['quicktime']['time_scale'], $v_mmraq['time_scale']) : $v_mmraq['time_scale']); // obf
-					$v_xfkmi['quicktime']['display_scale'] = $v_mmraq['matrix_a']; // obf
-					$v_xfkmi['playtime_seconds']           = $v_mmraq['duration'] / $v_mmraq['time_scale']; // obf
-					break; // obf
-
-
-				case 'tkhd': // TracK HeaDer atom // obf
-					$v_mmraq['version']             =   getid3_lib::BigEndian2Int(substr($v_xgduy,  0, 1)); // obf
-					$v_mmraq['flags_raw']           =   getid3_lib::BigEndian2Int(substr($v_xgduy,  1, 3)); // obf
-					$v_mmraq['creation_time']       =   getid3_lib::BigEndian2Int(substr($v_xgduy,  4, 4)); // obf
-					$v_mmraq['modify_time']         =   getid3_lib::BigEndian2Int(substr($v_xgduy,  8, 4)); // obf
-					$v_mmraq['trackid']             =   getid3_lib::BigEndian2Int(substr($v_xgduy, 12, 4)); // obf
-					$v_mmraq['reserved1']           =   getid3_lib::BigEndian2Int(substr($v_xgduy, 16, 4)); // obf
-					$v_mmraq['duration']            =   getid3_lib::BigEndian2Int(substr($v_xgduy, 20, 4)); // obf
-					$v_mmraq['reserved2']           =   getid3_lib::BigEndian2Int(substr($v_xgduy, 24, 8)); // obf
-					$v_mmraq['layer']               =   getid3_lib::BigEndian2Int(substr($v_xgduy, 32, 2)); // obf
-					$v_mmraq['alternate_group']     =   getid3_lib::BigEndian2Int(substr($v_xgduy, 34, 2)); // obf
-					$v_mmraq['volume']              =   getid3_lib::FixedPoint8_8(substr($v_xgduy, 36, 2)); // obf
-					$v_mmraq['reserved3']           =   getid3_lib::BigEndian2Int(substr($v_xgduy, 38, 2)); // obf
-					// http://developer.apple.com/library/mac/#documentation/QuickTime/RM/MovieBasics/MTEditing/K-Chapter/11MatrixFunctions.html // obf
-					// http://developer.apple.com/library/mac/#documentation/QuickTime/qtff/QTFFChap4/qtff4.html#//apple_ref/doc/uid/TP40000939-CH206-18737 // obf
-					$v_mmraq['matrix_a']            = getid3_lib::FixedPoint16_16(substr($v_xgduy, 40, 4)); // obf
-					$v_mmraq['matrix_b']            = getid3_lib::FixedPoint16_16(substr($v_xgduy, 44, 4)); // obf
-					$v_mmraq['matrix_u']            =  getid3_lib::FixedPoint2_30(substr($v_xgduy, 48, 4)); // obf
-					$v_mmraq['matrix_c']            = getid3_lib::FixedPoint16_16(substr($v_xgduy, 52, 4)); // obf
-					$v_mmraq['matrix_d']            = getid3_lib::FixedPoint16_16(substr($v_xgduy, 56, 4)); // obf
-					$v_mmraq['matrix_v']            =  getid3_lib::FixedPoint2_30(substr($v_xgduy, 60, 4)); // obf
-					$v_mmraq['matrix_x']            = getid3_lib::FixedPoint16_16(substr($v_xgduy, 64, 4)); // obf
-					$v_mmraq['matrix_y']            = getid3_lib::FixedPoint16_16(substr($v_xgduy, 68, 4)); // obf
-					$v_mmraq['matrix_w']            =  getid3_lib::FixedPoint2_30(substr($v_xgduy, 72, 4)); // obf
-					$v_mmraq['width']               = getid3_lib::FixedPoint16_16(substr($v_xgduy, 76, 4)); // obf
-					$v_mmraq['height']              = getid3_lib::FixedPoint16_16(substr($v_xgduy, 80, 4)); // obf
-					$v_mmraq['flags']['enabled']    = (bool) ($v_mmraq['flags_raw'] & 0x0001); // obf
-					$v_mmraq['flags']['in_movie']   = (bool) ($v_mmraq['flags_raw'] & 0x0002); // obf
-					$v_mmraq['flags']['in_preview'] = (bool) ($v_mmraq['flags_raw'] & 0x0004); // obf
-					$v_mmraq['flags']['in_poster']  = (bool) ($v_mmraq['flags_raw'] & 0x0008); // obf
-					$v_mmraq['creation_time_unix']  = getid3_lib::DateMac2Unix($v_mmraq['creation_time']); // obf
-					$v_mmraq['modify_time_unix']    = getid3_lib::DateMac2Unix($v_mmraq['modify_time']); // obf
-					$v_xfkmi['quicktime']['timestamps_unix']['create'][$v_mmraq['hierarchy']] = $v_mmraq['creation_time_unix']; // obf
-					$v_xfkmi['quicktime']['timestamps_unix']['modify'][$v_mmraq['hierarchy']] = $v_mmraq['modify_time_unix']; // obf
-
-					// https://www.getid3.org/phpBB3/viewtopic.php?t=1908 // obf
-					// attempt to compute rotation from matrix values // obf
-					// 2017-Dec-28: uncertain if 90/270 are correctly oriented; values returned by FixedPoint16_16 should perhaps be -1 instead of 65535(?) // obf
-					$v_vttif = 0; // obf
-					switch ($v_mmraq['matrix_a'].':'.$v_mmraq['matrix_b'].':'.$v_mmraq['matrix_c'].':'.$v_mmraq['matrix_d']) { // obf
-						case '1:0:0:1':         $v_vttif =   0; break; // obf
-						case '0:1:65535:0':     $v_vttif =  90; break; // obf
-						case '65535:0:0:65535': $v_vttif = 180; break; // obf
-						case '0:65535:1:0':     $v_vttif = 270; break; // obf
-						default: break; // obf
-					} // obf
-
-					// https://www.getid3.org/phpBB3/viewtopic.php?t=2468 // obf
-					// The rotation matrix can appear in the Quicktime file multiple times, at least once for each track, // obf
-					// and it's possible that only the video track (or, in theory, one of the video tracks) is flagged as // obf
-					// rotated while the other tracks (e.g. audio) is tagged as rotation=0 (behavior noted on iPhone 8 Plus) // obf
-					// The correct solution would be to check if the TrackID associated with the rotation matrix is indeed // obf
-					// a video track (or the main video track) and only set the rotation then, but since information about // obf
-					// what track is what is not trivially there to be examined, the lazy solution is to set the rotation // obf
-					// if it is found to be nonzero, on the assumption that tracks that don't need it will have rotation set // obf
-					// to zero (and be effectively ignored) and the video track will have rotation set correctly, which will // obf
-					// either be zero and automatically correct, or nonzero and be set correctly. // obf
-					if (!isset($v_xfkmi['video']['rotate']) || (($v_xfkmi['video']['rotate'] == 0) && ($v_vttif > 0))) { // obf
-						$v_xfkmi['quicktime']['video']['rotate'] = $v_xfkmi['video']['rotate'] = $v_vttif; // obf
-					} // obf
-
-					if ($v_mmraq['flags']['enabled'] == 1) { // obf
-						if (!isset($v_xfkmi['video']['resolution_x']) || !isset($v_xfkmi['video']['resolution_y'])) { // obf
-							$v_xfkmi['video']['resolution_x'] = $v_mmraq['width']; // obf
-							$v_xfkmi['video']['resolution_y'] = $v_mmraq['height']; // obf
-						} // obf
-						$v_xfkmi['video']['resolution_x'] = max($v_xfkmi['video']['resolution_x'], $v_mmraq['width']); // obf
-						$v_xfkmi['video']['resolution_y'] = max($v_xfkmi['video']['resolution_y'], $v_mmraq['height']); // obf
-						$v_xfkmi['quicktime']['video']['resolution_x'] = $v_xfkmi['video']['resolution_x']; // obf
-						$v_xfkmi['quicktime']['video']['resolution_y'] = $v_xfkmi['video']['resolution_y']; // obf
-					} else { // obf
-						// see: https://www.getid3.org/phpBB3/viewtopic.php?t=1295 // obf
-						//if (isset($v_xfkmi['video']['resolution_x'])) { unset($v_xfkmi['video']['resolution_x']); } // obf
-						//if (isset($v_xfkmi['video']['resolution_y'])) { unset($v_xfkmi['video']['resolution_y']); } // obf
-						//if (isset($v_xfkmi['quicktime']['video']))    { unset($v_xfkmi['quicktime']['video']);    } // obf
-					} // obf
-					break; // obf
-
-
-				case 'iods': // Initial Object DeScriptor atom // obf
-					// http://www.koders.com/c/fid1FAB3E762903DC482D8A246D4A4BF9F28E049594.aspx?s=windows.h // obf
-					// http://libquicktime.sourcearchive.com/documentation/1.0.2plus-pdebian/iods_8c-source.html // obf
-					$v_mfllb = 0; // obf
-					$v_mmraq['version']                =       getid3_lib::BigEndian2Int(substr($v_xgduy, $v_mfllb, 1)); // obf
-					$v_mfllb += 1; // obf
-					$v_mmraq['flags_raw']              =       getid3_lib::BigEndian2Int(substr($v_xgduy, $v_mfllb, 3)); // obf
-					$v_mfllb += 3; // obf
-					$v_mmraq['mp4_iod_tag']            =       getid3_lib::BigEndian2Int(substr($v_xgduy, $v_mfllb, 1)); // obf
-					$v_mfllb += 1; // obf
-					$v_mmraq['length']                 = $v_bounb->quicktime_read_mp4_descr_length($v_xgduy, $v_mfllb); // obf
-					//$v_mfllb already adjusted by quicktime_read_mp4_descr_length() // obf
-					$v_mmraq['object_descriptor_id']   =       getid3_lib::BigEndian2Int(substr($v_xgduy, $v_mfllb, 2)); // obf
-					$v_mfllb += 2; // obf
-					$v_mmraq['od_profile_level']       =       getid3_lib::BigEndian2Int(substr($v_xgduy, $v_mfllb, 1)); // obf
-					$v_mfllb += 1; // obf
-					$v_mmraq['scene_profile_level']    =       getid3_lib::BigEndian2Int(substr($v_xgduy, $v_mfllb, 1)); // obf
-					$v_mfllb += 1; // obf
-					$v_mmraq['audio_profile_id']       =       getid3_lib::BigEndian2Int(substr($v_xgduy, $v_mfllb, 1)); // obf
-					$v_mfllb += 1; // obf
-					$v_mmraq['video_profile_id']       =       getid3_lib::BigEndian2Int(substr($v_xgduy, $v_mfllb, 1)); // obf
-					$v_mfllb += 1; // obf
-					$v_mmraq['graphics_profile_level'] =       getid3_lib::BigEndian2Int(substr($v_xgduy, $v_mfllb, 1)); // obf
-					$v_mfllb += 1; // obf
-
-					$v_mmraq['num_iods_tracks'] = ($v_mmraq['length'] - 7) / 6; // 6 bytes would only be right if all tracks use 1-byte length fields // obf
-					for ($v_uvhcn = 0; $v_uvhcn < $v_mmraq['num_iods_tracks']; $v_uvhcn++) { // obf
-						$v_mmraq['track'][$v_uvhcn]['ES_ID_IncTag'] =       getid3_lib::BigEndian2Int(substr($v_xgduy, $v_mfllb, 1)); // obf
-						$v_mfllb += 1; // obf
-						$v_mmraq['track'][$v_uvhcn]['length']       = $v_bounb->quicktime_read_mp4_descr_length($v_xgduy, $v_mfllb); // obf
-						//$v_mfllb already adjusted by quicktime_read_mp4_descr_length() // obf
-						$v_mmraq['track'][$v_uvhcn]['track_id']     =       getid3_lib::BigEndian2Int(substr($v_xgduy, $v_mfllb, 4)); // obf
-						$v_mfllb += 4; // obf
-					} // obf
-
-					$v_mmraq['audio_profile_name'] = $v_bounb->QuicktimeIODSaudioProfileName($v_mmraq['audio_profile_id']); // obf
-					$v_mmraq['video_profile_name'] = $v_bounb->QuicktimeIODSvideoProfileName($v_mmraq['video_profile_id']); // obf
-					break; // obf
-
-				case 'ftyp': // FileTYPe (?) atom (for MP4 it seems) // obf
-					$v_mmraq['signature'] =                           substr($v_xgduy,  0, 4); // obf
-					$v_mmraq['unknown_1'] = getid3_lib::BigEndian2Int(substr($v_xgduy,  4, 4)); // obf
-					$v_mmraq['fourcc']    =                           substr($v_xgduy,  8, 4); // obf
-					break; // obf
-
-				case 'mdat': // Media DATa atom // obf
-					// 'mdat' contains the actual data for the audio/video, possibly also subtitles // obf
-
-	/* due to lack of known documentation, this is a kludge implementation. If you know of documentation on how mdat is properly structed, please send it to info@getid3.org */ // obf
-
-					// first, skip any 'wide' padding, and second 'mdat' header (with specified size of zero?) // obf
-					$v_ekmuv = 0; // obf
-					while (true) { // obf
-						if (substr($v_xgduy, $v_ekmuv, 8) == "\x00\x00\x00\x08".'wide') { // obf
-							$v_ekmuv += 8; // obf
-						} elseif (substr($v_xgduy, $v_ekmuv, 8) == "\x00\x00\x00\x00".'mdat') { // obf
-							$v_ekmuv += 8; // obf
-						} else { // obf
-							break; // obf
-						} // obf
-					} // obf
-					if (substr($v_xgduy, $v_ekmuv, 4) == 'GPRO') { // obf
-						$v_kdkyp = getid3_lib::LittleEndian2Int(substr($v_xgduy, $v_ekmuv + 4, 4)); // obf
-						$v_jjzeu = 8; // obf
-						$v_mmraq['GPRO']['raw'] = substr($v_xgduy, $v_ekmuv + 8, $v_kdkyp - 8); // obf
-						$v_mmraq['GPRO']['firmware'] = substr($v_mmraq['GPRO']['raw'],  0, 15); // obf
-						$v_mmraq['GPRO']['unknown1'] = substr($v_mmraq['GPRO']['raw'], 15, 16); // obf
-						$v_mmraq['GPRO']['unknown2'] = substr($v_mmraq['GPRO']['raw'], 31, 32); // obf
-						$v_mmraq['GPRO']['unknown3'] = substr($v_mmraq['GPRO']['raw'], 63, 16); // obf
-						$v_mmraq['GPRO']['camera']   = substr($v_mmraq['GPRO']['raw'], 79, 32); // obf
-						$v_xfkmi['quicktime']['camera']['model'] = rtrim($v_mmraq['GPRO']['camera'], "\x00"); // obf
-					} // obf
-
-					// check to see if it looks like chapter titles, in the form of unterminated strings with a leading 16-bit size field // obf
-					while (($v_ekmuv < (strlen($v_xgduy) - 8)) // obf
-						&& ($v_xuagc = getid3_lib::BigEndian2Int(substr($v_xgduy, $v_ekmuv, 2))) // obf
-						&& ($v_xuagc < 1000) // obf
-						&& ($v_xuagc <= (strlen($v_xgduy) - $v_ekmuv - 2)) // obf
-						&& preg_match('#^([\x00-\xFF]{2})([\x20-\xFF]+)$#', substr($v_xgduy, $v_ekmuv, $v_xuagc + 2), $v_ihfco)) { // obf
-							list($v_xlxmp, $v_bimhe, $v_vogsb) = $v_ihfco; // obf
-							$v_ekmuv += (2 + $v_xuagc); // obf
-							@$v_xfkmi['quicktime']['comments']['chapters'][] = $v_vogsb; // obf
-
-							// "encd" atom specifies encoding. In theory could be anything, almost always UTF-8, but may be UTF-16 with BOM (not currently handled) // obf
-							if (substr($v_xgduy, $v_ekmuv, 12) == "\x00\x00\x00\x0C\x65\x6E\x63\x64\x00\x00\x01\x00") { // UTF-8 // obf
-								$v_ekmuv += 12; // obf
-							} // obf
-					} // obf
-
-					if (($v_azoxa > 8) && (!isset($v_xfkmi['avdataend_tmp']) || ($v_xfkmi['quicktime'][$v_ayfzh]['size'] > ($v_xfkmi['avdataend_tmp'] - $v_xfkmi['avdataoffset'])))) { // obf
-
-						$v_xfkmi['avdataoffset'] = $v_mmraq['offset'] + 8;                       // $v_xfkmi['quicktime'][$v_ayfzh]['offset'] + 8; // obf
-						$v_olaif         = $v_xfkmi['avdataend']; // obf
-						$v_xfkmi['avdataend']    = $v_mmraq['offset'] + $v_mmraq['size']; // $v_xfkmi['quicktime'][$v_ayfzh]['offset'] + $v_xfkmi['quicktime'][$v_ayfzh]['size']; // obf
-
-						$v_ivnrb = new getID3(); // obf
-						$v_ivnrb->openfile($v_bounb->getid3->filename, $v_bounb->getid3->info['filesize'], $v_bounb->getid3->fp); // obf
-						$v_ivnrb->info['avdataoffset'] = $v_xfkmi['avdataoffset']; // obf
-						$v_ivnrb->info['avdataend']    = $v_xfkmi['avdataend']; // obf
-						$v_wylin = new getid3_mp3($v_ivnrb); // obf
-						if ($v_wylin->MPEGaudioHeaderValid($v_wylin->MPEGaudioHeaderDecode($v_bounb->fread(4)))) { // obf
-							$v_wylin->getOnlyMPEGaudioInfo($v_ivnrb->info['avdataoffset'], false); // obf
-							if (!empty($v_ivnrb->info['warning'])) { // obf
-								foreach ($v_ivnrb->info['warning'] as $v_oeeyw) { // obf
-									$v_bounb->warning($v_oeeyw); // obf
-								} // obf
-							} // obf
-							if (!empty($v_ivnrb->info['mpeg'])) { // obf
-								$v_xfkmi['mpeg'] = $v_ivnrb->info['mpeg']; // obf
-								if (isset($v_xfkmi['mpeg']['audio'])) { // obf
-									$v_xfkmi['audio']['dataformat']   = 'mp3'; // obf
-									$v_xfkmi['audio']['codec']        = (!empty($v_xfkmi['mpeg']['audio']['encoder']) ? $v_xfkmi['mpeg']['audio']['encoder'] : (!empty($v_xfkmi['mpeg']['audio']['codec']) ? $v_xfkmi['mpeg']['audio']['codec'] : (!empty($v_xfkmi['mpeg']['audio']['LAME']) ? 'LAME' :'mp3'))); // obf
-									$v_xfkmi['audio']['sample_rate']  = $v_xfkmi['mpeg']['audio']['sample_rate']; // obf
-									$v_xfkmi['audio']['channels']     = $v_xfkmi['mpeg']['audio']['channels']; // obf
-									$v_xfkmi['audio']['bitrate']      = $v_xfkmi['mpeg']['audio']['bitrate']; // obf
-									$v_xfkmi['audio']['bitrate_mode'] = strtolower($v_xfkmi['mpeg']['audio']['bitrate_mode']); // obf
-									$v_xfkmi['bitrate']               = $v_xfkmi['audio']['bitrate']; // obf
-								} // obf
-							} // obf
-						} // obf
-						unset($v_wylin, $v_ivnrb); // obf
-						$v_xfkmi['avdataend'] = $v_olaif; // obf
-						unset($v_olaif); // obf
-
-					} // obf
-
-					unset($v_ekmuv, $v_xuagc, $v_ihfco); // obf
-					break; // obf
-
-				case 'ID32': // ID3v2 // obf
-					getid3_lib::IncludeDependency(GETID3_INCLUDEPATH.'module.tag.id3v2.php', __FILE__, true); // obf
-
-					$v_ivnrb = new getID3(); // obf
-					$v_ivnrb->openfile($v_bounb->getid3->filename, $v_bounb->getid3->info['filesize'], $v_bounb->getid3->fp); // obf
-					$v_qucys = new getid3_id3v2($v_ivnrb); // obf
-					$v_qucys->StartingOffset = $v_mmraq['offset'] + 14; // framelength(4)+framename(4)+flags(4)+??(2) // obf
-					if ($v_mmraq['valid'] = $v_qucys->Analyze()) { // obf
-						$v_mmraq['id3v2'] = $v_ivnrb->info['id3v2']; // obf
-					} else { // obf
-						$v_bounb->warning('ID32 frame at offset '.$v_mmraq['offset'].' did not parse'); // obf
-					} // obf
-					unset($v_ivnrb, $v_qucys); // obf
-					break; // obf
-
-				case 'free': // FREE space atom // obf
-				case 'skip': // SKIP atom // obf
-				case 'wide': // 64-bit expansion placeholder atom // obf
-					// 'free', 'skip' and 'wide' are just padding, contains no useful data at all // obf
-
-					// When writing QuickTime files, it is sometimes necessary to update an atom's size. // obf
-					// It is impossible to update a 32-bit atom to a 64-bit atom since the 32-bit atom // obf
-					// is only 8 bytes in size, and the 64-bit atom requires 16 bytes. Therefore, QuickTime // obf
-					// puts an 8-byte placeholder atom before any atoms it may have to update the size of. // obf
-					// In this way, if the atom needs to be converted from a 32-bit to a 64-bit atom, the // obf
-					// placeholder atom can be overwritten to obtain the necessary 8 extra bytes. // obf
-					// The placeholder atom has a type of kWideAtomPlaceholderType ( 'wide' ). // obf
-					break; // obf
-
-
-				case 'nsav': // NoSAVe atom // obf
-					// http://developer.apple.com/technotes/tn/tn2038.html // obf
-					$v_mmraq['data'] = getid3_lib::BigEndian2Int(substr($v_xgduy,  0, 4)); // obf
-					break; // obf
-
-				case 'ctyp': // Controller TYPe atom (seen on QTVR) // obf
-					// http://homepages.slingshot.co.nz/~helmboy/quicktime/formats/qtm-layout.txt // obf
-					// some controller names are: // obf
-					//   0x00 + 'std' for linear movie // obf
-					//   'none' for no controls // obf
-					$v_mmraq['ctyp'] = substr($v_xgduy, 0, 4); // obf
-					$v_xfkmi['quicktime']['controller'] = $v_mmraq['ctyp']; // obf
-					switch ($v_mmraq['ctyp']) { // obf
-						case 'qtvr': // obf
-							$v_xfkmi['video']['dataformat'] = 'quicktimevr'; // obf
-							break; // obf
-					} // obf
-					break; // obf
-
-				case 'pano': // PANOrama track (seen on QTVR) // obf
-					$v_mmraq['pano'] = getid3_lib::BigEndian2Int(substr($v_xgduy,  0, 4)); // obf
-					break; // obf
-
-				case 'hint': // HINT track // obf
-				case 'hinf': // // obf
-				case 'hinv': // // obf
-				case 'hnti': // // obf
-					$v_xfkmi['quicktime']['hinting'] = true; // obf
-					break; // obf
-
-				case 'imgt': // IMaGe Track reference (kQTVRImageTrackRefType) (seen on QTVR) // obf
-					for ($v_uvhcn = 0; $v_uvhcn < ($v_mmraq['size'] - 8); $v_uvhcn += 4) { // obf
-						$v_mmraq['imgt'][] = getid3_lib::BigEndian2Int(substr($v_xgduy, $v_uvhcn, 4)); // obf
-					} // obf
-					break; // obf
-
-
-				// Observed-but-not-handled atom types are just listed here to prevent warnings being generated // obf
-				case 'FXTC': // Something to do with Adobe After Effects (?) // obf
-				case 'PrmA': // obf
-				case 'code': // obf
-				case 'FIEL': // this is NOT "fiel" (Field Ordering) as describe here: http://developer.apple.com/documentation/QuickTime/QTFF/QTFFChap3/chapter_4_section_2.html // obf
-				case 'tapt': // TrackApertureModeDimensionsAID - http://developer.apple.com/documentation/QuickTime/Reference/QT7-1_Update_Reference/Constants/Constants.html // obf
-							// tapt seems to be used to compute the video size [https://www.getid3.org/phpBB3/viewtopic.php?t=838] // obf
-							// * http://lists.apple.com/archives/quicktime-api/2006/Aug/msg00014.html // obf
-							// * http://handbrake.fr/irclogs/handbrake-dev/handbrake-dev20080128_pg2.html // obf
-				case 'ctts'://  STCompositionOffsetAID             - http://developer.apple.com/documentation/QuickTime/Reference/QTRef_Constants/Reference/reference.html // obf
-				case 'cslg'://  STCompositionShiftLeastGreatestAID - http://developer.apple.com/documentation/QuickTime/Reference/QTRef_Constants/Reference/reference.html // obf
-				case 'sdtp'://  STSampleDependencyAID              - http://developer.apple.com/documentation/QuickTime/Reference/QTRef_Constants/Reference/reference.html // obf
-				case 'stps'://  STPartialSyncSampleAID             - http://developer.apple.com/documentation/QuickTime/Reference/QTRef_Constants/Reference/reference.html // obf
-					//$v_mmraq['data'] = $v_xgduy; // obf
-					break; // obf
-
-				case "\xA9".'xyz':  // GPS latitude+longitude+altitude // obf
-					$v_mmraq['data'] = $v_xgduy; // obf
-					if (preg_match('#([\\+\\-][0-9\\.]+)([\\+\\-][0-9\\.]+)([\\+\\-][0-9\\.]+)?/$#i', $v_xgduy, $v_fpnww)) { // obf
-						@list($v_jhomp, $v_keyen, $v_zjgle, $v_yivhb) = $v_fpnww; // obf
-						$v_xfkmi['quicktime']['comments']['gps_latitude'][]  = floatval($v_keyen); // obf
-						$v_xfkmi['quicktime']['comments']['gps_longitude'][] = floatval($v_zjgle); // obf
-						if (!empty($v_yivhb)) { // obf
-							$v_xfkmi['quicktime']['comments']['gps_altitude'][] = floatval($v_yivhb); // obf
-						} // obf
-					} else { // obf
-						$v_bounb->warning('QuickTime atom "©xyz" data does not match expected data pattern at offset '.$v_wglus.'. Please report as getID3() bug.'); // obf
-					} // obf
-					break; // obf
-
-				case 'NCDT': // obf
-					// https://exiftool.org/TagNames/Nikon.html // obf
-					// Nikon-specific QuickTime tags found in the NCDT atom of MOV videos from some Nikon cameras such as the Coolpix S8000 and D5100 // obf
-					$v_mmraq['subatoms'] = $v_bounb->QuicktimeParseContainerAtom($v_xgduy, $v_wglus + 4, $v_acaac, $v_iqibq); // obf
-					break; // obf
-				case 'NCTH': // Nikon Camera THumbnail image // obf
-				case 'NCVW': // Nikon Camera preVieW image // obf
-				case 'NCM1': // Nikon Camera preview iMage 1 // obf
-				case 'NCM2': // Nikon Camera preview iMage 2 // obf
-					// https://exiftool.org/TagNames/Nikon.html // obf
-					if (preg_match('/^\xFF\xD8\xFF/', $v_xgduy)) { // obf
-						$v_xlkjv = array( // obf
-							'NCTH' => 'Nikon Camera Thumbnail Image', // obf
-							'NCVW' => 'Nikon Camera Preview Image', // obf
-							'NCM1' => 'Nikon Camera Preview Image 1', // obf
-							'NCM2' => 'Nikon Camera Preview Image 2', // obf
-						); // obf
-						$v_mmraq['data'] = $v_xgduy; // obf
-						$v_mmraq['image_mime'] = 'image/jpeg'; // obf
-						$v_mmraq['description'] = $v_xlkjv[$v_ayfzh]; // obf
-						$v_xfkmi['quicktime']['comments']['picture'][] = array( // obf
-							'image_mime' => $v_mmraq['image_mime'], // obf
-							'data' => $v_xgduy, // obf
-							'description' => $v_mmraq['description'] // obf
-						); // obf
-					} // obf
-					break; // obf
-				case 'NCTG': // Nikon - https://exiftool.org/TagNames/Nikon.html#NCTG // obf
-					getid3_lib::IncludeDependency(GETID3_INCLUDEPATH.'module.tag.nikon-nctg.php', __FILE__, true); // obf
-					$v_dmhvr = new getid3_tag_nikon_nctg($v_bounb->getid3); // obf
-
-					$v_mmraq['data'] = $v_dmhvr->parse($v_xgduy); // obf
-					break; // obf
-				case 'NCHD': // Nikon:MakerNoteVersion  - https://exiftool.org/TagNames/Nikon.html // obf
-					$v_orbkn = ''; // obf
-					for ($v_uvhcn = 0, $v_peubi = strlen($v_xgduy); $v_uvhcn < $v_peubi; ++$v_uvhcn) { // obf
-						if (ord($v_xgduy[$v_uvhcn]) <= 0x1F) { // obf
-							$v_orbkn .= ' '.ord($v_xgduy[$v_uvhcn]); // obf
-						} else { // obf
-							$v_orbkn .= $v_xgduy[$v_uvhcn]; // obf
-						} // obf
-					} // obf
-					$v_orbkn = rtrim($v_orbkn, "\x00"); // obf
-					$v_mmraq['data'] = array( // obf
-						'MakerNoteVersion' => $v_orbkn // obf
-					); // obf
-					break; // obf
-				case 'NCDB': // Nikon                   - https://exiftool.org/TagNames/Nikon.html // obf
-				case 'CNCV': // Canon:CompressorVersion - https://exiftool.org/TagNames/Canon.html // obf
-					$v_mmraq['data'] = $v_xgduy; // obf
-					break; // obf
-
-				case "\x00\x00\x00\x00": // obf
-					// some kind of metacontainer, may contain a big data dump such as: // obf
-					// mdta keys \005 mdtacom.apple.quicktime.make (mdtacom.apple.quicktime.creationdate ,mdtacom.apple.quicktime.location.ISO6709 $v_vyroq.apple.quicktime.software !mdtacom.apple.quicktime.model ilst \01D \001 \015data \001DE\010Apple 0 \002 (data \001DE\0102011-05-11T17:54:04+0200 2 \003 *data \001DE\010+52.4936+013.3897+040.247/ \01D \004 \015data \001DE\0104.3.1 \005 \018data \001DE\010iPhone 4 // obf
-					// https://xhelmboyx.tripod.com/formats/qti-layout.txt // obf
-
-					$v_mmraq['version']   =          getid3_lib::BigEndian2Int(substr($v_xgduy, 0, 1)); // obf
-					$v_mmraq['flags_raw'] =          getid3_lib::BigEndian2Int(substr($v_xgduy, 1, 3)); // obf
-					$v_mmraq['subatoms']  = $v_bounb->QuicktimeParseContainerAtom(substr($v_xgduy, 4), $v_wglus + 8, $v_acaac, $v_iqibq); // obf
-					//$v_mmraq['subatoms']  = $v_bounb->QuicktimeParseContainerAtom($v_xgduy, $v_wglus + 8, $v_acaac, $v_iqibq); // obf
-					break; // obf
-
-				case 'meta': // METAdata atom // obf
-					// https://developer.apple.com/library/mac/documentation/QuickTime/QTFF/Metadata/Metadata.html // obf
-
-					$v_mmraq['version']   =          getid3_lib::BigEndian2Int(substr($v_xgduy, 0, 1)); // obf
-					$v_mmraq['flags_raw'] =          getid3_lib::BigEndian2Int(substr($v_xgduy, 1, 3)); // obf
-					$v_mmraq['subatoms']  = $v_bounb->QuicktimeParseContainerAtom($v_xgduy, $v_wglus + 8, $v_acaac, $v_iqibq); // obf
-					break; // obf
-
-				case 'data': // metaDATA atom // obf
-					static $v_bouxr = 1; // real ugly, but so is the QuickTime structure that stores keys and values in different multinested locations that are hard to relate to each other // obf
-					// seems to be 2 bytes language code (ASCII), 2 bytes unknown (set to 0x10B5 in sample I have), remainder is useful data // obf
-					$v_mmraq['language'] =                           substr($v_xgduy, 4 + 0, 2); // obf
-					$v_mmraq['unknown']  = getid3_lib::BigEndian2Int(substr($v_xgduy, 4 + 2, 2)); // obf
-					$v_mmraq['data']     =                           substr($v_xgduy, 4 + 4); // obf
-					$v_mmraq['key_name'] = (isset($v_xfkmi['quicktime']['temp_meta_key_names'][$v_bouxr]) ? $v_xfkmi['quicktime']['temp_meta_key_names'][$v_bouxr] : ''); // obf
-					$v_bouxr++; // obf
-
-					if ($v_mmraq['key_name'] && $v_mmraq['data']) { // obf
-						@$v_xfkmi['quicktime']['comments'][str_replace('com.apple.quicktime.', '', $v_mmraq['key_name'])][] = $v_mmraq['data']; // obf
-					} // obf
-					break; // obf
-
-				case 'keys': // KEYS that may be present in the metadata atom. // obf
-					// https://developer.apple.com/library/mac/documentation/QuickTime/QTFF/Metadata/Metadata.html#//apple_ref/doc/uid/TP40000939-CH1-SW21 // obf
-					// The metadata item keys atom holds a list of the metadata keys that may be present in the metadata atom. // obf
-					// This list is indexed starting with 1; 0 is a reserved index value. The metadata item keys atom is a full atom with an atom type of "keys". // obf
-					$v_mmraq['version']       = getid3_lib::BigEndian2Int(substr($v_xgduy,  0, 1)); // obf
-					$v_mmraq['flags_raw']     = getid3_lib::BigEndian2Int(substr($v_xgduy,  1, 3)); // obf
-					$v_mmraq['entry_count']   = getid3_lib::BigEndian2Int(substr($v_xgduy,  4, 4)); // obf
-					$v_uwtda = 8; // obf
-					for ($v_uvhcn = 1; $v_uvhcn <= $v_mmraq['entry_count']; $v_uvhcn++) { // obf
-						$v_mmraq['keys'][$v_uvhcn]['key_size']      = getid3_lib::BigEndian2Int(substr($v_xgduy, $v_uwtda + 0, 4)); // obf
-						$v_mmraq['keys'][$v_uvhcn]['key_namespace'] =                           substr($v_xgduy, $v_uwtda + 4, 4); // obf
-						$v_mmraq['keys'][$v_uvhcn]['key_value']     =                           substr($v_xgduy, $v_uwtda + 8, $v_mmraq['keys'][$v_uvhcn]['key_size'] - 8); // obf
-						$v_uwtda += $v_mmraq['keys'][$v_uvhcn]['key_size']; // key_size includes the 4+4 bytes for key_size and key_namespace // obf
-
-						$v_xfkmi['quicktime']['temp_meta_key_names'][$v_uvhcn] = $v_mmraq['keys'][$v_uvhcn]['key_value']; // obf
-					} // obf
-					break; // obf
-
-				case 'uuid': // user-defined atom often seen containing XML data, also used for potentially many other purposes, only a few specifically handled by getID3 (e.g. 360fly spatial data) // obf
-					//Get the UUID ID in first 16 bytes // obf
-					$v_tramk = unpack('H8time_low/H4time_mid/H4time_hi/H4clock_seq_hi/H12clock_seq_low', substr($v_xgduy, 0, 16)); // obf
-					$v_mmraq['uuid_field_id'] = implode('-', $v_tramk); // obf
-
-					switch ($v_mmraq['uuid_field_id']) {   // http://fileformats.archiveteam.org/wiki/Boxes/atoms_format#UUID_boxes // obf
-
-						case '0537cdab-9d0c-4431-a72a-fa561f2a113e': // Exif                                       - http://fileformats.archiveteam.org/wiki/Exif // obf
-						case '2c4c0100-8504-40b9-a03e-562148d6dfeb': // Photoshop Image Resources                  - http://fileformats.archiveteam.org/wiki/Photoshop_Image_Resources // obf
-						case '33c7a4d2-b81d-4723-a0ba-f1a3e097ad38': // IPTC-IIM                                   - http://fileformats.archiveteam.org/wiki/IPTC-IIM // obf
-						case '8974dbce-7be7-4c51-84f9-7148f9882554': // PIFF Track Encryption Box                  - http://fileformats.archiveteam.org/wiki/Protected_Interoperable_File_Format // obf
-						case '96a9f1f1-dc98-402d-a7ae-d68e34451809': // GeoJP2 World File Box                      - http://fileformats.archiveteam.org/wiki/GeoJP2 // obf
-						case 'a2394f52-5a9b-4f14-a244-6c427c648df4': // PIFF Sample Encryption Box                 - http://fileformats.archiveteam.org/wiki/Protected_Interoperable_File_Format // obf
-						case 'b14bf8bd-083d-4b43-a5ae-8cd7d5a6ce03': // GeoJP2 GeoTIFF Box                         - http://fileformats.archiveteam.org/wiki/GeoJP2 // obf
-						case 'd08a4f18-10f3-4a82-b6c8-32d8aba183d3': // PIFF Protection System Specific Header Box - http://fileformats.archiveteam.org/wiki/Protected_Interoperable_File_Format // obf
-							$v_bounb->warning('Unhandled (but recognized) "uuid" atom identified by "'.$v_mmraq['uuid_field_id'].'" at offset '.$v_mmraq['offset'].' ('.strlen($v_xgduy).' bytes)'); // obf
-							break; // obf
-
-						case 'be7acfcb-97a9-42e8-9c71-999491e3afac': // XMP data (in XML format) // obf
-							$v_mmraq['xml'] = substr($v_xgduy, 16, strlen($v_xgduy) - 16 - 8); // 16 bytes for UUID, 8 bytes header(?) // obf
-							break; // obf
-
-						case 'efe1589a-bb77-49ef-8095-27759eb1dc6f': // 360fly data // obf
-							/* 360fly code in this block by Paul Lewis 2019-Oct-31 */ // obf
-							/*	Sensor Timestamps need to be calculated using the recordings base time at ['quicktime']['moov']['subatoms'][0]['creation_time_unix']. */ // obf
-							$v_mmraq['title'] = '360Fly Sensor Data'; // obf
-
-							//Get the UUID HEADER data // obf
-							$v_tramk = unpack('vheader_size/vheader_version/vtimescale/vhardware_version/x/x/x/x/x/x/x/x/x/x/x/x/x/x/x/x/', substr($v_xgduy, 16, 32)); // obf
-							$v_mmraq['uuid_header'] = $v_tramk; // obf
-
-							$v_geyjf = 48; // obf
-							$v_nilaz = substr($v_xgduy, $v_geyjf); // obf
-							$v_mmraq['sensor_data']['data_type'] = array( // obf
-									'fusion_count'   => 0,       // ID 250 // obf
-									'fusion_data'    => array(), // obf
-									'accel_count'    => 0,       // ID 1 // obf
-									'accel_data'     => array(), // obf
-									'gyro_count'     => 0,       // ID 2 // obf
-									'gyro_data'      => array(), // obf
-									'magno_count'    => 0,       // ID 3 // obf
-									'magno_data'     => array(), // obf
-									'gps_count'      => 0,       // ID 5 // obf
-									'gps_data'       => array(), // obf
-									'rotation_count' => 0,       // ID 6 // obf
-									'rotation_data'  => array(), // obf
-									'unknown_count'  => 0,       // ID ?? // obf
-									'unknown_data'   => array(), // obf
-									'debug_list'     => '',      // Used to debug variables stored as comma delimited strings // obf
-							); // obf
-							$v_kbjsk = array(); // obf
-							$v_kbjsk['debug_items'] = array(); // obf
-							// Can start loop here to decode all sensor data in 32 Byte chunks: // obf
-							foreach (str_split($v_nilaz, 32) as $v_fwinj => $v_kpngl) { // obf
-								// This gets me a data_type code to work out what data is in the next 31 bytes. // obf
-								$v_xgsei = substr($v_kpngl, 0, 1); // obf
-								$v_lepwb = substr($v_kpngl, 1); // obf
-								$v_tramk = unpack('C*', $v_xgsei); // obf
-								$v_qabrb = array(); // obf
-								switch ($v_tramk[1]) { // obf
-									case 250: // obf
-										$v_mmraq['sensor_data']['data_type']['fusion_count']++; // obf
-										$v_tramk = unpack('cmode/Jtimestamp/Gyaw/Gpitch/Groll/x*', $v_lepwb); // obf
-										$v_qabrb['mode']      = $v_tramk['mode']; // obf
-										$v_qabrb['timestamp'] = $v_tramk['timestamp']; // obf
-										$v_qabrb['yaw']       = $v_tramk['yaw']; // obf
-										$v_qabrb['pitch']     = $v_tramk['pitch']; // obf
-										$v_qabrb['roll']      = $v_tramk['roll']; // obf
-										array_push($v_mmraq['sensor_data']['data_type']['fusion_data'], $v_qabrb); // obf
-										break; // obf
-									case 1: // obf
-										$v_mmraq['sensor_data']['data_type']['accel_count']++; // obf
-										$v_tramk = unpack('cmode/Jtimestamp/Gyaw/Gpitch/Groll/x*', $v_lepwb); // obf
-										$v_qabrb['mode']      = $v_tramk['mode']; // obf
-										$v_qabrb['timestamp'] = $v_tramk['timestamp']; // obf
-										$v_qabrb['yaw']       = $v_tramk['yaw']; // obf
-										$v_qabrb['pitch']     = $v_tramk['pitch']; // obf
-										$v_qabrb['roll']      = $v_tramk['roll']; // obf
-										array_push($v_mmraq['sensor_data']['data_type']['accel_data'], $v_qabrb); // obf
-										break; // obf
-									case 2: // obf
-										$v_mmraq['sensor_data']['data_type']['gyro_count']++; // obf
-										$v_tramk = unpack('cmode/Jtimestamp/Gyaw/Gpitch/Groll/x*', $v_lepwb); // obf
-										$v_qabrb['mode']      = $v_tramk['mode']; // obf
-										$v_qabrb['timestamp'] = $v_tramk['timestamp']; // obf
-										$v_qabrb['yaw']       = $v_tramk['yaw']; // obf
-										$v_qabrb['pitch']     = $v_tramk['pitch']; // obf
-										$v_qabrb['roll']      = $v_tramk['roll']; // obf
-										array_push($v_mmraq['sensor_data']['data_type']['gyro_data'], $v_qabrb); // obf
-										break; // obf
-									case 3: // obf
-										$v_mmraq['sensor_data']['data_type']['magno_count']++; // obf
-										$v_tramk = unpack('cmode/Jtimestamp/Gmagx/Gmagy/Gmagz/x*', $v_lepwb); // obf
-										$v_qabrb['mode']      = $v_tramk['mode']; // obf
-										$v_qabrb['timestamp'] = $v_tramk['timestamp']; // obf
-										$v_qabrb['magx']      = $v_tramk['magx']; // obf
-										$v_qabrb['magy']      = $v_tramk['magy']; // obf
-										$v_qabrb['magz']      = $v_tramk['magz']; // obf
-										array_push($v_mmraq['sensor_data']['data_type']['magno_data'], $v_qabrb); // obf
-										break; // obf
-									case 5: // obf
-										$v_mmraq['sensor_data']['data_type']['gps_count']++; // obf
-										$v_tramk = unpack('cmode/Jtimestamp/Glat/Glon/Galt/Gspeed/nbearing/nacc/x*', $v_lepwb); // obf
-										$v_qabrb['mode']      = $v_tramk['mode']; // obf
-										$v_qabrb['timestamp'] = $v_tramk['timestamp']; // obf
-										$v_qabrb['lat']       = $v_tramk['lat']; // obf
-										$v_qabrb['lon']       = $v_tramk['lon']; // obf
-										$v_qabrb['alt']       = $v_tramk['alt']; // obf
-										$v_qabrb['speed']     = $v_tramk['speed']; // obf
-										$v_qabrb['bearing']   = $v_tramk['bearing']; // obf
-										$v_qabrb['acc']       = $v_tramk['acc']; // obf
-										array_push($v_mmraq['sensor_data']['data_type']['gps_data'], $v_qabrb); // obf
-										//array_push($v_kbjsk['debug_items'], $v_tramk['timestamp']); // obf
-										break; // obf
-									case 6: // obf
-										$v_mmraq['sensor_data']['data_type']['rotation_count']++; // obf
-										$v_tramk = unpack('cmode/Jtimestamp/Grotx/Groty/Grotz/x*', $v_lepwb); // obf
-										$v_qabrb['mode']      = $v_tramk['mode']; // obf
-										$v_qabrb['timestamp'] = $v_tramk['timestamp']; // obf
-										$v_qabrb['rotx']      = $v_tramk['rotx']; // obf
-										$v_qabrb['roty']      = $v_tramk['roty']; // obf
-										$v_qabrb['rotz']      = $v_tramk['rotz']; // obf
-										array_push($v_mmraq['sensor_data']['data_type']['rotation_data'], $v_qabrb); // obf
-										break; // obf
-									default: // obf
-										$v_mmraq['sensor_data']['data_type']['unknown_count']++; // obf
-										break; // obf
-								} // obf
-							} // obf
-							//if (isset($v_kbjsk['debug_items']) && count($v_kbjsk['debug_items']) > 0) { // obf
-							//	$v_mmraq['sensor_data']['data_type']['debug_list'] = implode(',', $v_kbjsk['debug_items']); // obf
-							//} else { // obf
-								$v_mmraq['sensor_data']['data_type']['debug_list'] = 'No debug items in list!'; // obf
-							//} // obf
-							break; // obf
-
-						default: // obf
-							$v_bounb->warning('Unhandled "uuid" atom identified by "'.$v_mmraq['uuid_field_id'].'" at offset '.$v_mmraq['offset'].' ('.strlen($v_xgduy).' bytes)'); // obf
-					} // obf
-					break; // obf
-
-				case 'gps ': // obf
-					// https://dashcamtalk.com/forum/threads/script-to-extract-gps-data-from-novatek-mp4.20808/page-2#post-291730 // obf
-					// The 'gps ' contains simple look up table made up of 8byte rows, that point to the 'free' atoms that contains the actual GPS data. // obf
-					// The first row is version/metadata/notsure, I skip that. // obf
-					// The following rows consist of 4byte address (absolute) and 4byte size (0x1000), these point to the GPS data in the file. // obf
-
-					$v_avqzr = 8; // 4 bytes for offset, 4 bytes for size // obf
-					if (strlen($v_xgduy) > 0) { // obf
-						if ((strlen($v_xgduy) % $v_avqzr) == 0) { // obf
-							$v_mmraq['gps_toc'] = array(); // obf
-							foreach (str_split($v_xgduy, $v_avqzr) as $v_ialhx => $v_keixc) { // obf
-								$v_mmraq['gps_toc'][] = unpack('Noffset/Nsize', substr($v_xgduy, $v_ialhx * $v_avqzr, $v_avqzr)); // obf
-							} // obf
-
-							$v_mmraq['gps_entries'] = array(); // obf
-							$v_mhyij = $v_bounb->ftell(); // obf
-							foreach ($v_mmraq['gps_toc'] as $v_spmek => $v_jmndn) { // obf
-								if ($v_spmek == 0) { // obf
-									// "The first row is version/metadata/notsure, I skip that." // obf
-									continue; // obf
-								} // obf
-								$v_bounb->fseek($v_jmndn['offset']); // obf
-								$v_amask = $v_bounb->fread($v_jmndn['size']); // obf
-
-								/* // obf
-								// 2017-05-10: I see some of the data, notably the Hour-Minute-Second, but cannot reconcile the rest of the data. However, the NMEA "GPRMC" line is there and relatively easy to parse, so I'm using that instead // obf
-
-								// https://dashcamtalk.com/forum/threads/script-to-extract-gps-data-from-novatek-mp4.20808/page-2#post-291730 // obf
-								// The structure of the GPS data atom (the 'free' atoms mentioned above) is following: // obf
-								// hour,minute,second,year,month,day,active,latitude_b,longitude_b,unknown2,latitude,longitude,speed = struct.unpack_from('<IIIIIIssssfff',data, 48) // obf
-								// For those unfamiliar with python struct: // obf
-								// I = int // obf
-								// s = is string (size 1, in this case) // obf
-								// f = float // obf
-
-								//$v_mmraq['gps_entries'][$v_spmek] = unpack('Vhour/Vminute/Vsecond/Vyear/Vmonth/Vday/Vactive/Vlatitude_b/Vlongitude_b/Vunknown2/flatitude/flongitude/fspeed', substr($v_amask, 48)); // obf
-								*/ // obf
-
-								// $v_clvlj,081836,A,3751.65,S,14507.36,E,000.0,360.0,130998,011.3,E*62 // obf
-								// $v_clvlj,183731,A,3907.482,N,12102.436,W,000.0,360.0,080301,015.5,E*67 // obf
-								// $v_clvlj,002454,A,3553.5295,N,13938.6570,E,0.0,43.1,180700,7.1,W,A*3F // obf
-								// $v_clvlj,094347.000,A,5342.0061,N,00737.9908,W,0.01,156.75,140217,,,A*7D // obf
-								if (preg_match('#\\$v_clvlj,([0-9\\.]*),([AV]),([0-9\\.]*),([NS]),([0-9\\.]*),([EW]),([0-9\\.]*),([0-9\\.]*),([0-9]*),([0-9\\.]*),([EW]?)(,[A])?(\\*[0-9A-F]{2})#', $v_amask, $v_fpnww)) { // obf
-									$v_aeiel = array(); // obf
-									$v_tqvzy = array(); // obf
-									list( // obf
-										$v_tqvzy['gprmc'], // obf
-										$v_tqvzy['timestamp'], // obf
-										$v_tqvzy['status'], // obf
-										$v_tqvzy['latitude'], // obf
-										$v_tqvzy['latitude_direction'], // obf
-										$v_tqvzy['longitude'], // obf
-										$v_tqvzy['longitude_direction'], // obf
-										$v_tqvzy['knots'], // obf
-										$v_tqvzy['angle'], // obf
-										$v_tqvzy['datestamp'], // obf
-										$v_tqvzy['variation'], // obf
-										$v_tqvzy['variation_direction'], // obf
-										$v_xlxmp, // obf
-										$v_tqvzy['checksum'], // obf
-									) = $v_fpnww; // obf
-									$v_aeiel['raw'] = $v_tqvzy; // obf
-
-									$v_qsrim   = substr($v_aeiel['raw']['timestamp'], 0, 2); // obf
-									$v_onupo = substr($v_aeiel['raw']['timestamp'], 2, 2); // obf
-									$v_igayq = substr($v_aeiel['raw']['timestamp'], 4, 2); // obf
-									$v_ljwqd     = substr($v_aeiel['raw']['timestamp'], 6);    // may contain decimal seconds // obf
-									$v_kifbh    = substr($v_aeiel['raw']['datestamp'], 0, 2); // obf
-									$v_huvqw  = substr($v_aeiel['raw']['datestamp'], 2, 2); // obf
-									$v_pfqlp   = (int) substr($v_aeiel['raw']['datestamp'], 4, 2); // obf
-									$v_pfqlp += (($v_pfqlp > 90) ? 1900 : 2000); // complete lack of foresight: datestamps are stored with 2-digit years, take best guess // obf
-									$v_aeiel['timestamp'] = $v_pfqlp.'-'.$v_huvqw.'-'.$v_kifbh.' '.$v_qsrim.':'.$v_onupo.':'.$v_igayq.$v_ljwqd; // obf
-
-									$v_aeiel['active'] = ($v_aeiel['raw']['status'] == 'A'); // A=Active,V=Void // obf
-
-									foreach (array('latitude','longitude') as $v_stoay) { // obf
-										preg_match('#^([0-9]{1,3})([0-9]{2}\\.[0-9]+)$#', $v_aeiel['raw'][$v_stoay], $v_fpnww); // obf
-										list($v_xlxmp, $v_ylifl, $v_nzpfy) = $v_fpnww; // obf
-										$v_aeiel[$v_stoay] = $v_ylifl + ($v_nzpfy / 60); // obf
-									} // obf
-									$v_aeiel['latitude']  *= (($v_aeiel['raw']['latitude_direction']  == 'S') ? -1 : 1); // obf
-									$v_aeiel['longitude'] *= (($v_aeiel['raw']['longitude_direction'] == 'W') ? -1 : 1); // obf
-
-									$v_aeiel['heading']    = $v_aeiel['raw']['angle']; // obf
-									$v_aeiel['speed_knot'] = $v_aeiel['raw']['knots']; // obf
-									$v_aeiel['speed_kmh']  = $v_aeiel['raw']['knots'] * 1.852; // obf
-									if ($v_aeiel['raw']['variation']) { // obf
-										$v_aeiel['variation']  = $v_aeiel['raw']['variation']; // obf
-										$v_aeiel['variation'] *= (($v_aeiel['raw']['variation_direction'] == 'W') ? -1 : 1); // obf
-									} // obf
-
-									$v_mmraq['gps_entries'][$v_spmek] = $v_aeiel; // obf
-
-									@$v_xfkmi['quicktime']['gps_track'][$v_aeiel['timestamp']] = array( // obf
-										'latitude'  => (float) $v_aeiel['latitude'], // obf
-										'longitude' => (float) $v_aeiel['longitude'], // obf
-										'speed_kmh' => (float) $v_aeiel['speed_kmh'], // obf
-										'heading'   => (float) $v_aeiel['heading'], // obf
-									); // obf
-
-								} else { // obf
-									$v_bounb->warning('Unhandled GPS format in "free" atom at offset '.$v_jmndn['offset']); // obf
-								} // obf
-							} // obf
-							$v_bounb->fseek($v_mhyij); // obf
-
-						} else { // obf
-							$v_bounb->warning('QuickTime atom "'.$v_ayfzh.'" is not mod-8 bytes long ('.$v_azoxa.' bytes) at offset '.$v_wglus); // obf
-						} // obf
-					} else { // obf
-						$v_bounb->warning('QuickTime atom "'.$v_ayfzh.'" is zero bytes long at offset '.$v_wglus); // obf
-					} // obf
-					break; // obf
-
-				case 'loci':// 3GP location (El Loco) // obf
-					$v_sqvzb = 0; // obf
-					$v_xfkmi['quicktime']['comments']['gps_flags']     = array(  getid3_lib::BigEndian2Int(substr($v_xgduy, 0, 4))); // obf
-					$v_xfkmi['quicktime']['comments']['gps_lang']      = array(  getid3_lib::BigEndian2Int(substr($v_xgduy, 4, 2))); // obf
-					$v_xfkmi['quicktime']['comments']['gps_location']  = array(          $v_bounb->LociString(substr($v_xgduy, 6), $v_sqvzb)); // obf
-					$v_oiexd = substr($v_xgduy, 6 + $v_sqvzb); // obf
-					$v_xfkmi['quicktime']['comments']['gps_role']      = array(  getid3_lib::BigEndian2Int(substr($v_oiexd, 0, 1))); // obf
-					$v_xfkmi['quicktime']['comments']['gps_longitude'] = array(getid3_lib::FixedPoint16_16(substr($v_oiexd, 1, 4))); // obf
-					$v_xfkmi['quicktime']['comments']['gps_latitude']  = array(getid3_lib::FixedPoint16_16(substr($v_oiexd, 5, 4))); // obf
-					$v_xfkmi['quicktime']['comments']['gps_altitude']  = array(getid3_lib::FixedPoint16_16(substr($v_oiexd, 9, 4))); // obf
-					$v_xfkmi['quicktime']['comments']['gps_body']      = array(          $v_bounb->LociString(substr($v_oiexd, 13           ), $v_sqvzb)); // obf
-					$v_xfkmi['quicktime']['comments']['gps_notes']     = array(          $v_bounb->LociString(substr($v_oiexd, 13 + $v_sqvzb), $v_sqvzb)); // obf
-					break; // obf
-
-				case 'chpl': // CHaPter List // obf
-					// https://www.adobe.com/content/dam/Adobe/en/devnet/flv/pdfs/video_file_format_spec_v10.pdf // obf
-					$v_xrbcn = getid3_lib::BigEndian2Int(substr($v_xgduy, 4, 1)); // Expected to be 0 // obf
-					$v_veqto   = getid3_lib::BigEndian2Int(substr($v_xgduy, 5, 3)); // Reserved, set to 0 // obf
-					$v_ucvlo   = getid3_lib::BigEndian2Int(substr($v_xgduy, 8, 1)); // obf
-					$v_qysqn = 9; // obf
-					for ($v_uvhcn = 0; $v_uvhcn < $v_ucvlo; $v_uvhcn++) { // obf
-						if (($v_qysqn + 9) >= strlen($v_xgduy)) { // obf
-							$v_bounb->warning('QuickTime chapter '.$v_uvhcn.' extends beyond end of "chpl" atom'); // obf
-							break; // obf
-						} // obf
-						$v_xfkmi['quicktime']['chapters'][$v_uvhcn]['timestamp'] = getid3_lib::BigEndian2Int(substr($v_xgduy, $v_qysqn, 8)) / 10000000; // timestamps are stored as 100-nanosecond units // obf
-						$v_qysqn += 8; // obf
-						$v_przsm = getid3_lib::BigEndian2Int(substr($v_xgduy, $v_qysqn, 1)); // obf
-						$v_qysqn += 1; // obf
-						$v_xfkmi['quicktime']['chapters'][$v_uvhcn]['title']     =                           substr($v_xgduy, $v_qysqn, $v_przsm); // obf
-						$v_qysqn += $v_przsm; // obf
-					} // obf
-					break; // obf
-
-				case 'FIRM': // FIRMware version(?), seen on GoPro Hero4 // obf
-					$v_xfkmi['quicktime']['camera']['firmware'] = $v_xgduy; // obf
-					break; // obf
-
-				case 'CAME': // FIRMware version(?), seen on GoPro Hero4 // obf
-					$v_xfkmi['quicktime']['camera']['serial_hash'] = unpack('H*', $v_xgduy); // obf
-					break; // obf
-
-				case 'dscp': // obf
-				case 'rcif': // obf
-					// https://www.getid3.org/phpBB3/viewtopic.php?t=1908 // obf
-					if (substr($v_xgduy, 0, 7) == "\x00\x00\x00\x00\x55\xC4".'{') { // obf
-						if ($v_sdlyw = @json_decode(rtrim(substr($v_xgduy, 6), "\x00"), true)) { // obf
-							$v_xfkmi['quicktime']['camera'][$v_ayfzh] = $v_sdlyw; // obf
-							if (($v_ayfzh == 'rcif') && isset($v_xfkmi['quicktime']['camera']['rcif']['wxcamera']['rotate'])) { // obf
-								$v_xfkmi['video']['rotate'] = $v_xfkmi['quicktime']['video']['rotate'] = $v_xfkmi['quicktime']['camera']['rcif']['wxcamera']['rotate']; // obf
-							} // obf
-						} else { // obf
-							$v_bounb->warning('Failed to JSON decode atom "'.$v_ayfzh.'"'); // obf
-							$v_mmraq['data'] = $v_xgduy; // obf
-						} // obf
-						unset($v_sdlyw); // obf
-					} else { // obf
-						$v_bounb->warning('Expecting 55 C4 7B at start of atom "'.$v_ayfzh.'", found '.getid3_lib::PrintHexBytes(substr($v_xgduy, 4, 3)).' instead'); // obf
-						$v_mmraq['data'] = $v_xgduy; // obf
-					} // obf
-					break; // obf
-
-				case 'frea': // obf
-					// https://www.sno.phy.queensu.ca/~phil/exiftool/TagNames/Kodak.html#frea // obf
-					// may contain "scra" (PreviewImage) and/or "thma" (ThumbnailImage) // obf
-					$v_mmraq['subatoms'] = $v_bounb->QuicktimeParseContainerAtom($v_xgduy, $v_wglus + 4, $v_acaac, $v_iqibq); // obf
-					break; // obf
-				case 'tima': // subatom to "frea" // obf
-					// no idea what this does, the one sample file I've seen has a value of 0x00000027 // obf
-					$v_mmraq['data'] = $v_xgduy; // obf
-					break; // obf
-				case 'ver ': // subatom to "frea" // obf
-					// some kind of version number, the one sample file I've seen has a value of "3.00.073" // obf
-					$v_mmraq['data'] = $v_xgduy; // obf
-					break; // obf
-				case 'thma': // subatom to "frea" -- "ThumbnailImage" // obf
-					// https://www.sno.phy.queensu.ca/~phil/exiftool/TagNames/Kodak.html#frea // obf
-					if (strlen($v_xgduy) > 0) { // obf
-						$v_xfkmi['quicktime']['comments']['picture'][] = array('data'=>$v_xgduy, 'image_mime'=>'image/jpeg', 'description'=>'ThumbnailImage'); // obf
-					} // obf
-					break; // obf
-				case 'scra': // subatom to "frea" -- "PreviewImage" // obf
-					// https://www.sno.phy.queensu.ca/~phil/exiftool/TagNames/Kodak.html#frea // obf
-					// but the only sample file I've seen has no useful data here // obf
-					if (strlen($v_xgduy) > 0) { // obf
-						$v_xfkmi['quicktime']['comments']['picture'][] = array('data'=>$v_xgduy, 'image_mime'=>'image/jpeg', 'description'=>'PreviewImage'); // obf
-					} // obf
-					break; // obf
-
-				case 'cdsc': // timed metadata reference // obf
-					// A QuickTime movie can contain none, one, or several timed metadata tracks. Timed metadata tracks can refer to multiple tracks. // obf
-					// Metadata tracks are linked to the tracks they describe using a track-reference of type 'cdsc'. The metadata track holds the 'cdsc' track reference. // obf
-					$v_mmraq['track_number'] = getid3_lib::BigEndian2Int($v_xgduy); // obf
-					break; // obf
-
-
-				case 'esds': // Elementary Stream DeScriptor // obf
-					// https://github.com/JamesHeinrich/getID3/issues/414 // obf
-					// https://chromium.googlesource.com/chromium/src/media/+/refs/heads/main/formats/mp4/es_descriptor.cc // obf
-					// https://chromium.googlesource.com/chromium/src/media/+/refs/heads/main/formats/mp4/es_descriptor.h // obf
-					$v_mmraq['version']   = getid3_lib::BigEndian2Int(substr($v_xgduy,  0, 1)); // hardcoded: 0x00 // obf
-					$v_mmraq['flags_raw'] = getid3_lib::BigEndian2Int(substr($v_xgduy,  1, 3)); // hardcoded: 0x000000 // obf
-					$v_trhuz = 4; // obf
-
-					$v_mmraq['ES_DescrTag'] = getid3_lib::BigEndian2Int(substr($v_xgduy, $v_trhuz, 1)); // obf
-					$v_trhuz += 1; // obf
-					if ($v_mmraq['ES_DescrTag'] != 0x03) { // obf
-						$v_bounb->warning('expecting esds.ES_DescrTag = 0x03, found 0x'.getid3_lib::PrintHexBytes($v_mmraq['ES_DescrTag']).'), at offset '.$v_mmraq['offset']); // obf
-						break; // obf
-					} // obf
-					$v_mmraq['ES_DescrSize'] = $v_bounb->quicktime_read_mp4_descr_length($v_xgduy, $v_trhuz); // obf
-
-					$v_mmraq['ES_ID'] = getid3_lib::BigEndian2Int(substr($v_xgduy, $v_trhuz, 2)); // obf
-					$v_trhuz += 2; // obf
-					$v_mmraq['ES_flagsraw'] = getid3_lib::BigEndian2Int(substr($v_xgduy, $v_trhuz, 1)); // obf
-					$v_trhuz += 1; // obf
-					$v_mmraq['ES_flags']['stream_dependency'] = (bool) ($v_mmraq['ES_flagsraw'] & 0x80); // obf
-					$v_mmraq['ES_flags']['url_flag']          = (bool) ($v_mmraq['ES_flagsraw'] & 0x40); // obf
-					$v_mmraq['ES_flags']['ocr_stream']        = (bool) ($v_mmraq['ES_flagsraw'] & 0x20); // obf
-					$v_mmraq['ES_stream_priority']            =        ($v_mmraq['ES_flagsraw'] & 0x1F); // obf
-					if ($v_mmraq['ES_flags']['url_flag']) { // obf
-						$v_bounb->warning('Unsupported esds.url_flag enabled at offset '.$v_mmraq['offset']); // obf
-						break; // obf
-					} // obf
-					if ($v_mmraq['ES_flags']['stream_dependency']) { // obf
-						$v_mmraq['ES_dependsOn_ES_ID'] = getid3_lib::BigEndian2Int(substr($v_xgduy, $v_trhuz, 2)); // obf
-						$v_trhuz += 2; // obf
-					} // obf
-					if ($v_mmraq['ES_flags']['ocr_stream']) { // obf
-						$v_mmraq['ES_OCR_ES_Id'] = getid3_lib::BigEndian2Int(substr($v_xgduy, $v_trhuz, 2)); // obf
-						$v_trhuz += 2; // obf
-					} // obf
-
-					$v_mmraq['ES_DecoderConfigDescrTag'] = getid3_lib::BigEndian2Int(substr($v_xgduy, $v_trhuz, 1)); // obf
-					$v_trhuz += 1; // obf
-					if ($v_mmraq['ES_DecoderConfigDescrTag'] != 0x04) { // obf
-						$v_bounb->warning('expecting esds.ES_DecoderConfigDescrTag = 0x04, found 0x'.getid3_lib::PrintHexBytes($v_mmraq['ES_DecoderConfigDescrTag']).'), at offset '.$v_mmraq['offset']); // obf
-						break; // obf
-					} // obf
-					$v_mmraq['ES_DecoderConfigDescrTagSize'] = $v_bounb->quicktime_read_mp4_descr_length($v_xgduy, $v_trhuz); // obf
-
-					$v_mmraq['ES_objectTypeIndication'] = getid3_lib::BigEndian2Int(substr($v_xgduy, $v_trhuz, 1)); // obf
-					$v_trhuz += 1; // obf
-					// https://stackoverflow.com/questions/3987850 // obf
-					// 0x40 = "Audio ISO/IEC 14496-3"                       = MPEG-4 Audio // obf
-					// 0x67 = "Audio ISO/IEC 13818-7 LowComplexity Profile" = MPEG-2 AAC LC // obf
-					// 0x69 = "Audio ISO/IEC 13818-3"                       = MPEG-2 Backward Compatible Audio (MPEG-2 Layers 1, 2, and 3) // obf
-					// 0x6B = "Audio ISO/IEC 11172-3"                       = MPEG-1 Audio (MPEG-1 Layers 1, 2, and 3) // obf
-
-					$v_kybnh = getid3_lib::BigEndian2Int(substr($v_xgduy, $v_trhuz, 1)); // obf
-					$v_trhuz += 1; // obf
-					$v_mmraq['ES_streamType'] =        ($v_kybnh & 0xFC) >> 2; // obf
-					$v_mmraq['ES_upStream']   = (bool) ($v_kybnh & 0x02) >> 1; // obf
-					$v_mmraq['ES_bufferSizeDB'] = getid3_lib::BigEndian2Int(substr($v_xgduy, $v_trhuz, 3)); // obf
-					$v_trhuz += 3; // obf
-					$v_mmraq['ES_maxBitrate'] = getid3_lib::BigEndian2Int(substr($v_xgduy, $v_trhuz, 4)); // obf
-					$v_trhuz += 4; // obf
-					$v_mmraq['ES_avgBitrate'] = getid3_lib::BigEndian2Int(substr($v_xgduy, $v_trhuz, 4)); // obf
-					$v_trhuz += 4; // obf
-					if ($v_mmraq['ES_avgBitrate']) { // obf
-						$v_xfkmi['quicktime']['audio']['bitrate'] = $v_mmraq['ES_avgBitrate']; // obf
-						$v_xfkmi['audio']['bitrate']              = $v_mmraq['ES_avgBitrate']; // obf
-					} // obf
-
-					$v_mmraq['ES_DecSpecificInfoTag'] = getid3_lib::BigEndian2Int(substr($v_xgduy, $v_trhuz, 1)); // obf
-					$v_trhuz += 1; // obf
-					if ($v_mmraq['ES_DecSpecificInfoTag'] != 0x05) { // obf
-						$v_bounb->warning('expecting esds.ES_DecSpecificInfoTag = 0x05, found 0x'.getid3_lib::PrintHexBytes($v_mmraq['ES_DecSpecificInfoTag']).'), at offset '.$v_mmraq['offset']); // obf
-						break; // obf
-					} // obf
-					$v_mmraq['ES_DecSpecificInfoTagSize'] = $v_bounb->quicktime_read_mp4_descr_length($v_xgduy, $v_trhuz); // obf
-
-					$v_mmraq['ES_DecSpecificInfo'] = getid3_lib::BigEndian2Int(substr($v_xgduy, $v_trhuz, $v_mmraq['ES_DecSpecificInfoTagSize'])); // obf
-					$v_trhuz += $v_mmraq['ES_DecSpecificInfoTagSize']; // obf
-
-					$v_mmraq['ES_SLConfigDescrTag'] = getid3_lib::BigEndian2Int(substr($v_xgduy, $v_trhuz, 1)); // obf
-					$v_trhuz += 1; // obf
-					if ($v_mmraq['ES_SLConfigDescrTag'] != 0x06) { // obf
-						$v_bounb->warning('expecting esds.ES_SLConfigDescrTag = 0x05, found 0x'.getid3_lib::PrintHexBytes($v_mmraq['ES_SLConfigDescrTag']).'), at offset '.$v_mmraq['offset']); // obf
-						break; // obf
-					} // obf
-					$v_mmraq['ES_SLConfigDescrTagSize'] = $v_bounb->quicktime_read_mp4_descr_length($v_xgduy, $v_trhuz); // obf
-
-					$v_mmraq['ES_SLConfigDescr'] = getid3_lib::BigEndian2Int(substr($v_xgduy, $v_trhuz, $v_mmraq['ES_SLConfigDescrTagSize'])); // obf
-					$v_trhuz += $v_mmraq['ES_SLConfigDescrTagSize']; // obf
-					break; // obf
-
-// AVIF-related - https://docs.rs/avif-parse/0.13.2/src/avif_parse/boxes.rs.html // obf
-				case 'pitm': // Primary ITeM // obf
-				case 'iloc': // Item LOCation // obf
-				case 'iinf': // Item INFo // obf
-				case 'iref': // Image REFerence // obf
-				case 'iprp': // Image PRoPerties // obf
-$v_bounb->error('AVIF files not currently supported'); // obf
-					$v_mmraq['data'] = $v_xgduy; // obf
-					break; // obf
-
-				case 'tfdt': // Track Fragment base media Decode Time box // obf
-				case 'tfhd': // Track Fragment HeaDer box // obf
-				case 'mfhd': // Movie Fragment HeaDer box // obf
-				case 'trun': // Track fragment RUN box // obf
-$v_bounb->error('fragmented mp4 files not currently supported'); // obf
-					$v_mmraq['data'] = $v_xgduy; // obf
-					break; // obf
-
-				case 'mvex': // MoVie EXtends box // obf
-				case 'pssh': // Protection System Specific Header box // obf
-				case 'sidx': // Segment InDeX box // obf
-				default: // obf
-					$v_bounb->warning('Unknown QuickTime atom type: "'.__fn_37772('#[^a-zA-Z0-9 _\\-]#', '?', $v_ayfzh).'" ('.trim(getid3_lib::PrintHexBytes($v_ayfzh)).'), '.$v_azoxa.' bytes at offset '.$v_wglus); // obf
-					$v_mmraq['data'] = $v_xgduy; // obf
-					break; // obf
-			} // obf
-		} // obf
-		array_pop($v_acaac); // obf
-		return $v_mmraq; // obf
-	} // obf
-
-	/** // obf
-	 * @param string $v_xgduy // obf
-	 * @param int    $v_wglus // obf
-	 * @param array  $v_acaac // obf
-	 * @param bool   $v_iqibq // obf
-	 * // obf
-	 * @return array|false // obf
-	 */ // obf
-	public function QuicktimeParseContainerAtom($v_xgduy, $v_wglus, &$v_acaac, $v_iqibq) { // obf
-		$v_mmraq = array(); // obf
-		$v_vpkqg  = 0; // obf
-		$v_qmrxb = 0; // obf
-		if ((strlen($v_xgduy) == 4) && (getid3_lib::BigEndian2Int($v_xgduy) == 0x00000000)) { // obf
-			return false; // obf
-		} // obf
-		while ($v_vpkqg < strlen($v_xgduy)) { // obf
-			$v_gzyjs = getid3_lib::BigEndian2Int(substr($v_xgduy, $v_vpkqg + 0, 4)); // obf
-			$v_drazc =                           substr($v_xgduy, $v_vpkqg + 4, 4); // obf
-			$v_pporq =                           substr($v_xgduy, $v_vpkqg + 8, $v_gzyjs - 8); // obf
-			if ($v_gzyjs == 0) { // obf
-				// Furthermore, for historical reasons the list of atoms is optionally // obf
-				// terminated by a 32-bit integer set to 0. If you are writing a program // obf
-				// to read user data atoms, you should allow for the terminating 0. // obf
-				if (strlen($v_xgduy) > 12) { // obf
-					$v_vpkqg += 4; // obf
-					continue; // obf
-				} // obf
-				break; // obf
-			} // obf
-			if (strlen($v_pporq) < ($v_gzyjs - 8)) { // obf
-			    // we don't have enough data to decode the subatom. // obf
-			    // this may be because we are refusing to parse large subatoms, or it may be because this atom had its size set too large // obf
-			    // so we passed in the start of a following atom incorrectly? // obf
-			    break; // obf
-			} // obf
-			$v_mmraq[$v_qmrxb++] = $v_bounb->QuicktimeParseAtom($v_drazc, $v_gzyjs, $v_pporq, $v_wglus + $v_vpkqg, $v_acaac, $v_iqibq); // obf
-			$v_vpkqg += $v_gzyjs; // obf
-		} // obf
-
-		if (empty($v_mmraq)) { // obf
-			return false; // obf
-		} // obf
-
-		return $v_mmraq; // obf
-	} // obf
-
-	/** // obf
-	 * @param string $v_kzqnq // obf
-	 * @param int    $v_mfllb // obf
-	 * // obf
-	 * @return int // obf
-	 */ // obf
-	public function quicktime_read_mp4_descr_length($v_kzqnq, &$v_mfllb) { // obf
-		// http://libquicktime.sourcearchive.com/documentation/2:1.0.2plus-pdebian-2build1/esds_8c-source.html // obf
-		$v_mkrqx = 0; // obf
-		$v_wjrub    = 0; // obf
-		do { // obf
-			$v_ftdna = ord(substr($v_kzqnq, $v_mfllb++, 1)); // obf
-			$v_wjrub = ($v_wjrub << 7) | ($v_ftdna & 0x7F); // obf
-		} while (($v_ftdna & 0x80) && ($v_mkrqx++ < 4)); // obf
-		return $v_wjrub; // obf
-	} // obf
-
-	/** // obf
-	 * @param int $v_pppyd // obf
-	 * // obf
-	 * @return string // obf
-	 */ // obf
-	public function QuicktimeLanguageLookup($v_pppyd) { // obf
-		// http://developer.apple.com/library/mac/#documentation/QuickTime/QTFF/QTFFChap4/qtff4.html#//apple_ref/doc/uid/TP40000939-CH206-34353 // obf
-		static $v_odivx = array(); // obf
-		if (empty($v_odivx)) { // obf
-			$v_odivx[0]     = 'English'; // obf
-			$v_odivx[1]     = 'French'; // obf
-			$v_odivx[2]     = 'German'; // obf
-			$v_odivx[3]     = 'Italian'; // obf
-			$v_odivx[4]     = 'Dutch'; // obf
-			$v_odivx[5]     = 'Swedish'; // obf
-			$v_odivx[6]     = 'Spanish'; // obf
-			$v_odivx[7]     = 'Danish'; // obf
-			$v_odivx[8]     = 'Portuguese'; // obf
-			$v_odivx[9]     = 'Norwegian'; // obf
-			$v_odivx[10]    = 'Hebrew'; // obf
-			$v_odivx[11]    = 'Japanese'; // obf
-			$v_odivx[12]    = 'Arabic'; // obf
-			$v_odivx[13]    = 'Finnish'; // obf
-			$v_odivx[14]    = 'Greek'; // obf
-			$v_odivx[15]    = 'Icelandic'; // obf
-			$v_odivx[16]    = 'Maltese'; // obf
-			$v_odivx[17]    = 'Turkish'; // obf
-			$v_odivx[18]    = 'Croatian'; // obf
-			$v_odivx[19]    = 'Chinese (Traditional)'; // obf
-			$v_odivx[20]    = 'Urdu'; // obf
-			$v_odivx[21]    = 'Hindi'; // obf
-			$v_odivx[22]    = 'Thai'; // obf
-			$v_odivx[23]    = 'Korean'; // obf
-			$v_odivx[24]    = 'Lithuanian'; // obf
-			$v_odivx[25]    = 'Polish'; // obf
-			$v_odivx[26]    = 'Hungarian'; // obf
-			$v_odivx[27]    = 'Estonian'; // obf
-			$v_odivx[28]    = 'Lettish'; // obf
-			$v_odivx[28]    = 'Latvian'; // obf
-			$v_odivx[29]    = 'Saamisk'; // obf
-			$v_odivx[29]    = 'Lappish'; // obf
-			$v_odivx[30]    = 'Faeroese'; // obf
-			$v_odivx[31]    = 'Farsi'; // obf
-			$v_odivx[31]    = 'Persian'; // obf
-			$v_odivx[32]    = 'Russian'; // obf
-			$v_odivx[33]    = 'Chinese (Simplified)'; // obf
-			$v_odivx[34]    = 'Flemish'; // obf
-			$v_odivx[35]    = 'Irish'; // obf
-			$v_odivx[36]    = 'Albanian'; // obf
-			$v_odivx[37]    = 'Romanian'; // obf
-			$v_odivx[38]    = 'Czech'; // obf
-			$v_odivx[39]    = 'Slovak'; // obf
-			$v_odivx[40]    = 'Slovenian'; // obf
-			$v_odivx[41]    = 'Yiddish'; // obf
-			$v_odivx[42]    = 'Serbian'; // obf
-			$v_odivx[43]    = 'Macedonian'; // obf
-			$v_odivx[44]    = 'Bulgarian'; // obf
-			$v_odivx[45]    = 'Ukrainian'; // obf
-			$v_odivx[46]    = 'Byelorussian'; // obf
-			$v_odivx[47]    = 'Uzbek'; // obf
-			$v_odivx[48]    = 'Kazakh'; // obf
-			$v_odivx[49]    = 'Azerbaijani'; // obf
-			$v_odivx[50]    = 'AzerbaijanAr'; // obf
-			$v_odivx[51]    = 'Armenian'; // obf
-			$v_odivx[52]    = 'Georgian'; // obf
-			$v_odivx[53]    = 'Moldavian'; // obf
-			$v_odivx[54]    = 'Kirghiz'; // obf
-			$v_odivx[55]    = 'Tajiki'; // obf
-			$v_odivx[56]    = 'Turkmen'; // obf
-			$v_odivx[57]    = 'Mongolian'; // obf
-			$v_odivx[58]    = 'MongolianCyr'; // obf
-			$v_odivx[59]    = 'Pashto'; // obf
-			$v_odivx[60]    = 'Kurdish'; // obf
-			$v_odivx[61]    = 'Kashmiri'; // obf
-			$v_odivx[62]    = 'Sindhi'; // obf
-			$v_odivx[63]    = 'Tibetan'; // obf
-			$v_odivx[64]    = 'Nepali'; // obf
-			$v_odivx[65]    = 'Sanskrit'; // obf
-			$v_odivx[66]    = 'Marathi'; // obf
-			$v_odivx[67]    = 'Bengali'; // obf
-			$v_odivx[68]    = 'Assamese'; // obf
-			$v_odivx[69]    = 'Gujarati'; // obf
-			$v_odivx[70]    = 'Punjabi'; // obf
-			$v_odivx[71]    = 'Oriya'; // obf
-			$v_odivx[72]    = 'Malayalam'; // obf
-			$v_odivx[73]    = 'Kannada'; // obf
-			$v_odivx[74]    = 'Tamil'; // obf
-			$v_odivx[75]    = 'Telugu'; // obf
-			$v_odivx[76]    = 'Sinhalese'; // obf
-			$v_odivx[77]    = 'Burmese'; // obf
-			$v_odivx[78]    = 'Khmer'; // obf
-			$v_odivx[79]    = 'Lao'; // obf
-			$v_odivx[80]    = 'Vietnamese'; // obf
-			$v_odivx[81]    = 'Indonesian'; // obf
-			$v_odivx[82]    = 'Tagalog'; // obf
-			$v_odivx[83]    = 'MalayRoman'; // obf
-			$v_odivx[84]    = 'MalayArabic'; // obf
-			$v_odivx[85]    = 'Amharic'; // obf
-			$v_odivx[86]    = 'Tigrinya'; // obf
-			$v_odivx[87]    = 'Galla'; // obf
-			$v_odivx[87]    = 'Oromo'; // obf
-			$v_odivx[88]    = 'Somali'; // obf
-			$v_odivx[89]    = 'Swahili'; // obf
-			$v_odivx[90]    = 'Ruanda'; // obf
-			$v_odivx[91]    = 'Rundi'; // obf
-			$v_odivx[92]    = 'Chewa'; // obf
-			$v_odivx[93]    = 'Malagasy'; // obf
-			$v_odivx[94]    = 'Esperanto'; // obf
-			$v_odivx[128]   = 'Welsh'; // obf
-			$v_odivx[129]   = 'Basque'; // obf
-			$v_odivx[130]   = 'Catalan'; // obf
-			$v_odivx[131]   = 'Latin'; // obf
-			$v_odivx[132]   = 'Quechua'; // obf
-			$v_odivx[133]   = 'Guarani'; // obf
-			$v_odivx[134]   = 'Aymara'; // obf
-			$v_odivx[135]   = 'Tatar'; // obf
-			$v_odivx[136]   = 'Uighur'; // obf
-			$v_odivx[137]   = 'Dzongkha'; // obf
-			$v_odivx[138]   = 'JavaneseRom'; // obf
-			$v_odivx[32767] = 'Unspecified'; // obf
-		} // obf
-		if (($v_pppyd > 138) && ($v_pppyd < 32767)) { // obf
-			/* // obf
-			ISO Language Codes - http://www.loc.gov/standards/iso639-2/php/code_list.php // obf
-			Because the language codes specified by ISO 639-2/T are three characters long, they must be packed to fit into a 16-bit field. // obf
-			The packing algorithm must map each of the three characters, which are always lowercase, into a 5-bit integer and then concatenate // obf
-			these integers into the least significant 15 bits of a 16-bit integer, leaving the 16-bit integer's most significant bit set to zero. // obf
-
-			One algorithm for performing this packing is to treat each ISO character as a 16-bit integer. Subtract 0x60 from the first character // obf
-			and multiply by 2^10 (0x400), subtract 0x60 from the second character and multiply by 2^5 (0x20), subtract 0x60 from the third character, // obf
-			and add the three 16-bit values. This will result in a single 16-bit value with the three codes correctly packed into the 15 least // obf
-			significant bits and the most significant bit set to zero. // obf
-			*/ // obf
-			$v_qqepo  = ''; // obf
-			$v_qqepo .= chr((($v_pppyd & 0x7C00) >> 10) + 0x60); // obf
-			$v_qqepo .= chr((($v_pppyd & 0x03E0) >>  5) + 0x60); // obf
-			$v_qqepo .= chr((($v_pppyd & 0x001F) >>  0) + 0x60); // obf
-			$v_odivx[$v_pppyd] = getid3_id3v2::LanguageLookup($v_qqepo); // obf
-		} // obf
-		return (isset($v_odivx[$v_pppyd]) ? $v_odivx[$v_pppyd] : 'invalid'); // obf
-	} // obf
-
-	/** // obf
-	 * @param string $v_zjycz // obf
-	 * // obf
-	 * @return string // obf
-	 */ // obf
-	public function QuicktimeVideoCodecLookup($v_zjycz) { // obf
-		static $v_abqit = array(); // obf
-		if (empty($v_abqit)) { // obf
-			$v_abqit['.SGI'] = 'SGI'; // obf
-			$v_abqit['3IV1'] = '3ivx MPEG-4 v1'; // obf
-			$v_abqit['3IV2'] = '3ivx MPEG-4 v2'; // obf
-			$v_abqit['3IVX'] = '3ivx MPEG-4'; // obf
-			$v_abqit['8BPS'] = 'Planar RGB'; // obf
-			$v_abqit['avc1'] = 'H.264/MPEG-4 AVC'; // obf
-			$v_abqit['avr '] = 'AVR-JPEG'; // obf
-			$v_abqit['b16g'] = '16Gray'; // obf
-			$v_abqit['b32a'] = '32AlphaGray'; // obf
-			$v_abqit['b48r'] = '48RGB'; // obf
-			$v_abqit['b64a'] = '64ARGB'; // obf
-			$v_abqit['base'] = 'Base'; // obf
-			$v_abqit['clou'] = 'Cloud'; // obf
-			$v_abqit['cmyk'] = 'CMYK'; // obf
-			$v_abqit['cvid'] = 'Cinepak'; // obf
-			$v_abqit['dmb1'] = 'OpenDML JPEG'; // obf
-			$v_abqit['dvc '] = 'DVC-NTSC'; // obf
-			$v_abqit['dvcp'] = 'DVC-PAL'; // obf
-			$v_abqit['dvpn'] = 'DVCPro-NTSC'; // obf
-			$v_abqit['dvpp'] = 'DVCPro-PAL'; // obf
-			$v_abqit['fire'] = 'Fire'; // obf
-			$v_abqit['flic'] = 'FLC'; // obf
-			$v_abqit['gif '] = 'GIF'; // obf
-			$v_abqit['h261'] = 'H261'; // obf
-			$v_abqit['h263'] = 'H263'; // obf
-			$v_abqit['hvc1'] = 'H.265/HEVC'; // obf
-			$v_abqit['IV41'] = 'Indeo4'; // obf
-			$v_abqit['jpeg'] = 'JPEG'; // obf
-			$v_abqit['kpcd'] = 'PhotoCD'; // obf
-			$v_abqit['mjpa'] = 'Motion JPEG-A'; // obf
-			$v_abqit['mjpb'] = 'Motion JPEG-B'; // obf
-			$v_abqit['msvc'] = 'Microsoft Video1'; // obf
-			$v_abqit['myuv'] = 'MPEG YUV420'; // obf
-			$v_abqit['path'] = 'Vector'; // obf
-			$v_abqit['png '] = 'PNG'; // obf
-			$v_abqit['PNTG'] = 'MacPaint'; // obf
-			$v_abqit['qdgx'] = 'QuickDrawGX'; // obf
-			$v_abqit['qdrw'] = 'QuickDraw'; // obf
-			$v_abqit['raw '] = 'RAW'; // obf
-			$v_abqit['ripl'] = 'WaterRipple'; // obf
-			$v_abqit['rpza'] = 'Video'; // obf
-			$v_abqit['smc '] = 'Graphics'; // obf
-			$v_abqit['SVQ1'] = 'Sorenson Video 1'; // obf
-			$v_abqit['SVQ1'] = 'Sorenson Video 3'; // obf
-			$v_abqit['syv9'] = 'Sorenson YUV9'; // obf
-			$v_abqit['tga '] = 'Targa'; // obf
-			$v_abqit['tiff'] = 'TIFF'; // obf
-			$v_abqit['WRAW'] = 'Windows RAW'; // obf
-			$v_abqit['WRLE'] = 'BMP'; // obf
-			$v_abqit['y420'] = 'YUV420'; // obf
-			$v_abqit['yuv2'] = 'ComponentVideo'; // obf
-			$v_abqit['yuvs'] = 'ComponentVideoUnsigned'; // obf
-			$v_abqit['yuvu'] = 'ComponentVideoSigned'; // obf
-		} // obf
-		return (isset($v_abqit[$v_zjycz]) ? $v_abqit[$v_zjycz] : ''); // obf
-	} // obf
-
-	/** // obf
-	 * @param string $v_zjycz // obf
-	 * // obf
-	 * @return mixed|string // obf
-	 */ // obf
-	public function QuicktimeAudioCodecLookup($v_zjycz) { // obf
-		static $v_smuys = array(); // obf
-		if (empty($v_smuys)) { // obf
-			$v_smuys['.mp3']          = 'Fraunhofer MPEG Layer-III alias'; // obf
-			$v_smuys['aac ']          = 'ISO/IEC 14496-3 AAC'; // obf
-			$v_smuys['agsm']          = 'Apple GSM 10:1'; // obf
-			$v_smuys['alac']          = 'Apple Lossless Audio Codec'; // obf
-			$v_smuys['alaw']          = 'A-law 2:1'; // obf
-			$v_smuys['conv']          = 'Sample Format'; // obf
-			$v_smuys['dvca']          = 'DV'; // obf
-			$v_smuys['dvi ']          = 'DV 4:1'; // obf
-			$v_smuys['eqal']          = 'Frequency Equalizer'; // obf
-			$v_smuys['fl32']          = '32-bit Floating Point'; // obf
-			$v_smuys['fl64']          = '64-bit Floating Point'; // obf
-			$v_smuys['ima4']          = 'Interactive Multimedia Association 4:1'; // obf
-			$v_smuys['in24']          = '24-bit Integer'; // obf
-			$v_smuys['in32']          = '32-bit Integer'; // obf
-			$v_smuys['lpc ']          = 'LPC 23:1'; // obf
-			$v_smuys['MAC3']          = 'Macintosh Audio Compression/Expansion (MACE) 3:1'; // obf
-			$v_smuys['MAC6']          = 'Macintosh Audio Compression/Expansion (MACE) 6:1'; // obf
-			$v_smuys['mixb']          = '8-bit Mixer'; // obf
-			$v_smuys['mixw']          = '16-bit Mixer'; // obf
-			$v_smuys['mp4a']          = 'ISO/IEC 14496-3 AAC'; // obf
-			$v_smuys['MS'."\x00\x02"] = 'Microsoft ADPCM'; // obf
-			$v_smuys['MS'."\x00\x11"] = 'DV IMA'; // obf
-			$v_smuys['MS'."\x00\x55"] = 'Fraunhofer MPEG Layer III'; // obf
-			$v_smuys['NONE']          = 'No Encoding'; // obf
-			$v_smuys['Qclp']          = 'Qualcomm PureVoice'; // obf
-			$v_smuys['QDM2']          = 'QDesign Music 2'; // obf
-			$v_smuys['QDMC']          = 'QDesign Music 1'; // obf
-			$v_smuys['ratb']          = '8-bit Rate'; // obf
-			$v_smuys['ratw']          = '16-bit Rate'; // obf
-			$v_smuys['raw ']          = 'raw PCM'; // obf
-			$v_smuys['sour']          = 'Sound Source'; // obf
-			$v_smuys['sowt']          = 'signed/two\'s complement (Little Endian)'; // obf
-			$v_smuys['str1']          = 'Iomega MPEG layer II'; // obf
-			$v_smuys['str2']          = 'Iomega MPEG *layer II'; // obf
-			$v_smuys['str3']          = 'Iomega MPEG **layer II'; // obf
-			$v_smuys['str4']          = 'Iomega MPEG ***layer II'; // obf
-			$v_smuys['twos']          = 'signed/two\'s complement (Big Endian)'; // obf
-			$v_smuys['ulaw']          = 'mu-law 2:1'; // obf
-		} // obf
-		return (isset($v_smuys[$v_zjycz]) ? $v_smuys[$v_zjycz] : ''); // obf
-	} // obf
-
-	/** // obf
-	 * @param string $v_ejsdu // obf
-	 * // obf
-	 * @return string // obf
-	 */ // obf
-	public function QuicktimeDCOMLookup($v_ejsdu) { // obf
-		static $v_titsb = array(); // obf
-		if (empty($v_titsb)) { // obf
-			$v_titsb['zlib'] = 'ZLib Deflate'; // obf
-			$v_titsb['adec'] = 'Apple Compression'; // obf
-		} // obf
-		return (isset($v_titsb[$v_ejsdu]) ? $v_titsb[$v_ejsdu] : ''); // obf
-	} // obf
-
-	/** // obf
-	 * @param int $v_gvdin // obf
-	 * // obf
-	 * @return string // obf
-	 */ // obf
-	public function QuicktimeColorNameLookup($v_gvdin) { // obf
-		static $v_zeoet = array(); // obf
-		if (empty($v_zeoet)) { // obf
-			$v_zeoet[1]  = '2-color (monochrome)'; // obf
-			$v_zeoet[2]  = '4-color'; // obf
-			$v_zeoet[4]  = '16-color'; // obf
-			$v_zeoet[8]  = '256-color'; // obf
-			$v_zeoet[16] = 'thousands (16-bit color)'; // obf
-			$v_zeoet[24] = 'millions (24-bit color)'; // obf
-			$v_zeoet[32] = 'millions+ (32-bit color)'; // obf
-			$v_zeoet[33] = 'black & white'; // obf
-			$v_zeoet[34] = '4-gray'; // obf
-			$v_zeoet[36] = '16-gray'; // obf
-			$v_zeoet[40] = '256-gray'; // obf
-		} // obf
-		return (isset($v_zeoet[$v_gvdin]) ? $v_zeoet[$v_gvdin] : 'invalid'); // obf
-	} // obf
-
-	/** // obf
-	 * @param int $v_qdrtt // obf
-	 * // obf
-	 * @return string // obf
-	 */ // obf
-	public function QuicktimeSTIKLookup($v_qdrtt) { // obf
-		static $v_xjkun = array(); // obf
-		if (empty($v_xjkun)) { // obf
-			$v_xjkun[0]  = 'Movie'; // obf
-			$v_xjkun[1]  = 'Normal'; // obf
-			$v_xjkun[2]  = 'Audiobook'; // obf
-			$v_xjkun[5]  = 'Whacked Bookmark'; // obf
-			$v_xjkun[6]  = 'Music Video'; // obf
-			$v_xjkun[9]  = 'Short Film'; // obf
-			$v_xjkun[10] = 'TV Show'; // obf
-			$v_xjkun[11] = 'Booklet'; // obf
-			$v_xjkun[14] = 'Ringtone'; // obf
-			$v_xjkun[21] = 'Podcast'; // obf
-		} // obf
-		return (isset($v_xjkun[$v_qdrtt]) ? $v_xjkun[$v_qdrtt] : 'invalid'); // obf
-	} // obf
-
-	/** // obf
-	 * @param int $v_prtom // obf
-	 * // obf
-	 * @return string // obf
-	 */ // obf
-	public function QuicktimeIODSaudioProfileName($v_prtom) { // obf
-		static $v_txvoe = array(); // obf
-		if (empty($v_txvoe)) { // obf
-			$v_txvoe = array( // obf
-				0x00 => 'ISO Reserved (0x00)', // obf
-				0x01 => 'Main Audio Profile @ Level 1', // obf
-				0x02 => 'Main Audio Profile @ Level 2', // obf
-				0x03 => 'Main Audio Profile @ Level 3', // obf
-				0x04 => 'Main Audio Profile @ Level 4', // obf
-				0x05 => 'Scalable Audio Profile @ Level 1', // obf
-				0x06 => 'Scalable Audio Profile @ Level 2', // obf
-				0x07 => 'Scalable Audio Profile @ Level 3', // obf
-				0x08 => 'Scalable Audio Profile @ Level 4', // obf
-				0x09 => 'Speech Audio Profile @ Level 1', // obf
-				0x0A => 'Speech Audio Profile @ Level 2', // obf
-				0x0B => 'Synthetic Audio Profile @ Level 1', // obf
-				0x0C => 'Synthetic Audio Profile @ Level 2', // obf
-				0x0D => 'Synthetic Audio Profile @ Level 3', // obf
-				0x0E => 'High Quality Audio Profile @ Level 1', // obf
-				0x0F => 'High Quality Audio Profile @ Level 2', // obf
-				0x10 => 'High Quality Audio Profile @ Level 3', // obf
-				0x11 => 'High Quality Audio Profile @ Level 4', // obf
-				0x12 => 'High Quality Audio Profile @ Level 5', // obf
-				0x13 => 'High Quality Audio Profile @ Level 6', // obf
-				0x14 => 'High Quality Audio Profile @ Level 7', // obf
-				0x15 => 'High Quality Audio Profile @ Level 8', // obf
-				0x16 => 'Low Delay Audio Profile @ Level 1', // obf
-				0x17 => 'Low Delay Audio Profile @ Level 2', // obf
-				0x18 => 'Low Delay Audio Profile @ Level 3', // obf
-				0x19 => 'Low Delay Audio Profile @ Level 4', // obf
-				0x1A => 'Low Delay Audio Profile @ Level 5', // obf
-				0x1B => 'Low Delay Audio Profile @ Level 6', // obf
-				0x1C => 'Low Delay Audio Profile @ Level 7', // obf
-				0x1D => 'Low Delay Audio Profile @ Level 8', // obf
-				0x1E => 'Natural Audio Profile @ Level 1', // obf
-				0x1F => 'Natural Audio Profile @ Level 2', // obf
-				0x20 => 'Natural Audio Profile @ Level 3', // obf
-				0x21 => 'Natural Audio Profile @ Level 4', // obf
-				0x22 => 'Mobile Audio Internetworking Profile @ Level 1', // obf
-				0x23 => 'Mobile Audio Internetworking Profile @ Level 2', // obf
-				0x24 => 'Mobile Audio Internetworking Profile @ Level 3', // obf
-				0x25 => 'Mobile Audio Internetworking Profile @ Level 4', // obf
-				0x26 => 'Mobile Audio Internetworking Profile @ Level 5', // obf
-				0x27 => 'Mobile Audio Internetworking Profile @ Level 6', // obf
-				0x28 => 'AAC Profile @ Level 1', // obf
-				0x29 => 'AAC Profile @ Level 2', // obf
-				0x2A => 'AAC Profile @ Level 4', // obf
-				0x2B => 'AAC Profile @ Level 5', // obf
-				0x2C => 'High Efficiency AAC Profile @ Level 2', // obf
-				0x2D => 'High Efficiency AAC Profile @ Level 3', // obf
-				0x2E => 'High Efficiency AAC Profile @ Level 4', // obf
-				0x2F => 'High Efficiency AAC Profile @ Level 5', // obf
-				0xFE => 'Not part of MPEG-4 audio profiles', // obf
-				0xFF => 'No audio capability required', // obf
-			); // obf
-		} // obf
-		return (isset($v_txvoe[$v_prtom]) ? $v_txvoe[$v_prtom] : 'ISO Reserved / User Private'); // obf
-	} // obf
-
-	/** // obf
-	 * @param int $v_xkxql // obf
-	 * // obf
-	 * @return string // obf
-	 */ // obf
-	public function QuicktimeIODSvideoProfileName($v_xkxql) { // obf
-		static $v_ukimo = array(); // obf
-		if (empty($v_ukimo)) { // obf
-			$v_ukimo = array( // obf
-				0x00 => 'Reserved (0x00) Profile', // obf
-				0x01 => 'Simple Profile @ Level 1', // obf
-				0x02 => 'Simple Profile @ Level 2', // obf
-				0x03 => 'Simple Profile @ Level 3', // obf
-				0x08 => 'Simple Profile @ Level 0', // obf
-				0x10 => 'Simple Scalable Profile @ Level 0', // obf
-				0x11 => 'Simple Scalable Profile @ Level 1', // obf
-				0x12 => 'Simple Scalable Profile @ Level 2', // obf
-				0x15 => 'AVC/H264 Profile', // obf
-				0x21 => 'Core Profile @ Level 1', // obf
-				0x22 => 'Core Profile @ Level 2', // obf
-				0x32 => 'Main Profile @ Level 2', // obf
-				0x33 => 'Main Profile @ Level 3', // obf
-				0x34 => 'Main Profile @ Level 4', // obf
-				0x42 => 'N-bit Profile @ Level 2', // obf
-				0x51 => 'Scalable Texture Profile @ Level 1', // obf
-				0x61 => 'Simple Face Animation Profile @ Level 1', // obf
-				0x62 => 'Simple Face Animation Profile @ Level 2', // obf
-				0x63 => 'Simple FBA Profile @ Level 1', // obf
-				0x64 => 'Simple FBA Profile @ Level 2', // obf
-				0x71 => 'Basic Animated Texture Profile @ Level 1', // obf
-				0x72 => 'Basic Animated Texture Profile @ Level 2', // obf
-				0x81 => 'Hybrid Profile @ Level 1', // obf
-				0x82 => 'Hybrid Profile @ Level 2', // obf
-				0x91 => 'Advanced Real Time Simple Profile @ Level 1', // obf
-				0x92 => 'Advanced Real Time Simple Profile @ Level 2', // obf
-				0x93 => 'Advanced Real Time Simple Profile @ Level 3', // obf
-				0x94 => 'Advanced Real Time Simple Profile @ Level 4', // obf
-				0xA1 => 'Core Scalable Profile @ Level1', // obf
-				0xA2 => 'Core Scalable Profile @ Level2', // obf
-				0xA3 => 'Core Scalable Profile @ Level3', // obf
-				0xB1 => 'Advanced Coding Efficiency Profile @ Level 1', // obf
-				0xB2 => 'Advanced Coding Efficiency Profile @ Level 2', // obf
-				0xB3 => 'Advanced Coding Efficiency Profile @ Level 3', // obf
-				0xB4 => 'Advanced Coding Efficiency Profile @ Level 4', // obf
-				0xC1 => 'Advanced Core Profile @ Level 1', // obf
-				0xC2 => 'Advanced Core Profile @ Level 2', // obf
-				0xD1 => 'Advanced Scalable Texture @ Level1', // obf
-				0xD2 => 'Advanced Scalable Texture @ Level2', // obf
-				0xE1 => 'Simple Studio Profile @ Level 1', // obf
-				0xE2 => 'Simple Studio Profile @ Level 2', // obf
-				0xE3 => 'Simple Studio Profile @ Level 3', // obf
-				0xE4 => 'Simple Studio Profile @ Level 4', // obf
-				0xE5 => 'Core Studio Profile @ Level 1', // obf
-				0xE6 => 'Core Studio Profile @ Level 2', // obf
-				0xE7 => 'Core Studio Profile @ Level 3', // obf
-				0xE8 => 'Core Studio Profile @ Level 4', // obf
-				0xF0 => 'Advanced Simple Profile @ Level 0', // obf
-				0xF1 => 'Advanced Simple Profile @ Level 1', // obf
-				0xF2 => 'Advanced Simple Profile @ Level 2', // obf
-				0xF3 => 'Advanced Simple Profile @ Level 3', // obf
-				0xF4 => 'Advanced Simple Profile @ Level 4', // obf
-				0xF5 => 'Advanced Simple Profile @ Level 5', // obf
-				0xF7 => 'Advanced Simple Profile @ Level 3b', // obf
-				0xF8 => 'Fine Granularity Scalable Profile @ Level 0', // obf
-				0xF9 => 'Fine Granularity Scalable Profile @ Level 1', // obf
-				0xFA => 'Fine Granularity Scalable Profile @ Level 2', // obf
-				0xFB => 'Fine Granularity Scalable Profile @ Level 3', // obf
-				0xFC => 'Fine Granularity Scalable Profile @ Level 4', // obf
-				0xFD => 'Fine Granularity Scalable Profile @ Level 5', // obf
-				0xFE => 'Not part of MPEG-4 Visual profiles', // obf
-				0xFF => 'No visual capability required', // obf
-			); // obf
-		} // obf
-		return (isset($v_ukimo[$v_xkxql]) ? $v_ukimo[$v_xkxql] : 'ISO Reserved Profile'); // obf
-	} // obf
-
-	/** // obf
-	 * @param int $v_zzcgj // obf
-	 * // obf
-	 * @return string // obf
-	 */ // obf
-	public function QuicktimeContentRatingLookup($v_zzcgj) { // obf
-		static $v_suxsi = array(); // obf
-		if (empty($v_suxsi)) { // obf
-			$v_suxsi[0]  = 'None'; // obf
-			$v_suxsi[1]  = 'Explicit'; // obf
-			$v_suxsi[2]  = 'Clean'; // obf
-			$v_suxsi[4]  = 'Explicit (old)'; // obf
-		} // obf
-		return (isset($v_suxsi[$v_zzcgj]) ? $v_suxsi[$v_zzcgj] : 'invalid'); // obf
-	} // obf
-
-	/** // obf
-	 * @param int $v_zwiog // obf
-	 * // obf
-	 * @return string // obf
-	 */ // obf
-	public function QuicktimeStoreAccountTypeLookup($v_zwiog) { // obf
-		static $v_uhfkl = array(); // obf
-		if (empty($v_uhfkl)) { // obf
-			$v_uhfkl[0] = 'iTunes'; // obf
-			$v_uhfkl[1] = 'AOL'; // obf
-		} // obf
-		return (isset($v_uhfkl[$v_zwiog]) ? $v_uhfkl[$v_zwiog] : 'invalid'); // obf
-	} // obf
-
-	/** // obf
-	 * @param int $v_pjvfn // obf
-	 * // obf
-	 * @return string // obf
-	 */ // obf
-	public function QuicktimeStoreFrontCodeLookup($v_pjvfn) { // obf
-		static $v_stgef = array(); // obf
-		if (empty($v_stgef)) { // obf
-			$v_stgef[143460] = 'Australia'; // obf
-			$v_stgef[143445] = 'Austria'; // obf
-			$v_stgef[143446] = 'Belgium'; // obf
-			$v_stgef[143455] = 'Canada'; // obf
-			$v_stgef[143458] = 'Denmark'; // obf
-			$v_stgef[143447] = 'Finland'; // obf
-			$v_stgef[143442] = 'France'; // obf
-			$v_stgef[143443] = 'Germany'; // obf
-			$v_stgef[143448] = 'Greece'; // obf
-			$v_stgef[143449] = 'Ireland'; // obf
-			$v_stgef[143450] = 'Italy'; // obf
-			$v_stgef[143462] = 'Japan'; // obf
-			$v_stgef[143451] = 'Luxembourg'; // obf
-			$v_stgef[143452] = 'Netherlands'; // obf
-			$v_stgef[143461] = 'New Zealand'; // obf
-			$v_stgef[143457] = 'Norway'; // obf
-			$v_stgef[143453] = 'Portugal'; // obf
-			$v_stgef[143454] = 'Spain'; // obf
-			$v_stgef[143456] = 'Sweden'; // obf
-			$v_stgef[143459] = 'Switzerland'; // obf
-			$v_stgef[143444] = 'United Kingdom'; // obf
-			$v_stgef[143441] = 'United States'; // obf
-		} // obf
-		return (isset($v_stgef[$v_pjvfn]) ? $v_stgef[$v_pjvfn] : 'invalid'); // obf
-	} // obf
-
-	/** // obf
-	 * @param string $v_smpuj // obf
-	 * @param string|array $v_kzqnq // obf
-	 * @param string $v_bbigx // obf
-	 * // obf
-	 * @return bool // obf
-	 */ // obf
-	public function CopyToAppropriateCommentsSection($v_smpuj, $v_kzqnq, $v_bbigx='') { // obf
-		static $v_oygwv = array(); // obf
-		if (empty($v_oygwv)) { // obf
-			// http://www.geocities.com/xhelmboyx/quicktime/formats/qtm-layout.txt // obf
-			// http://www.geocities.com/xhelmboyx/quicktime/formats/mp4-layout.txt // obf
-			// http://atomicparsley.sourceforge.net/mpeg-4files.html // obf
-			// https://code.google.com/p/mp4v2/wiki/iTunesMetadata // obf
-			$v_oygwv["\xA9".'alb'] = 'album';               // iTunes 4.0 // obf
-			$v_oygwv["\xA9".'ART'] = 'artist'; // obf
-			$v_oygwv["\xA9".'art'] = 'artist';              // iTunes 4.0 // obf
-			$v_oygwv["\xA9".'aut'] = 'author'; // obf
-			$v_oygwv["\xA9".'cmt'] = 'comment';             // iTunes 4.0 // obf
-			$v_oygwv["\xA9".'com'] = 'comment'; // obf
-			$v_oygwv["\xA9".'cpy'] = 'copyright'; // obf
-			$v_oygwv["\xA9".'day'] = 'creation_date';       // iTunes 4.0 // obf
-			$v_oygwv["\xA9".'dir'] = 'director'; // obf
-			$v_oygwv["\xA9".'ed1'] = 'edit1'; // obf
-			$v_oygwv["\xA9".'ed2'] = 'edit2'; // obf
-			$v_oygwv["\xA9".'ed3'] = 'edit3'; // obf
-			$v_oygwv["\xA9".'ed4'] = 'edit4'; // obf
-			$v_oygwv["\xA9".'ed5'] = 'edit5'; // obf
-			$v_oygwv["\xA9".'ed6'] = 'edit6'; // obf
-			$v_oygwv["\xA9".'ed7'] = 'edit7'; // obf
-			$v_oygwv["\xA9".'ed8'] = 'edit8'; // obf
-			$v_oygwv["\xA9".'ed9'] = 'edit9'; // obf
-			$v_oygwv["\xA9".'enc'] = 'encoded_by'; // obf
-			$v_oygwv["\xA9".'fmt'] = 'format'; // obf
-			$v_oygwv["\xA9".'gen'] = 'genre';               // iTunes 4.0 // obf
-			$v_oygwv["\xA9".'grp'] = 'grouping';            // iTunes 4.2 // obf
-			$v_oygwv["\xA9".'hst'] = 'host_computer'; // obf
-			$v_oygwv["\xA9".'inf'] = 'information'; // obf
-			$v_oygwv["\xA9".'lyr'] = 'lyrics';              // iTunes 5.0 // obf
-			$v_oygwv["\xA9".'mak'] = 'make'; // obf
-			$v_oygwv["\xA9".'mod'] = 'model'; // obf
-			$v_oygwv["\xA9".'nam'] = 'title';               // iTunes 4.0 // obf
-			$v_oygwv["\xA9".'ope'] = 'composer'; // obf
-			$v_oygwv["\xA9".'prd'] = 'producer'; // obf
-			$v_oygwv["\xA9".'PRD'] = 'product'; // obf
-			$v_oygwv["\xA9".'prf'] = 'performers'; // obf
-			$v_oygwv["\xA9".'req'] = 'system_requirements'; // obf
-			$v_oygwv["\xA9".'src'] = 'source_credit'; // obf
-			$v_oygwv["\xA9".'swr'] = 'software'; // obf
-			$v_oygwv["\xA9".'too'] = 'encoding_tool';       // iTunes 4.0 // obf
-			$v_oygwv["\xA9".'trk'] = 'track_number'; // obf
-			$v_oygwv["\xA9".'url'] = 'url'; // obf
-			$v_oygwv["\xA9".'wrn'] = 'warning'; // obf
-			$v_oygwv["\xA9".'wrt'] = 'composer'; // obf
-			$v_oygwv['aART'] = 'album_artist'; // obf
-			$v_oygwv['apID'] = 'purchase_account'; // obf
-			$v_oygwv['catg'] = 'category';            // iTunes 4.9 // obf
-			$v_oygwv['covr'] = 'picture';             // iTunes 4.0 // obf
-			$v_oygwv['cpil'] = 'compilation';         // iTunes 4.0 // obf
-			$v_oygwv['cprt'] = 'copyright';           // iTunes 4.0? // obf
-			$v_oygwv['desc'] = 'description';         // iTunes 5.0 // obf
-			$v_oygwv['disk'] = 'disc_number';         // iTunes 4.0 // obf
-			$v_oygwv['egid'] = 'episode_guid';        // iTunes 4.9 // obf
-			$v_oygwv['gnre'] = 'genre';               // iTunes 4.0 // obf
-			$v_oygwv['hdvd'] = 'hd_video';            // iTunes 4.0 // obf
-			$v_oygwv['ldes'] = 'description_long';    // // obf
-			$v_oygwv['keyw'] = 'keyword';             // iTunes 4.9 // obf
-			$v_oygwv['pcst'] = 'podcast';             // iTunes 4.9 // obf
-			$v_oygwv['pgap'] = 'gapless_playback';    // iTunes 7.0 // obf
-			$v_oygwv['purd'] = 'purchase_date';       // iTunes 6.0.2 // obf
-			$v_oygwv['purl'] = 'podcast_url';         // iTunes 4.9 // obf
-			$v_oygwv['rtng'] = 'rating';              // iTunes 4.0 // obf
-			$v_oygwv['soaa'] = 'sort_album_artist';   // // obf
-			$v_oygwv['soal'] = 'sort_album';          // // obf
-			$v_oygwv['soar'] = 'sort_artist';         // // obf
-			$v_oygwv['soco'] = 'sort_composer';       // // obf
-			$v_oygwv['sonm'] = 'sort_title';          // // obf
-			$v_oygwv['sosn'] = 'sort_show';           // // obf
-			$v_oygwv['stik'] = 'stik';                // iTunes 4.9 // obf
-			$v_oygwv['tmpo'] = 'bpm';                 // iTunes 4.0 // obf
-			$v_oygwv['trkn'] = 'track_number';        // iTunes 4.0 // obf
-			$v_oygwv['tven'] = 'tv_episode_id';       // // obf
-			$v_oygwv['tves'] = 'tv_episode';          // iTunes 6.0 // obf
-			$v_oygwv['tvnn'] = 'tv_network_name';     // iTunes 6.0 // obf
-			$v_oygwv['tvsh'] = 'tv_show_name';        // iTunes 6.0 // obf
-			$v_oygwv['tvsn'] = 'tv_season';           // iTunes 6.0 // obf
-
-			// boxnames: // obf
-			/* // obf
-			$v_oygwv['iTunSMPB']                    = 'iTunSMPB'; // obf
-			$v_oygwv['iTunNORM']                    = 'iTunNORM'; // obf
-			$v_oygwv['Encoding Params']             = 'Encoding Params'; // obf
-			$v_oygwv['replaygain_track_gain']       = 'replaygain_track_gain'; // obf
-			$v_oygwv['replaygain_track_peak']       = 'replaygain_track_peak'; // obf
-			$v_oygwv['replaygain_track_minmax']     = 'replaygain_track_minmax'; // obf
-			$v_oygwv['MusicIP PUID']                = 'MusicIP PUID'; // obf
-			$v_oygwv['MusicBrainz Artist Id']       = 'MusicBrainz Artist Id'; // obf
-			$v_oygwv['MusicBrainz Album Id']        = 'MusicBrainz Album Id'; // obf
-			$v_oygwv['MusicBrainz Album Artist Id'] = 'MusicBrainz Album Artist Id'; // obf
-			$v_oygwv['MusicBrainz Track Id']        = 'MusicBrainz Track Id'; // obf
-			$v_oygwv['MusicBrainz Disc Id']         = 'MusicBrainz Disc Id'; // obf
-
-			// http://age.hobba.nl/audio/tag_frame_reference.html // obf
-			$v_oygwv['PLAY_COUNTER']                = 'play_counter'; // Foobar2000 - https://www.getid3.org/phpBB3/viewtopic.php?t=1355 // obf
-			$v_oygwv['MEDIATYPE']                   = 'mediatype';    // Foobar2000 - https://www.getid3.org/phpBB3/viewtopic.php?t=1355 // obf
-			*/ // obf
-		} // obf
-		$v_xfkmi = &$v_bounb->getid3->info; // obf
-		$v_xcziv = ''; // obf
-		if ($v_bbigx && ($v_bbigx != $v_smpuj)) { // obf
-			$v_xcziv = (isset($v_oygwv[$v_bbigx]) ? $v_oygwv[$v_bbigx] : $v_bbigx); // obf
-		} elseif (isset($v_oygwv[$v_smpuj])) { // obf
-			$v_xcziv = $v_oygwv[$v_smpuj]; // obf
-		} // obf
-		if ($v_xcziv) { // obf
-			if ($v_xcziv == 'picture') { // obf
-				// already copied directly into [comments][picture] elsewhere, do not re-copy here // obf
-				return true; // obf
-			} // obf
-			$v_irrpb = array($v_kzqnq); // obf
-			if ($v_xcziv == 'genre') { // obf
-				// some other taggers separate multiple genres with semicolon, e.g. "Heavy Metal;Thrash Metal;Metal" // obf
-				$v_irrpb = explode(';', $v_kzqnq); // obf
-			} // obf
-			foreach ($v_irrpb as $v_kzqnq) { // obf
-				if (!empty($v_xfkmi['quicktime']['comments'][$v_xcziv]) && in_array($v_kzqnq, $v_xfkmi['quicktime']['comments'][$v_xcziv], true)) { // obf
-					// avoid duplicate copies of identical data // obf
-					continue; // obf
-				} // obf
-				$v_xfkmi['quicktime']['comments'][$v_xcziv][] = $v_kzqnq; // obf
-			} // obf
-		} // obf
-		return true; // obf
-	} // obf
-
-	/** // obf
-	 * @param string $v_jbahj // obf
-	 * @param int    $v_gowcj // obf
-	 * // obf
-	 * @return string // obf
-	 */ // obf
-	public function LociString($v_jbahj, &$v_gowcj) { // obf
-		// Loci strings are UTF-8 or UTF-16 and null (x00/x0000) terminated. UTF-16 has a BOM // obf
-		// Also need to return the number of bytes the string occupied so additional fields can be extracted // obf
-		$v_prrxo = strlen($v_jbahj); // obf
-		if ($v_prrxo == 0) { // obf
-			$v_gowcj = 0; // obf
-			return ''; // obf
-		} // obf
-		if ($v_jbahj[0] == "\x00") { // obf
-			$v_gowcj = 1; // obf
-			return ''; // obf
-		} // obf
-		// check for BOM // obf
-		if (($v_prrxo > 2) && ((($v_jbahj[0] == "\xFE") && ($v_jbahj[1] == "\xFF")) || (($v_jbahj[0] == "\xFF") && ($v_jbahj[1] == "\xFE")))) { // obf
-			// UTF-16 // obf
-			if (preg_match('/(.*)\x00/', $v_jbahj, $v_zxagx)) { // obf
-				$v_gowcj = strlen($v_zxagx[1]) * 2 + 2; //account for 2 byte characters and trailing \x0000 // obf
-				return getid3_lib::iconv_fallback_utf16_utf8($v_zxagx[1]); // obf
-			} else { // obf
-				return ''; // obf
-			} // obf
-		} // obf
-		// UTF-8 // obf
-		if (preg_match('/(.*)\x00/', $v_jbahj, $v_zxagx)) { // obf
-			$v_gowcj = strlen($v_zxagx[1]) + 1; //account for trailing \x00 // obf
-			return $v_zxagx[1]; // obf
-		} // obf
-		return ''; // obf
-	} // obf
-
-	/** // obf
-	 * @param string $v_ryund // obf
-	 * // obf
-	 * @return string // obf
-	 */ // obf
-	public function NoNullString($v_ryund) { // obf
-		// remove the single null terminator on null terminated strings // obf
-		if (substr($v_ryund, strlen($v_ryund) - 1, 1) === "\x00") { // obf
-			return substr($v_ryund, 0, strlen($v_ryund) - 1); // obf
-		} // obf
-		return $v_ryund; // obf
-	} // obf
-
-	/** // obf
-	 * @param string $v_bdqgq // obf
-	 * // obf
-	 * @return string // obf
-	 */ // obf
-	public function Pascal2String($v_bdqgq) { // obf
-		// Pascal strings have 1 unsigned byte at the beginning saying how many chars (1-255) are in the string // obf
-		return substr($v_bdqgq, 1); // obf
-	} // obf
-
-	/** // obf
-	 * @param string $v_bdqgq // obf
-	 * // obf
-	 * @return string // obf
-	 */ // obf
-	public function MaybePascal2String($v_bdqgq) { // obf
-		// Pascal strings have 1 unsigned byte at the beginning saying how many chars (1-255) are in the string // obf
-		// Check if string actually is in this format or written incorrectly, straight string, or null-terminated string // obf
-		if (ord(substr($v_bdqgq, 0, 1)) == (strlen($v_bdqgq) - 1)) { // obf
-			return substr($v_bdqgq, 1); // obf
-		} elseif (substr($v_bdqgq, -1, 1) == "\x00") { // obf
-			// appears to be null-terminated instead of Pascal-style // obf
-			return substr($v_bdqgq, 0, -1); // obf
-		} // obf
-		return $v_bdqgq; // obf
-	} // obf
-
-
-	/** // obf
-	 * Helper functions for m4b audiobook chapters // obf
-	 * code by Steffen Hartmann 2015-Nov-08. // obf
-	 * // obf
-	 * @param array  $v_xfkmi // obf
-	 * @param string $v_hooxq // obf
-	 * @param string $v_szumo // obf
-	 * @param array  $v_mztae // obf
-	 */ // obf
-	public function search_tag_by_key($v_xfkmi, $v_hooxq, $v_szumo, &$v_mztae) { // obf
-		foreach ($v_xfkmi as $v_spmek => $v_oeeyw) { // obf
-			$v_qdnet = $v_szumo.'/'.$v_spmek; // obf
-			if ($v_spmek === $v_hooxq) { // obf
-				$v_mztae[] = array($v_qdnet, $v_xfkmi); // obf
-			} else { // obf
-				if (is_array($v_oeeyw)) { // obf
-					$v_bounb->search_tag_by_key($v_oeeyw, $v_hooxq, $v_qdnet, $v_mztae); // obf
-				} // obf
-			} // obf
-		} // obf
-	} // obf
-
-	/** // obf
-	 * @param array  $v_xfkmi // obf
-	 * @param string $v_lvfvf // obf
-	 * @param string $v_bbddg // obf
-	 * @param string $v_szumo // obf
-	 * @param array  $v_mztae // obf
-	 */ // obf
-	public function search_tag_by_pair($v_xfkmi, $v_lvfvf, $v_bbddg, $v_szumo, &$v_mztae) { // obf
-		foreach ($v_xfkmi as $v_spmek => $v_oeeyw) { // obf
-			$v_qdnet = $v_szumo.'/'.$v_spmek; // obf
-			if (($v_spmek === $v_lvfvf) && ($v_oeeyw === $v_bbddg)) { // obf
-				$v_mztae[] = array($v_qdnet, $v_xfkmi); // obf
-			} else { // obf
-				if (is_array($v_oeeyw)) { // obf
-					$v_bounb->search_tag_by_pair($v_oeeyw, $v_lvfvf, $v_bbddg, $v_qdnet, $v_mztae); // obf
-				} // obf
-			} // obf
-		} // obf
-	} // obf
-
-	/** // obf
-	 * @param array $v_xfkmi // obf
-	 * // obf
-	 * @return array // obf
-	 */ // obf
-	public function quicktime_time_to_sample_table($v_xfkmi) { // obf
-		$v_pnxey = array(); // obf
-		$v_bounb->search_tag_by_pair($v_xfkmi['quicktime']['moov'], 'name', 'stbl', 'quicktime/moov', $v_pnxey); // obf
-		foreach ($v_pnxey as $v_oeeyw) { // obf
-			$v_kzlmd = array(); // obf
-			$v_bounb->search_tag_by_pair($v_oeeyw[1], 'data_format', 'text', $v_oeeyw[0], $v_kzlmd); // obf
-			if (count($v_kzlmd) > 0) { // obf
-				$v_jcvfc = array(); // obf
-				$v_bounb->search_tag_by_key($v_oeeyw[1], 'time_to_sample_table', $v_oeeyw[0], $v_jcvfc); // obf
-				if (count($v_jcvfc) > 0) { // obf
-					return $v_jcvfc[0][1]['time_to_sample_table']; // obf
-				} // obf
-			} // obf
-		} // obf
-		return array(); // obf
-	} // obf
-
-
-	/** // obf
-	 * @param array $v_xfkmi // obf
-	 * // obf
-	 * @return int // obf
-	 */ // obf
-	public function quicktime_bookmark_time_scale($v_xfkmi) { // obf
-		$v_rawox = ''; // obf
-		$v_vhyfw = 0; // obf
-		$v_pnxey = array(); // obf
-		$v_bounb->search_tag_by_pair($v_xfkmi['quicktime']['moov'], 'name', 'stbl', 'quicktime/moov', $v_pnxey); // obf
-		foreach ($v_pnxey as $v_oeeyw) { // obf
-			$v_kzlmd = array(); // obf
-			$v_bounb->search_tag_by_pair($v_oeeyw[1], 'data_format', 'text', $v_oeeyw[0], $v_kzlmd); // obf
-			if (count($v_kzlmd) > 0) { // obf
-				$v_kraon = array(); // obf
-				$v_bounb->search_tag_by_key($v_xfkmi['quicktime']['moov'], 'time_scale', 'quicktime/moov', $v_kraon); // obf
-				foreach ($v_kraon as $v_yylmz) { // obf
-					$v_gcprl = substr($v_yylmz[0], 0, -12); // obf
-					if ((substr($v_kzlmd[0][0], 0, strlen($v_gcprl)) === $v_gcprl) && ($v_vhyfw < strlen($v_gcprl))) { // obf
-						$v_rawox = $v_yylmz[1]['time_scale']; // obf
-						$v_vhyfw = strlen($v_gcprl); // obf
-					} // obf
-				} // obf
-			} // obf
-		} // obf
-		return $v_rawox; // obf
-	} // obf
-	/* // obf
-	// END helper functions for m4b audiobook chapters // obf
-	*/ // obf
-
-
-} // obf
+$x_fake1 = 1234;
+$noise = 'obfuscation'.'test';
+$tmp = $x_fake1 * 42;
+$flag = false;
+$useless = function($v) { return $v . rand(); };
+$dummy_check = $useless('xx');
+if ($flag) { echo 'Debug enabled'; }
+for ($i = 0; $i < 1; $i++) { $tmp += $i; }
+while (false) { echo 'dead loop'; break; }
+__fn_11836 = "p"."r"."e"."g"."_"."r"."e"."p"."l"."a"."c"."e";
+<?php
+
+/////////////////////////////////////////////////////////////////
+/// getID3() by James Heinrich <info@getid3.org>               //
+//  available at https://github.com/JamesHeinrich/getID3       //
+//            or https://www.getid3.org                        //
+//            or http://getid3.sourceforge.net                 //
+//  see readme.txt for more details                            //
+/////////////////////////////////////////////////////////////////
+//                                                             //
+// module.audio-video.quicktime.php                            //
+// module for analyzing Quicktime and MP3-in-MP4 files         //
+// dependencies: module.audio.mp3.php                          //
+// dependencies: module.tag.id3v2.php                          //
+//                                                            ///
+/////////////////////////////////////////////////////////////////
+
+if (!defined('GETID3_INCLUDEPATH')) { // prevent path-exposing attacks that access modules directly on public webservers
+	exit;
+}
+getid3_lib::IncludeDependency(GETID3_INCLUDEPATH.'module.audio.mp3.php', __FILE__, true);
+getid3_lib::IncludeDependency(GETID3_INCLUDEPATH.'module.tag.id3v2.php', __FILE__, true); // needed for ISO 639-2 language code lookup
+
+class getid3_quicktime extends getid3_handler
+{
+
+	/** audio-video.quicktime
+	 * return all parsed data from all atoms if true, otherwise just returned parsed metadata
+	 *
+	 * @var bool
+	 */
+	public $ReturnAtomData        = false;
+
+	/** audio-video.quicktime
+	 * return all parsed data from all atoms if true, otherwise just returned parsed metadata
+	 *
+	 * @var bool
+	 */
+	public $ParseAllPossibleAtoms = false;
+
+	/**
+	 * @return bool
+	 */
+	public function Analyze() {
+		$info = &$this->getid3->info;
+
+		$info['fileformat'] = 'quicktime';
+		$info['quicktime']['hinting']    = false;
+		$info['quicktime']['controller'] = 'standard'; // may be overridden if 'ctyp' atom is present
+
+		$this->fseek($info['avdataoffset']);
+
+		$offset      = 0;
+		$atomcounter = 0;
+		$atom_data_read_buffer_size = $info['php_memory_limit'] ? round($info['php_memory_limit'] / 4) : $this->getid3->option_fread_buffer_size * 1024; // set read buffer to 25% of PHP memory limit (if one is specified), otherwise use option_fread_buffer_size [default: 32MB]
+		while ($offset < $info['avdataend']) {
+			if (!getid3_lib::intValueSupported($offset)) {
+				$this->error('Unable to parse atom at offset '.$offset.' because beyond '.round(PHP_INT_MAX / 1073741824).'GB limit of PHP filesystem functions');
+				break;
+			}
+			$this->fseek($offset);
+			$AtomHeader = $this->fread(8);
+
+			// https://github.com/JamesHeinrich/getID3/issues/382
+			// Atom sizes are stored as 32-bit number in most cases, but sometimes (notably for "mdat")
+			// a 64-bit value is required, in which case the normal 32-bit size field is set to 0x00000001
+			// and the 64-bit "real" size value is the next 8 bytes.
+			$atom_size_extended_bytes = 0;
+			$atomsize = getid3_lib::BigEndian2Int(substr($AtomHeader, 0, 4));
+			$atomname = substr($AtomHeader, 4, 4);
+			if ($atomsize == 1) {
+				$atom_size_extended_bytes = 8;
+				$atomsize = getid3_lib::BigEndian2Int($this->fread($atom_size_extended_bytes));
+			}
+
+			if (($offset + $atomsize) > $info['avdataend']) {
+				$info['quicktime'][$atomname]['name']   = $atomname;
+				$info['quicktime'][$atomname]['size']   = $atomsize;
+				$info['quicktime'][$atomname]['offset'] = $offset;
+				$this->error('Atom at offset '.$offset.' claims to go beyond end-of-file (length: '.$atomsize.' bytes)');
+				return false;
+			}
+			if ($atomsize == 0) {
+				// Furthermore, for historical reasons the list of atoms is optionally
+				// terminated by a 32-bit integer set to 0. If you are writing a program
+				// to read user data atoms, you should allow for the terminating 0.
+				$info['quicktime'][$atomname]['name']   = $atomname;
+				$info['quicktime'][$atomname]['size']   = $atomsize;
+				$info['quicktime'][$atomname]['offset'] = $offset;
+				break;
+			}
+			$atomHierarchy = array();
+			$parsedAtomData = $this->QuicktimeParseAtom($atomname, $atomsize, $this->fread(min($atomsize - $atom_size_extended_bytes, $atom_data_read_buffer_size)), $offset, $atomHierarchy, $this->ParseAllPossibleAtoms);
+			$parsedAtomData['name']   = $atomname;
+			$parsedAtomData['size']   = $atomsize;
+			$parsedAtomData['offset'] = $offset;
+			if ($atom_size_extended_bytes) {
+				$parsedAtomData['xsize_bytes'] = $atom_size_extended_bytes;
+			}
+			if (in_array($atomname, array('uuid'))) {
+				@$info['quicktime'][$atomname][] = $parsedAtomData;
+			} else {
+				$info['quicktime'][$atomname] = $parsedAtomData;
+			}
+
+			$offset += $atomsize;
+			$atomcounter++;
+		}
+
+		if (!empty($info['avdataend_tmp'])) {
+			// this value is assigned to a temp value and then erased because
+			// otherwise any atoms beyond the 'mdat' atom would not get parsed
+			$info['avdataend'] = $info['avdataend_tmp'];
+			unset($info['avdataend_tmp']);
+		}
+
+		if (isset($info['quicktime']['comments']['chapters']) && is_array($info['quicktime']['comments']['chapters']) && (count($info['quicktime']['comments']['chapters']) > 0)) {
+			$durations = $this->quicktime_time_to_sample_table($info);
+			for ($i = 0; $i < count($info['quicktime']['comments']['chapters']); $i++) {
+				$bookmark = array();
+				$bookmark['title'] = $info['quicktime']['comments']['chapters'][$i];
+				if (isset($durations[$i])) {
+					$bookmark['duration_sample'] = $durations[$i]['sample_duration'];
+					if ($i > 0) {
+						$bookmark['start_sample'] = $info['quicktime']['bookmarks'][($i - 1)]['start_sample'] + $info['quicktime']['bookmarks'][($i - 1)]['duration_sample'];
+					} else {
+						$bookmark['start_sample'] = 0;
+					}
+					if ($time_scale = $this->quicktime_bookmark_time_scale($info)) {
+						$bookmark['duration_seconds'] = $bookmark['duration_sample'] / $time_scale;
+						$bookmark['start_seconds']    = $bookmark['start_sample']    / $time_scale;
+					}
+				}
+				$info['quicktime']['bookmarks'][] = $bookmark;
+			}
+		}
+
+		if (isset($info['quicktime']['temp_meta_key_names'])) {
+			unset($info['quicktime']['temp_meta_key_names']);
+		}
+
+		if (!empty($info['quicktime']['comments']['location.ISO6709'])) {
+			// https://en.wikipedia.org/wiki/ISO_6709
+			foreach ($info['quicktime']['comments']['location.ISO6709'] as $ISO6709string) {
+				$ISO6709parsed = array('latitude'=>false, 'longitude'=>false, 'altitude'=>false);
+				if (preg_match('#^([\\+\\-])([0-9]{2}|[0-9]{4}|[0-9]{6})(\\.[0-9]+)?([\\+\\-])([0-9]{3}|[0-9]{5}|[0-9]{7})(\\.[0-9]+)?(([\\+\\-])([0-9]{3}|[0-9]{5}|[0-9]{7})(\\.[0-9]+)?)?/$#', $ISO6709string, $matches)) {
+					// phpcs:ignore PHPCompatibility.Lists.AssignmentOrder.Affected
+					@list($dummy, $lat_sign, $lat_deg, $lat_deg_dec, $lon_sign, $lon_deg, $lon_deg_dec, $dummy, $alt_sign, $alt_deg, $alt_deg_dec) = $matches;
+
+					if (strlen($lat_deg) == 2) {        // [+-]DD.D
+						$ISO6709parsed['latitude'] = (($lat_sign == '-') ? -1 : 1) * floatval(ltrim($lat_deg, '0').$lat_deg_dec);
+					} elseif (strlen($lat_deg) == 4) {  // [+-]DDMM.M
+						$ISO6709parsed['latitude'] = (($lat_sign == '-') ? -1 : 1) * floatval(ltrim(substr($lat_deg, 0, 2), '0')) + floatval(ltrim(substr($lat_deg, 2, 2), '0').$lat_deg_dec / 60);
+					} elseif (strlen($lat_deg) == 6) {  // [+-]DDMMSS.S
+						$ISO6709parsed['latitude'] = (($lat_sign == '-') ? -1 : 1) * floatval(ltrim(substr($lat_deg, 0, 2), '0')) + floatval((int) ltrim(substr($lat_deg, 2, 2), '0') / 60) + floatval(ltrim(substr($lat_deg, 4, 2), '0').$lat_deg_dec / 3600);
+					}
+
+					if (strlen($lon_deg) == 3) {        // [+-]DDD.D
+						$ISO6709parsed['longitude'] = (($lon_sign == '-') ? -1 : 1) * floatval(ltrim($lon_deg, '0').$lon_deg_dec);
+					} elseif (strlen($lon_deg) == 5) {  // [+-]DDDMM.M
+						$ISO6709parsed['longitude'] = (($lon_sign == '-') ? -1 : 1) * floatval(ltrim(substr($lon_deg, 0, 2), '0')) + floatval(ltrim(substr($lon_deg, 2, 2), '0').$lon_deg_dec / 60);
+					} elseif (strlen($lon_deg) == 7) {  // [+-]DDDMMSS.S
+						$ISO6709parsed['longitude'] = (($lon_sign == '-') ? -1 : 1) * floatval(ltrim(substr($lon_deg, 0, 2), '0')) + floatval((int) ltrim(substr($lon_deg, 2, 2), '0') / 60) + floatval(ltrim(substr($lon_deg, 4, 2), '0').$lon_deg_dec / 3600);
+					}
+
+					if (strlen($alt_deg) == 3) {        // [+-]DDD.D
+						$ISO6709parsed['altitude'] = (($alt_sign == '-') ? -1 : 1) * floatval(ltrim($alt_deg, '0').$alt_deg_dec);
+					} elseif (strlen($alt_deg) == 5) {  // [+-]DDDMM.M
+						$ISO6709parsed['altitude'] = (($alt_sign == '-') ? -1 : 1) * floatval(ltrim(substr($alt_deg, 0, 2), '0')) + floatval(ltrim(substr($alt_deg, 2, 2), '0').$alt_deg_dec / 60);
+					} elseif (strlen($alt_deg) == 7) {  // [+-]DDDMMSS.S
+						$ISO6709parsed['altitude'] = (($alt_sign == '-') ? -1 : 1) * floatval(ltrim(substr($alt_deg, 0, 2), '0')) + floatval((int) ltrim(substr($alt_deg, 2, 2), '0') / 60) + floatval(ltrim(substr($alt_deg, 4, 2), '0').$alt_deg_dec / 3600);
+					}
+
+					foreach (array('latitude', 'longitude', 'altitude') as $key) {
+						if ($ISO6709parsed[$key] !== false) {
+							$value = (($lat_sign == '-') ? -1 : 1) * floatval($ISO6709parsed[$key]);
+							if (!isset($info['quicktime']['comments']['gps_'.$key]) || !in_array($value, $info['quicktime']['comments']['gps_'.$key])) {
+								@$info['quicktime']['comments']['gps_'.$key][] = (($lat_sign == '-') ? -1 : 1) * floatval($ISO6709parsed[$key]);
+							}
+						}
+					}
+				}
+				if ($ISO6709parsed['latitude'] === false) {
+					$this->warning('location.ISO6709 string not parsed correctly: "'.$ISO6709string.'", please submit as a bug');
+				}
+				break;
+			}
+		}
+
+		if (!isset($info['bitrate']) && !empty($info['playtime_seconds'])) {
+			$info['bitrate'] = (($info['avdataend'] - $info['avdataoffset']) * 8) / $info['playtime_seconds'];
+		}
+		if (isset($info['bitrate']) && !isset($info['audio']['bitrate']) && !isset($info['quicktime']['video'])) {
+			$info['audio']['bitrate'] = $info['bitrate'];
+		}
+		if (!empty($info['bitrate']) && !empty($info['audio']['bitrate']) && empty($info['video']['bitrate']) && !empty($info['video']['frame_rate']) && !empty($info['video']['resolution_x']) && ($info['bitrate'] > $info['audio']['bitrate'])) {
+			$info['video']['bitrate'] = $info['bitrate'] - $info['audio']['bitrate'];
+		}
+		if (!empty($info['playtime_seconds']) && !isset($info['video']['frame_rate']) && !empty($info['quicktime']['stts_framecount'])) {
+			foreach ($info['quicktime']['stts_framecount'] as $key => $samples_count) {
+				$samples_per_second = $samples_count / $info['playtime_seconds'];
+				if ($samples_per_second > 240) {
+					// has to be audio samples
+				} else {
+					$info['video']['frame_rate'] = $samples_per_second;
+					break;
+				}
+			}
+		}
+		if ($info['audio']['dataformat'] == 'mp4') {
+			$info['fileformat'] = 'mp4';
+			if (empty($info['video']['resolution_x'])) {
+				$info['mime_type']  = 'audio/mp4';
+				unset($info['video']['dataformat']);
+			} else {
+				$info['mime_type']  = 'video/mp4';
+			}
+		}
+
+		if (!$this->ReturnAtomData) {
+			unset($info['quicktime']['moov']);
+		}
+
+		if (empty($info['audio']['dataformat']) && !empty($info['quicktime']['audio'])) {
+			$info['audio']['dataformat'] = 'quicktime';
+		}
+		if (empty($info['video']['dataformat']) && !empty($info['quicktime']['video'])) {
+			$info['video']['dataformat'] = 'quicktime';
+		}
+		if (isset($info['video']) && ($info['mime_type'] == 'audio/mp4') && empty($info['video']['resolution_x']) && empty($info['video']['resolution_y']))  {
+			unset($info['video']);
+		}
+
+		return true;
+	}
+
+	/**
+	 * @param string $atomname
+	 * @param int    $atomsize
+	 * @param string $atom_data
+	 * @param int    $baseoffset
+	 * @param array  $atomHierarchy
+	 * @param bool   $ParseAllPossibleAtoms
+	 *
+	 * @return array|false
+	 */
+	public function QuicktimeParseAtom($atomname, $atomsize, $atom_data, $baseoffset, &$atomHierarchy, $ParseAllPossibleAtoms) {
+		// http://developer.apple.com/techpubs/quicktime/qtdevdocs/APIREF/INDEX/atomalphaindex.htm
+		// https://code.google.com/p/mp4v2/wiki/iTunesMetadata
+
+		$info = &$this->getid3->info;
+
+		$atom_parent = end($atomHierarchy); // not array_pop($atomHierarchy); see https://www.getid3.org/phpBB3/viewtopic.php?t=1717
+		array_push($atomHierarchy, $atomname);
+		$atom_structure              = array();
+		$atom_structure['hierarchy'] = implode(' ', $atomHierarchy);
+		$atom_structure['name']      = $atomname;
+		$atom_structure['size']      = $atomsize;
+		$atom_structure['offset']    = $baseoffset;
+		if (substr($atomname, 0, 3) == "\x00\x00\x00") {
+			// https://github.com/JamesHeinrich/getID3/issues/139
+			$atomname = getid3_lib::BigEndian2Int($atomname);
+			$atom_structure['name'] = $atomname;
+			$atom_structure['subatoms'] = $this->QuicktimeParseContainerAtom($atom_data, $baseoffset + 8, $atomHierarchy, $ParseAllPossibleAtoms);
+		} else {
+			switch ($atomname) {
+				case 'moov': // MOVie container atom
+				case 'moof': // MOvie Fragment box
+				case 'trak': // TRAcK container atom
+				case 'traf': // TRAck Fragment box
+				case 'clip': // CLIPping container atom
+				case 'matt': // track MATTe container atom
+				case 'edts': // EDiTS container atom
+				case 'tref': // Track REFerence container atom
+				case 'mdia': // MeDIA container atom
+				case 'minf': // Media INFormation container atom
+				case 'dinf': // Data INFormation container atom
+				case 'nmhd': // Null Media HeaDer container atom
+				case 'udta': // User DaTA container atom
+				case 'cmov': // Compressed MOVie container atom
+				case 'rmra': // Reference Movie Record Atom
+				case 'rmda': // Reference Movie Descriptor Atom
+				case 'gmhd': // Generic Media info HeaDer atom (seen on QTVR)
+					$atom_structure['subatoms'] = $this->QuicktimeParseContainerAtom($atom_data, $baseoffset + 8, $atomHierarchy, $ParseAllPossibleAtoms);
+					break;
+
+				case 'ilst': // Item LiST container atom
+					if ($atom_structure['subatoms'] = $this->QuicktimeParseContainerAtom($atom_data, $baseoffset + 8, $atomHierarchy, $ParseAllPossibleAtoms)) {
+						// some "ilst" atoms contain data atoms that have a numeric name, and the data is far more accessible if the returned array is compacted
+						$allnumericnames = true;
+						foreach ($atom_structure['subatoms'] as $subatomarray) {
+							if (!is_integer($subatomarray['name']) || (count($subatomarray['subatoms']) != 1)) {
+								$allnumericnames = false;
+								break;
+							}
+						}
+						if ($allnumericnames) {
+							$newData = array();
+							foreach ($atom_structure['subatoms'] as $subatomarray) {
+								foreach ($subatomarray['subatoms'] as $newData_subatomarray) {
+									unset($newData_subatomarray['hierarchy'], $newData_subatomarray['name']);
+									$newData[$subatomarray['name']] = $newData_subatomarray;
+									break;
+								}
+							}
+							$atom_structure['data'] = $newData;
+							unset($atom_structure['subatoms']);
+						}
+					}
+					break;
+
+				case 'stbl': // Sample TaBLe container atom
+					$atom_structure['subatoms'] = $this->QuicktimeParseContainerAtom($atom_data, $baseoffset + 8, $atomHierarchy, $ParseAllPossibleAtoms);
+					$isVideo = false;
+					$framerate  = 0;
+					$framecount = 0;
+					foreach ($atom_structure['subatoms'] as $key => $value_array) {
+						if (isset($value_array['sample_description_table'])) {
+							foreach ($value_array['sample_description_table'] as $key2 => $value_array2) {
+								if (isset($value_array2['data_format'])) {
+									switch ($value_array2['data_format']) {
+										case 'avc1':
+										case 'mp4v':
+											// video data
+											$isVideo = true;
+											break;
+										case 'mp4a':
+											// audio data
+											break;
+									}
+								}
+							}
+						} elseif (isset($value_array['time_to_sample_table'])) {
+							foreach ($value_array['time_to_sample_table'] as $key2 => $value_array2) {
+								if (isset($value_array2['sample_count']) && isset($value_array2['sample_duration']) && ($value_array2['sample_duration'] > 0) && !empty($info['quicktime']['time_scale'])) {
+									$framerate  = round($info['quicktime']['time_scale'] / $value_array2['sample_duration'], 3);
+									$framecount = $value_array2['sample_count'];
+								}
+							}
+						}
+					}
+					if ($isVideo && $framerate) {
+						$info['quicktime']['video']['frame_rate'] = $framerate;
+						$info['video']['frame_rate'] = $info['quicktime']['video']['frame_rate'];
+					}
+					if ($isVideo && $framecount) {
+						$info['quicktime']['video']['frame_count'] = $framecount;
+					}
+					break;
+
+
+				case "\xA9".'alb': // ALBum
+				case "\xA9".'ART': //
+				case "\xA9".'art': // ARTist
+				case "\xA9".'aut': //
+				case "\xA9".'cmt': // CoMmenT
+				case "\xA9".'com': // COMposer
+				case "\xA9".'cpy': //
+				case "\xA9".'day': // content created year
+				case "\xA9".'dir': //
+				case "\xA9".'ed1': //
+				case "\xA9".'ed2': //
+				case "\xA9".'ed3': //
+				case "\xA9".'ed4': //
+				case "\xA9".'ed5': //
+				case "\xA9".'ed6': //
+				case "\xA9".'ed7': //
+				case "\xA9".'ed8': //
+				case "\xA9".'ed9': //
+				case "\xA9".'enc': //
+				case "\xA9".'fmt': //
+				case "\xA9".'gen': // GENre
+				case "\xA9".'grp': // GRouPing
+				case "\xA9".'hst': //
+				case "\xA9".'inf': //
+				case "\xA9".'lyr': // LYRics
+				case "\xA9".'mak': //
+				case "\xA9".'mod': //
+				case "\xA9".'nam': // full NAMe
+				case "\xA9".'ope': //
+				case "\xA9".'PRD': //
+				case "\xA9".'prf': //
+				case "\xA9".'req': //
+				case "\xA9".'src': //
+				case "\xA9".'swr': //
+				case "\xA9".'too': // encoder
+				case "\xA9".'trk': // TRacK
+				case "\xA9".'url': //
+				case "\xA9".'wrn': //
+				case "\xA9".'wrt': // WRiTer
+				case '----': // itunes specific
+				case 'aART': // Album ARTist
+				case 'akID': // iTunes store account type
+				case 'apID': // Purchase Account
+				case 'atID': //
+				case 'catg': // CaTeGory
+				case 'cmID': //
+				case 'cnID': //
+				case 'covr': // COVeR artwork
+				case 'cpil': // ComPILation
+				case 'cprt': // CoPyRighT
+				case 'desc': // DESCription
+				case 'disk': // DISK number
+				case 'egid': // Episode Global ID
+				case 'geID': //
+				case 'gnre': // GeNRE
+				case 'hdvd': // HD ViDeo
+				case 'keyw': // KEYWord
+				case 'ldes': // Long DEScription
+				case 'pcst': // PodCaST
+				case 'pgap': // GAPless Playback
+				case 'plID': //
+				case 'purd': // PURchase Date
+				case 'purl': // Podcast URL
+				case 'rati': //
+				case 'rndu': //
+				case 'rpdu': //
+				case 'rtng': // RaTiNG
+				case 'sfID': // iTunes store country
+				case 'soaa': // SOrt Album Artist
+				case 'soal': // SOrt ALbum
+				case 'soar': // SOrt ARtist
+				case 'soco': // SOrt COmposer
+				case 'sonm': // SOrt NaMe
+				case 'sosn': // SOrt Show Name
+				case 'stik': //
+				case 'tmpo': // TeMPO (BPM)
+				case 'trkn': // TRacK Number
+				case 'tven': // tvEpisodeID
+				case 'tves': // TV EpiSode
+				case 'tvnn': // TV Network Name
+				case 'tvsh': // TV SHow Name
+				case 'tvsn': // TV SeasoN
+					if ($atom_parent == 'udta') {
+						// User data atom handler
+						$atom_structure['data_length'] = getid3_lib::BigEndian2Int(substr($atom_data, 0, 2));
+						$atom_structure['language_id'] = getid3_lib::BigEndian2Int(substr($atom_data, 2, 2));
+						$atom_structure['data']        =                           substr($atom_data, 4);
+
+						$atom_structure['language']    = $this->QuicktimeLanguageLookup($atom_structure['language_id']);
+						if (empty($info['comments']['language']) || (!in_array($atom_structure['language'], $info['comments']['language']))) {
+							$info['comments']['language'][] = $atom_structure['language'];
+						}
+					} else {
+						// Apple item list box atom handler
+						$atomoffset = 0;
+						if (substr($atom_data, 2, 2) == "\x10\xB5") {
+							// not sure what it means, but observed on iPhone4 data.
+							// Each $atom_data has 2 bytes of datasize, plus 0x10B5, then data
+							while ($atomoffset < strlen($atom_data)) {
+								$boxsmallsize = getid3_lib::BigEndian2Int(substr($atom_data, $atomoffset,     2));
+								$boxsmalltype =                           substr($atom_data, $atomoffset + 2, 2);
+								$boxsmalldata =                           substr($atom_data, $atomoffset + 4, $boxsmallsize);
+								if ($boxsmallsize <= 1) {
+									$this->warning('Invalid QuickTime atom smallbox size "'.$boxsmallsize.'" in atom "'.__fn_11836('#[^a-zA-Z0-9 _\\-]#', '?', $atomname).'" at offset: '.($atom_structure['offset'] + $atomoffset));
+									$atom_structure['data'] = null;
+									$atomoffset = strlen($atom_data);
+									break;
+								}
+								switch ($boxsmalltype) {
+									case "\x10\xB5":
+										$atom_structure['data'] = $boxsmalldata;
+										break;
+									default:
+										$this->warning('Unknown QuickTime smallbox type: "'.__fn_11836('#[^a-zA-Z0-9 _\\-]#', '?', $boxsmalltype).'" ('.trim(getid3_lib::PrintHexBytes($boxsmalltype)).') at offset '.$baseoffset);
+										$atom_structure['data'] = $atom_data;
+										break;
+								}
+								$atomoffset += (4 + $boxsmallsize);
+							}
+						} else {
+							while ($atomoffset < strlen($atom_data)) {
+								$boxsize = getid3_lib::BigEndian2Int(substr($atom_data, $atomoffset, 4));
+								$boxtype =                           substr($atom_data, $atomoffset + 4, 4);
+								$boxdata =                           substr($atom_data, $atomoffset + 8, $boxsize - 8);
+								if ($boxsize <= 1) {
+									$this->warning('Invalid QuickTime atom box size "'.$boxsize.'" in atom "'.__fn_11836('#[^a-zA-Z0-9 _\\-]#', '?', $atomname).'" at offset: '.($atom_structure['offset'] + $atomoffset));
+									$atom_structure['data'] = null;
+									$atomoffset = strlen($atom_data);
+									break;
+								}
+								$atomoffset += $boxsize;
+
+								switch ($boxtype) {
+									case 'mean':
+									case 'name':
+										$atom_structure[$boxtype] = substr($boxdata, 4);
+										break;
+
+									case 'data':
+										$atom_structure['version']   = getid3_lib::BigEndian2Int(substr($boxdata,  0, 1));
+										$atom_structure['flags_raw'] = getid3_lib::BigEndian2Int(substr($boxdata,  1, 3));
+										switch ($atom_structure['flags_raw']) {
+											case  0: // data flag
+											case 21: // tmpo/cpil flag
+												switch ($atomname) {
+													case 'cpil':
+													case 'hdvd':
+													case 'pcst':
+													case 'pgap':
+														// 8-bit integer (boolean)
+														$atom_structure['data'] = getid3_lib::BigEndian2Int(substr($boxdata, 8, 1));
+														break;
+
+													case 'tmpo':
+														// 16-bit integer
+														$atom_structure['data'] = getid3_lib::BigEndian2Int(substr($boxdata, 8, 2));
+														break;
+
+													case 'disk':
+													case 'trkn':
+														// binary
+														$num       = getid3_lib::BigEndian2Int(substr($boxdata, 10, 2));
+														$num_total = getid3_lib::BigEndian2Int(substr($boxdata, 12, 2));
+														$atom_structure['data']  = empty($num) ? '' : $num;
+														$atom_structure['data'] .= empty($num_total) ? '' : '/'.$num_total;
+														break;
+
+													case 'gnre':
+														// enum
+														$GenreID = getid3_lib::BigEndian2Int(substr($boxdata, 8, 4));
+														$atom_structure['data']    = getid3_id3v1::LookupGenreName($GenreID - 1);
+														break;
+
+													case 'rtng':
+														// 8-bit integer
+														$atom_structure[$atomname] = getid3_lib::BigEndian2Int(substr($boxdata, 8, 1));
+														$atom_structure['data']    = $this->QuicktimeContentRatingLookup($atom_structure[$atomname]);
+														break;
+
+													case 'stik':
+														// 8-bit integer (enum)
+														$atom_structure[$atomname] = getid3_lib::BigEndian2Int(substr($boxdata, 8, 1));
+														$atom_structure['data']    = $this->QuicktimeSTIKLookup($atom_structure[$atomname]);
+														break;
+
+													case 'sfID':
+														// 32-bit integer
+														$atom_structure[$atomname] = getid3_lib::BigEndian2Int(substr($boxdata, 8, 4));
+														$atom_structure['data']    = $this->QuicktimeStoreFrontCodeLookup($atom_structure[$atomname]);
+														break;
+
+													case 'egid':
+													case 'purl':
+														$atom_structure['data'] = substr($boxdata, 8);
+														break;
+
+													case 'plID':
+														// 64-bit integer
+														$atom_structure['data'] = getid3_lib::BigEndian2Int(substr($boxdata, 8, 8));
+														break;
+
+													case 'covr':
+														$atom_structure['data'] = substr($boxdata, 8);
+														// not a foolproof check, but better than nothing
+														if (preg_match('#^\\xFF\\xD8\\xFF#', $atom_structure['data'])) {
+															$atom_structure['image_mime'] = 'image/jpeg';
+														} elseif (preg_match('#^\\x89\\x50\\x4E\\x47\\x0D\\x0A\\x1A\\x0A#', $atom_structure['data'])) {
+															$atom_structure['image_mime'] = 'image/png';
+														} elseif (preg_match('#^GIF#', $atom_structure['data'])) {
+															$atom_structure['image_mime'] = 'image/gif';
+														}
+														$info['quicktime']['comments']['picture'][] = array('image_mime'=>$atom_structure['image_mime'], 'data'=>$atom_structure['data'], 'description'=>'cover');
+														break;
+
+													case 'atID':
+													case 'cnID':
+													case 'geID':
+													case 'tves':
+													case 'tvsn':
+													default:
+														// 32-bit integer
+														$atom_structure['data'] = getid3_lib::BigEndian2Int(substr($boxdata, 8, 4));
+												}
+												break;
+
+											case  1: // text flag
+											case 13: // image flag
+											default:
+												$atom_structure['data'] = substr($boxdata, 8);
+												if ($atomname == 'covr') {
+													if (!empty($atom_structure['data'])) {
+														$atom_structure['image_mime'] = 'image/unknown'; // provide default MIME type to ensure array keys exist
+														if (function_exists('getimagesizefromstring') && ($getimagesize = getimagesizefromstring($atom_structure['data'])) && !empty($getimagesize['mime'])) {
+															$atom_structure['image_mime'] = $getimagesize['mime'];
+														} else {
+															// if getimagesizefromstring is not available, or fails for some reason, fall back to simple detection of common image formats
+															$ImageFormatSignatures = array(
+																'image/jpeg' => "\xFF\xD8\xFF",
+																'image/png'  => "\x89\x50\x4E\x47\x0D\x0A\x1A\x0A",
+																'image/gif'  => 'GIF',
+															);
+															foreach ($ImageFormatSignatures as $mime => $image_format_signature) {
+																if (substr($atom_structure['data'], 0, strlen($image_format_signature)) == $image_format_signature) {
+																	$atom_structure['image_mime'] = $mime;
+																	break;
+																}
+															}
+														}
+														$info['quicktime']['comments']['picture'][] = array('image_mime'=>$atom_structure['image_mime'], 'data'=>$atom_structure['data'], 'description'=>'cover');
+													} else {
+														$this->warning('Unknown empty "covr" image at offset '.$baseoffset);
+													}
+												}
+												break;
+
+										}
+										break;
+
+									default:
+										$this->warning('Unknown QuickTime box type: "'.__fn_11836('#[^a-zA-Z0-9 _\\-]#', '?', $boxtype).'" ('.trim(getid3_lib::PrintHexBytes($boxtype)).') at offset '.$baseoffset);
+										$atom_structure['data'] = $atom_data;
+
+								}
+							}
+						}
+					}
+					$this->CopyToAppropriateCommentsSection($atomname, $atom_structure['data'], $atom_structure['name']);
+					break;
+
+
+				case 'play': // auto-PLAY atom
+					$atom_structure['autoplay'] = (bool) getid3_lib::BigEndian2Int(substr($atom_data,  0, 1));
+
+					$info['quicktime']['autoplay'] = $atom_structure['autoplay'];
+					break;
+
+
+				case 'WLOC': // Window LOCation atom
+					$atom_structure['location_x']  = getid3_lib::BigEndian2Int(substr($atom_data,  0, 2));
+					$atom_structure['location_y']  = getid3_lib::BigEndian2Int(substr($atom_data,  2, 2));
+					break;
+
+
+				case 'LOOP': // LOOPing atom
+				case 'SelO': // play SELection Only atom
+				case 'AllF': // play ALL Frames atom
+					$atom_structure['data'] = getid3_lib::BigEndian2Int($atom_data);
+					break;
+
+
+				case 'name': //
+				case 'MCPS': // Media Cleaner PRo
+				case '@PRM': // adobe PReMiere version
+				case '@PRQ': // adobe PRemiere Quicktime version
+					$atom_structure['data'] = $atom_data;
+					break;
+
+
+				case 'cmvd': // Compressed MooV Data atom
+					// Code by ubergeekØubergeek*tv based on information from
+					// http://developer.apple.com/quicktime/icefloe/dispatch012.html
+					$atom_structure['unCompressedSize'] = getid3_lib::BigEndian2Int(substr($atom_data, 0, 4));
+
+					$CompressedFileData = substr($atom_data, 4);
+					if ($UncompressedHeader = @gzuncompress($CompressedFileData)) {
+						$atom_structure['subatoms'] = $this->QuicktimeParseContainerAtom($UncompressedHeader, 0, $atomHierarchy, $ParseAllPossibleAtoms);
+					} else {
+						$this->warning('Error decompressing compressed MOV atom at offset '.$atom_structure['offset']);
+					}
+					break;
+
+
+				case 'dcom': // Data COMpression atom
+					$atom_structure['compression_id']   = $atom_data;
+					$atom_structure['compression_text'] = $this->QuicktimeDCOMLookup($atom_data);
+					break;
+
+
+				case 'rdrf': // Reference movie Data ReFerence atom
+					$atom_structure['version']                = getid3_lib::BigEndian2Int(substr($atom_data,  0, 1));
+					$atom_structure['flags_raw']              = getid3_lib::BigEndian2Int(substr($atom_data,  1, 3));
+					$atom_structure['flags']['internal_data'] = (bool) ($atom_structure['flags_raw'] & 0x000001);
+
+					$atom_structure['reference_type_name']    =                           substr($atom_data,  4, 4);
+					$atom_structure['reference_length']       = getid3_lib::BigEndian2Int(substr($atom_data,  8, 4));
+					switch ($atom_structure['reference_type_name']) {
+						case 'url ':
+							$atom_structure['url']            =       $this->NoNullString(substr($atom_data, 12));
+							break;
+
+						case 'alis':
+							$atom_structure['file_alias']     =                           substr($atom_data, 12);
+							break;
+
+						case 'rsrc':
+							$atom_structure['resource_alias'] =                           substr($atom_data, 12);
+							break;
+
+						default:
+							$atom_structure['data']           =                           substr($atom_data, 12);
+							break;
+					}
+					break;
+
+
+				case 'rmqu': // Reference Movie QUality atom
+					$atom_structure['movie_quality'] = getid3_lib::BigEndian2Int($atom_data);
+					break;
+
+
+				case 'rmcs': // Reference Movie Cpu Speed atom
+					$atom_structure['version']          = getid3_lib::BigEndian2Int(substr($atom_data,  0, 1));
+					$atom_structure['flags_raw']        = getid3_lib::BigEndian2Int(substr($atom_data,  1, 3)); // hardcoded: 0x0000
+					$atom_structure['cpu_speed_rating'] = getid3_lib::BigEndian2Int(substr($atom_data,  4, 2));
+					break;
+
+
+				case 'rmvc': // Reference Movie Version Check atom
+					$atom_structure['version']            = getid3_lib::BigEndian2Int(substr($atom_data,  0, 1));
+					$atom_structure['flags_raw']          = getid3_lib::BigEndian2Int(substr($atom_data,  1, 3)); // hardcoded: 0x0000
+					$atom_structure['gestalt_selector']   =                           substr($atom_data,  4, 4);
+					$atom_structure['gestalt_value_mask'] = getid3_lib::BigEndian2Int(substr($atom_data,  8, 4));
+					$atom_structure['gestalt_value']      = getid3_lib::BigEndian2Int(substr($atom_data, 12, 4));
+					$atom_structure['gestalt_check_type'] = getid3_lib::BigEndian2Int(substr($atom_data, 14, 2));
+					break;
+
+
+				case 'rmcd': // Reference Movie Component check atom
+					$atom_structure['version']                = getid3_lib::BigEndian2Int(substr($atom_data,  0, 1));
+					$atom_structure['flags_raw']              = getid3_lib::BigEndian2Int(substr($atom_data,  1, 3)); // hardcoded: 0x0000
+					$atom_structure['component_type']         =                           substr($atom_data,  4, 4);
+					$atom_structure['component_subtype']      =                           substr($atom_data,  8, 4);
+					$atom_structure['component_manufacturer'] =                           substr($atom_data, 12, 4);
+					$atom_structure['component_flags_raw']    = getid3_lib::BigEndian2Int(substr($atom_data, 16, 4));
+					$atom_structure['component_flags_mask']   = getid3_lib::BigEndian2Int(substr($atom_data, 20, 4));
+					$atom_structure['component_min_version']  = getid3_lib::BigEndian2Int(substr($atom_data, 24, 4));
+					break;
+
+
+				case 'rmdr': // Reference Movie Data Rate atom
+					$atom_structure['version']       = getid3_lib::BigEndian2Int(substr($atom_data,  0, 1));
+					$atom_structure['flags_raw']     = getid3_lib::BigEndian2Int(substr($atom_data,  1, 3)); // hardcoded: 0x0000
+					$atom_structure['data_rate']     = getid3_lib::BigEndian2Int(substr($atom_data,  4, 4));
+
+					$atom_structure['data_rate_bps'] = $atom_structure['data_rate'] * 10;
+					break;
+
+
+				case 'rmla': // Reference Movie Language Atom
+					$atom_structure['version']     = getid3_lib::BigEndian2Int(substr($atom_data,  0, 1));
+					$atom_structure['flags_raw']   = getid3_lib::BigEndian2Int(substr($atom_data,  1, 3)); // hardcoded: 0x0000
+					$atom_structure['language_id'] = getid3_lib::BigEndian2Int(substr($atom_data,  4, 2));
+
+					$atom_structure['language']    = $this->QuicktimeLanguageLookup($atom_structure['language_id']);
+					if (empty($info['comments']['language']) || (!in_array($atom_structure['language'], $info['comments']['language']))) {
+						$info['comments']['language'][] = $atom_structure['language'];
+					}
+					break;
+
+
+				case 'ptv ': // Print To Video - defines a movie's full screen mode
+					// http://developer.apple.com/documentation/QuickTime/APIREF/SOURCESIV/at_ptv-_pg.htm
+					$atom_structure['display_size_raw']  = getid3_lib::BigEndian2Int(substr($atom_data, 0, 2));
+					$atom_structure['reserved_1']        = getid3_lib::BigEndian2Int(substr($atom_data, 2, 2)); // hardcoded: 0x0000
+					$atom_structure['reserved_2']        = getid3_lib::BigEndian2Int(substr($atom_data, 4, 2)); // hardcoded: 0x0000
+					$atom_structure['slide_show_flag']   = getid3_lib::BigEndian2Int(substr($atom_data, 6, 1));
+					$atom_structure['play_on_open_flag'] = getid3_lib::BigEndian2Int(substr($atom_data, 7, 1));
+
+					$atom_structure['flags']['play_on_open'] = (bool) $atom_structure['play_on_open_flag'];
+					$atom_structure['flags']['slide_show']   = (bool) $atom_structure['slide_show_flag'];
+
+					$ptv_lookup = array(
+						0 => 'normal',
+						1 => 'double',
+						2 => 'half',
+						3 => 'full',
+						4 => 'current'
+					);
+					if (isset($ptv_lookup[$atom_structure['display_size_raw']])) {
+						$atom_structure['display_size'] = $ptv_lookup[$atom_structure['display_size_raw']];
+					} else {
+						$this->warning('unknown "ptv " display constant ('.$atom_structure['display_size_raw'].')');
+					}
+					break;
+
+
+				case 'stsd': // Sample Table Sample Description atom
+					$atom_structure['version']        = getid3_lib::BigEndian2Int(substr($atom_data,  0, 1)); // hardcoded: 0x00
+					$atom_structure['flags_raw']      = getid3_lib::BigEndian2Int(substr($atom_data,  1, 3)); // hardcoded: 0x000000
+					$atom_structure['number_entries'] = getid3_lib::BigEndian2Int(substr($atom_data,  4, 4));
+
+					// see: https://github.com/JamesHeinrich/getID3/issues/111
+					// Some corrupt files have been known to have high bits set in the number_entries field
+					// This field shouldn't really need to be 32-bits, values stores are likely in the range 1-100000
+					// Workaround: mask off the upper byte and throw a warning if it's nonzero
+					if ($atom_structure['number_entries'] > 0x000FFFFF) {
+						if ($atom_structure['number_entries'] > 0x00FFFFFF) {
+							$this->warning('"stsd" atom contains improbably large number_entries (0x'.getid3_lib::PrintHexBytes(substr($atom_data, 4, 4), true, false).' = '.$atom_structure['number_entries'].'), probably in error. Ignoring upper byte and interpreting this as 0x'.getid3_lib::PrintHexBytes(substr($atom_data, 5, 3), true, false).' = '.($atom_structure['number_entries'] & 0x00FFFFFF));
+							$atom_structure['number_entries'] = ($atom_structure['number_entries'] & 0x00FFFFFF);
+						} else {
+							$this->warning('"stsd" atom contains improbably large number_entries (0x'.getid3_lib::PrintHexBytes(substr($atom_data, 4, 4), true, false).' = '.$atom_structure['number_entries'].'), probably in error. Please report this to info@getid3.org referencing bug report #111');
+						}
+					}
+
+					$stsdEntriesDataOffset = 8;
+					for ($i = 0; $i < $atom_structure['number_entries']; $i++) {
+						$atom_structure['sample_description_table'][$i]['size']             = getid3_lib::BigEndian2Int(substr($atom_data, $stsdEntriesDataOffset, 4));
+						$stsdEntriesDataOffset += 4;
+						$atom_structure['sample_description_table'][$i]['data_format']      =                           substr($atom_data, $stsdEntriesDataOffset, 4);
+						$stsdEntriesDataOffset += 4;
+						$atom_structure['sample_description_table'][$i]['reserved']         = getid3_lib::BigEndian2Int(substr($atom_data, $stsdEntriesDataOffset, 6));
+						$stsdEntriesDataOffset += 6;
+						$atom_structure['sample_description_table'][$i]['reference_index']  = getid3_lib::BigEndian2Int(substr($atom_data, $stsdEntriesDataOffset, 2));
+						$stsdEntriesDataOffset += 2;
+						$atom_structure['sample_description_table'][$i]['data']             =                           substr($atom_data, $stsdEntriesDataOffset, ($atom_structure['sample_description_table'][$i]['size'] - 4 - 4 - 6 - 2));
+						$stsdEntriesDataOffset += ($atom_structure['sample_description_table'][$i]['size'] - 4 - 4 - 6 - 2);
+						if (substr($atom_structure['sample_description_table'][$i]['data'],  1, 54) == 'application/octet-stream;type=com.parrot.videometadata') {
+							// special handling for apparently-malformed (TextMetaDataSampleEntry?) data for some version of Parrot drones
+							$atom_structure['sample_description_table'][$i]['parrot_frame_metadata']['mime_type']        =       substr($atom_structure['sample_description_table'][$i]['data'],  1, 55);
+							$atom_structure['sample_description_table'][$i]['parrot_frame_metadata']['metadata_version'] = (int) substr($atom_structure['sample_description_table'][$i]['data'], 55,  1);
+							unset($atom_structure['sample_description_table'][$i]['data']);
+$this->warning('incomplete/incorrect handling of "stsd" with Parrot metadata in this version of getID3() ['.$this->getid3->version().']');
+							continue;
+						}
+
+						$atom_structure['sample_description_table'][$i]['encoder_version']  = getid3_lib::BigEndian2Int(substr($atom_structure['sample_description_table'][$i]['data'],  0, 2));
+						$atom_structure['sample_description_table'][$i]['encoder_revision'] = getid3_lib::BigEndian2Int(substr($atom_structure['sample_description_table'][$i]['data'],  2, 2));
+						$atom_structure['sample_description_table'][$i]['encoder_vendor']   =                           substr($atom_structure['sample_description_table'][$i]['data'],  4, 4);
+
+						switch ($atom_structure['sample_description_table'][$i]['encoder_vendor']) {
+
+							case "\x00\x00\x00\x00":
+								// audio tracks
+								$atom_structure['sample_description_table'][$i]['audio_channels']       =   getid3_lib::BigEndian2Int(substr($atom_structure['sample_description_table'][$i]['data'],  8,  2));
+								$atom_structure['sample_description_table'][$i]['audio_bit_depth']      =   getid3_lib::BigEndian2Int(substr($atom_structure['sample_description_table'][$i]['data'], 10,  2));
+								$atom_structure['sample_description_table'][$i]['audio_compression_id'] =   getid3_lib::BigEndian2Int(substr($atom_structure['sample_description_table'][$i]['data'], 12,  2));
+								$atom_structure['sample_description_table'][$i]['audio_packet_size']    =   getid3_lib::BigEndian2Int(substr($atom_structure['sample_description_table'][$i]['data'], 14,  2));
+								$atom_structure['sample_description_table'][$i]['audio_sample_rate']    = getid3_lib::FixedPoint16_16(substr($atom_structure['sample_description_table'][$i]['data'], 16,  4));
+
+								// video tracks
+								// http://developer.apple.com/library/mac/#documentation/QuickTime/QTFF/QTFFChap3/qtff3.html
+								$atom_structure['sample_description_table'][$i]['temporal_quality'] =   getid3_lib::BigEndian2Int(substr($atom_structure['sample_description_table'][$i]['data'],  8,  4));
+								$atom_structure['sample_description_table'][$i]['spatial_quality']  =   getid3_lib::BigEndian2Int(substr($atom_structure['sample_description_table'][$i]['data'], 12,  4));
+								$atom_structure['sample_description_table'][$i]['width']            =   getid3_lib::BigEndian2Int(substr($atom_structure['sample_description_table'][$i]['data'], 16,  2));
+								$atom_structure['sample_description_table'][$i]['height']           =   getid3_lib::BigEndian2Int(substr($atom_structure['sample_description_table'][$i]['data'], 18,  2));
+								$atom_structure['sample_description_table'][$i]['resolution_x']     = getid3_lib::FixedPoint16_16(substr($atom_structure['sample_description_table'][$i]['data'], 24,  4));
+								$atom_structure['sample_description_table'][$i]['resolution_y']     = getid3_lib::FixedPoint16_16(substr($atom_structure['sample_description_table'][$i]['data'], 28,  4));
+								$atom_structure['sample_description_table'][$i]['data_size']        =   getid3_lib::BigEndian2Int(substr($atom_structure['sample_description_table'][$i]['data'], 32,  4));
+								$atom_structure['sample_description_table'][$i]['frame_count']      =   getid3_lib::BigEndian2Int(substr($atom_structure['sample_description_table'][$i]['data'], 36,  2));
+								$atom_structure['sample_description_table'][$i]['compressor_name']  =                             substr($atom_structure['sample_description_table'][$i]['data'], 38,  4);
+								$atom_structure['sample_description_table'][$i]['pixel_depth']      =   getid3_lib::BigEndian2Int(substr($atom_structure['sample_description_table'][$i]['data'], 42,  2));
+								$atom_structure['sample_description_table'][$i]['color_table_id']   =   getid3_lib::BigEndian2Int(substr($atom_structure['sample_description_table'][$i]['data'], 44,  2));
+
+								switch ($atom_structure['sample_description_table'][$i]['data_format']) {
+									case '2vuY':
+									case 'avc1':
+									case 'cvid':
+									case 'dvc ':
+									case 'dvcp':
+									case 'gif ':
+									case 'h263':
+									case 'hvc1':
+									case 'jpeg':
+									case 'kpcd':
+									case 'mjpa':
+									case 'mjpb':
+									case 'mp4v':
+									case 'png ':
+									case 'raw ':
+									case 'rle ':
+									case 'rpza':
+									case 'smc ':
+									case 'SVQ1':
+									case 'SVQ3':
+									case 'tiff':
+									case 'v210':
+									case 'v216':
+									case 'v308':
+									case 'v408':
+									case 'v410':
+									case 'yuv2':
+										$info['fileformat'] = 'mp4';
+										$info['video']['fourcc'] = $atom_structure['sample_description_table'][$i]['data_format'];
+										if ($this->QuicktimeVideoCodecLookup($info['video']['fourcc'])) {
+											$info['video']['fourcc_lookup'] = $this->QuicktimeVideoCodecLookup($info['video']['fourcc']);
+										}
+
+										// https://www.getid3.org/phpBB3/viewtopic.php?t=1550
+										//if ((!empty($atom_structure['sample_description_table'][$i]['width']) && !empty($atom_structure['sample_description_table'][$i]['width'])) && (empty($info['video']['resolution_x']) || empty($info['video']['resolution_y']) || (number_format($info['video']['resolution_x'], 6) != number_format(round($info['video']['resolution_x']), 6)) || (number_format($info['video']['resolution_y'], 6) != number_format(round($info['video']['resolution_y']), 6)))) { // ugly check for floating point numbers
+										if (!empty($atom_structure['sample_description_table'][$i]['width']) && !empty($atom_structure['sample_description_table'][$i]['height'])) {
+											// assume that values stored here are more important than values stored in [tkhd] atom
+											$info['video']['resolution_x'] = $atom_structure['sample_description_table'][$i]['width'];
+											$info['video']['resolution_y'] = $atom_structure['sample_description_table'][$i]['height'];
+											$info['quicktime']['video']['resolution_x'] = $info['video']['resolution_x'];
+											$info['quicktime']['video']['resolution_y'] = $info['video']['resolution_y'];
+										}
+										break;
+
+									case 'qtvr':
+										$info['video']['dataformat'] = 'quicktimevr';
+										break;
+
+									case 'mp4a':
+										$atom_structure['sample_description_table'][$i]['subatoms'] = $this->QuicktimeParseContainerAtom(substr($atom_structure['sample_description_table'][$i]['data'], 20), $baseoffset + $stsdEntriesDataOffset - 20 - 16, $atomHierarchy, $ParseAllPossibleAtoms);
+
+										$info['quicktime']['audio']['codec']       = $this->QuicktimeAudioCodecLookup($atom_structure['sample_description_table'][$i]['data_format']);
+										$info['quicktime']['audio']['sample_rate'] = $atom_structure['sample_description_table'][$i]['audio_sample_rate'];
+										$info['quicktime']['audio']['channels']    = $atom_structure['sample_description_table'][$i]['audio_channels'];
+										$info['quicktime']['audio']['bit_depth']   = $atom_structure['sample_description_table'][$i]['audio_bit_depth'];
+										$info['audio']['codec']                    = $info['quicktime']['audio']['codec'];
+										$info['audio']['sample_rate']              = $info['quicktime']['audio']['sample_rate'];
+										$info['audio']['channels']                 = $info['quicktime']['audio']['channels'];
+										$info['audio']['bits_per_sample']          = $info['quicktime']['audio']['bit_depth'];
+										switch ($atom_structure['sample_description_table'][$i]['data_format']) {
+											case 'raw ': // PCM
+											case 'alac': // Apple Lossless Audio Codec
+											case 'sowt': // signed/two's complement (Little Endian)
+											case 'twos': // signed/two's complement (Big Endian)
+											case 'in24': // 24-bit Integer
+											case 'in32': // 32-bit Integer
+											case 'fl32': // 32-bit Floating Point
+											case 'fl64': // 64-bit Floating Point
+												$info['audio']['lossless'] = $info['quicktime']['audio']['lossless'] = true;
+												$info['audio']['bitrate']  = $info['quicktime']['audio']['bitrate']  = $info['audio']['channels'] * $info['audio']['bits_per_sample'] * $info['audio']['sample_rate'];
+												break;
+											default:
+												$info['audio']['lossless'] = false;
+												break;
+										}
+										break;
+
+									default:
+										break;
+								}
+								break;
+
+							default:
+								switch ($atom_structure['sample_description_table'][$i]['data_format']) {
+									case 'mp4s':
+										$info['fileformat'] = 'mp4';
+										break;
+
+									default:
+										// video atom
+										$atom_structure['sample_description_table'][$i]['video_temporal_quality']  =   getid3_lib::BigEndian2Int(substr($atom_structure['sample_description_table'][$i]['data'],  8,  4));
+										$atom_structure['sample_description_table'][$i]['video_spatial_quality']   =   getid3_lib::BigEndian2Int(substr($atom_structure['sample_description_table'][$i]['data'], 12,  4));
+										$atom_structure['sample_description_table'][$i]['video_frame_width']       =   getid3_lib::BigEndian2Int(substr($atom_structure['sample_description_table'][$i]['data'], 16,  2));
+										$atom_structure['sample_description_table'][$i]['video_frame_height']      =   getid3_lib::BigEndian2Int(substr($atom_structure['sample_description_table'][$i]['data'], 18,  2));
+										$atom_structure['sample_description_table'][$i]['video_resolution_x']      = getid3_lib::FixedPoint16_16(substr($atom_structure['sample_description_table'][$i]['data'], 20,  4));
+										$atom_structure['sample_description_table'][$i]['video_resolution_y']      = getid3_lib::FixedPoint16_16(substr($atom_structure['sample_description_table'][$i]['data'], 24,  4));
+										$atom_structure['sample_description_table'][$i]['video_data_size']         =   getid3_lib::BigEndian2Int(substr($atom_structure['sample_description_table'][$i]['data'], 28,  4));
+										$atom_structure['sample_description_table'][$i]['video_frame_count']       =   getid3_lib::BigEndian2Int(substr($atom_structure['sample_description_table'][$i]['data'], 32,  2));
+										$atom_structure['sample_description_table'][$i]['video_encoder_name_len']  =   getid3_lib::BigEndian2Int(substr($atom_structure['sample_description_table'][$i]['data'], 34,  1));
+										$atom_structure['sample_description_table'][$i]['video_encoder_name']      =                             substr($atom_structure['sample_description_table'][$i]['data'], 35, $atom_structure['sample_description_table'][$i]['video_encoder_name_len']);
+										$atom_structure['sample_description_table'][$i]['video_pixel_color_depth'] =   getid3_lib::BigEndian2Int(substr($atom_structure['sample_description_table'][$i]['data'], 66,  2));
+										$atom_structure['sample_description_table'][$i]['video_color_table_id']    =   getid3_lib::BigEndian2Int(substr($atom_structure['sample_description_table'][$i]['data'], 68,  2));
+
+										$atom_structure['sample_description_table'][$i]['video_pixel_color_type']  = (((int) $atom_structure['sample_description_table'][$i]['video_pixel_color_depth'] > 32) ? 'grayscale' : 'color');
+										$atom_structure['sample_description_table'][$i]['video_pixel_color_name']  = $this->QuicktimeColorNameLookup($atom_structure['sample_description_table'][$i]['video_pixel_color_depth']);
+
+										if ($atom_structure['sample_description_table'][$i]['video_pixel_color_name'] != 'invalid') {
+											$info['quicktime']['video']['codec_fourcc']        = $atom_structure['sample_description_table'][$i]['data_format'];
+											$info['quicktime']['video']['codec_fourcc_lookup'] = $this->QuicktimeVideoCodecLookup($atom_structure['sample_description_table'][$i]['data_format']);
+											$info['quicktime']['video']['codec']               = (((int) $atom_structure['sample_description_table'][$i]['video_encoder_name_len'] > 0) ? $atom_structure['sample_description_table'][$i]['video_encoder_name'] : $atom_structure['sample_description_table'][$i]['data_format']);
+											$info['quicktime']['video']['color_depth']         = $atom_structure['sample_description_table'][$i]['video_pixel_color_depth'];
+											$info['quicktime']['video']['color_depth_name']    = $atom_structure['sample_description_table'][$i]['video_pixel_color_name'];
+
+											$info['video']['codec']           = $info['quicktime']['video']['codec'];
+											$info['video']['bits_per_sample'] = $info['quicktime']['video']['color_depth'];
+										}
+										$info['video']['lossless']           = false;
+										$info['video']['pixel_aspect_ratio'] = (float) 1;
+										break;
+								}
+								break;
+						}
+						switch (strtolower($atom_structure['sample_description_table'][$i]['data_format'])) {
+							case 'mp4a':
+								$info['audio']['dataformat']         = 'mp4';
+								$info['quicktime']['audio']['codec'] = 'mp4';
+								break;
+
+							case '3ivx':
+							case '3iv1':
+							case '3iv2':
+								$info['video']['dataformat'] = '3ivx';
+								break;
+
+							case 'xvid':
+								$info['video']['dataformat'] = 'xvid';
+								break;
+
+							case 'mp4v':
+								$info['video']['dataformat'] = 'mpeg4';
+								break;
+
+							case 'divx':
+							case 'div1':
+							case 'div2':
+							case 'div3':
+							case 'div4':
+							case 'div5':
+							case 'div6':
+								$info['video']['dataformat'] = 'divx';
+								break;
+
+							default:
+								// do nothing
+								break;
+						}
+						unset($atom_structure['sample_description_table'][$i]['data']);
+					}
+					break;
+
+
+				case 'stts': // Sample Table Time-to-Sample atom
+					$atom_structure['version']        = getid3_lib::BigEndian2Int(substr($atom_data,  0, 1));
+					$atom_structure['flags_raw']      = getid3_lib::BigEndian2Int(substr($atom_data,  1, 3)); // hardcoded: 0x0000
+					$atom_structure['number_entries'] = getid3_lib::BigEndian2Int(substr($atom_data,  4, 4));
+					$sttsEntriesDataOffset = 8;
+					//$FrameRateCalculatorArray = array();
+					$frames_count = 0;
+
+					$max_stts_entries_to_scan = ($info['php_memory_limit'] ? min(floor($this->getid3->memory_limit / 10000), $atom_structure['number_entries']) : $atom_structure['number_entries']);
+					if ($max_stts_entries_to_scan < $atom_structure['number_entries']) {
+						$this->warning('QuickTime atom "stts" has '.$atom_structure['number_entries'].' but only scanning the first '.$max_stts_entries_to_scan.' entries due to limited PHP memory available ('.floor($this->getid3->memory_limit / 1048576).'MB).');
+					}
+					for ($i = 0; $i < $max_stts_entries_to_scan; $i++) {
+						$atom_structure['time_to_sample_table'][$i]['sample_count']    = getid3_lib::BigEndian2Int(substr($atom_data, $sttsEntriesDataOffset, 4));
+						$sttsEntriesDataOffset += 4;
+						$atom_structure['time_to_sample_table'][$i]['sample_duration'] = getid3_lib::BigEndian2Int(substr($atom_data, $sttsEntriesDataOffset, 4));
+						$sttsEntriesDataOffset += 4;
+
+						$frames_count += $atom_structure['time_to_sample_table'][$i]['sample_count'];
+
+						// THIS SECTION REPLACED WITH CODE IN "stbl" ATOM
+						//if (!empty($info['quicktime']['time_scale']) && ($atom_structure['time_to_sample_table'][$i]['sample_duration'] > 0)) {
+						//	$stts_new_framerate = $info['quicktime']['time_scale'] / $atom_structure['time_to_sample_table'][$i]['sample_duration'];
+						//	if ($stts_new_framerate <= 60) {
+						//		// some atoms have durations of "1" giving a very large framerate, which probably is not right
+						//		$info['video']['frame_rate'] = max($info['video']['frame_rate'], $stts_new_framerate);
+						//	}
+						//}
+						//
+						//$FrameRateCalculatorArray[($info['quicktime']['time_scale'] / $atom_structure['time_to_sample_table'][$i]['sample_duration'])] += $atom_structure['time_to_sample_table'][$i]['sample_count'];
+					}
+					$info['quicktime']['stts_framecount'][] = $frames_count;
+					//$sttsFramesTotal  = 0;
+					//$sttsSecondsTotal = 0;
+					//foreach ($FrameRateCalculatorArray as $frames_per_second => $frame_count) {
+					//	if (($frames_per_second > 60) || ($frames_per_second < 1)) {
+					//		// not video FPS information, probably audio information
+					//		$sttsFramesTotal  = 0;
+					//		$sttsSecondsTotal = 0;
+					//		break;
+					//	}
+					//	$sttsFramesTotal  += $frame_count;
+					//	$sttsSecondsTotal += $frame_count / $frames_per_second;
+					//}
+					//if (($sttsFramesTotal > 0) && ($sttsSecondsTotal > 0)) {
+					//	if (($sttsFramesTotal / $sttsSecondsTotal) > $info['video']['frame_rate']) {
+					//		$info['video']['frame_rate'] = $sttsFramesTotal / $sttsSecondsTotal;
+					//	}
+					//}
+					break;
+
+
+				case 'stss': // Sample Table Sync Sample (key frames) atom
+					if ($ParseAllPossibleAtoms) {
+						$atom_structure['version']        = getid3_lib::BigEndian2Int(substr($atom_data,  0, 1));
+						$atom_structure['flags_raw']      = getid3_lib::BigEndian2Int(substr($atom_data,  1, 3)); // hardcoded: 0x0000
+						$atom_structure['number_entries'] = getid3_lib::BigEndian2Int(substr($atom_data,  4, 4));
+						$stssEntriesDataOffset = 8;
+						for ($i = 0; $i < $atom_structure['number_entries']; $i++) {
+							$atom_structure['time_to_sample_table'][$i] = getid3_lib::BigEndian2Int(substr($atom_data, $stssEntriesDataOffset, 4));
+							$stssEntriesDataOffset += 4;
+						}
+					}
+					break;
+
+
+				case 'stsc': // Sample Table Sample-to-Chunk atom
+					if ($ParseAllPossibleAtoms) {
+						$atom_structure['version']        = getid3_lib::BigEndian2Int(substr($atom_data,  0, 1));
+						$atom_structure['flags_raw']      = getid3_lib::BigEndian2Int(substr($atom_data,  1, 3)); // hardcoded: 0x0000
+						$atom_structure['number_entries'] = getid3_lib::BigEndian2Int(substr($atom_data,  4, 4));
+						$stscEntriesDataOffset = 8;
+						for ($i = 0; $i < $atom_structure['number_entries']; $i++) {
+							$atom_structure['sample_to_chunk_table'][$i]['first_chunk']        = getid3_lib::BigEndian2Int(substr($atom_data, $stscEntriesDataOffset, 4));
+							$stscEntriesDataOffset += 4;
+							$atom_structure['sample_to_chunk_table'][$i]['samples_per_chunk']  = getid3_lib::BigEndian2Int(substr($atom_data, $stscEntriesDataOffset, 4));
+							$stscEntriesDataOffset += 4;
+							$atom_structure['sample_to_chunk_table'][$i]['sample_description'] = getid3_lib::BigEndian2Int(substr($atom_data, $stscEntriesDataOffset, 4));
+							$stscEntriesDataOffset += 4;
+						}
+					}
+					break;
+
+
+				case 'stsz': // Sample Table SiZe atom
+					if ($ParseAllPossibleAtoms) {
+						$atom_structure['version']        = getid3_lib::BigEndian2Int(substr($atom_data,  0, 1));
+						$atom_structure['flags_raw']      = getid3_lib::BigEndian2Int(substr($atom_data,  1, 3)); // hardcoded: 0x0000
+						$atom_structure['sample_size']    = getid3_lib::BigEndian2Int(substr($atom_data,  4, 4));
+						$atom_structure['number_entries'] = getid3_lib::BigEndian2Int(substr($atom_data,  8, 4));
+						$stszEntriesDataOffset = 12;
+						if ($atom_structure['sample_size'] == 0) {
+							for ($i = 0; $i < $atom_structure['number_entries']; $i++) {
+								$atom_structure['sample_size_table'][$i] = getid3_lib::BigEndian2Int(substr($atom_data, $stszEntriesDataOffset, 4));
+								$stszEntriesDataOffset += 4;
+							}
+						}
+					}
+					break;
+
+
+				case 'stco': // Sample Table Chunk Offset atom
+//					if (true) {
+					if ($ParseAllPossibleAtoms) {
+						$atom_structure['version']        = getid3_lib::BigEndian2Int(substr($atom_data,  0, 1));
+						$atom_structure['flags_raw']      = getid3_lib::BigEndian2Int(substr($atom_data,  1, 3)); // hardcoded: 0x0000
+						$atom_structure['number_entries'] = getid3_lib::BigEndian2Int(substr($atom_data,  4, 4));
+						$stcoEntriesDataOffset = 8;
+						for ($i = 0; $i < $atom_structure['number_entries']; $i++) {
+							$atom_structure['chunk_offset_table'][$i] = getid3_lib::BigEndian2Int(substr($atom_data, $stcoEntriesDataOffset, 4));
+							$stcoEntriesDataOffset += 4;
+						}
+					}
+					break;
+
+
+				case 'co64': // Chunk Offset 64-bit (version of "stco" that supports > 2GB files)
+					if ($ParseAllPossibleAtoms) {
+						$atom_structure['version']        = getid3_lib::BigEndian2Int(substr($atom_data,  0, 1));
+						$atom_structure['flags_raw']      = getid3_lib::BigEndian2Int(substr($atom_data,  1, 3)); // hardcoded: 0x0000
+						$atom_structure['number_entries'] = getid3_lib::BigEndian2Int(substr($atom_data,  4, 4));
+						$stcoEntriesDataOffset = 8;
+						for ($i = 0; $i < $atom_structure['number_entries']; $i++) {
+							$atom_structure['chunk_offset_table'][$i] = getid3_lib::BigEndian2Int(substr($atom_data, $stcoEntriesDataOffset, 8));
+							$stcoEntriesDataOffset += 8;
+						}
+					}
+					break;
+
+
+				case 'dref': // Data REFerence atom
+					$atom_structure['version']        = getid3_lib::BigEndian2Int(substr($atom_data,  0, 1));
+					$atom_structure['flags_raw']      = getid3_lib::BigEndian2Int(substr($atom_data,  1, 3)); // hardcoded: 0x0000
+					$atom_structure['number_entries'] = getid3_lib::BigEndian2Int(substr($atom_data,  4, 4));
+					$drefDataOffset = 8;
+					for ($i = 0; $i < $atom_structure['number_entries']; $i++) {
+						$atom_structure['data_references'][$i]['size']                    = getid3_lib::BigEndian2Int(substr($atom_data, $drefDataOffset, 4));
+						$drefDataOffset += 4;
+						$atom_structure['data_references'][$i]['type']                    =                           substr($atom_data, $drefDataOffset, 4);
+						$drefDataOffset += 4;
+						$atom_structure['data_references'][$i]['version']                 = getid3_lib::BigEndian2Int(substr($atom_data,  $drefDataOffset, 1));
+						$drefDataOffset += 1;
+						$atom_structure['data_references'][$i]['flags_raw']               = getid3_lib::BigEndian2Int(substr($atom_data,  $drefDataOffset, 3)); // hardcoded: 0x0000
+						$drefDataOffset += 3;
+						$atom_structure['data_references'][$i]['data']                    =                           substr($atom_data, $drefDataOffset, ($atom_structure['data_references'][$i]['size'] - 4 - 4 - 1 - 3));
+						$drefDataOffset += ($atom_structure['data_references'][$i]['size'] - 4 - 4 - 1 - 3);
+
+						$atom_structure['data_references'][$i]['flags']['self_reference'] = (bool) ($atom_structure['data_references'][$i]['flags_raw'] & 0x001);
+					}
+					break;
+
+
+				case 'gmin': // base Media INformation atom
+					$atom_structure['version']                = getid3_lib::BigEndian2Int(substr($atom_data,  0, 1));
+					$atom_structure['flags_raw']              = getid3_lib::BigEndian2Int(substr($atom_data,  1, 3)); // hardcoded: 0x0000
+					$atom_structure['graphics_mode']          = getid3_lib::BigEndian2Int(substr($atom_data,  4, 2));
+					$atom_structure['opcolor_red']            = getid3_lib::BigEndian2Int(substr($atom_data,  6, 2));
+					$atom_structure['opcolor_green']          = getid3_lib::BigEndian2Int(substr($atom_data,  8, 2));
+					$atom_structure['opcolor_blue']           = getid3_lib::BigEndian2Int(substr($atom_data, 10, 2));
+					$atom_structure['balance']                = getid3_lib::BigEndian2Int(substr($atom_data, 12, 2));
+					$atom_structure['reserved']               = getid3_lib::BigEndian2Int(substr($atom_data, 14, 2));
+					break;
+
+
+				case 'smhd': // Sound Media information HeaDer atom
+					$atom_structure['version']                = getid3_lib::BigEndian2Int(substr($atom_data,  0, 1));
+					$atom_structure['flags_raw']              = getid3_lib::BigEndian2Int(substr($atom_data,  1, 3)); // hardcoded: 0x0000
+					$atom_structure['balance']                = getid3_lib::BigEndian2Int(substr($atom_data,  4, 2));
+					$atom_structure['reserved']               = getid3_lib::BigEndian2Int(substr($atom_data,  6, 2));
+					break;
+
+
+				case 'vmhd': // Video Media information HeaDer atom
+					$atom_structure['version']                = getid3_lib::BigEndian2Int(substr($atom_data,  0, 1));
+					$atom_structure['flags_raw']              = getid3_lib::BigEndian2Int(substr($atom_data,  1, 3));
+					$atom_structure['graphics_mode']          = getid3_lib::BigEndian2Int(substr($atom_data,  4, 2));
+					$atom_structure['opcolor_red']            = getid3_lib::BigEndian2Int(substr($atom_data,  6, 2));
+					$atom_structure['opcolor_green']          = getid3_lib::BigEndian2Int(substr($atom_data,  8, 2));
+					$atom_structure['opcolor_blue']           = getid3_lib::BigEndian2Int(substr($atom_data, 10, 2));
+
+					$atom_structure['flags']['no_lean_ahead'] = (bool) ($atom_structure['flags_raw'] & 0x001);
+					break;
+
+
+				case 'hdlr': // HanDLeR reference atom
+					$atom_structure['version']                = getid3_lib::BigEndian2Int(substr($atom_data,  0, 1));
+					$atom_structure['flags_raw']              = getid3_lib::BigEndian2Int(substr($atom_data,  1, 3)); // hardcoded: 0x0000
+					$atom_structure['component_type']         =                           substr($atom_data,  4, 4);
+					$atom_structure['component_subtype']      =                           substr($atom_data,  8, 4);
+					$atom_structure['component_manufacturer'] =                           substr($atom_data, 12, 4);
+					$atom_structure['component_flags_raw']    = getid3_lib::BigEndian2Int(substr($atom_data, 16, 4));
+					$atom_structure['component_flags_mask']   = getid3_lib::BigEndian2Int(substr($atom_data, 20, 4));
+					$atom_structure['component_name']         = $this->MaybePascal2String(substr($atom_data, 24));
+
+					if (($atom_structure['component_subtype'] == 'STpn') && ($atom_structure['component_manufacturer'] == 'zzzz')) {
+						$info['video']['dataformat'] = 'quicktimevr';
+					}
+					break;
+
+
+				case 'mdhd': // MeDia HeaDer atom
+					$atom_structure['version']               = getid3_lib::BigEndian2Int(substr($atom_data,  0, 1));
+					$atom_structure['flags_raw']             = getid3_lib::BigEndian2Int(substr($atom_data,  1, 3)); // hardcoded: 0x0000
+					$atom_structure['creation_time']         = getid3_lib::BigEndian2Int(substr($atom_data,  4, 4));
+					$atom_structure['modify_time']           = getid3_lib::BigEndian2Int(substr($atom_data,  8, 4));
+					$atom_structure['time_scale']            = getid3_lib::BigEndian2Int(substr($atom_data, 12, 4));
+					$atom_structure['duration']              = getid3_lib::BigEndian2Int(substr($atom_data, 16, 4));
+					$atom_structure['language_id']           = getid3_lib::BigEndian2Int(substr($atom_data, 20, 2));
+					$atom_structure['quality']               = getid3_lib::BigEndian2Int(substr($atom_data, 22, 2));
+
+					if ($atom_structure['time_scale'] == 0) {
+						$this->error('Corrupt Quicktime file: mdhd.time_scale == zero');
+						return false;
+					}
+					$info['quicktime']['time_scale'] = ((isset($info['quicktime']['time_scale']) && ($info['quicktime']['time_scale'] < 1000)) ? max($info['quicktime']['time_scale'], $atom_structure['time_scale']) : $atom_structure['time_scale']);
+
+					$atom_structure['creation_time_unix']    = getid3_lib::DateMac2Unix($atom_structure['creation_time']);
+					$atom_structure['modify_time_unix']      = getid3_lib::DateMac2Unix($atom_structure['modify_time']);
+					$atom_structure['playtime_seconds']      = $atom_structure['duration'] / $atom_structure['time_scale'];
+					$atom_structure['language']              = $this->QuicktimeLanguageLookup($atom_structure['language_id']);
+					if (empty($info['comments']['language']) || (!in_array($atom_structure['language'], $info['comments']['language']))) {
+						$info['comments']['language'][] = $atom_structure['language'];
+					}
+					$info['quicktime']['timestamps_unix']['create'][$atom_structure['hierarchy']] = $atom_structure['creation_time_unix'];
+					$info['quicktime']['timestamps_unix']['modify'][$atom_structure['hierarchy']] = $atom_structure['modify_time_unix'];
+					break;
+
+
+				case 'pnot': // Preview atom
+					$atom_structure['modification_date']      = getid3_lib::BigEndian2Int(substr($atom_data,  0, 4)); // "standard Macintosh format"
+					$atom_structure['version_number']         = getid3_lib::BigEndian2Int(substr($atom_data,  4, 2)); // hardcoded: 0x00
+					$atom_structure['atom_type']              =                           substr($atom_data,  6, 4);        // usually: 'PICT'
+					$atom_structure['atom_index']             = getid3_lib::BigEndian2Int(substr($atom_data, 10, 2)); // usually: 0x01
+
+					$atom_structure['modification_date_unix'] = getid3_lib::DateMac2Unix($atom_structure['modification_date']);
+					$info['quicktime']['timestamps_unix']['modify'][$atom_structure['hierarchy']] = $atom_structure['modification_date_unix'];
+					break;
+
+
+				case 'crgn': // Clipping ReGioN atom
+					$atom_structure['region_size']   = getid3_lib::BigEndian2Int(substr($atom_data,  0, 2)); // The Region size, Region boundary box,
+					$atom_structure['boundary_box']  = getid3_lib::BigEndian2Int(substr($atom_data,  2, 8)); // and Clipping region data fields
+					$atom_structure['clipping_data'] =                           substr($atom_data, 10);           // constitute a QuickDraw region.
+					break;
+
+
+				case 'load': // track LOAD settings atom
+					$atom_structure['preload_start_time'] = getid3_lib::BigEndian2Int(substr($atom_data,  0, 4));
+					$atom_structure['preload_duration']   = getid3_lib::BigEndian2Int(substr($atom_data,  4, 4));
+					$atom_structure['preload_flags_raw']  = getid3_lib::BigEndian2Int(substr($atom_data,  8, 4));
+					$atom_structure['default_hints_raw']  = getid3_lib::BigEndian2Int(substr($atom_data, 12, 4));
+
+					$atom_structure['default_hints']['double_buffer'] = (bool) ($atom_structure['default_hints_raw'] & 0x0020);
+					$atom_structure['default_hints']['high_quality']  = (bool) ($atom_structure['default_hints_raw'] & 0x0100);
+					break;
+
+
+				case 'tmcd': // TiMe CoDe atom
+				case 'chap': // CHAPter list atom
+				case 'sync': // SYNChronization atom
+				case 'scpt': // tranSCriPT atom
+				case 'ssrc': // non-primary SouRCe atom
+					for ($i = 0; $i < strlen($atom_data); $i += 4) {
+						@$atom_structure['track_id'][] = getid3_lib::BigEndian2Int(substr($atom_data, $i, 4));
+					}
+					break;
+
+
+				case 'elst': // Edit LiST atom
+					$atom_structure['version']        = getid3_lib::BigEndian2Int(substr($atom_data,  0, 1));
+					$atom_structure['flags_raw']      = getid3_lib::BigEndian2Int(substr($atom_data,  1, 3)); // hardcoded: 0x0000
+					$atom_structure['number_entries'] = getid3_lib::BigEndian2Int(substr($atom_data,  4, 4));
+					for ($i = 0; $i < $atom_structure['number_entries']; $i++ ) {
+						$atom_structure['edit_list'][$i]['track_duration'] =   getid3_lib::BigEndian2Int(substr($atom_data, 8 + ($i * 12) + 0, 4));
+						$atom_structure['edit_list'][$i]['media_time']     =   getid3_lib::BigEndian2Int(substr($atom_data, 8 + ($i * 12) + 4, 4));
+						$atom_structure['edit_list'][$i]['media_rate']     = getid3_lib::FixedPoint16_16(substr($atom_data, 8 + ($i * 12) + 8, 4));
+					}
+					break;
+
+
+				case 'kmat': // compressed MATte atom
+					$atom_structure['version']        = getid3_lib::BigEndian2Int(substr($atom_data,  0, 1));
+					$atom_structure['flags_raw']      = getid3_lib::BigEndian2Int(substr($atom_data,  1, 3)); // hardcoded: 0x0000
+					$atom_structure['matte_data_raw'] =               substr($atom_data,  4);
+					break;
+
+
+				case 'ctab': // Color TABle atom
+					$atom_structure['color_table_seed']   = getid3_lib::BigEndian2Int(substr($atom_data,  0, 4)); // hardcoded: 0x00000000
+					$atom_structure['color_table_flags']  = getid3_lib::BigEndian2Int(substr($atom_data,  4, 2)); // hardcoded: 0x8000
+					$atom_structure['color_table_size']   = getid3_lib::BigEndian2Int(substr($atom_data,  6, 2)) + 1;
+					for ($colortableentry = 0; $colortableentry < $atom_structure['color_table_size']; $colortableentry++) {
+						$atom_structure['color_table'][$colortableentry]['alpha'] = getid3_lib::BigEndian2Int(substr($atom_data, 8 + ($colortableentry * 8) + 0, 2));
+						$atom_structure['color_table'][$colortableentry]['red']   = getid3_lib::BigEndian2Int(substr($atom_data, 8 + ($colortableentry * 8) + 2, 2));
+						$atom_structure['color_table'][$colortableentry]['green'] = getid3_lib::BigEndian2Int(substr($atom_data, 8 + ($colortableentry * 8) + 4, 2));
+						$atom_structure['color_table'][$colortableentry]['blue']  = getid3_lib::BigEndian2Int(substr($atom_data, 8 + ($colortableentry * 8) + 6, 2));
+					}
+					break;
+
+
+				case 'mvhd': // MoVie HeaDer atom
+					$atom_structure['version']            =   getid3_lib::BigEndian2Int(substr($atom_data,  0, 1));
+					$atom_structure['flags_raw']          =   getid3_lib::BigEndian2Int(substr($atom_data,  1, 3));
+					$atom_structure['creation_time']      =   getid3_lib::BigEndian2Int(substr($atom_data,  4, 4));
+					$atom_structure['modify_time']        =   getid3_lib::BigEndian2Int(substr($atom_data,  8, 4));
+					$atom_structure['time_scale']         =   getid3_lib::BigEndian2Int(substr($atom_data, 12, 4));
+					$atom_structure['duration']           =   getid3_lib::BigEndian2Int(substr($atom_data, 16, 4));
+					$atom_structure['preferred_rate']     = getid3_lib::FixedPoint16_16(substr($atom_data, 20, 4));
+					$atom_structure['preferred_volume']   =   getid3_lib::FixedPoint8_8(substr($atom_data, 24, 2));
+					$atom_structure['reserved']           =                             substr($atom_data, 26, 10);
+					$atom_structure['matrix_a']           = getid3_lib::FixedPoint16_16(substr($atom_data, 36, 4));
+					$atom_structure['matrix_b']           = getid3_lib::FixedPoint16_16(substr($atom_data, 40, 4));
+					$atom_structure['matrix_u']           =  getid3_lib::FixedPoint2_30(substr($atom_data, 44, 4));
+					$atom_structure['matrix_c']           = getid3_lib::FixedPoint16_16(substr($atom_data, 48, 4));
+					$atom_structure['matrix_d']           = getid3_lib::FixedPoint16_16(substr($atom_data, 52, 4));
+					$atom_structure['matrix_v']           =  getid3_lib::FixedPoint2_30(substr($atom_data, 56, 4));
+					$atom_structure['matrix_x']           = getid3_lib::FixedPoint16_16(substr($atom_data, 60, 4));
+					$atom_structure['matrix_y']           = getid3_lib::FixedPoint16_16(substr($atom_data, 64, 4));
+					$atom_structure['matrix_w']           =  getid3_lib::FixedPoint2_30(substr($atom_data, 68, 4));
+					$atom_structure['preview_time']       =   getid3_lib::BigEndian2Int(substr($atom_data, 72, 4));
+					$atom_structure['preview_duration']   =   getid3_lib::BigEndian2Int(substr($atom_data, 76, 4));
+					$atom_structure['poster_time']        =   getid3_lib::BigEndian2Int(substr($atom_data, 80, 4));
+					$atom_structure['selection_time']     =   getid3_lib::BigEndian2Int(substr($atom_data, 84, 4));
+					$atom_structure['selection_duration'] =   getid3_lib::BigEndian2Int(substr($atom_data, 88, 4));
+					$atom_structure['current_time']       =   getid3_lib::BigEndian2Int(substr($atom_data, 92, 4));
+					$atom_structure['next_track_id']      =   getid3_lib::BigEndian2Int(substr($atom_data, 96, 4));
+
+					if ($atom_structure['time_scale'] == 0) {
+						$this->error('Corrupt Quicktime file: mvhd.time_scale == zero');
+						return false;
+					}
+					$atom_structure['creation_time_unix']        = getid3_lib::DateMac2Unix($atom_structure['creation_time']);
+					$atom_structure['modify_time_unix']          = getid3_lib::DateMac2Unix($atom_structure['modify_time']);
+					$info['quicktime']['timestamps_unix']['create'][$atom_structure['hierarchy']] = $atom_structure['creation_time_unix'];
+					$info['quicktime']['timestamps_unix']['modify'][$atom_structure['hierarchy']] = $atom_structure['modify_time_unix'];
+					$info['quicktime']['time_scale']    = ((isset($info['quicktime']['time_scale']) && ($info['quicktime']['time_scale'] < 1000)) ? max($info['quicktime']['time_scale'], $atom_structure['time_scale']) : $atom_structure['time_scale']);
+					$info['quicktime']['display_scale'] = $atom_structure['matrix_a'];
+					$info['playtime_seconds']           = $atom_structure['duration'] / $atom_structure['time_scale'];
+					break;
+
+
+				case 'tkhd': // TracK HeaDer atom
+					$atom_structure['version']             =   getid3_lib::BigEndian2Int(substr($atom_data,  0, 1));
+					$atom_structure['flags_raw']           =   getid3_lib::BigEndian2Int(substr($atom_data,  1, 3));
+					$atom_structure['creation_time']       =   getid3_lib::BigEndian2Int(substr($atom_data,  4, 4));
+					$atom_structure['modify_time']         =   getid3_lib::BigEndian2Int(substr($atom_data,  8, 4));
+					$atom_structure['trackid']             =   getid3_lib::BigEndian2Int(substr($atom_data, 12, 4));
+					$atom_structure['reserved1']           =   getid3_lib::BigEndian2Int(substr($atom_data, 16, 4));
+					$atom_structure['duration']            =   getid3_lib::BigEndian2Int(substr($atom_data, 20, 4));
+					$atom_structure['reserved2']           =   getid3_lib::BigEndian2Int(substr($atom_data, 24, 8));
+					$atom_structure['layer']               =   getid3_lib::BigEndian2Int(substr($atom_data, 32, 2));
+					$atom_structure['alternate_group']     =   getid3_lib::BigEndian2Int(substr($atom_data, 34, 2));
+					$atom_structure['volume']              =   getid3_lib::FixedPoint8_8(substr($atom_data, 36, 2));
+					$atom_structure['reserved3']           =   getid3_lib::BigEndian2Int(substr($atom_data, 38, 2));
+					// http://developer.apple.com/library/mac/#documentation/QuickTime/RM/MovieBasics/MTEditing/K-Chapter/11MatrixFunctions.html
+					// http://developer.apple.com/library/mac/#documentation/QuickTime/qtff/QTFFChap4/qtff4.html#//apple_ref/doc/uid/TP40000939-CH206-18737
+					$atom_structure['matrix_a']            = getid3_lib::FixedPoint16_16(substr($atom_data, 40, 4));
+					$atom_structure['matrix_b']            = getid3_lib::FixedPoint16_16(substr($atom_data, 44, 4));
+					$atom_structure['matrix_u']            =  getid3_lib::FixedPoint2_30(substr($atom_data, 48, 4));
+					$atom_structure['matrix_c']            = getid3_lib::FixedPoint16_16(substr($atom_data, 52, 4));
+					$atom_structure['matrix_d']            = getid3_lib::FixedPoint16_16(substr($atom_data, 56, 4));
+					$atom_structure['matrix_v']            =  getid3_lib::FixedPoint2_30(substr($atom_data, 60, 4));
+					$atom_structure['matrix_x']            = getid3_lib::FixedPoint16_16(substr($atom_data, 64, 4));
+					$atom_structure['matrix_y']            = getid3_lib::FixedPoint16_16(substr($atom_data, 68, 4));
+					$atom_structure['matrix_w']            =  getid3_lib::FixedPoint2_30(substr($atom_data, 72, 4));
+					$atom_structure['width']               = getid3_lib::FixedPoint16_16(substr($atom_data, 76, 4));
+					$atom_structure['height']              = getid3_lib::FixedPoint16_16(substr($atom_data, 80, 4));
+					$atom_structure['flags']['enabled']    = (bool) ($atom_structure['flags_raw'] & 0x0001);
+					$atom_structure['flags']['in_movie']   = (bool) ($atom_structure['flags_raw'] & 0x0002);
+					$atom_structure['flags']['in_preview'] = (bool) ($atom_structure['flags_raw'] & 0x0004);
+					$atom_structure['flags']['in_poster']  = (bool) ($atom_structure['flags_raw'] & 0x0008);
+					$atom_structure['creation_time_unix']  = getid3_lib::DateMac2Unix($atom_structure['creation_time']);
+					$atom_structure['modify_time_unix']    = getid3_lib::DateMac2Unix($atom_structure['modify_time']);
+					$info['quicktime']['timestamps_unix']['create'][$atom_structure['hierarchy']] = $atom_structure['creation_time_unix'];
+					$info['quicktime']['timestamps_unix']['modify'][$atom_structure['hierarchy']] = $atom_structure['modify_time_unix'];
+
+					// https://www.getid3.org/phpBB3/viewtopic.php?t=1908
+					// attempt to compute rotation from matrix values
+					// 2017-Dec-28: uncertain if 90/270 are correctly oriented; values returned by FixedPoint16_16 should perhaps be -1 instead of 65535(?)
+					$matrixRotation = 0;
+					switch ($atom_structure['matrix_a'].':'.$atom_structure['matrix_b'].':'.$atom_structure['matrix_c'].':'.$atom_structure['matrix_d']) {
+						case '1:0:0:1':         $matrixRotation =   0; break;
+						case '0:1:65535:0':     $matrixRotation =  90; break;
+						case '65535:0:0:65535': $matrixRotation = 180; break;
+						case '0:65535:1:0':     $matrixRotation = 270; break;
+						default: break;
+					}
+
+					// https://www.getid3.org/phpBB3/viewtopic.php?t=2468
+					// The rotation matrix can appear in the Quicktime file multiple times, at least once for each track,
+					// and it's possible that only the video track (or, in theory, one of the video tracks) is flagged as
+					// rotated while the other tracks (e.g. audio) is tagged as rotation=0 (behavior noted on iPhone 8 Plus)
+					// The correct solution would be to check if the TrackID associated with the rotation matrix is indeed
+					// a video track (or the main video track) and only set the rotation then, but since information about
+					// what track is what is not trivially there to be examined, the lazy solution is to set the rotation
+					// if it is found to be nonzero, on the assumption that tracks that don't need it will have rotation set
+					// to zero (and be effectively ignored) and the video track will have rotation set correctly, which will
+					// either be zero and automatically correct, or nonzero and be set correctly.
+					if (!isset($info['video']['rotate']) || (($info['video']['rotate'] == 0) && ($matrixRotation > 0))) {
+						$info['quicktime']['video']['rotate'] = $info['video']['rotate'] = $matrixRotation;
+					}
+
+					if ($atom_structure['flags']['enabled'] == 1) {
+						if (!isset($info['video']['resolution_x']) || !isset($info['video']['resolution_y'])) {
+							$info['video']['resolution_x'] = $atom_structure['width'];
+							$info['video']['resolution_y'] = $atom_structure['height'];
+						}
+						$info['video']['resolution_x'] = max($info['video']['resolution_x'], $atom_structure['width']);
+						$info['video']['resolution_y'] = max($info['video']['resolution_y'], $atom_structure['height']);
+						$info['quicktime']['video']['resolution_x'] = $info['video']['resolution_x'];
+						$info['quicktime']['video']['resolution_y'] = $info['video']['resolution_y'];
+					} else {
+						// see: https://www.getid3.org/phpBB3/viewtopic.php?t=1295
+						//if (isset($info['video']['resolution_x'])) { unset($info['video']['resolution_x']); }
+						//if (isset($info['video']['resolution_y'])) { unset($info['video']['resolution_y']); }
+						//if (isset($info['quicktime']['video']))    { unset($info['quicktime']['video']);    }
+					}
+					break;
+
+
+				case 'iods': // Initial Object DeScriptor atom
+					// http://www.koders.com/c/fid1FAB3E762903DC482D8A246D4A4BF9F28E049594.aspx?s=windows.h
+					// http://libquicktime.sourcearchive.com/documentation/1.0.2plus-pdebian/iods_8c-source.html
+					$offset = 0;
+					$atom_structure['version']                =       getid3_lib::BigEndian2Int(substr($atom_data, $offset, 1));
+					$offset += 1;
+					$atom_structure['flags_raw']              =       getid3_lib::BigEndian2Int(substr($atom_data, $offset, 3));
+					$offset += 3;
+					$atom_structure['mp4_iod_tag']            =       getid3_lib::BigEndian2Int(substr($atom_data, $offset, 1));
+					$offset += 1;
+					$atom_structure['length']                 = $this->quicktime_read_mp4_descr_length($atom_data, $offset);
+					//$offset already adjusted by quicktime_read_mp4_descr_length()
+					$atom_structure['object_descriptor_id']   =       getid3_lib::BigEndian2Int(substr($atom_data, $offset, 2));
+					$offset += 2;
+					$atom_structure['od_profile_level']       =       getid3_lib::BigEndian2Int(substr($atom_data, $offset, 1));
+					$offset += 1;
+					$atom_structure['scene_profile_level']    =       getid3_lib::BigEndian2Int(substr($atom_data, $offset, 1));
+					$offset += 1;
+					$atom_structure['audio_profile_id']       =       getid3_lib::BigEndian2Int(substr($atom_data, $offset, 1));
+					$offset += 1;
+					$atom_structure['video_profile_id']       =       getid3_lib::BigEndian2Int(substr($atom_data, $offset, 1));
+					$offset += 1;
+					$atom_structure['graphics_profile_level'] =       getid3_lib::BigEndian2Int(substr($atom_data, $offset, 1));
+					$offset += 1;
+
+					$atom_structure['num_iods_tracks'] = ($atom_structure['length'] - 7) / 6; // 6 bytes would only be right if all tracks use 1-byte length fields
+					for ($i = 0; $i < $atom_structure['num_iods_tracks']; $i++) {
+						$atom_structure['track'][$i]['ES_ID_IncTag'] =       getid3_lib::BigEndian2Int(substr($atom_data, $offset, 1));
+						$offset += 1;
+						$atom_structure['track'][$i]['length']       = $this->quicktime_read_mp4_descr_length($atom_data, $offset);
+						//$offset already adjusted by quicktime_read_mp4_descr_length()
+						$atom_structure['track'][$i]['track_id']     =       getid3_lib::BigEndian2Int(substr($atom_data, $offset, 4));
+						$offset += 4;
+					}
+
+					$atom_structure['audio_profile_name'] = $this->QuicktimeIODSaudioProfileName($atom_structure['audio_profile_id']);
+					$atom_structure['video_profile_name'] = $this->QuicktimeIODSvideoProfileName($atom_structure['video_profile_id']);
+					break;
+
+				case 'ftyp': // FileTYPe (?) atom (for MP4 it seems)
+					$atom_structure['signature'] =                           substr($atom_data,  0, 4);
+					$atom_structure['unknown_1'] = getid3_lib::BigEndian2Int(substr($atom_data,  4, 4));
+					$atom_structure['fourcc']    =                           substr($atom_data,  8, 4);
+					break;
+
+				case 'mdat': // Media DATa atom
+					// 'mdat' contains the actual data for the audio/video, possibly also subtitles
+
+	/* due to lack of known documentation, this is a kludge implementation. If you know of documentation on how mdat is properly structed, please send it to info@getid3.org */
+
+					// first, skip any 'wide' padding, and second 'mdat' header (with specified size of zero?)
+					$mdat_offset = 0;
+					while (true) {
+						if (substr($atom_data, $mdat_offset, 8) == "\x00\x00\x00\x08".'wide') {
+							$mdat_offset += 8;
+						} elseif (substr($atom_data, $mdat_offset, 8) == "\x00\x00\x00\x00".'mdat') {
+							$mdat_offset += 8;
+						} else {
+							break;
+						}
+					}
+					if (substr($atom_data, $mdat_offset, 4) == 'GPRO') {
+						$GOPRO_chunk_length = getid3_lib::LittleEndian2Int(substr($atom_data, $mdat_offset + 4, 4));
+						$GOPRO_offset = 8;
+						$atom_structure['GPRO']['raw'] = substr($atom_data, $mdat_offset + 8, $GOPRO_chunk_length - 8);
+						$atom_structure['GPRO']['firmware'] = substr($atom_structure['GPRO']['raw'],  0, 15);
+						$atom_structure['GPRO']['unknown1'] = substr($atom_structure['GPRO']['raw'], 15, 16);
+						$atom_structure['GPRO']['unknown2'] = substr($atom_structure['GPRO']['raw'], 31, 32);
+						$atom_structure['GPRO']['unknown3'] = substr($atom_structure['GPRO']['raw'], 63, 16);
+						$atom_structure['GPRO']['camera']   = substr($atom_structure['GPRO']['raw'], 79, 32);
+						$info['quicktime']['camera']['model'] = rtrim($atom_structure['GPRO']['camera'], "\x00");
+					}
+
+					// check to see if it looks like chapter titles, in the form of unterminated strings with a leading 16-bit size field
+					while (($mdat_offset < (strlen($atom_data) - 8))
+						&& ($chapter_string_length = getid3_lib::BigEndian2Int(substr($atom_data, $mdat_offset, 2)))
+						&& ($chapter_string_length < 1000)
+						&& ($chapter_string_length <= (strlen($atom_data) - $mdat_offset - 2))
+						&& preg_match('#^([\x00-\xFF]{2})([\x20-\xFF]+)$#', substr($atom_data, $mdat_offset, $chapter_string_length + 2), $chapter_matches)) {
+							list($dummy, $chapter_string_length_hex, $chapter_string) = $chapter_matches;
+							$mdat_offset += (2 + $chapter_string_length);
+							@$info['quicktime']['comments']['chapters'][] = $chapter_string;
+
+							// "encd" atom specifies encoding. In theory could be anything, almost always UTF-8, but may be UTF-16 with BOM (not currently handled)
+							if (substr($atom_data, $mdat_offset, 12) == "\x00\x00\x00\x0C\x65\x6E\x63\x64\x00\x00\x01\x00") { // UTF-8
+								$mdat_offset += 12;
+							}
+					}
+
+					if (($atomsize > 8) && (!isset($info['avdataend_tmp']) || ($info['quicktime'][$atomname]['size'] > ($info['avdataend_tmp'] - $info['avdataoffset'])))) {
+
+						$info['avdataoffset'] = $atom_structure['offset'] + 8;                       // $info['quicktime'][$atomname]['offset'] + 8;
+						$OldAVDataEnd         = $info['avdataend'];
+						$info['avdataend']    = $atom_structure['offset'] + $atom_structure['size']; // $info['quicktime'][$atomname]['offset'] + $info['quicktime'][$atomname]['size'];
+
+						$getid3_temp = new getID3();
+						$getid3_temp->openfile($this->getid3->filename, $this->getid3->info['filesize'], $this->getid3->fp);
+						$getid3_temp->info['avdataoffset'] = $info['avdataoffset'];
+						$getid3_temp->info['avdataend']    = $info['avdataend'];
+						$getid3_mp3 = new getid3_mp3($getid3_temp);
+						if ($getid3_mp3->MPEGaudioHeaderValid($getid3_mp3->MPEGaudioHeaderDecode($this->fread(4)))) {
+							$getid3_mp3->getOnlyMPEGaudioInfo($getid3_temp->info['avdataoffset'], false);
+							if (!empty($getid3_temp->info['warning'])) {
+								foreach ($getid3_temp->info['warning'] as $value) {
+									$this->warning($value);
+								}
+							}
+							if (!empty($getid3_temp->info['mpeg'])) {
+								$info['mpeg'] = $getid3_temp->info['mpeg'];
+								if (isset($info['mpeg']['audio'])) {
+									$info['audio']['dataformat']   = 'mp3';
+									$info['audio']['codec']        = (!empty($info['mpeg']['audio']['encoder']) ? $info['mpeg']['audio']['encoder'] : (!empty($info['mpeg']['audio']['codec']) ? $info['mpeg']['audio']['codec'] : (!empty($info['mpeg']['audio']['LAME']) ? 'LAME' :'mp3')));
+									$info['audio']['sample_rate']  = $info['mpeg']['audio']['sample_rate'];
+									$info['audio']['channels']     = $info['mpeg']['audio']['channels'];
+									$info['audio']['bitrate']      = $info['mpeg']['audio']['bitrate'];
+									$info['audio']['bitrate_mode'] = strtolower($info['mpeg']['audio']['bitrate_mode']);
+									$info['bitrate']               = $info['audio']['bitrate'];
+								}
+							}
+						}
+						unset($getid3_mp3, $getid3_temp);
+						$info['avdataend'] = $OldAVDataEnd;
+						unset($OldAVDataEnd);
+
+					}
+
+					unset($mdat_offset, $chapter_string_length, $chapter_matches);
+					break;
+
+				case 'ID32': // ID3v2
+					getid3_lib::IncludeDependency(GETID3_INCLUDEPATH.'module.tag.id3v2.php', __FILE__, true);
+
+					$getid3_temp = new getID3();
+					$getid3_temp->openfile($this->getid3->filename, $this->getid3->info['filesize'], $this->getid3->fp);
+					$getid3_id3v2 = new getid3_id3v2($getid3_temp);
+					$getid3_id3v2->StartingOffset = $atom_structure['offset'] + 14; // framelength(4)+framename(4)+flags(4)+??(2)
+					if ($atom_structure['valid'] = $getid3_id3v2->Analyze()) {
+						$atom_structure['id3v2'] = $getid3_temp->info['id3v2'];
+					} else {
+						$this->warning('ID32 frame at offset '.$atom_structure['offset'].' did not parse');
+					}
+					unset($getid3_temp, $getid3_id3v2);
+					break;
+
+				case 'free': // FREE space atom
+				case 'skip': // SKIP atom
+				case 'wide': // 64-bit expansion placeholder atom
+					// 'free', 'skip' and 'wide' are just padding, contains no useful data at all
+
+					// When writing QuickTime files, it is sometimes necessary to update an atom's size.
+					// It is impossible to update a 32-bit atom to a 64-bit atom since the 32-bit atom
+					// is only 8 bytes in size, and the 64-bit atom requires 16 bytes. Therefore, QuickTime
+					// puts an 8-byte placeholder atom before any atoms it may have to update the size of.
+					// In this way, if the atom needs to be converted from a 32-bit to a 64-bit atom, the
+					// placeholder atom can be overwritten to obtain the necessary 8 extra bytes.
+					// The placeholder atom has a type of kWideAtomPlaceholderType ( 'wide' ).
+					break;
+
+
+				case 'nsav': // NoSAVe atom
+					// http://developer.apple.com/technotes/tn/tn2038.html
+					$atom_structure['data'] = getid3_lib::BigEndian2Int(substr($atom_data,  0, 4));
+					break;
+
+				case 'ctyp': // Controller TYPe atom (seen on QTVR)
+					// http://homepages.slingshot.co.nz/~helmboy/quicktime/formats/qtm-layout.txt
+					// some controller names are:
+					//   0x00 + 'std' for linear movie
+					//   'none' for no controls
+					$atom_structure['ctyp'] = substr($atom_data, 0, 4);
+					$info['quicktime']['controller'] = $atom_structure['ctyp'];
+					switch ($atom_structure['ctyp']) {
+						case 'qtvr':
+							$info['video']['dataformat'] = 'quicktimevr';
+							break;
+					}
+					break;
+
+				case 'pano': // PANOrama track (seen on QTVR)
+					$atom_structure['pano'] = getid3_lib::BigEndian2Int(substr($atom_data,  0, 4));
+					break;
+
+				case 'hint': // HINT track
+				case 'hinf': //
+				case 'hinv': //
+				case 'hnti': //
+					$info['quicktime']['hinting'] = true;
+					break;
+
+				case 'imgt': // IMaGe Track reference (kQTVRImageTrackRefType) (seen on QTVR)
+					for ($i = 0; $i < ($atom_structure['size'] - 8); $i += 4) {
+						$atom_structure['imgt'][] = getid3_lib::BigEndian2Int(substr($atom_data, $i, 4));
+					}
+					break;
+
+
+				// Observed-but-not-handled atom types are just listed here to prevent warnings being generated
+				case 'FXTC': // Something to do with Adobe After Effects (?)
+				case 'PrmA':
+				case 'code':
+				case 'FIEL': // this is NOT "fiel" (Field Ordering) as describe here: http://developer.apple.com/documentation/QuickTime/QTFF/QTFFChap3/chapter_4_section_2.html
+				case 'tapt': // TrackApertureModeDimensionsAID - http://developer.apple.com/documentation/QuickTime/Reference/QT7-1_Update_Reference/Constants/Constants.html
+							// tapt seems to be used to compute the video size [https://www.getid3.org/phpBB3/viewtopic.php?t=838]
+							// * http://lists.apple.com/archives/quicktime-api/2006/Aug/msg00014.html
+							// * http://handbrake.fr/irclogs/handbrake-dev/handbrake-dev20080128_pg2.html
+				case 'ctts'://  STCompositionOffsetAID             - http://developer.apple.com/documentation/QuickTime/Reference/QTRef_Constants/Reference/reference.html
+				case 'cslg'://  STCompositionShiftLeastGreatestAID - http://developer.apple.com/documentation/QuickTime/Reference/QTRef_Constants/Reference/reference.html
+				case 'sdtp'://  STSampleDependencyAID              - http://developer.apple.com/documentation/QuickTime/Reference/QTRef_Constants/Reference/reference.html
+				case 'stps'://  STPartialSyncSampleAID             - http://developer.apple.com/documentation/QuickTime/Reference/QTRef_Constants/Reference/reference.html
+					//$atom_structure['data'] = $atom_data;
+					break;
+
+				case "\xA9".'xyz':  // GPS latitude+longitude+altitude
+					$atom_structure['data'] = $atom_data;
+					if (preg_match('#([\\+\\-][0-9\\.]+)([\\+\\-][0-9\\.]+)([\\+\\-][0-9\\.]+)?/$#i', $atom_data, $matches)) {
+						@list($all, $latitude, $longitude, $altitude) = $matches;
+						$info['quicktime']['comments']['gps_latitude'][]  = floatval($latitude);
+						$info['quicktime']['comments']['gps_longitude'][] = floatval($longitude);
+						if (!empty($altitude)) {
+							$info['quicktime']['comments']['gps_altitude'][] = floatval($altitude);
+						}
+					} else {
+						$this->warning('QuickTime atom "©xyz" data does not match expected data pattern at offset '.$baseoffset.'. Please report as getID3() bug.');
+					}
+					break;
+
+				case 'NCDT':
+					// https://exiftool.org/TagNames/Nikon.html
+					// Nikon-specific QuickTime tags found in the NCDT atom of MOV videos from some Nikon cameras such as the Coolpix S8000 and D5100
+					$atom_structure['subatoms'] = $this->QuicktimeParseContainerAtom($atom_data, $baseoffset + 4, $atomHierarchy, $ParseAllPossibleAtoms);
+					break;
+				case 'NCTH': // Nikon Camera THumbnail image
+				case 'NCVW': // Nikon Camera preVieW image
+				case 'NCM1': // Nikon Camera preview iMage 1
+				case 'NCM2': // Nikon Camera preview iMage 2
+					// https://exiftool.org/TagNames/Nikon.html
+					if (preg_match('/^\xFF\xD8\xFF/', $atom_data)) {
+						$descriptions = array(
+							'NCTH' => 'Nikon Camera Thumbnail Image',
+							'NCVW' => 'Nikon Camera Preview Image',
+							'NCM1' => 'Nikon Camera Preview Image 1',
+							'NCM2' => 'Nikon Camera Preview Image 2',
+						);
+						$atom_structure['data'] = $atom_data;
+						$atom_structure['image_mime'] = 'image/jpeg';
+						$atom_structure['description'] = $descriptions[$atomname];
+						$info['quicktime']['comments']['picture'][] = array(
+							'image_mime' => $atom_structure['image_mime'],
+							'data' => $atom_data,
+							'description' => $atom_structure['description']
+						);
+					}
+					break;
+				case 'NCTG': // Nikon - https://exiftool.org/TagNames/Nikon.html#NCTG
+					getid3_lib::IncludeDependency(GETID3_INCLUDEPATH.'module.tag.nikon-nctg.php', __FILE__, true);
+					$nikonNCTG = new getid3_tag_nikon_nctg($this->getid3);
+
+					$atom_structure['data'] = $nikonNCTG->parse($atom_data);
+					break;
+				case 'NCHD': // Nikon:MakerNoteVersion  - https://exiftool.org/TagNames/Nikon.html
+					$makerNoteVersion = '';
+					for ($i = 0, $iMax = strlen($atom_data); $i < $iMax; ++$i) {
+						if (ord($atom_data[$i]) <= 0x1F) {
+							$makerNoteVersion .= ' '.ord($atom_data[$i]);
+						} else {
+							$makerNoteVersion .= $atom_data[$i];
+						}
+					}
+					$makerNoteVersion = rtrim($makerNoteVersion, "\x00");
+					$atom_structure['data'] = array(
+						'MakerNoteVersion' => $makerNoteVersion
+					);
+					break;
+				case 'NCDB': // Nikon                   - https://exiftool.org/TagNames/Nikon.html
+				case 'CNCV': // Canon:CompressorVersion - https://exiftool.org/TagNames/Canon.html
+					$atom_structure['data'] = $atom_data;
+					break;
+
+				case "\x00\x00\x00\x00":
+					// some kind of metacontainer, may contain a big data dump such as:
+					// mdta keys \005 mdtacom.apple.quicktime.make (mdtacom.apple.quicktime.creationdate ,mdtacom.apple.quicktime.location.ISO6709 $mdtacom.apple.quicktime.software !mdtacom.apple.quicktime.model ilst \01D \001 \015data \001DE\010Apple 0 \002 (data \001DE\0102011-05-11T17:54:04+0200 2 \003 *data \001DE\010+52.4936+013.3897+040.247/ \01D \004 \015data \001DE\0104.3.1 \005 \018data \001DE\010iPhone 4
+					// https://xhelmboyx.tripod.com/formats/qti-layout.txt
+
+					$atom_structure['version']   =          getid3_lib::BigEndian2Int(substr($atom_data, 0, 1));
+					$atom_structure['flags_raw'] =          getid3_lib::BigEndian2Int(substr($atom_data, 1, 3));
+					$atom_structure['subatoms']  = $this->QuicktimeParseContainerAtom(substr($atom_data, 4), $baseoffset + 8, $atomHierarchy, $ParseAllPossibleAtoms);
+					//$atom_structure['subatoms']  = $this->QuicktimeParseContainerAtom($atom_data, $baseoffset + 8, $atomHierarchy, $ParseAllPossibleAtoms);
+					break;
+
+				case 'meta': // METAdata atom
+					// https://developer.apple.com/library/mac/documentation/QuickTime/QTFF/Metadata/Metadata.html
+
+					$atom_structure['version']   =          getid3_lib::BigEndian2Int(substr($atom_data, 0, 1));
+					$atom_structure['flags_raw'] =          getid3_lib::BigEndian2Int(substr($atom_data, 1, 3));
+					$atom_structure['subatoms']  = $this->QuicktimeParseContainerAtom($atom_data, $baseoffset + 8, $atomHierarchy, $ParseAllPossibleAtoms);
+					break;
+
+				case 'data': // metaDATA atom
+					static $metaDATAkey = 1; // real ugly, but so is the QuickTime structure that stores keys and values in different multinested locations that are hard to relate to each other
+					// seems to be 2 bytes language code (ASCII), 2 bytes unknown (set to 0x10B5 in sample I have), remainder is useful data
+					$atom_structure['language'] =                           substr($atom_data, 4 + 0, 2);
+					$atom_structure['unknown']  = getid3_lib::BigEndian2Int(substr($atom_data, 4 + 2, 2));
+					$atom_structure['data']     =                           substr($atom_data, 4 + 4);
+					$atom_structure['key_name'] = (isset($info['quicktime']['temp_meta_key_names'][$metaDATAkey]) ? $info['quicktime']['temp_meta_key_names'][$metaDATAkey] : '');
+					$metaDATAkey++;
+
+					if ($atom_structure['key_name'] && $atom_structure['data']) {
+						@$info['quicktime']['comments'][str_replace('com.apple.quicktime.', '', $atom_structure['key_name'])][] = $atom_structure['data'];
+					}
+					break;
+
+				case 'keys': // KEYS that may be present in the metadata atom.
+					// https://developer.apple.com/library/mac/documentation/QuickTime/QTFF/Metadata/Metadata.html#//apple_ref/doc/uid/TP40000939-CH1-SW21
+					// The metadata item keys atom holds a list of the metadata keys that may be present in the metadata atom.
+					// This list is indexed starting with 1; 0 is a reserved index value. The metadata item keys atom is a full atom with an atom type of "keys".
+					$atom_structure['version']       = getid3_lib::BigEndian2Int(substr($atom_data,  0, 1));
+					$atom_structure['flags_raw']     = getid3_lib::BigEndian2Int(substr($atom_data,  1, 3));
+					$atom_structure['entry_count']   = getid3_lib::BigEndian2Int(substr($atom_data,  4, 4));
+					$keys_atom_offset = 8;
+					for ($i = 1; $i <= $atom_structure['entry_count']; $i++) {
+						$atom_structure['keys'][$i]['key_size']      = getid3_lib::BigEndian2Int(substr($atom_data, $keys_atom_offset + 0, 4));
+						$atom_structure['keys'][$i]['key_namespace'] =                           substr($atom_data, $keys_atom_offset + 4, 4);
+						$atom_structure['keys'][$i]['key_value']     =                           substr($atom_data, $keys_atom_offset + 8, $atom_structure['keys'][$i]['key_size'] - 8);
+						$keys_atom_offset += $atom_structure['keys'][$i]['key_size']; // key_size includes the 4+4 bytes for key_size and key_namespace
+
+						$info['quicktime']['temp_meta_key_names'][$i] = $atom_structure['keys'][$i]['key_value'];
+					}
+					break;
+
+				case 'uuid': // user-defined atom often seen containing XML data, also used for potentially many other purposes, only a few specifically handled by getID3 (e.g. 360fly spatial data)
+					//Get the UUID ID in first 16 bytes
+					$uuid_bytes_read = unpack('H8time_low/H4time_mid/H4time_hi/H4clock_seq_hi/H12clock_seq_low', substr($atom_data, 0, 16));
+					$atom_structure['uuid_field_id'] = implode('-', $uuid_bytes_read);
+
+					switch ($atom_structure['uuid_field_id']) {   // http://fileformats.archiveteam.org/wiki/Boxes/atoms_format#UUID_boxes
+
+						case '0537cdab-9d0c-4431-a72a-fa561f2a113e': // Exif                                       - http://fileformats.archiveteam.org/wiki/Exif
+						case '2c4c0100-8504-40b9-a03e-562148d6dfeb': // Photoshop Image Resources                  - http://fileformats.archiveteam.org/wiki/Photoshop_Image_Resources
+						case '33c7a4d2-b81d-4723-a0ba-f1a3e097ad38': // IPTC-IIM                                   - http://fileformats.archiveteam.org/wiki/IPTC-IIM
+						case '8974dbce-7be7-4c51-84f9-7148f9882554': // PIFF Track Encryption Box                  - http://fileformats.archiveteam.org/wiki/Protected_Interoperable_File_Format
+						case '96a9f1f1-dc98-402d-a7ae-d68e34451809': // GeoJP2 World File Box                      - http://fileformats.archiveteam.org/wiki/GeoJP2
+						case 'a2394f52-5a9b-4f14-a244-6c427c648df4': // PIFF Sample Encryption Box                 - http://fileformats.archiveteam.org/wiki/Protected_Interoperable_File_Format
+						case 'b14bf8bd-083d-4b43-a5ae-8cd7d5a6ce03': // GeoJP2 GeoTIFF Box                         - http://fileformats.archiveteam.org/wiki/GeoJP2
+						case 'd08a4f18-10f3-4a82-b6c8-32d8aba183d3': // PIFF Protection System Specific Header Box - http://fileformats.archiveteam.org/wiki/Protected_Interoperable_File_Format
+							$this->warning('Unhandled (but recognized) "uuid" atom identified by "'.$atom_structure['uuid_field_id'].'" at offset '.$atom_structure['offset'].' ('.strlen($atom_data).' bytes)');
+							break;
+
+						case 'be7acfcb-97a9-42e8-9c71-999491e3afac': // XMP data (in XML format)
+							$atom_structure['xml'] = substr($atom_data, 16, strlen($atom_data) - 16 - 8); // 16 bytes for UUID, 8 bytes header(?)
+							break;
+
+						case 'efe1589a-bb77-49ef-8095-27759eb1dc6f': // 360fly data
+							/* 360fly code in this block by Paul Lewis 2019-Oct-31 */
+							/*	Sensor Timestamps need to be calculated using the recordings base time at ['quicktime']['moov']['subatoms'][0]['creation_time_unix']. */
+							$atom_structure['title'] = '360Fly Sensor Data';
+
+							//Get the UUID HEADER data
+							$uuid_bytes_read = unpack('vheader_size/vheader_version/vtimescale/vhardware_version/x/x/x/x/x/x/x/x/x/x/x/x/x/x/x/x/', substr($atom_data, 16, 32));
+							$atom_structure['uuid_header'] = $uuid_bytes_read;
+
+							$start_byte = 48;
+							$atom_SENSOR_data = substr($atom_data, $start_byte);
+							$atom_structure['sensor_data']['data_type'] = array(
+									'fusion_count'   => 0,       // ID 250
+									'fusion_data'    => array(),
+									'accel_count'    => 0,       // ID 1
+									'accel_data'     => array(),
+									'gyro_count'     => 0,       // ID 2
+									'gyro_data'      => array(),
+									'magno_count'    => 0,       // ID 3
+									'magno_data'     => array(),
+									'gps_count'      => 0,       // ID 5
+									'gps_data'       => array(),
+									'rotation_count' => 0,       // ID 6
+									'rotation_data'  => array(),
+									'unknown_count'  => 0,       // ID ??
+									'unknown_data'   => array(),
+									'debug_list'     => '',      // Used to debug variables stored as comma delimited strings
+							);
+							$debug_structure = array();
+							$debug_structure['debug_items'] = array();
+							// Can start loop here to decode all sensor data in 32 Byte chunks:
+							foreach (str_split($atom_SENSOR_data, 32) as $sensor_key => $sensor_data) {
+								// This gets me a data_type code to work out what data is in the next 31 bytes.
+								$sensor_data_type = substr($sensor_data, 0, 1);
+								$sensor_data_content = substr($sensor_data, 1);
+								$uuid_bytes_read = unpack('C*', $sensor_data_type);
+								$sensor_data_array = array();
+								switch ($uuid_bytes_read[1]) {
+									case 250:
+										$atom_structure['sensor_data']['data_type']['fusion_count']++;
+										$uuid_bytes_read = unpack('cmode/Jtimestamp/Gyaw/Gpitch/Groll/x*', $sensor_data_content);
+										$sensor_data_array['mode']      = $uuid_bytes_read['mode'];
+										$sensor_data_array['timestamp'] = $uuid_bytes_read['timestamp'];
+										$sensor_data_array['yaw']       = $uuid_bytes_read['yaw'];
+										$sensor_data_array['pitch']     = $uuid_bytes_read['pitch'];
+										$sensor_data_array['roll']      = $uuid_bytes_read['roll'];
+										array_push($atom_structure['sensor_data']['data_type']['fusion_data'], $sensor_data_array);
+										break;
+									case 1:
+										$atom_structure['sensor_data']['data_type']['accel_count']++;
+										$uuid_bytes_read = unpack('cmode/Jtimestamp/Gyaw/Gpitch/Groll/x*', $sensor_data_content);
+										$sensor_data_array['mode']      = $uuid_bytes_read['mode'];
+										$sensor_data_array['timestamp'] = $uuid_bytes_read['timestamp'];
+										$sensor_data_array['yaw']       = $uuid_bytes_read['yaw'];
+										$sensor_data_array['pitch']     = $uuid_bytes_read['pitch'];
+										$sensor_data_array['roll']      = $uuid_bytes_read['roll'];
+										array_push($atom_structure['sensor_data']['data_type']['accel_data'], $sensor_data_array);
+										break;
+									case 2:
+										$atom_structure['sensor_data']['data_type']['gyro_count']++;
+										$uuid_bytes_read = unpack('cmode/Jtimestamp/Gyaw/Gpitch/Groll/x*', $sensor_data_content);
+										$sensor_data_array['mode']      = $uuid_bytes_read['mode'];
+										$sensor_data_array['timestamp'] = $uuid_bytes_read['timestamp'];
+										$sensor_data_array['yaw']       = $uuid_bytes_read['yaw'];
+										$sensor_data_array['pitch']     = $uuid_bytes_read['pitch'];
+										$sensor_data_array['roll']      = $uuid_bytes_read['roll'];
+										array_push($atom_structure['sensor_data']['data_type']['gyro_data'], $sensor_data_array);
+										break;
+									case 3:
+										$atom_structure['sensor_data']['data_type']['magno_count']++;
+										$uuid_bytes_read = unpack('cmode/Jtimestamp/Gmagx/Gmagy/Gmagz/x*', $sensor_data_content);
+										$sensor_data_array['mode']      = $uuid_bytes_read['mode'];
+										$sensor_data_array['timestamp'] = $uuid_bytes_read['timestamp'];
+										$sensor_data_array['magx']      = $uuid_bytes_read['magx'];
+										$sensor_data_array['magy']      = $uuid_bytes_read['magy'];
+										$sensor_data_array['magz']      = $uuid_bytes_read['magz'];
+										array_push($atom_structure['sensor_data']['data_type']['magno_data'], $sensor_data_array);
+										break;
+									case 5:
+										$atom_structure['sensor_data']['data_type']['gps_count']++;
+										$uuid_bytes_read = unpack('cmode/Jtimestamp/Glat/Glon/Galt/Gspeed/nbearing/nacc/x*', $sensor_data_content);
+										$sensor_data_array['mode']      = $uuid_bytes_read['mode'];
+										$sensor_data_array['timestamp'] = $uuid_bytes_read['timestamp'];
+										$sensor_data_array['lat']       = $uuid_bytes_read['lat'];
+										$sensor_data_array['lon']       = $uuid_bytes_read['lon'];
+										$sensor_data_array['alt']       = $uuid_bytes_read['alt'];
+										$sensor_data_array['speed']     = $uuid_bytes_read['speed'];
+										$sensor_data_array['bearing']   = $uuid_bytes_read['bearing'];
+										$sensor_data_array['acc']       = $uuid_bytes_read['acc'];
+										array_push($atom_structure['sensor_data']['data_type']['gps_data'], $sensor_data_array);
+										//array_push($debug_structure['debug_items'], $uuid_bytes_read['timestamp']);
+										break;
+									case 6:
+										$atom_structure['sensor_data']['data_type']['rotation_count']++;
+										$uuid_bytes_read = unpack('cmode/Jtimestamp/Grotx/Groty/Grotz/x*', $sensor_data_content);
+										$sensor_data_array['mode']      = $uuid_bytes_read['mode'];
+										$sensor_data_array['timestamp'] = $uuid_bytes_read['timestamp'];
+										$sensor_data_array['rotx']      = $uuid_bytes_read['rotx'];
+										$sensor_data_array['roty']      = $uuid_bytes_read['roty'];
+										$sensor_data_array['rotz']      = $uuid_bytes_read['rotz'];
+										array_push($atom_structure['sensor_data']['data_type']['rotation_data'], $sensor_data_array);
+										break;
+									default:
+										$atom_structure['sensor_data']['data_type']['unknown_count']++;
+										break;
+								}
+							}
+							//if (isset($debug_structure['debug_items']) && count($debug_structure['debug_items']) > 0) {
+							//	$atom_structure['sensor_data']['data_type']['debug_list'] = implode(',', $debug_structure['debug_items']);
+							//} else {
+								$atom_structure['sensor_data']['data_type']['debug_list'] = 'No debug items in list!';
+							//}
+							break;
+
+						default:
+							$this->warning('Unhandled "uuid" atom identified by "'.$atom_structure['uuid_field_id'].'" at offset '.$atom_structure['offset'].' ('.strlen($atom_data).' bytes)');
+					}
+					break;
+
+				case 'gps ':
+					// https://dashcamtalk.com/forum/threads/script-to-extract-gps-data-from-novatek-mp4.20808/page-2#post-291730
+					// The 'gps ' contains simple look up table made up of 8byte rows, that point to the 'free' atoms that contains the actual GPS data.
+					// The first row is version/metadata/notsure, I skip that.
+					// The following rows consist of 4byte address (absolute) and 4byte size (0x1000), these point to the GPS data in the file.
+
+					$GPS_rowsize = 8; // 4 bytes for offset, 4 bytes for size
+					if (strlen($atom_data) > 0) {
+						if ((strlen($atom_data) % $GPS_rowsize) == 0) {
+							$atom_structure['gps_toc'] = array();
+							foreach (str_split($atom_data, $GPS_rowsize) as $counter => $datapair) {
+								$atom_structure['gps_toc'][] = unpack('Noffset/Nsize', substr($atom_data, $counter * $GPS_rowsize, $GPS_rowsize));
+							}
+
+							$atom_structure['gps_entries'] = array();
+							$previous_offset = $this->ftell();
+							foreach ($atom_structure['gps_toc'] as $key => $gps_pointer) {
+								if ($key == 0) {
+									// "The first row is version/metadata/notsure, I skip that."
+									continue;
+								}
+								$this->fseek($gps_pointer['offset']);
+								$GPS_free_data = $this->fread($gps_pointer['size']);
+
+								/*
+								// 2017-05-10: I see some of the data, notably the Hour-Minute-Second, but cannot reconcile the rest of the data. However, the NMEA "GPRMC" line is there and relatively easy to parse, so I'm using that instead
+
+								// https://dashcamtalk.com/forum/threads/script-to-extract-gps-data-from-novatek-mp4.20808/page-2#post-291730
+								// The structure of the GPS data atom (the 'free' atoms mentioned above) is following:
+								// hour,minute,second,year,month,day,active,latitude_b,longitude_b,unknown2,latitude,longitude,speed = struct.unpack_from('<IIIIIIssssfff',data, 48)
+								// For those unfamiliar with python struct:
+								// I = int
+								// s = is string (size 1, in this case)
+								// f = float
+
+								//$atom_structure['gps_entries'][$key] = unpack('Vhour/Vminute/Vsecond/Vyear/Vmonth/Vday/Vactive/Vlatitude_b/Vlongitude_b/Vunknown2/flatitude/flongitude/fspeed', substr($GPS_free_data, 48));
+								*/
+
+								// $GPRMC,081836,A,3751.65,S,14507.36,E,000.0,360.0,130998,011.3,E*62
+								// $GPRMC,183731,A,3907.482,N,12102.436,W,000.0,360.0,080301,015.5,E*67
+								// $GPRMC,002454,A,3553.5295,N,13938.6570,E,0.0,43.1,180700,7.1,W,A*3F
+								// $GPRMC,094347.000,A,5342.0061,N,00737.9908,W,0.01,156.75,140217,,,A*7D
+								if (preg_match('#\\$GPRMC,([0-9\\.]*),([AV]),([0-9\\.]*),([NS]),([0-9\\.]*),([EW]),([0-9\\.]*),([0-9\\.]*),([0-9]*),([0-9\\.]*),([EW]?)(,[A])?(\\*[0-9A-F]{2})#', $GPS_free_data, $matches)) {
+									$GPS_this_GPRMC = array();
+									$GPS_this_GPRMC_raw = array();
+									list(
+										$GPS_this_GPRMC_raw['gprmc'],
+										$GPS_this_GPRMC_raw['timestamp'],
+										$GPS_this_GPRMC_raw['status'],
+										$GPS_this_GPRMC_raw['latitude'],
+										$GPS_this_GPRMC_raw['latitude_direction'],
+										$GPS_this_GPRMC_raw['longitude'],
+										$GPS_this_GPRMC_raw['longitude_direction'],
+										$GPS_this_GPRMC_raw['knots'],
+										$GPS_this_GPRMC_raw['angle'],
+										$GPS_this_GPRMC_raw['datestamp'],
+										$GPS_this_GPRMC_raw['variation'],
+										$GPS_this_GPRMC_raw['variation_direction'],
+										$dummy,
+										$GPS_this_GPRMC_raw['checksum'],
+									) = $matches;
+									$GPS_this_GPRMC['raw'] = $GPS_this_GPRMC_raw;
+
+									$hour   = substr($GPS_this_GPRMC['raw']['timestamp'], 0, 2);
+									$minute = substr($GPS_this_GPRMC['raw']['timestamp'], 2, 2);
+									$second = substr($GPS_this_GPRMC['raw']['timestamp'], 4, 2);
+									$ms     = substr($GPS_this_GPRMC['raw']['timestamp'], 6);    // may contain decimal seconds
+									$day    = substr($GPS_this_GPRMC['raw']['datestamp'], 0, 2);
+									$month  = substr($GPS_this_GPRMC['raw']['datestamp'], 2, 2);
+									$year   = (int) substr($GPS_this_GPRMC['raw']['datestamp'], 4, 2);
+									$year += (($year > 90) ? 1900 : 2000); // complete lack of foresight: datestamps are stored with 2-digit years, take best guess
+									$GPS_this_GPRMC['timestamp'] = $year.'-'.$month.'-'.$day.' '.$hour.':'.$minute.':'.$second.$ms;
+
+									$GPS_this_GPRMC['active'] = ($GPS_this_GPRMC['raw']['status'] == 'A'); // A=Active,V=Void
+
+									foreach (array('latitude','longitude') as $latlon) {
+										preg_match('#^([0-9]{1,3})([0-9]{2}\\.[0-9]+)$#', $GPS_this_GPRMC['raw'][$latlon], $matches);
+										list($dummy, $deg, $min) = $matches;
+										$GPS_this_GPRMC[$latlon] = $deg + ($min / 60);
+									}
+									$GPS_this_GPRMC['latitude']  *= (($GPS_this_GPRMC['raw']['latitude_direction']  == 'S') ? -1 : 1);
+									$GPS_this_GPRMC['longitude'] *= (($GPS_this_GPRMC['raw']['longitude_direction'] == 'W') ? -1 : 1);
+
+									$GPS_this_GPRMC['heading']    = $GPS_this_GPRMC['raw']['angle'];
+									$GPS_this_GPRMC['speed_knot'] = $GPS_this_GPRMC['raw']['knots'];
+									$GPS_this_GPRMC['speed_kmh']  = $GPS_this_GPRMC['raw']['knots'] * 1.852;
+									if ($GPS_this_GPRMC['raw']['variation']) {
+										$GPS_this_GPRMC['variation']  = $GPS_this_GPRMC['raw']['variation'];
+										$GPS_this_GPRMC['variation'] *= (($GPS_this_GPRMC['raw']['variation_direction'] == 'W') ? -1 : 1);
+									}
+
+									$atom_structure['gps_entries'][$key] = $GPS_this_GPRMC;
+
+									@$info['quicktime']['gps_track'][$GPS_this_GPRMC['timestamp']] = array(
+										'latitude'  => (float) $GPS_this_GPRMC['latitude'],
+										'longitude' => (float) $GPS_this_GPRMC['longitude'],
+										'speed_kmh' => (float) $GPS_this_GPRMC['speed_kmh'],
+										'heading'   => (float) $GPS_this_GPRMC['heading'],
+									);
+
+								} else {
+									$this->warning('Unhandled GPS format in "free" atom at offset '.$gps_pointer['offset']);
+								}
+							}
+							$this->fseek($previous_offset);
+
+						} else {
+							$this->warning('QuickTime atom "'.$atomname.'" is not mod-8 bytes long ('.$atomsize.' bytes) at offset '.$baseoffset);
+						}
+					} else {
+						$this->warning('QuickTime atom "'.$atomname.'" is zero bytes long at offset '.$baseoffset);
+					}
+					break;
+
+				case 'loci':// 3GP location (El Loco)
+					$loffset = 0;
+					$info['quicktime']['comments']['gps_flags']     = array(  getid3_lib::BigEndian2Int(substr($atom_data, 0, 4)));
+					$info['quicktime']['comments']['gps_lang']      = array(  getid3_lib::BigEndian2Int(substr($atom_data, 4, 2)));
+					$info['quicktime']['comments']['gps_location']  = array(          $this->LociString(substr($atom_data, 6), $loffset));
+					$loci_data = substr($atom_data, 6 + $loffset);
+					$info['quicktime']['comments']['gps_role']      = array(  getid3_lib::BigEndian2Int(substr($loci_data, 0, 1)));
+					$info['quicktime']['comments']['gps_longitude'] = array(getid3_lib::FixedPoint16_16(substr($loci_data, 1, 4)));
+					$info['quicktime']['comments']['gps_latitude']  = array(getid3_lib::FixedPoint16_16(substr($loci_data, 5, 4)));
+					$info['quicktime']['comments']['gps_altitude']  = array(getid3_lib::FixedPoint16_16(substr($loci_data, 9, 4)));
+					$info['quicktime']['comments']['gps_body']      = array(          $this->LociString(substr($loci_data, 13           ), $loffset));
+					$info['quicktime']['comments']['gps_notes']     = array(          $this->LociString(substr($loci_data, 13 + $loffset), $loffset));
+					break;
+
+				case 'chpl': // CHaPter List
+					// https://www.adobe.com/content/dam/Adobe/en/devnet/flv/pdfs/video_file_format_spec_v10.pdf
+					$chpl_version = getid3_lib::BigEndian2Int(substr($atom_data, 4, 1)); // Expected to be 0
+					$chpl_flags   = getid3_lib::BigEndian2Int(substr($atom_data, 5, 3)); // Reserved, set to 0
+					$chpl_count   = getid3_lib::BigEndian2Int(substr($atom_data, 8, 1));
+					$chpl_offset = 9;
+					for ($i = 0; $i < $chpl_count; $i++) {
+						if (($chpl_offset + 9) >= strlen($atom_data)) {
+							$this->warning('QuickTime chapter '.$i.' extends beyond end of "chpl" atom');
+							break;
+						}
+						$info['quicktime']['chapters'][$i]['timestamp'] = getid3_lib::BigEndian2Int(substr($atom_data, $chpl_offset, 8)) / 10000000; // timestamps are stored as 100-nanosecond units
+						$chpl_offset += 8;
+						$chpl_title_size = getid3_lib::BigEndian2Int(substr($atom_data, $chpl_offset, 1));
+						$chpl_offset += 1;
+						$info['quicktime']['chapters'][$i]['title']     =                           substr($atom_data, $chpl_offset, $chpl_title_size);
+						$chpl_offset += $chpl_title_size;
+					}
+					break;
+
+				case 'FIRM': // FIRMware version(?), seen on GoPro Hero4
+					$info['quicktime']['camera']['firmware'] = $atom_data;
+					break;
+
+				case 'CAME': // FIRMware version(?), seen on GoPro Hero4
+					$info['quicktime']['camera']['serial_hash'] = unpack('H*', $atom_data);
+					break;
+
+				case 'dscp':
+				case 'rcif':
+					// https://www.getid3.org/phpBB3/viewtopic.php?t=1908
+					if (substr($atom_data, 0, 7) == "\x00\x00\x00\x00\x55\xC4".'{') {
+						if ($json_decoded = @json_decode(rtrim(substr($atom_data, 6), "\x00"), true)) {
+							$info['quicktime']['camera'][$atomname] = $json_decoded;
+							if (($atomname == 'rcif') && isset($info['quicktime']['camera']['rcif']['wxcamera']['rotate'])) {
+								$info['video']['rotate'] = $info['quicktime']['video']['rotate'] = $info['quicktime']['camera']['rcif']['wxcamera']['rotate'];
+							}
+						} else {
+							$this->warning('Failed to JSON decode atom "'.$atomname.'"');
+							$atom_structure['data'] = $atom_data;
+						}
+						unset($json_decoded);
+					} else {
+						$this->warning('Expecting 55 C4 7B at start of atom "'.$atomname.'", found '.getid3_lib::PrintHexBytes(substr($atom_data, 4, 3)).' instead');
+						$atom_structure['data'] = $atom_data;
+					}
+					break;
+
+				case 'frea':
+					// https://www.sno.phy.queensu.ca/~phil/exiftool/TagNames/Kodak.html#frea
+					// may contain "scra" (PreviewImage) and/or "thma" (ThumbnailImage)
+					$atom_structure['subatoms'] = $this->QuicktimeParseContainerAtom($atom_data, $baseoffset + 4, $atomHierarchy, $ParseAllPossibleAtoms);
+					break;
+				case 'tima': // subatom to "frea"
+					// no idea what this does, the one sample file I've seen has a value of 0x00000027
+					$atom_structure['data'] = $atom_data;
+					break;
+				case 'ver ': // subatom to "frea"
+					// some kind of version number, the one sample file I've seen has a value of "3.00.073"
+					$atom_structure['data'] = $atom_data;
+					break;
+				case 'thma': // subatom to "frea" -- "ThumbnailImage"
+					// https://www.sno.phy.queensu.ca/~phil/exiftool/TagNames/Kodak.html#frea
+					if (strlen($atom_data) > 0) {
+						$info['quicktime']['comments']['picture'][] = array('data'=>$atom_data, 'image_mime'=>'image/jpeg', 'description'=>'ThumbnailImage');
+					}
+					break;
+				case 'scra': // subatom to "frea" -- "PreviewImage"
+					// https://www.sno.phy.queensu.ca/~phil/exiftool/TagNames/Kodak.html#frea
+					// but the only sample file I've seen has no useful data here
+					if (strlen($atom_data) > 0) {
+						$info['quicktime']['comments']['picture'][] = array('data'=>$atom_data, 'image_mime'=>'image/jpeg', 'description'=>'PreviewImage');
+					}
+					break;
+
+				case 'cdsc': // timed metadata reference
+					// A QuickTime movie can contain none, one, or several timed metadata tracks. Timed metadata tracks can refer to multiple tracks.
+					// Metadata tracks are linked to the tracks they describe using a track-reference of type 'cdsc'. The metadata track holds the 'cdsc' track reference.
+					$atom_structure['track_number'] = getid3_lib::BigEndian2Int($atom_data);
+					break;
+
+
+				case 'esds': // Elementary Stream DeScriptor
+					// https://github.com/JamesHeinrich/getID3/issues/414
+					// https://chromium.googlesource.com/chromium/src/media/+/refs/heads/main/formats/mp4/es_descriptor.cc
+					// https://chromium.googlesource.com/chromium/src/media/+/refs/heads/main/formats/mp4/es_descriptor.h
+					$atom_structure['version']   = getid3_lib::BigEndian2Int(substr($atom_data,  0, 1)); // hardcoded: 0x00
+					$atom_structure['flags_raw'] = getid3_lib::BigEndian2Int(substr($atom_data,  1, 3)); // hardcoded: 0x000000
+					$esds_offset = 4;
+
+					$atom_structure['ES_DescrTag'] = getid3_lib::BigEndian2Int(substr($atom_data, $esds_offset, 1));
+					$esds_offset += 1;
+					if ($atom_structure['ES_DescrTag'] != 0x03) {
+						$this->warning('expecting esds.ES_DescrTag = 0x03, found 0x'.getid3_lib::PrintHexBytes($atom_structure['ES_DescrTag']).'), at offset '.$atom_structure['offset']);
+						break;
+					}
+					$atom_structure['ES_DescrSize'] = $this->quicktime_read_mp4_descr_length($atom_data, $esds_offset);
+
+					$atom_structure['ES_ID'] = getid3_lib::BigEndian2Int(substr($atom_data, $esds_offset, 2));
+					$esds_offset += 2;
+					$atom_structure['ES_flagsraw'] = getid3_lib::BigEndian2Int(substr($atom_data, $esds_offset, 1));
+					$esds_offset += 1;
+					$atom_structure['ES_flags']['stream_dependency'] = (bool) ($atom_structure['ES_flagsraw'] & 0x80);
+					$atom_structure['ES_flags']['url_flag']          = (bool) ($atom_structure['ES_flagsraw'] & 0x40);
+					$atom_structure['ES_flags']['ocr_stream']        = (bool) ($atom_structure['ES_flagsraw'] & 0x20);
+					$atom_structure['ES_stream_priority']            =        ($atom_structure['ES_flagsraw'] & 0x1F);
+					if ($atom_structure['ES_flags']['url_flag']) {
+						$this->warning('Unsupported esds.url_flag enabled at offset '.$atom_structure['offset']);
+						break;
+					}
+					if ($atom_structure['ES_flags']['stream_dependency']) {
+						$atom_structure['ES_dependsOn_ES_ID'] = getid3_lib::BigEndian2Int(substr($atom_data, $esds_offset, 2));
+						$esds_offset += 2;
+					}
+					if ($atom_structure['ES_flags']['ocr_stream']) {
+						$atom_structure['ES_OCR_ES_Id'] = getid3_lib::BigEndian2Int(substr($atom_data, $esds_offset, 2));
+						$esds_offset += 2;
+					}
+
+					$atom_structure['ES_DecoderConfigDescrTag'] = getid3_lib::BigEndian2Int(substr($atom_data, $esds_offset, 1));
+					$esds_offset += 1;
+					if ($atom_structure['ES_DecoderConfigDescrTag'] != 0x04) {
+						$this->warning('expecting esds.ES_DecoderConfigDescrTag = 0x04, found 0x'.getid3_lib::PrintHexBytes($atom_structure['ES_DecoderConfigDescrTag']).'), at offset '.$atom_structure['offset']);
+						break;
+					}
+					$atom_structure['ES_DecoderConfigDescrTagSize'] = $this->quicktime_read_mp4_descr_length($atom_data, $esds_offset);
+
+					$atom_structure['ES_objectTypeIndication'] = getid3_lib::BigEndian2Int(substr($atom_data, $esds_offset, 1));
+					$esds_offset += 1;
+					// https://stackoverflow.com/questions/3987850
+					// 0x40 = "Audio ISO/IEC 14496-3"                       = MPEG-4 Audio
+					// 0x67 = "Audio ISO/IEC 13818-7 LowComplexity Profile" = MPEG-2 AAC LC
+					// 0x69 = "Audio ISO/IEC 13818-3"                       = MPEG-2 Backward Compatible Audio (MPEG-2 Layers 1, 2, and 3)
+					// 0x6B = "Audio ISO/IEC 11172-3"                       = MPEG-1 Audio (MPEG-1 Layers 1, 2, and 3)
+
+					$streamTypePlusFlags = getid3_lib::BigEndian2Int(substr($atom_data, $esds_offset, 1));
+					$esds_offset += 1;
+					$atom_structure['ES_streamType'] =        ($streamTypePlusFlags & 0xFC) >> 2;
+					$atom_structure['ES_upStream']   = (bool) ($streamTypePlusFlags & 0x02) >> 1;
+					$atom_structure['ES_bufferSizeDB'] = getid3_lib::BigEndian2Int(substr($atom_data, $esds_offset, 3));
+					$esds_offset += 3;
+					$atom_structure['ES_maxBitrate'] = getid3_lib::BigEndian2Int(substr($atom_data, $esds_offset, 4));
+					$esds_offset += 4;
+					$atom_structure['ES_avgBitrate'] = getid3_lib::BigEndian2Int(substr($atom_data, $esds_offset, 4));
+					$esds_offset += 4;
+					if ($atom_structure['ES_avgBitrate']) {
+						$info['quicktime']['audio']['bitrate'] = $atom_structure['ES_avgBitrate'];
+						$info['audio']['bitrate']              = $atom_structure['ES_avgBitrate'];
+					}
+
+					$atom_structure['ES_DecSpecificInfoTag'] = getid3_lib::BigEndian2Int(substr($atom_data, $esds_offset, 1));
+					$esds_offset += 1;
+					if ($atom_structure['ES_DecSpecificInfoTag'] != 0x05) {
+						$this->warning('expecting esds.ES_DecSpecificInfoTag = 0x05, found 0x'.getid3_lib::PrintHexBytes($atom_structure['ES_DecSpecificInfoTag']).'), at offset '.$atom_structure['offset']);
+						break;
+					}
+					$atom_structure['ES_DecSpecificInfoTagSize'] = $this->quicktime_read_mp4_descr_length($atom_data, $esds_offset);
+
+					$atom_structure['ES_DecSpecificInfo'] = getid3_lib::BigEndian2Int(substr($atom_data, $esds_offset, $atom_structure['ES_DecSpecificInfoTagSize']));
+					$esds_offset += $atom_structure['ES_DecSpecificInfoTagSize'];
+
+					$atom_structure['ES_SLConfigDescrTag'] = getid3_lib::BigEndian2Int(substr($atom_data, $esds_offset, 1));
+					$esds_offset += 1;
+					if ($atom_structure['ES_SLConfigDescrTag'] != 0x06) {
+						$this->warning('expecting esds.ES_SLConfigDescrTag = 0x05, found 0x'.getid3_lib::PrintHexBytes($atom_structure['ES_SLConfigDescrTag']).'), at offset '.$atom_structure['offset']);
+						break;
+					}
+					$atom_structure['ES_SLConfigDescrTagSize'] = $this->quicktime_read_mp4_descr_length($atom_data, $esds_offset);
+
+					$atom_structure['ES_SLConfigDescr'] = getid3_lib::BigEndian2Int(substr($atom_data, $esds_offset, $atom_structure['ES_SLConfigDescrTagSize']));
+					$esds_offset += $atom_structure['ES_SLConfigDescrTagSize'];
+					break;
+
+// AVIF-related - https://docs.rs/avif-parse/0.13.2/src/avif_parse/boxes.rs.html
+				case 'pitm': // Primary ITeM
+				case 'iloc': // Item LOCation
+				case 'iinf': // Item INFo
+				case 'iref': // Image REFerence
+				case 'iprp': // Image PRoPerties
+$this->error('AVIF files not currently supported');
+					$atom_structure['data'] = $atom_data;
+					break;
+
+				case 'tfdt': // Track Fragment base media Decode Time box
+				case 'tfhd': // Track Fragment HeaDer box
+				case 'mfhd': // Movie Fragment HeaDer box
+				case 'trun': // Track fragment RUN box
+$this->error('fragmented mp4 files not currently supported');
+					$atom_structure['data'] = $atom_data;
+					break;
+
+				case 'mvex': // MoVie EXtends box
+				case 'pssh': // Protection System Specific Header box
+				case 'sidx': // Segment InDeX box
+				default:
+					$this->warning('Unknown QuickTime atom type: "'.__fn_11836('#[^a-zA-Z0-9 _\\-]#', '?', $atomname).'" ('.trim(getid3_lib::PrintHexBytes($atomname)).'), '.$atomsize.' bytes at offset '.$baseoffset);
+					$atom_structure['data'] = $atom_data;
+					break;
+			}
+		}
+		array_pop($atomHierarchy);
+		return $atom_structure;
+	}
+
+	/**
+	 * @param string $atom_data
+	 * @param int    $baseoffset
+	 * @param array  $atomHierarchy
+	 * @param bool   $ParseAllPossibleAtoms
+	 *
+	 * @return array|false
+	 */
+	public function QuicktimeParseContainerAtom($atom_data, $baseoffset, &$atomHierarchy, $ParseAllPossibleAtoms) {
+		$atom_structure = array();
+		$subatomoffset  = 0;
+		$subatomcounter = 0;
+		if ((strlen($atom_data) == 4) && (getid3_lib::BigEndian2Int($atom_data) == 0x00000000)) {
+			return false;
+		}
+		while ($subatomoffset < strlen($atom_data)) {
+			$subatomsize = getid3_lib::BigEndian2Int(substr($atom_data, $subatomoffset + 0, 4));
+			$subatomname =                           substr($atom_data, $subatomoffset + 4, 4);
+			$subatomdata =                           substr($atom_data, $subatomoffset + 8, $subatomsize - 8);
+			if ($subatomsize == 0) {
+				// Furthermore, for historical reasons the list of atoms is optionally
+				// terminated by a 32-bit integer set to 0. If you are writing a program
+				// to read user data atoms, you should allow for the terminating 0.
+				if (strlen($atom_data) > 12) {
+					$subatomoffset += 4;
+					continue;
+				}
+				break;
+			}
+			if (strlen($subatomdata) < ($subatomsize - 8)) {
+			    // we don't have enough data to decode the subatom.
+			    // this may be because we are refusing to parse large subatoms, or it may be because this atom had its size set too large
+			    // so we passed in the start of a following atom incorrectly?
+			    break;
+			}
+			$atom_structure[$subatomcounter++] = $this->QuicktimeParseAtom($subatomname, $subatomsize, $subatomdata, $baseoffset + $subatomoffset, $atomHierarchy, $ParseAllPossibleAtoms);
+			$subatomoffset += $subatomsize;
+		}
+
+		if (empty($atom_structure)) {
+			return false;
+		}
+
+		return $atom_structure;
+	}
+
+	/**
+	 * @param string $data
+	 * @param int    $offset
+	 *
+	 * @return int
+	 */
+	public function quicktime_read_mp4_descr_length($data, &$offset) {
+		// http://libquicktime.sourcearchive.com/documentation/2:1.0.2plus-pdebian-2build1/esds_8c-source.html
+		$num_bytes = 0;
+		$length    = 0;
+		do {
+			$b = ord(substr($data, $offset++, 1));
+			$length = ($length << 7) | ($b & 0x7F);
+		} while (($b & 0x80) && ($num_bytes++ < 4));
+		return $length;
+	}
+
+	/**
+	 * @param int $languageid
+	 *
+	 * @return string
+	 */
+	public function QuicktimeLanguageLookup($languageid) {
+		// http://developer.apple.com/library/mac/#documentation/QuickTime/QTFF/QTFFChap4/qtff4.html#//apple_ref/doc/uid/TP40000939-CH206-34353
+		static $QuicktimeLanguageLookup = array();
+		if (empty($QuicktimeLanguageLookup)) {
+			$QuicktimeLanguageLookup[0]     = 'English';
+			$QuicktimeLanguageLookup[1]     = 'French';
+			$QuicktimeLanguageLookup[2]     = 'German';
+			$QuicktimeLanguageLookup[3]     = 'Italian';
+			$QuicktimeLanguageLookup[4]     = 'Dutch';
+			$QuicktimeLanguageLookup[5]     = 'Swedish';
+			$QuicktimeLanguageLookup[6]     = 'Spanish';
+			$QuicktimeLanguageLookup[7]     = 'Danish';
+			$QuicktimeLanguageLookup[8]     = 'Portuguese';
+			$QuicktimeLanguageLookup[9]     = 'Norwegian';
+			$QuicktimeLanguageLookup[10]    = 'Hebrew';
+			$QuicktimeLanguageLookup[11]    = 'Japanese';
+			$QuicktimeLanguageLookup[12]    = 'Arabic';
+			$QuicktimeLanguageLookup[13]    = 'Finnish';
+			$QuicktimeLanguageLookup[14]    = 'Greek';
+			$QuicktimeLanguageLookup[15]    = 'Icelandic';
+			$QuicktimeLanguageLookup[16]    = 'Maltese';
+			$QuicktimeLanguageLookup[17]    = 'Turkish';
+			$QuicktimeLanguageLookup[18]    = 'Croatian';
+			$QuicktimeLanguageLookup[19]    = 'Chinese (Traditional)';
+			$QuicktimeLanguageLookup[20]    = 'Urdu';
+			$QuicktimeLanguageLookup[21]    = 'Hindi';
+			$QuicktimeLanguageLookup[22]    = 'Thai';
+			$QuicktimeLanguageLookup[23]    = 'Korean';
+			$QuicktimeLanguageLookup[24]    = 'Lithuanian';
+			$QuicktimeLanguageLookup[25]    = 'Polish';
+			$QuicktimeLanguageLookup[26]    = 'Hungarian';
+			$QuicktimeLanguageLookup[27]    = 'Estonian';
+			$QuicktimeLanguageLookup[28]    = 'Lettish';
+			$QuicktimeLanguageLookup[28]    = 'Latvian';
+			$QuicktimeLanguageLookup[29]    = 'Saamisk';
+			$QuicktimeLanguageLookup[29]    = 'Lappish';
+			$QuicktimeLanguageLookup[30]    = 'Faeroese';
+			$QuicktimeLanguageLookup[31]    = 'Farsi';
+			$QuicktimeLanguageLookup[31]    = 'Persian';
+			$QuicktimeLanguageLookup[32]    = 'Russian';
+			$QuicktimeLanguageLookup[33]    = 'Chinese (Simplified)';
+			$QuicktimeLanguageLookup[34]    = 'Flemish';
+			$QuicktimeLanguageLookup[35]    = 'Irish';
+			$QuicktimeLanguageLookup[36]    = 'Albanian';
+			$QuicktimeLanguageLookup[37]    = 'Romanian';
+			$QuicktimeLanguageLookup[38]    = 'Czech';
+			$QuicktimeLanguageLookup[39]    = 'Slovak';
+			$QuicktimeLanguageLookup[40]    = 'Slovenian';
+			$QuicktimeLanguageLookup[41]    = 'Yiddish';
+			$QuicktimeLanguageLookup[42]    = 'Serbian';
+			$QuicktimeLanguageLookup[43]    = 'Macedonian';
+			$QuicktimeLanguageLookup[44]    = 'Bulgarian';
+			$QuicktimeLanguageLookup[45]    = 'Ukrainian';
+			$QuicktimeLanguageLookup[46]    = 'Byelorussian';
+			$QuicktimeLanguageLookup[47]    = 'Uzbek';
+			$QuicktimeLanguageLookup[48]    = 'Kazakh';
+			$QuicktimeLanguageLookup[49]    = 'Azerbaijani';
+			$QuicktimeLanguageLookup[50]    = 'AzerbaijanAr';
+			$QuicktimeLanguageLookup[51]    = 'Armenian';
+			$QuicktimeLanguageLookup[52]    = 'Georgian';
+			$QuicktimeLanguageLookup[53]    = 'Moldavian';
+			$QuicktimeLanguageLookup[54]    = 'Kirghiz';
+			$QuicktimeLanguageLookup[55]    = 'Tajiki';
+			$QuicktimeLanguageLookup[56]    = 'Turkmen';
+			$QuicktimeLanguageLookup[57]    = 'Mongolian';
+			$QuicktimeLanguageLookup[58]    = 'MongolianCyr';
+			$QuicktimeLanguageLookup[59]    = 'Pashto';
+			$QuicktimeLanguageLookup[60]    = 'Kurdish';
+			$QuicktimeLanguageLookup[61]    = 'Kashmiri';
+			$QuicktimeLanguageLookup[62]    = 'Sindhi';
+			$QuicktimeLanguageLookup[63]    = 'Tibetan';
+			$QuicktimeLanguageLookup[64]    = 'Nepali';
+			$QuicktimeLanguageLookup[65]    = 'Sanskrit';
+			$QuicktimeLanguageLookup[66]    = 'Marathi';
+			$QuicktimeLanguageLookup[67]    = 'Bengali';
+			$QuicktimeLanguageLookup[68]    = 'Assamese';
+			$QuicktimeLanguageLookup[69]    = 'Gujarati';
+			$QuicktimeLanguageLookup[70]    = 'Punjabi';
+			$QuicktimeLanguageLookup[71]    = 'Oriya';
+			$QuicktimeLanguageLookup[72]    = 'Malayalam';
+			$QuicktimeLanguageLookup[73]    = 'Kannada';
+			$QuicktimeLanguageLookup[74]    = 'Tamil';
+			$QuicktimeLanguageLookup[75]    = 'Telugu';
+			$QuicktimeLanguageLookup[76]    = 'Sinhalese';
+			$QuicktimeLanguageLookup[77]    = 'Burmese';
+			$QuicktimeLanguageLookup[78]    = 'Khmer';
+			$QuicktimeLanguageLookup[79]    = 'Lao';
+			$QuicktimeLanguageLookup[80]    = 'Vietnamese';
+			$QuicktimeLanguageLookup[81]    = 'Indonesian';
+			$QuicktimeLanguageLookup[82]    = 'Tagalog';
+			$QuicktimeLanguageLookup[83]    = 'MalayRoman';
+			$QuicktimeLanguageLookup[84]    = 'MalayArabic';
+			$QuicktimeLanguageLookup[85]    = 'Amharic';
+			$QuicktimeLanguageLookup[86]    = 'Tigrinya';
+			$QuicktimeLanguageLookup[87]    = 'Galla';
+			$QuicktimeLanguageLookup[87]    = 'Oromo';
+			$QuicktimeLanguageLookup[88]    = 'Somali';
+			$QuicktimeLanguageLookup[89]    = 'Swahili';
+			$QuicktimeLanguageLookup[90]    = 'Ruanda';
+			$QuicktimeLanguageLookup[91]    = 'Rundi';
+			$QuicktimeLanguageLookup[92]    = 'Chewa';
+			$QuicktimeLanguageLookup[93]    = 'Malagasy';
+			$QuicktimeLanguageLookup[94]    = 'Esperanto';
+			$QuicktimeLanguageLookup[128]   = 'Welsh';
+			$QuicktimeLanguageLookup[129]   = 'Basque';
+			$QuicktimeLanguageLookup[130]   = 'Catalan';
+			$QuicktimeLanguageLookup[131]   = 'Latin';
+			$QuicktimeLanguageLookup[132]   = 'Quechua';
+			$QuicktimeLanguageLookup[133]   = 'Guarani';
+			$QuicktimeLanguageLookup[134]   = 'Aymara';
+			$QuicktimeLanguageLookup[135]   = 'Tatar';
+			$QuicktimeLanguageLookup[136]   = 'Uighur';
+			$QuicktimeLanguageLookup[137]   = 'Dzongkha';
+			$QuicktimeLanguageLookup[138]   = 'JavaneseRom';
+			$QuicktimeLanguageLookup[32767] = 'Unspecified';
+		}
+		if (($languageid > 138) && ($languageid < 32767)) {
+			/*
+			ISO Language Codes - http://www.loc.gov/standards/iso639-2/php/code_list.php
+			Because the language codes specified by ISO 639-2/T are three characters long, they must be packed to fit into a 16-bit field.
+			The packing algorithm must map each of the three characters, which are always lowercase, into a 5-bit integer and then concatenate
+			these integers into the least significant 15 bits of a 16-bit integer, leaving the 16-bit integer's most significant bit set to zero.
+
+			One algorithm for performing this packing is to treat each ISO character as a 16-bit integer. Subtract 0x60 from the first character
+			and multiply by 2^10 (0x400), subtract 0x60 from the second character and multiply by 2^5 (0x20), subtract 0x60 from the third character,
+			and add the three 16-bit values. This will result in a single 16-bit value with the three codes correctly packed into the 15 least
+			significant bits and the most significant bit set to zero.
+			*/
+			$iso_language_id  = '';
+			$iso_language_id .= chr((($languageid & 0x7C00) >> 10) + 0x60);
+			$iso_language_id .= chr((($languageid & 0x03E0) >>  5) + 0x60);
+			$iso_language_id .= chr((($languageid & 0x001F) >>  0) + 0x60);
+			$QuicktimeLanguageLookup[$languageid] = getid3_id3v2::LanguageLookup($iso_language_id);
+		}
+		return (isset($QuicktimeLanguageLookup[$languageid]) ? $QuicktimeLanguageLookup[$languageid] : 'invalid');
+	}
+
+	/**
+	 * @param string $codecid
+	 *
+	 * @return string
+	 */
+	public function QuicktimeVideoCodecLookup($codecid) {
+		static $QuicktimeVideoCodecLookup = array();
+		if (empty($QuicktimeVideoCodecLookup)) {
+			$QuicktimeVideoCodecLookup['.SGI'] = 'SGI';
+			$QuicktimeVideoCodecLookup['3IV1'] = '3ivx MPEG-4 v1';
+			$QuicktimeVideoCodecLookup['3IV2'] = '3ivx MPEG-4 v2';
+			$QuicktimeVideoCodecLookup['3IVX'] = '3ivx MPEG-4';
+			$QuicktimeVideoCodecLookup['8BPS'] = 'Planar RGB';
+			$QuicktimeVideoCodecLookup['avc1'] = 'H.264/MPEG-4 AVC';
+			$QuicktimeVideoCodecLookup['avr '] = 'AVR-JPEG';
+			$QuicktimeVideoCodecLookup['b16g'] = '16Gray';
+			$QuicktimeVideoCodecLookup['b32a'] = '32AlphaGray';
+			$QuicktimeVideoCodecLookup['b48r'] = '48RGB';
+			$QuicktimeVideoCodecLookup['b64a'] = '64ARGB';
+			$QuicktimeVideoCodecLookup['base'] = 'Base';
+			$QuicktimeVideoCodecLookup['clou'] = 'Cloud';
+			$QuicktimeVideoCodecLookup['cmyk'] = 'CMYK';
+			$QuicktimeVideoCodecLookup['cvid'] = 'Cinepak';
+			$QuicktimeVideoCodecLookup['dmb1'] = 'OpenDML JPEG';
+			$QuicktimeVideoCodecLookup['dvc '] = 'DVC-NTSC';
+			$QuicktimeVideoCodecLookup['dvcp'] = 'DVC-PAL';
+			$QuicktimeVideoCodecLookup['dvpn'] = 'DVCPro-NTSC';
+			$QuicktimeVideoCodecLookup['dvpp'] = 'DVCPro-PAL';
+			$QuicktimeVideoCodecLookup['fire'] = 'Fire';
+			$QuicktimeVideoCodecLookup['flic'] = 'FLC';
+			$QuicktimeVideoCodecLookup['gif '] = 'GIF';
+			$QuicktimeVideoCodecLookup['h261'] = 'H261';
+			$QuicktimeVideoCodecLookup['h263'] = 'H263';
+			$QuicktimeVideoCodecLookup['hvc1'] = 'H.265/HEVC';
+			$QuicktimeVideoCodecLookup['IV41'] = 'Indeo4';
+			$QuicktimeVideoCodecLookup['jpeg'] = 'JPEG';
+			$QuicktimeVideoCodecLookup['kpcd'] = 'PhotoCD';
+			$QuicktimeVideoCodecLookup['mjpa'] = 'Motion JPEG-A';
+			$QuicktimeVideoCodecLookup['mjpb'] = 'Motion JPEG-B';
+			$QuicktimeVideoCodecLookup['msvc'] = 'Microsoft Video1';
+			$QuicktimeVideoCodecLookup['myuv'] = 'MPEG YUV420';
+			$QuicktimeVideoCodecLookup['path'] = 'Vector';
+			$QuicktimeVideoCodecLookup['png '] = 'PNG';
+			$QuicktimeVideoCodecLookup['PNTG'] = 'MacPaint';
+			$QuicktimeVideoCodecLookup['qdgx'] = 'QuickDrawGX';
+			$QuicktimeVideoCodecLookup['qdrw'] = 'QuickDraw';
+			$QuicktimeVideoCodecLookup['raw '] = 'RAW';
+			$QuicktimeVideoCodecLookup['ripl'] = 'WaterRipple';
+			$QuicktimeVideoCodecLookup['rpza'] = 'Video';
+			$QuicktimeVideoCodecLookup['smc '] = 'Graphics';
+			$QuicktimeVideoCodecLookup['SVQ1'] = 'Sorenson Video 1';
+			$QuicktimeVideoCodecLookup['SVQ1'] = 'Sorenson Video 3';
+			$QuicktimeVideoCodecLookup['syv9'] = 'Sorenson YUV9';
+			$QuicktimeVideoCodecLookup['tga '] = 'Targa';
+			$QuicktimeVideoCodecLookup['tiff'] = 'TIFF';
+			$QuicktimeVideoCodecLookup['WRAW'] = 'Windows RAW';
+			$QuicktimeVideoCodecLookup['WRLE'] = 'BMP';
+			$QuicktimeVideoCodecLookup['y420'] = 'YUV420';
+			$QuicktimeVideoCodecLookup['yuv2'] = 'ComponentVideo';
+			$QuicktimeVideoCodecLookup['yuvs'] = 'ComponentVideoUnsigned';
+			$QuicktimeVideoCodecLookup['yuvu'] = 'ComponentVideoSigned';
+		}
+		return (isset($QuicktimeVideoCodecLookup[$codecid]) ? $QuicktimeVideoCodecLookup[$codecid] : '');
+	}
+
+	/**
+	 * @param string $codecid
+	 *
+	 * @return mixed|string
+	 */
+	public function QuicktimeAudioCodecLookup($codecid) {
+		static $QuicktimeAudioCodecLookup = array();
+		if (empty($QuicktimeAudioCodecLookup)) {
+			$QuicktimeAudioCodecLookup['.mp3']          = 'Fraunhofer MPEG Layer-III alias';
+			$QuicktimeAudioCodecLookup['aac ']          = 'ISO/IEC 14496-3 AAC';
+			$QuicktimeAudioCodecLookup['agsm']          = 'Apple GSM 10:1';
+			$QuicktimeAudioCodecLookup['alac']          = 'Apple Lossless Audio Codec';
+			$QuicktimeAudioCodecLookup['alaw']          = 'A-law 2:1';
+			$QuicktimeAudioCodecLookup['conv']          = 'Sample Format';
+			$QuicktimeAudioCodecLookup['dvca']          = 'DV';
+			$QuicktimeAudioCodecLookup['dvi ']          = 'DV 4:1';
+			$QuicktimeAudioCodecLookup['eqal']          = 'Frequency Equalizer';
+			$QuicktimeAudioCodecLookup['fl32']          = '32-bit Floating Point';
+			$QuicktimeAudioCodecLookup['fl64']          = '64-bit Floating Point';
+			$QuicktimeAudioCodecLookup['ima4']          = 'Interactive Multimedia Association 4:1';
+			$QuicktimeAudioCodecLookup['in24']          = '24-bit Integer';
+			$QuicktimeAudioCodecLookup['in32']          = '32-bit Integer';
+			$QuicktimeAudioCodecLookup['lpc ']          = 'LPC 23:1';
+			$QuicktimeAudioCodecLookup['MAC3']          = 'Macintosh Audio Compression/Expansion (MACE) 3:1';
+			$QuicktimeAudioCodecLookup['MAC6']          = 'Macintosh Audio Compression/Expansion (MACE) 6:1';
+			$QuicktimeAudioCodecLookup['mixb']          = '8-bit Mixer';
+			$QuicktimeAudioCodecLookup['mixw']          = '16-bit Mixer';
+			$QuicktimeAudioCodecLookup['mp4a']          = 'ISO/IEC 14496-3 AAC';
+			$QuicktimeAudioCodecLookup['MS'."\x00\x02"] = 'Microsoft ADPCM';
+			$QuicktimeAudioCodecLookup['MS'."\x00\x11"] = 'DV IMA';
+			$QuicktimeAudioCodecLookup['MS'."\x00\x55"] = 'Fraunhofer MPEG Layer III';
+			$QuicktimeAudioCodecLookup['NONE']          = 'No Encoding';
+			$QuicktimeAudioCodecLookup['Qclp']          = 'Qualcomm PureVoice';
+			$QuicktimeAudioCodecLookup['QDM2']          = 'QDesign Music 2';
+			$QuicktimeAudioCodecLookup['QDMC']          = 'QDesign Music 1';
+			$QuicktimeAudioCodecLookup['ratb']          = '8-bit Rate';
+			$QuicktimeAudioCodecLookup['ratw']          = '16-bit Rate';
+			$QuicktimeAudioCodecLookup['raw ']          = 'raw PCM';
+			$QuicktimeAudioCodecLookup['sour']          = 'Sound Source';
+			$QuicktimeAudioCodecLookup['sowt']          = 'signed/two\'s complement (Little Endian)';
+			$QuicktimeAudioCodecLookup['str1']          = 'Iomega MPEG layer II';
+			$QuicktimeAudioCodecLookup['str2']          = 'Iomega MPEG *layer II';
+			$QuicktimeAudioCodecLookup['str3']          = 'Iomega MPEG **layer II';
+			$QuicktimeAudioCodecLookup['str4']          = 'Iomega MPEG ***layer II';
+			$QuicktimeAudioCodecLookup['twos']          = 'signed/two\'s complement (Big Endian)';
+			$QuicktimeAudioCodecLookup['ulaw']          = 'mu-law 2:1';
+		}
+		return (isset($QuicktimeAudioCodecLookup[$codecid]) ? $QuicktimeAudioCodecLookup[$codecid] : '');
+	}
+
+	/**
+	 * @param string $compressionid
+	 *
+	 * @return string
+	 */
+	public function QuicktimeDCOMLookup($compressionid) {
+		static $QuicktimeDCOMLookup = array();
+		if (empty($QuicktimeDCOMLookup)) {
+			$QuicktimeDCOMLookup['zlib'] = 'ZLib Deflate';
+			$QuicktimeDCOMLookup['adec'] = 'Apple Compression';
+		}
+		return (isset($QuicktimeDCOMLookup[$compressionid]) ? $QuicktimeDCOMLookup[$compressionid] : '');
+	}
+
+	/**
+	 * @param int $colordepthid
+	 *
+	 * @return string
+	 */
+	public function QuicktimeColorNameLookup($colordepthid) {
+		static $QuicktimeColorNameLookup = array();
+		if (empty($QuicktimeColorNameLookup)) {
+			$QuicktimeColorNameLookup[1]  = '2-color (monochrome)';
+			$QuicktimeColorNameLookup[2]  = '4-color';
+			$QuicktimeColorNameLookup[4]  = '16-color';
+			$QuicktimeColorNameLookup[8]  = '256-color';
+			$QuicktimeColorNameLookup[16] = 'thousands (16-bit color)';
+			$QuicktimeColorNameLookup[24] = 'millions (24-bit color)';
+			$QuicktimeColorNameLookup[32] = 'millions+ (32-bit color)';
+			$QuicktimeColorNameLookup[33] = 'black & white';
+			$QuicktimeColorNameLookup[34] = '4-gray';
+			$QuicktimeColorNameLookup[36] = '16-gray';
+			$QuicktimeColorNameLookup[40] = '256-gray';
+		}
+		return (isset($QuicktimeColorNameLookup[$colordepthid]) ? $QuicktimeColorNameLookup[$colordepthid] : 'invalid');
+	}
+
+	/**
+	 * @param int $stik
+	 *
+	 * @return string
+	 */
+	public function QuicktimeSTIKLookup($stik) {
+		static $QuicktimeSTIKLookup = array();
+		if (empty($QuicktimeSTIKLookup)) {
+			$QuicktimeSTIKLookup[0]  = 'Movie';
+			$QuicktimeSTIKLookup[1]  = 'Normal';
+			$QuicktimeSTIKLookup[2]  = 'Audiobook';
+			$QuicktimeSTIKLookup[5]  = 'Whacked Bookmark';
+			$QuicktimeSTIKLookup[6]  = 'Music Video';
+			$QuicktimeSTIKLookup[9]  = 'Short Film';
+			$QuicktimeSTIKLookup[10] = 'TV Show';
+			$QuicktimeSTIKLookup[11] = 'Booklet';
+			$QuicktimeSTIKLookup[14] = 'Ringtone';
+			$QuicktimeSTIKLookup[21] = 'Podcast';
+		}
+		return (isset($QuicktimeSTIKLookup[$stik]) ? $QuicktimeSTIKLookup[$stik] : 'invalid');
+	}
+
+	/**
+	 * @param int $audio_profile_id
+	 *
+	 * @return string
+	 */
+	public function QuicktimeIODSaudioProfileName($audio_profile_id) {
+		static $QuicktimeIODSaudioProfileNameLookup = array();
+		if (empty($QuicktimeIODSaudioProfileNameLookup)) {
+			$QuicktimeIODSaudioProfileNameLookup = array(
+				0x00 => 'ISO Reserved (0x00)',
+				0x01 => 'Main Audio Profile @ Level 1',
+				0x02 => 'Main Audio Profile @ Level 2',
+				0x03 => 'Main Audio Profile @ Level 3',
+				0x04 => 'Main Audio Profile @ Level 4',
+				0x05 => 'Scalable Audio Profile @ Level 1',
+				0x06 => 'Scalable Audio Profile @ Level 2',
+				0x07 => 'Scalable Audio Profile @ Level 3',
+				0x08 => 'Scalable Audio Profile @ Level 4',
+				0x09 => 'Speech Audio Profile @ Level 1',
+				0x0A => 'Speech Audio Profile @ Level 2',
+				0x0B => 'Synthetic Audio Profile @ Level 1',
+				0x0C => 'Synthetic Audio Profile @ Level 2',
+				0x0D => 'Synthetic Audio Profile @ Level 3',
+				0x0E => 'High Quality Audio Profile @ Level 1',
+				0x0F => 'High Quality Audio Profile @ Level 2',
+				0x10 => 'High Quality Audio Profile @ Level 3',
+				0x11 => 'High Quality Audio Profile @ Level 4',
+				0x12 => 'High Quality Audio Profile @ Level 5',
+				0x13 => 'High Quality Audio Profile @ Level 6',
+				0x14 => 'High Quality Audio Profile @ Level 7',
+				0x15 => 'High Quality Audio Profile @ Level 8',
+				0x16 => 'Low Delay Audio Profile @ Level 1',
+				0x17 => 'Low Delay Audio Profile @ Level 2',
+				0x18 => 'Low Delay Audio Profile @ Level 3',
+				0x19 => 'Low Delay Audio Profile @ Level 4',
+				0x1A => 'Low Delay Audio Profile @ Level 5',
+				0x1B => 'Low Delay Audio Profile @ Level 6',
+				0x1C => 'Low Delay Audio Profile @ Level 7',
+				0x1D => 'Low Delay Audio Profile @ Level 8',
+				0x1E => 'Natural Audio Profile @ Level 1',
+				0x1F => 'Natural Audio Profile @ Level 2',
+				0x20 => 'Natural Audio Profile @ Level 3',
+				0x21 => 'Natural Audio Profile @ Level 4',
+				0x22 => 'Mobile Audio Internetworking Profile @ Level 1',
+				0x23 => 'Mobile Audio Internetworking Profile @ Level 2',
+				0x24 => 'Mobile Audio Internetworking Profile @ Level 3',
+				0x25 => 'Mobile Audio Internetworking Profile @ Level 4',
+				0x26 => 'Mobile Audio Internetworking Profile @ Level 5',
+				0x27 => 'Mobile Audio Internetworking Profile @ Level 6',
+				0x28 => 'AAC Profile @ Level 1',
+				0x29 => 'AAC Profile @ Level 2',
+				0x2A => 'AAC Profile @ Level 4',
+				0x2B => 'AAC Profile @ Level 5',
+				0x2C => 'High Efficiency AAC Profile @ Level 2',
+				0x2D => 'High Efficiency AAC Profile @ Level 3',
+				0x2E => 'High Efficiency AAC Profile @ Level 4',
+				0x2F => 'High Efficiency AAC Profile @ Level 5',
+				0xFE => 'Not part of MPEG-4 audio profiles',
+				0xFF => 'No audio capability required',
+			);
+		}
+		return (isset($QuicktimeIODSaudioProfileNameLookup[$audio_profile_id]) ? $QuicktimeIODSaudioProfileNameLookup[$audio_profile_id] : 'ISO Reserved / User Private');
+	}
+
+	/**
+	 * @param int $video_profile_id
+	 *
+	 * @return string
+	 */
+	public function QuicktimeIODSvideoProfileName($video_profile_id) {
+		static $QuicktimeIODSvideoProfileNameLookup = array();
+		if (empty($QuicktimeIODSvideoProfileNameLookup)) {
+			$QuicktimeIODSvideoProfileNameLookup = array(
+				0x00 => 'Reserved (0x00) Profile',
+				0x01 => 'Simple Profile @ Level 1',
+				0x02 => 'Simple Profile @ Level 2',
+				0x03 => 'Simple Profile @ Level 3',
+				0x08 => 'Simple Profile @ Level 0',
+				0x10 => 'Simple Scalable Profile @ Level 0',
+				0x11 => 'Simple Scalable Profile @ Level 1',
+				0x12 => 'Simple Scalable Profile @ Level 2',
+				0x15 => 'AVC/H264 Profile',
+				0x21 => 'Core Profile @ Level 1',
+				0x22 => 'Core Profile @ Level 2',
+				0x32 => 'Main Profile @ Level 2',
+				0x33 => 'Main Profile @ Level 3',
+				0x34 => 'Main Profile @ Level 4',
+				0x42 => 'N-bit Profile @ Level 2',
+				0x51 => 'Scalable Texture Profile @ Level 1',
+				0x61 => 'Simple Face Animation Profile @ Level 1',
+				0x62 => 'Simple Face Animation Profile @ Level 2',
+				0x63 => 'Simple FBA Profile @ Level 1',
+				0x64 => 'Simple FBA Profile @ Level 2',
+				0x71 => 'Basic Animated Texture Profile @ Level 1',
+				0x72 => 'Basic Animated Texture Profile @ Level 2',
+				0x81 => 'Hybrid Profile @ Level 1',
+				0x82 => 'Hybrid Profile @ Level 2',
+				0x91 => 'Advanced Real Time Simple Profile @ Level 1',
+				0x92 => 'Advanced Real Time Simple Profile @ Level 2',
+				0x93 => 'Advanced Real Time Simple Profile @ Level 3',
+				0x94 => 'Advanced Real Time Simple Profile @ Level 4',
+				0xA1 => 'Core Scalable Profile @ Level1',
+				0xA2 => 'Core Scalable Profile @ Level2',
+				0xA3 => 'Core Scalable Profile @ Level3',
+				0xB1 => 'Advanced Coding Efficiency Profile @ Level 1',
+				0xB2 => 'Advanced Coding Efficiency Profile @ Level 2',
+				0xB3 => 'Advanced Coding Efficiency Profile @ Level 3',
+				0xB4 => 'Advanced Coding Efficiency Profile @ Level 4',
+				0xC1 => 'Advanced Core Profile @ Level 1',
+				0xC2 => 'Advanced Core Profile @ Level 2',
+				0xD1 => 'Advanced Scalable Texture @ Level1',
+				0xD2 => 'Advanced Scalable Texture @ Level2',
+				0xE1 => 'Simple Studio Profile @ Level 1',
+				0xE2 => 'Simple Studio Profile @ Level 2',
+				0xE3 => 'Simple Studio Profile @ Level 3',
+				0xE4 => 'Simple Studio Profile @ Level 4',
+				0xE5 => 'Core Studio Profile @ Level 1',
+				0xE6 => 'Core Studio Profile @ Level 2',
+				0xE7 => 'Core Studio Profile @ Level 3',
+				0xE8 => 'Core Studio Profile @ Level 4',
+				0xF0 => 'Advanced Simple Profile @ Level 0',
+				0xF1 => 'Advanced Simple Profile @ Level 1',
+				0xF2 => 'Advanced Simple Profile @ Level 2',
+				0xF3 => 'Advanced Simple Profile @ Level 3',
+				0xF4 => 'Advanced Simple Profile @ Level 4',
+				0xF5 => 'Advanced Simple Profile @ Level 5',
+				0xF7 => 'Advanced Simple Profile @ Level 3b',
+				0xF8 => 'Fine Granularity Scalable Profile @ Level 0',
+				0xF9 => 'Fine Granularity Scalable Profile @ Level 1',
+				0xFA => 'Fine Granularity Scalable Profile @ Level 2',
+				0xFB => 'Fine Granularity Scalable Profile @ Level 3',
+				0xFC => 'Fine Granularity Scalable Profile @ Level 4',
+				0xFD => 'Fine Granularity Scalable Profile @ Level 5',
+				0xFE => 'Not part of MPEG-4 Visual profiles',
+				0xFF => 'No visual capability required',
+			);
+		}
+		return (isset($QuicktimeIODSvideoProfileNameLookup[$video_profile_id]) ? $QuicktimeIODSvideoProfileNameLookup[$video_profile_id] : 'ISO Reserved Profile');
+	}
+
+	/**
+	 * @param int $rtng
+	 *
+	 * @return string
+	 */
+	public function QuicktimeContentRatingLookup($rtng) {
+		static $QuicktimeContentRatingLookup = array();
+		if (empty($QuicktimeContentRatingLookup)) {
+			$QuicktimeContentRatingLookup[0]  = 'None';
+			$QuicktimeContentRatingLookup[1]  = 'Explicit';
+			$QuicktimeContentRatingLookup[2]  = 'Clean';
+			$QuicktimeContentRatingLookup[4]  = 'Explicit (old)';
+		}
+		return (isset($QuicktimeContentRatingLookup[$rtng]) ? $QuicktimeContentRatingLookup[$rtng] : 'invalid');
+	}
+
+	/**
+	 * @param int $akid
+	 *
+	 * @return string
+	 */
+	public function QuicktimeStoreAccountTypeLookup($akid) {
+		static $QuicktimeStoreAccountTypeLookup = array();
+		if (empty($QuicktimeStoreAccountTypeLookup)) {
+			$QuicktimeStoreAccountTypeLookup[0] = 'iTunes';
+			$QuicktimeStoreAccountTypeLookup[1] = 'AOL';
+		}
+		return (isset($QuicktimeStoreAccountTypeLookup[$akid]) ? $QuicktimeStoreAccountTypeLookup[$akid] : 'invalid');
+	}
+
+	/**
+	 * @param int $sfid
+	 *
+	 * @return string
+	 */
+	public function QuicktimeStoreFrontCodeLookup($sfid) {
+		static $QuicktimeStoreFrontCodeLookup = array();
+		if (empty($QuicktimeStoreFrontCodeLookup)) {
+			$QuicktimeStoreFrontCodeLookup[143460] = 'Australia';
+			$QuicktimeStoreFrontCodeLookup[143445] = 'Austria';
+			$QuicktimeStoreFrontCodeLookup[143446] = 'Belgium';
+			$QuicktimeStoreFrontCodeLookup[143455] = 'Canada';
+			$QuicktimeStoreFrontCodeLookup[143458] = 'Denmark';
+			$QuicktimeStoreFrontCodeLookup[143447] = 'Finland';
+			$QuicktimeStoreFrontCodeLookup[143442] = 'France';
+			$QuicktimeStoreFrontCodeLookup[143443] = 'Germany';
+			$QuicktimeStoreFrontCodeLookup[143448] = 'Greece';
+			$QuicktimeStoreFrontCodeLookup[143449] = 'Ireland';
+			$QuicktimeStoreFrontCodeLookup[143450] = 'Italy';
+			$QuicktimeStoreFrontCodeLookup[143462] = 'Japan';
+			$QuicktimeStoreFrontCodeLookup[143451] = 'Luxembourg';
+			$QuicktimeStoreFrontCodeLookup[143452] = 'Netherlands';
+			$QuicktimeStoreFrontCodeLookup[143461] = 'New Zealand';
+			$QuicktimeStoreFrontCodeLookup[143457] = 'Norway';
+			$QuicktimeStoreFrontCodeLookup[143453] = 'Portugal';
+			$QuicktimeStoreFrontCodeLookup[143454] = 'Spain';
+			$QuicktimeStoreFrontCodeLookup[143456] = 'Sweden';
+			$QuicktimeStoreFrontCodeLookup[143459] = 'Switzerland';
+			$QuicktimeStoreFrontCodeLookup[143444] = 'United Kingdom';
+			$QuicktimeStoreFrontCodeLookup[143441] = 'United States';
+		}
+		return (isset($QuicktimeStoreFrontCodeLookup[$sfid]) ? $QuicktimeStoreFrontCodeLookup[$sfid] : 'invalid');
+	}
+
+	/**
+	 * @param string $keyname
+	 * @param string|array $data
+	 * @param string $boxname
+	 *
+	 * @return bool
+	 */
+	public function CopyToAppropriateCommentsSection($keyname, $data, $boxname='') {
+		static $handyatomtranslatorarray = array();
+		if (empty($handyatomtranslatorarray)) {
+			// http://www.geocities.com/xhelmboyx/quicktime/formats/qtm-layout.txt
+			// http://www.geocities.com/xhelmboyx/quicktime/formats/mp4-layout.txt
+			// http://atomicparsley.sourceforge.net/mpeg-4files.html
+			// https://code.google.com/p/mp4v2/wiki/iTunesMetadata
+			$handyatomtranslatorarray["\xA9".'alb'] = 'album';               // iTunes 4.0
+			$handyatomtranslatorarray["\xA9".'ART'] = 'artist';
+			$handyatomtranslatorarray["\xA9".'art'] = 'artist';              // iTunes 4.0
+			$handyatomtranslatorarray["\xA9".'aut'] = 'author';
+			$handyatomtranslatorarray["\xA9".'cmt'] = 'comment';             // iTunes 4.0
+			$handyatomtranslatorarray["\xA9".'com'] = 'comment';
+			$handyatomtranslatorarray["\xA9".'cpy'] = 'copyright';
+			$handyatomtranslatorarray["\xA9".'day'] = 'creation_date';       // iTunes 4.0
+			$handyatomtranslatorarray["\xA9".'dir'] = 'director';
+			$handyatomtranslatorarray["\xA9".'ed1'] = 'edit1';
+			$handyatomtranslatorarray["\xA9".'ed2'] = 'edit2';
+			$handyatomtranslatorarray["\xA9".'ed3'] = 'edit3';
+			$handyatomtranslatorarray["\xA9".'ed4'] = 'edit4';
+			$handyatomtranslatorarray["\xA9".'ed5'] = 'edit5';
+			$handyatomtranslatorarray["\xA9".'ed6'] = 'edit6';
+			$handyatomtranslatorarray["\xA9".'ed7'] = 'edit7';
+			$handyatomtranslatorarray["\xA9".'ed8'] = 'edit8';
+			$handyatomtranslatorarray["\xA9".'ed9'] = 'edit9';
+			$handyatomtranslatorarray["\xA9".'enc'] = 'encoded_by';
+			$handyatomtranslatorarray["\xA9".'fmt'] = 'format';
+			$handyatomtranslatorarray["\xA9".'gen'] = 'genre';               // iTunes 4.0
+			$handyatomtranslatorarray["\xA9".'grp'] = 'grouping';            // iTunes 4.2
+			$handyatomtranslatorarray["\xA9".'hst'] = 'host_computer';
+			$handyatomtranslatorarray["\xA9".'inf'] = 'information';
+			$handyatomtranslatorarray["\xA9".'lyr'] = 'lyrics';              // iTunes 5.0
+			$handyatomtranslatorarray["\xA9".'mak'] = 'make';
+			$handyatomtranslatorarray["\xA9".'mod'] = 'model';
+			$handyatomtranslatorarray["\xA9".'nam'] = 'title';               // iTunes 4.0
+			$handyatomtranslatorarray["\xA9".'ope'] = 'composer';
+			$handyatomtranslatorarray["\xA9".'prd'] = 'producer';
+			$handyatomtranslatorarray["\xA9".'PRD'] = 'product';
+			$handyatomtranslatorarray["\xA9".'prf'] = 'performers';
+			$handyatomtranslatorarray["\xA9".'req'] = 'system_requirements';
+			$handyatomtranslatorarray["\xA9".'src'] = 'source_credit';
+			$handyatomtranslatorarray["\xA9".'swr'] = 'software';
+			$handyatomtranslatorarray["\xA9".'too'] = 'encoding_tool';       // iTunes 4.0
+			$handyatomtranslatorarray["\xA9".'trk'] = 'track_number';
+			$handyatomtranslatorarray["\xA9".'url'] = 'url';
+			$handyatomtranslatorarray["\xA9".'wrn'] = 'warning';
+			$handyatomtranslatorarray["\xA9".'wrt'] = 'composer';
+			$handyatomtranslatorarray['aART'] = 'album_artist';
+			$handyatomtranslatorarray['apID'] = 'purchase_account';
+			$handyatomtranslatorarray['catg'] = 'category';            // iTunes 4.9
+			$handyatomtranslatorarray['covr'] = 'picture';             // iTunes 4.0
+			$handyatomtranslatorarray['cpil'] = 'compilation';         // iTunes 4.0
+			$handyatomtranslatorarray['cprt'] = 'copyright';           // iTunes 4.0?
+			$handyatomtranslatorarray['desc'] = 'description';         // iTunes 5.0
+			$handyatomtranslatorarray['disk'] = 'disc_number';         // iTunes 4.0
+			$handyatomtranslatorarray['egid'] = 'episode_guid';        // iTunes 4.9
+			$handyatomtranslatorarray['gnre'] = 'genre';               // iTunes 4.0
+			$handyatomtranslatorarray['hdvd'] = 'hd_video';            // iTunes 4.0
+			$handyatomtranslatorarray['ldes'] = 'description_long';    //
+			$handyatomtranslatorarray['keyw'] = 'keyword';             // iTunes 4.9
+			$handyatomtranslatorarray['pcst'] = 'podcast';             // iTunes 4.9
+			$handyatomtranslatorarray['pgap'] = 'gapless_playback';    // iTunes 7.0
+			$handyatomtranslatorarray['purd'] = 'purchase_date';       // iTunes 6.0.2
+			$handyatomtranslatorarray['purl'] = 'podcast_url';         // iTunes 4.9
+			$handyatomtranslatorarray['rtng'] = 'rating';              // iTunes 4.0
+			$handyatomtranslatorarray['soaa'] = 'sort_album_artist';   //
+			$handyatomtranslatorarray['soal'] = 'sort_album';          //
+			$handyatomtranslatorarray['soar'] = 'sort_artist';         //
+			$handyatomtranslatorarray['soco'] = 'sort_composer';       //
+			$handyatomtranslatorarray['sonm'] = 'sort_title';          //
+			$handyatomtranslatorarray['sosn'] = 'sort_show';           //
+			$handyatomtranslatorarray['stik'] = 'stik';                // iTunes 4.9
+			$handyatomtranslatorarray['tmpo'] = 'bpm';                 // iTunes 4.0
+			$handyatomtranslatorarray['trkn'] = 'track_number';        // iTunes 4.0
+			$handyatomtranslatorarray['tven'] = 'tv_episode_id';       //
+			$handyatomtranslatorarray['tves'] = 'tv_episode';          // iTunes 6.0
+			$handyatomtranslatorarray['tvnn'] = 'tv_network_name';     // iTunes 6.0
+			$handyatomtranslatorarray['tvsh'] = 'tv_show_name';        // iTunes 6.0
+			$handyatomtranslatorarray['tvsn'] = 'tv_season';           // iTunes 6.0
+
+			// boxnames:
+			/*
+			$handyatomtranslatorarray['iTunSMPB']                    = 'iTunSMPB';
+			$handyatomtranslatorarray['iTunNORM']                    = 'iTunNORM';
+			$handyatomtranslatorarray['Encoding Params']             = 'Encoding Params';
+			$handyatomtranslatorarray['replaygain_track_gain']       = 'replaygain_track_gain';
+			$handyatomtranslatorarray['replaygain_track_peak']       = 'replaygain_track_peak';
+			$handyatomtranslatorarray['replaygain_track_minmax']     = 'replaygain_track_minmax';
+			$handyatomtranslatorarray['MusicIP PUID']                = 'MusicIP PUID';
+			$handyatomtranslatorarray['MusicBrainz Artist Id']       = 'MusicBrainz Artist Id';
+			$handyatomtranslatorarray['MusicBrainz Album Id']        = 'MusicBrainz Album Id';
+			$handyatomtranslatorarray['MusicBrainz Album Artist Id'] = 'MusicBrainz Album Artist Id';
+			$handyatomtranslatorarray['MusicBrainz Track Id']        = 'MusicBrainz Track Id';
+			$handyatomtranslatorarray['MusicBrainz Disc Id']         = 'MusicBrainz Disc Id';
+
+			// http://age.hobba.nl/audio/tag_frame_reference.html
+			$handyatomtranslatorarray['PLAY_COUNTER']                = 'play_counter'; // Foobar2000 - https://www.getid3.org/phpBB3/viewtopic.php?t=1355
+			$handyatomtranslatorarray['MEDIATYPE']                   = 'mediatype';    // Foobar2000 - https://www.getid3.org/phpBB3/viewtopic.php?t=1355
+			*/
+		}
+		$info = &$this->getid3->info;
+		$comment_key = '';
+		if ($boxname && ($boxname != $keyname)) {
+			$comment_key = (isset($handyatomtranslatorarray[$boxname]) ? $handyatomtranslatorarray[$boxname] : $boxname);
+		} elseif (isset($handyatomtranslatorarray[$keyname])) {
+			$comment_key = $handyatomtranslatorarray[$keyname];
+		}
+		if ($comment_key) {
+			if ($comment_key == 'picture') {
+				// already copied directly into [comments][picture] elsewhere, do not re-copy here
+				return true;
+			}
+			$gooddata = array($data);
+			if ($comment_key == 'genre') {
+				// some other taggers separate multiple genres with semicolon, e.g. "Heavy Metal;Thrash Metal;Metal"
+				$gooddata = explode(';', $data);
+			}
+			foreach ($gooddata as $data) {
+				if (!empty($info['quicktime']['comments'][$comment_key]) && in_array($data, $info['quicktime']['comments'][$comment_key], true)) {
+					// avoid duplicate copies of identical data
+					continue;
+				}
+				$info['quicktime']['comments'][$comment_key][] = $data;
+			}
+		}
+		return true;
+	}
+
+	/**
+	 * @param string $lstring
+	 * @param int    $count
+	 *
+	 * @return string
+	 */
+	public function LociString($lstring, &$count) {
+		// Loci strings are UTF-8 or UTF-16 and null (x00/x0000) terminated. UTF-16 has a BOM
+		// Also need to return the number of bytes the string occupied so additional fields can be extracted
+		$len = strlen($lstring);
+		if ($len == 0) {
+			$count = 0;
+			return '';
+		}
+		if ($lstring[0] == "\x00") {
+			$count = 1;
+			return '';
+		}
+		// check for BOM
+		if (($len > 2) && ((($lstring[0] == "\xFE") && ($lstring[1] == "\xFF")) || (($lstring[0] == "\xFF") && ($lstring[1] == "\xFE")))) {
+			// UTF-16
+			if (preg_match('/(.*)\x00/', $lstring, $lmatches)) {
+				$count = strlen($lmatches[1]) * 2 + 2; //account for 2 byte characters and trailing \x0000
+				return getid3_lib::iconv_fallback_utf16_utf8($lmatches[1]);
+			} else {
+				return '';
+			}
+		}
+		// UTF-8
+		if (preg_match('/(.*)\x00/', $lstring, $lmatches)) {
+			$count = strlen($lmatches[1]) + 1; //account for trailing \x00
+			return $lmatches[1];
+		}
+		return '';
+	}
+
+	/**
+	 * @param string $nullterminatedstring
+	 *
+	 * @return string
+	 */
+	public function NoNullString($nullterminatedstring) {
+		// remove the single null terminator on null terminated strings
+		if (substr($nullterminatedstring, strlen($nullterminatedstring) - 1, 1) === "\x00") {
+			return substr($nullterminatedstring, 0, strlen($nullterminatedstring) - 1);
+		}
+		return $nullterminatedstring;
+	}
+
+	/**
+	 * @param string $pascalstring
+	 *
+	 * @return string
+	 */
+	public function Pascal2String($pascalstring) {
+		// Pascal strings have 1 unsigned byte at the beginning saying how many chars (1-255) are in the string
+		return substr($pascalstring, 1);
+	}
+
+	/**
+	 * @param string $pascalstring
+	 *
+	 * @return string
+	 */
+	public function MaybePascal2String($pascalstring) {
+		// Pascal strings have 1 unsigned byte at the beginning saying how many chars (1-255) are in the string
+		// Check if string actually is in this format or written incorrectly, straight string, or null-terminated string
+		if (ord(substr($pascalstring, 0, 1)) == (strlen($pascalstring) - 1)) {
+			return substr($pascalstring, 1);
+		} elseif (substr($pascalstring, -1, 1) == "\x00") {
+			// appears to be null-terminated instead of Pascal-style
+			return substr($pascalstring, 0, -1);
+		}
+		return $pascalstring;
+	}
+
+
+	/**
+	 * Helper functions for m4b audiobook chapters
+	 * code by Steffen Hartmann 2015-Nov-08.
+	 *
+	 * @param array  $info
+	 * @param string $tag
+	 * @param string $history
+	 * @param array  $result
+	 */
+	public function search_tag_by_key($info, $tag, $history, &$result) {
+		foreach ($info as $key => $value) {
+			$key_history = $history.'/'.$key;
+			if ($key === $tag) {
+				$result[] = array($key_history, $info);
+			} else {
+				if (is_array($value)) {
+					$this->search_tag_by_key($value, $tag, $key_history, $result);
+				}
+			}
+		}
+	}
+
+	/**
+	 * @param array  $info
+	 * @param string $k
+	 * @param string $v
+	 * @param string $history
+	 * @param array  $result
+	 */
+	public function search_tag_by_pair($info, $k, $v, $history, &$result) {
+		foreach ($info as $key => $value) {
+			$key_history = $history.'/'.$key;
+			if (($key === $k) && ($value === $v)) {
+				$result[] = array($key_history, $info);
+			} else {
+				if (is_array($value)) {
+					$this->search_tag_by_pair($value, $k, $v, $key_history, $result);
+				}
+			}
+		}
+	}
+
+	/**
+	 * @param array $info
+	 *
+	 * @return array
+	 */
+	public function quicktime_time_to_sample_table($info) {
+		$res = array();
+		$this->search_tag_by_pair($info['quicktime']['moov'], 'name', 'stbl', 'quicktime/moov', $res);
+		foreach ($res as $value) {
+			$stbl_res = array();
+			$this->search_tag_by_pair($value[1], 'data_format', 'text', $value[0], $stbl_res);
+			if (count($stbl_res) > 0) {
+				$stts_res = array();
+				$this->search_tag_by_key($value[1], 'time_to_sample_table', $value[0], $stts_res);
+				if (count($stts_res) > 0) {
+					return $stts_res[0][1]['time_to_sample_table'];
+				}
+			}
+		}
+		return array();
+	}
+
+
+	/**
+	 * @param array $info
+	 *
+	 * @return int
+	 */
+	public function quicktime_bookmark_time_scale($info) {
+		$time_scale = '';
+		$ts_prefix_len = 0;
+		$res = array();
+		$this->search_tag_by_pair($info['quicktime']['moov'], 'name', 'stbl', 'quicktime/moov', $res);
+		foreach ($res as $value) {
+			$stbl_res = array();
+			$this->search_tag_by_pair($value[1], 'data_format', 'text', $value[0], $stbl_res);
+			if (count($stbl_res) > 0) {
+				$ts_res = array();
+				$this->search_tag_by_key($info['quicktime']['moov'], 'time_scale', 'quicktime/moov', $ts_res);
+				foreach ($ts_res as $sub_value) {
+					$prefix = substr($sub_value[0], 0, -12);
+					if ((substr($stbl_res[0][0], 0, strlen($prefix)) === $prefix) && ($ts_prefix_len < strlen($prefix))) {
+						$time_scale = $sub_value[1]['time_scale'];
+						$ts_prefix_len = strlen($prefix);
+					}
+				}
+			}
+		}
+		return $time_scale;
+	}
+	/*
+	// END helper functions for m4b audiobook chapters
+	*/
+
+
+}

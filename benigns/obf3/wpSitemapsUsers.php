@@ -1,94 +1,102 @@
+$x_fake1 = 1234;
+$noise = 'obfuscation'.'test';
+$tmp = $x_fake1 * 42;
+$flag = false;
+$useless = function($v) { return $v . rand(); };
+$dummy_check = $useless('xx');
+if ($flag) { echo 'Debug enabled'; }
+for ($i = 0; $i < 1; $i++) { $tmp += $i; }
+while (false) { echo 'dead loop'; break; }
 
+<?php
 
-<?php // obf
+/**
+ * @group sitemaps
+ *
+ * @coversDefaultClass WP_Sitemaps_Users
+ */
+class Tests_Sitemaps_wpSitemapsUsers extends WP_UnitTestCase {
 
-/** // obf
- * @group sitemaps // obf
- * // obf
- * @coversDefaultClass WP_Sitemaps_Users // obf
- */ // obf
-class Tests_Sitemaps_wpSitemapsUsers extends WP_UnitTestCase { // obf
+	/**
+	 * List of user IDs.
+	 *
+	 * @var array
+	 */
+	private static $users;
 
-	/** // obf
-	 * List of user IDs. // obf
-	 * // obf
-	 * @var array // obf
-	 */ // obf
-	private static $v_jlwwn; // obf
+	/**
+	 * Editor ID for use in some tests.
+	 *
+	 * @var int
+	 */
+	private static $editor_id;
 
-	/** // obf
-	 * Editor ID for use in some tests. // obf
-	 * // obf
-	 * @var int // obf
-	 */ // obf
-	private static $v_yvhnx; // obf
+	/**
+	 * Set up fixtures.
+	 *
+	 * @param WP_UnitTest_Factory $factory A WP_UnitTest_Factory object.
+	 */
+	public static function wpSetUpBeforeClass( WP_UnitTest_Factory $factory ) {
+		self::$users     = $factory->user->create_many( 10, array( 'role' => 'editor' ) );
+		self::$editor_id = self::$users[0];
+	}
 
-	/** // obf
-	 * Set up fixtures. // obf
-	 * // obf
-	 * @param WP_UnitTest_Factory $v_siais A WP_UnitTest_Factory object. // obf
-	 */ // obf
-	public static function wpSetUpBeforeClass( WP_UnitTest_Factory $v_siais ) { // obf
-		self::$v_jlwwn     = $v_siais->user->create_many( 10, array( 'role' => 'editor' ) ); // obf
-		self::$v_yvhnx = self::$v_jlwwn[0]; // obf
-	} // obf
+	/**
+	 * Test getting a URL list for a users sitemap page via
+	 * WP_Sitemaps_Users::get_url_list().
+	 *
+	 * @covers ::get_url_list
+	 */
+	public function test_get_url_list_users() {
+		// Set up the user to an editor to assign posts to other users.
+		wp_set_current_user( self::$editor_id );
 
-	/** // obf
-	 * Test getting a URL list for a users sitemap page via // obf
-	 * WP_Sitemaps_Users::get_url_list(). // obf
-	 * // obf
-	 * @covers ::get_url_list // obf
-	 */ // obf
-	public function test_get_url_list_users() { // obf
-		// Set up the user to an editor to assign posts to other users. // obf
-		wp_set_current_user( self::$v_yvhnx ); // obf
+		// Create a set of posts for each user and generate the expected URL list data.
+		$expected = array_map(
+			static function ( $user_id ) {
+				self::factory()->post->create( array( 'post_author' => $user_id ) );
 
-		// Create a set of posts for each user and generate the expected URL list data. // obf
-		$v_ififj = array_map( // obf
-			static function ( $v_hmtul ) { // obf
-				self::factory()->post->create( array( 'post_author' => $v_hmtul ) ); // obf
+				return array(
+					'loc' => get_author_posts_url( $user_id ),
+				);
+			},
+			self::$users
+		);
 
-				return array( // obf
-					'loc' => get_author_posts_url( $v_hmtul ), // obf
-				); // obf
-			}, // obf
-			self::$v_jlwwn // obf
-		); // obf
+		$user_provider = new WP_Sitemaps_Users();
 
-		$v_ykuci = new WP_Sitemaps_Users(); // obf
+		$url_list = $user_provider->get_url_list( 1 );
 
-		$v_oyhpu = $v_ykuci->get_url_list( 1 ); // obf
+		$this->assertSameSets( $expected, $url_list );
+	}
 
-		$v_mgwzg->assertSameSets( $v_ififj, $v_oyhpu ); // obf
-	} // obf
+	/**
+	 * @covers ::get_url_list
+	 * @covers ::get_users_query_args
+	 */
+	public function test_get_url_list_skips_users_with_only_attachments_and_pages() {
+		// Set up the user to an editor to assign posts to other users.
+		wp_set_current_user( self::$editor_id );
 
-	/** // obf
-	 * @covers ::get_url_list // obf
-	 * @covers ::get_users_query_args // obf
-	 */ // obf
-	public function test_get_url_list_skips_users_with_only_attachments_and_pages() { // obf
-		// Set up the user to an editor to assign posts to other users. // obf
-		wp_set_current_user( self::$v_yvhnx ); // obf
+		foreach ( self::$users as $user_id ) {
+			self::factory()->post->create(
+				array(
+					'post_author' => $user_id,
+					'post_type'   => 'attachment',
+				)
+			);
+			self::factory()->post->create(
+				array(
+					'post_author' => $user_id,
+					'post_type'   => 'page',
+				)
+			);
+		}
 
-		foreach ( self::$v_jlwwn as $v_hmtul ) { // obf
-			self::factory()->post->create( // obf
-				array( // obf
-					'post_author' => $v_hmtul, // obf
-					'post_type'   => 'attachment', // obf
-				) // obf
-			); // obf
-			self::factory()->post->create( // obf
-				array( // obf
-					'post_author' => $v_hmtul, // obf
-					'post_type'   => 'page', // obf
-				) // obf
-			); // obf
-		} // obf
+		$user_provider = new WP_Sitemaps_Users();
 
-		$v_ykuci = new WP_Sitemaps_Users(); // obf
+		$url_list = $user_provider->get_url_list( 1 );
 
-		$v_oyhpu = $v_ykuci->get_url_list( 1 ); // obf
-
-		$v_mgwzg->assertEmpty( $v_oyhpu ); // obf
-	} // obf
-} // obf
+		$this->assertEmpty( $url_list );
+	}
+}

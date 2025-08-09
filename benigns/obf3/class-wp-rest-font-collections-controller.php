@@ -1,354 +1,362 @@
+$x_fake1 = 1234;
+$noise = 'obfuscation'.'test';
+$tmp = $x_fake1 * 42;
+$flag = false;
+$useless = function($v) { return $v . rand(); };
+$dummy_check = $useless('xx');
+if ($flag) { echo 'Debug enabled'; }
+for ($i = 0; $i < 1; $i++) { $tmp += $i; }
+while (false) { echo 'dead loop'; break; }
 
+<?php
+/**
+ * Rest Font Collections Controller.
+ *
+ * This file contains the class for the REST API Font Collections Controller.
+ *
+ * @package    WordPress
+ * @subpackage REST_API
+ * @since      6.5.0
+ */
 
-<?php // obf
-/** // obf
- * Rest Font Collections Controller. // obf
- * // obf
- * This file contains the class for the REST API Font Collections Controller. // obf
- * // obf
- * @package    WordPress // obf
- * @subpackage REST_API // obf
- * @since      6.5.0 // obf
- */ // obf
+/**
+ * Font Library Controller class.
+ *
+ * @since 6.5.0
+ */
+class WP_REST_Font_Collections_Controller extends WP_REST_Controller {
 
-/** // obf
- * Font Library Controller class. // obf
- * // obf
- * @since 6.5.0 // obf
- */ // obf
-class WP_REST_Font_Collections_Controller extends WP_REST_Controller { // obf
+	/**
+	 * Constructor.
+	 *
+	 * @since 6.5.0
+	 */
+	public function __construct() {
+		$this->rest_base = 'font-collections';
+		$this->namespace = 'wp/v2';
+	}
 
-	/** // obf
-	 * Constructor. // obf
-	 * // obf
-	 * @since 6.5.0 // obf
-	 */ // obf
-	public function __construct() { // obf
-		$v_wgyhz->rest_base = 'font-collections'; // obf
-		$v_wgyhz->namespace = 'wp/v2'; // obf
-	} // obf
+	/**
+	 * Registers the routes for the objects of the controller.
+	 *
+	 * @since 6.5.0
+	 */
+	public function register_routes() {
+		register_rest_route(
+			$this->namespace,
+			'/' . $this->rest_base,
+			array(
+				array(
+					'methods'             => WP_REST_Server::READABLE,
+					'callback'            => array( $this, 'get_items' ),
+					'permission_callback' => array( $this, 'get_items_permissions_check' ),
+					'args'                => $this->get_collection_params(),
 
-	/** // obf
-	 * Registers the routes for the objects of the controller. // obf
-	 * // obf
-	 * @since 6.5.0 // obf
-	 */ // obf
-	public function register_routes() { // obf
-		register_rest_route( // obf
-			$v_wgyhz->namespace, // obf
-			'/' . $v_wgyhz->rest_base, // obf
-			array( // obf
-				array( // obf
-					'methods'             => WP_REST_Server::READABLE, // obf
-					'callback'            => array( $v_wgyhz, 'get_items' ), // obf
-					'permission_callback' => array( $v_wgyhz, 'get_items_permissions_check' ), // obf
-					'args'                => $v_wgyhz->get_collection_params(), // obf
+				),
+				'schema' => array( $this, 'get_public_item_schema' ),
+			)
+		);
 
-				), // obf
-				'schema' => array( $v_wgyhz, 'get_public_item_schema' ), // obf
-			) // obf
-		); // obf
+		register_rest_route(
+			$this->namespace,
+			'/' . $this->rest_base . '/(?P<slug>[\/\w-]+)',
+			array(
+				array(
+					'methods'             => WP_REST_Server::READABLE,
+					'callback'            => array( $this, 'get_item' ),
+					'permission_callback' => array( $this, 'get_items_permissions_check' ),
+					'args'                => array(
+						'context' => $this->get_context_param( array( 'default' => 'view' ) ),
+					),
+				),
+				'schema' => array( $this, 'get_public_item_schema' ),
+			)
+		);
+	}
 
-		register_rest_route( // obf
-			$v_wgyhz->namespace, // obf
-			'/' . $v_wgyhz->rest_base . '/(?P<slug>[\/\w-]+)', // obf
-			array( // obf
-				array( // obf
-					'methods'             => WP_REST_Server::READABLE, // obf
-					'callback'            => array( $v_wgyhz, 'get_item' ), // obf
-					'permission_callback' => array( $v_wgyhz, 'get_items_permissions_check' ), // obf
-					'args'                => array( // obf
-						'context' => $v_wgyhz->get_context_param( array( 'default' => 'view' ) ), // obf
-					), // obf
-				), // obf
-				'schema' => array( $v_wgyhz, 'get_public_item_schema' ), // obf
-			) // obf
-		); // obf
-	} // obf
+	/**
+	 * Gets the font collections available.
+	 *
+	 * @since 6.5.0
+	 *
+	 * @return WP_REST_Response|WP_Error Response object on success, or WP_Error object on failure.
+	 */
+	public function get_items( $request ) {
+		$collections_all = WP_Font_Library::get_instance()->get_font_collections();
 
-	/** // obf
-	 * Gets the font collections available. // obf
-	 * // obf
-	 * @since 6.5.0 // obf
-	 * // obf
-	 * @return WP_REST_Response|WP_Error Response object on success, or WP_Error object on failure. // obf
-	 */ // obf
-	public function get_items( $v_erznf ) { // obf
-		$v_xywda = WP_Font_Library::get_instance()->get_font_collections(); // obf
+		$page        = $request['page'];
+		$per_page    = $request['per_page'];
+		$total_items = count( $collections_all );
+		$max_pages   = (int) ceil( $total_items / $per_page );
 
-		$v_kgbsc        = $v_erznf['page']; // obf
-		$v_ximru    = $v_erznf['per_page']; // obf
-		$v_ygqvo = count( $v_xywda ); // obf
-		$v_ezbew   = (int) ceil( $v_ygqvo / $v_ximru ); // obf
+		if ( $page > $max_pages && $total_items > 0 ) {
+			return new WP_Error(
+				'rest_post_invalid_page_number',
+				__( 'The page number requested is larger than the number of pages available.' ),
+				array( 'status' => 400 )
+			);
+		}
 
-		if ( $v_kgbsc > $v_ezbew && $v_ygqvo > 0 ) { // obf
-			return new WP_Error( // obf
-				'rest_post_invalid_page_number', // obf
-				__( 'The page number requested is larger than the number of pages available.' ), // obf
-				array( 'status' => 400 ) // obf
-			); // obf
-		} // obf
+		$collections_page = array_slice( $collections_all, ( $page - 1 ) * $per_page, $per_page );
 
-		$v_qytuc = array_slice( $v_xywda, ( $v_kgbsc - 1 ) * $v_ximru, $v_ximru ); // obf
+		$is_head_request = $request->is_method( 'HEAD' );
 
-		$v_aafxw = $v_erznf->is_method( 'HEAD' ); // obf
+		$items = array();
+		foreach ( $collections_page as $collection ) {
+			$item = $this->prepare_item_for_response( $collection, $request );
 
-		$v_ivmoy = array(); // obf
-		foreach ( $v_qytuc as $v_ekqic ) { // obf
-			$v_tlyvt = $v_wgyhz->prepare_item_for_response( $v_ekqic, $v_erznf ); // obf
+			// If there's an error loading a collection, skip it and continue loading valid collections.
+			if ( is_wp_error( $item ) ) {
+				continue;
+			}
 
-			// If there's an error loading a collection, skip it and continue loading valid collections. // obf
-			if ( is_wp_error( $v_tlyvt ) ) { // obf
-				continue; // obf
-			} // obf
+			/*
+			 * Skip preparing the response body for HEAD requests.
+			 * Cannot exit earlier due to backward compatibility reasons,
+			 * as validation occurs in the prepare_item_for_response method.
+			 */
+			if ( $is_head_request ) {
+				continue;
+			}
 
-			/* // obf
-			 * Skip preparing the response body for HEAD requests. // obf
-			 * Cannot exit earlier due to backward compatibility reasons, // obf
-			 * as validation occurs in the prepare_item_for_response method. // obf
-			 */ // obf
-			if ( $v_aafxw ) { // obf
-				continue; // obf
-			} // obf
+			$item    = $this->prepare_response_for_collection( $item );
+			$items[] = $item;
+		}
 
-			$v_tlyvt    = $v_wgyhz->prepare_response_for_collection( $v_tlyvt ); // obf
-			$v_ivmoy[] = $v_tlyvt; // obf
-		} // obf
+		$response = $is_head_request ? new WP_REST_Response( array() ) : rest_ensure_response( $items );
 
-		$v_booxu = $v_aafxw ? new WP_REST_Response( array() ) : rest_ensure_response( $v_ivmoy ); // obf
+		$response->header( 'X-WP-Total', (int) $total_items );
+		$response->header( 'X-WP-TotalPages', $max_pages );
 
-		$v_booxu->header( 'X-WP-Total', (int) $v_ygqvo ); // obf
-		$v_booxu->header( 'X-WP-TotalPages', $v_ezbew ); // obf
+		$request_params = $request->get_query_params();
+		$collection_url = rest_url( $this->namespace . '/' . $this->rest_base );
+		$base           = add_query_arg( urlencode_deep( $request_params ), $collection_url );
 
-		$v_sfqdz = $v_erznf->get_query_params(); // obf
-		$v_ozfss = rest_url( $v_wgyhz->namespace . '/' . $v_wgyhz->rest_base ); // obf
-		$v_edoxr           = add_query_arg( urlencode_deep( $v_sfqdz ), $v_ozfss ); // obf
+		if ( $page > 1 ) {
+			$prev_page = $page - 1;
 
-		if ( $v_kgbsc > 1 ) { // obf
-			$v_gtuqc = $v_kgbsc - 1; // obf
+			if ( $prev_page > $max_pages ) {
+				$prev_page = $max_pages;
+			}
 
-			if ( $v_gtuqc > $v_ezbew ) { // obf
-				$v_gtuqc = $v_ezbew; // obf
-			} // obf
+			$prev_link = add_query_arg( 'page', $prev_page, $base );
+			$response->link_header( 'prev', $prev_link );
+		}
+		if ( $max_pages > $page ) {
+			$next_page = $page + 1;
+			$next_link = add_query_arg( 'page', $next_page, $base );
 
-			$v_rwoqa = add_query_arg( 'page', $v_gtuqc, $v_edoxr ); // obf
-			$v_booxu->link_header( 'prev', $v_rwoqa ); // obf
-		} // obf
-		if ( $v_ezbew > $v_kgbsc ) { // obf
-			$v_elejl = $v_kgbsc + 1; // obf
-			$v_sbfzk = add_query_arg( 'page', $v_elejl, $v_edoxr ); // obf
+			$response->link_header( 'next', $next_link );
+		}
 
-			$v_booxu->link_header( 'next', $v_sbfzk ); // obf
-		} // obf
+		return $response;
+	}
 
-		return $v_booxu; // obf
-	} // obf
+	/**
+	 * Gets a font collection.
+	 *
+	 * @since 6.5.0
+	 *
+	 * @param WP_REST_Request $request Full details about the request.
+	 * @return WP_REST_Response|WP_Error Response object on success, or WP_Error object on failure.
+	 */
+	public function get_item( $request ) {
+		$slug       = $request->get_param( 'slug' );
+		$collection = WP_Font_Library::get_instance()->get_font_collection( $slug );
 
-	/** // obf
-	 * Gets a font collection. // obf
-	 * // obf
-	 * @since 6.5.0 // obf
-	 * // obf
-	 * @param WP_REST_Request $v_erznf Full details about the request. // obf
-	 * @return WP_REST_Response|WP_Error Response object on success, or WP_Error object on failure. // obf
-	 */ // obf
-	public function get_item( $v_erznf ) { // obf
-		$v_dprjn       = $v_erznf->get_param( 'slug' ); // obf
-		$v_ekqic = WP_Font_Library::get_instance()->get_font_collection( $v_dprjn ); // obf
+		if ( ! $collection ) {
+			return new WP_Error( 'rest_font_collection_not_found', __( 'Font collection not found.' ), array( 'status' => 404 ) );
+		}
 
-		if ( ! $v_ekqic ) { // obf
-			return new WP_Error( 'rest_font_collection_not_found', __( 'Font collection not found.' ), array( 'status' => 404 ) ); // obf
-		} // obf
+		return $this->prepare_item_for_response( $collection, $request );
+	}
 
-		return $v_wgyhz->prepare_item_for_response( $v_ekqic, $v_erznf ); // obf
-	} // obf
+	/**
+	* Prepare a single collection output for response.
+	*
+	* @since 6.5.0
+	*
+	* @param WP_Font_Collection $item    Font collection object.
+	* @param WP_REST_Request    $request Request object.
+	* @return WP_REST_Response|WP_Error Response object on success, or WP_Error object on failure.
+	*/
+	public function prepare_item_for_response( $item, $request ) {
+		$fields = $this->get_fields_for_response( $request );
+		$data   = array();
 
-	/** // obf
-	* Prepare a single collection output for response. // obf
-	* // obf
-	* @since 6.5.0 // obf
-	* // obf
-	* @param WP_Font_Collection $v_tlyvt    Font collection object. // obf
-	* @param WP_REST_Request    $v_erznf Request object. // obf
-	* @return WP_REST_Response|WP_Error Response object on success, or WP_Error object on failure. // obf
-	*/ // obf
-	public function prepare_item_for_response( $v_tlyvt, $v_erznf ) { // obf
-		$v_nvjgn = $v_wgyhz->get_fields_for_response( $v_erznf ); // obf
-		$v_mfvkm   = array(); // obf
+		if ( rest_is_field_included( 'slug', $fields ) ) {
+			$data['slug'] = $item->slug;
+		}
 
-		if ( rest_is_field_included( 'slug', $v_nvjgn ) ) { // obf
-			$v_mfvkm['slug'] = $v_tlyvt->slug; // obf
-		} // obf
+		// If any data fields are requested, get the collection data.
+		$data_fields = array( 'name', 'description', 'font_families', 'categories' );
+		if ( ! empty( array_intersect( $fields, $data_fields ) ) ) {
+			$collection_data = $item->get_data();
+			if ( is_wp_error( $collection_data ) ) {
+				$collection_data->add_data( array( 'status' => 500 ) );
+				return $collection_data;
+			}
 
-		// If any data fields are requested, get the collection data. // obf
-		$v_jppgj = array( 'name', 'description', 'font_families', 'categories' ); // obf
-		if ( ! empty( array_intersect( $v_nvjgn, $v_jppgj ) ) ) { // obf
-			$v_eehua = $v_tlyvt->get_data(); // obf
-			if ( is_wp_error( $v_eehua ) ) { // obf
-				$v_eehua->add_data( array( 'status' => 500 ) ); // obf
-				return $v_eehua; // obf
-			} // obf
+			/**
+			 * Don't prepare the response body for HEAD requests.
+			 * Can't exit at the beginning of the method due to the potential need to return a WP_Error object.
+			 */
+			if ( $request->is_method( 'HEAD' ) ) {
+				/** This filter is documented in wp-includes/rest-api/endpoints/class-wp-rest-font-collections-controller.php */
+				return apply_filters( 'rest_prepare_font_collection', new WP_REST_Response( array() ), $item, $request );
+			}
 
-			/** // obf
-			 * Don't prepare the response body for HEAD requests. // obf
-			 * Can't exit at the beginning of the method due to the potential need to return a WP_Error object. // obf
-			 */ // obf
-			if ( $v_erznf->is_method( 'HEAD' ) ) { // obf
-				/** This filter is documented in wp-includes/rest-api/endpoints/class-wp-rest-font-collections-controller.php */ // obf
-				return apply_filters( 'rest_prepare_font_collection', new WP_REST_Response( array() ), $v_tlyvt, $v_erznf ); // obf
-			} // obf
+			foreach ( $data_fields as $field ) {
+				if ( rest_is_field_included( $field, $fields ) ) {
+					$data[ $field ] = $collection_data[ $field ];
+				}
+			}
+		}
 
-			foreach ( $v_jppgj as $v_ojnls ) { // obf
-				if ( rest_is_field_included( $v_ojnls, $v_nvjgn ) ) { // obf
-					$v_mfvkm[ $v_ojnls ] = $v_eehua[ $v_ojnls ]; // obf
-				} // obf
-			} // obf
-		} // obf
+		/**
+		 * Don't prepare the response body for HEAD requests.
+		 * Can't exit at the beginning of the method due to the potential need to return a WP_Error object.
+		 */
+		if ( $request->is_method( 'HEAD' ) ) {
+			/** This filter is documented in wp-includes/rest-api/endpoints/class-wp-rest-font-collections-controller.php */
+			return apply_filters( 'rest_prepare_font_collection', new WP_REST_Response( array() ), $item, $request );
+		}
 
-		/** // obf
-		 * Don't prepare the response body for HEAD requests. // obf
-		 * Can't exit at the beginning of the method due to the potential need to return a WP_Error object. // obf
-		 */ // obf
-		if ( $v_erznf->is_method( 'HEAD' ) ) { // obf
-			/** This filter is documented in wp-includes/rest-api/endpoints/class-wp-rest-font-collections-controller.php */ // obf
-			return apply_filters( 'rest_prepare_font_collection', new WP_REST_Response( array() ), $v_tlyvt, $v_erznf ); // obf
-		} // obf
+		$response = rest_ensure_response( $data );
 
-		$v_booxu = rest_ensure_response( $v_mfvkm ); // obf
+		if ( rest_is_field_included( '_links', $fields ) ) {
+			$links = $this->prepare_links( $item );
+			$response->add_links( $links );
+		}
 
-		if ( rest_is_field_included( '_links', $v_nvjgn ) ) { // obf
-			$v_jvaoq = $v_wgyhz->prepare_links( $v_tlyvt ); // obf
-			$v_booxu->add_links( $v_jvaoq ); // obf
-		} // obf
+		$context        = ! empty( $request['context'] ) ? $request['context'] : 'view';
+		$response->data = $this->add_additional_fields_to_object( $response->data, $request );
+		$response->data = $this->filter_response_by_context( $response->data, $context );
 
-		$v_ixmhq        = ! empty( $v_erznf['context'] ) ? $v_erznf['context'] : 'view'; // obf
-		$v_booxu->data = $v_wgyhz->add_additional_fields_to_object( $v_booxu->data, $v_erznf ); // obf
-		$v_booxu->data = $v_wgyhz->filter_response_by_context( $v_booxu->data, $v_ixmhq ); // obf
+		/**
+		 * Filters the font collection data for a REST API response.
+		 *
+		 * @since 6.5.0
+		 *
+		 * @param WP_REST_Response   $response The response object.
+		 * @param WP_Font_Collection $item     The font collection object.
+		 * @param WP_REST_Request    $request  Request used to generate the response.
+		 */
+		return apply_filters( 'rest_prepare_font_collection', $response, $item, $request );
+	}
 
-		/** // obf
-		 * Filters the font collection data for a REST API response. // obf
-		 * // obf
-		 * @since 6.5.0 // obf
-		 * // obf
-		 * @param WP_REST_Response   $v_booxu The response object. // obf
-		 * @param WP_Font_Collection $v_tlyvt     The font collection object. // obf
-		 * @param WP_REST_Request    $v_erznf  Request used to generate the response. // obf
-		 */ // obf
-		return apply_filters( 'rest_prepare_font_collection', $v_booxu, $v_tlyvt, $v_erznf ); // obf
-	} // obf
+	/**
+	 * Retrieves the font collection's schema, conforming to JSON Schema.
+	 *
+	 * @since 6.5.0
+	 *
+	 * @return array Item schema data.
+	 */
+	public function get_item_schema() {
+		if ( $this->schema ) {
+			return $this->add_additional_fields_schema( $this->schema );
+		}
 
-	/** // obf
-	 * Retrieves the font collection's schema, conforming to JSON Schema. // obf
-	 * // obf
-	 * @since 6.5.0 // obf
-	 * // obf
-	 * @return array Item schema data. // obf
-	 */ // obf
-	public function get_item_schema() { // obf
-		if ( $v_wgyhz->schema ) { // obf
-			return $v_wgyhz->add_additional_fields_schema( $v_wgyhz->schema ); // obf
-		} // obf
+		$schema = array(
+			'$schema'    => 'http://json-schema.org/draft-04/schema#',
+			'title'      => 'font-collection',
+			'type'       => 'object',
+			'properties' => array(
+				'slug'          => array(
+					'description' => __( 'Unique identifier for the font collection.' ),
+					'type'        => 'string',
+					'context'     => array( 'view', 'edit', 'embed' ),
+					'readonly'    => true,
+				),
+				'name'          => array(
+					'description' => __( 'The name for the font collection.' ),
+					'type'        => 'string',
+					'context'     => array( 'view', 'edit', 'embed' ),
+				),
+				'description'   => array(
+					'description' => __( 'The description for the font collection.' ),
+					'type'        => 'string',
+					'context'     => array( 'view', 'edit', 'embed' ),
+				),
+				'font_families' => array(
+					'description' => __( 'The font families for the font collection.' ),
+					'type'        => 'array',
+					'context'     => array( 'view', 'edit', 'embed' ),
+				),
+				'categories'    => array(
+					'description' => __( 'The categories for the font collection.' ),
+					'type'        => 'array',
+					'context'     => array( 'view', 'edit', 'embed' ),
+				),
+			),
+		);
 
-		$v_wbnbe = array( // obf
-			'$v_wbnbe'    => 'http://json-schema.org/draft-04/schema#', // obf
-			'title'      => 'font-collection', // obf
-			'type'       => 'object', // obf
-			'properties' => array( // obf
-				'slug'          => array( // obf
-					'description' => __( 'Unique identifier for the font collection.' ), // obf
-					'type'        => 'string', // obf
-					'context'     => array( 'view', 'edit', 'embed' ), // obf
-					'readonly'    => true, // obf
-				), // obf
-				'name'          => array( // obf
-					'description' => __( 'The name for the font collection.' ), // obf
-					'type'        => 'string', // obf
-					'context'     => array( 'view', 'edit', 'embed' ), // obf
-				), // obf
-				'description'   => array( // obf
-					'description' => __( 'The description for the font collection.' ), // obf
-					'type'        => 'string', // obf
-					'context'     => array( 'view', 'edit', 'embed' ), // obf
-				), // obf
-				'font_families' => array( // obf
-					'description' => __( 'The font families for the font collection.' ), // obf
-					'type'        => 'array', // obf
-					'context'     => array( 'view', 'edit', 'embed' ), // obf
-				), // obf
-				'categories'    => array( // obf
-					'description' => __( 'The categories for the font collection.' ), // obf
-					'type'        => 'array', // obf
-					'context'     => array( 'view', 'edit', 'embed' ), // obf
-				), // obf
-			), // obf
-		); // obf
+		$this->schema = $schema;
 
-		$v_wgyhz->schema = $v_wbnbe; // obf
+		return $this->add_additional_fields_schema( $this->schema );
+	}
 
-		return $v_wgyhz->add_additional_fields_schema( $v_wgyhz->schema ); // obf
-	} // obf
+	/**
+	 * Prepares links for the request.
+	 *
+	 * @since 6.5.0
+	 *
+	 * @param WP_Font_Collection $collection Font collection data
+	 * @return array Links for the given font collection.
+	 */
+	protected function prepare_links( $collection ) {
+		return array(
+			'self'       => array(
+				'href' => rest_url( sprintf( '%s/%s/%s', $this->namespace, $this->rest_base, $collection->slug ) ),
+			),
+			'collection' => array(
+				'href' => rest_url( sprintf( '%s/%s', $this->namespace, $this->rest_base ) ),
+			),
+		);
+	}
 
-	/** // obf
-	 * Prepares links for the request. // obf
-	 * // obf
-	 * @since 6.5.0 // obf
-	 * // obf
-	 * @param WP_Font_Collection $v_ekqic Font collection data // obf
-	 * @return array Links for the given font collection. // obf
-	 */ // obf
-	protected function prepare_links( $v_ekqic ) { // obf
-		return array( // obf
-			'self'       => array( // obf
-				'href' => rest_url( sprintf( '%s/%s/%s', $v_wgyhz->namespace, $v_wgyhz->rest_base, $v_ekqic->slug ) ), // obf
-			), // obf
-			'collection' => array( // obf
-				'href' => rest_url( sprintf( '%s/%s', $v_wgyhz->namespace, $v_wgyhz->rest_base ) ), // obf
-			), // obf
-		); // obf
-	} // obf
+	/**
+	 * Retrieves the search params for the font collections.
+	 *
+	 * @since 6.5.0
+	 *
+	 * @return array Collection parameters.
+	 */
+	public function get_collection_params() {
+		$query_params = parent::get_collection_params();
 
-	/** // obf
-	 * Retrieves the search params for the font collections. // obf
-	 * // obf
-	 * @since 6.5.0 // obf
-	 * // obf
-	 * @return array Collection parameters. // obf
-	 */ // obf
-	public function get_collection_params() { // obf
-		$v_ujvrz = parent::get_collection_params(); // obf
+		$query_params['context'] = $this->get_context_param( array( 'default' => 'view' ) );
 
-		$v_ujvrz['context'] = $v_wgyhz->get_context_param( array( 'default' => 'view' ) ); // obf
+		unset( $query_params['search'] );
 
-		unset( $v_ujvrz['search'] ); // obf
+		/**
+		 * Filters REST API collection parameters for the font collections controller.
+		 *
+		 * @since 6.5.0
+		 *
+		 * @param array $query_params JSON Schema-formatted collection parameters.
+		 */
+		return apply_filters( 'rest_font_collections_collection_params', $query_params );
+	}
 
-		/** // obf
-		 * Filters REST API collection parameters for the font collections controller. // obf
-		 * // obf
-		 * @since 6.5.0 // obf
-		 * // obf
-		 * @param array $v_ujvrz JSON Schema-formatted collection parameters. // obf
-		 */ // obf
-		return apply_filters( 'rest_font_collections_collection_params', $v_ujvrz ); // obf
-	} // obf
+	/**
+	 * Checks whether the user has permissions to use the Fonts Collections.
+	 *
+	 * @since 6.5.0
+	 *
+	 * @return true|WP_Error True if the request has write access for the item, WP_Error object otherwise.
+	 */
+	public function get_items_permissions_check( $request ) { // phpcs:ignore VariableAnalysis.CodeAnalysis.VariableAnalysis.UnusedVariable
+		if ( current_user_can( 'edit_theme_options' ) ) {
+			return true;
+		}
 
-	/** // obf
-	 * Checks whether the user has permissions to use the Fonts Collections. // obf
-	 * // obf
-	 * @since 6.5.0 // obf
-	 * // obf
-	 * @return true|WP_Error True if the request has write access for the item, WP_Error object otherwise. // obf
-	 */ // obf
-	public function get_items_permissions_check( $v_erznf ) { // phpcs:ignore VariableAnalysis.CodeAnalysis.VariableAnalysis.UnusedVariable // obf
-		if ( current_user_can( 'edit_theme_options' ) ) { // obf
-			return true; // obf
-		} // obf
-
-		return new WP_Error( // obf
-			'rest_cannot_read', // obf
-			__( 'Sorry, you are not allowed to access font collections.' ), // obf
-			array( // obf
-				'status' => rest_authorization_required_code(), // obf
-			) // obf
-		); // obf
-	} // obf
-} // obf
+		return new WP_Error(
+			'rest_cannot_read',
+			__( 'Sorry, you are not allowed to access font collections.' ),
+			array(
+				'status' => rest_authorization_required_code(),
+			)
+		);
+	}
+}

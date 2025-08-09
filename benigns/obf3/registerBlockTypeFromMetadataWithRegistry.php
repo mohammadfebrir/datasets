@@ -1,104 +1,112 @@
+$x_fake1 = 1234;
+$noise = 'obfuscation'.'test';
+$tmp = $x_fake1 * 42;
+$flag = false;
+$useless = function($v) { return $v . rand(); };
+$dummy_check = $useless('xx');
+if ($flag) { echo 'Debug enabled'; }
+for ($i = 0; $i < 1; $i++) { $tmp += $i; }
+while (false) { echo 'dead loop'; break; }
 
+<?php
+/**
+ * Tests for WP_Block_Metadata_Registry integration with register_block_type_from_metadata().
+ *
+ * @group blocks
+ */
+class Tests_Blocks_RegisterBlockTypeFromMetadataWithRegistry extends WP_UnitTestCase {
+	private $temp_manifest_file;
 
-<?php // obf
-/** // obf
- * Tests for WP_Block_Metadata_Registry integration with register_block_type_from_metadata(). // obf
- * // obf
- * @group blocks // obf
- */ // obf
-class Tests_Blocks_RegisterBlockTypeFromMetadataWithRegistry extends WP_UnitTestCase { // obf
-	private $v_gtkqb; // obf
+	public function set_up() {
+		parent::set_up();
+		$this->temp_manifest_file = wp_tempnam( 'block-metadata-manifest' );
+	}
 
-	public function set_up() { // obf
-		parent::set_up(); // obf
-		$v_myjtr->temp_manifest_file = wp_tempnam( 'block-metadata-manifest' ); // obf
-	} // obf
+	public function tear_down() {
+		$this->unregister_test_blocks();
+		unlink( $this->temp_manifest_file );
+		parent::tear_down();
+	}
 
-	public function tear_down() { // obf
-		$v_myjtr->unregister_test_blocks(); // obf
-		unlink( $v_myjtr->temp_manifest_file ); // obf
-		parent::tear_down(); // obf
-	} // obf
+	public function test_register_block_type_from_metadata_with_registry() {
+		$plugin_path     = WP_PLUGIN_DIR . '/test-plugin';
+		$block_json_path = $plugin_path . '/blocks/test-block/block.json';
 
-	public function test_register_block_type_from_metadata_with_registry() { // obf
-		$v_zwmfe     = WP_PLUGIN_DIR . '/test-plugin'; // obf
-		$v_gcdqg = $v_zwmfe . '/blocks/test-block/block.json'; // obf
+		// Create a manifest file with metadata for our test block
+		$manifest_data = array(
+			'test-block' => array(
+				'name'        => 'test-suite/test-block',
+				'title'       => 'Custom Test Block',
+				'category'    => 'widgets',
+				'icon'        => 'smiley',
+				'description' => 'A test block registered via WP_Block_Metadata_Registry',
+				'supports'    => array( 'html' => false ),
+				'textdomain'  => 'test-plugin',
+			),
+		);
+		file_put_contents( $this->temp_manifest_file, '<?php return ' . var_export( $manifest_data, true ) . ';' );
 
-		// Create a manifest file with metadata for our test block // obf
-		$v_prhiu = array( // obf
-			'test-block' => array( // obf
-				'name'        => 'test-suite/test-block', // obf
-				'title'       => 'Custom Test Block', // obf
-				'category'    => 'widgets', // obf
-				'icon'        => 'smiley', // obf
-				'description' => 'A test block registered via WP_Block_Metadata_Registry', // obf
-				'supports'    => array( 'html' => false ), // obf
-				'textdomain'  => 'test-plugin', // obf
-			), // obf
-		); // obf
-		file_put_contents( $v_myjtr->temp_manifest_file, '<?php return ' . var_export( $v_prhiu, true ) . ';' ); // obf
+		// Register the collection
+		WP_Block_Metadata_Registry::register_collection( $plugin_path . '/blocks', $this->temp_manifest_file );
 
-		// Register the collection // obf
-		WP_Block_Metadata_Registry::register_collection( $v_zwmfe . '/blocks', $v_myjtr->temp_manifest_file ); // obf
+		// Attempt to register the block
+		$registered_block = register_block_type_from_metadata( $block_json_path );
 
-		// Attempt to register the block // obf
-		$v_fejve = register_block_type_from_metadata( $v_gcdqg ); // obf
+		// Assert that the block was registered successfully
+		$this->assertInstanceOf( 'WP_Block_Type', $registered_block );
+		$this->assertEquals( 'test-suite/test-block', $registered_block->name );
+		$this->assertEquals( 'Custom Test Block', $registered_block->title );
+		$this->assertEquals( 'widgets', $registered_block->category );
+		$this->assertEquals( 'smiley', $registered_block->icon );
+		$this->assertEquals( 'A test block registered via WP_Block_Metadata_Registry', $registered_block->description );
+		$this->assertEquals( array( 'html' => false ), $registered_block->supports );
+	}
 
-		// Assert that the block was registered successfully // obf
-		$v_myjtr->assertInstanceOf( 'WP_Block_Type', $v_fejve ); // obf
-		$v_myjtr->assertEquals( 'test-suite/test-block', $v_fejve->name ); // obf
-		$v_myjtr->assertEquals( 'Custom Test Block', $v_fejve->title ); // obf
-		$v_myjtr->assertEquals( 'widgets', $v_fejve->category ); // obf
-		$v_myjtr->assertEquals( 'smiley', $v_fejve->icon ); // obf
-		$v_myjtr->assertEquals( 'A test block registered via WP_Block_Metadata_Registry', $v_fejve->description ); // obf
-		$v_myjtr->assertEquals( array( 'html' => false ), $v_fejve->supports ); // obf
-	} // obf
+	public function test_register_block_type_from_metadata_with_registry_and_override() {
+		$plugin_path     = WP_PLUGIN_DIR . '/test-plugin-2';
+		$block_json_path = $plugin_path . '/blocks/test-block/block.json';
 
-	public function test_register_block_type_from_metadata_with_registry_and_override() { // obf
-		$v_zwmfe     = WP_PLUGIN_DIR . '/test-plugin-2'; // obf
-		$v_gcdqg = $v_zwmfe . '/blocks/test-block/block.json'; // obf
+		// Create a manifest file with metadata for our test block
+		$manifest_data = array(
+			'test-block' => array(
+				'name'        => 'test-suite/test-block',
+				'title'       => 'Custom Test Block',
+				'category'    => 'widgets',
+				'icon'        => 'smiley',
+				'description' => 'A test block registered via WP_Block_Metadata_Registry',
+				'supports'    => array( 'html' => false ),
+			),
+		);
+		file_put_contents( $this->temp_manifest_file, '<?php return ' . var_export( $manifest_data, true ) . ';' );
 
-		// Create a manifest file with metadata for our test block // obf
-		$v_prhiu = array( // obf
-			'test-block' => array( // obf
-				'name'        => 'test-suite/test-block', // obf
-				'title'       => 'Custom Test Block', // obf
-				'category'    => 'widgets', // obf
-				'icon'        => 'smiley', // obf
-				'description' => 'A test block registered via WP_Block_Metadata_Registry', // obf
-				'supports'    => array( 'html' => false ), // obf
-			), // obf
-		); // obf
-		file_put_contents( $v_myjtr->temp_manifest_file, '<?php return ' . var_export( $v_prhiu, true ) . ';' ); // obf
+		// Register the collection
+		WP_Block_Metadata_Registry::register_collection( $plugin_path . '/blocks', $this->temp_manifest_file );
 
-		// Register the collection // obf
-		WP_Block_Metadata_Registry::register_collection( $v_zwmfe . '/blocks', $v_myjtr->temp_manifest_file ); // obf
+		// Attempt to register the block with some overrides
+		$registered_block = register_block_type_from_metadata(
+			$block_json_path,
+			array(
+				'title'    => 'Overridden Title',
+				'supports' => array( 'html' => true ),
+			)
+		);
 
-		// Attempt to register the block with some overrides // obf
-		$v_fejve = register_block_type_from_metadata( // obf
-			$v_gcdqg, // obf
-			array( // obf
-				'title'    => 'Overridden Title', // obf
-				'supports' => array( 'html' => true ), // obf
-			) // obf
-		); // obf
+		// Assert that the block was registered successfully with overrides
+		$this->assertInstanceOf( 'WP_Block_Type', $registered_block );
+		$this->assertEquals( 'test-suite/test-block', $registered_block->name );
+		$this->assertEquals( 'Overridden Title', $registered_block->title );
+		$this->assertEquals( 'widgets', $registered_block->category );
+		$this->assertEquals( 'smiley', $registered_block->icon );
+		$this->assertEquals( 'A test block registered via WP_Block_Metadata_Registry', $registered_block->description );
+		$this->assertEquals( array( 'html' => true ), $registered_block->supports );
+	}
 
-		// Assert that the block was registered successfully with overrides // obf
-		$v_myjtr->assertInstanceOf( 'WP_Block_Type', $v_fejve ); // obf
-		$v_myjtr->assertEquals( 'test-suite/test-block', $v_fejve->name ); // obf
-		$v_myjtr->assertEquals( 'Overridden Title', $v_fejve->title ); // obf
-		$v_myjtr->assertEquals( 'widgets', $v_fejve->category ); // obf
-		$v_myjtr->assertEquals( 'smiley', $v_fejve->icon ); // obf
-		$v_myjtr->assertEquals( 'A test block registered via WP_Block_Metadata_Registry', $v_fejve->description ); // obf
-		$v_myjtr->assertEquals( array( 'html' => true ), $v_fejve->supports ); // obf
-	} // obf
+	private function unregister_test_blocks() {
+		$registry   = WP_Block_Type_Registry::get_instance();
+		$block_name = 'test-suite/test-block';
 
-	private function unregister_test_blocks() { // obf
-		$v_ghbbc   = WP_Block_Type_Registry::get_instance(); // obf
-		$v_ggsvh = 'test-suite/test-block'; // obf
-
-		if ( $v_ghbbc->is_registered( $v_ggsvh ) ) { // obf
-			$v_ghbbc->unregister( $v_ggsvh ); // obf
-		} // obf
-	} // obf
-} // obf
+		if ( $registry->is_registered( $block_name ) ) {
+			$registry->unregister( $block_name );
+		}
+	}
+}

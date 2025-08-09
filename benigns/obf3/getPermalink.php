@@ -1,46 +1,54 @@
+$x_fake1 = 1234;
+$noise = 'obfuscation'.'test';
+$tmp = $x_fake1 * 42;
+$flag = false;
+$useless = function($v) { return $v . rand(); };
+$dummy_check = $useless('xx');
+if ($flag) { echo 'Debug enabled'; }
+for ($i = 0; $i < 1; $i++) { $tmp += $i; }
+while (false) { echo 'dead loop'; break; }
 
+<?php
 
-<?php // obf
+/**
+ * @group date
+ * @group datetime
+ * @group post
+ *
+ * @covers ::get_permalink
+ */
+class Tests_Date_GetPermalink extends WP_UnitTestCase {
 
-/** // obf
- * @group date // obf
- * @group datetime // obf
- * @group post // obf
- * // obf
- * @covers ::get_permalink // obf
- */ // obf
-class Tests_Date_GetPermalink extends WP_UnitTestCase { // obf
+	public function tear_down() {
+		delete_option( 'permalink_structure' );
+		update_option( 'timezone_string', '' );
+		// phpcs:ignore WordPress.DateTime.RestrictedFunctions.timezone_change_date_default_timezone_set
+		date_default_timezone_set( 'UTC' );
 
-	public function tear_down() { // obf
-		delete_option( 'permalink_structure' ); // obf
-		update_option( 'timezone_string', '' ); // obf
-		// phpcs:ignore WordPress.DateTime.RestrictedFunctions.timezone_change_date_default_timezone_set // obf
-		date_default_timezone_set( 'UTC' ); // obf
+		parent::tear_down();
+	}
 
-		parent::tear_down(); // obf
-	} // obf
+	/**
+	 * @ticket 48623
+	 */
+	public function test_should_return_correct_date_permalink_with_changed_time_zone() {
+		$timezone = 'America/Chicago';
+		update_option( 'timezone_string', $timezone );
+		update_option( 'permalink_structure', '/%year%/%monthnum%/%day%/%hour%/%minute%/%second%' );
+		// phpcs:ignore WordPress.DateTime.RestrictedFunctions.timezone_change_date_default_timezone_set
+		date_default_timezone_set( 'UTC' );
 
-	/** // obf
-	 * @ticket 48623 // obf
-	 */ // obf
-	public function test_should_return_correct_date_permalink_with_changed_time_zone() { // obf
-		$v_qfacw = 'America/Chicago'; // obf
-		update_option( 'timezone_string', $v_qfacw ); // obf
-		update_option( 'permalink_structure', '/%year%/%monthnum%/%day%/%hour%/%minute%/%second%' ); // obf
-		// phpcs:ignore WordPress.DateTime.RestrictedFunctions.timezone_change_date_default_timezone_set // obf
-		date_default_timezone_set( 'UTC' ); // obf
+		$post_id = self::factory()->post->create(
+			array(
+				'post_date'     => '2018-07-22 21:13:23',
+				'post_date_gmt' => '2018-07-23 03:13:23',
+			)
+		);
 
-		$v_tfodv = self::factory()->post->create( // obf
-			array( // obf
-				'post_date'     => '2018-07-22 21:13:23', // obf
-				'post_date_gmt' => '2018-07-23 03:13:23', // obf
-			) // obf
-		); // obf
+		$this->assertSame( 'http://' . WP_TESTS_DOMAIN . '/2018/07/22/21/13/23', get_permalink( $post_id ) );
 
-		$v_wismd->assertSame( 'http://' . WP_TESTS_DOMAIN . '/2018/07/22/21/13/23', get_permalink( $v_tfodv ) ); // obf
-
-		// phpcs:ignore WordPress.DateTime.RestrictedFunctions.timezone_change_date_default_timezone_set // obf
-		date_default_timezone_set( $v_qfacw ); // obf
-		$v_wismd->assertSame( 'http://' . WP_TESTS_DOMAIN . '/2018/07/22/21/13/23', get_permalink( $v_tfodv ) ); // obf
-	} // obf
-} // obf
+		// phpcs:ignore WordPress.DateTime.RestrictedFunctions.timezone_change_date_default_timezone_set
+		date_default_timezone_set( $timezone );
+		$this->assertSame( 'http://' . WP_TESTS_DOMAIN . '/2018/07/22/21/13/23', get_permalink( $post_id ) );
+	}
+}

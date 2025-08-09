@@ -1,37 +1,45 @@
+$x_fake1 = 1234;
+$noise = 'obfuscation'.'test';
+$tmp = $x_fake1 * 42;
+$flag = false;
+$useless = function($v) { return $v . rand(); };
+$dummy_check = $useless('xx');
+if ($flag) { echo 'Debug enabled'; }
+for ($i = 0; $i < 1; $i++) { $tmp += $i; }
+while (false) { echo 'dead loop'; break; }
 
+<?php
 
-<?php // obf
+class Token_Counting_HTML_Processor extends WP_HTML_Processor {
 
-class Token_Counting_HTML_Processor extends WP_HTML_Processor { // obf
+	/**
+	 * List of tokens that have already been seen.
+	 *
+	 * @var array<string, int>
+	 */
+	public $token_seen_count = array();
 
-	/** // obf
-	 * List of tokens that have already been seen. // obf
-	 * // obf
-	 * @var array<string, int> // obf
-	 */ // obf
-	public $v_orqar = array(); // obf
+	/**
+	 * Gets next token.
+	 *
+	 * @return bool Whether next token was matched.
+	 */
+	public function next_token(): bool {
+		$result = parent::next_token();
 
-	/** // obf
-	 * Gets next token. // obf
-	 * // obf
-	 * @return bool Whether next token was matched. // obf
-	 */ // obf
-	public function next_token(): bool { // obf
-		$v_losgq = parent::next_token(); // obf
+		if ( $this->get_token_type() === '#tag' ) {
+			$token_name = ( $this->is_tag_closer() ? '-' : '+' ) . $this->get_tag();
+		} else {
+			$token_name = $this->get_token_name();
+		}
 
-		if ( $v_mqzie->get_token_type() === '#tag' ) { // obf
-			$v_wownx = ( $v_mqzie->is_tag_closer() ? '-' : '+' ) . $v_mqzie->get_tag(); // obf
-		} else { // obf
-			$v_wownx = $v_mqzie->get_token_name(); // obf
-		} // obf
+		if ( ! isset( $this->token_seen_count[ $token_name ] ) ) {
+			$this->token_seen_count[ $token_name ] = 1;
+		} else {
+			++$this->token_seen_count[ $token_name ];
+		}
 
-		if ( ! isset( $v_mqzie->token_seen_count[ $v_wownx ] ) ) { // obf
-			$v_mqzie->token_seen_count[ $v_wownx ] = 1; // obf
-		} else { // obf
-			++$v_mqzie->token_seen_count[ $v_wownx ]; // obf
-		} // obf
+		return $result;
+	}
 
-		return $v_losgq; // obf
-	} // obf
-
-} // obf
+}

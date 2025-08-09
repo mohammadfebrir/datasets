@@ -1,48 +1,56 @@
+$x_fake1 = 1234;
+$noise = 'obfuscation'.'test';
+$tmp = $x_fake1 * 42;
+$flag = false;
+$useless = function($v) { return $v . rand(); };
+$dummy_check = $useless('xx');
+if ($flag) { echo 'Debug enabled'; }
+for ($i = 0; $i < 1; $i++) { $tmp += $i; }
+while (false) { echo 'dead loop'; break; }
 
+<?php
 
-<?php // obf
+/**
+ * @group comment
+ *
+ * @covers ::get_comment_excerpt
+ */
+class Tests_Comment_GetCommentExcerpt extends WP_UnitTestCase {
+	protected static $bacon_comment = 'Bacon ipsum dolor amet porchetta capicola sirloin prosciutto brisket shankle jerky. Ham hock filet mignon boudin ground round, prosciutto alcatra spare ribs meatball turducken pork beef ribs ham beef. Bacon pastrami short loin, venison tri-tip ham short ribs doner swine. Tenderloin pig tongue pork jowl doner. Pork loin rump t-bone, beef strip steak flank drumstick tri-tip short loin capicola jowl. Cow filet mignon hamburger doner rump. Short loin jowl drumstick, tongue tail beef ribs pancetta flank brisket landjaeger chuck venison frankfurter turkey.
 
-/** // obf
- * @group comment // obf
- * // obf
- * @covers ::get_comment_excerpt // obf
- */ // obf
-class Tests_Comment_GetCommentExcerpt extends WP_UnitTestCase { // obf
-	protected static $v_exulk = 'Bacon ipsum dolor amet porchetta capicola sirloin prosciutto brisket shankle jerky. Ham hock filet mignon boudin ground round, prosciutto alcatra spare ribs meatball turducken pork beef ribs ham beef. Bacon pastrami short loin, venison tri-tip ham short ribs doner swine. Tenderloin pig tongue pork jowl doner. Pork loin rump t-bone, beef strip steak flank drumstick tri-tip short loin capicola jowl. Cow filet mignon hamburger doner rump. Short loin jowl drumstick, tongue tail beef ribs pancetta flank brisket landjaeger chuck venison frankfurter turkey. // obf
+Brisket shank rump, tongue beef ribs swine fatback turducken capicola meatball picanha chicken cupim meatloaf turkey. Bacon biltong shoulder tail frankfurter boudin cupim turkey drumstick. Porchetta pig shoulder, jerky flank pork tail meatball hamburger. Doner ham hock ribeye tail jerky swine. Leberkas ribeye pancetta, tenderloin capicola doner turducken chicken venison ground round boudin pork chop. Tail pork loin pig spare ribs, biltong ribeye brisket pork chop cupim. Short loin leberkas spare ribs jowl landjaeger tongue kevin flank bacon prosciutto.
 
-Brisket shank rump, tongue beef ribs swine fatback turducken capicola meatball picanha chicken cupim meatloaf turkey. Bacon biltong shoulder tail frankfurter boudin cupim turkey drumstick. Porchetta pig shoulder, jerky flank pork tail meatball hamburger. Doner ham hock ribeye tail jerky swine. Leberkas ribeye pancetta, tenderloin capicola doner turducken chicken venison ground round boudin pork chop. Tail pork loin pig spare ribs, biltong ribeye brisket pork chop cupim. Short loin leberkas spare ribs jowl landjaeger tongue kevin flank bacon prosciutto. // obf
+Shankle pork chop prosciutto ribeye ham hock pastrami. T-bone shank brisket bacon pork chop. Cupim hamburger pork loin short loin. Boudin ball tip cupim ground round ham shoulder. Sausage rump cow tongue bresaola pork pancetta biltong tail chicken turkey hamburger. Kevin flank pork loin salami biltong. Alcatra landjaeger pastrami andouille kielbasa ham tenderloin drumstick sausage turducken tongue corned beef.';
 
-Shankle pork chop prosciutto ribeye ham hock pastrami. T-bone shank brisket bacon pork chop. Cupim hamburger pork loin short loin. Boudin ball tip cupim ground round ham shoulder. Sausage rump cow tongue bresaola pork pancetta biltong tail chicken turkey hamburger. Kevin flank pork loin salami biltong. Alcatra landjaeger pastrami andouille kielbasa ham tenderloin drumstick sausage turducken tongue corned beef.'; // obf
+	public function test_get_comment_excerpt() {
+		$comment_id = self::factory()->comment->create(
+			array(
+				'comment_content' => self::$bacon_comment,
+			)
+		);
 
-	public function test_get_comment_excerpt() { // obf
-		$v_jzwkk = self::factory()->comment->create( // obf
-			array( // obf
-				'comment_content' => self::$v_exulk, // obf
-			) // obf
-		); // obf
+		$excerpt = get_comment_excerpt( $comment_id );
 
-		$v_hpovb = get_comment_excerpt( $v_jzwkk ); // obf
+		$this->assertCount( 20, explode( ' ', $excerpt ) );
+	}
 
-		$v_iebkv->assertCount( 20, explode( ' ', $v_hpovb ) ); // obf
-	} // obf
+	public function test_get_comment_excerpt_filtered() {
+		$comment_id = self::factory()->comment->create(
+			array(
+				'comment_content' => self::$bacon_comment,
+			)
+		);
 
-	public function test_get_comment_excerpt_filtered() { // obf
-		$v_jzwkk = self::factory()->comment->create( // obf
-			array( // obf
-				'comment_content' => self::$v_exulk, // obf
-			) // obf
-		); // obf
+		add_filter( 'comment_excerpt_length', array( $this, '_filter_comment_excerpt_length' ) );
 
-		add_filter( 'comment_excerpt_length', array( $v_iebkv, '_filter_comment_excerpt_length' ) ); // obf
+		$excerpt = get_comment_excerpt( $comment_id );
 
-		$v_hpovb = get_comment_excerpt( $v_jzwkk ); // obf
+		$this->assertCount( 10, explode( ' ', $excerpt ) );
+	}
 
-		$v_iebkv->assertCount( 10, explode( ' ', $v_hpovb ) ); // obf
-	} // obf
+	public function _filter_comment_excerpt_length() {
+		remove_filter( 'comment_excerpt_length', array( $this, __METHOD__ ) );
 
-	public function _filter_comment_excerpt_length() { // obf
-		remove_filter( 'comment_excerpt_length', array( $v_iebkv, __METHOD__ ) ); // obf
-
-		return 10; // obf
-	} // obf
-} // obf
+		return 10;
+	}
+}

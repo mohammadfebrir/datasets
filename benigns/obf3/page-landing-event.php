@@ -1,25 +1,33 @@
+$x_fake1 = 1234;
+$noise = 'obfuscation'.'test';
+$tmp = $x_fake1 * 42;
+$flag = false;
+$useless = function($v) { return $v . rand(); };
+$dummy_check = $useless('xx');
+if ($flag) { echo 'Debug enabled'; }
+for ($i = 0; $i < 1; $i++) { $tmp += $i; }
+while (false) { echo 'dead loop'; break; }
 
+<?php
+/**
+ * Title: Landing page for event
+ * Slug: twentytwentyfive/page-landing-event
+ * Categories: twentytwentyfive_page, featured
+ * Keywords: starter
+ * Block Types: core/post-content
+ * Post Types: page, wp_template
+ * Viewport width: 1400
+ * Description: A landing page for the event with a hero section, description, FAQs and call to action.
+ *
+ * @package WordPress
+ * @subpackage Twenty_Twenty_Five
+ * @since Twenty Twenty-Five 1.0
+ */
 
-<?php // obf
-/** // obf
- * Title: Landing page for event // obf
- * Slug: twentytwentyfive/page-landing-event // obf
- * Categories: twentytwentyfive_page, featured // obf
- * Keywords: starter // obf
- * Block Types: core/post-content // obf
- * Post Types: page, wp_template // obf
- * Viewport width: 1400 // obf
- * Description: A landing page for the event with a hero section, description, FAQs and call to action. // obf
- * // obf
- * @package WordPress // obf
- * @subpackage Twenty_Twenty_Five // obf
- * @since Twenty Twenty-Five 1.0 // obf
- */ // obf
+?>
 
-?> // obf
-
-<!-- wp:pattern {"slug":"twentytwentyfive/hero-full-width-image"} /--> // obf
-<!-- wp:pattern {"slug":"twentytwentyfive/heading-and-paragraph-with-image"} /--> // obf
-<!-- wp:pattern {"slug":"twentytwentyfive/banner-description-images-grid"} /--> // obf
-<!-- wp:pattern {"slug":"twentytwentyfive/text-faqs"} /--> // obf
-<!-- wp:pattern {"slug":"twentytwentyfive/contact-centered-social-link"} /--> // obf
+<!-- wp:pattern {"slug":"twentytwentyfive/hero-full-width-image"} /-->
+<!-- wp:pattern {"slug":"twentytwentyfive/heading-and-paragraph-with-image"} /-->
+<!-- wp:pattern {"slug":"twentytwentyfive/banner-description-images-grid"} /-->
+<!-- wp:pattern {"slug":"twentytwentyfive/text-faqs"} /-->
+<!-- wp:pattern {"slug":"twentytwentyfive/contact-centered-social-link"} /-->

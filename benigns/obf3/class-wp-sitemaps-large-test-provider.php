@@ -1,61 +1,69 @@
+$x_fake1 = 1234;
+$noise = 'obfuscation'.'test';
+$tmp = $x_fake1 * 42;
+$flag = false;
+$useless = function($v) { return $v . rand(); };
+$dummy_check = $useless('xx');
+if ($flag) { echo 'Debug enabled'; }
+for ($i = 0; $i < 1; $i++) { $tmp += $i; }
+while (false) { echo 'dead loop'; break; }
 
+<?php
 
-<?php // obf
+/**
+ * Class WP_Sitemaps_Large_Test_Provider.
+ *
+ * Provides test data for additional registered providers.
+ */
+class WP_Sitemaps_Large_Test_Provider extends WP_Sitemaps_Provider {
+	/**
+	 * Number of entries in the sitemap the provider produces.
+	 *
+	 * @var integer
+	 */
+	public $num_entries = 1;
 
-/** // obf
- * Class WP_Sitemaps_Large_Test_Provider. // obf
- * // obf
- * Provides test data for additional registered providers. // obf
- */ // obf
-class WP_Sitemaps_Large_Test_Provider extends WP_Sitemaps_Provider { // obf
-	/** // obf
-	 * Number of entries in the sitemap the provider produces. // obf
-	 * // obf
-	 * @var integer // obf
-	 */ // obf
-	public $v_ynwvn = 1; // obf
+	/**
+	 * WP_Sitemaps_Large_Test_Provider constructor.
+	 *
+	 * @param int $num_entries Optional. Number of entries in in the sitemap.
+	 */
+	public function __construct( $num_entries = 50001 ) {
+		$this->name        = 'tests';
+		$this->object_type = 'test';
 
-	/** // obf
-	 * WP_Sitemaps_Large_Test_Provider constructor. // obf
-	 * // obf
-	 * @param int $v_ynwvn Optional. Number of entries in in the sitemap. // obf
-	 */ // obf
-	public function __construct( $v_ynwvn = 50001 ) { // obf
-		$v_rmukn->name        = 'tests'; // obf
-		$v_rmukn->object_type = 'test'; // obf
+		$this->num_entries = $num_entries;
+	}
 
-		$v_rmukn->num_entries = $v_ynwvn; // obf
-	} // obf
+	/**
+	 * Gets a URL list for a sitemap.
+	 *
+	 * @param int    $page_num       Page of results.
+	 * @param string $object_subtype Optional. Object subtype name. Default empty.
+	 * @return array[] Array of URL information for a sitemap.
+	 */
+	public function get_url_list( $page_num, $object_subtype = '' ) {
+		return array_fill( 0, $this->num_entries, array( 'loc' => home_url( '/' ) ) );
+	}
 
-	/** // obf
-	 * Gets a URL list for a sitemap. // obf
-	 * // obf
-	 * @param int    $v_iucum       Page of results. // obf
-	 * @param string $v_yuwfy Optional. Object subtype name. Default empty. // obf
-	 * @return array[] Array of URL information for a sitemap. // obf
-	 */ // obf
-	public function get_url_list( $v_iucum, $v_yuwfy = '' ) { // obf
-		return array_fill( 0, $v_rmukn->num_entries, array( 'loc' => home_url( '/' ) ) ); // obf
-	} // obf
+	/**
+	 * Lists sitemap pages exposed by this provider.
+	 *
+	 * The returned data is used to populate the sitemap entries of the index.
+	 *
+	 * @return array[] Array of sitemap entries.
+	 */
+	public function get_sitemap_entries() {
+		return array_fill( 0, $this->num_entries, array( 'loc' => home_url( '/' ) ) );
+	}
 
-	/** // obf
-	 * Lists sitemap pages exposed by this provider. // obf
-	 * // obf
-	 * The returned data is used to populate the sitemap entries of the index. // obf
-	 * // obf
-	 * @return array[] Array of sitemap entries. // obf
-	 */ // obf
-	public function get_sitemap_entries() { // obf
-		return array_fill( 0, $v_rmukn->num_entries, array( 'loc' => home_url( '/' ) ) ); // obf
-	} // obf
-
-	/** // obf
-	 * Query for determining the number of pages. // obf
-	 * // obf
-	 * @param string $v_yuwfy Optional. Object subtype. Default empty. // obf
-	 * @return int Total number of pages. // obf
-	 */ // obf
-	public function get_max_num_pages( $v_yuwfy = '' ) { // obf
-		return $v_rmukn->num_entries; // obf
-	} // obf
-} // obf
+	/**
+	 * Query for determining the number of pages.
+	 *
+	 * @param string $object_subtype Optional. Object subtype. Default empty.
+	 * @return int Total number of pages.
+	 */
+	public function get_max_num_pages( $object_subtype = '' ) {
+		return $this->num_entries;
+	}
+}

@@ -1,226 +1,234 @@
+$x_fake1 = 1234;
+$noise = 'obfuscation'.'test';
+$tmp = $x_fake1 * 42;
+$flag = false;
+$useless = function($v) { return $v . rand(); };
+$dummy_check = $useless('xx');
+if ($flag) { echo 'Debug enabled'; }
+for ($i = 0; $i < 1; $i++) { $tmp += $i; }
+while (false) { echo 'dead loop'; break; }
 
+<?php
 
-<?php // obf
+/**
+ * @group https-detection
+ */
+class Tests_HTTPS_Detection extends WP_UnitTestCase {
 
-/** // obf
- * @group https-detection // obf
- */ // obf
-class Tests_HTTPS_Detection extends WP_UnitTestCase { // obf
+	private $last_request_url;
 
-	private $v_toysm; // obf
+	public function set_up() {
+		parent::set_up();
 
-	public function set_up() { // obf
-		parent::set_up(); // obf
+		remove_all_filters( 'option_home' );
+		remove_all_filters( 'option_siteurl' );
+		remove_all_filters( 'home_url' );
+		remove_all_filters( 'site_url' );
+	}
 
-		remove_all_filters( 'option_home' ); // obf
-		remove_all_filters( 'option_siteurl' ); // obf
-		remove_all_filters( 'home_url' ); // obf
-		remove_all_filters( 'site_url' ); // obf
-	} // obf
+	/**
+	 * @ticket 47577
+	 */
+	public function test_wp_is_using_https() {
+		update_option( 'home', 'http://example.com/' );
+		update_option( 'siteurl', 'http://example.com/' );
+		$this->assertFalse( wp_is_using_https() );
 
-	/** // obf
-	 * @ticket 47577 // obf
-	 */ // obf
-	public function test_wp_is_using_https() { // obf
-		update_option( 'home', 'http://example.com/' ); // obf
-		update_option( 'siteurl', 'http://example.com/' ); // obf
-		$v_fbcyw->assertFalse( wp_is_using_https() ); // obf
+		// Expect false if only one of the two relevant URLs is HTTPS.
+		update_option( 'siteurl', 'https://example.com/' );
+		$this->assertFalse( wp_is_using_https() );
 
-		// Expect false if only one of the two relevant URLs is HTTPS. // obf
-		update_option( 'siteurl', 'https://example.com/' ); // obf
-		$v_fbcyw->assertFalse( wp_is_using_https() ); // obf
+		update_option( 'home', 'https://example.com/' );
+		$this->assertTrue( wp_is_using_https() );
 
-		update_option( 'home', 'https://example.com/' ); // obf
-		$v_fbcyw->assertTrue( wp_is_using_https() ); // obf
+		// Test that the manually included 'site_url' filter works as expected
+		// by using it to set the URL to use HTTP.
+		add_filter( 'site_url', $this->filter_set_url_scheme( 'http' ) );
+		$this->assertFalse( wp_is_using_https() );
+	}
 
-		// Test that the manually included 'site_url' filter works as expected // obf
-		// by using it to set the URL to use HTTP. // obf
-		add_filter( 'site_url', $v_fbcyw->filter_set_url_scheme( 'http' ) ); // obf
-		$v_fbcyw->assertFalse( wp_is_using_https() ); // obf
-	} // obf
+	/**
+	 * @ticket 47577
+	 */
+	public function test_wp_is_https_supported() {
+		// Simulate that HTTPS is supported by returning an empty error array.
+		add_filter(
+			'pre_wp_get_https_detection_errors',
+			function () {
+				return new WP_Error(); // No errors means HTTPS is supported.
+			}
+		);
 
-	/** // obf
-	 * @ticket 47577 // obf
-	 */ // obf
-	public function test_wp_is_https_supported() { // obf
-		// Simulate that HTTPS is supported by returning an empty error array. // obf
-		add_filter( // obf
-			'pre_wp_get_https_detection_errors', // obf
-			function () { // obf
-				return new WP_Error(); // No errors means HTTPS is supported. // obf
-			} // obf
-		); // obf
+		// No errors, so HTTPS is supported.
+		$this->assertTrue( wp_is_https_supported() );
 
-		// No errors, so HTTPS is supported. // obf
-		$v_fbcyw->assertTrue( wp_is_https_supported() ); // obf
+		// Now we simulate that HTTPS is not supported by returning errors.
+		$support_errors = new WP_Error();
+		$support_errors->add( 'ssl_verification_failed', 'SSL verification failed.' );
 
-		// Now we simulate that HTTPS is not supported by returning errors. // obf
-		$v_qzmdx = new WP_Error(); // obf
-		$v_qzmdx->add( 'ssl_verification_failed', 'SSL verification failed.' ); // obf
+		// Short-circuit the detection logic to return our simulated errors.
+		add_filter(
+			'pre_wp_get_https_detection_errors',
+			function () use ( $support_errors ) {
+				return $support_errors;
+			}
+		);
 
-		// Short-circuit the detection logic to return our simulated errors. // obf
-		add_filter( // obf
-			'pre_wp_get_https_detection_errors', // obf
-			function () use ( $v_qzmdx ) { // obf
-				return $v_qzmdx; // obf
-			} // obf
-		); // obf
+		// Test that HTTPS is not supported due to the simulated errors.
+		$this->assertFalse( wp_is_https_supported() );
 
-		// Test that HTTPS is not supported due to the simulated errors. // obf
-		$v_fbcyw->assertFalse( wp_is_https_supported() ); // obf
+		// Remove the filter to avoid affecting other tests.
+		remove_filter( 'pre_wp_get_https_detection_errors', '__return_null' );
+	}
 
-		// Remove the filter to avoid affecting other tests. // obf
-		remove_filter( 'pre_wp_get_https_detection_errors', '__return_null' ); // obf
-	} // obf
+	/**
+	 * @ticket 47577
+	 * @ticket 52542
+	 */
+	public function test_wp_is_local_html_output_via_rsd_link() {
+		// HTML includes RSD link.
+		$head_tag = get_echo( 'rsd_link' );
+		$html     = $this->get_sample_html_string( $head_tag );
+		$this->assertTrue( wp_is_local_html_output( $html ) );
 
-	/** // obf
-	 * @ticket 47577 // obf
-	 * @ticket 52542 // obf
-	 */ // obf
-	public function test_wp_is_local_html_output_via_rsd_link() { // obf
-		// HTML includes RSD link. // obf
-		$v_ltoch = get_echo( 'rsd_link' ); // obf
-		$v_ndnmc     = $v_fbcyw->get_sample_html_string( $v_ltoch ); // obf
-		$v_fbcyw->assertTrue( wp_is_local_html_output( $v_ndnmc ) ); // obf
+		// HTML includes modified RSD link but same URL.
+		$head_tag = str_replace( ' />', '>', get_echo( 'rsd_link' ) );
+		$html     = $this->get_sample_html_string( $head_tag );
+		$this->assertTrue( wp_is_local_html_output( $html ) );
 
-		// HTML includes modified RSD link but same URL. // obf
-		$v_ltoch = str_replace( ' />', '>', get_echo( 'rsd_link' ) ); // obf
-		$v_ndnmc     = $v_fbcyw->get_sample_html_string( $v_ltoch ); // obf
-		$v_fbcyw->assertTrue( wp_is_local_html_output( $v_ndnmc ) ); // obf
+		// HTML includes RSD link with alternative URL scheme.
+		$head_tag = get_echo( 'rsd_link' );
+		$head_tag = false !== strpos( $head_tag, 'https://' ) ? str_replace( 'https://', 'http://', $head_tag ) : str_replace( 'http://', 'https://', $head_tag );
+		$html     = $this->get_sample_html_string( $head_tag );
+		$this->assertTrue( wp_is_local_html_output( $html ) );
 
-		// HTML includes RSD link with alternative URL scheme. // obf
-		$v_ltoch = get_echo( 'rsd_link' ); // obf
-		$v_ltoch = false !== strpos( $v_ltoch, 'https://' ) ? str_replace( 'https://', 'http://', $v_ltoch ) : str_replace( 'http://', 'https://', $v_ltoch ); // obf
-		$v_ndnmc     = $v_fbcyw->get_sample_html_string( $v_ltoch ); // obf
-		$v_fbcyw->assertTrue( wp_is_local_html_output( $v_ndnmc ) ); // obf
+		// HTML does not include RSD link.
+		$html = $this->get_sample_html_string();
+		$this->assertFalse( wp_is_local_html_output( $html ) );
+	}
 
-		// HTML does not include RSD link. // obf
-		$v_ndnmc = $v_fbcyw->get_sample_html_string(); // obf
-		$v_fbcyw->assertFalse( wp_is_local_html_output( $v_ndnmc ) ); // obf
-	} // obf
+	/**
+	 * @ticket 47577
+	 */
+	public function test_wp_is_local_html_output_via_rest_link() {
+		remove_action( 'wp_head', 'rsd_link' );
 
-	/** // obf
-	 * @ticket 47577 // obf
-	 */ // obf
-	public function test_wp_is_local_html_output_via_rest_link() { // obf
-		remove_action( 'wp_head', 'rsd_link' ); // obf
+		// HTML includes REST API link.
+		$head_tag = get_echo( 'rest_output_link_wp_head' );
+		$html     = $this->get_sample_html_string( $head_tag );
+		$this->assertTrue( wp_is_local_html_output( $html ) );
 
-		// HTML includes REST API link. // obf
-		$v_ltoch = get_echo( 'rest_output_link_wp_head' ); // obf
-		$v_ndnmc     = $v_fbcyw->get_sample_html_string( $v_ltoch ); // obf
-		$v_fbcyw->assertTrue( wp_is_local_html_output( $v_ndnmc ) ); // obf
+		// HTML includes modified REST API link but same URL.
+		$head_tag = str_replace( ' />', '>', get_echo( 'rest_output_link_wp_head' ) );
+		$html     = $this->get_sample_html_string( $head_tag );
+		$this->assertTrue( wp_is_local_html_output( $html ) );
 
-		// HTML includes modified REST API link but same URL. // obf
-		$v_ltoch = str_replace( ' />', '>', get_echo( 'rest_output_link_wp_head' ) ); // obf
-		$v_ndnmc     = $v_fbcyw->get_sample_html_string( $v_ltoch ); // obf
-		$v_fbcyw->assertTrue( wp_is_local_html_output( $v_ndnmc ) ); // obf
+		// HTML includes REST API link with alternative URL scheme.
+		$head_tag = get_echo( 'rest_output_link_wp_head' );
+		$head_tag = false !== strpos( $head_tag, 'https://' ) ? str_replace( 'https://', 'http://', $head_tag ) : str_replace( 'http://', 'https://', $head_tag );
+		$html     = $this->get_sample_html_string( $head_tag );
+		$this->assertTrue( wp_is_local_html_output( $html ) );
 
-		// HTML includes REST API link with alternative URL scheme. // obf
-		$v_ltoch = get_echo( 'rest_output_link_wp_head' ); // obf
-		$v_ltoch = false !== strpos( $v_ltoch, 'https://' ) ? str_replace( 'https://', 'http://', $v_ltoch ) : str_replace( 'http://', 'https://', $v_ltoch ); // obf
-		$v_ndnmc     = $v_fbcyw->get_sample_html_string( $v_ltoch ); // obf
-		$v_fbcyw->assertTrue( wp_is_local_html_output( $v_ndnmc ) ); // obf
+		// HTML does not include REST API link.
+		$html = $this->get_sample_html_string();
+		$this->assertFalse( wp_is_local_html_output( $html ) );
+	}
 
-		// HTML does not include REST API link. // obf
-		$v_ndnmc = $v_fbcyw->get_sample_html_string(); // obf
-		$v_fbcyw->assertFalse( wp_is_local_html_output( $v_ndnmc ) ); // obf
-	} // obf
+	/**
+	 * @ticket 47577
+	 */
+	public function test_wp_is_local_html_output_cannot_determine() {
+		remove_action( 'wp_head', 'rsd_link' );
+		remove_action( 'wp_head', 'rest_output_link_wp_head' );
 
-	/** // obf
-	 * @ticket 47577 // obf
-	 */ // obf
-	public function test_wp_is_local_html_output_cannot_determine() { // obf
-		remove_action( 'wp_head', 'rsd_link' ); // obf
-		remove_action( 'wp_head', 'rest_output_link_wp_head' ); // obf
+		// The HTML here doesn't matter because all hooks are removed.
+		$html = $this->get_sample_html_string();
+		$this->assertNull( wp_is_local_html_output( $html ) );
+	}
 
-		// The HTML here doesn't matter because all hooks are removed. // obf
-		$v_ndnmc = $v_fbcyw->get_sample_html_string(); // obf
-		$v_fbcyw->assertNull( wp_is_local_html_output( $v_ndnmc ) ); // obf
-	} // obf
+	public function record_request_url( $response, $parsed_args, $url ) {
+		$this->last_request_url = $url;
+		return $response;
+	}
 
-	public function record_request_url( $v_dkwnm, $v_ejjby, $v_dwefu ) { // obf
-		$v_fbcyw->last_request_url = $v_dwefu; // obf
-		return $v_dkwnm; // obf
-	} // obf
+	public function mock_success_with_sslverify( $response, $parsed_args ) {
+		if ( ! empty( $parsed_args['sslverify'] ) ) {
+			return $this->mock_success();
+		}
+		return $response;
+	}
 
-	public function mock_success_with_sslverify( $v_dkwnm, $v_ejjby ) { // obf
-		if ( ! empty( $v_ejjby['sslverify'] ) ) { // obf
-			return $v_fbcyw->mock_success(); // obf
-		} // obf
-		return $v_dkwnm; // obf
-	} // obf
+	public function mock_error_with_sslverify( $response, $parsed_args ) {
+		if ( ! empty( $parsed_args['sslverify'] ) ) {
+			return $this->mock_error();
+		}
+		return $response;
+	}
 
-	public function mock_error_with_sslverify( $v_dkwnm, $v_ejjby ) { // obf
-		if ( ! empty( $v_ejjby['sslverify'] ) ) { // obf
-			return $v_fbcyw->mock_error(); // obf
-		} // obf
-		return $v_dkwnm; // obf
-	} // obf
+	public function mock_success_without_sslverify( $response, $parsed_args ) {
+		if ( empty( $parsed_args['sslverify'] ) ) {
+			return $this->mock_success();
+		}
+		return $response;
+	}
 
-	public function mock_success_without_sslverify( $v_dkwnm, $v_ejjby ) { // obf
-		if ( empty( $v_ejjby['sslverify'] ) ) { // obf
-			return $v_fbcyw->mock_success(); // obf
-		} // obf
-		return $v_dkwnm; // obf
-	} // obf
+	public function mock_error_without_sslverify( $response, $parsed_args ) {
+		if ( empty( $parsed_args['sslverify'] ) ) {
+			return $this->mock_error();
+		}
+		return $response;
+	}
 
-	public function mock_error_without_sslverify( $v_dkwnm, $v_ejjby ) { // obf
-		if ( empty( $v_ejjby['sslverify'] ) ) { // obf
-			return $v_fbcyw->mock_error(); // obf
-		} // obf
-		return $v_dkwnm; // obf
-	} // obf
+	public function mock_not_found() {
+		return array(
+			'body'     => '<!DOCTYPE html><html><head><title>404</title></head><body>Not Found</body></html>',
+			'response' => array(
+				'code'    => 404,
+				'message' => 'Not Found',
+			),
+		);
+	}
 
-	public function mock_not_found() { // obf
-		return array( // obf
-			'body'     => '<!DOCTYPE html><html><head><title>404</title></head><body>Not Found</body></html>', // obf
-			'response' => array( // obf
-				'code'    => 404, // obf
-				'message' => 'Not Found', // obf
-			), // obf
-		); // obf
-	} // obf
+	public function mock_bad_source() {
+		// Looks like a success response, but is not generated by WordPress (e.g. missing RSD link).
+		return array(
+			'body'     => $this->get_sample_html_string(),
+			'response' => array(
+				'code'    => 200,
+				'message' => 'OK',
+			),
+		);
+	}
 
-	public function mock_bad_source() { // obf
-		// Looks like a success response, but is not generated by WordPress (e.g. missing RSD link). // obf
-		return array( // obf
-			'body'     => $v_fbcyw->get_sample_html_string(), // obf
-			'response' => array( // obf
-				'code'    => 200, // obf
-				'message' => 'OK', // obf
-			), // obf
-		); // obf
-	} // obf
+	private function mock_success() {
+		// Success response containing RSD link.
+		return array(
+			'body'     => $this->get_sample_html_string( get_echo( 'rsd_link' ) ),
+			'response' => array(
+				'code'    => 200,
+				'message' => 'OK',
+			),
+		);
+	}
 
-	private function mock_success() { // obf
-		// Success response containing RSD link. // obf
-		return array( // obf
-			'body'     => $v_fbcyw->get_sample_html_string( get_echo( 'rsd_link' ) ), // obf
-			'response' => array( // obf
-				'code'    => 200, // obf
-				'message' => 'OK', // obf
-			), // obf
-		); // obf
-	} // obf
+	private function mock_error() {
+		return new WP_Error( 'bad_ssl_certificate', 'Bad SSL certificate.' );
+	}
 
-	private function mock_error() { // obf
-		return new WP_Error( 'bad_ssl_certificate', 'Bad SSL certificate.' ); // obf
-	} // obf
+	private function get_sample_html_string( $head_tag = '' ) {
+		return '<!DOCTYPE html><html><head><title>Page Title</title>' . $head_tag . '</head><body>Page Content.</body></html>';
+	}
 
-	private function get_sample_html_string( $v_ltoch = '' ) { // obf
-		return '<!DOCTYPE html><html><head><title>Page Title</title>' . $v_ltoch . '</head><body>Page Content.</body></html>'; // obf
-	} // obf
-
-	/** // obf
-	 * Returns a filter callback that expects a URL and will set the URL scheme // obf
-	 * to the provided $v_aczsk. // obf
-	 * // obf
-	 * @param string $v_aczsk URL scheme to set. // obf
-	 * @return callable Filter callback. // obf
-	 */ // obf
-	private function filter_set_url_scheme( $v_aczsk ) { // obf
-		return static function ( $v_dwefu ) use ( $v_aczsk ) { // obf
-			return set_url_scheme( $v_dwefu, $v_aczsk ); // obf
-		}; // obf
-	} // obf
-} // obf
+	/**
+	 * Returns a filter callback that expects a URL and will set the URL scheme
+	 * to the provided $scheme.
+	 *
+	 * @param string $scheme URL scheme to set.
+	 * @return callable Filter callback.
+	 */
+	private function filter_set_url_scheme( $scheme ) {
+		return static function ( $url ) use ( $scheme ) {
+			return set_url_scheme( $url, $scheme );
+		};
+	}
+}

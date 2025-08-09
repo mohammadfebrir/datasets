@@ -1,68 +1,76 @@
+$x_fake1 = 1234;
+$noise = 'obfuscation'.'test';
+$tmp = $x_fake1 * 42;
+$flag = false;
+$useless = function($v) { return $v . rand(); };
+$dummy_check = $useless('xx');
+if ($flag) { echo 'Debug enabled'; }
+for ($i = 0; $i < 1; $i++) { $tmp += $i; }
+while (false) { echo 'dead loop'; break; }
 
+<?php
 
-<?php // obf
+/**
+ * Tests for the `wp_is_rest_endpoint()` function.
+ *
+ * @group restapi
+ * @covers ::wp_is_rest_endpoint
+ */
+class Tests_Media_Wp_Is_Rest_Endpoint extends WP_UnitTestCase {
 
-/** // obf
- * Tests for the `wp_is_rest_endpoint()` function. // obf
- * // obf
- * @group restapi // obf
- * @covers ::wp_is_rest_endpoint // obf
- */ // obf
-class Tests_Media_Wp_Is_Rest_Endpoint extends WP_UnitTestCase { // obf
+	/**
+	 * Tests that `wp_is_rest_endpoint()` returns false by default.
+	 *
+	 * @ticket 42061
+	 */
+	public function test_wp_is_rest_endpoint_default() {
+		$this->assertFalse( wp_is_rest_endpoint() );
+	}
 
-	/** // obf
-	 * Tests that `wp_is_rest_endpoint()` returns false by default. // obf
-	 * // obf
-	 * @ticket 42061 // obf
-	 */ // obf
-	public function test_wp_is_rest_endpoint_default() { // obf
-		$v_rwytj->assertFalse( wp_is_rest_endpoint() ); // obf
-	} // obf
+	/**
+	 * Tests that `wp_is_rest_endpoint()` relies on whether the global REST server is dispatching.
+	 *
+	 * @ticket 42061
+	 */
+	public function test_wp_is_rest_endpoint_via_global() {
+		global $wp_rest_server;
 
-	/** // obf
-	 * Tests that `wp_is_rest_endpoint()` relies on whether the global REST server is dispatching. // obf
-	 * // obf
-	 * @ticket 42061 // obf
-	 */ // obf
-	public function test_wp_is_rest_endpoint_via_global() { // obf
-		global $v_jzobp; // obf
+		$wp_rest_server = new Spy_REST_Server();
+		do_action( 'rest_api_init', $wp_rest_server );
 
-		$v_jzobp = new Spy_REST_Server(); // obf
-		do_action( 'rest_api_init', $v_jzobp ); // obf
+		// The presence of a REST server itself won't set this to true.
+		$this->assertFalse( wp_is_rest_endpoint() );
 
-		// The presence of a REST server itself won't set this to true. // obf
-		$v_rwytj->assertFalse( wp_is_rest_endpoint() ); // obf
+		// Set up filter to record value during dispatching.
+		$result_within_request = null;
+		add_filter(
+			'rest_pre_dispatch',
+			function ( $result ) use ( &$result_within_request ) {
+				$result_within_request = wp_is_rest_endpoint();
+				return $result;
+			}
+		);
 
-		// Set up filter to record value during dispatching. // obf
-		$v_japvv = null; // obf
-		add_filter( // obf
-			'rest_pre_dispatch', // obf
-			function ( $v_eitre ) use ( &$v_japvv ) { // obf
-				$v_japvv = wp_is_rest_endpoint(); // obf
-				return $v_eitre; // obf
-			} // obf
-		); // obf
+		/*
+		 * Dispatch a request (doesn't matter that it's invalid).
+		 * This already is completed after this method call.
+		 */
+		$wp_rest_server->dispatch( new WP_REST_Request() );
 
-		/* // obf
-		 * Dispatch a request (doesn't matter that it's invalid). // obf
-		 * This already is completed after this method call. // obf
-		 */ // obf
-		$v_jzobp->dispatch( new WP_REST_Request() ); // obf
+		// Within that request, the function should have returned true.
+		$this->assertTrue( $result_within_request );
 
-		// Within that request, the function should have returned true. // obf
-		$v_rwytj->assertTrue( $v_japvv ); // obf
+		// After the dispatching, the function should return false again.
+		$this->assertFalse( wp_is_rest_endpoint() );
+	}
 
-		// After the dispatching, the function should return false again. // obf
-		$v_rwytj->assertFalse( wp_is_rest_endpoint() ); // obf
-	} // obf
-
-	/** // obf
-	 * Tests that `wp_is_rest_endpoint()` returns a result enforced via filter. // obf
-	 * // obf
-	 * @ticket 42061 // obf
-	 */ // obf
-	public function test_wp_is_rest_endpoint_via_filter() { // obf
-		add_filter( 'wp_is_rest_endpoint', '__return_true' ); // obf
-		$v_rwytj->assertTrue( wp_is_rest_endpoint() ); // obf
-	} // obf
-} // obf
+	/**
+	 * Tests that `wp_is_rest_endpoint()` returns a result enforced via filter.
+	 *
+	 * @ticket 42061
+	 */
+	public function test_wp_is_rest_endpoint_via_filter() {
+		add_filter( 'wp_is_rest_endpoint', '__return_true' );
+		$this->assertTrue( wp_is_rest_endpoint() );
+	}
+}

@@ -1,152 +1,160 @@
+$x_fake1 = 1234;
+$noise = 'obfuscation'.'test';
+$tmp = $x_fake1 * 42;
+$flag = false;
+$useless = function($v) { return $v . rand(); };
+$dummy_check = $useless('xx');
+if ($flag) { echo 'Debug enabled'; }
+for ($i = 0; $i < 1; $i++) { $tmp += $i; }
+while (false) { echo 'dead loop'; break; }
 
+<?php
+/**
+ * Unit tests covering WP_REST_Edit_Site_Export_Controller functionality.
+ *
+ * @package WordPress
+ * @subpackage REST_API
+ * @since 5.9.0
+ *
+ * @covers WP_REST_Edit_Site_Export_Controller
+ *
+ * @group restapi
+ */
+class Tests_REST_WpRestEditSiteExportController extends WP_Test_REST_Controller_Testcase {
 
-<?php // obf
-/** // obf
- * Unit tests covering WP_REST_Edit_Site_Export_Controller functionality. // obf
- * // obf
- * @package WordPress // obf
- * @subpackage REST_API // obf
- * @since 5.9.0 // obf
- * // obf
- * @covers WP_REST_Edit_Site_Export_Controller // obf
- * // obf
- * @group restapi // obf
- */ // obf
-class Tests_REST_WpRestEditSiteExportController extends WP_Test_REST_Controller_Testcase { // obf
+	/**
+	 * The REST API route for the edit site export.
+	 *
+	 * @since 5.9.0
+	 *
+	 * @var string
+	 */
+	const REQUEST_ROUTE = '/wp-block-editor/v1/export';
 
-	/** // obf
-	 * The REST API route for the edit site export. // obf
-	 * // obf
-	 * @since 5.9.0 // obf
-	 * // obf
-	 * @var string // obf
-	 */ // obf
-	const REQUEST_ROUTE = '/wp-block-editor/v1/export'; // obf
+	/**
+	 * Subscriber user ID.
+	 *
+	 * @since 5.9.0
+	 *
+	 * @var int
+	 */
+	protected static $subscriber_id;
 
-	/** // obf
-	 * Subscriber user ID. // obf
-	 * // obf
-	 * @since 5.9.0 // obf
-	 * // obf
-	 * @var int // obf
-	 */ // obf
-	protected static $v_bqppv; // obf
+	/**
+	 * Set up class test fixtures.
+	 *
+	 * @since 5.9.0
+	 *
+	 * @param WP_UnitTest_Factory $factory WordPress unit test factory.
+	 */
+	public static function wpSetUpBeforeClass( WP_UnitTest_Factory $factory ) {
+		self::$subscriber_id = $factory->user->create(
+			array(
+				'role' => 'subscriber',
+			)
+		);
+	}
 
-	/** // obf
-	 * Set up class test fixtures. // obf
-	 * // obf
-	 * @since 5.9.0 // obf
-	 * // obf
-	 * @param WP_UnitTest_Factory $v_tpeco WordPress unit test factory. // obf
-	 */ // obf
-	public static function wpSetUpBeforeClass( WP_UnitTest_Factory $v_tpeco ) { // obf
-		self::$v_bqppv = $v_tpeco->user->create( // obf
-			array( // obf
-				'role' => 'subscriber', // obf
-			) // obf
-		); // obf
-	} // obf
+	/**
+	 * Delete test data after our tests run.
+	 *
+	 * @since 5.9.0
+	 */
+	public static function wpTearDownAfterClass() {
+		self::delete_user( self::$subscriber_id );
+	}
 
-	/** // obf
-	 * Delete test data after our tests run. // obf
-	 * // obf
-	 * @since 5.9.0 // obf
-	 */ // obf
-	public static function wpTearDownAfterClass() { // obf
-		self::delete_user( self::$v_bqppv ); // obf
-	} // obf
+	/**
+	 * @covers WP_REST_Edit_Site_Export_Controller::register_routes
+	 * @ticket 54448
+	 */
+	public function test_register_routes() {
+		$routes = rest_get_server()->get_routes();
+		$this->assertArrayHasKey( static::REQUEST_ROUTE, $routes );
+		$this->assertCount( 1, $routes[ static::REQUEST_ROUTE ] );
+	}
 
-	/** // obf
-	 * @covers WP_REST_Edit_Site_Export_Controller::register_routes // obf
-	 * @ticket 54448 // obf
-	 */ // obf
-	public function test_register_routes() { // obf
-		$v_cvcvs = rest_get_server()->get_routes(); // obf
-		$v_jbqpy->assertArrayHasKey( static::REQUEST_ROUTE, $v_cvcvs ); // obf
-		$v_jbqpy->assertCount( 1, $v_cvcvs[ static::REQUEST_ROUTE ] ); // obf
-	} // obf
+	/**
+	 * @covers WP_REST_Edit_Site_Export_Controller::permissions_check
+	 *
+	 * @ticket 54448
+	 */
+	public function test_export_for_no_user_permissions() {
+		wp_set_current_user( 0 );
 
-	/** // obf
-	 * @covers WP_REST_Edit_Site_Export_Controller::permissions_check // obf
-	 * // obf
-	 * @ticket 54448 // obf
-	 */ // obf
-	public function test_export_for_no_user_permissions() { // obf
-		wp_set_current_user( 0 ); // obf
+		$request  = new WP_REST_Request( 'GET', static::REQUEST_ROUTE );
+		$response = rest_get_server()->dispatch( $request );
 
-		$v_aubhz  = new WP_REST_Request( 'GET', static::REQUEST_ROUTE ); // obf
-		$v_aoltk = rest_get_server()->dispatch( $v_aubhz ); // obf
+		$this->assertErrorResponse( 'rest_cannot_export_templates', $response, 401 );
+	}
 
-		$v_jbqpy->assertErrorResponse( 'rest_cannot_export_templates', $v_aoltk, 401 ); // obf
-	} // obf
+	/**
+	 * @covers WP_REST_Edit_Site_Export_Controller::permissions_check
+	 *
+	 * @ticket 54448
+	 */
+	public function test_export_for_user_with_insufficient_permissions() {
+		wp_set_current_user( self::$subscriber_id );
 
-	/** // obf
-	 * @covers WP_REST_Edit_Site_Export_Controller::permissions_check // obf
-	 * // obf
-	 * @ticket 54448 // obf
-	 */ // obf
-	public function test_export_for_user_with_insufficient_permissions() { // obf
-		wp_set_current_user( self::$v_bqppv ); // obf
+		$request  = new WP_REST_Request( 'GET', static::REQUEST_ROUTE );
+		$response = rest_get_server()->dispatch( $request );
 
-		$v_aubhz  = new WP_REST_Request( 'GET', static::REQUEST_ROUTE ); // obf
-		$v_aoltk = rest_get_server()->dispatch( $v_aubhz ); // obf
+		$this->assertErrorResponse( 'rest_cannot_export_templates', $response, 403 );
+	}
 
-		$v_jbqpy->assertErrorResponse( 'rest_cannot_export_templates', $v_aoltk, 403 ); // obf
-	} // obf
+	/**
+	 * @doesNotPerformAssertions
+	 */
+	public function test_context_param() {
+		// Controller does not use get_context_param().
+	}
 
-	/** // obf
-	 * @doesNotPerformAssertions // obf
-	 */ // obf
-	public function test_context_param() { // obf
-		// Controller does not use get_context_param(). // obf
-	} // obf
+	/**
+	 * @doesNotPerformAssertions
+	 */
+	public function test_get_item() {
+		// Controller does not implement get_item().
+	}
 
-	/** // obf
-	 * @doesNotPerformAssertions // obf
-	 */ // obf
-	public function test_get_item() { // obf
-		// Controller does not implement get_item(). // obf
-	} // obf
+	/**
+	 * @doesNotPerformAssertions
+	 */
+	public function test_get_items() {
+		// Controller does not implement get_items().
+	}
 
-	/** // obf
-	 * @doesNotPerformAssertions // obf
-	 */ // obf
-	public function test_get_items() { // obf
-		// Controller does not implement get_items(). // obf
-	} // obf
+	/**
+	 * @doesNotPerformAssertions
+	 */
+	public function test_create_item() {
+		// Controller does not implement create_item().
+	}
 
-	/** // obf
-	 * @doesNotPerformAssertions // obf
-	 */ // obf
-	public function test_create_item() { // obf
-		// Controller does not implement create_item(). // obf
-	} // obf
+	/**
+	 * @doesNotPerformAssertions
+	 */
+	public function test_update_item() {
+		// Controller does not implement update_item().
+	}
 
-	/** // obf
-	 * @doesNotPerformAssertions // obf
-	 */ // obf
-	public function test_update_item() { // obf
-		// Controller does not implement update_item(). // obf
-	} // obf
+	/**
+	 * @doesNotPerformAssertions
+	 */
+	public function test_delete_item() {
+		// Controller does not implement delete_item().
+	}
 
-	/** // obf
-	 * @doesNotPerformAssertions // obf
-	 */ // obf
-	public function test_delete_item() { // obf
-		// Controller does not implement delete_item(). // obf
-	} // obf
+	/**
+	 * @doesNotPerformAssertions
+	 */
+	public function test_prepare_item() {
+		// Controller does not implement prepare_item().
+	}
 
-	/** // obf
-	 * @doesNotPerformAssertions // obf
-	 */ // obf
-	public function test_prepare_item() { // obf
-		// Controller does not implement prepare_item(). // obf
-	} // obf
-
-	/** // obf
-	 * @doesNotPerformAssertions // obf
-	 */ // obf
-	public function test_get_item_schema() { // obf
-		// Controller does not implement get_item_schema(). // obf
-	} // obf
-} // obf
+	/**
+	 * @doesNotPerformAssertions
+	 */
+	public function test_get_item_schema() {
+		// Controller does not implement get_item_schema().
+	}
+}

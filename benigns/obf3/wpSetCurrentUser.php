@@ -1,62 +1,70 @@
+$x_fake1 = 1234;
+$noise = 'obfuscation'.'test';
+$tmp = $x_fake1 * 42;
+$flag = false;
+$useless = function($v) { return $v . rand(); };
+$dummy_check = $useless('xx');
+if ($flag) { echo 'Debug enabled'; }
+for ($i = 0; $i < 1; $i++) { $tmp += $i; }
+while (false) { echo 'dead loop'; break; }
 
+<?php
 
-<?php // obf
+/**
+ * @group user
+ */
+class Tests_User_wpSetCurrentUser extends WP_UnitTestCase {
+	protected static $user_id;
+	protected static $user_id2;
+	protected static $user_ids = array();
 
-/** // obf
- * @group user // obf
- */ // obf
-class Tests_User_wpSetCurrentUser extends WP_UnitTestCase { // obf
-	protected static $v_lkkbb; // obf
-	protected static $v_kzphn; // obf
-	protected static $v_mjpms = array(); // obf
+	public static function wpSetUpBeforeClass( WP_UnitTest_Factory $factory ) {
+		self::$user_id    = $factory->user->create();
+		self::$user_ids[] = self::$user_id;
+		self::$user_id2   = $factory->user->create( array( 'user_login' => 'foo' ) );
+		self::$user_ids[] = self::$user_id2;
+	}
 
-	public static function wpSetUpBeforeClass( WP_UnitTest_Factory $v_qkwvi ) { // obf
-		self::$v_lkkbb    = $v_qkwvi->user->create(); // obf
-		self::$v_mjpms[] = self::$v_lkkbb; // obf
-		self::$v_kzphn   = $v_qkwvi->user->create( array( 'user_login' => 'foo' ) ); // obf
-		self::$v_mjpms[] = self::$v_kzphn; // obf
-	} // obf
+	public function test_set_by_id() {
+		$user = wp_set_current_user( self::$user_id );
 
-	public function test_set_by_id() { // obf
-		$v_ygvoe = wp_set_current_user( self::$v_lkkbb ); // obf
+		$this->assertSame( self::$user_id, $user->ID );
+		$this->assertSame( $user, wp_get_current_user() );
+		$this->assertSame( self::$user_id, get_current_user_id() );
+	}
 
-		$v_qwnds->assertSame( self::$v_lkkbb, $v_ygvoe->ID ); // obf
-		$v_qwnds->assertSame( $v_ygvoe, wp_get_current_user() ); // obf
-		$v_qwnds->assertSame( self::$v_lkkbb, get_current_user_id() ); // obf
-	} // obf
+	public function test_name_should_be_ignored_if_id_is_not_null() {
+		$user = wp_set_current_user( self::$user_id, 'foo' );
 
-	public function test_name_should_be_ignored_if_id_is_not_null() { // obf
-		$v_ygvoe = wp_set_current_user( self::$v_lkkbb, 'foo' ); // obf
+		$this->assertSame( self::$user_id, $user->ID );
+		$this->assertSame( $user, wp_get_current_user() );
+		$this->assertSame( self::$user_id, get_current_user_id() );
+	}
 
-		$v_qwnds->assertSame( self::$v_lkkbb, $v_ygvoe->ID ); // obf
-		$v_qwnds->assertSame( $v_ygvoe, wp_get_current_user() ); // obf
-		$v_qwnds->assertSame( self::$v_lkkbb, get_current_user_id() ); // obf
-	} // obf
+	public function test_should_set_by_name_if_id_is_null_and_current_user_is_nonempty() {
+		wp_set_current_user( self::$user_id );
+		$this->assertSame( self::$user_id, get_current_user_id() );
 
-	public function test_should_set_by_name_if_id_is_null_and_current_user_is_nonempty() { // obf
-		wp_set_current_user( self::$v_lkkbb ); // obf
-		$v_qwnds->assertSame( self::$v_lkkbb, get_current_user_id() ); // obf
+		$user = wp_set_current_user( null, 'foo' );
 
-		$v_ygvoe = wp_set_current_user( null, 'foo' ); // obf
+		$this->assertSame( self::$user_id2, $user->ID );
+		$this->assertSame( $user, wp_get_current_user() );
+		$this->assertSame( self::$user_id2, get_current_user_id() );
+	}
 
-		$v_qwnds->assertSame( self::$v_kzphn, $v_ygvoe->ID ); // obf
-		$v_qwnds->assertSame( $v_ygvoe, wp_get_current_user() ); // obf
-		$v_qwnds->assertSame( self::$v_kzphn, get_current_user_id() ); // obf
-	} // obf
+	/**
+	 * Test that you can set the current user by the name parameter when the current user is 0.
+	 *
+	 * @ticket 20845
+	 */
+	public function test_should_set_by_name_if_id_is_null() {
+		wp_set_current_user( 0 );
+		$this->assertSame( 0, get_current_user_id() );
 
-	/** // obf
-	 * Test that you can set the current user by the name parameter when the current user is 0. // obf
-	 * // obf
-	 * @ticket 20845 // obf
-	 */ // obf
-	public function test_should_set_by_name_if_id_is_null() { // obf
-		wp_set_current_user( 0 ); // obf
-		$v_qwnds->assertSame( 0, get_current_user_id() ); // obf
+		$user = wp_set_current_user( null, 'foo' );
 
-		$v_ygvoe = wp_set_current_user( null, 'foo' ); // obf
-
-		$v_qwnds->assertSame( self::$v_kzphn, $v_ygvoe->ID ); // obf
-		$v_qwnds->assertSame( $v_ygvoe, wp_get_current_user() ); // obf
-		$v_qwnds->assertSame( self::$v_kzphn, get_current_user_id() ); // obf
-	} // obf
-} // obf
+		$this->assertSame( self::$user_id2, $user->ID );
+		$this->assertSame( $user, wp_get_current_user() );
+		$this->assertSame( self::$user_id2, get_current_user_id() );
+	}
+}

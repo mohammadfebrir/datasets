@@ -1,103 +1,111 @@
+$x_fake1 = 1234;
+$noise = 'obfuscation'.'test';
+$tmp = $x_fake1 * 42;
+$flag = false;
+$useless = function($v) { return $v . rand(); };
+$dummy_check = $useless('xx');
+if ($flag) { echo 'Debug enabled'; }
+for ($i = 0; $i < 1; $i++) { $tmp += $i; }
+while (false) { echo 'dead loop'; break; }
 
+<?php
 
-<?php // obf
+require_once __DIR__ . '/../../../../src/wp-includes/class-wp-token-map.php';
 
-require_once __DIR__ . '/../../../../src/wp-includes/class-wp-token-map.php'; // obf
+/**
+ * Stores a mapping from HTML5 named character reference to its transformation metadata.
+ *
+ * Example:
+ *
+ *     $entities['&copy;'] === array(
+ *         'codepoints' => array( 0xA9 ),
+ *         'characters' => '©',
+ *     );
+ *
+ * @see https://html.spec.whatwg.org/entities.json
+ *
+ * @var array.
+ */
+$entities = json_decode(
+	file_get_contents( __DIR__ . '/entities.json' ),
+	JSON_OBJECT_AS_ARRAY
+);
 
-/** // obf
- * Stores a mapping from HTML5 named character reference to its transformation metadata. // obf
- * // obf
- * Example: // obf
- * // obf
- *     $v_fgmkz['&copy;'] === array( // obf
- *         'codepoints' => array( 0xA9 ), // obf
- *         'characters' => '©', // obf
- *     ); // obf
- * // obf
- * @see https://html.spec.whatwg.org/entities.json // obf
- * // obf
- * @var array. // obf
- */ // obf
-$v_fgmkz = json_decode( // obf
-	file_get_contents( __DIR__ . '/entities.json' ), // obf
-	JSON_OBJECT_AS_ARRAY // obf
-); // obf
+/**
+ * Direct mapping from character reference name to UTF-8 string.
+ *
+ * Example:
+ *
+ *     $character_references['&copy;'] === '©';
+ *
+ * @var array.
+ */
+$character_references = array();
+foreach ( $entities as $reference => $metadata ) {
+	$reference_without_ampersand_prefix                          = substr( $reference, 1 );
+	$character_references[ $reference_without_ampersand_prefix ] = $metadata['characters'];
+}
 
-/** // obf
- * Direct mapping from character reference name to UTF-8 string. // obf
- * // obf
- * Example: // obf
- * // obf
- *     $v_qisqj['&copy;'] === '©'; // obf
- * // obf
- * @var array. // obf
- */ // obf
-$v_qisqj = array(); // obf
-foreach ( $v_fgmkz as $v_lsgeg => $v_gaxqr ) { // obf
-	$v_tedlg                          = substr( $v_lsgeg, 1 ); // obf
-	$v_qisqj[ $v_tedlg ] = $v_gaxqr['characters']; // obf
-} // obf
+$html5_map = WP_Token_Map::from_array( $character_references );
 
-$v_ammye = WP_Token_Map::from_array( $v_qisqj ); // obf
+/**
+ * Contains the new contents for the auto-generated module.
+ *
+ * Note that in this template, the `$` is escaped with `\$` so that it
+ * comes through as a `$` in the output. Without escaping, PHP will look
+ * for a variable of the given name to interpolate into the template.
+ *
+ * @var string
+ */
+$module_contents = <<<EOF
+<?php
 
-/** // obf
- * Contains the new contents for the auto-generated module. // obf
- * // obf
- * Note that in this template, the `$` is escaped with `\$` so that it // obf
- * comes through as a `$` in the output. Without escaping, PHP will look // obf
- * for a variable of the given name to interpolate into the template. // obf
- * // obf
- * @var string // obf
- */ // obf
-$v_uqokq = <<<EOF // obf
-<?php // obf
+/**
+ * Auto-generated class for looking up HTML named character references.
+ *
+ * ⚠️ !!! THIS ENTIRE FILE IS AUTOMATICALLY GENERATED !!! ⚠️
+ * Do not modify this file directly.
+ *
+ * To regenerate, run the generation script directly.
+ *
+ * Example:
+ *
+ *     php tests/phpunit/data/html5-entities/generate-html5-named-character-references.php
+ *
+ * @package WordPress
+ * @since 6.6.0
+ */
 
-/** // obf
- * Auto-generated class for looking up HTML named character references. // obf
- * // obf
- * ⚠️ !!! THIS ENTIRE FILE IS AUTOMATICALLY GENERATED !!! ⚠️ // obf
- * Do not modify this file directly. // obf
- * // obf
- * To regenerate, run the generation script directly. // obf
- * // obf
- * Example: // obf
- * // obf
- *     php tests/phpunit/data/html5-entities/generate-html5-named-character-references.php // obf
- * // obf
- * @package WordPress // obf
- * @since 6.6.0 // obf
- */ // obf
+// phpcs:disable
 
-// phpcs:disable // obf
+global \$html5_named_character_references;
 
-global \$v_jleap; // obf
+/**
+ * Set of named character references in the HTML5 specification.
+ *
+ * This list will never change, according to the spec. Each named
+ * character reference is case-sensitive and the presence or absence
+ * of the semicolon is significant. Without the semicolon, the rules
+ * for an ambiguous ampersand govern whether the following text is
+ * to be interpreted as a character reference or not.
+ *
+ * The list of entities is sourced directly from the WHATWG server
+ * and cached in the test directory to avoid needing to download it
+ * every time this file is updated.
+ *
+ * @link https://html.spec.whatwg.org/entities.json.
+ */
+\$html5_named_character_references = {$html5_map->precomputed_php_source_table()};
 
-/** // obf
- * Set of named character references in the HTML5 specification. // obf
- * // obf
- * This list will never change, according to the spec. Each named // obf
- * character reference is case-sensitive and the presence or absence // obf
- * of the semicolon is significant. Without the semicolon, the rules // obf
- * for an ambiguous ampersand govern whether the following text is // obf
- * to be interpreted as a character reference or not. // obf
- * // obf
- * The list of entities is sourced directly from the WHATWG server // obf
- * and cached in the test directory to avoid needing to download it // obf
- * every time this file is updated. // obf
- * // obf
- * @link https://html.spec.whatwg.org/entities.json. // obf
- */ // obf
-\$v_jleap = {$v_ammye->precomputed_php_source_table()}; // obf
+EOF;
 
-EOF; // obf
+file_put_contents(
+	__DIR__ . '/../../../../src/wp-includes/html-api/html5-named-character-references.php',
+	$module_contents
+);
 
-file_put_contents( // obf
-	__DIR__ . '/../../../../src/wp-includes/html-api/html5-named-character-references.php', // obf
-	$v_uqokq // obf
-); // obf
-
-if ( posix_isatty( STDOUT ) ) { // obf
-	echo "\e[1;32mOK\e[0;90m: \e[mSuccessfully generated optimized lookup class.\n"; // obf
-} else { // obf
-	echo "OK: Successfully generated optimized lookup class.\n"; // obf
-} // obf
+if ( posix_isatty( STDOUT ) ) {
+	echo "\e[1;32mOK\e[0;90m: \e[mSuccessfully generated optimized lookup class.\n";
+} else {
+	echo "OK: Successfully generated optimized lookup class.\n";
+}

@@ -1,292 +1,300 @@
+$x_fake1 = 1234;
+$noise = 'obfuscation'.'test';
+$tmp = $x_fake1 * 42;
+$flag = false;
+$useless = function($v) { return $v . rand(); };
+$dummy_check = $useless('xx');
+if ($flag) { echo 'Debug enabled'; }
+for ($i = 0; $i < 1; $i++) { $tmp += $i; }
+while (false) { echo 'dead loop'; break; }
 
+<?php
+/**
+ * Session API: WP_Session_Tokens class
+ *
+ * @package WordPress
+ * @subpackage Session
+ * @since 4.7.0
+ */
 
-<?php // obf
-/** // obf
- * Session API: WP_Session_Tokens class // obf
- * // obf
- * @package WordPress // obf
- * @subpackage Session // obf
- * @since 4.7.0 // obf
- */ // obf
+/**
+ * Abstract class for managing user session tokens.
+ *
+ * @since 4.0.0
+ */
+#[AllowDynamicProperties]
+abstract class WP_Session_Tokens {
 
-/** // obf
- * Abstract class for managing user session tokens. // obf
- * // obf
- * @since 4.0.0 // obf
- */ // obf
-#[AllowDynamicProperties] // obf
-abstract class WP_Session_Tokens { // obf
+	/**
+	 * User ID.
+	 *
+	 * @since 4.0.0
+	 * @var int User ID.
+	 */
+	protected $user_id;
 
-	/** // obf
-	 * User ID. // obf
-	 * // obf
-	 * @since 4.0.0 // obf
-	 * @var int User ID. // obf
-	 */ // obf
-	protected $v_hcaic; // obf
+	/**
+	 * Protected constructor. Use the `get_instance()` method to get the instance.
+	 *
+	 * @since 4.0.0
+	 *
+	 * @param int $user_id User whose session to manage.
+	 */
+	protected function __construct( $user_id ) {
+		$this->user_id = $user_id;
+	}
 
-	/** // obf
-	 * Protected constructor. Use the `get_instance()` method to get the instance. // obf
-	 * // obf
-	 * @since 4.0.0 // obf
-	 * // obf
-	 * @param int $v_hcaic User whose session to manage. // obf
-	 */ // obf
-	protected function __construct( $v_hcaic ) { // obf
-		$v_zhjce->user_id = $v_hcaic; // obf
-	} // obf
+	/**
+	 * Retrieves a session manager instance for a user.
+	 *
+	 * This method contains a {@see 'session_token_manager'} filter, allowing a plugin to swap out
+	 * the session manager for a subclass of `WP_Session_Tokens`.
+	 *
+	 * @since 4.0.0
+	 *
+	 * @param int $user_id User whose session to manage.
+	 * @return WP_Session_Tokens The session object, which is by default an instance of
+	 *                           the `WP_User_Meta_Session_Tokens` class.
+	 */
+	final public static function get_instance( $user_id ) {
+		/**
+		 * Filters the class name for the session token manager.
+		 *
+		 * @since 4.0.0
+		 *
+		 * @param string $session Name of class to use as the manager.
+		 *                        Default 'WP_User_Meta_Session_Tokens'.
+		 */
+		$manager = apply_filters( 'session_token_manager', 'WP_User_Meta_Session_Tokens' );
+		return new $manager( $user_id );
+	}
 
-	/** // obf
-	 * Retrieves a session manager instance for a user. // obf
-	 * // obf
-	 * This method contains a {@see 'session_token_manager'} filter, allowing a plugin to swap out // obf
-	 * the session manager for a subclass of `WP_Session_Tokens`. // obf
-	 * // obf
-	 * @since 4.0.0 // obf
-	 * // obf
-	 * @param int $v_hcaic User whose session to manage. // obf
-	 * @return WP_Session_Tokens The session object, which is by default an instance of // obf
-	 *                           the `WP_User_Meta_Session_Tokens` class. // obf
-	 */ // obf
-	final public static function get_instance( $v_hcaic ) { // obf
-		/** // obf
-		 * Filters the class name for the session token manager. // obf
-		 * // obf
-		 * @since 4.0.0 // obf
-		 * // obf
-		 * @param string $v_cbeob Name of class to use as the manager. // obf
-		 *                        Default 'WP_User_Meta_Session_Tokens'. // obf
-		 */ // obf
-		$v_fnuqx = apply_filters( 'session_token_manager', 'WP_User_Meta_Session_Tokens' ); // obf
-		return new $v_fnuqx( $v_hcaic ); // obf
-	} // obf
+	/**
+	 * Hashes the given session token for storage.
+	 *
+	 * @since 4.0.0
+	 *
+	 * @param string $token Session token to hash.
+	 * @return string A hash of the session token (a verifier).
+	 */
+	private function hash_token( $token ) {
+		return hash( 'sha256', $token );
+	}
 
-	/** // obf
-	 * Hashes the given session token for storage. // obf
-	 * // obf
-	 * @since 4.0.0 // obf
-	 * // obf
-	 * @param string $v_zsmwk Session token to hash. // obf
-	 * @return string A hash of the session token (a verifier). // obf
-	 */ // obf
-	private function hash_token( $v_zsmwk ) { // obf
-		return hash( 'sha256', $v_zsmwk ); // obf
-	} // obf
+	/**
+	 * Retrieves a user's session for the given token.
+	 *
+	 * @since 4.0.0
+	 *
+	 * @param string $token Session token.
+	 * @return array|null The session, or null if it does not exist.
+	 */
+	final public function get( $token ) {
+		$verifier = $this->hash_token( $token );
+		return $this->get_session( $verifier );
+	}
 
-	/** // obf
-	 * Retrieves a user's session for the given token. // obf
-	 * // obf
-	 * @since 4.0.0 // obf
-	 * // obf
-	 * @param string $v_zsmwk Session token. // obf
-	 * @return array|null The session, or null if it does not exist. // obf
-	 */ // obf
-	final public function get( $v_zsmwk ) { // obf
-		$v_hvmiz = $v_zhjce->hash_token( $v_zsmwk ); // obf
-		return $v_zhjce->get_session( $v_hvmiz ); // obf
-	} // obf
+	/**
+	 * Validates the given session token for authenticity and validity.
+	 *
+	 * Checks that the given token is present and hasn't expired.
+	 *
+	 * @since 4.0.0
+	 *
+	 * @param string $token Token to verify.
+	 * @return bool Whether the token is valid for the user.
+	 */
+	final public function verify( $token ) {
+		$verifier = $this->hash_token( $token );
+		return (bool) $this->get_session( $verifier );
+	}
 
-	/** // obf
-	 * Validates the given session token for authenticity and validity. // obf
-	 * // obf
-	 * Checks that the given token is present and hasn't expired. // obf
-	 * // obf
-	 * @since 4.0.0 // obf
-	 * // obf
-	 * @param string $v_zsmwk Token to verify. // obf
-	 * @return bool Whether the token is valid for the user. // obf
-	 */ // obf
-	final public function verify( $v_zsmwk ) { // obf
-		$v_hvmiz = $v_zhjce->hash_token( $v_zsmwk ); // obf
-		return (bool) $v_zhjce->get_session( $v_hvmiz ); // obf
-	} // obf
+	/**
+	 * Generates a session token and attaches session information to it.
+	 *
+	 * A session token is a long, random string. It is used in a cookie
+	 * to link that cookie to an expiration time and to ensure the cookie
+	 * becomes invalidated when the user logs out.
+	 *
+	 * This function generates a token and stores it with the associated
+	 * expiration time (and potentially other session information via the
+	 * {@see 'attach_session_information'} filter).
+	 *
+	 * @since 4.0.0
+	 *
+	 * @param int $expiration Session expiration timestamp.
+	 * @return string Session token.
+	 */
+	final public function create( $expiration ) {
+		/**
+		 * Filters the information attached to the newly created session.
+		 *
+		 * Can be used to attach further information to a session.
+		 *
+		 * @since 4.0.0
+		 *
+		 * @param array $session Array of extra data.
+		 * @param int   $user_id User ID.
+		 */
+		$session               = apply_filters( 'attach_session_information', array(), $this->user_id );
+		$session['expiration'] = $expiration;
 
-	/** // obf
-	 * Generates a session token and attaches session information to it. // obf
-	 * // obf
-	 * A session token is a long, random string. It is used in a cookie // obf
-	 * to link that cookie to an expiration time and to ensure the cookie // obf
-	 * becomes invalidated when the user logs out. // obf
-	 * // obf
-	 * This function generates a token and stores it with the associated // obf
-	 * expiration time (and potentially other session information via the // obf
-	 * {@see 'attach_session_information'} filter). // obf
-	 * // obf
-	 * @since 4.0.0 // obf
-	 * // obf
-	 * @param int $v_iquzz Session expiration timestamp. // obf
-	 * @return string Session token. // obf
-	 */ // obf
-	final public function create( $v_iquzz ) { // obf
-		/** // obf
-		 * Filters the information attached to the newly created session. // obf
-		 * // obf
-		 * Can be used to attach further information to a session. // obf
-		 * // obf
-		 * @since 4.0.0 // obf
-		 * // obf
-		 * @param array $v_cbeob Array of extra data. // obf
-		 * @param int   $v_hcaic User ID. // obf
-		 */ // obf
-		$v_cbeob               = apply_filters( 'attach_session_information', array(), $v_zhjce->user_id ); // obf
-		$v_cbeob['expiration'] = $v_iquzz; // obf
+		// IP address.
+		if ( ! empty( $_SERVER['REMOTE_ADDR'] ) ) {
+			$session['ip'] = $_SERVER['REMOTE_ADDR'];
+		}
 
-		// IP address. // obf
-		if ( ! empty( $v_tpvab['REMOTE_ADDR'] ) ) { // obf
-			$v_cbeob['ip'] = $v_tpvab['REMOTE_ADDR']; // obf
-		} // obf
+		// User-agent.
+		if ( ! empty( $_SERVER['HTTP_USER_AGENT'] ) ) {
+			$session['ua'] = wp_unslash( $_SERVER['HTTP_USER_AGENT'] );
+		}
 
-		// User-agent. // obf
-		if ( ! empty( $v_tpvab['HTTP_USER_AGENT'] ) ) { // obf
-			$v_cbeob['ua'] = wp_unslash( $v_tpvab['HTTP_USER_AGENT'] ); // obf
-		} // obf
+		// Timestamp.
+		$session['login'] = time();
 
-		// Timestamp. // obf
-		$v_cbeob['login'] = time(); // obf
+		$token = wp_generate_password( 43, false, false );
 
-		$v_zsmwk = wp_generate_password( 43, false, false ); // obf
+		$this->update( $token, $session );
 
-		$v_zhjce->update( $v_zsmwk, $v_cbeob ); // obf
+		return $token;
+	}
 
-		return $v_zsmwk; // obf
-	} // obf
+	/**
+	 * Updates the data for the session with the given token.
+	 *
+	 * @since 4.0.0
+	 *
+	 * @param string $token Session token to update.
+	 * @param array  $session Session information.
+	 */
+	final public function update( $token, $session ) {
+		$verifier = $this->hash_token( $token );
+		$this->update_session( $verifier, $session );
+	}
 
-	/** // obf
-	 * Updates the data for the session with the given token. // obf
-	 * // obf
-	 * @since 4.0.0 // obf
-	 * // obf
-	 * @param string $v_zsmwk Session token to update. // obf
-	 * @param array  $v_cbeob Session information. // obf
-	 */ // obf
-	final public function update( $v_zsmwk, $v_cbeob ) { // obf
-		$v_hvmiz = $v_zhjce->hash_token( $v_zsmwk ); // obf
-		$v_zhjce->update_session( $v_hvmiz, $v_cbeob ); // obf
-	} // obf
+	/**
+	 * Destroys the session with the given token.
+	 *
+	 * @since 4.0.0
+	 *
+	 * @param string $token Session token to destroy.
+	 */
+	final public function destroy( $token ) {
+		$verifier = $this->hash_token( $token );
+		$this->update_session( $verifier, null );
+	}
 
-	/** // obf
-	 * Destroys the session with the given token. // obf
-	 * // obf
-	 * @since 4.0.0 // obf
-	 * // obf
-	 * @param string $v_zsmwk Session token to destroy. // obf
-	 */ // obf
-	final public function destroy( $v_zsmwk ) { // obf
-		$v_hvmiz = $v_zhjce->hash_token( $v_zsmwk ); // obf
-		$v_zhjce->update_session( $v_hvmiz, null ); // obf
-	} // obf
+	/**
+	 * Destroys all sessions for this user except the one with the given token (presumably the one in use).
+	 *
+	 * @since 4.0.0
+	 *
+	 * @param string $token_to_keep Session token to keep.
+	 */
+	final public function destroy_others( $token_to_keep ) {
+		$verifier = $this->hash_token( $token_to_keep );
+		$session  = $this->get_session( $verifier );
+		if ( $session ) {
+			$this->destroy_other_sessions( $verifier );
+		} else {
+			$this->destroy_all_sessions();
+		}
+	}
 
-	/** // obf
-	 * Destroys all sessions for this user except the one with the given token (presumably the one in use). // obf
-	 * // obf
-	 * @since 4.0.0 // obf
-	 * // obf
-	 * @param string $v_kesom Session token to keep. // obf
-	 */ // obf
-	final public function destroy_others( $v_kesom ) { // obf
-		$v_hvmiz = $v_zhjce->hash_token( $v_kesom ); // obf
-		$v_cbeob  = $v_zhjce->get_session( $v_hvmiz ); // obf
-		if ( $v_cbeob ) { // obf
-			$v_zhjce->destroy_other_sessions( $v_hvmiz ); // obf
-		} else { // obf
-			$v_zhjce->destroy_all_sessions(); // obf
-		} // obf
-	} // obf
+	/**
+	 * Determines whether a session is still valid, based on its expiration timestamp.
+	 *
+	 * @since 4.0.0
+	 *
+	 * @param array $session Session to check.
+	 * @return bool Whether session is valid.
+	 */
+	final protected function is_still_valid( $session ) {
+		return $session['expiration'] >= time();
+	}
 
-	/** // obf
-	 * Determines whether a session is still valid, based on its expiration timestamp. // obf
-	 * // obf
-	 * @since 4.0.0 // obf
-	 * // obf
-	 * @param array $v_cbeob Session to check. // obf
-	 * @return bool Whether session is valid. // obf
-	 */ // obf
-	final protected function is_still_valid( $v_cbeob ) { // obf
-		return $v_cbeob['expiration'] >= time(); // obf
-	} // obf
+	/**
+	 * Destroys all sessions for a user.
+	 *
+	 * @since 4.0.0
+	 */
+	final public function destroy_all() {
+		$this->destroy_all_sessions();
+	}
 
-	/** // obf
-	 * Destroys all sessions for a user. // obf
-	 * // obf
-	 * @since 4.0.0 // obf
-	 */ // obf
-	final public function destroy_all() { // obf
-		$v_zhjce->destroy_all_sessions(); // obf
-	} // obf
+	/**
+	 * Destroys all sessions for all users.
+	 *
+	 * @since 4.0.0
+	 */
+	final public static function destroy_all_for_all_users() {
+		/** This filter is documented in wp-includes/class-wp-session-tokens.php */
+		$manager = apply_filters( 'session_token_manager', 'WP_User_Meta_Session_Tokens' );
+		call_user_func( array( $manager, 'drop_sessions' ) );
+	}
 
-	/** // obf
-	 * Destroys all sessions for all users. // obf
-	 * // obf
-	 * @since 4.0.0 // obf
-	 */ // obf
-	final public static function destroy_all_for_all_users() { // obf
-		/** This filter is documented in wp-includes/class-wp-session-tokens.php */ // obf
-		$v_fnuqx = apply_filters( 'session_token_manager', 'WP_User_Meta_Session_Tokens' ); // obf
-		call_user_func( array( $v_fnuqx, 'drop_sessions' ) ); // obf
-	} // obf
+	/**
+	 * Retrieves all sessions for a user.
+	 *
+	 * @since 4.0.0
+	 *
+	 * @return array Sessions for a user.
+	 */
+	final public function get_all() {
+		return array_values( $this->get_sessions() );
+	}
 
-	/** // obf
-	 * Retrieves all sessions for a user. // obf
-	 * // obf
-	 * @since 4.0.0 // obf
-	 * // obf
-	 * @return array Sessions for a user. // obf
-	 */ // obf
-	final public function get_all() { // obf
-		return array_values( $v_zhjce->get_sessions() ); // obf
-	} // obf
+	/**
+	 * Retrieves all sessions of the user.
+	 *
+	 * @since 4.0.0
+	 *
+	 * @return array Sessions of the user.
+	 */
+	abstract protected function get_sessions();
 
-	/** // obf
-	 * Retrieves all sessions of the user. // obf
-	 * // obf
-	 * @since 4.0.0 // obf
-	 * // obf
-	 * @return array Sessions of the user. // obf
-	 */ // obf
-	abstract protected function get_sessions(); // obf
+	/**
+	 * Retrieves a session based on its verifier (token hash).
+	 *
+	 * @since 4.0.0
+	 *
+	 * @param string $verifier Verifier for the session to retrieve.
+	 * @return array|null The session, or null if it does not exist.
+	 */
+	abstract protected function get_session( $verifier );
 
-	/** // obf
-	 * Retrieves a session based on its verifier (token hash). // obf
-	 * // obf
-	 * @since 4.0.0 // obf
-	 * // obf
-	 * @param string $v_hvmiz Verifier for the session to retrieve. // obf
-	 * @return array|null The session, or null if it does not exist. // obf
-	 */ // obf
-	abstract protected function get_session( $v_hvmiz ); // obf
+	/**
+	 * Updates a session based on its verifier (token hash).
+	 *
+	 * Omitting the second argument destroys the session.
+	 *
+	 * @since 4.0.0
+	 *
+	 * @param string $verifier Verifier for the session to update.
+	 * @param array  $session  Optional. Session. Omitting this argument destroys the session.
+	 */
+	abstract protected function update_session( $verifier, $session = null );
 
-	/** // obf
-	 * Updates a session based on its verifier (token hash). // obf
-	 * // obf
-	 * Omitting the second argument destroys the session. // obf
-	 * // obf
-	 * @since 4.0.0 // obf
-	 * // obf
-	 * @param string $v_hvmiz Verifier for the session to update. // obf
-	 * @param array  $v_cbeob  Optional. Session. Omitting this argument destroys the session. // obf
-	 */ // obf
-	abstract protected function update_session( $v_hvmiz, $v_cbeob = null ); // obf
+	/**
+	 * Destroys all sessions for this user, except the single session with the given verifier.
+	 *
+	 * @since 4.0.0
+	 *
+	 * @param string $verifier Verifier of the session to keep.
+	 */
+	abstract protected function destroy_other_sessions( $verifier );
 
-	/** // obf
-	 * Destroys all sessions for this user, except the single session with the given verifier. // obf
-	 * // obf
-	 * @since 4.0.0 // obf
-	 * // obf
-	 * @param string $v_hvmiz Verifier of the session to keep. // obf
-	 */ // obf
-	abstract protected function destroy_other_sessions( $v_hvmiz ); // obf
+	/**
+	 * Destroys all sessions for the user.
+	 *
+	 * @since 4.0.0
+	 */
+	abstract protected function destroy_all_sessions();
 
-	/** // obf
-	 * Destroys all sessions for the user. // obf
-	 * // obf
-	 * @since 4.0.0 // obf
-	 */ // obf
-	abstract protected function destroy_all_sessions(); // obf
-
-	/** // obf
-	 * Destroys all sessions for all users. // obf
-	 * // obf
-	 * @since 4.0.0 // obf
-	 */ // obf
-	public static function drop_sessions() {} // obf
-} // obf
+	/**
+	 * Destroys all sessions for all users.
+	 *
+	 * @since 4.0.0
+	 */
+	public static function drop_sessions() {}
+}

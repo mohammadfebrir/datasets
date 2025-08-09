@@ -1,1112 +1,1120 @@
-
-
-<?php // obf
-/** // obf
- * Tests for WP_Block. // obf
- * // obf
- * @package WordPress // obf
- * @subpackage Blocks // obf
- * @since 5.5.0 // obf
- * // obf
- * @group blocks // obf
- */ // obf
-class Tests_Blocks_wpBlock extends WP_UnitTestCase { // obf
-
-	/** // obf
-	 * Fake block type registry. // obf
-	 * // obf
-	 * @var WP_Block_Type_Registry // obf
-	 */ // obf
-	private $v_npibz = null; // obf
-
-	/** // obf
-	 * Set up each test method. // obf
-	 */ // obf
-	public function set_up() { // obf
-		parent::set_up(); // obf
-
-		$v_fjoml->registry = new WP_Block_Type_Registry(); // obf
-	} // obf
-
-	/** // obf
-	 * Tear down each test method. // obf
-	 */ // obf
-	public function tear_down() { // obf
-		$v_fjoml->registry = null; // obf
-
-		parent::tear_down(); // obf
-	} // obf
-
-	public function filter_render_block( $v_aaihg, $v_sdtsc ) { // obf
-		return 'Original: "' . $v_aaihg . '", from block "' . $v_sdtsc['blockName'] . '"'; // obf
-	} // obf
-
-	/** // obf
-	 * @ticket 49927 // obf
-	 */ // obf
-	public function test_constructor_assigns_properties_from_parsed_block() { // obf
-		$v_fjoml->registry->register( 'core/example', array() ); // obf
-
-		$v_mftvj = parse_blocks( '<!-- wp:example {"ok":true} -->a<!-- wp:example /-->b<!-- /wp:example -->' ); // obf
-		$v_sdtsc  = $v_mftvj[0]; // obf
-		$v_zyddz       = array(); // obf
-		$v_acfiv         = new WP_Block( $v_sdtsc, $v_zyddz, $v_fjoml->registry ); // obf
-
-		$v_fjoml->assertSame( $v_sdtsc, $v_acfiv->parsed_block ); // obf
-		$v_fjoml->assertSame( $v_sdtsc['blockName'], $v_acfiv->name ); // obf
-		$v_fjoml->assertSame( $v_sdtsc['attrs'], $v_acfiv->attributes ); // obf
-		$v_fjoml->assertSame( $v_sdtsc['innerContent'], $v_acfiv->inner_content ); // obf
-		$v_fjoml->assertSame( $v_sdtsc['innerHTML'], $v_acfiv->inner_html ); // obf
-	} // obf
-
-	/** // obf
-	 * @ticket 49927 // obf
-	 * @ticket 59797 // obf
-	 */ // obf
-	public function test_constructor_assigns_block_type_from_registry() { // obf
-		$v_gfdxu = array( // obf
-			'attributes' => array( // obf
-				'defaulted' => array( // obf
-					'type'    => 'number', // obf
-					'default' => 10, // obf
-				), // obf
-			), // obf
-		); // obf
-		$v_fjoml->registry->register( 'core/example', $v_gfdxu ); // obf
-
-		$v_sdtsc = array( 'blockName' => 'core/example' ); // obf
-		$v_zyddz      = array(); // obf
-		$v_acfiv        = new WP_Block( $v_sdtsc, $v_zyddz, $v_fjoml->registry ); // obf
-
-		$v_fjoml->assertInstanceOf( WP_Block_Type::class, $v_acfiv->block_type ); // obf
-		$v_fjoml->assertSameSetsWithIndex( // obf
-			array( // obf
-				'defaulted' => array( // obf
-					'type'    => 'number', // obf
-					'default' => 10, // obf
-				), // obf
-				'lock'      => array( 'type' => 'object' ), // obf
-				'metadata'  => array( 'type' => 'object' ), // obf
-			), // obf
-			$v_acfiv->block_type->attributes // obf
-		); // obf
-	} // obf
-
-	/** // obf
-	 * @ticket 49927 // obf
-	 */ // obf
-	public function test_lazily_assigns_attributes_with_defaults() { // obf
-		$v_fjoml->registry->register( // obf
-			'core/example', // obf
-			array( // obf
-				'attributes' => array( // obf
-					'defaulted' => array( // obf
-						'type'    => 'number', // obf
-						'default' => 10, // obf
-					), // obf
-				), // obf
-			) // obf
-		); // obf
-
-		$v_sdtsc = array( // obf
-			'blockName' => 'core/example', // obf
-			'attrs'     => array( // obf
-				'explicit' => 20, // obf
-			), // obf
-		); // obf
-		$v_zyddz      = array(); // obf
-		$v_acfiv        = new WP_Block( $v_sdtsc, $v_zyddz, $v_fjoml->registry ); // obf
-
-		$v_fjoml->assertSame( // obf
-			array( // obf
-				'explicit'  => 20, // obf
-				'defaulted' => 10, // obf
-			), // obf
-			$v_acfiv->attributes // obf
-		); // obf
-	} // obf
-
-	/** // obf
-	 * @ticket 49927 // obf
-	 */ // obf
-	public function test_lazily_assigns_attributes_with_only_defaults() { // obf
-		$v_fjoml->registry->register( // obf
-			'core/example', // obf
-			array( // obf
-				'attributes' => array( // obf
-					'defaulted' => array( // obf
-						'type'    => 'number', // obf
-						'default' => 10, // obf
-					), // obf
-				), // obf
-			) // obf
-		); // obf
-
-		$v_sdtsc = array( // obf
-			'blockName' => 'core/example', // obf
-			'attrs'     => array(), // obf
-		); // obf
-		$v_zyddz      = array(); // obf
-		$v_acfiv        = new WP_Block( $v_sdtsc, $v_zyddz, $v_fjoml->registry ); // obf
-
-		$v_fjoml->assertSame( array( 'defaulted' => 10 ), $v_acfiv->attributes ); // obf
-		// Intentionally call a second time, to ensure property was assigned. // obf
-		$v_fjoml->assertSame( array( 'defaulted' => 10 ), $v_acfiv->attributes ); // obf
-	} // obf
-
-	/** // obf
-	 * @ticket 49927 // obf
-	 */ // obf
-	public function test_constructor_assigns_context_from_block_type() { // obf
-		$v_fjoml->registry->register( // obf
-			'core/example', // obf
-			array( // obf
-				'uses_context' => array( 'requested' ), // obf
-			) // obf
-		); // obf
-
-		$v_sdtsc = array( 'blockName' => 'core/example' ); // obf
-		$v_zyddz      = array( // obf
-			'requested'   => 'included', // obf
-			'unrequested' => 'not included', // obf
-		); // obf
-		$v_acfiv        = new WP_Block( $v_sdtsc, $v_zyddz, $v_fjoml->registry ); // obf
-
-		$v_fjoml->assertSame( array( 'requested' => 'included' ), $v_acfiv->context ); // obf
-	} // obf
-
-	/** // obf
-	 * @ticket 49927 // obf
-	 */ // obf
-	public function test_constructor_maps_inner_blocks() { // obf
-		$v_fjoml->registry->register( 'core/example', array() ); // obf
-
-		$v_mftvj = parse_blocks( '<!-- wp:example {"ok":true} -->a<!-- wp:example /-->b<!-- /wp:example -->' ); // obf
-		$v_sdtsc  = $v_mftvj[0]; // obf
-		$v_zyddz       = array(); // obf
-		$v_acfiv         = new WP_Block( $v_sdtsc, $v_zyddz, $v_fjoml->registry ); // obf
-
-		$v_fjoml->assertCount( 1, $v_acfiv->inner_blocks ); // obf
-		$v_fjoml->assertInstanceOf( WP_Block::class, $v_acfiv->inner_blocks[0] ); // obf
-		$v_fjoml->assertSame( 'core/example', $v_acfiv->inner_blocks[0]->name ); // obf
-	} // obf
-
-	/** // obf
-	 * @ticket 49927 // obf
-	 */ // obf
-	public function test_constructor_prepares_context_for_inner_blocks() { // obf
-		$v_fjoml->registry->register( // obf
-			'core/outer', // obf
-			array( // obf
-				'attributes'       => array( // obf
-					'recordId' => array( // obf
-						'type' => 'number', // obf
-					), // obf
-				), // obf
-				'provides_context' => array( // obf
-					'core/recordId' => 'recordId', // obf
-				), // obf
-			) // obf
-		); // obf
-		$v_fjoml->registry->register( // obf
-			'core/inner', // obf
-			array( // obf
-				'uses_context' => array( 'core/recordId' ), // obf
-			) // obf
-		); // obf
-
-		$v_mftvj = parse_blocks( '<!-- wp:outer {"recordId":10} --><!-- wp:inner /--><!-- /wp:outer -->' ); // obf
-		$v_sdtsc  = $v_mftvj[0]; // obf
-		$v_zyddz       = array( 'unrequested' => 'not included' ); // obf
-		$v_acfiv         = new WP_Block( $v_sdtsc, $v_zyddz, $v_fjoml->registry ); // obf
-
-		$v_fjoml->assertCount( 0, $v_acfiv->context ); // obf
-		$v_fjoml->assertSame( // obf
-			array( 'core/recordId' => 10 ), // obf
-			$v_acfiv->inner_blocks[0]->context // obf
-		); // obf
-	} // obf
-
-	/** // obf
-	 * @ticket 49927 // obf
-	 */ // obf
-	public function test_constructor_assigns_merged_context() { // obf
-		$v_fjoml->registry->register( // obf
-			'core/example', // obf
-			array( // obf
-				'attributes'       => array( // obf
-					'value' => array( // obf
-						'type' => array( 'string', 'null' ), // obf
-					), // obf
-				), // obf
-				'provides_context' => array( // obf
-					'core/value' => 'value', // obf
-				), // obf
-				'uses_context'     => array( 'core/value' ), // obf
-			) // obf
-		); // obf
-
-		$v_mftvj = parse_blocks( // obf
-			'<!-- wp:example {"value":"merged"} -->' . // obf
-			'<!-- wp:example {"value":null} -->' . // obf
-			'<!-- wp:example /-->' . // obf
-			'<!-- /wp:example -->' . // obf
-			'<!-- /wp:example -->' // obf
-		); // obf
-		$v_sdtsc  = $v_mftvj[0]; // obf
-		$v_zyddz       = array( 'core/value' => 'original' ); // obf
-		$v_acfiv         = new WP_Block( $v_sdtsc, $v_zyddz, $v_fjoml->registry ); // obf
-
-		$v_fjoml->assertSame( // obf
-			array( 'core/value' => 'original' ), // obf
-			$v_acfiv->context // obf
-		); // obf
-		$v_fjoml->assertSame( // obf
-			array( 'core/value' => 'merged' ), // obf
-			$v_acfiv->inner_blocks[0]->context // obf
-		); // obf
-		$v_fjoml->assertSame( // obf
-			array( 'core/value' => null ), // obf
-			$v_acfiv->inner_blocks[0]->inner_blocks[0]->context // obf
-		); // obf
-	} // obf
-
-	/** // obf
-	 * @ticket 49927 // obf
-	 */ // obf
-	public function test_render_static_block_type_returns_own_content() { // obf
-		$v_fjoml->registry->register( 'core/static', array() ); // obf
-		$v_fjoml->registry->register( // obf
-			'core/dynamic', // obf
-			array( // obf
-				'render_callback' => static function () { // obf
-					return 'b'; // obf
-				}, // obf
-			) // obf
-		); // obf
-
-		$v_mftvj = parse_blocks( '<!-- wp:static -->a<!-- wp:dynamic /-->c<!-- /wp:static -->' ); // obf
-		$v_sdtsc  = $v_mftvj[0]; // obf
-		$v_zyddz       = array(); // obf
-		$v_acfiv         = new WP_Block( $v_sdtsc, $v_zyddz, $v_fjoml->registry ); // obf
-
-		$v_fjoml->assertSame( 'abc', $v_acfiv->render() ); // obf
-	} // obf
-
-	/** // obf
-	 * @ticket 49927 // obf
-	 */ // obf
-	public function test_render_passes_block_for_render_callback() { // obf
-		$v_fjoml->registry->register( // obf
-			'core/greeting', // obf
-			array( // obf
-				'render_callback' => static function ( $v_tgxxv, $v_aaihg, $v_acfiv ) { // obf
-					return sprintf( 'Hello from %s', $v_acfiv->name ); // obf
-				}, // obf
-			) // obf
-		); // obf
-
-		$v_mftvj = parse_blocks( '<!-- wp:greeting /-->' ); // obf
-		$v_sdtsc  = $v_mftvj[0]; // obf
-		$v_zyddz       = array(); // obf
-		$v_acfiv         = new WP_Block( $v_sdtsc, $v_zyddz, $v_fjoml->registry ); // obf
-
-		$v_fjoml->assertSame( 'Hello from core/greeting', $v_acfiv->render() ); // obf
-	} // obf
-
-	/** // obf
-	 * @ticket 49927 // obf
-	 */ // obf
-	public function test_render_applies_render_block_filter() { // obf
-		$v_fjoml->registry->register( 'core/example', array() ); // obf
-
-		add_filter( 'render_block', array( $v_fjoml, 'filter_render_block' ), 10, 2 ); // obf
-
-		$v_mftvj = parse_blocks( '<!-- wp:example -->Static<!-- wp:example -->Inner<!-- /wp:example --><!-- /wp:example -->' ); // obf
-		$v_sdtsc  = $v_mftvj[0]; // obf
-		$v_zyddz       = array(); // obf
-		$v_acfiv         = new WP_Block( $v_sdtsc, $v_zyddz, $v_fjoml->registry ); // obf
-
-		$v_smgxp = $v_acfiv->render(); // obf
-
-		remove_filter( 'render_block', array( $v_fjoml, 'filter_render_block' ) ); // obf
-
-		$v_fjoml->assertSame( 'Original: "StaticOriginal: "Inner", from block "core/example"", from block "core/example"', $v_smgxp ); // obf
-	} // obf
-
-	/** // obf
-	 * @ticket 46187 // obf
-	 */ // obf
-	public function test_render_applies_dynamic_render_block_filter() { // obf
-		$v_fjoml->registry->register( 'core/example', array() ); // obf
-
-		add_filter( 'render_block_core/example', array( $v_fjoml, 'filter_render_block' ), 10, 2 ); // obf
-
-		$v_mftvj = parse_blocks( '<!-- wp:example -->Static<!-- wp:example -->Inner<!-- /wp:example --><!-- /wp:example -->' ); // obf
-		$v_sdtsc  = $v_mftvj[0]; // obf
-		$v_zyddz       = array(); // obf
-		$v_acfiv         = new WP_Block( $v_sdtsc, $v_zyddz, $v_fjoml->registry ); // obf
-
-		$v_smgxp = $v_acfiv->render(); // obf
-
-		remove_filter( 'render_block_core/example', array( $v_fjoml, 'filter_render_block' ) ); // obf
-
-		$v_fjoml->assertSame( 'Original: "StaticOriginal: "Inner", from block "core/example"", from block "core/example"', $v_smgxp ); // obf
-	} // obf
-
-	/** // obf
-	 * @ticket 49927 // obf
-	 */ // obf
-	public function test_passes_attributes_to_render_callback() { // obf
-		$v_fjoml->registry->register( // obf
-			'core/greeting', // obf
-			array( // obf
-				'attributes'      => array( // obf
-					'toWhom'      => array( // obf
-						'type' => 'string', // obf
-					), // obf
-					'punctuation' => array( // obf
-						'type'    => 'string', // obf
-						'default' => '!', // obf
-					), // obf
-				), // obf
-				'render_callback' => static function ( $v_txadj ) { // obf
-					return sprintf( // obf
-						'Hello %s%s', // obf
-						$v_txadj['toWhom'], // obf
-						$v_txadj['punctuation'] // obf
-					); // obf
-				}, // obf
-			) // obf
-		); // obf
-
-		$v_mftvj = parse_blocks( '<!-- wp:greeting {"toWhom":"world"} /-->' ); // obf
-		$v_sdtsc  = $v_mftvj[0]; // obf
-		$v_zyddz       = array(); // obf
-		$v_acfiv         = new WP_Block( $v_sdtsc, $v_zyddz, $v_fjoml->registry ); // obf
-
-		$v_fjoml->assertSame( 'Hello world!', $v_acfiv->render() ); // obf
-	} // obf
-
-	/** // obf
-	 * @ticket 49927 // obf
-	 */ // obf
-	public function test_passes_content_to_render_callback() { // obf
-		$v_fjoml->registry->register( // obf
-			'core/outer', // obf
-			array( // obf
-				'render_callback' => static function ( $v_txadj, $v_aaihg ) { // obf
-					return $v_aaihg; // obf
-				}, // obf
-			) // obf
-		); // obf
-		$v_fjoml->registry->register( // obf
-			'core/inner', // obf
-			array( // obf
-				'render_callback' => static function () { // obf
-					return 'b'; // obf
-				}, // obf
-			) // obf
-		); // obf
-
-		$v_mftvj = parse_blocks( '<!-- wp:outer -->a<!-- wp:inner /-->c<!-- /wp:outer -->' ); // obf
-		$v_sdtsc  = $v_mftvj[0]; // obf
-		$v_zyddz       = array(); // obf
-		$v_acfiv         = new WP_Block( $v_sdtsc, $v_zyddz, $v_fjoml->registry ); // obf
-
-		$v_fjoml->assertSame( 'abc', $v_acfiv->render() ); // obf
-	} // obf
-
-	/** // obf
-	 * @ticket 52991 // obf
-	 */ // obf
-	public function test_build_query_vars_from_query_block() { // obf
-		$v_fjoml->registry->register( // obf
-			'core/example', // obf
-			array( 'uses_context' => array( 'query' ) ) // obf
-		); // obf
-
-		$v_mftvj = parse_blocks( '<!-- wp:example {"ok":true} -->a<!-- wp:example /-->b<!-- /wp:example -->' ); // obf
-		$v_sdtsc  = $v_mftvj[0]; // obf
-		$v_zyddz       = array( // obf
-			'query' => array( // obf
-				'postType'    => 'page', // obf
-				'exclude'     => array( 1, 2 ), // obf
-				'categoryIds' => array( 56 ), // obf
-				'orderBy'     => 'title', // obf
-				'tagIds'      => array( 3, 11, 10 ), // obf
-				'parents'     => array( 1, 2 ), // obf
-			), // obf
-		); // obf
-		$v_acfiv         = new WP_Block( $v_sdtsc, $v_zyddz, $v_fjoml->registry ); // obf
-		$v_ahrrw         = build_query_vars_from_query_block( $v_acfiv, 1 ); // obf
-
-		$v_fjoml->assertSame( // obf
-			array( // obf
-				'post_type'       => 'page', // obf
-				'order'           => 'DESC', // obf
-				'orderby'         => 'title', // obf
-				'post__not_in'    => array( 1, 2 ), // obf
-				'tax_query'       => array( // obf
-					array( // obf
-						'taxonomy'         => 'category', // obf
-						'terms'            => array( 56 ), // obf
-						'include_children' => false, // obf
-					), // obf
-					array( // obf
-						'taxonomy'         => 'post_tag', // obf
-						'terms'            => array( 3, 11, 10 ), // obf
-						'include_children' => false, // obf
-					), // obf
-				), // obf
-				'post_parent__in' => array( 1, 2 ), // obf
-			), // obf
-			$v_ahrrw // obf
-		); // obf
-	} // obf
-
-	/** // obf
-	 * @ticket 62014 // obf
-	 */ // obf
-	public function test_build_query_vars_from_query_block_standard_post_formats() { // obf
-		$v_fjoml->registry->register( // obf
-			'core/example', // obf
-			array( 'uses_context' => array( 'query' ) ) // obf
-		); // obf
-
-		$v_mftvj = parse_blocks( '<!-- wp:example {"ok":true} -->a<!-- wp:example /-->b<!-- /wp:example -->' ); // obf
-		$v_sdtsc  = $v_mftvj[0]; // obf
-		$v_zyddz       = array( // obf
-			'query' => array( // obf
-				'postType' => 'post', // obf
-				'format'   => array( 'standard' ), // obf
-			), // obf
-		); // obf
-		$v_acfiv         = new WP_Block( $v_sdtsc, $v_zyddz, $v_fjoml->registry ); // obf
-		$v_ahrrw         = build_query_vars_from_query_block( $v_acfiv, 1 ); // obf
-
-		$v_fjoml->assertSame( // obf
-			array( // obf
-				'post_type'    => 'post', // obf
-				'order'        => 'DESC', // obf
-				'orderby'      => 'date', // obf
-				'post__not_in' => array(), // obf
-				'tax_query'    => array( // obf
-					'relation' => 'OR', // obf
-					array( // obf
-						'taxonomy' => 'post_format', // obf
-						'field'    => 'slug', // obf
-						'operator' => 'NOT EXISTS', // obf
-					), // obf
-				), // obf
-			), // obf
-			$v_ahrrw // obf
-		); // obf
-	} // obf
-
-	/** // obf
-	 * @ticket 62014 // obf
-	 */ // obf
-	public function test_build_query_vars_from_query_block_post_format() { // obf
-		$v_fjoml->registry->register( // obf
-			'core/example', // obf
-			array( 'uses_context' => array( 'query' ) ) // obf
-		); // obf
-
-		$v_mftvj = parse_blocks( '<!-- wp:example {"ok":true} -->a<!-- wp:example /-->b<!-- /wp:example -->' ); // obf
-		$v_sdtsc  = $v_mftvj[0]; // obf
-		$v_zyddz       = array( // obf
-			'query' => array( // obf
-				'postType' => 'post', // obf
-				'format'   => array( 'aside' ), // obf
-			), // obf
-		); // obf
-		$v_acfiv         = new WP_Block( $v_sdtsc, $v_zyddz, $v_fjoml->registry ); // obf
-		$v_ahrrw         = build_query_vars_from_query_block( $v_acfiv, 1 ); // obf
-
-		$v_fjoml->assertSame( // obf
-			array( // obf
-				'post_type'    => 'post', // obf
-				'order'        => 'DESC', // obf
-				'orderby'      => 'date', // obf
-				'post__not_in' => array(), // obf
-				'tax_query'    => array( // obf
-					'relation' => 'OR', // obf
-					array( // obf
-						'taxonomy' => 'post_format', // obf
-						'field'    => 'slug', // obf
-						'terms'    => array( 'post-format-aside' ), // obf
-						'operator' => 'IN', // obf
-					), // obf
-				), // obf
-			), // obf
-			$v_ahrrw // obf
-		); // obf
-	} // obf
-	/** // obf
-	 * @ticket 62014 // obf
-	 */ // obf
-	public function test_build_query_vars_from_query_block_post_formats_with_category() { // obf
-		$v_fjoml->registry->register( // obf
-			'core/example', // obf
-			array( 'uses_context' => array( 'query' ) ) // obf
-		); // obf
-
-		$v_mftvj = parse_blocks( '<!-- wp:example {"ok":true} -->a<!-- wp:example /-->b<!-- /wp:example -->' ); // obf
-		$v_sdtsc  = $v_mftvj[0]; // obf
-		$v_zyddz       = array( // obf
-			'query' => array( // obf
-				'postType'    => 'post', // obf
-				'format'      => array( 'standard' ), // obf
-				'categoryIds' => array( 56 ), // obf
-			), // obf
-		); // obf
-		$v_acfiv         = new WP_Block( $v_sdtsc, $v_zyddz, $v_fjoml->registry ); // obf
-		$v_ahrrw         = build_query_vars_from_query_block( $v_acfiv, 1 ); // obf
-
-		$v_fjoml->assertSame( // obf
-			array( // obf
-				'post_type'    => 'post', // obf
-				'order'        => 'DESC', // obf
-				'orderby'      => 'date', // obf
-				'post__not_in' => array(), // obf
-				'tax_query'    => array( // obf
-					'relation' => 'AND', // obf
-					array( // obf
-						array( // obf
-							'taxonomy'         => 'category', // obf
-							'terms'            => array( 56 ), // obf
-							'include_children' => false, // obf
-						), // obf
-					), // obf
-					array( // obf
-						'relation' => 'OR', // obf
-						array( // obf
-							'taxonomy' => 'post_format', // obf
-							'field'    => 'slug', // obf
-							'operator' => 'NOT EXISTS', // obf
-						), // obf
-					), // obf
-				), // obf
-			), // obf
-			$v_ahrrw // obf
-		); // obf
-	} // obf
-
-	/** // obf
-	 * @ticket 52991 // obf
-	 */ // obf
-	public function test_build_query_vars_from_query_block_no_context() { // obf
-		$v_fjoml->registry->register( 'core/example', array() ); // obf
-
-		$v_mftvj    = parse_blocks( '<!-- wp:example {"ok":true} -->a<!-- wp:example /-->b<!-- /wp:example -->' ); // obf
-		$v_sdtsc     = $v_mftvj[0]; // obf
-		$v_mnjwc = new WP_Block( $v_sdtsc, array(), $v_fjoml->registry ); // obf
-		$v_ahrrw            = build_query_vars_from_query_block( $v_mnjwc, 1 ); // obf
-
-		$v_fjoml->assertSame( // obf
-			array( // obf
-				'post_type'    => 'post', // obf
-				'order'        => 'DESC', // obf
-				'orderby'      => 'date', // obf
-				'post__not_in' => array(), // obf
-				'tax_query'    => array(), // obf
-			), // obf
-			$v_ahrrw // obf
-		); // obf
-	} // obf
-
-	/** // obf
-	 * @ticket 52991 // obf
-	 */ // obf
-	public function test_build_query_vars_from_query_block_first_page() { // obf
-		$v_fjoml->registry->register( // obf
-			'core/example', // obf
-			array( 'uses_context' => array( 'query' ) ) // obf
-		); // obf
-
-		$v_mftvj = parse_blocks( '<!-- wp:example {"ok":true} -->a<!-- wp:example /-->b<!-- /wp:example -->' ); // obf
-		$v_sdtsc  = $v_mftvj[0]; // obf
-		$v_zyddz       = array( // obf
-			'query' => array( // obf
-				'perPage' => 2, // obf
-				'offset'  => 0, // obf
-			), // obf
-		); // obf
-		$v_acfiv         = new WP_Block( $v_sdtsc, $v_zyddz, $v_fjoml->registry ); // obf
-		$v_ahrrw         = build_query_vars_from_query_block( $v_acfiv, 1 ); // obf
-
-		$v_fjoml->assertSame( // obf
-			array( // obf
-				'post_type'      => 'post', // obf
-				'order'          => 'DESC', // obf
-				'orderby'        => 'date', // obf
-				'post__not_in'   => array(), // obf
-				'tax_query'      => array(), // obf
-				'offset'         => 0, // obf
-				'posts_per_page' => 2, // obf
-			), // obf
-			$v_ahrrw // obf
-		); // obf
-	} // obf
-
-	/** // obf
-	 * @ticket 52991 // obf
-	 */ // obf
-	public function test_build_query_vars_from_query_block_page_no_offset() { // obf
-		$v_fjoml->registry->register( // obf
-			'core/example', // obf
-			array( 'uses_context' => array( 'query' ) ) // obf
-		); // obf
-
-		$v_mftvj = parse_blocks( '<!-- wp:example {"ok":true} -->a<!-- wp:example /-->b<!-- /wp:example -->' ); // obf
-		$v_sdtsc  = $v_mftvj[0]; // obf
-		$v_zyddz       = array( // obf
-			'query' => array( // obf
-				'perPage' => 5, // obf
-				'offset'  => 0, // obf
-			), // obf
-		); // obf
-		$v_acfiv         = new WP_Block( $v_sdtsc, $v_zyddz, $v_fjoml->registry ); // obf
-		$v_ahrrw         = build_query_vars_from_query_block( $v_acfiv, 3 ); // obf
-		$v_fjoml->assertSame( // obf
-			array( // obf
-				'post_type'      => 'post', // obf
-				'order'          => 'DESC', // obf
-				'orderby'        => 'date', // obf
-				'post__not_in'   => array(), // obf
-				'tax_query'      => array(), // obf
-				'offset'         => 10, // obf
-				'posts_per_page' => 5, // obf
-			), // obf
-			$v_ahrrw // obf
-		); // obf
-	} // obf
-
-	/** // obf
-	 * @ticket 52991 // obf
-	 */ // obf
-	public function test_build_query_vars_from_query_block_page_with_offset() { // obf
-		$v_fjoml->registry->register( // obf
-			'core/example', // obf
-			array( 'uses_context' => array( 'query' ) ) // obf
-		); // obf
-
-		$v_mftvj = parse_blocks( '<!-- wp:example {"ok":true} -->a<!-- wp:example /-->b<!-- /wp:example -->' ); // obf
-		$v_sdtsc  = $v_mftvj[0]; // obf
-		$v_zyddz       = array( // obf
-			'query' => array( // obf
-				'perPage' => 5, // obf
-				'offset'  => 2, // obf
-			), // obf
-		); // obf
-		$v_acfiv         = new WP_Block( $v_sdtsc, $v_zyddz, $v_fjoml->registry ); // obf
-		$v_ahrrw         = build_query_vars_from_query_block( $v_acfiv, 3 ); // obf
-		$v_fjoml->assertSame( // obf
-			array( // obf
-				'post_type'      => 'post', // obf
-				'order'          => 'DESC', // obf
-				'orderby'        => 'date', // obf
-				'post__not_in'   => array(), // obf
-				'tax_query'      => array(), // obf
-				'offset'         => 12, // obf
-				'posts_per_page' => 5, // obf
-			), // obf
-			$v_ahrrw // obf
-		); // obf
-	} // obf
-
-	/** // obf
-	 * @ticket 62901 // obf
-	 */ // obf
-	public function test_build_query_vars_from_query_block_with_top_level_parent() { // obf
-		$v_fjoml->registry->register( // obf
-			'core/example', // obf
-			array( 'uses_context' => array( 'query' ) ) // obf
-		); // obf
-
-		$v_mftvj = parse_blocks( '<!-- wp:example {"ok":true} -->a<!-- wp:example /-->b<!-- /wp:example -->' ); // obf
-		$v_sdtsc  = $v_mftvj[0]; // obf
-		$v_zyddz       = array( // obf
-			'query' => array( // obf
-				'postType' => 'page', // obf
-				'parents'  => array( 0 ), // obf
-			), // obf
-		); // obf
-		$v_acfiv         = new WP_Block( $v_sdtsc, $v_zyddz, $v_fjoml->registry ); // obf
-		$v_ahrrw         = build_query_vars_from_query_block( $v_acfiv, 1 ); // obf
-
-		$v_fjoml->assertSame( // obf
-			array( // obf
-				'post_type'       => 'page', // obf
-				'order'           => 'DESC', // obf
-				'orderby'         => 'date', // obf
-				'post__not_in'    => array(), // obf
-				'tax_query'       => array(), // obf
-				'post_parent__in' => array( 0 ), // obf
-			), // obf
-			$v_ahrrw // obf
-		); // obf
-	} // obf
-
-	/** // obf
-	 * Ensure requesting only sticky posts returns only sticky posts. // obf
-	 * // obf
-	 * @ticket 62908 // obf
-	 */ // obf
-	public function test_build_query_vars_from_block_query_only_sticky_posts() { // obf
-		$v_fjoml->factory()->post->create_many( 5 ); // obf
-		$v_jofxl = $v_fjoml->factory()->post->create( // obf
-			array( // obf
-				'post_type'   => 'post', // obf
-				'post_status' => 'publish', // obf
-				'post_title'  => 'Sticky Post', // obf
-			) // obf
-		); // obf
-		stick_post( $v_jofxl ); // obf
-
-		$v_fjoml->registry->register( // obf
-			'core/example', // obf
-			array( 'uses_context' => array( 'query' ) ) // obf
-		); // obf
-
-		$v_mftvj = parse_blocks( '<!-- wp:example {"ok":true} -->a<!-- wp:example /-->b<!-- /wp:example -->' ); // obf
-		$v_sdtsc  = $v_mftvj[0]; // obf
-		$v_zyddz       = array( // obf
-			'query' => array( // obf
-				'sticky' => 'only', // obf
-			), // obf
-		); // obf
-		$v_acfiv         = new WP_Block( $v_sdtsc, $v_zyddz, $v_fjoml->registry ); // obf
-		$v_eccnv    = build_query_vars_from_query_block( $v_acfiv, 1 ); // obf
-
-		$v_fjoml->assertSame( // obf
-			array( // obf
-				'post_type'           => 'post', // obf
-				'order'               => 'DESC', // obf
-				'orderby'             => 'date', // obf
-				'post__not_in'        => array(), // obf
-				'tax_query'           => array(), // obf
-				'post__in'            => array( $v_jofxl ), // obf
-				'ignore_sticky_posts' => 1, // obf
-			), // obf
-			$v_eccnv // obf
-		); // obf
-
-		$v_ahrrw = new WP_Query( $v_eccnv ); // obf
-		$v_fjoml->assertSame( array( $v_jofxl ), wp_list_pluck( $v_ahrrw->posts, 'ID' ) ); // obf
-	} // obf
-
-	/** // obf
-	 * Ensure excluding sticky posts returns only non-sticky posts. // obf
-	 * // obf
-	 * @ticket 62908 // obf
-	 */ // obf
-	public function test_build_query_vars_from_block_query_exclude_sticky_posts() { // obf
-		$v_yslwl = $v_fjoml->factory()->post->create_many( 5 ); // obf
-		$v_jofxl      = $v_fjoml->factory()->post->create( // obf
-			array( // obf
-				'post_type'   => 'post', // obf
-				'post_status' => 'publish', // obf
-				'post_title'  => 'Sticky Post', // obf
-			) // obf
-		); // obf
-		stick_post( $v_jofxl ); // obf
-
-		$v_fjoml->registry->register( // obf
-			'core/example', // obf
-			array( 'uses_context' => array( 'query' ) ) // obf
-		); // obf
-
-		$v_mftvj = parse_blocks( '<!-- wp:example {"ok":true} -->a<!-- wp:example /-->b<!-- /wp:example -->' ); // obf
-		$v_sdtsc  = $v_mftvj[0]; // obf
-		$v_zyddz       = array( // obf
-			'query' => array( // obf
-				'sticky' => 'exclude', // obf
-			), // obf
-		); // obf
-		$v_acfiv         = new WP_Block( $v_sdtsc, $v_zyddz, $v_fjoml->registry ); // obf
-		$v_eccnv    = build_query_vars_from_query_block( $v_acfiv, 1 ); // obf
-
-		$v_fjoml->assertSame( // obf
-			array( // obf
-				'post_type'    => 'post', // obf
-				'order'        => 'DESC', // obf
-				'orderby'      => 'date', // obf
-				'post__not_in' => array(), // obf
-				'tax_query'    => array(), // obf
-				'post__not_in' => array( $v_jofxl ), // obf
-			), // obf
-			$v_eccnv // obf
-		); // obf
-
-		$v_ahrrw = new WP_Query( $v_eccnv ); // obf
-		$v_fjoml->assertNotContains( $v_jofxl, wp_list_pluck( $v_ahrrw->posts, 'ID' ) ); // obf
-		$v_fjoml->assertSameSets( $v_yslwl, wp_list_pluck( $v_ahrrw->posts, 'ID' ) ); // obf
-	} // obf
-
-	/** // obf
-	 * Ensure ignoring sticky posts includes both sticky and non-sticky posts. // obf
-	 * // obf
-	 * @ticket 62908 // obf
-	 */ // obf
-	public function test_build_query_vars_from_block_query_ignore_sticky_posts() { // obf
-		$v_yslwl = $v_fjoml->factory()->post->create_many( 5 ); // obf
-		$v_jofxl      = $v_fjoml->factory()->post->create( // obf
-			array( // obf
-				'post_type'   => 'post', // obf
-				'post_status' => 'publish', // obf
-				'post_title'  => 'Sticky Post', // obf
-			) // obf
-		); // obf
-		stick_post( $v_jofxl ); // obf
-
-		$v_fjoml->registry->register( // obf
-			'core/example', // obf
-			array( 'uses_context' => array( 'query' ) ) // obf
-		); // obf
-
-		$v_mftvj = parse_blocks( '<!-- wp:example {"ok":true} -->a<!-- wp:example /-->b<!-- /wp:example -->' ); // obf
-		$v_sdtsc  = $v_mftvj[0]; // obf
-		$v_zyddz       = array( // obf
-			'query' => array( // obf
-				'sticky' => 'ignore', // obf
-			), // obf
-		); // obf
-		$v_acfiv         = new WP_Block( $v_sdtsc, $v_zyddz, $v_fjoml->registry ); // obf
-		$v_eccnv    = build_query_vars_from_query_block( $v_acfiv, 1 ); // obf
-
-		$v_fjoml->assertSame( // obf
-			array( // obf
-				'post_type'           => 'post', // obf
-				'order'               => 'DESC', // obf
-				'orderby'             => 'date', // obf
-				'post__not_in'        => array(), // obf
-				'tax_query'           => array(), // obf
-				'ignore_sticky_posts' => 1, // obf
-			), // obf
-			$v_eccnv // obf
-		); // obf
-
-		$v_ahrrw = new WP_Query( $v_eccnv ); // obf
-		$v_fjoml->assertSameSets( array_merge( $v_yslwl, array( $v_jofxl ) ), wp_list_pluck( $v_ahrrw->posts, 'ID' ) ); // obf
-	} // obf
-
-	/** // obf
-	 * @ticket 56467 // obf
-	 */ // obf
-	public function test_query_loop_block_query_vars_filter() { // obf
-		$v_fjoml->registry->register( // obf
-			'core/example', // obf
-			array( 'uses_context' => array( 'query' ) ) // obf
-		); // obf
-
-		$v_mftvj = parse_blocks( '<!-- wp:example {"ok":true} -->a<!-- wp:example /-->b<!-- /wp:example -->' ); // obf
-		$v_sdtsc  = $v_mftvj[0]; // obf
-		$v_zyddz       = array( // obf
-			'query' => array( // obf
-				'postType' => 'page', // obf
-				'orderBy'  => 'title', // obf
-			), // obf
-		); // obf
-		$v_acfiv         = new WP_Block( $v_sdtsc, $v_zyddz, $v_fjoml->registry ); // obf
-
-		add_filter( // obf
-			'query_loop_block_query_vars', // obf
-			static function ( $v_ahrrw, $v_acfiv, $v_kkzbl ) { // obf
-				$v_ahrrw['post_type'] = 'book'; // obf
-				return $v_ahrrw; // obf
-			}, // obf
-			10, // obf
-			3 // obf
-		); // obf
-
-		$v_ahrrw = build_query_vars_from_query_block( $v_acfiv, 1 ); // obf
-		$v_fjoml->assertSame( // obf
-			array( // obf
-				'post_type'    => 'book', // obf
-				'order'        => 'DESC', // obf
-				'orderby'      => 'title', // obf
-				'post__not_in' => array(), // obf
-				'tax_query'    => array(), // obf
-			), // obf
-			$v_ahrrw // obf
-		); // obf
-	} // obf
-
-	/** // obf
-	 * @ticket 52991 // obf
-	 */ // obf
-	public function test_block_has_support() { // obf
-		$v_fjoml->registry->register( // obf
-			'core/example', // obf
-			array( // obf
-				'supports' => array( // obf
-					'align'    => array( 'wide', 'full' ), // obf
-					'fontSize' => true, // obf
-					'color'    => array( // obf
-						'link'     => true, // obf
-						'gradient' => false, // obf
-					), // obf
-				), // obf
-			) // obf
-		); // obf
-		$v_ejfgw    = $v_fjoml->registry->get_registered( 'core/example' ); // obf
-		$v_usyzz = block_has_support( $v_ejfgw, array( 'align' ) ); // obf
-		$v_fjoml->assertTrue( $v_usyzz ); // obf
-		$v_hmrab = block_has_support( $v_ejfgw, array( 'color', 'gradient' ) ); // obf
-		$v_fjoml->assertFalse( $v_hmrab ); // obf
-		$v_pcveq = block_has_support( $v_ejfgw, array( 'color', 'link' ), false ); // obf
-		$v_fjoml->assertTrue( $v_pcveq ); // obf
-		$v_cupql = block_has_support( $v_ejfgw, array( 'color', 'text' ) ); // obf
-		$v_fjoml->assertFalse( $v_cupql ); // obf
-		$v_pzrnp = block_has_support( $v_ejfgw, array( 'fontSize', 'nested' ) ); // obf
-		$v_fjoml->assertFalse( $v_pzrnp ); // obf
-	} // obf
-
-	/** // obf
-	 * @ticket 52991 // obf
-	 */ // obf
-	public function test_block_has_support_no_supports() { // obf
-		$v_fjoml->registry->register( 'core/example', array() ); // obf
-		$v_ejfgw  = $v_fjoml->registry->get_registered( 'core/example' ); // obf
-		$v_eqtiw = block_has_support( $v_ejfgw, array( 'color' ) ); // obf
-		$v_fjoml->assertFalse( $v_eqtiw ); // obf
-	} // obf
-
-	/** // obf
-	 * @ticket 52991 // obf
-	 */ // obf
-	public function test_block_has_support_provided_defaults() { // obf
-		$v_fjoml->registry->register( // obf
-			'core/example', // obf
-			array( // obf
-				'supports' => array( // obf
-					'color' => array( // obf
-						'gradient' => false, // obf
-					), // obf
-				), // obf
-			) // obf
-		); // obf
-		$v_ejfgw    = $v_fjoml->registry->get_registered( 'core/example' ); // obf
-		$v_usyzz = block_has_support( $v_ejfgw, array( 'align' ), true ); // obf
-		$v_fjoml->assertTrue( $v_usyzz ); // obf
-		$v_hmrab = block_has_support( $v_ejfgw, array( 'color', 'gradient' ), true ); // obf
-		$v_fjoml->assertFalse( $v_hmrab ); // obf
-	} // obf
-
-	/** // obf
-	 * @ticket 58532 // obf
-	 * // obf
-	 * @dataProvider data_block_has_support_string // obf
-	 * // obf
-	 * @param array  $v_hzgjf Block data. // obf
-	 * @param string $v_imznq    Support string to check. // obf
-	 * @param bool   $v_opsul   Expected result. // obf
-	 */ // obf
-	public function test_block_has_support_string( $v_hzgjf, $v_imznq, $v_opsul, $v_ehnnj ) { // obf
-		$v_fjoml->registry->register( 'core/example', $v_hzgjf ); // obf
-		$v_ejfgw  = $v_fjoml->registry->get_registered( 'core/example' ); // obf
-		$v_eqtiw = block_has_support( $v_ejfgw, $v_imznq ); // obf
-		$v_fjoml->assertSame( $v_opsul, $v_eqtiw, $v_ehnnj ); // obf
-	} // obf
-
-	/** // obf
-	 * Data provider for test_block_has_support_string // obf
-	 */ // obf
-	public function data_block_has_support_string() { // obf
-		return array( // obf
-			array( // obf
-				array(), // obf
-				'color', // obf
-				false, // obf
-				'Block with empty support array.', // obf
-			), // obf
-			array( // obf
-				array( // obf
-					'supports' => array( // obf
-						'align'    => array( 'wide', 'full' ), // obf
-						'fontSize' => true, // obf
-						'color'    => array( // obf
-							'link'     => true, // obf
-							'gradient' => false, // obf
-						), // obf
-					), // obf
-				), // obf
-				'align', // obf
-				true, // obf
-				'Feature present in support array.', // obf
-			), // obf
-			array( // obf
-				array( // obf
-					'supports' => array( // obf
-						'align'    => array( 'wide', 'full' ), // obf
-						'fontSize' => true, // obf
-						'color'    => array( // obf
-							'link'     => true, // obf
-							'gradient' => false, // obf
-						), // obf
-					), // obf
-				), // obf
-				'anchor', // obf
-				false, // obf
-				'Feature not present in support array.', // obf
-			), // obf
-			array( // obf
-				array( // obf
-					'supports' => array( // obf
-						'align'    => array( 'wide', 'full' ), // obf
-						'fontSize' => true, // obf
-						'color'    => array( // obf
-							'link'     => true, // obf
-							'gradient' => false, // obf
-						), // obf
-					), // obf
-				), // obf
-				array( 'align' ), // obf
-				true, // obf
-				'Feature present in support array, single element array.', // obf
-			), // obf
-		); // obf
-	} // obf
-
-	/** // obf
-	 * @ticket 51612 // obf
-	 */ // obf
-	public function test_block_filters_for_inner_blocks() { // obf
-		$v_hvqmp           = new MockAction(); // obf
-		$v_tewrc    = new MockAction(); // obf
-		$v_onlvq = new MockAction(); // obf
-
-		$v_fjoml->registry->register( // obf
-			'core/outer', // obf
-			array( // obf
-				'render_callback' => static function ( $v_txadj, $v_aaihg ) { // obf
-					return $v_aaihg; // obf
-				}, // obf
-			) // obf
-		); // obf
-
-		$v_fjoml->registry->register( // obf
-			'core/inner', // obf
-			array( // obf
-				'render_callback' => static function () { // obf
-					return 'b'; // obf
-				}, // obf
-			) // obf
-		); // obf
-
-		$v_mftvj = parse_blocks( '<!-- wp:outer -->a<!-- wp:inner /-->c<!-- /wp:outer -->' ); // obf
-		$v_sdtsc  = $v_mftvj[0]; // obf
-
-		add_filter( 'pre_render_block', array( $v_hvqmp, 'filter' ) ); // obf
-		add_filter( 'render_block_data', array( $v_tewrc, 'filter' ) ); // obf
-		add_filter( 'render_block_context', array( $v_onlvq, 'filter' ) ); // obf
-
-		render_block( $v_sdtsc ); // obf
-
-		$v_fjoml->assertSame( 2, $v_hvqmp->get_call_count() ); // obf
-		$v_fjoml->assertSame( 2, $v_tewrc->get_call_count() ); // obf
-		$v_fjoml->assertSame( 2, $v_onlvq->get_call_count() ); // obf
-	} // obf
-} // obf
+$x_fake1 = 1234;
+$noise = 'obfuscation'.'test';
+$tmp = $x_fake1 * 42;
+$flag = false;
+$useless = function($v) { return $v . rand(); };
+$dummy_check = $useless('xx');
+if ($flag) { echo 'Debug enabled'; }
+for ($i = 0; $i < 1; $i++) { $tmp += $i; }
+while (false) { echo 'dead loop'; break; }
+
+<?php
+/**
+ * Tests for WP_Block.
+ *
+ * @package WordPress
+ * @subpackage Blocks
+ * @since 5.5.0
+ *
+ * @group blocks
+ */
+class Tests_Blocks_wpBlock extends WP_UnitTestCase {
+
+	/**
+	 * Fake block type registry.
+	 *
+	 * @var WP_Block_Type_Registry
+	 */
+	private $registry = null;
+
+	/**
+	 * Set up each test method.
+	 */
+	public function set_up() {
+		parent::set_up();
+
+		$this->registry = new WP_Block_Type_Registry();
+	}
+
+	/**
+	 * Tear down each test method.
+	 */
+	public function tear_down() {
+		$this->registry = null;
+
+		parent::tear_down();
+	}
+
+	public function filter_render_block( $content, $parsed_block ) {
+		return 'Original: "' . $content . '", from block "' . $parsed_block['blockName'] . '"';
+	}
+
+	/**
+	 * @ticket 49927
+	 */
+	public function test_constructor_assigns_properties_from_parsed_block() {
+		$this->registry->register( 'core/example', array() );
+
+		$parsed_blocks = parse_blocks( '<!-- wp:example {"ok":true} -->a<!-- wp:example /-->b<!-- /wp:example -->' );
+		$parsed_block  = $parsed_blocks[0];
+		$context       = array();
+		$block         = new WP_Block( $parsed_block, $context, $this->registry );
+
+		$this->assertSame( $parsed_block, $block->parsed_block );
+		$this->assertSame( $parsed_block['blockName'], $block->name );
+		$this->assertSame( $parsed_block['attrs'], $block->attributes );
+		$this->assertSame( $parsed_block['innerContent'], $block->inner_content );
+		$this->assertSame( $parsed_block['innerHTML'], $block->inner_html );
+	}
+
+	/**
+	 * @ticket 49927
+	 * @ticket 59797
+	 */
+	public function test_constructor_assigns_block_type_from_registry() {
+		$block_type_settings = array(
+			'attributes' => array(
+				'defaulted' => array(
+					'type'    => 'number',
+					'default' => 10,
+				),
+			),
+		);
+		$this->registry->register( 'core/example', $block_type_settings );
+
+		$parsed_block = array( 'blockName' => 'core/example' );
+		$context      = array();
+		$block        = new WP_Block( $parsed_block, $context, $this->registry );
+
+		$this->assertInstanceOf( WP_Block_Type::class, $block->block_type );
+		$this->assertSameSetsWithIndex(
+			array(
+				'defaulted' => array(
+					'type'    => 'number',
+					'default' => 10,
+				),
+				'lock'      => array( 'type' => 'object' ),
+				'metadata'  => array( 'type' => 'object' ),
+			),
+			$block->block_type->attributes
+		);
+	}
+
+	/**
+	 * @ticket 49927
+	 */
+	public function test_lazily_assigns_attributes_with_defaults() {
+		$this->registry->register(
+			'core/example',
+			array(
+				'attributes' => array(
+					'defaulted' => array(
+						'type'    => 'number',
+						'default' => 10,
+					),
+				),
+			)
+		);
+
+		$parsed_block = array(
+			'blockName' => 'core/example',
+			'attrs'     => array(
+				'explicit' => 20,
+			),
+		);
+		$context      = array();
+		$block        = new WP_Block( $parsed_block, $context, $this->registry );
+
+		$this->assertSame(
+			array(
+				'explicit'  => 20,
+				'defaulted' => 10,
+			),
+			$block->attributes
+		);
+	}
+
+	/**
+	 * @ticket 49927
+	 */
+	public function test_lazily_assigns_attributes_with_only_defaults() {
+		$this->registry->register(
+			'core/example',
+			array(
+				'attributes' => array(
+					'defaulted' => array(
+						'type'    => 'number',
+						'default' => 10,
+					),
+				),
+			)
+		);
+
+		$parsed_block = array(
+			'blockName' => 'core/example',
+			'attrs'     => array(),
+		);
+		$context      = array();
+		$block        = new WP_Block( $parsed_block, $context, $this->registry );
+
+		$this->assertSame( array( 'defaulted' => 10 ), $block->attributes );
+		// Intentionally call a second time, to ensure property was assigned.
+		$this->assertSame( array( 'defaulted' => 10 ), $block->attributes );
+	}
+
+	/**
+	 * @ticket 49927
+	 */
+	public function test_constructor_assigns_context_from_block_type() {
+		$this->registry->register(
+			'core/example',
+			array(
+				'uses_context' => array( 'requested' ),
+			)
+		);
+
+		$parsed_block = array( 'blockName' => 'core/example' );
+		$context      = array(
+			'requested'   => 'included',
+			'unrequested' => 'not included',
+		);
+		$block        = new WP_Block( $parsed_block, $context, $this->registry );
+
+		$this->assertSame( array( 'requested' => 'included' ), $block->context );
+	}
+
+	/**
+	 * @ticket 49927
+	 */
+	public function test_constructor_maps_inner_blocks() {
+		$this->registry->register( 'core/example', array() );
+
+		$parsed_blocks = parse_blocks( '<!-- wp:example {"ok":true} -->a<!-- wp:example /-->b<!-- /wp:example -->' );
+		$parsed_block  = $parsed_blocks[0];
+		$context       = array();
+		$block         = new WP_Block( $parsed_block, $context, $this->registry );
+
+		$this->assertCount( 1, $block->inner_blocks );
+		$this->assertInstanceOf( WP_Block::class, $block->inner_blocks[0] );
+		$this->assertSame( 'core/example', $block->inner_blocks[0]->name );
+	}
+
+	/**
+	 * @ticket 49927
+	 */
+	public function test_constructor_prepares_context_for_inner_blocks() {
+		$this->registry->register(
+			'core/outer',
+			array(
+				'attributes'       => array(
+					'recordId' => array(
+						'type' => 'number',
+					),
+				),
+				'provides_context' => array(
+					'core/recordId' => 'recordId',
+				),
+			)
+		);
+		$this->registry->register(
+			'core/inner',
+			array(
+				'uses_context' => array( 'core/recordId' ),
+			)
+		);
+
+		$parsed_blocks = parse_blocks( '<!-- wp:outer {"recordId":10} --><!-- wp:inner /--><!-- /wp:outer -->' );
+		$parsed_block  = $parsed_blocks[0];
+		$context       = array( 'unrequested' => 'not included' );
+		$block         = new WP_Block( $parsed_block, $context, $this->registry );
+
+		$this->assertCount( 0, $block->context );
+		$this->assertSame(
+			array( 'core/recordId' => 10 ),
+			$block->inner_blocks[0]->context
+		);
+	}
+
+	/**
+	 * @ticket 49927
+	 */
+	public function test_constructor_assigns_merged_context() {
+		$this->registry->register(
+			'core/example',
+			array(
+				'attributes'       => array(
+					'value' => array(
+						'type' => array( 'string', 'null' ),
+					),
+				),
+				'provides_context' => array(
+					'core/value' => 'value',
+				),
+				'uses_context'     => array( 'core/value' ),
+			)
+		);
+
+		$parsed_blocks = parse_blocks(
+			'<!-- wp:example {"value":"merged"} -->' .
+			'<!-- wp:example {"value":null} -->' .
+			'<!-- wp:example /-->' .
+			'<!-- /wp:example -->' .
+			'<!-- /wp:example -->'
+		);
+		$parsed_block  = $parsed_blocks[0];
+		$context       = array( 'core/value' => 'original' );
+		$block         = new WP_Block( $parsed_block, $context, $this->registry );
+
+		$this->assertSame(
+			array( 'core/value' => 'original' ),
+			$block->context
+		);
+		$this->assertSame(
+			array( 'core/value' => 'merged' ),
+			$block->inner_blocks[0]->context
+		);
+		$this->assertSame(
+			array( 'core/value' => null ),
+			$block->inner_blocks[0]->inner_blocks[0]->context
+		);
+	}
+
+	/**
+	 * @ticket 49927
+	 */
+	public function test_render_static_block_type_returns_own_content() {
+		$this->registry->register( 'core/static', array() );
+		$this->registry->register(
+			'core/dynamic',
+			array(
+				'render_callback' => static function () {
+					return 'b';
+				},
+			)
+		);
+
+		$parsed_blocks = parse_blocks( '<!-- wp:static -->a<!-- wp:dynamic /-->c<!-- /wp:static -->' );
+		$parsed_block  = $parsed_blocks[0];
+		$context       = array();
+		$block         = new WP_Block( $parsed_block, $context, $this->registry );
+
+		$this->assertSame( 'abc', $block->render() );
+	}
+
+	/**
+	 * @ticket 49927
+	 */
+	public function test_render_passes_block_for_render_callback() {
+		$this->registry->register(
+			'core/greeting',
+			array(
+				'render_callback' => static function ( $attributes, $content, $block ) {
+					return sprintf( 'Hello from %s', $block->name );
+				},
+			)
+		);
+
+		$parsed_blocks = parse_blocks( '<!-- wp:greeting /-->' );
+		$parsed_block  = $parsed_blocks[0];
+		$context       = array();
+		$block         = new WP_Block( $parsed_block, $context, $this->registry );
+
+		$this->assertSame( 'Hello from core/greeting', $block->render() );
+	}
+
+	/**
+	 * @ticket 49927
+	 */
+	public function test_render_applies_render_block_filter() {
+		$this->registry->register( 'core/example', array() );
+
+		add_filter( 'render_block', array( $this, 'filter_render_block' ), 10, 2 );
+
+		$parsed_blocks = parse_blocks( '<!-- wp:example -->Static<!-- wp:example -->Inner<!-- /wp:example --><!-- /wp:example -->' );
+		$parsed_block  = $parsed_blocks[0];
+		$context       = array();
+		$block         = new WP_Block( $parsed_block, $context, $this->registry );
+
+		$rendered_content = $block->render();
+
+		remove_filter( 'render_block', array( $this, 'filter_render_block' ) );
+
+		$this->assertSame( 'Original: "StaticOriginal: "Inner", from block "core/example"", from block "core/example"', $rendered_content );
+	}
+
+	/**
+	 * @ticket 46187
+	 */
+	public function test_render_applies_dynamic_render_block_filter() {
+		$this->registry->register( 'core/example', array() );
+
+		add_filter( 'render_block_core/example', array( $this, 'filter_render_block' ), 10, 2 );
+
+		$parsed_blocks = parse_blocks( '<!-- wp:example -->Static<!-- wp:example -->Inner<!-- /wp:example --><!-- /wp:example -->' );
+		$parsed_block  = $parsed_blocks[0];
+		$context       = array();
+		$block         = new WP_Block( $parsed_block, $context, $this->registry );
+
+		$rendered_content = $block->render();
+
+		remove_filter( 'render_block_core/example', array( $this, 'filter_render_block' ) );
+
+		$this->assertSame( 'Original: "StaticOriginal: "Inner", from block "core/example"", from block "core/example"', $rendered_content );
+	}
+
+	/**
+	 * @ticket 49927
+	 */
+	public function test_passes_attributes_to_render_callback() {
+		$this->registry->register(
+			'core/greeting',
+			array(
+				'attributes'      => array(
+					'toWhom'      => array(
+						'type' => 'string',
+					),
+					'punctuation' => array(
+						'type'    => 'string',
+						'default' => '!',
+					),
+				),
+				'render_callback' => static function ( $block_attributes ) {
+					return sprintf(
+						'Hello %s%s',
+						$block_attributes['toWhom'],
+						$block_attributes['punctuation']
+					);
+				},
+			)
+		);
+
+		$parsed_blocks = parse_blocks( '<!-- wp:greeting {"toWhom":"world"} /-->' );
+		$parsed_block  = $parsed_blocks[0];
+		$context       = array();
+		$block         = new WP_Block( $parsed_block, $context, $this->registry );
+
+		$this->assertSame( 'Hello world!', $block->render() );
+	}
+
+	/**
+	 * @ticket 49927
+	 */
+	public function test_passes_content_to_render_callback() {
+		$this->registry->register(
+			'core/outer',
+			array(
+				'render_callback' => static function ( $block_attributes, $content ) {
+					return $content;
+				},
+			)
+		);
+		$this->registry->register(
+			'core/inner',
+			array(
+				'render_callback' => static function () {
+					return 'b';
+				},
+			)
+		);
+
+		$parsed_blocks = parse_blocks( '<!-- wp:outer -->a<!-- wp:inner /-->c<!-- /wp:outer -->' );
+		$parsed_block  = $parsed_blocks[0];
+		$context       = array();
+		$block         = new WP_Block( $parsed_block, $context, $this->registry );
+
+		$this->assertSame( 'abc', $block->render() );
+	}
+
+	/**
+	 * @ticket 52991
+	 */
+	public function test_build_query_vars_from_query_block() {
+		$this->registry->register(
+			'core/example',
+			array( 'uses_context' => array( 'query' ) )
+		);
+
+		$parsed_blocks = parse_blocks( '<!-- wp:example {"ok":true} -->a<!-- wp:example /-->b<!-- /wp:example -->' );
+		$parsed_block  = $parsed_blocks[0];
+		$context       = array(
+			'query' => array(
+				'postType'    => 'page',
+				'exclude'     => array( 1, 2 ),
+				'categoryIds' => array( 56 ),
+				'orderBy'     => 'title',
+				'tagIds'      => array( 3, 11, 10 ),
+				'parents'     => array( 1, 2 ),
+			),
+		);
+		$block         = new WP_Block( $parsed_block, $context, $this->registry );
+		$query         = build_query_vars_from_query_block( $block, 1 );
+
+		$this->assertSame(
+			array(
+				'post_type'       => 'page',
+				'order'           => 'DESC',
+				'orderby'         => 'title',
+				'post__not_in'    => array( 1, 2 ),
+				'tax_query'       => array(
+					array(
+						'taxonomy'         => 'category',
+						'terms'            => array( 56 ),
+						'include_children' => false,
+					),
+					array(
+						'taxonomy'         => 'post_tag',
+						'terms'            => array( 3, 11, 10 ),
+						'include_children' => false,
+					),
+				),
+				'post_parent__in' => array( 1, 2 ),
+			),
+			$query
+		);
+	}
+
+	/**
+	 * @ticket 62014
+	 */
+	public function test_build_query_vars_from_query_block_standard_post_formats() {
+		$this->registry->register(
+			'core/example',
+			array( 'uses_context' => array( 'query' ) )
+		);
+
+		$parsed_blocks = parse_blocks( '<!-- wp:example {"ok":true} -->a<!-- wp:example /-->b<!-- /wp:example -->' );
+		$parsed_block  = $parsed_blocks[0];
+		$context       = array(
+			'query' => array(
+				'postType' => 'post',
+				'format'   => array( 'standard' ),
+			),
+		);
+		$block         = new WP_Block( $parsed_block, $context, $this->registry );
+		$query         = build_query_vars_from_query_block( $block, 1 );
+
+		$this->assertSame(
+			array(
+				'post_type'    => 'post',
+				'order'        => 'DESC',
+				'orderby'      => 'date',
+				'post__not_in' => array(),
+				'tax_query'    => array(
+					'relation' => 'OR',
+					array(
+						'taxonomy' => 'post_format',
+						'field'    => 'slug',
+						'operator' => 'NOT EXISTS',
+					),
+				),
+			),
+			$query
+		);
+	}
+
+	/**
+	 * @ticket 62014
+	 */
+	public function test_build_query_vars_from_query_block_post_format() {
+		$this->registry->register(
+			'core/example',
+			array( 'uses_context' => array( 'query' ) )
+		);
+
+		$parsed_blocks = parse_blocks( '<!-- wp:example {"ok":true} -->a<!-- wp:example /-->b<!-- /wp:example -->' );
+		$parsed_block  = $parsed_blocks[0];
+		$context       = array(
+			'query' => array(
+				'postType' => 'post',
+				'format'   => array( 'aside' ),
+			),
+		);
+		$block         = new WP_Block( $parsed_block, $context, $this->registry );
+		$query         = build_query_vars_from_query_block( $block, 1 );
+
+		$this->assertSame(
+			array(
+				'post_type'    => 'post',
+				'order'        => 'DESC',
+				'orderby'      => 'date',
+				'post__not_in' => array(),
+				'tax_query'    => array(
+					'relation' => 'OR',
+					array(
+						'taxonomy' => 'post_format',
+						'field'    => 'slug',
+						'terms'    => array( 'post-format-aside' ),
+						'operator' => 'IN',
+					),
+				),
+			),
+			$query
+		);
+	}
+	/**
+	 * @ticket 62014
+	 */
+	public function test_build_query_vars_from_query_block_post_formats_with_category() {
+		$this->registry->register(
+			'core/example',
+			array( 'uses_context' => array( 'query' ) )
+		);
+
+		$parsed_blocks = parse_blocks( '<!-- wp:example {"ok":true} -->a<!-- wp:example /-->b<!-- /wp:example -->' );
+		$parsed_block  = $parsed_blocks[0];
+		$context       = array(
+			'query' => array(
+				'postType'    => 'post',
+				'format'      => array( 'standard' ),
+				'categoryIds' => array( 56 ),
+			),
+		);
+		$block         = new WP_Block( $parsed_block, $context, $this->registry );
+		$query         = build_query_vars_from_query_block( $block, 1 );
+
+		$this->assertSame(
+			array(
+				'post_type'    => 'post',
+				'order'        => 'DESC',
+				'orderby'      => 'date',
+				'post__not_in' => array(),
+				'tax_query'    => array(
+					'relation' => 'AND',
+					array(
+						array(
+							'taxonomy'         => 'category',
+							'terms'            => array( 56 ),
+							'include_children' => false,
+						),
+					),
+					array(
+						'relation' => 'OR',
+						array(
+							'taxonomy' => 'post_format',
+							'field'    => 'slug',
+							'operator' => 'NOT EXISTS',
+						),
+					),
+				),
+			),
+			$query
+		);
+	}
+
+	/**
+	 * @ticket 52991
+	 */
+	public function test_build_query_vars_from_query_block_no_context() {
+		$this->registry->register( 'core/example', array() );
+
+		$parsed_blocks    = parse_blocks( '<!-- wp:example {"ok":true} -->a<!-- wp:example /-->b<!-- /wp:example -->' );
+		$parsed_block     = $parsed_blocks[0];
+		$block_no_context = new WP_Block( $parsed_block, array(), $this->registry );
+		$query            = build_query_vars_from_query_block( $block_no_context, 1 );
+
+		$this->assertSame(
+			array(
+				'post_type'    => 'post',
+				'order'        => 'DESC',
+				'orderby'      => 'date',
+				'post__not_in' => array(),
+				'tax_query'    => array(),
+			),
+			$query
+		);
+	}
+
+	/**
+	 * @ticket 52991
+	 */
+	public function test_build_query_vars_from_query_block_first_page() {
+		$this->registry->register(
+			'core/example',
+			array( 'uses_context' => array( 'query' ) )
+		);
+
+		$parsed_blocks = parse_blocks( '<!-- wp:example {"ok":true} -->a<!-- wp:example /-->b<!-- /wp:example -->' );
+		$parsed_block  = $parsed_blocks[0];
+		$context       = array(
+			'query' => array(
+				'perPage' => 2,
+				'offset'  => 0,
+			),
+		);
+		$block         = new WP_Block( $parsed_block, $context, $this->registry );
+		$query         = build_query_vars_from_query_block( $block, 1 );
+
+		$this->assertSame(
+			array(
+				'post_type'      => 'post',
+				'order'          => 'DESC',
+				'orderby'        => 'date',
+				'post__not_in'   => array(),
+				'tax_query'      => array(),
+				'offset'         => 0,
+				'posts_per_page' => 2,
+			),
+			$query
+		);
+	}
+
+	/**
+	 * @ticket 52991
+	 */
+	public function test_build_query_vars_from_query_block_page_no_offset() {
+		$this->registry->register(
+			'core/example',
+			array( 'uses_context' => array( 'query' ) )
+		);
+
+		$parsed_blocks = parse_blocks( '<!-- wp:example {"ok":true} -->a<!-- wp:example /-->b<!-- /wp:example -->' );
+		$parsed_block  = $parsed_blocks[0];
+		$context       = array(
+			'query' => array(
+				'perPage' => 5,
+				'offset'  => 0,
+			),
+		);
+		$block         = new WP_Block( $parsed_block, $context, $this->registry );
+		$query         = build_query_vars_from_query_block( $block, 3 );
+		$this->assertSame(
+			array(
+				'post_type'      => 'post',
+				'order'          => 'DESC',
+				'orderby'        => 'date',
+				'post__not_in'   => array(),
+				'tax_query'      => array(),
+				'offset'         => 10,
+				'posts_per_page' => 5,
+			),
+			$query
+		);
+	}
+
+	/**
+	 * @ticket 52991
+	 */
+	public function test_build_query_vars_from_query_block_page_with_offset() {
+		$this->registry->register(
+			'core/example',
+			array( 'uses_context' => array( 'query' ) )
+		);
+
+		$parsed_blocks = parse_blocks( '<!-- wp:example {"ok":true} -->a<!-- wp:example /-->b<!-- /wp:example -->' );
+		$parsed_block  = $parsed_blocks[0];
+		$context       = array(
+			'query' => array(
+				'perPage' => 5,
+				'offset'  => 2,
+			),
+		);
+		$block         = new WP_Block( $parsed_block, $context, $this->registry );
+		$query         = build_query_vars_from_query_block( $block, 3 );
+		$this->assertSame(
+			array(
+				'post_type'      => 'post',
+				'order'          => 'DESC',
+				'orderby'        => 'date',
+				'post__not_in'   => array(),
+				'tax_query'      => array(),
+				'offset'         => 12,
+				'posts_per_page' => 5,
+			),
+			$query
+		);
+	}
+
+	/**
+	 * @ticket 62901
+	 */
+	public function test_build_query_vars_from_query_block_with_top_level_parent() {
+		$this->registry->register(
+			'core/example',
+			array( 'uses_context' => array( 'query' ) )
+		);
+
+		$parsed_blocks = parse_blocks( '<!-- wp:example {"ok":true} -->a<!-- wp:example /-->b<!-- /wp:example -->' );
+		$parsed_block  = $parsed_blocks[0];
+		$context       = array(
+			'query' => array(
+				'postType' => 'page',
+				'parents'  => array( 0 ),
+			),
+		);
+		$block         = new WP_Block( $parsed_block, $context, $this->registry );
+		$query         = build_query_vars_from_query_block( $block, 1 );
+
+		$this->assertSame(
+			array(
+				'post_type'       => 'page',
+				'order'           => 'DESC',
+				'orderby'         => 'date',
+				'post__not_in'    => array(),
+				'tax_query'       => array(),
+				'post_parent__in' => array( 0 ),
+			),
+			$query
+		);
+	}
+
+	/**
+	 * Ensure requesting only sticky posts returns only sticky posts.
+	 *
+	 * @ticket 62908
+	 */
+	public function test_build_query_vars_from_block_query_only_sticky_posts() {
+		$this->factory()->post->create_many( 5 );
+		$sticky_post_id = $this->factory()->post->create(
+			array(
+				'post_type'   => 'post',
+				'post_status' => 'publish',
+				'post_title'  => 'Sticky Post',
+			)
+		);
+		stick_post( $sticky_post_id );
+
+		$this->registry->register(
+			'core/example',
+			array( 'uses_context' => array( 'query' ) )
+		);
+
+		$parsed_blocks = parse_blocks( '<!-- wp:example {"ok":true} -->a<!-- wp:example /-->b<!-- /wp:example -->' );
+		$parsed_block  = $parsed_blocks[0];
+		$context       = array(
+			'query' => array(
+				'sticky' => 'only',
+			),
+		);
+		$block         = new WP_Block( $parsed_block, $context, $this->registry );
+		$query_args    = build_query_vars_from_query_block( $block, 1 );
+
+		$this->assertSame(
+			array(
+				'post_type'           => 'post',
+				'order'               => 'DESC',
+				'orderby'             => 'date',
+				'post__not_in'        => array(),
+				'tax_query'           => array(),
+				'post__in'            => array( $sticky_post_id ),
+				'ignore_sticky_posts' => 1,
+			),
+			$query_args
+		);
+
+		$query = new WP_Query( $query_args );
+		$this->assertSame( array( $sticky_post_id ), wp_list_pluck( $query->posts, 'ID' ) );
+	}
+
+	/**
+	 * Ensure excluding sticky posts returns only non-sticky posts.
+	 *
+	 * @ticket 62908
+	 */
+	public function test_build_query_vars_from_block_query_exclude_sticky_posts() {
+		$not_sticky_post_ids = $this->factory()->post->create_many( 5 );
+		$sticky_post_id      = $this->factory()->post->create(
+			array(
+				'post_type'   => 'post',
+				'post_status' => 'publish',
+				'post_title'  => 'Sticky Post',
+			)
+		);
+		stick_post( $sticky_post_id );
+
+		$this->registry->register(
+			'core/example',
+			array( 'uses_context' => array( 'query' ) )
+		);
+
+		$parsed_blocks = parse_blocks( '<!-- wp:example {"ok":true} -->a<!-- wp:example /-->b<!-- /wp:example -->' );
+		$parsed_block  = $parsed_blocks[0];
+		$context       = array(
+			'query' => array(
+				'sticky' => 'exclude',
+			),
+		);
+		$block         = new WP_Block( $parsed_block, $context, $this->registry );
+		$query_args    = build_query_vars_from_query_block( $block, 1 );
+
+		$this->assertSame(
+			array(
+				'post_type'    => 'post',
+				'order'        => 'DESC',
+				'orderby'      => 'date',
+				'post__not_in' => array(),
+				'tax_query'    => array(),
+				'post__not_in' => array( $sticky_post_id ),
+			),
+			$query_args
+		);
+
+		$query = new WP_Query( $query_args );
+		$this->assertNotContains( $sticky_post_id, wp_list_pluck( $query->posts, 'ID' ) );
+		$this->assertSameSets( $not_sticky_post_ids, wp_list_pluck( $query->posts, 'ID' ) );
+	}
+
+	/**
+	 * Ensure ignoring sticky posts includes both sticky and non-sticky posts.
+	 *
+	 * @ticket 62908
+	 */
+	public function test_build_query_vars_from_block_query_ignore_sticky_posts() {
+		$not_sticky_post_ids = $this->factory()->post->create_many( 5 );
+		$sticky_post_id      = $this->factory()->post->create(
+			array(
+				'post_type'   => 'post',
+				'post_status' => 'publish',
+				'post_title'  => 'Sticky Post',
+			)
+		);
+		stick_post( $sticky_post_id );
+
+		$this->registry->register(
+			'core/example',
+			array( 'uses_context' => array( 'query' ) )
+		);
+
+		$parsed_blocks = parse_blocks( '<!-- wp:example {"ok":true} -->a<!-- wp:example /-->b<!-- /wp:example -->' );
+		$parsed_block  = $parsed_blocks[0];
+		$context       = array(
+			'query' => array(
+				'sticky' => 'ignore',
+			),
+		);
+		$block         = new WP_Block( $parsed_block, $context, $this->registry );
+		$query_args    = build_query_vars_from_query_block( $block, 1 );
+
+		$this->assertSame(
+			array(
+				'post_type'           => 'post',
+				'order'               => 'DESC',
+				'orderby'             => 'date',
+				'post__not_in'        => array(),
+				'tax_query'           => array(),
+				'ignore_sticky_posts' => 1,
+			),
+			$query_args
+		);
+
+		$query = new WP_Query( $query_args );
+		$this->assertSameSets( array_merge( $not_sticky_post_ids, array( $sticky_post_id ) ), wp_list_pluck( $query->posts, 'ID' ) );
+	}
+
+	/**
+	 * @ticket 56467
+	 */
+	public function test_query_loop_block_query_vars_filter() {
+		$this->registry->register(
+			'core/example',
+			array( 'uses_context' => array( 'query' ) )
+		);
+
+		$parsed_blocks = parse_blocks( '<!-- wp:example {"ok":true} -->a<!-- wp:example /-->b<!-- /wp:example -->' );
+		$parsed_block  = $parsed_blocks[0];
+		$context       = array(
+			'query' => array(
+				'postType' => 'page',
+				'orderBy'  => 'title',
+			),
+		);
+		$block         = new WP_Block( $parsed_block, $context, $this->registry );
+
+		add_filter(
+			'query_loop_block_query_vars',
+			static function ( $query, $block, $page ) {
+				$query['post_type'] = 'book';
+				return $query;
+			},
+			10,
+			3
+		);
+
+		$query = build_query_vars_from_query_block( $block, 1 );
+		$this->assertSame(
+			array(
+				'post_type'    => 'book',
+				'order'        => 'DESC',
+				'orderby'      => 'title',
+				'post__not_in' => array(),
+				'tax_query'    => array(),
+			),
+			$query
+		);
+	}
+
+	/**
+	 * @ticket 52991
+	 */
+	public function test_block_has_support() {
+		$this->registry->register(
+			'core/example',
+			array(
+				'supports' => array(
+					'align'    => array( 'wide', 'full' ),
+					'fontSize' => true,
+					'color'    => array(
+						'link'     => true,
+						'gradient' => false,
+					),
+				),
+			)
+		);
+		$block_type    = $this->registry->get_registered( 'core/example' );
+		$align_support = block_has_support( $block_type, array( 'align' ) );
+		$this->assertTrue( $align_support );
+		$gradient_support = block_has_support( $block_type, array( 'color', 'gradient' ) );
+		$this->assertFalse( $gradient_support );
+		$link_support = block_has_support( $block_type, array( 'color', 'link' ), false );
+		$this->assertTrue( $link_support );
+		$text_support = block_has_support( $block_type, array( 'color', 'text' ) );
+		$this->assertFalse( $text_support );
+		$font_nested = block_has_support( $block_type, array( 'fontSize', 'nested' ) );
+		$this->assertFalse( $font_nested );
+	}
+
+	/**
+	 * @ticket 52991
+	 */
+	public function test_block_has_support_no_supports() {
+		$this->registry->register( 'core/example', array() );
+		$block_type  = $this->registry->get_registered( 'core/example' );
+		$has_support = block_has_support( $block_type, array( 'color' ) );
+		$this->assertFalse( $has_support );
+	}
+
+	/**
+	 * @ticket 52991
+	 */
+	public function test_block_has_support_provided_defaults() {
+		$this->registry->register(
+			'core/example',
+			array(
+				'supports' => array(
+					'color' => array(
+						'gradient' => false,
+					),
+				),
+			)
+		);
+		$block_type    = $this->registry->get_registered( 'core/example' );
+		$align_support = block_has_support( $block_type, array( 'align' ), true );
+		$this->assertTrue( $align_support );
+		$gradient_support = block_has_support( $block_type, array( 'color', 'gradient' ), true );
+		$this->assertFalse( $gradient_support );
+	}
+
+	/**
+	 * @ticket 58532
+	 *
+	 * @dataProvider data_block_has_support_string
+	 *
+	 * @param array  $block_data Block data.
+	 * @param string $support    Support string to check.
+	 * @param bool   $expected   Expected result.
+	 */
+	public function test_block_has_support_string( $block_data, $support, $expected, $message ) {
+		$this->registry->register( 'core/example', $block_data );
+		$block_type  = $this->registry->get_registered( 'core/example' );
+		$has_support = block_has_support( $block_type, $support );
+		$this->assertSame( $expected, $has_support, $message );
+	}
+
+	/**
+	 * Data provider for test_block_has_support_string
+	 */
+	public function data_block_has_support_string() {
+		return array(
+			array(
+				array(),
+				'color',
+				false,
+				'Block with empty support array.',
+			),
+			array(
+				array(
+					'supports' => array(
+						'align'    => array( 'wide', 'full' ),
+						'fontSize' => true,
+						'color'    => array(
+							'link'     => true,
+							'gradient' => false,
+						),
+					),
+				),
+				'align',
+				true,
+				'Feature present in support array.',
+			),
+			array(
+				array(
+					'supports' => array(
+						'align'    => array( 'wide', 'full' ),
+						'fontSize' => true,
+						'color'    => array(
+							'link'     => true,
+							'gradient' => false,
+						),
+					),
+				),
+				'anchor',
+				false,
+				'Feature not present in support array.',
+			),
+			array(
+				array(
+					'supports' => array(
+						'align'    => array( 'wide', 'full' ),
+						'fontSize' => true,
+						'color'    => array(
+							'link'     => true,
+							'gradient' => false,
+						),
+					),
+				),
+				array( 'align' ),
+				true,
+				'Feature present in support array, single element array.',
+			),
+		);
+	}
+
+	/**
+	 * @ticket 51612
+	 */
+	public function test_block_filters_for_inner_blocks() {
+		$pre_render_callback           = new MockAction();
+		$render_block_data_callback    = new MockAction();
+		$render_block_context_callback = new MockAction();
+
+		$this->registry->register(
+			'core/outer',
+			array(
+				'render_callback' => static function ( $block_attributes, $content ) {
+					return $content;
+				},
+			)
+		);
+
+		$this->registry->register(
+			'core/inner',
+			array(
+				'render_callback' => static function () {
+					return 'b';
+				},
+			)
+		);
+
+		$parsed_blocks = parse_blocks( '<!-- wp:outer -->a<!-- wp:inner /-->c<!-- /wp:outer -->' );
+		$parsed_block  = $parsed_blocks[0];
+
+		add_filter( 'pre_render_block', array( $pre_render_callback, 'filter' ) );
+		add_filter( 'render_block_data', array( $render_block_data_callback, 'filter' ) );
+		add_filter( 'render_block_context', array( $render_block_context_callback, 'filter' ) );
+
+		render_block( $parsed_block );
+
+		$this->assertSame( 2, $pre_render_callback->get_call_count() );
+		$this->assertSame( 2, $render_block_data_callback->get_call_count() );
+		$this->assertSame( 2, $render_block_context_callback->get_call_count() );
+	}
+}

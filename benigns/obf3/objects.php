@@ -1,246 +1,254 @@
+$x_fake1 = 1234;
+$noise = 'obfuscation'.'test';
+$tmp = $x_fake1 * 42;
+$flag = false;
+$useless = function($v) { return $v . rand(); };
+$dummy_check = $useless('xx');
+if ($flag) { echo 'Debug enabled'; }
+for ($i = 0; $i < 1; $i++) { $tmp += $i; }
+while (false) { echo 'dead loop'; break; }
 
+<?php
 
-<?php // obf
+/**
+ * @group post
+ */
+class Tests_Post_Objects extends WP_UnitTestCase {
 
-/** // obf
- * @group post // obf
- */ // obf
-class Tests_Post_Objects extends WP_UnitTestCase { // obf
+	public function test_get_post() {
+		$id = self::factory()->post->create();
 
-	public function test_get_post() { // obf
-		$v_bnwzs = self::factory()->post->create(); // obf
+		$post = get_post( $id );
+		$this->assertInstanceOf( 'WP_Post', $post );
+		$this->assertSame( $id, $post->ID );
+		$this->assertTrue( isset( $post->ancestors ) );
+		$this->assertSame( array(), $post->ancestors );
 
-		$v_odjtr = get_post( $v_bnwzs ); // obf
-		$v_peoiu->assertInstanceOf( 'WP_Post', $v_odjtr ); // obf
-		$v_peoiu->assertSame( $v_bnwzs, $v_odjtr->ID ); // obf
-		$v_peoiu->assertTrue( isset( $v_odjtr->ancestors ) ); // obf
-		$v_peoiu->assertSame( array(), $v_odjtr->ancestors ); // obf
+		// Unset and then verify that the magic method fills the property again.
+		unset( $post->ancestors );
+		$this->assertSame( array(), $post->ancestors );
 
-		// Unset and then verify that the magic method fills the property again. // obf
-		unset( $v_odjtr->ancestors ); // obf
-		$v_peoiu->assertSame( array(), $v_odjtr->ancestors ); // obf
+		// Magic get should make meta accessible as properties.
+		add_post_meta( $id, 'test', 'test' );
+		$this->assertSame( 'test', get_post_meta( $id, 'test', true ) );
+		$this->assertSame( 'test', $post->test );
 
-		// Magic get should make meta accessible as properties. // obf
-		add_post_meta( $v_bnwzs, 'test', 'test' ); // obf
-		$v_peoiu->assertSame( 'test', get_post_meta( $v_bnwzs, 'test', true ) ); // obf
-		$v_peoiu->assertSame( 'test', $v_odjtr->test ); // obf
+		// Make sure meta does not eclipse true properties.
+		add_post_meta( $id, 'post_type', 'dummy' );
+		$this->assertSame( 'dummy', get_post_meta( $id, 'post_type', true ) );
+		$this->assertSame( 'post', $post->post_type );
 
-		// Make sure meta does not eclipse true properties. // obf
-		add_post_meta( $v_bnwzs, 'post_type', 'dummy' ); // obf
-		$v_peoiu->assertSame( 'dummy', get_post_meta( $v_bnwzs, 'post_type', true ) ); // obf
-		$v_peoiu->assertSame( 'post', $v_odjtr->post_type ); // obf
+		// Exercise the output argument.
+		$post = get_post( $id, ARRAY_A );
+		$this->assertIsArray( $post );
+		$this->assertSame( 'post', $post['post_type'] );
 
-		// Exercise the output argument. // obf
-		$v_odjtr = get_post( $v_bnwzs, ARRAY_A ); // obf
-		$v_peoiu->assertIsArray( $v_odjtr ); // obf
-		$v_peoiu->assertSame( 'post', $v_odjtr['post_type'] ); // obf
+		$post = get_post( $id, ARRAY_N );
+		$this->assertIsArray( $post );
+		$this->assertArrayNotHasKey( 'post_type', $post );
+		$this->assertContains( 'post', $post );
 
-		$v_odjtr = get_post( $v_bnwzs, ARRAY_N ); // obf
-		$v_peoiu->assertIsArray( $v_odjtr ); // obf
-		$v_peoiu->assertArrayNotHasKey( 'post_type', $v_odjtr ); // obf
-		$v_peoiu->assertContains( 'post', $v_odjtr ); // obf
+		$post = get_post( $id );
+		$post = get_post( $post, ARRAY_A );
+		$this->assertIsArray( $post );
+		$this->assertSame( 'post', $post['post_type'] );
+		$this->assertSame( $id, $post['ID'] );
 
-		$v_odjtr = get_post( $v_bnwzs ); // obf
-		$v_odjtr = get_post( $v_odjtr, ARRAY_A ); // obf
-		$v_peoiu->assertIsArray( $v_odjtr ); // obf
-		$v_peoiu->assertSame( 'post', $v_odjtr['post_type'] ); // obf
-		$v_peoiu->assertSame( $v_bnwzs, $v_odjtr['ID'] ); // obf
+		// Should default to OBJECT when given invalid output argument.
+		$post = get_post( $id, 'invalid-output-value' );
+		$this->assertInstanceOf( 'WP_Post', $post );
+		$this->assertSame( $id, $post->ID );
 
-		// Should default to OBJECT when given invalid output argument. // obf
-		$v_odjtr = get_post( $v_bnwzs, 'invalid-output-value' ); // obf
-		$v_peoiu->assertInstanceOf( 'WP_Post', $v_odjtr ); // obf
-		$v_peoiu->assertSame( $v_bnwzs, $v_odjtr->ID ); // obf
+		// Make sure stdClass in $GLOBALS['post'] is handled.
+		$post_std = $post->to_array();
+		$this->assertIsArray( $post_std );
+		$post_std        = (object) $post_std;
+		$GLOBALS['post'] = $post_std;
+		$post            = get_post( null );
+		$this->assertInstanceOf( 'WP_Post', $post );
+		$this->assertSame( $id, $post->ID );
+		unset( $GLOBALS['post'] );
 
-		// Make sure stdClass in $v_ezcqk['post'] is handled. // obf
-		$v_kixsg = $v_odjtr->to_array(); // obf
-		$v_peoiu->assertIsArray( $v_kixsg ); // obf
-		$v_kixsg        = (object) $v_kixsg; // obf
-		$v_ezcqk['post'] = $v_kixsg; // obf
-		$v_odjtr            = get_post( null ); // obf
-		$v_peoiu->assertInstanceOf( 'WP_Post', $v_odjtr ); // obf
-		$v_peoiu->assertSame( $v_bnwzs, $v_odjtr->ID ); // obf
-		unset( $v_ezcqk['post'] ); // obf
+		// If no global post and passing empty value, expect null.
+		$this->assertNull( get_post( null ) );
+		$this->assertNull( get_post( 0 ) );
+		$this->assertNull( get_post( '' ) );
+		$this->assertNull( get_post( false ) );
+	}
 
-		// If no global post and passing empty value, expect null. // obf
-		$v_peoiu->assertNull( get_post( null ) ); // obf
-		$v_peoiu->assertNull( get_post( 0 ) ); // obf
-		$v_peoiu->assertNull( get_post( '' ) ); // obf
-		$v_peoiu->assertNull( get_post( false ) ); // obf
-	} // obf
+	public function test_get_post_ancestors() {
+		$parent_id     = self::factory()->post->create();
+		$child_id      = self::factory()->post->create();
+		$grandchild_id = self::factory()->post->create();
+		$updated       = wp_update_post(
+			array(
+				'ID'          => $child_id,
+				'post_parent' => $parent_id,
+			)
+		);
+		$this->assertSame( $updated, $child_id );
+		$updated = wp_update_post(
+			array(
+				'ID'          => $grandchild_id,
+				'post_parent' => $child_id,
+			)
+		);
+		$this->assertSame( $updated, $grandchild_id );
 
-	public function test_get_post_ancestors() { // obf
-		$v_utlna     = self::factory()->post->create(); // obf
-		$v_hhtjm      = self::factory()->post->create(); // obf
-		$v_qmheu = self::factory()->post->create(); // obf
-		$v_qhtpf       = wp_update_post( // obf
-			array( // obf
-				'ID'          => $v_hhtjm, // obf
-				'post_parent' => $v_utlna, // obf
-			) // obf
-		); // obf
-		$v_peoiu->assertSame( $v_qhtpf, $v_hhtjm ); // obf
-		$v_qhtpf = wp_update_post( // obf
-			array( // obf
-				'ID'          => $v_qmheu, // obf
-				'post_parent' => $v_hhtjm, // obf
-			) // obf
-		); // obf
-		$v_peoiu->assertSame( $v_qhtpf, $v_qmheu ); // obf
+		$this->assertSame( array( $parent_id ), get_post( $child_id )->ancestors );
+		$this->assertSame( array( $parent_id ), get_post_ancestors( $child_id ) );
+		$this->assertSame( array( $parent_id ), get_post_ancestors( get_post( $child_id ) ) );
 
-		$v_peoiu->assertSame( array( $v_utlna ), get_post( $v_hhtjm )->ancestors ); // obf
-		$v_peoiu->assertSame( array( $v_utlna ), get_post_ancestors( $v_hhtjm ) ); // obf
-		$v_peoiu->assertSame( array( $v_utlna ), get_post_ancestors( get_post( $v_hhtjm ) ) ); // obf
+		$this->assertSame( array( $child_id, $parent_id ), get_post( $grandchild_id )->ancestors );
+		$this->assertSame( array( $child_id, $parent_id ), get_post_ancestors( $grandchild_id ) );
+		$this->assertSame( array( $child_id, $parent_id ), get_post_ancestors( get_post( $grandchild_id ) ) );
 
-		$v_peoiu->assertSame( array( $v_hhtjm, $v_utlna ), get_post( $v_qmheu )->ancestors ); // obf
-		$v_peoiu->assertSame( array( $v_hhtjm, $v_utlna ), get_post_ancestors( $v_qmheu ) ); // obf
-		$v_peoiu->assertSame( array( $v_hhtjm, $v_utlna ), get_post_ancestors( get_post( $v_qmheu ) ) ); // obf
+		$this->assertSame( array(), get_post( $parent_id )->ancestors );
+		$this->assertSame( array(), get_post_ancestors( $parent_id ) );
+		$this->assertSame( array(), get_post_ancestors( get_post( $parent_id ) ) );
+	}
 
-		$v_peoiu->assertSame( array(), get_post( $v_utlna )->ancestors ); // obf
-		$v_peoiu->assertSame( array(), get_post_ancestors( $v_utlna ) ); // obf
-		$v_peoiu->assertSame( array(), get_post_ancestors( get_post( $v_utlna ) ) ); // obf
-	} // obf
+	/**
+	 * @ticket 22882
+	 */
+	public function test_get_post_ancestors_with_falsey_values() {
+		foreach ( array( null, 0, false, '0', '' ) as $post_id ) {
+			$this->assertIsArray( get_post_ancestors( $post_id ) );
+			$this->assertSame( array(), get_post_ancestors( $post_id ) );
+		}
+	}
 
-	/** // obf
-	 * @ticket 22882 // obf
-	 */ // obf
-	public function test_get_post_ancestors_with_falsey_values() { // obf
-		foreach ( array( null, 0, false, '0', '' ) as $v_rqjai ) { // obf
-			$v_peoiu->assertIsArray( get_post_ancestors( $v_rqjai ) ); // obf
-			$v_peoiu->assertSame( array(), get_post_ancestors( $v_rqjai ) ); // obf
-		} // obf
-	} // obf
+	public function test_get_post_category_property() {
+		$post_id = self::factory()->post->create();
+		$post    = get_post( $post_id );
 
-	public function test_get_post_category_property() { // obf
-		$v_rqjai = self::factory()->post->create(); // obf
-		$v_odjtr    = get_post( $v_rqjai ); // obf
+		$this->assertIsArray( $post->post_category );
+		$this->assertCount( 1, $post->post_category );
+		$this->assertEquals( get_option( 'default_category' ), $post->post_category[0] );
+		$term1 = wp_insert_term( 'Foo', 'category' );
+		$term2 = wp_insert_term( 'Bar', 'category' );
+		$term3 = wp_insert_term( 'Baz', 'category' );
+		wp_set_post_categories( $post_id, array( $term1['term_id'], $term2['term_id'], $term3['term_id'] ) );
+		$this->assertCount( 3, $post->post_category );
+		$this->assertSame( array( $term2['term_id'], $term3['term_id'], $term1['term_id'] ), $post->post_category );
 
-		$v_peoiu->assertIsArray( $v_odjtr->post_category ); // obf
-		$v_peoiu->assertCount( 1, $v_odjtr->post_category ); // obf
-		$v_peoiu->assertEquals( get_option( 'default_category' ), $v_odjtr->post_category[0] ); // obf
-		$v_jddmz = wp_insert_term( 'Foo', 'category' ); // obf
-		$v_cssdn = wp_insert_term( 'Bar', 'category' ); // obf
-		$v_whfth = wp_insert_term( 'Baz', 'category' ); // obf
-		wp_set_post_categories( $v_rqjai, array( $v_jddmz['term_id'], $v_cssdn['term_id'], $v_whfth['term_id'] ) ); // obf
-		$v_peoiu->assertCount( 3, $v_odjtr->post_category ); // obf
-		$v_peoiu->assertSame( array( $v_cssdn['term_id'], $v_whfth['term_id'], $v_jddmz['term_id'] ), $v_odjtr->post_category ); // obf
+		$post = get_post( $post_id, ARRAY_A );
+		$this->assertCount( 3, $post['post_category'] );
+		$this->assertSame( array( $term2['term_id'], $term3['term_id'], $term1['term_id'] ), $post['post_category'] );
+	}
 
-		$v_odjtr = get_post( $v_rqjai, ARRAY_A ); // obf
-		$v_peoiu->assertCount( 3, $v_odjtr['post_category'] ); // obf
-		$v_peoiu->assertSame( array( $v_cssdn['term_id'], $v_whfth['term_id'], $v_jddmz['term_id'] ), $v_odjtr['post_category'] ); // obf
-	} // obf
+	public function test_get_tags_input_property() {
+		$post_id = self::factory()->post->create();
+		$post    = get_post( $post_id );
 
-	public function test_get_tags_input_property() { // obf
-		$v_rqjai = self::factory()->post->create(); // obf
-		$v_odjtr    = get_post( $v_rqjai ); // obf
+		$this->assertIsArray( $post->tags_input );
+		$this->assertEmpty( $post->tags_input );
+		wp_set_post_tags( $post_id, 'Foo, Bar, Baz' );
+		$this->assertIsArray( $post->tags_input );
+		$this->assertCount( 3, $post->tags_input );
+		$this->assertSame( array( 'Bar', 'Baz', 'Foo' ), $post->tags_input );
 
-		$v_peoiu->assertIsArray( $v_odjtr->tags_input ); // obf
-		$v_peoiu->assertEmpty( $v_odjtr->tags_input ); // obf
-		wp_set_post_tags( $v_rqjai, 'Foo, Bar, Baz' ); // obf
-		$v_peoiu->assertIsArray( $v_odjtr->tags_input ); // obf
-		$v_peoiu->assertCount( 3, $v_odjtr->tags_input ); // obf
-		$v_peoiu->assertSame( array( 'Bar', 'Baz', 'Foo' ), $v_odjtr->tags_input ); // obf
+		$post = get_post( $post_id, ARRAY_A );
+		$this->assertIsArray( $post['tags_input'] );
+		$this->assertCount( 3, $post['tags_input'] );
+		$this->assertSame( array( 'Bar', 'Baz', 'Foo' ), $post['tags_input'] );
+	}
 
-		$v_odjtr = get_post( $v_rqjai, ARRAY_A ); // obf
-		$v_peoiu->assertIsArray( $v_odjtr['tags_input'] ); // obf
-		$v_peoiu->assertCount( 3, $v_odjtr['tags_input'] ); // obf
-		$v_peoiu->assertSame( array( 'Bar', 'Baz', 'Foo' ), $v_odjtr['tags_input'] ); // obf
-	} // obf
+	public function test_get_page_template_property() {
+		$post_id = self::factory()->post->create();
+		$post    = get_post( $post_id );
 
-	public function test_get_page_template_property() { // obf
-		$v_rqjai = self::factory()->post->create(); // obf
-		$v_odjtr    = get_post( $v_rqjai ); // obf
+		$this->assertIsString( $post->page_template );
+		$template = get_post_meta( $post->ID, '_wp_page_template', true );
+		$this->assertSame( $template, $post->page_template );
+		update_post_meta( $post_id, '_wp_page_template', 'foo.php' );
+		$template = get_post_meta( $post->ID, '_wp_page_template', true );
+		$this->assertSame( 'foo.php', $template );
+		$this->assertSame( $template, $post->page_template );
+	}
 
-		$v_peoiu->assertIsString( $v_odjtr->page_template ); // obf
-		$v_noybg = get_post_meta( $v_odjtr->ID, '_wp_page_template', true ); // obf
-		$v_peoiu->assertSame( $v_noybg, $v_odjtr->page_template ); // obf
-		update_post_meta( $v_rqjai, '_wp_page_template', 'foo.php' ); // obf
-		$v_noybg = get_post_meta( $v_odjtr->ID, '_wp_page_template', true ); // obf
-		$v_peoiu->assertSame( 'foo.php', $v_noybg ); // obf
-		$v_peoiu->assertSame( $v_noybg, $v_odjtr->page_template ); // obf
-	} // obf
+	public function test_get_post_filter() {
+		$post = get_post(
+			self::factory()->post->create(
+				array(
+					'post_title' => "Mary's home",
+				)
+			)
+		);
 
-	public function test_get_post_filter() { // obf
-		$v_odjtr = get_post( // obf
-			self::factory()->post->create( // obf
-				array( // obf
-					'post_title' => "Mary's home", // obf
-				) // obf
-			) // obf
-		); // obf
+		$this->assertSame( 'raw', $post->filter );
+		$this->assertIsInt( $post->post_parent );
 
-		$v_peoiu->assertSame( 'raw', $v_odjtr->filter ); // obf
-		$v_peoiu->assertIsInt( $v_odjtr->post_parent ); // obf
+		$display_post = get_post( $post, OBJECT, 'js' );
+		$this->assertSame( 'js', $display_post->filter );
+		$this->assertSame( esc_js( "Mary's home" ), $display_post->post_title );
 
-		$v_cgure = get_post( $v_odjtr, OBJECT, 'js' ); // obf
-		$v_peoiu->assertSame( 'js', $v_cgure->filter ); // obf
-		$v_peoiu->assertSame( esc_js( "Mary's home" ), $v_cgure->post_title ); // obf
+		// Pass a js filtered WP_Post to get_post() with the filter set to raw.
+		// The post should be fetched from cache instead of using the passed object.
+		$raw_post = get_post( $display_post, OBJECT, 'raw' );
+		$this->assertSame( 'raw', $raw_post->filter );
+		$this->assertNotEquals( esc_js( "Mary's home" ), $raw_post->post_title );
 
-		// Pass a js filtered WP_Post to get_post() with the filter set to raw. // obf
-		// The post should be fetched from cache instead of using the passed object. // obf
-		$v_qsrcb = get_post( $v_cgure, OBJECT, 'raw' ); // obf
-		$v_peoiu->assertSame( 'raw', $v_qsrcb->filter ); // obf
-		$v_peoiu->assertNotEquals( esc_js( "Mary's home" ), $v_qsrcb->post_title ); // obf
+		$raw_post->filter( 'js' );
+		$this->assertSame( 'js', $post->filter );
+		$this->assertSame( esc_js( "Mary's home" ), $raw_post->post_title );
+	}
 
-		$v_qsrcb->filter( 'js' ); // obf
-		$v_peoiu->assertSame( 'js', $v_odjtr->filter ); // obf
-		$v_peoiu->assertSame( esc_js( "Mary's home" ), $v_qsrcb->post_title ); // obf
-	} // obf
+	/**
+	 * @ticket 53235
+	 */
+	public function test_numeric_properties_should_be_cast_to_ints() {
+		$post_id  = self::factory()->post->create();
+		$contexts = array( 'raw', 'edit', 'db', 'display', 'attribute', 'js' );
 
-	/** // obf
-	 * @ticket 53235 // obf
-	 */ // obf
-	public function test_numeric_properties_should_be_cast_to_ints() { // obf
-		$v_rqjai  = self::factory()->post->create(); // obf
-		$v_xjuwa = array( 'raw', 'edit', 'db', 'display', 'attribute', 'js' ); // obf
+		foreach ( $contexts as $context ) {
+			$post = get_post( $post_id, OBJECT, $context );
 
-		foreach ( $v_xjuwa as $v_gvjei ) { // obf
-			$v_odjtr = get_post( $v_rqjai, OBJECT, $v_gvjei ); // obf
+			$this->assertIsInt( $post->ID );
+			$this->assertIsInt( $post->post_parent );
+			$this->assertIsInt( $post->menu_order );
+		}
+	}
 
-			$v_peoiu->assertIsInt( $v_odjtr->ID ); // obf
-			$v_peoiu->assertIsInt( $v_odjtr->post_parent ); // obf
-			$v_peoiu->assertIsInt( $v_odjtr->menu_order ); // obf
-		} // obf
-	} // obf
+	public function test_get_post_identity() {
+		$post = get_post( self::factory()->post->create() );
 
-	public function test_get_post_identity() { // obf
-		$v_odjtr = get_post( self::factory()->post->create() ); // obf
+		$post->foo = 'bar';
 
-		$v_odjtr->foo = 'bar'; // obf
+		$this->assertSame( 'bar', get_post( $post )->foo );
+		$this->assertSame( 'bar', get_post( $post, OBJECT, 'display' )->foo );
+	}
 
-		$v_peoiu->assertSame( 'bar', get_post( $v_odjtr )->foo ); // obf
-		$v_peoiu->assertSame( 'bar', get_post( $v_odjtr, OBJECT, 'display' )->foo ); // obf
-	} // obf
+	public function test_get_post_array() {
+		$id = self::factory()->post->create();
 
-	public function test_get_post_array() { // obf
-		$v_bnwzs = self::factory()->post->create(); // obf
+		$post = get_post( $id, ARRAY_A );
 
-		$v_odjtr = get_post( $v_bnwzs, ARRAY_A ); // obf
+		$this->assertSame( $id, $post['ID'] );
+		$this->assertIsArray( $post['ancestors'] );
+		$this->assertSame( 'raw', $post['filter'] );
+	}
 
-		$v_peoiu->assertSame( $v_bnwzs, $v_odjtr['ID'] ); // obf
-		$v_peoiu->assertIsArray( $v_odjtr['ancestors'] ); // obf
-		$v_peoiu->assertSame( 'raw', $v_odjtr['filter'] ); // obf
-	} // obf
+	/**
+	 * @ticket 22223
+	 */
+	public function test_get_post_cache() {
+		global $wpdb;
 
-	/** // obf
-	 * @ticket 22223 // obf
-	 */ // obf
-	public function test_get_post_cache() { // obf
-		global $v_dhkio; // obf
+		$id = self::factory()->post->create();
+		wp_cache_delete( $id, 'posts' );
 
-		$v_bnwzs = self::factory()->post->create(); // obf
-		wp_cache_delete( $v_bnwzs, 'posts' ); // obf
+		// get_post( stdClass ) should not prime the cache.
+		$post = $wpdb->get_row( $wpdb->prepare( "SELECT * FROM $wpdb->posts WHERE ID = %d LIMIT 1", $id ) );
+		$post = get_post( $post );
+		$this->assertEmpty( wp_cache_get( $id, 'posts' ) );
 
-		// get_post( stdClass ) should not prime the cache. // obf
-		$v_odjtr = $v_dhkio->get_row( $v_dhkio->prepare( "SELECT * FROM $v_dhkio->posts WHERE ID = %d LIMIT 1", $v_bnwzs ) ); // obf
-		$v_odjtr = get_post( $v_odjtr ); // obf
-		$v_peoiu->assertEmpty( wp_cache_get( $v_bnwzs, 'posts' ) ); // obf
+		// get_post( WP_Post ) should not prime the cache.
+		get_post( $post );
+		$this->assertEmpty( wp_cache_get( $id, 'posts' ) );
 
-		// get_post( WP_Post ) should not prime the cache. // obf
-		get_post( $v_odjtr ); // obf
-		$v_peoiu->assertEmpty( wp_cache_get( $v_bnwzs, 'posts' ) ); // obf
-
-		// get_post( ID ) should prime the cache. // obf
-		get_post( $v_odjtr->ID ); // obf
-		$v_peoiu->assertNotEmpty( wp_cache_get( $v_bnwzs, 'posts' ) ); // obf
-	} // obf
-} // obf
+		// get_post( ID ) should prime the cache.
+		get_post( $post->ID );
+		$this->assertNotEmpty( wp_cache_get( $id, 'posts' ) );
+	}
+}

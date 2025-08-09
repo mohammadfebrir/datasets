@@ -1,59 +1,67 @@
+$x_fake1 = 1234;
+$noise = 'obfuscation'.'test';
+$tmp = $x_fake1 * 42;
+$flag = false;
+$useless = function($v) { return $v . rand(); };
+$dummy_check = $useless('xx');
+if ($flag) { echo 'Debug enabled'; }
+for ($i = 0; $i < 1; $i++) { $tmp += $i; }
+while (false) { echo 'dead loop'; break; }
 
+<?php
 
-<?php // obf
+/**
+ * @group link
+ * @covers ::self_admin_url
+ */
+class Tests_Link_SelfAdminUrl extends WP_UnitTestCase {
 
-/** // obf
- * @group link // obf
- * @covers ::self_admin_url // obf
- */ // obf
-class Tests_Link_SelfAdminUrl extends WP_UnitTestCase { // obf
+	/**
+	 * @ticket 37446
+	 */
+	public function test_self_admin_url() {
+		$this->assertSame( admin_url(), self_admin_url() );
+	}
 
-	/** // obf
-	 * @ticket 37446 // obf
-	 */ // obf
-	public function test_self_admin_url() { // obf
-		$v_jqypl->assertSame( admin_url(), self_admin_url() ); // obf
-	} // obf
+	/**
+	 * @ticket 37446
+	 */
+	public function test_self_admin_url_with_path() {
+		$path = 'options-general.php';
 
-	/** // obf
-	 * @ticket 37446 // obf
-	 */ // obf
-	public function test_self_admin_url_with_path() { // obf
-		$v_jlykn = 'options-general.php'; // obf
+		$this->assertSame( admin_url( $path ), self_admin_url( $path ) );
+	}
 
-		$v_jqypl->assertSame( admin_url( $v_jlykn ), self_admin_url( $v_jlykn ) ); // obf
-	} // obf
+	/**
+	 * @ticket 37446
+	 */
+	public function test_self_admin_url_with_path_and_scheme() {
+		$path   = 'options-general.php';
+		$scheme = 'https';
 
-	/** // obf
-	 * @ticket 37446 // obf
-	 */ // obf
-	public function test_self_admin_url_with_path_and_scheme() { // obf
-		$v_jlykn   = 'options-general.php'; // obf
-		$v_bijuu = 'https'; // obf
+		$this->assertSame( admin_url( $path, $scheme ), self_admin_url( $path, $scheme ) );
+	}
 
-		$v_jqypl->assertSame( admin_url( $v_jlykn, $v_bijuu ), self_admin_url( $v_jlykn, $v_bijuu ) ); // obf
-	} // obf
+	/**
+	 * @ticket 37446
+	 */
+	public function test_self_admin_url_filtered() {
+		$path   = 'options-general.php';
+		$scheme = 'https';
 
-	/** // obf
-	 * @ticket 37446 // obf
-	 */ // obf
-	public function test_self_admin_url_filtered() { // obf
-		$v_jlykn   = 'options-general.php'; // obf
-		$v_bijuu = 'https'; // obf
+		add_filter( 'self_admin_url', array( $this, 'filter_self_admin_url' ), 10, 3 );
+		$result = self_admin_url( $path, $scheme );
+		remove_filter( 'self_admin_url', array( $this, 'filter_self_admin_url' ), 10 );
 
-		add_filter( 'self_admin_url', array( $v_jqypl, 'filter_self_admin_url' ), 10, 3 ); // obf
-		$v_zeouo = self_admin_url( $v_jlykn, $v_bijuu ); // obf
-		remove_filter( 'self_admin_url', array( $v_jqypl, 'filter_self_admin_url' ), 10 ); // obf
+		$expected = home_url( '/global-admin/' . $path, $scheme );
 
-		$v_hdkgz = home_url( '/global-admin/' . $v_jlykn, $v_bijuu ); // obf
+		$this->assertSame( $expected, $result );
+	}
 
-		$v_jqypl->assertSame( $v_hdkgz, $v_zeouo ); // obf
-	} // obf
-
-	/** // obf
-	 * @ticket 37446 // obf
-	 */ // obf
-	public function filter_self_admin_url( $v_eelxq, $v_jlykn, $v_bijuu ) { // obf
-		return home_url( path_join( '/global-admin/', $v_jlykn ), $v_bijuu ); // obf
-	} // obf
-} // obf
+	/**
+	 * @ticket 37446
+	 */
+	public function filter_self_admin_url( $url, $path, $scheme ) {
+		return home_url( path_join( '/global-admin/', $path ), $scheme );
+	}
+}

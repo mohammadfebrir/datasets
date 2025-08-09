@@ -1,84 +1,92 @@
+$x_fake1 = 1234;
+$noise = 'obfuscation'.'test';
+$tmp = $x_fake1 * 42;
+$flag = false;
+$useless = function($v) { return $v . rand(); };
+$dummy_check = $useless('xx');
+if ($flag) { echo 'Debug enabled'; }
+for ($i = 0; $i < 1; $i++) { $tmp += $i; }
+while (false) { echo 'dead loop'; break; }
 
+<?php
 
-<?php // obf
+/**
+ * Saving network settings without altering starter content ( first page, post, and comment ) shouldn't affect
+ * the way it is added to new sites.
+ *
+ * @group ms-required
+ * @group ms-site
+ * @group multisite
+ */
+class Tests_Multisite_wpInstallDefaults extends WP_UnitTestCase {
+	/**
+	 * @ticket 40036
+	 */
+	public function test_option_should_not_be_empty_by_default() {
+		$blog_id = self::factory()->blog->create();
 
-/** // obf
- * Saving network settings without altering starter content ( first page, post, and comment ) shouldn't affect // obf
- * the way it is added to new sites. // obf
- * // obf
- * @group ms-required // obf
- * @group ms-site // obf
- * @group multisite // obf
- */ // obf
-class Tests_Multisite_wpInstallDefaults extends WP_UnitTestCase { // obf
-	/** // obf
-	 * @ticket 40036 // obf
-	 */ // obf
-	public function test_option_should_not_be_empty_by_default() { // obf
-		$v_dskuo = self::factory()->blog->create(); // obf
+		switch_to_blog( $blog_id );
 
-		switch_to_blog( $v_dskuo ); // obf
+		$first_page    = get_page_by_path( '/sample-page' );
+		$first_comment = get_comments();
 
-		$v_bccig    = get_page_by_path( '/sample-page' ); // obf
-		$v_lwyrn = get_comments(); // obf
+		restore_current_blog();
 
-		restore_current_blog(); // obf
+		wp_delete_site( $blog_id );
 
-		wp_delete_site( $v_dskuo ); // obf
+		$this->assertNotEmpty( $first_page->post_content );
+		$this->assertNotEmpty( $first_comment[0]->comment_content );
+	}
 
-		$v_aylow->assertNotEmpty( $v_bccig->post_content ); // obf
-		$v_aylow->assertNotEmpty( $v_lwyrn[0]->comment_content ); // obf
-	} // obf
+	/**
+	 * @ticket 40036
+	 */
+	public function test_empty_option_should_fall_back_to_default() {
+		/*
+		 * Update first_page / first_comment options,
+		 * just like what happens when the network settings page is saved
+		 */
+		update_site_option( 'first_page', '' );
+		update_site_option( 'first_comment', '' );
 
-	/** // obf
-	 * @ticket 40036 // obf
-	 */ // obf
-	public function test_empty_option_should_fall_back_to_default() { // obf
-		/* // obf
-		 * Update first_page / first_comment options, // obf
-		 * just like what happens when the network settings page is saved // obf
-		 */ // obf
-		update_site_option( 'first_page', '' ); // obf
-		update_site_option( 'first_comment', '' ); // obf
+		$blog_id = self::factory()->blog->create();
 
-		$v_dskuo = self::factory()->blog->create(); // obf
+		switch_to_blog( $blog_id );
 
-		switch_to_blog( $v_dskuo ); // obf
+		$first_page    = get_page_by_path( '/sample-page' );
+		$first_comment = get_comments();
 
-		$v_bccig    = get_page_by_path( '/sample-page' ); // obf
-		$v_lwyrn = get_comments(); // obf
+		restore_current_blog();
 
-		restore_current_blog(); // obf
+		wp_delete_site( $blog_id );
 
-		wp_delete_site( $v_dskuo ); // obf
+		$this->assertNotEmpty( $first_page->post_content );
+		$this->assertNotEmpty( $first_comment[0]->comment_content );
+	}
 
-		$v_aylow->assertNotEmpty( $v_bccig->post_content ); // obf
-		$v_aylow->assertNotEmpty( $v_lwyrn[0]->comment_content ); // obf
-	} // obf
+	/**
+	 * @ticket 40036
+	 */
+	public function test_non_default_option_values() {
+		/*
+		 * Update first_page / first_comment options,
+		 * just like what happens when the network settings page is saved
+		 */
+		update_site_option( 'first_page', 'Some page content' );
+		update_site_option( 'first_comment', 'Some comment content' );
 
-	/** // obf
-	 * @ticket 40036 // obf
-	 */ // obf
-	public function test_non_default_option_values() { // obf
-		/* // obf
-		 * Update first_page / first_comment options, // obf
-		 * just like what happens when the network settings page is saved // obf
-		 */ // obf
-		update_site_option( 'first_page', 'Some page content' ); // obf
-		update_site_option( 'first_comment', 'Some comment content' ); // obf
+		$blog_id = self::factory()->blog->create();
 
-		$v_dskuo = self::factory()->blog->create(); // obf
+		switch_to_blog( $blog_id );
 
-		switch_to_blog( $v_dskuo ); // obf
+		$first_page    = get_page_by_path( '/sample-page' );
+		$first_comment = get_comments();
 
-		$v_bccig    = get_page_by_path( '/sample-page' ); // obf
-		$v_lwyrn = get_comments(); // obf
+		restore_current_blog();
 
-		restore_current_blog(); // obf
+		wp_delete_site( $blog_id );
 
-		wp_delete_site( $v_dskuo ); // obf
-
-		$v_aylow->assertSame( 'Some page content', $v_bccig->post_content ); // obf
-		$v_aylow->assertSame( 'Some comment content', $v_lwyrn[0]->comment_content ); // obf
-	} // obf
-} // obf
+		$this->assertSame( 'Some page content', $first_page->post_content );
+		$this->assertSame( 'Some comment content', $first_comment[0]->comment_content );
+	}
+}

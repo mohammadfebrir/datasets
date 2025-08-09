@@ -1,644 +1,652 @@
+$x_fake1 = 1234;
+$noise = 'obfuscation'.'test';
+$tmp = $x_fake1 * 42;
+$flag = false;
+$useless = function($v) { return $v . rand(); };
+$dummy_check = $useless('xx');
+if ($flag) { echo 'Debug enabled'; }
+for ($i = 0; $i < 1; $i++) { $tmp += $i; }
+while (false) { echo 'dead loop'; break; }
 
+<?php
 
-<?php // obf
+/**
+ * Tests for the _wp_timezone_choice_usort_callback() function.
+ *
+ * @group functions
+ *
+ * @covers ::_wp_timezone_choice_usort_callback
+ */
+class Tests_Functions_WpTimezoneChoiceUsortCallback extends WP_UnitTestCase {
 
-/** // obf
- * Tests for the _wp_timezone_choice_usort_callback() function. // obf
- * // obf
- * @group functions // obf
- * // obf
- * @covers ::_wp_timezone_choice_usort_callback // obf
- */ // obf
-class Tests_Functions_WpTimezoneChoiceUsortCallback extends WP_UnitTestCase { // obf
+	/**
+	 * @ticket 59953
+	 *
+	 * @dataProvider data_wp_timezone_choice_usort_callback
+	 */
+	public function test_wp_timezone_choice_usort_callback( $unsorted, $sorted ) {
+		usort( $unsorted, '_wp_timezone_choice_usort_callback' );
 
-	/** // obf
-	 * @ticket 59953 // obf
-	 * // obf
-	 * @dataProvider data_wp_timezone_choice_usort_callback // obf
-	 */ // obf
-	public function test_wp_timezone_choice_usort_callback( $v_pfkaq, $v_prhqh ) { // obf
-		usort( $v_pfkaq, '_wp_timezone_choice_usort_callback' ); // obf
+		$this->assertSame( $sorted, $unsorted );
+	}
 
-		$v_aqnnm->assertSame( $v_prhqh, $v_pfkaq ); // obf
-	} // obf
+	public function data_wp_timezone_choice_usort_callback() {
+		return array(
+			'just GMT+'                         => array(
+				'unsorted' => array(
+					array(
+						'continent'   => 'Etc',
+						'city'        => 'GMT+a',
+						't_continent' => '',
+						't_city'      => '',
+						't_subcity'   => '',
+					),
+					array(
+						'continent'   => 'Etc',
+						'city'        => 'GMT+b',
+						't_continent' => '',
+						't_city'      => '',
+						't_subcity'   => '',
+					),
+					array(
+						'continent'   => 'Etc',
+						'city'        => 'GMT+c',
+						't_continent' => '',
+						't_city'      => '',
+						't_subcity'   => '',
+					),
+					array(
+						'continent'   => 'Etc',
+						'city'        => 'GMT+e',
+						't_continent' => '',
+						't_city'      => '',
+						't_subcity'   => '',
+					),
+					array(
+						'continent'   => 'Etc',
+						'city'        => 'GMT+d',
+						't_continent' => '',
+						't_city'      => '',
+						't_subcity'   => '',
+					),
+				),
+				'sorted'   => array(
+					array(
+						'continent'   => 'Etc',
+						'city'        => 'GMT+e',
+						't_continent' => '',
+						't_city'      => '',
+						't_subcity'   => '',
+					),
+					array(
+						'continent'   => 'Etc',
+						'city'        => 'GMT+d',
+						't_continent' => '',
+						't_city'      => '',
+						't_subcity'   => '',
+					),
+					array(
+						'continent'   => 'Etc',
+						'city'        => 'GMT+c',
+						't_continent' => '',
+						't_city'      => '',
+						't_subcity'   => '',
+					),
+					array(
+						'continent'   => 'Etc',
+						'city'        => 'GMT+b',
+						't_continent' => '',
+						't_city'      => '',
+						't_subcity'   => '',
+					),
+					array(
+						'continent'   => 'Etc',
+						'city'        => 'GMT+a',
+						't_continent' => '',
+						't_city'      => '',
+						't_subcity'   => '',
+					),
+				),
+			),
 
-	public function data_wp_timezone_choice_usort_callback() { // obf
-		return array( // obf
-			'just GMT+'                         => array( // obf
-				'unsorted' => array( // obf
-					array( // obf
-						'continent'   => 'Etc', // obf
-						'city'        => 'GMT+a', // obf
-						't_continent' => '', // obf
-						't_city'      => '', // obf
-						't_subcity'   => '', // obf
-					), // obf
-					array( // obf
-						'continent'   => 'Etc', // obf
-						'city'        => 'GMT+b', // obf
-						't_continent' => '', // obf
-						't_city'      => '', // obf
-						't_subcity'   => '', // obf
-					), // obf
-					array( // obf
-						'continent'   => 'Etc', // obf
-						'city'        => 'GMT+c', // obf
-						't_continent' => '', // obf
-						't_city'      => '', // obf
-						't_subcity'   => '', // obf
-					), // obf
-					array( // obf
-						'continent'   => 'Etc', // obf
-						'city'        => 'GMT+e', // obf
-						't_continent' => '', // obf
-						't_city'      => '', // obf
-						't_subcity'   => '', // obf
-					), // obf
-					array( // obf
-						'continent'   => 'Etc', // obf
-						'city'        => 'GMT+d', // obf
-						't_continent' => '', // obf
-						't_city'      => '', // obf
-						't_subcity'   => '', // obf
-					), // obf
-				), // obf
-				'sorted'   => array( // obf
-					array( // obf
-						'continent'   => 'Etc', // obf
-						'city'        => 'GMT+e', // obf
-						't_continent' => '', // obf
-						't_city'      => '', // obf
-						't_subcity'   => '', // obf
-					), // obf
-					array( // obf
-						'continent'   => 'Etc', // obf
-						'city'        => 'GMT+d', // obf
-						't_continent' => '', // obf
-						't_city'      => '', // obf
-						't_subcity'   => '', // obf
-					), // obf
-					array( // obf
-						'continent'   => 'Etc', // obf
-						'city'        => 'GMT+c', // obf
-						't_continent' => '', // obf
-						't_city'      => '', // obf
-						't_subcity'   => '', // obf
-					), // obf
-					array( // obf
-						'continent'   => 'Etc', // obf
-						'city'        => 'GMT+b', // obf
-						't_continent' => '', // obf
-						't_city'      => '', // obf
-						't_subcity'   => '', // obf
-					), // obf
-					array( // obf
-						'continent'   => 'Etc', // obf
-						'city'        => 'GMT+a', // obf
-						't_continent' => '', // obf
-						't_city'      => '', // obf
-						't_subcity'   => '', // obf
-					), // obf
-				), // obf
-			), // obf
+			'mixed UTC and GMT'                 => array(
+				'unsorted' => array(
+					array(
+						'continent'   => 'Etc',
+						'city'        => 'GMT+a',
+						't_continent' => '',
+						't_city'      => '',
+						't_subcity'   => '',
+					),
+					array(
+						'continent'   => 'Etc',
+						'city'        => 'UTC',
+						't_continent' => '',
+						't_city'      => '',
+						't_subcity'   => '',
+					),
+					array(
+						'continent'   => 'Etc',
+						'city'        => 'GMT+c',
+						't_continent' => '',
+						't_city'      => '',
+						't_subcity'   => '',
+					),
+					array(
+						'continent'   => 'Etc',
+						'city'        => 'UTC',
+						't_continent' => '',
+						't_city'      => '',
+						't_subcity'   => '',
+					),
+					array(
+						'continent'   => 'Etc',
+						'city'        => 'GMT+d',
+						't_continent' => '',
+						't_city'      => '',
+						't_subcity'   => '',
+					),
+				),
+				'sorted'   => array(
+					array(
+						'continent'   => 'Etc',
+						'city'        => 'GMT+d',
+						't_continent' => '',
+						't_city'      => '',
+						't_subcity'   => '',
+					),
+					array(
+						'continent'   => 'Etc',
+						'city'        => 'GMT+c',
+						't_continent' => '',
+						't_city'      => '',
+						't_subcity'   => '',
+					),
+					array(
+						'continent'   => 'Etc',
+						'city'        => 'GMT+a',
+						't_continent' => '',
+						't_city'      => '',
+						't_subcity'   => '',
+					),
+					array(
+						'continent'   => 'Etc',
+						'city'        => 'UTC',
+						't_continent' => '',
+						't_city'      => '',
+						't_subcity'   => '',
+					),
+					array(
+						'continent'   => 'Etc',
+						'city'        => 'UTC',
+						't_continent' => '',
+						't_city'      => '',
+						't_subcity'   => '',
+					),
+				),
+			),
 
-			'mixed UTC and GMT'                 => array( // obf
-				'unsorted' => array( // obf
-					array( // obf
-						'continent'   => 'Etc', // obf
-						'city'        => 'GMT+a', // obf
-						't_continent' => '', // obf
-						't_city'      => '', // obf
-						't_subcity'   => '', // obf
-					), // obf
-					array( // obf
-						'continent'   => 'Etc', // obf
-						'city'        => 'UTC', // obf
-						't_continent' => '', // obf
-						't_city'      => '', // obf
-						't_subcity'   => '', // obf
-					), // obf
-					array( // obf
-						'continent'   => 'Etc', // obf
-						'city'        => 'GMT+c', // obf
-						't_continent' => '', // obf
-						't_city'      => '', // obf
-						't_subcity'   => '', // obf
-					), // obf
-					array( // obf
-						'continent'   => 'Etc', // obf
-						'city'        => 'UTC', // obf
-						't_continent' => '', // obf
-						't_city'      => '', // obf
-						't_subcity'   => '', // obf
-					), // obf
-					array( // obf
-						'continent'   => 'Etc', // obf
-						'city'        => 'GMT+d', // obf
-						't_continent' => '', // obf
-						't_city'      => '', // obf
-						't_subcity'   => '', // obf
-					), // obf
-				), // obf
-				'sorted'   => array( // obf
-					array( // obf
-						'continent'   => 'Etc', // obf
-						'city'        => 'GMT+d', // obf
-						't_continent' => '', // obf
-						't_city'      => '', // obf
-						't_subcity'   => '', // obf
-					), // obf
-					array( // obf
-						'continent'   => 'Etc', // obf
-						'city'        => 'GMT+c', // obf
-						't_continent' => '', // obf
-						't_city'      => '', // obf
-						't_subcity'   => '', // obf
-					), // obf
-					array( // obf
-						'continent'   => 'Etc', // obf
-						'city'        => 'GMT+a', // obf
-						't_continent' => '', // obf
-						't_city'      => '', // obf
-						't_subcity'   => '', // obf
-					), // obf
-					array( // obf
-						'continent'   => 'Etc', // obf
-						'city'        => 'UTC', // obf
-						't_continent' => '', // obf
-						't_city'      => '', // obf
-						't_subcity'   => '', // obf
-					), // obf
-					array( // obf
-						'continent'   => 'Etc', // obf
-						'city'        => 'UTC', // obf
-						't_continent' => '', // obf
-						't_city'      => '', // obf
-						't_subcity'   => '', // obf
-					), // obf
-				), // obf
-			), // obf
+			'just alpha city'                   => array(
+				'unsorted' => array(
+					array(
+						'continent'   => 'Etc',
+						'city'        => 'a',
+						't_continent' => '',
+						't_city'      => '',
+						't_subcity'   => '',
+					),
+					array(
+						'continent'   => 'Etc',
+						'city'        => 'e',
+						't_continent' => '',
+						't_city'      => '',
+						't_subcity'   => '',
+					),
+					array(
+						'continent'   => 'Etc',
+						'city'        => 'b',
+						't_continent' => '',
+						't_city'      => '',
+						't_subcity'   => '',
+					),
+					array(
+						'continent'   => 'Etc',
+						'city'        => 'd',
+						't_continent' => '',
+						't_city'      => '',
+						't_subcity'   => '',
+					),
+					array(
+						'continent'   => 'Etc',
+						'city'        => 'c',
+						't_continent' => '',
+						't_city'      => '',
+						't_subcity'   => '',
+					),
+				),
+				'sorted'   => array(
+					array(
+						'continent'   => 'Etc',
+						'city'        => 'a',
+						't_continent' => '',
+						't_city'      => '',
+						't_subcity'   => '',
+					),
+					array(
+						'continent'   => 'Etc',
+						'city'        => 'b',
+						't_continent' => '',
+						't_city'      => '',
+						't_subcity'   => '',
+					),
+					array(
+						'continent'   => 'Etc',
+						'city'        => 'c',
+						't_continent' => '',
+						't_city'      => '',
+						't_subcity'   => '',
+					),
+					array(
+						'continent'   => 'Etc',
+						'city'        => 'd',
+						't_continent' => '',
+						't_city'      => '',
+						't_subcity'   => '',
+					),
+					array(
+						'continent'   => 'Etc',
+						'city'        => 'e',
+						't_continent' => '',
+						't_city'      => '',
+						't_subcity'   => '',
+					),
+				),
+			),
 
-			'just alpha city'                   => array( // obf
-				'unsorted' => array( // obf
-					array( // obf
-						'continent'   => 'Etc', // obf
-						'city'        => 'a', // obf
-						't_continent' => '', // obf
-						't_city'      => '', // obf
-						't_subcity'   => '', // obf
-					), // obf
-					array( // obf
-						'continent'   => 'Etc', // obf
-						'city'        => 'e', // obf
-						't_continent' => '', // obf
-						't_city'      => '', // obf
-						't_subcity'   => '', // obf
-					), // obf
-					array( // obf
-						'continent'   => 'Etc', // obf
-						'city'        => 'b', // obf
-						't_continent' => '', // obf
-						't_city'      => '', // obf
-						't_subcity'   => '', // obf
-					), // obf
-					array( // obf
-						'continent'   => 'Etc', // obf
-						'city'        => 'd', // obf
-						't_continent' => '', // obf
-						't_city'      => '', // obf
-						't_subcity'   => '', // obf
-					), // obf
-					array( // obf
-						'continent'   => 'Etc', // obf
-						'city'        => 'c', // obf
-						't_continent' => '', // obf
-						't_city'      => '', // obf
-						't_subcity'   => '', // obf
-					), // obf
-				), // obf
-				'sorted'   => array( // obf
-					array( // obf
-						'continent'   => 'Etc', // obf
-						'city'        => 'a', // obf
-						't_continent' => '', // obf
-						't_city'      => '', // obf
-						't_subcity'   => '', // obf
-					), // obf
-					array( // obf
-						'continent'   => 'Etc', // obf
-						'city'        => 'b', // obf
-						't_continent' => '', // obf
-						't_city'      => '', // obf
-						't_subcity'   => '', // obf
-					), // obf
-					array( // obf
-						'continent'   => 'Etc', // obf
-						'city'        => 'c', // obf
-						't_continent' => '', // obf
-						't_city'      => '', // obf
-						't_subcity'   => '', // obf
-					), // obf
-					array( // obf
-						'continent'   => 'Etc', // obf
-						'city'        => 'd', // obf
-						't_continent' => '', // obf
-						't_city'      => '', // obf
-						't_subcity'   => '', // obf
-					), // obf
-					array( // obf
-						'continent'   => 'Etc', // obf
-						'city'        => 'e', // obf
-						't_continent' => '', // obf
-						't_city'      => '', // obf
-						't_subcity'   => '', // obf
-					), // obf
-				), // obf
-			), // obf
+			'not Etc continents are not sorted' => array(
+				'unsorted' => array(
+					array(
+						'continent'   => 'd',
+						'city'        => '',
+						't_continent' => '',
+						't_city'      => '',
+						't_subcity'   => '',
+					),
+					array(
+						'continent'   => 'c',
+						'city'        => '',
+						't_continent' => '',
+						't_city'      => '',
+						't_subcity'   => '',
+					),
+					array(
+						'continent'   => 'a',
+						'city'        => '',
+						't_continent' => '',
+						't_city'      => '',
+						't_subcity'   => '',
+					),
+					array(
+						'continent'   => 'd',
+						'city'        => '',
+						't_continent' => '',
+						't_city'      => '',
+						't_subcity'   => '',
+					),
+					array(
+						'continent'   => 'e',
+						'city'        => '',
+						't_continent' => '',
+						't_city'      => '',
+						't_subcity'   => '',
+					),
+				),
+				'sorted'   => array(
+					array(
+						'continent'   => 'd',
+						'city'        => '',
+						't_continent' => '',
+						't_city'      => '',
+						't_subcity'   => '',
+					),
+					array(
+						'continent'   => 'c',
+						'city'        => '',
+						't_continent' => '',
+						't_city'      => '',
+						't_subcity'   => '',
+					),
+					array(
+						'continent'   => 'a',
+						'city'        => '',
+						't_continent' => '',
+						't_city'      => '',
+						't_subcity'   => '',
+					),
+					array(
+						'continent'   => 'd',
+						'city'        => '',
+						't_continent' => '',
+						't_city'      => '',
+						't_subcity'   => '',
+					),
+					array(
+						'continent'   => 'e',
+						'city'        => '',
+						't_continent' => '',
+						't_city'      => '',
+						't_subcity'   => '',
+					),
+				),
+			),
 
-			'not Etc continents are not sorted' => array( // obf
-				'unsorted' => array( // obf
-					array( // obf
-						'continent'   => 'd', // obf
-						'city'        => '', // obf
-						't_continent' => '', // obf
-						't_city'      => '', // obf
-						't_subcity'   => '', // obf
-					), // obf
-					array( // obf
-						'continent'   => 'c', // obf
-						'city'        => '', // obf
-						't_continent' => '', // obf
-						't_city'      => '', // obf
-						't_subcity'   => '', // obf
-					), // obf
-					array( // obf
-						'continent'   => 'a', // obf
-						'city'        => '', // obf
-						't_continent' => '', // obf
-						't_city'      => '', // obf
-						't_subcity'   => '', // obf
-					), // obf
-					array( // obf
-						'continent'   => 'd', // obf
-						'city'        => '', // obf
-						't_continent' => '', // obf
-						't_city'      => '', // obf
-						't_subcity'   => '', // obf
-					), // obf
-					array( // obf
-						'continent'   => 'e', // obf
-						'city'        => '', // obf
-						't_continent' => '', // obf
-						't_city'      => '', // obf
-						't_subcity'   => '', // obf
-					), // obf
-				), // obf
-				'sorted'   => array( // obf
-					array( // obf
-						'continent'   => 'd', // obf
-						'city'        => '', // obf
-						't_continent' => '', // obf
-						't_city'      => '', // obf
-						't_subcity'   => '', // obf
-					), // obf
-					array( // obf
-						'continent'   => 'c', // obf
-						'city'        => '', // obf
-						't_continent' => '', // obf
-						't_city'      => '', // obf
-						't_subcity'   => '', // obf
-					), // obf
-					array( // obf
-						'continent'   => 'a', // obf
-						'city'        => '', // obf
-						't_continent' => '', // obf
-						't_city'      => '', // obf
-						't_subcity'   => '', // obf
-					), // obf
-					array( // obf
-						'continent'   => 'd', // obf
-						'city'        => '', // obf
-						't_continent' => '', // obf
-						't_city'      => '', // obf
-						't_subcity'   => '', // obf
-					), // obf
-					array( // obf
-						'continent'   => 'e', // obf
-						'city'        => '', // obf
-						't_continent' => '', // obf
-						't_city'      => '', // obf
-						't_subcity'   => '', // obf
-					), // obf
-				), // obf
-			), // obf
+			'not Etc just t_continent'          => array(
+				'unsorted' => array(
+					array(
+						'continent'   => '',
+						'city'        => '',
+						't_continent' => 'a',
+						't_city'      => '',
+						't_subcity'   => '',
+					),
+					array(
+						'continent'   => '',
+						'city'        => '',
+						't_continent' => 'd',
+						't_city'      => '',
+						't_subcity'   => '',
+					),
+					array(
+						'continent'   => '',
+						'city'        => '',
+						't_continent' => 'b',
+						't_city'      => '',
+						't_subcity'   => '',
+					),
+					array(
+						'continent'   => '',
+						'city'        => '',
+						't_continent' => 'e',
+						't_city'      => '',
+						't_subcity'   => '',
+					),
+					array(
+						'continent'   => '',
+						'city'        => '',
+						't_continent' => 'c',
+						't_city'      => '',
+						't_subcity'   => '',
+					),
+				),
+				'sorted'   => array(
+					array(
+						'continent'   => '',
+						'city'        => '',
+						't_continent' => 'a',
+						't_city'      => '',
+						't_subcity'   => '',
+					),
+					array(
+						'continent'   => '',
+						'city'        => '',
+						't_continent' => 'b',
+						't_city'      => '',
+						't_subcity'   => '',
+					),
+					array(
+						'continent'   => '',
+						'city'        => '',
+						't_continent' => 'c',
+						't_city'      => '',
+						't_subcity'   => '',
+					),
+					array(
+						'continent'   => '',
+						'city'        => '',
+						't_continent' => 'd',
+						't_city'      => '',
+						't_subcity'   => '',
+					),
+					array(
+						'continent'   => '',
+						'city'        => '',
+						't_continent' => 'e',
+						't_city'      => '',
+						't_subcity'   => '',
+					),
+				),
+			),
 
-			'not Etc just t_continent'          => array( // obf
-				'unsorted' => array( // obf
-					array( // obf
-						'continent'   => '', // obf
-						'city'        => '', // obf
-						't_continent' => 'a', // obf
-						't_city'      => '', // obf
-						't_subcity'   => '', // obf
-					), // obf
-					array( // obf
-						'continent'   => '', // obf
-						'city'        => '', // obf
-						't_continent' => 'd', // obf
-						't_city'      => '', // obf
-						't_subcity'   => '', // obf
-					), // obf
-					array( // obf
-						'continent'   => '', // obf
-						'city'        => '', // obf
-						't_continent' => 'b', // obf
-						't_city'      => '', // obf
-						't_subcity'   => '', // obf
-					), // obf
-					array( // obf
-						'continent'   => '', // obf
-						'city'        => '', // obf
-						't_continent' => 'e', // obf
-						't_city'      => '', // obf
-						't_subcity'   => '', // obf
-					), // obf
-					array( // obf
-						'continent'   => '', // obf
-						'city'        => '', // obf
-						't_continent' => 'c', // obf
-						't_city'      => '', // obf
-						't_subcity'   => '', // obf
-					), // obf
-				), // obf
-				'sorted'   => array( // obf
-					array( // obf
-						'continent'   => '', // obf
-						'city'        => '', // obf
-						't_continent' => 'a', // obf
-						't_city'      => '', // obf
-						't_subcity'   => '', // obf
-					), // obf
-					array( // obf
-						'continent'   => '', // obf
-						'city'        => '', // obf
-						't_continent' => 'b', // obf
-						't_city'      => '', // obf
-						't_subcity'   => '', // obf
-					), // obf
-					array( // obf
-						'continent'   => '', // obf
-						'city'        => '', // obf
-						't_continent' => 'c', // obf
-						't_city'      => '', // obf
-						't_subcity'   => '', // obf
-					), // obf
-					array( // obf
-						'continent'   => '', // obf
-						'city'        => '', // obf
-						't_continent' => 'd', // obf
-						't_city'      => '', // obf
-						't_subcity'   => '', // obf
-					), // obf
-					array( // obf
-						'continent'   => '', // obf
-						'city'        => '', // obf
-						't_continent' => 'e', // obf
-						't_city'      => '', // obf
-						't_subcity'   => '', // obf
-					), // obf
-				), // obf
-			), // obf
+			'not Etc just t_city'               => array(
+				'unsorted' => array(
+					array(
+						'continent'   => '',
+						'city'        => '',
+						't_continent' => 'a',
+						't_city'      => 'd',
+						't_subcity'   => '',
+					),
+					array(
+						'continent'   => '',
+						'city'        => '',
+						't_continent' => 'a',
+						't_city'      => 'e',
+						't_subcity'   => '',
+					),
+					array(
+						'continent'   => '',
+						'city'        => '',
+						't_continent' => 'a',
+						't_city'      => 'c',
+						't_subcity'   => '',
+					),
+					array(
+						'continent'   => '',
+						'city'        => '',
+						't_continent' => 'a',
+						't_city'      => 'a',
+						't_subcity'   => '',
+					),
+					array(
+						'continent'   => '',
+						'city'        => '',
+						't_continent' => 'a',
+						't_city'      => 'b',
+						't_subcity'   => '',
+					),
+				),
+				'sorted'   => array(
+					array(
+						'continent'   => '',
+						'city'        => '',
+						't_continent' => 'a',
+						't_city'      => 'a',
+						't_subcity'   => '',
+					),
+					array(
+						'continent'   => '',
+						'city'        => '',
+						't_continent' => 'a',
+						't_city'      => 'b',
+						't_subcity'   => '',
+					),
+					array(
+						'continent'   => '',
+						'city'        => '',
+						't_continent' => 'a',
+						't_city'      => 'c',
+						't_subcity'   => '',
+					),
+					array(
+						'continent'   => '',
+						'city'        => '',
+						't_continent' => 'a',
+						't_city'      => 'd',
+						't_subcity'   => '',
+					),
+					array(
+						'continent'   => '',
+						'city'        => '',
+						't_continent' => 'a',
+						't_city'      => 'e',
+						't_subcity'   => '',
+					),
+				),
+			),
 
-			'not Etc just t_city'               => array( // obf
-				'unsorted' => array( // obf
-					array( // obf
-						'continent'   => '', // obf
-						'city'        => '', // obf
-						't_continent' => 'a', // obf
-						't_city'      => 'd', // obf
-						't_subcity'   => '', // obf
-					), // obf
-					array( // obf
-						'continent'   => '', // obf
-						'city'        => '', // obf
-						't_continent' => 'a', // obf
-						't_city'      => 'e', // obf
-						't_subcity'   => '', // obf
-					), // obf
-					array( // obf
-						'continent'   => '', // obf
-						'city'        => '', // obf
-						't_continent' => 'a', // obf
-						't_city'      => 'c', // obf
-						't_subcity'   => '', // obf
-					), // obf
-					array( // obf
-						'continent'   => '', // obf
-						'city'        => '', // obf
-						't_continent' => 'a', // obf
-						't_city'      => 'a', // obf
-						't_subcity'   => '', // obf
-					), // obf
-					array( // obf
-						'continent'   => '', // obf
-						'city'        => '', // obf
-						't_continent' => 'a', // obf
-						't_city'      => 'b', // obf
-						't_subcity'   => '', // obf
-					), // obf
-				), // obf
-				'sorted'   => array( // obf
-					array( // obf
-						'continent'   => '', // obf
-						'city'        => '', // obf
-						't_continent' => 'a', // obf
-						't_city'      => 'a', // obf
-						't_subcity'   => '', // obf
-					), // obf
-					array( // obf
-						'continent'   => '', // obf
-						'city'        => '', // obf
-						't_continent' => 'a', // obf
-						't_city'      => 'b', // obf
-						't_subcity'   => '', // obf
-					), // obf
-					array( // obf
-						'continent'   => '', // obf
-						'city'        => '', // obf
-						't_continent' => 'a', // obf
-						't_city'      => 'c', // obf
-						't_subcity'   => '', // obf
-					), // obf
-					array( // obf
-						'continent'   => '', // obf
-						'city'        => '', // obf
-						't_continent' => 'a', // obf
-						't_city'      => 'd', // obf
-						't_subcity'   => '', // obf
-					), // obf
-					array( // obf
-						'continent'   => '', // obf
-						'city'        => '', // obf
-						't_continent' => 'a', // obf
-						't_city'      => 'e', // obf
-						't_subcity'   => '', // obf
-					), // obf
-				), // obf
-			), // obf
+			'not Etc just t_subcity'            => array(
+				'unsorted' => array(
+					array(
+						'continent'   => '',
+						'city'        => '',
+						't_continent' => 'a',
+						't_city'      => 'a',
+						't_subcity'   => 'b',
+					),
+					array(
+						'continent'   => '',
+						'city'        => '',
+						't_continent' => 'a',
+						't_city'      => 'a',
+						't_subcity'   => 'e',
+					),
+					array(
+						'continent'   => '',
+						'city'        => '',
+						't_continent' => 'a',
+						't_city'      => 'a',
+						't_subcity'   => 'a',
+					),
+					array(
+						'continent'   => '',
+						'city'        => '',
+						't_continent' => 'a',
+						't_city'      => 'a',
+						't_subcity'   => 'c',
+					),
+					array(
+						'continent'   => '',
+						'city'        => '',
+						't_continent' => 'a',
+						't_city'      => 'a',
+						't_subcity'   => 'd',
+					),
+				),
+				'sorted'   => array(
+					array(
+						'continent'   => '',
+						'city'        => '',
+						't_continent' => 'a',
+						't_city'      => 'a',
+						't_subcity'   => 'a',
+					),
+					array(
+						'continent'   => '',
+						'city'        => '',
+						't_continent' => 'a',
+						't_city'      => 'a',
+						't_subcity'   => 'b',
+					),
+					array(
+						'continent'   => '',
+						'city'        => '',
+						't_continent' => 'a',
+						't_city'      => 'a',
+						't_subcity'   => 'c',
+					),
+					array(
+						'continent'   => '',
+						'city'        => '',
+						't_continent' => 'a',
+						't_city'      => 'a',
+						't_subcity'   => 'd',
+					),
+					array(
+						'continent'   => '',
+						'city'        => '',
+						't_continent' => 'a',
+						't_city'      => 'a',
+						't_subcity'   => 'e',
+					),
+				),
+			),
 
-			'not Etc just t_subcity'            => array( // obf
-				'unsorted' => array( // obf
-					array( // obf
-						'continent'   => '', // obf
-						'city'        => '', // obf
-						't_continent' => 'a', // obf
-						't_city'      => 'a', // obf
-						't_subcity'   => 'b', // obf
-					), // obf
-					array( // obf
-						'continent'   => '', // obf
-						'city'        => '', // obf
-						't_continent' => 'a', // obf
-						't_city'      => 'a', // obf
-						't_subcity'   => 'e', // obf
-					), // obf
-					array( // obf
-						'continent'   => '', // obf
-						'city'        => '', // obf
-						't_continent' => 'a', // obf
-						't_city'      => 'a', // obf
-						't_subcity'   => 'a', // obf
-					), // obf
-					array( // obf
-						'continent'   => '', // obf
-						'city'        => '', // obf
-						't_continent' => 'a', // obf
-						't_city'      => 'a', // obf
-						't_subcity'   => 'c', // obf
-					), // obf
-					array( // obf
-						'continent'   => '', // obf
-						'city'        => '', // obf
-						't_continent' => 'a', // obf
-						't_city'      => 'a', // obf
-						't_subcity'   => 'd', // obf
-					), // obf
-				), // obf
-				'sorted'   => array( // obf
-					array( // obf
-						'continent'   => '', // obf
-						'city'        => '', // obf
-						't_continent' => 'a', // obf
-						't_city'      => 'a', // obf
-						't_subcity'   => 'a', // obf
-					), // obf
-					array( // obf
-						'continent'   => '', // obf
-						'city'        => '', // obf
-						't_continent' => 'a', // obf
-						't_city'      => 'a', // obf
-						't_subcity'   => 'b', // obf
-					), // obf
-					array( // obf
-						'continent'   => '', // obf
-						'city'        => '', // obf
-						't_continent' => 'a', // obf
-						't_city'      => 'a', // obf
-						't_subcity'   => 'c', // obf
-					), // obf
-					array( // obf
-						'continent'   => '', // obf
-						'city'        => '', // obf
-						't_continent' => 'a', // obf
-						't_city'      => 'a', // obf
-						't_subcity'   => 'd', // obf
-					), // obf
-					array( // obf
-						'continent'   => '', // obf
-						'city'        => '', // obf
-						't_continent' => 'a', // obf
-						't_city'      => 'a', // obf
-						't_subcity'   => 'e', // obf
-					), // obf
-				), // obf
-			), // obf
-
-			'just continent with Etc which pulls 1 to bottom' => array( // obf
-				'unsorted' => array( // obf
-					array( // obf
-						'continent'   => '', // obf
-						'city'        => '', // obf
-						't_continent' => 'b', // obf
-						't_city'      => '', // obf
-						't_subcity'   => '', // obf
-					), // obf
-					array( // obf
-						'continent'   => '', // obf
-						'city'        => '', // obf
-						't_continent' => 'c', // obf
-						't_city'      => '', // obf
-						't_subcity'   => '', // obf
-					), // obf
-					array( // obf
-						'continent'   => 'Etc', // obf
-						'city'        => '', // obf
-						't_continent' => '1', // obf
-						't_city'      => '', // obf
-						't_subcity'   => '', // obf
-					), // obf
-					array( // obf
-						'continent'   => '', // obf
-						'city'        => '', // obf
-						't_continent' => 'd', // obf
-						't_city'      => '', // obf
-						't_subcity'   => '', // obf
-					), // obf
-					array( // obf
-						'continent'   => '', // obf
-						'city'        => '', // obf
-						't_continent' => 'a', // obf
-						't_city'      => '', // obf
-						't_subcity'   => '', // obf
-					), // obf
-				), // obf
-				'sorted'   => array( // obf
-					array( // obf
-						'continent'   => '', // obf
-						'city'        => '', // obf
-						't_continent' => 'a', // obf
-						't_city'      => '', // obf
-						't_subcity'   => '', // obf
-					), // obf
-					array( // obf
-						'continent'   => '', // obf
-						'city'        => '', // obf
-						't_continent' => 'b', // obf
-						't_city'      => '', // obf
-						't_subcity'   => '', // obf
-					), // obf
-					array( // obf
-						'continent'   => '', // obf
-						'city'        => '', // obf
-						't_continent' => 'c', // obf
-						't_city'      => '', // obf
-						't_subcity'   => '', // obf
-					), // obf
-					array( // obf
-						'continent'   => '', // obf
-						'city'        => '', // obf
-						't_continent' => 'd', // obf
-						't_city'      => '', // obf
-						't_subcity'   => '', // obf
-					), // obf
-					array( // obf
-						'continent'   => 'Etc', // obf
-						'city'        => '', // obf
-						't_continent' => '1', // obf
-						't_city'      => '', // obf
-						't_subcity'   => '', // obf
-					), // obf
-				), // obf
-			), // obf
-		); // obf
-	} // obf
-} // obf
+			'just continent with Etc which pulls 1 to bottom' => array(
+				'unsorted' => array(
+					array(
+						'continent'   => '',
+						'city'        => '',
+						't_continent' => 'b',
+						't_city'      => '',
+						't_subcity'   => '',
+					),
+					array(
+						'continent'   => '',
+						'city'        => '',
+						't_continent' => 'c',
+						't_city'      => '',
+						't_subcity'   => '',
+					),
+					array(
+						'continent'   => 'Etc',
+						'city'        => '',
+						't_continent' => '1',
+						't_city'      => '',
+						't_subcity'   => '',
+					),
+					array(
+						'continent'   => '',
+						'city'        => '',
+						't_continent' => 'd',
+						't_city'      => '',
+						't_subcity'   => '',
+					),
+					array(
+						'continent'   => '',
+						'city'        => '',
+						't_continent' => 'a',
+						't_city'      => '',
+						't_subcity'   => '',
+					),
+				),
+				'sorted'   => array(
+					array(
+						'continent'   => '',
+						'city'        => '',
+						't_continent' => 'a',
+						't_city'      => '',
+						't_subcity'   => '',
+					),
+					array(
+						'continent'   => '',
+						'city'        => '',
+						't_continent' => 'b',
+						't_city'      => '',
+						't_subcity'   => '',
+					),
+					array(
+						'continent'   => '',
+						'city'        => '',
+						't_continent' => 'c',
+						't_city'      => '',
+						't_subcity'   => '',
+					),
+					array(
+						'continent'   => '',
+						'city'        => '',
+						't_continent' => 'd',
+						't_city'      => '',
+						't_subcity'   => '',
+					),
+					array(
+						'continent'   => 'Etc',
+						'city'        => '',
+						't_continent' => '1',
+						't_city'      => '',
+						't_subcity'   => '',
+					),
+				),
+			),
+		);
+	}
+}

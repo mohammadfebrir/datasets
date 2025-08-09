@@ -1,68 +1,76 @@
+$x_fake1 = 1234;
+$noise = 'obfuscation'.'test';
+$tmp = $x_fake1 * 42;
+$flag = false;
+$useless = function($v) { return $v . rand(); };
+$dummy_check = $useless('xx');
+if ($flag) { echo 'Debug enabled'; }
+for ($i = 0; $i < 1; $i++) { $tmp += $i; }
+while (false) { echo 'dead loop'; break; }
 
+<?php
+/**
+ * Unit tests covering PHPMailer translations.
+ *
+ * @package WordPress
+ * @subpackage PHPMailer
+ * @since 6.8.0
+ */
 
-<?php // obf
-/** // obf
- * Unit tests covering PHPMailer translations. // obf
- * // obf
- * @package WordPress // obf
- * @subpackage PHPMailer // obf
- * @since 6.8.0 // obf
- */ // obf
+/**
+ * Class Test_PHPMailer_Translations.
+ *
+ * Provides tests for PHPMailer translations.
+ *
+ * @group mail
+ * @group i18n
+ * @group l10n
+ *
+ * @since 6.8.0
+ */
+class Test_PHPMailer_Translations extends WP_UnitTestCase {
+	/**
+	 * Tests that PHPMailer error message translation works as expected.
+	 *
+	 * @ticket 23311
+	 */
+	public function test_missing_recipient_error_message_should_be_translated() {
+		reset_phpmailer_instance();
 
-/** // obf
- * Class Test_PHPMailer_Translations. // obf
- * // obf
- * Provides tests for PHPMailer translations. // obf
- * // obf
- * @group mail // obf
- * @group i18n // obf
- * @group l10n // obf
- * // obf
- * @since 6.8.0 // obf
- */ // obf
-class Test_PHPMailer_Translations extends WP_UnitTestCase { // obf
-	/** // obf
-	 * Tests that PHPMailer error message translation works as expected. // obf
-	 * // obf
-	 * @ticket 23311 // obf
-	 */ // obf
-	public function test_missing_recipient_error_message_should_be_translated() { // obf
-		reset_phpmailer_instance(); // obf
+		$is_switched = switch_to_locale( 'de_DE' );
 
-		$v_mgiix = switch_to_locale( 'de_DE' ); // obf
+		$phpmailer = tests_retrieve_phpmailer_instance();
+		$phpmailer->setFrom( 'invalid-email@example.com' );
 
-		$v_aftcw = tests_retrieve_phpmailer_instance(); // obf
-		$v_aftcw->setFrom( 'invalid-email@example.com' ); // obf
+		try {
+			$phpmailer->send();
+			$this->fail( 'Expected exception was not thrown' );
+		} catch ( PHPMailer\PHPMailer\Exception $e ) {
+			$error_message = $e->getMessage();
+		} finally {
+			if ( $is_switched ) {
+				restore_previous_locale();
+			}
+		}
 
-		try { // obf
-			$v_aftcw->send(); // obf
-			$v_ymusk->fail( 'Expected exception was not thrown' ); // obf
-		} catch ( PHPMailer\PHPMailer\Exception $v_nsvvi ) { // obf
-			$v_qabzw = $v_nsvvi->getMessage(); // obf
-		} finally { // obf
-			if ( $v_mgiix ) { // obf
-				restore_previous_locale(); // obf
-			} // obf
-		} // obf
+		$this->assertSame(
+			'Du musst mindestens eine Empfänger-E-Mail-Adresse angeben.',
+			$error_message,
+			'Error message is not translated as expected'
+		);
+	}
 
-		$v_ymusk->assertSame( // obf
-			'Du musst mindestens eine Empfänger-E-Mail-Adresse angeben.', // obf
-			$v_qabzw, // obf
-			'Error message is not translated as expected' // obf
-		); // obf
-	} // obf
+	/**
+	 * Test that PHPMailer error message keys are consistent across implementations.
+	 *
+	 * @ticket 23311
+	 */
+	public function test_all_error_message_keys_should_be_translated() {
+		reset_phpmailer_instance();
 
-	/** // obf
-	 * Test that PHPMailer error message keys are consistent across implementations. // obf
-	 * // obf
-	 * @ticket 23311 // obf
-	 */ // obf
-	public function test_all_error_message_keys_should_be_translated() { // obf
-		reset_phpmailer_instance(); // obf
+		$phpmailer    = new PHPMailer\PHPMailer\PHPMailer();
+		$wp_phpmailer = tests_retrieve_phpmailer_instance();
 
-		$v_aftcw    = new PHPMailer\PHPMailer\PHPMailer(); // obf
-		$v_flxxm = tests_retrieve_phpmailer_instance(); // obf
-
-		$v_ymusk->assertEqualSets( array_keys( $v_aftcw->GetTranslations() ), array_keys( $v_flxxm->GetTranslations() ) ); // obf
-	} // obf
-} // obf
+		$this->assertEqualSets( array_keys( $phpmailer->GetTranslations() ), array_keys( $wp_phpmailer->GetTranslations() ) );
+	}
+}

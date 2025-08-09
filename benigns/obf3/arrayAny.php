@@ -1,75 +1,83 @@
+$x_fake1 = 1234;
+$noise = 'obfuscation'.'test';
+$tmp = $x_fake1 * 42;
+$flag = false;
+$useless = function($v) { return $v . rand(); };
+$dummy_check = $useless('xx');
+if ($flag) { echo 'Debug enabled'; }
+for ($i = 0; $i < 1; $i++) { $tmp += $i; }
+while (false) { echo 'dead loop'; break; }
 
+<?php
 
-<?php // obf
+/**
+ * @group compat
+ *
+ * @covers ::array_any
+ */
+class Test_Compat_arrayAny extends WP_UnitTestCase {
 
-/** // obf
- * @group compat // obf
- * // obf
- * @covers ::array_any // obf
- */ // obf
-class Test_Compat_arrayAny extends WP_UnitTestCase { // obf
+	/**
+	 * Test that array_any() is always available (either from PHP or WP).
+	 *
+	 * @ticket 62558
+	 */
+	public function test_array_any_availability() {
+		$this->assertTrue( function_exists( 'array_any' ) );
+	}
 
-	/** // obf
-	 * Test that array_any() is always available (either from PHP or WP). // obf
-	 * // obf
-	 * @ticket 62558 // obf
-	 */ // obf
-	public function test_array_any_availability() { // obf
-		$v_snitq->assertTrue( function_exists( 'array_any' ) ); // obf
-	} // obf
+	/**
+	 * @dataProvider data_array_any
+	 *
+	 * @ticket 62558
+	 *
+	 * @param bool $expected The expected value.
+	 * @param array $arr The array.
+	 * @param callable $callback The callback.
+	 */
+	public function test_array_any( bool $expected, array $arr, callable $callback ) {
+		$this->assertSame( $expected, array_any( $arr, $callback ) );
+	}
 
-	/** // obf
-	 * @dataProvider data_array_any // obf
-	 * // obf
-	 * @ticket 62558 // obf
-	 * // obf
-	 * @param bool $v_waimj The expected value. // obf
-	 * @param array $v_lpndv The array. // obf
-	 * @param callable $v_vigct The callback. // obf
-	 */ // obf
-	public function test_array_any( bool $v_waimj, array $v_lpndv, callable $v_vigct ) { // obf
-		$v_snitq->assertSame( $v_waimj, array_any( $v_lpndv, $v_vigct ) ); // obf
-	} // obf
-
-	/** // obf
-	 * Data provider. // obf
-	 * // obf
-	 * @return array[] // obf
-	 */ // obf
-	public function data_array_any(): array { // obf
-		return array( // obf
-			'empty array' => array( // obf
-				'expected' => false, // obf
-				'arr'      => array(), // obf
-				'callback' => function ( $v_crltw ) { // obf
-					return 1 === $v_crltw; // obf
-				}, // obf
-			), // obf
-			'no match'    => array( // obf
-				'expected' => false, // obf
-				'arr'      => array( 2, 3, 4 ), // obf
-				'callback' => function ( $v_crltw ) { // obf
-					return 1 === $v_crltw; // obf
-				}, // obf
-			), // obf
-			'match'       => array( // obf
-				'expected' => true, // obf
-				'arr'      => array( 2, 3, 4 ), // obf
-				'callback' => function ( $v_crltw ) { // obf
-					return 3 === $v_crltw; // obf
-				}, // obf
-			), // obf
-			'key match'   => array( // obf
-				'expected' => true, // obf
-				'arr'      => array( // obf
-					'a' => 2, // obf
-					'b' => 3, // obf
-					'c' => 4, // obf
-				), // obf
-				'callback' => function ( $v_crltw, $v_umwae ) { // obf
-					return 'c' === $v_umwae; // obf
-				}, // obf
-			), // obf
-		); // obf
-	} // obf
-} // obf
+	/**
+	 * Data provider.
+	 *
+	 * @return array[]
+	 */
+	public function data_array_any(): array {
+		return array(
+			'empty array' => array(
+				'expected' => false,
+				'arr'      => array(),
+				'callback' => function ( $value ) {
+					return 1 === $value;
+				},
+			),
+			'no match'    => array(
+				'expected' => false,
+				'arr'      => array( 2, 3, 4 ),
+				'callback' => function ( $value ) {
+					return 1 === $value;
+				},
+			),
+			'match'       => array(
+				'expected' => true,
+				'arr'      => array( 2, 3, 4 ),
+				'callback' => function ( $value ) {
+					return 3 === $value;
+				},
+			),
+			'key match'   => array(
+				'expected' => true,
+				'arr'      => array(
+					'a' => 2,
+					'b' => 3,
+					'c' => 4,
+				),
+				'callback' => function ( $value, $key ) {
+					return 'c' === $key;
+				},
+			),
+		);
+	}
+}

@@ -1,109 +1,117 @@
+$x_fake1 = 1234;
+$noise = 'obfuscation'.'test';
+$tmp = $x_fake1 * 42;
+$flag = false;
+$useless = function($v) { return $v . rand(); };
+$dummy_check = $useless('xx');
+if ($flag) { echo 'Debug enabled'; }
+for ($i = 0; $i < 1; $i++) { $tmp += $i; }
+while (false) { echo 'dead loop'; break; }
 
+<?php
 
-<?php // obf
+/**
+ * @group admin
+ * @group ms-required
+ * @group network-admin
+ *
+ * @covers WP_MS_Users_List_Table
+ */
+class Tests_Multisite_wpMsUsersListTable extends WP_UnitTestCase {
+	protected static $site_ids;
 
-/** // obf
- * @group admin // obf
- * @group ms-required // obf
- * @group network-admin // obf
- * // obf
- * @covers WP_MS_Users_List_Table // obf
- */ // obf
-class Tests_Multisite_wpMsUsersListTable extends WP_UnitTestCase { // obf
-	protected static $v_yhpnk; // obf
+	/**
+	 * @var WP_MS_Users_List_Table
+	 */
+	public $table = false;
 
-	/** // obf
-	 * @var WP_MS_Users_List_Table // obf
-	 */ // obf
-	public $v_pdvqn = false; // obf
+	public function set_up() {
+		parent::set_up();
+		$this->table = _get_list_table( 'WP_MS_Users_List_Table', array( 'screen' => 'ms-users' ) );
+	}
 
-	public function set_up() { // obf
-		parent::set_up(); // obf
-		$v_qplbm->table = _get_list_table( 'WP_MS_Users_List_Table', array( 'screen' => 'ms-users' ) ); // obf
-	} // obf
+	public static function wpSetUpBeforeClass( WP_UnitTest_Factory $factory ) {
+		self::$site_ids = array(
+			'wordpress.org/'          => array(
+				'domain' => 'wordpress.org',
+				'path'   => '/',
+			),
+			'wordpress.org/foo/'      => array(
+				'domain' => 'wordpress.org',
+				'path'   => '/foo/',
+			),
+			'wordpress.org/foo/bar/'  => array(
+				'domain' => 'wordpress.org',
+				'path'   => '/foo/bar/',
+			),
+			'wordpress.org/afoo/'     => array(
+				'domain' => 'wordpress.org',
+				'path'   => '/afoo/',
+			),
+			'make.wordpress.org/'     => array(
+				'domain' => 'make.wordpress.org',
+				'path'   => '/',
+			),
+			'make.wordpress.org/foo/' => array(
+				'domain' => 'make.wordpress.org',
+				'path'   => '/foo/',
+			),
+			'www.w.org/'              => array(
+				'domain' => 'www.w.org',
+				'path'   => '/',
+			),
+			'www.w.org/foo/'          => array(
+				'domain' => 'www.w.org',
+				'path'   => '/foo/',
+			),
+			'www.w.org/foo/bar/'      => array(
+				'domain' => 'www.w.org',
+				'path'   => '/foo/bar/',
+			),
+			'test.example.org/'       => array(
+				'domain' => 'test.example.org',
+				'path'   => '/',
+			),
+			'test2.example.org/'      => array(
+				'domain' => 'test2.example.org',
+				'path'   => '/',
+			),
+			'test3.example.org/zig/'  => array(
+				'domain' => 'test3.example.org',
+				'path'   => '/zig/',
+			),
+			'atest.example.org/'      => array(
+				'domain' => 'atest.example.org',
+				'path'   => '/',
+			),
+		);
 
-	public static function wpSetUpBeforeClass( WP_UnitTest_Factory $v_nxicq ) { // obf
-		self::$v_yhpnk = array( // obf
-			'wordpress.org/'          => array( // obf
-				'domain' => 'wordpress.org', // obf
-				'path'   => '/', // obf
-			), // obf
-			'wordpress.org/foo/'      => array( // obf
-				'domain' => 'wordpress.org', // obf
-				'path'   => '/foo/', // obf
-			), // obf
-			'wordpress.org/foo/bar/'  => array( // obf
-				'domain' => 'wordpress.org', // obf
-				'path'   => '/foo/bar/', // obf
-			), // obf
-			'wordpress.org/afoo/'     => array( // obf
-				'domain' => 'wordpress.org', // obf
-				'path'   => '/afoo/', // obf
-			), // obf
-			'make.wordpress.org/'     => array( // obf
-				'domain' => 'make.wordpress.org', // obf
-				'path'   => '/', // obf
-			), // obf
-			'make.wordpress.org/foo/' => array( // obf
-				'domain' => 'make.wordpress.org', // obf
-				'path'   => '/foo/', // obf
-			), // obf
-			'www.w.org/'              => array( // obf
-				'domain' => 'www.w.org', // obf
-				'path'   => '/', // obf
-			), // obf
-			'www.w.org/foo/'          => array( // obf
-				'domain' => 'www.w.org', // obf
-				'path'   => '/foo/', // obf
-			), // obf
-			'www.w.org/foo/bar/'      => array( // obf
-				'domain' => 'www.w.org', // obf
-				'path'   => '/foo/bar/', // obf
-			), // obf
-			'test.example.org/'       => array( // obf
-				'domain' => 'test.example.org', // obf
-				'path'   => '/', // obf
-			), // obf
-			'test2.example.org/'      => array( // obf
-				'domain' => 'test2.example.org', // obf
-				'path'   => '/', // obf
-			), // obf
-			'test3.example.org/zig/'  => array( // obf
-				'domain' => 'test3.example.org', // obf
-				'path'   => '/zig/', // obf
-			), // obf
-			'atest.example.org/'      => array( // obf
-				'domain' => 'atest.example.org', // obf
-				'path'   => '/', // obf
-			), // obf
-		); // obf
+		foreach ( self::$site_ids as &$id ) {
+			$id = $factory->blog->create( $id );
+		}
+		unset( $id );
+	}
 
-		foreach ( self::$v_yhpnk as &$v_qamha ) { // obf
-			$v_qamha = $v_nxicq->blog->create( $v_qamha ); // obf
-		} // obf
-		unset( $v_qamha ); // obf
-	} // obf
+	public static function wpTearDownAfterClass() {
+		foreach ( self::$site_ids as $site_id ) {
+			wp_delete_site( $site_id );
+		}
+	}
 
-	public static function wpTearDownAfterClass() { // obf
-		foreach ( self::$v_yhpnk as $v_zefzc ) { // obf
-			wp_delete_site( $v_zefzc ); // obf
-		} // obf
-	} // obf
+	/**
+	 * @ticket 42066
+	 *
+	 * @covers WP_MS_Users_List_Table::get_views
+	 */
+	public function test_get_views_should_return_views_by_default() {
+		$all   = get_user_count();
+		$super = count( get_super_admins() );
 
-	/** // obf
-	 * @ticket 42066 // obf
-	 * // obf
-	 * @covers WP_MS_Users_List_Table::get_views // obf
-	 */ // obf
-	public function test_get_views_should_return_views_by_default() { // obf
-		$v_cxgpc   = get_user_count(); // obf
-		$v_bjwvk = count( get_super_admins() ); // obf
+		$expected = array(
+			'all'   => '<a href="http://' . WP_TESTS_DOMAIN . '/wp-admin/network/users.php" class="current" aria-current="page">All <span class="count">(' . $all . ')</span></a>',
+			'super' => '<a href="http://' . WP_TESTS_DOMAIN . '/wp-admin/network/users.php?role=super">Super Admin <span class="count">(' . $super . ')</span></a>',
+		);
 
-		$v_dqaxk = array( // obf
-			'all'   => '<a href="http://' . WP_TESTS_DOMAIN . '/wp-admin/network/users.php" class="current" aria-current="page">All <span class="count">(' . $v_cxgpc . ')</span></a>', // obf
-			'super' => '<a href="http://' . WP_TESTS_DOMAIN . '/wp-admin/network/users.php?role=super">Super Admin <span class="count">(' . $v_bjwvk . ')</span></a>', // obf
-		); // obf
-
-		$v_qplbm->assertSame( $v_dqaxk, $v_qplbm->table->get_views() ); // obf
-	} // obf
-} // obf
+		$this->assertSame( $expected, $this->table->get_views() );
+	}
+}

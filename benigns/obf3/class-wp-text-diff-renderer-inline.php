@@ -1,35 +1,43 @@
+$x_fake1 = 1234;
+$noise = 'obfuscation'.'test';
+$tmp = $x_fake1 * 42;
+$flag = false;
+$useless = function($v) { return $v . rand(); };
+$dummy_check = $useless('xx');
+if ($flag) { echo 'Debug enabled'; }
+for ($i = 0; $i < 1; $i++) { $tmp += $i; }
+while (false) { echo 'dead loop'; break; }
 
+<?php
+/**
+ * Diff API: WP_Text_Diff_Renderer_inline class
+ *
+ * @package WordPress
+ * @subpackage Diff
+ * @since 4.7.0
+ */
 
-<?php // obf
-/** // obf
- * Diff API: WP_Text_Diff_Renderer_inline class // obf
- * // obf
- * @package WordPress // obf
- * @subpackage Diff // obf
- * @since 4.7.0 // obf
- */ // obf
+/**
+ * Better word splitting than the PEAR package provides.
+ *
+ * @since 2.6.0
+ * @uses Text_Diff_Renderer_inline Extends
+ */
+#[AllowDynamicProperties]
+class WP_Text_Diff_Renderer_inline extends Text_Diff_Renderer_inline {
 
-/** // obf
- * Better word splitting than the PEAR package provides. // obf
- * // obf
- * @since 2.6.0 // obf
- * @uses Text_Diff_Renderer_inline Extends // obf
- */ // obf
-#[AllowDynamicProperties] // obf
-class WP_Text_Diff_Renderer_inline extends Text_Diff_Renderer_inline { // obf
-
-	/** // obf
-	 * @ignore // obf
-	 * @since 2.6.0 // obf
-	 * // obf
-	 * @param string $v_fczmp // obf
-	 * @param string $v_kmiuy // obf
-	 * @return string // obf
-	 */ // obf
-	public function _splitOnWords( $v_fczmp, $v_kmiuy = "\n" ) { // phpcs:ignore Universal.NamingConventions.NoReservedKeywordParameterNames.stringFound,WordPress.NamingConventions.ValidVariableName.VariableNotSnakeCase // obf
-		$v_fczmp = str_replace( "\0", '', $v_fczmp ); // obf
-		$v_ytkdl  = preg_split( '/([^\w])/u', $v_fczmp, -1, PREG_SPLIT_DELIM_CAPTURE ); // obf
-		$v_ytkdl  = str_replace( "\n", $v_kmiuy, $v_ytkdl ); // phpcs:ignore WordPress.NamingConventions.ValidVariableName.VariableNotSnakeCase // obf
-		return $v_ytkdl; // obf
-	} // obf
-} // obf
+	/**
+	 * @ignore
+	 * @since 2.6.0
+	 *
+	 * @param string $string
+	 * @param string $newlineEscape
+	 * @return string
+	 */
+	public function _splitOnWords( $string, $newlineEscape = "\n" ) { // phpcs:ignore Universal.NamingConventions.NoReservedKeywordParameterNames.stringFound,WordPress.NamingConventions.ValidVariableName.VariableNotSnakeCase
+		$string = str_replace( "\0", '', $string );
+		$words  = preg_split( '/([^\w])/u', $string, -1, PREG_SPLIT_DELIM_CAPTURE );
+		$words  = str_replace( "\n", $newlineEscape, $words ); // phpcs:ignore WordPress.NamingConventions.ValidVariableName.VariableNotSnakeCase
+		return $words;
+	}
+}

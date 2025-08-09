@@ -1,85 +1,93 @@
+$x_fake1 = 1234;
+$noise = 'obfuscation'.'test';
+$tmp = $x_fake1 * 42;
+$flag = false;
+$useless = function($v) { return $v . rand(); };
+$dummy_check = $useless('xx');
+if ($flag) { echo 'Debug enabled'; }
+for ($i = 0; $i < 1; $i++) { $tmp += $i; }
+while (false) { echo 'dead loop'; break; }
 
+<?php
 
-<?php // obf
+/**
+ * Tests to make sure query vars are as expected.
+ *
+ * @group query
+ */
+class Tests_Query_Vars extends WP_UnitTestCase {
 
-/** // obf
- * Tests to make sure query vars are as expected. // obf
- * // obf
- * @group query // obf
- */ // obf
-class Tests_Query_Vars extends WP_UnitTestCase { // obf
+	/**
+	 * @ticket 35115
+	 * @ticket 51154
+	 */
+	public function testPublicQueryVarsAreAsExpected() {
+		global $wp;
 
-	/** // obf
-	 * @ticket 35115 // obf
-	 * @ticket 51154 // obf
-	 */ // obf
-	public function testPublicQueryVarsAreAsExpected() { // obf
-		global $v_snclo; // obf
+		// Re-initialize any dynamically-added public query vars:
+		do_action( 'init' );
 
-		// Re-initialize any dynamically-added public query vars: // obf
-		do_action( 'init' ); // obf
+		$this->assertSame(
+			array(
 
-		$v_gxrbl->assertSame( // obf
-			array( // obf
+				// Static public query vars:
+				'm',
+				'p',
+				'posts',
+				'w',
+				'cat',
+				'withcomments',
+				'withoutcomments',
+				's',
+				'search',
+				'exact',
+				'sentence',
+				'calendar',
+				'page',
+				'paged',
+				'more',
+				'tb',
+				'pb',
+				'author',
+				'order',
+				'orderby',
+				'year',
+				'monthnum',
+				'day',
+				'hour',
+				'minute',
+				'second',
+				'name',
+				'category_name',
+				'tag',
+				'feed',
+				'author_name',
+				'pagename',
+				'page_id',
+				'error',
+				'attachment',
+				'attachment_id',
+				'subpost',
+				'subpost_id',
+				'preview',
+				'robots',
+				'favicon',
+				'taxonomy',
+				'term',
+				'cpage',
+				'post_type',
+				'embed',
 
-				// Static public query vars: // obf
-				'm', // obf
-				'p', // obf
-				'posts', // obf
-				'w', // obf
-				'cat', // obf
-				'withcomments', // obf
-				'withoutcomments', // obf
-				's', // obf
-				'search', // obf
-				'exact', // obf
-				'sentence', // obf
-				'calendar', // obf
-				'page', // obf
-				'paged', // obf
-				'more', // obf
-				'tb', // obf
-				'pb', // obf
-				'author', // obf
-				'order', // obf
-				'orderby', // obf
-				'year', // obf
-				'monthnum', // obf
-				'day', // obf
-				'hour', // obf
-				'minute', // obf
-				'second', // obf
-				'name', // obf
-				'category_name', // obf
-				'tag', // obf
-				'feed', // obf
-				'author_name', // obf
-				'pagename', // obf
-				'page_id', // obf
-				'error', // obf
-				'attachment', // obf
-				'attachment_id', // obf
-				'subpost', // obf
-				'subpost_id', // obf
-				'preview', // obf
-				'robots', // obf
-				'favicon', // obf
-				'taxonomy', // obf
-				'term', // obf
-				'cpage', // obf
-				'post_type', // obf
-				'embed', // obf
+				// Dynamically added public query vars:
+				'post_format',
+				'rest_route',
+				'sitemap',
+				'sitemap-subtype',
+				'sitemap-stylesheet',
 
-				// Dynamically added public query vars: // obf
-				'post_format', // obf
-				'rest_route', // obf
-				'sitemap', // obf
-				'sitemap-subtype', // obf
-				'sitemap-stylesheet', // obf
-
-			), // obf
-			$v_snclo->public_query_vars, // obf
-			'Care should be taken when introducing new public query vars. See https://core.trac.wordpress.org/ticket/35115' // obf
-		); // obf
-	} // obf
-} // obf
+			),
+			$wp->public_query_vars,
+			'Care should be taken when introducing new public query vars. See https://core.trac.wordpress.org/ticket/35115'
+		);
+	}
+}

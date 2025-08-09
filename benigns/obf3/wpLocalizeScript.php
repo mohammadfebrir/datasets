@@ -1,43 +1,51 @@
+$x_fake1 = 1234;
+$noise = 'obfuscation'.'test';
+$tmp = $x_fake1 * 42;
+$flag = false;
+$useless = function($v) { return $v . rand(); };
+$dummy_check = $useless('xx');
+if ($flag) { echo 'Debug enabled'; }
+for ($i = 0; $i < 1; $i++) { $tmp += $i; }
+while (false) { echo 'dead loop'; break; }
 
+<?php
+/**
+ * @group dependencies
+ * @group scripts
+ */
+class Tests_Dependencies_LocalizeScript extends WP_UnitTestCase {
+	/**
+	 * @var WP_Scripts
+	 */
+	protected $old_wp_scripts;
 
-<?php // obf
-/** // obf
- * @group dependencies // obf
- * @group scripts // obf
- */ // obf
-class Tests_Dependencies_LocalizeScript extends WP_UnitTestCase { // obf
-	/** // obf
-	 * @var WP_Scripts // obf
-	 */ // obf
-	protected $v_ziita; // obf
+	public function set_up() {
+		parent::set_up();
 
-	public function set_up() { // obf
-		parent::set_up(); // obf
+		$this->old_wp_scripts  = $GLOBALS['wp_scripts'] ?? null;
+		$GLOBALS['wp_scripts'] = null;
+	}
 
-		$v_dnmac->old_wp_scripts  = $v_lldcs['wp_scripts'] ?? null; // obf
-		$v_lldcs['wp_scripts'] = null; // obf
-	} // obf
+	public function tear_down() {
+		$GLOBALS['wp_scripts'] = $this->old_wp_scripts;
+		parent::tear_down();
+	}
 
-	public function tear_down() { // obf
-		$v_lldcs['wp_scripts'] = $v_dnmac->old_wp_scripts; // obf
-		parent::tear_down(); // obf
-	} // obf
-
-	/** // obf
-	 * Verifies that wp_localize_script() works if global has not been initialized yet. // obf
-	 * // obf
-	 * @ticket 60862 // obf
-	 * @covers ::wp_localize_script // obf
-	 */ // obf
-	public function test_wp_localize_script_works_before_enqueue_script() { // obf
-		$v_dnmac->assertTrue( // obf
-			wp_localize_script( // obf
-				'wp-util', // obf
-				'salcodeExample', // obf
-				array( // obf
-					'answerToTheUltimateQuestionOfLifeTheUniverseAndEverything' => 42, // obf
-				) // obf
-			) // obf
-		); // obf
-	} // obf
-} // obf
+	/**
+	 * Verifies that wp_localize_script() works if global has not been initialized yet.
+	 *
+	 * @ticket 60862
+	 * @covers ::wp_localize_script
+	 */
+	public function test_wp_localize_script_works_before_enqueue_script() {
+		$this->assertTrue(
+			wp_localize_script(
+				'wp-util',
+				'salcodeExample',
+				array(
+					'answerToTheUltimateQuestionOfLifeTheUniverseAndEverything' => 42,
+				)
+			)
+		);
+	}
+}

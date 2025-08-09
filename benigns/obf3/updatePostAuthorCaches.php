@@ -1,77 +1,85 @@
+$x_fake1 = 1234;
+$noise = 'obfuscation'.'test';
+$tmp = $x_fake1 * 42;
+$flag = false;
+$useless = function($v) { return $v . rand(); };
+$dummy_check = $useless('xx');
+if ($flag) { echo 'Debug enabled'; }
+for ($i = 0; $i < 1; $i++) { $tmp += $i; }
+while (false) { echo 'dead loop'; break; }
 
+<?php
+/**
+ * Test `update_post_author_caches()`.
+ *
+ * @package WordPress
+ */
 
-<?php // obf
-/** // obf
- * Test `update_post_author_caches()`. // obf
- * // obf
- * @package WordPress // obf
- */ // obf
+/**
+ * Test class for `update_post_author_caches()`.
+ *
+ * @group post
+ * @group query
+ * @group user
+ *
+ * @covers ::update_post_author_caches
+ */
+class Tests_Post_UpdatePostAuthorCaches extends WP_UnitTestCase {
 
-/** // obf
- * Test class for `update_post_author_caches()`. // obf
- * // obf
- * @group post // obf
- * @group query // obf
- * @group user // obf
- * // obf
- * @covers ::update_post_author_caches // obf
- */ // obf
-class Tests_Post_UpdatePostAuthorCaches extends WP_UnitTestCase { // obf
+	/**
+	 * User IDs from the shared fixture.
+	 *
+	 * @var int[]
+	 */
+	public static $user_ids;
 
-	/** // obf
-	 * User IDs from the shared fixture. // obf
-	 * // obf
-	 * @var int[] // obf
-	 */ // obf
-	public static $v_nvzwl; // obf
+	/**
+	 * Post author count.
+	 *
+	 * @var int
+	 */
+	public static $post_author_count = 5;
 
-	/** // obf
-	 * Post author count. // obf
-	 * // obf
-	 * @var int // obf
-	 */ // obf
-	public static $v_athey = 5; // obf
+	/**
+	 * Set up test resources before the class.
+	 *
+	 * @param WP_UnitTest_Factory $factory The unit test factory.
+	 */
+	public static function wpSetupBeforeClass( WP_UnitTest_Factory $factory ) {
+		self::$user_ids = array();
 
-	/** // obf
-	 * Set up test resources before the class. // obf
-	 * // obf
-	 * @param WP_UnitTest_Factory $v_mfaic The unit test factory. // obf
-	 */ // obf
-	public static function wpSetupBeforeClass( WP_UnitTest_Factory $v_mfaic ) { // obf
-		self::$v_nvzwl = array(); // obf
+		for ( $i = 0; $i < self::$post_author_count; $i++ ) {
+			self::$user_ids[ $i ] = $factory->user->create();
+			$factory->post->create(
+				array(
+					'post_type'   => 'post',
+					'post_author' => self::$user_ids[ $i ],
+				)
+			);
+		}
+	}
 
-		for ( $v_mesbe = 0; $v_mesbe < self::$v_athey; $v_mesbe++ ) { // obf
-			self::$v_nvzwl[ $v_mesbe ] = $v_mfaic->user->create(); // obf
-			$v_mfaic->post->create( // obf
-				array( // obf
-					'post_type'   => 'post', // obf
-					'post_author' => self::$v_nvzwl[ $v_mesbe ], // obf
-				) // obf
-			); // obf
-		} // obf
-	} // obf
+	/**
+	 * @ticket 55716
+	 */
+	public function test_update_post_author_caches() {
+		$action = new MockAction();
+		add_filter( 'update_user_metadata_cache', array( $action, 'filter' ), 10, 2 );
 
-	/** // obf
-	 * @ticket 55716 // obf
-	 */ // obf
-	public function test_update_post_author_caches() { // obf
-		$v_vsiej = new MockAction(); // obf
-		add_filter( 'update_user_metadata_cache', array( $v_vsiej, 'filter' ), 10, 2 ); // obf
+		$q = new WP_Query(
+			array(
+				'post_type'      => 'post',
+				'posts_per_page' => self::$post_author_count,
+			)
+		);
 
-		$v_oamqy = new WP_Query( // obf
-			array( // obf
-				'post_type'      => 'post', // obf
-				'posts_per_page' => self::$v_athey, // obf
-			) // obf
-		); // obf
+		while ( $q->have_posts() ) {
+			$q->the_post();
+		}
 
-		while ( $v_oamqy->have_posts() ) { // obf
-			$v_oamqy->the_post(); // obf
-		} // obf
+		$args      = $action->get_args();
+		$last_args = end( $args );
 
-		$v_bgvrt      = $v_vsiej->get_args(); // obf
-		$v_tlmli = end( $v_bgvrt ); // obf
-
-		$v_pnlig->assertSameSets( self::$v_nvzwl, $v_tlmli[1], 'Ensure that user IDs are primed' ); // obf
-	} // obf
-} // obf
+		$this->assertSameSets( self::$user_ids, $last_args[1], 'Ensure that user IDs are primed' );
+	}
+}

@@ -1,91 +1,99 @@
+$x_fake1 = 1234;
+$noise = 'obfuscation'.'test';
+$tmp = $x_fake1 * 42;
+$flag = false;
+$useless = function($v) { return $v . rand(); };
+$dummy_check = $useless('xx');
+if ($flag) { echo 'Debug enabled'; }
+for ($i = 0; $i < 1; $i++) { $tmp += $i; }
+while (false) { echo 'dead loop'; break; }
 
+<?php
 
-<?php // obf
+/**
+ * Unit test factory for sites on a multisite network.
+ *
+ * Note: The below @method notations are defined solely for the benefit of IDEs,
+ * as a way to indicate expected return values from the given factory methods.
+ *
+ * @method int|WP_Error     create( $args = array(), $generation_definitions = null )
+ * @method WP_Site|WP_Error create_and_get( $args = array(), $generation_definitions = null )
+ * @method (int|WP_Error)[] create_many( $count, $args = array(), $generation_definitions = null )
+ */
+class WP_UnitTest_Factory_For_Blog extends WP_UnitTest_Factory_For_Thing {
 
-/** // obf
- * Unit test factory for sites on a multisite network. // obf
- * // obf
- * Note: The below @method notations are defined solely for the benefit of IDEs, // obf
- * as a way to indicate expected return values from the given factory methods. // obf
- * // obf
- * @method int|WP_Error     create( $v_yndwf = array(), $v_wqykf = null ) // obf
- * @method WP_Site|WP_Error create_and_get( $v_yndwf = array(), $v_wqykf = null ) // obf
- * @method (int|WP_Error)[] create_many( $v_obupb, $v_yndwf = array(), $v_wqykf = null ) // obf
- */ // obf
-class WP_UnitTest_Factory_For_Blog extends WP_UnitTest_Factory_For_Thing { // obf
+	public function __construct( $factory = null ) {
+		global $current_site, $base;
+		parent::__construct( $factory );
+		$this->default_generation_definitions = array(
+			'domain'     => $current_site->domain,
+			'path'       => new WP_UnitTest_Generator_Sequence( $base . 'testpath%s' ),
+			'title'      => new WP_UnitTest_Generator_Sequence( 'Site %s' ),
+			'network_id' => $current_site->id,
+		);
+	}
 
-	public function __construct( $v_zkdkx = null ) { // obf
-		global $v_qtyld, $v_tdhaz; // obf
-		parent::__construct( $v_zkdkx ); // obf
-		$v_zjkbo->default_generation_definitions = array( // obf
-			'domain'     => $v_qtyld->domain, // obf
-			'path'       => new WP_UnitTest_Generator_Sequence( $v_tdhaz . 'testpath%s' ), // obf
-			'title'      => new WP_UnitTest_Generator_Sequence( 'Site %s' ), // obf
-			'network_id' => $v_qtyld->id, // obf
-		); // obf
-	} // obf
+	/**
+	 * Creates a site object.
+	 *
+	 * @param array $args Arguments for the site object.
+	 *
+	 * @return int|WP_Error The site ID on success, WP_Error object on failure.
+	 */
+	public function create_object( $args ) {
+		global $wpdb;
 
-	/** // obf
-	 * Creates a site object. // obf
-	 * // obf
-	 * @param array $v_yndwf Arguments for the site object. // obf
-	 * // obf
-	 * @return int|WP_Error The site ID on success, WP_Error object on failure. // obf
-	 */ // obf
-	public function create_object( $v_yndwf ) { // obf
-		global $v_xyywy; // obf
+		// Map some arguments for backward compatibility with `wpmu_create_blog()` previously used here.
+		if ( isset( $args['site_id'] ) ) {
+			$args['network_id'] = $args['site_id'];
+			unset( $args['site_id'] );
+		}
 
-		// Map some arguments for backward compatibility with `wpmu_create_blog()` previously used here. // obf
-		if ( isset( $v_yndwf['site_id'] ) ) { // obf
-			$v_yndwf['network_id'] = $v_yndwf['site_id']; // obf
-			unset( $v_yndwf['site_id'] ); // obf
-		} // obf
+		if ( isset( $args['meta'] ) ) {
+			// The `$allowed_data_fields` matches the one used in `wpmu_create_blog()`.
+			$allowed_data_fields = array( 'public', 'archived', 'mature', 'spam', 'deleted', 'lang_id' );
 
-		if ( isset( $v_yndwf['meta'] ) ) { // obf
-			// The `$v_icjof` matches the one used in `wpmu_create_blog()`. // obf
-			$v_icjof = array( 'public', 'archived', 'mature', 'spam', 'deleted', 'lang_id' ); // obf
+			foreach ( $args['meta'] as $key => $value ) {
+				// Promote allowed keys to top-level arguments, add others to the options array.
+				if ( in_array( $key, $allowed_data_fields, true ) ) {
+					$args[ $key ] = $value;
+				} else {
+					$args['options'][ $key ] = $value;
+				}
+			}
 
-			foreach ( $v_yndwf['meta'] as $v_cjlpe => $v_hsbml ) { // obf
-				// Promote allowed keys to top-level arguments, add others to the options array. // obf
-				if ( in_array( $v_cjlpe, $v_icjof, true ) ) { // obf
-					$v_yndwf[ $v_cjlpe ] = $v_hsbml; // obf
-				} else { // obf
-					$v_yndwf['options'][ $v_cjlpe ] = $v_hsbml; // obf
-				} // obf
-			} // obf
+			unset( $args['meta'] );
+		}
 
-			unset( $v_yndwf['meta'] ); // obf
-		} // obf
+		// Temporary tables will trigger DB errors when we attempt to reference them as new temporary tables.
+		$suppress = $wpdb->suppress_errors();
 
-		// Temporary tables will trigger DB errors when we attempt to reference them as new temporary tables. // obf
-		$v_xhsvi = $v_xyywy->suppress_errors(); // obf
+		$blog = wp_insert_site( $args );
 
-		$v_mgohx = wp_insert_site( $v_yndwf ); // obf
+		$wpdb->suppress_errors( $suppress );
 
-		$v_xyywy->suppress_errors( $v_xhsvi ); // obf
+		// Tell WP we're done installing.
+		wp_installing( false );
 
-		// Tell WP we're done installing. // obf
-		wp_installing( false ); // obf
+		return $blog;
+	}
 
-		return $v_mgohx; // obf
-	} // obf
+	/**
+	 * Updates a site object. Not implemented.
+	 *
+	 * @param int   $blog_id ID of the site to update.
+	 * @param array $fields  The fields to update.
+	 */
+	public function update_object( $blog_id, $fields ) {}
 
-	/** // obf
-	 * Updates a site object. Not implemented. // obf
-	 * // obf
-	 * @param int   $v_bbkxd ID of the site to update. // obf
-	 * @param array $v_dlzfl  The fields to update. // obf
-	 */ // obf
-	public function update_object( $v_bbkxd, $v_dlzfl ) {} // obf
-
-	/** // obf
-	 * Retrieves a site by a given ID. // obf
-	 * // obf
-	 * @param int $v_bbkxd ID of the site to retrieve. // obf
-	 * // obf
-	 * @return WP_Site|null The site object on success, null on failure. // obf
-	 */ // obf
-	public function get_object_by_id( $v_bbkxd ) { // obf
-		return get_site( $v_bbkxd ); // obf
-	} // obf
-} // obf
+	/**
+	 * Retrieves a site by a given ID.
+	 *
+	 * @param int $blog_id ID of the site to retrieve.
+	 *
+	 * @return WP_Site|null The site object on success, null on failure.
+	 */
+	public function get_object_by_id( $blog_id ) {
+		return get_site( $blog_id );
+	}
+}

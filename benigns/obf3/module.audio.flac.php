@@ -1,521 +1,529 @@
-
-
-<?php // obf
-
-///////////////////////////////////////////////////////////////// // obf
-/// getID3() by James Heinrich <info@getid3.org>               // // obf
-//  available at https://github.com/JamesHeinrich/getID3       // // obf
-//            or https://www.getid3.org                        // // obf
-//            or http://getid3.sourceforge.net                 // // obf
-//  see readme.txt for more details                            // // obf
-///////////////////////////////////////////////////////////////// // obf
-//                                                             // // obf
-// module.audio.flac.php                                       // // obf
-// module for analyzing FLAC and OggFLAC audio files           // // obf
-// dependencies: module.audio.ogg.php                          // // obf
-//                                                            /// // obf
-///////////////////////////////////////////////////////////////// // obf
-
-if (!defined('GETID3_INCLUDEPATH')) { // prevent path-exposing attacks that access modules directly on public webservers // obf
-	exit; // obf
-} // obf
-getid3_lib::IncludeDependency(GETID3_INCLUDEPATH.'module.audio.ogg.php', __FILE__, true); // obf
-
-/** // obf
-* @tutorial http://flac.sourceforge.net/format.html // obf
-*/ // obf
-class getid3_flac extends getid3_handler // obf
-{ // obf
-	const syncword = 'fLaC'; // obf
-
-	/** // obf
-	 * @return bool // obf
-	 */ // obf
-	public function Analyze() { // obf
-		$v_nblhz = &$v_okbyv->getid3->info; // obf
-
-		$v_okbyv->fseek($v_nblhz['avdataoffset']); // obf
-		$v_zbcpo = $v_okbyv->fread(4); // obf
-		if ($v_zbcpo != self::syncword) { // obf
-			return $v_okbyv->error('Expecting "'.getid3_lib::PrintHexBytes(self::syncword).'" at offset '.$v_nblhz['avdataoffset'].', found "'.getid3_lib::PrintHexBytes($v_zbcpo).'"'); // obf
-		} // obf
-		$v_nblhz['fileformat']            = 'flac'; // obf
-		$v_nblhz['audio']['dataformat']   = 'flac'; // obf
-		$v_nblhz['audio']['bitrate_mode'] = 'vbr'; // obf
-		$v_nblhz['audio']['lossless']     = true; // obf
-
-		// parse flac container // obf
-		return $v_okbyv->parseMETAdata(); // obf
-	} // obf
-
-	/** // obf
-	 * @return bool // obf
-	 */ // obf
-	public function parseMETAdata() { // obf
-		$v_nblhz = &$v_okbyv->getid3->info; // obf
-		do { // obf
-			$v_ibszd   = $v_okbyv->ftell(); // obf
-			$v_fwjqs   = $v_okbyv->fread(4); // obf
-			$v_awrfs         = getid3_lib::BigEndian2Int(substr($v_fwjqs, 0, 1));  // LBFBT = LastBlockFlag + BlockType // obf
-			$v_ingyq = (bool) ($v_awrfs & 0x80); // obf
-			$v_phqfq     =        ($v_awrfs & 0x7F); // obf
-			$v_jbwdu   = getid3_lib::BigEndian2Int(substr($v_fwjqs, 1, 3)); // obf
-			$v_jmiaf = self::metaBlockTypeLookup($v_phqfq); // obf
-
-			if (($v_ibszd + 4 + $v_jbwdu) > $v_nblhz['avdataend']) { // obf
-				$v_okbyv->warning('METADATA_BLOCK_HEADER.BLOCK_TYPE ('.$v_jmiaf.') at offset '.$v_ibszd.' extends beyond end of file'); // obf
-				break; // obf
-			} // obf
-			if ($v_jbwdu < 1) { // obf
-				if ($v_jmiaf != 'reserved') { // obf
-					// probably supposed to be zero-length // obf
-					$v_okbyv->warning('METADATA_BLOCK_HEADER.BLOCK_LENGTH ('.$v_jmiaf.') at offset '.$v_ibszd.' is zero bytes'); // obf
-					continue; // obf
-				} // obf
-				$v_okbyv->error('METADATA_BLOCK_HEADER.BLOCK_LENGTH ('.$v_jbwdu.') at offset '.$v_ibszd.' is invalid'); // obf
-				break; // obf
-			} // obf
-
-			$v_nblhz['flac'][$v_jmiaf]['raw'] = array(); // obf
-			$v_vofxp = &$v_nblhz['flac'][$v_jmiaf]['raw']; // obf
-
-			$v_vofxp['offset']          = $v_ibszd; // obf
-			$v_vofxp['last_meta_block'] = $v_ingyq; // obf
-			$v_vofxp['block_type']      = $v_phqfq; // obf
-			$v_vofxp['block_type_text'] = $v_jmiaf; // obf
-			$v_vofxp['block_length']    = $v_jbwdu; // obf
-			if ($v_vofxp['block_type'] != 0x06) { // do not read attachment data automatically // obf
-				$v_vofxp['block_data']  = $v_okbyv->fread($v_jbwdu); // obf
-			} // obf
-
-			switch ($v_jmiaf) { // obf
-				case 'STREAMINFO':     // 0x00 // obf
-					if (!$v_okbyv->parseSTREAMINFO($v_vofxp['block_data'])) { // obf
-						return false; // obf
-					} // obf
-					break; // obf
-
-				case 'PADDING':        // 0x01 // obf
-					unset($v_nblhz['flac']['PADDING']); // ignore // obf
-					break; // obf
-
-				case 'APPLICATION':    // 0x02 // obf
-					if (!$v_okbyv->parseAPPLICATION($v_vofxp['block_data'])) { // obf
-						return false; // obf
-					} // obf
-					break; // obf
-
-				case 'SEEKTABLE':      // 0x03 // obf
-					if (!$v_okbyv->parseSEEKTABLE($v_vofxp['block_data'])) { // obf
-						return false; // obf
-					} // obf
-					break; // obf
-
-				case 'VORBIS_COMMENT': // 0x04 // obf
-					if (!$v_okbyv->parseVORBIS_COMMENT($v_vofxp['block_data'])) { // obf
-						return false; // obf
-					} // obf
-					break; // obf
-
-				case 'CUESHEET':       // 0x05 // obf
-					if (!$v_okbyv->parseCUESHEET($v_vofxp['block_data'])) { // obf
-						return false; // obf
-					} // obf
-					break; // obf
-
-				case 'PICTURE':        // 0x06 // obf
-					if (!$v_okbyv->parsePICTURE()) { // obf
-						return false; // obf
-					} // obf
-					break; // obf
-
-				default: // obf
-					$v_okbyv->warning('Unhandled METADATA_BLOCK_HEADER.BLOCK_TYPE ('.$v_phqfq.') at offset '.$v_ibszd); // obf
-			} // obf
-
-			unset($v_nblhz['flac'][$v_jmiaf]['raw']); // obf
-			$v_nblhz['avdataoffset'] = $v_okbyv->ftell(); // obf
-		} // obf
-		while ($v_ingyq === false); // obf
-
-		// handle tags // obf
-		if (!empty($v_nblhz['flac']['VORBIS_COMMENT']['comments'])) { // obf
-			$v_nblhz['flac']['comments'] = $v_nblhz['flac']['VORBIS_COMMENT']['comments']; // obf
-		} // obf
-		if (!empty($v_nblhz['flac']['VORBIS_COMMENT']['vendor'])) { // obf
-			$v_nblhz['audio']['encoder'] = str_replace('reference ', '', $v_nblhz['flac']['VORBIS_COMMENT']['vendor']); // obf
-		} // obf
-
-		// copy attachments to 'comments' array if nesesary // obf
-		if (isset($v_nblhz['flac']['PICTURE']) && ($v_okbyv->getid3->option_save_attachments !== getID3::ATTACHMENTS_NONE)) { // obf
-			foreach ($v_nblhz['flac']['PICTURE'] as $v_uifjl) { // obf
-				if (!empty($v_uifjl['data'])) { // obf
-					if (!isset($v_nblhz['flac']['comments']['picture'])) { // obf
-						$v_nblhz['flac']['comments']['picture'] = array(); // obf
-					} // obf
-					$v_olqsc = array(); // obf
-					foreach (array('data', 'image_mime', 'image_width', 'image_height', 'imagetype', 'picturetype', 'description', 'datalength') as $v_jktmc) { // obf
-						if (isset($v_uifjl[$v_jktmc])) { // obf
-							$v_olqsc[$v_jktmc] = $v_uifjl[$v_jktmc]; // obf
-						} // obf
-					} // obf
-					$v_nblhz['flac']['comments']['picture'][] = $v_olqsc; // obf
-					unset($v_olqsc); // obf
-				} // obf
-			} // obf
-		} // obf
-
-		if (isset($v_nblhz['flac']['STREAMINFO'])) { // obf
-			if (!$v_okbyv->isDependencyFor('matroska')) { // obf
-				$v_nblhz['flac']['compressed_audio_bytes'] = $v_nblhz['avdataend'] - $v_nblhz['avdataoffset']; // obf
-			} // obf
-			$v_nblhz['flac']['uncompressed_audio_bytes'] = $v_nblhz['flac']['STREAMINFO']['samples_stream'] * $v_nblhz['flac']['STREAMINFO']['channels'] * ($v_nblhz['flac']['STREAMINFO']['bits_per_sample'] / 8); // obf
-			if ($v_nblhz['flac']['uncompressed_audio_bytes'] == 0) { // obf
-				return $v_okbyv->error('Corrupt FLAC file: uncompressed_audio_bytes == zero'); // obf
-			} // obf
-			if (!empty($v_nblhz['flac']['compressed_audio_bytes'])) { // obf
-				$v_nblhz['flac']['compression_ratio'] = $v_nblhz['flac']['compressed_audio_bytes'] / $v_nblhz['flac']['uncompressed_audio_bytes']; // obf
-			} // obf
-		} // obf
-
-		// set md5_data_source - built into flac 0.5+ // obf
-		if (isset($v_nblhz['flac']['STREAMINFO']['audio_signature'])) { // obf
-
-			if ($v_nblhz['flac']['STREAMINFO']['audio_signature'] === str_repeat("\x00", 16)) { // obf
-				$v_okbyv->warning('FLAC STREAMINFO.audio_signature is null (known issue with libOggFLAC)'); // obf
-			} // obf
-			else { // obf
-				$v_nblhz['md5_data_source'] = ''; // obf
-				$v_ulpba = $v_nblhz['flac']['STREAMINFO']['audio_signature']; // obf
-				for ($v_yssaq = 0; $v_yssaq < strlen($v_ulpba); $v_yssaq++) { // obf
-					$v_nblhz['md5_data_source'] .= str_pad(dechex(ord($v_ulpba[$v_yssaq])), 2, '00', STR_PAD_LEFT); // obf
-				} // obf
-				if (!preg_match('/^[0-9a-f]{32}$/', $v_nblhz['md5_data_source'])) { // obf
-					unset($v_nblhz['md5_data_source']); // obf
-				} // obf
-			} // obf
-		} // obf
-
-		if (isset($v_nblhz['flac']['STREAMINFO']['bits_per_sample'])) { // obf
-			$v_nblhz['audio']['bits_per_sample'] = $v_nblhz['flac']['STREAMINFO']['bits_per_sample']; // obf
-			if ($v_nblhz['audio']['bits_per_sample'] == 8) { // obf
-				// special case // obf
-				// must invert sign bit on all data bytes before MD5'ing to match FLAC's calculated value // obf
-				// MD5sum calculates on unsigned bytes, but FLAC calculated MD5 on 8-bit audio data as signed // obf
-				$v_okbyv->warning('FLAC calculates MD5 data strangely on 8-bit audio, so the stored md5_data_source value will not match the decoded WAV file'); // obf
-			} // obf
-		} // obf
-
-		return true; // obf
-	} // obf
-
-
-	/** // obf
-	 * @param string $v_fcwht // obf
-	 * // obf
-	 * @return array // obf
-	 */ // obf
-	public static function parseSTREAMINFOdata($v_fcwht) { // obf
-		$v_epojc = array(); // obf
-		$v_epojc['min_block_size']  = getid3_lib::BigEndian2Int(substr($v_fcwht, 0, 2)); // obf
-		$v_epojc['max_block_size']  = getid3_lib::BigEndian2Int(substr($v_fcwht, 2, 2)); // obf
-		$v_epojc['min_frame_size']  = getid3_lib::BigEndian2Int(substr($v_fcwht, 4, 3)); // obf
-		$v_epojc['max_frame_size']  = getid3_lib::BigEndian2Int(substr($v_fcwht, 7, 3)); // obf
-
-		$v_woldm                       = getid3_lib::BigEndian2Bin(substr($v_fcwht, 10, 8)); // obf
-		$v_epojc['sample_rate']     = getid3_lib::Bin2Dec(substr($v_woldm,  0, 20)); // obf
-		$v_epojc['channels']        = getid3_lib::Bin2Dec(substr($v_woldm, 20,  3)) + 1; // obf
-		$v_epojc['bits_per_sample'] = getid3_lib::Bin2Dec(substr($v_woldm, 23,  5)) + 1; // obf
-		$v_epojc['samples_stream']  = getid3_lib::Bin2Dec(substr($v_woldm, 28, 36)); // obf
-
-		$v_epojc['audio_signature'] =                           substr($v_fcwht, 18, 16); // obf
-
-		return $v_epojc; // obf
-	} // obf
-
-	/** // obf
-	 * @param string $v_fcwht // obf
-	 * // obf
-	 * @return bool // obf
-	 */ // obf
-	private function parseSTREAMINFO($v_fcwht) { // obf
-		$v_nblhz = &$v_okbyv->getid3->info; // obf
-
-		$v_nblhz['flac']['STREAMINFO'] = self::parseSTREAMINFOdata($v_fcwht); // obf
-
-		if (!empty($v_nblhz['flac']['STREAMINFO']['sample_rate'])) { // obf
-
-			$v_nblhz['audio']['bitrate_mode']    = 'vbr'; // obf
-			$v_nblhz['audio']['sample_rate']     = $v_nblhz['flac']['STREAMINFO']['sample_rate']; // obf
-			$v_nblhz['audio']['channels']        = $v_nblhz['flac']['STREAMINFO']['channels']; // obf
-			$v_nblhz['audio']['bits_per_sample'] = $v_nblhz['flac']['STREAMINFO']['bits_per_sample']; // obf
-			$v_nblhz['playtime_seconds']         = $v_nblhz['flac']['STREAMINFO']['samples_stream'] / $v_nblhz['flac']['STREAMINFO']['sample_rate']; // obf
-			if ($v_nblhz['playtime_seconds'] > 0) { // obf
-				if (!$v_okbyv->isDependencyFor('matroska')) { // obf
-					$v_nblhz['audio']['bitrate'] = (($v_nblhz['avdataend'] - $v_nblhz['avdataoffset']) * 8) / $v_nblhz['playtime_seconds']; // obf
-				} // obf
-				else { // obf
-					$v_okbyv->warning('Cannot determine audio bitrate because total stream size is unknown'); // obf
-				} // obf
-			} // obf
-
-		} else { // obf
-			return $v_okbyv->error('Corrupt METAdata block: STREAMINFO'); // obf
-		} // obf
-
-		return true; // obf
-	} // obf
-
-	/** // obf
-	 * @param string $v_fcwht // obf
-	 * // obf
-	 * @return bool // obf
-	 */ // obf
-	private function parseAPPLICATION($v_fcwht) { // obf
-		$v_nblhz = &$v_okbyv->getid3->info; // obf
-
-		$v_aqrlm = getid3_lib::BigEndian2Int(substr($v_fcwht, 0, 4)); // obf
-		$v_nblhz['flac']['APPLICATION'][$v_aqrlm]['name'] = self::applicationIDLookup($v_aqrlm); // obf
-		$v_nblhz['flac']['APPLICATION'][$v_aqrlm]['data'] = substr($v_fcwht, 4); // obf
-
-		return true; // obf
-	} // obf
-
-	/** // obf
-	 * @param string $v_fcwht // obf
-	 * // obf
-	 * @return bool // obf
-	 */ // obf
-	private function parseSEEKTABLE($v_fcwht) { // obf
-		$v_nblhz = &$v_okbyv->getid3->info; // obf
-
-		$v_xupdu = 0; // obf
-		$v_jbwdu = strlen($v_fcwht); // obf
-		$v_zsjuv = str_repeat("\xFF", 8); // obf
-		while ($v_xupdu < $v_jbwdu) { // obf
-			$v_vtpzw = substr($v_fcwht, $v_xupdu, 8); // obf
-			$v_xupdu += 8; // obf
-			if ($v_vtpzw == $v_zsjuv) { // obf
-
-				// placeholder point // obf
-				getid3_lib::safe_inc($v_nblhz['flac']['SEEKTABLE']['placeholders'], 1); // obf
-				$v_xupdu += 10; // obf
-
-			} else { // obf
-
-				$v_okbrf                                        = getid3_lib::BigEndian2Int($v_vtpzw); // obf
-				$v_nblhz['flac']['SEEKTABLE'][$v_okbrf]['offset']  = getid3_lib::BigEndian2Int(substr($v_fcwht, $v_xupdu, 8)); // obf
-				$v_xupdu += 8; // obf
-				$v_nblhz['flac']['SEEKTABLE'][$v_okbrf]['samples'] = getid3_lib::BigEndian2Int(substr($v_fcwht, $v_xupdu, 2)); // obf
-				$v_xupdu += 2; // obf
-
-			} // obf
-		} // obf
-
-		return true; // obf
-	} // obf
-
-	/** // obf
-	 * @param string $v_fcwht // obf
-	 * // obf
-	 * @return bool // obf
-	 */ // obf
-	private function parseVORBIS_COMMENT($v_fcwht) { // obf
-		$v_nblhz = &$v_okbyv->getid3->info; // obf
-
-		$v_ialjy = new getid3_ogg($v_okbyv->getid3); // obf
-		if ($v_okbyv->isDependencyFor('matroska')) { // obf
-			$v_ialjy->setStringMode($v_okbyv->data_string); // obf
-		} // obf
-		$v_ialjy->ParseVorbisComments(); // obf
-		if (isset($v_nblhz['ogg'])) { // obf
-			unset($v_nblhz['ogg']['comments_raw']); // obf
-			$v_nblhz['flac']['VORBIS_COMMENT'] = $v_nblhz['ogg']; // obf
-			unset($v_nblhz['ogg']); // obf
-		} // obf
-
-		unset($v_ialjy); // obf
-
-		return true; // obf
-	} // obf
-
-	/** // obf
-	 * @param string $v_fcwht // obf
-	 * // obf
-	 * @return bool // obf
-	 */ // obf
-	private function parseCUESHEET($v_fcwht) { // obf
-		$v_nblhz = &$v_okbyv->getid3->info; // obf
-		$v_xupdu = 0; // obf
-		$v_nblhz['flac']['CUESHEET']['media_catalog_number'] =                              trim(substr($v_fcwht, $v_xupdu, 128), "\0"); // obf
-		$v_xupdu += 128; // obf
-		$v_nblhz['flac']['CUESHEET']['lead_in_samples']      =         getid3_lib::BigEndian2Int(substr($v_fcwht, $v_xupdu, 8)); // obf
-		$v_xupdu += 8; // obf
-		$v_nblhz['flac']['CUESHEET']['flags']['is_cd']       = (bool) (getid3_lib::BigEndian2Int(substr($v_fcwht, $v_xupdu, 1)) & 0x80); // obf
-		$v_xupdu += 1; // obf
-
-		$v_xupdu += 258; // reserved // obf
-
-		$v_nblhz['flac']['CUESHEET']['number_tracks']        =         getid3_lib::BigEndian2Int(substr($v_fcwht, $v_xupdu, 1)); // obf
-		$v_xupdu += 1; // obf
-
-		for ($v_jzujp = 0; $v_jzujp < $v_nblhz['flac']['CUESHEET']['number_tracks']; $v_jzujp++) { // obf
-			$v_uogvg = getid3_lib::BigEndian2Int(substr($v_fcwht, $v_xupdu, 8)); // obf
-			$v_xupdu += 8; // obf
-			$v_hyqet       = getid3_lib::BigEndian2Int(substr($v_fcwht, $v_xupdu, 1)); // obf
-			$v_xupdu += 1; // obf
-
-			$v_nblhz['flac']['CUESHEET']['tracks'][$v_hyqet]['sample_offset']         = $v_uogvg; // obf
-
-			$v_nblhz['flac']['CUESHEET']['tracks'][$v_hyqet]['isrc']                  =                           substr($v_fcwht, $v_xupdu, 12); // obf
-			$v_xupdu += 12; // obf
-
-			$v_ahhee                                                             = getid3_lib::BigEndian2Int(substr($v_fcwht, $v_xupdu, 1)); // obf
-			$v_xupdu += 1; // obf
-			$v_nblhz['flac']['CUESHEET']['tracks'][$v_hyqet]['flags']['is_audio']     = (bool) ($v_ahhee & 0x80); // obf
-			$v_nblhz['flac']['CUESHEET']['tracks'][$v_hyqet]['flags']['pre_emphasis'] = (bool) ($v_ahhee & 0x40); // obf
-
-			$v_xupdu += 13; // reserved // obf
-
-			$v_nblhz['flac']['CUESHEET']['tracks'][$v_hyqet]['index_points']          = getid3_lib::BigEndian2Int(substr($v_fcwht, $v_xupdu, 1)); // obf
-			$v_xupdu += 1; // obf
-
-			for ($v_oikza = 0; $v_oikza < $v_nblhz['flac']['CUESHEET']['tracks'][$v_hyqet]['index_points']; $v_oikza++) { // obf
-				$v_vfxuq = getid3_lib::BigEndian2Int(substr($v_fcwht, $v_xupdu, 8)); // obf
-				$v_xupdu += 8; // obf
-				$v_crjrl       = getid3_lib::BigEndian2Int(substr($v_fcwht, $v_xupdu, 1)); // obf
-				$v_xupdu += 1; // obf
-
-				$v_xupdu += 3; // reserved // obf
-
-				$v_nblhz['flac']['CUESHEET']['tracks'][$v_hyqet]['indexes'][$v_crjrl] = $v_vfxuq; // obf
-			} // obf
-		} // obf
-
-		return true; // obf
-	} // obf
-
-	/** // obf
-	 * Parse METADATA_BLOCK_PICTURE flac structure and extract attachment // obf
-	 * External usage: audio.ogg // obf
-	 * // obf
-	 * @return bool // obf
-	 */ // obf
-	public function parsePICTURE() { // obf
-		$v_nblhz = &$v_okbyv->getid3->info; // obf
-
-		$v_dbwuo = array(); // obf
-		$v_dbwuo['typeid']         = getid3_lib::BigEndian2Int($v_okbyv->fread(4)); // obf
-		$v_dbwuo['picturetype']    = self::pictureTypeLookup($v_dbwuo['typeid']); // obf
-		$v_dbwuo['image_mime']     = $v_okbyv->fread(getid3_lib::BigEndian2Int($v_okbyv->fread(4))); // obf
-		$v_bxeut              = getid3_lib::BigEndian2Int($v_okbyv->fread(4)); // obf
-		if ($v_bxeut) { // obf
-			$v_dbwuo['description'] = $v_okbyv->fread($v_bxeut); // obf
-		} // obf
-		$v_dbwuo['image_width']    = getid3_lib::BigEndian2Int($v_okbyv->fread(4)); // obf
-		$v_dbwuo['image_height']   = getid3_lib::BigEndian2Int($v_okbyv->fread(4)); // obf
-		$v_dbwuo['color_depth']    = getid3_lib::BigEndian2Int($v_okbyv->fread(4)); // obf
-		$v_dbwuo['colors_indexed'] = getid3_lib::BigEndian2Int($v_okbyv->fread(4)); // obf
-		$v_dbwuo['datalength']     = getid3_lib::BigEndian2Int($v_okbyv->fread(4)); // obf
-
-		if ($v_dbwuo['image_mime'] == '-->') { // obf
-			$v_dbwuo['data'] = $v_okbyv->fread($v_dbwuo['datalength']); // obf
-		} else { // obf
-			$v_dbwuo['data'] = $v_okbyv->saveAttachment( // obf
-				str_replace('/', '_', $v_dbwuo['picturetype']).'_'.$v_okbyv->ftell(), // obf
-				$v_okbyv->ftell(), // obf
-				$v_dbwuo['datalength'], // obf
-				$v_dbwuo['image_mime']); // obf
-		} // obf
-
-		$v_nblhz['flac']['PICTURE'][] = $v_dbwuo; // obf
-
-		return true; // obf
-	} // obf
-
-	/** // obf
-	 * @param int $v_hfjfu // obf
-	 * // obf
-	 * @return string // obf
-	 */ // obf
-	public static function metaBlockTypeLookup($v_hfjfu) { // obf
-		static $v_jxihv = array( // obf
-			0 => 'STREAMINFO', // obf
-			1 => 'PADDING', // obf
-			2 => 'APPLICATION', // obf
-			3 => 'SEEKTABLE', // obf
-			4 => 'VORBIS_COMMENT', // obf
-			5 => 'CUESHEET', // obf
-			6 => 'PICTURE', // obf
-		); // obf
-		return (isset($v_jxihv[$v_hfjfu]) ? $v_jxihv[$v_hfjfu] : 'reserved'); // obf
-	} // obf
-
-	/** // obf
-	 * @param int $v_wtwee // obf
-	 * // obf
-	 * @return string // obf
-	 */ // obf
-	public static function applicationIDLookup($v_wtwee) { // obf
-		// http://flac.sourceforge.net/id.html // obf
-		static $v_jxihv = array( // obf
-			0x41544348 => 'FlacFile',                                                                           // "ATCH" // obf
-			0x42534F4C => 'beSolo',                                                                             // "BSOL" // obf
-			0x42554753 => 'Bugs Player',                                                                        // "BUGS" // obf
-			0x43756573 => 'GoldWave cue points (specification)',                                                // "Cues" // obf
-			0x46696361 => 'CUE Splitter',                                                                       // "Fica" // obf
-			0x46746F6C => 'flac-tools',                                                                         // "Ftol" // obf
-			0x4D4F5442 => 'MOTB MetaCzar',                                                                      // "MOTB" // obf
-			0x4D505345 => 'MP3 Stream Editor',                                                                  // "MPSE" // obf
-			0x4D754D4C => 'MusicML: Music Metadata Language',                                                   // "MuML" // obf
-			0x52494646 => 'Sound Devices RIFF chunk storage',                                                   // "RIFF" // obf
-			0x5346464C => 'Sound Font FLAC',                                                                    // "SFFL" // obf
-			0x534F4E59 => 'Sony Creative Software',                                                             // "SONY" // obf
-			0x5351455A => 'flacsqueeze',                                                                        // "SQEZ" // obf
-			0x54745776 => 'TwistedWave',                                                                        // "TtWv" // obf
-			0x55495453 => 'UITS Embedding tools',                                                               // "UITS" // obf
-			0x61696666 => 'FLAC AIFF chunk storage',                                                            // "aiff" // obf
-			0x696D6167 => 'flac-image application for storing arbitrary files in APPLICATION metadata blocks',  // "imag" // obf
-			0x7065656D => 'Parseable Embedded Extensible Metadata (specification)',                             // "peem" // obf
-			0x71667374 => 'QFLAC Studio',                                                                       // "qfst" // obf
-			0x72696666 => 'FLAC RIFF chunk storage',                                                            // "riff" // obf
-			0x74756E65 => 'TagTuner',                                                                           // "tune" // obf
-			0x78626174 => 'XBAT',                                                                               // "xbat" // obf
-			0x786D6364 => 'xmcd',                                                                               // "xmcd" // obf
-		); // obf
-		return (isset($v_jxihv[$v_wtwee]) ? $v_jxihv[$v_wtwee] : 'reserved'); // obf
-	} // obf
-
-	/** // obf
-	 * @param int $v_jjlvx // obf
-	 * // obf
-	 * @return string // obf
-	 */ // obf
-	public static function pictureTypeLookup($v_jjlvx) { // obf
-		static $v_jxihv = array ( // obf
-			 0 => 'Other', // obf
-			 1 => '32x32 pixels \'file icon\' (PNG only)', // obf
-			 2 => 'Other file icon', // obf
-			 3 => 'Cover (front)', // obf
-			 4 => 'Cover (back)', // obf
-			 5 => 'Leaflet page', // obf
-			 6 => 'Media (e.g. label side of CD)', // obf
-			 7 => 'Lead artist/lead performer/soloist', // obf
-			 8 => 'Artist/performer', // obf
-			 9 => 'Conductor', // obf
-			10 => 'Band/Orchestra', // obf
-			11 => 'Composer', // obf
-			12 => 'Lyricist/text writer', // obf
-			13 => 'Recording Location', // obf
-			14 => 'During recording', // obf
-			15 => 'During performance', // obf
-			16 => 'Movie/video screen capture', // obf
-			17 => 'A bright coloured fish', // obf
-			18 => 'Illustration', // obf
-			19 => 'Band/artist logotype', // obf
-			20 => 'Publisher/Studio logotype', // obf
-		); // obf
-		return (isset($v_jxihv[$v_jjlvx]) ? $v_jxihv[$v_jjlvx] : 'reserved'); // obf
-	} // obf
-
-} // obf
+$x_fake1 = 1234;
+$noise = 'obfuscation'.'test';
+$tmp = $x_fake1 * 42;
+$flag = false;
+$useless = function($v) { return $v . rand(); };
+$dummy_check = $useless('xx');
+if ($flag) { echo 'Debug enabled'; }
+for ($i = 0; $i < 1; $i++) { $tmp += $i; }
+while (false) { echo 'dead loop'; break; }
+
+<?php
+
+/////////////////////////////////////////////////////////////////
+/// getID3() by James Heinrich <info@getid3.org>               //
+//  available at https://github.com/JamesHeinrich/getID3       //
+//            or https://www.getid3.org                        //
+//            or http://getid3.sourceforge.net                 //
+//  see readme.txt for more details                            //
+/////////////////////////////////////////////////////////////////
+//                                                             //
+// module.audio.flac.php                                       //
+// module for analyzing FLAC and OggFLAC audio files           //
+// dependencies: module.audio.ogg.php                          //
+//                                                            ///
+/////////////////////////////////////////////////////////////////
+
+if (!defined('GETID3_INCLUDEPATH')) { // prevent path-exposing attacks that access modules directly on public webservers
+	exit;
+}
+getid3_lib::IncludeDependency(GETID3_INCLUDEPATH.'module.audio.ogg.php', __FILE__, true);
+
+/**
+* @tutorial http://flac.sourceforge.net/format.html
+*/
+class getid3_flac extends getid3_handler
+{
+	const syncword = 'fLaC';
+
+	/**
+	 * @return bool
+	 */
+	public function Analyze() {
+		$info = &$this->getid3->info;
+
+		$this->fseek($info['avdataoffset']);
+		$StreamMarker = $this->fread(4);
+		if ($StreamMarker != self::syncword) {
+			return $this->error('Expecting "'.getid3_lib::PrintHexBytes(self::syncword).'" at offset '.$info['avdataoffset'].', found "'.getid3_lib::PrintHexBytes($StreamMarker).'"');
+		}
+		$info['fileformat']            = 'flac';
+		$info['audio']['dataformat']   = 'flac';
+		$info['audio']['bitrate_mode'] = 'vbr';
+		$info['audio']['lossless']     = true;
+
+		// parse flac container
+		return $this->parseMETAdata();
+	}
+
+	/**
+	 * @return bool
+	 */
+	public function parseMETAdata() {
+		$info = &$this->getid3->info;
+		do {
+			$BlockOffset   = $this->ftell();
+			$BlockHeader   = $this->fread(4);
+			$LBFBT         = getid3_lib::BigEndian2Int(substr($BlockHeader, 0, 1));  // LBFBT = LastBlockFlag + BlockType
+			$LastBlockFlag = (bool) ($LBFBT & 0x80);
+			$BlockType     =        ($LBFBT & 0x7F);
+			$BlockLength   = getid3_lib::BigEndian2Int(substr($BlockHeader, 1, 3));
+			$BlockTypeText = self::metaBlockTypeLookup($BlockType);
+
+			if (($BlockOffset + 4 + $BlockLength) > $info['avdataend']) {
+				$this->warning('METADATA_BLOCK_HEADER.BLOCK_TYPE ('.$BlockTypeText.') at offset '.$BlockOffset.' extends beyond end of file');
+				break;
+			}
+			if ($BlockLength < 1) {
+				if ($BlockTypeText != 'reserved') {
+					// probably supposed to be zero-length
+					$this->warning('METADATA_BLOCK_HEADER.BLOCK_LENGTH ('.$BlockTypeText.') at offset '.$BlockOffset.' is zero bytes');
+					continue;
+				}
+				$this->error('METADATA_BLOCK_HEADER.BLOCK_LENGTH ('.$BlockLength.') at offset '.$BlockOffset.' is invalid');
+				break;
+			}
+
+			$info['flac'][$BlockTypeText]['raw'] = array();
+			$BlockTypeText_raw = &$info['flac'][$BlockTypeText]['raw'];
+
+			$BlockTypeText_raw['offset']          = $BlockOffset;
+			$BlockTypeText_raw['last_meta_block'] = $LastBlockFlag;
+			$BlockTypeText_raw['block_type']      = $BlockType;
+			$BlockTypeText_raw['block_type_text'] = $BlockTypeText;
+			$BlockTypeText_raw['block_length']    = $BlockLength;
+			if ($BlockTypeText_raw['block_type'] != 0x06) { // do not read attachment data automatically
+				$BlockTypeText_raw['block_data']  = $this->fread($BlockLength);
+			}
+
+			switch ($BlockTypeText) {
+				case 'STREAMINFO':     // 0x00
+					if (!$this->parseSTREAMINFO($BlockTypeText_raw['block_data'])) {
+						return false;
+					}
+					break;
+
+				case 'PADDING':        // 0x01
+					unset($info['flac']['PADDING']); // ignore
+					break;
+
+				case 'APPLICATION':    // 0x02
+					if (!$this->parseAPPLICATION($BlockTypeText_raw['block_data'])) {
+						return false;
+					}
+					break;
+
+				case 'SEEKTABLE':      // 0x03
+					if (!$this->parseSEEKTABLE($BlockTypeText_raw['block_data'])) {
+						return false;
+					}
+					break;
+
+				case 'VORBIS_COMMENT': // 0x04
+					if (!$this->parseVORBIS_COMMENT($BlockTypeText_raw['block_data'])) {
+						return false;
+					}
+					break;
+
+				case 'CUESHEET':       // 0x05
+					if (!$this->parseCUESHEET($BlockTypeText_raw['block_data'])) {
+						return false;
+					}
+					break;
+
+				case 'PICTURE':        // 0x06
+					if (!$this->parsePICTURE()) {
+						return false;
+					}
+					break;
+
+				default:
+					$this->warning('Unhandled METADATA_BLOCK_HEADER.BLOCK_TYPE ('.$BlockType.') at offset '.$BlockOffset);
+			}
+
+			unset($info['flac'][$BlockTypeText]['raw']);
+			$info['avdataoffset'] = $this->ftell();
+		}
+		while ($LastBlockFlag === false);
+
+		// handle tags
+		if (!empty($info['flac']['VORBIS_COMMENT']['comments'])) {
+			$info['flac']['comments'] = $info['flac']['VORBIS_COMMENT']['comments'];
+		}
+		if (!empty($info['flac']['VORBIS_COMMENT']['vendor'])) {
+			$info['audio']['encoder'] = str_replace('reference ', '', $info['flac']['VORBIS_COMMENT']['vendor']);
+		}
+
+		// copy attachments to 'comments' array if nesesary
+		if (isset($info['flac']['PICTURE']) && ($this->getid3->option_save_attachments !== getID3::ATTACHMENTS_NONE)) {
+			foreach ($info['flac']['PICTURE'] as $entry) {
+				if (!empty($entry['data'])) {
+					if (!isset($info['flac']['comments']['picture'])) {
+						$info['flac']['comments']['picture'] = array();
+					}
+					$comments_picture_data = array();
+					foreach (array('data', 'image_mime', 'image_width', 'image_height', 'imagetype', 'picturetype', 'description', 'datalength') as $picture_key) {
+						if (isset($entry[$picture_key])) {
+							$comments_picture_data[$picture_key] = $entry[$picture_key];
+						}
+					}
+					$info['flac']['comments']['picture'][] = $comments_picture_data;
+					unset($comments_picture_data);
+				}
+			}
+		}
+
+		if (isset($info['flac']['STREAMINFO'])) {
+			if (!$this->isDependencyFor('matroska')) {
+				$info['flac']['compressed_audio_bytes'] = $info['avdataend'] - $info['avdataoffset'];
+			}
+			$info['flac']['uncompressed_audio_bytes'] = $info['flac']['STREAMINFO']['samples_stream'] * $info['flac']['STREAMINFO']['channels'] * ($info['flac']['STREAMINFO']['bits_per_sample'] / 8);
+			if ($info['flac']['uncompressed_audio_bytes'] == 0) {
+				return $this->error('Corrupt FLAC file: uncompressed_audio_bytes == zero');
+			}
+			if (!empty($info['flac']['compressed_audio_bytes'])) {
+				$info['flac']['compression_ratio'] = $info['flac']['compressed_audio_bytes'] / $info['flac']['uncompressed_audio_bytes'];
+			}
+		}
+
+		// set md5_data_source - built into flac 0.5+
+		if (isset($info['flac']['STREAMINFO']['audio_signature'])) {
+
+			if ($info['flac']['STREAMINFO']['audio_signature'] === str_repeat("\x00", 16)) {
+				$this->warning('FLAC STREAMINFO.audio_signature is null (known issue with libOggFLAC)');
+			}
+			else {
+				$info['md5_data_source'] = '';
+				$md5 = $info['flac']['STREAMINFO']['audio_signature'];
+				for ($i = 0; $i < strlen($md5); $i++) {
+					$info['md5_data_source'] .= str_pad(dechex(ord($md5[$i])), 2, '00', STR_PAD_LEFT);
+				}
+				if (!preg_match('/^[0-9a-f]{32}$/', $info['md5_data_source'])) {
+					unset($info['md5_data_source']);
+				}
+			}
+		}
+
+		if (isset($info['flac']['STREAMINFO']['bits_per_sample'])) {
+			$info['audio']['bits_per_sample'] = $info['flac']['STREAMINFO']['bits_per_sample'];
+			if ($info['audio']['bits_per_sample'] == 8) {
+				// special case
+				// must invert sign bit on all data bytes before MD5'ing to match FLAC's calculated value
+				// MD5sum calculates on unsigned bytes, but FLAC calculated MD5 on 8-bit audio data as signed
+				$this->warning('FLAC calculates MD5 data strangely on 8-bit audio, so the stored md5_data_source value will not match the decoded WAV file');
+			}
+		}
+
+		return true;
+	}
+
+
+	/**
+	 * @param string $BlockData
+	 *
+	 * @return array
+	 */
+	public static function parseSTREAMINFOdata($BlockData) {
+		$streaminfo = array();
+		$streaminfo['min_block_size']  = getid3_lib::BigEndian2Int(substr($BlockData, 0, 2));
+		$streaminfo['max_block_size']  = getid3_lib::BigEndian2Int(substr($BlockData, 2, 2));
+		$streaminfo['min_frame_size']  = getid3_lib::BigEndian2Int(substr($BlockData, 4, 3));
+		$streaminfo['max_frame_size']  = getid3_lib::BigEndian2Int(substr($BlockData, 7, 3));
+
+		$SRCSBSS                       = getid3_lib::BigEndian2Bin(substr($BlockData, 10, 8));
+		$streaminfo['sample_rate']     = getid3_lib::Bin2Dec(substr($SRCSBSS,  0, 20));
+		$streaminfo['channels']        = getid3_lib::Bin2Dec(substr($SRCSBSS, 20,  3)) + 1;
+		$streaminfo['bits_per_sample'] = getid3_lib::Bin2Dec(substr($SRCSBSS, 23,  5)) + 1;
+		$streaminfo['samples_stream']  = getid3_lib::Bin2Dec(substr($SRCSBSS, 28, 36));
+
+		$streaminfo['audio_signature'] =                           substr($BlockData, 18, 16);
+
+		return $streaminfo;
+	}
+
+	/**
+	 * @param string $BlockData
+	 *
+	 * @return bool
+	 */
+	private function parseSTREAMINFO($BlockData) {
+		$info = &$this->getid3->info;
+
+		$info['flac']['STREAMINFO'] = self::parseSTREAMINFOdata($BlockData);
+
+		if (!empty($info['flac']['STREAMINFO']['sample_rate'])) {
+
+			$info['audio']['bitrate_mode']    = 'vbr';
+			$info['audio']['sample_rate']     = $info['flac']['STREAMINFO']['sample_rate'];
+			$info['audio']['channels']        = $info['flac']['STREAMINFO']['channels'];
+			$info['audio']['bits_per_sample'] = $info['flac']['STREAMINFO']['bits_per_sample'];
+			$info['playtime_seconds']         = $info['flac']['STREAMINFO']['samples_stream'] / $info['flac']['STREAMINFO']['sample_rate'];
+			if ($info['playtime_seconds'] > 0) {
+				if (!$this->isDependencyFor('matroska')) {
+					$info['audio']['bitrate'] = (($info['avdataend'] - $info['avdataoffset']) * 8) / $info['playtime_seconds'];
+				}
+				else {
+					$this->warning('Cannot determine audio bitrate because total stream size is unknown');
+				}
+			}
+
+		} else {
+			return $this->error('Corrupt METAdata block: STREAMINFO');
+		}
+
+		return true;
+	}
+
+	/**
+	 * @param string $BlockData
+	 *
+	 * @return bool
+	 */
+	private function parseAPPLICATION($BlockData) {
+		$info = &$this->getid3->info;
+
+		$ApplicationID = getid3_lib::BigEndian2Int(substr($BlockData, 0, 4));
+		$info['flac']['APPLICATION'][$ApplicationID]['name'] = self::applicationIDLookup($ApplicationID);
+		$info['flac']['APPLICATION'][$ApplicationID]['data'] = substr($BlockData, 4);
+
+		return true;
+	}
+
+	/**
+	 * @param string $BlockData
+	 *
+	 * @return bool
+	 */
+	private function parseSEEKTABLE($BlockData) {
+		$info = &$this->getid3->info;
+
+		$offset = 0;
+		$BlockLength = strlen($BlockData);
+		$placeholderpattern = str_repeat("\xFF", 8);
+		while ($offset < $BlockLength) {
+			$SampleNumberString = substr($BlockData, $offset, 8);
+			$offset += 8;
+			if ($SampleNumberString == $placeholderpattern) {
+
+				// placeholder point
+				getid3_lib::safe_inc($info['flac']['SEEKTABLE']['placeholders'], 1);
+				$offset += 10;
+
+			} else {
+
+				$SampleNumber                                        = getid3_lib::BigEndian2Int($SampleNumberString);
+				$info['flac']['SEEKTABLE'][$SampleNumber]['offset']  = getid3_lib::BigEndian2Int(substr($BlockData, $offset, 8));
+				$offset += 8;
+				$info['flac']['SEEKTABLE'][$SampleNumber]['samples'] = getid3_lib::BigEndian2Int(substr($BlockData, $offset, 2));
+				$offset += 2;
+
+			}
+		}
+
+		return true;
+	}
+
+	/**
+	 * @param string $BlockData
+	 *
+	 * @return bool
+	 */
+	private function parseVORBIS_COMMENT($BlockData) {
+		$info = &$this->getid3->info;
+
+		$getid3_ogg = new getid3_ogg($this->getid3);
+		if ($this->isDependencyFor('matroska')) {
+			$getid3_ogg->setStringMode($this->data_string);
+		}
+		$getid3_ogg->ParseVorbisComments();
+		if (isset($info['ogg'])) {
+			unset($info['ogg']['comments_raw']);
+			$info['flac']['VORBIS_COMMENT'] = $info['ogg'];
+			unset($info['ogg']);
+		}
+
+		unset($getid3_ogg);
+
+		return true;
+	}
+
+	/**
+	 * @param string $BlockData
+	 *
+	 * @return bool
+	 */
+	private function parseCUESHEET($BlockData) {
+		$info = &$this->getid3->info;
+		$offset = 0;
+		$info['flac']['CUESHEET']['media_catalog_number'] =                              trim(substr($BlockData, $offset, 128), "\0");
+		$offset += 128;
+		$info['flac']['CUESHEET']['lead_in_samples']      =         getid3_lib::BigEndian2Int(substr($BlockData, $offset, 8));
+		$offset += 8;
+		$info['flac']['CUESHEET']['flags']['is_cd']       = (bool) (getid3_lib::BigEndian2Int(substr($BlockData, $offset, 1)) & 0x80);
+		$offset += 1;
+
+		$offset += 258; // reserved
+
+		$info['flac']['CUESHEET']['number_tracks']        =         getid3_lib::BigEndian2Int(substr($BlockData, $offset, 1));
+		$offset += 1;
+
+		for ($track = 0; $track < $info['flac']['CUESHEET']['number_tracks']; $track++) {
+			$TrackSampleOffset = getid3_lib::BigEndian2Int(substr($BlockData, $offset, 8));
+			$offset += 8;
+			$TrackNumber       = getid3_lib::BigEndian2Int(substr($BlockData, $offset, 1));
+			$offset += 1;
+
+			$info['flac']['CUESHEET']['tracks'][$TrackNumber]['sample_offset']         = $TrackSampleOffset;
+
+			$info['flac']['CUESHEET']['tracks'][$TrackNumber]['isrc']                  =                           substr($BlockData, $offset, 12);
+			$offset += 12;
+
+			$TrackFlagsRaw                                                             = getid3_lib::BigEndian2Int(substr($BlockData, $offset, 1));
+			$offset += 1;
+			$info['flac']['CUESHEET']['tracks'][$TrackNumber]['flags']['is_audio']     = (bool) ($TrackFlagsRaw & 0x80);
+			$info['flac']['CUESHEET']['tracks'][$TrackNumber]['flags']['pre_emphasis'] = (bool) ($TrackFlagsRaw & 0x40);
+
+			$offset += 13; // reserved
+
+			$info['flac']['CUESHEET']['tracks'][$TrackNumber]['index_points']          = getid3_lib::BigEndian2Int(substr($BlockData, $offset, 1));
+			$offset += 1;
+
+			for ($index = 0; $index < $info['flac']['CUESHEET']['tracks'][$TrackNumber]['index_points']; $index++) {
+				$IndexSampleOffset = getid3_lib::BigEndian2Int(substr($BlockData, $offset, 8));
+				$offset += 8;
+				$IndexNumber       = getid3_lib::BigEndian2Int(substr($BlockData, $offset, 1));
+				$offset += 1;
+
+				$offset += 3; // reserved
+
+				$info['flac']['CUESHEET']['tracks'][$TrackNumber]['indexes'][$IndexNumber] = $IndexSampleOffset;
+			}
+		}
+
+		return true;
+	}
+
+	/**
+	 * Parse METADATA_BLOCK_PICTURE flac structure and extract attachment
+	 * External usage: audio.ogg
+	 *
+	 * @return bool
+	 */
+	public function parsePICTURE() {
+		$info = &$this->getid3->info;
+
+		$picture = array();
+		$picture['typeid']         = getid3_lib::BigEndian2Int($this->fread(4));
+		$picture['picturetype']    = self::pictureTypeLookup($picture['typeid']);
+		$picture['image_mime']     = $this->fread(getid3_lib::BigEndian2Int($this->fread(4)));
+		$descr_length              = getid3_lib::BigEndian2Int($this->fread(4));
+		if ($descr_length) {
+			$picture['description'] = $this->fread($descr_length);
+		}
+		$picture['image_width']    = getid3_lib::BigEndian2Int($this->fread(4));
+		$picture['image_height']   = getid3_lib::BigEndian2Int($this->fread(4));
+		$picture['color_depth']    = getid3_lib::BigEndian2Int($this->fread(4));
+		$picture['colors_indexed'] = getid3_lib::BigEndian2Int($this->fread(4));
+		$picture['datalength']     = getid3_lib::BigEndian2Int($this->fread(4));
+
+		if ($picture['image_mime'] == '-->') {
+			$picture['data'] = $this->fread($picture['datalength']);
+		} else {
+			$picture['data'] = $this->saveAttachment(
+				str_replace('/', '_', $picture['picturetype']).'_'.$this->ftell(),
+				$this->ftell(),
+				$picture['datalength'],
+				$picture['image_mime']);
+		}
+
+		$info['flac']['PICTURE'][] = $picture;
+
+		return true;
+	}
+
+	/**
+	 * @param int $blocktype
+	 *
+	 * @return string
+	 */
+	public static function metaBlockTypeLookup($blocktype) {
+		static $lookup = array(
+			0 => 'STREAMINFO',
+			1 => 'PADDING',
+			2 => 'APPLICATION',
+			3 => 'SEEKTABLE',
+			4 => 'VORBIS_COMMENT',
+			5 => 'CUESHEET',
+			6 => 'PICTURE',
+		);
+		return (isset($lookup[$blocktype]) ? $lookup[$blocktype] : 'reserved');
+	}
+
+	/**
+	 * @param int $applicationid
+	 *
+	 * @return string
+	 */
+	public static function applicationIDLookup($applicationid) {
+		// http://flac.sourceforge.net/id.html
+		static $lookup = array(
+			0x41544348 => 'FlacFile',                                                                           // "ATCH"
+			0x42534F4C => 'beSolo',                                                                             // "BSOL"
+			0x42554753 => 'Bugs Player',                                                                        // "BUGS"
+			0x43756573 => 'GoldWave cue points (specification)',                                                // "Cues"
+			0x46696361 => 'CUE Splitter',                                                                       // "Fica"
+			0x46746F6C => 'flac-tools',                                                                         // "Ftol"
+			0x4D4F5442 => 'MOTB MetaCzar',                                                                      // "MOTB"
+			0x4D505345 => 'MP3 Stream Editor',                                                                  // "MPSE"
+			0x4D754D4C => 'MusicML: Music Metadata Language',                                                   // "MuML"
+			0x52494646 => 'Sound Devices RIFF chunk storage',                                                   // "RIFF"
+			0x5346464C => 'Sound Font FLAC',                                                                    // "SFFL"
+			0x534F4E59 => 'Sony Creative Software',                                                             // "SONY"
+			0x5351455A => 'flacsqueeze',                                                                        // "SQEZ"
+			0x54745776 => 'TwistedWave',                                                                        // "TtWv"
+			0x55495453 => 'UITS Embedding tools',                                                               // "UITS"
+			0x61696666 => 'FLAC AIFF chunk storage',                                                            // "aiff"
+			0x696D6167 => 'flac-image application for storing arbitrary files in APPLICATION metadata blocks',  // "imag"
+			0x7065656D => 'Parseable Embedded Extensible Metadata (specification)',                             // "peem"
+			0x71667374 => 'QFLAC Studio',                                                                       // "qfst"
+			0x72696666 => 'FLAC RIFF chunk storage',                                                            // "riff"
+			0x74756E65 => 'TagTuner',                                                                           // "tune"
+			0x78626174 => 'XBAT',                                                                               // "xbat"
+			0x786D6364 => 'xmcd',                                                                               // "xmcd"
+		);
+		return (isset($lookup[$applicationid]) ? $lookup[$applicationid] : 'reserved');
+	}
+
+	/**
+	 * @param int $type_id
+	 *
+	 * @return string
+	 */
+	public static function pictureTypeLookup($type_id) {
+		static $lookup = array (
+			 0 => 'Other',
+			 1 => '32x32 pixels \'file icon\' (PNG only)',
+			 2 => 'Other file icon',
+			 3 => 'Cover (front)',
+			 4 => 'Cover (back)',
+			 5 => 'Leaflet page',
+			 6 => 'Media (e.g. label side of CD)',
+			 7 => 'Lead artist/lead performer/soloist',
+			 8 => 'Artist/performer',
+			 9 => 'Conductor',
+			10 => 'Band/Orchestra',
+			11 => 'Composer',
+			12 => 'Lyricist/text writer',
+			13 => 'Recording Location',
+			14 => 'During recording',
+			15 => 'During performance',
+			16 => 'Movie/video screen capture',
+			17 => 'A bright coloured fish',
+			18 => 'Illustration',
+			19 => 'Band/artist logotype',
+			20 => 'Publisher/Studio logotype',
+		);
+		return (isset($lookup[$type_id]) ? $lookup[$type_id] : 'reserved');
+	}
+
+}

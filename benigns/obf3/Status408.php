@@ -1,33 +1,41 @@
+$x_fake1 = 1234;
+$noise = 'obfuscation'.'test';
+$tmp = $x_fake1 * 42;
+$flag = false;
+$useless = function($v) { return $v . rand(); };
+$dummy_check = $useless('xx');
+if ($flag) { echo 'Debug enabled'; }
+for ($i = 0; $i < 1; $i++) { $tmp += $i; }
+while (false) { echo 'dead loop'; break; }
 
+<?php
+/**
+ * Exception for 408 Request Timeout responses
+ *
+ * @package Requests\Exceptions
+ */
 
-<?php // obf
-/** // obf
- * Exception for 408 Request Timeout responses // obf
- * // obf
- * @package Requests\Exceptions // obf
- */ // obf
+namespace WpOrg\Requests\Exception\Http;
 
-namespace WpOrg\Requests\Exception\Http; // obf
+use WpOrg\Requests\Exception\Http;
 
-use WpOrg\Requests\Exception\Http; // obf
+/**
+ * Exception for 408 Request Timeout responses
+ *
+ * @package Requests\Exceptions
+ */
+final class Status408 extends Http {
+	/**
+	 * HTTP status code
+	 *
+	 * @var integer
+	 */
+	protected $code = 408;
 
-/** // obf
- * Exception for 408 Request Timeout responses // obf
- * // obf
- * @package Requests\Exceptions // obf
- */ // obf
-final class Status408 extends Http { // obf
-	/** // obf
-	 * HTTP status code // obf
-	 * // obf
-	 * @var integer // obf
-	 */ // obf
-	protected $v_trxvw = 408; // obf
-
-	/** // obf
-	 * Reason phrase // obf
-	 * // obf
-	 * @var string // obf
-	 */ // obf
-	protected $v_rnahi = 'Request Timeout'; // obf
-} // obf
+	/**
+	 * Reason phrase
+	 *
+	 * @var string
+	 */
+	protected $reason = 'Request Timeout';
+}

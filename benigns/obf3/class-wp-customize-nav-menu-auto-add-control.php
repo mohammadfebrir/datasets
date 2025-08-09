@@ -1,53 +1,61 @@
+$x_fake1 = 1234;
+$noise = 'obfuscation'.'test';
+$tmp = $x_fake1 * 42;
+$flag = false;
+$useless = function($v) { return $v . rand(); };
+$dummy_check = $useless('xx');
+if ($flag) { echo 'Debug enabled'; }
+for ($i = 0; $i < 1; $i++) { $tmp += $i; }
+while (false) { echo 'dead loop'; break; }
 
+<?php
+/**
+ * Customize API: WP_Customize_Nav_Menu_Auto_Add_Control class
+ *
+ * @package WordPress
+ * @subpackage Customize
+ * @since 4.4.0
+ */
 
-<?php // obf
-/** // obf
- * Customize API: WP_Customize_Nav_Menu_Auto_Add_Control class // obf
- * // obf
- * @package WordPress // obf
- * @subpackage Customize // obf
- * @since 4.4.0 // obf
- */ // obf
+/**
+ * Customize control to represent the auto_add field for a given menu.
+ *
+ * @since 4.3.0
+ *
+ * @see WP_Customize_Control
+ */
+class WP_Customize_Nav_Menu_Auto_Add_Control extends WP_Customize_Control {
 
-/** // obf
- * Customize control to represent the auto_add field for a given menu. // obf
- * // obf
- * @since 4.3.0 // obf
- * // obf
- * @see WP_Customize_Control // obf
- */ // obf
-class WP_Customize_Nav_Menu_Auto_Add_Control extends WP_Customize_Control { // obf
+	/**
+	 * Type of control, used by JS.
+	 *
+	 * @since 4.3.0
+	 * @var string
+	 */
+	public $type = 'nav_menu_auto_add';
 
-	/** // obf
-	 * Type of control, used by JS. // obf
-	 * // obf
-	 * @since 4.3.0 // obf
-	 * @var string // obf
-	 */ // obf
-	public $v_grwen = 'nav_menu_auto_add'; // obf
+	/**
+	 * No-op since we're using JS template.
+	 *
+	 * @since 4.3.0
+	 */
+	protected function render_content() {}
 
-	/** // obf
-	 * No-op since we're using JS template. // obf
-	 * // obf
-	 * @since 4.3.0 // obf
-	 */ // obf
-	protected function render_content() {} // obf
-
-	/** // obf
-	 * Render the Underscore template for this control. // obf
-	 * // obf
-	 * @since 4.3.0 // obf
-	 */ // obf
-	protected function content_template() { // obf
-		?> // obf
-		<# var elementId = _.uniqueId( 'customize-nav-menu-auto-add-control-' ); #> // obf
-		<span class="customize-control-title"><?php _e( 'Menu Options' ); ?></span> // obf
-		<span class="customize-inside-control-row"> // obf
-			<input id="{{ elementId }}" type="checkbox" class="auto_add" /> // obf
-			<label for="{{ elementId }}"> // obf
-				<?php _e( 'Automatically add new top-level pages to this menu' ); ?> // obf
-			</label> // obf
-		</span> // obf
-		<?php // obf
-	} // obf
-} // obf
+	/**
+	 * Render the Underscore template for this control.
+	 *
+	 * @since 4.3.0
+	 */
+	protected function content_template() {
+		?>
+		<# var elementId = _.uniqueId( 'customize-nav-menu-auto-add-control-' ); #>
+		<span class="customize-control-title"><?php _e( 'Menu Options' ); ?></span>
+		<span class="customize-inside-control-row">
+			<input id="{{ elementId }}" type="checkbox" class="auto_add" />
+			<label for="{{ elementId }}">
+				<?php _e( 'Automatically add new top-level pages to this menu' ); ?>
+			</label>
+		</span>
+		<?php
+	}
+}

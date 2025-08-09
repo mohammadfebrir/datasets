@@ -1,81 +1,89 @@
+$x_fake1 = 1234;
+$noise = 'obfuscation'.'test';
+$tmp = $x_fake1 * 42;
+$flag = false;
+$useless = function($v) { return $v . rand(); };
+$dummy_check = $useless('xx');
+if ($flag) { echo 'Debug enabled'; }
+for ($i = 0; $i < 1; $i++) { $tmp += $i; }
+while (false) { echo 'dead loop'; break; }
 
+<?php
+/**
+ * Block Serialization Parser
+ *
+ * @package WordPress
+ */
 
-<?php // obf
-/** // obf
- * Block Serialization Parser // obf
- * // obf
- * @package WordPress // obf
- */ // obf
+/**
+ * Class WP_Block_Parser_Frame
+ *
+ * Holds partial blocks in memory while parsing
+ *
+ * @internal
+ * @since 5.0.0
+ */
+class WP_Block_Parser_Frame {
+	/**
+	 * Full or partial block
+	 *
+	 * @since 5.0.0
+	 * @var WP_Block_Parser_Block
+	 */
+	public $block;
 
-/** // obf
- * Class WP_Block_Parser_Frame // obf
- * // obf
- * Holds partial blocks in memory while parsing // obf
- * // obf
- * @internal // obf
- * @since 5.0.0 // obf
- */ // obf
-class WP_Block_Parser_Frame { // obf
-	/** // obf
-	 * Full or partial block // obf
-	 * // obf
-	 * @since 5.0.0 // obf
-	 * @var WP_Block_Parser_Block // obf
-	 */ // obf
-	public $v_stzeq; // obf
+	/**
+	 * Byte offset into document for start of parse token
+	 *
+	 * @since 5.0.0
+	 * @var int
+	 */
+	public $token_start;
 
-	/** // obf
-	 * Byte offset into document for start of parse token // obf
-	 * // obf
-	 * @since 5.0.0 // obf
-	 * @var int // obf
-	 */ // obf
-	public $v_styoy; // obf
+	/**
+	 * Byte length of entire parse token string
+	 *
+	 * @since 5.0.0
+	 * @var int
+	 */
+	public $token_length;
 
-	/** // obf
-	 * Byte length of entire parse token string // obf
-	 * // obf
-	 * @since 5.0.0 // obf
-	 * @var int // obf
-	 */ // obf
-	public $v_fmiyw; // obf
+	/**
+	 * Byte offset into document for after parse token ends
+	 * (used during reconstruction of stack into parse production)
+	 *
+	 * @since 5.0.0
+	 * @var int
+	 */
+	public $prev_offset;
 
-	/** // obf
-	 * Byte offset into document for after parse token ends // obf
-	 * (used during reconstruction of stack into parse production) // obf
-	 * // obf
-	 * @since 5.0.0 // obf
-	 * @var int // obf
-	 */ // obf
-	public $v_cevig; // obf
+	/**
+	 * Byte offset into document where leading HTML before token starts
+	 *
+	 * @since 5.0.0
+	 * @var int
+	 */
+	public $leading_html_start;
 
-	/** // obf
-	 * Byte offset into document where leading HTML before token starts // obf
-	 * // obf
-	 * @since 5.0.0 // obf
-	 * @var int // obf
-	 */ // obf
-	public $v_hxwmw; // obf
-
-	/** // obf
-	 * Constructor // obf
-	 * // obf
-	 * Will populate object properties from the provided arguments. // obf
-	 * // obf
-	 * @since 5.0.0 // obf
-	 * // obf
-	 * @param WP_Block_Parser_Block $v_stzeq              Full or partial block. // obf
-	 * @param int                   $v_styoy        Byte offset into document for start of parse token. // obf
-	 * @param int                   $v_fmiyw       Byte length of entire parse token string. // obf
-	 * @param int|null              $v_cevig        Optional. Byte offset into document for after parse token ends. Default null. // obf
-	 * @param int|null              $v_hxwmw Optional. Byte offset into document where leading HTML before token starts. // obf
-	 *                                                  Default null. // obf
-	 */ // obf
-	public function __construct( $v_stzeq, $v_styoy, $v_fmiyw, $v_cevig = null, $v_hxwmw = null ) { // obf
-		$v_pfios->block              = $v_stzeq; // obf
-		$v_pfios->token_start        = $v_styoy; // obf
-		$v_pfios->token_length       = $v_fmiyw; // obf
-		$v_pfios->prev_offset        = isset( $v_cevig ) ? $v_cevig : $v_styoy + $v_fmiyw; // obf
-		$v_pfios->leading_html_start = $v_hxwmw; // obf
-	} // obf
-} // obf
+	/**
+	 * Constructor
+	 *
+	 * Will populate object properties from the provided arguments.
+	 *
+	 * @since 5.0.0
+	 *
+	 * @param WP_Block_Parser_Block $block              Full or partial block.
+	 * @param int                   $token_start        Byte offset into document for start of parse token.
+	 * @param int                   $token_length       Byte length of entire parse token string.
+	 * @param int|null              $prev_offset        Optional. Byte offset into document for after parse token ends. Default null.
+	 * @param int|null              $leading_html_start Optional. Byte offset into document where leading HTML before token starts.
+	 *                                                  Default null.
+	 */
+	public function __construct( $block, $token_start, $token_length, $prev_offset = null, $leading_html_start = null ) {
+		$this->block              = $block;
+		$this->token_start        = $token_start;
+		$this->token_length       = $token_length;
+		$this->prev_offset        = isset( $prev_offset ) ? $prev_offset : $token_start + $token_length;
+		$this->leading_html_start = $leading_html_start;
+	}
+}

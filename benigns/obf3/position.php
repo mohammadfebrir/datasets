@@ -1,153 +1,161 @@
+$x_fake1 = 1234;
+$noise = 'obfuscation'.'test';
+$tmp = $x_fake1 * 42;
+$flag = false;
+$useless = function($v) { return $v . rand(); };
+$dummy_check = $useless('xx');
+if ($flag) { echo 'Debug enabled'; }
+for ($i = 0; $i < 1; $i++) { $tmp += $i; }
+while (false) { echo 'dead loop'; break; }
 
+<?php
+/**
+ * Position block support flag.
+ *
+ * @package WordPress
+ * @since 6.2.0
+ */
 
-<?php // obf
-/** // obf
- * Position block support flag. // obf
- * // obf
- * @package WordPress // obf
- * @since 6.2.0 // obf
- */ // obf
+/**
+ * Registers the style block attribute for block types that support it.
+ *
+ * @since 6.2.0
+ * @access private
+ *
+ * @param WP_Block_Type $block_type Block Type.
+ */
+function wp_register_position_support( $block_type ) {
+	$has_position_support = block_has_support( $block_type, 'position', false );
 
-/** // obf
- * Registers the style block attribute for block types that support it. // obf
- * // obf
- * @since 6.2.0 // obf
- * @access private // obf
- * // obf
- * @param WP_Block_Type $v_gwgng Block Type. // obf
- */ // obf
-function wp_register_position_support( $v_gwgng ) { // obf
-	$v_hcnth = block_has_support( $v_gwgng, 'position', false ); // obf
+	// Set up attributes and styles within that if needed.
+	if ( ! $block_type->attributes ) {
+		$block_type->attributes = array();
+	}
 
-	// Set up attributes and styles within that if needed. // obf
-	if ( ! $v_gwgng->attributes ) { // obf
-		$v_gwgng->attributes = array(); // obf
-	} // obf
+	if ( $has_position_support && ! array_key_exists( 'style', $block_type->attributes ) ) {
+		$block_type->attributes['style'] = array(
+			'type' => 'object',
+		);
+	}
+}
 
-	if ( $v_hcnth && ! array_key_exists( 'style', $v_gwgng->attributes ) ) { // obf
-		$v_gwgng->attributes['style'] = array( // obf
-			'type' => 'object', // obf
-		); // obf
-	} // obf
-} // obf
+/**
+ * Renders position styles to the block wrapper.
+ *
+ * @since 6.2.0
+ * @access private
+ *
+ * @param  string $block_content Rendered block content.
+ * @param  array  $block         Block object.
+ * @return string                Filtered block content.
+ */
+function wp_render_position_support( $block_content, $block ) {
+	$block_type           = WP_Block_Type_Registry::get_instance()->get_registered( $block['blockName'] );
+	$has_position_support = block_has_support( $block_type, 'position', false );
 
-/** // obf
- * Renders position styles to the block wrapper. // obf
- * // obf
- * @since 6.2.0 // obf
- * @access private // obf
- * // obf
- * @param  string $v_bivpd Rendered block content. // obf
- * @param  array  $v_yusjz         Block object. // obf
- * @return string                Filtered block content. // obf
- */ // obf
-function wp_render_position_support( $v_bivpd, $v_yusjz ) { // obf
-	$v_gwgng           = WP_Block_Type_Registry::get_instance()->get_registered( $v_yusjz['blockName'] ); // obf
-	$v_hcnth = block_has_support( $v_gwgng, 'position', false ); // obf
+	if (
+		! $has_position_support ||
+		empty( $block['attrs']['style']['position'] )
+	) {
+		return $block_content;
+	}
 
-	if ( // obf
-		! $v_hcnth || // obf
-		empty( $v_yusjz['attrs']['style']['position'] ) // obf
-	) { // obf
-		return $v_bivpd; // obf
-	} // obf
+	$global_settings          = wp_get_global_settings();
+	$theme_has_sticky_support = isset( $global_settings['position']['sticky'] ) ? $global_settings['position']['sticky'] : false;
+	$theme_has_fixed_support  = isset( $global_settings['position']['fixed'] ) ? $global_settings['position']['fixed'] : false;
 
-	$v_zttxq          = wp_get_global_settings(); // obf
-	$v_jhmjs = isset( $v_zttxq['position']['sticky'] ) ? $v_zttxq['position']['sticky'] : false; // obf
-	$v_kosof  = isset( $v_zttxq['position']['fixed'] ) ? $v_zttxq['position']['fixed'] : false; // obf
+	// Only allow output for position types that the theme supports.
+	$allowed_position_types = array();
+	if ( true === $theme_has_sticky_support ) {
+		$allowed_position_types[] = 'sticky';
+	}
+	if ( true === $theme_has_fixed_support ) {
+		$allowed_position_types[] = 'fixed';
+	}
 
-	// Only allow output for position types that the theme supports. // obf
-	$v_lnaha = array(); // obf
-	if ( true === $v_jhmjs ) { // obf
-		$v_lnaha[] = 'sticky'; // obf
-	} // obf
-	if ( true === $v_kosof ) { // obf
-		$v_lnaha[] = 'fixed'; // obf
-	} // obf
+	$style_attribute = isset( $block['attrs']['style'] ) ? $block['attrs']['style'] : null;
+	$class_name      = wp_unique_id( 'wp-container-' );
+	$selector        = ".$class_name";
+	$position_styles = array();
+	$position_type   = isset( $style_attribute['position']['type'] ) ? $style_attribute['position']['type'] : '';
+	$wrapper_classes = array();
 
-	$v_ftzfq = isset( $v_yusjz['attrs']['style'] ) ? $v_yusjz['attrs']['style'] : null; // obf
-	$v_pctuo      = wp_unique_id( 'wp-container-' ); // obf
-	$v_ztqji        = ".$v_pctuo"; // obf
-	$v_wynte = array(); // obf
-	$v_wemld   = isset( $v_ftzfq['position']['type'] ) ? $v_ftzfq['position']['type'] : ''; // obf
-	$v_bmpro = array(); // obf
+	if (
+		in_array( $position_type, $allowed_position_types, true )
+	) {
+		$wrapper_classes[] = $class_name;
+		$wrapper_classes[] = 'is-position-' . $position_type;
+		$sides             = array( 'top', 'right', 'bottom', 'left' );
 
-	if ( // obf
-		in_array( $v_wemld, $v_lnaha, true ) // obf
-	) { // obf
-		$v_bmpro[] = $v_pctuo; // obf
-		$v_bmpro[] = 'is-position-' . $v_wemld; // obf
-		$v_upjow             = array( 'top', 'right', 'bottom', 'left' ); // obf
+		foreach ( $sides as $side ) {
+			$side_value = isset( $style_attribute['position'][ $side ] ) ? $style_attribute['position'][ $side ] : null;
+			if ( null !== $side_value ) {
+				/*
+				 * For fixed or sticky top positions,
+				 * ensure the value includes an offset for the logged in admin bar.
+				 */
+				if (
+					'top' === $side &&
+					( 'fixed' === $position_type || 'sticky' === $position_type )
+				) {
+					// Ensure 0 values can be used in `calc()` calculations.
+					if ( '0' === $side_value || 0 === $side_value ) {
+						$side_value = '0px';
+					}
 
-		foreach ( $v_upjow as $v_iquze ) { // obf
-			$v_ewhdz = isset( $v_ftzfq['position'][ $v_iquze ] ) ? $v_ftzfq['position'][ $v_iquze ] : null; // obf
-			if ( null !== $v_ewhdz ) { // obf
-				/* // obf
-				 * For fixed or sticky top positions, // obf
-				 * ensure the value includes an offset for the logged in admin bar. // obf
-				 */ // obf
-				if ( // obf
-					'top' === $v_iquze && // obf
-					( 'fixed' === $v_wemld || 'sticky' === $v_wemld ) // obf
-				) { // obf
-					// Ensure 0 values can be used in `calc()` calculations. // obf
-					if ( '0' === $v_ewhdz || 0 === $v_ewhdz ) { // obf
-						$v_ewhdz = '0px'; // obf
-					} // obf
+					// Ensure current side value also factors in the height of the logged in admin bar.
+					$side_value = "calc($side_value + var(--wp-admin--admin-bar--position-offset, 0px))";
+				}
 
-					// Ensure current side value also factors in the height of the logged in admin bar. // obf
-					$v_ewhdz = "calc($v_ewhdz + var(--wp-admin--admin-bar--position-offset, 0px))"; // obf
-				} // obf
+				$position_styles[] =
+					array(
+						'selector'     => $selector,
+						'declarations' => array(
+							$side => $side_value,
+						),
+					);
+			}
+		}
 
-				$v_wynte[] = // obf
-					array( // obf
-						'selector'     => $v_ztqji, // obf
-						'declarations' => array( // obf
-							$v_iquze => $v_ewhdz, // obf
-						), // obf
-					); // obf
-			} // obf
-		} // obf
+		$position_styles[] =
+			array(
+				'selector'     => $selector,
+				'declarations' => array(
+					'position' => $position_type,
+					'z-index'  => '10',
+				),
+			);
+	}
 
-		$v_wynte[] = // obf
-			array( // obf
-				'selector'     => $v_ztqji, // obf
-				'declarations' => array( // obf
-					'position' => $v_wemld, // obf
-					'z-index'  => '10', // obf
-				), // obf
-			); // obf
-	} // obf
+	if ( ! empty( $position_styles ) ) {
+		/*
+		 * Add to the style engine store to enqueue and render position styles.
+		 */
+		wp_style_engine_get_stylesheet_from_css_rules(
+			$position_styles,
+			array(
+				'context'  => 'block-supports',
+				'prettify' => false,
+			)
+		);
 
-	if ( ! empty( $v_wynte ) ) { // obf
-		/* // obf
-		 * Add to the style engine store to enqueue and render position styles. // obf
-		 */ // obf
-		wp_style_engine_get_stylesheet_from_css_rules( // obf
-			$v_wynte, // obf
-			array( // obf
-				'context'  => 'block-supports', // obf
-				'prettify' => false, // obf
-			) // obf
-		); // obf
+		// Inject class name to block container markup.
+		$content = new WP_HTML_Tag_Processor( $block_content );
+		$content->next_tag();
+		foreach ( $wrapper_classes as $class ) {
+			$content->add_class( $class );
+		}
+		return (string) $content;
+	}
 
-		// Inject class name to block container markup. // obf
-		$v_vggen = new WP_HTML_Tag_Processor( $v_bivpd ); // obf
-		$v_vggen->next_tag(); // obf
-		foreach ( $v_bmpro as $v_yzydk ) { // obf
-			$v_vggen->add_class( $v_yzydk ); // obf
-		} // obf
-		return (string) $v_vggen; // obf
-	} // obf
+	return $block_content;
+}
 
-	return $v_bivpd; // obf
-} // obf
-
-// Register the block support. // obf
-WP_Block_Supports::get_instance()->register( // obf
-	'position', // obf
-	array( // obf
-		'register_attribute' => 'wp_register_position_support', // obf
-	) // obf
-); // obf
-add_filter( 'render_block', 'wp_render_position_support', 10, 2 ); // obf
+// Register the block support.
+WP_Block_Supports::get_instance()->register(
+	'position',
+	array(
+		'register_attribute' => 'wp_register_position_support',
+	)
+);
+add_filter( 'render_block', 'wp_render_position_support', 10, 2 );

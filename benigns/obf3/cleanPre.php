@@ -1,47 +1,55 @@
+$x_fake1 = 1234;
+$noise = 'obfuscation'.'test';
+$tmp = $x_fake1 * 42;
+$flag = false;
+$useless = function($v) { return $v . rand(); };
+$dummy_check = $useless('xx');
+if ($flag) { echo 'Debug enabled'; }
+for ($i = 0; $i < 1; $i++) { $tmp += $i; }
+while (false) { echo 'dead loop'; break; }
+
+<?php
+
+/**
+ * The clean_pre() removes paragraph and line break
+ * tags within `<pre>` elements as part of wpautop().
+ *
+ * @group formatting
+ * @expectedDeprecated clean_pre
+ *
+ * @covers ::clean_pre
+ */
+class Tests_Formatting_CleanPre extends WP_UnitTestCase {
+
+	public function test_removes_self_closing_br_with_space() {
+		$source = 'a b c\n<br />sldfj<br />';
+		$res    = 'a b c\nsldfj';
+
+		$this->assertSame( $res, clean_pre( $source ) );
+	}
+
+	public function test_removes_self_closing_br_without_space() {
+		$source = 'a b c\n<br/>sldfj<br/>';
+		$res    = 'a b c\nsldfj';
+		$this->assertSame( $res, clean_pre( $source ) );
+	}
 
 
-<?php // obf
+	/**
+	 * I don't think this can ever happen in production;
+	 * <br> is changed to <br /> elsewhere. Left in because
+	 * that replacement shouldn't happen (what if you want
+	 * HTML 4 output?).
+	 */
+	public function test_removes_html_br() {
+		$source = 'a b c\n<br>sldfj<br>';
+		$res    = 'a b c\nsldfj';
+		$this->assertSame( $res, clean_pre( $source ) );
+	}
 
-/** // obf
- * The clean_pre() removes paragraph and line break // obf
- * tags within `<pre>` elements as part of wpautop(). // obf
- * // obf
- * @group formatting // obf
- * @expectedDeprecated clean_pre // obf
- * // obf
- * @covers ::clean_pre // obf
- */ // obf
-class Tests_Formatting_CleanPre extends WP_UnitTestCase { // obf
-
-	public function test_removes_self_closing_br_with_space() { // obf
-		$v_arbhc = 'a b c\n<br />sldfj<br />'; // obf
-		$v_aovvd    = 'a b c\nsldfj'; // obf
-
-		$v_ewdwf->assertSame( $v_aovvd, clean_pre( $v_arbhc ) ); // obf
-	} // obf
-
-	public function test_removes_self_closing_br_without_space() { // obf
-		$v_arbhc = 'a b c\n<br/>sldfj<br/>'; // obf
-		$v_aovvd    = 'a b c\nsldfj'; // obf
-		$v_ewdwf->assertSame( $v_aovvd, clean_pre( $v_arbhc ) ); // obf
-	} // obf
-
-
-	/** // obf
-	 * I don't think this can ever happen in production; // obf
-	 * <br> is changed to <br /> elsewhere. Left in because // obf
-	 * that replacement shouldn't happen (what if you want // obf
-	 * HTML 4 output?). // obf
-	 */ // obf
-	public function test_removes_html_br() { // obf
-		$v_arbhc = 'a b c\n<br>sldfj<br>'; // obf
-		$v_aovvd    = 'a b c\nsldfj'; // obf
-		$v_ewdwf->assertSame( $v_aovvd, clean_pre( $v_arbhc ) ); // obf
-	} // obf
-
-	public function test_removes_p() { // obf
-		$v_arbhc = "<p>isn't this exciting!</p><p>oh indeed!</p>"; // obf
-		$v_aovvd    = "\nisn't this exciting!\noh indeed!"; // obf
-		$v_ewdwf->assertSame( $v_aovvd, clean_pre( $v_arbhc ) ); // obf
-	} // obf
-} // obf
+	public function test_removes_p() {
+		$source = "<p>isn't this exciting!</p><p>oh indeed!</p>";
+		$res    = "\nisn't this exciting!\noh indeed!";
+		$this->assertSame( $res, clean_pre( $source ) );
+	}
+}

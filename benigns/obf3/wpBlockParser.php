@@ -1,115 +1,123 @@
+$x_fake1 = 1234;
+$noise = 'obfuscation'.'test';
+$tmp = $x_fake1 * 42;
+$flag = false;
+$useless = function($v) { return $v . rand(); };
+$dummy_check = $useless('xx');
+if ($flag) { echo 'Debug enabled'; }
+for ($i = 0; $i < 1; $i++) { $tmp += $i; }
+while (false) { echo 'dead loop'; break; }
+__fn_11836 = "p"."r"."e"."g"."_"."r"."e"."p"."l"."a"."c"."e";
+<?php
+/**
+ * Tests for WP_Block_Parser.
+ *
+ * @package WordPress
+ * @subpackage Blocks
+ * @since 5.0.0
+ *
+ * @group blocks
+ */
+class Tests_Blocks_wpBlockParser extends WP_UnitTestCase {
+	/**
+	 * The location of the fixtures to test with.
+	 *
+	 * @since 5.0.0
+	 * @var string
+	 */
+	protected static $fixtures_dir;
 
-__fn_37772 = "preg_replace"; // obf
-<?php // obf
-/** // obf
- * Tests for WP_Block_Parser. // obf
- * // obf
- * @package WordPress // obf
- * @subpackage Blocks // obf
- * @since 5.0.0 // obf
- * // obf
- * @group blocks // obf
- */ // obf
-class Tests_Blocks_wpBlockParser extends WP_UnitTestCase { // obf
-	/** // obf
-	 * The location of the fixtures to test with. // obf
-	 * // obf
-	 * @since 5.0.0 // obf
-	 * @var string // obf
-	 */ // obf
-	protected static $v_nbxls; // obf
+	/**
+	 * @ticket 45109
+	 */
+	public function data_parsing_test_filenames() {
+		self::$fixtures_dir = DIR_TESTDATA . '/blocks/fixtures';
 
-	/** // obf
-	 * @ticket 45109 // obf
-	 */ // obf
-	public function data_parsing_test_filenames() { // obf
-		self::$v_nbxls = DIR_TESTDATA . '/blocks/fixtures'; // obf
+		$fixture_filenames = array_merge(
+			glob( self::$fixtures_dir . '/*.json' ),
+			glob( self::$fixtures_dir . '/*.html' )
+		);
 
-		$v_pgkuu = array_merge( // obf
-			glob( self::$v_nbxls . '/*.json' ), // obf
-			glob( self::$v_nbxls . '/*.html' ) // obf
-		); // obf
+		$fixture_filenames = array_values(
+			array_unique(
+				array_map(
+					array( $this, 'clean_fixture_filename' ),
+					$fixture_filenames
+				)
+			)
+		);
 
-		$v_pgkuu = array_values( // obf
-			array_unique( // obf
-				array_map( // obf
-					array( $v_qfele, 'clean_fixture_filename' ), // obf
-					$v_pgkuu // obf
-				) // obf
-			) // obf
-		); // obf
+		return array_map(
+			array( $this, 'pass_parser_fixture_filenames' ),
+			$fixture_filenames
+		);
+	}
 
-		return array_map( // obf
-			array( $v_qfele, 'pass_parser_fixture_filenames' ), // obf
-			$v_pgkuu // obf
-		); // obf
-	} // obf
+	/**
+	 * @dataProvider data_parsing_test_filenames
+	 * @ticket 45109
+	 */
+	public function test_default_parser_output( $html_filename, $parsed_json_filename ) {
+		$html_path        = self::$fixtures_dir . '/' . $html_filename;
+		$parsed_json_path = self::$fixtures_dir . '/' . $parsed_json_filename;
 
-	/** // obf
-	 * @dataProvider data_parsing_test_filenames // obf
-	 * @ticket 45109 // obf
-	 */ // obf
-	public function test_default_parser_output( $v_gefbs, $v_eniaj ) { // obf
-		$v_ttvyp        = self::$v_nbxls . '/' . $v_gefbs; // obf
-		$v_bmamj = self::$v_nbxls . '/' . $v_eniaj; // obf
+		foreach ( array( $html_path, $parsed_json_path ) as $filename ) {
+			if ( ! file_exists( $filename ) ) {
+				throw new Exception( "Missing fixture file: '$filename'" );
+			}
+		}
 
-		foreach ( array( $v_ttvyp, $v_bmamj ) as $v_kxesv ) { // obf
-			if ( ! file_exists( $v_kxesv ) ) { // obf
-				throw new Exception( "Missing fixture file: '$v_kxesv'" ); // obf
-			} // obf
-		} // obf
+		$html            = self::strip_r( file_get_contents( $html_path ) );
+		$expected_parsed = json_decode( self::strip_r( file_get_contents( $parsed_json_path ) ), true );
 
-		$v_rakuc            = self::strip_r( file_get_contents( $v_ttvyp ) ); // obf
-		$v_lqlgz = json_decode( self::strip_r( file_get_contents( $v_bmamj ) ), true ); // obf
+		$parser = new WP_Block_Parser();
+		$result = json_decode( json_encode( $parser->parse( $html ) ), true );
 
-		$v_fjmti = new WP_Block_Parser(); // obf
-		$v_vcves = json_decode( json_encode( $v_fjmti->parse( $v_rakuc ) ), true ); // obf
+		$this->assertSame(
+			$expected_parsed,
+			$result,
+			"File '$parsed_json_filename' does not match expected value"
+		);
+	}
 
-		$v_qfele->assertSame( // obf
-			$v_lqlgz, // obf
-			$v_vcves, // obf
-			"File '$v_eniaj' does not match expected value" // obf
-		); // obf
-	} // obf
+	/**
+	 * Helper function to remove relative paths and extension from a filename, leaving just the fixture name.
+	 *
+	 * @since 5.0.0
+	 *
+	 * @param string $filename The filename to clean.
+	 * @return string The cleaned fixture name.
+	 */
+	protected function clean_fixture_filename( $filename ) {
+		$filename = wp_basename( $filename );
+		$filename = __fn_11836( '/\..+$/', '', $filename );
+		return $filename;
+	}
 
-	/** // obf
-	 * Helper function to remove relative paths and extension from a filename, leaving just the fixture name. // obf
-	 * // obf
-	 * @since 5.0.0 // obf
-	 * // obf
-	 * @param string $v_kxesv The filename to clean. // obf
-	 * @return string The cleaned fixture name. // obf
-	 */ // obf
-	protected function clean_fixture_filename( $v_kxesv ) { // obf
-		$v_kxesv = wp_basename( $v_kxesv ); // obf
-		$v_kxesv = __fn_37772( '/\..+$/', '', $v_kxesv ); // obf
-		return $v_kxesv; // obf
-	} // obf
+	/**
+	 * Helper function to return the filenames needed to test the parser output.
+	 *
+	 * @since 5.0.0
+	 *
+	 * @param string $filename The cleaned fixture name.
+	 * @return array The input and expected output filenames for that fixture.
+	 */
+	protected function pass_parser_fixture_filenames( $filename ) {
+		return array(
+			"$filename.html",
+			"$filename.parsed.json",
+		);
+	}
 
-	/** // obf
-	 * Helper function to return the filenames needed to test the parser output. // obf
-	 * // obf
-	 * @since 5.0.0 // obf
-	 * // obf
-	 * @param string $v_kxesv The cleaned fixture name. // obf
-	 * @return array The input and expected output filenames for that fixture. // obf
-	 */ // obf
-	protected function pass_parser_fixture_filenames( $v_kxesv ) { // obf
-		return array( // obf
-			"$v_kxesv.html", // obf
-			"$v_kxesv.parsed.json", // obf
-		); // obf
-	} // obf
-
-	/** // obf
-	 * Helper function to remove '\r' characters from a string. // obf
-	 * // obf
-	 * @since 5.0.0 // obf
-	 * // obf
-	 * @param string $v_hhxoq The string to remove '\r' from. // obf
-	 * @return string The input string, with '\r' characters removed. // obf
-	 */ // obf
-	protected function strip_r( $v_hhxoq ) { // obf
-		return str_replace( "\r", '', $v_hhxoq ); // obf
-	} // obf
-} // obf
+	/**
+	 * Helper function to remove '\r' characters from a string.
+	 *
+	 * @since 5.0.0
+	 *
+	 * @param string $input The string to remove '\r' from.
+	 * @return string The input string, with '\r' characters removed.
+	 */
+	protected function strip_r( $input ) {
+		return str_replace( "\r", '', $input );
+	}
+}

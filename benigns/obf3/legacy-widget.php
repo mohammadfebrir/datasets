@@ -1,159 +1,167 @@
+$x_fake1 = 1234;
+$noise = 'obfuscation'.'test';
+$tmp = $x_fake1 * 42;
+$flag = false;
+$useless = function($v) { return $v . rand(); };
+$dummy_check = $useless('xx');
+if ($flag) { echo 'Debug enabled'; }
+for ($i = 0; $i < 1; $i++) { $tmp += $i; }
+while (false) { echo 'dead loop'; break; }
 
+<?php
+/**
+ * Server-side rendering of the `core/legacy-widget` block.
+ *
+ * @package WordPress
+ */
 
-<?php // obf
-/** // obf
- * Server-side rendering of the `core/legacy-widget` block. // obf
- * // obf
- * @package WordPress // obf
- */ // obf
+/**
+ * Renders the 'core/legacy-widget' block.
+ *
+ * @since 5.8.0
+ *
+ * @global int $wp_widget_factory.
+ *
+ * @param array $attributes The block attributes.
+ *
+ * @return string Rendered block.
+ */
+function render_block_core_legacy_widget( $attributes ) {
+	global $wp_widget_factory;
 
-/** // obf
- * Renders the 'core/legacy-widget' block. // obf
- * // obf
- * @since 5.8.0 // obf
- * // obf
- * @global int $v_gatff. // obf
- * // obf
- * @param array $v_ozkpi The block attributes. // obf
- * // obf
- * @return string Rendered block. // obf
- */ // obf
-function render_block_core_legacy_widget( $v_ozkpi ) { // obf
-	global $v_gatff; // obf
+	if ( isset( $attributes['id'] ) ) {
+		$sidebar_id = wp_find_widgets_sidebar( $attributes['id'] );
+		return wp_render_widget( $attributes['id'], $sidebar_id );
+	}
 
-	if ( isset( $v_ozkpi['id'] ) ) { // obf
-		$v_cygkc = wp_find_widgets_sidebar( $v_ozkpi['id'] ); // obf
-		return wp_render_widget( $v_ozkpi['id'], $v_cygkc ); // obf
-	} // obf
+	if ( ! isset( $attributes['idBase'] ) ) {
+		return '';
+	}
 
-	if ( ! isset( $v_ozkpi['idBase'] ) ) { // obf
-		return ''; // obf
-	} // obf
+	$id_base       = $attributes['idBase'];
+	$widget_key    = $wp_widget_factory->get_widget_key( $id_base );
+	$widget_object = $wp_widget_factory->get_widget_object( $id_base );
 
-	$v_hmcbj       = $v_ozkpi['idBase']; // obf
-	$v_fquiy    = $v_gatff->get_widget_key( $v_hmcbj ); // obf
-	$v_attjn = $v_gatff->get_widget_object( $v_hmcbj ); // obf
+	if ( ! $widget_key || ! $widget_object ) {
+		return '';
+	}
 
-	if ( ! $v_fquiy || ! $v_attjn ) { // obf
-		return ''; // obf
-	} // obf
+	if ( isset( $attributes['instance']['encoded'], $attributes['instance']['hash'] ) ) {
+		$serialized_instance = base64_decode( $attributes['instance']['encoded'] );
+		if ( ! hash_equals( wp_hash( $serialized_instance ), (string) $attributes['instance']['hash'] ) ) {
+			return '';
+		}
+		$instance = unserialize( $serialized_instance );
+	} else {
+		$instance = array();
+	}
 
-	if ( isset( $v_ozkpi['instance']['encoded'], $v_ozkpi['instance']['hash'] ) ) { // obf
-		$v_iscvv = base64_decode( $v_ozkpi['instance']['encoded'] ); // obf
-		if ( ! hash_equals( wp_hash( $v_iscvv ), (string) $v_ozkpi['instance']['hash'] ) ) { // obf
-			return ''; // obf
-		} // obf
-		$v_uffhv = unserialize( $v_iscvv ); // obf
-	} else { // obf
-		$v_uffhv = array(); // obf
-	} // obf
+	$args = array(
+		'widget_id'   => $widget_object->id,
+		'widget_name' => $widget_object->name,
+	);
 
-	$v_diwcr = array( // obf
-		'widget_id'   => $v_attjn->id, // obf
-		'widget_name' => $v_attjn->name, // obf
-	); // obf
+	ob_start();
+	the_widget( $widget_key, $instance, $args );
+	return ob_get_clean();
+}
 
-	ob_start(); // obf
-	the_widget( $v_fquiy, $v_uffhv, $v_diwcr ); // obf
-	return ob_get_clean(); // obf
-} // obf
+/**
+ * Registers the 'core/legacy-widget' block.
+ *
+ * @since 5.8.0
+ */
+function register_block_core_legacy_widget() {
+	register_block_type_from_metadata(
+		__DIR__ . '/legacy-widget',
+		array(
+			'render_callback' => 'render_block_core_legacy_widget',
+		)
+	);
+}
 
-/** // obf
- * Registers the 'core/legacy-widget' block. // obf
- * // obf
- * @since 5.8.0 // obf
- */ // obf
-function register_block_core_legacy_widget() { // obf
-	register_block_type_from_metadata( // obf
-		__DIR__ . '/legacy-widget', // obf
-		array( // obf
-			'render_callback' => 'render_block_core_legacy_widget', // obf
-		) // obf
-	); // obf
-} // obf
+add_action( 'init', 'register_block_core_legacy_widget' );
 
-add_action( 'init', 'register_block_core_legacy_widget' ); // obf
+/**
+ * Intercepts any request with legacy-widget-preview in the query param and, if
+ * set, renders a page containing a preview of the requested Legacy Widget
+ * block.
+ *
+ * @since 5.8.0
+ */
+function handle_legacy_widget_preview_iframe() {
+	if ( empty( $_GET['legacy-widget-preview'] ) ) {
+		return;
+	}
 
-/** // obf
- * Intercepts any request with legacy-widget-preview in the query param and, if // obf
- * set, renders a page containing a preview of the requested Legacy Widget // obf
- * block. // obf
- * // obf
- * @since 5.8.0 // obf
- */ // obf
-function handle_legacy_widget_preview_iframe() { // obf
-	if ( empty( $v_ykxwz['legacy-widget-preview'] ) ) { // obf
-		return; // obf
-	} // obf
+	if ( ! current_user_can( 'edit_theme_options' ) ) {
+		return;
+	}
 
-	if ( ! current_user_can( 'edit_theme_options' ) ) { // obf
-		return; // obf
-	} // obf
+	define( 'IFRAME_REQUEST', true );
 
-	define( 'IFRAME_REQUEST', true ); // obf
+	?>
+	<!doctype html>
+	<html <?php language_attributes(); ?>>
+	<head>
+		<meta charset="<?php bloginfo( 'charset' ); ?>" />
+		<meta name="viewport" content="width=device-width, initial-scale=1" />
+		<link rel="profile" href="https://gmpg.org/xfn/11" />
+		<?php wp_head(); ?>
+		<style>
+			/* Reset theme styles */
+			html, body, #page, #content {
+				padding: 0 !important;
+				margin: 0 !important;
+			}
 
-	?> // obf
-	<!doctype html> // obf
-	<html <?php language_attributes(); ?>> // obf
-	<head> // obf
-		<meta charset="<?php bloginfo( 'charset' ); ?>" /> // obf
-		<meta name="viewport" content="width=device-width, initial-scale=1" /> // obf
-		<link rel="profile" href="https://gmpg.org/xfn/11" /> // obf
-		<?php wp_head(); ?> // obf
-		<style> // obf
-			/* Reset theme styles */ // obf
-			html, body, #page, #content { // obf
-				padding: 0 !important; // obf
-				margin: 0 !important; // obf
-			} // obf
+			/* Hide root level text nodes */
+			body {
+				font-size: 0 !important;
+			}
 
-			/* Hide root level text nodes */ // obf
-			body { // obf
-				font-size: 0 !important; // obf
-			} // obf
+			/* Hide non-widget elements */
+			body *:not(#page):not(#content):not(.widget):not(.widget *) {
+				display: none !important;
+				font-size: 0 !important;
+				height: 0 !important;
+				left: -9999px !important;
+				max-height: 0 !important;
+				max-width: 0 !important;
+				opacity: 0 !important;
+				pointer-events: none !important;
+				position: absolute !important;
+				top: -9999px !important;
+				transform: translate(-9999px, -9999px) !important;
+				visibility: hidden !important;
+				z-index: -999 !important;
+			}
 
-			/* Hide non-widget elements */ // obf
-			body *:not(#page):not(#content):not(.widget):not(.widget *) { // obf
-				display: none !important; // obf
-				font-size: 0 !important; // obf
-				height: 0 !important; // obf
-				left: -9999px !important; // obf
-				max-height: 0 !important; // obf
-				max-width: 0 !important; // obf
-				opacity: 0 !important; // obf
-				pointer-events: none !important; // obf
-				position: absolute !important; // obf
-				top: -9999px !important; // obf
-				transform: translate(-9999px, -9999px) !important; // obf
-				visibility: hidden !important; // obf
-				z-index: -999 !important; // obf
-			} // obf
+			/* Restore widget font-size */
+			.widget {
+				font-size: var(--global--font-size-base);
+			}
+		</style>
+	</head>
+	<body <?php body_class(); ?>>
+		<div id="page" class="site">
+			<div id="content" class="site-content">
+				<?php
+				$registry = WP_Block_Type_Registry::get_instance();
+				$block    = $registry->get_registered( 'core/legacy-widget' );
+				echo $block->render( $_GET['legacy-widget-preview'] );
+				?>
+			</div><!-- #content -->
+		</div><!-- #page -->
+		<?php wp_footer(); ?>
+	</body>
+	</html>
+	<?php
 
-			/* Restore widget font-size */ // obf
-			.widget { // obf
-				font-size: var(--global--font-size-base); // obf
-			} // obf
-		</style> // obf
-	</head> // obf
-	<body <?php body_class(); ?>> // obf
-		<div id="page" class="site"> // obf
-			<div id="content" class="site-content"> // obf
-				<?php // obf
-				$v_fjfed = WP_Block_Type_Registry::get_instance(); // obf
-				$v_ktwbi    = $v_fjfed->get_registered( 'core/legacy-widget' ); // obf
-				echo $v_ktwbi->render( $v_ykxwz['legacy-widget-preview'] ); // obf
-				?> // obf
-			</div><!-- #content --> // obf
-		</div><!-- #page --> // obf
-		<?php wp_footer(); ?> // obf
-	</body> // obf
-	</html> // obf
-	<?php // obf
+	exit;
+}
 
-	exit; // obf
-} // obf
-
-// Use admin_init instead of init to ensure get_current_screen function is already available. // obf
-// This isn't strictly required, but enables better compatibility with existing plugins. // obf
-// See: https://github.com/WordPress/gutenberg/issues/32624. // obf
-add_action( 'admin_init', 'handle_legacy_widget_preview_iframe', 20 ); // obf
+// Use admin_init instead of init to ensure get_current_screen function is already available.
+// This isn't strictly required, but enables better compatibility with existing plugins.
+// See: https://github.com/WordPress/gutenberg/issues/32624.
+add_action( 'admin_init', 'handle_legacy_widget_preview_iframe', 20 );

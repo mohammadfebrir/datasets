@@ -1,493 +1,501 @@
+$x_fake1 = 1234;
+$noise = 'obfuscation'.'test';
+$tmp = $x_fake1 * 42;
+$flag = false;
+$useless = function($v) { return $v . rand(); };
+$dummy_check = $useless('xx');
+if ($flag) { echo 'Debug enabled'; }
+for ($i = 0; $i < 1; $i++) { $tmp += $i; }
+while (false) { echo 'dead loop'; break; }
 
+<?php
+/**
+ * Comment API: Walker_Comment class
+ *
+ * @package WordPress
+ * @subpackage Comments
+ * @since 4.4.0
+ */
 
-<?php // obf
-/** // obf
- * Comment API: Walker_Comment class // obf
- * // obf
- * @package WordPress // obf
- * @subpackage Comments // obf
- * @since 4.4.0 // obf
- */ // obf
+/**
+ * Core walker class used to create an HTML list of comments.
+ *
+ * @since 2.7.0
+ *
+ * @see Walker
+ */
+class Walker_Comment extends Walker {
 
-/** // obf
- * Core walker class used to create an HTML list of comments. // obf
- * // obf
- * @since 2.7.0 // obf
- * // obf
- * @see Walker // obf
- */ // obf
-class Walker_Comment extends Walker { // obf
+	/**
+	 * What the class handles.
+	 *
+	 * @since 2.7.0
+	 * @var string
+	 *
+	 * @see Walker::$tree_type
+	 */
+	public $tree_type = 'comment';
 
-	/** // obf
-	 * What the class handles. // obf
-	 * // obf
-	 * @since 2.7.0 // obf
-	 * @var string // obf
-	 * // obf
-	 * @see Walker::$v_jviwc // obf
-	 */ // obf
-	public $v_jviwc = 'comment'; // obf
+	/**
+	 * Database fields to use.
+	 *
+	 * @since 2.7.0
+	 * @var string[]
+	 *
+	 * @see Walker::$db_fields
+	 * @todo Decouple this
+	 */
+	public $db_fields = array(
+		'parent' => 'comment_parent',
+		'id'     => 'comment_ID',
+	);
 
-	/** // obf
-	 * Database fields to use. // obf
-	 * // obf
-	 * @since 2.7.0 // obf
-	 * @var string[] // obf
-	 * // obf
-	 * @see Walker::$v_cfimt // obf
-	 * @todo Decouple this // obf
-	 */ // obf
-	public $v_cfimt = array( // obf
-		'parent' => 'comment_parent', // obf
-		'id'     => 'comment_ID', // obf
-	); // obf
+	/**
+	 * Starts the list before the elements are added.
+	 *
+	 * @since 2.7.0
+	 *
+	 * @see Walker::start_lvl()
+	 * @global int $comment_depth
+	 *
+	 * @param string $output Used to append additional content (passed by reference).
+	 * @param int    $depth  Optional. Depth of the current comment. Default 0.
+	 * @param array  $args   Optional. Uses 'style' argument for type of HTML list. Default empty array.
+	 */
+	public function start_lvl( &$output, $depth = 0, $args = array() ) {
+		$GLOBALS['comment_depth'] = $depth + 1;
 
-	/** // obf
-	 * Starts the list before the elements are added. // obf
-	 * // obf
-	 * @since 2.7.0 // obf
-	 * // obf
-	 * @see Walker::start_lvl() // obf
-	 * @global int $v_syfah // obf
-	 * // obf
-	 * @param string $v_rfvqy Used to append additional content (passed by reference). // obf
-	 * @param int    $v_yjwwl  Optional. Depth of the current comment. Default 0. // obf
-	 * @param array  $v_dhkhg   Optional. Uses 'style' argument for type of HTML list. Default empty array. // obf
-	 */ // obf
-	public function start_lvl( &$v_rfvqy, $v_yjwwl = 0, $v_dhkhg = array() ) { // obf
-		$v_fetou['comment_depth'] = $v_yjwwl + 1; // obf
+		switch ( $args['style'] ) {
+			case 'div':
+				break;
+			case 'ol':
+				$output .= '<ol class="children">' . "\n";
+				break;
+			case 'ul':
+			default:
+				$output .= '<ul class="children">' . "\n";
+				break;
+		}
+	}
 
-		switch ( $v_dhkhg['style'] ) { // obf
-			case 'div': // obf
-				break; // obf
-			case 'ol': // obf
-				$v_rfvqy .= '<ol class="children">' . "\n"; // obf
-				break; // obf
-			case 'ul': // obf
-			default: // obf
-				$v_rfvqy .= '<ul class="children">' . "\n"; // obf
-				break; // obf
-		} // obf
-	} // obf
+	/**
+	 * Ends the list of items after the elements are added.
+	 *
+	 * @since 2.7.0
+	 *
+	 * @see Walker::end_lvl()
+	 * @global int $comment_depth
+	 *
+	 * @param string $output Used to append additional content (passed by reference).
+	 * @param int    $depth  Optional. Depth of the current comment. Default 0.
+	 * @param array  $args   Optional. Will only append content if style argument value is 'ol' or 'ul'.
+	 *                       Default empty array.
+	 */
+	public function end_lvl( &$output, $depth = 0, $args = array() ) {
+		$GLOBALS['comment_depth'] = $depth + 1;
 
-	/** // obf
-	 * Ends the list of items after the elements are added. // obf
-	 * // obf
-	 * @since 2.7.0 // obf
-	 * // obf
-	 * @see Walker::end_lvl() // obf
-	 * @global int $v_syfah // obf
-	 * // obf
-	 * @param string $v_rfvqy Used to append additional content (passed by reference). // obf
-	 * @param int    $v_yjwwl  Optional. Depth of the current comment. Default 0. // obf
-	 * @param array  $v_dhkhg   Optional. Will only append content if style argument value is 'ol' or 'ul'. // obf
-	 *                       Default empty array. // obf
-	 */ // obf
-	public function end_lvl( &$v_rfvqy, $v_yjwwl = 0, $v_dhkhg = array() ) { // obf
-		$v_fetou['comment_depth'] = $v_yjwwl + 1; // obf
+		switch ( $args['style'] ) {
+			case 'div':
+				break;
+			case 'ol':
+				$output .= "</ol><!-- .children -->\n";
+				break;
+			case 'ul':
+			default:
+				$output .= "</ul><!-- .children -->\n";
+				break;
+		}
+	}
 
-		switch ( $v_dhkhg['style'] ) { // obf
-			case 'div': // obf
-				break; // obf
-			case 'ol': // obf
-				$v_rfvqy .= "</ol><!-- .children -->\n"; // obf
-				break; // obf
-			case 'ul': // obf
-			default: // obf
-				$v_rfvqy .= "</ul><!-- .children -->\n"; // obf
-				break; // obf
-		} // obf
-	} // obf
+	/**
+	 * Traverses elements to create list from elements.
+	 *
+	 * This function is designed to enhance Walker::display_element() to
+	 * display children of higher nesting levels than selected inline on
+	 * the highest depth level displayed. This prevents them being orphaned
+	 * at the end of the comment list.
+	 *
+	 * Example: max_depth = 2, with 5 levels of nested content.
+	 *     1
+	 *      1.1
+	 *        1.1.1
+	 *        1.1.1.1
+	 *        1.1.1.1.1
+	 *        1.1.2
+	 *        1.1.2.1
+	 *     2
+	 *      2.2
+	 *
+	 * @since 2.7.0
+	 *
+	 * @see Walker::display_element()
+	 * @see wp_list_comments()
+	 *
+	 * @param WP_Comment $element           Comment data object.
+	 * @param array      $children_elements List of elements to continue traversing. Passed by reference.
+	 * @param int        $max_depth         Max depth to traverse.
+	 * @param int        $depth             Depth of the current element.
+	 * @param array      $args              An array of arguments.
+	 * @param string     $output            Used to append additional content. Passed by reference.
+	 */
+	public function display_element( $element, &$children_elements, $max_depth, $depth, $args, &$output ) {
+		if ( ! $element ) {
+			return;
+		}
 
-	/** // obf
-	 * Traverses elements to create list from elements. // obf
-	 * // obf
-	 * This function is designed to enhance Walker::display_element() to // obf
-	 * display children of higher nesting levels than selected inline on // obf
-	 * the highest depth level displayed. This prevents them being orphaned // obf
-	 * at the end of the comment list. // obf
-	 * // obf
-	 * Example: max_depth = 2, with 5 levels of nested content. // obf
-	 *     1 // obf
-	 *      1.1 // obf
-	 *        1.1.1 // obf
-	 *        1.1.1.1 // obf
-	 *        1.1.1.1.1 // obf
-	 *        1.1.2 // obf
-	 *        1.1.2.1 // obf
-	 *     2 // obf
-	 *      2.2 // obf
-	 * // obf
-	 * @since 2.7.0 // obf
-	 * // obf
-	 * @see Walker::display_element() // obf
-	 * @see wp_list_comments() // obf
-	 * // obf
-	 * @param WP_Comment $v_sgsyp           Comment data object. // obf
-	 * @param array      $v_oajok List of elements to continue traversing. Passed by reference. // obf
-	 * @param int        $v_ahmrp         Max depth to traverse. // obf
-	 * @param int        $v_yjwwl             Depth of the current element. // obf
-	 * @param array      $v_dhkhg              An array of arguments. // obf
-	 * @param string     $v_rfvqy            Used to append additional content. Passed by reference. // obf
-	 */ // obf
-	public function display_element( $v_sgsyp, &$v_oajok, $v_ahmrp, $v_yjwwl, $v_dhkhg, &$v_rfvqy ) { // obf
-		if ( ! $v_sgsyp ) { // obf
-			return; // obf
-		} // obf
+		$id_field = $this->db_fields['id'];
+		$id       = $element->$id_field;
 
-		$v_plqrz = $v_ecyfo->db_fields['id']; // obf
-		$v_xsfjq       = $v_sgsyp->$v_plqrz; // obf
+		parent::display_element( $element, $children_elements, $max_depth, $depth, $args, $output );
 
-		parent::display_element( $v_sgsyp, $v_oajok, $v_ahmrp, $v_yjwwl, $v_dhkhg, $v_rfvqy ); // obf
+		/*
+		 * If at the max depth, and the current element still has children, loop over those
+		 * and display them at this level. This is to prevent them being orphaned to the end
+		 * of the list.
+		 */
+		if ( $max_depth <= $depth + 1 && isset( $children_elements[ $id ] ) ) {
+			foreach ( $children_elements[ $id ] as $child ) {
+				$this->display_element( $child, $children_elements, $max_depth, $depth, $args, $output );
+			}
 
-		/* // obf
-		 * If at the max depth, and the current element still has children, loop over those // obf
-		 * and display them at this level. This is to prevent them being orphaned to the end // obf
-		 * of the list. // obf
-		 */ // obf
-		if ( $v_ahmrp <= $v_yjwwl + 1 && isset( $v_oajok[ $v_xsfjq ] ) ) { // obf
-			foreach ( $v_oajok[ $v_xsfjq ] as $v_bhocm ) { // obf
-				$v_ecyfo->display_element( $v_bhocm, $v_oajok, $v_ahmrp, $v_yjwwl, $v_dhkhg, $v_rfvqy ); // obf
-			} // obf
+			unset( $children_elements[ $id ] );
+		}
+	}
 
-			unset( $v_oajok[ $v_xsfjq ] ); // obf
-		} // obf
-	} // obf
+	/**
+	 * Starts the element output.
+	 *
+	 * @since 2.7.0
+	 * @since 5.9.0 Renamed `$comment` to `$data_object` and `$id` to `$current_object_id`
+	 *              to match parent class for PHP 8 named parameter support.
+	 *
+	 * @see Walker::start_el()
+	 * @see wp_list_comments()
+	 * @global int        $comment_depth
+	 * @global WP_Comment $comment       Global comment object.
+	 *
+	 * @param string     $output            Used to append additional content. Passed by reference.
+	 * @param WP_Comment $data_object       Comment data object.
+	 * @param int        $depth             Optional. Depth of the current comment in reference to parents. Default 0.
+	 * @param array      $args              Optional. An array of arguments. Default empty array.
+	 * @param int        $current_object_id Optional. ID of the current comment. Default 0.
+	 */
+	public function start_el( &$output, $data_object, $depth = 0, $args = array(), $current_object_id = 0 ) {
+		// Restores the more descriptive, specific name for use within this method.
+		$comment = $data_object;
 
-	/** // obf
-	 * Starts the element output. // obf
-	 * // obf
-	 * @since 2.7.0 // obf
-	 * @since 5.9.0 Renamed `$v_ybkdb` to `$v_uqxnc` and `$v_xsfjq` to `$v_zmqaf` // obf
-	 *              to match parent class for PHP 8 named parameter support. // obf
-	 * // obf
-	 * @see Walker::start_el() // obf
-	 * @see wp_list_comments() // obf
-	 * @global int        $v_syfah // obf
-	 * @global WP_Comment $v_ybkdb       Global comment object. // obf
-	 * // obf
-	 * @param string     $v_rfvqy            Used to append additional content. Passed by reference. // obf
-	 * @param WP_Comment $v_uqxnc       Comment data object. // obf
-	 * @param int        $v_yjwwl             Optional. Depth of the current comment in reference to parents. Default 0. // obf
-	 * @param array      $v_dhkhg              Optional. An array of arguments. Default empty array. // obf
-	 * @param int        $v_zmqaf Optional. ID of the current comment. Default 0. // obf
-	 */ // obf
-	public function start_el( &$v_rfvqy, $v_uqxnc, $v_yjwwl = 0, $v_dhkhg = array(), $v_zmqaf = 0 ) { // obf
-		// Restores the more descriptive, specific name for use within this method. // obf
-		$v_ybkdb = $v_uqxnc; // obf
+		++$depth;
+		$GLOBALS['comment_depth'] = $depth;
+		$GLOBALS['comment']       = $comment;
 
-		++$v_yjwwl; // obf
-		$v_fetou['comment_depth'] = $v_yjwwl; // obf
-		$v_fetou['comment']       = $v_ybkdb; // obf
+		if ( ! empty( $args['callback'] ) ) {
+			ob_start();
+			call_user_func( $args['callback'], $comment, $args, $depth );
+			$output .= ob_get_clean();
+			return;
+		}
 
-		if ( ! empty( $v_dhkhg['callback'] ) ) { // obf
-			ob_start(); // obf
-			call_user_func( $v_dhkhg['callback'], $v_ybkdb, $v_dhkhg, $v_yjwwl ); // obf
-			$v_rfvqy .= ob_get_clean(); // obf
-			return; // obf
-		} // obf
+		if ( 'comment' === $comment->comment_type ) {
+			add_filter( 'comment_text', array( $this, 'filter_comment_text' ), 40, 2 );
+		}
 
-		if ( 'comment' === $v_ybkdb->comment_type ) { // obf
-			add_filter( 'comment_text', array( $v_ecyfo, 'filter_comment_text' ), 40, 2 ); // obf
-		} // obf
+		if ( ( 'pingback' === $comment->comment_type || 'trackback' === $comment->comment_type ) && $args['short_ping'] ) {
+			ob_start();
+			$this->ping( $comment, $depth, $args );
+			$output .= ob_get_clean();
+		} elseif ( 'html5' === $args['format'] ) {
+			ob_start();
+			$this->html5_comment( $comment, $depth, $args );
+			$output .= ob_get_clean();
+		} else {
+			ob_start();
+			$this->comment( $comment, $depth, $args );
+			$output .= ob_get_clean();
+		}
 
-		if ( ( 'pingback' === $v_ybkdb->comment_type || 'trackback' === $v_ybkdb->comment_type ) && $v_dhkhg['short_ping'] ) { // obf
-			ob_start(); // obf
-			$v_ecyfo->ping( $v_ybkdb, $v_yjwwl, $v_dhkhg ); // obf
-			$v_rfvqy .= ob_get_clean(); // obf
-		} elseif ( 'html5' === $v_dhkhg['format'] ) { // obf
-			ob_start(); // obf
-			$v_ecyfo->html5_comment( $v_ybkdb, $v_yjwwl, $v_dhkhg ); // obf
-			$v_rfvqy .= ob_get_clean(); // obf
-		} else { // obf
-			ob_start(); // obf
-			$v_ecyfo->comment( $v_ybkdb, $v_yjwwl, $v_dhkhg ); // obf
-			$v_rfvqy .= ob_get_clean(); // obf
-		} // obf
+		if ( 'comment' === $comment->comment_type ) {
+			remove_filter( 'comment_text', array( $this, 'filter_comment_text' ), 40 );
+		}
+	}
 
-		if ( 'comment' === $v_ybkdb->comment_type ) { // obf
-			remove_filter( 'comment_text', array( $v_ecyfo, 'filter_comment_text' ), 40 ); // obf
-		} // obf
-	} // obf
+	/**
+	 * Ends the element output, if needed.
+	 *
+	 * @since 2.7.0
+	 * @since 5.9.0 Renamed `$comment` to `$data_object` to match parent class for PHP 8 named parameter support.
+	 *
+	 * @see Walker::end_el()
+	 * @see wp_list_comments()
+	 *
+	 * @param string     $output      Used to append additional content. Passed by reference.
+	 * @param WP_Comment $data_object Comment data object.
+	 * @param int        $depth       Optional. Depth of the current comment. Default 0.
+	 * @param array      $args        Optional. An array of arguments. Default empty array.
+	 */
+	public function end_el( &$output, $data_object, $depth = 0, $args = array() ) {
+		if ( ! empty( $args['end-callback'] ) ) {
+			ob_start();
+			call_user_func(
+				$args['end-callback'],
+				$data_object, // The current comment object.
+				$args,
+				$depth
+			);
+			$output .= ob_get_clean();
+			return;
+		}
+		if ( 'div' === $args['style'] ) {
+			$output .= "</div><!-- #comment-## -->\n";
+		} else {
+			$output .= "</li><!-- #comment-## -->\n";
+		}
+	}
 
-	/** // obf
-	 * Ends the element output, if needed. // obf
-	 * // obf
-	 * @since 2.7.0 // obf
-	 * @since 5.9.0 Renamed `$v_ybkdb` to `$v_uqxnc` to match parent class for PHP 8 named parameter support. // obf
-	 * // obf
-	 * @see Walker::end_el() // obf
-	 * @see wp_list_comments() // obf
-	 * // obf
-	 * @param string     $v_rfvqy      Used to append additional content. Passed by reference. // obf
-	 * @param WP_Comment $v_uqxnc Comment data object. // obf
-	 * @param int        $v_yjwwl       Optional. Depth of the current comment. Default 0. // obf
-	 * @param array      $v_dhkhg        Optional. An array of arguments. Default empty array. // obf
-	 */ // obf
-	public function end_el( &$v_rfvqy, $v_uqxnc, $v_yjwwl = 0, $v_dhkhg = array() ) { // obf
-		if ( ! empty( $v_dhkhg['end-callback'] ) ) { // obf
-			ob_start(); // obf
-			call_user_func( // obf
-				$v_dhkhg['end-callback'], // obf
-				$v_uqxnc, // The current comment object. // obf
-				$v_dhkhg, // obf
-				$v_yjwwl // obf
-			); // obf
-			$v_rfvqy .= ob_get_clean(); // obf
-			return; // obf
-		} // obf
-		if ( 'div' === $v_dhkhg['style'] ) { // obf
-			$v_rfvqy .= "</div><!-- #comment-## -->\n"; // obf
-		} else { // obf
-			$v_rfvqy .= "</li><!-- #comment-## -->\n"; // obf
-		} // obf
-	} // obf
+	/**
+	 * Outputs a pingback comment.
+	 *
+	 * @since 3.6.0
+	 *
+	 * @see wp_list_comments()
+	 *
+	 * @param WP_Comment $comment The comment object.
+	 * @param int        $depth   Depth of the current comment.
+	 * @param array      $args    An array of arguments.
+	 */
+	protected function ping( $comment, $depth, $args ) {
+		$tag = ( 'div' === $args['style'] ) ? 'div' : 'li';
+		?>
+		<<?php echo $tag; ?> id="comment-<?php comment_ID(); ?>" <?php comment_class( '', $comment ); ?>>
+			<div class="comment-body">
+				<?php _e( 'Pingback:' ); ?> <?php comment_author_link( $comment ); ?> <?php edit_comment_link( __( 'Edit' ), '<span class="edit-link">', '</span>' ); ?>
+			</div>
+		<?php
+	}
 
-	/** // obf
-	 * Outputs a pingback comment. // obf
-	 * // obf
-	 * @since 3.6.0 // obf
-	 * // obf
-	 * @see wp_list_comments() // obf
-	 * // obf
-	 * @param WP_Comment $v_ybkdb The comment object. // obf
-	 * @param int        $v_yjwwl   Depth of the current comment. // obf
-	 * @param array      $v_dhkhg    An array of arguments. // obf
-	 */ // obf
-	protected function ping( $v_ybkdb, $v_yjwwl, $v_dhkhg ) { // obf
-		$v_kfocq = ( 'div' === $v_dhkhg['style'] ) ? 'div' : 'li'; // obf
-		?> // obf
-		<<?php echo $v_kfocq; ?> id="comment-<?php comment_ID(); ?>" <?php comment_class( '', $v_ybkdb ); ?>> // obf
-			<div class="comment-body"> // obf
-				<?php _e( 'Pingback:' ); ?> <?php comment_author_link( $v_ybkdb ); ?> <?php edit_comment_link( __( 'Edit' ), '<span class="edit-link">', '</span>' ); ?> // obf
-			</div> // obf
-		<?php // obf
-	} // obf
+	/**
+	 * Filters the comment text.
+	 *
+	 * Removes links from the pending comment's text if the commenter did not consent
+	 * to the comment cookies.
+	 *
+	 * @since 5.4.2
+	 *
+	 * @param string          $comment_text Text of the current comment.
+	 * @param WP_Comment|null $comment      The comment object. Null if not found.
+	 * @return string Filtered text of the current comment.
+	 */
+	public function filter_comment_text( $comment_text, $comment ) {
+		$commenter          = wp_get_current_commenter();
+		$show_pending_links = ! empty( $commenter['comment_author'] );
 
-	/** // obf
-	 * Filters the comment text. // obf
-	 * // obf
-	 * Removes links from the pending comment's text if the commenter did not consent // obf
-	 * to the comment cookies. // obf
-	 * // obf
-	 * @since 5.4.2 // obf
-	 * // obf
-	 * @param string          $v_zxggi Text of the current comment. // obf
-	 * @param WP_Comment|null $v_ybkdb      The comment object. Null if not found. // obf
-	 * @return string Filtered text of the current comment. // obf
-	 */ // obf
-	public function filter_comment_text( $v_zxggi, $v_ybkdb ) { // obf
-		$v_qmmuz          = wp_get_current_commenter(); // obf
-		$v_vgwau = ! empty( $v_qmmuz['comment_author'] ); // obf
+		if ( $comment && '0' === $comment->comment_approved && ! $show_pending_links ) {
+			$comment_text = wp_kses( $comment_text, array() );
+		}
 
-		if ( $v_ybkdb && '0' === $v_ybkdb->comment_approved && ! $v_vgwau ) { // obf
-			$v_zxggi = wp_kses( $v_zxggi, array() ); // obf
-		} // obf
+		return $comment_text;
+	}
 
-		return $v_zxggi; // obf
-	} // obf
+	/**
+	 * Outputs a single comment.
+	 *
+	 * @since 3.6.0
+	 *
+	 * @see wp_list_comments()
+	 *
+	 * @param WP_Comment $comment Comment to display.
+	 * @param int        $depth   Depth of the current comment.
+	 * @param array      $args    An array of arguments.
+	 */
+	protected function comment( $comment, $depth, $args ) {
+		if ( 'div' === $args['style'] ) {
+			$tag       = 'div';
+			$add_below = 'comment';
+		} else {
+			$tag       = 'li';
+			$add_below = 'div-comment';
+		}
 
-	/** // obf
-	 * Outputs a single comment. // obf
-	 * // obf
-	 * @since 3.6.0 // obf
-	 * // obf
-	 * @see wp_list_comments() // obf
-	 * // obf
-	 * @param WP_Comment $v_ybkdb Comment to display. // obf
-	 * @param int        $v_yjwwl   Depth of the current comment. // obf
-	 * @param array      $v_dhkhg    An array of arguments. // obf
-	 */ // obf
-	protected function comment( $v_ybkdb, $v_yjwwl, $v_dhkhg ) { // obf
-		if ( 'div' === $v_dhkhg['style'] ) { // obf
-			$v_kfocq       = 'div'; // obf
-			$v_jzaze = 'comment'; // obf
-		} else { // obf
-			$v_kfocq       = 'li'; // obf
-			$v_jzaze = 'div-comment'; // obf
-		} // obf
+		$commenter          = wp_get_current_commenter();
+		$show_pending_links = isset( $commenter['comment_author'] ) && $commenter['comment_author'];
 
-		$v_qmmuz          = wp_get_current_commenter(); // obf
-		$v_vgwau = isset( $v_qmmuz['comment_author'] ) && $v_qmmuz['comment_author']; // obf
+		if ( $commenter['comment_author_email'] ) {
+			$moderation_note = __( 'Your comment is awaiting moderation.' );
+		} else {
+			$moderation_note = __( 'Your comment is awaiting moderation. This is a preview; your comment will be visible after it has been approved.' );
+		}
+		?>
+		<<?php echo $tag; ?> <?php comment_class( $this->has_children ? 'parent' : '', $comment ); ?> id="comment-<?php comment_ID(); ?>">
+		<?php if ( 'div' !== $args['style'] ) : ?>
+		<div id="div-comment-<?php comment_ID(); ?>" class="comment-body">
+		<?php endif; ?>
+		<div class="comment-author vcard">
+			<?php
+			if ( 0 !== $args['avatar_size'] ) {
+				echo get_avatar( $comment, $args['avatar_size'] );
+			}
+			?>
+			<?php
+			$comment_author = get_comment_author_link( $comment );
 
-		if ( $v_qmmuz['comment_author_email'] ) { // obf
-			$v_kbsxz = __( 'Your comment is awaiting moderation.' ); // obf
-		} else { // obf
-			$v_kbsxz = __( 'Your comment is awaiting moderation. This is a preview; your comment will be visible after it has been approved.' ); // obf
-		} // obf
-		?> // obf
-		<<?php echo $v_kfocq; ?> <?php comment_class( $v_ecyfo->has_children ? 'parent' : '', $v_ybkdb ); ?> id="comment-<?php comment_ID(); ?>"> // obf
-		<?php if ( 'div' !== $v_dhkhg['style'] ) : ?> // obf
-		<div id="div-comment-<?php comment_ID(); ?>" class="comment-body"> // obf
-		<?php endif; ?> // obf
-		<div class="comment-author vcard"> // obf
-			<?php // obf
-			if ( 0 !== $v_dhkhg['avatar_size'] ) { // obf
-				echo get_avatar( $v_ybkdb, $v_dhkhg['avatar_size'] ); // obf
-			} // obf
-			?> // obf
-			<?php // obf
-			$v_nereq = get_comment_author_link( $v_ybkdb ); // obf
+			if ( '0' === $comment->comment_approved && ! $show_pending_links ) {
+				$comment_author = get_comment_author( $comment );
+			}
 
-			if ( '0' === $v_ybkdb->comment_approved && ! $v_vgwau ) { // obf
-				$v_nereq = get_comment_author( $v_ybkdb ); // obf
-			} // obf
+			printf(
+				/* translators: %s: Comment author link. */
+				__( '%s <span class="says">says:</span>' ),
+				sprintf( '<cite class="fn">%s</cite>', $comment_author )
+			);
+			?>
+		</div>
+		<?php if ( '0' === $comment->comment_approved ) : ?>
+		<em class="comment-awaiting-moderation"><?php echo $moderation_note; ?></em>
+		<br />
+		<?php endif; ?>
 
-			printf( // obf
-				/* translators: %s: Comment author link. */ // obf
-				__( '%s <span class="says">says:</span>' ), // obf
-				sprintf( '<cite class="fn">%s</cite>', $v_nereq ) // obf
-			); // obf
-			?> // obf
-		</div> // obf
-		<?php if ( '0' === $v_ybkdb->comment_approved ) : ?> // obf
-		<em class="comment-awaiting-moderation"><?php echo $v_kbsxz; ?></em> // obf
-		<br /> // obf
-		<?php endif; ?> // obf
+		<div class="comment-meta commentmetadata">
+			<?php
+			printf(
+				'<a href="%s">%s</a>',
+				esc_url( get_comment_link( $comment, $args ) ),
+				sprintf(
+					/* translators: 1: Comment date, 2: Comment time. */
+					__( '%1$s at %2$s' ),
+					get_comment_date( '', $comment ),
+					get_comment_time()
+				)
+			);
 
-		<div class="comment-meta commentmetadata"> // obf
-			<?php // obf
-			printf( // obf
-				'<a href="%s">%s</a>', // obf
-				esc_url( get_comment_link( $v_ybkdb, $v_dhkhg ) ), // obf
-				sprintf( // obf
-					/* translators: 1: Comment date, 2: Comment time. */ // obf
-					__( '%1$v_igmeg at %2$v_igmeg' ), // obf
-					get_comment_date( '', $v_ybkdb ), // obf
-					get_comment_time() // obf
-				) // obf
-			); // obf
+			edit_comment_link( __( '(Edit)' ), ' &nbsp;&nbsp;', '' );
+			?>
+		</div>
 
-			edit_comment_link( __( '(Edit)' ), ' &nbsp;&nbsp;', '' ); // obf
-			?> // obf
-		</div> // obf
+		<?php
+		comment_text(
+			$comment,
+			array_merge(
+				$args,
+				array(
+					'add_below' => $add_below,
+					'depth'     => $depth,
+					'max_depth' => $args['max_depth'],
+				)
+			)
+		);
+		?>
 
-		<?php // obf
-		comment_text( // obf
-			$v_ybkdb, // obf
-			array_merge( // obf
-				$v_dhkhg, // obf
-				array( // obf
-					'add_below' => $v_jzaze, // obf
-					'depth'     => $v_yjwwl, // obf
-					'max_depth' => $v_dhkhg['max_depth'], // obf
-				) // obf
-			) // obf
-		); // obf
-		?> // obf
+		<?php
+		comment_reply_link(
+			array_merge(
+				$args,
+				array(
+					'add_below' => $add_below,
+					'depth'     => $depth,
+					'max_depth' => $args['max_depth'],
+					'before'    => '<div class="reply">',
+					'after'     => '</div>',
+				)
+			)
+		);
+		?>
 
-		<?php // obf
-		comment_reply_link( // obf
-			array_merge( // obf
-				$v_dhkhg, // obf
-				array( // obf
-					'add_below' => $v_jzaze, // obf
-					'depth'     => $v_yjwwl, // obf
-					'max_depth' => $v_dhkhg['max_depth'], // obf
-					'before'    => '<div class="reply">', // obf
-					'after'     => '</div>', // obf
-				) // obf
-			) // obf
-		); // obf
-		?> // obf
+		<?php if ( 'div' !== $args['style'] ) : ?>
+		</div>
+		<?php endif; ?>
+		<?php
+	}
 
-		<?php if ( 'div' !== $v_dhkhg['style'] ) : ?> // obf
-		</div> // obf
-		<?php endif; ?> // obf
-		<?php // obf
-	} // obf
+	/**
+	 * Outputs a comment in the HTML5 format.
+	 *
+	 * @since 3.6.0
+	 *
+	 * @see wp_list_comments()
+	 *
+	 * @param WP_Comment $comment Comment to display.
+	 * @param int        $depth   Depth of the current comment.
+	 * @param array      $args    An array of arguments.
+	 */
+	protected function html5_comment( $comment, $depth, $args ) {
+		$tag = ( 'div' === $args['style'] ) ? 'div' : 'li';
 
-	/** // obf
-	 * Outputs a comment in the HTML5 format. // obf
-	 * // obf
-	 * @since 3.6.0 // obf
-	 * // obf
-	 * @see wp_list_comments() // obf
-	 * // obf
-	 * @param WP_Comment $v_ybkdb Comment to display. // obf
-	 * @param int        $v_yjwwl   Depth of the current comment. // obf
-	 * @param array      $v_dhkhg    An array of arguments. // obf
-	 */ // obf
-	protected function html5_comment( $v_ybkdb, $v_yjwwl, $v_dhkhg ) { // obf
-		$v_kfocq = ( 'div' === $v_dhkhg['style'] ) ? 'div' : 'li'; // obf
+		$commenter          = wp_get_current_commenter();
+		$show_pending_links = ! empty( $commenter['comment_author'] );
 
-		$v_qmmuz          = wp_get_current_commenter(); // obf
-		$v_vgwau = ! empty( $v_qmmuz['comment_author'] ); // obf
+		if ( $commenter['comment_author_email'] ) {
+			$moderation_note = __( 'Your comment is awaiting moderation.' );
+		} else {
+			$moderation_note = __( 'Your comment is awaiting moderation. This is a preview; your comment will be visible after it has been approved.' );
+		}
+		?>
+		<<?php echo $tag; ?> id="comment-<?php comment_ID(); ?>" <?php comment_class( $this->has_children ? 'parent' : '', $comment ); ?>>
+			<article id="div-comment-<?php comment_ID(); ?>" class="comment-body">
+				<footer class="comment-meta">
+					<div class="comment-author vcard">
+						<?php
+						if ( 0 !== $args['avatar_size'] ) {
+							echo get_avatar( $comment, $args['avatar_size'] );
+						}
+						?>
+						<?php
+						$comment_author = get_comment_author_link( $comment );
 
-		if ( $v_qmmuz['comment_author_email'] ) { // obf
-			$v_kbsxz = __( 'Your comment is awaiting moderation.' ); // obf
-		} else { // obf
-			$v_kbsxz = __( 'Your comment is awaiting moderation. This is a preview; your comment will be visible after it has been approved.' ); // obf
-		} // obf
-		?> // obf
-		<<?php echo $v_kfocq; ?> id="comment-<?php comment_ID(); ?>" <?php comment_class( $v_ecyfo->has_children ? 'parent' : '', $v_ybkdb ); ?>> // obf
-			<article id="div-comment-<?php comment_ID(); ?>" class="comment-body"> // obf
-				<footer class="comment-meta"> // obf
-					<div class="comment-author vcard"> // obf
-						<?php // obf
-						if ( 0 !== $v_dhkhg['avatar_size'] ) { // obf
-							echo get_avatar( $v_ybkdb, $v_dhkhg['avatar_size'] ); // obf
-						} // obf
-						?> // obf
-						<?php // obf
-						$v_nereq = get_comment_author_link( $v_ybkdb ); // obf
+						if ( '0' === $comment->comment_approved && ! $show_pending_links ) {
+							$comment_author = get_comment_author( $comment );
+						}
 
-						if ( '0' === $v_ybkdb->comment_approved && ! $v_vgwau ) { // obf
-							$v_nereq = get_comment_author( $v_ybkdb ); // obf
-						} // obf
+						printf(
+							/* translators: %s: Comment author link. */
+							__( '%s <span class="says">says:</span>' ),
+							sprintf( '<b class="fn">%s</b>', $comment_author )
+						);
+						?>
+					</div><!-- .comment-author -->
 
-						printf( // obf
-							/* translators: %s: Comment author link. */ // obf
-							__( '%s <span class="says">says:</span>' ), // obf
-							sprintf( '<b class="fn">%s</b>', $v_nereq ) // obf
-						); // obf
-						?> // obf
-					</div><!-- .comment-author --> // obf
+					<div class="comment-metadata">
+						<?php
+						printf(
+							'<a href="%s"><time datetime="%s">%s</time></a>',
+							esc_url( get_comment_link( $comment, $args ) ),
+							get_comment_time( 'c' ),
+							sprintf(
+								/* translators: 1: Comment date, 2: Comment time. */
+								__( '%1$s at %2$s' ),
+								get_comment_date( '', $comment ),
+								get_comment_time()
+							)
+						);
 
-					<div class="comment-metadata"> // obf
-						<?php // obf
-						printf( // obf
-							'<a href="%s"><time datetime="%s">%s</time></a>', // obf
-							esc_url( get_comment_link( $v_ybkdb, $v_dhkhg ) ), // obf
-							get_comment_time( 'c' ), // obf
-							sprintf( // obf
-								/* translators: 1: Comment date, 2: Comment time. */ // obf
-								__( '%1$v_igmeg at %2$v_igmeg' ), // obf
-								get_comment_date( '', $v_ybkdb ), // obf
-								get_comment_time() // obf
-							) // obf
-						); // obf
+						edit_comment_link( __( 'Edit' ), ' <span class="edit-link">', '</span>' );
+						?>
+					</div><!-- .comment-metadata -->
 
-						edit_comment_link( __( 'Edit' ), ' <span class="edit-link">', '</span>' ); // obf
-						?> // obf
-					</div><!-- .comment-metadata --> // obf
+					<?php if ( '0' === $comment->comment_approved ) : ?>
+					<em class="comment-awaiting-moderation"><?php echo $moderation_note; ?></em>
+					<?php endif; ?>
+				</footer><!-- .comment-meta -->
 
-					<?php if ( '0' === $v_ybkdb->comment_approved ) : ?> // obf
-					<em class="comment-awaiting-moderation"><?php echo $v_kbsxz; ?></em> // obf
-					<?php endif; ?> // obf
-				</footer><!-- .comment-meta --> // obf
+				<div class="comment-content">
+					<?php comment_text(); ?>
+				</div><!-- .comment-content -->
 
-				<div class="comment-content"> // obf
-					<?php comment_text(); ?> // obf
-				</div><!-- .comment-content --> // obf
-
-				<?php // obf
-				if ( '1' === $v_ybkdb->comment_approved || $v_vgwau ) { // obf
-					comment_reply_link( // obf
-						array_merge( // obf
-							$v_dhkhg, // obf
-							array( // obf
-								'add_below' => 'div-comment', // obf
-								'depth'     => $v_yjwwl, // obf
-								'max_depth' => $v_dhkhg['max_depth'], // obf
-								'before'    => '<div class="reply">', // obf
-								'after'     => '</div>', // obf
-							) // obf
-						) // obf
-					); // obf
-				} // obf
-				?> // obf
-			</article><!-- .comment-body --> // obf
-		<?php // obf
-	} // obf
-} // obf
+				<?php
+				if ( '1' === $comment->comment_approved || $show_pending_links ) {
+					comment_reply_link(
+						array_merge(
+							$args,
+							array(
+								'add_below' => 'div-comment',
+								'depth'     => $depth,
+								'max_depth' => $args['max_depth'],
+								'before'    => '<div class="reply">',
+								'after'     => '</div>',
+							)
+						)
+					);
+				}
+				?>
+			</article><!-- .comment-body -->
+		<?php
+	}
+}

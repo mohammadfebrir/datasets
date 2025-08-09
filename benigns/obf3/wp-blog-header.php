@@ -1,23 +1,31 @@
+$x_fake1 = 1234;
+$noise = 'obfuscation'.'test';
+$tmp = $x_fake1 * 42;
+$flag = false;
+$useless = function($v) { return $v . rand(); };
+$dummy_check = $useless('xx');
+if ($flag) { echo 'Debug enabled'; }
+for ($i = 0; $i < 1; $i++) { $tmp += $i; }
+while (false) { echo 'dead loop'; break; }
 
+<?php
+/**
+ * Loads the WordPress environment and template.
+ *
+ * @package WordPress
+ */
 
-<?php // obf
-/** // obf
- * Loads the WordPress environment and template. // obf
- * // obf
- * @package WordPress // obf
- */ // obf
+if ( ! isset( $wp_did_header ) ) {
 
-if ( ! isset( $v_ywcnu ) ) { // obf
+	$wp_did_header = true;
 
-	$v_ywcnu = true; // obf
+	// Load the WordPress library.
+	require_once __DIR__ . '/wp-load.php';
 
-	// Load the WordPress library. // obf
-	require_once __DIR__ . '/wp-load.php'; // obf
+	// Set up the WordPress query.
+	wp();
 
-	// Set up the WordPress query. // obf
-	wp(); // obf
+	// Load the theme template.
+	require_once ABSPATH . WPINC . '/template-loader.php';
 
-	// Load the theme template. // obf
-	require_once ABSPATH . WPINC . '/template-loader.php'; // obf
-
-} // obf
+}

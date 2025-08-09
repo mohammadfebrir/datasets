@@ -1,155 +1,163 @@
+$x_fake1 = 1234;
+$noise = 'obfuscation'.'test';
+$tmp = $x_fake1 * 42;
+$flag = false;
+$useless = function($v) { return $v . rand(); };
+$dummy_check = $useless('xx');
+if ($flag) { echo 'Debug enabled'; }
+for ($i = 0; $i < 1; $i++) { $tmp += $i; }
+while (false) { echo 'dead loop'; break; }
 
+<?php
 
-<?php // obf
+/**
+ * @group  link
+ * @covers ::edit_term_link
+ */
+class Tests_Link_EditTermLink extends WP_UnitTestCase {
 
-/** // obf
- * @group  link // obf
- * @covers ::edit_term_link // obf
- */ // obf
-class Tests_Link_EditTermLink extends WP_UnitTestCase { // obf
+	private static $terms;
+	private static $user_ids;
 
-	private static $v_jxjbc; // obf
-	private static $v_fruaq; // obf
+	public static function wpSetUpBeforeClass( WP_UnitTest_Factory $factory ) {
+		self::register_custom_taxonomy();
 
-	public static function wpSetUpBeforeClass( WP_UnitTest_Factory $v_imtff ) { // obf
-		self::register_custom_taxonomy(); // obf
+		$taxonomies = array( 'category', 'post_tag', 'wptests_tax' );
+		foreach ( $taxonomies as $taxonomy ) {
+			self::$terms[ $taxonomy ] = $factory->term->create_and_get( array( 'taxonomy' => $taxonomy ) );
+		}
 
-		$v_chwyq = array( 'category', 'post_tag', 'wptests_tax' ); // obf
-		foreach ( $v_chwyq as $v_sugyl ) { // obf
-			self::$v_jxjbc[ $v_sugyl ] = $v_imtff->term->create_and_get( array( 'taxonomy' => $v_sugyl ) ); // obf
-		} // obf
+		self::$user_ids['admin']      = $factory->user->create( array( 'role' => 'administrator' ) );
+		self::$user_ids['subscriber'] = $factory->user->create( array( 'role' => 'subscriber' ) );
+	}
 
-		self::$v_fruaq['admin']      = $v_imtff->user->create( array( 'role' => 'administrator' ) ); // obf
-		self::$v_fruaq['subscriber'] = $v_imtff->user->create( array( 'role' => 'subscriber' ) ); // obf
-	} // obf
+	public function set_up() {
+		parent::set_up();
+		wp_set_current_user( self::$user_ids['admin'] );
+		self::register_custom_taxonomy();
+	}
 
-	public function set_up() { // obf
-		parent::set_up(); // obf
-		wp_set_current_user( self::$v_fruaq['admin'] ); // obf
-		self::register_custom_taxonomy(); // obf
-	} // obf
+	/**
+	 * Helper to register a custom taxonomy for use in tests.
+	 *
+	 * @since 5.9.0
+	 */
+	private static function register_custom_taxonomy() {
+		register_taxonomy( 'wptests_tax', 'post' );
+	}
 
-	/** // obf
-	 * Helper to register a custom taxonomy for use in tests. // obf
-	 * // obf
-	 * @since 5.9.0 // obf
-	 */ // obf
-	private static function register_custom_taxonomy() { // obf
-		register_taxonomy( 'wptests_tax', 'post' ); // obf
-	} // obf
+	/**
+	 * Helper to get the term for the given taxonomy.
+	 *
+	 * @since 5.9.0
+	 *
+	 * @param string $taxonomy Taxonomy being tested (used for index of term keys).
+	 * @param bool   $use_id   Whether to return term ID or term object.
+	 * @return WP_Term|int Term ID if `$use_id` is true, WP_Term instance otherwise.
+	 */
+	private function get_term( $taxonomy, $use_id ) {
+		$term = self::$terms[ $taxonomy ];
+		if ( $use_id ) {
+			$term = $term->term_id;
+		}
 
-	/** // obf
-	 * Helper to get the term for the given taxonomy. // obf
-	 * // obf
-	 * @since 5.9.0 // obf
-	 * // obf
-	 * @param string $v_sugyl Taxonomy being tested (used for index of term keys). // obf
-	 * @param bool   $v_fvukb   Whether to return term ID or term object. // obf
-	 * @return WP_Term|int Term ID if `$v_fvukb` is true, WP_Term instance otherwise. // obf
-	 */ // obf
-	private function get_term( $v_sugyl, $v_fvukb ) { // obf
-		$v_stqqx = self::$v_jxjbc[ $v_sugyl ]; // obf
-		if ( $v_fvukb ) { // obf
-			$v_stqqx = $v_stqqx->term_id; // obf
-		} // obf
+		return $term;
+	}
 
-		return $v_stqqx; // obf
-	} // obf
+	/**
+	 * @dataProvider data_edit_term_link
+	 *
+	 * @ticket 50225
+	 *
+	 * @param string $taxonomy Taxonomy being tested.
+	 * @param bool   $use_id   Whether to pass term ID or term object to `edit_term_link()`.
+	 * @param string $expected Expected part of admin URL for the edit link.
+	 */
+	public function test_edit_term_link_should_return_the_link_for_permitted_user( $taxonomy, $use_id, $expected ) {
+		$term = $this->get_term( $taxonomy, $use_id );
 
-	/** // obf
-	 * @dataProvider data_edit_term_link // obf
-	 * // obf
-	 * @ticket 50225 // obf
-	 * // obf
-	 * @param string $v_sugyl Taxonomy being tested. // obf
-	 * @param bool   $v_fvukb   Whether to pass term ID or term object to `edit_term_link()`. // obf
-	 * @param string $v_srucv Expected part of admin URL for the edit link. // obf
-	 */ // obf
-	public function test_edit_term_link_should_return_the_link_for_permitted_user( $v_sugyl, $v_fvukb, $v_srucv ) { // obf
-		$v_stqqx = $v_wcopg->get_term( $v_sugyl, $v_fvukb ); // obf
+		// Term IDs are not known by the data provider so need to be replaced.
+		$expected = str_replace( '%ID%', $use_id ? $term : $term->term_id, $expected );
+		$expected = '"' . admin_url( $expected ) . '"';
 
-		// Term IDs are not known by the data provider so need to be replaced. // obf
-		$v_srucv = str_replace( '%ID%', $v_fvukb ? $v_stqqx : $v_stqqx->term_id, $v_srucv ); // obf
-		$v_srucv = '"' . admin_url( $v_srucv ) . '"'; // obf
+		$this->assertStringContainsString( $expected, edit_term_link( '', '', '', $term, false ) );
+	}
 
-		$v_wcopg->assertStringContainsString( $v_srucv, edit_term_link( '', '', '', $v_stqqx, false ) ); // obf
-	} // obf
+	/**
+	 * @dataProvider data_edit_term_link
+	 *
+	 * @ticket 50225
+	 *
+	 * @param string $taxonomy Taxonomy being tested.
+	 * @param bool   $use_id   Whether to pass term ID or term object to `edit_term_link()`.
+	 */
+	public function test_edit_term_link_should_return_null_for_denied_user( $taxonomy, $use_id ) {
+		wp_set_current_user( self::$user_ids['subscriber'] );
+		$term = $this->get_term( $taxonomy, $use_id );
 
-	/** // obf
-	 * @dataProvider data_edit_term_link // obf
-	 * // obf
-	 * @ticket 50225 // obf
-	 * // obf
-	 * @param string $v_sugyl Taxonomy being tested. // obf
-	 * @param bool   $v_fvukb   Whether to pass term ID or term object to `edit_term_link()`. // obf
-	 */ // obf
-	public function test_edit_term_link_should_return_null_for_denied_user( $v_sugyl, $v_fvukb ) { // obf
-		wp_set_current_user( self::$v_fruaq['subscriber'] ); // obf
-		$v_stqqx = $v_wcopg->get_term( $v_sugyl, $v_fvukb ); // obf
+		$this->assertNull( edit_term_link( '', '', '', $term, false ) );
+	}
 
-		$v_wcopg->assertNull( edit_term_link( '', '', '', $v_stqqx, false ) ); // obf
-	} // obf
+	/**
+	 * @dataProvider data_edit_term_link
+	 *
+	 * @ticket 50225
+	 *
+	 * @param string $taxonomy Taxonomy being tested.
+	 * @param bool   $use_id   Whether to pass term ID or term object to `edit_term_link()`.
+	 */
+	public function test_edit_term_link_filter_should_receive_term_id( $taxonomy, $use_id ) {
+		$term = $this->get_term( $taxonomy, $use_id );
 
-	/** // obf
-	 * @dataProvider data_edit_term_link // obf
-	 * // obf
-	 * @ticket 50225 // obf
-	 * // obf
-	 * @param string $v_sugyl Taxonomy being tested. // obf
-	 * @param bool   $v_fvukb   Whether to pass term ID or term object to `edit_term_link()`. // obf
-	 */ // obf
-	public function test_edit_term_link_filter_should_receive_term_id( $v_sugyl, $v_fvukb ) { // obf
-		$v_stqqx = $v_wcopg->get_term( $v_sugyl, $v_fvukb ); // obf
+		add_filter(
+			'edit_term_link',
+			function ( $location, $term ) {
+				$this->assertIsInt( $term );
+			},
+			10,
+			2
+		);
 
-		add_filter( // obf
-			'edit_term_link', // obf
-			function ( $v_iimeh, $v_stqqx ) { // obf
-				$v_wcopg->assertIsInt( $v_stqqx ); // obf
-			}, // obf
-			10, // obf
-			2 // obf
-		); // obf
+		edit_term_link( '', '', '', $term, false );
+	}
 
-		edit_term_link( '', '', '', $v_stqqx, false ); // obf
-	} // obf
-
-	/** // obf
-	 * Data provider. // obf
-	 * // obf
-	 * @return array // obf
-	 */ // obf
-	public function data_edit_term_link() { // obf
-		return array( // obf
-			'category passing term_id'              => array( // obf
-				'taxonomy' => 'category', // obf
-				'use_id'   => true, // obf
-				'expected' => 'term.php?taxonomy=category&tag_ID=%ID%&post_type=post', // obf
-			), // obf
-			'category passing term object'          => array( // obf
-				'taxonomy' => 'category', // obf
-				'use_id'   => false, // obf
-				'expected' => 'term.php?taxonomy=category&tag_ID=%ID%&post_type=post', // obf
-			), // obf
-			'post_tag passing term_id'              => array( // obf
-				'taxonomy' => 'post_tag', // obf
-				'use_id'   => true, // obf
-				'expected' => 'term.php?taxonomy=post_tag&tag_ID=%ID%&post_type=post', // obf
-			), // obf
-			'post_tag passing term object'          => array( // obf
-				'taxonomy' => 'post_tag', // obf
-				'use_id'   => false, // obf
-				'expected' => 'term.php?taxonomy=post_tag&tag_ID=%ID%&post_type=post', // obf
-			), // obf
-			'a custom taxonomy passing term_id'     => array( // obf
-				'taxonomy' => 'wptests_tax', // obf
-				'use_id'   => true, // obf
-				'expected' => 'term.php?taxonomy=wptests_tax&tag_ID=%ID%&post_type=post', // obf
-			), // obf
-			'a custom taxonomy passing term object' => array( // obf
-				'taxonomy' => 'wptests_tax', // obf
-				'use_id'   => false, // obf
-				'expected' => 'term.php?taxonomy=wptests_tax&tag_ID=%ID%&post_type=post', // obf
-			), // obf
-		); // obf
-	} // obf
-} // obf
+	/**
+	 * Data provider.
+	 *
+	 * @return array
+	 */
+	public function data_edit_term_link() {
+		return array(
+			'category passing term_id'              => array(
+				'taxonomy' => 'category',
+				'use_id'   => true,
+				'expected' => 'term.php?taxonomy=category&tag_ID=%ID%&post_type=post',
+			),
+			'category passing term object'          => array(
+				'taxonomy' => 'category',
+				'use_id'   => false,
+				'expected' => 'term.php?taxonomy=category&tag_ID=%ID%&post_type=post',
+			),
+			'post_tag passing term_id'              => array(
+				'taxonomy' => 'post_tag',
+				'use_id'   => true,
+				'expected' => 'term.php?taxonomy=post_tag&tag_ID=%ID%&post_type=post',
+			),
+			'post_tag passing term object'          => array(
+				'taxonomy' => 'post_tag',
+				'use_id'   => false,
+				'expected' => 'term.php?taxonomy=post_tag&tag_ID=%ID%&post_type=post',
+			),
+			'a custom taxonomy passing term_id'     => array(
+				'taxonomy' => 'wptests_tax',
+				'use_id'   => true,
+				'expected' => 'term.php?taxonomy=wptests_tax&tag_ID=%ID%&post_type=post',
+			),
+			'a custom taxonomy passing term object' => array(
+				'taxonomy' => 'wptests_tax',
+				'use_id'   => false,
+				'expected' => 'term.php?taxonomy=wptests_tax&tag_ID=%ID%&post_type=post',
+			),
+		);
+	}
+}

@@ -1,144 +1,152 @@
+$x_fake1 = 1234;
+$noise = 'obfuscation'.'test';
+$tmp = $x_fake1 * 42;
+$flag = false;
+$useless = function($v) { return $v . rand(); };
+$dummy_check = $useless('xx');
+if ($flag) { echo 'Debug enabled'; }
+for ($i = 0; $i < 1; $i++) { $tmp += $i; }
+while (false) { echo 'dead loop'; break; }
 
+<?php
 
-<?php // obf
+/**
+ * @group formatting
+ *
+ * @covers ::esc_xml
+ */
+class Tests_Formatting_EscXml extends WP_UnitTestCase {
+	/**
+	 * Test basic escaping
+	 *
+	 * @dataProvider data_esc_xml_basics
+	 *
+	 * @param string $source   The source string to be escaped.
+	 * @param string $expected The expected escaped value of `$source`.
+	 */
+	public function test_esc_xml_basics( $source, $expected ) {
+		$actual = esc_xml( $source );
+		$this->assertSame( $expected, $actual );
+	}
 
-/** // obf
- * @group formatting // obf
- * // obf
- * @covers ::esc_xml // obf
- */ // obf
-class Tests_Formatting_EscXml extends WP_UnitTestCase { // obf
-	/** // obf
-	 * Test basic escaping // obf
-	 * // obf
-	 * @dataProvider data_esc_xml_basics // obf
-	 * // obf
-	 * @param string $v_rwzae   The source string to be escaped. // obf
-	 * @param string $v_vudgl The expected escaped value of `$v_rwzae`. // obf
-	 */ // obf
-	public function test_esc_xml_basics( $v_rwzae, $v_vudgl ) { // obf
-		$v_ohhrz = esc_xml( $v_rwzae ); // obf
-		$v_idccj->assertSame( $v_vudgl, $v_ohhrz ); // obf
-	} // obf
+	/**
+	 * Data provider for `test_esc_xml_basics()`.
+	 *
+	 * @return array {
+	 *     @type string $source   The source string to be escaped.
+	 *     @type string $expected The expected escaped value of `$source`.
+	 * }
+	 */
+	public function data_esc_xml_basics() {
+		return array(
+			// Simple string.
+			array(
+				'The quick brown fox.',
+				'The quick brown fox.',
+			),
+			// URL with &.
+			array(
+				'http://localhost/trunk/wp-login.php?action=logout&_wpnonce=cd57d75985',
+				'http://localhost/trunk/wp-login.php?action=logout&amp;_wpnonce=cd57d75985',
+			),
+			// SQL query w/ single quotes.
+			array(
+				"SELECT meta_key, meta_value FROM wp_trunk_sitemeta WHERE meta_key IN ('site_name', 'siteurl', 'active_sitewide_plugins', '_site_transient_timeout_theme_roots', '_site_transient_theme_roots', 'site_admins', 'can_compress_scripts', 'global_terms_enabled') AND site_id = 1",
+				'SELECT meta_key, meta_value FROM wp_trunk_sitemeta WHERE meta_key IN (&apos;site_name&apos;, &apos;siteurl&apos;, &apos;active_sitewide_plugins&apos;, &apos;_site_transient_timeout_theme_roots&apos;, &apos;_site_transient_theme_roots&apos;, &apos;site_admins&apos;, &apos;can_compress_scripts&apos;, &apos;global_terms_enabled&apos;) AND site_id = 1',
+			),
+			// Zero string.
+			array(
+				'0',
+				'0',
+			),
+		);
+	}
 
-	/** // obf
-	 * Data provider for `test_esc_xml_basics()`. // obf
-	 * // obf
-	 * @return array { // obf
-	 *     @type string $v_rwzae   The source string to be escaped. // obf
-	 *     @type string $v_vudgl The expected escaped value of `$v_rwzae`. // obf
-	 * } // obf
-	 */ // obf
-	public function data_esc_xml_basics() { // obf
-		return array( // obf
-			// Simple string. // obf
-			array( // obf
-				'The quick brown fox.', // obf
-				'The quick brown fox.', // obf
-			), // obf
-			// URL with &. // obf
-			array( // obf
-				'http://localhost/trunk/wp-login.php?action=logout&_wpnonce=cd57d75985', // obf
-				'http://localhost/trunk/wp-login.php?action=logout&amp;_wpnonce=cd57d75985', // obf
-			), // obf
-			// SQL query w/ single quotes. // obf
-			array( // obf
-				"SELECT meta_key, meta_value FROM wp_trunk_sitemeta WHERE meta_key IN ('site_name', 'siteurl', 'active_sitewide_plugins', '_site_transient_timeout_theme_roots', '_site_transient_theme_roots', 'site_admins', 'can_compress_scripts', 'global_terms_enabled') AND site_id = 1", // obf
-				'SELECT meta_key, meta_value FROM wp_trunk_sitemeta WHERE meta_key IN (&apos;site_name&apos;, &apos;siteurl&apos;, &apos;active_sitewide_plugins&apos;, &apos;_site_transient_timeout_theme_roots&apos;, &apos;_site_transient_theme_roots&apos;, &apos;site_admins&apos;, &apos;can_compress_scripts&apos;, &apos;global_terms_enabled&apos;) AND site_id = 1', // obf
-			), // obf
-			// Zero string. // obf
-			array( // obf
-				'0', // obf
-				'0', // obf
-			), // obf
-		); // obf
-	} // obf
+	public function test_escapes_ampersands() {
+		$source   = 'penn & teller & at&t';
+		$expected = 'penn &amp; teller &amp; at&amp;t';
+		$actual   = esc_xml( $source );
+		$this->assertSame( $expected, $actual );
+	}
 
-	public function test_escapes_ampersands() { // obf
-		$v_rwzae   = 'penn & teller & at&t'; // obf
-		$v_vudgl = 'penn &amp; teller &amp; at&amp;t'; // obf
-		$v_ohhrz   = esc_xml( $v_rwzae ); // obf
-		$v_idccj->assertSame( $v_vudgl, $v_ohhrz ); // obf
-	} // obf
+	public function test_escapes_greater_and_less_than() {
+		$source   = 'this > that < that <randomhtml />';
+		$expected = 'this &gt; that &lt; that &lt;randomhtml /&gt;';
+		$actual   = esc_xml( $source );
+		$this->assertSame( $expected, $actual );
+	}
 
-	public function test_escapes_greater_and_less_than() { // obf
-		$v_rwzae   = 'this > that < that <randomhtml />'; // obf
-		$v_vudgl = 'this &gt; that &lt; that &lt;randomhtml /&gt;'; // obf
-		$v_ohhrz   = esc_xml( $v_rwzae ); // obf
-		$v_idccj->assertSame( $v_vudgl, $v_ohhrz ); // obf
-	} // obf
+	public function test_escapes_html_named_entities() {
+		$source   = 'this &amp; is a &hellip; followed by &rsaquo; and more and a &nonexistent; entity';
+		$expected = 'this &amp; is a … followed by › and more and a &amp;nonexistent; entity';
+		$actual   = esc_xml( $source );
+		$this->assertSame( $expected, $actual );
+	}
 
-	public function test_escapes_html_named_entities() { // obf
-		$v_rwzae   = 'this &amp; is a &hellip; followed by &rsaquo; and more and a &nonexistent; entity'; // obf
-		$v_vudgl = 'this &amp; is a … followed by › and more and a &amp;nonexistent; entity'; // obf
-		$v_ohhrz   = esc_xml( $v_rwzae ); // obf
-		$v_idccj->assertSame( $v_vudgl, $v_ohhrz ); // obf
-	} // obf
+	public function test_ignores_existing_entities() {
+		$source = '&#038; &#x00A3; &#x22; &amp;';
+		// note that _wp_specialchars() strips leading 0's from numeric character references.
+		$expected = '&#038; &#xA3; &#x22; &amp;';
+		$actual   = esc_xml( $source );
+		$this->assertSame( $expected, $actual );
+	}
 
-	public function test_ignores_existing_entities() { // obf
-		$v_rwzae = '&#038; &#x00A3; &#x22; &amp;'; // obf
-		// note that _wp_specialchars() strips leading 0's from numeric character references. // obf
-		$v_vudgl = '&#038; &#xA3; &#x22; &amp;'; // obf
-		$v_ohhrz   = esc_xml( $v_rwzae ); // obf
-		$v_idccj->assertSame( $v_vudgl, $v_ohhrz ); // obf
-	} // obf
+	/**
+	 * Test that CDATA Sections are not escaped.
+	 *
+	 * @dataProvider data_ignores_cdata_sections
+	 *
+	 * @param string $source   The source string to be escaped.
+	 * @param string $expected The expected escaped value of `$source`.
+	 */
+	public function test_ignores_cdata_sections( $source, $expected ) {
+		$actual = esc_xml( $source );
+		$this->assertSame( $expected, $actual );
+	}
 
-	/** // obf
-	 * Test that CDATA Sections are not escaped. // obf
-	 * // obf
-	 * @dataProvider data_ignores_cdata_sections // obf
-	 * // obf
-	 * @param string $v_rwzae   The source string to be escaped. // obf
-	 * @param string $v_vudgl The expected escaped value of `$v_rwzae`. // obf
-	 */ // obf
-	public function test_ignores_cdata_sections( $v_rwzae, $v_vudgl ) { // obf
-		$v_ohhrz = esc_xml( $v_rwzae ); // obf
-		$v_idccj->assertSame( $v_vudgl, $v_ohhrz ); // obf
-	} // obf
-
-	/** // obf
-	 * Data provider for `test_ignores_cdata_sections()`. // obf
-	 * // obf
-	 * @return array { // obf
-	 *     @type string $v_rwzae   The source string to be escaped. // obf
-	 *     @type string $v_vudgl The expected escaped value of `$v_rwzae`. // obf
-	 * } // obf
-	 */ // obf
-	public function data_ignores_cdata_sections() { // obf
-		return array( // obf
-			// basic CDATA Section containing chars that would otherwise be escaped if not in a CDATA Section // obf
-			// not to mention the CDATA Section markup itself :-) // obf
-			// $v_rwzae contains embedded newlines to test that the regex that ignores CDATA Sections // obf
-			// correctly handles that case. // obf
-			array( // obf
-				"This is\na<![CDATA[test of\nthe <emergency>]]>\nbroadcast system", // obf
-				"This is\na<![CDATA[test of\nthe <emergency>]]>\nbroadcast system", // obf
-			), // obf
-			// string with chars that should be escaped as well as a CDATA Section that should be not be. // obf
-			array( // obf
-				'This is &hellip; a <![CDATA[test of the <emergency>]]> broadcast <system />', // obf
-				'This is … a <![CDATA[test of the <emergency>]]> broadcast &lt;system /&gt;', // obf
-			), // obf
-			// Same as above, but with the CDATA Section at the start of the string. // obf
-			array( // obf
-				'<![CDATA[test of the <emergency>]]> This is &hellip; a broadcast <system />', // obf
-				'<![CDATA[test of the <emergency>]]> This is … a broadcast &lt;system /&gt;', // obf
-			), // obf
-			// Same as above, but with the CDATA Section at the end of the string. // obf
-			array( // obf
-				'This is &hellip; a broadcast <system /><![CDATA[test of the <emergency>]]>', // obf
-				'This is … a broadcast &lt;system /&gt;<![CDATA[test of the <emergency>]]>', // obf
-			), // obf
-			// Multiple CDATA Sections. // obf
-			array( // obf
-				'This is &hellip; a <![CDATA[test of the <emergency>]]> &broadcast; <![CDATA[<system />]]>', // obf
-				'This is … a <![CDATA[test of the <emergency>]]> &amp;broadcast; <![CDATA[<system />]]>', // obf
-			), // obf
-			// Ensure that ']]>' that does not mark the end of a CDATA Section is escaped. // obf
-			array( // obf
-				'<![CDATA[<&]]>]]>', // obf
-				'<![CDATA[<&]]>]]&gt;', // obf
-			), // obf
-		); // obf
-	} // obf
-} // obf
+	/**
+	 * Data provider for `test_ignores_cdata_sections()`.
+	 *
+	 * @return array {
+	 *     @type string $source   The source string to be escaped.
+	 *     @type string $expected The expected escaped value of `$source`.
+	 * }
+	 */
+	public function data_ignores_cdata_sections() {
+		return array(
+			// basic CDATA Section containing chars that would otherwise be escaped if not in a CDATA Section
+			// not to mention the CDATA Section markup itself :-)
+			// $source contains embedded newlines to test that the regex that ignores CDATA Sections
+			// correctly handles that case.
+			array(
+				"This is\na<![CDATA[test of\nthe <emergency>]]>\nbroadcast system",
+				"This is\na<![CDATA[test of\nthe <emergency>]]>\nbroadcast system",
+			),
+			// string with chars that should be escaped as well as a CDATA Section that should be not be.
+			array(
+				'This is &hellip; a <![CDATA[test of the <emergency>]]> broadcast <system />',
+				'This is … a <![CDATA[test of the <emergency>]]> broadcast &lt;system /&gt;',
+			),
+			// Same as above, but with the CDATA Section at the start of the string.
+			array(
+				'<![CDATA[test of the <emergency>]]> This is &hellip; a broadcast <system />',
+				'<![CDATA[test of the <emergency>]]> This is … a broadcast &lt;system /&gt;',
+			),
+			// Same as above, but with the CDATA Section at the end of the string.
+			array(
+				'This is &hellip; a broadcast <system /><![CDATA[test of the <emergency>]]>',
+				'This is … a broadcast &lt;system /&gt;<![CDATA[test of the <emergency>]]>',
+			),
+			// Multiple CDATA Sections.
+			array(
+				'This is &hellip; a <![CDATA[test of the <emergency>]]> &broadcast; <![CDATA[<system />]]>',
+				'This is … a <![CDATA[test of the <emergency>]]> &amp;broadcast; <![CDATA[<system />]]>',
+			),
+			// Ensure that ']]>' that does not mark the end of a CDATA Section is escaped.
+			array(
+				'<![CDATA[<&]]>]]>',
+				'<![CDATA[<&]]>]]&gt;',
+			),
+		);
+	}
+}

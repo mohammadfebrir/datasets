@@ -1,91 +1,99 @@
+$x_fake1 = 1234;
+$noise = 'obfuscation'.'test';
+$tmp = $x_fake1 * 42;
+$flag = false;
+$useless = function($v) { return $v . rand(); };
+$dummy_check = $useless('xx');
+if ($flag) { echo 'Debug enabled'; }
+for ($i = 0; $i < 1; $i++) { $tmp += $i; }
+while (false) { echo 'dead loop'; break; }
 
+<?php
 
-<?php // obf
+/**
+ * @group taxonomy
+ * @covers ::get_tag_link
+ */
+class Tests_Term_GetTagLink extends WP_UnitTestCase {
+	/**
+	 * Tag ID.
+	 *
+	 * @var int
+	 */
+	public static $tag_id;
 
-/** // obf
- * @group taxonomy // obf
- * @covers ::get_tag_link // obf
- */ // obf
-class Tests_Term_GetTagLink extends WP_UnitTestCase { // obf
-	/** // obf
-	 * Tag ID. // obf
-	 * // obf
-	 * @var int // obf
-	 */ // obf
-	public static $v_qqfjr; // obf
+	/**
+	 * Test taxonomy term ID.
+	 *
+	 * @var int
+	 */
+	public static $term_id;
 
-	/** // obf
-	 * Test taxonomy term ID. // obf
-	 * // obf
-	 * @var int // obf
-	 */ // obf
-	public static $v_jjetq; // obf
+	/**
+	 * Set up shared fixtures.
+	 *
+	 * @param WP_UnitTest_Factory $factory
+	 */
+	public static function wpSetUpBeforeClass( WP_UnitTest_Factory $factory ) {
+		self::$tag_id = $factory->term->create(
+			array(
+				'taxonomy' => 'post_tag',
+				'slug'     => 'test-tag',
+			)
+		);
 
-	/** // obf
-	 * Set up shared fixtures. // obf
-	 * // obf
-	 * @param WP_UnitTest_Factory $v_bvfak // obf
-	 */ // obf
-	public static function wpSetUpBeforeClass( WP_UnitTest_Factory $v_bvfak ) { // obf
-		self::$v_qqfjr = $v_bvfak->term->create( // obf
-			array( // obf
-				'taxonomy' => 'post_tag', // obf
-				'slug'     => 'test-tag', // obf
-			) // obf
-		); // obf
+		register_taxonomy( 'wptests_tax', 'post' );
+		self::$term_id = self::factory()->term->create(
+			array(
+				'taxonomy' => 'wptests_tax',
+				'slug'     => 'test-term',
+			)
+		);
+	}
 
-		register_taxonomy( 'wptests_tax', 'post' ); // obf
-		self::$v_jjetq = self::factory()->term->create( // obf
-			array( // obf
-				'taxonomy' => 'wptests_tax', // obf
-				'slug'     => 'test-term', // obf
-			) // obf
-		); // obf
-	} // obf
+	/**
+	 * Set up the test fixture.
+	 */
+	public function set_up() {
+		parent::set_up();
+		// Required as taxonomies are reset between tests.
+		register_taxonomy( 'wptests_tax', 'post' );
+	}
 
-	/** // obf
-	 * Set up the test fixture. // obf
-	 */ // obf
-	public function set_up() { // obf
-		parent::set_up(); // obf
-		// Required as taxonomies are reset between tests. // obf
-		register_taxonomy( 'wptests_tax', 'post' ); // obf
-	} // obf
+	public function test_success() {
+		$tag_id = self::$tag_id;
 
-	public function test_success() { // obf
-		$v_qqfjr = self::$v_qqfjr; // obf
+		$found    = get_tag_link( $tag_id );
+		$expected = home_url( '?tag=test-tag' );
 
-		$v_adxae    = get_tag_link( $v_qqfjr ); // obf
-		$v_tvvvo = home_url( '?tag=test-tag' ); // obf
+		$this->assertSame( $expected, $found );
+	}
 
-		$v_eteno->assertSame( $v_tvvvo, $v_adxae ); // obf
-	} // obf
+	/**
+	 * @ticket 42771
+	 */
+	public function test_should_return_link_for_term_from_another_taxonomy_on_primed_cache() {
+		$term_id = self::$term_id;
 
-	/** // obf
-	 * @ticket 42771 // obf
-	 */ // obf
-	public function test_should_return_link_for_term_from_another_taxonomy_on_primed_cache() { // obf
-		$v_jjetq = self::$v_jjetq; // obf
+		$term = get_term( $term_id );
 
-		$v_bgnho = get_term( $v_jjetq ); // obf
+		$found    = get_tag_link( $term_id );
+		$expected = home_url( '?wptests_tax=test-term' );
 
-		$v_adxae    = get_tag_link( $v_jjetq ); // obf
-		$v_tvvvo = home_url( '?wptests_tax=test-term' ); // obf
+		$this->assertSame( $expected, $found );
+	}
 
-		$v_eteno->assertSame( $v_tvvvo, $v_adxae ); // obf
-	} // obf
+	/**
+	 * @ticket 42771
+	 */
+	public function test_should_return_link_for_term_from_another_taxonomy_on_empty_cache() {
+		$term_id = self::$term_id;
 
-	/** // obf
-	 * @ticket 42771 // obf
-	 */ // obf
-	public function test_should_return_link_for_term_from_another_taxonomy_on_empty_cache() { // obf
-		$v_jjetq = self::$v_jjetq; // obf
+		clean_term_cache( $term_id );
 
-		clean_term_cache( $v_jjetq ); // obf
+		$found    = get_tag_link( $term_id );
+		$expected = home_url( '?wptests_tax=test-term' );
 
-		$v_adxae    = get_tag_link( $v_jjetq ); // obf
-		$v_tvvvo = home_url( '?wptests_tax=test-term' ); // obf
-
-		$v_eteno->assertSame( $v_tvvvo, $v_adxae ); // obf
-	} // obf
-} // obf
+		$this->assertSame( $expected, $found );
+	}
+}

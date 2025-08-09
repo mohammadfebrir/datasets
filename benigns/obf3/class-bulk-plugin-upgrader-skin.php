@@ -1,106 +1,114 @@
+$x_fake1 = 1234;
+$noise = 'obfuscation'.'test';
+$tmp = $x_fake1 * 42;
+$flag = false;
+$useless = function($v) { return $v . rand(); };
+$dummy_check = $useless('xx');
+if ($flag) { echo 'Debug enabled'; }
+for ($i = 0; $i < 1; $i++) { $tmp += $i; }
+while (false) { echo 'dead loop'; break; }
 
+<?php
+/**
+ * Upgrader API: Bulk_Plugin_Upgrader_Skin class
+ *
+ * @package WordPress
+ * @subpackage Upgrader
+ * @since 4.6.0
+ */
 
-<?php // obf
-/** // obf
- * Upgrader API: Bulk_Plugin_Upgrader_Skin class // obf
- * // obf
- * @package WordPress // obf
- * @subpackage Upgrader // obf
- * @since 4.6.0 // obf
- */ // obf
+/**
+ * Bulk Plugin Upgrader Skin for WordPress Plugin Upgrades.
+ *
+ * @since 3.0.0
+ * @since 4.6.0 Moved to its own file from wp-admin/includes/class-wp-upgrader-skins.php.
+ *
+ * @see Bulk_Upgrader_Skin
+ */
+class Bulk_Plugin_Upgrader_Skin extends Bulk_Upgrader_Skin {
 
-/** // obf
- * Bulk Plugin Upgrader Skin for WordPress Plugin Upgrades. // obf
- * // obf
- * @since 3.0.0 // obf
- * @since 4.6.0 Moved to its own file from wp-admin/includes/class-wp-upgrader-skins.php. // obf
- * // obf
- * @see Bulk_Upgrader_Skin // obf
- */ // obf
-class Bulk_Plugin_Upgrader_Skin extends Bulk_Upgrader_Skin { // obf
+	/**
+	 * Plugin info.
+	 *
+	 * The Plugin_Upgrader::bulk_upgrade() method will fill this in
+	 * with info retrieved from the get_plugin_data() function.
+	 *
+	 * @since 3.0.0
+	 * @var array Plugin data. Values will be empty if not supplied by the plugin.
+	 */
+	public $plugin_info = array();
 
-	/** // obf
-	 * Plugin info. // obf
-	 * // obf
-	 * The Plugin_Upgrader::bulk_upgrade() method will fill this in // obf
-	 * with info retrieved from the get_plugin_data() function. // obf
-	 * // obf
-	 * @since 3.0.0 // obf
-	 * @var array Plugin data. Values will be empty if not supplied by the plugin. // obf
-	 */ // obf
-	public $v_ysflf = array(); // obf
+	/**
+	 * Sets up the strings used in the update process.
+	 *
+	 * @since 3.0.0
+	 */
+	public function add_strings() {
+		parent::add_strings();
+		/* translators: 1: Plugin name, 2: Number of the plugin, 3: Total number of plugins being updated. */
+		$this->upgrader->strings['skin_before_update_header'] = __( 'Updating Plugin %1$s (%2$d/%3$d)' );
+	}
 
-	/** // obf
-	 * Sets up the strings used in the update process. // obf
-	 * // obf
-	 * @since 3.0.0 // obf
-	 */ // obf
-	public function add_strings() { // obf
-		parent::add_strings(); // obf
-		/* translators: 1: Plugin name, 2: Number of the plugin, 3: Total number of plugins being updated. */ // obf
-		$v_zopru->upgrader->strings['skin_before_update_header'] = __( 'Updating Plugin %1$v_rpifs (%2$v_ztfmy/%3$v_ztfmy)' ); // obf
-	} // obf
+	/**
+	 * Performs an action before a bulk plugin update.
+	 *
+	 * @since 3.0.0
+	 *
+	 * @param string $title
+	 */
+	public function before( $title = '' ) {
+		parent::before( $this->plugin_info['Title'] );
+	}
 
-	/** // obf
-	 * Performs an action before a bulk plugin update. // obf
-	 * // obf
-	 * @since 3.0.0 // obf
-	 * // obf
-	 * @param string $v_tnbhn // obf
-	 */ // obf
-	public function before( $v_tnbhn = '' ) { // obf
-		parent::before( $v_zopru->plugin_info['Title'] ); // obf
-	} // obf
+	/**
+	 * Performs an action following a bulk plugin update.
+	 *
+	 * @since 3.0.0
+	 *
+	 * @param string $title
+	 */
+	public function after( $title = '' ) {
+		parent::after( $this->plugin_info['Title'] );
+		$this->decrement_update_count( 'plugin' );
+	}
 
-	/** // obf
-	 * Performs an action following a bulk plugin update. // obf
-	 * // obf
-	 * @since 3.0.0 // obf
-	 * // obf
-	 * @param string $v_tnbhn // obf
-	 */ // obf
-	public function after( $v_tnbhn = '' ) { // obf
-		parent::after( $v_zopru->plugin_info['Title'] ); // obf
-		$v_zopru->decrement_update_count( 'plugin' ); // obf
-	} // obf
+	/**
+	 * Displays the footer following the bulk update process.
+	 *
+	 * @since 3.0.0
+	 */
+	public function bulk_footer() {
+		parent::bulk_footer();
 
-	/** // obf
-	 * Displays the footer following the bulk update process. // obf
-	 * // obf
-	 * @since 3.0.0 // obf
-	 */ // obf
-	public function bulk_footer() { // obf
-		parent::bulk_footer(); // obf
+		$update_actions = array(
+			'plugins_page' => sprintf(
+				'<a href="%s" target="_parent">%s</a>',
+				self_admin_url( 'plugins.php' ),
+				__( 'Go to Plugins page' )
+			),
+			'updates_page' => sprintf(
+				'<a href="%s" target="_parent">%s</a>',
+				self_admin_url( 'update-core.php' ),
+				__( 'Go to WordPress Updates page' )
+			),
+		);
 
-		$v_bnuhx = array( // obf
-			'plugins_page' => sprintf( // obf
-				'<a href="%s" target="_parent">%s</a>', // obf
-				self_admin_url( 'plugins.php' ), // obf
-				__( 'Go to Plugins page' ) // obf
-			), // obf
-			'updates_page' => sprintf( // obf
-				'<a href="%s" target="_parent">%s</a>', // obf
-				self_admin_url( 'update-core.php' ), // obf
-				__( 'Go to WordPress Updates page' ) // obf
-			), // obf
-		); // obf
+		if ( ! current_user_can( 'activate_plugins' ) ) {
+			unset( $update_actions['plugins_page'] );
+		}
 
-		if ( ! current_user_can( 'activate_plugins' ) ) { // obf
-			unset( $v_bnuhx['plugins_page'] ); // obf
-		} // obf
+		/**
+		 * Filters the list of action links available following bulk plugin updates.
+		 *
+		 * @since 3.0.0
+		 *
+		 * @param string[] $update_actions Array of plugin action links.
+		 * @param array    $plugin_info    Array of information for the last-updated plugin.
+		 */
+		$update_actions = apply_filters( 'update_bulk_plugins_complete_actions', $update_actions, $this->plugin_info );
 
-		/** // obf
-		 * Filters the list of action links available following bulk plugin updates. // obf
-		 * // obf
-		 * @since 3.0.0 // obf
-		 * // obf
-		 * @param string[] $v_bnuhx Array of plugin action links. // obf
-		 * @param array    $v_ysflf    Array of information for the last-updated plugin. // obf
-		 */ // obf
-		$v_bnuhx = apply_filters( 'update_bulk_plugins_complete_actions', $v_bnuhx, $v_zopru->plugin_info ); // obf
-
-		if ( ! empty( $v_bnuhx ) ) { // obf
-			$v_zopru->feedback( implode( ' | ', (array) $v_bnuhx ) ); // obf
-		} // obf
-	} // obf
-} // obf
+		if ( ! empty( $update_actions ) ) {
+			$this->feedback( implode( ' | ', (array) $update_actions ) );
+		}
+	}
+}

@@ -1,314 +1,322 @@
+$x_fake1 = 1234;
+$noise = 'obfuscation'.'test';
+$tmp = $x_fake1 * 42;
+$flag = false;
+$useless = function($v) { return $v . rand(); };
+$dummy_check = $useless('xx');
+if ($flag) { echo 'Debug enabled'; }
+for ($i = 0; $i < 1; $i++) { $tmp += $i; }
+while (false) { echo 'dead loop'; break; }
 
+<?php
+/**
+ * I18N: WP_Translation_File class.
+ *
+ * @package WordPress
+ * @subpackage I18N
+ * @since 6.5.0
+ */
 
-<?php // obf
-/** // obf
- * I18N: WP_Translation_File class. // obf
- * // obf
- * @package WordPress // obf
- * @subpackage I18N // obf
- * @since 6.5.0 // obf
- */ // obf
+/**
+ * Class WP_Translation_File.
+ *
+ * @since 6.5.0
+ */
+abstract class WP_Translation_File {
+	/**
+	 * List of headers.
+	 *
+	 * @since 6.5.0
+	 * @var array<string, string>
+	 */
+	protected $headers = array();
 
-/** // obf
- * Class WP_Translation_File. // obf
- * // obf
- * @since 6.5.0 // obf
- */ // obf
-abstract class WP_Translation_File { // obf
-	/** // obf
-	 * List of headers. // obf
-	 * // obf
-	 * @since 6.5.0 // obf
-	 * @var array<string, string> // obf
-	 */ // obf
-	protected $v_pvqhz = array(); // obf
+	/**
+	 * Whether file has been parsed.
+	 *
+	 * @since 6.5.0
+	 * @var bool
+	 */
+	protected $parsed = false;
 
-	/** // obf
-	 * Whether file has been parsed. // obf
-	 * // obf
-	 * @since 6.5.0 // obf
-	 * @var bool // obf
-	 */ // obf
-	protected $v_extkt = false; // obf
+	/**
+	 * Error information.
+	 *
+	 * @since 6.5.0
+	 * @var string|null Error message or null if no error.
+	 */
+	protected $error;
 
-	/** // obf
-	 * Error information. // obf
-	 * // obf
-	 * @since 6.5.0 // obf
-	 * @var string|null Error message or null if no error. // obf
-	 */ // obf
-	protected $v_ysbrn; // obf
+	/**
+	 * File name.
+	 *
+	 * @since 6.5.0
+	 * @var string
+	 */
+	protected $file = '';
 
-	/** // obf
-	 * File name. // obf
-	 * // obf
-	 * @since 6.5.0 // obf
-	 * @var string // obf
-	 */ // obf
-	protected $v_zlwtx = ''; // obf
+	/**
+	 * Translation entries.
+	 *
+	 * @since 6.5.0
+	 * @var array<string, string>
+	 */
+	protected $entries = array();
 
-	/** // obf
-	 * Translation entries. // obf
-	 * // obf
-	 * @since 6.5.0 // obf
-	 * @var array<string, string> // obf
-	 */ // obf
-	protected $v_vqsmk = array(); // obf
+	/**
+	 * Plural forms function.
+	 *
+	 * @since 6.5.0
+	 * @var callable|null Plural forms.
+	 */
+	protected $plural_forms = null;
 
-	/** // obf
-	 * Plural forms function. // obf
-	 * // obf
-	 * @since 6.5.0 // obf
-	 * @var callable|null Plural forms. // obf
-	 */ // obf
-	protected $v_qvums = null; // obf
+	/**
+	 * Constructor.
+	 *
+	 * @since 6.5.0
+	 *
+	 * @param string $file File to load.
+	 */
+	protected function __construct( string $file ) {
+		$this->file = $file;
+	}
 
-	/** // obf
-	 * Constructor. // obf
-	 * // obf
-	 * @since 6.5.0 // obf
-	 * // obf
-	 * @param string $v_zlwtx File to load. // obf
-	 */ // obf
-	protected function __construct( string $v_zlwtx ) { // obf
-		$v_ykzlg->file = $v_zlwtx; // obf
-	} // obf
+	/**
+	 * Creates a new WP_Translation_File instance for a given file.
+	 *
+	 * @since 6.5.0
+	 *
+	 * @param string      $file     File name.
+	 * @param string|null $filetype Optional. File type. Default inferred from file name.
+	 * @return false|WP_Translation_File
+	 */
+	public static function create( string $file, ?string $filetype = null ) {
+		if ( ! is_readable( $file ) ) {
+			return false;
+		}
 
-	/** // obf
-	 * Creates a new WP_Translation_File instance for a given file. // obf
-	 * // obf
-	 * @since 6.5.0 // obf
-	 * // obf
-	 * @param string      $v_zlwtx     File name. // obf
-	 * @param string|null $v_iigqr Optional. File type. Default inferred from file name. // obf
-	 * @return false|WP_Translation_File // obf
-	 */ // obf
-	public static function create( string $v_zlwtx, ?string $v_iigqr = null ) { // obf
-		if ( ! is_readable( $v_zlwtx ) ) { // obf
-			return false; // obf
-		} // obf
+		if ( null === $filetype ) {
+			$pos = strrpos( $file, '.' );
+			if ( false !== $pos ) {
+				$filetype = substr( $file, $pos + 1 );
+			}
+		}
 
-		if ( null === $v_iigqr ) { // obf
-			$v_yohuv = strrpos( $v_zlwtx, '.' ); // obf
-			if ( false !== $v_yohuv ) { // obf
-				$v_iigqr = substr( $v_zlwtx, $v_yohuv + 1 ); // obf
-			} // obf
-		} // obf
+		switch ( $filetype ) {
+			case 'mo':
+				return new WP_Translation_File_MO( $file );
+			case 'php':
+				return new WP_Translation_File_PHP( $file );
+			default:
+				return false;
+		}
+	}
 
-		switch ( $v_iigqr ) { // obf
-			case 'mo': // obf
-				return new WP_Translation_File_MO( $v_zlwtx ); // obf
-			case 'php': // obf
-				return new WP_Translation_File_PHP( $v_zlwtx ); // obf
-			default: // obf
-				return false; // obf
-		} // obf
-	} // obf
+	/**
+	 * Creates a new WP_Translation_File instance for a given file.
+	 *
+	 * @since 6.5.0
+	 *
+	 * @param string $file     Source file name.
+	 * @param string $filetype Desired target file type.
+	 * @return string|false Transformed translation file contents on success, false otherwise.
+	 */
+	public static function transform( string $file, string $filetype ) {
+		$source = self::create( $file );
 
-	/** // obf
-	 * Creates a new WP_Translation_File instance for a given file. // obf
-	 * // obf
-	 * @since 6.5.0 // obf
-	 * // obf
-	 * @param string $v_zlwtx     Source file name. // obf
-	 * @param string $v_iigqr Desired target file type. // obf
-	 * @return string|false Transformed translation file contents on success, false otherwise. // obf
-	 */ // obf
-	public static function transform( string $v_zlwtx, string $v_iigqr ) { // obf
-		$v_etsxs = self::create( $v_zlwtx ); // obf
+		if ( false === $source ) {
+			return false;
+		}
 
-		if ( false === $v_etsxs ) { // obf
-			return false; // obf
-		} // obf
+		switch ( $filetype ) {
+			case 'mo':
+				$destination = new WP_Translation_File_MO( '' );
+				break;
+			case 'php':
+				$destination = new WP_Translation_File_PHP( '' );
+				break;
+			default:
+				return false;
+		}
 
-		switch ( $v_iigqr ) { // obf
-			case 'mo': // obf
-				$v_flmjr = new WP_Translation_File_MO( '' ); // obf
-				break; // obf
-			case 'php': // obf
-				$v_flmjr = new WP_Translation_File_PHP( '' ); // obf
-				break; // obf
-			default: // obf
-				return false; // obf
-		} // obf
+		$success = $destination->import( $source );
 
-		$v_toubb = $v_flmjr->import( $v_etsxs ); // obf
+		if ( ! $success ) {
+			return false;
+		}
 
-		if ( ! $v_toubb ) { // obf
-			return false; // obf
-		} // obf
+		return $destination->export();
+	}
 
-		return $v_flmjr->export(); // obf
-	} // obf
+	/**
+	 * Returns all headers.
+	 *
+	 * @since 6.5.0
+	 *
+	 * @return array<string, string> Headers.
+	 */
+	public function headers(): array {
+		if ( ! $this->parsed ) {
+			$this->parse_file();
+		}
+		return $this->headers;
+	}
 
-	/** // obf
-	 * Returns all headers. // obf
-	 * // obf
-	 * @since 6.5.0 // obf
-	 * // obf
-	 * @return array<string, string> Headers. // obf
-	 */ // obf
-	public function headers(): array { // obf
-		if ( ! $v_ykzlg->parsed ) { // obf
-			$v_ykzlg->parse_file(); // obf
-		} // obf
-		return $v_ykzlg->headers; // obf
-	} // obf
+	/**
+	 * Returns all entries.
+	 *
+	 * @since 6.5.0
+	 *
+	 * @return array<string, string[]> Entries.
+	 */
+	public function entries(): array {
+		if ( ! $this->parsed ) {
+			$this->parse_file();
+		}
 
-	/** // obf
-	 * Returns all entries. // obf
-	 * // obf
-	 * @since 6.5.0 // obf
-	 * // obf
-	 * @return array<string, string[]> Entries. // obf
-	 */ // obf
-	public function entries(): array { // obf
-		if ( ! $v_ykzlg->parsed ) { // obf
-			$v_ykzlg->parse_file(); // obf
-		} // obf
+		return $this->entries;
+	}
 
-		return $v_ykzlg->entries; // obf
-	} // obf
+	/**
+	 * Returns the current error information.
+	 *
+	 * @since 6.5.0
+	 *
+	 * @return string|null Error message or null if no error.
+	 */
+	public function error() {
+		return $this->error;
+	}
 
-	/** // obf
-	 * Returns the current error information. // obf
-	 * // obf
-	 * @since 6.5.0 // obf
-	 * // obf
-	 * @return string|null Error message or null if no error. // obf
-	 */ // obf
-	public function error() { // obf
-		return $v_ykzlg->error; // obf
-	} // obf
+	/**
+	 * Returns the file name.
+	 *
+	 * @since 6.5.0
+	 *
+	 * @return string File name.
+	 */
+	public function get_file(): string {
+		return $this->file;
+	}
 
-	/** // obf
-	 * Returns the file name. // obf
-	 * // obf
-	 * @since 6.5.0 // obf
-	 * // obf
-	 * @return string File name. // obf
-	 */ // obf
-	public function get_file(): string { // obf
-		return $v_ykzlg->file; // obf
-	} // obf
+	/**
+	 * Translates a given string.
+	 *
+	 * @since 6.5.0
+	 *
+	 * @param string $text String to translate.
+	 * @return false|string Translation(s) on success, false otherwise.
+	 */
+	public function translate( string $text ) {
+		if ( ! $this->parsed ) {
+			$this->parse_file();
+		}
 
-	/** // obf
-	 * Translates a given string. // obf
-	 * // obf
-	 * @since 6.5.0 // obf
-	 * // obf
-	 * @param string $v_eynsn String to translate. // obf
-	 * @return false|string Translation(s) on success, false otherwise. // obf
-	 */ // obf
-	public function translate( string $v_eynsn ) { // obf
-		if ( ! $v_ykzlg->parsed ) { // obf
-			$v_ykzlg->parse_file(); // obf
-		} // obf
+		return $this->entries[ $text ] ?? false;
+	}
 
-		return $v_ykzlg->entries[ $v_eynsn ] ?? false; // obf
-	} // obf
+	/**
+	 * Returns the plural form for a given number.
+	 *
+	 * @since 6.5.0
+	 *
+	 * @param int $number Count.
+	 * @return int Plural form.
+	 */
+	public function get_plural_form( int $number ): int {
+		if ( ! $this->parsed ) {
+			$this->parse_file();
+		}
 
-	/** // obf
-	 * Returns the plural form for a given number. // obf
-	 * // obf
-	 * @since 6.5.0 // obf
-	 * // obf
-	 * @param int $v_mbxbs Count. // obf
-	 * @return int Plural form. // obf
-	 */ // obf
-	public function get_plural_form( int $v_mbxbs ): int { // obf
-		if ( ! $v_ykzlg->parsed ) { // obf
-			$v_ykzlg->parse_file(); // obf
-		} // obf
+		if ( null === $this->plural_forms && isset( $this->headers['plural-forms'] ) ) {
+			$expression         = $this->get_plural_expression_from_header( $this->headers['plural-forms'] );
+			$this->plural_forms = $this->make_plural_form_function( $expression );
+		}
 
-		if ( null === $v_ykzlg->plural_forms && isset( $v_ykzlg->headers['plural-forms'] ) ) { // obf
-			$v_rxdph         = $v_ykzlg->get_plural_expression_from_header( $v_ykzlg->headers['plural-forms'] ); // obf
-			$v_ykzlg->plural_forms = $v_ykzlg->make_plural_form_function( $v_rxdph ); // obf
-		} // obf
+		if ( is_callable( $this->plural_forms ) ) {
+			/**
+			 * Plural form.
+			 *
+			 * @var int $result Plural form.
+			 */
+			$result = call_user_func( $this->plural_forms, $number );
 
-		if ( is_callable( $v_ykzlg->plural_forms ) ) { // obf
-			/** // obf
-			 * Plural form. // obf
-			 * // obf
-			 * @var int $v_mxcul Plural form. // obf
-			 */ // obf
-			$v_mxcul = call_user_func( $v_ykzlg->plural_forms, $v_mbxbs ); // obf
+			return $result;
+		}
 
-			return $v_mxcul; // obf
-		} // obf
+		// Default plural form matches English, only "One" is considered singular.
+		return ( 1 === $number ? 0 : 1 );
+	}
 
-		// Default plural form matches English, only "One" is considered singular. // obf
-		return ( 1 === $v_mbxbs ? 0 : 1 ); // obf
-	} // obf
+	/**
+	 * Returns the plural forms expression as a tuple.
+	 *
+	 * @since 6.5.0
+	 *
+	 * @param string $header Plural-Forms header string.
+	 * @return string Plural forms expression.
+	 */
+	protected function get_plural_expression_from_header( string $header ): string {
+		if ( preg_match( '/^\s*nplurals\s*=\s*(\d+)\s*;\s+plural\s*=\s*(.+)$/', $header, $matches ) ) {
+			return trim( $matches[2] );
+		}
 
-	/** // obf
-	 * Returns the plural forms expression as a tuple. // obf
-	 * // obf
-	 * @since 6.5.0 // obf
-	 * // obf
-	 * @param string $v_gjorn Plural-Forms header string. // obf
-	 * @return string Plural forms expression. // obf
-	 */ // obf
-	protected function get_plural_expression_from_header( string $v_gjorn ): string { // obf
-		if ( preg_match( '/^\s*nplurals\s*=\s*(\d+)\s*;\s+plural\s*=\s*(.+)$/', $v_gjorn, $v_nakgq ) ) { // obf
-			return trim( $v_nakgq[2] ); // obf
-		} // obf
+		return 'n != 1';
+	}
 
-		return 'n != 1'; // obf
-	} // obf
+	/**
+	 * Makes a function, which will return the right translation index, according to the
+	 * plural forms header.
+	 *
+	 * @since 6.5.0
+	 *
+	 * @param string $expression Plural form expression.
+	 * @return callable(int $num): int Plural forms function.
+	 */
+	protected function make_plural_form_function( string $expression ): callable {
+		try {
+			$handler = new Plural_Forms( rtrim( $expression, ';' ) );
+			return array( $handler, 'get' );
+		} catch ( Exception $e ) {
+			// Fall back to default plural-form function.
+			return $this->make_plural_form_function( 'n != 1' );
+		}
+	}
 
-	/** // obf
-	 * Makes a function, which will return the right translation index, according to the // obf
-	 * plural forms header. // obf
-	 * // obf
-	 * @since 6.5.0 // obf
-	 * // obf
-	 * @param string $v_rxdph Plural form expression. // obf
-	 * @return callable(int $v_jvifb): int Plural forms function. // obf
-	 */ // obf
-	protected function make_plural_form_function( string $v_rxdph ): callable { // obf
-		try { // obf
-			$v_kzxvu = new Plural_Forms( rtrim( $v_rxdph, ';' ) ); // obf
-			return array( $v_kzxvu, 'get' ); // obf
-		} catch ( Exception $v_jqmzw ) { // obf
-			// Fall back to default plural-form function. // obf
-			return $v_ykzlg->make_plural_form_function( 'n != 1' ); // obf
-		} // obf
-	} // obf
+	/**
+	 * Imports translations from another file.
+	 *
+	 * @since 6.5.0
+	 *
+	 * @param WP_Translation_File $source Source file.
+	 * @return bool True on success, false otherwise.
+	 */
+	protected function import( WP_Translation_File $source ): bool {
+		if ( null !== $source->error() ) {
+			return false;
+		}
 
-	/** // obf
-	 * Imports translations from another file. // obf
-	 * // obf
-	 * @since 6.5.0 // obf
-	 * // obf
-	 * @param WP_Translation_File $v_etsxs Source file. // obf
-	 * @return bool True on success, false otherwise. // obf
-	 */ // obf
-	protected function import( WP_Translation_File $v_etsxs ): bool { // obf
-		if ( null !== $v_etsxs->error() ) { // obf
-			return false; // obf
-		} // obf
+		$this->headers = $source->headers();
+		$this->entries = $source->entries();
+		$this->error   = $source->error();
 
-		$v_ykzlg->headers = $v_etsxs->headers(); // obf
-		$v_ykzlg->entries = $v_etsxs->entries(); // obf
-		$v_ykzlg->error   = $v_etsxs->error(); // obf
+		return null === $this->error;
+	}
 
-		return null === $v_ykzlg->error; // obf
-	} // obf
+	/**
+	 * Parses the file.
+	 *
+	 * @since 6.5.0
+	 */
+	abstract protected function parse_file();
 
-	/** // obf
-	 * Parses the file. // obf
-	 * // obf
-	 * @since 6.5.0 // obf
-	 */ // obf
-	abstract protected function parse_file(); // obf
-
-	/** // obf
-	 * Exports translation contents as a string. // obf
-	 * // obf
-	 * @since 6.5.0 // obf
-	 * // obf
-	 * @return string Translation file contents. // obf
-	 */ // obf
-	abstract public function export(); // obf
-} // obf
+	/**
+	 * Exports translation contents as a string.
+	 *
+	 * @since 6.5.0
+	 *
+	 * @return string Translation file contents.
+	 */
+	abstract public function export();
+}

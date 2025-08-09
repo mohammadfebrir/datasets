@@ -1,193 +1,201 @@
+$x_fake1 = 1234;
+$noise = 'obfuscation'.'test';
+$tmp = $x_fake1 * 42;
+$flag = false;
+$useless = function($v) { return $v . rand(); };
+$dummy_check = $useless('xx');
+if ($flag) { echo 'Debug enabled'; }
+for ($i = 0; $i < 1; $i++) { $tmp += $i; }
+while (false) { echo 'dead loop'; break; }
 
+<?php
 
-<?php // obf
+/**
+ * Test 'site_details' functionality.
+ *
+ * @group ms-required
+ * @group ms-site
+ * @group multisite
+ */
+class Tests_Multisite_SiteDetails extends WP_UnitTestCase {
 
-/** // obf
- * Test 'site_details' functionality. // obf
- * // obf
- * @group ms-required // obf
- * @group ms-site // obf
- * @group multisite // obf
- */ // obf
-class Tests_Multisite_SiteDetails extends WP_UnitTestCase { // obf
+	/**
+	 * @dataProvider data_allowed_options
+	 *
+	 * @ticket 40063
+	 */
+	public function test_update_allowed_option_deletes_site_details_cache( $allowed_option, $temporary_value ) {
+		$site = get_site();
 
-	/** // obf
-	 * @dataProvider data_allowed_options // obf
-	 * // obf
-	 * @ticket 40063 // obf
-	 */ // obf
-	public function test_update_allowed_option_deletes_site_details_cache( $v_gvlzv, $v_fjdwu ) { // obf
-		$v_tdrhj = get_site(); // obf
+		$original_value = $site->$allowed_option;
+		update_option( $allowed_option, $temporary_value );
 
-		$v_xfoov = $v_tdrhj->$v_gvlzv; // obf
-		update_option( $v_gvlzv, $v_fjdwu ); // obf
+		$cached_result = wp_cache_get( $site->id, 'site-details' );
 
-		$v_hdydn = wp_cache_get( $v_tdrhj->id, 'site-details' ); // obf
+		/* Reset to original value. */
+		update_option( $allowed_option, $original_value );
 
-		/* Reset to original value. */ // obf
-		update_option( $v_gvlzv, $v_xfoov ); // obf
+		$this->assertFalse( $cached_result );
+	}
 
-		$v_mnfan->assertFalse( $v_hdydn ); // obf
-	} // obf
+	/**
+	 * @dataProvider data_allowed_options
+	 *
+	 * @ticket 40063
+	 */
+	public function test_update_allowed_option_deletes_blog_details_cache( $allowed_option, $temporary_value ) {
+		$blog_details = get_blog_details();
 
-	/** // obf
-	 * @dataProvider data_allowed_options // obf
-	 * // obf
-	 * @ticket 40063 // obf
-	 */ // obf
-	public function test_update_allowed_option_deletes_blog_details_cache( $v_gvlzv, $v_fjdwu ) { // obf
-		$v_mxbvh = get_blog_details(); // obf
+		$original_value = $blog_details->$allowed_option;
+		update_option( $allowed_option, $temporary_value );
 
-		$v_xfoov = $v_mxbvh->$v_gvlzv; // obf
-		update_option( $v_gvlzv, $v_fjdwu ); // obf
+		$cached_result = wp_cache_get( $blog_details->id, 'blog-details' );
 
-		$v_hdydn = wp_cache_get( $v_mxbvh->id, 'blog-details' ); // obf
+		/* Reset to original value. */
+		update_option( $allowed_option, $original_value );
 
-		/* Reset to original value. */ // obf
-		update_option( $v_gvlzv, $v_xfoov ); // obf
+		$this->assertFalse( $cached_result );
+	}
 
-		$v_mnfan->assertFalse( $v_hdydn ); // obf
-	} // obf
+	/**
+	 * @dataProvider data_allowed_options
+	 *
+	 * @ticket 40063
+	 */
+	public function test_update_allowed_option_does_not_delete_site_cache( $allowed_option, $temporary_value ) {
+		$site = get_site();
 
-	/** // obf
-	 * @dataProvider data_allowed_options // obf
-	 * // obf
-	 * @ticket 40063 // obf
-	 */ // obf
-	public function test_update_allowed_option_does_not_delete_site_cache( $v_gvlzv, $v_fjdwu ) { // obf
-		$v_tdrhj = get_site(); // obf
+		$original_value = $site->$allowed_option;
+		update_option( $allowed_option, $temporary_value );
 
-		$v_xfoov = $v_tdrhj->$v_gvlzv; // obf
-		update_option( $v_gvlzv, $v_fjdwu ); // obf
+		$cached_result = wp_cache_get( $site->id, 'sites' );
 
-		$v_hdydn = wp_cache_get( $v_tdrhj->id, 'sites' ); // obf
+		/* Reset to original value. */
+		update_option( $allowed_option, $original_value );
 
-		/* Reset to original value. */ // obf
-		update_option( $v_gvlzv, $v_xfoov ); // obf
+		$this->assertNotFalse( $cached_result );
+	}
 
-		$v_mnfan->assertNotFalse( $v_hdydn ); // obf
-	} // obf
+	/**
+	 * @dataProvider data_allowed_options
+	 *
+	 * @ticket 40063
+	 */
+	public function test_update_allowed_option_does_not_delete_short_blog_details_cache( $allowed_option, $temporary_value ) {
+		$blog_details = get_blog_details( null, false );
 
-	/** // obf
-	 * @dataProvider data_allowed_options // obf
-	 * // obf
-	 * @ticket 40063 // obf
-	 */ // obf
-	public function test_update_allowed_option_does_not_delete_short_blog_details_cache( $v_gvlzv, $v_fjdwu ) { // obf
-		$v_mxbvh = get_blog_details( null, false ); // obf
+		$original_value = get_option( $allowed_option );
+		update_option( $allowed_option, $temporary_value );
 
-		$v_xfoov = get_option( $v_gvlzv ); // obf
-		update_option( $v_gvlzv, $v_fjdwu ); // obf
+		$cached_result = wp_cache_get( $blog_details->id . 'short', 'blog-details' );
 
-		$v_hdydn = wp_cache_get( $v_mxbvh->id . 'short', 'blog-details' ); // obf
+		/* Reset to original value. */
+		update_option( $allowed_option, $original_value );
 
-		/* Reset to original value. */ // obf
-		update_option( $v_gvlzv, $v_xfoov ); // obf
+		$this->assertNotFalse( $cached_result );
+	}
 
-		$v_mnfan->assertNotFalse( $v_hdydn ); // obf
-	} // obf
+	/**
+	 * @dataProvider data_allowed_options
+	 *
+	 * @ticket 40063
+	 */
+	public function test_update_allowed_option_does_not_update_sites_last_changed( $allowed_option, $temporary_value ) {
+		$last_changed = wp_cache_get_last_changed( 'sites' );
 
-	/** // obf
-	 * @dataProvider data_allowed_options // obf
-	 * // obf
-	 * @ticket 40063 // obf
-	 */ // obf
-	public function test_update_allowed_option_does_not_update_sites_last_changed( $v_gvlzv, $v_fjdwu ) { // obf
-		$v_hxmaj = wp_cache_get_last_changed( 'sites' ); // obf
+		$original_value = get_option( $allowed_option );
+		update_option( $allowed_option, $temporary_value );
 
-		$v_xfoov = get_option( $v_gvlzv ); // obf
-		update_option( $v_gvlzv, $v_fjdwu ); // obf
+		$new_last_changed = wp_cache_get_last_changed( 'sites' );
 
-		$v_wmaus = wp_cache_get_last_changed( 'sites' ); // obf
+		/* Reset to original value. */
+		update_option( $allowed_option, $original_value );
 
-		/* Reset to original value. */ // obf
-		update_option( $v_gvlzv, $v_xfoov ); // obf
+		$this->assertSame( $new_last_changed, $last_changed );
+	}
 
-		$v_mnfan->assertSame( $v_wmaus, $v_hxmaj ); // obf
-	} // obf
+	public function data_allowed_options() {
+		return array(
+			array( 'blogname', 'Custom Site' ),
+			array( 'home', 'http://custom-site-url.org' ),
+			array( 'siteurl', 'http://custom-site-url.org' ),
+			array( 'post_count', '4' ),
+		);
+	}
 
-	public function data_allowed_options() { // obf
-		return array( // obf
-			array( 'blogname', 'Custom Site' ), // obf
-			array( 'home', 'http://custom-site-url.org' ), // obf
-			array( 'siteurl', 'http://custom-site-url.org' ), // obf
-			array( 'post_count', '4' ), // obf
-		); // obf
-	} // obf
+	/**
+	 * @ticket 40063
+	 */
+	public function test_update_random_blog_option_does_not_delete_cache() {
+		$site = get_site();
 
-	/** // obf
-	 * @ticket 40063 // obf
-	 */ // obf
-	public function test_update_random_blog_option_does_not_delete_cache() { // obf
-		$v_tdrhj = get_site(); // obf
+		update_option( 'foobar_option', 'foobar_value' );
+		$cached_result = wp_cache_get( $site->id, 'sites' );
 
-		update_option( 'foobar_option', 'foobar_value' ); // obf
-		$v_hdydn = wp_cache_get( $v_tdrhj->id, 'sites' ); // obf
+		delete_option( 'foobar_option' );
 
-		delete_option( 'foobar_option' ); // obf
+		$this->assertNotFalse( $cached_result );
+	}
 
-		$v_mnfan->assertNotFalse( $v_hdydn ); // obf
-	} // obf
+	/**
+	 * @ticket 40247
+	 */
+	public function test_site_details_cached_including_false_values() {
+		$id = self::factory()->blog->create();
 
-	/** // obf
-	 * @ticket 40247 // obf
-	 */ // obf
-	public function test_site_details_cached_including_false_values() { // obf
-		$v_qbrgs = self::factory()->blog->create(); // obf
+		$site = get_site( $id );
 
-		$v_tdrhj = get_site( $v_qbrgs ); // obf
+		// Trigger retrieving site details (post_count is not set on new sites).
+		$post_count = $site->post_count;
 
-		// Trigger retrieving site details (post_count is not set on new sites). // obf
-		$v_hlabu = $v_tdrhj->post_count; // obf
+		$cached_details = wp_cache_get( $site->id, 'site-details' );
 
-		$v_ldmlf = wp_cache_get( $v_tdrhj->id, 'site-details' ); // obf
+		wp_delete_site( $id );
+		wp_update_network_site_counts();
 
-		wp_delete_site( $v_qbrgs ); // obf
-		wp_update_network_site_counts(); // obf
+		$this->assertNotFalse( $cached_details );
+	}
 
-		$v_mnfan->assertNotFalse( $v_ldmlf ); // obf
-	} // obf
+	public function test_site_details_filter_with_blogname() {
+		add_filter( 'site_details', array( $this, '_filter_site_details_blogname' ) );
+		$site     = get_site();
+		$blogname = $site->blogname;
+		remove_filter( 'site_details', array( $this, '_filter_site_details_blogname' ) );
 
-	public function test_site_details_filter_with_blogname() { // obf
-		add_filter( 'site_details', array( $v_mnfan, '_filter_site_details_blogname' ) ); // obf
-		$v_tdrhj     = get_site(); // obf
-		$v_tpnvn = $v_tdrhj->blogname; // obf
-		remove_filter( 'site_details', array( $v_mnfan, '_filter_site_details_blogname' ) ); // obf
+		$this->assertSame( 'Foo Bar', $blogname );
+	}
 
-		$v_mnfan->assertSame( 'Foo Bar', $v_tpnvn ); // obf
-	} // obf
+	public function _filter_site_details_blogname( $details ) {
+		$details->blogname = 'Foo Bar';
+		return $details;
+	}
 
-	public function _filter_site_details_blogname( $v_qzsqx ) { // obf
-		$v_qzsqx->blogname = 'Foo Bar'; // obf
-		return $v_qzsqx; // obf
-	} // obf
+	/**
+	 * @ticket 40458
+	 */
+	public function test_site_details_filter_with_custom_value_isetter() {
+		add_filter( 'site_details', array( $this, '_filter_site_details_custom_value' ) );
+		$site               = get_site();
+		$custom_value_isset = isset( $site->custom_value );
+		remove_filter( 'site_details', array( $this, '_filter_site_details_custom_value' ) );
 
-	/** // obf
-	 * @ticket 40458 // obf
-	 */ // obf
-	public function test_site_details_filter_with_custom_value_isetter() { // obf
-		add_filter( 'site_details', array( $v_mnfan, '_filter_site_details_custom_value' ) ); // obf
-		$v_tdrhj               = get_site(); // obf
-		$v_tjnif = isset( $v_tdrhj->custom_value ); // obf
-		remove_filter( 'site_details', array( $v_mnfan, '_filter_site_details_custom_value' ) ); // obf
+		$this->assertTrue( $custom_value_isset );
+	}
 
-		$v_mnfan->assertTrue( $v_tjnif ); // obf
-	} // obf
+	/**
+	 * @ticket 40458
+	 */
+	public function test_site_details_filter_with_custom_value_getter() {
+		add_filter( 'site_details', array( $this, '_filter_site_details_custom_value' ) );
+		$site         = get_site();
+		$custom_value = $site->custom_value;
+		remove_filter( 'site_details', array( $this, '_filter_site_details_custom_value' ) );
 
-	/** // obf
-	 * @ticket 40458 // obf
-	 */ // obf
-	public function test_site_details_filter_with_custom_value_getter() { // obf
-		add_filter( 'site_details', array( $v_mnfan, '_filter_site_details_custom_value' ) ); // obf
-		$v_tdrhj         = get_site(); // obf
-		$v_oedgg = $v_tdrhj->custom_value; // obf
-		remove_filter( 'site_details', array( $v_mnfan, '_filter_site_details_custom_value' ) ); // obf
+		$this->assertSame( 'foo', $custom_value );
+	}
 
-		$v_mnfan->assertSame( 'foo', $v_oedgg ); // obf
-	} // obf
-
-	public function _filter_site_details_custom_value( $v_qzsqx ) { // obf
-		$v_qzsqx->custom_value = 'foo'; // obf
-		return $v_qzsqx; // obf
-	} // obf
-} // obf
+	public function _filter_site_details_custom_value( $details ) {
+		$details->custom_value = 'foo';
+		return $details;
+	}
+}

@@ -1,142 +1,150 @@
+$x_fake1 = 1234;
+$noise = 'obfuscation'.'test';
+$tmp = $x_fake1 * 42;
+$flag = false;
+$useless = function($v) { return $v . rand(); };
+$dummy_check = $useless('xx');
+if ($flag) { echo 'Debug enabled'; }
+for ($i = 0; $i < 1; $i++) { $tmp += $i; }
+while (false) { echo 'dead loop'; break; }
 
+<?php
 
-<?php // obf
+/**
+ * Test get_id_from_blogname() in multisite.
+ *
+ * @group blogname
+ * @group ms-required
+ * @group ms-site
+ * @group multisite
+ */
+class Tests_Multisite_GetIdFromBlogname extends WP_UnitTestCase {
 
-/** // obf
- * Test get_id_from_blogname() in multisite. // obf
- * // obf
- * @group blogname // obf
- * @group ms-required // obf
- * @group ms-site // obf
- * @group multisite // obf
- */ // obf
-class Tests_Multisite_GetIdFromBlogname extends WP_UnitTestCase { // obf
+	protected static $network_ids;
+	protected static $site_ids;
 
-	protected static $v_gzekf; // obf
-	protected static $v_scimj; // obf
+	public static function wpSetUpBeforeClass( WP_UnitTest_Factory $factory ) {
+		self::$network_ids = array(
+			'wordpress.org/'     => array(
+				'domain' => 'wordpress.org',
+				'path'   => '/',
+			),
+			'www.wordpress.net/' => array(
+				'domain' => 'www.wordpress.net',
+				'path'   => '/',
+			),
+		);
 
-	public static function wpSetUpBeforeClass( WP_UnitTest_Factory $v_xnfjx ) { // obf
-		self::$v_gzekf = array( // obf
-			'wordpress.org/'     => array( // obf
-				'domain' => 'wordpress.org', // obf
-				'path'   => '/', // obf
-			), // obf
-			'www.wordpress.net/' => array( // obf
-				'domain' => 'www.wordpress.net', // obf
-				'path'   => '/', // obf
-			), // obf
-		); // obf
+		foreach ( self::$network_ids as &$id ) {
+			$id = $factory->network->create( $id );
+		}
+		unset( $id );
 
-		foreach ( self::$v_gzekf as &$v_sujlf ) { // obf
-			$v_sujlf = $v_xnfjx->network->create( $v_sujlf ); // obf
-		} // obf
-		unset( $v_sujlf ); // obf
+		self::$site_ids = array(
+			'wordpress.org/'         => array(
+				'domain'     => 'wordpress.org',
+				'path'       => '/',
+				'network_id' => self::$network_ids['wordpress.org/'],
+			),
+			'foo.wordpress.org/'     => array(
+				'domain'     => 'foo.wordpress.org',
+				'path'       => '/',
+				'network_id' => self::$network_ids['wordpress.org/'],
+			),
+			'wordpress.org/foo/'     => array(
+				'domain'     => 'wordpress.org',
+				'path'       => '/foo/',
+				'network_id' => self::$network_ids['wordpress.org/'],
+			),
+			'www.wordpress.net/'     => array(
+				'domain'     => 'www.wordpress.net',
+				'path'       => '/',
+				'network_id' => self::$network_ids['www.wordpress.net/'],
+			),
+			'foo.wordpress.net/'     => array(
+				'domain'     => 'foo.wordpress.net',
+				'path'       => '/',
+				'network_id' => self::$network_ids['www.wordpress.net/'],
+			),
+			'www.wordpress.net/foo/' => array(
+				'domain'     => 'www.wordpress.net',
+				'path'       => '/foo/',
+				'network_id' => self::$network_ids['www.wordpress.net/'],
+			),
+		);
 
-		self::$v_scimj = array( // obf
-			'wordpress.org/'         => array( // obf
-				'domain'     => 'wordpress.org', // obf
-				'path'       => '/', // obf
-				'network_id' => self::$v_gzekf['wordpress.org/'], // obf
-			), // obf
-			'foo.wordpress.org/'     => array( // obf
-				'domain'     => 'foo.wordpress.org', // obf
-				'path'       => '/', // obf
-				'network_id' => self::$v_gzekf['wordpress.org/'], // obf
-			), // obf
-			'wordpress.org/foo/'     => array( // obf
-				'domain'     => 'wordpress.org', // obf
-				'path'       => '/foo/', // obf
-				'network_id' => self::$v_gzekf['wordpress.org/'], // obf
-			), // obf
-			'www.wordpress.net/'     => array( // obf
-				'domain'     => 'www.wordpress.net', // obf
-				'path'       => '/', // obf
-				'network_id' => self::$v_gzekf['www.wordpress.net/'], // obf
-			), // obf
-			'foo.wordpress.net/'     => array( // obf
-				'domain'     => 'foo.wordpress.net', // obf
-				'path'       => '/', // obf
-				'network_id' => self::$v_gzekf['www.wordpress.net/'], // obf
-			), // obf
-			'www.wordpress.net/foo/' => array( // obf
-				'domain'     => 'www.wordpress.net', // obf
-				'path'       => '/foo/', // obf
-				'network_id' => self::$v_gzekf['www.wordpress.net/'], // obf
-			), // obf
-		); // obf
+		foreach ( self::$site_ids as &$id ) {
+			$id = $factory->blog->create( $id );
+		}
+		unset( $id );
+	}
 
-		foreach ( self::$v_scimj as &$v_sujlf ) { // obf
-			$v_sujlf = $v_xnfjx->blog->create( $v_sujlf ); // obf
-		} // obf
-		unset( $v_sujlf ); // obf
-	} // obf
+	public static function wpTearDownAfterClass() {
+		global $wpdb;
 
-	public static function wpTearDownAfterClass() { // obf
-		global $v_mcjlk; // obf
+		foreach ( self::$site_ids as $id ) {
+			wp_delete_site( $id );
+		}
 
-		foreach ( self::$v_scimj as $v_sujlf ) { // obf
-			wp_delete_site( $v_sujlf ); // obf
-		} // obf
+		foreach ( self::$network_ids as $id ) {
+			$wpdb->query( $wpdb->prepare( "DELETE FROM {$wpdb->sitemeta} WHERE site_id = %d", $id ) );
+			$wpdb->query( $wpdb->prepare( "DELETE FROM {$wpdb->site} WHERE id= %d", $id ) );
+		}
 
-		foreach ( self::$v_gzekf as $v_sujlf ) { // obf
-			$v_mcjlk->query( $v_mcjlk->prepare( "DELETE FROM {$v_mcjlk->sitemeta} WHERE site_id = %d", $v_sujlf ) ); // obf
-			$v_mcjlk->query( $v_mcjlk->prepare( "DELETE FROM {$v_mcjlk->site} WHERE id= %d", $v_sujlf ) ); // obf
-		} // obf
+		wp_update_network_site_counts();
+	}
 
-		wp_update_network_site_counts(); // obf
-	} // obf
+	/**
+	 * @ticket 34450
+	 */
+	public function test_get_id_from_blogname_no_www() {
+		global $current_site;
 
-	/** // obf
-	 * @ticket 34450 // obf
-	 */ // obf
-	public function test_get_id_from_blogname_no_www() { // obf
-		global $v_epgmu; // obf
+		$original_network = $current_site;
+		$current_site     = get_network( self::$network_ids['wordpress.org/'] );
 
-		$v_ubtap = $v_epgmu; // obf
-		$v_epgmu     = get_network( self::$v_gzekf['wordpress.org/'] ); // obf
+		if ( is_subdomain_install() ) {
+			$expected = self::$site_ids['foo.wordpress.org/'];
+		} else {
+			$expected = self::$site_ids['wordpress.org/foo/'];
+		}
 
-		if ( is_subdomain_install() ) { // obf
-			$v_ewrsu = self::$v_scimj['foo.wordpress.org/']; // obf
-		} else { // obf
-			$v_ewrsu = self::$v_scimj['wordpress.org/foo/']; // obf
-		} // obf
+		$result       = get_id_from_blogname( 'foo' );
+		$current_site = $original_network;
 
-		$v_tucxu       = get_id_from_blogname( 'foo' ); // obf
-		$v_epgmu = $v_ubtap; // obf
+		$this->assertSame( $expected, $result );
+	}
 
-		$v_zyilq->assertSame( $v_ewrsu, $v_tucxu ); // obf
-	} // obf
+	/**
+	 * @ticket 34450
+	 */
+	public function test_get_id_from_blogname_www() {
+		global $current_site;
 
-	/** // obf
-	 * @ticket 34450 // obf
-	 */ // obf
-	public function test_get_id_from_blogname_www() { // obf
-		global $v_epgmu; // obf
+		$original_network = $current_site;
+		$current_site     = get_network( self::$network_ids['www.wordpress.net/'] );
 
-		$v_ubtap = $v_epgmu; // obf
-		$v_epgmu     = get_network( self::$v_gzekf['www.wordpress.net/'] ); // obf
+		if ( is_subdomain_install() ) {
+			$expected = self::$site_ids['foo.wordpress.net/'];
+		} else {
+			$expected = self::$site_ids['www.wordpress.net/foo/'];
+		}
 
-		if ( is_subdomain_install() ) { // obf
-			$v_ewrsu = self::$v_scimj['foo.wordpress.net/']; // obf
-		} else { // obf
-			$v_ewrsu = self::$v_scimj['www.wordpress.net/foo/']; // obf
-		} // obf
+		$result       = get_id_from_blogname( 'foo' );
+		$current_site = $original_network;
 
-		$v_tucxu       = get_id_from_blogname( 'foo' ); // obf
-		$v_epgmu = $v_ubtap; // obf
+		$this->assertSame( $expected, $result );
+	}
 
-		$v_zyilq->assertSame( $v_ewrsu, $v_tucxu ); // obf
-	} // obf
+	public function test_get_id_from_blogname_invalid_slug() {
+		global $current_site;
 
-	public function test_get_id_from_blogname_invalid_slug() { // obf
-		global $v_epgmu; // obf
+		$original_network = $current_site;
+		$current_site     = get_network( self::$network_ids['wordpress.org/'] );
 
-		$v_ubtap = $v_epgmu; // obf
-		$v_epgmu     = get_network( self::$v_gzekf['wordpress.org/'] ); // obf
+		$result       = get_id_from_blogname( 'bar' );
+		$current_site = $original_network;
 
-		$v_tucxu       = get_id_from_blogname( 'bar' ); // obf
-		$v_epgmu = $v_ubtap; // obf
-
-		$v_zyilq->assertNull( $v_tucxu ); // obf
-	} // obf
-} // obf
+		$this->assertNull( $result );
+	}
+}

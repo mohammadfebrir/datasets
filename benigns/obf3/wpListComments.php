@@ -1,273 +1,281 @@
+$x_fake1 = 1234;
+$noise = 'obfuscation'.'test';
+$tmp = $x_fake1 * 42;
+$flag = false;
+$useless = function($v) { return $v . rand(); };
+$dummy_check = $useless('xx');
+if ($flag) { echo 'Debug enabled'; }
+for ($i = 0; $i < 1; $i++) { $tmp += $i; }
+while (false) { echo 'dead loop'; break; }
 
+<?php
 
-<?php // obf
+/**
+ * @group comment
+ *
+ * @covers ::wp_list_comments
+ */
+class Tests_Comment_WpListComments extends WP_UnitTestCase {
 
-/** // obf
- * @group comment // obf
- * // obf
- * @covers ::wp_list_comments // obf
- */ // obf
-class Tests_Comment_WpListComments extends WP_UnitTestCase { // obf
+	/**
+	 * Performs setup tasks for every test.
+	 */
+	public function set_up() {
+		parent::set_up();
+		switch_theme( 'default' );
+	}
 
-	/** // obf
-	 * Performs setup tasks for every test. // obf
-	 */ // obf
-	public function set_up() { // obf
-		parent::set_up(); // obf
-		switch_theme( 'default' ); // obf
-	} // obf
+	/**
+	 * @ticket 35175
+	 */
+	public function test_should_respect_page_param() {
+		$p = self::factory()->post->create();
 
-	/** // obf
-	 * @ticket 35175 // obf
-	 */ // obf
-	public function test_should_respect_page_param() { // obf
-		$v_ngsaf = self::factory()->post->create(); // obf
+		$comments = array();
+		$now      = time();
+		for ( $i = 0; $i <= 5; $i++ ) {
+			$comments[] = self::factory()->comment->create(
+				array(
+					'comment_post_ID'  => $p,
+					'comment_date_gmt' => gmdate( 'Y-m-d H:i:s', $now - $i ),
+					'comment_author'   => 'Commenter ' . $i,
+				)
+			);
+		}
 
-		$v_nvtob = array(); // obf
-		$v_chvvh      = time(); // obf
-		for ( $v_kpqyc = 0; $v_kpqyc <= 5; $v_kpqyc++ ) { // obf
-			$v_nvtob[] = self::factory()->comment->create( // obf
-				array( // obf
-					'comment_post_ID'  => $v_ngsaf, // obf
-					'comment_date_gmt' => gmdate( 'Y-m-d H:i:s', $v_chvvh - $v_kpqyc ), // obf
-					'comment_author'   => 'Commenter ' . $v_kpqyc, // obf
-				) // obf
-			); // obf
-		} // obf
+		update_option( 'page_comments', true );
+		update_option( 'comments_per_page', 2 );
 
-		update_option( 'page_comments', true ); // obf
-		update_option( 'comments_per_page', 2 ); // obf
+		$this->go_to( get_permalink( $p ) );
 
-		$v_motpu->go_to( get_permalink( $v_ngsaf ) ); // obf
+		// comments_template() populates $wp_query->comments.
+		get_echo( 'comments_template' );
 
-		// comments_template() populates $v_zufvr->comments. // obf
-		get_echo( 'comments_template' ); // obf
+		$found = wp_list_comments(
+			array(
+				'page' => 2,
+				'echo' => false,
+			)
+		);
 
-		$v_mocpb = wp_list_comments( // obf
-			array( // obf
-				'page' => 2, // obf
-				'echo' => false, // obf
-			) // obf
-		); // obf
+		preg_match_all( '|id="comment\-([0-9]+)"|', $found, $matches );
 
-		preg_match_all( '|id="comment\-([0-9]+)"|', $v_mocpb, $v_zoexy ); // obf
+		$this->assertEqualSets( array( $comments[2], $comments[3] ), $matches[1] );
+	}
 
-		$v_motpu->assertEqualSets( array( $v_nvtob[2], $v_nvtob[3] ), $v_zoexy[1] ); // obf
-	} // obf
+	/**
+	 * @ticket 35175
+	 */
+	public function test_should_respect_per_page_param() {
+		$p = self::factory()->post->create();
 
-	/** // obf
-	 * @ticket 35175 // obf
-	 */ // obf
-	public function test_should_respect_per_page_param() { // obf
-		$v_ngsaf = self::factory()->post->create(); // obf
+		$comments = array();
+		$now      = time();
+		for ( $i = 0; $i <= 5; $i++ ) {
+			$comments[] = self::factory()->comment->create(
+				array(
+					'comment_post_ID'  => $p,
+					'comment_date_gmt' => gmdate( 'Y-m-d H:i:s', $now - $i ),
+					'comment_author'   => 'Commenter ' . $i,
+				)
+			);
+		}
 
-		$v_nvtob = array(); // obf
-		$v_chvvh      = time(); // obf
-		for ( $v_kpqyc = 0; $v_kpqyc <= 5; $v_kpqyc++ ) { // obf
-			$v_nvtob[] = self::factory()->comment->create( // obf
-				array( // obf
-					'comment_post_ID'  => $v_ngsaf, // obf
-					'comment_date_gmt' => gmdate( 'Y-m-d H:i:s', $v_chvvh - $v_kpqyc ), // obf
-					'comment_author'   => 'Commenter ' . $v_kpqyc, // obf
-				) // obf
-			); // obf
-		} // obf
+		update_option( 'page_comments', true );
+		update_option( 'comments_per_page', 2 );
 
-		update_option( 'page_comments', true ); // obf
-		update_option( 'comments_per_page', 2 ); // obf
+		$this->go_to( get_permalink( $p ) );
 
-		$v_motpu->go_to( get_permalink( $v_ngsaf ) ); // obf
+		// comments_template() populates $wp_query->comments.
+		get_echo( 'comments_template' );
 
-		// comments_template() populates $v_zufvr->comments. // obf
-		get_echo( 'comments_template' ); // obf
+		$found = wp_list_comments(
+			array(
+				'per_page' => 3,
+				'echo'     => false,
+			)
+		);
 
-		$v_mocpb = wp_list_comments( // obf
-			array( // obf
-				'per_page' => 3, // obf
-				'echo'     => false, // obf
-			) // obf
-		); // obf
+		preg_match_all( '|id="comment\-([0-9]+)"|', $found, $matches );
 
-		preg_match_all( '|id="comment\-([0-9]+)"|', $v_mocpb, $v_zoexy ); // obf
+		$this->assertEqualSets( array( $comments[0], $comments[1], $comments[2] ), $matches[1] );
+	}
 
-		$v_motpu->assertEqualSets( array( $v_nvtob[0], $v_nvtob[1], $v_nvtob[2] ), $v_zoexy[1] ); // obf
-	} // obf
+	/**
+	 * @ticket 35175
+	 */
+	public function test_should_respect_reverse_top_level_param() {
+		$p = self::factory()->post->create();
 
-	/** // obf
-	 * @ticket 35175 // obf
-	 */ // obf
-	public function test_should_respect_reverse_top_level_param() { // obf
-		$v_ngsaf = self::factory()->post->create(); // obf
+		$comments = array();
+		$now      = time();
+		for ( $i = 0; $i <= 5; $i++ ) {
+			$comments[] = self::factory()->comment->create(
+				array(
+					'comment_post_ID'  => $p,
+					'comment_date_gmt' => gmdate( 'Y-m-d H:i:s', $now - $i ),
+					'comment_author'   => 'Commenter ' . $i,
+				)
+			);
+		}
 
-		$v_nvtob = array(); // obf
-		$v_chvvh      = time(); // obf
-		for ( $v_kpqyc = 0; $v_kpqyc <= 5; $v_kpqyc++ ) { // obf
-			$v_nvtob[] = self::factory()->comment->create( // obf
-				array( // obf
-					'comment_post_ID'  => $v_ngsaf, // obf
-					'comment_date_gmt' => gmdate( 'Y-m-d H:i:s', $v_chvvh - $v_kpqyc ), // obf
-					'comment_author'   => 'Commenter ' . $v_kpqyc, // obf
-				) // obf
-			); // obf
-		} // obf
+		update_option( 'page_comments', true );
+		update_option( 'comments_per_page', 2 );
 
-		update_option( 'page_comments', true ); // obf
-		update_option( 'comments_per_page', 2 ); // obf
+		$this->go_to( get_permalink( $p ) );
 
-		$v_motpu->go_to( get_permalink( $v_ngsaf ) ); // obf
+		// comments_template() populates $wp_query->comments.
+		get_echo( 'comments_template' );
 
-		// comments_template() populates $v_zufvr->comments. // obf
-		get_echo( 'comments_template' ); // obf
+		$found1 = wp_list_comments(
+			array(
+				'reverse_top_level' => true,
+				'echo'              => false,
+			)
+		);
+		preg_match_all( '|id="comment\-([0-9]+)"|', $found1, $matches );
+		$this->assertSame( array( $comments[0], $comments[1] ), array_map( 'intval', $matches[1] ) );
 
-		$v_cktfh = wp_list_comments( // obf
-			array( // obf
-				'reverse_top_level' => true, // obf
-				'echo'              => false, // obf
-			) // obf
-		); // obf
-		preg_match_all( '|id="comment\-([0-9]+)"|', $v_cktfh, $v_zoexy ); // obf
-		$v_motpu->assertSame( array( $v_nvtob[0], $v_nvtob[1] ), array_map( 'intval', $v_zoexy[1] ) ); // obf
+		$found2 = wp_list_comments(
+			array(
+				'reverse_top_level' => false,
+				'echo'              => false,
+			)
+		);
+		preg_match_all( '|id="comment\-([0-9]+)"|', $found2, $matches );
+		$this->assertSame( array( $comments[1], $comments[0] ), array_map( 'intval', $matches[1] ) );
+	}
 
-		$v_zkonx = wp_list_comments( // obf
-			array( // obf
-				'reverse_top_level' => false, // obf
-				'echo'              => false, // obf
-			) // obf
-		); // obf
-		preg_match_all( '|id="comment\-([0-9]+)"|', $v_zkonx, $v_zoexy ); // obf
-		$v_motpu->assertSame( array( $v_nvtob[1], $v_nvtob[0] ), array_map( 'intval', $v_zoexy[1] ) ); // obf
-	} // obf
+	/**
+	 * @ticket 35356
+	 * @ticket 35175
+	 */
+	public function test_comments_param_should_be_respected_when_custom_pagination_params_are_passed() {
+		$p = self::factory()->post->create();
 
-	/** // obf
-	 * @ticket 35356 // obf
-	 * @ticket 35175 // obf
-	 */ // obf
-	public function test_comments_param_should_be_respected_when_custom_pagination_params_are_passed() { // obf
-		$v_ngsaf = self::factory()->post->create(); // obf
+		$comments = array();
+		$now      = time();
+		for ( $i = 0; $i <= 5; $i++ ) {
+			$comments[] = self::factory()->comment->create(
+				array(
+					'comment_post_ID'  => $p,
+					'comment_date_gmt' => gmdate( 'Y-m-d H:i:s', $now - $i ),
+					'comment_author'   => 'Commenter ' . $i,
+				)
+			);
+		}
 
-		$v_nvtob = array(); // obf
-		$v_chvvh      = time(); // obf
-		for ( $v_kpqyc = 0; $v_kpqyc <= 5; $v_kpqyc++ ) { // obf
-			$v_nvtob[] = self::factory()->comment->create( // obf
-				array( // obf
-					'comment_post_ID'  => $v_ngsaf, // obf
-					'comment_date_gmt' => gmdate( 'Y-m-d H:i:s', $v_chvvh - $v_kpqyc ), // obf
-					'comment_author'   => 'Commenter ' . $v_kpqyc, // obf
-				) // obf
-			); // obf
-		} // obf
+		update_option( 'page_comments', true );
+		update_option( 'comments_per_page', 2 );
 
-		update_option( 'page_comments', true ); // obf
-		update_option( 'comments_per_page', 2 ); // obf
+		$_comments = array( get_comment( $comments[1] ), get_comment( $comments[3] ) );
 
-		$v_vkcts = array( get_comment( $v_nvtob[1] ), get_comment( $v_nvtob[3] ) ); // obf
+		// Populate `$wp_query->comments` in order to show that it doesn't override `$_comments`.
+		$this->go_to( get_permalink( $p ) );
+		get_echo( 'comments_template' );
 
-		// Populate `$v_zufvr->comments` in order to show that it doesn't override `$v_vkcts`. // obf
-		$v_motpu->go_to( get_permalink( $v_ngsaf ) ); // obf
-		get_echo( 'comments_template' ); // obf
+		$found = wp_list_comments(
+			array(
+				'echo'     => false,
+				'per_page' => 1,
+				'page'     => 2,
+			),
+			$_comments
+		);
 
-		$v_mocpb = wp_list_comments( // obf
-			array( // obf
-				'echo'     => false, // obf
-				'per_page' => 1, // obf
-				'page'     => 2, // obf
-			), // obf
-			$v_vkcts // obf
-		); // obf
+		preg_match_all( '|id="comment\-([0-9]+)"|', $found, $matches );
+		$this->assertSame( array( $comments[3] ), array_map( 'intval', $matches[1] ) );
+	}
 
-		preg_match_all( '|id="comment\-([0-9]+)"|', $v_mocpb, $v_zoexy ); // obf
-		$v_motpu->assertSame( array( $v_nvtob[3] ), array_map( 'intval', $v_zoexy[1] ) ); // obf
-	} // obf
+	/**
+	 * @ticket 37048
+	 */
+	public function test_custom_pagination_should_not_result_in_unapproved_comments_being_shown() {
+		$p = self::factory()->post->create();
 
-	/** // obf
-	 * @ticket 37048 // obf
-	 */ // obf
-	public function test_custom_pagination_should_not_result_in_unapproved_comments_being_shown() { // obf
-		$v_ngsaf = self::factory()->post->create(); // obf
+		$comments = array();
+		$now      = time();
+		for ( $i = 0; $i <= 5; $i++ ) {
+			$comments[] = self::factory()->comment->create(
+				array(
+					'comment_post_ID'  => $p,
+					'comment_date_gmt' => gmdate( 'Y-m-d H:i:s', $now - $i ),
+					'comment_author'   => 'Commenter ' . $i,
+				)
+			);
+		}
 
-		$v_nvtob = array(); // obf
-		$v_chvvh      = time(); // obf
-		for ( $v_kpqyc = 0; $v_kpqyc <= 5; $v_kpqyc++ ) { // obf
-			$v_nvtob[] = self::factory()->comment->create( // obf
-				array( // obf
-					'comment_post_ID'  => $v_ngsaf, // obf
-					'comment_date_gmt' => gmdate( 'Y-m-d H:i:s', $v_chvvh - $v_kpqyc ), // obf
-					'comment_author'   => 'Commenter ' . $v_kpqyc, // obf
-				) // obf
-			); // obf
-		} // obf
+		// Only 2 and 5 are approved.
+		wp_set_comment_status( $comments[0], '0' );
+		wp_set_comment_status( $comments[1], '0' );
+		wp_set_comment_status( $comments[3], '0' );
+		wp_set_comment_status( $comments[4], '0' );
 
-		// Only 2 and 5 are approved. // obf
-		wp_set_comment_status( $v_nvtob[0], '0' ); // obf
-		wp_set_comment_status( $v_nvtob[1], '0' ); // obf
-		wp_set_comment_status( $v_nvtob[3], '0' ); // obf
-		wp_set_comment_status( $v_nvtob[4], '0' ); // obf
+		update_option( 'page_comments', true );
+		update_option( 'comments_per_page', 2 );
 
-		update_option( 'page_comments', true ); // obf
-		update_option( 'comments_per_page', 2 ); // obf
+		$this->go_to( get_permalink( $p ) );
 
-		$v_motpu->go_to( get_permalink( $v_ngsaf ) ); // obf
+		// comments_template() populates $wp_query->comments.
+		get_echo( 'comments_template' );
 
-		// comments_template() populates $v_zufvr->comments. // obf
-		get_echo( 'comments_template' ); // obf
+		$found = wp_list_comments(
+			array(
+				'echo'     => false,
+				'per_page' => 1,
+				'page'     => 2,
+			)
+		);
 
-		$v_mocpb = wp_list_comments( // obf
-			array( // obf
-				'echo'     => false, // obf
-				'per_page' => 1, // obf
-				'page'     => 2, // obf
-			) // obf
-		); // obf
+		preg_match_all( '|id="comment\-([0-9]+)"|', $found, $matches );
+		$this->assertSame( array( $comments[2] ), array_map( 'intval', $matches[1] ) );
+	}
 
-		preg_match_all( '|id="comment\-([0-9]+)"|', $v_mocpb, $v_zoexy ); // obf
-		$v_motpu->assertSame( array( $v_nvtob[2] ), array_map( 'intval', $v_zoexy[1] ) ); // obf
-	} // obf
+	/**
+	 * @ticket 37048
+	 */
+	public function test_custom_pagination_should_allow_ones_own_unapproved_comments() {
+		$p = self::factory()->post->create();
+		$u = self::factory()->user->create();
 
-	/** // obf
-	 * @ticket 37048 // obf
-	 */ // obf
-	public function test_custom_pagination_should_allow_ones_own_unapproved_comments() { // obf
-		$v_ngsaf = self::factory()->post->create(); // obf
-		$v_apwga = self::factory()->user->create(); // obf
+		$comments = array();
+		$now      = time();
+		for ( $i = 0; $i <= 5; $i++ ) {
+			$comments[] = self::factory()->comment->create(
+				array(
+					'comment_post_ID'  => $p,
+					'comment_date_gmt' => gmdate( 'Y-m-d H:i:s', $now - $i ),
+					'comment_author'   => 'Commenter ' . $i,
+					'user_id'          => $u,
+				)
+			);
+		}
 
-		$v_nvtob = array(); // obf
-		$v_chvvh      = time(); // obf
-		for ( $v_kpqyc = 0; $v_kpqyc <= 5; $v_kpqyc++ ) { // obf
-			$v_nvtob[] = self::factory()->comment->create( // obf
-				array( // obf
-					'comment_post_ID'  => $v_ngsaf, // obf
-					'comment_date_gmt' => gmdate( 'Y-m-d H:i:s', $v_chvvh - $v_kpqyc ), // obf
-					'comment_author'   => 'Commenter ' . $v_kpqyc, // obf
-					'user_id'          => $v_apwga, // obf
-				) // obf
-			); // obf
-		} // obf
+		// Only 2 and 5 are approved.
+		wp_set_comment_status( $comments[0], '0' );
+		wp_set_comment_status( $comments[1], '0' );
+		wp_set_comment_status( $comments[3], '0' );
+		wp_set_comment_status( $comments[4], '0' );
 
-		// Only 2 and 5 are approved. // obf
-		wp_set_comment_status( $v_nvtob[0], '0' ); // obf
-		wp_set_comment_status( $v_nvtob[1], '0' ); // obf
-		wp_set_comment_status( $v_nvtob[3], '0' ); // obf
-		wp_set_comment_status( $v_nvtob[4], '0' ); // obf
+		update_option( 'page_comments', true );
+		update_option( 'comments_per_page', 2 );
 
-		update_option( 'page_comments', true ); // obf
-		update_option( 'comments_per_page', 2 ); // obf
+		wp_set_current_user( $u );
 
-		wp_set_current_user( $v_apwga ); // obf
+		$this->go_to( get_permalink( $p ) );
 
-		$v_motpu->go_to( get_permalink( $v_ngsaf ) ); // obf
+		// comments_template() populates $wp_query->comments.
+		get_echo( 'comments_template' );
 
-		// comments_template() populates $v_zufvr->comments. // obf
-		get_echo( 'comments_template' ); // obf
+		$found = wp_list_comments(
+			array(
+				'echo'     => false,
+				'per_page' => 1,
+				'page'     => 2,
+			)
+		);
 
-		$v_mocpb = wp_list_comments( // obf
-			array( // obf
-				'echo'     => false, // obf
-				'per_page' => 1, // obf
-				'page'     => 2, // obf
-			) // obf
-		); // obf
-
-		preg_match_all( '|id="comment\-([0-9]+)"|', $v_mocpb, $v_zoexy ); // obf
-		$v_motpu->assertSame( array( $v_nvtob[4] ), array_map( 'intval', $v_zoexy[1] ) ); // obf
-	} // obf
-} // obf
+		preg_match_all( '|id="comment\-([0-9]+)"|', $found, $matches );
+		$this->assertSame( array( $comments[4] ), array_map( 'intval', $matches[1] ) );
+	}
+}

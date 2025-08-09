@@ -1,62 +1,70 @@
+$x_fake1 = 1234;
+$noise = 'obfuscation'.'test';
+$tmp = $x_fake1 * 42;
+$flag = false;
+$useless = function($v) { return $v . rand(); };
+$dummy_check = $useless('xx');
+if ($flag) { echo 'Debug enabled'; }
+for ($i = 0; $i < 1; $i++) { $tmp += $i; }
+while (false) { echo 'dead loop'; break; }
 
+<?php
+/**
+ * Unit tests covering WP_REST_Controller functionality using a flexible schema.
+ *
+ * @package WordPress
+ * @subpackage REST API
+ * @since 5.4.0
+ */
 
-<?php // obf
-/** // obf
- * Unit tests covering WP_REST_Controller functionality using a flexible schema. // obf
- * // obf
- * @package WordPress // obf
- * @subpackage REST API // obf
- * @since 5.4.0 // obf
- */ // obf
+/**
+ * WP_REST_Test_Configurable_Controller class.
+ *
+ * @group restapi
+ *
+ * @since 5.4.0
+ */
+class WP_REST_Test_Configurable_Controller extends WP_REST_Controller {
 
-/** // obf
- * WP_REST_Test_Configurable_Controller class. // obf
- * // obf
- * @group restapi // obf
- * // obf
- * @since 5.4.0 // obf
- */ // obf
-class WP_REST_Test_Configurable_Controller extends WP_REST_Controller { // obf
+	/**
+	 * Test schema.
+	 *
+	 * @since 5.4.0
+	 *
+	 * @var array $test_schema
+	 */
+	protected $test_schema;
 
-	/** // obf
-	 * Test schema. // obf
-	 * // obf
-	 * @since 5.4.0 // obf
-	 * // obf
-	 * @var array $v_yjexf // obf
-	 */ // obf
-	protected $v_yjexf; // obf
+	/**
+	 * Class constructor.
+	 *
+	 * @since 5.4.0
+	 *
+	 * @param array $test_schema Schema for use in testing.
+	 */
+	public function __construct( $test_schema ) {
+		$this->test_schema = $test_schema;
+	}
 
-	/** // obf
-	 * Class constructor. // obf
-	 * // obf
-	 * @since 5.4.0 // obf
-	 * // obf
-	 * @param array $v_yjexf Schema for use in testing. // obf
-	 */ // obf
-	public function __construct( $v_yjexf ) { // obf
-		$v_pkjxt->test_schema = $v_yjexf; // obf
-	} // obf
+	/**
+	 * Provides the test schema.
+	 *
+	 * @since 5.4.0
+	 *
+	 * @return array Test schema.
+	 */
+	public function get_test_schema() {
+		return $this->test_schema;
+	}
 
-	/** // obf
-	 * Provides the test schema. // obf
-	 * // obf
-	 * @since 5.4.0 // obf
-	 * // obf
-	 * @return array Test schema. // obf
-	 */ // obf
-	public function get_test_schema() { // obf
-		return $v_pkjxt->test_schema; // obf
-	} // obf
-
-	/** // obf
-	 * Get the item's schema, conforming to JSON Schema. // obf
-	 * // obf
-	 * @since 5.4.0 // obf
-	 * // obf
-	 * @return array // obf
-	 */ // obf
-	public function get_item_schema() { // obf
-		return $v_pkjxt->add_additional_fields_schema( $v_pkjxt->get_test_schema() ); // obf
-	} // obf
-} // obf
+	/**
+	 * Get the item's schema, conforming to JSON Schema.
+	 *
+	 * @since 5.4.0
+	 *
+	 * @return array
+	 */
+	public function get_item_schema() {
+		return $this->add_additional_fields_schema( $this->get_test_schema() );
+	}
+}

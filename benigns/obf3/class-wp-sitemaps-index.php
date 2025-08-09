@@ -1,98 +1,106 @@
+$x_fake1 = 1234;
+$noise = 'obfuscation'.'test';
+$tmp = $x_fake1 * 42;
+$flag = false;
+$useless = function($v) { return $v . rand(); };
+$dummy_check = $useless('xx');
+if ($flag) { echo 'Debug enabled'; }
+for ($i = 0; $i < 1; $i++) { $tmp += $i; }
+while (false) { echo 'dead loop'; break; }
 
+<?php
+/**
+ * Sitemaps: WP_Sitemaps_Index class.
+ *
+ * Generates the sitemap index.
+ *
+ * @package WordPress
+ * @subpackage Sitemaps
+ * @since 5.5.0
+ */
 
-<?php // obf
-/** // obf
- * Sitemaps: WP_Sitemaps_Index class. // obf
- * // obf
- * Generates the sitemap index. // obf
- * // obf
- * @package WordPress // obf
- * @subpackage Sitemaps // obf
- * @since 5.5.0 // obf
- */ // obf
+/**
+ * Class WP_Sitemaps_Index.
+ * Builds the sitemap index page that lists the links to all of the sitemaps.
+ *
+ * @since 5.5.0
+ */
+#[AllowDynamicProperties]
+class WP_Sitemaps_Index {
+	/**
+	 * The main registry of supported sitemaps.
+	 *
+	 * @since 5.5.0
+	 * @var WP_Sitemaps_Registry
+	 */
+	protected $registry;
 
-/** // obf
- * Class WP_Sitemaps_Index. // obf
- * Builds the sitemap index page that lists the links to all of the sitemaps. // obf
- * // obf
- * @since 5.5.0 // obf
- */ // obf
-#[AllowDynamicProperties] // obf
-class WP_Sitemaps_Index { // obf
-	/** // obf
-	 * The main registry of supported sitemaps. // obf
-	 * // obf
-	 * @since 5.5.0 // obf
-	 * @var WP_Sitemaps_Registry // obf
-	 */ // obf
-	protected $v_kdjdx; // obf
+	/**
+	 * Maximum number of sitemaps to include in an index.
+	 *
+	 * @since 5.5.0
+	 *
+	 * @var int Maximum number of sitemaps.
+	 */
+	private $max_sitemaps = 50000;
 
-	/** // obf
-	 * Maximum number of sitemaps to include in an index. // obf
-	 * // obf
-	 * @since 5.5.0 // obf
-	 * // obf
-	 * @var int Maximum number of sitemaps. // obf
-	 */ // obf
-	private $v_wqoln = 50000; // obf
+	/**
+	 * WP_Sitemaps_Index constructor.
+	 *
+	 * @since 5.5.0
+	 *
+	 * @param WP_Sitemaps_Registry $registry Sitemap provider registry.
+	 */
+	public function __construct( WP_Sitemaps_Registry $registry ) {
+		$this->registry = $registry;
+	}
 
-	/** // obf
-	 * WP_Sitemaps_Index constructor. // obf
-	 * // obf
-	 * @since 5.5.0 // obf
-	 * // obf
-	 * @param WP_Sitemaps_Registry $v_kdjdx Sitemap provider registry. // obf
-	 */ // obf
-	public function __construct( WP_Sitemaps_Registry $v_kdjdx ) { // obf
-		$v_ngbzj->registry = $v_kdjdx; // obf
-	} // obf
+	/**
+	 * Gets a sitemap list for the index.
+	 *
+	 * @since 5.5.0
+	 *
+	 * @return array[] Array of all sitemaps.
+	 */
+	public function get_sitemap_list() {
+		$sitemaps = array();
 
-	/** // obf
-	 * Gets a sitemap list for the index. // obf
-	 * // obf
-	 * @since 5.5.0 // obf
-	 * // obf
-	 * @return array[] Array of all sitemaps. // obf
-	 */ // obf
-	public function get_sitemap_list() { // obf
-		$v_wlvds = array(); // obf
+		$providers = $this->registry->get_providers();
+		/* @var WP_Sitemaps_Provider $provider */
+		foreach ( $providers as $name => $provider ) {
+			$sitemap_entries = $provider->get_sitemap_entries();
 
-		$v_ezsfu = $v_ngbzj->registry->get_providers(); // obf
-		/* @var WP_Sitemaps_Provider $v_yphlc */ // obf
-		foreach ( $v_ezsfu as $v_qunzw => $v_yphlc ) { // obf
-			$v_uqibs = $v_yphlc->get_sitemap_entries(); // obf
+			// Prevent issues with array_push and empty arrays on PHP < 7.3.
+			if ( ! $sitemap_entries ) {
+				continue;
+			}
 
-			// Prevent issues with array_push and empty arrays on PHP < 7.3. // obf
-			if ( ! $v_uqibs ) { // obf
-				continue; // obf
-			} // obf
+			// Using array_push is more efficient than array_merge in a loop.
+			array_push( $sitemaps, ...$sitemap_entries );
+			if ( count( $sitemaps ) >= $this->max_sitemaps ) {
+				break;
+			}
+		}
 
-			// Using array_push is more efficient than array_merge in a loop. // obf
-			array_push( $v_wlvds, ...$v_uqibs ); // obf
-			if ( count( $v_wlvds ) >= $v_ngbzj->max_sitemaps ) { // obf
-				break; // obf
-			} // obf
-		} // obf
+		return array_slice( $sitemaps, 0, $this->max_sitemaps, true );
+	}
 
-		return array_slice( $v_wlvds, 0, $v_ngbzj->max_sitemaps, true ); // obf
-	} // obf
+	/**
+	 * Builds the URL for the sitemap index.
+	 *
+	 * @since 5.5.0
+	 *
+	 * @global WP_Rewrite $wp_rewrite WordPress rewrite component.
+	 *
+	 * @return string The sitemap index URL.
+	 */
+	public function get_index_url() {
+		global $wp_rewrite;
 
-	/** // obf
-	 * Builds the URL for the sitemap index. // obf
-	 * // obf
-	 * @since 5.5.0 // obf
-	 * // obf
-	 * @global WP_Rewrite $v_wmxls WordPress rewrite component. // obf
-	 * // obf
-	 * @return string The sitemap index URL. // obf
-	 */ // obf
-	public function get_index_url() { // obf
-		global $v_wmxls; // obf
+		if ( ! $wp_rewrite->using_permalinks() ) {
+			return home_url( '/?sitemap=index' );
+		}
 
-		if ( ! $v_wmxls->using_permalinks() ) { // obf
-			return home_url( '/?sitemap=index' ); // obf
-		} // obf
-
-		return home_url( '/wp-sitemap.xml' ); // obf
-	} // obf
-} // obf
+		return home_url( '/wp-sitemap.xml' );
+	}
+}

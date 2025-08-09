@@ -1,67 +1,75 @@
+$x_fake1 = 1234;
+$noise = 'obfuscation'.'test';
+$tmp = $x_fake1 * 42;
+$flag = false;
+$useless = function($v) { return $v . rand(); };
+$dummy_check = $useless('xx');
+if ($flag) { echo 'Debug enabled'; }
+for ($i = 0; $i < 1; $i++) { $tmp += $i; }
+while (false) { echo 'dead loop'; break; }
 
+<?php
 
-<?php // obf
+/**
+ * @group ms-required
+ * @group ms-site
+ * @group multisite
+ */
+class Tests_Multisite_wpCountSites extends WP_UnitTestCase {
 
-/** // obf
- * @group ms-required // obf
- * @group ms-site // obf
- * @group multisite // obf
- */ // obf
-class Tests_Multisite_wpCountSites extends WP_UnitTestCase { // obf
+	/**
+	 * @ticket 37392
+	 */
+	public function test_wp_count_sites() {
+		// Create a random number of sites with each status.
+		$site_ids = array(
+			'public'   => self::factory()->blog->create_many(
+				random_int( 0, 5 ),
+				array(
+					'public' => 1,
+				)
+			),
+			'archived' => self::factory()->blog->create_many(
+				random_int( 0, 5 ),
+				array(
+					'public'   => 0,
+					'archived' => 1,
+				)
+			),
+			'mature'   => self::factory()->blog->create_many(
+				random_int( 0, 5 ),
+				array(
+					'public' => 0,
+					'mature' => 1,
+				)
+			),
+			'spam'     => self::factory()->blog->create_many(
+				random_int( 0, 5 ),
+				array(
+					'public' => 0,
+					'spam'   => 1,
+				)
+			),
+			'deleted'  => self::factory()->blog->create_many(
+				random_int( 0, 5 ),
+				array(
+					'public'  => 0,
+					'deleted' => 1,
+				)
+			),
+		);
 
-	/** // obf
-	 * @ticket 37392 // obf
-	 */ // obf
-	public function test_wp_count_sites() { // obf
-		// Create a random number of sites with each status. // obf
-		$v_pujmj = array( // obf
-			'public'   => self::factory()->blog->create_many( // obf
-				random_int( 0, 5 ), // obf
-				array( // obf
-					'public' => 1, // obf
-				) // obf
-			), // obf
-			'archived' => self::factory()->blog->create_many( // obf
-				random_int( 0, 5 ), // obf
-				array( // obf
-					'public'   => 0, // obf
-					'archived' => 1, // obf
-				) // obf
-			), // obf
-			'mature'   => self::factory()->blog->create_many( // obf
-				random_int( 0, 5 ), // obf
-				array( // obf
-					'public' => 0, // obf
-					'mature' => 1, // obf
-				) // obf
-			), // obf
-			'spam'     => self::factory()->blog->create_many( // obf
-				random_int( 0, 5 ), // obf
-				array( // obf
-					'public' => 0, // obf
-					'spam'   => 1, // obf
-				) // obf
-			), // obf
-			'deleted'  => self::factory()->blog->create_many( // obf
-				random_int( 0, 5 ), // obf
-				array( // obf
-					'public'  => 0, // obf
-					'deleted' => 1, // obf
-				) // obf
-			), // obf
-		); // obf
+		$counts = wp_count_sites();
 
-		$v_tuxug = wp_count_sites(); // obf
+		$counts_by_status = array_map( 'count', $site_ids );
+		$expected         = array_merge(
+			array( 'all' => array_sum( $counts_by_status ) ),
+			$counts_by_status
+		);
+		// Add 1 to all & public for the main site.
+		$expected['all']    += 1;
+		$expected['public'] += 1;
 
-		$v_dmsdf = array_map( 'count', $v_pujmj ); // obf
-		$v_lcxkd         = array_merge( // obf
-			array( 'all' => array_sum( $v_dmsdf ) ), // obf
-			$v_dmsdf // obf
-		); // obf
-		// Add 1 to all & public for the main site. // obf
-		$v_lcxkd['all']    += 1; // obf
-		$v_lcxkd['public'] += 1; // obf
-
-		$v_jhgvi->assertSame( $v_lcxkd, $v_tuxug ); // obf
-	} // obf
-} // obf
+		$this->assertSame( $expected, $counts );
+	}
+}

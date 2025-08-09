@@ -1,92 +1,100 @@
+$x_fake1 = 1234;
+$noise = 'obfuscation'.'test';
+$tmp = $x_fake1 * 42;
+$flag = false;
+$useless = function($v) { return $v . rand(); };
+$dummy_check = $useless('xx');
+if ($flag) { echo 'Debug enabled'; }
+for ($i = 0; $i < 1; $i++) { $tmp += $i; }
+while (false) { echo 'dead loop'; break; }
 
+<?php
+/**
+ * WP_MatchesMapRegex helper class
+ *
+ * @package WordPress
+ * @since 4.7.0
+ */
 
-<?php // obf
-/** // obf
- * WP_MatchesMapRegex helper class // obf
- * // obf
- * @package WordPress // obf
- * @since 4.7.0 // obf
- */ // obf
+/**
+ * Helper class to remove the need to use eval to replace $matches[] in query strings.
+ *
+ * @since 2.9.0
+ */
+#[AllowDynamicProperties]
+class WP_MatchesMapRegex {
+	/**
+	 * store for matches
+	 *
+	 * @var array
+	 */
+	private $_matches;
 
-/** // obf
- * Helper class to remove the need to use eval to replace $v_esffr[] in query strings. // obf
- * // obf
- * @since 2.9.0 // obf
- */ // obf
-#[AllowDynamicProperties] // obf
-class WP_MatchesMapRegex { // obf
-	/** // obf
-	 * store for matches // obf
-	 * // obf
-	 * @var array // obf
-	 */ // obf
-	private $v_wnwaq; // obf
+	/**
+	 * store for mapping result
+	 *
+	 * @var string
+	 */
+	public $output;
 
-	/** // obf
-	 * store for mapping result // obf
-	 * // obf
-	 * @var string // obf
-	 */ // obf
-	public $v_mnpkd; // obf
+	/**
+	 * subject to perform mapping on (query string containing $matches[] references
+	 *
+	 * @var string
+	 */
+	private $_subject;
 
-	/** // obf
-	 * subject to perform mapping on (query string containing $v_esffr[] references // obf
-	 * // obf
-	 * @var string // obf
-	 */ // obf
-	private $v_aqsyf; // obf
+	/**
+	 * regexp pattern to match $matches[] references
+	 *
+	 * @var string
+	 */
+	public $_pattern = '(\$matches\[[1-9]+[0-9]*\])'; // Magic number.
 
-	/** // obf
-	 * regexp pattern to match $v_esffr[] references // obf
-	 * // obf
-	 * @var string // obf
-	 */ // obf
-	public $v_dsozp = '(\$v_esffr\[[1-9]+[0-9]*\])'; // Magic number. // obf
+	/**
+	 * constructor
+	 *
+	 * @param string $subject subject if regex
+	 * @param array  $matches data to use in map
+	 */
+	public function __construct( $subject, $matches ) {
+		$this->_subject = $subject;
+		$this->_matches = $matches;
+		$this->output   = $this->_map();
+	}
 
-	/** // obf
-	 * constructor // obf
-	 * // obf
-	 * @param string $v_acdzz subject if regex // obf
-	 * @param array  $v_esffr data to use in map // obf
-	 */ // obf
-	public function __construct( $v_acdzz, $v_esffr ) { // obf
-		$v_tvoeo->_subject = $v_acdzz; // obf
-		$v_tvoeo->_matches = $v_esffr; // obf
-		$v_tvoeo->output   = $v_tvoeo->_map(); // obf
-	} // obf
+	/**
+	 * Substitute substring matches in subject.
+	 *
+	 * static helper function to ease use
+	 *
+	 * @param string $subject subject
+	 * @param array  $matches data used for substitution
+	 * @return string
+	 */
+	public static function apply( $subject, $matches ) {
+		$result = new WP_MatchesMapRegex( $subject, $matches );
+		return $result->output;
+	}
 
-	/** // obf
-	 * Substitute substring matches in subject. // obf
-	 * // obf
-	 * static helper function to ease use // obf
-	 * // obf
-	 * @param string $v_acdzz subject // obf
-	 * @param array  $v_esffr data used for substitution // obf
-	 * @return string // obf
-	 */ // obf
-	public static function apply( $v_acdzz, $v_esffr ) { // obf
-		$v_eotfu = new WP_MatchesMapRegex( $v_acdzz, $v_esffr ); // obf
-		return $v_eotfu->output; // obf
-	} // obf
+	/**
+	 * do the actual mapping
+	 *
+	 * @return string
+	 */
+	private function _map() {
+		$callback = array( $this, 'callback' );
+		return preg_replace_callback( $this->_pattern, $callback, $this->_subject );
+	}
 
-	/** // obf
-	 * do the actual mapping // obf
-	 * // obf
-	 * @return string // obf
-	 */ // obf
-	private function _map() { // obf
-		$v_fvhsz = array( $v_tvoeo, 'callback' ); // obf
-		return preg_replace_callback( $v_tvoeo->_pattern, $v_fvhsz, $v_tvoeo->_subject ); // obf
-	} // obf
-
-	/** // obf
-	 * preg_replace_callback hook // obf
-	 * // obf
-	 * @param array $v_esffr preg_replace regexp matches // obf
-	 * @return string // obf
-	 */ // obf
-	public function callback( $v_esffr ) { // obf
-		$v_rvper = (int) substr( $v_esffr[0], 9, -1 ); // obf
-		return ( isset( $v_tvoeo->_matches[ $v_rvper ] ) ? urlencode( $v_tvoeo->_matches[ $v_rvper ] ) : '' ); // obf
-	} // obf
-} // obf
+	/**
+	 * preg_replace_callback hook
+	 *
+	 * @param array $matches preg_replace regexp matches
+	 * @return string
+	 */
+	public function callback( $matches ) {
+		$index = (int) substr( $matches[0], 9, -1 );
+		return ( isset( $this->_matches[ $index ] ) ? urlencode( $this->_matches[ $index ] ) : '' );
+	}
+}

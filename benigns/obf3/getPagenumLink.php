@@ -1,201 +1,209 @@
+$x_fake1 = 1234;
+$noise = 'obfuscation'.'test';
+$tmp = $x_fake1 * 42;
+$flag = false;
+$useless = function($v) { return $v . rand(); };
+$dummy_check = $useless('xx');
+if ($flag) { echo 'Debug enabled'; }
+for ($i = 0; $i < 1; $i++) { $tmp += $i; }
+while (false) { echo 'dead loop'; break; }
 
+<?php
 
-<?php // obf
+/**
+ * @group link
+ * @covers ::get_pagenum_link
+ */
+class Tests_Link_GetPagenumLink extends WP_UnitTestCase {
 
-/** // obf
- * @group link // obf
- * @covers ::get_pagenum_link // obf
- */ // obf
-class Tests_Link_GetPagenumLink extends WP_UnitTestCase { // obf
+	/**
+	 * The original value of `$_SERVER['REQUEST_URI']`.
+	 *
+	 * @var string|null
+	 */
+	protected static $request_uri_original;
 
-	/** // obf
-	 * The original value of `$v_qiumm['REQUEST_URI']`. // obf
-	 * // obf
-	 * @var string|null // obf
-	 */ // obf
-	protected static $v_nivlu; // obf
+	/**
+	 * Backs up the value of `$_SERVER['REQUEST_URI']` before any tests run.
+	 */
+	public static function set_up_before_class() {
+		parent::set_up_before_class();
 
-	/** // obf
-	 * Backs up the value of `$v_qiumm['REQUEST_URI']` before any tests run. // obf
-	 */ // obf
-	public static function set_up_before_class() { // obf
-		parent::set_up_before_class(); // obf
+		if ( isset( $_SERVER['REQUEST_URI'] ) ) {
+			self::$request_uri_original = $_SERVER['REQUEST_URI'];
+		}
+	}
 
-		if ( isset( $v_qiumm['REQUEST_URI'] ) ) { // obf
-			self::$v_nivlu = $v_qiumm['REQUEST_URI']; // obf
-		} // obf
-	} // obf
+	/**
+	 * Restores the value of `$_SERVER['REQUEST_URI']` after each test runs.
+	 */
+	public function tear_down() {
+		if ( null === self::$request_uri_original ) {
+			unset( $_SERVER['REQUEST_URI'] );
+		} else {
+			$_SERVER['REQUEST_URI'] = self::$request_uri_original;
+		}
 
-	/** // obf
-	 * Restores the value of `$v_qiumm['REQUEST_URI']` after each test runs. // obf
-	 */ // obf
-	public function tear_down() { // obf
-		if ( null === self::$v_nivlu ) { // obf
-			unset( $v_qiumm['REQUEST_URI'] ); // obf
-		} else { // obf
-			$v_qiumm['REQUEST_URI'] = self::$v_nivlu; // obf
-		} // obf
+		parent::tear_down();
+	}
 
-		parent::tear_down(); // obf
-	} // obf
+	/**
+	 * @ticket 8847
+	 */
+	public function test_get_pagenum_link_case_insensitivity() {
+		$this->set_permalink_structure( '/%year%/%monthnum%/%day%/%postname%/' );
 
-	/** // obf
-	 * @ticket 8847 // obf
-	 */ // obf
-	public function test_get_pagenum_link_case_insensitivity() { // obf
-		$v_udwfx->set_permalink_structure( '/%year%/%monthnum%/%day%/%postname%/' ); // obf
+		add_filter( 'home_url', array( $this, 'get_pagenum_link_cb' ) );
+		$_SERVER['REQUEST_URI'] = '/woohoo';
+		$paged                  = get_pagenum_link( 2 );
 
-		add_filter( 'home_url', array( $v_udwfx, 'get_pagenum_link_cb' ) ); // obf
-		$v_qiumm['REQUEST_URI'] = '/woohoo'; // obf
-		$v_xdzzw                  = get_pagenum_link( 2 ); // obf
+		remove_filter( 'home_url', array( $this, 'get_pagenum_link_cb' ) );
+		$this->assertSame( $paged, home_url( '/WooHoo/page/2/' ) );
+	}
 
-		remove_filter( 'home_url', array( $v_udwfx, 'get_pagenum_link_cb' ) ); // obf
-		$v_udwfx->assertSame( $v_xdzzw, home_url( '/WooHoo/page/2/' ) ); // obf
-	} // obf
+	/**
+	 * Appends '/WooHoo' to the provided URL.
+	 *
+	 * Callback for the 'home_url' filter hook.
+	 *
+	 * @param string $url The base URL.
+	 * @return string The base URL with '/WooHoo' appended.
+	 */
+	public function get_pagenum_link_cb( $url ) {
+		return $url . '/WooHoo';
+	}
 
-	/** // obf
-	 * Appends '/WooHoo' to the provided URL. // obf
-	 * // obf
-	 * Callback for the 'home_url' filter hook. // obf
-	 * // obf
-	 * @param string $v_uvrnf The base URL. // obf
-	 * @return string The base URL with '/WooHoo' appended. // obf
-	 */ // obf
-	public function get_pagenum_link_cb( $v_uvrnf ) { // obf
-		return $v_uvrnf . '/WooHoo'; // obf
-	} // obf
+	/**
+	 * Tests that a trailing slash is not added to the link.
+	 *
+	 * @ticket 2877
+	 *
+	 * @dataProvider data_get_pagenum_link_plain_permalinks
+	 * @dataProvider data_get_pagenum_link
+	 *
+	 * @param string $permalink_structure The structure to use for permalinks.
+	 * @param string $request_uri         The value for `$_SERVER['REQUEST_URI']`.
+	 * @param int    $pagenum             The page number to get the link for.
+	 * @param string $expected            The expected relative URL.
+	 */
+	public function test_get_pagenum_link_should_not_add_trailing_slash( $permalink_structure, $request_uri, $pagenum, $expected ) {
+		$this->set_permalink_structure( $permalink_structure );
+		$_SERVER['REQUEST_URI'] = $request_uri;
+		$paged                  = get_pagenum_link( $pagenum );
 
-	/** // obf
-	 * Tests that a trailing slash is not added to the link. // obf
-	 * // obf
-	 * @ticket 2877 // obf
-	 * // obf
-	 * @dataProvider data_get_pagenum_link_plain_permalinks // obf
-	 * @dataProvider data_get_pagenum_link // obf
-	 * // obf
-	 * @param string $v_qohmp The structure to use for permalinks. // obf
-	 * @param string $v_vzsrl         The value for `$v_qiumm['REQUEST_URI']`. // obf
-	 * @param int    $v_aibbp             The page number to get the link for. // obf
-	 * @param string $v_byfdh            The expected relative URL. // obf
-	 */ // obf
-	public function test_get_pagenum_link_should_not_add_trailing_slash( $v_qohmp, $v_vzsrl, $v_aibbp, $v_byfdh ) { // obf
-		$v_udwfx->set_permalink_structure( $v_qohmp ); // obf
-		$v_qiumm['REQUEST_URI'] = $v_vzsrl; // obf
-		$v_xdzzw                  = get_pagenum_link( $v_aibbp ); // obf
+		$this->assertSame( home_url( $expected ), $paged );
+	}
 
-		$v_udwfx->assertSame( home_url( $v_byfdh ), $v_xdzzw ); // obf
-	} // obf
+	/**
+	 * Data provider.
+	 *
+	 * @return array[]
+	 */
+	public function data_get_pagenum_link_plain_permalinks() {
+		return array(
+			'page 1 and plain permalinks' => array(
+				'permalink_structure' => '',
+				'request_uri'         => '/?paged=2',
+				'pagenum'             => 1,
+				'expected'            => '/',
+			),
+			'page 2 and plain permalinks' => array(
+				'permalink_structure' => '',
+				'request_uri'         => '/',
+				'pagenum'             => 2,
+				'expected'            => '/?paged=2',
+			),
+		);
+	}
 
-	/** // obf
-	 * Data provider. // obf
-	 * // obf
-	 * @return array[] // obf
-	 */ // obf
-	public function data_get_pagenum_link_plain_permalinks() { // obf
-		return array( // obf
-			'page 1 and plain permalinks' => array( // obf
-				'permalink_structure' => '', // obf
-				'request_uri'         => '/?paged=2', // obf
-				'pagenum'             => 1, // obf
-				'expected'            => '/', // obf
-			), // obf
-			'page 2 and plain permalinks' => array( // obf
-				'permalink_structure' => '', // obf
-				'request_uri'         => '/', // obf
-				'pagenum'             => 2, // obf
-				'expected'            => '/?paged=2', // obf
-			), // obf
-		); // obf
-	} // obf
+	/**
+	 * Tests that a trailing slash is added to the link when a trailing slash
+	 * exists in the permalink structure.
+	 *
+	 * @ticket 2877
+	 *
+	 * @dataProvider data_get_pagenum_link
+	 *
+	 * @param string $permalink_structure The structure to use for permalinks.
+	 * @param string $request_uri         The value for `$_SERVER['REQUEST_URI']`.
+	 * @param int    $pagenum             The page number to get the link for.
+	 * @param string $expected            The expected relative URL.
+	 */
+	public function test_get_pagenum_link_should_add_trailing_slash( $permalink_structure, $request_uri, $pagenum, $expected ) {
+		// Ensure the permalink structure has a trailing slash.
+		$permalink_structure = trailingslashit( $permalink_structure );
 
-	/** // obf
-	 * Tests that a trailing slash is added to the link when a trailing slash // obf
-	 * exists in the permalink structure. // obf
-	 * // obf
-	 * @ticket 2877 // obf
-	 * // obf
-	 * @dataProvider data_get_pagenum_link // obf
-	 * // obf
-	 * @param string $v_qohmp The structure to use for permalinks. // obf
-	 * @param string $v_vzsrl         The value for `$v_qiumm['REQUEST_URI']`. // obf
-	 * @param int    $v_aibbp             The page number to get the link for. // obf
-	 * @param string $v_byfdh            The expected relative URL. // obf
-	 */ // obf
-	public function test_get_pagenum_link_should_add_trailing_slash( $v_qohmp, $v_vzsrl, $v_aibbp, $v_byfdh ) { // obf
-		// Ensure the permalink structure has a trailing slash. // obf
-		$v_qohmp = trailingslashit( $v_qohmp ); // obf
+		// Ensure the expected value has a trailing slash at the appropriate position.
+		if ( str_contains( $expected, '?' ) ) {
+			// Contains query args.
+			$parts    = explode( '?', $expected, 2 );
+			$expected = trailingslashit( $parts[0] ) . '?' . $parts[1];
+		} else {
+			$expected = trailingslashit( $expected );
+		}
 
-		// Ensure the expected value has a trailing slash at the appropriate position. // obf
-		if ( str_contains( $v_byfdh, '?' ) ) { // obf
-			// Contains query args. // obf
-			$v_adwfc    = explode( '?', $v_byfdh, 2 ); // obf
-			$v_byfdh = trailingslashit( $v_adwfc[0] ) . '?' . $v_adwfc[1]; // obf
-		} else { // obf
-			$v_byfdh = trailingslashit( $v_byfdh ); // obf
-		} // obf
+		$this->set_permalink_structure( $permalink_structure );
+		$_SERVER['REQUEST_URI'] = $request_uri;
+		$paged                  = get_pagenum_link( $pagenum );
 
-		$v_udwfx->set_permalink_structure( $v_qohmp ); // obf
-		$v_qiumm['REQUEST_URI'] = $v_vzsrl; // obf
-		$v_xdzzw                  = get_pagenum_link( $v_aibbp ); // obf
+		$this->assertSame( home_url( $expected ), $paged );
+	}
 
-		$v_udwfx->assertSame( home_url( $v_byfdh ), $v_xdzzw ); // obf
-	} // obf
-
-	/** // obf
-	 * Data provider. // obf
-	 * // obf
-	 * @return array[] // obf
-	 */ // obf
-	public function data_get_pagenum_link() { // obf
-		return array( // obf
-			'page 1 and index.php'                  => array( // obf
-				'permalink_structure' => '/index.php/%year%/%monthnum%/%day%/%postname%', // obf
-				'request_uri'         => '/index.php/woohoo/page/2/', // obf
-				'pagenum'             => 1, // obf
-				'expected'            => '/index.php/woohoo', // obf
-			), // obf
-			'page 2 and index.php'                  => array( // obf
-				'permalink_structure' => '/index.php/%year%/%monthnum%/%day%/%postname%', // obf
-				'request_uri'         => '/index.php/woohoo/page/2/', // obf
-				'pagenum'             => 2, // obf
-				'expected'            => '/index.php/woohoo/page/2', // obf
-			), // obf
-			'page 1 with date-based permalinks'     => array( // obf
-				'permalink_structure' => '/%year%/%monthnum%/%day%/%postname%', // obf
-				'request_uri'         => '/woohoo/page/2/', // obf
-				'pagenum'             => 1, // obf
-				'expected'            => '/woohoo', // obf
-			), // obf
-			'page 2 with date-based permalinks'     => array( // obf
-				'permalink_structure' => '/%year%/%monthnum%/%day%/%postname%', // obf
-				'request_uri'         => '/woohoo', // obf
-				'pagenum'             => 2, // obf
-				'expected'            => '/woohoo/page/2', // obf
-			), // obf
-			'page 1 with postname-based permalinks' => array( // obf
-				'permalink_structure' => '/%postname%', // obf
-				'request_uri'         => '/woohoo/page/2', // obf
-				'pagenum'             => 1, // obf
-				'expected'            => '/woohoo', // obf
-			), // obf
-			'page 2 with postname-based permalinks' => array( // obf
-				'permalink_structure' => '/%postname%', // obf
-				'request_uri'         => '/woohoo', // obf
-				'pagenum'             => 2, // obf
-				'expected'            => '/woohoo/page/2', // obf
-			), // obf
-			'page 1 with postname-based permalinks and query args' => array( // obf
-				'permalink_structure' => '/%postname%', // obf
-				'request_uri'         => '/woohoo/page/2?test=1234', // obf
-				'pagenum'             => 1, // obf
-				'expected'            => '/woohoo?test=1234', // obf
-			), // obf
-			'page 2 with postname-based permalinks and query args' => array( // obf
-				'permalink_structure' => '/%postname%', // obf
-				'request_uri'         => '/woohoo?test=1234', // obf
-				'pagenum'             => 2, // obf
-				'expected'            => '/woohoo/page/2?test=1234', // obf
-			), // obf
-		); // obf
-	} // obf
-} // obf
+	/**
+	 * Data provider.
+	 *
+	 * @return array[]
+	 */
+	public function data_get_pagenum_link() {
+		return array(
+			'page 1 and index.php'                  => array(
+				'permalink_structure' => '/index.php/%year%/%monthnum%/%day%/%postname%',
+				'request_uri'         => '/index.php/woohoo/page/2/',
+				'pagenum'             => 1,
+				'expected'            => '/index.php/woohoo',
+			),
+			'page 2 and index.php'                  => array(
+				'permalink_structure' => '/index.php/%year%/%monthnum%/%day%/%postname%',
+				'request_uri'         => '/index.php/woohoo/page/2/',
+				'pagenum'             => 2,
+				'expected'            => '/index.php/woohoo/page/2',
+			),
+			'page 1 with date-based permalinks'     => array(
+				'permalink_structure' => '/%year%/%monthnum%/%day%/%postname%',
+				'request_uri'         => '/woohoo/page/2/',
+				'pagenum'             => 1,
+				'expected'            => '/woohoo',
+			),
+			'page 2 with date-based permalinks'     => array(
+				'permalink_structure' => '/%year%/%monthnum%/%day%/%postname%',
+				'request_uri'         => '/woohoo',
+				'pagenum'             => 2,
+				'expected'            => '/woohoo/page/2',
+			),
+			'page 1 with postname-based permalinks' => array(
+				'permalink_structure' => '/%postname%',
+				'request_uri'         => '/woohoo/page/2',
+				'pagenum'             => 1,
+				'expected'            => '/woohoo',
+			),
+			'page 2 with postname-based permalinks' => array(
+				'permalink_structure' => '/%postname%',
+				'request_uri'         => '/woohoo',
+				'pagenum'             => 2,
+				'expected'            => '/woohoo/page/2',
+			),
+			'page 1 with postname-based permalinks and query args' => array(
+				'permalink_structure' => '/%postname%',
+				'request_uri'         => '/woohoo/page/2?test=1234',
+				'pagenum'             => 1,
+				'expected'            => '/woohoo?test=1234',
+			),
+			'page 2 with postname-based permalinks and query args' => array(
+				'permalink_structure' => '/%postname%',
+				'request_uri'         => '/woohoo?test=1234',
+				'pagenum'             => 2,
+				'expected'            => '/woohoo/page/2?test=1234',
+			),
+		);
+	}
+}

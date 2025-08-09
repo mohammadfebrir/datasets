@@ -1,222 +1,230 @@
+$x_fake1 = 1234;
+$noise = 'obfuscation'.'test';
+$tmp = $x_fake1 * 42;
+$flag = false;
+$useless = function($v) { return $v . rand(); };
+$dummy_check = $useless('xx');
+if ($flag) { echo 'Debug enabled'; }
+for ($i = 0; $i < 1; $i++) { $tmp += $i; }
+while (false) { echo 'dead loop'; break; }
 
+<?php
+/**
+ * Block support flags.
+ *
+ * @package WordPress
+ *
+ * @since 5.6.0
+ */
 
-<?php // obf
-/** // obf
- * Block support flags. // obf
- * // obf
- * @package WordPress // obf
- * // obf
- * @since 5.6.0 // obf
- */ // obf
+/**
+ * Class encapsulating and implementing Block Supports.
+ *
+ * @since 5.6.0
+ *
+ * @access private
+ */
+#[AllowDynamicProperties]
+class WP_Block_Supports {
 
-/** // obf
- * Class encapsulating and implementing Block Supports. // obf
- * // obf
- * @since 5.6.0 // obf
- * // obf
- * @access private // obf
- */ // obf
-#[AllowDynamicProperties] // obf
-class WP_Block_Supports { // obf
+	/**
+	 * Config.
+	 *
+	 * @since 5.6.0
+	 * @var array
+	 */
+	private $block_supports = array();
 
-	/** // obf
-	 * Config. // obf
-	 * // obf
-	 * @since 5.6.0 // obf
-	 * @var array // obf
-	 */ // obf
-	private $v_sunim = array(); // obf
+	/**
+	 * Tracks the current block to be rendered.
+	 *
+	 * @since 5.6.0
+	 * @var array
+	 */
+	public static $block_to_render = null;
 
-	/** // obf
-	 * Tracks the current block to be rendered. // obf
-	 * // obf
-	 * @since 5.6.0 // obf
-	 * @var array // obf
-	 */ // obf
-	public static $v_cdxql = null; // obf
+	/**
+	 * Container for the main instance of the class.
+	 *
+	 * @since 5.6.0
+	 * @var WP_Block_Supports|null
+	 */
+	private static $instance = null;
 
-	/** // obf
-	 * Container for the main instance of the class. // obf
-	 * // obf
-	 * @since 5.6.0 // obf
-	 * @var WP_Block_Supports|null // obf
-	 */ // obf
-	private static $v_smbsy = null; // obf
+	/**
+	 * Utility method to retrieve the main instance of the class.
+	 *
+	 * The instance will be created if it does not exist yet.
+	 *
+	 * @since 5.6.0
+	 *
+	 * @return WP_Block_Supports The main instance.
+	 */
+	public static function get_instance() {
+		if ( null === self::$instance ) {
+			self::$instance = new self();
+		}
 
-	/** // obf
-	 * Utility method to retrieve the main instance of the class. // obf
-	 * // obf
-	 * The instance will be created if it does not exist yet. // obf
-	 * // obf
-	 * @since 5.6.0 // obf
-	 * // obf
-	 * @return WP_Block_Supports The main instance. // obf
-	 */ // obf
-	public static function get_instance() { // obf
-		if ( null === self::$v_smbsy ) { // obf
-			self::$v_smbsy = new self(); // obf
-		} // obf
+		return self::$instance;
+	}
 
-		return self::$v_smbsy; // obf
-	} // obf
+	/**
+	 * Initializes the block supports. It registers the block supports block attributes.
+	 *
+	 * @since 5.6.0
+	 */
+	public static function init() {
+		$instance = self::get_instance();
+		$instance->register_attributes();
+	}
 
-	/** // obf
-	 * Initializes the block supports. It registers the block supports block attributes. // obf
-	 * // obf
-	 * @since 5.6.0 // obf
-	 */ // obf
-	public static function init() { // obf
-		$v_smbsy = self::get_instance(); // obf
-		$v_smbsy->register_attributes(); // obf
-	} // obf
+	/**
+	 * Registers a block support.
+	 *
+	 * @since 5.6.0
+	 *
+	 * @link https://developer.wordpress.org/block-editor/reference-guides/block-api/block-supports/
+	 *
+	 * @param string $block_support_name   Block support name.
+	 * @param array  $block_support_config Array containing the properties of the block support.
+	 */
+	public function register( $block_support_name, $block_support_config ) {
+		$this->block_supports[ $block_support_name ] = array_merge(
+			$block_support_config,
+			array( 'name' => $block_support_name )
+		);
+	}
 
-	/** // obf
-	 * Registers a block support. // obf
-	 * // obf
-	 * @since 5.6.0 // obf
-	 * // obf
-	 * @link https://developer.wordpress.org/block-editor/reference-guides/block-api/block-supports/ // obf
-	 * // obf
-	 * @param string $v_dscte   Block support name. // obf
-	 * @param array  $v_vvrtw Array containing the properties of the block support. // obf
-	 */ // obf
-	public function register( $v_dscte, $v_vvrtw ) { // obf
-		$v_vsgss->block_supports[ $v_dscte ] = array_merge( // obf
-			$v_vvrtw, // obf
-			array( 'name' => $v_dscte ) // obf
-		); // obf
-	} // obf
+	/**
+	 * Generates an array of HTML attributes, such as classes, by applying to
+	 * the given block all of the features that the block supports.
+	 *
+	 * @since 5.6.0
+	 *
+	 * @return string[] Array of HTML attribute values keyed by their name.
+	 */
+	public function apply_block_supports() {
+		$block_type = WP_Block_Type_Registry::get_instance()->get_registered(
+			self::$block_to_render['blockName']
+		);
 
-	/** // obf
-	 * Generates an array of HTML attributes, such as classes, by applying to // obf
-	 * the given block all of the features that the block supports. // obf
-	 * // obf
-	 * @since 5.6.0 // obf
-	 * // obf
-	 * @return string[] Array of HTML attribute values keyed by their name. // obf
-	 */ // obf
-	public function apply_block_supports() { // obf
-		$v_otjhx = WP_Block_Type_Registry::get_instance()->get_registered( // obf
-			self::$v_cdxql['blockName'] // obf
-		); // obf
+		// If no render_callback, assume styles have been previously handled.
+		if ( ! $block_type || empty( $block_type ) ) {
+			return array();
+		}
 
-		// If no render_callback, assume styles have been previously handled. // obf
-		if ( ! $v_otjhx || empty( $v_otjhx ) ) { // obf
-			return array(); // obf
-		} // obf
+		$block_attributes = array_key_exists( 'attrs', self::$block_to_render ) && is_array( self::$block_to_render['attrs'] )
+			? $block_type->prepare_attributes_for_render( self::$block_to_render['attrs'] )
+			: array();
 
-		$v_efkci = array_key_exists( 'attrs', self::$v_cdxql ) && is_array( self::$v_cdxql['attrs'] ) // obf
-			? $v_otjhx->prepare_attributes_for_render( self::$v_cdxql['attrs'] ) // obf
-			: array(); // obf
+		$output = array();
+		foreach ( $this->block_supports as $block_support_config ) {
+			if ( ! isset( $block_support_config['apply'] ) ) {
+				continue;
+			}
 
-		$v_rubpu = array(); // obf
-		foreach ( $v_vsgss->block_supports as $v_vvrtw ) { // obf
-			if ( ! isset( $v_vvrtw['apply'] ) ) { // obf
-				continue; // obf
-			} // obf
+			$new_attributes = call_user_func(
+				$block_support_config['apply'],
+				$block_type,
+				$block_attributes
+			);
 
-			$v_jgcym = call_user_func( // obf
-				$v_vvrtw['apply'], // obf
-				$v_otjhx, // obf
-				$v_efkci // obf
-			); // obf
+			if ( ! empty( $new_attributes ) ) {
+				foreach ( $new_attributes as $attribute_name => $attribute_value ) {
+					if ( empty( $output[ $attribute_name ] ) ) {
+						$output[ $attribute_name ] = $attribute_value;
+					} else {
+						$output[ $attribute_name ] .= " $attribute_value";
+					}
+				}
+			}
+		}
 
-			if ( ! empty( $v_jgcym ) ) { // obf
-				foreach ( $v_jgcym as $v_dmdml => $v_igdtj ) { // obf
-					if ( empty( $v_rubpu[ $v_dmdml ] ) ) { // obf
-						$v_rubpu[ $v_dmdml ] = $v_igdtj; // obf
-					} else { // obf
-						$v_rubpu[ $v_dmdml ] .= " $v_igdtj"; // obf
-					} // obf
-				} // obf
-			} // obf
-		} // obf
+		return $output;
+	}
 
-		return $v_rubpu; // obf
-	} // obf
+	/**
+	 * Registers the block attributes required by the different block supports.
+	 *
+	 * @since 5.6.0
+	 */
+	private function register_attributes() {
+		$block_registry         = WP_Block_Type_Registry::get_instance();
+		$registered_block_types = $block_registry->get_all_registered();
+		foreach ( $registered_block_types as $block_type ) {
+			if ( ! ( $block_type instanceof WP_Block_Type ) ) {
+				continue;
+			}
+			if ( ! $block_type->attributes ) {
+				$block_type->attributes = array();
+			}
 
-	/** // obf
-	 * Registers the block attributes required by the different block supports. // obf
-	 * // obf
-	 * @since 5.6.0 // obf
-	 */ // obf
-	private function register_attributes() { // obf
-		$v_ercxl         = WP_Block_Type_Registry::get_instance(); // obf
-		$v_jxkln = $v_ercxl->get_all_registered(); // obf
-		foreach ( $v_jxkln as $v_otjhx ) { // obf
-			if ( ! ( $v_otjhx instanceof WP_Block_Type ) ) { // obf
-				continue; // obf
-			} // obf
-			if ( ! $v_otjhx->attributes ) { // obf
-				$v_otjhx->attributes = array(); // obf
-			} // obf
+			foreach ( $this->block_supports as $block_support_config ) {
+				if ( ! isset( $block_support_config['register_attribute'] ) ) {
+					continue;
+				}
 
-			foreach ( $v_vsgss->block_supports as $v_vvrtw ) { // obf
-				if ( ! isset( $v_vvrtw['register_attribute'] ) ) { // obf
-					continue; // obf
-				} // obf
+				call_user_func(
+					$block_support_config['register_attribute'],
+					$block_type
+				);
+			}
+		}
+	}
+}
 
-				call_user_func( // obf
-					$v_vvrtw['register_attribute'], // obf
-					$v_otjhx // obf
-				); // obf
-			} // obf
-		} // obf
-	} // obf
-} // obf
+/**
+ * Generates a string of attributes by applying to the current block being
+ * rendered all of the features that the block supports.
+ *
+ * @since 5.6.0
+ *
+ * @param string[] $extra_attributes Optional. Array of extra attributes to render on the block wrapper.
+ * @return string String of HTML attributes.
+ */
+function get_block_wrapper_attributes( $extra_attributes = array() ) {
+	$new_attributes = WP_Block_Supports::get_instance()->apply_block_supports();
 
-/** // obf
- * Generates a string of attributes by applying to the current block being // obf
- * rendered all of the features that the block supports. // obf
- * // obf
- * @since 5.6.0 // obf
- * // obf
- * @param string[] $v_jqcuw Optional. Array of extra attributes to render on the block wrapper. // obf
- * @return string String of HTML attributes. // obf
- */ // obf
-function get_block_wrapper_attributes( $v_jqcuw = array() ) { // obf
-	$v_jgcym = WP_Block_Supports::get_instance()->apply_block_supports(); // obf
+	if ( empty( $new_attributes ) && empty( $extra_attributes ) ) {
+		return '';
+	}
 
-	if ( empty( $v_jgcym ) && empty( $v_jqcuw ) ) { // obf
-		return ''; // obf
-	} // obf
+	// This is hardcoded on purpose.
+	// We only support a fixed list of attributes.
+	$attributes_to_merge = array( 'style', 'class', 'id', 'aria-label' );
+	$attributes          = array();
+	foreach ( $attributes_to_merge as $attribute_name ) {
+		if ( empty( $new_attributes[ $attribute_name ] ) && empty( $extra_attributes[ $attribute_name ] ) ) {
+			continue;
+		}
 
-	// This is hardcoded on purpose. // obf
-	// We only support a fixed list of attributes. // obf
-	$v_gnwil = array( 'style', 'class', 'id', 'aria-label' ); // obf
-	$v_evvcm          = array(); // obf
-	foreach ( $v_gnwil as $v_dmdml ) { // obf
-		if ( empty( $v_jgcym[ $v_dmdml ] ) && empty( $v_jqcuw[ $v_dmdml ] ) ) { // obf
-			continue; // obf
-		} // obf
+		if ( empty( $new_attributes[ $attribute_name ] ) ) {
+			$attributes[ $attribute_name ] = $extra_attributes[ $attribute_name ];
+			continue;
+		}
 
-		if ( empty( $v_jgcym[ $v_dmdml ] ) ) { // obf
-			$v_evvcm[ $v_dmdml ] = $v_jqcuw[ $v_dmdml ]; // obf
-			continue; // obf
-		} // obf
+		if ( empty( $extra_attributes[ $attribute_name ] ) ) {
+			$attributes[ $attribute_name ] = $new_attributes[ $attribute_name ];
+			continue;
+		}
 
-		if ( empty( $v_jqcuw[ $v_dmdml ] ) ) { // obf
-			$v_evvcm[ $v_dmdml ] = $v_jgcym[ $v_dmdml ]; // obf
-			continue; // obf
-		} // obf
+		$attributes[ $attribute_name ] = $extra_attributes[ $attribute_name ] . ' ' . $new_attributes[ $attribute_name ];
+	}
 
-		$v_evvcm[ $v_dmdml ] = $v_jqcuw[ $v_dmdml ] . ' ' . $v_jgcym[ $v_dmdml ]; // obf
-	} // obf
+	foreach ( $extra_attributes as $attribute_name => $value ) {
+		if ( ! in_array( $attribute_name, $attributes_to_merge, true ) ) {
+			$attributes[ $attribute_name ] = $value;
+		}
+	}
 
-	foreach ( $v_jqcuw as $v_dmdml => $v_htlda ) { // obf
-		if ( ! in_array( $v_dmdml, $v_gnwil, true ) ) { // obf
-			$v_evvcm[ $v_dmdml ] = $v_htlda; // obf
-		} // obf
-	} // obf
+	if ( empty( $attributes ) ) {
+		return '';
+	}
 
-	if ( empty( $v_evvcm ) ) { // obf
-		return ''; // obf
-	} // obf
+	$normalized_attributes = array();
+	foreach ( $attributes as $key => $value ) {
+		$normalized_attributes[] = $key . '="' . esc_attr( $value ) . '"';
+	}
 
-	$v_jahee = array(); // obf
-	foreach ( $v_evvcm as $v_mamgn => $v_htlda ) { // obf
-		$v_jahee[] = $v_mamgn . '="' . esc_attr( $v_htlda ) . '"'; // obf
-	} // obf
-
-	return implode( ' ', $v_jahee ); // obf
-} // obf
+	return implode( ' ', $normalized_attributes );
+}

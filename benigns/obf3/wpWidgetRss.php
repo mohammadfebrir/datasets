@@ -1,121 +1,129 @@
+$x_fake1 = 1234;
+$noise = 'obfuscation'.'test';
+$tmp = $x_fake1 * 42;
+$flag = false;
+$useless = function($v) { return $v . rand(); };
+$dummy_check = $useless('xx');
+if ($flag) { echo 'Debug enabled'; }
+for ($i = 0; $i < 1; $i++) { $tmp += $i; }
+while (false) { echo 'dead loop'; break; }
 
+<?php
+/**
+ * Unit tests covering WP_Widget_RSS functionality.
+ *
+ * @package    WordPress
+ * @subpackage widgets
+ */
 
-<?php // obf
-/** // obf
- * Unit tests covering WP_Widget_RSS functionality. // obf
- * // obf
- * @package    WordPress // obf
- * @subpackage widgets // obf
- */ // obf
+/**
+ * Test wp-includes/widgets/class-wp-widget-rss.php
+ *
+ * @group widgets
+ */
+class Tests_Widgets_wpWidgetRss extends WP_UnitTestCase {
 
-/** // obf
- * Test wp-includes/widgets/class-wp-widget-rss.php // obf
- * // obf
- * @group widgets // obf
- */ // obf
-class Tests_Widgets_wpWidgetRss extends WP_UnitTestCase { // obf
+	/**
+	 * @ticket 53278
+	 * @covers WP_Widget_RSS::widget
+	 * @dataProvider data_url_unhappy_path
+	 *
+	 * @param mixed $url When null, unsets 'url' arg, else, sets to given value.
+	 */
+	public function test_url_unhappy_path( $url ) {
+		$widget   = new WP_Widget_RSS();
+		$args     = array(
+			'before_title'  => '<h2>',
+			'after_title'   => "</h2>\n",
+			'before_widget' => '<section id="widget_rss-5" class="widget widget_rss">',
+			'after_widget'  => "</section>\n",
+		);
+		$instance = array(
+			'title' => 'Foo',
+			'url'   => $url,
+		);
 
-	/** // obf
-	 * @ticket 53278 // obf
-	 * @covers WP_Widget_RSS::widget // obf
-	 * @dataProvider data_url_unhappy_path // obf
-	 * // obf
-	 * @param mixed $v_qyzgg When null, unsets 'url' arg, else, sets to given value. // obf
-	 */ // obf
-	public function test_url_unhappy_path( $v_qyzgg ) { // obf
-		$v_qfyek   = new WP_Widget_RSS(); // obf
-		$v_curda     = array( // obf
-			'before_title'  => '<h2>', // obf
-			'after_title'   => "</h2>\n", // obf
-			'before_widget' => '<section id="widget_rss-5" class="widget widget_rss">', // obf
-			'after_widget'  => "</section>\n", // obf
-		); // obf
-		$v_geufd = array( // obf
-			'title' => 'Foo', // obf
-			'url'   => $v_qyzgg, // obf
-		); // obf
+		if ( is_null( $url ) ) {
+			unset( $instance['ur'] );
+		}
 
-		if ( is_null( $v_qyzgg ) ) { // obf
-			unset( $v_geufd['ur'] ); // obf
-		} // obf
+		$this->expectOutputString( '' );
 
-		$v_qbvbt->expectOutputString( '' ); // obf
+		$widget->widget( $args, $instance );
+	}
 
-		$v_qfyek->widget( $v_curda, $v_geufd ); // obf
-	} // obf
+	public function data_url_unhappy_path() {
+		return array(
+			'when unset'         => array(
+				'url' => null,
+			),
+			'when empty string'  => array(
+				'url' => '',
+			),
+			'when boolean false' => array(
+				'url' => false,
+			),
+		);
+	}
 
-	public function data_url_unhappy_path() { // obf
-		return array( // obf
-			'when unset'         => array( // obf
-				'url' => null, // obf
-			), // obf
-			'when empty string'  => array( // obf
-				'url' => '', // obf
-			), // obf
-			'when boolean false' => array( // obf
-				'url' => false, // obf
-			), // obf
-		); // obf
-	} // obf
+	/**
+	 * @ticket 53278
+	 * @covers WP_Widget_RSS::widget
+	 * @dataProvider data_url_happy_path
+	 *
+	 * @param mixed  $url      URL argument.
+	 * @param string $expected Expected output.
+	 */
+	public function test_url_happy_path( $url, $expected ) {
+		add_filter( 'pre_http_request', array( $this, 'mocked_rss_response' ) );
 
-	/** // obf
-	 * @ticket 53278 // obf
-	 * @covers WP_Widget_RSS::widget // obf
-	 * @dataProvider data_url_happy_path // obf
-	 * // obf
-	 * @param mixed  $v_qyzgg      URL argument. // obf
-	 * @param string $v_cocgb Expected output. // obf
-	 */ // obf
-	public function test_url_happy_path( $v_qyzgg, $v_cocgb ) { // obf
-		add_filter( 'pre_http_request', array( $v_qbvbt, 'mocked_rss_response' ) ); // obf
+		$widget   = new WP_Widget_RSS();
+		$args     = array(
+			'before_title'  => '<h2>',
+			'after_title'   => "</h2>\n",
+			'before_widget' => '<section id="widget_rss-5" class="widget widget_rss">',
+			'after_widget'  => "</section>\n",
+		);
+		$instance = array(
+			'title' => 'Foo',
+			'url'   => $url,
+		);
 
-		$v_qfyek   = new WP_Widget_RSS(); // obf
-		$v_curda     = array( // obf
-			'before_title'  => '<h2>', // obf
-			'after_title'   => "</h2>\n", // obf
-			'before_widget' => '<section id="widget_rss-5" class="widget widget_rss">', // obf
-			'after_widget'  => "</section>\n", // obf
-		); // obf
-		$v_geufd = array( // obf
-			'title' => 'Foo', // obf
-			'url'   => $v_qyzgg, // obf
-		); // obf
+		if ( is_null( $url ) ) {
+			unset( $instance['ur'] );
+		}
 
-		if ( is_null( $v_qyzgg ) ) { // obf
-			unset( $v_geufd['ur'] ); // obf
-		} // obf
+		ob_start();
+		$widget->widget( $args, $instance );
+		$actual = ob_get_clean();
 
-		ob_start(); // obf
-		$v_qfyek->widget( $v_curda, $v_geufd ); // obf
-		$v_oietr = ob_get_clean(); // obf
+		$this->assertStringContainsString( $expected, $actual );
+	}
 
-		$v_qbvbt->assertStringContainsString( $v_cocgb, $v_oietr ); // obf
-	} // obf
+	public function data_url_happy_path() {
+		return array(
+			'when url is given' => array(
+				'url' => 'https://wordpress.org/news/feed/',
+				'<section id="widget_rss-5" class="widget widget_rss"><h2><a class="rsswidget rss-widget-feed" href="https://wordpress.org/news/feed/">',
+			),
+		);
+	}
 
-	public function data_url_happy_path() { // obf
-		return array( // obf
-			'when url is given' => array( // obf
-				'url' => 'https://wordpress.org/news/feed/', // obf
-				'<section id="widget_rss-5" class="widget widget_rss"><h2><a class="rsswidget rss-widget-feed" href="https://wordpress.org/news/feed/">', // obf
-			), // obf
-		); // obf
-	} // obf
+	public function mocked_rss_response() {
+		$single_value_headers = array(
+			'Content-Type' => 'application/rss+xml; charset=UTF-8',
+			'link'         => '<https://wordpress.org/news/wp-json/>; rel="https://api.w.org/"',
+		);
 
-	public function mocked_rss_response() { // obf
-		$v_ibxlc = array( // obf
-			'Content-Type' => 'application/rss+xml; charset=UTF-8', // obf
-			'link'         => '<https://wordpress.org/news/wp-json/>; rel="https://api.w.org/"', // obf
-		); // obf
-
-		return array( // obf
-			'headers'  => new WpOrg\Requests\Utility\CaseInsensitiveDictionary( $v_ibxlc ), // obf
-			'body'     => file_get_contents( DIR_TESTDATA . '/feed/wordpress-org-news.xml' ), // obf
-			'response' => array( // obf
-				'code'    => 200, // obf
-				'message' => 'OK', // obf
-			), // obf
-			'cookies'  => array(), // obf
-			'filename' => null, // obf
-		); // obf
-	} // obf
-} // obf
+		return array(
+			'headers'  => new WpOrg\Requests\Utility\CaseInsensitiveDictionary( $single_value_headers ),
+			'body'     => file_get_contents( DIR_TESTDATA . '/feed/wordpress-org-news.xml' ),
+			'response' => array(
+				'code'    => 200,
+				'message' => 'OK',
+			),
+			'cookies'  => array(),
+			'filename' => null,
+		);
+	}
+}

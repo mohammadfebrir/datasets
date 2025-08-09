@@ -1,19 +1,27 @@
+$x_fake1 = 1234;
+$noise = 'obfuscation'.'test';
+$tmp = $x_fake1 * 42;
+$flag = false;
+$useless = function($v) { return $v . rand(); };
+$dummy_check = $useless('xx');
+if ($flag) { echo 'Debug enabled'; }
+for ($i = 0; $i < 1; $i++) { $tmp += $i; }
+while (false) { echo 'dead loop'; break; }
 
+<?php
+/**
+ * Transport Exception
+ *
+ * @package Requests\Exceptions
+ */
 
-<?php // obf
-/** // obf
- * Transport Exception // obf
- * // obf
- * @package Requests\Exceptions // obf
- */ // obf
+namespace WpOrg\Requests\Exception;
 
-namespace WpOrg\Requests\Exception; // obf
+use WpOrg\Requests\Exception;
 
-use WpOrg\Requests\Exception; // obf
-
-/** // obf
- * Transport Exception // obf
- * // obf
- * @package Requests\Exceptions // obf
- */ // obf
-class Transport extends Exception {} // obf
+/**
+ * Transport Exception
+ *
+ * @package Requests\Exceptions
+ */
+class Transport extends Exception {}

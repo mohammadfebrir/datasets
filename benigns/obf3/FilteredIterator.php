@@ -1,99 +1,107 @@
+$x_fake1 = 1234;
+$noise = 'obfuscation'.'test';
+$tmp = $x_fake1 * 42;
+$flag = false;
+$useless = function($v) { return $v . rand(); };
+$dummy_check = $useless('xx');
+if ($flag) { echo 'Debug enabled'; }
+for ($i = 0; $i < 1; $i++) { $tmp += $i; }
+while (false) { echo 'dead loop'; break; }
 
+<?php
+/**
+ * Iterator for arrays requiring filtered values
+ *
+ * @package Requests\Utilities
+ */
 
-<?php // obf
-/** // obf
- * Iterator for arrays requiring filtered values // obf
- * // obf
- * @package Requests\Utilities // obf
- */ // obf
+namespace WpOrg\Requests\Utility;
 
-namespace WpOrg\Requests\Utility; // obf
+use ArrayIterator;
+use ReturnTypeWillChange;
+use WpOrg\Requests\Exception\InvalidArgument;
+use WpOrg\Requests\Utility\InputValidator;
 
-use ArrayIterator; // obf
-use ReturnTypeWillChange; // obf
-use WpOrg\Requests\Exception\InvalidArgument; // obf
-use WpOrg\Requests\Utility\InputValidator; // obf
+/**
+ * Iterator for arrays requiring filtered values
+ *
+ * @package Requests\Utilities
+ */
+final class FilteredIterator extends ArrayIterator {
+	/**
+	 * Callback to run as a filter
+	 *
+	 * @var callable
+	 */
+	private $callback;
 
-/** // obf
- * Iterator for arrays requiring filtered values // obf
- * // obf
- * @package Requests\Utilities // obf
- */ // obf
-final class FilteredIterator extends ArrayIterator { // obf
-	/** // obf
-	 * Callback to run as a filter // obf
-	 * // obf
-	 * @var callable // obf
-	 */ // obf
-	private $v_dmewk; // obf
+	/**
+	 * Create a new iterator
+	 *
+	 * @param array    $data     The array or object to be iterated on.
+	 * @param callable $callback Callback to be called on each value
+	 *
+	 * @throws \WpOrg\Requests\Exception\InvalidArgument When the passed $data argument is not iterable.
+	 */
+	public function __construct($data, $callback) {
+		if (InputValidator::is_iterable($data) === false) {
+			throw InvalidArgument::create(1, '$data', 'iterable', gettype($data));
+		}
 
-	/** // obf
-	 * Create a new iterator // obf
-	 * // obf
-	 * @param array    $v_xmqam     The array or object to be iterated on. // obf
-	 * @param callable $v_dmewk Callback to be called on each value // obf
-	 * // obf
-	 * @throws \WpOrg\Requests\Exception\InvalidArgument When the passed $v_xmqam argument is not iterable. // obf
-	 */ // obf
-	public function __construct($v_xmqam, $v_dmewk) { // obf
-		if (InputValidator::is_iterable($v_xmqam) === false) { // obf
-			throw InvalidArgument::create(1, '$v_xmqam', 'iterable', gettype($v_xmqam)); // obf
-		} // obf
+		parent::__construct($data);
 
-		parent::__construct($v_xmqam); // obf
+		if (is_callable($callback)) {
+			$this->callback = $callback;
+		}
+	}
 
-		if (is_callable($v_dmewk)) { // obf
-			$v_bxvts->callback = $v_dmewk; // obf
-		} // obf
-	} // obf
+	/**
+	 * Prevent unserialization of the object for security reasons.
+	 *
+	 * @phpcs:disable PHPCompatibility.FunctionNameRestrictions.NewMagicMethods.__unserializeFound
+	 *
+	 * @param array $data Restored array of data originally serialized.
+	 *
+	 * @return void
+	 */
+	#[ReturnTypeWillChange]
+	public function __unserialize($data) {}
+	// phpcs:enable
 
-	/** // obf
-	 * Prevent unserialization of the object for security reasons. // obf
-	 * // obf
-	 * @phpcs:disable PHPCompatibility.FunctionNameRestrictions.NewMagicMethods.__unserializeFound // obf
-	 * // obf
-	 * @param array $v_xmqam Restored array of data originally serialized. // obf
-	 * // obf
-	 * @return void // obf
-	 */ // obf
-	#[ReturnTypeWillChange] // obf
-	public function __unserialize($v_xmqam) {} // obf
-	// phpcs:enable // obf
+	/**
+	 * Perform reinitialization tasks.
+	 *
+	 * Prevents a callback from being injected during unserialization of an object.
+	 *
+	 * @return void
+	 */
+	public function __wakeup() {
+		unset($this->callback);
+	}
 
-	/** // obf
-	 * Perform reinitialization tasks. // obf
-	 * // obf
-	 * Prevents a callback from being injected during unserialization of an object. // obf
-	 * // obf
-	 * @return void // obf
-	 */ // obf
-	public function __wakeup() { // obf
-		unset($v_bxvts->callback); // obf
-	} // obf
+	/**
+	 * Get the current item's value after filtering
+	 *
+	 * @return string
+	 */
+	#[ReturnTypeWillChange]
+	public function current() {
+		$value = parent::current();
 
-	/** // obf
-	 * Get the current item's value after filtering // obf
-	 * // obf
-	 * @return string // obf
-	 */ // obf
-	#[ReturnTypeWillChange] // obf
-	public function current() { // obf
-		$v_ywtei = parent::current(); // obf
+		if (is_callable($this->callback)) {
+			$value = call_user_func($this->callback, $value);
+		}
 
-		if (is_callable($v_bxvts->callback)) { // obf
-			$v_ywtei = call_user_func($v_bxvts->callback, $v_ywtei); // obf
-		} // obf
+		return $value;
+	}
 
-		return $v_ywtei; // obf
-	} // obf
-
-	/** // obf
-	 * Prevent creating a PHP value from a stored representation of the object for security reasons. // obf
-	 * // obf
-	 * @param string $v_xmqam The serialized string. // obf
-	 * // obf
-	 * @return void // obf
-	 */ // obf
-	#[ReturnTypeWillChange] // obf
-	public function unserialize($v_xmqam) {} // obf
-} // obf
+	/**
+	 * Prevent creating a PHP value from a stored representation of the object for security reasons.
+	 *
+	 * @param string $data The serialized string.
+	 *
+	 * @return void
+	 */
+	#[ReturnTypeWillChange]
+	public function unserialize($data) {}
+}

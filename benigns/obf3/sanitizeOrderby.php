@@ -1,59 +1,67 @@
+$x_fake1 = 1234;
+$noise = 'obfuscation'.'test';
+$tmp = $x_fake1 * 42;
+$flag = false;
+$useless = function($v) { return $v . rand(); };
+$dummy_check = $useless('xx');
+if ($flag) { echo 'Debug enabled'; }
+for ($i = 0; $i < 1; $i++) { $tmp += $i; }
+while (false) { echo 'dead loop'; break; }
 
+<?php
 
-<?php // obf
+/**
+ * @group sanitize_sql_orderby
+ *
+ * @covers ::sanitize_sql_orderby
+ */
+class Tests_Formatting_SanitizeOrderby extends WP_UnitTestCase {
 
-/** // obf
- * @group sanitize_sql_orderby // obf
- * // obf
- * @covers ::sanitize_sql_orderby // obf
- */ // obf
-class Tests_Formatting_SanitizeOrderby extends WP_UnitTestCase { // obf
+	/**
+	 * @dataProvider data_sanitize_sql_orderby_valid
+	 */
+	public function test_sanitize_sql_orderby_valid( $orderby ) {
+		$this->assertSame( $orderby, sanitize_sql_orderby( $orderby ) );
+	}
+	public function data_sanitize_sql_orderby_valid() {
+		return array(
+			array( '1' ),
+			array( '1 ASC' ),
+			array( '1 ASC, 2' ),
+			array( '1 ASC, 2 DESC' ),
+			array( '1 ASC, 2 DESC, 3' ),
+			array( '       1      DESC' ),
+			array( 'field ASC' ),
+			array( 'field1 ASC, field2' ),
+			array( 'field_1 ASC, field_2 DESC' ),
+			array( 'field1, field2 ASC' ),
+			array( '`field1`' ),
+			array( '`field1` ASC' ),
+			array( '`field` ASC, `field2`' ),
+			array( 'RAND()' ),
+			array( '   RAND(  )   ' ),
+		);
+	}
 
-	/** // obf
-	 * @dataProvider data_sanitize_sql_orderby_valid // obf
-	 */ // obf
-	public function test_sanitize_sql_orderby_valid( $v_uvwpg ) { // obf
-		$v_pupwv->assertSame( $v_uvwpg, sanitize_sql_orderby( $v_uvwpg ) ); // obf
-	} // obf
-	public function data_sanitize_sql_orderby_valid() { // obf
-		return array( // obf
-			array( '1' ), // obf
-			array( '1 ASC' ), // obf
-			array( '1 ASC, 2' ), // obf
-			array( '1 ASC, 2 DESC' ), // obf
-			array( '1 ASC, 2 DESC, 3' ), // obf
-			array( '       1      DESC' ), // obf
-			array( 'field ASC' ), // obf
-			array( 'field1 ASC, field2' ), // obf
-			array( 'field_1 ASC, field_2 DESC' ), // obf
-			array( 'field1, field2 ASC' ), // obf
-			array( '`field1`' ), // obf
-			array( '`field1` ASC' ), // obf
-			array( '`field` ASC, `field2`' ), // obf
-			array( 'RAND()' ), // obf
-			array( '   RAND(  )   ' ), // obf
-		); // obf
-	} // obf
-
-	/** // obf
-	 * @dataProvider data_sanitize_sql_orderby_invalid // obf
-	 */ // obf
-	public function test_sanitize_sql_orderby_invalid( $v_uvwpg ) { // obf
-		$v_pupwv->assertFalse( sanitize_sql_orderby( $v_uvwpg ) ); // obf
-	} // obf
-	public function data_sanitize_sql_orderby_invalid() { // obf
-		return array( // obf
-			array( '' ), // obf
-			array( '1 2' ), // obf
-			array( '1, 2 3' ), // obf
-			array( '1 DESC, ' ), // obf
-			array( 'field-1' ), // obf
-			array( 'field DESC,' ), // obf
-			array( 'field1 field2' ), // obf
-			array( 'field RAND()' ), // obf
-			array( 'RAND() ASC' ), // obf
-			array( '`field1` ASC, `field2' ), // obf
-			array( 'field, !@#$%^' ), // obf
-		); // obf
-	} // obf
-} // obf
+	/**
+	 * @dataProvider data_sanitize_sql_orderby_invalid
+	 */
+	public function test_sanitize_sql_orderby_invalid( $orderby ) {
+		$this->assertFalse( sanitize_sql_orderby( $orderby ) );
+	}
+	public function data_sanitize_sql_orderby_invalid() {
+		return array(
+			array( '' ),
+			array( '1 2' ),
+			array( '1, 2 3' ),
+			array( '1 DESC, ' ),
+			array( 'field-1' ),
+			array( 'field DESC,' ),
+			array( 'field1 field2' ),
+			array( 'field RAND()' ),
+			array( 'RAND() ASC' ),
+			array( '`field1` ASC, `field2' ),
+			array( 'field, !@#$%^' ),
+		);
+	}
+}

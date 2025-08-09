@@ -1,1044 +1,1052 @@
-
-
-<?php // obf
-/** // obf
- * Post API: WP_Post_Type class // obf
- * // obf
- * @package WordPress // obf
- * @subpackage Post // obf
- * @since 4.6.0 // obf
- */ // obf
-
-/** // obf
- * Core class used for interacting with post types. // obf
- * // obf
- * @since 4.6.0 // obf
- * // obf
- * @see register_post_type() // obf
- */ // obf
-#[AllowDynamicProperties] // obf
-final class WP_Post_Type { // obf
-	/** // obf
-	 * Post type key. // obf
-	 * // obf
-	 * @since 4.6.0 // obf
-	 * @var string $v_ixzdx // obf
-	 */ // obf
-	public $v_ixzdx; // obf
-
-	/** // obf
-	 * Name of the post type shown in the menu. Usually plural. // obf
-	 * // obf
-	 * @since 4.6.0 // obf
-	 * @var string $v_tszql // obf
-	 */ // obf
-	public $v_tszql; // obf
-
-	/** // obf
-	 * Labels object for this post type. // obf
-	 * // obf
-	 * If not set, post labels are inherited for non-hierarchical types // obf
-	 * and page labels for hierarchical ones. // obf
-	 * // obf
-	 * @see get_post_type_labels() // obf
-	 * // obf
-	 * @since 4.6.0 // obf
-	 * @var stdClass $v_eskmn // obf
-	 */ // obf
-	public $v_eskmn; // obf
-
-	/** // obf
-	 * Default labels. // obf
-	 * // obf
-	 * @since 6.0.0 // obf
-	 * @var (string|null)[][] $v_wbffq // obf
-	 */ // obf
-	protected static $v_wbffq = array(); // obf
-
-	/** // obf
-	 * A short descriptive summary of what the post type is. // obf
-	 * // obf
-	 * Default empty. // obf
-	 * // obf
-	 * @since 4.6.0 // obf
-	 * @var string $v_jwnnz // obf
-	 */ // obf
-	public $v_jwnnz = ''; // obf
-
-	/** // obf
-	 * Whether a post type is intended for use publicly either via the admin interface or by front-end users. // obf
-	 * // obf
-	 * While the default settings of $v_gusnm, $v_eaxrl, $v_rgkfz, and $v_sxnxx // obf
-	 * are inherited from public, each does not rely on this relationship and controls a very specific intention. // obf
-	 * // obf
-	 * Default false. // obf
-	 * // obf
-	 * @since 4.6.0 // obf
-	 * @var bool $v_qvibf // obf
-	 */ // obf
-	public $v_qvibf = false; // obf
-
-	/** // obf
-	 * Whether the post type is hierarchical (e.g. page). // obf
-	 * // obf
-	 * Default false. // obf
-	 * // obf
-	 * @since 4.6.0 // obf
-	 * @var bool $v_xcfbl // obf
-	 */ // obf
-	public $v_xcfbl = false; // obf
-
-	/** // obf
-	 * Whether to exclude posts with this post type from front end search // obf
-	 * results. // obf
-	 * // obf
-	 * Default is the opposite value of $v_qvibf. // obf
-	 * // obf
-	 * @since 4.6.0 // obf
-	 * @var bool $v_gusnm // obf
-	 */ // obf
-	public $v_gusnm = null; // obf
-
-	/** // obf
-	 * Whether queries can be performed on the front end for the post type as part of `parse_request()`. // obf
-	 * // obf
-	 * Endpoints would include: // obf
-	 * // obf
-	 * - `?post_type={post_type_key}` // obf
-	 * - `?{post_type_key}={single_post_slug}` // obf
-	 * - `?{post_type_query_var}={single_post_slug}` // obf
-	 * // obf
-	 * Default is the value of $v_qvibf. // obf
-	 * // obf
-	 * @since 4.6.0 // obf
-	 * @var bool $v_eaxrl // obf
-	 */ // obf
-	public $v_eaxrl = null; // obf
-
-	/** // obf
-	 * Whether this post type is embeddable. // obf
-	 * // obf
-	 * Default is the value of $v_qvibf. // obf
-	 * // obf
-	 * @since 6.8.0 // obf
-	 * @var bool $v_evvzq // obf
-	 */ // obf
-	public $v_evvzq = null; // obf
-
-	/** // obf
-	 * Whether to generate and allow a UI for managing this post type in the admin. // obf
-	 * // obf
-	 * Default is the value of $v_qvibf. // obf
-	 * // obf
-	 * @since 4.6.0 // obf
-	 * @var bool $v_rgkfz // obf
-	 */ // obf
-	public $v_rgkfz = null; // obf
-
-	/** // obf
-	 * Where to show the post type in the admin menu. // obf
-	 * // obf
-	 * To work, $v_rgkfz must be true. If true, the post type is shown in its own top level menu. If false, no menu is // obf
-	 * shown. If a string of an existing top level menu ('tools.php' or 'edit.php?post_type=page', for example), the // obf
-	 * post type will be placed as a sub-menu of that. // obf
-	 * // obf
-	 * Default is the value of $v_rgkfz. // obf
-	 * // obf
-	 * @since 4.6.0 // obf
-	 * @var bool|string $v_lujfs // obf
-	 */ // obf
-	public $v_lujfs = null; // obf
-
-	/** // obf
-	 * Makes this post type available for selection in navigation menus. // obf
-	 * // obf
-	 * Default is the value $v_qvibf. // obf
-	 * // obf
-	 * @since 4.6.0 // obf
-	 * @var bool $v_sxnxx // obf
-	 */ // obf
-	public $v_sxnxx = null; // obf
-
-	/** // obf
-	 * Makes this post type available via the admin bar. // obf
-	 * // obf
-	 * Default is the value of $v_lujfs. // obf
-	 * // obf
-	 * @since 4.6.0 // obf
-	 * @var bool $v_hkwkq // obf
-	 */ // obf
-	public $v_hkwkq = null; // obf
-
-	/** // obf
-	 * The position in the menu order the post type should appear. // obf
-	 * // obf
-	 * To work, $v_lujfs must be true. Default null (at the bottom). // obf
-	 * // obf
-	 * @since 4.6.0 // obf
-	 * @var int $v_txfoe // obf
-	 */ // obf
-	public $v_txfoe = null; // obf
-
-	/** // obf
-	 * The URL or reference to the icon to be used for this menu. // obf
-	 * // obf
-	 * Pass a base64-encoded SVG using a data URI, which will be colored to match the color scheme. // obf
-	 * This should begin with 'data:image/svg+xml;base64,'. Pass the name of a Dashicons helper class // obf
-	 * to use a font icon, e.g. 'dashicons-chart-pie'. Pass 'none' to leave div.wp-menu-image empty // obf
-	 * so an icon can be added via CSS. // obf
-	 * // obf
-	 * Defaults to use the posts icon. // obf
-	 * // obf
-	 * @since 4.6.0 // obf
-	 * @var string $v_kwwkx // obf
-	 */ // obf
-	public $v_kwwkx = null; // obf
-
-	/** // obf
-	 * The string to use to build the read, edit, and delete capabilities. // obf
-	 * // obf
-	 * May be passed as an array to allow for alternative plurals when using // obf
-	 * this argument as a base to construct the capabilities, e.g. // obf
-	 * array( 'story', 'stories' ). Default 'post'. // obf
-	 * // obf
-	 * @since 4.6.0 // obf
-	 * @var string $v_miazp // obf
-	 */ // obf
-	public $v_miazp = 'post'; // obf
-
-	/** // obf
-	 * Whether to use the internal default meta capability handling. // obf
-	 * // obf
-	 * Default false. // obf
-	 * // obf
-	 * @since 4.6.0 // obf
-	 * @var bool $v_xxzew // obf
-	 */ // obf
-	public $v_xxzew = false; // obf
-
-	/** // obf
-	 * Provide a callback function that sets up the meta boxes for the edit form. // obf
-	 * // obf
-	 * Do `remove_meta_box()` and `add_meta_box()` calls in the callback. Default null. // obf
-	 * // obf
-	 * @since 4.6.0 // obf
-	 * @var callable $v_griko // obf
-	 */ // obf
-	public $v_griko = null; // obf
-
-	/** // obf
-	 * An array of taxonomy identifiers that will be registered for the post type. // obf
-	 * // obf
-	 * Taxonomies can be registered later with `register_taxonomy()` or `register_taxonomy_for_object_type()`. // obf
-	 * // obf
-	 * Default empty array. // obf
-	 * // obf
-	 * @since 4.6.0 // obf
-	 * @var string[] $v_xnysg // obf
-	 */ // obf
-	public $v_xnysg = array(); // obf
-
-	/** // obf
-	 * Whether there should be post type archives, or if a string, the archive slug to use. // obf
-	 * // obf
-	 * Will generate the proper rewrite rules if $v_yijlv is enabled. Default false. // obf
-	 * // obf
-	 * @since 4.6.0 // obf
-	 * @var bool|string $v_ypzzk // obf
-	 */ // obf
-	public $v_ypzzk = false; // obf
-
-	/** // obf
-	 * Sets the query_var key for this post type. // obf
-	 * // obf
-	 * Defaults to $v_dqlkr key. If false, a post type cannot be loaded at `?{query_var}={post_slug}`. // obf
-	 * If specified as a string, the query `?{query_var_string}={post_slug}` will be valid. // obf
-	 * // obf
-	 * @since 4.6.0 // obf
-	 * @var string|bool $v_lvtms // obf
-	 */ // obf
-	public $v_lvtms; // obf
-
-	/** // obf
-	 * Whether to allow this post type to be exported. // obf
-	 * // obf
-	 * Default true. // obf
-	 * // obf
-	 * @since 4.6.0 // obf
-	 * @var bool $v_gusok // obf
-	 */ // obf
-	public $v_gusok = true; // obf
-
-	/** // obf
-	 * Whether to delete posts of this type when deleting a user. // obf
-	 * // obf
-	 * - If true, posts of this type belonging to the user will be moved to Trash when the user is deleted. // obf
-	 * - If false, posts of this type belonging to the user will *not* be trashed or deleted. // obf
-	 * - If not set (the default), posts are trashed if post type supports the 'author' feature. // obf
-	 *   Otherwise posts are not trashed or deleted. // obf
-	 * // obf
-	 * Default null. // obf
-	 * // obf
-	 * @since 4.6.0 // obf
-	 * @var bool $v_iglss // obf
-	 */ // obf
-	public $v_iglss = null; // obf
-
-	/** // obf
-	 * Array of blocks to use as the default initial state for an editor session. // obf
-	 * // obf
-	 * Each item should be an array containing block name and optional attributes. // obf
-	 * // obf
-	 * Default empty array. // obf
-	 * // obf
-	 * @link https://developer.wordpress.org/block-editor/developers/block-api/block-templates/ // obf
-	 * // obf
-	 * @since 5.0.0 // obf
-	 * @var array[] $v_wycmo // obf
-	 */ // obf
-	public $v_wycmo = array(); // obf
-
-	/** // obf
-	 * Whether the block template should be locked if $v_wycmo is set. // obf
-	 * // obf
-	 * - If set to 'all', the user is unable to insert new blocks, move existing blocks // obf
-	 *   and delete blocks. // obf
-	 * - If set to 'insert', the user is able to move existing blocks but is unable to insert // obf
-	 *   new blocks and delete blocks. // obf
-	 * // obf
-	 * Default false. // obf
-	 * // obf
-	 * @link https://developer.wordpress.org/block-editor/developers/block-api/block-templates/ // obf
-	 * // obf
-	 * @since 5.0.0 // obf
-	 * @var string|false $v_sauvk // obf
-	 */ // obf
-	public $v_sauvk = false; // obf
-
-	/** // obf
-	 * Whether this post type is a native or "built-in" post_type. // obf
-	 * // obf
-	 * Default false. // obf
-	 * // obf
-	 * @since 4.6.0 // obf
-	 * @var bool $v_yehlc // obf
-	 */ // obf
-	public $v_yehlc = false; // obf
-
-	/** // obf
-	 * URL segment to use for edit link of this post type. // obf
-	 * // obf
-	 * Default 'post.php?post=%d'. // obf
-	 * // obf
-	 * @since 4.6.0 // obf
-	 * @var string $v_gdlgy // obf
-	 */ // obf
-	public $v_gdlgy = 'post.php?post=%d'; // obf
-
-	/** // obf
-	 * Post type capabilities. // obf
-	 * // obf
-	 * @since 4.6.0 // obf
-	 * @var stdClass $v_zcziw // obf
-	 */ // obf
-	public $v_zcziw; // obf
-
-	/** // obf
-	 * Triggers the handling of rewrites for this post type. // obf
-	 * // obf
-	 * Defaults to true, using $v_dqlkr as slug. // obf
-	 * // obf
-	 * @since 4.6.0 // obf
-	 * @var array|false $v_yijlv // obf
-	 */ // obf
-	public $v_yijlv; // obf
-
-	/** // obf
-	 * The features supported by the post type. // obf
-	 * // obf
-	 * @since 4.6.0 // obf
-	 * @var array|bool $v_husww // obf
-	 */ // obf
-	public $v_husww; // obf
-
-	/** // obf
-	 * Whether this post type should appear in the REST API. // obf
-	 * // obf
-	 * Default false. If true, standard endpoints will be registered with // obf
-	 * respect to $v_kqupc and $v_zdqcy. // obf
-	 * // obf
-	 * @since 4.7.4 // obf
-	 * @var bool $v_mprzz // obf
-	 */ // obf
-	public $v_mprzz; // obf
-
-	/** // obf
-	 * The base path for this post type's REST API endpoints. // obf
-	 * // obf
-	 * @since 4.7.4 // obf
-	 * @var string|bool $v_kqupc // obf
-	 */ // obf
-	public $v_kqupc; // obf
-
-	/** // obf
-	 * The namespace for this post type's REST API endpoints. // obf
-	 * // obf
-	 * @since 5.9.0 // obf
-	 * @var string|bool $v_pnkai // obf
-	 */ // obf
-	public $v_pnkai; // obf
-
-	/** // obf
-	 * The controller for this post type's REST API endpoints. // obf
-	 * // obf
-	 * Custom controllers must extend WP_REST_Controller. // obf
-	 * // obf
-	 * @since 4.7.4 // obf
-	 * @var string|bool $v_zdqcy // obf
-	 */ // obf
-	public $v_zdqcy; // obf
-
-	/** // obf
-	 * The controller instance for this post type's REST API endpoints. // obf
-	 * // obf
-	 * Lazily computed. Should be accessed using {@see WP_Post_Type::get_rest_controller()}. // obf
-	 * // obf
-	 * @since 5.3.0 // obf
-	 * @var WP_REST_Controller $v_dphjv // obf
-	 */ // obf
-	public $v_dphjv; // obf
-
-	/** // obf
-	 * The controller for this post type's revisions REST API endpoints. // obf
-	 * // obf
-	 * Custom controllers must extend WP_REST_Controller. // obf
-	 * // obf
-	 * @since 6.4.0 // obf
-	 * @var string|bool $v_tcvou // obf
-	 */ // obf
-	public $v_tcvou; // obf
-
-	/** // obf
-	 * The controller instance for this post type's revisions REST API endpoints. // obf
-	 * // obf
-	 * Lazily computed. Should be accessed using {@see WP_Post_Type::get_revisions_rest_controller()}. // obf
-	 * // obf
-	 * @since 6.4.0 // obf
-	 * @var WP_REST_Controller $v_tqhmh // obf
-	 */ // obf
-	public $v_tqhmh; // obf
-
-	/** // obf
-	 * The controller for this post type's autosave REST API endpoints. // obf
-	 * // obf
-	 * Custom controllers must extend WP_REST_Controller. // obf
-	 * // obf
-	 * @since 6.4.0 // obf
-	 * @var string|bool $v_ocolg // obf
-	 */ // obf
-	public $v_ocolg; // obf
-
-	/** // obf
-	 * The controller instance for this post type's autosave REST API endpoints. // obf
-	 * // obf
-	 * Lazily computed. Should be accessed using {@see WP_Post_Type::get_autosave_rest_controller()}. // obf
-	 * // obf
-	 * @since 6.4.0 // obf
-	 * @var WP_REST_Controller $v_pslrg // obf
-	 */ // obf
-	public $v_pslrg; // obf
-
-	/** // obf
-	 * A flag to register the post type REST API controller after its associated autosave / revisions controllers, instead of before. Registration order affects route matching priority. // obf
-	 * // obf
-	 * @since 6.4.0 // obf
-	 * @var bool $v_zkbdp // obf
-	 */ // obf
-	public $v_zkbdp; // obf
-
-	/** // obf
-	 * Constructor. // obf
-	 * // obf
-	 * See the register_post_type() function for accepted arguments for `$v_ubcxq`. // obf
-	 * // obf
-	 * Will populate object properties from the provided arguments and assign other // obf
-	 * default properties based on that information. // obf
-	 * // obf
-	 * @since 4.6.0 // obf
-	 * // obf
-	 * @see register_post_type() // obf
-	 * // obf
-	 * @param string       $v_dqlkr Post type key. // obf
-	 * @param array|string $v_ubcxq      Optional. Array or string of arguments for registering a post type. // obf
-	 *                                See register_post_type() for information on accepted arguments. // obf
-	 *                                Default empty array. // obf
-	 */ // obf
-	public function __construct( $v_dqlkr, $v_ubcxq = array() ) { // obf
-		$v_kmpma->name = $v_dqlkr; // obf
-
-		$v_kmpma->set_props( $v_ubcxq ); // obf
-	} // obf
-
-	/** // obf
-	 * Sets post type properties. // obf
-	 * // obf
-	 * See the register_post_type() function for accepted arguments for `$v_ubcxq`. // obf
-	 * // obf
-	 * @since 4.6.0 // obf
-	 * // obf
-	 * @param array|string $v_ubcxq Array or string of arguments for registering a post type. // obf
-	 */ // obf
-	public function set_props( $v_ubcxq ) { // obf
-		$v_ubcxq = wp_parse_args( $v_ubcxq ); // obf
-
-		/** // obf
-		 * Filters the arguments for registering a post type. // obf
-		 * // obf
-		 * @since 4.4.0 // obf
-		 * // obf
-		 * @param array  $v_ubcxq      Array of arguments for registering a post type. // obf
-		 *                          See the register_post_type() function for accepted arguments. // obf
-		 * @param string $v_dqlkr Post type key. // obf
-		 */ // obf
-		$v_ubcxq = apply_filters( 'register_post_type_args', $v_ubcxq, $v_kmpma->name ); // obf
-
-		$v_dqlkr = $v_kmpma->name; // obf
-
-		/** // obf
-		 * Filters the arguments for registering a specific post type. // obf
-		 * // obf
-		 * The dynamic portion of the filter name, `$v_dqlkr`, refers to the post type key. // obf
-		 * // obf
-		 * Possible hook names include: // obf
-		 * // obf
-		 *  - `register_post_post_type_args` // obf
-		 *  - `register_page_post_type_args` // obf
-		 * // obf
-		 * @since 6.0.0 // obf
-		 * @since 6.4.0 Added `late_route_registration`, `autosave_rest_controller_class` and `revisions_rest_controller_class` arguments. // obf
-		 * // obf
-		 * @param array  $v_ubcxq      Array of arguments for registering a post type. // obf
-		 *                          See the register_post_type() function for accepted arguments. // obf
-		 * @param string $v_dqlkr Post type key. // obf
-		 */ // obf
-		$v_ubcxq = apply_filters( "register_{$v_dqlkr}_post_type_args", $v_ubcxq, $v_kmpma->name ); // obf
-
-		$v_zqycv = ! empty( $v_ubcxq['_edit_link'] ); // obf
-
-		// Args prefixed with an underscore are reserved for internal use. // obf
-		$v_qugki = array( // obf
-			'labels'                          => array(), // obf
-			'description'                     => '', // obf
-			'public'                          => false, // obf
-			'hierarchical'                    => false, // obf
-			'exclude_from_search'             => null, // obf
-			'publicly_queryable'              => null, // obf
-			'embeddable'                      => null, // obf
-			'show_ui'                         => null, // obf
-			'show_in_menu'                    => null, // obf
-			'show_in_nav_menus'               => null, // obf
-			'show_in_admin_bar'               => null, // obf
-			'menu_position'                   => null, // obf
-			'menu_icon'                       => null, // obf
-			'capability_type'                 => 'post', // obf
-			'capabilities'                    => array(), // obf
-			'map_meta_cap'                    => null, // obf
-			'supports'                        => array(), // obf
-			'register_meta_box_cb'            => null, // obf
-			'taxonomies'                      => array(), // obf
-			'has_archive'                     => false, // obf
-			'rewrite'                         => true, // obf
-			'query_var'                       => true, // obf
-			'can_export'                      => true, // obf
-			'delete_with_user'                => null, // obf
-			'show_in_rest'                    => false, // obf
-			'rest_base'                       => false, // obf
-			'rest_namespace'                  => false, // obf
-			'rest_controller_class'           => false, // obf
-			'autosave_rest_controller_class'  => false, // obf
-			'revisions_rest_controller_class' => false, // obf
-			'late_route_registration'         => false, // obf
-			'template'                        => array(), // obf
-			'template_lock'                   => false, // obf
-			'_builtin'                        => false, // obf
-			'_edit_link'                      => 'post.php?post=%d', // obf
-		); // obf
-
-		$v_ubcxq = array_merge( $v_qugki, $v_ubcxq ); // obf
-
-		$v_ubcxq['name'] = $v_kmpma->name; // obf
-
-		// If not set, default to the setting for 'public'. // obf
-		if ( null === $v_ubcxq['publicly_queryable'] ) { // obf
-			$v_ubcxq['publicly_queryable'] = $v_ubcxq['public']; // obf
-		} // obf
-
-		// If not set, default to the setting for 'public'. // obf
-		if ( null === $v_ubcxq['show_ui'] ) { // obf
-			$v_ubcxq['show_ui'] = $v_ubcxq['public']; // obf
-		} // obf
-
-		// If not set, default to the setting for 'public'. // obf
-		if ( null === $v_ubcxq['embeddable'] ) { // obf
-			$v_ubcxq['embeddable'] = $v_ubcxq['public']; // obf
-		} // obf
-
-		// If not set, default rest_namespace to wp/v2 if show_in_rest is true. // obf
-		if ( false === $v_ubcxq['rest_namespace'] && ! empty( $v_ubcxq['show_in_rest'] ) ) { // obf
-			$v_ubcxq['rest_namespace'] = 'wp/v2'; // obf
-		} // obf
-
-		// If not set, default to the setting for 'show_ui'. // obf
-		if ( null === $v_ubcxq['show_in_menu'] || ! $v_ubcxq['show_ui'] ) { // obf
-			$v_ubcxq['show_in_menu'] = $v_ubcxq['show_ui']; // obf
-		} // obf
-
-		// If not set, default to the setting for 'show_in_menu'. // obf
-		if ( null === $v_ubcxq['show_in_admin_bar'] ) { // obf
-			$v_ubcxq['show_in_admin_bar'] = (bool) $v_ubcxq['show_in_menu']; // obf
-		} // obf
-
-		// If not set, default to the setting for 'public'. // obf
-		if ( null === $v_ubcxq['show_in_nav_menus'] ) { // obf
-			$v_ubcxq['show_in_nav_menus'] = $v_ubcxq['public']; // obf
-		} // obf
-
-		// If not set, default to true if not public, false if public. // obf
-		if ( null === $v_ubcxq['exclude_from_search'] ) { // obf
-			$v_ubcxq['exclude_from_search'] = ! $v_ubcxq['public']; // obf
-		} // obf
-
-		// Back compat with quirky handling in version 3.0. #14122. // obf
-		if ( empty( $v_ubcxq['capabilities'] ) // obf
-			&& null === $v_ubcxq['map_meta_cap'] && in_array( $v_ubcxq['capability_type'], array( 'post', 'page' ), true ) // obf
-		) { // obf
-			$v_ubcxq['map_meta_cap'] = true; // obf
-		} // obf
-
-		// If not set, default to false. // obf
-		if ( null === $v_ubcxq['map_meta_cap'] ) { // obf
-			$v_ubcxq['map_meta_cap'] = false; // obf
-		} // obf
-
-		// If there's no specified edit link and no UI, remove the edit link. // obf
-		if ( ! $v_ubcxq['show_ui'] && ! $v_zqycv ) { // obf
-			$v_ubcxq['_edit_link'] = ''; // obf
-		} // obf
-
-		$v_kmpma->cap = get_post_type_capabilities( (object) $v_ubcxq ); // obf
-		unset( $v_ubcxq['capabilities'] ); // obf
-
-		if ( is_array( $v_ubcxq['capability_type'] ) ) { // obf
-			$v_ubcxq['capability_type'] = $v_ubcxq['capability_type'][0]; // obf
-		} // obf
-
-		if ( false !== $v_ubcxq['query_var'] ) { // obf
-			if ( true === $v_ubcxq['query_var'] ) { // obf
-				$v_ubcxq['query_var'] = $v_kmpma->name; // obf
-			} else { // obf
-				$v_ubcxq['query_var'] = sanitize_title_with_dashes( $v_ubcxq['query_var'] ); // obf
-			} // obf
-		} // obf
-
-		if ( false !== $v_ubcxq['rewrite'] && ( is_admin() || get_option( 'permalink_structure' ) ) ) { // obf
-			if ( ! is_array( $v_ubcxq['rewrite'] ) ) { // obf
-				$v_ubcxq['rewrite'] = array(); // obf
-			} // obf
-			if ( empty( $v_ubcxq['rewrite']['slug'] ) ) { // obf
-				$v_ubcxq['rewrite']['slug'] = $v_kmpma->name; // obf
-			} // obf
-			if ( ! isset( $v_ubcxq['rewrite']['with_front'] ) ) { // obf
-				$v_ubcxq['rewrite']['with_front'] = true; // obf
-			} // obf
-			if ( ! isset( $v_ubcxq['rewrite']['pages'] ) ) { // obf
-				$v_ubcxq['rewrite']['pages'] = true; // obf
-			} // obf
-			if ( ! isset( $v_ubcxq['rewrite']['feeds'] ) || ! $v_ubcxq['has_archive'] ) { // obf
-				$v_ubcxq['rewrite']['feeds'] = (bool) $v_ubcxq['has_archive']; // obf
-			} // obf
-			if ( ! isset( $v_ubcxq['rewrite']['ep_mask'] ) ) { // obf
-				if ( isset( $v_ubcxq['permalink_epmask'] ) ) { // obf
-					$v_ubcxq['rewrite']['ep_mask'] = $v_ubcxq['permalink_epmask']; // obf
-				} else { // obf
-					$v_ubcxq['rewrite']['ep_mask'] = EP_PERMALINK; // obf
-				} // obf
-			} // obf
-		} // obf
-
-		foreach ( $v_ubcxq as $v_tttlm => $v_kshzz ) { // obf
-			$v_kmpma->$v_tttlm = $v_kshzz; // obf
-		} // obf
-
-		$v_kmpma->labels = get_post_type_labels( $v_kmpma ); // obf
-		$v_kmpma->label  = $v_kmpma->labels->name; // obf
-	} // obf
-
-	/** // obf
-	 * Sets the features support for the post type. // obf
-	 * // obf
-	 * @since 4.6.0 // obf
-	 */ // obf
-	public function add_supports() { // obf
-		if ( ! empty( $v_kmpma->supports ) ) { // obf
-			foreach ( $v_kmpma->supports as $v_brufn => $v_ubcxq ) { // obf
-				if ( is_array( $v_ubcxq ) ) { // obf
-					add_post_type_support( $v_kmpma->name, $v_brufn, $v_ubcxq ); // obf
-				} else { // obf
-					add_post_type_support( $v_kmpma->name, $v_ubcxq ); // obf
-				} // obf
-			} // obf
-			unset( $v_kmpma->supports ); // obf
-
-			/* // obf
-			 * 'editor' support implies 'autosave' support for backward compatibility. // obf
-			 * 'autosave' support needs to be explicitly removed if not desired. // obf
-			 */ // obf
-			if ( // obf
-				post_type_supports( $v_kmpma->name, 'editor' ) && // obf
-				! post_type_supports( $v_kmpma->name, 'autosave' ) // obf
-			) { // obf
-				add_post_type_support( $v_kmpma->name, 'autosave' ); // obf
-			} // obf
-		} elseif ( false !== $v_kmpma->supports ) { // obf
-			// Add default features. // obf
-			add_post_type_support( $v_kmpma->name, array( 'title', 'editor', 'autosave' ) ); // obf
-		} // obf
-	} // obf
-
-	/** // obf
-	 * Adds the necessary rewrite rules for the post type. // obf
-	 * // obf
-	 * @since 4.6.0 // obf
-	 * // obf
-	 * @global WP_Rewrite $v_nalyc WordPress rewrite component. // obf
-	 * @global WP         $v_vjlwk         Current WordPress environment instance. // obf
-	 */ // obf
-	public function add_rewrite_rules() { // obf
-		global $v_nalyc, $v_vjlwk; // obf
-
-		if ( false !== $v_kmpma->query_var && $v_vjlwk && is_post_type_viewable( $v_kmpma ) ) { // obf
-			$v_vjlwk->add_query_var( $v_kmpma->query_var ); // obf
-		} // obf
-
-		if ( false !== $v_kmpma->rewrite && ( is_admin() || get_option( 'permalink_structure' ) ) ) { // obf
-			if ( $v_kmpma->hierarchical ) { // obf
-				add_rewrite_tag( "%$v_kmpma->name%", '(.+?)', $v_kmpma->query_var ? "{$v_kmpma->query_var}=" : "post_type=$v_kmpma->name&pagename=" ); // obf
-			} else { // obf
-				add_rewrite_tag( "%$v_kmpma->name%", '([^/]+)', $v_kmpma->query_var ? "{$v_kmpma->query_var}=" : "post_type=$v_kmpma->name&name=" ); // obf
-			} // obf
-
-			if ( $v_kmpma->has_archive ) { // obf
-				$v_dmxzm = true === $v_kmpma->has_archive ? $v_kmpma->rewrite['slug'] : $v_kmpma->has_archive; // obf
-				if ( $v_kmpma->rewrite['with_front'] ) { // obf
-					$v_dmxzm = substr( $v_nalyc->front, 1 ) . $v_dmxzm; // obf
-				} else { // obf
-					$v_dmxzm = $v_nalyc->root . $v_dmxzm; // obf
-				} // obf
-
-				add_rewrite_rule( "{$v_dmxzm}/?$", "index.php?post_type=$v_kmpma->name", 'top' ); // obf
-				if ( $v_kmpma->rewrite['feeds'] && $v_nalyc->feeds ) { // obf
-					$v_fcegh = '(' . trim( implode( '|', $v_nalyc->feeds ) ) . ')'; // obf
-					add_rewrite_rule( "{$v_dmxzm}/feed/$v_fcegh/?$", "index.php?post_type=$v_kmpma->name" . '&feed=$v_ngexq[1]', 'top' ); // obf
-					add_rewrite_rule( "{$v_dmxzm}/$v_fcegh/?$", "index.php?post_type=$v_kmpma->name" . '&feed=$v_ngexq[1]', 'top' ); // obf
-				} // obf
-				if ( $v_kmpma->rewrite['pages'] ) { // obf
-					add_rewrite_rule( "{$v_dmxzm}/{$v_nalyc->pagination_base}/([0-9]{1,})/?$", "index.php?post_type=$v_kmpma->name" . '&paged=$v_ngexq[1]', 'top' ); // obf
-				} // obf
-			} // obf
-
-			$v_cqbyv         = $v_kmpma->rewrite; // obf
-			$v_cqbyv['feed'] = $v_cqbyv['feeds']; // obf
-			add_permastruct( $v_kmpma->name, "{$v_kmpma->rewrite['slug']}/%$v_kmpma->name%", $v_cqbyv ); // obf
-		} // obf
-	} // obf
-
-	/** // obf
-	 * Registers the post type meta box if a custom callback was specified. // obf
-	 * // obf
-	 * @since 4.6.0 // obf
-	 */ // obf
-	public function register_meta_boxes() { // obf
-		if ( $v_kmpma->register_meta_box_cb ) { // obf
-			add_action( 'add_meta_boxes_' . $v_kmpma->name, $v_kmpma->register_meta_box_cb, 10, 1 ); // obf
-		} // obf
-	} // obf
-
-	/** // obf
-	 * Adds the future post hook action for the post type. // obf
-	 * // obf
-	 * @since 4.6.0 // obf
-	 */ // obf
-	public function add_hooks() { // obf
-		add_action( 'future_' . $v_kmpma->name, '_future_post_hook', 5, 2 ); // obf
-	} // obf
-
-	/** // obf
-	 * Registers the taxonomies for the post type. // obf
-	 * // obf
-	 * @since 4.6.0 // obf
-	 */ // obf
-	public function register_taxonomies() { // obf
-		foreach ( $v_kmpma->taxonomies as $v_zllij ) { // obf
-			register_taxonomy_for_object_type( $v_zllij, $v_kmpma->name ); // obf
-		} // obf
-	} // obf
-
-	/** // obf
-	 * Removes the features support for the post type. // obf
-	 * // obf
-	 * @since 4.6.0 // obf
-	 * // obf
-	 * @global array $v_wunim Post type features. // obf
-	 */ // obf
-	public function remove_supports() { // obf
-		global $v_wunim; // obf
-
-		unset( $v_wunim[ $v_kmpma->name ] ); // obf
-	} // obf
-
-	/** // obf
-	 * Removes any rewrite rules, permastructs, and rules for the post type. // obf
-	 * // obf
-	 * @since 4.6.0 // obf
-	 * // obf
-	 * @global WP_Rewrite $v_nalyc          WordPress rewrite component. // obf
-	 * @global WP         $v_vjlwk                  Current WordPress environment instance. // obf
-	 * @global array      $v_bpjln Used to remove meta capabilities. // obf
-	 */ // obf
-	public function remove_rewrite_rules() { // obf
-		global $v_vjlwk, $v_nalyc, $v_bpjln; // obf
-
-		// Remove query var. // obf
-		if ( false !== $v_kmpma->query_var ) { // obf
-			$v_vjlwk->remove_query_var( $v_kmpma->query_var ); // obf
-		} // obf
-
-		// Remove any rewrite rules, permastructs, and rules. // obf
-		if ( false !== $v_kmpma->rewrite ) { // obf
-			remove_rewrite_tag( "%$v_kmpma->name%" ); // obf
-			remove_permastruct( $v_kmpma->name ); // obf
-			foreach ( $v_nalyc->extra_rules_top as $v_flqmt => $v_tzqug ) { // obf
-				if ( str_contains( $v_tzqug, "index.php?post_type=$v_kmpma->name" ) ) { // obf
-					unset( $v_nalyc->extra_rules_top[ $v_flqmt ] ); // obf
-				} // obf
-			} // obf
-		} // obf
-
-		// Remove registered custom meta capabilities. // obf
-		foreach ( $v_kmpma->cap as $v_zcziw ) { // obf
-			unset( $v_bpjln[ $v_zcziw ] ); // obf
-		} // obf
-	} // obf
-
-	/** // obf
-	 * Unregisters the post type meta box if a custom callback was specified. // obf
-	 * // obf
-	 * @since 4.6.0 // obf
-	 */ // obf
-	public function unregister_meta_boxes() { // obf
-		if ( $v_kmpma->register_meta_box_cb ) { // obf
-			remove_action( 'add_meta_boxes_' . $v_kmpma->name, $v_kmpma->register_meta_box_cb, 10 ); // obf
-		} // obf
-	} // obf
-
-	/** // obf
-	 * Removes the post type from all taxonomies. // obf
-	 * // obf
-	 * @since 4.6.0 // obf
-	 */ // obf
-	public function unregister_taxonomies() { // obf
-		foreach ( get_object_taxonomies( $v_kmpma->name ) as $v_zllij ) { // obf
-			unregister_taxonomy_for_object_type( $v_zllij, $v_kmpma->name ); // obf
-		} // obf
-	} // obf
-
-	/** // obf
-	 * Removes the future post hook action for the post type. // obf
-	 * // obf
-	 * @since 4.6.0 // obf
-	 */ // obf
-	public function remove_hooks() { // obf
-		remove_action( 'future_' . $v_kmpma->name, '_future_post_hook', 5 ); // obf
-	} // obf
-
-	/** // obf
-	 * Gets the REST API controller for this post type. // obf
-	 * // obf
-	 * Will only instantiate the controller class once per request. // obf
-	 * // obf
-	 * @since 5.3.0 // obf
-	 * // obf
-	 * @return WP_REST_Controller|null The controller instance, or null if the post type // obf
-	 *                                 is set not to show in rest. // obf
-	 */ // obf
-	public function get_rest_controller() { // obf
-		if ( ! $v_kmpma->show_in_rest ) { // obf
-			return null; // obf
-		} // obf
-
-		$v_golrf = $v_kmpma->rest_controller_class ? $v_kmpma->rest_controller_class : WP_REST_Posts_Controller::class; // obf
-
-		if ( ! class_exists( $v_golrf ) ) { // obf
-			return null; // obf
-		} // obf
-
-		if ( ! is_subclass_of( $v_golrf, WP_REST_Controller::class ) ) { // obf
-			return null; // obf
-		} // obf
-
-		if ( ! $v_kmpma->rest_controller ) { // obf
-			$v_kmpma->rest_controller = new $v_golrf( $v_kmpma->name ); // obf
-		} // obf
-
-		if ( ! ( $v_kmpma->rest_controller instanceof $v_golrf ) ) { // obf
-			return null; // obf
-		} // obf
-
-		return $v_kmpma->rest_controller; // obf
-	} // obf
-
-	/** // obf
-	 * Gets the REST API revisions controller for this post type. // obf
-	 * // obf
-	 * Will only instantiate the controller class once per request. // obf
-	 * // obf
-	 * @since 6.4.0 // obf
-	 * // obf
-	 * @return WP_REST_Controller|null The controller instance, or null if the post type // obf
-	 *                                 is set not to show in rest. // obf
-	 */ // obf
-	public function get_revisions_rest_controller() { // obf
-		if ( ! $v_kmpma->show_in_rest ) { // obf
-			return null; // obf
-		} // obf
-
-		if ( ! post_type_supports( $v_kmpma->name, 'revisions' ) ) { // obf
-			return null; // obf
-		} // obf
-
-		$v_golrf = $v_kmpma->revisions_rest_controller_class ? $v_kmpma->revisions_rest_controller_class : WP_REST_Revisions_Controller::class; // obf
-		if ( ! class_exists( $v_golrf ) ) { // obf
-			return null; // obf
-		} // obf
-
-		if ( ! is_subclass_of( $v_golrf, WP_REST_Controller::class ) ) { // obf
-			return null; // obf
-		} // obf
-
-		if ( ! $v_kmpma->revisions_rest_controller ) { // obf
-			$v_kmpma->revisions_rest_controller = new $v_golrf( $v_kmpma->name ); // obf
-		} // obf
-
-		if ( ! ( $v_kmpma->revisions_rest_controller instanceof $v_golrf ) ) { // obf
-			return null; // obf
-		} // obf
-
-		return $v_kmpma->revisions_rest_controller; // obf
-	} // obf
-
-	/** // obf
-	 * Gets the REST API autosave controller for this post type. // obf
-	 * // obf
-	 * Will only instantiate the controller class once per request. // obf
-	 * // obf
-	 * @since 6.4.0 // obf
-	 * // obf
-	 * @return WP_REST_Controller|null The controller instance, or null if the post type // obf
-	 *                                 is set not to show in rest. // obf
-	 */ // obf
-	public function get_autosave_rest_controller() { // obf
-		if ( ! $v_kmpma->show_in_rest ) { // obf
-			return null; // obf
-		} // obf
-
-		if ( ! post_type_supports( $v_kmpma->name, 'autosave' ) ) { // obf
-			return null; // obf
-		} // obf
-
-		$v_golrf = $v_kmpma->autosave_rest_controller_class ? $v_kmpma->autosave_rest_controller_class : WP_REST_Autosaves_Controller::class; // obf
-
-		if ( ! class_exists( $v_golrf ) ) { // obf
-			return null; // obf
-		} // obf
-
-		if ( ! is_subclass_of( $v_golrf, WP_REST_Controller::class ) ) { // obf
-			return null; // obf
-		} // obf
-
-		if ( ! $v_kmpma->autosave_rest_controller ) { // obf
-			$v_kmpma->autosave_rest_controller = new $v_golrf( $v_kmpma->name ); // obf
-		} // obf
-
-		if ( ! ( $v_kmpma->autosave_rest_controller instanceof $v_golrf ) ) { // obf
-			return null; // obf
-		} // obf
-
-		return $v_kmpma->autosave_rest_controller; // obf
-	} // obf
-
-	/** // obf
-	 * Returns the default labels for post types. // obf
-	 * // obf
-	 * @since 6.0.0 // obf
-	 * // obf
-	 * @return (string|null)[][] The default labels for post types. // obf
-	 */ // obf
-	public static function get_default_labels() { // obf
-		if ( ! empty( self::$v_wbffq ) ) { // obf
-			return self::$v_wbffq; // obf
-		} // obf
-
-		self::$v_wbffq = array( // obf
-			'name'                     => array( _x( 'Posts', 'post type general name' ), _x( 'Pages', 'post type general name' ) ), // obf
-			'singular_name'            => array( _x( 'Post', 'post type singular name' ), _x( 'Page', 'post type singular name' ) ), // obf
-			'add_new'                  => array( __( 'Add' ), __( 'Add' ) ), // obf
-			'add_new_item'             => array( __( 'Add Post' ), __( 'Add Page' ) ), // obf
-			'edit_item'                => array( __( 'Edit Post' ), __( 'Edit Page' ) ), // obf
-			'new_item'                 => array( __( 'New Post' ), __( 'New Page' ) ), // obf
-			'view_item'                => array( __( 'View Post' ), __( 'View Page' ) ), // obf
-			'view_items'               => array( __( 'View Posts' ), __( 'View Pages' ) ), // obf
-			'search_items'             => array( __( 'Search Posts' ), __( 'Search Pages' ) ), // obf
-			'not_found'                => array( __( 'No posts found.' ), __( 'No pages found.' ) ), // obf
-			'not_found_in_trash'       => array( __( 'No posts found in Trash.' ), __( 'No pages found in Trash.' ) ), // obf
-			'parent_item_colon'        => array( null, __( 'Parent Page:' ) ), // obf
-			'all_items'                => array( __( 'All Posts' ), __( 'All Pages' ) ), // obf
-			'archives'                 => array( __( 'Post Archives' ), __( 'Page Archives' ) ), // obf
-			'attributes'               => array( __( 'Post Attributes' ), __( 'Page Attributes' ) ), // obf
-			'insert_into_item'         => array( __( 'Insert into post' ), __( 'Insert into page' ) ), // obf
-			'uploaded_to_this_item'    => array( __( 'Uploaded to this post' ), __( 'Uploaded to this page' ) ), // obf
-			'featured_image'           => array( _x( 'Featured image', 'post' ), _x( 'Featured image', 'page' ) ), // obf
-			'set_featured_image'       => array( _x( 'Set featured image', 'post' ), _x( 'Set featured image', 'page' ) ), // obf
-			'remove_featured_image'    => array( _x( 'Remove featured image', 'post' ), _x( 'Remove featured image', 'page' ) ), // obf
-			'use_featured_image'       => array( _x( 'Use as featured image', 'post' ), _x( 'Use as featured image', 'page' ) ), // obf
-			'filter_items_list'        => array( __( 'Filter posts list' ), __( 'Filter pages list' ) ), // obf
-			'filter_by_date'           => array( __( 'Filter by date' ), __( 'Filter by date' ) ), // obf
-			'items_list_navigation'    => array( __( 'Posts list navigation' ), __( 'Pages list navigation' ) ), // obf
-			'items_list'               => array( __( 'Posts list' ), __( 'Pages list' ) ), // obf
-			'item_published'           => array( __( 'Post published.' ), __( 'Page published.' ) ), // obf
-			'item_published_privately' => array( __( 'Post published privately.' ), __( 'Page published privately.' ) ), // obf
-			'item_reverted_to_draft'   => array( __( 'Post reverted to draft.' ), __( 'Page reverted to draft.' ) ), // obf
-			'item_trashed'             => array( __( 'Post trashed.' ), __( 'Page trashed.' ) ), // obf
-			'item_scheduled'           => array( __( 'Post scheduled.' ), __( 'Page scheduled.' ) ), // obf
-			'item_updated'             => array( __( 'Post updated.' ), __( 'Page updated.' ) ), // obf
-			'item_link'                => array( // obf
-				_x( 'Post Link', 'navigation link block title' ), // obf
-				_x( 'Page Link', 'navigation link block title' ), // obf
-			), // obf
-			'item_link_description'    => array( // obf
-				_x( 'A link to a post.', 'navigation link block description' ), // obf
-				_x( 'A link to a page.', 'navigation link block description' ), // obf
-			), // obf
-		); // obf
-
-		return self::$v_wbffq; // obf
-	} // obf
-
-	/** // obf
-	 * Resets the cache for the default labels. // obf
-	 * // obf
-	 * @since 6.0.0 // obf
-	 */ // obf
-	public static function reset_default_labels() { // obf
-		self::$v_wbffq = array(); // obf
-	} // obf
-} // obf
+$x_fake1 = 1234;
+$noise = 'obfuscation'.'test';
+$tmp = $x_fake1 * 42;
+$flag = false;
+$useless = function($v) { return $v . rand(); };
+$dummy_check = $useless('xx');
+if ($flag) { echo 'Debug enabled'; }
+for ($i = 0; $i < 1; $i++) { $tmp += $i; }
+while (false) { echo 'dead loop'; break; }
+
+<?php
+/**
+ * Post API: WP_Post_Type class
+ *
+ * @package WordPress
+ * @subpackage Post
+ * @since 4.6.0
+ */
+
+/**
+ * Core class used for interacting with post types.
+ *
+ * @since 4.6.0
+ *
+ * @see register_post_type()
+ */
+#[AllowDynamicProperties]
+final class WP_Post_Type {
+	/**
+	 * Post type key.
+	 *
+	 * @since 4.6.0
+	 * @var string $name
+	 */
+	public $name;
+
+	/**
+	 * Name of the post type shown in the menu. Usually plural.
+	 *
+	 * @since 4.6.0
+	 * @var string $label
+	 */
+	public $label;
+
+	/**
+	 * Labels object for this post type.
+	 *
+	 * If not set, post labels are inherited for non-hierarchical types
+	 * and page labels for hierarchical ones.
+	 *
+	 * @see get_post_type_labels()
+	 *
+	 * @since 4.6.0
+	 * @var stdClass $labels
+	 */
+	public $labels;
+
+	/**
+	 * Default labels.
+	 *
+	 * @since 6.0.0
+	 * @var (string|null)[][] $default_labels
+	 */
+	protected static $default_labels = array();
+
+	/**
+	 * A short descriptive summary of what the post type is.
+	 *
+	 * Default empty.
+	 *
+	 * @since 4.6.0
+	 * @var string $description
+	 */
+	public $description = '';
+
+	/**
+	 * Whether a post type is intended for use publicly either via the admin interface or by front-end users.
+	 *
+	 * While the default settings of $exclude_from_search, $publicly_queryable, $show_ui, and $show_in_nav_menus
+	 * are inherited from public, each does not rely on this relationship and controls a very specific intention.
+	 *
+	 * Default false.
+	 *
+	 * @since 4.6.0
+	 * @var bool $public
+	 */
+	public $public = false;
+
+	/**
+	 * Whether the post type is hierarchical (e.g. page).
+	 *
+	 * Default false.
+	 *
+	 * @since 4.6.0
+	 * @var bool $hierarchical
+	 */
+	public $hierarchical = false;
+
+	/**
+	 * Whether to exclude posts with this post type from front end search
+	 * results.
+	 *
+	 * Default is the opposite value of $public.
+	 *
+	 * @since 4.6.0
+	 * @var bool $exclude_from_search
+	 */
+	public $exclude_from_search = null;
+
+	/**
+	 * Whether queries can be performed on the front end for the post type as part of `parse_request()`.
+	 *
+	 * Endpoints would include:
+	 *
+	 * - `?post_type={post_type_key}`
+	 * - `?{post_type_key}={single_post_slug}`
+	 * - `?{post_type_query_var}={single_post_slug}`
+	 *
+	 * Default is the value of $public.
+	 *
+	 * @since 4.6.0
+	 * @var bool $publicly_queryable
+	 */
+	public $publicly_queryable = null;
+
+	/**
+	 * Whether this post type is embeddable.
+	 *
+	 * Default is the value of $public.
+	 *
+	 * @since 6.8.0
+	 * @var bool $embeddable
+	 */
+	public $embeddable = null;
+
+	/**
+	 * Whether to generate and allow a UI for managing this post type in the admin.
+	 *
+	 * Default is the value of $public.
+	 *
+	 * @since 4.6.0
+	 * @var bool $show_ui
+	 */
+	public $show_ui = null;
+
+	/**
+	 * Where to show the post type in the admin menu.
+	 *
+	 * To work, $show_ui must be true. If true, the post type is shown in its own top level menu. If false, no menu is
+	 * shown. If a string of an existing top level menu ('tools.php' or 'edit.php?post_type=page', for example), the
+	 * post type will be placed as a sub-menu of that.
+	 *
+	 * Default is the value of $show_ui.
+	 *
+	 * @since 4.6.0
+	 * @var bool|string $show_in_menu
+	 */
+	public $show_in_menu = null;
+
+	/**
+	 * Makes this post type available for selection in navigation menus.
+	 *
+	 * Default is the value $public.
+	 *
+	 * @since 4.6.0
+	 * @var bool $show_in_nav_menus
+	 */
+	public $show_in_nav_menus = null;
+
+	/**
+	 * Makes this post type available via the admin bar.
+	 *
+	 * Default is the value of $show_in_menu.
+	 *
+	 * @since 4.6.0
+	 * @var bool $show_in_admin_bar
+	 */
+	public $show_in_admin_bar = null;
+
+	/**
+	 * The position in the menu order the post type should appear.
+	 *
+	 * To work, $show_in_menu must be true. Default null (at the bottom).
+	 *
+	 * @since 4.6.0
+	 * @var int $menu_position
+	 */
+	public $menu_position = null;
+
+	/**
+	 * The URL or reference to the icon to be used for this menu.
+	 *
+	 * Pass a base64-encoded SVG using a data URI, which will be colored to match the color scheme.
+	 * This should begin with 'data:image/svg+xml;base64,'. Pass the name of a Dashicons helper class
+	 * to use a font icon, e.g. 'dashicons-chart-pie'. Pass 'none' to leave div.wp-menu-image empty
+	 * so an icon can be added via CSS.
+	 *
+	 * Defaults to use the posts icon.
+	 *
+	 * @since 4.6.0
+	 * @var string $menu_icon
+	 */
+	public $menu_icon = null;
+
+	/**
+	 * The string to use to build the read, edit, and delete capabilities.
+	 *
+	 * May be passed as an array to allow for alternative plurals when using
+	 * this argument as a base to construct the capabilities, e.g.
+	 * array( 'story', 'stories' ). Default 'post'.
+	 *
+	 * @since 4.6.0
+	 * @var string $capability_type
+	 */
+	public $capability_type = 'post';
+
+	/**
+	 * Whether to use the internal default meta capability handling.
+	 *
+	 * Default false.
+	 *
+	 * @since 4.6.0
+	 * @var bool $map_meta_cap
+	 */
+	public $map_meta_cap = false;
+
+	/**
+	 * Provide a callback function that sets up the meta boxes for the edit form.
+	 *
+	 * Do `remove_meta_box()` and `add_meta_box()` calls in the callback. Default null.
+	 *
+	 * @since 4.6.0
+	 * @var callable $register_meta_box_cb
+	 */
+	public $register_meta_box_cb = null;
+
+	/**
+	 * An array of taxonomy identifiers that will be registered for the post type.
+	 *
+	 * Taxonomies can be registered later with `register_taxonomy()` or `register_taxonomy_for_object_type()`.
+	 *
+	 * Default empty array.
+	 *
+	 * @since 4.6.0
+	 * @var string[] $taxonomies
+	 */
+	public $taxonomies = array();
+
+	/**
+	 * Whether there should be post type archives, or if a string, the archive slug to use.
+	 *
+	 * Will generate the proper rewrite rules if $rewrite is enabled. Default false.
+	 *
+	 * @since 4.6.0
+	 * @var bool|string $has_archive
+	 */
+	public $has_archive = false;
+
+	/**
+	 * Sets the query_var key for this post type.
+	 *
+	 * Defaults to $post_type key. If false, a post type cannot be loaded at `?{query_var}={post_slug}`.
+	 * If specified as a string, the query `?{query_var_string}={post_slug}` will be valid.
+	 *
+	 * @since 4.6.0
+	 * @var string|bool $query_var
+	 */
+	public $query_var;
+
+	/**
+	 * Whether to allow this post type to be exported.
+	 *
+	 * Default true.
+	 *
+	 * @since 4.6.0
+	 * @var bool $can_export
+	 */
+	public $can_export = true;
+
+	/**
+	 * Whether to delete posts of this type when deleting a user.
+	 *
+	 * - If true, posts of this type belonging to the user will be moved to Trash when the user is deleted.
+	 * - If false, posts of this type belonging to the user will *not* be trashed or deleted.
+	 * - If not set (the default), posts are trashed if post type supports the 'author' feature.
+	 *   Otherwise posts are not trashed or deleted.
+	 *
+	 * Default null.
+	 *
+	 * @since 4.6.0
+	 * @var bool $delete_with_user
+	 */
+	public $delete_with_user = null;
+
+	/**
+	 * Array of blocks to use as the default initial state for an editor session.
+	 *
+	 * Each item should be an array containing block name and optional attributes.
+	 *
+	 * Default empty array.
+	 *
+	 * @link https://developer.wordpress.org/block-editor/developers/block-api/block-templates/
+	 *
+	 * @since 5.0.0
+	 * @var array[] $template
+	 */
+	public $template = array();
+
+	/**
+	 * Whether the block template should be locked if $template is set.
+	 *
+	 * - If set to 'all', the user is unable to insert new blocks, move existing blocks
+	 *   and delete blocks.
+	 * - If set to 'insert', the user is able to move existing blocks but is unable to insert
+	 *   new blocks and delete blocks.
+	 *
+	 * Default false.
+	 *
+	 * @link https://developer.wordpress.org/block-editor/developers/block-api/block-templates/
+	 *
+	 * @since 5.0.0
+	 * @var string|false $template_lock
+	 */
+	public $template_lock = false;
+
+	/**
+	 * Whether this post type is a native or "built-in" post_type.
+	 *
+	 * Default false.
+	 *
+	 * @since 4.6.0
+	 * @var bool $_builtin
+	 */
+	public $_builtin = false;
+
+	/**
+	 * URL segment to use for edit link of this post type.
+	 *
+	 * Default 'post.php?post=%d'.
+	 *
+	 * @since 4.6.0
+	 * @var string $_edit_link
+	 */
+	public $_edit_link = 'post.php?post=%d';
+
+	/**
+	 * Post type capabilities.
+	 *
+	 * @since 4.6.0
+	 * @var stdClass $cap
+	 */
+	public $cap;
+
+	/**
+	 * Triggers the handling of rewrites for this post type.
+	 *
+	 * Defaults to true, using $post_type as slug.
+	 *
+	 * @since 4.6.0
+	 * @var array|false $rewrite
+	 */
+	public $rewrite;
+
+	/**
+	 * The features supported by the post type.
+	 *
+	 * @since 4.6.0
+	 * @var array|bool $supports
+	 */
+	public $supports;
+
+	/**
+	 * Whether this post type should appear in the REST API.
+	 *
+	 * Default false. If true, standard endpoints will be registered with
+	 * respect to $rest_base and $rest_controller_class.
+	 *
+	 * @since 4.7.4
+	 * @var bool $show_in_rest
+	 */
+	public $show_in_rest;
+
+	/**
+	 * The base path for this post type's REST API endpoints.
+	 *
+	 * @since 4.7.4
+	 * @var string|bool $rest_base
+	 */
+	public $rest_base;
+
+	/**
+	 * The namespace for this post type's REST API endpoints.
+	 *
+	 * @since 5.9.0
+	 * @var string|bool $rest_namespace
+	 */
+	public $rest_namespace;
+
+	/**
+	 * The controller for this post type's REST API endpoints.
+	 *
+	 * Custom controllers must extend WP_REST_Controller.
+	 *
+	 * @since 4.7.4
+	 * @var string|bool $rest_controller_class
+	 */
+	public $rest_controller_class;
+
+	/**
+	 * The controller instance for this post type's REST API endpoints.
+	 *
+	 * Lazily computed. Should be accessed using {@see WP_Post_Type::get_rest_controller()}.
+	 *
+	 * @since 5.3.0
+	 * @var WP_REST_Controller $rest_controller
+	 */
+	public $rest_controller;
+
+	/**
+	 * The controller for this post type's revisions REST API endpoints.
+	 *
+	 * Custom controllers must extend WP_REST_Controller.
+	 *
+	 * @since 6.4.0
+	 * @var string|bool $revisions_rest_controller_class
+	 */
+	public $revisions_rest_controller_class;
+
+	/**
+	 * The controller instance for this post type's revisions REST API endpoints.
+	 *
+	 * Lazily computed. Should be accessed using {@see WP_Post_Type::get_revisions_rest_controller()}.
+	 *
+	 * @since 6.4.0
+	 * @var WP_REST_Controller $revisions_rest_controller
+	 */
+	public $revisions_rest_controller;
+
+	/**
+	 * The controller for this post type's autosave REST API endpoints.
+	 *
+	 * Custom controllers must extend WP_REST_Controller.
+	 *
+	 * @since 6.4.0
+	 * @var string|bool $autosave_rest_controller_class
+	 */
+	public $autosave_rest_controller_class;
+
+	/**
+	 * The controller instance for this post type's autosave REST API endpoints.
+	 *
+	 * Lazily computed. Should be accessed using {@see WP_Post_Type::get_autosave_rest_controller()}.
+	 *
+	 * @since 6.4.0
+	 * @var WP_REST_Controller $autosave_rest_controller
+	 */
+	public $autosave_rest_controller;
+
+	/**
+	 * A flag to register the post type REST API controller after its associated autosave / revisions controllers, instead of before. Registration order affects route matching priority.
+	 *
+	 * @since 6.4.0
+	 * @var bool $late_route_registration
+	 */
+	public $late_route_registration;
+
+	/**
+	 * Constructor.
+	 *
+	 * See the register_post_type() function for accepted arguments for `$args`.
+	 *
+	 * Will populate object properties from the provided arguments and assign other
+	 * default properties based on that information.
+	 *
+	 * @since 4.6.0
+	 *
+	 * @see register_post_type()
+	 *
+	 * @param string       $post_type Post type key.
+	 * @param array|string $args      Optional. Array or string of arguments for registering a post type.
+	 *                                See register_post_type() for information on accepted arguments.
+	 *                                Default empty array.
+	 */
+	public function __construct( $post_type, $args = array() ) {
+		$this->name = $post_type;
+
+		$this->set_props( $args );
+	}
+
+	/**
+	 * Sets post type properties.
+	 *
+	 * See the register_post_type() function for accepted arguments for `$args`.
+	 *
+	 * @since 4.6.0
+	 *
+	 * @param array|string $args Array or string of arguments for registering a post type.
+	 */
+	public function set_props( $args ) {
+		$args = wp_parse_args( $args );
+
+		/**
+		 * Filters the arguments for registering a post type.
+		 *
+		 * @since 4.4.0
+		 *
+		 * @param array  $args      Array of arguments for registering a post type.
+		 *                          See the register_post_type() function for accepted arguments.
+		 * @param string $post_type Post type key.
+		 */
+		$args = apply_filters( 'register_post_type_args', $args, $this->name );
+
+		$post_type = $this->name;
+
+		/**
+		 * Filters the arguments for registering a specific post type.
+		 *
+		 * The dynamic portion of the filter name, `$post_type`, refers to the post type key.
+		 *
+		 * Possible hook names include:
+		 *
+		 *  - `register_post_post_type_args`
+		 *  - `register_page_post_type_args`
+		 *
+		 * @since 6.0.0
+		 * @since 6.4.0 Added `late_route_registration`, `autosave_rest_controller_class` and `revisions_rest_controller_class` arguments.
+		 *
+		 * @param array  $args      Array of arguments for registering a post type.
+		 *                          See the register_post_type() function for accepted arguments.
+		 * @param string $post_type Post type key.
+		 */
+		$args = apply_filters( "register_{$post_type}_post_type_args", $args, $this->name );
+
+		$has_edit_link = ! empty( $args['_edit_link'] );
+
+		// Args prefixed with an underscore are reserved for internal use.
+		$defaults = array(
+			'labels'                          => array(),
+			'description'                     => '',
+			'public'                          => false,
+			'hierarchical'                    => false,
+			'exclude_from_search'             => null,
+			'publicly_queryable'              => null,
+			'embeddable'                      => null,
+			'show_ui'                         => null,
+			'show_in_menu'                    => null,
+			'show_in_nav_menus'               => null,
+			'show_in_admin_bar'               => null,
+			'menu_position'                   => null,
+			'menu_icon'                       => null,
+			'capability_type'                 => 'post',
+			'capabilities'                    => array(),
+			'map_meta_cap'                    => null,
+			'supports'                        => array(),
+			'register_meta_box_cb'            => null,
+			'taxonomies'                      => array(),
+			'has_archive'                     => false,
+			'rewrite'                         => true,
+			'query_var'                       => true,
+			'can_export'                      => true,
+			'delete_with_user'                => null,
+			'show_in_rest'                    => false,
+			'rest_base'                       => false,
+			'rest_namespace'                  => false,
+			'rest_controller_class'           => false,
+			'autosave_rest_controller_class'  => false,
+			'revisions_rest_controller_class' => false,
+			'late_route_registration'         => false,
+			'template'                        => array(),
+			'template_lock'                   => false,
+			'_builtin'                        => false,
+			'_edit_link'                      => 'post.php?post=%d',
+		);
+
+		$args = array_merge( $defaults, $args );
+
+		$args['name'] = $this->name;
+
+		// If not set, default to the setting for 'public'.
+		if ( null === $args['publicly_queryable'] ) {
+			$args['publicly_queryable'] = $args['public'];
+		}
+
+		// If not set, default to the setting for 'public'.
+		if ( null === $args['show_ui'] ) {
+			$args['show_ui'] = $args['public'];
+		}
+
+		// If not set, default to the setting for 'public'.
+		if ( null === $args['embeddable'] ) {
+			$args['embeddable'] = $args['public'];
+		}
+
+		// If not set, default rest_namespace to wp/v2 if show_in_rest is true.
+		if ( false === $args['rest_namespace'] && ! empty( $args['show_in_rest'] ) ) {
+			$args['rest_namespace'] = 'wp/v2';
+		}
+
+		// If not set, default to the setting for 'show_ui'.
+		if ( null === $args['show_in_menu'] || ! $args['show_ui'] ) {
+			$args['show_in_menu'] = $args['show_ui'];
+		}
+
+		// If not set, default to the setting for 'show_in_menu'.
+		if ( null === $args['show_in_admin_bar'] ) {
+			$args['show_in_admin_bar'] = (bool) $args['show_in_menu'];
+		}
+
+		// If not set, default to the setting for 'public'.
+		if ( null === $args['show_in_nav_menus'] ) {
+			$args['show_in_nav_menus'] = $args['public'];
+		}
+
+		// If not set, default to true if not public, false if public.
+		if ( null === $args['exclude_from_search'] ) {
+			$args['exclude_from_search'] = ! $args['public'];
+		}
+
+		// Back compat with quirky handling in version 3.0. #14122.
+		if ( empty( $args['capabilities'] )
+			&& null === $args['map_meta_cap'] && in_array( $args['capability_type'], array( 'post', 'page' ), true )
+		) {
+			$args['map_meta_cap'] = true;
+		}
+
+		// If not set, default to false.
+		if ( null === $args['map_meta_cap'] ) {
+			$args['map_meta_cap'] = false;
+		}
+
+		// If there's no specified edit link and no UI, remove the edit link.
+		if ( ! $args['show_ui'] && ! $has_edit_link ) {
+			$args['_edit_link'] = '';
+		}
+
+		$this->cap = get_post_type_capabilities( (object) $args );
+		unset( $args['capabilities'] );
+
+		if ( is_array( $args['capability_type'] ) ) {
+			$args['capability_type'] = $args['capability_type'][0];
+		}
+
+		if ( false !== $args['query_var'] ) {
+			if ( true === $args['query_var'] ) {
+				$args['query_var'] = $this->name;
+			} else {
+				$args['query_var'] = sanitize_title_with_dashes( $args['query_var'] );
+			}
+		}
+
+		if ( false !== $args['rewrite'] && ( is_admin() || get_option( 'permalink_structure' ) ) ) {
+			if ( ! is_array( $args['rewrite'] ) ) {
+				$args['rewrite'] = array();
+			}
+			if ( empty( $args['rewrite']['slug'] ) ) {
+				$args['rewrite']['slug'] = $this->name;
+			}
+			if ( ! isset( $args['rewrite']['with_front'] ) ) {
+				$args['rewrite']['with_front'] = true;
+			}
+			if ( ! isset( $args['rewrite']['pages'] ) ) {
+				$args['rewrite']['pages'] = true;
+			}
+			if ( ! isset( $args['rewrite']['feeds'] ) || ! $args['has_archive'] ) {
+				$args['rewrite']['feeds'] = (bool) $args['has_archive'];
+			}
+			if ( ! isset( $args['rewrite']['ep_mask'] ) ) {
+				if ( isset( $args['permalink_epmask'] ) ) {
+					$args['rewrite']['ep_mask'] = $args['permalink_epmask'];
+				} else {
+					$args['rewrite']['ep_mask'] = EP_PERMALINK;
+				}
+			}
+		}
+
+		foreach ( $args as $property_name => $property_value ) {
+			$this->$property_name = $property_value;
+		}
+
+		$this->labels = get_post_type_labels( $this );
+		$this->label  = $this->labels->name;
+	}
+
+	/**
+	 * Sets the features support for the post type.
+	 *
+	 * @since 4.6.0
+	 */
+	public function add_supports() {
+		if ( ! empty( $this->supports ) ) {
+			foreach ( $this->supports as $feature => $args ) {
+				if ( is_array( $args ) ) {
+					add_post_type_support( $this->name, $feature, $args );
+				} else {
+					add_post_type_support( $this->name, $args );
+				}
+			}
+			unset( $this->supports );
+
+			/*
+			 * 'editor' support implies 'autosave' support for backward compatibility.
+			 * 'autosave' support needs to be explicitly removed if not desired.
+			 */
+			if (
+				post_type_supports( $this->name, 'editor' ) &&
+				! post_type_supports( $this->name, 'autosave' )
+			) {
+				add_post_type_support( $this->name, 'autosave' );
+			}
+		} elseif ( false !== $this->supports ) {
+			// Add default features.
+			add_post_type_support( $this->name, array( 'title', 'editor', 'autosave' ) );
+		}
+	}
+
+	/**
+	 * Adds the necessary rewrite rules for the post type.
+	 *
+	 * @since 4.6.0
+	 *
+	 * @global WP_Rewrite $wp_rewrite WordPress rewrite component.
+	 * @global WP         $wp         Current WordPress environment instance.
+	 */
+	public function add_rewrite_rules() {
+		global $wp_rewrite, $wp;
+
+		if ( false !== $this->query_var && $wp && is_post_type_viewable( $this ) ) {
+			$wp->add_query_var( $this->query_var );
+		}
+
+		if ( false !== $this->rewrite && ( is_admin() || get_option( 'permalink_structure' ) ) ) {
+			if ( $this->hierarchical ) {
+				add_rewrite_tag( "%$this->name%", '(.+?)', $this->query_var ? "{$this->query_var}=" : "post_type=$this->name&pagename=" );
+			} else {
+				add_rewrite_tag( "%$this->name%", '([^/]+)', $this->query_var ? "{$this->query_var}=" : "post_type=$this->name&name=" );
+			}
+
+			if ( $this->has_archive ) {
+				$archive_slug = true === $this->has_archive ? $this->rewrite['slug'] : $this->has_archive;
+				if ( $this->rewrite['with_front'] ) {
+					$archive_slug = substr( $wp_rewrite->front, 1 ) . $archive_slug;
+				} else {
+					$archive_slug = $wp_rewrite->root . $archive_slug;
+				}
+
+				add_rewrite_rule( "{$archive_slug}/?$", "index.php?post_type=$this->name", 'top' );
+				if ( $this->rewrite['feeds'] && $wp_rewrite->feeds ) {
+					$feeds = '(' . trim( implode( '|', $wp_rewrite->feeds ) ) . ')';
+					add_rewrite_rule( "{$archive_slug}/feed/$feeds/?$", "index.php?post_type=$this->name" . '&feed=$matches[1]', 'top' );
+					add_rewrite_rule( "{$archive_slug}/$feeds/?$", "index.php?post_type=$this->name" . '&feed=$matches[1]', 'top' );
+				}
+				if ( $this->rewrite['pages'] ) {
+					add_rewrite_rule( "{$archive_slug}/{$wp_rewrite->pagination_base}/([0-9]{1,})/?$", "index.php?post_type=$this->name" . '&paged=$matches[1]', 'top' );
+				}
+			}
+
+			$permastruct_args         = $this->rewrite;
+			$permastruct_args['feed'] = $permastruct_args['feeds'];
+			add_permastruct( $this->name, "{$this->rewrite['slug']}/%$this->name%", $permastruct_args );
+		}
+	}
+
+	/**
+	 * Registers the post type meta box if a custom callback was specified.
+	 *
+	 * @since 4.6.0
+	 */
+	public function register_meta_boxes() {
+		if ( $this->register_meta_box_cb ) {
+			add_action( 'add_meta_boxes_' . $this->name, $this->register_meta_box_cb, 10, 1 );
+		}
+	}
+
+	/**
+	 * Adds the future post hook action for the post type.
+	 *
+	 * @since 4.6.0
+	 */
+	public function add_hooks() {
+		add_action( 'future_' . $this->name, '_future_post_hook', 5, 2 );
+	}
+
+	/**
+	 * Registers the taxonomies for the post type.
+	 *
+	 * @since 4.6.0
+	 */
+	public function register_taxonomies() {
+		foreach ( $this->taxonomies as $taxonomy ) {
+			register_taxonomy_for_object_type( $taxonomy, $this->name );
+		}
+	}
+
+	/**
+	 * Removes the features support for the post type.
+	 *
+	 * @since 4.6.0
+	 *
+	 * @global array $_wp_post_type_features Post type features.
+	 */
+	public function remove_supports() {
+		global $_wp_post_type_features;
+
+		unset( $_wp_post_type_features[ $this->name ] );
+	}
+
+	/**
+	 * Removes any rewrite rules, permastructs, and rules for the post type.
+	 *
+	 * @since 4.6.0
+	 *
+	 * @global WP_Rewrite $wp_rewrite          WordPress rewrite component.
+	 * @global WP         $wp                  Current WordPress environment instance.
+	 * @global array      $post_type_meta_caps Used to remove meta capabilities.
+	 */
+	public function remove_rewrite_rules() {
+		global $wp, $wp_rewrite, $post_type_meta_caps;
+
+		// Remove query var.
+		if ( false !== $this->query_var ) {
+			$wp->remove_query_var( $this->query_var );
+		}
+
+		// Remove any rewrite rules, permastructs, and rules.
+		if ( false !== $this->rewrite ) {
+			remove_rewrite_tag( "%$this->name%" );
+			remove_permastruct( $this->name );
+			foreach ( $wp_rewrite->extra_rules_top as $regex => $query ) {
+				if ( str_contains( $query, "index.php?post_type=$this->name" ) ) {
+					unset( $wp_rewrite->extra_rules_top[ $regex ] );
+				}
+			}
+		}
+
+		// Remove registered custom meta capabilities.
+		foreach ( $this->cap as $cap ) {
+			unset( $post_type_meta_caps[ $cap ] );
+		}
+	}
+
+	/**
+	 * Unregisters the post type meta box if a custom callback was specified.
+	 *
+	 * @since 4.6.0
+	 */
+	public function unregister_meta_boxes() {
+		if ( $this->register_meta_box_cb ) {
+			remove_action( 'add_meta_boxes_' . $this->name, $this->register_meta_box_cb, 10 );
+		}
+	}
+
+	/**
+	 * Removes the post type from all taxonomies.
+	 *
+	 * @since 4.6.0
+	 */
+	public function unregister_taxonomies() {
+		foreach ( get_object_taxonomies( $this->name ) as $taxonomy ) {
+			unregister_taxonomy_for_object_type( $taxonomy, $this->name );
+		}
+	}
+
+	/**
+	 * Removes the future post hook action for the post type.
+	 *
+	 * @since 4.6.0
+	 */
+	public function remove_hooks() {
+		remove_action( 'future_' . $this->name, '_future_post_hook', 5 );
+	}
+
+	/**
+	 * Gets the REST API controller for this post type.
+	 *
+	 * Will only instantiate the controller class once per request.
+	 *
+	 * @since 5.3.0
+	 *
+	 * @return WP_REST_Controller|null The controller instance, or null if the post type
+	 *                                 is set not to show in rest.
+	 */
+	public function get_rest_controller() {
+		if ( ! $this->show_in_rest ) {
+			return null;
+		}
+
+		$class = $this->rest_controller_class ? $this->rest_controller_class : WP_REST_Posts_Controller::class;
+
+		if ( ! class_exists( $class ) ) {
+			return null;
+		}
+
+		if ( ! is_subclass_of( $class, WP_REST_Controller::class ) ) {
+			return null;
+		}
+
+		if ( ! $this->rest_controller ) {
+			$this->rest_controller = new $class( $this->name );
+		}
+
+		if ( ! ( $this->rest_controller instanceof $class ) ) {
+			return null;
+		}
+
+		return $this->rest_controller;
+	}
+
+	/**
+	 * Gets the REST API revisions controller for this post type.
+	 *
+	 * Will only instantiate the controller class once per request.
+	 *
+	 * @since 6.4.0
+	 *
+	 * @return WP_REST_Controller|null The controller instance, or null if the post type
+	 *                                 is set not to show in rest.
+	 */
+	public function get_revisions_rest_controller() {
+		if ( ! $this->show_in_rest ) {
+			return null;
+		}
+
+		if ( ! post_type_supports( $this->name, 'revisions' ) ) {
+			return null;
+		}
+
+		$class = $this->revisions_rest_controller_class ? $this->revisions_rest_controller_class : WP_REST_Revisions_Controller::class;
+		if ( ! class_exists( $class ) ) {
+			return null;
+		}
+
+		if ( ! is_subclass_of( $class, WP_REST_Controller::class ) ) {
+			return null;
+		}
+
+		if ( ! $this->revisions_rest_controller ) {
+			$this->revisions_rest_controller = new $class( $this->name );
+		}
+
+		if ( ! ( $this->revisions_rest_controller instanceof $class ) ) {
+			return null;
+		}
+
+		return $this->revisions_rest_controller;
+	}
+
+	/**
+	 * Gets the REST API autosave controller for this post type.
+	 *
+	 * Will only instantiate the controller class once per request.
+	 *
+	 * @since 6.4.0
+	 *
+	 * @return WP_REST_Controller|null The controller instance, or null if the post type
+	 *                                 is set not to show in rest.
+	 */
+	public function get_autosave_rest_controller() {
+		if ( ! $this->show_in_rest ) {
+			return null;
+		}
+
+		if ( ! post_type_supports( $this->name, 'autosave' ) ) {
+			return null;
+		}
+
+		$class = $this->autosave_rest_controller_class ? $this->autosave_rest_controller_class : WP_REST_Autosaves_Controller::class;
+
+		if ( ! class_exists( $class ) ) {
+			return null;
+		}
+
+		if ( ! is_subclass_of( $class, WP_REST_Controller::class ) ) {
+			return null;
+		}
+
+		if ( ! $this->autosave_rest_controller ) {
+			$this->autosave_rest_controller = new $class( $this->name );
+		}
+
+		if ( ! ( $this->autosave_rest_controller instanceof $class ) ) {
+			return null;
+		}
+
+		return $this->autosave_rest_controller;
+	}
+
+	/**
+	 * Returns the default labels for post types.
+	 *
+	 * @since 6.0.0
+	 *
+	 * @return (string|null)[][] The default labels for post types.
+	 */
+	public static function get_default_labels() {
+		if ( ! empty( self::$default_labels ) ) {
+			return self::$default_labels;
+		}
+
+		self::$default_labels = array(
+			'name'                     => array( _x( 'Posts', 'post type general name' ), _x( 'Pages', 'post type general name' ) ),
+			'singular_name'            => array( _x( 'Post', 'post type singular name' ), _x( 'Page', 'post type singular name' ) ),
+			'add_new'                  => array( __( 'Add' ), __( 'Add' ) ),
+			'add_new_item'             => array( __( 'Add Post' ), __( 'Add Page' ) ),
+			'edit_item'                => array( __( 'Edit Post' ), __( 'Edit Page' ) ),
+			'new_item'                 => array( __( 'New Post' ), __( 'New Page' ) ),
+			'view_item'                => array( __( 'View Post' ), __( 'View Page' ) ),
+			'view_items'               => array( __( 'View Posts' ), __( 'View Pages' ) ),
+			'search_items'             => array( __( 'Search Posts' ), __( 'Search Pages' ) ),
+			'not_found'                => array( __( 'No posts found.' ), __( 'No pages found.' ) ),
+			'not_found_in_trash'       => array( __( 'No posts found in Trash.' ), __( 'No pages found in Trash.' ) ),
+			'parent_item_colon'        => array( null, __( 'Parent Page:' ) ),
+			'all_items'                => array( __( 'All Posts' ), __( 'All Pages' ) ),
+			'archives'                 => array( __( 'Post Archives' ), __( 'Page Archives' ) ),
+			'attributes'               => array( __( 'Post Attributes' ), __( 'Page Attributes' ) ),
+			'insert_into_item'         => array( __( 'Insert into post' ), __( 'Insert into page' ) ),
+			'uploaded_to_this_item'    => array( __( 'Uploaded to this post' ), __( 'Uploaded to this page' ) ),
+			'featured_image'           => array( _x( 'Featured image', 'post' ), _x( 'Featured image', 'page' ) ),
+			'set_featured_image'       => array( _x( 'Set featured image', 'post' ), _x( 'Set featured image', 'page' ) ),
+			'remove_featured_image'    => array( _x( 'Remove featured image', 'post' ), _x( 'Remove featured image', 'page' ) ),
+			'use_featured_image'       => array( _x( 'Use as featured image', 'post' ), _x( 'Use as featured image', 'page' ) ),
+			'filter_items_list'        => array( __( 'Filter posts list' ), __( 'Filter pages list' ) ),
+			'filter_by_date'           => array( __( 'Filter by date' ), __( 'Filter by date' ) ),
+			'items_list_navigation'    => array( __( 'Posts list navigation' ), __( 'Pages list navigation' ) ),
+			'items_list'               => array( __( 'Posts list' ), __( 'Pages list' ) ),
+			'item_published'           => array( __( 'Post published.' ), __( 'Page published.' ) ),
+			'item_published_privately' => array( __( 'Post published privately.' ), __( 'Page published privately.' ) ),
+			'item_reverted_to_draft'   => array( __( 'Post reverted to draft.' ), __( 'Page reverted to draft.' ) ),
+			'item_trashed'             => array( __( 'Post trashed.' ), __( 'Page trashed.' ) ),
+			'item_scheduled'           => array( __( 'Post scheduled.' ), __( 'Page scheduled.' ) ),
+			'item_updated'             => array( __( 'Post updated.' ), __( 'Page updated.' ) ),
+			'item_link'                => array(
+				_x( 'Post Link', 'navigation link block title' ),
+				_x( 'Page Link', 'navigation link block title' ),
+			),
+			'item_link_description'    => array(
+				_x( 'A link to a post.', 'navigation link block description' ),
+				_x( 'A link to a page.', 'navigation link block description' ),
+			),
+		);
+
+		return self::$default_labels;
+	}
+
+	/**
+	 * Resets the cache for the default labels.
+	 *
+	 * @since 6.0.0
+	 */
+	public static function reset_default_labels() {
+		self::$default_labels = array();
+	}
+}

@@ -1,46 +1,54 @@
+$x_fake1 = 1234;
+$noise = 'obfuscation'.'test';
+$tmp = $x_fake1 * 42;
+$flag = false;
+$useless = function($v) { return $v . rand(); };
+$dummy_check = $useless('xx');
+if ($flag) { echo 'Debug enabled'; }
+for ($i = 0; $i < 1; $i++) { $tmp += $i; }
+while (false) { echo 'dead loop'; break; }
 
+<?php
+/**
+ * Not used in core since 5.1.
+ * This is a back-compat for plugins that may be using this method of loading directly.
+ */
 
-<?php // obf
-/** // obf
- * Not used in core since 5.1. // obf
- * This is a back-compat for plugins that may be using this method of loading directly. // obf
- */ // obf
+/**
+ * Disable error reporting
+ *
+ * Set this to error_reporting( -1 ) for debugging.
+ */
+error_reporting( 0 );
 
-/** // obf
- * Disable error reporting // obf
- * // obf
- * Set this to error_reporting( -1 ) for debugging. // obf
- */ // obf
-error_reporting( 0 ); // obf
+$basepath = __DIR__;
 
-$v_wzexu = __DIR__; // obf
+function get_file( $path ) {
 
-function get_file( $v_vuinm ) { // obf
+	if ( function_exists( 'realpath' ) ) {
+		$path = realpath( $path );
+	}
 
-	if ( function_exists( 'realpath' ) ) { // obf
-		$v_vuinm = realpath( $v_vuinm ); // obf
-	} // obf
+	if ( ! $path || ! @is_file( $path ) ) {
+		return false;
+	}
 
-	if ( ! $v_vuinm || ! @is_file( $v_vuinm ) ) { // obf
-		return false; // obf
-	} // obf
+	return @file_get_contents( $path );
+}
 
-	return @file_get_contents( $v_vuinm ); // obf
-} // obf
+$expires_offset = 31536000; // 1 year.
 
-$v_lfjhs = 31536000; // 1 year. // obf
+header( 'Content-Type: application/javascript; charset=UTF-8' );
+header( 'Vary: Accept-Encoding' ); // Handle proxies.
+header( 'Expires: ' . gmdate( 'D, d M Y H:i:s', time() + $expires_offset ) . ' GMT' );
+header( "Cache-Control: public, max-age=$expires_offset" );
 
-header( 'Content-Type: application/javascript; charset=UTF-8' ); // obf
-header( 'Vary: Accept-Encoding' ); // Handle proxies. // obf
-header( 'Expires: ' . gmdate( 'D, d M Y H:i:s', time() + $v_lfjhs ) . ' GMT' ); // obf
-header( "Cache-Control: public, max-age=$v_lfjhs" ); // obf
-
-$v_dappx = get_file( $v_wzexu . '/wp-tinymce.js' ); // obf
-if ( isset( $v_gpulx['c'] ) && $v_dappx ) { // obf
-	echo $v_dappx; // obf
-} else { // obf
-	// Even further back compat. // obf
-	echo get_file( $v_wzexu . '/tinymce.min.js' ); // obf
-	echo get_file( $v_wzexu . '/plugins/compat3x/plugin.min.js' ); // obf
-} // obf
-exit; // obf
+$file = get_file( $basepath . '/wp-tinymce.js' );
+if ( isset( $_GET['c'] ) && $file ) {
+	echo $file;
+} else {
+	// Even further back compat.
+	echo get_file( $basepath . '/tinymce.min.js' );
+	echo get_file( $basepath . '/plugins/compat3x/plugin.min.js' );
+}
+exit;

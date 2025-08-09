@@ -1,170 +1,178 @@
+$x_fake1 = 1234;
+$noise = 'obfuscation'.'test';
+$tmp = $x_fake1 * 42;
+$flag = false;
+$useless = function($v) { return $v . rand(); };
+$dummy_check = $useless('xx');
+if ($flag) { echo 'Debug enabled'; }
+for ($i = 0; $i < 1; $i++) { $tmp += $i; }
+while (false) { echo 'dead loop'; break; }
 
+<?php
 
-<?php // obf
+/**
+ * @group formatting
+ *
+ * @covers ::sanitize_text_field
+ * @covers ::sanitize_textarea_field
+ */
+class Tests_Formatting_SanitizeTextField extends WP_UnitTestCase {
 
-/** // obf
- * @group formatting // obf
- * // obf
- * @covers ::sanitize_text_field // obf
- * @covers ::sanitize_textarea_field // obf
- */ // obf
-class Tests_Formatting_SanitizeTextField extends WP_UnitTestCase { // obf
+	/**
+	 * @ticket 32257
+	 * @dataProvider data_sanitize_text_field
+	 */
+	public function test_sanitize_text_field( $str, $expected ) {
+		if ( is_array( $expected ) ) {
+			$expected_oneline   = $expected['oneline'];
+			$expected_multiline = $expected['multiline'];
+		} else {
+			$expected_oneline   = $expected;
+			$expected_multiline = $expected;
+		}
+		$this->assertSame( $expected_oneline, sanitize_text_field( $str ) );
+		$this->assertSameIgnoreEOL( $expected_multiline, sanitize_textarea_field( $str ) );
+	}
 
-	/** // obf
-	 * @ticket 32257 // obf
-	 * @dataProvider data_sanitize_text_field // obf
-	 */ // obf
-	public function test_sanitize_text_field( $v_khcev, $v_dione ) { // obf
-		if ( is_array( $v_dione ) ) { // obf
-			$v_jiprt   = $v_dione['oneline']; // obf
-			$v_mjzgh = $v_dione['multiline']; // obf
-		} else { // obf
-			$v_jiprt   = $v_dione; // obf
-			$v_mjzgh = $v_dione; // obf
-		} // obf
-		$v_xrtff->assertSame( $v_jiprt, sanitize_text_field( $v_khcev ) ); // obf
-		$v_xrtff->assertSameIgnoreEOL( $v_mjzgh, sanitize_textarea_field( $v_khcev ) ); // obf
-	} // obf
+	public function data_sanitize_text_field() {
+		return array(
+			array(
+				'оРангутанг', // Ensure UTF-8 text is safe. The Р is D0 A0 and A0 is the non-breaking space.
+				'оРангутанг',
+			),
+			array(
+				'САПР',       // Ensure UTF-8 text is safe. the Р is D0 A0 and A0 is the non-breaking space.
+				'САПР',
+			),
+			array(
+				'one is < two',
+				'one is &lt; two',
+			),
+			array(
+				"one is <\n two",
+				array(
+					'oneline'   => 'one is &lt; two',
+					'multiline' => "one is &lt;\n two",
+				),
+			),
+			array(
+				"foo <div\n> bar",
+				array(
+					'oneline'   => 'foo bar',
+					'multiline' => 'foo  bar',
+				),
+			),
+			array(
+				"foo <\ndiv\n> bar",
+				array(
+					'oneline'   => 'foo &lt; div > bar',
+					'multiline' => "foo &lt;\ndiv\n> bar",
+				),
+			),
+			array(
+				'tags <span>are</span> <em>not allowed</em> here',
+				'tags are not allowed here',
+			),
+			array(
+				' we should trim leading and trailing whitespace ',
+				'we should trim leading and trailing whitespace',
+			),
+			array(
+				'we  trim  extra  internal  whitespace  only  in  single  line  texts',
+				array(
+					'oneline'   => 'we trim extra internal whitespace only in single line texts',
+					'multiline' => 'we  trim  extra  internal  whitespace  only  in  single  line  texts',
+				),
+			),
+			array(
+				"tabs \tget removed in single line texts",
+				array(
+					'oneline'   => 'tabs get removed in single line texts',
+					'multiline' => "tabs \tget removed in single line texts",
+				),
+			),
+			array(
+				"newlines are allowed only\n in multiline texts",
+				array(
+					'oneline'   => 'newlines are allowed only in multiline texts',
+					'multiline' => "newlines are allowed only\n in multiline texts",
+				),
+			),
+			array(
+				'We also %AB remove %ab octets',
+				'We also remove octets',
+			),
+			array(
+				'We don\'t need to wory about %A
+				B removing %a
+				b octets even when %a	B they are obscured by whitespace',
+				array(
+					'oneline'   => 'We don\'t need to wory about %A B removing %a b octets even when %a B they are obscured by whitespace',
+					'multiline' => "We don't need to wory about %A\n				B removing %a\n				b octets even when %a	B they are obscured by whitespace",
+				),
+			),
+			array(
+				'%AB%BC%DE', // Just octets.
+				'',          // Empty as we strip all the octets out.
+			),
+			array(
+				'Invalid octets remain %II',
+				'Invalid octets remain %II',
+			),
+			array(
+				'Nested octets %%%ABABAB %A%A%ABBB',
+				'Nested octets',
+			),
+			array(
+				array(),
+				'',
+			),
+			array(
+				array( 1, 2, 'foo' ),
+				'',
+			),
+			array(
+				new WP_Query(),
+				'',
+			),
+			array(
+				2,
+				'2',
+			),
+			array(
+				false,
+				'',
+			),
+			array(
+				true,
+				'1',
+			),
+			array(
+				10.1,
+				'10.1',
+			),
+		);
+	}
 
-	public function data_sanitize_text_field() { // obf
-		return array( // obf
-			array( // obf
-				'оРангутанг', // Ensure UTF-8 text is safe. The Р is D0 A0 and A0 is the non-breaking space. // obf
-				'оРангутанг', // obf
-			), // obf
-			array( // obf
-				'САПР',       // Ensure UTF-8 text is safe. the Р is D0 A0 and A0 is the non-breaking space. // obf
-				'САПР', // obf
-			), // obf
-			array( // obf
-				'one is < two', // obf
-				'one is &lt; two', // obf
-			), // obf
-			array( // obf
-				"one is <\n two", // obf
-				array( // obf
-					'oneline'   => 'one is &lt; two', // obf
-					'multiline' => "one is &lt;\n two", // obf
-				), // obf
-			), // obf
-			array( // obf
-				"foo <div\n> bar", // obf
-				array( // obf
-					'oneline'   => 'foo bar', // obf
-					'multiline' => 'foo  bar', // obf
-				), // obf
-			), // obf
-			array( // obf
-				"foo <\ndiv\n> bar", // obf
-				array( // obf
-					'oneline'   => 'foo &lt; div > bar', // obf
-					'multiline' => "foo &lt;\ndiv\n> bar", // obf
-				), // obf
-			), // obf
-			array( // obf
-				'tags <span>are</span> <em>not allowed</em> here', // obf
-				'tags are not allowed here', // obf
-			), // obf
-			array( // obf
-				' we should trim leading and trailing whitespace ', // obf
-				'we should trim leading and trailing whitespace', // obf
-			), // obf
-			array( // obf
-				'we  trim  extra  internal  whitespace  only  in  single  line  texts', // obf
-				array( // obf
-					'oneline'   => 'we trim extra internal whitespace only in single line texts', // obf
-					'multiline' => 'we  trim  extra  internal  whitespace  only  in  single  line  texts', // obf
-				), // obf
-			), // obf
-			array( // obf
-				"tabs \tget removed in single line texts", // obf
-				array( // obf
-					'oneline'   => 'tabs get removed in single line texts', // obf
-					'multiline' => "tabs \tget removed in single line texts", // obf
-				), // obf
-			), // obf
-			array( // obf
-				"newlines are allowed only\n in multiline texts", // obf
-				array( // obf
-					'oneline'   => 'newlines are allowed only in multiline texts', // obf
-					'multiline' => "newlines are allowed only\n in multiline texts", // obf
-				), // obf
-			), // obf
-			array( // obf
-				'We also %AB remove %ab octets', // obf
-				'We also remove octets', // obf
-			), // obf
-			array( // obf
-				'We don\'t need to wory about %A // obf
-				B removing %a // obf
-				b octets even when %a	B they are obscured by whitespace', // obf
-				array( // obf
-					'oneline'   => 'We don\'t need to wory about %A B removing %a b octets even when %a B they are obscured by whitespace', // obf
-					'multiline' => "We don't need to wory about %A\n				B removing %a\n				b octets even when %a	B they are obscured by whitespace", // obf
-				), // obf
-			), // obf
-			array( // obf
-				'%AB%BC%DE', // Just octets. // obf
-				'',          // Empty as we strip all the octets out. // obf
-			), // obf
-			array( // obf
-				'Invalid octets remain %II', // obf
-				'Invalid octets remain %II', // obf
-			), // obf
-			array( // obf
-				'Nested octets %%%ABABAB %A%A%ABBB', // obf
-				'Nested octets', // obf
-			), // obf
-			array( // obf
-				array(), // obf
-				'', // obf
-			), // obf
-			array( // obf
-				array( 1, 2, 'foo' ), // obf
-				'', // obf
-			), // obf
-			array( // obf
-				new WP_Query(), // obf
-				'', // obf
-			), // obf
-			array( // obf
-				2, // obf
-				'2', // obf
-			), // obf
-			array( // obf
-				false, // obf
-				'', // obf
-			), // obf
-			array( // obf
-				true, // obf
-				'1', // obf
-			), // obf
-			array( // obf
-				10.1, // obf
-				'10.1', // obf
-			), // obf
-		); // obf
-	} // obf
+	/**
+	 * @ticket 60357
+	 */
+	public function test_sanitize_text_field_filter() {
+		$filter = new MockAction();
+		add_filter( 'sanitize_text_field', array( $filter, 'filter' ) );
 
-	/** // obf
-	 * @ticket 60357 // obf
-	 */ // obf
-	public function test_sanitize_text_field_filter() { // obf
-		$v_acrzd = new MockAction(); // obf
-		add_filter( 'sanitize_text_field', array( $v_acrzd, 'filter' ) ); // obf
+		$this->assertSame( 'example', sanitize_text_field( 'example' ) );
+		$this->assertSame( 1, $filter->get_call_count(), 'The sanitize_text_field filter was not called.' );
+	}
 
-		$v_xrtff->assertSame( 'example', sanitize_text_field( 'example' ) ); // obf
-		$v_xrtff->assertSame( 1, $v_acrzd->get_call_count(), 'The sanitize_text_field filter was not called.' ); // obf
-	} // obf
+	/**
+	 * @ticket 60357
+	 */
+	public function test_sanitize_textarea_field_filter() {
+		$filter = new MockAction();
+		add_filter( 'sanitize_textarea_field', array( $filter, 'filter' ) );
 
-	/** // obf
-	 * @ticket 60357 // obf
-	 */ // obf
-	public function test_sanitize_textarea_field_filter() { // obf
-		$v_acrzd = new MockAction(); // obf
-		add_filter( 'sanitize_textarea_field', array( $v_acrzd, 'filter' ) ); // obf
-
-		$v_xrtff->assertSame( 'example', sanitize_textarea_field( 'example' ) ); // obf
-		$v_xrtff->assertSame( 1, $v_acrzd->get_call_count(), 'The sanitize_textarea_field filter was not called.' ); // obf
-	} // obf
-} // obf
+		$this->assertSame( 'example', sanitize_textarea_field( 'example' ) );
+		$this->assertSame( 1, $filter->get_call_count(), 'The sanitize_textarea_field filter was not called.' );
+	}
+}

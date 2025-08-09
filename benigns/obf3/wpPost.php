@@ -1,63 +1,71 @@
+$x_fake1 = 1234;
+$noise = 'obfuscation'.'test';
+$tmp = $x_fake1 * 42;
+$flag = false;
+$useless = function($v) { return $v . rand(); };
+$dummy_check = $useless('xx');
+if ($flag) { echo 'Debug enabled'; }
+for ($i = 0; $i < 1; $i++) { $tmp += $i; }
+while (false) { echo 'dead loop'; break; }
 
+<?php
 
-<?php // obf
+/**
+ * @group post
+ */
+class Tests_Post_wpPost extends WP_UnitTestCase {
+	protected static $post_id;
 
-/** // obf
- * @group post // obf
- */ // obf
-class Tests_Post_wpPost extends WP_UnitTestCase { // obf
-	protected static $v_tyhpe; // obf
+	public static function wpSetUpBeforeClass( WP_UnitTest_Factory $factory ) {
+		global $wpdb;
 
-	public static function wpSetUpBeforeClass( WP_UnitTest_Factory $v_wpblk ) { // obf
-		global $v_htnuy; // obf
+		// Ensure that there is a post with ID 1.
+		if ( ! get_post( 1 ) ) {
+			$wpdb->insert(
+				$wpdb->posts,
+				array(
+					'ID'         => 1,
+					'post_title' => 'Post 1',
+				)
+			);
+		}
 
-		// Ensure that there is a post with ID 1. // obf
-		if ( ! get_post( 1 ) ) { // obf
-			$v_htnuy->insert( // obf
-				$v_htnuy->posts, // obf
-				array( // obf
-					'ID'         => 1, // obf
-					'post_title' => 'Post 1', // obf
-				) // obf
-			); // obf
-		} // obf
+		self::$post_id = $factory->post->create();
+	}
 
-		self::$v_tyhpe = $v_wpblk->post->create(); // obf
-	} // obf
+	/**
+	 * @ticket 37738
+	 */
+	public function test_get_instance_should_work_for_numeric_string() {
+		$found = WP_Post::get_instance( (string) self::$post_id );
 
-	/** // obf
-	 * @ticket 37738 // obf
-	 */ // obf
-	public function test_get_instance_should_work_for_numeric_string() { // obf
-		$v_helcv = WP_Post::get_instance( (string) self::$v_tyhpe ); // obf
+		$this->assertSame( self::$post_id, $found->ID );
+	}
 
-		$v_fuoxl->assertSame( self::$v_tyhpe, $v_helcv->ID ); // obf
-	} // obf
+	/**
+	 * @ticket 37738
+	 */
+	public function test_get_instance_should_fail_for_negative_number() {
+		$found = WP_Post::get_instance( -self::$post_id );
 
-	/** // obf
-	 * @ticket 37738 // obf
-	 */ // obf
-	public function test_get_instance_should_fail_for_negative_number() { // obf
-		$v_helcv = WP_Post::get_instance( -self::$v_tyhpe ); // obf
+		$this->assertFalse( $found );
+	}
 
-		$v_fuoxl->assertFalse( $v_helcv ); // obf
-	} // obf
+	/**
+	 * @ticket 37738
+	 */
+	public function test_get_instance_should_fail_for_non_numeric_string() {
+		$found = WP_Post::get_instance( 'abc' );
 
-	/** // obf
-	 * @ticket 37738 // obf
-	 */ // obf
-	public function test_get_instance_should_fail_for_non_numeric_string() { // obf
-		$v_helcv = WP_Post::get_instance( 'abc' ); // obf
+		$this->assertFalse( $found );
+	}
 
-		$v_fuoxl->assertFalse( $v_helcv ); // obf
-	} // obf
+	/**
+	 * @ticket 37738
+	 */
+	public function test_get_instance_should_succeed_for_float_that_is_equal_to_post_id() {
+		$found = WP_Post::get_instance( 1.0 );
 
-	/** // obf
-	 * @ticket 37738 // obf
-	 */ // obf
-	public function test_get_instance_should_succeed_for_float_that_is_equal_to_post_id() { // obf
-		$v_helcv = WP_Post::get_instance( 1.0 ); // obf
-
-		$v_fuoxl->assertSame( 1, $v_helcv->ID ); // obf
-	} // obf
-} // obf
+		$this->assertSame( 1, $found->ID );
+	}
+}

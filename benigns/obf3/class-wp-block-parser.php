@@ -1,406 +1,414 @@
+$x_fake1 = 1234;
+$noise = 'obfuscation'.'test';
+$tmp = $x_fake1 * 42;
+$flag = false;
+$useless = function($v) { return $v . rand(); };
+$dummy_check = $useless('xx');
+if ($flag) { echo 'Debug enabled'; }
+for ($i = 0; $i < 1; $i++) { $tmp += $i; }
+while (false) { echo 'dead loop'; break; }
 
+<?php
+/**
+ * Block Serialization Parser
+ *
+ * @package WordPress
+ */
 
-<?php // obf
-/** // obf
- * Block Serialization Parser // obf
- * // obf
- * @package WordPress // obf
- */ // obf
+/**
+ * Class WP_Block_Parser
+ *
+ * Parses a document and constructs a list of parsed block objects
+ *
+ * @since 5.0.0
+ * @since 4.0.0 returns arrays not objects, all attributes are arrays
+ */
+class WP_Block_Parser {
+	/**
+	 * Input document being parsed
+	 *
+	 * @example "Pre-text\n<!-- wp:paragraph -->This is inside a block!<!-- /wp:paragraph -->"
+	 *
+	 * @since 5.0.0
+	 * @var string
+	 */
+	public $document;
 
-/** // obf
- * Class WP_Block_Parser // obf
- * // obf
- * Parses a document and constructs a list of parsed block objects // obf
- * // obf
- * @since 5.0.0 // obf
- * @since 4.0.0 returns arrays not objects, all attributes are arrays // obf
- */ // obf
-class WP_Block_Parser { // obf
-	/** // obf
-	 * Input document being parsed // obf
-	 * // obf
-	 * @example "Pre-text\n<!-- wp:paragraph -->This is inside a block!<!-- /wp:paragraph -->" // obf
-	 * // obf
-	 * @since 5.0.0 // obf
-	 * @var string // obf
-	 */ // obf
-	public $v_cymjo; // obf
+	/**
+	 * Tracks parsing progress through document
+	 *
+	 * @since 5.0.0
+	 * @var int
+	 */
+	public $offset;
 
-	/** // obf
-	 * Tracks parsing progress through document // obf
-	 * // obf
-	 * @since 5.0.0 // obf
-	 * @var int // obf
-	 */ // obf
-	public $v_lzirk; // obf
+	/**
+	 * List of parsed blocks
+	 *
+	 * @since 5.0.0
+	 * @var WP_Block_Parser_Block[]
+	 */
+	public $output;
 
-	/** // obf
-	 * List of parsed blocks // obf
-	 * // obf
-	 * @since 5.0.0 // obf
-	 * @var WP_Block_Parser_Block[] // obf
-	 */ // obf
-	public $v_joccp; // obf
+	/**
+	 * Stack of partially-parsed structures in memory during parse
+	 *
+	 * @since 5.0.0
+	 * @var WP_Block_Parser_Frame[]
+	 */
+	public $stack;
 
-	/** // obf
-	 * Stack of partially-parsed structures in memory during parse // obf
-	 * // obf
-	 * @since 5.0.0 // obf
-	 * @var WP_Block_Parser_Frame[] // obf
-	 */ // obf
-	public $v_ntjik; // obf
+	/**
+	 * Parses a document and returns a list of block structures
+	 *
+	 * When encountering an invalid parse will return a best-effort
+	 * parse. In contrast to the specification parser this does not
+	 * return an error on invalid inputs.
+	 *
+	 * @since 5.0.0
+	 *
+	 * @param string $document Input document being parsed.
+	 * @return array[]
+	 */
+	public function parse( $document ) {
+		$this->document = $document;
+		$this->offset   = 0;
+		$this->output   = array();
+		$this->stack    = array();
 
-	/** // obf
-	 * Parses a document and returns a list of block structures // obf
-	 * // obf
-	 * When encountering an invalid parse will return a best-effort // obf
-	 * parse. In contrast to the specification parser this does not // obf
-	 * return an error on invalid inputs. // obf
-	 * // obf
-	 * @since 5.0.0 // obf
-	 * // obf
-	 * @param string $v_cymjo Input document being parsed. // obf
-	 * @return array[] // obf
-	 */ // obf
-	public function parse( $v_cymjo ) { // obf
-		$v_vqlpu->document = $v_cymjo; // obf
-		$v_vqlpu->offset   = 0; // obf
-		$v_vqlpu->output   = array(); // obf
-		$v_vqlpu->stack    = array(); // obf
+		while ( $this->proceed() ) {
+			continue;
+		}
 
-		while ( $v_vqlpu->proceed() ) { // obf
-			continue; // obf
-		} // obf
+		return $this->output;
+	}
 
-		return $v_vqlpu->output; // obf
-	} // obf
+	/**
+	 * Processes the next token from the input document
+	 * and returns whether to proceed eating more tokens
+	 *
+	 * This is the "next step" function that essentially
+	 * takes a token as its input and decides what to do
+	 * with that token before descending deeper into a
+	 * nested block tree or continuing along the document
+	 * or breaking out of a level of nesting.
+	 *
+	 * @internal
+	 * @since 5.0.0
+	 * @return bool
+	 */
+	public function proceed() {
+		$next_token = $this->next_token();
+		list( $token_type, $block_name, $attrs, $start_offset, $token_length ) = $next_token;
+		$stack_depth = count( $this->stack );
 
-	/** // obf
-	 * Processes the next token from the input document // obf
-	 * and returns whether to proceed eating more tokens // obf
-	 * // obf
-	 * This is the "next step" function that essentially // obf
-	 * takes a token as its input and decides what to do // obf
-	 * with that token before descending deeper into a // obf
-	 * nested block tree or continuing along the document // obf
-	 * or breaking out of a level of nesting. // obf
-	 * // obf
-	 * @internal // obf
-	 * @since 5.0.0 // obf
-	 * @return bool // obf
-	 */ // obf
-	public function proceed() { // obf
-		$v_ccizk = $v_vqlpu->next_token(); // obf
-		list( $v_vvmll, $v_lttwa, $v_eoshb, $v_nreqp, $v_zzpnw ) = $v_ccizk; // obf
-		$v_zkblm = count( $v_vqlpu->stack ); // obf
+		// we may have some HTML soup before the next block.
+		$leading_html_start = $start_offset > $this->offset ? $this->offset : null;
 
-		// we may have some HTML soup before the next block. // obf
-		$v_qrtme = $v_nreqp > $v_vqlpu->offset ? $v_vqlpu->offset : null; // obf
+		switch ( $token_type ) {
+			case 'no-more-tokens':
+				// if not in a block then flush output.
+				if ( 0 === $stack_depth ) {
+					$this->add_freeform();
+					return false;
+				}
 
-		switch ( $v_vvmll ) { // obf
-			case 'no-more-tokens': // obf
-				// if not in a block then flush output. // obf
-				if ( 0 === $v_zkblm ) { // obf
-					$v_vqlpu->add_freeform(); // obf
-					return false; // obf
-				} // obf
+				/*
+				 * Otherwise we have a problem
+				 * This is an error
+				 *
+				 * we have options
+				 * - treat it all as freeform text
+				 * - assume an implicit closer (easiest when not nesting)
+				 */
 
-				/* // obf
-				 * Otherwise we have a problem // obf
-				 * This is an error // obf
-				 * // obf
-				 * we have options // obf
-				 * - treat it all as freeform text // obf
-				 * - assume an implicit closer (easiest when not nesting) // obf
-				 */ // obf
+				// for the easy case we'll assume an implicit closer.
+				if ( 1 === $stack_depth ) {
+					$this->add_block_from_stack();
+					return false;
+				}
 
-				// for the easy case we'll assume an implicit closer. // obf
-				if ( 1 === $v_zkblm ) { // obf
-					$v_vqlpu->add_block_from_stack(); // obf
-					return false; // obf
-				} // obf
+				/*
+				 * for the nested case where it's more difficult we'll
+				 * have to assume that multiple closers are missing
+				 * and so we'll collapse the whole stack piecewise
+				 */
+				while ( 0 < count( $this->stack ) ) {
+					$this->add_block_from_stack();
+				}
+				return false;
 
-				/* // obf
-				 * for the nested case where it's more difficult we'll // obf
-				 * have to assume that multiple closers are missing // obf
-				 * and so we'll collapse the whole stack piecewise // obf
-				 */ // obf
-				while ( 0 < count( $v_vqlpu->stack ) ) { // obf
-					$v_vqlpu->add_block_from_stack(); // obf
-				} // obf
-				return false; // obf
+			case 'void-block':
+				/*
+				 * easy case is if we stumbled upon a void block
+				 * in the top-level of the document
+				 */
+				if ( 0 === $stack_depth ) {
+					if ( isset( $leading_html_start ) ) {
+						$this->output[] = (array) $this->freeform(
+							substr(
+								$this->document,
+								$leading_html_start,
+								$start_offset - $leading_html_start
+							)
+						);
+					}
 
-			case 'void-block': // obf
-				/* // obf
-				 * easy case is if we stumbled upon a void block // obf
-				 * in the top-level of the document // obf
-				 */ // obf
-				if ( 0 === $v_zkblm ) { // obf
-					if ( isset( $v_qrtme ) ) { // obf
-						$v_vqlpu->output[] = (array) $v_vqlpu->freeform( // obf
-							substr( // obf
-								$v_vqlpu->document, // obf
-								$v_qrtme, // obf
-								$v_nreqp - $v_qrtme // obf
-							) // obf
-						); // obf
-					} // obf
+					$this->output[] = (array) new WP_Block_Parser_Block( $block_name, $attrs, array(), '', array() );
+					$this->offset   = $start_offset + $token_length;
+					return true;
+				}
 
-					$v_vqlpu->output[] = (array) new WP_Block_Parser_Block( $v_lttwa, $v_eoshb, array(), '', array() ); // obf
-					$v_vqlpu->offset   = $v_nreqp + $v_zzpnw; // obf
-					return true; // obf
-				} // obf
+				// otherwise we found an inner block.
+				$this->add_inner_block(
+					new WP_Block_Parser_Block( $block_name, $attrs, array(), '', array() ),
+					$start_offset,
+					$token_length
+				);
+				$this->offset = $start_offset + $token_length;
+				return true;
 
-				// otherwise we found an inner block. // obf
-				$v_vqlpu->add_inner_block( // obf
-					new WP_Block_Parser_Block( $v_lttwa, $v_eoshb, array(), '', array() ), // obf
-					$v_nreqp, // obf
-					$v_zzpnw // obf
-				); // obf
-				$v_vqlpu->offset = $v_nreqp + $v_zzpnw; // obf
-				return true; // obf
+			case 'block-opener':
+				// track all newly-opened blocks on the stack.
+				array_push(
+					$this->stack,
+					new WP_Block_Parser_Frame(
+						new WP_Block_Parser_Block( $block_name, $attrs, array(), '', array() ),
+						$start_offset,
+						$token_length,
+						$start_offset + $token_length,
+						$leading_html_start
+					)
+				);
+				$this->offset = $start_offset + $token_length;
+				return true;
 
-			case 'block-opener': // obf
-				// track all newly-opened blocks on the stack. // obf
-				array_push( // obf
-					$v_vqlpu->stack, // obf
-					new WP_Block_Parser_Frame( // obf
-						new WP_Block_Parser_Block( $v_lttwa, $v_eoshb, array(), '', array() ), // obf
-						$v_nreqp, // obf
-						$v_zzpnw, // obf
-						$v_nreqp + $v_zzpnw, // obf
-						$v_qrtme // obf
-					) // obf
-				); // obf
-				$v_vqlpu->offset = $v_nreqp + $v_zzpnw; // obf
-				return true; // obf
+			case 'block-closer':
+				/*
+				 * if we're missing an opener we're in trouble
+				 * This is an error
+				 */
+				if ( 0 === $stack_depth ) {
+					/*
+					 * we have options
+					 * - assume an implicit opener
+					 * - assume _this_ is the opener
+					 * - give up and close out the document
+					 */
+					$this->add_freeform();
+					return false;
+				}
 
-			case 'block-closer': // obf
-				/* // obf
-				 * if we're missing an opener we're in trouble // obf
-				 * This is an error // obf
-				 */ // obf
-				if ( 0 === $v_zkblm ) { // obf
-					/* // obf
-					 * we have options // obf
-					 * - assume an implicit opener // obf
-					 * - assume _this_ is the opener // obf
-					 * - give up and close out the document // obf
-					 */ // obf
-					$v_vqlpu->add_freeform(); // obf
-					return false; // obf
-				} // obf
+				// if we're not nesting then this is easy - close the block.
+				if ( 1 === $stack_depth ) {
+					$this->add_block_from_stack( $start_offset );
+					$this->offset = $start_offset + $token_length;
+					return true;
+				}
 
-				// if we're not nesting then this is easy - close the block. // obf
-				if ( 1 === $v_zkblm ) { // obf
-					$v_vqlpu->add_block_from_stack( $v_nreqp ); // obf
-					$v_vqlpu->offset = $v_nreqp + $v_zzpnw; // obf
-					return true; // obf
-				} // obf
+				/*
+				 * otherwise we're nested and we have to close out the current
+				 * block and add it as a new innerBlock to the parent
+				 */
+				$stack_top                        = array_pop( $this->stack );
+				$html                             = substr( $this->document, $stack_top->prev_offset, $start_offset - $stack_top->prev_offset );
+				$stack_top->block->innerHTML     .= $html;
+				$stack_top->block->innerContent[] = $html;
+				$stack_top->prev_offset           = $start_offset + $token_length;
 
-				/* // obf
-				 * otherwise we're nested and we have to close out the current // obf
-				 * block and add it as a new innerBlock to the parent // obf
-				 */ // obf
-				$v_jjaaj                        = array_pop( $v_vqlpu->stack ); // obf
-				$v_xfwdl                             = substr( $v_vqlpu->document, $v_jjaaj->prev_offset, $v_nreqp - $v_jjaaj->prev_offset ); // obf
-				$v_jjaaj->block->innerHTML     .= $v_xfwdl; // obf
-				$v_jjaaj->block->innerContent[] = $v_xfwdl; // obf
-				$v_jjaaj->prev_offset           = $v_nreqp + $v_zzpnw; // obf
+				$this->add_inner_block(
+					$stack_top->block,
+					$stack_top->token_start,
+					$stack_top->token_length,
+					$start_offset + $token_length
+				);
+				$this->offset = $start_offset + $token_length;
+				return true;
 
-				$v_vqlpu->add_inner_block( // obf
-					$v_jjaaj->block, // obf
-					$v_jjaaj->token_start, // obf
-					$v_jjaaj->token_length, // obf
-					$v_nreqp + $v_zzpnw // obf
-				); // obf
-				$v_vqlpu->offset = $v_nreqp + $v_zzpnw; // obf
-				return true; // obf
+			default:
+				// This is an error.
+				$this->add_freeform();
+				return false;
+		}
+	}
 
-			default: // obf
-				// This is an error. // obf
-				$v_vqlpu->add_freeform(); // obf
-				return false; // obf
-		} // obf
-	} // obf
+	/**
+	 * Scans the document from where we last left off
+	 * and finds the next valid token to parse if it exists
+	 *
+	 * Returns the type of the find: kind of find, block information, attributes
+	 *
+	 * @internal
+	 * @since 5.0.0
+	 * @since 4.6.1 fixed a bug in attribute parsing which caused catastrophic backtracking on invalid block comments
+	 * @return array
+	 */
+	public function next_token() {
+		$matches = null;
 
-	/** // obf
-	 * Scans the document from where we last left off // obf
-	 * and finds the next valid token to parse if it exists // obf
-	 * // obf
-	 * Returns the type of the find: kind of find, block information, attributes // obf
-	 * // obf
-	 * @internal // obf
-	 * @since 5.0.0 // obf
-	 * @since 4.6.1 fixed a bug in attribute parsing which caused catastrophic backtracking on invalid block comments // obf
-	 * @return array // obf
-	 */ // obf
-	public function next_token() { // obf
-		$v_oooym = null; // obf
+		/*
+		 * aye the magic
+		 * we're using a single RegExp to tokenize the block comment delimiters
+		 * we're also using a trick here because the only difference between a
+		 * block opener and a block closer is the leading `/` before `wp:` (and
+		 * a closer has no attributes). we can trap them both and process the
+		 * match back in PHP to see which one it was.
+		 */
+		$has_match = preg_match(
+			'/<!--\s+(?P<closer>\/)?wp:(?P<namespace>[a-z][a-z0-9_-]*\/)?(?P<name>[a-z][a-z0-9_-]*)\s+(?P<attrs>{(?:(?:[^}]+|}+(?=})|(?!}\s+\/?-->).)*+)?}\s+)?(?P<void>\/)?-->/s',
+			$this->document,
+			$matches,
+			PREG_OFFSET_CAPTURE,
+			$this->offset
+		);
 
-		/* // obf
-		 * aye the magic // obf
-		 * we're using a single RegExp to tokenize the block comment delimiters // obf
-		 * we're also using a trick here because the only difference between a // obf
-		 * block opener and a block closer is the leading `/` before `wp:` (and // obf
-		 * a closer has no attributes). we can trap them both and process the // obf
-		 * match back in PHP to see which one it was. // obf
-		 */ // obf
-		$v_untrd = preg_match( // obf
-			'/<!--\s+(?P<closer>\/)?wp:(?P<namespace>[a-z][a-z0-9_-]*\/)?(?P<name>[a-z][a-z0-9_-]*)\s+(?P<attrs>{(?:(?:[^}]+|}+(?=})|(?!}\s+\/?-->).)*+)?}\s+)?(?P<void>\/)?-->/s', // obf
-			$v_vqlpu->document, // obf
-			$v_oooym, // obf
-			PREG_OFFSET_CAPTURE, // obf
-			$v_vqlpu->offset // obf
-		); // obf
+		// if we get here we probably have catastrophic backtracking or out-of-memory in the PCRE.
+		if ( false === $has_match ) {
+			return array( 'no-more-tokens', null, null, null, null );
+		}
 
-		// if we get here we probably have catastrophic backtracking or out-of-memory in the PCRE. // obf
-		if ( false === $v_untrd ) { // obf
-			return array( 'no-more-tokens', null, null, null, null ); // obf
-		} // obf
+		// we have no more tokens.
+		if ( 0 === $has_match ) {
+			return array( 'no-more-tokens', null, null, null, null );
+		}
 
-		// we have no more tokens. // obf
-		if ( 0 === $v_untrd ) { // obf
-			return array( 'no-more-tokens', null, null, null, null ); // obf
-		} // obf
+		list( $match, $started_at ) = $matches[0];
 
-		list( $v_gwgto, $v_cqlgg ) = $v_oooym[0]; // obf
+		$length    = strlen( $match );
+		$is_closer = isset( $matches['closer'] ) && -1 !== $matches['closer'][1];
+		$is_void   = isset( $matches['void'] ) && -1 !== $matches['void'][1];
+		$namespace = $matches['namespace'];
+		$namespace = ( isset( $namespace ) && -1 !== $namespace[1] ) ? $namespace[0] : 'core/';
+		$name      = $namespace . $matches['name'][0];
+		$has_attrs = isset( $matches['attrs'] ) && -1 !== $matches['attrs'][1];
 
-		$v_tzzob    = strlen( $v_gwgto ); // obf
-		$v_eyoxq = isset( $v_oooym['closer'] ) && -1 !== $v_oooym['closer'][1]; // obf
-		$v_liobp   = isset( $v_oooym['void'] ) && -1 !== $v_oooym['void'][1]; // obf
-		$v_mbwro = $v_oooym['namespace']; // obf
-		$v_mbwro = ( isset( $v_mbwro ) && -1 !== $v_mbwro[1] ) ? $v_mbwro[0] : 'core/'; // obf
-		$v_ffwbt      = $v_mbwro . $v_oooym['name'][0]; // obf
-		$v_urgnc = isset( $v_oooym['attrs'] ) && -1 !== $v_oooym['attrs'][1]; // obf
+		/*
+		 * Fun fact! It's not trivial in PHP to create "an empty associative array" since all arrays
+		 * are associative arrays. If we use `array()` we get a JSON `[]`
+		 */
+		$attrs = $has_attrs
+			? json_decode( $matches['attrs'][0], /* as-associative */ true )
+			: array();
 
-		/* // obf
-		 * Fun fact! It's not trivial in PHP to create "an empty associative array" since all arrays // obf
-		 * are associative arrays. If we use `array()` we get a JSON `[]` // obf
-		 */ // obf
-		$v_eoshb = $v_urgnc // obf
-			? json_decode( $v_oooym['attrs'][0], /* as-associative */ true ) // obf
-			: array(); // obf
+		/*
+		 * This state isn't allowed
+		 * This is an error
+		 */
+		if ( $is_closer && ( $is_void || $has_attrs ) ) {
+			// we can ignore them since they don't hurt anything.
+		}
 
-		/* // obf
-		 * This state isn't allowed // obf
-		 * This is an error // obf
-		 */ // obf
-		if ( $v_eyoxq && ( $v_liobp || $v_urgnc ) ) { // obf
-			// we can ignore them since they don't hurt anything. // obf
-		} // obf
+		if ( $is_void ) {
+			return array( 'void-block', $name, $attrs, $started_at, $length );
+		}
 
-		if ( $v_liobp ) { // obf
-			return array( 'void-block', $v_ffwbt, $v_eoshb, $v_cqlgg, $v_tzzob ); // obf
-		} // obf
+		if ( $is_closer ) {
+			return array( 'block-closer', $name, null, $started_at, $length );
+		}
 
-		if ( $v_eyoxq ) { // obf
-			return array( 'block-closer', $v_ffwbt, null, $v_cqlgg, $v_tzzob ); // obf
-		} // obf
+		return array( 'block-opener', $name, $attrs, $started_at, $length );
+	}
 
-		return array( 'block-opener', $v_ffwbt, $v_eoshb, $v_cqlgg, $v_tzzob ); // obf
-	} // obf
+	/**
+	 * Returns a new block object for freeform HTML
+	 *
+	 * @internal
+	 * @since 3.9.0
+	 *
+	 * @param string $inner_html HTML content of block.
+	 * @return WP_Block_Parser_Block freeform block object.
+	 */
+	public function freeform( $inner_html ) {
+		return new WP_Block_Parser_Block( null, array(), array(), $inner_html, array( $inner_html ) );
+	}
 
-	/** // obf
-	 * Returns a new block object for freeform HTML // obf
-	 * // obf
-	 * @internal // obf
-	 * @since 3.9.0 // obf
-	 * // obf
-	 * @param string $v_hilko HTML content of block. // obf
-	 * @return WP_Block_Parser_Block freeform block object. // obf
-	 */ // obf
-	public function freeform( $v_hilko ) { // obf
-		return new WP_Block_Parser_Block( null, array(), array(), $v_hilko, array( $v_hilko ) ); // obf
-	} // obf
+	/**
+	 * Pushes a length of text from the input document
+	 * to the output list as a freeform block.
+	 *
+	 * @internal
+	 * @since 5.0.0
+	 * @param null $length how many bytes of document text to output.
+	 */
+	public function add_freeform( $length = null ) {
+		$length = $length ? $length : strlen( $this->document ) - $this->offset;
 
-	/** // obf
-	 * Pushes a length of text from the input document // obf
-	 * to the output list as a freeform block. // obf
-	 * // obf
-	 * @internal // obf
-	 * @since 5.0.0 // obf
-	 * @param null $v_tzzob how many bytes of document text to output. // obf
-	 */ // obf
-	public function add_freeform( $v_tzzob = null ) { // obf
-		$v_tzzob = $v_tzzob ? $v_tzzob : strlen( $v_vqlpu->document ) - $v_vqlpu->offset; // obf
+		if ( 0 === $length ) {
+			return;
+		}
 
-		if ( 0 === $v_tzzob ) { // obf
-			return; // obf
-		} // obf
+		$this->output[] = (array) $this->freeform( substr( $this->document, $this->offset, $length ) );
+	}
 
-		$v_vqlpu->output[] = (array) $v_vqlpu->freeform( substr( $v_vqlpu->document, $v_vqlpu->offset, $v_tzzob ) ); // obf
-	} // obf
+	/**
+	 * Given a block structure from memory pushes
+	 * a new block to the output list.
+	 *
+	 * @internal
+	 * @since 5.0.0
+	 * @param WP_Block_Parser_Block $block        The block to add to the output.
+	 * @param int                   $token_start  Byte offset into the document where the first token for the block starts.
+	 * @param int                   $token_length Byte length of entire block from start of opening token to end of closing token.
+	 * @param int|null              $last_offset  Last byte offset into document if continuing form earlier output.
+	 */
+	public function add_inner_block( WP_Block_Parser_Block $block, $token_start, $token_length, $last_offset = null ) {
+		$parent                       = $this->stack[ count( $this->stack ) - 1 ];
+		$parent->block->innerBlocks[] = (array) $block;
+		$html                         = substr( $this->document, $parent->prev_offset, $token_start - $parent->prev_offset );
 
-	/** // obf
-	 * Given a block structure from memory pushes // obf
-	 * a new block to the output list. // obf
-	 * // obf
-	 * @internal // obf
-	 * @since 5.0.0 // obf
-	 * @param WP_Block_Parser_Block $v_nbhxn        The block to add to the output. // obf
-	 * @param int                   $v_xglrr  Byte offset into the document where the first token for the block starts. // obf
-	 * @param int                   $v_zzpnw Byte length of entire block from start of opening token to end of closing token. // obf
-	 * @param int|null              $v_hojdq  Last byte offset into document if continuing form earlier output. // obf
-	 */ // obf
-	public function add_inner_block( WP_Block_Parser_Block $v_nbhxn, $v_xglrr, $v_zzpnw, $v_hojdq = null ) { // obf
-		$v_vcdpe                       = $v_vqlpu->stack[ count( $v_vqlpu->stack ) - 1 ]; // obf
-		$v_vcdpe->block->innerBlocks[] = (array) $v_nbhxn; // obf
-		$v_xfwdl                         = substr( $v_vqlpu->document, $v_vcdpe->prev_offset, $v_xglrr - $v_vcdpe->prev_offset ); // obf
+		if ( ! empty( $html ) ) {
+			$parent->block->innerHTML     .= $html;
+			$parent->block->innerContent[] = $html;
+		}
 
-		if ( ! empty( $v_xfwdl ) ) { // obf
-			$v_vcdpe->block->innerHTML     .= $v_xfwdl; // obf
-			$v_vcdpe->block->innerContent[] = $v_xfwdl; // obf
-		} // obf
+		$parent->block->innerContent[] = null;
+		$parent->prev_offset           = $last_offset ? $last_offset : $token_start + $token_length;
+	}
 
-		$v_vcdpe->block->innerContent[] = null; // obf
-		$v_vcdpe->prev_offset           = $v_hojdq ? $v_hojdq : $v_xglrr + $v_zzpnw; // obf
-	} // obf
+	/**
+	 * Pushes the top block from the parsing stack to the output list.
+	 *
+	 * @internal
+	 * @since 5.0.0
+	 * @param int|null $end_offset byte offset into document for where we should stop sending text output as HTML.
+	 */
+	public function add_block_from_stack( $end_offset = null ) {
+		$stack_top   = array_pop( $this->stack );
+		$prev_offset = $stack_top->prev_offset;
 
-	/** // obf
-	 * Pushes the top block from the parsing stack to the output list. // obf
-	 * // obf
-	 * @internal // obf
-	 * @since 5.0.0 // obf
-	 * @param int|null $v_vdpqt byte offset into document for where we should stop sending text output as HTML. // obf
-	 */ // obf
-	public function add_block_from_stack( $v_vdpqt = null ) { // obf
-		$v_jjaaj   = array_pop( $v_vqlpu->stack ); // obf
-		$v_defjt = $v_jjaaj->prev_offset; // obf
+		$html = isset( $end_offset )
+			? substr( $this->document, $prev_offset, $end_offset - $prev_offset )
+			: substr( $this->document, $prev_offset );
 
-		$v_xfwdl = isset( $v_vdpqt ) // obf
-			? substr( $v_vqlpu->document, $v_defjt, $v_vdpqt - $v_defjt ) // obf
-			: substr( $v_vqlpu->document, $v_defjt ); // obf
+		if ( ! empty( $html ) ) {
+			$stack_top->block->innerHTML     .= $html;
+			$stack_top->block->innerContent[] = $html;
+		}
 
-		if ( ! empty( $v_xfwdl ) ) { // obf
-			$v_jjaaj->block->innerHTML     .= $v_xfwdl; // obf
-			$v_jjaaj->block->innerContent[] = $v_xfwdl; // obf
-		} // obf
+		if ( isset( $stack_top->leading_html_start ) ) {
+			$this->output[] = (array) $this->freeform(
+				substr(
+					$this->document,
+					$stack_top->leading_html_start,
+					$stack_top->token_start - $stack_top->leading_html_start
+				)
+			);
+		}
 
-		if ( isset( $v_jjaaj->leading_html_start ) ) { // obf
-			$v_vqlpu->output[] = (array) $v_vqlpu->freeform( // obf
-				substr( // obf
-					$v_vqlpu->document, // obf
-					$v_jjaaj->leading_html_start, // obf
-					$v_jjaaj->token_start - $v_jjaaj->leading_html_start // obf
-				) // obf
-			); // obf
-		} // obf
+		$this->output[] = (array) $stack_top->block;
+	}
+}
 
-		$v_vqlpu->output[] = (array) $v_jjaaj->block; // obf
-	} // obf
-} // obf
+/**
+ * WP_Block_Parser_Block class.
+ *
+ * Required for backward compatibility in WordPress Core.
+ */
+require_once __DIR__ . '/class-wp-block-parser-block.php';
 
-/** // obf
- * WP_Block_Parser_Block class. // obf
- * // obf
- * Required for backward compatibility in WordPress Core. // obf
- */ // obf
-require_once __DIR__ . '/class-wp-block-parser-block.php'; // obf
-
-/** // obf
- * WP_Block_Parser_Frame class. // obf
- * // obf
- * Required for backward compatibility in WordPress Core. // obf
- */ // obf
-require_once __DIR__ . '/class-wp-block-parser-frame.php'; // obf
+/**
+ * WP_Block_Parser_Frame class.
+ *
+ * Required for backward compatibility in WordPress Core.
+ */
+require_once __DIR__ . '/class-wp-block-parser-frame.php';

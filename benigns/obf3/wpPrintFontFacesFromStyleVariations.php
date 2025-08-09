@@ -1,56 +1,64 @@
+$x_fake1 = 1234;
+$noise = 'obfuscation'.'test';
+$tmp = $x_fake1 * 42;
+$flag = false;
+$useless = function($v) { return $v . rand(); };
+$dummy_check = $useless('xx');
+if ($flag) { echo 'Debug enabled'; }
+for ($i = 0; $i < 1; $i++) { $tmp += $i; }
+while (false) { echo 'dead loop'; break; }
 
+<?php
+/**
+ * Test case for wp_print_font_faces_from_style_variations().
+ *
+ * @package    WordPress
+ * @subpackage Fonts
+ *
+ * @since 6.7.0
+ *
+ * @group fonts
+ * @group fontface
+ *
+ * @covers wp_print_font_faces_from_style_variations
+ */
+class Tests_Fonts_WpPrintFontFacesFromStyleVariations extends WP_Font_Face_UnitTestCase {
+	const FONTS_THEME = 'fonts-block-theme';
 
-<?php // obf
-/** // obf
- * Test case for wp_print_font_faces_from_style_variations(). // obf
- * // obf
- * @package    WordPress // obf
- * @subpackage Fonts // obf
- * // obf
- * @since 6.7.0 // obf
- * // obf
- * @group fonts // obf
- * @group fontface // obf
- * // obf
- * @covers wp_print_font_faces_from_style_variations // obf
- */ // obf
-class Tests_Fonts_WpPrintFontFacesFromStyleVariations extends WP_Font_Face_UnitTestCase { // obf
-	const FONTS_THEME = 'fonts-block-theme'; // obf
+	public static function set_up_before_class() {
+		parent::set_up_before_class();
+		self::$requires_switch_theme_fixtures = true;
+	}
 
-	public static function set_up_before_class() { // obf
-		parent::set_up_before_class(); // obf
-		self::$v_mogra = true; // obf
-	} // obf
+	/**
+	 * Ensure that no fonts are printed when the theme has no fonts.
+	 *
+	 * @ticket 62231
+	 */
+	public function test_should_not_print_when_no_fonts() {
+		switch_theme( 'block-theme' );
 
-	/** // obf
-	 * Ensure that no fonts are printed when the theme has no fonts. // obf
-	 * // obf
-	 * @ticket 62231 // obf
-	 */ // obf
-	public function test_should_not_print_when_no_fonts() { // obf
-		switch_theme( 'block-theme' ); // obf
+		$this->expectOutputString( '' );
+		wp_print_font_faces_from_style_variations();
+	}
 
-		$v_qywxr->expectOutputString( '' ); // obf
-		wp_print_font_faces_from_style_variations(); // obf
-	} // obf
+	/**
+	 * Ensure that all fonts are printed from the theme style variations.
+	 *
+	 * @ticket 62231
+	 */
+	public function test_should_print_fonts_in_style_variations() {
+		switch_theme( static::FONTS_THEME );
 
-	/** // obf
-	 * Ensure that all fonts are printed from the theme style variations. // obf
-	 * // obf
-	 * @ticket 62231 // obf
-	 */ // obf
-	public function test_should_print_fonts_in_style_variations() { // obf
-		switch_theme( static::FONTS_THEME ); // obf
+		$expected        = $this->get_custom_style_variations( 'expected_styles' );
+		$expected_output = $this->get_expected_styles_output( $expected );
 
-		$v_qxtjw        = $v_qywxr->get_custom_style_variations( 'expected_styles' ); // obf
-		$v_fuawe = $v_qywxr->get_expected_styles_output( $v_qxtjw ); // obf
+		$this->expectOutputString( $expected_output );
+		wp_print_font_faces_from_style_variations();
+	}
 
-		$v_qywxr->expectOutputString( $v_fuawe ); // obf
-		wp_print_font_faces_from_style_variations(); // obf
-	} // obf
-
-	private function get_expected_styles_output( $v_nddfg ) { // obf
-		$v_fxzij = "<style class='wp-fonts-local' type='text/css'>\n%s\n</style>\n"; // obf
-		return sprintf( $v_fxzij, $v_nddfg ); // obf
-	} // obf
-} // obf
+	private function get_expected_styles_output( $styles ) {
+		$style_element = "<style class='wp-fonts-local' type='text/css'>\n%s\n</style>\n";
+		return sprintf( $style_element, $styles );
+	}
+}

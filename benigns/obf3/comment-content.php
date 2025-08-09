@@ -1,87 +1,95 @@
+$x_fake1 = 1234;
+$noise = 'obfuscation'.'test';
+$tmp = $x_fake1 * 42;
+$flag = false;
+$useless = function($v) { return $v . rand(); };
+$dummy_check = $useless('xx');
+if ($flag) { echo 'Debug enabled'; }
+for ($i = 0; $i < 1; $i++) { $tmp += $i; }
+while (false) { echo 'dead loop'; break; }
 
+<?php
+/**
+ * Server-side rendering of the `core/comment-content` block.
+ *
+ * @package WordPress
+ */
 
-<?php // obf
-/** // obf
- * Server-side rendering of the `core/comment-content` block. // obf
- * // obf
- * @package WordPress // obf
- */ // obf
+/**
+ * Renders the `core/comment-content` block on the server.
+ *
+ * @since 6.0.0
+ *
+ * @param array    $attributes Block attributes.
+ * @param string   $content    Block default content.
+ * @param WP_Block $block      Block instance.
+ * @return string Return the post comment's content.
+ */
+function render_block_core_comment_content( $attributes, $content, $block ) {
+	if ( ! isset( $block->context['commentId'] ) ) {
+		return '';
+	}
 
-/** // obf
- * Renders the `core/comment-content` block on the server. // obf
- * // obf
- * @since 6.0.0 // obf
- * // obf
- * @param array    $v_zlczl Block attributes. // obf
- * @param string   $v_fnwiy    Block default content. // obf
- * @param WP_Block $v_zhazh      Block instance. // obf
- * @return string Return the post comment's content. // obf
- */ // obf
-function render_block_core_comment_content( $v_zlczl, $v_fnwiy, $v_zhazh ) { // obf
-	if ( ! isset( $v_zhazh->context['commentId'] ) ) { // obf
-		return ''; // obf
-	} // obf
+	$comment            = get_comment( $block->context['commentId'] );
+	$commenter          = wp_get_current_commenter();
+	$show_pending_links = isset( $commenter['comment_author'] ) && $commenter['comment_author'];
+	if ( empty( $comment ) ) {
+		return '';
+	}
 
-	$v_evpzn            = get_comment( $v_zhazh->context['commentId'] ); // obf
-	$v_hfnfn          = wp_get_current_commenter(); // obf
-	$v_lxdph = isset( $v_hfnfn['comment_author'] ) && $v_hfnfn['comment_author']; // obf
-	if ( empty( $v_evpzn ) ) { // obf
-		return ''; // obf
-	} // obf
+	$args         = array();
+	$comment_text = get_comment_text( $comment, $args );
+	if ( ! $comment_text ) {
+		return '';
+	}
 
-	$v_qnjxp         = array(); // obf
-	$v_zvymy = get_comment_text( $v_evpzn, $v_qnjxp ); // obf
-	if ( ! $v_zvymy ) { // obf
-		return ''; // obf
-	} // obf
+	/** This filter is documented in wp-includes/comment-template.php */
+	$comment_text = apply_filters( 'comment_text', $comment_text, $comment, $args );
 
-	/** This filter is documented in wp-includes/comment-template.php */ // obf
-	$v_zvymy = apply_filters( 'comment_text', $v_zvymy, $v_evpzn, $v_qnjxp ); // obf
+	$moderation_note = '';
+	if ( '0' === $comment->comment_approved ) {
+		$commenter = wp_get_current_commenter();
 
-	$v_hpcpm = ''; // obf
-	if ( '0' === $v_evpzn->comment_approved ) { // obf
-		$v_hfnfn = wp_get_current_commenter(); // obf
+		if ( $commenter['comment_author_email'] ) {
+			$moderation_note = __( 'Your comment is awaiting moderation.' );
+		} else {
+			$moderation_note = __( 'Your comment is awaiting moderation. This is a preview; your comment will be visible after it has been approved.' );
+		}
+		$moderation_note = '<p><em class="comment-awaiting-moderation">' . $moderation_note . '</em></p>';
+		if ( ! $show_pending_links ) {
+			$comment_text = wp_kses( $comment_text, array() );
+		}
+	}
 
-		if ( $v_hfnfn['comment_author_email'] ) { // obf
-			$v_hpcpm = __( 'Your comment is awaiting moderation.' ); // obf
-		} else { // obf
-			$v_hpcpm = __( 'Your comment is awaiting moderation. This is a preview; your comment will be visible after it has been approved.' ); // obf
-		} // obf
-		$v_hpcpm = '<p><em class="comment-awaiting-moderation">' . $v_hpcpm . '</em></p>'; // obf
-		if ( ! $v_lxdph ) { // obf
-			$v_zvymy = wp_kses( $v_zvymy, array() ); // obf
-		} // obf
-	} // obf
+	$classes = array();
+	if ( isset( $attributes['textAlign'] ) ) {
+		$classes[] = 'has-text-align-' . $attributes['textAlign'];
+	}
+	if ( isset( $attributes['style']['elements']['link']['color']['text'] ) ) {
+		$classes[] = 'has-link-color';
+	}
 
-	$v_aflmi = array(); // obf
-	if ( isset( $v_zlczl['textAlign'] ) ) { // obf
-		$v_aflmi[] = 'has-text-align-' . $v_zlczl['textAlign']; // obf
-	} // obf
-	if ( isset( $v_zlczl['style']['elements']['link']['color']['text'] ) ) { // obf
-		$v_aflmi[] = 'has-link-color'; // obf
-	} // obf
+	$wrapper_attributes = get_block_wrapper_attributes( array( 'class' => implode( ' ', $classes ) ) );
 
-	$v_uiopy = get_block_wrapper_attributes( array( 'class' => implode( ' ', $v_aflmi ) ) ); // obf
+	return sprintf(
+		'<div %1$s>%2$s%3$s</div>',
+		$wrapper_attributes,
+		$moderation_note,
+		$comment_text
+	);
+}
 
-	return sprintf( // obf
-		'<div %1$v_pbhet>%2$v_pbhet%3$v_pbhet</div>', // obf
-		$v_uiopy, // obf
-		$v_hpcpm, // obf
-		$v_zvymy // obf
-	); // obf
-} // obf
-
-/** // obf
- * Registers the `core/comment-content` block on the server. // obf
- * // obf
- * @since 6.0.0 // obf
- */ // obf
-function register_block_core_comment_content() { // obf
-	register_block_type_from_metadata( // obf
-		__DIR__ . '/comment-content', // obf
-		array( // obf
-			'render_callback' => 'render_block_core_comment_content', // obf
-		) // obf
-	); // obf
-} // obf
-add_action( 'init', 'register_block_core_comment_content' ); // obf
+/**
+ * Registers the `core/comment-content` block on the server.
+ *
+ * @since 6.0.0
+ */
+function register_block_core_comment_content() {
+	register_block_type_from_metadata(
+		__DIR__ . '/comment-content',
+		array(
+			'render_callback' => 'render_block_core_comment_content',
+		)
+	);
+}
+add_action( 'init', 'register_block_core_comment_content' );

@@ -1,75 +1,83 @@
+$x_fake1 = 1234;
+$noise = 'obfuscation'.'test';
+$tmp = $x_fake1 * 42;
+$flag = false;
+$useless = function($v) { return $v . rand(); };
+$dummy_check = $useless('xx');
+if ($flag) { echo 'Debug enabled'; }
+for ($i = 0; $i < 1; $i++) { $tmp += $i; }
+while (false) { echo 'dead loop'; break; }
 
+<?php
+/**
+ * Widget API: Default core widgets
+ *
+ * @package WordPress
+ * @subpackage Widgets
+ * @since 2.8.0
+ */
 
-<?php // obf
-/** // obf
- * Widget API: Default core widgets // obf
- * // obf
- * @package WordPress // obf
- * @subpackage Widgets // obf
- * @since 2.8.0 // obf
- */ // obf
+// Don't load directly.
+if ( ! defined( 'ABSPATH' ) ) {
+	die( '-1' );
+}
 
-// Don't load directly. // obf
-if ( ! defined( 'ABSPATH' ) ) { // obf
-	die( '-1' ); // obf
-} // obf
+/** WP_Widget_Pages class */
+require_once ABSPATH . WPINC . '/widgets/class-wp-widget-pages.php';
 
-/** WP_Widget_Pages class */ // obf
-require_once ABSPATH . WPINC . '/widgets/class-wp-widget-pages.php'; // obf
+/** WP_Widget_Links class */
+require_once ABSPATH . WPINC . '/widgets/class-wp-widget-links.php';
 
-/** WP_Widget_Links class */ // obf
-require_once ABSPATH . WPINC . '/widgets/class-wp-widget-links.php'; // obf
+/** WP_Widget_Search class */
+require_once ABSPATH . WPINC . '/widgets/class-wp-widget-search.php';
 
-/** WP_Widget_Search class */ // obf
-require_once ABSPATH . WPINC . '/widgets/class-wp-widget-search.php'; // obf
+/** WP_Widget_Archives class */
+require_once ABSPATH . WPINC . '/widgets/class-wp-widget-archives.php';
 
-/** WP_Widget_Archives class */ // obf
-require_once ABSPATH . WPINC . '/widgets/class-wp-widget-archives.php'; // obf
+/** WP_Widget_Media class */
+require_once ABSPATH . WPINC . '/widgets/class-wp-widget-media.php';
 
-/** WP_Widget_Media class */ // obf
-require_once ABSPATH . WPINC . '/widgets/class-wp-widget-media.php'; // obf
+/** WP_Widget_Media_Audio class */
+require_once ABSPATH . WPINC . '/widgets/class-wp-widget-media-audio.php';
 
-/** WP_Widget_Media_Audio class */ // obf
-require_once ABSPATH . WPINC . '/widgets/class-wp-widget-media-audio.php'; // obf
+/** WP_Widget_Media_Image class */
+require_once ABSPATH . WPINC . '/widgets/class-wp-widget-media-image.php';
 
-/** WP_Widget_Media_Image class */ // obf
-require_once ABSPATH . WPINC . '/widgets/class-wp-widget-media-image.php'; // obf
+/** WP_Widget_Media_Video class */
+require_once ABSPATH . WPINC . '/widgets/class-wp-widget-media-video.php';
 
-/** WP_Widget_Media_Video class */ // obf
-require_once ABSPATH . WPINC . '/widgets/class-wp-widget-media-video.php'; // obf
+/** WP_Widget_Media_Gallery class */
+require_once ABSPATH . WPINC . '/widgets/class-wp-widget-media-gallery.php';
 
-/** WP_Widget_Media_Gallery class */ // obf
-require_once ABSPATH . WPINC . '/widgets/class-wp-widget-media-gallery.php'; // obf
+/** WP_Widget_Meta class */
+require_once ABSPATH . WPINC . '/widgets/class-wp-widget-meta.php';
 
-/** WP_Widget_Meta class */ // obf
-require_once ABSPATH . WPINC . '/widgets/class-wp-widget-meta.php'; // obf
+/** WP_Widget_Calendar class */
+require_once ABSPATH . WPINC . '/widgets/class-wp-widget-calendar.php';
 
-/** WP_Widget_Calendar class */ // obf
-require_once ABSPATH . WPINC . '/widgets/class-wp-widget-calendar.php'; // obf
+/** WP_Widget_Text class */
+require_once ABSPATH . WPINC . '/widgets/class-wp-widget-text.php';
 
-/** WP_Widget_Text class */ // obf
-require_once ABSPATH . WPINC . '/widgets/class-wp-widget-text.php'; // obf
+/** WP_Widget_Categories class */
+require_once ABSPATH . WPINC . '/widgets/class-wp-widget-categories.php';
 
-/** WP_Widget_Categories class */ // obf
-require_once ABSPATH . WPINC . '/widgets/class-wp-widget-categories.php'; // obf
+/** WP_Widget_Recent_Posts class */
+require_once ABSPATH . WPINC . '/widgets/class-wp-widget-recent-posts.php';
 
-/** WP_Widget_Recent_Posts class */ // obf
-require_once ABSPATH . WPINC . '/widgets/class-wp-widget-recent-posts.php'; // obf
+/** WP_Widget_Recent_Comments class */
+require_once ABSPATH . WPINC . '/widgets/class-wp-widget-recent-comments.php';
 
-/** WP_Widget_Recent_Comments class */ // obf
-require_once ABSPATH . WPINC . '/widgets/class-wp-widget-recent-comments.php'; // obf
+/** WP_Widget_RSS class */
+require_once ABSPATH . WPINC . '/widgets/class-wp-widget-rss.php';
 
-/** WP_Widget_RSS class */ // obf
-require_once ABSPATH . WPINC . '/widgets/class-wp-widget-rss.php'; // obf
+/** WP_Widget_Tag_Cloud class */
+require_once ABSPATH . WPINC . '/widgets/class-wp-widget-tag-cloud.php';
 
-/** WP_Widget_Tag_Cloud class */ // obf
-require_once ABSPATH . WPINC . '/widgets/class-wp-widget-tag-cloud.php'; // obf
+/** WP_Nav_Menu_Widget class */
+require_once ABSPATH . WPINC . '/widgets/class-wp-nav-menu-widget.php';
 
-/** WP_Nav_Menu_Widget class */ // obf
-require_once ABSPATH . WPINC . '/widgets/class-wp-nav-menu-widget.php'; // obf
+/** WP_Widget_Custom_HTML class */
+require_once ABSPATH . WPINC . '/widgets/class-wp-widget-custom-html.php';
 
-/** WP_Widget_Custom_HTML class */ // obf
-require_once ABSPATH . WPINC . '/widgets/class-wp-widget-custom-html.php'; // obf
-
-/** WP_Widget_Block class */ // obf
-require_once ABSPATH . WPINC . '/widgets/class-wp-widget-block.php'; // obf
+/** WP_Widget_Block class */
+require_once ABSPATH . WPINC . '/widgets/class-wp-widget-block.php';

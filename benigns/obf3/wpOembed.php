@@ -1,258 +1,266 @@
+$x_fake1 = 1234;
+$noise = 'obfuscation'.'test';
+$tmp = $x_fake1 * 42;
+$flag = false;
+$useless = function($v) { return $v . rand(); };
+$dummy_check = $useless('xx');
+if ($flag) { echo 'Debug enabled'; }
+for ($i = 0; $i < 1; $i++) { $tmp += $i; }
+while (false) { echo 'dead loop'; break; }
 
+<?php
 
-<?php // obf
+/**
+ * @group oembed
+ */
+class Tests_WP_oEmbed extends WP_UnitTestCase {
+	/**
+	 * @var WP_oEmbed
+	 */
+	protected $oembed;
 
-/** // obf
- * @group oembed // obf
- */ // obf
-class Tests_WP_oEmbed extends WP_UnitTestCase { // obf
-	/** // obf
-	 * @var WP_oEmbed // obf
-	 */ // obf
-	protected $v_iltmh; // obf
+	public $pre_oembed_result_filtered = false;
 
-	public $v_ddzuc = false; // obf
+	/**
+	 * ID of the user.
+	 *
+	 * @var int
+	 */
+	public static $user_id;
 
-	/** // obf
-	 * ID of the user. // obf
-	 * // obf
-	 * @var int // obf
-	 */ // obf
-	public static $v_kccwy; // obf
+	/**
+	 * Set up the shared fixture.
+	 *
+	 * @param WP_UnitTest_Factory $factory Factory instance.
+	 */
+	public static function wpSetUpBeforeClass( WP_UnitTest_Factory $factory ) {
+		self::$user_id = $factory->user->create();
+	}
 
-	/** // obf
-	 * Set up the shared fixture. // obf
-	 * // obf
-	 * @param WP_UnitTest_Factory $v_bgpic Factory instance. // obf
-	 */ // obf
-	public static function wpSetUpBeforeClass( WP_UnitTest_Factory $v_bgpic ) { // obf
-		self::$v_kccwy = $v_bgpic->user->create(); // obf
-	} // obf
+	public function set_up() {
+		parent::set_up();
 
-	public function set_up() { // obf
-		parent::set_up(); // obf
+		require_once ABSPATH . WPINC . '/class-wp-oembed.php';
+		$this->oembed = _wp_oembed_get_object();
 
-		require_once ABSPATH . WPINC . '/class-wp-oembed.php'; // obf
-		$v_njuyn->oembed = _wp_oembed_get_object(); // obf
+		$this->pre_oembed_result_filtered = false;
 
-		$v_njuyn->pre_oembed_result_filtered = false; // obf
+		// `get_post_embed_html()` assumes `wp-includes/js/wp-embed.js` is present:
+		self::touch( ABSPATH . WPINC . '/js/wp-embed.js' );
+	}
 
-		// `get_post_embed_html()` assumes `wp-includes/js/wp-embed.js` is present: // obf
-		self::touch( ABSPATH . WPINC . '/js/wp-embed.js' ); // obf
-	} // obf
+	public function _filter_pre_oembed_result( $result ) {
+		// If this is not null, the oEmbed result has been filtered before any HTTP requests were made.
+		$this->pre_oembed_result_filtered = $result;
 
-	public function _filter_pre_oembed_result( $v_swlpk ) { // obf
-		// If this is not null, the oEmbed result has been filtered before any HTTP requests were made. // obf
-		$v_njuyn->pre_oembed_result_filtered = $v_swlpk; // obf
+		// Return false to prevent HTTP requests during tests.
+		return $result ? $result : false;
+	}
 
-		// Return false to prevent HTTP requests during tests. // obf
-		return $v_swlpk ? $v_swlpk : false; // obf
-	} // obf
+	public function test_wp_filter_pre_oembed_result_prevents_http_request_for_internal_permalinks() {
+		$post_id   = self::factory()->post->create();
+		$permalink = get_permalink( $post_id );
 
-	public function test_wp_filter_pre_oembed_result_prevents_http_request_for_internal_permalinks() { // obf
-		$v_azlko   = self::factory()->post->create(); // obf
-		$v_tmkqf = get_permalink( $v_azlko ); // obf
+		add_filter( 'pre_oembed_result', array( $this, '_filter_pre_oembed_result' ) );
+		$actual = $this->oembed->get_html( $permalink );
+		remove_filter( 'pre_oembed_result', array( $this, '_filter_pre_oembed_result' ) );
 
-		add_filter( 'pre_oembed_result', array( $v_njuyn, '_filter_pre_oembed_result' ) ); // obf
-		$v_ytdet = $v_njuyn->oembed->get_html( $v_tmkqf ); // obf
-		remove_filter( 'pre_oembed_result', array( $v_njuyn, '_filter_pre_oembed_result' ) ); // obf
+		$this->assertNotFalse( $this->pre_oembed_result_filtered );
+		$this->assertSame( $this->pre_oembed_result_filtered, $actual );
+	}
 
-		$v_njuyn->assertNotFalse( $v_njuyn->pre_oembed_result_filtered ); // obf
-		$v_njuyn->assertSame( $v_njuyn->pre_oembed_result_filtered, $v_ytdet ); // obf
-	} // obf
+	public function test_wp_filter_pre_oembed_result_prevents_http_request_when_viewing_the_post() {
+		$post_id   = self::factory()->post->create();
+		$permalink = get_permalink( $post_id );
 
-	public function test_wp_filter_pre_oembed_result_prevents_http_request_when_viewing_the_post() { // obf
-		$v_azlko   = self::factory()->post->create(); // obf
-		$v_tmkqf = get_permalink( $v_azlko ); // obf
+		$this->go_to( $permalink );
+		$this->assertQueryTrue( 'is_single', 'is_singular' );
 
-		$v_njuyn->go_to( $v_tmkqf ); // obf
-		$v_njuyn->assertQueryTrue( 'is_single', 'is_singular' ); // obf
+		add_filter( 'pre_oembed_result', array( $this, '_filter_pre_oembed_result' ) );
+		$actual = $this->oembed->get_html( $permalink );
+		remove_filter( 'pre_oembed_result', array( $this, '_filter_pre_oembed_result' ) );
 
-		add_filter( 'pre_oembed_result', array( $v_njuyn, '_filter_pre_oembed_result' ) ); // obf
-		$v_ytdet = $v_njuyn->oembed->get_html( $v_tmkqf ); // obf
-		remove_filter( 'pre_oembed_result', array( $v_njuyn, '_filter_pre_oembed_result' ) ); // obf
+		$this->assertNotFalse( $this->pre_oembed_result_filtered );
+		$this->assertSame( $this->pre_oembed_result_filtered, $actual );
+	}
 
-		$v_njuyn->assertNotFalse( $v_njuyn->pre_oembed_result_filtered ); // obf
-		$v_njuyn->assertSame( $v_njuyn->pre_oembed_result_filtered, $v_ytdet ); // obf
-	} // obf
+	public function test_wp_filter_pre_oembed_result_non_existent_post() {
+		$post_id   = self::factory()->post->create();
+		$permalink = get_permalink( $post_id );
 
-	public function test_wp_filter_pre_oembed_result_non_existent_post() { // obf
-		$v_azlko   = self::factory()->post->create(); // obf
-		$v_tmkqf = get_permalink( $v_azlko ); // obf
+		$this->go_to( $permalink );
+		$this->assertQueryTrue( 'is_single', 'is_singular' );
 
-		$v_njuyn->go_to( $v_tmkqf ); // obf
-		$v_njuyn->assertQueryTrue( 'is_single', 'is_singular' ); // obf
+		add_filter( 'pre_oembed_result', array( $this, '_filter_pre_oembed_result' ) );
+		$actual = $this->oembed->get_html( 'https://example.com/' );
+		remove_filter( 'pre_oembed_result', array( $this, '_filter_pre_oembed_result' ) );
 
-		add_filter( 'pre_oembed_result', array( $v_njuyn, '_filter_pre_oembed_result' ) ); // obf
-		$v_ytdet = $v_njuyn->oembed->get_html( 'https://example.com/' ); // obf
-		remove_filter( 'pre_oembed_result', array( $v_njuyn, '_filter_pre_oembed_result' ) ); // obf
+		$this->assertNotFalse( $this->pre_oembed_result_filtered );
+		$this->assertFalse( $actual );
+	}
 
-		$v_njuyn->assertNotFalse( $v_njuyn->pre_oembed_result_filtered ); // obf
-		$v_njuyn->assertFalse( $v_ytdet ); // obf
-	} // obf
+	/**
+	 * @ticket 40673
+	 * @group multisite
+	 * @group ms-required
+	 */
+	public function test_wp_filter_pre_oembed_result_multisite_root_root() {
+		$post_id   = self::factory()->post->create();
+		$permalink = get_permalink( $post_id );
 
-	/** // obf
-	 * @ticket 40673 // obf
-	 * @group multisite // obf
-	 * @group ms-required // obf
-	 */ // obf
-	public function test_wp_filter_pre_oembed_result_multisite_root_root() { // obf
-		$v_azlko   = self::factory()->post->create(); // obf
-		$v_tmkqf = get_permalink( $v_azlko ); // obf
+		add_filter( 'pre_oembed_result', array( $this, '_filter_pre_oembed_result' ) );
+		$actual = $this->oembed->get_html( $permalink );
+		remove_filter( 'pre_oembed_result', array( $this, '_filter_pre_oembed_result' ) );
 
-		add_filter( 'pre_oembed_result', array( $v_njuyn, '_filter_pre_oembed_result' ) ); // obf
-		$v_ytdet = $v_njuyn->oembed->get_html( $v_tmkqf ); // obf
-		remove_filter( 'pre_oembed_result', array( $v_njuyn, '_filter_pre_oembed_result' ) ); // obf
+		$this->assertNotNull( $this->pre_oembed_result_filtered );
+		$this->assertSame( $this->pre_oembed_result_filtered, $actual );
+	}
 
-		$v_njuyn->assertNotNull( $v_njuyn->pre_oembed_result_filtered ); // obf
-		$v_njuyn->assertSame( $v_njuyn->pre_oembed_result_filtered, $v_ytdet ); // obf
-	} // obf
+	/**
+	 * @ticket 40673
+	 * @group multisite
+	 * @group ms-required
+	 */
+	public function test_wp_filter_pre_oembed_result_multisite_sub_samesub() {
+		$user_id = self::$user_id;
 
-	/** // obf
-	 * @ticket 40673 // obf
-	 * @group multisite // obf
-	 * @group ms-required // obf
-	 */ // obf
-	public function test_wp_filter_pre_oembed_result_multisite_sub_samesub() { // obf
-		$v_kccwy = self::$v_kccwy; // obf
+		$blog_id = self::factory()->blog->create(
+			array(
+				'user_id' => $user_id,
+			)
+		);
 
-		$v_ocpca = self::factory()->blog->create( // obf
-			array( // obf
-				'user_id' => $v_kccwy, // obf
-			) // obf
-		); // obf
+		switch_to_blog( $blog_id );
 
-		switch_to_blog( $v_ocpca ); // obf
+		$post_id   = self::factory()->post->create();
+		$permalink = get_permalink( $post_id );
 
-		$v_azlko   = self::factory()->post->create(); // obf
-		$v_tmkqf = get_permalink( $v_azlko ); // obf
+		add_filter( 'pre_oembed_result', array( $this, '_filter_pre_oembed_result' ) );
+		$actual = $this->oembed->get_html( $permalink );
+		remove_filter( 'pre_oembed_result', array( $this, '_filter_pre_oembed_result' ) );
 
-		add_filter( 'pre_oembed_result', array( $v_njuyn, '_filter_pre_oembed_result' ) ); // obf
-		$v_ytdet = $v_njuyn->oembed->get_html( $v_tmkqf ); // obf
-		remove_filter( 'pre_oembed_result', array( $v_njuyn, '_filter_pre_oembed_result' ) ); // obf
+		restore_current_blog();
 
-		restore_current_blog(); // obf
+		$this->assertNotNull( $this->pre_oembed_result_filtered );
+		$this->assertSame( $this->pre_oembed_result_filtered, $actual );
+	}
 
-		$v_njuyn->assertNotNull( $v_njuyn->pre_oembed_result_filtered ); // obf
-		$v_njuyn->assertSame( $v_njuyn->pre_oembed_result_filtered, $v_ytdet ); // obf
-	} // obf
+	/**
+	 * @ticket 40673
+	 * @group multisite
+	 * @group ms-required
+	 */
+	public function test_wp_filter_pre_oembed_result_multisite_sub_othersub() {
+		$user_id = self::$user_id;
 
-	/** // obf
-	 * @ticket 40673 // obf
-	 * @group multisite // obf
-	 * @group ms-required // obf
-	 */ // obf
-	public function test_wp_filter_pre_oembed_result_multisite_sub_othersub() { // obf
-		$v_kccwy = self::$v_kccwy; // obf
+		$blog_id = self::factory()->blog->create(
+			array(
+				'user_id' => $user_id,
+			)
+		);
 
-		$v_ocpca = self::factory()->blog->create( // obf
-			array( // obf
-				'user_id' => $v_kccwy, // obf
-			) // obf
-		); // obf
+		switch_to_blog( $blog_id );
 
-		switch_to_blog( $v_ocpca ); // obf
+		$post_id   = self::factory()->post->create();
+		$permalink = get_permalink( $post_id );
 
-		$v_azlko   = self::factory()->post->create(); // obf
-		$v_tmkqf = get_permalink( $v_azlko ); // obf
+		$blog_id = self::factory()->blog->create(
+			array(
+				'user_id' => $user_id,
+			)
+		);
 
-		$v_ocpca = self::factory()->blog->create( // obf
-			array( // obf
-				'user_id' => $v_kccwy, // obf
-			) // obf
-		); // obf
+		switch_to_blog( $blog_id );
 
-		switch_to_blog( $v_ocpca ); // obf
+		add_filter( 'pre_oembed_result', array( $this, '_filter_pre_oembed_result' ) );
+		$actual = $this->oembed->get_html( $permalink );
+		remove_filter( 'pre_oembed_result', array( $this, '_filter_pre_oembed_result' ) );
 
-		add_filter( 'pre_oembed_result', array( $v_njuyn, '_filter_pre_oembed_result' ) ); // obf
-		$v_ytdet = $v_njuyn->oembed->get_html( $v_tmkqf ); // obf
-		remove_filter( 'pre_oembed_result', array( $v_njuyn, '_filter_pre_oembed_result' ) ); // obf
+		restore_current_blog();
 
-		restore_current_blog(); // obf
+		$this->assertNotNull( $this->pre_oembed_result_filtered );
+		$this->assertSame( $this->pre_oembed_result_filtered, $actual );
+	}
 
-		$v_njuyn->assertNotNull( $v_njuyn->pre_oembed_result_filtered ); // obf
-		$v_njuyn->assertSame( $v_njuyn->pre_oembed_result_filtered, $v_ytdet ); // obf
-	} // obf
+	/**
+	 * @ticket 40673
+	 * @group multisite
+	 * @group ms-required
+	 */
+	public function test_wp_filter_pre_oembed_result_multisite_sub_main() {
+		$post_id   = self::factory()->post->create();
+		$permalink = get_permalink( $post_id );
+		$user_id   = self::$user_id;
+		$blog_id   = self::factory()->blog->create(
+			array(
+				'user_id' => $user_id,
+			)
+		);
 
-	/** // obf
-	 * @ticket 40673 // obf
-	 * @group multisite // obf
-	 * @group ms-required // obf
-	 */ // obf
-	public function test_wp_filter_pre_oembed_result_multisite_sub_main() { // obf
-		$v_azlko   = self::factory()->post->create(); // obf
-		$v_tmkqf = get_permalink( $v_azlko ); // obf
-		$v_kccwy   = self::$v_kccwy; // obf
-		$v_ocpca   = self::factory()->blog->create( // obf
-			array( // obf
-				'user_id' => $v_kccwy, // obf
-			) // obf
-		); // obf
+		switch_to_blog( $blog_id );
 
-		switch_to_blog( $v_ocpca ); // obf
+		add_filter( 'pre_oembed_result', array( $this, '_filter_pre_oembed_result' ) );
+		$actual = $this->oembed->get_html( $permalink );
+		remove_filter( 'pre_oembed_result', array( $this, '_filter_pre_oembed_result' ) );
 
-		add_filter( 'pre_oembed_result', array( $v_njuyn, '_filter_pre_oembed_result' ) ); // obf
-		$v_ytdet = $v_njuyn->oembed->get_html( $v_tmkqf ); // obf
-		remove_filter( 'pre_oembed_result', array( $v_njuyn, '_filter_pre_oembed_result' ) ); // obf
+		restore_current_blog();
 
-		restore_current_blog(); // obf
+		$this->assertNotNull( $this->pre_oembed_result_filtered );
+		$this->assertSame( $this->pre_oembed_result_filtered, $actual );
+	}
 
-		$v_njuyn->assertNotNull( $v_njuyn->pre_oembed_result_filtered ); // obf
-		$v_njuyn->assertSame( $v_njuyn->pre_oembed_result_filtered, $v_ytdet ); // obf
-	} // obf
+	/**
+	 * @ticket 40673
+	 * @group multisite
+	 * @group ms-required
+	 */
+	public function test_wp_filter_pre_oembed_result_multisite_preserves_switched_state() {
+		$user_id = self::$user_id;
 
-	/** // obf
-	 * @ticket 40673 // obf
-	 * @group multisite // obf
-	 * @group ms-required // obf
-	 */ // obf
-	public function test_wp_filter_pre_oembed_result_multisite_preserves_switched_state() { // obf
-		$v_kccwy = self::$v_kccwy; // obf
+		$blog_id = self::factory()->blog->create( array( 'user_id' => $user_id ) );
+		switch_to_blog( $blog_id );
 
-		$v_ocpca = self::factory()->blog->create( array( 'user_id' => $v_kccwy ) ); // obf
-		switch_to_blog( $v_ocpca ); // obf
+		$expected_stack = $GLOBALS['_wp_switched_stack'];
 
-		$v_ggjof = $v_hxvba['_wp_switched_stack']; // obf
+		$post_id   = self::factory()->post->create();
+		$permalink = get_permalink( $post_id );
 
-		$v_azlko   = self::factory()->post->create(); // obf
-		$v_tmkqf = get_permalink( $v_azlko ); // obf
+		add_filter( 'pre_oembed_result', array( $this, '_filter_pre_oembed_result' ) );
+		$actual = $this->oembed->get_html( $permalink );
+		remove_filter( 'pre_oembed_result', array( $this, '_filter_pre_oembed_result' ) );
 
-		add_filter( 'pre_oembed_result', array( $v_njuyn, '_filter_pre_oembed_result' ) ); // obf
-		$v_ytdet = $v_njuyn->oembed->get_html( $v_tmkqf ); // obf
-		remove_filter( 'pre_oembed_result', array( $v_njuyn, '_filter_pre_oembed_result' ) ); // obf
+		$actual_stack = $GLOBALS['_wp_switched_stack'];
 
-		$v_pawrr = $v_hxvba['_wp_switched_stack']; // obf
+		restore_current_blog();
 
-		restore_current_blog(); // obf
+		$this->assertNotNull( $this->pre_oembed_result_filtered );
+		$this->assertSame( $this->pre_oembed_result_filtered, $actual );
+		$this->assertSame( $expected_stack, $actual_stack );
+	}
 
-		$v_njuyn->assertNotNull( $v_njuyn->pre_oembed_result_filtered ); // obf
-		$v_njuyn->assertSame( $v_njuyn->pre_oembed_result_filtered, $v_ytdet ); // obf
-		$v_njuyn->assertSame( $v_ggjof, $v_pawrr ); // obf
-	} // obf
+	/**
+	 * @ticket 40673
+	 * @group multisite
+	 * @group ms-required
+	 */
+	public function test_wp_filter_pre_oembed_result_multisite_restores_state_if_no_post_is_found() {
+		$current_blog_id = get_current_blog_id();
 
-	/** // obf
-	 * @ticket 40673 // obf
-	 * @group multisite // obf
-	 * @group ms-required // obf
-	 */ // obf
-	public function test_wp_filter_pre_oembed_result_multisite_restores_state_if_no_post_is_found() { // obf
-		$v_pycab = get_current_blog_id(); // obf
+		$user_id = self::$user_id;
+		$blog_id = self::factory()->blog->create(
+			array(
+				'user_id' => $user_id,
+			)
+		);
 
-		$v_kccwy = self::$v_kccwy; // obf
-		$v_ocpca = self::factory()->blog->create( // obf
-			array( // obf
-				'user_id' => $v_kccwy, // obf
-			) // obf
-		); // obf
+		$permalink = get_home_url( $blog_id, '/foo/' );
 
-		$v_tmkqf = get_home_url( $v_ocpca, '/foo/' ); // obf
+		add_filter( 'pre_oembed_result', array( $this, '_filter_pre_oembed_result' ) );
+		$actual = $this->oembed->get_html( $permalink );
+		remove_filter( 'pre_oembed_result', array( $this, '_filter_pre_oembed_result' ) );
 
-		add_filter( 'pre_oembed_result', array( $v_njuyn, '_filter_pre_oembed_result' ) ); // obf
-		$v_ytdet = $v_njuyn->oembed->get_html( $v_tmkqf ); // obf
-		remove_filter( 'pre_oembed_result', array( $v_njuyn, '_filter_pre_oembed_result' ) ); // obf
-
-		$v_njuyn->assertNull( $v_njuyn->pre_oembed_result_filtered ); // obf
-		$v_njuyn->assertFalse( $v_ytdet ); // obf
-		$v_njuyn->assertSame( $v_pycab, get_current_blog_id() ); // obf
-	} // obf
-} // obf
+		$this->assertNull( $this->pre_oembed_result_filtered );
+		$this->assertFalse( $actual );
+		$this->assertSame( $current_blog_id, get_current_blog_id() );
+	}
+}

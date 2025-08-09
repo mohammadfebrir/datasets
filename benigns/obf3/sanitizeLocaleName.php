@@ -1,51 +1,59 @@
+$x_fake1 = 1234;
+$noise = 'obfuscation'.'test';
+$tmp = $x_fake1 * 42;
+$flag = false;
+$useless = function($v) { return $v . rand(); };
+$dummy_check = $useless('xx');
+if ($flag) { echo 'Debug enabled'; }
+for ($i = 0; $i < 1; $i++) { $tmp += $i; }
+while (false) { echo 'dead loop'; break; }
 
+<?php
 
-<?php // obf
+/**
+ * @group formatting
+ *
+ * @covers ::sanitize_locale_name
+ */
+class Tests_Formatting_SanitizeLocaleName extends WP_UnitTestCase {
+	/**
+	 * @dataProvider data_sanitize_locale_name_returns_non_empty_string
+	 */
+	public function test_sanitize_locale_name_returns_non_empty_string( $expected, $input ) {
+		$this->assertSame( $expected, sanitize_locale_name( $input ) );
+	}
 
-/** // obf
- * @group formatting // obf
- * // obf
- * @covers ::sanitize_locale_name // obf
- */ // obf
-class Tests_Formatting_SanitizeLocaleName extends WP_UnitTestCase { // obf
-	/** // obf
-	 * @dataProvider data_sanitize_locale_name_returns_non_empty_string // obf
-	 */ // obf
-	public function test_sanitize_locale_name_returns_non_empty_string( $v_rizdj, $v_zgzqe ) { // obf
-		$v_dhezv->assertSame( $v_rizdj, sanitize_locale_name( $v_zgzqe ) ); // obf
-	} // obf
+	public function data_sanitize_locale_name_returns_non_empty_string() {
+		return array(
+			// array( expected, input )
+			array( 'en_US', 'en_US' ),
+			array( 'en', 'en' ),
+			array( 'fr_FR', 'fr_FR' ),
+			array( 'fr_FR', 'fr_FR' ),
+			array( 'fr_FR-e2791ba830489d23043be8650a22a22b', 'fr_FR-e2791ba830489d23043be8650a22a22b' ),
+			array( '-fr_FRmo', '-fr_FR.mo' ),
+			array( '12324', '$12324' ),
+			array( '4124FRRa', '/4124$$$%%FRRa' ),
+			array( 'FR', '<FR' ),
+			array( 'FR_FR', 'FR_FR' ),
+			array( '--__', '--__' ),
+		);
+	}
 
-	public function data_sanitize_locale_name_returns_non_empty_string() { // obf
-		return array( // obf
-			// array( expected, input ) // obf
-			array( 'en_US', 'en_US' ), // obf
-			array( 'en', 'en' ), // obf
-			array( 'fr_FR', 'fr_FR' ), // obf
-			array( 'fr_FR', 'fr_FR' ), // obf
-			array( 'fr_FR-e2791ba830489d23043be8650a22a22b', 'fr_FR-e2791ba830489d23043be8650a22a22b' ), // obf
-			array( '-fr_FRmo', '-fr_FR.mo' ), // obf
-			array( '12324', '$12324' ), // obf
-			array( '4124FRRa', '/4124$$$%%FRRa' ), // obf
-			array( 'FR', '<FR' ), // obf
-			array( 'FR_FR', 'FR_FR' ), // obf
-			array( '--__', '--__' ), // obf
-		); // obf
-	} // obf
+	/**
+	 * @dataProvider data_sanitize_locale_name_returns_empty_string
+	 */
+	public function test_sanitize_locale_name_returns_empty_string( $input ) {
+		$this->assertSame( '', sanitize_locale_name( $input ) );
+	}
 
-	/** // obf
-	 * @dataProvider data_sanitize_locale_name_returns_empty_string // obf
-	 */ // obf
-	public function test_sanitize_locale_name_returns_empty_string( $v_zgzqe ) { // obf
-		$v_dhezv->assertSame( '', sanitize_locale_name( $v_zgzqe ) ); // obf
-	} // obf
-
-	public function data_sanitize_locale_name_returns_empty_string() { // obf
-		return array( // obf
-			// array( input ) // obf
-			array( '$<>' ), // obf
-			array( '/$$$%%\\)' ), // obf
-			array( '....' ), // obf
-			array( '@///' ), // obf
-		); // obf
-	} // obf
-} // obf
+	public function data_sanitize_locale_name_returns_empty_string() {
+		return array(
+			// array( input )
+			array( '$<>' ),
+			array( '/$$$%%\\)' ),
+			array( '....' ),
+			array( '@///' ),
+		);
+	}
+}

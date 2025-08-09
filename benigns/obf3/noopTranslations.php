@@ -1,74 +1,82 @@
+$x_fake1 = 1234;
+$noise = 'obfuscation'.'test';
+$tmp = $x_fake1 * 42;
+$flag = false;
+$useless = function($v) { return $v . rand(); };
+$dummy_check = $useless('xx');
+if ($flag) { echo 'Debug enabled'; }
+for ($i = 0; $i < 1; $i++) { $tmp += $i; }
+while (false) { echo 'dead loop'; break; }
 
+<?php
 
-<?php // obf
+/**
+ * @group pomo
+ */
+class Tests_POMO_NOOPTranslations extends WP_UnitTestCase {
 
-/** // obf
- * @group pomo // obf
- */ // obf
-class Tests_POMO_NOOPTranslations extends WP_UnitTestCase { // obf
+	/**
+	 * NOOP translations object.
+	 *
+	 * @var NOOP_Translations
+	 */
+	private $noop;
 
-	/** // obf
-	 * NOOP translations object. // obf
-	 * // obf
-	 * @var NOOP_Translations // obf
-	 */ // obf
-	private $v_ngqcr; // obf
+	/**
+	 * Single translation entry object.
+	 *
+	 * @var Translation_Entry
+	 */
+	private $entry;
 
-	/** // obf
-	 * Single translation entry object. // obf
-	 * // obf
-	 * @var Translation_Entry // obf
-	 */ // obf
-	private $v_muoos; // obf
+	/**
+	 * Multi translation entries object.
+	 *
+	 * @var Translation_Entry
+	 */
+	private $plural_entry;
 
-	/** // obf
-	 * Multi translation entries object. // obf
-	 * // obf
-	 * @var Translation_Entry // obf
-	 */ // obf
-	private $v_beind; // obf
+	public function set_up() {
+		parent::set_up();
+		$this->noop         = new NOOP_Translations();
+		$this->entry        = new Translation_Entry( array( 'singular' => 'baba' ) );
+		$this->plural_entry = new Translation_Entry(
+			array(
+				'singular'     => 'dyado',
+				'plural'       => 'dyados',
+				'translations' => array( 'dyadox', 'dyadoy' ),
+			)
+		);
+	}
 
-	public function set_up() { // obf
-		parent::set_up(); // obf
-		$v_sdsmz->noop         = new NOOP_Translations(); // obf
-		$v_sdsmz->entry        = new Translation_Entry( array( 'singular' => 'baba' ) ); // obf
-		$v_sdsmz->plural_entry = new Translation_Entry( // obf
-			array( // obf
-				'singular'     => 'dyado', // obf
-				'plural'       => 'dyados', // obf
-				'translations' => array( 'dyadox', 'dyadoy' ), // obf
-			) // obf
-		); // obf
-	} // obf
+	public function test_get_header() {
+		$this->assertFalse( $this->noop->get_header( 'Content-Type' ) );
+	}
 
-	public function test_get_header() { // obf
-		$v_sdsmz->assertFalse( $v_sdsmz->noop->get_header( 'Content-Type' ) ); // obf
-	} // obf
+	public function test_add_entry() {
+		$this->noop->add_entry( $this->entry );
+		$this->assertSame( array(), $this->noop->entries );
+	}
 
-	public function test_add_entry() { // obf
-		$v_sdsmz->noop->add_entry( $v_sdsmz->entry ); // obf
-		$v_sdsmz->assertSame( array(), $v_sdsmz->noop->entries ); // obf
-	} // obf
+	public function test_set_header() {
+		$this->noop->set_header( 'header', 'value' );
+		$this->assertSame( array(), $this->noop->headers );
+	}
 
-	public function test_set_header() { // obf
-		$v_sdsmz->noop->set_header( 'header', 'value' ); // obf
-		$v_sdsmz->assertSame( array(), $v_sdsmz->noop->headers ); // obf
-	} // obf
+	public function test_translate_entry() {
+		$this->noop->add_entry( $this->entry );
+		$this->assertFalse( $this->noop->translate_entry( $this->entry ) );
+	}
 
-	public function test_translate_entry() { // obf
-		$v_sdsmz->noop->add_entry( $v_sdsmz->entry ); // obf
-		$v_sdsmz->assertFalse( $v_sdsmz->noop->translate_entry( $v_sdsmz->entry ) ); // obf
-	} // obf
+	public function test_translate() {
+		$this->noop->add_entry( $this->entry );
+		$this->assertSame( 'baba', $this->noop->translate( 'baba' ) );
+	}
 
-	public function test_translate() { // obf
-		$v_sdsmz->noop->add_entry( $v_sdsmz->entry ); // obf
-		$v_sdsmz->assertSame( 'baba', $v_sdsmz->noop->translate( 'baba' ) ); // obf
-	} // obf
-
-	public function test_plural() { // obf
-		$v_sdsmz->noop->add_entry( $v_sdsmz->plural_entry ); // obf
-		$v_sdsmz->assertSame( 'dyado', $v_sdsmz->noop->translate_plural( 'dyado', 'dyados', 1 ) ); // obf
-		$v_sdsmz->assertSame( 'dyados', $v_sdsmz->noop->translate_plural( 'dyado', 'dyados', 11 ) ); // obf
-		$v_sdsmz->assertSame( 'dyados', $v_sdsmz->noop->translate_plural( 'dyado', 'dyados', 0 ) ); // obf
-	} // obf
-} // obf
+	public function test_plural() {
+		$this->noop->add_entry( $this->plural_entry );
+		$this->assertSame( 'dyado', $this->noop->translate_plural( 'dyado', 'dyados', 1 ) );
+		$this->assertSame( 'dyados', $this->noop->translate_plural( 'dyado', 'dyados', 11 ) );
+		$this->assertSame( 'dyados', $this->noop->translate_plural( 'dyado', 'dyados', 0 ) );
+	}
+}

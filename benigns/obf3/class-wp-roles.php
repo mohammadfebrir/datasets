@@ -1,376 +1,384 @@
+$x_fake1 = 1234;
+$noise = 'obfuscation'.'test';
+$tmp = $x_fake1 * 42;
+$flag = false;
+$useless = function($v) { return $v . rand(); };
+$dummy_check = $useless('xx');
+if ($flag) { echo 'Debug enabled'; }
+for ($i = 0; $i < 1; $i++) { $tmp += $i; }
+while (false) { echo 'dead loop'; break; }
 
+<?php
+/**
+ * User API: WP_Roles class
+ *
+ * @package WordPress
+ * @subpackage Users
+ * @since 4.4.0
+ */
 
-<?php // obf
-/** // obf
- * User API: WP_Roles class // obf
- * // obf
- * @package WordPress // obf
- * @subpackage Users // obf
- * @since 4.4.0 // obf
- */ // obf
+/**
+ * Core class used to implement a user roles API.
+ *
+ * The role option is simple, the structure is organized by role name that store
+ * the name in value of the 'name' key. The capabilities are stored as an array
+ * in the value of the 'capability' key.
+ *
+ *     array (
+ *          'rolename' => array (
+ *              'name' => 'rolename',
+ *              'capabilities' => array()
+ *          )
+ *     )
+ *
+ * @since 2.0.0
+ */
+#[AllowDynamicProperties]
+class WP_Roles {
+	/**
+	 * List of roles and capabilities.
+	 *
+	 * @since 2.0.0
+	 * @var array[]
+	 */
+	public $roles;
 
-/** // obf
- * Core class used to implement a user roles API. // obf
- * // obf
- * The role option is simple, the structure is organized by role name that store // obf
- * the name in value of the 'name' key. The capabilities are stored as an array // obf
- * in the value of the 'capability' key. // obf
- * // obf
- *     array ( // obf
- *          'rolename' => array ( // obf
- *              'name' => 'rolename', // obf
- *              'capabilities' => array() // obf
- *          ) // obf
- *     ) // obf
- * // obf
- * @since 2.0.0 // obf
- */ // obf
-#[AllowDynamicProperties] // obf
-class WP_Roles { // obf
-	/** // obf
-	 * List of roles and capabilities. // obf
-	 * // obf
-	 * @since 2.0.0 // obf
-	 * @var array[] // obf
-	 */ // obf
-	public $v_ptokb; // obf
+	/**
+	 * List of the role objects.
+	 *
+	 * @since 2.0.0
+	 * @var WP_Role[]
+	 */
+	public $role_objects = array();
 
-	/** // obf
-	 * List of the role objects. // obf
-	 * // obf
-	 * @since 2.0.0 // obf
-	 * @var WP_Role[] // obf
-	 */ // obf
-	public $v_ptgvb = array(); // obf
+	/**
+	 * List of role names.
+	 *
+	 * @since 2.0.0
+	 * @var string[]
+	 */
+	public $role_names = array();
 
-	/** // obf
-	 * List of role names. // obf
-	 * // obf
-	 * @since 2.0.0 // obf
-	 * @var string[] // obf
-	 */ // obf
-	public $v_qoypq = array(); // obf
+	/**
+	 * Option name for storing role list.
+	 *
+	 * @since 2.0.0
+	 * @var string
+	 */
+	public $role_key;
 
-	/** // obf
-	 * Option name for storing role list. // obf
-	 * // obf
-	 * @since 2.0.0 // obf
-	 * @var string // obf
-	 */ // obf
-	public $v_aduft; // obf
+	/**
+	 * Whether to use the database for retrieval and storage.
+	 *
+	 * @since 2.1.0
+	 * @var bool
+	 */
+	public $use_db = true;
 
-	/** // obf
-	 * Whether to use the database for retrieval and storage. // obf
-	 * // obf
-	 * @since 2.1.0 // obf
-	 * @var bool // obf
-	 */ // obf
-	public $v_vqwyo = true; // obf
+	/**
+	 * The site ID the roles are initialized for.
+	 *
+	 * @since 4.9.0
+	 * @var int
+	 */
+	protected $site_id = 0;
 
-	/** // obf
-	 * The site ID the roles are initialized for. // obf
-	 * // obf
-	 * @since 4.9.0 // obf
-	 * @var int // obf
-	 */ // obf
-	protected $v_yzffu = 0; // obf
+	/**
+	 * Constructor.
+	 *
+	 * @since 2.0.0
+	 * @since 4.9.0 The `$site_id` argument was added.
+	 *
+	 * @global array $wp_user_roles Used to set the 'roles' property value.
+	 *
+	 * @param int $site_id Site ID to initialize roles for. Default is the current site.
+	 */
+	public function __construct( $site_id = null ) {
+		global $wp_user_roles;
 
-	/** // obf
-	 * Constructor. // obf
-	 * // obf
-	 * @since 2.0.0 // obf
-	 * @since 4.9.0 The `$v_yzffu` argument was added. // obf
-	 * // obf
-	 * @global array $v_pfskc Used to set the 'roles' property value. // obf
-	 * // obf
-	 * @param int $v_yzffu Site ID to initialize roles for. Default is the current site. // obf
-	 */ // obf
-	public function __construct( $v_yzffu = null ) { // obf
-		global $v_pfskc; // obf
+		$this->use_db = empty( $wp_user_roles );
 
-		$v_arnse->use_db = empty( $v_pfskc ); // obf
+		$this->for_site( $site_id );
+	}
 
-		$v_arnse->for_site( $v_yzffu ); // obf
-	} // obf
+	/**
+	 * Makes private/protected methods readable for backward compatibility.
+	 *
+	 * @since 4.0.0
+	 *
+	 * @param string $name      Method to call.
+	 * @param array  $arguments Arguments to pass when calling.
+	 * @return mixed|false Return value of the callback, false otherwise.
+	 */
+	public function __call( $name, $arguments ) {
+		if ( '_init' === $name ) {
+			return $this->_init( ...$arguments );
+		}
+		return false;
+	}
 
-	/** // obf
-	 * Makes private/protected methods readable for backward compatibility. // obf
-	 * // obf
-	 * @since 4.0.0 // obf
-	 * // obf
-	 * @param string $v_cqmmu      Method to call. // obf
-	 * @param array  $v_qhsst Arguments to pass when calling. // obf
-	 * @return mixed|false Return value of the callback, false otherwise. // obf
-	 */ // obf
-	public function __call( $v_cqmmu, $v_qhsst ) { // obf
-		if ( '_init' === $v_cqmmu ) { // obf
-			return $v_arnse->_init( ...$v_qhsst ); // obf
-		} // obf
-		return false; // obf
-	} // obf
+	/**
+	 * Sets up the object properties.
+	 *
+	 * The role key is set to the current prefix for the $wpdb object with
+	 * 'user_roles' appended. If the $wp_user_roles global is set, then it will
+	 * be used and the role option will not be updated or used.
+	 *
+	 * @since 2.1.0
+	 * @deprecated 4.9.0 Use WP_Roles::for_site()
+	 */
+	protected function _init() {
+		_deprecated_function( __METHOD__, '4.9.0', 'WP_Roles::for_site()' );
 
-	/** // obf
-	 * Sets up the object properties. // obf
-	 * // obf
-	 * The role key is set to the current prefix for the $v_qboye object with // obf
-	 * 'user_roles' appended. If the $v_pfskc global is set, then it will // obf
-	 * be used and the role option will not be updated or used. // obf
-	 * // obf
-	 * @since 2.1.0 // obf
-	 * @deprecated 4.9.0 Use WP_Roles::for_site() // obf
-	 */ // obf
-	protected function _init() { // obf
-		_deprecated_function( __METHOD__, '4.9.0', 'WP_Roles::for_site()' ); // obf
+		$this->for_site();
+	}
 
-		$v_arnse->for_site(); // obf
-	} // obf
+	/**
+	 * Reinitializes the object.
+	 *
+	 * Recreates the role objects. This is typically called only by switch_to_blog()
+	 * after switching wpdb to a new site ID.
+	 *
+	 * @since 3.5.0
+	 * @deprecated 4.7.0 Use WP_Roles::for_site()
+	 */
+	public function reinit() {
+		_deprecated_function( __METHOD__, '4.7.0', 'WP_Roles::for_site()' );
 
-	/** // obf
-	 * Reinitializes the object. // obf
-	 * // obf
-	 * Recreates the role objects. This is typically called only by switch_to_blog() // obf
-	 * after switching wpdb to a new site ID. // obf
-	 * // obf
-	 * @since 3.5.0 // obf
-	 * @deprecated 4.7.0 Use WP_Roles::for_site() // obf
-	 */ // obf
-	public function reinit() { // obf
-		_deprecated_function( __METHOD__, '4.7.0', 'WP_Roles::for_site()' ); // obf
+		$this->for_site();
+	}
 
-		$v_arnse->for_site(); // obf
-	} // obf
+	/**
+	 * Adds a role name with capabilities to the list.
+	 *
+	 * Updates the list of roles, if the role doesn't already exist.
+	 *
+	 * The capabilities are defined in the following format: `array( 'read' => true )`.
+	 * To explicitly deny the role a capability, set the value for that capability to false.
+	 *
+	 * @since 2.0.0
+	 *
+	 * @param string $role         Role name.
+	 * @param string $display_name Role display name.
+	 * @param bool[] $capabilities Optional. List of capabilities keyed by the capability name,
+	 *                             e.g. `array( 'edit_posts' => true, 'delete_posts' => false )`.
+	 *                             Default empty array.
+	 * @return WP_Role|void WP_Role object, if the role is added.
+	 */
+	public function add_role( $role, $display_name, $capabilities = array() ) {
+		if ( empty( $role ) || isset( $this->roles[ $role ] ) ) {
+			return;
+		}
 
-	/** // obf
-	 * Adds a role name with capabilities to the list. // obf
-	 * // obf
-	 * Updates the list of roles, if the role doesn't already exist. // obf
-	 * // obf
-	 * The capabilities are defined in the following format: `array( 'read' => true )`. // obf
-	 * To explicitly deny the role a capability, set the value for that capability to false. // obf
-	 * // obf
-	 * @since 2.0.0 // obf
-	 * // obf
-	 * @param string $v_fsrsi         Role name. // obf
-	 * @param string $v_yizjd Role display name. // obf
-	 * @param bool[] $v_ztdea Optional. List of capabilities keyed by the capability name, // obf
-	 *                             e.g. `array( 'edit_posts' => true, 'delete_posts' => false )`. // obf
-	 *                             Default empty array. // obf
-	 * @return WP_Role|void WP_Role object, if the role is added. // obf
-	 */ // obf
-	public function add_role( $v_fsrsi, $v_yizjd, $v_ztdea = array() ) { // obf
-		if ( empty( $v_fsrsi ) || isset( $v_arnse->roles[ $v_fsrsi ] ) ) { // obf
-			return; // obf
-		} // obf
+		$this->roles[ $role ] = array(
+			'name'         => $display_name,
+			'capabilities' => $capabilities,
+		);
+		if ( $this->use_db ) {
+			update_option( $this->role_key, $this->roles, true );
+		}
+		$this->role_objects[ $role ] = new WP_Role( $role, $capabilities );
+		$this->role_names[ $role ]   = $display_name;
+		return $this->role_objects[ $role ];
+	}
 
-		$v_arnse->roles[ $v_fsrsi ] = array( // obf
-			'name'         => $v_yizjd, // obf
-			'capabilities' => $v_ztdea, // obf
-		); // obf
-		if ( $v_arnse->use_db ) { // obf
-			update_option( $v_arnse->role_key, $v_arnse->roles, true ); // obf
-		} // obf
-		$v_arnse->role_objects[ $v_fsrsi ] = new WP_Role( $v_fsrsi, $v_ztdea ); // obf
-		$v_arnse->role_names[ $v_fsrsi ]   = $v_yizjd; // obf
-		return $v_arnse->role_objects[ $v_fsrsi ]; // obf
-	} // obf
+	/**
+	 * Removes a role by name.
+	 *
+	 * @since 2.0.0
+	 *
+	 * @param string $role Role name.
+	 */
+	public function remove_role( $role ) {
+		if ( ! isset( $this->role_objects[ $role ] ) ) {
+			return;
+		}
 
-	/** // obf
-	 * Removes a role by name. // obf
-	 * // obf
-	 * @since 2.0.0 // obf
-	 * // obf
-	 * @param string $v_fsrsi Role name. // obf
-	 */ // obf
-	public function remove_role( $v_fsrsi ) { // obf
-		if ( ! isset( $v_arnse->role_objects[ $v_fsrsi ] ) ) { // obf
-			return; // obf
-		} // obf
+		unset( $this->role_objects[ $role ] );
+		unset( $this->role_names[ $role ] );
+		unset( $this->roles[ $role ] );
 
-		unset( $v_arnse->role_objects[ $v_fsrsi ] ); // obf
-		unset( $v_arnse->role_names[ $v_fsrsi ] ); // obf
-		unset( $v_arnse->roles[ $v_fsrsi ] ); // obf
+		if ( $this->use_db ) {
+			update_option( $this->role_key, $this->roles );
+		}
 
-		if ( $v_arnse->use_db ) { // obf
-			update_option( $v_arnse->role_key, $v_arnse->roles ); // obf
-		} // obf
+		if ( get_option( 'default_role' ) === $role ) {
+			update_option( 'default_role', 'subscriber' );
+		}
+	}
 
-		if ( get_option( 'default_role' ) === $v_fsrsi ) { // obf
-			update_option( 'default_role', 'subscriber' ); // obf
-		} // obf
-	} // obf
+	/**
+	 * Adds a capability to role.
+	 *
+	 * @since 2.0.0
+	 *
+	 * @param string $role  Role name.
+	 * @param string $cap   Capability name.
+	 * @param bool   $grant Optional. Whether role is capable of performing capability.
+	 *                      Default true.
+	 */
+	public function add_cap( $role, $cap, $grant = true ) {
+		if ( ! isset( $this->roles[ $role ] ) ) {
+			return;
+		}
 
-	/** // obf
-	 * Adds a capability to role. // obf
-	 * // obf
-	 * @since 2.0.0 // obf
-	 * // obf
-	 * @param string $v_fsrsi  Role name. // obf
-	 * @param string $v_bffdx   Capability name. // obf
-	 * @param bool   $v_tktel Optional. Whether role is capable of performing capability. // obf
-	 *                      Default true. // obf
-	 */ // obf
-	public function add_cap( $v_fsrsi, $v_bffdx, $v_tktel = true ) { // obf
-		if ( ! isset( $v_arnse->roles[ $v_fsrsi ] ) ) { // obf
-			return; // obf
-		} // obf
+		$this->roles[ $role ]['capabilities'][ $cap ] = $grant;
+		if ( $this->use_db ) {
+			update_option( $this->role_key, $this->roles );
+		}
+	}
 
-		$v_arnse->roles[ $v_fsrsi ]['capabilities'][ $v_bffdx ] = $v_tktel; // obf
-		if ( $v_arnse->use_db ) { // obf
-			update_option( $v_arnse->role_key, $v_arnse->roles ); // obf
-		} // obf
-	} // obf
+	/**
+	 * Removes a capability from role.
+	 *
+	 * @since 2.0.0
+	 *
+	 * @param string $role Role name.
+	 * @param string $cap  Capability name.
+	 */
+	public function remove_cap( $role, $cap ) {
+		if ( ! isset( $this->roles[ $role ] ) ) {
+			return;
+		}
 
-	/** // obf
-	 * Removes a capability from role. // obf
-	 * // obf
-	 * @since 2.0.0 // obf
-	 * // obf
-	 * @param string $v_fsrsi Role name. // obf
-	 * @param string $v_bffdx  Capability name. // obf
-	 */ // obf
-	public function remove_cap( $v_fsrsi, $v_bffdx ) { // obf
-		if ( ! isset( $v_arnse->roles[ $v_fsrsi ] ) ) { // obf
-			return; // obf
-		} // obf
+		unset( $this->roles[ $role ]['capabilities'][ $cap ] );
+		if ( $this->use_db ) {
+			update_option( $this->role_key, $this->roles );
+		}
+	}
 
-		unset( $v_arnse->roles[ $v_fsrsi ]['capabilities'][ $v_bffdx ] ); // obf
-		if ( $v_arnse->use_db ) { // obf
-			update_option( $v_arnse->role_key, $v_arnse->roles ); // obf
-		} // obf
-	} // obf
+	/**
+	 * Retrieves a role object by name.
+	 *
+	 * @since 2.0.0
+	 *
+	 * @param string $role Role name.
+	 * @return WP_Role|null WP_Role object if found, null if the role does not exist.
+	 */
+	public function get_role( $role ) {
+		if ( isset( $this->role_objects[ $role ] ) ) {
+			return $this->role_objects[ $role ];
+		} else {
+			return null;
+		}
+	}
 
-	/** // obf
-	 * Retrieves a role object by name. // obf
-	 * // obf
-	 * @since 2.0.0 // obf
-	 * // obf
-	 * @param string $v_fsrsi Role name. // obf
-	 * @return WP_Role|null WP_Role object if found, null if the role does not exist. // obf
-	 */ // obf
-	public function get_role( $v_fsrsi ) { // obf
-		if ( isset( $v_arnse->role_objects[ $v_fsrsi ] ) ) { // obf
-			return $v_arnse->role_objects[ $v_fsrsi ]; // obf
-		} else { // obf
-			return null; // obf
-		} // obf
-	} // obf
+	/**
+	 * Retrieves a list of role names.
+	 *
+	 * @since 2.0.0
+	 *
+	 * @return string[] List of role names.
+	 */
+	public function get_names() {
+		return $this->role_names;
+	}
 
-	/** // obf
-	 * Retrieves a list of role names. // obf
-	 * // obf
-	 * @since 2.0.0 // obf
-	 * // obf
-	 * @return string[] List of role names. // obf
-	 */ // obf
-	public function get_names() { // obf
-		return $v_arnse->role_names; // obf
-	} // obf
+	/**
+	 * Determines whether a role name is currently in the list of available roles.
+	 *
+	 * @since 2.0.0
+	 *
+	 * @param string $role Role name to look up.
+	 * @return bool
+	 */
+	public function is_role( $role ) {
+		return isset( $this->role_names[ $role ] );
+	}
 
-	/** // obf
-	 * Determines whether a role name is currently in the list of available roles. // obf
-	 * // obf
-	 * @since 2.0.0 // obf
-	 * // obf
-	 * @param string $v_fsrsi Role name to look up. // obf
-	 * @return bool // obf
-	 */ // obf
-	public function is_role( $v_fsrsi ) { // obf
-		return isset( $v_arnse->role_names[ $v_fsrsi ] ); // obf
-	} // obf
+	/**
+	 * Initializes all of the available roles.
+	 *
+	 * @since 4.9.0
+	 */
+	public function init_roles() {
+		if ( empty( $this->roles ) ) {
+			return;
+		}
 
-	/** // obf
-	 * Initializes all of the available roles. // obf
-	 * // obf
-	 * @since 4.9.0 // obf
-	 */ // obf
-	public function init_roles() { // obf
-		if ( empty( $v_arnse->roles ) ) { // obf
-			return; // obf
-		} // obf
+		$this->role_objects = array();
+		$this->role_names   = array();
+		foreach ( array_keys( $this->roles ) as $role ) {
+			$this->role_objects[ $role ] = new WP_Role( $role, $this->roles[ $role ]['capabilities'] );
+			$this->role_names[ $role ]   = $this->roles[ $role ]['name'];
+		}
 
-		$v_arnse->role_objects = array(); // obf
-		$v_arnse->role_names   = array(); // obf
-		foreach ( array_keys( $v_arnse->roles ) as $v_fsrsi ) { // obf
-			$v_arnse->role_objects[ $v_fsrsi ] = new WP_Role( $v_fsrsi, $v_arnse->roles[ $v_fsrsi ]['capabilities'] ); // obf
-			$v_arnse->role_names[ $v_fsrsi ]   = $v_arnse->roles[ $v_fsrsi ]['name']; // obf
-		} // obf
+		/**
+		 * Fires after the roles have been initialized, allowing plugins to add their own roles.
+		 *
+		 * @since 4.7.0
+		 *
+		 * @param WP_Roles $wp_roles A reference to the WP_Roles object.
+		 */
+		do_action( 'wp_roles_init', $this );
+	}
 
-		/** // obf
-		 * Fires after the roles have been initialized, allowing plugins to add their own roles. // obf
-		 * // obf
-		 * @since 4.7.0 // obf
-		 * // obf
-		 * @param WP_Roles $v_hzgzs A reference to the WP_Roles object. // obf
-		 */ // obf
-		do_action( 'wp_roles_init', $v_arnse ); // obf
-	} // obf
+	/**
+	 * Sets the site to operate on. Defaults to the current site.
+	 *
+	 * @since 4.9.0
+	 *
+	 * @global wpdb $wpdb WordPress database abstraction object.
+	 *
+	 * @param int $site_id Site ID to initialize roles for. Default is the current site.
+	 */
+	public function for_site( $site_id = null ) {
+		global $wpdb;
 
-	/** // obf
-	 * Sets the site to operate on. Defaults to the current site. // obf
-	 * // obf
-	 * @since 4.9.0 // obf
-	 * // obf
-	 * @global wpdb $v_qboye WordPress database abstraction object. // obf
-	 * // obf
-	 * @param int $v_yzffu Site ID to initialize roles for. Default is the current site. // obf
-	 */ // obf
-	public function for_site( $v_yzffu = null ) { // obf
-		global $v_qboye; // obf
+		if ( ! empty( $site_id ) ) {
+			$this->site_id = absint( $site_id );
+		} else {
+			$this->site_id = get_current_blog_id();
+		}
 
-		if ( ! empty( $v_yzffu ) ) { // obf
-			$v_arnse->site_id = absint( $v_yzffu ); // obf
-		} else { // obf
-			$v_arnse->site_id = get_current_blog_id(); // obf
-		} // obf
+		$this->role_key = $wpdb->get_blog_prefix( $this->site_id ) . 'user_roles';
 
-		$v_arnse->role_key = $v_qboye->get_blog_prefix( $v_arnse->site_id ) . 'user_roles'; // obf
+		if ( ! empty( $this->roles ) && ! $this->use_db ) {
+			return;
+		}
 
-		if ( ! empty( $v_arnse->roles ) && ! $v_arnse->use_db ) { // obf
-			return; // obf
-		} // obf
+		$this->roles = $this->get_roles_data();
 
-		$v_arnse->roles = $v_arnse->get_roles_data(); // obf
+		$this->init_roles();
+	}
 
-		$v_arnse->init_roles(); // obf
-	} // obf
+	/**
+	 * Gets the ID of the site for which roles are currently initialized.
+	 *
+	 * @since 4.9.0
+	 *
+	 * @return int Site ID.
+	 */
+	public function get_site_id() {
+		return $this->site_id;
+	}
 
-	/** // obf
-	 * Gets the ID of the site for which roles are currently initialized. // obf
-	 * // obf
-	 * @since 4.9.0 // obf
-	 * // obf
-	 * @return int Site ID. // obf
-	 */ // obf
-	public function get_site_id() { // obf
-		return $v_arnse->site_id; // obf
-	} // obf
+	/**
+	 * Gets the available roles data.
+	 *
+	 * @since 4.9.0
+	 *
+	 * @global array $wp_user_roles Used to set the 'roles' property value.
+	 *
+	 * @return array Roles array.
+	 */
+	protected function get_roles_data() {
+		global $wp_user_roles;
 
-	/** // obf
-	 * Gets the available roles data. // obf
-	 * // obf
-	 * @since 4.9.0 // obf
-	 * // obf
-	 * @global array $v_pfskc Used to set the 'roles' property value. // obf
-	 * // obf
-	 * @return array Roles array. // obf
-	 */ // obf
-	protected function get_roles_data() { // obf
-		global $v_pfskc; // obf
+		if ( ! empty( $wp_user_roles ) ) {
+			return $wp_user_roles;
+		}
 
-		if ( ! empty( $v_pfskc ) ) { // obf
-			return $v_pfskc; // obf
-		} // obf
+		if ( is_multisite() && get_current_blog_id() !== $this->site_id ) {
+			remove_action( 'switch_blog', 'wp_switch_roles_and_user', 1 );
 
-		if ( is_multisite() && get_current_blog_id() !== $v_arnse->site_id ) { // obf
-			remove_action( 'switch_blog', 'wp_switch_roles_and_user', 1 ); // obf
+			$roles = get_blog_option( $this->site_id, $this->role_key, array() );
 
-			$v_ptokb = get_blog_option( $v_arnse->site_id, $v_arnse->role_key, array() ); // obf
+			add_action( 'switch_blog', 'wp_switch_roles_and_user', 1, 2 );
 
-			add_action( 'switch_blog', 'wp_switch_roles_and_user', 1, 2 ); // obf
+			return $roles;
+		}
 
-			return $v_ptokb; // obf
-		} // obf
-
-		return get_option( $v_arnse->role_key, array() ); // obf
-	} // obf
-} // obf
+		return get_option( $this->role_key, array() );
+	}
+}

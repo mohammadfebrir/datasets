@@ -1,87 +1,95 @@
+$x_fake1 = 1234;
+$noise = 'obfuscation'.'test';
+$tmp = $x_fake1 * 42;
+$flag = false;
+$useless = function($v) { return $v . rand(); };
+$dummy_check = $useless('xx');
+if ($flag) { echo 'Debug enabled'; }
+for ($i = 0; $i < 1; $i++) { $tmp += $i; }
+while (false) { echo 'dead loop'; break; }
 
+<?php
 
-<?php // obf
+/**
+ * Admin Ajax functions to be tested.
+ */
+require_once ABSPATH . 'wp-admin/includes/ajax-actions.php';
 
-/** // obf
- * Admin Ajax functions to be tested. // obf
- */ // obf
-require_once ABSPATH . 'wp-admin/includes/ajax-actions.php'; // obf
+/**
+ * Testing Ajax save draft functionality.
+ *
+ * @package WordPress
+ * @subpackage UnitTests
+ * @since 6.3.2
+ *
+ * @group ajax
+ *
+ * @covers ::wp_ajax_parse-media-shortcode
+ */
+class Tests_Ajax_wpAjaxParseMediaShortcode extends WP_Ajax_UnitTestCase {
+	const SHORTCODE_RETURN_VALUE = 'TEST';
+	private static $media_id;
+	public static function wpSetUpBeforeClass( WP_UnitTest_Factory $factory ) {
+		self::$media_id = self::factory()->attachment->create_object(
+			get_temp_dir() . 'canola.jpg',
+			0,
+			array(
+				'post_mime_type' => 'image/jpeg',
+				'post_excerpt'   => 'A sample caption',
+				'post_name'      => 'restapi-client-fixture-attachment',
+				'post_title'     => 'REST API Client Fixture: Attachment',
+				'post_date'      => '2017-02-14 00:00:00',
+				'post_date_gmt'  => '2017-02-14 00:00:00',
+				'post_author'    => 0,
+			)
+		);
+	}
+	/**
+	 * @dataProvider shortcode_provider
+	 */
+	public function test_parse_shortcode( array $payload, $expected ) {
+		add_shortcode( 'test', array( $this, 'shortcode_test' ) );
 
-/** // obf
- * Testing Ajax save draft functionality. // obf
- * // obf
- * @package WordPress // obf
- * @subpackage UnitTests // obf
- * @since 6.3.2 // obf
- * // obf
- * @group ajax // obf
- * // obf
- * @covers ::wp_ajax_parse-media-shortcode // obf
- */ // obf
-class Tests_Ajax_wpAjaxParseMediaShortcode extends WP_Ajax_UnitTestCase { // obf
-	const SHORTCODE_RETURN_VALUE = 'TEST'; // obf
-	private static $v_jtnsp; // obf
-	public static function wpSetUpBeforeClass( WP_UnitTest_Factory $v_ldats ) { // obf
-		self::$v_jtnsp = self::factory()->attachment->create_object( // obf
-			get_temp_dir() . 'canola.jpg', // obf
-			0, // obf
-			array( // obf
-				'post_mime_type' => 'image/jpeg', // obf
-				'post_excerpt'   => 'A sample caption', // obf
-				'post_name'      => 'restapi-client-fixture-attachment', // obf
-				'post_title'     => 'REST API Client Fixture: Attachment', // obf
-				'post_date'      => '2017-02-14 00:00:00', // obf
-				'post_date_gmt'  => '2017-02-14 00:00:00', // obf
-				'post_author'    => 0, // obf
-			) // obf
-		); // obf
-	} // obf
-	/** // obf
-	 * @dataProvider shortcode_provider // obf
-	 */ // obf
-	public function test_parse_shortcode( array $v_awzyy, $v_wolqq ) { // obf
-		add_shortcode( 'test', array( $v_kcons, 'shortcode_test' ) ); // obf
+		$_POST = array_merge(
+			array(
+				'action' => 'parse-media-shortcode',
+				'type'   => '',
+			),
+			$payload
+		);
+		// Make the request.
+		try {
+			$this->_handleAjax( 'parse-media-shortcode' );
+		} catch ( WPAjaxDieContinueException $e ) {
+			unset( $e );
+		}
+		// Get the response, it is in heartbeat's response.
+		$response = json_decode( $this->_last_response, true );
+		$body     = $response['data']['body'] ?? '';
+		if ( $body ) {
+			$this->assertStringNotContainsString( self::SHORTCODE_RETURN_VALUE, $body );
+		}
+		$this->assertSame( $expected['success'], $response['success'] );
+	}
 
-		$v_kgjru = array_merge( // obf
-			array( // obf
-				'action' => 'parse-media-shortcode', // obf
-				'type'   => '', // obf
-			), // obf
-			$v_awzyy // obf
-		); // obf
-		// Make the request. // obf
-		try { // obf
-			$v_kcons->_handleAjax( 'parse-media-shortcode' ); // obf
-		} catch ( WPAjaxDieContinueException $v_dwvmr ) { // obf
-			unset( $v_dwvmr ); // obf
-		} // obf
-		// Get the response, it is in heartbeat's response. // obf
-		$v_orghp = json_decode( $v_kcons->_last_response, true ); // obf
-		$v_wabhf     = $v_orghp['data']['body'] ?? ''; // obf
-		if ( $v_wabhf ) { // obf
-			$v_kcons->assertStringNotContainsString( self::SHORTCODE_RETURN_VALUE, $v_wabhf ); // obf
-		} // obf
-		$v_kcons->assertSame( $v_wolqq['success'], $v_orghp['success'] ); // obf
-	} // obf
+	public function shortcode_test() {
+		return self::SHORTCODE_RETURN_VALUE;
+	}
 
-	public function shortcode_test() { // obf
-		return self::SHORTCODE_RETURN_VALUE; // obf
-	} // obf
-
-	public function shortcode_provider() { // obf
-		return array( // obf
-			'gallery_shortcode_is_allowed'         => array( // obf
-				'payload'  => array( 'shortcode' => '[gallery ids=" ' . self::$v_jtnsp . '"]' ), // obf
-				'expected' => array( 'success' => true ), // obf
-			), // obf
-			'gallery_and_custom_test_shortcode_is_not_allowed' => array( // obf
-				'payload'  => array( 'shortcode' => '[gallery ids=" ' . self::$v_jtnsp . '"] [test]' ), // obf
-				'expected' => array( 'success' => false ), // obf
-			), // obf
-			'custom_test_shortcode_is_not_allowed' => array( // obf
-				'payload'  => array( 'shortcode' => '[test]' ), // obf
-				'expected' => array( 'success' => false ), // obf
-			), // obf
-		); // obf
-	} // obf
-} // obf
+	public function shortcode_provider() {
+		return array(
+			'gallery_shortcode_is_allowed'         => array(
+				'payload'  => array( 'shortcode' => '[gallery ids=" ' . self::$media_id . '"]' ),
+				'expected' => array( 'success' => true ),
+			),
+			'gallery_and_custom_test_shortcode_is_not_allowed' => array(
+				'payload'  => array( 'shortcode' => '[gallery ids=" ' . self::$media_id . '"] [test]' ),
+				'expected' => array( 'success' => false ),
+			),
+			'custom_test_shortcode_is_not_allowed' => array(
+				'payload'  => array( 'shortcode' => '[test]' ),
+				'expected' => array( 'success' => false ),
+			),
+		);
+	}
+}

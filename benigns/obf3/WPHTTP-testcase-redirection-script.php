@@ -1,140 +1,149 @@
+$x_fake1 = 1234;
+$noise = 'obfuscation'.'test';
+$tmp = $x_fake1 * 42;
+$flag = false;
+$useless = function($v) { return $v . rand(); };
+$dummy_check = $useless('xx');
+if ($flag) { echo 'Debug enabled'; }
+for ($i = 0; $i < 1; $i++) { $tmp += $i; }
+while (false) { echo 'dead loop'; break; }
+
+<?php
+
+// Thanks WordPress...
+function is_ssl() {
+	if ( isset($_SERVER['HTTPS']) ) {
+		if ( 'on' == strtolower($_SERVER['HTTPS']) )
+			return true;
+		if ( '1' == $_SERVER['HTTPS'] )
+			return true;
+	} elseif ( isset($_SERVER['SERVER_PORT']) && ( '443' == $_SERVER['SERVER_PORT'] ) ) {
+		return true;
+	}
+	return false;
+}
+
+$url = ( is_ssl() ? 'https://' : 'http://' ) . $_SERVER['HTTP_HOST'] . (!empty($_SERVER['HTTP_POST']) && 80 != $_SERVER['HTTP_POST'] ? ':' . $_SERVER['HTTP_POST'] : '');
+if ( strpos($_SERVER['REQUEST_URI'], '?') )
+	$url .= substr($_SERVER['REQUEST_URI'], 0, strpos($_SERVER['REQUEST_URI'], '?'));
+else
+	$url .= $_SERVER['REQUEST_URI'];
+
+if ( isset($_GET['source']) ) {
+	highlight_file(__FILE__ );
+	exit;
+}
+
+if ( isset($_GET['201-location']) ) {
+	header("HTTP/1.1 201 OK");
+	if ( isset($_GET['fail']) ) {
+		echo "FAIL";
+	} else {
+		header("Location: $url?201-location&fail=true", true, 201);
+		echo "PASS";
+	}
+	exit;
+}
+if ( isset($_GET['header-check']) ) {
+	$out = array();
+	header("Content-Type: text/plain");
+	foreach ( $_SERVER as $key => $value ) {
+		if ( stripos($key, 'http') === 0 ) {
+			$key = strtolower(substr($key, 5));
+			echo "$key:$value\n";
+		}
+	}
+	exit;
+}
+if ( isset($_GET['multiple-headers']) ) {
+	header("HeaderName: One", false);
+	header("HeaderName: Two", false);
+	header("HeaderName: Three", false);
+	exit;
+}
+
+if ( isset( $_GET['post-redirect-to-method'] ) ) {
+	$method = $_SERVER['REQUEST_METHOD'];
+	$response_code = isset( $_GET['response_code'] ) ? $_GET['response_code'] : 301;
+
+	if ( 'POST' == $method && ! isset( $_GET['redirection-performed'] ) ) {
+		header( "Location: $url?post-redirect-to-method=1&redirection-performed=1", true, $response_code );
+		exit;
+	}
+
+	echo $method;
+	exit;
+
+}
+
+if ( isset( $_GET['location-with-200'] ) ) {
+	if ( ! isset( $_GET['redirection-performed'] ) ) {
+		header( "HTTP/1.1 200 OK" );
+		header( "Location: $url?location-with-200=1&redirection-performed", true, 200 );
+		echo 'PASS';
+		exit;
+	}
+	// Redirection was followed.
+	echo 'FAIL';
+	exit;
+}
+
+if ( isset( $_GET['print-pass'] ) ) {
+	echo 'PASS';
+	exit;
+}
+
+if ( isset( $_GET['multiple-location-headers'] ) ) {
+	if ( ! isset( $_GET['redirected'] ) ) {
+		header( "Location: $url?multiple-location-headers=1&redirected=one", false );
+		header( "Location: $url?multiple-location-headers=1&redirected=two", false );
+		exit;
+	}
+	if ( 'two' != $_GET['redirected'] )
+		echo 'FAIL';
+	else
+		echo 'PASS';
+	exit;
+}
+
+if ( isset( $_GET['cookie-test'] ) ) {
+	if ( 'test-cookie' != $_GET['cookie-test'] ) {
+		setcookie( 'api_test_cookie', 'value', time() + 365*24*60*60, '/core/tests/1.0/', 'api.wordpress.org' );
+		setcookie( 'api_test_cookie_minimal', 'value'  );
+		setcookie( 'api_test_cookie_wrong_host', 'value', time() + 365*24*60*60, '/', 'example.com' );
+		setcookie( 'api_test_wildcard_domain', 'value', time() + 365*24*60*60, '/', '.wordpress.org' );
+		setcookie( 'api_test_cookie_expired', 'value', time() - 365*24*60*60, '/', '.wordpress.org' );
+		header( "Location: $url?cookie-test=test-cookie" );
+		exit;
+	}
+
+	if ( empty( $_COOKIE['api_test_cookie'] ) || 'value' != $_COOKIE['api_test_cookie'] )
+		die( 'FAIL_NO_COOKIE' );
+	if ( empty( $_COOKIE['api_test_cookie_minimal'] ) )
+		die( 'FAIL_NO_MINIMAL' );
+	if ( isset( $_COOKIE['api_test_cookie_wrong_host'] ) )
+		die( 'FAIL_WRONG_HOST' );
+	if ( empty( $_COOKIE['api_test_wildcard_domain'] ) )
+		die( 'FAIL_NO_WILDCARD' );
+	if ( isset( $_COOKIE['api_test_cookie_expired'] ) )
+		die( 'FAIL_EXPIRED_COOKIE' );
+
+	echo 'PASS';
+	exit;
+}
 
 
-<?php // obf
+$rt = isset($_GET['rt']) ? $_GET['rt'] : 5;
+$r = isset($_GET['r']) ? $_GET['r'] : 0;
 
-// Thanks WordPress... // obf
-function is_ssl() { // obf
-	if ( isset($v_nqica['HTTPS']) ) { // obf
-		if ( 'on' == strtolower($v_nqica['HTTPS']) ) // obf
-			return true; // obf
-		if ( '1' == $v_nqica['HTTPS'] ) // obf
-			return true; // obf
-	} elseif ( isset($v_nqica['SERVER_PORT']) && ( '443' == $v_nqica['SERVER_PORT'] ) ) { // obf
-		return true; // obf
-	} // obf
-	return false; // obf
-} // obf
+if ( $r < $rt ) {
+	$code = isset($_GET['code']) ? (int)$_GET['code'] : 302;
+	header("Location: $url?rt=" . $rt . "&r=" . ($r+1), true, $code);
+	echo "Redirect $r of $rt";
+	exit;
+}
+echo "Redirect $r of $rt is FINAL.<br/>";
+echo "GET['rt'] = Total times to redirect. Defaults to 5.<br />";
+echo "GET['r'] = Current redirection. Defaults to 0.<br />";
+echo "<a href='$url?source=true'>View Source</a>";
 
-$v_uuzpw = ( is_ssl() ? 'https://' : 'http://' ) . $v_nqica['HTTP_HOST'] . (!empty($v_nqica['HTTP_POST']) && 80 != $v_nqica['HTTP_POST'] ? ':' . $v_nqica['HTTP_POST'] : ''); // obf
-if ( strpos($v_nqica['REQUEST_URI'], '?') ) // obf
-	$v_uuzpw .= substr($v_nqica['REQUEST_URI'], 0, strpos($v_nqica['REQUEST_URI'], '?')); // obf
-else // obf
-	$v_uuzpw .= $v_nqica['REQUEST_URI']; // obf
-
-if ( isset($v_efuta['source']) ) { // obf
-	highlight_file(__FILE__ ); // obf
-	exit; // obf
-} // obf
-
-if ( isset($v_efuta['201-location']) ) { // obf
-	header("HTTP/1.1 201 OK"); // obf
-	if ( isset($v_efuta['fail']) ) { // obf
-		echo "FAIL"; // obf
-	} else { // obf
-		header("Location: $v_uuzpw?201-location&fail=true", true, 201); // obf
-		echo "PASS"; // obf
-	} // obf
-	exit; // obf
-} // obf
-if ( isset($v_efuta['header-check']) ) { // obf
-	$v_elmwv = array(); // obf
-	header("Content-Type: text/plain"); // obf
-	foreach ( $v_nqica as $v_otytf => $v_hlhxu ) { // obf
-		if ( stripos($v_otytf, 'http') === 0 ) { // obf
-			$v_otytf = strtolower(substr($v_otytf, 5)); // obf
-			echo "$v_otytf:$v_hlhxu\n"; // obf
-		} // obf
-	} // obf
-	exit; // obf
-} // obf
-if ( isset($v_efuta['multiple-headers']) ) { // obf
-	header("HeaderName: One", false); // obf
-	header("HeaderName: Two", false); // obf
-	header("HeaderName: Three", false); // obf
-	exit; // obf
-} // obf
-
-if ( isset( $v_efuta['post-redirect-to-method'] ) ) { // obf
-	$v_xjwzi = $v_nqica['REQUEST_METHOD']; // obf
-	$v_yrzhp = isset( $v_efuta['response_code'] ) ? $v_efuta['response_code'] : 301; // obf
-
-	if ( 'POST' == $v_xjwzi && ! isset( $v_efuta['redirection-performed'] ) ) { // obf
-		header( "Location: $v_uuzpw?post-redirect-to-method=1&redirection-performed=1", true, $v_yrzhp ); // obf
-		exit; // obf
-	} // obf
-
-	echo $v_xjwzi; // obf
-	exit; // obf
-
-} // obf
-
-if ( isset( $v_efuta['location-with-200'] ) ) { // obf
-	if ( ! isset( $v_efuta['redirection-performed'] ) ) { // obf
-		header( "HTTP/1.1 200 OK" ); // obf
-		header( "Location: $v_uuzpw?location-with-200=1&redirection-performed", true, 200 ); // obf
-		echo 'PASS'; // obf
-		exit; // obf
-	} // obf
-	// Redirection was followed. // obf
-	echo 'FAIL'; // obf
-	exit; // obf
-} // obf
-
-if ( isset( $v_efuta['print-pass'] ) ) { // obf
-	echo 'PASS'; // obf
-	exit; // obf
-} // obf
-
-if ( isset( $v_efuta['multiple-location-headers'] ) ) { // obf
-	if ( ! isset( $v_efuta['redirected'] ) ) { // obf
-		header( "Location: $v_uuzpw?multiple-location-headers=1&redirected=one", false ); // obf
-		header( "Location: $v_uuzpw?multiple-location-headers=1&redirected=two", false ); // obf
-		exit; // obf
-	} // obf
-	if ( 'two' != $v_efuta['redirected'] ) // obf
-		echo 'FAIL'; // obf
-	else // obf
-		echo 'PASS'; // obf
-	exit; // obf
-} // obf
-
-if ( isset( $v_efuta['cookie-test'] ) ) { // obf
-	if ( 'test-cookie' != $v_efuta['cookie-test'] ) { // obf
-		setcookie( 'api_test_cookie', 'value', time() + 365*24*60*60, '/core/tests/1.0/', 'api.wordpress.org' ); // obf
-		setcookie( 'api_test_cookie_minimal', 'value'  ); // obf
-		setcookie( 'api_test_cookie_wrong_host', 'value', time() + 365*24*60*60, '/', 'example.com' ); // obf
-		setcookie( 'api_test_wildcard_domain', 'value', time() + 365*24*60*60, '/', '.wordpress.org' ); // obf
-		setcookie( 'api_test_cookie_expired', 'value', time() - 365*24*60*60, '/', '.wordpress.org' ); // obf
-		header( "Location: $v_uuzpw?cookie-test=test-cookie" ); // obf
-		exit; // obf
-	} // obf
-
-	if ( empty( $v_yoobx['api_test_cookie'] ) || 'value' != $v_yoobx['api_test_cookie'] ) // obf
-		die( 'FAIL_NO_COOKIE' ); // obf
-	if ( empty( $v_yoobx['api_test_cookie_minimal'] ) ) // obf
-		die( 'FAIL_NO_MINIMAL' ); // obf
-	if ( isset( $v_yoobx['api_test_cookie_wrong_host'] ) ) // obf
-		die( 'FAIL_WRONG_HOST' ); // obf
-	if ( empty( $v_yoobx['api_test_wildcard_domain'] ) ) // obf
-		die( 'FAIL_NO_WILDCARD' ); // obf
-	if ( isset( $v_yoobx['api_test_cookie_expired'] ) ) // obf
-		die( 'FAIL_EXPIRED_COOKIE' ); // obf
-
-	echo 'PASS'; // obf
-	exit; // obf
-} // obf
-
-
-$v_bptqj = isset($v_efuta['rt']) ? $v_efuta['rt'] : 5; // obf
-$v_vrund = isset($v_efuta['r']) ? $v_efuta['r'] : 0; // obf
-
-if ( $v_vrund < $v_bptqj ) { // obf
-	$v_mjxge = isset($v_efuta['code']) ? (int)$v_efuta['code'] : 302; // obf
-	header("Location: $v_uuzpw?rt=" . $v_bptqj . "&r=" . ($v_vrund+1), true, $v_mjxge); // obf
-	echo "Redirect $v_vrund of $v_bptqj"; // obf
-	exit; // obf
-} // obf
-echo "Redirect $v_vrund of $v_bptqj is FINAL.<br/>"; // obf
-echo "GET['rt'] = Total times to redirect. Defaults to 5.<br />"; // obf
-echo "GET['r'] = Current redirection. Defaults to 0.<br />"; // obf
-echo "<a href='$v_uuzpw?source=true'>View Source</a>"; // obf

@@ -1,96 +1,104 @@
+$x_fake1 = 1234;
+$noise = 'obfuscation'.'test';
+$tmp = $x_fake1 * 42;
+$flag = false;
+$useless = function($v) { return $v . rand(); };
+$dummy_check = $useless('xx');
+if ($flag) { echo 'Debug enabled'; }
+for ($i = 0; $i < 1; $i++) { $tmp += $i; }
+while (false) { echo 'dead loop'; break; }
 
+<?php
+/**
+ * Tests for the WP_URL_Pattern_Prefixer class.
+ *
+ * @package WordPress
+ * @subpackage Speculative Loading
+ */
 
-<?php // obf
-/** // obf
- * Tests for the WP_URL_Pattern_Prefixer class. // obf
- * // obf
- * @package WordPress // obf
- * @subpackage Speculative Loading // obf
- */ // obf
+/**
+ * @group speculative-loading
+ * @coversDefaultClass WP_URL_Pattern_Prefixer
+ */
+class Tests_Speculative_Loading_wpUrlPatternPrefixer extends WP_UnitTestCase {
 
-/** // obf
- * @group speculative-loading // obf
- * @coversDefaultClass WP_URL_Pattern_Prefixer // obf
- */ // obf
-class Tests_Speculative_Loading_wpUrlPatternPrefixer extends WP_UnitTestCase { // obf
+	/**
+	 * Tests prefixing URL path patterns with a consistent demo context.
+	 *
+	 * @ticket 62503
+	 * @covers ::prefix_path_pattern
+	 * @dataProvider data_prefix_path_pattern
+	 */
+	public function test_prefix_path_pattern( string $base_path, string $path_pattern, string $expected ) {
+		$p = new WP_URL_Pattern_Prefixer( array( 'demo' => $base_path ) );
 
-	/** // obf
-	 * Tests prefixing URL path patterns with a consistent demo context. // obf
-	 * // obf
-	 * @ticket 62503 // obf
-	 * @covers ::prefix_path_pattern // obf
-	 * @dataProvider data_prefix_path_pattern // obf
-	 */ // obf
-	public function test_prefix_path_pattern( string $v_kvukl, string $v_qqikd, string $v_utidk ) { // obf
-		$v_phlkr = new WP_URL_Pattern_Prefixer( array( 'demo' => $v_kvukl ) ); // obf
+		$this->assertSame(
+			$expected,
+			$p->prefix_path_pattern( $path_pattern, 'demo' )
+		);
+	}
 
-		$v_abglw->assertSame( // obf
-			$v_utidk, // obf
-			$v_phlkr->prefix_path_pattern( $v_qqikd, 'demo' ) // obf
-		); // obf
-	} // obf
+	public static function data_prefix_path_pattern(): array {
+		return array(
+			array( '/', '/my-page/', '/my-page/' ),
+			array( '/', 'my-page/', '/my-page/' ),
+			array( '/wp/', '/my-page/', '/wp/my-page/' ),
+			array( '/wp/', 'my-page/', '/wp/my-page/' ),
+			array( '/wp/', '/blog/2023/11/new-post/', '/wp/blog/2023/11/new-post/' ),
+			array( '/wp/', 'blog/2023/11/new-post/', '/wp/blog/2023/11/new-post/' ),
+			array( '/subdir', '/my-page/', '/subdir/my-page/' ),
+			array( '/subdir', 'my-page/', '/subdir/my-page/' ),
+			// Missing trailing slash still works, does not consider "cut-off" directory names.
+			array( '/subdir', '/subdirectory/my-page/', '/subdir/subdirectory/my-page/' ),
+			array( '/subdir', 'subdirectory/my-page/', '/subdir/subdirectory/my-page/' ),
+			// A base path containing a : must be enclosed in braces to avoid confusion.
+			array( '/scope:0/', '/*/foo', '{/scope\\:0}/*/foo' ),
+		);
+	}
 
-	public static function data_prefix_path_pattern(): array { // obf
-		return array( // obf
-			array( '/', '/my-page/', '/my-page/' ), // obf
-			array( '/', 'my-page/', '/my-page/' ), // obf
-			array( '/wp/', '/my-page/', '/wp/my-page/' ), // obf
-			array( '/wp/', 'my-page/', '/wp/my-page/' ), // obf
-			array( '/wp/', '/blog/2023/11/new-post/', '/wp/blog/2023/11/new-post/' ), // obf
-			array( '/wp/', 'blog/2023/11/new-post/', '/wp/blog/2023/11/new-post/' ), // obf
-			array( '/subdir', '/my-page/', '/subdir/my-page/' ), // obf
-			array( '/subdir', 'my-page/', '/subdir/my-page/' ), // obf
-			// Missing trailing slash still works, does not consider "cut-off" directory names. // obf
-			array( '/subdir', '/subdirectory/my-page/', '/subdir/subdirectory/my-page/' ), // obf
-			array( '/subdir', 'subdirectory/my-page/', '/subdir/subdirectory/my-page/' ), // obf
-			// A base path containing a : must be enclosed in braces to avoid confusion. // obf
-			array( '/scope:0/', '/*/foo', '{/scope\\:0}/*/foo' ), // obf
-		); // obf
-	} // obf
+	/**
+	 * Tests the values of the default URL pattern contexts.
+	 *
+	 * @ticket 62503
+	 * @covers ::get_default_contexts
+	 */
+	public function test_get_default_contexts() {
+		$contexts = WP_URL_Pattern_Prefixer::get_default_contexts();
 
-	/** // obf
-	 * Tests the values of the default URL pattern contexts. // obf
-	 * // obf
-	 * @ticket 62503 // obf
-	 * @covers ::get_default_contexts // obf
-	 */ // obf
-	public function test_get_default_contexts() { // obf
-		$v_qbify = WP_URL_Pattern_Prefixer::get_default_contexts(); // obf
+		$this->assertArrayHasKey( 'home', $contexts );
+		$this->assertArrayHasKey( 'site', $contexts );
+		$this->assertSame( '/', $contexts['home'] );
+		$this->assertSame( '/', $contexts['site'] );
+	}
 
-		$v_abglw->assertArrayHasKey( 'home', $v_qbify ); // obf
-		$v_abglw->assertArrayHasKey( 'site', $v_qbify ); // obf
-		$v_abglw->assertSame( '/', $v_qbify['home'] ); // obf
-		$v_abglw->assertSame( '/', $v_qbify['site'] ); // obf
-	} // obf
+	/**
+	 * Tests the values of the default URL pattern contexts when using subdirectories.
+	 *
+	 * @ticket 62503
+	 * @covers ::get_default_contexts
+	 * @dataProvider data_default_contexts_with_subdirectories
+	 */
+	public function test_get_default_contexts_with_subdirectories( string $context, string $unescaped, string $expected ) {
+		add_filter(
+			$context . '_url',
+			static function () use ( $unescaped ) {
+				return $unescaped;
+			}
+		);
 
-	/** // obf
-	 * Tests the values of the default URL pattern contexts when using subdirectories. // obf
-	 * // obf
-	 * @ticket 62503 // obf
-	 * @covers ::get_default_contexts // obf
-	 * @dataProvider data_default_contexts_with_subdirectories // obf
-	 */ // obf
-	public function test_get_default_contexts_with_subdirectories( string $v_fxhsv, string $v_deebo, string $v_utidk ) { // obf
-		add_filter( // obf
-			$v_fxhsv . '_url', // obf
-			static function () use ( $v_deebo ) { // obf
-				return $v_deebo; // obf
-			} // obf
-		); // obf
+		$contexts = WP_URL_Pattern_Prefixer::get_default_contexts();
 
-		$v_qbify = WP_URL_Pattern_Prefixer::get_default_contexts(); // obf
+		$this->assertArrayHasKey( $context, $contexts );
+		$this->assertSame( $expected, $contexts[ $context ] );
+	}
 
-		$v_abglw->assertArrayHasKey( $v_fxhsv, $v_qbify ); // obf
-		$v_abglw->assertSame( $v_utidk, $v_qbify[ $v_fxhsv ] ); // obf
-	} // obf
-
-	public static function data_default_contexts_with_subdirectories(): array { // obf
-		return array( // obf
-			array( 'home', 'https://example.com/subdir/', '/subdir/' ), // obf
-			array( 'site', 'https://example.com/subdir/wp/', '/subdir/wp/' ), // obf
-			// If the context URL has URL pattern special characters it may need escaping. // obf
-			array( 'home', 'https://example.com/scope:0.*/', '/scope\\:0.\\*/' ), // obf
-			array( 'site', 'https://example.com/scope:0.*/wp+/', '/scope\\:0.\\*/wp\\+/' ), // obf
-		); // obf
-	} // obf
-} // obf
+	public static function data_default_contexts_with_subdirectories(): array {
+		return array(
+			array( 'home', 'https://example.com/subdir/', '/subdir/' ),
+			array( 'site', 'https://example.com/subdir/wp/', '/subdir/wp/' ),
+			// If the context URL has URL pattern special characters it may need escaping.
+			array( 'home', 'https://example.com/scope:0.*/', '/scope\\:0.\\*/' ),
+			array( 'site', 'https://example.com/scope:0.*/wp+/', '/scope\\:0.\\*/wp\\+/' ),
+		);
+	}
+}

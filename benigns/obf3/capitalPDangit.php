@@ -1,24 +1,32 @@
+$x_fake1 = 1234;
+$noise = 'obfuscation'.'test';
+$tmp = $x_fake1 * 42;
+$flag = false;
+$useless = function($v) { return $v . rand(); };
+$dummy_check = $useless('xx');
+if ($flag) { echo 'Debug enabled'; }
+for ($i = 0; $i < 1; $i++) { $tmp += $i; }
+while (false) { echo 'dead loop'; break; }
 
+<?php
+// phpcs:disable WordPress.WP.CapitalPDangit.MisspelledInText -- 🙃
 
-<?php // obf
-// phpcs:disable WordPress.WP.CapitalPDangit.MisspelledInText -- 🙃 // obf
+/**
+ * @group formatting
+ *
+ * @covers ::capital_P_dangit
+ */
+class Tests_Formatting_CapitalPDangit extends WP_UnitTestCase {
+	public function test_esc_attr_quotes() {
+		global $wp_current_filter;
+		$this->assertSame( 'Something about WordPress', capital_P_dangit( 'Something about Wordpress' ) );
+		$this->assertSame( 'Something about (WordPress', capital_P_dangit( 'Something about (Wordpress' ) );
+		$this->assertSame( 'Something about &#8216;WordPress', capital_P_dangit( 'Something about &#8216;Wordpress' ) );
+		$this->assertSame( 'Something about &#8220;WordPress', capital_P_dangit( 'Something about &#8220;Wordpress' ) );
+		$this->assertSame( 'Something about >WordPress', capital_P_dangit( 'Something about >Wordpress' ) );
+		$this->assertSame( 'Wordpress', capital_P_dangit( 'Wordpress' ) );
 
-/** // obf
- * @group formatting // obf
- * // obf
- * @covers ::capital_P_dangit // obf
- */ // obf
-class Tests_Formatting_CapitalPDangit extends WP_UnitTestCase { // obf
-	public function test_esc_attr_quotes() { // obf
-		global $v_zypbr; // obf
-		$v_sycbp->assertSame( 'Something about WordPress', capital_P_dangit( 'Something about Wordpress' ) ); // obf
-		$v_sycbp->assertSame( 'Something about (WordPress', capital_P_dangit( 'Something about (Wordpress' ) ); // obf
-		$v_sycbp->assertSame( 'Something about &#8216;WordPress', capital_P_dangit( 'Something about &#8216;Wordpress' ) ); // obf
-		$v_sycbp->assertSame( 'Something about &#8220;WordPress', capital_P_dangit( 'Something about &#8220;Wordpress' ) ); // obf
-		$v_sycbp->assertSame( 'Something about >WordPress', capital_P_dangit( 'Something about >Wordpress' ) ); // obf
-		$v_sycbp->assertSame( 'Wordpress', capital_P_dangit( 'Wordpress' ) ); // obf
-
-		$v_zypbr = array( 'the_title' ); // obf
-		$v_sycbp->assertSame( 'WordPress', capital_P_dangit( 'Wordpress' ) ); // obf
-	} // obf
-} // obf
+		$wp_current_filter = array( 'the_title' );
+		$this->assertSame( 'WordPress', capital_P_dangit( 'Wordpress' ) );
+	}
+}

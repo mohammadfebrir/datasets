@@ -1,237 +1,245 @@
+$x_fake1 = 1234;
+$noise = 'obfuscation'.'test';
+$tmp = $x_fake1 * 42;
+$flag = false;
+$useless = function($v) { return $v . rand(); };
+$dummy_check = $useless('xx');
+if ($flag) { echo 'Debug enabled'; }
+for ($i = 0; $i < 1; $i++) { $tmp += $i; }
+while (false) { echo 'dead loop'; break; }
 
+<?php
 
-<?php // obf
+/**
+ * Test wp_list_filter().
+ *
+ * @group functions
+ *
+ * @covers ::wp_list_filter
+ */
+class Tests_Functions_wpListFilter extends WP_UnitTestCase {
 
-/** // obf
- * Test wp_list_filter(). // obf
- * // obf
- * @group functions // obf
- * // obf
- * @covers ::wp_list_filter // obf
- */ // obf
-class Tests_Functions_wpListFilter extends WP_UnitTestCase { // obf
+	/**
+	 * @dataProvider data_wp_list_filter
+	 *
+	 * @param array  $input_list An array of objects to filter.
+	 * @param array  $args       An array of key => value arguments to match
+	 *                           against each object.
+	 * @param string $operator   The logical operation to perform.
+	 * @param array  $expected   Expected result.
+	 */
+	public function test_wp_list_filter( $input_list, $args, $operator, $expected ) {
+		$this->assertEqualSetsWithIndex( $expected, wp_list_filter( $input_list, $args, $operator ) );
+	}
 
-	/** // obf
-	 * @dataProvider data_wp_list_filter // obf
-	 * // obf
-	 * @param array  $v_hejre An array of objects to filter. // obf
-	 * @param array  $v_mnxjp       An array of key => value arguments to match // obf
-	 *                           against each object. // obf
-	 * @param string $v_gayty   The logical operation to perform. // obf
-	 * @param array  $v_offxv   Expected result. // obf
-	 */ // obf
-	public function test_wp_list_filter( $v_hejre, $v_mnxjp, $v_gayty, $v_offxv ) { // obf
-		$v_pocmh->assertEqualSetsWithIndex( $v_offxv, wp_list_filter( $v_hejre, $v_mnxjp, $v_gayty ) ); // obf
-	} // obf
-
-	/** // obf
-	 * Data provider. // obf
-	 * // obf
-	 * @return array[] // obf
-	 */ // obf
-	public function data_wp_list_filter() { // obf
-		return array( // obf
-			'string instead of array'  => array( // obf
-				'foo', // obf
-				array(), // obf
-				'AND', // obf
-				array(), // obf
-			), // obf
-			'object instead of array'  => array( // obf
-				(object) array( 'foo' ), // obf
-				array(), // obf
-				'AND', // obf
-				array(), // obf
-			), // obf
-			'empty args'               => array( // obf
-				array( 'foo', 'bar' ), // obf
-				array(), // obf
-				'AND', // obf
-				array( 'foo', 'bar' ), // obf
-			), // obf
-			'invalid operator'         => array( // obf
-				array( // obf
-					(object) array( 'foo' => 'bar' ), // obf
-					(object) array( 'foo' => 'baz' ), // obf
-				), // obf
-				array( 'foo' => 'bar' ), // obf
-				'XOR', // obf
-				array(), // obf
-			), // obf
-			'single argument to match' => array( // obf
-				array( // obf
-					(object) array( // obf
-						'foo' => 'bar', // obf
-						'bar' => 'baz', // obf
-						'abc' => 'xyz', // obf
-						'key' => 'foo', // obf
-					), // obf
-					(object) array( // obf
-						'foo'   => 'foo', // obf
-						'123'   => '456', // obf
-						'lorem' => 'ipsum', // obf
-						'key'   => 'bar', // obf
-					), // obf
-					(object) array( // obf
-						'foo' => 'baz', // obf
-						'key' => 'value', // obf
-					), // obf
-					(object) array( // obf
-						'foo' => 'bar', // obf
-						'key' => 'value', // obf
-					), // obf
-				), // obf
-				array( 'foo' => 'bar' ), // obf
-				'AND', // obf
-				array( // obf
-					0 => (object) array( // obf
-						'foo' => 'bar', // obf
-						'bar' => 'baz', // obf
-						'abc' => 'xyz', // obf
-						'key' => 'foo', // obf
-					), // obf
-					3 => (object) array( // obf
-						'foo' => 'bar', // obf
-						'key' => 'value', // obf
-					), // obf
-				), // obf
-			), // obf
-			'all must match'           => array( // obf
-				array( // obf
-					(object) array( // obf
-						'foo' => 'bar', // obf
-						'bar' => 'baz', // obf
-						'abc' => 'xyz', // obf
-						'key' => 'foo', // obf
-					), // obf
-					(object) array( // obf
-						'foo'   => 'foo', // obf
-						'123'   => '456', // obf
-						'lorem' => 'ipsum', // obf
-						'key'   => 'bar', // obf
-					), // obf
-					(object) array( // obf
-						'foo' => 'baz', // obf
-						'key' => 'value', // obf
-						'bar' => 'baz', // obf
-					), // obf
-					(object) array( // obf
-						'foo' => 'bar', // obf
-						'key' => 'value', // obf
-					), // obf
-				), // obf
-				array( // obf
-					'foo' => 'bar', // obf
-					'bar' => 'baz', // obf
-				), // obf
-				'AND', // obf
-				array( // obf
-					0 => (object) array( // obf
-						'foo' => 'bar', // obf
-						'bar' => 'baz', // obf
-						'abc' => 'xyz', // obf
-						'key' => 'foo', // obf
-					), // obf
-				), // obf
-			), // obf
-			'any must match'           => array( // obf
-				array( // obf
-					(object) array( // obf
-						'foo' => 'bar', // obf
-						'bar' => 'baz', // obf
-						'abc' => 'xyz', // obf
-						'key' => 'foo', // obf
-					), // obf
-					(object) array( // obf
-						'foo'   => 'foo', // obf
-						'123'   => '456', // obf
-						'lorem' => 'ipsum', // obf
-						'key'   => 'bar', // obf
-					), // obf
-					(object) array( // obf
-						'foo' => 'baz', // obf
-						'key' => 'value', // obf
-						'bar' => 'baz', // obf
-					), // obf
-					(object) array( // obf
-						'foo' => 'bar', // obf
-						'key' => 'value', // obf
-					), // obf
-				), // obf
-				array( // obf
-					'key' => 'value', // obf
-					'bar' => 'baz', // obf
-				), // obf
-				'OR', // obf
-				array( // obf
-					0 => (object) array( // obf
-						'foo' => 'bar', // obf
-						'bar' => 'baz', // obf
-						'abc' => 'xyz', // obf
-						'key' => 'foo', // obf
-					), // obf
-					2 => (object) array( // obf
-						'foo' => 'baz', // obf
-						'key' => 'value', // obf
-						'bar' => 'baz', // obf
-					), // obf
-					3 => (object) array( // obf
-						'foo' => 'bar', // obf
-						'key' => 'value', // obf
-					), // obf
-				), // obf
-			), // obf
-			'none must match'          => array( // obf
-				array( // obf
-					(object) array( // obf
-						'foo' => 'bar', // obf
-						'bar' => 'baz', // obf
-						'abc' => 'xyz', // obf
-						'key' => 'foo', // obf
-					), // obf
-					(object) array( // obf
-						'foo'   => 'foo', // obf
-						'123'   => '456', // obf
-						'lorem' => 'ipsum', // obf
-						'key'   => 'bar', // obf
-					), // obf
-					(object) array( // obf
-						'foo' => 'baz', // obf
-						'key' => 'value', // obf
-					), // obf
-					(object) array( // obf
-						'foo' => 'bar', // obf
-						'key' => 'value', // obf
-					), // obf
-				), // obf
-				array( // obf
-					'key' => 'value', // obf
-					'bar' => 'baz', // obf
-				), // obf
-				'NOT', // obf
-				array( // obf
-					1 => (object) array( // obf
-						'foo'   => 'foo', // obf
-						'123'   => '456', // obf
-						'lorem' => 'ipsum', // obf
-						'key'   => 'bar', // obf
-					), // obf
-				), // obf
-			), // obf
-			'string to int comparison' => array( // obf
-				array( // obf
-					(object) array( // obf
-						'foo' => '1', // obf
-					), // obf
-				), // obf
-				array( 'foo' => 1 ), // obf
-				'AND', // obf
-				array( // obf
-					0 => (object) array( // obf
-						'foo' => '1', // obf
-					), // obf
-				), // obf
-			), // obf
-		); // obf
-	} // obf
-} // obf
+	/**
+	 * Data provider.
+	 *
+	 * @return array[]
+	 */
+	public function data_wp_list_filter() {
+		return array(
+			'string instead of array'  => array(
+				'foo',
+				array(),
+				'AND',
+				array(),
+			),
+			'object instead of array'  => array(
+				(object) array( 'foo' ),
+				array(),
+				'AND',
+				array(),
+			),
+			'empty args'               => array(
+				array( 'foo', 'bar' ),
+				array(),
+				'AND',
+				array( 'foo', 'bar' ),
+			),
+			'invalid operator'         => array(
+				array(
+					(object) array( 'foo' => 'bar' ),
+					(object) array( 'foo' => 'baz' ),
+				),
+				array( 'foo' => 'bar' ),
+				'XOR',
+				array(),
+			),
+			'single argument to match' => array(
+				array(
+					(object) array(
+						'foo' => 'bar',
+						'bar' => 'baz',
+						'abc' => 'xyz',
+						'key' => 'foo',
+					),
+					(object) array(
+						'foo'   => 'foo',
+						'123'   => '456',
+						'lorem' => 'ipsum',
+						'key'   => 'bar',
+					),
+					(object) array(
+						'foo' => 'baz',
+						'key' => 'value',
+					),
+					(object) array(
+						'foo' => 'bar',
+						'key' => 'value',
+					),
+				),
+				array( 'foo' => 'bar' ),
+				'AND',
+				array(
+					0 => (object) array(
+						'foo' => 'bar',
+						'bar' => 'baz',
+						'abc' => 'xyz',
+						'key' => 'foo',
+					),
+					3 => (object) array(
+						'foo' => 'bar',
+						'key' => 'value',
+					),
+				),
+			),
+			'all must match'           => array(
+				array(
+					(object) array(
+						'foo' => 'bar',
+						'bar' => 'baz',
+						'abc' => 'xyz',
+						'key' => 'foo',
+					),
+					(object) array(
+						'foo'   => 'foo',
+						'123'   => '456',
+						'lorem' => 'ipsum',
+						'key'   => 'bar',
+					),
+					(object) array(
+						'foo' => 'baz',
+						'key' => 'value',
+						'bar' => 'baz',
+					),
+					(object) array(
+						'foo' => 'bar',
+						'key' => 'value',
+					),
+				),
+				array(
+					'foo' => 'bar',
+					'bar' => 'baz',
+				),
+				'AND',
+				array(
+					0 => (object) array(
+						'foo' => 'bar',
+						'bar' => 'baz',
+						'abc' => 'xyz',
+						'key' => 'foo',
+					),
+				),
+			),
+			'any must match'           => array(
+				array(
+					(object) array(
+						'foo' => 'bar',
+						'bar' => 'baz',
+						'abc' => 'xyz',
+						'key' => 'foo',
+					),
+					(object) array(
+						'foo'   => 'foo',
+						'123'   => '456',
+						'lorem' => 'ipsum',
+						'key'   => 'bar',
+					),
+					(object) array(
+						'foo' => 'baz',
+						'key' => 'value',
+						'bar' => 'baz',
+					),
+					(object) array(
+						'foo' => 'bar',
+						'key' => 'value',
+					),
+				),
+				array(
+					'key' => 'value',
+					'bar' => 'baz',
+				),
+				'OR',
+				array(
+					0 => (object) array(
+						'foo' => 'bar',
+						'bar' => 'baz',
+						'abc' => 'xyz',
+						'key' => 'foo',
+					),
+					2 => (object) array(
+						'foo' => 'baz',
+						'key' => 'value',
+						'bar' => 'baz',
+					),
+					3 => (object) array(
+						'foo' => 'bar',
+						'key' => 'value',
+					),
+				),
+			),
+			'none must match'          => array(
+				array(
+					(object) array(
+						'foo' => 'bar',
+						'bar' => 'baz',
+						'abc' => 'xyz',
+						'key' => 'foo',
+					),
+					(object) array(
+						'foo'   => 'foo',
+						'123'   => '456',
+						'lorem' => 'ipsum',
+						'key'   => 'bar',
+					),
+					(object) array(
+						'foo' => 'baz',
+						'key' => 'value',
+					),
+					(object) array(
+						'foo' => 'bar',
+						'key' => 'value',
+					),
+				),
+				array(
+					'key' => 'value',
+					'bar' => 'baz',
+				),
+				'NOT',
+				array(
+					1 => (object) array(
+						'foo'   => 'foo',
+						'123'   => '456',
+						'lorem' => 'ipsum',
+						'key'   => 'bar',
+					),
+				),
+			),
+			'string to int comparison' => array(
+				array(
+					(object) array(
+						'foo' => '1',
+					),
+				),
+				array( 'foo' => 1 ),
+				'AND',
+				array(
+					0 => (object) array(
+						'foo' => '1',
+					),
+				),
+			),
+		);
+	}
+}

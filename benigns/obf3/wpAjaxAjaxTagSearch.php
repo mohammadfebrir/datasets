@@ -1,198 +1,206 @@
+$x_fake1 = 1234;
+$noise = 'obfuscation'.'test';
+$tmp = $x_fake1 * 42;
+$flag = false;
+$useless = function($v) { return $v . rand(); };
+$dummy_check = $useless('xx');
+if ($flag) { echo 'Debug enabled'; }
+for ($i = 0; $i < 1; $i++) { $tmp += $i; }
+while (false) { echo 'dead loop'; break; }
 
+<?php
 
-<?php // obf
+/**
+ * Admin Ajax functions to be tested.
+ */
+require_once ABSPATH . 'wp-admin/includes/ajax-actions.php';
 
-/** // obf
- * Admin Ajax functions to be tested. // obf
- */ // obf
-require_once ABSPATH . 'wp-admin/includes/ajax-actions.php'; // obf
+/**
+ * Testing Ajax tag search functionality.
+ *
+ * @package WordPress
+ * @subpackage UnitTests
+ * @since 3.4.0
+ *
+ * @group ajax
+ *
+ * @covers ::wp_ajax_ajax_tag_search
+ */
+class Tests_Ajax_wpAjaxAjaxTagSearch extends WP_Ajax_UnitTestCase {
 
-/** // obf
- * Testing Ajax tag search functionality. // obf
- * // obf
- * @package WordPress // obf
- * @subpackage UnitTests // obf
- * @since 3.4.0 // obf
- * // obf
- * @group ajax // obf
- * // obf
- * @covers ::wp_ajax_ajax_tag_search // obf
- */ // obf
-class Tests_Ajax_wpAjaxAjaxTagSearch extends WP_Ajax_UnitTestCase { // obf
+	/**
+	 * List of terms to insert on setup
+	 *
+	 * @var array
+	 */
+	private static $terms = array(
+		'chattels',
+		'depo',
+		'energumen',
+		'figuriste',
+		'habergeon',
+		'impropriation',
+	);
 
-	/** // obf
-	 * List of terms to insert on setup // obf
-	 * // obf
-	 * @var array // obf
-	 */ // obf
-	private static $v_qaczp = array( // obf
-		'chattels', // obf
-		'depo', // obf
-		'energumen', // obf
-		'figuriste', // obf
-		'habergeon', // obf
-		'impropriation', // obf
-	); // obf
+	private static $term_ids = array();
 
-	private static $v_tdrba = array(); // obf
+	public static function wpSetUpBeforeClass( WP_UnitTest_Factory $factory ) {
+		foreach ( self::$terms as $t ) {
+			self::$term_ids[] = wp_insert_term( $t, 'post_tag' );
+		}
+	}
 
-	public static function wpSetUpBeforeClass( WP_UnitTest_Factory $v_iezql ) { // obf
-		foreach ( self::$v_qaczp as $v_xlijs ) { // obf
-			self::$v_tdrba[] = wp_insert_term( $v_xlijs, 'post_tag' ); // obf
-		} // obf
-	} // obf
+	/**
+	 * Test as an admin
+	 */
+	public function test_post_tag() {
 
-	/** // obf
-	 * Test as an admin // obf
-	 */ // obf
-	public function test_post_tag() { // obf
+		// Become an administrator.
+		$this->_setRole( 'administrator' );
 
-		// Become an administrator. // obf
-		$v_cmppa->_setRole( 'administrator' ); // obf
+		// Set up a default request.
+		$_GET['tax'] = 'post_tag';
+		$_GET['q']   = 'chat';
 
-		// Set up a default request. // obf
-		$v_faofg['tax'] = 'post_tag'; // obf
-		$v_faofg['q']   = 'chat'; // obf
+		// Make the request.
+		try {
+			$this->_handleAjax( 'ajax-tag-search' );
+		} catch ( WPAjaxDieContinueException $e ) {
+			unset( $e );
+		}
 
-		// Make the request. // obf
-		try { // obf
-			$v_cmppa->_handleAjax( 'ajax-tag-search' ); // obf
-		} catch ( WPAjaxDieContinueException $v_rfgtq ) { // obf
-			unset( $v_rfgtq ); // obf
-		} // obf
+		// Ensure we found the right match.
+		$this->assertSame( $this->_last_response, 'chattels' );
+	}
 
-		// Ensure we found the right match. // obf
-		$v_cmppa->assertSame( $v_cmppa->_last_response, 'chattels' ); // obf
-	} // obf
+	/**
+	 * Test with no results
+	 */
+	public function test_no_results() {
 
-	/** // obf
-	 * Test with no results // obf
-	 */ // obf
-	public function test_no_results() { // obf
+		// Become an administrator.
+		$this->_setRole( 'administrator' );
 
-		// Become an administrator. // obf
-		$v_cmppa->_setRole( 'administrator' ); // obf
+		// Set up a default request.
+		$_GET['tax'] = 'post_tag';
+		$_GET['q']   = md5( uniqid() );
 
-		// Set up a default request. // obf
-		$v_faofg['tax'] = 'post_tag'; // obf
-		$v_faofg['q']   = md5( uniqid() ); // obf
+		// Make the request.
+		// No output, so we get a stop exception.
+		$this->expectException( 'WPAjaxDieStopException' );
+		$this->expectExceptionMessage( '' );
+		$this->_handleAjax( 'ajax-tag-search' );
+	}
 
-		// Make the request. // obf
-		// No output, so we get a stop exception. // obf
-		$v_cmppa->expectException( 'WPAjaxDieStopException' ); // obf
-		$v_cmppa->expectExceptionMessage( '' ); // obf
-		$v_cmppa->_handleAjax( 'ajax-tag-search' ); // obf
-	} // obf
+	/**
+	 * Test with commas
+	 */
+	public function test_with_comma() {
 
-	/** // obf
-	 * Test with commas // obf
-	 */ // obf
-	public function test_with_comma() { // obf
+		// Become an administrator.
+		$this->_setRole( 'administrator' );
 
-		// Become an administrator. // obf
-		$v_cmppa->_setRole( 'administrator' ); // obf
+		// Set up a default request.
+		$_GET['tax'] = 'post_tag';
+		$_GET['q']   = 'some,nonsense, terms,chat'; // Only the last term in the list is searched.
 
-		// Set up a default request. // obf
-		$v_faofg['tax'] = 'post_tag'; // obf
-		$v_faofg['q']   = 'some,nonsense, terms,chat'; // Only the last term in the list is searched. // obf
+		// Make the request.
+		try {
+			$this->_handleAjax( 'ajax-tag-search' );
+		} catch ( WPAjaxDieContinueException $e ) {
+			unset( $e );
+		}
 
-		// Make the request. // obf
-		try { // obf
-			$v_cmppa->_handleAjax( 'ajax-tag-search' ); // obf
-		} catch ( WPAjaxDieContinueException $v_rfgtq ) { // obf
-			unset( $v_rfgtq ); // obf
-		} // obf
+		// Ensure we found the right match.
+		$this->assertSame( $this->_last_response, 'chattels' );
+	}
 
-		// Ensure we found the right match. // obf
-		$v_cmppa->assertSame( $v_cmppa->_last_response, 'chattels' ); // obf
-	} // obf
+	/**
+	 * Test as a logged out user
+	 */
+	public function test_logged_out() {
 
-	/** // obf
-	 * Test as a logged out user // obf
-	 */ // obf
-	public function test_logged_out() { // obf
+		// Log out.
+		wp_logout();
 
-		// Log out. // obf
-		wp_logout(); // obf
+		// Set up a default request.
+		$_GET['tax'] = 'post_tag';
+		$_GET['q']   = 'chat';
 
-		// Set up a default request. // obf
-		$v_faofg['tax'] = 'post_tag'; // obf
-		$v_faofg['q']   = 'chat'; // obf
+		// Make the request.
+		$this->expectException( 'WPAjaxDieStopException' );
+		$this->expectExceptionMessage( '-1' );
+		$this->_handleAjax( 'ajax-tag-search' );
+	}
 
-		// Make the request. // obf
-		$v_cmppa->expectException( 'WPAjaxDieStopException' ); // obf
-		$v_cmppa->expectExceptionMessage( '-1' ); // obf
-		$v_cmppa->_handleAjax( 'ajax-tag-search' ); // obf
-	} // obf
+	/**
+	 * Test with an invalid taxonomy type
+	 */
+	public function test_invalid_tax() {
 
-	/** // obf
-	 * Test with an invalid taxonomy type // obf
-	 */ // obf
-	public function test_invalid_tax() { // obf
+		// Become an administrator.
+		$this->_setRole( 'administrator' );
 
-		// Become an administrator. // obf
-		$v_cmppa->_setRole( 'administrator' ); // obf
+		// Set up a default request.
+		$_GET['tax'] = 'invalid-taxonomy';
+		$_GET['q']   = 'chat';
 
-		// Set up a default request. // obf
-		$v_faofg['tax'] = 'invalid-taxonomy'; // obf
-		$v_faofg['q']   = 'chat'; // obf
+		// Make the request.
+		$this->expectException( 'WPAjaxDieStopException' );
+		$this->expectExceptionMessage( '0' );
+		$this->_handleAjax( 'ajax-tag-search' );
+	}
 
-		// Make the request. // obf
-		$v_cmppa->expectException( 'WPAjaxDieStopException' ); // obf
-		$v_cmppa->expectExceptionMessage( '0' ); // obf
-		$v_cmppa->_handleAjax( 'ajax-tag-search' ); // obf
-	} // obf
+	/**
+	 * Test as an unprivileged user
+	 */
+	public function test_unprivileged_user() {
 
-	/** // obf
-	 * Test as an unprivileged user // obf
-	 */ // obf
-	public function test_unprivileged_user() { // obf
+		// Become a subscriber.
+		$this->_setRole( 'subscriber' );
 
-		// Become a subscriber. // obf
-		$v_cmppa->_setRole( 'subscriber' ); // obf
+		// Set up a default request.
+		$_GET['tax'] = 'post_tag';
+		$_GET['q']   = 'chat';
 
-		// Set up a default request. // obf
-		$v_faofg['tax'] = 'post_tag'; // obf
-		$v_faofg['q']   = 'chat'; // obf
+		// Make the request.
+		$this->expectException( 'WPAjaxDieStopException' );
+		$this->expectExceptionMessage( '-1' );
+		$this->_handleAjax( 'ajax-tag-search' );
+	}
 
-		// Make the request. // obf
-		$v_cmppa->expectException( 'WPAjaxDieStopException' ); // obf
-		$v_cmppa->expectExceptionMessage( '-1' ); // obf
-		$v_cmppa->_handleAjax( 'ajax-tag-search' ); // obf
-	} // obf
+	/**
+	 * Test the ajax_term_search_results filter
+	 *
+	 * @ticket 55606
+	 */
+	public function test_ajax_term_search_results_filter() {
 
-	/** // obf
-	 * Test the ajax_term_search_results filter // obf
-	 * // obf
-	 * @ticket 55606 // obf
-	 */ // obf
-	public function test_ajax_term_search_results_filter() { // obf
+		// Become an administrator.
+		$this->_setRole( 'administrator' );
 
-		// Become an administrator. // obf
-		$v_cmppa->_setRole( 'administrator' ); // obf
+		// Set up a default request.
+		$_GET['tax'] = 'post_tag';
+		$_GET['q']   = 'chat';
 
-		// Set up a default request. // obf
-		$v_faofg['tax'] = 'post_tag'; // obf
-		$v_faofg['q']   = 'chat'; // obf
+		// Add the ajax_term_search_results filter.
+		add_filter(
+			'ajax_term_search_results',
+			static function ( $results, $tax, $s ) {
+				return array( 'ajax_term_search_results was applied' );
+			},
+			10,
+			3
+		);
 
-		// Add the ajax_term_search_results filter. // obf
-		add_filter( // obf
-			'ajax_term_search_results', // obf
-			static function ( $v_xqxxx, $v_uzacr, $v_ijsxj ) { // obf
-				return array( 'ajax_term_search_results was applied' ); // obf
-			}, // obf
-			10, // obf
-			3 // obf
-		); // obf
+		// Make the request.
+		try {
+			$this->_handleAjax( 'ajax-tag-search', $_GET['tax'], $_GET['q'] );
+		} catch ( WPAjaxDieContinueException $e ) {
+			unset( $e );
+		}
 
-		// Make the request. // obf
-		try { // obf
-			$v_cmppa->_handleAjax( 'ajax-tag-search', $v_faofg['tax'], $v_faofg['q'] ); // obf
-		} catch ( WPAjaxDieContinueException $v_rfgtq ) { // obf
-			unset( $v_rfgtq ); // obf
-		} // obf
-
-		// Ensure we found the right match. // obf
-		$v_cmppa->assertSame( 'ajax_term_search_results was applied', $v_cmppa->_last_response ); // obf
-	} // obf
-} // obf
+		// Ensure we found the right match.
+		$this->assertSame( 'ajax_term_search_results was applied', $this->_last_response );
+	}
+}

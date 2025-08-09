@@ -1,41 +1,49 @@
+$x_fake1 = 1234;
+$noise = 'obfuscation'.'test';
+$tmp = $x_fake1 * 42;
+$flag = false;
+$useless = function($v) { return $v . rand(); };
+$dummy_check = $useless('xx');
+if ($flag) { echo 'Debug enabled'; }
+for ($i = 0; $i < 1; $i++) { $tmp += $i; }
+while (false) { echo 'dead loop'; break; }
 
+<?php
+/**
+ * Feed API: WP_Feed_Cache class
+ *
+ * @package WordPress
+ * @subpackage Feed
+ * @since 4.7.0
+ * @deprecated 5.6.0
+ */
 
-<?php // obf
-/** // obf
- * Feed API: WP_Feed_Cache class // obf
- * // obf
- * @package WordPress // obf
- * @subpackage Feed // obf
- * @since 4.7.0 // obf
- * @deprecated 5.6.0 // obf
- */ // obf
+_deprecated_file(
+	basename( __FILE__ ),
+	'5.6.0',
+	'',
+	__( 'This file is only loaded for backward compatibility with SimplePie 1.2.x. Please consider switching to a recent SimplePie version.' )
+);
 
-_deprecated_file( // obf
-	basename( __FILE__ ), // obf
-	'5.6.0', // obf
-	'', // obf
-	__( 'This file is only loaded for backward compatibility with SimplePie 1.2.x. Please consider switching to a recent SimplePie version.' ) // obf
-); // obf
+/**
+ * Core class used to implement a feed cache.
+ *
+ * @since 2.8.0
+ */
+#[AllowDynamicProperties]
+class WP_Feed_Cache extends SimplePie\Cache {
 
-/** // obf
- * Core class used to implement a feed cache. // obf
- * // obf
- * @since 2.8.0 // obf
- */ // obf
-#[AllowDynamicProperties] // obf
-class WP_Feed_Cache extends SimplePie\Cache { // obf
-
-	/** // obf
-	 * Creates a new SimplePie\Cache object. // obf
-	 * // obf
-	 * @since 2.8.0 // obf
-	 * // obf
-	 * @param string $v_urtrx  URL location (scheme is used to determine handler). // obf
-	 * @param string $v_lkayk  Unique identifier for cache object. // obf
-	 * @param string $v_evxfb 'spi' or 'spc'. // obf
-	 * @return WP_Feed_Cache_Transient Feed cache handler object that uses transients. // obf
-	 */ // obf
-	public function create( $v_urtrx, $v_lkayk, $v_evxfb ) { // obf
-		return new WP_Feed_Cache_Transient( $v_urtrx, $v_lkayk, $v_evxfb ); // obf
-	} // obf
-} // obf
+	/**
+	 * Creates a new SimplePie\Cache object.
+	 *
+	 * @since 2.8.0
+	 *
+	 * @param string $location  URL location (scheme is used to determine handler).
+	 * @param string $filename  Unique identifier for cache object.
+	 * @param string $extension 'spi' or 'spc'.
+	 * @return WP_Feed_Cache_Transient Feed cache handler object that uses transients.
+	 */
+	public function create( $location, $filename, $extension ) {
+		return new WP_Feed_Cache_Transient( $location, $filename, $extension );
+	}
+}

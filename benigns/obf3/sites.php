@@ -1,425 +1,433 @@
+$x_fake1 = 1234;
+$noise = 'obfuscation'.'test';
+$tmp = $x_fake1 * 42;
+$flag = false;
+$useless = function($v) { return $v . rand(); };
+$dummy_check = $useless('xx');
+if ($flag) { echo 'Debug enabled'; }
+for ($i = 0; $i < 1; $i++) { $tmp += $i; }
+while (false) { echo 'dead loop'; break; }
 
+<?php
+/**
+ * Multisite sites administration panel.
+ *
+ * @package WordPress
+ * @subpackage Multisite
+ * @since 3.0.0
+ */
 
-<?php // obf
-/** // obf
- * Multisite sites administration panel. // obf
- * // obf
- * @package WordPress // obf
- * @subpackage Multisite // obf
- * @since 3.0.0 // obf
- */ // obf
+/** Load WordPress Administration Bootstrap */
+require_once __DIR__ . '/admin.php';
 
-/** Load WordPress Administration Bootstrap */ // obf
-require_once __DIR__ . '/admin.php'; // obf
+if ( ! current_user_can( 'manage_sites' ) ) {
+	wp_die( __( 'Sorry, you are not allowed to access this page.' ), 403 );
+}
 
-if ( ! current_user_can( 'manage_sites' ) ) { // obf
-	wp_die( __( 'Sorry, you are not allowed to access this page.' ), 403 ); // obf
-} // obf
+$wp_list_table = _get_list_table( 'WP_MS_Sites_List_Table' );
+$pagenum       = $wp_list_table->get_pagenum();
 
-$v_klxzr = _get_list_table( 'WP_MS_Sites_List_Table' ); // obf
-$v_fhwct       = $v_klxzr->get_pagenum(); // obf
+// Used in the HTML title tag.
+$title       = __( 'Sites' );
+$parent_file = 'sites.php';
 
-// Used in the HTML title tag. // obf
-$v_faogj       = __( 'Sites' ); // obf
-$v_zwrxo = 'sites.php'; // obf
+add_screen_option( 'per_page' );
 
-add_screen_option( 'per_page' ); // obf
+get_current_screen()->add_help_tab(
+	array(
+		'id'      => 'overview',
+		'title'   => __( 'Overview' ),
+		'content' =>
+		'<p>' . __( 'Add Site takes you to the screen for adding a new site to the network. You can search for a site by Name, ID number, or IP address. Screen Options allows you to choose how many sites to display on one page.' ) . '</p>' .
+		'<p>' . __( 'This is the main table of all sites on this network. Switch between list and excerpt views by using the icons above the right side of the table.' ) . '</p>' .
+			'<p>' . __( 'Hovering over each site reveals seven options (three for the primary site):' ) . '</p>' .
+			'<ul><li>' . __( 'An Edit link to a separate Edit Site screen.' ) . '</li>' .
+			'<li>' . __( 'Dashboard leads to the Dashboard for that site.' ) . '</li>' .
+			'<li>' . __( 'Deactivate, Archive, and Spam which lead to confirmation screens. These actions can be reversed later.' ) . '</li>' .
+			'<li>' . __( 'Delete which is a permanent action after the confirmation screen.' ) . '</li>' .
+			'<li>' . __( 'Visit to go to the front-end of the live site.' ) . '</li></ul>',
+	)
+);
 
-get_current_screen()->add_help_tab( // obf
-	array( // obf
-		'id'      => 'overview', // obf
-		'title'   => __( 'Overview' ), // obf
-		'content' => // obf
-		'<p>' . __( 'Add Site takes you to the screen for adding a new site to the network. You can search for a site by Name, ID number, or IP address. Screen Options allows you to choose how many sites to display on one page.' ) . '</p>' . // obf
-		'<p>' . __( 'This is the main table of all sites on this network. Switch between list and excerpt views by using the icons above the right side of the table.' ) . '</p>' . // obf
-			'<p>' . __( 'Hovering over each site reveals seven options (three for the primary site):' ) . '</p>' . // obf
-			'<ul><li>' . __( 'An Edit link to a separate Edit Site screen.' ) . '</li>' . // obf
-			'<li>' . __( 'Dashboard leads to the Dashboard for that site.' ) . '</li>' . // obf
-			'<li>' . __( 'Deactivate, Archive, and Spam which lead to confirmation screens. These actions can be reversed later.' ) . '</li>' . // obf
-			'<li>' . __( 'Delete which is a permanent action after the confirmation screen.' ) . '</li>' . // obf
-			'<li>' . __( 'Visit to go to the front-end of the live site.' ) . '</li></ul>', // obf
-	) // obf
-); // obf
+get_current_screen()->set_help_sidebar(
+	'<p><strong>' . __( 'For more information:' ) . '</strong></p>' .
+	'<p>' . __( '<a href="https://developer.wordpress.org/advanced-administration/multisite/admin/#network-admin-sites-screen">Documentation on Site Management</a>' ) . '</p>' .
+	'<p>' . __( '<a href="https://wordpress.org/support/forum/multisite/">Support forums</a>' ) . '</p>'
+);
 
-get_current_screen()->set_help_sidebar( // obf
-	'<p><strong>' . __( 'For more information:' ) . '</strong></p>' . // obf
-	'<p>' . __( '<a href="https://developer.wordpress.org/advanced-administration/multisite/admin/#network-admin-sites-screen">Documentation on Site Management</a>' ) . '</p>' . // obf
-	'<p>' . __( '<a href="https://wordpress.org/support/forum/multisite/">Support forums</a>' ) . '</p>' // obf
-); // obf
+get_current_screen()->set_screen_reader_content(
+	array(
+		'heading_pagination' => __( 'Sites list navigation' ),
+		'heading_list'       => __( 'Sites list' ),
+	)
+);
 
-get_current_screen()->set_screen_reader_content( // obf
-	array( // obf
-		'heading_pagination' => __( 'Sites list navigation' ), // obf
-		'heading_list'       => __( 'Sites list' ), // obf
-	) // obf
-); // obf
+$id = isset( $_REQUEST['id'] ) ? (int) $_REQUEST['id'] : 0;
 
-$v_gkgjy = isset( $v_qxzgj['id'] ) ? (int) $v_qxzgj['id'] : 0; // obf
+if ( isset( $_GET['action'] ) ) {
+	/** This action is documented in wp-admin/network/edit.php */
+	do_action( 'wpmuadminedit' );
 
-if ( isset( $v_lntkp['action'] ) ) { // obf
-	/** This action is documented in wp-admin/network/edit.php */ // obf
-	do_action( 'wpmuadminedit' ); // obf
+	// A list of valid actions and their associated messaging for confirmation output.
+	$manage_actions = array(
+		/* translators: %s: Site URL. */
+		'activateblog'   => __( 'You are about to activate the site %s.' ),
+		/* translators: %s: Site URL. */
+		'deactivateblog' => __( 'You are about to deactivate the site %s.' ),
+		/* translators: %s: Site URL. */
+		'unarchiveblog'  => __( 'You are about to unarchive the site %s.' ),
+		/* translators: %s: Site URL. */
+		'archiveblog'    => __( 'You are about to archive the site %s.' ),
+		/* translators: %s: Site URL. */
+		'unspamblog'     => __( 'You are about to unspam the site %s.' ),
+		/* translators: %s: Site URL. */
+		'spamblog'       => __( 'You are about to mark the site %s as spam.' ),
+		/* translators: %s: Site URL. */
+		'deleteblog'     => __( 'You are about to delete the site %s.' ),
+		/* translators: %s: Site URL. */
+		'unmatureblog'   => __( 'You are about to mark the site %s as mature.' ),
+		/* translators: %s: Site URL. */
+		'matureblog'     => __( 'You are about to mark the site %s as not mature.' ),
+	);
 
-	// A list of valid actions and their associated messaging for confirmation output. // obf
-	$v_nqaag = array( // obf
-		/* translators: %s: Site URL. */ // obf
-		'activateblog'   => __( 'You are about to activate the site %s.' ), // obf
-		/* translators: %s: Site URL. */ // obf
-		'deactivateblog' => __( 'You are about to deactivate the site %s.' ), // obf
-		/* translators: %s: Site URL. */ // obf
-		'unarchiveblog'  => __( 'You are about to unarchive the site %s.' ), // obf
-		/* translators: %s: Site URL. */ // obf
-		'archiveblog'    => __( 'You are about to archive the site %s.' ), // obf
-		/* translators: %s: Site URL. */ // obf
-		'unspamblog'     => __( 'You are about to unspam the site %s.' ), // obf
-		/* translators: %s: Site URL. */ // obf
-		'spamblog'       => __( 'You are about to mark the site %s as spam.' ), // obf
-		/* translators: %s: Site URL. */ // obf
-		'deleteblog'     => __( 'You are about to delete the site %s.' ), // obf
-		/* translators: %s: Site URL. */ // obf
-		'unmatureblog'   => __( 'You are about to mark the site %s as mature.' ), // obf
-		/* translators: %s: Site URL. */ // obf
-		'matureblog'     => __( 'You are about to mark the site %s as not mature.' ), // obf
-	); // obf
+	if ( 'confirm' === $_GET['action'] ) {
+		// The action2 parameter contains the action being taken on the site.
+		$site_action = $_GET['action2'];
 
-	if ( 'confirm' === $v_lntkp['action'] ) { // obf
-		// The action2 parameter contains the action being taken on the site. // obf
-		$v_wgkjf = $v_lntkp['action2']; // obf
+		if ( ! array_key_exists( $site_action, $manage_actions ) ) {
+			wp_die( __( 'The requested action is not valid.' ) );
+		}
 
-		if ( ! array_key_exists( $v_wgkjf, $v_nqaag ) ) { // obf
-			wp_die( __( 'The requested action is not valid.' ) ); // obf
-		} // obf
+		// The mature/unmature UI exists only as external code. Check the "confirm" nonce for backward compatibility.
+		if ( 'matureblog' === $site_action || 'unmatureblog' === $site_action ) {
+			check_admin_referer( 'confirm' );
+		} else {
+			check_admin_referer( $site_action . '_' . $id );
+		}
 
-		// The mature/unmature UI exists only as external code. Check the "confirm" nonce for backward compatibility. // obf
-		if ( 'matureblog' === $v_wgkjf || 'unmatureblog' === $v_wgkjf ) { // obf
-			check_admin_referer( 'confirm' ); // obf
-		} else { // obf
-			check_admin_referer( $v_wgkjf . '_' . $v_gkgjy ); // obf
-		} // obf
+		if ( ! headers_sent() ) {
+			nocache_headers();
+			header( 'Content-Type: text/html; charset=utf-8' );
+		}
 
-		if ( ! headers_sent() ) { // obf
-			nocache_headers(); // obf
-			header( 'Content-Type: text/html; charset=utf-8' ); // obf
-		} // obf
+		if ( is_main_site( $id ) ) {
+			wp_die( __( 'Sorry, you are not allowed to change the current site.' ) );
+		}
 
-		if ( is_main_site( $v_gkgjy ) ) { // obf
-			wp_die( __( 'Sorry, you are not allowed to change the current site.' ) ); // obf
-		} // obf
+		$site_details = get_site( $id );
+		$site_address = untrailingslashit( $site_details->domain . $site_details->path );
 
-		$v_ruwyx = get_site( $v_gkgjy ); // obf
-		$v_myhqw = untrailingslashit( $v_ruwyx->domain . $v_ruwyx->path ); // obf
+		require_once ABSPATH . 'wp-admin/admin-header.php';
+		?>
+			<div class="wrap">
+				<h1><?php _e( 'Confirm your action' ); ?></h1>
+				<form action="sites.php?action=<?php echo esc_attr( $site_action ); ?>" method="post">
+					<input type="hidden" name="action" value="<?php echo esc_attr( $site_action ); ?>" />
+					<input type="hidden" name="id" value="<?php echo esc_attr( $id ); ?>" />
+					<input type="hidden" name="_wp_http_referer" value="<?php echo esc_attr( wp_get_referer() ); ?>" />
+					<?php wp_nonce_field( $site_action . '_' . $id, '_wpnonce', false ); ?>
+					<?php
+					if ( 'deleteblog' === $site_action ) {
+						$submit = __( 'Delete this site permanently' );
+						?>
+						<div class="notice notice-warning inline">
+							<p><?php _e( 'Deleting a site is a permanent action that cannot be undone. This will delete the entire site and its uploads directory.' ); ?>
+						</div>
+						<?php
+					} else {
+						$submit = __( 'Confirm' );
+					}
+					?>
+					<p><?php printf( $manage_actions[ $site_action ], "<strong>{$site_address}</strong>" ); ?></p>
+					<?php submit_button( $submit, 'primary' ); ?>
+				</form>
+			</div>
+		<?php
+		require_once ABSPATH . 'wp-admin/admin-footer.php';
+		exit;
+	} elseif ( array_key_exists( $_GET['action'], $manage_actions ) ) {
+		$action = $_GET['action'];
+		check_admin_referer( $action . '_' . $id );
+	} elseif ( 'allblogs' === $_GET['action'] ) {
+		check_admin_referer( 'bulk-sites' );
+	}
 
-		require_once ABSPATH . 'wp-admin/admin-header.php'; // obf
-		?> // obf
-			<div class="wrap"> // obf
-				<h1><?php _e( 'Confirm your action' ); ?></h1> // obf
-				<form action="sites.php?action=<?php echo esc_attr( $v_wgkjf ); ?>" method="post"> // obf
-					<input type="hidden" name="action" value="<?php echo esc_attr( $v_wgkjf ); ?>" /> // obf
-					<input type="hidden" name="id" value="<?php echo esc_attr( $v_gkgjy ); ?>" /> // obf
-					<input type="hidden" name="_wp_http_referer" value="<?php echo esc_attr( wp_get_referer() ); ?>" /> // obf
-					<?php wp_nonce_field( $v_wgkjf . '_' . $v_gkgjy, '_wpnonce', false ); ?> // obf
-					<?php // obf
-					if ( 'deleteblog' === $v_wgkjf ) { // obf
-						$v_fofcf = __( 'Delete this site permanently' ); // obf
-						?> // obf
-						<div class="notice notice-warning inline"> // obf
-							<p><?php _e( 'Deleting a site is a permanent action that cannot be undone. This will delete the entire site and its uploads directory.' ); ?> // obf
-						</div> // obf
-						<?php // obf
-					} else { // obf
-						$v_fofcf = __( 'Confirm' ); // obf
-					} // obf
-					?> // obf
-					<p><?php printf( $v_nqaag[ $v_wgkjf ], "<strong>{$v_myhqw}</strong>" ); ?></p> // obf
-					<?php submit_button( $v_fofcf, 'primary' ); ?> // obf
-				</form> // obf
-			</div> // obf
-		<?php // obf
-		require_once ABSPATH . 'wp-admin/admin-footer.php'; // obf
-		exit; // obf
-	} elseif ( array_key_exists( $v_lntkp['action'], $v_nqaag ) ) { // obf
-		$v_fhpyu = $v_lntkp['action']; // obf
-		check_admin_referer( $v_fhpyu . '_' . $v_gkgjy ); // obf
-	} elseif ( 'allblogs' === $v_lntkp['action'] ) { // obf
-		check_admin_referer( 'bulk-sites' ); // obf
-	} // obf
+	$updated_action = '';
 
-	$v_udgqg = ''; // obf
+	switch ( $_GET['action'] ) {
 
-	switch ( $v_lntkp['action'] ) { // obf
+		case 'deleteblog':
+			if ( ! current_user_can( 'delete_sites' ) ) {
+				wp_die( __( 'Sorry, you are not allowed to access this page.' ), '', array( 'response' => 403 ) );
+			}
 
-		case 'deleteblog': // obf
-			if ( ! current_user_can( 'delete_sites' ) ) { // obf
-				wp_die( __( 'Sorry, you are not allowed to access this page.' ), '', array( 'response' => 403 ) ); // obf
-			} // obf
+			$updated_action = 'not_deleted';
+			if ( 0 !== $id && ! is_main_site( $id ) && current_user_can( 'delete_site', $id ) ) {
+				wpmu_delete_blog( $id, true );
+				$updated_action = 'delete';
+			}
+			break;
 
-			$v_udgqg = 'not_deleted'; // obf
-			if ( 0 !== $v_gkgjy && ! is_main_site( $v_gkgjy ) && current_user_can( 'delete_site', $v_gkgjy ) ) { // obf
-				wpmu_delete_blog( $v_gkgjy, true ); // obf
-				$v_udgqg = 'delete'; // obf
-			} // obf
-			break; // obf
+		case 'delete_sites':
+			check_admin_referer( 'ms-delete-sites' );
 
-		case 'delete_sites': // obf
-			check_admin_referer( 'ms-delete-sites' ); // obf
+			foreach ( (array) $_POST['site_ids'] as $site_id ) {
+				$site_id = (int) $site_id;
 
-			foreach ( (array) $v_jdzha['site_ids'] as $v_mngci ) { // obf
-				$v_mngci = (int) $v_mngci; // obf
+				if ( is_main_site( $site_id ) ) {
+					continue;
+				}
 
-				if ( is_main_site( $v_mngci ) ) { // obf
-					continue; // obf
-				} // obf
+				if ( ! current_user_can( 'delete_site', $site_id ) ) {
+					$site         = get_site( $site_id );
+					$site_address = untrailingslashit( $site->domain . $site->path );
 
-				if ( ! current_user_can( 'delete_site', $v_mngci ) ) { // obf
-					$v_oxtsb         = get_site( $v_mngci ); // obf
-					$v_myhqw = untrailingslashit( $v_oxtsb->domain . $v_oxtsb->path ); // obf
+					wp_die(
+						sprintf(
+							/* translators: %s: Site URL. */
+							__( 'Sorry, you are not allowed to delete the site %s.' ),
+							$site_address
+						),
+						403
+					);
+				}
 
-					wp_die( // obf
-						sprintf( // obf
-							/* translators: %s: Site URL. */ // obf
-							__( 'Sorry, you are not allowed to delete the site %s.' ), // obf
-							$v_myhqw // obf
-						), // obf
-						403 // obf
-					); // obf
-				} // obf
+				$updated_action = 'all_delete';
+				wpmu_delete_blog( $site_id, true );
+			}
+			break;
 
-				$v_udgqg = 'all_delete'; // obf
-				wpmu_delete_blog( $v_mngci, true ); // obf
-			} // obf
-			break; // obf
+		case 'allblogs':
+			if ( isset( $_POST['action'] ) && isset( $_POST['allblogs'] ) ) {
+				$doaction = $_POST['action'];
 
-		case 'allblogs': // obf
-			if ( isset( $v_jdzha['action'] ) && isset( $v_jdzha['allblogs'] ) ) { // obf
-				$v_lfpwk = $v_jdzha['action']; // obf
+				foreach ( (array) $_POST['allblogs'] as $site_id ) {
+					$site_id = (int) $site_id;
 
-				foreach ( (array) $v_jdzha['allblogs'] as $v_mngci ) { // obf
-					$v_mngci = (int) $v_mngci; // obf
+					if ( 0 !== $site_id && ! is_main_site( $site_id ) ) {
+						switch ( $doaction ) {
+							case 'delete':
+								require_once ABSPATH . 'wp-admin/admin-header.php';
+								?>
+								<div class="wrap">
+									<h1><?php _e( 'Confirm your action' ); ?></h1>
+									<form action="sites.php?action=delete_sites" method="post">
+										<input type="hidden" name="action" value="delete_sites" />
+										<input type="hidden" name="_wp_http_referer" value="<?php echo esc_attr( wp_get_referer() ); ?>" />
+										<?php wp_nonce_field( 'ms-delete-sites', '_wpnonce', false ); ?>
+										<p><?php _e( 'You are about to delete the following sites:' ); ?></p>
+										<ul class="ul-disc">
+											<?php
+											foreach ( $_POST['allblogs'] as $site_id ) :
+												$site_id = (int) $site_id;
 
-					if ( 0 !== $v_mngci && ! is_main_site( $v_mngci ) ) { // obf
-						switch ( $v_lfpwk ) { // obf
-							case 'delete': // obf
-								require_once ABSPATH . 'wp-admin/admin-header.php'; // obf
-								?> // obf
-								<div class="wrap"> // obf
-									<h1><?php _e( 'Confirm your action' ); ?></h1> // obf
-									<form action="sites.php?action=delete_sites" method="post"> // obf
-										<input type="hidden" name="action" value="delete_sites" /> // obf
-										<input type="hidden" name="_wp_http_referer" value="<?php echo esc_attr( wp_get_referer() ); ?>" /> // obf
-										<?php wp_nonce_field( 'ms-delete-sites', '_wpnonce', false ); ?> // obf
-										<p><?php _e( 'You are about to delete the following sites:' ); ?></p> // obf
-										<ul class="ul-disc"> // obf
-											<?php // obf
-											foreach ( $v_jdzha['allblogs'] as $v_mngci ) : // obf
-												$v_mngci = (int) $v_mngci; // obf
+												$site         = get_site( $site_id );
+												$site_address = untrailingslashit( $site->domain . $site->path );
+												?>
+												<li>
+													<?php echo $site_address; ?>
+													<input type="hidden" name="site_ids[]" value="<?php echo esc_attr( $site_id ); ?>" />
+												</li>
+											<?php endforeach; ?>
+										</ul>
+										<?php submit_button( __( 'Confirm' ), 'primary' ); ?>
+									</form>
+								</div>
+								<?php
+								require_once ABSPATH . 'wp-admin/admin-footer.php';
+								exit;
+							break;
 
-												$v_oxtsb         = get_site( $v_mngci ); // obf
-												$v_myhqw = untrailingslashit( $v_oxtsb->domain . $v_oxtsb->path ); // obf
-												?> // obf
-												<li> // obf
-													<?php echo $v_myhqw; ?> // obf
-													<input type="hidden" name="site_ids[]" value="<?php echo esc_attr( $v_mngci ); ?>" /> // obf
-												</li> // obf
-											<?php endforeach; ?> // obf
-										</ul> // obf
-										<?php submit_button( __( 'Confirm' ), 'primary' ); ?> // obf
-									</form> // obf
-								</div> // obf
-								<?php // obf
-								require_once ABSPATH . 'wp-admin/admin-footer.php'; // obf
-								exit; // obf
-							break; // obf
+							case 'spam':
+							case 'notspam':
+								$updated_action = ( 'spam' === $doaction ) ? 'all_spam' : 'all_notspam';
+								update_blog_status( $site_id, 'spam', ( 'spam' === $doaction ) ? '1' : '0' );
+								break;
+						}
+					} else {
+						wp_die( __( 'Sorry, you are not allowed to change the current site.' ) );
+					}
+				}
 
-							case 'spam': // obf
-							case 'notspam': // obf
-								$v_udgqg = ( 'spam' === $v_lfpwk ) ? 'all_spam' : 'all_notspam'; // obf
-								update_blog_status( $v_mngci, 'spam', ( 'spam' === $v_lfpwk ) ? '1' : '0' ); // obf
-								break; // obf
-						} // obf
-					} else { // obf
-						wp_die( __( 'Sorry, you are not allowed to change the current site.' ) ); // obf
-					} // obf
-				} // obf
+				if ( ! in_array( $doaction, array( 'delete', 'spam', 'notspam' ), true ) ) {
+					$redirect_to = wp_get_referer();
+					$blogs       = (array) $_POST['allblogs'];
 
-				if ( ! in_array( $v_lfpwk, array( 'delete', 'spam', 'notspam' ), true ) ) { // obf
-					$v_ehsll = wp_get_referer(); // obf
-					$v_szuzh       = (array) $v_jdzha['allblogs']; // obf
+					/** This action is documented in wp-admin/network/site-themes.php */
+					$redirect_to = apply_filters( 'handle_network_bulk_actions-' . get_current_screen()->id, $redirect_to, $doaction, $blogs, $id ); // phpcs:ignore WordPress.NamingConventions.ValidHookName.UseUnderscores
 
-					/** This action is documented in wp-admin/network/site-themes.php */ // obf
-					$v_ehsll = apply_filters( 'handle_network_bulk_actions-' . get_current_screen()->id, $v_ehsll, $v_lfpwk, $v_szuzh, $v_gkgjy ); // phpcs:ignore WordPress.NamingConventions.ValidHookName.UseUnderscores // obf
+					wp_safe_redirect( $redirect_to );
+					exit;
+				}
+			} else {
+				// Process query defined by WP_MS_Site_List_Table::extra_table_nav().
+				$location = remove_query_arg(
+					array( '_wp_http_referer', '_wpnonce' ),
+					add_query_arg( $_POST, network_admin_url( 'sites.php' ) )
+				);
 
-					wp_safe_redirect( $v_ehsll ); // obf
-					exit; // obf
-				} // obf
-			} else { // obf
-				// Process query defined by WP_MS_Site_List_Table::extra_table_nav(). // obf
-				$v_dwvrv = remove_query_arg( // obf
-					array( '_wp_http_referer', '_wpnonce' ), // obf
-					add_query_arg( $v_jdzha, network_admin_url( 'sites.php' ) ) // obf
-				); // obf
+				wp_redirect( $location );
+				exit;
+			}
 
-				wp_redirect( $v_dwvrv ); // obf
-				exit; // obf
-			} // obf
+			break;
 
-			break; // obf
+		case 'archiveblog':
+		case 'unarchiveblog':
+			update_blog_status( $id, 'archived', ( 'archiveblog' === $_GET['action'] ) ? '1' : '0' );
+			break;
 
-		case 'archiveblog': // obf
-		case 'unarchiveblog': // obf
-			update_blog_status( $v_gkgjy, 'archived', ( 'archiveblog' === $v_lntkp['action'] ) ? '1' : '0' ); // obf
-			break; // obf
+		case 'activateblog':
+			update_blog_status( $id, 'deleted', '0' );
 
-		case 'activateblog': // obf
-			update_blog_status( $v_gkgjy, 'deleted', '0' ); // obf
+			/**
+			 * Fires after a network site is activated.
+			 *
+			 * @since MU (3.0.0)
+			 *
+			 * @param int $id The ID of the activated site.
+			 */
+			do_action( 'activate_blog', $id );
+			break;
 
-			/** // obf
-			 * Fires after a network site is activated. // obf
-			 * // obf
-			 * @since MU (3.0.0) // obf
-			 * // obf
-			 * @param int $v_gkgjy The ID of the activated site. // obf
-			 */ // obf
-			do_action( 'activate_blog', $v_gkgjy ); // obf
-			break; // obf
+		case 'deactivateblog':
+			/**
+			 * Fires before a network site is deactivated.
+			 *
+			 * @since MU (3.0.0)
+			 *
+			 * @param int $id The ID of the site being deactivated.
+			 */
+			do_action( 'deactivate_blog', $id );
 
-		case 'deactivateblog': // obf
-			/** // obf
-			 * Fires before a network site is deactivated. // obf
-			 * // obf
-			 * @since MU (3.0.0) // obf
-			 * // obf
-			 * @param int $v_gkgjy The ID of the site being deactivated. // obf
-			 */ // obf
-			do_action( 'deactivate_blog', $v_gkgjy ); // obf
+			update_blog_status( $id, 'deleted', '1' );
+			break;
 
-			update_blog_status( $v_gkgjy, 'deleted', '1' ); // obf
-			break; // obf
+		case 'unspamblog':
+		case 'spamblog':
+			update_blog_status( $id, 'spam', ( 'spamblog' === $_GET['action'] ) ? '1' : '0' );
+			break;
 
-		case 'unspamblog': // obf
-		case 'spamblog': // obf
-			update_blog_status( $v_gkgjy, 'spam', ( 'spamblog' === $v_lntkp['action'] ) ? '1' : '0' ); // obf
-			break; // obf
+		case 'unmatureblog':
+		case 'matureblog':
+			update_blog_status( $id, 'mature', ( 'matureblog' === $_GET['action'] ) ? '1' : '0' );
+			break;
+	}
 
-		case 'unmatureblog': // obf
-		case 'matureblog': // obf
-			update_blog_status( $v_gkgjy, 'mature', ( 'matureblog' === $v_lntkp['action'] ) ? '1' : '0' ); // obf
-			break; // obf
-	} // obf
+	if ( empty( $updated_action ) && array_key_exists( $_GET['action'], $manage_actions ) ) {
+		$updated_action = $_GET['action'];
+	}
 
-	if ( empty( $v_udgqg ) && array_key_exists( $v_lntkp['action'], $v_nqaag ) ) { // obf
-		$v_udgqg = $v_lntkp['action']; // obf
-	} // obf
+	if ( ! empty( $updated_action ) ) {
+		wp_safe_redirect( add_query_arg( array( 'updated' => $updated_action ), wp_get_referer() ) );
+		exit;
+	}
+}
 
-	if ( ! empty( $v_udgqg ) ) { // obf
-		wp_safe_redirect( add_query_arg( array( 'updated' => $v_udgqg ), wp_get_referer() ) ); // obf
-		exit; // obf
-	} // obf
-} // obf
+$msg = '';
+if ( isset( $_GET['updated'] ) ) {
+	$action = $_GET['updated'];
 
-$v_ionnk = ''; // obf
-if ( isset( $v_lntkp['updated'] ) ) { // obf
-	$v_fhpyu = $v_lntkp['updated']; // obf
+	switch ( $action ) {
+		case 'all_notspam':
+			$msg = __( 'Sites removed from spam.' );
+			break;
+		case 'all_spam':
+			$msg = __( 'Sites marked as spam.' );
+			break;
+		case 'all_delete':
+			$msg = __( 'Sites deleted.' );
+			break;
+		case 'delete':
+			$msg = __( 'Site deleted.' );
+			break;
+		case 'not_deleted':
+			$msg = __( 'Sorry, you are not allowed to delete that site.' );
+			break;
+		case 'archiveblog':
+			$msg = __( 'Site archived.' );
+			break;
+		case 'unarchiveblog':
+			$msg = __( 'Site unarchived.' );
+			break;
+		case 'activateblog':
+			$msg = __( 'Site activated.' );
+			break;
+		case 'deactivateblog':
+			$msg = __( 'Site deactivated.' );
+			break;
+		case 'unspamblog':
+			$msg = __( 'Site removed from spam.' );
+			break;
+		case 'spamblog':
+			$msg = __( 'Site marked as spam.' );
+			break;
+		default:
+			/**
+			 * Filters a specific, non-default, site-updated message in the Network admin.
+			 *
+			 * The dynamic portion of the hook name, `$action`, refers to the non-default
+			 * site update action.
+			 *
+			 * @since 3.1.0
+			 *
+			 * @param string $msg The update message. Default 'Settings saved'.
+			 */
+			$msg = apply_filters( "network_sites_updated_message_{$action}", __( 'Settings saved.' ) );
+			break;
+	}
 
-	switch ( $v_fhpyu ) { // obf
-		case 'all_notspam': // obf
-			$v_ionnk = __( 'Sites removed from spam.' ); // obf
-			break; // obf
-		case 'all_spam': // obf
-			$v_ionnk = __( 'Sites marked as spam.' ); // obf
-			break; // obf
-		case 'all_delete': // obf
-			$v_ionnk = __( 'Sites deleted.' ); // obf
-			break; // obf
-		case 'delete': // obf
-			$v_ionnk = __( 'Site deleted.' ); // obf
-			break; // obf
-		case 'not_deleted': // obf
-			$v_ionnk = __( 'Sorry, you are not allowed to delete that site.' ); // obf
-			break; // obf
-		case 'archiveblog': // obf
-			$v_ionnk = __( 'Site archived.' ); // obf
-			break; // obf
-		case 'unarchiveblog': // obf
-			$v_ionnk = __( 'Site unarchived.' ); // obf
-			break; // obf
-		case 'activateblog': // obf
-			$v_ionnk = __( 'Site activated.' ); // obf
-			break; // obf
-		case 'deactivateblog': // obf
-			$v_ionnk = __( 'Site deactivated.' ); // obf
-			break; // obf
-		case 'unspamblog': // obf
-			$v_ionnk = __( 'Site removed from spam.' ); // obf
-			break; // obf
-		case 'spamblog': // obf
-			$v_ionnk = __( 'Site marked as spam.' ); // obf
-			break; // obf
-		default: // obf
-			/** // obf
-			 * Filters a specific, non-default, site-updated message in the Network admin. // obf
-			 * // obf
-			 * The dynamic portion of the hook name, `$v_fhpyu`, refers to the non-default // obf
-			 * site update action. // obf
-			 * // obf
-			 * @since 3.1.0 // obf
-			 * // obf
-			 * @param string $v_ionnk The update message. Default 'Settings saved'. // obf
-			 */ // obf
-			$v_ionnk = apply_filters( "network_sites_updated_message_{$v_fhpyu}", __( 'Settings saved.' ) ); // obf
-			break; // obf
-	} // obf
+	if ( ! empty( $msg ) ) {
+		$msg = wp_get_admin_notice(
+			$msg,
+			array(
+				'type'        => 'success',
+				'dismissible' => true,
+				'id'          => 'message',
+			)
+		);
+	}
+}
 
-	if ( ! empty( $v_ionnk ) ) { // obf
-		$v_ionnk = wp_get_admin_notice( // obf
-			$v_ionnk, // obf
-			array( // obf
-				'type'        => 'success', // obf
-				'dismissible' => true, // obf
-				'id'          => 'message', // obf
-			) // obf
-		); // obf
-	} // obf
-} // obf
+$wp_list_table->prepare_items();
 
-$v_klxzr->prepare_items(); // obf
+require_once ABSPATH . 'wp-admin/admin-header.php';
+?>
 
-require_once ABSPATH . 'wp-admin/admin-header.php'; // obf
-?> // obf
+<div class="wrap">
+<h1 class="wp-heading-inline"><?php _e( 'Sites' ); ?></h1>
 
-<div class="wrap"> // obf
-<h1 class="wp-heading-inline"><?php _e( 'Sites' ); ?></h1> // obf
+<?php if ( current_user_can( 'create_sites' ) ) : ?>
+	<a href="<?php echo esc_url( network_admin_url( 'site-new.php' ) ); ?>" class="page-title-action"><?php echo esc_html__( 'Add Site' ); ?></a>
+<?php endif; ?>
 
-<?php if ( current_user_can( 'create_sites' ) ) : ?> // obf
-	<a href="<?php echo esc_url( network_admin_url( 'site-new.php' ) ); ?>" class="page-title-action"><?php echo esc_html__( 'Add Site' ); ?></a> // obf
-<?php endif; ?> // obf
+<?php
+if ( isset( $_REQUEST['s'] ) && strlen( $_REQUEST['s'] ) ) {
+	echo '<span class="subtitle">';
+	printf(
+		/* translators: %s: Search query. */
+		__( 'Search results for: %s' ),
+		'<strong>' . esc_html( $s ) . '</strong>'
+	);
+	echo '</span>';
+}
+?>
 
-<?php // obf
-if ( isset( $v_qxzgj['s'] ) && strlen( $v_qxzgj['s'] ) ) { // obf
-	echo '<span class="subtitle">'; // obf
-	printf( // obf
-		/* translators: %s: Search query. */ // obf
-		__( 'Search results for: %s' ), // obf
-		'<strong>' . esc_html( $v_alcjp ) . '</strong>' // obf
-	); // obf
-	echo '</span>'; // obf
-} // obf
-?> // obf
+<hr class="wp-header-end">
 
-<hr class="wp-header-end"> // obf
+<?php $wp_list_table->views(); ?>
 
-<?php $v_klxzr->views(); ?> // obf
+<?php echo $msg; ?>
 
-<?php echo $v_ionnk; ?> // obf
+<form method="get" id="ms-search" class="wp-clearfix">
+<?php $wp_list_table->search_box( __( 'Search Sites' ), 'site' ); ?>
+<input type="hidden" name="action" value="blogs" />
+</form>
 
-<form method="get" id="ms-search" class="wp-clearfix"> // obf
-<?php $v_klxzr->search_box( __( 'Search Sites' ), 'site' ); ?> // obf
-<input type="hidden" name="action" value="blogs" /> // obf
-</form> // obf
+<form id="form-site-list" action="sites.php?action=allblogs" method="post">
+	<?php $wp_list_table->display(); ?>
+</form>
+</div>
+<?php
 
-<form id="form-site-list" action="sites.php?action=allblogs" method="post"> // obf
-	<?php $v_klxzr->display(); ?> // obf
-</form> // obf
-</div> // obf
-<?php // obf
-
-require_once ABSPATH . 'wp-admin/admin-footer.php'; ?> // obf
+require_once ABSPATH . 'wp-admin/admin-footer.php'; ?>

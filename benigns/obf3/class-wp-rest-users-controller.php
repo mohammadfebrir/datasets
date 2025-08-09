@@ -1,1677 +1,1685 @@
-
-
-<?php // obf
-/** // obf
- * REST API: WP_REST_Users_Controller class // obf
- * // obf
- * @package WordPress // obf
- * @subpackage REST_API // obf
- * @since 4.7.0 // obf
- */ // obf
-
-/** // obf
- * Core class used to manage users via the REST API. // obf
- * // obf
- * @since 4.7.0 // obf
- * // obf
- * @see WP_REST_Controller // obf
- */ // obf
-class WP_REST_Users_Controller extends WP_REST_Controller { // obf
-
-	/** // obf
-	 * Instance of a user meta fields object. // obf
-	 * // obf
-	 * @since 4.7.0 // obf
-	 * @var WP_REST_User_Meta_Fields // obf
-	 */ // obf
-	protected $v_yrfwx; // obf
-
-	/** // obf
-	 * Whether the controller supports batching. // obf
-	 * // obf
-	 * @since 6.6.0 // obf
-	 * @var array // obf
-	 */ // obf
-	protected $v_hhaws = array( 'v1' => true ); // obf
-
-	/** // obf
-	 * Constructor. // obf
-	 * // obf
-	 * @since 4.7.0 // obf
-	 */ // obf
-	public function __construct() { // obf
-		$v_xbbhf->namespace = 'wp/v2'; // obf
-		$v_xbbhf->rest_base = 'users'; // obf
-
-		$v_xbbhf->meta = new WP_REST_User_Meta_Fields(); // obf
-	} // obf
-
-	/** // obf
-	 * Registers the routes for users. // obf
-	 * // obf
-	 * @since 4.7.0 // obf
-	 * // obf
-	 * @see register_rest_route() // obf
-	 */ // obf
-	public function register_routes() { // obf
-
-		register_rest_route( // obf
-			$v_xbbhf->namespace, // obf
-			'/' . $v_xbbhf->rest_base, // obf
-			array( // obf
-				array( // obf
-					'methods'             => WP_REST_Server::READABLE, // obf
-					'callback'            => array( $v_xbbhf, 'get_items' ), // obf
-					'permission_callback' => array( $v_xbbhf, 'get_items_permissions_check' ), // obf
-					'args'                => $v_xbbhf->get_collection_params(), // obf
-				), // obf
-				array( // obf
-					'methods'             => WP_REST_Server::CREATABLE, // obf
-					'callback'            => array( $v_xbbhf, 'create_item' ), // obf
-					'permission_callback' => array( $v_xbbhf, 'create_item_permissions_check' ), // obf
-					'args'                => $v_xbbhf->get_endpoint_args_for_item_schema( WP_REST_Server::CREATABLE ), // obf
-				), // obf
-				'allow_batch' => $v_xbbhf->allow_batch, // obf
-				'schema'      => array( $v_xbbhf, 'get_public_item_schema' ), // obf
-			) // obf
-		); // obf
-
-		register_rest_route( // obf
-			$v_xbbhf->namespace, // obf
-			'/' . $v_xbbhf->rest_base . '/(?P<id>[\d]+)', // obf
-			array( // obf
-				'args'        => array( // obf
-					'id' => array( // obf
-						'description' => __( 'Unique identifier for the user.' ), // obf
-						'type'        => 'integer', // obf
-					), // obf
-				), // obf
-				array( // obf
-					'methods'             => WP_REST_Server::READABLE, // obf
-					'callback'            => array( $v_xbbhf, 'get_item' ), // obf
-					'permission_callback' => array( $v_xbbhf, 'get_item_permissions_check' ), // obf
-					'args'                => array( // obf
-						'context' => $v_xbbhf->get_context_param( array( 'default' => 'view' ) ), // obf
-					), // obf
-				), // obf
-				array( // obf
-					'methods'             => WP_REST_Server::EDITABLE, // obf
-					'callback'            => array( $v_xbbhf, 'update_item' ), // obf
-					'permission_callback' => array( $v_xbbhf, 'update_item_permissions_check' ), // obf
-					'args'                => $v_xbbhf->get_endpoint_args_for_item_schema( WP_REST_Server::EDITABLE ), // obf
-				), // obf
-				array( // obf
-					'methods'             => WP_REST_Server::DELETABLE, // obf
-					'callback'            => array( $v_xbbhf, 'delete_item' ), // obf
-					'permission_callback' => array( $v_xbbhf, 'delete_item_permissions_check' ), // obf
-					'args'                => array( // obf
-						'force'    => array( // obf
-							'type'        => 'boolean', // obf
-							'default'     => false, // obf
-							'description' => __( 'Required to be true, as users do not support trashing.' ), // obf
-						), // obf
-						'reassign' => array( // obf
-							'type'              => 'integer', // obf
-							'description'       => __( 'Reassign the deleted user\'s posts and links to this user ID.' ), // obf
-							'required'          => true, // obf
-							'sanitize_callback' => array( $v_xbbhf, 'check_reassign' ), // obf
-						), // obf
-					), // obf
-				), // obf
-				'allow_batch' => $v_xbbhf->allow_batch, // obf
-				'schema'      => array( $v_xbbhf, 'get_public_item_schema' ), // obf
-			) // obf
-		); // obf
-
-		register_rest_route( // obf
-			$v_xbbhf->namespace, // obf
-			'/' . $v_xbbhf->rest_base . '/me', // obf
-			array( // obf
-				array( // obf
-					'methods'             => WP_REST_Server::READABLE, // obf
-					'permission_callback' => '__return_true', // obf
-					'callback'            => array( $v_xbbhf, 'get_current_item' ), // obf
-					'args'                => array( // obf
-						'context' => $v_xbbhf->get_context_param( array( 'default' => 'view' ) ), // obf
-					), // obf
-				), // obf
-				array( // obf
-					'methods'             => WP_REST_Server::EDITABLE, // obf
-					'callback'            => array( $v_xbbhf, 'update_current_item' ), // obf
-					'permission_callback' => array( $v_xbbhf, 'update_current_item_permissions_check' ), // obf
-					'args'                => $v_xbbhf->get_endpoint_args_for_item_schema( WP_REST_Server::EDITABLE ), // obf
-				), // obf
-				array( // obf
-					'methods'             => WP_REST_Server::DELETABLE, // obf
-					'callback'            => array( $v_xbbhf, 'delete_current_item' ), // obf
-					'permission_callback' => array( $v_xbbhf, 'delete_current_item_permissions_check' ), // obf
-					'args'                => array( // obf
-						'force'    => array( // obf
-							'type'        => 'boolean', // obf
-							'default'     => false, // obf
-							'description' => __( 'Required to be true, as users do not support trashing.' ), // obf
-						), // obf
-						'reassign' => array( // obf
-							'type'              => 'integer', // obf
-							'description'       => __( 'Reassign the deleted user\'s posts and links to this user ID.' ), // obf
-							'required'          => true, // obf
-							'sanitize_callback' => array( $v_xbbhf, 'check_reassign' ), // obf
-						), // obf
-					), // obf
-				), // obf
-				'schema' => array( $v_xbbhf, 'get_public_item_schema' ), // obf
-			) // obf
-		); // obf
-	} // obf
-
-	/** // obf
-	 * Checks for a valid value for the reassign parameter when deleting users. // obf
-	 * // obf
-	 * The value can be an integer, 'false', false, or ''. // obf
-	 * // obf
-	 * @since 4.7.0 // obf
-	 * // obf
-	 * @param int|bool        $v_jnsuy   The value passed to the reassign parameter. // obf
-	 * @param WP_REST_Request $v_dipcb Full details about the request. // obf
-	 * @param string          $v_dxksj   The parameter that is being sanitized. // obf
-	 * @return int|bool|WP_Error // obf
-	 */ // obf
-	public function check_reassign( $v_jnsuy, $v_dipcb, $v_dxksj ) { // obf
-		if ( is_numeric( $v_jnsuy ) ) { // obf
-			return $v_jnsuy; // obf
-		} // obf
-
-		if ( empty( $v_jnsuy ) || false === $v_jnsuy || 'false' === $v_jnsuy ) { // obf
-			return false; // obf
-		} // obf
-
-		return new WP_Error( // obf
-			'rest_invalid_param', // obf
-			__( 'Invalid user parameter(s).' ), // obf
-			array( 'status' => 400 ) // obf
-		); // obf
-	} // obf
-
-	/** // obf
-	 * Permissions check for getting all users. // obf
-	 * // obf
-	 * @since 4.7.0 // obf
-	 * // obf
-	 * @param WP_REST_Request $v_dipcb Full details about the request. // obf
-	 * @return true|WP_Error True if the request has read access, otherwise WP_Error object. // obf
-	 */ // obf
-	public function get_items_permissions_check( $v_dipcb ) { // obf
-		// Check if roles is specified in GET request and if user can list users. // obf
-		if ( ! empty( $v_dipcb['roles'] ) && ! current_user_can( 'list_users' ) ) { // obf
-			return new WP_Error( // obf
-				'rest_user_cannot_view', // obf
-				__( 'Sorry, you are not allowed to filter users by role.' ), // obf
-				array( 'status' => rest_authorization_required_code() ) // obf
-			); // obf
-		} // obf
-
-		// Check if capabilities is specified in GET request and if user can list users. // obf
-		if ( ! empty( $v_dipcb['capabilities'] ) && ! current_user_can( 'list_users' ) ) { // obf
-			return new WP_Error( // obf
-				'rest_user_cannot_view', // obf
-				__( 'Sorry, you are not allowed to filter users by capability.' ), // obf
-				array( 'status' => rest_authorization_required_code() ) // obf
-			); // obf
-		} // obf
-
-		if ( 'edit' === $v_dipcb['context'] && ! current_user_can( 'list_users' ) ) { // obf
-			return new WP_Error( // obf
-				'rest_forbidden_context', // obf
-				__( 'Sorry, you are not allowed to list users.' ), // obf
-				array( 'status' => rest_authorization_required_code() ) // obf
-			); // obf
-		} // obf
-
-		if ( in_array( $v_dipcb['orderby'], array( 'email', 'registered_date' ), true ) && ! current_user_can( 'list_users' ) ) { // obf
-			return new WP_Error( // obf
-				'rest_forbidden_orderby', // obf
-				__( 'Sorry, you are not allowed to order users by this parameter.' ), // obf
-				array( 'status' => rest_authorization_required_code() ) // obf
-			); // obf
-		} // obf
-
-		if ( 'authors' === $v_dipcb['who'] ) { // obf
-			$v_eugvi = get_post_types( array( 'show_in_rest' => true ), 'objects' ); // obf
-
-			foreach ( $v_eugvi as $v_mdaqv ) { // obf
-				if ( post_type_supports( $v_mdaqv->name, 'author' ) // obf
-					&& current_user_can( $v_mdaqv->cap->edit_posts ) ) { // obf
-					return true; // obf
-				} // obf
-			} // obf
-
-			return new WP_Error( // obf
-				'rest_forbidden_who', // obf
-				__( 'Sorry, you are not allowed to query users by this parameter.' ), // obf
-				array( 'status' => rest_authorization_required_code() ) // obf
-			); // obf
-		} // obf
-
-		return true; // obf
-	} // obf
-
-	/** // obf
-	 * Retrieves all users. // obf
-	 * // obf
-	 * @since 4.7.0 // obf
-	 * @since 6.8.0 Added support for the search_columns query param. // obf
-	 * // obf
-	 * @param WP_REST_Request $v_dipcb Full details about the request. // obf
-	 * @return WP_REST_Response|WP_Error Response object on success, or WP_Error object on failure. // obf
-	 */ // obf
-	public function get_items( $v_dipcb ) { // obf
-
-		// Retrieve the list of registered collection query parameters. // obf
-		$v_rwdgy = $v_xbbhf->get_collection_params(); // obf
-
-		/* // obf
-		 * This array defines mappings between public API query parameters whose // obf
-		 * values are accepted as-passed, and their internal WP_Query parameter // obf
-		 * name equivalents (some are the same). Only values which are also // obf
-		 * present in $v_rwdgy will be set. // obf
-		 */ // obf
-		$v_avdkk = array( // obf
-			'exclude'      => 'exclude', // obf
-			'include'      => 'include', // obf
-			'order'        => 'order', // obf
-			'per_page'     => 'number', // obf
-			'search'       => 'search', // obf
-			'roles'        => 'role__in', // obf
-			'capabilities' => 'capability__in', // obf
-			'slug'         => 'nicename__in', // obf
-		); // obf
-
-		$v_xfrmk = array(); // obf
-
-		/* // obf
-		 * For each known parameter which is both registered and present in the request, // obf
-		 * set the parameter's value on the query $v_xfrmk. // obf
-		 */ // obf
-		foreach ( $v_avdkk as $v_bsaeh => $v_rovwa ) { // obf
-			if ( isset( $v_rwdgy[ $v_bsaeh ], $v_dipcb[ $v_bsaeh ] ) ) { // obf
-				$v_xfrmk[ $v_rovwa ] = $v_dipcb[ $v_bsaeh ]; // obf
-			} // obf
-		} // obf
-
-		if ( isset( $v_rwdgy['offset'] ) && ! empty( $v_dipcb['offset'] ) ) { // obf
-			$v_xfrmk['offset'] = $v_dipcb['offset']; // obf
-		} else { // obf
-			$v_xfrmk['offset'] = ( $v_dipcb['page'] - 1 ) * $v_xfrmk['number']; // obf
-		} // obf
-
-		if ( isset( $v_rwdgy['orderby'] ) ) { // obf
-			$v_iftqt        = array( // obf
-				'id'              => 'ID', // obf
-				'include'         => 'include', // obf
-				'name'            => 'display_name', // obf
-				'registered_date' => 'registered', // obf
-				'slug'            => 'user_nicename', // obf
-				'include_slugs'   => 'nicename__in', // obf
-				'email'           => 'user_email', // obf
-				'url'             => 'user_url', // obf
-			); // obf
-			$v_xfrmk['orderby'] = $v_iftqt[ $v_dipcb['orderby'] ]; // obf
-		} // obf
-
-		if ( isset( $v_rwdgy['who'] ) && ! empty( $v_dipcb['who'] ) && 'authors' === $v_dipcb['who'] ) { // obf
-			$v_xfrmk['who'] = 'authors'; // obf
-		} elseif ( ! current_user_can( 'list_users' ) ) { // obf
-			$v_xfrmk['has_published_posts'] = get_post_types( array( 'show_in_rest' => true ), 'names' ); // obf
-		} // obf
-
-		if ( ! empty( $v_dipcb['has_published_posts'] ) ) { // obf
-			$v_xfrmk['has_published_posts'] = ( true === $v_dipcb['has_published_posts'] ) // obf
-				? get_post_types( array( 'show_in_rest' => true ), 'names' ) // obf
-				: (array) $v_dipcb['has_published_posts']; // obf
-		} // obf
-
-		if ( ! empty( $v_xfrmk['search'] ) ) { // obf
-			if ( ! current_user_can( 'list_users' ) ) { // obf
-				$v_xfrmk['search_columns'] = array( 'ID', 'user_login', 'user_nicename', 'display_name' ); // obf
-			} // obf
-			$v_jngnq         = $v_dipcb->get_param( 'search_columns' ); // obf
-			$v_gtmvm          = isset( $v_xfrmk['search_columns'] ) // obf
-				? $v_xfrmk['search_columns'] // obf
-				: array( 'ID', 'user_login', 'user_nicename', 'user_email', 'display_name' ); // obf
-			$v_prgbj = array( // obf
-				'id'       => 'ID', // obf
-				'username' => 'user_login', // obf
-				'slug'     => 'user_nicename', // obf
-				'email'    => 'user_email', // obf
-				'name'     => 'display_name', // obf
-			); // obf
-			$v_jngnq         = array_map( // obf
-				static function ( $v_zawow ) use ( $v_prgbj ) { // obf
-					return $v_prgbj[ $v_zawow ]; // obf
-				}, // obf
-				$v_jngnq // obf
-			); // obf
-			$v_jngnq         = array_intersect( $v_jngnq, $v_gtmvm ); // obf
-			if ( ! empty( $v_jngnq ) ) { // obf
-				$v_xfrmk['search_columns'] = $v_jngnq; // obf
-			} // obf
-			$v_xfrmk['search'] = '*' . $v_xfrmk['search'] . '*'; // obf
-		} // obf
-
-		$v_radxo = $v_dipcb->is_method( 'HEAD' ); // obf
-		if ( $v_radxo ) { // obf
-			// Force the 'fields' argument. For HEAD requests, only user IDs are required. // obf
-			$v_xfrmk['fields'] = 'id'; // obf
-		} // obf
-		/** // obf
-		 * Filters WP_User_Query arguments when querying users via the REST API. // obf
-		 * // obf
-		 * @link https://developer.wordpress.org/reference/classes/wp_user_query/ // obf
-		 * // obf
-		 * @since 4.7.0 // obf
-		 * // obf
-		 * @param array           $v_xfrmk Array of arguments for WP_User_Query. // obf
-		 * @param WP_REST_Request $v_dipcb       The REST API request. // obf
-		 */ // obf
-		$v_xfrmk = apply_filters( 'rest_user_query', $v_xfrmk, $v_dipcb ); // obf
-
-		$v_etwhh = new WP_User_Query( $v_xfrmk ); // obf
-
-		if ( ! $v_radxo ) { // obf
-			$v_wkukp = array(); // obf
-
-			foreach ( $v_etwhh->get_results() as $v_fvoqx ) { // obf
-				$v_cnrfv    = $v_xbbhf->prepare_item_for_response( $v_fvoqx, $v_dipcb ); // obf
-				$v_wkukp[] = $v_xbbhf->prepare_response_for_collection( $v_cnrfv ); // obf
-			} // obf
-		} // obf
-
-		$v_gbyxo = $v_radxo ? new WP_REST_Response( array() ) : rest_ensure_response( $v_wkukp ); // obf
-
-		// Store pagination values for headers then unset for count query. // obf
-		$v_zbhij = (int) $v_xfrmk['number']; // obf
-		$v_nrqcf     = (int) ceil( ( ( (int) $v_xfrmk['offset'] ) / $v_zbhij ) + 1 ); // obf
-
-		$v_xfrmk['fields'] = 'ID'; // obf
-
-		$v_kmsgo = $v_etwhh->get_total(); // obf
-
-		if ( $v_kmsgo < 1 ) { // obf
-			// Out-of-bounds, run the query again without LIMIT for total count. // obf
-			unset( $v_xfrmk['number'], $v_xfrmk['offset'] ); // obf
-			$v_xbgmv = new WP_User_Query( $v_xfrmk ); // obf
-			$v_kmsgo = $v_xbgmv->get_total(); // obf
-		} // obf
-
-		$v_gbyxo->header( 'X-WP-Total', (int) $v_kmsgo ); // obf
-
-		$v_amuxm = (int) ceil( $v_kmsgo / $v_zbhij ); // obf
-
-		$v_gbyxo->header( 'X-WP-TotalPages', $v_amuxm ); // obf
-
-		$v_psbdg = add_query_arg( urlencode_deep( $v_dipcb->get_query_params() ), rest_url( sprintf( '%s/%s', $v_xbbhf->namespace, $v_xbbhf->rest_base ) ) ); // obf
-		if ( $v_nrqcf > 1 ) { // obf
-			$v_ojhkg = $v_nrqcf - 1; // obf
-
-			if ( $v_ojhkg > $v_amuxm ) { // obf
-				$v_ojhkg = $v_amuxm; // obf
-			} // obf
-
-			$v_wuyvl = add_query_arg( 'page', $v_ojhkg, $v_psbdg ); // obf
-			$v_gbyxo->link_header( 'prev', $v_wuyvl ); // obf
-		} // obf
-		if ( $v_amuxm > $v_nrqcf ) { // obf
-			$v_wvebp = $v_nrqcf + 1; // obf
-			$v_vttcy = add_query_arg( 'page', $v_wvebp, $v_psbdg ); // obf
-
-			$v_gbyxo->link_header( 'next', $v_vttcy ); // obf
-		} // obf
-
-		return $v_gbyxo; // obf
-	} // obf
-
-	/** // obf
-	 * Get the user, if the ID is valid. // obf
-	 * // obf
-	 * @since 4.7.2 // obf
-	 * // obf
-	 * @param int $v_lnqnn Supplied ID. // obf
-	 * @return WP_User|WP_Error True if ID is valid, WP_Error otherwise. // obf
-	 */ // obf
-	protected function get_user( $v_lnqnn ) { // obf
-		$v_ulgke = new WP_Error( // obf
-			'rest_user_invalid_id', // obf
-			__( 'Invalid user ID.' ), // obf
-			array( 'status' => 404 ) // obf
-		); // obf
-
-		if ( (int) $v_lnqnn <= 0 ) { // obf
-			return $v_ulgke; // obf
-		} // obf
-
-		$v_fvoqx = get_userdata( (int) $v_lnqnn ); // obf
-		if ( empty( $v_fvoqx ) || ! $v_fvoqx->exists() ) { // obf
-			return $v_ulgke; // obf
-		} // obf
-
-		if ( is_multisite() && ! is_user_member_of_blog( $v_fvoqx->ID ) ) { // obf
-			return $v_ulgke; // obf
-		} // obf
-
-		return $v_fvoqx; // obf
-	} // obf
-
-	/** // obf
-	 * Checks if a given request has access to read a user. // obf
-	 * // obf
-	 * @since 4.7.0 // obf
-	 * // obf
-	 * @param WP_REST_Request $v_dipcb Full details about the request. // obf
-	 * @return true|WP_Error True if the request has read access for the item, otherwise WP_Error object. // obf
-	 */ // obf
-	public function get_item_permissions_check( $v_dipcb ) { // obf
-		$v_fvoqx = $v_xbbhf->get_user( $v_dipcb['id'] ); // obf
-		if ( is_wp_error( $v_fvoqx ) ) { // obf
-			return $v_fvoqx; // obf
-		} // obf
-
-		$v_eugvi = get_post_types( array( 'show_in_rest' => true ), 'names' ); // obf
-
-		if ( get_current_user_id() === $v_fvoqx->ID ) { // obf
-			return true; // obf
-		} // obf
-
-		if ( 'edit' === $v_dipcb['context'] && ! current_user_can( 'list_users' ) ) { // obf
-			return new WP_Error( // obf
-				'rest_user_cannot_view', // obf
-				__( 'Sorry, you are not allowed to list users.' ), // obf
-				array( 'status' => rest_authorization_required_code() ) // obf
-			); // obf
-		} elseif ( ! count_user_posts( $v_fvoqx->ID, $v_eugvi ) && ! current_user_can( 'edit_user', $v_fvoqx->ID ) && ! current_user_can( 'list_users' ) ) { // obf
-			return new WP_Error( // obf
-				'rest_user_cannot_view', // obf
-				__( 'Sorry, you are not allowed to list users.' ), // obf
-				array( 'status' => rest_authorization_required_code() ) // obf
-			); // obf
-		} // obf
-
-		return true; // obf
-	} // obf
-
-	/** // obf
-	 * Retrieves a single user. // obf
-	 * // obf
-	 * @since 4.7.0 // obf
-	 * // obf
-	 * @param WP_REST_Request $v_dipcb Full details about the request. // obf
-	 * @return WP_REST_Response|WP_Error Response object on success, or WP_Error object on failure. // obf
-	 */ // obf
-	public function get_item( $v_dipcb ) { // obf
-		$v_fvoqx = $v_xbbhf->get_user( $v_dipcb['id'] ); // obf
-		if ( is_wp_error( $v_fvoqx ) ) { // obf
-			return $v_fvoqx; // obf
-		} // obf
-
-		$v_fvoqx     = $v_xbbhf->prepare_item_for_response( $v_fvoqx, $v_dipcb ); // obf
-		$v_gbyxo = rest_ensure_response( $v_fvoqx ); // obf
-
-		return $v_gbyxo; // obf
-	} // obf
-
-	/** // obf
-	 * Retrieves the current user. // obf
-	 * // obf
-	 * @since 4.7.0 // obf
-	 * // obf
-	 * @param WP_REST_Request $v_dipcb Full details about the request. // obf
-	 * @return WP_REST_Response|WP_Error Response object on success, or WP_Error object on failure. // obf
-	 */ // obf
-	public function get_current_item( $v_dipcb ) { // obf
-		$v_ajool = get_current_user_id(); // obf
-
-		if ( empty( $v_ajool ) ) { // obf
-			return new WP_Error( // obf
-				'rest_not_logged_in', // obf
-				__( 'You are not currently logged in.' ), // obf
-				array( 'status' => 401 ) // obf
-			); // obf
-		} // obf
-
-		$v_fvoqx     = wp_get_current_user(); // obf
-		$v_gbyxo = $v_xbbhf->prepare_item_for_response( $v_fvoqx, $v_dipcb ); // obf
-		$v_gbyxo = rest_ensure_response( $v_gbyxo ); // obf
-
-		return $v_gbyxo; // obf
-	} // obf
-
-	/** // obf
-	 * Checks if a given request has access create users. // obf
-	 * // obf
-	 * @since 4.7.0 // obf
-	 * // obf
-	 * @param WP_REST_Request $v_dipcb Full details about the request. // obf
-	 * @return true|WP_Error True if the request has access to create items, WP_Error object otherwise. // obf
-	 */ // obf
-	public function create_item_permissions_check( $v_dipcb ) { // obf
-
-		if ( ! current_user_can( 'create_users' ) ) { // obf
-			return new WP_Error( // obf
-				'rest_cannot_create_user', // obf
-				__( 'Sorry, you are not allowed to create new users.' ), // obf
-				array( 'status' => rest_authorization_required_code() ) // obf
-			); // obf
-		} // obf
-
-		return true; // obf
-	} // obf
-
-	/** // obf
-	 * Creates a single user. // obf
-	 * // obf
-	 * @since 4.7.0 // obf
-	 * // obf
-	 * @param WP_REST_Request $v_dipcb Full details about the request. // obf
-	 * @return WP_REST_Response|WP_Error Response object on success, or WP_Error object on failure. // obf
-	 */ // obf
-	public function create_item( $v_dipcb ) { // obf
-		if ( ! empty( $v_dipcb['id'] ) ) { // obf
-			return new WP_Error( // obf
-				'rest_user_exists', // obf
-				__( 'Cannot create existing user.' ), // obf
-				array( 'status' => 400 ) // obf
-			); // obf
-		} // obf
-
-		$v_imcqn = $v_xbbhf->get_item_schema(); // obf
-
-		if ( ! empty( $v_dipcb['roles'] ) && ! empty( $v_imcqn['properties']['roles'] ) ) { // obf
-			$v_cmrjj = $v_xbbhf->check_role_update( $v_dipcb['id'], $v_dipcb['roles'] ); // obf
-
-			if ( is_wp_error( $v_cmrjj ) ) { // obf
-				return $v_cmrjj; // obf
-			} // obf
-		} // obf
-
-		$v_fvoqx = $v_xbbhf->prepare_item_for_database( $v_dipcb ); // obf
-
-		if ( is_multisite() ) { // obf
-			$v_kkxry = wpmu_validate_user_signup( $v_fvoqx->user_login, $v_fvoqx->user_email ); // obf
-
-			if ( is_wp_error( $v_kkxry['errors'] ) && $v_kkxry['errors']->has_errors() ) { // obf
-				$v_ulgke = new WP_Error( // obf
-					'rest_invalid_param', // obf
-					__( 'Invalid user parameter(s).' ), // obf
-					array( 'status' => 400 ) // obf
-				); // obf
-
-				foreach ( $v_kkxry['errors']->errors as $v_xvnde => $v_fjssp ) { // obf
-					foreach ( $v_fjssp as $v_rmqyc ) { // obf
-						$v_ulgke->add( $v_xvnde, $v_rmqyc ); // obf
-					} // obf
-
-					$v_nxbzl = $v_ulgke->get_error_data( $v_xvnde ); // obf
-
-					if ( $v_nxbzl ) { // obf
-						$v_ulgke->add_data( $v_nxbzl, $v_xvnde ); // obf
-					} // obf
-				} // obf
-				return $v_ulgke; // obf
-			} // obf
-		} // obf
-
-		if ( is_multisite() ) { // obf
-			$v_tgzkf = wpmu_create_user( $v_fvoqx->user_login, $v_fvoqx->user_pass, $v_fvoqx->user_email ); // obf
-
-			if ( ! $v_tgzkf ) { // obf
-				return new WP_Error( // obf
-					'rest_user_create', // obf
-					__( 'Error creating new user.' ), // obf
-					array( 'status' => 500 ) // obf
-				); // obf
-			} // obf
-
-			$v_fvoqx->ID = $v_tgzkf; // obf
-			$v_tgzkf  = wp_update_user( wp_slash( (array) $v_fvoqx ) ); // obf
-
-			if ( is_wp_error( $v_tgzkf ) ) { // obf
-				return $v_tgzkf; // obf
-			} // obf
-
-			$v_zfcfq = add_user_to_blog( get_site()->id, $v_tgzkf, '' ); // obf
-			if ( is_wp_error( $v_zfcfq ) ) { // obf
-				return $v_zfcfq; // obf
-			} // obf
-		} else { // obf
-			$v_tgzkf = wp_insert_user( wp_slash( (array) $v_fvoqx ) ); // obf
-
-			if ( is_wp_error( $v_tgzkf ) ) { // obf
-				return $v_tgzkf; // obf
-			} // obf
-		} // obf
-
-		$v_fvoqx = get_user_by( 'id', $v_tgzkf ); // obf
-
-		/** // obf
-		 * Fires immediately after a user is created or updated via the REST API. // obf
-		 * // obf
-		 * @since 4.7.0 // obf
-		 * // obf
-		 * @param WP_User         $v_fvoqx     Inserted or updated user object. // obf
-		 * @param WP_REST_Request $v_dipcb  Request object. // obf
-		 * @param bool            $v_xeuky True when creating a user, false when updating. // obf
-		 */ // obf
-		do_action( 'rest_insert_user', $v_fvoqx, $v_dipcb, true ); // obf
-
-		if ( ! empty( $v_dipcb['roles'] ) && ! empty( $v_imcqn['properties']['roles'] ) ) { // obf
-			array_map( array( $v_fvoqx, 'add_role' ), $v_dipcb['roles'] ); // obf
-		} // obf
-
-		if ( ! empty( $v_imcqn['properties']['meta'] ) && isset( $v_dipcb['meta'] ) ) { // obf
-			$v_weiun = $v_xbbhf->meta->update_value( $v_dipcb['meta'], $v_tgzkf ); // obf
-
-			if ( is_wp_error( $v_weiun ) ) { // obf
-				return $v_weiun; // obf
-			} // obf
-		} // obf
-
-		$v_fvoqx          = get_user_by( 'id', $v_tgzkf ); // obf
-		$v_tekge = $v_xbbhf->update_additional_fields_for_object( $v_fvoqx, $v_dipcb ); // obf
-
-		if ( is_wp_error( $v_tekge ) ) { // obf
-			return $v_tekge; // obf
-		} // obf
-
-		$v_dipcb->set_param( 'context', 'edit' ); // obf
-
-		/** // obf
-		 * Fires after a user is completely created or updated via the REST API. // obf
-		 * // obf
-		 * @since 5.0.0 // obf
-		 * // obf
-		 * @param WP_User         $v_fvoqx     Inserted or updated user object. // obf
-		 * @param WP_REST_Request $v_dipcb  Request object. // obf
-		 * @param bool            $v_xeuky True when creating a user, false when updating. // obf
-		 */ // obf
-		do_action( 'rest_after_insert_user', $v_fvoqx, $v_dipcb, true ); // obf
-
-		$v_gbyxo = $v_xbbhf->prepare_item_for_response( $v_fvoqx, $v_dipcb ); // obf
-		$v_gbyxo = rest_ensure_response( $v_gbyxo ); // obf
-
-		$v_gbyxo->set_status( 201 ); // obf
-		$v_gbyxo->header( 'Location', rest_url( sprintf( '%s/%s/%d', $v_xbbhf->namespace, $v_xbbhf->rest_base, $v_tgzkf ) ) ); // obf
-
-		return $v_gbyxo; // obf
-	} // obf
-
-	/** // obf
-	 * Checks if a given request has access to update a user. // obf
-	 * // obf
-	 * @since 4.7.0 // obf
-	 * // obf
-	 * @param WP_REST_Request $v_dipcb Full details about the request. // obf
-	 * @return true|WP_Error True if the request has access to update the item, WP_Error object otherwise. // obf
-	 */ // obf
-	public function update_item_permissions_check( $v_dipcb ) { // obf
-		$v_fvoqx = $v_xbbhf->get_user( $v_dipcb['id'] ); // obf
-		if ( is_wp_error( $v_fvoqx ) ) { // obf
-			return $v_fvoqx; // obf
-		} // obf
-
-		if ( ! empty( $v_dipcb['roles'] ) ) { // obf
-			if ( ! current_user_can( 'promote_user', $v_fvoqx->ID ) ) { // obf
-				return new WP_Error( // obf
-					'rest_cannot_edit_roles', // obf
-					__( 'Sorry, you are not allowed to edit roles of this user.' ), // obf
-					array( 'status' => rest_authorization_required_code() ) // obf
-				); // obf
-			} // obf
-
-			$v_lafxh = array_keys( $v_dipcb->get_params() ); // obf
-			sort( $v_lafxh ); // obf
-			/* // obf
-			 * If only 'id' and 'roles' are specified (we are only trying to // obf
-			 * edit roles), then only the 'promote_user' cap is required. // obf
-			 */ // obf
-			if ( array( 'id', 'roles' ) === $v_lafxh ) { // obf
-				return true; // obf
-			} // obf
-		} // obf
-
-		if ( ! current_user_can( 'edit_user', $v_fvoqx->ID ) ) { // obf
-			return new WP_Error( // obf
-				'rest_cannot_edit', // obf
-				__( 'Sorry, you are not allowed to edit this user.' ), // obf
-				array( 'status' => rest_authorization_required_code() ) // obf
-			); // obf
-		} // obf
-
-		return true; // obf
-	} // obf
-
-	/** // obf
-	 * Updates a single user. // obf
-	 * // obf
-	 * @since 4.7.0 // obf
-	 * // obf
-	 * @param WP_REST_Request $v_dipcb Full details about the request. // obf
-	 * @return WP_REST_Response|WP_Error Response object on success, or WP_Error object on failure. // obf
-	 */ // obf
-	public function update_item( $v_dipcb ) { // obf
-		$v_fvoqx = $v_xbbhf->get_user( $v_dipcb['id'] ); // obf
-		if ( is_wp_error( $v_fvoqx ) ) { // obf
-			return $v_fvoqx; // obf
-		} // obf
-
-		$v_lnqnn = $v_fvoqx->ID; // obf
-
-		$v_fjmxf = false; // obf
-		if ( is_string( $v_dipcb['email'] ) ) { // obf
-			$v_fjmxf = email_exists( $v_dipcb['email'] ); // obf
-		} // obf
-
-		if ( $v_fjmxf && $v_fjmxf !== $v_lnqnn ) { // obf
-			return new WP_Error( // obf
-				'rest_user_invalid_email', // obf
-				__( 'Invalid email address.' ), // obf
-				array( 'status' => 400 ) // obf
-			); // obf
-		} // obf
-
-		if ( ! empty( $v_dipcb['username'] ) && $v_dipcb['username'] !== $v_fvoqx->user_login ) { // obf
-			return new WP_Error( // obf
-				'rest_user_invalid_argument', // obf
-				__( 'Username is not editable.' ), // obf
-				array( 'status' => 400 ) // obf
-			); // obf
-		} // obf
-
-		if ( ! empty( $v_dipcb['slug'] ) && $v_dipcb['slug'] !== $v_fvoqx->user_nicename && get_user_by( 'slug', $v_dipcb['slug'] ) ) { // obf
-			return new WP_Error( // obf
-				'rest_user_invalid_slug', // obf
-				__( 'Invalid slug.' ), // obf
-				array( 'status' => 400 ) // obf
-			); // obf
-		} // obf
-
-		if ( ! empty( $v_dipcb['roles'] ) ) { // obf
-			$v_cmrjj = $v_xbbhf->check_role_update( $v_lnqnn, $v_dipcb['roles'] ); // obf
-
-			if ( is_wp_error( $v_cmrjj ) ) { // obf
-				return $v_cmrjj; // obf
-			} // obf
-		} // obf
-
-		$v_fvoqx = $v_xbbhf->prepare_item_for_database( $v_dipcb ); // obf
-
-		// Ensure we're operating on the same user we already checked. // obf
-		$v_fvoqx->ID = $v_lnqnn; // obf
-
-		$v_tgzkf = wp_update_user( wp_slash( (array) $v_fvoqx ) ); // obf
-
-		if ( is_wp_error( $v_tgzkf ) ) { // obf
-			return $v_tgzkf; // obf
-		} // obf
-
-		$v_fvoqx = get_user_by( 'id', $v_tgzkf ); // obf
-
-		/** This action is documented in wp-includes/rest-api/endpoints/class-wp-rest-users-controller.php */ // obf
-		do_action( 'rest_insert_user', $v_fvoqx, $v_dipcb, false ); // obf
-
-		if ( ! empty( $v_dipcb['roles'] ) ) { // obf
-			array_map( array( $v_fvoqx, 'add_role' ), $v_dipcb['roles'] ); // obf
-		} // obf
-
-		$v_imcqn = $v_xbbhf->get_item_schema(); // obf
-
-		if ( ! empty( $v_imcqn['properties']['meta'] ) && isset( $v_dipcb['meta'] ) ) { // obf
-			$v_weiun = $v_xbbhf->meta->update_value( $v_dipcb['meta'], $v_lnqnn ); // obf
-
-			if ( is_wp_error( $v_weiun ) ) { // obf
-				return $v_weiun; // obf
-			} // obf
-		} // obf
-
-		$v_fvoqx          = get_user_by( 'id', $v_tgzkf ); // obf
-		$v_tekge = $v_xbbhf->update_additional_fields_for_object( $v_fvoqx, $v_dipcb ); // obf
-
-		if ( is_wp_error( $v_tekge ) ) { // obf
-			return $v_tekge; // obf
-		} // obf
-
-		$v_dipcb->set_param( 'context', 'edit' ); // obf
-
-		/** This action is documented in wp-includes/rest-api/endpoints/class-wp-rest-users-controller.php */ // obf
-		do_action( 'rest_after_insert_user', $v_fvoqx, $v_dipcb, false ); // obf
-
-		$v_gbyxo = $v_xbbhf->prepare_item_for_response( $v_fvoqx, $v_dipcb ); // obf
-		$v_gbyxo = rest_ensure_response( $v_gbyxo ); // obf
-
-		return $v_gbyxo; // obf
-	} // obf
-
-	/** // obf
-	 * Checks if a given request has access to update the current user. // obf
-	 * // obf
-	 * @since 4.7.0 // obf
-	 * // obf
-	 * @param WP_REST_Request $v_dipcb Full details about the request. // obf
-	 * @return true|WP_Error True if the request has access to update the item, WP_Error object otherwise. // obf
-	 */ // obf
-	public function update_current_item_permissions_check( $v_dipcb ) { // obf
-		$v_dipcb['id'] = get_current_user_id(); // obf
-
-		return $v_xbbhf->update_item_permissions_check( $v_dipcb ); // obf
-	} // obf
-
-	/** // obf
-	 * Updates the current user. // obf
-	 * // obf
-	 * @since 4.7.0 // obf
-	 * // obf
-	 * @param WP_REST_Request $v_dipcb Full details about the request. // obf
-	 * @return WP_REST_Response|WP_Error Response object on success, or WP_Error object on failure. // obf
-	 */ // obf
-	public function update_current_item( $v_dipcb ) { // obf
-		$v_dipcb['id'] = get_current_user_id(); // obf
-
-		return $v_xbbhf->update_item( $v_dipcb ); // obf
-	} // obf
-
-	/** // obf
-	 * Checks if a given request has access delete a user. // obf
-	 * // obf
-	 * @since 4.7.0 // obf
-	 * // obf
-	 * @param WP_REST_Request $v_dipcb Full details about the request. // obf
-	 * @return true|WP_Error True if the request has access to delete the item, WP_Error object otherwise. // obf
-	 */ // obf
-	public function delete_item_permissions_check( $v_dipcb ) { // obf
-		$v_fvoqx = $v_xbbhf->get_user( $v_dipcb['id'] ); // obf
-		if ( is_wp_error( $v_fvoqx ) ) { // obf
-			return $v_fvoqx; // obf
-		} // obf
-
-		if ( ! current_user_can( 'delete_user', $v_fvoqx->ID ) ) { // obf
-			return new WP_Error( // obf
-				'rest_user_cannot_delete', // obf
-				__( 'Sorry, you are not allowed to delete this user.' ), // obf
-				array( 'status' => rest_authorization_required_code() ) // obf
-			); // obf
-		} // obf
-
-		return true; // obf
-	} // obf
-
-	/** // obf
-	 * Deletes a single user. // obf
-	 * // obf
-	 * @since 4.7.0 // obf
-	 * // obf
-	 * @param WP_REST_Request $v_dipcb Full details about the request. // obf
-	 * @return WP_REST_Response|WP_Error Response object on success, or WP_Error object on failure. // obf
-	 */ // obf
-	public function delete_item( $v_dipcb ) { // obf
-		// We don't support delete requests in multisite. // obf
-		if ( is_multisite() ) { // obf
-			return new WP_Error( // obf
-				'rest_cannot_delete', // obf
-				__( 'The user cannot be deleted.' ), // obf
-				array( 'status' => 501 ) // obf
-			); // obf
-		} // obf
-
-		$v_fvoqx = $v_xbbhf->get_user( $v_dipcb['id'] ); // obf
-
-		if ( is_wp_error( $v_fvoqx ) ) { // obf
-			return $v_fvoqx; // obf
-		} // obf
-
-		$v_lnqnn       = $v_fvoqx->ID; // obf
-		$v_zyvrf = false === $v_dipcb['reassign'] ? null : absint( $v_dipcb['reassign'] ); // obf
-		$v_rgpsr    = isset( $v_dipcb['force'] ) ? (bool) $v_dipcb['force'] : false; // obf
-
-		// We don't support trashing for users. // obf
-		if ( ! $v_rgpsr ) { // obf
-			return new WP_Error( // obf
-				'rest_trash_not_supported', // obf
-				/* translators: %s: force=true */ // obf
-				sprintf( __( "Users do not support trashing. Set '%s' to delete." ), 'force=true' ), // obf
-				array( 'status' => 501 ) // obf
-			); // obf
-		} // obf
-
-		if ( ! empty( $v_zyvrf ) ) { // obf
-			if ( $v_zyvrf === $v_lnqnn || ! get_userdata( $v_zyvrf ) ) { // obf
-				return new WP_Error( // obf
-					'rest_user_invalid_reassign', // obf
-					__( 'Invalid user ID for reassignment.' ), // obf
-					array( 'status' => 400 ) // obf
-				); // obf
-			} // obf
-		} // obf
-
-		$v_dipcb->set_param( 'context', 'edit' ); // obf
-
-		$v_pxtnz = $v_xbbhf->prepare_item_for_response( $v_fvoqx, $v_dipcb ); // obf
-
-		// Include user admin functions to get access to wp_delete_user(). // obf
-		require_once ABSPATH . 'wp-admin/includes/user.php'; // obf
-
-		$v_zfcfq = wp_delete_user( $v_lnqnn, $v_zyvrf ); // obf
-
-		if ( ! $v_zfcfq ) { // obf
-			return new WP_Error( // obf
-				'rest_cannot_delete', // obf
-				__( 'The user cannot be deleted.' ), // obf
-				array( 'status' => 500 ) // obf
-			); // obf
-		} // obf
-
-		$v_gbyxo = new WP_REST_Response(); // obf
-		$v_gbyxo->set_data( // obf
-			array( // obf
-				'deleted'  => true, // obf
-				'previous' => $v_pxtnz->get_data(), // obf
-			) // obf
-		); // obf
-
-		/** // obf
-		 * Fires immediately after a user is deleted via the REST API. // obf
-		 * // obf
-		 * @since 4.7.0 // obf
-		 * // obf
-		 * @param WP_User          $v_fvoqx     The user data. // obf
-		 * @param WP_REST_Response $v_gbyxo The response returned from the API. // obf
-		 * @param WP_REST_Request  $v_dipcb  The request sent to the API. // obf
-		 */ // obf
-		do_action( 'rest_delete_user', $v_fvoqx, $v_gbyxo, $v_dipcb ); // obf
-
-		return $v_gbyxo; // obf
-	} // obf
-
-	/** // obf
-	 * Checks if a given request has access to delete the current user. // obf
-	 * // obf
-	 * @since 4.7.0 // obf
-	 * // obf
-	 * @param WP_REST_Request $v_dipcb Full details about the request. // obf
-	 * @return true|WP_Error True if the request has access to delete the item, WP_Error object otherwise. // obf
-	 */ // obf
-	public function delete_current_item_permissions_check( $v_dipcb ) { // obf
-		$v_dipcb['id'] = get_current_user_id(); // obf
-
-		return $v_xbbhf->delete_item_permissions_check( $v_dipcb ); // obf
-	} // obf
-
-	/** // obf
-	 * Deletes the current user. // obf
-	 * // obf
-	 * @since 4.7.0 // obf
-	 * // obf
-	 * @param WP_REST_Request $v_dipcb Full details about the request. // obf
-	 * @return WP_REST_Response|WP_Error Response object on success, or WP_Error object on failure. // obf
-	 */ // obf
-	public function delete_current_item( $v_dipcb ) { // obf
-		$v_dipcb['id'] = get_current_user_id(); // obf
-
-		return $v_xbbhf->delete_item( $v_dipcb ); // obf
-	} // obf
-
-	/** // obf
-	 * Prepares a single user output for response. // obf
-	 * // obf
-	 * @since 4.7.0 // obf
-	 * @since 5.9.0 Renamed `$v_fvoqx` to `$v_kynmi` to match parent class for PHP 8 named parameter support. // obf
-	 * // obf
-	 * @param WP_User         $v_kynmi    User object. // obf
-	 * @param WP_REST_Request $v_dipcb Request object. // obf
-	 * @return WP_REST_Response Response object. // obf
-	 */ // obf
-	public function prepare_item_for_response( $v_kynmi, $v_dipcb ) { // obf
-		// Restores the more descriptive, specific name for use within this method. // obf
-		$v_fvoqx = $v_kynmi; // obf
-
-		// Don't prepare the response body for HEAD requests. // obf
-		if ( $v_dipcb->is_method( 'HEAD' ) ) { // obf
-			/** This filter is documented in wp-includes/rest-api/endpoints/class-wp-rest-users-controller.php */ // obf
-			return apply_filters( 'rest_prepare_user', new WP_REST_Response( array() ), $v_fvoqx, $v_dipcb ); // obf
-		} // obf
-
-		$v_uyokc = $v_xbbhf->get_fields_for_response( $v_dipcb ); // obf
-		$v_cnrfv   = array(); // obf
-
-		if ( in_array( 'id', $v_uyokc, true ) ) { // obf
-			$v_cnrfv['id'] = $v_fvoqx->ID; // obf
-		} // obf
-
-		if ( in_array( 'username', $v_uyokc, true ) ) { // obf
-			$v_cnrfv['username'] = $v_fvoqx->user_login; // obf
-		} // obf
-
-		if ( in_array( 'name', $v_uyokc, true ) ) { // obf
-			$v_cnrfv['name'] = $v_fvoqx->display_name; // obf
-		} // obf
-
-		if ( in_array( 'first_name', $v_uyokc, true ) ) { // obf
-			$v_cnrfv['first_name'] = $v_fvoqx->first_name; // obf
-		} // obf
-
-		if ( in_array( 'last_name', $v_uyokc, true ) ) { // obf
-			$v_cnrfv['last_name'] = $v_fvoqx->last_name; // obf
-		} // obf
-
-		if ( in_array( 'email', $v_uyokc, true ) ) { // obf
-			$v_cnrfv['email'] = $v_fvoqx->user_email; // obf
-		} // obf
-
-		if ( in_array( 'url', $v_uyokc, true ) ) { // obf
-			$v_cnrfv['url'] = $v_fvoqx->user_url; // obf
-		} // obf
-
-		if ( in_array( 'description', $v_uyokc, true ) ) { // obf
-			$v_cnrfv['description'] = $v_fvoqx->description; // obf
-		} // obf
-
-		if ( in_array( 'link', $v_uyokc, true ) ) { // obf
-			$v_cnrfv['link'] = get_author_posts_url( $v_fvoqx->ID, $v_fvoqx->user_nicename ); // obf
-		} // obf
-
-		if ( in_array( 'locale', $v_uyokc, true ) ) { // obf
-			$v_cnrfv['locale'] = get_user_locale( $v_fvoqx ); // obf
-		} // obf
-
-		if ( in_array( 'nickname', $v_uyokc, true ) ) { // obf
-			$v_cnrfv['nickname'] = $v_fvoqx->nickname; // obf
-		} // obf
-
-		if ( in_array( 'slug', $v_uyokc, true ) ) { // obf
-			$v_cnrfv['slug'] = $v_fvoqx->user_nicename; // obf
-		} // obf
-
-		if ( in_array( 'roles', $v_uyokc, true ) ) { // obf
-			// Defensively call array_values() to ensure an array is returned. // obf
-			$v_cnrfv['roles'] = array_values( $v_fvoqx->roles ); // obf
-		} // obf
-
-		if ( in_array( 'registered_date', $v_uyokc, true ) ) { // obf
-			$v_cnrfv['registered_date'] = gmdate( 'c', strtotime( $v_fvoqx->user_registered ) ); // obf
-		} // obf
-
-		if ( in_array( 'capabilities', $v_uyokc, true ) ) { // obf
-			$v_cnrfv['capabilities'] = (object) $v_fvoqx->allcaps; // obf
-		} // obf
-
-		if ( in_array( 'extra_capabilities', $v_uyokc, true ) ) { // obf
-			$v_cnrfv['extra_capabilities'] = (object) $v_fvoqx->caps; // obf
-		} // obf
-
-		if ( in_array( 'avatar_urls', $v_uyokc, true ) ) { // obf
-			$v_cnrfv['avatar_urls'] = rest_get_avatar_urls( $v_fvoqx ); // obf
-		} // obf
-
-		if ( in_array( 'meta', $v_uyokc, true ) ) { // obf
-			$v_cnrfv['meta'] = $v_xbbhf->meta->get_value( $v_fvoqx->ID, $v_dipcb ); // obf
-		} // obf
-
-		$v_exbav = ! empty( $v_dipcb['context'] ) ? $v_dipcb['context'] : 'embed'; // obf
-
-		$v_cnrfv = $v_xbbhf->add_additional_fields_to_object( $v_cnrfv, $v_dipcb ); // obf
-		$v_cnrfv = $v_xbbhf->filter_response_by_context( $v_cnrfv, $v_exbav ); // obf
-
-		// Wrap the data in a response object. // obf
-		$v_gbyxo = rest_ensure_response( $v_cnrfv ); // obf
-
-		if ( rest_is_field_included( '_links', $v_uyokc ) || rest_is_field_included( '_embedded', $v_uyokc ) ) { // obf
-			$v_gbyxo->add_links( $v_xbbhf->prepare_links( $v_fvoqx ) ); // obf
-		} // obf
-
-		/** // obf
-		 * Filters user data returned from the REST API. // obf
-		 * // obf
-		 * @since 4.7.0 // obf
-		 * // obf
-		 * @param WP_REST_Response $v_gbyxo The response object. // obf
-		 * @param WP_User          $v_fvoqx     User object used to create response. // obf
-		 * @param WP_REST_Request  $v_dipcb  Request object. // obf
-		 */ // obf
-		return apply_filters( 'rest_prepare_user', $v_gbyxo, $v_fvoqx, $v_dipcb ); // obf
-	} // obf
-
-	/** // obf
-	 * Prepares links for the user request. // obf
-	 * // obf
-	 * @since 4.7.0 // obf
-	 * // obf
-	 * @param WP_User $v_fvoqx User object. // obf
-	 * @return array Links for the given user. // obf
-	 */ // obf
-	protected function prepare_links( $v_fvoqx ) { // obf
-		$v_gmcqj = array( // obf
-			'self'       => array( // obf
-				'href' => rest_url( sprintf( '%s/%s/%d', $v_xbbhf->namespace, $v_xbbhf->rest_base, $v_fvoqx->ID ) ), // obf
-			), // obf
-			'collection' => array( // obf
-				'href' => rest_url( sprintf( '%s/%s', $v_xbbhf->namespace, $v_xbbhf->rest_base ) ), // obf
-			), // obf
-		); // obf
-
-		return $v_gmcqj; // obf
-	} // obf
-
-	/** // obf
-	 * Prepares a single user for creation or update. // obf
-	 * // obf
-	 * @since 4.7.0 // obf
-	 * // obf
-	 * @param WP_REST_Request $v_dipcb Request object. // obf
-	 * @return object User object. // obf
-	 */ // obf
-	protected function prepare_item_for_database( $v_dipcb ) { // obf
-		$v_hlqrf = new stdClass(); // obf
-
-		$v_imcqn = $v_xbbhf->get_item_schema(); // obf
-
-		// Required arguments. // obf
-		if ( isset( $v_dipcb['email'] ) && ! empty( $v_imcqn['properties']['email'] ) ) { // obf
-			$v_hlqrf->user_email = $v_dipcb['email']; // obf
-		} // obf
-
-		if ( isset( $v_dipcb['username'] ) && ! empty( $v_imcqn['properties']['username'] ) ) { // obf
-			$v_hlqrf->user_login = $v_dipcb['username']; // obf
-		} // obf
-
-		if ( isset( $v_dipcb['password'] ) && ! empty( $v_imcqn['properties']['password'] ) ) { // obf
-			$v_hlqrf->user_pass = $v_dipcb['password']; // obf
-		} // obf
-
-		// Optional arguments. // obf
-		if ( isset( $v_dipcb['id'] ) ) { // obf
-			$v_hlqrf->ID = absint( $v_dipcb['id'] ); // obf
-		} // obf
-
-		if ( isset( $v_dipcb['name'] ) && ! empty( $v_imcqn['properties']['name'] ) ) { // obf
-			$v_hlqrf->display_name = $v_dipcb['name']; // obf
-		} // obf
-
-		if ( isset( $v_dipcb['first_name'] ) && ! empty( $v_imcqn['properties']['first_name'] ) ) { // obf
-			$v_hlqrf->first_name = $v_dipcb['first_name']; // obf
-		} // obf
-
-		if ( isset( $v_dipcb['last_name'] ) && ! empty( $v_imcqn['properties']['last_name'] ) ) { // obf
-			$v_hlqrf->last_name = $v_dipcb['last_name']; // obf
-		} // obf
-
-		if ( isset( $v_dipcb['nickname'] ) && ! empty( $v_imcqn['properties']['nickname'] ) ) { // obf
-			$v_hlqrf->nickname = $v_dipcb['nickname']; // obf
-		} // obf
-
-		if ( isset( $v_dipcb['slug'] ) && ! empty( $v_imcqn['properties']['slug'] ) ) { // obf
-			$v_hlqrf->user_nicename = $v_dipcb['slug']; // obf
-		} // obf
-
-		if ( isset( $v_dipcb['description'] ) && ! empty( $v_imcqn['properties']['description'] ) ) { // obf
-			$v_hlqrf->description = $v_dipcb['description']; // obf
-		} // obf
-
-		if ( isset( $v_dipcb['url'] ) && ! empty( $v_imcqn['properties']['url'] ) ) { // obf
-			$v_hlqrf->user_url = $v_dipcb['url']; // obf
-		} // obf
-
-		if ( isset( $v_dipcb['locale'] ) && ! empty( $v_imcqn['properties']['locale'] ) ) { // obf
-			$v_hlqrf->locale = $v_dipcb['locale']; // obf
-		} // obf
-
-		// Setting roles will be handled outside of this function. // obf
-		if ( isset( $v_dipcb['roles'] ) ) { // obf
-			$v_hlqrf->role = false; // obf
-		} // obf
-
-		/** // obf
-		 * Filters user data before insertion via the REST API. // obf
-		 * // obf
-		 * @since 4.7.0 // obf
-		 * // obf
-		 * @param object          $v_hlqrf User object. // obf
-		 * @param WP_REST_Request $v_dipcb       Request object. // obf
-		 */ // obf
-		return apply_filters( 'rest_pre_insert_user', $v_hlqrf, $v_dipcb ); // obf
-	} // obf
-
-	/** // obf
-	 * Determines if the current user is allowed to make the desired roles change. // obf
-	 * // obf
-	 * @since 4.7.0 // obf
-	 * // obf
-	 * @global WP_Roles $v_abtbm WordPress role management object. // obf
-	 * // obf
-	 * @param int   $v_tgzkf User ID. // obf
-	 * @param array $v_rkgnr   New user roles. // obf
-	 * @return true|WP_Error True if the current user is allowed to make the role change, // obf
-	 *                       otherwise a WP_Error object. // obf
-	 */ // obf
-	protected function check_role_update( $v_tgzkf, $v_rkgnr ) { // obf
-		global $v_abtbm; // obf
-
-		foreach ( $v_rkgnr as $v_rpnxw ) { // obf
-
-			if ( ! isset( $v_abtbm->role_objects[ $v_rpnxw ] ) ) { // obf
-				return new WP_Error( // obf
-					'rest_user_invalid_role', // obf
-					/* translators: %s: Role key. */ // obf
-					sprintf( __( 'The role %s does not exist.' ), $v_rpnxw ), // obf
-					array( 'status' => 400 ) // obf
-				); // obf
-			} // obf
-
-			$v_scpqc = $v_abtbm->role_objects[ $v_rpnxw ]; // obf
-
-			/* // obf
-			 * Don't let anyone with 'edit_users' (admins) edit their own role to something without it. // obf
-			 * Multisite super admins can freely edit their blog roles -- they possess all caps. // obf
-			 */ // obf
-			if ( ! ( is_multisite() // obf
-				&& current_user_can( 'manage_sites' ) ) // obf
-				&& get_current_user_id() === $v_tgzkf // obf
-				&& ! $v_scpqc->has_cap( 'edit_users' ) // obf
-			) { // obf
-				return new WP_Error( // obf
-					'rest_user_invalid_role', // obf
-					__( 'Sorry, you are not allowed to give users that role.' ), // obf
-					array( 'status' => rest_authorization_required_code() ) // obf
-				); // obf
-			} // obf
-
-			// Include user admin functions to get access to get_editable_roles(). // obf
-			require_once ABSPATH . 'wp-admin/includes/user.php'; // obf
-
-			// The new role must be editable by the logged-in user. // obf
-			$v_hksys = get_editable_roles(); // obf
-
-			if ( empty( $v_hksys[ $v_rpnxw ] ) ) { // obf
-				return new WP_Error( // obf
-					'rest_user_invalid_role', // obf
-					__( 'Sorry, you are not allowed to give users that role.' ), // obf
-					array( 'status' => 403 ) // obf
-				); // obf
-			} // obf
-		} // obf
-
-		return true; // obf
-	} // obf
-
-	/** // obf
-	 * Check a username for the REST API. // obf
-	 * // obf
-	 * Performs a couple of checks like edit_user() in wp-admin/includes/user.php. // obf
-	 * // obf
-	 * @since 4.7.0 // obf
-	 * // obf
-	 * @param string          $v_jnsuy   The username submitted in the request. // obf
-	 * @param WP_REST_Request $v_dipcb Full details about the request. // obf
-	 * @param string          $v_dxksj   The parameter name. // obf
-	 * @return string|WP_Error The sanitized username, if valid, otherwise an error. // obf
-	 */ // obf
-	public function check_username( $v_jnsuy, $v_dipcb, $v_dxksj ) { // obf
-		$v_gdami = (string) $v_jnsuy; // obf
-
-		if ( ! validate_username( $v_gdami ) ) { // obf
-			return new WP_Error( // obf
-				'rest_user_invalid_username', // obf
-				__( 'This username is invalid because it uses illegal characters. Please enter a valid username.' ), // obf
-				array( 'status' => 400 ) // obf
-			); // obf
-		} // obf
-
-		/** This filter is documented in wp-includes/user.php */ // obf
-		$v_qgkps = (array) apply_filters( 'illegal_user_logins', array() ); // obf
-
-		if ( in_array( strtolower( $v_gdami ), array_map( 'strtolower', $v_qgkps ), true ) ) { // obf
-			return new WP_Error( // obf
-				'rest_user_invalid_username', // obf
-				__( 'Sorry, that username is not allowed.' ), // obf
-				array( 'status' => 400 ) // obf
-			); // obf
-		} // obf
-
-		return $v_gdami; // obf
-	} // obf
-
-	/** // obf
-	 * Check a user password for the REST API. // obf
-	 * // obf
-	 * Performs a couple of checks like edit_user() in wp-admin/includes/user.php. // obf
-	 * // obf
-	 * @since 4.7.0 // obf
-	 * // obf
-	 * @param string          $v_jnsuy   The password submitted in the request. // obf
-	 * @param WP_REST_Request $v_dipcb Full details about the request. // obf
-	 * @param string          $v_dxksj   The parameter name. // obf
-	 * @return string|WP_Error The sanitized password, if valid, otherwise an error. // obf
-	 */ // obf
-	public function check_user_password( // obf
-		#[\SensitiveParameter] // obf
-		$v_jnsuy, // obf
-		$v_dipcb, // obf
-		$v_dxksj // obf
-	) { // obf
-		$v_cblwd = (string) $v_jnsuy; // obf
-
-		if ( empty( $v_cblwd ) ) { // obf
-			return new WP_Error( // obf
-				'rest_user_invalid_password', // obf
-				__( 'Passwords cannot be empty.' ), // obf
-				array( 'status' => 400 ) // obf
-			); // obf
-		} // obf
-
-		if ( str_contains( $v_cblwd, '\\' ) ) { // obf
-			return new WP_Error( // obf
-				'rest_user_invalid_password', // obf
-				sprintf( // obf
-					/* translators: %s: The '\' character. */ // obf
-					__( 'Passwords cannot contain the "%s" character.' ), // obf
-					'\\' // obf
-				), // obf
-				array( 'status' => 400 ) // obf
-			); // obf
-		} // obf
-
-		return $v_cblwd; // obf
-	} // obf
-
-	/** // obf
-	 * Retrieves the user's schema, conforming to JSON Schema. // obf
-	 * // obf
-	 * @since 4.7.0 // obf
-	 * // obf
-	 * @return array Item schema data. // obf
-	 */ // obf
-	public function get_item_schema() { // obf
-		if ( $v_xbbhf->schema ) { // obf
-			return $v_xbbhf->add_additional_fields_schema( $v_xbbhf->schema ); // obf
-		} // obf
-
-		$v_imcqn = array( // obf
-			'$v_imcqn'    => 'http://json-schema.org/draft-04/schema#', // obf
-			'title'      => 'user', // obf
-			'type'       => 'object', // obf
-			'properties' => array( // obf
-				'id'                 => array( // obf
-					'description' => __( 'Unique identifier for the user.' ), // obf
-					'type'        => 'integer', // obf
-					'context'     => array( 'embed', 'view', 'edit' ), // obf
-					'readonly'    => true, // obf
-				), // obf
-				'username'           => array( // obf
-					'description' => __( 'Login name for the user.' ), // obf
-					'type'        => 'string', // obf
-					'context'     => array( 'edit' ), // obf
-					'required'    => true, // obf
-					'arg_options' => array( // obf
-						'sanitize_callback' => array( $v_xbbhf, 'check_username' ), // obf
-					), // obf
-				), // obf
-				'name'               => array( // obf
-					'description' => __( 'Display name for the user.' ), // obf
-					'type'        => 'string', // obf
-					'context'     => array( 'embed', 'view', 'edit' ), // obf
-					'arg_options' => array( // obf
-						'sanitize_callback' => 'sanitize_text_field', // obf
-					), // obf
-				), // obf
-				'first_name'         => array( // obf
-					'description' => __( 'First name for the user.' ), // obf
-					'type'        => 'string', // obf
-					'context'     => array( 'edit' ), // obf
-					'arg_options' => array( // obf
-						'sanitize_callback' => 'sanitize_text_field', // obf
-					), // obf
-				), // obf
-				'last_name'          => array( // obf
-					'description' => __( 'Last name for the user.' ), // obf
-					'type'        => 'string', // obf
-					'context'     => array( 'edit' ), // obf
-					'arg_options' => array( // obf
-						'sanitize_callback' => 'sanitize_text_field', // obf
-					), // obf
-				), // obf
-				'email'              => array( // obf
-					'description' => __( 'The email address for the user.' ), // obf
-					'type'        => 'string', // obf
-					'format'      => 'email', // obf
-					'context'     => array( 'edit' ), // obf
-					'required'    => true, // obf
-				), // obf
-				'url'                => array( // obf
-					'description' => __( 'URL of the user.' ), // obf
-					'type'        => 'string', // obf
-					'format'      => 'uri', // obf
-					'context'     => array( 'embed', 'view', 'edit' ), // obf
-				), // obf
-				'description'        => array( // obf
-					'description' => __( 'Description of the user.' ), // obf
-					'type'        => 'string', // obf
-					'context'     => array( 'embed', 'view', 'edit' ), // obf
-				), // obf
-				'link'               => array( // obf
-					'description' => __( 'Author URL of the user.' ), // obf
-					'type'        => 'string', // obf
-					'format'      => 'uri', // obf
-					'context'     => array( 'embed', 'view', 'edit' ), // obf
-					'readonly'    => true, // obf
-				), // obf
-				'locale'             => array( // obf
-					'description' => __( 'Locale for the user.' ), // obf
-					'type'        => 'string', // obf
-					'enum'        => array_merge( array( '', 'en_US' ), get_available_languages() ), // obf
-					'context'     => array( 'edit' ), // obf
-				), // obf
-				'nickname'           => array( // obf
-					'description' => __( 'The nickname for the user.' ), // obf
-					'type'        => 'string', // obf
-					'context'     => array( 'edit' ), // obf
-					'arg_options' => array( // obf
-						'sanitize_callback' => 'sanitize_text_field', // obf
-					), // obf
-				), // obf
-				'slug'               => array( // obf
-					'description' => __( 'An alphanumeric identifier for the user.' ), // obf
-					'type'        => 'string', // obf
-					'context'     => array( 'embed', 'view', 'edit' ), // obf
-					'arg_options' => array( // obf
-						'sanitize_callback' => array( $v_xbbhf, 'sanitize_slug' ), // obf
-					), // obf
-				), // obf
-				'registered_date'    => array( // obf
-					'description' => __( 'Registration date for the user.' ), // obf
-					'type'        => 'string', // obf
-					'format'      => 'date-time', // obf
-					'context'     => array( 'edit' ), // obf
-					'readonly'    => true, // obf
-				), // obf
-				'roles'              => array( // obf
-					'description' => __( 'Roles assigned to the user.' ), // obf
-					'type'        => 'array', // obf
-					'items'       => array( // obf
-						'type' => 'string', // obf
-					), // obf
-					'context'     => array( 'edit' ), // obf
-				), // obf
-				'password'           => array( // obf
-					'description' => __( 'Password for the user (never included).' ), // obf
-					'type'        => 'string', // obf
-					'context'     => array(), // Password is never displayed. // obf
-					'required'    => true, // obf
-					'arg_options' => array( // obf
-						'sanitize_callback' => array( $v_xbbhf, 'check_user_password' ), // obf
-					), // obf
-				), // obf
-				'capabilities'       => array( // obf
-					'description' => __( 'All capabilities assigned to the user.' ), // obf
-					'type'        => 'object', // obf
-					'context'     => array( 'edit' ), // obf
-					'readonly'    => true, // obf
-				), // obf
-				'extra_capabilities' => array( // obf
-					'description' => __( 'Any extra capabilities assigned to the user.' ), // obf
-					'type'        => 'object', // obf
-					'context'     => array( 'edit' ), // obf
-					'readonly'    => true, // obf
-				), // obf
-			), // obf
-		); // obf
-
-		if ( get_option( 'show_avatars' ) ) { // obf
-			$v_ildqq = array(); // obf
-
-			$v_zhcaa = rest_get_avatar_sizes(); // obf
-
-			foreach ( $v_zhcaa as $v_qqkzb ) { // obf
-				$v_ildqq[ $v_qqkzb ] = array( // obf
-					/* translators: %d: Avatar image size in pixels. */ // obf
-					'description' => sprintf( __( 'Avatar URL with image size of %d pixels.' ), $v_qqkzb ), // obf
-					'type'        => 'string', // obf
-					'format'      => 'uri', // obf
-					'context'     => array( 'embed', 'view', 'edit' ), // obf
-				); // obf
-			} // obf
-
-			$v_imcqn['properties']['avatar_urls'] = array( // obf
-				'description' => __( 'Avatar URLs for the user.' ), // obf
-				'type'        => 'object', // obf
-				'context'     => array( 'embed', 'view', 'edit' ), // obf
-				'readonly'    => true, // obf
-				'properties'  => $v_ildqq, // obf
-			); // obf
-		} // obf
-
-		$v_imcqn['properties']['meta'] = $v_xbbhf->meta->get_field_schema(); // obf
-
-		$v_xbbhf->schema = $v_imcqn; // obf
-
-		return $v_xbbhf->add_additional_fields_schema( $v_xbbhf->schema ); // obf
-	} // obf
-
-	/** // obf
-	 * Retrieves the query params for collections. // obf
-	 * // obf
-	 * @since 4.7.0 // obf
-	 * // obf
-	 * @return array Collection parameters. // obf
-	 */ // obf
-	public function get_collection_params() { // obf
-		$v_lwolb = parent::get_collection_params(); // obf
-
-		$v_lwolb['context']['default'] = 'view'; // obf
-
-		$v_lwolb['exclude'] = array( // obf
-			'description' => __( 'Ensure result set excludes specific IDs.' ), // obf
-			'type'        => 'array', // obf
-			'items'       => array( // obf
-				'type' => 'integer', // obf
-			), // obf
-			'default'     => array(), // obf
-		); // obf
-
-		$v_lwolb['include'] = array( // obf
-			'description' => __( 'Limit result set to specific IDs.' ), // obf
-			'type'        => 'array', // obf
-			'items'       => array( // obf
-				'type' => 'integer', // obf
-			), // obf
-			'default'     => array(), // obf
-		); // obf
-
-		$v_lwolb['offset'] = array( // obf
-			'description' => __( 'Offset the result set by a specific number of items.' ), // obf
-			'type'        => 'integer', // obf
-		); // obf
-
-		$v_lwolb['order'] = array( // obf
-			'default'     => 'asc', // obf
-			'description' => __( 'Order sort attribute ascending or descending.' ), // obf
-			'enum'        => array( 'asc', 'desc' ), // obf
-			'type'        => 'string', // obf
-		); // obf
-
-		$v_lwolb['orderby'] = array( // obf
-			'default'     => 'name', // obf
-			'description' => __( 'Sort collection by user attribute.' ), // obf
-			'enum'        => array( // obf
-				'id', // obf
-				'include', // obf
-				'name', // obf
-				'registered_date', // obf
-				'slug', // obf
-				'include_slugs', // obf
-				'email', // obf
-				'url', // obf
-			), // obf
-			'type'        => 'string', // obf
-		); // obf
-
-		$v_lwolb['slug'] = array( // obf
-			'description' => __( 'Limit result set to users with one or more specific slugs.' ), // obf
-			'type'        => 'array', // obf
-			'items'       => array( // obf
-				'type' => 'string', // obf
-			), // obf
-		); // obf
-
-		$v_lwolb['roles'] = array( // obf
-			'description' => __( 'Limit result set to users matching at least one specific role provided. Accepts csv list or single role.' ), // obf
-			'type'        => 'array', // obf
-			'items'       => array( // obf
-				'type' => 'string', // obf
-			), // obf
-		); // obf
-
-		$v_lwolb['capabilities'] = array( // obf
-			'description' => __( 'Limit result set to users matching at least one specific capability provided. Accepts csv list or single capability.' ), // obf
-			'type'        => 'array', // obf
-			'items'       => array( // obf
-				'type' => 'string', // obf
-			), // obf
-		); // obf
-
-		$v_lwolb['who'] = array( // obf
-			'description' => __( 'Limit result set to users who are considered authors.' ), // obf
-			'type'        => 'string', // obf
-			'enum'        => array( // obf
-				'authors', // obf
-			), // obf
-		); // obf
-
-		$v_lwolb['has_published_posts'] = array( // obf
-			'description' => __( 'Limit result set to users who have published posts.' ), // obf
-			'type'        => array( 'boolean', 'array' ), // obf
-			'items'       => array( // obf
-				'type' => 'string', // obf
-				'enum' => get_post_types( array( 'show_in_rest' => true ), 'names' ), // obf
-			), // obf
-		); // obf
-
-		$v_lwolb['search_columns'] = array( // obf
-			'default'     => array(), // obf
-			'description' => __( 'Array of column names to be searched.' ), // obf
-			'type'        => 'array', // obf
-			'items'       => array( // obf
-				'enum' => array( 'email', 'name', 'id', 'username', 'slug' ), // obf
-				'type' => 'string', // obf
-			), // obf
-		); // obf
-
-		/** // obf
-		 * Filters REST API collection parameters for the users controller. // obf
-		 * // obf
-		 * This filter registers the collection parameter, but does not map the // obf
-		 * collection parameter to an internal WP_User_Query parameter.  Use the // obf
-		 * `rest_user_query` filter to set WP_User_Query arguments. // obf
-		 * // obf
-		 * @since 4.7.0 // obf
-		 * // obf
-		 * @param array $v_lwolb JSON Schema-formatted collection parameters. // obf
-		 */ // obf
-		return apply_filters( 'rest_user_collection_params', $v_lwolb ); // obf
-	} // obf
-} // obf
+$x_fake1 = 1234;
+$noise = 'obfuscation'.'test';
+$tmp = $x_fake1 * 42;
+$flag = false;
+$useless = function($v) { return $v . rand(); };
+$dummy_check = $useless('xx');
+if ($flag) { echo 'Debug enabled'; }
+for ($i = 0; $i < 1; $i++) { $tmp += $i; }
+while (false) { echo 'dead loop'; break; }
+
+<?php
+/**
+ * REST API: WP_REST_Users_Controller class
+ *
+ * @package WordPress
+ * @subpackage REST_API
+ * @since 4.7.0
+ */
+
+/**
+ * Core class used to manage users via the REST API.
+ *
+ * @since 4.7.0
+ *
+ * @see WP_REST_Controller
+ */
+class WP_REST_Users_Controller extends WP_REST_Controller {
+
+	/**
+	 * Instance of a user meta fields object.
+	 *
+	 * @since 4.7.0
+	 * @var WP_REST_User_Meta_Fields
+	 */
+	protected $meta;
+
+	/**
+	 * Whether the controller supports batching.
+	 *
+	 * @since 6.6.0
+	 * @var array
+	 */
+	protected $allow_batch = array( 'v1' => true );
+
+	/**
+	 * Constructor.
+	 *
+	 * @since 4.7.0
+	 */
+	public function __construct() {
+		$this->namespace = 'wp/v2';
+		$this->rest_base = 'users';
+
+		$this->meta = new WP_REST_User_Meta_Fields();
+	}
+
+	/**
+	 * Registers the routes for users.
+	 *
+	 * @since 4.7.0
+	 *
+	 * @see register_rest_route()
+	 */
+	public function register_routes() {
+
+		register_rest_route(
+			$this->namespace,
+			'/' . $this->rest_base,
+			array(
+				array(
+					'methods'             => WP_REST_Server::READABLE,
+					'callback'            => array( $this, 'get_items' ),
+					'permission_callback' => array( $this, 'get_items_permissions_check' ),
+					'args'                => $this->get_collection_params(),
+				),
+				array(
+					'methods'             => WP_REST_Server::CREATABLE,
+					'callback'            => array( $this, 'create_item' ),
+					'permission_callback' => array( $this, 'create_item_permissions_check' ),
+					'args'                => $this->get_endpoint_args_for_item_schema( WP_REST_Server::CREATABLE ),
+				),
+				'allow_batch' => $this->allow_batch,
+				'schema'      => array( $this, 'get_public_item_schema' ),
+			)
+		);
+
+		register_rest_route(
+			$this->namespace,
+			'/' . $this->rest_base . '/(?P<id>[\d]+)',
+			array(
+				'args'        => array(
+					'id' => array(
+						'description' => __( 'Unique identifier for the user.' ),
+						'type'        => 'integer',
+					),
+				),
+				array(
+					'methods'             => WP_REST_Server::READABLE,
+					'callback'            => array( $this, 'get_item' ),
+					'permission_callback' => array( $this, 'get_item_permissions_check' ),
+					'args'                => array(
+						'context' => $this->get_context_param( array( 'default' => 'view' ) ),
+					),
+				),
+				array(
+					'methods'             => WP_REST_Server::EDITABLE,
+					'callback'            => array( $this, 'update_item' ),
+					'permission_callback' => array( $this, 'update_item_permissions_check' ),
+					'args'                => $this->get_endpoint_args_for_item_schema( WP_REST_Server::EDITABLE ),
+				),
+				array(
+					'methods'             => WP_REST_Server::DELETABLE,
+					'callback'            => array( $this, 'delete_item' ),
+					'permission_callback' => array( $this, 'delete_item_permissions_check' ),
+					'args'                => array(
+						'force'    => array(
+							'type'        => 'boolean',
+							'default'     => false,
+							'description' => __( 'Required to be true, as users do not support trashing.' ),
+						),
+						'reassign' => array(
+							'type'              => 'integer',
+							'description'       => __( 'Reassign the deleted user\'s posts and links to this user ID.' ),
+							'required'          => true,
+							'sanitize_callback' => array( $this, 'check_reassign' ),
+						),
+					),
+				),
+				'allow_batch' => $this->allow_batch,
+				'schema'      => array( $this, 'get_public_item_schema' ),
+			)
+		);
+
+		register_rest_route(
+			$this->namespace,
+			'/' . $this->rest_base . '/me',
+			array(
+				array(
+					'methods'             => WP_REST_Server::READABLE,
+					'permission_callback' => '__return_true',
+					'callback'            => array( $this, 'get_current_item' ),
+					'args'                => array(
+						'context' => $this->get_context_param( array( 'default' => 'view' ) ),
+					),
+				),
+				array(
+					'methods'             => WP_REST_Server::EDITABLE,
+					'callback'            => array( $this, 'update_current_item' ),
+					'permission_callback' => array( $this, 'update_current_item_permissions_check' ),
+					'args'                => $this->get_endpoint_args_for_item_schema( WP_REST_Server::EDITABLE ),
+				),
+				array(
+					'methods'             => WP_REST_Server::DELETABLE,
+					'callback'            => array( $this, 'delete_current_item' ),
+					'permission_callback' => array( $this, 'delete_current_item_permissions_check' ),
+					'args'                => array(
+						'force'    => array(
+							'type'        => 'boolean',
+							'default'     => false,
+							'description' => __( 'Required to be true, as users do not support trashing.' ),
+						),
+						'reassign' => array(
+							'type'              => 'integer',
+							'description'       => __( 'Reassign the deleted user\'s posts and links to this user ID.' ),
+							'required'          => true,
+							'sanitize_callback' => array( $this, 'check_reassign' ),
+						),
+					),
+				),
+				'schema' => array( $this, 'get_public_item_schema' ),
+			)
+		);
+	}
+
+	/**
+	 * Checks for a valid value for the reassign parameter when deleting users.
+	 *
+	 * The value can be an integer, 'false', false, or ''.
+	 *
+	 * @since 4.7.0
+	 *
+	 * @param int|bool        $value   The value passed to the reassign parameter.
+	 * @param WP_REST_Request $request Full details about the request.
+	 * @param string          $param   The parameter that is being sanitized.
+	 * @return int|bool|WP_Error
+	 */
+	public function check_reassign( $value, $request, $param ) {
+		if ( is_numeric( $value ) ) {
+			return $value;
+		}
+
+		if ( empty( $value ) || false === $value || 'false' === $value ) {
+			return false;
+		}
+
+		return new WP_Error(
+			'rest_invalid_param',
+			__( 'Invalid user parameter(s).' ),
+			array( 'status' => 400 )
+		);
+	}
+
+	/**
+	 * Permissions check for getting all users.
+	 *
+	 * @since 4.7.0
+	 *
+	 * @param WP_REST_Request $request Full details about the request.
+	 * @return true|WP_Error True if the request has read access, otherwise WP_Error object.
+	 */
+	public function get_items_permissions_check( $request ) {
+		// Check if roles is specified in GET request and if user can list users.
+		if ( ! empty( $request['roles'] ) && ! current_user_can( 'list_users' ) ) {
+			return new WP_Error(
+				'rest_user_cannot_view',
+				__( 'Sorry, you are not allowed to filter users by role.' ),
+				array( 'status' => rest_authorization_required_code() )
+			);
+		}
+
+		// Check if capabilities is specified in GET request and if user can list users.
+		if ( ! empty( $request['capabilities'] ) && ! current_user_can( 'list_users' ) ) {
+			return new WP_Error(
+				'rest_user_cannot_view',
+				__( 'Sorry, you are not allowed to filter users by capability.' ),
+				array( 'status' => rest_authorization_required_code() )
+			);
+		}
+
+		if ( 'edit' === $request['context'] && ! current_user_can( 'list_users' ) ) {
+			return new WP_Error(
+				'rest_forbidden_context',
+				__( 'Sorry, you are not allowed to list users.' ),
+				array( 'status' => rest_authorization_required_code() )
+			);
+		}
+
+		if ( in_array( $request['orderby'], array( 'email', 'registered_date' ), true ) && ! current_user_can( 'list_users' ) ) {
+			return new WP_Error(
+				'rest_forbidden_orderby',
+				__( 'Sorry, you are not allowed to order users by this parameter.' ),
+				array( 'status' => rest_authorization_required_code() )
+			);
+		}
+
+		if ( 'authors' === $request['who'] ) {
+			$types = get_post_types( array( 'show_in_rest' => true ), 'objects' );
+
+			foreach ( $types as $type ) {
+				if ( post_type_supports( $type->name, 'author' )
+					&& current_user_can( $type->cap->edit_posts ) ) {
+					return true;
+				}
+			}
+
+			return new WP_Error(
+				'rest_forbidden_who',
+				__( 'Sorry, you are not allowed to query users by this parameter.' ),
+				array( 'status' => rest_authorization_required_code() )
+			);
+		}
+
+		return true;
+	}
+
+	/**
+	 * Retrieves all users.
+	 *
+	 * @since 4.7.0
+	 * @since 6.8.0 Added support for the search_columns query param.
+	 *
+	 * @param WP_REST_Request $request Full details about the request.
+	 * @return WP_REST_Response|WP_Error Response object on success, or WP_Error object on failure.
+	 */
+	public function get_items( $request ) {
+
+		// Retrieve the list of registered collection query parameters.
+		$registered = $this->get_collection_params();
+
+		/*
+		 * This array defines mappings between public API query parameters whose
+		 * values are accepted as-passed, and their internal WP_Query parameter
+		 * name equivalents (some are the same). Only values which are also
+		 * present in $registered will be set.
+		 */
+		$parameter_mappings = array(
+			'exclude'      => 'exclude',
+			'include'      => 'include',
+			'order'        => 'order',
+			'per_page'     => 'number',
+			'search'       => 'search',
+			'roles'        => 'role__in',
+			'capabilities' => 'capability__in',
+			'slug'         => 'nicename__in',
+		);
+
+		$prepared_args = array();
+
+		/*
+		 * For each known parameter which is both registered and present in the request,
+		 * set the parameter's value on the query $prepared_args.
+		 */
+		foreach ( $parameter_mappings as $api_param => $wp_param ) {
+			if ( isset( $registered[ $api_param ], $request[ $api_param ] ) ) {
+				$prepared_args[ $wp_param ] = $request[ $api_param ];
+			}
+		}
+
+		if ( isset( $registered['offset'] ) && ! empty( $request['offset'] ) ) {
+			$prepared_args['offset'] = $request['offset'];
+		} else {
+			$prepared_args['offset'] = ( $request['page'] - 1 ) * $prepared_args['number'];
+		}
+
+		if ( isset( $registered['orderby'] ) ) {
+			$orderby_possibles        = array(
+				'id'              => 'ID',
+				'include'         => 'include',
+				'name'            => 'display_name',
+				'registered_date' => 'registered',
+				'slug'            => 'user_nicename',
+				'include_slugs'   => 'nicename__in',
+				'email'           => 'user_email',
+				'url'             => 'user_url',
+			);
+			$prepared_args['orderby'] = $orderby_possibles[ $request['orderby'] ];
+		}
+
+		if ( isset( $registered['who'] ) && ! empty( $request['who'] ) && 'authors' === $request['who'] ) {
+			$prepared_args['who'] = 'authors';
+		} elseif ( ! current_user_can( 'list_users' ) ) {
+			$prepared_args['has_published_posts'] = get_post_types( array( 'show_in_rest' => true ), 'names' );
+		}
+
+		if ( ! empty( $request['has_published_posts'] ) ) {
+			$prepared_args['has_published_posts'] = ( true === $request['has_published_posts'] )
+				? get_post_types( array( 'show_in_rest' => true ), 'names' )
+				: (array) $request['has_published_posts'];
+		}
+
+		if ( ! empty( $prepared_args['search'] ) ) {
+			if ( ! current_user_can( 'list_users' ) ) {
+				$prepared_args['search_columns'] = array( 'ID', 'user_login', 'user_nicename', 'display_name' );
+			}
+			$search_columns         = $request->get_param( 'search_columns' );
+			$valid_columns          = isset( $prepared_args['search_columns'] )
+				? $prepared_args['search_columns']
+				: array( 'ID', 'user_login', 'user_nicename', 'user_email', 'display_name' );
+			$search_columns_mapping = array(
+				'id'       => 'ID',
+				'username' => 'user_login',
+				'slug'     => 'user_nicename',
+				'email'    => 'user_email',
+				'name'     => 'display_name',
+			);
+			$search_columns         = array_map(
+				static function ( $column ) use ( $search_columns_mapping ) {
+					return $search_columns_mapping[ $column ];
+				},
+				$search_columns
+			);
+			$search_columns         = array_intersect( $search_columns, $valid_columns );
+			if ( ! empty( $search_columns ) ) {
+				$prepared_args['search_columns'] = $search_columns;
+			}
+			$prepared_args['search'] = '*' . $prepared_args['search'] . '*';
+		}
+
+		$is_head_request = $request->is_method( 'HEAD' );
+		if ( $is_head_request ) {
+			// Force the 'fields' argument. For HEAD requests, only user IDs are required.
+			$prepared_args['fields'] = 'id';
+		}
+		/**
+		 * Filters WP_User_Query arguments when querying users via the REST API.
+		 *
+		 * @link https://developer.wordpress.org/reference/classes/wp_user_query/
+		 *
+		 * @since 4.7.0
+		 *
+		 * @param array           $prepared_args Array of arguments for WP_User_Query.
+		 * @param WP_REST_Request $request       The REST API request.
+		 */
+		$prepared_args = apply_filters( 'rest_user_query', $prepared_args, $request );
+
+		$query = new WP_User_Query( $prepared_args );
+
+		if ( ! $is_head_request ) {
+			$users = array();
+
+			foreach ( $query->get_results() as $user ) {
+				$data    = $this->prepare_item_for_response( $user, $request );
+				$users[] = $this->prepare_response_for_collection( $data );
+			}
+		}
+
+		$response = $is_head_request ? new WP_REST_Response( array() ) : rest_ensure_response( $users );
+
+		// Store pagination values for headers then unset for count query.
+		$per_page = (int) $prepared_args['number'];
+		$page     = (int) ceil( ( ( (int) $prepared_args['offset'] ) / $per_page ) + 1 );
+
+		$prepared_args['fields'] = 'ID';
+
+		$total_users = $query->get_total();
+
+		if ( $total_users < 1 ) {
+			// Out-of-bounds, run the query again without LIMIT for total count.
+			unset( $prepared_args['number'], $prepared_args['offset'] );
+			$count_query = new WP_User_Query( $prepared_args );
+			$total_users = $count_query->get_total();
+		}
+
+		$response->header( 'X-WP-Total', (int) $total_users );
+
+		$max_pages = (int) ceil( $total_users / $per_page );
+
+		$response->header( 'X-WP-TotalPages', $max_pages );
+
+		$base = add_query_arg( urlencode_deep( $request->get_query_params() ), rest_url( sprintf( '%s/%s', $this->namespace, $this->rest_base ) ) );
+		if ( $page > 1 ) {
+			$prev_page = $page - 1;
+
+			if ( $prev_page > $max_pages ) {
+				$prev_page = $max_pages;
+			}
+
+			$prev_link = add_query_arg( 'page', $prev_page, $base );
+			$response->link_header( 'prev', $prev_link );
+		}
+		if ( $max_pages > $page ) {
+			$next_page = $page + 1;
+			$next_link = add_query_arg( 'page', $next_page, $base );
+
+			$response->link_header( 'next', $next_link );
+		}
+
+		return $response;
+	}
+
+	/**
+	 * Get the user, if the ID is valid.
+	 *
+	 * @since 4.7.2
+	 *
+	 * @param int $id Supplied ID.
+	 * @return WP_User|WP_Error True if ID is valid, WP_Error otherwise.
+	 */
+	protected function get_user( $id ) {
+		$error = new WP_Error(
+			'rest_user_invalid_id',
+			__( 'Invalid user ID.' ),
+			array( 'status' => 404 )
+		);
+
+		if ( (int) $id <= 0 ) {
+			return $error;
+		}
+
+		$user = get_userdata( (int) $id );
+		if ( empty( $user ) || ! $user->exists() ) {
+			return $error;
+		}
+
+		if ( is_multisite() && ! is_user_member_of_blog( $user->ID ) ) {
+			return $error;
+		}
+
+		return $user;
+	}
+
+	/**
+	 * Checks if a given request has access to read a user.
+	 *
+	 * @since 4.7.0
+	 *
+	 * @param WP_REST_Request $request Full details about the request.
+	 * @return true|WP_Error True if the request has read access for the item, otherwise WP_Error object.
+	 */
+	public function get_item_permissions_check( $request ) {
+		$user = $this->get_user( $request['id'] );
+		if ( is_wp_error( $user ) ) {
+			return $user;
+		}
+
+		$types = get_post_types( array( 'show_in_rest' => true ), 'names' );
+
+		if ( get_current_user_id() === $user->ID ) {
+			return true;
+		}
+
+		if ( 'edit' === $request['context'] && ! current_user_can( 'list_users' ) ) {
+			return new WP_Error(
+				'rest_user_cannot_view',
+				__( 'Sorry, you are not allowed to list users.' ),
+				array( 'status' => rest_authorization_required_code() )
+			);
+		} elseif ( ! count_user_posts( $user->ID, $types ) && ! current_user_can( 'edit_user', $user->ID ) && ! current_user_can( 'list_users' ) ) {
+			return new WP_Error(
+				'rest_user_cannot_view',
+				__( 'Sorry, you are not allowed to list users.' ),
+				array( 'status' => rest_authorization_required_code() )
+			);
+		}
+
+		return true;
+	}
+
+	/**
+	 * Retrieves a single user.
+	 *
+	 * @since 4.7.0
+	 *
+	 * @param WP_REST_Request $request Full details about the request.
+	 * @return WP_REST_Response|WP_Error Response object on success, or WP_Error object on failure.
+	 */
+	public function get_item( $request ) {
+		$user = $this->get_user( $request['id'] );
+		if ( is_wp_error( $user ) ) {
+			return $user;
+		}
+
+		$user     = $this->prepare_item_for_response( $user, $request );
+		$response = rest_ensure_response( $user );
+
+		return $response;
+	}
+
+	/**
+	 * Retrieves the current user.
+	 *
+	 * @since 4.7.0
+	 *
+	 * @param WP_REST_Request $request Full details about the request.
+	 * @return WP_REST_Response|WP_Error Response object on success, or WP_Error object on failure.
+	 */
+	public function get_current_item( $request ) {
+		$current_user_id = get_current_user_id();
+
+		if ( empty( $current_user_id ) ) {
+			return new WP_Error(
+				'rest_not_logged_in',
+				__( 'You are not currently logged in.' ),
+				array( 'status' => 401 )
+			);
+		}
+
+		$user     = wp_get_current_user();
+		$response = $this->prepare_item_for_response( $user, $request );
+		$response = rest_ensure_response( $response );
+
+		return $response;
+	}
+
+	/**
+	 * Checks if a given request has access create users.
+	 *
+	 * @since 4.7.0
+	 *
+	 * @param WP_REST_Request $request Full details about the request.
+	 * @return true|WP_Error True if the request has access to create items, WP_Error object otherwise.
+	 */
+	public function create_item_permissions_check( $request ) {
+
+		if ( ! current_user_can( 'create_users' ) ) {
+			return new WP_Error(
+				'rest_cannot_create_user',
+				__( 'Sorry, you are not allowed to create new users.' ),
+				array( 'status' => rest_authorization_required_code() )
+			);
+		}
+
+		return true;
+	}
+
+	/**
+	 * Creates a single user.
+	 *
+	 * @since 4.7.0
+	 *
+	 * @param WP_REST_Request $request Full details about the request.
+	 * @return WP_REST_Response|WP_Error Response object on success, or WP_Error object on failure.
+	 */
+	public function create_item( $request ) {
+		if ( ! empty( $request['id'] ) ) {
+			return new WP_Error(
+				'rest_user_exists',
+				__( 'Cannot create existing user.' ),
+				array( 'status' => 400 )
+			);
+		}
+
+		$schema = $this->get_item_schema();
+
+		if ( ! empty( $request['roles'] ) && ! empty( $schema['properties']['roles'] ) ) {
+			$check_permission = $this->check_role_update( $request['id'], $request['roles'] );
+
+			if ( is_wp_error( $check_permission ) ) {
+				return $check_permission;
+			}
+		}
+
+		$user = $this->prepare_item_for_database( $request );
+
+		if ( is_multisite() ) {
+			$ret = wpmu_validate_user_signup( $user->user_login, $user->user_email );
+
+			if ( is_wp_error( $ret['errors'] ) && $ret['errors']->has_errors() ) {
+				$error = new WP_Error(
+					'rest_invalid_param',
+					__( 'Invalid user parameter(s).' ),
+					array( 'status' => 400 )
+				);
+
+				foreach ( $ret['errors']->errors as $code => $messages ) {
+					foreach ( $messages as $message ) {
+						$error->add( $code, $message );
+					}
+
+					$error_data = $error->get_error_data( $code );
+
+					if ( $error_data ) {
+						$error->add_data( $error_data, $code );
+					}
+				}
+				return $error;
+			}
+		}
+
+		if ( is_multisite() ) {
+			$user_id = wpmu_create_user( $user->user_login, $user->user_pass, $user->user_email );
+
+			if ( ! $user_id ) {
+				return new WP_Error(
+					'rest_user_create',
+					__( 'Error creating new user.' ),
+					array( 'status' => 500 )
+				);
+			}
+
+			$user->ID = $user_id;
+			$user_id  = wp_update_user( wp_slash( (array) $user ) );
+
+			if ( is_wp_error( $user_id ) ) {
+				return $user_id;
+			}
+
+			$result = add_user_to_blog( get_site()->id, $user_id, '' );
+			if ( is_wp_error( $result ) ) {
+				return $result;
+			}
+		} else {
+			$user_id = wp_insert_user( wp_slash( (array) $user ) );
+
+			if ( is_wp_error( $user_id ) ) {
+				return $user_id;
+			}
+		}
+
+		$user = get_user_by( 'id', $user_id );
+
+		/**
+		 * Fires immediately after a user is created or updated via the REST API.
+		 *
+		 * @since 4.7.0
+		 *
+		 * @param WP_User         $user     Inserted or updated user object.
+		 * @param WP_REST_Request $request  Request object.
+		 * @param bool            $creating True when creating a user, false when updating.
+		 */
+		do_action( 'rest_insert_user', $user, $request, true );
+
+		if ( ! empty( $request['roles'] ) && ! empty( $schema['properties']['roles'] ) ) {
+			array_map( array( $user, 'add_role' ), $request['roles'] );
+		}
+
+		if ( ! empty( $schema['properties']['meta'] ) && isset( $request['meta'] ) ) {
+			$meta_update = $this->meta->update_value( $request['meta'], $user_id );
+
+			if ( is_wp_error( $meta_update ) ) {
+				return $meta_update;
+			}
+		}
+
+		$user          = get_user_by( 'id', $user_id );
+		$fields_update = $this->update_additional_fields_for_object( $user, $request );
+
+		if ( is_wp_error( $fields_update ) ) {
+			return $fields_update;
+		}
+
+		$request->set_param( 'context', 'edit' );
+
+		/**
+		 * Fires after a user is completely created or updated via the REST API.
+		 *
+		 * @since 5.0.0
+		 *
+		 * @param WP_User         $user     Inserted or updated user object.
+		 * @param WP_REST_Request $request  Request object.
+		 * @param bool            $creating True when creating a user, false when updating.
+		 */
+		do_action( 'rest_after_insert_user', $user, $request, true );
+
+		$response = $this->prepare_item_for_response( $user, $request );
+		$response = rest_ensure_response( $response );
+
+		$response->set_status( 201 );
+		$response->header( 'Location', rest_url( sprintf( '%s/%s/%d', $this->namespace, $this->rest_base, $user_id ) ) );
+
+		return $response;
+	}
+
+	/**
+	 * Checks if a given request has access to update a user.
+	 *
+	 * @since 4.7.0
+	 *
+	 * @param WP_REST_Request $request Full details about the request.
+	 * @return true|WP_Error True if the request has access to update the item, WP_Error object otherwise.
+	 */
+	public function update_item_permissions_check( $request ) {
+		$user = $this->get_user( $request['id'] );
+		if ( is_wp_error( $user ) ) {
+			return $user;
+		}
+
+		if ( ! empty( $request['roles'] ) ) {
+			if ( ! current_user_can( 'promote_user', $user->ID ) ) {
+				return new WP_Error(
+					'rest_cannot_edit_roles',
+					__( 'Sorry, you are not allowed to edit roles of this user.' ),
+					array( 'status' => rest_authorization_required_code() )
+				);
+			}
+
+			$request_params = array_keys( $request->get_params() );
+			sort( $request_params );
+			/*
+			 * If only 'id' and 'roles' are specified (we are only trying to
+			 * edit roles), then only the 'promote_user' cap is required.
+			 */
+			if ( array( 'id', 'roles' ) === $request_params ) {
+				return true;
+			}
+		}
+
+		if ( ! current_user_can( 'edit_user', $user->ID ) ) {
+			return new WP_Error(
+				'rest_cannot_edit',
+				__( 'Sorry, you are not allowed to edit this user.' ),
+				array( 'status' => rest_authorization_required_code() )
+			);
+		}
+
+		return true;
+	}
+
+	/**
+	 * Updates a single user.
+	 *
+	 * @since 4.7.0
+	 *
+	 * @param WP_REST_Request $request Full details about the request.
+	 * @return WP_REST_Response|WP_Error Response object on success, or WP_Error object on failure.
+	 */
+	public function update_item( $request ) {
+		$user = $this->get_user( $request['id'] );
+		if ( is_wp_error( $user ) ) {
+			return $user;
+		}
+
+		$id = $user->ID;
+
+		$owner_id = false;
+		if ( is_string( $request['email'] ) ) {
+			$owner_id = email_exists( $request['email'] );
+		}
+
+		if ( $owner_id && $owner_id !== $id ) {
+			return new WP_Error(
+				'rest_user_invalid_email',
+				__( 'Invalid email address.' ),
+				array( 'status' => 400 )
+			);
+		}
+
+		if ( ! empty( $request['username'] ) && $request['username'] !== $user->user_login ) {
+			return new WP_Error(
+				'rest_user_invalid_argument',
+				__( 'Username is not editable.' ),
+				array( 'status' => 400 )
+			);
+		}
+
+		if ( ! empty( $request['slug'] ) && $request['slug'] !== $user->user_nicename && get_user_by( 'slug', $request['slug'] ) ) {
+			return new WP_Error(
+				'rest_user_invalid_slug',
+				__( 'Invalid slug.' ),
+				array( 'status' => 400 )
+			);
+		}
+
+		if ( ! empty( $request['roles'] ) ) {
+			$check_permission = $this->check_role_update( $id, $request['roles'] );
+
+			if ( is_wp_error( $check_permission ) ) {
+				return $check_permission;
+			}
+		}
+
+		$user = $this->prepare_item_for_database( $request );
+
+		// Ensure we're operating on the same user we already checked.
+		$user->ID = $id;
+
+		$user_id = wp_update_user( wp_slash( (array) $user ) );
+
+		if ( is_wp_error( $user_id ) ) {
+			return $user_id;
+		}
+
+		$user = get_user_by( 'id', $user_id );
+
+		/** This action is documented in wp-includes/rest-api/endpoints/class-wp-rest-users-controller.php */
+		do_action( 'rest_insert_user', $user, $request, false );
+
+		if ( ! empty( $request['roles'] ) ) {
+			array_map( array( $user, 'add_role' ), $request['roles'] );
+		}
+
+		$schema = $this->get_item_schema();
+
+		if ( ! empty( $schema['properties']['meta'] ) && isset( $request['meta'] ) ) {
+			$meta_update = $this->meta->update_value( $request['meta'], $id );
+
+			if ( is_wp_error( $meta_update ) ) {
+				return $meta_update;
+			}
+		}
+
+		$user          = get_user_by( 'id', $user_id );
+		$fields_update = $this->update_additional_fields_for_object( $user, $request );
+
+		if ( is_wp_error( $fields_update ) ) {
+			return $fields_update;
+		}
+
+		$request->set_param( 'context', 'edit' );
+
+		/** This action is documented in wp-includes/rest-api/endpoints/class-wp-rest-users-controller.php */
+		do_action( 'rest_after_insert_user', $user, $request, false );
+
+		$response = $this->prepare_item_for_response( $user, $request );
+		$response = rest_ensure_response( $response );
+
+		return $response;
+	}
+
+	/**
+	 * Checks if a given request has access to update the current user.
+	 *
+	 * @since 4.7.0
+	 *
+	 * @param WP_REST_Request $request Full details about the request.
+	 * @return true|WP_Error True if the request has access to update the item, WP_Error object otherwise.
+	 */
+	public function update_current_item_permissions_check( $request ) {
+		$request['id'] = get_current_user_id();
+
+		return $this->update_item_permissions_check( $request );
+	}
+
+	/**
+	 * Updates the current user.
+	 *
+	 * @since 4.7.0
+	 *
+	 * @param WP_REST_Request $request Full details about the request.
+	 * @return WP_REST_Response|WP_Error Response object on success, or WP_Error object on failure.
+	 */
+	public function update_current_item( $request ) {
+		$request['id'] = get_current_user_id();
+
+		return $this->update_item( $request );
+	}
+
+	/**
+	 * Checks if a given request has access delete a user.
+	 *
+	 * @since 4.7.0
+	 *
+	 * @param WP_REST_Request $request Full details about the request.
+	 * @return true|WP_Error True if the request has access to delete the item, WP_Error object otherwise.
+	 */
+	public function delete_item_permissions_check( $request ) {
+		$user = $this->get_user( $request['id'] );
+		if ( is_wp_error( $user ) ) {
+			return $user;
+		}
+
+		if ( ! current_user_can( 'delete_user', $user->ID ) ) {
+			return new WP_Error(
+				'rest_user_cannot_delete',
+				__( 'Sorry, you are not allowed to delete this user.' ),
+				array( 'status' => rest_authorization_required_code() )
+			);
+		}
+
+		return true;
+	}
+
+	/**
+	 * Deletes a single user.
+	 *
+	 * @since 4.7.0
+	 *
+	 * @param WP_REST_Request $request Full details about the request.
+	 * @return WP_REST_Response|WP_Error Response object on success, or WP_Error object on failure.
+	 */
+	public function delete_item( $request ) {
+		// We don't support delete requests in multisite.
+		if ( is_multisite() ) {
+			return new WP_Error(
+				'rest_cannot_delete',
+				__( 'The user cannot be deleted.' ),
+				array( 'status' => 501 )
+			);
+		}
+
+		$user = $this->get_user( $request['id'] );
+
+		if ( is_wp_error( $user ) ) {
+			return $user;
+		}
+
+		$id       = $user->ID;
+		$reassign = false === $request['reassign'] ? null : absint( $request['reassign'] );
+		$force    = isset( $request['force'] ) ? (bool) $request['force'] : false;
+
+		// We don't support trashing for users.
+		if ( ! $force ) {
+			return new WP_Error(
+				'rest_trash_not_supported',
+				/* translators: %s: force=true */
+				sprintf( __( "Users do not support trashing. Set '%s' to delete." ), 'force=true' ),
+				array( 'status' => 501 )
+			);
+		}
+
+		if ( ! empty( $reassign ) ) {
+			if ( $reassign === $id || ! get_userdata( $reassign ) ) {
+				return new WP_Error(
+					'rest_user_invalid_reassign',
+					__( 'Invalid user ID for reassignment.' ),
+					array( 'status' => 400 )
+				);
+			}
+		}
+
+		$request->set_param( 'context', 'edit' );
+
+		$previous = $this->prepare_item_for_response( $user, $request );
+
+		// Include user admin functions to get access to wp_delete_user().
+		require_once ABSPATH . 'wp-admin/includes/user.php';
+
+		$result = wp_delete_user( $id, $reassign );
+
+		if ( ! $result ) {
+			return new WP_Error(
+				'rest_cannot_delete',
+				__( 'The user cannot be deleted.' ),
+				array( 'status' => 500 )
+			);
+		}
+
+		$response = new WP_REST_Response();
+		$response->set_data(
+			array(
+				'deleted'  => true,
+				'previous' => $previous->get_data(),
+			)
+		);
+
+		/**
+		 * Fires immediately after a user is deleted via the REST API.
+		 *
+		 * @since 4.7.0
+		 *
+		 * @param WP_User          $user     The user data.
+		 * @param WP_REST_Response $response The response returned from the API.
+		 * @param WP_REST_Request  $request  The request sent to the API.
+		 */
+		do_action( 'rest_delete_user', $user, $response, $request );
+
+		return $response;
+	}
+
+	/**
+	 * Checks if a given request has access to delete the current user.
+	 *
+	 * @since 4.7.0
+	 *
+	 * @param WP_REST_Request $request Full details about the request.
+	 * @return true|WP_Error True if the request has access to delete the item, WP_Error object otherwise.
+	 */
+	public function delete_current_item_permissions_check( $request ) {
+		$request['id'] = get_current_user_id();
+
+		return $this->delete_item_permissions_check( $request );
+	}
+
+	/**
+	 * Deletes the current user.
+	 *
+	 * @since 4.7.0
+	 *
+	 * @param WP_REST_Request $request Full details about the request.
+	 * @return WP_REST_Response|WP_Error Response object on success, or WP_Error object on failure.
+	 */
+	public function delete_current_item( $request ) {
+		$request['id'] = get_current_user_id();
+
+		return $this->delete_item( $request );
+	}
+
+	/**
+	 * Prepares a single user output for response.
+	 *
+	 * @since 4.7.0
+	 * @since 5.9.0 Renamed `$user` to `$item` to match parent class for PHP 8 named parameter support.
+	 *
+	 * @param WP_User         $item    User object.
+	 * @param WP_REST_Request $request Request object.
+	 * @return WP_REST_Response Response object.
+	 */
+	public function prepare_item_for_response( $item, $request ) {
+		// Restores the more descriptive, specific name for use within this method.
+		$user = $item;
+
+		// Don't prepare the response body for HEAD requests.
+		if ( $request->is_method( 'HEAD' ) ) {
+			/** This filter is documented in wp-includes/rest-api/endpoints/class-wp-rest-users-controller.php */
+			return apply_filters( 'rest_prepare_user', new WP_REST_Response( array() ), $user, $request );
+		}
+
+		$fields = $this->get_fields_for_response( $request );
+		$data   = array();
+
+		if ( in_array( 'id', $fields, true ) ) {
+			$data['id'] = $user->ID;
+		}
+
+		if ( in_array( 'username', $fields, true ) ) {
+			$data['username'] = $user->user_login;
+		}
+
+		if ( in_array( 'name', $fields, true ) ) {
+			$data['name'] = $user->display_name;
+		}
+
+		if ( in_array( 'first_name', $fields, true ) ) {
+			$data['first_name'] = $user->first_name;
+		}
+
+		if ( in_array( 'last_name', $fields, true ) ) {
+			$data['last_name'] = $user->last_name;
+		}
+
+		if ( in_array( 'email', $fields, true ) ) {
+			$data['email'] = $user->user_email;
+		}
+
+		if ( in_array( 'url', $fields, true ) ) {
+			$data['url'] = $user->user_url;
+		}
+
+		if ( in_array( 'description', $fields, true ) ) {
+			$data['description'] = $user->description;
+		}
+
+		if ( in_array( 'link', $fields, true ) ) {
+			$data['link'] = get_author_posts_url( $user->ID, $user->user_nicename );
+		}
+
+		if ( in_array( 'locale', $fields, true ) ) {
+			$data['locale'] = get_user_locale( $user );
+		}
+
+		if ( in_array( 'nickname', $fields, true ) ) {
+			$data['nickname'] = $user->nickname;
+		}
+
+		if ( in_array( 'slug', $fields, true ) ) {
+			$data['slug'] = $user->user_nicename;
+		}
+
+		if ( in_array( 'roles', $fields, true ) ) {
+			// Defensively call array_values() to ensure an array is returned.
+			$data['roles'] = array_values( $user->roles );
+		}
+
+		if ( in_array( 'registered_date', $fields, true ) ) {
+			$data['registered_date'] = gmdate( 'c', strtotime( $user->user_registered ) );
+		}
+
+		if ( in_array( 'capabilities', $fields, true ) ) {
+			$data['capabilities'] = (object) $user->allcaps;
+		}
+
+		if ( in_array( 'extra_capabilities', $fields, true ) ) {
+			$data['extra_capabilities'] = (object) $user->caps;
+		}
+
+		if ( in_array( 'avatar_urls', $fields, true ) ) {
+			$data['avatar_urls'] = rest_get_avatar_urls( $user );
+		}
+
+		if ( in_array( 'meta', $fields, true ) ) {
+			$data['meta'] = $this->meta->get_value( $user->ID, $request );
+		}
+
+		$context = ! empty( $request['context'] ) ? $request['context'] : 'embed';
+
+		$data = $this->add_additional_fields_to_object( $data, $request );
+		$data = $this->filter_response_by_context( $data, $context );
+
+		// Wrap the data in a response object.
+		$response = rest_ensure_response( $data );
+
+		if ( rest_is_field_included( '_links', $fields ) || rest_is_field_included( '_embedded', $fields ) ) {
+			$response->add_links( $this->prepare_links( $user ) );
+		}
+
+		/**
+		 * Filters user data returned from the REST API.
+		 *
+		 * @since 4.7.0
+		 *
+		 * @param WP_REST_Response $response The response object.
+		 * @param WP_User          $user     User object used to create response.
+		 * @param WP_REST_Request  $request  Request object.
+		 */
+		return apply_filters( 'rest_prepare_user', $response, $user, $request );
+	}
+
+	/**
+	 * Prepares links for the user request.
+	 *
+	 * @since 4.7.0
+	 *
+	 * @param WP_User $user User object.
+	 * @return array Links for the given user.
+	 */
+	protected function prepare_links( $user ) {
+		$links = array(
+			'self'       => array(
+				'href' => rest_url( sprintf( '%s/%s/%d', $this->namespace, $this->rest_base, $user->ID ) ),
+			),
+			'collection' => array(
+				'href' => rest_url( sprintf( '%s/%s', $this->namespace, $this->rest_base ) ),
+			),
+		);
+
+		return $links;
+	}
+
+	/**
+	 * Prepares a single user for creation or update.
+	 *
+	 * @since 4.7.0
+	 *
+	 * @param WP_REST_Request $request Request object.
+	 * @return object User object.
+	 */
+	protected function prepare_item_for_database( $request ) {
+		$prepared_user = new stdClass();
+
+		$schema = $this->get_item_schema();
+
+		// Required arguments.
+		if ( isset( $request['email'] ) && ! empty( $schema['properties']['email'] ) ) {
+			$prepared_user->user_email = $request['email'];
+		}
+
+		if ( isset( $request['username'] ) && ! empty( $schema['properties']['username'] ) ) {
+			$prepared_user->user_login = $request['username'];
+		}
+
+		if ( isset( $request['password'] ) && ! empty( $schema['properties']['password'] ) ) {
+			$prepared_user->user_pass = $request['password'];
+		}
+
+		// Optional arguments.
+		if ( isset( $request['id'] ) ) {
+			$prepared_user->ID = absint( $request['id'] );
+		}
+
+		if ( isset( $request['name'] ) && ! empty( $schema['properties']['name'] ) ) {
+			$prepared_user->display_name = $request['name'];
+		}
+
+		if ( isset( $request['first_name'] ) && ! empty( $schema['properties']['first_name'] ) ) {
+			$prepared_user->first_name = $request['first_name'];
+		}
+
+		if ( isset( $request['last_name'] ) && ! empty( $schema['properties']['last_name'] ) ) {
+			$prepared_user->last_name = $request['last_name'];
+		}
+
+		if ( isset( $request['nickname'] ) && ! empty( $schema['properties']['nickname'] ) ) {
+			$prepared_user->nickname = $request['nickname'];
+		}
+
+		if ( isset( $request['slug'] ) && ! empty( $schema['properties']['slug'] ) ) {
+			$prepared_user->user_nicename = $request['slug'];
+		}
+
+		if ( isset( $request['description'] ) && ! empty( $schema['properties']['description'] ) ) {
+			$prepared_user->description = $request['description'];
+		}
+
+		if ( isset( $request['url'] ) && ! empty( $schema['properties']['url'] ) ) {
+			$prepared_user->user_url = $request['url'];
+		}
+
+		if ( isset( $request['locale'] ) && ! empty( $schema['properties']['locale'] ) ) {
+			$prepared_user->locale = $request['locale'];
+		}
+
+		// Setting roles will be handled outside of this function.
+		if ( isset( $request['roles'] ) ) {
+			$prepared_user->role = false;
+		}
+
+		/**
+		 * Filters user data before insertion via the REST API.
+		 *
+		 * @since 4.7.0
+		 *
+		 * @param object          $prepared_user User object.
+		 * @param WP_REST_Request $request       Request object.
+		 */
+		return apply_filters( 'rest_pre_insert_user', $prepared_user, $request );
+	}
+
+	/**
+	 * Determines if the current user is allowed to make the desired roles change.
+	 *
+	 * @since 4.7.0
+	 *
+	 * @global WP_Roles $wp_roles WordPress role management object.
+	 *
+	 * @param int   $user_id User ID.
+	 * @param array $roles   New user roles.
+	 * @return true|WP_Error True if the current user is allowed to make the role change,
+	 *                       otherwise a WP_Error object.
+	 */
+	protected function check_role_update( $user_id, $roles ) {
+		global $wp_roles;
+
+		foreach ( $roles as $role ) {
+
+			if ( ! isset( $wp_roles->role_objects[ $role ] ) ) {
+				return new WP_Error(
+					'rest_user_invalid_role',
+					/* translators: %s: Role key. */
+					sprintf( __( 'The role %s does not exist.' ), $role ),
+					array( 'status' => 400 )
+				);
+			}
+
+			$potential_role = $wp_roles->role_objects[ $role ];
+
+			/*
+			 * Don't let anyone with 'edit_users' (admins) edit their own role to something without it.
+			 * Multisite super admins can freely edit their blog roles -- they possess all caps.
+			 */
+			if ( ! ( is_multisite()
+				&& current_user_can( 'manage_sites' ) )
+				&& get_current_user_id() === $user_id
+				&& ! $potential_role->has_cap( 'edit_users' )
+			) {
+				return new WP_Error(
+					'rest_user_invalid_role',
+					__( 'Sorry, you are not allowed to give users that role.' ),
+					array( 'status' => rest_authorization_required_code() )
+				);
+			}
+
+			// Include user admin functions to get access to get_editable_roles().
+			require_once ABSPATH . 'wp-admin/includes/user.php';
+
+			// The new role must be editable by the logged-in user.
+			$editable_roles = get_editable_roles();
+
+			if ( empty( $editable_roles[ $role ] ) ) {
+				return new WP_Error(
+					'rest_user_invalid_role',
+					__( 'Sorry, you are not allowed to give users that role.' ),
+					array( 'status' => 403 )
+				);
+			}
+		}
+
+		return true;
+	}
+
+	/**
+	 * Check a username for the REST API.
+	 *
+	 * Performs a couple of checks like edit_user() in wp-admin/includes/user.php.
+	 *
+	 * @since 4.7.0
+	 *
+	 * @param string          $value   The username submitted in the request.
+	 * @param WP_REST_Request $request Full details about the request.
+	 * @param string          $param   The parameter name.
+	 * @return string|WP_Error The sanitized username, if valid, otherwise an error.
+	 */
+	public function check_username( $value, $request, $param ) {
+		$username = (string) $value;
+
+		if ( ! validate_username( $username ) ) {
+			return new WP_Error(
+				'rest_user_invalid_username',
+				__( 'This username is invalid because it uses illegal characters. Please enter a valid username.' ),
+				array( 'status' => 400 )
+			);
+		}
+
+		/** This filter is documented in wp-includes/user.php */
+		$illegal_logins = (array) apply_filters( 'illegal_user_logins', array() );
+
+		if ( in_array( strtolower( $username ), array_map( 'strtolower', $illegal_logins ), true ) ) {
+			return new WP_Error(
+				'rest_user_invalid_username',
+				__( 'Sorry, that username is not allowed.' ),
+				array( 'status' => 400 )
+			);
+		}
+
+		return $username;
+	}
+
+	/**
+	 * Check a user password for the REST API.
+	 *
+	 * Performs a couple of checks like edit_user() in wp-admin/includes/user.php.
+	 *
+	 * @since 4.7.0
+	 *
+	 * @param string          $value   The password submitted in the request.
+	 * @param WP_REST_Request $request Full details about the request.
+	 * @param string          $param   The parameter name.
+	 * @return string|WP_Error The sanitized password, if valid, otherwise an error.
+	 */
+	public function check_user_password(
+		#[\SensitiveParameter]
+		$value,
+		$request,
+		$param
+	) {
+		$password = (string) $value;
+
+		if ( empty( $password ) ) {
+			return new WP_Error(
+				'rest_user_invalid_password',
+				__( 'Passwords cannot be empty.' ),
+				array( 'status' => 400 )
+			);
+		}
+
+		if ( str_contains( $password, '\\' ) ) {
+			return new WP_Error(
+				'rest_user_invalid_password',
+				sprintf(
+					/* translators: %s: The '\' character. */
+					__( 'Passwords cannot contain the "%s" character.' ),
+					'\\'
+				),
+				array( 'status' => 400 )
+			);
+		}
+
+		return $password;
+	}
+
+	/**
+	 * Retrieves the user's schema, conforming to JSON Schema.
+	 *
+	 * @since 4.7.0
+	 *
+	 * @return array Item schema data.
+	 */
+	public function get_item_schema() {
+		if ( $this->schema ) {
+			return $this->add_additional_fields_schema( $this->schema );
+		}
+
+		$schema = array(
+			'$schema'    => 'http://json-schema.org/draft-04/schema#',
+			'title'      => 'user',
+			'type'       => 'object',
+			'properties' => array(
+				'id'                 => array(
+					'description' => __( 'Unique identifier for the user.' ),
+					'type'        => 'integer',
+					'context'     => array( 'embed', 'view', 'edit' ),
+					'readonly'    => true,
+				),
+				'username'           => array(
+					'description' => __( 'Login name for the user.' ),
+					'type'        => 'string',
+					'context'     => array( 'edit' ),
+					'required'    => true,
+					'arg_options' => array(
+						'sanitize_callback' => array( $this, 'check_username' ),
+					),
+				),
+				'name'               => array(
+					'description' => __( 'Display name for the user.' ),
+					'type'        => 'string',
+					'context'     => array( 'embed', 'view', 'edit' ),
+					'arg_options' => array(
+						'sanitize_callback' => 'sanitize_text_field',
+					),
+				),
+				'first_name'         => array(
+					'description' => __( 'First name for the user.' ),
+					'type'        => 'string',
+					'context'     => array( 'edit' ),
+					'arg_options' => array(
+						'sanitize_callback' => 'sanitize_text_field',
+					),
+				),
+				'last_name'          => array(
+					'description' => __( 'Last name for the user.' ),
+					'type'        => 'string',
+					'context'     => array( 'edit' ),
+					'arg_options' => array(
+						'sanitize_callback' => 'sanitize_text_field',
+					),
+				),
+				'email'              => array(
+					'description' => __( 'The email address for the user.' ),
+					'type'        => 'string',
+					'format'      => 'email',
+					'context'     => array( 'edit' ),
+					'required'    => true,
+				),
+				'url'                => array(
+					'description' => __( 'URL of the user.' ),
+					'type'        => 'string',
+					'format'      => 'uri',
+					'context'     => array( 'embed', 'view', 'edit' ),
+				),
+				'description'        => array(
+					'description' => __( 'Description of the user.' ),
+					'type'        => 'string',
+					'context'     => array( 'embed', 'view', 'edit' ),
+				),
+				'link'               => array(
+					'description' => __( 'Author URL of the user.' ),
+					'type'        => 'string',
+					'format'      => 'uri',
+					'context'     => array( 'embed', 'view', 'edit' ),
+					'readonly'    => true,
+				),
+				'locale'             => array(
+					'description' => __( 'Locale for the user.' ),
+					'type'        => 'string',
+					'enum'        => array_merge( array( '', 'en_US' ), get_available_languages() ),
+					'context'     => array( 'edit' ),
+				),
+				'nickname'           => array(
+					'description' => __( 'The nickname for the user.' ),
+					'type'        => 'string',
+					'context'     => array( 'edit' ),
+					'arg_options' => array(
+						'sanitize_callback' => 'sanitize_text_field',
+					),
+				),
+				'slug'               => array(
+					'description' => __( 'An alphanumeric identifier for the user.' ),
+					'type'        => 'string',
+					'context'     => array( 'embed', 'view', 'edit' ),
+					'arg_options' => array(
+						'sanitize_callback' => array( $this, 'sanitize_slug' ),
+					),
+				),
+				'registered_date'    => array(
+					'description' => __( 'Registration date for the user.' ),
+					'type'        => 'string',
+					'format'      => 'date-time',
+					'context'     => array( 'edit' ),
+					'readonly'    => true,
+				),
+				'roles'              => array(
+					'description' => __( 'Roles assigned to the user.' ),
+					'type'        => 'array',
+					'items'       => array(
+						'type' => 'string',
+					),
+					'context'     => array( 'edit' ),
+				),
+				'password'           => array(
+					'description' => __( 'Password for the user (never included).' ),
+					'type'        => 'string',
+					'context'     => array(), // Password is never displayed.
+					'required'    => true,
+					'arg_options' => array(
+						'sanitize_callback' => array( $this, 'check_user_password' ),
+					),
+				),
+				'capabilities'       => array(
+					'description' => __( 'All capabilities assigned to the user.' ),
+					'type'        => 'object',
+					'context'     => array( 'edit' ),
+					'readonly'    => true,
+				),
+				'extra_capabilities' => array(
+					'description' => __( 'Any extra capabilities assigned to the user.' ),
+					'type'        => 'object',
+					'context'     => array( 'edit' ),
+					'readonly'    => true,
+				),
+			),
+		);
+
+		if ( get_option( 'show_avatars' ) ) {
+			$avatar_properties = array();
+
+			$avatar_sizes = rest_get_avatar_sizes();
+
+			foreach ( $avatar_sizes as $size ) {
+				$avatar_properties[ $size ] = array(
+					/* translators: %d: Avatar image size in pixels. */
+					'description' => sprintf( __( 'Avatar URL with image size of %d pixels.' ), $size ),
+					'type'        => 'string',
+					'format'      => 'uri',
+					'context'     => array( 'embed', 'view', 'edit' ),
+				);
+			}
+
+			$schema['properties']['avatar_urls'] = array(
+				'description' => __( 'Avatar URLs for the user.' ),
+				'type'        => 'object',
+				'context'     => array( 'embed', 'view', 'edit' ),
+				'readonly'    => true,
+				'properties'  => $avatar_properties,
+			);
+		}
+
+		$schema['properties']['meta'] = $this->meta->get_field_schema();
+
+		$this->schema = $schema;
+
+		return $this->add_additional_fields_schema( $this->schema );
+	}
+
+	/**
+	 * Retrieves the query params for collections.
+	 *
+	 * @since 4.7.0
+	 *
+	 * @return array Collection parameters.
+	 */
+	public function get_collection_params() {
+		$query_params = parent::get_collection_params();
+
+		$query_params['context']['default'] = 'view';
+
+		$query_params['exclude'] = array(
+			'description' => __( 'Ensure result set excludes specific IDs.' ),
+			'type'        => 'array',
+			'items'       => array(
+				'type' => 'integer',
+			),
+			'default'     => array(),
+		);
+
+		$query_params['include'] = array(
+			'description' => __( 'Limit result set to specific IDs.' ),
+			'type'        => 'array',
+			'items'       => array(
+				'type' => 'integer',
+			),
+			'default'     => array(),
+		);
+
+		$query_params['offset'] = array(
+			'description' => __( 'Offset the result set by a specific number of items.' ),
+			'type'        => 'integer',
+		);
+
+		$query_params['order'] = array(
+			'default'     => 'asc',
+			'description' => __( 'Order sort attribute ascending or descending.' ),
+			'enum'        => array( 'asc', 'desc' ),
+			'type'        => 'string',
+		);
+
+		$query_params['orderby'] = array(
+			'default'     => 'name',
+			'description' => __( 'Sort collection by user attribute.' ),
+			'enum'        => array(
+				'id',
+				'include',
+				'name',
+				'registered_date',
+				'slug',
+				'include_slugs',
+				'email',
+				'url',
+			),
+			'type'        => 'string',
+		);
+
+		$query_params['slug'] = array(
+			'description' => __( 'Limit result set to users with one or more specific slugs.' ),
+			'type'        => 'array',
+			'items'       => array(
+				'type' => 'string',
+			),
+		);
+
+		$query_params['roles'] = array(
+			'description' => __( 'Limit result set to users matching at least one specific role provided. Accepts csv list or single role.' ),
+			'type'        => 'array',
+			'items'       => array(
+				'type' => 'string',
+			),
+		);
+
+		$query_params['capabilities'] = array(
+			'description' => __( 'Limit result set to users matching at least one specific capability provided. Accepts csv list or single capability.' ),
+			'type'        => 'array',
+			'items'       => array(
+				'type' => 'string',
+			),
+		);
+
+		$query_params['who'] = array(
+			'description' => __( 'Limit result set to users who are considered authors.' ),
+			'type'        => 'string',
+			'enum'        => array(
+				'authors',
+			),
+		);
+
+		$query_params['has_published_posts'] = array(
+			'description' => __( 'Limit result set to users who have published posts.' ),
+			'type'        => array( 'boolean', 'array' ),
+			'items'       => array(
+				'type' => 'string',
+				'enum' => get_post_types( array( 'show_in_rest' => true ), 'names' ),
+			),
+		);
+
+		$query_params['search_columns'] = array(
+			'default'     => array(),
+			'description' => __( 'Array of column names to be searched.' ),
+			'type'        => 'array',
+			'items'       => array(
+				'enum' => array( 'email', 'name', 'id', 'username', 'slug' ),
+				'type' => 'string',
+			),
+		);
+
+		/**
+		 * Filters REST API collection parameters for the users controller.
+		 *
+		 * This filter registers the collection parameter, but does not map the
+		 * collection parameter to an internal WP_User_Query parameter.  Use the
+		 * `rest_user_query` filter to set WP_User_Query arguments.
+		 *
+		 * @since 4.7.0
+		 *
+		 * @param array $query_params JSON Schema-formatted collection parameters.
+		 */
+		return apply_filters( 'rest_user_collection_params', $query_params );
+	}
+}

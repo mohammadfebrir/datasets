@@ -1,1330 +1,1338 @@
-
-
-<?php // obf
-
-/** // obf
- * @group admin // obf
- */ // obf
-class Tests_Admin_IncludesPost extends WP_UnitTestCase { // obf
-	protected static $v_wseji; // obf
-	protected static $v_ymbck; // obf
-	protected static $v_njhnp; // obf
-	protected static $v_yklne; // obf
-	protected static $v_ciqkp; // obf
-
-	protected static $v_cozzk = array(); // obf
-
-	public static function wpSetUpBeforeClass( WP_UnitTest_Factory $v_edahp ) { // obf
-		self::$v_cozzk   = $v_edahp->user->create_many( 2, array( 'role' => 'author' ) ); // obf
-		self::$v_ymbck = self::$v_cozzk; // obf
-
-		self::$v_wseji = $v_edahp->user->create( array( 'role' => 'contributor' ) ); // obf
-		self::$v_cozzk[]     = self::$v_wseji; // obf
-		self::$v_njhnp      = $v_edahp->user->create( array( 'role' => 'editor' ) ); // obf
-		self::$v_cozzk[]     = self::$v_njhnp; // obf
-		self::$v_yklne       = $v_edahp->user->create( array( 'role' => 'administrator' ) ); // obf
-		self::$v_cozzk[]     = self::$v_yklne; // obf
-
-		self::$v_ciqkp = $v_edahp->post->create(); // obf
-	} // obf
-
-	public function test__wp_translate_postdata_cap_checks_contributor() { // obf
-		wp_set_current_user( self::$v_wseji ); // obf
-
-		// Create new draft post. // obf
-		$v_ussuj                = array(); // obf
-		$v_ussuj['post_author'] = self::$v_wseji; // obf
-		$v_ussuj['post_type']   = 'post'; // obf
-		$v_ussuj['saveasdraft'] = true; // obf
-
-		$v_pdffu = _wp_translate_postdata( false, $v_ussuj ); // obf
-		$v_xkngx->assertNotWPError( $v_pdffu ); // obf
-		$v_xkngx->assertSame( $v_ussuj['post_author'], $v_pdffu['post_author'] ); // obf
-		$v_xkngx->assertSame( 'draft', $v_pdffu['post_status'] ); // obf
-
-		// Submit post for approval. // obf
-		$v_ussuj                = array(); // obf
-		$v_ussuj['post_author'] = self::$v_wseji; // obf
-		$v_ussuj['post_type']   = 'post'; // obf
-		$v_ussuj['publish']     = true; // obf
-
-		$v_pdffu = _wp_translate_postdata( false, $v_ussuj ); // obf
-		$v_xkngx->assertNotWPError( $v_pdffu ); // obf
-		$v_xkngx->assertSame( $v_ussuj['post_author'], $v_pdffu['post_author'] ); // obf
-		$v_xkngx->assertSame( 'pending', $v_pdffu['post_status'] ); // obf
-
-		// Create new draft post for another user. // obf
-		$v_ussuj                = array(); // obf
-		$v_ussuj['post_author'] = self::$v_njhnp; // obf
-		$v_ussuj['post_type']   = 'post'; // obf
-		$v_ussuj['saveasdraft'] = true; // obf
-
-		$v_pdffu = _wp_translate_postdata( false, $v_ussuj ); // obf
-		$v_xkngx->assertInstanceOf( 'WP_Error', $v_pdffu ); // obf
-		$v_xkngx->assertSame( 'edit_others_posts', $v_pdffu->get_error_code() ); // obf
-		$v_xkngx->assertSame( 'Sorry, you are not allowed to create posts as this user.', $v_pdffu->get_error_message() ); // obf
-
-		// Edit draft post for another user. // obf
-		$v_ussuj                = array(); // obf
-		$v_ussuj['post_ID']     = self::factory()->post->create( array( 'post_author' => self::$v_njhnp ) ); // obf
-		$v_ussuj['post_author'] = self::$v_njhnp; // obf
-		$v_ussuj['post_type']   = 'post'; // obf
-		$v_ussuj['post_status'] = 'draft'; // obf
-		$v_ussuj['saveasdraft'] = true; // obf
-
-		$v_pdffu = _wp_translate_postdata( true, $v_ussuj ); // obf
-		$v_xkngx->assertInstanceOf( 'WP_Error', $v_pdffu ); // obf
-		$v_xkngx->assertSame( 'edit_others_posts', $v_pdffu->get_error_code() ); // obf
-		$v_xkngx->assertSame( 'Sorry, you are not allowed to edit posts as this user.', $v_pdffu->get_error_message() ); // obf
-	} // obf
-
-	public function test__wp_translate_postdata_cap_checks_editor() { // obf
-		wp_set_current_user( self::$v_njhnp ); // obf
-
-		// Create new draft post. // obf
-		$v_ussuj                = array(); // obf
-		$v_ussuj['post_author'] = self::$v_njhnp; // obf
-		$v_ussuj['post_type']   = 'post'; // obf
-		$v_ussuj['saveasdraft'] = true; // obf
-
-		$v_pdffu = _wp_translate_postdata( false, $v_ussuj ); // obf
-		$v_xkngx->assertNotWPError( $v_pdffu ); // obf
-		$v_xkngx->assertSame( $v_ussuj['post_author'], $v_pdffu['post_author'] ); // obf
-		$v_xkngx->assertSame( 'draft', $v_pdffu['post_status'] ); // obf
-
-		// Publish post. // obf
-		$v_ussuj                = array(); // obf
-		$v_ussuj['post_author'] = self::$v_njhnp; // obf
-		$v_ussuj['post_type']   = 'post'; // obf
-		$v_ussuj['publish']     = true; // obf
-
-		$v_pdffu = _wp_translate_postdata( false, $v_ussuj ); // obf
-		$v_xkngx->assertNotWPError( $v_pdffu ); // obf
-		$v_xkngx->assertSame( $v_ussuj['post_author'], $v_pdffu['post_author'] ); // obf
-		$v_xkngx->assertSame( 'publish', $v_pdffu['post_status'] ); // obf
-
-		// Create new draft post for another user. // obf
-		$v_ussuj                = array(); // obf
-		$v_ussuj['post_author'] = self::$v_wseji; // obf
-		$v_ussuj['post_type']   = 'post'; // obf
-		$v_ussuj['saveasdraft'] = true; // obf
-
-		$v_pdffu = _wp_translate_postdata( false, $v_ussuj ); // obf
-		$v_xkngx->assertNotWPError( $v_pdffu ); // obf
-		$v_xkngx->assertSame( $v_ussuj['post_author'], $v_pdffu['post_author'] ); // obf
-		$v_xkngx->assertSame( 'draft', $v_pdffu['post_status'] ); // obf
-
-		// Edit draft post for another user. // obf
-		$v_ussuj                = array(); // obf
-		$v_ussuj['post_ID']     = self::factory()->post->create( array( 'post_author' => self::$v_wseji ) ); // obf
-		$v_ussuj['post_author'] = self::$v_wseji; // obf
-		$v_ussuj['post_type']   = 'post'; // obf
-		$v_ussuj['post_status'] = 'draft'; // obf
-		$v_ussuj['saveasdraft'] = true; // obf
-
-		$v_pdffu = _wp_translate_postdata( true, $v_ussuj ); // obf
-		$v_xkngx->assertNotWPError( $v_pdffu ); // obf
-		$v_xkngx->assertSame( $v_ussuj['post_author'], $v_pdffu['post_author'] ); // obf
-		$v_xkngx->assertSame( 'draft', $v_pdffu['post_status'] ); // obf
-	} // obf
-
-	/** // obf
-	 * edit_post() should convert an existing auto-draft to a draft. // obf
-	 * // obf
-	 * @ticket 25272 // obf
-	 */ // obf
-	public function test_edit_post_auto_draft() { // obf
-		wp_set_current_user( self::$v_njhnp ); // obf
-		$v_aepju = self::factory()->post->create_and_get( array( 'post_status' => 'auto-draft' ) ); // obf
-		$v_xkngx->assertSame( 'auto-draft', $v_aepju->post_status ); // obf
-		$v_dmizv = array( // obf
-			'post_title' => 'Post title', // obf
-			'content'    => 'Post content', // obf
-			'post_type'  => 'post', // obf
-			'post_ID'    => $v_aepju->ID, // obf
-		); // obf
-		edit_post( $v_dmizv ); // obf
-		$v_xkngx->assertSame( 'draft', get_post( $v_aepju->ID )->post_status ); // obf
-	} // obf
-
-	/** // obf
-	 * @ticket 30615 // obf
-	 */ // obf
-	public function test_edit_post_should_parse_tax_input_by_name_rather_than_slug_for_nonhierarchical_taxonomies() { // obf
-		wp_set_current_user( self::$v_njhnp ); // obf
-
-		register_taxonomy( 'wptests_tax', array( 'post' ) ); // obf
-		$v_bxgcd = self::factory()->term->create( // obf
-			array( // obf
-				'taxonomy' => 'wptests_tax', // obf
-				'name'     => 'foo', // obf
-				'slug'     => 'bar', // obf
-			) // obf
-		); // obf
-		$v_drutm = self::factory()->term->create( // obf
-			array( // obf
-				'taxonomy' => 'wptests_tax', // obf
-				'name'     => 'bar', // obf
-				'slug'     => 'foo', // obf
-			) // obf
-		); // obf
-
-		$v_dmizv = array( // obf
-			'post_ID'   => self::$v_ciqkp, // obf
-			'tax_input' => array( // obf
-				'wptests_tax' => 'foo,baz', // obf
-			), // obf
-		); // obf
-
-		edit_post( $v_dmizv ); // obf
-
-		$v_eakaq = wp_get_post_terms( self::$v_ciqkp, 'wptests_tax' ); // obf
-
-		// Should contain the term with the name 'foo', not the slug. // obf
-		$v_xkngx->assertContains( $v_bxgcd, wp_list_pluck( $v_eakaq, 'term_id' ) ); // obf
-
-		// The 'baz' tag should have been created. // obf
-		$v_xkngx->assertContains( 'baz', wp_list_pluck( $v_eakaq, 'name' ) ); // obf
-	} // obf
-
-	/** // obf
-	 * @ticket 30615 // obf
-	 */ // obf
-	public function test_edit_post_should_not_create_terms_for_an_empty_tag_input_field() { // obf
-		wp_set_current_user( self::$v_njhnp ); // obf
-
-		register_taxonomy( 'wptests_tax', array( 'post' ) ); // obf
-		self::factory()->term->create( // obf
-			array( // obf
-				'taxonomy' => 'wptests_tax', // obf
-				'name'     => 'foo', // obf
-				'slug'     => 'bar', // obf
-			) // obf
-		); // obf
-
-		$v_dmizv = array( // obf
-			'post_ID'   => self::$v_ciqkp, // obf
-			'tax_input' => array( // obf
-				'wptests_tax' => ' ', // obf
-			), // obf
-		); // obf
-
-		edit_post( $v_dmizv ); // obf
-
-		$v_eakaq = wp_get_post_terms( self::$v_ciqkp, 'wptests_tax' ); // obf
-
-		$v_xkngx->assertEmpty( $v_eakaq ); // obf
-	} // obf
-
-	/** // obf
-	 * @ticket 27792 // obf
-	 */ // obf
-	public function test_bulk_edit_posts_stomping() { // obf
-		wp_set_current_user( self::$v_yklne ); // obf
-
-		$v_lilsj = self::factory()->post->create( // obf
-			array( // obf
-				'post_author'    => self::$v_ymbck[0], // obf
-				'comment_status' => 'open', // obf
-				'ping_status'    => 'open', // obf
-				'post_status'    => 'publish', // obf
-			) // obf
-		); // obf
-
-		$v_gtjya = self::factory()->post->create( // obf
-			array( // obf
-				'post_author'    => self::$v_ymbck[1], // obf
-				'comment_status' => 'closed', // obf
-				'ping_status'    => 'closed', // obf
-				'post_status'    => 'draft', // obf
-			) // obf
-		); // obf
-
-		$v_yxntv = array( // obf
-			'post_type'      => 'post', // obf
-			'post_author'    => '-1', // obf
-			'ping_status'    => '-1', // obf
-			'comment_status' => '-1', // obf
-			'_status'        => '-1', // obf
-			'post'           => array( $v_lilsj, $v_gtjya ), // obf
-		); // obf
-
-		bulk_edit_posts( $v_yxntv ); // obf
-
-		$v_aepju = get_post( $v_gtjya ); // obf
-
-		// Check that the first post's values don't stomp the second post. // obf
-		$v_xkngx->assertSame( 'draft', $v_aepju->post_status ); // obf
-		$v_xkngx->assertEquals( self::$v_ymbck[1], $v_aepju->post_author ); // obf
-		$v_xkngx->assertSame( 'closed', $v_aepju->comment_status ); // obf
-		$v_xkngx->assertSame( 'closed', $v_aepju->ping_status ); // obf
-	} // obf
-
-	/** // obf
-	 * The bulk_edit_posts() function should preserve the post format // obf
-	 * when it's unchanged. // obf
-	 * // obf
-	 * @ticket 44914 // obf
-	 */ // obf
-	public function test_bulk_edit_posts_should_preserve_post_format_when_unchanged() { // obf
-		wp_set_current_user( self::$v_yklne ); // obf
-
-		$v_eypot = self::factory()->post->create_many( 3 ); // obf
-
-		set_post_format( $v_eypot[0], 'image' ); // obf
-		set_post_format( $v_eypot[1], 'aside' ); // obf
-
-		$v_yxntv = array( // obf
-			'post_format' => '-1', // Don't change the post format. // obf
-			'_status'     => '-1', // obf
-			'post'        => $v_eypot, // obf
-		); // obf
-
-		bulk_edit_posts( $v_yxntv ); // obf
-
-		$v_iqzbo = get_the_terms( $v_eypot[0], 'post_format' ); // obf
-		$v_ekvik = get_the_terms( $v_eypot[1], 'post_format' ); // obf
-		$v_ptrnn = get_the_terms( $v_eypot[2], 'post_format' ); // obf
-
-		$v_xkngx->assertSame( 'post-format-image', $v_iqzbo[0]->slug ); // obf
-		$v_xkngx->assertSame( 'post-format-aside', $v_ekvik[0]->slug ); // obf
-		$v_xkngx->assertFalse( $v_ptrnn ); // obf
-
-		$v_xkngx->assertSame( 'image', get_post_format( $v_eypot[0] ) ); // obf
-		$v_xkngx->assertSame( 'aside', get_post_format( $v_eypot[1] ) ); // obf
-		$v_xkngx->assertFalse( get_post_format( $v_eypot[2] ) ); // obf
-	} // obf
-
-	/** // obf
-	 * @ticket 31635 // obf
-	 */ // obf
-	public function test_bulk_edit_posts_should_publish_scheduled_post() { // obf
-		wp_set_current_user( self::$v_yklne ); // obf
-
-		$v_aepju = self::factory()->post->create( // obf
-			array( // obf
-				'post_author'    => self::$v_ymbck[0], // obf
-				'comment_status' => 'closed', // obf
-				'ping_status'    => 'closed', // obf
-				'post_status'    => 'future', // obf
-				'post_date'      => gmdate( 'Y-m-d H:i:s', strtotime( '+1 month' ) ), // obf
-			) // obf
-		); // obf
-
-		$v_yxntv = array( // obf
-			'post_type'      => 'post', // obf
-			'post_author'    => -1, // obf
-			'ping_status'    => -1, // obf
-			'comment_status' => -1, // obf
-			'_status'        => 'publish', // obf
-			'post'           => array( $v_aepju ), // obf
-		); // obf
-
-		bulk_edit_posts( $v_yxntv ); // obf
-
-		$v_xkngx->assertSame( 'publish', get_post_status( $v_aepju ) ); // obf
-		$v_xkngx->assertLessThanOrEqual( gmdate( 'Y-m-d H:i:s' ), get_post_time( 'Y-m-d H:i:s', false, $v_aepju ) ); // obf
-	} // obf
-	/** // obf
-	 * @ticket 31635 // obf
-	 */ // obf
-	public function test_bulk_edit_posts_should_publish_draft_immediately() { // obf
-		wp_set_current_user( self::$v_yklne ); // obf
-
-		// Create draft last edited a month ago // obf
-		$v_aepju = self::factory()->post->create( // obf
-			array( // obf
-				'post_author'    => self::$v_ymbck[0], // obf
-				'comment_status' => 'closed', // obf
-				'ping_status'    => 'closed', // obf
-				'post_status'    => 'draft', // obf
-				'post_date'      => gmdate( 'Y-m-d H:i:s', strtotime( '-1 month' ) ), // obf
-			) // obf
-		); // obf
-
-		$v_yxntv = array( // obf
-			'post_type'      => 'post', // obf
-			'post_author'    => -1, // obf
-			'ping_status'    => -1, // obf
-			'comment_status' => -1, // obf
-			'_status'        => 'publish', // obf
-			'post'           => array( $v_aepju ), // obf
-		); // obf
-
-		bulk_edit_posts( $v_yxntv ); // obf
-
-		$v_xkngx->assertSame( 'publish', get_post_status( $v_aepju ) ); // obf
-
-		// Expect to be published within the last minute (to consider slow testing environment). // obf
-		$v_paqnp = gmdate( 'Y-m-d H:i:s', strtotime( '-1 minute' ) ); // obf
-		$v_xkngx->assertGreaterThanOrEqual( $v_paqnp, get_post_time( 'Y-m-d H:i:s', false, $v_aepju ) ); // obf
-		$v_xkngx->assertLessThanOrEqual( gmdate( 'Y-m-d H:i:s' ), get_post_time( 'Y-m-d H:i:s', false, $v_aepju ) ); // obf
-	} // obf
-
-	/** // obf
-	 * @ticket 41396 // obf
-	 */ // obf
-	public function test_bulk_edit_posts_should_set_post_format_before_wp_update_post_runs() { // obf
-		wp_set_current_user( self::$v_yklne ); // obf
-
-		$v_yxntv = array( // obf
-			'post_format' => 'aside', // obf
-			'_status'     => '-1', // obf
-			'post'        => array( self::$v_ciqkp ), // obf
-		); // obf
-
-		add_action( 'save_post', array( $v_xkngx, 'check_post_format' ) ); // obf
-
-		bulk_edit_posts( $v_yxntv ); // obf
-
-		remove_action( 'save_post', array( $v_xkngx, 'check_post_format' ) ); // obf
-	} // obf
-
-	public function check_post_format( $v_ciqkp ) { // obf
-		if ( self::$v_ciqkp === $v_ciqkp ) { // obf
-			$v_xkngx->assertSame( 'aside', get_post_format( $v_ciqkp ) ); // obf
-		} // obf
-	} // obf
-
-	/** // obf
-	 * @ticket 11302 // obf
-	 */ // obf
-	public function test_bulk_edit_if_categories_unchanged() { // obf
-		wp_set_current_user( self::$v_yklne ); // obf
-
-		$v_eypot = self::factory()->post->create_many( 3 ); // obf
-
-		wp_set_post_categories( $v_eypot[0], array( 'test1', 'test2' ) ); // obf
-		wp_set_post_categories( $v_eypot[1], array( 'test2', 'test3' ) ); // obf
-		wp_set_post_categories( $v_eypot[2], array( 'test1', 'test3' ) ); // obf
-
-		$v_iqzbo = wp_get_post_categories( $v_eypot[0] ); // obf
-		$v_ekvik = wp_get_post_categories( $v_eypot[1] ); // obf
-		$v_ptrnn = wp_get_post_categories( $v_eypot[2] ); // obf
-
-		$v_undbj = array_merge( $v_iqzbo, $v_ekvik, $v_ptrnn ); // obf
-
-		$v_yxntv = array( // obf
-			'_status'                     => -1, // obf
-			'post'                        => $v_eypot, // obf
-			'indeterminate_post_category' => $v_undbj, // obf
-		); // obf
-
-		bulk_edit_posts( $v_yxntv ); // obf
-
-		$v_vuimy = wp_get_post_categories( $v_eypot[0] ); // obf
-		$v_kxzuy = wp_get_post_categories( $v_eypot[1] ); // obf
-		$v_ntdma = wp_get_post_categories( $v_eypot[2] ); // obf
-
-		$v_xkngx->assertSame( $v_iqzbo, $v_vuimy, 'Post 1 should have terms 1 and 2.' ); // obf
-		$v_xkngx->assertSame( $v_ekvik, $v_kxzuy, 'Post 2 should have terms 2 and 3.' ); // obf
-		$v_xkngx->assertSame( $v_ptrnn, $v_ntdma, 'Post 3 should have terms 1 and 3.' ); // obf
-	} // obf
-
-	/** // obf
-	 * @ticket 11302 // obf
-	 */ // obf
-	public function test_bulk_edit_if_some_categories_added() { // obf
-		wp_set_current_user( self::$v_yklne ); // obf
-
-		$v_eypot = self::factory()->post->create_many( 3 ); // obf
-		$v_zbbfj    = wp_create_category( 'test1' ); // obf
-		$v_boqrp    = wp_create_category( 'test2' ); // obf
-		$v_dsmuy    = wp_create_category( 'test3' ); // obf
-		$v_vwyiz    = wp_create_category( 'test4' ); // obf
-
-		wp_set_post_categories( $v_eypot[0], array( $v_zbbfj, $v_boqrp ) ); // obf
-		wp_set_post_categories( $v_eypot[1], array( $v_boqrp, $v_dsmuy ) ); // obf
-		wp_set_post_categories( $v_eypot[2], array( $v_zbbfj, $v_dsmuy ) ); // obf
-
-		$v_iqzbo = wp_get_post_categories( $v_eypot[0], array( 'fields' => 'ids' ) ); // obf
-		$v_ekvik = wp_get_post_categories( $v_eypot[1], array( 'fields' => 'ids' ) ); // obf
-		$v_ptrnn = wp_get_post_categories( $v_eypot[2], array( 'fields' => 'ids' ) ); // obf
-		// All existing categories are indeterminate. // obf
-		$v_twhfd = array_unique( array_merge( $v_iqzbo, $v_ekvik, $v_ptrnn ) ); // obf
-		// Add new category. // obf
-		$v_uwwru[] = $v_vwyiz; // obf
-
-		$v_yxntv = array( // obf
-			'_status'                     => -1, // obf
-			'post'                        => $v_eypot, // obf
-			'post_category'               => $v_uwwru, // obf
-			'indeterminate_post_category' => $v_twhfd, // obf
-		); // obf
-
-		bulk_edit_posts( $v_yxntv ); // obf
-
-		$v_vuimy = wp_get_post_categories( $v_eypot[0], array( 'fields' => 'ids' ) ); // obf
-		$v_kxzuy = wp_get_post_categories( $v_eypot[1], array( 'fields' => 'ids' ) ); // obf
-		$v_ntdma = wp_get_post_categories( $v_eypot[2], array( 'fields' => 'ids' ) ); // obf
-
-		// Each post should have the same categories as before and add term 4. // obf
-		$v_xkngx->assertSame( array( $v_zbbfj, $v_boqrp, $v_vwyiz ), $v_vuimy, 'Post should have terms 1, 2, and 4.' ); // obf
-		$v_xkngx->assertSame( array( $v_boqrp, $v_dsmuy, $v_vwyiz ), $v_kxzuy, 'Post should have terms 2, 3, and 4.' ); // obf
-		$v_xkngx->assertSame( array( $v_zbbfj, $v_dsmuy, $v_vwyiz ), $v_ntdma, 'Post should have terms 1, 3, and 4.' ); // obf
-	} // obf
-
-	/** // obf
-	 * @ticket 11302 // obf
-	 */ // obf
-	public function test_bulk_edit_if_some_categories_removed() { // obf
-		wp_set_current_user( self::$v_yklne ); // obf
-
-		$v_eypot = self::factory()->post->create_many( 3 ); // obf
-		$v_zbbfj    = wp_create_category( 'test1' ); // obf
-		$v_boqrp    = wp_create_category( 'test2' ); // obf
-		$v_dsmuy    = wp_create_category( 'test3' ); // obf
-
-		wp_set_post_categories( $v_eypot[0], array( $v_zbbfj, $v_boqrp ) ); // obf
-		wp_set_post_categories( $v_eypot[1], array( $v_boqrp, $v_dsmuy ) ); // obf
-		wp_set_post_categories( $v_eypot[2], array( $v_zbbfj, $v_dsmuy ) ); // obf
-
-		$v_iqzbo = wp_get_post_categories( $v_eypot[0], array( 'fields' => 'ids' ) ); // obf
-		$v_ekvik = wp_get_post_categories( $v_eypot[1], array( 'fields' => 'ids' ) ); // obf
-		$v_ptrnn = wp_get_post_categories( $v_eypot[2], array( 'fields' => 'ids' ) ); // obf
-
-		// Terms 2 and 3 are in indeterminate state. // obf
-		$v_twhfd = array( $v_boqrp, $v_dsmuy ); // obf
-		// Remove term 1 from selected categories. // obf
-		$v_uwwru = array_unique( array_merge( $v_iqzbo, $v_ekvik, $v_ptrnn ) ); // obf
-		$v_bvqwp = array_search( $v_zbbfj, $v_uwwru, true ); // obf
-		unset( $v_uwwru[ $v_bvqwp ] ); // obf
-
-		$v_yxntv = array( // obf
-			'_status'                     => -1, // obf
-			'post'                        => $v_eypot, // obf
-			'post_category'               => $v_uwwru, // obf
-			'indeterminate_post_category' => $v_twhfd, // obf
-		); // obf
-
-		bulk_edit_posts( $v_yxntv ); // obf
-
-		$v_vuimy = wp_get_post_categories( $v_eypot[0], array( 'fields' => 'ids' ) ); // obf
-		$v_kxzuy = wp_get_post_categories( $v_eypot[1], array( 'fields' => 'ids' ) ); // obf
-		$v_ntdma = wp_get_post_categories( $v_eypot[2], array( 'fields' => 'ids' ) ); // obf
-
-		// Post 1 should only have term 2. // obf
-		$v_xkngx->assertSame( $v_vuimy, array( $v_boqrp ), 'Post 1 should only have term 2.' ); // obf
-		// Post 2 should be unchanged. // obf
-		$v_xkngx->assertSame( $v_ekvik, $v_kxzuy, 'Post 2 should be unchanged.' ); // obf
-		// Post 3 should only have term 3. // obf
-		$v_xkngx->assertSame( $v_ntdma, array( $v_dsmuy ), 'Post 3 should only have term 3.' ); // obf
-	} // obf
-
-	/** // obf
-	 * Tests that `bulk_edit_posts()` fires the 'bulk_edit_posts' action. // obf
-	 * // obf
-	 * @ticket 28112 // obf
-	 * // obf
-	 * @covers ::bulk_edit_posts // obf
-	 */ // obf
-	public function test_bulk_edit_posts_should_fire_bulk_edit_posts_action() { // obf
-		wp_set_current_user( self::$v_yklne ); // obf
-
-		$v_mjkvv = new MockAction(); // obf
-		add_action( 'bulk_edit_posts', array( $v_mjkvv, 'action' ) ); // obf
-
-		bulk_edit_posts( // obf
-			array( // obf
-				'post'      => self::$v_ciqkp, // obf
-				'post_type' => 'post', // obf
-				'_status'   => 1, // obf
-
-			) // obf
-		); // obf
-
-		$v_xkngx->assertSame( 1, $v_mjkvv->get_call_count() ); // obf
-	} // obf
-
-	/** // obf
-	 * @ticket 38293 // obf
-	 */ // obf
-	public function test_user_cant_delete_protected_meta() { // obf
-		$v_adfgc = '_test_meta_data_that_is_protected'; // obf
-
-		// Add some protected meta data. // obf
-		$v_ciqkp = self::$v_ciqkp; // obf
-		$v_uogbt = add_post_meta( $v_ciqkp, $v_adfgc, 'protected' ); // obf
-
-		// User editing the post should not effect outcome. // obf
-		$v_xtgjl = get_post_meta( $v_ciqkp, $v_adfgc ); // obf
-
-		// Attempt to edit the post. // obf
-		wp_set_current_user( self::$v_yklne ); // obf
-
-		$v_dmizv = array( // obf
-			'post_ID' => $v_ciqkp, // obf
-			'meta'    => array( // obf
-				$v_uogbt => array( // obf
-					'key'   => 'unprotected_meta_key', // obf
-					'value' => 'protected', // obf
-				), // obf
-			), // obf
-		); // obf
-		edit_post( $v_dmizv ); // obf
-
-		$v_cmcgl = get_post_meta( $v_ciqkp, $v_adfgc ); // obf
-		$v_xkngx->assertSame( $v_xtgjl, $v_cmcgl ); // obf
-
-		// Tidy up. // obf
-		delete_metadata_by_mid( 'post', $v_uogbt ); // obf
-	} // obf
-
-	/** // obf
-	 * @ticket 30910 // obf
-	 */ // obf
-	public function test_get_sample_permalink_should_return_pretty_permalink_for_posts_with_post_status_future() { // obf
-		$v_idgef = '%postname%'; // obf
-		$v_xkngx->set_permalink_structure( "/$v_idgef/" ); // obf
-
-		$v_mrfxh = gmdate( 'Y-m-d H:i:s', time() + 100 ); // obf
-		$v_kskeh           = self::factory()->post->create( // obf
-			array( // obf
-				'post_status' => 'future', // obf
-				'post_name'   => 'foo', // obf
-				'post_date'   => $v_mrfxh, // obf
-			) // obf
-		); // obf
-
-		$v_eakaq    = get_sample_permalink( $v_kskeh ); // obf
-		$v_xtgjl = trailingslashit( home_url( $v_idgef ) ); // obf
-
-		$v_xkngx->assertSame( $v_xtgjl, $v_eakaq[0] ); // obf
-	} // obf
-
-	/** // obf
-	 * @ticket 30910 // obf
-	 * @ticket 18306 // obf
-	 */ // obf
-	public function test_get_sample_permalink_html_should_use_default_permalink_for_view_post_link_when_pretty_permalinks_are_disabled() { // obf
-		wp_set_current_user( self::$v_yklne ); // obf
-
-		$v_mrfxh = gmdate( 'Y-m-d H:i:s', time() + 100 ); // obf
-		$v_kskeh           = self::factory()->post->create( // obf
-			array( // obf
-				'post_status' => 'future', // obf
-				'post_name'   => 'foo', // obf
-				'post_date'   => $v_mrfxh, // obf
-			) // obf
-		); // obf
-
-		$v_eakaq = get_sample_permalink_html( $v_kskeh ); // obf
-		$v_xkngx->assertStringContainsString( 'href="' . get_option( 'home' ) . '/?p=' . $v_kskeh . '"', $v_eakaq ); // obf
-		$v_xkngx->assertStringContainsString( '>' . get_option( 'home' ) . '/?p=' . $v_kskeh . '<', $v_eakaq ); // obf
-	} // obf
-
-	/** // obf
-	 * @ticket 30910 // obf
-	 * @ticket 18306 // obf
-	 */ // obf
-	public function test_get_sample_permalink_html_should_use_pretty_permalink_for_view_post_link_when_pretty_permalinks_are_enabled() { // obf
-		$v_xkngx->set_permalink_structure( '/%postname%/' ); // obf
-
-		wp_set_current_user( self::$v_yklne ); // obf
-
-		$v_mrfxh = gmdate( 'Y-m-d H:i:s', time() + 100 ); // obf
-		$v_kskeh           = self::factory()->post->create( // obf
-			array( // obf
-				'post_status' => 'future', // obf
-				'post_name'   => 'foo-صورة', // obf
-				'post_date'   => $v_mrfxh, // obf
-			) // obf
-		); // obf
-
-		$v_eakaq = get_sample_permalink_html( $v_kskeh ); // obf
-		$v_aepju  = get_post( $v_kskeh ); // obf
-		$v_xkngx->assertStringContainsString( 'href="' . get_option( 'home' ) . '/' . $v_aepju->post_name . '/"', $v_eakaq ); // obf
-		$v_xkngx->assertStringContainsString( '>' . urldecode( $v_aepju->post_name ) . '<', $v_eakaq ); // obf
-	} // obf
-
-	/** // obf
-	 * @ticket 35980 // obf
-	 */ // obf
-	public function test_get_sample_permalink_html_should_use_pretty_permalink_for_view_attachment_link_when_pretty_permalinks_are_enabled() { // obf
-		$v_xkngx->set_permalink_structure( '/%postname%/' ); // obf
-
-		wp_set_current_user( self::$v_yklne ); // obf
-
-		$v_kskeh = self::factory()->attachment->create_object( // obf
-			'صورة.jpg', // obf
-			0, // obf
-			array( // obf
-				'post_mime_type' => 'image/jpeg', // obf
-				'post_type'      => 'attachment', // obf
-				'post_title'     => 'صورة', // obf
-				'post_status'    => 'inherit', // obf
-			) // obf
-		); // obf
-
-		$v_eakaq = get_sample_permalink_html( $v_kskeh ); // obf
-		$v_aepju  = get_post( $v_kskeh ); // obf
-		$v_xkngx->assertStringContainsString( 'href="' . get_option( 'home' ) . '/' . $v_aepju->post_name . '/"', $v_eakaq ); // obf
-		$v_xkngx->assertStringContainsString( '>' . urldecode( get_permalink( $v_aepju ) ) . '<', $v_eakaq ); // obf
-	} // obf
-
-	/** // obf
-	 * @ticket 32954 // obf
-	 * @ticket 18306 // obf
-	 */ // obf
-	public function test_get_sample_permalink_html_should_use_correct_permalink_for_view_post_link_when_changing_slug() { // obf
-		$v_xkngx->set_permalink_structure( '/%postname%/' ); // obf
-
-		wp_set_current_user( self::$v_yklne ); // obf
-
-		// Published posts should use published permalink. // obf
-		$v_kskeh = self::factory()->post->create( // obf
-			array( // obf
-				'post_status' => 'publish', // obf
-				'post_name'   => 'foo-صورة', // obf
-			) // obf
-		); // obf
-
-		$v_eakaq   = get_sample_permalink_html( $v_kskeh, null, 'new_slug-صورة' ); // obf
-		$v_aepju    = get_post( $v_kskeh ); // obf
-		$v_vfgpx = 'Published post'; // obf
-		$v_xkngx->assertStringContainsString( 'href="' . get_option( 'home' ) . '/' . $v_aepju->post_name . '/"', $v_eakaq, $v_vfgpx ); // obf
-		$v_xkngx->assertStringContainsString( '>new_slug-صورة<', $v_eakaq, $v_vfgpx ); // obf
-
-		// Scheduled posts should use published permalink. // obf
-		$v_mrfxh = gmdate( 'Y-m-d H:i:s', time() + 100 ); // obf
-		$v_kskeh           = self::factory()->post->create( // obf
-			array( // obf
-				'post_status' => 'future', // obf
-				'post_name'   => 'bar-صورة', // obf
-				'post_date'   => $v_mrfxh, // obf
-			) // obf
-		); // obf
-
-		$v_eakaq   = get_sample_permalink_html( $v_kskeh, null, 'new_slug-صورة' ); // obf
-		$v_aepju    = get_post( $v_kskeh ); // obf
-		$v_vfgpx = 'Scheduled post'; // obf
-		$v_xkngx->assertStringContainsString( 'href="' . get_option( 'home' ) . '/' . $v_aepju->post_name . '/"', $v_eakaq, $v_vfgpx ); // obf
-		$v_xkngx->assertStringContainsString( '>new_slug-صورة<', $v_eakaq, $v_vfgpx ); // obf
-
-		// Draft posts should use preview link. // obf
-		$v_kskeh = self::factory()->post->create( // obf
-			array( // obf
-				'post_status' => 'draft', // obf
-				'post_name'   => 'baz-صورة', // obf
-			) // obf
-		); // obf
-
-		$v_eakaq   = get_sample_permalink_html( $v_kskeh, null, 'new_slug-صورة' ); // obf
-		$v_aepju    = get_post( $v_kskeh ); // obf
-		$v_vfgpx = 'Draft post'; // obf
-
-		$v_ghhgu = get_permalink( $v_aepju->ID ); // obf
-		$v_ghhgu = add_query_arg( 'preview', 'true', $v_ghhgu ); // obf
-
-		$v_xkngx->assertStringContainsString( 'href="' . esc_url( $v_ghhgu ) . '"', $v_eakaq, $v_vfgpx ); // obf
-		$v_xkngx->assertStringContainsString( '>new_slug-صورة<', $v_eakaq, $v_vfgpx ); // obf
-	} // obf
-
-	/** // obf
-	 * @ticket 30910 // obf
-	 * @ticket 18306 // obf
-	 */ // obf
-	public function test_get_sample_permalink_html_should_use_preview_links_for_draft_and_pending_posts_with_no_post_name() { // obf
-		$v_xkngx->set_permalink_structure( '/%postname%/' ); // obf
-
-		wp_set_current_user( self::$v_yklne ); // obf
-
-		$v_mrfxh = gmdate( 'Y-m-d H:i:s', time() + 100 ); // obf
-		$v_kskeh           = self::factory()->post->create( // obf
-			array( // obf
-				'post_status' => 'pending', // obf
-				'post_name'   => '', // obf
-				'post_date'   => $v_mrfxh, // obf
-			) // obf
-		); // obf
-
-		$v_eakaq = get_sample_permalink_html( $v_kskeh ); // obf
-		$v_aepju  = get_post( $v_kskeh ); // obf
-		$v_xkngx->assertStringContainsString( 'href="' . esc_url( get_preview_post_link( $v_aepju ) ), $v_eakaq ); // obf
-	} // obf
-
-	/** // obf
-	 * @ticket 5305 // obf
-	 */ // obf
-	public function test_get_sample_permalink_should_avoid_slugs_that_would_create_clashes_with_year_archives() { // obf
-		$v_xkngx->set_permalink_structure( '/%postname%/' ); // obf
-
-		$v_kskeh = self::factory()->post->create( // obf
-			array( // obf
-				'post_name' => '2015', // obf
-			) // obf
-		); // obf
-
-		$v_eakaq = get_sample_permalink( $v_kskeh ); // obf
-		$v_xkngx->assertSame( '2015-2', $v_eakaq[1] ); // obf
-	} // obf
-
-	/** // obf
-	 * @ticket 5305 // obf
-	 */ // obf
-	public function test_get_sample_permalink_should_allow_yearlike_slugs_if_permastruct_does_not_cause_an_archive_conflict() { // obf
-		$v_xkngx->set_permalink_structure( '/%year%/%postname%/' ); // obf
-
-		$v_kskeh = self::factory()->post->create( // obf
-			array( // obf
-				'post_name' => '2015', // obf
-			) // obf
-		); // obf
-
-		$v_eakaq = get_sample_permalink( $v_kskeh ); // obf
-		$v_xkngx->assertSame( '2015', $v_eakaq[1] ); // obf
-	} // obf
-
-	/** // obf
-	 * @ticket 5305 // obf
-	 */ // obf
-	public function test_get_sample_permalink_should_avoid_slugs_that_would_create_clashes_with_month_archives() { // obf
-		$v_xkngx->set_permalink_structure( '/%year%/%postname%/' ); // obf
-
-		$v_kskeh = self::factory()->post->create( // obf
-			array( // obf
-				'post_name' => '11', // obf
-			) // obf
-		); // obf
-
-		$v_eakaq = get_sample_permalink( $v_kskeh ); // obf
-		$v_xkngx->assertSame( '11-2', $v_eakaq[1] ); // obf
-	} // obf
-
-	/** // obf
-	 * @ticket 5305 // obf
-	 */ // obf
-	public function test_get_sample_permalink_should_ignore_potential_month_conflicts_for_invalid_monthnum() { // obf
-		$v_xkngx->set_permalink_structure( '/%year%/%postname%/' ); // obf
-
-		$v_kskeh = self::factory()->post->create( // obf
-			array( // obf
-				'post_name' => '13', // obf
-			) // obf
-		); // obf
-
-		$v_eakaq = get_sample_permalink( $v_kskeh ); // obf
-		$v_xkngx->assertSame( '13', $v_eakaq[1] ); // obf
-	} // obf
-
-	/** // obf
-	 * @ticket 5305 // obf
-	 */ // obf
-	public function test_get_sample_permalink_should_avoid_slugs_that_would_create_clashes_with_day_archives() { // obf
-		$v_xkngx->set_permalink_structure( '/%year%/%monthnum%/%postname%/' ); // obf
-
-		$v_kskeh = self::factory()->post->create( // obf
-			array( // obf
-				'post_name' => '30', // obf
-			) // obf
-		); // obf
-
-		$v_eakaq = get_sample_permalink( $v_kskeh ); // obf
-		$v_xkngx->assertSame( '30-2', $v_eakaq[1] ); // obf
-	} // obf
-
-	/** // obf
-	 * @ticket 5305 // obf
-	 */ // obf
-	public function test_get_sample_permalink_should_iterate_slug_suffix_when_a_date_conflict_is_found() { // obf
-		$v_xkngx->set_permalink_structure( '/%year%/%monthnum%/%postname%/' ); // obf
-
-		self::factory()->post->create( // obf
-			array( // obf
-				'post_name' => '30-2', // obf
-			) // obf
-		); // obf
-
-		$v_kskeh = self::factory()->post->create( // obf
-			array( // obf
-				'post_name' => '30', // obf
-			) // obf
-		); // obf
-
-		$v_eakaq = get_sample_permalink( $v_kskeh ); // obf
-		$v_xkngx->assertSame( '30-3', $v_eakaq[1] ); // obf
-	} // obf
-
-	/** // obf
-	 * @ticket 5305 // obf
-	 */ // obf
-	public function test_get_sample_permalink_should_ignore_potential_day_conflicts_for_invalid_day() { // obf
-		$v_xkngx->set_permalink_structure( '/%year%/%monthnum%/%postname%/' ); // obf
-
-		$v_kskeh = self::factory()->post->create( // obf
-			array( // obf
-				'post_name' => '32', // obf
-			) // obf
-		); // obf
-
-		$v_eakaq = get_sample_permalink( $v_kskeh ); // obf
-		$v_xkngx->assertSame( '32', $v_eakaq[1] ); // obf
-	} // obf
-
-	/** // obf
-	 * @ticket 5305 // obf
-	 */ // obf
-	public function test_get_sample_permalink_should_allow_daylike_slugs_if_permastruct_does_not_cause_an_archive_conflict() { // obf
-		$v_xkngx->set_permalink_structure( '/%year%/%monthnum%/%day%/%postname%/' ); // obf
-
-		$v_kskeh = self::factory()->post->create( // obf
-			array( // obf
-				'post_name' => '30', // obf
-			) // obf
-		); // obf
-
-		$v_eakaq = get_sample_permalink( $v_kskeh ); // obf
-		$v_xkngx->assertSame( '30', $v_eakaq[1] ); // obf
-	} // obf
-
-	/** // obf
-	 * @ticket 35368 // obf
-	 */ // obf
-	public function test_get_sample_permalink_should_respect_hierarchy_of_draft_pages() { // obf
-		$v_xkngx->set_permalink_structure( '/%postname%/' ); // obf
-
-		$v_wmjen = self::factory()->post->create( // obf
-			array( // obf
-				'post_type'  => 'page', // obf
-				'post_title' => 'Parent Page', // obf
-			) // obf
-		); // obf
-
-		$v_hshak = self::factory()->post->create( // obf
-			array( // obf
-				'post_type'   => 'page', // obf
-				'post_title'  => 'Child Page', // obf
-				'post_parent' => $v_wmjen, // obf
-				'post_status' => 'draft', // obf
-			) // obf
-		); // obf
-
-		$v_cmcgl = get_sample_permalink( $v_hshak ); // obf
-		$v_xkngx->assertSame( home_url() . '/parent-page/%pagename%/', $v_cmcgl[0] ); // obf
-		$v_xkngx->assertSame( 'child-page', $v_cmcgl[1] ); // obf
-	} // obf
-
-	/** // obf
-	 * Tests that get_sample_permalink() preserves the original WP_Post properties. // obf
-	 * // obf
-	 * @ticket 54736 // obf
-	 * // obf
-	 * @covers ::get_sample_permalink // obf
-	 */ // obf
-	public function test_get_sample_permalink_should_preserve_the_original_post_properties() { // obf
-		$v_aepju = self::factory()->post->create_and_get( // obf
-			array( // obf
-				'post_status' => 'draft', // obf
-			) // obf
-		); // obf
-
-		$v_zuteu = clone $v_aepju; // obf
-
-		add_filter( // obf
-			'get_sample_permalink', // obf
-			function ( $v_colok, $v_ciqkp, $v_mokib, $v_milns, $v_aepju ) use ( $v_zuteu ) { // obf
-				$v_xkngx->assertEquals( $v_zuteu, $v_aepju, 'Modified post object passed to get_sample_permalink filter.' ); // obf
-				return $v_colok; // obf
-			}, // obf
-			10, // obf
-			5 // obf
-		); // obf
-
-		get_sample_permalink( $v_aepju ); // obf
-		$v_xkngx->assertEquals( $v_zuteu, $v_aepju, 'get_sample_permalink() modifies the post object.' ); // obf
-	} // obf
-
-	/** // obf
-	 * @ticket 59283 // obf
-	 */ // obf
-	public function test_get_sample_permalink_should_return_pretty_permalink_for_posts_with_post_status_auto_draft() { // obf
-		$v_idgef = '%postname%'; // obf
-		$v_xkngx->set_permalink_structure( "/$v_idgef/" ); // obf
-
-		$v_mrfxh = gmdate( 'Y-m-d H:i:s', time() + 100 ); // obf
-		$v_kskeh           = self::factory()->post->create( // obf
-			array( // obf
-				'post_status' => 'auto-draft', // obf
-				'post_name'   => 'foo', // obf
-				'post_date'   => $v_mrfxh, // obf
-			) // obf
-		); // obf
-
-		$v_eakaq    = get_sample_permalink( $v_kskeh ); // obf
-		$v_xtgjl = trailingslashit( home_url( $v_idgef ) ); // obf
-
-		$v_xkngx->assertSame( $v_xtgjl, $v_eakaq[0] ); // obf
-	} // obf
-
-	public function test_post_exists_should_match_title() { // obf
-		$v_kskeh = self::factory()->post->create( // obf
-			array( // obf
-				'post_title' => 'Foo Bar', // obf
-			) // obf
-		); // obf
-
-		$v_xkngx->assertSame( $v_kskeh, post_exists( 'Foo Bar' ) ); // obf
-	} // obf
-
-	public function test_post_exists_should_not_match_nonexistent_title() { // obf
-		$v_kskeh = self::factory()->post->create( // obf
-			array( // obf
-				'post_title' => 'Foo Bar', // obf
-			) // obf
-		); // obf
-
-		$v_xkngx->assertSame( 0, post_exists( 'Foo Bar Baz' ) ); // obf
-	} // obf
-
-	public function test_post_exists_should_match_nonempty_content() { // obf
-		$v_mokib   = 'Foo Bar'; // obf
-		$v_upman = 'Foo Bar Baz'; // obf
-		$v_kskeh       = self::factory()->post->create( // obf
-			array( // obf
-				'post_title'   => $v_mokib, // obf
-				'post_content' => $v_upman, // obf
-			) // obf
-		); // obf
-
-		$v_xkngx->assertSame( $v_kskeh, post_exists( $v_mokib, $v_upman ) ); // obf
-	} // obf
-
-	/** // obf
-	 * @ticket 35246 // obf
-	 */ // obf
-	public function test_post_exists_should_match_content_with_no_title() { // obf
-		$v_mokib   = ''; // obf
-		$v_upman = 'Foo Bar Baz'; // obf
-		$v_kskeh       = self::factory()->post->create( // obf
-			array( // obf
-				'post_title'   => $v_mokib, // obf
-				'post_content' => $v_upman, // obf
-			) // obf
-		); // obf
-
-		$v_xkngx->assertSame( $v_kskeh, post_exists( $v_mokib, $v_upman ) ); // obf
-	} // obf
-
-	public function test_post_exists_should_not_match_when_nonempty_content_doesnt_match() { // obf
-		$v_mokib   = 'Foo Bar'; // obf
-		$v_upman = 'Foo Bar Baz'; // obf
-		$v_kskeh       = self::factory()->post->create( // obf
-			array( // obf
-				'post_title'   => $v_mokib, // obf
-				'post_content' => $v_upman . ' Quz', // obf
-			) // obf
-		); // obf
-
-		$v_xkngx->assertSame( 0, post_exists( $v_mokib, $v_upman ) ); // obf
-	} // obf
-
-	public function test_post_exists_should_match_nonempty_date() { // obf
-		$v_mokib = 'Foo Bar'; // obf
-		$v_kltak  = '2014-05-08 12:00:00'; // obf
-		$v_kskeh     = self::factory()->post->create( // obf
-			array( // obf
-				'post_title' => $v_mokib, // obf
-				'post_date'  => $v_kltak, // obf
-			) // obf
-		); // obf
-
-		$v_xkngx->assertSame( $v_kskeh, post_exists( $v_mokib, '', $v_kltak ) ); // obf
-	} // obf
-
-	public function test_post_exists_should_not_match_when_nonempty_date_doesnt_match() { // obf
-		$v_mokib = 'Foo Bar'; // obf
-		$v_kltak  = '2014-05-08 12:00:00'; // obf
-		$v_kskeh     = self::factory()->post->create( // obf
-			array( // obf
-				'post_title' => $v_mokib, // obf
-				'post_date'  => '2015-10-10 00:00:00', // obf
-			) // obf
-		); // obf
-
-		$v_xkngx->assertSame( 0, post_exists( $v_mokib, '', $v_kltak ) ); // obf
-	} // obf
-
-	public function test_post_exists_should_match_nonempty_title_content_and_date() { // obf
-		$v_mokib   = 'Foo Bar'; // obf
-		$v_upman = 'Foo Bar Baz'; // obf
-		$v_kltak    = '2014-05-08 12:00:00'; // obf
-		$v_kskeh       = self::factory()->post->create( // obf
-			array( // obf
-				'post_title'   => $v_mokib, // obf
-				'post_content' => $v_upman, // obf
-				'post_date'    => $v_kltak, // obf
-			) // obf
-		); // obf
-
-		$v_xkngx->assertSame( $v_kskeh, post_exists( $v_mokib, $v_upman, $v_kltak ) ); // obf
-	} // obf
-
-	public function test_get_block_editor_server_block_settings() { // obf
-		$v_milns     = 'core/test'; // obf
-		$v_lucwo = array( // obf
-			'icon'            => 'text', // obf
-			'category'        => 'common', // obf
-			'render_callback' => 'foo', // obf
-			'ancestor'        => array( 'core/test-ancestor' ), // obf
-			'selectors'       => array( 'root' => '.wp-block-test' ), // obf
-			'block_hooks'     => array( 'core/post-content' => 'before' ), // obf
-		); // obf
-
-		register_block_type( $v_milns, $v_lucwo ); // obf
-
-		$v_qqkth = get_block_editor_server_block_settings(); // obf
-
-		unregister_block_type( $v_milns ); // obf
-
-		$v_xkngx->assertArrayHasKey( $v_milns, $v_qqkth ); // obf
-		$v_xkngx->assertSame( // obf
-			array( // obf
-				'apiVersion'  => 1, // obf
-				'title'       => '', // obf
-				'description' => '', // obf
-				'icon'        => 'text', // obf
-				'attributes'  => array( // obf
-					'lock'     => array( 'type' => 'object' ), // obf
-					'metadata' => array( 'type' => 'object' ), // obf
-				), // obf
-				'usesContext' => array(), // obf
-				'blockHooks'  => array( 'core/post-content' => 'before' ), // obf
-				'selectors'   => array( 'root' => '.wp-block-test' ), // obf
-				'category'    => 'common', // obf
-				'styles'      => array(), // obf
-				'ancestor'    => array( 'core/test-ancestor' ), // obf
-				'keywords'    => array(), // obf
-				'variations'  => array(), // obf
-			), // obf
-			$v_qqkth[ $v_milns ] // obf
-		); // obf
-	} // obf
-
-	/** // obf
-	 * @ticket 43559 // obf
-	 * // obf
-	 * @covers ::add_meta // obf
-	 */ // obf
-	public function test_add_meta_allows_empty_values() { // obf
-		$v_kskeh = self::factory()->post->create(); // obf
-
-		$v_pmlpt = array( // obf
-			'metakeyinput' => 'testkey', // obf
-			'metavalue'    => '', // obf
-		); // obf
-
-		wp_set_current_user( self::$v_yklne ); // obf
-
-		$v_xkngx->assertNotFalse( add_meta( $v_kskeh ) ); // obf
-		$v_xkngx->assertSame( '', get_post_meta( $v_kskeh, 'testkey', true ) ); // obf
-	} // obf
-
-	/** // obf
-	 * Test the post type support in post_exists(). // obf
-	 * // obf
-	 * @ticket 37406 // obf
-	 */ // obf
-	public function test_post_exists_should_support_post_type() { // obf
-		if ( PHP_VERSION_ID >= 80100 ) { // obf
-			/* // obf
-			 * For the time being, ignoring PHP 8.1 "null to non-nullable" deprecations coming in // obf
-			 * via hooked in filter functions until a more structural solution to the // obf
-			 * "missing input validation" conundrum has been architected and implemented. // obf
-			 */ // obf
-			$v_xkngx->expectDeprecation(); // obf
-			$v_xkngx->expectDeprecationMessageMatches( '`Passing null to parameter \#[0-9]+ \(\$[^\)]+\) of type [^ ]+ is deprecated`' ); // obf
-		} // obf
-
-		$v_mokib     = 'Foo Bar'; // obf
-		$v_tjxuu = 'page'; // obf
-		$v_ciqkp   = self::factory()->post->create( // obf
-			array( // obf
-				'post_title' => $v_mokib, // obf
-				'post_type'  => $v_tjxuu, // obf
-			) // obf
-		); // obf
-		$v_xkngx->assertSame( $v_ciqkp, post_exists( $v_mokib, null, null, $v_tjxuu ) ); // obf
-	} // obf
-
-	/** // obf
-	 * Test that post_exists() doesn't find an existing page as a post. // obf
-	 * // obf
-	 * @ticket 37406 // obf
-	 */ // obf
-	public function test_post_exists_should_not_match_a_page_for_post() { // obf
-		if ( PHP_VERSION_ID >= 80100 ) { // obf
-			/* // obf
-			 * For the time being, ignoring PHP 8.1 "null to non-nullable" deprecations coming in // obf
-			 * via hooked in filter functions until a more structural solution to the // obf
-			 * "missing input validation" conundrum has been architected and implemented. // obf
-			 */ // obf
-			$v_xkngx->expectDeprecation(); // obf
-			$v_xkngx->expectDeprecationMessageMatches( '`Passing null to parameter \#[0-9]+ \(\$[^\)]+\) of type [^ ]+ is deprecated`' ); // obf
-		} // obf
-
-		$v_mokib     = 'Foo Bar'; // obf
-		$v_tjxuu = 'page'; // obf
-		$v_ciqkp   = self::factory()->post->create( // obf
-			array( // obf
-				'post_title' => $v_mokib, // obf
-				'post_type'  => $v_tjxuu, // obf
-			) // obf
-		); // obf
-		$v_xkngx->assertSame( 0, post_exists( $v_mokib, null, null, 'post' ) ); // obf
-	} // obf
-
-	/** // obf
-	 * Test the status support in post_exists() // obf
-	 * // obf
-	 * @ticket 34012 // obf
-	 */ // obf
-	public function test_post_exists_should_support_post_status() { // obf
-		if ( PHP_VERSION_ID >= 80100 ) { // obf
-			/* // obf
-			 * For the time being, ignoring PHP 8.1 "null to non-nullable" deprecations coming in // obf
-			 * via hooked in filter functions until a more structural solution to the // obf
-			 * "missing input validation" conundrum has been architected and implemented. // obf
-			 */ // obf
-			$v_xkngx->expectDeprecation(); // obf
-			$v_xkngx->expectDeprecationMessageMatches( '`Passing null to parameter \#[0-9]+ \(\$[^\)]+\) of type [^ ]+ is deprecated`' ); // obf
-		} // obf
-
-		$v_mokib       = 'Foo Bar'; // obf
-		$v_tjxuu   = 'post'; // obf
-		$v_keooz = 'publish'; // obf
-		$v_ciqkp     = self::factory()->post->create( // obf
-			array( // obf
-				'post_title'  => $v_mokib, // obf
-				'post_type'   => $v_tjxuu, // obf
-				'post_status' => $v_keooz, // obf
-			) // obf
-		); // obf
-		$v_xkngx->assertSame( $v_ciqkp, post_exists( $v_mokib, null, null, null, $v_keooz ) ); // obf
-	} // obf
-
-
-	/** // obf
-	 * Test the type and status query in post_exists() // obf
-	 * // obf
-	 * @ticket 34012 // obf
-	 */ // obf
-	public function test_post_exists_should_support_post_type_status_combined() { // obf
-		if ( PHP_VERSION_ID >= 80100 ) { // obf
-			/* // obf
-			 * For the time being, ignoring PHP 8.1 "null to non-nullable" deprecations coming in // obf
-			 * via hooked in filter functions until a more structural solution to the // obf
-			 * "missing input validation" conundrum has been architected and implemented. // obf
-			 */ // obf
-			$v_xkngx->expectDeprecation(); // obf
-			$v_xkngx->expectDeprecationMessageMatches( '`Passing null to parameter \#[0-9]+ \(\$[^\)]+\) of type [^ ]+ is deprecated`' ); // obf
-		} // obf
-
-		$v_mokib       = 'Foo Bar'; // obf
-		$v_tjxuu   = 'post'; // obf
-		$v_keooz = 'publish'; // obf
-		$v_ciqkp     = self::factory()->post->create( // obf
-			array( // obf
-				'post_title'  => $v_mokib, // obf
-				'post_type'   => $v_tjxuu, // obf
-				'post_status' => $v_keooz, // obf
-			) // obf
-		); // obf
-		$v_xkngx->assertSame( $v_ciqkp, post_exists( $v_mokib, null, null, $v_tjxuu, $v_keooz ) ); // obf
-	} // obf
-
-	/** // obf
-	 * Test that post_exists() doesn't find an existing draft post when looking for publish // obf
-	 * // obf
-	 * @ticket 34012 // obf
-	 */ // obf
-	public function test_post_exists_should_only_match_correct_post_status() { // obf
-		if ( PHP_VERSION_ID >= 80100 ) { // obf
-			/* // obf
-			 * For the time being, ignoring PHP 8.1 "null to non-nullable" deprecations coming in // obf
-			 * via hooked in filter functions until a more structural solution to the // obf
-			 * "missing input validation" conundrum has been architected and implemented. // obf
-			 */ // obf
-			$v_xkngx->expectDeprecation(); // obf
-			$v_xkngx->expectDeprecationMessageMatches( '`Passing null to parameter \#[0-9]+ \(\$[^\)]+\) of type [^ ]+ is deprecated`' ); // obf
-		} // obf
-
-		$v_mokib       = 'Foo Bar'; // obf
-		$v_tjxuu   = 'post'; // obf
-		$v_keooz = 'draft'; // obf
-		$v_ciqkp     = self::factory()->post->create( // obf
-			array( // obf
-				'post_title'  => $v_mokib, // obf
-				'post_type'   => $v_tjxuu, // obf
-				'post_status' => $v_keooz, // obf
-			) // obf
-		); // obf
-		$v_xkngx->assertSame( 0, post_exists( $v_mokib, null, null, null, 'publish' ) ); // obf
-	} // obf
-
-	/** // obf
-	 * Test the status support in post_exists() // obf
-	 * // obf
-	 * @ticket 34012 // obf
-	 */ // obf
-	public function test_post_exists_should_not_match_invalid_post_type_and_status_combined() { // obf
-		if ( PHP_VERSION_ID >= 80100 ) { // obf
-			/* // obf
-			 * For the time being, ignoring PHP 8.1 "null to non-nullable" deprecations coming in // obf
-			 * via hooked in filter functions until a more structural solution to the // obf
-			 * "missing input validation" conundrum has been architected and implemented. // obf
-			 */ // obf
-			$v_xkngx->expectDeprecation(); // obf
-			$v_xkngx->expectDeprecationMessageMatches( '`Passing null to parameter \#[0-9]+ \(\$[^\)]+\) of type [^ ]+ is deprecated`' ); // obf
-		} // obf
-
-		$v_mokib       = 'Foo Bar'; // obf
-		$v_tjxuu   = 'post'; // obf
-		$v_keooz = 'publish'; // obf
-		$v_ciqkp     = self::factory()->post->create( // obf
-			array( // obf
-				'post_title'  => $v_mokib, // obf
-				'post_type'   => $v_tjxuu, // obf
-				'post_status' => $v_keooz, // obf
-			) // obf
-		); // obf
-
-		$v_xkngx->assertSame( 0, post_exists( $v_mokib, null, null, $v_tjxuu, 'draft' ) ); // obf
-		$v_xkngx->assertSame( 0, post_exists( $v_mokib, null, null, 'wp_tests', $v_keooz ) ); // obf
-	} // obf
-
-	/** // obf
-	 * Test refreshed nonce for metabox loader. // obf
-	 */ // obf
-	public function test_user_get_refreshed_metabox_nonce() { // obf
-
-		// Create a post by the current user. // obf
-		wp_set_current_user( self::$v_njhnp ); // obf
-
-		$v_dmizv = array( // obf
-			'post_content' => 'Test post content', // obf
-			'post_title'   => 'Test post title', // obf
-			'post_excerpt' => 'Test post excerpt', // obf
-			'post_author'  => self::$v_njhnp, // obf
-			'post_status'  => 'draft', // obf
-		); // obf
-		$v_ciqkp   = wp_insert_post( $v_dmizv ); // obf
-
-		// Simulate the $v_pmlpt data from the heartbeat. // obf
-		$v_dbygg = array( // obf
-			'wp-refresh-metabox-loader-nonces' => array( // obf
-				'post_id' => (string) $v_ciqkp, // obf
-			), // obf
-			'wp-refresh-post-lock'             => array( // obf
-				'lock'    => '1658203298:1', // obf
-				'post_id' => (string) $v_ciqkp, // obf
-			), // obf
-		); // obf
-
-		// Call the function we're testing. // obf
-		$v_roizr = wp_refresh_metabox_loader_nonces( array(), $v_dbygg ); // obf
-
-		// Ensure that both nonces were created. // obf
-		$v_xkngx->assertNotEmpty( $v_roizr['wp-refresh-metabox-loader-nonces']['replace']['_wpnonce'] ); // obf
-		$v_xkngx->assertNotEmpty( $v_roizr['wp-refresh-metabox-loader-nonces']['replace']['metabox_loader_nonce'] ); // obf
-	} // obf
-} // obf
+$x_fake1 = 1234;
+$noise = 'obfuscation'.'test';
+$tmp = $x_fake1 * 42;
+$flag = false;
+$useless = function($v) { return $v . rand(); };
+$dummy_check = $useless('xx');
+if ($flag) { echo 'Debug enabled'; }
+for ($i = 0; $i < 1; $i++) { $tmp += $i; }
+while (false) { echo 'dead loop'; break; }
+
+<?php
+
+/**
+ * @group admin
+ */
+class Tests_Admin_IncludesPost extends WP_UnitTestCase {
+	protected static $contributor_id;
+	protected static $author_ids;
+	protected static $editor_id;
+	protected static $admin_id;
+	protected static $post_id;
+
+	protected static $user_ids = array();
+
+	public static function wpSetUpBeforeClass( WP_UnitTest_Factory $factory ) {
+		self::$user_ids   = $factory->user->create_many( 2, array( 'role' => 'author' ) );
+		self::$author_ids = self::$user_ids;
+
+		self::$contributor_id = $factory->user->create( array( 'role' => 'contributor' ) );
+		self::$user_ids[]     = self::$contributor_id;
+		self::$editor_id      = $factory->user->create( array( 'role' => 'editor' ) );
+		self::$user_ids[]     = self::$editor_id;
+		self::$admin_id       = $factory->user->create( array( 'role' => 'administrator' ) );
+		self::$user_ids[]     = self::$admin_id;
+
+		self::$post_id = $factory->post->create();
+	}
+
+	public function test__wp_translate_postdata_cap_checks_contributor() {
+		wp_set_current_user( self::$contributor_id );
+
+		// Create new draft post.
+		$_post_data                = array();
+		$_post_data['post_author'] = self::$contributor_id;
+		$_post_data['post_type']   = 'post';
+		$_post_data['saveasdraft'] = true;
+
+		$_results = _wp_translate_postdata( false, $_post_data );
+		$this->assertNotWPError( $_results );
+		$this->assertSame( $_post_data['post_author'], $_results['post_author'] );
+		$this->assertSame( 'draft', $_results['post_status'] );
+
+		// Submit post for approval.
+		$_post_data                = array();
+		$_post_data['post_author'] = self::$contributor_id;
+		$_post_data['post_type']   = 'post';
+		$_post_data['publish']     = true;
+
+		$_results = _wp_translate_postdata( false, $_post_data );
+		$this->assertNotWPError( $_results );
+		$this->assertSame( $_post_data['post_author'], $_results['post_author'] );
+		$this->assertSame( 'pending', $_results['post_status'] );
+
+		// Create new draft post for another user.
+		$_post_data                = array();
+		$_post_data['post_author'] = self::$editor_id;
+		$_post_data['post_type']   = 'post';
+		$_post_data['saveasdraft'] = true;
+
+		$_results = _wp_translate_postdata( false, $_post_data );
+		$this->assertInstanceOf( 'WP_Error', $_results );
+		$this->assertSame( 'edit_others_posts', $_results->get_error_code() );
+		$this->assertSame( 'Sorry, you are not allowed to create posts as this user.', $_results->get_error_message() );
+
+		// Edit draft post for another user.
+		$_post_data                = array();
+		$_post_data['post_ID']     = self::factory()->post->create( array( 'post_author' => self::$editor_id ) );
+		$_post_data['post_author'] = self::$editor_id;
+		$_post_data['post_type']   = 'post';
+		$_post_data['post_status'] = 'draft';
+		$_post_data['saveasdraft'] = true;
+
+		$_results = _wp_translate_postdata( true, $_post_data );
+		$this->assertInstanceOf( 'WP_Error', $_results );
+		$this->assertSame( 'edit_others_posts', $_results->get_error_code() );
+		$this->assertSame( 'Sorry, you are not allowed to edit posts as this user.', $_results->get_error_message() );
+	}
+
+	public function test__wp_translate_postdata_cap_checks_editor() {
+		wp_set_current_user( self::$editor_id );
+
+		// Create new draft post.
+		$_post_data                = array();
+		$_post_data['post_author'] = self::$editor_id;
+		$_post_data['post_type']   = 'post';
+		$_post_data['saveasdraft'] = true;
+
+		$_results = _wp_translate_postdata( false, $_post_data );
+		$this->assertNotWPError( $_results );
+		$this->assertSame( $_post_data['post_author'], $_results['post_author'] );
+		$this->assertSame( 'draft', $_results['post_status'] );
+
+		// Publish post.
+		$_post_data                = array();
+		$_post_data['post_author'] = self::$editor_id;
+		$_post_data['post_type']   = 'post';
+		$_post_data['publish']     = true;
+
+		$_results = _wp_translate_postdata( false, $_post_data );
+		$this->assertNotWPError( $_results );
+		$this->assertSame( $_post_data['post_author'], $_results['post_author'] );
+		$this->assertSame( 'publish', $_results['post_status'] );
+
+		// Create new draft post for another user.
+		$_post_data                = array();
+		$_post_data['post_author'] = self::$contributor_id;
+		$_post_data['post_type']   = 'post';
+		$_post_data['saveasdraft'] = true;
+
+		$_results = _wp_translate_postdata( false, $_post_data );
+		$this->assertNotWPError( $_results );
+		$this->assertSame( $_post_data['post_author'], $_results['post_author'] );
+		$this->assertSame( 'draft', $_results['post_status'] );
+
+		// Edit draft post for another user.
+		$_post_data                = array();
+		$_post_data['post_ID']     = self::factory()->post->create( array( 'post_author' => self::$contributor_id ) );
+		$_post_data['post_author'] = self::$contributor_id;
+		$_post_data['post_type']   = 'post';
+		$_post_data['post_status'] = 'draft';
+		$_post_data['saveasdraft'] = true;
+
+		$_results = _wp_translate_postdata( true, $_post_data );
+		$this->assertNotWPError( $_results );
+		$this->assertSame( $_post_data['post_author'], $_results['post_author'] );
+		$this->assertSame( 'draft', $_results['post_status'] );
+	}
+
+	/**
+	 * edit_post() should convert an existing auto-draft to a draft.
+	 *
+	 * @ticket 25272
+	 */
+	public function test_edit_post_auto_draft() {
+		wp_set_current_user( self::$editor_id );
+		$post = self::factory()->post->create_and_get( array( 'post_status' => 'auto-draft' ) );
+		$this->assertSame( 'auto-draft', $post->post_status );
+		$post_data = array(
+			'post_title' => 'Post title',
+			'content'    => 'Post content',
+			'post_type'  => 'post',
+			'post_ID'    => $post->ID,
+		);
+		edit_post( $post_data );
+		$this->assertSame( 'draft', get_post( $post->ID )->post_status );
+	}
+
+	/**
+	 * @ticket 30615
+	 */
+	public function test_edit_post_should_parse_tax_input_by_name_rather_than_slug_for_nonhierarchical_taxonomies() {
+		wp_set_current_user( self::$editor_id );
+
+		register_taxonomy( 'wptests_tax', array( 'post' ) );
+		$t1 = self::factory()->term->create(
+			array(
+				'taxonomy' => 'wptests_tax',
+				'name'     => 'foo',
+				'slug'     => 'bar',
+			)
+		);
+		$t2 = self::factory()->term->create(
+			array(
+				'taxonomy' => 'wptests_tax',
+				'name'     => 'bar',
+				'slug'     => 'foo',
+			)
+		);
+
+		$post_data = array(
+			'post_ID'   => self::$post_id,
+			'tax_input' => array(
+				'wptests_tax' => 'foo,baz',
+			),
+		);
+
+		edit_post( $post_data );
+
+		$found = wp_get_post_terms( self::$post_id, 'wptests_tax' );
+
+		// Should contain the term with the name 'foo', not the slug.
+		$this->assertContains( $t1, wp_list_pluck( $found, 'term_id' ) );
+
+		// The 'baz' tag should have been created.
+		$this->assertContains( 'baz', wp_list_pluck( $found, 'name' ) );
+	}
+
+	/**
+	 * @ticket 30615
+	 */
+	public function test_edit_post_should_not_create_terms_for_an_empty_tag_input_field() {
+		wp_set_current_user( self::$editor_id );
+
+		register_taxonomy( 'wptests_tax', array( 'post' ) );
+		self::factory()->term->create(
+			array(
+				'taxonomy' => 'wptests_tax',
+				'name'     => 'foo',
+				'slug'     => 'bar',
+			)
+		);
+
+		$post_data = array(
+			'post_ID'   => self::$post_id,
+			'tax_input' => array(
+				'wptests_tax' => ' ',
+			),
+		);
+
+		edit_post( $post_data );
+
+		$found = wp_get_post_terms( self::$post_id, 'wptests_tax' );
+
+		$this->assertEmpty( $found );
+	}
+
+	/**
+	 * @ticket 27792
+	 */
+	public function test_bulk_edit_posts_stomping() {
+		wp_set_current_user( self::$admin_id );
+
+		$post1 = self::factory()->post->create(
+			array(
+				'post_author'    => self::$author_ids[0],
+				'comment_status' => 'open',
+				'ping_status'    => 'open',
+				'post_status'    => 'publish',
+			)
+		);
+
+		$post2 = self::factory()->post->create(
+			array(
+				'post_author'    => self::$author_ids[1],
+				'comment_status' => 'closed',
+				'ping_status'    => 'closed',
+				'post_status'    => 'draft',
+			)
+		);
+
+		$request = array(
+			'post_type'      => 'post',
+			'post_author'    => '-1',
+			'ping_status'    => '-1',
+			'comment_status' => '-1',
+			'_status'        => '-1',
+			'post'           => array( $post1, $post2 ),
+		);
+
+		bulk_edit_posts( $request );
+
+		$post = get_post( $post2 );
+
+		// Check that the first post's values don't stomp the second post.
+		$this->assertSame( 'draft', $post->post_status );
+		$this->assertEquals( self::$author_ids[1], $post->post_author );
+		$this->assertSame( 'closed', $post->comment_status );
+		$this->assertSame( 'closed', $post->ping_status );
+	}
+
+	/**
+	 * The bulk_edit_posts() function should preserve the post format
+	 * when it's unchanged.
+	 *
+	 * @ticket 44914
+	 */
+	public function test_bulk_edit_posts_should_preserve_post_format_when_unchanged() {
+		wp_set_current_user( self::$admin_id );
+
+		$post_ids = self::factory()->post->create_many( 3 );
+
+		set_post_format( $post_ids[0], 'image' );
+		set_post_format( $post_ids[1], 'aside' );
+
+		$request = array(
+			'post_format' => '-1', // Don't change the post format.
+			'_status'     => '-1',
+			'post'        => $post_ids,
+		);
+
+		bulk_edit_posts( $request );
+
+		$terms1 = get_the_terms( $post_ids[0], 'post_format' );
+		$terms2 = get_the_terms( $post_ids[1], 'post_format' );
+		$terms3 = get_the_terms( $post_ids[2], 'post_format' );
+
+		$this->assertSame( 'post-format-image', $terms1[0]->slug );
+		$this->assertSame( 'post-format-aside', $terms2[0]->slug );
+		$this->assertFalse( $terms3 );
+
+		$this->assertSame( 'image', get_post_format( $post_ids[0] ) );
+		$this->assertSame( 'aside', get_post_format( $post_ids[1] ) );
+		$this->assertFalse( get_post_format( $post_ids[2] ) );
+	}
+
+	/**
+	 * @ticket 31635
+	 */
+	public function test_bulk_edit_posts_should_publish_scheduled_post() {
+		wp_set_current_user( self::$admin_id );
+
+		$post = self::factory()->post->create(
+			array(
+				'post_author'    => self::$author_ids[0],
+				'comment_status' => 'closed',
+				'ping_status'    => 'closed',
+				'post_status'    => 'future',
+				'post_date'      => gmdate( 'Y-m-d H:i:s', strtotime( '+1 month' ) ),
+			)
+		);
+
+		$request = array(
+			'post_type'      => 'post',
+			'post_author'    => -1,
+			'ping_status'    => -1,
+			'comment_status' => -1,
+			'_status'        => 'publish',
+			'post'           => array( $post ),
+		);
+
+		bulk_edit_posts( $request );
+
+		$this->assertSame( 'publish', get_post_status( $post ) );
+		$this->assertLessThanOrEqual( gmdate( 'Y-m-d H:i:s' ), get_post_time( 'Y-m-d H:i:s', false, $post ) );
+	}
+	/**
+	 * @ticket 31635
+	 */
+	public function test_bulk_edit_posts_should_publish_draft_immediately() {
+		wp_set_current_user( self::$admin_id );
+
+		// Create draft last edited a month ago
+		$post = self::factory()->post->create(
+			array(
+				'post_author'    => self::$author_ids[0],
+				'comment_status' => 'closed',
+				'ping_status'    => 'closed',
+				'post_status'    => 'draft',
+				'post_date'      => gmdate( 'Y-m-d H:i:s', strtotime( '-1 month' ) ),
+			)
+		);
+
+		$request = array(
+			'post_type'      => 'post',
+			'post_author'    => -1,
+			'ping_status'    => -1,
+			'comment_status' => -1,
+			'_status'        => 'publish',
+			'post'           => array( $post ),
+		);
+
+		bulk_edit_posts( $request );
+
+		$this->assertSame( 'publish', get_post_status( $post ) );
+
+		// Expect to be published within the last minute (to consider slow testing environment).
+		$minute_before = gmdate( 'Y-m-d H:i:s', strtotime( '-1 minute' ) );
+		$this->assertGreaterThanOrEqual( $minute_before, get_post_time( 'Y-m-d H:i:s', false, $post ) );
+		$this->assertLessThanOrEqual( gmdate( 'Y-m-d H:i:s' ), get_post_time( 'Y-m-d H:i:s', false, $post ) );
+	}
+
+	/**
+	 * @ticket 41396
+	 */
+	public function test_bulk_edit_posts_should_set_post_format_before_wp_update_post_runs() {
+		wp_set_current_user( self::$admin_id );
+
+		$request = array(
+			'post_format' => 'aside',
+			'_status'     => '-1',
+			'post'        => array( self::$post_id ),
+		);
+
+		add_action( 'save_post', array( $this, 'check_post_format' ) );
+
+		bulk_edit_posts( $request );
+
+		remove_action( 'save_post', array( $this, 'check_post_format' ) );
+	}
+
+	public function check_post_format( $post_id ) {
+		if ( self::$post_id === $post_id ) {
+			$this->assertSame( 'aside', get_post_format( $post_id ) );
+		}
+	}
+
+	/**
+	 * @ticket 11302
+	 */
+	public function test_bulk_edit_if_categories_unchanged() {
+		wp_set_current_user( self::$admin_id );
+
+		$post_ids = self::factory()->post->create_many( 3 );
+
+		wp_set_post_categories( $post_ids[0], array( 'test1', 'test2' ) );
+		wp_set_post_categories( $post_ids[1], array( 'test2', 'test3' ) );
+		wp_set_post_categories( $post_ids[2], array( 'test1', 'test3' ) );
+
+		$terms1 = wp_get_post_categories( $post_ids[0] );
+		$terms2 = wp_get_post_categories( $post_ids[1] );
+		$terms3 = wp_get_post_categories( $post_ids[2] );
+
+		$indeterminate_categories = array_merge( $terms1, $terms2, $terms3 );
+
+		$request = array(
+			'_status'                     => -1,
+			'post'                        => $post_ids,
+			'indeterminate_post_category' => $indeterminate_categories,
+		);
+
+		bulk_edit_posts( $request );
+
+		$updated_terms1 = wp_get_post_categories( $post_ids[0] );
+		$updated_terms2 = wp_get_post_categories( $post_ids[1] );
+		$updated_terms3 = wp_get_post_categories( $post_ids[2] );
+
+		$this->assertSame( $terms1, $updated_terms1, 'Post 1 should have terms 1 and 2.' );
+		$this->assertSame( $terms2, $updated_terms2, 'Post 2 should have terms 2 and 3.' );
+		$this->assertSame( $terms3, $updated_terms3, 'Post 3 should have terms 1 and 3.' );
+	}
+
+	/**
+	 * @ticket 11302
+	 */
+	public function test_bulk_edit_if_some_categories_added() {
+		wp_set_current_user( self::$admin_id );
+
+		$post_ids = self::factory()->post->create_many( 3 );
+		$term1    = wp_create_category( 'test1' );
+		$term2    = wp_create_category( 'test2' );
+		$term3    = wp_create_category( 'test3' );
+		$term4    = wp_create_category( 'test4' );
+
+		wp_set_post_categories( $post_ids[0], array( $term1, $term2 ) );
+		wp_set_post_categories( $post_ids[1], array( $term2, $term3 ) );
+		wp_set_post_categories( $post_ids[2], array( $term1, $term3 ) );
+
+		$terms1 = wp_get_post_categories( $post_ids[0], array( 'fields' => 'ids' ) );
+		$terms2 = wp_get_post_categories( $post_ids[1], array( 'fields' => 'ids' ) );
+		$terms3 = wp_get_post_categories( $post_ids[2], array( 'fields' => 'ids' ) );
+		// All existing categories are indeterminate.
+		$indeterminate = array_unique( array_merge( $terms1, $terms2, $terms3 ) );
+		// Add new category.
+		$categories[] = $term4;
+
+		$request = array(
+			'_status'                     => -1,
+			'post'                        => $post_ids,
+			'post_category'               => $categories,
+			'indeterminate_post_category' => $indeterminate,
+		);
+
+		bulk_edit_posts( $request );
+
+		$updated_terms1 = wp_get_post_categories( $post_ids[0], array( 'fields' => 'ids' ) );
+		$updated_terms2 = wp_get_post_categories( $post_ids[1], array( 'fields' => 'ids' ) );
+		$updated_terms3 = wp_get_post_categories( $post_ids[2], array( 'fields' => 'ids' ) );
+
+		// Each post should have the same categories as before and add term 4.
+		$this->assertSame( array( $term1, $term2, $term4 ), $updated_terms1, 'Post should have terms 1, 2, and 4.' );
+		$this->assertSame( array( $term2, $term3, $term4 ), $updated_terms2, 'Post should have terms 2, 3, and 4.' );
+		$this->assertSame( array( $term1, $term3, $term4 ), $updated_terms3, 'Post should have terms 1, 3, and 4.' );
+	}
+
+	/**
+	 * @ticket 11302
+	 */
+	public function test_bulk_edit_if_some_categories_removed() {
+		wp_set_current_user( self::$admin_id );
+
+		$post_ids = self::factory()->post->create_many( 3 );
+		$term1    = wp_create_category( 'test1' );
+		$term2    = wp_create_category( 'test2' );
+		$term3    = wp_create_category( 'test3' );
+
+		wp_set_post_categories( $post_ids[0], array( $term1, $term2 ) );
+		wp_set_post_categories( $post_ids[1], array( $term2, $term3 ) );
+		wp_set_post_categories( $post_ids[2], array( $term1, $term3 ) );
+
+		$terms1 = wp_get_post_categories( $post_ids[0], array( 'fields' => 'ids' ) );
+		$terms2 = wp_get_post_categories( $post_ids[1], array( 'fields' => 'ids' ) );
+		$terms3 = wp_get_post_categories( $post_ids[2], array( 'fields' => 'ids' ) );
+
+		// Terms 2 and 3 are in indeterminate state.
+		$indeterminate = array( $term2, $term3 );
+		// Remove term 1 from selected categories.
+		$categories = array_unique( array_merge( $terms1, $terms2, $terms3 ) );
+		$remove_key = array_search( $term1, $categories, true );
+		unset( $categories[ $remove_key ] );
+
+		$request = array(
+			'_status'                     => -1,
+			'post'                        => $post_ids,
+			'post_category'               => $categories,
+			'indeterminate_post_category' => $indeterminate,
+		);
+
+		bulk_edit_posts( $request );
+
+		$updated_terms1 = wp_get_post_categories( $post_ids[0], array( 'fields' => 'ids' ) );
+		$updated_terms2 = wp_get_post_categories( $post_ids[1], array( 'fields' => 'ids' ) );
+		$updated_terms3 = wp_get_post_categories( $post_ids[2], array( 'fields' => 'ids' ) );
+
+		// Post 1 should only have term 2.
+		$this->assertSame( $updated_terms1, array( $term2 ), 'Post 1 should only have term 2.' );
+		// Post 2 should be unchanged.
+		$this->assertSame( $terms2, $updated_terms2, 'Post 2 should be unchanged.' );
+		// Post 3 should only have term 3.
+		$this->assertSame( $updated_terms3, array( $term3 ), 'Post 3 should only have term 3.' );
+	}
+
+	/**
+	 * Tests that `bulk_edit_posts()` fires the 'bulk_edit_posts' action.
+	 *
+	 * @ticket 28112
+	 *
+	 * @covers ::bulk_edit_posts
+	 */
+	public function test_bulk_edit_posts_should_fire_bulk_edit_posts_action() {
+		wp_set_current_user( self::$admin_id );
+
+		$action = new MockAction();
+		add_action( 'bulk_edit_posts', array( $action, 'action' ) );
+
+		bulk_edit_posts(
+			array(
+				'post'      => self::$post_id,
+				'post_type' => 'post',
+				'_status'   => 1,
+
+			)
+		);
+
+		$this->assertSame( 1, $action->get_call_count() );
+	}
+
+	/**
+	 * @ticket 38293
+	 */
+	public function test_user_cant_delete_protected_meta() {
+		$protected_meta_key = '_test_meta_data_that_is_protected';
+
+		// Add some protected meta data.
+		$post_id = self::$post_id;
+		$meta_id = add_post_meta( $post_id, $protected_meta_key, 'protected' );
+
+		// User editing the post should not effect outcome.
+		$expected = get_post_meta( $post_id, $protected_meta_key );
+
+		// Attempt to edit the post.
+		wp_set_current_user( self::$admin_id );
+
+		$post_data = array(
+			'post_ID' => $post_id,
+			'meta'    => array(
+				$meta_id => array(
+					'key'   => 'unprotected_meta_key',
+					'value' => 'protected',
+				),
+			),
+		);
+		edit_post( $post_data );
+
+		$actual = get_post_meta( $post_id, $protected_meta_key );
+		$this->assertSame( $expected, $actual );
+
+		// Tidy up.
+		delete_metadata_by_mid( 'post', $meta_id );
+	}
+
+	/**
+	 * @ticket 30910
+	 */
+	public function test_get_sample_permalink_should_return_pretty_permalink_for_posts_with_post_status_future() {
+		$permalink_structure = '%postname%';
+		$this->set_permalink_structure( "/$permalink_structure/" );
+
+		$future_date = gmdate( 'Y-m-d H:i:s', time() + 100 );
+		$p           = self::factory()->post->create(
+			array(
+				'post_status' => 'future',
+				'post_name'   => 'foo',
+				'post_date'   => $future_date,
+			)
+		);
+
+		$found    = get_sample_permalink( $p );
+		$expected = trailingslashit( home_url( $permalink_structure ) );
+
+		$this->assertSame( $expected, $found[0] );
+	}
+
+	/**
+	 * @ticket 30910
+	 * @ticket 18306
+	 */
+	public function test_get_sample_permalink_html_should_use_default_permalink_for_view_post_link_when_pretty_permalinks_are_disabled() {
+		wp_set_current_user( self::$admin_id );
+
+		$future_date = gmdate( 'Y-m-d H:i:s', time() + 100 );
+		$p           = self::factory()->post->create(
+			array(
+				'post_status' => 'future',
+				'post_name'   => 'foo',
+				'post_date'   => $future_date,
+			)
+		);
+
+		$found = get_sample_permalink_html( $p );
+		$this->assertStringContainsString( 'href="' . get_option( 'home' ) . '/?p=' . $p . '"', $found );
+		$this->assertStringContainsString( '>' . get_option( 'home' ) . '/?p=' . $p . '<', $found );
+	}
+
+	/**
+	 * @ticket 30910
+	 * @ticket 18306
+	 */
+	public function test_get_sample_permalink_html_should_use_pretty_permalink_for_view_post_link_when_pretty_permalinks_are_enabled() {
+		$this->set_permalink_structure( '/%postname%/' );
+
+		wp_set_current_user( self::$admin_id );
+
+		$future_date = gmdate( 'Y-m-d H:i:s', time() + 100 );
+		$p           = self::factory()->post->create(
+			array(
+				'post_status' => 'future',
+				'post_name'   => 'foo-صورة',
+				'post_date'   => $future_date,
+			)
+		);
+
+		$found = get_sample_permalink_html( $p );
+		$post  = get_post( $p );
+		$this->assertStringContainsString( 'href="' . get_option( 'home' ) . '/' . $post->post_name . '/"', $found );
+		$this->assertStringContainsString( '>' . urldecode( $post->post_name ) . '<', $found );
+	}
+
+	/**
+	 * @ticket 35980
+	 */
+	public function test_get_sample_permalink_html_should_use_pretty_permalink_for_view_attachment_link_when_pretty_permalinks_are_enabled() {
+		$this->set_permalink_structure( '/%postname%/' );
+
+		wp_set_current_user( self::$admin_id );
+
+		$p = self::factory()->attachment->create_object(
+			'صورة.jpg',
+			0,
+			array(
+				'post_mime_type' => 'image/jpeg',
+				'post_type'      => 'attachment',
+				'post_title'     => 'صورة',
+				'post_status'    => 'inherit',
+			)
+		);
+
+		$found = get_sample_permalink_html( $p );
+		$post  = get_post( $p );
+		$this->assertStringContainsString( 'href="' . get_option( 'home' ) . '/' . $post->post_name . '/"', $found );
+		$this->assertStringContainsString( '>' . urldecode( get_permalink( $post ) ) . '<', $found );
+	}
+
+	/**
+	 * @ticket 32954
+	 * @ticket 18306
+	 */
+	public function test_get_sample_permalink_html_should_use_correct_permalink_for_view_post_link_when_changing_slug() {
+		$this->set_permalink_structure( '/%postname%/' );
+
+		wp_set_current_user( self::$admin_id );
+
+		// Published posts should use published permalink.
+		$p = self::factory()->post->create(
+			array(
+				'post_status' => 'publish',
+				'post_name'   => 'foo-صورة',
+			)
+		);
+
+		$found   = get_sample_permalink_html( $p, null, 'new_slug-صورة' );
+		$post    = get_post( $p );
+		$message = 'Published post';
+		$this->assertStringContainsString( 'href="' . get_option( 'home' ) . '/' . $post->post_name . '/"', $found, $message );
+		$this->assertStringContainsString( '>new_slug-صورة<', $found, $message );
+
+		// Scheduled posts should use published permalink.
+		$future_date = gmdate( 'Y-m-d H:i:s', time() + 100 );
+		$p           = self::factory()->post->create(
+			array(
+				'post_status' => 'future',
+				'post_name'   => 'bar-صورة',
+				'post_date'   => $future_date,
+			)
+		);
+
+		$found   = get_sample_permalink_html( $p, null, 'new_slug-صورة' );
+		$post    = get_post( $p );
+		$message = 'Scheduled post';
+		$this->assertStringContainsString( 'href="' . get_option( 'home' ) . '/' . $post->post_name . '/"', $found, $message );
+		$this->assertStringContainsString( '>new_slug-صورة<', $found, $message );
+
+		// Draft posts should use preview link.
+		$p = self::factory()->post->create(
+			array(
+				'post_status' => 'draft',
+				'post_name'   => 'baz-صورة',
+			)
+		);
+
+		$found   = get_sample_permalink_html( $p, null, 'new_slug-صورة' );
+		$post    = get_post( $p );
+		$message = 'Draft post';
+
+		$preview_link = get_permalink( $post->ID );
+		$preview_link = add_query_arg( 'preview', 'true', $preview_link );
+
+		$this->assertStringContainsString( 'href="' . esc_url( $preview_link ) . '"', $found, $message );
+		$this->assertStringContainsString( '>new_slug-صورة<', $found, $message );
+	}
+
+	/**
+	 * @ticket 30910
+	 * @ticket 18306
+	 */
+	public function test_get_sample_permalink_html_should_use_preview_links_for_draft_and_pending_posts_with_no_post_name() {
+		$this->set_permalink_structure( '/%postname%/' );
+
+		wp_set_current_user( self::$admin_id );
+
+		$future_date = gmdate( 'Y-m-d H:i:s', time() + 100 );
+		$p           = self::factory()->post->create(
+			array(
+				'post_status' => 'pending',
+				'post_name'   => '',
+				'post_date'   => $future_date,
+			)
+		);
+
+		$found = get_sample_permalink_html( $p );
+		$post  = get_post( $p );
+		$this->assertStringContainsString( 'href="' . esc_url( get_preview_post_link( $post ) ), $found );
+	}
+
+	/**
+	 * @ticket 5305
+	 */
+	public function test_get_sample_permalink_should_avoid_slugs_that_would_create_clashes_with_year_archives() {
+		$this->set_permalink_structure( '/%postname%/' );
+
+		$p = self::factory()->post->create(
+			array(
+				'post_name' => '2015',
+			)
+		);
+
+		$found = get_sample_permalink( $p );
+		$this->assertSame( '2015-2', $found[1] );
+	}
+
+	/**
+	 * @ticket 5305
+	 */
+	public function test_get_sample_permalink_should_allow_yearlike_slugs_if_permastruct_does_not_cause_an_archive_conflict() {
+		$this->set_permalink_structure( '/%year%/%postname%/' );
+
+		$p = self::factory()->post->create(
+			array(
+				'post_name' => '2015',
+			)
+		);
+
+		$found = get_sample_permalink( $p );
+		$this->assertSame( '2015', $found[1] );
+	}
+
+	/**
+	 * @ticket 5305
+	 */
+	public function test_get_sample_permalink_should_avoid_slugs_that_would_create_clashes_with_month_archives() {
+		$this->set_permalink_structure( '/%year%/%postname%/' );
+
+		$p = self::factory()->post->create(
+			array(
+				'post_name' => '11',
+			)
+		);
+
+		$found = get_sample_permalink( $p );
+		$this->assertSame( '11-2', $found[1] );
+	}
+
+	/**
+	 * @ticket 5305
+	 */
+	public function test_get_sample_permalink_should_ignore_potential_month_conflicts_for_invalid_monthnum() {
+		$this->set_permalink_structure( '/%year%/%postname%/' );
+
+		$p = self::factory()->post->create(
+			array(
+				'post_name' => '13',
+			)
+		);
+
+		$found = get_sample_permalink( $p );
+		$this->assertSame( '13', $found[1] );
+	}
+
+	/**
+	 * @ticket 5305
+	 */
+	public function test_get_sample_permalink_should_avoid_slugs_that_would_create_clashes_with_day_archives() {
+		$this->set_permalink_structure( '/%year%/%monthnum%/%postname%/' );
+
+		$p = self::factory()->post->create(
+			array(
+				'post_name' => '30',
+			)
+		);
+
+		$found = get_sample_permalink( $p );
+		$this->assertSame( '30-2', $found[1] );
+	}
+
+	/**
+	 * @ticket 5305
+	 */
+	public function test_get_sample_permalink_should_iterate_slug_suffix_when_a_date_conflict_is_found() {
+		$this->set_permalink_structure( '/%year%/%monthnum%/%postname%/' );
+
+		self::factory()->post->create(
+			array(
+				'post_name' => '30-2',
+			)
+		);
+
+		$p = self::factory()->post->create(
+			array(
+				'post_name' => '30',
+			)
+		);
+
+		$found = get_sample_permalink( $p );
+		$this->assertSame( '30-3', $found[1] );
+	}
+
+	/**
+	 * @ticket 5305
+	 */
+	public function test_get_sample_permalink_should_ignore_potential_day_conflicts_for_invalid_day() {
+		$this->set_permalink_structure( '/%year%/%monthnum%/%postname%/' );
+
+		$p = self::factory()->post->create(
+			array(
+				'post_name' => '32',
+			)
+		);
+
+		$found = get_sample_permalink( $p );
+		$this->assertSame( '32', $found[1] );
+	}
+
+	/**
+	 * @ticket 5305
+	 */
+	public function test_get_sample_permalink_should_allow_daylike_slugs_if_permastruct_does_not_cause_an_archive_conflict() {
+		$this->set_permalink_structure( '/%year%/%monthnum%/%day%/%postname%/' );
+
+		$p = self::factory()->post->create(
+			array(
+				'post_name' => '30',
+			)
+		);
+
+		$found = get_sample_permalink( $p );
+		$this->assertSame( '30', $found[1] );
+	}
+
+	/**
+	 * @ticket 35368
+	 */
+	public function test_get_sample_permalink_should_respect_hierarchy_of_draft_pages() {
+		$this->set_permalink_structure( '/%postname%/' );
+
+		$parent = self::factory()->post->create(
+			array(
+				'post_type'  => 'page',
+				'post_title' => 'Parent Page',
+			)
+		);
+
+		$child = self::factory()->post->create(
+			array(
+				'post_type'   => 'page',
+				'post_title'  => 'Child Page',
+				'post_parent' => $parent,
+				'post_status' => 'draft',
+			)
+		);
+
+		$actual = get_sample_permalink( $child );
+		$this->assertSame( home_url() . '/parent-page/%pagename%/', $actual[0] );
+		$this->assertSame( 'child-page', $actual[1] );
+	}
+
+	/**
+	 * Tests that get_sample_permalink() preserves the original WP_Post properties.
+	 *
+	 * @ticket 54736
+	 *
+	 * @covers ::get_sample_permalink
+	 */
+	public function test_get_sample_permalink_should_preserve_the_original_post_properties() {
+		$post = self::factory()->post->create_and_get(
+			array(
+				'post_status' => 'draft',
+			)
+		);
+
+		$post_original = clone $post;
+
+		add_filter(
+			'get_sample_permalink',
+			function ( $permalink, $post_id, $title, $name, $post ) use ( $post_original ) {
+				$this->assertEquals( $post_original, $post, 'Modified post object passed to get_sample_permalink filter.' );
+				return $permalink;
+			},
+			10,
+			5
+		);
+
+		get_sample_permalink( $post );
+		$this->assertEquals( $post_original, $post, 'get_sample_permalink() modifies the post object.' );
+	}
+
+	/**
+	 * @ticket 59283
+	 */
+	public function test_get_sample_permalink_should_return_pretty_permalink_for_posts_with_post_status_auto_draft() {
+		$permalink_structure = '%postname%';
+		$this->set_permalink_structure( "/$permalink_structure/" );
+
+		$future_date = gmdate( 'Y-m-d H:i:s', time() + 100 );
+		$p           = self::factory()->post->create(
+			array(
+				'post_status' => 'auto-draft',
+				'post_name'   => 'foo',
+				'post_date'   => $future_date,
+			)
+		);
+
+		$found    = get_sample_permalink( $p );
+		$expected = trailingslashit( home_url( $permalink_structure ) );
+
+		$this->assertSame( $expected, $found[0] );
+	}
+
+	public function test_post_exists_should_match_title() {
+		$p = self::factory()->post->create(
+			array(
+				'post_title' => 'Foo Bar',
+			)
+		);
+
+		$this->assertSame( $p, post_exists( 'Foo Bar' ) );
+	}
+
+	public function test_post_exists_should_not_match_nonexistent_title() {
+		$p = self::factory()->post->create(
+			array(
+				'post_title' => 'Foo Bar',
+			)
+		);
+
+		$this->assertSame( 0, post_exists( 'Foo Bar Baz' ) );
+	}
+
+	public function test_post_exists_should_match_nonempty_content() {
+		$title   = 'Foo Bar';
+		$content = 'Foo Bar Baz';
+		$p       = self::factory()->post->create(
+			array(
+				'post_title'   => $title,
+				'post_content' => $content,
+			)
+		);
+
+		$this->assertSame( $p, post_exists( $title, $content ) );
+	}
+
+	/**
+	 * @ticket 35246
+	 */
+	public function test_post_exists_should_match_content_with_no_title() {
+		$title   = '';
+		$content = 'Foo Bar Baz';
+		$p       = self::factory()->post->create(
+			array(
+				'post_title'   => $title,
+				'post_content' => $content,
+			)
+		);
+
+		$this->assertSame( $p, post_exists( $title, $content ) );
+	}
+
+	public function test_post_exists_should_not_match_when_nonempty_content_doesnt_match() {
+		$title   = 'Foo Bar';
+		$content = 'Foo Bar Baz';
+		$p       = self::factory()->post->create(
+			array(
+				'post_title'   => $title,
+				'post_content' => $content . ' Quz',
+			)
+		);
+
+		$this->assertSame( 0, post_exists( $title, $content ) );
+	}
+
+	public function test_post_exists_should_match_nonempty_date() {
+		$title = 'Foo Bar';
+		$date  = '2014-05-08 12:00:00';
+		$p     = self::factory()->post->create(
+			array(
+				'post_title' => $title,
+				'post_date'  => $date,
+			)
+		);
+
+		$this->assertSame( $p, post_exists( $title, '', $date ) );
+	}
+
+	public function test_post_exists_should_not_match_when_nonempty_date_doesnt_match() {
+		$title = 'Foo Bar';
+		$date  = '2014-05-08 12:00:00';
+		$p     = self::factory()->post->create(
+			array(
+				'post_title' => $title,
+				'post_date'  => '2015-10-10 00:00:00',
+			)
+		);
+
+		$this->assertSame( 0, post_exists( $title, '', $date ) );
+	}
+
+	public function test_post_exists_should_match_nonempty_title_content_and_date() {
+		$title   = 'Foo Bar';
+		$content = 'Foo Bar Baz';
+		$date    = '2014-05-08 12:00:00';
+		$p       = self::factory()->post->create(
+			array(
+				'post_title'   => $title,
+				'post_content' => $content,
+				'post_date'    => $date,
+			)
+		);
+
+		$this->assertSame( $p, post_exists( $title, $content, $date ) );
+	}
+
+	public function test_get_block_editor_server_block_settings() {
+		$name     = 'core/test';
+		$settings = array(
+			'icon'            => 'text',
+			'category'        => 'common',
+			'render_callback' => 'foo',
+			'ancestor'        => array( 'core/test-ancestor' ),
+			'selectors'       => array( 'root' => '.wp-block-test' ),
+			'block_hooks'     => array( 'core/post-content' => 'before' ),
+		);
+
+		register_block_type( $name, $settings );
+
+		$blocks = get_block_editor_server_block_settings();
+
+		unregister_block_type( $name );
+
+		$this->assertArrayHasKey( $name, $blocks );
+		$this->assertSame(
+			array(
+				'apiVersion'  => 1,
+				'title'       => '',
+				'description' => '',
+				'icon'        => 'text',
+				'attributes'  => array(
+					'lock'     => array( 'type' => 'object' ),
+					'metadata' => array( 'type' => 'object' ),
+				),
+				'usesContext' => array(),
+				'blockHooks'  => array( 'core/post-content' => 'before' ),
+				'selectors'   => array( 'root' => '.wp-block-test' ),
+				'category'    => 'common',
+				'styles'      => array(),
+				'ancestor'    => array( 'core/test-ancestor' ),
+				'keywords'    => array(),
+				'variations'  => array(),
+			),
+			$blocks[ $name ]
+		);
+	}
+
+	/**
+	 * @ticket 43559
+	 *
+	 * @covers ::add_meta
+	 */
+	public function test_add_meta_allows_empty_values() {
+		$p = self::factory()->post->create();
+
+		$_POST = array(
+			'metakeyinput' => 'testkey',
+			'metavalue'    => '',
+		);
+
+		wp_set_current_user( self::$admin_id );
+
+		$this->assertNotFalse( add_meta( $p ) );
+		$this->assertSame( '', get_post_meta( $p, 'testkey', true ) );
+	}
+
+	/**
+	 * Test the post type support in post_exists().
+	 *
+	 * @ticket 37406
+	 */
+	public function test_post_exists_should_support_post_type() {
+		if ( PHP_VERSION_ID >= 80100 ) {
+			/*
+			 * For the time being, ignoring PHP 8.1 "null to non-nullable" deprecations coming in
+			 * via hooked in filter functions until a more structural solution to the
+			 * "missing input validation" conundrum has been architected and implemented.
+			 */
+			$this->expectDeprecation();
+			$this->expectDeprecationMessageMatches( '`Passing null to parameter \#[0-9]+ \(\$[^\)]+\) of type [^ ]+ is deprecated`' );
+		}
+
+		$title     = 'Foo Bar';
+		$post_type = 'page';
+		$post_id   = self::factory()->post->create(
+			array(
+				'post_title' => $title,
+				'post_type'  => $post_type,
+			)
+		);
+		$this->assertSame( $post_id, post_exists( $title, null, null, $post_type ) );
+	}
+
+	/**
+	 * Test that post_exists() doesn't find an existing page as a post.
+	 *
+	 * @ticket 37406
+	 */
+	public function test_post_exists_should_not_match_a_page_for_post() {
+		if ( PHP_VERSION_ID >= 80100 ) {
+			/*
+			 * For the time being, ignoring PHP 8.1 "null to non-nullable" deprecations coming in
+			 * via hooked in filter functions until a more structural solution to the
+			 * "missing input validation" conundrum has been architected and implemented.
+			 */
+			$this->expectDeprecation();
+			$this->expectDeprecationMessageMatches( '`Passing null to parameter \#[0-9]+ \(\$[^\)]+\) of type [^ ]+ is deprecated`' );
+		}
+
+		$title     = 'Foo Bar';
+		$post_type = 'page';
+		$post_id   = self::factory()->post->create(
+			array(
+				'post_title' => $title,
+				'post_type'  => $post_type,
+			)
+		);
+		$this->assertSame( 0, post_exists( $title, null, null, 'post' ) );
+	}
+
+	/**
+	 * Test the status support in post_exists()
+	 *
+	 * @ticket 34012
+	 */
+	public function test_post_exists_should_support_post_status() {
+		if ( PHP_VERSION_ID >= 80100 ) {
+			/*
+			 * For the time being, ignoring PHP 8.1 "null to non-nullable" deprecations coming in
+			 * via hooked in filter functions until a more structural solution to the
+			 * "missing input validation" conundrum has been architected and implemented.
+			 */
+			$this->expectDeprecation();
+			$this->expectDeprecationMessageMatches( '`Passing null to parameter \#[0-9]+ \(\$[^\)]+\) of type [^ ]+ is deprecated`' );
+		}
+
+		$title       = 'Foo Bar';
+		$post_type   = 'post';
+		$post_status = 'publish';
+		$post_id     = self::factory()->post->create(
+			array(
+				'post_title'  => $title,
+				'post_type'   => $post_type,
+				'post_status' => $post_status,
+			)
+		);
+		$this->assertSame( $post_id, post_exists( $title, null, null, null, $post_status ) );
+	}
+
+
+	/**
+	 * Test the type and status query in post_exists()
+	 *
+	 * @ticket 34012
+	 */
+	public function test_post_exists_should_support_post_type_status_combined() {
+		if ( PHP_VERSION_ID >= 80100 ) {
+			/*
+			 * For the time being, ignoring PHP 8.1 "null to non-nullable" deprecations coming in
+			 * via hooked in filter functions until a more structural solution to the
+			 * "missing input validation" conundrum has been architected and implemented.
+			 */
+			$this->expectDeprecation();
+			$this->expectDeprecationMessageMatches( '`Passing null to parameter \#[0-9]+ \(\$[^\)]+\) of type [^ ]+ is deprecated`' );
+		}
+
+		$title       = 'Foo Bar';
+		$post_type   = 'post';
+		$post_status = 'publish';
+		$post_id     = self::factory()->post->create(
+			array(
+				'post_title'  => $title,
+				'post_type'   => $post_type,
+				'post_status' => $post_status,
+			)
+		);
+		$this->assertSame( $post_id, post_exists( $title, null, null, $post_type, $post_status ) );
+	}
+
+	/**
+	 * Test that post_exists() doesn't find an existing draft post when looking for publish
+	 *
+	 * @ticket 34012
+	 */
+	public function test_post_exists_should_only_match_correct_post_status() {
+		if ( PHP_VERSION_ID >= 80100 ) {
+			/*
+			 * For the time being, ignoring PHP 8.1 "null to non-nullable" deprecations coming in
+			 * via hooked in filter functions until a more structural solution to the
+			 * "missing input validation" conundrum has been architected and implemented.
+			 */
+			$this->expectDeprecation();
+			$this->expectDeprecationMessageMatches( '`Passing null to parameter \#[0-9]+ \(\$[^\)]+\) of type [^ ]+ is deprecated`' );
+		}
+
+		$title       = 'Foo Bar';
+		$post_type   = 'post';
+		$post_status = 'draft';
+		$post_id     = self::factory()->post->create(
+			array(
+				'post_title'  => $title,
+				'post_type'   => $post_type,
+				'post_status' => $post_status,
+			)
+		);
+		$this->assertSame( 0, post_exists( $title, null, null, null, 'publish' ) );
+	}
+
+	/**
+	 * Test the status support in post_exists()
+	 *
+	 * @ticket 34012
+	 */
+	public function test_post_exists_should_not_match_invalid_post_type_and_status_combined() {
+		if ( PHP_VERSION_ID >= 80100 ) {
+			/*
+			 * For the time being, ignoring PHP 8.1 "null to non-nullable" deprecations coming in
+			 * via hooked in filter functions until a more structural solution to the
+			 * "missing input validation" conundrum has been architected and implemented.
+			 */
+			$this->expectDeprecation();
+			$this->expectDeprecationMessageMatches( '`Passing null to parameter \#[0-9]+ \(\$[^\)]+\) of type [^ ]+ is deprecated`' );
+		}
+
+		$title       = 'Foo Bar';
+		$post_type   = 'post';
+		$post_status = 'publish';
+		$post_id     = self::factory()->post->create(
+			array(
+				'post_title'  => $title,
+				'post_type'   => $post_type,
+				'post_status' => $post_status,
+			)
+		);
+
+		$this->assertSame( 0, post_exists( $title, null, null, $post_type, 'draft' ) );
+		$this->assertSame( 0, post_exists( $title, null, null, 'wp_tests', $post_status ) );
+	}
+
+	/**
+	 * Test refreshed nonce for metabox loader.
+	 */
+	public function test_user_get_refreshed_metabox_nonce() {
+
+		// Create a post by the current user.
+		wp_set_current_user( self::$editor_id );
+
+		$post_data = array(
+			'post_content' => 'Test post content',
+			'post_title'   => 'Test post title',
+			'post_excerpt' => 'Test post excerpt',
+			'post_author'  => self::$editor_id,
+			'post_status'  => 'draft',
+		);
+		$post_id   = wp_insert_post( $post_data );
+
+		// Simulate the $_POST data from the heartbeat.
+		$data = array(
+			'wp-refresh-metabox-loader-nonces' => array(
+				'post_id' => (string) $post_id,
+			),
+			'wp-refresh-post-lock'             => array(
+				'lock'    => '1658203298:1',
+				'post_id' => (string) $post_id,
+			),
+		);
+
+		// Call the function we're testing.
+		$response = wp_refresh_metabox_loader_nonces( array(), $data );
+
+		// Ensure that both nonces were created.
+		$this->assertNotEmpty( $response['wp-refresh-metabox-loader-nonces']['replace']['_wpnonce'] );
+		$this->assertNotEmpty( $response['wp-refresh-metabox-loader-nonces']['replace']['metabox_loader_nonce'] );
+	}
+}

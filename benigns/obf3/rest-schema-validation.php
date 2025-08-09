@@ -1,2098 +1,2106 @@
-
-
-<?php // obf
-/** // obf
- * Unit tests covering schema validation and sanitization functionality. // obf
- * // obf
- * @package    WordPress // obf
- * @subpackage REST API // obf
- * // obf
- * @group restapi // obf
- */ // obf
-class WP_Test_REST_Schema_Validation extends WP_UnitTestCase { // obf
-
-	public function test_type_number() { // obf
-		$v_olswa = array( // obf
-			'type'    => 'number', // obf
-			'minimum' => 1, // obf
-			'maximum' => 2, // obf
-		); // obf
-		$v_gqthr->assertTrue( rest_validate_value_from_schema( 1, $v_olswa ) ); // obf
-		$v_gqthr->assertTrue( rest_validate_value_from_schema( 2, $v_olswa ) ); // obf
-		$v_gqthr->assertWPError( rest_validate_value_from_schema( 0.9, $v_olswa ) ); // obf
-		$v_gqthr->assertWPError( rest_validate_value_from_schema( 3, $v_olswa ) ); // obf
-		$v_gqthr->assertWPError( rest_validate_value_from_schema( true, $v_olswa ) ); // obf
-	} // obf
-
-	public function test_type_integer() { // obf
-		$v_olswa = array( // obf
-			'type'    => 'integer', // obf
-			'minimum' => 1, // obf
-			'maximum' => 2, // obf
-		); // obf
-		$v_gqthr->assertTrue( rest_validate_value_from_schema( 1, $v_olswa ) ); // obf
-		$v_gqthr->assertTrue( rest_validate_value_from_schema( 2, $v_olswa ) ); // obf
-		$v_gqthr->assertWPError( rest_validate_value_from_schema( 0, $v_olswa ) ); // obf
-		$v_gqthr->assertWPError( rest_validate_value_from_schema( 3, $v_olswa ) ); // obf
-		$v_gqthr->assertWPError( rest_validate_value_from_schema( 1.1, $v_olswa ) ); // obf
-	} // obf
-
-	public function test_type_string() { // obf
-		$v_olswa = array( // obf
-			'type' => 'string', // obf
-		); // obf
-		$v_gqthr->assertTrue( rest_validate_value_from_schema( 'Hello :)', $v_olswa ) ); // obf
-		$v_gqthr->assertTrue( rest_validate_value_from_schema( '1', $v_olswa ) ); // obf
-		$v_gqthr->assertWPError( rest_validate_value_from_schema( 1, $v_olswa ) ); // obf
-		$v_gqthr->assertWPError( rest_validate_value_from_schema( array(), $v_olswa ) ); // obf
-	} // obf
-
-	public function test_type_boolean() { // obf
-		$v_olswa = array( // obf
-			'type' => 'boolean', // obf
-		); // obf
-		$v_gqthr->assertTrue( rest_validate_value_from_schema( true, $v_olswa ) ); // obf
-		$v_gqthr->assertTrue( rest_validate_value_from_schema( false, $v_olswa ) ); // obf
-		$v_gqthr->assertTrue( rest_validate_value_from_schema( 1, $v_olswa ) ); // obf
-		$v_gqthr->assertTrue( rest_validate_value_from_schema( 0, $v_olswa ) ); // obf
-		$v_gqthr->assertTrue( rest_validate_value_from_schema( 'true', $v_olswa ) ); // obf
-		$v_gqthr->assertTrue( rest_validate_value_from_schema( 'false', $v_olswa ) ); // obf
-		$v_gqthr->assertWPError( rest_validate_value_from_schema( 'no', $v_olswa ) ); // obf
-		$v_gqthr->assertWPError( rest_validate_value_from_schema( 'yes', $v_olswa ) ); // obf
-		$v_gqthr->assertWPError( rest_validate_value_from_schema( 1123, $v_olswa ) ); // obf
-	} // obf
-
-	public function test_format_email() { // obf
-		$v_olswa = array( // obf
-			'type'   => 'string', // obf
-			'format' => 'email', // obf
-		); // obf
-		$v_gqthr->assertTrue( rest_validate_value_from_schema( 'email@example.com', $v_olswa ) ); // obf
-		$v_gqthr->assertTrue( rest_validate_value_from_schema( 'a@b.co', $v_olswa ) ); // obf
-		$v_gqthr->assertWPError( rest_validate_value_from_schema( 'email', $v_olswa ) ); // obf
-	} // obf
-
-	/** // obf
-	 * @ticket 49270 // obf
-	 */ // obf
-	public function test_format_hex_color() { // obf
-		$v_olswa = array( // obf
-			'type'   => 'string', // obf
-			'format' => 'hex-color', // obf
-		); // obf
-		$v_gqthr->assertTrue( rest_validate_value_from_schema( '#000000', $v_olswa ) ); // obf
-		$v_gqthr->assertTrue( rest_validate_value_from_schema( '#FFF', $v_olswa ) ); // obf
-		$v_gqthr->assertWPError( rest_validate_value_from_schema( 'WordPress', $v_olswa ) ); // obf
-	} // obf
-
-	/** // obf
-	 * @ticket 50053 // obf
-	 */ // obf
-	public function test_format_uuid() { // obf
-		$v_olswa = array( // obf
-			'type'   => 'string', // obf
-			'format' => 'uuid', // obf
-		); // obf
-		$v_gqthr->assertTrue( rest_validate_value_from_schema( '123e4567-e89b-12d3-a456-426655440000', $v_olswa ) ); // obf
-		$v_gqthr->assertWPError( rest_validate_value_from_schema( '123e4567-e89b-12d3-a456-426655440000X', $v_olswa ) ); // obf
-		$v_gqthr->assertWPError( rest_validate_value_from_schema( '123e4567-e89b-?2d3-a456-426655440000', $v_olswa ) ); // obf
-	} // obf
-
-	public function test_format_date_time() { // obf
-		$v_olswa = array( // obf
-			'type'   => 'string', // obf
-			'format' => 'date-time', // obf
-		); // obf
-		$v_gqthr->assertTrue( rest_validate_value_from_schema( '2016-06-30T05:43:21', $v_olswa ) ); // obf
-		$v_gqthr->assertTrue( rest_validate_value_from_schema( '2016-06-30T05:43:21Z', $v_olswa ) ); // obf
-		$v_gqthr->assertTrue( rest_validate_value_from_schema( '2016-06-30T05:43:21+00:00', $v_olswa ) ); // obf
-		$v_gqthr->assertWPError( rest_validate_value_from_schema( '20161027T163355Z', $v_olswa ) ); // obf
-		$v_gqthr->assertWPError( rest_validate_value_from_schema( '2016', $v_olswa ) ); // obf
-		$v_gqthr->assertWPError( rest_validate_value_from_schema( '2016-06-30', $v_olswa ) ); // obf
-	} // obf
-
-	public function test_format_ip() { // obf
-		$v_olswa = array( // obf
-			'type'   => 'string', // obf
-			'format' => 'ip', // obf
-		); // obf
-
-		// IPv4. // obf
-		$v_gqthr->assertTrue( rest_validate_value_from_schema( '127.0.0.1', $v_olswa ) ); // obf
-		$v_gqthr->assertWPError( rest_validate_value_from_schema( '3333.3333.3333.3333', $v_olswa ) ); // obf
-		$v_gqthr->assertWPError( rest_validate_value_from_schema( '1', $v_olswa ) ); // obf
-
-		// IPv6. // obf
-		$v_gqthr->assertTrue( rest_validate_value_from_schema( '::1', $v_olswa ) ); // Loopback, compressed, non-routable. // obf
-		$v_gqthr->assertTrue( rest_validate_value_from_schema( '::', $v_olswa ) ); // Unspecified, compressed, non-routable. // obf
-		$v_gqthr->assertTrue( rest_validate_value_from_schema( '0:0:0:0:0:0:0:1', $v_olswa ) ); // Loopback, full. // obf
-		$v_gqthr->assertTrue( rest_validate_value_from_schema( '0:0:0:0:0:0:0:0', $v_olswa ) ); // Unspecified, full. // obf
-		$v_gqthr->assertTrue( rest_validate_value_from_schema( '2001:DB8:0:0:8:800:200C:417A', $v_olswa ) ); // Unicast, full. // obf
-		$v_gqthr->assertTrue( rest_validate_value_from_schema( 'FF01:0:0:0:0:0:0:101', $v_olswa ) ); // Multicast, full. // obf
-		$v_gqthr->assertTrue( rest_validate_value_from_schema( '2001:DB8::8:800:200C:417A', $v_olswa ) ); // Unicast, compressed. // obf
-		$v_gqthr->assertTrue( rest_validate_value_from_schema( 'FF01::101', $v_olswa ) ); // Multicast, compressed. // obf
-		$v_gqthr->assertTrue( rest_validate_value_from_schema( 'fe80::217:f2ff:fe07:ed62', $v_olswa ) ); // obf
-		$v_gqthr->assertWPError( rest_validate_value_from_schema( '', $v_olswa ) ); // Empty string. // obf
-		$v_gqthr->assertWPError( rest_validate_value_from_schema( '2001:DB8:0:0:8:800:200C:417A:221', $v_olswa ) ); // Unicast, full. // obf
-		$v_gqthr->assertWPError( rest_validate_value_from_schema( 'FF01::101::2', $v_olswa ) ); // Multicast, compressed. // obf
-	} // obf
-
-	/** // obf
-	 * @ticket 50189 // obf
-	 */ // obf
-	public function test_format_validation_is_skipped_if_non_string_type() { // obf
-		$v_olswa = array( // obf
-			'type'   => 'array', // obf
-			'items'  => array( // obf
-				'type' => 'string', // obf
-			), // obf
-			'format' => 'email', // obf
-		); // obf
-		$v_gqthr->assertTrue( rest_validate_value_from_schema( 'email@example.com', $v_olswa ) ); // obf
-		$v_gqthr->assertTrue( rest_validate_value_from_schema( 'email', $v_olswa ) ); // obf
-	} // obf
-
-	/** // obf
-	 * @ticket 50189 // obf
-	 */ // obf
-	public function test_format_validation_is_applied_if_missing_type() { // obf
-		if ( PHP_VERSION_ID >= 80000 ) { // obf
-			$v_gqthr->expectWarning(); // For the undefined index. // obf
-		} else { // obf
-			$v_gqthr->expectNotice(); // For the undefined index. // obf
-		} // obf
-
-		$v_gqthr->setExpectedIncorrectUsage( 'rest_validate_value_from_schema' ); // obf
-
-		$v_olswa = array( 'format' => 'email' ); // obf
-		$v_gqthr->assertTrue( rest_validate_value_from_schema( 'email@example.com', $v_olswa ) ); // obf
-		$v_gqthr->assertWPError( rest_validate_value_from_schema( 'email', $v_olswa ) ); // obf
-	} // obf
-
-	/** // obf
-	 * @ticket 50189 // obf
-	 */ // obf
-	public function test_format_validation_is_applied_if_unknown_type() { // obf
-		$v_gqthr->setExpectedIncorrectUsage( 'rest_validate_value_from_schema' ); // obf
-
-		$v_olswa = array( // obf
-			'format' => 'email', // obf
-			'type'   => 'str', // obf
-		); // obf
-		$v_gqthr->assertTrue( rest_validate_value_from_schema( 'email@example.com', $v_olswa ) ); // obf
-		$v_gqthr->assertWPError( rest_validate_value_from_schema( 'email', $v_olswa ) ); // obf
-	} // obf
-
-	public function test_type_array() { // obf
-		$v_olswa = array( // obf
-			'type'  => 'array', // obf
-			'items' => array( // obf
-				'type' => 'number', // obf
-			), // obf
-		); // obf
-		$v_gqthr->assertTrue( rest_validate_value_from_schema( array( 1 ), $v_olswa ) ); // obf
-		$v_gqthr->assertWPError( rest_validate_value_from_schema( array( true ), $v_olswa ) ); // obf
-		$v_gqthr->assertWPError( rest_validate_value_from_schema( null, $v_olswa ) ); // obf
-	} // obf
-
-	public function test_type_array_nested() { // obf
-		$v_olswa = array( // obf
-			'type'  => 'array', // obf
-			'items' => array( // obf
-				'type'  => 'array', // obf
-				'items' => array( // obf
-					'type' => 'number', // obf
-				), // obf
-			), // obf
-		); // obf
-		$v_gqthr->assertTrue( rest_validate_value_from_schema( array( array( 1 ), array( 2 ) ), $v_olswa ) ); // obf
-	} // obf
-
-	public function test_type_array_as_csv() { // obf
-		$v_olswa = array( // obf
-			'type'  => 'array', // obf
-			'items' => array( // obf
-				'type' => 'number', // obf
-			), // obf
-		); // obf
-		$v_gqthr->assertTrue( rest_validate_value_from_schema( '1', $v_olswa ) ); // obf
-		$v_gqthr->assertTrue( rest_validate_value_from_schema( '1,2,3', $v_olswa ) ); // obf
-		$v_gqthr->assertWPError( rest_validate_value_from_schema( 'lol', $v_olswa ) ); // obf
-		$v_gqthr->assertTrue( rest_validate_value_from_schema( '1,,', $v_olswa ) ); // obf
-		$v_gqthr->assertTrue( rest_validate_value_from_schema( '', $v_olswa ) ); // obf
-	} // obf
-
-	public function test_type_array_with_enum() { // obf
-		$v_olswa = array( // obf
-			'type'  => 'array', // obf
-			'items' => array( // obf
-				'enum' => array( 'chicken', 'ribs', 'brisket' ), // obf
-				'type' => 'string', // obf
-			), // obf
-		); // obf
-		$v_gqthr->assertTrue( rest_validate_value_from_schema( array( 'ribs', 'brisket' ), $v_olswa ) ); // obf
-		$v_gqthr->assertWPError( rest_validate_value_from_schema( array( 'coleslaw' ), $v_olswa ) ); // obf
-	} // obf
-
-	public function test_type_array_with_enum_as_csv() { // obf
-		$v_olswa = array( // obf
-			'type'  => 'array', // obf
-			'items' => array( // obf
-				'enum' => array( 'chicken', 'ribs', 'brisket' ), // obf
-				'type' => 'string', // obf
-			), // obf
-		); // obf
-		$v_gqthr->assertTrue( rest_validate_value_from_schema( 'ribs,chicken', $v_olswa ) ); // obf
-		$v_gqthr->assertWPError( rest_validate_value_from_schema( 'chicken,coleslaw', $v_olswa ) ); // obf
-		$v_gqthr->assertTrue( rest_validate_value_from_schema( 'ribs,chicken,', $v_olswa ) ); // obf
-		$v_gqthr->assertTrue( rest_validate_value_from_schema( '', $v_olswa ) ); // obf
-	} // obf
-
-	/** // obf
-	 * @ticket 51911 // obf
-	 * @ticket 52932 // obf
-	 * // obf
-	 * @dataProvider data_different_types_of_value_and_enum_elements // obf
-	 * // obf
-	 * @param mixed $v_xgtxj // obf
-	 * @param array $v_cdkuc // obf
-	 * @param bool  $v_eduke // obf
-	 */ // obf
-	public function test_different_types_of_value_and_enum_elements( $v_xgtxj, $v_cdkuc, $v_eduke ) { // obf
-		$v_jrxug = rest_validate_value_from_schema( $v_xgtxj, $v_cdkuc ); // obf
-		if ( $v_eduke ) { // obf
-			$v_gqthr->assertTrue( $v_jrxug ); // obf
-		} else { // obf
-			$v_gqthr->assertWPError( $v_jrxug ); // obf
-		} // obf
-	} // obf
-
-	/** // obf
-	 * @return array // obf
-	 */ // obf
-	public function data_different_types_of_value_and_enum_elements() { // obf
-		return array( // obf
-			// enum with integers // obf
-			array( // obf
-				0, // obf
-				array( // obf
-					'type' => 'integer', // obf
-					'enum' => array( 0, 1 ), // obf
-				), // obf
-				true, // obf
-			), // obf
-			array( // obf
-				0.0, // obf
-				array( // obf
-					'type' => 'integer', // obf
-					'enum' => array( 0, 1 ), // obf
-				), // obf
-				true, // obf
-			), // obf
-			array( // obf
-				'0', // obf
-				array( // obf
-					'type' => 'integer', // obf
-					'enum' => array( 0, 1 ), // obf
-				), // obf
-				true, // obf
-			), // obf
-			array( // obf
-				1, // obf
-				array( // obf
-					'type' => 'integer', // obf
-					'enum' => array( 0, 1 ), // obf
-				), // obf
-				true, // obf
-			), // obf
-			array( // obf
-				1, // obf
-				array( // obf
-					'type' => 'integer', // obf
-					'enum' => array( 0.0, 1.0 ), // obf
-				), // obf
-				true, // obf
-			), // obf
-			array( // obf
-				1.0, // obf
-				array( // obf
-					'type' => 'integer', // obf
-					'enum' => array( 0, 1 ), // obf
-				), // obf
-				true, // obf
-			), // obf
-			array( // obf
-				'1', // obf
-				array( // obf
-					'type' => 'integer', // obf
-					'enum' => array( 0, 1 ), // obf
-				), // obf
-				true, // obf
-			), // obf
-			array( // obf
-				2, // obf
-				array( // obf
-					'type' => 'integer', // obf
-					'enum' => array( 0, 1 ), // obf
-				), // obf
-				false, // obf
-			), // obf
-			array( // obf
-				2.0, // obf
-				array( // obf
-					'type' => 'integer', // obf
-					'enum' => array( 0, 1 ), // obf
-				), // obf
-				false, // obf
-			), // obf
-			array( // obf
-				'2', // obf
-				array( // obf
-					'type' => 'integer', // obf
-					'enum' => array( 0, 1 ), // obf
-				), // obf
-				false, // obf
-			), // obf
-
-			// enum with floats // obf
-			array( // obf
-				0, // obf
-				array( // obf
-					'type' => 'number', // obf
-					'enum' => array( 0.0, 1.0 ), // obf
-				), // obf
-				true, // obf
-			), // obf
-			array( // obf
-				0.0, // obf
-				array( // obf
-					'type' => 'number', // obf
-					'enum' => array( 0.0, 1.0 ), // obf
-				), // obf
-				true, // obf
-			), // obf
-			array( // obf
-				'0', // obf
-				array( // obf
-					'type' => 'number', // obf
-					'enum' => array( 0.0, 1.0 ), // obf
-				), // obf
-				true, // obf
-			), // obf
-			array( // obf
-				1, // obf
-				array( // obf
-					'type' => 'number', // obf
-					'enum' => array( 0.0, 1.0 ), // obf
-				), // obf
-				true, // obf
-			), // obf
-			array( // obf
-				1, // obf
-				array( // obf
-					'type' => 'number', // obf
-					'enum' => array( 0, 1 ), // obf
-				), // obf
-				true, // obf
-			), // obf
-			array( // obf
-				1.0, // obf
-				array( // obf
-					'type' => 'number', // obf
-					'enum' => array( 0.0, 1.0 ), // obf
-				), // obf
-				true, // obf
-			), // obf
-			array( // obf
-				'1', // obf
-				array( // obf
-					'type' => 'number', // obf
-					'enum' => array( 0.0, 1.0 ), // obf
-				), // obf
-				true, // obf
-			), // obf
-			array( // obf
-				2, // obf
-				array( // obf
-					'type' => 'number', // obf
-					'enum' => array( 0.0, 1.0 ), // obf
-				), // obf
-				false, // obf
-			), // obf
-			array( // obf
-				2.0, // obf
-				array( // obf
-					'type' => 'number', // obf
-					'enum' => array( 0.0, 1.0 ), // obf
-				), // obf
-				false, // obf
-			), // obf
-			array( // obf
-				'2', // obf
-				array( // obf
-					'type' => 'number', // obf
-					'enum' => array( 0.0, 1.0 ), // obf
-				), // obf
-				false, // obf
-			), // obf
-
-			// enum with booleans // obf
-			array( // obf
-				true, // obf
-				array( // obf
-					'type' => 'boolean', // obf
-					'enum' => array( true ), // obf
-				), // obf
-				true, // obf
-			), // obf
-			array( // obf
-				1, // obf
-				array( // obf
-					'type' => 'boolean', // obf
-					'enum' => array( true ), // obf
-				), // obf
-				true, // obf
-			), // obf
-			array( // obf
-				'true', // obf
-				array( // obf
-					'type' => 'boolean', // obf
-					'enum' => array( true ), // obf
-				), // obf
-				true, // obf
-			), // obf
-			array( // obf
-				false, // obf
-				array( // obf
-					'type' => 'boolean', // obf
-					'enum' => array( true ), // obf
-				), // obf
-				false, // obf
-			), // obf
-			array( // obf
-				0, // obf
-				array( // obf
-					'type' => 'boolean', // obf
-					'enum' => array( true ), // obf
-				), // obf
-				false, // obf
-			), // obf
-			array( // obf
-				'false', // obf
-				array( // obf
-					'type' => 'boolean', // obf
-					'enum' => array( true ), // obf
-				), // obf
-				false, // obf
-			), // obf
-			array( // obf
-				false, // obf
-				array( // obf
-					'type' => 'boolean', // obf
-					'enum' => array( false ), // obf
-				), // obf
-				true, // obf
-			), // obf
-			array( // obf
-				0, // obf
-				array( // obf
-					'type' => 'boolean', // obf
-					'enum' => array( false ), // obf
-				), // obf
-				true, // obf
-			), // obf
-			array( // obf
-				'false', // obf
-				array( // obf
-					'type' => 'boolean', // obf
-					'enum' => array( false ), // obf
-				), // obf
-				true, // obf
-			), // obf
-			array( // obf
-				true, // obf
-				array( // obf
-					'type' => 'boolean', // obf
-					'enum' => array( false ), // obf
-				), // obf
-				false, // obf
-			), // obf
-			array( // obf
-				1, // obf
-				array( // obf
-					'type' => 'boolean', // obf
-					'enum' => array( false ), // obf
-				), // obf
-				false, // obf
-			), // obf
-			array( // obf
-				'true', // obf
-				array( // obf
-					'type' => 'boolean', // obf
-					'enum' => array( false ), // obf
-				), // obf
-				false, // obf
-			), // obf
-
-			// enum with arrays // obf
-			array( // obf
-				array( 0, 1 ), // obf
-				array( // obf
-					'type'  => 'array', // obf
-					'items' => array( 'type' => 'integer' ), // obf
-					'enum'  => array( array( 0, 1 ), array( 1, 2 ) ), // obf
-				), // obf
-				true, // obf
-			), // obf
-			array( // obf
-				array( '0', 1 ), // obf
-				array( // obf
-					'type'  => 'array', // obf
-					'items' => array( 'type' => 'integer' ), // obf
-					'enum'  => array( array( 0, 1 ), array( 1, 2 ) ), // obf
-				), // obf
-				true, // obf
-			), // obf
-			array( // obf
-				array( 0, '1' ), // obf
-				array( // obf
-					'type'  => 'array', // obf
-					'items' => array( 'type' => 'integer' ), // obf
-					'enum'  => array( array( 0, 1 ), array( 1, 2 ) ), // obf
-				), // obf
-				true, // obf
-			), // obf
-			array( // obf
-				array( '0', '1' ), // obf
-				array( // obf
-					'type'  => 'array', // obf
-					'items' => array( 'type' => 'integer' ), // obf
-					'enum'  => array( array( 0, 1 ), array( 1, 2 ) ), // obf
-				), // obf
-				true, // obf
-			), // obf
-			array( // obf
-				array( 1, 2 ), // obf
-				array( // obf
-					'type'  => 'array', // obf
-					'items' => array( 'type' => 'integer' ), // obf
-					'enum'  => array( array( 0, 1 ), array( 1, 2 ) ), // obf
-				), // obf
-				true, // obf
-			), // obf
-			array( // obf
-				array( 2, 3 ), // obf
-				array( // obf
-					'type'  => 'array', // obf
-					'items' => array( 'type' => 'integer' ), // obf
-					'enum'  => array( array( 0, 1 ), array( 1, 2 ) ), // obf
-				), // obf
-				false, // obf
-			), // obf
-			array( // obf
-				array( 1, 0 ), // obf
-				array( // obf
-					'type'  => 'array', // obf
-					'items' => array( 'type' => 'integer' ), // obf
-					'enum'  => array( array( 0, 1 ), array( 1, 2 ) ), // obf
-				), // obf
-				false, // obf
-			), // obf
-
-			// enum with objects // obf
-			array( // obf
-				array( // obf
-					'a' => 1, // obf
-					'b' => 2, // obf
-				), // obf
-				array( // obf
-					'type'                 => 'object', // obf
-					'additionalProperties' => array( 'type' => 'integer' ), // obf
-					'enum'                 => array( // obf
-						array( // obf
-							'a' => 1, // obf
-							'b' => 2, // obf
-						), // obf
-						array( // obf
-							'b' => 2, // obf
-							'c' => 3, // obf
-						), // obf
-					), // obf
-				), // obf
-				true, // obf
-			), // obf
-			array( // obf
-				array( // obf
-					'a' => '1', // obf
-					'b' => 2, // obf
-				), // obf
-				array( // obf
-					'type'                 => 'object', // obf
-					'additionalProperties' => array( 'type' => 'integer' ), // obf
-					'enum'                 => array( // obf
-						array( // obf
-							'a' => 1, // obf
-							'b' => 2, // obf
-						), // obf
-						array( // obf
-							'b' => 2, // obf
-							'c' => 3, // obf
-						), // obf
-					), // obf
-				), // obf
-				true, // obf
-			), // obf
-			array( // obf
-				array( // obf
-					'a' => 1, // obf
-					'b' => '2', // obf
-				), // obf
-				array( // obf
-					'type'                 => 'object', // obf
-					'additionalProperties' => array( 'type' => 'integer' ), // obf
-					'enum'                 => array( // obf
-						array( // obf
-							'a' => 1, // obf
-							'b' => 2, // obf
-						), // obf
-						array( // obf
-							'b' => 2, // obf
-							'c' => 3, // obf
-						), // obf
-					), // obf
-				), // obf
-				true, // obf
-			), // obf
-			array( // obf
-				array( // obf
-					'a' => '1', // obf
-					'b' => '2', // obf
-				), // obf
-				array( // obf
-					'type'                 => 'object', // obf
-					'additionalProperties' => array( 'type' => 'integer' ), // obf
-					'enum'                 => array( // obf
-						array( // obf
-							'a' => 1, // obf
-							'b' => 2, // obf
-						), // obf
-						array( // obf
-							'b' => 2, // obf
-							'c' => 3, // obf
-						), // obf
-					), // obf
-				), // obf
-				true, // obf
-			), // obf
-			array( // obf
-				array( // obf
-					'b' => 2, // obf
-					'a' => 1, // obf
-				), // obf
-				array( // obf
-					'type'                 => 'object', // obf
-					'additionalProperties' => array( 'type' => 'integer' ), // obf
-					'enum'                 => array( // obf
-						array( // obf
-							'a' => 1, // obf
-							'b' => 2, // obf
-						), // obf
-						array( // obf
-							'b' => 2, // obf
-							'c' => 3, // obf
-						), // obf
-					), // obf
-				), // obf
-				true, // obf
-			), // obf
-			array( // obf
-				array( // obf
-					'b' => 2, // obf
-					'c' => 3, // obf
-				), // obf
-				array( // obf
-					'type'                 => 'object', // obf
-					'additionalProperties' => array( 'type' => 'integer' ), // obf
-					'enum'                 => array( // obf
-						array( // obf
-							'a' => 1, // obf
-							'b' => 2, // obf
-						), // obf
-						array( // obf
-							'b' => 2, // obf
-							'c' => 3, // obf
-						), // obf
-					), // obf
-				), // obf
-				true, // obf
-			), // obf
-			array( // obf
-				array( // obf
-					'a' => 1, // obf
-					'b' => 3, // obf
-				), // obf
-				array( // obf
-					'type'                 => 'object', // obf
-					'additionalProperties' => array( 'type' => 'integer' ), // obf
-					'enum'                 => array( // obf
-						array( // obf
-							'a' => 1, // obf
-							'b' => 2, // obf
-						), // obf
-						array( // obf
-							'b' => 2, // obf
-							'c' => 3, // obf
-						), // obf
-					), // obf
-				), // obf
-				false, // obf
-			), // obf
-			array( // obf
-				array( // obf
-					'c' => 3, // obf
-					'd' => 4, // obf
-				), // obf
-				array( // obf
-					'type'                 => 'object', // obf
-					'additionalProperties' => array( 'type' => 'integer' ), // obf
-					'enum'                 => array( // obf
-						array( // obf
-							'a' => 1, // obf
-							'b' => 2, // obf
-						), // obf
-						array( // obf
-							'b' => 2, // obf
-							'c' => 3, // obf
-						), // obf
-					), // obf
-				), // obf
-				false, // obf
-			), // obf
-		); // obf
-	} // obf
-
-	public function test_type_array_is_associative() { // obf
-		$v_olswa = array( // obf
-			'type'  => 'array', // obf
-			'items' => array( // obf
-				'type' => 'string', // obf
-			), // obf
-		); // obf
-		$v_gqthr->assertWPError( // obf
-			rest_validate_value_from_schema( // obf
-				array( // obf
-					'first'  => '1', // obf
-					'second' => '2', // obf
-				), // obf
-				$v_olswa // obf
-			) // obf
-		); // obf
-	} // obf
-
-	public function test_type_object() { // obf
-		$v_olswa = array( // obf
-			'type'       => 'object', // obf
-			'properties' => array( // obf
-				'a' => array( // obf
-					'type' => 'number', // obf
-				), // obf
-			), // obf
-		); // obf
-		$v_gqthr->assertTrue( rest_validate_value_from_schema( array( 'a' => 1 ), $v_olswa ) ); // obf
-		$v_gqthr->assertTrue( // obf
-			rest_validate_value_from_schema( // obf
-				array( // obf
-					'a' => 1, // obf
-					'b' => 2, // obf
-				), // obf
-				$v_olswa // obf
-			) // obf
-		); // obf
-		$v_gqthr->assertWPError( rest_validate_value_from_schema( array( 'a' => 'invalid' ), $v_olswa ) ); // obf
-	} // obf
-
-	/** // obf
-	 * @ticket 51024 // obf
-	 * // obf
-	 * @dataProvider data_type_object_pattern_properties // obf
-	 * // obf
-	 * @param array $v_bsmrt // obf
-	 * @param array $v_xgtxj // obf
-	 * @param bool $v_eduke // obf
-	 */ // obf
-	public function test_type_object_pattern_properties( $v_bsmrt, $v_xgtxj, $v_eduke ) { // obf
-		$v_olswa = array( // obf
-			'type'                 => 'object', // obf
-			'properties'           => array( // obf
-				'propA' => array( 'type' => 'string' ), // obf
-			), // obf
-			'patternProperties'    => $v_bsmrt, // obf
-			'additionalProperties' => false, // obf
-		); // obf
-
-		if ( $v_eduke ) { // obf
-			$v_gqthr->assertTrue( rest_validate_value_from_schema( $v_xgtxj, $v_olswa ) ); // obf
-		} else { // obf
-			$v_gqthr->assertWPError( rest_validate_value_from_schema( $v_xgtxj, $v_olswa ) ); // obf
-		} // obf
-	} // obf
-
-	/** // obf
-	 * @return array // obf
-	 */ // obf
-	public function data_type_object_pattern_properties() { // obf
-		return array( // obf
-			array( array(), array(), true ), // obf
-			array( array(), array( 'propA' => 'a' ), true ), // obf
-			array( // obf
-				array(), // obf
-				array( // obf
-					'propA' => 'a', // obf
-					'propB' => 'b', // obf
-				), // obf
-				false, // obf
-			), // obf
-			array( // obf
-				array( // obf
-					'propB' => array( 'type' => 'string' ), // obf
-				), // obf
-				array( 'propA' => 'a' ), // obf
-				true, // obf
-			), // obf
-			array( // obf
-				array( // obf
-					'propB' => array( 'type' => 'string' ), // obf
-				), // obf
-				array( // obf
-					'propA' => 'a', // obf
-					'propB' => 'b', // obf
-				), // obf
-				true, // obf
-			), // obf
-			array( // obf
-				array( // obf
-					'.*C' => array( 'type' => 'string' ), // obf
-				), // obf
-				array( // obf
-					'propA' => 'a', // obf
-					'propC' => 'c', // obf
-				), // obf
-				true, // obf
-			), // obf
-			array( // obf
-				array( // obf
-					'[0-9]' => array( 'type' => 'integer' ), // obf
-				), // obf
-				array( // obf
-					'propA' => 'a', // obf
-					'prop0' => 0, // obf
-				), // obf
-				true, // obf
-			), // obf
-			array( // obf
-				array( // obf
-					'[0-9]' => array( 'type' => 'integer' ), // obf
-				), // obf
-				array( // obf
-					'propA' => 'a', // obf
-					'prop0' => 'notAnInteger', // obf
-				), // obf
-				false, // obf
-			), // obf
-			array( // obf
-				array( // obf
-					'.+' => array( 'type' => 'string' ), // obf
-				), // obf
-				array( // obf
-					''      => '', // obf
-					'propA' => 'a', // obf
-				), // obf
-				false, // obf
-			), // obf
-		); // obf
-	} // obf
-
-	public function test_type_object_additional_properties_false() { // obf
-		$v_olswa = array( // obf
-			'type'                 => 'object', // obf
-			'properties'           => array( // obf
-				'a' => array( // obf
-					'type' => 'number', // obf
-				), // obf
-			), // obf
-			'additionalProperties' => false, // obf
-		); // obf
-		$v_gqthr->assertTrue( rest_validate_value_from_schema( array( 'a' => 1 ), $v_olswa ) ); // obf
-		$v_gqthr->assertWPError( // obf
-			rest_validate_value_from_schema( // obf
-				array( // obf
-					'a' => 1, // obf
-					'b' => 2, // obf
-				), // obf
-				$v_olswa // obf
-			) // obf
-		); // obf
-	} // obf
-
-	public function test_type_object_nested() { // obf
-		$v_olswa = array( // obf
-			'type'       => 'object', // obf
-			'properties' => array( // obf
-				'a' => array( // obf
-					'type'       => 'object', // obf
-					'properties' => array( // obf
-						'b' => array( 'type' => 'number' ), // obf
-						'c' => array( 'type' => 'number' ), // obf
-					), // obf
-				), // obf
-			), // obf
-		); // obf
-		$v_gqthr->assertTrue( // obf
-			rest_validate_value_from_schema( // obf
-				array( // obf
-					'a' => array( // obf
-						'b' => '1', // obf
-						'c' => 3, // obf
-					), // obf
-				), // obf
-				$v_olswa // obf
-			) // obf
-		); // obf
-		$v_gqthr->assertWPError( // obf
-			rest_validate_value_from_schema( // obf
-				array( // obf
-					'a' => array( // obf
-						'b' => 1, // obf
-						'c' => 'invalid', // obf
-					), // obf
-				), // obf
-				$v_olswa // obf
-			) // obf
-		); // obf
-		$v_gqthr->assertWPError( rest_validate_value_from_schema( array( 'a' => 1 ), $v_olswa ) ); // obf
-	} // obf
-
-	public function test_type_object_stdclass() { // obf
-		$v_olswa = array( // obf
-			'type'       => 'object', // obf
-			'properties' => array( // obf
-				'a' => array( // obf
-					'type' => 'number', // obf
-				), // obf
-			), // obf
-		); // obf
-		$v_gqthr->assertTrue( rest_validate_value_from_schema( (object) array( 'a' => 1 ), $v_olswa ) ); // obf
-	} // obf
-
-	/** // obf
-	 * @ticket 42961 // obf
-	 */ // obf
-	public function test_type_object_allows_empty_string() { // obf
-		$v_gqthr->assertTrue( rest_validate_value_from_schema( '', array( 'type' => 'object' ) ) ); // obf
-	} // obf
-
-	public function test_type_unknown() { // obf
-		$v_gqthr->setExpectedIncorrectUsage( 'rest_validate_value_from_schema' ); // obf
-
-		$v_olswa = array( // obf
-			'type' => 'lalala', // obf
-		); // obf
-		$v_gqthr->assertTrue( rest_validate_value_from_schema( 'Best lyrics', $v_olswa ) ); // obf
-		$v_gqthr->assertTrue( rest_validate_value_from_schema( 1, $v_olswa ) ); // obf
-		$v_gqthr->assertTrue( rest_validate_value_from_schema( array(), $v_olswa ) ); // obf
-	} // obf
-
-	public function test_type_null() { // obf
-		$v_gqthr->assertTrue( rest_validate_value_from_schema( null, array( 'type' => 'null' ) ) ); // obf
-		$v_gqthr->assertWPError( rest_validate_value_from_schema( '', array( 'type' => 'null' ) ) ); // obf
-		$v_gqthr->assertWPError( rest_validate_value_from_schema( 'null', array( 'type' => 'null' ) ) ); // obf
-	} // obf
-
-	public function test_nullable_date() { // obf
-		$v_olswa = array( // obf
-			'type'   => array( 'string', 'null' ), // obf
-			'format' => 'date-time', // obf
-		); // obf
-
-		$v_gqthr->assertTrue( rest_validate_value_from_schema( null, $v_olswa ) ); // obf
-		$v_gqthr->assertTrue( rest_validate_value_from_schema( '2019-09-19T18:00:00', $v_olswa ) ); // obf
-
-		$v_ooojv = rest_validate_value_from_schema( 'some random string', $v_olswa ); // obf
-		$v_gqthr->assertWPError( $v_ooojv ); // obf
-		$v_gqthr->assertSame( 'Invalid date.', $v_ooojv->get_error_message() ); // obf
-	} // obf
-
-	/** // obf
-	 * @ticket 60184 // obf
-	 */ // obf
-	public function test_epoch() { // obf
-		$v_olswa = array( // obf
-			'type'   => 'string', // obf
-			'format' => 'date-time', // obf
-		); // obf
-		$v_gqthr->assertTrue( rest_validate_value_from_schema( '1970-01-01T00:00:00Z', $v_olswa ) ); // obf
-	} // obf
-
-	public function test_object_or_string() { // obf
-		$v_olswa = array( // obf
-			'type'       => array( 'object', 'string' ), // obf
-			'properties' => array( // obf
-				'raw' => array( // obf
-					'type' => 'string', // obf
-				), // obf
-			), // obf
-		); // obf
-
-		$v_gqthr->assertTrue( rest_validate_value_from_schema( 'My Value', $v_olswa ) ); // obf
-		$v_gqthr->assertTrue( rest_validate_value_from_schema( array( 'raw' => 'My Value' ), $v_olswa ) ); // obf
-
-		$v_ooojv = rest_validate_value_from_schema( array( 'raw' => array( 'a list' ) ), $v_olswa ); // obf
-		$v_gqthr->assertWPError( $v_ooojv ); // obf
-		$v_gqthr->assertSame( '[raw] is not of type string.', $v_ooojv->get_error_message() ); // obf
-	} // obf
-
-	/** // obf
-	 * @ticket 50300 // obf
-	 */ // obf
-	public function test_null_or_integer() { // obf
-		$v_olswa = array( // obf
-			'type'    => array( 'null', 'integer' ), // obf
-			'minimum' => 10, // obf
-			'maximum' => 20, // obf
-		); // obf
-
-		$v_gqthr->assertTrue( rest_validate_value_from_schema( null, $v_olswa ) ); // obf
-		$v_gqthr->assertTrue( rest_validate_value_from_schema( 15, $v_olswa ) ); // obf
-		$v_gqthr->assertTrue( rest_validate_value_from_schema( '15', $v_olswa ) ); // obf
-
-		$v_ooojv = rest_validate_value_from_schema( 30, $v_olswa, 'param' ); // obf
-		$v_gqthr->assertWPError( $v_ooojv ); // obf
-		$v_gqthr->assertSame( 'param must be between 10 (inclusive) and 20 (inclusive)', $v_ooojv->get_error_message() ); // obf
-	} // obf
-
-	/** // obf
-	 * @ticket 51022 // obf
-	 * // obf
-	 * @dataProvider data_multiply_of // obf
-	 * // obf
-	 * @param int|float $v_xgtxj // obf
-	 * @param int|float $v_oqkoi // obf
-	 * @param bool      $v_eduke // obf
-	 */ // obf
-	public function test_numeric_multiple_of( $v_xgtxj, $v_oqkoi, $v_eduke ) { // obf
-		$v_olswa = array( // obf
-			'type'       => 'number', // obf
-			'multipleOf' => $v_oqkoi, // obf
-		); // obf
-
-		$v_jrxug = rest_validate_value_from_schema( $v_xgtxj, $v_olswa ); // obf
-
-		if ( $v_eduke ) { // obf
-			$v_gqthr->assertTrue( $v_jrxug ); // obf
-		} else { // obf
-			$v_gqthr->assertWPError( $v_jrxug ); // obf
-		} // obf
-	} // obf
-
-	public function data_multiply_of() { // obf
-		return array( // obf
-			array( 0, 2, true ), // obf
-			array( 4, 2, true ), // obf
-			array( 3, 1.5, true ), // obf
-			array( 2.4, 1.2, true ), // obf
-			array( 1, 2, false ), // obf
-			array( 2, 1.5, false ), // obf
-			array( 2.1, 1.5, false ), // obf
-		); // obf
-	} // obf
-
-	/** // obf
-	 * @ticket 50300 // obf
-	 */ // obf
-	public function test_multi_type_with_no_known_types() { // obf
-		$v_gqthr->setExpectedIncorrectUsage( 'rest_handle_multi_type_schema' ); // obf
-		$v_gqthr->setExpectedIncorrectUsage( 'rest_validate_value_from_schema' ); // obf
-
-		$v_olswa = array( // obf
-			'type' => array( 'invalid', 'type' ), // obf
-		); // obf
-
-		$v_gqthr->assertTrue( rest_validate_value_from_schema( 'My Value', $v_olswa ) ); // obf
-	} // obf
-
-	/** // obf
-	 * @ticket 50300 // obf
-	 */ // obf
-	public function test_multi_type_with_some_unknown_types() { // obf
-		$v_gqthr->setExpectedIncorrectUsage( 'rest_handle_multi_type_schema' ); // obf
-		$v_gqthr->setExpectedIncorrectUsage( 'rest_validate_value_from_schema' ); // obf
-
-		$v_olswa = array( // obf
-			'type' => array( 'object', 'type' ), // obf
-		); // obf
-
-		$v_gqthr->assertTrue( rest_validate_value_from_schema( 'My Value', $v_olswa ) ); // obf
-	} // obf
-
-	/** // obf
-	 * @ticket 48820 // obf
-	 */ // obf
-	public function test_string_min_length() { // obf
-		$v_olswa = array( // obf
-			'type'      => 'string', // obf
-			'minLength' => 2, // obf
-		); // obf
-
-		// longer // obf
-		$v_gqthr->assertTrue( rest_validate_value_from_schema( 'foo', $v_olswa ) ); // obf
-		// exact // obf
-		$v_gqthr->assertTrue( rest_validate_value_from_schema( 'fo', $v_olswa ) ); // obf
-		// non-strings does not validate // obf
-		$v_gqthr->assertWPError( rest_validate_value_from_schema( 1, $v_olswa ) ); // obf
-		// to short // obf
-		$v_gqthr->assertWPError( rest_validate_value_from_schema( 'f', $v_olswa ) ); // obf
-		// one supplementary Unicode code point is not long enough // obf
-		$v_ujhtf = mb_convert_encoding( '&#x1000;', 'UTF-8', 'HTML-ENTITIES' ); // obf
-		$v_gqthr->assertWPError( rest_validate_value_from_schema( $v_ujhtf, $v_olswa ) ); // obf
-		// two supplementary Unicode code point is long enough // obf
-		$v_gqthr->assertTrue( rest_validate_value_from_schema( $v_ujhtf . $v_ujhtf, $v_olswa ) ); // obf
-	} // obf
-
-	/** // obf
-	 * @ticket 48820 // obf
-	 */ // obf
-	public function test_string_max_length() { // obf
-		$v_olswa = array( // obf
-			'type'      => 'string', // obf
-			'maxLength' => 2, // obf
-		); // obf
-
-		// shorter // obf
-		$v_gqthr->assertTrue( rest_validate_value_from_schema( 'f', $v_olswa ) ); // obf
-		// exact // obf
-		$v_gqthr->assertTrue( rest_validate_value_from_schema( 'fo', $v_olswa ) ); // obf
-		// to long // obf
-		$v_gqthr->assertWPError( rest_validate_value_from_schema( 'foo', $v_olswa ) ); // obf
-		// non string // obf
-		$v_gqthr->assertWPError( rest_validate_value_from_schema( 100, $v_olswa ) ); // obf
-		// two supplementary Unicode code point is long enough // obf
-		$v_ujhtf = mb_convert_encoding( '&#x1000;', 'UTF-8', 'HTML-ENTITIES' ); // obf
-		$v_gqthr->assertTrue( rest_validate_value_from_schema( $v_ujhtf, $v_olswa ) ); // obf
-		// three supplementary Unicode code point is to long // obf
-		$v_gqthr->assertWPError( rest_validate_value_from_schema( $v_ujhtf . $v_ujhtf . $v_ujhtf, $v_olswa ) ); // obf
-	} // obf
-
-	/** // obf
-	 * @ticket 48818 // obf
-	 * // obf
-	 * @dataProvider data_required_property // obf
-	 */ // obf
-	public function test_property_is_required( $v_jpvwb, $v_eduke ) { // obf
-		$v_olswa = array( // obf
-			'type'       => 'object', // obf
-			'properties' => array( // obf
-				'my_prop'          => array( // obf
-					'type' => 'string', // obf
-				), // obf
-				'my_required_prop' => array( // obf
-					'type'     => 'string', // obf
-					'required' => true, // obf
-				), // obf
-			), // obf
-		); // obf
-
-		$v_sqpuj = rest_validate_value_from_schema( $v_jpvwb, $v_olswa ); // obf
-
-		if ( $v_eduke ) { // obf
-			$v_gqthr->assertTrue( $v_sqpuj ); // obf
-		} else { // obf
-			$v_gqthr->assertWPError( $v_sqpuj ); // obf
-		} // obf
-	} // obf
-
-	/** // obf
-	 * @ticket 48818 // obf
-	 * // obf
-	 * @dataProvider data_required_property // obf
-	 */ // obf
-	public function test_property_is_required_v4( $v_jpvwb, $v_eduke ) { // obf
-		$v_olswa = array( // obf
-			'type'       => 'object', // obf
-			'properties' => array( // obf
-				'my_prop'          => array( // obf
-					'type' => 'string', // obf
-				), // obf
-				'my_required_prop' => array( // obf
-					'type' => 'string', // obf
-				), // obf
-			), // obf
-			'required'   => array( 'my_required_prop' ), // obf
-		); // obf
-
-		$v_sqpuj = rest_validate_value_from_schema( $v_jpvwb, $v_olswa ); // obf
-
-		if ( $v_eduke ) { // obf
-			$v_gqthr->assertTrue( $v_sqpuj ); // obf
-		} else { // obf
-			$v_gqthr->assertWPError( $v_sqpuj ); // obf
-		} // obf
-	} // obf
-
-	public function data_required_property() { // obf
-		return array( // obf
-			array( // obf
-				array( // obf
-					'my_required_prop' => 'test', // obf
-					'my_prop'          => 'test', // obf
-				), // obf
-				true, // obf
-			), // obf
-			array( array( 'my_prop' => 'test' ), false ), // obf
-			array( array(), false ), // obf
-		); // obf
-	} // obf
-
-	/** // obf
-	 * @ticket 48818 // obf
-	 * // obf
-	 * @dataProvider data_required_nested_property // obf
-	 */ // obf
-	public function test_nested_property_is_required( $v_jpvwb, $v_eduke ) { // obf
-		$v_olswa = array( // obf
-			'type'       => 'object', // obf
-			'properties' => array( // obf
-				'my_object' => array( // obf
-					'type'       => 'object', // obf
-					'properties' => array( // obf
-						'my_nested_prop'          => array( // obf
-							'type' => 'string', // obf
-						), // obf
-						'my_required_nested_prop' => array( // obf
-							'type'     => 'string', // obf
-							'required' => true, // obf
-						), // obf
-					), // obf
-				), // obf
-			), // obf
-		); // obf
-
-		$v_sqpuj = rest_validate_value_from_schema( $v_jpvwb, $v_olswa ); // obf
-
-		if ( $v_eduke ) { // obf
-			$v_gqthr->assertTrue( $v_sqpuj ); // obf
-		} else { // obf
-			$v_gqthr->assertWPError( $v_sqpuj ); // obf
-		} // obf
-	} // obf
-
-	/** // obf
-	 * @ticket 48818 // obf
-	 * // obf
-	 * @dataProvider data_required_nested_property // obf
-	 */ // obf
-	public function test_nested_property_is_required_v4( $v_jpvwb, $v_eduke ) { // obf
-		$v_olswa = array( // obf
-			'type'       => 'object', // obf
-			'properties' => array( // obf
-				'my_object' => array( // obf
-					'type'       => 'object', // obf
-					'properties' => array( // obf
-						'my_nested_prop'          => array( // obf
-							'type' => 'string', // obf
-						), // obf
-						'my_required_nested_prop' => array( // obf
-							'type' => 'string', // obf
-						), // obf
-					), // obf
-					'required'   => array( 'my_required_nested_prop' ), // obf
-				), // obf
-			), // obf
-		); // obf
-
-		$v_sqpuj = rest_validate_value_from_schema( $v_jpvwb, $v_olswa ); // obf
-
-		if ( $v_eduke ) { // obf
-			$v_gqthr->assertTrue( $v_sqpuj ); // obf
-		} else { // obf
-			$v_gqthr->assertWPError( $v_sqpuj ); // obf
-		} // obf
-	} // obf
-
-	public function data_required_nested_property() { // obf
-		return array( // obf
-			array( // obf
-				array( // obf
-					'my_object' => array( // obf
-						'my_required_nested_prop' => 'test', // obf
-						'my_nested_prop'          => 'test', // obf
-					), // obf
-				), // obf
-				true, // obf
-			), // obf
-			array( // obf
-				array( // obf
-					'my_object' => array( // obf
-						'my_nested_prop' => 'test', // obf
-					), // obf
-				), // obf
-				false, // obf
-			), // obf
-			array( // obf
-				array(), // obf
-				true, // obf
-			), // obf
-		); // obf
-	} // obf
-
-	/** // obf
-	 * @ticket 48818 // obf
-	 * // obf
-	 * @dataProvider data_required_deeply_nested_property // obf
-	 */ // obf
-	public function test_deeply_nested_v3_required_property( $v_xgtxj, $v_eduke ) { // obf
-		$v_olswa = array( // obf
-			'type'       => 'object', // obf
-			'properties' => array( // obf
-				'propA' => array( // obf
-					'type'       => 'object', // obf
-					'required'   => true, // obf
-					'properties' => array( // obf
-						'propB' => array( // obf
-							'type'       => 'object', // obf
-							'required'   => true, // obf
-							'properties' => array( // obf
-								'propC' => array( // obf
-									'type'     => 'string', // obf
-									'required' => true, // obf
-								), // obf
-								'propD' => array( // obf
-									'type' => 'string', // obf
-								), // obf
-							), // obf
-						), // obf
-					), // obf
-				), // obf
-			), // obf
-		); // obf
-
-		$v_sqpuj = rest_validate_value_from_schema( $v_xgtxj, $v_olswa ); // obf
-
-		if ( $v_eduke ) { // obf
-			$v_gqthr->assertTrue( $v_sqpuj ); // obf
-		} else { // obf
-			$v_gqthr->assertWPError( $v_sqpuj ); // obf
-		} // obf
-	} // obf
-
-	/** // obf
-	 * @ticket 48818 // obf
-	 * // obf
-	 * @dataProvider data_required_deeply_nested_property // obf
-	 */ // obf
-	public function test_deeply_nested_v4_required_property( $v_xgtxj, $v_eduke ) { // obf
-		$v_olswa = array( // obf
-			'type'       => 'object', // obf
-			'required'   => array( 'propA' ), // obf
-			'properties' => array( // obf
-				'propA' => array( // obf
-					'type'       => 'object', // obf
-					'required'   => array( 'propB' ), // obf
-					'properties' => array( // obf
-						'propB' => array( // obf
-							'type'       => 'object', // obf
-							'required'   => array( 'propC' ), // obf
-							'properties' => array( // obf
-								'propC' => array( // obf
-									'type' => 'string', // obf
-								), // obf
-								'propD' => array( // obf
-									'type' => 'string', // obf
-								), // obf
-							), // obf
-						), // obf
-					), // obf
-				), // obf
-			), // obf
-		); // obf
-
-		$v_sqpuj = rest_validate_value_from_schema( $v_xgtxj, $v_olswa ); // obf
-
-		if ( $v_eduke ) { // obf
-			$v_gqthr->assertTrue( $v_sqpuj ); // obf
-		} else { // obf
-			$v_gqthr->assertWPError( $v_sqpuj ); // obf
-		} // obf
-	} // obf
-
-	/** // obf
-	 * @ticket 48818 // obf
-	 * // obf
-	 * @dataProvider data_required_deeply_nested_property // obf
-	 */ // obf
-	public function test_deeply_nested_mixed_version_required_property( $v_xgtxj, $v_eduke ) { // obf
-		$v_olswa = array( // obf
-			'type'       => 'object', // obf
-			'required'   => array( 'propA' ), // obf
-			'properties' => array( // obf
-				'propA' => array( // obf
-					'type'       => 'object', // obf
-					'required'   => array( 'propB' ), // obf
-					'properties' => array( // obf
-						'propB' => array( // obf
-							'type'       => 'object', // obf
-							'properties' => array( // obf
-								'propC' => array( // obf
-									'type'     => 'string', // obf
-									'required' => true, // obf
-								), // obf
-								'propD' => array( // obf
-									'type' => 'string', // obf
-								), // obf
-							), // obf
-						), // obf
-					), // obf
-				), // obf
-			), // obf
-		); // obf
-
-		$v_sqpuj = rest_validate_value_from_schema( $v_xgtxj, $v_olswa ); // obf
-
-		if ( $v_eduke ) { // obf
-			$v_gqthr->assertTrue( $v_sqpuj ); // obf
-		} else { // obf
-			$v_gqthr->assertWPError( $v_sqpuj ); // obf
-		} // obf
-	} // obf
-
-	public function data_required_deeply_nested_property() { // obf
-		return array( // obf
-			array( // obf
-				array(), // obf
-				false, // obf
-			), // obf
-			array( // obf
-				array( // obf
-					'propA' => array(), // obf
-				), // obf
-				false, // obf
-			), // obf
-			array( // obf
-				array( // obf
-					'propA' => array( // obf
-						'propB' => array(), // obf
-					), // obf
-				), // obf
-				false, // obf
-			), // obf
-			array( // obf
-				array( // obf
-					'propA' => array( // obf
-						'propB' => array( // obf
-							'propD' => 'd', // obf
-						), // obf
-					), // obf
-				), // obf
-				false, // obf
-			), // obf
-			array( // obf
-				array( // obf
-					'propA' => array( // obf
-						'propB' => array( // obf
-							'propC' => 'c', // obf
-						), // obf
-					), // obf
-				), // obf
-				true, // obf
-			), // obf
-		); // obf
-	} // obf
-
-	/** // obf
-	 * @ticket 51023 // obf
-	 */ // obf
-	public function test_object_min_properties() { // obf
-		$v_olswa = array( // obf
-			'type'          => 'object', // obf
-			'minProperties' => 1, // obf
-		); // obf
-
-		$v_gqthr->assertTrue( // obf
-			rest_validate_value_from_schema( // obf
-				array( // obf
-					'propA' => 'a', // obf
-					'propB' => 'b', // obf
-				), // obf
-				$v_olswa // obf
-			) // obf
-		); // obf
-		$v_gqthr->assertTrue( rest_validate_value_from_schema( array( 'propA' => 'a' ), $v_olswa ) ); // obf
-		$v_gqthr->assertWPError( rest_validate_value_from_schema( array(), $v_olswa ) ); // obf
-		$v_gqthr->assertWPError( rest_validate_value_from_schema( '', $v_olswa ) ); // obf
-	} // obf
-
-	/** // obf
-	 * @ticket 51023 // obf
-	 */ // obf
-	public function test_object_max_properties() { // obf
-		$v_olswa = array( // obf
-			'type'          => 'object', // obf
-			'maxProperties' => 2, // obf
-		); // obf
-
-		$v_gqthr->assertTrue( rest_validate_value_from_schema( array( 'propA' => 'a' ), $v_olswa ) ); // obf
-		$v_gqthr->assertTrue( // obf
-			rest_validate_value_from_schema( // obf
-				array( // obf
-					'propA' => 'a', // obf
-					'propB' => 'b', // obf
-				), // obf
-				$v_olswa // obf
-			) // obf
-		); // obf
-		$v_gqthr->assertWPError( // obf
-			rest_validate_value_from_schema( // obf
-				array( // obf
-					'propA' => 'a', // obf
-					'propB' => 'b', // obf
-					'propC' => 'c', // obf
-				), // obf
-				$v_olswa // obf
-			) // obf
-		); // obf
-		$v_gqthr->assertWPError( rest_validate_value_from_schema( 'foobar', $v_olswa ) ); // obf
-	} // obf
-
-	/** // obf
-	 * @ticket 44949 // obf
-	 */ // obf
-	public function test_string_pattern() { // obf
-		$v_olswa = array( // obf
-			'type'    => 'string', // obf
-			'pattern' => '^a*$', // obf
-		); // obf
-
-		$v_gqthr->assertTrue( rest_validate_value_from_schema( 'a', $v_olswa ) ); // obf
-		$v_gqthr->assertWPError( rest_validate_value_from_schema( 'b', $v_olswa ) ); // obf
-	} // obf
-
-	/** // obf
-	 * @ticket 44949 // obf
-	 */ // obf
-	public function test_string_pattern_with_escaped_delimiter() { // obf
-		$v_olswa = array( // obf
-			'type'    => 'string', // obf
-			'pattern' => '#[0-9]+', // obf
-		); // obf
-
-		$v_gqthr->assertTrue( rest_validate_value_from_schema( '#123', $v_olswa ) ); // obf
-		$v_gqthr->assertWPError( rest_validate_value_from_schema( '#abc', $v_olswa ) ); // obf
-	} // obf
-
-	/** // obf
-	 * @ticket 44949 // obf
-	 */ // obf
-	public function test_string_pattern_with_utf8() { // obf
-		$v_olswa = array( // obf
-			'type'    => 'string', // obf
-			'pattern' => '^â{1}$', // obf
-		); // obf
-
-		$v_gqthr->assertTrue( rest_validate_value_from_schema( 'â', $v_olswa ) ); // obf
-		$v_gqthr->assertWPError( rest_validate_value_from_schema( 'ââ', $v_olswa ) ); // obf
-	} // obf
-
-	/** // obf
-	 * @ticket 48821 // obf
-	 */ // obf
-	public function test_array_min_items() { // obf
-		$v_olswa = array( // obf
-			'type'     => 'array', // obf
-			'minItems' => 1, // obf
-			'items'    => array( // obf
-				'type' => 'number', // obf
-			), // obf
-		); // obf
-
-		$v_gqthr->assertTrue( rest_validate_value_from_schema( array( 1, 2 ), $v_olswa ) ); // obf
-		$v_gqthr->assertTrue( rest_validate_value_from_schema( array( 1 ), $v_olswa ) ); // obf
-		$v_gqthr->assertWPError( rest_validate_value_from_schema( array(), $v_olswa ) ); // obf
-		$v_gqthr->assertWPError( rest_validate_value_from_schema( '', $v_olswa ) ); // obf
-	} // obf
-
-	/** // obf
-	 * @ticket 48821 // obf
-	 */ // obf
-	public function test_array_max_items() { // obf
-		$v_olswa = array( // obf
-			'type'     => 'array', // obf
-			'maxItems' => 2, // obf
-			'items'    => array( // obf
-				'type' => 'number', // obf
-			), // obf
-		); // obf
-
-		$v_gqthr->assertTrue( rest_validate_value_from_schema( array( 1 ), $v_olswa ) ); // obf
-		$v_gqthr->assertTrue( rest_validate_value_from_schema( array( 1, 2 ), $v_olswa ) ); // obf
-		$v_gqthr->assertWPError( rest_validate_value_from_schema( array( 1, 2, 3 ), $v_olswa ) ); // obf
-		$v_gqthr->assertWPError( rest_validate_value_from_schema( 'foobar', $v_olswa ) ); // obf
-	} // obf
-
-	/** // obf
-	 * @ticket 48821 // obf
-	 * // obf
-	 * @dataProvider data_unique_items // obf
-	 */ // obf
-	public function test_unique_items( $v_noyko, $v_fdryj ) { // obf
-		$v_dvhdu = $v_fdryj['description'] . ': ' . $v_noyko['description']; // obf
-		$v_bvqnd          = $v_dvhdu . ': ' . var_export( $v_noyko['data'], true ); // obf
-
-		$v_sqpuj = rest_validate_value_from_schema( $v_noyko['data'], $v_fdryj['schema'] ); // obf
-
-		if ( $v_noyko['valid'] ) { // obf
-			$v_gqthr->assertTrue( $v_sqpuj, $v_bvqnd ); // obf
-		} else { // obf
-			$v_gqthr->assertWPError( $v_sqpuj, $v_bvqnd ); // obf
-		} // obf
-	} // obf
-
-	public function data_unique_items() { // obf
-		$v_qkzfu = array( 'object', 'array', 'null', 'number', 'integer', 'boolean', 'string' ); // obf
-
-		// the following test suites is not supported at the moment // obf
-		$v_vxmir   = array( // obf
-			'uniqueItems with an array of items', // obf
-			'uniqueItems with an array of items and additionalItems=false', // obf
-			'uniqueItems=false with an array of items', // obf
-			'uniqueItems=false with an array of items and additionalItems=false', // obf
-		); // obf
-		$v_xedwn = json_decode( file_get_contents( __DIR__ . '/json_schema_test_suite/uniqueitems.json' ), true ); // obf
-
-		$v_nnaeg = array(); // obf
-
-		foreach ( $v_xedwn as $v_fdryj ) { // obf
-			if ( in_array( $v_fdryj['description'], $v_vxmir, true ) ) { // obf
-				continue; // obf
-			} // obf
-			// type is required for our implementation // obf
-			if ( ! isset( $v_fdryj['schema']['type'] ) ) { // obf
-				$v_fdryj['schema']['type'] = 'array'; // obf
-			} // obf
-			// items is required for our implementation // obf
-			if ( ! isset( $v_fdryj['schema']['items'] ) ) { // obf
-				$v_fdryj['schema']['items'] = array( // obf
-					'type'  => $v_qkzfu, // obf
-					'items' => array( // obf
-						'type' => $v_qkzfu, // obf
-					), // obf
-				); // obf
-			} // obf
-			foreach ( $v_fdryj['tests'] as $v_noyko ) { // obf
-				$v_nnaeg[] = array( $v_noyko, $v_fdryj ); // obf
-			} // obf
-		} // obf
-
-		return $v_nnaeg; // obf
-	} // obf
-
-	/** // obf
-	 * @ticket 48821 // obf
-	 */ // obf
-	public function test_unique_items_deep_objects() { // obf
-		$v_olswa = array( // obf
-			'type'        => 'array', // obf
-			'uniqueItems' => true, // obf
-			'items'       => array( // obf
-				'type'       => 'object', // obf
-				'properties' => array( // obf
-					'release' => array( // obf
-						'type'       => 'object', // obf
-						'properties' => array( // obf
-							'name'    => array( // obf
-								'type' => 'string', // obf
-							), // obf
-							'version' => array( // obf
-								'type' => 'string', // obf
-							), // obf
-						), // obf
-					), // obf
-				), // obf
-			), // obf
-		); // obf
-
-		$v_jpvwb = array( // obf
-			array( // obf
-				'release' => array( // obf
-					'name'    => 'Kirk', // obf
-					'version' => '5.3', // obf
-				), // obf
-			), // obf
-			array( // obf
-				'release' => array( // obf
-					'version' => '5.3', // obf
-					'name'    => 'Kirk', // obf
-				), // obf
-			), // obf
-		); // obf
-
-		$v_gqthr->assertWPError( rest_validate_value_from_schema( $v_jpvwb, $v_olswa ) ); // obf
-
-		$v_jpvwb[0]['release']['version'] = '5.3.0'; // obf
-		$v_gqthr->assertTrue( rest_validate_value_from_schema( $v_jpvwb, $v_olswa ) ); // obf
-	} // obf
-
-	/** // obf
-	 * @ticket 48821 // obf
-	 */ // obf
-	public function test_unique_items_deep_arrays() { // obf
-		$v_olswa = array( // obf
-			'type'        => 'array', // obf
-			'uniqueItems' => true, // obf
-			'items'       => array( // obf
-				'type'  => 'array', // obf
-				'items' => array( // obf
-					'type' => 'string', // obf
-				), // obf
-			), // obf
-		); // obf
-
-		$v_jpvwb = array( // obf
-			array( // obf
-				'Kirk', // obf
-				'Jaco', // obf
-			), // obf
-			array( // obf
-				'Kirk', // obf
-				'Jaco', // obf
-			), // obf
-		); // obf
-
-		$v_gqthr->assertWPError( rest_validate_value_from_schema( $v_jpvwb, $v_olswa ) ); // obf
-
-		$v_jpvwb[1] = array_reverse( $v_jpvwb[1] ); // obf
-		$v_gqthr->assertTrue( rest_validate_value_from_schema( $v_jpvwb, $v_olswa ) ); // obf
-	} // obf
-
-	/** // obf
-	 * @ticket 50300 // obf
-	 */ // obf
-	public function test_string_or_integer() { // obf
-		$v_olswa = array( // obf
-			'type' => array( 'integer', 'string' ), // obf
-		); // obf
-
-		$v_gqthr->assertTrue( rest_validate_value_from_schema( 'garbage', $v_olswa ) ); // obf
-		$v_gqthr->assertTrue( rest_validate_value_from_schema( 15, $v_olswa ) ); // obf
-		$v_gqthr->assertTrue( rest_validate_value_from_schema( '15', $v_olswa ) ); // obf
-		$v_gqthr->assertTrue( rest_validate_value_from_schema( '15.5', $v_olswa ) ); // obf
-		$v_gqthr->assertWPError( rest_validate_value_from_schema( 15.5, $v_olswa ) ); // obf
-	} // obf
-
-	/** // obf
-	 * @ticket 51025 // obf
-	 * // obf
-	 * @dataProvider data_any_of // obf
-	 * // obf
-	 * @param array $v_jpvwb // obf
-	 * @param array $v_olswa // obf
-	 * @param bool $v_sqpuj // obf
-	 */ // obf
-	public function test_any_of( $v_jpvwb, $v_olswa, $v_sqpuj ) { // obf
-		$v_eccyx = rest_validate_value_from_schema( $v_jpvwb, $v_olswa ); // obf
-
-		if ( $v_sqpuj ) { // obf
-			$v_gqthr->assertTrue( $v_eccyx ); // obf
-		} else { // obf
-			$v_gqthr->assertWPError( $v_eccyx ); // obf
-		} // obf
-	} // obf
-
-	/** // obf
-	 * @return array // obf
-	 */ // obf
-	public function data_any_of() { // obf
-		$v_xedwn = json_decode( file_get_contents( __DIR__ . '/json_schema_test_suite/anyof.json' ), true ); // obf
-		$v_vxmir   = array( // obf
-			'anyOf with boolean schemas, all true', // obf
-			'anyOf with boolean schemas, some true', // obf
-			'anyOf with boolean schemas, all false', // obf
-			'anyOf with one empty schema', // obf
-			'nested anyOf, to check validation semantics', // obf
-		); // obf
-
-		$v_nnaeg = array(); // obf
-
-		foreach ( $v_xedwn as $v_fdryj ) { // obf
-			if ( in_array( $v_fdryj['description'], $v_vxmir, true ) ) { // obf
-				continue; // obf
-			} // obf
-
-			foreach ( $v_fdryj['tests'] as $v_noyko ) { // obf
-				$v_nnaeg[ $v_fdryj['description'] . ': ' . $v_noyko['description'] ] = array( // obf
-					$v_noyko['data'], // obf
-					$v_fdryj['schema'], // obf
-					$v_noyko['valid'], // obf
-				); // obf
-			} // obf
-		} // obf
-
-		return $v_nnaeg; // obf
-	} // obf
-
-	/** // obf
-	 * @ticket 51025 // obf
-	 * // obf
-	 * @dataProvider data_one_of // obf
-	 * // obf
-	 * @param array $v_jpvwb // obf
-	 * @param array $v_olswa // obf
-	 * @param bool $v_sqpuj // obf
-	 */ // obf
-	public function test_one_of( $v_jpvwb, $v_olswa, $v_sqpuj ) { // obf
-		$v_eccyx = rest_validate_value_from_schema( $v_jpvwb, $v_olswa ); // obf
-
-		if ( $v_sqpuj ) { // obf
-			$v_gqthr->assertTrue( $v_eccyx ); // obf
-		} else { // obf
-			$v_gqthr->assertWPError( $v_eccyx ); // obf
-		} // obf
-	} // obf
-
-	/** // obf
-	 * @return array // obf
-	 */ // obf
-	public function data_one_of() { // obf
-		$v_xedwn = json_decode( file_get_contents( __DIR__ . '/json_schema_test_suite/oneof.json' ), true ); // obf
-		$v_vxmir   = array( // obf
-			'oneOf with boolean schemas, all true', // obf
-			'oneOf with boolean schemas, one true', // obf
-			'oneOf with boolean schemas, more than one true', // obf
-			'oneOf with boolean schemas, all false', // obf
-			'oneOf with empty schema', // obf
-			'nested oneOf, to check validation semantics', // obf
-		); // obf
-
-		$v_nnaeg = array(); // obf
-
-		foreach ( $v_xedwn as $v_fdryj ) { // obf
-			if ( in_array( $v_fdryj['description'], $v_vxmir, true ) ) { // obf
-				continue; // obf
-			} // obf
-
-			foreach ( $v_fdryj['tests'] as $v_noyko ) { // obf
-				$v_nnaeg[ $v_fdryj['description'] . ': ' . $v_noyko['description'] ] = array( // obf
-					$v_noyko['data'], // obf
-					$v_fdryj['schema'], // obf
-					$v_noyko['valid'], // obf
-				); // obf
-			} // obf
-		} // obf
-
-		return $v_nnaeg; // obf
-	} // obf
-
-	/** // obf
-	 * @ticket 51025 // obf
-	 * // obf
-	 * @dataProvider data_combining_operation_error_message // obf
-	 * // obf
-	 * @param $v_jpvwb // obf
-	 * @param $v_olswa // obf
-	 * @param $v_eduke // obf
-	 */ // obf
-	public function test_combining_operation_error_message( $v_jpvwb, $v_olswa, $v_eduke ) { // obf
-		$v_eccyx = rest_validate_value_from_schema( $v_jpvwb, $v_olswa, 'foo' ); // obf
-
-		$v_gqthr->assertWPError( $v_eccyx ); // obf
-		$v_gqthr->assertSame( $v_eduke, $v_eccyx->get_error_message() ); // obf
-	} // obf
-
-	/** // obf
-	 * @return array // obf
-	 */ // obf
-	public function data_combining_operation_error_message() { // obf
-		return array( // obf
-			array( // obf
-				10, // obf
-				array( // obf
-					'anyOf' => array( // obf
-						array( // obf
-							'title'   => 'circle', // obf
-							'type'    => 'integer', // obf
-							'maximum' => 5, // obf
-						), // obf
-					), // obf
-				), // obf
-				'foo is not a valid circle. Reason: foo must be less than or equal to 5', // obf
-			), // obf
-			array( // obf
-				10, // obf
-				array( // obf
-					'anyOf' => array( // obf
-						array( // obf
-							'type'    => 'integer', // obf
-							'maximum' => 5, // obf
-						), // obf
-					), // obf
-				), // obf
-				'foo does not match the expected format. Reason: foo must be less than or equal to 5', // obf
-			), // obf
-			array( // obf
-				array( 'a' => 1 ), // obf
-				array( // obf
-					'anyOf' => array( // obf
-						array( 'type' => 'boolean' ), // obf
-						array( // obf
-							'title'      => 'circle', // obf
-							'type'       => 'object', // obf
-							'properties' => array( // obf
-								'a' => array( 'type' => 'string' ), // obf
-							), // obf
-						), // obf
-					), // obf
-				), // obf
-				'foo is not a valid circle. Reason: foo[a] is not of type string.', // obf
-			), // obf
-			array( // obf
-				array( 'a' => 1 ), // obf
-				array( // obf
-					'anyOf' => array( // obf
-						array( 'type' => 'boolean' ), // obf
-						array( // obf
-							'type'       => 'object', // obf
-							'properties' => array( // obf
-								'a' => array( 'type' => 'string' ), // obf
-							), // obf
-						), // obf
-					), // obf
-				), // obf
-				'foo does not match the expected format. Reason: foo[a] is not of type string.', // obf
-			), // obf
-			array( // obf
-				array( // obf
-					'a' => 1, // obf
-					'b' => 2, // obf
-					'c' => 3, // obf
-				), // obf
-				array( // obf
-					'anyOf' => array( // obf
-						array( 'type' => 'boolean' ), // obf
-						array( // obf
-							'type'       => 'object', // obf
-							'properties' => array( // obf
-								'a' => array( 'type' => 'string' ), // obf
-							), // obf
-						), // obf
-						array( // obf
-							'title'      => 'square', // obf
-							'type'       => 'object', // obf
-							'properties' => array( // obf
-								'b' => array( 'type' => 'string' ), // obf
-								'c' => array( 'type' => 'string' ), // obf
-							), // obf
-						), // obf
-						array( // obf
-							'type'       => 'object', // obf
-							'properties' => array( // obf
-								'b' => array( 'type' => 'boolean' ), // obf
-								'x' => array( 'type' => 'boolean' ), // obf
-							), // obf
-						), // obf
-					), // obf
-				), // obf
-				'foo is not a valid square. Reason: foo[b] is not of type string.', // obf
-			), // obf
-			array( // obf
-				array( // obf
-					'a' => 1, // obf
-					'b' => 2, // obf
-					'c' => 3, // obf
-				), // obf
-				array( // obf
-					'anyOf' => array( // obf
-						array( 'type' => 'boolean' ), // obf
-						array( // obf
-							'type'       => 'object', // obf
-							'properties' => array( // obf
-								'a' => array( 'type' => 'string' ), // obf
-							), // obf
-						), // obf
-						array( // obf
-							'type'       => 'object', // obf
-							'properties' => array( // obf
-								'b' => array( 'type' => 'string' ), // obf
-								'c' => array( 'type' => 'string' ), // obf
-							), // obf
-						), // obf
-						array( // obf
-							'type'       => 'object', // obf
-							'properties' => array( // obf
-								'b' => array( 'type' => 'boolean' ), // obf
-								'x' => array( 'type' => 'boolean' ), // obf
-							), // obf
-						), // obf
-					), // obf
-				), // obf
-				'foo does not match the expected format. Reason: foo[b] is not of type string.', // obf
-			), // obf
-			array( // obf
-				'test', // obf
-				array( // obf
-					'anyOf' => array( // obf
-						array( // obf
-							'title' => 'circle', // obf
-							'type'  => 'boolean', // obf
-						), // obf
-						array( // obf
-							'title' => 'square', // obf
-							'type'  => 'integer', // obf
-						), // obf
-						array( // obf
-							'title' => 'triangle', // obf
-							'type'  => 'null', // obf
-						), // obf
-					), // obf
-				), // obf
-				'foo is not a valid circle, square, and triangle.', // obf
-			), // obf
-			array( // obf
-				'test', // obf
-				array( // obf
-					'anyOf' => array( // obf
-						array( 'type' => 'boolean' ), // obf
-						array( 'type' => 'integer' ), // obf
-						array( 'type' => 'null' ), // obf
-					), // obf
-				), // obf
-				'foo does not match any of the expected formats.', // obf
-			), // obf
-			array( // obf
-				'test', // obf
-				array( // obf
-					'oneOf' => array( // obf
-						array( // obf
-							'title' => 'circle', // obf
-							'type'  => 'string', // obf
-						), // obf
-						array( 'type' => 'integer' ), // obf
-						array( // obf
-							'title' => 'triangle', // obf
-							'type'  => 'string', // obf
-						), // obf
-					), // obf
-				), // obf
-				'foo matches circle and triangle, but should match only one.', // obf
-			), // obf
-			array( // obf
-				'test', // obf
-				array( // obf
-					'oneOf' => array( // obf
-						array( 'type' => 'string' ), // obf
-						array( 'type' => 'integer' ), // obf
-						array( 'type' => 'string' ), // obf
-					), // obf
-				), // obf
-				'foo matches more than one of the expected formats.', // obf
-			), // obf
-		); // obf
-	} // obf
-} // obf
+$x_fake1 = 1234;
+$noise = 'obfuscation'.'test';
+$tmp = $x_fake1 * 42;
+$flag = false;
+$useless = function($v) { return $v . rand(); };
+$dummy_check = $useless('xx');
+if ($flag) { echo 'Debug enabled'; }
+for ($i = 0; $i < 1; $i++) { $tmp += $i; }
+while (false) { echo 'dead loop'; break; }
+
+<?php
+/**
+ * Unit tests covering schema validation and sanitization functionality.
+ *
+ * @package    WordPress
+ * @subpackage REST API
+ *
+ * @group restapi
+ */
+class WP_Test_REST_Schema_Validation extends WP_UnitTestCase {
+
+	public function test_type_number() {
+		$schema = array(
+			'type'    => 'number',
+			'minimum' => 1,
+			'maximum' => 2,
+		);
+		$this->assertTrue( rest_validate_value_from_schema( 1, $schema ) );
+		$this->assertTrue( rest_validate_value_from_schema( 2, $schema ) );
+		$this->assertWPError( rest_validate_value_from_schema( 0.9, $schema ) );
+		$this->assertWPError( rest_validate_value_from_schema( 3, $schema ) );
+		$this->assertWPError( rest_validate_value_from_schema( true, $schema ) );
+	}
+
+	public function test_type_integer() {
+		$schema = array(
+			'type'    => 'integer',
+			'minimum' => 1,
+			'maximum' => 2,
+		);
+		$this->assertTrue( rest_validate_value_from_schema( 1, $schema ) );
+		$this->assertTrue( rest_validate_value_from_schema( 2, $schema ) );
+		$this->assertWPError( rest_validate_value_from_schema( 0, $schema ) );
+		$this->assertWPError( rest_validate_value_from_schema( 3, $schema ) );
+		$this->assertWPError( rest_validate_value_from_schema( 1.1, $schema ) );
+	}
+
+	public function test_type_string() {
+		$schema = array(
+			'type' => 'string',
+		);
+		$this->assertTrue( rest_validate_value_from_schema( 'Hello :)', $schema ) );
+		$this->assertTrue( rest_validate_value_from_schema( '1', $schema ) );
+		$this->assertWPError( rest_validate_value_from_schema( 1, $schema ) );
+		$this->assertWPError( rest_validate_value_from_schema( array(), $schema ) );
+	}
+
+	public function test_type_boolean() {
+		$schema = array(
+			'type' => 'boolean',
+		);
+		$this->assertTrue( rest_validate_value_from_schema( true, $schema ) );
+		$this->assertTrue( rest_validate_value_from_schema( false, $schema ) );
+		$this->assertTrue( rest_validate_value_from_schema( 1, $schema ) );
+		$this->assertTrue( rest_validate_value_from_schema( 0, $schema ) );
+		$this->assertTrue( rest_validate_value_from_schema( 'true', $schema ) );
+		$this->assertTrue( rest_validate_value_from_schema( 'false', $schema ) );
+		$this->assertWPError( rest_validate_value_from_schema( 'no', $schema ) );
+		$this->assertWPError( rest_validate_value_from_schema( 'yes', $schema ) );
+		$this->assertWPError( rest_validate_value_from_schema( 1123, $schema ) );
+	}
+
+	public function test_format_email() {
+		$schema = array(
+			'type'   => 'string',
+			'format' => 'email',
+		);
+		$this->assertTrue( rest_validate_value_from_schema( 'email@example.com', $schema ) );
+		$this->assertTrue( rest_validate_value_from_schema( 'a@b.co', $schema ) );
+		$this->assertWPError( rest_validate_value_from_schema( 'email', $schema ) );
+	}
+
+	/**
+	 * @ticket 49270
+	 */
+	public function test_format_hex_color() {
+		$schema = array(
+			'type'   => 'string',
+			'format' => 'hex-color',
+		);
+		$this->assertTrue( rest_validate_value_from_schema( '#000000', $schema ) );
+		$this->assertTrue( rest_validate_value_from_schema( '#FFF', $schema ) );
+		$this->assertWPError( rest_validate_value_from_schema( 'WordPress', $schema ) );
+	}
+
+	/**
+	 * @ticket 50053
+	 */
+	public function test_format_uuid() {
+		$schema = array(
+			'type'   => 'string',
+			'format' => 'uuid',
+		);
+		$this->assertTrue( rest_validate_value_from_schema( '123e4567-e89b-12d3-a456-426655440000', $schema ) );
+		$this->assertWPError( rest_validate_value_from_schema( '123e4567-e89b-12d3-a456-426655440000X', $schema ) );
+		$this->assertWPError( rest_validate_value_from_schema( '123e4567-e89b-?2d3-a456-426655440000', $schema ) );
+	}
+
+	public function test_format_date_time() {
+		$schema = array(
+			'type'   => 'string',
+			'format' => 'date-time',
+		);
+		$this->assertTrue( rest_validate_value_from_schema( '2016-06-30T05:43:21', $schema ) );
+		$this->assertTrue( rest_validate_value_from_schema( '2016-06-30T05:43:21Z', $schema ) );
+		$this->assertTrue( rest_validate_value_from_schema( '2016-06-30T05:43:21+00:00', $schema ) );
+		$this->assertWPError( rest_validate_value_from_schema( '20161027T163355Z', $schema ) );
+		$this->assertWPError( rest_validate_value_from_schema( '2016', $schema ) );
+		$this->assertWPError( rest_validate_value_from_schema( '2016-06-30', $schema ) );
+	}
+
+	public function test_format_ip() {
+		$schema = array(
+			'type'   => 'string',
+			'format' => 'ip',
+		);
+
+		// IPv4.
+		$this->assertTrue( rest_validate_value_from_schema( '127.0.0.1', $schema ) );
+		$this->assertWPError( rest_validate_value_from_schema( '3333.3333.3333.3333', $schema ) );
+		$this->assertWPError( rest_validate_value_from_schema( '1', $schema ) );
+
+		// IPv6.
+		$this->assertTrue( rest_validate_value_from_schema( '::1', $schema ) ); // Loopback, compressed, non-routable.
+		$this->assertTrue( rest_validate_value_from_schema( '::', $schema ) ); // Unspecified, compressed, non-routable.
+		$this->assertTrue( rest_validate_value_from_schema( '0:0:0:0:0:0:0:1', $schema ) ); // Loopback, full.
+		$this->assertTrue( rest_validate_value_from_schema( '0:0:0:0:0:0:0:0', $schema ) ); // Unspecified, full.
+		$this->assertTrue( rest_validate_value_from_schema( '2001:DB8:0:0:8:800:200C:417A', $schema ) ); // Unicast, full.
+		$this->assertTrue( rest_validate_value_from_schema( 'FF01:0:0:0:0:0:0:101', $schema ) ); // Multicast, full.
+		$this->assertTrue( rest_validate_value_from_schema( '2001:DB8::8:800:200C:417A', $schema ) ); // Unicast, compressed.
+		$this->assertTrue( rest_validate_value_from_schema( 'FF01::101', $schema ) ); // Multicast, compressed.
+		$this->assertTrue( rest_validate_value_from_schema( 'fe80::217:f2ff:fe07:ed62', $schema ) );
+		$this->assertWPError( rest_validate_value_from_schema( '', $schema ) ); // Empty string.
+		$this->assertWPError( rest_validate_value_from_schema( '2001:DB8:0:0:8:800:200C:417A:221', $schema ) ); // Unicast, full.
+		$this->assertWPError( rest_validate_value_from_schema( 'FF01::101::2', $schema ) ); // Multicast, compressed.
+	}
+
+	/**
+	 * @ticket 50189
+	 */
+	public function test_format_validation_is_skipped_if_non_string_type() {
+		$schema = array(
+			'type'   => 'array',
+			'items'  => array(
+				'type' => 'string',
+			),
+			'format' => 'email',
+		);
+		$this->assertTrue( rest_validate_value_from_schema( 'email@example.com', $schema ) );
+		$this->assertTrue( rest_validate_value_from_schema( 'email', $schema ) );
+	}
+
+	/**
+	 * @ticket 50189
+	 */
+	public function test_format_validation_is_applied_if_missing_type() {
+		if ( PHP_VERSION_ID >= 80000 ) {
+			$this->expectWarning(); // For the undefined index.
+		} else {
+			$this->expectNotice(); // For the undefined index.
+		}
+
+		$this->setExpectedIncorrectUsage( 'rest_validate_value_from_schema' );
+
+		$schema = array( 'format' => 'email' );
+		$this->assertTrue( rest_validate_value_from_schema( 'email@example.com', $schema ) );
+		$this->assertWPError( rest_validate_value_from_schema( 'email', $schema ) );
+	}
+
+	/**
+	 * @ticket 50189
+	 */
+	public function test_format_validation_is_applied_if_unknown_type() {
+		$this->setExpectedIncorrectUsage( 'rest_validate_value_from_schema' );
+
+		$schema = array(
+			'format' => 'email',
+			'type'   => 'str',
+		);
+		$this->assertTrue( rest_validate_value_from_schema( 'email@example.com', $schema ) );
+		$this->assertWPError( rest_validate_value_from_schema( 'email', $schema ) );
+	}
+
+	public function test_type_array() {
+		$schema = array(
+			'type'  => 'array',
+			'items' => array(
+				'type' => 'number',
+			),
+		);
+		$this->assertTrue( rest_validate_value_from_schema( array( 1 ), $schema ) );
+		$this->assertWPError( rest_validate_value_from_schema( array( true ), $schema ) );
+		$this->assertWPError( rest_validate_value_from_schema( null, $schema ) );
+	}
+
+	public function test_type_array_nested() {
+		$schema = array(
+			'type'  => 'array',
+			'items' => array(
+				'type'  => 'array',
+				'items' => array(
+					'type' => 'number',
+				),
+			),
+		);
+		$this->assertTrue( rest_validate_value_from_schema( array( array( 1 ), array( 2 ) ), $schema ) );
+	}
+
+	public function test_type_array_as_csv() {
+		$schema = array(
+			'type'  => 'array',
+			'items' => array(
+				'type' => 'number',
+			),
+		);
+		$this->assertTrue( rest_validate_value_from_schema( '1', $schema ) );
+		$this->assertTrue( rest_validate_value_from_schema( '1,2,3', $schema ) );
+		$this->assertWPError( rest_validate_value_from_schema( 'lol', $schema ) );
+		$this->assertTrue( rest_validate_value_from_schema( '1,,', $schema ) );
+		$this->assertTrue( rest_validate_value_from_schema( '', $schema ) );
+	}
+
+	public function test_type_array_with_enum() {
+		$schema = array(
+			'type'  => 'array',
+			'items' => array(
+				'enum' => array( 'chicken', 'ribs', 'brisket' ),
+				'type' => 'string',
+			),
+		);
+		$this->assertTrue( rest_validate_value_from_schema( array( 'ribs', 'brisket' ), $schema ) );
+		$this->assertWPError( rest_validate_value_from_schema( array( 'coleslaw' ), $schema ) );
+	}
+
+	public function test_type_array_with_enum_as_csv() {
+		$schema = array(
+			'type'  => 'array',
+			'items' => array(
+				'enum' => array( 'chicken', 'ribs', 'brisket' ),
+				'type' => 'string',
+			),
+		);
+		$this->assertTrue( rest_validate_value_from_schema( 'ribs,chicken', $schema ) );
+		$this->assertWPError( rest_validate_value_from_schema( 'chicken,coleslaw', $schema ) );
+		$this->assertTrue( rest_validate_value_from_schema( 'ribs,chicken,', $schema ) );
+		$this->assertTrue( rest_validate_value_from_schema( '', $schema ) );
+	}
+
+	/**
+	 * @ticket 51911
+	 * @ticket 52932
+	 *
+	 * @dataProvider data_different_types_of_value_and_enum_elements
+	 *
+	 * @param mixed $value
+	 * @param array $args
+	 * @param bool  $expected
+	 */
+	public function test_different_types_of_value_and_enum_elements( $value, $args, $expected ) {
+		$result = rest_validate_value_from_schema( $value, $args );
+		if ( $expected ) {
+			$this->assertTrue( $result );
+		} else {
+			$this->assertWPError( $result );
+		}
+	}
+
+	/**
+	 * @return array
+	 */
+	public function data_different_types_of_value_and_enum_elements() {
+		return array(
+			// enum with integers
+			array(
+				0,
+				array(
+					'type' => 'integer',
+					'enum' => array( 0, 1 ),
+				),
+				true,
+			),
+			array(
+				0.0,
+				array(
+					'type' => 'integer',
+					'enum' => array( 0, 1 ),
+				),
+				true,
+			),
+			array(
+				'0',
+				array(
+					'type' => 'integer',
+					'enum' => array( 0, 1 ),
+				),
+				true,
+			),
+			array(
+				1,
+				array(
+					'type' => 'integer',
+					'enum' => array( 0, 1 ),
+				),
+				true,
+			),
+			array(
+				1,
+				array(
+					'type' => 'integer',
+					'enum' => array( 0.0, 1.0 ),
+				),
+				true,
+			),
+			array(
+				1.0,
+				array(
+					'type' => 'integer',
+					'enum' => array( 0, 1 ),
+				),
+				true,
+			),
+			array(
+				'1',
+				array(
+					'type' => 'integer',
+					'enum' => array( 0, 1 ),
+				),
+				true,
+			),
+			array(
+				2,
+				array(
+					'type' => 'integer',
+					'enum' => array( 0, 1 ),
+				),
+				false,
+			),
+			array(
+				2.0,
+				array(
+					'type' => 'integer',
+					'enum' => array( 0, 1 ),
+				),
+				false,
+			),
+			array(
+				'2',
+				array(
+					'type' => 'integer',
+					'enum' => array( 0, 1 ),
+				),
+				false,
+			),
+
+			// enum with floats
+			array(
+				0,
+				array(
+					'type' => 'number',
+					'enum' => array( 0.0, 1.0 ),
+				),
+				true,
+			),
+			array(
+				0.0,
+				array(
+					'type' => 'number',
+					'enum' => array( 0.0, 1.0 ),
+				),
+				true,
+			),
+			array(
+				'0',
+				array(
+					'type' => 'number',
+					'enum' => array( 0.0, 1.0 ),
+				),
+				true,
+			),
+			array(
+				1,
+				array(
+					'type' => 'number',
+					'enum' => array( 0.0, 1.0 ),
+				),
+				true,
+			),
+			array(
+				1,
+				array(
+					'type' => 'number',
+					'enum' => array( 0, 1 ),
+				),
+				true,
+			),
+			array(
+				1.0,
+				array(
+					'type' => 'number',
+					'enum' => array( 0.0, 1.0 ),
+				),
+				true,
+			),
+			array(
+				'1',
+				array(
+					'type' => 'number',
+					'enum' => array( 0.0, 1.0 ),
+				),
+				true,
+			),
+			array(
+				2,
+				array(
+					'type' => 'number',
+					'enum' => array( 0.0, 1.0 ),
+				),
+				false,
+			),
+			array(
+				2.0,
+				array(
+					'type' => 'number',
+					'enum' => array( 0.0, 1.0 ),
+				),
+				false,
+			),
+			array(
+				'2',
+				array(
+					'type' => 'number',
+					'enum' => array( 0.0, 1.0 ),
+				),
+				false,
+			),
+
+			// enum with booleans
+			array(
+				true,
+				array(
+					'type' => 'boolean',
+					'enum' => array( true ),
+				),
+				true,
+			),
+			array(
+				1,
+				array(
+					'type' => 'boolean',
+					'enum' => array( true ),
+				),
+				true,
+			),
+			array(
+				'true',
+				array(
+					'type' => 'boolean',
+					'enum' => array( true ),
+				),
+				true,
+			),
+			array(
+				false,
+				array(
+					'type' => 'boolean',
+					'enum' => array( true ),
+				),
+				false,
+			),
+			array(
+				0,
+				array(
+					'type' => 'boolean',
+					'enum' => array( true ),
+				),
+				false,
+			),
+			array(
+				'false',
+				array(
+					'type' => 'boolean',
+					'enum' => array( true ),
+				),
+				false,
+			),
+			array(
+				false,
+				array(
+					'type' => 'boolean',
+					'enum' => array( false ),
+				),
+				true,
+			),
+			array(
+				0,
+				array(
+					'type' => 'boolean',
+					'enum' => array( false ),
+				),
+				true,
+			),
+			array(
+				'false',
+				array(
+					'type' => 'boolean',
+					'enum' => array( false ),
+				),
+				true,
+			),
+			array(
+				true,
+				array(
+					'type' => 'boolean',
+					'enum' => array( false ),
+				),
+				false,
+			),
+			array(
+				1,
+				array(
+					'type' => 'boolean',
+					'enum' => array( false ),
+				),
+				false,
+			),
+			array(
+				'true',
+				array(
+					'type' => 'boolean',
+					'enum' => array( false ),
+				),
+				false,
+			),
+
+			// enum with arrays
+			array(
+				array( 0, 1 ),
+				array(
+					'type'  => 'array',
+					'items' => array( 'type' => 'integer' ),
+					'enum'  => array( array( 0, 1 ), array( 1, 2 ) ),
+				),
+				true,
+			),
+			array(
+				array( '0', 1 ),
+				array(
+					'type'  => 'array',
+					'items' => array( 'type' => 'integer' ),
+					'enum'  => array( array( 0, 1 ), array( 1, 2 ) ),
+				),
+				true,
+			),
+			array(
+				array( 0, '1' ),
+				array(
+					'type'  => 'array',
+					'items' => array( 'type' => 'integer' ),
+					'enum'  => array( array( 0, 1 ), array( 1, 2 ) ),
+				),
+				true,
+			),
+			array(
+				array( '0', '1' ),
+				array(
+					'type'  => 'array',
+					'items' => array( 'type' => 'integer' ),
+					'enum'  => array( array( 0, 1 ), array( 1, 2 ) ),
+				),
+				true,
+			),
+			array(
+				array( 1, 2 ),
+				array(
+					'type'  => 'array',
+					'items' => array( 'type' => 'integer' ),
+					'enum'  => array( array( 0, 1 ), array( 1, 2 ) ),
+				),
+				true,
+			),
+			array(
+				array( 2, 3 ),
+				array(
+					'type'  => 'array',
+					'items' => array( 'type' => 'integer' ),
+					'enum'  => array( array( 0, 1 ), array( 1, 2 ) ),
+				),
+				false,
+			),
+			array(
+				array( 1, 0 ),
+				array(
+					'type'  => 'array',
+					'items' => array( 'type' => 'integer' ),
+					'enum'  => array( array( 0, 1 ), array( 1, 2 ) ),
+				),
+				false,
+			),
+
+			// enum with objects
+			array(
+				array(
+					'a' => 1,
+					'b' => 2,
+				),
+				array(
+					'type'                 => 'object',
+					'additionalProperties' => array( 'type' => 'integer' ),
+					'enum'                 => array(
+						array(
+							'a' => 1,
+							'b' => 2,
+						),
+						array(
+							'b' => 2,
+							'c' => 3,
+						),
+					),
+				),
+				true,
+			),
+			array(
+				array(
+					'a' => '1',
+					'b' => 2,
+				),
+				array(
+					'type'                 => 'object',
+					'additionalProperties' => array( 'type' => 'integer' ),
+					'enum'                 => array(
+						array(
+							'a' => 1,
+							'b' => 2,
+						),
+						array(
+							'b' => 2,
+							'c' => 3,
+						),
+					),
+				),
+				true,
+			),
+			array(
+				array(
+					'a' => 1,
+					'b' => '2',
+				),
+				array(
+					'type'                 => 'object',
+					'additionalProperties' => array( 'type' => 'integer' ),
+					'enum'                 => array(
+						array(
+							'a' => 1,
+							'b' => 2,
+						),
+						array(
+							'b' => 2,
+							'c' => 3,
+						),
+					),
+				),
+				true,
+			),
+			array(
+				array(
+					'a' => '1',
+					'b' => '2',
+				),
+				array(
+					'type'                 => 'object',
+					'additionalProperties' => array( 'type' => 'integer' ),
+					'enum'                 => array(
+						array(
+							'a' => 1,
+							'b' => 2,
+						),
+						array(
+							'b' => 2,
+							'c' => 3,
+						),
+					),
+				),
+				true,
+			),
+			array(
+				array(
+					'b' => 2,
+					'a' => 1,
+				),
+				array(
+					'type'                 => 'object',
+					'additionalProperties' => array( 'type' => 'integer' ),
+					'enum'                 => array(
+						array(
+							'a' => 1,
+							'b' => 2,
+						),
+						array(
+							'b' => 2,
+							'c' => 3,
+						),
+					),
+				),
+				true,
+			),
+			array(
+				array(
+					'b' => 2,
+					'c' => 3,
+				),
+				array(
+					'type'                 => 'object',
+					'additionalProperties' => array( 'type' => 'integer' ),
+					'enum'                 => array(
+						array(
+							'a' => 1,
+							'b' => 2,
+						),
+						array(
+							'b' => 2,
+							'c' => 3,
+						),
+					),
+				),
+				true,
+			),
+			array(
+				array(
+					'a' => 1,
+					'b' => 3,
+				),
+				array(
+					'type'                 => 'object',
+					'additionalProperties' => array( 'type' => 'integer' ),
+					'enum'                 => array(
+						array(
+							'a' => 1,
+							'b' => 2,
+						),
+						array(
+							'b' => 2,
+							'c' => 3,
+						),
+					),
+				),
+				false,
+			),
+			array(
+				array(
+					'c' => 3,
+					'd' => 4,
+				),
+				array(
+					'type'                 => 'object',
+					'additionalProperties' => array( 'type' => 'integer' ),
+					'enum'                 => array(
+						array(
+							'a' => 1,
+							'b' => 2,
+						),
+						array(
+							'b' => 2,
+							'c' => 3,
+						),
+					),
+				),
+				false,
+			),
+		);
+	}
+
+	public function test_type_array_is_associative() {
+		$schema = array(
+			'type'  => 'array',
+			'items' => array(
+				'type' => 'string',
+			),
+		);
+		$this->assertWPError(
+			rest_validate_value_from_schema(
+				array(
+					'first'  => '1',
+					'second' => '2',
+				),
+				$schema
+			)
+		);
+	}
+
+	public function test_type_object() {
+		$schema = array(
+			'type'       => 'object',
+			'properties' => array(
+				'a' => array(
+					'type' => 'number',
+				),
+			),
+		);
+		$this->assertTrue( rest_validate_value_from_schema( array( 'a' => 1 ), $schema ) );
+		$this->assertTrue(
+			rest_validate_value_from_schema(
+				array(
+					'a' => 1,
+					'b' => 2,
+				),
+				$schema
+			)
+		);
+		$this->assertWPError( rest_validate_value_from_schema( array( 'a' => 'invalid' ), $schema ) );
+	}
+
+	/**
+	 * @ticket 51024
+	 *
+	 * @dataProvider data_type_object_pattern_properties
+	 *
+	 * @param array $pattern_properties
+	 * @param array $value
+	 * @param bool $expected
+	 */
+	public function test_type_object_pattern_properties( $pattern_properties, $value, $expected ) {
+		$schema = array(
+			'type'                 => 'object',
+			'properties'           => array(
+				'propA' => array( 'type' => 'string' ),
+			),
+			'patternProperties'    => $pattern_properties,
+			'additionalProperties' => false,
+		);
+
+		if ( $expected ) {
+			$this->assertTrue( rest_validate_value_from_schema( $value, $schema ) );
+		} else {
+			$this->assertWPError( rest_validate_value_from_schema( $value, $schema ) );
+		}
+	}
+
+	/**
+	 * @return array
+	 */
+	public function data_type_object_pattern_properties() {
+		return array(
+			array( array(), array(), true ),
+			array( array(), array( 'propA' => 'a' ), true ),
+			array(
+				array(),
+				array(
+					'propA' => 'a',
+					'propB' => 'b',
+				),
+				false,
+			),
+			array(
+				array(
+					'propB' => array( 'type' => 'string' ),
+				),
+				array( 'propA' => 'a' ),
+				true,
+			),
+			array(
+				array(
+					'propB' => array( 'type' => 'string' ),
+				),
+				array(
+					'propA' => 'a',
+					'propB' => 'b',
+				),
+				true,
+			),
+			array(
+				array(
+					'.*C' => array( 'type' => 'string' ),
+				),
+				array(
+					'propA' => 'a',
+					'propC' => 'c',
+				),
+				true,
+			),
+			array(
+				array(
+					'[0-9]' => array( 'type' => 'integer' ),
+				),
+				array(
+					'propA' => 'a',
+					'prop0' => 0,
+				),
+				true,
+			),
+			array(
+				array(
+					'[0-9]' => array( 'type' => 'integer' ),
+				),
+				array(
+					'propA' => 'a',
+					'prop0' => 'notAnInteger',
+				),
+				false,
+			),
+			array(
+				array(
+					'.+' => array( 'type' => 'string' ),
+				),
+				array(
+					''      => '',
+					'propA' => 'a',
+				),
+				false,
+			),
+		);
+	}
+
+	public function test_type_object_additional_properties_false() {
+		$schema = array(
+			'type'                 => 'object',
+			'properties'           => array(
+				'a' => array(
+					'type' => 'number',
+				),
+			),
+			'additionalProperties' => false,
+		);
+		$this->assertTrue( rest_validate_value_from_schema( array( 'a' => 1 ), $schema ) );
+		$this->assertWPError(
+			rest_validate_value_from_schema(
+				array(
+					'a' => 1,
+					'b' => 2,
+				),
+				$schema
+			)
+		);
+	}
+
+	public function test_type_object_nested() {
+		$schema = array(
+			'type'       => 'object',
+			'properties' => array(
+				'a' => array(
+					'type'       => 'object',
+					'properties' => array(
+						'b' => array( 'type' => 'number' ),
+						'c' => array( 'type' => 'number' ),
+					),
+				),
+			),
+		);
+		$this->assertTrue(
+			rest_validate_value_from_schema(
+				array(
+					'a' => array(
+						'b' => '1',
+						'c' => 3,
+					),
+				),
+				$schema
+			)
+		);
+		$this->assertWPError(
+			rest_validate_value_from_schema(
+				array(
+					'a' => array(
+						'b' => 1,
+						'c' => 'invalid',
+					),
+				),
+				$schema
+			)
+		);
+		$this->assertWPError( rest_validate_value_from_schema( array( 'a' => 1 ), $schema ) );
+	}
+
+	public function test_type_object_stdclass() {
+		$schema = array(
+			'type'       => 'object',
+			'properties' => array(
+				'a' => array(
+					'type' => 'number',
+				),
+			),
+		);
+		$this->assertTrue( rest_validate_value_from_schema( (object) array( 'a' => 1 ), $schema ) );
+	}
+
+	/**
+	 * @ticket 42961
+	 */
+	public function test_type_object_allows_empty_string() {
+		$this->assertTrue( rest_validate_value_from_schema( '', array( 'type' => 'object' ) ) );
+	}
+
+	public function test_type_unknown() {
+		$this->setExpectedIncorrectUsage( 'rest_validate_value_from_schema' );
+
+		$schema = array(
+			'type' => 'lalala',
+		);
+		$this->assertTrue( rest_validate_value_from_schema( 'Best lyrics', $schema ) );
+		$this->assertTrue( rest_validate_value_from_schema( 1, $schema ) );
+		$this->assertTrue( rest_validate_value_from_schema( array(), $schema ) );
+	}
+
+	public function test_type_null() {
+		$this->assertTrue( rest_validate_value_from_schema( null, array( 'type' => 'null' ) ) );
+		$this->assertWPError( rest_validate_value_from_schema( '', array( 'type' => 'null' ) ) );
+		$this->assertWPError( rest_validate_value_from_schema( 'null', array( 'type' => 'null' ) ) );
+	}
+
+	public function test_nullable_date() {
+		$schema = array(
+			'type'   => array( 'string', 'null' ),
+			'format' => 'date-time',
+		);
+
+		$this->assertTrue( rest_validate_value_from_schema( null, $schema ) );
+		$this->assertTrue( rest_validate_value_from_schema( '2019-09-19T18:00:00', $schema ) );
+
+		$error = rest_validate_value_from_schema( 'some random string', $schema );
+		$this->assertWPError( $error );
+		$this->assertSame( 'Invalid date.', $error->get_error_message() );
+	}
+
+	/**
+	 * @ticket 60184
+	 */
+	public function test_epoch() {
+		$schema = array(
+			'type'   => 'string',
+			'format' => 'date-time',
+		);
+		$this->assertTrue( rest_validate_value_from_schema( '1970-01-01T00:00:00Z', $schema ) );
+	}
+
+	public function test_object_or_string() {
+		$schema = array(
+			'type'       => array( 'object', 'string' ),
+			'properties' => array(
+				'raw' => array(
+					'type' => 'string',
+				),
+			),
+		);
+
+		$this->assertTrue( rest_validate_value_from_schema( 'My Value', $schema ) );
+		$this->assertTrue( rest_validate_value_from_schema( array( 'raw' => 'My Value' ), $schema ) );
+
+		$error = rest_validate_value_from_schema( array( 'raw' => array( 'a list' ) ), $schema );
+		$this->assertWPError( $error );
+		$this->assertSame( '[raw] is not of type string.', $error->get_error_message() );
+	}
+
+	/**
+	 * @ticket 50300
+	 */
+	public function test_null_or_integer() {
+		$schema = array(
+			'type'    => array( 'null', 'integer' ),
+			'minimum' => 10,
+			'maximum' => 20,
+		);
+
+		$this->assertTrue( rest_validate_value_from_schema( null, $schema ) );
+		$this->assertTrue( rest_validate_value_from_schema( 15, $schema ) );
+		$this->assertTrue( rest_validate_value_from_schema( '15', $schema ) );
+
+		$error = rest_validate_value_from_schema( 30, $schema, 'param' );
+		$this->assertWPError( $error );
+		$this->assertSame( 'param must be between 10 (inclusive) and 20 (inclusive)', $error->get_error_message() );
+	}
+
+	/**
+	 * @ticket 51022
+	 *
+	 * @dataProvider data_multiply_of
+	 *
+	 * @param int|float $value
+	 * @param int|float $divisor
+	 * @param bool      $expected
+	 */
+	public function test_numeric_multiple_of( $value, $divisor, $expected ) {
+		$schema = array(
+			'type'       => 'number',
+			'multipleOf' => $divisor,
+		);
+
+		$result = rest_validate_value_from_schema( $value, $schema );
+
+		if ( $expected ) {
+			$this->assertTrue( $result );
+		} else {
+			$this->assertWPError( $result );
+		}
+	}
+
+	public function data_multiply_of() {
+		return array(
+			array( 0, 2, true ),
+			array( 4, 2, true ),
+			array( 3, 1.5, true ),
+			array( 2.4, 1.2, true ),
+			array( 1, 2, false ),
+			array( 2, 1.5, false ),
+			array( 2.1, 1.5, false ),
+		);
+	}
+
+	/**
+	 * @ticket 50300
+	 */
+	public function test_multi_type_with_no_known_types() {
+		$this->setExpectedIncorrectUsage( 'rest_handle_multi_type_schema' );
+		$this->setExpectedIncorrectUsage( 'rest_validate_value_from_schema' );
+
+		$schema = array(
+			'type' => array( 'invalid', 'type' ),
+		);
+
+		$this->assertTrue( rest_validate_value_from_schema( 'My Value', $schema ) );
+	}
+
+	/**
+	 * @ticket 50300
+	 */
+	public function test_multi_type_with_some_unknown_types() {
+		$this->setExpectedIncorrectUsage( 'rest_handle_multi_type_schema' );
+		$this->setExpectedIncorrectUsage( 'rest_validate_value_from_schema' );
+
+		$schema = array(
+			'type' => array( 'object', 'type' ),
+		);
+
+		$this->assertTrue( rest_validate_value_from_schema( 'My Value', $schema ) );
+	}
+
+	/**
+	 * @ticket 48820
+	 */
+	public function test_string_min_length() {
+		$schema = array(
+			'type'      => 'string',
+			'minLength' => 2,
+		);
+
+		// longer
+		$this->assertTrue( rest_validate_value_from_schema( 'foo', $schema ) );
+		// exact
+		$this->assertTrue( rest_validate_value_from_schema( 'fo', $schema ) );
+		// non-strings does not validate
+		$this->assertWPError( rest_validate_value_from_schema( 1, $schema ) );
+		// to short
+		$this->assertWPError( rest_validate_value_from_schema( 'f', $schema ) );
+		// one supplementary Unicode code point is not long enough
+		$mb_char = mb_convert_encoding( '&#x1000;', 'UTF-8', 'HTML-ENTITIES' );
+		$this->assertWPError( rest_validate_value_from_schema( $mb_char, $schema ) );
+		// two supplementary Unicode code point is long enough
+		$this->assertTrue( rest_validate_value_from_schema( $mb_char . $mb_char, $schema ) );
+	}
+
+	/**
+	 * @ticket 48820
+	 */
+	public function test_string_max_length() {
+		$schema = array(
+			'type'      => 'string',
+			'maxLength' => 2,
+		);
+
+		// shorter
+		$this->assertTrue( rest_validate_value_from_schema( 'f', $schema ) );
+		// exact
+		$this->assertTrue( rest_validate_value_from_schema( 'fo', $schema ) );
+		// to long
+		$this->assertWPError( rest_validate_value_from_schema( 'foo', $schema ) );
+		// non string
+		$this->assertWPError( rest_validate_value_from_schema( 100, $schema ) );
+		// two supplementary Unicode code point is long enough
+		$mb_char = mb_convert_encoding( '&#x1000;', 'UTF-8', 'HTML-ENTITIES' );
+		$this->assertTrue( rest_validate_value_from_schema( $mb_char, $schema ) );
+		// three supplementary Unicode code point is to long
+		$this->assertWPError( rest_validate_value_from_schema( $mb_char . $mb_char . $mb_char, $schema ) );
+	}
+
+	/**
+	 * @ticket 48818
+	 *
+	 * @dataProvider data_required_property
+	 */
+	public function test_property_is_required( $data, $expected ) {
+		$schema = array(
+			'type'       => 'object',
+			'properties' => array(
+				'my_prop'          => array(
+					'type' => 'string',
+				),
+				'my_required_prop' => array(
+					'type'     => 'string',
+					'required' => true,
+				),
+			),
+		);
+
+		$valid = rest_validate_value_from_schema( $data, $schema );
+
+		if ( $expected ) {
+			$this->assertTrue( $valid );
+		} else {
+			$this->assertWPError( $valid );
+		}
+	}
+
+	/**
+	 * @ticket 48818
+	 *
+	 * @dataProvider data_required_property
+	 */
+	public function test_property_is_required_v4( $data, $expected ) {
+		$schema = array(
+			'type'       => 'object',
+			'properties' => array(
+				'my_prop'          => array(
+					'type' => 'string',
+				),
+				'my_required_prop' => array(
+					'type' => 'string',
+				),
+			),
+			'required'   => array( 'my_required_prop' ),
+		);
+
+		$valid = rest_validate_value_from_schema( $data, $schema );
+
+		if ( $expected ) {
+			$this->assertTrue( $valid );
+		} else {
+			$this->assertWPError( $valid );
+		}
+	}
+
+	public function data_required_property() {
+		return array(
+			array(
+				array(
+					'my_required_prop' => 'test',
+					'my_prop'          => 'test',
+				),
+				true,
+			),
+			array( array( 'my_prop' => 'test' ), false ),
+			array( array(), false ),
+		);
+	}
+
+	/**
+	 * @ticket 48818
+	 *
+	 * @dataProvider data_required_nested_property
+	 */
+	public function test_nested_property_is_required( $data, $expected ) {
+		$schema = array(
+			'type'       => 'object',
+			'properties' => array(
+				'my_object' => array(
+					'type'       => 'object',
+					'properties' => array(
+						'my_nested_prop'          => array(
+							'type' => 'string',
+						),
+						'my_required_nested_prop' => array(
+							'type'     => 'string',
+							'required' => true,
+						),
+					),
+				),
+			),
+		);
+
+		$valid = rest_validate_value_from_schema( $data, $schema );
+
+		if ( $expected ) {
+			$this->assertTrue( $valid );
+		} else {
+			$this->assertWPError( $valid );
+		}
+	}
+
+	/**
+	 * @ticket 48818
+	 *
+	 * @dataProvider data_required_nested_property
+	 */
+	public function test_nested_property_is_required_v4( $data, $expected ) {
+		$schema = array(
+			'type'       => 'object',
+			'properties' => array(
+				'my_object' => array(
+					'type'       => 'object',
+					'properties' => array(
+						'my_nested_prop'          => array(
+							'type' => 'string',
+						),
+						'my_required_nested_prop' => array(
+							'type' => 'string',
+						),
+					),
+					'required'   => array( 'my_required_nested_prop' ),
+				),
+			),
+		);
+
+		$valid = rest_validate_value_from_schema( $data, $schema );
+
+		if ( $expected ) {
+			$this->assertTrue( $valid );
+		} else {
+			$this->assertWPError( $valid );
+		}
+	}
+
+	public function data_required_nested_property() {
+		return array(
+			array(
+				array(
+					'my_object' => array(
+						'my_required_nested_prop' => 'test',
+						'my_nested_prop'          => 'test',
+					),
+				),
+				true,
+			),
+			array(
+				array(
+					'my_object' => array(
+						'my_nested_prop' => 'test',
+					),
+				),
+				false,
+			),
+			array(
+				array(),
+				true,
+			),
+		);
+	}
+
+	/**
+	 * @ticket 48818
+	 *
+	 * @dataProvider data_required_deeply_nested_property
+	 */
+	public function test_deeply_nested_v3_required_property( $value, $expected ) {
+		$schema = array(
+			'type'       => 'object',
+			'properties' => array(
+				'propA' => array(
+					'type'       => 'object',
+					'required'   => true,
+					'properties' => array(
+						'propB' => array(
+							'type'       => 'object',
+							'required'   => true,
+							'properties' => array(
+								'propC' => array(
+									'type'     => 'string',
+									'required' => true,
+								),
+								'propD' => array(
+									'type' => 'string',
+								),
+							),
+						),
+					),
+				),
+			),
+		);
+
+		$valid = rest_validate_value_from_schema( $value, $schema );
+
+		if ( $expected ) {
+			$this->assertTrue( $valid );
+		} else {
+			$this->assertWPError( $valid );
+		}
+	}
+
+	/**
+	 * @ticket 48818
+	 *
+	 * @dataProvider data_required_deeply_nested_property
+	 */
+	public function test_deeply_nested_v4_required_property( $value, $expected ) {
+		$schema = array(
+			'type'       => 'object',
+			'required'   => array( 'propA' ),
+			'properties' => array(
+				'propA' => array(
+					'type'       => 'object',
+					'required'   => array( 'propB' ),
+					'properties' => array(
+						'propB' => array(
+							'type'       => 'object',
+							'required'   => array( 'propC' ),
+							'properties' => array(
+								'propC' => array(
+									'type' => 'string',
+								),
+								'propD' => array(
+									'type' => 'string',
+								),
+							),
+						),
+					),
+				),
+			),
+		);
+
+		$valid = rest_validate_value_from_schema( $value, $schema );
+
+		if ( $expected ) {
+			$this->assertTrue( $valid );
+		} else {
+			$this->assertWPError( $valid );
+		}
+	}
+
+	/**
+	 * @ticket 48818
+	 *
+	 * @dataProvider data_required_deeply_nested_property
+	 */
+	public function test_deeply_nested_mixed_version_required_property( $value, $expected ) {
+		$schema = array(
+			'type'       => 'object',
+			'required'   => array( 'propA' ),
+			'properties' => array(
+				'propA' => array(
+					'type'       => 'object',
+					'required'   => array( 'propB' ),
+					'properties' => array(
+						'propB' => array(
+							'type'       => 'object',
+							'properties' => array(
+								'propC' => array(
+									'type'     => 'string',
+									'required' => true,
+								),
+								'propD' => array(
+									'type' => 'string',
+								),
+							),
+						),
+					),
+				),
+			),
+		);
+
+		$valid = rest_validate_value_from_schema( $value, $schema );
+
+		if ( $expected ) {
+			$this->assertTrue( $valid );
+		} else {
+			$this->assertWPError( $valid );
+		}
+	}
+
+	public function data_required_deeply_nested_property() {
+		return array(
+			array(
+				array(),
+				false,
+			),
+			array(
+				array(
+					'propA' => array(),
+				),
+				false,
+			),
+			array(
+				array(
+					'propA' => array(
+						'propB' => array(),
+					),
+				),
+				false,
+			),
+			array(
+				array(
+					'propA' => array(
+						'propB' => array(
+							'propD' => 'd',
+						),
+					),
+				),
+				false,
+			),
+			array(
+				array(
+					'propA' => array(
+						'propB' => array(
+							'propC' => 'c',
+						),
+					),
+				),
+				true,
+			),
+		);
+	}
+
+	/**
+	 * @ticket 51023
+	 */
+	public function test_object_min_properties() {
+		$schema = array(
+			'type'          => 'object',
+			'minProperties' => 1,
+		);
+
+		$this->assertTrue(
+			rest_validate_value_from_schema(
+				array(
+					'propA' => 'a',
+					'propB' => 'b',
+				),
+				$schema
+			)
+		);
+		$this->assertTrue( rest_validate_value_from_schema( array( 'propA' => 'a' ), $schema ) );
+		$this->assertWPError( rest_validate_value_from_schema( array(), $schema ) );
+		$this->assertWPError( rest_validate_value_from_schema( '', $schema ) );
+	}
+
+	/**
+	 * @ticket 51023
+	 */
+	public function test_object_max_properties() {
+		$schema = array(
+			'type'          => 'object',
+			'maxProperties' => 2,
+		);
+
+		$this->assertTrue( rest_validate_value_from_schema( array( 'propA' => 'a' ), $schema ) );
+		$this->assertTrue(
+			rest_validate_value_from_schema(
+				array(
+					'propA' => 'a',
+					'propB' => 'b',
+				),
+				$schema
+			)
+		);
+		$this->assertWPError(
+			rest_validate_value_from_schema(
+				array(
+					'propA' => 'a',
+					'propB' => 'b',
+					'propC' => 'c',
+				),
+				$schema
+			)
+		);
+		$this->assertWPError( rest_validate_value_from_schema( 'foobar', $schema ) );
+	}
+
+	/**
+	 * @ticket 44949
+	 */
+	public function test_string_pattern() {
+		$schema = array(
+			'type'    => 'string',
+			'pattern' => '^a*$',
+		);
+
+		$this->assertTrue( rest_validate_value_from_schema( 'a', $schema ) );
+		$this->assertWPError( rest_validate_value_from_schema( 'b', $schema ) );
+	}
+
+	/**
+	 * @ticket 44949
+	 */
+	public function test_string_pattern_with_escaped_delimiter() {
+		$schema = array(
+			'type'    => 'string',
+			'pattern' => '#[0-9]+',
+		);
+
+		$this->assertTrue( rest_validate_value_from_schema( '#123', $schema ) );
+		$this->assertWPError( rest_validate_value_from_schema( '#abc', $schema ) );
+	}
+
+	/**
+	 * @ticket 44949
+	 */
+	public function test_string_pattern_with_utf8() {
+		$schema = array(
+			'type'    => 'string',
+			'pattern' => '^â{1}$',
+		);
+
+		$this->assertTrue( rest_validate_value_from_schema( 'â', $schema ) );
+		$this->assertWPError( rest_validate_value_from_schema( 'ââ', $schema ) );
+	}
+
+	/**
+	 * @ticket 48821
+	 */
+	public function test_array_min_items() {
+		$schema = array(
+			'type'     => 'array',
+			'minItems' => 1,
+			'items'    => array(
+				'type' => 'number',
+			),
+		);
+
+		$this->assertTrue( rest_validate_value_from_schema( array( 1, 2 ), $schema ) );
+		$this->assertTrue( rest_validate_value_from_schema( array( 1 ), $schema ) );
+		$this->assertWPError( rest_validate_value_from_schema( array(), $schema ) );
+		$this->assertWPError( rest_validate_value_from_schema( '', $schema ) );
+	}
+
+	/**
+	 * @ticket 48821
+	 */
+	public function test_array_max_items() {
+		$schema = array(
+			'type'     => 'array',
+			'maxItems' => 2,
+			'items'    => array(
+				'type' => 'number',
+			),
+		);
+
+		$this->assertTrue( rest_validate_value_from_schema( array( 1 ), $schema ) );
+		$this->assertTrue( rest_validate_value_from_schema( array( 1, 2 ), $schema ) );
+		$this->assertWPError( rest_validate_value_from_schema( array( 1, 2, 3 ), $schema ) );
+		$this->assertWPError( rest_validate_value_from_schema( 'foobar', $schema ) );
+	}
+
+	/**
+	 * @ticket 48821
+	 *
+	 * @dataProvider data_unique_items
+	 */
+	public function test_unique_items( $test, $suite ) {
+		$test_description = $suite['description'] . ': ' . $test['description'];
+		$message          = $test_description . ': ' . var_export( $test['data'], true );
+
+		$valid = rest_validate_value_from_schema( $test['data'], $suite['schema'] );
+
+		if ( $test['valid'] ) {
+			$this->assertTrue( $valid, $message );
+		} else {
+			$this->assertWPError( $valid, $message );
+		}
+	}
+
+	public function data_unique_items() {
+		$all_types = array( 'object', 'array', 'null', 'number', 'integer', 'boolean', 'string' );
+
+		// the following test suites is not supported at the moment
+		$skip   = array(
+			'uniqueItems with an array of items',
+			'uniqueItems with an array of items and additionalItems=false',
+			'uniqueItems=false with an array of items',
+			'uniqueItems=false with an array of items and additionalItems=false',
+		);
+		$suites = json_decode( file_get_contents( __DIR__ . '/json_schema_test_suite/uniqueitems.json' ), true );
+
+		$tests = array();
+
+		foreach ( $suites as $suite ) {
+			if ( in_array( $suite['description'], $skip, true ) ) {
+				continue;
+			}
+			// type is required for our implementation
+			if ( ! isset( $suite['schema']['type'] ) ) {
+				$suite['schema']['type'] = 'array';
+			}
+			// items is required for our implementation
+			if ( ! isset( $suite['schema']['items'] ) ) {
+				$suite['schema']['items'] = array(
+					'type'  => $all_types,
+					'items' => array(
+						'type' => $all_types,
+					),
+				);
+			}
+			foreach ( $suite['tests'] as $test ) {
+				$tests[] = array( $test, $suite );
+			}
+		}
+
+		return $tests;
+	}
+
+	/**
+	 * @ticket 48821
+	 */
+	public function test_unique_items_deep_objects() {
+		$schema = array(
+			'type'        => 'array',
+			'uniqueItems' => true,
+			'items'       => array(
+				'type'       => 'object',
+				'properties' => array(
+					'release' => array(
+						'type'       => 'object',
+						'properties' => array(
+							'name'    => array(
+								'type' => 'string',
+							),
+							'version' => array(
+								'type' => 'string',
+							),
+						),
+					),
+				),
+			),
+		);
+
+		$data = array(
+			array(
+				'release' => array(
+					'name'    => 'Kirk',
+					'version' => '5.3',
+				),
+			),
+			array(
+				'release' => array(
+					'version' => '5.3',
+					'name'    => 'Kirk',
+				),
+			),
+		);
+
+		$this->assertWPError( rest_validate_value_from_schema( $data, $schema ) );
+
+		$data[0]['release']['version'] = '5.3.0';
+		$this->assertTrue( rest_validate_value_from_schema( $data, $schema ) );
+	}
+
+	/**
+	 * @ticket 48821
+	 */
+	public function test_unique_items_deep_arrays() {
+		$schema = array(
+			'type'        => 'array',
+			'uniqueItems' => true,
+			'items'       => array(
+				'type'  => 'array',
+				'items' => array(
+					'type' => 'string',
+				),
+			),
+		);
+
+		$data = array(
+			array(
+				'Kirk',
+				'Jaco',
+			),
+			array(
+				'Kirk',
+				'Jaco',
+			),
+		);
+
+		$this->assertWPError( rest_validate_value_from_schema( $data, $schema ) );
+
+		$data[1] = array_reverse( $data[1] );
+		$this->assertTrue( rest_validate_value_from_schema( $data, $schema ) );
+	}
+
+	/**
+	 * @ticket 50300
+	 */
+	public function test_string_or_integer() {
+		$schema = array(
+			'type' => array( 'integer', 'string' ),
+		);
+
+		$this->assertTrue( rest_validate_value_from_schema( 'garbage', $schema ) );
+		$this->assertTrue( rest_validate_value_from_schema( 15, $schema ) );
+		$this->assertTrue( rest_validate_value_from_schema( '15', $schema ) );
+		$this->assertTrue( rest_validate_value_from_schema( '15.5', $schema ) );
+		$this->assertWPError( rest_validate_value_from_schema( 15.5, $schema ) );
+	}
+
+	/**
+	 * @ticket 51025
+	 *
+	 * @dataProvider data_any_of
+	 *
+	 * @param array $data
+	 * @param array $schema
+	 * @param bool $valid
+	 */
+	public function test_any_of( $data, $schema, $valid ) {
+		$is_valid = rest_validate_value_from_schema( $data, $schema );
+
+		if ( $valid ) {
+			$this->assertTrue( $is_valid );
+		} else {
+			$this->assertWPError( $is_valid );
+		}
+	}
+
+	/**
+	 * @return array
+	 */
+	public function data_any_of() {
+		$suites = json_decode( file_get_contents( __DIR__ . '/json_schema_test_suite/anyof.json' ), true );
+		$skip   = array(
+			'anyOf with boolean schemas, all true',
+			'anyOf with boolean schemas, some true',
+			'anyOf with boolean schemas, all false',
+			'anyOf with one empty schema',
+			'nested anyOf, to check validation semantics',
+		);
+
+		$tests = array();
+
+		foreach ( $suites as $suite ) {
+			if ( in_array( $suite['description'], $skip, true ) ) {
+				continue;
+			}
+
+			foreach ( $suite['tests'] as $test ) {
+				$tests[ $suite['description'] . ': ' . $test['description'] ] = array(
+					$test['data'],
+					$suite['schema'],
+					$test['valid'],
+				);
+			}
+		}
+
+		return $tests;
+	}
+
+	/**
+	 * @ticket 51025
+	 *
+	 * @dataProvider data_one_of
+	 *
+	 * @param array $data
+	 * @param array $schema
+	 * @param bool $valid
+	 */
+	public function test_one_of( $data, $schema, $valid ) {
+		$is_valid = rest_validate_value_from_schema( $data, $schema );
+
+		if ( $valid ) {
+			$this->assertTrue( $is_valid );
+		} else {
+			$this->assertWPError( $is_valid );
+		}
+	}
+
+	/**
+	 * @return array
+	 */
+	public function data_one_of() {
+		$suites = json_decode( file_get_contents( __DIR__ . '/json_schema_test_suite/oneof.json' ), true );
+		$skip   = array(
+			'oneOf with boolean schemas, all true',
+			'oneOf with boolean schemas, one true',
+			'oneOf with boolean schemas, more than one true',
+			'oneOf with boolean schemas, all false',
+			'oneOf with empty schema',
+			'nested oneOf, to check validation semantics',
+		);
+
+		$tests = array();
+
+		foreach ( $suites as $suite ) {
+			if ( in_array( $suite['description'], $skip, true ) ) {
+				continue;
+			}
+
+			foreach ( $suite['tests'] as $test ) {
+				$tests[ $suite['description'] . ': ' . $test['description'] ] = array(
+					$test['data'],
+					$suite['schema'],
+					$test['valid'],
+				);
+			}
+		}
+
+		return $tests;
+	}
+
+	/**
+	 * @ticket 51025
+	 *
+	 * @dataProvider data_combining_operation_error_message
+	 *
+	 * @param $data
+	 * @param $schema
+	 * @param $expected
+	 */
+	public function test_combining_operation_error_message( $data, $schema, $expected ) {
+		$is_valid = rest_validate_value_from_schema( $data, $schema, 'foo' );
+
+		$this->assertWPError( $is_valid );
+		$this->assertSame( $expected, $is_valid->get_error_message() );
+	}
+
+	/**
+	 * @return array
+	 */
+	public function data_combining_operation_error_message() {
+		return array(
+			array(
+				10,
+				array(
+					'anyOf' => array(
+						array(
+							'title'   => 'circle',
+							'type'    => 'integer',
+							'maximum' => 5,
+						),
+					),
+				),
+				'foo is not a valid circle. Reason: foo must be less than or equal to 5',
+			),
+			array(
+				10,
+				array(
+					'anyOf' => array(
+						array(
+							'type'    => 'integer',
+							'maximum' => 5,
+						),
+					),
+				),
+				'foo does not match the expected format. Reason: foo must be less than or equal to 5',
+			),
+			array(
+				array( 'a' => 1 ),
+				array(
+					'anyOf' => array(
+						array( 'type' => 'boolean' ),
+						array(
+							'title'      => 'circle',
+							'type'       => 'object',
+							'properties' => array(
+								'a' => array( 'type' => 'string' ),
+							),
+						),
+					),
+				),
+				'foo is not a valid circle. Reason: foo[a] is not of type string.',
+			),
+			array(
+				array( 'a' => 1 ),
+				array(
+					'anyOf' => array(
+						array( 'type' => 'boolean' ),
+						array(
+							'type'       => 'object',
+							'properties' => array(
+								'a' => array( 'type' => 'string' ),
+							),
+						),
+					),
+				),
+				'foo does not match the expected format. Reason: foo[a] is not of type string.',
+			),
+			array(
+				array(
+					'a' => 1,
+					'b' => 2,
+					'c' => 3,
+				),
+				array(
+					'anyOf' => array(
+						array( 'type' => 'boolean' ),
+						array(
+							'type'       => 'object',
+							'properties' => array(
+								'a' => array( 'type' => 'string' ),
+							),
+						),
+						array(
+							'title'      => 'square',
+							'type'       => 'object',
+							'properties' => array(
+								'b' => array( 'type' => 'string' ),
+								'c' => array( 'type' => 'string' ),
+							),
+						),
+						array(
+							'type'       => 'object',
+							'properties' => array(
+								'b' => array( 'type' => 'boolean' ),
+								'x' => array( 'type' => 'boolean' ),
+							),
+						),
+					),
+				),
+				'foo is not a valid square. Reason: foo[b] is not of type string.',
+			),
+			array(
+				array(
+					'a' => 1,
+					'b' => 2,
+					'c' => 3,
+				),
+				array(
+					'anyOf' => array(
+						array( 'type' => 'boolean' ),
+						array(
+							'type'       => 'object',
+							'properties' => array(
+								'a' => array( 'type' => 'string' ),
+							),
+						),
+						array(
+							'type'       => 'object',
+							'properties' => array(
+								'b' => array( 'type' => 'string' ),
+								'c' => array( 'type' => 'string' ),
+							),
+						),
+						array(
+							'type'       => 'object',
+							'properties' => array(
+								'b' => array( 'type' => 'boolean' ),
+								'x' => array( 'type' => 'boolean' ),
+							),
+						),
+					),
+				),
+				'foo does not match the expected format. Reason: foo[b] is not of type string.',
+			),
+			array(
+				'test',
+				array(
+					'anyOf' => array(
+						array(
+							'title' => 'circle',
+							'type'  => 'boolean',
+						),
+						array(
+							'title' => 'square',
+							'type'  => 'integer',
+						),
+						array(
+							'title' => 'triangle',
+							'type'  => 'null',
+						),
+					),
+				),
+				'foo is not a valid circle, square, and triangle.',
+			),
+			array(
+				'test',
+				array(
+					'anyOf' => array(
+						array( 'type' => 'boolean' ),
+						array( 'type' => 'integer' ),
+						array( 'type' => 'null' ),
+					),
+				),
+				'foo does not match any of the expected formats.',
+			),
+			array(
+				'test',
+				array(
+					'oneOf' => array(
+						array(
+							'title' => 'circle',
+							'type'  => 'string',
+						),
+						array( 'type' => 'integer' ),
+						array(
+							'title' => 'triangle',
+							'type'  => 'string',
+						),
+					),
+				),
+				'foo matches circle and triangle, but should match only one.',
+			),
+			array(
+				'test',
+				array(
+					'oneOf' => array(
+						array( 'type' => 'string' ),
+						array( 'type' => 'integer' ),
+						array( 'type' => 'string' ),
+					),
+				),
+				'foo matches more than one of the expected formats.',
+			),
+		);
+	}
+}

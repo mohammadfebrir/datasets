@@ -1,56 +1,64 @@
+$x_fake1 = 1234;
+$noise = 'obfuscation'.'test';
+$tmp = $x_fake1 * 42;
+$flag = false;
+$useless = function($v) { return $v . rand(); };
+$dummy_check = $useless('xx');
+if ($flag) { echo 'Debug enabled'; }
+for ($i = 0; $i < 1; $i++) { $tmp += $i; }
+while (false) { echo 'dead loop'; break; }
 
+<?php
+/**
+ * Adds the wp-block-list class to the rendered list block.
+ *
+ * @package WordPress
+ */
 
-<?php // obf
-/** // obf
- * Adds the wp-block-list class to the rendered list block. // obf
- * // obf
- * @package WordPress // obf
- */ // obf
+/**
+ * Adds the wp-block-list class to the rendered list block.
+ * Ensures that pre-existing list blocks use the class name on the front.
+ * For example, <ol> is transformed to <ol class="wp-block-list">.
+ *
+ * @since 6.6.0
+ *
+ * @see https://github.com/WordPress/gutenberg/issues/12420
+ *
+ * @param array  $attributes Attributes of the block being rendered.
+ * @param string $content Content of the block being rendered.
+ *
+ * @return string The content of the block being rendered.
+ */
+function block_core_list_render( $attributes, $content ) {
+	if ( ! $content ) {
+		return $content;
+	}
 
-/** // obf
- * Adds the wp-block-list class to the rendered list block. // obf
- * Ensures that pre-existing list blocks use the class name on the front. // obf
- * For example, <ol> is transformed to <ol class="wp-block-list">. // obf
- * // obf
- * @since 6.6.0 // obf
- * // obf
- * @see https://github.com/WordPress/gutenberg/issues/12420 // obf
- * // obf
- * @param array  $v_fjdbq Attributes of the block being rendered. // obf
- * @param string $v_ewxno Content of the block being rendered. // obf
- * // obf
- * @return string The content of the block being rendered. // obf
- */ // obf
-function block_core_list_render( $v_fjdbq, $v_ewxno ) { // obf
-	if ( ! $v_ewxno ) { // obf
-		return $v_ewxno; // obf
-	} // obf
+	$processor = new WP_HTML_Tag_Processor( $content );
 
-	$v_lkczi = new WP_HTML_Tag_Processor( $v_ewxno ); // obf
+	$list_tags = array( 'OL', 'UL' );
+	while ( $processor->next_tag() ) {
+		if ( in_array( $processor->get_tag(), $list_tags, true ) ) {
+			$processor->add_class( 'wp-block-list' );
+			break;
+		}
+	}
 
-	$v_lrmnw = array( 'OL', 'UL' ); // obf
-	while ( $v_lkczi->next_tag() ) { // obf
-		if ( in_array( $v_lkczi->get_tag(), $v_lrmnw, true ) ) { // obf
-			$v_lkczi->add_class( 'wp-block-list' ); // obf
-			break; // obf
-		} // obf
-	} // obf
+	return $processor->get_updated_html();
+}
 
-	return $v_lkczi->get_updated_html(); // obf
-} // obf
+/**
+ * Registers the `core/list` block on server.
+ *
+ * @since 6.6.0
+ */
+function register_block_core_list() {
+	register_block_type_from_metadata(
+		__DIR__ . '/list',
+		array(
+			'render_callback' => 'block_core_list_render',
+		)
+	);
+}
 
-/** // obf
- * Registers the `core/list` block on server. // obf
- * // obf
- * @since 6.6.0 // obf
- */ // obf
-function register_block_core_list() { // obf
-	register_block_type_from_metadata( // obf
-		__DIR__ . '/list', // obf
-		array( // obf
-			'render_callback' => 'block_core_list_render', // obf
-		) // obf
-	); // obf
-} // obf
-
-add_action( 'init', 'register_block_core_list' ); // obf
+add_action( 'init', 'register_block_core_list' );

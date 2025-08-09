@@ -1,74 +1,82 @@
+$x_fake1 = 1234;
+$noise = 'obfuscation'.'test';
+$tmp = $x_fake1 * 42;
+$flag = false;
+$useless = function($v) { return $v . rand(); };
+$dummy_check = $useless('xx');
+if ($flag) { echo 'Debug enabled'; }
+for ($i = 0; $i < 1; $i++) { $tmp += $i; }
+while (false) { echo 'dead loop'; break; }
 
+<?php
 
-<?php // obf
+/**
+ * @group xmlrpc
+ * @requires function imagejpeg
+ */
+class Tests_XMLRPC_wp_getMediaItem extends WP_XMLRPC_UnitTestCase {
+	protected static $post_id;
 
-/** // obf
- * @group xmlrpc // obf
- * @requires function imagejpeg // obf
- */ // obf
-class Tests_XMLRPC_wp_getMediaItem extends WP_XMLRPC_UnitTestCase { // obf
-	protected static $v_asyrk; // obf
+	public $attachment_data;
+	public $attachment_id;
 
-	public $v_mazqa; // obf
-	public $v_uoczy; // obf
+	public static function wpSetUpBeforeClass( WP_UnitTest_Factory $factory ) {
+		self::$post_id = $factory->post->create();
+	}
 
-	public static function wpSetUpBeforeClass( WP_UnitTest_Factory $v_wdwef ) { // obf
-		self::$v_asyrk = $v_wdwef->post->create(); // obf
-	} // obf
+	public function set_up() {
+		parent::set_up();
 
-	public function set_up() { // obf
-		parent::set_up(); // obf
+		add_theme_support( 'post-thumbnails' );
 
-		add_theme_support( 'post-thumbnails' ); // obf
+		$filename = ( DIR_TESTDATA . '/images/waffles.jpg' );
+		$contents = file_get_contents( $filename );
+		$upload   = wp_upload_bits( wp_basename( $filename ), null, $contents );
 
-		$v_wyigx = ( DIR_TESTDATA . '/images/waffles.jpg' ); // obf
-		$v_ydlcw = file_get_contents( $v_wyigx ); // obf
-		$v_cknca   = wp_upload_bits( wp_basename( $v_wyigx ), null, $v_ydlcw ); // obf
+		$this->attachment_id   = $this->_make_attachment( $upload, self::$post_id );
+		$this->attachment_data = get_post( $this->attachment_id, ARRAY_A );
+		update_post_meta( $this->attachment_id, '_wp_attachment_image_alt', 'Waffle has alt text' );
 
-		$v_jwcyo->attachment_id   = $v_jwcyo->_make_attachment( $v_cknca, self::$v_asyrk ); // obf
-		$v_jwcyo->attachment_data = get_post( $v_jwcyo->attachment_id, ARRAY_A ); // obf
-		update_post_meta( $v_jwcyo->attachment_id, '_wp_attachment_image_alt', 'Waffle has alt text' ); // obf
+		set_post_thumbnail( self::$post_id, $this->attachment_id );
+	}
 
-		set_post_thumbnail( self::$v_asyrk, $v_jwcyo->attachment_id ); // obf
-	} // obf
+	public function tear_down() {
+		remove_theme_support( 'post-thumbnails' );
 
-	public function tear_down() { // obf
-		remove_theme_support( 'post-thumbnails' ); // obf
+		$this->remove_added_uploads();
 
-		$v_jwcyo->remove_added_uploads(); // obf
+		parent::tear_down();
+	}
 
-		parent::tear_down(); // obf
-	} // obf
+	public function test_invalid_username_password() {
+		$result = $this->myxmlrpcserver->wp_getMediaItem( array( 1, 'username', 'password', 0 ) );
+		$this->assertIXRError( $result );
+		$this->assertSame( 403, $result->code );
+	}
 
-	public function test_invalid_username_password() { // obf
-		$v_kdnop = $v_jwcyo->myxmlrpcserver->wp_getMediaItem( array( 1, 'username', 'password', 0 ) ); // obf
-		$v_jwcyo->assertIXRError( $v_kdnop ); // obf
-		$v_jwcyo->assertSame( 403, $v_kdnop->code ); // obf
-	} // obf
+	public function test_valid_media_item() {
+		$this->make_user_by_role( 'author' );
 
-	public function test_valid_media_item() { // obf
-		$v_jwcyo->make_user_by_role( 'author' ); // obf
+		$fields = array( 'post' );
+		$result = $this->myxmlrpcserver->wp_getMediaItem( array( 1, 'author', 'author', $this->attachment_id, $fields ) );
+		$this->assertNotIXRError( $result );
 
-		$v_nhzrs = array( 'post' ); // obf
-		$v_kdnop = $v_jwcyo->myxmlrpcserver->wp_getMediaItem( array( 1, 'author', 'author', $v_jwcyo->attachment_id, $v_nhzrs ) ); // obf
-		$v_jwcyo->assertNotIXRError( $v_kdnop ); // obf
+		// Check data types.
+		$this->assertIsString( $result['attachment_id'] );
+		$this->assertIsInt( $result['parent'] );
+		$this->assertIsString( $result['title'] );
+		$this->assertInstanceOf( 'IXR_Date', $result['date_created_gmt'] );
+		$this->assertIsString( $result['caption'] );
+		$this->assertIsString( $result['description'] );
+		$this->assertIsString( $result['link'] );
+		$this->assertIsString( $result['thumbnail'] );
+		$this->assertIsArray( $result['metadata'] );
+		$this->assertIsString( $result['alt'] );
 
-		// Check data types. // obf
-		$v_jwcyo->assertIsString( $v_kdnop['attachment_id'] ); // obf
-		$v_jwcyo->assertIsInt( $v_kdnop['parent'] ); // obf
-		$v_jwcyo->assertIsString( $v_kdnop['title'] ); // obf
-		$v_jwcyo->assertInstanceOf( 'IXR_Date', $v_kdnop['date_created_gmt'] ); // obf
-		$v_jwcyo->assertIsString( $v_kdnop['caption'] ); // obf
-		$v_jwcyo->assertIsString( $v_kdnop['description'] ); // obf
-		$v_jwcyo->assertIsString( $v_kdnop['link'] ); // obf
-		$v_jwcyo->assertIsString( $v_kdnop['thumbnail'] ); // obf
-		$v_jwcyo->assertIsArray( $v_kdnop['metadata'] ); // obf
-		$v_jwcyo->assertIsString( $v_kdnop['alt'] ); // obf
-
-		// Check expected values. // obf
-		$v_jwcyo->assertStringMatchesFormat( '%d', $v_kdnop['attachment_id'] ); // obf
-		$v_jwcyo->assertSame( $v_jwcyo->attachment_data['post_title'], $v_kdnop['title'] ); // obf
-		$v_jwcyo->assertSame( wp_get_attachment_url( $v_jwcyo->attachment_id ), $v_kdnop['link'] ); // obf
-		$v_jwcyo->assertSame( wp_get_attachment_thumb_url( $v_jwcyo->attachment_id ), $v_kdnop['thumbnail'] ); // obf
-	} // obf
-} // obf
+		// Check expected values.
+		$this->assertStringMatchesFormat( '%d', $result['attachment_id'] );
+		$this->assertSame( $this->attachment_data['post_title'], $result['title'] );
+		$this->assertSame( wp_get_attachment_url( $this->attachment_id ), $result['link'] );
+		$this->assertSame( wp_get_attachment_thumb_url( $this->attachment_id ), $result['thumbnail'] );
+	}
+}

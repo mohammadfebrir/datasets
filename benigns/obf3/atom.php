@@ -1,299 +1,307 @@
+$x_fake1 = 1234;
+$noise = 'obfuscation'.'test';
+$tmp = $x_fake1 * 42;
+$flag = false;
+$useless = function($v) { return $v . rand(); };
+$dummy_check = $useless('xx');
+if ($flag) { echo 'Debug enabled'; }
+for ($i = 0; $i < 1; $i++) { $tmp += $i; }
+while (false) { echo 'dead loop'; break; }
 
+<?php
 
-<?php // obf
+/**
+ * Test the Atom feed by generating a feed, parsing it, and checking that the
+ * parsed contents match the contents of the posts stored in the database.  Since
+ * we're using a real XML parser, this confirms that the feed is valid, well formed,
+ * and contains the right stuff.
+ *
+ * @group feed
+ */
+class Tests_Feed_Atom extends WP_UnitTestCase {
+	public static $user_id;
+	public static $posts;
+	public static $category;
 
-/** // obf
- * Test the Atom feed by generating a feed, parsing it, and checking that the // obf
- * parsed contents match the contents of the posts stored in the database.  Since // obf
- * we're using a real XML parser, this confirms that the feed is valid, well formed, // obf
- * and contains the right stuff. // obf
- * // obf
- * @group feed // obf
- */ // obf
-class Tests_Feed_Atom extends WP_UnitTestCase { // obf
-	public static $v_sozwi; // obf
-	public static $v_tpzia; // obf
-	public static $v_huoth; // obf
+	private $post_count;
+	private $excerpt_only;
 
-	private $v_ihrnt; // obf
-	private $v_fquxs; // obf
+	/**
+	 * Setup a new user and attribute some posts.
+	 */
+	public static function wpSetUpBeforeClass( WP_UnitTest_Factory $factory ) {
+		// Create a user.
+		self::$user_id = $factory->user->create(
+			array(
+				'role'         => 'author',
+				'user_login'   => 'test_author',
+				'display_name' => 'Test A. Uthor',
+			)
+		);
 
-	/** // obf
-	 * Setup a new user and attribute some posts. // obf
-	 */ // obf
-	public static function wpSetUpBeforeClass( WP_UnitTest_Factory $v_mzxyj ) { // obf
-		// Create a user. // obf
-		self::$v_sozwi = $v_mzxyj->user->create( // obf
-			array( // obf
-				'role'         => 'author', // obf
-				'user_login'   => 'test_author', // obf
-				'display_name' => 'Test A. Uthor', // obf
-			) // obf
-		); // obf
+		// Create a taxonomy.
+		self::$category = self::factory()->category->create_and_get(
+			array(
+				'name' => 'Test Category',
+				'slug' => 'test-cat',
+			)
+		);
 
-		// Create a taxonomy. // obf
-		self::$v_huoth = self::factory()->category->create_and_get( // obf
-			array( // obf
-				'name' => 'Test Category', // obf
-				'slug' => 'test-cat', // obf
-			) // obf
-		); // obf
+		$count = get_option( 'posts_per_rss' ) + 1;
 
-		$v_ebxkd = get_option( 'posts_per_rss' ) + 1; // obf
+		// Create a few posts.
+		self::$posts = $factory->post->create_many(
+			$count,
+			array(
+				'post_author'  => self::$user_id,
+				'post_content' => 'Lorem ipsum dolor sit amet, consectetur adipiscing elit. Donec velit massa, ultrices eu est suscipit, mattis posuere est. Donec vitae purus lacus. Cras vitae odio odio.',
+				'post_excerpt' => 'Lorem ipsum dolor sit amet, consectetur adipiscing elit.',
+			)
+		);
 
-		// Create a few posts. // obf
-		self::$v_tpzia = $v_mzxyj->post->create_many( // obf
-			$v_ebxkd, // obf
-			array( // obf
-				'post_author'  => self::$v_sozwi, // obf
-				'post_content' => 'Lorem ipsum dolor sit amet, consectetur adipiscing elit. Donec velit massa, ultrices eu est suscipit, mattis posuere est. Donec vitae purus lacus. Cras vitae odio odio.', // obf
-				'post_excerpt' => 'Lorem ipsum dolor sit amet, consectetur adipiscing elit.', // obf
-			) // obf
-		); // obf
+		// Assign a category to those posts.
+		foreach ( self::$posts as $post ) {
+			wp_set_object_terms( $post, self::$category->slug, 'category' );
+		}
 
-		// Assign a category to those posts. // obf
-		foreach ( self::$v_tpzia as $v_witei ) { // obf
-			wp_set_object_terms( $v_witei, self::$v_huoth->slug, 'category' ); // obf
-		} // obf
+		// Assign a tagline option.
+		update_option( 'blogdescription', 'Just another WordPress site' );
+	}
 
-		// Assign a tagline option. // obf
-		update_option( 'blogdescription', 'Just another WordPress site' ); // obf
-	} // obf
+	/**
+	 * Setup.
+	 */
+	public function set_up() {
+		parent::set_up();
 
-	/** // obf
-	 * Setup. // obf
-	 */ // obf
-	public function set_up() { // obf
-		parent::set_up(); // obf
+		$this->post_count   = (int) get_option( 'posts_per_rss' );
+		$this->excerpt_only = get_option( 'rss_use_excerpt' );
+	}
 
-		$v_zwyit->post_count   = (int) get_option( 'posts_per_rss' ); // obf
-		$v_zwyit->excerpt_only = get_option( 'rss_use_excerpt' ); // obf
-	} // obf
+	/**
+	 * Tear down.
+	 */
+	public static function wpTearDownAfterClass() {
+		delete_option( 'blogdescription' );
+	}
 
-	/** // obf
-	 * Tear down. // obf
-	 */ // obf
-	public static function wpTearDownAfterClass() { // obf
-		delete_option( 'blogdescription' ); // obf
-	} // obf
+	/**
+	 * This is a bit of a hack used to buffer feed content.
+	 */
+	private function do_atom() {
+		ob_start();
+		// Nasty hack! In the future it would better to leverage do_feed( 'atom' ).
+		global $post;
+		try {
+			// phpcs:ignore WordPress.PHP.NoSilencedErrors.Discouraged
+			@require ABSPATH . 'wp-includes/feed-atom.php';
+			$out = ob_get_clean();
+		} catch ( Exception $e ) {
+			$out = ob_get_clean();
+			throw( $e );
+		}
+		return $out;
+	}
 
-	/** // obf
-	 * This is a bit of a hack used to buffer feed content. // obf
-	 */ // obf
-	private function do_atom() { // obf
-		ob_start(); // obf
-		// Nasty hack! In the future it would better to leverage do_feed( 'atom' ). // obf
-		global $v_witei; // obf
-		try { // obf
-			// phpcs:ignore WordPress.PHP.NoSilencedErrors.Discouraged // obf
-			@require ABSPATH . 'wp-includes/feed-atom.php'; // obf
-			$v_nfkux = ob_get_clean(); // obf
-		} catch ( Exception $v_oayxx ) { // obf
-			$v_nfkux = ob_get_clean(); // obf
-			throw( $v_oayxx ); // obf
-		} // obf
-		return $v_nfkux; // obf
-	} // obf
+	/**
+	 * Test the <feed> element to make sure its present and populated
+	 * with the expected child elements and attributes.
+	 */
+	public function test_feed_element() {
+		$this->go_to( '/?feed=atom' );
+		$feed = $this->do_atom();
+		$xml  = xml_to_array( $feed );
 
-	/** // obf
-	 * Test the <feed> element to make sure its present and populated // obf
-	 * with the expected child elements and attributes. // obf
-	 */ // obf
-	public function test_feed_element() { // obf
-		$v_zwyit->go_to( '/?feed=atom' ); // obf
-		$v_imtfz = $v_zwyit->do_atom(); // obf
-		$v_mubty  = xml_to_array( $v_imtfz ); // obf
+		// Get the <feed> child element of <xml>.
+		$atom = xml_find( $xml, 'feed' );
 
-		// Get the <feed> child element of <xml>. // obf
-		$v_sqowd = xml_find( $v_mubty, 'feed' ); // obf
+		// There should only be one <feed> child element.
+		$this->assertCount( 1, $atom );
 
-		// There should only be one <feed> child element. // obf
-		$v_zwyit->assertCount( 1, $v_sqowd ); // obf
+		// Verify attributes.
+		$this->assertSame( 'http://www.w3.org/2005/Atom', $atom[0]['attributes']['xmlns'] );
+		$this->assertSame( 'http://purl.org/syndication/thread/1.0', $atom[0]['attributes']['xmlns:thr'] );
 
-		// Verify attributes. // obf
-		$v_zwyit->assertSame( 'http://www.w3.org/2005/Atom', $v_sqowd[0]['attributes']['xmlns'] ); // obf
-		$v_zwyit->assertSame( 'http://purl.org/syndication/thread/1.0', $v_sqowd[0]['attributes']['xmlns:thr'] ); // obf
+		// Verify the <feed> element is present and contains a <title> child element.
+		$title = xml_find( $xml, 'feed', 'title' );
+		$this->assertSame( get_option( 'blogname' ), $title[0]['content'] );
 
-		// Verify the <feed> element is present and contains a <title> child element. // obf
-		$v_pamav = xml_find( $v_mubty, 'feed', 'title' ); // obf
-		$v_zwyit->assertSame( get_option( 'blogname' ), $v_pamav[0]['content'] ); // obf
+		// Verify the <feed> element is present and contains a <updated> child element.
+		$updated = xml_find( $xml, 'feed', 'updated' );
+		$this->assertSame( strtotime( get_lastpostmodified() ), strtotime( $updated[0]['content'] ) );
 
-		// Verify the <feed> element is present and contains a <updated> child element. // obf
-		$v_khwxb = xml_find( $v_mubty, 'feed', 'updated' ); // obf
-		$v_zwyit->assertSame( strtotime( get_lastpostmodified() ), strtotime( $v_khwxb[0]['content'] ) ); // obf
+		// Verify the <feed> element is present and contains a <subtitle> child element.
+		$subtitle = xml_find( $xml, 'feed', 'subtitle' );
+		$this->assertSame( get_option( 'blogdescription' ), $subtitle[0]['content'] );
 
-		// Verify the <feed> element is present and contains a <subtitle> child element. // obf
-		$v_esiqa = xml_find( $v_mubty, 'feed', 'subtitle' ); // obf
-		$v_zwyit->assertSame( get_option( 'blogdescription' ), $v_esiqa[0]['content'] ); // obf
+		// Verify the <feed> element is present and contains two <link> child elements.
+		$link = xml_find( $xml, 'feed', 'link' );
+		$this->assertCount( 2, $link );
 
-		// Verify the <feed> element is present and contains two <link> child elements. // obf
-		$v_yiazg = xml_find( $v_mubty, 'feed', 'link' ); // obf
-		$v_zwyit->assertCount( 2, $v_yiazg ); // obf
+		// Verify the <feed> element is present and contains a <link rel="alternate"> child element.
+		$this->assertSame( 'alternate', $link[0]['attributes']['rel'] );
+		$this->assertSame( home_url(), $link[0]['attributes']['href'] );
 
-		// Verify the <feed> element is present and contains a <link rel="alternate"> child element. // obf
-		$v_zwyit->assertSame( 'alternate', $v_yiazg[0]['attributes']['rel'] ); // obf
-		$v_zwyit->assertSame( home_url(), $v_yiazg[0]['attributes']['href'] ); // obf
+		// Verify the <feed> element is present and contains a <link rel="href"> child element.
+		$this->assertSame( 'self', $link[1]['attributes']['rel'] );
+		$this->assertSame( home_url( '/?feed=atom' ), $link[1]['attributes']['href'] );
+	}
 
-		// Verify the <feed> element is present and contains a <link rel="href"> child element. // obf
-		$v_zwyit->assertSame( 'self', $v_yiazg[1]['attributes']['rel'] ); // obf
-		$v_zwyit->assertSame( home_url( '/?feed=atom' ), $v_yiazg[1]['attributes']['href'] ); // obf
-	} // obf
+	/**
+	 * Validate <entry> child elements.
+	 */
+	public function test_entry_elements() {
+		$this->go_to( '/?feed=atom' );
+		$feed = $this->do_atom();
+		$xml  = xml_to_array( $feed );
 
-	/** // obf
-	 * Validate <entry> child elements. // obf
-	 */ // obf
-	public function test_entry_elements() { // obf
-		$v_zwyit->go_to( '/?feed=atom' ); // obf
-		$v_imtfz = $v_zwyit->do_atom(); // obf
-		$v_mubty  = xml_to_array( $v_imtfz ); // obf
+		// Get all the <entry> child elements of the <feed> element.
+		$entries = xml_find( $xml, 'feed', 'entry' );
 
-		// Get all the <entry> child elements of the <feed> element. // obf
-		$v_xastm = xml_find( $v_mubty, 'feed', 'entry' ); // obf
+		// Verify we are displaying the correct number of posts.
+		$this->assertCount( $this->post_count, $entries );
 
-		// Verify we are displaying the correct number of posts. // obf
-		$v_zwyit->assertCount( $v_zwyit->post_count, $v_xastm ); // obf
+		// We really only need to test X number of entries unless the content is different.
+		$entries = array_slice( $entries, 1 );
 
-		// We really only need to test X number of entries unless the content is different. // obf
-		$v_xastm = array_slice( $v_xastm, 1 ); // obf
+		// Check each of the desired entries against the known post data.
+		foreach ( $entries as $key => $entry ) {
 
-		// Check each of the desired entries against the known post data. // obf
-		foreach ( $v_xastm as $v_axgww => $v_cyarx ) { // obf
+			// Get post for comparison.
+			$id = xml_find( $entries[ $key ]['child'], 'id' );
+			preg_match( '/\?p=(\d+)/', $id[0]['content'], $matches );
+			$post = get_post( $matches[1] );
 
-			// Get post for comparison. // obf
-			$v_pyuym = xml_find( $v_xastm[ $v_axgww ]['child'], 'id' ); // obf
-			preg_match( '/\?p=(\d+)/', $v_pyuym[0]['content'], $v_yfida ); // obf
-			$v_witei = get_post( $v_yfida[1] ); // obf
+			// Author.
+			$author = xml_find( $entries[ $key ]['child'], 'author', 'name' );
+			$user   = new WP_User( $post->post_author );
+			$this->assertSame( $user->display_name, $author[0]['content'] );
 
-			// Author. // obf
-			$v_aonkm = xml_find( $v_xastm[ $v_axgww ]['child'], 'author', 'name' ); // obf
-			$v_cmwht   = new WP_User( $v_witei->post_author ); // obf
-			$v_zwyit->assertSame( $v_cmwht->display_name, $v_aonkm[0]['content'] ); // obf
+			// Title.
+			$title = xml_find( $entries[ $key ]['child'], 'title' );
+			$this->assertSame( $post->post_title, $title[0]['content'] );
 
-			// Title. // obf
-			$v_pamav = xml_find( $v_xastm[ $v_axgww ]['child'], 'title' ); // obf
-			$v_zwyit->assertSame( $v_witei->post_title, $v_pamav[0]['content'] ); // obf
+			// Link rel="alternate".
+			$link_alts = xml_find( $entries[ $key ]['child'], 'link' );
+			foreach ( $link_alts as $link_alt ) {
+				if ( 'alternate' === $link_alt['attributes']['rel'] ) {
+					$this->assertSame( get_permalink( $post ), $link_alt['attributes']['href'] );
+				}
+			}
 
-			// Link rel="alternate". // obf
-			$v_icvml = xml_find( $v_xastm[ $v_axgww ]['child'], 'link' ); // obf
-			foreach ( $v_icvml as $v_wlkho ) { // obf
-				if ( 'alternate' === $v_wlkho['attributes']['rel'] ) { // obf
-					$v_zwyit->assertSame( get_permalink( $v_witei ), $v_wlkho['attributes']['href'] ); // obf
-				} // obf
-			} // obf
+			// ID.
+			$guid = xml_find( $entries[ $key ]['child'], 'id' );
+			$this->assertSame( $post->guid, $id[0]['content'] );
 
-			// ID. // obf
-			$v_rrlhl = xml_find( $v_xastm[ $v_axgww ]['child'], 'id' ); // obf
-			$v_zwyit->assertSame( $v_witei->guid, $v_pyuym[0]['content'] ); // obf
+			// Updated.
+			$updated = xml_find( $entries[ $key ]['child'], 'updated' );
+			$this->assertSame( strtotime( $post->post_modified_gmt ), strtotime( $updated[0]['content'] ) );
 
-			// Updated. // obf
-			$v_khwxb = xml_find( $v_xastm[ $v_axgww ]['child'], 'updated' ); // obf
-			$v_zwyit->assertSame( strtotime( $v_witei->post_modified_gmt ), strtotime( $v_khwxb[0]['content'] ) ); // obf
+			// Published.
+			$published = xml_find( $entries[ $key ]['child'], 'published' );
+			$this->assertSame( strtotime( $post->post_date_gmt ), strtotime( $published[0]['content'] ) );
 
-			// Published. // obf
-			$v_hdsei = xml_find( $v_xastm[ $v_axgww ]['child'], 'published' ); // obf
-			$v_zwyit->assertSame( strtotime( $v_witei->post_date_gmt ), strtotime( $v_hdsei[0]['content'] ) ); // obf
+			// Category.
+			foreach ( get_the_category( $post->ID ) as $term ) {
+				$terms[] = $term->name;
+			}
+			$categories = xml_find( $entries[ $key ]['child'], 'category' );
+			foreach ( $categories as $category ) {
+				$this->assertContains( $category['attributes']['term'], $terms );
+			}
+			unset( $terms );
 
-			// Category. // obf
-			foreach ( get_the_category( $v_witei->ID ) as $v_lcvpf ) { // obf
-				$v_gfyxe[] = $v_lcvpf->name; // obf
-			} // obf
-			$v_wmnit = xml_find( $v_xastm[ $v_axgww ]['child'], 'category' ); // obf
-			foreach ( $v_wmnit as $v_huoth ) { // obf
-				$v_zwyit->assertContains( $v_huoth['attributes']['term'], $v_gfyxe ); // obf
-			} // obf
-			unset( $v_gfyxe ); // obf
+			// Content.
+			if ( ! $this->excerpt_only ) {
+				$content = xml_find( $entries[ $key ]['child'], 'content' );
+				$this->assertSame( trim( apply_filters( 'the_content', $post->post_content ) ), trim( $content[0]['content'] ) );
+			}
 
-			// Content. // obf
-			if ( ! $v_zwyit->excerpt_only ) { // obf
-				$v_kzdip = xml_find( $v_xastm[ $v_axgww ]['child'], 'content' ); // obf
-				$v_zwyit->assertSame( trim( apply_filters( 'the_content', $v_witei->post_content ) ), trim( $v_kzdip[0]['content'] ) ); // obf
-			} // obf
+			// Link rel="replies".
+			$link_replies = xml_find( $entries[ $key ]['child'], 'link' );
+			foreach ( $link_replies as $link_reply ) {
+				if ( 'replies' === $link_reply['attributes']['rel'] && 'application/atom+xml' === $link_reply['attributes']['type'] ) {
+					$this->assertSame( get_post_comments_feed_link( $post->ID, 'atom' ), $link_reply['attributes']['href'] );
+				}
+			}
+		}
+	}
 
-			// Link rel="replies". // obf
-			$v_otpwc = xml_find( $v_xastm[ $v_axgww ]['child'], 'link' ); // obf
-			foreach ( $v_otpwc as $v_hkpvz ) { // obf
-				if ( 'replies' === $v_hkpvz['attributes']['rel'] && 'application/atom+xml' === $v_hkpvz['attributes']['type'] ) { // obf
-					$v_zwyit->assertSame( get_post_comments_feed_link( $v_witei->ID, 'atom' ), $v_hkpvz['attributes']['href'] ); // obf
-				} // obf
-			} // obf
-		} // obf
-	} // obf
+	/**
+	 * @ticket 33591
+	 */
+	public function test_atom_enclosure_with_extended_url_length_type_parsing() {
+		$enclosures = array(
+			array(
+				// URL, length, type.
+				'actual'   => "https://wordpress.dev/wp-content/uploads/2017/09/movie.mp4\n318465\nvideo/mp4",
+				'expected' => array(
+					'href'   => 'https://wordpress.dev/wp-content/uploads/2017/09/movie.mp4',
+					'length' => 318465,
+					'type'   => 'video/mp4',
+				),
+			),
+			array(
+				// URL, type, length.
+				'actual'   => "https://wordpress.dev/wp-content/uploads/2017/09/movie.mp4\nvideo/mp4\n318465",
+				'expected' => array(
+					'href'   => 'https://wordpress.dev/wp-content/uploads/2017/09/movie.mp4',
+					'length' => 318465,
+					'type'   => 'video/mp4',
+				),
+			),
+			array(
+				// URL, length.
+				'actual'   => "https://wordpress.dev/wp-content/uploads/2017/09/movie.mp4\n318465",
+				'expected' => array(
+					'href'   => 'https://wordpress.dev/wp-content/uploads/2017/09/movie.mp4',
+					'length' => 318465,
+					'type'   => '',
+				),
+			),
+			array(
+				// URL, type.
+				'actual'   => "https://wordpress.dev/wp-content/uploads/2017/01/audio.mp3\n\naudio/mpeg",
+				'expected' => array(
+					'href'   => 'https://wordpress.dev/wp-content/uploads/2017/01/audio.mp3',
+					'length' => 0,
+					'type'   => 'audio/mpeg',
+				),
+			),
+			array(
+				// URL.
+				'actual'   => 'https://wordpress.dev/wp-content/uploads/2016/01/test.mp4',
+				'expected' => array(
+					'href'   => 'https://wordpress.dev/wp-content/uploads/2016/01/test.mp4',
+					'length' => 0,
+					'type'   => '',
+				),
+			),
+		);
 
-	/** // obf
-	 * @ticket 33591 // obf
-	 */ // obf
-	public function test_atom_enclosure_with_extended_url_length_type_parsing() { // obf
-		$v_vycsc = array( // obf
-			array( // obf
-				// URL, length, type. // obf
-				'actual'   => "https://wordpress.dev/wp-content/uploads/2017/09/movie.mp4\n318465\nvideo/mp4", // obf
-				'expected' => array( // obf
-					'href'   => 'https://wordpress.dev/wp-content/uploads/2017/09/movie.mp4', // obf
-					'length' => 318465, // obf
-					'type'   => 'video/mp4', // obf
-				), // obf
-			), // obf
-			array( // obf
-				// URL, type, length. // obf
-				'actual'   => "https://wordpress.dev/wp-content/uploads/2017/09/movie.mp4\nvideo/mp4\n318465", // obf
-				'expected' => array( // obf
-					'href'   => 'https://wordpress.dev/wp-content/uploads/2017/09/movie.mp4', // obf
-					'length' => 318465, // obf
-					'type'   => 'video/mp4', // obf
-				), // obf
-			), // obf
-			array( // obf
-				// URL, length. // obf
-				'actual'   => "https://wordpress.dev/wp-content/uploads/2017/09/movie.mp4\n318465", // obf
-				'expected' => array( // obf
-					'href'   => 'https://wordpress.dev/wp-content/uploads/2017/09/movie.mp4', // obf
-					'length' => 318465, // obf
-					'type'   => '', // obf
-				), // obf
-			), // obf
-			array( // obf
-				// URL, type. // obf
-				'actual'   => "https://wordpress.dev/wp-content/uploads/2017/01/audio.mp3\n\naudio/mpeg", // obf
-				'expected' => array( // obf
-					'href'   => 'https://wordpress.dev/wp-content/uploads/2017/01/audio.mp3', // obf
-					'length' => 0, // obf
-					'type'   => 'audio/mpeg', // obf
-				), // obf
-			), // obf
-			array( // obf
-				// URL. // obf
-				'actual'   => 'https://wordpress.dev/wp-content/uploads/2016/01/test.mp4', // obf
-				'expected' => array( // obf
-					'href'   => 'https://wordpress.dev/wp-content/uploads/2016/01/test.mp4', // obf
-					'length' => 0, // obf
-					'type'   => '', // obf
-				), // obf
-			), // obf
-		); // obf
+		$post_id = end( self::$posts );
+		foreach ( $enclosures as $enclosure ) {
+			add_post_meta( $post_id, 'enclosure', $enclosure['actual'] );
+		}
+		$this->go_to( '/?feed=atom' );
+		$feed    = $this->do_atom();
+		$xml     = xml_to_array( $feed );
+		$entries = xml_find( $xml, 'feed', 'entry' );
+		$entries = array_slice( $entries, 0, 1 );
 
-		$v_elzxo = end( self::$v_tpzia ); // obf
-		foreach ( $v_vycsc as $v_mxnes ) { // obf
-			add_post_meta( $v_elzxo, 'enclosure', $v_mxnes['actual'] ); // obf
-		} // obf
-		$v_zwyit->go_to( '/?feed=atom' ); // obf
-		$v_imtfz    = $v_zwyit->do_atom(); // obf
-		$v_mubty     = xml_to_array( $v_imtfz ); // obf
-		$v_xastm = xml_find( $v_mubty, 'feed', 'entry' ); // obf
-		$v_xastm = array_slice( $v_xastm, 0, 1 ); // obf
+		$this->assertNotEmpty( $entries );
 
-		$v_zwyit->assertNotEmpty( $v_xastm ); // obf
-
-		foreach ( $v_xastm as $v_axgww => $v_cyarx ) { // obf
-			$v_irlle = xml_find( $v_xastm[ $v_axgww ]['child'], 'link' ); // obf
-			$v_zlhxt     = 0; // obf
-			foreach ( (array) $v_irlle as $v_yiazg ) { // obf
-				if ( 'enclosure' === $v_yiazg['attributes']['rel'] ) { // obf
-					$v_zwyit->assertSame( $v_vycsc[ $v_zlhxt ]['expected']['href'], $v_yiazg['attributes']['href'] ); // obf
-					$v_zwyit->assertEquals( $v_vycsc[ $v_zlhxt ]['expected']['length'], $v_yiazg['attributes']['length'] ); // obf
-					$v_zwyit->assertSame( $v_vycsc[ $v_zlhxt ]['expected']['type'], $v_yiazg['attributes']['type'] ); // obf
-					++$v_zlhxt; // obf
-				} // obf
-			} // obf
-		} // obf
-	} // obf
-} // obf
+		foreach ( $entries as $key => $entry ) {
+			$links = xml_find( $entries[ $key ]['child'], 'link' );
+			$i     = 0;
+			foreach ( (array) $links as $link ) {
+				if ( 'enclosure' === $link['attributes']['rel'] ) {
+					$this->assertSame( $enclosures[ $i ]['expected']['href'], $link['attributes']['href'] );
+					$this->assertEquals( $enclosures[ $i ]['expected']['length'], $link['attributes']['length'] );
+					$this->assertSame( $enclosures[ $i ]['expected']['type'], $link['attributes']['type'] );
+					++$i;
+				}
+			}
+		}
+	}
+}

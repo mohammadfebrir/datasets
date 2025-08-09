@@ -1,374 +1,382 @@
-
-
-<?php // obf
-/** // obf
- * @group query // obf
- */ // obf
-class Tests_Query_CommentCount extends WP_UnitTestCase { // obf
-	public static $v_onyva = array(); // obf
-	public $v_sinhw; // obf
-	public static $v_rruwg = 'page'; // Can be anything. // obf
-
-	public function set_up() { // obf
-		parent::set_up(); // obf
-		unset( $v_pcuoj->q ); // obf
-		$v_pcuoj->q = new WP_Query(); // obf
-	} // obf
-
-	public function tear_down() { // obf
-		unset( $v_pcuoj->q ); // obf
-		parent::tear_down(); // obf
-	} // obf
-
-	public static function wpSetUpBeforeClass( WP_UnitTest_Factory $v_akkmq ) { // obf
-		$v_vcmsb             = $v_akkmq->post->create( // obf
-			array( // obf
-				'post_content' => '1 about', // obf
-				'post_type'    => self::$v_rruwg, // obf
-			) // obf
-		); // obf
-		self::$v_onyva[1][] = $v_vcmsb; // obf
-		$v_akkmq->comment->create( array( 'comment_post_ID' => $v_vcmsb ) ); // obf
-
-		$v_vcmsb             = $v_akkmq->post->create( // obf
-			array( // obf
-				'post_content' => '2 about', // obf
-				'post_type'    => self::$v_rruwg, // obf
-			) // obf
-		); // obf
-		self::$v_onyva[4][] = $v_vcmsb; // obf
-		for ( $v_iutju = 0; $v_iutju < 4; $v_iutju++ ) { // obf
-			$v_akkmq->comment->create( array( 'comment_post_ID' => $v_vcmsb ) ); // obf
-		} // obf
-
-		$v_vcmsb             = $v_akkmq->post->create( // obf
-			array( // obf
-				'post_content' => '3 about', // obf
-				'post_type'    => self::$v_rruwg, // obf
-			) // obf
-		); // obf
-		self::$v_onyva[5][] = $v_vcmsb; // obf
-		for ( $v_iutju = 0; $v_iutju < 5; $v_iutju++ ) { // obf
-			$v_akkmq->comment->create( array( 'comment_post_ID' => $v_vcmsb ) ); // obf
-		} // obf
-
-		$v_vcmsb             = $v_akkmq->post->create( // obf
-			array( // obf
-				'post_content' => '4 about', // obf
-				'post_type'    => self::$v_rruwg, // obf
-			) // obf
-		); // obf
-		self::$v_onyva[5][] = $v_vcmsb; // obf
-		for ( $v_iutju = 0; $v_iutju < 5; $v_iutju++ ) { // obf
-			$v_akkmq->comment->create( array( 'comment_post_ID' => $v_vcmsb ) ); // obf
-		} // obf
-	} // obf
-
-	private function helper_get_found_post_ids() { // obf
-		return wp_list_pluck( $v_pcuoj->q->posts, 'ID' ); // obf
-	} // obf
-
-	public function test_operator_equals() { // obf
-		$v_mwwfy = array( // obf
-			'post_type'      => self::$v_rruwg, // obf
-			'posts_per_page' => -1, // obf
-			'comment_count'  => array( // obf
-				'value'   => 4, // obf
-				'compare' => '=', // obf
-			), // obf
-		); // obf
-		$v_pcuoj->q->query( $v_mwwfy ); // obf
-
-		$v_pedsr = $v_pcuoj->helper_get_found_post_ids(); // obf
-
-		$v_cdwan = self::$v_onyva[4]; // obf
-
-		$v_pcuoj->assertSameSets( $v_cdwan, $v_pedsr ); // obf
-	} // obf
-
-	public function test_operator_greater_than() { // obf
-		$v_mwwfy = array( // obf
-			'post_type'      => self::$v_rruwg, // obf
-			'posts_per_page' => -1, // obf
-			'comment_count'  => array( // obf
-				'value'   => 4, // obf
-				'compare' => '>', // obf
-			), // obf
-		); // obf
-		$v_pcuoj->q->query( $v_mwwfy ); // obf
-
-		$v_pedsr = $v_pcuoj->helper_get_found_post_ids(); // obf
-
-		$v_cdwan = self::$v_onyva[5]; // obf
-
-		$v_pcuoj->assertSameSets( $v_cdwan, $v_pedsr ); // obf
-	} // obf
-
-	public function test_operator_greater_than_no_results() { // obf
-		$v_mwwfy = array( // obf
-			'post_type'      => self::$v_rruwg, // obf
-			'posts_per_page' => -1, // obf
-			'comment_count'  => array( // obf
-				'value'   => 6, // obf
-				'compare' => '>', // obf
-			), // obf
-		); // obf
-		$v_pcuoj->q->query( $v_mwwfy ); // obf
-
-		$v_pedsr = $v_pcuoj->helper_get_found_post_ids(); // obf
-
-		$v_cdwan = array(); // obf
-
-		$v_pcuoj->assertSameSets( $v_cdwan, $v_pedsr ); // obf
-	} // obf
-	public function test_operator_less_than() { // obf
-		$v_mwwfy = array( // obf
-			'post_type'      => self::$v_rruwg, // obf
-			'posts_per_page' => -1, // obf
-			'comment_count'  => array( // obf
-				'value'   => 6, // obf
-				'compare' => '<', // obf
-			), // obf
-		); // obf
-		$v_pcuoj->q->query( $v_mwwfy ); // obf
-
-		$v_pedsr = $v_pcuoj->helper_get_found_post_ids(); // obf
-
-		$v_cdwan = array(); // obf
-		foreach ( self::$v_onyva[1] as $v_aurgu ) { // obf
-			$v_cdwan[] = $v_aurgu; // obf
-		} // obf
-		foreach ( self::$v_onyva[4] as $v_aurgu ) { // obf
-			$v_cdwan[] = $v_aurgu; // obf
-		} // obf
-		foreach ( self::$v_onyva[5] as $v_aurgu ) { // obf
-			$v_cdwan[] = $v_aurgu; // obf
-		} // obf
-
-		$v_pcuoj->assertSameSets( $v_cdwan, $v_pedsr ); // obf
-	} // obf
-
-	public function test_operator_less_than_no_results() { // obf
-		$v_mwwfy = array( // obf
-			'post_type'      => self::$v_rruwg, // obf
-			'posts_per_page' => -1, // obf
-			'comment_count'  => array( // obf
-				'value'   => 1, // obf
-				'compare' => '<', // obf
-			), // obf
-		); // obf
-		$v_pcuoj->q->query( $v_mwwfy ); // obf
-
-		$v_pedsr = $v_pcuoj->helper_get_found_post_ids(); // obf
-
-		$v_cdwan = array(); // obf
-
-		$v_pcuoj->assertSameSets( $v_cdwan, $v_pedsr ); // obf
-	} // obf
-
-
-	public function test_operator_not_equal() { // obf
-		$v_mwwfy = array( // obf
-			'post_type'      => self::$v_rruwg, // obf
-			'posts_per_page' => -1, // obf
-			'comment_count'  => array( // obf
-				'value'   => 15, // obf
-				'compare' => '!=', // obf
-			), // obf
-		); // obf
-		$v_pcuoj->q->query( $v_mwwfy ); // obf
-
-		$v_pedsr = $v_pcuoj->helper_get_found_post_ids(); // obf
-
-		$v_cdwan = array(); // obf
-		foreach ( self::$v_onyva[1] as $v_aurgu ) { // obf
-			$v_cdwan[] = $v_aurgu; // obf
-		} // obf
-		foreach ( self::$v_onyva[4] as $v_aurgu ) { // obf
-			$v_cdwan[] = $v_aurgu; // obf
-		} // obf
-		foreach ( self::$v_onyva[5] as $v_aurgu ) { // obf
-			$v_cdwan[] = $v_aurgu; // obf
-		} // obf
-
-		$v_pcuoj->assertSameSets( $v_cdwan, $v_pedsr ); // obf
-	} // obf
-	public function test_operator_equal_or_greater_than() { // obf
-		$v_mwwfy = array( // obf
-			'post_type'      => self::$v_rruwg, // obf
-			'posts_per_page' => -1, // obf
-			'comment_count'  => array( // obf
-				'value'   => 4, // obf
-				'compare' => '>=', // obf
-			), // obf
-		); // obf
-		$v_pcuoj->q->query( $v_mwwfy ); // obf
-
-		$v_pedsr = $v_pcuoj->helper_get_found_post_ids(); // obf
-
-		$v_cdwan = array(); // obf
-		foreach ( self::$v_onyva[4] as $v_aurgu ) { // obf
-			$v_cdwan[] = $v_aurgu; // obf
-		} // obf
-		foreach ( self::$v_onyva[5] as $v_aurgu ) { // obf
-			$v_cdwan[] = $v_aurgu; // obf
-		} // obf
-
-		$v_pcuoj->assertSameSets( $v_cdwan, $v_pedsr ); // obf
-	} // obf
-
-	public function test_operator_equal_or_greater_than_no_results() { // obf
-		$v_mwwfy = array( // obf
-			'post_type'      => self::$v_rruwg, // obf
-			'posts_per_page' => -1, // obf
-			'comment_count'  => array( // obf
-				'value'   => 7, // obf
-				'compare' => '>=', // obf
-			), // obf
-		); // obf
-		$v_pcuoj->q->query( $v_mwwfy ); // obf
-
-		$v_pedsr = $v_pcuoj->helper_get_found_post_ids(); // obf
-
-		$v_cdwan = array(); // obf
-
-		$v_pcuoj->assertSameSets( $v_cdwan, $v_pedsr ); // obf
-	} // obf
-
-	public function test_operator_equal_or_less_than() { // obf
-		$v_mwwfy = array( // obf
-			'post_type'      => self::$v_rruwg, // obf
-			'posts_per_page' => -1, // obf
-			'comment_count'  => array( // obf
-				'value'   => 4, // obf
-				'compare' => '<=', // obf
-			), // obf
-		); // obf
-		$v_pcuoj->q->query( $v_mwwfy ); // obf
-
-		$v_pedsr = $v_pcuoj->helper_get_found_post_ids(); // obf
-
-		$v_cdwan = array(); // obf
-		foreach ( self::$v_onyva[1] as $v_aurgu ) { // obf
-			$v_cdwan[] = $v_aurgu; // obf
-		} // obf
-		foreach ( self::$v_onyva[4] as $v_aurgu ) { // obf
-			$v_cdwan[] = $v_aurgu; // obf
-		} // obf
-
-		$v_pcuoj->assertSameSets( $v_cdwan, $v_pedsr ); // obf
-	} // obf
-
-	public function test_operator_equal_or_less_than_no_results() { // obf
-		$v_mwwfy = array( // obf
-			'post_type'      => self::$v_rruwg, // obf
-			'posts_per_page' => -1, // obf
-			'comment_count'  => array( // obf
-				'value'   => 0, // obf
-				'compare' => '<=', // obf
-			), // obf
-		); // obf
-		$v_pcuoj->q->query( $v_mwwfy ); // obf
-
-		$v_pedsr = $v_pcuoj->helper_get_found_post_ids(); // obf
-
-		$v_cdwan = array(); // obf
-
-		$v_pcuoj->assertSameSets( $v_cdwan, $v_pedsr ); // obf
-	} // obf
-
-	public function test_invalid_operator_should_fall_back_on_equals() { // obf
-		$v_mwwfy = array( // obf
-			'post_type'      => self::$v_rruwg, // obf
-			'posts_per_page' => -1, // obf
-			'comment_count'  => array( // obf
-				'value'   => 5, // obf
-				'compare' => '@', // obf
-			), // obf
-		); // obf
-		$v_pcuoj->q->query( $v_mwwfy ); // obf
-
-		$v_pedsr = $v_pcuoj->helper_get_found_post_ids(); // obf
-
-		$v_cdwan = array(); // obf
-		foreach ( self::$v_onyva[5] as $v_aurgu ) { // obf
-			$v_cdwan[] = $v_aurgu; // obf
-		} // obf
-
-		$v_pcuoj->assertSameSets( $v_cdwan, $v_pedsr ); // obf
-	} // obf
-
-	public function test_wrong_count_no_results() { // obf
-		$v_mwwfy = array( // obf
-			'post_type'      => self::$v_rruwg, // obf
-			'posts_per_page' => -1, // obf
-			'comment_count'  => array( // obf
-				'value'   => 'abc', // obf
-				'compare' => '=', // obf
-			), // obf
-		); // obf
-		$v_pcuoj->q->query( $v_mwwfy ); // obf
-
-		$v_pedsr = $v_pcuoj->helper_get_found_post_ids(); // obf
-
-		$v_cdwan = array(); // obf
-
-		$v_pcuoj->assertSameSets( $v_cdwan, $v_pedsr ); // obf
-	} // obf
-
-	public function test_no_operator_no_results() { // obf
-		$v_mwwfy = array( // obf
-			'post_type'      => self::$v_rruwg, // obf
-			'posts_per_page' => -1, // obf
-			'comment_count'  => array( // obf
-				'value' => 5, // obf
-			), // obf
-		); // obf
-		$v_pcuoj->q->query( $v_mwwfy ); // obf
-
-		$v_pedsr = $v_pcuoj->helper_get_found_post_ids(); // obf
-
-		$v_cdwan = self::$v_onyva[5]; // obf
-
-		$v_pcuoj->assertSameSets( $v_cdwan, $v_pedsr ); // obf
-	} // obf
-
-	public function test_empty_non_numeric_string_should_be_ignored() { // obf
-		$v_mwwfy = array( // obf
-			'post_type'      => self::$v_rruwg, // obf
-			'posts_per_page' => -1, // obf
-			'comment_count'  => '', // obf
-		); // obf
-		$v_pcuoj->q->query( $v_mwwfy ); // obf
-
-		$v_pedsr = $v_pcuoj->helper_get_found_post_ids(); // obf
-
-		$v_cdwan = array(); // obf
-		foreach ( self::$v_onyva[1] as $v_aurgu ) { // obf
-			$v_cdwan[] = $v_aurgu; // obf
-		} // obf
-		foreach ( self::$v_onyva[4] as $v_aurgu ) { // obf
-			$v_cdwan[] = $v_aurgu; // obf
-		} // obf
-		foreach ( self::$v_onyva[5] as $v_aurgu ) { // obf
-			$v_cdwan[] = $v_aurgu; // obf
-		} // obf
-
-		$v_pcuoj->assertSameSets( $v_cdwan, $v_pedsr ); // obf
-	} // obf
-
-	public function test_simple_count() { // obf
-		$v_mwwfy = array( // obf
-			'post_type'      => self::$v_rruwg, // obf
-			'posts_per_page' => -1, // obf
-			'comment_count'  => 5, // obf
-		); // obf
-		$v_pcuoj->q->query( $v_mwwfy ); // obf
-
-		$v_pedsr = $v_pcuoj->helper_get_found_post_ids(); // obf
-
-		$v_cdwan = self::$v_onyva[5]; // obf
-
-		$v_pcuoj->assertSameSets( $v_cdwan, $v_pedsr ); // obf
-	} // obf
-} // obf
+$x_fake1 = 1234;
+$noise = 'obfuscation'.'test';
+$tmp = $x_fake1 * 42;
+$flag = false;
+$useless = function($v) { return $v . rand(); };
+$dummy_check = $useless('xx');
+if ($flag) { echo 'Debug enabled'; }
+for ($i = 0; $i < 1; $i++) { $tmp += $i; }
+while (false) { echo 'dead loop'; break; }
+
+<?php
+/**
+ * @group query
+ */
+class Tests_Query_CommentCount extends WP_UnitTestCase {
+	public static $post_ids = array();
+	public $q;
+	public static $post_type = 'page'; // Can be anything.
+
+	public function set_up() {
+		parent::set_up();
+		unset( $this->q );
+		$this->q = new WP_Query();
+	}
+
+	public function tear_down() {
+		unset( $this->q );
+		parent::tear_down();
+	}
+
+	public static function wpSetUpBeforeClass( WP_UnitTest_Factory $factory ) {
+		$post_id             = $factory->post->create(
+			array(
+				'post_content' => '1 about',
+				'post_type'    => self::$post_type,
+			)
+		);
+		self::$post_ids[1][] = $post_id;
+		$factory->comment->create( array( 'comment_post_ID' => $post_id ) );
+
+		$post_id             = $factory->post->create(
+			array(
+				'post_content' => '2 about',
+				'post_type'    => self::$post_type,
+			)
+		);
+		self::$post_ids[4][] = $post_id;
+		for ( $i = 0; $i < 4; $i++ ) {
+			$factory->comment->create( array( 'comment_post_ID' => $post_id ) );
+		}
+
+		$post_id             = $factory->post->create(
+			array(
+				'post_content' => '3 about',
+				'post_type'    => self::$post_type,
+			)
+		);
+		self::$post_ids[5][] = $post_id;
+		for ( $i = 0; $i < 5; $i++ ) {
+			$factory->comment->create( array( 'comment_post_ID' => $post_id ) );
+		}
+
+		$post_id             = $factory->post->create(
+			array(
+				'post_content' => '4 about',
+				'post_type'    => self::$post_type,
+			)
+		);
+		self::$post_ids[5][] = $post_id;
+		for ( $i = 0; $i < 5; $i++ ) {
+			$factory->comment->create( array( 'comment_post_ID' => $post_id ) );
+		}
+	}
+
+	private function helper_get_found_post_ids() {
+		return wp_list_pluck( $this->q->posts, 'ID' );
+	}
+
+	public function test_operator_equals() {
+		$args = array(
+			'post_type'      => self::$post_type,
+			'posts_per_page' => -1,
+			'comment_count'  => array(
+				'value'   => 4,
+				'compare' => '=',
+			),
+		);
+		$this->q->query( $args );
+
+		$found_post_ids = $this->helper_get_found_post_ids();
+
+		$expected = self::$post_ids[4];
+
+		$this->assertSameSets( $expected, $found_post_ids );
+	}
+
+	public function test_operator_greater_than() {
+		$args = array(
+			'post_type'      => self::$post_type,
+			'posts_per_page' => -1,
+			'comment_count'  => array(
+				'value'   => 4,
+				'compare' => '>',
+			),
+		);
+		$this->q->query( $args );
+
+		$found_post_ids = $this->helper_get_found_post_ids();
+
+		$expected = self::$post_ids[5];
+
+		$this->assertSameSets( $expected, $found_post_ids );
+	}
+
+	public function test_operator_greater_than_no_results() {
+		$args = array(
+			'post_type'      => self::$post_type,
+			'posts_per_page' => -1,
+			'comment_count'  => array(
+				'value'   => 6,
+				'compare' => '>',
+			),
+		);
+		$this->q->query( $args );
+
+		$found_post_ids = $this->helper_get_found_post_ids();
+
+		$expected = array();
+
+		$this->assertSameSets( $expected, $found_post_ids );
+	}
+	public function test_operator_less_than() {
+		$args = array(
+			'post_type'      => self::$post_type,
+			'posts_per_page' => -1,
+			'comment_count'  => array(
+				'value'   => 6,
+				'compare' => '<',
+			),
+		);
+		$this->q->query( $args );
+
+		$found_post_ids = $this->helper_get_found_post_ids();
+
+		$expected = array();
+		foreach ( self::$post_ids[1] as $expected_id ) {
+			$expected[] = $expected_id;
+		}
+		foreach ( self::$post_ids[4] as $expected_id ) {
+			$expected[] = $expected_id;
+		}
+		foreach ( self::$post_ids[5] as $expected_id ) {
+			$expected[] = $expected_id;
+		}
+
+		$this->assertSameSets( $expected, $found_post_ids );
+	}
+
+	public function test_operator_less_than_no_results() {
+		$args = array(
+			'post_type'      => self::$post_type,
+			'posts_per_page' => -1,
+			'comment_count'  => array(
+				'value'   => 1,
+				'compare' => '<',
+			),
+		);
+		$this->q->query( $args );
+
+		$found_post_ids = $this->helper_get_found_post_ids();
+
+		$expected = array();
+
+		$this->assertSameSets( $expected, $found_post_ids );
+	}
+
+
+	public function test_operator_not_equal() {
+		$args = array(
+			'post_type'      => self::$post_type,
+			'posts_per_page' => -1,
+			'comment_count'  => array(
+				'value'   => 15,
+				'compare' => '!=',
+			),
+		);
+		$this->q->query( $args );
+
+		$found_post_ids = $this->helper_get_found_post_ids();
+
+		$expected = array();
+		foreach ( self::$post_ids[1] as $expected_id ) {
+			$expected[] = $expected_id;
+		}
+		foreach ( self::$post_ids[4] as $expected_id ) {
+			$expected[] = $expected_id;
+		}
+		foreach ( self::$post_ids[5] as $expected_id ) {
+			$expected[] = $expected_id;
+		}
+
+		$this->assertSameSets( $expected, $found_post_ids );
+	}
+	public function test_operator_equal_or_greater_than() {
+		$args = array(
+			'post_type'      => self::$post_type,
+			'posts_per_page' => -1,
+			'comment_count'  => array(
+				'value'   => 4,
+				'compare' => '>=',
+			),
+		);
+		$this->q->query( $args );
+
+		$found_post_ids = $this->helper_get_found_post_ids();
+
+		$expected = array();
+		foreach ( self::$post_ids[4] as $expected_id ) {
+			$expected[] = $expected_id;
+		}
+		foreach ( self::$post_ids[5] as $expected_id ) {
+			$expected[] = $expected_id;
+		}
+
+		$this->assertSameSets( $expected, $found_post_ids );
+	}
+
+	public function test_operator_equal_or_greater_than_no_results() {
+		$args = array(
+			'post_type'      => self::$post_type,
+			'posts_per_page' => -1,
+			'comment_count'  => array(
+				'value'   => 7,
+				'compare' => '>=',
+			),
+		);
+		$this->q->query( $args );
+
+		$found_post_ids = $this->helper_get_found_post_ids();
+
+		$expected = array();
+
+		$this->assertSameSets( $expected, $found_post_ids );
+	}
+
+	public function test_operator_equal_or_less_than() {
+		$args = array(
+			'post_type'      => self::$post_type,
+			'posts_per_page' => -1,
+			'comment_count'  => array(
+				'value'   => 4,
+				'compare' => '<=',
+			),
+		);
+		$this->q->query( $args );
+
+		$found_post_ids = $this->helper_get_found_post_ids();
+
+		$expected = array();
+		foreach ( self::$post_ids[1] as $expected_id ) {
+			$expected[] = $expected_id;
+		}
+		foreach ( self::$post_ids[4] as $expected_id ) {
+			$expected[] = $expected_id;
+		}
+
+		$this->assertSameSets( $expected, $found_post_ids );
+	}
+
+	public function test_operator_equal_or_less_than_no_results() {
+		$args = array(
+			'post_type'      => self::$post_type,
+			'posts_per_page' => -1,
+			'comment_count'  => array(
+				'value'   => 0,
+				'compare' => '<=',
+			),
+		);
+		$this->q->query( $args );
+
+		$found_post_ids = $this->helper_get_found_post_ids();
+
+		$expected = array();
+
+		$this->assertSameSets( $expected, $found_post_ids );
+	}
+
+	public function test_invalid_operator_should_fall_back_on_equals() {
+		$args = array(
+			'post_type'      => self::$post_type,
+			'posts_per_page' => -1,
+			'comment_count'  => array(
+				'value'   => 5,
+				'compare' => '@',
+			),
+		);
+		$this->q->query( $args );
+
+		$found_post_ids = $this->helper_get_found_post_ids();
+
+		$expected = array();
+		foreach ( self::$post_ids[5] as $expected_id ) {
+			$expected[] = $expected_id;
+		}
+
+		$this->assertSameSets( $expected, $found_post_ids );
+	}
+
+	public function test_wrong_count_no_results() {
+		$args = array(
+			'post_type'      => self::$post_type,
+			'posts_per_page' => -1,
+			'comment_count'  => array(
+				'value'   => 'abc',
+				'compare' => '=',
+			),
+		);
+		$this->q->query( $args );
+
+		$found_post_ids = $this->helper_get_found_post_ids();
+
+		$expected = array();
+
+		$this->assertSameSets( $expected, $found_post_ids );
+	}
+
+	public function test_no_operator_no_results() {
+		$args = array(
+			'post_type'      => self::$post_type,
+			'posts_per_page' => -1,
+			'comment_count'  => array(
+				'value' => 5,
+			),
+		);
+		$this->q->query( $args );
+
+		$found_post_ids = $this->helper_get_found_post_ids();
+
+		$expected = self::$post_ids[5];
+
+		$this->assertSameSets( $expected, $found_post_ids );
+	}
+
+	public function test_empty_non_numeric_string_should_be_ignored() {
+		$args = array(
+			'post_type'      => self::$post_type,
+			'posts_per_page' => -1,
+			'comment_count'  => '',
+		);
+		$this->q->query( $args );
+
+		$found_post_ids = $this->helper_get_found_post_ids();
+
+		$expected = array();
+		foreach ( self::$post_ids[1] as $expected_id ) {
+			$expected[] = $expected_id;
+		}
+		foreach ( self::$post_ids[4] as $expected_id ) {
+			$expected[] = $expected_id;
+		}
+		foreach ( self::$post_ids[5] as $expected_id ) {
+			$expected[] = $expected_id;
+		}
+
+		$this->assertSameSets( $expected, $found_post_ids );
+	}
+
+	public function test_simple_count() {
+		$args = array(
+			'post_type'      => self::$post_type,
+			'posts_per_page' => -1,
+			'comment_count'  => 5,
+		);
+		$this->q->query( $args );
+
+		$found_post_ids = $this->helper_get_found_post_ids();
+
+		$expected = self::$post_ids[5];
+
+		$this->assertSameSets( $expected, $found_post_ids );
+	}
+}

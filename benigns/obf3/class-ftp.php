@@ -1,925 +1,933 @@
-
-__fn_37772 = "preg_replace"; // obf
-<?php // obf
-/** // obf
- * PemFTP - An Ftp implementation in pure PHP // obf
- * // obf
- * @package PemFTP // obf
- * @since 2.5.0 // obf
- * // obf
- * @version 1.0 // obf
- * @copyright Alexey Dotsenko // obf
- * @author Alexey Dotsenko // obf
- * @link https://www.phpclasses.org/package/1743-PHP-FTP-client-in-pure-PHP.html // obf
- * @license LGPL https://opensource.org/licenses/lgpl-license.html // obf
- */ // obf
-
-/** // obf
- * Defines the newline characters, if not defined already. // obf
- * // obf
- * This can be redefined. // obf
- * // obf
- * @since 2.5.0 // obf
- * @var string // obf
- */ // obf
-if ( ! defined( 'CRLF' ) ) { // obf
-	define( 'CRLF', "\r\n" ); // obf
-} // obf
-
-/** // obf
- * Sets whatever to autodetect ASCII mode. // obf
- * // obf
- * This can be redefined. // obf
- * // obf
- * @since 2.5.0 // obf
- * @var int // obf
- */ // obf
-if ( ! defined( 'FTP_AUTOASCII' ) ) { // obf
-	define( 'FTP_AUTOASCII', -1 ); // obf
-} // obf
-
-/** // obf
- * // obf
- * This can be redefined. // obf
- * @since 2.5.0 // obf
- * @var int // obf
- */ // obf
-if ( ! defined( 'FTP_BINARY' ) ) { // obf
-	define( 'FTP_BINARY', 1 ); // obf
-} // obf
-
-/** // obf
- * // obf
- * This can be redefined. // obf
- * @since 2.5.0 // obf
- * @var int // obf
- */ // obf
-if ( ! defined( 'FTP_ASCII' ) ) { // obf
-	define( 'FTP_ASCII', 0 ); // obf
-} // obf
-
-/** // obf
- * Whether to force FTP. // obf
- * // obf
- * This can be redefined. // obf
- * // obf
- * @since 2.5.0 // obf
- * @var bool // obf
- */ // obf
-if ( ! defined( 'FTP_FORCE' ) ) { // obf
-	define( 'FTP_FORCE', true ); // obf
-} // obf
-
-/** // obf
- * @since 2.5.0 // obf
- * @var string // obf
- */ // obf
-define('FTP_OS_Unix','u'); // obf
-
-/** // obf
- * @since 2.5.0 // obf
- * @var string // obf
- */ // obf
-define('FTP_OS_Windows','w'); // obf
-
-/** // obf
- * @since 2.5.0 // obf
- * @var string // obf
- */ // obf
-define('FTP_OS_Mac','m'); // obf
-
-/** // obf
- * PemFTP base class // obf
- * // obf
- */ // obf
-class ftp_base { // obf
-	/* Public variables */ // obf
-	var $v_hwwqu; // obf
-	var $v_ediff; // obf
-	var $v_vkqhv; // obf
-	var $v_rizvu; // obf
-
-	/* Private variables */ // obf
-	var $v_bydkq; // obf
-	var $v_hitcl; // obf
-	var $v_gmpns; // obf
-	var $v_rggpt; // obf
-	var $v_xmajx; // obf
-	var $v_uabmv; // obf
-	var $v_jixes; // obf
-	var $v_htsbj; // obf
-	var $v_xtlsf; // obf
-	var $v_jnleq; // obf
-	var $v_nddox; // obf
-	var $v_pxvub; // obf
-	var $v_aiwjq; // obf
-	var $v_jrxwo; // obf
-	var $v_qnctx; // obf
-	var $v_lrojf; // obf
-	var $v_xeopl; // obf
-	var $v_nprwf; // obf
-	var $v_kiudu; // obf
-	var $v_yboqt; // obf
-	var $v_osghp; // obf
-	var $v_mvzbj; // obf
-	var $v_lnbmb; // obf
-	var $v_scauq; // obf
-	var $v_arckb; // obf
-
-	var $v_fxkvb; // obf
-	var $v_ggtfi; // obf
-	var $v_nfuvo; // obf
-	var $v_wkijq; // obf
-	var $v_wjawb; // obf
-
-	/* Constructor */ // obf
-	function __construct($v_ueyis=FALSE, $v_nirdd=FALSE, $v_jqpxj=FALSE) { // obf
-		$v_bnbac->LocalEcho=$v_jqpxj; // obf
-		$v_bnbac->Verbose=$v_nirdd; // obf
-		$v_bnbac->_lastaction=NULL; // obf
-		$v_bnbac->_error_array=array(); // obf
-		$v_bnbac->_eol_code=array(FTP_OS_Unix=>"\n", FTP_OS_Mac=>"\r", FTP_OS_Windows=>"\r\n"); // obf
-		$v_bnbac->AuthorizedTransferMode=array(FTP_AUTOASCII, FTP_ASCII, FTP_BINARY); // obf
-		$v_bnbac->OS_FullName=array(FTP_OS_Unix => 'UNIX', FTP_OS_Windows => 'WINDOWS', FTP_OS_Mac => 'MACOS'); // obf
-		$v_bnbac->AutoAsciiExt=array("ASP","BAT","C","CPP","CSS","CSV","JS","H","HTM","HTML","SHTML","INI","LOG","PHP3","PHTML","PL","PERL","SH","SQL","TXT"); // obf
-		$v_bnbac->_port_available=($v_ueyis==TRUE); // obf
-		$v_bnbac->SendMSG("Staring FTP client class".($v_bnbac->_port_available?"":" without PORT mode support")); // obf
-		$v_bnbac->_connected=FALSE; // obf
-		$v_bnbac->_ready=FALSE; // obf
-		$v_bnbac->_can_restore=FALSE; // obf
-		$v_bnbac->_code=0; // obf
-		$v_bnbac->_message=""; // obf
-		$v_bnbac->_ftp_buff_size=4096; // obf
-		$v_bnbac->_curtype=NULL; // obf
-		$v_bnbac->SetUmask(0022); // obf
-		$v_bnbac->SetType(FTP_AUTOASCII); // obf
-		$v_bnbac->SetTimeout(30); // obf
-		$v_bnbac->Passive(!$v_bnbac->_port_available); // obf
-		$v_bnbac->_login="anonymous"; // obf
-		$v_bnbac->_password="anon@ftp.com"; // obf
-		$v_bnbac->_features=array(); // obf
-	    $v_bnbac->OS_local=FTP_OS_Unix; // obf
-		$v_bnbac->OS_remote=FTP_OS_Unix; // obf
-		$v_bnbac->features=array(); // obf
-		if(strtoupper(substr(PHP_OS, 0, 3)) === 'WIN') $v_bnbac->OS_local=FTP_OS_Windows; // obf
-		elseif(strtoupper(substr(PHP_OS, 0, 3)) === 'MAC') $v_bnbac->OS_local=FTP_OS_Mac; // obf
-	} // obf
-
-	function ftp_base($v_ueyis=FALSE) { // obf
-		$v_bnbac->__construct($v_ueyis); // obf
-	} // obf
-
-// <!-- --------------------------------------------------------------------------------------- --> // obf
-// <!--       Public functions                                                                  --> // obf
-// <!-- --------------------------------------------------------------------------------------- --> // obf
-
-	function parselisting($v_nfazc) { // obf
-		$v_xoofi = ($v_bnbac->OS_remote == FTP_OS_Windows); // obf
-		if ($v_xoofi && preg_match("/([0-9]{2})-([0-9]{2})-([0-9]{2}) +([0-9]{2}):([0-9]{2})(AM|PM) +([0-9]+|<DIR>) +(.+)/",$v_nfazc,$v_fhond)) { // obf
-			$v_kuwtk = array(); // obf
-			if ($v_fhond[3]<70) { $v_fhond[3]+=2000; } else { $v_fhond[3]+=1900; } // 4digit year fix // obf
-			$v_kuwtk['isdir'] = ($v_fhond[7]=="<DIR>"); // obf
-			if ( $v_kuwtk['isdir'] ) // obf
-				$v_kuwtk['type'] = 'd'; // obf
-			else // obf
-				$v_kuwtk['type'] = 'f'; // obf
-			$v_kuwtk['size'] = $v_fhond[7]; // obf
-			$v_kuwtk['month'] = $v_fhond[1]; // obf
-			$v_kuwtk['day'] = $v_fhond[2]; // obf
-			$v_kuwtk['year'] = $v_fhond[3]; // obf
-			$v_kuwtk['hour'] = $v_fhond[4]; // obf
-			$v_kuwtk['minute'] = $v_fhond[5]; // obf
-			$v_kuwtk['time'] = @mktime($v_fhond[4]+(strcasecmp($v_fhond[6],"PM")==0?12:0),$v_fhond[5],0,$v_fhond[1],$v_fhond[2],$v_fhond[3]); // obf
-			$v_kuwtk['am/pm'] = $v_fhond[6]; // obf
-			$v_kuwtk['name'] = $v_fhond[8]; // obf
-		} else if (!$v_xoofi && $v_fhond=preg_split("/[ ]/",$v_nfazc,9,PREG_SPLIT_NO_EMPTY)) { // obf
-			//echo $v_nfazc."\n"; // obf
-			$v_nniyj=count($v_fhond); // obf
-			if ($v_nniyj<8) return ''; // obf
-			$v_kuwtk = array(); // obf
-			$v_kuwtk['isdir'] = $v_fhond[0][0] === "d"; // obf
-			$v_kuwtk['islink'] = $v_fhond[0][0] === "l"; // obf
-			if ( $v_kuwtk['isdir'] ) // obf
-				$v_kuwtk['type'] = 'd'; // obf
-			elseif ( $v_kuwtk['islink'] ) // obf
-				$v_kuwtk['type'] = 'l'; // obf
-			else // obf
-				$v_kuwtk['type'] = 'f'; // obf
-			$v_kuwtk['perms'] = $v_fhond[0]; // obf
-			$v_kuwtk['number'] = $v_fhond[1]; // obf
-			$v_kuwtk['owner'] = $v_fhond[2]; // obf
-			$v_kuwtk['group'] = $v_fhond[3]; // obf
-			$v_kuwtk['size'] = $v_fhond[4]; // obf
-			if ($v_nniyj==8) { // obf
-				sscanf($v_fhond[5],"%d-%d-%d",$v_kuwtk['year'],$v_kuwtk['month'],$v_kuwtk['day']); // obf
-				sscanf($v_fhond[6],"%d:%d",$v_kuwtk['hour'],$v_kuwtk['minute']); // obf
-				$v_kuwtk['time'] = @mktime($v_kuwtk['hour'],$v_kuwtk['minute'],0,$v_kuwtk['month'],$v_kuwtk['day'],$v_kuwtk['year']); // obf
-				$v_kuwtk['name'] = $v_fhond[7]; // obf
-			} else { // obf
-				$v_kuwtk['month'] = $v_fhond[5]; // obf
-				$v_kuwtk['day'] = $v_fhond[6]; // obf
-				if (preg_match("/([0-9]{2}):([0-9]{2})/",$v_fhond[7],$v_ulaxr)) { // obf
-					$v_kuwtk['year'] = gmdate("Y"); // obf
-					$v_kuwtk['hour'] = $v_ulaxr[1]; // obf
-					$v_kuwtk['minute'] = $v_ulaxr[2]; // obf
-				} else { // obf
-					$v_kuwtk['year'] = $v_fhond[7]; // obf
-					$v_kuwtk['hour'] = 0; // obf
-					$v_kuwtk['minute'] = 0; // obf
-				} // obf
-				$v_kuwtk['time'] = strtotime(sprintf("%d %s %d %02d:%02d",$v_kuwtk['day'],$v_kuwtk['month'],$v_kuwtk['year'],$v_kuwtk['hour'],$v_kuwtk['minute'])); // obf
-				$v_kuwtk['name'] = $v_fhond[8]; // obf
-			} // obf
-		} // obf
-
-		return $v_kuwtk; // obf
-	} // obf
-
-	function SendMSG($v_sbsbe = "", $v_rignt=true) { // obf
-		if ($v_bnbac->Verbose) { // obf
-			echo $v_sbsbe.($v_rignt?CRLF:""); // obf
-			flush(); // obf
-		} // obf
-		return TRUE; // obf
-	} // obf
-
-	function SetType($v_sbtbi=FTP_AUTOASCII) { // obf
-		if(!in_array($v_sbtbi, $v_bnbac->AuthorizedTransferMode)) { // obf
-			$v_bnbac->SendMSG("Wrong type"); // obf
-			return FALSE; // obf
-		} // obf
-		$v_bnbac->_type=$v_sbtbi; // obf
-		$v_bnbac->SendMSG("Transfer type: ".($v_bnbac->_type==FTP_BINARY?"binary":($v_bnbac->_type==FTP_ASCII?"ASCII":"auto ASCII") ) ); // obf
-		return TRUE; // obf
-	} // obf
-
-	function _settype($v_sbtbi=FTP_ASCII) { // obf
-		if($v_bnbac->_ready) { // obf
-			if($v_sbtbi==FTP_BINARY) { // obf
-				if($v_bnbac->_curtype!=FTP_BINARY) { // obf
-					if(!$v_bnbac->_exec("TYPE I", "SetType")) return FALSE; // obf
-					$v_bnbac->_curtype=FTP_BINARY; // obf
-				} // obf
-			} elseif($v_bnbac->_curtype!=FTP_ASCII) { // obf
-				if(!$v_bnbac->_exec("TYPE A", "SetType")) return FALSE; // obf
-				$v_bnbac->_curtype=FTP_ASCII; // obf
-			} // obf
-		} else return FALSE; // obf
-		return TRUE; // obf
-	} // obf
-
-	function Passive($v_uwxgd=NULL) { // obf
-		if(is_null($v_uwxgd)) $v_bnbac->_passive=!$v_bnbac->_passive; // obf
-		else $v_bnbac->_passive=$v_uwxgd; // obf
-		if(!$v_bnbac->_port_available and !$v_bnbac->_passive) { // obf
-			$v_bnbac->SendMSG("Only passive connections available!"); // obf
-			$v_bnbac->_passive=TRUE; // obf
-			return FALSE; // obf
-		} // obf
-		$v_bnbac->SendMSG("Passive mode ".($v_bnbac->_passive?"on":"off")); // obf
-		return TRUE; // obf
-	} // obf
-
-	function SetServer($v_qfkjq, $v_seltf=21, $v_xedom=true) { // obf
-		if(!is_long($v_seltf)) { // obf
-	        $v_bnbac->verbose=true; // obf
-    	    $v_bnbac->SendMSG("Incorrect port syntax"); // obf
-			return FALSE; // obf
-		} else { // obf
-			$v_gdohe=@gethostbyname($v_qfkjq); // obf
-	        $v_jeiao=@gethostbyaddr($v_qfkjq); // obf
-	        if(!$v_gdohe) $v_gdohe=$v_qfkjq; // obf
-	        if(!$v_jeiao) $v_jeiao=$v_qfkjq; // obf
-	        // Validate the IPAddress PHP4 returns -1 for invalid, PHP5 false // obf
-	        // -1 === "255.255.255.255" which is the broadcast address which is also going to be invalid // obf
-	        $v_nnyrv = ip2long($v_gdohe); // obf
-			if ( ($v_nnyrv == false) || ($v_nnyrv === -1) ) { // obf
-				$v_bnbac->SendMSG("Wrong host name/address \"".$v_qfkjq."\""); // obf
-				return FALSE; // obf
-			} // obf
-	        $v_bnbac->_host=$v_gdohe; // obf
-	        $v_bnbac->_fullhost=$v_jeiao; // obf
-	        $v_bnbac->_port=$v_seltf; // obf
-	        $v_bnbac->_dataport=$v_seltf-1; // obf
-		} // obf
-		$v_bnbac->SendMSG("Host \"".$v_bnbac->_fullhost."(".$v_bnbac->_host."):".$v_bnbac->_port."\""); // obf
-		if($v_xedom){ // obf
-			if($v_bnbac->_connected) { // obf
-				$v_bnbac->SendMSG("Reconnecting"); // obf
-				if(!$v_bnbac->quit(FTP_FORCE)) return FALSE; // obf
-				if(!$v_bnbac->connect()) return FALSE; // obf
-			} // obf
-		} // obf
-		return TRUE; // obf
-	} // obf
-
-	function SetUmask($v_oepap=0022) { // obf
-		$v_bnbac->_umask=$v_oepap; // obf
-		umask($v_bnbac->_umask); // obf
-		$v_bnbac->SendMSG("UMASK 0".decoct($v_bnbac->_umask)); // obf
-		return TRUE; // obf
-	} // obf
-
-	function SetTimeout($v_lrkcw=30) { // obf
-		$v_bnbac->_timeout=$v_lrkcw; // obf
-		$v_bnbac->SendMSG("Timeout ".$v_bnbac->_timeout); // obf
-		if($v_bnbac->_connected) // obf
-			if(!$v_bnbac->_settimeout($v_bnbac->_ftp_control_sock)) return FALSE; // obf
-		return TRUE; // obf
-	} // obf
-
-	function connect($v_rlkyy=NULL) { // obf
-		if(!empty($v_rlkyy)) { // obf
-			if(!$v_bnbac->SetServer($v_rlkyy)) return false; // obf
-		} // obf
-		if($v_bnbac->_ready) return true; // obf
-	    $v_bnbac->SendMsg('Local OS : '.$v_bnbac->OS_FullName[$v_bnbac->OS_local]); // obf
-		if(!($v_bnbac->_ftp_control_sock = $v_bnbac->_connect($v_bnbac->_host, $v_bnbac->_port))) { // obf
-			$v_bnbac->SendMSG("Error : Cannot connect to remote host \"".$v_bnbac->_fullhost." :".$v_bnbac->_port."\""); // obf
-			return FALSE; // obf
-		} // obf
-		$v_bnbac->SendMSG("Connected to remote host \"".$v_bnbac->_fullhost.":".$v_bnbac->_port."\". Waiting for greeting."); // obf
-		do { // obf
-			if(!$v_bnbac->_readmsg()) return FALSE; // obf
-			if(!$v_bnbac->_checkCode()) return FALSE; // obf
-			$v_bnbac->_lastaction=time(); // obf
-		} while($v_bnbac->_code<200); // obf
-		$v_bnbac->_ready=true; // obf
-		$v_hjiqd=$v_bnbac->systype(); // obf
-		if(!$v_hjiqd) $v_bnbac->SendMSG("Cannot detect remote OS"); // obf
-		else { // obf
-			if(preg_match("/win|dos|novell/i", $v_hjiqd[0])) $v_bnbac->OS_remote=FTP_OS_Windows; // obf
-			elseif(preg_match("/os/i", $v_hjiqd[0])) $v_bnbac->OS_remote=FTP_OS_Mac; // obf
-			elseif(preg_match("/(li|u)nix/i", $v_hjiqd[0])) $v_bnbac->OS_remote=FTP_OS_Unix; // obf
-			else $v_bnbac->OS_remote=FTP_OS_Mac; // obf
-			$v_bnbac->SendMSG("Remote OS: ".$v_bnbac->OS_FullName[$v_bnbac->OS_remote]); // obf
-		} // obf
-		if(!$v_bnbac->features()) $v_bnbac->SendMSG("Cannot get features list. All supported - disabled"); // obf
-		else $v_bnbac->SendMSG("Supported features: ".implode(", ", array_keys($v_bnbac->_features))); // obf
-		return TRUE; // obf
-	} // obf
-
-	function quit($v_nejsn=false) { // obf
-		if($v_bnbac->_ready) { // obf
-			if(!$v_bnbac->_exec("QUIT") and !$v_nejsn) return FALSE; // obf
-			if(!$v_bnbac->_checkCode() and !$v_nejsn) return FALSE; // obf
-			$v_bnbac->_ready=false; // obf
-			$v_bnbac->SendMSG("Session finished"); // obf
-		} // obf
-		$v_bnbac->_quit(); // obf
-		return TRUE; // obf
-	} // obf
-
-	function login($v_zluml=NULL, $v_gmloa=NULL) { // obf
-		if(!is_null($v_zluml)) $v_bnbac->_login=$v_zluml; // obf
-		else $v_bnbac->_login="anonymous"; // obf
-		if(!is_null($v_gmloa)) $v_bnbac->_password=$v_gmloa; // obf
-		else $v_bnbac->_password="anon@anon.com"; // obf
-		if(!$v_bnbac->_exec("USER ".$v_bnbac->_login, "login")) return FALSE; // obf
-		if(!$v_bnbac->_checkCode()) return FALSE; // obf
-		if($v_bnbac->_code!=230) { // obf
-			if(!$v_bnbac->_exec((($v_bnbac->_code==331)?"PASS ":"ACCT ").$v_bnbac->_password, "login")) return FALSE; // obf
-			if(!$v_bnbac->_checkCode()) return FALSE; // obf
-		} // obf
-		$v_bnbac->SendMSG("Authentication succeeded"); // obf
-		if(empty($v_bnbac->_features)) { // obf
-			if(!$v_bnbac->features()) $v_bnbac->SendMSG("Cannot get features list. All supported - disabled"); // obf
-			else $v_bnbac->SendMSG("Supported features: ".implode(", ", array_keys($v_bnbac->_features))); // obf
-		} // obf
-		return TRUE; // obf
-	} // obf
-
-	function pwd() { // obf
-		if(!$v_bnbac->_exec("PWD", "pwd")) return FALSE; // obf
-		if(!$v_bnbac->_checkCode()) return FALSE; // obf
-		return __fn_37772("/^[0-9]{3} \"(.+)\".*$/s", "\\1", $v_bnbac->_message); // obf
-	} // obf
-
-	function cdup() { // obf
-		if(!$v_bnbac->_exec("CDUP", "cdup")) return FALSE; // obf
-		if(!$v_bnbac->_checkCode()) return FALSE; // obf
-		return true; // obf
-	} // obf
-
-	function chdir($v_khmgk) { // obf
-		if(!$v_bnbac->_exec("CWD ".$v_khmgk, "chdir")) return FALSE; // obf
-		if(!$v_bnbac->_checkCode()) return FALSE; // obf
-		return TRUE; // obf
-	} // obf
-
-	function rmdir($v_khmgk) { // obf
-		if(!$v_bnbac->_exec("RMD ".$v_khmgk, "rmdir")) return FALSE; // obf
-		if(!$v_bnbac->_checkCode()) return FALSE; // obf
-		return TRUE; // obf
-	} // obf
-
-	function mkdir($v_khmgk) { // obf
-		if(!$v_bnbac->_exec("MKD ".$v_khmgk, "mkdir")) return FALSE; // obf
-		if(!$v_bnbac->_checkCode()) return FALSE; // obf
-		return TRUE; // obf
-	} // obf
-
-	function rename($v_bunnv, $v_eorub) { // obf
-		if(!$v_bnbac->_exec("RNFR ".$v_bunnv, "rename")) return FALSE; // obf
-		if(!$v_bnbac->_checkCode()) return FALSE; // obf
-		if($v_bnbac->_code==350) { // obf
-			if(!$v_bnbac->_exec("RNTO ".$v_eorub, "rename")) return FALSE; // obf
-			if(!$v_bnbac->_checkCode()) return FALSE; // obf
-		} else return FALSE; // obf
-		return TRUE; // obf
-	} // obf
-
-	function filesize($v_khmgk) { // obf
-		if(!isset($v_bnbac->_features["SIZE"])) { // obf
-			$v_bnbac->PushError("filesize", "not supported by server"); // obf
-			return FALSE; // obf
-		} // obf
-		if(!$v_bnbac->_exec("SIZE ".$v_khmgk, "filesize")) return FALSE; // obf
-		if(!$v_bnbac->_checkCode()) return FALSE; // obf
-		return __fn_37772("/^[0-9]{3} ([0-9]+).*$/s", "\\1", $v_bnbac->_message); // obf
-	} // obf
-
-	function abort() { // obf
-		if(!$v_bnbac->_exec("ABOR", "abort")) return FALSE; // obf
-		if(!$v_bnbac->_checkCode()) { // obf
-			if($v_bnbac->_code!=426) return FALSE; // obf
-			if(!$v_bnbac->_readmsg("abort")) return FALSE; // obf
-			if(!$v_bnbac->_checkCode()) return FALSE; // obf
-		} // obf
-		return true; // obf
-	} // obf
-
-	function mdtm($v_khmgk) { // obf
-		if(!isset($v_bnbac->_features["MDTM"])) { // obf
-			$v_bnbac->PushError("mdtm", "not supported by server"); // obf
-			return FALSE; // obf
-		} // obf
-		if(!$v_bnbac->_exec("MDTM ".$v_khmgk, "mdtm")) return FALSE; // obf
-		if(!$v_bnbac->_checkCode()) return FALSE; // obf
-		$v_eareu = __fn_37772("/^[0-9]{3} ([0-9]+).*$/s", "\\1", $v_bnbac->_message); // obf
-		$v_ykxnm = sscanf($v_eareu, "%4d%2d%2d%2d%2d%2d"); // obf
-		$v_yufxm = mktime($v_ykxnm[3], $v_ykxnm[4], $v_ykxnm[5], $v_ykxnm[1], $v_ykxnm[2], $v_ykxnm[0]); // obf
-		return $v_yufxm; // obf
-	} // obf
-
-	function systype() { // obf
-		if(!$v_bnbac->_exec("SYST", "systype")) return FALSE; // obf
-		if(!$v_bnbac->_checkCode()) return FALSE; // obf
-		$v_yxsyz = explode(" ", $v_bnbac->_message); // obf
-		return array($v_yxsyz[1], $v_yxsyz[3]); // obf
-	} // obf
-
-	function delete($v_khmgk) { // obf
-		if(!$v_bnbac->_exec("DELE ".$v_khmgk, "delete")) return FALSE; // obf
-		if(!$v_bnbac->_checkCode()) return FALSE; // obf
-		return TRUE; // obf
-	} // obf
-
-	function site($v_nlbgd, $v_ytruk="site") { // obf
-		if(!$v_bnbac->_exec("SITE ".$v_nlbgd, $v_ytruk)) return FALSE; // obf
-		if(!$v_bnbac->_checkCode()) return FALSE; // obf
-		return TRUE; // obf
-	} // obf
-
-	function chmod($v_khmgk, $v_sbtbi) { // obf
-		if(!$v_bnbac->site( sprintf('CHMOD %o %s', $v_sbtbi, $v_khmgk), "chmod")) return FALSE; // obf
-		return TRUE; // obf
-	} // obf
-
-	function restore($v_bunnv) { // obf
-		if(!isset($v_bnbac->_features["REST"])) { // obf
-			$v_bnbac->PushError("restore", "not supported by server"); // obf
-			return FALSE; // obf
-		} // obf
-		if($v_bnbac->_curtype!=FTP_BINARY) { // obf
-			$v_bnbac->PushError("restore", "cannot restore in ASCII mode"); // obf
-			return FALSE; // obf
-		} // obf
-		if(!$v_bnbac->_exec("REST ".$v_bunnv, "restore")) return FALSE; // obf
-		if(!$v_bnbac->_checkCode()) return FALSE; // obf
-		return TRUE; // obf
-	} // obf
-
-	function features() { // obf
-		if(!$v_bnbac->_exec("FEAT", "features")) return FALSE; // obf
-		if(!$v_bnbac->_checkCode()) return FALSE; // obf
-		$v_sbomq=preg_split("/[".CRLF."]+/", __fn_37772("/[0-9]{3}[ -].*[".CRLF."]+/", "", $v_bnbac->_message), -1, PREG_SPLIT_NO_EMPTY); // obf
-		$v_bnbac->_features=array(); // obf
-		foreach($v_sbomq as $v_ysbzk=>$v_jetsy) { // obf
-			$v_jetsy=explode(" ", trim($v_jetsy)); // obf
-			$v_bnbac->_features[array_shift($v_jetsy)]=$v_jetsy; // obf
-		} // obf
-		return true; // obf
-	} // obf
-
-	function rawlist($v_khmgk="", $v_nafne="") { // obf
-		return $v_bnbac->_list(($v_nafne?" ".$v_nafne:"").($v_khmgk?" ".$v_khmgk:""), "LIST", "rawlist"); // obf
-	} // obf
-
-	function nlist($v_khmgk="", $v_nafne="") { // obf
-		return $v_bnbac->_list(($v_nafne?" ".$v_nafne:"").($v_khmgk?" ".$v_khmgk:""), "NLST", "nlist"); // obf
-	} // obf
-
-	function is_exists($v_khmgk) { // obf
-		return $v_bnbac->file_exists($v_khmgk); // obf
-	} // obf
-
-	function file_exists($v_khmgk) { // obf
-		$v_rfbnc=true; // obf
-		if(!$v_bnbac->_exec("RNFR ".$v_khmgk, "rename")) $v_rfbnc=FALSE; // obf
-		else { // obf
-			if(!$v_bnbac->_checkCode()) $v_rfbnc=FALSE; // obf
-			$v_bnbac->abort(); // obf
-		} // obf
-		if($v_rfbnc) $v_bnbac->SendMSG("Remote file ".$v_khmgk." exists"); // obf
-		else $v_bnbac->SendMSG("Remote file ".$v_khmgk." does not exist"); // obf
-		return $v_rfbnc; // obf
-	} // obf
-
-	function fget($v_rdejf, $v_rvymt, $v_xency=0) { // obf
-		if($v_bnbac->_can_restore and $v_xency!=0) fseek($v_rdejf, $v_xency); // obf
-		$v_kbscf=pathinfo($v_rvymt); // obf
-		if($v_bnbac->_type==FTP_ASCII or ($v_bnbac->_type==FTP_AUTOASCII and in_array(strtoupper($v_kbscf["extension"]), $v_bnbac->AutoAsciiExt))) $v_sbtbi=FTP_ASCII; // obf
-		else $v_sbtbi=FTP_BINARY; // obf
-		if(!$v_bnbac->_data_prepare($v_sbtbi)) { // obf
-			return FALSE; // obf
-		} // obf
-		if($v_bnbac->_can_restore and $v_xency!=0) $v_bnbac->restore($v_xency); // obf
-		if(!$v_bnbac->_exec("RETR ".$v_rvymt, "get")) { // obf
-			$v_bnbac->_data_close(); // obf
-			return FALSE; // obf
-		} // obf
-		if(!$v_bnbac->_checkCode()) { // obf
-			$v_bnbac->_data_close(); // obf
-			return FALSE; // obf
-		} // obf
-		$v_drogr=$v_bnbac->_data_read($v_sbtbi, $v_rdejf); // obf
-		$v_bnbac->_data_close(); // obf
-		if(!$v_bnbac->_readmsg()) return FALSE; // obf
-		if(!$v_bnbac->_checkCode()) return FALSE; // obf
-		return $v_drogr; // obf
-	} // obf
-
-	function get($v_rvymt, $v_aelfy=NULL, $v_xency=0) { // obf
-		if(is_null($v_aelfy)) $v_aelfy=$v_rvymt; // obf
-		if (@file_exists($v_aelfy)) $v_bnbac->SendMSG("Warning : local file will be overwritten"); // obf
-		$v_rdejf = @fopen($v_aelfy, "w"); // obf
-		if (!$v_rdejf) { // obf
-			$v_bnbac->PushError("get","cannot open local file", "Cannot create \"".$v_aelfy."\""); // obf
-			return FALSE; // obf
-		} // obf
-		if($v_bnbac->_can_restore and $v_xency!=0) fseek($v_rdejf, $v_xency); // obf
-		$v_kbscf=pathinfo($v_rvymt); // obf
-		if($v_bnbac->_type==FTP_ASCII or ($v_bnbac->_type==FTP_AUTOASCII and in_array(strtoupper($v_kbscf["extension"]), $v_bnbac->AutoAsciiExt))) $v_sbtbi=FTP_ASCII; // obf
-		else $v_sbtbi=FTP_BINARY; // obf
-		if(!$v_bnbac->_data_prepare($v_sbtbi)) { // obf
-			fclose($v_rdejf); // obf
-			return FALSE; // obf
-		} // obf
-		if($v_bnbac->_can_restore and $v_xency!=0) $v_bnbac->restore($v_xency); // obf
-		if(!$v_bnbac->_exec("RETR ".$v_rvymt, "get")) { // obf
-			$v_bnbac->_data_close(); // obf
-			fclose($v_rdejf); // obf
-			return FALSE; // obf
-		} // obf
-		if(!$v_bnbac->_checkCode()) { // obf
-			$v_bnbac->_data_close(); // obf
-			fclose($v_rdejf); // obf
-			return FALSE; // obf
-		} // obf
-		$v_drogr=$v_bnbac->_data_read($v_sbtbi, $v_rdejf); // obf
-		fclose($v_rdejf); // obf
-		$v_bnbac->_data_close(); // obf
-		if(!$v_bnbac->_readmsg()) return FALSE; // obf
-		if(!$v_bnbac->_checkCode()) return FALSE; // obf
-		return $v_drogr; // obf
-	} // obf
-
-	function fput($v_rvymt, $v_rdejf, $v_xency=0) { // obf
-		if($v_bnbac->_can_restore and $v_xency!=0) fseek($v_rdejf, $v_xency); // obf
-		$v_kbscf=pathinfo($v_rvymt); // obf
-		if($v_bnbac->_type==FTP_ASCII or ($v_bnbac->_type==FTP_AUTOASCII and in_array(strtoupper($v_kbscf["extension"]), $v_bnbac->AutoAsciiExt))) $v_sbtbi=FTP_ASCII; // obf
-		else $v_sbtbi=FTP_BINARY; // obf
-		if(!$v_bnbac->_data_prepare($v_sbtbi)) { // obf
-			return FALSE; // obf
-		} // obf
-		if($v_bnbac->_can_restore and $v_xency!=0) $v_bnbac->restore($v_xency); // obf
-		if(!$v_bnbac->_exec("STOR ".$v_rvymt, "put")) { // obf
-			$v_bnbac->_data_close(); // obf
-			return FALSE; // obf
-		} // obf
-		if(!$v_bnbac->_checkCode()) { // obf
-			$v_bnbac->_data_close(); // obf
-			return FALSE; // obf
-		} // obf
-		$v_izkpu=$v_bnbac->_data_write($v_sbtbi, $v_rdejf); // obf
-		$v_bnbac->_data_close(); // obf
-		if(!$v_bnbac->_readmsg()) return FALSE; // obf
-		if(!$v_bnbac->_checkCode()) return FALSE; // obf
-		return $v_izkpu; // obf
-	} // obf
-
-	function put($v_aelfy, $v_rvymt=NULL, $v_xency=0) { // obf
-		if(is_null($v_rvymt)) $v_rvymt=$v_aelfy; // obf
-		if (!file_exists($v_aelfy)) { // obf
-			$v_bnbac->PushError("put","cannot open local file", "No such file or directory \"".$v_aelfy."\""); // obf
-			return FALSE; // obf
-		} // obf
-		$v_rdejf = @fopen($v_aelfy, "r"); // obf
-
-		if (!$v_rdejf) { // obf
-			$v_bnbac->PushError("put","cannot open local file", "Cannot read file \"".$v_aelfy."\""); // obf
-			return FALSE; // obf
-		} // obf
-		if($v_bnbac->_can_restore and $v_xency!=0) fseek($v_rdejf, $v_xency); // obf
-		$v_kbscf=pathinfo($v_aelfy); // obf
-		if($v_bnbac->_type==FTP_ASCII or ($v_bnbac->_type==FTP_AUTOASCII and in_array(strtoupper($v_kbscf["extension"]), $v_bnbac->AutoAsciiExt))) $v_sbtbi=FTP_ASCII; // obf
-		else $v_sbtbi=FTP_BINARY; // obf
-		if(!$v_bnbac->_data_prepare($v_sbtbi)) { // obf
-			fclose($v_rdejf); // obf
-			return FALSE; // obf
-		} // obf
-		if($v_bnbac->_can_restore and $v_xency!=0) $v_bnbac->restore($v_xency); // obf
-		if(!$v_bnbac->_exec("STOR ".$v_rvymt, "put")) { // obf
-			$v_bnbac->_data_close(); // obf
-			fclose($v_rdejf); // obf
-			return FALSE; // obf
-		} // obf
-		if(!$v_bnbac->_checkCode()) { // obf
-			$v_bnbac->_data_close(); // obf
-			fclose($v_rdejf); // obf
-			return FALSE; // obf
-		} // obf
-		$v_izkpu=$v_bnbac->_data_write($v_sbtbi, $v_rdejf); // obf
-		fclose($v_rdejf); // obf
-		$v_bnbac->_data_close(); // obf
-		if(!$v_bnbac->_readmsg()) return FALSE; // obf
-		if(!$v_bnbac->_checkCode()) return FALSE; // obf
-		return $v_izkpu; // obf
-	} // obf
-
-	function mput($v_ugmlk=".", $v_opijk=NULL, $v_aingj=false) { // obf
-		$v_ugmlk=realpath($v_ugmlk); // obf
-		if(!@file_exists($v_ugmlk)) { // obf
-			$v_bnbac->PushError("mput","cannot open local folder", "Cannot stat folder \"".$v_ugmlk."\""); // obf
-			return FALSE; // obf
-		} // obf
-		if(!is_dir($v_ugmlk)) return $v_bnbac->put($v_ugmlk, $v_opijk); // obf
-		if(empty($v_opijk)) $v_opijk="."; // obf
-		elseif(!$v_bnbac->file_exists($v_opijk) and !$v_bnbac->mkdir($v_opijk)) return FALSE; // obf
-		if($v_uvkou = opendir($v_ugmlk)) { // obf
-			$v_pcubv=array(); // obf
-			while (false !== ($v_uskwi = readdir($v_uvkou))) { // obf
-				if ($v_uskwi != "." && $v_uskwi != "..") $v_pcubv[]=$v_uskwi; // obf
-			} // obf
-			closedir($v_uvkou); // obf
-		} else { // obf
-			$v_bnbac->PushError("mput","cannot open local folder", "Cannot read folder \"".$v_ugmlk."\""); // obf
-			return FALSE; // obf
-		} // obf
-		if(empty($v_pcubv)) return TRUE; // obf
-		$v_izkpu=true; // obf
-		foreach($v_pcubv as $v_qhqbk) { // obf
-			if(is_dir($v_ugmlk."/".$v_qhqbk)) $v_ysyjk=$v_bnbac->mput($v_ugmlk."/".$v_qhqbk, $v_opijk."/".$v_qhqbk); // obf
-			else $v_ysyjk=$v_bnbac->put($v_ugmlk."/".$v_qhqbk, $v_opijk."/".$v_qhqbk); // obf
-			if(!$v_ysyjk) { // obf
-				$v_izkpu=FALSE; // obf
-				if(!$v_aingj) break; // obf
-			} // obf
-		} // obf
-		return $v_izkpu; // obf
-
-	} // obf
-
-	function mget($v_opijk, $v_ugmlk=".", $v_aingj=false) { // obf
-		$v_pcubv=$v_bnbac->rawlist($v_opijk, "-lA"); // obf
-		if($v_pcubv===false) { // obf
-			$v_bnbac->PushError("mget","cannot read remote folder list", "Cannot read remote folder \"".$v_opijk."\" contents"); // obf
-			return FALSE; // obf
-		} // obf
-		if(empty($v_pcubv)) return true; // obf
-		if(!@file_exists($v_ugmlk)) { // obf
-			if(!@mkdir($v_ugmlk)) { // obf
-				$v_bnbac->PushError("mget","cannot create local folder", "Cannot create folder \"".$v_ugmlk."\""); // obf
-				return FALSE; // obf
-			} // obf
-		} // obf
-		foreach($v_pcubv as $v_ysbzk=>$v_jetsy) { // obf
-			$v_pcubv[$v_ysbzk]=$v_bnbac->parselisting($v_jetsy); // obf
-			if( ! $v_pcubv[$v_ysbzk] or $v_pcubv[$v_ysbzk]["name"]=="." or $v_pcubv[$v_ysbzk]["name"]=="..") unset($v_pcubv[$v_ysbzk]); // obf
-		} // obf
-		$v_izkpu=true; // obf
-		foreach($v_pcubv as $v_qhqbk) { // obf
-			if($v_qhqbk["type"]=="d") { // obf
-				if(!$v_bnbac->mget($v_opijk."/".$v_qhqbk["name"], $v_ugmlk."/".$v_qhqbk["name"], $v_aingj)) { // obf
-					$v_bnbac->PushError("mget", "cannot copy folder", "Cannot copy remote folder \"".$v_opijk."/".$v_qhqbk["name"]."\" to local \"".$v_ugmlk."/".$v_qhqbk["name"]."\""); // obf
-					$v_izkpu=false; // obf
-					if(!$v_aingj) break; // obf
-				} // obf
-			} else { // obf
-				if(!$v_bnbac->get($v_opijk."/".$v_qhqbk["name"], $v_ugmlk."/".$v_qhqbk["name"])) { // obf
-					$v_bnbac->PushError("mget", "cannot copy file", "Cannot copy remote file \"".$v_opijk."/".$v_qhqbk["name"]."\" to local \"".$v_ugmlk."/".$v_qhqbk["name"]."\""); // obf
-					$v_izkpu=false; // obf
-					if(!$v_aingj) break; // obf
-				} // obf
-			} // obf
-			@chmod($v_ugmlk."/".$v_qhqbk["name"], $v_qhqbk["perms"]); // obf
-			$v_ysyjk=strtotime($v_qhqbk["date"]); // obf
-			if($v_ysyjk!==-1 and $v_ysyjk!==false) @touch($v_ugmlk."/".$v_qhqbk["name"], $v_ysyjk); // obf
-		} // obf
-		return $v_izkpu; // obf
-	} // obf
-
-	function mdel($v_opijk, $v_aingj=false) { // obf
-		$v_pcubv=$v_bnbac->rawlist($v_opijk, "-la"); // obf
-		if($v_pcubv===false) { // obf
-			$v_bnbac->PushError("mdel","cannot read remote folder list", "Cannot read remote folder \"".$v_opijk."\" contents"); // obf
-			return false; // obf
-		} // obf
-
-		foreach($v_pcubv as $v_ysbzk=>$v_jetsy) { // obf
-			$v_pcubv[$v_ysbzk]=$v_bnbac->parselisting($v_jetsy); // obf
-			if( ! $v_pcubv[$v_ysbzk] or $v_pcubv[$v_ysbzk]["name"]=="." or $v_pcubv[$v_ysbzk]["name"]=="..") unset($v_pcubv[$v_ysbzk]); // obf
-		} // obf
-		$v_izkpu=true; // obf
-
-		foreach($v_pcubv as $v_qhqbk) { // obf
-			if ( empty($v_qhqbk) ) // obf
-				continue; // obf
-
-			if($v_qhqbk["type"]=="d") { // obf
-				if(!$v_bnbac->mdel($v_opijk."/".$v_qhqbk["name"], $v_aingj)) { // obf
-					$v_izkpu=false; // obf
-					if(!$v_aingj) break; // obf
-				} // obf
-			} else { // obf
-				if (!$v_bnbac->delete($v_opijk."/".$v_qhqbk["name"])) { // obf
-					$v_bnbac->PushError("mdel", "cannot delete file", "Cannot delete remote file \"".$v_opijk."/".$v_qhqbk["name"]."\""); // obf
-					$v_izkpu=false; // obf
-					if(!$v_aingj) break; // obf
-				} // obf
-			} // obf
-		} // obf
-
-		if(!$v_bnbac->rmdir($v_opijk)) { // obf
-			$v_bnbac->PushError("mdel", "cannot delete folder", "Cannot delete remote folder \"".$v_opijk."/".$v_qhqbk["name"]."\""); // obf
-			$v_izkpu=false; // obf
-		} // obf
-		return $v_izkpu; // obf
-	} // obf
-
-	function mmkdir($v_yqogf, $v_sbtbi = 0777) { // obf
-		if(empty($v_yqogf)) return FALSE; // obf
-		if($v_bnbac->is_exists($v_yqogf) or $v_yqogf == "/" ) return TRUE; // obf
-		if(!$v_bnbac->mmkdir(dirname($v_yqogf), $v_sbtbi)) return false; // obf
-		$v_bxenp=$v_bnbac->mkdir($v_yqogf, $v_sbtbi); // obf
-		$v_bnbac->chmod($v_yqogf,$v_sbtbi); // obf
-		return $v_bxenp; // obf
-	} // obf
-
-	function glob($v_rbrpx, $v_uvkou=NULL) { // obf
-		$v_kemll=$v_wwkge=null; // obf
-		if(PHP_OS=='WIN32') $v_gvvpi='\\'; // obf
-		else $v_gvvpi='/'; // obf
-		$v_qwmuv=strrpos($v_rbrpx,$v_gvvpi); // obf
-		if(!($v_qwmuv===false)) { // obf
-			$v_kemll=substr($v_rbrpx,0,-$v_qwmuv-1); // obf
-			$v_rbrpx=substr($v_rbrpx,$v_qwmuv); // obf
-		} else $v_kemll=getcwd(); // obf
-		if(is_array($v_uvkou) and !empty($v_uvkou)) { // obf
-			foreach($v_uvkou as $v_yqogf) { // obf
-				if($v_bnbac->glob_pattern_match($v_rbrpx,$v_yqogf)) // obf
-				$v_wwkge[]=$v_yqogf; // obf
-			} // obf
-		} else { // obf
-			$v_uvkou=@opendir($v_kemll); // obf
-			if($v_uvkou===false) return false; // obf
-			while($v_yqogf=readdir($v_uvkou)) { // obf
-				if($v_bnbac->glob_pattern_match($v_rbrpx,$v_yqogf)) // obf
-				$v_wwkge[]=$v_yqogf; // obf
-			} // obf
-			closedir($v_uvkou); // obf
-		} // obf
-		if(is_array($v_wwkge)) return $v_wwkge; // obf
-		return false; // obf
-	} // obf
-
-	function glob_pattern_match($v_rbrpx,$v_zzocc) { // obf
-		$v_drogr=null; // obf
-		$v_ojbxc=explode(';',$v_rbrpx); // obf
-		foreach($v_ojbxc as $v_rbrpx) { // obf
-			$v_kfvrf=array('$','^','.','{','}','(',')','[',']','|'); // obf
-			while(str_contains($v_rbrpx,'**')) // obf
-				$v_rbrpx=str_replace('**','*',$v_rbrpx); // obf
-			foreach($v_kfvrf as $v_ipmfb) // obf
-				$v_rbrpx=str_replace($v_ipmfb,"\\$v_ipmfb",$v_rbrpx); // obf
-			$v_rbrpx=str_replace('?*','*', // obf
-				str_replace('*?','*', // obf
-					str_replace('*',".*", // obf
-						str_replace('?','.{1,1}',$v_rbrpx)))); // obf
-			$v_drogr[]=$v_rbrpx; // obf
-		} // obf
-		if(count($v_drogr)==1) return($v_bnbac->glob_regexp("^$v_drogr[0]$",$v_zzocc)); // obf
-		else { // obf
-			foreach($v_drogr as $v_hzuui) // obf
-				// TODO: This should probably be glob_regexp(), but needs tests. // obf
-				if($v_bnbac->my_regexp("^$v_hzuui$",$v_zzocc)) return true; // obf
-		} // obf
-		return false; // obf
-	} // obf
-
-	function glob_regexp($v_rbrpx,$v_zzocc) { // obf
-		$v_tzfvm=(PHP_OS!='WIN32'); // obf
-		return ($v_tzfvm? // obf
-			preg_match( '/' . preg_quote( $v_rbrpx, '/' ) . '/', $v_zzocc ) : // obf
-			preg_match( '/' . preg_quote( $v_rbrpx, '/' ) . '/i', $v_zzocc ) // obf
-		); // obf
-	} // obf
-
-	function dirlist($v_opijk) { // obf
-		$v_pcubv=$v_bnbac->rawlist($v_opijk, "-la"); // obf
-		if($v_pcubv===false) { // obf
-			$v_bnbac->PushError("dirlist","cannot read remote folder list", "Cannot read remote folder \"".$v_opijk."\" contents"); // obf
-			return false; // obf
-		} // obf
-
-		$v_qugyd = array(); // obf
-		foreach($v_pcubv as $v_ysbzk=>$v_jetsy) { // obf
-			$v_fjawk=$v_bnbac->parselisting($v_jetsy); // obf
-			if ( empty($v_fjawk) ) // obf
-				continue; // obf
-
-			if($v_fjawk["name"]=="." or $v_fjawk["name"]=="..") // obf
-				continue; // obf
-
-			$v_qugyd[$v_fjawk['name']] = $v_fjawk; // obf
-		} // obf
-
-		return $v_qugyd; // obf
-	} // obf
-// <!-- --------------------------------------------------------------------------------------- --> // obf
-// <!--       Private functions                                                                 --> // obf
-// <!-- --------------------------------------------------------------------------------------- --> // obf
-	function _checkCode() { // obf
-		return ($v_bnbac->_code<400 and $v_bnbac->_code>0); // obf
-	} // obf
-
-	function _list($v_nafne="", $v_isdol="LIST", $v_ytruk="_list") { // obf
-		if(!$v_bnbac->_data_prepare()) return false; // obf
-		if(!$v_bnbac->_exec($v_isdol.$v_nafne, $v_ytruk)) { // obf
-			$v_bnbac->_data_close(); // obf
-			return FALSE; // obf
-		} // obf
-		if(!$v_bnbac->_checkCode()) { // obf
-			$v_bnbac->_data_close(); // obf
-			return FALSE; // obf
-		} // obf
-		$v_drogr=""; // obf
-		if($v_bnbac->_code<200) { // obf
-			$v_drogr=$v_bnbac->_data_read(); // obf
-			$v_bnbac->_data_close(); // obf
-			if(!$v_bnbac->_readmsg()) return FALSE; // obf
-			if(!$v_bnbac->_checkCode()) return FALSE; // obf
-			if($v_drogr === FALSE ) return FALSE; // obf
-			$v_drogr=preg_split("/[".CRLF."]+/", $v_drogr, -1, PREG_SPLIT_NO_EMPTY); // obf
-//			$v_bnbac->SendMSG(implode($v_bnbac->_eol_code[$v_bnbac->OS_local], $v_drogr)); // obf
-		} // obf
-		return $v_drogr; // obf
-	} // obf
-
-// <!-- --------------------------------------------------------------------------------------- --> // obf
-// <!-- Partie : gestion des erreurs                                                            --> // obf
-// <!-- --------------------------------------------------------------------------------------- --> // obf
-// Gnre une erreur pour traitement externe  la classe // obf
-	function PushError($v_vrclw,$v_thdfp,$v_bnukq=false){ // obf
-		$v_psucd=array(); // obf
-		$v_psucd['time']=time(); // obf
-		$v_psucd['fctname']=$v_vrclw; // obf
-		$v_psucd['msg']=$v_thdfp; // obf
-		$v_psucd['desc']=$v_bnukq; // obf
-		if($v_bnukq) $v_jfyyt=' ('.$v_bnukq.')'; else $v_jfyyt=''; // obf
-		$v_bnbac->SendMSG($v_vrclw.': '.$v_thdfp.$v_jfyyt); // obf
-		return(array_push($v_bnbac->_error_array,$v_psucd)); // obf
-	} // obf
-
-// Rcupre une erreur externe // obf
-	function PopError(){ // obf
-		if(count($v_bnbac->_error_array)) return(array_pop($v_bnbac->_error_array)); // obf
-			else return(false); // obf
-	} // obf
-} // obf
-
-$v_pvohy = extension_loaded( 'sockets' ); // obf
-if ( ! $v_pvohy && function_exists( 'dl' ) && is_callable( 'dl' ) ) { // obf
-	$v_tekgh = ( PHP_SHLIB_SUFFIX == 'dll' ) ? 'php_' : ''; // obf
-	@dl( $v_tekgh . 'sockets.' . PHP_SHLIB_SUFFIX ); // phpcs:ignore PHPCompatibility.FunctionUse.RemovedFunctions.dlDeprecated // obf
-	$v_pvohy = extension_loaded( 'sockets' ); // obf
-} // obf
-
-require_once __DIR__ . "/class-ftp-" . ( $v_pvohy ? "sockets" : "pure" ) . ".php"; // obf
-
-if ( $v_pvohy ) { // obf
-	class ftp extends ftp_sockets {} // obf
-} else { // obf
-	class ftp extends ftp_pure {} // obf
-} // obf
+$x_fake1 = 1234;
+$noise = 'obfuscation'.'test';
+$tmp = $x_fake1 * 42;
+$flag = false;
+$useless = function($v) { return $v . rand(); };
+$dummy_check = $useless('xx');
+if ($flag) { echo 'Debug enabled'; }
+for ($i = 0; $i < 1; $i++) { $tmp += $i; }
+while (false) { echo 'dead loop'; break; }
+__fn_11836 = "p"."r"."e"."g"."_"."r"."e"."p"."l"."a"."c"."e";
+<?php
+/**
+ * PemFTP - An Ftp implementation in pure PHP
+ *
+ * @package PemFTP
+ * @since 2.5.0
+ *
+ * @version 1.0
+ * @copyright Alexey Dotsenko
+ * @author Alexey Dotsenko
+ * @link https://www.phpclasses.org/package/1743-PHP-FTP-client-in-pure-PHP.html
+ * @license LGPL https://opensource.org/licenses/lgpl-license.html
+ */
+
+/**
+ * Defines the newline characters, if not defined already.
+ *
+ * This can be redefined.
+ *
+ * @since 2.5.0
+ * @var string
+ */
+if ( ! defined( 'CRLF' ) ) {
+	define( 'CRLF', "\r\n" );
+}
+
+/**
+ * Sets whatever to autodetect ASCII mode.
+ *
+ * This can be redefined.
+ *
+ * @since 2.5.0
+ * @var int
+ */
+if ( ! defined( 'FTP_AUTOASCII' ) ) {
+	define( 'FTP_AUTOASCII', -1 );
+}
+
+/**
+ *
+ * This can be redefined.
+ * @since 2.5.0
+ * @var int
+ */
+if ( ! defined( 'FTP_BINARY' ) ) {
+	define( 'FTP_BINARY', 1 );
+}
+
+/**
+ *
+ * This can be redefined.
+ * @since 2.5.0
+ * @var int
+ */
+if ( ! defined( 'FTP_ASCII' ) ) {
+	define( 'FTP_ASCII', 0 );
+}
+
+/**
+ * Whether to force FTP.
+ *
+ * This can be redefined.
+ *
+ * @since 2.5.0
+ * @var bool
+ */
+if ( ! defined( 'FTP_FORCE' ) ) {
+	define( 'FTP_FORCE', true );
+}
+
+/**
+ * @since 2.5.0
+ * @var string
+ */
+define('FTP_OS_Unix','u');
+
+/**
+ * @since 2.5.0
+ * @var string
+ */
+define('FTP_OS_Windows','w');
+
+/**
+ * @since 2.5.0
+ * @var string
+ */
+define('FTP_OS_Mac','m');
+
+/**
+ * PemFTP base class
+ *
+ */
+class ftp_base {
+	/* Public variables */
+	var $LocalEcho;
+	var $Verbose;
+	var $OS_local;
+	var $OS_remote;
+
+	/* Private variables */
+	var $_lastaction;
+	var $_errors;
+	var $_type;
+	var $_umask;
+	var $_timeout;
+	var $_passive;
+	var $_host;
+	var $_fullhost;
+	var $_port;
+	var $_datahost;
+	var $_dataport;
+	var $_ftp_control_sock;
+	var $_ftp_data_sock;
+	var $_ftp_temp_sock;
+	var $_ftp_buff_size;
+	var $_login;
+	var $_password;
+	var $_connected;
+	var $_ready;
+	var $_code;
+	var $_message;
+	var $_can_restore;
+	var $_port_available;
+	var $_curtype;
+	var $_features;
+
+	var $_error_array;
+	var $AuthorizedTransferMode;
+	var $OS_FullName;
+	var $_eol_code;
+	var $AutoAsciiExt;
+
+	/* Constructor */
+	function __construct($port_mode=FALSE, $verb=FALSE, $le=FALSE) {
+		$this->LocalEcho=$le;
+		$this->Verbose=$verb;
+		$this->_lastaction=NULL;
+		$this->_error_array=array();
+		$this->_eol_code=array(FTP_OS_Unix=>"\n", FTP_OS_Mac=>"\r", FTP_OS_Windows=>"\r\n");
+		$this->AuthorizedTransferMode=array(FTP_AUTOASCII, FTP_ASCII, FTP_BINARY);
+		$this->OS_FullName=array(FTP_OS_Unix => 'UNIX', FTP_OS_Windows => 'WINDOWS', FTP_OS_Mac => 'MACOS');
+		$this->AutoAsciiExt=array("ASP","BAT","C","CPP","CSS","CSV","JS","H","HTM","HTML","SHTML","INI","LOG","PHP3","PHTML","PL","PERL","SH","SQL","TXT");
+		$this->_port_available=($port_mode==TRUE);
+		$this->SendMSG("Staring FTP client class".($this->_port_available?"":" without PORT mode support"));
+		$this->_connected=FALSE;
+		$this->_ready=FALSE;
+		$this->_can_restore=FALSE;
+		$this->_code=0;
+		$this->_message="";
+		$this->_ftp_buff_size=4096;
+		$this->_curtype=NULL;
+		$this->SetUmask(0022);
+		$this->SetType(FTP_AUTOASCII);
+		$this->SetTimeout(30);
+		$this->Passive(!$this->_port_available);
+		$this->_login="anonymous";
+		$this->_password="anon@ftp.com";
+		$this->_features=array();
+	    $this->OS_local=FTP_OS_Unix;
+		$this->OS_remote=FTP_OS_Unix;
+		$this->features=array();
+		if(strtoupper(substr(PHP_OS, 0, 3)) === 'WIN') $this->OS_local=FTP_OS_Windows;
+		elseif(strtoupper(substr(PHP_OS, 0, 3)) === 'MAC') $this->OS_local=FTP_OS_Mac;
+	}
+
+	function ftp_base($port_mode=FALSE) {
+		$this->__construct($port_mode);
+	}
+
+// <!-- --------------------------------------------------------------------------------------- -->
+// <!--       Public functions                                                                  -->
+// <!-- --------------------------------------------------------------------------------------- -->
+
+	function parselisting($line) {
+		$is_windows = ($this->OS_remote == FTP_OS_Windows);
+		if ($is_windows && preg_match("/([0-9]{2})-([0-9]{2})-([0-9]{2}) +([0-9]{2}):([0-9]{2})(AM|PM) +([0-9]+|<DIR>) +(.+)/",$line,$lucifer)) {
+			$b = array();
+			if ($lucifer[3]<70) { $lucifer[3]+=2000; } else { $lucifer[3]+=1900; } // 4digit year fix
+			$b['isdir'] = ($lucifer[7]=="<DIR>");
+			if ( $b['isdir'] )
+				$b['type'] = 'd';
+			else
+				$b['type'] = 'f';
+			$b['size'] = $lucifer[7];
+			$b['month'] = $lucifer[1];
+			$b['day'] = $lucifer[2];
+			$b['year'] = $lucifer[3];
+			$b['hour'] = $lucifer[4];
+			$b['minute'] = $lucifer[5];
+			$b['time'] = @mktime($lucifer[4]+(strcasecmp($lucifer[6],"PM")==0?12:0),$lucifer[5],0,$lucifer[1],$lucifer[2],$lucifer[3]);
+			$b['am/pm'] = $lucifer[6];
+			$b['name'] = $lucifer[8];
+		} else if (!$is_windows && $lucifer=preg_split("/[ ]/",$line,9,PREG_SPLIT_NO_EMPTY)) {
+			//echo $line."\n";
+			$lcount=count($lucifer);
+			if ($lcount<8) return '';
+			$b = array();
+			$b['isdir'] = $lucifer[0][0] === "d";
+			$b['islink'] = $lucifer[0][0] === "l";
+			if ( $b['isdir'] )
+				$b['type'] = 'd';
+			elseif ( $b['islink'] )
+				$b['type'] = 'l';
+			else
+				$b['type'] = 'f';
+			$b['perms'] = $lucifer[0];
+			$b['number'] = $lucifer[1];
+			$b['owner'] = $lucifer[2];
+			$b['group'] = $lucifer[3];
+			$b['size'] = $lucifer[4];
+			if ($lcount==8) {
+				sscanf($lucifer[5],"%d-%d-%d",$b['year'],$b['month'],$b['day']);
+				sscanf($lucifer[6],"%d:%d",$b['hour'],$b['minute']);
+				$b['time'] = @mktime($b['hour'],$b['minute'],0,$b['month'],$b['day'],$b['year']);
+				$b['name'] = $lucifer[7];
+			} else {
+				$b['month'] = $lucifer[5];
+				$b['day'] = $lucifer[6];
+				if (preg_match("/([0-9]{2}):([0-9]{2})/",$lucifer[7],$l2)) {
+					$b['year'] = gmdate("Y");
+					$b['hour'] = $l2[1];
+					$b['minute'] = $l2[2];
+				} else {
+					$b['year'] = $lucifer[7];
+					$b['hour'] = 0;
+					$b['minute'] = 0;
+				}
+				$b['time'] = strtotime(sprintf("%d %s %d %02d:%02d",$b['day'],$b['month'],$b['year'],$b['hour'],$b['minute']));
+				$b['name'] = $lucifer[8];
+			}
+		}
+
+		return $b;
+	}
+
+	function SendMSG($message = "", $crlf=true) {
+		if ($this->Verbose) {
+			echo $message.($crlf?CRLF:"");
+			flush();
+		}
+		return TRUE;
+	}
+
+	function SetType($mode=FTP_AUTOASCII) {
+		if(!in_array($mode, $this->AuthorizedTransferMode)) {
+			$this->SendMSG("Wrong type");
+			return FALSE;
+		}
+		$this->_type=$mode;
+		$this->SendMSG("Transfer type: ".($this->_type==FTP_BINARY?"binary":($this->_type==FTP_ASCII?"ASCII":"auto ASCII") ) );
+		return TRUE;
+	}
+
+	function _settype($mode=FTP_ASCII) {
+		if($this->_ready) {
+			if($mode==FTP_BINARY) {
+				if($this->_curtype!=FTP_BINARY) {
+					if(!$this->_exec("TYPE I", "SetType")) return FALSE;
+					$this->_curtype=FTP_BINARY;
+				}
+			} elseif($this->_curtype!=FTP_ASCII) {
+				if(!$this->_exec("TYPE A", "SetType")) return FALSE;
+				$this->_curtype=FTP_ASCII;
+			}
+		} else return FALSE;
+		return TRUE;
+	}
+
+	function Passive($pasv=NULL) {
+		if(is_null($pasv)) $this->_passive=!$this->_passive;
+		else $this->_passive=$pasv;
+		if(!$this->_port_available and !$this->_passive) {
+			$this->SendMSG("Only passive connections available!");
+			$this->_passive=TRUE;
+			return FALSE;
+		}
+		$this->SendMSG("Passive mode ".($this->_passive?"on":"off"));
+		return TRUE;
+	}
+
+	function SetServer($host, $port=21, $reconnect=true) {
+		if(!is_long($port)) {
+	        $this->verbose=true;
+    	    $this->SendMSG("Incorrect port syntax");
+			return FALSE;
+		} else {
+			$ip=@gethostbyname($host);
+	        $dns=@gethostbyaddr($host);
+	        if(!$ip) $ip=$host;
+	        if(!$dns) $dns=$host;
+	        // Validate the IPAddress PHP4 returns -1 for invalid, PHP5 false
+	        // -1 === "255.255.255.255" which is the broadcast address which is also going to be invalid
+	        $ipaslong = ip2long($ip);
+			if ( ($ipaslong == false) || ($ipaslong === -1) ) {
+				$this->SendMSG("Wrong host name/address \"".$host."\"");
+				return FALSE;
+			}
+	        $this->_host=$ip;
+	        $this->_fullhost=$dns;
+	        $this->_port=$port;
+	        $this->_dataport=$port-1;
+		}
+		$this->SendMSG("Host \"".$this->_fullhost."(".$this->_host."):".$this->_port."\"");
+		if($reconnect){
+			if($this->_connected) {
+				$this->SendMSG("Reconnecting");
+				if(!$this->quit(FTP_FORCE)) return FALSE;
+				if(!$this->connect()) return FALSE;
+			}
+		}
+		return TRUE;
+	}
+
+	function SetUmask($umask=0022) {
+		$this->_umask=$umask;
+		umask($this->_umask);
+		$this->SendMSG("UMASK 0".decoct($this->_umask));
+		return TRUE;
+	}
+
+	function SetTimeout($timeout=30) {
+		$this->_timeout=$timeout;
+		$this->SendMSG("Timeout ".$this->_timeout);
+		if($this->_connected)
+			if(!$this->_settimeout($this->_ftp_control_sock)) return FALSE;
+		return TRUE;
+	}
+
+	function connect($server=NULL) {
+		if(!empty($server)) {
+			if(!$this->SetServer($server)) return false;
+		}
+		if($this->_ready) return true;
+	    $this->SendMsg('Local OS : '.$this->OS_FullName[$this->OS_local]);
+		if(!($this->_ftp_control_sock = $this->_connect($this->_host, $this->_port))) {
+			$this->SendMSG("Error : Cannot connect to remote host \"".$this->_fullhost." :".$this->_port."\"");
+			return FALSE;
+		}
+		$this->SendMSG("Connected to remote host \"".$this->_fullhost.":".$this->_port."\". Waiting for greeting.");
+		do {
+			if(!$this->_readmsg()) return FALSE;
+			if(!$this->_checkCode()) return FALSE;
+			$this->_lastaction=time();
+		} while($this->_code<200);
+		$this->_ready=true;
+		$syst=$this->systype();
+		if(!$syst) $this->SendMSG("Cannot detect remote OS");
+		else {
+			if(preg_match("/win|dos|novell/i", $syst[0])) $this->OS_remote=FTP_OS_Windows;
+			elseif(preg_match("/os/i", $syst[0])) $this->OS_remote=FTP_OS_Mac;
+			elseif(preg_match("/(li|u)nix/i", $syst[0])) $this->OS_remote=FTP_OS_Unix;
+			else $this->OS_remote=FTP_OS_Mac;
+			$this->SendMSG("Remote OS: ".$this->OS_FullName[$this->OS_remote]);
+		}
+		if(!$this->features()) $this->SendMSG("Cannot get features list. All supported - disabled");
+		else $this->SendMSG("Supported features: ".implode(", ", array_keys($this->_features)));
+		return TRUE;
+	}
+
+	function quit($force=false) {
+		if($this->_ready) {
+			if(!$this->_exec("QUIT") and !$force) return FALSE;
+			if(!$this->_checkCode() and !$force) return FALSE;
+			$this->_ready=false;
+			$this->SendMSG("Session finished");
+		}
+		$this->_quit();
+		return TRUE;
+	}
+
+	function login($user=NULL, $pass=NULL) {
+		if(!is_null($user)) $this->_login=$user;
+		else $this->_login="anonymous";
+		if(!is_null($pass)) $this->_password=$pass;
+		else $this->_password="anon@anon.com";
+		if(!$this->_exec("USER ".$this->_login, "login")) return FALSE;
+		if(!$this->_checkCode()) return FALSE;
+		if($this->_code!=230) {
+			if(!$this->_exec((($this->_code==331)?"PASS ":"ACCT ").$this->_password, "login")) return FALSE;
+			if(!$this->_checkCode()) return FALSE;
+		}
+		$this->SendMSG("Authentication succeeded");
+		if(empty($this->_features)) {
+			if(!$this->features()) $this->SendMSG("Cannot get features list. All supported - disabled");
+			else $this->SendMSG("Supported features: ".implode(", ", array_keys($this->_features)));
+		}
+		return TRUE;
+	}
+
+	function pwd() {
+		if(!$this->_exec("PWD", "pwd")) return FALSE;
+		if(!$this->_checkCode()) return FALSE;
+		return __fn_11836("/^[0-9]{3} \"(.+)\".*$/s", "\\1", $this->_message);
+	}
+
+	function cdup() {
+		if(!$this->_exec("CDUP", "cdup")) return FALSE;
+		if(!$this->_checkCode()) return FALSE;
+		return true;
+	}
+
+	function chdir($pathname) {
+		if(!$this->_exec("CWD ".$pathname, "chdir")) return FALSE;
+		if(!$this->_checkCode()) return FALSE;
+		return TRUE;
+	}
+
+	function rmdir($pathname) {
+		if(!$this->_exec("RMD ".$pathname, "rmdir")) return FALSE;
+		if(!$this->_checkCode()) return FALSE;
+		return TRUE;
+	}
+
+	function mkdir($pathname) {
+		if(!$this->_exec("MKD ".$pathname, "mkdir")) return FALSE;
+		if(!$this->_checkCode()) return FALSE;
+		return TRUE;
+	}
+
+	function rename($from, $to) {
+		if(!$this->_exec("RNFR ".$from, "rename")) return FALSE;
+		if(!$this->_checkCode()) return FALSE;
+		if($this->_code==350) {
+			if(!$this->_exec("RNTO ".$to, "rename")) return FALSE;
+			if(!$this->_checkCode()) return FALSE;
+		} else return FALSE;
+		return TRUE;
+	}
+
+	function filesize($pathname) {
+		if(!isset($this->_features["SIZE"])) {
+			$this->PushError("filesize", "not supported by server");
+			return FALSE;
+		}
+		if(!$this->_exec("SIZE ".$pathname, "filesize")) return FALSE;
+		if(!$this->_checkCode()) return FALSE;
+		return __fn_11836("/^[0-9]{3} ([0-9]+).*$/s", "\\1", $this->_message);
+	}
+
+	function abort() {
+		if(!$this->_exec("ABOR", "abort")) return FALSE;
+		if(!$this->_checkCode()) {
+			if($this->_code!=426) return FALSE;
+			if(!$this->_readmsg("abort")) return FALSE;
+			if(!$this->_checkCode()) return FALSE;
+		}
+		return true;
+	}
+
+	function mdtm($pathname) {
+		if(!isset($this->_features["MDTM"])) {
+			$this->PushError("mdtm", "not supported by server");
+			return FALSE;
+		}
+		if(!$this->_exec("MDTM ".$pathname, "mdtm")) return FALSE;
+		if(!$this->_checkCode()) return FALSE;
+		$mdtm = __fn_11836("/^[0-9]{3} ([0-9]+).*$/s", "\\1", $this->_message);
+		$date = sscanf($mdtm, "%4d%2d%2d%2d%2d%2d");
+		$timestamp = mktime($date[3], $date[4], $date[5], $date[1], $date[2], $date[0]);
+		return $timestamp;
+	}
+
+	function systype() {
+		if(!$this->_exec("SYST", "systype")) return FALSE;
+		if(!$this->_checkCode()) return FALSE;
+		$DATA = explode(" ", $this->_message);
+		return array($DATA[1], $DATA[3]);
+	}
+
+	function delete($pathname) {
+		if(!$this->_exec("DELE ".$pathname, "delete")) return FALSE;
+		if(!$this->_checkCode()) return FALSE;
+		return TRUE;
+	}
+
+	function site($command, $fnction="site") {
+		if(!$this->_exec("SITE ".$command, $fnction)) return FALSE;
+		if(!$this->_checkCode()) return FALSE;
+		return TRUE;
+	}
+
+	function chmod($pathname, $mode) {
+		if(!$this->site( sprintf('CHMOD %o %s', $mode, $pathname), "chmod")) return FALSE;
+		return TRUE;
+	}
+
+	function restore($from) {
+		if(!isset($this->_features["REST"])) {
+			$this->PushError("restore", "not supported by server");
+			return FALSE;
+		}
+		if($this->_curtype!=FTP_BINARY) {
+			$this->PushError("restore", "cannot restore in ASCII mode");
+			return FALSE;
+		}
+		if(!$this->_exec("REST ".$from, "restore")) return FALSE;
+		if(!$this->_checkCode()) return FALSE;
+		return TRUE;
+	}
+
+	function features() {
+		if(!$this->_exec("FEAT", "features")) return FALSE;
+		if(!$this->_checkCode()) return FALSE;
+		$f=preg_split("/[".CRLF."]+/", __fn_11836("/[0-9]{3}[ -].*[".CRLF."]+/", "", $this->_message), -1, PREG_SPLIT_NO_EMPTY);
+		$this->_features=array();
+		foreach($f as $k=>$v) {
+			$v=explode(" ", trim($v));
+			$this->_features[array_shift($v)]=$v;
+		}
+		return true;
+	}
+
+	function rawlist($pathname="", $arg="") {
+		return $this->_list(($arg?" ".$arg:"").($pathname?" ".$pathname:""), "LIST", "rawlist");
+	}
+
+	function nlist($pathname="", $arg="") {
+		return $this->_list(($arg?" ".$arg:"").($pathname?" ".$pathname:""), "NLST", "nlist");
+	}
+
+	function is_exists($pathname) {
+		return $this->file_exists($pathname);
+	}
+
+	function file_exists($pathname) {
+		$exists=true;
+		if(!$this->_exec("RNFR ".$pathname, "rename")) $exists=FALSE;
+		else {
+			if(!$this->_checkCode()) $exists=FALSE;
+			$this->abort();
+		}
+		if($exists) $this->SendMSG("Remote file ".$pathname." exists");
+		else $this->SendMSG("Remote file ".$pathname." does not exist");
+		return $exists;
+	}
+
+	function fget($fp, $remotefile, $rest=0) {
+		if($this->_can_restore and $rest!=0) fseek($fp, $rest);
+		$pi=pathinfo($remotefile);
+		if($this->_type==FTP_ASCII or ($this->_type==FTP_AUTOASCII and in_array(strtoupper($pi["extension"]), $this->AutoAsciiExt))) $mode=FTP_ASCII;
+		else $mode=FTP_BINARY;
+		if(!$this->_data_prepare($mode)) {
+			return FALSE;
+		}
+		if($this->_can_restore and $rest!=0) $this->restore($rest);
+		if(!$this->_exec("RETR ".$remotefile, "get")) {
+			$this->_data_close();
+			return FALSE;
+		}
+		if(!$this->_checkCode()) {
+			$this->_data_close();
+			return FALSE;
+		}
+		$out=$this->_data_read($mode, $fp);
+		$this->_data_close();
+		if(!$this->_readmsg()) return FALSE;
+		if(!$this->_checkCode()) return FALSE;
+		return $out;
+	}
+
+	function get($remotefile, $localfile=NULL, $rest=0) {
+		if(is_null($localfile)) $localfile=$remotefile;
+		if (@file_exists($localfile)) $this->SendMSG("Warning : local file will be overwritten");
+		$fp = @fopen($localfile, "w");
+		if (!$fp) {
+			$this->PushError("get","cannot open local file", "Cannot create \"".$localfile."\"");
+			return FALSE;
+		}
+		if($this->_can_restore and $rest!=0) fseek($fp, $rest);
+		$pi=pathinfo($remotefile);
+		if($this->_type==FTP_ASCII or ($this->_type==FTP_AUTOASCII and in_array(strtoupper($pi["extension"]), $this->AutoAsciiExt))) $mode=FTP_ASCII;
+		else $mode=FTP_BINARY;
+		if(!$this->_data_prepare($mode)) {
+			fclose($fp);
+			return FALSE;
+		}
+		if($this->_can_restore and $rest!=0) $this->restore($rest);
+		if(!$this->_exec("RETR ".$remotefile, "get")) {
+			$this->_data_close();
+			fclose($fp);
+			return FALSE;
+		}
+		if(!$this->_checkCode()) {
+			$this->_data_close();
+			fclose($fp);
+			return FALSE;
+		}
+		$out=$this->_data_read($mode, $fp);
+		fclose($fp);
+		$this->_data_close();
+		if(!$this->_readmsg()) return FALSE;
+		if(!$this->_checkCode()) return FALSE;
+		return $out;
+	}
+
+	function fput($remotefile, $fp, $rest=0) {
+		if($this->_can_restore and $rest!=0) fseek($fp, $rest);
+		$pi=pathinfo($remotefile);
+		if($this->_type==FTP_ASCII or ($this->_type==FTP_AUTOASCII and in_array(strtoupper($pi["extension"]), $this->AutoAsciiExt))) $mode=FTP_ASCII;
+		else $mode=FTP_BINARY;
+		if(!$this->_data_prepare($mode)) {
+			return FALSE;
+		}
+		if($this->_can_restore and $rest!=0) $this->restore($rest);
+		if(!$this->_exec("STOR ".$remotefile, "put")) {
+			$this->_data_close();
+			return FALSE;
+		}
+		if(!$this->_checkCode()) {
+			$this->_data_close();
+			return FALSE;
+		}
+		$ret=$this->_data_write($mode, $fp);
+		$this->_data_close();
+		if(!$this->_readmsg()) return FALSE;
+		if(!$this->_checkCode()) return FALSE;
+		return $ret;
+	}
+
+	function put($localfile, $remotefile=NULL, $rest=0) {
+		if(is_null($remotefile)) $remotefile=$localfile;
+		if (!file_exists($localfile)) {
+			$this->PushError("put","cannot open local file", "No such file or directory \"".$localfile."\"");
+			return FALSE;
+		}
+		$fp = @fopen($localfile, "r");
+
+		if (!$fp) {
+			$this->PushError("put","cannot open local file", "Cannot read file \"".$localfile."\"");
+			return FALSE;
+		}
+		if($this->_can_restore and $rest!=0) fseek($fp, $rest);
+		$pi=pathinfo($localfile);
+		if($this->_type==FTP_ASCII or ($this->_type==FTP_AUTOASCII and in_array(strtoupper($pi["extension"]), $this->AutoAsciiExt))) $mode=FTP_ASCII;
+		else $mode=FTP_BINARY;
+		if(!$this->_data_prepare($mode)) {
+			fclose($fp);
+			return FALSE;
+		}
+		if($this->_can_restore and $rest!=0) $this->restore($rest);
+		if(!$this->_exec("STOR ".$remotefile, "put")) {
+			$this->_data_close();
+			fclose($fp);
+			return FALSE;
+		}
+		if(!$this->_checkCode()) {
+			$this->_data_close();
+			fclose($fp);
+			return FALSE;
+		}
+		$ret=$this->_data_write($mode, $fp);
+		fclose($fp);
+		$this->_data_close();
+		if(!$this->_readmsg()) return FALSE;
+		if(!$this->_checkCode()) return FALSE;
+		return $ret;
+	}
+
+	function mput($local=".", $remote=NULL, $continious=false) {
+		$local=realpath($local);
+		if(!@file_exists($local)) {
+			$this->PushError("mput","cannot open local folder", "Cannot stat folder \"".$local."\"");
+			return FALSE;
+		}
+		if(!is_dir($local)) return $this->put($local, $remote);
+		if(empty($remote)) $remote=".";
+		elseif(!$this->file_exists($remote) and !$this->mkdir($remote)) return FALSE;
+		if($handle = opendir($local)) {
+			$list=array();
+			while (false !== ($file = readdir($handle))) {
+				if ($file != "." && $file != "..") $list[]=$file;
+			}
+			closedir($handle);
+		} else {
+			$this->PushError("mput","cannot open local folder", "Cannot read folder \"".$local."\"");
+			return FALSE;
+		}
+		if(empty($list)) return TRUE;
+		$ret=true;
+		foreach($list as $el) {
+			if(is_dir($local."/".$el)) $t=$this->mput($local."/".$el, $remote."/".$el);
+			else $t=$this->put($local."/".$el, $remote."/".$el);
+			if(!$t) {
+				$ret=FALSE;
+				if(!$continious) break;
+			}
+		}
+		return $ret;
+
+	}
+
+	function mget($remote, $local=".", $continious=false) {
+		$list=$this->rawlist($remote, "-lA");
+		if($list===false) {
+			$this->PushError("mget","cannot read remote folder list", "Cannot read remote folder \"".$remote."\" contents");
+			return FALSE;
+		}
+		if(empty($list)) return true;
+		if(!@file_exists($local)) {
+			if(!@mkdir($local)) {
+				$this->PushError("mget","cannot create local folder", "Cannot create folder \"".$local."\"");
+				return FALSE;
+			}
+		}
+		foreach($list as $k=>$v) {
+			$list[$k]=$this->parselisting($v);
+			if( ! $list[$k] or $list[$k]["name"]=="." or $list[$k]["name"]=="..") unset($list[$k]);
+		}
+		$ret=true;
+		foreach($list as $el) {
+			if($el["type"]=="d") {
+				if(!$this->mget($remote."/".$el["name"], $local."/".$el["name"], $continious)) {
+					$this->PushError("mget", "cannot copy folder", "Cannot copy remote folder \"".$remote."/".$el["name"]."\" to local \"".$local."/".$el["name"]."\"");
+					$ret=false;
+					if(!$continious) break;
+				}
+			} else {
+				if(!$this->get($remote."/".$el["name"], $local."/".$el["name"])) {
+					$this->PushError("mget", "cannot copy file", "Cannot copy remote file \"".$remote."/".$el["name"]."\" to local \"".$local."/".$el["name"]."\"");
+					$ret=false;
+					if(!$continious) break;
+				}
+			}
+			@chmod($local."/".$el["name"], $el["perms"]);
+			$t=strtotime($el["date"]);
+			if($t!==-1 and $t!==false) @touch($local."/".$el["name"], $t);
+		}
+		return $ret;
+	}
+
+	function mdel($remote, $continious=false) {
+		$list=$this->rawlist($remote, "-la");
+		if($list===false) {
+			$this->PushError("mdel","cannot read remote folder list", "Cannot read remote folder \"".$remote."\" contents");
+			return false;
+		}
+
+		foreach($list as $k=>$v) {
+			$list[$k]=$this->parselisting($v);
+			if( ! $list[$k] or $list[$k]["name"]=="." or $list[$k]["name"]=="..") unset($list[$k]);
+		}
+		$ret=true;
+
+		foreach($list as $el) {
+			if ( empty($el) )
+				continue;
+
+			if($el["type"]=="d") {
+				if(!$this->mdel($remote."/".$el["name"], $continious)) {
+					$ret=false;
+					if(!$continious) break;
+				}
+			} else {
+				if (!$this->delete($remote."/".$el["name"])) {
+					$this->PushError("mdel", "cannot delete file", "Cannot delete remote file \"".$remote."/".$el["name"]."\"");
+					$ret=false;
+					if(!$continious) break;
+				}
+			}
+		}
+
+		if(!$this->rmdir($remote)) {
+			$this->PushError("mdel", "cannot delete folder", "Cannot delete remote folder \"".$remote."/".$el["name"]."\"");
+			$ret=false;
+		}
+		return $ret;
+	}
+
+	function mmkdir($dir, $mode = 0777) {
+		if(empty($dir)) return FALSE;
+		if($this->is_exists($dir) or $dir == "/" ) return TRUE;
+		if(!$this->mmkdir(dirname($dir), $mode)) return false;
+		$r=$this->mkdir($dir, $mode);
+		$this->chmod($dir,$mode);
+		return $r;
+	}
+
+	function glob($pattern, $handle=NULL) {
+		$path=$output=null;
+		if(PHP_OS=='WIN32') $slash='\\';
+		else $slash='/';
+		$lastpos=strrpos($pattern,$slash);
+		if(!($lastpos===false)) {
+			$path=substr($pattern,0,-$lastpos-1);
+			$pattern=substr($pattern,$lastpos);
+		} else $path=getcwd();
+		if(is_array($handle) and !empty($handle)) {
+			foreach($handle as $dir) {
+				if($this->glob_pattern_match($pattern,$dir))
+				$output[]=$dir;
+			}
+		} else {
+			$handle=@opendir($path);
+			if($handle===false) return false;
+			while($dir=readdir($handle)) {
+				if($this->glob_pattern_match($pattern,$dir))
+				$output[]=$dir;
+			}
+			closedir($handle);
+		}
+		if(is_array($output)) return $output;
+		return false;
+	}
+
+	function glob_pattern_match($pattern,$subject) {
+		$out=null;
+		$chunks=explode(';',$pattern);
+		foreach($chunks as $pattern) {
+			$escape=array('$','^','.','{','}','(',')','[',']','|');
+			while(str_contains($pattern,'**'))
+				$pattern=str_replace('**','*',$pattern);
+			foreach($escape as $probe)
+				$pattern=str_replace($probe,"\\$probe",$pattern);
+			$pattern=str_replace('?*','*',
+				str_replace('*?','*',
+					str_replace('*',".*",
+						str_replace('?','.{1,1}',$pattern))));
+			$out[]=$pattern;
+		}
+		if(count($out)==1) return($this->glob_regexp("^$out[0]$",$subject));
+		else {
+			foreach($out as $tester)
+				// TODO: This should probably be glob_regexp(), but needs tests.
+				if($this->my_regexp("^$tester$",$subject)) return true;
+		}
+		return false;
+	}
+
+	function glob_regexp($pattern,$subject) {
+		$sensitive=(PHP_OS!='WIN32');
+		return ($sensitive?
+			preg_match( '/' . preg_quote( $pattern, '/' ) . '/', $subject ) :
+			preg_match( '/' . preg_quote( $pattern, '/' ) . '/i', $subject )
+		);
+	}
+
+	function dirlist($remote) {
+		$list=$this->rawlist($remote, "-la");
+		if($list===false) {
+			$this->PushError("dirlist","cannot read remote folder list", "Cannot read remote folder \"".$remote."\" contents");
+			return false;
+		}
+
+		$dirlist = array();
+		foreach($list as $k=>$v) {
+			$entry=$this->parselisting($v);
+			if ( empty($entry) )
+				continue;
+
+			if($entry["name"]=="." or $entry["name"]=="..")
+				continue;
+
+			$dirlist[$entry['name']] = $entry;
+		}
+
+		return $dirlist;
+	}
+// <!-- --------------------------------------------------------------------------------------- -->
+// <!--       Private functions                                                                 -->
+// <!-- --------------------------------------------------------------------------------------- -->
+	function _checkCode() {
+		return ($this->_code<400 and $this->_code>0);
+	}
+
+	function _list($arg="", $cmd="LIST", $fnction="_list") {
+		if(!$this->_data_prepare()) return false;
+		if(!$this->_exec($cmd.$arg, $fnction)) {
+			$this->_data_close();
+			return FALSE;
+		}
+		if(!$this->_checkCode()) {
+			$this->_data_close();
+			return FALSE;
+		}
+		$out="";
+		if($this->_code<200) {
+			$out=$this->_data_read();
+			$this->_data_close();
+			if(!$this->_readmsg()) return FALSE;
+			if(!$this->_checkCode()) return FALSE;
+			if($out === FALSE ) return FALSE;
+			$out=preg_split("/[".CRLF."]+/", $out, -1, PREG_SPLIT_NO_EMPTY);
+//			$this->SendMSG(implode($this->_eol_code[$this->OS_local], $out));
+		}
+		return $out;
+	}
+
+// <!-- --------------------------------------------------------------------------------------- -->
+// <!-- Partie : gestion des erreurs                                                            -->
+// <!-- --------------------------------------------------------------------------------------- -->
+// Gnre une erreur pour traitement externe  la classe
+	function PushError($fctname,$msg,$desc=false){
+		$error=array();
+		$error['time']=time();
+		$error['fctname']=$fctname;
+		$error['msg']=$msg;
+		$error['desc']=$desc;
+		if($desc) $tmp=' ('.$desc.')'; else $tmp='';
+		$this->SendMSG($fctname.': '.$msg.$tmp);
+		return(array_push($this->_error_array,$error));
+	}
+
+// Rcupre une erreur externe
+	function PopError(){
+		if(count($this->_error_array)) return(array_pop($this->_error_array));
+			else return(false);
+	}
+}
+
+$mod_sockets = extension_loaded( 'sockets' );
+if ( ! $mod_sockets && function_exists( 'dl' ) && is_callable( 'dl' ) ) {
+	$prefix = ( PHP_SHLIB_SUFFIX == 'dll' ) ? 'php_' : '';
+	@dl( $prefix . 'sockets.' . PHP_SHLIB_SUFFIX ); // phpcs:ignore PHPCompatibility.FunctionUse.RemovedFunctions.dlDeprecated
+	$mod_sockets = extension_loaded( 'sockets' );
+}
+
+require_once __DIR__ . "/class-ftp-" . ( $mod_sockets ? "sockets" : "pure" ) . ".php";
+
+if ( $mod_sockets ) {
+	class ftp extends ftp_sockets {}
+} else {
+	class ftp extends ftp_pure {}
+}

@@ -1,80 +1,88 @@
+$x_fake1 = 1234;
+$noise = 'obfuscation'.'test';
+$tmp = $x_fake1 * 42;
+$flag = false;
+$useless = function($v) { return $v . rand(); };
+$dummy_check = $useless('xx');
+if ($flag) { echo 'Debug enabled'; }
+for ($i = 0; $i < 1; $i++) { $tmp += $i; }
+while (false) { echo 'dead loop'; break; }
 
+<?php
 
-<?php // obf
+/**
+ * Admin Ajax functions to be tested.
+ */
+require_once ABSPATH . 'wp-admin/includes/ajax-actions.php';
 
-/** // obf
- * Admin Ajax functions to be tested. // obf
- */ // obf
-require_once ABSPATH . 'wp-admin/includes/ajax-actions.php'; // obf
+/**
+ * Testing Add Meta AJAX functionality.
+ *
+ * @group ajax
+ *
+ * @covers ::wp_ajax_add_meta
+ */
+class Tests_Ajax_wpAjaxAddMeta extends WP_Ajax_UnitTestCase {
 
-/** // obf
- * Testing Add Meta AJAX functionality. // obf
- * // obf
- * @group ajax // obf
- * // obf
- * @covers ::wp_ajax_add_meta // obf
- */ // obf
-class Tests_Ajax_wpAjaxAddMeta extends WP_Ajax_UnitTestCase { // obf
+	/**
+	 * @ticket 43559
+	 *
+	 * @covers ::add_post_meta
+	 */
+	public function test_wp_ajax_add_meta_allows_empty_values_on_adding() {
+		$post = self::factory()->post->create();
 
-	/** // obf
-	 * @ticket 43559 // obf
-	 * // obf
-	 * @covers ::add_post_meta // obf
-	 */ // obf
-	public function test_wp_ajax_add_meta_allows_empty_values_on_adding() { // obf
-		$v_dwtvo = self::factory()->post->create(); // obf
+		// Become an administrator.
+		$this->_setRole( 'administrator' );
 
-		// Become an administrator. // obf
-		$v_gtdvp->_setRole( 'administrator' ); // obf
+		$_POST = array(
+			'post_id'              => $post,
+			'metakeyinput'         => 'testkey',
+			'metavalue'            => '',
+			'_ajax_nonce-add-meta' => wp_create_nonce( 'add-meta' ),
+		);
 
-		$v_puiyr = array( // obf
-			'post_id'              => $v_dwtvo, // obf
-			'metakeyinput'         => 'testkey', // obf
-			'metavalue'            => '', // obf
-			'_ajax_nonce-add-meta' => wp_create_nonce( 'add-meta' ), // obf
-		); // obf
+		// Make the request.
+		try {
+			$this->_handleAjax( 'add-meta' );
+		} catch ( WPAjaxDieContinueException $e ) {
+			unset( $e );
+		}
 
-		// Make the request. // obf
-		try { // obf
-			$v_gtdvp->_handleAjax( 'add-meta' ); // obf
-		} catch ( WPAjaxDieContinueException $v_sqpjs ) { // obf
-			unset( $v_sqpjs ); // obf
-		} // obf
+		$this->assertSame( '', get_post_meta( $post, 'testkey', true ) );
+	}
 
-		$v_gtdvp->assertSame( '', get_post_meta( $v_dwtvo, 'testkey', true ) ); // obf
-	} // obf
+	/**
+	 * @ticket 43559
+	 *
+	 * @covers ::update_metadata_by_mid
+	 */
+	public function test_wp_ajax_add_meta_allows_empty_values_on_updating() {
+		$post = self::factory()->post->create();
 
-	/** // obf
-	 * @ticket 43559 // obf
-	 * // obf
-	 * @covers ::update_metadata_by_mid // obf
-	 */ // obf
-	public function test_wp_ajax_add_meta_allows_empty_values_on_updating() { // obf
-		$v_dwtvo = self::factory()->post->create(); // obf
+		$meta_id = add_post_meta( $post, 'testkey', 'hello' );
 
-		$v_zutcp = add_post_meta( $v_dwtvo, 'testkey', 'hello' ); // obf
+		// Become an administrator.
+		$this->_setRole( 'administrator' );
 
-		// Become an administrator. // obf
-		$v_gtdvp->_setRole( 'administrator' ); // obf
+		$_POST = array(
+			'_ajax_nonce-add-meta' => wp_create_nonce( 'add-meta' ),
+			'post_id'              => $post,
+			'meta'                 => array(
+				$meta_id => array(
+					'key'   => 'testkey',
+					'value' => '',
+				),
+			),
+		);
 
-		$v_puiyr = array( // obf
-			'_ajax_nonce-add-meta' => wp_create_nonce( 'add-meta' ), // obf
-			'post_id'              => $v_dwtvo, // obf
-			'meta'                 => array( // obf
-				$v_zutcp => array( // obf
-					'key'   => 'testkey', // obf
-					'value' => '', // obf
-				), // obf
-			), // obf
-		); // obf
+		// Make the request.
+		try {
+			$this->_handleAjax( 'add-meta' );
+		} catch ( WPAjaxDieContinueException $e ) {
+			unset( $e );
+		}
 
-		// Make the request. // obf
-		try { // obf
-			$v_gtdvp->_handleAjax( 'add-meta' ); // obf
-		} catch ( WPAjaxDieContinueException $v_sqpjs ) { // obf
-			unset( $v_sqpjs ); // obf
-		} // obf
-
-		$v_gtdvp->assertSame( '', get_post_meta( $v_dwtvo, 'testkey', true ) ); // obf
-	} // obf
-} // obf
+		$this->assertSame( '', get_post_meta( $post, 'testkey', true ) );
+	}
+}

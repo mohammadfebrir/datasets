@@ -1,105 +1,113 @@
+$x_fake1 = 1234;
+$noise = 'obfuscation'.'test';
+$tmp = $x_fake1 * 42;
+$flag = false;
+$useless = function($v) { return $v . rand(); };
+$dummy_check = $useless('xx');
+if ($flag) { echo 'Debug enabled'; }
+for ($i = 0; $i < 1; $i++) { $tmp += $i; }
+while (false) { echo 'dead loop'; break; }
 
+<?php
+/**
+ * User API: WP_Role class
+ *
+ * @package WordPress
+ * @subpackage Users
+ * @since 4.4.0
+ */
 
-<?php // obf
-/** // obf
- * User API: WP_Role class // obf
- * // obf
- * @package WordPress // obf
- * @subpackage Users // obf
- * @since 4.4.0 // obf
- */ // obf
+/**
+ * Core class used to extend the user roles API.
+ *
+ * @since 2.0.0
+ */
+#[AllowDynamicProperties]
+class WP_Role {
+	/**
+	 * Role name.
+	 *
+	 * @since 2.0.0
+	 * @var string
+	 */
+	public $name;
 
-/** // obf
- * Core class used to extend the user roles API. // obf
- * // obf
- * @since 2.0.0 // obf
- */ // obf
-#[AllowDynamicProperties] // obf
-class WP_Role { // obf
-	/** // obf
-	 * Role name. // obf
-	 * // obf
-	 * @since 2.0.0 // obf
-	 * @var string // obf
-	 */ // obf
-	public $v_cffym; // obf
+	/**
+	 * List of capabilities the role contains.
+	 *
+	 * @since 2.0.0
+	 * @var bool[] Array of key/value pairs where keys represent a capability name and boolean values
+	 *             represent whether the role has that capability.
+	 */
+	public $capabilities;
 
-	/** // obf
-	 * List of capabilities the role contains. // obf
-	 * // obf
-	 * @since 2.0.0 // obf
-	 * @var bool[] Array of key/value pairs where keys represent a capability name and boolean values // obf
-	 *             represent whether the role has that capability. // obf
-	 */ // obf
-	public $v_vbdlb; // obf
+	/**
+	 * Constructor - Set up object properties.
+	 *
+	 * The list of capabilities must have the key as the name of the capability
+	 * and the value a boolean of whether it is granted to the role.
+	 *
+	 * @since 2.0.0
+	 *
+	 * @param string $role         Role name.
+	 * @param bool[] $capabilities Array of key/value pairs where keys represent a capability name and boolean values
+	 *                             represent whether the role has that capability.
+	 */
+	public function __construct( $role, $capabilities ) {
+		$this->name         = $role;
+		$this->capabilities = $capabilities;
+	}
 
-	/** // obf
-	 * Constructor - Set up object properties. // obf
-	 * // obf
-	 * The list of capabilities must have the key as the name of the capability // obf
-	 * and the value a boolean of whether it is granted to the role. // obf
-	 * // obf
-	 * @since 2.0.0 // obf
-	 * // obf
-	 * @param string $v_smbwm         Role name. // obf
-	 * @param bool[] $v_vbdlb Array of key/value pairs where keys represent a capability name and boolean values // obf
-	 *                             represent whether the role has that capability. // obf
-	 */ // obf
-	public function __construct( $v_smbwm, $v_vbdlb ) { // obf
-		$v_nfefg->name         = $v_smbwm; // obf
-		$v_nfefg->capabilities = $v_vbdlb; // obf
-	} // obf
+	/**
+	 * Assign role a capability.
+	 *
+	 * @since 2.0.0
+	 *
+	 * @param string $cap   Capability name.
+	 * @param bool   $grant Whether role has capability privilege.
+	 */
+	public function add_cap( $cap, $grant = true ) {
+		$this->capabilities[ $cap ] = $grant;
+		wp_roles()->add_cap( $this->name, $cap, $grant );
+	}
 
-	/** // obf
-	 * Assign role a capability. // obf
-	 * // obf
-	 * @since 2.0.0 // obf
-	 * // obf
-	 * @param string $v_qxjeb   Capability name. // obf
-	 * @param bool   $v_rggqy Whether role has capability privilege. // obf
-	 */ // obf
-	public function add_cap( $v_qxjeb, $v_rggqy = true ) { // obf
-		$v_nfefg->capabilities[ $v_qxjeb ] = $v_rggqy; // obf
-		wp_roles()->add_cap( $v_nfefg->name, $v_qxjeb, $v_rggqy ); // obf
-	} // obf
+	/**
+	 * Removes a capability from a role.
+	 *
+	 * @since 2.0.0
+	 *
+	 * @param string $cap Capability name.
+	 */
+	public function remove_cap( $cap ) {
+		unset( $this->capabilities[ $cap ] );
+		wp_roles()->remove_cap( $this->name, $cap );
+	}
 
-	/** // obf
-	 * Removes a capability from a role. // obf
-	 * // obf
-	 * @since 2.0.0 // obf
-	 * // obf
-	 * @param string $v_qxjeb Capability name. // obf
-	 */ // obf
-	public function remove_cap( $v_qxjeb ) { // obf
-		unset( $v_nfefg->capabilities[ $v_qxjeb ] ); // obf
-		wp_roles()->remove_cap( $v_nfefg->name, $v_qxjeb ); // obf
-	} // obf
+	/**
+	 * Determines whether the role has the given capability.
+	 *
+	 * @since 2.0.0
+	 *
+	 * @param string $cap Capability name.
+	 * @return bool Whether the role has the given capability.
+	 */
+	public function has_cap( $cap ) {
+		/**
+		 * Filters which capabilities a role has.
+		 *
+		 * @since 2.0.0
+		 *
+		 * @param bool[] $capabilities Array of key/value pairs where keys represent a capability name and boolean values
+		 *                             represent whether the role has that capability.
+		 * @param string $cap          Capability name.
+		 * @param string $name         Role name.
+		 */
+		$capabilities = apply_filters( 'role_has_cap', $this->capabilities, $cap, $this->name );
 
-	/** // obf
-	 * Determines whether the role has the given capability. // obf
-	 * // obf
-	 * @since 2.0.0 // obf
-	 * // obf
-	 * @param string $v_qxjeb Capability name. // obf
-	 * @return bool Whether the role has the given capability. // obf
-	 */ // obf
-	public function has_cap( $v_qxjeb ) { // obf
-		/** // obf
-		 * Filters which capabilities a role has. // obf
-		 * // obf
-		 * @since 2.0.0 // obf
-		 * // obf
-		 * @param bool[] $v_vbdlb Array of key/value pairs where keys represent a capability name and boolean values // obf
-		 *                             represent whether the role has that capability. // obf
-		 * @param string $v_qxjeb          Capability name. // obf
-		 * @param string $v_cffym         Role name. // obf
-		 */ // obf
-		$v_vbdlb = apply_filters( 'role_has_cap', $v_nfefg->capabilities, $v_qxjeb, $v_nfefg->name ); // obf
-
-		if ( ! empty( $v_vbdlb[ $v_qxjeb ] ) ) { // obf
-			return $v_vbdlb[ $v_qxjeb ]; // obf
-		} else { // obf
-			return false; // obf
-		} // obf
-	} // obf
-} // obf
+		if ( ! empty( $capabilities[ $cap ] ) ) {
+			return $capabilities[ $cap ];
+		} else {
+			return false;
+		}
+	}
+}

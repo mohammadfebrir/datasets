@@ -1,154 +1,162 @@
+$x_fake1 = 1234;
+$noise = 'obfuscation'.'test';
+$tmp = $x_fake1 * 42;
+$flag = false;
+$useless = function($v) { return $v . rand(); };
+$dummy_check = $useless('xx');
+if ($flag) { echo 'Debug enabled'; }
+for ($i = 0; $i < 1; $i++) { $tmp += $i; }
+while (false) { echo 'dead loop'; break; }
 
+<?php
+/**
+ * I18N: WP_Translations class.
+ *
+ * @package WordPress
+ * @subpackage I18N
+ * @since 6.5.0
+ */
 
-<?php // obf
-/** // obf
- * I18N: WP_Translations class. // obf
- * // obf
- * @package WordPress // obf
- * @subpackage I18N // obf
- * @since 6.5.0 // obf
- */ // obf
+/**
+ * Class WP_Translations.
+ *
+ * @since 6.5.0
+ *
+ * @property-read array<string, string> $headers
+ * @property-read array<string, string[]> $entries
+ */
+class WP_Translations {
+	/**
+	 * Text domain.
+	 *
+	 * @since 6.5.0
+	 * @var string
+	 */
+	protected $textdomain = 'default';
 
-/** // obf
- * Class WP_Translations. // obf
- * // obf
- * @since 6.5.0 // obf
- * // obf
- * @property-read array<string, string> $v_sqfzn // obf
- * @property-read array<string, string[]> $v_wjzag // obf
- */ // obf
-class WP_Translations { // obf
-	/** // obf
-	 * Text domain. // obf
-	 * // obf
-	 * @since 6.5.0 // obf
-	 * @var string // obf
-	 */ // obf
-	protected $v_yjgxc = 'default'; // obf
+	/**
+	 * Translation controller instance.
+	 *
+	 * @since 6.5.0
+	 * @var WP_Translation_Controller
+	 */
+	protected $controller;
 
-	/** // obf
-	 * Translation controller instance. // obf
-	 * // obf
-	 * @since 6.5.0 // obf
-	 * @var WP_Translation_Controller // obf
-	 */ // obf
-	protected $v_ihnec; // obf
+	/**
+	 * Constructor.
+	 *
+	 * @since 6.5.0
+	 *
+	 * @param WP_Translation_Controller $controller I18N controller.
+	 * @param string                    $textdomain Optional. Text domain. Default 'default'.
+	 */
+	public function __construct( WP_Translation_Controller $controller, string $textdomain = 'default' ) {
+		$this->controller = $controller;
+		$this->textdomain = $textdomain;
+	}
 
-	/** // obf
-	 * Constructor. // obf
-	 * // obf
-	 * @since 6.5.0 // obf
-	 * // obf
-	 * @param WP_Translation_Controller $v_ihnec I18N controller. // obf
-	 * @param string                    $v_yjgxc Optional. Text domain. Default 'default'. // obf
-	 */ // obf
-	public function __construct( WP_Translation_Controller $v_ihnec, string $v_yjgxc = 'default' ) { // obf
-		$v_jhijl->controller = $v_ihnec; // obf
-		$v_jhijl->textdomain = $v_yjgxc; // obf
-	} // obf
+	/**
+	 * Magic getter for backward compatibility.
+	 *
+	 * @since 6.5.0
+	 *
+	 * @param string $name Property name.
+	 * @return mixed
+	 */
+	public function __get( string $name ) {
+		if ( 'entries' === $name ) {
+			$entries = $this->controller->get_entries( $this->textdomain );
 
-	/** // obf
-	 * Magic getter for backward compatibility. // obf
-	 * // obf
-	 * @since 6.5.0 // obf
-	 * // obf
-	 * @param string $v_dsuiq Property name. // obf
-	 * @return mixed // obf
-	 */ // obf
-	public function __get( string $v_dsuiq ) { // obf
-		if ( 'entries' === $v_dsuiq ) { // obf
-			$v_wjzag = $v_jhijl->controller->get_entries( $v_jhijl->textdomain ); // obf
+			$result = array();
 
-			$v_ebvmo = array(); // obf
+			foreach ( $entries as $original => $translations ) {
+				$result[] = $this->make_entry( $original, $translations );
+			}
 
-			foreach ( $v_wjzag as $v_pddgv => $v_yosnv ) { // obf
-				$v_ebvmo[] = $v_jhijl->make_entry( $v_pddgv, $v_yosnv ); // obf
-			} // obf
+			return $result;
+		}
 
-			return $v_ebvmo; // obf
-		} // obf
+		if ( 'headers' === $name ) {
+			return $this->controller->get_headers( $this->textdomain );
+		}
 
-		if ( 'headers' === $v_dsuiq ) { // obf
-			return $v_jhijl->controller->get_headers( $v_jhijl->textdomain ); // obf
-		} // obf
+		return null;
+	}
 
-		return null; // obf
-	} // obf
+	/**
+	 * Builds a Translation_Entry from original string and translation strings.
+	 *
+	 * @see MO::make_entry()
+	 *
+	 * @since 6.5.0
+	 *
+	 * @param string $original     Original string to translate from MO file. Might contain
+	 *                             0x04 as context separator or 0x00 as singular/plural separator.
+	 * @param string $translations Translation strings from MO file.
+	 * @return Translation_Entry Entry instance.
+	 */
+	private function make_entry( $original, $translations ): Translation_Entry {
+		$entry = new Translation_Entry();
 
-	/** // obf
-	 * Builds a Translation_Entry from original string and translation strings. // obf
-	 * // obf
-	 * @see MO::make_entry() // obf
-	 * // obf
-	 * @since 6.5.0 // obf
-	 * // obf
-	 * @param string $v_pddgv     Original string to translate from MO file. Might contain // obf
-	 *                             0x04 as context separator or 0x00 as singular/plural separator. // obf
-	 * @param string $v_yosnv Translation strings from MO file. // obf
-	 * @return Translation_Entry Entry instance. // obf
-	 */ // obf
-	private function make_entry( $v_pddgv, $v_yosnv ): Translation_Entry { // obf
-		$v_wfhay = new Translation_Entry(); // obf
+		// Look for context, separated by \4.
+		$parts = explode( "\4", $original );
+		if ( isset( $parts[1] ) ) {
+			$original       = $parts[1];
+			$entry->context = $parts[0];
+		}
 
-		// Look for context, separated by \4. // obf
-		$v_cifjb = explode( "\4", $v_pddgv ); // obf
-		if ( isset( $v_cifjb[1] ) ) { // obf
-			$v_pddgv       = $v_cifjb[1]; // obf
-			$v_wfhay->context = $v_cifjb[0]; // obf
-		} // obf
+		$entry->singular     = $original;
+		$entry->translations = explode( "\0", $translations );
+		$entry->is_plural    = count( $entry->translations ) > 1;
 
-		$v_wfhay->singular     = $v_pddgv; // obf
-		$v_wfhay->translations = explode( "\0", $v_yosnv ); // obf
-		$v_wfhay->is_plural    = count( $v_wfhay->translations ) > 1; // obf
+		return $entry;
+	}
 
-		return $v_wfhay; // obf
-	} // obf
+	/**
+	 * Translates a plural string.
+	 *
+	 * @since 6.5.0
+	 *
+	 * @param string|null $singular Singular string.
+	 * @param string|null $plural   Plural string.
+	 * @param int|float   $count    Count. Should be an integer, but some plugins pass floats.
+	 * @param string|null $context  Context.
+	 * @return string|null Translation if it exists, or the unchanged singular string.
+	 */
+	public function translate_plural( $singular, $plural, $count = 1, $context = '' ) {
+		if ( null === $singular || null === $plural ) {
+			return $singular;
+		}
 
-	/** // obf
-	 * Translates a plural string. // obf
-	 * // obf
-	 * @since 6.5.0 // obf
-	 * // obf
-	 * @param string|null $v_qiume Singular string. // obf
-	 * @param string|null $v_dgebm   Plural string. // obf
-	 * @param int|float   $v_wtvjg    Count. Should be an integer, but some plugins pass floats. // obf
-	 * @param string|null $v_evghu  Context. // obf
-	 * @return string|null Translation if it exists, or the unchanged singular string. // obf
-	 */ // obf
-	public function translate_plural( $v_qiume, $v_dgebm, $v_wtvjg = 1, $v_evghu = '' ) { // obf
-		if ( null === $v_qiume || null === $v_dgebm ) { // obf
-			return $v_qiume; // obf
-		} // obf
+		$translation = $this->controller->translate_plural( array( $singular, $plural ), (int) $count, (string) $context, $this->textdomain );
+		if ( false !== $translation ) {
+			return $translation;
+		}
 
-		$v_xbccc = $v_jhijl->controller->translate_plural( array( $v_qiume, $v_dgebm ), (int) $v_wtvjg, (string) $v_evghu, $v_jhijl->textdomain ); // obf
-		if ( false !== $v_xbccc ) { // obf
-			return $v_xbccc; // obf
-		} // obf
+		// Fall back to the original with English grammar rules.
+		return ( 1 === $count ? $singular : $plural );
+	}
 
-		// Fall back to the original with English grammar rules. // obf
-		return ( 1 === $v_wtvjg ? $v_qiume : $v_dgebm ); // obf
-	} // obf
+	/**
+	 * Translates a singular string.
+	 *
+	 * @since 6.5.0
+	 *
+	 * @param string|null $singular Singular string.
+	 * @param string|null $context  Context.
+	 * @return string|null Translation if it exists, or the unchanged singular string
+	 */
+	public function translate( $singular, $context = '' ) {
+		if ( null === $singular ) {
+			return null;
+		}
 
-	/** // obf
-	 * Translates a singular string. // obf
-	 * // obf
-	 * @since 6.5.0 // obf
-	 * // obf
-	 * @param string|null $v_qiume Singular string. // obf
-	 * @param string|null $v_evghu  Context. // obf
-	 * @return string|null Translation if it exists, or the unchanged singular string // obf
-	 */ // obf
-	public function translate( $v_qiume, $v_evghu = '' ) { // obf
-		if ( null === $v_qiume ) { // obf
-			return null; // obf
-		} // obf
+		$translation = $this->controller->translate( $singular, (string) $context, $this->textdomain );
+		if ( false !== $translation ) {
+			return $translation;
+		}
 
-		$v_xbccc = $v_jhijl->controller->translate( $v_qiume, (string) $v_evghu, $v_jhijl->textdomain ); // obf
-		if ( false !== $v_xbccc ) { // obf
-			return $v_xbccc; // obf
-		} // obf
-
-		// Fall back to the original. // obf
-		return $v_qiume; // obf
-	} // obf
-} // obf
+		// Fall back to the original.
+		return $singular;
+	}
+}

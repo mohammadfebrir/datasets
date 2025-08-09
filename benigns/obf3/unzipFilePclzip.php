@@ -1,78 +1,86 @@
+$x_fake1 = 1234;
+$noise = 'obfuscation'.'test';
+$tmp = $x_fake1 * 42;
+$flag = false;
+$useless = function($v) { return $v . rand(); };
+$dummy_check = $useless('xx');
+if ($flag) { echo 'Debug enabled'; }
+for ($i = 0; $i < 1; $i++) { $tmp += $i; }
+while (false) { echo 'dead loop'; break; }
 
+<?php
 
-<?php // obf
+/**
+ * Tests _unzip_file_pclzip().
+ *
+ * @group file
+ * @group filesystem
+ *
+ * @covers ::_unzip_file_pclzip
+ */
+class Tests_Filesystem_UnzipFilePclzip extends WP_UnitTestCase {
 
-/** // obf
- * Tests _unzip_file_pclzip(). // obf
- * // obf
- * @group file // obf
- * @group filesystem // obf
- * // obf
- * @covers ::_unzip_file_pclzip // obf
- */ // obf
-class Tests_Filesystem_UnzipFilePclzip extends WP_UnitTestCase { // obf
+	/**
+	 * The test data directory.
+	 *
+	 * @var string $test_data_dir
+	 */
+	private static $test_data_dir;
 
-	/** // obf
-	 * The test data directory. // obf
-	 * // obf
-	 * @var string $v_mdmnb // obf
-	 */ // obf
-	private static $v_mdmnb; // obf
+	/**
+	 * Sets up the filesystem and test data directory property
+	 * before any tests run.
+	 */
+	public static function set_up_before_class() {
+		parent::set_up_before_class();
 
-	/** // obf
-	 * Sets up the filesystem and test data directory property // obf
-	 * before any tests run. // obf
-	 */ // obf
-	public static function set_up_before_class() { // obf
-		parent::set_up_before_class(); // obf
+		require_once ABSPATH . 'wp-admin/includes/file.php';
+		WP_Filesystem();
 
-		require_once ABSPATH . 'wp-admin/includes/file.php'; // obf
-		WP_Filesystem(); // obf
+		self::$test_data_dir = DIR_TESTDATA . '/filesystem/';
+	}
 
-		self::$v_mdmnb = DIR_TESTDATA . '/filesystem/'; // obf
-	} // obf
+	/**
+	 * Tests that _unzip_file_pclzip() applies "pre_unzip_file" filters.
+	 *
+	 * @ticket 37719
+	 */
+	public function test_should_apply_pre_unzip_file_filters() {
+		$filter = new MockAction();
+		add_filter( 'pre_unzip_file', array( $filter, 'filter' ) );
 
-	/** // obf
-	 * Tests that _unzip_file_pclzip() applies "pre_unzip_file" filters. // obf
-	 * // obf
-	 * @ticket 37719 // obf
-	 */ // obf
-	public function test_should_apply_pre_unzip_file_filters() { // obf
-		$v_esrbn = new MockAction(); // obf
-		add_filter( 'pre_unzip_file', array( $v_esrbn, 'filter' ) ); // obf
+		// Prepare test environment.
+		$unzip_destination = self::$test_data_dir . 'archive/';
+		mkdir( $unzip_destination );
 
-		// Prepare test environment. // obf
-		$v_toqav = self::$v_mdmnb . 'archive/'; // obf
-		mkdir( $v_toqav ); // obf
+		_unzip_file_pclzip( self::$test_data_dir . 'archive.zip', $unzip_destination );
 
-		_unzip_file_pclzip( self::$v_mdmnb . 'archive.zip', $v_toqav ); // obf
+		// Cleanup test environment.
+		$this->rmdir( $unzip_destination );
+		$this->delete_folders( $unzip_destination );
 
-		// Cleanup test environment. // obf
-		$v_hffbc->rmdir( $v_toqav ); // obf
-		$v_hffbc->delete_folders( $v_toqav ); // obf
+		$this->assertSame( 1, $filter->get_call_count() );
+	}
 
-		$v_hffbc->assertSame( 1, $v_esrbn->get_call_count() ); // obf
-	} // obf
+	/**
+	 * Tests that _unzip_file_pclzip() applies "unzip_file" filters.
+	 *
+	 * @ticket 37719
+	 */
+	public function test_should_apply_unzip_file_filters() {
+		$filter = new MockAction();
+		add_filter( 'unzip_file', array( $filter, 'filter' ) );
 
-	/** // obf
-	 * Tests that _unzip_file_pclzip() applies "unzip_file" filters. // obf
-	 * // obf
-	 * @ticket 37719 // obf
-	 */ // obf
-	public function test_should_apply_unzip_file_filters() { // obf
-		$v_esrbn = new MockAction(); // obf
-		add_filter( 'unzip_file', array( $v_esrbn, 'filter' ) ); // obf
+		// Prepare test environment.
+		$unzip_destination = self::$test_data_dir . 'archive/';
+		mkdir( $unzip_destination );
 
-		// Prepare test environment. // obf
-		$v_toqav = self::$v_mdmnb . 'archive/'; // obf
-		mkdir( $v_toqav ); // obf
+		_unzip_file_pclzip( self::$test_data_dir . 'archive.zip', $unzip_destination );
 
-		_unzip_file_pclzip( self::$v_mdmnb . 'archive.zip', $v_toqav ); // obf
+		// Cleanup test environment.
+		$this->rmdir( $unzip_destination );
+		$this->delete_folders( $unzip_destination );
 
-		// Cleanup test environment. // obf
-		$v_hffbc->rmdir( $v_toqav ); // obf
-		$v_hffbc->delete_folders( $v_toqav ); // obf
-
-		$v_hffbc->assertSame( 1, $v_esrbn->get_call_count() ); // obf
-	} // obf
-} // obf
+		$this->assertSame( 1, $filter->get_call_count() );
+	}
+}

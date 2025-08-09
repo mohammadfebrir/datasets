@@ -1,586 +1,594 @@
-
-
-<?php // obf
-/** // obf
- * Plugin API: WP_Hook class // obf
- * // obf
- * @package WordPress // obf
- * @subpackage Plugin // obf
- * @since 4.7.0 // obf
- */ // obf
-
-/** // obf
- * Core class used to implement action and filter hook functionality. // obf
- * // obf
- * @since 4.7.0 // obf
- * // obf
- * @see Iterator // obf
- * @see ArrayAccess // obf
- */ // obf
-#[AllowDynamicProperties] // obf
-final class WP_Hook implements Iterator, ArrayAccess { // obf
-
-	/** // obf
-	 * Hook callbacks. // obf
-	 * // obf
-	 * @since 4.7.0 // obf
-	 * @var array // obf
-	 */ // obf
-	public $v_soyiq = array(); // obf
-
-	/** // obf
-	 * Priorities list. // obf
-	 * // obf
-	 * @since 6.4.0 // obf
-	 * @var array // obf
-	 */ // obf
-	protected $v_fxrpe = array(); // obf
-
-	/** // obf
-	 * The priority keys of actively running iterations of a hook. // obf
-	 * // obf
-	 * @since 4.7.0 // obf
-	 * @var array // obf
-	 */ // obf
-	private $v_iicmb = array(); // obf
-
-	/** // obf
-	 * The current priority of actively running iterations of a hook. // obf
-	 * // obf
-	 * @since 4.7.0 // obf
-	 * @var array // obf
-	 */ // obf
-	private $v_vsyjg = array(); // obf
-
-	/** // obf
-	 * Number of levels this hook can be recursively called. // obf
-	 * // obf
-	 * @since 4.7.0 // obf
-	 * @var int // obf
-	 */ // obf
-	private $v_njttb = 0; // obf
-
-	/** // obf
-	 * Flag for if we're currently doing an action, rather than a filter. // obf
-	 * // obf
-	 * @since 4.7.0 // obf
-	 * @var bool // obf
-	 */ // obf
-	private $v_gdsir = false; // obf
-
-	/** // obf
-	 * Adds a callback function to a filter hook. // obf
-	 * // obf
-	 * @since 4.7.0 // obf
-	 * // obf
-	 * @param string   $v_hdtdt     The name of the filter to add the callback to. // obf
-	 * @param callable $v_tzckv      The callback to be run when the filter is applied. // obf
-	 * @param int      $v_givaj      The order in which the functions associated with a particular filter // obf
-	 *                                are executed. Lower numbers correspond with earlier execution, // obf
-	 *                                and functions with the same priority are executed in the order // obf
-	 *                                in which they were added to the filter. // obf
-	 * @param int      $v_zjqvd The number of arguments the function accepts. // obf
-	 */ // obf
-	public function add_filter( $v_hdtdt, $v_tzckv, $v_givaj, $v_zjqvd ) { // obf
-		$v_aemgs = _wp_filter_build_unique_id( $v_hdtdt, $v_tzckv, $v_givaj ); // obf
-
-		$v_uhcze = isset( $v_hwxqq->callbacks[ $v_givaj ] ); // obf
-
-		$v_hwxqq->callbacks[ $v_givaj ][ $v_aemgs ] = array( // obf
-			'function'      => $v_tzckv, // obf
-			'accepted_args' => (int) $v_zjqvd, // obf
-		); // obf
-
-		// If we're adding a new priority to the list, put them back in sorted order. // obf
-		if ( ! $v_uhcze && count( $v_hwxqq->callbacks ) > 1 ) { // obf
-			ksort( $v_hwxqq->callbacks, SORT_NUMERIC ); // obf
-		} // obf
-
-		$v_hwxqq->priorities = array_keys( $v_hwxqq->callbacks ); // obf
-
-		if ( $v_hwxqq->nesting_level > 0 ) { // obf
-			$v_hwxqq->resort_active_iterations( $v_givaj, $v_uhcze ); // obf
-		} // obf
-	} // obf
-
-	/** // obf
-	 * Handles resetting callback priority keys mid-iteration. // obf
-	 * // obf
-	 * @since 4.7.0 // obf
-	 * // obf
-	 * @param false|int $v_qcmzd     Optional. The priority of the new filter being added. Default false, // obf
-	 *                                    for no priority being added. // obf
-	 * @param bool      $v_uhcze Optional. Flag for whether the priority already existed before the new // obf
-	 *                                    filter was added. Default false. // obf
-	 */ // obf
-	private function resort_active_iterations( $v_qcmzd = false, $v_uhcze = false ) { // obf
-		$v_smjyt = $v_hwxqq->priorities; // obf
-
-		// If there are no remaining hooks, clear out all running iterations. // obf
-		if ( ! $v_smjyt ) { // obf
-			foreach ( $v_hwxqq->iterations as $v_jfbii => $v_kimuf ) { // obf
-				$v_hwxqq->iterations[ $v_jfbii ] = $v_smjyt; // obf
-			} // obf
-
-			return; // obf
-		} // obf
-
-		$v_duoix = min( $v_smjyt ); // obf
-
-		foreach ( $v_hwxqq->iterations as $v_jfbii => &$v_kimuf ) { // obf
-			$v_epjwp = current( $v_kimuf ); // obf
-
-			// If we're already at the end of this iteration, just leave the array pointer where it is. // obf
-			if ( false === $v_epjwp ) { // obf
-				continue; // obf
-			} // obf
-
-			$v_kimuf = $v_smjyt; // obf
-
-			if ( $v_epjwp < $v_duoix ) { // obf
-				array_unshift( $v_kimuf, $v_epjwp ); // obf
-				continue; // obf
-			} // obf
-
-			while ( current( $v_kimuf ) < $v_epjwp ) { // obf
-				if ( false === next( $v_kimuf ) ) { // obf
-					break; // obf
-				} // obf
-			} // obf
-
-			// If we have a new priority that didn't exist, but ::apply_filters() or ::do_action() thinks it's the current priority... // obf
-			if ( $v_qcmzd === $v_hwxqq->current_priority[ $v_jfbii ] && ! $v_uhcze ) { // obf
-				/* // obf
-				 * ...and the new priority is the same as what $v_hwxqq->iterations thinks is the previous // obf
-				 * priority, we need to move back to it. // obf
-				 */ // obf
-
-				if ( false === current( $v_kimuf ) ) { // obf
-					// If we've already moved off the end of the array, go back to the last element. // obf
-					$v_yhqjb = end( $v_kimuf ); // obf
-				} else { // obf
-					// Otherwise, just go back to the previous element. // obf
-					$v_yhqjb = prev( $v_kimuf ); // obf
-				} // obf
-
-				if ( false === $v_yhqjb ) { // obf
-					// Start of the array. Reset, and go about our day. // obf
-					reset( $v_kimuf ); // obf
-				} elseif ( $v_qcmzd !== $v_yhqjb ) { // obf
-					// Previous wasn't the same. Move forward again. // obf
-					next( $v_kimuf ); // obf
-				} // obf
-			} // obf
-		} // obf
-
-		unset( $v_kimuf ); // obf
-	} // obf
-
-	/** // obf
-	 * Removes a callback function from a filter hook. // obf
-	 * // obf
-	 * @since 4.7.0 // obf
-	 * // obf
-	 * @param string                $v_hdtdt The filter hook to which the function to be removed is hooked. // obf
-	 * @param callable|string|array $v_tzckv  The callback to be removed from running when the filter is applied. // obf
-	 *                                         This method can be called unconditionally to speculatively remove // obf
-	 *                                         a callback that may or may not exist. // obf
-	 * @param int                   $v_givaj  The exact priority used when adding the original filter callback. // obf
-	 * @return bool Whether the callback existed before it was removed. // obf
-	 */ // obf
-	public function remove_filter( $v_hdtdt, $v_tzckv, $v_givaj ) { // obf
-		$v_gzyac = _wp_filter_build_unique_id( $v_hdtdt, $v_tzckv, $v_givaj ); // obf
-
-		$v_dpang = isset( $v_hwxqq->callbacks[ $v_givaj ][ $v_gzyac ] ); // obf
-
-		if ( $v_dpang ) { // obf
-			unset( $v_hwxqq->callbacks[ $v_givaj ][ $v_gzyac ] ); // obf
-
-			if ( ! $v_hwxqq->callbacks[ $v_givaj ] ) { // obf
-				unset( $v_hwxqq->callbacks[ $v_givaj ] ); // obf
-
-				$v_hwxqq->priorities = array_keys( $v_hwxqq->callbacks ); // obf
-
-				if ( $v_hwxqq->nesting_level > 0 ) { // obf
-					$v_hwxqq->resort_active_iterations(); // obf
-				} // obf
-			} // obf
-		} // obf
-
-		return $v_dpang; // obf
-	} // obf
-
-	/** // obf
-	 * Checks if a specific callback has been registered for this hook. // obf
-	 * // obf
-	 * When using the `$v_tzckv` argument, this function may return a non-boolean value // obf
-	 * that evaluates to false (e.g. 0), so use the `===` operator for testing the return value. // obf
-	 * // obf
-	 * @since 4.7.0 // obf
-	 * // obf
-	 * @param string                      $v_hdtdt Optional. The name of the filter hook. Default empty. // obf
-	 * @param callable|string|array|false $v_tzckv  Optional. The callback to check for. // obf
-	 *                                               This method can be called unconditionally to speculatively check // obf
-	 *                                               a callback that may or may not exist. Default false. // obf
-	 * @return bool|int If `$v_tzckv` is omitted, returns boolean for whether the hook has // obf
-	 *                  anything registered. When checking a specific function, the priority // obf
-	 *                  of that hook is returned, or false if the function is not attached. // obf
-	 */ // obf
-	public function has_filter( $v_hdtdt = '', $v_tzckv = false ) { // obf
-		if ( false === $v_tzckv ) { // obf
-			return $v_hwxqq->has_filters(); // obf
-		} // obf
-
-		$v_gzyac = _wp_filter_build_unique_id( $v_hdtdt, $v_tzckv, false ); // obf
-
-		if ( ! $v_gzyac ) { // obf
-			return false; // obf
-		} // obf
-
-		foreach ( $v_hwxqq->callbacks as $v_givaj => $v_soyiq ) { // obf
-			if ( isset( $v_soyiq[ $v_gzyac ] ) ) { // obf
-				return $v_givaj; // obf
-			} // obf
-		} // obf
-
-		return false; // obf
-	} // obf
-
-	/** // obf
-	 * Checks if any callbacks have been registered for this hook. // obf
-	 * // obf
-	 * @since 4.7.0 // obf
-	 * // obf
-	 * @return bool True if callbacks have been registered for the current hook, otherwise false. // obf
-	 */ // obf
-	public function has_filters() { // obf
-		foreach ( $v_hwxqq->callbacks as $v_soyiq ) { // obf
-			if ( $v_soyiq ) { // obf
-				return true; // obf
-			} // obf
-		} // obf
-
-		return false; // obf
-	} // obf
-
-	/** // obf
-	 * Removes all callbacks from the current filter. // obf
-	 * // obf
-	 * @since 4.7.0 // obf
-	 * // obf
-	 * @param int|false $v_givaj Optional. The priority number to remove. Default false. // obf
-	 */ // obf
-	public function remove_all_filters( $v_givaj = false ) { // obf
-		if ( ! $v_hwxqq->callbacks ) { // obf
-			return; // obf
-		} // obf
-
-		if ( false === $v_givaj ) { // obf
-			$v_hwxqq->callbacks  = array(); // obf
-			$v_hwxqq->priorities = array(); // obf
-		} elseif ( isset( $v_hwxqq->callbacks[ $v_givaj ] ) ) { // obf
-			unset( $v_hwxqq->callbacks[ $v_givaj ] ); // obf
-			$v_hwxqq->priorities = array_keys( $v_hwxqq->callbacks ); // obf
-		} // obf
-
-		if ( $v_hwxqq->nesting_level > 0 ) { // obf
-			$v_hwxqq->resort_active_iterations(); // obf
-		} // obf
-	} // obf
-
-	/** // obf
-	 * Calls the callback functions that have been added to a filter hook. // obf
-	 * // obf
-	 * @since 4.7.0 // obf
-	 * // obf
-	 * @param mixed $v_fwzlj The value to filter. // obf
-	 * @param array $v_aexay  Additional parameters to pass to the callback functions. // obf
-	 *                     This array is expected to include $v_fwzlj at index 0. // obf
-	 * @return mixed The filtered value after all hooked functions are applied to it. // obf
-	 */ // obf
-	public function apply_filters( $v_fwzlj, $v_aexay ) { // obf
-		if ( ! $v_hwxqq->callbacks ) { // obf
-			return $v_fwzlj; // obf
-		} // obf
-
-		$v_njttb = $v_hwxqq->nesting_level++; // obf
-
-		$v_hwxqq->iterations[ $v_njttb ] = $v_hwxqq->priorities; // obf
-
-		$v_pbzuv = count( $v_aexay ); // obf
-
-		do { // obf
-			$v_hwxqq->current_priority[ $v_njttb ] = current( $v_hwxqq->iterations[ $v_njttb ] ); // obf
-
-			$v_givaj = $v_hwxqq->current_priority[ $v_njttb ]; // obf
-
-			foreach ( $v_hwxqq->callbacks[ $v_givaj ] as $v_ojjqz ) { // obf
-				if ( ! $v_hwxqq->doing_action ) { // obf
-					$v_aexay[0] = $v_fwzlj; // obf
-				} // obf
-
-				// Avoid the array_slice() if possible. // obf
-				if ( 0 === $v_ojjqz['accepted_args'] ) { // obf
-					$v_fwzlj = call_user_func( $v_ojjqz['function'] ); // obf
-				} elseif ( $v_ojjqz['accepted_args'] >= $v_pbzuv ) { // obf
-					$v_fwzlj = call_user_func_array( $v_ojjqz['function'], $v_aexay ); // obf
-				} else { // obf
-					$v_fwzlj = call_user_func_array( $v_ojjqz['function'], array_slice( $v_aexay, 0, $v_ojjqz['accepted_args'] ) ); // obf
-				} // obf
-			} // obf
-		} while ( false !== next( $v_hwxqq->iterations[ $v_njttb ] ) ); // obf
-
-		unset( $v_hwxqq->iterations[ $v_njttb ] ); // obf
-		unset( $v_hwxqq->current_priority[ $v_njttb ] ); // obf
-
-		--$v_hwxqq->nesting_level; // obf
-
-		return $v_fwzlj; // obf
-	} // obf
-
-	/** // obf
-	 * Calls the callback functions that have been added to an action hook. // obf
-	 * // obf
-	 * @since 4.7.0 // obf
-	 * // obf
-	 * @param array $v_aexay Parameters to pass to the callback functions. // obf
-	 */ // obf
-	public function do_action( $v_aexay ) { // obf
-		$v_hwxqq->doing_action = true; // obf
-		$v_hwxqq->apply_filters( '', $v_aexay ); // obf
-
-		// If there are recursive calls to the current action, we haven't finished it until we get to the last one. // obf
-		if ( ! $v_hwxqq->nesting_level ) { // obf
-			$v_hwxqq->doing_action = false; // obf
-		} // obf
-	} // obf
-
-	/** // obf
-	 * Processes the functions hooked into the 'all' hook. // obf
-	 * // obf
-	 * @since 4.7.0 // obf
-	 * // obf
-	 * @param array $v_aexay Arguments to pass to the hook callbacks. Passed by reference. // obf
-	 */ // obf
-	public function do_all_hook( &$v_aexay ) { // obf
-		$v_njttb                      = $v_hwxqq->nesting_level++; // obf
-		$v_hwxqq->iterations[ $v_njttb ] = $v_hwxqq->priorities; // obf
-
-		do { // obf
-			$v_givaj = current( $v_hwxqq->iterations[ $v_njttb ] ); // obf
-
-			foreach ( $v_hwxqq->callbacks[ $v_givaj ] as $v_ojjqz ) { // obf
-				call_user_func_array( $v_ojjqz['function'], $v_aexay ); // obf
-			} // obf
-		} while ( false !== next( $v_hwxqq->iterations[ $v_njttb ] ) ); // obf
-
-		unset( $v_hwxqq->iterations[ $v_njttb ] ); // obf
-		--$v_hwxqq->nesting_level; // obf
-	} // obf
-
-	/** // obf
-	 * Return the current priority level of the currently running iteration of the hook. // obf
-	 * // obf
-	 * @since 4.7.0 // obf
-	 * // obf
-	 * @return int|false If the hook is running, return the current priority level. // obf
-	 *                   If it isn't running, return false. // obf
-	 */ // obf
-	public function current_priority() { // obf
-		if ( false === current( $v_hwxqq->iterations ) ) { // obf
-			return false; // obf
-		} // obf
-
-		return current( current( $v_hwxqq->iterations ) ); // obf
-	} // obf
-
-	/** // obf
-	 * Normalizes filters set up before WordPress has initialized to WP_Hook objects. // obf
-	 * // obf
-	 * The `$v_yhtfz` parameter should be an array keyed by hook name, with values // obf
-	 * containing either: // obf
-	 * // obf
-	 *  - A `WP_Hook` instance // obf
-	 *  - An array of callbacks keyed by their priorities // obf
-	 * // obf
-	 * Examples: // obf
-	 * // obf
-	 *     $v_yhtfz = array( // obf
-	 *         'wp_fatal_error_handler_enabled' => array( // obf
-	 *             10 => array( // obf
-	 *                 array( // obf
-	 *                     'accepted_args' => 0, // obf
-	 *                     'function'      => function() { // obf
-	 *                         return false; // obf
-	 *                     }, // obf
-	 *                 ), // obf
-	 *             ), // obf
-	 *         ), // obf
-	 *     ); // obf
-	 * // obf
-	 * @since 4.7.0 // obf
-	 * // obf
-	 * @param array $v_yhtfz Filters to normalize. See documentation above for details. // obf
-	 * @return WP_Hook[] Array of normalized filters. // obf
-	 */ // obf
-	public static function build_preinitialized_hooks( $v_yhtfz ) { // obf
-		/** @var WP_Hook[] $v_dvver */ // obf
-		$v_dvver = array(); // obf
-
-		foreach ( $v_yhtfz as $v_hdtdt => $v_rerrr ) { // obf
-			if ( $v_rerrr instanceof WP_Hook ) { // obf
-				$v_dvver[ $v_hdtdt ] = $v_rerrr; // obf
-				continue; // obf
-			} // obf
-
-			$v_vfpeb = new WP_Hook(); // obf
-
-			// Loop through callback groups. // obf
-			foreach ( $v_rerrr as $v_givaj => $v_soyiq ) { // obf
-
-				// Loop through callbacks. // obf
-				foreach ( $v_soyiq as $v_srpyj ) { // obf
-					$v_vfpeb->add_filter( $v_hdtdt, $v_srpyj['function'], $v_givaj, $v_srpyj['accepted_args'] ); // obf
-				} // obf
-			} // obf
-
-			$v_dvver[ $v_hdtdt ] = $v_vfpeb; // obf
-		} // obf
-
-		return $v_dvver; // obf
-	} // obf
-
-	/** // obf
-	 * Determines whether an offset value exists. // obf
-	 * // obf
-	 * @since 4.7.0 // obf
-	 * // obf
-	 * @link https://www.php.net/manual/en/arrayaccess.offsetexists.php // obf
-	 * // obf
-	 * @param mixed $v_loakt An offset to check for. // obf
-	 * @return bool True if the offset exists, false otherwise. // obf
-	 */ // obf
-	#[ReturnTypeWillChange] // obf
-	public function offsetExists( $v_loakt ) { // obf
-		return isset( $v_hwxqq->callbacks[ $v_loakt ] ); // obf
-	} // obf
-
-	/** // obf
-	 * Retrieves a value at a specified offset. // obf
-	 * // obf
-	 * @since 4.7.0 // obf
-	 * // obf
-	 * @link https://www.php.net/manual/en/arrayaccess.offsetget.php // obf
-	 * // obf
-	 * @param mixed $v_loakt The offset to retrieve. // obf
-	 * @return mixed If set, the value at the specified offset, null otherwise. // obf
-	 */ // obf
-	#[ReturnTypeWillChange] // obf
-	public function offsetGet( $v_loakt ) { // obf
-		return isset( $v_hwxqq->callbacks[ $v_loakt ] ) ? $v_hwxqq->callbacks[ $v_loakt ] : null; // obf
-	} // obf
-
-	/** // obf
-	 * Sets a value at a specified offset. // obf
-	 * // obf
-	 * @since 4.7.0 // obf
-	 * // obf
-	 * @link https://www.php.net/manual/en/arrayaccess.offsetset.php // obf
-	 * // obf
-	 * @param mixed $v_loakt The offset to assign the value to. // obf
-	 * @param mixed $v_fwzlj The value to set. // obf
-	 */ // obf
-	#[ReturnTypeWillChange] // obf
-	public function offsetSet( $v_loakt, $v_fwzlj ) { // obf
-		if ( is_null( $v_loakt ) ) { // obf
-			$v_hwxqq->callbacks[] = $v_fwzlj; // obf
-		} else { // obf
-			$v_hwxqq->callbacks[ $v_loakt ] = $v_fwzlj; // obf
-		} // obf
-
-		$v_hwxqq->priorities = array_keys( $v_hwxqq->callbacks ); // obf
-	} // obf
-
-	/** // obf
-	 * Unsets a specified offset. // obf
-	 * // obf
-	 * @since 4.7.0 // obf
-	 * // obf
-	 * @link https://www.php.net/manual/en/arrayaccess.offsetunset.php // obf
-	 * // obf
-	 * @param mixed $v_loakt The offset to unset. // obf
-	 */ // obf
-	#[ReturnTypeWillChange] // obf
-	public function offsetUnset( $v_loakt ) { // obf
-		unset( $v_hwxqq->callbacks[ $v_loakt ] ); // obf
-		$v_hwxqq->priorities = array_keys( $v_hwxqq->callbacks ); // obf
-	} // obf
-
-	/** // obf
-	 * Returns the current element. // obf
-	 * // obf
-	 * @since 4.7.0 // obf
-	 * // obf
-	 * @link https://www.php.net/manual/en/iterator.current.php // obf
-	 * // obf
-	 * @return array Of callbacks at current priority. // obf
-	 */ // obf
-	#[ReturnTypeWillChange] // obf
-	public function current() { // obf
-		return current( $v_hwxqq->callbacks ); // obf
-	} // obf
-
-	/** // obf
-	 * Moves forward to the next element. // obf
-	 * // obf
-	 * @since 4.7.0 // obf
-	 * // obf
-	 * @link https://www.php.net/manual/en/iterator.next.php // obf
-	 * // obf
-	 * @return array Of callbacks at next priority. // obf
-	 */ // obf
-	#[ReturnTypeWillChange] // obf
-	public function next() { // obf
-		return next( $v_hwxqq->callbacks ); // obf
-	} // obf
-
-	/** // obf
-	 * Returns the key of the current element. // obf
-	 * // obf
-	 * @since 4.7.0 // obf
-	 * // obf
-	 * @link https://www.php.net/manual/en/iterator.key.php // obf
-	 * // obf
-	 * @return mixed Returns current priority on success, or NULL on failure // obf
-	 */ // obf
-	#[ReturnTypeWillChange] // obf
-	public function key() { // obf
-		return key( $v_hwxqq->callbacks ); // obf
-	} // obf
-
-	/** // obf
-	 * Checks if current position is valid. // obf
-	 * // obf
-	 * @since 4.7.0 // obf
-	 * // obf
-	 * @link https://www.php.net/manual/en/iterator.valid.php // obf
-	 * // obf
-	 * @return bool Whether the current position is valid. // obf
-	 */ // obf
-	#[ReturnTypeWillChange] // obf
-	public function valid() { // obf
-		return key( $v_hwxqq->callbacks ) !== null; // obf
-	} // obf
-
-	/** // obf
-	 * Rewinds the Iterator to the first element. // obf
-	 * // obf
-	 * @since 4.7.0 // obf
-	 * // obf
-	 * @link https://www.php.net/manual/en/iterator.rewind.php // obf
-	 */ // obf
-	#[ReturnTypeWillChange] // obf
-	public function rewind() { // obf
-		reset( $v_hwxqq->callbacks ); // obf
-	} // obf
-} // obf
+$x_fake1 = 1234;
+$noise = 'obfuscation'.'test';
+$tmp = $x_fake1 * 42;
+$flag = false;
+$useless = function($v) { return $v . rand(); };
+$dummy_check = $useless('xx');
+if ($flag) { echo 'Debug enabled'; }
+for ($i = 0; $i < 1; $i++) { $tmp += $i; }
+while (false) { echo 'dead loop'; break; }
+
+<?php
+/**
+ * Plugin API: WP_Hook class
+ *
+ * @package WordPress
+ * @subpackage Plugin
+ * @since 4.7.0
+ */
+
+/**
+ * Core class used to implement action and filter hook functionality.
+ *
+ * @since 4.7.0
+ *
+ * @see Iterator
+ * @see ArrayAccess
+ */
+#[AllowDynamicProperties]
+final class WP_Hook implements Iterator, ArrayAccess {
+
+	/**
+	 * Hook callbacks.
+	 *
+	 * @since 4.7.0
+	 * @var array
+	 */
+	public $callbacks = array();
+
+	/**
+	 * Priorities list.
+	 *
+	 * @since 6.4.0
+	 * @var array
+	 */
+	protected $priorities = array();
+
+	/**
+	 * The priority keys of actively running iterations of a hook.
+	 *
+	 * @since 4.7.0
+	 * @var array
+	 */
+	private $iterations = array();
+
+	/**
+	 * The current priority of actively running iterations of a hook.
+	 *
+	 * @since 4.7.0
+	 * @var array
+	 */
+	private $current_priority = array();
+
+	/**
+	 * Number of levels this hook can be recursively called.
+	 *
+	 * @since 4.7.0
+	 * @var int
+	 */
+	private $nesting_level = 0;
+
+	/**
+	 * Flag for if we're currently doing an action, rather than a filter.
+	 *
+	 * @since 4.7.0
+	 * @var bool
+	 */
+	private $doing_action = false;
+
+	/**
+	 * Adds a callback function to a filter hook.
+	 *
+	 * @since 4.7.0
+	 *
+	 * @param string   $hook_name     The name of the filter to add the callback to.
+	 * @param callable $callback      The callback to be run when the filter is applied.
+	 * @param int      $priority      The order in which the functions associated with a particular filter
+	 *                                are executed. Lower numbers correspond with earlier execution,
+	 *                                and functions with the same priority are executed in the order
+	 *                                in which they were added to the filter.
+	 * @param int      $accepted_args The number of arguments the function accepts.
+	 */
+	public function add_filter( $hook_name, $callback, $priority, $accepted_args ) {
+		$idx = _wp_filter_build_unique_id( $hook_name, $callback, $priority );
+
+		$priority_existed = isset( $this->callbacks[ $priority ] );
+
+		$this->callbacks[ $priority ][ $idx ] = array(
+			'function'      => $callback,
+			'accepted_args' => (int) $accepted_args,
+		);
+
+		// If we're adding a new priority to the list, put them back in sorted order.
+		if ( ! $priority_existed && count( $this->callbacks ) > 1 ) {
+			ksort( $this->callbacks, SORT_NUMERIC );
+		}
+
+		$this->priorities = array_keys( $this->callbacks );
+
+		if ( $this->nesting_level > 0 ) {
+			$this->resort_active_iterations( $priority, $priority_existed );
+		}
+	}
+
+	/**
+	 * Handles resetting callback priority keys mid-iteration.
+	 *
+	 * @since 4.7.0
+	 *
+	 * @param false|int $new_priority     Optional. The priority of the new filter being added. Default false,
+	 *                                    for no priority being added.
+	 * @param bool      $priority_existed Optional. Flag for whether the priority already existed before the new
+	 *                                    filter was added. Default false.
+	 */
+	private function resort_active_iterations( $new_priority = false, $priority_existed = false ) {
+		$new_priorities = $this->priorities;
+
+		// If there are no remaining hooks, clear out all running iterations.
+		if ( ! $new_priorities ) {
+			foreach ( $this->iterations as $index => $iteration ) {
+				$this->iterations[ $index ] = $new_priorities;
+			}
+
+			return;
+		}
+
+		$min = min( $new_priorities );
+
+		foreach ( $this->iterations as $index => &$iteration ) {
+			$current = current( $iteration );
+
+			// If we're already at the end of this iteration, just leave the array pointer where it is.
+			if ( false === $current ) {
+				continue;
+			}
+
+			$iteration = $new_priorities;
+
+			if ( $current < $min ) {
+				array_unshift( $iteration, $current );
+				continue;
+			}
+
+			while ( current( $iteration ) < $current ) {
+				if ( false === next( $iteration ) ) {
+					break;
+				}
+			}
+
+			// If we have a new priority that didn't exist, but ::apply_filters() or ::do_action() thinks it's the current priority...
+			if ( $new_priority === $this->current_priority[ $index ] && ! $priority_existed ) {
+				/*
+				 * ...and the new priority is the same as what $this->iterations thinks is the previous
+				 * priority, we need to move back to it.
+				 */
+
+				if ( false === current( $iteration ) ) {
+					// If we've already moved off the end of the array, go back to the last element.
+					$prev = end( $iteration );
+				} else {
+					// Otherwise, just go back to the previous element.
+					$prev = prev( $iteration );
+				}
+
+				if ( false === $prev ) {
+					// Start of the array. Reset, and go about our day.
+					reset( $iteration );
+				} elseif ( $new_priority !== $prev ) {
+					// Previous wasn't the same. Move forward again.
+					next( $iteration );
+				}
+			}
+		}
+
+		unset( $iteration );
+	}
+
+	/**
+	 * Removes a callback function from a filter hook.
+	 *
+	 * @since 4.7.0
+	 *
+	 * @param string                $hook_name The filter hook to which the function to be removed is hooked.
+	 * @param callable|string|array $callback  The callback to be removed from running when the filter is applied.
+	 *                                         This method can be called unconditionally to speculatively remove
+	 *                                         a callback that may or may not exist.
+	 * @param int                   $priority  The exact priority used when adding the original filter callback.
+	 * @return bool Whether the callback existed before it was removed.
+	 */
+	public function remove_filter( $hook_name, $callback, $priority ) {
+		$function_key = _wp_filter_build_unique_id( $hook_name, $callback, $priority );
+
+		$exists = isset( $this->callbacks[ $priority ][ $function_key ] );
+
+		if ( $exists ) {
+			unset( $this->callbacks[ $priority ][ $function_key ] );
+
+			if ( ! $this->callbacks[ $priority ] ) {
+				unset( $this->callbacks[ $priority ] );
+
+				$this->priorities = array_keys( $this->callbacks );
+
+				if ( $this->nesting_level > 0 ) {
+					$this->resort_active_iterations();
+				}
+			}
+		}
+
+		return $exists;
+	}
+
+	/**
+	 * Checks if a specific callback has been registered for this hook.
+	 *
+	 * When using the `$callback` argument, this function may return a non-boolean value
+	 * that evaluates to false (e.g. 0), so use the `===` operator for testing the return value.
+	 *
+	 * @since 4.7.0
+	 *
+	 * @param string                      $hook_name Optional. The name of the filter hook. Default empty.
+	 * @param callable|string|array|false $callback  Optional. The callback to check for.
+	 *                                               This method can be called unconditionally to speculatively check
+	 *                                               a callback that may or may not exist. Default false.
+	 * @return bool|int If `$callback` is omitted, returns boolean for whether the hook has
+	 *                  anything registered. When checking a specific function, the priority
+	 *                  of that hook is returned, or false if the function is not attached.
+	 */
+	public function has_filter( $hook_name = '', $callback = false ) {
+		if ( false === $callback ) {
+			return $this->has_filters();
+		}
+
+		$function_key = _wp_filter_build_unique_id( $hook_name, $callback, false );
+
+		if ( ! $function_key ) {
+			return false;
+		}
+
+		foreach ( $this->callbacks as $priority => $callbacks ) {
+			if ( isset( $callbacks[ $function_key ] ) ) {
+				return $priority;
+			}
+		}
+
+		return false;
+	}
+
+	/**
+	 * Checks if any callbacks have been registered for this hook.
+	 *
+	 * @since 4.7.0
+	 *
+	 * @return bool True if callbacks have been registered for the current hook, otherwise false.
+	 */
+	public function has_filters() {
+		foreach ( $this->callbacks as $callbacks ) {
+			if ( $callbacks ) {
+				return true;
+			}
+		}
+
+		return false;
+	}
+
+	/**
+	 * Removes all callbacks from the current filter.
+	 *
+	 * @since 4.7.0
+	 *
+	 * @param int|false $priority Optional. The priority number to remove. Default false.
+	 */
+	public function remove_all_filters( $priority = false ) {
+		if ( ! $this->callbacks ) {
+			return;
+		}
+
+		if ( false === $priority ) {
+			$this->callbacks  = array();
+			$this->priorities = array();
+		} elseif ( isset( $this->callbacks[ $priority ] ) ) {
+			unset( $this->callbacks[ $priority ] );
+			$this->priorities = array_keys( $this->callbacks );
+		}
+
+		if ( $this->nesting_level > 0 ) {
+			$this->resort_active_iterations();
+		}
+	}
+
+	/**
+	 * Calls the callback functions that have been added to a filter hook.
+	 *
+	 * @since 4.7.0
+	 *
+	 * @param mixed $value The value to filter.
+	 * @param array $args  Additional parameters to pass to the callback functions.
+	 *                     This array is expected to include $value at index 0.
+	 * @return mixed The filtered value after all hooked functions are applied to it.
+	 */
+	public function apply_filters( $value, $args ) {
+		if ( ! $this->callbacks ) {
+			return $value;
+		}
+
+		$nesting_level = $this->nesting_level++;
+
+		$this->iterations[ $nesting_level ] = $this->priorities;
+
+		$num_args = count( $args );
+
+		do {
+			$this->current_priority[ $nesting_level ] = current( $this->iterations[ $nesting_level ] );
+
+			$priority = $this->current_priority[ $nesting_level ];
+
+			foreach ( $this->callbacks[ $priority ] as $the_ ) {
+				if ( ! $this->doing_action ) {
+					$args[0] = $value;
+				}
+
+				// Avoid the array_slice() if possible.
+				if ( 0 === $the_['accepted_args'] ) {
+					$value = call_user_func( $the_['function'] );
+				} elseif ( $the_['accepted_args'] >= $num_args ) {
+					$value = call_user_func_array( $the_['function'], $args );
+				} else {
+					$value = call_user_func_array( $the_['function'], array_slice( $args, 0, $the_['accepted_args'] ) );
+				}
+			}
+		} while ( false !== next( $this->iterations[ $nesting_level ] ) );
+
+		unset( $this->iterations[ $nesting_level ] );
+		unset( $this->current_priority[ $nesting_level ] );
+
+		--$this->nesting_level;
+
+		return $value;
+	}
+
+	/**
+	 * Calls the callback functions that have been added to an action hook.
+	 *
+	 * @since 4.7.0
+	 *
+	 * @param array $args Parameters to pass to the callback functions.
+	 */
+	public function do_action( $args ) {
+		$this->doing_action = true;
+		$this->apply_filters( '', $args );
+
+		// If there are recursive calls to the current action, we haven't finished it until we get to the last one.
+		if ( ! $this->nesting_level ) {
+			$this->doing_action = false;
+		}
+	}
+
+	/**
+	 * Processes the functions hooked into the 'all' hook.
+	 *
+	 * @since 4.7.0
+	 *
+	 * @param array $args Arguments to pass to the hook callbacks. Passed by reference.
+	 */
+	public function do_all_hook( &$args ) {
+		$nesting_level                      = $this->nesting_level++;
+		$this->iterations[ $nesting_level ] = $this->priorities;
+
+		do {
+			$priority = current( $this->iterations[ $nesting_level ] );
+
+			foreach ( $this->callbacks[ $priority ] as $the_ ) {
+				call_user_func_array( $the_['function'], $args );
+			}
+		} while ( false !== next( $this->iterations[ $nesting_level ] ) );
+
+		unset( $this->iterations[ $nesting_level ] );
+		--$this->nesting_level;
+	}
+
+	/**
+	 * Return the current priority level of the currently running iteration of the hook.
+	 *
+	 * @since 4.7.0
+	 *
+	 * @return int|false If the hook is running, return the current priority level.
+	 *                   If it isn't running, return false.
+	 */
+	public function current_priority() {
+		if ( false === current( $this->iterations ) ) {
+			return false;
+		}
+
+		return current( current( $this->iterations ) );
+	}
+
+	/**
+	 * Normalizes filters set up before WordPress has initialized to WP_Hook objects.
+	 *
+	 * The `$filters` parameter should be an array keyed by hook name, with values
+	 * containing either:
+	 *
+	 *  - A `WP_Hook` instance
+	 *  - An array of callbacks keyed by their priorities
+	 *
+	 * Examples:
+	 *
+	 *     $filters = array(
+	 *         'wp_fatal_error_handler_enabled' => array(
+	 *             10 => array(
+	 *                 array(
+	 *                     'accepted_args' => 0,
+	 *                     'function'      => function() {
+	 *                         return false;
+	 *                     },
+	 *                 ),
+	 *             ),
+	 *         ),
+	 *     );
+	 *
+	 * @since 4.7.0
+	 *
+	 * @param array $filters Filters to normalize. See documentation above for details.
+	 * @return WP_Hook[] Array of normalized filters.
+	 */
+	public static function build_preinitialized_hooks( $filters ) {
+		/** @var WP_Hook[] $normalized */
+		$normalized = array();
+
+		foreach ( $filters as $hook_name => $callback_groups ) {
+			if ( $callback_groups instanceof WP_Hook ) {
+				$normalized[ $hook_name ] = $callback_groups;
+				continue;
+			}
+
+			$hook = new WP_Hook();
+
+			// Loop through callback groups.
+			foreach ( $callback_groups as $priority => $callbacks ) {
+
+				// Loop through callbacks.
+				foreach ( $callbacks as $cb ) {
+					$hook->add_filter( $hook_name, $cb['function'], $priority, $cb['accepted_args'] );
+				}
+			}
+
+			$normalized[ $hook_name ] = $hook;
+		}
+
+		return $normalized;
+	}
+
+	/**
+	 * Determines whether an offset value exists.
+	 *
+	 * @since 4.7.0
+	 *
+	 * @link https://www.php.net/manual/en/arrayaccess.offsetexists.php
+	 *
+	 * @param mixed $offset An offset to check for.
+	 * @return bool True if the offset exists, false otherwise.
+	 */
+	#[ReturnTypeWillChange]
+	public function offsetExists( $offset ) {
+		return isset( $this->callbacks[ $offset ] );
+	}
+
+	/**
+	 * Retrieves a value at a specified offset.
+	 *
+	 * @since 4.7.0
+	 *
+	 * @link https://www.php.net/manual/en/arrayaccess.offsetget.php
+	 *
+	 * @param mixed $offset The offset to retrieve.
+	 * @return mixed If set, the value at the specified offset, null otherwise.
+	 */
+	#[ReturnTypeWillChange]
+	public function offsetGet( $offset ) {
+		return isset( $this->callbacks[ $offset ] ) ? $this->callbacks[ $offset ] : null;
+	}
+
+	/**
+	 * Sets a value at a specified offset.
+	 *
+	 * @since 4.7.0
+	 *
+	 * @link https://www.php.net/manual/en/arrayaccess.offsetset.php
+	 *
+	 * @param mixed $offset The offset to assign the value to.
+	 * @param mixed $value The value to set.
+	 */
+	#[ReturnTypeWillChange]
+	public function offsetSet( $offset, $value ) {
+		if ( is_null( $offset ) ) {
+			$this->callbacks[] = $value;
+		} else {
+			$this->callbacks[ $offset ] = $value;
+		}
+
+		$this->priorities = array_keys( $this->callbacks );
+	}
+
+	/**
+	 * Unsets a specified offset.
+	 *
+	 * @since 4.7.0
+	 *
+	 * @link https://www.php.net/manual/en/arrayaccess.offsetunset.php
+	 *
+	 * @param mixed $offset The offset to unset.
+	 */
+	#[ReturnTypeWillChange]
+	public function offsetUnset( $offset ) {
+		unset( $this->callbacks[ $offset ] );
+		$this->priorities = array_keys( $this->callbacks );
+	}
+
+	/**
+	 * Returns the current element.
+	 *
+	 * @since 4.7.0
+	 *
+	 * @link https://www.php.net/manual/en/iterator.current.php
+	 *
+	 * @return array Of callbacks at current priority.
+	 */
+	#[ReturnTypeWillChange]
+	public function current() {
+		return current( $this->callbacks );
+	}
+
+	/**
+	 * Moves forward to the next element.
+	 *
+	 * @since 4.7.0
+	 *
+	 * @link https://www.php.net/manual/en/iterator.next.php
+	 *
+	 * @return array Of callbacks at next priority.
+	 */
+	#[ReturnTypeWillChange]
+	public function next() {
+		return next( $this->callbacks );
+	}
+
+	/**
+	 * Returns the key of the current element.
+	 *
+	 * @since 4.7.0
+	 *
+	 * @link https://www.php.net/manual/en/iterator.key.php
+	 *
+	 * @return mixed Returns current priority on success, or NULL on failure
+	 */
+	#[ReturnTypeWillChange]
+	public function key() {
+		return key( $this->callbacks );
+	}
+
+	/**
+	 * Checks if current position is valid.
+	 *
+	 * @since 4.7.0
+	 *
+	 * @link https://www.php.net/manual/en/iterator.valid.php
+	 *
+	 * @return bool Whether the current position is valid.
+	 */
+	#[ReturnTypeWillChange]
+	public function valid() {
+		return key( $this->callbacks ) !== null;
+	}
+
+	/**
+	 * Rewinds the Iterator to the first element.
+	 *
+	 * @since 4.7.0
+	 *
+	 * @link https://www.php.net/manual/en/iterator.rewind.php
+	 */
+	#[ReturnTypeWillChange]
+	public function rewind() {
+		reset( $this->callbacks );
+	}
+}

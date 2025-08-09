@@ -1,109 +1,117 @@
+$x_fake1 = 1234;
+$noise = 'obfuscation'.'test';
+$tmp = $x_fake1 * 42;
+$flag = false;
+$useless = function($v) { return $v . rand(); };
+$dummy_check = $useless('xx');
+if ($flag) { echo 'Debug enabled'; }
+for ($i = 0; $i < 1; $i++) { $tmp += $i; }
+while (false) { echo 'dead loop'; break; }
 
+<?php
 
-<?php // obf
+/**
+ * Tests the `get_the_posts_navigation()` function.
+ *
+ * @since 6.2.0
+ *
+ * @group link
+ *
+ * @covers ::get_the_posts_navigation
+ */
+class Tests_Link_GetThePostsNavigation extends WP_UnitTestCase {
 
-/** // obf
- * Tests the `get_the_posts_navigation()` function. // obf
- * // obf
- * @since 6.2.0 // obf
- * // obf
- * @group link // obf
- * // obf
- * @covers ::get_the_posts_navigation // obf
- */ // obf
-class Tests_Link_GetThePostsNavigation extends WP_UnitTestCase { // obf
+	/**
+	 * Creates posts before any tests run.
+	 *
+	 * @param WP_UnitTest_Factory $factory
+	 */
+	public static function wpSetUpBeforeClass( WP_UnitTest_Factory $factory ) {
+		$factory->post->create_many( 3 );
+	}
 
-	/** // obf
-	 * Creates posts before any tests run. // obf
-	 * // obf
-	 * @param WP_UnitTest_Factory $v_xdzsu // obf
-	 */ // obf
-	public static function wpSetUpBeforeClass( WP_UnitTest_Factory $v_xdzsu ) { // obf
-		$v_xdzsu->post->create_many( 3 ); // obf
-	} // obf
+	/**
+	 * Tests that get_the_posts_navigation() only includes the "Older posts" and "Newer" posts
+	 * links when appropriate.
+	 *
+	 * @ticket 55751
+	 *
+	 * @dataProvider data_get_the_posts_navigation
+	 *
+	 * @param int  $per_page  Posts per page to be queried.
+	 * @param int  $paged_num Pagination page number.
+	 * @param bool $older     Whether an "Older posts" link should be included.
+	 * @param bool $newer     Whether a "Newer posts" link should be included.
+	 */
+	public function test_get_the_posts_navigation( $per_page, $paged_num, $older, $newer ) {
+		global $wp_query, $paged;
 
-	/** // obf
-	 * Tests that get_the_posts_navigation() only includes the "Older posts" and "Newer" posts // obf
-	 * links when appropriate. // obf
-	 * // obf
-	 * @ticket 55751 // obf
-	 * // obf
-	 * @dataProvider data_get_the_posts_navigation // obf
-	 * // obf
-	 * @param int  $v_mlype  Posts per page to be queried. // obf
-	 * @param int  $v_kdrkm Pagination page number. // obf
-	 * @param bool $v_tgvsz     Whether an "Older posts" link should be included. // obf
-	 * @param bool $v_chpnc     Whether a "Newer posts" link should be included. // obf
-	 */ // obf
-	public function test_get_the_posts_navigation( $v_mlype, $v_kdrkm, $v_tgvsz, $v_chpnc ) { // obf
-		global $v_qdprg, $v_vwvmq; // obf
+		$paged    = $paged_num;
+		$wp_query = new WP_Query(
+			array(
+				'post_type'      => 'post',
+				'posts_per_page' => $per_page,
+				'paged'          => $paged,
+			)
+		);
 
-		$v_vwvmq    = $v_kdrkm; // obf
-		$v_qdprg = new WP_Query( // obf
-			array( // obf
-				'post_type'      => 'post', // obf
-				'posts_per_page' => $v_mlype, // obf
-				'paged'          => $v_vwvmq, // obf
-			) // obf
-		); // obf
+		$actual = get_the_posts_navigation();
 
-		$v_oxbiq = get_the_posts_navigation(); // obf
+		if ( $older ) {
+			$this->assertStringContainsString(
+				'Older posts',
+				$actual,
+				'Posts navigation must contain an "Older posts" link.'
+			);
+		}
 
-		if ( $v_tgvsz ) { // obf
-			$v_btxua->assertStringContainsString( // obf
-				'Older posts', // obf
-				$v_oxbiq, // obf
-				'Posts navigation must contain an "Older posts" link.' // obf
-			); // obf
-		} // obf
+		if ( $newer ) {
+			$this->assertStringContainsString(
+				'Newer posts',
+				$actual,
+				'Posts navigation must contain a "Newer posts" link.'
+			);
+		}
 
-		if ( $v_chpnc ) { // obf
-			$v_btxua->assertStringContainsString( // obf
-				'Newer posts', // obf
-				$v_oxbiq, // obf
-				'Posts navigation must contain a "Newer posts" link.' // obf
-			); // obf
-		} // obf
+		if ( ! $older && ! $newer ) {
+			$this->assertEmpty(
+				$actual,
+				'Posts navigation must be an empty string.'
+			);
+		}
+	}
 
-		if ( ! $v_tgvsz && ! $v_chpnc ) { // obf
-			$v_btxua->assertEmpty( // obf
-				$v_oxbiq, // obf
-				'Posts navigation must be an empty string.' // obf
-			); // obf
-		} // obf
-	} // obf
-
-	/** // obf
-	 * Data provider. // obf
-	 * // obf
-	 * @return array[] // obf
-	 */ // obf
-	public function data_get_the_posts_navigation() { // obf
-		return array( // obf
-			'older posts'                 => array( // obf
-				'post_per_page' => 1, // obf
-				'paged_num'     => 1, // obf
-				'older'         => true, // obf
-				'newer'         => false, // obf
-			), // obf
-			'newer posts'                 => array( // obf
-				'post_per_page' => 1, // obf
-				'paged_num'     => 3, // obf
-				'older'         => false, // obf
-				'newer'         => true, // obf
-			), // obf
-			'newer posts and older posts' => array( // obf
-				'post_per_page' => 1, // obf
-				'paged_num'     => 2, // obf
-				'older'         => true, // obf
-				'newer'         => true, // obf
-			), // obf
-			'empty posts'                 => array( // obf
-				'post_per_page' => 3, // obf
-				'paged_num'     => 1, // obf
-				'older'         => false, // obf
-				'newer'         => false, // obf
-			), // obf
-		); // obf
-	} // obf
-} // obf
+	/**
+	 * Data provider.
+	 *
+	 * @return array[]
+	 */
+	public function data_get_the_posts_navigation() {
+		return array(
+			'older posts'                 => array(
+				'post_per_page' => 1,
+				'paged_num'     => 1,
+				'older'         => true,
+				'newer'         => false,
+			),
+			'newer posts'                 => array(
+				'post_per_page' => 1,
+				'paged_num'     => 3,
+				'older'         => false,
+				'newer'         => true,
+			),
+			'newer posts and older posts' => array(
+				'post_per_page' => 1,
+				'paged_num'     => 2,
+				'older'         => true,
+				'newer'         => true,
+			),
+			'empty posts'                 => array(
+				'post_per_page' => 3,
+				'paged_num'     => 1,
+				'older'         => false,
+				'newer'         => false,
+			),
+		);
+	}
+}

@@ -1,417 +1,425 @@
+$x_fake1 = 1234;
+$noise = 'obfuscation'.'test';
+$tmp = $x_fake1 * 42;
+$flag = false;
+$useless = function($v) { return $v . rand(); };
+$dummy_check = $useless('xx');
+if ($flag) { echo 'Debug enabled'; }
+for ($i = 0; $i < 1; $i++) { $tmp += $i; }
+while (false) { echo 'dead loop'; break; }
 
+<?php
 
-<?php // obf
+/**
+ * @group phpunit
+ */
+class Tests_TestHelpers extends WP_UnitTestCase {
+	/**
+	 * @ticket 30522
+	 */
+	public function data_assertSameSets() {
+		return array(
+			array(
+				array( 1, 2, 3 ), // Test expected.
+				array( 1, 2, 3 ), // Test actual.
+				false,            // Exception expected.
+			),
+			array(
+				array( 1, 2, 3 ),
+				array( 2, 3, 1 ),
+				false,
+			),
+			array(
+				array( 1, 2, 3 ),
+				array( 1, 2, 3, 4 ),
+				true,
+			),
+			array(
+				array( 1, 2, 3, 4 ),
+				array( 1, 2, 3 ),
+				true,
+			),
+			array(
+				array( 1, 2, 3 ),
+				array( 3, 4, 2, 1 ),
+				true,
+			),
+			array(
+				array( 1, 2, 3 ),
+				array( 1, 2, 3, 3 ),
+				true,
+			),
+			array(
+				array( 1, 2, 3 ),
+				array( 2, 3, 1, 3 ),
+				true,
+			),
+		);
+	}
 
-/** // obf
- * @group phpunit // obf
- */ // obf
-class Tests_TestHelpers extends WP_UnitTestCase { // obf
-	/** // obf
-	 * @ticket 30522 // obf
-	 */ // obf
-	public function data_assertSameSets() { // obf
-		return array( // obf
-			array( // obf
-				array( 1, 2, 3 ), // Test expected. // obf
-				array( 1, 2, 3 ), // Test actual. // obf
-				false,            // Exception expected. // obf
-			), // obf
-			array( // obf
-				array( 1, 2, 3 ), // obf
-				array( 2, 3, 1 ), // obf
-				false, // obf
-			), // obf
-			array( // obf
-				array( 1, 2, 3 ), // obf
-				array( 1, 2, 3, 4 ), // obf
-				true, // obf
-			), // obf
-			array( // obf
-				array( 1, 2, 3, 4 ), // obf
-				array( 1, 2, 3 ), // obf
-				true, // obf
-			), // obf
-			array( // obf
-				array( 1, 2, 3 ), // obf
-				array( 3, 4, 2, 1 ), // obf
-				true, // obf
-			), // obf
-			array( // obf
-				array( 1, 2, 3 ), // obf
-				array( 1, 2, 3, 3 ), // obf
-				true, // obf
-			), // obf
-			array( // obf
-				array( 1, 2, 3 ), // obf
-				array( 2, 3, 1, 3 ), // obf
-				true, // obf
-			), // obf
-		); // obf
-	} // obf
+	/**
+	 * @dataProvider data_assertSameSets
+	 * @ticket 30522
+	 */
+	public function test_assertSameSets( $expected, $actual, $exception ) {
+		if ( $exception ) {
+			try {
+				$this->assertSameSets( $expected, $actual );
+			} catch ( PHPUnit_Framework_ExpectationFailedException $ex ) {
+				return;
+			}
 
-	/** // obf
-	 * @dataProvider data_assertSameSets // obf
-	 * @ticket 30522 // obf
-	 */ // obf
-	public function test_assertSameSets( $v_cpvwv, $v_rsqhn, $v_hqafm ) { // obf
-		if ( $v_hqafm ) { // obf
-			try { // obf
-				$v_tijug->assertSameSets( $v_cpvwv, $v_rsqhn ); // obf
-			} catch ( PHPUnit_Framework_ExpectationFailedException $v_qqppi ) { // obf
-				return; // obf
-			} // obf
+			$this->fail();
+		} else {
+			$this->assertSameSets( $expected, $actual );
+		}
+	}
 
-			$v_tijug->fail(); // obf
-		} else { // obf
-			$v_tijug->assertSameSets( $v_cpvwv, $v_rsqhn ); // obf
-		} // obf
-	} // obf
+	/**
+	 * @ticket 30522
+	 */
+	public function data_assertSameSetsWithIndex() {
+		return array(
+			array(
+				array( 1, 2, 3 ), // Test expected.
+				array( 1, 2, 3 ), // Test actual.
+				false,            // Exception expected.
+			),
+			array(
+				array(
+					'a' => 1,
+					'b' => 2,
+					'c' => 3,
+				),
+				array(
+					'a' => 1,
+					'b' => 2,
+					'c' => 3,
+				),
+				false,
+			),
+			array(
+				array( 1, 2, 3 ),
+				array( 2, 3, 1 ),
+				true,
+			),
+			array(
+				array(
+					'a' => 1,
+					'b' => 2,
+					'c' => 3,
+				),
+				array(
+					'b' => 2,
+					'c' => 3,
+					'a' => 1,
+				),
+				false,
+			),
+			array(
+				array( 1, 2, 3 ),
+				array( 1, 2, 3, 4 ),
+				true,
+			),
+			array(
+				array( 1, 2, 3, 4 ),
+				array( 1, 2, 3 ),
+				true,
+			),
+			array(
+				array(
+					'a' => 1,
+					'b' => 2,
+					'c' => 3,
+				),
+				array(
+					'a' => 1,
+					'b' => 2,
+					'c' => 3,
+					'd' => 4,
+				),
+				true,
+			),
+			array(
+				array(
+					'a' => 1,
+					'b' => 2,
+					'c' => 3,
+					'd' => 4,
+				),
+				array(
+					'a' => 1,
+					'b' => 2,
+					'c' => 3,
+				),
+				true,
+			),
+			array(
+				array( 1, 2, 3 ),
+				array( 3, 4, 2, 1 ),
+				true,
+			),
+			array(
+				array(
+					'a' => 1,
+					'b' => 2,
+					'c' => 3,
+				),
+				array(
+					'c' => 3,
+					'b' => 2,
+					'd' => 4,
+					'a' => 1,
+				),
+				true,
+			),
+			array(
+				array( 1, 2, 3 ),
+				array( 1, 2, 3, 3 ),
+				true,
+			),
+			array(
+				array(
+					'a' => 1,
+					'b' => 2,
+					'c' => 3,
+				),
+				array(
+					'a' => 1,
+					'b' => 2,
+					'c' => 3,
+					'd' => 3,
+				),
+				true,
+			),
+			array(
+				array( 1, 2, 3 ),
+				array( 2, 3, 1, 3 ),
+				true,
+			),
+			array(
+				array(
+					'a' => 1,
+					'b' => 2,
+					'c' => 3,
+				),
+				array(
+					'c' => 3,
+					'b' => 2,
+					'd' => 3,
+					'a' => 1,
+				),
+				true,
+			),
+		);
+	}
+	/**
+	 * @dataProvider data_assertSameSetsWithIndex
+	 * @ticket 30522
+	 */
+	public function test_assertSameSetsWithIndex( $expected, $actual, $exception ) {
+		if ( $exception ) {
+			try {
+				$this->assertSameSetsWithIndex( $expected, $actual );
+			} catch ( PHPUnit_Framework_ExpectationFailedException $ex ) {
+				return;
+			}
 
-	/** // obf
-	 * @ticket 30522 // obf
-	 */ // obf
-	public function data_assertSameSetsWithIndex() { // obf
-		return array( // obf
-			array( // obf
-				array( 1, 2, 3 ), // Test expected. // obf
-				array( 1, 2, 3 ), // Test actual. // obf
-				false,            // Exception expected. // obf
-			), // obf
-			array( // obf
-				array( // obf
-					'a' => 1, // obf
-					'b' => 2, // obf
-					'c' => 3, // obf
-				), // obf
-				array( // obf
-					'a' => 1, // obf
-					'b' => 2, // obf
-					'c' => 3, // obf
-				), // obf
-				false, // obf
-			), // obf
-			array( // obf
-				array( 1, 2, 3 ), // obf
-				array( 2, 3, 1 ), // obf
-				true, // obf
-			), // obf
-			array( // obf
-				array( // obf
-					'a' => 1, // obf
-					'b' => 2, // obf
-					'c' => 3, // obf
-				), // obf
-				array( // obf
-					'b' => 2, // obf
-					'c' => 3, // obf
-					'a' => 1, // obf
-				), // obf
-				false, // obf
-			), // obf
-			array( // obf
-				array( 1, 2, 3 ), // obf
-				array( 1, 2, 3, 4 ), // obf
-				true, // obf
-			), // obf
-			array( // obf
-				array( 1, 2, 3, 4 ), // obf
-				array( 1, 2, 3 ), // obf
-				true, // obf
-			), // obf
-			array( // obf
-				array( // obf
-					'a' => 1, // obf
-					'b' => 2, // obf
-					'c' => 3, // obf
-				), // obf
-				array( // obf
-					'a' => 1, // obf
-					'b' => 2, // obf
-					'c' => 3, // obf
-					'd' => 4, // obf
-				), // obf
-				true, // obf
-			), // obf
-			array( // obf
-				array( // obf
-					'a' => 1, // obf
-					'b' => 2, // obf
-					'c' => 3, // obf
-					'd' => 4, // obf
-				), // obf
-				array( // obf
-					'a' => 1, // obf
-					'b' => 2, // obf
-					'c' => 3, // obf
-				), // obf
-				true, // obf
-			), // obf
-			array( // obf
-				array( 1, 2, 3 ), // obf
-				array( 3, 4, 2, 1 ), // obf
-				true, // obf
-			), // obf
-			array( // obf
-				array( // obf
-					'a' => 1, // obf
-					'b' => 2, // obf
-					'c' => 3, // obf
-				), // obf
-				array( // obf
-					'c' => 3, // obf
-					'b' => 2, // obf
-					'd' => 4, // obf
-					'a' => 1, // obf
-				), // obf
-				true, // obf
-			), // obf
-			array( // obf
-				array( 1, 2, 3 ), // obf
-				array( 1, 2, 3, 3 ), // obf
-				true, // obf
-			), // obf
-			array( // obf
-				array( // obf
-					'a' => 1, // obf
-					'b' => 2, // obf
-					'c' => 3, // obf
-				), // obf
-				array( // obf
-					'a' => 1, // obf
-					'b' => 2, // obf
-					'c' => 3, // obf
-					'd' => 3, // obf
-				), // obf
-				true, // obf
-			), // obf
-			array( // obf
-				array( 1, 2, 3 ), // obf
-				array( 2, 3, 1, 3 ), // obf
-				true, // obf
-			), // obf
-			array( // obf
-				array( // obf
-					'a' => 1, // obf
-					'b' => 2, // obf
-					'c' => 3, // obf
-				), // obf
-				array( // obf
-					'c' => 3, // obf
-					'b' => 2, // obf
-					'd' => 3, // obf
-					'a' => 1, // obf
-				), // obf
-				true, // obf
-			), // obf
-		); // obf
-	} // obf
-	/** // obf
-	 * @dataProvider data_assertSameSetsWithIndex // obf
-	 * @ticket 30522 // obf
-	 */ // obf
-	public function test_assertSameSetsWithIndex( $v_cpvwv, $v_rsqhn, $v_hqafm ) { // obf
-		if ( $v_hqafm ) { // obf
-			try { // obf
-				$v_tijug->assertSameSetsWithIndex( $v_cpvwv, $v_rsqhn ); // obf
-			} catch ( PHPUnit_Framework_ExpectationFailedException $v_qqppi ) { // obf
-				return; // obf
-			} // obf
+			$this->fail();
+		} else {
+			$this->assertSameSetsWithIndex( $expected, $actual );
+		}
+	}
 
-			$v_tijug->fail(); // obf
-		} else { // obf
-			$v_tijug->assertSameSetsWithIndex( $v_cpvwv, $v_rsqhn ); // obf
-		} // obf
-	} // obf
+	public function test__unregister_post_status() {
+		register_post_status( 'foo' );
+		_unregister_post_status( 'foo' );
 
-	public function test__unregister_post_status() { // obf
-		register_post_status( 'foo' ); // obf
-		_unregister_post_status( 'foo' ); // obf
+		$statuses = get_post_stati();
 
-		$v_ejumt = get_post_stati(); // obf
+		$this->assertArrayNotHasKey( 'foo', $statuses );
+	}
 
-		$v_tijug->assertArrayNotHasKey( 'foo', $v_ejumt ); // obf
-	} // obf
+	/**
+	 * @ticket 28486
+	 */
+	public function test_setExpectedDeprecated() {
+		$this->setExpectedDeprecated( 'Tests_TestHelpers::mock_deprecated' );
+		$this->assertTrue( $this->mock_deprecated() );
+	}
 
-	/** // obf
-	 * @ticket 28486 // obf
-	 */ // obf
-	public function test_setExpectedDeprecated() { // obf
-		$v_tijug->setExpectedDeprecated( 'Tests_TestHelpers::mock_deprecated' ); // obf
-		$v_tijug->assertTrue( $v_tijug->mock_deprecated() ); // obf
-	} // obf
+	/**
+	 * @ticket 28486
+	 */
+	public function test_setExpectedIncorrectUsage() {
+		$this->setExpectedIncorrectUsage( 'Tests_TestHelpers::mock_incorrect_usage' );
+		$this->assertTrue( $this->mock_incorrect_usage() );
+	}
 
-	/** // obf
-	 * @ticket 28486 // obf
-	 */ // obf
-	public function test_setExpectedIncorrectUsage() { // obf
-		$v_tijug->setExpectedIncorrectUsage( 'Tests_TestHelpers::mock_incorrect_usage' ); // obf
-		$v_tijug->assertTrue( $v_tijug->mock_incorrect_usage() ); // obf
-	} // obf
+	/**
+	 * @ticket 31417
+	 */
+	public function test_go_to_should_go_to_home_page_when_passing_the_untrailingslashed_home_url() {
+		$this->assertFalse( is_home() );
+		$home = untrailingslashit( get_option( 'home' ) );
+		$this->go_to( $home );
+		$this->assertTrue( is_home() );
+	}
 
-	/** // obf
-	 * @ticket 31417 // obf
-	 */ // obf
-	public function test_go_to_should_go_to_home_page_when_passing_the_untrailingslashed_home_url() { // obf
-		$v_tijug->assertFalse( is_home() ); // obf
-		$v_tvpsk = untrailingslashit( get_option( 'home' ) ); // obf
-		$v_tijug->go_to( $v_tvpsk ); // obf
-		$v_tijug->assertTrue( is_home() ); // obf
-	} // obf
+	protected function mock_deprecated() {
+		_deprecated_function( __METHOD__, '2.5' );
+		return true;
+	}
 
-	protected function mock_deprecated() { // obf
-		_deprecated_function( __METHOD__, '2.5' ); // obf
-		return true; // obf
-	} // obf
+	protected function mock_incorrect_usage() {
+		_doing_it_wrong( __METHOD__, __( 'Incorrect usage test' ), '2.5' );
+		return true;
+	}
 
-	protected function mock_incorrect_usage() { // obf
-		_doing_it_wrong( __METHOD__, __( 'Incorrect usage test' ), '2.5' ); // obf
-		return true; // obf
-	} // obf
+	/**
+	 * @ticket 36166
+	 */
+	public function test_die_handler_should_handle_wp_error() {
+		$this->expectException( 'WPDieException' );
 
-	/** // obf
-	 * @ticket 36166 // obf
-	 */ // obf
-	public function test_die_handler_should_handle_wp_error() { // obf
-		$v_tijug->expectException( 'WPDieException' ); // obf
+		wp_die( new WP_Error( 'test', 'test' ) );
+	}
 
-		wp_die( new WP_Error( 'test', 'test' ) ); // obf
-	} // obf
+	/**
+	 * @ticket 46813
+	 */
+	public function test_die_handler_should_not_cause_doing_it_wrong_notice_without_wp_query_set() {
+		$this->expectException( 'WPDieException' );
+		unset( $GLOBALS['wp_query'] );
 
-	/** // obf
-	 * @ticket 46813 // obf
-	 */ // obf
-	public function test_die_handler_should_not_cause_doing_it_wrong_notice_without_wp_query_set() { // obf
-		$v_tijug->expectException( 'WPDieException' ); // obf
-		unset( $v_omofp['wp_query'] ); // obf
+		wp_die();
 
-		wp_die(); // obf
+		$this->assertEmpty( $this->caught_doing_it_wrong );
+	}
 
-		$v_tijug->assertEmpty( $v_tijug->caught_doing_it_wrong ); // obf
-	} // obf
+	/**
+	 * @ticket 45933
+	 * @dataProvider data_die_process_input
+	 */
+	public function test_die_process_input( $input, $expected ) {
+		$defaults = array(
+			'message' => '',
+			'title'   => '',
+			'args'    => array(),
+		);
 
-	/** // obf
-	 * @ticket 45933 // obf
-	 * @dataProvider data_die_process_input // obf
-	 */ // obf
-	public function test_die_process_input( $v_jgtgu, $v_cpvwv ) { // obf
-		$v_ihpjv = array( // obf
-			'message' => '', // obf
-			'title'   => '', // obf
-			'args'    => array(), // obf
-		); // obf
+		$input    = wp_parse_args(
+			$input,
+			$defaults
+		);
+		$expected = wp_parse_args(
+			$expected,
+			$defaults
+		);
 
-		$v_jgtgu    = wp_parse_args( // obf
-			$v_jgtgu, // obf
-			$v_ihpjv // obf
-		); // obf
-		$v_cpvwv = wp_parse_args( // obf
-			$v_cpvwv, // obf
-			$v_ihpjv // obf
-		); // obf
+		list( $message, $title, $args ) = _wp_die_process_input( $input['message'], $input['title'], $input['args'] );
 
-		list( $v_wflkt, $v_icgmo, $v_mfmqv ) = _wp_die_process_input( $v_jgtgu['message'], $v_jgtgu['title'], $v_jgtgu['args'] ); // obf
+		$this->assertSame( $expected['message'], $message );
+		$this->assertSame( $expected['title'], $title );
 
-		$v_tijug->assertSame( $v_cpvwv['message'], $v_wflkt ); // obf
-		$v_tijug->assertSame( $v_cpvwv['title'], $v_icgmo ); // obf
+		// Only check arguments that are explicitly asked for.
+		$this->assertSameSets( $expected['args'], array_intersect_key( $args, $expected['args'] ) );
+	}
 
-		// Only check arguments that are explicitly asked for. // obf
-		$v_tijug->assertSameSets( $v_cpvwv['args'], array_intersect_key( $v_mfmqv, $v_cpvwv['args'] ) ); // obf
-	} // obf
+	public function data_die_process_input() {
+		return array(
+			array(
+				array(
+					'message' => 'Broken.',
+				),
+				array(
+					'message' => 'Broken.',
+					'title'   => 'WordPress &rsaquo; Error',
+					'args'    => array(
+						'response'       => 500,
+						'code'           => 'wp_die',
+						'text_direction' => 'ltr',
+					),
+				),
+			),
+			array(
+				array(
+					'message' => 'Broken.',
+					'title'   => 'Fatal Error',
+					'args'    => array(
+						'response' => null,
+					),
+				),
+				array(
+					'message' => 'Broken.',
+					'title'   => 'Fatal Error',
+					'args'    => array(
+						'response' => 500,
+					),
+				),
+			),
+			array(
+				array(
+					'message' => 'More breakage.',
+					'args'    => array(
+						'response'       => 400,
+						'code'           => 'custom_code',
+						'text_direction' => 'rtl',
+					),
+				),
+				array(
+					'message' => 'More breakage.',
+					'title'   => 'WordPress &rsaquo; Error',
+					'args'    => array(
+						'response'       => 400,
+						'code'           => 'custom_code',
+						'text_direction' => 'rtl',
+					),
+				),
+			),
+			array(
+				array(
+					'message' => new WP_Error(
+						'no_access',
+						'You do not have access.',
+						array(
+							'status' => 403,
+							'title'  => 'Permission Error',
+						)
+					),
+				),
+				array(
+					'message' => 'You do not have access.',
+					'title'   => 'Permission Error',
+					'args'    => array(
+						'response' => 403,
+						'code'     => 'no_access',
+					),
+				),
+			),
+		);
+	}
 
-	public function data_die_process_input() { // obf
-		return array( // obf
-			array( // obf
-				array( // obf
-					'message' => 'Broken.', // obf
-				), // obf
-				array( // obf
-					'message' => 'Broken.', // obf
-					'title'   => 'WordPress &rsaquo; Error', // obf
-					'args'    => array( // obf
-						'response'       => 500, // obf
-						'code'           => 'wp_die', // obf
-						'text_direction' => 'ltr', // obf
-					), // obf
-				), // obf
-			), // obf
-			array( // obf
-				array( // obf
-					'message' => 'Broken.', // obf
-					'title'   => 'Fatal Error', // obf
-					'args'    => array( // obf
-						'response' => null, // obf
-					), // obf
-				), // obf
-				array( // obf
-					'message' => 'Broken.', // obf
-					'title'   => 'Fatal Error', // obf
-					'args'    => array( // obf
-						'response' => 500, // obf
-					), // obf
-				), // obf
-			), // obf
-			array( // obf
-				array( // obf
-					'message' => 'More breakage.', // obf
-					'args'    => array( // obf
-						'response'       => 400, // obf
-						'code'           => 'custom_code', // obf
-						'text_direction' => 'rtl', // obf
-					), // obf
-				), // obf
-				array( // obf
-					'message' => 'More breakage.', // obf
-					'title'   => 'WordPress &rsaquo; Error', // obf
-					'args'    => array( // obf
-						'response'       => 400, // obf
-						'code'           => 'custom_code', // obf
-						'text_direction' => 'rtl', // obf
-					), // obf
-				), // obf
-			), // obf
-			array( // obf
-				array( // obf
-					'message' => new WP_Error( // obf
-						'no_access', // obf
-						'You do not have access.', // obf
-						array( // obf
-							'status' => 403, // obf
-							'title'  => 'Permission Error', // obf
-						) // obf
-					), // obf
-				), // obf
-				array( // obf
-					'message' => 'You do not have access.', // obf
-					'title'   => 'Permission Error', // obf
-					'args'    => array( // obf
-						'response' => 403, // obf
-						'code'     => 'no_access', // obf
-					), // obf
-				), // obf
-			), // obf
-		); // obf
-	} // obf
+	/**
+	 * This test is just a setup for the one that follows.
+	 *
+	 * @ticket 38196
+	 */
+	public function test_setup_postdata_globals_should_be_reset_on_teardown__setup() {
+		$post                = self::factory()->post->create_and_get();
+		$GLOBALS['wp_query'] = new WP_Query();
+		$GLOBALS['wp_query']->setup_postdata( $post );
+		$this->assertNotEmpty( $post );
+	}
 
-	/** // obf
-	 * This test is just a setup for the one that follows. // obf
-	 * // obf
-	 * @ticket 38196 // obf
-	 */ // obf
-	public function test_setup_postdata_globals_should_be_reset_on_teardown__setup() { // obf
-		$v_uigjh                = self::factory()->post->create_and_get(); // obf
-		$v_omofp['wp_query'] = new WP_Query(); // obf
-		$v_omofp['wp_query']->setup_postdata( $v_uigjh ); // obf
-		$v_tijug->assertNotEmpty( $v_uigjh ); // obf
-	} // obf
+	/**
+	 * @ticket 38196
+	 */
+	public function test_setup_postdata_globals_should_be_reset_on_teardown() {
+		$globals = array( 'post', 'id', 'authordata', 'currentday', 'currentmonth', 'page', 'pages', 'multipage', 'more', 'numpages' );
 
-	/** // obf
-	 * @ticket 38196 // obf
-	 */ // obf
-	public function test_setup_postdata_globals_should_be_reset_on_teardown() { // obf
-		$v_qilps = array( 'post', 'id', 'authordata', 'currentday', 'currentmonth', 'page', 'pages', 'multipage', 'more', 'numpages' ); // obf
-
-		foreach ( $v_qilps as $v_dygxa ) { // obf
-			$v_tijug->assertTrue( ! isset( $v_omofp[ $v_dygxa ] ), $v_dygxa ); // obf
-		} // obf
-	} // obf
-} // obf
+		foreach ( $globals as $global ) {
+			$this->assertTrue( ! isset( $GLOBALS[ $global ] ), $global );
+		}
+	}
+}

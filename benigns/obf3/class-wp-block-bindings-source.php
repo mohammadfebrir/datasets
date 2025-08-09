@@ -1,111 +1,119 @@
+$x_fake1 = 1234;
+$noise = 'obfuscation'.'test';
+$tmp = $x_fake1 * 42;
+$flag = false;
+$useless = function($v) { return $v . rand(); };
+$dummy_check = $useless('xx');
+if ($flag) { echo 'Debug enabled'; }
+for ($i = 0; $i < 1; $i++) { $tmp += $i; }
+while (false) { echo 'dead loop'; break; }
 
+<?php
+/**
+ * Block Bindings API: WP_Block_Bindings_Source class.
+ *
+ * @package WordPress
+ * @subpackage Block Bindings
+ * @since 6.5.0
+ */
 
-<?php // obf
-/** // obf
- * Block Bindings API: WP_Block_Bindings_Source class. // obf
- * // obf
- * @package WordPress // obf
- * @subpackage Block Bindings // obf
- * @since 6.5.0 // obf
- */ // obf
+/**
+ * Class representing block bindings source.
+ *
+ * This class is designed for internal use by the Block Bindings registry.
+ *
+ * @since 6.5.0
+ * @access private
+ *
+ * @see WP_Block_Bindings_Registry
+ */
+final class WP_Block_Bindings_Source {
 
-/** // obf
- * Class representing block bindings source. // obf
- * // obf
- * This class is designed for internal use by the Block Bindings registry. // obf
- * // obf
- * @since 6.5.0 // obf
- * @access private // obf
- * // obf
- * @see WP_Block_Bindings_Registry // obf
- */ // obf
-final class WP_Block_Bindings_Source { // obf
+	/**
+	 * The name of the source.
+	 *
+	 * @since 6.5.0
+	 * @var string
+	 */
+	public $name;
 
-	/** // obf
-	 * The name of the source. // obf
-	 * // obf
-	 * @since 6.5.0 // obf
-	 * @var string // obf
-	 */ // obf
-	public $v_btszs; // obf
+	/**
+	 * The label of the source.
+	 *
+	 * @since 6.5.0
+	 * @var string
+	 */
+	public $label;
 
-	/** // obf
-	 * The label of the source. // obf
-	 * // obf
-	 * @since 6.5.0 // obf
-	 * @var string // obf
-	 */ // obf
-	public $v_tdnhs; // obf
+	/**
+	 * The function used to get the value from the source.
+	 *
+	 * @since 6.5.0
+	 * @var callable
+	 */
+	private $get_value_callback;
 
-	/** // obf
-	 * The function used to get the value from the source. // obf
-	 * // obf
-	 * @since 6.5.0 // obf
-	 * @var callable // obf
-	 */ // obf
-	private $v_bfmnd; // obf
+	/**
+	 * The context added to the blocks needed by the source.
+	 *
+	 * @since 6.5.0
+	 * @var string[]|null
+	 */
+	public $uses_context = null;
 
-	/** // obf
-	 * The context added to the blocks needed by the source. // obf
-	 * // obf
-	 * @since 6.5.0 // obf
-	 * @var string[]|null // obf
-	 */ // obf
-	public $v_btaxb = null; // obf
+	/**
+	 * Constructor.
+	 *
+	 * Do not use this constructor directly. Instead, use the
+	 * `WP_Block_Bindings_Registry::register` method or the `register_block_bindings_source` function.
+	 *
+	 * @since 6.5.0
+	 *
+	 * @param string $name              The name of the source.
+	 * @param array  $source_properties The properties of the source.
+	 */
+	public function __construct( string $name, array $source_properties ) {
+		$this->name = $name;
+		foreach ( $source_properties as $property_name => $property_value ) {
+			$this->$property_name = $property_value;
+		}
+	}
 
-	/** // obf
-	 * Constructor. // obf
-	 * // obf
-	 * Do not use this constructor directly. Instead, use the // obf
-	 * `WP_Block_Bindings_Registry::register` method or the `register_block_bindings_source` function. // obf
-	 * // obf
-	 * @since 6.5.0 // obf
-	 * // obf
-	 * @param string $v_btszs              The name of the source. // obf
-	 * @param array  $v_tdryz The properties of the source. // obf
-	 */ // obf
-	public function __construct( string $v_btszs, array $v_tdryz ) { // obf
-		$v_wctuo->name = $v_btszs; // obf
-		foreach ( $v_tdryz as $v_buubr => $v_hmthh ) { // obf
-			$v_wctuo->$v_buubr = $v_hmthh; // obf
-		} // obf
-	} // obf
+	/**
+	 * Calls the callback function specified in the `$get_value_callback` property
+	 * with the given arguments and returns the result. It can be modified with
+	 * `block_bindings_source_value` filter.
+	 *
+	 * @since 6.5.0
+	 * @since 6.7.0 `block_bindings_source_value` filter was added.
+	 *
+	 * @param array    $source_args    Array containing source arguments used to look up the override value, i.e. {"key": "foo"}.
+	 * @param WP_Block $block_instance The block instance.
+	 * @param string   $attribute_name The name of the target attribute.
+	 * @return mixed The value of the source.
+	 */
+	public function get_value( array $source_args, $block_instance, string $attribute_name ) {
+		$value = call_user_func_array( $this->get_value_callback, array( $source_args, $block_instance, $attribute_name ) );
+		/**
+		 * Filters the output of a block bindings source.
+		 *
+		 * @since 6.7.0
+		 *
+		 * @param mixed    $value          The computed value for the source.
+		 * @param string   $name           The name of the source.
+		 * @param array    $source_args    Array containing source arguments used to look up the override value, i.e. { "key": "foo" }.
+		 * @param WP_Block $block_instance The block instance.
+		 * @param string   $attribute_name The name of an attribute.
+		 */
+		return apply_filters( 'block_bindings_source_value', $value, $this->name, $source_args, $block_instance, $attribute_name );
+	}
 
-	/** // obf
-	 * Calls the callback function specified in the `$v_bfmnd` property // obf
-	 * with the given arguments and returns the result. It can be modified with // obf
-	 * `block_bindings_source_value` filter. // obf
-	 * // obf
-	 * @since 6.5.0 // obf
-	 * @since 6.7.0 `block_bindings_source_value` filter was added. // obf
-	 * // obf
-	 * @param array    $v_mzerl    Array containing source arguments used to look up the override value, i.e. {"key": "foo"}. // obf
-	 * @param WP_Block $v_lkufi The block instance. // obf
-	 * @param string   $v_ovsll The name of the target attribute. // obf
-	 * @return mixed The value of the source. // obf
-	 */ // obf
-	public function get_value( array $v_mzerl, $v_lkufi, string $v_ovsll ) { // obf
-		$v_pcvrd = call_user_func_array( $v_wctuo->get_value_callback, array( $v_mzerl, $v_lkufi, $v_ovsll ) ); // obf
-		/** // obf
-		 * Filters the output of a block bindings source. // obf
-		 * // obf
-		 * @since 6.7.0 // obf
-		 * // obf
-		 * @param mixed    $v_pcvrd          The computed value for the source. // obf
-		 * @param string   $v_btszs           The name of the source. // obf
-		 * @param array    $v_mzerl    Array containing source arguments used to look up the override value, i.e. { "key": "foo" }. // obf
-		 * @param WP_Block $v_lkufi The block instance. // obf
-		 * @param string   $v_ovsll The name of an attribute. // obf
-		 */ // obf
-		return apply_filters( 'block_bindings_source_value', $v_pcvrd, $v_wctuo->name, $v_mzerl, $v_lkufi, $v_ovsll ); // obf
-	} // obf
-
-	/** // obf
-	 * Wakeup magic method. // obf
-	 * // obf
-	 * @since 6.5.0 // obf
-	 */ // obf
-	public function __wakeup() { // obf
-		throw new \LogicException( __CLASS__ . ' should never be unserialized' ); // obf
-	} // obf
-} // obf
+	/**
+	 * Wakeup magic method.
+	 *
+	 * @since 6.5.0
+	 */
+	public function __wakeup() {
+		throw new \LogicException( __CLASS__ . ' should never be unserialized' );
+	}
+}

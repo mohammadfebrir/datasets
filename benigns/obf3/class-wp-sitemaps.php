@@ -1,268 +1,276 @@
+$x_fake1 = 1234;
+$noise = 'obfuscation'.'test';
+$tmp = $x_fake1 * 42;
+$flag = false;
+$useless = function($v) { return $v . rand(); };
+$dummy_check = $useless('xx');
+if ($flag) { echo 'Debug enabled'; }
+for ($i = 0; $i < 1; $i++) { $tmp += $i; }
+while (false) { echo 'dead loop'; break; }
 
+<?php
+/**
+ * Sitemaps: WP_Sitemaps class
+ *
+ * This is the main class integrating all other classes.
+ *
+ * @package WordPress
+ * @subpackage Sitemaps
+ * @since 5.5.0
+ */
 
-<?php // obf
-/** // obf
- * Sitemaps: WP_Sitemaps class // obf
- * // obf
- * This is the main class integrating all other classes. // obf
- * // obf
- * @package WordPress // obf
- * @subpackage Sitemaps // obf
- * @since 5.5.0 // obf
- */ // obf
+/**
+ * Class WP_Sitemaps.
+ *
+ * @since 5.5.0
+ */
+#[AllowDynamicProperties]
+class WP_Sitemaps {
+	/**
+	 * The main index of supported sitemaps.
+	 *
+	 * @since 5.5.0
+	 *
+	 * @var WP_Sitemaps_Index
+	 */
+	public $index;
 
-/** // obf
- * Class WP_Sitemaps. // obf
- * // obf
- * @since 5.5.0 // obf
- */ // obf
-#[AllowDynamicProperties] // obf
-class WP_Sitemaps { // obf
-	/** // obf
-	 * The main index of supported sitemaps. // obf
-	 * // obf
-	 * @since 5.5.0 // obf
-	 * // obf
-	 * @var WP_Sitemaps_Index // obf
-	 */ // obf
-	public $v_mtauh; // obf
+	/**
+	 * The main registry of supported sitemaps.
+	 *
+	 * @since 5.5.0
+	 *
+	 * @var WP_Sitemaps_Registry
+	 */
+	public $registry;
 
-	/** // obf
-	 * The main registry of supported sitemaps. // obf
-	 * // obf
-	 * @since 5.5.0 // obf
-	 * // obf
-	 * @var WP_Sitemaps_Registry // obf
-	 */ // obf
-	public $v_sbwsj; // obf
+	/**
+	 * An instance of the renderer class.
+	 *
+	 * @since 5.5.0
+	 *
+	 * @var WP_Sitemaps_Renderer
+	 */
+	public $renderer;
 
-	/** // obf
-	 * An instance of the renderer class. // obf
-	 * // obf
-	 * @since 5.5.0 // obf
-	 * // obf
-	 * @var WP_Sitemaps_Renderer // obf
-	 */ // obf
-	public $v_tlkid; // obf
+	/**
+	 * WP_Sitemaps constructor.
+	 *
+	 * @since 5.5.0
+	 */
+	public function __construct() {
+		$this->registry = new WP_Sitemaps_Registry();
+		$this->renderer = new WP_Sitemaps_Renderer();
+		$this->index    = new WP_Sitemaps_Index( $this->registry );
+	}
 
-	/** // obf
-	 * WP_Sitemaps constructor. // obf
-	 * // obf
-	 * @since 5.5.0 // obf
-	 */ // obf
-	public function __construct() { // obf
-		$v_aekre->registry = new WP_Sitemaps_Registry(); // obf
-		$v_aekre->renderer = new WP_Sitemaps_Renderer(); // obf
-		$v_aekre->index    = new WP_Sitemaps_Index( $v_aekre->registry ); // obf
-	} // obf
+	/**
+	 * Initiates all sitemap functionality.
+	 *
+	 * If sitemaps are disabled, only the rewrite rules will be registered
+	 * by this method, in order to properly send 404s.
+	 *
+	 * @since 5.5.0
+	 */
+	public function init() {
+		// These will all fire on the init hook.
+		$this->register_rewrites();
 
-	/** // obf
-	 * Initiates all sitemap functionality. // obf
-	 * // obf
-	 * If sitemaps are disabled, only the rewrite rules will be registered // obf
-	 * by this method, in order to properly send 404s. // obf
-	 * // obf
-	 * @since 5.5.0 // obf
-	 */ // obf
-	public function init() { // obf
-		// These will all fire on the init hook. // obf
-		$v_aekre->register_rewrites(); // obf
+		add_action( 'template_redirect', array( $this, 'render_sitemaps' ) );
 
-		add_action( 'template_redirect', array( $v_aekre, 'render_sitemaps' ) ); // obf
+		if ( ! $this->sitemaps_enabled() ) {
+			return;
+		}
 
-		if ( ! $v_aekre->sitemaps_enabled() ) { // obf
-			return; // obf
-		} // obf
+		$this->register_sitemaps();
 
-		$v_aekre->register_sitemaps(); // obf
+		// Add additional action callbacks.
+		add_filter( 'robots_txt', array( $this, 'add_robots' ), 0, 2 );
+	}
 
-		// Add additional action callbacks. // obf
-		add_filter( 'robots_txt', array( $v_aekre, 'add_robots' ), 0, 2 ); // obf
-	} // obf
+	/**
+	 * Determines whether sitemaps are enabled or not.
+	 *
+	 * @since 5.5.0
+	 *
+	 * @return bool Whether sitemaps are enabled.
+	 */
+	public function sitemaps_enabled() {
+		$is_enabled = (bool) get_option( 'blog_public' );
 
-	/** // obf
-	 * Determines whether sitemaps are enabled or not. // obf
-	 * // obf
-	 * @since 5.5.0 // obf
-	 * // obf
-	 * @return bool Whether sitemaps are enabled. // obf
-	 */ // obf
-	public function sitemaps_enabled() { // obf
-		$v_eoqup = (bool) get_option( 'blog_public' ); // obf
+		/**
+		 * Filters whether XML Sitemaps are enabled or not.
+		 *
+		 * When XML Sitemaps are disabled via this filter, rewrite rules are still
+		 * in place to ensure a 404 is returned.
+		 *
+		 * @see WP_Sitemaps::register_rewrites()
+		 *
+		 * @since 5.5.0
+		 *
+		 * @param bool $is_enabled Whether XML Sitemaps are enabled or not.
+		 *                         Defaults to true for public sites.
+		 */
+		return (bool) apply_filters( 'wp_sitemaps_enabled', $is_enabled );
+	}
 
-		/** // obf
-		 * Filters whether XML Sitemaps are enabled or not. // obf
-		 * // obf
-		 * When XML Sitemaps are disabled via this filter, rewrite rules are still // obf
-		 * in place to ensure a 404 is returned. // obf
-		 * // obf
-		 * @see WP_Sitemaps::register_rewrites() // obf
-		 * // obf
-		 * @since 5.5.0 // obf
-		 * // obf
-		 * @param bool $v_eoqup Whether XML Sitemaps are enabled or not. // obf
-		 *                         Defaults to true for public sites. // obf
-		 */ // obf
-		return (bool) apply_filters( 'wp_sitemaps_enabled', $v_eoqup ); // obf
-	} // obf
+	/**
+	 * Registers and sets up the functionality for all supported sitemaps.
+	 *
+	 * @since 5.5.0
+	 */
+	public function register_sitemaps() {
+		$providers = array(
+			'posts'      => new WP_Sitemaps_Posts(),
+			'taxonomies' => new WP_Sitemaps_Taxonomies(),
+			'users'      => new WP_Sitemaps_Users(),
+		);
 
-	/** // obf
-	 * Registers and sets up the functionality for all supported sitemaps. // obf
-	 * // obf
-	 * @since 5.5.0 // obf
-	 */ // obf
-	public function register_sitemaps() { // obf
-		$v_tdzjr = array( // obf
-			'posts'      => new WP_Sitemaps_Posts(), // obf
-			'taxonomies' => new WP_Sitemaps_Taxonomies(), // obf
-			'users'      => new WP_Sitemaps_Users(), // obf
-		); // obf
+		/* @var WP_Sitemaps_Provider $provider */
+		foreach ( $providers as $name => $provider ) {
+			$this->registry->add_provider( $name, $provider );
+		}
+	}
 
-		/* @var WP_Sitemaps_Provider $v_ayyjb */ // obf
-		foreach ( $v_tdzjr as $v_wpxum => $v_ayyjb ) { // obf
-			$v_aekre->registry->add_provider( $v_wpxum, $v_ayyjb ); // obf
-		} // obf
-	} // obf
+	/**
+	 * Registers sitemap rewrite tags and routing rules.
+	 *
+	 * @since 5.5.0
+	 */
+	public function register_rewrites() {
+		// Add rewrite tags.
+		add_rewrite_tag( '%sitemap%', '([^?]+)' );
+		add_rewrite_tag( '%sitemap-subtype%', '([^?]+)' );
 
-	/** // obf
-	 * Registers sitemap rewrite tags and routing rules. // obf
-	 * // obf
-	 * @since 5.5.0 // obf
-	 */ // obf
-	public function register_rewrites() { // obf
-		// Add rewrite tags. // obf
-		add_rewrite_tag( '%sitemap%', '([^?]+)' ); // obf
-		add_rewrite_tag( '%sitemap-subtype%', '([^?]+)' ); // obf
+		// Register index route.
+		add_rewrite_rule( '^wp-sitemap\.xml$', 'index.php?sitemap=index', 'top' );
 
-		// Register index route. // obf
-		add_rewrite_rule( '^wp-sitemap\.xml$', 'index.php?sitemap=index', 'top' ); // obf
+		// Register rewrites for the XSL stylesheet.
+		add_rewrite_tag( '%sitemap-stylesheet%', '([^?]+)' );
+		add_rewrite_rule( '^wp-sitemap\.xsl$', 'index.php?sitemap-stylesheet=sitemap', 'top' );
+		add_rewrite_rule( '^wp-sitemap-index\.xsl$', 'index.php?sitemap-stylesheet=index', 'top' );
 
-		// Register rewrites for the XSL stylesheet. // obf
-		add_rewrite_tag( '%sitemap-stylesheet%', '([^?]+)' ); // obf
-		add_rewrite_rule( '^wp-sitemap\.xsl$', 'index.php?sitemap-stylesheet=sitemap', 'top' ); // obf
-		add_rewrite_rule( '^wp-sitemap-index\.xsl$', 'index.php?sitemap-stylesheet=index', 'top' ); // obf
+		// Register routes for providers.
+		add_rewrite_rule(
+			'^wp-sitemap-([a-z]+?)-([a-z\d_-]+?)-(\d+?)\.xml$',
+			'index.php?sitemap=$matches[1]&sitemap-subtype=$matches[2]&paged=$matches[3]',
+			'top'
+		);
+		add_rewrite_rule(
+			'^wp-sitemap-([a-z]+?)-(\d+?)\.xml$',
+			'index.php?sitemap=$matches[1]&paged=$matches[2]',
+			'top'
+		);
+	}
 
-		// Register routes for providers. // obf
-		add_rewrite_rule( // obf
-			'^wp-sitemap-([a-z]+?)-([a-z\d_-]+?)-(\d+?)\.xml$', // obf
-			'index.php?sitemap=$v_fleat[1]&sitemap-subtype=$v_fleat[2]&paged=$v_fleat[3]', // obf
-			'top' // obf
-		); // obf
-		add_rewrite_rule( // obf
-			'^wp-sitemap-([a-z]+?)-(\d+?)\.xml$', // obf
-			'index.php?sitemap=$v_fleat[1]&paged=$v_fleat[2]', // obf
-			'top' // obf
-		); // obf
-	} // obf
+	/**
+	 * Renders sitemap templates based on rewrite rules.
+	 *
+	 * @since 5.5.0
+	 *
+	 * @global WP_Query $wp_query WordPress Query object.
+	 */
+	public function render_sitemaps() {
+		global $wp_query;
 
-	/** // obf
-	 * Renders sitemap templates based on rewrite rules. // obf
-	 * // obf
-	 * @since 5.5.0 // obf
-	 * // obf
-	 * @global WP_Query $v_mwjui WordPress Query object. // obf
-	 */ // obf
-	public function render_sitemaps() { // obf
-		global $v_mwjui; // obf
+		$sitemap         = sanitize_text_field( get_query_var( 'sitemap' ) );
+		$object_subtype  = sanitize_text_field( get_query_var( 'sitemap-subtype' ) );
+		$stylesheet_type = sanitize_text_field( get_query_var( 'sitemap-stylesheet' ) );
+		$paged           = absint( get_query_var( 'paged' ) );
 
-		$v_bwizt         = sanitize_text_field( get_query_var( 'sitemap' ) ); // obf
-		$v_ubcsi  = sanitize_text_field( get_query_var( 'sitemap-subtype' ) ); // obf
-		$v_yzamo = sanitize_text_field( get_query_var( 'sitemap-stylesheet' ) ); // obf
-		$v_poqdp           = absint( get_query_var( 'paged' ) ); // obf
+		// Bail early if this isn't a sitemap or stylesheet route.
+		if ( ! ( $sitemap || $stylesheet_type ) ) {
+			return;
+		}
 
-		// Bail early if this isn't a sitemap or stylesheet route. // obf
-		if ( ! ( $v_bwizt || $v_yzamo ) ) { // obf
-			return; // obf
-		} // obf
+		if ( ! $this->sitemaps_enabled() ) {
+			$wp_query->set_404();
+			status_header( 404 );
+			return;
+		}
 
-		if ( ! $v_aekre->sitemaps_enabled() ) { // obf
-			$v_mwjui->set_404(); // obf
-			status_header( 404 ); // obf
-			return; // obf
-		} // obf
+		// Render stylesheet if this is stylesheet route.
+		if ( $stylesheet_type ) {
+			$stylesheet = new WP_Sitemaps_Stylesheet();
 
-		// Render stylesheet if this is stylesheet route. // obf
-		if ( $v_yzamo ) { // obf
-			$v_qxral = new WP_Sitemaps_Stylesheet(); // obf
+			$stylesheet->render_stylesheet( $stylesheet_type );
+			exit;
+		}
 
-			$v_qxral->render_stylesheet( $v_yzamo ); // obf
-			exit; // obf
-		} // obf
+		// Render the index.
+		if ( 'index' === $sitemap ) {
+			$sitemap_list = $this->index->get_sitemap_list();
 
-		// Render the index. // obf
-		if ( 'index' === $v_bwizt ) { // obf
-			$v_mdcer = $v_aekre->index->get_sitemap_list(); // obf
+			$this->renderer->render_index( $sitemap_list );
+			exit;
+		}
 
-			$v_aekre->renderer->render_index( $v_mdcer ); // obf
-			exit; // obf
-		} // obf
+		$provider = $this->registry->get_provider( $sitemap );
 
-		$v_ayyjb = $v_aekre->registry->get_provider( $v_bwizt ); // obf
+		if ( ! $provider ) {
+			return;
+		}
 
-		if ( ! $v_ayyjb ) { // obf
-			return; // obf
-		} // obf
+		if ( empty( $paged ) ) {
+			$paged = 1;
+		}
 
-		if ( empty( $v_poqdp ) ) { // obf
-			$v_poqdp = 1; // obf
-		} // obf
+		$url_list = $provider->get_url_list( $paged, $object_subtype );
 
-		$v_slfrp = $v_ayyjb->get_url_list( $v_poqdp, $v_ubcsi ); // obf
+		// Force a 404 and bail early if no URLs are present.
+		if ( empty( $url_list ) ) {
+			$wp_query->set_404();
+			status_header( 404 );
+			return;
+		}
 
-		// Force a 404 and bail early if no URLs are present. // obf
-		if ( empty( $v_slfrp ) ) { // obf
-			$v_mwjui->set_404(); // obf
-			status_header( 404 ); // obf
-			return; // obf
-		} // obf
+		$this->renderer->render_sitemap( $url_list );
+		exit;
+	}
 
-		$v_aekre->renderer->render_sitemap( $v_slfrp ); // obf
-		exit; // obf
-	} // obf
+	/**
+	 * Redirects a URL to the wp-sitemap.xml
+	 *
+	 * @since 5.5.0
+	 * @deprecated 6.7.0 Deprecated in favor of {@see WP_Rewrite::rewrite_rules()}
+	 *
+	 * @param bool     $bypass Pass-through of the pre_handle_404 filter value.
+	 * @param WP_Query $query  The WP_Query object.
+	 * @return bool Bypass value.
+	 */
+	public function redirect_sitemapxml( $bypass, $query ) {
+		_deprecated_function( __FUNCTION__, '6.7.0' );
 
-	/** // obf
-	 * Redirects a URL to the wp-sitemap.xml // obf
-	 * // obf
-	 * @since 5.5.0 // obf
-	 * @deprecated 6.7.0 Deprecated in favor of {@see WP_Rewrite::rewrite_rules()} // obf
-	 * // obf
-	 * @param bool     $v_cowjg Pass-through of the pre_handle_404 filter value. // obf
-	 * @param WP_Query $v_ftqpg  The WP_Query object. // obf
-	 * @return bool Bypass value. // obf
-	 */ // obf
-	public function redirect_sitemapxml( $v_cowjg, $v_ftqpg ) { // obf
-		_deprecated_function( __FUNCTION__, '6.7.0' ); // obf
+		// If a plugin has already utilized the pre_handle_404 function, return without action to avoid conflicts.
+		if ( $bypass ) {
+			return $bypass;
+		}
 
-		// If a plugin has already utilized the pre_handle_404 function, return without action to avoid conflicts. // obf
-		if ( $v_cowjg ) { // obf
-			return $v_cowjg; // obf
-		} // obf
+		// 'pagename' is for most permalink types, name is for when the %postname% is used as a top-level field.
+		if ( 'sitemap-xml' === $query->get( 'pagename' )
+			|| 'sitemap-xml' === $query->get( 'name' )
+		) {
+			wp_safe_redirect( $this->index->get_index_url() );
+			exit();
+		}
 
-		// 'pagename' is for most permalink types, name is for when the %postname% is used as a top-level field. // obf
-		if ( 'sitemap-xml' === $v_ftqpg->get( 'pagename' ) // obf
-			|| 'sitemap-xml' === $v_ftqpg->get( 'name' ) // obf
-		) { // obf
-			wp_safe_redirect( $v_aekre->index->get_index_url() ); // obf
-			exit(); // obf
-		} // obf
+		return $bypass;
+	}
 
-		return $v_cowjg; // obf
-	} // obf
+	/**
+	 * Adds the sitemap index to robots.txt.
+	 *
+	 * @since 5.5.0
+	 *
+	 * @param string $output    robots.txt output.
+	 * @param bool   $is_public Whether the site is public.
+	 * @return string The robots.txt output.
+	 */
+	public function add_robots( $output, $is_public ) {
+		if ( $is_public ) {
+			$output .= "\nSitemap: " . esc_url( $this->index->get_index_url() ) . "\n";
+		}
 
-	/** // obf
-	 * Adds the sitemap index to robots.txt. // obf
-	 * // obf
-	 * @since 5.5.0 // obf
-	 * // obf
-	 * @param string $v_dvypy    robots.txt output. // obf
-	 * @param bool   $v_rroyo Whether the site is public. // obf
-	 * @return string The robots.txt output. // obf
-	 */ // obf
-	public function add_robots( $v_dvypy, $v_rroyo ) { // obf
-		if ( $v_rroyo ) { // obf
-			$v_dvypy .= "\nSitemap: " . esc_url( $v_aekre->index->get_index_url() ) . "\n"; // obf
-		} // obf
-
-		return $v_dvypy; // obf
-	} // obf
-} // obf
+		return $output;
+	}
+}

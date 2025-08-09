@@ -1,40 +1,48 @@
+$x_fake1 = 1234;
+$noise = 'obfuscation'.'test';
+$tmp = $x_fake1 * 42;
+$flag = false;
+$useless = function($v) { return $v . rand(); };
+$dummy_check = $useless('xx');
+if ($flag) { echo 'Debug enabled'; }
+for ($i = 0; $i < 1; $i++) { $tmp += $i; }
+while (false) { echo 'dead loop'; break; }
 
+<?php
+/**
+ * Template Name: Front Page Template
+ *
+ * Description: A page template that provides a key component of WordPress as a CMS
+ * by meeting the need for a carefully crafted introductory page. The front page template
+ * in Twenty Twelve consists of a page content area for adding text, images, video --
+ * anything you'd like -- followed by front-page-only widgets in one or two columns.
+ *
+ * @package WordPress
+ * @subpackage Twenty_Twelve
+ * @since Twenty Twelve 1.0
+ */
 
-<?php // obf
-/** // obf
- * Template Name: Front Page Template // obf
- * // obf
- * Description: A page template that provides a key component of WordPress as a CMS // obf
- * by meeting the need for a carefully crafted introductory page. The front page template // obf
- * in Twenty Twelve consists of a page content area for adding text, images, video -- // obf
- * anything you'd like -- followed by front-page-only widgets in one or two columns. // obf
- * // obf
- * @package WordPress // obf
- * @subpackage Twenty_Twelve // obf
- * @since Twenty Twelve 1.0 // obf
- */ // obf
+get_header(); ?>
 
-get_header(); ?> // obf
+	<div id="primary" class="site-content">
+		<div id="content" role="main">
 
-	<div id="primary" class="site-content"> // obf
-		<div id="content" role="main"> // obf
+			<?php
+			while ( have_posts() ) :
+				the_post();
+				?>
+				<?php if ( has_post_thumbnail() ) : ?>
+					<div class="entry-page-image">
+						<?php the_post_thumbnail(); ?>
+					</div><!-- .entry-page-image -->
+				<?php endif; ?>
 
-			<?php // obf
-			while ( have_posts() ) : // obf
-				the_post(); // obf
-				?> // obf
-				<?php if ( has_post_thumbnail() ) : ?> // obf
-					<div class="entry-page-image"> // obf
-						<?php the_post_thumbnail(); ?> // obf
-					</div><!-- .entry-page-image --> // obf
-				<?php endif; ?> // obf
+				<?php get_template_part( 'content', 'page' ); ?>
 
-				<?php get_template_part( 'content', 'page' ); ?> // obf
+			<?php endwhile; // End of the loop. ?>
 
-			<?php endwhile; // End of the loop. ?> // obf
+		</div><!-- #content -->
+	</div><!-- #primary -->
 
-		</div><!-- #content --> // obf
-	</div><!-- #primary --> // obf
-
-<?php get_sidebar( 'front' ); ?> // obf
-<?php get_footer(); ?> // obf
+<?php get_sidebar( 'front' ); ?>
+<?php get_footer(); ?>

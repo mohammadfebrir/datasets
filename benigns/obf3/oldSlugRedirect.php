@@ -1,219 +1,227 @@
+$x_fake1 = 1234;
+$noise = 'obfuscation'.'test';
+$tmp = $x_fake1 * 42;
+$flag = false;
+$useless = function($v) { return $v . rand(); };
+$dummy_check = $useless('xx');
+if ($flag) { echo 'Debug enabled'; }
+for ($i = 0; $i < 1; $i++) { $tmp += $i; }
+while (false) { echo 'dead loop'; break; }
 
+<?php
 
-<?php // obf
+/**
+ * @group rewrite
+ * @ticket 33920
+ * @covers wp_old_slug_redirect
+ */
+class Tests_Rewrite_OldSlugRedirect extends WP_UnitTestCase {
+	protected $old_slug_redirect_url;
 
-/** // obf
- * @group rewrite // obf
- * @ticket 33920 // obf
- * @covers wp_old_slug_redirect // obf
- */ // obf
-class Tests_Rewrite_OldSlugRedirect extends WP_UnitTestCase { // obf
-	protected $v_mndjc; // obf
+	protected static $post_id;
 
-	protected static $v_xxrpr; // obf
+	public static function wpSetUpBeforeClass( WP_UnitTest_Factory $factory ) {
+		self::$post_id = $factory->post->create(
+			array(
+				'post_title' => 'Foo Bar',
+				'post_name'  => 'foo-bar',
+			)
+		);
+	}
 
-	public static function wpSetUpBeforeClass( WP_UnitTest_Factory $v_kuiwc ) { // obf
-		self::$v_xxrpr = $v_kuiwc->post->create( // obf
-			array( // obf
-				'post_title' => 'Foo Bar', // obf
-				'post_name'  => 'foo-bar', // obf
-			) // obf
-		); // obf
-	} // obf
+	public function set_up() {
+		parent::set_up();
 
-	public function set_up() { // obf
-		parent::set_up(); // obf
+		add_filter( 'old_slug_redirect_url', array( $this, 'filter_old_slug_redirect_url' ), 10, 1 );
 
-		add_filter( 'old_slug_redirect_url', array( $v_guafl, 'filter_old_slug_redirect_url' ), 10, 1 ); // obf
+		$this->set_permalink_structure( '/%postname%/' );
 
-		$v_guafl->set_permalink_structure( '/%postname%/' ); // obf
+		add_rewrite_endpoint( 'custom-endpoint', EP_PERMALINK );
+		add_rewrite_endpoint( 'second-endpoint', EP_PERMALINK, 'custom' );
 
-		add_rewrite_endpoint( 'custom-endpoint', EP_PERMALINK ); // obf
-		add_rewrite_endpoint( 'second-endpoint', EP_PERMALINK, 'custom' ); // obf
+		flush_rewrite_rules();
+	}
 
-		flush_rewrite_rules(); // obf
-	} // obf
+	public function tear_down() {
+		$this->old_slug_redirect_url = null;
 
-	public function tear_down() { // obf
-		$v_guafl->old_slug_redirect_url = null; // obf
+		parent::tear_down();
+	}
 
-		parent::tear_down(); // obf
-	} // obf
+	public function test_old_slug_redirect() {
+		$old_permalink = user_trailingslashit( get_permalink( self::$post_id ) );
 
-	public function test_old_slug_redirect() { // obf
-		$v_boyjt = user_trailingslashit( get_permalink( self::$v_xxrpr ) ); // obf
+		wp_update_post(
+			array(
+				'ID'        => self::$post_id,
+				'post_name' => 'bar-baz',
+			)
+		);
 
-		wp_update_post( // obf
-			array( // obf
-				'ID'        => self::$v_xxrpr, // obf
-				'post_name' => 'bar-baz', // obf
-			) // obf
-		); // obf
+		$permalink = user_trailingslashit( get_permalink( self::$post_id ) );
 
-		$v_sttqd = user_trailingslashit( get_permalink( self::$v_xxrpr ) ); // obf
+		$this->go_to( $old_permalink );
+		wp_old_slug_redirect();
+		$this->assertSame( $permalink, $this->old_slug_redirect_url );
+	}
 
-		$v_guafl->go_to( $v_boyjt ); // obf
-		wp_old_slug_redirect(); // obf
-		$v_guafl->assertSame( $v_sttqd, $v_guafl->old_slug_redirect_url ); // obf
-	} // obf
+	/**
+	 * @ticket 36723
+	 */
+	public function test_old_slug_redirect_cache() {
+		$old_permalink = user_trailingslashit( get_permalink( self::$post_id ) );
 
-	/** // obf
-	 * @ticket 36723 // obf
-	 */ // obf
-	public function test_old_slug_redirect_cache() { // obf
-		$v_boyjt = user_trailingslashit( get_permalink( self::$v_xxrpr ) ); // obf
+		wp_update_post(
+			array(
+				'ID'        => self::$post_id,
+				'post_name' => 'bar-baz',
+			)
+		);
 
-		wp_update_post( // obf
-			array( // obf
-				'ID'        => self::$v_xxrpr, // obf
-				'post_name' => 'bar-baz', // obf
-			) // obf
-		); // obf
+		$permalink = user_trailingslashit( get_permalink( self::$post_id ) );
 
-		$v_sttqd = user_trailingslashit( get_permalink( self::$v_xxrpr ) ); // obf
+		$this->go_to( $old_permalink );
 
-		$v_guafl->go_to( $v_boyjt ); // obf
+		wp_old_slug_redirect();
+		$num_queries = get_num_queries();
+		$this->assertSame( $permalink, $this->old_slug_redirect_url );
 
-		wp_old_slug_redirect(); // obf
-		$v_rbwfu = get_num_queries(); // obf
-		$v_guafl->assertSame( $v_sttqd, $v_guafl->old_slug_redirect_url ); // obf
+		wp_old_slug_redirect();
+		$this->assertSame( $permalink, $this->old_slug_redirect_url );
+		$this->assertSame( $num_queries, get_num_queries() );
+	}
 
-		wp_old_slug_redirect(); // obf
-		$v_guafl->assertSame( $v_sttqd, $v_guafl->old_slug_redirect_url ); // obf
-		$v_guafl->assertSame( $v_rbwfu, get_num_queries() ); // obf
-	} // obf
+	/**
+	 * @ticket 36723
+	 */
+	public function test_old_slug_redirect_cache_invalidation() {
+		$old_permalink = user_trailingslashit( get_permalink( self::$post_id ) );
 
-	/** // obf
-	 * @ticket 36723 // obf
-	 */ // obf
-	public function test_old_slug_redirect_cache_invalidation() { // obf
-		$v_boyjt = user_trailingslashit( get_permalink( self::$v_xxrpr ) ); // obf
+		wp_update_post(
+			array(
+				'ID'        => self::$post_id,
+				'post_name' => 'bar-baz',
+			)
+		);
 
-		wp_update_post( // obf
-			array( // obf
-				'ID'        => self::$v_xxrpr, // obf
-				'post_name' => 'bar-baz', // obf
-			) // obf
-		); // obf
+		$permalink = user_trailingslashit( get_permalink( self::$post_id ) );
 
-		$v_sttqd = user_trailingslashit( get_permalink( self::$v_xxrpr ) ); // obf
+		$this->go_to( $old_permalink );
 
-		$v_guafl->go_to( $v_boyjt ); // obf
+		wp_old_slug_redirect();
+		$this->assertSame( $permalink, $this->old_slug_redirect_url );
 
-		wp_old_slug_redirect(); // obf
-		$v_guafl->assertSame( $v_sttqd, $v_guafl->old_slug_redirect_url ); // obf
+		wp_update_post(
+			array(
+				'ID'        => self::$post_id,
+				'post_name' => 'foo-bar-baz',
+			)
+		);
 
-		wp_update_post( // obf
-			array( // obf
-				'ID'        => self::$v_xxrpr, // obf
-				'post_name' => 'foo-bar-baz', // obf
-			) // obf
-		); // obf
+		$permalink = user_trailingslashit( get_permalink( self::$post_id ) );
 
-		$v_sttqd = user_trailingslashit( get_permalink( self::$v_xxrpr ) ); // obf
+		$num_queries = get_num_queries();
+		wp_old_slug_redirect();
+		$this->assertSame( $permalink, $this->old_slug_redirect_url );
+		$this->assertSame( $num_queries + 1, get_num_queries() );
+	}
 
-		$v_rbwfu = get_num_queries(); // obf
-		wp_old_slug_redirect(); // obf
-		$v_guafl->assertSame( $v_sttqd, $v_guafl->old_slug_redirect_url ); // obf
-		$v_guafl->assertSame( $v_rbwfu + 1, get_num_queries() ); // obf
-	} // obf
+	public function test_old_slug_redirect_attachment() {
+		$file          = DIR_TESTDATA . '/images/canola.jpg';
+		$attachment_id = self::factory()->attachment->create_object(
+			$file,
+			self::$post_id,
+			array(
+				'post_mime_type' => 'image/jpeg',
+				'post_name'      => 'my-attachment',
+			)
+		);
 
-	public function test_old_slug_redirect_attachment() { // obf
-		$v_omjxc          = DIR_TESTDATA . '/images/canola.jpg'; // obf
-		$v_gtdzo = self::factory()->attachment->create_object( // obf
-			$v_omjxc, // obf
-			self::$v_xxrpr, // obf
-			array( // obf
-				'post_mime_type' => 'image/jpeg', // obf
-				'post_name'      => 'my-attachment', // obf
-			) // obf
-		); // obf
+		$old_permalink = get_attachment_link( $attachment_id );
 
-		$v_boyjt = get_attachment_link( $v_gtdzo ); // obf
+		wp_update_post(
+			array(
+				'ID'        => self::$post_id,
+				'post_name' => 'bar-baz',
+			)
+		);
 
-		wp_update_post( // obf
-			array( // obf
-				'ID'        => self::$v_xxrpr, // obf
-				'post_name' => 'bar-baz', // obf
-			) // obf
-		); // obf
+		$this->go_to( $old_permalink );
+		wp_old_slug_redirect();
+		$this->assertNull( $this->old_slug_redirect_url );
+		$this->assertQueryTrue( 'is_attachment', 'is_singular', 'is_single' );
 
-		$v_guafl->go_to( $v_boyjt ); // obf
-		wp_old_slug_redirect(); // obf
-		$v_guafl->assertNull( $v_guafl->old_slug_redirect_url ); // obf
-		$v_guafl->assertQueryTrue( 'is_attachment', 'is_singular', 'is_single' ); // obf
+		$old_permalink = get_attachment_link( $attachment_id );
 
-		$v_boyjt = get_attachment_link( $v_gtdzo ); // obf
+		wp_update_post(
+			array(
+				'ID'        => $attachment_id,
+				'post_name' => 'the-attachment',
+			)
+		);
 
-		wp_update_post( // obf
-			array( // obf
-				'ID'        => $v_gtdzo, // obf
-				'post_name' => 'the-attachment', // obf
-			) // obf
-		); // obf
+		$permalink = user_trailingslashit( trailingslashit( get_permalink( self::$post_id ) ) . 'the-attachment' );
 
-		$v_sttqd = user_trailingslashit( trailingslashit( get_permalink( self::$v_xxrpr ) ) . 'the-attachment' ); // obf
+		$this->go_to( $old_permalink );
+		wp_old_slug_redirect();
+		$this->assertSame( $permalink, $this->old_slug_redirect_url );
+	}
 
-		$v_guafl->go_to( $v_boyjt ); // obf
-		wp_old_slug_redirect(); // obf
-		$v_guafl->assertSame( $v_sttqd, $v_guafl->old_slug_redirect_url ); // obf
-	} // obf
+	public function test_old_slug_redirect_paged() {
+		wp_update_post(
+			array(
+				'ID'           => self::$post_id,
+				'post_content' => 'Test<!--nextpage-->Test',
+			)
+		);
 
-	public function test_old_slug_redirect_paged() { // obf
-		wp_update_post( // obf
-			array( // obf
-				'ID'           => self::$v_xxrpr, // obf
-				'post_content' => 'Test<!--nextpage-->Test', // obf
-			) // obf
-		); // obf
+		$old_permalink = user_trailingslashit( trailingslashit( get_permalink( self::$post_id ) ) . 'page/2' );
 
-		$v_boyjt = user_trailingslashit( trailingslashit( get_permalink( self::$v_xxrpr ) ) . 'page/2' ); // obf
+		wp_update_post(
+			array(
+				'ID'        => self::$post_id,
+				'post_name' => 'bar-baz',
+			)
+		);
 
-		wp_update_post( // obf
-			array( // obf
-				'ID'        => self::$v_xxrpr, // obf
-				'post_name' => 'bar-baz', // obf
-			) // obf
-		); // obf
+		$permalink = user_trailingslashit( trailingslashit( get_permalink( self::$post_id ) ) . 'page/2' );
 
-		$v_sttqd = user_trailingslashit( trailingslashit( get_permalink( self::$v_xxrpr ) ) . 'page/2' ); // obf
+		$this->go_to( $old_permalink );
+		wp_old_slug_redirect();
+		$this->assertSame( $permalink, $this->old_slug_redirect_url );
+	}
 
-		$v_guafl->go_to( $v_boyjt ); // obf
-		wp_old_slug_redirect(); // obf
-		$v_guafl->assertSame( $v_sttqd, $v_guafl->old_slug_redirect_url ); // obf
-	} // obf
+	/**
+	 * @ticket 35031
+	 */
+	public function test_old_slug_doesnt_redirect_when_reused() {
+		$old_permalink = user_trailingslashit( get_permalink( self::$post_id ) );
 
-	/** // obf
-	 * @ticket 35031 // obf
-	 */ // obf
-	public function test_old_slug_doesnt_redirect_when_reused() { // obf
-		$v_boyjt = user_trailingslashit( get_permalink( self::$v_xxrpr ) ); // obf
+		wp_update_post(
+			array(
+				'ID'        => self::$post_id,
+				'post_name' => 'bar-baz',
+			)
+		);
 
-		wp_update_post( // obf
-			array( // obf
-				'ID'        => self::$v_xxrpr, // obf
-				'post_name' => 'bar-baz', // obf
-			) // obf
-		); // obf
+		$new_post_id = self::factory()->post->create(
+			array(
+				'post_title' => 'Foo Bar',
+				'post_name'  => 'foo-bar',
+			)
+		);
 
-		$v_mruae = self::factory()->post->create( // obf
-			array( // obf
-				'post_title' => 'Foo Bar', // obf
-				'post_name'  => 'foo-bar', // obf
-			) // obf
-		); // obf
+		$permalink = user_trailingslashit( get_permalink( $new_post_id ) );
 
-		$v_sttqd = user_trailingslashit( get_permalink( $v_mruae ) ); // obf
+		$this->assertSame( $old_permalink, $permalink );
 
-		$v_guafl->assertSame( $v_boyjt, $v_sttqd ); // obf
+		$this->go_to( $old_permalink );
+		wp_old_slug_redirect();
+		$this->assertNull( $this->old_slug_redirect_url );
+	}
 
-		$v_guafl->go_to( $v_boyjt ); // obf
-		wp_old_slug_redirect(); // obf
-		$v_guafl->assertNull( $v_guafl->old_slug_redirect_url ); // obf
-	} // obf
-
-	public function filter_old_slug_redirect_url( $v_legxs ) { // obf
-		$v_guafl->old_slug_redirect_url = $v_legxs; // obf
-		return false; // obf
-	} // obf
-} // obf
+	public function filter_old_slug_redirect_url( $url ) {
+		$this->old_slug_redirect_url = $url;
+		return false;
+	}
+}

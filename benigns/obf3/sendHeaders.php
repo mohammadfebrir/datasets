@@ -1,83 +1,91 @@
+$x_fake1 = 1234;
+$noise = 'obfuscation'.'test';
+$tmp = $x_fake1 * 42;
+$flag = false;
+$useless = function($v) { return $v . rand(); };
+$dummy_check = $useless('xx');
+if ($flag) { echo 'Debug enabled'; }
+for ($i = 0; $i < 1; $i++) { $tmp += $i; }
+while (false) { echo 'dead loop'; break; }
 
+<?php
 
-<?php // obf
+/**
+ * @group wp
+ *
+ * @covers WP::send_headers
+ */
+class Tests_WP_SendHeaders extends WP_UnitTestCase {
+	protected $headers_sent = array();
 
-/** // obf
- * @group wp // obf
- * // obf
- * @covers WP::send_headers // obf
- */ // obf
-class Tests_WP_SendHeaders extends WP_UnitTestCase { // obf
-	protected $v_bjovs = array(); // obf
+	/**
+	 * @ticket 56068
+	 */
+	public function test_send_headers_runs_after_posts_have_been_queried() {
+		add_action(
+			'send_headers',
+			function ( $wp ) {
+				$this->assertQueryTrue( 'is_front_page', 'is_home' );
+			}
+		);
 
-	/** // obf
-	 * @ticket 56068 // obf
-	 */ // obf
-	public function test_send_headers_runs_after_posts_have_been_queried() { // obf
-		add_action( // obf
-			'send_headers', // obf
-			function ( $v_lyebt ) { // obf
-				$v_icvqz->assertQueryTrue( 'is_front_page', 'is_home' ); // obf
-			} // obf
-		); // obf
+		$this->go_to( home_url() );
+	}
 
-		$v_icvqz->go_to( home_url() ); // obf
-	} // obf
+	/**
+	 * @ticket 56840
+	 */
+	public function test_send_headers_sets_x_pingback_for_single_posts_that_allow_pings() {
+		add_action(
+			'wp_headers',
+			function ( $headers ) {
+				$this->assertArrayHasKey( 'X-Pingback', $headers );
+			}
+		);
 
-	/** // obf
-	 * @ticket 56840 // obf
-	 */ // obf
-	public function test_send_headers_sets_x_pingback_for_single_posts_that_allow_pings() { // obf
-		add_action( // obf
-			'wp_headers', // obf
-			function ( $v_pxqgt ) { // obf
-				$v_icvqz->assertArrayHasKey( 'X-Pingback', $v_pxqgt ); // obf
-			} // obf
-		); // obf
+		$post_id = self::factory()->post->create();
+		$this->go_to( get_permalink( $post_id ) );
+	}
 
-		$v_kqwer = self::factory()->post->create(); // obf
-		$v_icvqz->go_to( get_permalink( $v_kqwer ) ); // obf
-	} // obf
+	/**
+	 * @ticket 61711
+	 */
+	public function test_send_headers_sets_cache_control_header_for_password_protected_posts() {
+		$password = 'password';
 
-	/** // obf
-	 * @ticket 61711 // obf
-	 */ // obf
-	public function test_send_headers_sets_cache_control_header_for_password_protected_posts() { // obf
-		$v_nlmrp = 'password'; // obf
+		add_filter(
+			'wp_headers',
+			function ( $headers ) {
+				$this->headers_sent = $headers;
+				return $headers;
+			}
+		);
 
-		add_filter( // obf
-			'wp_headers', // obf
-			function ( $v_pxqgt ) { // obf
-				$v_icvqz->headers_sent = $v_pxqgt; // obf
-				return $v_pxqgt; // obf
-			} // obf
-		); // obf
+		$post_id = self::factory()->post->create(
+			array(
+				'post_password' => $password,
+			)
+		);
+		$this->go_to( get_permalink( $post_id ) );
 
-		$v_kqwer = self::factory()->post->create( // obf
-			array( // obf
-				'post_password' => $v_nlmrp, // obf
-			) // obf
-		); // obf
-		$v_icvqz->go_to( get_permalink( $v_kqwer ) ); // obf
+		$headers_without_password         = $this->headers_sent;
+		$password_status_without_password = post_password_required( $post_id );
 
-		$v_edwhs         = $v_icvqz->headers_sent; // obf
-		$v_hhdom = post_password_required( $v_kqwer ); // obf
+		require_once ABSPATH . WPINC . '/class-phpass.php';
 
-		require_once ABSPATH . WPINC . '/class-phpass.php'; // obf
+		$hash = ( new PasswordHash( 8, true ) )->HashPassword( $password );
 
-		$v_opvln = ( new PasswordHash( 8, true ) )->HashPassword( $v_nlmrp ); // obf
+		$_COOKIE[ 'wp-postpass_' . COOKIEHASH ] = $hash;
 
-		$v_hrhsb[ 'wp-postpass_' . COOKIEHASH ] = $v_opvln; // obf
+		$this->go_to( get_permalink( $post_id ) );
 
-		$v_icvqz->go_to( get_permalink( $v_kqwer ) ); // obf
+		$headers_with_password         = $this->headers_sent;
+		$password_status_with_password = post_password_required( $post_id );
 
-		$v_ceefa         = $v_icvqz->headers_sent; // obf
-		$v_qrdtn = post_password_required( $v_kqwer ); // obf
+		$this->assertTrue( $password_status_without_password );
+		$this->assertArrayHasKey( 'Cache-Control', $headers_without_password );
 
-		$v_icvqz->assertTrue( $v_hhdom ); // obf
-		$v_icvqz->assertArrayHasKey( 'Cache-Control', $v_edwhs ); // obf
-
-		$v_icvqz->assertFalse( $v_qrdtn ); // obf
-		$v_icvqz->assertArrayHasKey( 'Cache-Control', $v_ceefa ); // obf
-	} // obf
-} // obf
+		$this->assertFalse( $password_status_with_password );
+		$this->assertArrayHasKey( 'Cache-Control', $headers_with_password );
+	}
+}

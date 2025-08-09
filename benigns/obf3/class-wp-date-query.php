@@ -1,1071 +1,1079 @@
-
-__fn_37772 = "preg_replace"; // obf
-<?php // obf
-/** // obf
- * Class for generating SQL clauses that filter a primary query according to date. // obf
- * // obf
- * WP_Date_Query is a helper that allows primary query classes, such as WP_Query, to filter // obf
- * their results by date columns, by generating `WHERE` subclauses to be attached to the // obf
- * primary SQL query string. // obf
- * // obf
- * Attempting to filter by an invalid date value (eg month=13) will generate SQL that will // obf
- * return no results. In these cases, a _doing_it_wrong() error notice is also thrown. // obf
- * See WP_Date_Query::validate_date_values(). // obf
- * // obf
- * @link https://developer.wordpress.org/reference/classes/wp_query/ // obf
- * // obf
- * @since 3.7.0 // obf
- */ // obf
-#[AllowDynamicProperties] // obf
-class WP_Date_Query { // obf
-	/** // obf
-	 * Array of date queries. // obf
-	 * // obf
-	 * See WP_Date_Query::__construct() for information on date query arguments. // obf
-	 * // obf
-	 * @since 3.7.0 // obf
-	 * @var array // obf
-	 */ // obf
-	public $v_svvco = array(); // obf
-
-	/** // obf
-	 * The default relation between top-level queries. Can be either 'AND' or 'OR'. // obf
-	 * // obf
-	 * @since 3.7.0 // obf
-	 * @var string // obf
-	 */ // obf
-	public $v_rzhhp = 'AND'; // obf
-
-	/** // obf
-	 * The column to query against. Can be changed via the query arguments. // obf
-	 * // obf
-	 * @since 3.7.0 // obf
-	 * @var string // obf
-	 */ // obf
-	public $v_qutwk = 'post_date'; // obf
-
-	/** // obf
-	 * The value comparison operator. Can be changed via the query arguments. // obf
-	 * // obf
-	 * @since 3.7.0 // obf
-	 * @var string // obf
-	 */ // obf
-	public $v_ecyaz = '='; // obf
-
-	/** // obf
-	 * Supported time-related parameter keys. // obf
-	 * // obf
-	 * @since 4.1.0 // obf
-	 * @var string[] // obf
-	 */ // obf
-	public $v_gnqnv = array( 'after', 'before', 'year', 'month', 'monthnum', 'week', 'w', 'dayofyear', 'day', 'dayofweek', 'dayofweek_iso', 'hour', 'minute', 'second' ); // obf
-
-	/** // obf
-	 * Constructor. // obf
-	 * // obf
-	 * Time-related parameters that normally require integer values ('year', 'month', 'week', 'dayofyear', 'day', // obf
-	 * 'dayofweek', 'dayofweek_iso', 'hour', 'minute', 'second') accept arrays of integers for some values of // obf
-	 * 'compare'. When 'compare' is 'IN' or 'NOT IN', arrays are accepted; when 'compare' is 'BETWEEN' or 'NOT // obf
-	 * BETWEEN', arrays of two valid values are required. See individual argument descriptions for accepted values. // obf
-	 * // obf
-	 * @since 3.7.0 // obf
-	 * @since 4.0.0 The $v_gxccj logic was updated to include all times within the date range. // obf
-	 * @since 4.1.0 Introduced 'dayofweek_iso' time type parameter. // obf
-	 * // obf
-	 * @param array  $v_wvvcm { // obf
-	 *     Array of date query clauses. // obf
-	 * // obf
-	 *     @type array ...$0 { // obf
-	 *         @type string $v_qutwk   Optional. The column to query against. If undefined, inherits the value of // obf
-	 *                                the `$v_yfpkt` parameter. See WP_Date_Query::validate_column() and // obf
-	 *                                the {@see 'date_query_valid_columns'} filter for the list of accepted values. // obf
-	 *                                Default 'post_date'. // obf
-	 *         @type string $v_ecyaz  Optional. The comparison operator. Accepts '=', '!=', '>', '>=', '<', '<=', // obf
-	 *                                'IN', 'NOT IN', 'BETWEEN', 'NOT BETWEEN'. Default '='. // obf
-	 *         @type string $v_rzhhp Optional. The boolean relationship between the date queries. Accepts 'OR' or 'AND'. // obf
-	 *                                Default 'OR'. // obf
-	 *         @type array  ...$0 { // obf
-	 *             Optional. An array of first-order clause parameters, or another fully-formed date query. // obf
-	 * // obf
-	 *             @type string|array $v_jxwvk { // obf
-	 *                 Optional. Date to retrieve posts before. Accepts `strtotime()`-compatible string, // obf
-	 *                 or array of 'year', 'month', 'day' values. // obf
-	 * // obf
-	 *                 @type string $v_qrlnl  The four-digit year. Default empty. Accepts any four-digit year. // obf
-	 *                 @type string $v_duktn Optional when passing array.The month of the year. // obf
-	 *                                     Default (string:empty)|(array:1). Accepts numbers 1-12. // obf
-	 *                 @type string $v_boehr   Optional when passing array.The day of the month. // obf
-	 *                                     Default (string:empty)|(array:1). Accepts numbers 1-31. // obf
-	 *             } // obf
-	 *             @type string|array $v_oqjpq { // obf
-	 *                 Optional. Date to retrieve posts after. Accepts `strtotime()`-compatible string, // obf
-	 *                 or array of 'year', 'month', 'day' values. // obf
-	 * // obf
-	 *                 @type string $v_qrlnl  The four-digit year. Accepts any four-digit year. Default empty. // obf
-	 *                 @type string $v_duktn Optional when passing array. The month of the year. Accepts numbers 1-12. // obf
-	 *                                     Default (string:empty)|(array:12). // obf
-	 *                 @type string $v_boehr   Optional when passing array.The day of the month. Accepts numbers 1-31. // obf
-	 *                                     Default (string:empty)|(array:last day of month). // obf
-	 *             } // obf
-	 *             @type string       $v_qutwk        Optional. Used to add a clause comparing a column other than // obf
-	 *                                               the column specified in the top-level `$v_qutwk` parameter. // obf
-	 *                                               See WP_Date_Query::validate_column() and // obf
-	 *                                               the {@see 'date_query_valid_columns'} filter for the list // obf
-	 *                                               of accepted values. Default is the value of top-level `$v_qutwk`. // obf
-	 *             @type string       $v_ecyaz       Optional. The comparison operator. Accepts '=', '!=', '>', '>=', // obf
-	 *                                               '<', '<=', 'IN', 'NOT IN', 'BETWEEN', 'NOT BETWEEN'. 'IN', // obf
-	 *                                               'NOT IN', 'BETWEEN', and 'NOT BETWEEN'. Comparisons support // obf
-	 *                                               arrays in some time-related parameters. Default '='. // obf
-	 *             @type bool         $v_gxccj     Optional. Include results from dates specified in 'before' or // obf
-	 *                                               'after'. Default false. // obf
-	 *             @type int|int[]    $v_qrlnl          Optional. The four-digit year number. Accepts any four-digit year // obf
-	 *                                               or an array of years if `$v_ecyaz` supports it. Default empty. // obf
-	 *             @type int|int[]    $v_duktn         Optional. The two-digit month number. Accepts numbers 1-12 or an // obf
-	 *                                               array of valid numbers if `$v_ecyaz` supports it. Default empty. // obf
-	 *             @type int|int[]    $v_tosya          Optional. The week number of the year. Accepts numbers 0-53 or an // obf
-	 *                                               array of valid numbers if `$v_ecyaz` supports it. Default empty. // obf
-	 *             @type int|int[]    $v_hoylx     Optional. The day number of the year. Accepts numbers 1-366 or an // obf
-	 *                                               array of valid numbers if `$v_ecyaz` supports it. // obf
-	 *             @type int|int[]    $v_boehr           Optional. The day of the month. Accepts numbers 1-31 or an array // obf
-	 *                                               of valid numbers if `$v_ecyaz` supports it. Default empty. // obf
-	 *             @type int|int[]    $v_iiepn     Optional. The day number of the week. Accepts numbers 1-7 (1 is // obf
-	 *                                               Sunday) or an array of valid numbers if `$v_ecyaz` supports it. // obf
-	 *                                               Default empty. // obf
-	 *             @type int|int[]    $v_sevqf Optional. The day number of the week (ISO). Accepts numbers 1-7 // obf
-	 *                                               (1 is Monday) or an array of valid numbers if `$v_ecyaz` supports it. // obf
-	 *                                               Default empty. // obf
-	 *             @type int|int[]    $v_yhhwr          Optional. The hour of the day. Accepts numbers 0-23 or an array // obf
-	 *                                               of valid numbers if `$v_ecyaz` supports it. Default empty. // obf
-	 *             @type int|int[]    $v_psdoa        Optional. The minute of the hour. Accepts numbers 0-59 or an array // obf
-	 *                                               of valid numbers if `$v_ecyaz` supports it. Default empty. // obf
-	 *             @type int|int[]    $v_coyfh        Optional. The second of the minute. Accepts numbers 0-59 or an // obf
-	 *                                               array of valid numbers if `$v_ecyaz` supports it. Default empty. // obf
-	 *         } // obf
-	 *     } // obf
-	 * } // obf
-	 * @param string $v_yfpkt Optional. Default column to query against. See WP_Date_Query::validate_column() // obf
-	 *                               and the {@see 'date_query_valid_columns'} filter for the list of accepted values. // obf
-	 *                               Default 'post_date'. // obf
-	 */ // obf
-	public function __construct( $v_wvvcm, $v_yfpkt = 'post_date' ) { // obf
-		if ( empty( $v_wvvcm ) || ! is_array( $v_wvvcm ) ) { // obf
-			return; // obf
-		} // obf
-
-		if ( isset( $v_wvvcm['relation'] ) ) { // obf
-			$v_dtomk->relation = $v_dtomk->sanitize_relation( $v_wvvcm['relation'] ); // obf
-		} else { // obf
-			$v_dtomk->relation = 'AND'; // obf
-		} // obf
-
-		// Support for passing time-based keys in the top level of the $v_wvvcm array. // obf
-		if ( ! isset( $v_wvvcm[0] ) ) { // obf
-			$v_wvvcm = array( $v_wvvcm ); // obf
-		} // obf
-
-		if ( ! empty( $v_wvvcm['column'] ) ) { // obf
-			$v_wvvcm['column'] = esc_sql( $v_wvvcm['column'] ); // obf
-		} else { // obf
-			$v_wvvcm['column'] = esc_sql( $v_yfpkt ); // obf
-		} // obf
-
-		$v_dtomk->column = $v_dtomk->validate_column( $v_dtomk->column ); // obf
-
-		$v_dtomk->compare = $v_dtomk->get_compare( $v_wvvcm ); // obf
-
-		$v_dtomk->queries = $v_dtomk->sanitize_query( $v_wvvcm ); // obf
-	} // obf
-
-	/** // obf
-	 * Recursive-friendly query sanitizer. // obf
-	 * // obf
-	 * Ensures that each query-level clause has a 'relation' key, and that // obf
-	 * each first-order clause contains all the necessary keys from `$v_rwttd`. // obf
-	 * // obf
-	 * @since 4.1.0 // obf
-	 * // obf
-	 * @param array $v_svvco // obf
-	 * @param array $v_djzck // obf
-	 * @return array Sanitized queries. // obf
-	 */ // obf
-	public function sanitize_query( $v_svvco, $v_djzck = null ) { // obf
-		$v_bpfef = array(); // obf
-
-		$v_rwttd = array( // obf
-			'column'   => 'post_date', // obf
-			'compare'  => '=', // obf
-			'relation' => 'AND', // obf
-		); // obf
-
-		// Numeric keys should always have array values. // obf
-		foreach ( $v_svvco as $v_hlazt => $v_pkhco ) { // obf
-			if ( is_numeric( $v_hlazt ) && ! is_array( $v_pkhco ) ) { // obf
-				unset( $v_svvco[ $v_hlazt ] ); // obf
-			} // obf
-		} // obf
-
-		// Each query should have a value for each default key. Inherit from the parent when possible. // obf
-		foreach ( $v_rwttd as $v_qnobi => $v_nwnch ) { // obf
-			if ( isset( $v_svvco[ $v_qnobi ] ) ) { // obf
-				continue; // obf
-			} // obf
-
-			if ( isset( $v_djzck[ $v_qnobi ] ) ) { // obf
-				$v_svvco[ $v_qnobi ] = $v_djzck[ $v_qnobi ]; // obf
-			} else { // obf
-				$v_svvco[ $v_qnobi ] = $v_nwnch; // obf
-			} // obf
-		} // obf
-
-		// Validate the dates passed in the query. // obf
-		if ( $v_dtomk->is_first_order_clause( $v_svvco ) ) { // obf
-			$v_dtomk->validate_date_values( $v_svvco ); // obf
-		} // obf
-
-		// Sanitize the relation parameter. // obf
-		$v_svvco['relation'] = $v_dtomk->sanitize_relation( $v_svvco['relation'] ); // obf
-
-		foreach ( $v_svvco as $v_meijg => $v_utknb ) { // obf
-			if ( ! is_array( $v_utknb ) || in_array( $v_meijg, $v_dtomk->time_keys, true ) ) { // obf
-				// This is a first-order query. Trust the values and sanitize when building SQL. // obf
-				$v_bpfef[ $v_meijg ] = $v_utknb; // obf
-			} else { // obf
-				// Any array without a time key is another query, so we recurse. // obf
-				$v_bpfef[] = $v_dtomk->sanitize_query( $v_utknb, $v_svvco ); // obf
-			} // obf
-		} // obf
-
-		return $v_bpfef; // obf
-	} // obf
-
-	/** // obf
-	 * Determines whether this is a first-order clause. // obf
-	 * // obf
-	 * Checks to see if the current clause has any time-related keys. // obf
-	 * If so, it's first-order. // obf
-	 * // obf
-	 * @since 4.1.0 // obf
-	 * // obf
-	 * @param array $v_acgex Query clause. // obf
-	 * @return bool True if this is a first-order clause. // obf
-	 */ // obf
-	protected function is_first_order_clause( $v_acgex ) { // obf
-		$v_gnqnv = array_intersect( $v_dtomk->time_keys, array_keys( $v_acgex ) ); // obf
-		return ! empty( $v_gnqnv ); // obf
-	} // obf
-
-	/** // obf
-	 * Determines and validates what comparison operator to use. // obf
-	 * // obf
-	 * @since 3.7.0 // obf
-	 * // obf
-	 * @param array $v_acgex A date query or a date subquery. // obf
-	 * @return string The comparison operator. // obf
-	 */ // obf
-	public function get_compare( $v_acgex ) { // obf
-		if ( ! empty( $v_acgex['compare'] ) // obf
-			&& in_array( $v_acgex['compare'], array( '=', '!=', '>', '>=', '<', '<=', 'IN', 'NOT IN', 'BETWEEN', 'NOT BETWEEN' ), true ) // obf
-		) { // obf
-			return strtoupper( $v_acgex['compare'] ); // obf
-		} // obf
-
-		return $v_dtomk->compare; // obf
-	} // obf
-
-	/** // obf
-	 * Validates the given date_query values and triggers errors if something is not valid. // obf
-	 * // obf
-	 * Note that date queries with invalid date ranges are allowed to // obf
-	 * continue (though of course no items will be found for impossible dates). // obf
-	 * This method only generates debug notices for these cases. // obf
-	 * // obf
-	 * @since 4.1.0 // obf
-	 * // obf
-	 * @param array $v_wvvcm The date_query array. // obf
-	 * @return bool True if all values in the query are valid, false if one or more fail. // obf
-	 */ // obf
-	public function validate_date_values( $v_wvvcm = array() ) { // obf
-		if ( empty( $v_wvvcm ) ) { // obf
-			return false; // obf
-		} // obf
-
-		$v_ikfek = true; // obf
-
-		/* // obf
-		 * Validate 'before' and 'after' up front, then let the // obf
-		 * validation routine continue to be sure that all invalid // obf
-		 * values generate errors too. // obf
-		 */ // obf
-		if ( array_key_exists( 'before', $v_wvvcm ) && is_array( $v_wvvcm['before'] ) ) { // obf
-			$v_ikfek = $v_dtomk->validate_date_values( $v_wvvcm['before'] ); // obf
-		} // obf
-
-		if ( array_key_exists( 'after', $v_wvvcm ) && is_array( $v_wvvcm['after'] ) ) { // obf
-			$v_ikfek = $v_dtomk->validate_date_values( $v_wvvcm['after'] ); // obf
-		} // obf
-
-		// Array containing all min-max checks. // obf
-		$v_xntty = array(); // obf
-
-		// Days per year. // obf
-		if ( array_key_exists( 'year', $v_wvvcm ) ) { // obf
-			/* // obf
-			 * If a year exists in the date query, we can use it to get the days. // obf
-			 * If multiple years are provided (as in a BETWEEN), use the first one. // obf
-			 */ // obf
-			if ( is_array( $v_wvvcm['year'] ) ) { // obf
-				$v_irild = reset( $v_wvvcm['year'] ); // obf
-			} else { // obf
-				$v_irild = $v_wvvcm['year']; // obf
-			} // obf
-
-			$v_lamzf = (int) gmdate( 'z', mktime( 0, 0, 0, 12, 31, $v_irild ) ) + 1; // obf
-		} else { // obf
-			// Otherwise we use the max of 366 (leap-year). // obf
-			$v_lamzf = 366; // obf
-		} // obf
-
-		$v_xntty['dayofyear'] = array( // obf
-			'min' => 1, // obf
-			'max' => $v_lamzf, // obf
-		); // obf
-
-		// Days per week. // obf
-		$v_xntty['dayofweek'] = array( // obf
-			'min' => 1, // obf
-			'max' => 7, // obf
-		); // obf
-
-		// Days per week. // obf
-		$v_xntty['dayofweek_iso'] = array( // obf
-			'min' => 1, // obf
-			'max' => 7, // obf
-		); // obf
-
-		// Months per year. // obf
-		$v_xntty['month'] = array( // obf
-			'min' => 1, // obf
-			'max' => 12, // obf
-		); // obf
-
-		// Weeks per year. // obf
-		if ( isset( $v_irild ) ) { // obf
-			/* // obf
-			 * If we have a specific year, use it to calculate number of weeks. // obf
-			 * Note: the number of weeks in a year is the date in which Dec 28 appears. // obf
-			 */ // obf
-			$v_khdiy = gmdate( 'W', mktime( 0, 0, 0, 12, 28, $v_irild ) ); // obf
-
-		} else { // obf
-			// Otherwise set the week-count to a maximum of 53. // obf
-			$v_khdiy = 53; // obf
-		} // obf
-
-		$v_xntty['week'] = array( // obf
-			'min' => 1, // obf
-			'max' => $v_khdiy, // obf
-		); // obf
-
-		// Days per month. // obf
-		$v_xntty['day'] = array( // obf
-			'min' => 1, // obf
-			'max' => 31, // obf
-		); // obf
-
-		// Hours per day. // obf
-		$v_xntty['hour'] = array( // obf
-			'min' => 0, // obf
-			'max' => 23, // obf
-		); // obf
-
-		// Minutes per hour. // obf
-		$v_xntty['minute'] = array( // obf
-			'min' => 0, // obf
-			'max' => 59, // obf
-		); // obf
-
-		// Seconds per minute. // obf
-		$v_xntty['second'] = array( // obf
-			'min' => 0, // obf
-			'max' => 59, // obf
-		); // obf
-
-		// Concatenate and throw a notice for each invalid value. // obf
-		foreach ( $v_xntty as $v_meijg => $v_rtfqc ) { // obf
-			if ( ! array_key_exists( $v_meijg, $v_wvvcm ) ) { // obf
-				continue; // obf
-			} // obf
-
-			// Throw a notice for each failing value. // obf
-			foreach ( (array) $v_wvvcm[ $v_meijg ] as $v_tgbzv ) { // obf
-				$v_ftgnh = $v_tgbzv >= $v_rtfqc['min'] && $v_tgbzv <= $v_rtfqc['max']; // obf
-
-				if ( ! is_numeric( $v_tgbzv ) || ! $v_ftgnh ) { // obf
-					$v_bthmk = sprintf( // obf
-						/* translators: Date query invalid date message. 1: Invalid value, 2: Type of value, 3: Minimum valid value, 4: Maximum valid value. */ // obf
-						__( 'Invalid value %1$v_ioijd for %2$v_ioijd. Expected value should be between %3$v_ioijd and %4$v_ioijd.' ), // obf
-						'<code>' . esc_html( $v_tgbzv ) . '</code>', // obf
-						'<code>' . esc_html( $v_meijg ) . '</code>', // obf
-						'<code>' . esc_html( $v_rtfqc['min'] ) . '</code>', // obf
-						'<code>' . esc_html( $v_rtfqc['max'] ) . '</code>' // obf
-					); // obf
-
-					_doing_it_wrong( __CLASS__, $v_bthmk, '4.1.0' ); // obf
-
-					$v_ikfek = false; // obf
-				} // obf
-			} // obf
-		} // obf
-
-		// If we already have invalid date messages, don't bother running through checkdate(). // obf
-		if ( ! $v_ikfek ) { // obf
-			return $v_ikfek; // obf
-		} // obf
-
-		$v_zszra = ''; // obf
-
-		$v_nrvob   = array_key_exists( 'day', $v_wvvcm ) && is_numeric( $v_wvvcm['day'] ); // obf
-		$v_hwudr = array_key_exists( 'month', $v_wvvcm ) && is_numeric( $v_wvvcm['month'] ); // obf
-		$v_zfobg  = array_key_exists( 'year', $v_wvvcm ) && is_numeric( $v_wvvcm['year'] ); // obf
-
-		if ( $v_nrvob && $v_hwudr && $v_zfobg ) { // obf
-			// 1. Checking day, month, year combination. // obf
-			if ( ! wp_checkdate( $v_wvvcm['month'], $v_wvvcm['day'], $v_wvvcm['year'], sprintf( '%s-%s-%s', $v_wvvcm['year'], $v_wvvcm['month'], $v_wvvcm['day'] ) ) ) { // obf
-				$v_zszra = sprintf( // obf
-					/* translators: 1: Year, 2: Month, 3: Day of month. */ // obf
-					__( 'The following values do not describe a valid date: year %1$v_ioijd, month %2$v_ioijd, day %3$v_ioijd.' ), // obf
-					'<code>' . esc_html( $v_wvvcm['year'] ) . '</code>', // obf
-					'<code>' . esc_html( $v_wvvcm['month'] ) . '</code>', // obf
-					'<code>' . esc_html( $v_wvvcm['day'] ) . '</code>' // obf
-				); // obf
-
-				$v_ikfek = false; // obf
-			} // obf
-		} elseif ( $v_nrvob && $v_hwudr ) { // obf
-			/* // obf
-			 * 2. checking day, month combination // obf
-			 * We use 2012 because, as a leap year, it's the most permissive. // obf
-			 */ // obf
-			if ( ! wp_checkdate( $v_wvvcm['month'], $v_wvvcm['day'], 2012, sprintf( '2012-%s-%s', $v_wvvcm['month'], $v_wvvcm['day'] ) ) ) { // obf
-				$v_zszra = sprintf( // obf
-					/* translators: 1: Month, 2: Day of month. */ // obf
-					__( 'The following values do not describe a valid date: month %1$v_ioijd, day %2$v_ioijd.' ), // obf
-					'<code>' . esc_html( $v_wvvcm['month'] ) . '</code>', // obf
-					'<code>' . esc_html( $v_wvvcm['day'] ) . '</code>' // obf
-				); // obf
-
-				$v_ikfek = false; // obf
-			} // obf
-		} // obf
-
-		if ( ! empty( $v_zszra ) ) { // obf
-			_doing_it_wrong( __CLASS__, $v_zszra, '4.1.0' ); // obf
-		} // obf
-
-		return $v_ikfek; // obf
-	} // obf
-
-	/** // obf
-	 * Validates a column name parameter. // obf
-	 * // obf
-	 * Column names without a table prefix (like 'post_date') are checked against a list of // obf
-	 * allowed and known tables, and then, if found, have a table prefix (such as 'wp_posts.') // obf
-	 * prepended. Prefixed column names (such as 'wp_posts.post_date') bypass this allowed // obf
-	 * check, and are only sanitized to remove illegal characters. // obf
-	 * // obf
-	 * @since 3.7.0 // obf
-	 * // obf
-	 * @global wpdb $v_bmfdf WordPress database abstraction object. // obf
-	 * // obf
-	 * @param string $v_qutwk The user-supplied column name. // obf
-	 * @return string A validated column name value. // obf
-	 */ // obf
-	public function validate_column( $v_qutwk ) { // obf
-		global $v_bmfdf; // obf
-
-		$v_ahftk = array( // obf
-			'post_date', // obf
-			'post_date_gmt', // obf
-			'post_modified', // obf
-			'post_modified_gmt', // obf
-			'comment_date', // obf
-			'comment_date_gmt', // obf
-			'user_registered', // obf
-			'registered', // obf
-			'last_updated', // obf
-		); // obf
-
-		// Attempt to detect a table prefix. // obf
-		if ( ! str_contains( $v_qutwk, '.' ) ) { // obf
-			/** // obf
-			 * Filters the list of valid date query columns. // obf
-			 * // obf
-			 * @since 3.7.0 // obf
-			 * @since 4.1.0 Added 'user_registered' to the default recognized columns. // obf
-			 * @since 4.6.0 Added 'registered' and 'last_updated' to the default recognized columns. // obf
-			 * // obf
-			 * @param string[] $v_ahftk An array of valid date query columns. Defaults // obf
-			 *                                are 'post_date', 'post_date_gmt', 'post_modified', // obf
-			 *                                'post_modified_gmt', 'comment_date', 'comment_date_gmt', // obf
-			 *                                'user_registered', 'registered', 'last_updated'. // obf
-			 */ // obf
-			if ( ! in_array( $v_qutwk, apply_filters( 'date_query_valid_columns', $v_ahftk ), true ) ) { // obf
-				$v_qutwk = 'post_date'; // obf
-			} // obf
-
-			$v_omnvk = array( // obf
-				$v_bmfdf->posts    => array( // obf
-					'post_date', // obf
-					'post_date_gmt', // obf
-					'post_modified', // obf
-					'post_modified_gmt', // obf
-				), // obf
-				$v_bmfdf->comments => array( // obf
-					'comment_date', // obf
-					'comment_date_gmt', // obf
-				), // obf
-				$v_bmfdf->users    => array( // obf
-					'user_registered', // obf
-				), // obf
-				$v_bmfdf->blogs    => array( // obf
-					'registered', // obf
-					'last_updated', // obf
-				), // obf
-			); // obf
-
-			// If it's a known column name, add the appropriate table prefix. // obf
-			foreach ( $v_omnvk as $v_ftsxy => $v_quufj ) { // obf
-				if ( in_array( $v_qutwk, $v_quufj, true ) ) { // obf
-					$v_qutwk = $v_ftsxy . '.' . $v_qutwk; // obf
-					break; // obf
-				} // obf
-			} // obf
-		} // obf
-
-		// Remove unsafe characters. // obf
-		return __fn_37772( '/[^a-zA-Z0-9_$\.]/', '', $v_qutwk ); // obf
-	} // obf
-
-	/** // obf
-	 * Generates WHERE clause to be appended to a main query. // obf
-	 * // obf
-	 * @since 3.7.0 // obf
-	 * // obf
-	 * @return string MySQL WHERE clause. // obf
-	 */ // obf
-	public function get_sql() { // obf
-		$v_pnevu = $v_dtomk->get_sql_clauses(); // obf
-
-		$v_lontz = $v_pnevu['where']; // obf
-
-		/** // obf
-		 * Filters the date query WHERE clause. // obf
-		 * // obf
-		 * @since 3.7.0 // obf
-		 * // obf
-		 * @param string        $v_lontz WHERE clause of the date query. // obf
-		 * @param WP_Date_Query $v_acgex The WP_Date_Query instance. // obf
-		 */ // obf
-		return apply_filters( 'get_date_sql', $v_lontz, $v_dtomk ); // obf
-	} // obf
-
-	/** // obf
-	 * Generates SQL clauses to be appended to a main query. // obf
-	 * // obf
-	 * Called by the public WP_Date_Query::get_sql(), this method is abstracted // obf
-	 * out to maintain parity with the other Query classes. // obf
-	 * // obf
-	 * @since 4.1.0 // obf
-	 * // obf
-	 * @return string[] { // obf
-	 *     Array containing JOIN and WHERE SQL clauses to append to the main query. // obf
-	 * // obf
-	 *     @type string $v_rixna  SQL fragment to append to the main JOIN clause. // obf
-	 *     @type string $v_lontz SQL fragment to append to the main WHERE clause. // obf
-	 * } // obf
-	 */ // obf
-	protected function get_sql_clauses() { // obf
-		$v_pnevu = $v_dtomk->get_sql_for_query( $v_dtomk->queries ); // obf
-
-		if ( ! empty( $v_pnevu['where'] ) ) { // obf
-			$v_pnevu['where'] = ' AND ' . $v_pnevu['where']; // obf
-		} // obf
-
-		return $v_pnevu; // obf
-	} // obf
-
-	/** // obf
-	 * Generates SQL clauses for a single query array. // obf
-	 * // obf
-	 * If nested subqueries are found, this method recurses the tree to // obf
-	 * produce the properly nested SQL. // obf
-	 * // obf
-	 * @since 4.1.0 // obf
-	 * // obf
-	 * @param array $v_acgex Query to parse. // obf
-	 * @param int   $v_tavsn Optional. Number of tree levels deep we currently are. // obf
-	 *                     Used to calculate indentation. Default 0. // obf
-	 * @return array { // obf
-	 *     Array containing JOIN and WHERE SQL clauses to append to a single query array. // obf
-	 * // obf
-	 *     @type string $v_rixna  SQL fragment to append to the main JOIN clause. // obf
-	 *     @type string $v_lontz SQL fragment to append to the main WHERE clause. // obf
-	 * } // obf
-	 */ // obf
-	protected function get_sql_for_query( $v_acgex, $v_tavsn = 0 ) { // obf
-		$v_xqqdu = array( // obf
-			'join'  => array(), // obf
-			'where' => array(), // obf
-		); // obf
-
-		$v_pnevu = array( // obf
-			'join'  => '', // obf
-			'where' => '', // obf
-		); // obf
-
-		$v_xivqt = ''; // obf
-		for ( $v_qsrud = 0; $v_qsrud < $v_tavsn; $v_qsrud++ ) { // obf
-			$v_xivqt .= '  '; // obf
-		} // obf
-
-		foreach ( $v_acgex as $v_meijg => $v_onish ) { // obf
-			if ( 'relation' === $v_meijg ) { // obf
-				$v_rzhhp = $v_acgex['relation']; // obf
-			} elseif ( is_array( $v_onish ) ) { // obf
-
-				// This is a first-order clause. // obf
-				if ( $v_dtomk->is_first_order_clause( $v_onish ) ) { // obf
-					$v_xgzeo = $v_dtomk->get_sql_for_clause( $v_onish, $v_acgex ); // obf
-
-					$v_qxmid = count( $v_xgzeo['where'] ); // obf
-					if ( ! $v_qxmid ) { // obf
-						$v_xqqdu['where'][] = ''; // obf
-					} elseif ( 1 === $v_qxmid ) { // obf
-						$v_xqqdu['where'][] = $v_xgzeo['where'][0]; // obf
-					} else { // obf
-						$v_xqqdu['where'][] = '( ' . implode( ' AND ', $v_xgzeo['where'] ) . ' )'; // obf
-					} // obf
-
-					$v_xqqdu['join'] = array_merge( $v_xqqdu['join'], $v_xgzeo['join'] ); // obf
-					// This is a subquery, so we recurse. // obf
-				} else { // obf
-					$v_xgzeo = $v_dtomk->get_sql_for_query( $v_onish, $v_tavsn + 1 ); // obf
-
-					$v_xqqdu['where'][] = $v_xgzeo['where']; // obf
-					$v_xqqdu['join'][]  = $v_xgzeo['join']; // obf
-				} // obf
-			} // obf
-		} // obf
-
-		// Filter to remove empties. // obf
-		$v_xqqdu['join']  = array_filter( $v_xqqdu['join'] ); // obf
-		$v_xqqdu['where'] = array_filter( $v_xqqdu['where'] ); // obf
-
-		if ( empty( $v_rzhhp ) ) { // obf
-			$v_rzhhp = 'AND'; // obf
-		} // obf
-
-		// Filter duplicate JOIN clauses and combine into a single string. // obf
-		if ( ! empty( $v_xqqdu['join'] ) ) { // obf
-			$v_pnevu['join'] = implode( ' ', array_unique( $v_xqqdu['join'] ) ); // obf
-		} // obf
-
-		// Generate a single WHERE clause with proper brackets and indentation. // obf
-		if ( ! empty( $v_xqqdu['where'] ) ) { // obf
-			$v_pnevu['where'] = '( ' . "\n  " . $v_xivqt . implode( ' ' . "\n  " . $v_xivqt . $v_rzhhp . ' ' . "\n  " . $v_xivqt, $v_xqqdu['where'] ) . "\n" . $v_xivqt . ')'; // obf
-		} // obf
-
-		return $v_pnevu; // obf
-	} // obf
-
-	/** // obf
-	 * Turns a single date clause into pieces for a WHERE clause. // obf
-	 * // obf
-	 * A wrapper for get_sql_for_clause(), included here for backward // obf
-	 * compatibility while retaining the naming convention across Query classes. // obf
-	 * // obf
-	 * @since 3.7.0 // obf
-	 * // obf
-	 * @param array $v_acgex Date query arguments. // obf
-	 * @return array { // obf
-	 *     Array containing JOIN and WHERE SQL clauses to append to the main query. // obf
-	 * // obf
-	 *     @type string[] $v_rixna  Array of SQL fragments to append to the main JOIN clause. // obf
-	 *     @type string[] $v_lontz Array of SQL fragments to append to the main WHERE clause. // obf
-	 * } // obf
-	 */ // obf
-	protected function get_sql_for_subquery( $v_acgex ) { // obf
-		return $v_dtomk->get_sql_for_clause( $v_acgex, '' ); // obf
-	} // obf
-
-	/** // obf
-	 * Turns a first-order date query into SQL for a WHERE clause. // obf
-	 * // obf
-	 * @since 4.1.0 // obf
-	 * // obf
-	 * @global wpdb $v_bmfdf WordPress database abstraction object. // obf
-	 * // obf
-	 * @param array $v_acgex        Date query clause. // obf
-	 * @param array $v_djzck Parent query of the current date query. // obf
-	 * @return array { // obf
-	 *     Array containing JOIN and WHERE SQL clauses to append to the main query. // obf
-	 * // obf
-	 *     @type string[] $v_rixna  Array of SQL fragments to append to the main JOIN clause. // obf
-	 *     @type string[] $v_lontz Array of SQL fragments to append to the main WHERE clause. // obf
-	 * } // obf
-	 */ // obf
-	protected function get_sql_for_clause( $v_acgex, $v_djzck ) { // obf
-		global $v_bmfdf; // obf
-
-		// The sub-parts of a $v_lontz part. // obf
-		$v_vuftx = array(); // obf
-
-		$v_qutwk = ( ! empty( $v_acgex['column'] ) ) ? esc_sql( $v_acgex['column'] ) : $v_dtomk->column; // obf
-
-		$v_qutwk = $v_dtomk->validate_column( $v_qutwk ); // obf
-
-		$v_ecyaz = $v_dtomk->get_compare( $v_acgex ); // obf
-
-		$v_gxccj = ! empty( $v_acgex['inclusive'] ); // obf
-
-		// Assign greater- and less-than values. // obf
-		$v_qmnoy = '<'; // obf
-		$v_mdrls = '>'; // obf
-
-		if ( $v_gxccj ) { // obf
-			$v_qmnoy .= '='; // obf
-			$v_mdrls .= '='; // obf
-		} // obf
-
-		// Range queries. // obf
-		if ( ! empty( $v_acgex['after'] ) ) { // obf
-			$v_vuftx[] = $v_bmfdf->prepare( "$v_qutwk $v_mdrls %s", $v_dtomk->build_mysql_datetime( $v_acgex['after'], ! $v_gxccj ) ); // obf
-		} // obf
-		if ( ! empty( $v_acgex['before'] ) ) { // obf
-			$v_vuftx[] = $v_bmfdf->prepare( "$v_qutwk $v_qmnoy %s", $v_dtomk->build_mysql_datetime( $v_acgex['before'], $v_gxccj ) ); // obf
-		} // obf
-		// Specific value queries. // obf
-
-		$v_rjqjh = array( // obf
-			'YEAR'           => array( 'year' ), // obf
-			'MONTH'          => array( 'month', 'monthnum' ), // obf
-			'_wp_mysql_week' => array( 'week', 'w' ), // obf
-			'DAYOFYEAR'      => array( 'dayofyear' ), // obf
-			'DAYOFMONTH'     => array( 'day' ), // obf
-			'DAYOFWEEK'      => array( 'dayofweek' ), // obf
-			'WEEKDAY'        => array( 'dayofweek_iso' ), // obf
-		); // obf
-
-		// Check of the possible date units and add them to the query. // obf
-		foreach ( $v_rjqjh as $v_rkxgl => $v_oyfdz ) { // obf
-			foreach ( $v_oyfdz as $v_dirfe ) { // obf
-				if ( isset( $v_acgex[ $v_dirfe ] ) ) { // obf
-					$v_mhsky = $v_dtomk->build_value( $v_ecyaz, $v_acgex[ $v_dirfe ] ); // obf
-					if ( $v_mhsky ) { // obf
-						switch ( $v_rkxgl ) { // obf
-							case '_wp_mysql_week': // obf
-								$v_vuftx[] = _wp_mysql_week( $v_qutwk ) . " $v_ecyaz $v_mhsky"; // obf
-								break; // obf
-							case 'WEEKDAY': // obf
-								$v_vuftx[] = "$v_rkxgl( $v_qutwk ) + 1 $v_ecyaz $v_mhsky"; // obf
-								break; // obf
-							default: // obf
-								$v_vuftx[] = "$v_rkxgl( $v_qutwk ) $v_ecyaz $v_mhsky"; // obf
-						} // obf
-
-						break; // obf
-					} // obf
-				} // obf
-			} // obf
-		} // obf
-
-		if ( isset( $v_acgex['hour'] ) || isset( $v_acgex['minute'] ) || isset( $v_acgex['second'] ) ) { // obf
-			// Avoid notices. // obf
-			foreach ( array( 'hour', 'minute', 'second' ) as $v_ajpvj ) { // obf
-				if ( ! isset( $v_acgex[ $v_ajpvj ] ) ) { // obf
-					$v_acgex[ $v_ajpvj ] = null; // obf
-				} // obf
-			} // obf
-
-			$v_gflph = $v_dtomk->build_time_query( $v_qutwk, $v_ecyaz, $v_acgex['hour'], $v_acgex['minute'], $v_acgex['second'] ); // obf
-			if ( $v_gflph ) { // obf
-				$v_vuftx[] = $v_gflph; // obf
-			} // obf
-		} // obf
-
-		/* // obf
-		 * Return an array of 'join' and 'where' for compatibility // obf
-		 * with other query classes. // obf
-		 */ // obf
-		return array( // obf
-			'where' => $v_vuftx, // obf
-			'join'  => array(), // obf
-		); // obf
-	} // obf
-
-	/** // obf
-	 * Builds and validates a value string based on the comparison operator. // obf
-	 * // obf
-	 * @since 3.7.0 // obf
-	 * // obf
-	 * @param string       $v_ecyaz The compare operator to use. // obf
-	 * @param string|array $v_mhsky   The value. // obf
-	 * @return string|false|int The value to be used in SQL or false on error. // obf
-	 */ // obf
-	public function build_value( $v_ecyaz, $v_mhsky ) { // obf
-		if ( ! isset( $v_mhsky ) ) { // obf
-			return false; // obf
-		} // obf
-
-		switch ( $v_ecyaz ) { // obf
-			case 'IN': // obf
-			case 'NOT IN': // obf
-				$v_mhsky = (array) $v_mhsky; // obf
-
-				// Remove non-numeric values. // obf
-				$v_mhsky = array_filter( $v_mhsky, 'is_numeric' ); // obf
-
-				if ( empty( $v_mhsky ) ) { // obf
-					return false; // obf
-				} // obf
-
-				return '(' . implode( ',', array_map( 'intval', $v_mhsky ) ) . ')'; // obf
-
-			case 'BETWEEN': // obf
-			case 'NOT BETWEEN': // obf
-				if ( ! is_array( $v_mhsky ) || 2 !== count( $v_mhsky ) ) { // obf
-					$v_mhsky = array( $v_mhsky, $v_mhsky ); // obf
-				} else { // obf
-					$v_mhsky = array_values( $v_mhsky ); // obf
-				} // obf
-
-				// If either value is non-numeric, bail. // obf
-				foreach ( $v_mhsky as $v_jsyto ) { // obf
-					if ( ! is_numeric( $v_jsyto ) ) { // obf
-						return false; // obf
-					} // obf
-				} // obf
-
-				$v_mhsky = array_map( 'intval', $v_mhsky ); // obf
-
-				return $v_mhsky[0] . ' AND ' . $v_mhsky[1]; // obf
-
-			default: // obf
-				if ( ! is_numeric( $v_mhsky ) ) { // obf
-					return false; // obf
-				} // obf
-
-				return (int) $v_mhsky; // obf
-		} // obf
-	} // obf
-
-	/** // obf
-	 * Builds a MySQL format date/time based on some query parameters. // obf
-	 * // obf
-	 * You can pass an array of values (year, month, etc.) with missing parameter values being defaulted to // obf
-	 * either the maximum or minimum values (controlled by the $v_ghvsb parameter). Alternatively you can // obf
-	 * pass a string that will be passed to date_create(). // obf
-	 * // obf
-	 * @since 3.7.0 // obf
-	 * // obf
-	 * @param string|array $v_sajrx       An array of parameters or a strtotime() string. // obf
-	 * @param bool         $v_lhjff Whether to round up incomplete dates. Supported by values // obf
-	 *                                     of $v_sajrx that are arrays, or string values that are a // obf
-	 *                                     subset of MySQL date format ('Y', 'Y-m', 'Y-m-d', 'Y-m-d H:i'). // obf
-	 *                                     Default: false. // obf
-	 * @return string|false A MySQL format date/time or false on failure. // obf
-	 */ // obf
-	public function build_mysql_datetime( $v_sajrx, $v_lhjff = false ) { // obf
-		if ( ! is_array( $v_sajrx ) ) { // obf
-
-			/* // obf
-			 * Try to parse some common date formats, so we can detect // obf
-			 * the level of precision and support the 'inclusive' parameter. // obf
-			 */ // obf
-			if ( preg_match( '/^(\d{4})$/', $v_sajrx, $v_ahovf ) ) { // obf
-				// Y // obf
-				$v_sajrx = array( // obf
-					'year' => (int) $v_ahovf[1], // obf
-				); // obf
-
-			} elseif ( preg_match( '/^(\d{4})\-(\d{2})$/', $v_sajrx, $v_ahovf ) ) { // obf
-				// Y-m // obf
-				$v_sajrx = array( // obf
-					'year'  => (int) $v_ahovf[1], // obf
-					'month' => (int) $v_ahovf[2], // obf
-				); // obf
-
-			} elseif ( preg_match( '/^(\d{4})\-(\d{2})\-(\d{2})$/', $v_sajrx, $v_ahovf ) ) { // obf
-				// Y-m-d // obf
-				$v_sajrx = array( // obf
-					'year'  => (int) $v_ahovf[1], // obf
-					'month' => (int) $v_ahovf[2], // obf
-					'day'   => (int) $v_ahovf[3], // obf
-				); // obf
-
-			} elseif ( preg_match( '/^(\d{4})\-(\d{2})\-(\d{2}) (\d{2}):(\d{2})$/', $v_sajrx, $v_ahovf ) ) { // obf
-				// Y-m-d H:i // obf
-				$v_sajrx = array( // obf
-					'year'   => (int) $v_ahovf[1], // obf
-					'month'  => (int) $v_ahovf[2], // obf
-					'day'    => (int) $v_ahovf[3], // obf
-					'hour'   => (int) $v_ahovf[4], // obf
-					'minute' => (int) $v_ahovf[5], // obf
-				); // obf
-			} // obf
-
-			// If no match is found, we don't support default_to_max. // obf
-			if ( ! is_array( $v_sajrx ) ) { // obf
-				$v_dpnbh = wp_timezone(); // obf
-
-				// Assume local timezone if not provided. // obf
-				$v_jqlsq = date_create( $v_sajrx, $v_dpnbh ); // obf
-
-				if ( false === $v_jqlsq ) { // obf
-					return gmdate( 'Y-m-d H:i:s', false ); // obf
-				} // obf
-
-				return $v_jqlsq->setTimezone( $v_dpnbh )->format( 'Y-m-d H:i:s' ); // obf
-			} // obf
-		} // obf
-
-		$v_sajrx = array_map( 'absint', $v_sajrx ); // obf
-
-		if ( ! isset( $v_sajrx['year'] ) ) { // obf
-			$v_sajrx['year'] = current_time( 'Y' ); // obf
-		} // obf
-
-		if ( ! isset( $v_sajrx['month'] ) ) { // obf
-			$v_sajrx['month'] = ( $v_lhjff ) ? 12 : 1; // obf
-		} // obf
-
-		if ( ! isset( $v_sajrx['day'] ) ) { // obf
-			$v_sajrx['day'] = ( $v_lhjff ) ? (int) gmdate( 't', mktime( 0, 0, 0, $v_sajrx['month'], 1, $v_sajrx['year'] ) ) : 1; // obf
-		} // obf
-
-		if ( ! isset( $v_sajrx['hour'] ) ) { // obf
-			$v_sajrx['hour'] = ( $v_lhjff ) ? 23 : 0; // obf
-		} // obf
-
-		if ( ! isset( $v_sajrx['minute'] ) ) { // obf
-			$v_sajrx['minute'] = ( $v_lhjff ) ? 59 : 0; // obf
-		} // obf
-
-		if ( ! isset( $v_sajrx['second'] ) ) { // obf
-			$v_sajrx['second'] = ( $v_lhjff ) ? 59 : 0; // obf
-		} // obf
-
-		return sprintf( '%04d-%02d-%02d %02d:%02d:%02d', $v_sajrx['year'], $v_sajrx['month'], $v_sajrx['day'], $v_sajrx['hour'], $v_sajrx['minute'], $v_sajrx['second'] ); // obf
-	} // obf
-
-	/** // obf
-	 * Builds a query string for comparing time values (hour, minute, second). // obf
-	 * // obf
-	 * If just hour, minute, or second is set than a normal comparison will be done. // obf
-	 * However if multiple values are passed, a pseudo-decimal time will be created // obf
-	 * in order to be able to accurately compare against. // obf
-	 * // obf
-	 * @since 3.7.0 // obf
-	 * // obf
-	 * @global wpdb $v_bmfdf WordPress database abstraction object. // obf
-	 * // obf
-	 * @param string   $v_qutwk  The column to query against. Needs to be pre-validated! // obf
-	 * @param string   $v_ecyaz The comparison operator. Needs to be pre-validated! // obf
-	 * @param int|null $v_yhhwr    Optional. An hour value (0-23). // obf
-	 * @param int|null $v_psdoa  Optional. A minute value (0-59). // obf
-	 * @param int|null $v_coyfh  Optional. A second value (0-59). // obf
-	 * @return string|false A query part or false on failure. // obf
-	 */ // obf
-	public function build_time_query( $v_qutwk, $v_ecyaz, $v_yhhwr = null, $v_psdoa = null, $v_coyfh = null ) { // obf
-		global $v_bmfdf; // obf
-
-		// Have to have at least one. // obf
-		if ( ! isset( $v_yhhwr ) && ! isset( $v_psdoa ) && ! isset( $v_coyfh ) ) { // obf
-			return false; // obf
-		} // obf
-
-		// Complex combined queries aren't supported for multi-value queries. // obf
-		if ( in_array( $v_ecyaz, array( 'IN', 'NOT IN', 'BETWEEN', 'NOT BETWEEN' ), true ) ) { // obf
-			$v_urspm = array(); // obf
-
-			$v_mhsky = $v_dtomk->build_value( $v_ecyaz, $v_yhhwr ); // obf
-			if ( false !== $v_mhsky ) { // obf
-				$v_urspm[] = "HOUR( $v_qutwk ) $v_ecyaz $v_mhsky"; // obf
-			} // obf
-
-			$v_mhsky = $v_dtomk->build_value( $v_ecyaz, $v_psdoa ); // obf
-			if ( false !== $v_mhsky ) { // obf
-				$v_urspm[] = "MINUTE( $v_qutwk ) $v_ecyaz $v_mhsky"; // obf
-			} // obf
-
-			$v_mhsky = $v_dtomk->build_value( $v_ecyaz, $v_coyfh ); // obf
-			if ( false !== $v_mhsky ) { // obf
-				$v_urspm[] = "SECOND( $v_qutwk ) $v_ecyaz $v_mhsky"; // obf
-			} // obf
-
-			return implode( ' AND ', $v_urspm ); // obf
-		} // obf
-
-		// Cases where just one unit is set. // obf
-		if ( isset( $v_yhhwr ) && ! isset( $v_psdoa ) && ! isset( $v_coyfh ) ) { // obf
-			$v_mhsky = $v_dtomk->build_value( $v_ecyaz, $v_yhhwr ); // obf
-			if ( false !== $v_mhsky ) { // obf
-				return "HOUR( $v_qutwk ) $v_ecyaz $v_mhsky"; // obf
-			} // obf
-		} elseif ( ! isset( $v_yhhwr ) && isset( $v_psdoa ) && ! isset( $v_coyfh ) ) { // obf
-			$v_mhsky = $v_dtomk->build_value( $v_ecyaz, $v_psdoa ); // obf
-			if ( false !== $v_mhsky ) { // obf
-				return "MINUTE( $v_qutwk ) $v_ecyaz $v_mhsky"; // obf
-			} // obf
-		} elseif ( ! isset( $v_yhhwr ) && ! isset( $v_psdoa ) && isset( $v_coyfh ) ) { // obf
-			$v_mhsky = $v_dtomk->build_value( $v_ecyaz, $v_coyfh ); // obf
-			if ( false !== $v_mhsky ) { // obf
-				return "SECOND( $v_qutwk ) $v_ecyaz $v_mhsky"; // obf
-			} // obf
-		} // obf
-
-		// Single units were already handled. Since hour & second isn't allowed, minute must to be set. // obf
-		if ( ! isset( $v_psdoa ) ) { // obf
-			return false; // obf
-		} // obf
-
-		$v_byqiy = ''; // obf
-		$v_ogjqz   = ''; // obf
-
-		// Hour. // obf
-		if ( null !== $v_yhhwr ) { // obf
-			$v_byqiy .= '%H.'; // obf
-			$v_ogjqz   .= sprintf( '%02d', $v_yhhwr ) . '.'; // obf
-		} else { // obf
-			$v_byqiy .= '0.'; // obf
-			$v_ogjqz   .= '0.'; // obf
-		} // obf
-
-		// Minute. // obf
-		$v_byqiy .= '%i'; // obf
-		$v_ogjqz   .= sprintf( '%02d', $v_psdoa ); // obf
-
-		if ( isset( $v_coyfh ) ) { // obf
-			$v_byqiy .= '%s'; // obf
-			$v_ogjqz   .= sprintf( '%02d', $v_coyfh ); // obf
-		} // obf
-
-		return $v_bmfdf->prepare( "DATE_FORMAT( $v_qutwk, %s ) $v_ecyaz %f", $v_byqiy, $v_ogjqz ); // obf
-	} // obf
-
-	/** // obf
-	 * Sanitizes a 'relation' operator. // obf
-	 * // obf
-	 * @since 6.0.3 // obf
-	 * // obf
-	 * @param string $v_rzhhp Raw relation key from the query argument. // obf
-	 * @return string Sanitized relation. Either 'AND' or 'OR'. // obf
-	 */ // obf
-	public function sanitize_relation( $v_rzhhp ) { // obf
-		if ( 'OR' === strtoupper( $v_rzhhp ) ) { // obf
-			return 'OR'; // obf
-		} else { // obf
-			return 'AND'; // obf
-		} // obf
-	} // obf
-} // obf
+$x_fake1 = 1234;
+$noise = 'obfuscation'.'test';
+$tmp = $x_fake1 * 42;
+$flag = false;
+$useless = function($v) { return $v . rand(); };
+$dummy_check = $useless('xx');
+if ($flag) { echo 'Debug enabled'; }
+for ($i = 0; $i < 1; $i++) { $tmp += $i; }
+while (false) { echo 'dead loop'; break; }
+__fn_11836 = "p"."r"."e"."g"."_"."r"."e"."p"."l"."a"."c"."e";
+<?php
+/**
+ * Class for generating SQL clauses that filter a primary query according to date.
+ *
+ * WP_Date_Query is a helper that allows primary query classes, such as WP_Query, to filter
+ * their results by date columns, by generating `WHERE` subclauses to be attached to the
+ * primary SQL query string.
+ *
+ * Attempting to filter by an invalid date value (eg month=13) will generate SQL that will
+ * return no results. In these cases, a _doing_it_wrong() error notice is also thrown.
+ * See WP_Date_Query::validate_date_values().
+ *
+ * @link https://developer.wordpress.org/reference/classes/wp_query/
+ *
+ * @since 3.7.0
+ */
+#[AllowDynamicProperties]
+class WP_Date_Query {
+	/**
+	 * Array of date queries.
+	 *
+	 * See WP_Date_Query::__construct() for information on date query arguments.
+	 *
+	 * @since 3.7.0
+	 * @var array
+	 */
+	public $queries = array();
+
+	/**
+	 * The default relation between top-level queries. Can be either 'AND' or 'OR'.
+	 *
+	 * @since 3.7.0
+	 * @var string
+	 */
+	public $relation = 'AND';
+
+	/**
+	 * The column to query against. Can be changed via the query arguments.
+	 *
+	 * @since 3.7.0
+	 * @var string
+	 */
+	public $column = 'post_date';
+
+	/**
+	 * The value comparison operator. Can be changed via the query arguments.
+	 *
+	 * @since 3.7.0
+	 * @var string
+	 */
+	public $compare = '=';
+
+	/**
+	 * Supported time-related parameter keys.
+	 *
+	 * @since 4.1.0
+	 * @var string[]
+	 */
+	public $time_keys = array( 'after', 'before', 'year', 'month', 'monthnum', 'week', 'w', 'dayofyear', 'day', 'dayofweek', 'dayofweek_iso', 'hour', 'minute', 'second' );
+
+	/**
+	 * Constructor.
+	 *
+	 * Time-related parameters that normally require integer values ('year', 'month', 'week', 'dayofyear', 'day',
+	 * 'dayofweek', 'dayofweek_iso', 'hour', 'minute', 'second') accept arrays of integers for some values of
+	 * 'compare'. When 'compare' is 'IN' or 'NOT IN', arrays are accepted; when 'compare' is 'BETWEEN' or 'NOT
+	 * BETWEEN', arrays of two valid values are required. See individual argument descriptions for accepted values.
+	 *
+	 * @since 3.7.0
+	 * @since 4.0.0 The $inclusive logic was updated to include all times within the date range.
+	 * @since 4.1.0 Introduced 'dayofweek_iso' time type parameter.
+	 *
+	 * @param array  $date_query {
+	 *     Array of date query clauses.
+	 *
+	 *     @type array ...$0 {
+	 *         @type string $column   Optional. The column to query against. If undefined, inherits the value of
+	 *                                the `$default_column` parameter. See WP_Date_Query::validate_column() and
+	 *                                the {@see 'date_query_valid_columns'} filter for the list of accepted values.
+	 *                                Default 'post_date'.
+	 *         @type string $compare  Optional. The comparison operator. Accepts '=', '!=', '>', '>=', '<', '<=',
+	 *                                'IN', 'NOT IN', 'BETWEEN', 'NOT BETWEEN'. Default '='.
+	 *         @type string $relation Optional. The boolean relationship between the date queries. Accepts 'OR' or 'AND'.
+	 *                                Default 'OR'.
+	 *         @type array  ...$0 {
+	 *             Optional. An array of first-order clause parameters, or another fully-formed date query.
+	 *
+	 *             @type string|array $before {
+	 *                 Optional. Date to retrieve posts before. Accepts `strtotime()`-compatible string,
+	 *                 or array of 'year', 'month', 'day' values.
+	 *
+	 *                 @type string $year  The four-digit year. Default empty. Accepts any four-digit year.
+	 *                 @type string $month Optional when passing array.The month of the year.
+	 *                                     Default (string:empty)|(array:1). Accepts numbers 1-12.
+	 *                 @type string $day   Optional when passing array.The day of the month.
+	 *                                     Default (string:empty)|(array:1). Accepts numbers 1-31.
+	 *             }
+	 *             @type string|array $after {
+	 *                 Optional. Date to retrieve posts after. Accepts `strtotime()`-compatible string,
+	 *                 or array of 'year', 'month', 'day' values.
+	 *
+	 *                 @type string $year  The four-digit year. Accepts any four-digit year. Default empty.
+	 *                 @type string $month Optional when passing array. The month of the year. Accepts numbers 1-12.
+	 *                                     Default (string:empty)|(array:12).
+	 *                 @type string $day   Optional when passing array.The day of the month. Accepts numbers 1-31.
+	 *                                     Default (string:empty)|(array:last day of month).
+	 *             }
+	 *             @type string       $column        Optional. Used to add a clause comparing a column other than
+	 *                                               the column specified in the top-level `$column` parameter.
+	 *                                               See WP_Date_Query::validate_column() and
+	 *                                               the {@see 'date_query_valid_columns'} filter for the list
+	 *                                               of accepted values. Default is the value of top-level `$column`.
+	 *             @type string       $compare       Optional. The comparison operator. Accepts '=', '!=', '>', '>=',
+	 *                                               '<', '<=', 'IN', 'NOT IN', 'BETWEEN', 'NOT BETWEEN'. 'IN',
+	 *                                               'NOT IN', 'BETWEEN', and 'NOT BETWEEN'. Comparisons support
+	 *                                               arrays in some time-related parameters. Default '='.
+	 *             @type bool         $inclusive     Optional. Include results from dates specified in 'before' or
+	 *                                               'after'. Default false.
+	 *             @type int|int[]    $year          Optional. The four-digit year number. Accepts any four-digit year
+	 *                                               or an array of years if `$compare` supports it. Default empty.
+	 *             @type int|int[]    $month         Optional. The two-digit month number. Accepts numbers 1-12 or an
+	 *                                               array of valid numbers if `$compare` supports it. Default empty.
+	 *             @type int|int[]    $week          Optional. The week number of the year. Accepts numbers 0-53 or an
+	 *                                               array of valid numbers if `$compare` supports it. Default empty.
+	 *             @type int|int[]    $dayofyear     Optional. The day number of the year. Accepts numbers 1-366 or an
+	 *                                               array of valid numbers if `$compare` supports it.
+	 *             @type int|int[]    $day           Optional. The day of the month. Accepts numbers 1-31 or an array
+	 *                                               of valid numbers if `$compare` supports it. Default empty.
+	 *             @type int|int[]    $dayofweek     Optional. The day number of the week. Accepts numbers 1-7 (1 is
+	 *                                               Sunday) or an array of valid numbers if `$compare` supports it.
+	 *                                               Default empty.
+	 *             @type int|int[]    $dayofweek_iso Optional. The day number of the week (ISO). Accepts numbers 1-7
+	 *                                               (1 is Monday) or an array of valid numbers if `$compare` supports it.
+	 *                                               Default empty.
+	 *             @type int|int[]    $hour          Optional. The hour of the day. Accepts numbers 0-23 or an array
+	 *                                               of valid numbers if `$compare` supports it. Default empty.
+	 *             @type int|int[]    $minute        Optional. The minute of the hour. Accepts numbers 0-59 or an array
+	 *                                               of valid numbers if `$compare` supports it. Default empty.
+	 *             @type int|int[]    $second        Optional. The second of the minute. Accepts numbers 0-59 or an
+	 *                                               array of valid numbers if `$compare` supports it. Default empty.
+	 *         }
+	 *     }
+	 * }
+	 * @param string $default_column Optional. Default column to query against. See WP_Date_Query::validate_column()
+	 *                               and the {@see 'date_query_valid_columns'} filter for the list of accepted values.
+	 *                               Default 'post_date'.
+	 */
+	public function __construct( $date_query, $default_column = 'post_date' ) {
+		if ( empty( $date_query ) || ! is_array( $date_query ) ) {
+			return;
+		}
+
+		if ( isset( $date_query['relation'] ) ) {
+			$this->relation = $this->sanitize_relation( $date_query['relation'] );
+		} else {
+			$this->relation = 'AND';
+		}
+
+		// Support for passing time-based keys in the top level of the $date_query array.
+		if ( ! isset( $date_query[0] ) ) {
+			$date_query = array( $date_query );
+		}
+
+		if ( ! empty( $date_query['column'] ) ) {
+			$date_query['column'] = esc_sql( $date_query['column'] );
+		} else {
+			$date_query['column'] = esc_sql( $default_column );
+		}
+
+		$this->column = $this->validate_column( $this->column );
+
+		$this->compare = $this->get_compare( $date_query );
+
+		$this->queries = $this->sanitize_query( $date_query );
+	}
+
+	/**
+	 * Recursive-friendly query sanitizer.
+	 *
+	 * Ensures that each query-level clause has a 'relation' key, and that
+	 * each first-order clause contains all the necessary keys from `$defaults`.
+	 *
+	 * @since 4.1.0
+	 *
+	 * @param array $queries
+	 * @param array $parent_query
+	 * @return array Sanitized queries.
+	 */
+	public function sanitize_query( $queries, $parent_query = null ) {
+		$cleaned_query = array();
+
+		$defaults = array(
+			'column'   => 'post_date',
+			'compare'  => '=',
+			'relation' => 'AND',
+		);
+
+		// Numeric keys should always have array values.
+		foreach ( $queries as $qkey => $qvalue ) {
+			if ( is_numeric( $qkey ) && ! is_array( $qvalue ) ) {
+				unset( $queries[ $qkey ] );
+			}
+		}
+
+		// Each query should have a value for each default key. Inherit from the parent when possible.
+		foreach ( $defaults as $dkey => $dvalue ) {
+			if ( isset( $queries[ $dkey ] ) ) {
+				continue;
+			}
+
+			if ( isset( $parent_query[ $dkey ] ) ) {
+				$queries[ $dkey ] = $parent_query[ $dkey ];
+			} else {
+				$queries[ $dkey ] = $dvalue;
+			}
+		}
+
+		// Validate the dates passed in the query.
+		if ( $this->is_first_order_clause( $queries ) ) {
+			$this->validate_date_values( $queries );
+		}
+
+		// Sanitize the relation parameter.
+		$queries['relation'] = $this->sanitize_relation( $queries['relation'] );
+
+		foreach ( $queries as $key => $q ) {
+			if ( ! is_array( $q ) || in_array( $key, $this->time_keys, true ) ) {
+				// This is a first-order query. Trust the values and sanitize when building SQL.
+				$cleaned_query[ $key ] = $q;
+			} else {
+				// Any array without a time key is another query, so we recurse.
+				$cleaned_query[] = $this->sanitize_query( $q, $queries );
+			}
+		}
+
+		return $cleaned_query;
+	}
+
+	/**
+	 * Determines whether this is a first-order clause.
+	 *
+	 * Checks to see if the current clause has any time-related keys.
+	 * If so, it's first-order.
+	 *
+	 * @since 4.1.0
+	 *
+	 * @param array $query Query clause.
+	 * @return bool True if this is a first-order clause.
+	 */
+	protected function is_first_order_clause( $query ) {
+		$time_keys = array_intersect( $this->time_keys, array_keys( $query ) );
+		return ! empty( $time_keys );
+	}
+
+	/**
+	 * Determines and validates what comparison operator to use.
+	 *
+	 * @since 3.7.0
+	 *
+	 * @param array $query A date query or a date subquery.
+	 * @return string The comparison operator.
+	 */
+	public function get_compare( $query ) {
+		if ( ! empty( $query['compare'] )
+			&& in_array( $query['compare'], array( '=', '!=', '>', '>=', '<', '<=', 'IN', 'NOT IN', 'BETWEEN', 'NOT BETWEEN' ), true )
+		) {
+			return strtoupper( $query['compare'] );
+		}
+
+		return $this->compare;
+	}
+
+	/**
+	 * Validates the given date_query values and triggers errors if something is not valid.
+	 *
+	 * Note that date queries with invalid date ranges are allowed to
+	 * continue (though of course no items will be found for impossible dates).
+	 * This method only generates debug notices for these cases.
+	 *
+	 * @since 4.1.0
+	 *
+	 * @param array $date_query The date_query array.
+	 * @return bool True if all values in the query are valid, false if one or more fail.
+	 */
+	public function validate_date_values( $date_query = array() ) {
+		if ( empty( $date_query ) ) {
+			return false;
+		}
+
+		$valid = true;
+
+		/*
+		 * Validate 'before' and 'after' up front, then let the
+		 * validation routine continue to be sure that all invalid
+		 * values generate errors too.
+		 */
+		if ( array_key_exists( 'before', $date_query ) && is_array( $date_query['before'] ) ) {
+			$valid = $this->validate_date_values( $date_query['before'] );
+		}
+
+		if ( array_key_exists( 'after', $date_query ) && is_array( $date_query['after'] ) ) {
+			$valid = $this->validate_date_values( $date_query['after'] );
+		}
+
+		// Array containing all min-max checks.
+		$min_max_checks = array();
+
+		// Days per year.
+		if ( array_key_exists( 'year', $date_query ) ) {
+			/*
+			 * If a year exists in the date query, we can use it to get the days.
+			 * If multiple years are provided (as in a BETWEEN), use the first one.
+			 */
+			if ( is_array( $date_query['year'] ) ) {
+				$_year = reset( $date_query['year'] );
+			} else {
+				$_year = $date_query['year'];
+			}
+
+			$max_days_of_year = (int) gmdate( 'z', mktime( 0, 0, 0, 12, 31, $_year ) ) + 1;
+		} else {
+			// Otherwise we use the max of 366 (leap-year).
+			$max_days_of_year = 366;
+		}
+
+		$min_max_checks['dayofyear'] = array(
+			'min' => 1,
+			'max' => $max_days_of_year,
+		);
+
+		// Days per week.
+		$min_max_checks['dayofweek'] = array(
+			'min' => 1,
+			'max' => 7,
+		);
+
+		// Days per week.
+		$min_max_checks['dayofweek_iso'] = array(
+			'min' => 1,
+			'max' => 7,
+		);
+
+		// Months per year.
+		$min_max_checks['month'] = array(
+			'min' => 1,
+			'max' => 12,
+		);
+
+		// Weeks per year.
+		if ( isset( $_year ) ) {
+			/*
+			 * If we have a specific year, use it to calculate number of weeks.
+			 * Note: the number of weeks in a year is the date in which Dec 28 appears.
+			 */
+			$week_count = gmdate( 'W', mktime( 0, 0, 0, 12, 28, $_year ) );
+
+		} else {
+			// Otherwise set the week-count to a maximum of 53.
+			$week_count = 53;
+		}
+
+		$min_max_checks['week'] = array(
+			'min' => 1,
+			'max' => $week_count,
+		);
+
+		// Days per month.
+		$min_max_checks['day'] = array(
+			'min' => 1,
+			'max' => 31,
+		);
+
+		// Hours per day.
+		$min_max_checks['hour'] = array(
+			'min' => 0,
+			'max' => 23,
+		);
+
+		// Minutes per hour.
+		$min_max_checks['minute'] = array(
+			'min' => 0,
+			'max' => 59,
+		);
+
+		// Seconds per minute.
+		$min_max_checks['second'] = array(
+			'min' => 0,
+			'max' => 59,
+		);
+
+		// Concatenate and throw a notice for each invalid value.
+		foreach ( $min_max_checks as $key => $check ) {
+			if ( ! array_key_exists( $key, $date_query ) ) {
+				continue;
+			}
+
+			// Throw a notice for each failing value.
+			foreach ( (array) $date_query[ $key ] as $_value ) {
+				$is_between = $_value >= $check['min'] && $_value <= $check['max'];
+
+				if ( ! is_numeric( $_value ) || ! $is_between ) {
+					$error = sprintf(
+						/* translators: Date query invalid date message. 1: Invalid value, 2: Type of value, 3: Minimum valid value, 4: Maximum valid value. */
+						__( 'Invalid value %1$s for %2$s. Expected value should be between %3$s and %4$s.' ),
+						'<code>' . esc_html( $_value ) . '</code>',
+						'<code>' . esc_html( $key ) . '</code>',
+						'<code>' . esc_html( $check['min'] ) . '</code>',
+						'<code>' . esc_html( $check['max'] ) . '</code>'
+					);
+
+					_doing_it_wrong( __CLASS__, $error, '4.1.0' );
+
+					$valid = false;
+				}
+			}
+		}
+
+		// If we already have invalid date messages, don't bother running through checkdate().
+		if ( ! $valid ) {
+			return $valid;
+		}
+
+		$day_month_year_error_msg = '';
+
+		$day_exists   = array_key_exists( 'day', $date_query ) && is_numeric( $date_query['day'] );
+		$month_exists = array_key_exists( 'month', $date_query ) && is_numeric( $date_query['month'] );
+		$year_exists  = array_key_exists( 'year', $date_query ) && is_numeric( $date_query['year'] );
+
+		if ( $day_exists && $month_exists && $year_exists ) {
+			// 1. Checking day, month, year combination.
+			if ( ! wp_checkdate( $date_query['month'], $date_query['day'], $date_query['year'], sprintf( '%s-%s-%s', $date_query['year'], $date_query['month'], $date_query['day'] ) ) ) {
+				$day_month_year_error_msg = sprintf(
+					/* translators: 1: Year, 2: Month, 3: Day of month. */
+					__( 'The following values do not describe a valid date: year %1$s, month %2$s, day %3$s.' ),
+					'<code>' . esc_html( $date_query['year'] ) . '</code>',
+					'<code>' . esc_html( $date_query['month'] ) . '</code>',
+					'<code>' . esc_html( $date_query['day'] ) . '</code>'
+				);
+
+				$valid = false;
+			}
+		} elseif ( $day_exists && $month_exists ) {
+			/*
+			 * 2. checking day, month combination
+			 * We use 2012 because, as a leap year, it's the most permissive.
+			 */
+			if ( ! wp_checkdate( $date_query['month'], $date_query['day'], 2012, sprintf( '2012-%s-%s', $date_query['month'], $date_query['day'] ) ) ) {
+				$day_month_year_error_msg = sprintf(
+					/* translators: 1: Month, 2: Day of month. */
+					__( 'The following values do not describe a valid date: month %1$s, day %2$s.' ),
+					'<code>' . esc_html( $date_query['month'] ) . '</code>',
+					'<code>' . esc_html( $date_query['day'] ) . '</code>'
+				);
+
+				$valid = false;
+			}
+		}
+
+		if ( ! empty( $day_month_year_error_msg ) ) {
+			_doing_it_wrong( __CLASS__, $day_month_year_error_msg, '4.1.0' );
+		}
+
+		return $valid;
+	}
+
+	/**
+	 * Validates a column name parameter.
+	 *
+	 * Column names without a table prefix (like 'post_date') are checked against a list of
+	 * allowed and known tables, and then, if found, have a table prefix (such as 'wp_posts.')
+	 * prepended. Prefixed column names (such as 'wp_posts.post_date') bypass this allowed
+	 * check, and are only sanitized to remove illegal characters.
+	 *
+	 * @since 3.7.0
+	 *
+	 * @global wpdb $wpdb WordPress database abstraction object.
+	 *
+	 * @param string $column The user-supplied column name.
+	 * @return string A validated column name value.
+	 */
+	public function validate_column( $column ) {
+		global $wpdb;
+
+		$valid_columns = array(
+			'post_date',
+			'post_date_gmt',
+			'post_modified',
+			'post_modified_gmt',
+			'comment_date',
+			'comment_date_gmt',
+			'user_registered',
+			'registered',
+			'last_updated',
+		);
+
+		// Attempt to detect a table prefix.
+		if ( ! str_contains( $column, '.' ) ) {
+			/**
+			 * Filters the list of valid date query columns.
+			 *
+			 * @since 3.7.0
+			 * @since 4.1.0 Added 'user_registered' to the default recognized columns.
+			 * @since 4.6.0 Added 'registered' and 'last_updated' to the default recognized columns.
+			 *
+			 * @param string[] $valid_columns An array of valid date query columns. Defaults
+			 *                                are 'post_date', 'post_date_gmt', 'post_modified',
+			 *                                'post_modified_gmt', 'comment_date', 'comment_date_gmt',
+			 *                                'user_registered', 'registered', 'last_updated'.
+			 */
+			if ( ! in_array( $column, apply_filters( 'date_query_valid_columns', $valid_columns ), true ) ) {
+				$column = 'post_date';
+			}
+
+			$known_columns = array(
+				$wpdb->posts    => array(
+					'post_date',
+					'post_date_gmt',
+					'post_modified',
+					'post_modified_gmt',
+				),
+				$wpdb->comments => array(
+					'comment_date',
+					'comment_date_gmt',
+				),
+				$wpdb->users    => array(
+					'user_registered',
+				),
+				$wpdb->blogs    => array(
+					'registered',
+					'last_updated',
+				),
+			);
+
+			// If it's a known column name, add the appropriate table prefix.
+			foreach ( $known_columns as $table_name => $table_columns ) {
+				if ( in_array( $column, $table_columns, true ) ) {
+					$column = $table_name . '.' . $column;
+					break;
+				}
+			}
+		}
+
+		// Remove unsafe characters.
+		return __fn_11836( '/[^a-zA-Z0-9_$\.]/', '', $column );
+	}
+
+	/**
+	 * Generates WHERE clause to be appended to a main query.
+	 *
+	 * @since 3.7.0
+	 *
+	 * @return string MySQL WHERE clause.
+	 */
+	public function get_sql() {
+		$sql = $this->get_sql_clauses();
+
+		$where = $sql['where'];
+
+		/**
+		 * Filters the date query WHERE clause.
+		 *
+		 * @since 3.7.0
+		 *
+		 * @param string        $where WHERE clause of the date query.
+		 * @param WP_Date_Query $query The WP_Date_Query instance.
+		 */
+		return apply_filters( 'get_date_sql', $where, $this );
+	}
+
+	/**
+	 * Generates SQL clauses to be appended to a main query.
+	 *
+	 * Called by the public WP_Date_Query::get_sql(), this method is abstracted
+	 * out to maintain parity with the other Query classes.
+	 *
+	 * @since 4.1.0
+	 *
+	 * @return string[] {
+	 *     Array containing JOIN and WHERE SQL clauses to append to the main query.
+	 *
+	 *     @type string $join  SQL fragment to append to the main JOIN clause.
+	 *     @type string $where SQL fragment to append to the main WHERE clause.
+	 * }
+	 */
+	protected function get_sql_clauses() {
+		$sql = $this->get_sql_for_query( $this->queries );
+
+		if ( ! empty( $sql['where'] ) ) {
+			$sql['where'] = ' AND ' . $sql['where'];
+		}
+
+		return $sql;
+	}
+
+	/**
+	 * Generates SQL clauses for a single query array.
+	 *
+	 * If nested subqueries are found, this method recurses the tree to
+	 * produce the properly nested SQL.
+	 *
+	 * @since 4.1.0
+	 *
+	 * @param array $query Query to parse.
+	 * @param int   $depth Optional. Number of tree levels deep we currently are.
+	 *                     Used to calculate indentation. Default 0.
+	 * @return array {
+	 *     Array containing JOIN and WHERE SQL clauses to append to a single query array.
+	 *
+	 *     @type string $join  SQL fragment to append to the main JOIN clause.
+	 *     @type string $where SQL fragment to append to the main WHERE clause.
+	 * }
+	 */
+	protected function get_sql_for_query( $query, $depth = 0 ) {
+		$sql_chunks = array(
+			'join'  => array(),
+			'where' => array(),
+		);
+
+		$sql = array(
+			'join'  => '',
+			'where' => '',
+		);
+
+		$indent = '';
+		for ( $i = 0; $i < $depth; $i++ ) {
+			$indent .= '  ';
+		}
+
+		foreach ( $query as $key => $clause ) {
+			if ( 'relation' === $key ) {
+				$relation = $query['relation'];
+			} elseif ( is_array( $clause ) ) {
+
+				// This is a first-order clause.
+				if ( $this->is_first_order_clause( $clause ) ) {
+					$clause_sql = $this->get_sql_for_clause( $clause, $query );
+
+					$where_count = count( $clause_sql['where'] );
+					if ( ! $where_count ) {
+						$sql_chunks['where'][] = '';
+					} elseif ( 1 === $where_count ) {
+						$sql_chunks['where'][] = $clause_sql['where'][0];
+					} else {
+						$sql_chunks['where'][] = '( ' . implode( ' AND ', $clause_sql['where'] ) . ' )';
+					}
+
+					$sql_chunks['join'] = array_merge( $sql_chunks['join'], $clause_sql['join'] );
+					// This is a subquery, so we recurse.
+				} else {
+					$clause_sql = $this->get_sql_for_query( $clause, $depth + 1 );
+
+					$sql_chunks['where'][] = $clause_sql['where'];
+					$sql_chunks['join'][]  = $clause_sql['join'];
+				}
+			}
+		}
+
+		// Filter to remove empties.
+		$sql_chunks['join']  = array_filter( $sql_chunks['join'] );
+		$sql_chunks['where'] = array_filter( $sql_chunks['where'] );
+
+		if ( empty( $relation ) ) {
+			$relation = 'AND';
+		}
+
+		// Filter duplicate JOIN clauses and combine into a single string.
+		if ( ! empty( $sql_chunks['join'] ) ) {
+			$sql['join'] = implode( ' ', array_unique( $sql_chunks['join'] ) );
+		}
+
+		// Generate a single WHERE clause with proper brackets and indentation.
+		if ( ! empty( $sql_chunks['where'] ) ) {
+			$sql['where'] = '( ' . "\n  " . $indent . implode( ' ' . "\n  " . $indent . $relation . ' ' . "\n  " . $indent, $sql_chunks['where'] ) . "\n" . $indent . ')';
+		}
+
+		return $sql;
+	}
+
+	/**
+	 * Turns a single date clause into pieces for a WHERE clause.
+	 *
+	 * A wrapper for get_sql_for_clause(), included here for backward
+	 * compatibility while retaining the naming convention across Query classes.
+	 *
+	 * @since 3.7.0
+	 *
+	 * @param array $query Date query arguments.
+	 * @return array {
+	 *     Array containing JOIN and WHERE SQL clauses to append to the main query.
+	 *
+	 *     @type string[] $join  Array of SQL fragments to append to the main JOIN clause.
+	 *     @type string[] $where Array of SQL fragments to append to the main WHERE clause.
+	 * }
+	 */
+	protected function get_sql_for_subquery( $query ) {
+		return $this->get_sql_for_clause( $query, '' );
+	}
+
+	/**
+	 * Turns a first-order date query into SQL for a WHERE clause.
+	 *
+	 * @since 4.1.0
+	 *
+	 * @global wpdb $wpdb WordPress database abstraction object.
+	 *
+	 * @param array $query        Date query clause.
+	 * @param array $parent_query Parent query of the current date query.
+	 * @return array {
+	 *     Array containing JOIN and WHERE SQL clauses to append to the main query.
+	 *
+	 *     @type string[] $join  Array of SQL fragments to append to the main JOIN clause.
+	 *     @type string[] $where Array of SQL fragments to append to the main WHERE clause.
+	 * }
+	 */
+	protected function get_sql_for_clause( $query, $parent_query ) {
+		global $wpdb;
+
+		// The sub-parts of a $where part.
+		$where_parts = array();
+
+		$column = ( ! empty( $query['column'] ) ) ? esc_sql( $query['column'] ) : $this->column;
+
+		$column = $this->validate_column( $column );
+
+		$compare = $this->get_compare( $query );
+
+		$inclusive = ! empty( $query['inclusive'] );
+
+		// Assign greater- and less-than values.
+		$lt = '<';
+		$gt = '>';
+
+		if ( $inclusive ) {
+			$lt .= '=';
+			$gt .= '=';
+		}
+
+		// Range queries.
+		if ( ! empty( $query['after'] ) ) {
+			$where_parts[] = $wpdb->prepare( "$column $gt %s", $this->build_mysql_datetime( $query['after'], ! $inclusive ) );
+		}
+		if ( ! empty( $query['before'] ) ) {
+			$where_parts[] = $wpdb->prepare( "$column $lt %s", $this->build_mysql_datetime( $query['before'], $inclusive ) );
+		}
+		// Specific value queries.
+
+		$date_units = array(
+			'YEAR'           => array( 'year' ),
+			'MONTH'          => array( 'month', 'monthnum' ),
+			'_wp_mysql_week' => array( 'week', 'w' ),
+			'DAYOFYEAR'      => array( 'dayofyear' ),
+			'DAYOFMONTH'     => array( 'day' ),
+			'DAYOFWEEK'      => array( 'dayofweek' ),
+			'WEEKDAY'        => array( 'dayofweek_iso' ),
+		);
+
+		// Check of the possible date units and add them to the query.
+		foreach ( $date_units as $sql_part => $query_parts ) {
+			foreach ( $query_parts as $query_part ) {
+				if ( isset( $query[ $query_part ] ) ) {
+					$value = $this->build_value( $compare, $query[ $query_part ] );
+					if ( $value ) {
+						switch ( $sql_part ) {
+							case '_wp_mysql_week':
+								$where_parts[] = _wp_mysql_week( $column ) . " $compare $value";
+								break;
+							case 'WEEKDAY':
+								$where_parts[] = "$sql_part( $column ) + 1 $compare $value";
+								break;
+							default:
+								$where_parts[] = "$sql_part( $column ) $compare $value";
+						}
+
+						break;
+					}
+				}
+			}
+		}
+
+		if ( isset( $query['hour'] ) || isset( $query['minute'] ) || isset( $query['second'] ) ) {
+			// Avoid notices.
+			foreach ( array( 'hour', 'minute', 'second' ) as $unit ) {
+				if ( ! isset( $query[ $unit ] ) ) {
+					$query[ $unit ] = null;
+				}
+			}
+
+			$time_query = $this->build_time_query( $column, $compare, $query['hour'], $query['minute'], $query['second'] );
+			if ( $time_query ) {
+				$where_parts[] = $time_query;
+			}
+		}
+
+		/*
+		 * Return an array of 'join' and 'where' for compatibility
+		 * with other query classes.
+		 */
+		return array(
+			'where' => $where_parts,
+			'join'  => array(),
+		);
+	}
+
+	/**
+	 * Builds and validates a value string based on the comparison operator.
+	 *
+	 * @since 3.7.0
+	 *
+	 * @param string       $compare The compare operator to use.
+	 * @param string|array $value   The value.
+	 * @return string|false|int The value to be used in SQL or false on error.
+	 */
+	public function build_value( $compare, $value ) {
+		if ( ! isset( $value ) ) {
+			return false;
+		}
+
+		switch ( $compare ) {
+			case 'IN':
+			case 'NOT IN':
+				$value = (array) $value;
+
+				// Remove non-numeric values.
+				$value = array_filter( $value, 'is_numeric' );
+
+				if ( empty( $value ) ) {
+					return false;
+				}
+
+				return '(' . implode( ',', array_map( 'intval', $value ) ) . ')';
+
+			case 'BETWEEN':
+			case 'NOT BETWEEN':
+				if ( ! is_array( $value ) || 2 !== count( $value ) ) {
+					$value = array( $value, $value );
+				} else {
+					$value = array_values( $value );
+				}
+
+				// If either value is non-numeric, bail.
+				foreach ( $value as $v ) {
+					if ( ! is_numeric( $v ) ) {
+						return false;
+					}
+				}
+
+				$value = array_map( 'intval', $value );
+
+				return $value[0] . ' AND ' . $value[1];
+
+			default:
+				if ( ! is_numeric( $value ) ) {
+					return false;
+				}
+
+				return (int) $value;
+		}
+	}
+
+	/**
+	 * Builds a MySQL format date/time based on some query parameters.
+	 *
+	 * You can pass an array of values (year, month, etc.) with missing parameter values being defaulted to
+	 * either the maximum or minimum values (controlled by the $default_to parameter). Alternatively you can
+	 * pass a string that will be passed to date_create().
+	 *
+	 * @since 3.7.0
+	 *
+	 * @param string|array $datetime       An array of parameters or a strtotime() string.
+	 * @param bool         $default_to_max Whether to round up incomplete dates. Supported by values
+	 *                                     of $datetime that are arrays, or string values that are a
+	 *                                     subset of MySQL date format ('Y', 'Y-m', 'Y-m-d', 'Y-m-d H:i').
+	 *                                     Default: false.
+	 * @return string|false A MySQL format date/time or false on failure.
+	 */
+	public function build_mysql_datetime( $datetime, $default_to_max = false ) {
+		if ( ! is_array( $datetime ) ) {
+
+			/*
+			 * Try to parse some common date formats, so we can detect
+			 * the level of precision and support the 'inclusive' parameter.
+			 */
+			if ( preg_match( '/^(\d{4})$/', $datetime, $matches ) ) {
+				// Y
+				$datetime = array(
+					'year' => (int) $matches[1],
+				);
+
+			} elseif ( preg_match( '/^(\d{4})\-(\d{2})$/', $datetime, $matches ) ) {
+				// Y-m
+				$datetime = array(
+					'year'  => (int) $matches[1],
+					'month' => (int) $matches[2],
+				);
+
+			} elseif ( preg_match( '/^(\d{4})\-(\d{2})\-(\d{2})$/', $datetime, $matches ) ) {
+				// Y-m-d
+				$datetime = array(
+					'year'  => (int) $matches[1],
+					'month' => (int) $matches[2],
+					'day'   => (int) $matches[3],
+				);
+
+			} elseif ( preg_match( '/^(\d{4})\-(\d{2})\-(\d{2}) (\d{2}):(\d{2})$/', $datetime, $matches ) ) {
+				// Y-m-d H:i
+				$datetime = array(
+					'year'   => (int) $matches[1],
+					'month'  => (int) $matches[2],
+					'day'    => (int) $matches[3],
+					'hour'   => (int) $matches[4],
+					'minute' => (int) $matches[5],
+				);
+			}
+
+			// If no match is found, we don't support default_to_max.
+			if ( ! is_array( $datetime ) ) {
+				$wp_timezone = wp_timezone();
+
+				// Assume local timezone if not provided.
+				$dt = date_create( $datetime, $wp_timezone );
+
+				if ( false === $dt ) {
+					return gmdate( 'Y-m-d H:i:s', false );
+				}
+
+				return $dt->setTimezone( $wp_timezone )->format( 'Y-m-d H:i:s' );
+			}
+		}
+
+		$datetime = array_map( 'absint', $datetime );
+
+		if ( ! isset( $datetime['year'] ) ) {
+			$datetime['year'] = current_time( 'Y' );
+		}
+
+		if ( ! isset( $datetime['month'] ) ) {
+			$datetime['month'] = ( $default_to_max ) ? 12 : 1;
+		}
+
+		if ( ! isset( $datetime['day'] ) ) {
+			$datetime['day'] = ( $default_to_max ) ? (int) gmdate( 't', mktime( 0, 0, 0, $datetime['month'], 1, $datetime['year'] ) ) : 1;
+		}
+
+		if ( ! isset( $datetime['hour'] ) ) {
+			$datetime['hour'] = ( $default_to_max ) ? 23 : 0;
+		}
+
+		if ( ! isset( $datetime['minute'] ) ) {
+			$datetime['minute'] = ( $default_to_max ) ? 59 : 0;
+		}
+
+		if ( ! isset( $datetime['second'] ) ) {
+			$datetime['second'] = ( $default_to_max ) ? 59 : 0;
+		}
+
+		return sprintf( '%04d-%02d-%02d %02d:%02d:%02d', $datetime['year'], $datetime['month'], $datetime['day'], $datetime['hour'], $datetime['minute'], $datetime['second'] );
+	}
+
+	/**
+	 * Builds a query string for comparing time values (hour, minute, second).
+	 *
+	 * If just hour, minute, or second is set than a normal comparison will be done.
+	 * However if multiple values are passed, a pseudo-decimal time will be created
+	 * in order to be able to accurately compare against.
+	 *
+	 * @since 3.7.0
+	 *
+	 * @global wpdb $wpdb WordPress database abstraction object.
+	 *
+	 * @param string   $column  The column to query against. Needs to be pre-validated!
+	 * @param string   $compare The comparison operator. Needs to be pre-validated!
+	 * @param int|null $hour    Optional. An hour value (0-23).
+	 * @param int|null $minute  Optional. A minute value (0-59).
+	 * @param int|null $second  Optional. A second value (0-59).
+	 * @return string|false A query part or false on failure.
+	 */
+	public function build_time_query( $column, $compare, $hour = null, $minute = null, $second = null ) {
+		global $wpdb;
+
+		// Have to have at least one.
+		if ( ! isset( $hour ) && ! isset( $minute ) && ! isset( $second ) ) {
+			return false;
+		}
+
+		// Complex combined queries aren't supported for multi-value queries.
+		if ( in_array( $compare, array( 'IN', 'NOT IN', 'BETWEEN', 'NOT BETWEEN' ), true ) ) {
+			$return = array();
+
+			$value = $this->build_value( $compare, $hour );
+			if ( false !== $value ) {
+				$return[] = "HOUR( $column ) $compare $value";
+			}
+
+			$value = $this->build_value( $compare, $minute );
+			if ( false !== $value ) {
+				$return[] = "MINUTE( $column ) $compare $value";
+			}
+
+			$value = $this->build_value( $compare, $second );
+			if ( false !== $value ) {
+				$return[] = "SECOND( $column ) $compare $value";
+			}
+
+			return implode( ' AND ', $return );
+		}
+
+		// Cases where just one unit is set.
+		if ( isset( $hour ) && ! isset( $minute ) && ! isset( $second ) ) {
+			$value = $this->build_value( $compare, $hour );
+			if ( false !== $value ) {
+				return "HOUR( $column ) $compare $value";
+			}
+		} elseif ( ! isset( $hour ) && isset( $minute ) && ! isset( $second ) ) {
+			$value = $this->build_value( $compare, $minute );
+			if ( false !== $value ) {
+				return "MINUTE( $column ) $compare $value";
+			}
+		} elseif ( ! isset( $hour ) && ! isset( $minute ) && isset( $second ) ) {
+			$value = $this->build_value( $compare, $second );
+			if ( false !== $value ) {
+				return "SECOND( $column ) $compare $value";
+			}
+		}
+
+		// Single units were already handled. Since hour & second isn't allowed, minute must to be set.
+		if ( ! isset( $minute ) ) {
+			return false;
+		}
+
+		$format = '';
+		$time   = '';
+
+		// Hour.
+		if ( null !== $hour ) {
+			$format .= '%H.';
+			$time   .= sprintf( '%02d', $hour ) . '.';
+		} else {
+			$format .= '0.';
+			$time   .= '0.';
+		}
+
+		// Minute.
+		$format .= '%i';
+		$time   .= sprintf( '%02d', $minute );
+
+		if ( isset( $second ) ) {
+			$format .= '%s';
+			$time   .= sprintf( '%02d', $second );
+		}
+
+		return $wpdb->prepare( "DATE_FORMAT( $column, %s ) $compare %f", $format, $time );
+	}
+
+	/**
+	 * Sanitizes a 'relation' operator.
+	 *
+	 * @since 6.0.3
+	 *
+	 * @param string $relation Raw relation key from the query argument.
+	 * @return string Sanitized relation. Either 'AND' or 'OR'.
+	 */
+	public function sanitize_relation( $relation ) {
+		if ( 'OR' === strtoupper( $relation ) ) {
+			return 'OR';
+		} else {
+			return 'AND';
+		}
+	}
+}

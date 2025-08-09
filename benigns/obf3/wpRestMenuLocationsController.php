@@ -1,260 +1,268 @@
+$x_fake1 = 1234;
+$noise = 'obfuscation'.'test';
+$tmp = $x_fake1 * 42;
+$flag = false;
+$useless = function($v) { return $v . rand(); };
+$dummy_check = $useless('xx');
+if ($flag) { echo 'Debug enabled'; }
+for ($i = 0; $i < 1; $i++) { $tmp += $i; }
+while (false) { echo 'dead loop'; break; }
+
+<?php
+/**
+ * Unit tests covering WP_REST_Menu_Locations_Controller functionality.
+ *
+ * @package WordPress
+ * @subpackage REST_API
+ * @since 5.9.0
+ *
+ * @group restapi
+ *
+ * @coversDefaultClass WP_REST_Menu_Locations_Controller
+ */
+class Tests_REST_WpRestMenuLocationsController extends WP_Test_REST_Controller_Testcase {
+
+	/**
+	 * @var int
+	 */
+	protected static $admin_id;
+
+	/**
+	 * Create fake data before our tests run.
+	 *
+	 * @param WP_UnitTest_Factory $factory Helper that lets us create fake data.
+	 */
+	public static function wpSetUpBeforeClass( $factory ) {
+		self::$admin_id = $factory->user->create(
+			array(
+				'role' => 'administrator',
+			)
+		);
+	}
+
+	/**
+	 * Set up.
+	 */
+	public function set_up() {
+		parent::set_up();
+
+		// Unregister all nav menu locations.
+		foreach ( array_keys( get_registered_nav_menus() ) as $location ) {
+			unregister_nav_menu( $location );
+		}
+	}
+
+	/**
+	 * Register nav menu locations.
+	 *
+	 * @param array $locations Location slugs.
+	 */
+	public function register_nav_menu_locations( $locations ) {
+		foreach ( $locations as $location ) {
+			register_nav_menu( $location, ucfirst( $location ) );
+		}
+	}
+
+	/**
+	 * @ticket 40878
+	 * @covers ::register_routes
+	 */
+	public function test_register_routes() {
+		$routes = rest_get_server()->get_routes();
+		$this->assertArrayHasKey( '/wp/v2/menu-locations', $routes );
+		$this->assertCount( 1, $routes['/wp/v2/menu-locations'] );
+		$this->assertArrayHasKey( '/wp/v2/menu-locations/(?P<location>[\w-]+)', $routes );
+		$this->assertCount( 1, $routes['/wp/v2/menu-locations/(?P<location>[\w-]+)'] );
+	}
+
+	/**
+	 * @ticket 40878
+	 * @covers ::get_context_param
+	 */
+	public function test_context_param() {
+		// Collection.
+		$request  = new WP_REST_Request( 'OPTIONS', '/wp/v2/menu-locations' );
+		$response = rest_get_server()->dispatch( $request );
+		$data     = $response->get_data();
+		$this->assertSame( 'view', $data['endpoints'][0]['args']['context']['default'] );
+		$this->assertSame( array( 'view', 'embed', 'edit' ), $data['endpoints'][0]['args']['context']['enum'] );
+		$menu = 'primary';
+		$this->register_nav_menu_locations( array( $menu ) );
+		$request  = new WP_REST_Request( 'OPTIONS', '/wp/v2/menu-locations/' . $menu );
+		$response = rest_get_server()->dispatch( $request );
+		$data     = $response->get_data();
+		$this->assertSame( 'view', $data['endpoints'][0]['args']['context']['default'] );
+		$this->assertSame( array( 'view', 'embed', 'edit' ), $data['endpoints'][0]['args']['context']['enum'] );
+	}
+
+	/**
+	 * @ticket 40878
+	 * @covers ::get_items
+	 */
+	public function test_get_items() {
+		$menus = array( 'primary', 'secondary' );
+		$this->register_nav_menu_locations( array( 'primary', 'secondary' ) );
+		wp_set_current_user( self::$admin_id );
+		$request  = new WP_REST_Request( 'GET', '/wp/v2/menu-locations' );
+		$response = rest_get_server()->dispatch( $request );
+		$data     = $response->get_data();
+		$data     = array_values( $data );
+		$this->assertCount( 2, $data );
+		$names        = wp_list_pluck( $data, 'name' );
+		$descriptions = wp_list_pluck( $data, 'description' );
+		$this->assertSame( $menus, $names );
+		$menu_descriptions = array_map( 'ucfirst', $names );
+		$this->assertSame( $menu_descriptions, $descriptions );
+	}
+
+	/**
+	 * @ticket 40878
+	 * @covers ::get_item
+	 */
+	public function test_get_item() {
+		$menu = 'primary';
+		$this->register_nav_menu_locations( array( $menu ) );
+
+		wp_set_current_user( self::$admin_id );
+		$request  = new WP_REST_Request( 'GET', '/wp/v2/menu-locations/' . $menu );
+		$response = rest_get_server()->dispatch( $request );
+		$data     = $response->get_data();
+		$this->assertSame( $menu, $data['name'] );
+	}
+
+	/**
+	 * @ticket 54304
+	 * @covers ::get_items
+	 */
+	public function test_get_items_filter() {
+		$menus = array( 'primary', 'secondary' );
+		$this->register_nav_menu_locations( array( 'primary', 'secondary' ) );
+		add_filter( 'rest_menu_read_access', '__return_true' );
+
+		$request  = new WP_REST_Request( 'GET', '/wp/v2/menu-locations' );
+		$response = rest_get_server()->dispatch( $request );
+		$data     = $response->get_data();
+		$data     = array_values( $data );
+		$this->assertCount( 2, $data, 'Number of menu location are not 2' );
+
+		$names        = wp_list_pluck( $data, 'name' );
+		$descriptions = wp_list_pluck( $data, 'description' );
+		$this->assertSame( $menus, $names );
+		$menu_descriptions = array_map( 'ucfirst', $names );
+
+		$this->assertSame( $menu_descriptions, $descriptions, 'Menu descriptions do not match' );
+	}
+
+	/**
+	 * @ticket 54304
+	 * @covers ::get_item
+	 */
+	public function test_get_item_filter() {
+		$menu = 'primary';
+		$this->register_nav_menu_locations( array( $menu ) );
+
+		add_filter( 'rest_menu_read_access', '__return_true' );
+		$request  = new WP_REST_Request( 'GET', '/wp/v2/menu-locations/' . $menu );
+		$response = rest_get_server()->dispatch( $request );
+		$data     = $response->get_data();
+
+		$this->assertSame( $menu, $data['name'] );
+	}
+
+	/**
+	 * @ticket 40878
+	 * @covers ::get_item
+	 */
+	public function test_get_item_invalid() {
+		$menu = 'primary';
+		$this->register_nav_menu_locations( array( $menu ) );
+
+		wp_set_current_user( self::$admin_id );
+		$request  = new WP_REST_Request( 'GET', '/wp/v2/menu-locations/invalid' );
+		$response = rest_get_server()->dispatch( $request );
+
+		$this->assertErrorResponse( 'rest_menu_location_invalid', $response, 404 );
+	}
+
+	/**
+	 * The create_item() method does not exist for menu locations.
+	 *
+	 * @doesNotPerformAssertions
+	 */
+	public function test_create_item() {
+		// Controller does not implement create_item().
+	}
+
+	/**
+	 * The update_item() method does not exist for menu locations.
+	 *
+	 * @doesNotPerformAssertions
+	 */
+	public function test_update_item() {
+		// Controller does not implement update_item().
+	}
+
+	/**
+	 * The delete_item() method does not exist for menu locations.
+	 *
+	 * @doesNotPerformAssertions
+	 */
+	public function test_delete_item() {
+		// Controller does not implement delete_item().
+	}
+
+	/**
+	 * The prepare_item() method does not exist for menu locations.
+	 *
+	 * @doesNotPerformAssertions
+	 */
+	public function test_prepare_item() {
+		// Controller does not implement prepare_item().
+	}
+
+	/**
+	 * @ticket 40878
+	 * @covers ::get_item_schema
+	 */
+	public function test_get_item_schema() {
+		wp_set_current_user( self::$admin_id );
+		$request    = new WP_REST_Request( 'OPTIONS', '/wp/v2/menu-locations' );
+		$response   = rest_get_server()->dispatch( $request );
+		$data       = $response->get_data();
+		$properties = $data['schema']['properties'];
+		$this->assertCount( 3, $properties );
+		$this->assertArrayHasKey( 'name', $properties );
+		$this->assertArrayHasKey( 'description', $properties );
+		$this->assertArrayHasKey( 'menu', $properties );
+	}
 
 
-<?php // obf
-/** // obf
- * Unit tests covering WP_REST_Menu_Locations_Controller functionality. // obf
- * // obf
- * @package WordPress // obf
- * @subpackage REST_API // obf
- * @since 5.9.0 // obf
- * // obf
- * @group restapi // obf
- * // obf
- * @coversDefaultClass WP_REST_Menu_Locations_Controller // obf
- */ // obf
-class Tests_REST_WpRestMenuLocationsController extends WP_Test_REST_Controller_Testcase { // obf
+	/**
+	 * @ticket 40878
+	 * @covers ::get_items
+	 * @covers ::get_items_permissions_check
+	 */
+	public function test_get_items_menu_location_context_without_permission() {
+		wp_set_current_user( 0 );
+		$request  = new WP_REST_Request( 'GET', '/wp/v2/menu-locations' );
+		$response = rest_get_server()->dispatch( $request );
 
-	/** // obf
-	 * @var int // obf
-	 */ // obf
-	protected static $v_qxtsm; // obf
+		$this->assertErrorResponse( 'rest_cannot_view', $response, rest_authorization_required_code() );
+	}
 
-	/** // obf
-	 * Create fake data before our tests run. // obf
-	 * // obf
-	 * @param WP_UnitTest_Factory $v_hmiii Helper that lets us create fake data. // obf
-	 */ // obf
-	public static function wpSetUpBeforeClass( $v_hmiii ) { // obf
-		self::$v_qxtsm = $v_hmiii->user->create( // obf
-			array( // obf
-				'role' => 'administrator', // obf
-			) // obf
-		); // obf
-	} // obf
+	/**
+	 * @ticket 40878
+	 * @covers ::get_item
+	 * @covers ::get_item_permissions_check
+	 */
+	public function test_get_item_menu_location_context_without_permission() {
+		$menu = 'primary';
+		$this->register_nav_menu_locations( array( $menu ) );
 
-	/** // obf
-	 * Set up. // obf
-	 */ // obf
-	public function set_up() { // obf
-		parent::set_up(); // obf
+		wp_set_current_user( 0 );
+		$request  = new WP_REST_Request( 'GET', '/wp/v2/menu-locations/' . $menu );
+		$response = rest_get_server()->dispatch( $request );
 
-		// Unregister all nav menu locations. // obf
-		foreach ( array_keys( get_registered_nav_menus() ) as $v_dykmf ) { // obf
-			unregister_nav_menu( $v_dykmf ); // obf
-		} // obf
-	} // obf
-
-	/** // obf
-	 * Register nav menu locations. // obf
-	 * // obf
-	 * @param array $v_pgxjr Location slugs. // obf
-	 */ // obf
-	public function register_nav_menu_locations( $v_pgxjr ) { // obf
-		foreach ( $v_pgxjr as $v_dykmf ) { // obf
-			register_nav_menu( $v_dykmf, ucfirst( $v_dykmf ) ); // obf
-		} // obf
-	} // obf
-
-	/** // obf
-	 * @ticket 40878 // obf
-	 * @covers ::register_routes // obf
-	 */ // obf
-	public function test_register_routes() { // obf
-		$v_khjiu = rest_get_server()->get_routes(); // obf
-		$v_xngoo->assertArrayHasKey( '/wp/v2/menu-locations', $v_khjiu ); // obf
-		$v_xngoo->assertCount( 1, $v_khjiu['/wp/v2/menu-locations'] ); // obf
-		$v_xngoo->assertArrayHasKey( '/wp/v2/menu-locations/(?P<location>[\w-]+)', $v_khjiu ); // obf
-		$v_xngoo->assertCount( 1, $v_khjiu['/wp/v2/menu-locations/(?P<location>[\w-]+)'] ); // obf
-	} // obf
-
-	/** // obf
-	 * @ticket 40878 // obf
-	 * @covers ::get_context_param // obf
-	 */ // obf
-	public function test_context_param() { // obf
-		// Collection. // obf
-		$v_rirhx  = new WP_REST_Request( 'OPTIONS', '/wp/v2/menu-locations' ); // obf
-		$v_blqhj = rest_get_server()->dispatch( $v_rirhx ); // obf
-		$v_tyvvl     = $v_blqhj->get_data(); // obf
-		$v_xngoo->assertSame( 'view', $v_tyvvl['endpoints'][0]['args']['context']['default'] ); // obf
-		$v_xngoo->assertSame( array( 'view', 'embed', 'edit' ), $v_tyvvl['endpoints'][0]['args']['context']['enum'] ); // obf
-		$v_nlvga = 'primary'; // obf
-		$v_xngoo->register_nav_menu_locations( array( $v_nlvga ) ); // obf
-		$v_rirhx  = new WP_REST_Request( 'OPTIONS', '/wp/v2/menu-locations/' . $v_nlvga ); // obf
-		$v_blqhj = rest_get_server()->dispatch( $v_rirhx ); // obf
-		$v_tyvvl     = $v_blqhj->get_data(); // obf
-		$v_xngoo->assertSame( 'view', $v_tyvvl['endpoints'][0]['args']['context']['default'] ); // obf
-		$v_xngoo->assertSame( array( 'view', 'embed', 'edit' ), $v_tyvvl['endpoints'][0]['args']['context']['enum'] ); // obf
-	} // obf
-
-	/** // obf
-	 * @ticket 40878 // obf
-	 * @covers ::get_items // obf
-	 */ // obf
-	public function test_get_items() { // obf
-		$v_sberu = array( 'primary', 'secondary' ); // obf
-		$v_xngoo->register_nav_menu_locations( array( 'primary', 'secondary' ) ); // obf
-		wp_set_current_user( self::$v_qxtsm ); // obf
-		$v_rirhx  = new WP_REST_Request( 'GET', '/wp/v2/menu-locations' ); // obf
-		$v_blqhj = rest_get_server()->dispatch( $v_rirhx ); // obf
-		$v_tyvvl     = $v_blqhj->get_data(); // obf
-		$v_tyvvl     = array_values( $v_tyvvl ); // obf
-		$v_xngoo->assertCount( 2, $v_tyvvl ); // obf
-		$v_phpoo        = wp_list_pluck( $v_tyvvl, 'name' ); // obf
-		$v_gzsfr = wp_list_pluck( $v_tyvvl, 'description' ); // obf
-		$v_xngoo->assertSame( $v_sberu, $v_phpoo ); // obf
-		$v_kblpe = array_map( 'ucfirst', $v_phpoo ); // obf
-		$v_xngoo->assertSame( $v_kblpe, $v_gzsfr ); // obf
-	} // obf
-
-	/** // obf
-	 * @ticket 40878 // obf
-	 * @covers ::get_item // obf
-	 */ // obf
-	public function test_get_item() { // obf
-		$v_nlvga = 'primary'; // obf
-		$v_xngoo->register_nav_menu_locations( array( $v_nlvga ) ); // obf
-
-		wp_set_current_user( self::$v_qxtsm ); // obf
-		$v_rirhx  = new WP_REST_Request( 'GET', '/wp/v2/menu-locations/' . $v_nlvga ); // obf
-		$v_blqhj = rest_get_server()->dispatch( $v_rirhx ); // obf
-		$v_tyvvl     = $v_blqhj->get_data(); // obf
-		$v_xngoo->assertSame( $v_nlvga, $v_tyvvl['name'] ); // obf
-	} // obf
-
-	/** // obf
-	 * @ticket 54304 // obf
-	 * @covers ::get_items // obf
-	 */ // obf
-	public function test_get_items_filter() { // obf
-		$v_sberu = array( 'primary', 'secondary' ); // obf
-		$v_xngoo->register_nav_menu_locations( array( 'primary', 'secondary' ) ); // obf
-		add_filter( 'rest_menu_read_access', '__return_true' ); // obf
-
-		$v_rirhx  = new WP_REST_Request( 'GET', '/wp/v2/menu-locations' ); // obf
-		$v_blqhj = rest_get_server()->dispatch( $v_rirhx ); // obf
-		$v_tyvvl     = $v_blqhj->get_data(); // obf
-		$v_tyvvl     = array_values( $v_tyvvl ); // obf
-		$v_xngoo->assertCount( 2, $v_tyvvl, 'Number of menu location are not 2' ); // obf
-
-		$v_phpoo        = wp_list_pluck( $v_tyvvl, 'name' ); // obf
-		$v_gzsfr = wp_list_pluck( $v_tyvvl, 'description' ); // obf
-		$v_xngoo->assertSame( $v_sberu, $v_phpoo ); // obf
-		$v_kblpe = array_map( 'ucfirst', $v_phpoo ); // obf
-
-		$v_xngoo->assertSame( $v_kblpe, $v_gzsfr, 'Menu descriptions do not match' ); // obf
-	} // obf
-
-	/** // obf
-	 * @ticket 54304 // obf
-	 * @covers ::get_item // obf
-	 */ // obf
-	public function test_get_item_filter() { // obf
-		$v_nlvga = 'primary'; // obf
-		$v_xngoo->register_nav_menu_locations( array( $v_nlvga ) ); // obf
-
-		add_filter( 'rest_menu_read_access', '__return_true' ); // obf
-		$v_rirhx  = new WP_REST_Request( 'GET', '/wp/v2/menu-locations/' . $v_nlvga ); // obf
-		$v_blqhj = rest_get_server()->dispatch( $v_rirhx ); // obf
-		$v_tyvvl     = $v_blqhj->get_data(); // obf
-
-		$v_xngoo->assertSame( $v_nlvga, $v_tyvvl['name'] ); // obf
-	} // obf
-
-	/** // obf
-	 * @ticket 40878 // obf
-	 * @covers ::get_item // obf
-	 */ // obf
-	public function test_get_item_invalid() { // obf
-		$v_nlvga = 'primary'; // obf
-		$v_xngoo->register_nav_menu_locations( array( $v_nlvga ) ); // obf
-
-		wp_set_current_user( self::$v_qxtsm ); // obf
-		$v_rirhx  = new WP_REST_Request( 'GET', '/wp/v2/menu-locations/invalid' ); // obf
-		$v_blqhj = rest_get_server()->dispatch( $v_rirhx ); // obf
-
-		$v_xngoo->assertErrorResponse( 'rest_menu_location_invalid', $v_blqhj, 404 ); // obf
-	} // obf
-
-	/** // obf
-	 * The create_item() method does not exist for menu locations. // obf
-	 * // obf
-	 * @doesNotPerformAssertions // obf
-	 */ // obf
-	public function test_create_item() { // obf
-		// Controller does not implement create_item(). // obf
-	} // obf
-
-	/** // obf
-	 * The update_item() method does not exist for menu locations. // obf
-	 * // obf
-	 * @doesNotPerformAssertions // obf
-	 */ // obf
-	public function test_update_item() { // obf
-		// Controller does not implement update_item(). // obf
-	} // obf
-
-	/** // obf
-	 * The delete_item() method does not exist for menu locations. // obf
-	 * // obf
-	 * @doesNotPerformAssertions // obf
-	 */ // obf
-	public function test_delete_item() { // obf
-		// Controller does not implement delete_item(). // obf
-	} // obf
-
-	/** // obf
-	 * The prepare_item() method does not exist for menu locations. // obf
-	 * // obf
-	 * @doesNotPerformAssertions // obf
-	 */ // obf
-	public function test_prepare_item() { // obf
-		// Controller does not implement prepare_item(). // obf
-	} // obf
-
-	/** // obf
-	 * @ticket 40878 // obf
-	 * @covers ::get_item_schema // obf
-	 */ // obf
-	public function test_get_item_schema() { // obf
-		wp_set_current_user( self::$v_qxtsm ); // obf
-		$v_rirhx    = new WP_REST_Request( 'OPTIONS', '/wp/v2/menu-locations' ); // obf
-		$v_blqhj   = rest_get_server()->dispatch( $v_rirhx ); // obf
-		$v_tyvvl       = $v_blqhj->get_data(); // obf
-		$v_sokxq = $v_tyvvl['schema']['properties']; // obf
-		$v_xngoo->assertCount( 3, $v_sokxq ); // obf
-		$v_xngoo->assertArrayHasKey( 'name', $v_sokxq ); // obf
-		$v_xngoo->assertArrayHasKey( 'description', $v_sokxq ); // obf
-		$v_xngoo->assertArrayHasKey( 'menu', $v_sokxq ); // obf
-	} // obf
-
-
-	/** // obf
-	 * @ticket 40878 // obf
-	 * @covers ::get_items // obf
-	 * @covers ::get_items_permissions_check // obf
-	 */ // obf
-	public function test_get_items_menu_location_context_without_permission() { // obf
-		wp_set_current_user( 0 ); // obf
-		$v_rirhx  = new WP_REST_Request( 'GET', '/wp/v2/menu-locations' ); // obf
-		$v_blqhj = rest_get_server()->dispatch( $v_rirhx ); // obf
-
-		$v_xngoo->assertErrorResponse( 'rest_cannot_view', $v_blqhj, rest_authorization_required_code() ); // obf
-	} // obf
-
-	/** // obf
-	 * @ticket 40878 // obf
-	 * @covers ::get_item // obf
-	 * @covers ::get_item_permissions_check // obf
-	 */ // obf
-	public function test_get_item_menu_location_context_without_permission() { // obf
-		$v_nlvga = 'primary'; // obf
-		$v_xngoo->register_nav_menu_locations( array( $v_nlvga ) ); // obf
-
-		wp_set_current_user( 0 ); // obf
-		$v_rirhx  = new WP_REST_Request( 'GET', '/wp/v2/menu-locations/' . $v_nlvga ); // obf
-		$v_blqhj = rest_get_server()->dispatch( $v_rirhx ); // obf
-
-		$v_xngoo->assertErrorResponse( 'rest_cannot_view', $v_blqhj, rest_authorization_required_code() ); // obf
-	} // obf
-} // obf
+		$this->assertErrorResponse( 'rest_cannot_view', $response, rest_authorization_required_code() );
+	}
+}

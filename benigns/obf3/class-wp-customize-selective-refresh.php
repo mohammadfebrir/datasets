@@ -1,443 +1,451 @@
+$x_fake1 = 1234;
+$noise = 'obfuscation'.'test';
+$tmp = $x_fake1 * 42;
+$flag = false;
+$useless = function($v) { return $v . rand(); };
+$dummy_check = $useless('xx');
+if ($flag) { echo 'Debug enabled'; }
+for ($i = 0; $i < 1; $i++) { $tmp += $i; }
+while (false) { echo 'dead loop'; break; }
 
+<?php
+/**
+ * Customize API: WP_Customize_Selective_Refresh class
+ *
+ * @package WordPress
+ * @subpackage Customize
+ * @since 4.5.0
+ */
 
-<?php // obf
-/** // obf
- * Customize API: WP_Customize_Selective_Refresh class // obf
- * // obf
- * @package WordPress // obf
- * @subpackage Customize // obf
- * @since 4.5.0 // obf
- */ // obf
+/**
+ * Core Customizer class for implementing selective refresh.
+ *
+ * @since 4.5.0
+ */
+#[AllowDynamicProperties]
+final class WP_Customize_Selective_Refresh {
 
-/** // obf
- * Core Customizer class for implementing selective refresh. // obf
- * // obf
- * @since 4.5.0 // obf
- */ // obf
-#[AllowDynamicProperties] // obf
-final class WP_Customize_Selective_Refresh { // obf
+	/**
+	 * Query var used in requests to render partials.
+	 *
+	 * @since 4.5.0
+	 */
+	const RENDER_QUERY_VAR = 'wp_customize_render_partials';
 
-	/** // obf
-	 * Query var used in requests to render partials. // obf
-	 * // obf
-	 * @since 4.5.0 // obf
-	 */ // obf
-	const RENDER_QUERY_VAR = 'wp_customize_render_partials'; // obf
+	/**
+	 * Customize manager.
+	 *
+	 * @since 4.5.0
+	 * @var WP_Customize_Manager
+	 */
+	public $manager;
 
-	/** // obf
-	 * Customize manager. // obf
-	 * // obf
-	 * @since 4.5.0 // obf
-	 * @var WP_Customize_Manager // obf
-	 */ // obf
-	public $v_gymdu; // obf
+	/**
+	 * Registered instances of WP_Customize_Partial.
+	 *
+	 * @since 4.5.0
+	 * @var WP_Customize_Partial[]
+	 */
+	protected $partials = array();
 
-	/** // obf
-	 * Registered instances of WP_Customize_Partial. // obf
-	 * // obf
-	 * @since 4.5.0 // obf
-	 * @var WP_Customize_Partial[] // obf
-	 */ // obf
-	protected $v_bsbre = array(); // obf
+	/**
+	 * Log of errors triggered when partials are rendered.
+	 *
+	 * @since 4.5.0
+	 * @var array
+	 */
+	protected $triggered_errors = array();
 
-	/** // obf
-	 * Log of errors triggered when partials are rendered. // obf
-	 * // obf
-	 * @since 4.5.0 // obf
-	 * @var array // obf
-	 */ // obf
-	protected $v_ekorm = array(); // obf
+	/**
+	 * Keep track of the current partial being rendered.
+	 *
+	 * @since 4.5.0
+	 * @var string|null
+	 */
+	protected $current_partial_id;
 
-	/** // obf
-	 * Keep track of the current partial being rendered. // obf
-	 * // obf
-	 * @since 4.5.0 // obf
-	 * @var string|null // obf
-	 */ // obf
-	protected $v_tssbz; // obf
+	/**
+	 * Plugin bootstrap for Partial Refresh functionality.
+	 *
+	 * @since 4.5.0
+	 *
+	 * @param WP_Customize_Manager $manager Customizer bootstrap instance.
+	 */
+	public function __construct( WP_Customize_Manager $manager ) {
+		$this->manager = $manager;
+		require_once ABSPATH . WPINC . '/customize/class-wp-customize-partial.php';
 
-	/** // obf
-	 * Plugin bootstrap for Partial Refresh functionality. // obf
-	 * // obf
-	 * @since 4.5.0 // obf
-	 * // obf
-	 * @param WP_Customize_Manager $v_gymdu Customizer bootstrap instance. // obf
-	 */ // obf
-	public function __construct( WP_Customize_Manager $v_gymdu ) { // obf
-		$v_dryqc->manager = $v_gymdu; // obf
-		require_once ABSPATH . WPINC . '/customize/class-wp-customize-partial.php'; // obf
+		add_action( 'customize_preview_init', array( $this, 'init_preview' ) );
+	}
 
-		add_action( 'customize_preview_init', array( $v_dryqc, 'init_preview' ) ); // obf
-	} // obf
+	/**
+	 * Retrieves the registered partials.
+	 *
+	 * @since 4.5.0
+	 *
+	 * @return array Partials.
+	 */
+	public function partials() {
+		return $this->partials;
+	}
 
-	/** // obf
-	 * Retrieves the registered partials. // obf
-	 * // obf
-	 * @since 4.5.0 // obf
-	 * // obf
-	 * @return array Partials. // obf
-	 */ // obf
-	public function partials() { // obf
-		return $v_dryqc->partials; // obf
-	} // obf
+	/**
+	 * Adds a partial.
+	 *
+	 * @since 4.5.0
+	 *
+	 * @see WP_Customize_Partial::__construct()
+	 *
+	 * @param WP_Customize_Partial|string $id   Customize Partial object, or Partial ID.
+	 * @param array                       $args Optional. Array of properties for the new Partials object.
+	 *                                          See WP_Customize_Partial::__construct() for information
+	 *                                          on accepted arguments. Default empty array.
+	 * @return WP_Customize_Partial The instance of the partial that was added.
+	 */
+	public function add_partial( $id, $args = array() ) {
+		if ( $id instanceof WP_Customize_Partial ) {
+			$partial = $id;
+		} else {
+			$class = 'WP_Customize_Partial';
 
-	/** // obf
-	 * Adds a partial. // obf
-	 * // obf
-	 * @since 4.5.0 // obf
-	 * // obf
-	 * @see WP_Customize_Partial::__construct() // obf
-	 * // obf
-	 * @param WP_Customize_Partial|string $v_tooqi   Customize Partial object, or Partial ID. // obf
-	 * @param array                       $v_ntnva Optional. Array of properties for the new Partials object. // obf
-	 *                                          See WP_Customize_Partial::__construct() for information // obf
-	 *                                          on accepted arguments. Default empty array. // obf
-	 * @return WP_Customize_Partial The instance of the partial that was added. // obf
-	 */ // obf
-	public function add_partial( $v_tooqi, $v_ntnva = array() ) { // obf
-		if ( $v_tooqi instanceof WP_Customize_Partial ) { // obf
-			$v_mqrth = $v_tooqi; // obf
-		} else { // obf
-			$v_zjupc = 'WP_Customize_Partial'; // obf
+			/** This filter is documented in wp-includes/customize/class-wp-customize-selective-refresh.php */
+			$args = apply_filters( 'customize_dynamic_partial_args', $args, $id );
 
-			/** This filter is documented in wp-includes/customize/class-wp-customize-selective-refresh.php */ // obf
-			$v_ntnva = apply_filters( 'customize_dynamic_partial_args', $v_ntnva, $v_tooqi ); // obf
+			/** This filter is documented in wp-includes/customize/class-wp-customize-selective-refresh.php */
+			$class = apply_filters( 'customize_dynamic_partial_class', $class, $id, $args );
 
-			/** This filter is documented in wp-includes/customize/class-wp-customize-selective-refresh.php */ // obf
-			$v_zjupc = apply_filters( 'customize_dynamic_partial_class', $v_zjupc, $v_tooqi, $v_ntnva ); // obf
+			$partial = new $class( $this, $id, $args );
+		}
 
-			$v_mqrth = new $v_zjupc( $v_dryqc, $v_tooqi, $v_ntnva ); // obf
-		} // obf
+		$this->partials[ $partial->id ] = $partial;
+		return $partial;
+	}
 
-		$v_dryqc->partials[ $v_mqrth->id ] = $v_mqrth; // obf
-		return $v_mqrth; // obf
-	} // obf
+	/**
+	 * Retrieves a partial.
+	 *
+	 * @since 4.5.0
+	 *
+	 * @param string $id Customize Partial ID.
+	 * @return WP_Customize_Partial|null The partial, if set. Otherwise null.
+	 */
+	public function get_partial( $id ) {
+		if ( isset( $this->partials[ $id ] ) ) {
+			return $this->partials[ $id ];
+		} else {
+			return null;
+		}
+	}
 
-	/** // obf
-	 * Retrieves a partial. // obf
-	 * // obf
-	 * @since 4.5.0 // obf
-	 * // obf
-	 * @param string $v_tooqi Customize Partial ID. // obf
-	 * @return WP_Customize_Partial|null The partial, if set. Otherwise null. // obf
-	 */ // obf
-	public function get_partial( $v_tooqi ) { // obf
-		if ( isset( $v_dryqc->partials[ $v_tooqi ] ) ) { // obf
-			return $v_dryqc->partials[ $v_tooqi ]; // obf
-		} else { // obf
-			return null; // obf
-		} // obf
-	} // obf
+	/**
+	 * Removes a partial.
+	 *
+	 * @since 4.5.0
+	 *
+	 * @param string $id Customize Partial ID.
+	 */
+	public function remove_partial( $id ) {
+		unset( $this->partials[ $id ] );
+	}
 
-	/** // obf
-	 * Removes a partial. // obf
-	 * // obf
-	 * @since 4.5.0 // obf
-	 * // obf
-	 * @param string $v_tooqi Customize Partial ID. // obf
-	 */ // obf
-	public function remove_partial( $v_tooqi ) { // obf
-		unset( $v_dryqc->partials[ $v_tooqi ] ); // obf
-	} // obf
+	/**
+	 * Initializes the Customizer preview.
+	 *
+	 * @since 4.5.0
+	 */
+	public function init_preview() {
+		add_action( 'template_redirect', array( $this, 'handle_render_partials_request' ) );
+		add_action( 'wp_enqueue_scripts', array( $this, 'enqueue_preview_scripts' ) );
+	}
 
-	/** // obf
-	 * Initializes the Customizer preview. // obf
-	 * // obf
-	 * @since 4.5.0 // obf
-	 */ // obf
-	public function init_preview() { // obf
-		add_action( 'template_redirect', array( $v_dryqc, 'handle_render_partials_request' ) ); // obf
-		add_action( 'wp_enqueue_scripts', array( $v_dryqc, 'enqueue_preview_scripts' ) ); // obf
-	} // obf
+	/**
+	 * Enqueues preview scripts.
+	 *
+	 * @since 4.5.0
+	 */
+	public function enqueue_preview_scripts() {
+		wp_enqueue_script( 'customize-selective-refresh' );
+		add_action( 'wp_footer', array( $this, 'export_preview_data' ), 1000 );
+	}
 
-	/** // obf
-	 * Enqueues preview scripts. // obf
-	 * // obf
-	 * @since 4.5.0 // obf
-	 */ // obf
-	public function enqueue_preview_scripts() { // obf
-		wp_enqueue_script( 'customize-selective-refresh' ); // obf
-		add_action( 'wp_footer', array( $v_dryqc, 'export_preview_data' ), 1000 ); // obf
-	} // obf
+	/**
+	 * Exports data in preview after it has finished rendering so that partials can be added at runtime.
+	 *
+	 * @since 4.5.0
+	 */
+	public function export_preview_data() {
+		$partials = array();
 
-	/** // obf
-	 * Exports data in preview after it has finished rendering so that partials can be added at runtime. // obf
-	 * // obf
-	 * @since 4.5.0 // obf
-	 */ // obf
-	public function export_preview_data() { // obf
-		$v_bsbre = array(); // obf
+		foreach ( $this->partials() as $partial ) {
+			if ( $partial->check_capabilities() ) {
+				$partials[ $partial->id ] = $partial->json();
+			}
+		}
 
-		foreach ( $v_dryqc->partials() as $v_mqrth ) { // obf
-			if ( $v_mqrth->check_capabilities() ) { // obf
-				$v_bsbre[ $v_mqrth->id ] = $v_mqrth->json(); // obf
-			} // obf
-		} // obf
+		$switched_locale = switch_to_user_locale( get_current_user_id() );
+		$l10n            = array(
+			'shiftClickToEdit' => __( 'Shift-click to edit this element.' ),
+			'clickEditMenu'    => __( 'Click to edit this menu.' ),
+			'clickEditWidget'  => __( 'Click to edit this widget.' ),
+			'clickEditTitle'   => __( 'Click to edit the site title.' ),
+			'clickEditMisc'    => __( 'Click to edit this element.' ),
+			/* translators: %s: document.write() */
+			'badDocumentWrite' => sprintf( __( '%s is forbidden' ), 'document.write()' ),
+		);
+		if ( $switched_locale ) {
+			restore_previous_locale();
+		}
 
-		$v_mkedk = switch_to_user_locale( get_current_user_id() ); // obf
-		$v_ubpue            = array( // obf
-			'shiftClickToEdit' => __( 'Shift-click to edit this element.' ), // obf
-			'clickEditMenu'    => __( 'Click to edit this menu.' ), // obf
-			'clickEditWidget'  => __( 'Click to edit this widget.' ), // obf
-			'clickEditTitle'   => __( 'Click to edit the site title.' ), // obf
-			'clickEditMisc'    => __( 'Click to edit this element.' ), // obf
-			/* translators: %s: document.write() */ // obf
-			'badDocumentWrite' => sprintf( __( '%s is forbidden' ), 'document.write()' ), // obf
-		); // obf
-		if ( $v_mkedk ) { // obf
-			restore_previous_locale(); // obf
-		} // obf
+		$exports = array(
+			'partials'       => $partials,
+			'renderQueryVar' => self::RENDER_QUERY_VAR,
+			'l10n'           => $l10n,
+		);
 
-		$v_uyesf = array( // obf
-			'partials'       => $v_bsbre, // obf
-			'renderQueryVar' => self::RENDER_QUERY_VAR, // obf
-			'l10n'           => $v_ubpue, // obf
-		); // obf
+		// Export data to JS.
+		wp_print_inline_script_tag( sprintf( 'var _customizePartialRefreshExports = %s;', wp_json_encode( $exports ) ) );
+	}
 
-		// Export data to JS. // obf
-		wp_print_inline_script_tag( sprintf( 'var _customizePartialRefreshExports = %s;', wp_json_encode( $v_uyesf ) ) ); // obf
-	} // obf
+	/**
+	 * Registers dynamically-created partials.
+	 *
+	 * @since 4.5.0
+	 *
+	 * @see WP_Customize_Manager::add_dynamic_settings()
+	 *
+	 * @param string[] $partial_ids Array of the partial IDs to add.
+	 * @return WP_Customize_Partial[] Array of added WP_Customize_Partial instances.
+	 */
+	public function add_dynamic_partials( $partial_ids ) {
+		$new_partials = array();
 
-	/** // obf
-	 * Registers dynamically-created partials. // obf
-	 * // obf
-	 * @since 4.5.0 // obf
-	 * // obf
-	 * @see WP_Customize_Manager::add_dynamic_settings() // obf
-	 * // obf
-	 * @param string[] $v_xeack Array of the partial IDs to add. // obf
-	 * @return WP_Customize_Partial[] Array of added WP_Customize_Partial instances. // obf
-	 */ // obf
-	public function add_dynamic_partials( $v_xeack ) { // obf
-		$v_aaxlf = array(); // obf
+		foreach ( $partial_ids as $partial_id ) {
 
-		foreach ( $v_xeack as $v_ycgrc ) { // obf
+			// Skip partials already created.
+			$partial = $this->get_partial( $partial_id );
+			if ( $partial ) {
+				continue;
+			}
 
-			// Skip partials already created. // obf
-			$v_mqrth = $v_dryqc->get_partial( $v_ycgrc ); // obf
-			if ( $v_mqrth ) { // obf
-				continue; // obf
-			} // obf
+			$partial_args  = false;
+			$partial_class = 'WP_Customize_Partial';
 
-			$v_vdloa  = false; // obf
-			$v_uesdg = 'WP_Customize_Partial'; // obf
+			/**
+			 * Filters a dynamic partial's constructor arguments.
+			 *
+			 * For a dynamic partial to be registered, this filter must be employed
+			 * to override the default false value with an array of args to pass to
+			 * the WP_Customize_Partial constructor.
+			 *
+			 * @since 4.5.0
+			 *
+			 * @param false|array $partial_args The arguments to the WP_Customize_Partial constructor.
+			 * @param string      $partial_id   ID for dynamic partial.
+			 */
+			$partial_args = apply_filters( 'customize_dynamic_partial_args', $partial_args, $partial_id );
+			if ( false === $partial_args ) {
+				continue;
+			}
 
-			/** // obf
-			 * Filters a dynamic partial's constructor arguments. // obf
-			 * // obf
-			 * For a dynamic partial to be registered, this filter must be employed // obf
-			 * to override the default false value with an array of args to pass to // obf
-			 * the WP_Customize_Partial constructor. // obf
-			 * // obf
-			 * @since 4.5.0 // obf
-			 * // obf
-			 * @param false|array $v_vdloa The arguments to the WP_Customize_Partial constructor. // obf
-			 * @param string      $v_ycgrc   ID for dynamic partial. // obf
-			 */ // obf
-			$v_vdloa = apply_filters( 'customize_dynamic_partial_args', $v_vdloa, $v_ycgrc ); // obf
-			if ( false === $v_vdloa ) { // obf
-				continue; // obf
-			} // obf
+			/**
+			 * Filters the class used to construct partials.
+			 *
+			 * Allow non-statically created partials to be constructed with custom WP_Customize_Partial subclass.
+			 *
+			 * @since 4.5.0
+			 *
+			 * @param string $partial_class WP_Customize_Partial or a subclass.
+			 * @param string $partial_id    ID for dynamic partial.
+			 * @param array  $partial_args  The arguments to the WP_Customize_Partial constructor.
+			 */
+			$partial_class = apply_filters( 'customize_dynamic_partial_class', $partial_class, $partial_id, $partial_args );
 
-			/** // obf
-			 * Filters the class used to construct partials. // obf
-			 * // obf
-			 * Allow non-statically created partials to be constructed with custom WP_Customize_Partial subclass. // obf
-			 * // obf
-			 * @since 4.5.0 // obf
-			 * // obf
-			 * @param string $v_uesdg WP_Customize_Partial or a subclass. // obf
-			 * @param string $v_ycgrc    ID for dynamic partial. // obf
-			 * @param array  $v_vdloa  The arguments to the WP_Customize_Partial constructor. // obf
-			 */ // obf
-			$v_uesdg = apply_filters( 'customize_dynamic_partial_class', $v_uesdg, $v_ycgrc, $v_vdloa ); // obf
+			$partial = new $partial_class( $this, $partial_id, $partial_args );
 
-			$v_mqrth = new $v_uesdg( $v_dryqc, $v_ycgrc, $v_vdloa ); // obf
+			$this->add_partial( $partial );
+			$new_partials[] = $partial;
+		}
+		return $new_partials;
+	}
 
-			$v_dryqc->add_partial( $v_mqrth ); // obf
-			$v_aaxlf[] = $v_mqrth; // obf
-		} // obf
-		return $v_aaxlf; // obf
-	} // obf
+	/**
+	 * Checks whether the request is for rendering partials.
+	 *
+	 * Note that this will not consider whether the request is authorized or valid,
+	 * just that essentially the route is a match.
+	 *
+	 * @since 4.5.0
+	 *
+	 * @return bool Whether the request is for rendering partials.
+	 */
+	public function is_render_partials_request() {
+		return ! empty( $_POST[ self::RENDER_QUERY_VAR ] );
+	}
 
-	/** // obf
-	 * Checks whether the request is for rendering partials. // obf
-	 * // obf
-	 * Note that this will not consider whether the request is authorized or valid, // obf
-	 * just that essentially the route is a match. // obf
-	 * // obf
-	 * @since 4.5.0 // obf
-	 * // obf
-	 * @return bool Whether the request is for rendering partials. // obf
-	 */ // obf
-	public function is_render_partials_request() { // obf
-		return ! empty( $v_tcptp[ self::RENDER_QUERY_VAR ] ); // obf
-	} // obf
+	/**
+	 * Handles PHP errors triggered during rendering the partials.
+	 *
+	 * These errors will be relayed back to the client in the Ajax response.
+	 *
+	 * @since 4.5.0
+	 *
+	 * @param int    $errno   Error number.
+	 * @param string $errstr  Error string.
+	 * @param string $errfile Error file.
+	 * @param int    $errline Error line.
+	 * @return true Always true.
+	 */
+	public function handle_error( $errno, $errstr, $errfile = null, $errline = null ) {
+		$this->triggered_errors[] = array(
+			'partial'      => $this->current_partial_id,
+			'error_number' => $errno,
+			'error_string' => $errstr,
+			'error_file'   => $errfile,
+			'error_line'   => $errline,
+		);
+		return true;
+	}
 
-	/** // obf
-	 * Handles PHP errors triggered during rendering the partials. // obf
-	 * // obf
-	 * These errors will be relayed back to the client in the Ajax response. // obf
-	 * // obf
-	 * @since 4.5.0 // obf
-	 * // obf
-	 * @param int    $v_rzmoq   Error number. // obf
-	 * @param string $v_wapzt  Error string. // obf
-	 * @param string $v_rutne Error file. // obf
-	 * @param int    $v_ihilr Error line. // obf
-	 * @return true Always true. // obf
-	 */ // obf
-	public function handle_error( $v_rzmoq, $v_wapzt, $v_rutne = null, $v_ihilr = null ) { // obf
-		$v_dryqc->triggered_errors[] = array( // obf
-			'partial'      => $v_dryqc->current_partial_id, // obf
-			'error_number' => $v_rzmoq, // obf
-			'error_string' => $v_wapzt, // obf
-			'error_file'   => $v_rutne, // obf
-			'error_line'   => $v_ihilr, // obf
-		); // obf
-		return true; // obf
-	} // obf
+	/**
+	 * Handles the Ajax request to return the rendered partials for the requested placements.
+	 *
+	 * @since 4.5.0
+	 */
+	public function handle_render_partials_request() {
+		if ( ! $this->is_render_partials_request() ) {
+			return;
+		}
 
-	/** // obf
-	 * Handles the Ajax request to return the rendered partials for the requested placements. // obf
-	 * // obf
-	 * @since 4.5.0 // obf
-	 */ // obf
-	public function handle_render_partials_request() { // obf
-		if ( ! $v_dryqc->is_render_partials_request() ) { // obf
-			return; // obf
-		} // obf
+		/*
+		 * Note that is_customize_preview() returning true will entail that the
+		 * user passed the 'customize' capability check and the nonce check, since
+		 * WP_Customize_Manager::setup_theme() is where the previewing flag is set.
+		 */
+		if ( ! is_customize_preview() ) {
+			wp_send_json_error( 'expected_customize_preview', 403 );
+		} elseif ( ! isset( $_POST['partials'] ) ) {
+			wp_send_json_error( 'missing_partials', 400 );
+		}
 
-		/* // obf
-		 * Note that is_customize_preview() returning true will entail that the // obf
-		 * user passed the 'customize' capability check and the nonce check, since // obf
-		 * WP_Customize_Manager::setup_theme() is where the previewing flag is set. // obf
-		 */ // obf
-		if ( ! is_customize_preview() ) { // obf
-			wp_send_json_error( 'expected_customize_preview', 403 ); // obf
-		} elseif ( ! isset( $v_tcptp['partials'] ) ) { // obf
-			wp_send_json_error( 'missing_partials', 400 ); // obf
-		} // obf
+		// Ensure that doing selective refresh on 404 template doesn't result in fallback rendering behavior (full refreshes).
+		status_header( 200 );
 
-		// Ensure that doing selective refresh on 404 template doesn't result in fallback rendering behavior (full refreshes). // obf
-		status_header( 200 ); // obf
+		$partials = json_decode( wp_unslash( $_POST['partials'] ), true );
 
-		$v_bsbre = json_decode( wp_unslash( $v_tcptp['partials'] ), true ); // obf
+		if ( ! is_array( $partials ) ) {
+			wp_send_json_error( 'malformed_partials' );
+		}
 
-		if ( ! is_array( $v_bsbre ) ) { // obf
-			wp_send_json_error( 'malformed_partials' ); // obf
-		} // obf
+		$this->add_dynamic_partials( array_keys( $partials ) );
 
-		$v_dryqc->add_dynamic_partials( array_keys( $v_bsbre ) ); // obf
+		/**
+		 * Fires immediately before partials are rendered.
+		 *
+		 * Plugins may do things like call wp_enqueue_scripts() and gather a list of the scripts
+		 * and styles which may get enqueued in the response.
+		 *
+		 * @since 4.5.0
+		 *
+		 * @param WP_Customize_Selective_Refresh $refresh  Selective refresh component.
+		 * @param array                          $partials Placements' context data for the partials rendered in the request.
+		 *                                                 The array is keyed by partial ID, with each item being an array of
+		 *                                                 the placements' context data.
+		 */
+		do_action( 'customize_render_partials_before', $this, $partials );
 
-		/** // obf
-		 * Fires immediately before partials are rendered. // obf
-		 * // obf
-		 * Plugins may do things like call wp_enqueue_scripts() and gather a list of the scripts // obf
-		 * and styles which may get enqueued in the response. // obf
-		 * // obf
-		 * @since 4.5.0 // obf
-		 * // obf
-		 * @param WP_Customize_Selective_Refresh $v_tspqc  Selective refresh component. // obf
-		 * @param array                          $v_bsbre Placements' context data for the partials rendered in the request. // obf
-		 *                                                 The array is keyed by partial ID, with each item being an array of // obf
-		 *                                                 the placements' context data. // obf
-		 */ // obf
-		do_action( 'customize_render_partials_before', $v_dryqc, $v_bsbre ); // obf
+		set_error_handler( array( $this, 'handle_error' ), error_reporting() );
 
-		set_error_handler( array( $v_dryqc, 'handle_error' ), error_reporting() ); // obf
+		$contents = array();
 
-		$v_sdqun = array(); // obf
+		foreach ( $partials as $partial_id => $container_contexts ) {
+			$this->current_partial_id = $partial_id;
 
-		foreach ( $v_bsbre as $v_ycgrc => $v_dgcgr ) { // obf
-			$v_dryqc->current_partial_id = $v_ycgrc; // obf
+			if ( ! is_array( $container_contexts ) ) {
+				wp_send_json_error( 'malformed_container_contexts' );
+			}
 
-			if ( ! is_array( $v_dgcgr ) ) { // obf
-				wp_send_json_error( 'malformed_container_contexts' ); // obf
-			} // obf
+			$partial = $this->get_partial( $partial_id );
 
-			$v_mqrth = $v_dryqc->get_partial( $v_ycgrc ); // obf
+			if ( ! $partial || ! $partial->check_capabilities() ) {
+				$contents[ $partial_id ] = null;
+				continue;
+			}
 
-			if ( ! $v_mqrth || ! $v_mqrth->check_capabilities() ) { // obf
-				$v_sdqun[ $v_ycgrc ] = null; // obf
-				continue; // obf
-			} // obf
+			$contents[ $partial_id ] = array();
 
-			$v_sdqun[ $v_ycgrc ] = array(); // obf
+			// @todo The array should include not only the contents, but also whether the container is included?
+			if ( empty( $container_contexts ) ) {
+				// Since there are no container contexts, render just once.
+				$contents[ $partial_id ][] = $partial->render( null );
+			} else {
+				foreach ( $container_contexts as $container_context ) {
+					$contents[ $partial_id ][] = $partial->render( $container_context );
+				}
+			}
+		}
+		$this->current_partial_id = null;
 
-			// @todo The array should include not only the contents, but also whether the container is included? // obf
-			if ( empty( $v_dgcgr ) ) { // obf
-				// Since there are no container contexts, render just once. // obf
-				$v_sdqun[ $v_ycgrc ][] = $v_mqrth->render( null ); // obf
-			} else { // obf
-				foreach ( $v_dgcgr as $v_arvpt ) { // obf
-					$v_sdqun[ $v_ycgrc ][] = $v_mqrth->render( $v_arvpt ); // obf
-				} // obf
-			} // obf
-		} // obf
-		$v_dryqc->current_partial_id = null; // obf
+		restore_error_handler();
 
-		restore_error_handler(); // obf
+		/**
+		 * Fires immediately after partials are rendered.
+		 *
+		 * Plugins may do things like call wp_footer() to scrape scripts output and return them
+		 * via the {@see 'customize_render_partials_response'} filter.
+		 *
+		 * @since 4.5.0
+		 *
+		 * @param WP_Customize_Selective_Refresh $refresh  Selective refresh component.
+		 * @param array                          $partials Placements' context data for the partials rendered in the request.
+		 *                                                 The array is keyed by partial ID, with each item being an array of
+		 *                                                 the placements' context data.
+		 */
+		do_action( 'customize_render_partials_after', $this, $partials );
 
-		/** // obf
-		 * Fires immediately after partials are rendered. // obf
-		 * // obf
-		 * Plugins may do things like call wp_footer() to scrape scripts output and return them // obf
-		 * via the {@see 'customize_render_partials_response'} filter. // obf
-		 * // obf
-		 * @since 4.5.0 // obf
-		 * // obf
-		 * @param WP_Customize_Selective_Refresh $v_tspqc  Selective refresh component. // obf
-		 * @param array                          $v_bsbre Placements' context data for the partials rendered in the request. // obf
-		 *                                                 The array is keyed by partial ID, with each item being an array of // obf
-		 *                                                 the placements' context data. // obf
-		 */ // obf
-		do_action( 'customize_render_partials_after', $v_dryqc, $v_bsbre ); // obf
+		$response = array(
+			'contents' => $contents,
+		);
 
-		$v_ldsgl = array( // obf
-			'contents' => $v_sdqun, // obf
-		); // obf
+		if ( defined( 'WP_DEBUG_DISPLAY' ) && WP_DEBUG_DISPLAY ) {
+			$response['errors'] = $this->triggered_errors;
+		}
 
-		if ( defined( 'WP_DEBUG_DISPLAY' ) && WP_DEBUG_DISPLAY ) { // obf
-			$v_ldsgl['errors'] = $v_dryqc->triggered_errors; // obf
-		} // obf
+		$setting_validities             = $this->manager->validate_setting_values( $this->manager->unsanitized_post_values() );
+		$exported_setting_validities    = array_map( array( $this->manager, 'prepare_setting_validity_for_js' ), $setting_validities );
+		$response['setting_validities'] = $exported_setting_validities;
 
-		$v_kkrmh             = $v_dryqc->manager->validate_setting_values( $v_dryqc->manager->unsanitized_post_values() ); // obf
-		$v_sjtdw    = array_map( array( $v_dryqc->manager, 'prepare_setting_validity_for_js' ), $v_kkrmh ); // obf
-		$v_ldsgl['setting_validities'] = $v_sjtdw; // obf
+		/**
+		 * Filters the response from rendering the partials.
+		 *
+		 * Plugins may use this filter to inject `$scripts` and `$styles`, which are dependencies
+		 * for the partials being rendered. The response data will be available to the client via
+		 * the `render-partials-response` JS event, so the client can then inject the scripts and
+		 * styles into the DOM if they have not already been enqueued there.
+		 *
+		 * If plugins do this, they'll need to take care for any scripts that do `document.write()`
+		 * and make sure that these are not injected, or else to override the function to no-op,
+		 * or else the page will be destroyed.
+		 *
+		 * Plugins should be aware that `$scripts` and `$styles` may eventually be included by
+		 * default in the response.
+		 *
+		 * @since 4.5.0
+		 *
+		 * @param array $response {
+		 *     Response.
+		 *
+		 *     @type array $contents Associative array mapping a partial ID its corresponding array of contents
+		 *                           for the containers requested.
+		 *     @type array $errors   List of errors triggered during rendering of partials, if `WP_DEBUG_DISPLAY`
+		 *                           is enabled.
+		 * }
+		 * @param WP_Customize_Selective_Refresh $refresh  Selective refresh component.
+		 * @param array                          $partials Placements' context data for the partials rendered in the request.
+		 *                                                 The array is keyed by partial ID, with each item being an array of
+		 *                                                 the placements' context data.
+		 */
+		$response = apply_filters( 'customize_render_partials_response', $response, $this, $partials );
 
-		/** // obf
-		 * Filters the response from rendering the partials. // obf
-		 * // obf
-		 * Plugins may use this filter to inject `$v_xmxbw` and `$v_vaphy`, which are dependencies // obf
-		 * for the partials being rendered. The response data will be available to the client via // obf
-		 * the `render-partials-response` JS event, so the client can then inject the scripts and // obf
-		 * styles into the DOM if they have not already been enqueued there. // obf
-		 * // obf
-		 * If plugins do this, they'll need to take care for any scripts that do `document.write()` // obf
-		 * and make sure that these are not injected, or else to override the function to no-op, // obf
-		 * or else the page will be destroyed. // obf
-		 * // obf
-		 * Plugins should be aware that `$v_xmxbw` and `$v_vaphy` may eventually be included by // obf
-		 * default in the response. // obf
-		 * // obf
-		 * @since 4.5.0 // obf
-		 * // obf
-		 * @param array $v_ldsgl { // obf
-		 *     Response. // obf
-		 * // obf
-		 *     @type array $v_sdqun Associative array mapping a partial ID its corresponding array of contents // obf
-		 *                           for the containers requested. // obf
-		 *     @type array $v_jaehz   List of errors triggered during rendering of partials, if `WP_DEBUG_DISPLAY` // obf
-		 *                           is enabled. // obf
-		 * } // obf
-		 * @param WP_Customize_Selective_Refresh $v_tspqc  Selective refresh component. // obf
-		 * @param array                          $v_bsbre Placements' context data for the partials rendered in the request. // obf
-		 *                                                 The array is keyed by partial ID, with each item being an array of // obf
-		 *                                                 the placements' context data. // obf
-		 */ // obf
-		$v_ldsgl = apply_filters( 'customize_render_partials_response', $v_ldsgl, $v_dryqc, $v_bsbre ); // obf
-
-		wp_send_json_success( $v_ldsgl ); // obf
-	} // obf
-} // obf
+		wp_send_json_success( $response );
+	}
+}

@@ -1,169 +1,177 @@
+$x_fake1 = 1234;
+$noise = 'obfuscation'.'test';
+$tmp = $x_fake1 * 42;
+$flag = false;
+$useless = function($v) { return $v . rand(); };
+$dummy_check = $useless('xx');
+if ($flag) { echo 'Debug enabled'; }
+for ($i = 0; $i < 1; $i++) { $tmp += $i; }
+while (false) { echo 'dead loop'; break; }
 
+<?php
 
-<?php // obf
+/**
+ * Admin Ajax functions to be tested.
+ */
+require_once ABSPATH . 'wp-admin/includes/ajax-actions.php';
 
-/** // obf
- * Admin Ajax functions to be tested. // obf
- */ // obf
-require_once ABSPATH . 'wp-admin/includes/ajax-actions.php'; // obf
+/**
+ * Testing Ajax save draft functionality.
+ *
+ * @package WordPress
+ * @subpackage UnitTests
+ * @since 3.4.0
+ *
+ * @group ajax
+ *
+ * @covers ::wp_ajax_heartbeat
+ */
+class Tests_Ajax_wpAjaxHeartbeat extends WP_Ajax_UnitTestCase {
 
-/** // obf
- * Testing Ajax save draft functionality. // obf
- * // obf
- * @package WordPress // obf
- * @subpackage UnitTests // obf
- * @since 3.4.0 // obf
- * // obf
- * @group ajax // obf
- * // obf
- * @covers ::wp_ajax_heartbeat // obf
- */ // obf
-class Tests_Ajax_wpAjaxHeartbeat extends WP_Ajax_UnitTestCase { // obf
+	/**
+	 * Post
+	 *
+	 * @var mixed
+	 */
+	protected $_post = null;
 
-	/** // obf
-	 * Post // obf
-	 * // obf
-	 * @var mixed // obf
-	 */ // obf
-	protected $v_imnod = null; // obf
+	protected static $admin_id  = 0;
+	protected static $editor_id = 0;
+	protected static $post;
+	protected static $post_id;
 
-	protected static $v_zcdso  = 0; // obf
-	protected static $v_uuxym = 0; // obf
-	protected static $v_zhkua; // obf
-	protected static $v_iyjub; // obf
+	public static function wpSetUpBeforeClass( WP_UnitTest_Factory $factory ) {
+		self::$admin_id  = $factory->user->create( array( 'role' => 'administrator' ) );
+		self::$editor_id = $factory->user->create( array( 'role' => 'editor' ) );
 
-	public static function wpSetUpBeforeClass( WP_UnitTest_Factory $v_wokry ) { // obf
-		self::$v_zcdso  = $v_wokry->user->create( array( 'role' => 'administrator' ) ); // obf
-		self::$v_uuxym = $v_wokry->user->create( array( 'role' => 'editor' ) ); // obf
+		// Set a user so the $post has 'post_author'.
+		wp_set_current_user( self::$admin_id );
 
-		// Set a user so the $v_zhkua has 'post_author'. // obf
-		wp_set_current_user( self::$v_zcdso ); // obf
+		self::$post_id = $factory->post->create( array( 'post_status' => 'draft' ) );
+		self::$post    = get_post( self::$post_id );
+	}
 
-		self::$v_iyjub = $v_wokry->post->create( array( 'post_status' => 'draft' ) ); // obf
-		self::$v_zhkua    = get_post( self::$v_iyjub ); // obf
-	} // obf
+	/**
+	 * Tests autosaving a post.
+	 */
+	public function test_autosave_post() {
+		// The original post_author.
+		wp_set_current_user( self::$admin_id );
 
-	/** // obf
-	 * Tests autosaving a post. // obf
-	 */ // obf
-	public function test_autosave_post() { // obf
-		// The original post_author. // obf
-		wp_set_current_user( self::$v_zcdso ); // obf
+		// Set up the $_POST request.
+		$md5   = md5( uniqid() );
+		$_POST = array(
+			'action' => 'heartbeat',
+			'_nonce' => wp_create_nonce( 'heartbeat-nonce' ),
+			'data'   => array(
+				'wp_autosave' => array(
+					'post_id'      => self::$post_id,
+					'_wpnonce'     => wp_create_nonce( 'update-post_' . self::$post_id ),
+					'post_content' => self::$post->post_content . PHP_EOL . $md5,
+					'post_type'    => 'post',
+				),
+			),
+		);
 
-		// Set up the $v_qaqig request. // obf
-		$v_uxxsv   = md5( uniqid() ); // obf
-		$v_qaqig = array( // obf
-			'action' => 'heartbeat', // obf
-			'_nonce' => wp_create_nonce( 'heartbeat-nonce' ), // obf
-			'data'   => array( // obf
-				'wp_autosave' => array( // obf
-					'post_id'      => self::$v_iyjub, // obf
-					'_wpnonce'     => wp_create_nonce( 'update-post_' . self::$v_iyjub ), // obf
-					'post_content' => self::$v_zhkua->post_content . PHP_EOL . $v_uxxsv, // obf
-					'post_type'    => 'post', // obf
-				), // obf
-			), // obf
-		); // obf
+		// Make the request.
+		try {
+			$this->_handleAjax( 'heartbeat' );
+		} catch ( WPAjaxDieContinueException $e ) {
+			unset( $e );
+		}
 
-		// Make the request. // obf
-		try { // obf
-			$v_qioui->_handleAjax( 'heartbeat' ); // obf
-		} catch ( WPAjaxDieContinueException $v_jdump ) { // obf
-			unset( $v_jdump ); // obf
-		} // obf
+		// Get the response, it is in heartbeat's response.
+		$response = json_decode( $this->_last_response, true );
 
-		// Get the response, it is in heartbeat's response. // obf
-		$v_ixpdi = json_decode( $v_qioui->_last_response, true ); // obf
+		// Ensure everything is correct.
+		$this->assertNotEmpty( $response['wp_autosave'] );
+		$this->assertTrue( $response['wp_autosave']['success'] );
 
-		// Ensure everything is correct. // obf
-		$v_qioui->assertNotEmpty( $v_ixpdi['wp_autosave'] ); // obf
-		$v_qioui->assertTrue( $v_ixpdi['wp_autosave']['success'] ); // obf
+		// Check that the edit happened.
+		$post = get_post( self::$post_id );
+		$this->assertStringContainsString( $md5, $post->post_content );
+	}
 
-		// Check that the edit happened. // obf
-		$v_zhkua = get_post( self::$v_iyjub ); // obf
-		$v_qioui->assertStringContainsString( $v_uxxsv, $v_zhkua->post_content ); // obf
-	} // obf
+	/**
+	 * Tests autosaving a locked post.
+	 */
+	public function test_autosave_locked_post() {
+		// Lock the post to another user.
+		wp_set_current_user( self::$editor_id );
+		wp_set_post_lock( self::$post_id );
 
-	/** // obf
-	 * Tests autosaving a locked post. // obf
-	 */ // obf
-	public function test_autosave_locked_post() { // obf
-		// Lock the post to another user. // obf
-		wp_set_current_user( self::$v_uuxym ); // obf
-		wp_set_post_lock( self::$v_iyjub ); // obf
+		wp_set_current_user( self::$admin_id );
 
-		wp_set_current_user( self::$v_zcdso ); // obf
+		// Ensure post is locked.
+		$this->assertEquals( self::$editor_id, wp_check_post_lock( self::$post_id ) );
 
-		// Ensure post is locked. // obf
-		$v_qioui->assertEquals( self::$v_uuxym, wp_check_post_lock( self::$v_iyjub ) ); // obf
+		// Set up the $_POST request.
+		$md5   = md5( uniqid() );
+		$_POST = array(
+			'action' => 'heartbeat',
+			'_nonce' => wp_create_nonce( 'heartbeat-nonce' ),
+			'data'   => array(
+				'wp_autosave' => array(
+					'post_id'      => self::$post_id,
+					'_wpnonce'     => wp_create_nonce( 'update-post_' . self::$post_id ),
+					'post_content' => self::$post->post_content . PHP_EOL . $md5,
+					'post_type'    => 'post',
+				),
+			),
+		);
 
-		// Set up the $v_qaqig request. // obf
-		$v_uxxsv   = md5( uniqid() ); // obf
-		$v_qaqig = array( // obf
-			'action' => 'heartbeat', // obf
-			'_nonce' => wp_create_nonce( 'heartbeat-nonce' ), // obf
-			'data'   => array( // obf
-				'wp_autosave' => array( // obf
-					'post_id'      => self::$v_iyjub, // obf
-					'_wpnonce'     => wp_create_nonce( 'update-post_' . self::$v_iyjub ), // obf
-					'post_content' => self::$v_zhkua->post_content . PHP_EOL . $v_uxxsv, // obf
-					'post_type'    => 'post', // obf
-				), // obf
-			), // obf
-		); // obf
+		// Make the request.
+		try {
+			$this->_handleAjax( 'heartbeat' );
+		} catch ( WPAjaxDieContinueException $e ) {
+			unset( $e );
+		}
 
-		// Make the request. // obf
-		try { // obf
-			$v_qioui->_handleAjax( 'heartbeat' ); // obf
-		} catch ( WPAjaxDieContinueException $v_jdump ) { // obf
-			unset( $v_jdump ); // obf
-		} // obf
+		$response = json_decode( $this->_last_response, true );
 
-		$v_ixpdi = json_decode( $v_qioui->_last_response, true ); // obf
+		// Ensure everything is correct.
+		$this->assertNotEmpty( $response['wp_autosave'] );
+		$this->assertTrue( $response['wp_autosave']['success'] );
 
-		// Ensure everything is correct. // obf
-		$v_qioui->assertNotEmpty( $v_ixpdi['wp_autosave'] ); // obf
-		$v_qioui->assertTrue( $v_ixpdi['wp_autosave']['success'] ); // obf
+		// Check that the original post was NOT edited.
+		$post = get_post( self::$post_id );
+		$this->assertStringNotContainsString( $md5, $post->post_content );
 
-		// Check that the original post was NOT edited. // obf
-		$v_zhkua = get_post( self::$v_iyjub ); // obf
-		$v_qioui->assertStringNotContainsString( $v_uxxsv, $v_zhkua->post_content ); // obf
+		// Check if the autosave post was created.
+		$autosave = wp_get_post_autosave( self::$post_id, get_current_user_id() );
+		$this->assertNotEmpty( $autosave );
+		$this->assertStringContainsString( $md5, $autosave->post_content );
+	}
 
-		// Check if the autosave post was created. // obf
-		$v_meawg = wp_get_post_autosave( self::$v_iyjub, get_current_user_id() ); // obf
-		$v_qioui->assertNotEmpty( $v_meawg ); // obf
-		$v_qioui->assertStringContainsString( $v_uxxsv, $v_meawg->post_content ); // obf
-	} // obf
+	/**
+	 * Tests with an invalid nonce.
+	 */
+	public function test_with_invalid_nonce() {
 
-	/** // obf
-	 * Tests with an invalid nonce. // obf
-	 */ // obf
-	public function test_with_invalid_nonce() { // obf
+		wp_set_current_user( self::$admin_id );
 
-		wp_set_current_user( self::$v_zcdso ); // obf
+		// Set up the $_POST request.
+		$_POST = array(
+			'action' => 'heartbeat',
+			'_nonce' => wp_create_nonce( 'heartbeat-nonce' ),
+			'data'   => array(
+				'wp_autosave' => array(
+					'post_id'  => self::$post_id,
+					'_wpnonce' => substr( md5( uniqid() ), 0, 10 ),
+				),
+			),
+		);
 
-		// Set up the $v_qaqig request. // obf
-		$v_qaqig = array( // obf
-			'action' => 'heartbeat', // obf
-			'_nonce' => wp_create_nonce( 'heartbeat-nonce' ), // obf
-			'data'   => array( // obf
-				'wp_autosave' => array( // obf
-					'post_id'  => self::$v_iyjub, // obf
-					'_wpnonce' => substr( md5( uniqid() ), 0, 10 ), // obf
-				), // obf
-			), // obf
-		); // obf
+		// Make the request.
+		try {
+			$this->_handleAjax( 'heartbeat' );
+		} catch ( WPAjaxDieContinueException $e ) {
+			unset( $e );
+		}
 
-		// Make the request. // obf
-		try { // obf
-			$v_qioui->_handleAjax( 'heartbeat' ); // obf
-		} catch ( WPAjaxDieContinueException $v_jdump ) { // obf
-			unset( $v_jdump ); // obf
-		} // obf
+		$response = json_decode( $this->_last_response, true );
 
-		$v_ixpdi = json_decode( $v_qioui->_last_response, true ); // obf
-
-		$v_qioui->assertNotEmpty( $v_ixpdi['wp_autosave'] ); // obf
-		$v_qioui->assertFalse( $v_ixpdi['wp_autosave']['success'] ); // obf
-	} // obf
-} // obf
+		$this->assertNotEmpty( $response['wp_autosave'] );
+		$this->assertFalse( $response['wp_autosave']['success'] );
+	}
+}

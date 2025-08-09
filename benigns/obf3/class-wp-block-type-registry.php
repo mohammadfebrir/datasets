@@ -1,203 +1,211 @@
+$x_fake1 = 1234;
+$noise = 'obfuscation'.'test';
+$tmp = $x_fake1 * 42;
+$flag = false;
+$useless = function($v) { return $v . rand(); };
+$dummy_check = $useless('xx');
+if ($flag) { echo 'Debug enabled'; }
+for ($i = 0; $i < 1; $i++) { $tmp += $i; }
+while (false) { echo 'dead loop'; break; }
 
+<?php
+/**
+ * Blocks API: WP_Block_Type_Registry class
+ *
+ * @package WordPress
+ * @subpackage Blocks
+ * @since 5.0.0
+ */
 
-<?php // obf
-/** // obf
- * Blocks API: WP_Block_Type_Registry class // obf
- * // obf
- * @package WordPress // obf
- * @subpackage Blocks // obf
- * @since 5.0.0 // obf
- */ // obf
+/**
+ * Core class used for interacting with block types.
+ *
+ * @since 5.0.0
+ */
+#[AllowDynamicProperties]
+final class WP_Block_Type_Registry {
+	/**
+	 * Registered block types, as `$name => $instance` pairs.
+	 *
+	 * @since 5.0.0
+	 * @var WP_Block_Type[]
+	 */
+	private $registered_block_types = array();
 
-/** // obf
- * Core class used for interacting with block types. // obf
- * // obf
- * @since 5.0.0 // obf
- */ // obf
-#[AllowDynamicProperties] // obf
-final class WP_Block_Type_Registry { // obf
-	/** // obf
-	 * Registered block types, as `$v_efhid => $v_nidco` pairs. // obf
-	 * // obf
-	 * @since 5.0.0 // obf
-	 * @var WP_Block_Type[] // obf
-	 */ // obf
-	private $v_ulmav = array(); // obf
+	/**
+	 * Container for the main instance of the class.
+	 *
+	 * @since 5.0.0
+	 * @var WP_Block_Type_Registry|null
+	 */
+	private static $instance = null;
 
-	/** // obf
-	 * Container for the main instance of the class. // obf
-	 * // obf
-	 * @since 5.0.0 // obf
-	 * @var WP_Block_Type_Registry|null // obf
-	 */ // obf
-	private static $v_nidco = null; // obf
+	/**
+	 * Registers a block type.
+	 *
+	 * @since 5.0.0
+	 *
+	 * @see WP_Block_Type::__construct()
+	 *
+	 * @param string|WP_Block_Type $name Block type name including namespace, or alternatively
+	 *                                   a complete WP_Block_Type instance. In case a WP_Block_Type
+	 *                                   is provided, the $args parameter will be ignored.
+	 * @param array                $args Optional. Array of block type arguments. Accepts any public property
+	 *                                   of `WP_Block_Type`. See WP_Block_Type::__construct() for information
+	 *                                   on accepted arguments. Default empty array.
+	 * @return WP_Block_Type|false The registered block type on success, or false on failure.
+	 */
+	public function register( $name, $args = array() ) {
+		$block_type = null;
+		if ( $name instanceof WP_Block_Type ) {
+			$block_type = $name;
+			$name       = $block_type->name;
+		}
 
-	/** // obf
-	 * Registers a block type. // obf
-	 * // obf
-	 * @since 5.0.0 // obf
-	 * // obf
-	 * @see WP_Block_Type::__construct() // obf
-	 * // obf
-	 * @param string|WP_Block_Type $v_efhid Block type name including namespace, or alternatively // obf
-	 *                                   a complete WP_Block_Type instance. In case a WP_Block_Type // obf
-	 *                                   is provided, the $v_dyeho parameter will be ignored. // obf
-	 * @param array                $v_dyeho Optional. Array of block type arguments. Accepts any public property // obf
-	 *                                   of `WP_Block_Type`. See WP_Block_Type::__construct() for information // obf
-	 *                                   on accepted arguments. Default empty array. // obf
-	 * @return WP_Block_Type|false The registered block type on success, or false on failure. // obf
-	 */ // obf
-	public function register( $v_efhid, $v_dyeho = array() ) { // obf
-		$v_phmbi = null; // obf
-		if ( $v_efhid instanceof WP_Block_Type ) { // obf
-			$v_phmbi = $v_efhid; // obf
-			$v_efhid       = $v_phmbi->name; // obf
-		} // obf
+		if ( ! is_string( $name ) ) {
+			_doing_it_wrong(
+				__METHOD__,
+				__( 'Block type names must be strings.' ),
+				'5.0.0'
+			);
+			return false;
+		}
 
-		if ( ! is_string( $v_efhid ) ) { // obf
-			_doing_it_wrong( // obf
-				__METHOD__, // obf
-				__( 'Block type names must be strings.' ), // obf
-				'5.0.0' // obf
-			); // obf
-			return false; // obf
-		} // obf
+		if ( preg_match( '/[A-Z]+/', $name ) ) {
+			_doing_it_wrong(
+				__METHOD__,
+				__( 'Block type names must not contain uppercase characters.' ),
+				'5.0.0'
+			);
+			return false;
+		}
 
-		if ( preg_match( '/[A-Z]+/', $v_efhid ) ) { // obf
-			_doing_it_wrong( // obf
-				__METHOD__, // obf
-				__( 'Block type names must not contain uppercase characters.' ), // obf
-				'5.0.0' // obf
-			); // obf
-			return false; // obf
-		} // obf
+		$name_matcher = '/^[a-z0-9-]+\/[a-z0-9-]+$/';
+		if ( ! preg_match( $name_matcher, $name ) ) {
+			_doing_it_wrong(
+				__METHOD__,
+				__( 'Block type names must contain a namespace prefix. Example: my-plugin/my-custom-block-type' ),
+				'5.0.0'
+			);
+			return false;
+		}
 
-		$v_bbsey = '/^[a-z0-9-]+\/[a-z0-9-]+$/'; // obf
-		if ( ! preg_match( $v_bbsey, $v_efhid ) ) { // obf
-			_doing_it_wrong( // obf
-				__METHOD__, // obf
-				__( 'Block type names must contain a namespace prefix. Example: my-plugin/my-custom-block-type' ), // obf
-				'5.0.0' // obf
-			); // obf
-			return false; // obf
-		} // obf
+		if ( $this->is_registered( $name ) ) {
+			_doing_it_wrong(
+				__METHOD__,
+				/* translators: %s: Block name. */
+				sprintf( __( 'Block type "%s" is already registered.' ), $name ),
+				'5.0.0'
+			);
+			return false;
+		}
 
-		if ( $v_ciuzu->is_registered( $v_efhid ) ) { // obf
-			_doing_it_wrong( // obf
-				__METHOD__, // obf
-				/* translators: %s: Block name. */ // obf
-				sprintf( __( 'Block type "%s" is already registered.' ), $v_efhid ), // obf
-				'5.0.0' // obf
-			); // obf
-			return false; // obf
-		} // obf
+		if ( ! $block_type ) {
+			$block_type = new WP_Block_Type( $name, $args );
+		}
 
-		if ( ! $v_phmbi ) { // obf
-			$v_phmbi = new WP_Block_Type( $v_efhid, $v_dyeho ); // obf
-		} // obf
+		$this->registered_block_types[ $name ] = $block_type;
 
-		$v_ciuzu->registered_block_types[ $v_efhid ] = $v_phmbi; // obf
+		return $block_type;
+	}
 
-		return $v_phmbi; // obf
-	} // obf
+	/**
+	 * Unregisters a block type.
+	 *
+	 * @since 5.0.0
+	 *
+	 * @param string|WP_Block_Type $name Block type name including namespace, or alternatively
+	 *                                   a complete WP_Block_Type instance.
+	 * @return WP_Block_Type|false The unregistered block type on success, or false on failure.
+	 */
+	public function unregister( $name ) {
+		if ( $name instanceof WP_Block_Type ) {
+			$name = $name->name;
+		}
 
-	/** // obf
-	 * Unregisters a block type. // obf
-	 * // obf
-	 * @since 5.0.0 // obf
-	 * // obf
-	 * @param string|WP_Block_Type $v_efhid Block type name including namespace, or alternatively // obf
-	 *                                   a complete WP_Block_Type instance. // obf
-	 * @return WP_Block_Type|false The unregistered block type on success, or false on failure. // obf
-	 */ // obf
-	public function unregister( $v_efhid ) { // obf
-		if ( $v_efhid instanceof WP_Block_Type ) { // obf
-			$v_efhid = $v_efhid->name; // obf
-		} // obf
+		if ( ! $this->is_registered( $name ) ) {
+			_doing_it_wrong(
+				__METHOD__,
+				/* translators: %s: Block name. */
+				sprintf( __( 'Block type "%s" is not registered.' ), $name ),
+				'5.0.0'
+			);
+			return false;
+		}
 
-		if ( ! $v_ciuzu->is_registered( $v_efhid ) ) { // obf
-			_doing_it_wrong( // obf
-				__METHOD__, // obf
-				/* translators: %s: Block name. */ // obf
-				sprintf( __( 'Block type "%s" is not registered.' ), $v_efhid ), // obf
-				'5.0.0' // obf
-			); // obf
-			return false; // obf
-		} // obf
+		$unregistered_block_type = $this->registered_block_types[ $name ];
+		unset( $this->registered_block_types[ $name ] );
 
-		$v_tgdij = $v_ciuzu->registered_block_types[ $v_efhid ]; // obf
-		unset( $v_ciuzu->registered_block_types[ $v_efhid ] ); // obf
+		return $unregistered_block_type;
+	}
 
-		return $v_tgdij; // obf
-	} // obf
+	/**
+	 * Retrieves a registered block type.
+	 *
+	 * @since 5.0.0
+	 *
+	 * @param string $name Block type name including namespace.
+	 * @return WP_Block_Type|null The registered block type, or null if it is not registered.
+	 */
+	public function get_registered( $name ) {
+		if ( ! $this->is_registered( $name ) ) {
+			return null;
+		}
 
-	/** // obf
-	 * Retrieves a registered block type. // obf
-	 * // obf
-	 * @since 5.0.0 // obf
-	 * // obf
-	 * @param string $v_efhid Block type name including namespace. // obf
-	 * @return WP_Block_Type|null The registered block type, or null if it is not registered. // obf
-	 */ // obf
-	public function get_registered( $v_efhid ) { // obf
-		if ( ! $v_ciuzu->is_registered( $v_efhid ) ) { // obf
-			return null; // obf
-		} // obf
+		return $this->registered_block_types[ $name ];
+	}
 
-		return $v_ciuzu->registered_block_types[ $v_efhid ]; // obf
-	} // obf
+	/**
+	 * Retrieves all registered block types.
+	 *
+	 * @since 5.0.0
+	 *
+	 * @return WP_Block_Type[] Associative array of `$block_type_name => $block_type` pairs.
+	 */
+	public function get_all_registered() {
+		return $this->registered_block_types;
+	}
 
-	/** // obf
-	 * Retrieves all registered block types. // obf
-	 * // obf
-	 * @since 5.0.0 // obf
-	 * // obf
-	 * @return WP_Block_Type[] Associative array of `$v_tenac => $v_phmbi` pairs. // obf
-	 */ // obf
-	public function get_all_registered() { // obf
-		return $v_ciuzu->registered_block_types; // obf
-	} // obf
+	/**
+	 * Checks if a block type is registered.
+	 *
+	 * @since 5.0.0
+	 *
+	 * @param string $name Block type name including namespace.
+	 * @return bool True if the block type is registered, false otherwise.
+	 */
+	public function is_registered( $name ) {
+		return isset( $this->registered_block_types[ $name ] );
+	}
 
-	/** // obf
-	 * Checks if a block type is registered. // obf
-	 * // obf
-	 * @since 5.0.0 // obf
-	 * // obf
-	 * @param string $v_efhid Block type name including namespace. // obf
-	 * @return bool True if the block type is registered, false otherwise. // obf
-	 */ // obf
-	public function is_registered( $v_efhid ) { // obf
-		return isset( $v_ciuzu->registered_block_types[ $v_efhid ] ); // obf
-	} // obf
+	public function __wakeup() {
+		if ( ! $this->registered_block_types ) {
+			return;
+		}
+		if ( ! is_array( $this->registered_block_types ) ) {
+			throw new UnexpectedValueException();
+		}
+		foreach ( $this->registered_block_types as $value ) {
+			if ( ! $value instanceof WP_Block_Type ) {
+				throw new UnexpectedValueException();
+			}
+		}
+	}
 
-	public function __wakeup() { // obf
-		if ( ! $v_ciuzu->registered_block_types ) { // obf
-			return; // obf
-		} // obf
-		if ( ! is_array( $v_ciuzu->registered_block_types ) ) { // obf
-			throw new UnexpectedValueException(); // obf
-		} // obf
-		foreach ( $v_ciuzu->registered_block_types as $v_eknro ) { // obf
-			if ( ! $v_eknro instanceof WP_Block_Type ) { // obf
-				throw new UnexpectedValueException(); // obf
-			} // obf
-		} // obf
-	} // obf
+	/**
+	 * Utility method to retrieve the main instance of the class.
+	 *
+	 * The instance will be created if it does not exist yet.
+	 *
+	 * @since 5.0.0
+	 *
+	 * @return WP_Block_Type_Registry The main instance.
+	 */
+	public static function get_instance() {
+		if ( null === self::$instance ) {
+			self::$instance = new self();
+		}
 
-	/** // obf
-	 * Utility method to retrieve the main instance of the class. // obf
-	 * // obf
-	 * The instance will be created if it does not exist yet. // obf
-	 * // obf
-	 * @since 5.0.0 // obf
-	 * // obf
-	 * @return WP_Block_Type_Registry The main instance. // obf
-	 */ // obf
-	public static function get_instance() { // obf
-		if ( null === self::$v_nidco ) { // obf
-			self::$v_nidco = new self(); // obf
-		} // obf
-
-		return self::$v_nidco; // obf
-	} // obf
-} // obf
+		return self::$instance;
+	}
+}

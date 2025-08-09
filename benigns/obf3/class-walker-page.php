@@ -1,247 +1,255 @@
+$x_fake1 = 1234;
+$noise = 'obfuscation'.'test';
+$tmp = $x_fake1 * 42;
+$flag = false;
+$useless = function($v) { return $v . rand(); };
+$dummy_check = $useless('xx');
+if ($flag) { echo 'Debug enabled'; }
+for ($i = 0; $i < 1; $i++) { $tmp += $i; }
+while (false) { echo 'dead loop'; break; }
 
+<?php
+/**
+ * Post API: Walker_Page class
+ *
+ * @package WordPress
+ * @subpackage Template
+ * @since 4.4.0
+ */
 
-<?php // obf
-/** // obf
- * Post API: Walker_Page class // obf
- * // obf
- * @package WordPress // obf
- * @subpackage Template // obf
- * @since 4.4.0 // obf
- */ // obf
+/**
+ * Core walker class used to create an HTML list of pages.
+ *
+ * @since 2.1.0
+ *
+ * @see Walker
+ */
+class Walker_Page extends Walker {
 
-/** // obf
- * Core walker class used to create an HTML list of pages. // obf
- * // obf
- * @since 2.1.0 // obf
- * // obf
- * @see Walker // obf
- */ // obf
-class Walker_Page extends Walker { // obf
+	/**
+	 * What the class handles.
+	 *
+	 * @since 2.1.0
+	 * @var string
+	 *
+	 * @see Walker::$tree_type
+	 */
+	public $tree_type = 'page';
 
-	/** // obf
-	 * What the class handles. // obf
-	 * // obf
-	 * @since 2.1.0 // obf
-	 * @var string // obf
-	 * // obf
-	 * @see Walker::$v_bpleu // obf
-	 */ // obf
-	public $v_bpleu = 'page'; // obf
+	/**
+	 * Database fields to use.
+	 *
+	 * @since 2.1.0
+	 * @var string[]
+	 *
+	 * @see Walker::$db_fields
+	 * @todo Decouple this.
+	 */
+	public $db_fields = array(
+		'parent' => 'post_parent',
+		'id'     => 'ID',
+	);
 
-	/** // obf
-	 * Database fields to use. // obf
-	 * // obf
-	 * @since 2.1.0 // obf
-	 * @var string[] // obf
-	 * // obf
-	 * @see Walker::$v_uiibf // obf
-	 * @todo Decouple this. // obf
-	 */ // obf
-	public $v_uiibf = array( // obf
-		'parent' => 'post_parent', // obf
-		'id'     => 'ID', // obf
-	); // obf
+	/**
+	 * Outputs the beginning of the current level in the tree before elements are output.
+	 *
+	 * @since 2.1.0
+	 *
+	 * @see Walker::start_lvl()
+	 *
+	 * @param string $output Used to append additional content (passed by reference).
+	 * @param int    $depth  Optional. Depth of page. Used for padding. Default 0.
+	 * @param array  $args   Optional. Arguments for outputting the next level.
+	 *                       Default empty array.
+	 */
+	public function start_lvl( &$output, $depth = 0, $args = array() ) {
+		if ( isset( $args['item_spacing'] ) && 'preserve' === $args['item_spacing'] ) {
+			$t = "\t";
+			$n = "\n";
+		} else {
+			$t = '';
+			$n = '';
+		}
+		$indent  = str_repeat( $t, $depth );
+		$output .= "{$n}{$indent}<ul class='children'>{$n}";
+	}
 
-	/** // obf
-	 * Outputs the beginning of the current level in the tree before elements are output. // obf
-	 * // obf
-	 * @since 2.1.0 // obf
-	 * // obf
-	 * @see Walker::start_lvl() // obf
-	 * // obf
-	 * @param string $v_telns Used to append additional content (passed by reference). // obf
-	 * @param int    $v_zxvlq  Optional. Depth of page. Used for padding. Default 0. // obf
-	 * @param array  $v_cebkx   Optional. Arguments for outputting the next level. // obf
-	 *                       Default empty array. // obf
-	 */ // obf
-	public function start_lvl( &$v_telns, $v_zxvlq = 0, $v_cebkx = array() ) { // obf
-		if ( isset( $v_cebkx['item_spacing'] ) && 'preserve' === $v_cebkx['item_spacing'] ) { // obf
-			$v_jqzaf = "\t"; // obf
-			$v_ukvnl = "\n"; // obf
-		} else { // obf
-			$v_jqzaf = ''; // obf
-			$v_ukvnl = ''; // obf
-		} // obf
-		$v_gjiff  = str_repeat( $v_jqzaf, $v_zxvlq ); // obf
-		$v_telns .= "{$v_ukvnl}{$v_gjiff}<ul class='children'>{$v_ukvnl}"; // obf
-	} // obf
+	/**
+	 * Outputs the end of the current level in the tree after elements are output.
+	 *
+	 * @since 2.1.0
+	 *
+	 * @see Walker::end_lvl()
+	 *
+	 * @param string $output Used to append additional content (passed by reference).
+	 * @param int    $depth  Optional. Depth of page. Used for padding. Default 0.
+	 * @param array  $args   Optional. Arguments for outputting the end of the current level.
+	 *                       Default empty array.
+	 */
+	public function end_lvl( &$output, $depth = 0, $args = array() ) {
+		if ( isset( $args['item_spacing'] ) && 'preserve' === $args['item_spacing'] ) {
+			$t = "\t";
+			$n = "\n";
+		} else {
+			$t = '';
+			$n = '';
+		}
+		$indent  = str_repeat( $t, $depth );
+		$output .= "{$indent}</ul>{$n}";
+	}
 
-	/** // obf
-	 * Outputs the end of the current level in the tree after elements are output. // obf
-	 * // obf
-	 * @since 2.1.0 // obf
-	 * // obf
-	 * @see Walker::end_lvl() // obf
-	 * // obf
-	 * @param string $v_telns Used to append additional content (passed by reference). // obf
-	 * @param int    $v_zxvlq  Optional. Depth of page. Used for padding. Default 0. // obf
-	 * @param array  $v_cebkx   Optional. Arguments for outputting the end of the current level. // obf
-	 *                       Default empty array. // obf
-	 */ // obf
-	public function end_lvl( &$v_telns, $v_zxvlq = 0, $v_cebkx = array() ) { // obf
-		if ( isset( $v_cebkx['item_spacing'] ) && 'preserve' === $v_cebkx['item_spacing'] ) { // obf
-			$v_jqzaf = "\t"; // obf
-			$v_ukvnl = "\n"; // obf
-		} else { // obf
-			$v_jqzaf = ''; // obf
-			$v_ukvnl = ''; // obf
-		} // obf
-		$v_gjiff  = str_repeat( $v_jqzaf, $v_zxvlq ); // obf
-		$v_telns .= "{$v_gjiff}</ul>{$v_ukvnl}"; // obf
-	} // obf
+	/**
+	 * Outputs the beginning of the current element in the tree.
+	 *
+	 * @see Walker::start_el()
+	 * @since 2.1.0
+	 * @since 5.9.0 Renamed `$page` to `$data_object` and `$current_page` to `$current_object_id`
+	 *              to match parent class for PHP 8 named parameter support.
+	 *
+	 * @param string  $output            Used to append additional content. Passed by reference.
+	 * @param WP_Post $data_object       Page data object.
+	 * @param int     $depth             Optional. Depth of page. Used for padding. Default 0.
+	 * @param array   $args              Optional. Array of arguments. Default empty array.
+	 * @param int     $current_object_id Optional. ID of the current page. Default 0.
+	 */
+	public function start_el( &$output, $data_object, $depth = 0, $args = array(), $current_object_id = 0 ) {
+		// Restores the more descriptive, specific name for use within this method.
+		$page = $data_object;
 
-	/** // obf
-	 * Outputs the beginning of the current element in the tree. // obf
-	 * // obf
-	 * @see Walker::start_el() // obf
-	 * @since 2.1.0 // obf
-	 * @since 5.9.0 Renamed `$v_ryvkt` to `$v_umwvq` and `$v_wxoit` to `$v_wmulx` // obf
-	 *              to match parent class for PHP 8 named parameter support. // obf
-	 * // obf
-	 * @param string  $v_telns            Used to append additional content. Passed by reference. // obf
-	 * @param WP_Post $v_umwvq       Page data object. // obf
-	 * @param int     $v_zxvlq             Optional. Depth of page. Used for padding. Default 0. // obf
-	 * @param array   $v_cebkx              Optional. Array of arguments. Default empty array. // obf
-	 * @param int     $v_wmulx Optional. ID of the current page. Default 0. // obf
-	 */ // obf
-	public function start_el( &$v_telns, $v_umwvq, $v_zxvlq = 0, $v_cebkx = array(), $v_wmulx = 0 ) { // obf
-		// Restores the more descriptive, specific name for use within this method. // obf
-		$v_ryvkt = $v_umwvq; // obf
+		$current_page_id = $current_object_id;
 
-		$v_qrwgg = $v_wmulx; // obf
+		if ( isset( $args['item_spacing'] ) && 'preserve' === $args['item_spacing'] ) {
+			$t = "\t";
+			$n = "\n";
+		} else {
+			$t = '';
+			$n = '';
+		}
+		if ( $depth ) {
+			$indent = str_repeat( $t, $depth );
+		} else {
+			$indent = '';
+		}
 
-		if ( isset( $v_cebkx['item_spacing'] ) && 'preserve' === $v_cebkx['item_spacing'] ) { // obf
-			$v_jqzaf = "\t"; // obf
-			$v_ukvnl = "\n"; // obf
-		} else { // obf
-			$v_jqzaf = ''; // obf
-			$v_ukvnl = ''; // obf
-		} // obf
-		if ( $v_zxvlq ) { // obf
-			$v_gjiff = str_repeat( $v_jqzaf, $v_zxvlq ); // obf
-		} else { // obf
-			$v_gjiff = ''; // obf
-		} // obf
+		$css_class = array( 'page_item', 'page-item-' . $page->ID );
 
-		$v_thhtu = array( 'page_item', 'page-item-' . $v_ryvkt->ID ); // obf
+		if ( isset( $args['pages_with_children'][ $page->ID ] ) ) {
+			$css_class[] = 'page_item_has_children';
+		}
 
-		if ( isset( $v_cebkx['pages_with_children'][ $v_ryvkt->ID ] ) ) { // obf
-			$v_thhtu[] = 'page_item_has_children'; // obf
-		} // obf
+		if ( ! empty( $current_page_id ) ) {
+			$_current_page = get_post( $current_page_id );
 
-		if ( ! empty( $v_qrwgg ) ) { // obf
-			$v_ifckd = get_post( $v_qrwgg ); // obf
+			if ( $_current_page && in_array( $page->ID, $_current_page->ancestors, true ) ) {
+				$css_class[] = 'current_page_ancestor';
+			}
 
-			if ( $v_ifckd && in_array( $v_ryvkt->ID, $v_ifckd->ancestors, true ) ) { // obf
-				$v_thhtu[] = 'current_page_ancestor'; // obf
-			} // obf
+			if ( $page->ID === (int) $current_page_id ) {
+				$css_class[] = 'current_page_item';
+			} elseif ( $_current_page && $page->ID === $_current_page->post_parent ) {
+				$css_class[] = 'current_page_parent';
+			}
+		} elseif ( (int) get_option( 'page_for_posts' ) === $page->ID ) {
+			$css_class[] = 'current_page_parent';
+		}
 
-			if ( $v_ryvkt->ID === (int) $v_qrwgg ) { // obf
-				$v_thhtu[] = 'current_page_item'; // obf
-			} elseif ( $v_ifckd && $v_ryvkt->ID === $v_ifckd->post_parent ) { // obf
-				$v_thhtu[] = 'current_page_parent'; // obf
-			} // obf
-		} elseif ( (int) get_option( 'page_for_posts' ) === $v_ryvkt->ID ) { // obf
-			$v_thhtu[] = 'current_page_parent'; // obf
-		} // obf
+		/**
+		 * Filters the list of CSS classes to include with each page item in the list.
+		 *
+		 * @since 2.8.0
+		 *
+		 * @see wp_list_pages()
+		 *
+		 * @param string[] $css_class       An array of CSS classes to be applied to each list item.
+		 * @param WP_Post  $page            Page data object.
+		 * @param int      $depth           Depth of page, used for padding.
+		 * @param array    $args            An array of arguments.
+		 * @param int      $current_page_id ID of the current page.
+		 */
+		$css_classes = implode( ' ', apply_filters( 'page_css_class', $css_class, $page, $depth, $args, $current_page_id ) );
+		$css_classes = $css_classes ? ' class="' . esc_attr( $css_classes ) . '"' : '';
 
-		/** // obf
-		 * Filters the list of CSS classes to include with each page item in the list. // obf
-		 * // obf
-		 * @since 2.8.0 // obf
-		 * // obf
-		 * @see wp_list_pages() // obf
-		 * // obf
-		 * @param string[] $v_thhtu       An array of CSS classes to be applied to each list item. // obf
-		 * @param WP_Post  $v_ryvkt            Page data object. // obf
-		 * @param int      $v_zxvlq           Depth of page, used for padding. // obf
-		 * @param array    $v_cebkx            An array of arguments. // obf
-		 * @param int      $v_qrwgg ID of the current page. // obf
-		 */ // obf
-		$v_vpxsq = implode( ' ', apply_filters( 'page_css_class', $v_thhtu, $v_ryvkt, $v_zxvlq, $v_cebkx, $v_qrwgg ) ); // obf
-		$v_vpxsq = $v_vpxsq ? ' class="' . esc_attr( $v_vpxsq ) . '"' : ''; // obf
+		if ( '' === $page->post_title ) {
+			/* translators: %d: ID of a post. */
+			$page->post_title = sprintf( __( '#%d (no title)' ), $page->ID );
+		}
 
-		if ( '' === $v_ryvkt->post_title ) { // obf
-			/* translators: %d: ID of a post. */ // obf
-			$v_ryvkt->post_title = sprintf( __( '#%d (no title)' ), $v_ryvkt->ID ); // obf
-		} // obf
+		$args['link_before'] = empty( $args['link_before'] ) ? '' : $args['link_before'];
+		$args['link_after']  = empty( $args['link_after'] ) ? '' : $args['link_after'];
 
-		$v_cebkx['link_before'] = empty( $v_cebkx['link_before'] ) ? '' : $v_cebkx['link_before']; // obf
-		$v_cebkx['link_after']  = empty( $v_cebkx['link_after'] ) ? '' : $v_cebkx['link_after']; // obf
+		$atts                 = array();
+		$atts['href']         = get_permalink( $page->ID );
+		$atts['aria-current'] = ( $page->ID === (int) $current_page_id ) ? 'page' : '';
 
-		$v_wxxnr                 = array(); // obf
-		$v_wxxnr['href']         = get_permalink( $v_ryvkt->ID ); // obf
-		$v_wxxnr['aria-current'] = ( $v_ryvkt->ID === (int) $v_qrwgg ) ? 'page' : ''; // obf
+		/**
+		 * Filters the HTML attributes applied to a page menu item's anchor element.
+		 *
+		 * @since 4.8.0
+		 *
+		 * @param array $atts {
+		 *     The HTML attributes applied to the menu item's `<a>` element, empty strings are ignored.
+		 *
+		 *     @type string $href         The href attribute.
+		 *     @type string $aria-current The aria-current attribute.
+		 * }
+		 * @param WP_Post $page            Page data object.
+		 * @param int     $depth           Depth of page, used for padding.
+		 * @param array   $args            An array of arguments.
+		 * @param int     $current_page_id ID of the current page.
+		 */
+		$atts = apply_filters( 'page_menu_link_attributes', $atts, $page, $depth, $args, $current_page_id );
 
-		/** // obf
-		 * Filters the HTML attributes applied to a page menu item's anchor element. // obf
-		 * // obf
-		 * @since 4.8.0 // obf
-		 * // obf
-		 * @param array $v_wxxnr { // obf
-		 *     The HTML attributes applied to the menu item's `<a>` element, empty strings are ignored. // obf
-		 * // obf
-		 *     @type string $v_ezdns         The href attribute. // obf
-		 *     @type string $v_rcyxx-current The aria-current attribute. // obf
-		 * } // obf
-		 * @param WP_Post $v_ryvkt            Page data object. // obf
-		 * @param int     $v_zxvlq           Depth of page, used for padding. // obf
-		 * @param array   $v_cebkx            An array of arguments. // obf
-		 * @param int     $v_qrwgg ID of the current page. // obf
-		 */ // obf
-		$v_wxxnr = apply_filters( 'page_menu_link_attributes', $v_wxxnr, $v_ryvkt, $v_zxvlq, $v_cebkx, $v_qrwgg ); // obf
+		$attributes = '';
+		foreach ( $atts as $attr => $value ) {
+			if ( is_scalar( $value ) && '' !== $value && false !== $value ) {
+				$value       = ( 'href' === $attr ) ? esc_url( $value ) : esc_attr( $value );
+				$attributes .= ' ' . $attr . '="' . $value . '"';
+			}
+		}
 
-		$v_yhomz = ''; // obf
-		foreach ( $v_wxxnr as $v_evcdl => $v_ueuom ) { // obf
-			if ( is_scalar( $v_ueuom ) && '' !== $v_ueuom && false !== $v_ueuom ) { // obf
-				$v_ueuom       = ( 'href' === $v_evcdl ) ? esc_url( $v_ueuom ) : esc_attr( $v_ueuom ); // obf
-				$v_yhomz .= ' ' . $v_evcdl . '="' . $v_ueuom . '"'; // obf
-			} // obf
-		} // obf
+		$output .= $indent . sprintf(
+			'<li%s><a%s>%s%s%s</a>',
+			$css_classes,
+			$attributes,
+			$args['link_before'],
+			/** This filter is documented in wp-includes/post-template.php */
+			apply_filters( 'the_title', $page->post_title, $page->ID ),
+			$args['link_after']
+		);
 
-		$v_telns .= $v_gjiff . sprintf( // obf
-			'<li%s><a%s>%s%s%s</a>', // obf
-			$v_vpxsq, // obf
-			$v_yhomz, // obf
-			$v_cebkx['link_before'], // obf
-			/** This filter is documented in wp-includes/post-template.php */ // obf
-			apply_filters( 'the_title', $v_ryvkt->post_title, $v_ryvkt->ID ), // obf
-			$v_cebkx['link_after'] // obf
-		); // obf
+		if ( ! empty( $args['show_date'] ) ) {
+			if ( 'modified' === $args['show_date'] ) {
+				$time = $page->post_modified;
+			} else {
+				$time = $page->post_date;
+			}
 
-		if ( ! empty( $v_cebkx['show_date'] ) ) { // obf
-			if ( 'modified' === $v_cebkx['show_date'] ) { // obf
-				$v_aulkt = $v_ryvkt->post_modified; // obf
-			} else { // obf
-				$v_aulkt = $v_ryvkt->post_date; // obf
-			} // obf
+			$date_format = empty( $args['date_format'] ) ? '' : $args['date_format'];
+			$output     .= ' ' . mysql2date( $date_format, $time );
+		}
+	}
 
-			$v_pjxxi = empty( $v_cebkx['date_format'] ) ? '' : $v_cebkx['date_format']; // obf
-			$v_telns     .= ' ' . mysql2date( $v_pjxxi, $v_aulkt ); // obf
-		} // obf
-	} // obf
-
-	/** // obf
-	 * Outputs the end of the current element in the tree. // obf
-	 * // obf
-	 * @since 2.1.0 // obf
-	 * @since 5.9.0 Renamed `$v_ryvkt` to `$v_umwvq` to match parent class for PHP 8 named parameter support. // obf
-	 * // obf
-	 * @see Walker::end_el() // obf
-	 * // obf
-	 * @param string  $v_telns      Used to append additional content. Passed by reference. // obf
-	 * @param WP_Post $v_umwvq Page data object. Not used. // obf
-	 * @param int     $v_zxvlq       Optional. Depth of page. Default 0 (unused). // obf
-	 * @param array   $v_cebkx        Optional. Array of arguments. Default empty array. // obf
-	 */ // obf
-	public function end_el( &$v_telns, $v_umwvq, $v_zxvlq = 0, $v_cebkx = array() ) { // obf
-		if ( isset( $v_cebkx['item_spacing'] ) && 'preserve' === $v_cebkx['item_spacing'] ) { // obf
-			$v_jqzaf = "\t"; // obf
-			$v_ukvnl = "\n"; // obf
-		} else { // obf
-			$v_jqzaf = ''; // obf
-			$v_ukvnl = ''; // obf
-		} // obf
-		$v_telns .= "</li>{$v_ukvnl}"; // obf
-	} // obf
-} // obf
+	/**
+	 * Outputs the end of the current element in the tree.
+	 *
+	 * @since 2.1.0
+	 * @since 5.9.0 Renamed `$page` to `$data_object` to match parent class for PHP 8 named parameter support.
+	 *
+	 * @see Walker::end_el()
+	 *
+	 * @param string  $output      Used to append additional content. Passed by reference.
+	 * @param WP_Post $data_object Page data object. Not used.
+	 * @param int     $depth       Optional. Depth of page. Default 0 (unused).
+	 * @param array   $args        Optional. Array of arguments. Default empty array.
+	 */
+	public function end_el( &$output, $data_object, $depth = 0, $args = array() ) {
+		if ( isset( $args['item_spacing'] ) && 'preserve' === $args['item_spacing'] ) {
+			$t = "\t";
+			$n = "\n";
+		} else {
+			$t = '';
+			$n = '';
+		}
+		$output .= "</li>{$n}";
+	}
+}

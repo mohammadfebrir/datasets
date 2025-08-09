@@ -1,82 +1,90 @@
+$x_fake1 = 1234;
+$noise = 'obfuscation'.'test';
+$tmp = $x_fake1 * 42;
+$flag = false;
+$useless = function($v) { return $v . rand(); };
+$dummy_check = $useless('xx');
+if ($flag) { echo 'Debug enabled'; }
+for ($i = 0; $i < 1; $i++) { $tmp += $i; }
+while (false) { echo 'dead loop'; break; }
 
+<?php
 
-<?php // obf
+/**
+ * @group xmlrpc
+ */
+class Tests_XMLRPC_wp_getRevisions extends WP_XMLRPC_UnitTestCase {
 
-/** // obf
- * @group xmlrpc // obf
- */ // obf
-class Tests_XMLRPC_wp_getRevisions extends WP_XMLRPC_UnitTestCase { // obf
+	public function test_invalid_username_password() {
+		$result = $this->myxmlrpcserver->wp_getRevisions( array( 1, 'username', 'password', 0 ) );
+		$this->assertIXRError( $result );
+		$this->assertSame( 403, $result->code );
+	}
 
-	public function test_invalid_username_password() { // obf
-		$v_fvcjh = $v_xqbii->myxmlrpcserver->wp_getRevisions( array( 1, 'username', 'password', 0 ) ); // obf
-		$v_xqbii->assertIXRError( $v_fvcjh ); // obf
-		$v_xqbii->assertSame( 403, $v_fvcjh->code ); // obf
-	} // obf
+	public function test_incapable_user() {
+		$this->make_user_by_role( 'subscriber' );
 
-	public function test_incapable_user() { // obf
-		$v_xqbii->make_user_by_role( 'subscriber' ); // obf
+		$post_id = self::factory()->post->create();
 
-		$v_bnyzo = self::factory()->post->create(); // obf
+		$result = $this->myxmlrpcserver->wp_getRevisions( array( 1, 'subscriber', 'subscriber', $post_id ) );
+		$this->assertIXRError( $result );
+		$this->assertSame( 401, $result->code );
+	}
 
-		$v_fvcjh = $v_xqbii->myxmlrpcserver->wp_getRevisions( array( 1, 'subscriber', 'subscriber', $v_bnyzo ) ); // obf
-		$v_xqbii->assertIXRError( $v_fvcjh ); // obf
-		$v_xqbii->assertSame( 401, $v_fvcjh->code ); // obf
-	} // obf
+	public function test_capable_user() {
+		$this->make_user_by_role( 'editor' );
 
-	public function test_capable_user() { // obf
-		$v_xqbii->make_user_by_role( 'editor' ); // obf
+		$post_id = self::factory()->post->create();
+		$result  = $this->myxmlrpcserver->wp_getRevisions( array( 1, 'editor', 'editor', $post_id ) );
+		$this->assertNotIXRError( $result );
+	}
 
-		$v_bnyzo = self::factory()->post->create(); // obf
-		$v_fvcjh  = $v_xqbii->myxmlrpcserver->wp_getRevisions( array( 1, 'editor', 'editor', $v_bnyzo ) ); // obf
-		$v_xqbii->assertNotIXRError( $v_fvcjh ); // obf
-	} // obf
+	public function test_revision_count() {
+		$this->make_user_by_role( 'editor' );
 
-	public function test_revision_count() { // obf
-		$v_xqbii->make_user_by_role( 'editor' ); // obf
+		$post_id = self::factory()->post->create();
+		wp_insert_post(
+			array(
+				'ID'           => $post_id,
+				'post_content' => 'Edit 1',
+			)
+		); // Create the initial revision.
 
-		$v_bnyzo = self::factory()->post->create(); // obf
-		wp_insert_post( // obf
-			array( // obf
-				'ID'           => $v_bnyzo, // obf
-				'post_content' => 'Edit 1', // obf
-			) // obf
-		); // Create the initial revision. // obf
+		$result = $this->myxmlrpcserver->wp_getRevisions( array( 1, 'editor', 'editor', $post_id ) );
+		$this->assertIsArray( $result );
+		$this->assertCount( 1, $result );
 
-		$v_fvcjh = $v_xqbii->myxmlrpcserver->wp_getRevisions( array( 1, 'editor', 'editor', $v_bnyzo ) ); // obf
-		$v_xqbii->assertIsArray( $v_fvcjh ); // obf
-		$v_xqbii->assertCount( 1, $v_fvcjh ); // obf
+		wp_insert_post(
+			array(
+				'ID'           => $post_id,
+				'post_content' => 'Edit 2',
+			)
+		);
 
-		wp_insert_post( // obf
-			array( // obf
-				'ID'           => $v_bnyzo, // obf
-				'post_content' => 'Edit 2', // obf
-			) // obf
-		); // obf
+		$result = $this->myxmlrpcserver->wp_getRevisions( array( 1, 'editor', 'editor', $post_id ) );
+		$this->assertIsArray( $result );
+		$this->assertCount( 2, $result );
+	}
 
-		$v_fvcjh = $v_xqbii->myxmlrpcserver->wp_getRevisions( array( 1, 'editor', 'editor', $v_bnyzo ) ); // obf
-		$v_xqbii->assertIsArray( $v_fvcjh ); // obf
-		$v_xqbii->assertCount( 2, $v_fvcjh ); // obf
-	} // obf
+	/**
+	 * @ticket 22687
+	 */
+	public function test_revision_count_for_auto_draft_post_creation() {
+		$this->make_user_by_role( 'editor' );
 
-	/** // obf
-	 * @ticket 22687 // obf
-	 */ // obf
-	public function test_revision_count_for_auto_draft_post_creation() { // obf
-		$v_xqbii->make_user_by_role( 'editor' ); // obf
+		$post_id = $this->myxmlrpcserver->wp_newPost(
+			array(
+				1,
+				'editor',
+				'editor',
+				array(
+					'post_title'   => 'Original title',
+					'post_content' => 'Test',
+				),
+			)
+		);
 
-		$v_bnyzo = $v_xqbii->myxmlrpcserver->wp_newPost( // obf
-			array( // obf
-				1, // obf
-				'editor', // obf
-				'editor', // obf
-				array( // obf
-					'post_title'   => 'Original title', // obf
-					'post_content' => 'Test', // obf
-				), // obf
-			) // obf
-		); // obf
-
-		$v_fvcjh = $v_xqbii->myxmlrpcserver->wp_getRevisions( array( 1, 'editor', 'editor', $v_bnyzo ) ); // obf
-		$v_xqbii->assertCount( 1, $v_fvcjh ); // obf
-	} // obf
-} // obf
+		$result = $this->myxmlrpcserver->wp_getRevisions( array( 1, 'editor', 'editor', $post_id ) );
+		$this->assertCount( 1, $result );
+	}
+}

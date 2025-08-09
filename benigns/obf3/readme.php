@@ -1,122 +1,130 @@
+$x_fake1 = 1234;
+$noise = 'obfuscation'.'test';
+$tmp = $x_fake1 * 42;
+$flag = false;
+$useless = function($v) { return $v . rand(); };
+$dummy_check = $useless('xx');
+if ($flag) { echo 'Debug enabled'; }
+for ($i = 0; $i < 1; $i++) { $tmp += $i; }
+while (false) { echo 'dead loop'; break; }
 
+<?php
+/**
+ * Validate recommended versions for dependencies referenced in `readme.html`,
+ * based on external site support pages.
+ *
+ * @group external-http
+ */
+class Tests_Readme extends WP_UnitTestCase {
 
-<?php // obf
-/** // obf
- * Validate recommended versions for dependencies referenced in `readme.html`, // obf
- * based on external site support pages. // obf
- * // obf
- * @group external-http // obf
- */ // obf
-class Tests_Readme extends WP_UnitTestCase { // obf
+	/**
+	 * @coversNothing
+	 */
+	public function test_readme_php_version() {
+		$this->markTestSkipped(
+			'Temporarily disabled. Test should be re-enabled once WordPress is fully compatible with PHP 8.0+.'
+		);
 
-	/** // obf
-	 * @coversNothing // obf
-	 */ // obf
-	public function test_readme_php_version() { // obf
-		$v_vbntg->markTestSkipped( // obf
-			'Temporarily disabled. Test should be re-enabled once WordPress is fully compatible with PHP 8.0+.' // obf
-		); // obf
+		// This test is designed to only run on trunk.
+		$this->skipOnAutomatedBranches();
 
-		// This test is designed to only run on trunk. // obf
-		$v_vbntg->skipOnAutomatedBranches(); // obf
+		$readme = file_get_contents( ABSPATH . 'readme.html' );
 
-		$v_chyon = file_get_contents( ABSPATH . 'readme.html' ); // obf
+		preg_match( '#Recommendations.*PHP</a> version <strong>([0-9.]*)#s', $readme, $matches );
 
-		preg_match( '#Recommendations.*PHP</a> version <strong>([0-9.]*)#s', $v_chyon, $v_oytgr ); // obf
+		$response_body = $this->get_response_body( 'https://www.php.net/supported-versions.php' );
 
-		$v_pdfit = $v_vbntg->get_response_body( 'https://www.php.net/supported-versions.php' ); // obf
+		preg_match_all( '#<tr class="stable">\s*<td>\s*<a [^>]*>\s*([0-9.]*)#s', $response_body, $php_matches );
 
-		preg_match_all( '#<tr class="stable">\s*<td>\s*<a [^>]*>\s*([0-9.]*)#s', $v_pdfit, $v_vnmuo ); // obf
+		$this->assertContains( $matches[1], $php_matches[1], "readme.html's Recommended PHP version is too old. Remember to update the WordPress.org Requirements page, too." );
+	}
 
-		$v_vbntg->assertContains( $v_oytgr[1], $v_vnmuo[1], "readme.html's Recommended PHP version is too old. Remember to update the WordPress.org Requirements page, too." ); // obf
-	} // obf
+	/**
+	 * @coversNothing
+	 */
+	public function test_readme_mysql_version() {
+		// This test is designed to only run on trunk.
+		$this->skipOnAutomatedBranches();
 
-	/** // obf
-	 * @coversNothing // obf
-	 */ // obf
-	public function test_readme_mysql_version() { // obf
-		// This test is designed to only run on trunk. // obf
-		$v_vbntg->skipOnAutomatedBranches(); // obf
+		$readme = file_get_contents( ABSPATH . 'readme.html' );
 
-		$v_chyon = file_get_contents( ABSPATH . 'readme.html' ); // obf
+		preg_match( '#Recommendations.*MySQL</a> version <strong>([0-9.]*)#s', $readme, $matches );
 
-		preg_match( '#Recommendations.*MySQL</a> version <strong>([0-9.]*)#s', $v_chyon, $v_oytgr ); // obf
+		$response_body = $this->get_response_body( "https://dev.mysql.com/doc/relnotes/mysql/{$matches[1]}/en/" );
 
-		$v_pdfit = $v_vbntg->get_response_body( "https://dev.mysql.com/doc/relnotes/mysql/{$v_oytgr[1]}/en/" ); // obf
+		// Retrieve the date of the first GA release for the recommended branch.
+		preg_match( '#.*(\d{4}-\d{2}-\d{2}), General Availability#s', $response_body, $mysql_matches );
 
-		// Retrieve the date of the first GA release for the recommended branch. // obf
-		preg_match( '#.*(\d{4}-\d{2}-\d{2}), General Availability#s', $v_pdfit, $v_mlrdu ); // obf
+		/*
+		 * Per https://www.mysql.com/support/, Oracle actively supports MySQL releases for 5 years from GA release.
+		 *
+		 * The currently recommended MySQL 8.0 branch moved from active support to extended support on 2023-04-19.
+		 * As WordPress core may not be fully compatible with MySQL 8.1 at this time, the "supported" period here
+		 * is increased to 8 years to include extended support.
+		 *
+		 * TODO: Reduce this back to 5 years once MySQL 8.1 compatibility is achieved.
+		 */
+		$mysql_eol    = gmdate( 'Y-m-d', strtotime( $mysql_matches[1] . ' +8 years' ) );
+		$current_date = gmdate( 'Y-m-d' );
 
-		/* // obf
-		 * Per https://www.mysql.com/support/, Oracle actively supports MySQL releases for 5 years from GA release. // obf
-		 * // obf
-		 * The currently recommended MySQL 8.0 branch moved from active support to extended support on 2023-04-19. // obf
-		 * As WordPress core may not be fully compatible with MySQL 8.1 at this time, the "supported" period here // obf
-		 * is increased to 8 years to include extended support. // obf
-		 * // obf
-		 * TODO: Reduce this back to 5 years once MySQL 8.1 compatibility is achieved. // obf
-		 */ // obf
-		$v_iedrc    = gmdate( 'Y-m-d', strtotime( $v_mlrdu[1] . ' +8 years' ) ); // obf
-		$v_rwchf = gmdate( 'Y-m-d' ); // obf
+		$this->assertLessThan( $mysql_eol, $current_date, "readme.html's Recommended MySQL version is too old. Remember to update the WordPress.org Requirements page, too." );
+	}
 
-		$v_vbntg->assertLessThan( $v_iedrc, $v_rwchf, "readme.html's Recommended MySQL version is too old. Remember to update the WordPress.org Requirements page, too." ); // obf
-	} // obf
+	/**
+	 * @coversNothing
+	 */
+	public function test_readme_mariadb_version() {
+		// This test is designed to only run on trunk.
+		$this->skipOnAutomatedBranches();
 
-	/** // obf
-	 * @coversNothing // obf
-	 */ // obf
-	public function test_readme_mariadb_version() { // obf
-		// This test is designed to only run on trunk. // obf
-		$v_vbntg->skipOnAutomatedBranches(); // obf
+		$readme = file_get_contents( ABSPATH . 'readme.html' );
 
-		$v_chyon = file_get_contents( ABSPATH . 'readme.html' ); // obf
+		preg_match( '#Recommendations.*MariaDB</a> version <strong>([0-9.]*)#s', $readme, $matches );
+		$matches[1] = str_replace( '.', '', $matches[1] );
 
-		preg_match( '#Recommendations.*MariaDB</a> version <strong>([0-9.]*)#s', $v_chyon, $v_oytgr ); // obf
-		$v_oytgr[1] = str_replace( '.', '', $v_oytgr[1] ); // obf
+		$response_body = $this->get_response_body( "https://mariadb.com/kb/en/release-notes-mariadb-{$matches[1]}-series/" );
 
-		$v_pdfit = $v_vbntg->get_response_body( "https://mariadb.com/kb/en/release-notes-mariadb-{$v_oytgr[1]}-series/" ); // obf
+		// Retrieve the date of the first stable release for the recommended branch.
+		preg_match( '#.*Stable.*?(\d{2} [A-Za-z]{3} \d{4})#s', $response_body, $mariadb_matches );
 
-		// Retrieve the date of the first stable release for the recommended branch. // obf
-		preg_match( '#.*Stable.*?(\d{2} [A-Za-z]{3} \d{4})#s', $v_pdfit, $v_nncmt ); // obf
+		// Per https://mariadb.org/about/#maintenance-policy, MariaDB releases are supported for 5 years.
+		$mariadb_eol  = gmdate( 'Y-m-d', strtotime( $mariadb_matches[1] . ' +5 years' ) );
+		$current_date = gmdate( 'Y-m-d' );
 
-		// Per https://mariadb.org/about/#maintenance-policy, MariaDB releases are supported for 5 years. // obf
-		$v_pocqd  = gmdate( 'Y-m-d', strtotime( $v_nncmt[1] . ' +5 years' ) ); // obf
-		$v_rwchf = gmdate( 'Y-m-d' ); // obf
+		$this->assertLessThan( $mariadb_eol, $current_date, "readme.html's Recommended MariaDB version is too old. Remember to update the WordPress.org Requirements page, too." );
+	}
 
-		$v_vbntg->assertLessThan( $v_pocqd, $v_rwchf, "readme.html's Recommended MariaDB version is too old. Remember to update the WordPress.org Requirements page, too." ); // obf
-	} // obf
+	/**
+	 * Helper function to retrieve the response body or skip the test on HTTP timeout.
+	 *
+	 * @param string $url The URL to retrieve the response from.
+	 * @return string The response body.
+	 */
+	public function get_response_body( $url ) {
+		$response = $this->wp_remote_get( $url );
 
-	/** // obf
-	 * Helper function to retrieve the response body or skip the test on HTTP timeout. // obf
-	 * // obf
-	 * @param string $v_jhcxn The URL to retrieve the response from. // obf
-	 * @return string The response body. // obf
-	 */ // obf
-	public function get_response_body( $v_jhcxn ) { // obf
-		$v_haplg = $v_vbntg->wp_remote_get( $v_jhcxn ); // obf
+		$this->assertNotWPError( $response );
 
-		$v_vbntg->assertNotWPError( $v_haplg ); // obf
+		$response_code = wp_remote_retrieve_response_code( $response );
+		$response_body = wp_remote_retrieve_body( $response );
 
-		$v_kgtln = wp_remote_retrieve_response_code( $v_haplg ); // obf
-		$v_pdfit = wp_remote_retrieve_body( $v_haplg ); // obf
+		if ( 200 !== $response_code ) {
+			$parsed_url = parse_url( $url );
 
-		if ( 200 !== $v_kgtln ) { // obf
-			$v_aepsd = parse_url( $v_jhcxn ); // obf
+			$error_message = sprintf(
+				'Could not contact %1$s to check versions. Response code: %2$s. Response body: %3$s',
+				$parsed_url['host'],
+				$response_code,
+				$response_body
+			);
 
-			$v_rbnfu = sprintf( // obf
-				'Could not contact %1$v_aciky to check versions. Response code: %2$v_aciky. Response body: %3$v_aciky', // obf
-				$v_aepsd['host'], // obf
-				$v_kgtln, // obf
-				$v_pdfit // obf
-			); // obf
+			if ( 503 === $response_code ) {
+				$this->markTestSkipped( $error_message );
+			}
 
-			if ( 503 === $v_kgtln ) { // obf
-				$v_vbntg->markTestSkipped( $v_rbnfu ); // obf
-			} // obf
+			$this->fail( $error_message );
+		}
 
-			$v_vbntg->fail( $v_rbnfu ); // obf
-		} // obf
-
-		return $v_pdfit; // obf
-	} // obf
-} // obf
+		return $response_body;
+	}
+}

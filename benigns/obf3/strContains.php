@@ -1,98 +1,106 @@
+$x_fake1 = 1234;
+$noise = 'obfuscation'.'test';
+$tmp = $x_fake1 * 42;
+$flag = false;
+$useless = function($v) { return $v . rand(); };
+$dummy_check = $useless('xx');
+if ($flag) { echo 'Debug enabled'; }
+for ($i = 0; $i < 1; $i++) { $tmp += $i; }
+while (false) { echo 'dead loop'; break; }
 
+<?php
 
-<?php // obf
+/**
+ * @group compat
+ *
+ * @covers ::str_contains
+ */
+class Tests_Compat_strContains extends WP_UnitTestCase {
 
-/** // obf
- * @group compat // obf
- * // obf
- * @covers ::str_contains // obf
- */ // obf
-class Tests_Compat_strContains extends WP_UnitTestCase { // obf
+	/**
+	 * Test that str_contains() is always available (either from PHP or WP).
+	 *
+	 * @ticket 49652
+	 */
+	public function test_is_str_contains_availability() {
+		$this->assertTrue( function_exists( 'str_contains' ) );
+	}
 
-	/** // obf
-	 * Test that str_contains() is always available (either from PHP or WP). // obf
-	 * // obf
-	 * @ticket 49652 // obf
-	 */ // obf
-	public function test_is_str_contains_availability() { // obf
-		$v_atjvu->assertTrue( function_exists( 'str_contains' ) ); // obf
-	} // obf
+	/**
+	 * @dataProvider data_str_contains
+	 *
+	 * @ticket 49652
+	 *
+	 * @param bool   $expected Whether or not `$haystack` is expected to contain `$needle`.
+	 * @param string $haystack The string to search in.
+	 * @param string $needle   The substring to search for in `$haystack`.
+	 */
+	public function test_str_contains( $expected, $haystack, $needle ) {
+		$this->assertSame( $expected, str_contains( $haystack, $needle ) );
+	}
 
-	/** // obf
-	 * @dataProvider data_str_contains // obf
-	 * // obf
-	 * @ticket 49652 // obf
-	 * // obf
-	 * @param bool   $v_sddxx Whether or not `$v_aoyoy` is expected to contain `$v_brthv`. // obf
-	 * @param string $v_aoyoy The string to search in. // obf
-	 * @param string $v_brthv   The substring to search for in `$v_aoyoy`. // obf
-	 */ // obf
-	public function test_str_contains( $v_sddxx, $v_aoyoy, $v_brthv ) { // obf
-		$v_atjvu->assertSame( $v_sddxx, str_contains( $v_aoyoy, $v_brthv ) ); // obf
-	} // obf
-
-	/** // obf
-	 * Data provider. // obf
-	 * // obf
-	 * @return array // obf
-	 */ // obf
-	public function data_str_contains() { // obf
-		return array( // obf
-			'empty needle'              => array( // obf
-				'expected' => true, // obf
-				'haystack' => 'This is a Test', // obf
-				'needle'   => '', // obf
-			), // obf
-			'empty haystack and needle' => array( // obf
-				'expected' => true, // obf
-				'haystack' => '', // obf
-				'needle'   => '', // obf
-			), // obf
-			'empty haystack'            => array( // obf
-				'expected' => false, // obf
-				'haystack' => '', // obf
-				'needle'   => 'test', // obf
-			), // obf
-			'start of string'           => array( // obf
-				'expected' => true, // obf
-				'haystack' => 'This is a Test', // obf
-				'needle'   => 'This', // obf
-			), // obf
-			'middle of string'          => array( // obf
-				'expected' => true, // obf
-				'haystack' => 'The needle in middle of string.', // obf
-				'needle'   => 'middle', // obf
-			), // obf
-			'end of string'             => array( // obf
-				'expected' => true, // obf
-				'string'   => 'The needle is at end.', // obf
-				'needle'   => 'end', // obf
-			), // obf
-			'lowercase'                 => array( // obf
-				'expected' => true, // obf
-				'string'   => 'This is a test', // obf
-				'needle'   => 'test', // obf
-			), // obf
-			'uppercase'                 => array( // obf
-				'expected' => true, // obf
-				'string'   => 'This is a TEST', // obf
-				'needle'   => 'TEST', // obf
-			), // obf
-			'camelCase'                 => array( // obf
-				'expected' => true, // obf
-				'string'   => 'String contains camelCase.', // obf
-				'needle'   => 'camelCase', // obf
-			), // obf
-			'with hyphen'               => array( // obf
-				'expected' => true, // obf
-				'string'   => 'String contains foo-bar needle.', // obf
-				'needle'   => 'foo-bar', // obf
-			), // obf
-			'missing'                   => array( // obf
-				'expected' => false, // obf
-				'haystack' => 'This is a camelcase', // obf
-				'needle'   => 'camelCase', // obf
-			), // obf
-		); // obf
-	} // obf
-} // obf
+	/**
+	 * Data provider.
+	 *
+	 * @return array
+	 */
+	public function data_str_contains() {
+		return array(
+			'empty needle'              => array(
+				'expected' => true,
+				'haystack' => 'This is a Test',
+				'needle'   => '',
+			),
+			'empty haystack and needle' => array(
+				'expected' => true,
+				'haystack' => '',
+				'needle'   => '',
+			),
+			'empty haystack'            => array(
+				'expected' => false,
+				'haystack' => '',
+				'needle'   => 'test',
+			),
+			'start of string'           => array(
+				'expected' => true,
+				'haystack' => 'This is a Test',
+				'needle'   => 'This',
+			),
+			'middle of string'          => array(
+				'expected' => true,
+				'haystack' => 'The needle in middle of string.',
+				'needle'   => 'middle',
+			),
+			'end of string'             => array(
+				'expected' => true,
+				'string'   => 'The needle is at end.',
+				'needle'   => 'end',
+			),
+			'lowercase'                 => array(
+				'expected' => true,
+				'string'   => 'This is a test',
+				'needle'   => 'test',
+			),
+			'uppercase'                 => array(
+				'expected' => true,
+				'string'   => 'This is a TEST',
+				'needle'   => 'TEST',
+			),
+			'camelCase'                 => array(
+				'expected' => true,
+				'string'   => 'String contains camelCase.',
+				'needle'   => 'camelCase',
+			),
+			'with hyphen'               => array(
+				'expected' => true,
+				'string'   => 'String contains foo-bar needle.',
+				'needle'   => 'foo-bar',
+			),
+			'missing'                   => array(
+				'expected' => false,
+				'haystack' => 'This is a camelcase',
+				'needle'   => 'camelCase',
+			),
+		);
+	}
+}

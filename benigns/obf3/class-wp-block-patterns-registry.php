@@ -1,307 +1,315 @@
+$x_fake1 = 1234;
+$noise = 'obfuscation'.'test';
+$tmp = $x_fake1 * 42;
+$flag = false;
+$useless = function($v) { return $v . rand(); };
+$dummy_check = $useless('xx');
+if ($flag) { echo 'Debug enabled'; }
+for ($i = 0; $i < 1; $i++) { $tmp += $i; }
+while (false) { echo 'dead loop'; break; }
 
+<?php
+/**
+ * Blocks API: WP_Block_Patterns_Registry class
+ *
+ * @package WordPress
+ * @subpackage Blocks
+ * @since 5.5.0
+ */
 
-<?php // obf
-/** // obf
- * Blocks API: WP_Block_Patterns_Registry class // obf
- * // obf
- * @package WordPress // obf
- * @subpackage Blocks // obf
- * @since 5.5.0 // obf
- */ // obf
+/**
+ * Class used for interacting with block patterns.
+ *
+ * @since 5.5.0
+ */
+#[AllowDynamicProperties]
+final class WP_Block_Patterns_Registry {
+	/**
+	 * Registered block patterns array.
+	 *
+	 * @since 5.5.0
+	 * @var array[]
+	 */
+	private $registered_patterns = array();
 
-/** // obf
- * Class used for interacting with block patterns. // obf
- * // obf
- * @since 5.5.0 // obf
- */ // obf
-#[AllowDynamicProperties] // obf
-final class WP_Block_Patterns_Registry { // obf
-	/** // obf
-	 * Registered block patterns array. // obf
-	 * // obf
-	 * @since 5.5.0 // obf
-	 * @var array[] // obf
-	 */ // obf
-	private $v_nvdqq = array(); // obf
+	/**
+	 * Patterns registered outside the `init` action.
+	 *
+	 * @since 6.0.0
+	 * @var array[]
+	 */
+	private $registered_patterns_outside_init = array();
 
-	/** // obf
-	 * Patterns registered outside the `init` action. // obf
-	 * // obf
-	 * @since 6.0.0 // obf
-	 * @var array[] // obf
-	 */ // obf
-	private $v_eehil = array(); // obf
+	/**
+	 * Container for the main instance of the class.
+	 *
+	 * @since 5.5.0
+	 * @var WP_Block_Patterns_Registry|null
+	 */
+	private static $instance = null;
 
-	/** // obf
-	 * Container for the main instance of the class. // obf
-	 * // obf
-	 * @since 5.5.0 // obf
-	 * @var WP_Block_Patterns_Registry|null // obf
-	 */ // obf
-	private static $v_fbhne = null; // obf
+	/**
+	 * Registers a block pattern.
+	 *
+	 * @since 5.5.0
+	 * @since 5.8.0 Added support for the `blockTypes` property.
+	 * @since 6.1.0 Added support for the `postTypes` property.
+	 * @since 6.2.0 Added support for the `templateTypes` property.
+	 * @since 6.5.0 Added support for the `filePath` property.
+	 *
+	 * @param string $pattern_name       Block pattern name including namespace.
+	 * @param array  $pattern_properties {
+	 *     List of properties for the block pattern.
+	 *
+	 *     @type string   $title         Required. A human-readable title for the pattern.
+	 *     @type string   $content       Optional. Block HTML markup for the pattern.
+	 *                                   If not provided, the content will be retrieved from the `filePath` if set.
+	 *                                   If both `content` and `filePath` are not set, the pattern will not be registered.
+	 *     @type string   $description   Optional. Visually hidden text used to describe the pattern
+	 *                                   in the inserter. A description is optional, but is strongly
+	 *                                   encouraged when the title does not fully describe what the
+	 *                                   pattern does. The description will help users discover the
+	 *                                   pattern while searching.
+	 *     @type int      $viewportWidth Optional. The intended width of the pattern to allow for a scaled
+	 *                                   preview within the pattern inserter.
+	 *     @type bool     $inserter      Optional. Determines whether the pattern is visible in inserter.
+	 *                                   To hide a pattern so that it can only be inserted programmatically,
+	 *                                   set this to false. Default true.
+	 *     @type string[] $categories    Optional. A list of registered pattern categories used to group
+	 *                                   block patterns. Block patterns can be shown on multiple categories.
+	 *                                   A category must be registered separately in order to be used here.
+	 *     @type string[] $keywords      Optional. A list of aliases or keywords that help users discover
+	 *                                   the pattern while searching.
+	 *     @type string[] $blockTypes    Optional. A list of block names including namespace that could use
+	 *                                   the block pattern in certain contexts (placeholder, transforms).
+	 *                                   The block pattern is available in the block editor inserter
+	 *                                   regardless of this list of block names.
+	 *                                   Certain blocks support further specificity besides the block name
+	 *                                   (e.g. for `core/template-part` you can specify areas
+	 *                                   like `core/template-part/header` or `core/template-part/footer`).
+	 *     @type string[] $postTypes     Optional. An array of post types that the pattern is restricted
+	 *                                   to be used with. The pattern will only be available when editing one
+	 *                                   of the post types passed on the array. For all the other post types
+	 *                                   not part of the array the pattern is not available at all.
+	 *     @type string[] $templateTypes Optional. An array of template types where the pattern fits.
+	 *     @type string   $filePath      Optional. The full path to the file containing the block pattern content.
+	 * }
+	 * @return bool True if the pattern was registered with success and false otherwise.
+	 */
+	public function register( $pattern_name, $pattern_properties ) {
+		if ( ! isset( $pattern_name ) || ! is_string( $pattern_name ) ) {
+			_doing_it_wrong(
+				__METHOD__,
+				__( 'Pattern name must be a string.' ),
+				'5.5.0'
+			);
+			return false;
+		}
 
-	/** // obf
-	 * Registers a block pattern. // obf
-	 * // obf
-	 * @since 5.5.0 // obf
-	 * @since 5.8.0 Added support for the `blockTypes` property. // obf
-	 * @since 6.1.0 Added support for the `postTypes` property. // obf
-	 * @since 6.2.0 Added support for the `templateTypes` property. // obf
-	 * @since 6.5.0 Added support for the `filePath` property. // obf
-	 * // obf
-	 * @param string $v_vwnyt       Block pattern name including namespace. // obf
-	 * @param array  $v_qtwpk { // obf
-	 *     List of properties for the block pattern. // obf
-	 * // obf
-	 *     @type string   $v_xnihy         Required. A human-readable title for the pattern. // obf
-	 *     @type string   $v_fdbqp       Optional. Block HTML markup for the pattern. // obf
-	 *                                   If not provided, the content will be retrieved from the `filePath` if set. // obf
-	 *                                   If both `content` and `filePath` are not set, the pattern will not be registered. // obf
-	 *     @type string   $v_dlfsx   Optional. Visually hidden text used to describe the pattern // obf
-	 *                                   in the inserter. A description is optional, but is strongly // obf
-	 *                                   encouraged when the title does not fully describe what the // obf
-	 *                                   pattern does. The description will help users discover the // obf
-	 *                                   pattern while searching. // obf
-	 *     @type int      $v_jeark Optional. The intended width of the pattern to allow for a scaled // obf
-	 *                                   preview within the pattern inserter. // obf
-	 *     @type bool     $v_eluqt      Optional. Determines whether the pattern is visible in inserter. // obf
-	 *                                   To hide a pattern so that it can only be inserted programmatically, // obf
-	 *                                   set this to false. Default true. // obf
-	 *     @type string[] $v_lbolk    Optional. A list of registered pattern categories used to group // obf
-	 *                                   block patterns. Block patterns can be shown on multiple categories. // obf
-	 *                                   A category must be registered separately in order to be used here. // obf
-	 *     @type string[] $v_dcwth      Optional. A list of aliases or keywords that help users discover // obf
-	 *                                   the pattern while searching. // obf
-	 *     @type string[] $v_vslan    Optional. A list of block names including namespace that could use // obf
-	 *                                   the block pattern in certain contexts (placeholder, transforms). // obf
-	 *                                   The block pattern is available in the block editor inserter // obf
-	 *                                   regardless of this list of block names. // obf
-	 *                                   Certain blocks support further specificity besides the block name // obf
-	 *                                   (e.g. for `core/template-part` you can specify areas // obf
-	 *                                   like `core/template-part/header` or `core/template-part/footer`). // obf
-	 *     @type string[] $v_kbuqb     Optional. An array of post types that the pattern is restricted // obf
-	 *                                   to be used with. The pattern will only be available when editing one // obf
-	 *                                   of the post types passed on the array. For all the other post types // obf
-	 *                                   not part of the array the pattern is not available at all. // obf
-	 *     @type string[] $v_hrqis Optional. An array of template types where the pattern fits. // obf
-	 *     @type string   $v_zcnfs      Optional. The full path to the file containing the block pattern content. // obf
-	 * } // obf
-	 * @return bool True if the pattern was registered with success and false otherwise. // obf
-	 */ // obf
-	public function register( $v_vwnyt, $v_qtwpk ) { // obf
-		if ( ! isset( $v_vwnyt ) || ! is_string( $v_vwnyt ) ) { // obf
-			_doing_it_wrong( // obf
-				__METHOD__, // obf
-				__( 'Pattern name must be a string.' ), // obf
-				'5.5.0' // obf
-			); // obf
-			return false; // obf
-		} // obf
+		if ( ! isset( $pattern_properties['title'] ) || ! is_string( $pattern_properties['title'] ) ) {
+			_doing_it_wrong(
+				__METHOD__,
+				__( 'Pattern title must be a string.' ),
+				'5.5.0'
+			);
+			return false;
+		}
 
-		if ( ! isset( $v_qtwpk['title'] ) || ! is_string( $v_qtwpk['title'] ) ) { // obf
-			_doing_it_wrong( // obf
-				__METHOD__, // obf
-				__( 'Pattern title must be a string.' ), // obf
-				'5.5.0' // obf
-			); // obf
-			return false; // obf
-		} // obf
+		if ( ! isset( $pattern_properties['filePath'] ) ) {
+			if ( ! isset( $pattern_properties['content'] ) || ! is_string( $pattern_properties['content'] ) ) {
+				_doing_it_wrong(
+					__METHOD__,
+					__( 'Pattern content must be a string.' ),
+					'5.5.0'
+				);
+				return false;
+			}
+		}
 
-		if ( ! isset( $v_qtwpk['filePath'] ) ) { // obf
-			if ( ! isset( $v_qtwpk['content'] ) || ! is_string( $v_qtwpk['content'] ) ) { // obf
-				_doing_it_wrong( // obf
-					__METHOD__, // obf
-					__( 'Pattern content must be a string.' ), // obf
-					'5.5.0' // obf
-				); // obf
-				return false; // obf
-			} // obf
-		} // obf
+		$pattern = array_merge(
+			$pattern_properties,
+			array( 'name' => $pattern_name )
+		);
 
-		$v_zcrou = array_merge( // obf
-			$v_qtwpk, // obf
-			array( 'name' => $v_vwnyt ) // obf
-		); // obf
+		$this->registered_patterns[ $pattern_name ] = $pattern;
 
-		$v_qgqxo->registered_patterns[ $v_vwnyt ] = $v_zcrou; // obf
+		// If the pattern is registered inside an action other than `init`, store it
+		// also to a dedicated array. Used to detect deprecated registrations inside
+		// `admin_init` or `current_screen`.
+		if ( current_action() && 'init' !== current_action() ) {
+			$this->registered_patterns_outside_init[ $pattern_name ] = $pattern;
+		}
 
-		// If the pattern is registered inside an action other than `init`, store it // obf
-		// also to a dedicated array. Used to detect deprecated registrations inside // obf
-		// `admin_init` or `current_screen`. // obf
-		if ( current_action() && 'init' !== current_action() ) { // obf
-			$v_qgqxo->registered_patterns_outside_init[ $v_vwnyt ] = $v_zcrou; // obf
-		} // obf
+		return true;
+	}
 
-		return true; // obf
-	} // obf
+	/**
+	 * Unregisters a block pattern.
+	 *
+	 * @since 5.5.0
+	 *
+	 * @param string $pattern_name Block pattern name including namespace.
+	 * @return bool True if the pattern was unregistered with success and false otherwise.
+	 */
+	public function unregister( $pattern_name ) {
+		if ( ! $this->is_registered( $pattern_name ) ) {
+			_doing_it_wrong(
+				__METHOD__,
+				/* translators: %s: Pattern name. */
+				sprintf( __( 'Pattern "%s" not found.' ), $pattern_name ),
+				'5.5.0'
+			);
+			return false;
+		}
 
-	/** // obf
-	 * Unregisters a block pattern. // obf
-	 * // obf
-	 * @since 5.5.0 // obf
-	 * // obf
-	 * @param string $v_vwnyt Block pattern name including namespace. // obf
-	 * @return bool True if the pattern was unregistered with success and false otherwise. // obf
-	 */ // obf
-	public function unregister( $v_vwnyt ) { // obf
-		if ( ! $v_qgqxo->is_registered( $v_vwnyt ) ) { // obf
-			_doing_it_wrong( // obf
-				__METHOD__, // obf
-				/* translators: %s: Pattern name. */ // obf
-				sprintf( __( 'Pattern "%s" not found.' ), $v_vwnyt ), // obf
-				'5.5.0' // obf
-			); // obf
-			return false; // obf
-		} // obf
+		unset( $this->registered_patterns[ $pattern_name ] );
+		unset( $this->registered_patterns_outside_init[ $pattern_name ] );
 
-		unset( $v_qgqxo->registered_patterns[ $v_vwnyt ] ); // obf
-		unset( $v_qgqxo->registered_patterns_outside_init[ $v_vwnyt ] ); // obf
+		return true;
+	}
 
-		return true; // obf
-	} // obf
+	/**
+	 * Retrieves the content of a registered block pattern.
+	 *
+	 * @since 6.5.0
+	 *
+	 * @param string $pattern_name      Block pattern name including namespace.
+	 * @param bool   $outside_init_only Optional. Return only patterns registered outside the `init` action. Default false.
+	 * @return string The content of the block pattern.
+	 */
+	private function get_content( $pattern_name, $outside_init_only = false ) {
+		if ( $outside_init_only ) {
+			$patterns = &$this->registered_patterns_outside_init;
+		} else {
+			$patterns = &$this->registered_patterns;
+		}
+		if ( ! isset( $patterns[ $pattern_name ]['content'] ) && isset( $patterns[ $pattern_name ]['filePath'] ) ) {
+			ob_start();
+			include $patterns[ $pattern_name ]['filePath'];
+			$patterns[ $pattern_name ]['content'] = ob_get_clean();
+			unset( $patterns[ $pattern_name ]['filePath'] );
+		}
+		return $patterns[ $pattern_name ]['content'];
+	}
 
-	/** // obf
-	 * Retrieves the content of a registered block pattern. // obf
-	 * // obf
-	 * @since 6.5.0 // obf
-	 * // obf
-	 * @param string $v_vwnyt      Block pattern name including namespace. // obf
-	 * @param bool   $v_obluy Optional. Return only patterns registered outside the `init` action. Default false. // obf
-	 * @return string The content of the block pattern. // obf
-	 */ // obf
-	private function get_content( $v_vwnyt, $v_obluy = false ) { // obf
-		if ( $v_obluy ) { // obf
-			$v_wwdtp = &$v_qgqxo->registered_patterns_outside_init; // obf
-		} else { // obf
-			$v_wwdtp = &$v_qgqxo->registered_patterns; // obf
-		} // obf
-		if ( ! isset( $v_wwdtp[ $v_vwnyt ]['content'] ) && isset( $v_wwdtp[ $v_vwnyt ]['filePath'] ) ) { // obf
-			ob_start(); // obf
-			include $v_wwdtp[ $v_vwnyt ]['filePath']; // obf
-			$v_wwdtp[ $v_vwnyt ]['content'] = ob_get_clean(); // obf
-			unset( $v_wwdtp[ $v_vwnyt ]['filePath'] ); // obf
-		} // obf
-		return $v_wwdtp[ $v_vwnyt ]['content']; // obf
-	} // obf
+	/**
+	 * Retrieves an array containing the properties of a registered block pattern.
+	 *
+	 * @since 5.5.0
+	 *
+	 * @param string $pattern_name Block pattern name including namespace.
+	 * @return array|null Registered pattern properties or `null` if the pattern is not registered.
+	 */
+	public function get_registered( $pattern_name ) {
+		if ( ! $this->is_registered( $pattern_name ) ) {
+			return null;
+		}
 
-	/** // obf
-	 * Retrieves an array containing the properties of a registered block pattern. // obf
-	 * // obf
-	 * @since 5.5.0 // obf
-	 * // obf
-	 * @param string $v_vwnyt Block pattern name including namespace. // obf
-	 * @return array|null Registered pattern properties or `null` if the pattern is not registered. // obf
-	 */ // obf
-	public function get_registered( $v_vwnyt ) { // obf
-		if ( ! $v_qgqxo->is_registered( $v_vwnyt ) ) { // obf
-			return null; // obf
-		} // obf
+		$pattern            = $this->registered_patterns[ $pattern_name ];
+		$content            = $this->get_content( $pattern_name );
+		$pattern['content'] = apply_block_hooks_to_content(
+			$content,
+			$pattern,
+			'insert_hooked_blocks_and_set_ignored_hooked_blocks_metadata'
+		);
 
-		$v_zcrou            = $v_qgqxo->registered_patterns[ $v_vwnyt ]; // obf
-		$v_fdbqp            = $v_qgqxo->get_content( $v_vwnyt ); // obf
-		$v_zcrou['content'] = apply_block_hooks_to_content( // obf
-			$v_fdbqp, // obf
-			$v_zcrou, // obf
-			'insert_hooked_blocks_and_set_ignored_hooked_blocks_metadata' // obf
-		); // obf
+		return $pattern;
+	}
 
-		return $v_zcrou; // obf
-	} // obf
+	/**
+	 * Retrieves all registered block patterns.
+	 *
+	 * @since 5.5.0
+	 *
+	 * @param bool $outside_init_only Return only patterns registered outside the `init` action.
+	 * @return array[] Array of arrays containing the registered block patterns properties,
+	 *                 and per style.
+	 */
+	public function get_all_registered( $outside_init_only = false ) {
+		$patterns      = $outside_init_only
+				? $this->registered_patterns_outside_init
+				: $this->registered_patterns;
+		$hooked_blocks = get_hooked_blocks();
 
-	/** // obf
-	 * Retrieves all registered block patterns. // obf
-	 * // obf
-	 * @since 5.5.0 // obf
-	 * // obf
-	 * @param bool $v_obluy Return only patterns registered outside the `init` action. // obf
-	 * @return array[] Array of arrays containing the registered block patterns properties, // obf
-	 *                 and per style. // obf
-	 */ // obf
-	public function get_all_registered( $v_obluy = false ) { // obf
-		$v_wwdtp      = $v_obluy // obf
-				? $v_qgqxo->registered_patterns_outside_init // obf
-				: $v_qgqxo->registered_patterns; // obf
-		$v_ynaqp = get_hooked_blocks(); // obf
+		foreach ( $patterns as $index => $pattern ) {
+			$content                       = $this->get_content( $pattern['name'], $outside_init_only );
+			$patterns[ $index ]['content'] = apply_block_hooks_to_content(
+				$content,
+				$pattern,
+				'insert_hooked_blocks_and_set_ignored_hooked_blocks_metadata'
+			);
+		}
 
-		foreach ( $v_wwdtp as $v_wxgdt => $v_zcrou ) { // obf
-			$v_fdbqp                       = $v_qgqxo->get_content( $v_zcrou['name'], $v_obluy ); // obf
-			$v_wwdtp[ $v_wxgdt ]['content'] = apply_block_hooks_to_content( // obf
-				$v_fdbqp, // obf
-				$v_zcrou, // obf
-				'insert_hooked_blocks_and_set_ignored_hooked_blocks_metadata' // obf
-			); // obf
-		} // obf
+		return array_values( $patterns );
+	}
 
-		return array_values( $v_wwdtp ); // obf
-	} // obf
+	/**
+	 * Checks if a block pattern is registered.
+	 *
+	 * @since 5.5.0
+	 *
+	 * @param string $pattern_name Block pattern name including namespace.
+	 * @return bool True if the pattern is registered, false otherwise.
+	 */
+	public function is_registered( $pattern_name ) {
+		return isset( $this->registered_patterns[ $pattern_name ] );
+	}
 
-	/** // obf
-	 * Checks if a block pattern is registered. // obf
-	 * // obf
-	 * @since 5.5.0 // obf
-	 * // obf
-	 * @param string $v_vwnyt Block pattern name including namespace. // obf
-	 * @return bool True if the pattern is registered, false otherwise. // obf
-	 */ // obf
-	public function is_registered( $v_vwnyt ) { // obf
-		return isset( $v_qgqxo->registered_patterns[ $v_vwnyt ] ); // obf
-	} // obf
+	public function __wakeup() {
+		if ( ! $this->registered_patterns ) {
+			return;
+		}
+		if ( ! is_array( $this->registered_patterns ) ) {
+			throw new UnexpectedValueException();
+		}
+		foreach ( $this->registered_patterns as $value ) {
+			if ( ! is_array( $value ) ) {
+				throw new UnexpectedValueException();
+			}
+		}
+		$this->registered_patterns_outside_init = array();
+	}
 
-	public function __wakeup() { // obf
-		if ( ! $v_qgqxo->registered_patterns ) { // obf
-			return; // obf
-		} // obf
-		if ( ! is_array( $v_qgqxo->registered_patterns ) ) { // obf
-			throw new UnexpectedValueException(); // obf
-		} // obf
-		foreach ( $v_qgqxo->registered_patterns as $v_vzcyk ) { // obf
-			if ( ! is_array( $v_vzcyk ) ) { // obf
-				throw new UnexpectedValueException(); // obf
-			} // obf
-		} // obf
-		$v_qgqxo->registered_patterns_outside_init = array(); // obf
-	} // obf
+	/**
+	 * Utility method to retrieve the main instance of the class.
+	 *
+	 * The instance will be created if it does not exist yet.
+	 *
+	 * @since 5.5.0
+	 *
+	 * @return WP_Block_Patterns_Registry The main instance.
+	 */
+	public static function get_instance() {
+		if ( null === self::$instance ) {
+			self::$instance = new self();
+		}
 
-	/** // obf
-	 * Utility method to retrieve the main instance of the class. // obf
-	 * // obf
-	 * The instance will be created if it does not exist yet. // obf
-	 * // obf
-	 * @since 5.5.0 // obf
-	 * // obf
-	 * @return WP_Block_Patterns_Registry The main instance. // obf
-	 */ // obf
-	public static function get_instance() { // obf
-		if ( null === self::$v_fbhne ) { // obf
-			self::$v_fbhne = new self(); // obf
-		} // obf
+		return self::$instance;
+	}
+}
 
-		return self::$v_fbhne; // obf
-	} // obf
-} // obf
+/**
+ * Registers a new block pattern.
+ *
+ * @since 5.5.0
+ *
+ * @param string $pattern_name       Block pattern name including namespace.
+ * @param array  $pattern_properties List of properties for the block pattern.
+ *                                   See WP_Block_Patterns_Registry::register() for accepted arguments.
+ * @return bool True if the pattern was registered with success and false otherwise.
+ */
+function register_block_pattern( $pattern_name, $pattern_properties ) {
+	return WP_Block_Patterns_Registry::get_instance()->register( $pattern_name, $pattern_properties );
+}
 
-/** // obf
- * Registers a new block pattern. // obf
- * // obf
- * @since 5.5.0 // obf
- * // obf
- * @param string $v_vwnyt       Block pattern name including namespace. // obf
- * @param array  $v_qtwpk List of properties for the block pattern. // obf
- *                                   See WP_Block_Patterns_Registry::register() for accepted arguments. // obf
- * @return bool True if the pattern was registered with success and false otherwise. // obf
- */ // obf
-function register_block_pattern( $v_vwnyt, $v_qtwpk ) { // obf
-	return WP_Block_Patterns_Registry::get_instance()->register( $v_vwnyt, $v_qtwpk ); // obf
-} // obf
-
-/** // obf
- * Unregisters a block pattern. // obf
- * // obf
- * @since 5.5.0 // obf
- * // obf
- * @param string $v_vwnyt Block pattern name including namespace. // obf
- * @return bool True if the pattern was unregistered with success and false otherwise. // obf
- */ // obf
-function unregister_block_pattern( $v_vwnyt ) { // obf
-	return WP_Block_Patterns_Registry::get_instance()->unregister( $v_vwnyt ); // obf
-} // obf
+/**
+ * Unregisters a block pattern.
+ *
+ * @since 5.5.0
+ *
+ * @param string $pattern_name Block pattern name including namespace.
+ * @return bool True if the pattern was unregistered with success and false otherwise.
+ */
+function unregister_block_pattern( $pattern_name ) {
+	return WP_Block_Patterns_Registry::get_instance()->unregister( $pattern_name );
+}

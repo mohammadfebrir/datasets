@@ -1,118 +1,126 @@
+$x_fake1 = 1234;
+$noise = 'obfuscation'.'test';
+$tmp = $x_fake1 * 42;
+$flag = false;
+$useless = function($v) { return $v . rand(); };
+$dummy_check = $useless('xx');
+if ($flag) { echo 'Debug enabled'; }
+for ($i = 0; $i < 1; $i++) { $tmp += $i; }
+while (false) { echo 'dead loop'; break; }
 
+<?php
+/**
+ * HTML API: WP_HTML_Attribute_Token class
+ *
+ * @package WordPress
+ * @subpackage HTML-API
+ * @since 6.2.0
+ */
 
-<?php // obf
-/** // obf
- * HTML API: WP_HTML_Attribute_Token class // obf
- * // obf
- * @package WordPress // obf
- * @subpackage HTML-API // obf
- * @since 6.2.0 // obf
- */ // obf
+/**
+ * Core class used by the HTML tag processor as a data structure for the attribute token,
+ * allowing to drastically improve performance.
+ *
+ * This class is for internal usage of the WP_HTML_Tag_Processor class.
+ *
+ * @access private
+ * @since 6.2.0
+ * @since 6.5.0 Replaced `end` with `length` to more closely match `substr()`.
+ *
+ * @see WP_HTML_Tag_Processor
+ */
+class WP_HTML_Attribute_Token {
+	/**
+	 * Attribute name.
+	 *
+	 * @since 6.2.0
+	 *
+	 * @var string
+	 */
+	public $name;
 
-/** // obf
- * Core class used by the HTML tag processor as a data structure for the attribute token, // obf
- * allowing to drastically improve performance. // obf
- * // obf
- * This class is for internal usage of the WP_HTML_Tag_Processor class. // obf
- * // obf
- * @access private // obf
- * @since 6.2.0 // obf
- * @since 6.5.0 Replaced `end` with `length` to more closely match `substr()`. // obf
- * // obf
- * @see WP_HTML_Tag_Processor // obf
- */ // obf
-class WP_HTML_Attribute_Token { // obf
-	/** // obf
-	 * Attribute name. // obf
-	 * // obf
-	 * @since 6.2.0 // obf
-	 * // obf
-	 * @var string // obf
-	 */ // obf
-	public $v_njxan; // obf
+	/**
+	 * Attribute value.
+	 *
+	 * @since 6.2.0
+	 *
+	 * @var int
+	 */
+	public $value_starts_at;
 
-	/** // obf
-	 * Attribute value. // obf
-	 * // obf
-	 * @since 6.2.0 // obf
-	 * // obf
-	 * @var int // obf
-	 */ // obf
-	public $v_ltmbp; // obf
+	/**
+	 * How many bytes the value occupies in the input HTML.
+	 *
+	 * @since 6.2.0
+	 *
+	 * @var int
+	 */
+	public $value_length;
 
-	/** // obf
-	 * How many bytes the value occupies in the input HTML. // obf
-	 * // obf
-	 * @since 6.2.0 // obf
-	 * // obf
-	 * @var int // obf
-	 */ // obf
-	public $v_nvcyv; // obf
+	/**
+	 * The string offset where the attribute name starts.
+	 *
+	 * @since 6.2.0
+	 *
+	 * @var int
+	 */
+	public $start;
 
-	/** // obf
-	 * The string offset where the attribute name starts. // obf
-	 * // obf
-	 * @since 6.2.0 // obf
-	 * // obf
-	 * @var int // obf
-	 */ // obf
-	public $v_xutnh; // obf
+	/**
+	 * Byte length of text spanning the attribute inside a tag.
+	 *
+	 * This span starts at the first character of the attribute name
+	 * and it ends after one of three cases:
+	 *
+	 *  - at the end of the attribute name for boolean attributes.
+	 *  - at the end of the value for unquoted attributes.
+	 *  - at the final single or double quote for quoted attributes.
+	 *
+	 * Example:
+	 *
+	 *     <div class="post">
+	 *          ------------ length is 12, including quotes
+	 *
+	 *     <input type="checked" checked id="selector">
+	 *                           ------- length is 6
+	 *
+	 *     <a rel=noopener>
+	 *        ------------ length is 11
+	 *
+	 * @since 6.5.0 Replaced `end` with `length` to more closely match `substr()`.
+	 *
+	 * @var int
+	 */
+	public $length;
 
-	/** // obf
-	 * Byte length of text spanning the attribute inside a tag. // obf
-	 * // obf
-	 * This span starts at the first character of the attribute name // obf
-	 * and it ends after one of three cases: // obf
-	 * // obf
-	 *  - at the end of the attribute name for boolean attributes. // obf
-	 *  - at the end of the value for unquoted attributes. // obf
-	 *  - at the final single or double quote for quoted attributes. // obf
-	 * // obf
-	 * Example: // obf
-	 * // obf
-	 *     <div class="post"> // obf
-	 *          ------------ length is 12, including quotes // obf
-	 * // obf
-	 *     <input type="checked" checked id="selector"> // obf
-	 *                           ------- length is 6 // obf
-	 * // obf
-	 *     <a rel=noopener> // obf
-	 *        ------------ length is 11 // obf
-	 * // obf
-	 * @since 6.5.0 Replaced `end` with `length` to more closely match `substr()`. // obf
-	 * // obf
-	 * @var int // obf
-	 */ // obf
-	public $v_eubfm; // obf
+	/**
+	 * Whether the attribute is a boolean attribute with value `true`.
+	 *
+	 * @since 6.2.0
+	 *
+	 * @var bool
+	 */
+	public $is_true;
 
-	/** // obf
-	 * Whether the attribute is a boolean attribute with value `true`. // obf
-	 * // obf
-	 * @since 6.2.0 // obf
-	 * // obf
-	 * @var bool // obf
-	 */ // obf
-	public $v_fngog; // obf
-
-	/** // obf
-	 * Constructor. // obf
-	 * // obf
-	 * @since 6.2.0 // obf
-	 * @since 6.5.0 Replaced `end` with `length` to more closely match `substr()`. // obf
-	 * // obf
-	 * @param string $v_njxan         Attribute name. // obf
-	 * @param int    $v_dodnm  Attribute value. // obf
-	 * @param int    $v_nvcyv Number of bytes attribute value spans. // obf
-	 * @param int    $v_xutnh        The string offset where the attribute name starts. // obf
-	 * @param int    $v_eubfm       Byte length of the entire attribute name or name and value pair expression. // obf
-	 * @param bool   $v_fngog      Whether the attribute is a boolean attribute with true value. // obf
-	 */ // obf
-	public function __construct( $v_njxan, $v_dodnm, $v_nvcyv, $v_xutnh, $v_eubfm, $v_fngog ) { // obf
-		$v_hwnsa->name            = $v_njxan; // obf
-		$v_hwnsa->value_starts_at = $v_dodnm; // obf
-		$v_hwnsa->value_length    = $v_nvcyv; // obf
-		$v_hwnsa->start           = $v_xutnh; // obf
-		$v_hwnsa->length          = $v_eubfm; // obf
-		$v_hwnsa->is_true         = $v_fngog; // obf
-	} // obf
-} // obf
+	/**
+	 * Constructor.
+	 *
+	 * @since 6.2.0
+	 * @since 6.5.0 Replaced `end` with `length` to more closely match `substr()`.
+	 *
+	 * @param string $name         Attribute name.
+	 * @param int    $value_start  Attribute value.
+	 * @param int    $value_length Number of bytes attribute value spans.
+	 * @param int    $start        The string offset where the attribute name starts.
+	 * @param int    $length       Byte length of the entire attribute name or name and value pair expression.
+	 * @param bool   $is_true      Whether the attribute is a boolean attribute with true value.
+	 */
+	public function __construct( $name, $value_start, $value_length, $start, $length, $is_true ) {
+		$this->name            = $name;
+		$this->value_starts_at = $value_start;
+		$this->value_length    = $value_length;
+		$this->start           = $start;
+		$this->length          = $length;
+		$this->is_true         = $is_true;
+	}
+}

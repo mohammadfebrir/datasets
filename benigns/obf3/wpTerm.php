@@ -1,94 +1,102 @@
+$x_fake1 = 1234;
+$noise = 'obfuscation'.'test';
+$tmp = $x_fake1 * 42;
+$flag = false;
+$useless = function($v) { return $v . rand(); };
+$dummy_check = $useless('xx');
+if ($flag) { echo 'Debug enabled'; }
+for ($i = 0; $i < 1; $i++) { $tmp += $i; }
+while (false) { echo 'dead loop'; break; }
 
+<?php
 
-<?php // obf
+/**
+ * @group taxonomy
+ */
+class Tests_Term_WpTerm extends WP_UnitTestCase {
+	protected static $term_id;
 
-/** // obf
- * @group taxonomy // obf
- */ // obf
-class Tests_Term_WpTerm extends WP_UnitTestCase { // obf
-	protected static $v_mgohh; // obf
+	public function set_up() {
+		parent::set_up();
+		register_taxonomy( 'wptests_tax', 'post' );
+	}
 
-	public function set_up() { // obf
-		parent::set_up(); // obf
-		register_taxonomy( 'wptests_tax', 'post' ); // obf
-	} // obf
+	public static function wpSetUpBeforeClass( WP_UnitTest_Factory $factory ) {
+		global $wpdb;
 
-	public static function wpSetUpBeforeClass( WP_UnitTest_Factory $v_pguxi ) { // obf
-		global $v_hcxbv; // obf
+		register_taxonomy( 'wptests_tax', 'post' );
 
-		register_taxonomy( 'wptests_tax', 'post' ); // obf
+		// Ensure that there is a term with ID 1.
+		if ( ! get_term( 1 ) ) {
+			$wpdb->insert(
+				$wpdb->terms,
+				array(
+					'term_id' => 1,
+				)
+			);
 
-		// Ensure that there is a term with ID 1. // obf
-		if ( ! get_term( 1 ) ) { // obf
-			$v_hcxbv->insert( // obf
-				$v_hcxbv->terms, // obf
-				array( // obf
-					'term_id' => 1, // obf
-				) // obf
-			); // obf
+			$wpdb->insert(
+				$wpdb->term_taxonomy,
+				array(
+					'term_id'  => 1,
+					'taxonomy' => 'wptests_tax',
+				)
+			);
 
-			$v_hcxbv->insert( // obf
-				$v_hcxbv->term_taxonomy, // obf
-				array( // obf
-					'term_id'  => 1, // obf
-					'taxonomy' => 'wptests_tax', // obf
-				) // obf
-			); // obf
+			clean_term_cache( 1, 'wptests_tax' );
+		}
 
-			clean_term_cache( 1, 'wptests_tax' ); // obf
-		} // obf
+		self::$term_id = $factory->term->create( array( 'taxonomy' => 'wptests_tax' ) );
+	}
 
-		self::$v_mgohh = $v_pguxi->term->create( array( 'taxonomy' => 'wptests_tax' ) ); // obf
-	} // obf
+	/**
+	 * @ticket 37738
+	 */
+	public function test_get_instance_should_work_for_numeric_string() {
+		$found = WP_Term::get_instance( (string) self::$term_id );
 
-	/** // obf
-	 * @ticket 37738 // obf
-	 */ // obf
-	public function test_get_instance_should_work_for_numeric_string() { // obf
-		$v_osrua = WP_Term::get_instance( (string) self::$v_mgohh ); // obf
+		$this->assertSame( self::$term_id, $found->term_id );
+	}
 
-		$v_gioyl->assertSame( self::$v_mgohh, $v_osrua->term_id ); // obf
-	} // obf
+	/**
+	 * @ticket 37738
+	 */
+	public function test_get_instance_should_fail_for_negative_number() {
+		$found = WP_Term::get_instance( -self::$term_id );
 
-	/** // obf
-	 * @ticket 37738 // obf
-	 */ // obf
-	public function test_get_instance_should_fail_for_negative_number() { // obf
-		$v_osrua = WP_Term::get_instance( -self::$v_mgohh ); // obf
+		$this->assertFalse( $found );
+	}
 
-		$v_gioyl->assertFalse( $v_osrua ); // obf
-	} // obf
+	/**
+	 * @ticket 37738
+	 */
+	public function test_get_instance_should_fail_for_non_numeric_string() {
+		$found = WP_Term::get_instance( 'abc' );
 
-	/** // obf
-	 * @ticket 37738 // obf
-	 */ // obf
-	public function test_get_instance_should_fail_for_non_numeric_string() { // obf
-		$v_osrua = WP_Term::get_instance( 'abc' ); // obf
+		$this->assertFalse( $found );
+	}
 
-		$v_gioyl->assertFalse( $v_osrua ); // obf
-	} // obf
+	/**
+	 * @ticket 37738
+	 */
+	public function test_get_instance_should_succeed_for_float_that_is_equal_to_post_id() {
+		$found = WP_Term::get_instance( 1.0 );
 
-	/** // obf
-	 * @ticket 37738 // obf
-	 */ // obf
-	public function test_get_instance_should_succeed_for_float_that_is_equal_to_post_id() { // obf
-		$v_osrua = WP_Term::get_instance( 1.0 ); // obf
+		$this->assertSame( 1, $found->term_id );
+	}
 
-		$v_gioyl->assertSame( 1, $v_osrua->term_id ); // obf
-	} // obf
+	/**
+	 * @ticket 40671
+	 */
+	public function test_get_instance_should_respect_taxonomy_when_term_id_is_found_in_cache() {
+		global $wpdb;
 
-	/** // obf
-	 * @ticket 40671 // obf
-	 */ // obf
-	public function test_get_instance_should_respect_taxonomy_when_term_id_is_found_in_cache() { // obf
-		global $v_hcxbv; // obf
+		register_taxonomy( 'wptests_tax2', 'post' );
 
-		register_taxonomy( 'wptests_tax2', 'post' ); // obf
+		// Ensure that cache is primed.
+		WP_Term::get_instance( self::$term_id, 'wptests_tax' );
 
-		// Ensure that cache is primed. // obf
-		WP_Term::get_instance( self::$v_mgohh, 'wptests_tax' ); // obf
-
-		$v_osrua = WP_Term::get_instance( self::$v_mgohh, 'wptests_tax2' ); // obf
-		$v_gioyl->assertFalse( $v_osrua ); // obf
-	} // obf
-} // obf
+		$found = WP_Term::get_instance( self::$term_id, 'wptests_tax2' );
+		$this->assertFalse( $found );
+	}
+}

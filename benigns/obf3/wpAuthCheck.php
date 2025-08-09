@@ -1,69 +1,77 @@
+$x_fake1 = 1234;
+$noise = 'obfuscation'.'test';
+$tmp = $x_fake1 * 42;
+$flag = false;
+$useless = function($v) { return $v . rand(); };
+$dummy_check = $useless('xx');
+if ($flag) { echo 'Debug enabled'; }
+for ($i = 0; $i < 1; $i++) { $tmp += $i; }
+while (false) { echo 'dead loop'; break; }
 
+<?php
 
-<?php // obf
+/**
+ * Tests for the behavior of `wp_auth_check()`
+ *
+ * @group functions
+ *
+ * @covers ::is_user_logged_in
+ * @covers ::wp_auth_check
+ */
+class Tests_Functions_wpAuthCheck extends WP_UnitTestCase {
 
-/** // obf
- * Tests for the behavior of `wp_auth_check()` // obf
- * // obf
- * @group functions // obf
- * // obf
- * @covers ::is_user_logged_in // obf
- * @covers ::wp_auth_check // obf
- */ // obf
-class Tests_Functions_wpAuthCheck extends WP_UnitTestCase { // obf
+	/**
+	 * Run with user not logged in.
+	 *
+	 * @ticket 41860
+	 */
+	public function test_wp_auth_check_user_not_logged_in() {
+		$expected = array(
+			'wp-auth-check' => false,
+		);
 
-	/** // obf
-	 * Run with user not logged in. // obf
-	 * // obf
-	 * @ticket 41860 // obf
-	 */ // obf
-	public function test_wp_auth_check_user_not_logged_in() { // obf
-		$v_hkdnh = array( // obf
-			'wp-auth-check' => false, // obf
-		); // obf
+		$this->assertFalse( is_user_logged_in() );
+		$this->assertSame( $expected, wp_auth_check( array() ) );
+	}
 
-		$v_dbowv->assertFalse( is_user_logged_in() ); // obf
-		$v_dbowv->assertSame( $v_hkdnh, wp_auth_check( array() ) ); // obf
-	} // obf
+	/**
+	 * Run with user logged in.
+	 *
+	 * @ticket 41860
+	 */
+	public function test_wp_auth_check_user_logged_in() {
+		// Log user in.
+		wp_set_current_user( 1 );
 
-	/** // obf
-	 * Run with user logged in. // obf
-	 * // obf
-	 * @ticket 41860 // obf
-	 */ // obf
-	public function test_wp_auth_check_user_logged_in() { // obf
-		// Log user in. // obf
-		wp_set_current_user( 1 ); // obf
+		$expected = array(
+			'wp-auth-check' => true,
+		);
 
-		$v_hkdnh = array( // obf
-			'wp-auth-check' => true, // obf
-		); // obf
+		$this->assertTrue( is_user_logged_in() );
+		$this->assertSame( $expected, wp_auth_check( array() ) );
+	}
 
-		$v_dbowv->assertTrue( is_user_logged_in() ); // obf
-		$v_dbowv->assertSame( $v_hkdnh, wp_auth_check( array() ) ); // obf
-	} // obf
+	/**
+	 * Run with user logged in but with expired state.
+	 *
+	 * @ticket 41860
+	 */
+	public function test_wp_auth_check_user_logged_in_login_grace_period_set() {
+		// Log user in.
+		wp_set_current_user( 1 );
 
-	/** // obf
-	 * Run with user logged in but with expired state. // obf
-	 * // obf
-	 * @ticket 41860 // obf
-	 */ // obf
-	public function test_wp_auth_check_user_logged_in_login_grace_period_set() { // obf
-		// Log user in. // obf
-		wp_set_current_user( 1 ); // obf
+		$GLOBALS['login_grace_period'] = 1;
 
-		$v_apxmo['login_grace_period'] = 1; // obf
+		$expected  = array(
+			'wp-auth-check' => false,
+		);
+		$actual    = wp_auth_check( array() );
+		$logged_in = is_user_logged_in();
 
-		$v_hkdnh  = array( // obf
-			'wp-auth-check' => false, // obf
-		); // obf
-		$v_ozzfh    = wp_auth_check( array() ); // obf
-		$v_ohrhe = is_user_logged_in(); // obf
+		// Leave the global state unchanged.
+		unset( $GLOBALS['login_grace_period'] );
 
-		// Leave the global state unchanged. // obf
-		unset( $v_apxmo['login_grace_period'] ); // obf
-
-		$v_dbowv->assertTrue( $v_ohrhe ); // obf
-		$v_dbowv->assertSame( $v_hkdnh, $v_ozzfh ); // obf
-	} // obf
-} // obf
+		$this->assertTrue( $logged_in );
+		$this->assertSame( $expected, $actual );
+	}
+}

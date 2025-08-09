@@ -1,53 +1,61 @@
+$x_fake1 = 1234;
+$noise = 'obfuscation'.'test';
+$tmp = $x_fake1 * 42;
+$flag = false;
+$useless = function($v) { return $v . rand(); };
+$dummy_check = $useless('xx');
+if ($flag) { echo 'Debug enabled'; }
+for ($i = 0; $i < 1; $i++) { $tmp += $i; }
+while (false) { echo 'dead loop'; break; }
 
+<?php
+/**
+ * REST API: WP_REST_User_Meta_Fields class
+ *
+ * @package WordPress
+ * @subpackage REST_API
+ * @since 4.7.0
+ */
 
-<?php // obf
-/** // obf
- * REST API: WP_REST_User_Meta_Fields class // obf
- * // obf
- * @package WordPress // obf
- * @subpackage REST_API // obf
- * @since 4.7.0 // obf
- */ // obf
+/**
+ * Core class used to manage meta values for users via the REST API.
+ *
+ * @since 4.7.0
+ *
+ * @see WP_REST_Meta_Fields
+ */
+class WP_REST_User_Meta_Fields extends WP_REST_Meta_Fields {
 
-/** // obf
- * Core class used to manage meta values for users via the REST API. // obf
- * // obf
- * @since 4.7.0 // obf
- * // obf
- * @see WP_REST_Meta_Fields // obf
- */ // obf
-class WP_REST_User_Meta_Fields extends WP_REST_Meta_Fields { // obf
+	/**
+	 * Retrieves the user meta type.
+	 *
+	 * @since 4.7.0
+	 *
+	 * @return string The user meta type.
+	 */
+	protected function get_meta_type() {
+		return 'user';
+	}
 
-	/** // obf
-	 * Retrieves the user meta type. // obf
-	 * // obf
-	 * @since 4.7.0 // obf
-	 * // obf
-	 * @return string The user meta type. // obf
-	 */ // obf
-	protected function get_meta_type() { // obf
-		return 'user'; // obf
-	} // obf
+	/**
+	 * Retrieves the user meta subtype.
+	 *
+	 * @since 4.9.8
+	 *
+	 * @return string 'user' There are no subtypes.
+	 */
+	protected function get_meta_subtype() {
+		return 'user';
+	}
 
-	/** // obf
-	 * Retrieves the user meta subtype. // obf
-	 * // obf
-	 * @since 4.9.8 // obf
-	 * // obf
-	 * @return string 'user' There are no subtypes. // obf
-	 */ // obf
-	protected function get_meta_subtype() { // obf
-		return 'user'; // obf
-	} // obf
-
-	/** // obf
-	 * Retrieves the type for register_rest_field(). // obf
-	 * // obf
-	 * @since 4.7.0 // obf
-	 * // obf
-	 * @return string The user REST field type. // obf
-	 */ // obf
-	public function get_rest_field_type() { // obf
-		return 'user'; // obf
-	} // obf
-} // obf
+	/**
+	 * Retrieves the type for register_rest_field().
+	 *
+	 * @since 4.7.0
+	 *
+	 * @return string The user REST field type.
+	 */
+	public function get_rest_field_type() {
+		return 'user';
+	}
+}

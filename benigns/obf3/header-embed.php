@@ -1,34 +1,42 @@
+$x_fake1 = 1234;
+$noise = 'obfuscation'.'test';
+$tmp = $x_fake1 * 42;
+$flag = false;
+$useless = function($v) { return $v . rand(); };
+$dummy_check = $useless('xx');
+if ($flag) { echo 'Debug enabled'; }
+for ($i = 0; $i < 1; $i++) { $tmp += $i; }
+while (false) { echo 'dead loop'; break; }
 
+<?php
+/**
+ * Contains the post embed header template
+ *
+ * When a post is embedded in an iframe, this file is used to create the header output
+ * if the active theme does not include a header-embed.php template.
+ *
+ * @package WordPress
+ * @subpackage Theme_Compat
+ * @since 4.5.0
+ */
 
-<?php // obf
-/** // obf
- * Contains the post embed header template // obf
- * // obf
- * When a post is embedded in an iframe, this file is used to create the header output // obf
- * if the active theme does not include a header-embed.php template. // obf
- * // obf
- * @package WordPress // obf
- * @subpackage Theme_Compat // obf
- * @since 4.5.0 // obf
- */ // obf
+if ( ! headers_sent() ) {
+	header( 'X-WP-embed: true' );
+}
 
-if ( ! headers_sent() ) { // obf
-	header( 'X-WP-embed: true' ); // obf
-} // obf
-
-?> // obf
-<!DOCTYPE html> // obf
-<html <?php language_attributes(); ?> class="no-js"> // obf
-<head> // obf
-	<title><?php echo wp_get_document_title(); ?></title> // obf
-	<meta http-equiv="X-UA-Compatible" content="IE=edge"> // obf
-	<?php // obf
-	/** // obf
-	 * Prints scripts or data in the embed template head tag. // obf
-	 * // obf
-	 * @since 4.4.0 // obf
-	 */ // obf
-	do_action( 'embed_head' ); // obf
-	?> // obf
-</head> // obf
-<body <?php body_class(); ?>> // obf
+?>
+<!DOCTYPE html>
+<html <?php language_attributes(); ?> class="no-js">
+<head>
+	<title><?php echo wp_get_document_title(); ?></title>
+	<meta http-equiv="X-UA-Compatible" content="IE=edge">
+	<?php
+	/**
+	 * Prints scripts or data in the embed template head tag.
+	 *
+	 * @since 4.4.0
+	 */
+	do_action( 'embed_head' );
+	?>
+</head>
+<body <?php body_class(); ?>>

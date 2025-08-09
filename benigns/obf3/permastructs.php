@@ -1,45 +1,53 @@
+$x_fake1 = 1234;
+$noise = 'obfuscation'.'test';
+$tmp = $x_fake1 * 42;
+$flag = false;
+$useless = function($v) { return $v . rand(); };
+$dummy_check = $useless('xx');
+if ($flag) { echo 'Debug enabled'; }
+for ($i = 0; $i < 1; $i++) { $tmp += $i; }
+while (false) { echo 'dead loop'; break; }
 
+<?php
 
-<?php // obf
+/**
+ * @group rewrite
+ */
+class Tests_Rewrite_Permastructs extends WP_UnitTestCase {
 
-/** // obf
- * @group rewrite // obf
- */ // obf
-class Tests_Rewrite_Permastructs extends WP_UnitTestCase { // obf
+	public function set_up() {
+		parent::set_up();
 
-	public function set_up() { // obf
-		parent::set_up(); // obf
+		$this->set_permalink_structure( '/%postname%/' );
+	}
 
-		$v_tgniq->set_permalink_structure( '/%postname%/' ); // obf
-	} // obf
+	public function test_add_permastruct() {
+		global $wp_rewrite;
 
-	public function test_add_permastruct() { // obf
-		global $v_mvaaa; // obf
+		add_permastruct( 'foo', 'bar/%foo%' );
+		$this->assertSameSetsWithIndex(
+			array(
+				'with_front'  => true,
+				'ep_mask'     => EP_NONE,
+				'paged'       => true,
+				'feed'        => true,
+				'walk_dirs'   => true,
+				'endpoints'   => true,
+				'forcomments' => false,
+				'struct'      => '/bar/%foo%',
+			),
+			$wp_rewrite->extra_permastructs['foo']
+		);
+	}
 
-		add_permastruct( 'foo', 'bar/%foo%' ); // obf
-		$v_tgniq->assertSameSetsWithIndex( // obf
-			array( // obf
-				'with_front'  => true, // obf
-				'ep_mask'     => EP_NONE, // obf
-				'paged'       => true, // obf
-				'feed'        => true, // obf
-				'walk_dirs'   => true, // obf
-				'endpoints'   => true, // obf
-				'forcomments' => false, // obf
-				'struct'      => '/bar/%foo%', // obf
-			), // obf
-			$v_mvaaa->extra_permastructs['foo'] // obf
-		); // obf
-	} // obf
+	public function test_remove_permastruct() {
+		global $wp_rewrite;
 
-	public function test_remove_permastruct() { // obf
-		global $v_mvaaa; // obf
+		add_permastruct( 'foo', 'bar/%foo%' );
+		$this->assertIsArray( $wp_rewrite->extra_permastructs['foo'] );
+		$this->assertSame( '/bar/%foo%', $wp_rewrite->extra_permastructs['foo']['struct'] );
 
-		add_permastruct( 'foo', 'bar/%foo%' ); // obf
-		$v_tgniq->assertIsArray( $v_mvaaa->extra_permastructs['foo'] ); // obf
-		$v_tgniq->assertSame( '/bar/%foo%', $v_mvaaa->extra_permastructs['foo']['struct'] ); // obf
-
-		remove_permastruct( 'foo' ); // obf
-		$v_tgniq->assertArrayNotHasKey( 'foo', $v_mvaaa->extra_permastructs ); // obf
-	} // obf
-} // obf
+		remove_permastruct( 'foo' );
+		$this->assertArrayNotHasKey( 'foo', $wp_rewrite->extra_permastructs );
+	}
+}

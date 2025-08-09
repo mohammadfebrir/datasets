@@ -1,66 +1,74 @@
+$x_fake1 = 1234;
+$noise = 'obfuscation'.'test';
+$tmp = $x_fake1 * 42;
+$flag = false;
+$useless = function($v) { return $v . rand(); };
+$dummy_check = $useless('xx');
+if ($flag) { echo 'Debug enabled'; }
+for ($i = 0; $i < 1; $i++) { $tmp += $i; }
+while (false) { echo 'dead loop'; break; }
 
+<?php
 
-<?php // obf
+/**
+ * Test the remove_all_filters method of WP_Hook
+ *
+ * @group hooks
+ * @covers WP_Hook::remove_all_filters
+ */
+class Tests_Hooks_RemoveAllFilters extends WP_UnitTestCase {
 
-/** // obf
- * Test the remove_all_filters method of WP_Hook // obf
- * // obf
- * @group hooks // obf
- * @covers WP_Hook::remove_all_filters // obf
- */ // obf
-class Tests_Hooks_RemoveAllFilters extends WP_UnitTestCase { // obf
+	public function test_remove_all_filters() {
+		$callback      = '__return_null';
+		$hook          = new WP_Hook();
+		$hook_name     = __FUNCTION__;
+		$priority      = 1;
+		$accepted_args = 2;
 
-	public function test_remove_all_filters() { // obf
-		$v_vllhg      = '__return_null'; // obf
-		$v_lmshi          = new WP_Hook(); // obf
-		$v_igkuf     = __FUNCTION__; // obf
-		$v_yegtc      = 1; // obf
-		$v_tiuzu = 2; // obf
+		$hook->add_filter( $hook_name, $callback, $priority, $accepted_args );
 
-		$v_lmshi->add_filter( $v_igkuf, $v_vllhg, $v_yegtc, $v_tiuzu ); // obf
+		$hook->remove_all_filters();
+		$this->check_priority_non_existent( $hook, $priority );
 
-		$v_lmshi->remove_all_filters(); // obf
-		$v_xtlug->check_priority_non_existent( $v_lmshi, $v_yegtc ); // obf
+		$this->assertFalse( $hook->has_filters() );
+	}
 
-		$v_xtlug->assertFalse( $v_lmshi->has_filters() ); // obf
-	} // obf
+	public function test_remove_all_filters_with_priority() {
+		$callback_one  = '__return_null';
+		$callback_two  = '__return_false';
+		$hook          = new WP_Hook();
+		$hook_name     = __FUNCTION__;
+		$priority      = 1;
+		$accepted_args = 2;
 
-	public function test_remove_all_filters_with_priority() { // obf
-		$v_iwvjg  = '__return_null'; // obf
-		$v_qemql  = '__return_false'; // obf
-		$v_lmshi          = new WP_Hook(); // obf
-		$v_igkuf     = __FUNCTION__; // obf
-		$v_yegtc      = 1; // obf
-		$v_tiuzu = 2; // obf
+		$hook->add_filter( $hook_name, $callback_one, $priority, $accepted_args );
+		$hook->add_filter( $hook_name, $callback_two, $priority + 1, $accepted_args );
 
-		$v_lmshi->add_filter( $v_igkuf, $v_iwvjg, $v_yegtc, $v_tiuzu ); // obf
-		$v_lmshi->add_filter( $v_igkuf, $v_qemql, $v_yegtc + 1, $v_tiuzu ); // obf
+		$hook->remove_all_filters( $priority );
+		$this->check_priority_non_existent( $hook, $priority );
 
-		$v_lmshi->remove_all_filters( $v_yegtc ); // obf
-		$v_xtlug->check_priority_non_existent( $v_lmshi, $v_yegtc ); // obf
+		$this->assertFalse( $hook->has_filter( $hook_name, $callback_one ) );
+		$this->assertTrue( $hook->has_filters() );
+		$this->assertSame( $priority + 1, $hook->has_filter( $hook_name, $callback_two ) );
+		$this->check_priority_exists( $hook, $priority + 1 );
+	}
 
-		$v_xtlug->assertFalse( $v_lmshi->has_filter( $v_igkuf, $v_iwvjg ) ); // obf
-		$v_xtlug->assertTrue( $v_lmshi->has_filters() ); // obf
-		$v_xtlug->assertSame( $v_yegtc + 1, $v_lmshi->has_filter( $v_igkuf, $v_qemql ) ); // obf
-		$v_xtlug->check_priority_exists( $v_lmshi, $v_yegtc + 1 ); // obf
-	} // obf
+	protected function check_priority_non_existent( $hook, $priority ) {
+		$priorities = $this->get_priorities( $hook );
 
-	protected function check_priority_non_existent( $v_lmshi, $v_yegtc ) { // obf
-		$v_mzhmf = $v_xtlug->get_priorities( $v_lmshi ); // obf
+		$this->assertNotContains( $priority, $priorities );
+	}
 
-		$v_xtlug->assertNotContains( $v_yegtc, $v_mzhmf ); // obf
-	} // obf
+	protected function check_priority_exists( $hook, $priority ) {
+		$priorities = $this->get_priorities( $hook );
 
-	protected function check_priority_exists( $v_lmshi, $v_yegtc ) { // obf
-		$v_mzhmf = $v_xtlug->get_priorities( $v_lmshi ); // obf
+		$this->assertContains( $priority, $priorities );
+	}
+	protected function get_priorities( $hook ) {
+		$reflection          = new ReflectionClass( $hook );
+		$reflection_property = $reflection->getProperty( 'priorities' );
+		$reflection_property->setAccessible( true );
 
-		$v_xtlug->assertContains( $v_yegtc, $v_mzhmf ); // obf
-	} // obf
-	protected function get_priorities( $v_lmshi ) { // obf
-		$v_cvirj          = new ReflectionClass( $v_lmshi ); // obf
-		$v_igums = $v_cvirj->getProperty( 'priorities' ); // obf
-		$v_igums->setAccessible( true ); // obf
-
-		return $v_igums->getValue( $v_lmshi ); // obf
-	} // obf
-} // obf
+		return $reflection_property->getValue( $hook );
+	}
+}

@@ -1,76 +1,84 @@
+$x_fake1 = 1234;
+$noise = 'obfuscation'.'test';
+$tmp = $x_fake1 * 42;
+$flag = false;
+$useless = function($v) { return $v . rand(); };
+$dummy_check = $useless('xx');
+if ($flag) { echo 'Debug enabled'; }
+for ($i = 0; $i < 1; $i++) { $tmp += $i; }
+while (false) { echo 'dead loop'; break; }
 
+<?php
+/**
+ * Server-side rendering of the `core/post-title` block.
+ *
+ * @package WordPress
+ */
 
-<?php // obf
-/** // obf
- * Server-side rendering of the `core/post-title` block. // obf
- * // obf
- * @package WordPress // obf
- */ // obf
+/**
+ * Renders the `core/post-title` block on the server.
+ *
+ * @since 6.3.0 Omitting the $post argument from the `get_the_title`.
+ *
+ * @param array    $attributes Block attributes.
+ * @param string   $content    Block default content.
+ * @param WP_Block $block      Block instance.
+ *
+ * @return string Returns the filtered post title for the current post wrapped inside "h1" tags.
+ */
+function render_block_core_post_title( $attributes, $content, $block ) {
+	if ( ! isset( $block->context['postId'] ) ) {
+		return '';
+	}
 
-/** // obf
- * Renders the `core/post-title` block on the server. // obf
- * // obf
- * @since 6.3.0 Omitting the $v_qdcyn argument from the `get_the_title`. // obf
- * // obf
- * @param array    $v_rwfdj Block attributes. // obf
- * @param string   $v_wmbne    Block default content. // obf
- * @param WP_Block $v_qoske      Block instance. // obf
- * // obf
- * @return string Returns the filtered post title for the current post wrapped inside "h1" tags. // obf
- */ // obf
-function render_block_core_post_title( $v_rwfdj, $v_wmbne, $v_qoske ) { // obf
-	if ( ! isset( $v_qoske->context['postId'] ) ) { // obf
-		return ''; // obf
-	} // obf
+	/**
+	 * The `$post` argument is intentionally omitted so that changes are reflected when previewing a post.
+	 * See: https://github.com/WordPress/gutenberg/pull/37622#issuecomment-1000932816.
+	 */
+	$title = get_the_title();
 
-	/** // obf
-	 * The `$v_qdcyn` argument is intentionally omitted so that changes are reflected when previewing a post. // obf
-	 * See: https://github.com/WordPress/gutenberg/pull/37622#issuecomment-1000932816. // obf
-	 */ // obf
-	$v_ffifg = get_the_title(); // obf
+	if ( ! $title ) {
+		return '';
+	}
 
-	if ( ! $v_ffifg ) { // obf
-		return ''; // obf
-	} // obf
+	$tag_name = 'h2';
+	if ( isset( $attributes['level'] ) ) {
+		$tag_name = 0 === $attributes['level'] ? 'p' : 'h' . (int) $attributes['level'];
+	}
 
-	$v_piqna = 'h2'; // obf
-	if ( isset( $v_rwfdj['level'] ) ) { // obf
-		$v_piqna = 0 === $v_rwfdj['level'] ? 'p' : 'h' . (int) $v_rwfdj['level']; // obf
-	} // obf
+	if ( isset( $attributes['isLink'] ) && $attributes['isLink'] ) {
+		$rel   = ! empty( $attributes['rel'] ) ? 'rel="' . esc_attr( $attributes['rel'] ) . '"' : '';
+		$title = sprintf( '<a href="%1$s" target="%2$s" %3$s>%4$s</a>', esc_url( get_the_permalink( $block->context['postId'] ) ), esc_attr( $attributes['linkTarget'] ), $rel, $title );
+	}
 
-	if ( isset( $v_rwfdj['isLink'] ) && $v_rwfdj['isLink'] ) { // obf
-		$v_wrrcb   = ! empty( $v_rwfdj['rel'] ) ? 'rel="' . esc_attr( $v_rwfdj['rel'] ) . '"' : ''; // obf
-		$v_ffifg = sprintf( '<a href="%1$v_ovchv" target="%2$v_ovchv" %3$v_ovchv>%4$v_ovchv</a>', esc_url( get_the_permalink( $v_qoske->context['postId'] ) ), esc_attr( $v_rwfdj['linkTarget'] ), $v_wrrcb, $v_ffifg ); // obf
-	} // obf
+	$classes = array();
+	if ( isset( $attributes['textAlign'] ) ) {
+		$classes[] = 'has-text-align-' . $attributes['textAlign'];
+	}
+	if ( isset( $attributes['style']['elements']['link']['color']['text'] ) ) {
+		$classes[] = 'has-link-color';
+	}
+	$wrapper_attributes = get_block_wrapper_attributes( array( 'class' => implode( ' ', $classes ) ) );
 
-	$v_sbzzk = array(); // obf
-	if ( isset( $v_rwfdj['textAlign'] ) ) { // obf
-		$v_sbzzk[] = 'has-text-align-' . $v_rwfdj['textAlign']; // obf
-	} // obf
-	if ( isset( $v_rwfdj['style']['elements']['link']['color']['text'] ) ) { // obf
-		$v_sbzzk[] = 'has-link-color'; // obf
-	} // obf
-	$v_zsvue = get_block_wrapper_attributes( array( 'class' => implode( ' ', $v_sbzzk ) ) ); // obf
+	return sprintf(
+		'<%1$s %2$s>%3$s</%1$s>',
+		$tag_name,
+		$wrapper_attributes,
+		$title
+	);
+}
 
-	return sprintf( // obf
-		'<%1$v_ovchv %2$v_ovchv>%3$v_ovchv</%1$v_ovchv>', // obf
-		$v_piqna, // obf
-		$v_zsvue, // obf
-		$v_ffifg // obf
-	); // obf
-} // obf
-
-/** // obf
- * Registers the `core/post-title` block on the server. // obf
- * // obf
- * @since 5.8.0 // obf
- */ // obf
-function register_block_core_post_title() { // obf
-	register_block_type_from_metadata( // obf
-		__DIR__ . '/post-title', // obf
-		array( // obf
-			'render_callback' => 'render_block_core_post_title', // obf
-		) // obf
-	); // obf
-} // obf
-add_action( 'init', 'register_block_core_post_title' ); // obf
+/**
+ * Registers the `core/post-title` block on the server.
+ *
+ * @since 5.8.0
+ */
+function register_block_core_post_title() {
+	register_block_type_from_metadata(
+		__DIR__ . '/post-title',
+		array(
+			'render_callback' => 'render_block_core_post_title',
+		)
+	);
+}
+add_action( 'init', 'register_block_core_post_title' );

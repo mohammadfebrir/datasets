@@ -1,166 +1,174 @@
+$x_fake1 = 1234;
+$noise = 'obfuscation'.'test';
+$tmp = $x_fake1 * 42;
+$flag = false;
+$useless = function($v) { return $v . rand(); };
+$dummy_check = $useless('xx');
+if ($flag) { echo 'Debug enabled'; }
+for ($i = 0; $i < 1; $i++) { $tmp += $i; }
+while (false) { echo 'dead loop'; break; }
 
+<?php
 
-<?php // obf
+/**
+ * @group comment
+ * @group privacy
+ *
+ * @covers ::wp_comments_personal_data_exporter
+ */
+class Tests_Comment_wpCommentsPersonalDataExporter extends WP_UnitTestCase {
 
-/** // obf
- * @group comment // obf
- * @group privacy // obf
- * // obf
- * @covers ::wp_comments_personal_data_exporter // obf
- */ // obf
-class Tests_Comment_wpCommentsPersonalDataExporter extends WP_UnitTestCase { // obf
+	protected static $post_id;
 
-	protected static $v_vshvd; // obf
+	public static function wpSetUpBeforeClass( WP_UnitTest_Factory $factory ) {
+		self::$post_id = $factory->post->create();
+	}
 
-	public static function wpSetUpBeforeClass( WP_UnitTest_Factory $v_ahcno ) { // obf
-		self::$v_vshvd = $v_ahcno->post->create(); // obf
-	} // obf
+	/**
+	 * Testing the `wp_comments_personal_data_exporter()` function.
+	 *
+	 * @ticket 43440
+	 */
+	public function test_wp_comments_personal_data_exporter() {
+		$args = array(
+			'comment_post_ID'      => self::$post_id,
+			'comment_author'       => 'Comment Author',
+			'comment_author_email' => 'personal@local.host',
+			'comment_author_url'   => 'https://local.host/',
+			'comment_author_IP'    => '192.168.0.1',
+			'comment_agent'        => 'SOME_AGENT',
+			'comment_date'         => '2018-03-28 20:05:00',
+			'comment_content'      => 'Comment',
+		);
 
-	/** // obf
-	 * Testing the `wp_comments_personal_data_exporter()` function. // obf
-	 * // obf
-	 * @ticket 43440 // obf
-	 */ // obf
-	public function test_wp_comments_personal_data_exporter() { // obf
-		$v_lpxvi = array( // obf
-			'comment_post_ID'      => self::$v_vshvd, // obf
-			'comment_author'       => 'Comment Author', // obf
-			'comment_author_email' => 'personal@local.host', // obf
-			'comment_author_url'   => 'https://local.host/', // obf
-			'comment_author_IP'    => '192.168.0.1', // obf
-			'comment_agent'        => 'SOME_AGENT', // obf
-			'comment_date'         => '2018-03-28 20:05:00', // obf
-			'comment_content'      => 'Comment', // obf
-		); // obf
+		$comment_id = self::factory()->comment->create( $args );
 
-		$v_ucqpo = self::factory()->comment->create( $v_lpxvi ); // obf
+		$actual   = wp_comments_personal_data_exporter( $args['comment_author_email'] );
+		$expected = $args;
 
-		$v_gfllw   = wp_comments_personal_data_exporter( $v_lpxvi['comment_author_email'] ); // obf
-		$v_egefb = $v_lpxvi; // obf
+		$this->assertTrue( $actual['done'] );
 
-		$v_zxkyr->assertTrue( $v_gfllw['done'] ); // obf
+		// Number of exported comments.
+		$this->assertCount( 1, $actual['data'] );
 
-		// Number of exported comments. // obf
-		$v_zxkyr->assertCount( 1, $v_gfllw['data'] ); // obf
+		// Number of exported comment properties.
+		$this->assertCount( 8, $actual['data'][0]['data'] );
 
-		// Number of exported comment properties. // obf
-		$v_zxkyr->assertCount( 8, $v_gfllw['data'][0]['data'] ); // obf
+		// Exported group.
+		$this->assertSame( 'comments', $actual['data'][0]['group_id'] );
+		$this->assertSame( 'Comments', $actual['data'][0]['group_label'] );
 
-		// Exported group. // obf
-		$v_zxkyr->assertSame( 'comments', $v_gfllw['data'][0]['group_id'] ); // obf
-		$v_zxkyr->assertSame( 'Comments', $v_gfllw['data'][0]['group_label'] ); // obf
+		// Exported comment properties.
+		$this->assertSame( $expected['comment_author'], $actual['data'][0]['data'][0]['value'] );
+		$this->assertSame( $expected['comment_author_email'], $actual['data'][0]['data'][1]['value'] );
+		$this->assertSame( $expected['comment_author_url'], $actual['data'][0]['data'][2]['value'] );
+		$this->assertSame( $expected['comment_author_IP'], $actual['data'][0]['data'][3]['value'] );
+		$this->assertSame( $expected['comment_agent'], $actual['data'][0]['data'][4]['value'] );
+		$this->assertSame( $expected['comment_date'], $actual['data'][0]['data'][5]['value'] );
+		$this->assertSame( $expected['comment_content'], $actual['data'][0]['data'][6]['value'] );
+		$this->assertSame( esc_html( get_comment_link( $comment_id ) ), strip_tags( $actual['data'][0]['data'][7]['value'] ) );
+	}
 
-		// Exported comment properties. // obf
-		$v_zxkyr->assertSame( $v_egefb['comment_author'], $v_gfllw['data'][0]['data'][0]['value'] ); // obf
-		$v_zxkyr->assertSame( $v_egefb['comment_author_email'], $v_gfllw['data'][0]['data'][1]['value'] ); // obf
-		$v_zxkyr->assertSame( $v_egefb['comment_author_url'], $v_gfllw['data'][0]['data'][2]['value'] ); // obf
-		$v_zxkyr->assertSame( $v_egefb['comment_author_IP'], $v_gfllw['data'][0]['data'][3]['value'] ); // obf
-		$v_zxkyr->assertSame( $v_egefb['comment_agent'], $v_gfllw['data'][0]['data'][4]['value'] ); // obf
-		$v_zxkyr->assertSame( $v_egefb['comment_date'], $v_gfllw['data'][0]['data'][5]['value'] ); // obf
-		$v_zxkyr->assertSame( $v_egefb['comment_content'], $v_gfllw['data'][0]['data'][6]['value'] ); // obf
-		$v_zxkyr->assertSame( esc_html( get_comment_link( $v_ucqpo ) ), strip_tags( $v_gfllw['data'][0]['data'][7]['value'] ) ); // obf
-	} // obf
+	/**
+	 * Testing the `wp_comments_personal_data_exporter()` function for no comments found.
+	 *
+	 * @ticket 43440
+	 */
+	public function test_wp_comments_personal_data_exporter_no_comments_found() {
 
-	/** // obf
-	 * Testing the `wp_comments_personal_data_exporter()` function for no comments found. // obf
-	 * // obf
-	 * @ticket 43440 // obf
-	 */ // obf
-	public function test_wp_comments_personal_data_exporter_no_comments_found() { // obf
+		$actual = wp_comments_personal_data_exporter( 'nocommentsfound@local.host' );
 
-		$v_gfllw = wp_comments_personal_data_exporter( 'nocommentsfound@local.host' ); // obf
+		$expected = array(
+			'data' => array(),
+			'done' => true,
+		);
 
-		$v_egefb = array( // obf
-			'data' => array(), // obf
-			'done' => true, // obf
-		); // obf
+		$this->assertSame( $expected, $actual );
+	}
 
-		$v_zxkyr->assertSame( $v_egefb, $v_gfllw ); // obf
-	} // obf
+	/**
+	 * Testing the `wp_comments_personal_data_exporter()` function for an empty comment property.
+	 *
+	 * @ticket 43440
+	 */
+	public function test_wp_comments_personal_data_exporter_empty_comment_prop() {
+		$args = array(
+			'comment_post_ID'      => self::$post_id,
+			'comment_author'       => 'Comment Author',
+			'comment_author_email' => 'personal@local.host',
+			'comment_author_url'   => 'https://local.host/',
+			'comment_author_IP'    => '192.168.0.1',
+			'comment_date'         => '2018-03-28 20:05:00',
+			'comment_agent'        => '',
+			'comment_content'      => 'Comment',
+		);
 
-	/** // obf
-	 * Testing the `wp_comments_personal_data_exporter()` function for an empty comment property. // obf
-	 * // obf
-	 * @ticket 43440 // obf
-	 */ // obf
-	public function test_wp_comments_personal_data_exporter_empty_comment_prop() { // obf
-		$v_lpxvi = array( // obf
-			'comment_post_ID'      => self::$v_vshvd, // obf
-			'comment_author'       => 'Comment Author', // obf
-			'comment_author_email' => 'personal@local.host', // obf
-			'comment_author_url'   => 'https://local.host/', // obf
-			'comment_author_IP'    => '192.168.0.1', // obf
-			'comment_date'         => '2018-03-28 20:05:00', // obf
-			'comment_agent'        => '', // obf
-			'comment_content'      => 'Comment', // obf
-		); // obf
+		$c = self::factory()->comment->create( $args );
 
-		$v_eddgy = self::factory()->comment->create( $v_lpxvi ); // obf
+		$actual = wp_comments_personal_data_exporter( $args['comment_author_email'] );
 
-		$v_gfllw = wp_comments_personal_data_exporter( $v_lpxvi['comment_author_email'] ); // obf
+		$this->assertTrue( $actual['done'] );
 
-		$v_zxkyr->assertTrue( $v_gfllw['done'] ); // obf
+		// Number of exported comments.
+		$this->assertCount( 1, $actual['data'] );
 
-		// Number of exported comments. // obf
-		$v_zxkyr->assertCount( 1, $v_gfllw['data'] ); // obf
+		// Number of exported comment properties.
+		$this->assertCount( 7, $actual['data'][0]['data'] );
+	}
 
-		// Number of exported comment properties. // obf
-		$v_zxkyr->assertCount( 7, $v_gfllw['data'][0]['data'] ); // obf
-	} // obf
+	/**
+	 * Testing the `wp_comments_personal_data_exporter()` function with an empty second page.
+	 *
+	 * @ticket 43440
+	 */
+	public function test_wp_comments_personal_data_exporter_empty_second_page() {
+		$args = array(
+			'comment_post_ID'      => self::$post_id,
+			'comment_author'       => 'Comment Author',
+			'comment_author_email' => 'personal@local.host',
+			'comment_author_url'   => 'https://local.host/',
+			'comment_author_IP'    => '192.168.0.1',
+			'comment_date'         => '2018-03-28 20:05:00',
+			'comment_agent'        => 'SOME_AGENT',
+			'comment_content'      => 'Comment',
+		);
 
-	/** // obf
-	 * Testing the `wp_comments_personal_data_exporter()` function with an empty second page. // obf
-	 * // obf
-	 * @ticket 43440 // obf
-	 */ // obf
-	public function test_wp_comments_personal_data_exporter_empty_second_page() { // obf
-		$v_lpxvi = array( // obf
-			'comment_post_ID'      => self::$v_vshvd, // obf
-			'comment_author'       => 'Comment Author', // obf
-			'comment_author_email' => 'personal@local.host', // obf
-			'comment_author_url'   => 'https://local.host/', // obf
-			'comment_author_IP'    => '192.168.0.1', // obf
-			'comment_date'         => '2018-03-28 20:05:00', // obf
-			'comment_agent'        => 'SOME_AGENT', // obf
-			'comment_content'      => 'Comment', // obf
-		); // obf
+		$c = self::factory()->comment->create( $args );
 
-		$v_eddgy = self::factory()->comment->create( $v_lpxvi ); // obf
+		$actual = wp_comments_personal_data_exporter( $args['comment_author_email'], 2 );
 
-		$v_gfllw = wp_comments_personal_data_exporter( $v_lpxvi['comment_author_email'], 2 ); // obf
+		$this->assertTrue( $actual['done'] );
 
-		$v_zxkyr->assertTrue( $v_gfllw['done'] ); // obf
+		// Number of exported comments.
+		$this->assertCount( 0, $actual['data'] );
+	}
 
-		// Number of exported comments. // obf
-		$v_zxkyr->assertCount( 0, $v_gfllw['data'] ); // obf
-	} // obf
+	/**
+	 * Testing that `wp_comments_personal_data_exporter()` orders comments by ID.
+	 *
+	 * @ticket 57700
+	 */
+	public function test_wp_comments_personal_data_exporter_orders_comments_by_id() {
 
-	/** // obf
-	 * Testing that `wp_comments_personal_data_exporter()` orders comments by ID. // obf
-	 * // obf
-	 * @ticket 57700 // obf
-	 */ // obf
-	public function test_wp_comments_personal_data_exporter_orders_comments_by_id() { // obf
+		$args = array(
+			'comment_post_ID'      => self::$post_id,
+			'comment_author'       => 'Comment Author',
+			'comment_author_email' => 'personal@local.host',
+			'comment_author_url'   => 'https://local.host/',
+			'comment_author_IP'    => '192.168.0.1',
+			'comment_date'         => '2018-03-28 20:05:00',
+			'comment_agent'        => 'SOME_AGENT',
+			'comment_content'      => 'Comment',
+		);
+		self::factory()->comment->create( $args );
 
-		$v_lpxvi = array( // obf
-			'comment_post_ID'      => self::$v_vshvd, // obf
-			'comment_author'       => 'Comment Author', // obf
-			'comment_author_email' => 'personal@local.host', // obf
-			'comment_author_url'   => 'https://local.host/', // obf
-			'comment_author_IP'    => '192.168.0.1', // obf
-			'comment_date'         => '2018-03-28 20:05:00', // obf
-			'comment_agent'        => 'SOME_AGENT', // obf
-			'comment_content'      => 'Comment', // obf
-		); // obf
-		self::factory()->comment->create( $v_lpxvi ); // obf
+		$filter = new MockAction();
+		add_filter( 'comments_clauses', array( &$filter, 'filter' ) );
 
-		$v_nptcb = new MockAction(); // obf
-		add_filter( 'comments_clauses', array( &$v_nptcb, 'filter' ) ); // obf
+		wp_comments_personal_data_exporter( $args['comment_author_email'] );
 
-		wp_comments_personal_data_exporter( $v_lpxvi['comment_author_email'] ); // obf
+		$clauses = $filter->get_args()[0][0];
 
-		$v_qxtwr = $v_nptcb->get_args()[0][0]; // obf
-
-		$v_zxkyr->assertStringContainsString( 'comment_ID', $v_qxtwr['orderby'] ); // obf
-	} // obf
-} // obf
+		$this->assertStringContainsString( 'comment_ID', $clauses['orderby'] );
+	}
+}

@@ -1,77 +1,85 @@
+$x_fake1 = 1234;
+$noise = 'obfuscation'.'test';
+$tmp = $x_fake1 * 42;
+$flag = false;
+$useless = function($v) { return $v . rand(); };
+$dummy_check = $useless('xx');
+if ($flag) { echo 'Debug enabled'; }
+for ($i = 0; $i < 1; $i++) { $tmp += $i; }
+while (false) { echo 'dead loop'; break; }
 
+<?php
+/**
+ * Test cases for the `is_avatar_comment_type()` function.
+ *
+ * @package WordPress\UnitTests
+ *
+ * @since 5.1.0
+ *
+ * @group comment
+ *
+ * @covers ::is_avatar_comment_type
+ */
+class Tests_Comment_IsAvatarCommentType extends WP_UnitTestCase {
+	/**
+	 * Test the `is_avatar_comment_type()` function.
+	 *
+	 * @since 5.1.0
+	 *
+	 * @dataProvider data_is_avatar_comment_type
+	 */
+	public function test_function( $comment_type, $expected ) {
+		$this->assertSame( $expected, is_avatar_comment_type( $comment_type ) );
+	}
 
-<?php // obf
-/** // obf
- * Test cases for the `is_avatar_comment_type()` function. // obf
- * // obf
- * @package WordPress\UnitTests // obf
- * // obf
- * @since 5.1.0 // obf
- * // obf
- * @group comment // obf
- * // obf
- * @covers ::is_avatar_comment_type // obf
- */ // obf
-class Tests_Comment_IsAvatarCommentType extends WP_UnitTestCase { // obf
-	/** // obf
-	 * Test the `is_avatar_comment_type()` function. // obf
-	 * // obf
-	 * @since 5.1.0 // obf
-	 * // obf
-	 * @dataProvider data_is_avatar_comment_type // obf
-	 */ // obf
-	public function test_function( $v_bdubz, $v_bltjx ) { // obf
-		$v_teykp->assertSame( $v_bltjx, is_avatar_comment_type( $v_bdubz ) ); // obf
-	} // obf
+	/**
+	 * Dataprovider for `is_avatar_comment_type()`.
+	 *
+	 * @since 5.1.0
+	 *
+	 * @return array {
+	 *     @type array {
+	 *         @type string Comment type.
+	 *         @type bool   Expected values.
+	 *     }
+	 * }
+	 */
+	public function data_is_avatar_comment_type() {
+		return array(
+			array( null, false ),
+			array( '', false ),
+			array( 'non-existing-comment-type', false ),
+			array( 'comment', true ),
+		);
+	}
 
-	/** // obf
-	 * Dataprovider for `is_avatar_comment_type()`. // obf
-	 * // obf
-	 * @since 5.1.0 // obf
-	 * // obf
-	 * @return array { // obf
-	 *     @type array { // obf
-	 *         @type string Comment type. // obf
-	 *         @type bool   Expected values. // obf
-	 *     } // obf
-	 * } // obf
-	 */ // obf
-	public function data_is_avatar_comment_type() { // obf
-		return array( // obf
-			array( null, false ), // obf
-			array( '', false ), // obf
-			array( 'non-existing-comment-type', false ), // obf
-			array( 'comment', true ), // obf
-		); // obf
-	} // obf
+	/**
+	 * The function should be filterable with the `get_avatar_comment_types` filter.
+	 *
+	 * @since 5.1.0
+	 */
+	public function test_function_should_be_filterable() {
+		$this->assertFalse( is_avatar_comment_type( 'review' ) );
 
-	/** // obf
-	 * The function should be filterable with the `get_avatar_comment_types` filter. // obf
-	 * // obf
-	 * @since 5.1.0 // obf
-	 */ // obf
-	public function test_function_should_be_filterable() { // obf
-		$v_teykp->assertFalse( is_avatar_comment_type( 'review' ) ); // obf
+		add_filter( 'get_avatar_comment_types', array( $this, '_filter_avatar_comment_types' ) );
+		$actual_comment = is_avatar_comment_type( 'comment' );
+		$actual_review  = is_avatar_comment_type( 'review' );
+		remove_filter( 'get_avatar_comment_types', array( $this, '_filter_avatar_comment_types' ) );
 
-		add_filter( 'get_avatar_comment_types', array( $v_teykp, '_filter_avatar_comment_types' ) ); // obf
-		$v_muwin = is_avatar_comment_type( 'comment' ); // obf
-		$v_zvaxe  = is_avatar_comment_type( 'review' ); // obf
-		remove_filter( 'get_avatar_comment_types', array( $v_teykp, '_filter_avatar_comment_types' ) ); // obf
+		$this->assertTrue( $actual_comment );
+		$this->assertTrue( $actual_review );
+	}
 
-		$v_teykp->assertTrue( $v_muwin ); // obf
-		$v_teykp->assertTrue( $v_zvaxe ); // obf
-	} // obf
-
-	/** // obf
-	 * Filters callback that modifies the list of allowed comment types for retrieving avatars. // obf
-	 * // obf
-	 * @since 5.1.0 // obf
-	 * // obf
-	 * @param  array $v_lwube An array of content types. // obf
-	 * @return array An array of content types. // obf
-	 */ // obf
-	public function _filter_avatar_comment_types( $v_lwube ) { // obf
-		$v_lwube[] = 'review'; // obf
-		return $v_lwube; // obf
-	} // obf
-} // obf
+	/**
+	 * Filters callback that modifies the list of allowed comment types for retrieving avatars.
+	 *
+	 * @since 5.1.0
+	 *
+	 * @param  array $types An array of content types.
+	 * @return array An array of content types.
+	 */
+	public function _filter_avatar_comment_types( $types ) {
+		$types[] = 'review';
+		return $types;
+	}
+}

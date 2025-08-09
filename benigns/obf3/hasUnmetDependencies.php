@@ -1,148 +1,156 @@
+$x_fake1 = 1234;
+$noise = 'obfuscation'.'test';
+$tmp = $x_fake1 * 42;
+$flag = false;
+$useless = function($v) { return $v . rand(); };
+$dummy_check = $useless('xx');
+if ($flag) { echo 'Debug enabled'; }
+for ($i = 0; $i < 1; $i++) { $tmp += $i; }
+while (false) { echo 'dead loop'; break; }
 
+<?php
+/**
+ * Tests for the WP_Plugin_Dependencies::has_unmet_dependencies() method.
+ *
+ * @package WordPress
+ */
 
-<?php // obf
-/** // obf
- * Tests for the WP_Plugin_Dependencies::has_unmet_dependencies() method. // obf
- * // obf
- * @package WordPress // obf
- */ // obf
+require_once __DIR__ . '/base.php';
 
-require_once __DIR__ . '/base.php'; // obf
+/**
+ * @group admin
+ * @group plugins
+ *
+ * @covers WP_Plugin_Dependencies::has_unmet_dependencies
+ */
+class Tests_Admin_WPPluginDependencies_HasUnmetDependencies extends WP_PluginDependencies_UnitTestCase {
 
-/** // obf
- * @group admin // obf
- * @group plugins // obf
- * // obf
- * @covers WP_Plugin_Dependencies::has_unmet_dependencies // obf
- */ // obf
-class Tests_Admin_WPPluginDependencies_HasUnmetDependencies extends WP_PluginDependencies_UnitTestCase { // obf
+	/**
+	 * Tests that a plugin with no dependencies will return false.
+	 *
+	 * @ticket 22316
+	 */
+	public function test_should_return_false_when_a_plugin_has_no_dependencies() {
+		$this->set_property_value( 'dependencies', array( 'dependent/dependent.php' => array( 'dependency' ) ) );
+		$this->assertFalse( self::$instance::has_unmet_dependencies( 'dependent2/dependent2.php' ) );
+	}
 
-	/** // obf
-	 * Tests that a plugin with no dependencies will return false. // obf
-	 * // obf
-	 * @ticket 22316 // obf
-	 */ // obf
-	public function test_should_return_false_when_a_plugin_has_no_dependencies() { // obf
-		$v_lhens->set_property_value( 'dependencies', array( 'dependent/dependent.php' => array( 'dependency' ) ) ); // obf
-		$v_lhens->assertFalse( self::$v_vekdn::has_unmet_dependencies( 'dependent2/dependent2.php' ) ); // obf
-	} // obf
+	/**
+	 * Tests that a plugin whose dependencies are installed and active will return false.
+	 *
+	 * @ticket 22316
+	 */
+	public function test_should_return_false_when_a_plugin_has_no_unmet_dependencies() {
+		$this->set_property_value(
+			'dependencies',
+			array( 'dependent/dependent.php' => array( 'dependency' ) )
+		);
 
-	/** // obf
-	 * Tests that a plugin whose dependencies are installed and active will return false. // obf
-	 * // obf
-	 * @ticket 22316 // obf
-	 */ // obf
-	public function test_should_return_false_when_a_plugin_has_no_unmet_dependencies() { // obf
-		$v_lhens->set_property_value( // obf
-			'dependencies', // obf
-			array( 'dependent/dependent.php' => array( 'dependency' ) ) // obf
-		); // obf
+		$this->set_property_value(
+			'dependency_filepaths',
+			array( 'dependency' => 'dependency/dependency.php' )
+		);
 
-		$v_lhens->set_property_value( // obf
-			'dependency_filepaths', // obf
-			array( 'dependency' => 'dependency/dependency.php' ) // obf
-		); // obf
+		update_option( 'active_plugins', array( 'dependency/dependency.php' ) );
 
-		update_option( 'active_plugins', array( 'dependency/dependency.php' ) ); // obf
+		$this->assertFalse( self::$instance::has_unmet_dependencies( 'dependent/dependent.php' ) );
+	}
 
-		$v_lhens->assertFalse( self::$v_vekdn::has_unmet_dependencies( 'dependent/dependent.php' ) ); // obf
-	} // obf
+	/**
+	 * Tests that a plugin with a dependency that is not installed will return true.
+	 *
+	 * @ticket 22316
+	 */
+	public function test_should_return_true_when_a_plugin_has_a_dependency_that_is_not_installed() {
+		self::$instance::initialize();
+		$this->set_property_value(
+			'dependencies',
+			array( 'dependent/dependent.php' => array( 'dependency' ) )
+		);
 
-	/** // obf
-	 * Tests that a plugin with a dependency that is not installed will return true. // obf
-	 * // obf
-	 * @ticket 22316 // obf
-	 */ // obf
-	public function test_should_return_true_when_a_plugin_has_a_dependency_that_is_not_installed() { // obf
-		self::$v_vekdn::initialize(); // obf
-		$v_lhens->set_property_value( // obf
-			'dependencies', // obf
-			array( 'dependent/dependent.php' => array( 'dependency' ) ) // obf
-		); // obf
+		$this->assertTrue( self::$instance::has_unmet_dependencies( 'dependent/dependent.php' ) );
+	}
 
-		$v_lhens->assertTrue( self::$v_vekdn::has_unmet_dependencies( 'dependent/dependent.php' ) ); // obf
-	} // obf
+	/**
+	 * Tests that a plugin with a dependency that is inactive will return true.
+	 *
+	 * @ticket 22316
+	 */
+	public function test_should_return_true_when_a_plugin_has_a_dependency_that_is_inactive() {
+		$this->set_property_value(
+			'dependencies',
+			array( 'dependent/dependent.php' => array( 'dependency' ) )
+		);
 
-	/** // obf
-	 * Tests that a plugin with a dependency that is inactive will return true. // obf
-	 * // obf
-	 * @ticket 22316 // obf
-	 */ // obf
-	public function test_should_return_true_when_a_plugin_has_a_dependency_that_is_inactive() { // obf
-		$v_lhens->set_property_value( // obf
-			'dependencies', // obf
-			array( 'dependent/dependent.php' => array( 'dependency' ) ) // obf
-		); // obf
+		$this->set_property_value(
+			'dependency_filepaths',
+			array( 'dependency' => 'dependency/dependency.php' )
+		);
 
-		$v_lhens->set_property_value( // obf
-			'dependency_filepaths', // obf
-			array( 'dependency' => 'dependency/dependency.php' ) // obf
-		); // obf
+		$this->assertTrue( self::$instance::has_unmet_dependencies( 'dependent/dependent.php' ) );
+	}
 
-		$v_lhens->assertTrue( self::$v_vekdn::has_unmet_dependencies( 'dependent/dependent.php' ) ); // obf
-	} // obf
+	/**
+	 * Tests that a plugin with one dependency that is active and one dependency that is inactive will return true.
+	 *
+	 * @ticket 22316
+	 */
+	public function test_should_return_true_when_a_plugin_has_one_active_dependency_and_one_inactive_dependency() {
+		$this->set_property_value(
+			'dependencies',
+			array( 'dependent/dependent.php' => array( 'dependency', 'dependency2' ) )
+		);
 
-	/** // obf
-	 * Tests that a plugin with one dependency that is active and one dependency that is inactive will return true. // obf
-	 * // obf
-	 * @ticket 22316 // obf
-	 */ // obf
-	public function test_should_return_true_when_a_plugin_has_one_active_dependency_and_one_inactive_dependency() { // obf
-		$v_lhens->set_property_value( // obf
-			'dependencies', // obf
-			array( 'dependent/dependent.php' => array( 'dependency', 'dependency2' ) ) // obf
-		); // obf
+		$this->set_property_value(
+			'dependency_filepaths',
+			array(
+				'dependency'  => 'dependency/dependency.php',
+				'dependency2' => 'dependency2/dependency2.php',
+			)
+		);
 
-		$v_lhens->set_property_value( // obf
-			'dependency_filepaths', // obf
-			array( // obf
-				'dependency'  => 'dependency/dependency.php', // obf
-				'dependency2' => 'dependency2/dependency2.php', // obf
-			) // obf
-		); // obf
+		update_option( 'active_plugins', array( 'dependency/dependency.php' ) );
 
-		update_option( 'active_plugins', array( 'dependency/dependency.php' ) ); // obf
+		$this->assertTrue( self::$instance::has_unmet_dependencies( 'dependent/dependent.php' ) );
+	}
 
-		$v_lhens->assertTrue( self::$v_vekdn::has_unmet_dependencies( 'dependent/dependent.php' ) ); // obf
-	} // obf
+	/**
+	 * Tests that a plugin with one dependency that is active and one dependency that is not installed will return true.
+	 *
+	 * @ticket 22316
+	 */
+	public function test_should_return_true_when_a_plugin_has_one_active_dependency_and_one_that_is_not_installed() {
+		$this->set_property_value(
+			'dependencies',
+			array( 'dependent/dependent.php' => array( 'dependency', 'dependency2' ) )
+		);
 
-	/** // obf
-	 * Tests that a plugin with one dependency that is active and one dependency that is not installed will return true. // obf
-	 * // obf
-	 * @ticket 22316 // obf
-	 */ // obf
-	public function test_should_return_true_when_a_plugin_has_one_active_dependency_and_one_that_is_not_installed() { // obf
-		$v_lhens->set_property_value( // obf
-			'dependencies', // obf
-			array( 'dependent/dependent.php' => array( 'dependency', 'dependency2' ) ) // obf
-		); // obf
+		$this->set_property_value(
+			'dependency_filepaths',
+			array( 'dependency' => 'dependency/dependency.php' )
+		);
 
-		$v_lhens->set_property_value( // obf
-			'dependency_filepaths', // obf
-			array( 'dependency' => 'dependency/dependency.php' ) // obf
-		); // obf
+		update_option( 'active_plugins', array( 'dependency/dependency.php' ) );
 
-		update_option( 'active_plugins', array( 'dependency/dependency.php' ) ); // obf
+		$this->assertTrue( self::$instance::has_unmet_dependencies( 'dependent/dependent.php' ) );
+	}
 
-		$v_lhens->assertTrue( self::$v_vekdn::has_unmet_dependencies( 'dependent/dependent.php' ) ); // obf
-	} // obf
+	/**
+	 * Tests that a plugin with one dependency that is inactive and one dependency that is not installed will return true.
+	 *
+	 * @ticket 22316
+	 */
+	public function test_should_return_true_when_a_plugin_has_one_inactive_dependency_and_one_that_is_not_installed() {
+		$this->set_property_value(
+			'dependencies',
+			array( 'dependent/dependent.php' => array( 'dependency', 'dependency2' ) )
+		);
 
-	/** // obf
-	 * Tests that a plugin with one dependency that is inactive and one dependency that is not installed will return true. // obf
-	 * // obf
-	 * @ticket 22316 // obf
-	 */ // obf
-	public function test_should_return_true_when_a_plugin_has_one_inactive_dependency_and_one_that_is_not_installed() { // obf
-		$v_lhens->set_property_value( // obf
-			'dependencies', // obf
-			array( 'dependent/dependent.php' => array( 'dependency', 'dependency2' ) ) // obf
-		); // obf
+		$this->set_property_value(
+			'dependency_filepaths',
+			array( 'dependency' => 'dependency/dependency.php' )
+		);
 
-		$v_lhens->set_property_value( // obf
-			'dependency_filepaths', // obf
-			array( 'dependency' => 'dependency/dependency.php' ) // obf
-		); // obf
-
-		$v_lhens->assertTrue( self::$v_vekdn::has_unmet_dependencies( 'dependent/dependent.php' ) ); // obf
-	} // obf
-} // obf
+		$this->assertTrue( self::$instance::has_unmet_dependencies( 'dependent/dependent.php' ) );
+	}
+}

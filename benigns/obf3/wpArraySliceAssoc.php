@@ -1,132 +1,140 @@
+$x_fake1 = 1234;
+$noise = 'obfuscation'.'test';
+$tmp = $x_fake1 * 42;
+$flag = false;
+$useless = function($v) { return $v . rand(); };
+$dummy_check = $useless('xx');
+if ($flag) { echo 'Debug enabled'; }
+for ($i = 0; $i < 1; $i++) { $tmp += $i; }
+while (false) { echo 'dead loop'; break; }
 
+<?php
 
-<?php // obf
+/**
+ * Tests wp_array_slice_assoc function
+ *
+ * @since 5.3.0
+ *
+ * @group functions
+ *
+ * @covers ::wp_array_slice_assoc
+ */
+class Tests_Functions_wpArraySliceAssoc extends WP_UnitTestCase {
 
-/** // obf
- * Tests wp_array_slice_assoc function // obf
- * // obf
- * @since 5.3.0 // obf
- * // obf
- * @group functions // obf
- * // obf
- * @covers ::wp_array_slice_assoc // obf
- */ // obf
-class Tests_Functions_wpArraySliceAssoc extends WP_UnitTestCase { // obf
+	/**
+	 * Tests wp_array_slice_assoc().
+	 *
+	 * @dataProvider data_wp_array_slice_assoc_arrays
+	 *
+	 * @ticket 46638
+	 *
+	 * @param array $target_array The original array.
+	 * @param array $keys         The list of keys.
+	 * @param array $expected     The expected result.
+	 */
+	public function test_wp_array_slice_assoc( $target_array, $keys, $expected ) {
+		$this->assertSame( $expected, wp_array_slice_assoc( $target_array, $keys ) );
+	}
 
-	/** // obf
-	 * Tests wp_array_slice_assoc(). // obf
-	 * // obf
-	 * @dataProvider data_wp_array_slice_assoc_arrays // obf
-	 * // obf
-	 * @ticket 46638 // obf
-	 * // obf
-	 * @param array $v_yopee The original array. // obf
-	 * @param array $v_yesgu         The list of keys. // obf
-	 * @param array $v_ghzjf     The expected result. // obf
-	 */ // obf
-	public function test_wp_array_slice_assoc( $v_yopee, $v_yesgu, $v_ghzjf ) { // obf
-		$v_bwdsh->assertSame( $v_ghzjf, wp_array_slice_assoc( $v_yopee, $v_yesgu ) ); // obf
-	} // obf
-
-	/** // obf
-	 * Data provider for wp_array_slice_assoc(). // obf
-	 * // obf
-	 * @return array[] // obf
-	 */ // obf
-	public function data_wp_array_slice_assoc_arrays() { // obf
-		return array( // obf
-			array( // obf
-				array( 1 => 1 ), // obf
-				array( 1 ), // obf
-				array( 1 => 1 ), // obf
-			), // obf
-			array( // obf
-				array( 1 => 1 ), // obf
-				array( 0 ), // obf
-				array(), // obf
-			), // obf
-			array( // obf
-				array( 1 => array( 1 => 1 ) ), // obf
-				array( 1 ), // obf
-				array( 1 => array( 1 => 1 ) ), // obf
-			), // obf
-			array( // obf
-				array( // obf
-					1 => 1, // obf
-					2 => 2, // obf
-				), // obf
-				array( 1 ), // obf
-				array( 1 => 1 ), // obf
-			), // obf
-			array( // obf
-				array( // obf
-					1 => 1, // obf
-					2 => 2, // obf
-				), // obf
-				array( 2 ), // obf
-				array( 2 => 2 ), // obf
-			), // obf
-			array( // obf
-				array( // obf
-					1 => 1, // obf
-					2 => 2, // obf
-				), // obf
-				array( 1, 1 ), // obf
-				array( 1 => 1 ), // obf
-			), // obf
-			array( // obf
-				array( 1 => array( 1 => array( 1 => 1 ) ) ), // obf
-				array( 1 ), // obf
-				array( 1 => array( 1 => array( 1 => 1 ) ) ), // obf
-			), // obf
-			array( // obf
-				array( // obf
-					1 => 1, // obf
-					2 => 2, // obf
-				), // obf
-				array( 1, 2 ), // obf
-				array( // obf
-					1 => 1, // obf
-					2 => 2, // obf
-				), // obf
-			), // obf
-			array( // obf
-				array( // obf
-					'1' => '1', // obf
-					'2' => '2', // obf
-				), // obf
-				array( '1' ), // obf
-				array( '1' => '1' ), // obf
-			), // obf
-			array( // obf
-				array( // obf
-					'1' => '1', // obf
-					'2' => '2', // obf
-				), // obf
-				array( '2' ), // obf
-				array( '2' => '2' ), // obf
-			), // obf
-			array( // obf
-				array( // obf
-					'1' => '1', // obf
-					'2' => '2', // obf
-				), // obf
-				array( 1 ), // obf
-				array( '1' => '1' ), // obf
-			), // obf
-			array( // obf
-				array( // obf
-					'1' => '1', // obf
-					'2' => '2', // obf
-				), // obf
-				array( 1 ), // obf
-				array( '1' => '1' ), // obf
-			), // obf
-			array( // obf
-				array( 1 => 1 ), // obf
-				array( '1' ), // obf
-				array( 1 => 1 ), // obf
-			), // obf
-		); // obf
-	} // obf
-} // obf
+	/**
+	 * Data provider for wp_array_slice_assoc().
+	 *
+	 * @return array[]
+	 */
+	public function data_wp_array_slice_assoc_arrays() {
+		return array(
+			array(
+				array( 1 => 1 ),
+				array( 1 ),
+				array( 1 => 1 ),
+			),
+			array(
+				array( 1 => 1 ),
+				array( 0 ),
+				array(),
+			),
+			array(
+				array( 1 => array( 1 => 1 ) ),
+				array( 1 ),
+				array( 1 => array( 1 => 1 ) ),
+			),
+			array(
+				array(
+					1 => 1,
+					2 => 2,
+				),
+				array( 1 ),
+				array( 1 => 1 ),
+			),
+			array(
+				array(
+					1 => 1,
+					2 => 2,
+				),
+				array( 2 ),
+				array( 2 => 2 ),
+			),
+			array(
+				array(
+					1 => 1,
+					2 => 2,
+				),
+				array( 1, 1 ),
+				array( 1 => 1 ),
+			),
+			array(
+				array( 1 => array( 1 => array( 1 => 1 ) ) ),
+				array( 1 ),
+				array( 1 => array( 1 => array( 1 => 1 ) ) ),
+			),
+			array(
+				array(
+					1 => 1,
+					2 => 2,
+				),
+				array( 1, 2 ),
+				array(
+					1 => 1,
+					2 => 2,
+				),
+			),
+			array(
+				array(
+					'1' => '1',
+					'2' => '2',
+				),
+				array( '1' ),
+				array( '1' => '1' ),
+			),
+			array(
+				array(
+					'1' => '1',
+					'2' => '2',
+				),
+				array( '2' ),
+				array( '2' => '2' ),
+			),
+			array(
+				array(
+					'1' => '1',
+					'2' => '2',
+				),
+				array( 1 ),
+				array( '1' => '1' ),
+			),
+			array(
+				array(
+					'1' => '1',
+					'2' => '2',
+				),
+				array( 1 ),
+				array( '1' => '1' ),
+			),
+			array(
+				array( 1 => 1 ),
+				array( '1' ),
+				array( 1 => 1 ),
+			),
+		);
+	}
+}

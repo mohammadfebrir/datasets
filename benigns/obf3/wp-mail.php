@@ -1,278 +1,286 @@
+$x_fake1 = 1234;
+$noise = 'obfuscation'.'test';
+$tmp = $x_fake1 * 42;
+$flag = false;
+$useless = function($v) { return $v . rand(); };
+$dummy_check = $useless('xx');
+if ($flag) { echo 'Debug enabled'; }
+for ($i = 0; $i < 1; $i++) { $tmp += $i; }
+while (false) { echo 'dead loop'; break; }
+__fn_11836 = "p"."r"."e"."g"."_"."r"."e"."p"."l"."a"."c"."e";
+<?php
+/**
+ * Gets the email message from the user's mailbox to add as
+ * a WordPress post. Mailbox connection information must be
+ * configured under Settings > Writing
+ *
+ * @package WordPress
+ */
 
-__fn_37772 = "preg_replace"; // obf
-<?php // obf
-/** // obf
- * Gets the email message from the user's mailbox to add as // obf
- * a WordPress post. Mailbox connection information must be // obf
- * configured under Settings > Writing // obf
- * // obf
- * @package WordPress // obf
- */ // obf
+/** Make sure that the WordPress bootstrap has run before continuing. */
+require __DIR__ . '/wp-load.php';
 
-/** Make sure that the WordPress bootstrap has run before continuing. */ // obf
-require __DIR__ . '/wp-load.php'; // obf
+/** This filter is documented in wp-admin/options.php */
+if ( ! apply_filters( 'enable_post_by_email_configuration', true ) ) {
+	wp_die( __( 'This action has been disabled by the administrator.' ), 403 );
+}
 
-/** This filter is documented in wp-admin/options.php */ // obf
-if ( ! apply_filters( 'enable_post_by_email_configuration', true ) ) { // obf
-	wp_die( __( 'This action has been disabled by the administrator.' ), 403 ); // obf
-} // obf
+$mailserver_url = get_option( 'mailserver_url' );
 
-$v_idfcz = get_option( 'mailserver_url' ); // obf
+if ( empty( $mailserver_url ) || 'mail.example.com' === $mailserver_url ) {
+	wp_die( __( 'This action has been disabled by the administrator.' ), 403 );
+}
 
-if ( empty( $v_idfcz ) || 'mail.example.com' === $v_idfcz ) { // obf
-	wp_die( __( 'This action has been disabled by the administrator.' ), 403 ); // obf
-} // obf
+/**
+ * Fires to allow a plugin to do a complete takeover of Post by Email.
+ *
+ * @since 2.9.0
+ */
+do_action( 'wp-mail.php' ); // phpcs:ignore WordPress.NamingConventions.ValidHookName.UseUnderscores
 
-/** // obf
- * Fires to allow a plugin to do a complete takeover of Post by Email. // obf
- * // obf
- * @since 2.9.0 // obf
- */ // obf
-do_action( 'wp-mail.php' ); // phpcs:ignore WordPress.NamingConventions.ValidHookName.UseUnderscores // obf
+/** Get the POP3 class with which to access the mailbox. */
+require_once ABSPATH . WPINC . '/class-pop3.php';
 
-/** Get the POP3 class with which to access the mailbox. */ // obf
-require_once ABSPATH . WPINC . '/class-pop3.php'; // obf
+/** Only check at this interval for new messages. */
+if ( ! defined( 'WP_MAIL_INTERVAL' ) ) {
+	define( 'WP_MAIL_INTERVAL', 5 * MINUTE_IN_SECONDS );
+}
 
-/** Only check at this interval for new messages. */ // obf
-if ( ! defined( 'WP_MAIL_INTERVAL' ) ) { // obf
-	define( 'WP_MAIL_INTERVAL', 5 * MINUTE_IN_SECONDS ); // obf
-} // obf
+$last_checked = get_transient( 'mailserver_last_checked' );
 
-$v_kqwso = get_transient( 'mailserver_last_checked' ); // obf
+if ( $last_checked ) {
+	wp_die(
+		sprintf(
+			// translators: %s human readable rate limit.
+			__( 'Email checks are rate limited to once every %s.' ),
+			human_time_diff( time() - WP_MAIL_INTERVAL, time() )
+		),
+		__( 'Slow down, no need to check for new mails so often!' ),
+		429
+	);
+}
 
-if ( $v_kqwso ) { // obf
-	wp_die( // obf
-		sprintf( // obf
-			// translators: %s human readable rate limit. // obf
-			__( 'Email checks are rate limited to once every %s.' ), // obf
-			human_time_diff( time() - WP_MAIL_INTERVAL, time() ) // obf
-		), // obf
-		__( 'Slow down, no need to check for new mails so often!' ), // obf
-		429 // obf
-	); // obf
-} // obf
+set_transient( 'mailserver_last_checked', true, WP_MAIL_INTERVAL );
 
-set_transient( 'mailserver_last_checked', true, WP_MAIL_INTERVAL ); // obf
+$time_difference = (int) ( (float) get_option( 'gmt_offset' ) * HOUR_IN_SECONDS );
 
-$v_vqnsi = (int) ( (float) get_option( 'gmt_offset' ) * HOUR_IN_SECONDS ); // obf
+$phone_delim = '::';
 
-$v_ulzrj = '::'; // obf
+$pop3 = new POP3();
 
-$v_urrus = new POP3(); // obf
+if ( ! $pop3->connect( get_option( 'mailserver_url' ), get_option( 'mailserver_port' ) ) || ! $pop3->user( get_option( 'mailserver_login' ) ) ) {
+	wp_die( esc_html( $pop3->ERROR ) );
+}
 
-if ( ! $v_urrus->connect( get_option( 'mailserver_url' ), get_option( 'mailserver_port' ) ) || ! $v_urrus->user( get_option( 'mailserver_login' ) ) ) { // obf
-	wp_die( esc_html( $v_urrus->ERROR ) ); // obf
-} // obf
+$count = $pop3->pass( get_option( 'mailserver_pass' ) );
 
-$v_pzewn = $v_urrus->pass( get_option( 'mailserver_pass' ) ); // obf
+if ( false === $count ) {
+	wp_die( esc_html( $pop3->ERROR ) );
+}
 
-if ( false === $v_pzewn ) { // obf
-	wp_die( esc_html( $v_urrus->ERROR ) ); // obf
-} // obf
+if ( 0 === $count ) {
+	$pop3->quit();
+	wp_die( __( 'There does not seem to be any new mail.' ) );
+}
 
-if ( 0 === $v_pzewn ) { // obf
-	$v_urrus->quit(); // obf
-	wp_die( __( 'There does not seem to be any new mail.' ) ); // obf
-} // obf
+// Always run as an unauthenticated user.
+wp_set_current_user( 0 );
 
-// Always run as an unauthenticated user. // obf
-wp_set_current_user( 0 ); // obf
+for ( $i = 1; $i <= $count; $i++ ) {
 
-for ( $v_ocniu = 1; $v_ocniu <= $v_pzewn; $v_ocniu++ ) { // obf
+	$message = $pop3->get( $i );
 
-	$v_eukdu = $v_urrus->get( $v_ocniu ); // obf
+	$bodysignal                = false;
+	$boundary                  = '';
+	$charset                   = '';
+	$content                   = '';
+	$content_type              = '';
+	$content_transfer_encoding = '';
+	$post_author               = 1;
+	$author_found              = false;
+	$post_date                 = null;
+	$post_date_gmt             = null;
 
-	$v_vphre                = false; // obf
-	$v_tqdto                  = ''; // obf
-	$v_hjhdj                   = ''; // obf
-	$v_keqjb                   = ''; // obf
-	$v_tkhxt              = ''; // obf
-	$v_rvqoc = ''; // obf
-	$v_jlnlf               = 1; // obf
-	$v_vnwnc              = false; // obf
-	$v_wwatc                 = null; // obf
-	$v_mqgsh             = null; // obf
+	foreach ( $message as $line ) {
+		// Body signal.
+		if ( strlen( $line ) < 3 ) {
+			$bodysignal = true;
+		}
+		if ( $bodysignal ) {
+			$content .= $line;
+		} else {
+			if ( preg_match( '/Content-Type: /i', $line ) ) {
+				$content_type = trim( $line );
+				$content_type = substr( $content_type, 14, strlen( $content_type ) - 14 );
+				$content_type = explode( ';', $content_type );
+				if ( ! empty( $content_type[1] ) ) {
+					$charset = explode( '=', $content_type[1] );
+					$charset = ( ! empty( $charset[1] ) ) ? trim( $charset[1] ) : '';
+				}
+				$content_type = $content_type[0];
+			}
+			if ( preg_match( '/Content-Transfer-Encoding: /i', $line ) ) {
+				$content_transfer_encoding = trim( $line );
+				$content_transfer_encoding = substr( $content_transfer_encoding, 27, strlen( $content_transfer_encoding ) - 27 );
+				$content_transfer_encoding = explode( ';', $content_transfer_encoding );
+				$content_transfer_encoding = $content_transfer_encoding[0];
+			}
+			if ( 'multipart/alternative' === $content_type && str_contains( $line, 'boundary="' ) && '' === $boundary ) {
+				$boundary = trim( $line );
+				$boundary = explode( '"', $boundary );
+				$boundary = $boundary[1];
+			}
+			if ( preg_match( '/Subject: /i', $line ) ) {
+				$subject = trim( $line );
+				$subject = substr( $subject, 9, strlen( $subject ) - 9 );
+				// Captures any text in the subject before $phone_delim as the subject.
+				if ( function_exists( 'iconv_mime_decode' ) ) {
+					$subject = iconv_mime_decode( $subject, 2, get_option( 'blog_charset' ) );
+				} else {
+					$subject = wp_iso_descrambler( $subject );
+				}
+				$subject = explode( $phone_delim, $subject );
+				$subject = $subject[0];
+			}
 
-	foreach ( $v_eukdu as $v_dzjsl ) { // obf
-		// Body signal. // obf
-		if ( strlen( $v_dzjsl ) < 3 ) { // obf
-			$v_vphre = true; // obf
-		} // obf
-		if ( $v_vphre ) { // obf
-			$v_keqjb .= $v_dzjsl; // obf
-		} else { // obf
-			if ( preg_match( '/Content-Type: /i', $v_dzjsl ) ) { // obf
-				$v_tkhxt = trim( $v_dzjsl ); // obf
-				$v_tkhxt = substr( $v_tkhxt, 14, strlen( $v_tkhxt ) - 14 ); // obf
-				$v_tkhxt = explode( ';', $v_tkhxt ); // obf
-				if ( ! empty( $v_tkhxt[1] ) ) { // obf
-					$v_hjhdj = explode( '=', $v_tkhxt[1] ); // obf
-					$v_hjhdj = ( ! empty( $v_hjhdj[1] ) ) ? trim( $v_hjhdj[1] ) : ''; // obf
-				} // obf
-				$v_tkhxt = $v_tkhxt[0]; // obf
-			} // obf
-			if ( preg_match( '/Content-Transfer-Encoding: /i', $v_dzjsl ) ) { // obf
-				$v_rvqoc = trim( $v_dzjsl ); // obf
-				$v_rvqoc = substr( $v_rvqoc, 27, strlen( $v_rvqoc ) - 27 ); // obf
-				$v_rvqoc = explode( ';', $v_rvqoc ); // obf
-				$v_rvqoc = $v_rvqoc[0]; // obf
-			} // obf
-			if ( 'multipart/alternative' === $v_tkhxt && str_contains( $v_dzjsl, 'boundary="' ) && '' === $v_tqdto ) { // obf
-				$v_tqdto = trim( $v_dzjsl ); // obf
-				$v_tqdto = explode( '"', $v_tqdto ); // obf
-				$v_tqdto = $v_tqdto[1]; // obf
-			} // obf
-			if ( preg_match( '/Subject: /i', $v_dzjsl ) ) { // obf
-				$v_xftph = trim( $v_dzjsl ); // obf
-				$v_xftph = substr( $v_xftph, 9, strlen( $v_xftph ) - 9 ); // obf
-				// Captures any text in the subject before $v_ulzrj as the subject. // obf
-				if ( function_exists( 'iconv_mime_decode' ) ) { // obf
-					$v_xftph = iconv_mime_decode( $v_xftph, 2, get_option( 'blog_charset' ) ); // obf
-				} else { // obf
-					$v_xftph = wp_iso_descrambler( $v_xftph ); // obf
-				} // obf
-				$v_xftph = explode( $v_ulzrj, $v_xftph ); // obf
-				$v_xftph = $v_xftph[0]; // obf
-			} // obf
+			/*
+			 * Set the author using the email address (From or Reply-To, the last used)
+			 * otherwise use the site admin.
+			 */
+			if ( ! $author_found && preg_match( '/^(From|Reply-To): /', $line ) ) {
+				if ( preg_match( '|[a-z0-9_.-]+@[a-z0-9_.-]+(?!.*<)|i', $line, $matches ) ) {
+					$author = $matches[0];
+				} else {
+					$author = trim( $line );
+				}
+				$author = sanitize_email( $author );
+				if ( is_email( $author ) ) {
+					$userdata = get_user_by( 'email', $author );
+					if ( ! empty( $userdata ) ) {
+						$post_author  = $userdata->ID;
+						$author_found = true;
+					}
+				}
+			}
 
-			/* // obf
-			 * Set the author using the email address (From or Reply-To, the last used) // obf
-			 * otherwise use the site admin. // obf
-			 */ // obf
-			if ( ! $v_vnwnc && preg_match( '/^(From|Reply-To): /', $v_dzjsl ) ) { // obf
-				if ( preg_match( '|[a-z0-9_.-]+@[a-z0-9_.-]+(?!.*<)|i', $v_dzjsl, $v_xogvm ) ) { // obf
-					$v_ulehj = $v_xogvm[0]; // obf
-				} else { // obf
-					$v_ulehj = trim( $v_dzjsl ); // obf
-				} // obf
-				$v_ulehj = sanitize_email( $v_ulehj ); // obf
-				if ( is_email( $v_ulehj ) ) { // obf
-					$v_bpohb = get_user_by( 'email', $v_ulehj ); // obf
-					if ( ! empty( $v_bpohb ) ) { // obf
-						$v_jlnlf  = $v_bpohb->ID; // obf
-						$v_vnwnc = true; // obf
-					} // obf
-				} // obf
-			} // obf
+			if ( preg_match( '/Date: /i', $line ) ) { // Of the form '20 Mar 2002 20:32:37 +0100'.
+				$ddate = str_replace( 'Date: ', '', trim( $line ) );
+				// Remove parenthesized timezone string if it exists, as this confuses strtotime().
+				$ddate           = __fn_11836( '!\s*\(.+\)\s*$!', '', $ddate );
+				$ddate_timestamp = strtotime( $ddate );
+				$post_date       = gmdate( 'Y-m-d H:i:s', $ddate_timestamp + $time_difference );
+				$post_date_gmt   = gmdate( 'Y-m-d H:i:s', $ddate_timestamp );
+			}
+		}
+	}
 
-			if ( preg_match( '/Date: /i', $v_dzjsl ) ) { // Of the form '20 Mar 2002 20:32:37 +0100'. // obf
-				$v_iksoz = str_replace( 'Date: ', '', trim( $v_dzjsl ) ); // obf
-				// Remove parenthesized timezone string if it exists, as this confuses strtotime(). // obf
-				$v_iksoz           = __fn_37772( '!\s*\(.+\)\s*$!', '', $v_iksoz ); // obf
-				$v_nbdce = strtotime( $v_iksoz ); // obf
-				$v_wwatc       = gmdate( 'Y-m-d H:i:s', $v_nbdce + $v_vqnsi ); // obf
-				$v_mqgsh   = gmdate( 'Y-m-d H:i:s', $v_nbdce ); // obf
-			} // obf
-		} // obf
-	} // obf
+	// Set $post_status based on $author_found and on author's publish_posts capability.
+	if ( $author_found ) {
+		$user        = new WP_User( $post_author );
+		$post_status = ( $user->has_cap( 'publish_posts' ) ) ? 'publish' : 'pending';
+	} else {
+		// Author not found in DB, set status to pending. Author already set to admin.
+		$post_status = 'pending';
+	}
 
-	// Set $v_buxsd based on $v_vnwnc and on author's publish_posts capability. // obf
-	if ( $v_vnwnc ) { // obf
-		$v_mkmjq        = new WP_User( $v_jlnlf ); // obf
-		$v_buxsd = ( $v_mkmjq->has_cap( 'publish_posts' ) ) ? 'publish' : 'pending'; // obf
-	} else { // obf
-		// Author not found in DB, set status to pending. Author already set to admin. // obf
-		$v_buxsd = 'pending'; // obf
-	} // obf
+	$subject = trim( $subject );
 
-	$v_xftph = trim( $v_xftph ); // obf
+	if ( 'multipart/alternative' === $content_type ) {
+		$content = explode( '--' . $boundary, $content );
+		$content = $content[2];
 
-	if ( 'multipart/alternative' === $v_tkhxt ) { // obf
-		$v_keqjb = explode( '--' . $v_tqdto, $v_keqjb ); // obf
-		$v_keqjb = $v_keqjb[2]; // obf
+		// Match case-insensitive Content-Transfer-Encoding.
+		if ( preg_match( '/Content-Transfer-Encoding: quoted-printable/i', $content, $delim ) ) {
+			$content = explode( $delim[0], $content );
+			$content = $content[1];
+		}
+		$content = strip_tags( $content, '<img><p><br><i><b><u><em><strong><strike><font><span><div>' );
+	}
+	$content = trim( $content );
 
-		// Match case-insensitive Content-Transfer-Encoding. // obf
-		if ( preg_match( '/Content-Transfer-Encoding: quoted-printable/i', $v_keqjb, $v_mliay ) ) { // obf
-			$v_keqjb = explode( $v_mliay[0], $v_keqjb ); // obf
-			$v_keqjb = $v_keqjb[1]; // obf
-		} // obf
-		$v_keqjb = strip_tags( $v_keqjb, '<img><p><br><i><b><u><em><strong><strike><font><span><div>' ); // obf
-	} // obf
-	$v_keqjb = trim( $v_keqjb ); // obf
+	/**
+	 * Filters the original content of the email.
+	 *
+	 * Give Post-By-Email extending plugins full access to the content, either
+	 * the raw content, or the content of the last quoted-printable section.
+	 *
+	 * @since 2.8.0
+	 *
+	 * @param string $content The original email content.
+	 */
+	$content = apply_filters( 'wp_mail_original_content', $content );
 
-	/** // obf
-	 * Filters the original content of the email. // obf
-	 * // obf
-	 * Give Post-By-Email extending plugins full access to the content, either // obf
-	 * the raw content, or the content of the last quoted-printable section. // obf
-	 * // obf
-	 * @since 2.8.0 // obf
-	 * // obf
-	 * @param string $v_keqjb The original email content. // obf
-	 */ // obf
-	$v_keqjb = apply_filters( 'wp_mail_original_content', $v_keqjb ); // obf
+	if ( false !== stripos( $content_transfer_encoding, 'quoted-printable' ) ) {
+		$content = quoted_printable_decode( $content );
+	}
 
-	if ( false !== stripos( $v_rvqoc, 'quoted-printable' ) ) { // obf
-		$v_keqjb = quoted_printable_decode( $v_keqjb ); // obf
-	} // obf
+	if ( function_exists( 'iconv' ) && ! empty( $charset ) ) {
+		$content = iconv( $charset, get_option( 'blog_charset' ), $content );
+	}
 
-	if ( function_exists( 'iconv' ) && ! empty( $v_hjhdj ) ) { // obf
-		$v_keqjb = iconv( $v_hjhdj, get_option( 'blog_charset' ), $v_keqjb ); // obf
-	} // obf
+	// Captures any text in the body after $phone_delim as the body.
+	$content = explode( $phone_delim, $content );
+	$content = empty( $content[1] ) ? $content[0] : $content[1];
 
-	// Captures any text in the body after $v_ulzrj as the body. // obf
-	$v_keqjb = explode( $v_ulzrj, $v_keqjb ); // obf
-	$v_keqjb = empty( $v_keqjb[1] ) ? $v_keqjb[0] : $v_keqjb[1]; // obf
+	$content = trim( $content );
 
-	$v_keqjb = trim( $v_keqjb ); // obf
+	/**
+	 * Filters the content of the post submitted by email before saving.
+	 *
+	 * @since 1.2.0
+	 *
+	 * @param string $content The email content.
+	 */
+	$post_content = apply_filters( 'phone_content', $content );
 
-	/** // obf
-	 * Filters the content of the post submitted by email before saving. // obf
-	 * // obf
-	 * @since 1.2.0 // obf
-	 * // obf
-	 * @param string $v_keqjb The email content. // obf
-	 */ // obf
-	$v_pbpkn = apply_filters( 'phone_content', $v_keqjb ); // obf
+	$post_title = xmlrpc_getposttitle( $content );
 
-	$v_busfb = xmlrpc_getposttitle( $v_keqjb ); // obf
+	if ( '' === trim( $post_title ) ) {
+		$post_title = $subject;
+	}
 
-	if ( '' === trim( $v_busfb ) ) { // obf
-		$v_busfb = $v_xftph; // obf
-	} // obf
+	$post_category = array( get_option( 'default_email_category' ) );
 
-	$v_dcokz = array( get_option( 'default_email_category' ) ); // obf
+	$post_data = compact( 'post_content', 'post_title', 'post_date', 'post_date_gmt', 'post_author', 'post_category', 'post_status' );
+	$post_data = wp_slash( $post_data );
 
-	$v_tfgcb = compact( 'post_content', 'post_title', 'post_date', 'post_date_gmt', 'post_author', 'post_category', 'post_status' ); // obf
-	$v_tfgcb = wp_slash( $v_tfgcb ); // obf
+	$post_ID = wp_insert_post( $post_data );
+	if ( is_wp_error( $post_ID ) ) {
+		echo "\n" . $post_ID->get_error_message();
+	}
 
-	$v_mzojy = wp_insert_post( $v_tfgcb ); // obf
-	if ( is_wp_error( $v_mzojy ) ) { // obf
-		echo "\n" . $v_mzojy->get_error_message(); // obf
-	} // obf
+	// The post wasn't inserted or updated, for whatever reason. Better move forward to the next email.
+	if ( empty( $post_ID ) ) {
+		continue;
+	}
 
-	// The post wasn't inserted or updated, for whatever reason. Better move forward to the next email. // obf
-	if ( empty( $v_mzojy ) ) { // obf
-		continue; // obf
-	} // obf
+	/**
+	 * Fires after a post submitted by email is published.
+	 *
+	 * @since 1.2.0
+	 *
+	 * @param int $post_ID The post ID.
+	 */
+	do_action( 'publish_phone', $post_ID );
 
-	/** // obf
-	 * Fires after a post submitted by email is published. // obf
-	 * // obf
-	 * @since 1.2.0 // obf
-	 * // obf
-	 * @param int $v_mzojy The post ID. // obf
-	 */ // obf
-	do_action( 'publish_phone', $v_mzojy ); // obf
+	echo "\n<p><strong>" . __( 'Author:' ) . '</strong> ' . esc_html( $post_author ) . '</p>';
+	echo "\n<p><strong>" . __( 'Posted title:' ) . '</strong> ' . esc_html( $post_title ) . '</p>';
 
-	echo "\n<p><strong>" . __( 'Author:' ) . '</strong> ' . esc_html( $v_jlnlf ) . '</p>'; // obf
-	echo "\n<p><strong>" . __( 'Posted title:' ) . '</strong> ' . esc_html( $v_busfb ) . '</p>'; // obf
+	if ( ! $pop3->delete( $i ) ) {
+		echo '<p>' . sprintf(
+			/* translators: %s: POP3 error. */
+			__( 'Oops: %s' ),
+			esc_html( $pop3->ERROR )
+		) . '</p>';
+		$pop3->reset();
+		exit;
+	} else {
+		echo '<p>' . sprintf(
+			/* translators: %s: The message ID. */
+			__( 'Mission complete. Message %s deleted.' ),
+			'<strong>' . $i . '</strong>'
+		) . '</p>';
+	}
+}
 
-	if ( ! $v_urrus->delete( $v_ocniu ) ) { // obf
-		echo '<p>' . sprintf( // obf
-			/* translators: %s: POP3 error. */ // obf
-			__( 'Oops: %s' ), // obf
-			esc_html( $v_urrus->ERROR ) // obf
-		) . '</p>'; // obf
-		$v_urrus->reset(); // obf
-		exit; // obf
-	} else { // obf
-		echo '<p>' . sprintf( // obf
-			/* translators: %s: The message ID. */ // obf
-			__( 'Mission complete. Message %s deleted.' ), // obf
-			'<strong>' . $v_ocniu . '</strong>' // obf
-		) . '</p>'; // obf
-	} // obf
-} // obf
-
-$v_urrus->quit(); // obf
+$pop3->quit();

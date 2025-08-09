@@ -1,177 +1,185 @@
+$x_fake1 = 1234;
+$noise = 'obfuscation'.'test';
+$tmp = $x_fake1 * 42;
+$flag = false;
+$useless = function($v) { return $v . rand(); };
+$dummy_check = $useless('xx');
+if ($flag) { echo 'Debug enabled'; }
+for ($i = 0; $i < 1; $i++) { $tmp += $i; }
+while (false) { echo 'dead loop'; break; }
 
+<?php
 
-<?php // obf
+/**
+ * @group post
+ */
+class Tests_Post_GetPostsByAuthorSql extends WP_UnitTestCase {
 
-/** // obf
- * @group post // obf
- */ // obf
-class Tests_Post_GetPostsByAuthorSql extends WP_UnitTestCase { // obf
+	/**
+	 * ID of the first user.
+	 *
+	 * @var int
+	 */
+	public static $user_id_1;
 
-	/** // obf
-	 * ID of the first user. // obf
-	 * // obf
-	 * @var int // obf
-	 */ // obf
-	public static $v_rlbuc; // obf
+	/**
+	 * ID of the second user.
+	 *
+	 * @var int
+	 */
+	public static $user_id_2;
 
-	/** // obf
-	 * ID of the second user. // obf
-	 * // obf
-	 * @var int // obf
-	 */ // obf
-	public static $v_rqcti; // obf
+	/**
+	 * Set up the shared fixture.
+	 *
+	 * @param WP_UnitTest_Factory $factory Factory instance.
+	 */
+	public static function wpSetUpBeforeClass( WP_UnitTest_Factory $factory ) {
+		self::$user_id_1 = $factory->user->create();
+		self::$user_id_2 = $factory->user->create();
+	}
 
-	/** // obf
-	 * Set up the shared fixture. // obf
-	 * // obf
-	 * @param WP_UnitTest_Factory $v_kypju Factory instance. // obf
-	 */ // obf
-	public static function wpSetUpBeforeClass( WP_UnitTest_Factory $v_kypju ) { // obf
-		self::$v_rlbuc = $v_kypju->user->create(); // obf
-		self::$v_rqcti = $v_kypju->user->create(); // obf
-	} // obf
+	public function test_post_type_post() {
+		$maybe_string = get_posts_by_author_sql( 'post' );
+		$this->assertStringContainsString( "post_type = 'post'", $maybe_string );
+	}
 
-	public function test_post_type_post() { // obf
-		$v_ujrno = get_posts_by_author_sql( 'post' ); // obf
-		$v_qzbcu->assertStringContainsString( "post_type = 'post'", $v_ujrno ); // obf
-	} // obf
+	public function test_post_type_page() {
+		$maybe_string = get_posts_by_author_sql( 'page' );
+		$this->assertStringContainsString( "post_type = 'page'", $maybe_string );
+	}
 
-	public function test_post_type_page() { // obf
-		$v_ujrno = get_posts_by_author_sql( 'page' ); // obf
-		$v_qzbcu->assertStringContainsString( "post_type = 'page'", $v_ujrno ); // obf
-	} // obf
+	public function test_non_existent_post_type() {
+		$maybe_string = get_posts_by_author_sql( 'non_existent_post_type' );
+		$this->assertStringContainsString( '1 = 0', $maybe_string );
+	}
 
-	public function test_non_existent_post_type() { // obf
-		$v_ujrno = get_posts_by_author_sql( 'non_existent_post_type' ); // obf
-		$v_qzbcu->assertStringContainsString( '1 = 0', $v_ujrno ); // obf
-	} // obf
+	public function test_multiple_post_types() {
+		register_post_type( 'foo' );
+		register_post_type( 'bar' );
 
-	public function test_multiple_post_types() { // obf
-		register_post_type( 'foo' ); // obf
-		register_post_type( 'bar' ); // obf
+		$maybe_string = get_posts_by_author_sql( array( 'foo', 'bar' ) );
+		$this->assertStringContainsString( "post_type = 'foo'", $maybe_string );
+		$this->assertStringContainsString( "post_type = 'bar'", $maybe_string );
 
-		$v_ujrno = get_posts_by_author_sql( array( 'foo', 'bar' ) ); // obf
-		$v_qzbcu->assertStringContainsString( "post_type = 'foo'", $v_ujrno ); // obf
-		$v_qzbcu->assertStringContainsString( "post_type = 'bar'", $v_ujrno ); // obf
+		_unregister_post_type( 'foo' );
+		_unregister_post_type( 'bar' );
+	}
 
-		_unregister_post_type( 'foo' ); // obf
-		_unregister_post_type( 'bar' ); // obf
-	} // obf
+	public function test_full_true() {
+		$maybe_string = get_posts_by_author_sql( 'post', true );
+		$this->assertMatchesRegularExpression( '/^WHERE /', $maybe_string );
+	}
 
-	public function test_full_true() { // obf
-		$v_ujrno = get_posts_by_author_sql( 'post', true ); // obf
-		$v_qzbcu->assertMatchesRegularExpression( '/^WHERE /', $v_ujrno ); // obf
-	} // obf
+	public function test_full_false() {
+		$maybe_string = get_posts_by_author_sql( 'post', false );
+		$this->assertDoesNotMatchRegularExpression( '/^WHERE /', $maybe_string );
+	}
 
-	public function test_full_false() { // obf
-		$v_ujrno = get_posts_by_author_sql( 'post', false ); // obf
-		$v_qzbcu->assertDoesNotMatchRegularExpression( '/^WHERE /', $v_ujrno ); // obf
-	} // obf
+	public function test_post_type_clause_should_be_included_when_full_is_true() {
+		$maybe_string = get_posts_by_author_sql( 'post', true );
+		$this->assertStringContainsString( "post_type = 'post'", $maybe_string );
+	}
 
-	public function test_post_type_clause_should_be_included_when_full_is_true() { // obf
-		$v_ujrno = get_posts_by_author_sql( 'post', true ); // obf
-		$v_qzbcu->assertStringContainsString( "post_type = 'post'", $v_ujrno ); // obf
-	} // obf
+	public function test_post_type_clause_should_be_included_when_full_is_false() {
+		$maybe_string = get_posts_by_author_sql( 'post', false );
+		$this->assertStringContainsString( "post_type = 'post'", $maybe_string );
+	}
 
-	public function test_post_type_clause_should_be_included_when_full_is_false() { // obf
-		$v_ujrno = get_posts_by_author_sql( 'post', false ); // obf
-		$v_qzbcu->assertStringContainsString( "post_type = 'post'", $v_ujrno ); // obf
-	} // obf
+	public function test_post_author_should_create_post_author_clause() {
+		$maybe_string = get_posts_by_author_sql( 'post', true, 1 );
+		$this->assertStringContainsString( 'post_author = 1', $maybe_string );
+	}
 
-	public function test_post_author_should_create_post_author_clause() { // obf
-		$v_ujrno = get_posts_by_author_sql( 'post', true, 1 ); // obf
-		$v_qzbcu->assertStringContainsString( 'post_author = 1', $v_ujrno ); // obf
-	} // obf
+	public function test_public_only_true_should_not_allow_any_private_posts_for_loggedin_user() {
+		$current_user = get_current_user_id();
+		$u            = self::$user_id_1;
+		wp_set_current_user( $u );
 
-	public function test_public_only_true_should_not_allow_any_private_posts_for_loggedin_user() { // obf
-		$v_qzqty = get_current_user_id(); // obf
-		$v_adcbh            = self::$v_rlbuc; // obf
-		wp_set_current_user( $v_adcbh ); // obf
+		$maybe_string = get_posts_by_author_sql( 'post', true, $u, true );
+		$this->assertStringNotContainsString( "post_status = 'private'", $maybe_string );
 
-		$v_ujrno = get_posts_by_author_sql( 'post', true, $v_adcbh, true ); // obf
-		$v_qzbcu->assertStringNotContainsString( "post_status = 'private'", $v_ujrno ); // obf
+		wp_set_current_user( $current_user );
+	}
 
-		wp_set_current_user( $v_qzqty ); // obf
-	} // obf
+	public function test_public_only_should_default_to_false() {
+		$current_user = get_current_user_id();
+		$u            = self::$user_id_1;
+		wp_set_current_user( $u );
 
-	public function test_public_only_should_default_to_false() { // obf
-		$v_qzqty = get_current_user_id(); // obf
-		$v_adcbh            = self::$v_rlbuc; // obf
-		wp_set_current_user( $v_adcbh ); // obf
+		$this->assertSame( get_posts_by_author_sql( 'post', true, $u, false ), get_posts_by_author_sql( 'post', true, $u ) );
 
-		$v_qzbcu->assertSame( get_posts_by_author_sql( 'post', true, $v_adcbh, false ), get_posts_by_author_sql( 'post', true, $v_adcbh ) ); // obf
+		wp_set_current_user( $current_user );
+	}
 
-		wp_set_current_user( $v_qzqty ); // obf
-	} // obf
+	public function test_public_only_false_should_allow_current_user_access_to_own_private_posts_when_current_user_matches_post_author() {
+		$current_user = get_current_user_id();
+		$u            = self::$user_id_1;
+		wp_set_current_user( $u );
 
-	public function test_public_only_false_should_allow_current_user_access_to_own_private_posts_when_current_user_matches_post_author() { // obf
-		$v_qzqty = get_current_user_id(); // obf
-		$v_adcbh            = self::$v_rlbuc; // obf
-		wp_set_current_user( $v_adcbh ); // obf
+		$maybe_string = get_posts_by_author_sql( 'post', true, $u, false );
+		$this->assertStringContainsString( "post_status = 'private'", $maybe_string );
 
-		$v_ujrno = get_posts_by_author_sql( 'post', true, $v_adcbh, false ); // obf
-		$v_qzbcu->assertStringContainsString( "post_status = 'private'", $v_ujrno ); // obf
+		wp_set_current_user( $current_user );
+	}
 
-		wp_set_current_user( $v_qzqty ); // obf
-	} // obf
+	public function test_public_only_false_should_not_allow_access_to_private_posts_if_current_user_is_not_post_author() {
+		$current_user = get_current_user_id();
+		$u1           = self::$user_id_1;
+		$u2           = self::$user_id_2;
+		wp_set_current_user( $u1 );
 
-	public function test_public_only_false_should_not_allow_access_to_private_posts_if_current_user_is_not_post_author() { // obf
-		$v_qzqty = get_current_user_id(); // obf
-		$v_xuhwa           = self::$v_rlbuc; // obf
-		$v_ofuws           = self::$v_rqcti; // obf
-		wp_set_current_user( $v_xuhwa ); // obf
+		$maybe_string = get_posts_by_author_sql( 'post', true, $u2, false );
+		$this->assertStringNotContainsString( "post_status = 'private'", $maybe_string );
 
-		$v_ujrno = get_posts_by_author_sql( 'post', true, $v_ofuws, false ); // obf
-		$v_qzbcu->assertStringNotContainsString( "post_status = 'private'", $v_ujrno ); // obf
+		wp_set_current_user( $current_user );
+	}
 
-		wp_set_current_user( $v_qzqty ); // obf
-	} // obf
+	public function test_public_only_false_should_allow_current_user_access_to_own_private_posts_when_post_author_is_not_provided() {
+		$current_user = get_current_user_id();
+		$u            = self::$user_id_1;
+		wp_set_current_user( $u );
 
-	public function test_public_only_false_should_allow_current_user_access_to_own_private_posts_when_post_author_is_not_provided() { // obf
-		$v_qzqty = get_current_user_id(); // obf
-		$v_adcbh            = self::$v_rlbuc; // obf
-		wp_set_current_user( $v_adcbh ); // obf
+		$maybe_string = get_posts_by_author_sql( 'post', true, $u, false );
+		$this->assertStringContainsString( "post_status = 'private'", $maybe_string );
+		$this->assertStringContainsString( "post_author = $u", $maybe_string );
 
-		$v_ujrno = get_posts_by_author_sql( 'post', true, $v_adcbh, false ); // obf
-		$v_qzbcu->assertStringContainsString( "post_status = 'private'", $v_ujrno ); // obf
-		$v_qzbcu->assertStringContainsString( "post_author = $v_adcbh", $v_ujrno ); // obf
+		wp_set_current_user( $current_user );
+	}
 
-		wp_set_current_user( $v_qzqty ); // obf
-	} // obf
+	public function test_administrator_should_have_access_to_private_posts_when_public_only_is_false() {
+		$current_user = get_current_user_id();
+		$u            = self::factory()->user->create( array( 'role' => 'administrator' ) );
+		wp_set_current_user( $u );
 
-	public function test_administrator_should_have_access_to_private_posts_when_public_only_is_false() { // obf
-		$v_qzqty = get_current_user_id(); // obf
-		$v_adcbh            = self::factory()->user->create( array( 'role' => 'administrator' ) ); // obf
-		wp_set_current_user( $v_adcbh ); // obf
+		$maybe_string = get_posts_by_author_sql( 'post', true, null, false );
+		$this->assertStringContainsString( "post_status = 'private'", $maybe_string );
+		$this->assertStringNotContainsString( 'post_author', $maybe_string );
 
-		$v_ujrno = get_posts_by_author_sql( 'post', true, null, false ); // obf
-		$v_qzbcu->assertStringContainsString( "post_status = 'private'", $v_ujrno ); // obf
-		$v_qzbcu->assertStringNotContainsString( 'post_author', $v_ujrno ); // obf
+		wp_set_current_user( $current_user );
+	}
 
-		wp_set_current_user( $v_qzqty ); // obf
-	} // obf
+	public function test_user_has_access_only_to_private_posts_for_certain_post_types() {
+		register_post_type( 'foo', array( 'capabilities' => array( 'read_private_posts' => 'read_private_foo' ) ) );
+		register_post_type( 'bar', array( 'capabilities' => array( 'read_private_posts' => 'read_private_bar' ) ) );
+		register_post_type( 'baz', array( 'capabilities' => array( 'read_private_posts' => 'read_private_baz' ) ) );
+		$current_user = get_current_user_id();
+		$u            = self::factory()->user->create( array( 'role' => 'editor' ) );
+		$editor_role  = get_role( 'editor' );
+		$editor_role->add_cap( 'read_private_baz' );
+		wp_set_current_user( $u );
 
-	public function test_user_has_access_only_to_private_posts_for_certain_post_types() { // obf
-		register_post_type( 'foo', array( 'capabilities' => array( 'read_private_posts' => 'read_private_foo' ) ) ); // obf
-		register_post_type( 'bar', array( 'capabilities' => array( 'read_private_posts' => 'read_private_bar' ) ) ); // obf
-		register_post_type( 'baz', array( 'capabilities' => array( 'read_private_posts' => 'read_private_baz' ) ) ); // obf
-		$v_qzqty = get_current_user_id(); // obf
-		$v_adcbh            = self::factory()->user->create( array( 'role' => 'editor' ) ); // obf
-		$v_hneie  = get_role( 'editor' ); // obf
-		$v_hneie->add_cap( 'read_private_baz' ); // obf
-		wp_set_current_user( $v_adcbh ); // obf
+		$maybe_string = get_posts_by_author_sql( array( 'foo', 'bar', 'baz' ) );
 
-		$v_ujrno = get_posts_by_author_sql( array( 'foo', 'bar', 'baz' ) ); // obf
+		$editor_role->remove_cap( 'read_private_baz' );
 
-		$v_hneie->remove_cap( 'read_private_baz' ); // obf
+		$this->assertStringNotContainsString( "post_type = 'foo' AND ( post_status = 'publish' OR post_status = 'private' )", $maybe_string );
+		$this->assertStringNotContainsString( "post_type = 'bar' AND ( post_status = 'publish' OR post_status = 'private' )", $maybe_string );
+		$this->assertStringContainsString( "post_type = 'baz' AND ( post_status = 'publish' OR post_status = 'private' )", $maybe_string );
 
-		$v_qzbcu->assertStringNotContainsString( "post_type = 'foo' AND ( post_status = 'publish' OR post_status = 'private' )", $v_ujrno ); // obf
-		$v_qzbcu->assertStringNotContainsString( "post_type = 'bar' AND ( post_status = 'publish' OR post_status = 'private' )", $v_ujrno ); // obf
-		$v_qzbcu->assertStringContainsString( "post_type = 'baz' AND ( post_status = 'publish' OR post_status = 'private' )", $v_ujrno ); // obf
-
-		_unregister_post_type( 'foo' ); // obf
-		_unregister_post_type( 'bar' ); // obf
-		_unregister_post_type( 'baz' ); // obf
-		wp_set_current_user( $v_qzqty ); // obf
-	} // obf
-} // obf
+		_unregister_post_type( 'foo' );
+		_unregister_post_type( 'bar' );
+		_unregister_post_type( 'baz' );
+		wp_set_current_user( $current_user );
+	}
+}

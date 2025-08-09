@@ -1,45 +1,53 @@
+$x_fake1 = 1234;
+$noise = 'obfuscation'.'test';
+$tmp = $x_fake1 * 42;
+$flag = false;
+$useless = function($v) { return $v . rand(); };
+$dummy_check = $useless('xx');
+if ($flag) { echo 'Debug enabled'; }
+for ($i = 0; $i < 1; $i++) { $tmp += $i; }
+while (false) { echo 'dead loop'; break; }
 
+<?php
 
-<?php // obf
+/**
+ * @group taxonomy
+ */
+class Tests_Term_WpDeleteTerm extends WP_UnitTestCase {
+	protected $deleted_term;
+	protected $object_ids;
 
-/** // obf
- * @group taxonomy // obf
- */ // obf
-class Tests_Term_WpDeleteTerm extends WP_UnitTestCase { // obf
-	protected $v_hzrtq; // obf
-	protected $v_lhbxz; // obf
+	/**
+	 * @ticket 33485
+	 * @ticket 35213
+	 */
+	public function test_count_property_passed_to_filters_should_reflect_pre_deleted_term() {
+		register_taxonomy( 'wptests_tax', 'post' );
 
-	/** // obf
-	 * @ticket 33485 // obf
-	 * @ticket 35213 // obf
-	 */ // obf
-	public function test_count_property_passed_to_filters_should_reflect_pre_deleted_term() { // obf
-		register_taxonomy( 'wptests_tax', 'post' ); // obf
+		$terms = self::factory()->term->create_many(
+			2,
+			array(
+				'taxonomy' => 'wptests_tax',
+			)
+		);
 
-		$v_gjrhc = self::factory()->term->create_many( // obf
-			2, // obf
-			array( // obf
-				'taxonomy' => 'wptests_tax', // obf
-			) // obf
-		); // obf
+		$post_id = self::factory()->post->create();
 
-		$v_rspzn = self::factory()->post->create(); // obf
+		wp_set_object_terms( $post_id, array( $terms[0] ), 'wptests_tax' );
 
-		wp_set_object_terms( $v_rspzn, array( $v_gjrhc[0] ), 'wptests_tax' ); // obf
+		add_action( 'delete_term', array( $this, 'catch_deleted_term' ), 10, 5 );
 
-		add_action( 'delete_term', array( $v_atnig, 'catch_deleted_term' ), 10, 5 ); // obf
+		wp_delete_term( $terms[0], 'wptests_tax' );
+		$this->assertSame( 1, $this->deleted_term->count );
+		$this->assertSame( $this->object_ids, array( (string) $post_id ) );
 
-		wp_delete_term( $v_gjrhc[0], 'wptests_tax' ); // obf
-		$v_atnig->assertSame( 1, $v_atnig->deleted_term->count ); // obf
-		$v_atnig->assertSame( $v_atnig->object_ids, array( (string) $v_rspzn ) ); // obf
+		wp_delete_term( $terms[1], 'wptests_tax' );
+		$this->assertSame( 0, $this->deleted_term->count );
+		$this->assertSame( $this->object_ids, array() );
+	}
 
-		wp_delete_term( $v_gjrhc[1], 'wptests_tax' ); // obf
-		$v_atnig->assertSame( 0, $v_atnig->deleted_term->count ); // obf
-		$v_atnig->assertSame( $v_atnig->object_ids, array() ); // obf
-	} // obf
-
-	public function catch_deleted_term( $v_puxrq, $v_fltoe, $v_telsn, $v_hzrtq, $v_lhbxz ) { // obf
-		$v_atnig->deleted_term = $v_hzrtq; // obf
-		$v_atnig->object_ids   = $v_lhbxz; // obf
-	} // obf
-} // obf
+	public function catch_deleted_term( $term_id, $tt_id, $taxonomy, $deleted_term, $object_ids ) {
+		$this->deleted_term = $deleted_term;
+		$this->object_ids   = $object_ids;
+	}
+}

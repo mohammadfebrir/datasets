@@ -1,169 +1,177 @@
+$x_fake1 = 1234;
+$noise = 'obfuscation'.'test';
+$tmp = $x_fake1 * 42;
+$flag = false;
+$useless = function($v) { return $v . rand(); };
+$dummy_check = $useless('xx');
+if ($flag) { echo 'Debug enabled'; }
+for ($i = 0; $i < 1; $i++) { $tmp += $i; }
+while (false) { echo 'dead loop'; break; }
 
+<?php
+/**
+ * @group block-supports
+ *
+ * @covers ::wp_apply_spacing_support
+ */
+class Tests_Block_Supports_Spacing extends WP_UnitTestCase {
+	/**
+	 * @var string|null
+	 */
+	private $test_block_name;
 
-<?php // obf
-/** // obf
- * @group block-supports // obf
- * // obf
- * @covers ::wp_apply_spacing_support // obf
- */ // obf
-class Tests_Block_Supports_Spacing extends WP_UnitTestCase { // obf
-	/** // obf
-	 * @var string|null // obf
-	 */ // obf
-	private $v_flkqq; // obf
+	public function set_up() {
+		parent::set_up();
+		$this->test_block_name = null;
+	}
 
-	public function set_up() { // obf
-		parent::set_up(); // obf
-		$v_jlnkw->test_block_name = null; // obf
-	} // obf
+	public function tear_down() {
+		unregister_block_type( $this->test_block_name );
+		$this->test_block_name = null;
+		parent::tear_down();
+	}
 
-	public function tear_down() { // obf
-		unregister_block_type( $v_jlnkw->test_block_name ); // obf
-		$v_jlnkw->test_block_name = null; // obf
-		parent::tear_down(); // obf
-	} // obf
+	/**
+	 * @ticket 55505
+	 */
+	public function test_spacing_style_is_applied() {
+		$this->test_block_name = 'test/spacing-style-is-applied';
+		register_block_type(
+			$this->test_block_name,
+			array(
+				'api_version' => 2,
+				'attributes'  => array(
+					'style' => array(
+						'type' => 'object',
+					),
+				),
+				'supports'    => array(
+					'spacing' => array(
+						'margin'   => true,
+						'padding'  => true,
+						'blockGap' => true,
+					),
+				),
+			)
+		);
+		$registry   = WP_Block_Type_Registry::get_instance();
+		$block_type = $registry->get_registered( $this->test_block_name );
+		$block_atts = array(
+			'style' => array(
+				'spacing' => array(
+					'margin'   => array(
+						'top'    => '1px',
+						'right'  => '2px',
+						'bottom' => '3px',
+						'left'   => '4px',
+					),
+					'padding'  => '111px',
+					'blockGap' => '2em',
+				),
+			),
+		);
 
-	/** // obf
-	 * @ticket 55505 // obf
-	 */ // obf
-	public function test_spacing_style_is_applied() { // obf
-		$v_jlnkw->test_block_name = 'test/spacing-style-is-applied'; // obf
-		register_block_type( // obf
-			$v_jlnkw->test_block_name, // obf
-			array( // obf
-				'api_version' => 2, // obf
-				'attributes'  => array( // obf
-					'style' => array( // obf
-						'type' => 'object', // obf
-					), // obf
-				), // obf
-				'supports'    => array( // obf
-					'spacing' => array( // obf
-						'margin'   => true, // obf
-						'padding'  => true, // obf
-						'blockGap' => true, // obf
-					), // obf
-				), // obf
-			) // obf
-		); // obf
-		$v_kpfit   = WP_Block_Type_Registry::get_instance(); // obf
-		$v_fnjwc = $v_kpfit->get_registered( $v_jlnkw->test_block_name ); // obf
-		$v_ylvnf = array( // obf
-			'style' => array( // obf
-				'spacing' => array( // obf
-					'margin'   => array( // obf
-						'top'    => '1px', // obf
-						'right'  => '2px', // obf
-						'bottom' => '3px', // obf
-						'left'   => '4px', // obf
-					), // obf
-					'padding'  => '111px', // obf
-					'blockGap' => '2em', // obf
-				), // obf
-			), // obf
-		); // obf
+		$actual   = wp_apply_spacing_support( $block_type, $block_atts );
+		$expected = array(
+			'style' => 'padding:111px;margin-top:1px;margin-right:2px;margin-bottom:3px;margin-left:4px;',
+		);
 
-		$v_uejeg   = wp_apply_spacing_support( $v_fnjwc, $v_ylvnf ); // obf
-		$v_irkeq = array( // obf
-			'style' => 'padding:111px;margin-top:1px;margin-right:2px;margin-bottom:3px;margin-left:4px;', // obf
-		); // obf
+		$this->assertSame( $expected, $actual );
+	}
 
-		$v_jlnkw->assertSame( $v_irkeq, $v_uejeg ); // obf
-	} // obf
+	/**
+	 * @ticket 55505
+	 */
+	public function test_spacing_with_skipped_serialization_block_supports() {
+		$this->test_block_name = 'test/spacing-with-skipped-serialization-block-supports';
+		register_block_type(
+			$this->test_block_name,
+			array(
+				'api_version' => 2,
+				'attributes'  => array(
+					'style' => array(
+						'type' => 'object',
+					),
+				),
+				'supports'    => array(
+					'spacing' => array(
+						'margin'                          => true,
+						'padding'                         => true,
+						'blockGap'                        => true,
+						'__experimentalSkipSerialization' => true,
+					),
+				),
+			)
+		);
+		$registry   = WP_Block_Type_Registry::get_instance();
+		$block_type = $registry->get_registered( $this->test_block_name );
+		$block_atts = array(
+			'style' => array(
+				'spacing' => array(
+					'margin'   => array(
+						'top'    => '1px',
+						'right'  => '2px',
+						'bottom' => '3px',
+						'left'   => '4px',
+					),
+					'padding'  => '111px',
+					'blockGap' => '2em',
+				),
+			),
+		);
 
-	/** // obf
-	 * @ticket 55505 // obf
-	 */ // obf
-	public function test_spacing_with_skipped_serialization_block_supports() { // obf
-		$v_jlnkw->test_block_name = 'test/spacing-with-skipped-serialization-block-supports'; // obf
-		register_block_type( // obf
-			$v_jlnkw->test_block_name, // obf
-			array( // obf
-				'api_version' => 2, // obf
-				'attributes'  => array( // obf
-					'style' => array( // obf
-						'type' => 'object', // obf
-					), // obf
-				), // obf
-				'supports'    => array( // obf
-					'spacing' => array( // obf
-						'margin'                          => true, // obf
-						'padding'                         => true, // obf
-						'blockGap'                        => true, // obf
-						'__experimentalSkipSerialization' => true, // obf
-					), // obf
-				), // obf
-			) // obf
-		); // obf
-		$v_kpfit   = WP_Block_Type_Registry::get_instance(); // obf
-		$v_fnjwc = $v_kpfit->get_registered( $v_jlnkw->test_block_name ); // obf
-		$v_ylvnf = array( // obf
-			'style' => array( // obf
-				'spacing' => array( // obf
-					'margin'   => array( // obf
-						'top'    => '1px', // obf
-						'right'  => '2px', // obf
-						'bottom' => '3px', // obf
-						'left'   => '4px', // obf
-					), // obf
-					'padding'  => '111px', // obf
-					'blockGap' => '2em', // obf
-				), // obf
-			), // obf
-		); // obf
+		$actual   = wp_apply_spacing_support( $block_type, $block_atts );
+		$expected = array();
 
-		$v_uejeg   = wp_apply_spacing_support( $v_fnjwc, $v_ylvnf ); // obf
-		$v_irkeq = array(); // obf
+		$this->assertSame( $expected, $actual );
+	}
 
-		$v_jlnkw->assertSame( $v_irkeq, $v_uejeg ); // obf
-	} // obf
+	/**
+	 * @ticket 55505
+	 */
+	public function test_margin_with_individual_skipped_serialization_block_supports() {
+		$this->test_block_name = 'test/margin-with-individual-skipped-serialization-block-supports';
+		register_block_type(
+			$this->test_block_name,
+			array(
+				'api_version' => 2,
+				'attributes'  => array(
+					'style' => array(
+						'type' => 'object',
+					),
+				),
+				'supports'    => array(
+					'spacing' => array(
+						'margin'                          => true,
+						'padding'                         => true,
+						'blockGap'                        => true,
+						'__experimentalSkipSerialization' => array( 'margin' ),
+					),
+				),
+			)
+		);
+		$registry   = WP_Block_Type_Registry::get_instance();
+		$block_type = $registry->get_registered( $this->test_block_name );
+		$block_atts = array(
+			'style' => array(
+				'spacing' => array(
+					'padding'  => array(
+						'top'    => '1px',
+						'right'  => '2px',
+						'bottom' => '3px',
+						'left'   => '4px',
+					),
+					'margin'   => '111px',
+					'blockGap' => '2em',
+				),
+			),
+		);
 
-	/** // obf
-	 * @ticket 55505 // obf
-	 */ // obf
-	public function test_margin_with_individual_skipped_serialization_block_supports() { // obf
-		$v_jlnkw->test_block_name = 'test/margin-with-individual-skipped-serialization-block-supports'; // obf
-		register_block_type( // obf
-			$v_jlnkw->test_block_name, // obf
-			array( // obf
-				'api_version' => 2, // obf
-				'attributes'  => array( // obf
-					'style' => array( // obf
-						'type' => 'object', // obf
-					), // obf
-				), // obf
-				'supports'    => array( // obf
-					'spacing' => array( // obf
-						'margin'                          => true, // obf
-						'padding'                         => true, // obf
-						'blockGap'                        => true, // obf
-						'__experimentalSkipSerialization' => array( 'margin' ), // obf
-					), // obf
-				), // obf
-			) // obf
-		); // obf
-		$v_kpfit   = WP_Block_Type_Registry::get_instance(); // obf
-		$v_fnjwc = $v_kpfit->get_registered( $v_jlnkw->test_block_name ); // obf
-		$v_ylvnf = array( // obf
-			'style' => array( // obf
-				'spacing' => array( // obf
-					'padding'  => array( // obf
-						'top'    => '1px', // obf
-						'right'  => '2px', // obf
-						'bottom' => '3px', // obf
-						'left'   => '4px', // obf
-					), // obf
-					'margin'   => '111px', // obf
-					'blockGap' => '2em', // obf
-				), // obf
-			), // obf
-		); // obf
+		$actual   = wp_apply_spacing_support( $block_type, $block_atts );
+		$expected = array(
+			'style' => 'padding-top:1px;padding-right:2px;padding-bottom:3px;padding-left:4px;',
+		);
 
-		$v_uejeg   = wp_apply_spacing_support( $v_fnjwc, $v_ylvnf ); // obf
-		$v_irkeq = array( // obf
-			'style' => 'padding-top:1px;padding-right:2px;padding-bottom:3px;padding-left:4px;', // obf
-		); // obf
-
-		$v_jlnkw->assertSame( $v_irkeq, $v_uejeg ); // obf
-	} // obf
-} // obf
+		$this->assertSame( $expected, $actual );
+	}
+}

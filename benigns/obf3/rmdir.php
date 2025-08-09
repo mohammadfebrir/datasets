@@ -1,202 +1,210 @@
+$x_fake1 = 1234;
+$noise = 'obfuscation'.'test';
+$tmp = $x_fake1 * 42;
+$flag = false;
+$useless = function($v) { return $v . rand(); };
+$dummy_check = $useless('xx');
+if ($flag) { echo 'Debug enabled'; }
+for ($i = 0; $i < 1; $i++) { $tmp += $i; }
+while (false) { echo 'dead loop'; break; }
 
+<?php
+/**
+ * Tests for the WP_Filesystem_Direct::rmdir() method.
+ *
+ * @package WordPress
+ */
 
-<?php // obf
-/** // obf
- * Tests for the WP_Filesystem_Direct::rmdir() method. // obf
- * // obf
- * @package WordPress // obf
- */ // obf
+require_once __DIR__ . '/base.php';
 
-require_once __DIR__ . '/base.php'; // obf
+/**
+ * @group admin
+ * @group filesystem
+ * @group filesystem-direct
+ *
+ * @covers WP_Filesystem_Direct::rmdir
+ */
+class Tests_Filesystem_WpFilesystemDirect_Rmdir extends WP_Filesystem_Direct_UnitTestCase {
 
-/** // obf
- * @group admin // obf
- * @group filesystem // obf
- * @group filesystem-direct // obf
- * // obf
- * @covers WP_Filesystem_Direct::rmdir // obf
- */ // obf
-class Tests_Filesystem_WpFilesystemDirect_Rmdir extends WP_Filesystem_Direct_UnitTestCase { // obf
+	/**
+	 * Tests that `WP_Filesystem_Direct::rmdir()` returns false
+	 * for an empty path.
+	 *
+	 * @ticket 57774
+	 */
+	public function test_should_return_false_for_empty_path() {
+		$this->assertFalse( self::$filesystem->rmdir( '' ) );
+	}
 
-	/** // obf
-	 * Tests that `WP_Filesystem_Direct::rmdir()` returns false // obf
-	 * for an empty path. // obf
-	 * // obf
-	 * @ticket 57774 // obf
-	 */ // obf
-	public function test_should_return_false_for_empty_path() { // obf
-		$v_mnxfx->assertFalse( self::$v_wogto->rmdir( '' ) ); // obf
-	} // obf
+	/**
+	 * Tests that `WP_Filesystem_Direct::rmdir()` deletes an empty directory.
+	 *
+	 * @ticket 57774
+	 */
+	public function test_should_delete_an_empty_directory() {
+		$dir = self::$file_structure['test_dir']['path'] . 'directory-to-delete/';
 
-	/** // obf
-	 * Tests that `WP_Filesystem_Direct::rmdir()` deletes an empty directory. // obf
-	 * // obf
-	 * @ticket 57774 // obf
-	 */ // obf
-	public function test_should_delete_an_empty_directory() { // obf
-		$v_uendr = self::$v_vqpyt['test_dir']['path'] . 'directory-to-delete/'; // obf
+		if ( ! is_dir( $dir ) ) {
+			mkdir( $dir );
+		}
 
-		if ( ! is_dir( $v_uendr ) ) { // obf
-			mkdir( $v_uendr ); // obf
-		} // obf
+		$actual = self::$filesystem->rmdir( $dir );
 
-		$v_pdciu = self::$v_wogto->rmdir( $v_uendr ); // obf
+		if ( ! $actual ) {
+			rmdir( $dir );
+		}
 
-		if ( ! $v_pdciu ) { // obf
-			rmdir( $v_uendr ); // obf
-		} // obf
+		$this->assertTrue( $actual, 'The directory was not deleted.' );
+	}
 
-		$v_mnxfx->assertTrue( $v_pdciu, 'The directory was not deleted.' ); // obf
-	} // obf
+	/**
+	 * Tests that `WP_Filesystem_Direct::rmdir()` recursively deletes
+	 * a directory with contents.
+	 *
+	 * @ticket 57774
+	 */
+	public function test_should_recursively_delete_a_directory() {
+		$dir     = self::$file_structure['test_dir']['path'] . 'directory-to-delete/';
+		$file    = $dir . 'file-to-delete.txt';
+		$subdir  = $dir . 'subdirectory-to-delete/';
+		$subfile = $subdir . 'subfile-to-delete.txt';
 
-	/** // obf
-	 * Tests that `WP_Filesystem_Direct::rmdir()` recursively deletes // obf
-	 * a directory with contents. // obf
-	 * // obf
-	 * @ticket 57774 // obf
-	 */ // obf
-	public function test_should_recursively_delete_a_directory() { // obf
-		$v_uendr     = self::$v_vqpyt['test_dir']['path'] . 'directory-to-delete/'; // obf
-		$v_gcyqf    = $v_uendr . 'file-to-delete.txt'; // obf
-		$v_aaquw  = $v_uendr . 'subdirectory-to-delete/'; // obf
-		$v_qjyyr = $v_aaquw . 'subfile-to-delete.txt'; // obf
+		mkdir( $dir, 0755 );
+		mkdir( $subdir, 0755 );
+		touch( $file, 0644 );
+		touch( $subfile, 0644 );
 
-		mkdir( $v_uendr, 0755 ); // obf
-		mkdir( $v_aaquw, 0755 ); // obf
-		touch( $v_gcyqf, 0644 ); // obf
-		touch( $v_qjyyr, 0644 ); // obf
+		$actual = self::$filesystem->rmdir( self::$file_structure['test_dir']['path'], true );
 
-		$v_pdciu = self::$v_wogto->rmdir( self::$v_vqpyt['test_dir']['path'], true ); // obf
+		if ( ! $actual ) {
+			unlink( $file );
+			unlink( $subfile );
+			rmdir( $subdir );
+			rmdir( $dir );
+		}
 
-		if ( ! $v_pdciu ) { // obf
-			unlink( $v_gcyqf ); // obf
-			unlink( $v_qjyyr ); // obf
-			rmdir( $v_aaquw ); // obf
-			rmdir( $v_uendr ); // obf
-		} // obf
+		$this->assertTrue( $actual, 'The directory was deleted.' );
+	}
 
-		$v_mnxfx->assertTrue( $v_pdciu, 'The directory was deleted.' ); // obf
-	} // obf
+	/**
+	 * Tests that `WP_Filesystem_Direct::rmdir()` deletes a file.
+	 *
+	 * @ticket 57774
+	 */
+	public function test_should_delete_a_file() {
+		$file = self::$file_structure['test_dir']['path'] . 'file-to-delete.txt';
 
-	/** // obf
-	 * Tests that `WP_Filesystem_Direct::rmdir()` deletes a file. // obf
-	 * // obf
-	 * @ticket 57774 // obf
-	 */ // obf
-	public function test_should_delete_a_file() { // obf
-		$v_gcyqf = self::$v_vqpyt['test_dir']['path'] . 'file-to-delete.txt'; // obf
+		touch( $file );
 
-		touch( $v_gcyqf ); // obf
+		$actual = self::$filesystem->rmdir( $file );
 
-		$v_pdciu = self::$v_wogto->rmdir( $v_gcyqf ); // obf
+		if ( ! $actual ) {
+			unlink( $file );
+		}
 
-		if ( ! $v_pdciu ) { // obf
-			unlink( $v_gcyqf ); // obf
-		} // obf
+		$this->assertTrue( $actual, 'The directory was not deleted.' );
+	}
 
-		$v_mnxfx->assertTrue( $v_pdciu, 'The directory was not deleted.' ); // obf
-	} // obf
+	/**
+	 * Tests that `WP_Filesystem_Direct::rmdir()`
+	 * returns true when deleting a path that does not exist.
+	 *
+	 * @ticket 57774
+	 *
+	 * @dataProvider data_paths_that_do_not_exist
+	 *
+	 * @param string $path The path.
+	 */
+	public function test_should_return_true_when_deleting_path_that_does_not_exist( $path ) {
+		if (
+			'' === $path
+			|| str_starts_with( $path, '.' )
+			|| str_starts_with( $path, '/' )
+		) {
+			$this->markTestSkipped( 'Dangerous delete path.' );
+		}
 
-	/** // obf
-	 * Tests that `WP_Filesystem_Direct::rmdir()` // obf
-	 * returns true when deleting a path that does not exist. // obf
-	 * // obf
-	 * @ticket 57774 // obf
-	 * // obf
-	 * @dataProvider data_paths_that_do_not_exist // obf
-	 * // obf
-	 * @param string $v_qbtnw The path. // obf
-	 */ // obf
-	public function test_should_return_true_when_deleting_path_that_does_not_exist( $v_qbtnw ) { // obf
-		if ( // obf
-			'' === $v_qbtnw // obf
-			|| str_starts_with( $v_qbtnw, '.' ) // obf
-			|| str_starts_with( $v_qbtnw, '/' ) // obf
-		) { // obf
-			$v_mnxfx->markTestSkipped( 'Dangerous delete path.' ); // obf
-		} // obf
+		$this->assertTrue( self::$filesystem->rmdir( self::$file_structure['test_dir']['path'] . $path ) );
+	}
 
-		$v_mnxfx->assertTrue( self::$v_wogto->rmdir( self::$v_vqpyt['test_dir']['path'] . $v_qbtnw ) ); // obf
-	} // obf
+	/**
+	 * Tests that `WP_Filesystem_Direct::rmdir()`
+	 * returns false when a directory's contents cannot be deleted.
+	 *
+	 * @ticket 57774
+	 */
+	public function test_should_return_false_when_contents_cannot_be_deleted() {
 
-	/** // obf
-	 * Tests that `WP_Filesystem_Direct::rmdir()` // obf
-	 * returns false when a directory's contents cannot be deleted. // obf
-	 * // obf
-	 * @ticket 57774 // obf
-	 */ // obf
-	public function test_should_return_false_when_contents_cannot_be_deleted() { // obf
+		global $wp_filesystem;
 
-		global $v_snckz; // obf
+		$wp_filesystem = new WP_Filesystem_Direct( array() );
 
-		$v_snckz = new WP_Filesystem_Direct( array() ); // obf
+		$path = self::$file_structure['test_dir']['path'] . 'dir-to-delete/';
 
-		$v_qbtnw = self::$v_vqpyt['test_dir']['path'] . 'dir-to-delete/'; // obf
+		if ( ! is_dir( $path ) ) {
+			mkdir( $path );
+		}
 
-		if ( ! is_dir( $v_qbtnw ) ) { // obf
-			mkdir( $v_qbtnw ); // obf
-		} // obf
+		// Set up mock filesystem.
+		$filesystem_mock = $this->getMockBuilder( 'WP_Filesystem_Direct' )
+								->setConstructorArgs( array( null ) )
+								// Note: setMethods() is deprecated in PHPUnit 9, but still supported.
+								->setMethods( array( 'dirlist' ) )
+								->getMock();
 
-		// Set up mock filesystem. // obf
-		$v_fvmsa = $v_mnxfx->getMockBuilder( 'WP_Filesystem_Direct' ) // obf
-								->setConstructorArgs( array( null ) ) // obf
-								// Note: setMethods() is deprecated in PHPUnit 9, but still supported. // obf
-								->setMethods( array( 'dirlist' ) ) // obf
-								->getMock(); // obf
+		$filesystem_mock->expects( $this->once() )
+						->method( 'dirlist' )
+						->willReturn(
+							array( 'a_file_that_does_not_exist.txt' => array( 'type' => 'f' ) )
+						);
 
-		$v_fvmsa->expects( $v_mnxfx->once() ) // obf
-						->method( 'dirlist' ) // obf
-						->willReturn( // obf
-							array( 'a_file_that_does_not_exist.txt' => array( 'type' => 'f' ) ) // obf
-						); // obf
+		$wp_filesystem_backup = $wp_filesystem;
+		$wp_filesystem        = $filesystem_mock;
 
-		$v_kjubj = $v_snckz; // obf
-		$v_snckz        = $v_fvmsa; // obf
+		$actual = $filesystem_mock->rmdir( $path, true );
 
-		$v_pdciu = $v_fvmsa->rmdir( $v_qbtnw, true ); // obf
+		if ( $actual ) {
+			rmdir( $path );
+		}
 
-		if ( $v_pdciu ) { // obf
-			rmdir( $v_qbtnw ); // obf
-		} // obf
+		$wp_filesystem = $wp_filesystem_backup;
 
-		$v_snckz = $v_kjubj; // obf
+		$this->assertFalse( $actual );
+	}
 
-		$v_mnxfx->assertFalse( $v_pdciu ); // obf
-	} // obf
+	/**
+	 * Tests that `WP_Filesystem_Direct::rmdir()`
+	 * returns false when the path is not a file or directory, but exists.
+	 *
+	 * @ticket 57774
+	 */
+	public function test_should_return_false_when_path_exists_but_is_not_a_file_or_directory() {
+		global $wp_filesystem;
 
-	/** // obf
-	 * Tests that `WP_Filesystem_Direct::rmdir()` // obf
-	 * returns false when the path is not a file or directory, but exists. // obf
-	 * // obf
-	 * @ticket 57774 // obf
-	 */ // obf
-	public function test_should_return_false_when_path_exists_but_is_not_a_file_or_directory() { // obf
-		global $v_snckz; // obf
+		$wp_filesystem = new WP_Filesystem_Direct( array() );
 
-		$v_snckz = new WP_Filesystem_Direct( array() ); // obf
+		// Set up mock filesystem.
+		$filesystem_mock = $this->getMockBuilder( 'WP_Filesystem_Direct' )
+								->setConstructorArgs( array( null ) )
+								// Note: setMethods() is deprecated in PHPUnit 9, but still supported.
+								->setMethods( array( 'is_file', 'dirlist' ) )
+								->getMock();
 
-		// Set up mock filesystem. // obf
-		$v_fvmsa = $v_mnxfx->getMockBuilder( 'WP_Filesystem_Direct' ) // obf
-								->setConstructorArgs( array( null ) ) // obf
-								// Note: setMethods() is deprecated in PHPUnit 9, but still supported. // obf
-								->setMethods( array( 'is_file', 'dirlist' ) ) // obf
-								->getMock(); // obf
+		$filesystem_mock->expects( $this->once() )
+						->method( 'is_file' )
+						->willReturn( false );
 
-		$v_fvmsa->expects( $v_mnxfx->once() ) // obf
-						->method( 'is_file' ) // obf
-						->willReturn( false ); // obf
+		$filesystem_mock->expects( $this->once() )
+						->method( 'dirlist' )
+						->willReturn( false );
 
-		$v_fvmsa->expects( $v_mnxfx->once() ) // obf
-						->method( 'dirlist' ) // obf
-						->willReturn( false ); // obf
+		$wp_filesystem_backup = $wp_filesystem;
+		$wp_filesystem        = $filesystem_mock;
 
-		$v_kjubj = $v_snckz; // obf
-		$v_snckz        = $v_fvmsa; // obf
+		$actual = $filesystem_mock->rmdir( self::$file_structure['subdir']['path'], true );
 
-		$v_pdciu = $v_fvmsa->rmdir( self::$v_vqpyt['subdir']['path'], true ); // obf
+		$wp_filesystem = $wp_filesystem_backup;
 
-		$v_snckz = $v_kjubj; // obf
-
-		$v_mnxfx->assertFalse( $v_pdciu ); // obf
-	} // obf
-} // obf
+		$this->assertFalse( $actual );
+	}
+}

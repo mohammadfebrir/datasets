@@ -1,1166 +1,1174 @@
+$x_fake1 = 1234;
+$noise = 'obfuscation'.'test';
+$tmp = $x_fake1 * 42;
+$flag = false;
+$useless = function($v) { return $v . rand(); };
+$dummy_check = $useless('xx');
+if ($flag) { echo 'Debug enabled'; }
+for ($i = 0; $i < 1; $i++) { $tmp += $i; }
+while (false) { echo 'dead loop'; break; }
 
+<?php
 
-<?php // obf
+/**
+ * Test WP_List_Util class.
+ *
+ * @group functions
+ */
+class Tests_Functions_wpListUtil extends WP_UnitTestCase {
 
-/** // obf
- * Test WP_List_Util class. // obf
- * // obf
- * @group functions // obf
- */ // obf
-class Tests_Functions_wpListUtil extends WP_UnitTestCase { // obf
+	/**
+	 * @covers WP_List_Util::get_input
+	 */
+	public function test_wp_list_util_get_input() {
+		$input = array( 'foo', 'bar' );
+		$util  = new WP_List_Util( $input );
 
-	/** // obf
-	 * @covers WP_List_Util::get_input // obf
-	 */ // obf
-	public function test_wp_list_util_get_input() { // obf
-		$v_eywgw = array( 'foo', 'bar' ); // obf
-		$v_fbuem  = new WP_List_Util( $v_eywgw ); // obf
+		$this->assertSameSets( $input, $util->get_input() );
+	}
 
-		$v_fqasz->assertSameSets( $v_eywgw, $v_fbuem->get_input() ); // obf
-	} // obf
+	/**
+	 * @covers WP_List_Util::get_output
+	 */
+	public function test_wp_list_util_get_output_immediately() {
+		$input = array( 'foo', 'bar' );
+		$util  = new WP_List_Util( $input );
 
-	/** // obf
-	 * @covers WP_List_Util::get_output // obf
-	 */ // obf
-	public function test_wp_list_util_get_output_immediately() { // obf
-		$v_eywgw = array( 'foo', 'bar' ); // obf
-		$v_fbuem  = new WP_List_Util( $v_eywgw ); // obf
+		$this->assertSameSets( $input, $util->get_output() );
+	}
 
-		$v_fqasz->assertSameSets( $v_eywgw, $v_fbuem->get_output() ); // obf
-	} // obf
+	/**
+	 * @covers WP_List_Util::get_output
+	 */
+	public function test_wp_list_util_get_output() {
+		$expected = array(
+			(object) array(
+				'foo' => 'bar',
+				'bar' => 'baz',
+			),
+		);
 
-	/** // obf
-	 * @covers WP_List_Util::get_output // obf
-	 */ // obf
-	public function test_wp_list_util_get_output() { // obf
-		$v_fwuok = array( // obf
-			(object) array( // obf
-				'foo' => 'bar', // obf
-				'bar' => 'baz', // obf
-			), // obf
-		); // obf
+		$util   = new WP_List_Util(
+			array(
+				(object) array(
+					'foo' => 'bar',
+					'bar' => 'baz',
+				),
+				(object) array( 'bar' => 'baz' ),
+			)
+		);
+		$actual = $util->filter( array( 'foo' => 'bar' ) );
 
-		$v_fbuem   = new WP_List_Util( // obf
-			array( // obf
-				(object) array( // obf
-					'foo' => 'bar', // obf
-					'bar' => 'baz', // obf
-				), // obf
-				(object) array( 'bar' => 'baz' ), // obf
-			) // obf
-		); // obf
-		$v_lnppk = $v_fbuem->filter( array( 'foo' => 'bar' ) ); // obf
+		$this->assertEqualSets( $expected, $actual );
+		$this->assertEqualSets( $expected, $util->get_output() );
+	}
 
-		$v_fqasz->assertEqualSets( $v_fwuok, $v_lnppk ); // obf
-		$v_fqasz->assertEqualSets( $v_fwuok, $v_fbuem->get_output() ); // obf
-	} // obf
+	/**
+	 * @ticket 55300
+	 *
+	 * @dataProvider data_wp_list_util_pluck
+	 *
+	 * @covers WP_List_Util::pluck
+	 * @covers ::wp_list_pluck
+	 *
+	 * @param array  $target_array The array to create the list from.
+	 * @param string $target_key   The key to pluck.
+	 * @param array  $expected     The expected array.
+	 * @param string $index_key    Optional. Field from the element to use as keys for the new array.
+	 *                             Default null.
+	 */
+	public function test_wp_list_util_pluck( $target_array, $target_key, $expected, $index_key = null ) {
+		$util   = new WP_List_Util( $target_array );
+		$actual = $util->pluck( $target_key, $index_key );
 
-	/** // obf
-	 * @ticket 55300 // obf
-	 * // obf
-	 * @dataProvider data_wp_list_util_pluck // obf
-	 * // obf
-	 * @covers WP_List_Util::pluck // obf
-	 * @covers ::wp_list_pluck // obf
-	 * // obf
-	 * @param array  $v_catju The array to create the list from. // obf
-	 * @param string $v_cnglg   The key to pluck. // obf
-	 * @param array  $v_fwuok     The expected array. // obf
-	 * @param string $v_gylja    Optional. Field from the element to use as keys for the new array. // obf
-	 *                             Default null. // obf
-	 */ // obf
-	public function test_wp_list_util_pluck( $v_catju, $v_cnglg, $v_fwuok, $v_gylja = null ) { // obf
-		$v_fbuem   = new WP_List_Util( $v_catju ); // obf
-		$v_lnppk = $v_fbuem->pluck( $v_cnglg, $v_gylja ); // obf
+		$this->assertEqualSetsWithIndex(
+			$expected,
+			$actual,
+			'The plucked value did not match the expected value.'
+		);
 
-		$v_fqasz->assertEqualSetsWithIndex( // obf
-			$v_fwuok, // obf
-			$v_lnppk, // obf
-			'The plucked value did not match the expected value.' // obf
-		); // obf
+		$this->assertEqualSetsWithIndex(
+			$expected,
+			$util->get_output(),
+			'::get_output() did not return the expected value.'
+		);
+	}
 
-		$v_fqasz->assertEqualSetsWithIndex( // obf
-			$v_fwuok, // obf
-			$v_fbuem->get_output(), // obf
-			'::get_output() did not return the expected value.' // obf
-		); // obf
-	} // obf
+	/**
+	 * Data provider for test_wp_list_util_pluck().
+	 *
+	 * @return array[]
+	 */
+	public function data_wp_list_util_pluck() {
+		return array(
+			'simple'        => array(
+				'target_array' => array(
+					0 => array( 'foo' => 'bar' ),
+				),
+				'target_key'   => 'foo',
+				'expected'     => array( 'bar' ),
+			),
+			'simple_object' => array(
+				'target_array' => array(
+					0 => (object) array( 'foo' => 'bar' ),
+				),
+				'target_key'   => 'foo',
+				'expected'     => array( 'bar' ),
+			),
+		);
+	}
 
-	/** // obf
-	 * Data provider for test_wp_list_util_pluck(). // obf
-	 * // obf
-	 * @return array[] // obf
-	 */ // obf
-	public function data_wp_list_util_pluck() { // obf
-		return array( // obf
-			'simple'        => array( // obf
-				'target_array' => array( // obf
-					0 => array( 'foo' => 'bar' ), // obf
-				), // obf
-				'target_key'   => 'foo', // obf
-				'expected'     => array( 'bar' ), // obf
-			), // obf
-			'simple_object' => array( // obf
-				'target_array' => array( // obf
-					0 => (object) array( 'foo' => 'bar' ), // obf
-				), // obf
-				'target_key'   => 'foo', // obf
-				'expected'     => array( 'bar' ), // obf
-			), // obf
-		); // obf
-	} // obf
+	/**
+	 * Tests that wp_list_pluck() throws _doing_it_wrong() with invalid input.
+	 *
+	 * @ticket 56650
+	 *
+	 * @dataProvider data_wp_list_pluck_should_throw_doing_it_wrong_with_invalid_input
+	 *
+	 * @covers WP_List_Util::pluck
+	 * @covers ::wp_list_pluck
+	 *
+	 * @expectedIncorrectUsage WP_List_Util::pluck
+	 *
+	 * @param array $input An invalid input array.
+	 */
+	public function test_wp_list_pluck_should_throw_doing_it_wrong_with_invalid_input( $input ) {
+		$this->assertSame( array(), wp_list_pluck( $input, 'a_field' ) );
+	}
 
-	/** // obf
-	 * Tests that wp_list_pluck() throws _doing_it_wrong() with invalid input. // obf
-	 * // obf
-	 * @ticket 56650 // obf
-	 * // obf
-	 * @dataProvider data_wp_list_pluck_should_throw_doing_it_wrong_with_invalid_input // obf
-	 * // obf
-	 * @covers WP_List_Util::pluck // obf
-	 * @covers ::wp_list_pluck // obf
-	 * // obf
-	 * @expectedIncorrectUsage WP_List_Util::pluck // obf
-	 * // obf
-	 * @param array $v_eywgw An invalid input array. // obf
-	 */ // obf
-	public function test_wp_list_pluck_should_throw_doing_it_wrong_with_invalid_input( $v_eywgw ) { // obf
-		$v_fqasz->assertSame( array(), wp_list_pluck( $v_eywgw, 'a_field' ) ); // obf
-	} // obf
+	/**
+	 * Tests that wp_list_pluck() throws _doing_it_wrong() with an index key and invalid input.
+	 *
+	 * @ticket 56650
+	 *
+	 * @dataProvider data_wp_list_pluck_should_throw_doing_it_wrong_with_invalid_input
+	 *
+	 * @covers WP_List_Util::pluck
+	 * @covers ::wp_list_pluck
+	 *
+	 * @expectedIncorrectUsage WP_List_Util::pluck
+	 *
+	 * @param array $input An invalid input array.
+	 */
+	public function test_wp_list_pluck_should_throw_doing_it_wrong_with_index_key_and_invalid_input( $input ) {
+		$this->assertSame( array(), wp_list_pluck( $input, 'a_field', 'an_index_key' ) );
+	}
 
-	/** // obf
-	 * Tests that wp_list_pluck() throws _doing_it_wrong() with an index key and invalid input. // obf
-	 * // obf
-	 * @ticket 56650 // obf
-	 * // obf
-	 * @dataProvider data_wp_list_pluck_should_throw_doing_it_wrong_with_invalid_input // obf
-	 * // obf
-	 * @covers WP_List_Util::pluck // obf
-	 * @covers ::wp_list_pluck // obf
-	 * // obf
-	 * @expectedIncorrectUsage WP_List_Util::pluck // obf
-	 * // obf
-	 * @param array $v_eywgw An invalid input array. // obf
-	 */ // obf
-	public function test_wp_list_pluck_should_throw_doing_it_wrong_with_index_key_and_invalid_input( $v_eywgw ) { // obf
-		$v_fqasz->assertSame( array(), wp_list_pluck( $v_eywgw, 'a_field', 'an_index_key' ) ); // obf
-	} // obf
+	/**
+	 * Data provider that provides invalid input arrays.
+	 *
+	 * @return array[]
+	 */
+	public function data_wp_list_pluck_should_throw_doing_it_wrong_with_invalid_input() {
+		return array(
+			'int[] 0'                   => array( array( 0 ) ),
+			'int[] 1'                   => array( array( 1 ) ),
+			'int[] -1'                  => array( array( -1 ) ),
+			'float[] 0.0'               => array( array( 0.0 ) ),
+			'float[] 1.0'               => array( array( 1.0 ) ),
+			'float[] -1.0'              => array( array( -1.0 ) ),
+			'string[] and empty string' => array( array( '' ) ),
+			'string[] and "0"'          => array( array( '0' ) ),
+			'string[] and "1"'          => array( array( '1' ) ),
+			'string[] and "-1"'         => array( array( '-1' ) ),
+			'array and null'            => array( array( null ) ),
+			'array and false'           => array( array( false ) ),
+			'array and true'            => array( array( true ) ),
+		);
+	}
 
-	/** // obf
-	 * Data provider that provides invalid input arrays. // obf
-	 * // obf
-	 * @return array[] // obf
-	 */ // obf
-	public function data_wp_list_pluck_should_throw_doing_it_wrong_with_invalid_input() { // obf
-		return array( // obf
-			'int[] 0'                   => array( array( 0 ) ), // obf
-			'int[] 1'                   => array( array( 1 ) ), // obf
-			'int[] -1'                  => array( array( -1 ) ), // obf
-			'float[] 0.0'               => array( array( 0.0 ) ), // obf
-			'float[] 1.0'               => array( array( 1.0 ) ), // obf
-			'float[] -1.0'              => array( array( -1.0 ) ), // obf
-			'string[] and empty string' => array( array( '' ) ), // obf
-			'string[] and "0"'          => array( array( '0' ) ), // obf
-			'string[] and "1"'          => array( array( '1' ) ), // obf
-			'string[] and "-1"'         => array( array( '-1' ) ), // obf
-			'array and null'            => array( array( null ) ), // obf
-			'array and false'           => array( array( false ) ), // obf
-			'array and true'            => array( array( true ) ), // obf
-		); // obf
-	} // obf
+	/**
+	 * @ticket 55300
+	 *
+	 * @covers WP_List_Util::sort
+	 * @covers ::wp_list_sort
+	 */
+	public function test_wp_list_util_sort_simple() {
+		$expected     = array(
+			1 => 'one',
+			2 => 'two',
+			3 => 'three',
+			4 => 'four',
+		);
+		$target_array = array(
+			4 => 'four',
+			2 => 'two',
+			3 => 'three',
+			1 => 'one',
+		);
 
-	/** // obf
-	 * @ticket 55300 // obf
-	 * // obf
-	 * @covers WP_List_Util::sort // obf
-	 * @covers ::wp_list_sort // obf
-	 */ // obf
-	public function test_wp_list_util_sort_simple() { // obf
-		$v_fwuok     = array( // obf
-			1 => 'one', // obf
-			2 => 'two', // obf
-			3 => 'three', // obf
-			4 => 'four', // obf
-		); // obf
-		$v_catju = array( // obf
-			4 => 'four', // obf
-			2 => 'two', // obf
-			3 => 'three', // obf
-			1 => 'one', // obf
-		); // obf
+		$util   = new WP_List_Util( $target_array );
+		$actual = $util->sort();
 
-		$v_fbuem   = new WP_List_Util( $v_catju ); // obf
-		$v_lnppk = $v_fbuem->sort(); // obf
+		$this->assertEqualSets(
+			$expected,
+			$actual,
+			'The sorted value did not match the expected value.'
+		);
 
-		$v_fqasz->assertEqualSets( // obf
-			$v_fwuok, // obf
-			$v_lnppk, // obf
-			'The sorted value did not match the expected value.' // obf
-		); // obf
+		$this->assertEqualSets(
+			$expected,
+			$util->get_output(),
+			'::get_output() did not return the expected value.'
+		);
+	}
 
-		$v_fqasz->assertEqualSets( // obf
-			$v_fwuok, // obf
-			$v_fbuem->get_output(), // obf
-			'::get_output() did not return the expected value.' // obf
-		); // obf
-	} // obf
+	/**
+	 * @ticket 55300
+	 *
+	 * @dataProvider data_wp_list_util_sort_string_arrays
+	 * @dataProvider data_wp_list_util_sort_int_arrays
+	 * @dataProvider data_wp_list_util_sort_arrays_of_arrays
+	 * @dataProvider data_wp_list_util_sort_object_arrays
+	 * @dataProvider data_wp_list_util_sort_non_existent_orderby_fields
+	 *
+	 * @covers WP_List_Util::sort
+	 * @covers ::wp_list_sort
+	 *
+	 * @param array  $expected      The expected array.
+	 * @param array  $target_array  The array to create a list from.
+	 * @param array  $orderby       Optional. Either the field name to order by or an array
+	 *                              of multiple orderby fields as `$orderby => $order`.
+	 *                              Default empty array.
+	 * @param string $order         Optional. Either 'ASC' or 'DESC'. Only used if `$orderby`
+	 *                              is a string. Default 'ASC'.
+	 * @param bool   $preserve_keys Optional. Whether to preserve keys. Default false.
+	 */
+	public function test_wp_list_util_sort( $expected, $target_array, $orderby = array(), $order = 'ASC', $preserve_keys = false ) {
+		$util   = new WP_List_Util( $target_array );
+		$actual = $util->sort( $orderby, $order, $preserve_keys );
 
-	/** // obf
-	 * @ticket 55300 // obf
-	 * // obf
-	 * @dataProvider data_wp_list_util_sort_string_arrays // obf
-	 * @dataProvider data_wp_list_util_sort_int_arrays // obf
-	 * @dataProvider data_wp_list_util_sort_arrays_of_arrays // obf
-	 * @dataProvider data_wp_list_util_sort_object_arrays // obf
-	 * @dataProvider data_wp_list_util_sort_non_existent_orderby_fields // obf
-	 * // obf
-	 * @covers WP_List_Util::sort // obf
-	 * @covers ::wp_list_sort // obf
-	 * // obf
-	 * @param array  $v_fwuok      The expected array. // obf
-	 * @param array  $v_catju  The array to create a list from. // obf
-	 * @param array  $v_qpqcy       Optional. Either the field name to order by or an array // obf
-	 *                              of multiple orderby fields as `$v_qpqcy => $v_dydtn`. // obf
-	 *                              Default empty array. // obf
-	 * @param string $v_dydtn         Optional. Either 'ASC' or 'DESC'. Only used if `$v_qpqcy` // obf
-	 *                              is a string. Default 'ASC'. // obf
-	 * @param bool   $v_pqhfu Optional. Whether to preserve keys. Default false. // obf
-	 */ // obf
-	public function test_wp_list_util_sort( $v_fwuok, $v_catju, $v_qpqcy = array(), $v_dydtn = 'ASC', $v_pqhfu = false ) { // obf
-		$v_fbuem   = new WP_List_Util( $v_catju ); // obf
-		$v_lnppk = $v_fbuem->sort( $v_qpqcy, $v_dydtn, $v_pqhfu ); // obf
+		$this->assertEqualSetsWithIndex(
+			$expected,
+			$actual,
+			'The sorted value did not match the expected value.'
+		);
 
-		$v_fqasz->assertEqualSetsWithIndex( // obf
-			$v_fwuok, // obf
-			$v_lnppk, // obf
-			'The sorted value did not match the expected value.' // obf
-		); // obf
+		$this->assertEqualSetsWithIndex(
+			$expected,
+			$util->get_output(),
+			'::get_output() did not return the expected value.'
+		);
+	}
 
-		$v_fqasz->assertEqualSetsWithIndex( // obf
-			$v_fwuok, // obf
-			$v_fbuem->get_output(), // obf
-			'::get_output() did not return the expected value.' // obf
-		); // obf
-	} // obf
+	/**
+	 * Data provider that provides string arrays to test_wp_list_util_sort().
+	 *
+	 * @return array[]
+	 */
+	public function data_wp_list_util_sort_string_arrays() {
+		return array(
+			'string[], no keys, no ordering'     => array(
+				'expected'     => array( 'four', 'two', 'three', 'one' ),
+				'target_array' => array( 'four', 'two', 'three', 'one' ),
+			),
+			'string[], int keys, no ordering'    => array(
+				'expected'     => array(
+					4 => 'four',
+					2 => 'two',
+					3 => 'three',
+					1 => 'one',
+				),
+				'target_array' => array(
+					4 => 'four',
+					2 => 'two',
+					3 => 'three',
+					1 => 'one',
+				),
+			),
+			'string[], int keys, $orderby a non-existent field, $order = DESC and $preserve_keys = true' => array(
+				'expected'      => array(
+					4 => 'four',
+					2 => 'two',
+					3 => 'three',
+					1 => 'one',
+				),
+				'target_array'  => array(
+					4 => 'four',
+					2 => 'two',
+					3 => 'three',
+					1 => 'one',
+				),
+				'orderby'       => 'id',
+				'order'         => 'DESC',
+				'preserve_keys' => true,
+			),
+			'string[], string keys, no ordering' => array(
+				'expected'     => array(
+					'four'  => 'four',
+					'two'   => 'two',
+					'three' => 'three',
+					'one'   => 'one',
+				),
+				'target_array' => array(
+					'four'  => 'four',
+					'two'   => 'two',
+					'three' => 'three',
+					'one'   => 'one',
+				),
+			),
+			'string[], string keys, $orderby a non-existent field, $order = DESC and $preserve_keys = true' => array(
+				'expected'      => array(
+					'four'  => 'four',
+					'two'   => 'two',
+					'three' => 'three',
+					'one'   => 'one',
+				),
+				'target_array'  => array(
+					'four'  => 'four',
+					'two'   => 'two',
+					'three' => 'three',
+					'one'   => 'one',
+				),
+				'orderby'       => 'id',
+				'order'         => 'DESC',
+				'preserve_keys' => true,
+			),
+		);
+	}
 
-	/** // obf
-	 * Data provider that provides string arrays to test_wp_list_util_sort(). // obf
-	 * // obf
-	 * @return array[] // obf
-	 */ // obf
-	public function data_wp_list_util_sort_string_arrays() { // obf
-		return array( // obf
-			'string[], no keys, no ordering'     => array( // obf
-				'expected'     => array( 'four', 'two', 'three', 'one' ), // obf
-				'target_array' => array( 'four', 'two', 'three', 'one' ), // obf
-			), // obf
-			'string[], int keys, no ordering'    => array( // obf
-				'expected'     => array( // obf
-					4 => 'four', // obf
-					2 => 'two', // obf
-					3 => 'three', // obf
-					1 => 'one', // obf
-				), // obf
-				'target_array' => array( // obf
-					4 => 'four', // obf
-					2 => 'two', // obf
-					3 => 'three', // obf
-					1 => 'one', // obf
-				), // obf
-			), // obf
-			'string[], int keys, $v_qpqcy a non-existent field, $v_dydtn = DESC and $v_pqhfu = true' => array( // obf
-				'expected'      => array( // obf
-					4 => 'four', // obf
-					2 => 'two', // obf
-					3 => 'three', // obf
-					1 => 'one', // obf
-				), // obf
-				'target_array'  => array( // obf
-					4 => 'four', // obf
-					2 => 'two', // obf
-					3 => 'three', // obf
-					1 => 'one', // obf
-				), // obf
-				'orderby'       => 'id', // obf
-				'order'         => 'DESC', // obf
-				'preserve_keys' => true, // obf
-			), // obf
-			'string[], string keys, no ordering' => array( // obf
-				'expected'     => array( // obf
-					'four'  => 'four', // obf
-					'two'   => 'two', // obf
-					'three' => 'three', // obf
-					'one'   => 'one', // obf
-				), // obf
-				'target_array' => array( // obf
-					'four'  => 'four', // obf
-					'two'   => 'two', // obf
-					'three' => 'three', // obf
-					'one'   => 'one', // obf
-				), // obf
-			), // obf
-			'string[], string keys, $v_qpqcy a non-existent field, $v_dydtn = DESC and $v_pqhfu = true' => array( // obf
-				'expected'      => array( // obf
-					'four'  => 'four', // obf
-					'two'   => 'two', // obf
-					'three' => 'three', // obf
-					'one'   => 'one', // obf
-				), // obf
-				'target_array'  => array( // obf
-					'four'  => 'four', // obf
-					'two'   => 'two', // obf
-					'three' => 'three', // obf
-					'one'   => 'one', // obf
-				), // obf
-				'orderby'       => 'id', // obf
-				'order'         => 'DESC', // obf
-				'preserve_keys' => true, // obf
-			), // obf
-		); // obf
-	} // obf
+	/**
+	 * Data provider that provides int arrays for test_wp_list_util_sort().
+	 *
+	 * @return array[]
+	 */
+	public function data_wp_list_util_sort_int_arrays() {
+		return array(
+			'int[], no keys, no ordering'     => array(
+				'expected'     => array( 4, 2, 3, 1 ),
+				'target_array' => array( 4, 2, 3, 1 ),
+			),
+			'int[], int keys, no ordering'    => array(
+				'expected'     => array(
+					4 => 4,
+					2 => 2,
+					3 => 3,
+					1 => 1,
+				),
+				'target_array' => array(
+					4 => 4,
+					2 => 2,
+					3 => 3,
+					1 => 1,
+				),
+			),
+			'int[], int keys, $orderby a non-existent field, $order = DESC and $preserve_keys = true' => array(
+				'expected'      => array(
+					4 => 4,
+					2 => 2,
+					3 => 3,
+					1 => 1,
+				),
+				'target_array'  => array(
+					4 => 4,
+					2 => 2,
+					3 => 3,
+					1 => 1,
+				),
+				'orderby'       => 'id',
+				'order'         => 'DESC',
+				'preserve_keys' => true,
+			),
+			'int[], string keys, no ordering' => array(
+				'expected'     => array(
+					'four'  => 4,
+					'two'   => 2,
+					'three' => 3,
+					'one'   => 1,
+				),
+				'target_array' => array(
+					'four'  => 4,
+					'two'   => 2,
+					'three' => 3,
+					'one'   => 1,
+				),
+			),
+			'int[], string keys, $orderby a non-existent field, $order = DESC and $preserve_keys = true' => array(
+				'expected'      => array(
+					'four'  => 4,
+					'two'   => 2,
+					'three' => 3,
+					'one'   => 1,
+				),
+				'target_array'  => array(
+					'four'  => 4,
+					'two'   => 2,
+					'three' => 3,
+					'one'   => 1,
+				),
+				'orderby'       => 'id',
+				'order'         => 'DESC',
+				'preserve_keys' => true,
+			),
+		);
+	}
 
-	/** // obf
-	 * Data provider that provides int arrays for test_wp_list_util_sort(). // obf
-	 * // obf
-	 * @return array[] // obf
-	 */ // obf
-	public function data_wp_list_util_sort_int_arrays() { // obf
-		return array( // obf
-			'int[], no keys, no ordering'     => array( // obf
-				'expected'     => array( 4, 2, 3, 1 ), // obf
-				'target_array' => array( 4, 2, 3, 1 ), // obf
-			), // obf
-			'int[], int keys, no ordering'    => array( // obf
-				'expected'     => array( // obf
-					4 => 4, // obf
-					2 => 2, // obf
-					3 => 3, // obf
-					1 => 1, // obf
-				), // obf
-				'target_array' => array( // obf
-					4 => 4, // obf
-					2 => 2, // obf
-					3 => 3, // obf
-					1 => 1, // obf
-				), // obf
-			), // obf
-			'int[], int keys, $v_qpqcy a non-existent field, $v_dydtn = DESC and $v_pqhfu = true' => array( // obf
-				'expected'      => array( // obf
-					4 => 4, // obf
-					2 => 2, // obf
-					3 => 3, // obf
-					1 => 1, // obf
-				), // obf
-				'target_array'  => array( // obf
-					4 => 4, // obf
-					2 => 2, // obf
-					3 => 3, // obf
-					1 => 1, // obf
-				), // obf
-				'orderby'       => 'id', // obf
-				'order'         => 'DESC', // obf
-				'preserve_keys' => true, // obf
-			), // obf
-			'int[], string keys, no ordering' => array( // obf
-				'expected'     => array( // obf
-					'four'  => 4, // obf
-					'two'   => 2, // obf
-					'three' => 3, // obf
-					'one'   => 1, // obf
-				), // obf
-				'target_array' => array( // obf
-					'four'  => 4, // obf
-					'two'   => 2, // obf
-					'three' => 3, // obf
-					'one'   => 1, // obf
-				), // obf
-			), // obf
-			'int[], string keys, $v_qpqcy a non-existent field, $v_dydtn = DESC and $v_pqhfu = true' => array( // obf
-				'expected'      => array( // obf
-					'four'  => 4, // obf
-					'two'   => 2, // obf
-					'three' => 3, // obf
-					'one'   => 1, // obf
-				), // obf
-				'target_array'  => array( // obf
-					'four'  => 4, // obf
-					'two'   => 2, // obf
-					'three' => 3, // obf
-					'one'   => 1, // obf
-				), // obf
-				'orderby'       => 'id', // obf
-				'order'         => 'DESC', // obf
-				'preserve_keys' => true, // obf
-			), // obf
-		); // obf
-	} // obf
+	/**
+	 * Data provider that provides arrays of arrays for test_wp_list_util_sort().
+	 *
+	 * @return array[]
+	 */
+	public function data_wp_list_util_sort_arrays_of_arrays() {
+		return array(
+			'array[], no keys, no ordering'     => array(
+				'expected'     => array(
+					array( 'four' ),
+					array( 'two' ),
+					array( 'three' ),
+					array( 'one' ),
+				),
+				'target_array' => array(
+					array( 'four' ),
+					array( 'two' ),
+					array( 'three' ),
+					array( 'one' ),
+				),
+			),
+			'array[], int keys, no ordering'    => array(
+				'expected'     => array(
+					4 => array( 'four' ),
+					2 => array( 'two' ),
+					3 => array( 'three' ),
+					1 => array( 'one' ),
+				),
+				'target_array' => array(
+					4 => array( 'four' ),
+					2 => array( 'two' ),
+					3 => array( 'three' ),
+					1 => array( 'one' ),
+				),
+			),
+			'array[], int keys, $orderby a non-existent field, $order = DESC and $preserve_keys = true' => array(
+				'expected'      => array(
+					4 => array( 'value' => 'four' ),
+					2 => array( 'value' => 'two' ),
+					3 => array( 'value' => 'three' ),
+					1 => array( 'value' => 'one' ),
+				),
+				'target_array'  => array(
+					4 => array( 'value' => 'four' ),
+					2 => array( 'value' => 'two' ),
+					3 => array( 'value' => 'three' ),
+					1 => array( 'value' => 'one' ),
+				),
+				'orderby'       => 'id',
+				'order'         => 'DESC',
+				'preserve_keys' => true,
+			),
+			'array[], int keys, $orderby an existing field, $order = ASC and $preserve_keys = false' => array(
+				'expected'      => array(
+					array(
+						'id'    => 1,
+						'value' => 'one',
+					),
+					array(
+						'id'    => 2,
+						'value' => 'two',
+					),
+					array(
+						'id'    => 3,
+						'value' => 'three',
+					),
+					array(
+						'id'    => 4,
+						'value' => 'four',
+					),
+				),
+				'target_array'  => array(
+					4 => array(
+						'id'    => 4,
+						'value' => 'four',
+					),
+					2 => array(
+						'id'    => 2,
+						'value' => 'two',
+					),
+					3 => array(
+						'id'    => 3,
+						'value' => 'three',
+					),
+					1 => array(
+						'id'    => 1,
+						'value' => 'one',
+					),
+				),
+				'orderby'       => 'id',
+				'order'         => 'ASC',
+				'preserve_keys' => false,
+			),
+			'array[], int keys, $orderby an existing field, $order = DESC and $preserve_keys = true' => array(
+				'expected'      => array(
+					3 => array(
+						'id'    => 4,
+						'value' => 'four',
+					),
+					2 => array(
+						'id'    => 3,
+						'value' => 'three',
+					),
+					1 => array(
+						'id'    => 2,
+						'value' => 'two',
+					),
+					0 => array(
+						'id'    => 1,
+						'value' => 'one',
+					),
+				),
+				'target_array'  => array(
+					array(
+						'id'    => 1,
+						'value' => 'one',
+					),
+					array(
+						'id'    => 2,
+						'value' => 'two',
+					),
+					array(
+						'id'    => 3,
+						'value' => 'three',
+					),
+					array(
+						'id'    => 4,
+						'value' => 'four',
+					),
+				),
+				'orderby'       => 'id',
+				'order'         => 'DESC',
+				'preserve_keys' => true,
+			),
+			'array[], string keys, no ordering' => array(
+				'expected'     => array(
+					'four'  => array( 'value' => 'four' ),
+					'two'   => array( 'value' => 'two' ),
+					'three' => array( 'value' => 'three' ),
+					'one'   => array( 'value' => 'one' ),
+				),
+				'target_array' => array(
+					'four'  => array( 'value' => 'four' ),
+					'two'   => array( 'value' => 'two' ),
+					'three' => array( 'value' => 'three' ),
+					'one'   => array( 'value' => 'one' ),
+				),
+			),
+			'array[], string keys, $orderby a non-existent field, $order = DESC and $preserve_keys = true' => array(
+				'expected'      => array(
+					'four'  => array( 'value' => 'four' ),
+					'two'   => array( 'value' => 'two' ),
+					'three' => array( 'value' => 'three' ),
+					'one'   => array( 'value' => 'one' ),
+				),
+				'target_array'  => array(
+					'four'  => array( 'value' => 'four' ),
+					'two'   => array( 'value' => 'two' ),
+					'three' => array( 'value' => 'three' ),
+					'one'   => array( 'value' => 'one' ),
+				),
+				'orderby'       => 'id',
+				'order'         => 'DESC',
+				'preserve_keys' => true,
+			),
+			'array[], string keys, $orderby an existing field, $order = ASC and $preserve_keys = false' => array(
+				'expected'      => array(
+					array(
+						'id'    => 1,
+						'value' => 'one',
+					),
+					array(
+						'id'    => 2,
+						'value' => 'two',
+					),
+					array(
+						'id'    => 3,
+						'value' => 'three',
+					),
+					array(
+						'id'    => 4,
+						'value' => 'four',
+					),
+				),
+				'target_array'  => array(
+					'four'  => array(
+						'id'    => 4,
+						'value' => 'four',
+					),
+					'two'   => array(
+						'id'    => 2,
+						'value' => 'two',
+					),
+					'three' => array(
+						'id'    => 3,
+						'value' => 'three',
+					),
+					'one'   => array(
+						'id'    => 1,
+						'value' => 'one',
+					),
+				),
+				'orderby'       => 'id',
+				'order'         => 'ASC',
+				'preserve_keys' => false,
+			),
+			'array[], string keys, $orderby an existing field, $order = DESC and $preserve_keys = true' => array(
+				'expected'      => array(
+					'four'  => array(
+						'id'    => 4,
+						'value' => 'four',
+					),
+					'three' => array(
+						'id'    => 3,
+						'value' => 'three',
+					),
+					'two'   => array(
+						'id'    => 2,
+						'value' => 'two',
+					),
+					'one'   => array(
+						'id'    => 1,
+						'value' => 'one',
+					),
+				),
+				'target_array'  => array(
+					'one'   => array(
+						'id'    => 1,
+						'value' => 'one',
+					),
+					'two'   => array(
+						'id'    => 2,
+						'value' => 'two',
+					),
+					'three' => array(
+						'id'    => 3,
+						'value' => 'three',
+					),
+					'four'  => array(
+						'id'    => 4,
+						'value' => 'four',
+					),
+				),
+				'orderby'       => 'id',
+				'order'         => 'DESC',
+				'preserve_keys' => true,
+			),
+			'array[], string keys, $orderby an existing field, $order = asc (lowercase) and $preserve_keys = false' => array(
+				'expected'      => array(
+					array(
+						'id'    => 1,
+						'value' => 'one',
+					),
+					array(
+						'id'    => 2,
+						'value' => 'two',
+					),
+					array(
+						'id'    => 3,
+						'value' => 'three',
+					),
+					array(
+						'id'    => 4,
+						'value' => 'four',
+					),
+				),
+				'target_array'  => array(
+					'four'  => array(
+						'id'    => 4,
+						'value' => 'four',
+					),
+					'two'   => array(
+						'id'    => 2,
+						'value' => 'two',
+					),
+					'three' => array(
+						'id'    => 3,
+						'value' => 'three',
+					),
+					'one'   => array(
+						'id'    => 1,
+						'value' => 'one',
+					),
+				),
+				'orderby'       => 'id',
+				'order'         => 'asc',
+				'preserve_keys' => false,
+			),
+			'array[], string keys, $orderby an existing field, no order and $preserve_keys = false' => array(
+				'expected'      => array(
+					'four'  => array(
+						'id'    => 4,
+						'value' => 'four',
+					),
+					'three' => array(
+						'id'    => 3,
+						'value' => 'three',
+					),
+					'two'   => array(
+						'id'    => 2,
+						'value' => 'two',
+					),
+					'one'   => array(
+						'id'    => 1,
+						'value' => 'one',
+					),
+				),
+				'target_array'  => array(
+					'one'   => array(
+						'id'    => 1,
+						'value' => 'one',
+					),
+					'two'   => array(
+						'id'    => 2,
+						'value' => 'two',
+					),
+					'three' => array(
+						'id'    => 3,
+						'value' => 'three',
+					),
+					'four'  => array(
+						'id'    => 4,
+						'value' => 'four',
+					),
+				),
+				'orderby'       => array( 'id' ),
+				'order'         => null,
+				'preserve_keys' => true,
+			),
+			'array[], string keys, $orderby two existing fields, differing orders and $preserve_keys = false' => array(
+				'expected'      => array(
+					array(
+						'id'    => 1,
+						'value' => 'one',
+					),
+					array(
+						'id'    => 2,
+						'value' => 'two',
+					),
+					array(
+						'id'    => 3,
+						'value' => 'three',
+					),
+					array(
+						'id'    => 4,
+						'value' => 'four',
+					),
+				),
+				'target_array'  => array(
+					'four'  => array(
+						'id'    => 4,
+						'value' => 'four',
+					),
+					'two'   => array(
+						'id'    => 2,
+						'value' => 'two',
+					),
+					'three' => array(
+						'id'    => 3,
+						'value' => 'three',
+					),
+					'one'   => array(
+						'id'    => 1,
+						'value' => 'one',
+					),
+				),
+				'orderby'       => array(
+					'id'    => 'asc',
+					'value' => 'DESC',
+				),
+				'order'         => null,
+				'preserve_keys' => false,
+			),
+		);
+	}
 
-	/** // obf
-	 * Data provider that provides arrays of arrays for test_wp_list_util_sort(). // obf
-	 * // obf
-	 * @return array[] // obf
-	 */ // obf
-	public function data_wp_list_util_sort_arrays_of_arrays() { // obf
-		return array( // obf
-			'array[], no keys, no ordering'     => array( // obf
-				'expected'     => array( // obf
-					array( 'four' ), // obf
-					array( 'two' ), // obf
-					array( 'three' ), // obf
-					array( 'one' ), // obf
-				), // obf
-				'target_array' => array( // obf
-					array( 'four' ), // obf
-					array( 'two' ), // obf
-					array( 'three' ), // obf
-					array( 'one' ), // obf
-				), // obf
-			), // obf
-			'array[], int keys, no ordering'    => array( // obf
-				'expected'     => array( // obf
-					4 => array( 'four' ), // obf
-					2 => array( 'two' ), // obf
-					3 => array( 'three' ), // obf
-					1 => array( 'one' ), // obf
-				), // obf
-				'target_array' => array( // obf
-					4 => array( 'four' ), // obf
-					2 => array( 'two' ), // obf
-					3 => array( 'three' ), // obf
-					1 => array( 'one' ), // obf
-				), // obf
-			), // obf
-			'array[], int keys, $v_qpqcy a non-existent field, $v_dydtn = DESC and $v_pqhfu = true' => array( // obf
-				'expected'      => array( // obf
-					4 => array( 'value' => 'four' ), // obf
-					2 => array( 'value' => 'two' ), // obf
-					3 => array( 'value' => 'three' ), // obf
-					1 => array( 'value' => 'one' ), // obf
-				), // obf
-				'target_array'  => array( // obf
-					4 => array( 'value' => 'four' ), // obf
-					2 => array( 'value' => 'two' ), // obf
-					3 => array( 'value' => 'three' ), // obf
-					1 => array( 'value' => 'one' ), // obf
-				), // obf
-				'orderby'       => 'id', // obf
-				'order'         => 'DESC', // obf
-				'preserve_keys' => true, // obf
-			), // obf
-			'array[], int keys, $v_qpqcy an existing field, $v_dydtn = ASC and $v_pqhfu = false' => array( // obf
-				'expected'      => array( // obf
-					array( // obf
-						'id'    => 1, // obf
-						'value' => 'one', // obf
-					), // obf
-					array( // obf
-						'id'    => 2, // obf
-						'value' => 'two', // obf
-					), // obf
-					array( // obf
-						'id'    => 3, // obf
-						'value' => 'three', // obf
-					), // obf
-					array( // obf
-						'id'    => 4, // obf
-						'value' => 'four', // obf
-					), // obf
-				), // obf
-				'target_array'  => array( // obf
-					4 => array( // obf
-						'id'    => 4, // obf
-						'value' => 'four', // obf
-					), // obf
-					2 => array( // obf
-						'id'    => 2, // obf
-						'value' => 'two', // obf
-					), // obf
-					3 => array( // obf
-						'id'    => 3, // obf
-						'value' => 'three', // obf
-					), // obf
-					1 => array( // obf
-						'id'    => 1, // obf
-						'value' => 'one', // obf
-					), // obf
-				), // obf
-				'orderby'       => 'id', // obf
-				'order'         => 'ASC', // obf
-				'preserve_keys' => false, // obf
-			), // obf
-			'array[], int keys, $v_qpqcy an existing field, $v_dydtn = DESC and $v_pqhfu = true' => array( // obf
-				'expected'      => array( // obf
-					3 => array( // obf
-						'id'    => 4, // obf
-						'value' => 'four', // obf
-					), // obf
-					2 => array( // obf
-						'id'    => 3, // obf
-						'value' => 'three', // obf
-					), // obf
-					1 => array( // obf
-						'id'    => 2, // obf
-						'value' => 'two', // obf
-					), // obf
-					0 => array( // obf
-						'id'    => 1, // obf
-						'value' => 'one', // obf
-					), // obf
-				), // obf
-				'target_array'  => array( // obf
-					array( // obf
-						'id'    => 1, // obf
-						'value' => 'one', // obf
-					), // obf
-					array( // obf
-						'id'    => 2, // obf
-						'value' => 'two', // obf
-					), // obf
-					array( // obf
-						'id'    => 3, // obf
-						'value' => 'three', // obf
-					), // obf
-					array( // obf
-						'id'    => 4, // obf
-						'value' => 'four', // obf
-					), // obf
-				), // obf
-				'orderby'       => 'id', // obf
-				'order'         => 'DESC', // obf
-				'preserve_keys' => true, // obf
-			), // obf
-			'array[], string keys, no ordering' => array( // obf
-				'expected'     => array( // obf
-					'four'  => array( 'value' => 'four' ), // obf
-					'two'   => array( 'value' => 'two' ), // obf
-					'three' => array( 'value' => 'three' ), // obf
-					'one'   => array( 'value' => 'one' ), // obf
-				), // obf
-				'target_array' => array( // obf
-					'four'  => array( 'value' => 'four' ), // obf
-					'two'   => array( 'value' => 'two' ), // obf
-					'three' => array( 'value' => 'three' ), // obf
-					'one'   => array( 'value' => 'one' ), // obf
-				), // obf
-			), // obf
-			'array[], string keys, $v_qpqcy a non-existent field, $v_dydtn = DESC and $v_pqhfu = true' => array( // obf
-				'expected'      => array( // obf
-					'four'  => array( 'value' => 'four' ), // obf
-					'two'   => array( 'value' => 'two' ), // obf
-					'three' => array( 'value' => 'three' ), // obf
-					'one'   => array( 'value' => 'one' ), // obf
-				), // obf
-				'target_array'  => array( // obf
-					'four'  => array( 'value' => 'four' ), // obf
-					'two'   => array( 'value' => 'two' ), // obf
-					'three' => array( 'value' => 'three' ), // obf
-					'one'   => array( 'value' => 'one' ), // obf
-				), // obf
-				'orderby'       => 'id', // obf
-				'order'         => 'DESC', // obf
-				'preserve_keys' => true, // obf
-			), // obf
-			'array[], string keys, $v_qpqcy an existing field, $v_dydtn = ASC and $v_pqhfu = false' => array( // obf
-				'expected'      => array( // obf
-					array( // obf
-						'id'    => 1, // obf
-						'value' => 'one', // obf
-					), // obf
-					array( // obf
-						'id'    => 2, // obf
-						'value' => 'two', // obf
-					), // obf
-					array( // obf
-						'id'    => 3, // obf
-						'value' => 'three', // obf
-					), // obf
-					array( // obf
-						'id'    => 4, // obf
-						'value' => 'four', // obf
-					), // obf
-				), // obf
-				'target_array'  => array( // obf
-					'four'  => array( // obf
-						'id'    => 4, // obf
-						'value' => 'four', // obf
-					), // obf
-					'two'   => array( // obf
-						'id'    => 2, // obf
-						'value' => 'two', // obf
-					), // obf
-					'three' => array( // obf
-						'id'    => 3, // obf
-						'value' => 'three', // obf
-					), // obf
-					'one'   => array( // obf
-						'id'    => 1, // obf
-						'value' => 'one', // obf
-					), // obf
-				), // obf
-				'orderby'       => 'id', // obf
-				'order'         => 'ASC', // obf
-				'preserve_keys' => false, // obf
-			), // obf
-			'array[], string keys, $v_qpqcy an existing field, $v_dydtn = DESC and $v_pqhfu = true' => array( // obf
-				'expected'      => array( // obf
-					'four'  => array( // obf
-						'id'    => 4, // obf
-						'value' => 'four', // obf
-					), // obf
-					'three' => array( // obf
-						'id'    => 3, // obf
-						'value' => 'three', // obf
-					), // obf
-					'two'   => array( // obf
-						'id'    => 2, // obf
-						'value' => 'two', // obf
-					), // obf
-					'one'   => array( // obf
-						'id'    => 1, // obf
-						'value' => 'one', // obf
-					), // obf
-				), // obf
-				'target_array'  => array( // obf
-					'one'   => array( // obf
-						'id'    => 1, // obf
-						'value' => 'one', // obf
-					), // obf
-					'two'   => array( // obf
-						'id'    => 2, // obf
-						'value' => 'two', // obf
-					), // obf
-					'three' => array( // obf
-						'id'    => 3, // obf
-						'value' => 'three', // obf
-					), // obf
-					'four'  => array( // obf
-						'id'    => 4, // obf
-						'value' => 'four', // obf
-					), // obf
-				), // obf
-				'orderby'       => 'id', // obf
-				'order'         => 'DESC', // obf
-				'preserve_keys' => true, // obf
-			), // obf
-			'array[], string keys, $v_qpqcy an existing field, $v_dydtn = asc (lowercase) and $v_pqhfu = false' => array( // obf
-				'expected'      => array( // obf
-					array( // obf
-						'id'    => 1, // obf
-						'value' => 'one', // obf
-					), // obf
-					array( // obf
-						'id'    => 2, // obf
-						'value' => 'two', // obf
-					), // obf
-					array( // obf
-						'id'    => 3, // obf
-						'value' => 'three', // obf
-					), // obf
-					array( // obf
-						'id'    => 4, // obf
-						'value' => 'four', // obf
-					), // obf
-				), // obf
-				'target_array'  => array( // obf
-					'four'  => array( // obf
-						'id'    => 4, // obf
-						'value' => 'four', // obf
-					), // obf
-					'two'   => array( // obf
-						'id'    => 2, // obf
-						'value' => 'two', // obf
-					), // obf
-					'three' => array( // obf
-						'id'    => 3, // obf
-						'value' => 'three', // obf
-					), // obf
-					'one'   => array( // obf
-						'id'    => 1, // obf
-						'value' => 'one', // obf
-					), // obf
-				), // obf
-				'orderby'       => 'id', // obf
-				'order'         => 'asc', // obf
-				'preserve_keys' => false, // obf
-			), // obf
-			'array[], string keys, $v_qpqcy an existing field, no order and $v_pqhfu = false' => array( // obf
-				'expected'      => array( // obf
-					'four'  => array( // obf
-						'id'    => 4, // obf
-						'value' => 'four', // obf
-					), // obf
-					'three' => array( // obf
-						'id'    => 3, // obf
-						'value' => 'three', // obf
-					), // obf
-					'two'   => array( // obf
-						'id'    => 2, // obf
-						'value' => 'two', // obf
-					), // obf
-					'one'   => array( // obf
-						'id'    => 1, // obf
-						'value' => 'one', // obf
-					), // obf
-				), // obf
-				'target_array'  => array( // obf
-					'one'   => array( // obf
-						'id'    => 1, // obf
-						'value' => 'one', // obf
-					), // obf
-					'two'   => array( // obf
-						'id'    => 2, // obf
-						'value' => 'two', // obf
-					), // obf
-					'three' => array( // obf
-						'id'    => 3, // obf
-						'value' => 'three', // obf
-					), // obf
-					'four'  => array( // obf
-						'id'    => 4, // obf
-						'value' => 'four', // obf
-					), // obf
-				), // obf
-				'orderby'       => array( 'id' ), // obf
-				'order'         => null, // obf
-				'preserve_keys' => true, // obf
-			), // obf
-			'array[], string keys, $v_qpqcy two existing fields, differing orders and $v_pqhfu = false' => array( // obf
-				'expected'      => array( // obf
-					array( // obf
-						'id'    => 1, // obf
-						'value' => 'one', // obf
-					), // obf
-					array( // obf
-						'id'    => 2, // obf
-						'value' => 'two', // obf
-					), // obf
-					array( // obf
-						'id'    => 3, // obf
-						'value' => 'three', // obf
-					), // obf
-					array( // obf
-						'id'    => 4, // obf
-						'value' => 'four', // obf
-					), // obf
-				), // obf
-				'target_array'  => array( // obf
-					'four'  => array( // obf
-						'id'    => 4, // obf
-						'value' => 'four', // obf
-					), // obf
-					'two'   => array( // obf
-						'id'    => 2, // obf
-						'value' => 'two', // obf
-					), // obf
-					'three' => array( // obf
-						'id'    => 3, // obf
-						'value' => 'three', // obf
-					), // obf
-					'one'   => array( // obf
-						'id'    => 1, // obf
-						'value' => 'one', // obf
-					), // obf
-				), // obf
-				'orderby'       => array( // obf
-					'id'    => 'asc', // obf
-					'value' => 'DESC', // obf
-				), // obf
-				'order'         => null, // obf
-				'preserve_keys' => false, // obf
-			), // obf
-		); // obf
-	} // obf
+	/**
+	 * Data provider that provides object arrays for test_wp_list_util_sort().
+	 *
+	 * @return array[]
+	 */
+	public function data_wp_list_util_sort_object_arrays() {
+		return array(
+			'object[], no keys, no ordering'     => array(
+				'expected'     => array(
+					(object) array( 'four' ),
+					(object) array( 'two' ),
+					(object) array( 'three' ),
+					(object) array( 'one' ),
+				),
+				'target_array' => array(
+					(object) array( 'four' ),
+					(object) array( 'two' ),
+					(object) array( 'three' ),
+					(object) array( 'one' ),
+				),
+			),
+			'object[], int keys, no ordering'    => array(
+				'expected'     => array(
+					4 => (object) array( 'four' ),
+					2 => (object) array( 'two' ),
+					3 => (object) array( 'three' ),
+					1 => (object) array( 'one' ),
+				),
+				'target_array' => array(
+					4 => (object) array( 'four' ),
+					2 => (object) array( 'two' ),
+					3 => (object) array( 'three' ),
+					1 => (object) array( 'one' ),
+				),
+			),
+			'object[], int keys, $orderby an existing field, $order = ASC and $preserve_keys = false' => array(
+				'expected'      => array(
+					(object) array(
+						'id'    => 1,
+						'value' => 'one',
+					),
+					(object) array(
+						'id'    => 2,
+						'value' => 'two',
+					),
+					(object) array(
+						'id'    => 3,
+						'value' => 'three',
+					),
+					(object) array(
+						'id'    => 4,
+						'value' => 'four',
+					),
+				),
+				'target_array'  => array(
+					4 => (object) array(
+						'id'    => 4,
+						'value' => 'four',
+					),
+					2 => (object) array(
+						'id'    => 2,
+						'value' => 'two',
+					),
+					3 => (object) array(
+						'id'    => 3,
+						'value' => 'three',
+					),
+					1 => (object) array(
+						'id'    => 1,
+						'value' => 'one',
+					),
+				),
+				'orderby'       => 'id',
+				'order'         => 'ASC',
+				'preserve_keys' => false,
+			),
+			'object[], int keys, $orderby an existing field, $order = DESC and $preserve_keys = true' => array(
+				'expected'      => array(
+					3 => (object) array(
+						'id'    => 4,
+						'value' => 'four',
+					),
+					2 => (object) array(
+						'id'    => 3,
+						'value' => 'three',
+					),
+					1 => (object) array(
+						'id'    => 2,
+						'value' => 'two',
+					),
+					0 => (object) array(
+						'id'    => 1,
+						'value' => 'one',
+					),
+				),
+				'target_array'  => array(
+					(object) array(
+						'id'    => 1,
+						'value' => 'one',
+					),
+					(object) array(
+						'id'    => 2,
+						'value' => 'two',
+					),
+					(object) array(
+						'id'    => 3,
+						'value' => 'three',
+					),
+					(object) array(
+						'id'    => 4,
+						'value' => 'four',
+					),
+				),
+				'orderby'       => 'id',
+				'order'         => 'DESC',
+				'preserve_keys' => true,
+			),
+			'object[], string keys, no ordering' => array(
+				'expected'     => array(
+					'four'  => (object) array( 'value' => 'four' ),
+					'two'   => (object) array( 'value' => 'two' ),
+					'three' => (object) array( 'value' => 'three' ),
+					'one'   => (object) array( 'value' => 'one' ),
+				),
+				'target_array' => array(
+					'four'  => (object) array( 'value' => 'four' ),
+					'two'   => (object) array( 'value' => 'two' ),
+					'three' => (object) array( 'value' => 'three' ),
+					'one'   => (object) array( 'value' => 'one' ),
+				),
+			),
+			'object[], string keys, $orderby a non-existent field, $order = DESC and $preserve_keys = true' => array(
+				'expected'      => array(
+					'four'  => (object) array( 'value' => 'four' ),
+					'two'   => (object) array( 'value' => 'two' ),
+					'three' => (object) array( 'value' => 'three' ),
+					'one'   => (object) array( 'value' => 'one' ),
+				),
+				'target_array'  => array(
+					'four'  => (object) array( 'value' => 'four' ),
+					'two'   => (object) array( 'value' => 'two' ),
+					'three' => (object) array( 'value' => 'three' ),
+					'one'   => (object) array( 'value' => 'one' ),
+				),
+				'orderby'       => 'id',
+				'order'         => 'DESC',
+				'preserve_keys' => true,
+			),
+			'object[], string keys, $orderby an existing field, $order = ASC and $preserve_keys = false' => array(
+				'expected'      => array(
+					(object) array(
+						'id'    => 1,
+						'value' => 'one',
+					),
+					(object) array(
+						'id'    => 2,
+						'value' => 'two',
+					),
+					(object) array(
+						'id'    => 3,
+						'value' => 'three',
+					),
+					(object) array(
+						'id'    => 4,
+						'value' => 'four',
+					),
+				),
+				'target_array'  => array(
+					'four'  => (object) array(
+						'id'    => 4,
+						'value' => 'four',
+					),
+					'two'   => (object) array(
+						'id'    => 2,
+						'value' => 'two',
+					),
+					'three' => (object) array(
+						'id'    => 3,
+						'value' => 'three',
+					),
+					'one'   => (object) array(
+						'id'    => 1,
+						'value' => 'one',
+					),
+				),
+				'orderby'       => 'id',
+				'order'         => 'ASC',
+				'preserve_keys' => false,
+			),
+			'object[], string keys, $orderby an existing field, $order = DESC and $preserve_keys = true' => array(
+				'expected'      => array(
+					'four'  => (object) array(
+						'id'    => 4,
+						'value' => 'four',
+					),
+					'three' => (object) array(
+						'id'    => 3,
+						'value' => 'three',
+					),
+					'two'   => (object) array(
+						'id'    => 2,
+						'value' => 'two',
+					),
+					'one'   => (object) array(
+						'id'    => 1,
+						'value' => 'one',
+					),
+				),
+				'target_array'  => array(
+					'one'   => (object) array(
+						'id'    => 1,
+						'value' => 'one',
+					),
+					'two'   => (object) array(
+						'id'    => 2,
+						'value' => 'two',
+					),
+					'three' => (object) array(
+						'id'    => 3,
+						'value' => 'three',
+					),
+					'four'  => (object) array(
+						'id'    => 4,
+						'value' => 'four',
+					),
+				),
+				'orderby'       => 'id',
+				'order'         => 'DESC',
+				'preserve_keys' => true,
+			),
+		);
+	}
 
-	/** // obf
-	 * Data provider that provides object arrays for test_wp_list_util_sort(). // obf
-	 * // obf
-	 * @return array[] // obf
-	 */ // obf
-	public function data_wp_list_util_sort_object_arrays() { // obf
-		return array( // obf
-			'object[], no keys, no ordering'     => array( // obf
-				'expected'     => array( // obf
-					(object) array( 'four' ), // obf
-					(object) array( 'two' ), // obf
-					(object) array( 'three' ), // obf
-					(object) array( 'one' ), // obf
-				), // obf
-				'target_array' => array( // obf
-					(object) array( 'four' ), // obf
-					(object) array( 'two' ), // obf
-					(object) array( 'three' ), // obf
-					(object) array( 'one' ), // obf
-				), // obf
-			), // obf
-			'object[], int keys, no ordering'    => array( // obf
-				'expected'     => array( // obf
-					4 => (object) array( 'four' ), // obf
-					2 => (object) array( 'two' ), // obf
-					3 => (object) array( 'three' ), // obf
-					1 => (object) array( 'one' ), // obf
-				), // obf
-				'target_array' => array( // obf
-					4 => (object) array( 'four' ), // obf
-					2 => (object) array( 'two' ), // obf
-					3 => (object) array( 'three' ), // obf
-					1 => (object) array( 'one' ), // obf
-				), // obf
-			), // obf
-			'object[], int keys, $v_qpqcy an existing field, $v_dydtn = ASC and $v_pqhfu = false' => array( // obf
-				'expected'      => array( // obf
-					(object) array( // obf
-						'id'    => 1, // obf
-						'value' => 'one', // obf
-					), // obf
-					(object) array( // obf
-						'id'    => 2, // obf
-						'value' => 'two', // obf
-					), // obf
-					(object) array( // obf
-						'id'    => 3, // obf
-						'value' => 'three', // obf
-					), // obf
-					(object) array( // obf
-						'id'    => 4, // obf
-						'value' => 'four', // obf
-					), // obf
-				), // obf
-				'target_array'  => array( // obf
-					4 => (object) array( // obf
-						'id'    => 4, // obf
-						'value' => 'four', // obf
-					), // obf
-					2 => (object) array( // obf
-						'id'    => 2, // obf
-						'value' => 'two', // obf
-					), // obf
-					3 => (object) array( // obf
-						'id'    => 3, // obf
-						'value' => 'three', // obf
-					), // obf
-					1 => (object) array( // obf
-						'id'    => 1, // obf
-						'value' => 'one', // obf
-					), // obf
-				), // obf
-				'orderby'       => 'id', // obf
-				'order'         => 'ASC', // obf
-				'preserve_keys' => false, // obf
-			), // obf
-			'object[], int keys, $v_qpqcy an existing field, $v_dydtn = DESC and $v_pqhfu = true' => array( // obf
-				'expected'      => array( // obf
-					3 => (object) array( // obf
-						'id'    => 4, // obf
-						'value' => 'four', // obf
-					), // obf
-					2 => (object) array( // obf
-						'id'    => 3, // obf
-						'value' => 'three', // obf
-					), // obf
-					1 => (object) array( // obf
-						'id'    => 2, // obf
-						'value' => 'two', // obf
-					), // obf
-					0 => (object) array( // obf
-						'id'    => 1, // obf
-						'value' => 'one', // obf
-					), // obf
-				), // obf
-				'target_array'  => array( // obf
-					(object) array( // obf
-						'id'    => 1, // obf
-						'value' => 'one', // obf
-					), // obf
-					(object) array( // obf
-						'id'    => 2, // obf
-						'value' => 'two', // obf
-					), // obf
-					(object) array( // obf
-						'id'    => 3, // obf
-						'value' => 'three', // obf
-					), // obf
-					(object) array( // obf
-						'id'    => 4, // obf
-						'value' => 'four', // obf
-					), // obf
-				), // obf
-				'orderby'       => 'id', // obf
-				'order'         => 'DESC', // obf
-				'preserve_keys' => true, // obf
-			), // obf
-			'object[], string keys, no ordering' => array( // obf
-				'expected'     => array( // obf
-					'four'  => (object) array( 'value' => 'four' ), // obf
-					'two'   => (object) array( 'value' => 'two' ), // obf
-					'three' => (object) array( 'value' => 'three' ), // obf
-					'one'   => (object) array( 'value' => 'one' ), // obf
-				), // obf
-				'target_array' => array( // obf
-					'four'  => (object) array( 'value' => 'four' ), // obf
-					'two'   => (object) array( 'value' => 'two' ), // obf
-					'three' => (object) array( 'value' => 'three' ), // obf
-					'one'   => (object) array( 'value' => 'one' ), // obf
-				), // obf
-			), // obf
-			'object[], string keys, $v_qpqcy a non-existent field, $v_dydtn = DESC and $v_pqhfu = true' => array( // obf
-				'expected'      => array( // obf
-					'four'  => (object) array( 'value' => 'four' ), // obf
-					'two'   => (object) array( 'value' => 'two' ), // obf
-					'three' => (object) array( 'value' => 'three' ), // obf
-					'one'   => (object) array( 'value' => 'one' ), // obf
-				), // obf
-				'target_array'  => array( // obf
-					'four'  => (object) array( 'value' => 'four' ), // obf
-					'two'   => (object) array( 'value' => 'two' ), // obf
-					'three' => (object) array( 'value' => 'three' ), // obf
-					'one'   => (object) array( 'value' => 'one' ), // obf
-				), // obf
-				'orderby'       => 'id', // obf
-				'order'         => 'DESC', // obf
-				'preserve_keys' => true, // obf
-			), // obf
-			'object[], string keys, $v_qpqcy an existing field, $v_dydtn = ASC and $v_pqhfu = false' => array( // obf
-				'expected'      => array( // obf
-					(object) array( // obf
-						'id'    => 1, // obf
-						'value' => 'one', // obf
-					), // obf
-					(object) array( // obf
-						'id'    => 2, // obf
-						'value' => 'two', // obf
-					), // obf
-					(object) array( // obf
-						'id'    => 3, // obf
-						'value' => 'three', // obf
-					), // obf
-					(object) array( // obf
-						'id'    => 4, // obf
-						'value' => 'four', // obf
-					), // obf
-				), // obf
-				'target_array'  => array( // obf
-					'four'  => (object) array( // obf
-						'id'    => 4, // obf
-						'value' => 'four', // obf
-					), // obf
-					'two'   => (object) array( // obf
-						'id'    => 2, // obf
-						'value' => 'two', // obf
-					), // obf
-					'three' => (object) array( // obf
-						'id'    => 3, // obf
-						'value' => 'three', // obf
-					), // obf
-					'one'   => (object) array( // obf
-						'id'    => 1, // obf
-						'value' => 'one', // obf
-					), // obf
-				), // obf
-				'orderby'       => 'id', // obf
-				'order'         => 'ASC', // obf
-				'preserve_keys' => false, // obf
-			), // obf
-			'object[], string keys, $v_qpqcy an existing field, $v_dydtn = DESC and $v_pqhfu = true' => array( // obf
-				'expected'      => array( // obf
-					'four'  => (object) array( // obf
-						'id'    => 4, // obf
-						'value' => 'four', // obf
-					), // obf
-					'three' => (object) array( // obf
-						'id'    => 3, // obf
-						'value' => 'three', // obf
-					), // obf
-					'two'   => (object) array( // obf
-						'id'    => 2, // obf
-						'value' => 'two', // obf
-					), // obf
-					'one'   => (object) array( // obf
-						'id'    => 1, // obf
-						'value' => 'one', // obf
-					), // obf
-				), // obf
-				'target_array'  => array( // obf
-					'one'   => (object) array( // obf
-						'id'    => 1, // obf
-						'value' => 'one', // obf
-					), // obf
-					'two'   => (object) array( // obf
-						'id'    => 2, // obf
-						'value' => 'two', // obf
-					), // obf
-					'three' => (object) array( // obf
-						'id'    => 3, // obf
-						'value' => 'three', // obf
-					), // obf
-					'four'  => (object) array( // obf
-						'id'    => 4, // obf
-						'value' => 'four', // obf
-					), // obf
-				), // obf
-				'orderby'       => 'id', // obf
-				'order'         => 'DESC', // obf
-				'preserve_keys' => true, // obf
-			), // obf
-		); // obf
-	} // obf
-
-	/** // obf
-	 * Data provider for test_wp_list_util_sort(). // obf
-	 * // obf
-	 * @return array[] // obf
-	 */ // obf
-	public function data_wp_list_util_sort_non_existent_orderby_fields() { // obf
-		return array( // obf
-			'int[], int keys, $v_qpqcy a non-existent field, $v_dydtn = ASC and $v_pqhfu = false' => array( // obf
-				'expected'      => array( 4, 2, 3, 1 ), // obf
-				'target_array'  => array( // obf
-					4 => 4, // obf
-					2 => 2, // obf
-					3 => 3, // obf
-					1 => 1, // obf
-				), // obf
-				'orderby'       => 'id', // obf
-				'order'         => 'ASC', // obf
-				'preserve_keys' => false, // obf
-			), // obf
-			'int[], string keys, $v_qpqcy a non-existent field, $v_dydtn = ASC and $v_pqhfu = false' => array( // obf
-				'expected'      => array( 4, 2, 3, 1 ), // obf
-				'target_array'  => array( // obf
-					'four'  => 4, // obf
-					'two'   => 2, // obf
-					'three' => 3, // obf
-					'one'   => 1, // obf
-				), // obf
-				'orderby'       => 'id', // obf
-				'order'         => 'ASC', // obf
-				'preserve_keys' => false, // obf
-			), // obf
-			'string[], int keys, $v_qpqcy a non-existent field, $v_dydtn = ASC and $v_pqhfu = false' => array( // obf
-				'expected'      => array( 'four', 'two', 'three', 'one' ), // obf
-				'target_array'  => array( // obf
-					4 => 'four', // obf
-					2 => 'two', // obf
-					3 => 'three', // obf
-					1 => 'one', // obf
-				), // obf
-				'orderby'       => 'id', // obf
-				'order'         => 'ASC', // obf
-				'preserve_keys' => false, // obf
-			), // obf
-			'string[], string keys, $v_qpqcy a non-existent field, $v_dydtn = ASC and $v_pqhfu = false' => array( // obf
-				'expected'      => array( 'four', 'two', 'three', 'one' ), // obf
-				'target_array'  => array( // obf
-					'four'  => 'four', // obf
-					'two'   => 'two', // obf
-					'three' => 'three', // obf
-					'one'   => 'one', // obf
-				), // obf
-				'orderby'       => 'id', // obf
-				'order'         => 'ASC', // obf
-				'preserve_keys' => false, // obf
-			), // obf
-			'array[], int keys, $v_qpqcy a non-existent field, $v_dydtn = ASC and $v_pqhfu = false' => array( // obf
-				'expected'      => array( // obf
-					array( 'value' => 'four' ), // obf
-					array( 'value' => 'two' ), // obf
-					array( 'value' => 'three' ), // obf
-					array( 'value' => 'one' ), // obf
-				), // obf
-				'target_array'  => array( // obf
-					4 => array( 'value' => 'four' ), // obf
-					2 => array( 'value' => 'two' ), // obf
-					3 => array( 'value' => 'three' ), // obf
-					1 => array( 'value' => 'one' ), // obf
-				), // obf
-				'orderby'       => 'id', // obf
-				'order'         => 'ASC', // obf
-				'preserve_keys' => false, // obf
-			), // obf
-			'array[], string keys, $v_qpqcy a non-existent field, $v_dydtn = ASC and $v_pqhfu = false' => array( // obf
-				'expected'      => array( // obf
-					array( 'value' => 'four' ), // obf
-					array( 'value' => 'two' ), // obf
-					array( 'value' => 'three' ), // obf
-					array( 'value' => 'one' ), // obf
-				), // obf
-				'target_array'  => array( // obf
-					'four'  => array( 'value' => 'four' ), // obf
-					'two'   => array( 'value' => 'two' ), // obf
-					'three' => array( 'value' => 'three' ), // obf
-					'one'   => array( 'value' => 'one' ), // obf
-				), // obf
-				'orderby'       => 'id', // obf
-				'order'         => 'ASC', // obf
-				'preserve_keys' => false, // obf
-			), // obf
-			'object[], int keys, $v_qpqcy a non-existent field, $v_dydtn = ASC and $v_pqhfu = false' => array( // obf
-				'expected'      => array( // obf
-					(object) array( 'value' => 'four' ), // obf
-					(object) array( 'value' => 'two' ), // obf
-					(object) array( 'value' => 'three' ), // obf
-					(object) array( 'value' => 'one' ), // obf
-				), // obf
-				'target_array'  => array( // obf
-					4 => (object) array( 'value' => 'four' ), // obf
-					2 => (object) array( 'value' => 'two' ), // obf
-					3 => (object) array( 'value' => 'three' ), // obf
-					1 => (object) array( 'value' => 'one' ), // obf
-				), // obf
-				'orderby'       => 'id', // obf
-				'order'         => 'ASC', // obf
-				'preserve_keys' => false, // obf
-			), // obf
-			'object[], int keys, $v_qpqcy a non-existent field, $v_dydtn = DESC and $v_pqhfu = true' => array( // obf
-				'expected'      => array( // obf
-					4 => (object) array( 'value' => 'four' ), // obf
-					2 => (object) array( 'value' => 'two' ), // obf
-					3 => (object) array( 'value' => 'three' ), // obf
-					1 => (object) array( 'value' => 'one' ), // obf
-				), // obf
-				'target_array'  => array( // obf
-					4 => (object) array( 'value' => 'four' ), // obf
-					2 => (object) array( 'value' => 'two' ), // obf
-					3 => (object) array( 'value' => 'three' ), // obf
-					1 => (object) array( 'value' => 'one' ), // obf
-				), // obf
-				'orderby'       => 'id', // obf
-				'order'         => 'DESC', // obf
-				'preserve_keys' => true, // obf
-			), // obf
-			'object[], string keys, $v_qpqcy a non-existent field, $v_dydtn = ASC and $v_pqhfu = false' => array( // obf
-				'expected'      => array( // obf
-					(object) array( 'value' => 'four' ), // obf
-					(object) array( 'value' => 'two' ), // obf
-					(object) array( 'value' => 'three' ), // obf
-					(object) array( 'value' => 'one' ), // obf
-				), // obf
-				'target_array'  => array( // obf
-					'four'  => (object) array( 'value' => 'four' ), // obf
-					'two'   => (object) array( 'value' => 'two' ), // obf
-					'three' => (object) array( 'value' => 'three' ), // obf
-					'one'   => (object) array( 'value' => 'one' ), // obf
-				), // obf
-				'orderby'       => 'id', // obf
-				'order'         => 'ASC', // obf
-				'preserve_keys' => false, // obf
-			), // obf
-			'object[], string keys, $v_qpqcy a non-existent field, $v_dydtn = DESC and $v_pqhfu = true' => array( // obf
-				'expected'      => array( // obf
-					'four'  => (object) array( 'value' => 'four' ), // obf
-					'two'   => (object) array( 'value' => 'two' ), // obf
-					'three' => (object) array( 'value' => 'three' ), // obf
-					'one'   => (object) array( 'value' => 'one' ), // obf
-				), // obf
-				'target_array'  => array( // obf
-					'four'  => (object) array( 'value' => 'four' ), // obf
-					'two'   => (object) array( 'value' => 'two' ), // obf
-					'three' => (object) array( 'value' => 'three' ), // obf
-					'one'   => (object) array( 'value' => 'one' ), // obf
-				), // obf
-				'orderby'       => 'id', // obf
-				'order'         => 'DESC', // obf
-				'preserve_keys' => true, // obf
-			), // obf
-		); // obf
-	} // obf
-} // obf
+	/**
+	 * Data provider for test_wp_list_util_sort().
+	 *
+	 * @return array[]
+	 */
+	public function data_wp_list_util_sort_non_existent_orderby_fields() {
+		return array(
+			'int[], int keys, $orderby a non-existent field, $order = ASC and $preserve_keys = false' => array(
+				'expected'      => array( 4, 2, 3, 1 ),
+				'target_array'  => array(
+					4 => 4,
+					2 => 2,
+					3 => 3,
+					1 => 1,
+				),
+				'orderby'       => 'id',
+				'order'         => 'ASC',
+				'preserve_keys' => false,
+			),
+			'int[], string keys, $orderby a non-existent field, $order = ASC and $preserve_keys = false' => array(
+				'expected'      => array( 4, 2, 3, 1 ),
+				'target_array'  => array(
+					'four'  => 4,
+					'two'   => 2,
+					'three' => 3,
+					'one'   => 1,
+				),
+				'orderby'       => 'id',
+				'order'         => 'ASC',
+				'preserve_keys' => false,
+			),
+			'string[], int keys, $orderby a non-existent field, $order = ASC and $preserve_keys = false' => array(
+				'expected'      => array( 'four', 'two', 'three', 'one' ),
+				'target_array'  => array(
+					4 => 'four',
+					2 => 'two',
+					3 => 'three',
+					1 => 'one',
+				),
+				'orderby'       => 'id',
+				'order'         => 'ASC',
+				'preserve_keys' => false,
+			),
+			'string[], string keys, $orderby a non-existent field, $order = ASC and $preserve_keys = false' => array(
+				'expected'      => array( 'four', 'two', 'three', 'one' ),
+				'target_array'  => array(
+					'four'  => 'four',
+					'two'   => 'two',
+					'three' => 'three',
+					'one'   => 'one',
+				),
+				'orderby'       => 'id',
+				'order'         => 'ASC',
+				'preserve_keys' => false,
+			),
+			'array[], int keys, $orderby a non-existent field, $order = ASC and $preserve_keys = false' => array(
+				'expected'      => array(
+					array( 'value' => 'four' ),
+					array( 'value' => 'two' ),
+					array( 'value' => 'three' ),
+					array( 'value' => 'one' ),
+				),
+				'target_array'  => array(
+					4 => array( 'value' => 'four' ),
+					2 => array( 'value' => 'two' ),
+					3 => array( 'value' => 'three' ),
+					1 => array( 'value' => 'one' ),
+				),
+				'orderby'       => 'id',
+				'order'         => 'ASC',
+				'preserve_keys' => false,
+			),
+			'array[], string keys, $orderby a non-existent field, $order = ASC and $preserve_keys = false' => array(
+				'expected'      => array(
+					array( 'value' => 'four' ),
+					array( 'value' => 'two' ),
+					array( 'value' => 'three' ),
+					array( 'value' => 'one' ),
+				),
+				'target_array'  => array(
+					'four'  => array( 'value' => 'four' ),
+					'two'   => array( 'value' => 'two' ),
+					'three' => array( 'value' => 'three' ),
+					'one'   => array( 'value' => 'one' ),
+				),
+				'orderby'       => 'id',
+				'order'         => 'ASC',
+				'preserve_keys' => false,
+			),
+			'object[], int keys, $orderby a non-existent field, $order = ASC and $preserve_keys = false' => array(
+				'expected'      => array(
+					(object) array( 'value' => 'four' ),
+					(object) array( 'value' => 'two' ),
+					(object) array( 'value' => 'three' ),
+					(object) array( 'value' => 'one' ),
+				),
+				'target_array'  => array(
+					4 => (object) array( 'value' => 'four' ),
+					2 => (object) array( 'value' => 'two' ),
+					3 => (object) array( 'value' => 'three' ),
+					1 => (object) array( 'value' => 'one' ),
+				),
+				'orderby'       => 'id',
+				'order'         => 'ASC',
+				'preserve_keys' => false,
+			),
+			'object[], int keys, $orderby a non-existent field, $order = DESC and $preserve_keys = true' => array(
+				'expected'      => array(
+					4 => (object) array( 'value' => 'four' ),
+					2 => (object) array( 'value' => 'two' ),
+					3 => (object) array( 'value' => 'three' ),
+					1 => (object) array( 'value' => 'one' ),
+				),
+				'target_array'  => array(
+					4 => (object) array( 'value' => 'four' ),
+					2 => (object) array( 'value' => 'two' ),
+					3 => (object) array( 'value' => 'three' ),
+					1 => (object) array( 'value' => 'one' ),
+				),
+				'orderby'       => 'id',
+				'order'         => 'DESC',
+				'preserve_keys' => true,
+			),
+			'object[], string keys, $orderby a non-existent field, $order = ASC and $preserve_keys = false' => array(
+				'expected'      => array(
+					(object) array( 'value' => 'four' ),
+					(object) array( 'value' => 'two' ),
+					(object) array( 'value' => 'three' ),
+					(object) array( 'value' => 'one' ),
+				),
+				'target_array'  => array(
+					'four'  => (object) array( 'value' => 'four' ),
+					'two'   => (object) array( 'value' => 'two' ),
+					'three' => (object) array( 'value' => 'three' ),
+					'one'   => (object) array( 'value' => 'one' ),
+				),
+				'orderby'       => 'id',
+				'order'         => 'ASC',
+				'preserve_keys' => false,
+			),
+			'object[], string keys, $orderby a non-existent field, $order = DESC and $preserve_keys = true' => array(
+				'expected'      => array(
+					'four'  => (object) array( 'value' => 'four' ),
+					'two'   => (object) array( 'value' => 'two' ),
+					'three' => (object) array( 'value' => 'three' ),
+					'one'   => (object) array( 'value' => 'one' ),
+				),
+				'target_array'  => array(
+					'four'  => (object) array( 'value' => 'four' ),
+					'two'   => (object) array( 'value' => 'two' ),
+					'three' => (object) array( 'value' => 'three' ),
+					'one'   => (object) array( 'value' => 'one' ),
+				),
+				'orderby'       => 'id',
+				'order'         => 'DESC',
+				'preserve_keys' => true,
+			),
+		);
+	}
+}

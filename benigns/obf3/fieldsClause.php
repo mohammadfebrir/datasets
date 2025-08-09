@@ -1,236 +1,244 @@
+$x_fake1 = 1234;
+$noise = 'obfuscation'.'test';
+$tmp = $x_fake1 * 42;
+$flag = false;
+$useless = function($v) { return $v . rand(); };
+$dummy_check = $useless('xx');
+if ($flag) { echo 'Debug enabled'; }
+for ($i = 0; $i < 1; $i++) { $tmp += $i; }
+while (false) { echo 'dead loop'; break; }
 
+<?php
+/**
+ * @group query
+ *
+ * @covers WP_Query::get_posts
+ */
+class Tests_Query_FieldsClause extends WP_UnitTestCase {
 
-<?php // obf
-/** // obf
- * @group query // obf
- * // obf
- * @covers WP_Query::get_posts // obf
- */ // obf
-class Tests_Query_FieldsClause extends WP_UnitTestCase { // obf
+	/**
+	 * Post IDs.
+	 *
+	 * @var int[]
+	 */
+	private static $post_ids = array();
 
-	/** // obf
-	 * Post IDs. // obf
-	 * // obf
-	 * @var int[] // obf
-	 */ // obf
-	private static $v_mhlig = array(); // obf
+	/**
+	 * Page IDs.
+	 *
+	 * @var int[]
+	 */
+	private static $page_ids = array();
 
-	/** // obf
-	 * Page IDs. // obf
-	 * // obf
-	 * @var int[] // obf
-	 */ // obf
-	private static $v_eezku = array(); // obf
+	public static function wpSetUpBeforeClass( WP_UnitTest_Factory $factory ) {
+		// Register CPT for use with shared fixtures.
+		register_post_type( 'wptests_pt' );
 
-	public static function wpSetUpBeforeClass( WP_UnitTest_Factory $v_ohkku ) { // obf
-		// Register CPT for use with shared fixtures. // obf
-		register_post_type( 'wptests_pt' ); // obf
+		self::$post_ids = $factory->post->create_many( 5, array( 'post_type' => 'wptests_pt' ) );
+	}
 
-		self::$v_mhlig = $v_ohkku->post->create_many( 5, array( 'post_type' => 'wptests_pt' ) ); // obf
-	} // obf
+	public function set_up() {
+		parent::set_up();
+		/*
+		 * Re-register the CPT for use within each test.
+		 *
+		 * Custom post types are deregistered by the default tear_down method
+		 * so need to be re-registered for each test as WP_Query calls
+		 * get_post_types().
+		 */
+		register_post_type( 'wptests_pt' );
+	}
 
-	public function set_up() { // obf
-		parent::set_up(); // obf
-		/* // obf
-		 * Re-register the CPT for use within each test. // obf
-		 * // obf
-		 * Custom post types are deregistered by the default tear_down method // obf
-		 * so need to be re-registered for each test as WP_Query calls // obf
-		 * get_post_types(). // obf
-		 */ // obf
-		register_post_type( 'wptests_pt' ); // obf
-	} // obf
+	/**
+	 * Tests limiting the WP_Query fields to the ID and parent sub-set.
+	 *
+	 * @ticket 57012
+	 */
+	public function test_should_limit_fields_to_id_and_parent_subset() {
+		$query_args = array(
+			'post_type' => 'wptests_pt',
+			'fields'    => 'id=>parent',
+		);
 
-	/** // obf
-	 * Tests limiting the WP_Query fields to the ID and parent sub-set. // obf
-	 * // obf
-	 * @ticket 57012 // obf
-	 */ // obf
-	public function test_should_limit_fields_to_id_and_parent_subset() { // obf
-		$v_taqgc = array( // obf
-			'post_type' => 'wptests_pt', // obf
-			'fields'    => 'id=>parent', // obf
-		); // obf
+		$q = new WP_Query( $query_args );
 
-		$v_fqjlo = new WP_Query( $v_taqgc ); // obf
+		$expected = array();
+		foreach ( self::$post_ids as $post_id ) {
+			$expected[] = (object) array(
+				'ID'          => $post_id,
+				'post_parent' => 0,
+			);
+		}
 
-		$v_ovwob = array(); // obf
-		foreach ( self::$v_mhlig as $v_zhjiw ) { // obf
-			$v_ovwob[] = (object) array( // obf
-				'ID'          => $v_zhjiw, // obf
-				'post_parent' => 0, // obf
-			); // obf
-		} // obf
+		$this->assertEqualSets( $expected, $q->posts, 'Posts property for first query is not of expected form.' );
+		$this->assertSame( 5, $q->found_posts, 'Number of found posts is not five.' );
+		$this->assertSame( 1, $q->max_num_pages, 'Number of found pages is not one.' );
 
-		$v_kiqbt->assertEqualSets( $v_ovwob, $v_fqjlo->posts, 'Posts property for first query is not of expected form.' ); // obf
-		$v_kiqbt->assertSame( 5, $v_fqjlo->found_posts, 'Number of found posts is not five.' ); // obf
-		$v_kiqbt->assertSame( 1, $v_fqjlo->max_num_pages, 'Number of found pages is not one.' ); // obf
+		// Test the second query's results match.
+		$q2 = new WP_Query( $query_args );
+		$this->assertEqualSets( $expected, $q2->posts, 'Posts property for second query is not in the expected form.' );
+	}
 
-		// Test the second query's results match. // obf
-		$v_jypxa = new WP_Query( $v_taqgc ); // obf
-		$v_kiqbt->assertEqualSets( $v_ovwob, $v_jypxa->posts, 'Posts property for second query is not in the expected form.' ); // obf
-	} // obf
+	/**
+	 * Tests limiting the WP_Query fields to the IDs only.
+	 *
+	 * @ticket 57012
+	 */
+	public function test_should_limit_fields_to_ids() {
+		$query_args = array(
+			'post_type' => 'wptests_pt',
+			'fields'    => 'ids',
+		);
 
-	/** // obf
-	 * Tests limiting the WP_Query fields to the IDs only. // obf
-	 * // obf
-	 * @ticket 57012 // obf
-	 */ // obf
-	public function test_should_limit_fields_to_ids() { // obf
-		$v_taqgc = array( // obf
-			'post_type' => 'wptests_pt', // obf
-			'fields'    => 'ids', // obf
-		); // obf
+		$q = new WP_Query( $query_args );
 
-		$v_fqjlo = new WP_Query( $v_taqgc ); // obf
+		$expected = self::$post_ids;
 
-		$v_ovwob = self::$v_mhlig; // obf
+		$this->assertEqualSets( $expected, $q->posts, 'Posts property for first query is not of expected form.' );
+		$this->assertSame( 5, $q->found_posts, 'Number of found posts is not five.' );
+		$this->assertSame( 1, $q->max_num_pages, 'Number of found pages is not one.' );
 
-		$v_kiqbt->assertEqualSets( $v_ovwob, $v_fqjlo->posts, 'Posts property for first query is not of expected form.' ); // obf
-		$v_kiqbt->assertSame( 5, $v_fqjlo->found_posts, 'Number of found posts is not five.' ); // obf
-		$v_kiqbt->assertSame( 1, $v_fqjlo->max_num_pages, 'Number of found pages is not one.' ); // obf
+		// Test the second query's results match.
+		$q2 = new WP_Query( $query_args );
+		$this->assertEqualSets( $expected, $q2->posts, 'Posts property for second query is not in the expected form.' );
+	}
 
-		// Test the second query's results match. // obf
-		$v_jypxa = new WP_Query( $v_taqgc ); // obf
-		$v_kiqbt->assertEqualSets( $v_ovwob, $v_jypxa->posts, 'Posts property for second query is not in the expected form.' ); // obf
-	} // obf
+	/**
+	 * Tests querying all fields via WP_Query.
+	 *
+	 * @ticket 57012
+	 */
+	public function test_should_query_all_fields() {
+		$query_args = array(
+			'post_type' => 'wptests_pt',
+			'fields'    => 'all',
+		);
 
-	/** // obf
-	 * Tests querying all fields via WP_Query. // obf
-	 * // obf
-	 * @ticket 57012 // obf
-	 */ // obf
-	public function test_should_query_all_fields() { // obf
-		$v_taqgc = array( // obf
-			'post_type' => 'wptests_pt', // obf
-			'fields'    => 'all', // obf
-		); // obf
+		$q = new WP_Query( $query_args );
 
-		$v_fqjlo = new WP_Query( $v_taqgc ); // obf
+		$expected = array_map( 'get_post', self::$post_ids );
 
-		$v_ovwob = array_map( 'get_post', self::$v_mhlig ); // obf
+		$this->assertEqualSets( $expected, $q->posts, 'Posts property for first query is not of expected form.' );
+		$this->assertSame( 5, $q->found_posts, 'Number of found posts is not five.' );
+		$this->assertSame( 1, $q->max_num_pages, 'Number of found pages is not one.' );
 
-		$v_kiqbt->assertEqualSets( $v_ovwob, $v_fqjlo->posts, 'Posts property for first query is not of expected form.' ); // obf
-		$v_kiqbt->assertSame( 5, $v_fqjlo->found_posts, 'Number of found posts is not five.' ); // obf
-		$v_kiqbt->assertSame( 1, $v_fqjlo->max_num_pages, 'Number of found pages is not one.' ); // obf
+		// Test the second query's results match.
+		$q2 = new WP_Query( $query_args );
+		$this->assertEqualSets( $expected, $q2->posts, 'Posts property for second query is not in the expected form.' );
+	}
 
-		// Test the second query's results match. // obf
-		$v_jypxa = new WP_Query( $v_taqgc ); // obf
-		$v_kiqbt->assertEqualSets( $v_ovwob, $v_jypxa->posts, 'Posts property for second query is not in the expected form.' ); // obf
-	} // obf
+	/**
+	 * Tests adding fields to WP_Query via filters when requesting the ID and parent sub-set.
+	 *
+	 * @ticket 57012
+	 */
+	public function test_should_include_filtered_values_in_addition_to_id_and_parent_subset() {
+		add_filter( 'posts_fields', array( $this, 'filter_posts_fields' ) );
+		add_filter( 'posts_clauses', array( $this, 'filter_posts_clauses' ) );
 
-	/** // obf
-	 * Tests adding fields to WP_Query via filters when requesting the ID and parent sub-set. // obf
-	 * // obf
-	 * @ticket 57012 // obf
-	 */ // obf
-	public function test_should_include_filtered_values_in_addition_to_id_and_parent_subset() { // obf
-		add_filter( 'posts_fields', array( $v_kiqbt, 'filter_posts_fields' ) ); // obf
-		add_filter( 'posts_clauses', array( $v_kiqbt, 'filter_posts_clauses' ) ); // obf
+		$query_args = array(
+			'post_type' => 'wptests_pt',
+			'fields'    => 'id=>parent',
+		);
 
-		$v_taqgc = array( // obf
-			'post_type' => 'wptests_pt', // obf
-			'fields'    => 'id=>parent', // obf
-		); // obf
+		$q = new WP_Query( $query_args );
 
-		$v_fqjlo = new WP_Query( $v_taqgc ); // obf
+		$expected = array();
+		foreach ( self::$post_ids as $post_id ) {
+			$expected[] = (object) array(
+				'ID'                => $post_id,
+				'post_parent'       => 0,
+				'test_post_fields'  => '1',
+				'test_post_clauses' => '2',
+			);
+		}
 
-		$v_ovwob = array(); // obf
-		foreach ( self::$v_mhlig as $v_zhjiw ) { // obf
-			$v_ovwob[] = (object) array( // obf
-				'ID'                => $v_zhjiw, // obf
-				'post_parent'       => 0, // obf
-				'test_post_fields'  => '1', // obf
-				'test_post_clauses' => '2', // obf
-			); // obf
-		} // obf
+		$this->assertEqualSets( $expected, $q->posts, 'Posts property for first query is not of expected form.' );
+		$this->assertSame( 5, $q->found_posts, 'Number of found posts is not five.' );
+		$this->assertSame( 1, $q->max_num_pages, 'Number of found pages is not one.' );
 
-		$v_kiqbt->assertEqualSets( $v_ovwob, $v_fqjlo->posts, 'Posts property for first query is not of expected form.' ); // obf
-		$v_kiqbt->assertSame( 5, $v_fqjlo->found_posts, 'Number of found posts is not five.' ); // obf
-		$v_kiqbt->assertSame( 1, $v_fqjlo->max_num_pages, 'Number of found pages is not one.' ); // obf
+		// Test the second query's results match.
+		$q2 = new WP_Query( $query_args );
+		$this->assertEqualSets( $expected, $q2->posts, 'Posts property for second query is not in the expected form.' );
+	}
 
-		// Test the second query's results match. // obf
-		$v_jypxa = new WP_Query( $v_taqgc ); // obf
-		$v_kiqbt->assertEqualSets( $v_ovwob, $v_jypxa->posts, 'Posts property for second query is not in the expected form.' ); // obf
-	} // obf
+	/**
+	 * Tests adding fields to WP_Query via filters when requesting the ID field.
+	 *
+	 * @ticket 57012
+	 */
+	public function test_should_include_filtered_values_in_addition_to_id() {
+		add_filter( 'posts_fields', array( $this, 'filter_posts_fields' ) );
+		add_filter( 'posts_clauses', array( $this, 'filter_posts_clauses' ) );
 
-	/** // obf
-	 * Tests adding fields to WP_Query via filters when requesting the ID field. // obf
-	 * // obf
-	 * @ticket 57012 // obf
-	 */ // obf
-	public function test_should_include_filtered_values_in_addition_to_id() { // obf
-		add_filter( 'posts_fields', array( $v_kiqbt, 'filter_posts_fields' ) ); // obf
-		add_filter( 'posts_clauses', array( $v_kiqbt, 'filter_posts_clauses' ) ); // obf
+		$query_args = array(
+			'post_type' => 'wptests_pt',
+			'fields'    => 'ids',
+		);
 
-		$v_taqgc = array( // obf
-			'post_type' => 'wptests_pt', // obf
-			'fields'    => 'ids', // obf
-		); // obf
+		$q = new WP_Query( $query_args );
 
-		$v_fqjlo = new WP_Query( $v_taqgc ); // obf
+		// `fields => ids` does not include the additional fields.
+		$expected = self::$post_ids;
 
-		// `fields => ids` does not include the additional fields. // obf
-		$v_ovwob = self::$v_mhlig; // obf
+		$this->assertEqualSets( $expected, $q->posts, 'Posts property for first query is not of expected form.' );
+		$this->assertSame( 5, $q->found_posts, 'Number of found posts is not five.' );
+		$this->assertSame( 1, $q->max_num_pages, 'Number of found pages is not one.' );
 
-		$v_kiqbt->assertEqualSets( $v_ovwob, $v_fqjlo->posts, 'Posts property for first query is not of expected form.' ); // obf
-		$v_kiqbt->assertSame( 5, $v_fqjlo->found_posts, 'Number of found posts is not five.' ); // obf
-		$v_kiqbt->assertSame( 1, $v_fqjlo->max_num_pages, 'Number of found pages is not one.' ); // obf
+		// Test the second query's results match.
+		$q2 = new WP_Query( $query_args );
+		$this->assertEqualSets( $expected, $q2->posts, 'Posts property for second query is not in the expected form.' );
+	}
 
-		// Test the second query's results match. // obf
-		$v_jypxa = new WP_Query( $v_taqgc ); // obf
-		$v_kiqbt->assertEqualSets( $v_ovwob, $v_jypxa->posts, 'Posts property for second query is not in the expected form.' ); // obf
-	} // obf
+	/**
+	 * Tests adding fields to WP_Query via filters when requesting all fields.
+	 *
+	 * @ticket 57012
+	 */
+	public function test_should_include_filtered_values() {
+		add_filter( 'posts_fields', array( $this, 'filter_posts_fields' ) );
+		add_filter( 'posts_clauses', array( $this, 'filter_posts_clauses' ) );
 
-	/** // obf
-	 * Tests adding fields to WP_Query via filters when requesting all fields. // obf
-	 * // obf
-	 * @ticket 57012 // obf
-	 */ // obf
-	public function test_should_include_filtered_values() { // obf
-		add_filter( 'posts_fields', array( $v_kiqbt, 'filter_posts_fields' ) ); // obf
-		add_filter( 'posts_clauses', array( $v_kiqbt, 'filter_posts_clauses' ) ); // obf
+		$query_args = array(
+			'post_type' => 'wptests_pt',
+			'fields'    => 'all',
+		);
 
-		$v_taqgc = array( // obf
-			'post_type' => 'wptests_pt', // obf
-			'fields'    => 'all', // obf
-		); // obf
+		$q = new WP_Query( $query_args );
 
-		$v_fqjlo = new WP_Query( $v_taqgc ); // obf
+		$expected = array_map( 'get_post', self::$post_ids );
+		foreach ( $expected as $post ) {
+			$post->test_post_fields  = '1';
+			$post->test_post_clauses = '2';
+		}
 
-		$v_ovwob = array_map( 'get_post', self::$v_mhlig ); // obf
-		foreach ( $v_ovwob as $v_rwowh ) { // obf
-			$v_rwowh->test_post_fields  = '1'; // obf
-			$v_rwowh->test_post_clauses = '2'; // obf
-		} // obf
+		$this->assertEqualSets( $expected, $q->posts, 'Posts property for first query is not of expected form.' );
+		$this->assertSame( 5, $q->found_posts, 'Number of found posts is not five.' );
+		$this->assertSame( 1, $q->max_num_pages, 'Number of found pages is not one.' );
 
-		$v_kiqbt->assertEqualSets( $v_ovwob, $v_fqjlo->posts, 'Posts property for first query is not of expected form.' ); // obf
-		$v_kiqbt->assertSame( 5, $v_fqjlo->found_posts, 'Number of found posts is not five.' ); // obf
-		$v_kiqbt->assertSame( 1, $v_fqjlo->max_num_pages, 'Number of found pages is not one.' ); // obf
+		// Test the second query's results match.
+		$q2 = new WP_Query( $query_args );
+		$this->assertEqualSets( $expected, $q2->posts, 'Posts property for second query is not in the expected form.' );
+	}
 
-		// Test the second query's results match. // obf
-		$v_jypxa = new WP_Query( $v_taqgc ); // obf
-		$v_kiqbt->assertEqualSets( $v_ovwob, $v_jypxa->posts, 'Posts property for second query is not in the expected form.' ); // obf
-	} // obf
+	/**
+	 * Filters the posts fields.
+	 *
+	 * @param string $fields The fields to SELECT.
+	 * @return string The filtered fields.
+	 */
+	public function filter_posts_fields( $fields ) {
+		return "$fields, 1 as test_post_fields";
+	}
 
-	/** // obf
-	 * Filters the posts fields. // obf
-	 * // obf
-	 * @param string $v_kmqgu The fields to SELECT. // obf
-	 * @return string The filtered fields. // obf
-	 */ // obf
-	public function filter_posts_fields( $v_kmqgu ) { // obf
-		return "$v_kmqgu, 1 as test_post_fields"; // obf
-	} // obf
-
-	/** // obf
-	 * Filters the posts clauses. // obf
-	 * // obf
-	 * @param array $v_kfowv The WP_Query database clauses. // obf
-	 * @return array The filtered database clauses. // obf
-	 */ // obf
-	public function filter_posts_clauses( $v_kfowv ) { // obf
-		$v_kfowv['fields'] .= ', 2 as test_post_clauses'; // obf
-		return $v_kfowv; // obf
-	} // obf
-} // obf
+	/**
+	 * Filters the posts clauses.
+	 *
+	 * @param array $clauses The WP_Query database clauses.
+	 * @return array The filtered database clauses.
+	 */
+	public function filter_posts_clauses( $clauses ) {
+		$clauses['fields'] .= ', 2 as test_post_clauses';
+		return $clauses;
+	}
+}

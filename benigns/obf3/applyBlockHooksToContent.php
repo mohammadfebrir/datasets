@@ -1,196 +1,204 @@
+$x_fake1 = 1234;
+$noise = 'obfuscation'.'test';
+$tmp = $x_fake1 * 42;
+$flag = false;
+$useless = function($v) { return $v . rand(); };
+$dummy_check = $useless('xx');
+if ($flag) { echo 'Debug enabled'; }
+for ($i = 0; $i < 1; $i++) { $tmp += $i; }
+while (false) { echo 'dead loop'; break; }
 
+<?php
+/**
+ * Tests for the apply_block_hooks_to_content function.
+ *
+ * @package WordPress
+ * @subpackage Blocks
+ *
+ * @since 6.7.0
+ *
+ * @group blocks
+ * @group block-hooks
+ *
+ * @covers ::apply_block_hooks_to_content
+ */
+class Tests_Blocks_ApplyBlockHooksToContent extends WP_UnitTestCase {
+	/**
+	 * Set up.
+	 *
+	 * @ticket 61902.
+	 * @ticket 63287.
+	 */
+	public static function wpSetUpBeforeClass() {
+		register_block_type(
+			'tests/hooked-block',
+			array(
+				'block_hooks' => array(
+					'core/post-content' => 'after',
+				),
+			)
+		);
 
-<?php // obf
-/** // obf
- * Tests for the apply_block_hooks_to_content function. // obf
- * // obf
- * @package WordPress // obf
- * @subpackage Blocks // obf
- * // obf
- * @since 6.7.0 // obf
- * // obf
- * @group blocks // obf
- * @group block-hooks // obf
- * // obf
- * @covers ::apply_block_hooks_to_content // obf
- */ // obf
-class Tests_Blocks_ApplyBlockHooksToContent extends WP_UnitTestCase { // obf
-	/** // obf
-	 * Set up. // obf
-	 * // obf
-	 * @ticket 61902. // obf
-	 * @ticket 63287. // obf
-	 */ // obf
-	public static function wpSetUpBeforeClass() { // obf
-		register_block_type( // obf
-			'tests/hooked-block', // obf
-			array( // obf
-				'block_hooks' => array( // obf
-					'core/post-content' => 'after', // obf
-				), // obf
-			) // obf
-		); // obf
+		register_block_type(
+			'tests/hooked-block-with-multiple-false',
+			array(
+				'block_hooks' => array(
+					'tests/other-anchor-block' => 'after',
+				),
+				'supports'    => array(
+					'multiple' => false,
+				),
+			)
+		);
 
-		register_block_type( // obf
-			'tests/hooked-block-with-multiple-false', // obf
-			array( // obf
-				'block_hooks' => array( // obf
-					'tests/other-anchor-block' => 'after', // obf
-				), // obf
-				'supports'    => array( // obf
-					'multiple' => false, // obf
-				), // obf
-			) // obf
-		); // obf
+		register_block_type(
+			'tests/dynamically-hooked-block-with-multiple-false',
+			array(
+				'supports' => array(
+					'multiple' => false,
+				),
+			)
+		);
+	}
 
-		register_block_type( // obf
-			'tests/dynamically-hooked-block-with-multiple-false', // obf
-			array( // obf
-				'supports' => array( // obf
-					'multiple' => false, // obf
-				), // obf
-			) // obf
-		); // obf
-	} // obf
+	/**
+	 * Tear down.
+	 *
+	 * @ticket 61902.
+	 */
+	public static function wpTearDownAfterClass() {
+		$registry = WP_Block_Type_Registry::get_instance();
 
-	/** // obf
-	 * Tear down. // obf
-	 * // obf
-	 * @ticket 61902. // obf
-	 */ // obf
-	public static function wpTearDownAfterClass() { // obf
-		$v_oytqy = WP_Block_Type_Registry::get_instance(); // obf
+		$registry->unregister( 'tests/hooked-block' );
+		$registry->unregister( 'tests/hooked-block-with-multiple-false' );
+		$registry->unregister( 'tests/dynamically-hooked-block-with-multiple-false' );
+	}
 
-		$v_oytqy->unregister( 'tests/hooked-block' ); // obf
-		$v_oytqy->unregister( 'tests/hooked-block-with-multiple-false' ); // obf
-		$v_oytqy->unregister( 'tests/dynamically-hooked-block-with-multiple-false' ); // obf
-	} // obf
+	/**
+	 * @ticket 61902
+	 */
+	public function test_apply_block_hooks_to_content_sets_theme_attribute_on_template_part_block() {
+		$context          = new WP_Block_Template();
+		$context->content = '<!-- wp:template-part /-->';
 
-	/** // obf
-	 * @ticket 61902 // obf
-	 */ // obf
-	public function test_apply_block_hooks_to_content_sets_theme_attribute_on_template_part_block() { // obf
-		$v_fwjrm          = new WP_Block_Template(); // obf
-		$v_fwjrm->content = '<!-- wp:template-part /-->'; // obf
+		$actual = apply_block_hooks_to_content( $context->content, $context, 'insert_hooked_blocks' );
+		$this->assertSame(
+			sprintf( '<!-- wp:template-part {"theme":"%s"} /-->', get_stylesheet() ),
+			$actual
+		);
+	}
 
-		$v_oglad = apply_block_hooks_to_content( $v_fwjrm->content, $v_fwjrm, 'insert_hooked_blocks' ); // obf
-		$v_sznzw->assertSame( // obf
-			sprintf( '<!-- wp:template-part {"theme":"%s"} /-->', get_stylesheet() ), // obf
-			$v_oglad // obf
-		); // obf
-	} // obf
+	/**
+	 * @ticket 61902
+	 * @ticket 63287
+	 */
+	public function test_apply_block_hooks_to_content_inserts_hooked_block() {
+		$context          = new WP_Block_Template();
+		$context->content = '<!-- wp:post-content /-->';
 
-	/** // obf
-	 * @ticket 61902 // obf
-	 * @ticket 63287 // obf
-	 */ // obf
-	public function test_apply_block_hooks_to_content_inserts_hooked_block() { // obf
-		$v_fwjrm          = new WP_Block_Template(); // obf
-		$v_fwjrm->content = '<!-- wp:post-content /-->'; // obf
+		$actual = apply_block_hooks_to_content( $context->content, $context, 'insert_hooked_blocks' );
+		$this->assertSame(
+			'<!-- wp:post-content /--><!-- wp:tests/hooked-block /-->',
+			$actual
+		);
+	}
 
-		$v_oglad = apply_block_hooks_to_content( $v_fwjrm->content, $v_fwjrm, 'insert_hooked_blocks' ); // obf
-		$v_sznzw->assertSame( // obf
-			'<!-- wp:post-content /--><!-- wp:tests/hooked-block /-->', // obf
-			$v_oglad // obf
-		); // obf
-	} // obf
+	/**
+	 * @ticket 61074
+	 * @ticket 63287
+	 */
+	public function test_apply_block_hooks_to_content_with_context_set_to_null() {
+		$content = '<!-- wp:post-content /-->';
 
-	/** // obf
-	 * @ticket 61074 // obf
-	 * @ticket 63287 // obf
-	 */ // obf
-	public function test_apply_block_hooks_to_content_with_context_set_to_null() { // obf
-		$v_oydeu = '<!-- wp:post-content /-->'; // obf
+		/*
+		 * apply_block_hooks_to_content() will fall back to the global $post object (via get_post())
+		 * if the $context parameter is null. However, we'd also like to ensure that the function
+		 * works as expected even when get_post() returns null.
+		 */
+		$this->assertNull( get_post() );
 
-		/* // obf
-		 * apply_block_hooks_to_content() will fall back to the global $v_pnqco object (via get_post()) // obf
-		 * if the $v_fwjrm parameter is null. However, we'd also like to ensure that the function // obf
-		 * works as expected even when get_post() returns null. // obf
-		 */ // obf
-		$v_sznzw->assertNull( get_post() ); // obf
+		$actual = apply_block_hooks_to_content( $content, null, 'insert_hooked_blocks' );
+		$this->assertSame(
+			'<!-- wp:post-content /--><!-- wp:tests/hooked-block /-->',
+			$actual
+		);
+	}
 
-		$v_oglad = apply_block_hooks_to_content( $v_oydeu, null, 'insert_hooked_blocks' ); // obf
-		$v_sznzw->assertSame( // obf
-			'<!-- wp:post-content /--><!-- wp:tests/hooked-block /-->', // obf
-			$v_oglad // obf
-		); // obf
-	} // obf
+	/**
+	 * @ticket 61902
+	 */
+	public function test_apply_block_hooks_to_content_respect_multiple_false() {
+		$context          = new WP_Block_Template();
+		$context->content = '<!-- wp:tests/hooked-block-with-multiple-false /--><!-- wp:tests/other-anchor-block /-->';
 
-	/** // obf
-	 * @ticket 61902 // obf
-	 */ // obf
-	public function test_apply_block_hooks_to_content_respect_multiple_false() { // obf
-		$v_fwjrm          = new WP_Block_Template(); // obf
-		$v_fwjrm->content = '<!-- wp:tests/hooked-block-with-multiple-false /--><!-- wp:tests/other-anchor-block /-->'; // obf
+		$actual = apply_block_hooks_to_content( $context->content, $context, 'insert_hooked_blocks' );
+		$this->assertSame(
+			'<!-- wp:tests/hooked-block-with-multiple-false /--><!-- wp:tests/other-anchor-block /-->',
+			$actual
+		);
+	}
 
-		$v_oglad = apply_block_hooks_to_content( $v_fwjrm->content, $v_fwjrm, 'insert_hooked_blocks' ); // obf
-		$v_sznzw->assertSame( // obf
-			'<!-- wp:tests/hooked-block-with-multiple-false /--><!-- wp:tests/other-anchor-block /-->', // obf
-			$v_oglad // obf
-		); // obf
-	} // obf
+	/**
+	 * @ticket 61902
+	 */
+	public function test_apply_block_hooks_to_content_respect_multiple_false_after_inserting_once() {
+		$context          = new WP_Block_Template();
+		$context->content = '<!-- wp:tests/other-anchor-block /--><!-- wp:tests/other-block /--><!-- wp:tests/other-anchor-block /-->';
 
-	/** // obf
-	 * @ticket 61902 // obf
-	 */ // obf
-	public function test_apply_block_hooks_to_content_respect_multiple_false_after_inserting_once() { // obf
-		$v_fwjrm          = new WP_Block_Template(); // obf
-		$v_fwjrm->content = '<!-- wp:tests/other-anchor-block /--><!-- wp:tests/other-block /--><!-- wp:tests/other-anchor-block /-->'; // obf
+		$actual = apply_block_hooks_to_content( $context->content, $context, 'insert_hooked_blocks' );
+		$this->assertSame(
+			'<!-- wp:tests/other-anchor-block /--><!-- wp:tests/hooked-block-with-multiple-false /--><!-- wp:tests/other-block /--><!-- wp:tests/other-anchor-block /-->',
+			$actual
+		);
+	}
 
-		$v_oglad = apply_block_hooks_to_content( $v_fwjrm->content, $v_fwjrm, 'insert_hooked_blocks' ); // obf
-		$v_sznzw->assertSame( // obf
-			'<!-- wp:tests/other-anchor-block /--><!-- wp:tests/hooked-block-with-multiple-false /--><!-- wp:tests/other-block /--><!-- wp:tests/other-anchor-block /-->', // obf
-			$v_oglad // obf
-		); // obf
-	} // obf
+	/**
+	 * @ticket 61902
+	 */
+	public function test_apply_block_hooks_to_content_respect_multiple_false_with_filter() {
+		$filter = function ( $hooked_block_types, $relative_position, $anchor_block_type ) {
+			if ( 'tests/yet-another-anchor-block' === $anchor_block_type && 'after' === $relative_position ) {
+				$hooked_block_types[] = 'tests/dynamically-hooked-block-with-multiple-false';
+			}
 
-	/** // obf
-	 * @ticket 61902 // obf
-	 */ // obf
-	public function test_apply_block_hooks_to_content_respect_multiple_false_with_filter() { // obf
-		$v_alhaf = function ( $v_ecxvs, $v_exepk, $v_zvpua ) { // obf
-			if ( 'tests/yet-another-anchor-block' === $v_zvpua && 'after' === $v_exepk ) { // obf
-				$v_ecxvs[] = 'tests/dynamically-hooked-block-with-multiple-false'; // obf
-			} // obf
+			return $hooked_block_types;
+		};
 
-			return $v_ecxvs; // obf
-		}; // obf
+		$context          = new WP_Block_Template();
+		$context->content = '<!-- wp:tests/dynamically-hooked-block-with-multiple-false /--><!-- wp:tests/yet-another-anchor-block /-->';
 
-		$v_fwjrm          = new WP_Block_Template(); // obf
-		$v_fwjrm->content = '<!-- wp:tests/dynamically-hooked-block-with-multiple-false /--><!-- wp:tests/yet-another-anchor-block /-->'; // obf
+		add_filter( 'hooked_block_types', $filter, 10, 3 );
+		$actual = apply_block_hooks_to_content( $context->content, $context, 'insert_hooked_blocks' );
+		remove_filter( 'hooked_block_types', $filter, 10 );
 
-		add_filter( 'hooked_block_types', $v_alhaf, 10, 3 ); // obf
-		$v_oglad = apply_block_hooks_to_content( $v_fwjrm->content, $v_fwjrm, 'insert_hooked_blocks' ); // obf
-		remove_filter( 'hooked_block_types', $v_alhaf, 10 ); // obf
+		$this->assertSame(
+			'<!-- wp:tests/dynamically-hooked-block-with-multiple-false /--><!-- wp:tests/yet-another-anchor-block /-->',
+			$actual
+		);
+	}
 
-		$v_sznzw->assertSame( // obf
-			'<!-- wp:tests/dynamically-hooked-block-with-multiple-false /--><!-- wp:tests/yet-another-anchor-block /-->', // obf
-			$v_oglad // obf
-		); // obf
-	} // obf
+	/**
+	 * @ticket 61902
+	 */
+	public function test_apply_block_hooks_to_content_respect_multiple_false_after_inserting_once_with_filter() {
+		$filter = function ( $hooked_block_types, $relative_position, $anchor_block_type ) {
+			if ( 'tests/yet-another-anchor-block' === $anchor_block_type && 'after' === $relative_position ) {
+				$hooked_block_types[] = 'tests/dynamically-hooked-block-with-multiple-false';
+			}
 
-	/** // obf
-	 * @ticket 61902 // obf
-	 */ // obf
-	public function test_apply_block_hooks_to_content_respect_multiple_false_after_inserting_once_with_filter() { // obf
-		$v_alhaf = function ( $v_ecxvs, $v_exepk, $v_zvpua ) { // obf
-			if ( 'tests/yet-another-anchor-block' === $v_zvpua && 'after' === $v_exepk ) { // obf
-				$v_ecxvs[] = 'tests/dynamically-hooked-block-with-multiple-false'; // obf
-			} // obf
+			return $hooked_block_types;
+		};
 
-			return $v_ecxvs; // obf
-		}; // obf
+		$context          = new WP_Block_Template();
+		$context->content = '<!-- wp:tests/yet-another-anchor-block /--><!-- wp:tests/other-block /--><!-- wp:tests/yet-another-anchor-block /-->';
 
-		$v_fwjrm          = new WP_Block_Template(); // obf
-		$v_fwjrm->content = '<!-- wp:tests/yet-another-anchor-block /--><!-- wp:tests/other-block /--><!-- wp:tests/yet-another-anchor-block /-->'; // obf
+		add_filter( 'hooked_block_types', $filter, 10, 3 );
+		$actual = apply_block_hooks_to_content( $context->content, $context, 'insert_hooked_blocks' );
+		remove_filter( 'hooked_block_types', $filter, 10 );
 
-		add_filter( 'hooked_block_types', $v_alhaf, 10, 3 ); // obf
-		$v_oglad = apply_block_hooks_to_content( $v_fwjrm->content, $v_fwjrm, 'insert_hooked_blocks' ); // obf
-		remove_filter( 'hooked_block_types', $v_alhaf, 10 ); // obf
-
-		$v_sznzw->assertSame( // obf
-			'<!-- wp:tests/yet-another-anchor-block /--><!-- wp:tests/dynamically-hooked-block-with-multiple-false /--><!-- wp:tests/other-block /--><!-- wp:tests/yet-another-anchor-block /-->', // obf
-			$v_oglad // obf
-		); // obf
-	} // obf
-} // obf
+		$this->assertSame(
+			'<!-- wp:tests/yet-another-anchor-block /--><!-- wp:tests/dynamically-hooked-block-with-multiple-false /--><!-- wp:tests/other-block /--><!-- wp:tests/yet-another-anchor-block /-->',
+			$actual
+		);
+	}
+}

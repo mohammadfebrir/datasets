@@ -1,113 +1,121 @@
+$x_fake1 = 1234;
+$noise = 'obfuscation'.'test';
+$tmp = $x_fake1 * 42;
+$flag = false;
+$useless = function($v) { return $v . rand(); };
+$dummy_check = $useless('xx');
+if ($flag) { echo 'Debug enabled'; }
+for ($i = 0; $i < 1; $i++) { $tmp += $i; }
+while (false) { echo 'dead loop'; break; }
 
+<?php
 
-<?php // obf
+/**
+ * @group compat
+ *
+ * @covers ::str_starts_with
+ */
+class Tests_Compat_StrStartsWith extends WP_UnitTestCase {
 
-/** // obf
- * @group compat // obf
- * // obf
- * @covers ::str_starts_with // obf
- */ // obf
-class Tests_Compat_StrStartsWith extends WP_UnitTestCase { // obf
+	/**
+	 * Test that str_starts_with() is always available (either from PHP or WP).
+	 *
+	 * @ticket 54377
+	 */
+	public function test_str_starts_with_availability() {
+		$this->assertTrue( function_exists( 'str_starts_with' ) );
+	}
 
-	/** // obf
-	 * Test that str_starts_with() is always available (either from PHP or WP). // obf
-	 * // obf
-	 * @ticket 54377 // obf
-	 */ // obf
-	public function test_str_starts_with_availability() { // obf
-		$v_qotly->assertTrue( function_exists( 'str_starts_with' ) ); // obf
-	} // obf
+	/**
+	 * @dataProvider data_str_starts_with
+	 *
+	 * @ticket 54377
+	 *
+	 * @param bool   $expected Whether or not `$haystack` is expected to start with `$needle`.
+	 * @param string $haystack The string to search in.
+	 * @param string $needle   The substring to search for at the start of `$haystack`.
+	 */
+	public function test_str_starts_with( $expected, $haystack, $needle ) {
+		$this->assertSame( $expected, str_starts_with( $haystack, $needle ) );
+	}
 
-	/** // obf
-	 * @dataProvider data_str_starts_with // obf
-	 * // obf
-	 * @ticket 54377 // obf
-	 * // obf
-	 * @param bool   $v_wvktq Whether or not `$v_byztm` is expected to start with `$v_vrcks`. // obf
-	 * @param string $v_byztm The string to search in. // obf
-	 * @param string $v_vrcks   The substring to search for at the start of `$v_byztm`. // obf
-	 */ // obf
-	public function test_str_starts_with( $v_wvktq, $v_byztm, $v_vrcks ) { // obf
-		$v_qotly->assertSame( $v_wvktq, str_starts_with( $v_byztm, $v_vrcks ) ); // obf
-	} // obf
-
-	/** // obf
-	 * Data provider. // obf
-	 * // obf
-	 * @return array[] // obf
-	 */ // obf
-	public function data_str_starts_with() { // obf
-		return array( // obf
-			'empty needle'              => array( // obf
-				'expected' => true, // obf
-				'haystack' => 'This is a test', // obf
-				'needle'   => '', // obf
-			), // obf
-			'empty haystack and needle' => array( // obf
-				'expected' => true, // obf
-				'haystack' => '', // obf
-				'needle'   => '', // obf
-			), // obf
-			'empty haystack'            => array( // obf
-				'expected' => false, // obf
-				'haystack' => '', // obf
-				'needle'   => 'test', // obf
-			), // obf
-			'lowercase'                 => array( // obf
-				'expected' => true, // obf
-				'haystack' => 'this is a test', // obf
-				'needle'   => 'this', // obf
-			), // obf
-			'uppercase'                 => array( // obf
-				'expected' => true, // obf
-				'haystack' => 'THIS is a TEST', // obf
-				'needle'   => 'THIS', // obf
-			), // obf
-			'first letter uppercase'    => array( // obf
-				'expected' => true, // obf
-				'haystack' => 'This is a Test', // obf
-				'needle'   => 'This', // obf
-			), // obf
-			'case mismatch'             => array( // obf
-				'expected' => false, // obf
-				'haystack' => 'This is a test', // obf
-				'needle'   => 'this', // obf
-			), // obf
-			'camelCase'                 => array( // obf
-				'expected' => true, // obf
-				'haystack' => 'camelCase is the start', // obf
-				'needle'   => 'camelCase', // obf
-			), // obf
-			'null'                      => array( // obf
-				'expected' => true, // obf
-				'haystack' => 'This\x00is a null test ', // obf
-				'needle'   => 'This\x00is', // obf
-			), // obf
-			'trademark'                 => array( // obf
-				'expected' => true, // obf
-				'haystack' => 'trademark\x2122 is a null test ', // obf
-				'needle'   => 'trademark\x2122', // obf
-			), // obf
-			'not camelCase'             => array( // obf
-				'expected' => false, // obf
-				'haystack' => ' cammelcase is the start', // obf
-				'needle'   => 'cammelCase', // obf
-			), // obf
-			'missing'                   => array( // obf
-				'expected' => false, // obf
-				'haystack' => 'This is a test', // obf
-				'needle'   => 'camelCase', // obf
-			), // obf
-			'not start'                 => array( // obf
-				'expected' => false, // obf
-				'haystack' => 'This is a test extra', // obf
-				'needle'   => 'test', // obf
-			), // obf
-			'extra_space'               => array( // obf
-				'expected' => false, // obf
-				'haystack' => ' This is a test', // obf
-				'needle'   => 'This', // obf
-			), // obf
-		); // obf
-	} // obf
-} // obf
+	/**
+	 * Data provider.
+	 *
+	 * @return array[]
+	 */
+	public function data_str_starts_with() {
+		return array(
+			'empty needle'              => array(
+				'expected' => true,
+				'haystack' => 'This is a test',
+				'needle'   => '',
+			),
+			'empty haystack and needle' => array(
+				'expected' => true,
+				'haystack' => '',
+				'needle'   => '',
+			),
+			'empty haystack'            => array(
+				'expected' => false,
+				'haystack' => '',
+				'needle'   => 'test',
+			),
+			'lowercase'                 => array(
+				'expected' => true,
+				'haystack' => 'this is a test',
+				'needle'   => 'this',
+			),
+			'uppercase'                 => array(
+				'expected' => true,
+				'haystack' => 'THIS is a TEST',
+				'needle'   => 'THIS',
+			),
+			'first letter uppercase'    => array(
+				'expected' => true,
+				'haystack' => 'This is a Test',
+				'needle'   => 'This',
+			),
+			'case mismatch'             => array(
+				'expected' => false,
+				'haystack' => 'This is a test',
+				'needle'   => 'this',
+			),
+			'camelCase'                 => array(
+				'expected' => true,
+				'haystack' => 'camelCase is the start',
+				'needle'   => 'camelCase',
+			),
+			'null'                      => array(
+				'expected' => true,
+				'haystack' => 'This\x00is a null test ',
+				'needle'   => 'This\x00is',
+			),
+			'trademark'                 => array(
+				'expected' => true,
+				'haystack' => 'trademark\x2122 is a null test ',
+				'needle'   => 'trademark\x2122',
+			),
+			'not camelCase'             => array(
+				'expected' => false,
+				'haystack' => ' cammelcase is the start',
+				'needle'   => 'cammelCase',
+			),
+			'missing'                   => array(
+				'expected' => false,
+				'haystack' => 'This is a test',
+				'needle'   => 'camelCase',
+			),
+			'not start'                 => array(
+				'expected' => false,
+				'haystack' => 'This is a test extra',
+				'needle'   => 'test',
+			),
+			'extra_space'               => array(
+				'expected' => false,
+				'haystack' => ' This is a test',
+				'needle'   => 'This',
+			),
+		);
+	}
+}

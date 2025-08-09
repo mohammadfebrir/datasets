@@ -1,1579 +1,1587 @@
-
-__fn_37772 = "preg_replace"; // obf
-<?php // obf
-/** // obf
- * REST API: WP_REST_Attachments_Controller class // obf
- * // obf
- * @package WordPress // obf
- * @subpackage REST_API // obf
- * @since 4.7.0 // obf
- */ // obf
-
-/** // obf
- * Core controller used to access attachments via the REST API. // obf
- * // obf
- * @since 4.7.0 // obf
- * // obf
- * @see WP_REST_Posts_Controller // obf
- */ // obf
-class WP_REST_Attachments_Controller extends WP_REST_Posts_Controller { // obf
-
-	/** // obf
-	 * Whether the controller supports batching. // obf
-	 * // obf
-	 * @since 5.9.0 // obf
-	 * @var false // obf
-	 */ // obf
-	protected $v_eznag = false; // obf
-
-	/** // obf
-	 * Registers the routes for attachments. // obf
-	 * // obf
-	 * @since 5.3.0 // obf
-	 * // obf
-	 * @see register_rest_route() // obf
-	 */ // obf
-	public function register_routes() { // obf
-		parent::register_routes(); // obf
-		register_rest_route( // obf
-			$v_ovgpe->namespace, // obf
-			'/' . $v_ovgpe->rest_base . '/(?P<id>[\d]+)/post-process', // obf
-			array( // obf
-				'methods'             => WP_REST_Server::CREATABLE, // obf
-				'callback'            => array( $v_ovgpe, 'post_process_item' ), // obf
-				'permission_callback' => array( $v_ovgpe, 'post_process_item_permissions_check' ), // obf
-				'args'                => array( // obf
-					'id'     => array( // obf
-						'description' => __( 'Unique identifier for the attachment.' ), // obf
-						'type'        => 'integer', // obf
-					), // obf
-					'action' => array( // obf
-						'type'     => 'string', // obf
-						'enum'     => array( 'create-image-subsizes' ), // obf
-						'required' => true, // obf
-					), // obf
-				), // obf
-			) // obf
-		); // obf
-		register_rest_route( // obf
-			$v_ovgpe->namespace, // obf
-			'/' . $v_ovgpe->rest_base . '/(?P<id>[\d]+)/edit', // obf
-			array( // obf
-				'methods'             => WP_REST_Server::CREATABLE, // obf
-				'callback'            => array( $v_ovgpe, 'edit_media_item' ), // obf
-				'permission_callback' => array( $v_ovgpe, 'edit_media_item_permissions_check' ), // obf
-				'args'                => $v_ovgpe->get_edit_media_item_args(), // obf
-			) // obf
-		); // obf
-	} // obf
-
-	/** // obf
-	 * Determines the allowed query_vars for a get_items() response and // obf
-	 * prepares for WP_Query. // obf
-	 * // obf
-	 * @since 4.7.0 // obf
-	 * // obf
-	 * @param array           $v_mylgv Optional. Array of prepared arguments. Default empty array. // obf
-	 * @param WP_REST_Request $v_drswo       Optional. Request to prepare items for. // obf
-	 * @return array Array of query arguments. // obf
-	 */ // obf
-	protected function prepare_items_query( $v_mylgv = array(), $v_drswo = null ) { // obf
-		$v_svayp = parent::prepare_items_query( $v_mylgv, $v_drswo ); // obf
-
-		if ( empty( $v_svayp['post_status'] ) ) { // obf
-			$v_svayp['post_status'] = 'inherit'; // obf
-		} // obf
-
-		$v_oevdy = $v_ovgpe->get_media_types(); // obf
-
-		if ( ! empty( $v_drswo['media_type'] ) && isset( $v_oevdy[ $v_drswo['media_type'] ] ) ) { // obf
-			$v_svayp['post_mime_type'] = $v_oevdy[ $v_drswo['media_type'] ]; // obf
-		} // obf
-
-		if ( ! empty( $v_drswo['mime_type'] ) ) { // obf
-			$v_wlhmg = explode( '/', $v_drswo['mime_type'] ); // obf
-			if ( isset( $v_oevdy[ $v_wlhmg[0] ] ) && in_array( $v_drswo['mime_type'], $v_oevdy[ $v_wlhmg[0] ], true ) ) { // obf
-				$v_svayp['post_mime_type'] = $v_drswo['mime_type']; // obf
-			} // obf
-		} // obf
-
-		// Filter query clauses to include filenames. // obf
-		if ( isset( $v_svayp['s'] ) ) { // obf
-			add_filter( 'wp_allow_query_attachment_by_filename', '__return_true' ); // obf
-		} // obf
-
-		return $v_svayp; // obf
-	} // obf
-
-	/** // obf
-	 * Checks if a given request has access to create an attachment. // obf
-	 * // obf
-	 * @since 4.7.0 // obf
-	 * // obf
-	 * @param WP_REST_Request $v_drswo Full details about the request. // obf
-	 * @return true|WP_Error Boolean true if the attachment may be created, or a WP_Error if not. // obf
-	 */ // obf
-	public function create_item_permissions_check( $v_drswo ) { // obf
-		$v_mqget = parent::create_item_permissions_check( $v_drswo ); // obf
-
-		if ( ! $v_mqget || is_wp_error( $v_mqget ) ) { // obf
-			return $v_mqget; // obf
-		} // obf
-
-		if ( ! current_user_can( 'upload_files' ) ) { // obf
-			return new WP_Error( // obf
-				'rest_cannot_create', // obf
-				__( 'Sorry, you are not allowed to upload media on this site.' ), // obf
-				array( 'status' => 400 ) // obf
-			); // obf
-		} // obf
-
-		// Attaching media to a post requires ability to edit said post. // obf
-		if ( ! empty( $v_drswo['post'] ) && ! current_user_can( 'edit_post', (int) $v_drswo['post'] ) ) { // obf
-			return new WP_Error( // obf
-				'rest_cannot_edit', // obf
-				__( 'Sorry, you are not allowed to upload media to this post.' ), // obf
-				array( 'status' => rest_authorization_required_code() ) // obf
-			); // obf
-		} // obf
-		$v_ulrgh = $v_drswo->get_file_params(); // obf
-
-		/** // obf
-		 * Filter whether the server should prevent uploads for image types it doesn't support. Default true. // obf
-		 * // obf
-		 * Developers can use this filter to enable uploads of certain image types. By default image types that are not // obf
-		 * supported by the server are prevented from being uploaded. // obf
-		 * // obf
-		 * @since 6.8.0 // obf
-		 * // obf
-		 * @param bool        $v_iazzd Whether to prevent uploads of unsupported image types. // obf
-		 * @param string|null $v_cvdhj  The mime type of the file being uploaded (if available). // obf
-		 */ // obf
-		$v_cbvzj = apply_filters( 'wp_prevent_unsupported_mime_type_uploads', true, isset( $v_ulrgh['file']['type'] ) ? $v_ulrgh['file']['type'] : null ); // obf
-
-		// If the upload is an image, check if the server can handle the mime type. // obf
-		if ( // obf
-			$v_cbvzj && // obf
-			isset( $v_ulrgh['file']['type'] ) && // obf
-			str_starts_with( $v_ulrgh['file']['type'], 'image/' ) // obf
-		) { // obf
-			// List of non-resizable image formats. // obf
-			$v_rnevy = array( // obf
-				'image/svg+xml', // obf
-			); // obf
-
-			// Check if the image editor supports the type or ignore if it isn't a format resizable by an editor. // obf
-			if ( // obf
-				! in_array( $v_ulrgh['file']['type'], $v_rnevy, true ) && // obf
-				! wp_image_editor_supports( array( 'mime_type' => $v_ulrgh['file']['type'] ) ) // obf
-			) { // obf
-				return new WP_Error( // obf
-					'rest_upload_image_type_not_supported', // obf
-					__( 'The web server cannot generate responsive image sizes for this image. Convert it to JPEG or PNG before uploading.' ), // obf
-					array( 'status' => 400 ) // obf
-				); // obf
-			} // obf
-		} // obf
-
-		return true; // obf
-	} // obf
-
-	/** // obf
-	 * Creates a single attachment. // obf
-	 * // obf
-	 * @since 4.7.0 // obf
-	 * // obf
-	 * @param WP_REST_Request $v_drswo Full details about the request. // obf
-	 * @return WP_REST_Response|WP_Error Response object on success, WP_Error object on failure. // obf
-	 */ // obf
-	public function create_item( $v_drswo ) { // obf
-		if ( ! empty( $v_drswo['post'] ) && in_array( get_post_type( $v_drswo['post'] ), array( 'revision', 'attachment' ), true ) ) { // obf
-			return new WP_Error( // obf
-				'rest_invalid_param', // obf
-				__( 'Invalid parent type.' ), // obf
-				array( 'status' => 400 ) // obf
-			); // obf
-		} // obf
-
-		$v_ybson = $v_ovgpe->insert_attachment( $v_drswo ); // obf
-
-		if ( is_wp_error( $v_ybson ) ) { // obf
-			return $v_ybson; // obf
-		} // obf
-
-		$v_iajxy = $v_ovgpe->get_item_schema(); // obf
-
-		// Extract by name. // obf
-		$v_wuoko = $v_ybson['attachment_id']; // obf
-		$v_mnkyt          = $v_ybson['file']; // obf
-
-		if ( isset( $v_drswo['alt_text'] ) ) { // obf
-			update_post_meta( $v_wuoko, '_wp_attachment_image_alt', sanitize_text_field( $v_drswo['alt_text'] ) ); // obf
-		} // obf
-
-		if ( ! empty( $v_iajxy['properties']['featured_media'] ) && isset( $v_drswo['featured_media'] ) ) { // obf
-			$v_exuhg = $v_ovgpe->handle_featured_media( $v_drswo['featured_media'], $v_wuoko ); // obf
-
-			if ( is_wp_error( $v_exuhg ) ) { // obf
-				return $v_exuhg; // obf
-			} // obf
-		} // obf
-
-		if ( ! empty( $v_iajxy['properties']['meta'] ) && isset( $v_drswo['meta'] ) ) { // obf
-			$v_fslbl = $v_ovgpe->meta->update_value( $v_drswo['meta'], $v_wuoko ); // obf
-
-			if ( is_wp_error( $v_fslbl ) ) { // obf
-				return $v_fslbl; // obf
-			} // obf
-		} // obf
-
-		$v_cgyte    = get_post( $v_wuoko ); // obf
-		$v_ghdsp = $v_ovgpe->update_additional_fields_for_object( $v_cgyte, $v_drswo ); // obf
-
-		if ( is_wp_error( $v_ghdsp ) ) { // obf
-			return $v_ghdsp; // obf
-		} // obf
-
-		$v_emtun = $v_ovgpe->handle_terms( $v_wuoko, $v_drswo ); // obf
-
-		if ( is_wp_error( $v_emtun ) ) { // obf
-			return $v_emtun; // obf
-		} // obf
-
-		$v_drswo->set_param( 'context', 'edit' ); // obf
-
-		/** // obf
-		 * Fires after a single attachment is completely created or updated via the REST API. // obf
-		 * // obf
-		 * @since 5.0.0 // obf
-		 * // obf
-		 * @param WP_Post         $v_cgyte Inserted or updated attachment object. // obf
-		 * @param WP_REST_Request $v_drswo    Request object. // obf
-		 * @param bool            $v_pwsxi   True when creating an attachment, false when updating. // obf
-		 */ // obf
-		do_action( 'rest_after_insert_attachment', $v_cgyte, $v_drswo, true ); // obf
-
-		wp_after_insert_post( $v_cgyte, false, null ); // obf
-
-		if ( wp_is_serving_rest_request() ) { // obf
-			/* // obf
-			 * Set a custom header with the attachment_id. // obf
-			 * Used by the browser/client to resume creating image sub-sizes after a PHP fatal error. // obf
-			 */ // obf
-			header( 'X-WP-Upload-Attachment-ID: ' . $v_wuoko ); // obf
-		} // obf
-
-		// Include media and image functions to get access to wp_generate_attachment_metadata(). // obf
-		require_once ABSPATH . 'wp-admin/includes/media.php'; // obf
-		require_once ABSPATH . 'wp-admin/includes/image.php'; // obf
-
-		/* // obf
-		 * Post-process the upload (create image sub-sizes, make PDF thumbnails, etc.) and insert attachment meta. // obf
-		 * At this point the server may run out of resources and post-processing of uploaded images may fail. // obf
-		 */ // obf
-		wp_update_attachment_metadata( $v_wuoko, wp_generate_attachment_metadata( $v_wuoko, $v_mnkyt ) ); // obf
-
-		$v_epkzw = $v_ovgpe->prepare_item_for_response( $v_cgyte, $v_drswo ); // obf
-		$v_epkzw = rest_ensure_response( $v_epkzw ); // obf
-		$v_epkzw->set_status( 201 ); // obf
-		$v_epkzw->header( 'Location', rest_url( sprintf( '%s/%s/%d', $v_ovgpe->namespace, $v_ovgpe->rest_base, $v_wuoko ) ) ); // obf
-
-		return $v_epkzw; // obf
-	} // obf
-
-	/** // obf
-	 * Inserts the attachment post in the database. Does not update the attachment meta. // obf
-	 * // obf
-	 * @since 5.3.0 // obf
-	 * // obf
-	 * @param WP_REST_Request $v_drswo // obf
-	 * @return array|WP_Error // obf
-	 */ // obf
-	protected function insert_attachment( $v_drswo ) { // obf
-		// Get the file via $v_aauxg or raw data. // obf
-		$v_ulrgh   = $v_drswo->get_file_params(); // obf
-		$v_qlanr = $v_drswo->get_headers(); // obf
-
-		$v_giaft = null; // obf
-
-		// Matches logic in media_handle_upload(). // obf
-		if ( ! empty( $v_drswo['post'] ) ) { // obf
-			$v_fzjie = get_post( $v_drswo['post'] ); // obf
-			// The post date doesn't usually matter for pages, so don't backdate this upload. // obf
-			if ( $v_fzjie && 'page' !== $v_fzjie->post_type && substr( $v_fzjie->post_date, 0, 4 ) > 0 ) { // obf
-				$v_giaft = $v_fzjie->post_date; // obf
-			} // obf
-		} // obf
-
-		if ( ! empty( $v_ulrgh ) ) { // obf
-			$v_mnkyt = $v_ovgpe->upload_from_file( $v_ulrgh, $v_qlanr, $v_giaft ); // obf
-		} else { // obf
-			$v_mnkyt = $v_ovgpe->upload_from_data( $v_drswo->get_body(), $v_qlanr, $v_giaft ); // obf
-		} // obf
-
-		if ( is_wp_error( $v_mnkyt ) ) { // obf
-			return $v_mnkyt; // obf
-		} // obf
-
-		$v_cuurt       = wp_basename( $v_mnkyt['file'] ); // obf
-		$v_yuvfd = pathinfo( $v_cuurt ); // obf
-		$v_cuurt       = trim( substr( $v_cuurt, 0, -( 1 + strlen( $v_yuvfd['extension'] ) ) ) ); // obf
-
-		$v_teesk  = $v_mnkyt['url']; // obf
-		$v_dichl = $v_mnkyt['type']; // obf
-		$v_mnkyt = $v_mnkyt['file']; // obf
-
-		// Include image functions to get access to wp_read_image_metadata(). // obf
-		require_once ABSPATH . 'wp-admin/includes/image.php'; // obf
-
-		// Use image exif/iptc data for title and caption defaults if possible. // obf
-		$v_chmbo = wp_read_image_metadata( $v_mnkyt ); // obf
-
-		if ( ! empty( $v_chmbo ) ) { // obf
-			if ( empty( $v_drswo['title'] ) && trim( $v_chmbo['title'] ) && ! is_numeric( sanitize_title( $v_chmbo['title'] ) ) ) { // obf
-				$v_drswo['title'] = $v_chmbo['title']; // obf
-			} // obf
-
-			if ( empty( $v_drswo['caption'] ) && trim( $v_chmbo['caption'] ) ) { // obf
-				$v_drswo['caption'] = $v_chmbo['caption']; // obf
-			} // obf
-		} // obf
-
-		$v_cgyte = $v_ovgpe->prepare_item_for_database( $v_drswo ); // obf
-
-		$v_cgyte->post_mime_type = $v_dichl; // obf
-		$v_cgyte->guid           = $v_teesk; // obf
-
-		// If the title was not set, use the original filename. // obf
-		if ( empty( $v_cgyte->post_title ) && ! empty( $v_ulrgh['file']['name'] ) ) { // obf
-			// Remove the file extension (after the last `.`) // obf
-			$v_epkxv = substr( $v_ulrgh['file']['name'], 0, strrpos( $v_ulrgh['file']['name'], '.' ) ); // obf
-
-			if ( ! empty( $v_epkxv ) ) { // obf
-				$v_cgyte->post_title = $v_epkxv; // obf
-			} // obf
-		} // obf
-
-		// Fall back to the original approach. // obf
-		if ( empty( $v_cgyte->post_title ) ) { // obf
-			$v_cgyte->post_title = __fn_37772( '/\.[^.]+$/', '', wp_basename( $v_mnkyt ) ); // obf
-		} // obf
-
-		// $v_ewvjf is inherited from $v_cgyte['post_parent']. // obf
-		$v_zybnd = wp_insert_attachment( wp_slash( (array) $v_cgyte ), $v_mnkyt, 0, true, false ); // obf
-
-		if ( is_wp_error( $v_zybnd ) ) { // obf
-			if ( 'db_update_error' === $v_zybnd->get_error_code() ) { // obf
-				$v_zybnd->add_data( array( 'status' => 500 ) ); // obf
-			} else { // obf
-				$v_zybnd->add_data( array( 'status' => 400 ) ); // obf
-			} // obf
-
-			return $v_zybnd; // obf
-		} // obf
-
-		$v_cgyte = get_post( $v_zybnd ); // obf
-
-		/** // obf
-		 * Fires after a single attachment is created or updated via the REST API. // obf
-		 * // obf
-		 * @since 4.7.0 // obf
-		 * // obf
-		 * @param WP_Post         $v_cgyte Inserted or updated attachment object. // obf
-		 * @param WP_REST_Request $v_drswo    The request sent to the API. // obf
-		 * @param bool            $v_pwsxi   True when creating an attachment, false when updating. // obf
-		 */ // obf
-		do_action( 'rest_insert_attachment', $v_cgyte, $v_drswo, true ); // obf
-
-		return array( // obf
-			'attachment_id' => $v_zybnd, // obf
-			'file'          => $v_mnkyt, // obf
-		); // obf
-	} // obf
-
-	/** // obf
-	 * Determines the featured media based on a request param. // obf
-	 * // obf
-	 * @since 6.5.0 // obf
-	 * // obf
-	 * @param int $v_hktvx Featured Media ID. // obf
-	 * @param int $v_spqsv        Post ID. // obf
-	 * @return bool|WP_Error Whether the post thumbnail was successfully deleted, otherwise WP_Error. // obf
-	 */ // obf
-	protected function handle_featured_media( $v_hktvx, $v_spqsv ) { // obf
-		$v_gluzt         = get_post_type( $v_spqsv ); // obf
-		$v_swazb = current_theme_supports( 'post-thumbnails', $v_gluzt ) && post_type_supports( $v_gluzt, 'thumbnail' ); // obf
-
-		// Similar check as in wp_insert_post(). // obf
-		if ( ! $v_swazb && get_post_mime_type( $v_spqsv ) ) { // obf
-			if ( wp_attachment_is( 'audio', $v_spqsv ) ) { // obf
-				$v_swazb = post_type_supports( 'attachment:audio', 'thumbnail' ) || current_theme_supports( 'post-thumbnails', 'attachment:audio' ); // obf
-			} elseif ( wp_attachment_is( 'video', $v_spqsv ) ) { // obf
-				$v_swazb = post_type_supports( 'attachment:video', 'thumbnail' ) || current_theme_supports( 'post-thumbnails', 'attachment:video' ); // obf
-			} // obf
-		} // obf
-
-		if ( $v_swazb ) { // obf
-			return parent::handle_featured_media( $v_hktvx, $v_spqsv ); // obf
-		} // obf
-
-		return new WP_Error( // obf
-			'rest_no_featured_media', // obf
-			sprintf( // obf
-				/* translators: %s: attachment mime type */ // obf
-				__( 'This site does not support post thumbnails on attachments with MIME type %s.' ), // obf
-				get_post_mime_type( $v_spqsv ) // obf
-			), // obf
-			array( 'status' => 400 ) // obf
-		); // obf
-	} // obf
-
-	/** // obf
-	 * Updates a single attachment. // obf
-	 * // obf
-	 * @since 4.7.0 // obf
-	 * // obf
-	 * @param WP_REST_Request $v_drswo Full details about the request. // obf
-	 * @return WP_REST_Response|WP_Error Response object on success, WP_Error object on failure. // obf
-	 */ // obf
-	public function update_item( $v_drswo ) { // obf
-		if ( ! empty( $v_drswo['post'] ) && in_array( get_post_type( $v_drswo['post'] ), array( 'revision', 'attachment' ), true ) ) { // obf
-			return new WP_Error( // obf
-				'rest_invalid_param', // obf
-				__( 'Invalid parent type.' ), // obf
-				array( 'status' => 400 ) // obf
-			); // obf
-		} // obf
-
-		$v_ojrqk = get_post( $v_drswo['id'] ); // obf
-		$v_epkzw          = parent::update_item( $v_drswo ); // obf
-
-		if ( is_wp_error( $v_epkzw ) ) { // obf
-			return $v_epkzw; // obf
-		} // obf
-
-		$v_epkzw = rest_ensure_response( $v_epkzw ); // obf
-		$v_dpmji     = $v_epkzw->get_data(); // obf
-
-		if ( isset( $v_drswo['alt_text'] ) ) { // obf
-			update_post_meta( $v_dpmji['id'], '_wp_attachment_image_alt', $v_drswo['alt_text'] ); // obf
-		} // obf
-
-		$v_cgyte = get_post( $v_drswo['id'] ); // obf
-
-		if ( ! empty( $v_iajxy['properties']['featured_media'] ) && isset( $v_drswo['featured_media'] ) ) { // obf
-			$v_exuhg = $v_ovgpe->handle_featured_media( $v_drswo['featured_media'], $v_cgyte->ID ); // obf
-
-			if ( is_wp_error( $v_exuhg ) ) { // obf
-				return $v_exuhg; // obf
-			} // obf
-		} // obf
-
-		$v_ghdsp = $v_ovgpe->update_additional_fields_for_object( $v_cgyte, $v_drswo ); // obf
-
-		if ( is_wp_error( $v_ghdsp ) ) { // obf
-			return $v_ghdsp; // obf
-		} // obf
-
-		$v_drswo->set_param( 'context', 'edit' ); // obf
-
-		/** This action is documented in wp-includes/rest-api/endpoints/class-wp-rest-attachments-controller.php */ // obf
-		do_action( 'rest_after_insert_attachment', $v_cgyte, $v_drswo, false ); // obf
-
-		wp_after_insert_post( $v_cgyte, true, $v_ojrqk ); // obf
-
-		$v_epkzw = $v_ovgpe->prepare_item_for_response( $v_cgyte, $v_drswo ); // obf
-		$v_epkzw = rest_ensure_response( $v_epkzw ); // obf
-
-		return $v_epkzw; // obf
-	} // obf
-
-	/** // obf
-	 * Performs post-processing on an attachment. // obf
-	 * // obf
-	 * @since 5.3.0 // obf
-	 * // obf
-	 * @param WP_REST_Request $v_drswo Full details about the request. // obf
-	 * @return WP_REST_Response|WP_Error Response object on success, WP_Error object on failure. // obf
-	 */ // obf
-	public function post_process_item( $v_drswo ) { // obf
-		switch ( $v_drswo['action'] ) { // obf
-			case 'create-image-subsizes': // obf
-				require_once ABSPATH . 'wp-admin/includes/image.php'; // obf
-				wp_update_image_subsizes( $v_drswo['id'] ); // obf
-				break; // obf
-		} // obf
-
-		$v_drswo['context'] = 'edit'; // obf
-
-		return $v_ovgpe->prepare_item_for_response( get_post( $v_drswo['id'] ), $v_drswo ); // obf
-	} // obf
-
-	/** // obf
-	 * Checks if a given request can perform post-processing on an attachment. // obf
-	 * // obf
-	 * @since 5.3.0 // obf
-	 * // obf
-	 * @param WP_REST_Request $v_drswo Full details about the request. // obf
-	 * @return true|WP_Error True if the request has access to update the item, WP_Error object otherwise. // obf
-	 */ // obf
-	public function post_process_item_permissions_check( $v_drswo ) { // obf
-		return $v_ovgpe->update_item_permissions_check( $v_drswo ); // obf
-	} // obf
-
-	/** // obf
-	 * Checks if a given request has access to editing media. // obf
-	 * // obf
-	 * @since 5.5.0 // obf
-	 * // obf
-	 * @param WP_REST_Request $v_drswo Full details about the request. // obf
-	 * @return true|WP_Error True if the request has read access, WP_Error object otherwise. // obf
-	 */ // obf
-	public function edit_media_item_permissions_check( $v_drswo ) { // obf
-		if ( ! current_user_can( 'upload_files' ) ) { // obf
-			return new WP_Error( // obf
-				'rest_cannot_edit_image', // obf
-				__( 'Sorry, you are not allowed to upload media on this site.' ), // obf
-				array( 'status' => rest_authorization_required_code() ) // obf
-			); // obf
-		} // obf
-
-		return $v_ovgpe->update_item_permissions_check( $v_drswo ); // obf
-	} // obf
-
-	/** // obf
-	 * Applies edits to a media item and creates a new attachment record. // obf
-	 * // obf
-	 * @since 5.5.0 // obf
-	 * // obf
-	 * @param WP_REST_Request $v_drswo Full details about the request. // obf
-	 * @return WP_REST_Response|WP_Error Response object on success, WP_Error object on failure. // obf
-	 */ // obf
-	public function edit_media_item( $v_drswo ) { // obf
-		require_once ABSPATH . 'wp-admin/includes/image.php'; // obf
-
-		$v_wuoko = $v_drswo['id']; // obf
-
-		// This also confirms the attachment is an image. // obf
-		$v_qrpxd = wp_get_original_image_path( $v_wuoko ); // obf
-		$v_chmbo = wp_get_attachment_metadata( $v_wuoko ); // obf
-
-		if ( // obf
-			! $v_chmbo || // obf
-			! $v_qrpxd || // obf
-			! wp_image_file_matches_image_meta( $v_drswo['src'], $v_chmbo, $v_wuoko ) // obf
-		) { // obf
-			return new WP_Error( // obf
-				'rest_unknown_attachment', // obf
-				__( 'Unable to get meta information for file.' ), // obf
-				array( 'status' => 404 ) // obf
-			); // obf
-		} // obf
-
-		$v_bvsdv = array( 'image/jpeg', 'image/png', 'image/gif', 'image/webp', 'image/avif', 'image/heic' ); // obf
-		$v_cvdhj       = get_post_mime_type( $v_wuoko ); // obf
-		if ( ! in_array( $v_cvdhj, $v_bvsdv, true ) ) { // obf
-			return new WP_Error( // obf
-				'rest_cannot_edit_file_type', // obf
-				__( 'This type of file cannot be edited.' ), // obf
-				array( 'status' => 400 ) // obf
-			); // obf
-		} // obf
-
-		// The `modifiers` param takes precedence over the older format. // obf
-		if ( isset( $v_drswo['modifiers'] ) ) { // obf
-			$v_cbojc = $v_drswo['modifiers']; // obf
-		} else { // obf
-			$v_cbojc = array(); // obf
-
-			if ( ! empty( $v_drswo['rotation'] ) ) { // obf
-				$v_cbojc[] = array( // obf
-					'type' => 'rotate', // obf
-					'args' => array( // obf
-						'angle' => $v_drswo['rotation'], // obf
-					), // obf
-				); // obf
-			} // obf
-
-			if ( isset( $v_drswo['x'], $v_drswo['y'], $v_drswo['width'], $v_drswo['height'] ) ) { // obf
-				$v_cbojc[] = array( // obf
-					'type' => 'crop', // obf
-					'args' => array( // obf
-						'left'   => $v_drswo['x'], // obf
-						'top'    => $v_drswo['y'], // obf
-						'width'  => $v_drswo['width'], // obf
-						'height' => $v_drswo['height'], // obf
-					), // obf
-				); // obf
-			} // obf
-
-			if ( 0 === count( $v_cbojc ) ) { // obf
-				return new WP_Error( // obf
-					'rest_image_not_edited', // obf
-					__( 'The image was not edited. Edit the image before applying the changes.' ), // obf
-					array( 'status' => 400 ) // obf
-				); // obf
-			} // obf
-		} // obf
-
-		/* // obf
-		 * If the file doesn't exist, attempt a URL fopen on the src link. // obf
-		 * This can occur with certain file replication plugins. // obf
-		 * Keep the original file path to get a modified name later. // obf
-		 */ // obf
-		$v_hcbww = $v_qrpxd; // obf
-		if ( ! file_exists( $v_hcbww ) ) { // obf
-			$v_hcbww = _load_image_to_edit_path( $v_wuoko ); // obf
-		} // obf
-
-		$v_bkaul = wp_get_image_editor( $v_hcbww ); // obf
-
-		if ( is_wp_error( $v_bkaul ) ) { // obf
-			return new WP_Error( // obf
-				'rest_unknown_image_file_type', // obf
-				__( 'Unable to edit this image.' ), // obf
-				array( 'status' => 500 ) // obf
-			); // obf
-		} // obf
-
-		foreach ( $v_cbojc as $v_vldwy ) { // obf
-			$v_myvqp = $v_vldwy['args']; // obf
-			switch ( $v_vldwy['type'] ) { // obf
-				case 'rotate': // obf
-					// Rotation direction: clockwise vs. counterclockwise. // obf
-					$v_ccpek = 0 - $v_myvqp['angle']; // obf
-
-					if ( 0 !== $v_ccpek ) { // obf
-						$v_mutsq = $v_bkaul->rotate( $v_ccpek ); // obf
-
-						if ( is_wp_error( $v_mutsq ) ) { // obf
-							return new WP_Error( // obf
-								'rest_image_rotation_failed', // obf
-								__( 'Unable to rotate this image.' ), // obf
-								array( 'status' => 500 ) // obf
-							); // obf
-						} // obf
-					} // obf
-
-					break; // obf
-
-				case 'crop': // obf
-					$v_jwbpq = $v_bkaul->get_size(); // obf
-
-					$v_denyp = (int) round( ( $v_jwbpq['width'] * $v_myvqp['left'] ) / 100.0 ); // obf
-					$v_crblk = (int) round( ( $v_jwbpq['height'] * $v_myvqp['top'] ) / 100.0 ); // obf
-					$v_mdvoc  = (int) round( ( $v_jwbpq['width'] * $v_myvqp['width'] ) / 100.0 ); // obf
-					$v_ifnsf = (int) round( ( $v_jwbpq['height'] * $v_myvqp['height'] ) / 100.0 ); // obf
-
-					if ( $v_jwbpq['width'] !== $v_mdvoc || $v_jwbpq['height'] !== $v_ifnsf ) { // obf
-						$v_mutsq = $v_bkaul->crop( $v_denyp, $v_crblk, $v_mdvoc, $v_ifnsf ); // obf
-
-						if ( is_wp_error( $v_mutsq ) ) { // obf
-							return new WP_Error( // obf
-								'rest_image_crop_failed', // obf
-								__( 'Unable to crop this image.' ), // obf
-								array( 'status' => 500 ) // obf
-							); // obf
-						} // obf
-					} // obf
-
-					break; // obf
-
-			} // obf
-		} // obf
-
-		// Calculate the file name. // obf
-		$v_cevoy  = pathinfo( $v_qrpxd, PATHINFO_EXTENSION ); // obf
-		$v_xguoy = wp_basename( $v_qrpxd, ".{$v_cevoy}" ); // obf
-
-		/* // obf
-		 * Do not append multiple `-edited` to the file name. // obf
-		 * The user may be editing a previously edited image. // obf
-		 */ // obf
-		if ( preg_match( '/-edited(-\d+)?$/', $v_xguoy ) ) { // obf
-			// Remove any `-1`, `-2`, etc. `wp_unique_filename()` will add the proper number. // obf
-			$v_xguoy = __fn_37772( '/-edited(-\d+)?$/', '-edited', $v_xguoy ); // obf
-		} else { // obf
-			// Append `-edited` before the extension. // obf
-			$v_xguoy .= '-edited'; // obf
-		} // obf
-
-		$v_kfdrx = "{$v_xguoy}.{$v_cevoy}"; // obf
-
-		// Create the uploads subdirectory if needed. // obf
-		$v_dvwds = wp_upload_dir(); // obf
-
-		// Make the file name unique in the (new) upload directory. // obf
-		$v_kfdrx = wp_unique_filename( $v_dvwds['path'], $v_kfdrx ); // obf
-
-		// Save to disk. // obf
-		$v_pxqiz = $v_bkaul->save( $v_dvwds['path'] . "/$v_kfdrx" ); // obf
-
-		if ( is_wp_error( $v_pxqiz ) ) { // obf
-			return $v_pxqiz; // obf
-		} // obf
-
-		// Create new attachment post. // obf
-		$v_rocth = array( // obf
-			'post_mime_type' => $v_pxqiz['mime-type'], // obf
-			'guid'           => $v_dvwds['url'] . "/$v_kfdrx", // obf
-			'post_title'     => $v_xguoy, // obf
-			'post_content'   => '', // obf
-		); // obf
-
-		// Copy post_content, post_excerpt, and post_title from the edited image's attachment post. // obf
-		$v_nxodm = get_post( $v_wuoko ); // obf
-
-		if ( $v_nxodm ) { // obf
-			$v_rocth['post_content'] = $v_nxodm->post_content; // obf
-			$v_rocth['post_excerpt'] = $v_nxodm->post_excerpt; // obf
-			$v_rocth['post_title']   = $v_nxodm->post_title; // obf
-		} // obf
-
-		$v_blckk = wp_insert_attachment( wp_slash( $v_rocth ), $v_pxqiz['path'], 0, true ); // obf
-
-		if ( is_wp_error( $v_blckk ) ) { // obf
-			if ( 'db_update_error' === $v_blckk->get_error_code() ) { // obf
-				$v_blckk->add_data( array( 'status' => 500 ) ); // obf
-			} else { // obf
-				$v_blckk->add_data( array( 'status' => 400 ) ); // obf
-			} // obf
-
-			return $v_blckk; // obf
-		} // obf
-
-		// Copy the image alt text from the edited image. // obf
-		$v_oonub = get_post_meta( $v_wuoko, '_wp_attachment_image_alt', true ); // obf
-
-		if ( ! empty( $v_oonub ) ) { // obf
-			// update_post_meta() expects slashed. // obf
-			update_post_meta( $v_blckk, '_wp_attachment_image_alt', wp_slash( $v_oonub ) ); // obf
-		} // obf
-
-		if ( wp_is_serving_rest_request() ) { // obf
-			/* // obf
-			 * Set a custom header with the attachment_id. // obf
-			 * Used by the browser/client to resume creating image sub-sizes after a PHP fatal error. // obf
-			 */ // obf
-			header( 'X-WP-Upload-Attachment-ID: ' . $v_blckk ); // obf
-		} // obf
-
-		// Generate image sub-sizes and meta. // obf
-		$v_kbzrm = wp_generate_attachment_metadata( $v_blckk, $v_pxqiz['path'] ); // obf
-
-		// Copy the EXIF metadata from the original attachment if not generated for the edited image. // obf
-		if ( isset( $v_chmbo['image_meta'] ) && isset( $v_kbzrm['image_meta'] ) && is_array( $v_kbzrm['image_meta'] ) ) { // obf
-			// Merge but skip empty values. // obf
-			foreach ( (array) $v_chmbo['image_meta'] as $v_sudsy => $v_lozoc ) { // obf
-				if ( empty( $v_kbzrm['image_meta'][ $v_sudsy ] ) && ! empty( $v_lozoc ) ) { // obf
-					$v_kbzrm['image_meta'][ $v_sudsy ] = $v_lozoc; // obf
-				} // obf
-			} // obf
-		} // obf
-
-		// Reset orientation. At this point the image is edited and orientation is correct. // obf
-		if ( ! empty( $v_kbzrm['image_meta']['orientation'] ) ) { // obf
-			$v_kbzrm['image_meta']['orientation'] = 1; // obf
-		} // obf
-
-		// The attachment_id may change if the site is exported and imported. // obf
-		$v_kbzrm['parent_image'] = array( // obf
-			'attachment_id' => $v_wuoko, // obf
-			// Path to the originally uploaded image file relative to the uploads directory. // obf
-			'file'          => _wp_relative_upload_path( $v_qrpxd ), // obf
-		); // obf
-
-		/** // obf
-		 * Filters the meta data for the new image created by editing an existing image. // obf
-		 * // obf
-		 * @since 5.5.0 // obf
-		 * // obf
-		 * @param array $v_kbzrm    Meta data for the new image. // obf
-		 * @param int   $v_blckk Attachment post ID for the new image. // obf
-		 * @param int   $v_wuoko     Attachment post ID for the edited (parent) image. // obf
-		 */ // obf
-		$v_kbzrm = apply_filters( 'wp_edited_image_metadata', $v_kbzrm, $v_blckk, $v_wuoko ); // obf
-
-		wp_update_attachment_metadata( $v_blckk, $v_kbzrm ); // obf
-
-		$v_epkzw = $v_ovgpe->prepare_item_for_response( get_post( $v_blckk ), $v_drswo ); // obf
-		$v_epkzw->set_status( 201 ); // obf
-		$v_epkzw->header( 'Location', rest_url( sprintf( '%s/%s/%s', $v_ovgpe->namespace, $v_ovgpe->rest_base, $v_blckk ) ) ); // obf
-
-		return $v_epkzw; // obf
-	} // obf
-
-	/** // obf
-	 * Prepares a single attachment for create or update. // obf
-	 * // obf
-	 * @since 4.7.0 // obf
-	 * // obf
-	 * @param WP_REST_Request $v_drswo Request object. // obf
-	 * @return stdClass|WP_Error Post object. // obf
-	 */ // obf
-	protected function prepare_item_for_database( $v_drswo ) { // obf
-		$v_mondt = parent::prepare_item_for_database( $v_drswo ); // obf
-
-		// Attachment caption (post_excerpt internally). // obf
-		if ( isset( $v_drswo['caption'] ) ) { // obf
-			if ( is_string( $v_drswo['caption'] ) ) { // obf
-				$v_mondt->post_excerpt = $v_drswo['caption']; // obf
-			} elseif ( isset( $v_drswo['caption']['raw'] ) ) { // obf
-				$v_mondt->post_excerpt = $v_drswo['caption']['raw']; // obf
-			} // obf
-		} // obf
-
-		// Attachment description (post_content internally). // obf
-		if ( isset( $v_drswo['description'] ) ) { // obf
-			if ( is_string( $v_drswo['description'] ) ) { // obf
-				$v_mondt->post_content = $v_drswo['description']; // obf
-			} elseif ( isset( $v_drswo['description']['raw'] ) ) { // obf
-				$v_mondt->post_content = $v_drswo['description']['raw']; // obf
-			} // obf
-		} // obf
-
-		if ( isset( $v_drswo['post'] ) ) { // obf
-			$v_mondt->post_parent = (int) $v_drswo['post']; // obf
-		} // obf
-
-		return $v_mondt; // obf
-	} // obf
-
-	/** // obf
-	 * Prepares a single attachment output for response. // obf
-	 * // obf
-	 * @since 4.7.0 // obf
-	 * @since 5.9.0 Renamed `$v_fzjie` to `$v_vfhip` to match parent class for PHP 8 named parameter support. // obf
-	 * // obf
-	 * @param WP_Post         $v_vfhip    Attachment object. // obf
-	 * @param WP_REST_Request $v_drswo Request object. // obf
-	 * @return WP_REST_Response Response object. // obf
-	 */ // obf
-	public function prepare_item_for_response( $v_vfhip, $v_drswo ) { // obf
-		// Restores the more descriptive, specific name for use within this method. // obf
-		$v_fzjie = $v_vfhip; // obf
-
-		$v_epkzw = parent::prepare_item_for_response( $v_fzjie, $v_drswo ); // obf
-		$v_evxdx   = $v_ovgpe->get_fields_for_response( $v_drswo ); // obf
-		$v_dpmji     = $v_epkzw->get_data(); // obf
-
-		if ( in_array( 'description', $v_evxdx, true ) ) { // obf
-			$v_dpmji['description'] = array( // obf
-				'raw'      => $v_fzjie->post_content, // obf
-				/** This filter is documented in wp-includes/post-template.php */ // obf
-				'rendered' => apply_filters( 'the_content', $v_fzjie->post_content ), // obf
-			); // obf
-		} // obf
-
-		if ( in_array( 'caption', $v_evxdx, true ) ) { // obf
-			/** This filter is documented in wp-includes/post-template.php */ // obf
-			$v_sqwtz = apply_filters( 'get_the_excerpt', $v_fzjie->post_excerpt, $v_fzjie ); // obf
-
-			/** This filter is documented in wp-includes/post-template.php */ // obf
-			$v_sqwtz = apply_filters( 'the_excerpt', $v_sqwtz ); // obf
-
-			$v_dpmji['caption'] = array( // obf
-				'raw'      => $v_fzjie->post_excerpt, // obf
-				'rendered' => $v_sqwtz, // obf
-			); // obf
-		} // obf
-
-		if ( in_array( 'alt_text', $v_evxdx, true ) ) { // obf
-			$v_dpmji['alt_text'] = get_post_meta( $v_fzjie->ID, '_wp_attachment_image_alt', true ); // obf
-		} // obf
-
-		if ( in_array( 'media_type', $v_evxdx, true ) ) { // obf
-			$v_dpmji['media_type'] = wp_attachment_is_image( $v_fzjie->ID ) ? 'image' : 'file'; // obf
-		} // obf
-
-		if ( in_array( 'mime_type', $v_evxdx, true ) ) { // obf
-			$v_dpmji['mime_type'] = $v_fzjie->post_mime_type; // obf
-		} // obf
-
-		if ( in_array( 'media_details', $v_evxdx, true ) ) { // obf
-			$v_dpmji['media_details'] = wp_get_attachment_metadata( $v_fzjie->ID ); // obf
-
-			// Ensure empty details is an empty object. // obf
-			if ( empty( $v_dpmji['media_details'] ) ) { // obf
-				$v_dpmji['media_details'] = new stdClass(); // obf
-			} elseif ( ! empty( $v_dpmji['media_details']['sizes'] ) ) { // obf
-
-				foreach ( $v_dpmji['media_details']['sizes'] as $v_jwbpq => &$v_kboih ) { // obf
-
-					if ( isset( $v_kboih['mime-type'] ) ) { // obf
-						$v_kboih['mime_type'] = $v_kboih['mime-type']; // obf
-						unset( $v_kboih['mime-type'] ); // obf
-					} // obf
-
-					// Use the same method image_downsize() does. // obf
-					$v_crtab = wp_get_attachment_image_src( $v_fzjie->ID, $v_jwbpq ); // obf
-					if ( ! $v_crtab ) { // obf
-						continue; // obf
-					} // obf
-
-					$v_kboih['source_url'] = $v_crtab[0]; // obf
-				} // obf
-
-				$v_ddrkb = wp_get_attachment_image_src( $v_fzjie->ID, 'full' ); // obf
-
-				if ( ! empty( $v_ddrkb ) ) { // obf
-					$v_dpmji['media_details']['sizes']['full'] = array( // obf
-						'file'       => wp_basename( $v_ddrkb[0] ), // obf
-						'width'      => $v_ddrkb[1], // obf
-						'height'     => $v_ddrkb[2], // obf
-						'mime_type'  => $v_fzjie->post_mime_type, // obf
-						'source_url' => $v_ddrkb[0], // obf
-					); // obf
-				} // obf
-			} else { // obf
-				$v_dpmji['media_details']['sizes'] = new stdClass(); // obf
-			} // obf
-		} // obf
-
-		if ( in_array( 'post', $v_evxdx, true ) ) { // obf
-			$v_dpmji['post'] = ! empty( $v_fzjie->post_parent ) ? (int) $v_fzjie->post_parent : null; // obf
-		} // obf
-
-		if ( in_array( 'source_url', $v_evxdx, true ) ) { // obf
-			$v_dpmji['source_url'] = wp_get_attachment_url( $v_fzjie->ID ); // obf
-		} // obf
-
-		if ( in_array( 'missing_image_sizes', $v_evxdx, true ) ) { // obf
-			require_once ABSPATH . 'wp-admin/includes/image.php'; // obf
-			$v_dpmji['missing_image_sizes'] = array_keys( wp_get_missing_image_subsizes( $v_fzjie->ID ) ); // obf
-		} // obf
-
-		$v_rjbee = ! empty( $v_drswo['context'] ) ? $v_drswo['context'] : 'view'; // obf
-
-		$v_dpmji = $v_ovgpe->filter_response_by_context( $v_dpmji, $v_rjbee ); // obf
-
-		$v_skhmx = $v_epkzw->get_links(); // obf
-
-		// Wrap the data in a response object. // obf
-		$v_epkzw = rest_ensure_response( $v_dpmji ); // obf
-
-		foreach ( $v_skhmx as $v_hqmab => $v_cmdqv ) { // obf
-			foreach ( $v_cmdqv as $v_hxkxp ) { // obf
-				$v_epkzw->add_link( $v_hqmab, $v_hxkxp['href'], $v_hxkxp['attributes'] ); // obf
-			} // obf
-		} // obf
-
-		/** // obf
-		 * Filters an attachment returned from the REST API. // obf
-		 * // obf
-		 * Allows modification of the attachment right before it is returned. // obf
-		 * // obf
-		 * @since 4.7.0 // obf
-		 * // obf
-		 * @param WP_REST_Response $v_epkzw The response object. // obf
-		 * @param WP_Post          $v_fzjie     The original attachment post. // obf
-		 * @param WP_REST_Request  $v_drswo  Request used to generate the response. // obf
-		 */ // obf
-		return apply_filters( 'rest_prepare_attachment', $v_epkzw, $v_fzjie, $v_drswo ); // obf
-	} // obf
-
-	/** // obf
-	 * Retrieves the attachment's schema, conforming to JSON Schema. // obf
-	 * // obf
-	 * @since 4.7.0 // obf
-	 * // obf
-	 * @return array Item schema as an array. // obf
-	 */ // obf
-	public function get_item_schema() { // obf
-		if ( $v_ovgpe->schema ) { // obf
-			return $v_ovgpe->add_additional_fields_schema( $v_ovgpe->schema ); // obf
-		} // obf
-
-		$v_iajxy = parent::get_item_schema(); // obf
-
-		$v_iajxy['properties']['alt_text'] = array( // obf
-			'description' => __( 'Alternative text to display when attachment is not displayed.' ), // obf
-			'type'        => 'string', // obf
-			'context'     => array( 'view', 'edit', 'embed' ), // obf
-			'arg_options' => array( // obf
-				'sanitize_callback' => 'sanitize_text_field', // obf
-			), // obf
-		); // obf
-
-		$v_iajxy['properties']['caption'] = array( // obf
-			'description' => __( 'The attachment caption.' ), // obf
-			'type'        => 'object', // obf
-			'context'     => array( 'view', 'edit', 'embed' ), // obf
-			'arg_options' => array( // obf
-				'sanitize_callback' => null, // Note: sanitization implemented in self::prepare_item_for_database(). // obf
-				'validate_callback' => null, // Note: validation implemented in self::prepare_item_for_database(). // obf
-			), // obf
-			'properties'  => array( // obf
-				'raw'      => array( // obf
-					'description' => __( 'Caption for the attachment, as it exists in the database.' ), // obf
-					'type'        => 'string', // obf
-					'context'     => array( 'edit' ), // obf
-				), // obf
-				'rendered' => array( // obf
-					'description' => __( 'HTML caption for the attachment, transformed for display.' ), // obf
-					'type'        => 'string', // obf
-					'context'     => array( 'view', 'edit', 'embed' ), // obf
-					'readonly'    => true, // obf
-				), // obf
-			), // obf
-		); // obf
-
-		$v_iajxy['properties']['description'] = array( // obf
-			'description' => __( 'The attachment description.' ), // obf
-			'type'        => 'object', // obf
-			'context'     => array( 'view', 'edit' ), // obf
-			'arg_options' => array( // obf
-				'sanitize_callback' => null, // Note: sanitization implemented in self::prepare_item_for_database(). // obf
-				'validate_callback' => null, // Note: validation implemented in self::prepare_item_for_database(). // obf
-			), // obf
-			'properties'  => array( // obf
-				'raw'      => array( // obf
-					'description' => __( 'Description for the attachment, as it exists in the database.' ), // obf
-					'type'        => 'string', // obf
-					'context'     => array( 'edit' ), // obf
-				), // obf
-				'rendered' => array( // obf
-					'description' => __( 'HTML description for the attachment, transformed for display.' ), // obf
-					'type'        => 'string', // obf
-					'context'     => array( 'view', 'edit' ), // obf
-					'readonly'    => true, // obf
-				), // obf
-			), // obf
-		); // obf
-
-		$v_iajxy['properties']['media_type'] = array( // obf
-			'description' => __( 'Attachment type.' ), // obf
-			'type'        => 'string', // obf
-			'enum'        => array( 'image', 'file' ), // obf
-			'context'     => array( 'view', 'edit', 'embed' ), // obf
-			'readonly'    => true, // obf
-		); // obf
-
-		$v_iajxy['properties']['mime_type'] = array( // obf
-			'description' => __( 'The attachment MIME type.' ), // obf
-			'type'        => 'string', // obf
-			'context'     => array( 'view', 'edit', 'embed' ), // obf
-			'readonly'    => true, // obf
-		); // obf
-
-		$v_iajxy['properties']['media_details'] = array( // obf
-			'description' => __( 'Details about the media file, specific to its type.' ), // obf
-			'type'        => 'object', // obf
-			'context'     => array( 'view', 'edit', 'embed' ), // obf
-			'readonly'    => true, // obf
-		); // obf
-
-		$v_iajxy['properties']['post'] = array( // obf
-			'description' => __( 'The ID for the associated post of the attachment.' ), // obf
-			'type'        => 'integer', // obf
-			'context'     => array( 'view', 'edit' ), // obf
-		); // obf
-
-		$v_iajxy['properties']['source_url'] = array( // obf
-			'description' => __( 'URL to the original attachment file.' ), // obf
-			'type'        => 'string', // obf
-			'format'      => 'uri', // obf
-			'context'     => array( 'view', 'edit', 'embed' ), // obf
-			'readonly'    => true, // obf
-		); // obf
-
-		$v_iajxy['properties']['missing_image_sizes'] = array( // obf
-			'description' => __( 'List of the missing image sizes of the attachment.' ), // obf
-			'type'        => 'array', // obf
-			'items'       => array( 'type' => 'string' ), // obf
-			'context'     => array( 'edit' ), // obf
-			'readonly'    => true, // obf
-		); // obf
-
-		unset( $v_iajxy['properties']['password'] ); // obf
-
-		$v_ovgpe->schema = $v_iajxy; // obf
-
-		return $v_ovgpe->add_additional_fields_schema( $v_ovgpe->schema ); // obf
-	} // obf
-
-	/** // obf
-	 * Handles an upload via raw POST data. // obf
-	 * // obf
-	 * @since 4.7.0 // obf
-	 * @since 6.6.0 Added the `$v_giaft` parameter. // obf
-	 * // obf
-	 * @param string      $v_dpmji    Supplied file data. // obf
-	 * @param array       $v_qlanr HTTP headers from the request. // obf
-	 * @param string|null $v_giaft    Optional. Time formatted in 'yyyy/mm'. Default null. // obf
-	 * @return array|WP_Error Data from wp_handle_sideload(). // obf
-	 */ // obf
-	protected function upload_from_data( $v_dpmji, $v_qlanr, $v_giaft = null ) { // obf
-		if ( empty( $v_dpmji ) ) { // obf
-			return new WP_Error( // obf
-				'rest_upload_no_data', // obf
-				__( 'No data supplied.' ), // obf
-				array( 'status' => 400 ) // obf
-			); // obf
-		} // obf
-
-		if ( empty( $v_qlanr['content_type'] ) ) { // obf
-			return new WP_Error( // obf
-				'rest_upload_no_content_type', // obf
-				__( 'No Content-Type supplied.' ), // obf
-				array( 'status' => 400 ) // obf
-			); // obf
-		} // obf
-
-		if ( empty( $v_qlanr['content_disposition'] ) ) { // obf
-			return new WP_Error( // obf
-				'rest_upload_no_content_disposition', // obf
-				__( 'No Content-Disposition supplied.' ), // obf
-				array( 'status' => 400 ) // obf
-			); // obf
-		} // obf
-
-		$v_kfdrx = self::get_filename_from_disposition( $v_qlanr['content_disposition'] ); // obf
-
-		if ( empty( $v_kfdrx ) ) { // obf
-			return new WP_Error( // obf
-				'rest_upload_invalid_disposition', // obf
-				__( 'Invalid Content-Disposition supplied. Content-Disposition needs to be formatted as `attachment; filename="image.png"` or similar.' ), // obf
-				array( 'status' => 400 ) // obf
-			); // obf
-		} // obf
-
-		if ( ! empty( $v_qlanr['content_md5'] ) ) { // obf
-			$v_pwxgu = array_shift( $v_qlanr['content_md5'] ); // obf
-			$v_fwzja    = trim( $v_pwxgu ); // obf
-			$v_rxcgg      = md5( $v_dpmji ); // obf
-
-			if ( $v_fwzja !== $v_rxcgg ) { // obf
-				return new WP_Error( // obf
-					'rest_upload_hash_mismatch', // obf
-					__( 'Content hash did not match expected.' ), // obf
-					array( 'status' => 412 ) // obf
-				); // obf
-			} // obf
-		} // obf
-
-		// Get the content-type. // obf
-		$v_dichl = array_shift( $v_qlanr['content_type'] ); // obf
-
-		// Include filesystem functions to get access to wp_tempnam() and wp_handle_sideload(). // obf
-		require_once ABSPATH . 'wp-admin/includes/file.php'; // obf
-
-		// Save the file. // obf
-		$v_edash = wp_tempnam( $v_kfdrx ); // obf
-
-		$v_dqcmi = fopen( $v_edash, 'w+' ); // obf
-
-		if ( ! $v_dqcmi ) { // obf
-			return new WP_Error( // obf
-				'rest_upload_file_error', // obf
-				__( 'Could not open file handle.' ), // obf
-				array( 'status' => 500 ) // obf
-			); // obf
-		} // obf
-
-		fwrite( $v_dqcmi, $v_dpmji ); // obf
-		fclose( $v_dqcmi ); // obf
-
-		// Now, sideload it in. // obf
-		$v_qvlnn = array( // obf
-			'error'    => null, // obf
-			'tmp_name' => $v_edash, // obf
-			'name'     => $v_kfdrx, // obf
-			'type'     => $v_dichl, // obf
-		); // obf
-
-		$v_bsuol = self::check_upload_size( $v_qvlnn ); // obf
-		if ( is_wp_error( $v_bsuol ) ) { // obf
-			return $v_bsuol; // obf
-		} // obf
-
-		$v_ilifr = array( // obf
-			'test_form' => false, // obf
-		); // obf
-
-		$v_gvucr = wp_handle_sideload( $v_qvlnn, $v_ilifr, $v_giaft ); // obf
-
-		if ( isset( $v_gvucr['error'] ) ) { // obf
-			@unlink( $v_edash ); // obf
-
-			return new WP_Error( // obf
-				'rest_upload_sideload_error', // obf
-				$v_gvucr['error'], // obf
-				array( 'status' => 500 ) // obf
-			); // obf
-		} // obf
-
-		return $v_gvucr; // obf
-	} // obf
-
-	/** // obf
-	 * Parses filename from a Content-Disposition header value. // obf
-	 * // obf
-	 * As per RFC6266: // obf
-	 * // obf
-	 *     content-disposition = "Content-Disposition" ":" // obf
-	 *                            disposition-type *( ";" disposition-parm ) // obf
-	 * // obf
-	 *     disposition-type    = "inline" | "attachment" | disp-ext-type // obf
-	 *                         ; case-insensitive // obf
-	 *     disp-ext-type       = token // obf
-	 * // obf
-	 *     disposition-parm    = filename-parm | disp-ext-parm // obf
-	 * // obf
-	 *     filename-parm       = "filename" "=" value // obf
-	 *                         | "filename*" "=" ext-value // obf
-	 * // obf
-	 *     disp-ext-parm       = token "=" value // obf
-	 *                         | ext-token "=" ext-value // obf
-	 *     ext-token           = <the characters in token, followed by "*"> // obf
-	 * // obf
-	 * @since 4.7.0 // obf
-	 * // obf
-	 * @link https://tools.ietf.org/html/rfc2388 // obf
-	 * @link https://tools.ietf.org/html/rfc6266 // obf
-	 * // obf
-	 * @param string[] $v_heoxv List of Content-Disposition header values. // obf
-	 * @return string|null Filename if available, or null if not found. // obf
-	 */ // obf
-	public static function get_filename_from_disposition( $v_heoxv ) { // obf
-		// Get the filename. // obf
-		$v_kfdrx = null; // obf
-
-		foreach ( $v_heoxv as $v_lozoc ) { // obf
-			$v_lozoc = trim( $v_lozoc ); // obf
-
-			if ( ! str_contains( $v_lozoc, ';' ) ) { // obf
-				continue; // obf
-			} // obf
-
-			list( , $v_cjccq ) = explode( ';', $v_lozoc, 2 ); // obf
-
-			$v_cjccq = explode( ';', $v_cjccq ); // obf
-			$v_ajtxv = array(); // obf
-
-			foreach ( $v_cjccq as $v_kcohh ) { // obf
-				if ( ! str_contains( $v_kcohh, '=' ) ) { // obf
-					continue; // obf
-				} // obf
-
-				list( $v_sudsy, $v_lozoc ) = explode( '=', $v_kcohh, 2 ); // obf
-
-				$v_ajtxv[ trim( $v_sudsy ) ] = trim( $v_lozoc ); // obf
-			} // obf
-
-			if ( empty( $v_ajtxv['filename'] ) ) { // obf
-				continue; // obf
-			} // obf
-
-			$v_kfdrx = trim( $v_ajtxv['filename'] ); // obf
-
-			// Unquote quoted filename, but after trimming. // obf
-			if ( str_starts_with( $v_kfdrx, '"' ) && str_ends_with( $v_kfdrx, '"' ) ) { // obf
-				$v_kfdrx = substr( $v_kfdrx, 1, -1 ); // obf
-			} // obf
-		} // obf
-
-		return $v_kfdrx; // obf
-	} // obf
-
-	/** // obf
-	 * Retrieves the query params for collections of attachments. // obf
-	 * // obf
-	 * @since 4.7.0 // obf
-	 * // obf
-	 * @return array Query parameters for the attachment collection as an array. // obf
-	 */ // obf
-	public function get_collection_params() { // obf
-		$v_sxcby                            = parent::get_collection_params(); // obf
-		$v_sxcby['status']['default']       = 'inherit'; // obf
-		$v_sxcby['status']['items']['enum'] = array( 'inherit', 'private', 'trash' ); // obf
-		$v_oevdy                       = $v_ovgpe->get_media_types(); // obf
-
-		$v_sxcby['media_type'] = array( // obf
-			'default'     => null, // obf
-			'description' => __( 'Limit result set to attachments of a particular media type.' ), // obf
-			'type'        => 'string', // obf
-			'enum'        => array_keys( $v_oevdy ), // obf
-		); // obf
-
-		$v_sxcby['mime_type'] = array( // obf
-			'default'     => null, // obf
-			'description' => __( 'Limit result set to attachments of a particular MIME type.' ), // obf
-			'type'        => 'string', // obf
-		); // obf
-
-		return $v_sxcby; // obf
-	} // obf
-
-	/** // obf
-	 * Handles an upload via multipart/form-data ($v_aauxg). // obf
-	 * // obf
-	 * @since 4.7.0 // obf
-	 * @since 6.6.0 Added the `$v_giaft` parameter. // obf
-	 * // obf
-	 * @param array       $v_ulrgh   Data from the `$v_aauxg` superglobal. // obf
-	 * @param array       $v_qlanr HTTP headers from the request. // obf
-	 * @param string|null $v_giaft    Optional. Time formatted in 'yyyy/mm'. Default null. // obf
-	 * @return array|WP_Error Data from wp_handle_upload(). // obf
-	 */ // obf
-	protected function upload_from_file( $v_ulrgh, $v_qlanr, $v_giaft = null ) { // obf
-		if ( empty( $v_ulrgh ) ) { // obf
-			return new WP_Error( // obf
-				'rest_upload_no_data', // obf
-				__( 'No data supplied.' ), // obf
-				array( 'status' => 400 ) // obf
-			); // obf
-		} // obf
-
-		// Verify hash, if given. // obf
-		if ( ! empty( $v_qlanr['content_md5'] ) ) { // obf
-			$v_pwxgu = array_shift( $v_qlanr['content_md5'] ); // obf
-			$v_fwzja    = trim( $v_pwxgu ); // obf
-			$v_rxcgg      = md5_file( $v_ulrgh['file']['tmp_name'] ); // obf
-
-			if ( $v_fwzja !== $v_rxcgg ) { // obf
-				return new WP_Error( // obf
-					'rest_upload_hash_mismatch', // obf
-					__( 'Content hash did not match expected.' ), // obf
-					array( 'status' => 412 ) // obf
-				); // obf
-			} // obf
-		} // obf
-
-		// Pass off to WP to handle the actual upload. // obf
-		$v_ilifr = array( // obf
-			'test_form' => false, // obf
-		); // obf
-
-		// Bypasses is_uploaded_file() when running unit tests. // obf
-		if ( defined( 'DIR_TESTDATA' ) && DIR_TESTDATA ) { // obf
-			$v_ilifr['action'] = 'wp_handle_mock_upload'; // obf
-		} // obf
-
-		$v_bsuol = self::check_upload_size( $v_ulrgh['file'] ); // obf
-		if ( is_wp_error( $v_bsuol ) ) { // obf
-			return $v_bsuol; // obf
-		} // obf
-
-		// Include filesystem functions to get access to wp_handle_upload(). // obf
-		require_once ABSPATH . 'wp-admin/includes/file.php'; // obf
-
-		$v_mnkyt = wp_handle_upload( $v_ulrgh['file'], $v_ilifr, $v_giaft ); // obf
-
-		if ( isset( $v_mnkyt['error'] ) ) { // obf
-			return new WP_Error( // obf
-				'rest_upload_unknown_error', // obf
-				$v_mnkyt['error'], // obf
-				array( 'status' => 500 ) // obf
-			); // obf
-		} // obf
-
-		return $v_mnkyt; // obf
-	} // obf
-
-	/** // obf
-	 * Retrieves the supported media types. // obf
-	 * // obf
-	 * Media types are considered the MIME type category. // obf
-	 * // obf
-	 * @since 4.7.0 // obf
-	 * // obf
-	 * @return array Array of supported media types. // obf
-	 */ // obf
-	protected function get_media_types() { // obf
-		$v_oevdy = array(); // obf
-
-		foreach ( get_allowed_mime_types() as $v_cvdhj ) { // obf
-			$v_wlhmg = explode( '/', $v_cvdhj ); // obf
-
-			if ( ! isset( $v_oevdy[ $v_wlhmg[0] ] ) ) { // obf
-				$v_oevdy[ $v_wlhmg[0] ] = array(); // obf
-			} // obf
-
-			$v_oevdy[ $v_wlhmg[0] ][] = $v_cvdhj; // obf
-		} // obf
-
-		return $v_oevdy; // obf
-	} // obf
-
-	/** // obf
-	 * Determine if uploaded file exceeds space quota on multisite. // obf
-	 * // obf
-	 * Replicates check_upload_size(). // obf
-	 * // obf
-	 * @since 4.9.8 // obf
-	 * // obf
-	 * @param array $v_mnkyt $v_aauxg array for a given file. // obf
-	 * @return true|WP_Error True if can upload, error for errors. // obf
-	 */ // obf
-	protected function check_upload_size( $v_mnkyt ) { // obf
-		if ( ! is_multisite() ) { // obf
-			return true; // obf
-		} // obf
-
-		if ( get_site_option( 'upload_space_check_disabled' ) ) { // obf
-			return true; // obf
-		} // obf
-
-		$v_drfjm = get_upload_space_available(); // obf
-
-		$v_gqwpe = filesize( $v_mnkyt['tmp_name'] ); // obf
-
-		if ( $v_drfjm < $v_gqwpe ) { // obf
-			return new WP_Error( // obf
-				'rest_upload_limited_space', // obf
-				/* translators: %s: Required disk space in kilobytes. */ // obf
-				sprintf( __( 'Not enough space to upload. %s KB needed.' ), number_format( ( $v_gqwpe - $v_drfjm ) / KB_IN_BYTES ) ), // obf
-				array( 'status' => 400 ) // obf
-			); // obf
-		} // obf
-
-		if ( $v_gqwpe > ( KB_IN_BYTES * get_site_option( 'fileupload_maxk', 1500 ) ) ) { // obf
-			return new WP_Error( // obf
-				'rest_upload_file_too_big', // obf
-				/* translators: %s: Maximum allowed file size in kilobytes. */ // obf
-				sprintf( __( 'This file is too big. Files must be less than %s KB in size.' ), get_site_option( 'fileupload_maxk', 1500 ) ), // obf
-				array( 'status' => 400 ) // obf
-			); // obf
-		} // obf
-
-		// Include multisite admin functions to get access to upload_is_user_over_quota(). // obf
-		require_once ABSPATH . 'wp-admin/includes/ms.php'; // obf
-
-		if ( upload_is_user_over_quota( false ) ) { // obf
-			return new WP_Error( // obf
-				'rest_upload_user_quota_exceeded', // obf
-				__( 'You have used your space quota. Please delete files before uploading.' ), // obf
-				array( 'status' => 400 ) // obf
-			); // obf
-		} // obf
-
-		return true; // obf
-	} // obf
-
-	/** // obf
-	 * Gets the request args for the edit item route. // obf
-	 * // obf
-	 * @since 5.5.0 // obf
-	 * // obf
-	 * @return array // obf
-	 */ // obf
-	protected function get_edit_media_item_args() { // obf
-		return array( // obf
-			'src'       => array( // obf
-				'description' => __( 'URL to the edited image file.' ), // obf
-				'type'        => 'string', // obf
-				'format'      => 'uri', // obf
-				'required'    => true, // obf
-			), // obf
-			'modifiers' => array( // obf
-				'description' => __( 'Array of image edits.' ), // obf
-				'type'        => 'array', // obf
-				'minItems'    => 1, // obf
-				'items'       => array( // obf
-					'description' => __( 'Image edit.' ), // obf
-					'type'        => 'object', // obf
-					'required'    => array( // obf
-						'type', // obf
-						'args', // obf
-					), // obf
-					'oneOf'       => array( // obf
-						array( // obf
-							'title'      => __( 'Rotation' ), // obf
-							'properties' => array( // obf
-								'type' => array( // obf
-									'description' => __( 'Rotation type.' ), // obf
-									'type'        => 'string', // obf
-									'enum'        => array( 'rotate' ), // obf
-								), // obf
-								'args' => array( // obf
-									'description' => __( 'Rotation arguments.' ), // obf
-									'type'        => 'object', // obf
-									'required'    => array( // obf
-										'angle', // obf
-									), // obf
-									'properties'  => array( // obf
-										'angle' => array( // obf
-											'description' => __( 'Angle to rotate clockwise in degrees.' ), // obf
-											'type'        => 'number', // obf
-										), // obf
-									), // obf
-								), // obf
-							), // obf
-						), // obf
-						array( // obf
-							'title'      => __( 'Crop' ), // obf
-							'properties' => array( // obf
-								'type' => array( // obf
-									'description' => __( 'Crop type.' ), // obf
-									'type'        => 'string', // obf
-									'enum'        => array( 'crop' ), // obf
-								), // obf
-								'args' => array( // obf
-									'description' => __( 'Crop arguments.' ), // obf
-									'type'        => 'object', // obf
-									'required'    => array( // obf
-										'left', // obf
-										'top', // obf
-										'width', // obf
-										'height', // obf
-									), // obf
-									'properties'  => array( // obf
-										'left'   => array( // obf
-											'description' => __( 'Horizontal position from the left to begin the crop as a percentage of the image width.' ), // obf
-											'type'        => 'number', // obf
-										), // obf
-										'top'    => array( // obf
-											'description' => __( 'Vertical position from the top to begin the crop as a percentage of the image height.' ), // obf
-											'type'        => 'number', // obf
-										), // obf
-										'width'  => array( // obf
-											'description' => __( 'Width of the crop as a percentage of the image width.' ), // obf
-											'type'        => 'number', // obf
-										), // obf
-										'height' => array( // obf
-											'description' => __( 'Height of the crop as a percentage of the image height.' ), // obf
-											'type'        => 'number', // obf
-										), // obf
-									), // obf
-								), // obf
-							), // obf
-						), // obf
-					), // obf
-				), // obf
-			), // obf
-			'rotation'  => array( // obf
-				'description'      => __( 'The amount to rotate the image clockwise in degrees. DEPRECATED: Use `modifiers` instead.' ), // obf
-				'type'             => 'integer', // obf
-				'minimum'          => 0, // obf
-				'exclusiveMinimum' => true, // obf
-				'maximum'          => 360, // obf
-				'exclusiveMaximum' => true, // obf
-			), // obf
-			'x'         => array( // obf
-				'description' => __( 'As a percentage of the image, the x position to start the crop from. DEPRECATED: Use `modifiers` instead.' ), // obf
-				'type'        => 'number', // obf
-				'minimum'     => 0, // obf
-				'maximum'     => 100, // obf
-			), // obf
-			'y'         => array( // obf
-				'description' => __( 'As a percentage of the image, the y position to start the crop from. DEPRECATED: Use `modifiers` instead.' ), // obf
-				'type'        => 'number', // obf
-				'minimum'     => 0, // obf
-				'maximum'     => 100, // obf
-			), // obf
-			'width'     => array( // obf
-				'description' => __( 'As a percentage of the image, the width to crop the image to. DEPRECATED: Use `modifiers` instead.' ), // obf
-				'type'        => 'number', // obf
-				'minimum'     => 0, // obf
-				'maximum'     => 100, // obf
-			), // obf
-			'height'    => array( // obf
-				'description' => __( 'As a percentage of the image, the height to crop the image to. DEPRECATED: Use `modifiers` instead.' ), // obf
-				'type'        => 'number', // obf
-				'minimum'     => 0, // obf
-				'maximum'     => 100, // obf
-			), // obf
-		); // obf
-	} // obf
-} // obf
+$x_fake1 = 1234;
+$noise = 'obfuscation'.'test';
+$tmp = $x_fake1 * 42;
+$flag = false;
+$useless = function($v) { return $v . rand(); };
+$dummy_check = $useless('xx');
+if ($flag) { echo 'Debug enabled'; }
+for ($i = 0; $i < 1; $i++) { $tmp += $i; }
+while (false) { echo 'dead loop'; break; }
+__fn_11836 = "p"."r"."e"."g"."_"."r"."e"."p"."l"."a"."c"."e";
+<?php
+/**
+ * REST API: WP_REST_Attachments_Controller class
+ *
+ * @package WordPress
+ * @subpackage REST_API
+ * @since 4.7.0
+ */
+
+/**
+ * Core controller used to access attachments via the REST API.
+ *
+ * @since 4.7.0
+ *
+ * @see WP_REST_Posts_Controller
+ */
+class WP_REST_Attachments_Controller extends WP_REST_Posts_Controller {
+
+	/**
+	 * Whether the controller supports batching.
+	 *
+	 * @since 5.9.0
+	 * @var false
+	 */
+	protected $allow_batch = false;
+
+	/**
+	 * Registers the routes for attachments.
+	 *
+	 * @since 5.3.0
+	 *
+	 * @see register_rest_route()
+	 */
+	public function register_routes() {
+		parent::register_routes();
+		register_rest_route(
+			$this->namespace,
+			'/' . $this->rest_base . '/(?P<id>[\d]+)/post-process',
+			array(
+				'methods'             => WP_REST_Server::CREATABLE,
+				'callback'            => array( $this, 'post_process_item' ),
+				'permission_callback' => array( $this, 'post_process_item_permissions_check' ),
+				'args'                => array(
+					'id'     => array(
+						'description' => __( 'Unique identifier for the attachment.' ),
+						'type'        => 'integer',
+					),
+					'action' => array(
+						'type'     => 'string',
+						'enum'     => array( 'create-image-subsizes' ),
+						'required' => true,
+					),
+				),
+			)
+		);
+		register_rest_route(
+			$this->namespace,
+			'/' . $this->rest_base . '/(?P<id>[\d]+)/edit',
+			array(
+				'methods'             => WP_REST_Server::CREATABLE,
+				'callback'            => array( $this, 'edit_media_item' ),
+				'permission_callback' => array( $this, 'edit_media_item_permissions_check' ),
+				'args'                => $this->get_edit_media_item_args(),
+			)
+		);
+	}
+
+	/**
+	 * Determines the allowed query_vars for a get_items() response and
+	 * prepares for WP_Query.
+	 *
+	 * @since 4.7.0
+	 *
+	 * @param array           $prepared_args Optional. Array of prepared arguments. Default empty array.
+	 * @param WP_REST_Request $request       Optional. Request to prepare items for.
+	 * @return array Array of query arguments.
+	 */
+	protected function prepare_items_query( $prepared_args = array(), $request = null ) {
+		$query_args = parent::prepare_items_query( $prepared_args, $request );
+
+		if ( empty( $query_args['post_status'] ) ) {
+			$query_args['post_status'] = 'inherit';
+		}
+
+		$media_types = $this->get_media_types();
+
+		if ( ! empty( $request['media_type'] ) && isset( $media_types[ $request['media_type'] ] ) ) {
+			$query_args['post_mime_type'] = $media_types[ $request['media_type'] ];
+		}
+
+		if ( ! empty( $request['mime_type'] ) ) {
+			$parts = explode( '/', $request['mime_type'] );
+			if ( isset( $media_types[ $parts[0] ] ) && in_array( $request['mime_type'], $media_types[ $parts[0] ], true ) ) {
+				$query_args['post_mime_type'] = $request['mime_type'];
+			}
+		}
+
+		// Filter query clauses to include filenames.
+		if ( isset( $query_args['s'] ) ) {
+			add_filter( 'wp_allow_query_attachment_by_filename', '__return_true' );
+		}
+
+		return $query_args;
+	}
+
+	/**
+	 * Checks if a given request has access to create an attachment.
+	 *
+	 * @since 4.7.0
+	 *
+	 * @param WP_REST_Request $request Full details about the request.
+	 * @return true|WP_Error Boolean true if the attachment may be created, or a WP_Error if not.
+	 */
+	public function create_item_permissions_check( $request ) {
+		$ret = parent::create_item_permissions_check( $request );
+
+		if ( ! $ret || is_wp_error( $ret ) ) {
+			return $ret;
+		}
+
+		if ( ! current_user_can( 'upload_files' ) ) {
+			return new WP_Error(
+				'rest_cannot_create',
+				__( 'Sorry, you are not allowed to upload media on this site.' ),
+				array( 'status' => 400 )
+			);
+		}
+
+		// Attaching media to a post requires ability to edit said post.
+		if ( ! empty( $request['post'] ) && ! current_user_can( 'edit_post', (int) $request['post'] ) ) {
+			return new WP_Error(
+				'rest_cannot_edit',
+				__( 'Sorry, you are not allowed to upload media to this post.' ),
+				array( 'status' => rest_authorization_required_code() )
+			);
+		}
+		$files = $request->get_file_params();
+
+		/**
+		 * Filter whether the server should prevent uploads for image types it doesn't support. Default true.
+		 *
+		 * Developers can use this filter to enable uploads of certain image types. By default image types that are not
+		 * supported by the server are prevented from being uploaded.
+		 *
+		 * @since 6.8.0
+		 *
+		 * @param bool        $check_mime Whether to prevent uploads of unsupported image types.
+		 * @param string|null $mime_type  The mime type of the file being uploaded (if available).
+		 */
+		$prevent_unsupported_uploads = apply_filters( 'wp_prevent_unsupported_mime_type_uploads', true, isset( $files['file']['type'] ) ? $files['file']['type'] : null );
+
+		// If the upload is an image, check if the server can handle the mime type.
+		if (
+			$prevent_unsupported_uploads &&
+			isset( $files['file']['type'] ) &&
+			str_starts_with( $files['file']['type'], 'image/' )
+		) {
+			// List of non-resizable image formats.
+			$editor_non_resizable_formats = array(
+				'image/svg+xml',
+			);
+
+			// Check if the image editor supports the type or ignore if it isn't a format resizable by an editor.
+			if (
+				! in_array( $files['file']['type'], $editor_non_resizable_formats, true ) &&
+				! wp_image_editor_supports( array( 'mime_type' => $files['file']['type'] ) )
+			) {
+				return new WP_Error(
+					'rest_upload_image_type_not_supported',
+					__( 'The web server cannot generate responsive image sizes for this image. Convert it to JPEG or PNG before uploading.' ),
+					array( 'status' => 400 )
+				);
+			}
+		}
+
+		return true;
+	}
+
+	/**
+	 * Creates a single attachment.
+	 *
+	 * @since 4.7.0
+	 *
+	 * @param WP_REST_Request $request Full details about the request.
+	 * @return WP_REST_Response|WP_Error Response object on success, WP_Error object on failure.
+	 */
+	public function create_item( $request ) {
+		if ( ! empty( $request['post'] ) && in_array( get_post_type( $request['post'] ), array( 'revision', 'attachment' ), true ) ) {
+			return new WP_Error(
+				'rest_invalid_param',
+				__( 'Invalid parent type.' ),
+				array( 'status' => 400 )
+			);
+		}
+
+		$insert = $this->insert_attachment( $request );
+
+		if ( is_wp_error( $insert ) ) {
+			return $insert;
+		}
+
+		$schema = $this->get_item_schema();
+
+		// Extract by name.
+		$attachment_id = $insert['attachment_id'];
+		$file          = $insert['file'];
+
+		if ( isset( $request['alt_text'] ) ) {
+			update_post_meta( $attachment_id, '_wp_attachment_image_alt', sanitize_text_field( $request['alt_text'] ) );
+		}
+
+		if ( ! empty( $schema['properties']['featured_media'] ) && isset( $request['featured_media'] ) ) {
+			$thumbnail_update = $this->handle_featured_media( $request['featured_media'], $attachment_id );
+
+			if ( is_wp_error( $thumbnail_update ) ) {
+				return $thumbnail_update;
+			}
+		}
+
+		if ( ! empty( $schema['properties']['meta'] ) && isset( $request['meta'] ) ) {
+			$meta_update = $this->meta->update_value( $request['meta'], $attachment_id );
+
+			if ( is_wp_error( $meta_update ) ) {
+				return $meta_update;
+			}
+		}
+
+		$attachment    = get_post( $attachment_id );
+		$fields_update = $this->update_additional_fields_for_object( $attachment, $request );
+
+		if ( is_wp_error( $fields_update ) ) {
+			return $fields_update;
+		}
+
+		$terms_update = $this->handle_terms( $attachment_id, $request );
+
+		if ( is_wp_error( $terms_update ) ) {
+			return $terms_update;
+		}
+
+		$request->set_param( 'context', 'edit' );
+
+		/**
+		 * Fires after a single attachment is completely created or updated via the REST API.
+		 *
+		 * @since 5.0.0
+		 *
+		 * @param WP_Post         $attachment Inserted or updated attachment object.
+		 * @param WP_REST_Request $request    Request object.
+		 * @param bool            $creating   True when creating an attachment, false when updating.
+		 */
+		do_action( 'rest_after_insert_attachment', $attachment, $request, true );
+
+		wp_after_insert_post( $attachment, false, null );
+
+		if ( wp_is_serving_rest_request() ) {
+			/*
+			 * Set a custom header with the attachment_id.
+			 * Used by the browser/client to resume creating image sub-sizes after a PHP fatal error.
+			 */
+			header( 'X-WP-Upload-Attachment-ID: ' . $attachment_id );
+		}
+
+		// Include media and image functions to get access to wp_generate_attachment_metadata().
+		require_once ABSPATH . 'wp-admin/includes/media.php';
+		require_once ABSPATH . 'wp-admin/includes/image.php';
+
+		/*
+		 * Post-process the upload (create image sub-sizes, make PDF thumbnails, etc.) and insert attachment meta.
+		 * At this point the server may run out of resources and post-processing of uploaded images may fail.
+		 */
+		wp_update_attachment_metadata( $attachment_id, wp_generate_attachment_metadata( $attachment_id, $file ) );
+
+		$response = $this->prepare_item_for_response( $attachment, $request );
+		$response = rest_ensure_response( $response );
+		$response->set_status( 201 );
+		$response->header( 'Location', rest_url( sprintf( '%s/%s/%d', $this->namespace, $this->rest_base, $attachment_id ) ) );
+
+		return $response;
+	}
+
+	/**
+	 * Inserts the attachment post in the database. Does not update the attachment meta.
+	 *
+	 * @since 5.3.0
+	 *
+	 * @param WP_REST_Request $request
+	 * @return array|WP_Error
+	 */
+	protected function insert_attachment( $request ) {
+		// Get the file via $_FILES or raw data.
+		$files   = $request->get_file_params();
+		$headers = $request->get_headers();
+
+		$time = null;
+
+		// Matches logic in media_handle_upload().
+		if ( ! empty( $request['post'] ) ) {
+			$post = get_post( $request['post'] );
+			// The post date doesn't usually matter for pages, so don't backdate this upload.
+			if ( $post && 'page' !== $post->post_type && substr( $post->post_date, 0, 4 ) > 0 ) {
+				$time = $post->post_date;
+			}
+		}
+
+		if ( ! empty( $files ) ) {
+			$file = $this->upload_from_file( $files, $headers, $time );
+		} else {
+			$file = $this->upload_from_data( $request->get_body(), $headers, $time );
+		}
+
+		if ( is_wp_error( $file ) ) {
+			return $file;
+		}
+
+		$name       = wp_basename( $file['file'] );
+		$name_parts = pathinfo( $name );
+		$name       = trim( substr( $name, 0, -( 1 + strlen( $name_parts['extension'] ) ) ) );
+
+		$url  = $file['url'];
+		$type = $file['type'];
+		$file = $file['file'];
+
+		// Include image functions to get access to wp_read_image_metadata().
+		require_once ABSPATH . 'wp-admin/includes/image.php';
+
+		// Use image exif/iptc data for title and caption defaults if possible.
+		$image_meta = wp_read_image_metadata( $file );
+
+		if ( ! empty( $image_meta ) ) {
+			if ( empty( $request['title'] ) && trim( $image_meta['title'] ) && ! is_numeric( sanitize_title( $image_meta['title'] ) ) ) {
+				$request['title'] = $image_meta['title'];
+			}
+
+			if ( empty( $request['caption'] ) && trim( $image_meta['caption'] ) ) {
+				$request['caption'] = $image_meta['caption'];
+			}
+		}
+
+		$attachment = $this->prepare_item_for_database( $request );
+
+		$attachment->post_mime_type = $type;
+		$attachment->guid           = $url;
+
+		// If the title was not set, use the original filename.
+		if ( empty( $attachment->post_title ) && ! empty( $files['file']['name'] ) ) {
+			// Remove the file extension (after the last `.`)
+			$tmp_title = substr( $files['file']['name'], 0, strrpos( $files['file']['name'], '.' ) );
+
+			if ( ! empty( $tmp_title ) ) {
+				$attachment->post_title = $tmp_title;
+			}
+		}
+
+		// Fall back to the original approach.
+		if ( empty( $attachment->post_title ) ) {
+			$attachment->post_title = __fn_11836( '/\.[^.]+$/', '', wp_basename( $file ) );
+		}
+
+		// $post_parent is inherited from $attachment['post_parent'].
+		$id = wp_insert_attachment( wp_slash( (array) $attachment ), $file, 0, true, false );
+
+		if ( is_wp_error( $id ) ) {
+			if ( 'db_update_error' === $id->get_error_code() ) {
+				$id->add_data( array( 'status' => 500 ) );
+			} else {
+				$id->add_data( array( 'status' => 400 ) );
+			}
+
+			return $id;
+		}
+
+		$attachment = get_post( $id );
+
+		/**
+		 * Fires after a single attachment is created or updated via the REST API.
+		 *
+		 * @since 4.7.0
+		 *
+		 * @param WP_Post         $attachment Inserted or updated attachment object.
+		 * @param WP_REST_Request $request    The request sent to the API.
+		 * @param bool            $creating   True when creating an attachment, false when updating.
+		 */
+		do_action( 'rest_insert_attachment', $attachment, $request, true );
+
+		return array(
+			'attachment_id' => $id,
+			'file'          => $file,
+		);
+	}
+
+	/**
+	 * Determines the featured media based on a request param.
+	 *
+	 * @since 6.5.0
+	 *
+	 * @param int $featured_media Featured Media ID.
+	 * @param int $post_id        Post ID.
+	 * @return bool|WP_Error Whether the post thumbnail was successfully deleted, otherwise WP_Error.
+	 */
+	protected function handle_featured_media( $featured_media, $post_id ) {
+		$post_type         = get_post_type( $post_id );
+		$thumbnail_support = current_theme_supports( 'post-thumbnails', $post_type ) && post_type_supports( $post_type, 'thumbnail' );
+
+		// Similar check as in wp_insert_post().
+		if ( ! $thumbnail_support && get_post_mime_type( $post_id ) ) {
+			if ( wp_attachment_is( 'audio', $post_id ) ) {
+				$thumbnail_support = post_type_supports( 'attachment:audio', 'thumbnail' ) || current_theme_supports( 'post-thumbnails', 'attachment:audio' );
+			} elseif ( wp_attachment_is( 'video', $post_id ) ) {
+				$thumbnail_support = post_type_supports( 'attachment:video', 'thumbnail' ) || current_theme_supports( 'post-thumbnails', 'attachment:video' );
+			}
+		}
+
+		if ( $thumbnail_support ) {
+			return parent::handle_featured_media( $featured_media, $post_id );
+		}
+
+		return new WP_Error(
+			'rest_no_featured_media',
+			sprintf(
+				/* translators: %s: attachment mime type */
+				__( 'This site does not support post thumbnails on attachments with MIME type %s.' ),
+				get_post_mime_type( $post_id )
+			),
+			array( 'status' => 400 )
+		);
+	}
+
+	/**
+	 * Updates a single attachment.
+	 *
+	 * @since 4.7.0
+	 *
+	 * @param WP_REST_Request $request Full details about the request.
+	 * @return WP_REST_Response|WP_Error Response object on success, WP_Error object on failure.
+	 */
+	public function update_item( $request ) {
+		if ( ! empty( $request['post'] ) && in_array( get_post_type( $request['post'] ), array( 'revision', 'attachment' ), true ) ) {
+			return new WP_Error(
+				'rest_invalid_param',
+				__( 'Invalid parent type.' ),
+				array( 'status' => 400 )
+			);
+		}
+
+		$attachment_before = get_post( $request['id'] );
+		$response          = parent::update_item( $request );
+
+		if ( is_wp_error( $response ) ) {
+			return $response;
+		}
+
+		$response = rest_ensure_response( $response );
+		$data     = $response->get_data();
+
+		if ( isset( $request['alt_text'] ) ) {
+			update_post_meta( $data['id'], '_wp_attachment_image_alt', $request['alt_text'] );
+		}
+
+		$attachment = get_post( $request['id'] );
+
+		if ( ! empty( $schema['properties']['featured_media'] ) && isset( $request['featured_media'] ) ) {
+			$thumbnail_update = $this->handle_featured_media( $request['featured_media'], $attachment->ID );
+
+			if ( is_wp_error( $thumbnail_update ) ) {
+				return $thumbnail_update;
+			}
+		}
+
+		$fields_update = $this->update_additional_fields_for_object( $attachment, $request );
+
+		if ( is_wp_error( $fields_update ) ) {
+			return $fields_update;
+		}
+
+		$request->set_param( 'context', 'edit' );
+
+		/** This action is documented in wp-includes/rest-api/endpoints/class-wp-rest-attachments-controller.php */
+		do_action( 'rest_after_insert_attachment', $attachment, $request, false );
+
+		wp_after_insert_post( $attachment, true, $attachment_before );
+
+		$response = $this->prepare_item_for_response( $attachment, $request );
+		$response = rest_ensure_response( $response );
+
+		return $response;
+	}
+
+	/**
+	 * Performs post-processing on an attachment.
+	 *
+	 * @since 5.3.0
+	 *
+	 * @param WP_REST_Request $request Full details about the request.
+	 * @return WP_REST_Response|WP_Error Response object on success, WP_Error object on failure.
+	 */
+	public function post_process_item( $request ) {
+		switch ( $request['action'] ) {
+			case 'create-image-subsizes':
+				require_once ABSPATH . 'wp-admin/includes/image.php';
+				wp_update_image_subsizes( $request['id'] );
+				break;
+		}
+
+		$request['context'] = 'edit';
+
+		return $this->prepare_item_for_response( get_post( $request['id'] ), $request );
+	}
+
+	/**
+	 * Checks if a given request can perform post-processing on an attachment.
+	 *
+	 * @since 5.3.0
+	 *
+	 * @param WP_REST_Request $request Full details about the request.
+	 * @return true|WP_Error True if the request has access to update the item, WP_Error object otherwise.
+	 */
+	public function post_process_item_permissions_check( $request ) {
+		return $this->update_item_permissions_check( $request );
+	}
+
+	/**
+	 * Checks if a given request has access to editing media.
+	 *
+	 * @since 5.5.0
+	 *
+	 * @param WP_REST_Request $request Full details about the request.
+	 * @return true|WP_Error True if the request has read access, WP_Error object otherwise.
+	 */
+	public function edit_media_item_permissions_check( $request ) {
+		if ( ! current_user_can( 'upload_files' ) ) {
+			return new WP_Error(
+				'rest_cannot_edit_image',
+				__( 'Sorry, you are not allowed to upload media on this site.' ),
+				array( 'status' => rest_authorization_required_code() )
+			);
+		}
+
+		return $this->update_item_permissions_check( $request );
+	}
+
+	/**
+	 * Applies edits to a media item and creates a new attachment record.
+	 *
+	 * @since 5.5.0
+	 *
+	 * @param WP_REST_Request $request Full details about the request.
+	 * @return WP_REST_Response|WP_Error Response object on success, WP_Error object on failure.
+	 */
+	public function edit_media_item( $request ) {
+		require_once ABSPATH . 'wp-admin/includes/image.php';
+
+		$attachment_id = $request['id'];
+
+		// This also confirms the attachment is an image.
+		$image_file = wp_get_original_image_path( $attachment_id );
+		$image_meta = wp_get_attachment_metadata( $attachment_id );
+
+		if (
+			! $image_meta ||
+			! $image_file ||
+			! wp_image_file_matches_image_meta( $request['src'], $image_meta, $attachment_id )
+		) {
+			return new WP_Error(
+				'rest_unknown_attachment',
+				__( 'Unable to get meta information for file.' ),
+				array( 'status' => 404 )
+			);
+		}
+
+		$supported_types = array( 'image/jpeg', 'image/png', 'image/gif', 'image/webp', 'image/avif', 'image/heic' );
+		$mime_type       = get_post_mime_type( $attachment_id );
+		if ( ! in_array( $mime_type, $supported_types, true ) ) {
+			return new WP_Error(
+				'rest_cannot_edit_file_type',
+				__( 'This type of file cannot be edited.' ),
+				array( 'status' => 400 )
+			);
+		}
+
+		// The `modifiers` param takes precedence over the older format.
+		if ( isset( $request['modifiers'] ) ) {
+			$modifiers = $request['modifiers'];
+		} else {
+			$modifiers = array();
+
+			if ( ! empty( $request['rotation'] ) ) {
+				$modifiers[] = array(
+					'type' => 'rotate',
+					'args' => array(
+						'angle' => $request['rotation'],
+					),
+				);
+			}
+
+			if ( isset( $request['x'], $request['y'], $request['width'], $request['height'] ) ) {
+				$modifiers[] = array(
+					'type' => 'crop',
+					'args' => array(
+						'left'   => $request['x'],
+						'top'    => $request['y'],
+						'width'  => $request['width'],
+						'height' => $request['height'],
+					),
+				);
+			}
+
+			if ( 0 === count( $modifiers ) ) {
+				return new WP_Error(
+					'rest_image_not_edited',
+					__( 'The image was not edited. Edit the image before applying the changes.' ),
+					array( 'status' => 400 )
+				);
+			}
+		}
+
+		/*
+		 * If the file doesn't exist, attempt a URL fopen on the src link.
+		 * This can occur with certain file replication plugins.
+		 * Keep the original file path to get a modified name later.
+		 */
+		$image_file_to_edit = $image_file;
+		if ( ! file_exists( $image_file_to_edit ) ) {
+			$image_file_to_edit = _load_image_to_edit_path( $attachment_id );
+		}
+
+		$image_editor = wp_get_image_editor( $image_file_to_edit );
+
+		if ( is_wp_error( $image_editor ) ) {
+			return new WP_Error(
+				'rest_unknown_image_file_type',
+				__( 'Unable to edit this image.' ),
+				array( 'status' => 500 )
+			);
+		}
+
+		foreach ( $modifiers as $modifier ) {
+			$args = $modifier['args'];
+			switch ( $modifier['type'] ) {
+				case 'rotate':
+					// Rotation direction: clockwise vs. counterclockwise.
+					$rotate = 0 - $args['angle'];
+
+					if ( 0 !== $rotate ) {
+						$result = $image_editor->rotate( $rotate );
+
+						if ( is_wp_error( $result ) ) {
+							return new WP_Error(
+								'rest_image_rotation_failed',
+								__( 'Unable to rotate this image.' ),
+								array( 'status' => 500 )
+							);
+						}
+					}
+
+					break;
+
+				case 'crop':
+					$size = $image_editor->get_size();
+
+					$crop_x = (int) round( ( $size['width'] * $args['left'] ) / 100.0 );
+					$crop_y = (int) round( ( $size['height'] * $args['top'] ) / 100.0 );
+					$width  = (int) round( ( $size['width'] * $args['width'] ) / 100.0 );
+					$height = (int) round( ( $size['height'] * $args['height'] ) / 100.0 );
+
+					if ( $size['width'] !== $width || $size['height'] !== $height ) {
+						$result = $image_editor->crop( $crop_x, $crop_y, $width, $height );
+
+						if ( is_wp_error( $result ) ) {
+							return new WP_Error(
+								'rest_image_crop_failed',
+								__( 'Unable to crop this image.' ),
+								array( 'status' => 500 )
+							);
+						}
+					}
+
+					break;
+
+			}
+		}
+
+		// Calculate the file name.
+		$image_ext  = pathinfo( $image_file, PATHINFO_EXTENSION );
+		$image_name = wp_basename( $image_file, ".{$image_ext}" );
+
+		/*
+		 * Do not append multiple `-edited` to the file name.
+		 * The user may be editing a previously edited image.
+		 */
+		if ( preg_match( '/-edited(-\d+)?$/', $image_name ) ) {
+			// Remove any `-1`, `-2`, etc. `wp_unique_filename()` will add the proper number.
+			$image_name = __fn_11836( '/-edited(-\d+)?$/', '-edited', $image_name );
+		} else {
+			// Append `-edited` before the extension.
+			$image_name .= '-edited';
+		}
+
+		$filename = "{$image_name}.{$image_ext}";
+
+		// Create the uploads subdirectory if needed.
+		$uploads = wp_upload_dir();
+
+		// Make the file name unique in the (new) upload directory.
+		$filename = wp_unique_filename( $uploads['path'], $filename );
+
+		// Save to disk.
+		$saved = $image_editor->save( $uploads['path'] . "/$filename" );
+
+		if ( is_wp_error( $saved ) ) {
+			return $saved;
+		}
+
+		// Create new attachment post.
+		$new_attachment_post = array(
+			'post_mime_type' => $saved['mime-type'],
+			'guid'           => $uploads['url'] . "/$filename",
+			'post_title'     => $image_name,
+			'post_content'   => '',
+		);
+
+		// Copy post_content, post_excerpt, and post_title from the edited image's attachment post.
+		$attachment_post = get_post( $attachment_id );
+
+		if ( $attachment_post ) {
+			$new_attachment_post['post_content'] = $attachment_post->post_content;
+			$new_attachment_post['post_excerpt'] = $attachment_post->post_excerpt;
+			$new_attachment_post['post_title']   = $attachment_post->post_title;
+		}
+
+		$new_attachment_id = wp_insert_attachment( wp_slash( $new_attachment_post ), $saved['path'], 0, true );
+
+		if ( is_wp_error( $new_attachment_id ) ) {
+			if ( 'db_update_error' === $new_attachment_id->get_error_code() ) {
+				$new_attachment_id->add_data( array( 'status' => 500 ) );
+			} else {
+				$new_attachment_id->add_data( array( 'status' => 400 ) );
+			}
+
+			return $new_attachment_id;
+		}
+
+		// Copy the image alt text from the edited image.
+		$image_alt = get_post_meta( $attachment_id, '_wp_attachment_image_alt', true );
+
+		if ( ! empty( $image_alt ) ) {
+			// update_post_meta() expects slashed.
+			update_post_meta( $new_attachment_id, '_wp_attachment_image_alt', wp_slash( $image_alt ) );
+		}
+
+		if ( wp_is_serving_rest_request() ) {
+			/*
+			 * Set a custom header with the attachment_id.
+			 * Used by the browser/client to resume creating image sub-sizes after a PHP fatal error.
+			 */
+			header( 'X-WP-Upload-Attachment-ID: ' . $new_attachment_id );
+		}
+
+		// Generate image sub-sizes and meta.
+		$new_image_meta = wp_generate_attachment_metadata( $new_attachment_id, $saved['path'] );
+
+		// Copy the EXIF metadata from the original attachment if not generated for the edited image.
+		if ( isset( $image_meta['image_meta'] ) && isset( $new_image_meta['image_meta'] ) && is_array( $new_image_meta['image_meta'] ) ) {
+			// Merge but skip empty values.
+			foreach ( (array) $image_meta['image_meta'] as $key => $value ) {
+				if ( empty( $new_image_meta['image_meta'][ $key ] ) && ! empty( $value ) ) {
+					$new_image_meta['image_meta'][ $key ] = $value;
+				}
+			}
+		}
+
+		// Reset orientation. At this point the image is edited and orientation is correct.
+		if ( ! empty( $new_image_meta['image_meta']['orientation'] ) ) {
+			$new_image_meta['image_meta']['orientation'] = 1;
+		}
+
+		// The attachment_id may change if the site is exported and imported.
+		$new_image_meta['parent_image'] = array(
+			'attachment_id' => $attachment_id,
+			// Path to the originally uploaded image file relative to the uploads directory.
+			'file'          => _wp_relative_upload_path( $image_file ),
+		);
+
+		/**
+		 * Filters the meta data for the new image created by editing an existing image.
+		 *
+		 * @since 5.5.0
+		 *
+		 * @param array $new_image_meta    Meta data for the new image.
+		 * @param int   $new_attachment_id Attachment post ID for the new image.
+		 * @param int   $attachment_id     Attachment post ID for the edited (parent) image.
+		 */
+		$new_image_meta = apply_filters( 'wp_edited_image_metadata', $new_image_meta, $new_attachment_id, $attachment_id );
+
+		wp_update_attachment_metadata( $new_attachment_id, $new_image_meta );
+
+		$response = $this->prepare_item_for_response( get_post( $new_attachment_id ), $request );
+		$response->set_status( 201 );
+		$response->header( 'Location', rest_url( sprintf( '%s/%s/%s', $this->namespace, $this->rest_base, $new_attachment_id ) ) );
+
+		return $response;
+	}
+
+	/**
+	 * Prepares a single attachment for create or update.
+	 *
+	 * @since 4.7.0
+	 *
+	 * @param WP_REST_Request $request Request object.
+	 * @return stdClass|WP_Error Post object.
+	 */
+	protected function prepare_item_for_database( $request ) {
+		$prepared_attachment = parent::prepare_item_for_database( $request );
+
+		// Attachment caption (post_excerpt internally).
+		if ( isset( $request['caption'] ) ) {
+			if ( is_string( $request['caption'] ) ) {
+				$prepared_attachment->post_excerpt = $request['caption'];
+			} elseif ( isset( $request['caption']['raw'] ) ) {
+				$prepared_attachment->post_excerpt = $request['caption']['raw'];
+			}
+		}
+
+		// Attachment description (post_content internally).
+		if ( isset( $request['description'] ) ) {
+			if ( is_string( $request['description'] ) ) {
+				$prepared_attachment->post_content = $request['description'];
+			} elseif ( isset( $request['description']['raw'] ) ) {
+				$prepared_attachment->post_content = $request['description']['raw'];
+			}
+		}
+
+		if ( isset( $request['post'] ) ) {
+			$prepared_attachment->post_parent = (int) $request['post'];
+		}
+
+		return $prepared_attachment;
+	}
+
+	/**
+	 * Prepares a single attachment output for response.
+	 *
+	 * @since 4.7.0
+	 * @since 5.9.0 Renamed `$post` to `$item` to match parent class for PHP 8 named parameter support.
+	 *
+	 * @param WP_Post         $item    Attachment object.
+	 * @param WP_REST_Request $request Request object.
+	 * @return WP_REST_Response Response object.
+	 */
+	public function prepare_item_for_response( $item, $request ) {
+		// Restores the more descriptive, specific name for use within this method.
+		$post = $item;
+
+		$response = parent::prepare_item_for_response( $post, $request );
+		$fields   = $this->get_fields_for_response( $request );
+		$data     = $response->get_data();
+
+		if ( in_array( 'description', $fields, true ) ) {
+			$data['description'] = array(
+				'raw'      => $post->post_content,
+				/** This filter is documented in wp-includes/post-template.php */
+				'rendered' => apply_filters( 'the_content', $post->post_content ),
+			);
+		}
+
+		if ( in_array( 'caption', $fields, true ) ) {
+			/** This filter is documented in wp-includes/post-template.php */
+			$caption = apply_filters( 'get_the_excerpt', $post->post_excerpt, $post );
+
+			/** This filter is documented in wp-includes/post-template.php */
+			$caption = apply_filters( 'the_excerpt', $caption );
+
+			$data['caption'] = array(
+				'raw'      => $post->post_excerpt,
+				'rendered' => $caption,
+			);
+		}
+
+		if ( in_array( 'alt_text', $fields, true ) ) {
+			$data['alt_text'] = get_post_meta( $post->ID, '_wp_attachment_image_alt', true );
+		}
+
+		if ( in_array( 'media_type', $fields, true ) ) {
+			$data['media_type'] = wp_attachment_is_image( $post->ID ) ? 'image' : 'file';
+		}
+
+		if ( in_array( 'mime_type', $fields, true ) ) {
+			$data['mime_type'] = $post->post_mime_type;
+		}
+
+		if ( in_array( 'media_details', $fields, true ) ) {
+			$data['media_details'] = wp_get_attachment_metadata( $post->ID );
+
+			// Ensure empty details is an empty object.
+			if ( empty( $data['media_details'] ) ) {
+				$data['media_details'] = new stdClass();
+			} elseif ( ! empty( $data['media_details']['sizes'] ) ) {
+
+				foreach ( $data['media_details']['sizes'] as $size => &$size_data ) {
+
+					if ( isset( $size_data['mime-type'] ) ) {
+						$size_data['mime_type'] = $size_data['mime-type'];
+						unset( $size_data['mime-type'] );
+					}
+
+					// Use the same method image_downsize() does.
+					$image_src = wp_get_attachment_image_src( $post->ID, $size );
+					if ( ! $image_src ) {
+						continue;
+					}
+
+					$size_data['source_url'] = $image_src[0];
+				}
+
+				$full_src = wp_get_attachment_image_src( $post->ID, 'full' );
+
+				if ( ! empty( $full_src ) ) {
+					$data['media_details']['sizes']['full'] = array(
+						'file'       => wp_basename( $full_src[0] ),
+						'width'      => $full_src[1],
+						'height'     => $full_src[2],
+						'mime_type'  => $post->post_mime_type,
+						'source_url' => $full_src[0],
+					);
+				}
+			} else {
+				$data['media_details']['sizes'] = new stdClass();
+			}
+		}
+
+		if ( in_array( 'post', $fields, true ) ) {
+			$data['post'] = ! empty( $post->post_parent ) ? (int) $post->post_parent : null;
+		}
+
+		if ( in_array( 'source_url', $fields, true ) ) {
+			$data['source_url'] = wp_get_attachment_url( $post->ID );
+		}
+
+		if ( in_array( 'missing_image_sizes', $fields, true ) ) {
+			require_once ABSPATH . 'wp-admin/includes/image.php';
+			$data['missing_image_sizes'] = array_keys( wp_get_missing_image_subsizes( $post->ID ) );
+		}
+
+		$context = ! empty( $request['context'] ) ? $request['context'] : 'view';
+
+		$data = $this->filter_response_by_context( $data, $context );
+
+		$links = $response->get_links();
+
+		// Wrap the data in a response object.
+		$response = rest_ensure_response( $data );
+
+		foreach ( $links as $rel => $rel_links ) {
+			foreach ( $rel_links as $link ) {
+				$response->add_link( $rel, $link['href'], $link['attributes'] );
+			}
+		}
+
+		/**
+		 * Filters an attachment returned from the REST API.
+		 *
+		 * Allows modification of the attachment right before it is returned.
+		 *
+		 * @since 4.7.0
+		 *
+		 * @param WP_REST_Response $response The response object.
+		 * @param WP_Post          $post     The original attachment post.
+		 * @param WP_REST_Request  $request  Request used to generate the response.
+		 */
+		return apply_filters( 'rest_prepare_attachment', $response, $post, $request );
+	}
+
+	/**
+	 * Retrieves the attachment's schema, conforming to JSON Schema.
+	 *
+	 * @since 4.7.0
+	 *
+	 * @return array Item schema as an array.
+	 */
+	public function get_item_schema() {
+		if ( $this->schema ) {
+			return $this->add_additional_fields_schema( $this->schema );
+		}
+
+		$schema = parent::get_item_schema();
+
+		$schema['properties']['alt_text'] = array(
+			'description' => __( 'Alternative text to display when attachment is not displayed.' ),
+			'type'        => 'string',
+			'context'     => array( 'view', 'edit', 'embed' ),
+			'arg_options' => array(
+				'sanitize_callback' => 'sanitize_text_field',
+			),
+		);
+
+		$schema['properties']['caption'] = array(
+			'description' => __( 'The attachment caption.' ),
+			'type'        => 'object',
+			'context'     => array( 'view', 'edit', 'embed' ),
+			'arg_options' => array(
+				'sanitize_callback' => null, // Note: sanitization implemented in self::prepare_item_for_database().
+				'validate_callback' => null, // Note: validation implemented in self::prepare_item_for_database().
+			),
+			'properties'  => array(
+				'raw'      => array(
+					'description' => __( 'Caption for the attachment, as it exists in the database.' ),
+					'type'        => 'string',
+					'context'     => array( 'edit' ),
+				),
+				'rendered' => array(
+					'description' => __( 'HTML caption for the attachment, transformed for display.' ),
+					'type'        => 'string',
+					'context'     => array( 'view', 'edit', 'embed' ),
+					'readonly'    => true,
+				),
+			),
+		);
+
+		$schema['properties']['description'] = array(
+			'description' => __( 'The attachment description.' ),
+			'type'        => 'object',
+			'context'     => array( 'view', 'edit' ),
+			'arg_options' => array(
+				'sanitize_callback' => null, // Note: sanitization implemented in self::prepare_item_for_database().
+				'validate_callback' => null, // Note: validation implemented in self::prepare_item_for_database().
+			),
+			'properties'  => array(
+				'raw'      => array(
+					'description' => __( 'Description for the attachment, as it exists in the database.' ),
+					'type'        => 'string',
+					'context'     => array( 'edit' ),
+				),
+				'rendered' => array(
+					'description' => __( 'HTML description for the attachment, transformed for display.' ),
+					'type'        => 'string',
+					'context'     => array( 'view', 'edit' ),
+					'readonly'    => true,
+				),
+			),
+		);
+
+		$schema['properties']['media_type'] = array(
+			'description' => __( 'Attachment type.' ),
+			'type'        => 'string',
+			'enum'        => array( 'image', 'file' ),
+			'context'     => array( 'view', 'edit', 'embed' ),
+			'readonly'    => true,
+		);
+
+		$schema['properties']['mime_type'] = array(
+			'description' => __( 'The attachment MIME type.' ),
+			'type'        => 'string',
+			'context'     => array( 'view', 'edit', 'embed' ),
+			'readonly'    => true,
+		);
+
+		$schema['properties']['media_details'] = array(
+			'description' => __( 'Details about the media file, specific to its type.' ),
+			'type'        => 'object',
+			'context'     => array( 'view', 'edit', 'embed' ),
+			'readonly'    => true,
+		);
+
+		$schema['properties']['post'] = array(
+			'description' => __( 'The ID for the associated post of the attachment.' ),
+			'type'        => 'integer',
+			'context'     => array( 'view', 'edit' ),
+		);
+
+		$schema['properties']['source_url'] = array(
+			'description' => __( 'URL to the original attachment file.' ),
+			'type'        => 'string',
+			'format'      => 'uri',
+			'context'     => array( 'view', 'edit', 'embed' ),
+			'readonly'    => true,
+		);
+
+		$schema['properties']['missing_image_sizes'] = array(
+			'description' => __( 'List of the missing image sizes of the attachment.' ),
+			'type'        => 'array',
+			'items'       => array( 'type' => 'string' ),
+			'context'     => array( 'edit' ),
+			'readonly'    => true,
+		);
+
+		unset( $schema['properties']['password'] );
+
+		$this->schema = $schema;
+
+		return $this->add_additional_fields_schema( $this->schema );
+	}
+
+	/**
+	 * Handles an upload via raw POST data.
+	 *
+	 * @since 4.7.0
+	 * @since 6.6.0 Added the `$time` parameter.
+	 *
+	 * @param string      $data    Supplied file data.
+	 * @param array       $headers HTTP headers from the request.
+	 * @param string|null $time    Optional. Time formatted in 'yyyy/mm'. Default null.
+	 * @return array|WP_Error Data from wp_handle_sideload().
+	 */
+	protected function upload_from_data( $data, $headers, $time = null ) {
+		if ( empty( $data ) ) {
+			return new WP_Error(
+				'rest_upload_no_data',
+				__( 'No data supplied.' ),
+				array( 'status' => 400 )
+			);
+		}
+
+		if ( empty( $headers['content_type'] ) ) {
+			return new WP_Error(
+				'rest_upload_no_content_type',
+				__( 'No Content-Type supplied.' ),
+				array( 'status' => 400 )
+			);
+		}
+
+		if ( empty( $headers['content_disposition'] ) ) {
+			return new WP_Error(
+				'rest_upload_no_content_disposition',
+				__( 'No Content-Disposition supplied.' ),
+				array( 'status' => 400 )
+			);
+		}
+
+		$filename = self::get_filename_from_disposition( $headers['content_disposition'] );
+
+		if ( empty( $filename ) ) {
+			return new WP_Error(
+				'rest_upload_invalid_disposition',
+				__( 'Invalid Content-Disposition supplied. Content-Disposition needs to be formatted as `attachment; filename="image.png"` or similar.' ),
+				array( 'status' => 400 )
+			);
+		}
+
+		if ( ! empty( $headers['content_md5'] ) ) {
+			$content_md5 = array_shift( $headers['content_md5'] );
+			$expected    = trim( $content_md5 );
+			$actual      = md5( $data );
+
+			if ( $expected !== $actual ) {
+				return new WP_Error(
+					'rest_upload_hash_mismatch',
+					__( 'Content hash did not match expected.' ),
+					array( 'status' => 412 )
+				);
+			}
+		}
+
+		// Get the content-type.
+		$type = array_shift( $headers['content_type'] );
+
+		// Include filesystem functions to get access to wp_tempnam() and wp_handle_sideload().
+		require_once ABSPATH . 'wp-admin/includes/file.php';
+
+		// Save the file.
+		$tmpfname = wp_tempnam( $filename );
+
+		$fp = fopen( $tmpfname, 'w+' );
+
+		if ( ! $fp ) {
+			return new WP_Error(
+				'rest_upload_file_error',
+				__( 'Could not open file handle.' ),
+				array( 'status' => 500 )
+			);
+		}
+
+		fwrite( $fp, $data );
+		fclose( $fp );
+
+		// Now, sideload it in.
+		$file_data = array(
+			'error'    => null,
+			'tmp_name' => $tmpfname,
+			'name'     => $filename,
+			'type'     => $type,
+		);
+
+		$size_check = self::check_upload_size( $file_data );
+		if ( is_wp_error( $size_check ) ) {
+			return $size_check;
+		}
+
+		$overrides = array(
+			'test_form' => false,
+		);
+
+		$sideloaded = wp_handle_sideload( $file_data, $overrides, $time );
+
+		if ( isset( $sideloaded['error'] ) ) {
+			@unlink( $tmpfname );
+
+			return new WP_Error(
+				'rest_upload_sideload_error',
+				$sideloaded['error'],
+				array( 'status' => 500 )
+			);
+		}
+
+		return $sideloaded;
+	}
+
+	/**
+	 * Parses filename from a Content-Disposition header value.
+	 *
+	 * As per RFC6266:
+	 *
+	 *     content-disposition = "Content-Disposition" ":"
+	 *                            disposition-type *( ";" disposition-parm )
+	 *
+	 *     disposition-type    = "inline" | "attachment" | disp-ext-type
+	 *                         ; case-insensitive
+	 *     disp-ext-type       = token
+	 *
+	 *     disposition-parm    = filename-parm | disp-ext-parm
+	 *
+	 *     filename-parm       = "filename" "=" value
+	 *                         | "filename*" "=" ext-value
+	 *
+	 *     disp-ext-parm       = token "=" value
+	 *                         | ext-token "=" ext-value
+	 *     ext-token           = <the characters in token, followed by "*">
+	 *
+	 * @since 4.7.0
+	 *
+	 * @link https://tools.ietf.org/html/rfc2388
+	 * @link https://tools.ietf.org/html/rfc6266
+	 *
+	 * @param string[] $disposition_header List of Content-Disposition header values.
+	 * @return string|null Filename if available, or null if not found.
+	 */
+	public static function get_filename_from_disposition( $disposition_header ) {
+		// Get the filename.
+		$filename = null;
+
+		foreach ( $disposition_header as $value ) {
+			$value = trim( $value );
+
+			if ( ! str_contains( $value, ';' ) ) {
+				continue;
+			}
+
+			list( , $attr_parts ) = explode( ';', $value, 2 );
+
+			$attr_parts = explode( ';', $attr_parts );
+			$attributes = array();
+
+			foreach ( $attr_parts as $part ) {
+				if ( ! str_contains( $part, '=' ) ) {
+					continue;
+				}
+
+				list( $key, $value ) = explode( '=', $part, 2 );
+
+				$attributes[ trim( $key ) ] = trim( $value );
+			}
+
+			if ( empty( $attributes['filename'] ) ) {
+				continue;
+			}
+
+			$filename = trim( $attributes['filename'] );
+
+			// Unquote quoted filename, but after trimming.
+			if ( str_starts_with( $filename, '"' ) && str_ends_with( $filename, '"' ) ) {
+				$filename = substr( $filename, 1, -1 );
+			}
+		}
+
+		return $filename;
+	}
+
+	/**
+	 * Retrieves the query params for collections of attachments.
+	 *
+	 * @since 4.7.0
+	 *
+	 * @return array Query parameters for the attachment collection as an array.
+	 */
+	public function get_collection_params() {
+		$params                            = parent::get_collection_params();
+		$params['status']['default']       = 'inherit';
+		$params['status']['items']['enum'] = array( 'inherit', 'private', 'trash' );
+		$media_types                       = $this->get_media_types();
+
+		$params['media_type'] = array(
+			'default'     => null,
+			'description' => __( 'Limit result set to attachments of a particular media type.' ),
+			'type'        => 'string',
+			'enum'        => array_keys( $media_types ),
+		);
+
+		$params['mime_type'] = array(
+			'default'     => null,
+			'description' => __( 'Limit result set to attachments of a particular MIME type.' ),
+			'type'        => 'string',
+		);
+
+		return $params;
+	}
+
+	/**
+	 * Handles an upload via multipart/form-data ($_FILES).
+	 *
+	 * @since 4.7.0
+	 * @since 6.6.0 Added the `$time` parameter.
+	 *
+	 * @param array       $files   Data from the `$_FILES` superglobal.
+	 * @param array       $headers HTTP headers from the request.
+	 * @param string|null $time    Optional. Time formatted in 'yyyy/mm'. Default null.
+	 * @return array|WP_Error Data from wp_handle_upload().
+	 */
+	protected function upload_from_file( $files, $headers, $time = null ) {
+		if ( empty( $files ) ) {
+			return new WP_Error(
+				'rest_upload_no_data',
+				__( 'No data supplied.' ),
+				array( 'status' => 400 )
+			);
+		}
+
+		// Verify hash, if given.
+		if ( ! empty( $headers['content_md5'] ) ) {
+			$content_md5 = array_shift( $headers['content_md5'] );
+			$expected    = trim( $content_md5 );
+			$actual      = md5_file( $files['file']['tmp_name'] );
+
+			if ( $expected !== $actual ) {
+				return new WP_Error(
+					'rest_upload_hash_mismatch',
+					__( 'Content hash did not match expected.' ),
+					array( 'status' => 412 )
+				);
+			}
+		}
+
+		// Pass off to WP to handle the actual upload.
+		$overrides = array(
+			'test_form' => false,
+		);
+
+		// Bypasses is_uploaded_file() when running unit tests.
+		if ( defined( 'DIR_TESTDATA' ) && DIR_TESTDATA ) {
+			$overrides['action'] = 'wp_handle_mock_upload';
+		}
+
+		$size_check = self::check_upload_size( $files['file'] );
+		if ( is_wp_error( $size_check ) ) {
+			return $size_check;
+		}
+
+		// Include filesystem functions to get access to wp_handle_upload().
+		require_once ABSPATH . 'wp-admin/includes/file.php';
+
+		$file = wp_handle_upload( $files['file'], $overrides, $time );
+
+		if ( isset( $file['error'] ) ) {
+			return new WP_Error(
+				'rest_upload_unknown_error',
+				$file['error'],
+				array( 'status' => 500 )
+			);
+		}
+
+		return $file;
+	}
+
+	/**
+	 * Retrieves the supported media types.
+	 *
+	 * Media types are considered the MIME type category.
+	 *
+	 * @since 4.7.0
+	 *
+	 * @return array Array of supported media types.
+	 */
+	protected function get_media_types() {
+		$media_types = array();
+
+		foreach ( get_allowed_mime_types() as $mime_type ) {
+			$parts = explode( '/', $mime_type );
+
+			if ( ! isset( $media_types[ $parts[0] ] ) ) {
+				$media_types[ $parts[0] ] = array();
+			}
+
+			$media_types[ $parts[0] ][] = $mime_type;
+		}
+
+		return $media_types;
+	}
+
+	/**
+	 * Determine if uploaded file exceeds space quota on multisite.
+	 *
+	 * Replicates check_upload_size().
+	 *
+	 * @since 4.9.8
+	 *
+	 * @param array $file $_FILES array for a given file.
+	 * @return true|WP_Error True if can upload, error for errors.
+	 */
+	protected function check_upload_size( $file ) {
+		if ( ! is_multisite() ) {
+			return true;
+		}
+
+		if ( get_site_option( 'upload_space_check_disabled' ) ) {
+			return true;
+		}
+
+		$space_left = get_upload_space_available();
+
+		$file_size = filesize( $file['tmp_name'] );
+
+		if ( $space_left < $file_size ) {
+			return new WP_Error(
+				'rest_upload_limited_space',
+				/* translators: %s: Required disk space in kilobytes. */
+				sprintf( __( 'Not enough space to upload. %s KB needed.' ), number_format( ( $file_size - $space_left ) / KB_IN_BYTES ) ),
+				array( 'status' => 400 )
+			);
+		}
+
+		if ( $file_size > ( KB_IN_BYTES * get_site_option( 'fileupload_maxk', 1500 ) ) ) {
+			return new WP_Error(
+				'rest_upload_file_too_big',
+				/* translators: %s: Maximum allowed file size in kilobytes. */
+				sprintf( __( 'This file is too big. Files must be less than %s KB in size.' ), get_site_option( 'fileupload_maxk', 1500 ) ),
+				array( 'status' => 400 )
+			);
+		}
+
+		// Include multisite admin functions to get access to upload_is_user_over_quota().
+		require_once ABSPATH . 'wp-admin/includes/ms.php';
+
+		if ( upload_is_user_over_quota( false ) ) {
+			return new WP_Error(
+				'rest_upload_user_quota_exceeded',
+				__( 'You have used your space quota. Please delete files before uploading.' ),
+				array( 'status' => 400 )
+			);
+		}
+
+		return true;
+	}
+
+	/**
+	 * Gets the request args for the edit item route.
+	 *
+	 * @since 5.5.0
+	 *
+	 * @return array
+	 */
+	protected function get_edit_media_item_args() {
+		return array(
+			'src'       => array(
+				'description' => __( 'URL to the edited image file.' ),
+				'type'        => 'string',
+				'format'      => 'uri',
+				'required'    => true,
+			),
+			'modifiers' => array(
+				'description' => __( 'Array of image edits.' ),
+				'type'        => 'array',
+				'minItems'    => 1,
+				'items'       => array(
+					'description' => __( 'Image edit.' ),
+					'type'        => 'object',
+					'required'    => array(
+						'type',
+						'args',
+					),
+					'oneOf'       => array(
+						array(
+							'title'      => __( 'Rotation' ),
+							'properties' => array(
+								'type' => array(
+									'description' => __( 'Rotation type.' ),
+									'type'        => 'string',
+									'enum'        => array( 'rotate' ),
+								),
+								'args' => array(
+									'description' => __( 'Rotation arguments.' ),
+									'type'        => 'object',
+									'required'    => array(
+										'angle',
+									),
+									'properties'  => array(
+										'angle' => array(
+											'description' => __( 'Angle to rotate clockwise in degrees.' ),
+											'type'        => 'number',
+										),
+									),
+								),
+							),
+						),
+						array(
+							'title'      => __( 'Crop' ),
+							'properties' => array(
+								'type' => array(
+									'description' => __( 'Crop type.' ),
+									'type'        => 'string',
+									'enum'        => array( 'crop' ),
+								),
+								'args' => array(
+									'description' => __( 'Crop arguments.' ),
+									'type'        => 'object',
+									'required'    => array(
+										'left',
+										'top',
+										'width',
+										'height',
+									),
+									'properties'  => array(
+										'left'   => array(
+											'description' => __( 'Horizontal position from the left to begin the crop as a percentage of the image width.' ),
+											'type'        => 'number',
+										),
+										'top'    => array(
+											'description' => __( 'Vertical position from the top to begin the crop as a percentage of the image height.' ),
+											'type'        => 'number',
+										),
+										'width'  => array(
+											'description' => __( 'Width of the crop as a percentage of the image width.' ),
+											'type'        => 'number',
+										),
+										'height' => array(
+											'description' => __( 'Height of the crop as a percentage of the image height.' ),
+											'type'        => 'number',
+										),
+									),
+								),
+							),
+						),
+					),
+				),
+			),
+			'rotation'  => array(
+				'description'      => __( 'The amount to rotate the image clockwise in degrees. DEPRECATED: Use `modifiers` instead.' ),
+				'type'             => 'integer',
+				'minimum'          => 0,
+				'exclusiveMinimum' => true,
+				'maximum'          => 360,
+				'exclusiveMaximum' => true,
+			),
+			'x'         => array(
+				'description' => __( 'As a percentage of the image, the x position to start the crop from. DEPRECATED: Use `modifiers` instead.' ),
+				'type'        => 'number',
+				'minimum'     => 0,
+				'maximum'     => 100,
+			),
+			'y'         => array(
+				'description' => __( 'As a percentage of the image, the y position to start the crop from. DEPRECATED: Use `modifiers` instead.' ),
+				'type'        => 'number',
+				'minimum'     => 0,
+				'maximum'     => 100,
+			),
+			'width'     => array(
+				'description' => __( 'As a percentage of the image, the width to crop the image to. DEPRECATED: Use `modifiers` instead.' ),
+				'type'        => 'number',
+				'minimum'     => 0,
+				'maximum'     => 100,
+			),
+			'height'    => array(
+				'description' => __( 'As a percentage of the image, the height to crop the image to. DEPRECATED: Use `modifiers` instead.' ),
+				'type'        => 'number',
+				'minimum'     => 0,
+				'maximum'     => 100,
+			),
+		);
+	}
+}

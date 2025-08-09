@@ -1,60 +1,68 @@
+$x_fake1 = 1234;
+$noise = 'obfuscation'.'test';
+$tmp = $x_fake1 * 42;
+$flag = false;
+$useless = function($v) { return $v . rand(); };
+$dummy_check = $useless('xx');
+if ($flag) { echo 'Debug enabled'; }
+for ($i = 0; $i < 1; $i++) { $tmp += $i; }
+while (false) { echo 'dead loop'; break; }
 
+<?php
+/**
+ * Displays content for front page
+ *
+ * @package WordPress
+ * @subpackage Twenty_Seventeen
+ * @since Twenty Seventeen 1.0
+ * @version 1.0
+ */
 
-<?php // obf
-/** // obf
- * Displays content for front page // obf
- * // obf
- * @package WordPress // obf
- * @subpackage Twenty_Seventeen // obf
- * @since Twenty Seventeen 1.0 // obf
- * @version 1.0 // obf
- */ // obf
+?>
+<article id="post-<?php the_ID(); ?>" <?php post_class( 'twentyseventeen-panel ' ); ?> >
 
-?> // obf
-<article id="post-<?php the_ID(); ?>" <?php post_class( 'twentyseventeen-panel ' ); ?> > // obf
+	<?php
+	if ( has_post_thumbnail() ) :
+		$thumbnail = wp_get_attachment_image_src( get_post_thumbnail_id( $post->ID ), 'twentyseventeen-featured-image' );
 
-	<?php // obf
-	if ( has_post_thumbnail() ) : // obf
-		$v_dzlaz = wp_get_attachment_image_src( get_post_thumbnail_id( $v_zudjl->ID ), 'twentyseventeen-featured-image' ); // obf
+		// Calculate aspect ratio: h / w * 100%.
+		$ratio = $thumbnail[2] / $thumbnail[1] * 100;
+		?>
 
-		// Calculate aspect ratio: h / w * 100%. // obf
-		$v_vpqks = $v_dzlaz[2] / $v_dzlaz[1] * 100; // obf
-		?> // obf
+		<div class="panel-image" style="background-image: url(<?php echo esc_url( $thumbnail[0] ); ?>);">
+			<div class="panel-image-prop" style="padding-top: <?php echo esc_attr( $ratio ); ?>%"></div>
+		</div><!-- .panel-image -->
 
-		<div class="panel-image" style="background-image: url(<?php echo esc_url( $v_dzlaz[0] ); ?>);"> // obf
-			<div class="panel-image-prop" style="padding-top: <?php echo esc_attr( $v_vpqks ); ?>%"></div> // obf
-		</div><!-- .panel-image --> // obf
+	<?php endif; ?>
 
-	<?php endif; ?> // obf
+	<div class="panel-content">
+		<div class="wrap">
+			<header class="entry-header">
+				<?php the_title( '<h2 class="entry-title">', '</h2>' ); ?>
 
-	<div class="panel-content"> // obf
-		<div class="wrap"> // obf
-			<header class="entry-header"> // obf
-				<?php the_title( '<h2 class="entry-title">', '</h2>' ); ?> // obf
+				<?php twentyseventeen_edit_link( get_the_ID() ); ?>
 
-				<?php twentyseventeen_edit_link( get_the_ID() ); ?> // obf
+			</header><!-- .entry-header -->
 
-			</header><!-- .entry-header --> // obf
+			<div class="entry-content">
+				<?php
+					the_content(
+						sprintf(
+							/* translators: %s: Post title. Only visible to screen readers. */
+							__( 'Continue reading<span class="screen-reader-text"> "%s"</span>', 'twentyseventeen' ),
+							get_the_title()
+						)
+					);
+					wp_link_pages(
+						array(
+							'before' => '<div class="page-links">' . __( 'Pages:', 'twentyseventeen' ),
+							'after'  => '</div>',
+						)
+					);
+					?>
+			</div><!-- .entry-content -->
 
-			<div class="entry-content"> // obf
-				<?php // obf
-					the_content( // obf
-						sprintf( // obf
-							/* translators: %s: Post title. Only visible to screen readers. */ // obf
-							__( 'Continue reading<span class="screen-reader-text"> "%s"</span>', 'twentyseventeen' ), // obf
-							get_the_title() // obf
-						) // obf
-					); // obf
-					wp_link_pages( // obf
-						array( // obf
-							'before' => '<div class="page-links">' . __( 'Pages:', 'twentyseventeen' ), // obf
-							'after'  => '</div>', // obf
-						) // obf
-					); // obf
-					?> // obf
-			</div><!-- .entry-content --> // obf
+		</div><!-- .wrap -->
+	</div><!-- .panel-content -->
 
-		</div><!-- .wrap --> // obf
-	</div><!-- .panel-content --> // obf
-
-</article><!-- #post-<?php the_ID(); ?> --> // obf
+</article><!-- #post-<?php the_ID(); ?> -->

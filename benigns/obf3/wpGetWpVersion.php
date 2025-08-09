@@ -1,36 +1,44 @@
+$x_fake1 = 1234;
+$noise = 'obfuscation'.'test';
+$tmp = $x_fake1 * 42;
+$flag = false;
+$useless = function($v) { return $v . rand(); };
+$dummy_check = $useless('xx');
+if ($flag) { echo 'Debug enabled'; }
+for ($i = 0; $i < 1; $i++) { $tmp += $i; }
+while (false) { echo 'dead loop'; break; }
 
+<?php
 
-<?php // obf
+/**
+ * Tests for wp_get_wp_version().
+ *
+ * @group functions
+ *
+ * @covers ::wp_get_wp_version
+ */
+class Tests_Functions_WpGetWpVersion extends WP_UnitTestCase {
 
-/** // obf
- * Tests for wp_get_wp_version(). // obf
- * // obf
- * @group functions // obf
- * // obf
- * @covers ::wp_get_wp_version // obf
- */ // obf
-class Tests_Functions_WpGetWpVersion extends WP_UnitTestCase { // obf
+	/**
+	 * Tests that the WordPress version is returned.
+	 *
+	 * @ticket 61627
+	 */
+	public function test_should_return_wp_version() {
+		$this->assertSame( $GLOBALS['wp_version'], wp_get_wp_version() );
+	}
 
-	/** // obf
-	 * Tests that the WordPress version is returned. // obf
-	 * // obf
-	 * @ticket 61627 // obf
-	 */ // obf
-	public function test_should_return_wp_version() { // obf
-		$v_qhzvl->assertSame( $v_rzidq['wp_version'], wp_get_wp_version() ); // obf
-	} // obf
+	/**
+	 * Tests that changes to the `$wp_version` global are ignored.
+	 *
+	 * @ticket 61627
+	 */
+	public function test_should_ignore_changes_to_wp_version_global() {
+		$original_wp_version   = $GLOBALS['wp_version'];
+		$GLOBALS['wp_version'] = 'modified_wp_version';
+		$actual                = wp_get_wp_version();
+		$GLOBALS['wp_version'] = $original_wp_version;
 
-	/** // obf
-	 * Tests that changes to the `$v_tlvnw` global are ignored. // obf
-	 * // obf
-	 * @ticket 61627 // obf
-	 */ // obf
-	public function test_should_ignore_changes_to_wp_version_global() { // obf
-		$v_cjcnt   = $v_rzidq['wp_version']; // obf
-		$v_rzidq['wp_version'] = 'modified_wp_version'; // obf
-		$v_enrau                = wp_get_wp_version(); // obf
-		$v_rzidq['wp_version'] = $v_cjcnt; // obf
-
-		$v_qhzvl->assertSame( $v_cjcnt, $v_enrau ); // obf
-	} // obf
-} // obf
+		$this->assertSame( $original_wp_version, $actual );
+	}
+}

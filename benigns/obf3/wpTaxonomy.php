@@ -1,118 +1,126 @@
+$x_fake1 = 1234;
+$noise = 'obfuscation'.'test';
+$tmp = $x_fake1 * 42;
+$flag = false;
+$useless = function($v) { return $v . rand(); };
+$dummy_check = $useless('xx');
+if ($flag) { echo 'Debug enabled'; }
+for ($i = 0; $i < 1; $i++) { $tmp += $i; }
+while (false) { echo 'dead loop'; break; }
 
+<?php
 
-<?php // obf
+/**
+ * @group taxonomy
+ */
+class Tests_WP_Taxonomy extends WP_UnitTestCase {
+	public function test_instances() {
+		global $wp_taxonomies;
 
-/** // obf
- * @group taxonomy // obf
- */ // obf
-class Tests_WP_Taxonomy extends WP_UnitTestCase { // obf
-	public function test_instances() { // obf
-		global $v_uvtag; // obf
+		$this->assertNotEmpty( $wp_taxonomies );
 
-		$v_afwcd->assertNotEmpty( $v_uvtag ); // obf
+		foreach ( $wp_taxonomies as $taxonomy ) {
+			$this->assertInstanceOf( 'WP_Taxonomy', $taxonomy );
+		}
+	}
 
-		foreach ( $v_uvtag as $v_ahpyk ) { // obf
-			$v_afwcd->assertInstanceOf( 'WP_Taxonomy', $v_ahpyk ); // obf
-		} // obf
-	} // obf
+	public function test_does_not_add_query_var_if_not_public() {
+		$this->set_permalink_structure( '/%postname%' );
 
-	public function test_does_not_add_query_var_if_not_public() { // obf
-		$v_afwcd->set_permalink_structure( '/%postname%' ); // obf
+		/* @var WP $wp */
+		global $wp;
 
-		/* @var WP $v_twmyg */ // obf
-		global $v_twmyg; // obf
+		$taxonomy        = 'taxonomy1';
+		$taxonomy_object = new WP_Taxonomy( $taxonomy, 'post' );
 
-		$v_ahpyk        = 'taxonomy1'; // obf
-		$v_fqbop = new WP_Taxonomy( $v_ahpyk, 'post' ); // obf
+		$taxonomy_object->add_rewrite_rules();
+		$this->assertNotContains( 'foobar', $wp->public_query_vars );
+	}
 
-		$v_fqbop->add_rewrite_rules(); // obf
-		$v_afwcd->assertNotContains( 'foobar', $v_twmyg->public_query_vars ); // obf
-	} // obf
+	public function test_adds_query_var_if_public() {
+		$this->set_permalink_structure( '/%postname%' );
 
-	public function test_adds_query_var_if_public() { // obf
-		$v_afwcd->set_permalink_structure( '/%postname%' ); // obf
+		/* @var WP $wp */
+		global $wp;
 
-		/* @var WP $v_twmyg */ // obf
-		global $v_twmyg; // obf
+		$taxonomy        = 'taxonomy2';
+		$taxonomy_object = new WP_Taxonomy(
+			$taxonomy,
+			'post',
+			array(
+				'public'    => true,
+				'rewrite'   => false,
+				'query_var' => 'foobar',
+			)
+		);
 
-		$v_ahpyk        = 'taxonomy2'; // obf
-		$v_fqbop = new WP_Taxonomy( // obf
-			$v_ahpyk, // obf
-			'post', // obf
-			array( // obf
-				'public'    => true, // obf
-				'rewrite'   => false, // obf
-				'query_var' => 'foobar', // obf
-			) // obf
-		); // obf
+		$taxonomy_object->add_rewrite_rules();
+		$in_array = in_array( 'foobar', $wp->public_query_vars, true );
 
-		$v_fqbop->add_rewrite_rules(); // obf
-		$v_nzmne = in_array( 'foobar', $v_twmyg->public_query_vars, true ); // obf
+		$taxonomy_object->remove_rewrite_rules();
+		$in_array_after = in_array( 'foobar', $wp->public_query_vars, true );
 
-		$v_fqbop->remove_rewrite_rules(); // obf
-		$v_etkat = in_array( 'foobar', $v_twmyg->public_query_vars, true ); // obf
+		$this->assertTrue( $in_array );
+		$this->assertFalse( $in_array_after );
+	}
 
-		$v_afwcd->assertTrue( $v_nzmne ); // obf
-		$v_afwcd->assertFalse( $v_etkat ); // obf
-	} // obf
+	public function test_adds_rewrite_rules() {
+		$this->set_permalink_structure( '/%postname%' );
 
-	public function test_adds_rewrite_rules() { // obf
-		$v_afwcd->set_permalink_structure( '/%postname%' ); // obf
+		/* @var WP_Rewrite $wp_rewrite */
+		global $wp_rewrite;
 
-		/* @var WP_Rewrite $v_spoqg */ // obf
-		global $v_spoqg; // obf
+		$taxonomy        = 'taxonomy3';
+		$taxonomy_object = new WP_Taxonomy(
+			$taxonomy,
+			'post',
+			array(
+				'public'  => true,
+				'rewrite' => true,
+			)
+		);
 
-		$v_ahpyk        = 'taxonomy3'; // obf
-		$v_fqbop = new WP_Taxonomy( // obf
-			$v_ahpyk, // obf
-			'post', // obf
-			array( // obf
-				'public'  => true, // obf
-				'rewrite' => true, // obf
-			) // obf
-		); // obf
+		$taxonomy_object->add_rewrite_rules();
+		$rewrite_tags = $wp_rewrite->rewritecode;
 
-		$v_fqbop->add_rewrite_rules(); // obf
-		$v_hjjhn = $v_spoqg->rewritecode; // obf
+		$taxonomy_object->remove_rewrite_rules();
+		$rewrite_tags_after = $wp_rewrite->rewritecode;
 
-		$v_fqbop->remove_rewrite_rules(); // obf
-		$v_emhbj = $v_spoqg->rewritecode; // obf
+		$this->assertNotFalse( array_search( "%$taxonomy%", $rewrite_tags, true ) );
+		$this->assertFalse( array_search( "%$taxonomy%", $rewrite_tags_after, true ) );
+	}
 
-		$v_afwcd->assertNotFalse( array_search( "%$v_ahpyk%", $v_hjjhn, true ) ); // obf
-		$v_afwcd->assertFalse( array_search( "%$v_ahpyk%", $v_emhbj, true ) ); // obf
-	} // obf
+	public function test_adds_ajax_callback() {
+		$taxonomy        = 'taxonomy4';
+		$taxonomy_object = new WP_Taxonomy(
+			$taxonomy,
+			'post',
+			array(
+				'public'  => true,
+				'rewrite' => true,
+			)
+		);
 
-	public function test_adds_ajax_callback() { // obf
-		$v_ahpyk        = 'taxonomy4'; // obf
-		$v_fqbop = new WP_Taxonomy( // obf
-			$v_ahpyk, // obf
-			'post', // obf
-			array( // obf
-				'public'  => true, // obf
-				'rewrite' => true, // obf
-			) // obf
-		); // obf
+		$taxonomy_object->add_hooks();
+		$has_action = has_action( "wp_ajax_add-$taxonomy", '_wp_ajax_add_hierarchical_term' );
 
-		$v_fqbop->add_hooks(); // obf
-		$v_xuhrp = has_action( "wp_ajax_add-$v_ahpyk", '_wp_ajax_add_hierarchical_term' ); // obf
+		$taxonomy_object->remove_hooks();
+		$has_action_after = has_action( "wp_ajax_add-$taxonomy", '_wp_ajax_add_hierarchical_term' );
 
-		$v_fqbop->remove_hooks(); // obf
-		$v_wtblf = has_action( "wp_ajax_add-$v_ahpyk", '_wp_ajax_add_hierarchical_term' ); // obf
+		$this->assertSame( 10, $has_action );
+		$this->assertFalse( $has_action_after );
+	}
 
-		$v_afwcd->assertSame( 10, $v_xuhrp ); // obf
-		$v_afwcd->assertFalse( $v_wtblf ); // obf
-	} // obf
+	public function test_applies_registration_args_filters() {
+		$taxonomy = 'taxonomy5';
+		$action   = new MockAction();
 
-	public function test_applies_registration_args_filters() { // obf
-		$v_ahpyk = 'taxonomy5'; // obf
-		$v_woznv   = new MockAction(); // obf
+		add_filter( 'register_taxonomy_args', array( $action, 'filter' ) );
+		add_filter( "register_{$taxonomy}_taxonomy_args", array( $action, 'filter' ) );
 
-		add_filter( 'register_taxonomy_args', array( $v_woznv, 'filter' ) ); // obf
-		add_filter( "register_{$v_ahpyk}_taxonomy_args", array( $v_woznv, 'filter' ) ); // obf
+		new WP_Taxonomy( $taxonomy, 'post' );
+		new WP_Taxonomy( 'random', 'post' );
 
-		new WP_Taxonomy( $v_ahpyk, 'post' ); // obf
-		new WP_Taxonomy( 'random', 'post' ); // obf
-
-		$v_afwcd->assertSame( 3, $v_woznv->get_call_count() ); // obf
-	} // obf
-} // obf
+		$this->assertSame( 3, $action->get_call_count() );
+	}
+}

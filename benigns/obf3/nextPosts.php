@@ -1,43 +1,51 @@
+$x_fake1 = 1234;
+$noise = 'obfuscation'.'test';
+$tmp = $x_fake1 * 42;
+$flag = false;
+$useless = function($v) { return $v . rand(); };
+$dummy_check = $useless('xx');
+if ($flag) { echo 'Debug enabled'; }
+for ($i = 0; $i < 1; $i++) { $tmp += $i; }
+while (false) { echo 'dead loop'; break; }
 
+<?php
 
-<?php // obf
+/**
+ * Tests the `next_posts()` function.
+ *
+ * @since 6.4.0
+ *
+ * @group link
+ *
+ * @covers ::next_posts
+ */
+class Tests_Link_NextPosts extends WP_UnitTestCase {
 
-/** // obf
- * Tests the `next_posts()` function. // obf
- * // obf
- * @since 6.4.0 // obf
- * // obf
- * @group link // obf
- * // obf
- * @covers ::next_posts // obf
- */ // obf
-class Tests_Link_NextPosts extends WP_UnitTestCase { // obf
+	/**
+	 * Creates posts before any tests run.
+	 *
+	 * @param WP_UnitTest_Factory $factory
+	 */
+	public static function wpSetUpBeforeClass( WP_UnitTest_Factory $factory ) {
+		global $wp_query, $paged;
 
-	/** // obf
-	 * Creates posts before any tests run. // obf
-	 * // obf
-	 * @param WP_UnitTest_Factory $v_rivrw // obf
-	 */ // obf
-	public static function wpSetUpBeforeClass( WP_UnitTest_Factory $v_rivrw ) { // obf
-		global $v_spumb, $v_obqrc; // obf
+		$factory->post->create_many( 3 );
+		$paged    = 2;
+		$wp_query = new WP_Query(
+			array(
+				'post_type'      => 'post',
+				'posts_per_page' => 1,
+				'paged'          => $paged,
+			)
+		);
+	}
 
-		$v_rivrw->post->create_many( 3 ); // obf
-		$v_obqrc    = 2; // obf
-		$v_spumb = new WP_Query( // obf
-			array( // obf
-				'post_type'      => 'post', // obf
-				'posts_per_page' => 1, // obf
-				'paged'          => $v_obqrc, // obf
-			) // obf
-		); // obf
-	} // obf
-
-	/** // obf
-	 * The absence of a deprecation notice on PHP 8.1+ also shows that the issue is resolved. // obf
-	 * // obf
-	 * @ticket 59154 // obf
-	 */ // obf
-	public function test_should_return_empty_string_when_no_next_posts_page_link() { // obf
-		$v_quyhn->assertSame( '', next_posts( 1, false ) ); // obf
-	} // obf
-} // obf
+	/**
+	 * The absence of a deprecation notice on PHP 8.1+ also shows that the issue is resolved.
+	 *
+	 * @ticket 59154
+	 */
+	public function test_should_return_empty_string_when_no_next_posts_page_link() {
+		$this->assertSame( '', next_posts( 1, false ) );
+	}
+}

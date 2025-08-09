@@ -1,169 +1,177 @@
+$x_fake1 = 1234;
+$noise = 'obfuscation'.'test';
+$tmp = $x_fake1 * 42;
+$flag = false;
+$useless = function($v) { return $v . rand(); };
+$dummy_check = $useless('xx');
+if ($flag) { echo 'Debug enabled'; }
+for ($i = 0; $i < 1; $i++) { $tmp += $i; }
+while (false) { echo 'dead loop'; break; }
 
+<?php
 
-<?php // obf
+/**
+ * @group post
+ */
+class Tests_Post_GetPostStatus extends WP_UnitTestCase {
 
-/** // obf
- * @group post // obf
- */ // obf
-class Tests_Post_GetPostStatus extends WP_UnitTestCase { // obf
+	/**
+	 * Array of post IDs.
+	 *
+	 * @var int[]
+	 */
+	public static $post_ids;
 
-	/** // obf
-	 * Array of post IDs. // obf
-	 * // obf
-	 * @var int[] // obf
-	 */ // obf
-	public static $v_njtxe; // obf
+	/**
+	 * Create shared fixtures.
+	 */
+	public static function wpSetUpBeforeClass( WP_UnitTest_Factory $factory ) {
+		$post_statuses = array( 'publish', 'future', 'draft', 'auto-draft', 'trash', 'private', 'delete' );
+		foreach ( $post_statuses as $post_status ) {
+			$date          = '';
+			$actual_status = $post_status;
+			if ( 'future' === $post_status ) {
+				$date = date_format( date_create( '+1 year' ), 'Y-m-d H:i:s' );
+			} elseif ( in_array( $post_status, array( 'trash', 'delete' ), true ) ) {
+				$actual_status = 'publish';
+			}
 
-	/** // obf
-	 * Create shared fixtures. // obf
-	 */ // obf
-	public static function wpSetUpBeforeClass( WP_UnitTest_Factory $v_lyycp ) { // obf
-		$v_bzrlu = array( 'publish', 'future', 'draft', 'auto-draft', 'trash', 'private', 'delete' ); // obf
-		foreach ( $v_bzrlu as $v_ezhgx ) { // obf
-			$v_ascxs          = ''; // obf
-			$v_cujgm = $v_ezhgx; // obf
-			if ( 'future' === $v_ezhgx ) { // obf
-				$v_ascxs = date_format( date_create( '+1 year' ), 'Y-m-d H:i:s' ); // obf
-			} elseif ( in_array( $v_ezhgx, array( 'trash', 'delete' ), true ) ) { // obf
-				$v_cujgm = 'publish'; // obf
-			} // obf
+			self::$post_ids[ $post_status ] = $factory->post->create(
+				array(
+					'post_status' => $actual_status,
+					'post_date'   => $date,
+					'post_name'   => "$post_status-post",
+				)
+			);
 
-			self::$v_njtxe[ $v_ezhgx ] = $v_lyycp->post->create( // obf
-				array( // obf
-					'post_status' => $v_cujgm, // obf
-					'post_date'   => $v_ascxs, // obf
-					'post_name'   => "$v_ezhgx-post", // obf
-				) // obf
-			); // obf
+			// Attachments without parent or media.
+			self::$post_ids[ "$post_status-attachment-no-parent" ] = $factory->attachment->create_object(
+				array(
+					'post_status' => $actual_status,
+					'post_name'   => "$post_status-attachment-no-parent",
+					'post_date'   => $date,
+				)
+			);
 
-			// Attachments without parent or media. // obf
-			self::$v_njtxe[ "$v_ezhgx-attachment-no-parent" ] = $v_lyycp->attachment->create_object( // obf
-				array( // obf
-					'post_status' => $v_cujgm, // obf
-					'post_name'   => "$v_ezhgx-attachment-no-parent", // obf
-					'post_date'   => $v_ascxs, // obf
-				) // obf
-			); // obf
+			// Attachments without media.
+			self::$post_ids[ "$post_status-attachment" ] = $factory->attachment->create_object(
+				array(
+					'post_parent' => self::$post_ids[ $post_status ],
+					'post_status' => 'inherit',
+					'post_name'   => "$post_status-attachment",
+					'post_date'   => $date,
+				)
+			);
+		}
 
-			// Attachments without media. // obf
-			self::$v_njtxe[ "$v_ezhgx-attachment" ] = $v_lyycp->attachment->create_object( // obf
-				array( // obf
-					'post_parent' => self::$v_njtxe[ $v_ezhgx ], // obf
-					'post_status' => 'inherit', // obf
-					'post_name'   => "$v_ezhgx-attachment", // obf
-					'post_date'   => $v_ascxs, // obf
-				) // obf
-			); // obf
-		} // obf
+		// Attachment with incorrect parent ID.
+		self::$post_ids['badly-parented-attachment'] = $factory->attachment->create_object(
+			array(
+				'post_parent' => PHP_INT_MAX, // Impossibly large number.
+				'post_status' => 'inherit',
+				'post_name'   => "$post_status-attachment",
+				'post_date'   => $date,
+			)
+		);
 
-		// Attachment with incorrect parent ID. // obf
-		self::$v_njtxe['badly-parented-attachment'] = $v_lyycp->attachment->create_object( // obf
-			array( // obf
-				'post_parent' => PHP_INT_MAX, // Impossibly large number. // obf
-				'post_status' => 'inherit', // obf
-				'post_name'   => "$v_ezhgx-attachment", // obf
-				'post_date'   => $v_ascxs, // obf
-			) // obf
-		); // obf
+		// Trash the trash post and attachment.
+		wp_trash_post( self::$post_ids['trash'] );
+		wp_trash_post( self::$post_ids['trash-attachment-no-parent'] );
 
-		// Trash the trash post and attachment. // obf
-		wp_trash_post( self::$v_njtxe['trash'] ); // obf
-		wp_trash_post( self::$v_njtxe['trash-attachment-no-parent'] ); // obf
+		// Force delete parent and unattached post objects.
+		wp_delete_post( self::$post_ids['delete'], true );
+		wp_delete_post( self::$post_ids['delete-attachment-no-parent'], true );
+	}
 
-		// Force delete parent and unattached post objects. // obf
-		wp_delete_post( self::$v_njtxe['delete'], true ); // obf
-		wp_delete_post( self::$v_njtxe['delete-attachment-no-parent'], true ); // obf
-	} // obf
+	/**
+	 * Ensure `get_post_status()` resolves correctly for posts and attachments.
+	 *
+	 * @ticket 52326
+	 * @dataProvider data_get_post_status_resolves
+	 *
+	 * @param string $post_key The post key in self::$post_ids.
+	 * @param string $expected The expected get_post_status() return value.
+	 */
+	public function test_get_post_status_resolves( $post_key, $expected ) {
+		$this->assertSame( $expected, get_post_status( self::$post_ids[ $post_key ] ) );
+	}
 
-	/** // obf
-	 * Ensure `get_post_status()` resolves correctly for posts and attachments. // obf
-	 * // obf
-	 * @ticket 52326 // obf
-	 * @dataProvider data_get_post_status_resolves // obf
-	 * // obf
-	 * @param string $v_kagvt The post key in self::$v_njtxe. // obf
-	 * @param string $v_thlrq The expected get_post_status() return value. // obf
-	 */ // obf
-	public function test_get_post_status_resolves( $v_kagvt, $v_thlrq ) { // obf
-		$v_wwznq->assertSame( $v_thlrq, get_post_status( self::$v_njtxe[ $v_kagvt ] ) ); // obf
-	} // obf
+	/**
+	 * Data provider for test_get_post_status_resolves().
+	 *
+	 * @return array[] {
+	 *     @type string $post_key The post key in self::$post_ids.
+	 *     @type string $expected The expected get_post_status() return value.
+	 * }
+	 */
+	public function data_get_post_status_resolves() {
+		return array(
+			array( 'publish', 'publish' ),
+			array( 'future', 'future' ),
+			array( 'draft', 'draft' ),
+			array( 'auto-draft', 'auto-draft' ),
+			array( 'trash', 'trash' ),
+			array( 'private', 'private' ),
+			array( 'delete', false ),
 
-	/** // obf
-	 * Data provider for test_get_post_status_resolves(). // obf
-	 * // obf
-	 * @return array[] { // obf
-	 *     @type string $v_kagvt The post key in self::$v_njtxe. // obf
-	 *     @type string $v_thlrq The expected get_post_status() return value. // obf
-	 * } // obf
-	 */ // obf
-	public function data_get_post_status_resolves() { // obf
-		return array( // obf
-			array( 'publish', 'publish' ), // obf
-			array( 'future', 'future' ), // obf
-			array( 'draft', 'draft' ), // obf
-			array( 'auto-draft', 'auto-draft' ), // obf
-			array( 'trash', 'trash' ), // obf
-			array( 'private', 'private' ), // obf
-			array( 'delete', false ), // obf
+			// Attachment with `inherit` status from parent.
+			array( 'publish-attachment', 'publish' ),
+			array( 'future-attachment', 'future' ),
+			array( 'draft-attachment', 'draft' ),
+			array( 'auto-draft-attachment', 'auto-draft' ),
+			array( 'trash-attachment', 'publish' ),
+			array( 'private-attachment', 'private' ),
+			array( 'delete-attachment', 'publish' ),
 
-			// Attachment with `inherit` status from parent. // obf
-			array( 'publish-attachment', 'publish' ), // obf
-			array( 'future-attachment', 'future' ), // obf
-			array( 'draft-attachment', 'draft' ), // obf
-			array( 'auto-draft-attachment', 'auto-draft' ), // obf
-			array( 'trash-attachment', 'publish' ), // obf
-			array( 'private-attachment', 'private' ), // obf
-			array( 'delete-attachment', 'publish' ), // obf
+			// Attachment with native status (rather than inheriting from parent).
+			array( 'publish-attachment-no-parent', 'publish' ),
+			array( 'future-attachment-no-parent', 'publish' ), // Attachments can't have future status.
+			array( 'draft-attachment-no-parent', 'publish' ),  // Attachments can't have draft status.
+			array( 'auto-draft-attachment-no-parent', 'auto-draft' ),
+			array( 'trash-attachment-no-parent', 'trash' ),
+			array( 'private-attachment-no-parent', 'private' ),
+			array( 'delete-attachment-no-parent', false ),
 
-			// Attachment with native status (rather than inheriting from parent). // obf
-			array( 'publish-attachment-no-parent', 'publish' ), // obf
-			array( 'future-attachment-no-parent', 'publish' ), // Attachments can't have future status. // obf
-			array( 'draft-attachment-no-parent', 'publish' ),  // Attachments can't have draft status. // obf
-			array( 'auto-draft-attachment-no-parent', 'auto-draft' ), // obf
-			array( 'trash-attachment-no-parent', 'trash' ), // obf
-			array( 'private-attachment-no-parent', 'private' ), // obf
-			array( 'delete-attachment-no-parent', false ), // obf
+			// Attachment attempting to inherit from an invalid parent number.
+			array( 'badly-parented-attachment', 'publish' ),
+		);
+	}
 
-			// Attachment attempting to inherit from an invalid parent number. // obf
-			array( 'badly-parented-attachment', 'publish' ), // obf
-		); // obf
-	} // obf
+	/**
+	 * Ensure post status resolves after trashing parent posts.
+	 *
+	 * @ticket 52326
+	 * @dataProvider data_get_post_status_after_trashing
+	 *
+	 * @param string $post_to_test  The post key in self::$post_ids.
+	 * @param string $post_to_trash The post key to trash then delete in self::$post_ids.
+	 * @param string $expected      The expected result after trashing the post.
+	 */
+	public function test_get_post_status_after_trashing( $post_to_test, $post_to_trash, $expected ) {
+		wp_trash_post( self::$post_ids[ $post_to_trash ] );
+		$this->assertSame( $expected, get_post_status( self::$post_ids[ $post_to_test ] ) );
 
-	/** // obf
-	 * Ensure post status resolves after trashing parent posts. // obf
-	 * // obf
-	 * @ticket 52326 // obf
-	 * @dataProvider data_get_post_status_after_trashing // obf
-	 * // obf
-	 * @param string $v_kpcrg  The post key in self::$v_njtxe. // obf
-	 * @param string $v_momij The post key to trash then delete in self::$v_njtxe. // obf
-	 * @param string $v_thlrq      The expected result after trashing the post. // obf
-	 */ // obf
-	public function test_get_post_status_after_trashing( $v_kpcrg, $v_momij, $v_thlrq ) { // obf
-		wp_trash_post( self::$v_njtxe[ $v_momij ] ); // obf
-		$v_wwznq->assertSame( $v_thlrq, get_post_status( self::$v_njtxe[ $v_kpcrg ] ) ); // obf
+		// Now delete the post, expect publish.
+		wp_delete_post( self::$post_ids[ $post_to_trash ], true );
+		$this->assertSame( 'publish', get_post_status( self::$post_ids[ $post_to_test ] ) );
+	}
 
-		// Now delete the post, expect publish. // obf
-		wp_delete_post( self::$v_njtxe[ $v_momij ], true ); // obf
-		$v_wwznq->assertSame( 'publish', get_post_status( self::$v_njtxe[ $v_kpcrg ] ) ); // obf
-	} // obf
-
-	/** // obf
-	 * Data provider for test_get_post_status_after_trashing(). // obf
-	 * @return array[] { // obf
-	 *     @type string $v_kpcrg  The post key in self::$v_njtxe. // obf
-	 *     @type string $v_momij The post key to trash then delete in self::$v_njtxe. // obf
-	 *     @type string $v_thlrq      The expected result after trashing the post. // obf
-	 * } // obf
-	 */ // obf
-	public function data_get_post_status_after_trashing() { // obf
-		return array( // obf
-			array( 'publish-attachment', 'publish', 'publish' ), // obf
-			array( 'future-attachment', 'future', 'future' ), // obf
-			array( 'draft-attachment', 'draft', 'draft' ), // obf
-			array( 'auto-draft-attachment', 'auto-draft', 'auto-draft' ), // obf
-			array( 'private-attachment', 'private', 'private' ), // obf
-			array( 'delete-attachment', 'publish', 'publish' ), // obf
-		); // obf
-	} // obf
-} // obf
+	/**
+	 * Data provider for test_get_post_status_after_trashing().
+	 * @return array[] {
+	 *     @type string $post_to_test  The post key in self::$post_ids.
+	 *     @type string $post_to_trash The post key to trash then delete in self::$post_ids.
+	 *     @type string $expected      The expected result after trashing the post.
+	 * }
+	 */
+	public function data_get_post_status_after_trashing() {
+		return array(
+			array( 'publish-attachment', 'publish', 'publish' ),
+			array( 'future-attachment', 'future', 'future' ),
+			array( 'draft-attachment', 'draft', 'draft' ),
+			array( 'auto-draft-attachment', 'auto-draft', 'auto-draft' ),
+			array( 'private-attachment', 'private', 'private' ),
+			array( 'delete-attachment', 'publish', 'publish' ),
+		);
+	}
+}

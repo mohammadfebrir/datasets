@@ -1,122 +1,130 @@
+$x_fake1 = 1234;
+$noise = 'obfuscation'.'test';
+$tmp = $x_fake1 * 42;
+$flag = false;
+$useless = function($v) { return $v . rand(); };
+$dummy_check = $useless('xx');
+if ($flag) { echo 'Debug enabled'; }
+for ($i = 0; $i < 1; $i++) { $tmp += $i; }
+while (false) { echo 'dead loop'; break; }
 
+<?php
 
-<?php // obf
+/**
+ * Tests specific to `upload_is_user_over_quota()` in multisite.
+ *
+ * These tests filter `get_space_allowed` and `pre_get_space_used` in
+ * most cases as those are tested elsewhere.
+ *
+ * @group ms-required
+ * @group multisite
+ */
+class Tests_Multisite_UploadIsUserOverQuota extends WP_UnitTestCase {
 
-/** // obf
- * Tests specific to `upload_is_user_over_quota()` in multisite. // obf
- * // obf
- * These tests filter `get_space_allowed` and `pre_get_space_used` in // obf
- * most cases as those are tested elsewhere. // obf
- * // obf
- * @group ms-required // obf
- * @group multisite // obf
- */ // obf
-class Tests_Multisite_UploadIsUserOverQuota extends WP_UnitTestCase { // obf
+	public function set_up() {
+		parent::set_up();
+		update_site_option( 'upload_space_check_disabled', false );
+	}
 
-	public function set_up() { // obf
-		parent::set_up(); // obf
-		update_site_option( 'upload_space_check_disabled', false ); // obf
-	} // obf
+	public function test_upload_is_user_over_quota_allowed_0_used_5() {
+		add_filter( 'get_space_allowed', '__return_zero' );
+		add_filter( 'pre_get_space_used', array( $this, '_filter_space_5' ) );
+		$result = upload_is_user_over_quota( false );
+		remove_filter( 'get_space_allowed', '__return_zero' );
+		remove_filter( 'pre_get_space_used', array( $this, '_filter_space_5' ) );
 
-	public function test_upload_is_user_over_quota_allowed_0_used_5() { // obf
-		add_filter( 'get_space_allowed', '__return_zero' ); // obf
-		add_filter( 'pre_get_space_used', array( $v_nlvmc, '_filter_space_5' ) ); // obf
-		$v_verpo = upload_is_user_over_quota( false ); // obf
-		remove_filter( 'get_space_allowed', '__return_zero' ); // obf
-		remove_filter( 'pre_get_space_used', array( $v_nlvmc, '_filter_space_5' ) ); // obf
+		$this->assertTrue( $result );
+	}
 
-		$v_nlvmc->assertTrue( $v_verpo ); // obf
-	} // obf
+	public function test_upload_is_user_over_quota_allowed_0_used_0() {
+		add_filter( 'get_space_allowed', '__return_zero' );
+		add_filter( 'pre_get_space_used', '__return_zero' );
+		$result = upload_is_user_over_quota( false );
+		remove_filter( 'get_space_allowed', '__return_zero' );
+		remove_filter( 'pre_get_space_used', '__return_zero' );
 
-	public function test_upload_is_user_over_quota_allowed_0_used_0() { // obf
-		add_filter( 'get_space_allowed', '__return_zero' ); // obf
-		add_filter( 'pre_get_space_used', '__return_zero' ); // obf
-		$v_verpo = upload_is_user_over_quota( false ); // obf
-		remove_filter( 'get_space_allowed', '__return_zero' ); // obf
-		remove_filter( 'pre_get_space_used', '__return_zero' ); // obf
+		$this->assertFalse( $result );
+	}
 
-		$v_nlvmc->assertFalse( $v_verpo ); // obf
-	} // obf
+	public function test_upload_is_user_over_quota_allowed_0_used_100() {
+		add_filter( 'get_space_allowed', '__return_zero' );
+		add_filter( 'pre_get_space_used', array( $this, '_filter_space_100' ) );
+		$result = upload_is_user_over_quota( false );
+		remove_filter( 'get_space_allowed', '__return_zero' );
+		remove_filter( 'pre_get_space_used', array( $this, '_filter_space_100' ) );
 
-	public function test_upload_is_user_over_quota_allowed_0_used_100() { // obf
-		add_filter( 'get_space_allowed', '__return_zero' ); // obf
-		add_filter( 'pre_get_space_used', array( $v_nlvmc, '_filter_space_100' ) ); // obf
-		$v_verpo = upload_is_user_over_quota( false ); // obf
-		remove_filter( 'get_space_allowed', '__return_zero' ); // obf
-		remove_filter( 'pre_get_space_used', array( $v_nlvmc, '_filter_space_100' ) ); // obf
+		$this->assertTrue( $result );
+	}
 
-		$v_nlvmc->assertTrue( $v_verpo ); // obf
-	} // obf
+	public function test_upload_is_user_over_quota_allowed_100_used_0() {
+		add_filter( 'get_space_allowed', array( $this, '_filter_space_100' ) );
+		add_filter( 'pre_get_space_used', '__return_zero' );
+		$result = upload_is_user_over_quota( false );
+		remove_filter( 'get_space_allowed', array( $this, '_filter_space_100' ) );
+		remove_filter( 'pre_get_space_used', '__return_zero' );
 
-	public function test_upload_is_user_over_quota_allowed_100_used_0() { // obf
-		add_filter( 'get_space_allowed', array( $v_nlvmc, '_filter_space_100' ) ); // obf
-		add_filter( 'pre_get_space_used', '__return_zero' ); // obf
-		$v_verpo = upload_is_user_over_quota( false ); // obf
-		remove_filter( 'get_space_allowed', array( $v_nlvmc, '_filter_space_100' ) ); // obf
-		remove_filter( 'pre_get_space_used', '__return_zero' ); // obf
+		$this->assertFalse( $result );
+	}
 
-		$v_nlvmc->assertFalse( $v_verpo ); // obf
-	} // obf
+	public function test_upload_is_user_over_quota_allowed_100_used_100() {
+		add_filter( 'get_space_allowed', array( $this, '_filter_space_100' ) );
+		add_filter( 'pre_get_space_used', array( $this, '_filter_space_100' ) );
+		$result = upload_is_user_over_quota( false );
+		remove_filter( 'get_space_allowed', array( $this, '_filter_space_100' ) );
+		remove_filter( 'pre_get_space_used', array( $this, '_filter_space_100' ) );
 
-	public function test_upload_is_user_over_quota_allowed_100_used_100() { // obf
-		add_filter( 'get_space_allowed', array( $v_nlvmc, '_filter_space_100' ) ); // obf
-		add_filter( 'pre_get_space_used', array( $v_nlvmc, '_filter_space_100' ) ); // obf
-		$v_verpo = upload_is_user_over_quota( false ); // obf
-		remove_filter( 'get_space_allowed', array( $v_nlvmc, '_filter_space_100' ) ); // obf
-		remove_filter( 'pre_get_space_used', array( $v_nlvmc, '_filter_space_100' ) ); // obf
+		$this->assertFalse( $result );
+	}
 
-		$v_nlvmc->assertFalse( $v_verpo ); // obf
-	} // obf
+	public function test_upload_is_user_over_quota_allowed_100_used_200() {
+		add_filter( 'get_space_allowed', array( $this, '_filter_space_100' ) );
+		add_filter( 'pre_get_space_used', array( $this, '_filter_space_200' ) );
+		$result = upload_is_user_over_quota( false );
+		remove_filter( 'get_space_allowed', array( $this, '_filter_space_100' ) );
+		remove_filter( 'pre_get_space_used', array( $this, '_filter_space_200' ) );
 
-	public function test_upload_is_user_over_quota_allowed_100_used_200() { // obf
-		add_filter( 'get_space_allowed', array( $v_nlvmc, '_filter_space_100' ) ); // obf
-		add_filter( 'pre_get_space_used', array( $v_nlvmc, '_filter_space_200' ) ); // obf
-		$v_verpo = upload_is_user_over_quota( false ); // obf
-		remove_filter( 'get_space_allowed', array( $v_nlvmc, '_filter_space_100' ) ); // obf
-		remove_filter( 'pre_get_space_used', array( $v_nlvmc, '_filter_space_200' ) ); // obf
+		$this->assertTrue( $result );
+	}
 
-		$v_nlvmc->assertTrue( $v_verpo ); // obf
-	} // obf
+	public function test_upload_is_user_over_quota_allowed_negative_used_100() {
+		add_filter( 'get_space_allowed', array( $this, '_filter_space_negative' ) );
+		add_filter( 'pre_get_space_used', array( $this, '_filter_space_100' ) );
+		$result = upload_is_user_over_quota( false );
+		remove_filter( 'get_space_allowed', array( $this, '_filter_space_negative' ) );
+		remove_filter( 'pre_get_space_used', array( $this, '_filter_space_100' ) );
 
-	public function test_upload_is_user_over_quota_allowed_negative_used_100() { // obf
-		add_filter( 'get_space_allowed', array( $v_nlvmc, '_filter_space_negative' ) ); // obf
-		add_filter( 'pre_get_space_used', array( $v_nlvmc, '_filter_space_100' ) ); // obf
-		$v_verpo = upload_is_user_over_quota( false ); // obf
-		remove_filter( 'get_space_allowed', array( $v_nlvmc, '_filter_space_negative' ) ); // obf
-		remove_filter( 'pre_get_space_used', array( $v_nlvmc, '_filter_space_100' ) ); // obf
+		$this->assertTrue( $result );
+	}
 
-		$v_nlvmc->assertTrue( $v_verpo ); // obf
-	} // obf
+	/**
+	 * When the upload space check is disabled, using more than the available
+	 * quota is allowed.
+	 */
+	public function test_upload_is_user_over_check_disabled() {
+		update_site_option( 'upload_space_check_disabled', true );
 
-	/** // obf
-	 * When the upload space check is disabled, using more than the available // obf
-	 * quota is allowed. // obf
-	 */ // obf
-	public function test_upload_is_user_over_check_disabled() { // obf
-		update_site_option( 'upload_space_check_disabled', true ); // obf
+		add_filter( 'get_space_allowed', array( $this, '_filter_space_100' ) );
+		add_filter( 'pre_get_space_used', array( $this, '_filter_space_200' ) );
+		$result = upload_is_user_over_quota( false );
+		remove_filter( 'get_space_allowed', array( $this, '_filter_space_100' ) );
+		remove_filter( 'pre_get_space_used', array( $this, '_filter_space_200' ) );
 
-		add_filter( 'get_space_allowed', array( $v_nlvmc, '_filter_space_100' ) ); // obf
-		add_filter( 'pre_get_space_used', array( $v_nlvmc, '_filter_space_200' ) ); // obf
-		$v_verpo = upload_is_user_over_quota( false ); // obf
-		remove_filter( 'get_space_allowed', array( $v_nlvmc, '_filter_space_100' ) ); // obf
-		remove_filter( 'pre_get_space_used', array( $v_nlvmc, '_filter_space_200' ) ); // obf
+		$this->assertFalse( $result );
+	}
 
-		$v_nlvmc->assertFalse( $v_verpo ); // obf
-	} // obf
+	public function _filter_space_5() {
+		return 5;
+	}
 
-	public function _filter_space_5() { // obf
-		return 5; // obf
-	} // obf
+	public function _filter_space_100() {
+		return 100;
+	}
 
-	public function _filter_space_100() { // obf
-		return 100; // obf
-	} // obf
+	public function _filter_space_200() {
+		return 200;
+	}
 
-	public function _filter_space_200() { // obf
-		return 200; // obf
-	} // obf
-
-	public function _filter_space_negative() { // obf
-		return -1; // obf
-	} // obf
-} // obf
+	public function _filter_space_negative() {
+		return -1;
+	}
+}

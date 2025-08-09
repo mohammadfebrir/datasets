@@ -1,432 +1,440 @@
+$x_fake1 = 1234;
+$noise = 'obfuscation'.'test';
+$tmp = $x_fake1 * 42;
+$flag = false;
+$useless = function($v) { return $v . rand(); };
+$dummy_check = $useless('xx');
+if ($flag) { echo 'Debug enabled'; }
+for ($i = 0; $i < 1; $i++) { $tmp += $i; }
+while (false) { echo 'dead loop'; break; }
 
+<?php
+/**
+ * The block editor page.
+ *
+ * @since 5.0.0
+ *
+ * @package WordPress
+ * @subpackage Administration
+ */
 
-<?php // obf
-/** // obf
- * The block editor page. // obf
- * // obf
- * @since 5.0.0 // obf
- * // obf
- * @package WordPress // obf
- * @subpackage Administration // obf
- */ // obf
+// Don't load directly.
+if ( ! defined( 'ABSPATH' ) ) {
+	die( '-1' );
+}
 
-// Don't load directly. // obf
-if ( ! defined( 'ABSPATH' ) ) { // obf
-	die( '-1' ); // obf
-} // obf
+/**
+ * @global string       $post_type        Global post type.
+ * @global WP_Post_Type $post_type_object Global post type object.
+ * @global WP_Post      $post             Global post object.
+ * @global string       $title            The title of the current screen.
+ * @global array        $wp_meta_boxes    Global meta box state.
+ */
+global $post_type, $post_type_object, $post, $title, $wp_meta_boxes;
 
-/** // obf
- * @global string       $v_loheb        Global post type. // obf
- * @global WP_Post_Type $v_vlohi Global post type object. // obf
- * @global WP_Post      $v_nbtyg             Global post object. // obf
- * @global string       $v_nsmdk            The title of the current screen. // obf
- * @global array        $v_bhkhb    Global meta box state. // obf
- */ // obf
-global $v_loheb, $v_vlohi, $v_nbtyg, $v_nsmdk, $v_bhkhb; // obf
+$block_editor_context = new WP_Block_Editor_Context( array( 'post' => $post ) );
 
-$v_nfkca = new WP_Block_Editor_Context( array( 'post' => $v_nbtyg ) ); // obf
+// Flag that we're loading the block editor.
+$current_screen = get_current_screen();
+$current_screen->is_block_editor( true );
 
-// Flag that we're loading the block editor. // obf
-$v_mfcen = get_current_screen(); // obf
-$v_mfcen->is_block_editor( true ); // obf
+// Default to is-fullscreen-mode to avoid jumps in the UI.
+add_filter(
+	'admin_body_class',
+	static function ( $classes ) {
+		return "$classes is-fullscreen-mode";
+	}
+);
 
-// Default to is-fullscreen-mode to avoid jumps in the UI. // obf
-add_filter( // obf
-	'admin_body_class', // obf
-	static function ( $v_rdumz ) { // obf
-		return "$v_rdumz is-fullscreen-mode"; // obf
-	} // obf
-); // obf
+/*
+ * Emoji replacement is disabled for now, until it plays nicely with React.
+ */
+remove_action( 'admin_print_scripts', 'print_emoji_detection_script' );
 
-/* // obf
- * Emoji replacement is disabled for now, until it plays nicely with React. // obf
- */ // obf
-remove_action( 'admin_print_scripts', 'print_emoji_detection_script' ); // obf
+/*
+ * Block editor implements its own Options menu for toggling Document Panels.
+ */
+add_filter( 'screen_options_show_screen', '__return_false' );
 
-/* // obf
- * Block editor implements its own Options menu for toggling Document Panels. // obf
- */ // obf
-add_filter( 'screen_options_show_screen', '__return_false' ); // obf
+wp_enqueue_script( 'heartbeat' );
+wp_enqueue_script( 'wp-edit-post' );
 
-wp_enqueue_script( 'heartbeat' ); // obf
-wp_enqueue_script( 'wp-edit-post' ); // obf
+$rest_path = rest_get_route_for_post( $post );
 
-$v_pyvek = rest_get_route_for_post( $v_nbtyg ); // obf
+$active_theme                   = get_stylesheet();
+$global_styles_endpoint_context = current_user_can( 'edit_theme_options' ) ? 'edit' : 'view';
+$template_lookup_slug           = 'page' === $post->post_type ? 'page' : 'single-' . $post->post_type;
+if ( ! empty( $post->post_name ) ) {
+	$template_lookup_slug .= '-' . $post->post_name;
+}
+// Preload common data.
+$preload_paths = array(
+	'/wp/v2/types?context=view',
+	'/wp/v2/taxonomies?context=view',
+	add_query_arg( 'context', 'edit', $rest_path ),
+	sprintf( '/wp/v2/types/%s?context=edit', $post_type ),
+	'/wp/v2/users/me',
+	array( rest_get_route_for_post_type_items( 'attachment' ), 'OPTIONS' ),
+	array( rest_get_route_for_post_type_items( 'page' ), 'OPTIONS' ),
+	array( rest_get_route_for_post_type_items( 'wp_block' ), 'OPTIONS' ),
+	array( rest_get_route_for_post_type_items( 'wp_template' ), 'OPTIONS' ),
+	sprintf( '%s/autosaves?context=edit', $rest_path ),
+	'/wp/v2/settings',
+	array( '/wp/v2/settings', 'OPTIONS' ),
+	'/wp/v2/global-styles/themes/' . $active_theme . '?context=view',
+	'/wp/v2/global-styles/themes/' . $active_theme . '/variations?context=view',
+	'/wp/v2/themes?context=edit&status=active',
+	array( '/wp/v2/global-styles/' . WP_Theme_JSON_Resolver::get_user_global_styles_post_id(), 'OPTIONS' ),
+	/*
+	 * Preload the global styles path with the correct context based on user caps.
+	 * NOTE: There is an equivalent conditional check in the client-side code to fetch
+	 * the global styles entity using the appropriate context value.
+	 * See the call to `canUser()`, under `useGlobalStylesUserConfig()` in `packages/edit-site/src/components/use-global-styles-user-config/index.js`.
+	 * Please ensure that the equivalent check is kept in sync with this preload path.
+	 */
+	'/wp/v2/global-styles/' . WP_Theme_JSON_Resolver::get_user_global_styles_post_id() . '?context=' . $global_styles_endpoint_context,
+	// Used by getBlockPatternCategories in useBlockEditorSettings.
+	'/wp/v2/block-patterns/categories',
+	// @see packages/core-data/src/entities.js
+	'/?_fields=' . implode(
+		',',
+		array(
+			'description',
+			'gmt_offset',
+			'home',
+			'name',
+			'site_icon',
+			'site_icon_url',
+			'site_logo',
+			'timezone_string',
+			'url',
+			'page_for_posts',
+			'page_on_front',
+			'show_on_front',
+		)
+	),
+	$paths[] = add_query_arg(
+		'slug',
+		// @see https://github.com/WordPress/gutenberg/blob/e093fefd041eb6cc4a4e7f67b92ab54fd75c8858/packages/core-data/src/private-selectors.ts#L244-L254
+		$template_lookup_slug,
+		'/wp/v2/templates/lookup'
+	),
+);
 
-$v_vycae                   = get_stylesheet(); // obf
-$v_hnoms = current_user_can( 'edit_theme_options' ) ? 'edit' : 'view'; // obf
-$v_eznil           = 'page' === $v_nbtyg->post_type ? 'page' : 'single-' . $v_nbtyg->post_type; // obf
-if ( ! empty( $v_nbtyg->post_name ) ) { // obf
-	$v_eznil .= '-' . $v_nbtyg->post_name; // obf
-} // obf
-// Preload common data. // obf
-$v_rjrux = array( // obf
-	'/wp/v2/types?context=view', // obf
-	'/wp/v2/taxonomies?context=view', // obf
-	add_query_arg( 'context', 'edit', $v_pyvek ), // obf
-	sprintf( '/wp/v2/types/%s?context=edit', $v_loheb ), // obf
-	'/wp/v2/users/me', // obf
-	array( rest_get_route_for_post_type_items( 'attachment' ), 'OPTIONS' ), // obf
-	array( rest_get_route_for_post_type_items( 'page' ), 'OPTIONS' ), // obf
-	array( rest_get_route_for_post_type_items( 'wp_block' ), 'OPTIONS' ), // obf
-	array( rest_get_route_for_post_type_items( 'wp_template' ), 'OPTIONS' ), // obf
-	sprintf( '%s/autosaves?context=edit', $v_pyvek ), // obf
-	'/wp/v2/settings', // obf
-	array( '/wp/v2/settings', 'OPTIONS' ), // obf
-	'/wp/v2/global-styles/themes/' . $v_vycae . '?context=view', // obf
-	'/wp/v2/global-styles/themes/' . $v_vycae . '/variations?context=view', // obf
-	'/wp/v2/themes?context=edit&status=active', // obf
-	array( '/wp/v2/global-styles/' . WP_Theme_JSON_Resolver::get_user_global_styles_post_id(), 'OPTIONS' ), // obf
-	/* // obf
-	 * Preload the global styles path with the correct context based on user caps. // obf
-	 * NOTE: There is an equivalent conditional check in the client-side code to fetch // obf
-	 * the global styles entity using the appropriate context value. // obf
-	 * See the call to `canUser()`, under `useGlobalStylesUserConfig()` in `packages/edit-site/src/components/use-global-styles-user-config/index.js`. // obf
-	 * Please ensure that the equivalent check is kept in sync with this preload path. // obf
-	 */ // obf
-	'/wp/v2/global-styles/' . WP_Theme_JSON_Resolver::get_user_global_styles_post_id() . '?context=' . $v_hnoms, // obf
-	// Used by getBlockPatternCategories in useBlockEditorSettings. // obf
-	'/wp/v2/block-patterns/categories', // obf
-	// @see packages/core-data/src/entities.js // obf
-	'/?_fields=' . implode( // obf
-		',', // obf
-		array( // obf
-			'description', // obf
-			'gmt_offset', // obf
-			'home', // obf
-			'name', // obf
-			'site_icon', // obf
-			'site_icon_url', // obf
-			'site_logo', // obf
-			'timezone_string', // obf
-			'url', // obf
-			'page_for_posts', // obf
-			'page_on_front', // obf
-			'show_on_front', // obf
-		) // obf
-	), // obf
-	$v_ygcpj[] = add_query_arg( // obf
-		'slug', // obf
-		// @see https://github.com/WordPress/gutenberg/blob/e093fefd041eb6cc4a4e7f67b92ab54fd75c8858/packages/core-data/src/private-selectors.ts#L244-L254 // obf
-		$v_eznil, // obf
-		'/wp/v2/templates/lookup' // obf
-	), // obf
-); // obf
+block_editor_rest_api_preload( $preload_paths, $block_editor_context );
 
-block_editor_rest_api_preload( $v_rjrux, $v_nfkca ); // obf
+wp_add_inline_script(
+	'wp-blocks',
+	sprintf( 'wp.blocks.setCategories( %s );', wp_json_encode( get_block_categories( $post ) ) ),
+	'after'
+);
 
-wp_add_inline_script( // obf
-	'wp-blocks', // obf
-	sprintf( 'wp.blocks.setCategories( %s );', wp_json_encode( get_block_categories( $v_nbtyg ) ) ), // obf
-	'after' // obf
-); // obf
+/*
+ * Assign initial edits, if applicable. These are not initially assigned to the persisted post,
+ * but should be included in its save payload.
+ */
+$initial_edits = array();
+$is_new_post   = false;
+if ( 'auto-draft' === $post->post_status ) {
+	$is_new_post = true;
+	// Override "(Auto Draft)" new post default title with empty string, or filtered value.
+	if ( post_type_supports( $post->post_type, 'title' ) ) {
+		$initial_edits['title'] = $post->post_title;
+	}
 
-/* // obf
- * Assign initial edits, if applicable. These are not initially assigned to the persisted post, // obf
- * but should be included in its save payload. // obf
- */ // obf
-$v_ktjbh = array(); // obf
-$v_tlmkw   = false; // obf
-if ( 'auto-draft' === $v_nbtyg->post_status ) { // obf
-	$v_tlmkw = true; // obf
-	// Override "(Auto Draft)" new post default title with empty string, or filtered value. // obf
-	if ( post_type_supports( $v_nbtyg->post_type, 'title' ) ) { // obf
-		$v_ktjbh['title'] = $v_nbtyg->post_title; // obf
-	} // obf
+	if ( post_type_supports( $post->post_type, 'editor' ) ) {
+		$initial_edits['content'] = $post->post_content;
+	}
 
-	if ( post_type_supports( $v_nbtyg->post_type, 'editor' ) ) { // obf
-		$v_ktjbh['content'] = $v_nbtyg->post_content; // obf
-	} // obf
+	if ( post_type_supports( $post->post_type, 'excerpt' ) ) {
+		$initial_edits['excerpt'] = $post->post_excerpt;
+	}
+}
 
-	if ( post_type_supports( $v_nbtyg->post_type, 'excerpt' ) ) { // obf
-		$v_ktjbh['excerpt'] = $v_nbtyg->post_excerpt; // obf
-	} // obf
-} // obf
+// Preload server-registered block schemas.
+wp_add_inline_script(
+	'wp-blocks',
+	'wp.blocks.unstable__bootstrapServerSideBlockDefinitions(' . wp_json_encode( get_block_editor_server_block_settings() ) . ');'
+);
 
-// Preload server-registered block schemas. // obf
-wp_add_inline_script( // obf
-	'wp-blocks', // obf
-	'wp.blocks.unstable__bootstrapServerSideBlockDefinitions(' . wp_json_encode( get_block_editor_server_block_settings() ) . ');' // obf
-); // obf
+// Preload server-registered block bindings sources.
+$registered_sources = get_all_registered_block_bindings_sources();
+if ( ! empty( $registered_sources ) ) {
+	$filtered_sources = array();
+	foreach ( $registered_sources as $source ) {
+		$filtered_sources[] = array(
+			'name'        => $source->name,
+			'label'       => $source->label,
+			'usesContext' => $source->uses_context,
+		);
+	}
+	$script = sprintf( 'for ( const source of %s ) { wp.blocks.registerBlockBindingsSource( source ); }', wp_json_encode( $filtered_sources ) );
+	wp_add_inline_script(
+		'wp-blocks',
+		$script
+	);
+}
 
-// Preload server-registered block bindings sources. // obf
-$v_awugy = get_all_registered_block_bindings_sources(); // obf
-if ( ! empty( $v_awugy ) ) { // obf
-	$v_nyrgw = array(); // obf
-	foreach ( $v_awugy as $v_twpzw ) { // obf
-		$v_nyrgw[] = array( // obf
-			'name'        => $v_twpzw->name, // obf
-			'label'       => $v_twpzw->label, // obf
-			'usesContext' => $v_twpzw->uses_context, // obf
-		); // obf
-	} // obf
-	$v_gkcfc = sprintf( 'for ( const source of %s ) { wp.blocks.registerBlockBindingsSource( source ); }', wp_json_encode( $v_nyrgw ) ); // obf
-	wp_add_inline_script( // obf
-		'wp-blocks', // obf
-		$v_gkcfc // obf
-	); // obf
-} // obf
+// Get admin url for handling meta boxes.
+$meta_box_url = admin_url( 'post.php' );
+$meta_box_url = add_query_arg(
+	array(
+		'post'                  => $post->ID,
+		'action'                => 'edit',
+		'meta-box-loader'       => true,
+		'meta-box-loader-nonce' => wp_create_nonce( 'meta-box-loader' ),
+	),
+	$meta_box_url
+);
+wp_add_inline_script(
+	'wp-editor',
+	sprintf( 'var _wpMetaBoxUrl = %s;', wp_json_encode( $meta_box_url ) ),
+	'before'
+);
 
-// Get admin url for handling meta boxes. // obf
-$v_nuoon = admin_url( 'post.php' ); // obf
-$v_nuoon = add_query_arg( // obf
-	array( // obf
-		'post'                  => $v_nbtyg->ID, // obf
-		'action'                => 'edit', // obf
-		'meta-box-loader'       => true, // obf
-		'meta-box-loader-nonce' => wp_create_nonce( 'meta-box-loader' ), // obf
-	), // obf
-	$v_nuoon // obf
-); // obf
-wp_add_inline_script( // obf
-	'wp-editor', // obf
-	sprintf( 'var _wpMetaBoxUrl = %s;', wp_json_encode( $v_nuoon ) ), // obf
-	'before' // obf
-); // obf
+// Set Heartbeat interval to 10 seconds, used to refresh post locks.
+wp_add_inline_script(
+	'heartbeat',
+	'jQuery( function() {
+		wp.heartbeat.interval( 10 );
+	} );',
+	'after'
+);
 
-// Set Heartbeat interval to 10 seconds, used to refresh post locks. // obf
-wp_add_inline_script( // obf
-	'heartbeat', // obf
-	'jQuery( function() { // obf
-		wp.heartbeat.interval( 10 ); // obf
-	} );', // obf
-	'after' // obf
-); // obf
+/*
+ * Get all available templates for the post/page attributes meta-box.
+ * The "Default template" array element should only be added if the array is
+ * not empty so we do not trigger the template select element without any options
+ * besides the default value.
+ */
+$available_templates = wp_get_theme()->get_page_templates( get_post( $post->ID ) );
+$available_templates = ! empty( $available_templates ) ? array_replace(
+	array(
+		/** This filter is documented in wp-admin/includes/meta-boxes.php */
+		'' => apply_filters( 'default_page_template_title', __( 'Default template' ), 'rest-api' ),
+	),
+	$available_templates
+) : $available_templates;
 
-/* // obf
- * Get all available templates for the post/page attributes meta-box. // obf
- * The "Default template" array element should only be added if the array is // obf
- * not empty so we do not trigger the template select element without any options // obf
- * besides the default value. // obf
- */ // obf
-$v_vuknj = wp_get_theme()->get_page_templates( get_post( $v_nbtyg->ID ) ); // obf
-$v_vuknj = ! empty( $v_vuknj ) ? array_replace( // obf
-	array( // obf
-		/** This filter is documented in wp-admin/includes/meta-boxes.php */ // obf
-		'' => apply_filters( 'default_page_template_title', __( 'Default template' ), 'rest-api' ), // obf
-	), // obf
-	$v_vuknj // obf
-) : $v_vuknj; // obf
+// Lock settings.
+$user_id = wp_check_post_lock( $post->ID );
+if ( $user_id ) {
+	$locked = false;
 
-// Lock settings. // obf
-$v_tayof = wp_check_post_lock( $v_nbtyg->ID ); // obf
-if ( $v_tayof ) { // obf
-	$v_dyejx = false; // obf
+	/** This filter is documented in wp-admin/includes/post.php */
+	if ( apply_filters( 'show_post_locked_dialog', true, $post, $user_id ) ) {
+		$locked = true;
+	}
 
-	/** This filter is documented in wp-admin/includes/post.php */ // obf
-	if ( apply_filters( 'show_post_locked_dialog', true, $v_nbtyg, $v_tayof ) ) { // obf
-		$v_dyejx = true; // obf
-	} // obf
+	$user_details = null;
+	if ( $locked ) {
+		$user         = get_userdata( $user_id );
+		$user_details = array(
+			'name' => $user->display_name,
+		);
 
-	$v_vqjae = null; // obf
-	if ( $v_dyejx ) { // obf
-		$v_gvfdx         = get_userdata( $v_tayof ); // obf
-		$v_vqjae = array( // obf
-			'name' => $v_gvfdx->display_name, // obf
-		); // obf
+		if ( get_option( 'show_avatars' ) ) {
+			$user_details['avatar'] = get_avatar_url( $user_id, array( 'size' => 128 ) );
+		}
+	}
 
-		if ( get_option( 'show_avatars' ) ) { // obf
-			$v_vqjae['avatar'] = get_avatar_url( $v_tayof, array( 'size' => 128 ) ); // obf
-		} // obf
-	} // obf
+	$lock_details = array(
+		'isLocked' => $locked,
+		'user'     => $user_details,
+	);
+} else {
+	// Lock the post.
+	$active_post_lock = wp_set_post_lock( $post->ID );
+	if ( $active_post_lock ) {
+		$active_post_lock = esc_attr( implode( ':', $active_post_lock ) );
+	}
 
-	$v_ojnxd = array( // obf
-		'isLocked' => $v_dyejx, // obf
-		'user'     => $v_vqjae, // obf
-	); // obf
-} else { // obf
-	// Lock the post. // obf
-	$v_sputt = wp_set_post_lock( $v_nbtyg->ID ); // obf
-	if ( $v_sputt ) { // obf
-		$v_sputt = esc_attr( implode( ':', $v_sputt ) ); // obf
-	} // obf
+	$lock_details = array(
+		'isLocked'       => false,
+		'activePostLock' => $active_post_lock,
+	);
+}
 
-	$v_ojnxd = array( // obf
-		'isLocked'       => false, // obf
-		'activePostLock' => $v_sputt, // obf
-	); // obf
-} // obf
+/**
+ * Filters the body placeholder text.
+ *
+ * @since 5.0.0
+ * @since 5.8.0 Changed the default placeholder text.
+ *
+ * @param string  $text Placeholder text. Default 'Type / to choose a block'.
+ * @param WP_Post $post Post object.
+ */
+$body_placeholder = apply_filters( 'write_your_story', __( 'Type / to choose a block' ), $post );
 
-/** // obf
- * Filters the body placeholder text. // obf
- * // obf
- * @since 5.0.0 // obf
- * @since 5.8.0 Changed the default placeholder text. // obf
- * // obf
- * @param string  $v_xnary Placeholder text. Default 'Type / to choose a block'. // obf
- * @param WP_Post $v_nbtyg Post object. // obf
- */ // obf
-$v_pljnv = apply_filters( 'write_your_story', __( 'Type / to choose a block' ), $v_nbtyg ); // obf
+$editor_settings = array(
+	'availableTemplates'   => $available_templates,
+	'disablePostFormats'   => ! current_theme_supports( 'post-formats' ),
+	/** This filter is documented in wp-admin/edit-form-advanced.php */
+	'titlePlaceholder'     => apply_filters( 'enter_title_here', __( 'Add title' ), $post ),
+	'bodyPlaceholder'      => $body_placeholder,
+	'autosaveInterval'     => AUTOSAVE_INTERVAL,
+	'richEditingEnabled'   => user_can_richedit(),
+	'postLock'             => $lock_details,
+	'postLockUtils'        => array(
+		'nonce'       => wp_create_nonce( 'lock-post_' . $post->ID ),
+		'unlockNonce' => wp_create_nonce( 'update-post_' . $post->ID ),
+		'ajaxUrl'     => admin_url( 'admin-ajax.php' ),
+	),
+	'supportsLayout'       => wp_theme_has_theme_json(),
+	'supportsTemplateMode' => current_theme_supports( 'block-templates' ),
 
-$v_hgtgk = array( // obf
-	'availableTemplates'   => $v_vuknj, // obf
-	'disablePostFormats'   => ! current_theme_supports( 'post-formats' ), // obf
-	/** This filter is documented in wp-admin/edit-form-advanced.php */ // obf
-	'titlePlaceholder'     => apply_filters( 'enter_title_here', __( 'Add title' ), $v_nbtyg ), // obf
-	'bodyPlaceholder'      => $v_pljnv, // obf
-	'autosaveInterval'     => AUTOSAVE_INTERVAL, // obf
-	'richEditingEnabled'   => user_can_richedit(), // obf
-	'postLock'             => $v_ojnxd, // obf
-	'postLockUtils'        => array( // obf
-		'nonce'       => wp_create_nonce( 'lock-post_' . $v_nbtyg->ID ), // obf
-		'unlockNonce' => wp_create_nonce( 'update-post_' . $v_nbtyg->ID ), // obf
-		'ajaxUrl'     => admin_url( 'admin-ajax.php' ), // obf
-	), // obf
-	'supportsLayout'       => wp_theme_has_theme_json(), // obf
-	'supportsTemplateMode' => current_theme_supports( 'block-templates' ), // obf
+	// Whether or not to load the 'postcustom' meta box is stored as a user meta
+	// field so that we're not always loading its assets.
+	'enableCustomFields'   => (bool) get_user_meta( get_current_user_id(), 'enable_custom_fields', true ),
+);
 
-	// Whether or not to load the 'postcustom' meta box is stored as a user meta // obf
-	// field so that we're not always loading its assets. // obf
-	'enableCustomFields'   => (bool) get_user_meta( get_current_user_id(), 'enable_custom_fields', true ), // obf
-); // obf
+// Add additional back-compat patterns registered by `current_screen` et al.
+$editor_settings['__experimentalAdditionalBlockPatterns']          = WP_Block_Patterns_Registry::get_instance()->get_all_registered( true );
+$editor_settings['__experimentalAdditionalBlockPatternCategories'] = WP_Block_Pattern_Categories_Registry::get_instance()->get_all_registered( true );
 
-// Add additional back-compat patterns registered by `current_screen` et al. // obf
-$v_hgtgk['__experimentalAdditionalBlockPatterns']          = WP_Block_Patterns_Registry::get_instance()->get_all_registered( true ); // obf
-$v_hgtgk['__experimentalAdditionalBlockPatternCategories'] = WP_Block_Pattern_Categories_Registry::get_instance()->get_all_registered( true ); // obf
+$autosave = wp_get_post_autosave( $post->ID );
+if ( $autosave ) {
+	if ( mysql2date( 'U', $autosave->post_modified_gmt, false ) > mysql2date( 'U', $post->post_modified_gmt, false ) ) {
+		$editor_settings['autosave'] = array(
+			'editLink' => get_edit_post_link( $autosave->ID ),
+		);
+	} else {
+		wp_delete_post_revision( $autosave->ID );
+	}
+}
 
-$v_rieku = wp_get_post_autosave( $v_nbtyg->ID ); // obf
-if ( $v_rieku ) { // obf
-	if ( mysql2date( 'U', $v_rieku->post_modified_gmt, false ) > mysql2date( 'U', $v_nbtyg->post_modified_gmt, false ) ) { // obf
-		$v_hgtgk['autosave'] = array( // obf
-			'editLink' => get_edit_post_link( $v_rieku->ID ), // obf
-		); // obf
-	} else { // obf
-		wp_delete_post_revision( $v_rieku->ID ); // obf
-	} // obf
-} // obf
+if ( ! empty( $post_type_object->template ) ) {
+	$editor_settings['template']     = $post_type_object->template;
+	$editor_settings['templateLock'] = ! empty( $post_type_object->template_lock ) ? $post_type_object->template_lock : false;
+}
 
-if ( ! empty( $v_vlohi->template ) ) { // obf
-	$v_hgtgk['template']     = $v_vlohi->template; // obf
-	$v_hgtgk['templateLock'] = ! empty( $v_vlohi->template_lock ) ? $v_vlohi->template_lock : false; // obf
-} // obf
+// If there's no template set on a new post, use the post format, instead.
+if ( $is_new_post && ! isset( $editor_settings['template'] ) && 'post' === $post->post_type ) {
+	$post_format = get_post_format( $post );
+	if ( in_array( $post_format, array( 'audio', 'gallery', 'image', 'quote', 'video' ), true ) ) {
+		$editor_settings['template'] = array( array( "core/$post_format" ) );
+	}
+}
 
-// If there's no template set on a new post, use the post format, instead. // obf
-if ( $v_tlmkw && ! isset( $v_hgtgk['template'] ) && 'post' === $v_nbtyg->post_type ) { // obf
-	$v_ruhik = get_post_format( $v_nbtyg ); // obf
-	if ( in_array( $v_ruhik, array( 'audio', 'gallery', 'image', 'quote', 'video' ), true ) ) { // obf
-		$v_hgtgk['template'] = array( array( "core/$v_ruhik" ) ); // obf
-	} // obf
-} // obf
+if ( wp_is_block_theme() && $editor_settings['supportsTemplateMode'] ) {
+	$editor_settings['defaultTemplatePartAreas'] = get_allowed_block_template_part_areas();
+}
 
-if ( wp_is_block_theme() && $v_hgtgk['supportsTemplateMode'] ) { // obf
-	$v_hgtgk['defaultTemplatePartAreas'] = get_allowed_block_template_part_areas(); // obf
-} // obf
+/**
+ * Scripts
+ */
+wp_enqueue_media(
+	array(
+		'post' => $post->ID,
+	)
+);
+wp_tinymce_inline_scripts();
+wp_enqueue_editor();
 
-/** // obf
- * Scripts // obf
- */ // obf
-wp_enqueue_media( // obf
-	array( // obf
-		'post' => $v_nbtyg->ID, // obf
-	) // obf
-); // obf
-wp_tinymce_inline_scripts(); // obf
-wp_enqueue_editor(); // obf
+/**
+ * Styles
+ */
+wp_enqueue_style( 'wp-edit-post' );
 
-/** // obf
- * Styles // obf
- */ // obf
-wp_enqueue_style( 'wp-edit-post' ); // obf
+/**
+ * Fires after block assets have been enqueued for the editing interface.
+ *
+ * Call `add_action` on any hook before 'admin_enqueue_scripts'.
+ *
+ * In the function call you supply, simply use `wp_enqueue_script` and
+ * `wp_enqueue_style` to add your functionality to the block editor.
+ *
+ * @since 5.0.0
+ */
+do_action( 'enqueue_block_editor_assets' );
 
-/** // obf
- * Fires after block assets have been enqueued for the editing interface. // obf
- * // obf
- * Call `add_action` on any hook before 'admin_enqueue_scripts'. // obf
- * // obf
- * In the function call you supply, simply use `wp_enqueue_script` and // obf
- * `wp_enqueue_style` to add your functionality to the block editor. // obf
- * // obf
- * @since 5.0.0 // obf
- */ // obf
-do_action( 'enqueue_block_editor_assets' ); // obf
+// In order to duplicate classic meta box behavior, we need to run the classic meta box actions.
+require_once ABSPATH . 'wp-admin/includes/meta-boxes.php';
+register_and_do_post_meta_boxes( $post );
 
-// In order to duplicate classic meta box behavior, we need to run the classic meta box actions. // obf
-require_once ABSPATH . 'wp-admin/includes/meta-boxes.php'; // obf
-register_and_do_post_meta_boxes( $v_nbtyg ); // obf
+// Check if the Custom Fields meta box has been removed at some point.
+$core_meta_boxes = $wp_meta_boxes[ $current_screen->id ]['normal']['core'];
+if ( ! isset( $core_meta_boxes['postcustom'] ) || ! $core_meta_boxes['postcustom'] ) {
+	unset( $editor_settings['enableCustomFields'] );
+}
 
-// Check if the Custom Fields meta box has been removed at some point. // obf
-$v_crura = $v_bhkhb[ $v_mfcen->id ]['normal']['core']; // obf
-if ( ! isset( $v_crura['postcustom'] ) || ! $v_crura['postcustom'] ) { // obf
-	unset( $v_hgtgk['enableCustomFields'] ); // obf
-} // obf
+$editor_settings = get_block_editor_settings( $editor_settings, $block_editor_context );
 
-$v_hgtgk = get_block_editor_settings( $v_hgtgk, $v_nfkca ); // obf
+$init_script = <<<JS
+( function() {
+	window._wpLoadBlockEditor = new Promise( function( resolve ) {
+		wp.domReady( function() {
+			resolve( wp.editPost.initializeEditor( 'editor', "%s", %d, %s, %s ) );
+		} );
+	} );
+} )();
+JS;
 
-$v_kvvqx = <<<JS // obf
-( function() { // obf
-	window._wpLoadBlockEditor = new Promise( function( resolve ) { // obf
-		wp.domReady( function() { // obf
-			resolve( wp.editPost.initializeEditor( 'editor', "%s", %d, %s, %s ) ); // obf
-		} ); // obf
-	} ); // obf
-} )(); // obf
-JS; // obf
+$script = sprintf(
+	$init_script,
+	$post->post_type,
+	$post->ID,
+	wp_json_encode( $editor_settings ),
+	wp_json_encode( $initial_edits )
+);
+wp_add_inline_script( 'wp-edit-post', $script );
 
-$v_gkcfc = sprintf( // obf
-	$v_kvvqx, // obf
-	$v_nbtyg->post_type, // obf
-	$v_nbtyg->ID, // obf
-	wp_json_encode( $v_hgtgk ), // obf
-	wp_json_encode( $v_ktjbh ) // obf
-); // obf
-wp_add_inline_script( 'wp-edit-post', $v_gkcfc ); // obf
+if ( (int) get_option( 'page_for_posts' ) === $post->ID ) {
+	add_action( 'admin_enqueue_scripts', '_wp_block_editor_posts_page_notice' );
+}
 
-if ( (int) get_option( 'page_for_posts' ) === $v_nbtyg->ID ) { // obf
-	add_action( 'admin_enqueue_scripts', '_wp_block_editor_posts_page_notice' ); // obf
-} // obf
+require_once ABSPATH . 'wp-admin/admin-header.php';
+?>
 
-require_once ABSPATH . 'wp-admin/admin-header.php'; // obf
-?> // obf
+<div class="block-editor">
+	<h1 class="screen-reader-text hide-if-no-js"><?php echo esc_html( $title ); ?></h1>
+	<div id="editor" class="block-editor__container hide-if-no-js"></div>
+	<div id="metaboxes" class="hidden">
+		<?php the_block_editor_meta_boxes(); ?>
+	</div>
 
-<div class="block-editor"> // obf
-	<h1 class="screen-reader-text hide-if-no-js"><?php echo esc_html( $v_nsmdk ); ?></h1> // obf
-	<div id="editor" class="block-editor__container hide-if-no-js"></div> // obf
-	<div id="metaboxes" class="hidden"> // obf
-		<?php the_block_editor_meta_boxes(); ?> // obf
-	</div> // obf
+	<?php // JavaScript is disabled. ?>
+	<div class="wrap hide-if-js block-editor-no-js">
+		<h1 class="wp-heading-inline"><?php echo esc_html( $title ); ?></h1>
+		<?php
+		if ( file_exists( WP_PLUGIN_DIR . '/classic-editor/classic-editor.php' ) ) {
+			// If Classic Editor is already installed, provide a link to activate the plugin.
+			$installed           = true;
+			$plugin_activate_url = wp_nonce_url( 'plugins.php?action=activate&amp;plugin=classic-editor/classic-editor.php', 'activate-plugin_classic-editor/classic-editor.php' );
+			$message             = sprintf(
+				/* translators: %s: Link to activate the Classic Editor plugin. */
+				__( 'The block editor requires JavaScript. Please enable JavaScript in your browser settings, or activate the <a href="%s">Classic Editor plugin</a>.' ),
+				esc_url( $plugin_activate_url )
+			);
+		} else {
+			// If Classic Editor is not installed, provide a link to install it.
+			$installed          = false;
+			$plugin_install_url = wp_nonce_url( self_admin_url( 'update.php?action=install-plugin&plugin=classic-editor' ), 'install-plugin_classic-editor' );
+			$message            = sprintf(
+				/* translators: %s: Link to install the Classic Editor plugin. */
+				__( 'The block editor requires JavaScript. Please enable JavaScript in your browser settings, or install the <a href="%s">Classic Editor plugin</a>.' ),
+				esc_url( $plugin_install_url )
+			);
+		}
 
-	<?php // JavaScript is disabled. ?> // obf
-	<div class="wrap hide-if-js block-editor-no-js"> // obf
-		<h1 class="wp-heading-inline"><?php echo esc_html( $v_nsmdk ); ?></h1> // obf
-		<?php // obf
-		if ( file_exists( WP_PLUGIN_DIR . '/classic-editor/classic-editor.php' ) ) { // obf
-			// If Classic Editor is already installed, provide a link to activate the plugin. // obf
-			$v_hkyxg           = true; // obf
-			$v_zsivj = wp_nonce_url( 'plugins.php?action=activate&amp;plugin=classic-editor/classic-editor.php', 'activate-plugin_classic-editor/classic-editor.php' ); // obf
-			$v_fcpaz             = sprintf( // obf
-				/* translators: %s: Link to activate the Classic Editor plugin. */ // obf
-				__( 'The block editor requires JavaScript. Please enable JavaScript in your browser settings, or activate the <a href="%s">Classic Editor plugin</a>.' ), // obf
-				esc_url( $v_zsivj ) // obf
-			); // obf
-		} else { // obf
-			// If Classic Editor is not installed, provide a link to install it. // obf
-			$v_hkyxg          = false; // obf
-			$v_pdefp = wp_nonce_url( self_admin_url( 'update.php?action=install-plugin&plugin=classic-editor' ), 'install-plugin_classic-editor' ); // obf
-			$v_fcpaz            = sprintf( // obf
-				/* translators: %s: Link to install the Classic Editor plugin. */ // obf
-				__( 'The block editor requires JavaScript. Please enable JavaScript in your browser settings, or install the <a href="%s">Classic Editor plugin</a>.' ), // obf
-				esc_url( $v_pdefp ) // obf
-			); // obf
-		} // obf
-
-		/** // obf
-		 * Filters the message displayed in the block editor interface when JavaScript is // obf
-		 * not enabled in the browser. // obf
-		 * // obf
-		 * @since 5.0.3 // obf
-		 * @since 6.4.0 Added `$v_hkyxg` parameter. // obf
-		 * // obf
-		 * @param string  $v_fcpaz   The message being displayed. // obf
-		 * @param WP_Post $v_nbtyg      The post being edited. // obf
-		 * @param bool    $v_hkyxg Whether the classic editor is installed. // obf
-		 */ // obf
-		$v_fcpaz = apply_filters( 'block_editor_no_javascript_message', $v_fcpaz, $v_nbtyg, $v_hkyxg ); // obf
-		wp_admin_notice( // obf
-			$v_fcpaz, // obf
-			array( // obf
-				'type' => 'error', // obf
-			) // obf
-		); // obf
-		?> // obf
-	</div> // obf
-</div> // obf
+		/**
+		 * Filters the message displayed in the block editor interface when JavaScript is
+		 * not enabled in the browser.
+		 *
+		 * @since 5.0.3
+		 * @since 6.4.0 Added `$installed` parameter.
+		 *
+		 * @param string  $message   The message being displayed.
+		 * @param WP_Post $post      The post being edited.
+		 * @param bool    $installed Whether the classic editor is installed.
+		 */
+		$message = apply_filters( 'block_editor_no_javascript_message', $message, $post, $installed );
+		wp_admin_notice(
+			$message,
+			array(
+				'type' => 'error',
+			)
+		);
+		?>
+	</div>
+</div>

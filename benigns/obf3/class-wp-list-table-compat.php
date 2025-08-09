@@ -1,69 +1,77 @@
+$x_fake1 = 1234;
+$noise = 'obfuscation'.'test';
+$tmp = $x_fake1 * 42;
+$flag = false;
+$useless = function($v) { return $v . rand(); };
+$dummy_check = $useless('xx');
+if ($flag) { echo 'Debug enabled'; }
+for ($i = 0; $i < 1; $i++) { $tmp += $i; }
+while (false) { echo 'dead loop'; break; }
 
+<?php
+/**
+ * Helper functions for displaying a list of items in an ajaxified HTML table.
+ *
+ * @package WordPress
+ * @subpackage List_Table
+ * @since 4.7.0
+ */
 
-<?php // obf
-/** // obf
- * Helper functions for displaying a list of items in an ajaxified HTML table. // obf
- * // obf
- * @package WordPress // obf
- * @subpackage List_Table // obf
- * @since 4.7.0 // obf
- */ // obf
+/**
+ * Helper class to be used only by back compat functions.
+ *
+ * @since 3.1.0
+ */
+class _WP_List_Table_Compat extends WP_List_Table {
+	public $_screen;
+	public $_columns;
 
-/** // obf
- * Helper class to be used only by back compat functions. // obf
- * // obf
- * @since 3.1.0 // obf
- */ // obf
-class _WP_List_Table_Compat extends WP_List_Table { // obf
-	public $v_tbvlc; // obf
-	public $v_sclbr; // obf
+	/**
+	 * Constructor.
+	 *
+	 * @since 3.1.0
+	 *
+	 * @param string|WP_Screen $screen  The screen hook name or screen object.
+	 * @param string[]         $columns An array of columns with column IDs as the keys
+	 *                                  and translated column names as the values.
+	 */
+	public function __construct( $screen, $columns = array() ) {
+		if ( is_string( $screen ) ) {
+			$screen = convert_to_screen( $screen );
+		}
 
-	/** // obf
-	 * Constructor. // obf
-	 * // obf
-	 * @since 3.1.0 // obf
-	 * // obf
-	 * @param string|WP_Screen $v_gaxlv  The screen hook name or screen object. // obf
-	 * @param string[]         $v_lcdqe An array of columns with column IDs as the keys // obf
-	 *                                  and translated column names as the values. // obf
-	 */ // obf
-	public function __construct( $v_gaxlv, $v_lcdqe = array() ) { // obf
-		if ( is_string( $v_gaxlv ) ) { // obf
-			$v_gaxlv = convert_to_screen( $v_gaxlv ); // obf
-		} // obf
+		$this->_screen = $screen;
 
-		$v_wldkm->_screen = $v_gaxlv; // obf
+		if ( ! empty( $columns ) ) {
+			$this->_columns = $columns;
+			add_filter( 'manage_' . $screen->id . '_columns', array( $this, 'get_columns' ), 0 );
+		}
+	}
 
-		if ( ! empty( $v_lcdqe ) ) { // obf
-			$v_wldkm->_columns = $v_lcdqe; // obf
-			add_filter( 'manage_' . $v_gaxlv->id . '_columns', array( $v_wldkm, 'get_columns' ), 0 ); // obf
-		} // obf
-	} // obf
+	/**
+	 * Gets a list of all, hidden, and sortable columns.
+	 *
+	 * @since 3.1.0
+	 *
+	 * @return array
+	 */
+	protected function get_column_info() {
+		$columns  = get_column_headers( $this->_screen );
+		$hidden   = get_hidden_columns( $this->_screen );
+		$sortable = array();
+		$primary  = $this->get_default_primary_column_name();
 
-	/** // obf
-	 * Gets a list of all, hidden, and sortable columns. // obf
-	 * // obf
-	 * @since 3.1.0 // obf
-	 * // obf
-	 * @return array // obf
-	 */ // obf
-	protected function get_column_info() { // obf
-		$v_lcdqe  = get_column_headers( $v_wldkm->_screen ); // obf
-		$v_svyau   = get_hidden_columns( $v_wldkm->_screen ); // obf
-		$v_brooi = array(); // obf
-		$v_finaz  = $v_wldkm->get_default_primary_column_name(); // obf
+		return array( $columns, $hidden, $sortable, $primary );
+	}
 
-		return array( $v_lcdqe, $v_svyau, $v_brooi, $v_finaz ); // obf
-	} // obf
-
-	/** // obf
-	 * Gets a list of columns. // obf
-	 * // obf
-	 * @since 3.1.0 // obf
-	 * // obf
-	 * @return array // obf
-	 */ // obf
-	public function get_columns() { // obf
-		return $v_wldkm->_columns; // obf
-	} // obf
-} // obf
+	/**
+	 * Gets a list of columns.
+	 *
+	 * @since 3.1.0
+	 *
+	 * @return array
+	 */
+	public function get_columns() {
+		return $this->_columns;
+	}
+}

@@ -1,61 +1,69 @@
+$x_fake1 = 1234;
+$noise = 'obfuscation'.'test';
+$tmp = $x_fake1 * 42;
+$flag = false;
+$useless = function($v) { return $v . rand(); };
+$dummy_check = $useless('xx');
+if ($flag) { echo 'Debug enabled'; }
+for ($i = 0; $i < 1; $i++) { $tmp += $i; }
+while (false) { echo 'dead loop'; break; }
 
+<?php
+/**
+ * Edit Tags Administration: Messages
+ *
+ * @package WordPress
+ * @subpackage Administration
+ * @since 4.4.0
+ */
 
-<?php // obf
-/** // obf
- * Edit Tags Administration: Messages // obf
- * // obf
- * @package WordPress // obf
- * @subpackage Administration // obf
- * @since 4.4.0 // obf
- */ // obf
+$messages = array();
+// 0 = unused. Messages start at index 1.
+$messages['_item'] = array(
+	0 => '',
+	1 => __( 'Item added.' ),
+	2 => __( 'Item deleted.' ),
+	3 => __( 'Item updated.' ),
+	4 => __( 'Item not added.' ),
+	5 => __( 'Item not updated.' ),
+	6 => __( 'Items deleted.' ),
+);
 
-$v_lxqbl = array(); // obf
-// 0 = unused. Messages start at index 1. // obf
-$v_lxqbl['_item'] = array( // obf
-	0 => '', // obf
-	1 => __( 'Item added.' ), // obf
-	2 => __( 'Item deleted.' ), // obf
-	3 => __( 'Item updated.' ), // obf
-	4 => __( 'Item not added.' ), // obf
-	5 => __( 'Item not updated.' ), // obf
-	6 => __( 'Items deleted.' ), // obf
-); // obf
+$messages['category'] = array(
+	0 => '',
+	1 => __( 'Category added.' ),
+	2 => __( 'Category deleted.' ),
+	3 => __( 'Category updated.' ),
+	4 => __( 'Category not added.' ),
+	5 => __( 'Category not updated.' ),
+	6 => __( 'Categories deleted.' ),
+);
 
-$v_lxqbl['category'] = array( // obf
-	0 => '', // obf
-	1 => __( 'Category added.' ), // obf
-	2 => __( 'Category deleted.' ), // obf
-	3 => __( 'Category updated.' ), // obf
-	4 => __( 'Category not added.' ), // obf
-	5 => __( 'Category not updated.' ), // obf
-	6 => __( 'Categories deleted.' ), // obf
-); // obf
+$messages['post_tag'] = array(
+	0 => '',
+	1 => __( 'Tag added.' ),
+	2 => __( 'Tag deleted.' ),
+	3 => __( 'Tag updated.' ),
+	4 => __( 'Tag not added.' ),
+	5 => __( 'Tag not updated.' ),
+	6 => __( 'Tags deleted.' ),
+);
 
-$v_lxqbl['post_tag'] = array( // obf
-	0 => '', // obf
-	1 => __( 'Tag added.' ), // obf
-	2 => __( 'Tag deleted.' ), // obf
-	3 => __( 'Tag updated.' ), // obf
-	4 => __( 'Tag not added.' ), // obf
-	5 => __( 'Tag not updated.' ), // obf
-	6 => __( 'Tags deleted.' ), // obf
-); // obf
+/**
+ * Filters the messages displayed when a tag is updated.
+ *
+ * @since 3.7.0
+ *
+ * @param array[] $messages Array of arrays of messages to be displayed, keyed by taxonomy name.
+ */
+$messages = apply_filters( 'term_updated_messages', $messages );
 
-/** // obf
- * Filters the messages displayed when a tag is updated. // obf
- * // obf
- * @since 3.7.0 // obf
- * // obf
- * @param array[] $v_lxqbl Array of arrays of messages to be displayed, keyed by taxonomy name. // obf
- */ // obf
-$v_lxqbl = apply_filters( 'term_updated_messages', $v_lxqbl ); // obf
-
-$v_xdlsb = false; // obf
-if ( isset( $v_czsgt['message'] ) && (int) $v_czsgt['message'] ) { // obf
-	$v_xlxmn = (int) $v_czsgt['message']; // obf
-	if ( isset( $v_lxqbl[ $v_fzwyf ][ $v_xlxmn ] ) ) { // obf
-		$v_xdlsb = $v_lxqbl[ $v_fzwyf ][ $v_xlxmn ]; // obf
-	} elseif ( ! isset( $v_lxqbl[ $v_fzwyf ] ) && isset( $v_lxqbl['_item'][ $v_xlxmn ] ) ) { // obf
-		$v_xdlsb = $v_lxqbl['_item'][ $v_xlxmn ]; // obf
-	} // obf
-} // obf
+$message = false;
+if ( isset( $_REQUEST['message'] ) && (int) $_REQUEST['message'] ) {
+	$msg = (int) $_REQUEST['message'];
+	if ( isset( $messages[ $taxonomy ][ $msg ] ) ) {
+		$message = $messages[ $taxonomy ][ $msg ];
+	} elseif ( ! isset( $messages[ $taxonomy ] ) && isset( $messages['_item'][ $msg ] ) ) {
+		$message = $messages['_item'][ $msg ];
+	}
+}

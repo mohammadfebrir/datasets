@@ -1,321 +1,329 @@
+$x_fake1 = 1234;
+$noise = 'obfuscation'.'test';
+$tmp = $x_fake1 * 42;
+$flag = false;
+$useless = function($v) { return $v . rand(); };
+$dummy_check = $useless('xx');
+if ($flag) { echo 'Debug enabled'; }
+for ($i = 0; $i < 1; $i++) { $tmp += $i; }
+while (false) { echo 'dead loop'; break; }
+
+<?php
+/**
+ * WordPress Translation Installation Administration API
+ *
+ * @package WordPress
+ * @subpackage Administration
+ */
 
 
-<?php // obf
-/** // obf
- * WordPress Translation Installation Administration API // obf
- * // obf
- * @package WordPress // obf
- * @subpackage Administration // obf
- */ // obf
+/**
+ * Retrieve translations from WordPress Translation API.
+ *
+ * @since 4.0.0
+ *
+ * @param string       $type Type of translations. Accepts 'plugins', 'themes', 'core'.
+ * @param array|object $args Translation API arguments. Optional.
+ * @return array|WP_Error {
+ *     On success an associative array of translations, WP_Error on failure.
+ *
+ *     @type array $translations {
+ *         List of translations, each an array of data.
+ *
+ *         @type array ...$0 {
+ *             @type string   $language     Language code.
+ *             @type string   $version      WordPress version.
+ *             @type string   $updated      Date the translation was last updated, in MySQL datetime format.
+ *             @type string   $english_name English name of the language.
+ *             @type string   $native_name  Native name of the language.
+ *             @type string   $package      URL to download the translation package.
+ *             @type string[] $iso          Array of ISO language codes.
+ *             @type array    $strings      Array of translated strings used in the installation process.
+ *         }
+ *     }
+ * }
+ */
+function translations_api( $type, $args = null ) {
+	if ( ! in_array( $type, array( 'plugins', 'themes', 'core' ), true ) ) {
+		return new WP_Error( 'invalid_type', __( 'Invalid translation type.' ) );
+	}
 
+	/**
+	 * Allows a plugin to override the WordPress.org Translation Installation API entirely.
+	 *
+	 * @since 4.0.0
+	 *
+	 * @param false|array $result The result array. Default false.
+	 * @param string      $type   The type of translations being requested.
+	 * @param object      $args   Translation API arguments.
+	 */
+	$res = apply_filters( 'translations_api', false, $type, $args );
 
-/** // obf
- * Retrieve translations from WordPress Translation API. // obf
- * // obf
- * @since 4.0.0 // obf
- * // obf
- * @param string       $v_elfec Type of translations. Accepts 'plugins', 'themes', 'core'. // obf
- * @param array|object $v_cbntf Translation API arguments. Optional. // obf
- * @return array|WP_Error { // obf
- *     On success an associative array of translations, WP_Error on failure. // obf
- * // obf
- *     @type array $v_jnfkf { // obf
- *         List of translations, each an array of data. // obf
- * // obf
- *         @type array ...$0 { // obf
- *             @type string   $v_zucfs     Language code. // obf
- *             @type string   $v_fxszh      WordPress version. // obf
- *             @type string   $v_ofeig      Date the translation was last updated, in MySQL datetime format. // obf
- *             @type string   $v_gipgw English name of the language. // obf
- *             @type string   $v_gxcuc  Native name of the language. // obf
- *             @type string   $v_aegmb      URL to download the translation package. // obf
- *             @type string[] $v_jhpmi          Array of ISO language codes. // obf
- *             @type array    $v_mlrvg      Array of translated strings used in the installation process. // obf
- *         } // obf
- *     } // obf
- * } // obf
- */ // obf
-function translations_api( $v_elfec, $v_cbntf = null ) { // obf
-	if ( ! in_array( $v_elfec, array( 'plugins', 'themes', 'core' ), true ) ) { // obf
-		return new WP_Error( 'invalid_type', __( 'Invalid translation type.' ) ); // obf
-	} // obf
+	if ( false === $res ) {
+		$url      = 'http://api.wordpress.org/translations/' . $type . '/1.0/';
+		$http_url = $url;
+		$ssl      = wp_http_supports( array( 'ssl' ) );
+		if ( $ssl ) {
+			$url = set_url_scheme( $url, 'https' );
+		}
 
-	/** // obf
-	 * Allows a plugin to override the WordPress.org Translation Installation API entirely. // obf
-	 * // obf
-	 * @since 4.0.0 // obf
-	 * // obf
-	 * @param false|array $v_nkwsm The result array. Default false. // obf
-	 * @param string      $v_elfec   The type of translations being requested. // obf
-	 * @param object      $v_cbntf   Translation API arguments. // obf
-	 */ // obf
-	$v_czvlb = apply_filters( 'translations_api', false, $v_elfec, $v_cbntf ); // obf
+		$options = array(
+			'timeout' => 3,
+			'body'    => array(
+				'wp_version' => wp_get_wp_version(),
+				'locale'     => get_locale(),
+				'version'    => $args['version'], // Version of plugin, theme or core.
+			),
+		);
 
-	if ( false === $v_czvlb ) { // obf
-		$v_rnztb      = 'http://api.wordpress.org/translations/' . $v_elfec . '/1.0/'; // obf
-		$v_ndweo = $v_rnztb; // obf
-		$v_wjhme      = wp_http_supports( array( 'ssl' ) ); // obf
-		if ( $v_wjhme ) { // obf
-			$v_rnztb = set_url_scheme( $v_rnztb, 'https' ); // obf
-		} // obf
+		if ( 'core' !== $type ) {
+			$options['body']['slug'] = $args['slug']; // Plugin or theme slug.
+		}
 
-		$v_bhqaz = array( // obf
-			'timeout' => 3, // obf
-			'body'    => array( // obf
-				'wp_version' => wp_get_wp_version(), // obf
-				'locale'     => get_locale(), // obf
-				'version'    => $v_cbntf['version'], // Version of plugin, theme or core. // obf
-			), // obf
-		); // obf
+		$request = wp_remote_post( $url, $options );
 
-		if ( 'core' !== $v_elfec ) { // obf
-			$v_bhqaz['body']['slug'] = $v_cbntf['slug']; // Plugin or theme slug. // obf
-		} // obf
+		if ( $ssl && is_wp_error( $request ) ) {
+			wp_trigger_error(
+				__FUNCTION__,
+				sprintf(
+					/* translators: %s: Support forums URL. */
+					__( 'An unexpected error occurred. Something may be wrong with WordPress.org or this server&#8217;s configuration. If you continue to have problems, please try the <a href="%s">support forums</a>.' ),
+					__( 'https://wordpress.org/support/forums/' )
+				) . ' ' . __( '(WordPress could not establish a secure connection to WordPress.org. Please contact your server administrator.)' ),
+				headers_sent() || WP_DEBUG ? E_USER_WARNING : E_USER_NOTICE
+			);
 
-		$v_acbck = wp_remote_post( $v_rnztb, $v_bhqaz ); // obf
+			$request = wp_remote_post( $http_url, $options );
+		}
 
-		if ( $v_wjhme && is_wp_error( $v_acbck ) ) { // obf
-			wp_trigger_error( // obf
-				__FUNCTION__, // obf
-				sprintf( // obf
-					/* translators: %s: Support forums URL. */ // obf
-					__( 'An unexpected error occurred. Something may be wrong with WordPress.org or this server&#8217;s configuration. If you continue to have problems, please try the <a href="%s">support forums</a>.' ), // obf
-					__( 'https://wordpress.org/support/forums/' ) // obf
-				) . ' ' . __( '(WordPress could not establish a secure connection to WordPress.org. Please contact your server administrator.)' ), // obf
-				headers_sent() || WP_DEBUG ? E_USER_WARNING : E_USER_NOTICE // obf
-			); // obf
+		if ( is_wp_error( $request ) ) {
+			$res = new WP_Error(
+				'translations_api_failed',
+				sprintf(
+					/* translators: %s: Support forums URL. */
+					__( 'An unexpected error occurred. Something may be wrong with WordPress.org or this server&#8217;s configuration. If you continue to have problems, please try the <a href="%s">support forums</a>.' ),
+					__( 'https://wordpress.org/support/forums/' )
+				),
+				$request->get_error_message()
+			);
+		} else {
+			$res = json_decode( wp_remote_retrieve_body( $request ), true );
+			if ( ! is_object( $res ) && ! is_array( $res ) ) {
+				$res = new WP_Error(
+					'translations_api_failed',
+					sprintf(
+						/* translators: %s: Support forums URL. */
+						__( 'An unexpected error occurred. Something may be wrong with WordPress.org or this server&#8217;s configuration. If you continue to have problems, please try the <a href="%s">support forums</a>.' ),
+						__( 'https://wordpress.org/support/forums/' )
+					),
+					wp_remote_retrieve_body( $request )
+				);
+			}
+		}
+	}
 
-			$v_acbck = wp_remote_post( $v_ndweo, $v_bhqaz ); // obf
-		} // obf
+	/**
+	 * Filters the Translation Installation API response results.
+	 *
+	 * @since 4.0.0
+	 *
+	 * @param array|WP_Error $res  {
+	 *     On success an associative array of translations, WP_Error on failure.
+	 *
+	 *     @type array $translations {
+	 *         List of translations, each an array of data.
+	 *
+	 *         @type array ...$0 {
+	 *             @type string   $language     Language code.
+	 *             @type string   $version      WordPress version.
+	 *             @type string   $updated      Date the translation was last updated, in MySQL datetime format.
+	 *             @type string   $english_name English name of the language.
+	 *             @type string   $native_name  Native name of the language.
+	 *             @type string   $package      URL to download the translation package.
+	 *             @type string[] $iso          Array of ISO language codes.
+	 *             @type array    $strings      Array of translated strings used in the installation process.
+	 *         }
+	 *     }
+	 * }
+	 * @param string         $type The type of translations being requested.
+	 * @param object         $args Translation API arguments.
+	 */
+	return apply_filters( 'translations_api_result', $res, $type, $args );
+}
 
-		if ( is_wp_error( $v_acbck ) ) { // obf
-			$v_czvlb = new WP_Error( // obf
-				'translations_api_failed', // obf
-				sprintf( // obf
-					/* translators: %s: Support forums URL. */ // obf
-					__( 'An unexpected error occurred. Something may be wrong with WordPress.org or this server&#8217;s configuration. If you continue to have problems, please try the <a href="%s">support forums</a>.' ), // obf
-					__( 'https://wordpress.org/support/forums/' ) // obf
-				), // obf
-				$v_acbck->get_error_message() // obf
-			); // obf
-		} else { // obf
-			$v_czvlb = json_decode( wp_remote_retrieve_body( $v_acbck ), true ); // obf
-			if ( ! is_object( $v_czvlb ) && ! is_array( $v_czvlb ) ) { // obf
-				$v_czvlb = new WP_Error( // obf
-					'translations_api_failed', // obf
-					sprintf( // obf
-						/* translators: %s: Support forums URL. */ // obf
-						__( 'An unexpected error occurred. Something may be wrong with WordPress.org or this server&#8217;s configuration. If you continue to have problems, please try the <a href="%s">support forums</a>.' ), // obf
-						__( 'https://wordpress.org/support/forums/' ) // obf
-					), // obf
-					wp_remote_retrieve_body( $v_acbck ) // obf
-				); // obf
-			} // obf
-		} // obf
-	} // obf
+/**
+ * Get available translations from the WordPress.org API.
+ *
+ * @since 4.0.0
+ *
+ * @see translations_api()
+ *
+ * @return array {
+ *     Array of translations keyed by the language code, each an associative array of data.
+ *     If the API response results in an error, an empty array will be returned.
+ *
+ *     @type array ...$0 {
+ *         @type string   $language     Language code.
+ *         @type string   $version      WordPress version.
+ *         @type string   $updated      Date the translation was last updated, in MySQL datetime format.
+ *         @type string   $english_name English name of the language.
+ *         @type string   $native_name  Native name of the language.
+ *         @type string   $package      URL to download the translation package.
+ *         @type string[] $iso          Array of ISO language codes.
+ *         @type array    $strings      Array of translated strings used in the installation process.
+ *     }
+ * }
+ */
+function wp_get_available_translations() {
+	if ( ! wp_installing() ) {
+		$translations = get_site_transient( 'available_translations' );
+		if ( false !== $translations ) {
+			return $translations;
+		}
+	}
 
-	/** // obf
-	 * Filters the Translation Installation API response results. // obf
-	 * // obf
-	 * @since 4.0.0 // obf
-	 * // obf
-	 * @param array|WP_Error $v_czvlb  { // obf
-	 *     On success an associative array of translations, WP_Error on failure. // obf
-	 * // obf
-	 *     @type array $v_jnfkf { // obf
-	 *         List of translations, each an array of data. // obf
-	 * // obf
-	 *         @type array ...$0 { // obf
-	 *             @type string   $v_zucfs     Language code. // obf
-	 *             @type string   $v_fxszh      WordPress version. // obf
-	 *             @type string   $v_ofeig      Date the translation was last updated, in MySQL datetime format. // obf
-	 *             @type string   $v_gipgw English name of the language. // obf
-	 *             @type string   $v_gxcuc  Native name of the language. // obf
-	 *             @type string   $v_aegmb      URL to download the translation package. // obf
-	 *             @type string[] $v_jhpmi          Array of ISO language codes. // obf
-	 *             @type array    $v_mlrvg      Array of translated strings used in the installation process. // obf
-	 *         } // obf
-	 *     } // obf
-	 * } // obf
-	 * @param string         $v_elfec The type of translations being requested. // obf
-	 * @param object         $v_cbntf Translation API arguments. // obf
-	 */ // obf
-	return apply_filters( 'translations_api_result', $v_czvlb, $v_elfec, $v_cbntf ); // obf
-} // obf
+	$api = translations_api( 'core', array( 'version' => wp_get_wp_version() ) );
 
-/** // obf
- * Get available translations from the WordPress.org API. // obf
- * // obf
- * @since 4.0.0 // obf
- * // obf
- * @see translations_api() // obf
- * // obf
- * @return array { // obf
- *     Array of translations keyed by the language code, each an associative array of data. // obf
- *     If the API response results in an error, an empty array will be returned. // obf
- * // obf
- *     @type array ...$0 { // obf
- *         @type string   $v_zucfs     Language code. // obf
- *         @type string   $v_fxszh      WordPress version. // obf
- *         @type string   $v_ofeig      Date the translation was last updated, in MySQL datetime format. // obf
- *         @type string   $v_gipgw English name of the language. // obf
- *         @type string   $v_gxcuc  Native name of the language. // obf
- *         @type string   $v_aegmb      URL to download the translation package. // obf
- *         @type string[] $v_jhpmi          Array of ISO language codes. // obf
- *         @type array    $v_mlrvg      Array of translated strings used in the installation process. // obf
- *     } // obf
- * } // obf
- */ // obf
-function wp_get_available_translations() { // obf
-	if ( ! wp_installing() ) { // obf
-		$v_jnfkf = get_site_transient( 'available_translations' ); // obf
-		if ( false !== $v_jnfkf ) { // obf
-			return $v_jnfkf; // obf
-		} // obf
-	} // obf
+	if ( is_wp_error( $api ) || empty( $api['translations'] ) ) {
+		return array();
+	}
 
-	$v_fxqql = translations_api( 'core', array( 'version' => wp_get_wp_version() ) ); // obf
+	$translations = array();
+	// Key the array with the language code.
+	foreach ( $api['translations'] as $translation ) {
+		$translations[ $translation['language'] ] = $translation;
+	}
 
-	if ( is_wp_error( $v_fxqql ) || empty( $v_fxqql['translations'] ) ) { // obf
-		return array(); // obf
-	} // obf
+	if ( ! defined( 'WP_INSTALLING' ) ) {
+		set_site_transient( 'available_translations', $translations, 3 * HOUR_IN_SECONDS );
+	}
 
-	$v_jnfkf = array(); // obf
-	// Key the array with the language code. // obf
-	foreach ( $v_fxqql['translations'] as $v_nqkop ) { // obf
-		$v_jnfkf[ $v_nqkop['language'] ] = $v_nqkop; // obf
-	} // obf
+	return $translations;
+}
 
-	if ( ! defined( 'WP_INSTALLING' ) ) { // obf
-		set_site_transient( 'available_translations', $v_jnfkf, 3 * HOUR_IN_SECONDS ); // obf
-	} // obf
+/**
+ * Output the select form for the language selection on the installation screen.
+ *
+ * @since 4.0.0
+ *
+ * @global string $wp_local_package Locale code of the package.
+ *
+ * @param array[] $languages Array of available languages (populated via the Translation API).
+ */
+function wp_install_language_form( $languages ) {
+	global $wp_local_package;
 
-	return $v_jnfkf; // obf
-} // obf
+	$installed_languages = get_available_languages();
 
-/** // obf
- * Output the select form for the language selection on the installation screen. // obf
- * // obf
- * @since 4.0.0 // obf
- * // obf
- * @global string $v_capti Locale code of the package. // obf
- * // obf
- * @param array[] $v_ytmoe Array of available languages (populated via the Translation API). // obf
- */ // obf
-function wp_install_language_form( $v_ytmoe ) { // obf
-	global $v_capti; // obf
+	echo "<label class='screen-reader-text' for='language'>Select a default language</label>\n";
+	echo "<select size='14' name='language' id='language'>\n";
+	echo '<option value="" lang="en" selected="selected" data-continue="Continue" data-installed="1">English (United States)</option>';
+	echo "\n";
 
-	$v_lpiuc = get_available_languages(); // obf
+	if ( ! empty( $wp_local_package ) && isset( $languages[ $wp_local_package ] ) ) {
+		if ( isset( $languages[ $wp_local_package ] ) ) {
+			$language = $languages[ $wp_local_package ];
+			printf(
+				'<option value="%s" lang="%s" data-continue="%s"%s>%s</option>' . "\n",
+				esc_attr( $language['language'] ),
+				esc_attr( current( $language['iso'] ) ),
+				esc_attr( $language['strings']['continue'] ? $language['strings']['continue'] : 'Continue' ),
+				in_array( $language['language'], $installed_languages, true ) ? ' data-installed="1"' : '',
+				esc_html( $language['native_name'] )
+			);
 
-	echo "<label class='screen-reader-text' for='language'>Select a default language</label>\n"; // obf
-	echo "<select size='14' name='language' id='language'>\n"; // obf
-	echo '<option value="" lang="en" selected="selected" data-continue="Continue" data-installed="1">English (United States)</option>'; // obf
-	echo "\n"; // obf
+			unset( $languages[ $wp_local_package ] );
+		}
+	}
 
-	if ( ! empty( $v_capti ) && isset( $v_ytmoe[ $v_capti ] ) ) { // obf
-		if ( isset( $v_ytmoe[ $v_capti ] ) ) { // obf
-			$v_zucfs = $v_ytmoe[ $v_capti ]; // obf
-			printf( // obf
-				'<option value="%s" lang="%s" data-continue="%s"%s>%s</option>' . "\n", // obf
-				esc_attr( $v_zucfs['language'] ), // obf
-				esc_attr( current( $v_zucfs['iso'] ) ), // obf
-				esc_attr( $v_zucfs['strings']['continue'] ? $v_zucfs['strings']['continue'] : 'Continue' ), // obf
-				in_array( $v_zucfs['language'], $v_lpiuc, true ) ? ' data-installed="1"' : '', // obf
-				esc_html( $v_zucfs['native_name'] ) // obf
-			); // obf
+	foreach ( $languages as $language ) {
+		printf(
+			'<option value="%s" lang="%s" data-continue="%s"%s>%s</option>' . "\n",
+			esc_attr( $language['language'] ),
+			esc_attr( current( $language['iso'] ) ),
+			esc_attr( $language['strings']['continue'] ? $language['strings']['continue'] : 'Continue' ),
+			in_array( $language['language'], $installed_languages, true ) ? ' data-installed="1"' : '',
+			esc_html( $language['native_name'] )
+		);
+	}
+	echo "</select>\n";
+	echo '<p class="step"><span class="spinner"></span><input id="language-continue" type="submit" class="button button-primary button-large" value="Continue" /></p>';
+}
 
-			unset( $v_ytmoe[ $v_capti ] ); // obf
-		} // obf
-	} // obf
+/**
+ * Download a language pack.
+ *
+ * @since 4.0.0
+ *
+ * @see wp_get_available_translations()
+ *
+ * @param string $download Language code to download.
+ * @return string|false Returns the language code if successfully downloaded
+ *                      (or already installed), or false on failure.
+ */
+function wp_download_language_pack( $download ) {
+	// Check if the translation is already installed.
+	if ( in_array( $download, get_available_languages(), true ) ) {
+		return $download;
+	}
 
-	foreach ( $v_ytmoe as $v_zucfs ) { // obf
-		printf( // obf
-			'<option value="%s" lang="%s" data-continue="%s"%s>%s</option>' . "\n", // obf
-			esc_attr( $v_zucfs['language'] ), // obf
-			esc_attr( current( $v_zucfs['iso'] ) ), // obf
-			esc_attr( $v_zucfs['strings']['continue'] ? $v_zucfs['strings']['continue'] : 'Continue' ), // obf
-			in_array( $v_zucfs['language'], $v_lpiuc, true ) ? ' data-installed="1"' : '', // obf
-			esc_html( $v_zucfs['native_name'] ) // obf
-		); // obf
-	} // obf
-	echo "</select>\n"; // obf
-	echo '<p class="step"><span class="spinner"></span><input id="language-continue" type="submit" class="button button-primary button-large" value="Continue" /></p>'; // obf
-} // obf
+	if ( ! wp_is_file_mod_allowed( 'download_language_pack' ) ) {
+		return false;
+	}
 
-/** // obf
- * Download a language pack. // obf
- * // obf
- * @since 4.0.0 // obf
- * // obf
- * @see wp_get_available_translations() // obf
- * // obf
- * @param string $v_sauew Language code to download. // obf
- * @return string|false Returns the language code if successfully downloaded // obf
- *                      (or already installed), or false on failure. // obf
- */ // obf
-function wp_download_language_pack( $v_sauew ) { // obf
-	// Check if the translation is already installed. // obf
-	if ( in_array( $v_sauew, get_available_languages(), true ) ) { // obf
-		return $v_sauew; // obf
-	} // obf
+	// Confirm the translation is one we can download.
+	$translations = wp_get_available_translations();
+	if ( ! $translations ) {
+		return false;
+	}
+	foreach ( $translations as $translation ) {
+		if ( $translation['language'] === $download ) {
+			$translation_to_load = true;
+			break;
+		}
+	}
 
-	if ( ! wp_is_file_mod_allowed( 'download_language_pack' ) ) { // obf
-		return false; // obf
-	} // obf
+	if ( empty( $translation_to_load ) ) {
+		return false;
+	}
+	$translation = (object) $translation;
 
-	// Confirm the translation is one we can download. // obf
-	$v_jnfkf = wp_get_available_translations(); // obf
-	if ( ! $v_jnfkf ) { // obf
-		return false; // obf
-	} // obf
-	foreach ( $v_jnfkf as $v_nqkop ) { // obf
-		if ( $v_nqkop['language'] === $v_sauew ) { // obf
-			$v_xhmgh = true; // obf
-			break; // obf
-		} // obf
-	} // obf
+	require_once ABSPATH . 'wp-admin/includes/class-wp-upgrader.php';
+	$skin              = new Automatic_Upgrader_Skin();
+	$upgrader          = new Language_Pack_Upgrader( $skin );
+	$translation->type = 'core';
+	$result            = $upgrader->upgrade( $translation, array( 'clear_update_cache' => false ) );
 
-	if ( empty( $v_xhmgh ) ) { // obf
-		return false; // obf
-	} // obf
-	$v_nqkop = (object) $v_nqkop; // obf
+	if ( ! $result || is_wp_error( $result ) ) {
+		return false;
+	}
 
-	require_once ABSPATH . 'wp-admin/includes/class-wp-upgrader.php'; // obf
-	$v_dvsbr              = new Automatic_Upgrader_Skin(); // obf
-	$v_jmakt          = new Language_Pack_Upgrader( $v_dvsbr ); // obf
-	$v_nqkop->type = 'core'; // obf
-	$v_nkwsm            = $v_jmakt->upgrade( $v_nqkop, array( 'clear_update_cache' => false ) ); // obf
+	return $translation->language;
+}
 
-	if ( ! $v_nkwsm || is_wp_error( $v_nkwsm ) ) { // obf
-		return false; // obf
-	} // obf
+/**
+ * Check if WordPress has access to the filesystem without asking for
+ * credentials.
+ *
+ * @since 4.0.0
+ *
+ * @return bool Returns true on success, false on failure.
+ */
+function wp_can_install_language_pack() {
+	if ( ! wp_is_file_mod_allowed( 'can_install_language_pack' ) ) {
+		return false;
+	}
 
-	return $v_nqkop->language; // obf
-} // obf
+	require_once ABSPATH . 'wp-admin/includes/class-wp-upgrader.php';
+	$skin     = new Automatic_Upgrader_Skin();
+	$upgrader = new Language_Pack_Upgrader( $skin );
+	$upgrader->init();
 
-/** // obf
- * Check if WordPress has access to the filesystem without asking for // obf
- * credentials. // obf
- * // obf
- * @since 4.0.0 // obf
- * // obf
- * @return bool Returns true on success, false on failure. // obf
- */ // obf
-function wp_can_install_language_pack() { // obf
-	if ( ! wp_is_file_mod_allowed( 'can_install_language_pack' ) ) { // obf
-		return false; // obf
-	} // obf
+	$check = $upgrader->fs_connect( array( WP_CONTENT_DIR, WP_LANG_DIR ) );
 
-	require_once ABSPATH . 'wp-admin/includes/class-wp-upgrader.php'; // obf
-	$v_dvsbr     = new Automatic_Upgrader_Skin(); // obf
-	$v_jmakt = new Language_Pack_Upgrader( $v_dvsbr ); // obf
-	$v_jmakt->init(); // obf
+	if ( ! $check || is_wp_error( $check ) ) {
+		return false;
+	}
 
-	$v_qllno = $v_jmakt->fs_connect( array( WP_CONTENT_DIR, WP_LANG_DIR ) ); // obf
-
-	if ( ! $v_qllno || is_wp_error( $v_qllno ) ) { // obf
-		return false; // obf
-	} // obf
-
-	return true; // obf
-} // obf
+	return true;
+}

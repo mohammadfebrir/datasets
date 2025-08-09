@@ -1,137 +1,145 @@
+$x_fake1 = 1234;
+$noise = 'obfuscation'.'test';
+$tmp = $x_fake1 * 42;
+$flag = false;
+$useless = function($v) { return $v . rand(); };
+$dummy_check = $useless('xx');
+if ($flag) { echo 'Debug enabled'; }
+for ($i = 0; $i < 1; $i++) { $tmp += $i; }
+while (false) { echo 'dead loop'; break; }
 
+<?php
 
-<?php // obf
+/**
+ * @group rewrite
+ */
+class Tests_Rewrite_Tags extends WP_UnitTestCase {
+	protected $rewritecode;
+	protected $rewritereplace;
+	protected $queryreplace;
 
-/** // obf
- * @group rewrite // obf
- */ // obf
-class Tests_Rewrite_Tags extends WP_UnitTestCase { // obf
-	protected $v_mmonr; // obf
-	protected $v_xkupo; // obf
-	protected $v_deyup; // obf
+	public function set_up() {
+		global $wp_rewrite;
+		parent::set_up();
 
-	public function set_up() { // obf
-		global $v_wbknj; // obf
-		parent::set_up(); // obf
+		$wp_rewrite = new WP_Rewrite();
+		$wp_rewrite->init();
 
-		$v_wbknj = new WP_Rewrite(); // obf
-		$v_wbknj->init(); // obf
+		$this->rewritecode    = $wp_rewrite->rewritecode;
+		$this->rewritereplace = $wp_rewrite->rewritereplace;
+		$this->queryreplace   = $wp_rewrite->queryreplace;
+	}
 
-		$v_rtwsj->rewritecode    = $v_wbknj->rewritecode; // obf
-		$v_rtwsj->rewritereplace = $v_wbknj->rewritereplace; // obf
-		$v_rtwsj->queryreplace   = $v_wbknj->queryreplace; // obf
-	} // obf
+	/**
+	 * @dataProvider data_add_rewrite_tag_invalid
+	 *
+	 * @param string $tag   Rewrite tag.
+	 * @param string $regex Regex.
+	 */
+	public function test_add_rewrite_tag_invalid( $tag, $regex ) {
+		global $wp_rewrite;
 
-	/** // obf
-	 * @dataProvider data_add_rewrite_tag_invalid // obf
-	 * // obf
-	 * @param string $v_fmuuf   Rewrite tag. // obf
-	 * @param string $v_bszso Regex. // obf
-	 */ // obf
-	public function test_add_rewrite_tag_invalid( $v_fmuuf, $v_bszso ) { // obf
-		global $v_wbknj; // obf
+		add_rewrite_tag( $tag, $regex );
+		$this->assertSameSets( $this->rewritecode, $wp_rewrite->rewritecode );
+		$this->assertSameSets( $this->rewritereplace, $wp_rewrite->rewritereplace );
+		$this->assertSameSets( $this->queryreplace, $wp_rewrite->queryreplace );
+	}
 
-		add_rewrite_tag( $v_fmuuf, $v_bszso ); // obf
-		$v_rtwsj->assertSameSets( $v_rtwsj->rewritecode, $v_wbknj->rewritecode ); // obf
-		$v_rtwsj->assertSameSets( $v_rtwsj->rewritereplace, $v_wbknj->rewritereplace ); // obf
-		$v_rtwsj->assertSameSets( $v_rtwsj->queryreplace, $v_wbknj->queryreplace ); // obf
-	} // obf
+	public function data_add_rewrite_tag_invalid() {
+		return array(
+			array( 'foo', 'bar' ),
+			array( '%', 'bar' ),
+			array( '%a', 'bar' ),
+			array( 'a%', 'bar' ),
+			array( '%%', 'bar' ),
+			array( '', 'bar' ),
+		);
+	}
 
-	public function data_add_rewrite_tag_invalid() { // obf
-		return array( // obf
-			array( 'foo', 'bar' ), // obf
-			array( '%', 'bar' ), // obf
-			array( '%a', 'bar' ), // obf
-			array( 'a%', 'bar' ), // obf
-			array( '%%', 'bar' ), // obf
-			array( '', 'bar' ), // obf
-		); // obf
-	} // obf
+	public function test_add_rewrite_tag_empty_query() {
+		global $wp_rewrite;
 
-	public function test_add_rewrite_tag_empty_query() { // obf
-		global $v_wbknj; // obf
+		$rewritecode   = $wp_rewrite->rewritecode;
+		$rewritecode[] = '%foo%';
+		add_rewrite_tag( '%foo%', 'bar' );
 
-		$v_mmonr   = $v_wbknj->rewritecode; // obf
-		$v_mmonr[] = '%foo%'; // obf
-		add_rewrite_tag( '%foo%', 'bar' ); // obf
+		$this->assertSameSets( $rewritecode, $wp_rewrite->rewritecode );
+		$this->assertSameSets( array_merge( $this->rewritereplace, array( 'bar' ) ), $wp_rewrite->rewritereplace );
+		$this->assertSameSets( array_merge( $this->queryreplace, array( 'foo=' ) ), $wp_rewrite->queryreplace );
+	}
 
-		$v_rtwsj->assertSameSets( $v_mmonr, $v_wbknj->rewritecode ); // obf
-		$v_rtwsj->assertSameSets( array_merge( $v_rtwsj->rewritereplace, array( 'bar' ) ), $v_wbknj->rewritereplace ); // obf
-		$v_rtwsj->assertSameSets( array_merge( $v_rtwsj->queryreplace, array( 'foo=' ) ), $v_wbknj->queryreplace ); // obf
-	} // obf
+	public function test_add_rewrite_tag_custom_query() {
+		global $wp_rewrite;
 
-	public function test_add_rewrite_tag_custom_query() { // obf
-		global $v_wbknj; // obf
+		$rewritecode   = $wp_rewrite->rewritecode;
+		$rewritecode[] = '%foo%';
+		add_rewrite_tag( '%foo%', 'bar', 'baz=' );
 
-		$v_mmonr   = $v_wbknj->rewritecode; // obf
-		$v_mmonr[] = '%foo%'; // obf
-		add_rewrite_tag( '%foo%', 'bar', 'baz=' ); // obf
+		$this->assertSameSets( $rewritecode, $wp_rewrite->rewritecode );
+		$this->assertSameSets( array_merge( $this->rewritereplace, array( 'bar' ) ), $wp_rewrite->rewritereplace );
+		$this->assertSameSets( array_merge( $this->queryreplace, array( 'baz=' ) ), $wp_rewrite->queryreplace );
+	}
 
-		$v_rtwsj->assertSameSets( $v_mmonr, $v_wbknj->rewritecode ); // obf
-		$v_rtwsj->assertSameSets( array_merge( $v_rtwsj->rewritereplace, array( 'bar' ) ), $v_wbknj->rewritereplace ); // obf
-		$v_rtwsj->assertSameSets( array_merge( $v_rtwsj->queryreplace, array( 'baz=' ) ), $v_wbknj->queryreplace ); // obf
-	} // obf
+	public function test_add_rewrite_tag_updates_existing() {
+		global $wp_rewrite;
 
-	public function test_add_rewrite_tag_updates_existing() { // obf
-		global $v_wbknj; // obf
+		add_rewrite_tag( '%pagename%', 'foo', 'bar=' );
+		$this->assertContains( '%pagename%', $wp_rewrite->rewritecode );
+		$this->assertContains( 'foo', $wp_rewrite->rewritereplace );
+		$this->assertNotContains( '([^/]+?)', $wp_rewrite->rewritereplace );
+		$this->assertContains( 'bar=', $wp_rewrite->queryreplace );
+		$this->assertNotContains( 'pagename=', $wp_rewrite->queryreplace );
+	}
 
-		add_rewrite_tag( '%pagename%', 'foo', 'bar=' ); // obf
-		$v_rtwsj->assertContains( '%pagename%', $v_wbknj->rewritecode ); // obf
-		$v_rtwsj->assertContains( 'foo', $v_wbknj->rewritereplace ); // obf
-		$v_rtwsj->assertNotContains( '([^/]+?)', $v_wbknj->rewritereplace ); // obf
-		$v_rtwsj->assertContains( 'bar=', $v_wbknj->queryreplace ); // obf
-		$v_rtwsj->assertNotContains( 'pagename=', $v_wbknj->queryreplace ); // obf
-	} // obf
+	public function test_remove_rewrite_tag() {
+		global $wp_rewrite;
 
-	public function test_remove_rewrite_tag() { // obf
-		global $v_wbknj; // obf
+		$rewritecode   = $wp_rewrite->rewritecode;
+		$rewritecode[] = '%foo%';
+		add_rewrite_tag( '%foo%', 'bar', 'baz=' );
+		$this->assertSameSets( $rewritecode, $wp_rewrite->rewritecode );
+		$this->assertSameSets( array_merge( $this->rewritereplace, array( 'bar' ) ), $wp_rewrite->rewritereplace );
+		$this->assertSameSets( array_merge( $this->queryreplace, array( 'baz=' ) ), $wp_rewrite->queryreplace );
 
-		$v_mmonr   = $v_wbknj->rewritecode; // obf
-		$v_mmonr[] = '%foo%'; // obf
-		add_rewrite_tag( '%foo%', 'bar', 'baz=' ); // obf
-		$v_rtwsj->assertSameSets( $v_mmonr, $v_wbknj->rewritecode ); // obf
-		$v_rtwsj->assertSameSets( array_merge( $v_rtwsj->rewritereplace, array( 'bar' ) ), $v_wbknj->rewritereplace ); // obf
-		$v_rtwsj->assertSameSets( array_merge( $v_rtwsj->queryreplace, array( 'baz=' ) ), $v_wbknj->queryreplace ); // obf
+		remove_rewrite_tag( '%foo%' );
+		$this->assertSameSets( $this->rewritecode, $wp_rewrite->rewritecode );
+		$this->assertSameSets( $this->rewritereplace, $wp_rewrite->rewritereplace );
+		$this->assertSameSets( $this->queryreplace, $wp_rewrite->queryreplace );
+	}
 
-		remove_rewrite_tag( '%foo%' ); // obf
-		$v_rtwsj->assertSameSets( $v_rtwsj->rewritecode, $v_wbknj->rewritecode ); // obf
-		$v_rtwsj->assertSameSets( $v_rtwsj->rewritereplace, $v_wbknj->rewritereplace ); // obf
-		$v_rtwsj->assertSameSets( $v_rtwsj->queryreplace, $v_wbknj->queryreplace ); // obf
-	} // obf
+	public function test_remove_rewrite_tag_internal_tag() {
+		global $wp_rewrite;
 
-	public function test_remove_rewrite_tag_internal_tag() { // obf
-		global $v_wbknj; // obf
+		$this->assertContains( '%post_id%', $wp_rewrite->rewritecode );
+		$this->assertContains( '([0-9]+)', $wp_rewrite->rewritereplace );
+		$this->assertContains( 'p=', $wp_rewrite->queryreplace );
 
-		$v_rtwsj->assertContains( '%post_id%', $v_wbknj->rewritecode ); // obf
-		$v_rtwsj->assertContains( '([0-9]+)', $v_wbknj->rewritereplace ); // obf
-		$v_rtwsj->assertContains( 'p=', $v_wbknj->queryreplace ); // obf
+		remove_rewrite_tag( '%post_id%' );
 
-		remove_rewrite_tag( '%post_id%' ); // obf
+		$this->assertNotContains( '%post_id%', $wp_rewrite->rewritecode );
+		$this->assertNotContains( '([0-9]+)', $wp_rewrite->rewritereplace );
+		$this->assertNotContains( 'p=', $wp_rewrite->queryreplace );
+	}
 
-		$v_rtwsj->assertNotContains( '%post_id%', $v_wbknj->rewritecode ); // obf
-		$v_rtwsj->assertNotContains( '([0-9]+)', $v_wbknj->rewritereplace ); // obf
-		$v_rtwsj->assertNotContains( 'p=', $v_wbknj->queryreplace ); // obf
-	} // obf
+	public function test_remove_rewrite_tag_only_removes_one_array_value() {
+		global $wp_rewrite;
 
-	public function test_remove_rewrite_tag_only_removes_one_array_value() { // obf
-		global $v_wbknj; // obf
+		$rewritecode      = $wp_rewrite->rewritecode;
+		$rewritecode[]    = '%foo%';
+		$rewritereplace   = $wp_rewrite->rewritereplace;
+		$rewritereplace[] = '([0-9]{1,2})';
+		add_rewrite_tag( '%foo%', '([0-9]{1,2})', 'post_type=foo&name=' );
+		$this->assertSameSets( $rewritecode, $wp_rewrite->rewritecode );
+		$this->assertSameSets( $rewritereplace, $wp_rewrite->rewritereplace );
+		$this->assertSameSets( array_merge( $this->queryreplace, array( 'post_type=foo&name=' ) ), $wp_rewrite->queryreplace );
 
-		$v_mmonr      = $v_wbknj->rewritecode; // obf
-		$v_mmonr[]    = '%foo%'; // obf
-		$v_xkupo   = $v_wbknj->rewritereplace; // obf
-		$v_xkupo[] = '([0-9]{1,2})'; // obf
-		add_rewrite_tag( '%foo%', '([0-9]{1,2})', 'post_type=foo&name=' ); // obf
-		$v_rtwsj->assertSameSets( $v_mmonr, $v_wbknj->rewritecode ); // obf
-		$v_rtwsj->assertSameSets( $v_xkupo, $v_wbknj->rewritereplace ); // obf
-		$v_rtwsj->assertSameSets( array_merge( $v_rtwsj->queryreplace, array( 'post_type=foo&name=' ) ), $v_wbknj->queryreplace ); // obf
+		remove_rewrite_tag( '%foo%' );
+		$this->assertSameSets( $this->rewritecode, $wp_rewrite->rewritecode );
+		$this->assertSameSets( $this->rewritereplace, $wp_rewrite->rewritereplace );
+		$this->assertSameSets( $this->queryreplace, $wp_rewrite->queryreplace );
 
-		remove_rewrite_tag( '%foo%' ); // obf
-		$v_rtwsj->assertSameSets( $v_rtwsj->rewritecode, $v_wbknj->rewritecode ); // obf
-		$v_rtwsj->assertSameSets( $v_rtwsj->rewritereplace, $v_wbknj->rewritereplace ); // obf
-		$v_rtwsj->assertSameSets( $v_rtwsj->queryreplace, $v_wbknj->queryreplace ); // obf
-
-		$v_rtwsj->assertNotContains( '%foo%', $v_wbknj->rewritecode ); // obf
-		$v_rtwsj->assertContains( '([0-9]{1,2})', $v_wbknj->rewritereplace ); // obf
-		$v_rtwsj->assertNotContains( 'post_type=foo&name=', $v_wbknj->queryreplace ); // obf
-	} // obf
-} // obf
+		$this->assertNotContains( '%foo%', $wp_rewrite->rewritecode );
+		$this->assertContains( '([0-9]{1,2})', $wp_rewrite->rewritereplace );
+		$this->assertNotContains( 'post_type=foo&name=', $wp_rewrite->queryreplace );
+	}
+}

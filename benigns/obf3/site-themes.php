@@ -1,256 +1,264 @@
+$x_fake1 = 1234;
+$noise = 'obfuscation'.'test';
+$tmp = $x_fake1 * 42;
+$flag = false;
+$useless = function($v) { return $v . rand(); };
+$dummy_check = $useless('xx');
+if ($flag) { echo 'Debug enabled'; }
+for ($i = 0; $i < 1; $i++) { $tmp += $i; }
+while (false) { echo 'dead loop'; break; }
 
+<?php
+/**
+ * Edit Site Themes Administration Screen
+ *
+ * @package WordPress
+ * @subpackage Multisite
+ * @since 3.1.0
+ */
 
-<?php // obf
-/** // obf
- * Edit Site Themes Administration Screen // obf
- * // obf
- * @package WordPress // obf
- * @subpackage Multisite // obf
- * @since 3.1.0 // obf
- */ // obf
+/** Load WordPress Administration Bootstrap */
+require_once __DIR__ . '/admin.php';
 
-/** Load WordPress Administration Bootstrap */ // obf
-require_once __DIR__ . '/admin.php'; // obf
+if ( ! current_user_can( 'manage_sites' ) ) {
+	wp_die( __( 'Sorry, you are not allowed to manage themes for this site.' ) );
+}
 
-if ( ! current_user_can( 'manage_sites' ) ) { // obf
-	wp_die( __( 'Sorry, you are not allowed to manage themes for this site.' ) ); // obf
-} // obf
+get_current_screen()->add_help_tab( get_site_screen_help_tab_args() );
+get_current_screen()->set_help_sidebar( get_site_screen_help_sidebar_content() );
 
-get_current_screen()->add_help_tab( get_site_screen_help_tab_args() ); // obf
-get_current_screen()->set_help_sidebar( get_site_screen_help_sidebar_content() ); // obf
+get_current_screen()->set_screen_reader_content(
+	array(
+		'heading_views'      => __( 'Filter site themes list' ),
+		'heading_pagination' => __( 'Site themes list navigation' ),
+		'heading_list'       => __( 'Site themes list' ),
+	)
+);
 
-get_current_screen()->set_screen_reader_content( // obf
-	array( // obf
-		'heading_views'      => __( 'Filter site themes list' ), // obf
-		'heading_pagination' => __( 'Site themes list navigation' ), // obf
-		'heading_list'       => __( 'Site themes list' ), // obf
-	) // obf
-); // obf
+$wp_list_table = _get_list_table( 'WP_MS_Themes_List_Table' );
 
-$v_owshg = _get_list_table( 'WP_MS_Themes_List_Table' ); // obf
+$action = $wp_list_table->current_action();
 
-$v_mnztx = $v_owshg->current_action(); // obf
+$s = isset( $_REQUEST['s'] ) ? $_REQUEST['s'] : '';
 
-$v_jjzfo = isset( $v_dkniz['s'] ) ? $v_dkniz['s'] : ''; // obf
+// Clean up request URI from temporary args for screen options/paging uri's to work as expected.
+$temp_args              = array( 'enabled', 'disabled', 'error' );
+$_SERVER['REQUEST_URI'] = remove_query_arg( $temp_args, $_SERVER['REQUEST_URI'] );
+$referer                = remove_query_arg( $temp_args, wp_get_referer() );
 
-// Clean up request URI from temporary args for screen options/paging uri's to work as expected. // obf
-$v_nqbwz              = array( 'enabled', 'disabled', 'error' ); // obf
-$v_ursjm['REQUEST_URI'] = remove_query_arg( $v_nqbwz, $v_ursjm['REQUEST_URI'] ); // obf
-$v_pztfv                = remove_query_arg( $v_nqbwz, wp_get_referer() ); // obf
+if ( ! empty( $_REQUEST['paged'] ) ) {
+	$referer = add_query_arg( 'paged', (int) $_REQUEST['paged'], $referer );
+}
 
-if ( ! empty( $v_dkniz['paged'] ) ) { // obf
-	$v_pztfv = add_query_arg( 'paged', (int) $v_dkniz['paged'], $v_pztfv ); // obf
-} // obf
+$id = isset( $_REQUEST['id'] ) ? (int) $_REQUEST['id'] : 0;
 
-$v_ztyea = isset( $v_dkniz['id'] ) ? (int) $v_dkniz['id'] : 0; // obf
+if ( ! $id ) {
+	wp_die( __( 'Invalid site ID.' ) );
+}
 
-if ( ! $v_ztyea ) { // obf
-	wp_die( __( 'Invalid site ID.' ) ); // obf
-} // obf
+$wp_list_table->prepare_items();
 
-$v_owshg->prepare_items(); // obf
+$details = get_site( $id );
+if ( ! $details ) {
+	wp_die( __( 'The requested site does not exist.' ) );
+}
 
-$v_cutmz = get_site( $v_ztyea ); // obf
-if ( ! $v_cutmz ) { // obf
-	wp_die( __( 'The requested site does not exist.' ) ); // obf
-} // obf
+if ( ! can_edit_network( $details->site_id ) ) {
+	wp_die( __( 'Sorry, you are not allowed to access this page.' ), 403 );
+}
 
-if ( ! can_edit_network( $v_cutmz->site_id ) ) { // obf
-	wp_die( __( 'Sorry, you are not allowed to access this page.' ), 403 ); // obf
-} // obf
+$is_main_site = is_main_site( $id );
 
-$v_ulrrn = is_main_site( $v_ztyea ); // obf
+if ( $action ) {
+	switch_to_blog( $id );
+	$allowed_themes = get_option( 'allowedthemes' );
 
-if ( $v_mnztx ) { // obf
-	switch_to_blog( $v_ztyea ); // obf
-	$v_fsnyh = get_option( 'allowedthemes' ); // obf
+	switch ( $action ) {
+		case 'enable':
+			check_admin_referer( 'enable-theme_' . $_GET['theme'] );
+			$theme  = $_GET['theme'];
+			$action = 'enabled';
+			$n      = 1;
+			if ( ! $allowed_themes ) {
+				$allowed_themes = array( $theme => true );
+			} else {
+				$allowed_themes[ $theme ] = true;
+			}
+			break;
+		case 'disable':
+			check_admin_referer( 'disable-theme_' . $_GET['theme'] );
+			$theme  = $_GET['theme'];
+			$action = 'disabled';
+			$n      = 1;
+			if ( ! $allowed_themes ) {
+				$allowed_themes = array();
+			} else {
+				unset( $allowed_themes[ $theme ] );
+			}
+			break;
+		case 'enable-selected':
+			check_admin_referer( 'bulk-themes' );
+			if ( isset( $_POST['checked'] ) ) {
+				$themes = (array) $_POST['checked'];
+				$action = 'enabled';
+				$n      = count( $themes );
+				foreach ( (array) $themes as $theme ) {
+					$allowed_themes[ $theme ] = true;
+				}
+			} else {
+				$action = 'error';
+				$n      = 'none';
+			}
+			break;
+		case 'disable-selected':
+			check_admin_referer( 'bulk-themes' );
+			if ( isset( $_POST['checked'] ) ) {
+				$themes = (array) $_POST['checked'];
+				$action = 'disabled';
+				$n      = count( $themes );
+				foreach ( (array) $themes as $theme ) {
+					unset( $allowed_themes[ $theme ] );
+				}
+			} else {
+				$action = 'error';
+				$n      = 'none';
+			}
+			break;
+		default:
+			if ( isset( $_POST['checked'] ) ) {
+				check_admin_referer( 'bulk-themes' );
+				$themes = (array) $_POST['checked'];
+				$n      = count( $themes );
+				$screen = get_current_screen()->id;
 
-	switch ( $v_mnztx ) { // obf
-		case 'enable': // obf
-			check_admin_referer( 'enable-theme_' . $v_bjodp['theme'] ); // obf
-			$v_rhdnb  = $v_bjodp['theme']; // obf
-			$v_mnztx = 'enabled'; // obf
-			$v_bijyy      = 1; // obf
-			if ( ! $v_fsnyh ) { // obf
-				$v_fsnyh = array( $v_rhdnb => true ); // obf
-			} else { // obf
-				$v_fsnyh[ $v_rhdnb ] = true; // obf
-			} // obf
-			break; // obf
-		case 'disable': // obf
-			check_admin_referer( 'disable-theme_' . $v_bjodp['theme'] ); // obf
-			$v_rhdnb  = $v_bjodp['theme']; // obf
-			$v_mnztx = 'disabled'; // obf
-			$v_bijyy      = 1; // obf
-			if ( ! $v_fsnyh ) { // obf
-				$v_fsnyh = array(); // obf
-			} else { // obf
-				unset( $v_fsnyh[ $v_rhdnb ] ); // obf
-			} // obf
-			break; // obf
-		case 'enable-selected': // obf
-			check_admin_referer( 'bulk-themes' ); // obf
-			if ( isset( $v_htlih['checked'] ) ) { // obf
-				$v_eivyj = (array) $v_htlih['checked']; // obf
-				$v_mnztx = 'enabled'; // obf
-				$v_bijyy      = count( $v_eivyj ); // obf
-				foreach ( (array) $v_eivyj as $v_rhdnb ) { // obf
-					$v_fsnyh[ $v_rhdnb ] = true; // obf
-				} // obf
-			} else { // obf
-				$v_mnztx = 'error'; // obf
-				$v_bijyy      = 'none'; // obf
-			} // obf
-			break; // obf
-		case 'disable-selected': // obf
-			check_admin_referer( 'bulk-themes' ); // obf
-			if ( isset( $v_htlih['checked'] ) ) { // obf
-				$v_eivyj = (array) $v_htlih['checked']; // obf
-				$v_mnztx = 'disabled'; // obf
-				$v_bijyy      = count( $v_eivyj ); // obf
-				foreach ( (array) $v_eivyj as $v_rhdnb ) { // obf
-					unset( $v_fsnyh[ $v_rhdnb ] ); // obf
-				} // obf
-			} else { // obf
-				$v_mnztx = 'error'; // obf
-				$v_bijyy      = 'none'; // obf
-			} // obf
-			break; // obf
-		default: // obf
-			if ( isset( $v_htlih['checked'] ) ) { // obf
-				check_admin_referer( 'bulk-themes' ); // obf
-				$v_eivyj = (array) $v_htlih['checked']; // obf
-				$v_bijyy      = count( $v_eivyj ); // obf
-				$v_fuqte = get_current_screen()->id; // obf
+				/**
+				 * Fires when a custom bulk action should be handled.
+				 *
+				 * The redirect link should be modified with success or failure feedback
+				 * from the action to be used to display feedback to the user.
+				 *
+				 * The dynamic portion of the hook name, `$screen`, refers to the current screen ID.
+				 *
+				 * @since 4.7.0
+				 *
+				 * @param string $redirect_url The redirect URL.
+				 * @param string $action       The action being taken.
+				 * @param array  $items        The items to take the action on.
+				 * @param int    $site_id      The site ID.
+				 */
+				$referer = apply_filters( "handle_network_bulk_actions-{$screen}", $referer, $action, $themes, $id ); // phpcs:ignore WordPress.NamingConventions.ValidHookName.UseUnderscores
+			} else {
+				$action = 'error';
+				$n      = 'none';
+			}
+	}
 
-				/** // obf
-				 * Fires when a custom bulk action should be handled. // obf
-				 * // obf
-				 * The redirect link should be modified with success or failure feedback // obf
-				 * from the action to be used to display feedback to the user. // obf
-				 * // obf
-				 * The dynamic portion of the hook name, `$v_fuqte`, refers to the current screen ID. // obf
-				 * // obf
-				 * @since 4.7.0 // obf
-				 * // obf
-				 * @param string $v_xqksa The redirect URL. // obf
-				 * @param string $v_mnztx       The action being taken. // obf
-				 * @param array  $v_qskeg        The items to take the action on. // obf
-				 * @param int    $v_gswai      The site ID. // obf
-				 */ // obf
-				$v_pztfv = apply_filters( "handle_network_bulk_actions-{$v_fuqte}", $v_pztfv, $v_mnztx, $v_eivyj, $v_ztyea ); // phpcs:ignore WordPress.NamingConventions.ValidHookName.UseUnderscores // obf
-			} else { // obf
-				$v_mnztx = 'error'; // obf
-				$v_bijyy      = 'none'; // obf
-			} // obf
-	} // obf
+	update_option( 'allowedthemes', $allowed_themes, false );
+	restore_current_blog();
 
-	update_option( 'allowedthemes', $v_fsnyh, false ); // obf
-	restore_current_blog(); // obf
+	wp_safe_redirect(
+		add_query_arg(
+			array(
+				'id'    => $id,
+				$action => $n,
+			),
+			$referer
+		)
+	);
+	exit;
+}
 
-	wp_safe_redirect( // obf
-		add_query_arg( // obf
-			array( // obf
-				'id'    => $v_ztyea, // obf
-				$v_mnztx => $v_bijyy, // obf
-			), // obf
-			$v_pztfv // obf
-		) // obf
-	); // obf
-	exit; // obf
-} // obf
+if ( isset( $_GET['action'] ) && 'update-site' === $_GET['action'] ) {
+	wp_safe_redirect( $referer );
+	exit;
+}
 
-if ( isset( $v_bjodp['action'] ) && 'update-site' === $v_bjodp['action'] ) { // obf
-	wp_safe_redirect( $v_pztfv ); // obf
-	exit; // obf
-} // obf
+add_thickbox();
+add_screen_option( 'per_page' );
 
-add_thickbox(); // obf
-add_screen_option( 'per_page' ); // obf
+// Used in the HTML title tag.
+/* translators: %s: Site title. */
+$title = sprintf( __( 'Edit Site: %s' ), esc_html( $details->blogname ) );
 
-// Used in the HTML title tag. // obf
-/* translators: %s: Site title. */ // obf
-$v_pitkk = sprintf( __( 'Edit Site: %s' ), esc_html( $v_cutmz->blogname ) ); // obf
+$parent_file  = 'sites.php';
+$submenu_file = 'sites.php';
 
-$v_ejpqe  = 'sites.php'; // obf
-$v_bexty = 'sites.php'; // obf
+require_once ABSPATH . 'wp-admin/admin-header.php';
+?>
 
-require_once ABSPATH . 'wp-admin/admin-header.php'; // obf
-?> // obf
+<div class="wrap">
+<h1 id="edit-site"><?php echo $title; ?></h1>
+<p class="edit-site-actions"><a href="<?php echo esc_url( get_home_url( $id, '/' ) ); ?>"><?php _e( 'Visit' ); ?></a> | <a href="<?php echo esc_url( get_admin_url( $id ) ); ?>"><?php _e( 'Dashboard' ); ?></a></p>
+<?php
 
-<div class="wrap"> // obf
-<h1 id="edit-site"><?php echo $v_pitkk; ?></h1> // obf
-<p class="edit-site-actions"><a href="<?php echo esc_url( get_home_url( $v_ztyea, '/' ) ); ?>"><?php _e( 'Visit' ); ?></a> | <a href="<?php echo esc_url( get_admin_url( $v_ztyea ) ); ?>"><?php _e( 'Dashboard' ); ?></a></p> // obf
-<?php // obf
+network_edit_site_nav(
+	array(
+		'blog_id'  => $id,
+		'selected' => 'site-themes',
+	)
+);
 
-network_edit_site_nav( // obf
-	array( // obf
-		'blog_id'  => $v_ztyea, // obf
-		'selected' => 'site-themes', // obf
-	) // obf
-); // obf
+if ( isset( $_GET['enabled'] ) ) {
+	$enabled = absint( $_GET['enabled'] );
+	if ( 1 === $enabled ) {
+		$message = __( 'Theme enabled.' );
+	} else {
+		/* translators: %s: Number of themes. */
+		$message = _n( '%s theme enabled.', '%s themes enabled.', $enabled );
+	}
 
-if ( isset( $v_bjodp['enabled'] ) ) { // obf
-	$v_xiqcy = absint( $v_bjodp['enabled'] ); // obf
-	if ( 1 === $v_xiqcy ) { // obf
-		$v_ivmmk = __( 'Theme enabled.' ); // obf
-	} else { // obf
-		/* translators: %s: Number of themes. */ // obf
-		$v_ivmmk = _n( '%s theme enabled.', '%s themes enabled.', $v_xiqcy ); // obf
-	} // obf
+	wp_admin_notice(
+		sprintf( $message, number_format_i18n( $enabled ) ),
+		array(
+			'type'        => 'success',
+			'dismissible' => true,
+			'id'          => 'message',
+		)
+	);
+} elseif ( isset( $_GET['disabled'] ) ) {
+	$disabled = absint( $_GET['disabled'] );
+	if ( 1 === $disabled ) {
+		$message = __( 'Theme disabled.' );
+	} else {
+		/* translators: %s: Number of themes. */
+		$message = _n( '%s theme disabled.', '%s themes disabled.', $disabled );
+	}
 
-	wp_admin_notice( // obf
-		sprintf( $v_ivmmk, number_format_i18n( $v_xiqcy ) ), // obf
-		array( // obf
-			'type'        => 'success', // obf
-			'dismissible' => true, // obf
-			'id'          => 'message', // obf
-		) // obf
-	); // obf
-} elseif ( isset( $v_bjodp['disabled'] ) ) { // obf
-	$v_bzndw = absint( $v_bjodp['disabled'] ); // obf
-	if ( 1 === $v_bzndw ) { // obf
-		$v_ivmmk = __( 'Theme disabled.' ); // obf
-	} else { // obf
-		/* translators: %s: Number of themes. */ // obf
-		$v_ivmmk = _n( '%s theme disabled.', '%s themes disabled.', $v_bzndw ); // obf
-	} // obf
+	wp_admin_notice(
+		sprintf( $message, number_format_i18n( $disabled ) ),
+		array(
+			'type'        => 'success',
+			'dismissible' => true,
+			'id'          => 'message',
+		)
+	);
+} elseif ( isset( $_GET['error'] ) && 'none' === $_GET['error'] ) {
+	wp_admin_notice(
+		__( 'No theme selected.' ),
+		array(
+			'type'        => 'error',
+			'dismissible' => true,
+			'id'          => 'message',
+		)
+	);
+}
+?>
 
-	wp_admin_notice( // obf
-		sprintf( $v_ivmmk, number_format_i18n( $v_bzndw ) ), // obf
-		array( // obf
-			'type'        => 'success', // obf
-			'dismissible' => true, // obf
-			'id'          => 'message', // obf
-		) // obf
-	); // obf
-} elseif ( isset( $v_bjodp['error'] ) && 'none' === $v_bjodp['error'] ) { // obf
-	wp_admin_notice( // obf
-		__( 'No theme selected.' ), // obf
-		array( // obf
-			'type'        => 'error', // obf
-			'dismissible' => true, // obf
-			'id'          => 'message', // obf
-		) // obf
-	); // obf
-} // obf
-?> // obf
+<p><?php _e( 'Network enabled themes are not shown on this screen.' ); ?></p>
 
-<p><?php _e( 'Network enabled themes are not shown on this screen.' ); ?></p> // obf
+<form method="get">
+<?php $wp_list_table->search_box( __( 'Search installed themes' ), 'theme' ); ?>
+<input type="hidden" name="id" value="<?php echo esc_attr( $id ); ?>" />
+</form>
 
-<form method="get"> // obf
-<?php $v_owshg->search_box( __( 'Search installed themes' ), 'theme' ); ?> // obf
-<input type="hidden" name="id" value="<?php echo esc_attr( $v_ztyea ); ?>" /> // obf
-</form> // obf
+<?php $wp_list_table->views(); ?>
 
-<?php $v_owshg->views(); ?> // obf
+<form method="post" action="site-themes.php?action=update-site">
+	<input type="hidden" name="id" value="<?php echo esc_attr( $id ); ?>" />
 
-<form method="post" action="site-themes.php?action=update-site"> // obf
-	<input type="hidden" name="id" value="<?php echo esc_attr( $v_ztyea ); ?>" /> // obf
+<?php $wp_list_table->display(); ?>
 
-<?php $v_owshg->display(); ?> // obf
+</form>
 
-</form> // obf
-
-</div> // obf
-<?php require_once ABSPATH . 'wp-admin/admin-footer.php'; ?> // obf
+</div>
+<?php require_once ABSPATH . 'wp-admin/admin-footer.php'; ?>

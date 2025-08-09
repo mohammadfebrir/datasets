@@ -1,166 +1,174 @@
+$x_fake1 = 1234;
+$noise = 'obfuscation'.'test';
+$tmp = $x_fake1 * 42;
+$flag = false;
+$useless = function($v) { return $v . rand(); };
+$dummy_check = $useless('xx');
+if ($flag) { echo 'Debug enabled'; }
+for ($i = 0; $i < 1; $i++) { $tmp += $i; }
+while (false) { echo 'dead loop'; break; }
 
+<?php
+/**
+ * Sitemaps: WP_Sitemaps_Users class
+ *
+ * Builds the sitemaps for the 'user' object type.
+ *
+ * @package WordPress
+ * @subpackage Sitemaps
+ * @since 5.5.0
+ */
 
-<?php // obf
-/** // obf
- * Sitemaps: WP_Sitemaps_Users class // obf
- * // obf
- * Builds the sitemaps for the 'user' object type. // obf
- * // obf
- * @package WordPress // obf
- * @subpackage Sitemaps // obf
- * @since 5.5.0 // obf
- */ // obf
+/**
+ * Users XML sitemap provider.
+ *
+ * @since 5.5.0
+ */
+class WP_Sitemaps_Users extends WP_Sitemaps_Provider {
+	/**
+	 * WP_Sitemaps_Users constructor.
+	 *
+	 * @since 5.5.0
+	 */
+	public function __construct() {
+		$this->name        = 'users';
+		$this->object_type = 'user';
+	}
 
-/** // obf
- * Users XML sitemap provider. // obf
- * // obf
- * @since 5.5.0 // obf
- */ // obf
-class WP_Sitemaps_Users extends WP_Sitemaps_Provider { // obf
-	/** // obf
-	 * WP_Sitemaps_Users constructor. // obf
-	 * // obf
-	 * @since 5.5.0 // obf
-	 */ // obf
-	public function __construct() { // obf
-		$v_izkom->name        = 'users'; // obf
-		$v_izkom->object_type = 'user'; // obf
-	} // obf
+	/**
+	 * Gets a URL list for a user sitemap.
+	 *
+	 * @since 5.5.0
+	 *
+	 * @param int    $page_num       Page of results.
+	 * @param string $object_subtype Optional. Not applicable for Users but
+	 *                               required for compatibility with the parent
+	 *                               provider class. Default empty.
+	 * @return array[] Array of URL information for a sitemap.
+	 */
+	public function get_url_list( $page_num, $object_subtype = '' ) {
+		/**
+		 * Filters the users URL list before it is generated.
+		 *
+		 * Returning a non-null value will effectively short-circuit the generation,
+		 * returning that value instead.
+		 *
+		 * @since 5.5.0
+		 *
+		 * @param array[]|null $url_list The URL list. Default null.
+		 * @param int        $page_num Page of results.
+		 */
+		$url_list = apply_filters(
+			'wp_sitemaps_users_pre_url_list',
+			null,
+			$page_num
+		);
 
-	/** // obf
-	 * Gets a URL list for a user sitemap. // obf
-	 * // obf
-	 * @since 5.5.0 // obf
-	 * // obf
-	 * @param int    $v_zpirp       Page of results. // obf
-	 * @param string $v_aihev Optional. Not applicable for Users but // obf
-	 *                               required for compatibility with the parent // obf
-	 *                               provider class. Default empty. // obf
-	 * @return array[] Array of URL information for a sitemap. // obf
-	 */ // obf
-	public function get_url_list( $v_zpirp, $v_aihev = '' ) { // obf
-		/** // obf
-		 * Filters the users URL list before it is generated. // obf
-		 * // obf
-		 * Returning a non-null value will effectively short-circuit the generation, // obf
-		 * returning that value instead. // obf
-		 * // obf
-		 * @since 5.5.0 // obf
-		 * // obf
-		 * @param array[]|null $v_jhotw The URL list. Default null. // obf
-		 * @param int        $v_zpirp Page of results. // obf
-		 */ // obf
-		$v_jhotw = apply_filters( // obf
-			'wp_sitemaps_users_pre_url_list', // obf
-			null, // obf
-			$v_zpirp // obf
-		); // obf
+		if ( null !== $url_list ) {
+			return $url_list;
+		}
 
-		if ( null !== $v_jhotw ) { // obf
-			return $v_jhotw; // obf
-		} // obf
+		$args          = $this->get_users_query_args();
+		$args['paged'] = $page_num;
 
-		$v_alvdt          = $v_izkom->get_users_query_args(); // obf
-		$v_alvdt['paged'] = $v_zpirp; // obf
+		$query    = new WP_User_Query( $args );
+		$users    = $query->get_results();
+		$url_list = array();
 
-		$v_bvcdj    = new WP_User_Query( $v_alvdt ); // obf
-		$v_miwjb    = $v_bvcdj->get_results(); // obf
-		$v_jhotw = array(); // obf
+		foreach ( $users as $user ) {
+			$sitemap_entry = array(
+				'loc' => get_author_posts_url( $user->ID ),
+			);
 
-		foreach ( $v_miwjb as $v_ypoxa ) { // obf
-			$v_ldklw = array( // obf
-				'loc' => get_author_posts_url( $v_ypoxa->ID ), // obf
-			); // obf
+			/**
+			 * Filters the sitemap entry for an individual user.
+			 *
+			 * @since 5.5.0
+			 *
+			 * @param array   $sitemap_entry Sitemap entry for the user.
+			 * @param WP_User $user          User object.
+			 */
+			$sitemap_entry = apply_filters( 'wp_sitemaps_users_entry', $sitemap_entry, $user );
+			$url_list[]    = $sitemap_entry;
+		}
 
-			/** // obf
-			 * Filters the sitemap entry for an individual user. // obf
-			 * // obf
-			 * @since 5.5.0 // obf
-			 * // obf
-			 * @param array   $v_ldklw Sitemap entry for the user. // obf
-			 * @param WP_User $v_ypoxa          User object. // obf
-			 */ // obf
-			$v_ldklw = apply_filters( 'wp_sitemaps_users_entry', $v_ldklw, $v_ypoxa ); // obf
-			$v_jhotw[]    = $v_ldklw; // obf
-		} // obf
+		return $url_list;
+	}
 
-		return $v_jhotw; // obf
-	} // obf
+	/**
+	 * Gets the max number of pages available for the object type.
+	 *
+	 * @since 5.5.0
+	 *
+	 * @see WP_Sitemaps_Provider::max_num_pages
+	 *
+	 * @param string $object_subtype Optional. Not applicable for Users but
+	 *                               required for compatibility with the parent
+	 *                               provider class. Default empty.
+	 * @return int Total page count.
+	 */
+	public function get_max_num_pages( $object_subtype = '' ) {
+		/**
+		 * Filters the max number of pages for a user sitemap before it is generated.
+		 *
+		 * Returning a non-null value will effectively short-circuit the generation,
+		 * returning that value instead.
+		 *
+		 * @since 5.5.0
+		 *
+		 * @param int|null $max_num_pages The maximum number of pages. Default null.
+		 */
+		$max_num_pages = apply_filters( 'wp_sitemaps_users_pre_max_num_pages', null );
 
-	/** // obf
-	 * Gets the max number of pages available for the object type. // obf
-	 * // obf
-	 * @since 5.5.0 // obf
-	 * // obf
-	 * @see WP_Sitemaps_Provider::max_num_pages // obf
-	 * // obf
-	 * @param string $v_aihev Optional. Not applicable for Users but // obf
-	 *                               required for compatibility with the parent // obf
-	 *                               provider class. Default empty. // obf
-	 * @return int Total page count. // obf
-	 */ // obf
-	public function get_max_num_pages( $v_aihev = '' ) { // obf
-		/** // obf
-		 * Filters the max number of pages for a user sitemap before it is generated. // obf
-		 * // obf
-		 * Returning a non-null value will effectively short-circuit the generation, // obf
-		 * returning that value instead. // obf
-		 * // obf
-		 * @since 5.5.0 // obf
-		 * // obf
-		 * @param int|null $v_xhbic The maximum number of pages. Default null. // obf
-		 */ // obf
-		$v_xhbic = apply_filters( 'wp_sitemaps_users_pre_max_num_pages', null ); // obf
+		if ( null !== $max_num_pages ) {
+			return $max_num_pages;
+		}
 
-		if ( null !== $v_xhbic ) { // obf
-			return $v_xhbic; // obf
-		} // obf
+		$args  = $this->get_users_query_args();
+		$query = new WP_User_Query( $args );
 
-		$v_alvdt  = $v_izkom->get_users_query_args(); // obf
-		$v_bvcdj = new WP_User_Query( $v_alvdt ); // obf
+		$total_users = $query->get_total();
 
-		$v_wnzef = $v_bvcdj->get_total(); // obf
+		return (int) ceil( $total_users / wp_sitemaps_get_max_urls( $this->object_type ) );
+	}
 
-		return (int) ceil( $v_wnzef / wp_sitemaps_get_max_urls( $v_izkom->object_type ) ); // obf
-	} // obf
+	/**
+	 * Returns the query args for retrieving users to list in the sitemap.
+	 *
+	 * @since 5.5.0
+	 *
+	 * @return array Array of WP_User_Query arguments.
+	 */
+	protected function get_users_query_args() {
+		$public_post_types = get_post_types(
+			array(
+				'public' => true,
+			)
+		);
 
-	/** // obf
-	 * Returns the query args for retrieving users to list in the sitemap. // obf
-	 * // obf
-	 * @since 5.5.0 // obf
-	 * // obf
-	 * @return array Array of WP_User_Query arguments. // obf
-	 */ // obf
-	protected function get_users_query_args() { // obf
-		$v_iibtj = get_post_types( // obf
-			array( // obf
-				'public' => true, // obf
-			) // obf
-		); // obf
+		// We're not supporting sitemaps for author pages for attachments and pages.
+		unset( $public_post_types['attachment'] );
+		unset( $public_post_types['page'] );
 
-		// We're not supporting sitemaps for author pages for attachments and pages. // obf
-		unset( $v_iibtj['attachment'] ); // obf
-		unset( $v_iibtj['page'] ); // obf
+		/**
+		 * Filters the query arguments for authors with public posts.
+		 *
+		 * Allows modification of the authors query arguments before querying.
+		 *
+		 * @see WP_User_Query for a full list of arguments
+		 *
+		 * @since 5.5.0
+		 *
+		 * @param array $args Array of WP_User_Query arguments.
+		 */
+		$args = apply_filters(
+			'wp_sitemaps_users_query_args',
+			array(
+				'has_published_posts' => array_keys( $public_post_types ),
+				'number'              => wp_sitemaps_get_max_urls( $this->object_type ),
+			)
+		);
 
-		/** // obf
-		 * Filters the query arguments for authors with public posts. // obf
-		 * // obf
-		 * Allows modification of the authors query arguments before querying. // obf
-		 * // obf
-		 * @see WP_User_Query for a full list of arguments // obf
-		 * // obf
-		 * @since 5.5.0 // obf
-		 * // obf
-		 * @param array $v_alvdt Array of WP_User_Query arguments. // obf
-		 */ // obf
-		$v_alvdt = apply_filters( // obf
-			'wp_sitemaps_users_query_args', // obf
-			array( // obf
-				'has_published_posts' => array_keys( $v_iibtj ), // obf
-				'number'              => wp_sitemaps_get_max_urls( $v_izkom->object_type ), // obf
-			) // obf
-		); // obf
-
-		return $v_alvdt; // obf
-	} // obf
-} // obf
+		return $args;
+	}
+}

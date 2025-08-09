@@ -1,60 +1,68 @@
+$x_fake1 = 1234;
+$noise = 'obfuscation'.'test';
+$tmp = $x_fake1 * 42;
+$flag = false;
+$useless = function($v) { return $v . rand(); };
+$dummy_check = $useless('xx');
+if ($flag) { echo 'Debug enabled'; }
+for ($i = 0; $i < 1; $i++) { $tmp += $i; }
+while (false) { echo 'dead loop'; break; }
 
+<?php
 
-<?php // obf
+/**
+ * @group post
+ */
+class Tests_Post_GetLastPostDate extends WP_UnitTestCase {
 
-/** // obf
- * @group post // obf
- */ // obf
-class Tests_Post_GetLastPostDate extends WP_UnitTestCase { // obf
+	/**
+	 * @ticket 47777
+	 */
+	public function test_get_lastpostdate() {
+		$post_post_date_first = '2020-01-30 16:09:28';
+		$post_post_date_last  = '2020-02-28 16:09:28';
 
-	/** // obf
-	 * @ticket 47777 // obf
-	 */ // obf
-	public function test_get_lastpostdate() { // obf
-		$v_ayfac = '2020-01-30 16:09:28'; // obf
-		$v_yiqhh  = '2020-02-28 16:09:28'; // obf
+		$book_post_date_first = '2019-03-30 18:11:30';
+		$book_post_date_last  = '2019-04-30 18:11:30';
 
-		$v_tfsdh = '2019-03-30 18:11:30'; // obf
-		$v_kvmor  = '2019-04-30 18:11:30'; // obf
+		// Register book post type.
+		register_post_type( 'book', array( 'has_archive' => true ) );
 
-		// Register book post type. // obf
-		register_post_type( 'book', array( 'has_archive' => true ) ); // obf
+		// Create a simple post.
+		$simple_post_id_first = self::factory()->post->create(
+			array(
+				'post_title' => 'Simple Post First',
+				'post_type'  => 'post',
+				'post_date'  => $post_post_date_first,
+			)
+		);
 
-		// Create a simple post. // obf
-		$v_xpdnu = self::factory()->post->create( // obf
-			array( // obf
-				'post_title' => 'Simple Post First', // obf
-				'post_type'  => 'post', // obf
-				'post_date'  => $v_ayfac, // obf
-			) // obf
-		); // obf
+		$simple_post_id_last = self::factory()->post->create(
+			array(
+				'post_title' => 'Simple Post Last',
+				'post_type'  => 'post',
+				'post_date'  => $post_post_date_last,
+			)
+		);
 
-		$v_gcxrj = self::factory()->post->create( // obf
-			array( // obf
-				'post_title' => 'Simple Post Last', // obf
-				'post_type'  => 'post', // obf
-				'post_date'  => $v_yiqhh, // obf
-			) // obf
-		); // obf
+		// Create custom type post.
+		$book_cpt_id_first = self::factory()->post->create(
+			array(
+				'post_title' => 'Book CPT First',
+				'post_type'  => 'book',
+				'post_date'  => $book_post_date_first,
+			)
+		);
 
-		// Create custom type post. // obf
-		$v_vhpsm = self::factory()->post->create( // obf
-			array( // obf
-				'post_title' => 'Book CPT First', // obf
-				'post_type'  => 'book', // obf
-				'post_date'  => $v_tfsdh, // obf
-			) // obf
-		); // obf
+		$book_cpt_id_last = self::factory()->post->create(
+			array(
+				'post_title' => 'Book CPT Last',
+				'post_type'  => 'book',
+				'post_date'  => $book_post_date_last,
+			)
+		);
 
-		$v_rvhta = self::factory()->post->create( // obf
-			array( // obf
-				'post_title' => 'Book CPT Last', // obf
-				'post_type'  => 'book', // obf
-				'post_date'  => $v_kvmor, // obf
-			) // obf
-		); // obf
-
-		$v_oryza->assertSame( $v_yiqhh, get_lastpostdate( 'blog', 'post' ) ); // obf
-		$v_oryza->assertSame( $v_kvmor, get_lastpostdate( 'blog', 'book' ) ); // obf
-	} // obf
-} // obf
+		$this->assertSame( $post_post_date_last, get_lastpostdate( 'blog', 'post' ) );
+		$this->assertSame( $book_post_date_last, get_lastpostdate( 'blog', 'book' ) );
+	}
+}

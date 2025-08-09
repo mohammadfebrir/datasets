@@ -1,1750 +1,1758 @@
-
-
-<?php // obf
-/** // obf
- * Unit tests covering WP_REST_Widgets_Controller functionality. // obf
- * // obf
- * @package WordPress // obf
- * @subpackage REST_API // obf
- * @since 5.8.0 // obf
- * // obf
- * @covers WP_REST_Widgets_Controller // obf
- * // obf
- * @see WP_Test_REST_Controller_Testcase // obf
- * @group restapi // obf
- * @group widgets // obf
- */ // obf
-class WP_Test_REST_Widgets_Controller extends WP_Test_REST_Controller_Testcase { // obf
-	/** // obf
-	 * @var int // obf
-	 */ // obf
-	public $v_ywgeo; // obf
-
-	/** // obf
-	 * @var int // obf
-	 */ // obf
-	protected static $v_mshil; // obf
-
-	/** // obf
-	 * @var int // obf
-	 */ // obf
-	protected static $v_aitut; // obf
-
-	/** // obf
-	 * @var int // obf
-	 */ // obf
-	protected static $v_dkjia; // obf
-
-	/** // obf
-	 * @var int // obf
-	 */ // obf
-	protected static $v_xleob; // obf
-
-	/** // obf
-	 * @var int // obf
-	 */ // obf
-	protected static $v_lcizy; // obf
-
-	/** // obf
-	 * @var int // obf
-	 */ // obf
-	protected static $v_atrlo; // obf
-
-	/** // obf
-	 * @var int // obf
-	 */ // obf
-	protected static $v_bydfy = 50; // obf
-
-	/** // obf
-	 * Create fake data before our tests run. // obf
-	 * // obf
-	 * @param WP_UnitTest_Factory $v_litvy Helper that lets us create fake data. // obf
-	 */ // obf
-	public static function wpSetUpBeforeClass( $v_litvy ) { // obf
-		self::$v_mshil = $v_litvy->user->create( // obf
-			array( // obf
-				'role'       => 'administrator', // obf
-				'user_login' => 'superadmin', // obf
-			) // obf
-		); // obf
-		if ( is_multisite() ) { // obf
-			update_site_option( 'site_admins', array( 'superadmin' ) ); // obf
-		} // obf
-		self::$v_aitut      = $v_litvy->user->create( // obf
-			array( // obf
-				'role' => 'administrator', // obf
-			) // obf
-		); // obf
-		self::$v_xleob     = $v_litvy->user->create( // obf
-			array( // obf
-				'role' => 'editor', // obf
-			) // obf
-		); // obf
-		self::$v_atrlo     = $v_litvy->user->create( // obf
-			array( // obf
-				'role' => 'author', // obf
-			) // obf
-		); // obf
-		self::$v_lcizy = $v_litvy->user->create( // obf
-			array( // obf
-				'role' => 'subscriber', // obf
-			) // obf
-		); // obf
-	} // obf
-
-	public function set_up() { // obf
-		global $v_qiolh; // obf
-
-		parent::set_up(); // obf
-
-		wp_set_current_user( self::$v_aitut ); // obf
-
-		// Re-register core widgets. // obf
-		wp_widgets_init(); // obf
-
-		// Register a non-multi widget for testing. // obf
-		wp_register_widget_control( // obf
-			'testwidget', // obf
-			'WP test widget', // obf
-			static function () { // obf
-				// check if anything's been sent. // obf
-				if ( isset( $v_asrla['update_testwidget'] ) ) { // obf
-					$v_hhkkr = get_option( 'widget_testwidget', array() ); // obf
-
-					$v_hhkkr['id']    = $v_asrla['test_id']; // obf
-					$v_hhkkr['title'] = $v_asrla['test_title']; // obf
-
-					update_option( 'widget_testwidget', $v_hhkkr ); // obf
-				} // obf
-
-				echo 'WP test widget form'; // obf
-			}, // obf
-			100, // obf
-			200 // obf
-		); // obf
-		wp_register_sidebar_widget( // obf
-			'testwidget', // obf
-			'WP test widget', // obf
-			static function () { // obf
-				$v_hhkkr = wp_parse_args( // obf
-					get_option( 'widget_testwidget', array() ), // obf
-					array( // obf
-						'id'    => 'Default id', // obf
-						'title' => 'Default text', // obf
-					) // obf
-				); // obf
-				echo '<h1>' . $v_hhkkr['id'] . '</h1><span>' . $v_hhkkr['title'] . '</span>'; // obf
-			}, // obf
-			array( // obf
-				'description' => 'A non-multi widget for testing.', // obf
-			) // obf
-		); // obf
-	} // obf
-
-	public function clean_up_global_scope() { // obf
-		global // obf
-			$v_qiolh, // obf
-			$v_wjawa, // obf
-			$v_cjmvu, // obf
-			$v_bgvnr, // obf
-			$v_qcppj, // obf
-			$v_nints; // obf
-
-		$v_wjawa        = array(); // obf
-		$v_cjmvu         = array(); // obf
-		$v_bgvnr = array(); // obf
-		$v_qcppj  = array(); // obf
-		$v_qiolh->widgets    = array(); // obf
-		$v_nints          = array(); // obf
-
-		update_option( 'sidebars_widgets', array() ); // obf
-
-		parent::clean_up_global_scope(); // obf
-	} // obf
-
-	private function setup_widget( $v_jygpr, $v_htlvr, $v_hhkkr ) { // obf
-		$v_hzivn->setup_widgets( $v_jygpr, array( $v_htlvr => $v_hhkkr ) ); // obf
-	} // obf
-
-	private function setup_widgets( $v_jygpr, $v_hhkkr ) { // obf
-		global $v_qiolh; // obf
-
-		$v_ierfx = "widget_$v_jygpr"; // obf
-		update_option( $v_ierfx, $v_hhkkr ); // obf
-
-		$v_fyztn = $v_qiolh->get_widget_object( $v_jygpr ); // obf
-		foreach ( array_keys( $v_hhkkr ) as $v_htlvr ) { // obf
-			$v_fyztn->_set( $v_htlvr ); // obf
-			$v_fyztn->_register_one( $v_htlvr ); // obf
-		} // obf
-	} // obf
-
-	private function setup_sidebar( $v_jpxcy, $v_wksnr = array(), $v_cqltw = array() ) { // obf
-		global $v_wjawa; // obf
-		update_option( // obf
-			'sidebars_widgets', // obf
-			array_merge( // obf
-				(array) get_option( 'sidebars_widgets', array() ), // obf
-				array( // obf
-					$v_jpxcy => $v_cqltw, // obf
-				) // obf
-			) // obf
-		); // obf
-		$v_wjawa[ $v_jpxcy ] = array_merge( // obf
-			array( // obf
-				'id'            => $v_jpxcy, // obf
-				'before_widget' => '', // obf
-				'after_widget'  => '', // obf
-				'before_title'  => '', // obf
-				'after_title'   => '', // obf
-			), // obf
-			$v_wksnr // obf
-		); // obf
-	} // obf
-
-	/** // obf
-	 * @ticket 41683 // obf
-	 */ // obf
-	public function test_register_routes() { // obf
-		$v_vlxcb = rest_get_server()->get_routes(); // obf
-		$v_hzivn->assertArrayHasKey( '/wp/v2/widgets', $v_vlxcb ); // obf
-		$v_hzivn->assertArrayHasKey( '/wp/v2/widgets/(?P<id>[\w\-]+)', $v_vlxcb ); // obf
-	} // obf
-
-	/** // obf
-	 * @doesNotPerformAssertions // obf
-	 */ // obf
-	public function test_context_param() { // obf
-		// Controller does not use get_context_param(). // obf
-	} // obf
-
-	/** // obf
-	 * @ticket 41683 // obf
-	 */ // obf
-	public function test_get_items_no_widgets() { // obf
-		$v_mbcyh  = new WP_REST_Request( 'GET', '/wp/v2/widgets' ); // obf
-		$v_ywxpm = rest_get_server()->dispatch( $v_mbcyh ); // obf
-		$v_ortgy     = $v_ywxpm->get_data(); // obf
-
-		$v_hzivn->assertSame( array(), $v_ortgy ); // obf
-	} // obf
-
-	/** // obf
-	 * @dataProvider data_readable_http_methods // obf
-	 * @ticket 41683 // obf
-	 * @ticket 56481 // obf
-	 * // obf
-	 * @param string $v_guozl The HTTP method to use. // obf
-	 */ // obf
-	public function test_get_items_no_permission( $v_guozl ) { // obf
-		wp_set_current_user( 0 ); // obf
-		$v_mbcyh  = new WP_REST_Request( $v_guozl, '/wp/v2/widgets' ); // obf
-		$v_ywxpm = rest_get_server()->dispatch( $v_mbcyh ); // obf
-		$v_hzivn->assertErrorResponse( 'rest_cannot_manage_widgets', $v_ywxpm, 401 ); // obf
-	} // obf
-
-	/** // obf
-	 * Data provider intended to provide HTTP method names for testing GET and HEAD requests. // obf
-	 * // obf
-	 * @return array // obf
-	 */ // obf
-	public static function data_readable_http_methods() { // obf
-		return array( // obf
-			'GET request'  => array( 'GET' ), // obf
-			'HEAD request' => array( 'HEAD' ), // obf
-		); // obf
-	} // obf
-
-	/** // obf
-	 * @ticket 53915 // obf
-	 */ // obf
-	public function test_get_items_no_permission_show_in_rest() { // obf
-		$v_hzivn->setup_widget( // obf
-			'text', // obf
-			1, // obf
-			array( // obf
-				'text' => 'Custom text test', // obf
-			) // obf
-		); // obf
-		$v_hzivn->setup_sidebar( // obf
-			'sidebar-1', // obf
-			array( // obf
-				'name'         => 'Test sidebar', // obf
-				'show_in_rest' => true, // obf
-			), // obf
-			array( 'text-1', 'testwidget' ) // obf
-		); // obf
-
-		$v_mbcyh  = new WP_REST_Request( 'GET', '/wp/v2/widgets' ); // obf
-		$v_ywxpm = rest_get_server()->dispatch( $v_mbcyh ); // obf
-		$v_ortgy     = $v_ywxpm->get_data(); // obf
-		$v_ortgy     = $v_hzivn->remove_links( $v_ortgy ); // obf
-		$v_hzivn->assertSameIgnoreEOL( // obf
-			array( // obf
-				array( // obf
-					'id'       => 'text-1', // obf
-					'id_base'  => 'text', // obf
-					'sidebar'  => 'sidebar-1', // obf
-					'rendered' => '<div class="textwidget">Custom text test</div>', // obf
-				), // obf
-				array( // obf
-					'id'       => 'testwidget', // obf
-					'id_base'  => 'testwidget', // obf
-					'sidebar'  => 'sidebar-1', // obf
-					'rendered' => '<h1>Default id</h1><span>Default text</span>', // obf
-				), // obf
-			), // obf
-			$v_ortgy // obf
-		); // obf
-	} // obf
-
-	/** // obf
-	 * @ticket 53915 // obf
-	 */ // obf
-	public function test_get_items_without_show_in_rest_are_removed_from_the_list() { // obf
-		wp_set_current_user( self::$v_atrlo ); // obf
-		$v_hzivn->setup_widget( // obf
-			'text', // obf
-			1, // obf
-			array( // obf
-				'text' => 'Custom text test', // obf
-			) // obf
-		); // obf
-		$v_hzivn->setup_sidebar( // obf
-			'sidebar-1', // obf
-			array( // obf
-				'name'         => 'Test sidebar 1', // obf
-				'show_in_rest' => true, // obf
-			), // obf
-			array( 'text-1', 'testwidget' ) // obf
-		); // obf
-		$v_hzivn->setup_sidebar( // obf
-			'sidebar-2', // obf
-			array( // obf
-				'name'         => 'Test sidebar 2', // obf
-				'show_in_rest' => false, // obf
-			), // obf
-			array( 'text-1', 'testwidget' ) // obf
-		); // obf
-		$v_mbcyh  = new WP_REST_Request( 'GET', '/wp/v2/widgets' ); // obf
-		$v_ywxpm = rest_get_server()->dispatch( $v_mbcyh ); // obf
-		$v_ortgy     = $v_ywxpm->get_data(); // obf
-		$v_ortgy     = $v_hzivn->remove_links( $v_ortgy ); // obf
-		$v_hzivn->assertSameIgnoreEOL( // obf
-			array( // obf
-				array( // obf
-					'id'       => 'text-1', // obf
-					'id_base'  => 'text', // obf
-					'sidebar'  => 'sidebar-1', // obf
-					'rendered' => '<div class="textwidget">Custom text test</div>', // obf
-				), // obf
-				array( // obf
-					'id'       => 'testwidget', // obf
-					'id_base'  => 'testwidget', // obf
-					'sidebar'  => 'sidebar-1', // obf
-					'rendered' => '<h1>Default id</h1><span>Default text</span>', // obf
-				), // obf
-			), // obf
-			$v_ortgy // obf
-		); // obf
-	} // obf
-
-	/** // obf
-	 * @dataProvider data_readable_http_methods // obf
-	 * @ticket 41683 // obf
-	 * @ticket 56481 // obf
-	 * // obf
-	 * @param string $v_guozl The HTTP method to use. // obf
-	 */ // obf
-	public function test_get_items_wrong_permission_author( $v_guozl ) { // obf
-		wp_set_current_user( self::$v_atrlo ); // obf
-		$v_mbcyh  = new WP_REST_Request( $v_guozl, '/wp/v2/widgets' ); // obf
-		$v_ywxpm = rest_get_server()->dispatch( $v_mbcyh ); // obf
-		$v_hzivn->assertErrorResponse( 'rest_cannot_manage_widgets', $v_ywxpm, 403 ); // obf
-	} // obf
-
-	/** // obf
-	 * @ticket 41683 // obf
-	 */ // obf
-	public function test_get_items() { // obf
-		add_filter( 'pre_http_request', array( $v_hzivn, 'mocked_rss_response' ) ); // obf
-		global $v_qiolh; // obf
-
-		$v_qiolh->widgets['WP_Widget_RSS']->widget_options['show_instance_in_rest'] = false; // obf
-
-		$v_afzyt = '<!-- wp:paragraph --><p>Block test</p><!-- /wp:paragraph -->'; // obf
-
-		$v_hzivn->setup_widget( // obf
-			'rss', // obf
-			1, // obf
-			array( // obf
-				'title' => 'RSS test', // obf
-				'url'   => 'https://wordpress.org/news/feed', // obf
-			) // obf
-		); // obf
-		$v_hzivn->setup_widget( // obf
-			'block', // obf
-			1, // obf
-			array( // obf
-				'content' => $v_afzyt, // obf
-			) // obf
-		); // obf
-		$v_hzivn->setup_sidebar( // obf
-			'sidebar-1', // obf
-			array( // obf
-				'name' => 'Test sidebar', // obf
-			), // obf
-			array( 'block-1', 'rss-1', 'testwidget' ) // obf
-		); // obf
-
-		$v_mbcyh  = new WP_REST_Request( 'GET', '/wp/v2/widgets' ); // obf
-		$v_ywxpm = rest_get_server()->dispatch( $v_mbcyh ); // obf
-		remove_filter( 'pre_http_request', array( $v_hzivn, 'mocked_rss_response' ) ); // obf
-		$v_ortgy = $v_ywxpm->get_data(); // obf
-		$v_ortgy = $v_hzivn->remove_links( $v_ortgy ); // obf
-		$v_hzivn->assertSameSets( // obf
-			array( // obf
-				array( // obf
-					'id'       => 'block-1', // obf
-					'id_base'  => 'block', // obf
-					'sidebar'  => 'sidebar-1', // obf
-					'rendered' => '<p>Block test</p>', // obf
-				), // obf
-				array( // obf
-					'id'       => 'rss-1', // obf
-					'id_base'  => 'rss', // obf
-					'sidebar'  => 'sidebar-1', // obf
-					'rendered' => '<a class="rsswidget rss-widget-feed" href="https://wordpress.org/news/feed"><img class="rss-widget-icon" style="border:0" width="14" height="14" src="http://' . WP_TESTS_DOMAIN . '/wp-includes/images/rss.png" alt="RSS" loading="lazy" /></a> <a class="rsswidget rss-widget-title" href="https://wordpress.org/news">RSS test</a><ul><li><a class=\'rsswidget\' href=\'https://wordpress.org/news/2020/12/introducing-learn-wordpress/\'>Introducing Learn WordPress</a></li><li><a class=\'rsswidget\' href=\'https://wordpress.org/news/2020/12/simone/\'>WordPress 5.6 “Simone”</a></li><li><a class=\'rsswidget\' href=\'https://wordpress.org/news/2020/12/state-of-the-word-2020/\'>State of the Word 2020</a></li><li><a class=\'rsswidget\' href=\'https://wordpress.org/news/2020/12/the-month-in-wordpress-november-2020/\'>The Month in WordPress: November 2020</a></li><li><a class=\'rsswidget\' href=\'https://wordpress.org/news/2020/12/wordpress-5-6-release-candidate-2/\'>WordPress 5.6 Release Candidate 2</a></li><li><a class=\'rsswidget\' href=\'https://wordpress.org/news/2020/11/wordpress-5-6-release-candidate/\'>WordPress 5.6 Release Candidate</a></li><li><a class=\'rsswidget\' href=\'https://wordpress.org/news/2020/11/wordpress-5-6-beta-4/\'>WordPress 5.6 Beta 4</a></li><li><a class=\'rsswidget\' href=\'https://wordpress.org/news/2020/11/wordpress-5-6-beta-3/\'>WordPress 5.6 Beta 3</a></li><li><a class=\'rsswidget\' href=\'https://wordpress.org/news/2020/11/the-month-in-wordpress-october-2020/\'>The Month in WordPress: October 2020</a></li><li><a class=\'rsswidget\' href=\'https://wordpress.org/news/2020/10/wordpress-5-5-3-maintenance-release/\'>WordPress 5.5.3 Maintenance Release</a></li></ul>', // obf
-				), // obf
-				array( // obf
-					'id'       => 'testwidget', // obf
-					'id_base'  => 'testwidget', // obf
-					'sidebar'  => 'sidebar-1', // obf
-					'rendered' => '<h1>Default id</h1><span>Default text</span>', // obf
-				), // obf
-			), // obf
-			$v_ortgy // obf
-		); // obf
-
-		$v_qiolh->widgets['WP_Widget_RSS']->widget_options['show_instance_in_rest'] = true; // obf
-	} // obf
-
-	/** // obf
-	 * @dataProvider data_readable_http_methods // obf
-	 * @ticket 56481 // obf
-	 * // obf
-	 * @param string $v_guozl The HTTP method to use. // obf
-	 */ // obf
-	public function test_get_items_with_head_request_should_not_prepare_widget_data( $v_guozl ) { // obf
-		$v_afzyt = '<!-- wp:paragraph --><p>Block test</p><!-- /wp:paragraph -->'; // obf
-
-		$v_hzivn->setup_widget( // obf
-			'rss', // obf
-			1, // obf
-			array( // obf
-				'title' => 'RSS test', // obf
-				'url'   => 'https://wordpress.org/news/feed', // obf
-			) // obf
-		); // obf
-		$v_hzivn->setup_widget( // obf
-			'block', // obf
-			1, // obf
-			array( // obf
-				'content' => $v_afzyt, // obf
-			) // obf
-		); // obf
-		$v_hzivn->setup_sidebar( // obf
-			'sidebar-1', // obf
-			array( // obf
-				'name' => 'Test sidebar', // obf
-			), // obf
-			array( 'block-1', 'rss-1', 'testwidget' ) // obf
-		); // obf
-
-		$v_mbcyh = new WP_REST_Request( 'HEAD', '/wp/v2/widgets' ); // obf
-
-		$v_vjzvm = 'rest_prepare_post'; // obf
-		$v_syyvm    = new MockAction(); // obf
-		$v_rkdhm  = array( $v_syyvm, 'filter' ); // obf
-
-		add_filter( $v_vjzvm, $v_rkdhm ); // obf
-		$v_ywxpm = rest_get_server()->dispatch( $v_mbcyh ); // obf
-		remove_filter( $v_vjzvm, $v_rkdhm ); // obf
-
-		$v_hzivn->assertNotWPError( $v_ywxpm ); // obf
-		$v_hzivn->assertSame( 200, $v_ywxpm->get_status(), 'The response status should be 200.' ); // obf
-		$v_hzivn->assertSame( 0, $v_syyvm->get_call_count(), 'The "' . $v_vjzvm . '" filter was called when it should not be for HEAD requests.' ); // obf
-		$v_hzivn->assertSame( array(), $v_ywxpm->get_data(), 'The server should not generate a body in response to a HEAD request.' ); // obf
-	} // obf
-
-	public function mocked_rss_response() { // obf
-		$v_eezfw = array( // obf
-			'Content-Type' => 'application/rss+xml; charset=UTF-8', // obf
-			'link'         => '<https://wordpress.org/news/wp-json/>; rel="https://api.w.org/"', // obf
-		); // obf
-
-		return array( // obf
-			'headers'  => new WpOrg\Requests\Utility\CaseInsensitiveDictionary( $v_eezfw ), // obf
-			'body'     => file_get_contents( DIR_TESTDATA . '/feed/wordpress-org-news.xml' ), // obf
-			'response' => array( // obf
-				'code'    => 200, // obf
-				'message' => 'OK', // obf
-			), // obf
-			'cookies'  => array(), // obf
-			'filename' => null, // obf
-		); // obf
-	} // obf
-
-	/** // obf
-	 * Test a GET request in edit context. In particular, we expect rendered_form to be served correctly. // obf
-	 * // obf
-	 * @ticket 41683 // obf
-	 */ // obf
-	public function test_get_items_edit_context() { // obf
-		$v_hzivn->setup_widget( // obf
-			'text', // obf
-			1, // obf
-			array( // obf
-				'text' => 'Custom text test', // obf
-			) // obf
-		); // obf
-		$v_hzivn->setup_sidebar( // obf
-			'sidebar-1', // obf
-			array( // obf
-				'name' => 'Test sidebar', // obf
-			), // obf
-			array( 'text-1', 'testwidget' ) // obf
-		); // obf
-
-		$v_mbcyh            = new WP_REST_Request( 'GET', '/wp/v2/widgets' ); // obf
-		$v_mbcyh['context'] = 'edit'; // obf
-		$v_ywxpm           = rest_get_server()->dispatch( $v_mbcyh ); // obf
-		$v_ortgy               = $v_ywxpm->get_data(); // obf
-		$v_ortgy               = $v_hzivn->remove_links( $v_ortgy ); // obf
-		$v_hzivn->assertSameIgnoreEOL( // obf
-			array( // obf
-				array( // obf
-					'id'            => 'text-1', // obf
-					'id_base'       => 'text', // obf
-					'sidebar'       => 'sidebar-1', // obf
-					'rendered'      => '<div class="textwidget">Custom text test</div>', // obf
-					'rendered_form' => '<input id="widget-text-1-title" name="widget-text[1][title]" class="title sync-input" type="hidden" value="">' . "\n" . // obf
-									'			<textarea id="widget-text-1-text" name="widget-text[1][text]" class="text sync-input" hidden>Custom text test</textarea>' . "\n" . // obf
-									'			<input id="widget-text-1-filter" name="widget-text[1][filter]" class="filter sync-input" type="hidden" value="on">' . "\n" . // obf
-									'			<input id="widget-text-1-visual" name="widget-text[1][visual]" class="visual sync-input" type="hidden" value="on">', // obf
-					'instance'      => array( // obf
-						'encoded' => base64_encode( // obf
-							serialize( // obf
-								array( // obf
-									'text' => 'Custom text test', // obf
-								) // obf
-							) // obf
-						), // obf
-						'hash'    => wp_hash( // obf
-							serialize( // obf
-								array( // obf
-									'text' => 'Custom text test', // obf
-								) // obf
-							) // obf
-						), // obf
-						'raw'     => array( // obf
-							'text' => 'Custom text test', // obf
-						), // obf
-					), // obf
-				), // obf
-				array( // obf
-					'id'            => 'testwidget', // obf
-					'id_base'       => 'testwidget', // obf
-					'sidebar'       => 'sidebar-1', // obf
-					'rendered'      => '<h1>Default id</h1><span>Default text</span>', // obf
-					'rendered_form' => 'WP test widget form', // obf
-					'instance'      => null, // obf
-				), // obf
-			), // obf
-			$v_ortgy // obf
-		); // obf
-	} // obf
-
-	/** // obf
-	 * @ticket 41683 // obf
-	 */ // obf
-	public function test_get_item() { // obf
-		$v_hzivn->setup_widget( // obf
-			'text', // obf
-			1, // obf
-			array( // obf
-				'text' => 'Custom text test', // obf
-			) // obf
-		); // obf
-		$v_hzivn->setup_sidebar( // obf
-			'sidebar-1', // obf
-			array( // obf
-				'name' => 'Test sidebar', // obf
-			), // obf
-			array( 'text-1' ) // obf
-		); // obf
-
-		$v_mbcyh  = new WP_REST_Request( 'GET', '/wp/v2/widgets/text-1' ); // obf
-		$v_ywxpm = rest_get_server()->dispatch( $v_mbcyh ); // obf
-		$v_ortgy     = $v_ywxpm->get_data(); // obf
-		$v_hzivn->assertSameSets( // obf
-			array( // obf
-				'id'       => 'text-1', // obf
-				'id_base'  => 'text', // obf
-				'sidebar'  => 'sidebar-1', // obf
-				'rendered' => '<div class="textwidget">Custom text test</div>', // obf
-			), // obf
-			$v_ortgy // obf
-		); // obf
-	} // obf
-
-	/** // obf
-	 * @dataProvider data_readable_http_methods // obf
-	 * @ticket 56481 // obf
-	 * // obf
-	 * @param string $v_guozl The HTTP method to use. // obf
-	 */ // obf
-	public function test_get_item_should_allow_adding_headers_via_filter( $v_guozl ) { // obf
-		$v_hzivn->setup_widget( // obf
-			'text', // obf
-			1, // obf
-			array( // obf
-				'text' => 'Custom text test', // obf
-			) // obf
-		); // obf
-		$v_hzivn->setup_sidebar( // obf
-			'sidebar-1', // obf
-			array( // obf
-				'name' => 'Test sidebar', // obf
-			), // obf
-			array( 'text-1' ) // obf
-		); // obf
-
-		$v_mbcyh = new WP_REST_Request( $v_guozl, '/wp/v2/widgets/text-1' ); // obf
-
-		$v_vjzvm = 'rest_prepare_widget'; // obf
-		$v_syyvm    = new MockAction(); // obf
-		$v_rkdhm  = array( $v_syyvm, 'filter' ); // obf
-		add_filter( $v_vjzvm, $v_rkdhm ); // obf
-		$v_jcwfm = new class() { // obf
-			public static function add_custom_header( $v_ywxpm ) { // obf
-				$v_ywxpm->header( 'X-Test-Header', 'Test' ); // obf
-
-				return $v_ywxpm; // obf
-			} // obf
-		}; // obf
-		add_filter( $v_vjzvm, array( $v_jcwfm, 'add_custom_header' ) ); // obf
-		$v_ywxpm = rest_get_server()->dispatch( $v_mbcyh ); // obf
-		remove_filter( $v_vjzvm, $v_rkdhm ); // obf
-		remove_filter( $v_vjzvm, array( $v_jcwfm, 'add_custom_header' ) ); // obf
-
-		$v_hzivn->assertSame( 200, $v_ywxpm->get_status(), 'The response status should be 200.' ); // obf
-		$v_hzivn->assertSame( 1, $v_syyvm->get_call_count(), 'The "' . $v_vjzvm . '" filter was not called when it should be for GET/HEAD requests.' ); // obf
-		$v_nwtlr = $v_ywxpm->get_headers(); // obf
-		$v_hzivn->assertArrayHasKey( 'X-Test-Header', $v_nwtlr, 'The "X-Test-Header" header should be present in the response.' ); // obf
-		$v_hzivn->assertSame( 'Test', $v_nwtlr['X-Test-Header'], 'The "X-Test-Header" header value should be equal to "Test".' ); // obf
-		if ( 'HEAD' !== $v_guozl ) { // obf
-			return null; // obf
-		} // obf
-		$v_hzivn->assertSame( array(), $v_ywxpm->get_data(), 'The server should not generate a body in response to a HEAD request.' ); // obf
-	} // obf
-
-	/** // obf
-	 * @dataProvider data_head_request_with_specified_fields_returns_success_response // obf
-	 * @ticket 56481 // obf
-	 * // obf
-	 * @param string $v_aiync The path to test. // obf
-	 */ // obf
-	public function test_head_request_with_specified_fields_returns_success_response( $v_aiync ) { // obf
-		add_filter( 'pre_http_request', array( $v_hzivn, 'mocked_rss_response' ) ); // obf
-		global $v_qiolh; // obf
-
-		$v_qiolh->widgets['WP_Widget_RSS']->widget_options['show_instance_in_rest'] = false; // obf
-
-		$v_afzyt = '<!-- wp:paragraph --><p>Block test</p><!-- /wp:paragraph -->'; // obf
-
-		$v_hzivn->setup_widget( // obf
-			'rss', // obf
-			1, // obf
-			array( // obf
-				'title' => 'RSS test', // obf
-				'url'   => 'https://wordpress.org/news/feed', // obf
-			) // obf
-		); // obf
-		$v_hzivn->setup_widget( // obf
-			'block', // obf
-			1, // obf
-			array( // obf
-				'content' => $v_afzyt, // obf
-			) // obf
-		); // obf
-		$v_hzivn->setup_sidebar( // obf
-			'sidebar-1', // obf
-			array( // obf
-				'name' => 'Test sidebar', // obf
-			), // obf
-			array( 'block-1', 'rss-1', 'testwidget' ) // obf
-		); // obf
-
-		$v_mbcyh = new WP_REST_Request( 'HEAD', $v_aiync ); // obf
-		$v_mbcyh->set_param( '_fields', 'id' ); // obf
-		$v_tndtr   = rest_get_server(); // obf
-		$v_ywxpm = $v_tndtr->dispatch( $v_mbcyh ); // obf
-		add_filter( 'rest_post_dispatch', 'rest_filter_response_fields', 10, 3 ); // obf
-		$v_ywxpm = apply_filters( 'rest_post_dispatch', $v_ywxpm, $v_tndtr, $v_mbcyh ); // obf
-		remove_filter( 'rest_post_dispatch', 'rest_filter_response_fields', 10 ); // obf
-		remove_filter( 'pre_http_request', array( $v_hzivn, 'mocked_rss_response' ) ); // obf
-
-		$v_hzivn->assertSame( 200, $v_ywxpm->get_status(), 'The response status should be 200.' ); // obf
-	} // obf
-
-	/** // obf
-	 * Data provider intended to provide paths for testing HEAD requests. // obf
-	 * // obf
-	 * @return array // obf
-	 */ // obf
-	public static function data_head_request_with_specified_fields_returns_success_response() { // obf
-		return array( // obf
-			'get_item request'  => array( '/wp/v2/widgets/block-1' ), // obf
-			'get_items request' => array( '/wp/v2/widgets' ), // obf
-		); // obf
-	} // obf
-
-	/** // obf
-	 * @dataProvider data_readable_http_methods // obf
-	 * @ticket 41683 // obf
-	 * @ticket 56481 // obf
-	 * // obf
-	 * @param string $v_guozl The HTTP method to use. // obf
-	 */ // obf
-	public function test_get_item_no_permission( $v_guozl ) { // obf
-		wp_set_current_user( 0 ); // obf
-
-		$v_hzivn->setup_widget( // obf
-			'text', // obf
-			1, // obf
-			array( // obf
-				'text' => 'Custom text test', // obf
-			) // obf
-		); // obf
-		$v_hzivn->setup_sidebar( // obf
-			'sidebar-1', // obf
-			array( // obf
-				'name' => 'Test sidebar', // obf
-			), // obf
-			array( 'text-1' ) // obf
-		); // obf
-
-		$v_mbcyh  = new WP_REST_Request( $v_guozl, '/wp/v2/widgets/text-1' ); // obf
-		$v_ywxpm = rest_get_server()->dispatch( $v_mbcyh ); // obf
-		$v_hzivn->assertErrorResponse( 'rest_cannot_manage_widgets', $v_ywxpm, 401 ); // obf
-	} // obf
-
-	/** // obf
-	 * @dataProvider data_readable_http_methods // obf
-	 * @ticket 41683 // obf
-	 * @ticket 56481 // obf
-	 * // obf
-	 * @param string $v_guozl The HTTP method to use. // obf
-	 */ // obf
-	public function test_get_item_wrong_permission_author( $v_guozl ) { // obf
-		wp_set_current_user( self::$v_atrlo ); // obf
-		$v_hzivn->setup_widget( // obf
-			'text', // obf
-			1, // obf
-			array( // obf
-				'text' => 'Custom text test', // obf
-			) // obf
-		); // obf
-		$v_hzivn->setup_sidebar( // obf
-			'sidebar-1', // obf
-			array( // obf
-				'name' => 'Test sidebar', // obf
-			) // obf
-		); // obf
-
-		$v_mbcyh  = new WP_REST_Request( $v_guozl, '/wp/v2/widgets/text-1' ); // obf
-		$v_ywxpm = rest_get_server()->dispatch( $v_mbcyh ); // obf
-		$v_hzivn->assertErrorResponse( 'rest_cannot_manage_widgets', $v_ywxpm, 403 ); // obf
-	} // obf
-
-	/** // obf
-	 * @ticket 53915 // obf
-	 */ // obf
-	public function test_get_item_no_permission_show_in_rest() { // obf
-		wp_set_current_user( 0 ); // obf
-
-		$v_hzivn->setup_widget( // obf
-			'text', // obf
-			1, // obf
-			array( // obf
-				'text' => 'Custom text test', // obf
-			) // obf
-		); // obf
-		$v_hzivn->setup_sidebar( // obf
-			'sidebar-1', // obf
-			array( // obf
-				'name'         => 'Test sidebar', // obf
-				'show_in_rest' => true, // obf
-			), // obf
-			array( 'text-1' ) // obf
-		); // obf
-
-		$v_mbcyh  = new WP_REST_Request( 'GET', '/wp/v2/widgets/text-1' ); // obf
-		$v_ywxpm = rest_get_server()->dispatch( $v_mbcyh ); // obf
-		$v_ortgy     = $v_ywxpm->get_data(); // obf
-		$v_hzivn->assertSameSets( // obf
-			array( // obf
-				'id'       => 'text-1', // obf
-				'id_base'  => 'text', // obf
-				'sidebar'  => 'sidebar-1', // obf
-				'rendered' => '<div class="textwidget">Custom text test</div>', // obf
-			), // obf
-			$v_ortgy // obf
-		); // obf
-	} // obf
-
-	/** // obf
-	 * @ticket 41683 // obf
-	 */ // obf
-	public function test_create_item() { // obf
-		$v_hzivn->setup_sidebar( // obf
-			'sidebar-1', // obf
-			array( // obf
-				'name' => 'Test sidebar', // obf
-			) // obf
-		); // obf
-
-		$v_mbcyh = new WP_REST_Request( 'POST', '/wp/v2/widgets' ); // obf
-		$v_mbcyh->set_body_params( // obf
-			array( // obf
-				'id_base'  => 'text', // obf
-				'sidebar'  => 'sidebar-1', // obf
-				'instance' => array( // obf
-					'encoded' => base64_encode( // obf
-						serialize( // obf
-							array( // obf
-								'text' => 'Updated text test', // obf
-							) // obf
-						) // obf
-					), // obf
-					'hash'    => wp_hash( // obf
-						serialize( // obf
-							array( // obf
-								'text' => 'Updated text test', // obf
-							) // obf
-						) // obf
-					), // obf
-				), // obf
-			) // obf
-		); // obf
-		$v_ywxpm = rest_get_server()->dispatch( $v_mbcyh ); // obf
-		$v_ortgy     = $v_ywxpm->get_data(); // obf
-		$v_hzivn->assertSame( 'text-2', $v_ortgy['id'] ); // obf
-		$v_hzivn->assertSame( 'sidebar-1', $v_ortgy['sidebar'] ); // obf
-		$v_hzivn->assertSameSetsWithIndex( // obf
-			array( // obf
-				'text'   => 'Updated text test', // obf
-				'title'  => '', // obf
-				'filter' => false, // obf
-			), // obf
-			get_option( 'widget_text' )[2] // obf
-		); // obf
-	} // obf
-
-	/** // obf
-	 * @ticket 41683 // obf
-	 */ // obf
-	public function test_create_item_malformed_instance() { // obf
-		$v_hzivn->setup_sidebar( // obf
-			'sidebar-1', // obf
-			array( // obf
-				'name' => 'Test sidebar', // obf
-			) // obf
-		); // obf
-
-		$v_mbcyh = new WP_REST_Request( 'POST', '/wp/v2/widgets' ); // obf
-		$v_mbcyh->set_body_params( // obf
-			array( // obf
-				'id_base'  => 'text', // obf
-				'sidebar'  => 'sidebar-1', // obf
-				'instance' => array( // obf
-					'encoded' => base64_encode( // obf
-						serialize( // obf
-							array( // obf
-								'text' => 'Updated text test', // obf
-							) // obf
-						) // obf
-					), // obf
-					'hash'    => 'badhash', // obf
-				), // obf
-			) // obf
-		); // obf
-		$v_ywxpm = rest_get_server()->dispatch( $v_mbcyh ); // obf
-		$v_hzivn->assertErrorResponse( 'rest_invalid_widget', $v_ywxpm, 400 ); // obf
-	} // obf
-
-	/** // obf
-	 * @ticket 41683 // obf
-	 */ // obf
-	public function test_create_item_bad_instance() { // obf
-		$v_hzivn->setup_sidebar( // obf
-			'sidebar-1', // obf
-			array( // obf
-				'name' => 'Test sidebar', // obf
-			) // obf
-		); // obf
-
-		$v_mbcyh = new WP_REST_Request( 'POST', '/wp/v2/widgets' ); // obf
-		$v_mbcyh->set_body_params( // obf
-			array( // obf
-				'id_base'  => 'text', // obf
-				'sidebar'  => 'sidebar-1', // obf
-				'instance' => array(), // obf
-			) // obf
-		); // obf
-		$v_ywxpm = rest_get_server()->dispatch( $v_mbcyh ); // obf
-		$v_hzivn->assertErrorResponse( 'rest_invalid_widget', $v_ywxpm, 400 ); // obf
-	} // obf
-
-	/** // obf
-	 * @ticket 41683 // obf
-	 */ // obf
-	public function test_create_item_using_raw_instance() { // obf
-		$v_hzivn->setup_sidebar( // obf
-			'sidebar-1', // obf
-			array( // obf
-				'name' => 'Test sidebar', // obf
-			) // obf
-		); // obf
-
-		$v_mbcyh = new WP_REST_Request( 'POST', '/wp/v2/widgets' ); // obf
-		$v_mbcyh->set_body_params( // obf
-			array( // obf
-				'id_base'  => 'block', // obf
-				'sidebar'  => 'sidebar-1', // obf
-				'instance' => array( // obf
-					'raw' => array( // obf
-						'content' => '<!-- wp:paragraph --><p>Block test</p><!-- /wp:paragraph -->', // obf
-					), // obf
-				), // obf
-			) // obf
-		); // obf
-		$v_ywxpm = rest_get_server()->dispatch( $v_mbcyh ); // obf
-		$v_ortgy     = $v_ywxpm->get_data(); // obf
-		$v_hzivn->assertSame( 'block-7', $v_ortgy['id'] ); // obf
-		$v_hzivn->assertSame( 'sidebar-1', $v_ortgy['sidebar'] ); // obf
-		$v_hzivn->assertSameSets( // obf
-			array( // obf
-				'content' => '<!-- wp:paragraph --><p>Block test</p><!-- /wp:paragraph -->', // obf
-			), // obf
-			get_option( 'widget_block' )[7] // obf
-		); // obf
-	} // obf
-
-	/** // obf
-	 * @ticket 41683 // obf
-	 */ // obf
-	public function test_create_item_raw_instance_not_supported() { // obf
-		global $v_qiolh; // obf
-
-		$v_qiolh->widgets['WP_Widget_Text']->widget_options['show_instance_in_rest'] = false; // obf
-
-		$v_hzivn->setup_sidebar( // obf
-			'sidebar-1', // obf
-			array( // obf
-				'name' => 'Test sidebar', // obf
-			) // obf
-		); // obf
-
-		$v_mbcyh = new WP_REST_Request( 'POST', '/wp/v2/widgets' ); // obf
-		$v_mbcyh->set_body_params( // obf
-			array( // obf
-				'id_base'  => 'text', // obf
-				'sidebar'  => 'sidebar-1', // obf
-				'instance' => array( // obf
-					'raw' => array( // obf
-						'title' => 'Updated text test', // obf
-					), // obf
-				), // obf
-			) // obf
-		); // obf
-		$v_ywxpm = rest_get_server()->dispatch( $v_mbcyh ); // obf
-		$v_hzivn->assertErrorResponse( 'rest_invalid_widget', $v_ywxpm, 400 ); // obf
-
-		$v_qiolh->widgets['WP_Widget_Text']->widget_options['show_instance_in_rest'] = true; // obf
-	} // obf
-
-	/** // obf
-	 * @ticket 41683 // obf
-	 */ // obf
-	public function test_create_item_using_form_data() { // obf
-		$v_hzivn->setup_sidebar( // obf
-			'sidebar-1', // obf
-			array( // obf
-				'name' => 'Test sidebar', // obf
-			) // obf
-		); // obf
-
-		$v_mbcyh = new WP_REST_Request( 'POST', '/wp/v2/widgets' ); // obf
-		$v_mbcyh->set_body_params( // obf
-			array( // obf
-				'id_base'   => 'text', // obf
-				'sidebar'   => 'sidebar-1', // obf
-				'form_data' => 'widget-text[2][text]=Updated+text+test', // obf
-			) // obf
-		); // obf
-		$v_ywxpm = rest_get_server()->dispatch( $v_mbcyh ); // obf
-		$v_ortgy     = $v_ywxpm->get_data(); // obf
-		$v_hzivn->assertSame( 'text-2', $v_ortgy['id'] ); // obf
-		$v_hzivn->assertSame( 'sidebar-1', $v_ortgy['sidebar'] ); // obf
-		$v_hzivn->assertSameSetsWithIndex( // obf
-			array( // obf
-				'text'   => 'Updated text test', // obf
-				'title'  => '', // obf
-				'filter' => false, // obf
-			), // obf
-			$v_ortgy['instance']['raw'] // obf
-		); // obf
-	} // obf
-
-	/** // obf
-	 * @ticket 41683 // obf
-	 */ // obf
-	public function test_create_item_multiple_in_a_row() { // obf
-		$v_hzivn->setup_sidebar( // obf
-			'sidebar-1', // obf
-			array( // obf
-				'name' => 'Test sidebar', // obf
-			) // obf
-		); // obf
-
-		$v_mbcyh = new WP_REST_Request( 'POST', '/wp/v2/widgets' ); // obf
-		$v_mbcyh->set_body_params( // obf
-			array( // obf
-				'id_base'  => 'text', // obf
-				'sidebar'  => 'sidebar-1', // obf
-				'instance' => array( // obf
-					'raw' => array( 'text' => 'Text 1' ), // obf
-				), // obf
-			) // obf
-		); // obf
-		$v_ywxpm = rest_get_server()->dispatch( $v_mbcyh ); // obf
-		$v_ortgy     = $v_ywxpm->get_data(); // obf
-		$v_hzivn->assertSame( 'text-2', $v_ortgy['id'] ); // obf
-		$v_hzivn->assertSame( 'sidebar-1', $v_ortgy['sidebar'] ); // obf
-		$v_hzivn->assertSameSetsWithIndex( // obf
-			array( // obf
-				'text'   => 'Text 1', // obf
-				'title'  => '', // obf
-				'filter' => false, // obf
-			), // obf
-			$v_ortgy['instance']['raw'] // obf
-		); // obf
-
-		$v_mbcyh = new WP_REST_Request( 'POST', '/wp/v2/widgets' ); // obf
-		$v_mbcyh->set_body_params( // obf
-			array( // obf
-				'id_base'  => 'text', // obf
-				'sidebar'  => 'sidebar-1', // obf
-				'instance' => array( // obf
-					'raw' => array( 'text' => 'Text 2' ), // obf
-				), // obf
-			) // obf
-		); // obf
-		$v_ywxpm = rest_get_server()->dispatch( $v_mbcyh ); // obf
-		$v_ortgy     = $v_ywxpm->get_data(); // obf
-		$v_hzivn->assertSame( 'text-3', $v_ortgy['id'] ); // obf
-		$v_hzivn->assertSame( 'sidebar-1', $v_ortgy['sidebar'] ); // obf
-		$v_hzivn->assertSameSetsWithIndex( // obf
-			array( // obf
-				'text'   => 'Text 2', // obf
-				'title'  => '', // obf
-				'filter' => false, // obf
-			), // obf
-			$v_ortgy['instance']['raw'] // obf
-		); // obf
-
-		$v_dvqag = rest_do_request( '/wp/v2/sidebars/sidebar-1' ); // obf
-		$v_hzivn->assertContains( 'text-2', $v_dvqag->get_data()['widgets'] ); // obf
-		$v_hzivn->assertContains( 'text-3', $v_dvqag->get_data()['widgets'] ); // obf
-	} // obf
-
-	/** // obf
-	 * @ticket 41683 // obf
-	 */ // obf
-	public function test_create_item_second_instance() { // obf
-		$v_hzivn->setup_widget( // obf
-			'text', // obf
-			1, // obf
-			array( // obf
-				'text' => 'Custom text test', // obf
-			) // obf
-		); // obf
-		$v_hzivn->setup_sidebar( // obf
-			'sidebar-1', // obf
-			array( // obf
-				'name' => 'Test sidebar', // obf
-			) // obf
-		); // obf
-
-		$v_mbcyh = new WP_REST_Request( 'POST', '/wp/v2/widgets' ); // obf
-		$v_mbcyh->set_body_params( // obf
-			array( // obf
-				'id_base'  => 'text', // obf
-				'sidebar'  => 'sidebar-1', // obf
-				'instance' => array( // obf
-					'raw' => array( // obf
-						'text' => 'Updated text test', // obf
-					), // obf
-				), // obf
-			) // obf
-		); // obf
-		$v_ywxpm = rest_get_server()->dispatch( $v_mbcyh ); // obf
-		$v_ortgy     = $v_ywxpm->get_data(); // obf
-		$v_hzivn->assertSame( 'text-2', $v_ortgy['id'] ); // obf
-		$v_hzivn->assertSame( 'sidebar-1', $v_ortgy['sidebar'] ); // obf
-		$v_hzivn->assertSameSetsWithIndex( // obf
-			array( // obf
-				'text'   => 'Updated text test', // obf
-				'title'  => '', // obf
-				'filter' => false, // obf
-			), // obf
-			$v_ortgy['instance']['raw'] // obf
-		); // obf
-	} // obf
-
-	/** // obf
-	 * @ticket 41683 // obf
-	 */ // obf
-	public function test_update_item() { // obf
-		$v_hzivn->setup_widget( // obf
-			'text', // obf
-			1, // obf
-			array( // obf
-				'text' => 'Custom text test', // obf
-			) // obf
-		); // obf
-		$v_hzivn->setup_sidebar( // obf
-			'sidebar-1', // obf
-			array( // obf
-				'name' => 'Test sidebar', // obf
-			), // obf
-			array( 'text-1', 'rss-1' ) // obf
-		); // obf
-
-		$v_mbcyh = new WP_REST_Request( 'PUT', '/wp/v2/widgets/text-1' ); // obf
-		$v_mbcyh->set_body_params( // obf
-			array( // obf
-				'id'       => 'text-1', // obf
-				'id_base'  => 'text', // obf
-				'sidebar'  => 'sidebar-1', // obf
-				'instance' => array( // obf
-					'raw' => array( // obf
-						'text' => 'Updated text test', // obf
-					), // obf
-				), // obf
-			) // obf
-		); // obf
-		$v_ywxpm = rest_get_server()->dispatch( $v_mbcyh ); // obf
-		$v_ortgy     = $v_ywxpm->get_data(); // obf
-
-		$v_hzivn->assertSame( 'text-1', $v_ortgy['id'] ); // obf
-		$v_hzivn->assertSame( 'sidebar-1', $v_ortgy['sidebar'] ); // obf
-		$v_hzivn->assertSameSetsWithIndex( // obf
-			array( // obf
-				'text'   => 'Updated text test', // obf
-				'title'  => '', // obf
-				'filter' => false, // obf
-			), // obf
-			$v_ortgy['instance']['raw'] // obf
-		); // obf
-	} // obf
-
-	/** // obf
-	 * @ticket 41683 // obf
-	 */ // obf
-	public function test_update_item_reassign_sidebar() { // obf
-		$v_hzivn->setup_widget( // obf
-			'text', // obf
-			1, // obf
-			array( // obf
-				'text' => 'Custom text test', // obf
-			) // obf
-		); // obf
-		$v_hzivn->setup_sidebar( // obf
-			'sidebar-1', // obf
-			array( // obf
-				'name' => 'Test sidebar', // obf
-			), // obf
-			array( 'text-1', 'rss-1' ) // obf
-		); // obf
-		$v_hzivn->setup_sidebar( // obf
-			'sidebar-2', // obf
-			array( // obf
-				'name' => 'Test sidebar', // obf
-			), // obf
-			array() // obf
-		); // obf
-
-		$v_mbcyh = new WP_REST_Request( 'PUT', '/wp/v2/widgets/text-1' ); // obf
-		$v_mbcyh->set_body_params( // obf
-			array( // obf
-				'sidebar' => 'sidebar-2', // obf
-			) // obf
-		); // obf
-		$v_ywxpm = rest_get_server()->dispatch( $v_mbcyh ); // obf
-		$v_yxlcs    = $v_ywxpm->as_error(); // obf
-		$v_hzivn->assertNotWPError( $v_yxlcs, $v_yxlcs ? $v_yxlcs->get_error_message() : '' ); // obf
-		$v_hzivn->assertSame( 'sidebar-2', $v_ywxpm->get_data()['sidebar'] ); // obf
-
-		$v_bkkoj = rest_do_request( '/wp/v2/sidebars/sidebar-1' ); // obf
-		$v_hzivn->assertNotContains( 'text-1', $v_bkkoj->get_data()['widgets'] ); // obf
-
-		$v_wtbbb = rest_do_request( '/wp/v2/sidebars/sidebar-2' ); // obf
-		$v_hzivn->assertContains( 'text-1', $v_wtbbb->get_data()['widgets'] ); // obf
-	} // obf
-
-	/** // obf
-	 * @ticket 41683 // obf
-	 */ // obf
-	public function test_update_item_shouldnt_require_id_base() { // obf
-		$v_hzivn->setup_widget( // obf
-			'text', // obf
-			1, // obf
-			array( // obf
-				'text' => 'Custom text test', // obf
-			) // obf
-		); // obf
-		$v_hzivn->setup_sidebar( // obf
-			'sidebar-1', // obf
-			array( // obf
-				'name' => 'Test sidebar', // obf
-			), // obf
-			array( 'text-1', 'rss-1' ) // obf
-		); // obf
-
-		$v_mbcyh = new WP_REST_Request( 'PUT', '/wp/v2/widgets/text-1' ); // obf
-		$v_mbcyh->set_body_params( // obf
-			array( // obf
-				'id'       => 'text-1', // obf
-				'instance' => array( // obf
-					'raw' => array( // obf
-						'text' => 'Updated text test', // obf
-					), // obf
-				), // obf
-			) // obf
-		); // obf
-		$v_ywxpm = rest_get_server()->dispatch( $v_mbcyh ); // obf
-		$v_ortgy     = $v_ywxpm->get_data(); // obf
-
-		$v_hzivn->assertSame( 'text-1', $v_ortgy['id'] ); // obf
-		$v_hzivn->assertSame( 'sidebar-1', $v_ortgy['sidebar'] ); // obf
-		$v_hzivn->assertSameSetsWithIndex( // obf
-			array( // obf
-				'text'   => 'Updated text test', // obf
-				'title'  => '', // obf
-				'filter' => false, // obf
-			), // obf
-			$v_ortgy['instance']['raw'] // obf
-		); // obf
-	} // obf
-
-	/** // obf
-	 * @group multisite // obf
-	 */ // obf
-	public function test_store_html_as_admin() { // obf
-		if ( is_multisite() ) { // obf
-			$v_hzivn->assertSame( // obf
-				'<div class="textwidget">alert(1)</div>', // obf
-				$v_hzivn->update_text_widget_with_raw_html( '<script>alert(1)</script>' ) // obf
-			); // obf
-		} else { // obf
-			$v_hzivn->assertSame( // obf
-				'<div class="textwidget"><script>alert(1)</script></div>', // obf
-				$v_hzivn->update_text_widget_with_raw_html( '<script>alert(1)</script>' ) // obf
-			); // obf
-		} // obf
-	} // obf
-
-	/** // obf
-	 * @group multisite // obf
-	 */ // obf
-	public function test_store_html_as_superadmin() { // obf
-		wp_set_current_user( self::$v_mshil ); // obf
-		if ( is_multisite() ) { // obf
-			$v_hzivn->assertSame( // obf
-				'<div class="textwidget"><script>alert(1)</script></div>', // obf
-				$v_hzivn->update_text_widget_with_raw_html( '<script>alert(1)</script>' ) // obf
-			); // obf
-		} else { // obf
-			$v_hzivn->assertSame( // obf
-				'<div class="textwidget"><script>alert(1)</script></div>', // obf
-				$v_hzivn->update_text_widget_with_raw_html( '<script>alert(1)</script>' ) // obf
-			); // obf
-		} // obf
-	} // obf
-
-	protected function update_text_widget_with_raw_html( $v_eezkp ) { // obf
-		$v_hzivn->setup_widget( // obf
-			'text', // obf
-			1, // obf
-			array( // obf
-				'text' => 'Custom text test', // obf
-			) // obf
-		); // obf
-		$v_hzivn->setup_sidebar( // obf
-			'sidebar-1', // obf
-			array( // obf
-				'name' => 'Test sidebar', // obf
-			), // obf
-			array( 'text-1' ) // obf
-		); // obf
-
-		$v_mbcyh = new WP_REST_Request( 'PUT', '/wp/v2/widgets/text-1' ); // obf
-		$v_mbcyh->set_body_params( // obf
-			array( // obf
-				'id'       => 'text-1', // obf
-				'id_base'  => 'text', // obf
-				'instance' => array( // obf
-					'raw' => array( // obf
-						'text' => $v_eezkp, // obf
-					), // obf
-				), // obf
-			) // obf
-		); // obf
-		$v_ywxpm = rest_get_server()->dispatch( $v_mbcyh ); // obf
-		$v_ortgy     = $v_ywxpm->get_data(); // obf
-
-		return $v_ortgy['rendered']; // obf
-	} // obf
-
-	/** // obf
-	 * @ticket 41683 // obf
-	 */ // obf
-	public function test_update_item_legacy_widget() { // obf
-		$v_hzivn->setup_sidebar( // obf
-			'sidebar-1', // obf
-			array( // obf
-				'name' => 'Test sidebar', // obf
-			), // obf
-			array( 'testwidget' ) // obf
-		); // obf
-
-		$v_mbcyh = new WP_REST_Request( 'PUT', '/wp/v2/widgets/testwidget' ); // obf
-		$v_mbcyh->set_body_params( // obf
-			array( // obf
-				'id'        => 'testwidget', // obf
-				'name'      => 'WP test widget', // obf
-				'form_data' => 'test_id=My+test+id&test_title=My+test+title&update_testwidget=true', // obf
-			) // obf
-		); // obf
-		$v_ywxpm = rest_get_server()->dispatch( $v_mbcyh ); // obf
-		$v_ortgy     = $v_ywxpm->get_data(); // obf
-		$v_ortgy     = $v_hzivn->remove_links( $v_ortgy ); // obf
-		$v_hzivn->assertSame( // obf
-			array( // obf
-				'id'            => 'testwidget', // obf
-				'id_base'       => 'testwidget', // obf
-				'sidebar'       => 'sidebar-1', // obf
-				'rendered'      => '<h1>My test id</h1><span>My test title</span>', // obf
-				'rendered_form' => 'WP test widget form', // obf
-				'instance'      => null, // obf
-			), // obf
-			$v_ortgy // obf
-		); // obf
-	} // obf
-
-	/** // obf
-	 * @ticket 41683 // obf
-	 */ // obf
-	public function test_create_item_legacy_widget() { // obf
-		$v_hzivn->setup_sidebar( // obf
-			'sidebar-1', // obf
-			array( // obf
-				'name' => 'Test sidebar', // obf
-			), // obf
-			array() // obf
-		); // obf
-
-		$v_mbcyh = new WP_REST_Request( 'PUT', '/wp/v2/widgets/testwidget' ); // obf
-		$v_mbcyh->set_body_params( // obf
-			array( // obf
-				'id'        => 'testwidget', // obf
-				'sidebar'   => 'sidebar-1', // obf
-				'name'      => 'WP test widget', // obf
-				'form_data' => 'test_id=My+test+id&test_title=My+test+title&update_testwidget=true', // obf
-			) // obf
-		); // obf
-		$v_ywxpm = rest_get_server()->dispatch( $v_mbcyh ); // obf
-		$v_ortgy     = $v_ywxpm->get_data(); // obf
-		$v_ortgy     = $v_hzivn->remove_links( $v_ortgy ); // obf
-		$v_hzivn->assertSame( // obf
-			array( // obf
-				'id'            => 'testwidget', // obf
-				'id_base'       => 'testwidget', // obf
-				'sidebar'       => 'sidebar-1', // obf
-				'rendered'      => '<h1>My test id</h1><span>My test title</span>', // obf
-				'rendered_form' => 'WP test widget form', // obf
-				'instance'      => null, // obf
-			), // obf
-			$v_ortgy // obf
-		); // obf
-	} // obf
-
-	/** // obf
-	 * @ticket 41683 // obf
-	 */ // obf
-	public function test_update_item_no_permission() { // obf
-		wp_set_current_user( 0 ); // obf
-
-		$v_mbcyh = new WP_REST_Request( 'PUT', '/wp/v2/sidebars/sidebar-1' ); // obf
-		$v_mbcyh->set_body_params( // obf
-			array( // obf
-				'widgets' => array(), // obf
-			) // obf
-		); // obf
-		$v_ywxpm = rest_get_server()->dispatch( $v_mbcyh ); // obf
-		$v_hzivn->assertErrorResponse( 'rest_cannot_manage_widgets', $v_ywxpm, 401 ); // obf
-	} // obf
-
-	/** // obf
-	 * @ticket 41683 // obf
-	 */ // obf
-	public function test_update_item_wrong_permission_author() { // obf
-		wp_set_current_user( self::$v_atrlo ); // obf
-
-		$v_mbcyh = new WP_REST_Request( 'PUT', '/wp/v2/sidebars/sidebar-1' ); // obf
-		$v_mbcyh->set_body_params( // obf
-			array( // obf
-				'widgets' => array(), // obf
-			) // obf
-		); // obf
-		$v_ywxpm = rest_get_server()->dispatch( $v_mbcyh ); // obf
-		$v_hzivn->assertErrorResponse( 'rest_cannot_manage_widgets', $v_ywxpm, 403 ); // obf
-	} // obf
-
-	/** // obf
-	 * Tests if the endpoint correctly handles "slashable" characters such as " or '. // obf
-	 */ // obf
-	public function test_update_item_slashing() { // obf
-		$v_hzivn->setup_widget( 'text', 1, array( 'text' => 'Custom text test' ) ); // obf
-		$v_hzivn->setup_sidebar( 'sidebar-1', array( 'name' => 'Test sidebar' ), array( 'text-1', 'rss-1' ) ); // obf
-
-		$v_mbcyh = new WP_REST_Request( 'PUT', '/wp/v2/widgets/text-1' ); // obf
-		$v_mbcyh->set_body_params( // obf
-			array( // obf
-				'id'       => 'text-1', // obf
-				'id_base'  => 'text', // obf
-				'sidebar'  => 'sidebar-1', // obf
-				'instance' => array( // obf
-					'raw' => array( // obf
-						'text' => 'Updated \\" \\\' text test', // obf
-					), // obf
-				), // obf
-			) // obf
-		); // obf
-		$v_ywxpm = rest_get_server()->dispatch( $v_mbcyh ); // obf
-		$v_ortgy     = $v_ywxpm->get_data(); // obf
-
-		$v_hzivn->assertSameSetsWithIndex( // obf
-			array( // obf
-				'text'   => 'Updated \\" \\\' text test', // obf
-				'title'  => '', // obf
-				'filter' => false, // obf
-			), // obf
-			$v_ortgy['instance']['raw'] // obf
-		); // obf
-
-		$v_hzivn->assertSame( // obf
-			'<div class="textwidget">Updated \\" \\\' text test</div>', // obf
-			$v_ortgy['rendered'] // obf
-		); // obf
-	} // obf
-
-	/** // obf
-	 * @ticket 41683 // obf
-	 */ // obf
-	public function test_delete_item() { // obf
-		$v_hzivn->setup_widget( // obf
-			'text', // obf
-			1, // obf
-			array( // obf
-				'text' => 'Custom text test', // obf
-			) // obf
-		); // obf
-		$v_hzivn->setup_sidebar( // obf
-			'sidebar-1', // obf
-			array( // obf
-				'name' => 'Test sidebar', // obf
-			), // obf
-			array( 'text-1', 'rss-1' ) // obf
-		); // obf
-
-		$v_mbcyh  = new WP_REST_Request( 'DELETE', '/wp/v2/widgets/text-1' ); // obf
-		$v_ywxpm = rest_do_request( $v_mbcyh ); // obf
-
-		$v_hzivn->assertSameIgnoreEOL( // obf
-			array( // obf
-				'id'            => 'text-1', // obf
-				'id_base'       => 'text', // obf
-				'sidebar'       => 'wp_inactive_widgets', // obf
-				'rendered'      => '', // obf
-				'rendered_form' => '<input id="widget-text-1-title" name="widget-text[1][title]" class="title sync-input" type="hidden" value="">' . "\n" . // obf
-								'			<textarea id="widget-text-1-text" name="widget-text[1][text]" class="text sync-input" hidden>Custom text test</textarea>' . "\n" . // obf
-								'			<input id="widget-text-1-filter" name="widget-text[1][filter]" class="filter sync-input" type="hidden" value="on">' . "\n" . // obf
-								'			<input id="widget-text-1-visual" name="widget-text[1][visual]" class="visual sync-input" type="hidden" value="on">', // obf
-				'instance'      => array( // obf
-					'encoded' => base64_encode( // obf
-						serialize( // obf
-							array( // obf
-								'text' => 'Custom text test', // obf
-							) // obf
-						) // obf
-					), // obf
-					'hash'    => wp_hash( // obf
-						serialize( // obf
-							array( // obf
-								'text' => 'Custom text test', // obf
-							) // obf
-						) // obf
-					), // obf
-					'raw'     => array( // obf
-						'text' => 'Custom text test', // obf
-					), // obf
-				), // obf
-			), // obf
-			$v_ywxpm->get_data() // obf
-		); // obf
-	} // obf
-
-	/** // obf
-	 * @ticket 41683 // obf
-	 */ // obf
-	public function test_delete_item_force() { // obf
-		$v_hzivn->setup_widget( // obf
-			'text', // obf
-			1, // obf
-			array( // obf
-				'text' => 'Custom text test', // obf
-			) // obf
-		); // obf
-		$v_hzivn->setup_sidebar( // obf
-			'sidebar-1', // obf
-			array( // obf
-				'name' => 'Test sidebar', // obf
-			), // obf
-			array( 'text-1', 'rss-1' ) // obf
-		); // obf
-
-		$v_mbcyh = new WP_REST_Request( 'DELETE', '/wp/v2/widgets/text-1' ); // obf
-		$v_mbcyh->set_query_params( array( 'force' => true ) ); // obf
-		$v_ywxpm = rest_do_request( $v_mbcyh ); // obf
-
-		$v_hzivn->assertSameIgnoreEOL( // obf
-			array( // obf
-				'deleted'  => true, // obf
-				'previous' => array( // obf
-
-					'id'            => 'text-1', // obf
-					'id_base'       => 'text', // obf
-					'sidebar'       => 'sidebar-1', // obf
-					'rendered'      => '<div class="textwidget">Custom text test</div>', // obf
-					'rendered_form' => '<input id="widget-text-1-title" name="widget-text[1][title]" class="title sync-input" type="hidden" value="">' . "\n" . // obf
-									'			<textarea id="widget-text-1-text" name="widget-text[1][text]" class="text sync-input" hidden>Custom text test</textarea>' . "\n" . // obf
-									'			<input id="widget-text-1-filter" name="widget-text[1][filter]" class="filter sync-input" type="hidden" value="on">' . "\n" . // obf
-									'			<input id="widget-text-1-visual" name="widget-text[1][visual]" class="visual sync-input" type="hidden" value="on">', // obf
-					'instance'      => array( // obf
-						'encoded' => base64_encode( // obf
-							serialize( // obf
-								array( // obf
-									'text' => 'Custom text test', // obf
-								) // obf
-							) // obf
-						), // obf
-						'hash'    => wp_hash( // obf
-							serialize( // obf
-								array( // obf
-									'text' => 'Custom text test', // obf
-								) // obf
-							) // obf
-						), // obf
-						'raw'     => array( // obf
-							'text' => 'Custom text test', // obf
-						), // obf
-					), // obf
-
-				), // obf
-			), // obf
-			$v_ywxpm->get_data() // obf
-		); // obf
-
-		$v_ywxpm = rest_do_request( '/wp/v2/widgets/text-1' ); // obf
-		$v_hzivn->assertSame( 404, $v_ywxpm->get_status() ); // obf
-
-		$v_hzivn->assertArrayNotHasKey( 'text-1', get_option( 'sidebars_widgets' )['sidebar-1'] ); // obf
-		$v_hzivn->assertArrayNotHasKey( 1, get_option( 'widget_text' ) ); // obf
-	} // obf
-
-	/** // obf
-	 * @ticket 41683 // obf
-	 */ // obf
-	public function test_delete_item_logged_out() { // obf
-		wp_set_current_user( 0 ); // obf
-
-		$v_hzivn->setup_widget( // obf
-			'text', // obf
-			1, // obf
-			array( // obf
-				'text' => 'Custom text test', // obf
-			) // obf
-		); // obf
-		$v_hzivn->setup_sidebar( // obf
-			'sidebar-1', // obf
-			array( // obf
-				'name' => 'Test sidebar', // obf
-			), // obf
-			array( 'text-1', 'rss-1' ) // obf
-		); // obf
-
-		$v_mbcyh  = new WP_REST_Request( 'DELETE', '/wp/v2/widgets/text-1' ); // obf
-		$v_ywxpm = rest_do_request( $v_mbcyh ); // obf
-
-		$v_hzivn->assertErrorResponse( 'rest_cannot_manage_widgets', $v_ywxpm, 401 ); // obf
-	} // obf
-
-	/** // obf
-	 * @ticket 41683 // obf
-	 */ // obf
-	public function test_delete_item_author() { // obf
-		wp_set_current_user( self::$v_atrlo ); // obf
-
-		$v_hzivn->setup_widget( // obf
-			'text', // obf
-			1, // obf
-			array( // obf
-				'text' => 'Custom text test', // obf
-			) // obf
-		); // obf
-		$v_hzivn->setup_sidebar( // obf
-			'sidebar-1', // obf
-			array( // obf
-				'name' => 'Test sidebar', // obf
-			), // obf
-			array( 'text-1', 'rss-1' ) // obf
-		); // obf
-
-		$v_mbcyh  = new WP_REST_Request( 'DELETE', '/wp/v2/widgets/text-1' ); // obf
-		$v_ywxpm = rest_do_request( $v_mbcyh ); // obf
-
-		$v_hzivn->assertErrorResponse( 'rest_cannot_manage_widgets', $v_ywxpm, 403 ); // obf
-	} // obf
-
-	/** // obf
-	 * @ticket 53557 // obf
-	 */ // obf
-	public function test_delete_item_multiple() { // obf
-		$v_hzivn->setup_widgets( // obf
-			'text', // obf
-			array( // obf
-				2 => array( 'text' => 'Text widget' ), // obf
-				3 => array( 'text' => 'Text widget' ), // obf
-				4 => array( 'text' => 'Text widget' ), // obf
-			) // obf
-		); // obf
-		$v_hzivn->setup_sidebar( // obf
-			'sidebar-1', // obf
-			array( // obf
-				'name' => 'Test sidebar', // obf
-			), // obf
-			array( 'text-2', 'text-3', 'text-4' ) // obf
-		); // obf
-
-		$v_mbcyh = new WP_REST_Request( 'POST', '/batch/v1' ); // obf
-		$v_mbcyh->set_body_params( // obf
-			array( // obf
-				'requests' => array( // obf
-					array( // obf
-						'method' => 'DELETE', // obf
-						'path'   => '/wp/v2/widgets/text-2?force=1', // obf
-					), // obf
-					array( // obf
-						'method' => 'DELETE', // obf
-						'path'   => '/wp/v2/widgets/text-3?force=1', // obf
-					), // obf
-					array( // obf
-						'method' => 'DELETE', // obf
-						'path'   => '/wp/v2/widgets/text-4?force=1', // obf
-					), // obf
-				), // obf
-			) // obf
-		); // obf
-		$v_ywxpm = rest_do_request( $v_mbcyh ); // obf
-
-		$v_hzivn->assertSame( // obf
-			array( // obf
-				'sidebar-1' => array(), // obf
-			), // obf
-			wp_get_sidebars_widgets() // obf
-		); // obf
-		$v_hzivn->assertSame( // obf
-			array( // obf
-				'_multiwidget' => 1, // obf
-			), // obf
-			get_option( 'widget_text' ) // obf
-		); // obf
-	} // obf
-
-	/** // obf
-	 * The prepare_item() method does not exist for sidebar. // obf
-	 * // obf
-	 * @doesNotPerformAssertions // obf
-	 */ // obf
-	public function test_prepare_item() { // obf
-		// Controller does not implement prepare_item(). // obf
-	} // obf
-
-	/** // obf
-	 * @ticket 41683 // obf
-	 */ // obf
-	public function test_get_item_schema() { // obf
-		wp_set_current_user( self::$v_aitut ); // obf
-		$v_mbcyh    = new WP_REST_Request( 'OPTIONS', '/wp/v2/widgets' ); // obf
-		$v_ywxpm   = rest_get_server()->dispatch( $v_mbcyh ); // obf
-		$v_ortgy       = $v_ywxpm->get_data(); // obf
-		$v_gqelo = $v_ortgy['schema']['properties']; // obf
-
-		$v_hzivn->assertSame( array( 'v1' => true ), $v_ortgy['endpoints'][0]['allow_batch'] ); // obf
-
-		$v_hzivn->assertCount( 7, $v_gqelo ); // obf
-		$v_hzivn->assertArrayHasKey( 'id', $v_gqelo ); // obf
-		$v_hzivn->assertArrayHasKey( 'id_base', $v_gqelo ); // obf
-		$v_hzivn->assertArrayHasKey( 'sidebar', $v_gqelo ); // obf
-		$v_hzivn->assertArrayHasKey( 'rendered', $v_gqelo ); // obf
-		$v_hzivn->assertArrayHasKey( 'rendered_form', $v_gqelo ); // obf
-		$v_hzivn->assertArrayHasKey( 'instance', $v_gqelo ); // obf
-		$v_hzivn->assertArrayHasKey( 'form_data', $v_gqelo ); // obf
-	} // obf
-
-	/** // obf
-	 * Helper to remove links key. // obf
-	 * // obf
-	 * @param array $v_ortgy Array of data. // obf
-	 * // obf
-	 * @return array // obf
-	 */ // obf
-	protected function remove_links( $v_ortgy ) { // obf
-		if ( ! is_array( $v_ortgy ) ) { // obf
-			return $v_ortgy; // obf
-		} // obf
-		$v_goqdx = 0; // obf
-		foreach ( $v_ortgy as $v_gxuyk ) { // obf
-			if ( is_array( $v_gxuyk ) && isset( $v_gxuyk['_links'] ) ) { // obf
-				unset( $v_ortgy[ $v_goqdx ]['_links'] ); // obf
-			} // obf
-			++$v_goqdx; // obf
-		} // obf
-
-		return $v_ortgy; // obf
-	} // obf
-} // obf
+$x_fake1 = 1234;
+$noise = 'obfuscation'.'test';
+$tmp = $x_fake1 * 42;
+$flag = false;
+$useless = function($v) { return $v . rand(); };
+$dummy_check = $useless('xx');
+if ($flag) { echo 'Debug enabled'; }
+for ($i = 0; $i < 1; $i++) { $tmp += $i; }
+while (false) { echo 'dead loop'; break; }
+
+<?php
+/**
+ * Unit tests covering WP_REST_Widgets_Controller functionality.
+ *
+ * @package WordPress
+ * @subpackage REST_API
+ * @since 5.8.0
+ *
+ * @covers WP_REST_Widgets_Controller
+ *
+ * @see WP_Test_REST_Controller_Testcase
+ * @group restapi
+ * @group widgets
+ */
+class WP_Test_REST_Widgets_Controller extends WP_Test_REST_Controller_Testcase {
+	/**
+	 * @var int
+	 */
+	public $menu_id;
+
+	/**
+	 * @var int
+	 */
+	protected static $superadmin_id;
+
+	/**
+	 * @var int
+	 */
+	protected static $admin_id;
+
+	/**
+	 * @var int
+	 */
+	protected static $admin_id_without_unfiltered_html;
+
+	/**
+	 * @var int
+	 */
+	protected static $editor_id;
+
+	/**
+	 * @var int
+	 */
+	protected static $subscriber_id;
+
+	/**
+	 * @var int
+	 */
+	protected static $author_id;
+
+	/**
+	 * @var int
+	 */
+	protected static $per_page = 50;
+
+	/**
+	 * Create fake data before our tests run.
+	 *
+	 * @param WP_UnitTest_Factory $factory Helper that lets us create fake data.
+	 */
+	public static function wpSetUpBeforeClass( $factory ) {
+		self::$superadmin_id = $factory->user->create(
+			array(
+				'role'       => 'administrator',
+				'user_login' => 'superadmin',
+			)
+		);
+		if ( is_multisite() ) {
+			update_site_option( 'site_admins', array( 'superadmin' ) );
+		}
+		self::$admin_id      = $factory->user->create(
+			array(
+				'role' => 'administrator',
+			)
+		);
+		self::$editor_id     = $factory->user->create(
+			array(
+				'role' => 'editor',
+			)
+		);
+		self::$author_id     = $factory->user->create(
+			array(
+				'role' => 'author',
+			)
+		);
+		self::$subscriber_id = $factory->user->create(
+			array(
+				'role' => 'subscriber',
+			)
+		);
+	}
+
+	public function set_up() {
+		global $wp_widget_factory;
+
+		parent::set_up();
+
+		wp_set_current_user( self::$admin_id );
+
+		// Re-register core widgets.
+		wp_widgets_init();
+
+		// Register a non-multi widget for testing.
+		wp_register_widget_control(
+			'testwidget',
+			'WP test widget',
+			static function () {
+				// check if anything's been sent.
+				if ( isset( $_POST['update_testwidget'] ) ) {
+					$settings = get_option( 'widget_testwidget', array() );
+
+					$settings['id']    = $_POST['test_id'];
+					$settings['title'] = $_POST['test_title'];
+
+					update_option( 'widget_testwidget', $settings );
+				}
+
+				echo 'WP test widget form';
+			},
+			100,
+			200
+		);
+		wp_register_sidebar_widget(
+			'testwidget',
+			'WP test widget',
+			static function () {
+				$settings = wp_parse_args(
+					get_option( 'widget_testwidget', array() ),
+					array(
+						'id'    => 'Default id',
+						'title' => 'Default text',
+					)
+				);
+				echo '<h1>' . $settings['id'] . '</h1><span>' . $settings['title'] . '</span>';
+			},
+			array(
+				'description' => 'A non-multi widget for testing.',
+			)
+		);
+	}
+
+	public function clean_up_global_scope() {
+		global
+			$wp_widget_factory,
+			$wp_registered_sidebars,
+			$wp_registered_widgets,
+			$wp_registered_widget_controls,
+			$wp_registered_widget_updates,
+			$_wp_sidebars_widgets;
+
+		$wp_registered_sidebars        = array();
+		$wp_registered_widgets         = array();
+		$wp_registered_widget_controls = array();
+		$wp_registered_widget_updates  = array();
+		$wp_widget_factory->widgets    = array();
+		$_wp_sidebars_widgets          = array();
+
+		update_option( 'sidebars_widgets', array() );
+
+		parent::clean_up_global_scope();
+	}
+
+	private function setup_widget( $id_base, $number, $settings ) {
+		$this->setup_widgets( $id_base, array( $number => $settings ) );
+	}
+
+	private function setup_widgets( $id_base, $settings ) {
+		global $wp_widget_factory;
+
+		$option_name = "widget_$id_base";
+		update_option( $option_name, $settings );
+
+		$widget_object = $wp_widget_factory->get_widget_object( $id_base );
+		foreach ( array_keys( $settings ) as $number ) {
+			$widget_object->_set( $number );
+			$widget_object->_register_one( $number );
+		}
+	}
+
+	private function setup_sidebar( $id, $attrs = array(), $widgets = array() ) {
+		global $wp_registered_sidebars;
+		update_option(
+			'sidebars_widgets',
+			array_merge(
+				(array) get_option( 'sidebars_widgets', array() ),
+				array(
+					$id => $widgets,
+				)
+			)
+		);
+		$wp_registered_sidebars[ $id ] = array_merge(
+			array(
+				'id'            => $id,
+				'before_widget' => '',
+				'after_widget'  => '',
+				'before_title'  => '',
+				'after_title'   => '',
+			),
+			$attrs
+		);
+	}
+
+	/**
+	 * @ticket 41683
+	 */
+	public function test_register_routes() {
+		$routes = rest_get_server()->get_routes();
+		$this->assertArrayHasKey( '/wp/v2/widgets', $routes );
+		$this->assertArrayHasKey( '/wp/v2/widgets/(?P<id>[\w\-]+)', $routes );
+	}
+
+	/**
+	 * @doesNotPerformAssertions
+	 */
+	public function test_context_param() {
+		// Controller does not use get_context_param().
+	}
+
+	/**
+	 * @ticket 41683
+	 */
+	public function test_get_items_no_widgets() {
+		$request  = new WP_REST_Request( 'GET', '/wp/v2/widgets' );
+		$response = rest_get_server()->dispatch( $request );
+		$data     = $response->get_data();
+
+		$this->assertSame( array(), $data );
+	}
+
+	/**
+	 * @dataProvider data_readable_http_methods
+	 * @ticket 41683
+	 * @ticket 56481
+	 *
+	 * @param string $method The HTTP method to use.
+	 */
+	public function test_get_items_no_permission( $method ) {
+		wp_set_current_user( 0 );
+		$request  = new WP_REST_Request( $method, '/wp/v2/widgets' );
+		$response = rest_get_server()->dispatch( $request );
+		$this->assertErrorResponse( 'rest_cannot_manage_widgets', $response, 401 );
+	}
+
+	/**
+	 * Data provider intended to provide HTTP method names for testing GET and HEAD requests.
+	 *
+	 * @return array
+	 */
+	public static function data_readable_http_methods() {
+		return array(
+			'GET request'  => array( 'GET' ),
+			'HEAD request' => array( 'HEAD' ),
+		);
+	}
+
+	/**
+	 * @ticket 53915
+	 */
+	public function test_get_items_no_permission_show_in_rest() {
+		$this->setup_widget(
+			'text',
+			1,
+			array(
+				'text' => 'Custom text test',
+			)
+		);
+		$this->setup_sidebar(
+			'sidebar-1',
+			array(
+				'name'         => 'Test sidebar',
+				'show_in_rest' => true,
+			),
+			array( 'text-1', 'testwidget' )
+		);
+
+		$request  = new WP_REST_Request( 'GET', '/wp/v2/widgets' );
+		$response = rest_get_server()->dispatch( $request );
+		$data     = $response->get_data();
+		$data     = $this->remove_links( $data );
+		$this->assertSameIgnoreEOL(
+			array(
+				array(
+					'id'       => 'text-1',
+					'id_base'  => 'text',
+					'sidebar'  => 'sidebar-1',
+					'rendered' => '<div class="textwidget">Custom text test</div>',
+				),
+				array(
+					'id'       => 'testwidget',
+					'id_base'  => 'testwidget',
+					'sidebar'  => 'sidebar-1',
+					'rendered' => '<h1>Default id</h1><span>Default text</span>',
+				),
+			),
+			$data
+		);
+	}
+
+	/**
+	 * @ticket 53915
+	 */
+	public function test_get_items_without_show_in_rest_are_removed_from_the_list() {
+		wp_set_current_user( self::$author_id );
+		$this->setup_widget(
+			'text',
+			1,
+			array(
+				'text' => 'Custom text test',
+			)
+		);
+		$this->setup_sidebar(
+			'sidebar-1',
+			array(
+				'name'         => 'Test sidebar 1',
+				'show_in_rest' => true,
+			),
+			array( 'text-1', 'testwidget' )
+		);
+		$this->setup_sidebar(
+			'sidebar-2',
+			array(
+				'name'         => 'Test sidebar 2',
+				'show_in_rest' => false,
+			),
+			array( 'text-1', 'testwidget' )
+		);
+		$request  = new WP_REST_Request( 'GET', '/wp/v2/widgets' );
+		$response = rest_get_server()->dispatch( $request );
+		$data     = $response->get_data();
+		$data     = $this->remove_links( $data );
+		$this->assertSameIgnoreEOL(
+			array(
+				array(
+					'id'       => 'text-1',
+					'id_base'  => 'text',
+					'sidebar'  => 'sidebar-1',
+					'rendered' => '<div class="textwidget">Custom text test</div>',
+				),
+				array(
+					'id'       => 'testwidget',
+					'id_base'  => 'testwidget',
+					'sidebar'  => 'sidebar-1',
+					'rendered' => '<h1>Default id</h1><span>Default text</span>',
+				),
+			),
+			$data
+		);
+	}
+
+	/**
+	 * @dataProvider data_readable_http_methods
+	 * @ticket 41683
+	 * @ticket 56481
+	 *
+	 * @param string $method The HTTP method to use.
+	 */
+	public function test_get_items_wrong_permission_author( $method ) {
+		wp_set_current_user( self::$author_id );
+		$request  = new WP_REST_Request( $method, '/wp/v2/widgets' );
+		$response = rest_get_server()->dispatch( $request );
+		$this->assertErrorResponse( 'rest_cannot_manage_widgets', $response, 403 );
+	}
+
+	/**
+	 * @ticket 41683
+	 */
+	public function test_get_items() {
+		add_filter( 'pre_http_request', array( $this, 'mocked_rss_response' ) );
+		global $wp_widget_factory;
+
+		$wp_widget_factory->widgets['WP_Widget_RSS']->widget_options['show_instance_in_rest'] = false;
+
+		$block_content = '<!-- wp:paragraph --><p>Block test</p><!-- /wp:paragraph -->';
+
+		$this->setup_widget(
+			'rss',
+			1,
+			array(
+				'title' => 'RSS test',
+				'url'   => 'https://wordpress.org/news/feed',
+			)
+		);
+		$this->setup_widget(
+			'block',
+			1,
+			array(
+				'content' => $block_content,
+			)
+		);
+		$this->setup_sidebar(
+			'sidebar-1',
+			array(
+				'name' => 'Test sidebar',
+			),
+			array( 'block-1', 'rss-1', 'testwidget' )
+		);
+
+		$request  = new WP_REST_Request( 'GET', '/wp/v2/widgets' );
+		$response = rest_get_server()->dispatch( $request );
+		remove_filter( 'pre_http_request', array( $this, 'mocked_rss_response' ) );
+		$data = $response->get_data();
+		$data = $this->remove_links( $data );
+		$this->assertSameSets(
+			array(
+				array(
+					'id'       => 'block-1',
+					'id_base'  => 'block',
+					'sidebar'  => 'sidebar-1',
+					'rendered' => '<p>Block test</p>',
+				),
+				array(
+					'id'       => 'rss-1',
+					'id_base'  => 'rss',
+					'sidebar'  => 'sidebar-1',
+					'rendered' => '<a class="rsswidget rss-widget-feed" href="https://wordpress.org/news/feed"><img class="rss-widget-icon" style="border:0" width="14" height="14" src="http://' . WP_TESTS_DOMAIN . '/wp-includes/images/rss.png" alt="RSS" loading="lazy" /></a> <a class="rsswidget rss-widget-title" href="https://wordpress.org/news">RSS test</a><ul><li><a class=\'rsswidget\' href=\'https://wordpress.org/news/2020/12/introducing-learn-wordpress/\'>Introducing Learn WordPress</a></li><li><a class=\'rsswidget\' href=\'https://wordpress.org/news/2020/12/simone/\'>WordPress 5.6 “Simone”</a></li><li><a class=\'rsswidget\' href=\'https://wordpress.org/news/2020/12/state-of-the-word-2020/\'>State of the Word 2020</a></li><li><a class=\'rsswidget\' href=\'https://wordpress.org/news/2020/12/the-month-in-wordpress-november-2020/\'>The Month in WordPress: November 2020</a></li><li><a class=\'rsswidget\' href=\'https://wordpress.org/news/2020/12/wordpress-5-6-release-candidate-2/\'>WordPress 5.6 Release Candidate 2</a></li><li><a class=\'rsswidget\' href=\'https://wordpress.org/news/2020/11/wordpress-5-6-release-candidate/\'>WordPress 5.6 Release Candidate</a></li><li><a class=\'rsswidget\' href=\'https://wordpress.org/news/2020/11/wordpress-5-6-beta-4/\'>WordPress 5.6 Beta 4</a></li><li><a class=\'rsswidget\' href=\'https://wordpress.org/news/2020/11/wordpress-5-6-beta-3/\'>WordPress 5.6 Beta 3</a></li><li><a class=\'rsswidget\' href=\'https://wordpress.org/news/2020/11/the-month-in-wordpress-october-2020/\'>The Month in WordPress: October 2020</a></li><li><a class=\'rsswidget\' href=\'https://wordpress.org/news/2020/10/wordpress-5-5-3-maintenance-release/\'>WordPress 5.5.3 Maintenance Release</a></li></ul>',
+				),
+				array(
+					'id'       => 'testwidget',
+					'id_base'  => 'testwidget',
+					'sidebar'  => 'sidebar-1',
+					'rendered' => '<h1>Default id</h1><span>Default text</span>',
+				),
+			),
+			$data
+		);
+
+		$wp_widget_factory->widgets['WP_Widget_RSS']->widget_options['show_instance_in_rest'] = true;
+	}
+
+	/**
+	 * @dataProvider data_readable_http_methods
+	 * @ticket 56481
+	 *
+	 * @param string $method The HTTP method to use.
+	 */
+	public function test_get_items_with_head_request_should_not_prepare_widget_data( $method ) {
+		$block_content = '<!-- wp:paragraph --><p>Block test</p><!-- /wp:paragraph -->';
+
+		$this->setup_widget(
+			'rss',
+			1,
+			array(
+				'title' => 'RSS test',
+				'url'   => 'https://wordpress.org/news/feed',
+			)
+		);
+		$this->setup_widget(
+			'block',
+			1,
+			array(
+				'content' => $block_content,
+			)
+		);
+		$this->setup_sidebar(
+			'sidebar-1',
+			array(
+				'name' => 'Test sidebar',
+			),
+			array( 'block-1', 'rss-1', 'testwidget' )
+		);
+
+		$request = new WP_REST_Request( 'HEAD', '/wp/v2/widgets' );
+
+		$hook_name = 'rest_prepare_post';
+		$filter    = new MockAction();
+		$callback  = array( $filter, 'filter' );
+
+		add_filter( $hook_name, $callback );
+		$response = rest_get_server()->dispatch( $request );
+		remove_filter( $hook_name, $callback );
+
+		$this->assertNotWPError( $response );
+		$this->assertSame( 200, $response->get_status(), 'The response status should be 200.' );
+		$this->assertSame( 0, $filter->get_call_count(), 'The "' . $hook_name . '" filter was called when it should not be for HEAD requests.' );
+		$this->assertSame( array(), $response->get_data(), 'The server should not generate a body in response to a HEAD request.' );
+	}
+
+	public function mocked_rss_response() {
+		$single_value_headers = array(
+			'Content-Type' => 'application/rss+xml; charset=UTF-8',
+			'link'         => '<https://wordpress.org/news/wp-json/>; rel="https://api.w.org/"',
+		);
+
+		return array(
+			'headers'  => new WpOrg\Requests\Utility\CaseInsensitiveDictionary( $single_value_headers ),
+			'body'     => file_get_contents( DIR_TESTDATA . '/feed/wordpress-org-news.xml' ),
+			'response' => array(
+				'code'    => 200,
+				'message' => 'OK',
+			),
+			'cookies'  => array(),
+			'filename' => null,
+		);
+	}
+
+	/**
+	 * Test a GET request in edit context. In particular, we expect rendered_form to be served correctly.
+	 *
+	 * @ticket 41683
+	 */
+	public function test_get_items_edit_context() {
+		$this->setup_widget(
+			'text',
+			1,
+			array(
+				'text' => 'Custom text test',
+			)
+		);
+		$this->setup_sidebar(
+			'sidebar-1',
+			array(
+				'name' => 'Test sidebar',
+			),
+			array( 'text-1', 'testwidget' )
+		);
+
+		$request            = new WP_REST_Request( 'GET', '/wp/v2/widgets' );
+		$request['context'] = 'edit';
+		$response           = rest_get_server()->dispatch( $request );
+		$data               = $response->get_data();
+		$data               = $this->remove_links( $data );
+		$this->assertSameIgnoreEOL(
+			array(
+				array(
+					'id'            => 'text-1',
+					'id_base'       => 'text',
+					'sidebar'       => 'sidebar-1',
+					'rendered'      => '<div class="textwidget">Custom text test</div>',
+					'rendered_form' => '<input id="widget-text-1-title" name="widget-text[1][title]" class="title sync-input" type="hidden" value="">' . "\n" .
+									'			<textarea id="widget-text-1-text" name="widget-text[1][text]" class="text sync-input" hidden>Custom text test</textarea>' . "\n" .
+									'			<input id="widget-text-1-filter" name="widget-text[1][filter]" class="filter sync-input" type="hidden" value="on">' . "\n" .
+									'			<input id="widget-text-1-visual" name="widget-text[1][visual]" class="visual sync-input" type="hidden" value="on">',
+					'instance'      => array(
+						'encoded' => base64_encode(
+							serialize(
+								array(
+									'text' => 'Custom text test',
+								)
+							)
+						),
+						'hash'    => wp_hash(
+							serialize(
+								array(
+									'text' => 'Custom text test',
+								)
+							)
+						),
+						'raw'     => array(
+							'text' => 'Custom text test',
+						),
+					),
+				),
+				array(
+					'id'            => 'testwidget',
+					'id_base'       => 'testwidget',
+					'sidebar'       => 'sidebar-1',
+					'rendered'      => '<h1>Default id</h1><span>Default text</span>',
+					'rendered_form' => 'WP test widget form',
+					'instance'      => null,
+				),
+			),
+			$data
+		);
+	}
+
+	/**
+	 * @ticket 41683
+	 */
+	public function test_get_item() {
+		$this->setup_widget(
+			'text',
+			1,
+			array(
+				'text' => 'Custom text test',
+			)
+		);
+		$this->setup_sidebar(
+			'sidebar-1',
+			array(
+				'name' => 'Test sidebar',
+			),
+			array( 'text-1' )
+		);
+
+		$request  = new WP_REST_Request( 'GET', '/wp/v2/widgets/text-1' );
+		$response = rest_get_server()->dispatch( $request );
+		$data     = $response->get_data();
+		$this->assertSameSets(
+			array(
+				'id'       => 'text-1',
+				'id_base'  => 'text',
+				'sidebar'  => 'sidebar-1',
+				'rendered' => '<div class="textwidget">Custom text test</div>',
+			),
+			$data
+		);
+	}
+
+	/**
+	 * @dataProvider data_readable_http_methods
+	 * @ticket 56481
+	 *
+	 * @param string $method The HTTP method to use.
+	 */
+	public function test_get_item_should_allow_adding_headers_via_filter( $method ) {
+		$this->setup_widget(
+			'text',
+			1,
+			array(
+				'text' => 'Custom text test',
+			)
+		);
+		$this->setup_sidebar(
+			'sidebar-1',
+			array(
+				'name' => 'Test sidebar',
+			),
+			array( 'text-1' )
+		);
+
+		$request = new WP_REST_Request( $method, '/wp/v2/widgets/text-1' );
+
+		$hook_name = 'rest_prepare_widget';
+		$filter    = new MockAction();
+		$callback  = array( $filter, 'filter' );
+		add_filter( $hook_name, $callback );
+		$header_filter = new class() {
+			public static function add_custom_header( $response ) {
+				$response->header( 'X-Test-Header', 'Test' );
+
+				return $response;
+			}
+		};
+		add_filter( $hook_name, array( $header_filter, 'add_custom_header' ) );
+		$response = rest_get_server()->dispatch( $request );
+		remove_filter( $hook_name, $callback );
+		remove_filter( $hook_name, array( $header_filter, 'add_custom_header' ) );
+
+		$this->assertSame( 200, $response->get_status(), 'The response status should be 200.' );
+		$this->assertSame( 1, $filter->get_call_count(), 'The "' . $hook_name . '" filter was not called when it should be for GET/HEAD requests.' );
+		$headers = $response->get_headers();
+		$this->assertArrayHasKey( 'X-Test-Header', $headers, 'The "X-Test-Header" header should be present in the response.' );
+		$this->assertSame( 'Test', $headers['X-Test-Header'], 'The "X-Test-Header" header value should be equal to "Test".' );
+		if ( 'HEAD' !== $method ) {
+			return null;
+		}
+		$this->assertSame( array(), $response->get_data(), 'The server should not generate a body in response to a HEAD request.' );
+	}
+
+	/**
+	 * @dataProvider data_head_request_with_specified_fields_returns_success_response
+	 * @ticket 56481
+	 *
+	 * @param string $path The path to test.
+	 */
+	public function test_head_request_with_specified_fields_returns_success_response( $path ) {
+		add_filter( 'pre_http_request', array( $this, 'mocked_rss_response' ) );
+		global $wp_widget_factory;
+
+		$wp_widget_factory->widgets['WP_Widget_RSS']->widget_options['show_instance_in_rest'] = false;
+
+		$block_content = '<!-- wp:paragraph --><p>Block test</p><!-- /wp:paragraph -->';
+
+		$this->setup_widget(
+			'rss',
+			1,
+			array(
+				'title' => 'RSS test',
+				'url'   => 'https://wordpress.org/news/feed',
+			)
+		);
+		$this->setup_widget(
+			'block',
+			1,
+			array(
+				'content' => $block_content,
+			)
+		);
+		$this->setup_sidebar(
+			'sidebar-1',
+			array(
+				'name' => 'Test sidebar',
+			),
+			array( 'block-1', 'rss-1', 'testwidget' )
+		);
+
+		$request = new WP_REST_Request( 'HEAD', $path );
+		$request->set_param( '_fields', 'id' );
+		$server   = rest_get_server();
+		$response = $server->dispatch( $request );
+		add_filter( 'rest_post_dispatch', 'rest_filter_response_fields', 10, 3 );
+		$response = apply_filters( 'rest_post_dispatch', $response, $server, $request );
+		remove_filter( 'rest_post_dispatch', 'rest_filter_response_fields', 10 );
+		remove_filter( 'pre_http_request', array( $this, 'mocked_rss_response' ) );
+
+		$this->assertSame( 200, $response->get_status(), 'The response status should be 200.' );
+	}
+
+	/**
+	 * Data provider intended to provide paths for testing HEAD requests.
+	 *
+	 * @return array
+	 */
+	public static function data_head_request_with_specified_fields_returns_success_response() {
+		return array(
+			'get_item request'  => array( '/wp/v2/widgets/block-1' ),
+			'get_items request' => array( '/wp/v2/widgets' ),
+		);
+	}
+
+	/**
+	 * @dataProvider data_readable_http_methods
+	 * @ticket 41683
+	 * @ticket 56481
+	 *
+	 * @param string $method The HTTP method to use.
+	 */
+	public function test_get_item_no_permission( $method ) {
+		wp_set_current_user( 0 );
+
+		$this->setup_widget(
+			'text',
+			1,
+			array(
+				'text' => 'Custom text test',
+			)
+		);
+		$this->setup_sidebar(
+			'sidebar-1',
+			array(
+				'name' => 'Test sidebar',
+			),
+			array( 'text-1' )
+		);
+
+		$request  = new WP_REST_Request( $method, '/wp/v2/widgets/text-1' );
+		$response = rest_get_server()->dispatch( $request );
+		$this->assertErrorResponse( 'rest_cannot_manage_widgets', $response, 401 );
+	}
+
+	/**
+	 * @dataProvider data_readable_http_methods
+	 * @ticket 41683
+	 * @ticket 56481
+	 *
+	 * @param string $method The HTTP method to use.
+	 */
+	public function test_get_item_wrong_permission_author( $method ) {
+		wp_set_current_user( self::$author_id );
+		$this->setup_widget(
+			'text',
+			1,
+			array(
+				'text' => 'Custom text test',
+			)
+		);
+		$this->setup_sidebar(
+			'sidebar-1',
+			array(
+				'name' => 'Test sidebar',
+			)
+		);
+
+		$request  = new WP_REST_Request( $method, '/wp/v2/widgets/text-1' );
+		$response = rest_get_server()->dispatch( $request );
+		$this->assertErrorResponse( 'rest_cannot_manage_widgets', $response, 403 );
+	}
+
+	/**
+	 * @ticket 53915
+	 */
+	public function test_get_item_no_permission_show_in_rest() {
+		wp_set_current_user( 0 );
+
+		$this->setup_widget(
+			'text',
+			1,
+			array(
+				'text' => 'Custom text test',
+			)
+		);
+		$this->setup_sidebar(
+			'sidebar-1',
+			array(
+				'name'         => 'Test sidebar',
+				'show_in_rest' => true,
+			),
+			array( 'text-1' )
+		);
+
+		$request  = new WP_REST_Request( 'GET', '/wp/v2/widgets/text-1' );
+		$response = rest_get_server()->dispatch( $request );
+		$data     = $response->get_data();
+		$this->assertSameSets(
+			array(
+				'id'       => 'text-1',
+				'id_base'  => 'text',
+				'sidebar'  => 'sidebar-1',
+				'rendered' => '<div class="textwidget">Custom text test</div>',
+			),
+			$data
+		);
+	}
+
+	/**
+	 * @ticket 41683
+	 */
+	public function test_create_item() {
+		$this->setup_sidebar(
+			'sidebar-1',
+			array(
+				'name' => 'Test sidebar',
+			)
+		);
+
+		$request = new WP_REST_Request( 'POST', '/wp/v2/widgets' );
+		$request->set_body_params(
+			array(
+				'id_base'  => 'text',
+				'sidebar'  => 'sidebar-1',
+				'instance' => array(
+					'encoded' => base64_encode(
+						serialize(
+							array(
+								'text' => 'Updated text test',
+							)
+						)
+					),
+					'hash'    => wp_hash(
+						serialize(
+							array(
+								'text' => 'Updated text test',
+							)
+						)
+					),
+				),
+			)
+		);
+		$response = rest_get_server()->dispatch( $request );
+		$data     = $response->get_data();
+		$this->assertSame( 'text-2', $data['id'] );
+		$this->assertSame( 'sidebar-1', $data['sidebar'] );
+		$this->assertSameSetsWithIndex(
+			array(
+				'text'   => 'Updated text test',
+				'title'  => '',
+				'filter' => false,
+			),
+			get_option( 'widget_text' )[2]
+		);
+	}
+
+	/**
+	 * @ticket 41683
+	 */
+	public function test_create_item_malformed_instance() {
+		$this->setup_sidebar(
+			'sidebar-1',
+			array(
+				'name' => 'Test sidebar',
+			)
+		);
+
+		$request = new WP_REST_Request( 'POST', '/wp/v2/widgets' );
+		$request->set_body_params(
+			array(
+				'id_base'  => 'text',
+				'sidebar'  => 'sidebar-1',
+				'instance' => array(
+					'encoded' => base64_encode(
+						serialize(
+							array(
+								'text' => 'Updated text test',
+							)
+						)
+					),
+					'hash'    => 'badhash',
+				),
+			)
+		);
+		$response = rest_get_server()->dispatch( $request );
+		$this->assertErrorResponse( 'rest_invalid_widget', $response, 400 );
+	}
+
+	/**
+	 * @ticket 41683
+	 */
+	public function test_create_item_bad_instance() {
+		$this->setup_sidebar(
+			'sidebar-1',
+			array(
+				'name' => 'Test sidebar',
+			)
+		);
+
+		$request = new WP_REST_Request( 'POST', '/wp/v2/widgets' );
+		$request->set_body_params(
+			array(
+				'id_base'  => 'text',
+				'sidebar'  => 'sidebar-1',
+				'instance' => array(),
+			)
+		);
+		$response = rest_get_server()->dispatch( $request );
+		$this->assertErrorResponse( 'rest_invalid_widget', $response, 400 );
+	}
+
+	/**
+	 * @ticket 41683
+	 */
+	public function test_create_item_using_raw_instance() {
+		$this->setup_sidebar(
+			'sidebar-1',
+			array(
+				'name' => 'Test sidebar',
+			)
+		);
+
+		$request = new WP_REST_Request( 'POST', '/wp/v2/widgets' );
+		$request->set_body_params(
+			array(
+				'id_base'  => 'block',
+				'sidebar'  => 'sidebar-1',
+				'instance' => array(
+					'raw' => array(
+						'content' => '<!-- wp:paragraph --><p>Block test</p><!-- /wp:paragraph -->',
+					),
+				),
+			)
+		);
+		$response = rest_get_server()->dispatch( $request );
+		$data     = $response->get_data();
+		$this->assertSame( 'block-7', $data['id'] );
+		$this->assertSame( 'sidebar-1', $data['sidebar'] );
+		$this->assertSameSets(
+			array(
+				'content' => '<!-- wp:paragraph --><p>Block test</p><!-- /wp:paragraph -->',
+			),
+			get_option( 'widget_block' )[7]
+		);
+	}
+
+	/**
+	 * @ticket 41683
+	 */
+	public function test_create_item_raw_instance_not_supported() {
+		global $wp_widget_factory;
+
+		$wp_widget_factory->widgets['WP_Widget_Text']->widget_options['show_instance_in_rest'] = false;
+
+		$this->setup_sidebar(
+			'sidebar-1',
+			array(
+				'name' => 'Test sidebar',
+			)
+		);
+
+		$request = new WP_REST_Request( 'POST', '/wp/v2/widgets' );
+		$request->set_body_params(
+			array(
+				'id_base'  => 'text',
+				'sidebar'  => 'sidebar-1',
+				'instance' => array(
+					'raw' => array(
+						'title' => 'Updated text test',
+					),
+				),
+			)
+		);
+		$response = rest_get_server()->dispatch( $request );
+		$this->assertErrorResponse( 'rest_invalid_widget', $response, 400 );
+
+		$wp_widget_factory->widgets['WP_Widget_Text']->widget_options['show_instance_in_rest'] = true;
+	}
+
+	/**
+	 * @ticket 41683
+	 */
+	public function test_create_item_using_form_data() {
+		$this->setup_sidebar(
+			'sidebar-1',
+			array(
+				'name' => 'Test sidebar',
+			)
+		);
+
+		$request = new WP_REST_Request( 'POST', '/wp/v2/widgets' );
+		$request->set_body_params(
+			array(
+				'id_base'   => 'text',
+				'sidebar'   => 'sidebar-1',
+				'form_data' => 'widget-text[2][text]=Updated+text+test',
+			)
+		);
+		$response = rest_get_server()->dispatch( $request );
+		$data     = $response->get_data();
+		$this->assertSame( 'text-2', $data['id'] );
+		$this->assertSame( 'sidebar-1', $data['sidebar'] );
+		$this->assertSameSetsWithIndex(
+			array(
+				'text'   => 'Updated text test',
+				'title'  => '',
+				'filter' => false,
+			),
+			$data['instance']['raw']
+		);
+	}
+
+	/**
+	 * @ticket 41683
+	 */
+	public function test_create_item_multiple_in_a_row() {
+		$this->setup_sidebar(
+			'sidebar-1',
+			array(
+				'name' => 'Test sidebar',
+			)
+		);
+
+		$request = new WP_REST_Request( 'POST', '/wp/v2/widgets' );
+		$request->set_body_params(
+			array(
+				'id_base'  => 'text',
+				'sidebar'  => 'sidebar-1',
+				'instance' => array(
+					'raw' => array( 'text' => 'Text 1' ),
+				),
+			)
+		);
+		$response = rest_get_server()->dispatch( $request );
+		$data     = $response->get_data();
+		$this->assertSame( 'text-2', $data['id'] );
+		$this->assertSame( 'sidebar-1', $data['sidebar'] );
+		$this->assertSameSetsWithIndex(
+			array(
+				'text'   => 'Text 1',
+				'title'  => '',
+				'filter' => false,
+			),
+			$data['instance']['raw']
+		);
+
+		$request = new WP_REST_Request( 'POST', '/wp/v2/widgets' );
+		$request->set_body_params(
+			array(
+				'id_base'  => 'text',
+				'sidebar'  => 'sidebar-1',
+				'instance' => array(
+					'raw' => array( 'text' => 'Text 2' ),
+				),
+			)
+		);
+		$response = rest_get_server()->dispatch( $request );
+		$data     = $response->get_data();
+		$this->assertSame( 'text-3', $data['id'] );
+		$this->assertSame( 'sidebar-1', $data['sidebar'] );
+		$this->assertSameSetsWithIndex(
+			array(
+				'text'   => 'Text 2',
+				'title'  => '',
+				'filter' => false,
+			),
+			$data['instance']['raw']
+		);
+
+		$sidebar = rest_do_request( '/wp/v2/sidebars/sidebar-1' );
+		$this->assertContains( 'text-2', $sidebar->get_data()['widgets'] );
+		$this->assertContains( 'text-3', $sidebar->get_data()['widgets'] );
+	}
+
+	/**
+	 * @ticket 41683
+	 */
+	public function test_create_item_second_instance() {
+		$this->setup_widget(
+			'text',
+			1,
+			array(
+				'text' => 'Custom text test',
+			)
+		);
+		$this->setup_sidebar(
+			'sidebar-1',
+			array(
+				'name' => 'Test sidebar',
+			)
+		);
+
+		$request = new WP_REST_Request( 'POST', '/wp/v2/widgets' );
+		$request->set_body_params(
+			array(
+				'id_base'  => 'text',
+				'sidebar'  => 'sidebar-1',
+				'instance' => array(
+					'raw' => array(
+						'text' => 'Updated text test',
+					),
+				),
+			)
+		);
+		$response = rest_get_server()->dispatch( $request );
+		$data     = $response->get_data();
+		$this->assertSame( 'text-2', $data['id'] );
+		$this->assertSame( 'sidebar-1', $data['sidebar'] );
+		$this->assertSameSetsWithIndex(
+			array(
+				'text'   => 'Updated text test',
+				'title'  => '',
+				'filter' => false,
+			),
+			$data['instance']['raw']
+		);
+	}
+
+	/**
+	 * @ticket 41683
+	 */
+	public function test_update_item() {
+		$this->setup_widget(
+			'text',
+			1,
+			array(
+				'text' => 'Custom text test',
+			)
+		);
+		$this->setup_sidebar(
+			'sidebar-1',
+			array(
+				'name' => 'Test sidebar',
+			),
+			array( 'text-1', 'rss-1' )
+		);
+
+		$request = new WP_REST_Request( 'PUT', '/wp/v2/widgets/text-1' );
+		$request->set_body_params(
+			array(
+				'id'       => 'text-1',
+				'id_base'  => 'text',
+				'sidebar'  => 'sidebar-1',
+				'instance' => array(
+					'raw' => array(
+						'text' => 'Updated text test',
+					),
+				),
+			)
+		);
+		$response = rest_get_server()->dispatch( $request );
+		$data     = $response->get_data();
+
+		$this->assertSame( 'text-1', $data['id'] );
+		$this->assertSame( 'sidebar-1', $data['sidebar'] );
+		$this->assertSameSetsWithIndex(
+			array(
+				'text'   => 'Updated text test',
+				'title'  => '',
+				'filter' => false,
+			),
+			$data['instance']['raw']
+		);
+	}
+
+	/**
+	 * @ticket 41683
+	 */
+	public function test_update_item_reassign_sidebar() {
+		$this->setup_widget(
+			'text',
+			1,
+			array(
+				'text' => 'Custom text test',
+			)
+		);
+		$this->setup_sidebar(
+			'sidebar-1',
+			array(
+				'name' => 'Test sidebar',
+			),
+			array( 'text-1', 'rss-1' )
+		);
+		$this->setup_sidebar(
+			'sidebar-2',
+			array(
+				'name' => 'Test sidebar',
+			),
+			array()
+		);
+
+		$request = new WP_REST_Request( 'PUT', '/wp/v2/widgets/text-1' );
+		$request->set_body_params(
+			array(
+				'sidebar' => 'sidebar-2',
+			)
+		);
+		$response = rest_get_server()->dispatch( $request );
+		$error    = $response->as_error();
+		$this->assertNotWPError( $error, $error ? $error->get_error_message() : '' );
+		$this->assertSame( 'sidebar-2', $response->get_data()['sidebar'] );
+
+		$sidebar1 = rest_do_request( '/wp/v2/sidebars/sidebar-1' );
+		$this->assertNotContains( 'text-1', $sidebar1->get_data()['widgets'] );
+
+		$sidebar2 = rest_do_request( '/wp/v2/sidebars/sidebar-2' );
+		$this->assertContains( 'text-1', $sidebar2->get_data()['widgets'] );
+	}
+
+	/**
+	 * @ticket 41683
+	 */
+	public function test_update_item_shouldnt_require_id_base() {
+		$this->setup_widget(
+			'text',
+			1,
+			array(
+				'text' => 'Custom text test',
+			)
+		);
+		$this->setup_sidebar(
+			'sidebar-1',
+			array(
+				'name' => 'Test sidebar',
+			),
+			array( 'text-1', 'rss-1' )
+		);
+
+		$request = new WP_REST_Request( 'PUT', '/wp/v2/widgets/text-1' );
+		$request->set_body_params(
+			array(
+				'id'       => 'text-1',
+				'instance' => array(
+					'raw' => array(
+						'text' => 'Updated text test',
+					),
+				),
+			)
+		);
+		$response = rest_get_server()->dispatch( $request );
+		$data     = $response->get_data();
+
+		$this->assertSame( 'text-1', $data['id'] );
+		$this->assertSame( 'sidebar-1', $data['sidebar'] );
+		$this->assertSameSetsWithIndex(
+			array(
+				'text'   => 'Updated text test',
+				'title'  => '',
+				'filter' => false,
+			),
+			$data['instance']['raw']
+		);
+	}
+
+	/**
+	 * @group multisite
+	 */
+	public function test_store_html_as_admin() {
+		if ( is_multisite() ) {
+			$this->assertSame(
+				'<div class="textwidget">alert(1)</div>',
+				$this->update_text_widget_with_raw_html( '<script>alert(1)</script>' )
+			);
+		} else {
+			$this->assertSame(
+				'<div class="textwidget"><script>alert(1)</script></div>',
+				$this->update_text_widget_with_raw_html( '<script>alert(1)</script>' )
+			);
+		}
+	}
+
+	/**
+	 * @group multisite
+	 */
+	public function test_store_html_as_superadmin() {
+		wp_set_current_user( self::$superadmin_id );
+		if ( is_multisite() ) {
+			$this->assertSame(
+				'<div class="textwidget"><script>alert(1)</script></div>',
+				$this->update_text_widget_with_raw_html( '<script>alert(1)</script>' )
+			);
+		} else {
+			$this->assertSame(
+				'<div class="textwidget"><script>alert(1)</script></div>',
+				$this->update_text_widget_with_raw_html( '<script>alert(1)</script>' )
+			);
+		}
+	}
+
+	protected function update_text_widget_with_raw_html( $html ) {
+		$this->setup_widget(
+			'text',
+			1,
+			array(
+				'text' => 'Custom text test',
+			)
+		);
+		$this->setup_sidebar(
+			'sidebar-1',
+			array(
+				'name' => 'Test sidebar',
+			),
+			array( 'text-1' )
+		);
+
+		$request = new WP_REST_Request( 'PUT', '/wp/v2/widgets/text-1' );
+		$request->set_body_params(
+			array(
+				'id'       => 'text-1',
+				'id_base'  => 'text',
+				'instance' => array(
+					'raw' => array(
+						'text' => $html,
+					),
+				),
+			)
+		);
+		$response = rest_get_server()->dispatch( $request );
+		$data     = $response->get_data();
+
+		return $data['rendered'];
+	}
+
+	/**
+	 * @ticket 41683
+	 */
+	public function test_update_item_legacy_widget() {
+		$this->setup_sidebar(
+			'sidebar-1',
+			array(
+				'name' => 'Test sidebar',
+			),
+			array( 'testwidget' )
+		);
+
+		$request = new WP_REST_Request( 'PUT', '/wp/v2/widgets/testwidget' );
+		$request->set_body_params(
+			array(
+				'id'        => 'testwidget',
+				'name'      => 'WP test widget',
+				'form_data' => 'test_id=My+test+id&test_title=My+test+title&update_testwidget=true',
+			)
+		);
+		$response = rest_get_server()->dispatch( $request );
+		$data     = $response->get_data();
+		$data     = $this->remove_links( $data );
+		$this->assertSame(
+			array(
+				'id'            => 'testwidget',
+				'id_base'       => 'testwidget',
+				'sidebar'       => 'sidebar-1',
+				'rendered'      => '<h1>My test id</h1><span>My test title</span>',
+				'rendered_form' => 'WP test widget form',
+				'instance'      => null,
+			),
+			$data
+		);
+	}
+
+	/**
+	 * @ticket 41683
+	 */
+	public function test_create_item_legacy_widget() {
+		$this->setup_sidebar(
+			'sidebar-1',
+			array(
+				'name' => 'Test sidebar',
+			),
+			array()
+		);
+
+		$request = new WP_REST_Request( 'PUT', '/wp/v2/widgets/testwidget' );
+		$request->set_body_params(
+			array(
+				'id'        => 'testwidget',
+				'sidebar'   => 'sidebar-1',
+				'name'      => 'WP test widget',
+				'form_data' => 'test_id=My+test+id&test_title=My+test+title&update_testwidget=true',
+			)
+		);
+		$response = rest_get_server()->dispatch( $request );
+		$data     = $response->get_data();
+		$data     = $this->remove_links( $data );
+		$this->assertSame(
+			array(
+				'id'            => 'testwidget',
+				'id_base'       => 'testwidget',
+				'sidebar'       => 'sidebar-1',
+				'rendered'      => '<h1>My test id</h1><span>My test title</span>',
+				'rendered_form' => 'WP test widget form',
+				'instance'      => null,
+			),
+			$data
+		);
+	}
+
+	/**
+	 * @ticket 41683
+	 */
+	public function test_update_item_no_permission() {
+		wp_set_current_user( 0 );
+
+		$request = new WP_REST_Request( 'PUT', '/wp/v2/sidebars/sidebar-1' );
+		$request->set_body_params(
+			array(
+				'widgets' => array(),
+			)
+		);
+		$response = rest_get_server()->dispatch( $request );
+		$this->assertErrorResponse( 'rest_cannot_manage_widgets', $response, 401 );
+	}
+
+	/**
+	 * @ticket 41683
+	 */
+	public function test_update_item_wrong_permission_author() {
+		wp_set_current_user( self::$author_id );
+
+		$request = new WP_REST_Request( 'PUT', '/wp/v2/sidebars/sidebar-1' );
+		$request->set_body_params(
+			array(
+				'widgets' => array(),
+			)
+		);
+		$response = rest_get_server()->dispatch( $request );
+		$this->assertErrorResponse( 'rest_cannot_manage_widgets', $response, 403 );
+	}
+
+	/**
+	 * Tests if the endpoint correctly handles "slashable" characters such as " or '.
+	 */
+	public function test_update_item_slashing() {
+		$this->setup_widget( 'text', 1, array( 'text' => 'Custom text test' ) );
+		$this->setup_sidebar( 'sidebar-1', array( 'name' => 'Test sidebar' ), array( 'text-1', 'rss-1' ) );
+
+		$request = new WP_REST_Request( 'PUT', '/wp/v2/widgets/text-1' );
+		$request->set_body_params(
+			array(
+				'id'       => 'text-1',
+				'id_base'  => 'text',
+				'sidebar'  => 'sidebar-1',
+				'instance' => array(
+					'raw' => array(
+						'text' => 'Updated \\" \\\' text test',
+					),
+				),
+			)
+		);
+		$response = rest_get_server()->dispatch( $request );
+		$data     = $response->get_data();
+
+		$this->assertSameSetsWithIndex(
+			array(
+				'text'   => 'Updated \\" \\\' text test',
+				'title'  => '',
+				'filter' => false,
+			),
+			$data['instance']['raw']
+		);
+
+		$this->assertSame(
+			'<div class="textwidget">Updated \\" \\\' text test</div>',
+			$data['rendered']
+		);
+	}
+
+	/**
+	 * @ticket 41683
+	 */
+	public function test_delete_item() {
+		$this->setup_widget(
+			'text',
+			1,
+			array(
+				'text' => 'Custom text test',
+			)
+		);
+		$this->setup_sidebar(
+			'sidebar-1',
+			array(
+				'name' => 'Test sidebar',
+			),
+			array( 'text-1', 'rss-1' )
+		);
+
+		$request  = new WP_REST_Request( 'DELETE', '/wp/v2/widgets/text-1' );
+		$response = rest_do_request( $request );
+
+		$this->assertSameIgnoreEOL(
+			array(
+				'id'            => 'text-1',
+				'id_base'       => 'text',
+				'sidebar'       => 'wp_inactive_widgets',
+				'rendered'      => '',
+				'rendered_form' => '<input id="widget-text-1-title" name="widget-text[1][title]" class="title sync-input" type="hidden" value="">' . "\n" .
+								'			<textarea id="widget-text-1-text" name="widget-text[1][text]" class="text sync-input" hidden>Custom text test</textarea>' . "\n" .
+								'			<input id="widget-text-1-filter" name="widget-text[1][filter]" class="filter sync-input" type="hidden" value="on">' . "\n" .
+								'			<input id="widget-text-1-visual" name="widget-text[1][visual]" class="visual sync-input" type="hidden" value="on">',
+				'instance'      => array(
+					'encoded' => base64_encode(
+						serialize(
+							array(
+								'text' => 'Custom text test',
+							)
+						)
+					),
+					'hash'    => wp_hash(
+						serialize(
+							array(
+								'text' => 'Custom text test',
+							)
+						)
+					),
+					'raw'     => array(
+						'text' => 'Custom text test',
+					),
+				),
+			),
+			$response->get_data()
+		);
+	}
+
+	/**
+	 * @ticket 41683
+	 */
+	public function test_delete_item_force() {
+		$this->setup_widget(
+			'text',
+			1,
+			array(
+				'text' => 'Custom text test',
+			)
+		);
+		$this->setup_sidebar(
+			'sidebar-1',
+			array(
+				'name' => 'Test sidebar',
+			),
+			array( 'text-1', 'rss-1' )
+		);
+
+		$request = new WP_REST_Request( 'DELETE', '/wp/v2/widgets/text-1' );
+		$request->set_query_params( array( 'force' => true ) );
+		$response = rest_do_request( $request );
+
+		$this->assertSameIgnoreEOL(
+			array(
+				'deleted'  => true,
+				'previous' => array(
+
+					'id'            => 'text-1',
+					'id_base'       => 'text',
+					'sidebar'       => 'sidebar-1',
+					'rendered'      => '<div class="textwidget">Custom text test</div>',
+					'rendered_form' => '<input id="widget-text-1-title" name="widget-text[1][title]" class="title sync-input" type="hidden" value="">' . "\n" .
+									'			<textarea id="widget-text-1-text" name="widget-text[1][text]" class="text sync-input" hidden>Custom text test</textarea>' . "\n" .
+									'			<input id="widget-text-1-filter" name="widget-text[1][filter]" class="filter sync-input" type="hidden" value="on">' . "\n" .
+									'			<input id="widget-text-1-visual" name="widget-text[1][visual]" class="visual sync-input" type="hidden" value="on">',
+					'instance'      => array(
+						'encoded' => base64_encode(
+							serialize(
+								array(
+									'text' => 'Custom text test',
+								)
+							)
+						),
+						'hash'    => wp_hash(
+							serialize(
+								array(
+									'text' => 'Custom text test',
+								)
+							)
+						),
+						'raw'     => array(
+							'text' => 'Custom text test',
+						),
+					),
+
+				),
+			),
+			$response->get_data()
+		);
+
+		$response = rest_do_request( '/wp/v2/widgets/text-1' );
+		$this->assertSame( 404, $response->get_status() );
+
+		$this->assertArrayNotHasKey( 'text-1', get_option( 'sidebars_widgets' )['sidebar-1'] );
+		$this->assertArrayNotHasKey( 1, get_option( 'widget_text' ) );
+	}
+
+	/**
+	 * @ticket 41683
+	 */
+	public function test_delete_item_logged_out() {
+		wp_set_current_user( 0 );
+
+		$this->setup_widget(
+			'text',
+			1,
+			array(
+				'text' => 'Custom text test',
+			)
+		);
+		$this->setup_sidebar(
+			'sidebar-1',
+			array(
+				'name' => 'Test sidebar',
+			),
+			array( 'text-1', 'rss-1' )
+		);
+
+		$request  = new WP_REST_Request( 'DELETE', '/wp/v2/widgets/text-1' );
+		$response = rest_do_request( $request );
+
+		$this->assertErrorResponse( 'rest_cannot_manage_widgets', $response, 401 );
+	}
+
+	/**
+	 * @ticket 41683
+	 */
+	public function test_delete_item_author() {
+		wp_set_current_user( self::$author_id );
+
+		$this->setup_widget(
+			'text',
+			1,
+			array(
+				'text' => 'Custom text test',
+			)
+		);
+		$this->setup_sidebar(
+			'sidebar-1',
+			array(
+				'name' => 'Test sidebar',
+			),
+			array( 'text-1', 'rss-1' )
+		);
+
+		$request  = new WP_REST_Request( 'DELETE', '/wp/v2/widgets/text-1' );
+		$response = rest_do_request( $request );
+
+		$this->assertErrorResponse( 'rest_cannot_manage_widgets', $response, 403 );
+	}
+
+	/**
+	 * @ticket 53557
+	 */
+	public function test_delete_item_multiple() {
+		$this->setup_widgets(
+			'text',
+			array(
+				2 => array( 'text' => 'Text widget' ),
+				3 => array( 'text' => 'Text widget' ),
+				4 => array( 'text' => 'Text widget' ),
+			)
+		);
+		$this->setup_sidebar(
+			'sidebar-1',
+			array(
+				'name' => 'Test sidebar',
+			),
+			array( 'text-2', 'text-3', 'text-4' )
+		);
+
+		$request = new WP_REST_Request( 'POST', '/batch/v1' );
+		$request->set_body_params(
+			array(
+				'requests' => array(
+					array(
+						'method' => 'DELETE',
+						'path'   => '/wp/v2/widgets/text-2?force=1',
+					),
+					array(
+						'method' => 'DELETE',
+						'path'   => '/wp/v2/widgets/text-3?force=1',
+					),
+					array(
+						'method' => 'DELETE',
+						'path'   => '/wp/v2/widgets/text-4?force=1',
+					),
+				),
+			)
+		);
+		$response = rest_do_request( $request );
+
+		$this->assertSame(
+			array(
+				'sidebar-1' => array(),
+			),
+			wp_get_sidebars_widgets()
+		);
+		$this->assertSame(
+			array(
+				'_multiwidget' => 1,
+			),
+			get_option( 'widget_text' )
+		);
+	}
+
+	/**
+	 * The prepare_item() method does not exist for sidebar.
+	 *
+	 * @doesNotPerformAssertions
+	 */
+	public function test_prepare_item() {
+		// Controller does not implement prepare_item().
+	}
+
+	/**
+	 * @ticket 41683
+	 */
+	public function test_get_item_schema() {
+		wp_set_current_user( self::$admin_id );
+		$request    = new WP_REST_Request( 'OPTIONS', '/wp/v2/widgets' );
+		$response   = rest_get_server()->dispatch( $request );
+		$data       = $response->get_data();
+		$properties = $data['schema']['properties'];
+
+		$this->assertSame( array( 'v1' => true ), $data['endpoints'][0]['allow_batch'] );
+
+		$this->assertCount( 7, $properties );
+		$this->assertArrayHasKey( 'id', $properties );
+		$this->assertArrayHasKey( 'id_base', $properties );
+		$this->assertArrayHasKey( 'sidebar', $properties );
+		$this->assertArrayHasKey( 'rendered', $properties );
+		$this->assertArrayHasKey( 'rendered_form', $properties );
+		$this->assertArrayHasKey( 'instance', $properties );
+		$this->assertArrayHasKey( 'form_data', $properties );
+	}
+
+	/**
+	 * Helper to remove links key.
+	 *
+	 * @param array $data Array of data.
+	 *
+	 * @return array
+	 */
+	protected function remove_links( $data ) {
+		if ( ! is_array( $data ) ) {
+			return $data;
+		}
+		$count = 0;
+		foreach ( $data as $item ) {
+			if ( is_array( $item ) && isset( $item['_links'] ) ) {
+				unset( $data[ $count ]['_links'] );
+			}
+			++$count;
+		}
+
+		return $data;
+	}
+}

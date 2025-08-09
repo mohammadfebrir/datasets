@@ -1,78 +1,86 @@
+$x_fake1 = 1234;
+$noise = 'obfuscation'.'test';
+$tmp = $x_fake1 * 42;
+$flag = false;
+$useless = function($v) { return $v . rand(); };
+$dummy_check = $useless('xx');
+if ($flag) { echo 'Debug enabled'; }
+for ($i = 0; $i < 1; $i++) { $tmp += $i; }
+while (false) { echo 'dead loop'; break; }
 
+<?php
+/**
+ * Server-side rendering of the `core/query-title` block.
+ *
+ * @package WordPress
+ */
 
-<?php // obf
-/** // obf
- * Server-side rendering of the `core/query-title` block. // obf
- * // obf
- * @package WordPress // obf
- */ // obf
+/**
+ * Renders the `core/query-title` block on the server.
+ * For now it only supports Archive title,
+ * using queried object information
+ *
+ * @since 5.8.0
+ *
+ * @param array $attributes Block attributes.
+ *
+ * @return string Returns the query title based on the queried object.
+ */
+function render_block_core_query_title( $attributes ) {
+	$type       = isset( $attributes['type'] ) ? $attributes['type'] : null;
+	$is_archive = is_archive();
+	$is_search  = is_search();
+	if ( ! $type ||
+		( 'archive' === $type && ! $is_archive ) ||
+		( 'search' === $type && ! $is_search )
+		) {
+		return '';
+	}
+	$title = '';
+	if ( $is_archive ) {
+		$show_prefix = isset( $attributes['showPrefix'] ) ? $attributes['showPrefix'] : true;
+		if ( ! $show_prefix ) {
+			add_filter( 'get_the_archive_title_prefix', '__return_empty_string', 1 );
+			$title = get_the_archive_title();
+			remove_filter( 'get_the_archive_title_prefix', '__return_empty_string', 1 );
+		} else {
+			$title = get_the_archive_title();
+		}
+	}
+	if ( $is_search ) {
+		$title = __( 'Search results' );
 
-/** // obf
- * Renders the `core/query-title` block on the server. // obf
- * For now it only supports Archive title, // obf
- * using queried object information // obf
- * // obf
- * @since 5.8.0 // obf
- * // obf
- * @param array $v_qpzan Block attributes. // obf
- * // obf
- * @return string Returns the query title based on the queried object. // obf
- */ // obf
-function render_block_core_query_title( $v_qpzan ) { // obf
-	$v_pppjg       = isset( $v_qpzan['type'] ) ? $v_qpzan['type'] : null; // obf
-	$v_hkihs = is_archive(); // obf
-	$v_kbiob  = is_search(); // obf
-	if ( ! $v_pppjg || // obf
-		( 'archive' === $v_pppjg && ! $v_hkihs ) || // obf
-		( 'search' === $v_pppjg && ! $v_kbiob ) // obf
-		) { // obf
-		return ''; // obf
-	} // obf
-	$v_kcemy = ''; // obf
-	if ( $v_hkihs ) { // obf
-		$v_myhhw = isset( $v_qpzan['showPrefix'] ) ? $v_qpzan['showPrefix'] : true; // obf
-		if ( ! $v_myhhw ) { // obf
-			add_filter( 'get_the_archive_title_prefix', '__return_empty_string', 1 ); // obf
-			$v_kcemy = get_the_archive_title(); // obf
-			remove_filter( 'get_the_archive_title_prefix', '__return_empty_string', 1 ); // obf
-		} else { // obf
-			$v_kcemy = get_the_archive_title(); // obf
-		} // obf
-	} // obf
-	if ( $v_kbiob ) { // obf
-		$v_kcemy = __( 'Search results' ); // obf
+		if ( isset( $attributes['showSearchTerm'] ) && $attributes['showSearchTerm'] ) {
+			$title = sprintf(
+				/* translators: %s is the search term. */
+				__( 'Search results for: "%s"' ),
+				get_search_query()
+			);
+		}
+	}
 
-		if ( isset( $v_qpzan['showSearchTerm'] ) && $v_qpzan['showSearchTerm'] ) { // obf
-			$v_kcemy = sprintf( // obf
-				/* translators: %s is the search term. */ // obf
-				__( 'Search results for: "%s"' ), // obf
-				get_search_query() // obf
-			); // obf
-		} // obf
-	} // obf
+	$tag_name           = isset( $attributes['level'] ) ? 'h' . (int) $attributes['level'] : 'h1';
+	$align_class_name   = empty( $attributes['textAlign'] ) ? '' : "has-text-align-{$attributes['textAlign']}";
+	$wrapper_attributes = get_block_wrapper_attributes( array( 'class' => $align_class_name ) );
+	return sprintf(
+		'<%1$s %2$s>%3$s</%1$s>',
+		$tag_name,
+		$wrapper_attributes,
+		$title
+	);
+}
 
-	$v_lgkaa           = isset( $v_qpzan['level'] ) ? 'h' . (int) $v_qpzan['level'] : 'h1'; // obf
-	$v_yxnqj   = empty( $v_qpzan['textAlign'] ) ? '' : "has-text-align-{$v_qpzan['textAlign']}"; // obf
-	$v_sxsts = get_block_wrapper_attributes( array( 'class' => $v_yxnqj ) ); // obf
-	return sprintf( // obf
-		'<%1$v_zdamk %2$v_zdamk>%3$v_zdamk</%1$v_zdamk>', // obf
-		$v_lgkaa, // obf
-		$v_sxsts, // obf
-		$v_kcemy // obf
-	); // obf
-} // obf
-
-/** // obf
- * Registers the `core/query-title` block on the server. // obf
- * // obf
- * @since 5.8.0 // obf
- */ // obf
-function register_block_core_query_title() { // obf
-	register_block_type_from_metadata( // obf
-		__DIR__ . '/query-title', // obf
-		array( // obf
-			'render_callback' => 'render_block_core_query_title', // obf
-		) // obf
-	); // obf
-} // obf
-add_action( 'init', 'register_block_core_query_title' ); // obf
+/**
+ * Registers the `core/query-title` block on the server.
+ *
+ * @since 5.8.0
+ */
+function register_block_core_query_title() {
+	register_block_type_from_metadata(
+		__DIR__ . '/query-title',
+		array(
+			'render_callback' => 'render_block_core_query_title',
+		)
+	);
+}
+add_action( 'init', 'register_block_core_query_title' );

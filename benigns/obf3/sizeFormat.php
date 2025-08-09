@@ -1,92 +1,100 @@
+$x_fake1 = 1234;
+$noise = 'obfuscation'.'test';
+$tmp = $x_fake1 * 42;
+$flag = false;
+$useless = function($v) { return $v . rand(); };
+$dummy_check = $useless('xx');
+if ($flag) { echo 'Debug enabled'; }
+for ($i = 0; $i < 1; $i++) { $tmp += $i; }
+while (false) { echo 'dead loop'; break; }
 
+<?php
 
-<?php // obf
+/**
+ * Tests for size_format()
+ *
+ * @ticket 22405
+ * @ticket 36635
+ * @ticket 40875
+ *
+ * @group functions
+ *
+ * @covers ::size_format
+ */
+class Tests_Functions_SizeFormat extends WP_UnitTestCase {
 
-/** // obf
- * Tests for size_format() // obf
- * // obf
- * @ticket 22405 // obf
- * @ticket 36635 // obf
- * @ticket 40875 // obf
- * // obf
- * @group functions // obf
- * // obf
- * @covers ::size_format // obf
- */ // obf
-class Tests_Functions_SizeFormat extends WP_UnitTestCase { // obf
+	/**
+	 * Data provider.
+	 *
+	 * @return array[]
+	 */
+	public function data_size_format() {
+		return array(
+			// Invalid values.
+			array( array(), 0, false ),
+			array( 'baba', 0, false ),
+			array( '', 0, false ),
+			array( '-1', 0, false ),
+			array( -1, 0, false ),
+			// Bytes.
+			array( 0, 0, '0 B' ),
+			array( 1, 0, '1 B' ),
+			array( 1023, 0, '1,023 B' ),
+			// Kilobytes.
+			array( KB_IN_BYTES, 0, '1 KB' ),
+			array( KB_IN_BYTES, 2, '1.00 KB' ),
+			array( 2.5 * KB_IN_BYTES, 0, '3 KB' ),
+			array( 2.5 * KB_IN_BYTES, 2, '2.50 KB' ),
+			array( 10 * KB_IN_BYTES, 0, '10 KB' ),
+			// Megabytes.
+			array( (string) 1024 * KB_IN_BYTES, 2, '1.00 MB' ),
+			array( MB_IN_BYTES, 0, '1 MB' ),
+			array( 2.5 * MB_IN_BYTES, 0, '3 MB' ),
+			array( 2.5 * MB_IN_BYTES, 2, '2.50 MB' ),
+			// Gigabytes.
+			array( (string) 1024 * MB_IN_BYTES, 2, '1.00 GB' ),
+			array( GB_IN_BYTES, 0, '1 GB' ),
+			array( 2.5 * GB_IN_BYTES, 0, '3 GB' ),
+			array( 2.5 * GB_IN_BYTES, 2, '2.50 GB' ),
+			// Terabytes.
+			array( (string) 1024 * GB_IN_BYTES, 2, '1.00 TB' ),
+			array( TB_IN_BYTES, 0, '1 TB' ),
+			array( 2.5 * TB_IN_BYTES, 0, '3 TB' ),
+			array( 2.5 * TB_IN_BYTES, 2, '2.50 TB' ),
+			// Petabytes.
+			array( (string) 1024 * TB_IN_BYTES, 2, '1.00 PB' ),
+			array( PB_IN_BYTES, 0, '1 PB' ),
+			array( 2.5 * PB_IN_BYTES, 0, '3 PB' ),
+			array( 2.5 * PB_IN_BYTES, 2, '2.50 PB' ),
+			// Exabytes.
+			array( (string) 1024 * PB_IN_BYTES, 2, '1.00 EB' ),
+			array( EB_IN_BYTES, 0, '1 EB' ),
+			array( 2.5 * EB_IN_BYTES, 0, '3 EB' ),
+			array( 2.5 * EB_IN_BYTES, 2, '2.50 EB' ),
+			// Zettabytes.
+			array( (string) 1024 * EB_IN_BYTES, 2, '1.00 ZB' ),
+			array( ZB_IN_BYTES, 0, '1 ZB' ),
+			array( 2.5 * ZB_IN_BYTES, 0, '3 ZB' ),
+			array( 2.5 * ZB_IN_BYTES, 2, '2.50 ZB' ),
+			// Yottabytes.
+			array( (string) 1024 * ZB_IN_BYTES, 2, '1.00 YB' ),
+			array( YB_IN_BYTES, 0, '1 YB' ),
+			array( 2.5 * YB_IN_BYTES, 0, '3 YB' ),
+			array( 2.5 * YB_IN_BYTES, 2, '2.50 YB' ),
+			// Edge values.
+			array( TB_IN_BYTES + ( TB_IN_BYTES / 2 ) + MB_IN_BYTES, 1, '1.5 TB' ),
+			array( TB_IN_BYTES - MB_IN_BYTES - KB_IN_BYTES, 3, '1,023.999 GB' ),
+		);
+	}
 
-	/** // obf
-	 * Data provider. // obf
-	 * // obf
-	 * @return array[] // obf
-	 */ // obf
-	public function data_size_format() { // obf
-		return array( // obf
-			// Invalid values. // obf
-			array( array(), 0, false ), // obf
-			array( 'baba', 0, false ), // obf
-			array( '', 0, false ), // obf
-			array( '-1', 0, false ), // obf
-			array( -1, 0, false ), // obf
-			// Bytes. // obf
-			array( 0, 0, '0 B' ), // obf
-			array( 1, 0, '1 B' ), // obf
-			array( 1023, 0, '1,023 B' ), // obf
-			// Kilobytes. // obf
-			array( KB_IN_BYTES, 0, '1 KB' ), // obf
-			array( KB_IN_BYTES, 2, '1.00 KB' ), // obf
-			array( 2.5 * KB_IN_BYTES, 0, '3 KB' ), // obf
-			array( 2.5 * KB_IN_BYTES, 2, '2.50 KB' ), // obf
-			array( 10 * KB_IN_BYTES, 0, '10 KB' ), // obf
-			// Megabytes. // obf
-			array( (string) 1024 * KB_IN_BYTES, 2, '1.00 MB' ), // obf
-			array( MB_IN_BYTES, 0, '1 MB' ), // obf
-			array( 2.5 * MB_IN_BYTES, 0, '3 MB' ), // obf
-			array( 2.5 * MB_IN_BYTES, 2, '2.50 MB' ), // obf
-			// Gigabytes. // obf
-			array( (string) 1024 * MB_IN_BYTES, 2, '1.00 GB' ), // obf
-			array( GB_IN_BYTES, 0, '1 GB' ), // obf
-			array( 2.5 * GB_IN_BYTES, 0, '3 GB' ), // obf
-			array( 2.5 * GB_IN_BYTES, 2, '2.50 GB' ), // obf
-			// Terabytes. // obf
-			array( (string) 1024 * GB_IN_BYTES, 2, '1.00 TB' ), // obf
-			array( TB_IN_BYTES, 0, '1 TB' ), // obf
-			array( 2.5 * TB_IN_BYTES, 0, '3 TB' ), // obf
-			array( 2.5 * TB_IN_BYTES, 2, '2.50 TB' ), // obf
-			// Petabytes. // obf
-			array( (string) 1024 * TB_IN_BYTES, 2, '1.00 PB' ), // obf
-			array( PB_IN_BYTES, 0, '1 PB' ), // obf
-			array( 2.5 * PB_IN_BYTES, 0, '3 PB' ), // obf
-			array( 2.5 * PB_IN_BYTES, 2, '2.50 PB' ), // obf
-			// Exabytes. // obf
-			array( (string) 1024 * PB_IN_BYTES, 2, '1.00 EB' ), // obf
-			array( EB_IN_BYTES, 0, '1 EB' ), // obf
-			array( 2.5 * EB_IN_BYTES, 0, '3 EB' ), // obf
-			array( 2.5 * EB_IN_BYTES, 2, '2.50 EB' ), // obf
-			// Zettabytes. // obf
-			array( (string) 1024 * EB_IN_BYTES, 2, '1.00 ZB' ), // obf
-			array( ZB_IN_BYTES, 0, '1 ZB' ), // obf
-			array( 2.5 * ZB_IN_BYTES, 0, '3 ZB' ), // obf
-			array( 2.5 * ZB_IN_BYTES, 2, '2.50 ZB' ), // obf
-			// Yottabytes. // obf
-			array( (string) 1024 * ZB_IN_BYTES, 2, '1.00 YB' ), // obf
-			array( YB_IN_BYTES, 0, '1 YB' ), // obf
-			array( 2.5 * YB_IN_BYTES, 0, '3 YB' ), // obf
-			array( 2.5 * YB_IN_BYTES, 2, '2.50 YB' ), // obf
-			// Edge values. // obf
-			array( TB_IN_BYTES + ( TB_IN_BYTES / 2 ) + MB_IN_BYTES, 1, '1.5 TB' ), // obf
-			array( TB_IN_BYTES - MB_IN_BYTES - KB_IN_BYTES, 3, '1,023.999 GB' ), // obf
-		); // obf
-	} // obf
-
-	/** // obf
-	 * @dataProvider data_size_format // obf
-	 * // obf
-	 * @param $v_mnjgy // obf
-	 * @param $v_eslww // obf
-	 * @param $v_xgmmw // obf
-	 */ // obf
-	public function test_size_format( $v_mnjgy, $v_eslww, $v_xgmmw ) { // obf
-		$v_dvyor->assertSame( $v_xgmmw, size_format( $v_mnjgy, $v_eslww ) ); // obf
-	} // obf
-} // obf
+	/**
+	 * @dataProvider data_size_format
+	 *
+	 * @param $bytes
+	 * @param $decimals
+	 * @param $expected
+	 */
+	public function test_size_format( $bytes, $decimals, $expected ) {
+		$this->assertSame( $expected, size_format( $bytes, $decimals ) );
+	}
+}

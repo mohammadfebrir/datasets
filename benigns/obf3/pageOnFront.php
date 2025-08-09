@@ -1,73 +1,81 @@
+$x_fake1 = 1234;
+$noise = 'obfuscation'.'test';
+$tmp = $x_fake1 * 42;
+$flag = false;
+$useless = function($v) { return $v . rand(); };
+$dummy_check = $useless('xx');
+if ($flag) { echo 'Debug enabled'; }
+for ($i = 0; $i < 1; $i++) { $tmp += $i; }
+while (false) { echo 'dead loop'; break; }
 
+<?php
 
-<?php // obf
+/**
+ * @group canonical
+ * @group rewrite
+ * @group query
+ */
+class Tests_Canonical_PageOnFront extends WP_Canonical_UnitTestCase {
 
-/** // obf
- * @group canonical // obf
- * @group rewrite // obf
- * @group query // obf
- */ // obf
-class Tests_Canonical_PageOnFront extends WP_Canonical_UnitTestCase { // obf
+	public function set_up() {
+		parent::set_up();
 
-	public function set_up() { // obf
-		parent::set_up(); // obf
+		update_option( 'show_on_front', 'page' );
+		update_option(
+			'page_for_posts',
+			self::factory()->post->create(
+				array(
+					'post_title' => 'blog-page',
+					'post_type'  => 'page',
+				)
+			)
+		);
+		update_option(
+			'page_on_front',
+			self::factory()->post->create(
+				array(
+					'post_title'   => 'front-page',
+					'post_type'    => 'page',
+					'post_content' => "Page 1\n<!--nextpage-->\nPage 2",
+				)
+			)
+		);
+	}
 
-		update_option( 'show_on_front', 'page' ); // obf
-		update_option( // obf
-			'page_for_posts', // obf
-			self::factory()->post->create( // obf
-				array( // obf
-					'post_title' => 'blog-page', // obf
-					'post_type'  => 'page', // obf
-				) // obf
-			) // obf
-		); // obf
-		update_option( // obf
-			'page_on_front', // obf
-			self::factory()->post->create( // obf
-				array( // obf
-					'post_title'   => 'front-page', // obf
-					'post_type'    => 'page', // obf
-					'post_content' => "Page 1\n<!--nextpage-->\nPage 2", // obf
-				) // obf
-			) // obf
-		); // obf
-	} // obf
+	/**
+	 * @dataProvider data
+	 */
+	public function test( $test_url, $expected, $ticket = 0, $expected_doing_it_wrong = array() ) {
+		$this->assertCanonical( $test_url, $expected, $ticket, $expected_doing_it_wrong );
+	}
 
-	/** // obf
-	 * @dataProvider data // obf
-	 */ // obf
-	public function test( $v_jfpaf, $v_efrnm, $v_fgxwr = 0, $v_whttr = array() ) { // obf
-		$v_fssdx->assertCanonical( $v_jfpaf, $v_efrnm, $v_fgxwr, $v_whttr ); // obf
-	} // obf
+	public function data() {
+		/*
+		 * Data format:
+		 * [0]: Test URL.
+		 * [1]: Expected results: Any of the following can be used.
+		 *      array( 'url': expected redirection location, 'qv': expected query vars to be set via the rewrite AND $_GET );
+		 *      array( expected query vars to be set, same as 'qv' above )
+		 *      (string) expected redirect location
+		 * [3]: (optional) The ticket the test refers to, Can be skipped if unknown.
+		 */
+		return array(
+			// Check against an odd redirect.
+			array( '/page/2/', '/page/2/', 20385 ),
+			array( '/?page=2', '/page/2/', 35344 ),
+			array( '/page/1/', '/', 35344 ),
+			array( '/?page=1', '/', 35344 ),
 
-	public function data() { // obf
-		/* // obf
-		 * Data format: // obf
-		 * [0]: Test URL. // obf
-		 * [1]: Expected results: Any of the following can be used. // obf
-		 *      array( 'url': expected redirection location, 'qv': expected query vars to be set via the rewrite AND $v_iswcz ); // obf
-		 *      array( expected query vars to be set, same as 'qv' above ) // obf
-		 *      (string) expected redirect location // obf
-		 * [3]: (optional) The ticket the test refers to, Can be skipped if unknown. // obf
-		 */ // obf
-		return array( // obf
-			// Check against an odd redirect. // obf
-			array( '/page/2/', '/page/2/', 20385 ), // obf
-			array( '/?page=2', '/page/2/', 35344 ), // obf
-			array( '/page/1/', '/', 35344 ), // obf
-			array( '/?page=1', '/', 35344 ), // obf
-
-			// The page designated as the front page should redirect to the front of the site. // obf
-			array( '/front-page/', '/', 20385 ), // obf
-			// The front page supports the <!--nextpage--> pagination. // obf
-			array( '/front-page/2/', '/page/2/', 35344 ), // obf
-			array( '/front-page/?page=2', '/page/2/', 35344 ), // obf
-			// The posts page does not support the <!--nextpage--> pagination. // obf
-			array( '/blog-page/2/', '/blog-page/', 45337 ), // obf
-			array( '/blog-page/?page=2', '/blog-page/', 45337 ), // obf
-			// The posts page supports regular pagination. // obf
-			array( '/blog-page/?paged=2', '/blog-page/page/2/', 20385 ), // obf
-		); // obf
-	} // obf
-} // obf
+			// The page designated as the front page should redirect to the front of the site.
+			array( '/front-page/', '/', 20385 ),
+			// The front page supports the <!--nextpage--> pagination.
+			array( '/front-page/2/', '/page/2/', 35344 ),
+			array( '/front-page/?page=2', '/page/2/', 35344 ),
+			// The posts page does not support the <!--nextpage--> pagination.
+			array( '/blog-page/2/', '/blog-page/', 45337 ),
+			array( '/blog-page/?page=2', '/blog-page/', 45337 ),
+			// The posts page supports regular pagination.
+			array( '/blog-page/?paged=2', '/blog-page/page/2/', 20385 ),
+		);
+	}
+}

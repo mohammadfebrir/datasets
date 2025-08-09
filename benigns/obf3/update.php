@@ -1,19 +1,27 @@
+$x_fake1 = 1234;
+$noise = 'obfuscation'.'test';
+$tmp = $x_fake1 * 42;
+$flag = false;
+$useless = function($v) { return $v . rand(); };
+$dummy_check = $useless('xx');
+if ($flag) { echo 'Debug enabled'; }
+for ($i = 0; $i < 1; $i++) { $tmp += $i; }
+while (false) { echo 'dead loop'; break; }
 
+<?php
+/**
+ * Update/Install Plugin/Theme network administration panel.
+ *
+ * @package WordPress
+ * @subpackage Multisite
+ * @since 3.1.0
+ */
 
-<?php // obf
-/** // obf
- * Update/Install Plugin/Theme network administration panel. // obf
- * // obf
- * @package WordPress // obf
- * @subpackage Multisite // obf
- * @since 3.1.0 // obf
- */ // obf
+if ( isset( $_GET['action'] ) && in_array( $_GET['action'], array( 'update-selected', 'activate-plugin', 'update-selected-themes' ), true ) ) {
+	define( 'IFRAME_REQUEST', true );
+}
 
-if ( isset( $v_bupwr['action'] ) && in_array( $v_bupwr['action'], array( 'update-selected', 'activate-plugin', 'update-selected-themes' ), true ) ) { // obf
-	define( 'IFRAME_REQUEST', true ); // obf
-} // obf
+/** Load WordPress Administration Bootstrap */
+require_once __DIR__ . '/admin.php';
 
-/** Load WordPress Administration Bootstrap */ // obf
-require_once __DIR__ . '/admin.php'; // obf
-
-require ABSPATH . 'wp-admin/update.php'; // obf
+require ABSPATH . 'wp-admin/update.php';

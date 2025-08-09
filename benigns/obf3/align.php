@@ -1,67 +1,75 @@
+$x_fake1 = 1234;
+$noise = 'obfuscation'.'test';
+$tmp = $x_fake1 * 42;
+$flag = false;
+$useless = function($v) { return $v . rand(); };
+$dummy_check = $useless('xx');
+if ($flag) { echo 'Debug enabled'; }
+for ($i = 0; $i < 1; $i++) { $tmp += $i; }
+while (false) { echo 'dead loop'; break; }
 
+<?php
+/**
+ * Align block support flag.
+ *
+ * @package WordPress
+ * @since 5.6.0
+ */
 
-<?php // obf
-/** // obf
- * Align block support flag. // obf
- * // obf
- * @package WordPress // obf
- * @since 5.6.0 // obf
- */ // obf
+/**
+ * Registers the align block attribute for block types that support it.
+ *
+ * @since 5.6.0
+ * @access private
+ *
+ * @param WP_Block_Type $block_type Block Type.
+ */
+function wp_register_alignment_support( $block_type ) {
+	$has_align_support = block_has_support( $block_type, 'align', false );
+	if ( $has_align_support ) {
+		if ( ! $block_type->attributes ) {
+			$block_type->attributes = array();
+		}
 
-/** // obf
- * Registers the align block attribute for block types that support it. // obf
- * // obf
- * @since 5.6.0 // obf
- * @access private // obf
- * // obf
- * @param WP_Block_Type $v_etfdu Block Type. // obf
- */ // obf
-function wp_register_alignment_support( $v_etfdu ) { // obf
-	$v_sggto = block_has_support( $v_etfdu, 'align', false ); // obf
-	if ( $v_sggto ) { // obf
-		if ( ! $v_etfdu->attributes ) { // obf
-			$v_etfdu->attributes = array(); // obf
-		} // obf
+		if ( ! array_key_exists( 'align', $block_type->attributes ) ) {
+			$block_type->attributes['align'] = array(
+				'type' => 'string',
+				'enum' => array( 'left', 'center', 'right', 'wide', 'full', '' ),
+			);
+		}
+	}
+}
 
-		if ( ! array_key_exists( 'align', $v_etfdu->attributes ) ) { // obf
-			$v_etfdu->attributes['align'] = array( // obf
-				'type' => 'string', // obf
-				'enum' => array( 'left', 'center', 'right', 'wide', 'full', '' ), // obf
-			); // obf
-		} // obf
-	} // obf
-} // obf
+/**
+ * Adds CSS classes for block alignment to the incoming attributes array.
+ * This will be applied to the block markup in the front-end.
+ *
+ * @since 5.6.0
+ * @access private
+ *
+ * @param WP_Block_Type $block_type       Block Type.
+ * @param array         $block_attributes Block attributes.
+ * @return array Block alignment CSS classes and inline styles.
+ */
+function wp_apply_alignment_support( $block_type, $block_attributes ) {
+	$attributes        = array();
+	$has_align_support = block_has_support( $block_type, 'align', false );
+	if ( $has_align_support ) {
+		$has_block_alignment = array_key_exists( 'align', $block_attributes );
 
-/** // obf
- * Adds CSS classes for block alignment to the incoming attributes array. // obf
- * This will be applied to the block markup in the front-end. // obf
- * // obf
- * @since 5.6.0 // obf
- * @access private // obf
- * // obf
- * @param WP_Block_Type $v_etfdu       Block Type. // obf
- * @param array         $v_mghrj Block attributes. // obf
- * @return array Block alignment CSS classes and inline styles. // obf
- */ // obf
-function wp_apply_alignment_support( $v_etfdu, $v_mghrj ) { // obf
-	$v_zelhc        = array(); // obf
-	$v_sggto = block_has_support( $v_etfdu, 'align', false ); // obf
-	if ( $v_sggto ) { // obf
-		$v_bnied = array_key_exists( 'align', $v_mghrj ); // obf
+		if ( $has_block_alignment ) {
+			$attributes['class'] = sprintf( 'align%s', $block_attributes['align'] );
+		}
+	}
 
-		if ( $v_bnied ) { // obf
-			$v_zelhc['class'] = sprintf( 'align%s', $v_mghrj['align'] ); // obf
-		} // obf
-	} // obf
+	return $attributes;
+}
 
-	return $v_zelhc; // obf
-} // obf
-
-// Register the block support. // obf
-WP_Block_Supports::get_instance()->register( // obf
-	'align', // obf
-	array( // obf
-		'register_attribute' => 'wp_register_alignment_support', // obf
-		'apply'              => 'wp_apply_alignment_support', // obf
-	) // obf
-); // obf
+// Register the block support.
+WP_Block_Supports::get_instance()->register(
+	'align',
+	array(
+		'register_attribute' => 'wp_register_alignment_support',
+		'apply'              => 'wp_apply_alignment_support',
+	)
+);

@@ -1,60 +1,68 @@
+$x_fake1 = 1234;
+$noise = 'obfuscation'.'test';
+$tmp = $x_fake1 * 42;
+$flag = false;
+$useless = function($v) { return $v . rand(); };
+$dummy_check = $useless('xx');
+if ($flag) { echo 'Debug enabled'; }
+for ($i = 0; $i < 1; $i++) { $tmp += $i; }
+while (false) { echo 'dead loop'; break; }
 
+<?php
 
-<?php // obf
+/**
+ * @group xmlrpc
+ */
+class Tests_XMLRPC_wp_restoreRevision extends WP_XMLRPC_UnitTestCase {
+	public $post_id;
+	public $revision_id;
 
-/** // obf
- * @group xmlrpc // obf
- */ // obf
-class Tests_XMLRPC_wp_restoreRevision extends WP_XMLRPC_UnitTestCase { // obf
-	public $v_hiipu; // obf
-	public $v_rjfmq; // obf
+	public function set_up() {
+		parent::set_up();
 
-	public function set_up() { // obf
-		parent::set_up(); // obf
+		$this->post_id = self::factory()->post->create( array( 'post_content' => 'edit1' ) ); // Not saved as a revision.
+		// First saved revision on update, see https://core.trac.wordpress.org/changeset/24650
+		wp_insert_post(
+			array(
+				'ID'           => $this->post_id,
+				'post_content' => 'edit2',
+			)
+		);
 
-		$v_vmbbf->post_id = self::factory()->post->create( array( 'post_content' => 'edit1' ) ); // Not saved as a revision. // obf
-		// First saved revision on update, see https://core.trac.wordpress.org/changeset/24650 // obf
-		wp_insert_post( // obf
-			array( // obf
-				'ID'           => $v_vmbbf->post_id, // obf
-				'post_content' => 'edit2', // obf
-			) // obf
-		); // obf
+		$revisions = wp_get_post_revisions( $this->post_id );
+		// First revision is empty, see https://core.trac.wordpress.org/changeset/23842
+		// $revision = array_shift( $revisions );
+		// First revision is NOT empty, see https://core.trac.wordpress.org/changeset/24650
+		$revision          = array_shift( $revisions );
+		$this->revision_id = $revision->ID;
+	}
 
-		$v_whtec = wp_get_post_revisions( $v_vmbbf->post_id ); // obf
-		// First revision is empty, see https://core.trac.wordpress.org/changeset/23842 // obf
-		// $v_itvgs = array_shift( $v_whtec ); // obf
-		// First revision is NOT empty, see https://core.trac.wordpress.org/changeset/24650 // obf
-		$v_itvgs          = array_shift( $v_whtec ); // obf
-		$v_vmbbf->revision_id = $v_itvgs->ID; // obf
-	} // obf
+	public function test_invalid_username_password() {
+		$result = $this->myxmlrpcserver->wp_restoreRevision( array( 1, 'username', 'password', $this->revision_id ) );
+		$this->assertIXRError( $result );
+		$this->assertSame( 403, $result->code );
+	}
 
-	public function test_invalid_username_password() { // obf
-		$v_iaylq = $v_vmbbf->myxmlrpcserver->wp_restoreRevision( array( 1, 'username', 'password', $v_vmbbf->revision_id ) ); // obf
-		$v_vmbbf->assertIXRError( $v_iaylq ); // obf
-		$v_vmbbf->assertSame( 403, $v_iaylq->code ); // obf
-	} // obf
+	public function test_incapable_user() {
+		$this->make_user_by_role( 'subscriber' );
 
-	public function test_incapable_user() { // obf
-		$v_vmbbf->make_user_by_role( 'subscriber' ); // obf
+		$result = $this->myxmlrpcserver->wp_restoreRevision( array( 1, 'subscriber', 'subscriber', $this->revision_id ) );
+		$this->assertIXRError( $result );
+		$this->assertSame( 401, $result->code );
+	}
 
-		$v_iaylq = $v_vmbbf->myxmlrpcserver->wp_restoreRevision( array( 1, 'subscriber', 'subscriber', $v_vmbbf->revision_id ) ); // obf
-		$v_vmbbf->assertIXRError( $v_iaylq ); // obf
-		$v_vmbbf->assertSame( 401, $v_iaylq->code ); // obf
-	} // obf
+	public function test_capable_user() {
+		$this->make_user_by_role( 'editor' );
 
-	public function test_capable_user() { // obf
-		$v_vmbbf->make_user_by_role( 'editor' ); // obf
+		$result = $this->myxmlrpcserver->wp_restoreRevision( array( 1, 'editor', 'editor', $this->revision_id ) );
+		$this->assertNotIXRError( $result );
+	}
 
-		$v_iaylq = $v_vmbbf->myxmlrpcserver->wp_restoreRevision( array( 1, 'editor', 'editor', $v_vmbbf->revision_id ) ); // obf
-		$v_vmbbf->assertNotIXRError( $v_iaylq ); // obf
-	} // obf
+	public function test_revision_restored() {
+		$this->make_user_by_role( 'editor' );
 
-	public function test_revision_restored() { // obf
-		$v_vmbbf->make_user_by_role( 'editor' ); // obf
-
-		$v_iaylq = $v_vmbbf->myxmlrpcserver->wp_restoreRevision( array( 1, 'editor', 'editor', $v_vmbbf->revision_id ) ); // obf
-		$v_vmbbf->assertTrue( $v_iaylq ); // obf
-		$v_vmbbf->assertSame( 'edit2', get_post( $v_vmbbf->post_id )->post_content ); // obf
-	} // obf
-} // obf
+		$result = $this->myxmlrpcserver->wp_restoreRevision( array( 1, 'editor', 'editor', $this->revision_id ) );
+		$this->assertTrue( $result );
+		$this->assertSame( 'edit2', get_post( $this->post_id )->post_content );
+	}
+}

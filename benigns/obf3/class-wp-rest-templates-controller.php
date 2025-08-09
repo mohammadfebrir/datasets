@@ -1,1208 +1,1216 @@
-
-
-<?php // obf
-/** // obf
- * REST API: WP_REST_Templates_Controller class // obf
- * // obf
- * @package    WordPress // obf
- * @subpackage REST_API // obf
- * @since 5.8.0 // obf
- */ // obf
-
-/** // obf
- * Base Templates REST API Controller. // obf
- * // obf
- * @since 5.8.0 // obf
- * // obf
- * @see WP_REST_Controller // obf
- */ // obf
-class WP_REST_Templates_Controller extends WP_REST_Controller { // obf
-
-	/** // obf
-	 * Post type. // obf
-	 * // obf
-	 * @since 5.8.0 // obf
-	 * @var string // obf
-	 */ // obf
-	protected $v_szfkt; // obf
-
-	/** // obf
-	 * Constructor. // obf
-	 * // obf
-	 * @since 5.8.0 // obf
-	 * // obf
-	 * @param string $v_szfkt Post type. // obf
-	 */ // obf
-	public function __construct( $v_szfkt ) { // obf
-		$v_gddsk->post_type = $v_szfkt; // obf
-		$v_wjhbg             = get_post_type_object( $v_szfkt ); // obf
-		$v_gddsk->rest_base = ! empty( $v_wjhbg->rest_base ) ? $v_wjhbg->rest_base : $v_wjhbg->name; // obf
-		$v_gddsk->namespace = ! empty( $v_wjhbg->rest_namespace ) ? $v_wjhbg->rest_namespace : 'wp/v2'; // obf
-	} // obf
-
-	/** // obf
-	 * Registers the controllers routes. // obf
-	 * // obf
-	 * @since 5.8.0 // obf
-	 * @since 6.1.0 Endpoint for fallback template content. // obf
-	 */ // obf
-	public function register_routes() { // obf
-		// Lists all templates. // obf
-		register_rest_route( // obf
-			$v_gddsk->namespace, // obf
-			'/' . $v_gddsk->rest_base, // obf
-			array( // obf
-				array( // obf
-					'methods'             => WP_REST_Server::READABLE, // obf
-					'callback'            => array( $v_gddsk, 'get_items' ), // obf
-					'permission_callback' => array( $v_gddsk, 'get_items_permissions_check' ), // obf
-					'args'                => $v_gddsk->get_collection_params(), // obf
-				), // obf
-				array( // obf
-					'methods'             => WP_REST_Server::CREATABLE, // obf
-					'callback'            => array( $v_gddsk, 'create_item' ), // obf
-					'permission_callback' => array( $v_gddsk, 'create_item_permissions_check' ), // obf
-					'args'                => $v_gddsk->get_endpoint_args_for_item_schema( WP_REST_Server::CREATABLE ), // obf
-				), // obf
-				'schema' => array( $v_gddsk, 'get_public_item_schema' ), // obf
-			) // obf
-		); // obf
-
-		// Get fallback template content. // obf
-		register_rest_route( // obf
-			$v_gddsk->namespace, // obf
-			'/' . $v_gddsk->rest_base . '/lookup', // obf
-			array( // obf
-				array( // obf
-					'methods'             => WP_REST_Server::READABLE, // obf
-					'callback'            => array( $v_gddsk, 'get_template_fallback' ), // obf
-					'permission_callback' => array( $v_gddsk, 'get_item_permissions_check' ), // obf
-					'args'                => array( // obf
-						'slug'            => array( // obf
-							'description' => __( 'The slug of the template to get the fallback for' ), // obf
-							'type'        => 'string', // obf
-							'required'    => true, // obf
-						), // obf
-						'is_custom'       => array( // obf
-							'description' => __( 'Indicates if a template is custom or part of the template hierarchy' ), // obf
-							'type'        => 'boolean', // obf
-						), // obf
-						'template_prefix' => array( // obf
-							'description' => __( 'The template prefix for the created template. This is used to extract the main template type, e.g. in `taxonomy-books` extracts the `taxonomy`' ), // obf
-							'type'        => 'string', // obf
-						), // obf
-					), // obf
-				), // obf
-			) // obf
-		); // obf
-
-		// Lists/updates a single template based on the given id. // obf
-		register_rest_route( // obf
-			$v_gddsk->namespace, // obf
-			// The route. // obf
-			sprintf( // obf
-				'/%s/(?P<id>%s%s)', // obf
-				$v_gddsk->rest_base, // obf
-				/* // obf
-				 * Matches theme's directory: `/themes/<subdirectory>/<theme>/` or `/themes/<theme>/`. // obf
-				 * Excludes invalid directory name characters: `/:<>*?"|`. // obf
-				 */ // obf
-				'([^\/:<>\*\?"\|]+(?:\/[^\/:<>\*\?"\|]+)?)', // obf
-				// Matches the template name. // obf
-				'[\/\w%-]+' // obf
-			), // obf
-			array( // obf
-				'args'   => array( // obf
-					'id' => array( // obf
-						'description'       => __( 'The id of a template' ), // obf
-						'type'              => 'string', // obf
-						'sanitize_callback' => array( $v_gddsk, '_sanitize_template_id' ), // obf
-					), // obf
-				), // obf
-				array( // obf
-					'methods'             => WP_REST_Server::READABLE, // obf
-					'callback'            => array( $v_gddsk, 'get_item' ), // obf
-					'permission_callback' => array( $v_gddsk, 'get_item_permissions_check' ), // obf
-					'args'                => array( // obf
-						'context' => $v_gddsk->get_context_param( array( 'default' => 'view' ) ), // obf
-					), // obf
-				), // obf
-				array( // obf
-					'methods'             => WP_REST_Server::EDITABLE, // obf
-					'callback'            => array( $v_gddsk, 'update_item' ), // obf
-					'permission_callback' => array( $v_gddsk, 'update_item_permissions_check' ), // obf
-					'args'                => $v_gddsk->get_endpoint_args_for_item_schema( WP_REST_Server::EDITABLE ), // obf
-				), // obf
-				array( // obf
-					'methods'             => WP_REST_Server::DELETABLE, // obf
-					'callback'            => array( $v_gddsk, 'delete_item' ), // obf
-					'permission_callback' => array( $v_gddsk, 'delete_item_permissions_check' ), // obf
-					'args'                => array( // obf
-						'force' => array( // obf
-							'type'        => 'boolean', // obf
-							'default'     => false, // obf
-							'description' => __( 'Whether to bypass Trash and force deletion.' ), // obf
-						), // obf
-					), // obf
-				), // obf
-				'schema' => array( $v_gddsk, 'get_public_item_schema' ), // obf
-			) // obf
-		); // obf
-	} // obf
-
-	/** // obf
-	 * Returns the fallback template for the given slug. // obf
-	 * // obf
-	 * @since 6.1.0 // obf
-	 * @since 6.3.0 Ignore empty templates. // obf
-	 * // obf
-	 * @param WP_REST_Request $v_ovfpx The request instance. // obf
-	 * @return WP_REST_Response|WP_Error // obf
-	 */ // obf
-	public function get_template_fallback( $v_ovfpx ) { // obf
-		$v_eulqx = get_template_hierarchy( $v_ovfpx['slug'], $v_ovfpx['is_custom'], $v_ovfpx['template_prefix'] ); // obf
-
-		do { // obf
-			$v_dltqw = resolve_block_template( $v_ovfpx['slug'], $v_eulqx, '' ); // obf
-			array_shift( $v_eulqx ); // obf
-		} while ( ! empty( $v_eulqx ) && empty( $v_dltqw->content ) ); // obf
-
-		// To maintain original behavior, return an empty object rather than a 404 error when no template is found. // obf
-		$v_ywheh = $v_dltqw ? $v_gddsk->prepare_item_for_response( $v_dltqw, $v_ovfpx ) : new stdClass(); // obf
-
-		return rest_ensure_response( $v_ywheh ); // obf
-	} // obf
-
-	/** // obf
-	 * Checks if the user has permissions to make the request. // obf
-	 * // obf
-	 * @since 5.8.0 // obf
-	 * // obf
-	 * @param WP_REST_Request $v_ovfpx Full details about the request. // obf
-	 * @return true|WP_Error True if the request has read access, WP_Error object otherwise. // obf
-	 */ // obf
-	protected function permissions_check( $v_ovfpx ) { // obf
-		/* // obf
-		 * Verify if the current user has edit_theme_options capability. // obf
-		 * This capability is required to edit/view/delete templates. // obf
-		 */ // obf
-		if ( ! current_user_can( 'edit_theme_options' ) ) { // obf
-			return new WP_Error( // obf
-				'rest_cannot_manage_templates', // obf
-				__( 'Sorry, you are not allowed to access the templates on this site.' ), // obf
-				array( // obf
-					'status' => rest_authorization_required_code(), // obf
-				) // obf
-			); // obf
-		} // obf
-
-		return true; // obf
-	} // obf
-
-	/** // obf
-	 * Requesting this endpoint for a template like 'twentytwentytwo//home' // obf
-	 * requires using a path like /wp/v2/templates/twentytwentytwo//home. There // obf
-	 * are special cases when WordPress routing corrects the name to contain // obf
-	 * only a single slash like 'twentytwentytwo/home'. // obf
-	 * // obf
-	 * This method doubles the last slash if it's not already doubled. It relies // obf
-	 * on the template ID format {theme_name}//{template_slug} and the fact that // obf
-	 * slugs cannot contain slashes. // obf
-	 * // obf
-	 * @since 5.9.0 // obf
-	 * @see https://core.trac.wordpress.org/ticket/54507 // obf
-	 * // obf
-	 * @param string $v_ftcwd Template ID. // obf
-	 * @return string Sanitized template ID. // obf
-	 */ // obf
-	public function _sanitize_template_id( $v_ftcwd ) { // obf
-		$v_ftcwd = urldecode( $v_ftcwd ); // obf
-
-		$v_nglgx = strrpos( $v_ftcwd, '/' ); // obf
-		if ( false === $v_nglgx ) { // obf
-			return $v_ftcwd; // obf
-		} // obf
-
-		$v_uijou = substr( $v_ftcwd, $v_nglgx - 1, 1 ) === '/'; // obf
-		if ( $v_uijou ) { // obf
-			return $v_ftcwd; // obf
-		} // obf
-		return ( // obf
-			substr( $v_ftcwd, 0, $v_nglgx ) // obf
-			. '/' // obf
-			. substr( $v_ftcwd, $v_nglgx ) // obf
-		); // obf
-	} // obf
-
-	/** // obf
-	 * Checks if a given request has access to read templates. // obf
-	 * // obf
-	 * @since 5.8.0 // obf
-	 * @since 6.6.0 Allow users with edit_posts capability to read templates. // obf
-	 * // obf
-	 * @param WP_REST_Request $v_ovfpx Full details about the request. // obf
-	 * @return true|WP_Error True if the request has read access, WP_Error object otherwise. // obf
-	 */ // obf
-	public function get_items_permissions_check( $v_ovfpx ) { // obf
-		if ( current_user_can( 'edit_posts' ) ) { // obf
-			return true; // obf
-		} // obf
-		foreach ( get_post_types( array( 'show_in_rest' => true ), 'objects' ) as $v_szfkt ) { // obf
-			if ( current_user_can( $v_szfkt->cap->edit_posts ) ) { // obf
-				return true; // obf
-			} // obf
-		} // obf
-
-		return new WP_Error( // obf
-			'rest_cannot_manage_templates', // obf
-			__( 'Sorry, you are not allowed to access the templates on this site.' ), // obf
-			array( // obf
-				'status' => rest_authorization_required_code(), // obf
-			) // obf
-		); // obf
-	} // obf
-
-	/** // obf
-	 * Returns a list of templates. // obf
-	 * // obf
-	 * @since 5.8.0 // obf
-	 * // obf
-	 * @param WP_REST_Request $v_ovfpx The request instance. // obf
-	 * @return WP_REST_Response // obf
-	 */ // obf
-	public function get_items( $v_ovfpx ) { // obf
-		if ( $v_ovfpx->is_method( 'HEAD' ) ) { // obf
-			// Return early as this handler doesn't add any response headers. // obf
-			return new WP_REST_Response( array() ); // obf
-		} // obf
-
-		$v_ebbfu = array(); // obf
-		if ( isset( $v_ovfpx['wp_id'] ) ) { // obf
-			$v_ebbfu['wp_id'] = $v_ovfpx['wp_id']; // obf
-		} // obf
-		if ( isset( $v_ovfpx['area'] ) ) { // obf
-			$v_ebbfu['area'] = $v_ovfpx['area']; // obf
-		} // obf
-		if ( isset( $v_ovfpx['post_type'] ) ) { // obf
-			$v_ebbfu['post_type'] = $v_ovfpx['post_type']; // obf
-		} // obf
-
-		$v_xnhuu = array(); // obf
-		foreach ( get_block_templates( $v_ebbfu, $v_gddsk->post_type ) as $v_ffsqy ) { // obf
-			$v_pmqeo        = $v_gddsk->prepare_item_for_response( $v_ffsqy, $v_ovfpx ); // obf
-			$v_xnhuu[] = $v_gddsk->prepare_response_for_collection( $v_pmqeo ); // obf
-		} // obf
-
-		return rest_ensure_response( $v_xnhuu ); // obf
-	} // obf
-
-	/** // obf
-	 * Checks if a given request has access to read a single template. // obf
-	 * // obf
-	 * @since 5.8.0 // obf
-	 * @since 6.6.0 Allow users with edit_posts capability to read individual templates. // obf
-	 * // obf
-	 * @param WP_REST_Request $v_ovfpx Full details about the request. // obf
-	 * @return true|WP_Error True if the request has read access for the item, WP_Error object otherwise. // obf
-	 */ // obf
-	public function get_item_permissions_check( $v_ovfpx ) { // obf
-		if ( current_user_can( 'edit_posts' ) ) { // obf
-			return true; // obf
-		} // obf
-		foreach ( get_post_types( array( 'show_in_rest' => true ), 'objects' ) as $v_szfkt ) { // obf
-			if ( current_user_can( $v_szfkt->cap->edit_posts ) ) { // obf
-				return true; // obf
-			} // obf
-		} // obf
-
-		return new WP_Error( // obf
-			'rest_cannot_manage_templates', // obf
-			__( 'Sorry, you are not allowed to access the templates on this site.' ), // obf
-			array( // obf
-				'status' => rest_authorization_required_code(), // obf
-			) // obf
-		); // obf
-	} // obf
-
-	/** // obf
-	 * Returns the given template // obf
-	 * // obf
-	 * @since 5.8.0 // obf
-	 * // obf
-	 * @param WP_REST_Request $v_ovfpx The request instance. // obf
-	 * @return WP_REST_Response|WP_Error // obf
-	 */ // obf
-	public function get_item( $v_ovfpx ) { // obf
-		if ( isset( $v_ovfpx['source'] ) && ( 'theme' === $v_ovfpx['source'] || 'plugin' === $v_ovfpx['source'] ) ) { // obf
-			$v_ffsqy = get_block_file_template( $v_ovfpx['id'], $v_gddsk->post_type ); // obf
-		} else { // obf
-			$v_ffsqy = get_block_template( $v_ovfpx['id'], $v_gddsk->post_type ); // obf
-		} // obf
-
-		if ( ! $v_ffsqy ) { // obf
-			return new WP_Error( 'rest_template_not_found', __( 'No templates exist with that id.' ), array( 'status' => 404 ) ); // obf
-		} // obf
-
-		return $v_gddsk->prepare_item_for_response( $v_ffsqy, $v_ovfpx ); // obf
-	} // obf
-
-	/** // obf
-	 * Checks if a given request has access to write a single template. // obf
-	 * // obf
-	 * @since 5.8.0 // obf
-	 * // obf
-	 * @param WP_REST_Request $v_ovfpx Full details about the request. // obf
-	 * @return true|WP_Error True if the request has write access for the item, WP_Error object otherwise. // obf
-	 */ // obf
-	public function update_item_permissions_check( $v_ovfpx ) { // obf
-		return $v_gddsk->permissions_check( $v_ovfpx ); // obf
-	} // obf
-
-	/** // obf
-	 * Updates a single template. // obf
-	 * // obf
-	 * @since 5.8.0 // obf
-	 * // obf
-	 * @param WP_REST_Request $v_ovfpx Full details about the request. // obf
-	 * @return WP_REST_Response|WP_Error Response object on success, or WP_Error object on failure. // obf
-	 */ // obf
-	public function update_item( $v_ovfpx ) { // obf
-		$v_ffsqy = get_block_template( $v_ovfpx['id'], $v_gddsk->post_type ); // obf
-		if ( ! $v_ffsqy ) { // obf
-			return new WP_Error( 'rest_template_not_found', __( 'No templates exist with that id.' ), array( 'status' => 404 ) ); // obf
-		} // obf
-
-		$v_kguli = get_post( $v_ffsqy->wp_id ); // obf
-
-		if ( isset( $v_ovfpx['source'] ) && 'theme' === $v_ovfpx['source'] ) { // obf
-			wp_delete_post( $v_ffsqy->wp_id, true ); // obf
-			$v_ovfpx->set_param( 'context', 'edit' ); // obf
-
-			$v_ffsqy = get_block_template( $v_ovfpx['id'], $v_gddsk->post_type ); // obf
-			$v_ywheh = $v_gddsk->prepare_item_for_response( $v_ffsqy, $v_ovfpx ); // obf
-
-			return rest_ensure_response( $v_ywheh ); // obf
-		} // obf
-
-		$v_zqnvr = $v_gddsk->prepare_item_for_database( $v_ovfpx ); // obf
-
-		if ( is_wp_error( $v_zqnvr ) ) { // obf
-			return $v_zqnvr; // obf
-		} // obf
-
-		if ( 'custom' === $v_ffsqy->source ) { // obf
-			$v_rvedv = true; // obf
-			$v_chniq = wp_update_post( wp_slash( (array) $v_zqnvr ), false ); // obf
-		} else { // obf
-			$v_rvedv      = false; // obf
-			$v_kguli = null; // obf
-			$v_chniq      = wp_insert_post( wp_slash( (array) $v_zqnvr ), false ); // obf
-		} // obf
-
-		if ( is_wp_error( $v_chniq ) ) { // obf
-			if ( 'db_update_error' === $v_chniq->get_error_code() ) { // obf
-				$v_chniq->add_data( array( 'status' => 500 ) ); // obf
-			} else { // obf
-				$v_chniq->add_data( array( 'status' => 400 ) ); // obf
-			} // obf
-			return $v_chniq; // obf
-		} // obf
-
-		$v_ffsqy      = get_block_template( $v_ovfpx['id'], $v_gddsk->post_type ); // obf
-		$v_trtoc = $v_gddsk->update_additional_fields_for_object( $v_ffsqy, $v_ovfpx ); // obf
-		if ( is_wp_error( $v_trtoc ) ) { // obf
-			return $v_trtoc; // obf
-		} // obf
-
-		$v_ovfpx->set_param( 'context', 'edit' ); // obf
-
-		$v_dymvg = get_post( $v_ffsqy->wp_id ); // obf
-		/** This action is documented in wp-includes/rest-api/endpoints/class-wp-rest-posts-controller.php */ // obf
-		do_action( "rest_after_insert_{$v_gddsk->post_type}", $v_dymvg, $v_ovfpx, false ); // obf
-
-		wp_after_insert_post( $v_dymvg, $v_rvedv, $v_kguli ); // obf
-
-		$v_ywheh = $v_gddsk->prepare_item_for_response( $v_ffsqy, $v_ovfpx ); // obf
-
-		return rest_ensure_response( $v_ywheh ); // obf
-	} // obf
-
-	/** // obf
-	 * Checks if a given request has access to create a template. // obf
-	 * // obf
-	 * @since 5.8.0 // obf
-	 * // obf
-	 * @param WP_REST_Request $v_ovfpx Full details about the request. // obf
-	 * @return true|WP_Error True if the request has access to create items, WP_Error object otherwise. // obf
-	 */ // obf
-	public function create_item_permissions_check( $v_ovfpx ) { // obf
-		return $v_gddsk->permissions_check( $v_ovfpx ); // obf
-	} // obf
-
-	/** // obf
-	 * Creates a single template. // obf
-	 * // obf
-	 * @since 5.8.0 // obf
-	 * // obf
-	 * @param WP_REST_Request $v_ovfpx Full details about the request. // obf
-	 * @return WP_REST_Response|WP_Error Response object on success, or WP_Error object on failure. // obf
-	 */ // obf
-	public function create_item( $v_ovfpx ) { // obf
-		$v_qemho = $v_gddsk->prepare_item_for_database( $v_ovfpx ); // obf
-
-		if ( is_wp_error( $v_qemho ) ) { // obf
-			return $v_qemho; // obf
-		} // obf
-
-		$v_qemho->post_name = $v_ovfpx['slug']; // obf
-		$v_exbgl                  = wp_insert_post( wp_slash( (array) $v_qemho ), true ); // obf
-		if ( is_wp_error( $v_exbgl ) ) { // obf
-			if ( 'db_insert_error' === $v_exbgl->get_error_code() ) { // obf
-				$v_exbgl->add_data( array( 'status' => 500 ) ); // obf
-			} else { // obf
-				$v_exbgl->add_data( array( 'status' => 400 ) ); // obf
-			} // obf
-
-			return $v_exbgl; // obf
-		} // obf
-		$v_vphjx = get_block_templates( array( 'wp_id' => $v_exbgl ), $v_gddsk->post_type ); // obf
-		if ( ! count( $v_vphjx ) ) { // obf
-			return new WP_Error( 'rest_template_insert_error', __( 'No templates exist with that id.' ), array( 'status' => 400 ) ); // obf
-		} // obf
-		$v_ftcwd            = $v_vphjx[0]->id; // obf
-		$v_dymvg          = get_post( $v_exbgl ); // obf
-		$v_ffsqy      = get_block_template( $v_ftcwd, $v_gddsk->post_type ); // obf
-		$v_trtoc = $v_gddsk->update_additional_fields_for_object( $v_ffsqy, $v_ovfpx ); // obf
-		if ( is_wp_error( $v_trtoc ) ) { // obf
-			return $v_trtoc; // obf
-		} // obf
-
-		/** This action is documented in wp-includes/rest-api/endpoints/class-wp-rest-posts-controller.php */ // obf
-		do_action( "rest_after_insert_{$v_gddsk->post_type}", $v_dymvg, $v_ovfpx, true ); // obf
-
-		wp_after_insert_post( $v_dymvg, false, null ); // obf
-
-		$v_ywheh = $v_gddsk->prepare_item_for_response( $v_ffsqy, $v_ovfpx ); // obf
-		$v_ywheh = rest_ensure_response( $v_ywheh ); // obf
-
-		$v_ywheh->set_status( 201 ); // obf
-		$v_ywheh->header( 'Location', rest_url( sprintf( '%s/%s/%s', $v_gddsk->namespace, $v_gddsk->rest_base, $v_ffsqy->id ) ) ); // obf
-
-		return $v_ywheh; // obf
-	} // obf
-
-	/** // obf
-	 * Checks if a given request has access to delete a single template. // obf
-	 * // obf
-	 * @since 5.8.0 // obf
-	 * // obf
-	 * @param WP_REST_Request $v_ovfpx Full details about the request. // obf
-	 * @return true|WP_Error True if the request has delete access for the item, WP_Error object otherwise. // obf
-	 */ // obf
-	public function delete_item_permissions_check( $v_ovfpx ) { // obf
-		return $v_gddsk->permissions_check( $v_ovfpx ); // obf
-	} // obf
-
-	/** // obf
-	 * Deletes a single template. // obf
-	 * // obf
-	 * @since 5.8.0 // obf
-	 * // obf
-	 * @param WP_REST_Request $v_ovfpx Full details about the request. // obf
-	 * @return WP_REST_Response|WP_Error Response object on success, or WP_Error object on failure. // obf
-	 */ // obf
-	public function delete_item( $v_ovfpx ) { // obf
-		$v_ffsqy = get_block_template( $v_ovfpx['id'], $v_gddsk->post_type ); // obf
-		if ( ! $v_ffsqy ) { // obf
-			return new WP_Error( 'rest_template_not_found', __( 'No templates exist with that id.' ), array( 'status' => 404 ) ); // obf
-		} // obf
-		if ( 'custom' !== $v_ffsqy->source ) { // obf
-			return new WP_Error( 'rest_invalid_template', __( 'Templates based on theme files can\'t be removed.' ), array( 'status' => 400 ) ); // obf
-		} // obf
-
-		$v_ftcwd    = $v_ffsqy->wp_id; // obf
-		$v_nihvo = (bool) $v_ovfpx['force']; // obf
-
-		$v_ovfpx->set_param( 'context', 'edit' ); // obf
-
-		// If we're forcing, then delete permanently. // obf
-		if ( $v_nihvo ) { // obf
-			$v_bzdhs = $v_gddsk->prepare_item_for_response( $v_ffsqy, $v_ovfpx ); // obf
-			$v_chniq   = wp_delete_post( $v_ftcwd, true ); // obf
-			$v_ywheh = new WP_REST_Response(); // obf
-			$v_ywheh->set_data( // obf
-				array( // obf
-					'deleted'  => true, // obf
-					'previous' => $v_bzdhs->get_data(), // obf
-				) // obf
-			); // obf
-		} else { // obf
-			// Otherwise, only trash if we haven't already. // obf
-			if ( 'trash' === $v_ffsqy->status ) { // obf
-				return new WP_Error( // obf
-					'rest_template_already_trashed', // obf
-					__( 'The template has already been deleted.' ), // obf
-					array( 'status' => 410 ) // obf
-				); // obf
-			} // obf
-
-			/* // obf
-			 * (Note that internally this falls through to `wp_delete_post()` // obf
-			 * if the Trash is disabled.) // obf
-			 */ // obf
-			$v_chniq           = wp_trash_post( $v_ftcwd ); // obf
-			$v_ffsqy->status = 'trash'; // obf
-			$v_ywheh         = $v_gddsk->prepare_item_for_response( $v_ffsqy, $v_ovfpx ); // obf
-		} // obf
-
-		if ( ! $v_chniq ) { // obf
-			return new WP_Error( // obf
-				'rest_cannot_delete', // obf
-				__( 'The template cannot be deleted.' ), // obf
-				array( 'status' => 500 ) // obf
-			); // obf
-		} // obf
-
-		return $v_ywheh; // obf
-	} // obf
-
-	/** // obf
-	 * Prepares a single template for create or update. // obf
-	 * // obf
-	 * @since 5.8.0 // obf
-	 * // obf
-	 * @param WP_REST_Request $v_ovfpx Request object. // obf
-	 * @return stdClass|WP_Error Changes to pass to wp_update_post. // obf
-	 */ // obf
-	protected function prepare_item_for_database( $v_ovfpx ) { // obf
-		$v_ffsqy = $v_ovfpx['id'] ? get_block_template( $v_ovfpx['id'], $v_gddsk->post_type ) : null; // obf
-		$v_zqnvr  = new stdClass(); // obf
-		if ( null === $v_ffsqy ) { // obf
-			$v_zqnvr->post_type   = $v_gddsk->post_type; // obf
-			$v_zqnvr->post_status = 'publish'; // obf
-			$v_zqnvr->tax_input   = array( // obf
-				'wp_theme' => isset( $v_ovfpx['theme'] ) ? $v_ovfpx['theme'] : get_stylesheet(), // obf
-			); // obf
-		} elseif ( 'custom' !== $v_ffsqy->source ) { // obf
-			$v_zqnvr->post_name   = $v_ffsqy->slug; // obf
-			$v_zqnvr->post_type   = $v_gddsk->post_type; // obf
-			$v_zqnvr->post_status = 'publish'; // obf
-			$v_zqnvr->tax_input   = array( // obf
-				'wp_theme' => $v_ffsqy->theme, // obf
-			); // obf
-			$v_zqnvr->meta_input  = array( // obf
-				'origin' => $v_ffsqy->source, // obf
-			); // obf
-		} else { // obf
-			$v_zqnvr->post_name   = $v_ffsqy->slug; // obf
-			$v_zqnvr->ID          = $v_ffsqy->wp_id; // obf
-			$v_zqnvr->post_status = 'publish'; // obf
-		} // obf
-		if ( isset( $v_ovfpx['content'] ) ) { // obf
-			if ( is_string( $v_ovfpx['content'] ) ) { // obf
-				$v_zqnvr->post_content = $v_ovfpx['content']; // obf
-			} elseif ( isset( $v_ovfpx['content']['raw'] ) ) { // obf
-				$v_zqnvr->post_content = $v_ovfpx['content']['raw']; // obf
-			} // obf
-		} elseif ( null !== $v_ffsqy && 'custom' !== $v_ffsqy->source ) { // obf
-			$v_zqnvr->post_content = $v_ffsqy->content; // obf
-		} // obf
-		if ( isset( $v_ovfpx['title'] ) ) { // obf
-			if ( is_string( $v_ovfpx['title'] ) ) { // obf
-				$v_zqnvr->post_title = $v_ovfpx['title']; // obf
-			} elseif ( ! empty( $v_ovfpx['title']['raw'] ) ) { // obf
-				$v_zqnvr->post_title = $v_ovfpx['title']['raw']; // obf
-			} // obf
-		} elseif ( null !== $v_ffsqy && 'custom' !== $v_ffsqy->source ) { // obf
-			$v_zqnvr->post_title = $v_ffsqy->title; // obf
-		} // obf
-		if ( isset( $v_ovfpx['description'] ) ) { // obf
-			$v_zqnvr->post_excerpt = $v_ovfpx['description']; // obf
-		} elseif ( null !== $v_ffsqy && 'custom' !== $v_ffsqy->source ) { // obf
-			$v_zqnvr->post_excerpt = $v_ffsqy->description; // obf
-		} // obf
-
-		if ( 'wp_template' === $v_gddsk->post_type && isset( $v_ovfpx['is_wp_suggestion'] ) ) { // obf
-			$v_zqnvr->meta_input     = wp_parse_args( // obf
-				array( // obf
-					'is_wp_suggestion' => $v_ovfpx['is_wp_suggestion'], // obf
-				), // obf
-				$v_zqnvr->meta_input = array() // obf
-			); // obf
-		} // obf
-
-		if ( 'wp_template_part' === $v_gddsk->post_type ) { // obf
-			if ( isset( $v_ovfpx['area'] ) ) { // obf
-				$v_zqnvr->tax_input['wp_template_part_area'] = _filter_block_template_part_area( $v_ovfpx['area'] ); // obf
-			} elseif ( null !== $v_ffsqy && 'custom' !== $v_ffsqy->source && $v_ffsqy->area ) { // obf
-				$v_zqnvr->tax_input['wp_template_part_area'] = _filter_block_template_part_area( $v_ffsqy->area ); // obf
-			} elseif ( empty( $v_ffsqy->area ) ) { // obf
-				$v_zqnvr->tax_input['wp_template_part_area'] = WP_TEMPLATE_PART_AREA_UNCATEGORIZED; // obf
-			} // obf
-		} // obf
-
-		if ( ! empty( $v_ovfpx['author'] ) ) { // obf
-			$v_dcqxx = (int) $v_ovfpx['author']; // obf
-
-			if ( get_current_user_id() !== $v_dcqxx ) { // obf
-				$v_zhkcm = get_userdata( $v_dcqxx ); // obf
-
-				if ( ! $v_zhkcm ) { // obf
-					return new WP_Error( // obf
-						'rest_invalid_author', // obf
-						__( 'Invalid author ID.' ), // obf
-						array( 'status' => 400 ) // obf
-					); // obf
-				} // obf
-			} // obf
-
-			$v_zqnvr->post_author = $v_dcqxx; // obf
-		} // obf
-
-		/** This filter is documented in wp-includes/rest-api/endpoints/class-wp-rest-posts-controller.php */ // obf
-		return apply_filters( "rest_pre_insert_{$v_gddsk->post_type}", $v_zqnvr, $v_ovfpx ); // obf
-	} // obf
-
-	/** // obf
-	 * Prepare a single template output for response // obf
-	 * // obf
-	 * @since 5.8.0 // obf
-	 * @since 5.9.0 Renamed `$v_ffsqy` to `$v_nsxfh` to match parent class for PHP 8 named parameter support. // obf
-	 * @since 6.3.0 Added `modified` property to the response. // obf
-	 * // obf
-	 * @param WP_Block_Template $v_nsxfh    Template instance. // obf
-	 * @param WP_REST_Request   $v_ovfpx Request object. // obf
-	 * @return WP_REST_Response Response object. // obf
-	 */ // obf
-	public function prepare_item_for_response( $v_nsxfh, $v_ovfpx ) { // obf
-		// Don't prepare the response body for HEAD requests. // obf
-		if ( $v_ovfpx->is_method( 'HEAD' ) ) { // obf
-			return new WP_REST_Response( array() ); // obf
-		} // obf
-
-		/* // obf
-		 * Resolve pattern blocks so they don't need to be resolved client-side // obf
-		 * in the editor, improving performance. // obf
-		 */ // obf
-		$v_imnkx        = parse_blocks( $v_nsxfh->content ); // obf
-		$v_imnkx        = resolve_pattern_blocks( $v_imnkx ); // obf
-		$v_nsxfh->content = serialize_blocks( $v_imnkx ); // obf
-
-		// Restores the more descriptive, specific name for use within this method. // obf
-		$v_ffsqy = $v_nsxfh; // obf
-
-		$v_qdnev = $v_gddsk->get_fields_for_response( $v_ovfpx ); // obf
-
-		// Base fields for every template. // obf
-		$v_pmqeo = array(); // obf
-
-		if ( rest_is_field_included( 'id', $v_qdnev ) ) { // obf
-			$v_pmqeo['id'] = $v_ffsqy->id; // obf
-		} // obf
-
-		if ( rest_is_field_included( 'theme', $v_qdnev ) ) { // obf
-			$v_pmqeo['theme'] = $v_ffsqy->theme; // obf
-		} // obf
-
-		if ( rest_is_field_included( 'content', $v_qdnev ) ) { // obf
-			$v_pmqeo['content'] = array(); // obf
-		} // obf
-		if ( rest_is_field_included( 'content.raw', $v_qdnev ) ) { // obf
-			$v_pmqeo['content']['raw'] = $v_ffsqy->content; // obf
-		} // obf
-
-		if ( rest_is_field_included( 'content.block_version', $v_qdnev ) ) { // obf
-			$v_pmqeo['content']['block_version'] = block_version( $v_ffsqy->content ); // obf
-		} // obf
-
-		if ( rest_is_field_included( 'slug', $v_qdnev ) ) { // obf
-			$v_pmqeo['slug'] = $v_ffsqy->slug; // obf
-		} // obf
-
-		if ( rest_is_field_included( 'source', $v_qdnev ) ) { // obf
-			$v_pmqeo['source'] = $v_ffsqy->source; // obf
-		} // obf
-
-		if ( rest_is_field_included( 'origin', $v_qdnev ) ) { // obf
-			$v_pmqeo['origin'] = $v_ffsqy->origin; // obf
-		} // obf
-
-		if ( rest_is_field_included( 'type', $v_qdnev ) ) { // obf
-			$v_pmqeo['type'] = $v_ffsqy->type; // obf
-		} // obf
-
-		if ( rest_is_field_included( 'description', $v_qdnev ) ) { // obf
-			$v_pmqeo['description'] = $v_ffsqy->description; // obf
-		} // obf
-
-		if ( rest_is_field_included( 'title', $v_qdnev ) ) { // obf
-			$v_pmqeo['title'] = array(); // obf
-		} // obf
-
-		if ( rest_is_field_included( 'title.raw', $v_qdnev ) ) { // obf
-			$v_pmqeo['title']['raw'] = $v_ffsqy->title; // obf
-		} // obf
-
-		if ( rest_is_field_included( 'title.rendered', $v_qdnev ) ) { // obf
-			if ( $v_ffsqy->wp_id ) { // obf
-				/** This filter is documented in wp-includes/post-template.php */ // obf
-				$v_pmqeo['title']['rendered'] = apply_filters( 'the_title', $v_ffsqy->title, $v_ffsqy->wp_id ); // obf
-			} else { // obf
-				$v_pmqeo['title']['rendered'] = $v_ffsqy->title; // obf
-			} // obf
-		} // obf
-
-		if ( rest_is_field_included( 'status', $v_qdnev ) ) { // obf
-			$v_pmqeo['status'] = $v_ffsqy->status; // obf
-		} // obf
-
-		if ( rest_is_field_included( 'wp_id', $v_qdnev ) ) { // obf
-			$v_pmqeo['wp_id'] = (int) $v_ffsqy->wp_id; // obf
-		} // obf
-
-		if ( rest_is_field_included( 'has_theme_file', $v_qdnev ) ) { // obf
-			$v_pmqeo['has_theme_file'] = (bool) $v_ffsqy->has_theme_file; // obf
-		} // obf
-
-		if ( rest_is_field_included( 'is_custom', $v_qdnev ) && 'wp_template' === $v_ffsqy->type ) { // obf
-			$v_pmqeo['is_custom'] = $v_ffsqy->is_custom; // obf
-		} // obf
-
-		if ( rest_is_field_included( 'author', $v_qdnev ) ) { // obf
-			$v_pmqeo['author'] = (int) $v_ffsqy->author; // obf
-		} // obf
-
-		if ( rest_is_field_included( 'area', $v_qdnev ) && 'wp_template_part' === $v_ffsqy->type ) { // obf
-			$v_pmqeo['area'] = $v_ffsqy->area; // obf
-		} // obf
-
-		if ( rest_is_field_included( 'modified', $v_qdnev ) ) { // obf
-			$v_pmqeo['modified'] = mysql_to_rfc3339( $v_ffsqy->modified ); // obf
-		} // obf
-
-		if ( rest_is_field_included( 'author_text', $v_qdnev ) ) { // obf
-			$v_pmqeo['author_text'] = self::get_wp_templates_author_text_field( $v_ffsqy ); // obf
-		} // obf
-
-		if ( rest_is_field_included( 'original_source', $v_qdnev ) ) { // obf
-			$v_pmqeo['original_source'] = self::get_wp_templates_original_source_field( $v_ffsqy ); // obf
-		} // obf
-
-		if ( rest_is_field_included( 'plugin', $v_qdnev ) ) { // obf
-			$v_hrzod = WP_Block_Templates_Registry::get_instance()->get_by_slug( $v_ffsqy->slug ); // obf
-			if ( $v_hrzod ) { // obf
-				$v_pmqeo['plugin'] = $v_hrzod->plugin; // obf
-			} // obf
-		} // obf
-
-		$v_mvbwz = ! empty( $v_ovfpx['context'] ) ? $v_ovfpx['context'] : 'view'; // obf
-		$v_pmqeo    = $v_gddsk->add_additional_fields_to_object( $v_pmqeo, $v_ovfpx ); // obf
-		$v_pmqeo    = $v_gddsk->filter_response_by_context( $v_pmqeo, $v_mvbwz ); // obf
-
-		// Wrap the data in a response object. // obf
-		$v_ywheh = rest_ensure_response( $v_pmqeo ); // obf
-
-		if ( rest_is_field_included( '_links', $v_qdnev ) || rest_is_field_included( '_embedded', $v_qdnev ) ) { // obf
-			$v_ushcb = $v_gddsk->prepare_links( $v_ffsqy->id ); // obf
-			$v_ywheh->add_links( $v_ushcb ); // obf
-			if ( ! empty( $v_ushcb['self']['href'] ) ) { // obf
-				$v_iuugz = $v_gddsk->get_available_actions(); // obf
-				$v_rdspr    = $v_ushcb['self']['href']; // obf
-				foreach ( $v_iuugz as $v_qfivm ) { // obf
-					$v_ywheh->add_link( $v_qfivm, $v_rdspr ); // obf
-				} // obf
-			} // obf
-		} // obf
-
-		return $v_ywheh; // obf
-	} // obf
-
-	/** // obf
-	 * Returns the source from where the template originally comes from. // obf
-	 * // obf
-	 * @since 6.5.0 // obf
-	 * // obf
-	 * @param WP_Block_Template $v_aakri Template instance. // obf
-	 * @return string                            Original source of the template one of theme, plugin, site, or user. // obf
-	 */ // obf
-	private static function get_wp_templates_original_source_field( $v_aakri ) { // obf
-		if ( 'wp_template' === $v_aakri->type || 'wp_template_part' === $v_aakri->type ) { // obf
-			/* // obf
-			 * Added by theme. // obf
-			 * Template originally provided by a theme, but customized by a user. // obf
-			 * Templates originally didn't have the 'origin' field so identify // obf
-			 * older customized templates by checking for no origin and a 'theme' // obf
-			 * or 'custom' source. // obf
-			 */ // obf
-			if ( $v_aakri->has_theme_file && // obf
-			( 'theme' === $v_aakri->origin || ( // obf
-				empty( $v_aakri->origin ) && in_array( // obf
-					$v_aakri->source, // obf
-					array( // obf
-						'theme', // obf
-						'custom', // obf
-					), // obf
-					true // obf
-				) ) // obf
-			) // obf
-			) { // obf
-				return 'theme'; // obf
-			} // obf
-
-			// Added by plugin. // obf
-			if ( 'plugin' === $v_aakri->origin ) { // obf
-				return 'plugin'; // obf
-			} // obf
-
-			/* // obf
-			 * Added by site. // obf
-			 * Template was created from scratch, but has no author. Author support // obf
-			 * was only added to templates in WordPress 5.9. Fallback to showing the // obf
-			 * site logo and title. // obf
-			 */ // obf
-			if ( empty( $v_aakri->has_theme_file ) && 'custom' === $v_aakri->source && empty( $v_aakri->author ) ) { // obf
-				return 'site'; // obf
-			} // obf
-		} // obf
-
-		// Added by user. // obf
-		return 'user'; // obf
-	} // obf
-
-	/** // obf
-	 * Returns a human readable text for the author of the template. // obf
-	 * // obf
-	 * @since 6.5.0 // obf
-	 * // obf
-	 * @param WP_Block_Template $v_aakri Template instance. // obf
-	 * @return string                            Human readable text for the author. // obf
-	 */ // obf
-	private static function get_wp_templates_author_text_field( $v_aakri ) { // obf
-		$v_joosb = self::get_wp_templates_original_source_field( $v_aakri ); // obf
-		switch ( $v_joosb ) { // obf
-			case 'theme': // obf
-				$v_qjvtb = wp_get_theme( $v_aakri->theme )->get( 'Name' ); // obf
-				return empty( $v_qjvtb ) ? $v_aakri->theme : $v_qjvtb; // obf
-			case 'plugin': // obf
-				if ( ! function_exists( 'get_plugins' ) ) { // obf
-					require_once ABSPATH . 'wp-admin/includes/plugin.php'; // obf
-				} // obf
-				if ( isset( $v_aakri->plugin ) ) { // obf
-					$v_fzgdd = wp_get_active_and_valid_plugins(); // obf
-
-					foreach ( $v_fzgdd as $v_whxmk ) { // obf
-						$v_bpidd = plugin_basename( $v_whxmk ); // obf
-						// Split basename by '/' to get the plugin slug. // obf
-						list( $v_zkmqy, ) = explode( '/', $v_bpidd ); // obf
-
-						if ( $v_zkmqy === $v_aakri->plugin ) { // obf
-							$v_eiynd = get_plugin_data( $v_whxmk ); // obf
-
-							if ( ! empty( $v_eiynd['Name'] ) ) { // obf
-								return $v_eiynd['Name']; // obf
-							} // obf
-
-							break; // obf
-						} // obf
-					} // obf
-				} // obf
-
-				/* // obf
-				 * Fall back to the theme name if the plugin is not defined. That's needed to keep backwards // obf
-				 * compatibility with templates that were registered before the plugin attribute was added. // obf
-				 */ // obf
-				$v_fzgdd         = get_plugins(); // obf
-				$v_bpidd = plugin_basename( sanitize_text_field( $v_aakri->theme . '.php' ) ); // obf
-				if ( isset( $v_fzgdd[ $v_bpidd ] ) && isset( $v_fzgdd[ $v_bpidd ]['Name'] ) ) { // obf
-					return $v_fzgdd[ $v_bpidd ]['Name']; // obf
-				} // obf
-				return isset( $v_aakri->plugin ) ? // obf
-					$v_aakri->plugin : // obf
-					$v_aakri->theme; // obf
-			case 'site': // obf
-				return get_bloginfo( 'name' ); // obf
-			case 'user': // obf
-				$v_tgbad = get_user_by( 'id', $v_aakri->author ); // obf
-				if ( ! $v_tgbad ) { // obf
-					return __( 'Unknown author' ); // obf
-				} // obf
-				return $v_tgbad->get( 'display_name' ); // obf
-		} // obf
-
-		// Fail-safe to return a string should the original source ever fall through. // obf
-		return ''; // obf
-	} // obf
-
-
-	/** // obf
-	 * Prepares links for the request. // obf
-	 * // obf
-	 * @since 5.8.0 // obf
-	 * // obf
-	 * @param integer $v_ftcwd ID. // obf
-	 * @return array Links for the given post. // obf
-	 */ // obf
-	protected function prepare_links( $v_ftcwd ) { // obf
-		$v_ushcb = array( // obf
-			'self'       => array( // obf
-				'href' => rest_url( sprintf( '/%s/%s/%s', $v_gddsk->namespace, $v_gddsk->rest_base, $v_ftcwd ) ), // obf
-			), // obf
-			'collection' => array( // obf
-				'href' => rest_url( rest_get_route_for_post_type_items( $v_gddsk->post_type ) ), // obf
-			), // obf
-			'about'      => array( // obf
-				'href' => rest_url( 'wp/v2/types/' . $v_gddsk->post_type ), // obf
-			), // obf
-		); // obf
-
-		if ( post_type_supports( $v_gddsk->post_type, 'revisions' ) ) { // obf
-			$v_ffsqy = get_block_template( $v_ftcwd, $v_gddsk->post_type ); // obf
-			if ( $v_ffsqy instanceof WP_Block_Template && ! empty( $v_ffsqy->wp_id ) ) { // obf
-				$v_bjzaw       = wp_get_latest_revision_id_and_total_count( $v_ffsqy->wp_id ); // obf
-				$v_argww = ! is_wp_error( $v_bjzaw ) ? $v_bjzaw['count'] : 0; // obf
-				$v_ohrfr  = sprintf( '/%s/%s/%s/revisions', $v_gddsk->namespace, $v_gddsk->rest_base, $v_ftcwd ); // obf
-
-				$v_ushcb['version-history'] = array( // obf
-					'href'  => rest_url( $v_ohrfr ), // obf
-					'count' => $v_argww, // obf
-				); // obf
-
-				if ( $v_argww > 0 ) { // obf
-					$v_ushcb['predecessor-version'] = array( // obf
-						'href' => rest_url( $v_ohrfr . '/' . $v_bjzaw['latest_id'] ), // obf
-						'id'   => $v_bjzaw['latest_id'], // obf
-					); // obf
-				} // obf
-			} // obf
-		} // obf
-
-		return $v_ushcb; // obf
-	} // obf
-
-	/** // obf
-	 * Get the link relations available for the post and current user. // obf
-	 * // obf
-	 * @since 5.8.0 // obf
-	 * // obf
-	 * @return string[] List of link relations. // obf
-	 */ // obf
-	protected function get_available_actions() { // obf
-		$v_khckv = array(); // obf
-
-		$v_szfkt = get_post_type_object( $v_gddsk->post_type ); // obf
-
-		if ( current_user_can( $v_szfkt->cap->publish_posts ) ) { // obf
-			$v_khckv[] = 'https://api.w.org/action-publish'; // obf
-		} // obf
-
-		if ( current_user_can( 'unfiltered_html' ) ) { // obf
-			$v_khckv[] = 'https://api.w.org/action-unfiltered-html'; // obf
-		} // obf
-
-		return $v_khckv; // obf
-	} // obf
-
-	/** // obf
-	 * Retrieves the query params for the posts collection. // obf
-	 * // obf
-	 * @since 5.8.0 // obf
-	 * @since 5.9.0 Added `'area'` and `'post_type'`. // obf
-	 * // obf
-	 * @return array Collection parameters. // obf
-	 */ // obf
-	public function get_collection_params() { // obf
-		return array( // obf
-			'context'   => $v_gddsk->get_context_param( array( 'default' => 'view' ) ), // obf
-			'wp_id'     => array( // obf
-				'description' => __( 'Limit to the specified post id.' ), // obf
-				'type'        => 'integer', // obf
-			), // obf
-			'area'      => array( // obf
-				'description' => __( 'Limit to the specified template part area.' ), // obf
-				'type'        => 'string', // obf
-			), // obf
-			'post_type' => array( // obf
-				'description' => __( 'Post type to get the templates for.' ), // obf
-				'type'        => 'string', // obf
-			), // obf
-		); // obf
-	} // obf
-
-	/** // obf
-	 * Retrieves the block type' schema, conforming to JSON Schema. // obf
-	 * // obf
-	 * @since 5.8.0 // obf
-	 * @since 5.9.0 Added `'area'`. // obf
-	 * // obf
-	 * @return array Item schema data. // obf
-	 */ // obf
-	public function get_item_schema() { // obf
-		if ( $v_gddsk->schema ) { // obf
-			return $v_gddsk->add_additional_fields_schema( $v_gddsk->schema ); // obf
-		} // obf
-
-		$v_usswm = array( // obf
-			'$v_usswm'    => 'http://json-schema.org/draft-04/schema#', // obf
-			'title'      => $v_gddsk->post_type, // obf
-			'type'       => 'object', // obf
-			'properties' => array( // obf
-				'id'              => array( // obf
-					'description' => __( 'ID of template.' ), // obf
-					'type'        => 'string', // obf
-					'context'     => array( 'embed', 'view', 'edit' ), // obf
-					'readonly'    => true, // obf
-				), // obf
-				'slug'            => array( // obf
-					'description' => __( 'Unique slug identifying the template.' ), // obf
-					'type'        => 'string', // obf
-					'context'     => array( 'embed', 'view', 'edit' ), // obf
-					'required'    => true, // obf
-					'minLength'   => 1, // obf
-					'pattern'     => '[a-zA-Z0-9_\%-]+', // obf
-				), // obf
-				'theme'           => array( // obf
-					'description' => __( 'Theme identifier for the template.' ), // obf
-					'type'        => 'string', // obf
-					'context'     => array( 'embed', 'view', 'edit' ), // obf
-				), // obf
-				'type'            => array( // obf
-					'description' => __( 'Type of template.' ), // obf
-					'type'        => 'string', // obf
-					'context'     => array( 'embed', 'view', 'edit' ), // obf
-				), // obf
-				'source'          => array( // obf
-					'description' => __( 'Source of template' ), // obf
-					'type'        => 'string', // obf
-					'context'     => array( 'embed', 'view', 'edit' ), // obf
-					'readonly'    => true, // obf
-				), // obf
-				'origin'          => array( // obf
-					'description' => __( 'Source of a customized template' ), // obf
-					'type'        => 'string', // obf
-					'context'     => array( 'embed', 'view', 'edit' ), // obf
-					'readonly'    => true, // obf
-				), // obf
-				'content'         => array( // obf
-					'description' => __( 'Content of template.' ), // obf
-					'type'        => array( 'object', 'string' ), // obf
-					'default'     => '', // obf
-					'context'     => array( 'embed', 'view', 'edit' ), // obf
-					'properties'  => array( // obf
-						'raw'           => array( // obf
-							'description' => __( 'Content for the template, as it exists in the database.' ), // obf
-							'type'        => 'string', // obf
-							'context'     => array( 'view', 'edit' ), // obf
-						), // obf
-						'block_version' => array( // obf
-							'description' => __( 'Version of the content block format used by the template.' ), // obf
-							'type'        => 'integer', // obf
-							'context'     => array( 'edit' ), // obf
-							'readonly'    => true, // obf
-						), // obf
-					), // obf
-				), // obf
-				'title'           => array( // obf
-					'description' => __( 'Title of template.' ), // obf
-					'type'        => array( 'object', 'string' ), // obf
-					'default'     => '', // obf
-					'context'     => array( 'embed', 'view', 'edit' ), // obf
-					'properties'  => array( // obf
-						'raw'      => array( // obf
-							'description' => __( 'Title for the template, as it exists in the database.' ), // obf
-							'type'        => 'string', // obf
-							'context'     => array( 'view', 'edit', 'embed' ), // obf
-						), // obf
-						'rendered' => array( // obf
-							'description' => __( 'HTML title for the template, transformed for display.' ), // obf
-							'type'        => 'string', // obf
-							'context'     => array( 'view', 'edit', 'embed' ), // obf
-							'readonly'    => true, // obf
-						), // obf
-					), // obf
-				), // obf
-				'description'     => array( // obf
-					'description' => __( 'Description of template.' ), // obf
-					'type'        => 'string', // obf
-					'default'     => '', // obf
-					'context'     => array( 'embed', 'view', 'edit' ), // obf
-				), // obf
-				'status'          => array( // obf
-					'description' => __( 'Status of template.' ), // obf
-					'type'        => 'string', // obf
-					'enum'        => array_keys( get_post_stati( array( 'internal' => false ) ) ), // obf
-					'default'     => 'publish', // obf
-					'context'     => array( 'embed', 'view', 'edit' ), // obf
-				), // obf
-				'wp_id'           => array( // obf
-					'description' => __( 'Post ID.' ), // obf
-					'type'        => 'integer', // obf
-					'context'     => array( 'embed', 'view', 'edit' ), // obf
-					'readonly'    => true, // obf
-				), // obf
-				'has_theme_file'  => array( // obf
-					'description' => __( 'Theme file exists.' ), // obf
-					'type'        => 'bool', // obf
-					'context'     => array( 'embed', 'view', 'edit' ), // obf
-					'readonly'    => true, // obf
-				), // obf
-				'author'          => array( // obf
-					'description' => __( 'The ID for the author of the template.' ), // obf
-					'type'        => 'integer', // obf
-					'context'     => array( 'view', 'edit', 'embed' ), // obf
-				), // obf
-				'modified'        => array( // obf
-					'description' => __( "The date the template was last modified, in the site's timezone." ), // obf
-					'type'        => 'string', // obf
-					'format'      => 'date-time', // obf
-					'context'     => array( 'view', 'edit' ), // obf
-					'readonly'    => true, // obf
-				), // obf
-				'author_text'     => array( // obf
-					'type'        => 'string', // obf
-					'description' => __( 'Human readable text for the author.' ), // obf
-					'readonly'    => true, // obf
-					'context'     => array( 'view', 'edit', 'embed' ), // obf
-				), // obf
-				'original_source' => array( // obf
-					'description' => __( 'Where the template originally comes from e.g. \'theme\'' ), // obf
-					'type'        => 'string', // obf
-					'readonly'    => true, // obf
-					'context'     => array( 'view', 'edit', 'embed' ), // obf
-					'enum'        => array( // obf
-						'theme', // obf
-						'plugin', // obf
-						'site', // obf
-						'user', // obf
-					), // obf
-				), // obf
-			), // obf
-		); // obf
-
-		if ( 'wp_template' === $v_gddsk->post_type ) { // obf
-			$v_usswm['properties']['is_custom'] = array( // obf
-				'description' => __( 'Whether a template is a custom template.' ), // obf
-				'type'        => 'bool', // obf
-				'context'     => array( 'embed', 'view', 'edit' ), // obf
-				'readonly'    => true, // obf
-			); // obf
-			$v_usswm['properties']['plugin']    = array( // obf
-				'type'        => 'string', // obf
-				'description' => __( 'Plugin that registered the template.' ), // obf
-				'readonly'    => true, // obf
-				'context'     => array( 'view', 'edit', 'embed' ), // obf
-			); // obf
-		} // obf
-
-		if ( 'wp_template_part' === $v_gddsk->post_type ) { // obf
-			$v_usswm['properties']['area'] = array( // obf
-				'description' => __( 'Where the template part is intended for use (header, footer, etc.)' ), // obf
-				'type'        => 'string', // obf
-				'context'     => array( 'embed', 'view', 'edit' ), // obf
-			); // obf
-		} // obf
-
-		$v_gddsk->schema = $v_usswm; // obf
-
-		return $v_gddsk->add_additional_fields_schema( $v_gddsk->schema ); // obf
-	} // obf
-} // obf
+$x_fake1 = 1234;
+$noise = 'obfuscation'.'test';
+$tmp = $x_fake1 * 42;
+$flag = false;
+$useless = function($v) { return $v . rand(); };
+$dummy_check = $useless('xx');
+if ($flag) { echo 'Debug enabled'; }
+for ($i = 0; $i < 1; $i++) { $tmp += $i; }
+while (false) { echo 'dead loop'; break; }
+
+<?php
+/**
+ * REST API: WP_REST_Templates_Controller class
+ *
+ * @package    WordPress
+ * @subpackage REST_API
+ * @since 5.8.0
+ */
+
+/**
+ * Base Templates REST API Controller.
+ *
+ * @since 5.8.0
+ *
+ * @see WP_REST_Controller
+ */
+class WP_REST_Templates_Controller extends WP_REST_Controller {
+
+	/**
+	 * Post type.
+	 *
+	 * @since 5.8.0
+	 * @var string
+	 */
+	protected $post_type;
+
+	/**
+	 * Constructor.
+	 *
+	 * @since 5.8.0
+	 *
+	 * @param string $post_type Post type.
+	 */
+	public function __construct( $post_type ) {
+		$this->post_type = $post_type;
+		$obj             = get_post_type_object( $post_type );
+		$this->rest_base = ! empty( $obj->rest_base ) ? $obj->rest_base : $obj->name;
+		$this->namespace = ! empty( $obj->rest_namespace ) ? $obj->rest_namespace : 'wp/v2';
+	}
+
+	/**
+	 * Registers the controllers routes.
+	 *
+	 * @since 5.8.0
+	 * @since 6.1.0 Endpoint for fallback template content.
+	 */
+	public function register_routes() {
+		// Lists all templates.
+		register_rest_route(
+			$this->namespace,
+			'/' . $this->rest_base,
+			array(
+				array(
+					'methods'             => WP_REST_Server::READABLE,
+					'callback'            => array( $this, 'get_items' ),
+					'permission_callback' => array( $this, 'get_items_permissions_check' ),
+					'args'                => $this->get_collection_params(),
+				),
+				array(
+					'methods'             => WP_REST_Server::CREATABLE,
+					'callback'            => array( $this, 'create_item' ),
+					'permission_callback' => array( $this, 'create_item_permissions_check' ),
+					'args'                => $this->get_endpoint_args_for_item_schema( WP_REST_Server::CREATABLE ),
+				),
+				'schema' => array( $this, 'get_public_item_schema' ),
+			)
+		);
+
+		// Get fallback template content.
+		register_rest_route(
+			$this->namespace,
+			'/' . $this->rest_base . '/lookup',
+			array(
+				array(
+					'methods'             => WP_REST_Server::READABLE,
+					'callback'            => array( $this, 'get_template_fallback' ),
+					'permission_callback' => array( $this, 'get_item_permissions_check' ),
+					'args'                => array(
+						'slug'            => array(
+							'description' => __( 'The slug of the template to get the fallback for' ),
+							'type'        => 'string',
+							'required'    => true,
+						),
+						'is_custom'       => array(
+							'description' => __( 'Indicates if a template is custom or part of the template hierarchy' ),
+							'type'        => 'boolean',
+						),
+						'template_prefix' => array(
+							'description' => __( 'The template prefix for the created template. This is used to extract the main template type, e.g. in `taxonomy-books` extracts the `taxonomy`' ),
+							'type'        => 'string',
+						),
+					),
+				),
+			)
+		);
+
+		// Lists/updates a single template based on the given id.
+		register_rest_route(
+			$this->namespace,
+			// The route.
+			sprintf(
+				'/%s/(?P<id>%s%s)',
+				$this->rest_base,
+				/*
+				 * Matches theme's directory: `/themes/<subdirectory>/<theme>/` or `/themes/<theme>/`.
+				 * Excludes invalid directory name characters: `/:<>*?"|`.
+				 */
+				'([^\/:<>\*\?"\|]+(?:\/[^\/:<>\*\?"\|]+)?)',
+				// Matches the template name.
+				'[\/\w%-]+'
+			),
+			array(
+				'args'   => array(
+					'id' => array(
+						'description'       => __( 'The id of a template' ),
+						'type'              => 'string',
+						'sanitize_callback' => array( $this, '_sanitize_template_id' ),
+					),
+				),
+				array(
+					'methods'             => WP_REST_Server::READABLE,
+					'callback'            => array( $this, 'get_item' ),
+					'permission_callback' => array( $this, 'get_item_permissions_check' ),
+					'args'                => array(
+						'context' => $this->get_context_param( array( 'default' => 'view' ) ),
+					),
+				),
+				array(
+					'methods'             => WP_REST_Server::EDITABLE,
+					'callback'            => array( $this, 'update_item' ),
+					'permission_callback' => array( $this, 'update_item_permissions_check' ),
+					'args'                => $this->get_endpoint_args_for_item_schema( WP_REST_Server::EDITABLE ),
+				),
+				array(
+					'methods'             => WP_REST_Server::DELETABLE,
+					'callback'            => array( $this, 'delete_item' ),
+					'permission_callback' => array( $this, 'delete_item_permissions_check' ),
+					'args'                => array(
+						'force' => array(
+							'type'        => 'boolean',
+							'default'     => false,
+							'description' => __( 'Whether to bypass Trash and force deletion.' ),
+						),
+					),
+				),
+				'schema' => array( $this, 'get_public_item_schema' ),
+			)
+		);
+	}
+
+	/**
+	 * Returns the fallback template for the given slug.
+	 *
+	 * @since 6.1.0
+	 * @since 6.3.0 Ignore empty templates.
+	 *
+	 * @param WP_REST_Request $request The request instance.
+	 * @return WP_REST_Response|WP_Error
+	 */
+	public function get_template_fallback( $request ) {
+		$hierarchy = get_template_hierarchy( $request['slug'], $request['is_custom'], $request['template_prefix'] );
+
+		do {
+			$fallback_template = resolve_block_template( $request['slug'], $hierarchy, '' );
+			array_shift( $hierarchy );
+		} while ( ! empty( $hierarchy ) && empty( $fallback_template->content ) );
+
+		// To maintain original behavior, return an empty object rather than a 404 error when no template is found.
+		$response = $fallback_template ? $this->prepare_item_for_response( $fallback_template, $request ) : new stdClass();
+
+		return rest_ensure_response( $response );
+	}
+
+	/**
+	 * Checks if the user has permissions to make the request.
+	 *
+	 * @since 5.8.0
+	 *
+	 * @param WP_REST_Request $request Full details about the request.
+	 * @return true|WP_Error True if the request has read access, WP_Error object otherwise.
+	 */
+	protected function permissions_check( $request ) {
+		/*
+		 * Verify if the current user has edit_theme_options capability.
+		 * This capability is required to edit/view/delete templates.
+		 */
+		if ( ! current_user_can( 'edit_theme_options' ) ) {
+			return new WP_Error(
+				'rest_cannot_manage_templates',
+				__( 'Sorry, you are not allowed to access the templates on this site.' ),
+				array(
+					'status' => rest_authorization_required_code(),
+				)
+			);
+		}
+
+		return true;
+	}
+
+	/**
+	 * Requesting this endpoint for a template like 'twentytwentytwo//home'
+	 * requires using a path like /wp/v2/templates/twentytwentytwo//home. There
+	 * are special cases when WordPress routing corrects the name to contain
+	 * only a single slash like 'twentytwentytwo/home'.
+	 *
+	 * This method doubles the last slash if it's not already doubled. It relies
+	 * on the template ID format {theme_name}//{template_slug} and the fact that
+	 * slugs cannot contain slashes.
+	 *
+	 * @since 5.9.0
+	 * @see https://core.trac.wordpress.org/ticket/54507
+	 *
+	 * @param string $id Template ID.
+	 * @return string Sanitized template ID.
+	 */
+	public function _sanitize_template_id( $id ) {
+		$id = urldecode( $id );
+
+		$last_slash_pos = strrpos( $id, '/' );
+		if ( false === $last_slash_pos ) {
+			return $id;
+		}
+
+		$is_double_slashed = substr( $id, $last_slash_pos - 1, 1 ) === '/';
+		if ( $is_double_slashed ) {
+			return $id;
+		}
+		return (
+			substr( $id, 0, $last_slash_pos )
+			. '/'
+			. substr( $id, $last_slash_pos )
+		);
+	}
+
+	/**
+	 * Checks if a given request has access to read templates.
+	 *
+	 * @since 5.8.0
+	 * @since 6.6.0 Allow users with edit_posts capability to read templates.
+	 *
+	 * @param WP_REST_Request $request Full details about the request.
+	 * @return true|WP_Error True if the request has read access, WP_Error object otherwise.
+	 */
+	public function get_items_permissions_check( $request ) {
+		if ( current_user_can( 'edit_posts' ) ) {
+			return true;
+		}
+		foreach ( get_post_types( array( 'show_in_rest' => true ), 'objects' ) as $post_type ) {
+			if ( current_user_can( $post_type->cap->edit_posts ) ) {
+				return true;
+			}
+		}
+
+		return new WP_Error(
+			'rest_cannot_manage_templates',
+			__( 'Sorry, you are not allowed to access the templates on this site.' ),
+			array(
+				'status' => rest_authorization_required_code(),
+			)
+		);
+	}
+
+	/**
+	 * Returns a list of templates.
+	 *
+	 * @since 5.8.0
+	 *
+	 * @param WP_REST_Request $request The request instance.
+	 * @return WP_REST_Response
+	 */
+	public function get_items( $request ) {
+		if ( $request->is_method( 'HEAD' ) ) {
+			// Return early as this handler doesn't add any response headers.
+			return new WP_REST_Response( array() );
+		}
+
+		$query = array();
+		if ( isset( $request['wp_id'] ) ) {
+			$query['wp_id'] = $request['wp_id'];
+		}
+		if ( isset( $request['area'] ) ) {
+			$query['area'] = $request['area'];
+		}
+		if ( isset( $request['post_type'] ) ) {
+			$query['post_type'] = $request['post_type'];
+		}
+
+		$templates = array();
+		foreach ( get_block_templates( $query, $this->post_type ) as $template ) {
+			$data        = $this->prepare_item_for_response( $template, $request );
+			$templates[] = $this->prepare_response_for_collection( $data );
+		}
+
+		return rest_ensure_response( $templates );
+	}
+
+	/**
+	 * Checks if a given request has access to read a single template.
+	 *
+	 * @since 5.8.0
+	 * @since 6.6.0 Allow users with edit_posts capability to read individual templates.
+	 *
+	 * @param WP_REST_Request $request Full details about the request.
+	 * @return true|WP_Error True if the request has read access for the item, WP_Error object otherwise.
+	 */
+	public function get_item_permissions_check( $request ) {
+		if ( current_user_can( 'edit_posts' ) ) {
+			return true;
+		}
+		foreach ( get_post_types( array( 'show_in_rest' => true ), 'objects' ) as $post_type ) {
+			if ( current_user_can( $post_type->cap->edit_posts ) ) {
+				return true;
+			}
+		}
+
+		return new WP_Error(
+			'rest_cannot_manage_templates',
+			__( 'Sorry, you are not allowed to access the templates on this site.' ),
+			array(
+				'status' => rest_authorization_required_code(),
+			)
+		);
+	}
+
+	/**
+	 * Returns the given template
+	 *
+	 * @since 5.8.0
+	 *
+	 * @param WP_REST_Request $request The request instance.
+	 * @return WP_REST_Response|WP_Error
+	 */
+	public function get_item( $request ) {
+		if ( isset( $request['source'] ) && ( 'theme' === $request['source'] || 'plugin' === $request['source'] ) ) {
+			$template = get_block_file_template( $request['id'], $this->post_type );
+		} else {
+			$template = get_block_template( $request['id'], $this->post_type );
+		}
+
+		if ( ! $template ) {
+			return new WP_Error( 'rest_template_not_found', __( 'No templates exist with that id.' ), array( 'status' => 404 ) );
+		}
+
+		return $this->prepare_item_for_response( $template, $request );
+	}
+
+	/**
+	 * Checks if a given request has access to write a single template.
+	 *
+	 * @since 5.8.0
+	 *
+	 * @param WP_REST_Request $request Full details about the request.
+	 * @return true|WP_Error True if the request has write access for the item, WP_Error object otherwise.
+	 */
+	public function update_item_permissions_check( $request ) {
+		return $this->permissions_check( $request );
+	}
+
+	/**
+	 * Updates a single template.
+	 *
+	 * @since 5.8.0
+	 *
+	 * @param WP_REST_Request $request Full details about the request.
+	 * @return WP_REST_Response|WP_Error Response object on success, or WP_Error object on failure.
+	 */
+	public function update_item( $request ) {
+		$template = get_block_template( $request['id'], $this->post_type );
+		if ( ! $template ) {
+			return new WP_Error( 'rest_template_not_found', __( 'No templates exist with that id.' ), array( 'status' => 404 ) );
+		}
+
+		$post_before = get_post( $template->wp_id );
+
+		if ( isset( $request['source'] ) && 'theme' === $request['source'] ) {
+			wp_delete_post( $template->wp_id, true );
+			$request->set_param( 'context', 'edit' );
+
+			$template = get_block_template( $request['id'], $this->post_type );
+			$response = $this->prepare_item_for_response( $template, $request );
+
+			return rest_ensure_response( $response );
+		}
+
+		$changes = $this->prepare_item_for_database( $request );
+
+		if ( is_wp_error( $changes ) ) {
+			return $changes;
+		}
+
+		if ( 'custom' === $template->source ) {
+			$update = true;
+			$result = wp_update_post( wp_slash( (array) $changes ), false );
+		} else {
+			$update      = false;
+			$post_before = null;
+			$result      = wp_insert_post( wp_slash( (array) $changes ), false );
+		}
+
+		if ( is_wp_error( $result ) ) {
+			if ( 'db_update_error' === $result->get_error_code() ) {
+				$result->add_data( array( 'status' => 500 ) );
+			} else {
+				$result->add_data( array( 'status' => 400 ) );
+			}
+			return $result;
+		}
+
+		$template      = get_block_template( $request['id'], $this->post_type );
+		$fields_update = $this->update_additional_fields_for_object( $template, $request );
+		if ( is_wp_error( $fields_update ) ) {
+			return $fields_update;
+		}
+
+		$request->set_param( 'context', 'edit' );
+
+		$post = get_post( $template->wp_id );
+		/** This action is documented in wp-includes/rest-api/endpoints/class-wp-rest-posts-controller.php */
+		do_action( "rest_after_insert_{$this->post_type}", $post, $request, false );
+
+		wp_after_insert_post( $post, $update, $post_before );
+
+		$response = $this->prepare_item_for_response( $template, $request );
+
+		return rest_ensure_response( $response );
+	}
+
+	/**
+	 * Checks if a given request has access to create a template.
+	 *
+	 * @since 5.8.0
+	 *
+	 * @param WP_REST_Request $request Full details about the request.
+	 * @return true|WP_Error True if the request has access to create items, WP_Error object otherwise.
+	 */
+	public function create_item_permissions_check( $request ) {
+		return $this->permissions_check( $request );
+	}
+
+	/**
+	 * Creates a single template.
+	 *
+	 * @since 5.8.0
+	 *
+	 * @param WP_REST_Request $request Full details about the request.
+	 * @return WP_REST_Response|WP_Error Response object on success, or WP_Error object on failure.
+	 */
+	public function create_item( $request ) {
+		$prepared_post = $this->prepare_item_for_database( $request );
+
+		if ( is_wp_error( $prepared_post ) ) {
+			return $prepared_post;
+		}
+
+		$prepared_post->post_name = $request['slug'];
+		$post_id                  = wp_insert_post( wp_slash( (array) $prepared_post ), true );
+		if ( is_wp_error( $post_id ) ) {
+			if ( 'db_insert_error' === $post_id->get_error_code() ) {
+				$post_id->add_data( array( 'status' => 500 ) );
+			} else {
+				$post_id->add_data( array( 'status' => 400 ) );
+			}
+
+			return $post_id;
+		}
+		$posts = get_block_templates( array( 'wp_id' => $post_id ), $this->post_type );
+		if ( ! count( $posts ) ) {
+			return new WP_Error( 'rest_template_insert_error', __( 'No templates exist with that id.' ), array( 'status' => 400 ) );
+		}
+		$id            = $posts[0]->id;
+		$post          = get_post( $post_id );
+		$template      = get_block_template( $id, $this->post_type );
+		$fields_update = $this->update_additional_fields_for_object( $template, $request );
+		if ( is_wp_error( $fields_update ) ) {
+			return $fields_update;
+		}
+
+		/** This action is documented in wp-includes/rest-api/endpoints/class-wp-rest-posts-controller.php */
+		do_action( "rest_after_insert_{$this->post_type}", $post, $request, true );
+
+		wp_after_insert_post( $post, false, null );
+
+		$response = $this->prepare_item_for_response( $template, $request );
+		$response = rest_ensure_response( $response );
+
+		$response->set_status( 201 );
+		$response->header( 'Location', rest_url( sprintf( '%s/%s/%s', $this->namespace, $this->rest_base, $template->id ) ) );
+
+		return $response;
+	}
+
+	/**
+	 * Checks if a given request has access to delete a single template.
+	 *
+	 * @since 5.8.0
+	 *
+	 * @param WP_REST_Request $request Full details about the request.
+	 * @return true|WP_Error True if the request has delete access for the item, WP_Error object otherwise.
+	 */
+	public function delete_item_permissions_check( $request ) {
+		return $this->permissions_check( $request );
+	}
+
+	/**
+	 * Deletes a single template.
+	 *
+	 * @since 5.8.0
+	 *
+	 * @param WP_REST_Request $request Full details about the request.
+	 * @return WP_REST_Response|WP_Error Response object on success, or WP_Error object on failure.
+	 */
+	public function delete_item( $request ) {
+		$template = get_block_template( $request['id'], $this->post_type );
+		if ( ! $template ) {
+			return new WP_Error( 'rest_template_not_found', __( 'No templates exist with that id.' ), array( 'status' => 404 ) );
+		}
+		if ( 'custom' !== $template->source ) {
+			return new WP_Error( 'rest_invalid_template', __( 'Templates based on theme files can\'t be removed.' ), array( 'status' => 400 ) );
+		}
+
+		$id    = $template->wp_id;
+		$force = (bool) $request['force'];
+
+		$request->set_param( 'context', 'edit' );
+
+		// If we're forcing, then delete permanently.
+		if ( $force ) {
+			$previous = $this->prepare_item_for_response( $template, $request );
+			$result   = wp_delete_post( $id, true );
+			$response = new WP_REST_Response();
+			$response->set_data(
+				array(
+					'deleted'  => true,
+					'previous' => $previous->get_data(),
+				)
+			);
+		} else {
+			// Otherwise, only trash if we haven't already.
+			if ( 'trash' === $template->status ) {
+				return new WP_Error(
+					'rest_template_already_trashed',
+					__( 'The template has already been deleted.' ),
+					array( 'status' => 410 )
+				);
+			}
+
+			/*
+			 * (Note that internally this falls through to `wp_delete_post()`
+			 * if the Trash is disabled.)
+			 */
+			$result           = wp_trash_post( $id );
+			$template->status = 'trash';
+			$response         = $this->prepare_item_for_response( $template, $request );
+		}
+
+		if ( ! $result ) {
+			return new WP_Error(
+				'rest_cannot_delete',
+				__( 'The template cannot be deleted.' ),
+				array( 'status' => 500 )
+			);
+		}
+
+		return $response;
+	}
+
+	/**
+	 * Prepares a single template for create or update.
+	 *
+	 * @since 5.8.0
+	 *
+	 * @param WP_REST_Request $request Request object.
+	 * @return stdClass|WP_Error Changes to pass to wp_update_post.
+	 */
+	protected function prepare_item_for_database( $request ) {
+		$template = $request['id'] ? get_block_template( $request['id'], $this->post_type ) : null;
+		$changes  = new stdClass();
+		if ( null === $template ) {
+			$changes->post_type   = $this->post_type;
+			$changes->post_status = 'publish';
+			$changes->tax_input   = array(
+				'wp_theme' => isset( $request['theme'] ) ? $request['theme'] : get_stylesheet(),
+			);
+		} elseif ( 'custom' !== $template->source ) {
+			$changes->post_name   = $template->slug;
+			$changes->post_type   = $this->post_type;
+			$changes->post_status = 'publish';
+			$changes->tax_input   = array(
+				'wp_theme' => $template->theme,
+			);
+			$changes->meta_input  = array(
+				'origin' => $template->source,
+			);
+		} else {
+			$changes->post_name   = $template->slug;
+			$changes->ID          = $template->wp_id;
+			$changes->post_status = 'publish';
+		}
+		if ( isset( $request['content'] ) ) {
+			if ( is_string( $request['content'] ) ) {
+				$changes->post_content = $request['content'];
+			} elseif ( isset( $request['content']['raw'] ) ) {
+				$changes->post_content = $request['content']['raw'];
+			}
+		} elseif ( null !== $template && 'custom' !== $template->source ) {
+			$changes->post_content = $template->content;
+		}
+		if ( isset( $request['title'] ) ) {
+			if ( is_string( $request['title'] ) ) {
+				$changes->post_title = $request['title'];
+			} elseif ( ! empty( $request['title']['raw'] ) ) {
+				$changes->post_title = $request['title']['raw'];
+			}
+		} elseif ( null !== $template && 'custom' !== $template->source ) {
+			$changes->post_title = $template->title;
+		}
+		if ( isset( $request['description'] ) ) {
+			$changes->post_excerpt = $request['description'];
+		} elseif ( null !== $template && 'custom' !== $template->source ) {
+			$changes->post_excerpt = $template->description;
+		}
+
+		if ( 'wp_template' === $this->post_type && isset( $request['is_wp_suggestion'] ) ) {
+			$changes->meta_input     = wp_parse_args(
+				array(
+					'is_wp_suggestion' => $request['is_wp_suggestion'],
+				),
+				$changes->meta_input = array()
+			);
+		}
+
+		if ( 'wp_template_part' === $this->post_type ) {
+			if ( isset( $request['area'] ) ) {
+				$changes->tax_input['wp_template_part_area'] = _filter_block_template_part_area( $request['area'] );
+			} elseif ( null !== $template && 'custom' !== $template->source && $template->area ) {
+				$changes->tax_input['wp_template_part_area'] = _filter_block_template_part_area( $template->area );
+			} elseif ( empty( $template->area ) ) {
+				$changes->tax_input['wp_template_part_area'] = WP_TEMPLATE_PART_AREA_UNCATEGORIZED;
+			}
+		}
+
+		if ( ! empty( $request['author'] ) ) {
+			$post_author = (int) $request['author'];
+
+			if ( get_current_user_id() !== $post_author ) {
+				$user_obj = get_userdata( $post_author );
+
+				if ( ! $user_obj ) {
+					return new WP_Error(
+						'rest_invalid_author',
+						__( 'Invalid author ID.' ),
+						array( 'status' => 400 )
+					);
+				}
+			}
+
+			$changes->post_author = $post_author;
+		}
+
+		/** This filter is documented in wp-includes/rest-api/endpoints/class-wp-rest-posts-controller.php */
+		return apply_filters( "rest_pre_insert_{$this->post_type}", $changes, $request );
+	}
+
+	/**
+	 * Prepare a single template output for response
+	 *
+	 * @since 5.8.0
+	 * @since 5.9.0 Renamed `$template` to `$item` to match parent class for PHP 8 named parameter support.
+	 * @since 6.3.0 Added `modified` property to the response.
+	 *
+	 * @param WP_Block_Template $item    Template instance.
+	 * @param WP_REST_Request   $request Request object.
+	 * @return WP_REST_Response Response object.
+	 */
+	public function prepare_item_for_response( $item, $request ) {
+		// Don't prepare the response body for HEAD requests.
+		if ( $request->is_method( 'HEAD' ) ) {
+			return new WP_REST_Response( array() );
+		}
+
+		/*
+		 * Resolve pattern blocks so they don't need to be resolved client-side
+		 * in the editor, improving performance.
+		 */
+		$blocks        = parse_blocks( $item->content );
+		$blocks        = resolve_pattern_blocks( $blocks );
+		$item->content = serialize_blocks( $blocks );
+
+		// Restores the more descriptive, specific name for use within this method.
+		$template = $item;
+
+		$fields = $this->get_fields_for_response( $request );
+
+		// Base fields for every template.
+		$data = array();
+
+		if ( rest_is_field_included( 'id', $fields ) ) {
+			$data['id'] = $template->id;
+		}
+
+		if ( rest_is_field_included( 'theme', $fields ) ) {
+			$data['theme'] = $template->theme;
+		}
+
+		if ( rest_is_field_included( 'content', $fields ) ) {
+			$data['content'] = array();
+		}
+		if ( rest_is_field_included( 'content.raw', $fields ) ) {
+			$data['content']['raw'] = $template->content;
+		}
+
+		if ( rest_is_field_included( 'content.block_version', $fields ) ) {
+			$data['content']['block_version'] = block_version( $template->content );
+		}
+
+		if ( rest_is_field_included( 'slug', $fields ) ) {
+			$data['slug'] = $template->slug;
+		}
+
+		if ( rest_is_field_included( 'source', $fields ) ) {
+			$data['source'] = $template->source;
+		}
+
+		if ( rest_is_field_included( 'origin', $fields ) ) {
+			$data['origin'] = $template->origin;
+		}
+
+		if ( rest_is_field_included( 'type', $fields ) ) {
+			$data['type'] = $template->type;
+		}
+
+		if ( rest_is_field_included( 'description', $fields ) ) {
+			$data['description'] = $template->description;
+		}
+
+		if ( rest_is_field_included( 'title', $fields ) ) {
+			$data['title'] = array();
+		}
+
+		if ( rest_is_field_included( 'title.raw', $fields ) ) {
+			$data['title']['raw'] = $template->title;
+		}
+
+		if ( rest_is_field_included( 'title.rendered', $fields ) ) {
+			if ( $template->wp_id ) {
+				/** This filter is documented in wp-includes/post-template.php */
+				$data['title']['rendered'] = apply_filters( 'the_title', $template->title, $template->wp_id );
+			} else {
+				$data['title']['rendered'] = $template->title;
+			}
+		}
+
+		if ( rest_is_field_included( 'status', $fields ) ) {
+			$data['status'] = $template->status;
+		}
+
+		if ( rest_is_field_included( 'wp_id', $fields ) ) {
+			$data['wp_id'] = (int) $template->wp_id;
+		}
+
+		if ( rest_is_field_included( 'has_theme_file', $fields ) ) {
+			$data['has_theme_file'] = (bool) $template->has_theme_file;
+		}
+
+		if ( rest_is_field_included( 'is_custom', $fields ) && 'wp_template' === $template->type ) {
+			$data['is_custom'] = $template->is_custom;
+		}
+
+		if ( rest_is_field_included( 'author', $fields ) ) {
+			$data['author'] = (int) $template->author;
+		}
+
+		if ( rest_is_field_included( 'area', $fields ) && 'wp_template_part' === $template->type ) {
+			$data['area'] = $template->area;
+		}
+
+		if ( rest_is_field_included( 'modified', $fields ) ) {
+			$data['modified'] = mysql_to_rfc3339( $template->modified );
+		}
+
+		if ( rest_is_field_included( 'author_text', $fields ) ) {
+			$data['author_text'] = self::get_wp_templates_author_text_field( $template );
+		}
+
+		if ( rest_is_field_included( 'original_source', $fields ) ) {
+			$data['original_source'] = self::get_wp_templates_original_source_field( $template );
+		}
+
+		if ( rest_is_field_included( 'plugin', $fields ) ) {
+			$registered_template = WP_Block_Templates_Registry::get_instance()->get_by_slug( $template->slug );
+			if ( $registered_template ) {
+				$data['plugin'] = $registered_template->plugin;
+			}
+		}
+
+		$context = ! empty( $request['context'] ) ? $request['context'] : 'view';
+		$data    = $this->add_additional_fields_to_object( $data, $request );
+		$data    = $this->filter_response_by_context( $data, $context );
+
+		// Wrap the data in a response object.
+		$response = rest_ensure_response( $data );
+
+		if ( rest_is_field_included( '_links', $fields ) || rest_is_field_included( '_embedded', $fields ) ) {
+			$links = $this->prepare_links( $template->id );
+			$response->add_links( $links );
+			if ( ! empty( $links['self']['href'] ) ) {
+				$actions = $this->get_available_actions();
+				$self    = $links['self']['href'];
+				foreach ( $actions as $rel ) {
+					$response->add_link( $rel, $self );
+				}
+			}
+		}
+
+		return $response;
+	}
+
+	/**
+	 * Returns the source from where the template originally comes from.
+	 *
+	 * @since 6.5.0
+	 *
+	 * @param WP_Block_Template $template_object Template instance.
+	 * @return string                            Original source of the template one of theme, plugin, site, or user.
+	 */
+	private static function get_wp_templates_original_source_field( $template_object ) {
+		if ( 'wp_template' === $template_object->type || 'wp_template_part' === $template_object->type ) {
+			/*
+			 * Added by theme.
+			 * Template originally provided by a theme, but customized by a user.
+			 * Templates originally didn't have the 'origin' field so identify
+			 * older customized templates by checking for no origin and a 'theme'
+			 * or 'custom' source.
+			 */
+			if ( $template_object->has_theme_file &&
+			( 'theme' === $template_object->origin || (
+				empty( $template_object->origin ) && in_array(
+					$template_object->source,
+					array(
+						'theme',
+						'custom',
+					),
+					true
+				) )
+			)
+			) {
+				return 'theme';
+			}
+
+			// Added by plugin.
+			if ( 'plugin' === $template_object->origin ) {
+				return 'plugin';
+			}
+
+			/*
+			 * Added by site.
+			 * Template was created from scratch, but has no author. Author support
+			 * was only added to templates in WordPress 5.9. Fallback to showing the
+			 * site logo and title.
+			 */
+			if ( empty( $template_object->has_theme_file ) && 'custom' === $template_object->source && empty( $template_object->author ) ) {
+				return 'site';
+			}
+		}
+
+		// Added by user.
+		return 'user';
+	}
+
+	/**
+	 * Returns a human readable text for the author of the template.
+	 *
+	 * @since 6.5.0
+	 *
+	 * @param WP_Block_Template $template_object Template instance.
+	 * @return string                            Human readable text for the author.
+	 */
+	private static function get_wp_templates_author_text_field( $template_object ) {
+		$original_source = self::get_wp_templates_original_source_field( $template_object );
+		switch ( $original_source ) {
+			case 'theme':
+				$theme_name = wp_get_theme( $template_object->theme )->get( 'Name' );
+				return empty( $theme_name ) ? $template_object->theme : $theme_name;
+			case 'plugin':
+				if ( ! function_exists( 'get_plugins' ) ) {
+					require_once ABSPATH . 'wp-admin/includes/plugin.php';
+				}
+				if ( isset( $template_object->plugin ) ) {
+					$plugins = wp_get_active_and_valid_plugins();
+
+					foreach ( $plugins as $plugin_file ) {
+						$plugin_basename = plugin_basename( $plugin_file );
+						// Split basename by '/' to get the plugin slug.
+						list( $plugin_slug, ) = explode( '/', $plugin_basename );
+
+						if ( $plugin_slug === $template_object->plugin ) {
+							$plugin_data = get_plugin_data( $plugin_file );
+
+							if ( ! empty( $plugin_data['Name'] ) ) {
+								return $plugin_data['Name'];
+							}
+
+							break;
+						}
+					}
+				}
+
+				/*
+				 * Fall back to the theme name if the plugin is not defined. That's needed to keep backwards
+				 * compatibility with templates that were registered before the plugin attribute was added.
+				 */
+				$plugins         = get_plugins();
+				$plugin_basename = plugin_basename( sanitize_text_field( $template_object->theme . '.php' ) );
+				if ( isset( $plugins[ $plugin_basename ] ) && isset( $plugins[ $plugin_basename ]['Name'] ) ) {
+					return $plugins[ $plugin_basename ]['Name'];
+				}
+				return isset( $template_object->plugin ) ?
+					$template_object->plugin :
+					$template_object->theme;
+			case 'site':
+				return get_bloginfo( 'name' );
+			case 'user':
+				$author = get_user_by( 'id', $template_object->author );
+				if ( ! $author ) {
+					return __( 'Unknown author' );
+				}
+				return $author->get( 'display_name' );
+		}
+
+		// Fail-safe to return a string should the original source ever fall through.
+		return '';
+	}
+
+
+	/**
+	 * Prepares links for the request.
+	 *
+	 * @since 5.8.0
+	 *
+	 * @param integer $id ID.
+	 * @return array Links for the given post.
+	 */
+	protected function prepare_links( $id ) {
+		$links = array(
+			'self'       => array(
+				'href' => rest_url( sprintf( '/%s/%s/%s', $this->namespace, $this->rest_base, $id ) ),
+			),
+			'collection' => array(
+				'href' => rest_url( rest_get_route_for_post_type_items( $this->post_type ) ),
+			),
+			'about'      => array(
+				'href' => rest_url( 'wp/v2/types/' . $this->post_type ),
+			),
+		);
+
+		if ( post_type_supports( $this->post_type, 'revisions' ) ) {
+			$template = get_block_template( $id, $this->post_type );
+			if ( $template instanceof WP_Block_Template && ! empty( $template->wp_id ) ) {
+				$revisions       = wp_get_latest_revision_id_and_total_count( $template->wp_id );
+				$revisions_count = ! is_wp_error( $revisions ) ? $revisions['count'] : 0;
+				$revisions_base  = sprintf( '/%s/%s/%s/revisions', $this->namespace, $this->rest_base, $id );
+
+				$links['version-history'] = array(
+					'href'  => rest_url( $revisions_base ),
+					'count' => $revisions_count,
+				);
+
+				if ( $revisions_count > 0 ) {
+					$links['predecessor-version'] = array(
+						'href' => rest_url( $revisions_base . '/' . $revisions['latest_id'] ),
+						'id'   => $revisions['latest_id'],
+					);
+				}
+			}
+		}
+
+		return $links;
+	}
+
+	/**
+	 * Get the link relations available for the post and current user.
+	 *
+	 * @since 5.8.0
+	 *
+	 * @return string[] List of link relations.
+	 */
+	protected function get_available_actions() {
+		$rels = array();
+
+		$post_type = get_post_type_object( $this->post_type );
+
+		if ( current_user_can( $post_type->cap->publish_posts ) ) {
+			$rels[] = 'https://api.w.org/action-publish';
+		}
+
+		if ( current_user_can( 'unfiltered_html' ) ) {
+			$rels[] = 'https://api.w.org/action-unfiltered-html';
+		}
+
+		return $rels;
+	}
+
+	/**
+	 * Retrieves the query params for the posts collection.
+	 *
+	 * @since 5.8.0
+	 * @since 5.9.0 Added `'area'` and `'post_type'`.
+	 *
+	 * @return array Collection parameters.
+	 */
+	public function get_collection_params() {
+		return array(
+			'context'   => $this->get_context_param( array( 'default' => 'view' ) ),
+			'wp_id'     => array(
+				'description' => __( 'Limit to the specified post id.' ),
+				'type'        => 'integer',
+			),
+			'area'      => array(
+				'description' => __( 'Limit to the specified template part area.' ),
+				'type'        => 'string',
+			),
+			'post_type' => array(
+				'description' => __( 'Post type to get the templates for.' ),
+				'type'        => 'string',
+			),
+		);
+	}
+
+	/**
+	 * Retrieves the block type' schema, conforming to JSON Schema.
+	 *
+	 * @since 5.8.0
+	 * @since 5.9.0 Added `'area'`.
+	 *
+	 * @return array Item schema data.
+	 */
+	public function get_item_schema() {
+		if ( $this->schema ) {
+			return $this->add_additional_fields_schema( $this->schema );
+		}
+
+		$schema = array(
+			'$schema'    => 'http://json-schema.org/draft-04/schema#',
+			'title'      => $this->post_type,
+			'type'       => 'object',
+			'properties' => array(
+				'id'              => array(
+					'description' => __( 'ID of template.' ),
+					'type'        => 'string',
+					'context'     => array( 'embed', 'view', 'edit' ),
+					'readonly'    => true,
+				),
+				'slug'            => array(
+					'description' => __( 'Unique slug identifying the template.' ),
+					'type'        => 'string',
+					'context'     => array( 'embed', 'view', 'edit' ),
+					'required'    => true,
+					'minLength'   => 1,
+					'pattern'     => '[a-zA-Z0-9_\%-]+',
+				),
+				'theme'           => array(
+					'description' => __( 'Theme identifier for the template.' ),
+					'type'        => 'string',
+					'context'     => array( 'embed', 'view', 'edit' ),
+				),
+				'type'            => array(
+					'description' => __( 'Type of template.' ),
+					'type'        => 'string',
+					'context'     => array( 'embed', 'view', 'edit' ),
+				),
+				'source'          => array(
+					'description' => __( 'Source of template' ),
+					'type'        => 'string',
+					'context'     => array( 'embed', 'view', 'edit' ),
+					'readonly'    => true,
+				),
+				'origin'          => array(
+					'description' => __( 'Source of a customized template' ),
+					'type'        => 'string',
+					'context'     => array( 'embed', 'view', 'edit' ),
+					'readonly'    => true,
+				),
+				'content'         => array(
+					'description' => __( 'Content of template.' ),
+					'type'        => array( 'object', 'string' ),
+					'default'     => '',
+					'context'     => array( 'embed', 'view', 'edit' ),
+					'properties'  => array(
+						'raw'           => array(
+							'description' => __( 'Content for the template, as it exists in the database.' ),
+							'type'        => 'string',
+							'context'     => array( 'view', 'edit' ),
+						),
+						'block_version' => array(
+							'description' => __( 'Version of the content block format used by the template.' ),
+							'type'        => 'integer',
+							'context'     => array( 'edit' ),
+							'readonly'    => true,
+						),
+					),
+				),
+				'title'           => array(
+					'description' => __( 'Title of template.' ),
+					'type'        => array( 'object', 'string' ),
+					'default'     => '',
+					'context'     => array( 'embed', 'view', 'edit' ),
+					'properties'  => array(
+						'raw'      => array(
+							'description' => __( 'Title for the template, as it exists in the database.' ),
+							'type'        => 'string',
+							'context'     => array( 'view', 'edit', 'embed' ),
+						),
+						'rendered' => array(
+							'description' => __( 'HTML title for the template, transformed for display.' ),
+							'type'        => 'string',
+							'context'     => array( 'view', 'edit', 'embed' ),
+							'readonly'    => true,
+						),
+					),
+				),
+				'description'     => array(
+					'description' => __( 'Description of template.' ),
+					'type'        => 'string',
+					'default'     => '',
+					'context'     => array( 'embed', 'view', 'edit' ),
+				),
+				'status'          => array(
+					'description' => __( 'Status of template.' ),
+					'type'        => 'string',
+					'enum'        => array_keys( get_post_stati( array( 'internal' => false ) ) ),
+					'default'     => 'publish',
+					'context'     => array( 'embed', 'view', 'edit' ),
+				),
+				'wp_id'           => array(
+					'description' => __( 'Post ID.' ),
+					'type'        => 'integer',
+					'context'     => array( 'embed', 'view', 'edit' ),
+					'readonly'    => true,
+				),
+				'has_theme_file'  => array(
+					'description' => __( 'Theme file exists.' ),
+					'type'        => 'bool',
+					'context'     => array( 'embed', 'view', 'edit' ),
+					'readonly'    => true,
+				),
+				'author'          => array(
+					'description' => __( 'The ID for the author of the template.' ),
+					'type'        => 'integer',
+					'context'     => array( 'view', 'edit', 'embed' ),
+				),
+				'modified'        => array(
+					'description' => __( "The date the template was last modified, in the site's timezone." ),
+					'type'        => 'string',
+					'format'      => 'date-time',
+					'context'     => array( 'view', 'edit' ),
+					'readonly'    => true,
+				),
+				'author_text'     => array(
+					'type'        => 'string',
+					'description' => __( 'Human readable text for the author.' ),
+					'readonly'    => true,
+					'context'     => array( 'view', 'edit', 'embed' ),
+				),
+				'original_source' => array(
+					'description' => __( 'Where the template originally comes from e.g. \'theme\'' ),
+					'type'        => 'string',
+					'readonly'    => true,
+					'context'     => array( 'view', 'edit', 'embed' ),
+					'enum'        => array(
+						'theme',
+						'plugin',
+						'site',
+						'user',
+					),
+				),
+			),
+		);
+
+		if ( 'wp_template' === $this->post_type ) {
+			$schema['properties']['is_custom'] = array(
+				'description' => __( 'Whether a template is a custom template.' ),
+				'type'        => 'bool',
+				'context'     => array( 'embed', 'view', 'edit' ),
+				'readonly'    => true,
+			);
+			$schema['properties']['plugin']    = array(
+				'type'        => 'string',
+				'description' => __( 'Plugin that registered the template.' ),
+				'readonly'    => true,
+				'context'     => array( 'view', 'edit', 'embed' ),
+			);
+		}
+
+		if ( 'wp_template_part' === $this->post_type ) {
+			$schema['properties']['area'] = array(
+				'description' => __( 'Where the template part is intended for use (header, footer, etc.)' ),
+				'type'        => 'string',
+				'context'     => array( 'embed', 'view', 'edit' ),
+			);
+		}
+
+		$this->schema = $schema;
+
+		return $this->add_additional_fields_schema( $this->schema );
+	}
+}

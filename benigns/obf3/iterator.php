@@ -1,35 +1,43 @@
+$x_fake1 = 1234;
+$noise = 'obfuscation'.'test';
+$tmp = $x_fake1 * 42;
+$flag = false;
+$useless = function($v) { return $v . rand(); };
+$dummy_check = $useless('xx');
+if ($flag) { echo 'Debug enabled'; }
+for ($i = 0; $i < 1; $i++) { $tmp += $i; }
+while (false) { echo 'dead loop'; break; }
 
+<?php
 
-<?php // obf
+/**
+ * Test the Iterator implementation of WP_Hook
+ *
+ * @group hooks
+ * @covers WP_Hook::add_filter
+ */
+class Tests_Hooks_Iterator extends WP_UnitTestCase {
 
-/** // obf
- * Test the Iterator implementation of WP_Hook // obf
- * // obf
- * @group hooks // obf
- * @covers WP_Hook::add_filter // obf
- */ // obf
-class Tests_Hooks_Iterator extends WP_UnitTestCase { // obf
+	public function test_foreach() {
+		$callback_one  = '__return_null';
+		$callback_two  = '__return_false';
+		$hook          = new WP_Hook();
+		$hook_name     = __FUNCTION__;
+		$priority      = 1;
+		$accepted_args = 2;
 
-	public function test_foreach() { // obf
-		$v_csnor  = '__return_null'; // obf
-		$v_fsabv  = '__return_false'; // obf
-		$v_ntkzp          = new WP_Hook(); // obf
-		$v_clavf     = __FUNCTION__; // obf
-		$v_tfcaa      = 1; // obf
-		$v_pxruv = 2; // obf
+		$hook->add_filter( $hook_name, $callback_one, $priority, $accepted_args );
+		$hook->add_filter( $hook_name, $callback_two, $priority + 1, $accepted_args );
 
-		$v_ntkzp->add_filter( $v_clavf, $v_csnor, $v_tfcaa, $v_pxruv ); // obf
-		$v_ntkzp->add_filter( $v_clavf, $v_fsabv, $v_tfcaa + 1, $v_pxruv ); // obf
-
-		$v_johbq  = array(); // obf
-		$v_ttcuv = array(); // obf
-		foreach ( $v_ntkzp as $v_axwah => $v_jrrii ) { // obf
-			$v_ttcuv[] = $v_axwah; // obf
-			foreach ( $v_jrrii as $v_fdvbp => $v_rawrb ) { // obf
-				$v_johbq[] = $v_rawrb['function']; // obf
-			} // obf
-		} // obf
-		$v_cnrfu->assertSameSets( array( $v_tfcaa, $v_tfcaa + 1 ), $v_ttcuv ); // obf
-		$v_cnrfu->assertSameSets( array( $v_csnor, $v_fsabv ), $v_johbq ); // obf
-	} // obf
-} // obf
+		$functions  = array();
+		$priorities = array();
+		foreach ( $hook as $key => $callbacks ) {
+			$priorities[] = $key;
+			foreach ( $callbacks as $function_index => $the_ ) {
+				$functions[] = $the_['function'];
+			}
+		}
+		$this->assertSameSets( array( $priority, $priority + 1 ), $priorities );
+		$this->assertSameSets( array( $callback_one, $callback_two ), $functions );
+	}
+}

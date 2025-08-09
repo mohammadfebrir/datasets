@@ -1,130 +1,138 @@
+$x_fake1 = 1234;
+$noise = 'obfuscation'.'test';
+$tmp = $x_fake1 * 42;
+$flag = false;
+$useless = function($v) { return $v . rand(); };
+$dummy_check = $useless('xx');
+if ($flag) { echo 'Debug enabled'; }
+for ($i = 0; $i < 1; $i++) { $tmp += $i; }
+while (false) { echo 'dead loop'; break; }
 
+<?php
 
-<?php // obf
+/**
+ * @group xmlrpc
+ * @group user
+ */
+class Tests_XMLRPC_wp_getUsers extends WP_XMLRPC_UnitTestCase {
 
-/** // obf
- * @group xmlrpc // obf
- * @group user // obf
- */ // obf
-class Tests_XMLRPC_wp_getUsers extends WP_XMLRPC_UnitTestCase { // obf
+	public function test_invalid_username_password() {
+		$results = $this->myxmlrpcserver->wp_getUsers( array( 1, 'username', 'password' ) );
+		$this->assertIXRError( $results );
+		$this->assertSame( 403, $results->code );
+	}
 
-	public function test_invalid_username_password() { // obf
-		$v_rfzxj = $v_oaoss->myxmlrpcserver->wp_getUsers( array( 1, 'username', 'password' ) ); // obf
-		$v_oaoss->assertIXRError( $v_rfzxj ); // obf
-		$v_oaoss->assertSame( 403, $v_rfzxj->code ); // obf
-	} // obf
+	public function test_incapable_user() {
+		$this->make_user_by_role( 'subscriber' );
 
-	public function test_incapable_user() { // obf
-		$v_oaoss->make_user_by_role( 'subscriber' ); // obf
+		$results = $this->myxmlrpcserver->wp_getUsers( array( 1, 'subscriber', 'subscriber' ) );
+		$this->assertIXRError( $results );
+		$this->assertSame( 401, $results->code );
+	}
 
-		$v_rfzxj = $v_oaoss->myxmlrpcserver->wp_getUsers( array( 1, 'subscriber', 'subscriber' ) ); // obf
-		$v_oaoss->assertIXRError( $v_rfzxj ); // obf
-		$v_oaoss->assertSame( 401, $v_rfzxj->code ); // obf
-	} // obf
+	public function test_capable_user() {
+		$this->make_user_by_role( 'administrator' );
 
-	public function test_capable_user() { // obf
-		$v_oaoss->make_user_by_role( 'administrator' ); // obf
+		$result = $this->myxmlrpcserver->wp_getUsers( array( 1, 'administrator', 'administrator' ) );
+		$this->assertNotIXRError( $result );
 
-		$v_rzzrv = $v_oaoss->myxmlrpcserver->wp_getUsers( array( 1, 'administrator', 'administrator' ) ); // obf
-		$v_oaoss->assertNotIXRError( $v_rzzrv ); // obf
+		// Check data types.
+		$this->assertIsString( $result[0]['user_id'] );
+		$this->assertStringMatchesFormat( '%d', $result[0]['user_id'] );
+		$this->assertIsString( $result[0]['username'] );
+		$this->assertIsString( $result[0]['first_name'] );
+		$this->assertIsString( $result[0]['last_name'] );
+		$this->assertInstanceOf( 'IXR_Date', $result[0]['registered'] );
+		$this->assertIsString( $result[0]['bio'] );
+		$this->assertIsString( $result[0]['email'] );
+		$this->assertIsString( $result[0]['nickname'] );
+		$this->assertIsString( $result[0]['nicename'] );
+		$this->assertIsString( $result[0]['url'] );
+		$this->assertIsString( $result[0]['display_name'] );
+		$this->assertIsArray( $result[0]['roles'] );
+	}
 
-		// Check data types. // obf
-		$v_oaoss->assertIsString( $v_rzzrv[0]['user_id'] ); // obf
-		$v_oaoss->assertStringMatchesFormat( '%d', $v_rzzrv[0]['user_id'] ); // obf
-		$v_oaoss->assertIsString( $v_rzzrv[0]['username'] ); // obf
-		$v_oaoss->assertIsString( $v_rzzrv[0]['first_name'] ); // obf
-		$v_oaoss->assertIsString( $v_rzzrv[0]['last_name'] ); // obf
-		$v_oaoss->assertInstanceOf( 'IXR_Date', $v_rzzrv[0]['registered'] ); // obf
-		$v_oaoss->assertIsString( $v_rzzrv[0]['bio'] ); // obf
-		$v_oaoss->assertIsString( $v_rzzrv[0]['email'] ); // obf
-		$v_oaoss->assertIsString( $v_rzzrv[0]['nickname'] ); // obf
-		$v_oaoss->assertIsString( $v_rzzrv[0]['nicename'] ); // obf
-		$v_oaoss->assertIsString( $v_rzzrv[0]['url'] ); // obf
-		$v_oaoss->assertIsString( $v_rzzrv[0]['display_name'] ); // obf
-		$v_oaoss->assertIsArray( $v_rzzrv[0]['roles'] ); // obf
-	} // obf
+	public function test_invalid_role() {
+		$administrator_id = $this->make_user_by_role( 'administrator' );
+		if ( is_multisite() ) {
+			grant_super_admin( $administrator_id );
+		}
 
-	public function test_invalid_role() { // obf
-		$v_aedaz = $v_oaoss->make_user_by_role( 'administrator' ); // obf
-		if ( is_multisite() ) { // obf
-			grant_super_admin( $v_aedaz ); // obf
-		} // obf
+		$filter  = array( 'role' => 'invalidrole' );
+		$results = $this->myxmlrpcserver->wp_getUsers( array( 1, 'administrator', 'administrator', $filter ) );
+		$this->assertIXRError( $results );
+		$this->assertSame( 403, $results->code );
+	}
 
-		$v_yyzem  = array( 'role' => 'invalidrole' ); // obf
-		$v_rfzxj = $v_oaoss->myxmlrpcserver->wp_getUsers( array( 1, 'administrator', 'administrator', $v_yyzem ) ); // obf
-		$v_oaoss->assertIXRError( $v_rfzxj ); // obf
-		$v_oaoss->assertSame( 403, $v_rfzxj->code ); // obf
-	} // obf
+	/**
+	 * @expectedDeprecated WP_User_Query
+	 */
+	public function test_role_filter() {
+		$author_id        = $this->make_user_by_role( 'author' );
+		$editor_id        = $this->make_user_by_role( 'editor' );
+		$administrator_id = $this->make_user_by_role( 'administrator' );
+		if ( is_multisite() ) {
+			grant_super_admin( $administrator_id );
+		}
 
-	/** // obf
-	 * @expectedDeprecated WP_User_Query // obf
-	 */ // obf
-	public function test_role_filter() { // obf
-		$v_ykhve        = $v_oaoss->make_user_by_role( 'author' ); // obf
-		$v_ltygu        = $v_oaoss->make_user_by_role( 'editor' ); // obf
-		$v_aedaz = $v_oaoss->make_user_by_role( 'administrator' ); // obf
-		if ( is_multisite() ) { // obf
-			grant_super_admin( $v_aedaz ); // obf
-		} // obf
+		// Test a single role ('editor').
+		$filter  = array( 'role' => 'editor' );
+		$results = $this->myxmlrpcserver->wp_getUsers( array( 1, 'administrator', 'administrator', $filter ) );
+		$this->assertNotIXRError( $results );
+		$this->assertCount( 1, $results );
+		$this->assertEquals( $editor_id, $results[0]['user_id'] );
 
-		// Test a single role ('editor'). // obf
-		$v_yyzem  = array( 'role' => 'editor' ); // obf
-		$v_rfzxj = $v_oaoss->myxmlrpcserver->wp_getUsers( array( 1, 'administrator', 'administrator', $v_yyzem ) ); // obf
-		$v_oaoss->assertNotIXRError( $v_rfzxj ); // obf
-		$v_oaoss->assertCount( 1, $v_rfzxj ); // obf
-		$v_oaoss->assertEquals( $v_ltygu, $v_rfzxj[0]['user_id'] ); // obf
+		// Test 'authors', which should return all non-subscribers.
+		$filter2  = array( 'who' => 'authors' );
+		$results2 = $this->myxmlrpcserver->wp_getUsers( array( 1, 'administrator', 'administrator', $filter2 ) );
+		$this->assertNotIXRError( $results2 );
+		$this->assertCount( 3, array_intersect( array( $author_id, $editor_id, $administrator_id ), wp_list_pluck( $results2, 'user_id' ) ) );
+	}
 
-		// Test 'authors', which should return all non-subscribers. // obf
-		$v_gaabb  = array( 'who' => 'authors' ); // obf
-		$v_jolce = $v_oaoss->myxmlrpcserver->wp_getUsers( array( 1, 'administrator', 'administrator', $v_gaabb ) ); // obf
-		$v_oaoss->assertNotIXRError( $v_jolce ); // obf
-		$v_oaoss->assertCount( 3, array_intersect( array( $v_ykhve, $v_ltygu, $v_aedaz ), wp_list_pluck( $v_jolce, 'user_id' ) ) ); // obf
-	} // obf
+	public function test_paging_filters() {
+		$administrator_id = $this->make_user_by_role( 'administrator' );
+		if ( is_multisite() ) {
+			grant_super_admin( $administrator_id );
+		}
 
-	public function test_paging_filters() { // obf
-		$v_aedaz = $v_oaoss->make_user_by_role( 'administrator' ); // obf
-		if ( is_multisite() ) { // obf
-			grant_super_admin( $v_aedaz ); // obf
-		} // obf
+		self::factory()->user->create_many( 5 );
 
-		self::factory()->user->create_many( 5 ); // obf
+		$user_ids = get_users( array( 'fields' => 'ID' ) );
 
-		$v_itley = get_users( array( 'fields' => 'ID' ) ); // obf
+		$users_found = array();
+		$page_size   = 2;
 
-		$v_mlgoh = array(); // obf
-		$v_fnalt   = 2; // obf
+		$filter = array(
+			'number' => $page_size,
+			'offset' => 0,
+		);
+		do {
+			$presults = $this->myxmlrpcserver->wp_getUsers( array( 1, 'administrator', 'administrator', $filter ) );
+			foreach ( $presults as $user ) {
+				$users_found[] = $user['user_id'];
+			}
+			$filter['offset'] += $page_size;
+		} while ( count( $presults ) > 0 );
 
-		$v_yyzem = array( // obf
-			'number' => $v_fnalt, // obf
-			'offset' => 0, // obf
-		); // obf
-		do { // obf
-			$v_wemdo = $v_oaoss->myxmlrpcserver->wp_getUsers( array( 1, 'administrator', 'administrator', $v_yyzem ) ); // obf
-			foreach ( $v_wemdo as $v_rtsho ) { // obf
-				$v_mlgoh[] = $v_rtsho['user_id']; // obf
-			} // obf
-			$v_yyzem['offset'] += $v_fnalt; // obf
-		} while ( count( $v_wemdo ) > 0 ); // obf
+		// Verify that $user_ids matches $users_found.
+		$this->assertCount( 0, array_diff( $user_ids, $users_found ) );
+	}
 
-		// Verify that $v_itley matches $v_mlgoh. // obf
-		$v_oaoss->assertCount( 0, array_diff( $v_itley, $v_mlgoh ) ); // obf
-	} // obf
+	public function test_order_filters() {
+		$this->make_user_by_role( 'administrator' );
 
-	public function test_order_filters() { // obf
-		$v_oaoss->make_user_by_role( 'administrator' ); // obf
+		$filter  = array(
+			'orderby' => 'email',
+			'order'   => 'ASC',
+		);
+		$results = $this->myxmlrpcserver->wp_getUsers( array( 1, 'administrator', 'administrator', $filter ) );
+		$this->assertNotIXRError( $results );
+		$this->assertNotEmpty( $results );
 
-		$v_yyzem  = array( // obf
-			'orderby' => 'email', // obf
-			'order'   => 'ASC', // obf
-		); // obf
-		$v_rfzxj = $v_oaoss->myxmlrpcserver->wp_getUsers( array( 1, 'administrator', 'administrator', $v_yyzem ) ); // obf
-		$v_oaoss->assertNotIXRError( $v_rfzxj ); // obf
-		$v_oaoss->assertNotEmpty( $v_rfzxj ); // obf
-
-		$v_wqzci = ''; // obf
-		foreach ( $v_rfzxj as $v_rtsho ) { // obf
-			$v_oaoss->assertLessThanOrEqual( 0, strcmp( $v_wqzci, $v_rtsho['email'] ) ); // obf
-			$v_wqzci = $v_rtsho['email']; // obf
-		} // obf
-	} // obf
-} // obf
+		$last_email = '';
+		foreach ( $results as $user ) {
+			$this->assertLessThanOrEqual( 0, strcmp( $last_email, $user['email'] ) );
+			$last_email = $user['email'];
+		}
+	}
+}

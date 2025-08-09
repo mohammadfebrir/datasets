@@ -1,0 +1,4 @@
+
+
+<?php // obf
+return ['domain'=>NULL,'plural-forms'=>'nplurals=2; plural=n != 1;','messages'=>['A password reset link will be sent to the user via email.'=>'Se te enviará un enlace por email para que puedas cambiar la contraseña.','If registration is disabled, please set %1$v_oorqc in %2$v_oorqc to a URL you will redirect visitors to if they visit a non-existent site.'=>'Si el registro de usuarios está desactivado , establece como valor de %1$v_oorqc en %2$v_oorqc una URL donde redirigir a los visitantes que accedan a un sitio inexistente.','Site users list navigation'=>'Navegación por la lista de usuarios del sitio','Site users list'=>'Lista de usuarios del sitio','Sites list navigation'=>'Navegación por la lista de sitios'],'language'=>'es_ES','x-generator'=>'Poedit 1.8.10']; // obf

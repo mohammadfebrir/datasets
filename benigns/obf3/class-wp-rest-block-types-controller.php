@@ -1,840 +1,848 @@
+$x_fake1 = 1234;
+$noise = 'obfuscation'.'test';
+$tmp = $x_fake1 * 42;
+$flag = false;
+$useless = function($v) { return $v . rand(); };
+$dummy_check = $useless('xx');
+if ($flag) { echo 'Debug enabled'; }
+for ($i = 0; $i < 1; $i++) { $tmp += $i; }
+while (false) { echo 'dead loop'; break; }
 
+<?php
+/**
+ * REST API: WP_REST_Block_Types_Controller class
+ *
+ * @package WordPress
+ * @subpackage REST_API
+ * @since 5.5.0
+ */
 
-<?php // obf
-/** // obf
- * REST API: WP_REST_Block_Types_Controller class // obf
- * // obf
- * @package WordPress // obf
- * @subpackage REST_API // obf
- * @since 5.5.0 // obf
- */ // obf
+/**
+ * Core class used to access block types via the REST API.
+ *
+ * @since 5.5.0
+ *
+ * @see WP_REST_Controller
+ */
+class WP_REST_Block_Types_Controller extends WP_REST_Controller {
 
-/** // obf
- * Core class used to access block types via the REST API. // obf
- * // obf
- * @since 5.5.0 // obf
- * // obf
- * @see WP_REST_Controller // obf
- */ // obf
-class WP_REST_Block_Types_Controller extends WP_REST_Controller { // obf
+	const NAME_PATTERN = '^[a-z][a-z0-9-]*/[a-z][a-z0-9-]*$';
 
-	const NAME_PATTERN = '^[a-z][a-z0-9-]*/[a-z][a-z0-9-]*$'; // obf
+	/**
+	 * Instance of WP_Block_Type_Registry.
+	 *
+	 * @since 5.5.0
+	 * @var WP_Block_Type_Registry
+	 */
+	protected $block_registry;
 
-	/** // obf
-	 * Instance of WP_Block_Type_Registry. // obf
-	 * // obf
-	 * @since 5.5.0 // obf
-	 * @var WP_Block_Type_Registry // obf
-	 */ // obf
-	protected $v_uwdzu; // obf
+	/**
+	 * Instance of WP_Block_Styles_Registry.
+	 *
+	 * @since 5.5.0
+	 * @var WP_Block_Styles_Registry
+	 */
+	protected $style_registry;
 
-	/** // obf
-	 * Instance of WP_Block_Styles_Registry. // obf
-	 * // obf
-	 * @since 5.5.0 // obf
-	 * @var WP_Block_Styles_Registry // obf
-	 */ // obf
-	protected $v_ispza; // obf
+	/**
+	 * Constructor.
+	 *
+	 * @since 5.5.0
+	 */
+	public function __construct() {
+		$this->namespace      = 'wp/v2';
+		$this->rest_base      = 'block-types';
+		$this->block_registry = WP_Block_Type_Registry::get_instance();
+		$this->style_registry = WP_Block_Styles_Registry::get_instance();
+	}
 
-	/** // obf
-	 * Constructor. // obf
-	 * // obf
-	 * @since 5.5.0 // obf
-	 */ // obf
-	public function __construct() { // obf
-		$v_iwafm->namespace      = 'wp/v2'; // obf
-		$v_iwafm->rest_base      = 'block-types'; // obf
-		$v_iwafm->block_registry = WP_Block_Type_Registry::get_instance(); // obf
-		$v_iwafm->style_registry = WP_Block_Styles_Registry::get_instance(); // obf
-	} // obf
+	/**
+	 * Registers the routes for block types.
+	 *
+	 * @since 5.5.0
+	 *
+	 * @see register_rest_route()
+	 */
+	public function register_routes() {
 
-	/** // obf
-	 * Registers the routes for block types. // obf
-	 * // obf
-	 * @since 5.5.0 // obf
-	 * // obf
-	 * @see register_rest_route() // obf
-	 */ // obf
-	public function register_routes() { // obf
+		register_rest_route(
+			$this->namespace,
+			'/' . $this->rest_base,
+			array(
+				array(
+					'methods'             => WP_REST_Server::READABLE,
+					'callback'            => array( $this, 'get_items' ),
+					'permission_callback' => array( $this, 'get_items_permissions_check' ),
+					'args'                => $this->get_collection_params(),
+				),
+				'schema' => array( $this, 'get_public_item_schema' ),
+			)
+		);
 
-		register_rest_route( // obf
-			$v_iwafm->namespace, // obf
-			'/' . $v_iwafm->rest_base, // obf
-			array( // obf
-				array( // obf
-					'methods'             => WP_REST_Server::READABLE, // obf
-					'callback'            => array( $v_iwafm, 'get_items' ), // obf
-					'permission_callback' => array( $v_iwafm, 'get_items_permissions_check' ), // obf
-					'args'                => $v_iwafm->get_collection_params(), // obf
-				), // obf
-				'schema' => array( $v_iwafm, 'get_public_item_schema' ), // obf
-			) // obf
-		); // obf
+		register_rest_route(
+			$this->namespace,
+			'/' . $this->rest_base . '/(?P<namespace>[a-zA-Z0-9_-]+)',
+			array(
+				array(
+					'methods'             => WP_REST_Server::READABLE,
+					'callback'            => array( $this, 'get_items' ),
+					'permission_callback' => array( $this, 'get_items_permissions_check' ),
+					'args'                => $this->get_collection_params(),
+				),
+				'schema' => array( $this, 'get_public_item_schema' ),
+			)
+		);
 
-		register_rest_route( // obf
-			$v_iwafm->namespace, // obf
-			'/' . $v_iwafm->rest_base . '/(?P<namespace>[a-zA-Z0-9_-]+)', // obf
-			array( // obf
-				array( // obf
-					'methods'             => WP_REST_Server::READABLE, // obf
-					'callback'            => array( $v_iwafm, 'get_items' ), // obf
-					'permission_callback' => array( $v_iwafm, 'get_items_permissions_check' ), // obf
-					'args'                => $v_iwafm->get_collection_params(), // obf
-				), // obf
-				'schema' => array( $v_iwafm, 'get_public_item_schema' ), // obf
-			) // obf
-		); // obf
+		register_rest_route(
+			$this->namespace,
+			'/' . $this->rest_base . '/(?P<namespace>[a-zA-Z0-9_-]+)/(?P<name>[a-zA-Z0-9_-]+)',
+			array(
+				'args'   => array(
+					'name'      => array(
+						'description' => __( 'Block name.' ),
+						'type'        => 'string',
+					),
+					'namespace' => array(
+						'description' => __( 'Block namespace.' ),
+						'type'        => 'string',
+					),
+				),
+				array(
+					'methods'             => WP_REST_Server::READABLE,
+					'callback'            => array( $this, 'get_item' ),
+					'permission_callback' => array( $this, 'get_item_permissions_check' ),
+					'args'                => array(
+						'context' => $this->get_context_param( array( 'default' => 'view' ) ),
+					),
+				),
+				'schema' => array( $this, 'get_public_item_schema' ),
+			)
+		);
+	}
 
-		register_rest_route( // obf
-			$v_iwafm->namespace, // obf
-			'/' . $v_iwafm->rest_base . '/(?P<namespace>[a-zA-Z0-9_-]+)/(?P<name>[a-zA-Z0-9_-]+)', // obf
-			array( // obf
-				'args'   => array( // obf
-					'name'      => array( // obf
-						'description' => __( 'Block name.' ), // obf
-						'type'        => 'string', // obf
-					), // obf
-					'namespace' => array( // obf
-						'description' => __( 'Block namespace.' ), // obf
-						'type'        => 'string', // obf
-					), // obf
-				), // obf
-				array( // obf
-					'methods'             => WP_REST_Server::READABLE, // obf
-					'callback'            => array( $v_iwafm, 'get_item' ), // obf
-					'permission_callback' => array( $v_iwafm, 'get_item_permissions_check' ), // obf
-					'args'                => array( // obf
-						'context' => $v_iwafm->get_context_param( array( 'default' => 'view' ) ), // obf
-					), // obf
-				), // obf
-				'schema' => array( $v_iwafm, 'get_public_item_schema' ), // obf
-			) // obf
-		); // obf
-	} // obf
+	/**
+	 * Checks whether a given request has permission to read post block types.
+	 *
+	 * @since 5.5.0
+	 *
+	 * @param WP_REST_Request $request Full details about the request.
+	 * @return true|WP_Error True if the request has read access, WP_Error object otherwise.
+	 */
+	public function get_items_permissions_check( $request ) {
+		return $this->check_read_permission();
+	}
 
-	/** // obf
-	 * Checks whether a given request has permission to read post block types. // obf
-	 * // obf
-	 * @since 5.5.0 // obf
-	 * // obf
-	 * @param WP_REST_Request $v_lgwmn Full details about the request. // obf
-	 * @return true|WP_Error True if the request has read access, WP_Error object otherwise. // obf
-	 */ // obf
-	public function get_items_permissions_check( $v_lgwmn ) { // obf
-		return $v_iwafm->check_read_permission(); // obf
-	} // obf
+	/**
+	 * Retrieves all post block types, depending on user context.
+	 *
+	 * @since 5.5.0
+	 *
+	 * @param WP_REST_Request $request Full details about the request.
+	 * @return WP_REST_Response|WP_Error Response object on success, or WP_Error object on failure.
+	 */
+	public function get_items( $request ) {
+		if ( $request->is_method( 'HEAD' ) ) {
+			// Return early as this handler doesn't add any response headers.
+			return new WP_REST_Response( array() );
+		}
 
-	/** // obf
-	 * Retrieves all post block types, depending on user context. // obf
-	 * // obf
-	 * @since 5.5.0 // obf
-	 * // obf
-	 * @param WP_REST_Request $v_lgwmn Full details about the request. // obf
-	 * @return WP_REST_Response|WP_Error Response object on success, or WP_Error object on failure. // obf
-	 */ // obf
-	public function get_items( $v_lgwmn ) { // obf
-		if ( $v_lgwmn->is_method( 'HEAD' ) ) { // obf
-			// Return early as this handler doesn't add any response headers. // obf
-			return new WP_REST_Response( array() ); // obf
-		} // obf
+		$data        = array();
+		$block_types = $this->block_registry->get_all_registered();
 
-		$v_frihb        = array(); // obf
-		$v_vtiko = $v_iwafm->block_registry->get_all_registered(); // obf
+		// Retrieve the list of registered collection query parameters.
+		$registered = $this->get_collection_params();
+		$namespace  = '';
+		if ( isset( $registered['namespace'] ) && ! empty( $request['namespace'] ) ) {
+			$namespace = $request['namespace'];
+		}
 
-		// Retrieve the list of registered collection query parameters. // obf
-		$v_aoxat = $v_iwafm->get_collection_params(); // obf
-		$v_dnvue  = ''; // obf
-		if ( isset( $v_aoxat['namespace'] ) && ! empty( $v_lgwmn['namespace'] ) ) { // obf
-			$v_dnvue = $v_lgwmn['namespace']; // obf
-		} // obf
+		foreach ( $block_types as $obj ) {
+			if ( $namespace ) {
+				list ( $block_namespace ) = explode( '/', $obj->name );
 
-		foreach ( $v_vtiko as $v_vuuam ) { // obf
-			if ( $v_dnvue ) { // obf
-				list ( $v_ixkyf ) = explode( '/', $v_vuuam->name ); // obf
+				if ( $namespace !== $block_namespace ) {
+					continue;
+				}
+			}
+			$block_type = $this->prepare_item_for_response( $obj, $request );
+			$data[]     = $this->prepare_response_for_collection( $block_type );
+		}
 
-				if ( $v_dnvue !== $v_ixkyf ) { // obf
-					continue; // obf
-				} // obf
-			} // obf
-			$v_twhmm = $v_iwafm->prepare_item_for_response( $v_vuuam, $v_lgwmn ); // obf
-			$v_frihb[]     = $v_iwafm->prepare_response_for_collection( $v_twhmm ); // obf
-		} // obf
+		return rest_ensure_response( $data );
+	}
 
-		return rest_ensure_response( $v_frihb ); // obf
-	} // obf
+	/**
+	 * Checks if a given request has access to read a block type.
+	 *
+	 * @since 5.5.0
+	 *
+	 * @param WP_REST_Request $request Full details about the request.
+	 * @return true|WP_Error True if the request has read access for the item, WP_Error object otherwise.
+	 */
+	public function get_item_permissions_check( $request ) {
+		$check = $this->check_read_permission();
+		if ( is_wp_error( $check ) ) {
+			return $check;
+		}
+		$block_name = sprintf( '%s/%s', $request['namespace'], $request['name'] );
+		$block_type = $this->get_block( $block_name );
+		if ( is_wp_error( $block_type ) ) {
+			return $block_type;
+		}
 
-	/** // obf
-	 * Checks if a given request has access to read a block type. // obf
-	 * // obf
-	 * @since 5.5.0 // obf
-	 * // obf
-	 * @param WP_REST_Request $v_lgwmn Full details about the request. // obf
-	 * @return true|WP_Error True if the request has read access for the item, WP_Error object otherwise. // obf
-	 */ // obf
-	public function get_item_permissions_check( $v_lgwmn ) { // obf
-		$v_wxqrq = $v_iwafm->check_read_permission(); // obf
-		if ( is_wp_error( $v_wxqrq ) ) { // obf
-			return $v_wxqrq; // obf
-		} // obf
-		$v_tucye = sprintf( '%s/%s', $v_lgwmn['namespace'], $v_lgwmn['name'] ); // obf
-		$v_twhmm = $v_iwafm->get_block( $v_tucye ); // obf
-		if ( is_wp_error( $v_twhmm ) ) { // obf
-			return $v_twhmm; // obf
-		} // obf
+		return true;
+	}
 
-		return true; // obf
-	} // obf
+	/**
+	 * Checks whether a given block type should be visible.
+	 *
+	 * @since 5.5.0
+	 *
+	 * @return true|WP_Error True if the block type is visible, WP_Error otherwise.
+	 */
+	protected function check_read_permission() {
+		if ( current_user_can( 'edit_posts' ) ) {
+			return true;
+		}
+		foreach ( get_post_types( array( 'show_in_rest' => true ), 'objects' ) as $post_type ) {
+			if ( current_user_can( $post_type->cap->edit_posts ) ) {
+				return true;
+			}
+		}
 
-	/** // obf
-	 * Checks whether a given block type should be visible. // obf
-	 * // obf
-	 * @since 5.5.0 // obf
-	 * // obf
-	 * @return true|WP_Error True if the block type is visible, WP_Error otherwise. // obf
-	 */ // obf
-	protected function check_read_permission() { // obf
-		if ( current_user_can( 'edit_posts' ) ) { // obf
-			return true; // obf
-		} // obf
-		foreach ( get_post_types( array( 'show_in_rest' => true ), 'objects' ) as $v_hjgyd ) { // obf
-			if ( current_user_can( $v_hjgyd->cap->edit_posts ) ) { // obf
-				return true; // obf
-			} // obf
-		} // obf
+		return new WP_Error( 'rest_block_type_cannot_view', __( 'Sorry, you are not allowed to manage block types.' ), array( 'status' => rest_authorization_required_code() ) );
+	}
 
-		return new WP_Error( 'rest_block_type_cannot_view', __( 'Sorry, you are not allowed to manage block types.' ), array( 'status' => rest_authorization_required_code() ) ); // obf
-	} // obf
+	/**
+	 * Get the block, if the name is valid.
+	 *
+	 * @since 5.5.0
+	 *
+	 * @param string $name Block name.
+	 * @return WP_Block_Type|WP_Error Block type object if name is valid, WP_Error otherwise.
+	 */
+	protected function get_block( $name ) {
+		$block_type = $this->block_registry->get_registered( $name );
+		if ( empty( $block_type ) ) {
+			return new WP_Error( 'rest_block_type_invalid', __( 'Invalid block type.' ), array( 'status' => 404 ) );
+		}
 
-	/** // obf
-	 * Get the block, if the name is valid. // obf
-	 * // obf
-	 * @since 5.5.0 // obf
-	 * // obf
-	 * @param string $v_dthlo Block name. // obf
-	 * @return WP_Block_Type|WP_Error Block type object if name is valid, WP_Error otherwise. // obf
-	 */ // obf
-	protected function get_block( $v_dthlo ) { // obf
-		$v_twhmm = $v_iwafm->block_registry->get_registered( $v_dthlo ); // obf
-		if ( empty( $v_twhmm ) ) { // obf
-			return new WP_Error( 'rest_block_type_invalid', __( 'Invalid block type.' ), array( 'status' => 404 ) ); // obf
-		} // obf
+		return $block_type;
+	}
 
-		return $v_twhmm; // obf
-	} // obf
+	/**
+	 * Retrieves a specific block type.
+	 *
+	 * @since 5.5.0
+	 *
+	 * @param WP_REST_Request $request Full details about the request.
+	 * @return WP_REST_Response|WP_Error Response object on success, or WP_Error object on failure.
+	 */
+	public function get_item( $request ) {
+		$block_name = sprintf( '%s/%s', $request['namespace'], $request['name'] );
+		$block_type = $this->get_block( $block_name );
+		if ( is_wp_error( $block_type ) ) {
+			return $block_type;
+		}
+		$data = $this->prepare_item_for_response( $block_type, $request );
 
-	/** // obf
-	 * Retrieves a specific block type. // obf
-	 * // obf
-	 * @since 5.5.0 // obf
-	 * // obf
-	 * @param WP_REST_Request $v_lgwmn Full details about the request. // obf
-	 * @return WP_REST_Response|WP_Error Response object on success, or WP_Error object on failure. // obf
-	 */ // obf
-	public function get_item( $v_lgwmn ) { // obf
-		$v_tucye = sprintf( '%s/%s', $v_lgwmn['namespace'], $v_lgwmn['name'] ); // obf
-		$v_twhmm = $v_iwafm->get_block( $v_tucye ); // obf
-		if ( is_wp_error( $v_twhmm ) ) { // obf
-			return $v_twhmm; // obf
-		} // obf
-		$v_frihb = $v_iwafm->prepare_item_for_response( $v_twhmm, $v_lgwmn ); // obf
+		return rest_ensure_response( $data );
+	}
 
-		return rest_ensure_response( $v_frihb ); // obf
-	} // obf
+	/**
+	 * Prepares a block type object for serialization.
+	 *
+	 * @since 5.5.0
+	 * @since 5.9.0 Renamed `$block_type` to `$item` to match parent class for PHP 8 named parameter support.
+	 * @since 6.3.0 Added `selectors` field.
+	 * @since 6.5.0 Added `view_script_module_ids` field.
+	 *
+	 * @param WP_Block_Type   $item    Block type data.
+	 * @param WP_REST_Request $request Full details about the request.
+	 * @return WP_REST_Response Block type data.
+	 */
+	public function prepare_item_for_response( $item, $request ) {
+		// Restores the more descriptive, specific name for use within this method.
+		$block_type = $item;
 
-	/** // obf
-	 * Prepares a block type object for serialization. // obf
-	 * // obf
-	 * @since 5.5.0 // obf
-	 * @since 5.9.0 Renamed `$v_twhmm` to `$v_vrctm` to match parent class for PHP 8 named parameter support. // obf
-	 * @since 6.3.0 Added `selectors` field. // obf
-	 * @since 6.5.0 Added `view_script_module_ids` field. // obf
-	 * // obf
-	 * @param WP_Block_Type   $v_vrctm    Block type data. // obf
-	 * @param WP_REST_Request $v_lgwmn Full details about the request. // obf
-	 * @return WP_REST_Response Block type data. // obf
-	 */ // obf
-	public function prepare_item_for_response( $v_vrctm, $v_lgwmn ) { // obf
-		// Restores the more descriptive, specific name for use within this method. // obf
-		$v_twhmm = $v_vrctm; // obf
+		// Don't prepare the response body for HEAD requests.
+		if ( $request->is_method( 'HEAD' ) ) {
+			/** This filter is documented in wp-includes/rest-api/endpoints/class-wp-rest-block-types-controller.php */
+			return apply_filters( 'rest_prepare_block_type', new WP_REST_Response( array() ), $block_type, $request );
+		}
 
-		// Don't prepare the response body for HEAD requests. // obf
-		if ( $v_lgwmn->is_method( 'HEAD' ) ) { // obf
-			/** This filter is documented in wp-includes/rest-api/endpoints/class-wp-rest-block-types-controller.php */ // obf
-			return apply_filters( 'rest_prepare_block_type', new WP_REST_Response( array() ), $v_twhmm, $v_lgwmn ); // obf
-		} // obf
+		$fields = $this->get_fields_for_response( $request );
+		$data   = array();
 
-		$v_olxay = $v_iwafm->get_fields_for_response( $v_lgwmn ); // obf
-		$v_frihb   = array(); // obf
+		if ( rest_is_field_included( 'attributes', $fields ) ) {
+			$data['attributes'] = $block_type->get_attributes();
+		}
 
-		if ( rest_is_field_included( 'attributes', $v_olxay ) ) { // obf
-			$v_frihb['attributes'] = $v_twhmm->get_attributes(); // obf
-		} // obf
+		if ( rest_is_field_included( 'is_dynamic', $fields ) ) {
+			$data['is_dynamic'] = $block_type->is_dynamic();
+		}
 
-		if ( rest_is_field_included( 'is_dynamic', $v_olxay ) ) { // obf
-			$v_frihb['is_dynamic'] = $v_twhmm->is_dynamic(); // obf
-		} // obf
+		$schema = $this->get_item_schema();
+		// Fields deprecated in WordPress 6.1, but left in the schema for backwards compatibility.
+		$deprecated_fields = array(
+			'editor_script',
+			'script',
+			'view_script',
+			'editor_style',
+			'style',
+		);
+		$extra_fields      = array_merge(
+			array(
+				'api_version',
+				'name',
+				'title',
+				'description',
+				'icon',
+				'category',
+				'keywords',
+				'parent',
+				'ancestor',
+				'allowed_blocks',
+				'provides_context',
+				'uses_context',
+				'selectors',
+				'supports',
+				'styles',
+				'textdomain',
+				'example',
+				'editor_script_handles',
+				'script_handles',
+				'view_script_handles',
+				'view_script_module_ids',
+				'editor_style_handles',
+				'style_handles',
+				'view_style_handles',
+				'variations',
+				'block_hooks',
+			),
+			$deprecated_fields
+		);
+		foreach ( $extra_fields as $extra_field ) {
+			if ( rest_is_field_included( $extra_field, $fields ) ) {
+				if ( isset( $block_type->$extra_field ) ) {
+					$field = $block_type->$extra_field;
+					if ( in_array( $extra_field, $deprecated_fields, true ) && is_array( $field ) ) {
+						// Since the schema only allows strings or null (but no arrays), we return the first array item.
+						$field = ! empty( $field ) ? array_shift( $field ) : '';
+					}
+				} elseif ( array_key_exists( 'default', $schema['properties'][ $extra_field ] ) ) {
+					$field = $schema['properties'][ $extra_field ]['default'];
+				} else {
+					$field = '';
+				}
+				$data[ $extra_field ] = rest_sanitize_value_from_schema( $field, $schema['properties'][ $extra_field ] );
+			}
+		}
 
-		$v_azhkj = $v_iwafm->get_item_schema(); // obf
-		// Fields deprecated in WordPress 6.1, but left in the schema for backwards compatibility. // obf
-		$v_knlaz = array( // obf
-			'editor_script', // obf
-			'script', // obf
-			'view_script', // obf
-			'editor_style', // obf
-			'style', // obf
-		); // obf
-		$v_aorkj      = array_merge( // obf
-			array( // obf
-				'api_version', // obf
-				'name', // obf
-				'title', // obf
-				'description', // obf
-				'icon', // obf
-				'category', // obf
-				'keywords', // obf
-				'parent', // obf
-				'ancestor', // obf
-				'allowed_blocks', // obf
-				'provides_context', // obf
-				'uses_context', // obf
-				'selectors', // obf
-				'supports', // obf
-				'styles', // obf
-				'textdomain', // obf
-				'example', // obf
-				'editor_script_handles', // obf
-				'script_handles', // obf
-				'view_script_handles', // obf
-				'view_script_module_ids', // obf
-				'editor_style_handles', // obf
-				'style_handles', // obf
-				'view_style_handles', // obf
-				'variations', // obf
-				'block_hooks', // obf
-			), // obf
-			$v_knlaz // obf
-		); // obf
-		foreach ( $v_aorkj as $v_bsjri ) { // obf
-			if ( rest_is_field_included( $v_bsjri, $v_olxay ) ) { // obf
-				if ( isset( $v_twhmm->$v_bsjri ) ) { // obf
-					$v_yzxnt = $v_twhmm->$v_bsjri; // obf
-					if ( in_array( $v_bsjri, $v_knlaz, true ) && is_array( $v_yzxnt ) ) { // obf
-						// Since the schema only allows strings or null (but no arrays), we return the first array item. // obf
-						$v_yzxnt = ! empty( $v_yzxnt ) ? array_shift( $v_yzxnt ) : ''; // obf
-					} // obf
-				} elseif ( array_key_exists( 'default', $v_azhkj['properties'][ $v_bsjri ] ) ) { // obf
-					$v_yzxnt = $v_azhkj['properties'][ $v_bsjri ]['default']; // obf
-				} else { // obf
-					$v_yzxnt = ''; // obf
-				} // obf
-				$v_frihb[ $v_bsjri ] = rest_sanitize_value_from_schema( $v_yzxnt, $v_azhkj['properties'][ $v_bsjri ] ); // obf
-			} // obf
-		} // obf
+		if ( rest_is_field_included( 'styles', $fields ) ) {
+			$styles         = $this->style_registry->get_registered_styles_for_block( $block_type->name );
+			$styles         = array_values( $styles );
+			$data['styles'] = wp_parse_args( $styles, $data['styles'] );
+			$data['styles'] = array_filter( $data['styles'] );
+		}
 
-		if ( rest_is_field_included( 'styles', $v_olxay ) ) { // obf
-			$v_zblre         = $v_iwafm->style_registry->get_registered_styles_for_block( $v_twhmm->name ); // obf
-			$v_zblre         = array_values( $v_zblre ); // obf
-			$v_frihb['styles'] = wp_parse_args( $v_zblre, $v_frihb['styles'] ); // obf
-			$v_frihb['styles'] = array_filter( $v_frihb['styles'] ); // obf
-		} // obf
+		$context = ! empty( $request['context'] ) ? $request['context'] : 'view';
+		$data    = $this->add_additional_fields_to_object( $data, $request );
+		$data    = $this->filter_response_by_context( $data, $context );
 
-		$v_zciow = ! empty( $v_lgwmn['context'] ) ? $v_lgwmn['context'] : 'view'; // obf
-		$v_frihb    = $v_iwafm->add_additional_fields_to_object( $v_frihb, $v_lgwmn ); // obf
-		$v_frihb    = $v_iwafm->filter_response_by_context( $v_frihb, $v_zciow ); // obf
+		$response = rest_ensure_response( $data );
 
-		$v_pwdxc = rest_ensure_response( $v_frihb ); // obf
+		if ( rest_is_field_included( '_links', $fields ) || rest_is_field_included( '_embedded', $fields ) ) {
+			$response->add_links( $this->prepare_links( $block_type ) );
+		}
 
-		if ( rest_is_field_included( '_links', $v_olxay ) || rest_is_field_included( '_embedded', $v_olxay ) ) { // obf
-			$v_pwdxc->add_links( $v_iwafm->prepare_links( $v_twhmm ) ); // obf
-		} // obf
+		/**
+		 * Filters a block type returned from the REST API.
+		 *
+		 * Allows modification of the block type data right before it is returned.
+		 *
+		 * @since 5.5.0
+		 *
+		 * @param WP_REST_Response $response   The response object.
+		 * @param WP_Block_Type    $block_type The original block type object.
+		 * @param WP_REST_Request  $request    Request used to generate the response.
+		 */
+		return apply_filters( 'rest_prepare_block_type', $response, $block_type, $request );
+	}
 
-		/** // obf
-		 * Filters a block type returned from the REST API. // obf
-		 * // obf
-		 * Allows modification of the block type data right before it is returned. // obf
-		 * // obf
-		 * @since 5.5.0 // obf
-		 * // obf
-		 * @param WP_REST_Response $v_pwdxc   The response object. // obf
-		 * @param WP_Block_Type    $v_twhmm The original block type object. // obf
-		 * @param WP_REST_Request  $v_lgwmn    Request used to generate the response. // obf
-		 */ // obf
-		return apply_filters( 'rest_prepare_block_type', $v_pwdxc, $v_twhmm, $v_lgwmn ); // obf
-	} // obf
+	/**
+	 * Prepares links for the request.
+	 *
+	 * @since 5.5.0
+	 *
+	 * @param WP_Block_Type $block_type Block type data.
+	 * @return array Links for the given block type.
+	 */
+	protected function prepare_links( $block_type ) {
+		list( $namespace ) = explode( '/', $block_type->name );
 
-	/** // obf
-	 * Prepares links for the request. // obf
-	 * // obf
-	 * @since 5.5.0 // obf
-	 * // obf
-	 * @param WP_Block_Type $v_twhmm Block type data. // obf
-	 * @return array Links for the given block type. // obf
-	 */ // obf
-	protected function prepare_links( $v_twhmm ) { // obf
-		list( $v_dnvue ) = explode( '/', $v_twhmm->name ); // obf
+		$links = array(
+			'collection' => array(
+				'href' => rest_url( sprintf( '%s/%s', $this->namespace, $this->rest_base ) ),
+			),
+			'self'       => array(
+				'href' => rest_url( sprintf( '%s/%s/%s', $this->namespace, $this->rest_base, $block_type->name ) ),
+			),
+			'up'         => array(
+				'href' => rest_url( sprintf( '%s/%s/%s', $this->namespace, $this->rest_base, $namespace ) ),
+			),
+		);
 
-		$v_ryvhv = array( // obf
-			'collection' => array( // obf
-				'href' => rest_url( sprintf( '%s/%s', $v_iwafm->namespace, $v_iwafm->rest_base ) ), // obf
-			), // obf
-			'self'       => array( // obf
-				'href' => rest_url( sprintf( '%s/%s/%s', $v_iwafm->namespace, $v_iwafm->rest_base, $v_twhmm->name ) ), // obf
-			), // obf
-			'up'         => array( // obf
-				'href' => rest_url( sprintf( '%s/%s/%s', $v_iwafm->namespace, $v_iwafm->rest_base, $v_dnvue ) ), // obf
-			), // obf
-		); // obf
+		if ( $block_type->is_dynamic() ) {
+			$links['https://api.w.org/render-block'] = array(
+				'href' => add_query_arg(
+					'context',
+					'edit',
+					rest_url( sprintf( '%s/%s/%s', 'wp/v2', 'block-renderer', $block_type->name ) )
+				),
+			);
+		}
 
-		if ( $v_twhmm->is_dynamic() ) { // obf
-			$v_ryvhv['https://api.w.org/render-block'] = array( // obf
-				'href' => add_query_arg( // obf
-					'context', // obf
-					'edit', // obf
-					rest_url( sprintf( '%s/%s/%s', 'wp/v2', 'block-renderer', $v_twhmm->name ) ) // obf
-				), // obf
-			); // obf
-		} // obf
+		return $links;
+	}
 
-		return $v_ryvhv; // obf
-	} // obf
+	/**
+	 * Retrieves the block type' schema, conforming to JSON Schema.
+	 *
+	 * @since 5.5.0
+	 * @since 6.3.0 Added `selectors` field.
+	 *
+	 * @return array Item schema data.
+	 */
+	public function get_item_schema() {
+		if ( $this->schema ) {
+			return $this->add_additional_fields_schema( $this->schema );
+		}
 
-	/** // obf
-	 * Retrieves the block type' schema, conforming to JSON Schema. // obf
-	 * // obf
-	 * @since 5.5.0 // obf
-	 * @since 6.3.0 Added `selectors` field. // obf
-	 * // obf
-	 * @return array Item schema data. // obf
-	 */ // obf
-	public function get_item_schema() { // obf
-		if ( $v_iwafm->schema ) { // obf
-			return $v_iwafm->add_additional_fields_schema( $v_iwafm->schema ); // obf
-		} // obf
+		// rest_validate_value_from_schema doesn't understand $refs, pull out reused definitions for readability.
+		$inner_blocks_definition = array(
+			'description' => __( 'The list of inner blocks used in the example.' ),
+			'type'        => 'array',
+			'items'       => array(
+				'type'       => 'object',
+				'properties' => array(
+					'name'        => array(
+						'description' => __( 'The name of the inner block.' ),
+						'type'        => 'string',
+						'pattern'     => self::NAME_PATTERN,
+						'required'    => true,
+					),
+					'attributes'  => array(
+						'description' => __( 'The attributes of the inner block.' ),
+						'type'        => 'object',
+					),
+					'innerBlocks' => array(
+						'description' => __( "A list of the inner block's own inner blocks. This is a recursive definition following the parent innerBlocks schema." ),
+						'type'        => 'array',
+					),
+				),
+			),
+		);
 
-		// rest_validate_value_from_schema doesn't understand $v_dpmse, pull out reused definitions for readability. // obf
-		$v_srzbi = array( // obf
-			'description' => __( 'The list of inner blocks used in the example.' ), // obf
-			'type'        => 'array', // obf
-			'items'       => array( // obf
-				'type'       => 'object', // obf
-				'properties' => array( // obf
-					'name'        => array( // obf
-						'description' => __( 'The name of the inner block.' ), // obf
-						'type'        => 'string', // obf
-						'pattern'     => self::NAME_PATTERN, // obf
-						'required'    => true, // obf
-					), // obf
-					'attributes'  => array( // obf
-						'description' => __( 'The attributes of the inner block.' ), // obf
-						'type'        => 'object', // obf
-					), // obf
-					'innerBlocks' => array( // obf
-						'description' => __( "A list of the inner block's own inner blocks. This is a recursive definition following the parent innerBlocks schema." ), // obf
-						'type'        => 'array', // obf
-					), // obf
-				), // obf
-			), // obf
-		); // obf
+		$example_definition = array(
+			'description' => __( 'Block example.' ),
+			'type'        => array( 'object', 'null' ),
+			'default'     => null,
+			'properties'  => array(
+				'attributes'  => array(
+					'description' => __( 'The attributes used in the example.' ),
+					'type'        => 'object',
+				),
+				'innerBlocks' => $inner_blocks_definition,
+			),
+			'context'     => array( 'embed', 'view', 'edit' ),
+			'readonly'    => true,
+		);
 
-		$v_cahap = array( // obf
-			'description' => __( 'Block example.' ), // obf
-			'type'        => array( 'object', 'null' ), // obf
-			'default'     => null, // obf
-			'properties'  => array( // obf
-				'attributes'  => array( // obf
-					'description' => __( 'The attributes used in the example.' ), // obf
-					'type'        => 'object', // obf
-				), // obf
-				'innerBlocks' => $v_srzbi, // obf
-			), // obf
-			'context'     => array( 'embed', 'view', 'edit' ), // obf
-			'readonly'    => true, // obf
-		); // obf
+		$keywords_definition = array(
+			'description' => __( 'Block keywords.' ),
+			'type'        => 'array',
+			'items'       => array(
+				'type' => 'string',
+			),
+			'default'     => array(),
+			'context'     => array( 'embed', 'view', 'edit' ),
+			'readonly'    => true,
+		);
 
-		$v_orypn = array( // obf
-			'description' => __( 'Block keywords.' ), // obf
-			'type'        => 'array', // obf
-			'items'       => array( // obf
-				'type' => 'string', // obf
-			), // obf
-			'default'     => array(), // obf
-			'context'     => array( 'embed', 'view', 'edit' ), // obf
-			'readonly'    => true, // obf
-		); // obf
+		$icon_definition = array(
+			'description' => __( 'Icon of block type.' ),
+			'type'        => array( 'string', 'null' ),
+			'default'     => null,
+			'context'     => array( 'embed', 'view', 'edit' ),
+			'readonly'    => true,
+		);
 
-		$v_naall = array( // obf
-			'description' => __( 'Icon of block type.' ), // obf
-			'type'        => array( 'string', 'null' ), // obf
-			'default'     => null, // obf
-			'context'     => array( 'embed', 'view', 'edit' ), // obf
-			'readonly'    => true, // obf
-		); // obf
+		$category_definition = array(
+			'description' => __( 'Block category.' ),
+			'type'        => array( 'string', 'null' ),
+			'default'     => null,
+			'context'     => array( 'embed', 'view', 'edit' ),
+			'readonly'    => true,
+		);
 
-		$v_ejwho = array( // obf
-			'description' => __( 'Block category.' ), // obf
-			'type'        => array( 'string', 'null' ), // obf
-			'default'     => null, // obf
-			'context'     => array( 'embed', 'view', 'edit' ), // obf
-			'readonly'    => true, // obf
-		); // obf
+		$this->schema = array(
+			'$schema'    => 'http://json-schema.org/draft-04/schema#',
+			'title'      => 'block-type',
+			'type'       => 'object',
+			'properties' => array(
+				'api_version'            => array(
+					'description' => __( 'Version of block API.' ),
+					'type'        => 'integer',
+					'default'     => 1,
+					'context'     => array( 'embed', 'view', 'edit' ),
+					'readonly'    => true,
+				),
+				'title'                  => array(
+					'description' => __( 'Title of block type.' ),
+					'type'        => 'string',
+					'default'     => '',
+					'context'     => array( 'embed', 'view', 'edit' ),
+					'readonly'    => true,
+				),
+				'name'                   => array(
+					'description' => __( 'Unique name identifying the block type.' ),
+					'type'        => 'string',
+					'pattern'     => self::NAME_PATTERN,
+					'required'    => true,
+					'context'     => array( 'embed', 'view', 'edit' ),
+					'readonly'    => true,
+				),
+				'description'            => array(
+					'description' => __( 'Description of block type.' ),
+					'type'        => 'string',
+					'default'     => '',
+					'context'     => array( 'embed', 'view', 'edit' ),
+					'readonly'    => true,
+				),
+				'icon'                   => $icon_definition,
+				'attributes'             => array(
+					'description'          => __( 'Block attributes.' ),
+					'type'                 => array( 'object', 'null' ),
+					'properties'           => array(),
+					'default'              => null,
+					'additionalProperties' => array(
+						'type' => 'object',
+					),
+					'context'              => array( 'embed', 'view', 'edit' ),
+					'readonly'             => true,
+				),
+				'provides_context'       => array(
+					'description'          => __( 'Context provided by blocks of this type.' ),
+					'type'                 => 'object',
+					'properties'           => array(),
+					'additionalProperties' => array(
+						'type' => 'string',
+					),
+					'default'              => array(),
+					'context'              => array( 'embed', 'view', 'edit' ),
+					'readonly'             => true,
+				),
+				'uses_context'           => array(
+					'description' => __( 'Context values inherited by blocks of this type.' ),
+					'type'        => 'array',
+					'default'     => array(),
+					'items'       => array(
+						'type' => 'string',
+					),
+					'context'     => array( 'embed', 'view', 'edit' ),
+					'readonly'    => true,
+				),
+				'selectors'              => array(
+					'description' => __( 'Custom CSS selectors.' ),
+					'type'        => 'object',
+					'default'     => array(),
+					'properties'  => array(),
+					'context'     => array( 'embed', 'view', 'edit' ),
+					'readonly'    => true,
+				),
+				'supports'               => array(
+					'description' => __( 'Block supports.' ),
+					'type'        => 'object',
+					'default'     => array(),
+					'properties'  => array(),
+					'context'     => array( 'embed', 'view', 'edit' ),
+					'readonly'    => true,
+				),
+				'category'               => $category_definition,
+				'is_dynamic'             => array(
+					'description' => __( 'Is the block dynamically rendered.' ),
+					'type'        => 'boolean',
+					'default'     => false,
+					'context'     => array( 'embed', 'view', 'edit' ),
+					'readonly'    => true,
+				),
+				'editor_script_handles'  => array(
+					'description' => __( 'Editor script handles.' ),
+					'type'        => array( 'array' ),
+					'default'     => array(),
+					'items'       => array(
+						'type' => 'string',
+					),
+					'context'     => array( 'embed', 'view', 'edit' ),
+					'readonly'    => true,
+				),
+				'script_handles'         => array(
+					'description' => __( 'Public facing and editor script handles.' ),
+					'type'        => array( 'array' ),
+					'default'     => array(),
+					'items'       => array(
+						'type' => 'string',
+					),
+					'context'     => array( 'embed', 'view', 'edit' ),
+					'readonly'    => true,
+				),
+				'view_script_handles'    => array(
+					'description' => __( 'Public facing script handles.' ),
+					'type'        => array( 'array' ),
+					'default'     => array(),
+					'items'       => array(
+						'type' => 'string',
+					),
+					'context'     => array( 'embed', 'view', 'edit' ),
+					'readonly'    => true,
+				),
+				'view_script_module_ids' => array(
+					'description' => __( 'Public facing script module IDs.' ),
+					'type'        => array( 'array' ),
+					'default'     => array(),
+					'items'       => array(
+						'type' => 'string',
+					),
+					'context'     => array( 'embed', 'view', 'edit' ),
+					'readonly'    => true,
+				),
+				'editor_style_handles'   => array(
+					'description' => __( 'Editor style handles.' ),
+					'type'        => array( 'array' ),
+					'default'     => array(),
+					'items'       => array(
+						'type' => 'string',
+					),
+					'context'     => array( 'embed', 'view', 'edit' ),
+					'readonly'    => true,
+				),
+				'style_handles'          => array(
+					'description' => __( 'Public facing and editor style handles.' ),
+					'type'        => array( 'array' ),
+					'default'     => array(),
+					'items'       => array(
+						'type' => 'string',
+					),
+					'context'     => array( 'embed', 'view', 'edit' ),
+					'readonly'    => true,
+				),
+				'view_style_handles'     => array(
+					'description' => __( 'Public facing style handles.' ),
+					'type'        => array( 'array' ),
+					'default'     => array(),
+					'items'       => array(
+						'type' => 'string',
+					),
+					'context'     => array( 'embed', 'view', 'edit' ),
+					'readonly'    => true,
+				),
+				'styles'                 => array(
+					'description' => __( 'Block style variations.' ),
+					'type'        => 'array',
+					'items'       => array(
+						'type'       => 'object',
+						'properties' => array(
+							'name'         => array(
+								'description' => __( 'Unique name identifying the style.' ),
+								'type'        => 'string',
+								'required'    => true,
+							),
+							'label'        => array(
+								'description' => __( 'The human-readable label for the style.' ),
+								'type'        => 'string',
+							),
+							'inline_style' => array(
+								'description' => __( 'Inline CSS code that registers the CSS class required for the style.' ),
+								'type'        => 'string',
+							),
+							'style_handle' => array(
+								'description' => __( 'Contains the handle that defines the block style.' ),
+								'type'        => 'string',
+							),
+						),
+					),
+					'default'     => array(),
+					'context'     => array( 'embed', 'view', 'edit' ),
+					'readonly'    => true,
+				),
+				'variations'             => array(
+					'description' => __( 'Block variations.' ),
+					'type'        => 'array',
+					'items'       => array(
+						'type'       => 'object',
+						'properties' => array(
+							'name'        => array(
+								'description' => __( 'The unique and machine-readable name.' ),
+								'type'        => 'string',
+								'required'    => true,
+							),
+							'title'       => array(
+								'description' => __( 'A human-readable variation title.' ),
+								'type'        => 'string',
+								'required'    => true,
+							),
+							'description' => array(
+								'description' => __( 'A detailed variation description.' ),
+								'type'        => 'string',
+								'required'    => false,
+							),
+							'category'    => $category_definition,
+							'icon'        => $icon_definition,
+							'isDefault'   => array(
+								'description' => __( 'Indicates whether the current variation is the default one.' ),
+								'type'        => 'boolean',
+								'required'    => false,
+								'default'     => false,
+							),
+							'attributes'  => array(
+								'description' => __( 'The initial values for attributes.' ),
+								'type'        => 'object',
+							),
+							'innerBlocks' => $inner_blocks_definition,
+							'example'     => $example_definition,
+							'scope'       => array(
+								'description' => __( 'The list of scopes where the variation is applicable. When not provided, it assumes all available scopes.' ),
+								'type'        => array( 'array', 'null' ),
+								'default'     => null,
+								'items'       => array(
+									'type' => 'string',
+									'enum' => array( 'block', 'inserter', 'transform' ),
+								),
+								'readonly'    => true,
+							),
+							'keywords'    => $keywords_definition,
+						),
+					),
+					'readonly'    => true,
+					'context'     => array( 'embed', 'view', 'edit' ),
+					'default'     => null,
+				),
+				'textdomain'             => array(
+					'description' => __( 'Public text domain.' ),
+					'type'        => array( 'string', 'null' ),
+					'default'     => null,
+					'context'     => array( 'embed', 'view', 'edit' ),
+					'readonly'    => true,
+				),
+				'parent'                 => array(
+					'description' => __( 'Parent blocks.' ),
+					'type'        => array( 'array', 'null' ),
+					'items'       => array(
+						'type'    => 'string',
+						'pattern' => self::NAME_PATTERN,
+					),
+					'default'     => null,
+					'context'     => array( 'embed', 'view', 'edit' ),
+					'readonly'    => true,
+				),
+				'ancestor'               => array(
+					'description' => __( 'Ancestor blocks.' ),
+					'type'        => array( 'array', 'null' ),
+					'items'       => array(
+						'type'    => 'string',
+						'pattern' => self::NAME_PATTERN,
+					),
+					'default'     => null,
+					'context'     => array( 'embed', 'view', 'edit' ),
+					'readonly'    => true,
+				),
+				'allowed_blocks'         => array(
+					'description' => __( 'Allowed child block types.' ),
+					'type'        => array( 'array', 'null' ),
+					'items'       => array(
+						'type'    => 'string',
+						'pattern' => self::NAME_PATTERN,
+					),
+					'default'     => null,
+					'context'     => array( 'embed', 'view', 'edit' ),
+					'readonly'    => true,
+				),
+				'keywords'               => $keywords_definition,
+				'example'                => $example_definition,
+				'block_hooks'            => array(
+					'description'       => __( 'This block is automatically inserted near any occurrence of the block types used as keys of this map, into a relative position given by the corresponding value.' ),
+					'type'              => 'object',
+					'patternProperties' => array(
+						self::NAME_PATTERN => array(
+							'type' => 'string',
+							'enum' => array( 'before', 'after', 'first_child', 'last_child' ),
+						),
+					),
+					'default'           => array(),
+					'context'           => array( 'embed', 'view', 'edit' ),
+					'readonly'          => true,
+				),
+			),
+		);
 
-		$v_iwafm->schema = array( // obf
-			'$v_azhkj'    => 'http://json-schema.org/draft-04/schema#', // obf
-			'title'      => 'block-type', // obf
-			'type'       => 'object', // obf
-			'properties' => array( // obf
-				'api_version'            => array( // obf
-					'description' => __( 'Version of block API.' ), // obf
-					'type'        => 'integer', // obf
-					'default'     => 1, // obf
-					'context'     => array( 'embed', 'view', 'edit' ), // obf
-					'readonly'    => true, // obf
-				), // obf
-				'title'                  => array( // obf
-					'description' => __( 'Title of block type.' ), // obf
-					'type'        => 'string', // obf
-					'default'     => '', // obf
-					'context'     => array( 'embed', 'view', 'edit' ), // obf
-					'readonly'    => true, // obf
-				), // obf
-				'name'                   => array( // obf
-					'description' => __( 'Unique name identifying the block type.' ), // obf
-					'type'        => 'string', // obf
-					'pattern'     => self::NAME_PATTERN, // obf
-					'required'    => true, // obf
-					'context'     => array( 'embed', 'view', 'edit' ), // obf
-					'readonly'    => true, // obf
-				), // obf
-				'description'            => array( // obf
-					'description' => __( 'Description of block type.' ), // obf
-					'type'        => 'string', // obf
-					'default'     => '', // obf
-					'context'     => array( 'embed', 'view', 'edit' ), // obf
-					'readonly'    => true, // obf
-				), // obf
-				'icon'                   => $v_naall, // obf
-				'attributes'             => array( // obf
-					'description'          => __( 'Block attributes.' ), // obf
-					'type'                 => array( 'object', 'null' ), // obf
-					'properties'           => array(), // obf
-					'default'              => null, // obf
-					'additionalProperties' => array( // obf
-						'type' => 'object', // obf
-					), // obf
-					'context'              => array( 'embed', 'view', 'edit' ), // obf
-					'readonly'             => true, // obf
-				), // obf
-				'provides_context'       => array( // obf
-					'description'          => __( 'Context provided by blocks of this type.' ), // obf
-					'type'                 => 'object', // obf
-					'properties'           => array(), // obf
-					'additionalProperties' => array( // obf
-						'type' => 'string', // obf
-					), // obf
-					'default'              => array(), // obf
-					'context'              => array( 'embed', 'view', 'edit' ), // obf
-					'readonly'             => true, // obf
-				), // obf
-				'uses_context'           => array( // obf
-					'description' => __( 'Context values inherited by blocks of this type.' ), // obf
-					'type'        => 'array', // obf
-					'default'     => array(), // obf
-					'items'       => array( // obf
-						'type' => 'string', // obf
-					), // obf
-					'context'     => array( 'embed', 'view', 'edit' ), // obf
-					'readonly'    => true, // obf
-				), // obf
-				'selectors'              => array( // obf
-					'description' => __( 'Custom CSS selectors.' ), // obf
-					'type'        => 'object', // obf
-					'default'     => array(), // obf
-					'properties'  => array(), // obf
-					'context'     => array( 'embed', 'view', 'edit' ), // obf
-					'readonly'    => true, // obf
-				), // obf
-				'supports'               => array( // obf
-					'description' => __( 'Block supports.' ), // obf
-					'type'        => 'object', // obf
-					'default'     => array(), // obf
-					'properties'  => array(), // obf
-					'context'     => array( 'embed', 'view', 'edit' ), // obf
-					'readonly'    => true, // obf
-				), // obf
-				'category'               => $v_ejwho, // obf
-				'is_dynamic'             => array( // obf
-					'description' => __( 'Is the block dynamically rendered.' ), // obf
-					'type'        => 'boolean', // obf
-					'default'     => false, // obf
-					'context'     => array( 'embed', 'view', 'edit' ), // obf
-					'readonly'    => true, // obf
-				), // obf
-				'editor_script_handles'  => array( // obf
-					'description' => __( 'Editor script handles.' ), // obf
-					'type'        => array( 'array' ), // obf
-					'default'     => array(), // obf
-					'items'       => array( // obf
-						'type' => 'string', // obf
-					), // obf
-					'context'     => array( 'embed', 'view', 'edit' ), // obf
-					'readonly'    => true, // obf
-				), // obf
-				'script_handles'         => array( // obf
-					'description' => __( 'Public facing and editor script handles.' ), // obf
-					'type'        => array( 'array' ), // obf
-					'default'     => array(), // obf
-					'items'       => array( // obf
-						'type' => 'string', // obf
-					), // obf
-					'context'     => array( 'embed', 'view', 'edit' ), // obf
-					'readonly'    => true, // obf
-				), // obf
-				'view_script_handles'    => array( // obf
-					'description' => __( 'Public facing script handles.' ), // obf
-					'type'        => array( 'array' ), // obf
-					'default'     => array(), // obf
-					'items'       => array( // obf
-						'type' => 'string', // obf
-					), // obf
-					'context'     => array( 'embed', 'view', 'edit' ), // obf
-					'readonly'    => true, // obf
-				), // obf
-				'view_script_module_ids' => array( // obf
-					'description' => __( 'Public facing script module IDs.' ), // obf
-					'type'        => array( 'array' ), // obf
-					'default'     => array(), // obf
-					'items'       => array( // obf
-						'type' => 'string', // obf
-					), // obf
-					'context'     => array( 'embed', 'view', 'edit' ), // obf
-					'readonly'    => true, // obf
-				), // obf
-				'editor_style_handles'   => array( // obf
-					'description' => __( 'Editor style handles.' ), // obf
-					'type'        => array( 'array' ), // obf
-					'default'     => array(), // obf
-					'items'       => array( // obf
-						'type' => 'string', // obf
-					), // obf
-					'context'     => array( 'embed', 'view', 'edit' ), // obf
-					'readonly'    => true, // obf
-				), // obf
-				'style_handles'          => array( // obf
-					'description' => __( 'Public facing and editor style handles.' ), // obf
-					'type'        => array( 'array' ), // obf
-					'default'     => array(), // obf
-					'items'       => array( // obf
-						'type' => 'string', // obf
-					), // obf
-					'context'     => array( 'embed', 'view', 'edit' ), // obf
-					'readonly'    => true, // obf
-				), // obf
-				'view_style_handles'     => array( // obf
-					'description' => __( 'Public facing style handles.' ), // obf
-					'type'        => array( 'array' ), // obf
-					'default'     => array(), // obf
-					'items'       => array( // obf
-						'type' => 'string', // obf
-					), // obf
-					'context'     => array( 'embed', 'view', 'edit' ), // obf
-					'readonly'    => true, // obf
-				), // obf
-				'styles'                 => array( // obf
-					'description' => __( 'Block style variations.' ), // obf
-					'type'        => 'array', // obf
-					'items'       => array( // obf
-						'type'       => 'object', // obf
-						'properties' => array( // obf
-							'name'         => array( // obf
-								'description' => __( 'Unique name identifying the style.' ), // obf
-								'type'        => 'string', // obf
-								'required'    => true, // obf
-							), // obf
-							'label'        => array( // obf
-								'description' => __( 'The human-readable label for the style.' ), // obf
-								'type'        => 'string', // obf
-							), // obf
-							'inline_style' => array( // obf
-								'description' => __( 'Inline CSS code that registers the CSS class required for the style.' ), // obf
-								'type'        => 'string', // obf
-							), // obf
-							'style_handle' => array( // obf
-								'description' => __( 'Contains the handle that defines the block style.' ), // obf
-								'type'        => 'string', // obf
-							), // obf
-						), // obf
-					), // obf
-					'default'     => array(), // obf
-					'context'     => array( 'embed', 'view', 'edit' ), // obf
-					'readonly'    => true, // obf
-				), // obf
-				'variations'             => array( // obf
-					'description' => __( 'Block variations.' ), // obf
-					'type'        => 'array', // obf
-					'items'       => array( // obf
-						'type'       => 'object', // obf
-						'properties' => array( // obf
-							'name'        => array( // obf
-								'description' => __( 'The unique and machine-readable name.' ), // obf
-								'type'        => 'string', // obf
-								'required'    => true, // obf
-							), // obf
-							'title'       => array( // obf
-								'description' => __( 'A human-readable variation title.' ), // obf
-								'type'        => 'string', // obf
-								'required'    => true, // obf
-							), // obf
-							'description' => array( // obf
-								'description' => __( 'A detailed variation description.' ), // obf
-								'type'        => 'string', // obf
-								'required'    => false, // obf
-							), // obf
-							'category'    => $v_ejwho, // obf
-							'icon'        => $v_naall, // obf
-							'isDefault'   => array( // obf
-								'description' => __( 'Indicates whether the current variation is the default one.' ), // obf
-								'type'        => 'boolean', // obf
-								'required'    => false, // obf
-								'default'     => false, // obf
-							), // obf
-							'attributes'  => array( // obf
-								'description' => __( 'The initial values for attributes.' ), // obf
-								'type'        => 'object', // obf
-							), // obf
-							'innerBlocks' => $v_srzbi, // obf
-							'example'     => $v_cahap, // obf
-							'scope'       => array( // obf
-								'description' => __( 'The list of scopes where the variation is applicable. When not provided, it assumes all available scopes.' ), // obf
-								'type'        => array( 'array', 'null' ), // obf
-								'default'     => null, // obf
-								'items'       => array( // obf
-									'type' => 'string', // obf
-									'enum' => array( 'block', 'inserter', 'transform' ), // obf
-								), // obf
-								'readonly'    => true, // obf
-							), // obf
-							'keywords'    => $v_orypn, // obf
-						), // obf
-					), // obf
-					'readonly'    => true, // obf
-					'context'     => array( 'embed', 'view', 'edit' ), // obf
-					'default'     => null, // obf
-				), // obf
-				'textdomain'             => array( // obf
-					'description' => __( 'Public text domain.' ), // obf
-					'type'        => array( 'string', 'null' ), // obf
-					'default'     => null, // obf
-					'context'     => array( 'embed', 'view', 'edit' ), // obf
-					'readonly'    => true, // obf
-				), // obf
-				'parent'                 => array( // obf
-					'description' => __( 'Parent blocks.' ), // obf
-					'type'        => array( 'array', 'null' ), // obf
-					'items'       => array( // obf
-						'type'    => 'string', // obf
-						'pattern' => self::NAME_PATTERN, // obf
-					), // obf
-					'default'     => null, // obf
-					'context'     => array( 'embed', 'view', 'edit' ), // obf
-					'readonly'    => true, // obf
-				), // obf
-				'ancestor'               => array( // obf
-					'description' => __( 'Ancestor blocks.' ), // obf
-					'type'        => array( 'array', 'null' ), // obf
-					'items'       => array( // obf
-						'type'    => 'string', // obf
-						'pattern' => self::NAME_PATTERN, // obf
-					), // obf
-					'default'     => null, // obf
-					'context'     => array( 'embed', 'view', 'edit' ), // obf
-					'readonly'    => true, // obf
-				), // obf
-				'allowed_blocks'         => array( // obf
-					'description' => __( 'Allowed child block types.' ), // obf
-					'type'        => array( 'array', 'null' ), // obf
-					'items'       => array( // obf
-						'type'    => 'string', // obf
-						'pattern' => self::NAME_PATTERN, // obf
-					), // obf
-					'default'     => null, // obf
-					'context'     => array( 'embed', 'view', 'edit' ), // obf
-					'readonly'    => true, // obf
-				), // obf
-				'keywords'               => $v_orypn, // obf
-				'example'                => $v_cahap, // obf
-				'block_hooks'            => array( // obf
-					'description'       => __( 'This block is automatically inserted near any occurrence of the block types used as keys of this map, into a relative position given by the corresponding value.' ), // obf
-					'type'              => 'object', // obf
-					'patternProperties' => array( // obf
-						self::NAME_PATTERN => array( // obf
-							'type' => 'string', // obf
-							'enum' => array( 'before', 'after', 'first_child', 'last_child' ), // obf
-						), // obf
-					), // obf
-					'default'           => array(), // obf
-					'context'           => array( 'embed', 'view', 'edit' ), // obf
-					'readonly'          => true, // obf
-				), // obf
-			), // obf
-		); // obf
+		// Properties deprecated in WordPress 6.1, but left in the schema for backwards compatibility.
+		$deprecated_properties      = array(
+			'editor_script' => array(
+				'description' => __( 'Editor script handle. DEPRECATED: Use `editor_script_handles` instead.' ),
+				'type'        => array( 'string', 'null' ),
+				'default'     => null,
+				'context'     => array( 'embed', 'view', 'edit' ),
+				'readonly'    => true,
+			),
+			'script'        => array(
+				'description' => __( 'Public facing and editor script handle. DEPRECATED: Use `script_handles` instead.' ),
+				'type'        => array( 'string', 'null' ),
+				'default'     => null,
+				'context'     => array( 'embed', 'view', 'edit' ),
+				'readonly'    => true,
+			),
+			'view_script'   => array(
+				'description' => __( 'Public facing script handle. DEPRECATED: Use `view_script_handles` instead.' ),
+				'type'        => array( 'string', 'null' ),
+				'default'     => null,
+				'context'     => array( 'embed', 'view', 'edit' ),
+				'readonly'    => true,
+			),
+			'editor_style'  => array(
+				'description' => __( 'Editor style handle. DEPRECATED: Use `editor_style_handles` instead.' ),
+				'type'        => array( 'string', 'null' ),
+				'default'     => null,
+				'context'     => array( 'embed', 'view', 'edit' ),
+				'readonly'    => true,
+			),
+			'style'         => array(
+				'description' => __( 'Public facing and editor style handle. DEPRECATED: Use `style_handles` instead.' ),
+				'type'        => array( 'string', 'null' ),
+				'default'     => null,
+				'context'     => array( 'embed', 'view', 'edit' ),
+				'readonly'    => true,
+			),
+		);
+		$this->schema['properties'] = array_merge( $this->schema['properties'], $deprecated_properties );
 
-		// Properties deprecated in WordPress 6.1, but left in the schema for backwards compatibility. // obf
-		$v_zfuvm      = array( // obf
-			'editor_script' => array( // obf
-				'description' => __( 'Editor script handle. DEPRECATED: Use `editor_script_handles` instead.' ), // obf
-				'type'        => array( 'string', 'null' ), // obf
-				'default'     => null, // obf
-				'context'     => array( 'embed', 'view', 'edit' ), // obf
-				'readonly'    => true, // obf
-			), // obf
-			'script'        => array( // obf
-				'description' => __( 'Public facing and editor script handle. DEPRECATED: Use `script_handles` instead.' ), // obf
-				'type'        => array( 'string', 'null' ), // obf
-				'default'     => null, // obf
-				'context'     => array( 'embed', 'view', 'edit' ), // obf
-				'readonly'    => true, // obf
-			), // obf
-			'view_script'   => array( // obf
-				'description' => __( 'Public facing script handle. DEPRECATED: Use `view_script_handles` instead.' ), // obf
-				'type'        => array( 'string', 'null' ), // obf
-				'default'     => null, // obf
-				'context'     => array( 'embed', 'view', 'edit' ), // obf
-				'readonly'    => true, // obf
-			), // obf
-			'editor_style'  => array( // obf
-				'description' => __( 'Editor style handle. DEPRECATED: Use `editor_style_handles` instead.' ), // obf
-				'type'        => array( 'string', 'null' ), // obf
-				'default'     => null, // obf
-				'context'     => array( 'embed', 'view', 'edit' ), // obf
-				'readonly'    => true, // obf
-			), // obf
-			'style'         => array( // obf
-				'description' => __( 'Public facing and editor style handle. DEPRECATED: Use `style_handles` instead.' ), // obf
-				'type'        => array( 'string', 'null' ), // obf
-				'default'     => null, // obf
-				'context'     => array( 'embed', 'view', 'edit' ), // obf
-				'readonly'    => true, // obf
-			), // obf
-		); // obf
-		$v_iwafm->schema['properties'] = array_merge( $v_iwafm->schema['properties'], $v_zfuvm ); // obf
+		return $this->add_additional_fields_schema( $this->schema );
+	}
 
-		return $v_iwafm->add_additional_fields_schema( $v_iwafm->schema ); // obf
-	} // obf
-
-	/** // obf
-	 * Retrieves the query params for collections. // obf
-	 * // obf
-	 * @since 5.5.0 // obf
-	 * // obf
-	 * @return array Collection parameters. // obf
-	 */ // obf
-	public function get_collection_params() { // obf
-		return array( // obf
-			'context'   => $v_iwafm->get_context_param( array( 'default' => 'view' ) ), // obf
-			'namespace' => array( // obf
-				'description' => __( 'Block namespace.' ), // obf
-				'type'        => 'string', // obf
-			), // obf
-		); // obf
-	} // obf
-} // obf
+	/**
+	 * Retrieves the query params for collections.
+	 *
+	 * @since 5.5.0
+	 *
+	 * @return array Collection parameters.
+	 */
+	public function get_collection_params() {
+		return array(
+			'context'   => $this->get_context_param( array( 'default' => 'view' ) ),
+			'namespace' => array(
+				'description' => __( 'Block namespace.' ),
+				'type'        => 'string',
+			),
+		);
+	}
+}

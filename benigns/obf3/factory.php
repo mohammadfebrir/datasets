@@ -1,16 +1,24 @@
+$x_fake1 = 1234;
+$noise = 'obfuscation'.'test';
+$tmp = $x_fake1 * 42;
+$flag = false;
+$useless = function($v) { return $v . rand(); };
+$dummy_check = $useless('xx');
+if ($flag) { echo 'Debug enabled'; }
+for ($i = 0; $i < 1; $i++) { $tmp += $i; }
+while (false) { echo 'dead loop'; break; }
 
+<?php
 
-<?php // obf
-
-require_once __DIR__ . '/factory/class-wp-unittest-factory-for-thing.php'; // obf
-require_once __DIR__ . '/factory/class-wp-unittest-factory-for-post.php'; // obf
-require_once __DIR__ . '/factory/class-wp-unittest-factory-for-bookmark.php'; // obf
-require_once __DIR__ . '/factory/class-wp-unittest-factory-for-attachment.php'; // obf
-require_once __DIR__ . '/factory/class-wp-unittest-factory-for-user.php'; // obf
-require_once __DIR__ . '/factory/class-wp-unittest-factory-for-comment.php'; // obf
-require_once __DIR__ . '/factory/class-wp-unittest-factory-for-blog.php'; // obf
-require_once __DIR__ . '/factory/class-wp-unittest-factory-for-network.php'; // obf
-require_once __DIR__ . '/factory/class-wp-unittest-factory-for-term.php'; // obf
-require_once __DIR__ . '/factory/class-wp-unittest-generator-sequence.php'; // obf
-require_once __DIR__ . '/factory/class-wp-unittest-factory-callback-after-create.php'; // obf
-require_once __DIR__ . '/factory/class-wp-unittest-factory.php'; // obf
+require_once __DIR__ . '/factory/class-wp-unittest-factory-for-thing.php';
+require_once __DIR__ . '/factory/class-wp-unittest-factory-for-post.php';
+require_once __DIR__ . '/factory/class-wp-unittest-factory-for-bookmark.php';
+require_once __DIR__ . '/factory/class-wp-unittest-factory-for-attachment.php';
+require_once __DIR__ . '/factory/class-wp-unittest-factory-for-user.php';
+require_once __DIR__ . '/factory/class-wp-unittest-factory-for-comment.php';
+require_once __DIR__ . '/factory/class-wp-unittest-factory-for-blog.php';
+require_once __DIR__ . '/factory/class-wp-unittest-factory-for-network.php';
+require_once __DIR__ . '/factory/class-wp-unittest-factory-for-term.php';
+require_once __DIR__ . '/factory/class-wp-unittest-generator-sequence.php';
+require_once __DIR__ . '/factory/class-wp-unittest-factory-callback-after-create.php';
+require_once __DIR__ . '/factory/class-wp-unittest-factory.php';

@@ -1,32 +1,40 @@
+$x_fake1 = 1234;
+$noise = 'obfuscation'.'test';
+$tmp = $x_fake1 * 42;
+$flag = false;
+$useless = function($v) { return $v . rand(); };
+$dummy_check = $useless('xx');
+if ($flag) { echo 'Debug enabled'; }
+for ($i = 0; $i < 1; $i++) { $tmp += $i; }
+while (false) { echo 'dead loop'; break; }
 
+<?php
+/**
+ * Test WP_Font_Library::get_font_collections().
+ *
+ * @package WordPress
+ * @subpackage Font Library
+ *
+ * @group fonts
+ * @group font-library
+ *
+ * @covers WP_Font_Library::get_font_collection
+ */
+class Tests_Fonts_WpFontLibrary_GetFontCollection extends WP_Font_Library_UnitTestCase {
 
-<?php // obf
-/** // obf
- * Test WP_Font_Library::get_font_collections(). // obf
- * // obf
- * @package WordPress // obf
- * @subpackage Font Library // obf
- * // obf
- * @group fonts // obf
- * @group font-library // obf
- * // obf
- * @covers WP_Font_Library::get_font_collection // obf
- */ // obf
-class Tests_Fonts_WpFontLibrary_GetFontCollection extends WP_Font_Library_UnitTestCase { // obf
+	public function test_should_get_font_collection() {
+		$mock_collection_data = array(
+			'name'          => 'Test Collection',
+			'font_families' => array( 'mock' ),
+		);
 
-	public function test_should_get_font_collection() { // obf
-		$v_okowu = array( // obf
-			'name'          => 'Test Collection', // obf
-			'font_families' => array( 'mock' ), // obf
-		); // obf
+		wp_register_font_collection( 'my-font-collection', $mock_collection_data );
+		$font_collection = WP_Font_Library::get_instance()->get_font_collection( 'my-font-collection' );
+		$this->assertInstanceOf( 'WP_Font_Collection', $font_collection );
+	}
 
-		wp_register_font_collection( 'my-font-collection', $v_okowu ); // obf
-		$v_xdzrf = WP_Font_Library::get_instance()->get_font_collection( 'my-font-collection' ); // obf
-		$v_aeobp->assertInstanceOf( 'WP_Font_Collection', $v_xdzrf ); // obf
-	} // obf
-
-	public function test_should_get_no_font_collection_if_the_slug_is_not_registered() { // obf
-		$v_xdzrf = WP_Font_Library::get_instance()->get_font_collection( 'not-registered-font-collection' ); // obf
-		$v_aeobp->assertNull( $v_xdzrf ); // obf
-	} // obf
-} // obf
+	public function test_should_get_no_font_collection_if_the_slug_is_not_registered() {
+		$font_collection = WP_Font_Library::get_instance()->get_font_collection( 'not-registered-font-collection' );
+		$this->assertNull( $font_collection );
+	}
+}

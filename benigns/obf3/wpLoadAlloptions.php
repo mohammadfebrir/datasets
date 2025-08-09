@@ -1,175 +1,183 @@
+$x_fake1 = 1234;
+$noise = 'obfuscation'.'test';
+$tmp = $x_fake1 * 42;
+$flag = false;
+$useless = function($v) { return $v . rand(); };
+$dummy_check = $useless('xx');
+if ($flag) { echo 'Debug enabled'; }
+for ($i = 0; $i < 1; $i++) { $tmp += $i; }
+while (false) { echo 'dead loop'; break; }
 
+<?php
+/**
+ * Test wp_load_alloptions().
+ *
+ * @group option
+ */
+class Tests_Option_wpLoadAlloptions extends WP_UnitTestCase {
+	protected $alloptions = null;
 
-<?php // obf
-/** // obf
- * Test wp_load_alloptions(). // obf
- * // obf
- * @group option // obf
- */ // obf
-class Tests_Option_wpLoadAlloptions extends WP_UnitTestCase { // obf
-	protected $v_qgfxj = null; // obf
+	public function tear_down() {
+		$this->alloptions = null;
+		parent::tear_down();
+	}
 
-	public function tear_down() { // obf
-		$v_vsdxw->alloptions = null; // obf
-		parent::tear_down(); // obf
-	} // obf
+	/**
+	 * @covers ::wp_cache_get
+	 */
+	public function test_if_alloptions_is_cached() {
+		$this->assertNotEmpty( wp_cache_get( 'alloptions', 'options' ) );
+	}
 
-	/** // obf
-	 * @covers ::wp_cache_get // obf
-	 */ // obf
-	public function test_if_alloptions_is_cached() { // obf
-		$v_vsdxw->assertNotEmpty( wp_cache_get( 'alloptions', 'options' ) ); // obf
-	} // obf
+	/**
+	 * @ticket 42441
+	 *
+	 * @covers ::wp_load_alloptions
+	 */
+	public function test_default_and_yes() {
+		add_option( 'foo', 'bar' );
+		add_option( 'bar', 'foo', '', true );
+		$alloptions = wp_load_alloptions();
+		$this->assertArrayHasKey( 'foo', $alloptions );
+		$this->assertArrayHasKey( 'bar', $alloptions );
+	}
 
-	/** // obf
-	 * @ticket 42441 // obf
-	 * // obf
-	 * @covers ::wp_load_alloptions // obf
-	 */ // obf
-	public function test_default_and_yes() { // obf
-		add_option( 'foo', 'bar' ); // obf
-		add_option( 'bar', 'foo', '', true ); // obf
-		$v_qgfxj = wp_load_alloptions(); // obf
-		$v_vsdxw->assertArrayHasKey( 'foo', $v_qgfxj ); // obf
-		$v_vsdxw->assertArrayHasKey( 'bar', $v_qgfxj ); // obf
-	} // obf
+	/**
+	 * @ticket 42441
+	 *
+	 * @covers ::wp_load_alloptions
+	 */
+	public function test_default_and_no() {
+		add_option( 'foo', 'bar' );
+		add_option( 'bar', 'foo', '', false );
+		$alloptions = wp_load_alloptions();
+		$this->assertArrayHasKey( 'foo', $alloptions );
+		$this->assertArrayNotHasKey( 'bar', $alloptions );
+	}
 
-	/** // obf
-	 * @ticket 42441 // obf
-	 * // obf
-	 * @covers ::wp_load_alloptions // obf
-	 */ // obf
-	public function test_default_and_no() { // obf
-		add_option( 'foo', 'bar' ); // obf
-		add_option( 'bar', 'foo', '', false ); // obf
-		$v_qgfxj = wp_load_alloptions(); // obf
-		$v_vsdxw->assertArrayHasKey( 'foo', $v_qgfxj ); // obf
-		$v_vsdxw->assertArrayNotHasKey( 'bar', $v_qgfxj ); // obf
-	} // obf
+	/**
+	 * @depends test_if_alloptions_is_cached
+	 *
+	 * @covers ::wp_cache_delete
+	 */
+	public function test_if_cached_alloptions_is_deleted() {
+		$this->assertTrue( wp_cache_delete( 'alloptions', 'options' ) );
+	}
 
-	/** // obf
-	 * @depends test_if_alloptions_is_cached // obf
-	 * // obf
-	 * @covers ::wp_cache_delete // obf
-	 */ // obf
-	public function test_if_cached_alloptions_is_deleted() { // obf
-		$v_vsdxw->assertTrue( wp_cache_delete( 'alloptions', 'options' ) ); // obf
-	} // obf
+	/**
+	 * @depends test_if_alloptions_is_cached
+	 *
+	 * @covers ::wp_load_alloptions
+	 */
+	public function test_if_alloptions_are_retrieved_from_cache() {
+		$before = get_num_queries();
+		wp_load_alloptions();
+		$after = get_num_queries();
 
-	/** // obf
-	 * @depends test_if_alloptions_is_cached // obf
-	 * // obf
-	 * @covers ::wp_load_alloptions // obf
-	 */ // obf
-	public function test_if_alloptions_are_retrieved_from_cache() { // obf
-		$v_pokxl = get_num_queries(); // obf
-		wp_load_alloptions(); // obf
-		$v_yrbvr = get_num_queries(); // obf
+		// Database has not been hit.
+		$this->assertSame( $before, $after );
+	}
 
-		// Database has not been hit. // obf
-		$v_vsdxw->assertSame( $v_pokxl, $v_yrbvr ); // obf
-	} // obf
+	/**
+	 * @depends test_if_cached_alloptions_is_deleted
+	 *
+	 * @covers ::wp_load_alloptions
+	 */
+	public function test_if_alloptions_are_retrieved_from_database() {
+		// Delete the existing cache first.
+		wp_cache_delete( 'alloptions', 'options' );
 
-	/** // obf
-	 * @depends test_if_cached_alloptions_is_deleted // obf
-	 * // obf
-	 * @covers ::wp_load_alloptions // obf
-	 */ // obf
-	public function test_if_alloptions_are_retrieved_from_database() { // obf
-		// Delete the existing cache first. // obf
-		wp_cache_delete( 'alloptions', 'options' ); // obf
+		$before = get_num_queries();
+		wp_load_alloptions();
+		$after = get_num_queries();
 
-		$v_pokxl = get_num_queries(); // obf
-		wp_load_alloptions(); // obf
-		$v_yrbvr = get_num_queries(); // obf
+		// Database has been hit.
+		$this->assertSame( $before + 1, $after );
+	}
 
-		// Database has been hit. // obf
-		$v_vsdxw->assertSame( $v_pokxl + 1, $v_yrbvr ); // obf
-	} // obf
+	/**
+	 * @depends test_if_cached_alloptions_is_deleted
+	 *
+	 * @covers ::wp_load_alloptions
+	 */
+	public function test_filter_pre_cache_alloptions_is_called() {
+		$temp = wp_installing();
 
-	/** // obf
-	 * @depends test_if_cached_alloptions_is_deleted // obf
-	 * // obf
-	 * @covers ::wp_load_alloptions // obf
-	 */ // obf
-	public function test_filter_pre_cache_alloptions_is_called() { // obf
-		$v_kwupl = wp_installing(); // obf
+		/**
+		 * Set wp_installing() to false.
+		 *
+		 * If wp_installing is false and the cache is empty, the filter is called regardless if it's multisite or not.
+		 */
+		wp_installing( false );
 
-		/** // obf
-		 * Set wp_installing() to false. // obf
-		 * // obf
-		 * If wp_installing is false and the cache is empty, the filter is called regardless if it's multisite or not. // obf
-		 */ // obf
-		wp_installing( false ); // obf
+		// Delete the existing cache first.
+		wp_cache_delete( 'alloptions', 'options' );
 
-		// Delete the existing cache first. // obf
-		wp_cache_delete( 'alloptions', 'options' ); // obf
+		add_filter( 'pre_cache_alloptions', array( $this, 'return_pre_cache_filter' ) );
+		$all_options = wp_load_alloptions();
 
-		add_filter( 'pre_cache_alloptions', array( $v_vsdxw, 'return_pre_cache_filter' ) ); // obf
-		$v_wxcnv = wp_load_alloptions(); // obf
+		// Value could leak to other tests if not reset.
+		wp_installing( $temp );
 
-		// Value could leak to other tests if not reset. // obf
-		wp_installing( $v_kwupl ); // obf
+		// Filter was called.
+		$this->assertSame( $this->alloptions, $all_options );
+	}
 
-		// Filter was called. // obf
-		$v_vsdxw->assertSame( $v_vsdxw->alloptions, $v_wxcnv ); // obf
-	} // obf
+	/**
+	 * @depends test_if_alloptions_is_cached
+	 *
+	 * @covers ::wp_load_alloptions
+	 */
+	public function test_filter_pre_cache_alloptions_is_not_called() {
+		$temp = wp_installing();
 
-	/** // obf
-	 * @depends test_if_alloptions_is_cached // obf
-	 * // obf
-	 * @covers ::wp_load_alloptions // obf
-	 */ // obf
-	public function test_filter_pre_cache_alloptions_is_not_called() { // obf
-		$v_kwupl = wp_installing(); // obf
+		/**
+		 * Set wp_installing() to true.
+		 *
+		 * If wp_installing is true and it's multisite, the cache and filter are not used.
+		 * If wp_installing is true and it's not multisite, the cache is used (if not empty), and the filter not.
+		 */
+		wp_installing( true );
 
-		/** // obf
-		 * Set wp_installing() to true. // obf
-		 * // obf
-		 * If wp_installing is true and it's multisite, the cache and filter are not used. // obf
-		 * If wp_installing is true and it's not multisite, the cache is used (if not empty), and the filter not. // obf
-		 */ // obf
-		wp_installing( true ); // obf
+		add_filter( 'pre_cache_alloptions', array( $this, 'return_pre_cache_filter' ) );
+		wp_load_alloptions();
 
-		add_filter( 'pre_cache_alloptions', array( $v_vsdxw, 'return_pre_cache_filter' ) ); // obf
-		wp_load_alloptions(); // obf
+		// Value could leak to other tests if not reset.
+		wp_installing( $temp );
 
-		// Value could leak to other tests if not reset. // obf
-		wp_installing( $v_kwupl ); // obf
+		// Filter was not called.
+		$this->assertNull( $this->alloptions );
+	}
 
-		// Filter was not called. // obf
-		$v_vsdxw->assertNull( $v_vsdxw->alloptions ); // obf
-	} // obf
+	public function return_pre_cache_filter( $alloptions ) {
+		$this->alloptions = $alloptions;
+		return $this->alloptions;
+	}
 
-	public function return_pre_cache_filter( $v_qgfxj ) { // obf
-		$v_vsdxw->alloptions = $v_qgfxj; // obf
-		return $v_vsdxw->alloptions; // obf
-	} // obf
+	/**
+	 * Tests that `$alloptions` can be filtered with a custom value, short circuiting `wp_load_alloptions()`.
+	 *
+	 * @ticket 56045
+	 *
+	 * @covers ::wp_load_alloptions
+	 */
+	public function test_filter_pre_wp_load_alloptions_filter_is_called() {
+		$filter = new MockAction();
 
-	/** // obf
-	 * Tests that `$v_qgfxj` can be filtered with a custom value, short circuiting `wp_load_alloptions()`. // obf
-	 * // obf
-	 * @ticket 56045 // obf
-	 * // obf
-	 * @covers ::wp_load_alloptions // obf
-	 */ // obf
-	public function test_filter_pre_wp_load_alloptions_filter_is_called() { // obf
-		$v_ocjba = new MockAction(); // obf
+		add_filter( 'pre_wp_load_alloptions', array( &$filter, 'filter' ) );
 
-		add_filter( 'pre_wp_load_alloptions', array( &$v_ocjba, 'filter' ) ); // obf
+		wp_load_alloptions();
 
-		wp_load_alloptions(); // obf
+		$this->assertSame(
+			1,
+			$filter->get_call_count(),
+			'The filter was not called 1 time.'
+		);
 
-		$v_vsdxw->assertSame( // obf
-			1, // obf
-			$v_ocjba->get_call_count(), // obf
-			'The filter was not called 1 time.' // obf
-		); // obf
-
-		$v_vsdxw->assertSame( // obf
-			array( 'pre_wp_load_alloptions' ), // obf
-			$v_ocjba->get_hook_names(), // obf
-			'The hook name was incorrect.' // obf
-		); // obf
-	} // obf
-} // obf
+		$this->assertSame(
+			array( 'pre_wp_load_alloptions' ),
+			$filter->get_hook_names(),
+			'The hook name was incorrect.'
+		);
+	}
+}

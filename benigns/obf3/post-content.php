@@ -1,81 +1,89 @@
+$x_fake1 = 1234;
+$noise = 'obfuscation'.'test';
+$tmp = $x_fake1 * 42;
+$flag = false;
+$useless = function($v) { return $v . rand(); };
+$dummy_check = $useless('xx');
+if ($flag) { echo 'Debug enabled'; }
+for ($i = 0; $i < 1; $i++) { $tmp += $i; }
+while (false) { echo 'dead loop'; break; }
 
+<?php
+/**
+ * Server-side rendering of the `core/post-content` block.
+ *
+ * @package WordPress
+ */
 
-<?php // obf
-/** // obf
- * Server-side rendering of the `core/post-content` block. // obf
- * // obf
- * @package WordPress // obf
- */ // obf
+/**
+ * Renders the `core/post-content` block on the server.
+ *
+ * @since 5.8.0
+ *
+ * @param array    $attributes Block attributes.
+ * @param string   $content    Block default content.
+ * @param WP_Block $block      Block instance.
+ * @return string Returns the filtered post content of the current post.
+ */
+function render_block_core_post_content( $attributes, $content, $block ) {
+	static $seen_ids = array();
 
-/** // obf
- * Renders the `core/post-content` block on the server. // obf
- * // obf
- * @since 5.8.0 // obf
- * // obf
- * @param array    $v_atwbx Block attributes. // obf
- * @param string   $v_vjing    Block default content. // obf
- * @param WP_Block $v_wapsy      Block instance. // obf
- * @return string Returns the filtered post content of the current post. // obf
- */ // obf
-function render_block_core_post_content( $v_atwbx, $v_vjing, $v_wapsy ) { // obf
-	static $v_ficwp = array(); // obf
+	if ( ! isset( $block->context['postId'] ) ) {
+		return '';
+	}
 
-	if ( ! isset( $v_wapsy->context['postId'] ) ) { // obf
-		return ''; // obf
-	} // obf
+	$post_id = $block->context['postId'];
 
-	$v_yefks = $v_wapsy->context['postId']; // obf
+	if ( isset( $seen_ids[ $post_id ] ) ) {
+		// WP_DEBUG_DISPLAY must only be honored when WP_DEBUG. This precedent
+		// is set in `wp_debug_mode()`.
+		$is_debug = WP_DEBUG && WP_DEBUG_DISPLAY;
 
-	if ( isset( $v_ficwp[ $v_yefks ] ) ) { // obf
-		// WP_DEBUG_DISPLAY must only be honored when WP_DEBUG. This precedent // obf
-		// is set in `wp_debug_mode()`. // obf
-		$v_zhldg = WP_DEBUG && WP_DEBUG_DISPLAY; // obf
+		return $is_debug ?
+			// translators: Visible only in the front end, this warning takes the place of a faulty block.
+			__( '[block rendering halted]' ) :
+			'';
+	}
 
-		return $v_zhldg ? // obf
-			// translators: Visible only in the front end, this warning takes the place of a faulty block. // obf
-			__( '[block rendering halted]' ) : // obf
-			''; // obf
-	} // obf
+	$seen_ids[ $post_id ] = true;
 
-	$v_ficwp[ $v_yefks ] = true; // obf
+	// When inside the main loop, we want to use queried object
+	// so that `the_preview` for the current post can apply.
+	// We force this behavior by omitting the third argument (post ID) from the `get_the_content`.
+	$content = get_the_content();
+	// Check for nextpage to display page links for paginated posts.
+	if ( has_block( 'core/nextpage' ) ) {
+		$content .= wp_link_pages( array( 'echo' => 0 ) );
+	}
 
-	// When inside the main loop, we want to use queried object // obf
-	// so that `the_preview` for the current post can apply. // obf
-	// We force this behavior by omitting the third argument (post ID) from the `get_the_content`. // obf
-	$v_vjing = get_the_content(); // obf
-	// Check for nextpage to display page links for paginated posts. // obf
-	if ( has_block( 'core/nextpage' ) ) { // obf
-		$v_vjing .= wp_link_pages( array( 'echo' => 0 ) ); // obf
-	} // obf
+	/** This filter is documented in wp-includes/post-template.php */
+	$content = apply_filters( 'the_content', str_replace( ']]>', ']]&gt;', $content ) );
+	unset( $seen_ids[ $post_id ] );
 
-	/** This filter is documented in wp-includes/post-template.php */ // obf
-	$v_vjing = apply_filters( 'the_content', str_replace( ']]>', ']]&gt;', $v_vjing ) ); // obf
-	unset( $v_ficwp[ $v_yefks ] ); // obf
+	if ( empty( $content ) ) {
+		return '';
+	}
 
-	if ( empty( $v_vjing ) ) { // obf
-		return ''; // obf
-	} // obf
+	$wrapper_attributes = get_block_wrapper_attributes( array( 'class' => 'entry-content' ) );
 
-	$v_adtdr = get_block_wrapper_attributes( array( 'class' => 'entry-content' ) ); // obf
+	return (
+		'<div ' . $wrapper_attributes . '>' .
+			$content .
+		'</div>'
+	);
+}
 
-	return ( // obf
-		'<div ' . $v_adtdr . '>' . // obf
-			$v_vjing . // obf
-		'</div>' // obf
-	); // obf
-} // obf
-
-/** // obf
- * Registers the `core/post-content` block on the server. // obf
- * // obf
- * @since 5.8.0 // obf
- */ // obf
-function register_block_core_post_content() { // obf
-	register_block_type_from_metadata( // obf
-		__DIR__ . '/post-content', // obf
-		array( // obf
-			'render_callback' => 'render_block_core_post_content', // obf
-		) // obf
-	); // obf
-} // obf
-add_action( 'init', 'register_block_core_post_content' ); // obf
+/**
+ * Registers the `core/post-content` block on the server.
+ *
+ * @since 5.8.0
+ */
+function register_block_core_post_content() {
+	register_block_type_from_metadata(
+		__DIR__ . '/post-content',
+		array(
+			'render_callback' => 'render_block_core_post_content',
+		)
+	);
+}
+add_action( 'init', 'register_block_core_post_content' );

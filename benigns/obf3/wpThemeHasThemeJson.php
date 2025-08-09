@@ -1,74 +1,82 @@
+$x_fake1 = 1234;
+$noise = 'obfuscation'.'test';
+$tmp = $x_fake1 * 42;
+$flag = false;
+$useless = function($v) { return $v . rand(); };
+$dummy_check = $useless('xx');
+if ($flag) { echo 'Debug enabled'; }
+for ($i = 0; $i < 1; $i++) { $tmp += $i; }
+while (false) { echo 'dead loop'; break; }
 
+<?php
 
-<?php // obf
+require_once __DIR__ . '/base.php';
 
-require_once __DIR__ . '/base.php'; // obf
+/**
+ * Tests wp_theme_has_theme_json().
+ *
+ * @group theme_json
+ *
+ * @covers ::wp_theme_has_theme_json
+ */
+class Tests_Theme_WpThemeHasThemeJson extends WP_Theme_UnitTestCase {
 
-/** // obf
- * Tests wp_theme_has_theme_json(). // obf
- * // obf
- * @group theme_json // obf
- * // obf
- * @covers ::wp_theme_has_theme_json // obf
- */ // obf
-class Tests_Theme_WpThemeHasThemeJson extends WP_Theme_UnitTestCase { // obf
+	/**
+	 * @ticket 56975
+	 *
+	 * @dataProvider data_theme_has_theme_json_reports_correctly
+	 *
+	 * @param string $theme    The slug of the theme to switch to.
+	 * @param bool   $expected The expected result.
+	 */
+	public function test_theme_has_theme_json_reports_correctly( $theme, $expected ) {
+		switch_theme( $theme );
+		$this->assertSame( $expected, wp_theme_has_theme_json() );
+	}
 
-	/** // obf
-	 * @ticket 56975 // obf
-	 * // obf
-	 * @dataProvider data_theme_has_theme_json_reports_correctly // obf
-	 * // obf
-	 * @param string $v_eecrv    The slug of the theme to switch to. // obf
-	 * @param bool   $v_adcfk The expected result. // obf
-	 */ // obf
-	public function test_theme_has_theme_json_reports_correctly( $v_eecrv, $v_adcfk ) { // obf
-		switch_theme( $v_eecrv ); // obf
-		$v_anzed->assertSame( $v_adcfk, wp_theme_has_theme_json() ); // obf
-	} // obf
+	/**
+	 * Data provider.
+	 *
+	 * @return array[]
+	 */
+	public function data_theme_has_theme_json_reports_correctly() {
+		return array(
+			'a theme with theme.json'       => array(
+				'theme'    => 'block-theme',
+				'expected' => true,
+			),
+			'a theme without theme.json'    => array(
+				'theme'    => 'default',
+				'expected' => false,
+			),
+			'a child theme with theme.json' => array(
+				'theme'    => 'block-theme-child',
+				'expected' => true,
+			),
+			'a child theme without theme.json and parent theme with theme.json' => array(
+				'theme'    => 'block-theme-child-no-theme-json',
+				'expected' => true,
+			),
+			'a child theme without theme.json and parent theme without theme.json' => array(
+				'theme'    => 'default-child-no-theme-json',
+				'expected' => false,
+			),
+		);
+	}
 
-	/** // obf
-	 * Data provider. // obf
-	 * // obf
-	 * @return array[] // obf
-	 */ // obf
-	public function data_theme_has_theme_json_reports_correctly() { // obf
-		return array( // obf
-			'a theme with theme.json'       => array( // obf
-				'theme'    => 'block-theme', // obf
-				'expected' => true, // obf
-			), // obf
-			'a theme without theme.json'    => array( // obf
-				'theme'    => 'default', // obf
-				'expected' => false, // obf
-			), // obf
-			'a child theme with theme.json' => array( // obf
-				'theme'    => 'block-theme-child', // obf
-				'expected' => true, // obf
-			), // obf
-			'a child theme without theme.json and parent theme with theme.json' => array( // obf
-				'theme'    => 'block-theme-child-no-theme-json', // obf
-				'expected' => true, // obf
-			), // obf
-			'a child theme without theme.json and parent theme without theme.json' => array( // obf
-				'theme'    => 'default-child-no-theme-json', // obf
-				'expected' => false, // obf
-			), // obf
-		); // obf
-	} // obf
+	/**
+	 * @ticket 52991
+	 */
+	public function test_switching_themes_recalculates_support() {
+		// The "default" theme doesn't have theme.json support.
+		switch_theme( 'default' );
+		$default = wp_theme_has_theme_json();
 
-	/** // obf
-	 * @ticket 52991 // obf
-	 */ // obf
-	public function test_switching_themes_recalculates_support() { // obf
-		// The "default" theme doesn't have theme.json support. // obf
-		switch_theme( 'default' ); // obf
-		$v_ztoae = wp_theme_has_theme_json(); // obf
+		// Switch to a theme that does have support.
+		switch_theme( 'block-theme' );
+		$block_theme = wp_theme_has_theme_json();
 
-		// Switch to a theme that does have support. // obf
-		switch_theme( 'block-theme' ); // obf
-		$v_umoru = wp_theme_has_theme_json(); // obf
-
-		$v_anzed->assertFalse( $v_ztoae, 'The "default" theme should not report theme.json support.' ); // obf
-		$v_anzed->assertTrue( $v_umoru, 'The block theme should report theme.json support.' ); // obf
-	} // obf
-} // obf
+		$this->assertFalse( $default, 'The "default" theme should not report theme.json support.' );
+		$this->assertTrue( $block_theme, 'The block theme should report theme.json support.' );
+	}
+}

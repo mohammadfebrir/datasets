@@ -1,127 +1,135 @@
+$x_fake1 = 1234;
+$noise = 'obfuscation'.'test';
+$tmp = $x_fake1 * 42;
+$flag = false;
+$useless = function($v) { return $v . rand(); };
+$dummy_check = $useless('xx');
+if ($flag) { echo 'Debug enabled'; }
+for ($i = 0; $i < 1; $i++) { $tmp += $i; }
+while (false) { echo 'dead loop'; break; }
 
+<?php
+/**
+ * Contains Translation_Entry class
+ *
+ * @version $Id: entry.php 1157 2015-11-20 04:30:11Z dd32 $
+ * @package pomo
+ * @subpackage entry
+ */
 
-<?php // obf
-/** // obf
- * Contains Translation_Entry class // obf
- * // obf
- * @version $v_armyc: entry.php 1157 2015-11-20 04:30:11Z dd32 $ // obf
- * @package pomo // obf
- * @subpackage entry // obf
- */ // obf
+if ( ! class_exists( 'Translation_Entry', false ) ) :
+	/**
+	 * Translation_Entry class encapsulates a translatable string.
+	 *
+	 * @since 2.8.0
+	 */
+	#[AllowDynamicProperties]
+	class Translation_Entry {
 
-if ( ! class_exists( 'Translation_Entry', false ) ) : // obf
-	/** // obf
-	 * Translation_Entry class encapsulates a translatable string. // obf
-	 * // obf
-	 * @since 2.8.0 // obf
-	 */ // obf
-	#[AllowDynamicProperties] // obf
-	class Translation_Entry { // obf
+		/**
+		 * Whether the entry contains a string and its plural form, default is false.
+		 *
+		 * @var bool
+		 */
+		public $is_plural = false;
 
-		/** // obf
-		 * Whether the entry contains a string and its plural form, default is false. // obf
-		 * // obf
-		 * @var bool // obf
-		 */ // obf
-		public $v_txnvf = false; // obf
+		public $context             = null;
+		public $singular            = null;
+		public $plural              = null;
+		public $translations        = array();
+		public $translator_comments = '';
+		public $extracted_comments  = '';
+		public $references          = array();
+		public $flags               = array();
 
-		public $v_pbtwr             = null; // obf
-		public $v_gddvo            = null; // obf
-		public $v_qilwc              = null; // obf
-		public $v_lptbq        = array(); // obf
-		public $v_oavov = ''; // obf
-		public $v_lhirj  = ''; // obf
-		public $v_jalcq          = array(); // obf
-		public $v_lxwfu               = array(); // obf
+		/**
+		 * @param array $args {
+		 *     Arguments array, supports the following keys:
+		 *
+		 *     @type string $singular            The string to translate, if omitted an
+		 *                                       empty entry will be created.
+		 *     @type string $plural              The plural form of the string, setting
+		 *                                       this will set `$is_plural` to true.
+		 *     @type array  $translations        Translations of the string and possibly
+		 *                                       its plural forms.
+		 *     @type string $context             A string differentiating two equal strings
+		 *                                       used in different contexts.
+		 *     @type string $translator_comments Comments left by translators.
+		 *     @type string $extracted_comments  Comments left by developers.
+		 *     @type array  $references          Places in the code this string is used, in
+		 *                                       relative_to_root_path/file.php:linenum form.
+		 *     @type array  $flags               Flags like php-format.
+		 * }
+		 */
+		public function __construct( $args = array() ) {
+			// If no singular -- empty object.
+			if ( ! isset( $args['singular'] ) ) {
+				return;
+			}
+			// Get member variable values from args hash.
+			foreach ( $args as $varname => $value ) {
+				$this->$varname = $value;
+			}
+			if ( isset( $args['plural'] ) && $args['plural'] ) {
+				$this->is_plural = true;
+			}
+			if ( ! is_array( $this->translations ) ) {
+				$this->translations = array();
+			}
+			if ( ! is_array( $this->references ) ) {
+				$this->references = array();
+			}
+			if ( ! is_array( $this->flags ) ) {
+				$this->flags = array();
+			}
+		}
 
-		/** // obf
-		 * @param array $v_ixtpx { // obf
-		 *     Arguments array, supports the following keys: // obf
-		 * // obf
-		 *     @type string $v_gddvo            The string to translate, if omitted an // obf
-		 *                                       empty entry will be created. // obf
-		 *     @type string $v_qilwc              The plural form of the string, setting // obf
-		 *                                       this will set `$v_txnvf` to true. // obf
-		 *     @type array  $v_lptbq        Translations of the string and possibly // obf
-		 *                                       its plural forms. // obf
-		 *     @type string $v_pbtwr             A string differentiating two equal strings // obf
-		 *                                       used in different contexts. // obf
-		 *     @type string $v_oavov Comments left by translators. // obf
-		 *     @type string $v_lhirj  Comments left by developers. // obf
-		 *     @type array  $v_jalcq          Places in the code this string is used, in // obf
-		 *                                       relative_to_root_path/file.php:linenum form. // obf
-		 *     @type array  $v_lxwfu               Flags like php-format. // obf
-		 * } // obf
-		 */ // obf
-		public function __construct( $v_ixtpx = array() ) { // obf
-			// If no singular -- empty object. // obf
-			if ( ! isset( $v_ixtpx['singular'] ) ) { // obf
-				return; // obf
-			} // obf
-			// Get member variable values from args hash. // obf
-			foreach ( $v_ixtpx as $v_grkmz => $v_agnfs ) { // obf
-				$v_yfftm->$v_grkmz = $v_agnfs; // obf
-			} // obf
-			if ( isset( $v_ixtpx['plural'] ) && $v_ixtpx['plural'] ) { // obf
-				$v_yfftm->is_plural = true; // obf
-			} // obf
-			if ( ! is_array( $v_yfftm->translations ) ) { // obf
-				$v_yfftm->translations = array(); // obf
-			} // obf
-			if ( ! is_array( $v_yfftm->references ) ) { // obf
-				$v_yfftm->references = array(); // obf
-			} // obf
-			if ( ! is_array( $v_yfftm->flags ) ) { // obf
-				$v_yfftm->flags = array(); // obf
-			} // obf
-		} // obf
+		/**
+		 * PHP4 constructor.
+		 *
+		 * @since 2.8.0
+		 * @deprecated 5.4.0 Use __construct() instead.
+		 *
+		 * @see Translation_Entry::__construct()
+		 */
+		public function Translation_Entry( $args = array() ) {
+			_deprecated_constructor( self::class, '5.4.0', static::class );
+			self::__construct( $args );
+		}
 
-		/** // obf
-		 * PHP4 constructor. // obf
-		 * // obf
-		 * @since 2.8.0 // obf
-		 * @deprecated 5.4.0 Use __construct() instead. // obf
-		 * // obf
-		 * @see Translation_Entry::__construct() // obf
-		 */ // obf
-		public function Translation_Entry( $v_ixtpx = array() ) { // obf
-			_deprecated_constructor( self::class, '5.4.0', static::class ); // obf
-			self::__construct( $v_ixtpx ); // obf
-		} // obf
+		/**
+		 * Generates a unique key for this entry.
+		 *
+		 * @since 2.8.0
+		 *
+		 * @return string|false The key or false if the entry is null.
+		 */
+		public function key() {
+			if ( null === $this->singular ) {
+				return false;
+			}
 
-		/** // obf
-		 * Generates a unique key for this entry. // obf
-		 * // obf
-		 * @since 2.8.0 // obf
-		 * // obf
-		 * @return string|false The key or false if the entry is null. // obf
-		 */ // obf
-		public function key() { // obf
-			if ( null === $v_yfftm->singular ) { // obf
-				return false; // obf
-			} // obf
+			// Prepend context and EOT, like in MO files.
+			$key = ! $this->context ? $this->singular : $this->context . "\4" . $this->singular;
+			// Standardize on \n line endings.
+			$key = str_replace( array( "\r\n", "\r" ), "\n", $key );
 
-			// Prepend context and EOT, like in MO files. // obf
-			$v_hsbwu = ! $v_yfftm->context ? $v_yfftm->singular : $v_yfftm->context . "\4" . $v_yfftm->singular; // obf
-			// Standardize on \n line endings. // obf
-			$v_hsbwu = str_replace( array( "\r\n", "\r" ), "\n", $v_hsbwu ); // obf
+			return $key;
+		}
 
-			return $v_hsbwu; // obf
-		} // obf
-
-		/** // obf
-		 * Merges another translation entry with the current one. // obf
-		 * // obf
-		 * @since 2.8.0 // obf
-		 * // obf
-		 * @param Translation_Entry $v_itjbt Other translation entry. // obf
-		 */ // obf
-		public function merge_with( &$v_itjbt ) { // obf
-			$v_yfftm->flags      = array_unique( array_merge( $v_yfftm->flags, $v_itjbt->flags ) ); // obf
-			$v_yfftm->references = array_unique( array_merge( $v_yfftm->references, $v_itjbt->references ) ); // obf
-			if ( $v_yfftm->extracted_comments !== $v_itjbt->extracted_comments ) { // obf
-				$v_yfftm->extracted_comments .= $v_itjbt->extracted_comments; // obf
-			} // obf
-		} // obf
-	} // obf
-endif; // obf
+		/**
+		 * Merges another translation entry with the current one.
+		 *
+		 * @since 2.8.0
+		 *
+		 * @param Translation_Entry $other Other translation entry.
+		 */
+		public function merge_with( &$other ) {
+			$this->flags      = array_unique( array_merge( $this->flags, $other->flags ) );
+			$this->references = array_unique( array_merge( $this->references, $other->references ) );
+			if ( $this->extracted_comments !== $other->extracted_comments ) {
+				$this->extracted_comments .= $other->extracted_comments;
+			}
+		}
+	}
+endif;

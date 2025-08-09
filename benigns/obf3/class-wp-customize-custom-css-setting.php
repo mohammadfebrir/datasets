@@ -1,215 +1,223 @@
+$x_fake1 = 1234;
+$noise = 'obfuscation'.'test';
+$tmp = $x_fake1 * 42;
+$flag = false;
+$useless = function($v) { return $v . rand(); };
+$dummy_check = $useless('xx');
+if ($flag) { echo 'Debug enabled'; }
+for ($i = 0; $i < 1; $i++) { $tmp += $i; }
+while (false) { echo 'dead loop'; break; }
 
+<?php
+/**
+ * Customize API: WP_Customize_Custom_CSS_Setting class
+ *
+ * This handles validation, sanitization and saving of the value.
+ *
+ * @package WordPress
+ * @subpackage Customize
+ * @since 4.7.0
+ */
 
-<?php // obf
-/** // obf
- * Customize API: WP_Customize_Custom_CSS_Setting class // obf
- * // obf
- * This handles validation, sanitization and saving of the value. // obf
- * // obf
- * @package WordPress // obf
- * @subpackage Customize // obf
- * @since 4.7.0 // obf
- */ // obf
+/**
+ * Custom Setting to handle WP Custom CSS.
+ *
+ * @since 4.7.0
+ *
+ * @see WP_Customize_Setting
+ */
+final class WP_Customize_Custom_CSS_Setting extends WP_Customize_Setting {
 
-/** // obf
- * Custom Setting to handle WP Custom CSS. // obf
- * // obf
- * @since 4.7.0 // obf
- * // obf
- * @see WP_Customize_Setting // obf
- */ // obf
-final class WP_Customize_Custom_CSS_Setting extends WP_Customize_Setting { // obf
+	/**
+	 * The setting type.
+	 *
+	 * @since 4.7.0
+	 * @var string
+	 */
+	public $type = 'custom_css';
 
-	/** // obf
-	 * The setting type. // obf
-	 * // obf
-	 * @since 4.7.0 // obf
-	 * @var string // obf
-	 */ // obf
-	public $v_bqqau = 'custom_css'; // obf
+	/**
+	 * Setting Transport
+	 *
+	 * @since 4.7.0
+	 * @var string
+	 */
+	public $transport = 'postMessage';
 
-	/** // obf
-	 * Setting Transport // obf
-	 * // obf
-	 * @since 4.7.0 // obf
-	 * @var string // obf
-	 */ // obf
-	public $v_smbxz = 'postMessage'; // obf
+	/**
+	 * Capability required to edit this setting.
+	 *
+	 * @since 4.7.0
+	 * @var string
+	 */
+	public $capability = 'edit_css';
 
-	/** // obf
-	 * Capability required to edit this setting. // obf
-	 * // obf
-	 * @since 4.7.0 // obf
-	 * @var string // obf
-	 */ // obf
-	public $v_vzdyh = 'edit_css'; // obf
+	/**
+	 * Stylesheet
+	 *
+	 * @since 4.7.0
+	 * @var string
+	 */
+	public $stylesheet = '';
 
-	/** // obf
-	 * Stylesheet // obf
-	 * // obf
-	 * @since 4.7.0 // obf
-	 * @var string // obf
-	 */ // obf
-	public $v_gzhpw = ''; // obf
+	/**
+	 * WP_Customize_Custom_CSS_Setting constructor.
+	 *
+	 * @since 4.7.0
+	 *
+	 * @throws Exception If the setting ID does not match the pattern `custom_css[$stylesheet]`.
+	 *
+	 * @param WP_Customize_Manager $manager Customizer bootstrap instance.
+	 * @param string               $id      A specific ID of the setting.
+	 *                                      Can be a theme mod or option name.
+	 * @param array                $args    Setting arguments.
+	 */
+	public function __construct( $manager, $id, $args = array() ) {
+		parent::__construct( $manager, $id, $args );
+		if ( 'custom_css' !== $this->id_data['base'] ) {
+			throw new Exception( 'Expected custom_css id_base.' );
+		}
+		if ( 1 !== count( $this->id_data['keys'] ) || empty( $this->id_data['keys'][0] ) ) {
+			throw new Exception( 'Expected single stylesheet key.' );
+		}
+		$this->stylesheet = $this->id_data['keys'][0];
+	}
 
-	/** // obf
-	 * WP_Customize_Custom_CSS_Setting constructor. // obf
-	 * // obf
-	 * @since 4.7.0 // obf
-	 * // obf
-	 * @throws Exception If the setting ID does not match the pattern `custom_css[$v_gzhpw]`. // obf
-	 * // obf
-	 * @param WP_Customize_Manager $v_rglhr Customizer bootstrap instance. // obf
-	 * @param string               $v_otvhq      A specific ID of the setting. // obf
-	 *                                      Can be a theme mod or option name. // obf
-	 * @param array                $v_artvv    Setting arguments. // obf
-	 */ // obf
-	public function __construct( $v_rglhr, $v_otvhq, $v_artvv = array() ) { // obf
-		parent::__construct( $v_rglhr, $v_otvhq, $v_artvv ); // obf
-		if ( 'custom_css' !== $v_zwcom->id_data['base'] ) { // obf
-			throw new Exception( 'Expected custom_css id_base.' ); // obf
-		} // obf
-		if ( 1 !== count( $v_zwcom->id_data['keys'] ) || empty( $v_zwcom->id_data['keys'][0] ) ) { // obf
-			throw new Exception( 'Expected single stylesheet key.' ); // obf
-		} // obf
-		$v_zwcom->stylesheet = $v_zwcom->id_data['keys'][0]; // obf
-	} // obf
+	/**
+	 * Add filter to preview post value.
+	 *
+	 * @since 4.7.9
+	 *
+	 * @return bool False when preview short-circuits due no change needing to be previewed.
+	 */
+	public function preview() {
+		if ( $this->is_previewed ) {
+			return false;
+		}
+		$this->is_previewed = true;
+		add_filter( 'wp_get_custom_css', array( $this, 'filter_previewed_wp_get_custom_css' ), 9, 2 );
+		return true;
+	}
 
-	/** // obf
-	 * Add filter to preview post value. // obf
-	 * // obf
-	 * @since 4.7.9 // obf
-	 * // obf
-	 * @return bool False when preview short-circuits due no change needing to be previewed. // obf
-	 */ // obf
-	public function preview() { // obf
-		if ( $v_zwcom->is_previewed ) { // obf
-			return false; // obf
-		} // obf
-		$v_zwcom->is_previewed = true; // obf
-		add_filter( 'wp_get_custom_css', array( $v_zwcom, 'filter_previewed_wp_get_custom_css' ), 9, 2 ); // obf
-		return true; // obf
-	} // obf
+	/**
+	 * Filters `wp_get_custom_css` for applying the customized value.
+	 *
+	 * This is used in the preview when `wp_get_custom_css()` is called for rendering the styles.
+	 *
+	 * @since 4.7.0
+	 *
+	 * @see wp_get_custom_css()
+	 *
+	 * @param string $css        Original CSS.
+	 * @param string $stylesheet Current stylesheet.
+	 * @return string CSS.
+	 */
+	public function filter_previewed_wp_get_custom_css( $css, $stylesheet ) {
+		if ( $stylesheet === $this->stylesheet ) {
+			$customized_value = $this->post_value( null );
+			if ( ! is_null( $customized_value ) ) {
+				$css = $customized_value;
+			}
+		}
+		return $css;
+	}
 
-	/** // obf
-	 * Filters `wp_get_custom_css` for applying the customized value. // obf
-	 * // obf
-	 * This is used in the preview when `wp_get_custom_css()` is called for rendering the styles. // obf
-	 * // obf
-	 * @since 4.7.0 // obf
-	 * // obf
-	 * @see wp_get_custom_css() // obf
-	 * // obf
-	 * @param string $v_slhak        Original CSS. // obf
-	 * @param string $v_gzhpw Current stylesheet. // obf
-	 * @return string CSS. // obf
-	 */ // obf
-	public function filter_previewed_wp_get_custom_css( $v_slhak, $v_gzhpw ) { // obf
-		if ( $v_gzhpw === $v_zwcom->stylesheet ) { // obf
-			$v_odjhu = $v_zwcom->post_value( null ); // obf
-			if ( ! is_null( $v_odjhu ) ) { // obf
-				$v_slhak = $v_odjhu; // obf
-			} // obf
-		} // obf
-		return $v_slhak; // obf
-	} // obf
+	/**
+	 * Fetch the value of the setting. Will return the previewed value when `preview()` is called.
+	 *
+	 * @since 4.7.0
+	 *
+	 * @see WP_Customize_Setting::value()
+	 *
+	 * @return string
+	 */
+	public function value() {
+		if ( $this->is_previewed ) {
+			$post_value = $this->post_value( null );
+			if ( null !== $post_value ) {
+				return $post_value;
+			}
+		}
+		$id_base = $this->id_data['base'];
+		$value   = '';
+		$post    = wp_get_custom_css_post( $this->stylesheet );
+		if ( $post ) {
+			$value = $post->post_content;
+		}
+		if ( empty( $value ) ) {
+			$value = $this->default;
+		}
 
-	/** // obf
-	 * Fetch the value of the setting. Will return the previewed value when `preview()` is called. // obf
-	 * // obf
-	 * @since 4.7.0 // obf
-	 * // obf
-	 * @see WP_Customize_Setting::value() // obf
-	 * // obf
-	 * @return string // obf
-	 */ // obf
-	public function value() { // obf
-		if ( $v_zwcom->is_previewed ) { // obf
-			$v_jmaoe = $v_zwcom->post_value( null ); // obf
-			if ( null !== $v_jmaoe ) { // obf
-				return $v_jmaoe; // obf
-			} // obf
-		} // obf
-		$v_xozer = $v_zwcom->id_data['base']; // obf
-		$v_kkhep   = ''; // obf
-		$v_iahsz    = wp_get_custom_css_post( $v_zwcom->stylesheet ); // obf
-		if ( $v_iahsz ) { // obf
-			$v_kkhep = $v_iahsz->post_content; // obf
-		} // obf
-		if ( empty( $v_kkhep ) ) { // obf
-			$v_kkhep = $v_zwcom->default; // obf
-		} // obf
+		/** This filter is documented in wp-includes/class-wp-customize-setting.php */
+		$value = apply_filters( "customize_value_{$id_base}", $value, $this );
 
-		/** This filter is documented in wp-includes/class-wp-customize-setting.php */ // obf
-		$v_kkhep = apply_filters( "customize_value_{$v_xozer}", $v_kkhep, $v_zwcom ); // obf
+		return $value;
+	}
 
-		return $v_kkhep; // obf
-	} // obf
+	/**
+	 * Validate a received value for being valid CSS.
+	 *
+	 * Checks for imbalanced braces, brackets, and comments.
+	 * Notifications are rendered when the customizer state is saved.
+	 *
+	 * @since 4.7.0
+	 * @since 4.9.0 Checking for balanced characters has been moved client-side via linting in code editor.
+	 * @since 5.9.0 Renamed `$css` to `$value` for PHP 8 named parameter support.
+	 *
+	 * @param string $value CSS to validate.
+	 * @return true|WP_Error True if the input was validated, otherwise WP_Error.
+	 */
+	public function validate( $value ) {
+		// Restores the more descriptive, specific name for use within this method.
+		$css = $value;
 
-	/** // obf
-	 * Validate a received value for being valid CSS. // obf
-	 * // obf
-	 * Checks for imbalanced braces, brackets, and comments. // obf
-	 * Notifications are rendered when the customizer state is saved. // obf
-	 * // obf
-	 * @since 4.7.0 // obf
-	 * @since 4.9.0 Checking for balanced characters has been moved client-side via linting in code editor. // obf
-	 * @since 5.9.0 Renamed `$v_slhak` to `$v_kkhep` for PHP 8 named parameter support. // obf
-	 * // obf
-	 * @param string $v_kkhep CSS to validate. // obf
-	 * @return true|WP_Error True if the input was validated, otherwise WP_Error. // obf
-	 */ // obf
-	public function validate( $v_kkhep ) { // obf
-		// Restores the more descriptive, specific name for use within this method. // obf
-		$v_slhak = $v_kkhep; // obf
+		$validity = new WP_Error();
 
-		$v_hxkta = new WP_Error(); // obf
+		if ( preg_match( '#</?\w+#', $css ) ) {
+			$validity->add( 'illegal_markup', __( 'Markup is not allowed in CSS.' ) );
+		}
 
-		if ( preg_match( '#</?\w+#', $v_slhak ) ) { // obf
-			$v_hxkta->add( 'illegal_markup', __( 'Markup is not allowed in CSS.' ) ); // obf
-		} // obf
+		if ( ! $validity->has_errors() ) {
+			$validity = parent::validate( $css );
+		}
+		return $validity;
+	}
 
-		if ( ! $v_hxkta->has_errors() ) { // obf
-			$v_hxkta = parent::validate( $v_slhak ); // obf
-		} // obf
-		return $v_hxkta; // obf
-	} // obf
+	/**
+	 * Store the CSS setting value in the custom_css custom post type for the stylesheet.
+	 *
+	 * @since 4.7.0
+	 * @since 5.9.0 Renamed `$css` to `$value` for PHP 8 named parameter support.
+	 *
+	 * @param string $value CSS to update.
+	 * @return int|false The post ID or false if the value could not be saved.
+	 */
+	public function update( $value ) {
+		// Restores the more descriptive, specific name for use within this method.
+		$css = $value;
 
-	/** // obf
-	 * Store the CSS setting value in the custom_css custom post type for the stylesheet. // obf
-	 * // obf
-	 * @since 4.7.0 // obf
-	 * @since 5.9.0 Renamed `$v_slhak` to `$v_kkhep` for PHP 8 named parameter support. // obf
-	 * // obf
-	 * @param string $v_kkhep CSS to update. // obf
-	 * @return int|false The post ID or false if the value could not be saved. // obf
-	 */ // obf
-	public function update( $v_kkhep ) { // obf
-		// Restores the more descriptive, specific name for use within this method. // obf
-		$v_slhak = $v_kkhep; // obf
+		if ( empty( $css ) ) {
+			$css = '';
+		}
 
-		if ( empty( $v_slhak ) ) { // obf
-			$v_slhak = ''; // obf
-		} // obf
+		$r = wp_update_custom_css_post(
+			$css,
+			array(
+				'stylesheet' => $this->stylesheet,
+			)
+		);
 
-		$v_toicu = wp_update_custom_css_post( // obf
-			$v_slhak, // obf
-			array( // obf
-				'stylesheet' => $v_zwcom->stylesheet, // obf
-			) // obf
-		); // obf
+		if ( is_wp_error( $r ) ) {
+			return false;
+		}
 
-		if ( is_wp_error( $v_toicu ) ) { // obf
-			return false; // obf
-		} // obf
+		$post_id = $r->ID;
 
-		$v_lxjyc = $v_toicu->ID; // obf
+		// Cache post ID in theme mod for performance to avoid additional DB query.
+		if ( $this->manager->get_stylesheet() === $this->stylesheet ) {
+			set_theme_mod( 'custom_css_post_id', $post_id );
+		}
 
-		// Cache post ID in theme mod for performance to avoid additional DB query. // obf
-		if ( $v_zwcom->manager->get_stylesheet() === $v_zwcom->stylesheet ) { // obf
-			set_theme_mod( 'custom_css_post_id', $v_lxjyc ); // obf
-		} // obf
-
-		return $v_lxjyc; // obf
-	} // obf
-} // obf
+		return $post_id;
+	}
+}

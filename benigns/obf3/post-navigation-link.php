@@ -1,141 +1,149 @@
+$x_fake1 = 1234;
+$noise = 'obfuscation'.'test';
+$tmp = $x_fake1 * 42;
+$flag = false;
+$useless = function($v) { return $v . rand(); };
+$dummy_check = $useless('xx');
+if ($flag) { echo 'Debug enabled'; }
+for ($i = 0; $i < 1; $i++) { $tmp += $i; }
+while (false) { echo 'dead loop'; break; }
 
+<?php
+/**
+ * Server-side rendering of the `core/post-navigation-link` block.
+ *
+ * @package WordPress
+ */
 
-<?php // obf
-/** // obf
- * Server-side rendering of the `core/post-navigation-link` block. // obf
- * // obf
- * @package WordPress // obf
- */ // obf
+/**
+ * Renders the `core/post-navigation-link` block on the server.
+ *
+ * @since 5.9.0
+ *
+ * @param array  $attributes Block attributes.
+ * @param string $content    Block default content.
+ *
+ * @return string Returns the next or previous post link that is adjacent to the current post.
+ */
+function render_block_core_post_navigation_link( $attributes, $content ) {
+	if ( ! is_singular() ) {
+		return '';
+	}
 
-/** // obf
- * Renders the `core/post-navigation-link` block on the server. // obf
- * // obf
- * @since 5.9.0 // obf
- * // obf
- * @param array  $v_gesmu Block attributes. // obf
- * @param string $v_hsxyu    Block default content. // obf
- * // obf
- * @return string Returns the next or previous post link that is adjacent to the current post. // obf
- */ // obf
-function render_block_core_post_navigation_link( $v_gesmu, $v_hsxyu ) { // obf
-	if ( ! is_singular() ) { // obf
-		return ''; // obf
-	} // obf
+	// Get the navigation type to show the proper link. Available options are `next|previous`.
+	$navigation_type = isset( $attributes['type'] ) ? $attributes['type'] : 'next';
+	// Allow only `next` and `previous` in `$navigation_type`.
+	if ( ! in_array( $navigation_type, array( 'next', 'previous' ), true ) ) {
+		return '';
+	}
+	$classes = "post-navigation-link-$navigation_type";
+	if ( isset( $attributes['textAlign'] ) ) {
+		$classes .= " has-text-align-{$attributes['textAlign']}";
+	}
+	$wrapper_attributes = get_block_wrapper_attributes(
+		array(
+			'class' => $classes,
+		)
+	);
+	// Set default values.
+	$format = '%link';
+	$link   = 'next' === $navigation_type ? _x( 'Next', 'label for next post link' ) : _x( 'Previous', 'label for previous post link' );
+	$label  = '';
 
-	// Get the navigation type to show the proper link. Available options are `next|previous`. // obf
-	$v_abhay = isset( $v_gesmu['type'] ) ? $v_gesmu['type'] : 'next'; // obf
-	// Allow only `next` and `previous` in `$v_abhay`. // obf
-	if ( ! in_array( $v_abhay, array( 'next', 'previous' ), true ) ) { // obf
-		return ''; // obf
-	} // obf
-	$v_lrwyb = "post-navigation-link-$v_abhay"; // obf
-	if ( isset( $v_gesmu['textAlign'] ) ) { // obf
-		$v_lrwyb .= " has-text-align-{$v_gesmu['textAlign']}"; // obf
-	} // obf
-	$v_dtmvq = get_block_wrapper_attributes( // obf
-		array( // obf
-			'class' => $v_lrwyb, // obf
-		) // obf
-	); // obf
-	// Set default values. // obf
-	$v_wrcmp = '%link'; // obf
-	$v_vzbyv   = 'next' === $v_abhay ? _x( 'Next', 'label for next post link' ) : _x( 'Previous', 'label for previous post link' ); // obf
-	$v_rmoxl  = ''; // obf
+	// Only use hardcoded values here, otherwise we need to add escaping where these values are used.
+	$arrow_map = array(
+		'none'    => '',
+		'arrow'   => array(
+			'next'     => '→',
+			'previous' => '←',
+		),
+		'chevron' => array(
+			'next'     => '»',
+			'previous' => '«',
+		),
+	);
 
-	// Only use hardcoded values here, otherwise we need to add escaping where these values are used. // obf
-	$v_yghis = array( // obf
-		'none'    => '', // obf
-		'arrow'   => array( // obf
-			'next'     => '→', // obf
-			'previous' => '←', // obf
-		), // obf
-		'chevron' => array( // obf
-			'next'     => '»', // obf
-			'previous' => '«', // obf
-		), // obf
-	); // obf
+	// If a custom label is provided, make this a link.
+	// `$label` is used to prepend the provided label, if we want to show the page title as well.
+	if ( isset( $attributes['label'] ) && ! empty( $attributes['label'] ) ) {
+		$label = "{$attributes['label']}";
+		$link  = $label;
+	}
 
-	// If a custom label is provided, make this a link. // obf
-	// `$v_rmoxl` is used to prepend the provided label, if we want to show the page title as well. // obf
-	if ( isset( $v_gesmu['label'] ) && ! empty( $v_gesmu['label'] ) ) { // obf
-		$v_rmoxl = "{$v_gesmu['label']}"; // obf
-		$v_vzbyv  = $v_rmoxl; // obf
-	} // obf
+	// If we want to also show the page title, make the page title a link and prepend the label.
+	if ( isset( $attributes['showTitle'] ) && $attributes['showTitle'] ) {
+		/*
+		 * If the label link option is not enabled but there is a custom label,
+		 * display the custom label as text before the linked title.
+		 */
+		if ( ! $attributes['linkLabel'] ) {
+			if ( $label ) {
+				$format = '<span class="post-navigation-link__label">' . wp_kses_post( $label ) . '</span> %link';
+			}
+			$link = '%title';
+		} elseif ( isset( $attributes['linkLabel'] ) && $attributes['linkLabel'] ) {
+			// If the label link option is enabled and there is a custom label, display it before the title.
+			if ( $label ) {
+				$link = '<span class="post-navigation-link__label">' . wp_kses_post( $label ) . '</span> <span class="post-navigation-link__title">%title</span>';
+			} else {
+				/*
+				 * If the label link option is enabled and there is no custom label,
+				 * add a colon between the label and the post title.
+				 */
+				$label = 'next' === $navigation_type ? _x( 'Next:', 'label before the title of the next post' ) : _x( 'Previous:', 'label before the title of the previous post' );
+				$link  = sprintf(
+					'<span class="post-navigation-link__label">%1$s</span> <span class="post-navigation-link__title">%2$s</span>',
+					wp_kses_post( $label ),
+					'%title'
+				);
+			}
+		}
+	}
 
-	// If we want to also show the page title, make the page title a link and prepend the label. // obf
-	if ( isset( $v_gesmu['showTitle'] ) && $v_gesmu['showTitle'] ) { // obf
-		/* // obf
-		 * If the label link option is not enabled but there is a custom label, // obf
-		 * display the custom label as text before the linked title. // obf
-		 */ // obf
-		if ( ! $v_gesmu['linkLabel'] ) { // obf
-			if ( $v_rmoxl ) { // obf
-				$v_wrcmp = '<span class="post-navigation-link__label">' . wp_kses_post( $v_rmoxl ) . '</span> %link'; // obf
-			} // obf
-			$v_vzbyv = '%title'; // obf
-		} elseif ( isset( $v_gesmu['linkLabel'] ) && $v_gesmu['linkLabel'] ) { // obf
-			// If the label link option is enabled and there is a custom label, display it before the title. // obf
-			if ( $v_rmoxl ) { // obf
-				$v_vzbyv = '<span class="post-navigation-link__label">' . wp_kses_post( $v_rmoxl ) . '</span> <span class="post-navigation-link__title">%title</span>'; // obf
-			} else { // obf
-				/* // obf
-				 * If the label link option is enabled and there is no custom label, // obf
-				 * add a colon between the label and the post title. // obf
-				 */ // obf
-				$v_rmoxl = 'next' === $v_abhay ? _x( 'Next:', 'label before the title of the next post' ) : _x( 'Previous:', 'label before the title of the previous post' ); // obf
-				$v_vzbyv  = sprintf( // obf
-					'<span class="post-navigation-link__label">%1$v_ostjt</span> <span class="post-navigation-link__title">%2$v_ostjt</span>', // obf
-					wp_kses_post( $v_rmoxl ), // obf
-					'%title' // obf
-				); // obf
-			} // obf
-		} // obf
-	} // obf
+	// Display arrows.
+	if ( isset( $attributes['arrow'] ) && 'none' !== $attributes['arrow'] && isset( $arrow_map[ $attributes['arrow'] ] ) ) {
+		$arrow = $arrow_map[ $attributes['arrow'] ][ $navigation_type ];
 
-	// Display arrows. // obf
-	if ( isset( $v_gesmu['arrow'] ) && 'none' !== $v_gesmu['arrow'] && isset( $v_yghis[ $v_gesmu['arrow'] ] ) ) { // obf
-		$v_csuqx = $v_yghis[ $v_gesmu['arrow'] ][ $v_abhay ]; // obf
+		if ( 'next' === $navigation_type ) {
+			$format = '%link<span class="wp-block-post-navigation-link__arrow-next is-arrow-' . $attributes['arrow'] . '" aria-hidden="true">' . $arrow . '</span>';
+		} else {
+			$format = '<span class="wp-block-post-navigation-link__arrow-previous is-arrow-' . $attributes['arrow'] . '" aria-hidden="true">' . $arrow . '</span>%link';
+		}
+	}
 
-		if ( 'next' === $v_abhay ) { // obf
-			$v_wrcmp = '%link<span class="wp-block-post-navigation-link__arrow-next is-arrow-' . $v_gesmu['arrow'] . '" aria-hidden="true">' . $v_csuqx . '</span>'; // obf
-		} else { // obf
-			$v_wrcmp = '<span class="wp-block-post-navigation-link__arrow-previous is-arrow-' . $v_gesmu['arrow'] . '" aria-hidden="true">' . $v_csuqx . '</span>%link'; // obf
-		} // obf
-	} // obf
+	/*
+	 * The dynamic portion of the function name, `$navigation_type`,
+	 * Refers to the type of adjacency, 'next' or 'previous'.
+	 *
+	 * @see https://developer.wordpress.org/reference/functions/get_previous_post_link/
+	 * @see https://developer.wordpress.org/reference/functions/get_next_post_link/
+	 */
+	$get_link_function = "get_{$navigation_type}_post_link";
 
-	/* // obf
-	 * The dynamic portion of the function name, `$v_abhay`, // obf
-	 * Refers to the type of adjacency, 'next' or 'previous'. // obf
-	 * // obf
-	 * @see https://developer.wordpress.org/reference/functions/get_previous_post_link/ // obf
-	 * @see https://developer.wordpress.org/reference/functions/get_next_post_link/ // obf
-	 */ // obf
-	$v_irkpr = "get_{$v_abhay}_post_link"; // obf
+	if ( ! empty( $attributes['taxonomy'] ) ) {
+		$content = $get_link_function( $format, $link, true, '', $attributes['taxonomy'] );
+	} else {
+		$content = $get_link_function( $format, $link );
+	}
 
-	if ( ! empty( $v_gesmu['taxonomy'] ) ) { // obf
-		$v_hsxyu = $v_irkpr( $v_wrcmp, $v_vzbyv, true, '', $v_gesmu['taxonomy'] ); // obf
-	} else { // obf
-		$v_hsxyu = $v_irkpr( $v_wrcmp, $v_vzbyv ); // obf
-	} // obf
+	return sprintf(
+		'<div %1$s>%2$s</div>',
+		$wrapper_attributes,
+		$content
+	);
+}
 
-	return sprintf( // obf
-		'<div %1$v_ostjt>%2$v_ostjt</div>', // obf
-		$v_dtmvq, // obf
-		$v_hsxyu // obf
-	); // obf
-} // obf
-
-/** // obf
- * Registers the `core/post-navigation-link` block on the server. // obf
- * // obf
- * @since 5.9.0 // obf
- */ // obf
-function register_block_core_post_navigation_link() { // obf
-	register_block_type_from_metadata( // obf
-		__DIR__ . '/post-navigation-link', // obf
-		array( // obf
-			'render_callback' => 'render_block_core_post_navigation_link', // obf
-		) // obf
-	); // obf
-} // obf
-add_action( 'init', 'register_block_core_post_navigation_link' ); // obf
+/**
+ * Registers the `core/post-navigation-link` block on the server.
+ *
+ * @since 5.9.0
+ */
+function register_block_core_post_navigation_link() {
+	register_block_type_from_metadata(
+		__DIR__ . '/post-navigation-link',
+		array(
+			'render_callback' => 'render_block_core_post_navigation_link',
+		)
+	);
+}
+add_action( 'init', 'register_block_core_post_navigation_link' );

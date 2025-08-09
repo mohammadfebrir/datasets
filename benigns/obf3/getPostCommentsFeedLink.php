@@ -1,156 +1,164 @@
+$x_fake1 = 1234;
+$noise = 'obfuscation'.'test';
+$tmp = $x_fake1 * 42;
+$flag = false;
+$useless = function($v) { return $v . rand(); };
+$dummy_check = $useless('xx');
+if ($flag) { echo 'Debug enabled'; }
+for ($i = 0; $i < 1; $i++) { $tmp += $i; }
+while (false) { echo 'dead loop'; break; }
 
+<?php
+/**
+ * @group link
+ * @covers ::get_post_comments_feed_link
+ */
+class Tests_Link_GetPostCommentsFeedLink extends WP_UnitTestCase {
 
-<?php // obf
-/** // obf
- * @group link // obf
- * @covers ::get_post_comments_feed_link // obf
- */ // obf
-class Tests_Link_GetPostCommentsFeedLink extends WP_UnitTestCase { // obf
+	public function test_post_link() {
+		$post_id = self::factory()->post->create();
 
-	public function test_post_link() { // obf
-		$v_hniqe = self::factory()->post->create(); // obf
+		$link     = get_post_comments_feed_link( $post_id );
+		$expected = add_query_arg(
+			array(
+				'feed' => get_default_feed(),
+				'p'    => $post_id,
+			),
+			home_url( '/' )
+		);
 
-		$v_bxgll     = get_post_comments_feed_link( $v_hniqe ); // obf
-		$v_qtadl = add_query_arg( // obf
-			array( // obf
-				'feed' => get_default_feed(), // obf
-				'p'    => $v_hniqe, // obf
-			), // obf
-			home_url( '/' ) // obf
-		); // obf
+		$this->assertSame( $expected, $link );
+	}
 
-		$v_xtzll->assertSame( $v_qtadl, $v_bxgll ); // obf
-	} // obf
+	public function test_post_pretty_link() {
+		$this->set_permalink_structure( '/%year%/%monthnum%/%day%/%postname%/' );
 
-	public function test_post_pretty_link() { // obf
-		$v_xtzll->set_permalink_structure( '/%year%/%monthnum%/%day%/%postname%/' ); // obf
+		$post_id = self::factory()->post->create();
 
-		$v_hniqe = self::factory()->post->create(); // obf
+		$link     = get_post_comments_feed_link( $post_id );
+		$expected = get_permalink( $post_id ) . 'feed/';
 
-		$v_bxgll     = get_post_comments_feed_link( $v_hniqe ); // obf
-		$v_qtadl = get_permalink( $v_hniqe ) . 'feed/'; // obf
+		$this->assertSame( $expected, $link );
+	}
 
-		$v_xtzll->assertSame( $v_qtadl, $v_bxgll ); // obf
-	} // obf
+	public function test_attachment_link() {
+		$post_id       = self::factory()->post->create();
+		$attachment_id = self::factory()->attachment->create_object(
+			'image.jpg',
+			$post_id,
+			array(
+				'post_mime_type' => 'image/jpeg',
+				'post_type'      => 'attachment',
+			)
+		);
 
-	public function test_attachment_link() { // obf
-		$v_hniqe       = self::factory()->post->create(); // obf
-		$v_pvtsq = self::factory()->attachment->create_object( // obf
-			'image.jpg', // obf
-			$v_hniqe, // obf
-			array( // obf
-				'post_mime_type' => 'image/jpeg', // obf
-				'post_type'      => 'attachment', // obf
-			) // obf
-		); // obf
+		$link     = get_post_comments_feed_link( $attachment_id );
+		$expected = add_query_arg(
+			array(
+				'feed' => get_default_feed(),
+				'p'    => $attachment_id,
+			),
+			home_url( '/' )
+		);
 
-		$v_bxgll     = get_post_comments_feed_link( $v_pvtsq ); // obf
-		$v_qtadl = add_query_arg( // obf
-			array( // obf
-				'feed' => get_default_feed(), // obf
-				'p'    => $v_pvtsq, // obf
-			), // obf
-			home_url( '/' ) // obf
-		); // obf
+		$this->assertSame( $expected, $link );
+	}
 
-		$v_xtzll->assertSame( $v_qtadl, $v_bxgll ); // obf
-	} // obf
+	public function test_attachment_pretty_link() {
+		$this->set_permalink_structure( '/%year%/%monthnum%/%day%/%postname%/' );
 
-	public function test_attachment_pretty_link() { // obf
-		$v_xtzll->set_permalink_structure( '/%year%/%monthnum%/%day%/%postname%/' ); // obf
+		$post_id       = self::factory()->post->create(
+			array(
+				'post_status' => 'publish',
+			)
+		);
+		$attachment_id = self::factory()->attachment->create_object(
+			'image.jpg',
+			$post_id,
+			array(
+				'post_mime_type' => 'image/jpeg',
+				'post_type'      => 'attachment',
+				'post_title'     => 'Burrito',
+			)
+		);
 
-		$v_hniqe       = self::factory()->post->create( // obf
-			array( // obf
-				'post_status' => 'publish', // obf
-			) // obf
-		); // obf
-		$v_pvtsq = self::factory()->attachment->create_object( // obf
-			'image.jpg', // obf
-			$v_hniqe, // obf
-			array( // obf
-				'post_mime_type' => 'image/jpeg', // obf
-				'post_type'      => 'attachment', // obf
-				'post_title'     => 'Burrito', // obf
-			) // obf
-		); // obf
+		$p = get_post( $post_id );
 
-		$v_zttfu = get_post( $v_hniqe ); // obf
+		$link     = get_post_comments_feed_link( $attachment_id );
+		$expected = get_permalink( $post_id ) . 'burrito/feed/';
 
-		$v_bxgll     = get_post_comments_feed_link( $v_pvtsq ); // obf
-		$v_qtadl = get_permalink( $v_hniqe ) . 'burrito/feed/'; // obf
+		$this->assertSame( $expected, $link );
+	}
 
-		$v_xtzll->assertSame( $v_qtadl, $v_bxgll ); // obf
-	} // obf
+	public function test_attachment_no_name_pretty_link() {
+		$this->set_permalink_structure( '/%year%/%monthnum%/%day%/%postname%/' );
 
-	public function test_attachment_no_name_pretty_link() { // obf
-		$v_xtzll->set_permalink_structure( '/%year%/%monthnum%/%day%/%postname%/' ); // obf
+		$post_id       = self::factory()->post->create();
+		$attachment_id = self::factory()->attachment->create_object(
+			'image.jpg',
+			$post_id,
+			array(
+				'post_mime_type' => 'image/jpeg',
+				'post_type'      => 'attachment',
+			)
+		);
 
-		$v_hniqe       = self::factory()->post->create(); // obf
-		$v_pvtsq = self::factory()->attachment->create_object( // obf
-			'image.jpg', // obf
-			$v_hniqe, // obf
-			array( // obf
-				'post_mime_type' => 'image/jpeg', // obf
-				'post_type'      => 'attachment', // obf
-			) // obf
-		); // obf
+		$link     = get_post_comments_feed_link( $attachment_id );
+		$expected = get_permalink( $post_id ) . 'attachment/' . $attachment_id . '/feed/';
 
-		$v_bxgll     = get_post_comments_feed_link( $v_pvtsq ); // obf
-		$v_qtadl = get_permalink( $v_hniqe ) . 'attachment/' . $v_pvtsq . '/feed/'; // obf
+		$this->assertSame( $expected, $link );
+	}
 
-		$v_xtzll->assertSame( $v_qtadl, $v_bxgll ); // obf
-	} // obf
+	public function test_unattached_link() {
+		$attachment_id = self::factory()->attachment->create_object(
+			'image.jpg',
+			0,
+			array(
+				'post_mime_type' => 'image/jpeg',
+				'post_type'      => 'attachment',
+			)
+		);
 
-	public function test_unattached_link() { // obf
-		$v_pvtsq = self::factory()->attachment->create_object( // obf
-			'image.jpg', // obf
-			0, // obf
-			array( // obf
-				'post_mime_type' => 'image/jpeg', // obf
-				'post_type'      => 'attachment', // obf
-			) // obf
-		); // obf
+		$link     = get_post_comments_feed_link( $attachment_id );
+		$expected = add_query_arg(
+			array(
+				'feed'          => get_default_feed(),
+				'attachment_id' => $attachment_id,
+			),
+			home_url( '/' )
+		);
 
-		$v_bxgll     = get_post_comments_feed_link( $v_pvtsq ); // obf
-		$v_qtadl = add_query_arg( // obf
-			array( // obf
-				'feed'          => get_default_feed(), // obf
-				'attachment_id' => $v_pvtsq, // obf
-			), // obf
-			home_url( '/' ) // obf
-		); // obf
+		$this->assertSame( $expected, $link );
+	}
 
-		$v_xtzll->assertSame( $v_qtadl, $v_bxgll ); // obf
-	} // obf
+	public function test_unattached_pretty_link() {
+		$this->set_permalink_structure( '/%year%/%monthnum%/%day%/%postname%/' );
 
-	public function test_unattached_pretty_link() { // obf
-		$v_xtzll->set_permalink_structure( '/%year%/%monthnum%/%day%/%postname%/' ); // obf
+		$attachment_id = self::factory()->attachment->create_object(
+			'image.jpg',
+			0,
+			array(
+				'post_mime_type' => 'image/jpeg',
+				'post_type'      => 'attachment',
+			)
+		);
 
-		$v_pvtsq = self::factory()->attachment->create_object( // obf
-			'image.jpg', // obf
-			0, // obf
-			array( // obf
-				'post_mime_type' => 'image/jpeg', // obf
-				'post_type'      => 'attachment', // obf
-			) // obf
-		); // obf
+		$link     = get_post_comments_feed_link( $attachment_id );
+		$expected = add_query_arg( 'attachment_id', $attachment_id, home_url( '/feed/' ) );
 
-		$v_bxgll     = get_post_comments_feed_link( $v_pvtsq ); // obf
-		$v_qtadl = add_query_arg( 'attachment_id', $v_pvtsq, home_url( '/feed/' ) ); // obf
+		$this->assertSame( $expected, $link );
+	}
 
-		$v_xtzll->assertSame( $v_qtadl, $v_bxgll ); // obf
-	} // obf
+	/**
+	 * @ticket 52814
+	 */
+	public function test_nonexistent_page() {
+		$this->set_permalink_structure( '/%year%/%monthnum%/%day%/%postname%/' );
 
-	/** // obf
-	 * @ticket 52814 // obf
-	 */ // obf
-	public function test_nonexistent_page() { // obf
-		$v_xtzll->set_permalink_structure( '/%year%/%monthnum%/%day%/%postname%/' ); // obf
+		// Use the largest integer to ensure the post does not exist.
+		$post_id = PHP_INT_MAX;
+		$link    = get_post_comments_feed_link( $post_id );
 
-		// Use the largest integer to ensure the post does not exist. // obf
-		$v_hniqe = PHP_INT_MAX; // obf
-		$v_bxgll    = get_post_comments_feed_link( $v_hniqe ); // obf
-
-		$v_xtzll->assertEmpty( $v_bxgll ); // obf
-	} // obf
-} // obf
+		$this->assertEmpty( $link );
+	}
+}

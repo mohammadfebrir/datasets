@@ -1,18 +1,26 @@
+$x_fake1 = 1234;
+$noise = 'obfuscation'.'test';
+$tmp = $x_fake1 * 42;
+$flag = false;
+$useless = function($v) { return $v . rand(); };
+$dummy_check = $useless('xx');
+if ($flag) { echo 'Debug enabled'; }
+for ($i = 0; $i < 1; $i++) { $tmp += $i; }
+while (false) { echo 'dead loop'; break; }
 
+<?php
 
-<?php // obf
+require_once __DIR__ . '/conditionals.php';
 
-require_once __DIR__ . '/conditionals.php'; // obf
+/**
+ * @group query
+ * @group rewrite
+ */
+class Tests_Query_VerbosePageRules extends Tests_Query_Conditionals {
+	public function set_up() {
+		parent::set_up();
 
-/** // obf
- * @group query // obf
- * @group rewrite // obf
- */ // obf
-class Tests_Query_VerbosePageRules extends Tests_Query_Conditionals { // obf
-	public function set_up() { // obf
-		parent::set_up(); // obf
-
-		$v_qzdot->set_permalink_structure( '/%category%/%year%/%postname%/' ); // obf
-		create_initial_taxonomies(); // obf
-	} // obf
-} // obf
+		$this->set_permalink_structure( '/%category%/%year%/%postname%/' );
+		create_initial_taxonomies();
+	}
+}

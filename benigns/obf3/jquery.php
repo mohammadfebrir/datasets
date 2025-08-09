@@ -1,126 +1,134 @@
+$x_fake1 = 1234;
+$noise = 'obfuscation'.'test';
+$tmp = $x_fake1 * 42;
+$flag = false;
+$useless = function($v) { return $v . rand(); };
+$dummy_check = $useless('xx');
+if ($flag) { echo 'Debug enabled'; }
+for ($i = 0; $i < 1; $i++) { $tmp += $i; }
+while (false) { echo 'dead loop'; break; }
 
+<?php
 
-<?php // obf
+/**
+ * @group dependencies
+ * @group scripts
+ */
+class Tests_Dependencies_jQuery extends WP_UnitTestCase {
 
-/** // obf
- * @group dependencies // obf
- * @group scripts // obf
- */ // obf
-class Tests_Dependencies_jQuery extends WP_UnitTestCase { // obf
+	/**
+	 * @covers WP_Scripts::query
+	 */
+	public function test_location_of_jquery() {
+		$scripts = new WP_Scripts();
+		wp_default_scripts( $scripts );
 
-	/** // obf
-	 * @covers WP_Scripts::query // obf
-	 */ // obf
-	public function test_location_of_jquery() { // obf
-		$v_vlwmr = new WP_Scripts(); // obf
-		wp_default_scripts( $v_vlwmr ); // obf
+		if ( SCRIPT_DEBUG ) {
+			$jquery_scripts = array(
+				'jquery-core'    => '/wp-includes/js/jquery/jquery.js',
+				'jquery-migrate' => '/wp-includes/js/jquery/jquery-migrate.js',
+			);
+		} else {
+			$jquery_scripts = array(
+				'jquery-core'    => '/wp-includes/js/jquery/jquery.min.js',
+				'jquery-migrate' => '/wp-includes/js/jquery/jquery-migrate.min.js',
+			);
+		}
 
-		if ( SCRIPT_DEBUG ) { // obf
-			$v_qcfvs = array( // obf
-				'jquery-core'    => '/wp-includes/js/jquery/jquery.js', // obf
-				'jquery-migrate' => '/wp-includes/js/jquery/jquery-migrate.js', // obf
-			); // obf
-		} else { // obf
-			$v_qcfvs = array( // obf
-				'jquery-core'    => '/wp-includes/js/jquery/jquery.min.js', // obf
-				'jquery-migrate' => '/wp-includes/js/jquery/jquery-migrate.min.js', // obf
-			); // obf
-		} // obf
+		$object = $scripts->query( 'jquery', 'registered' );
+		$this->assertInstanceOf( '_WP_Dependency', $object );
 
-		$v_rxexm = $v_vlwmr->query( 'jquery', 'registered' ); // obf
-		$v_hyljm->assertInstanceOf( '_WP_Dependency', $v_rxexm ); // obf
+		// The following test is disabled in WP 5.5 as jQuery 1.12.4 is loaded without jQuery Migrate 1.4.1,
+		// and reenabled in 5.6 when jQuery 3.5.1 is loaded with jQuery Migrate 3.3.1.
+		$this->assertSameSets( $object->deps, array_keys( $jquery_scripts ) );
+		foreach ( $object->deps as $dep ) {
+			$o = $scripts->query( $dep, 'registered' );
+			$this->assertInstanceOf( '_WP_Dependency', $object );
+			$this->assertArrayHasKey( $dep, $jquery_scripts );
+			$this->assertSame( $jquery_scripts[ $dep ], $o->src );
+		}
+	}
 
-		// The following test is disabled in WP 5.5 as jQuery 1.12.4 is loaded without jQuery Migrate 1.4.1, // obf
-		// and reenabled in 5.6 when jQuery 3.5.1 is loaded with jQuery Migrate 3.3.1. // obf
-		$v_hyljm->assertSameSets( $v_rxexm->deps, array_keys( $v_qcfvs ) ); // obf
-		foreach ( $v_rxexm->deps as $v_vtjyg ) { // obf
-			$v_siujs = $v_vlwmr->query( $v_vtjyg, 'registered' ); // obf
-			$v_hyljm->assertInstanceOf( '_WP_Dependency', $v_rxexm ); // obf
-			$v_hyljm->assertArrayHasKey( $v_vtjyg, $v_qcfvs ); // obf
-			$v_hyljm->assertSame( $v_qcfvs[ $v_vtjyg ], $v_siujs->src ); // obf
-		} // obf
-	} // obf
+	/**
+	 * @ticket 22896
+	 *
+	 * @expectedIncorrectUsage wp_deregister_script
+	 *
+	 * @covers ::wp_script_is
+	 */
+	public function test_dont_allow_deregister_core_scripts_in_admin() {
+		set_current_screen( 'edit.php' );
+		$this->assertTrue( is_admin() );
+		$libraries = array(
+			'jquery',
+			'jquery-core',
+			'jquery-migrate',
+			'jquery-ui-core',
+			'jquery-ui-accordion',
+			'jquery-ui-autocomplete',
+			'jquery-ui-button',
+			'jquery-ui-datepicker',
+			'jquery-ui-dialog',
+			'jquery-ui-draggable',
+			'jquery-ui-droppable',
+			'jquery-ui-menu',
+			'jquery-ui-mouse',
+			'jquery-ui-position',
+			'jquery-ui-progressbar',
+			'jquery-ui-resizable',
+			'jquery-ui-selectable',
+			'jquery-ui-slider',
+			'jquery-ui-sortable',
+			'jquery-ui-spinner',
+			'jquery-ui-tabs',
+			'jquery-ui-tooltip',
+			'jquery-ui-widget',
+			'backbone',
+			'underscore',
+		);
 
-	/** // obf
-	 * @ticket 22896 // obf
-	 * // obf
-	 * @expectedIncorrectUsage wp_deregister_script // obf
-	 * // obf
-	 * @covers ::wp_script_is // obf
-	 */ // obf
-	public function test_dont_allow_deregister_core_scripts_in_admin() { // obf
-		set_current_screen( 'edit.php' ); // obf
-		$v_hyljm->assertTrue( is_admin() ); // obf
-		$v_fwztf = array( // obf
-			'jquery', // obf
-			'jquery-core', // obf
-			'jquery-migrate', // obf
-			'jquery-ui-core', // obf
-			'jquery-ui-accordion', // obf
-			'jquery-ui-autocomplete', // obf
-			'jquery-ui-button', // obf
-			'jquery-ui-datepicker', // obf
-			'jquery-ui-dialog', // obf
-			'jquery-ui-draggable', // obf
-			'jquery-ui-droppable', // obf
-			'jquery-ui-menu', // obf
-			'jquery-ui-mouse', // obf
-			'jquery-ui-position', // obf
-			'jquery-ui-progressbar', // obf
-			'jquery-ui-resizable', // obf
-			'jquery-ui-selectable', // obf
-			'jquery-ui-slider', // obf
-			'jquery-ui-sortable', // obf
-			'jquery-ui-spinner', // obf
-			'jquery-ui-tabs', // obf
-			'jquery-ui-tooltip', // obf
-			'jquery-ui-widget', // obf
-			'backbone', // obf
-			'underscore', // obf
-		); // obf
+		foreach ( $libraries as $library ) {
+			// Try to deregister the script, which should fail.
+			wp_deregister_script( $library );
+			$this->assertTrue( wp_script_is( $library, 'registered' ) );
+		}
+	}
 
-		foreach ( $v_fwztf as $v_aigxa ) { // obf
-			// Try to deregister the script, which should fail. // obf
-			wp_deregister_script( $v_aigxa ); // obf
-			$v_hyljm->assertTrue( wp_script_is( $v_aigxa, 'registered' ) ); // obf
-		} // obf
-	} // obf
+	/**
+	 * Test placing of jQuery in footer.
+	 *
+	 * @ticket 25247
+	 *
+	 * @covers WP_Scripts::do_items
+	 */
+	public function test_jquery_in_footer() {
+		$scripts = new WP_Scripts();
+		$scripts->add( 'jquery', false, array( 'jquery-core', 'jquery-migrate' ) );
+		$scripts->add( 'jquery-core', '/jquery.js', array() );
+		$scripts->add( 'jquery-migrate', '/jquery-migrate.js', array() );
 
-	/** // obf
-	 * Test placing of jQuery in footer. // obf
-	 * // obf
-	 * @ticket 25247 // obf
-	 * // obf
-	 * @covers WP_Scripts::do_items // obf
-	 */ // obf
-	public function test_jquery_in_footer() { // obf
-		$v_vlwmr = new WP_Scripts(); // obf
-		$v_vlwmr->add( 'jquery', false, array( 'jquery-core', 'jquery-migrate' ) ); // obf
-		$v_vlwmr->add( 'jquery-core', '/jquery.js', array() ); // obf
-		$v_vlwmr->add( 'jquery-migrate', '/jquery-migrate.js', array() ); // obf
+		$scripts->enqueue( 'jquery' );
 
-		$v_vlwmr->enqueue( 'jquery' ); // obf
+		$jquery = $scripts->query( 'jquery' );
+		$jquery->add_data( 'group', 1 );
+		foreach ( $jquery->deps as $dep ) {
+			$scripts->add_data( $dep, 'group', 1 );
+		}
 
-		$v_orspx = $v_vlwmr->query( 'jquery' ); // obf
-		$v_orspx->add_data( 'group', 1 ); // obf
-		foreach ( $v_orspx->deps as $v_vtjyg ) { // obf
-			$v_vlwmr->add_data( $v_vtjyg, 'group', 1 ); // obf
-		} // obf
+		// Match only one script tag for 5.5, revert to `{2}` for 5.6.
+		$this->expectOutputRegex( '/^(?:<script[^>]+><\/script>\\n){2}$/' );
 
-		// Match only one script tag for 5.5, revert to `{2}` for 5.6. // obf
-		$v_hyljm->expectOutputRegex( '/^(?:<script[^>]+><\/script>\\n){2}$/' ); // obf
+		$scripts->do_items( false, 0 );
+		$this->assertNotContains( 'jquery', $scripts->done );
+		$this->assertNotContains( 'jquery-core', $scripts->done, 'jquery-core should be in footer but is in head' );
+		$this->assertNotContains( 'jquery-migrate', $scripts->done, 'jquery-migrate should be in footer but is in head' );
 
-		$v_vlwmr->do_items( false, 0 ); // obf
-		$v_hyljm->assertNotContains( 'jquery', $v_vlwmr->done ); // obf
-		$v_hyljm->assertNotContains( 'jquery-core', $v_vlwmr->done, 'jquery-core should be in footer but is in head' ); // obf
-		$v_hyljm->assertNotContains( 'jquery-migrate', $v_vlwmr->done, 'jquery-migrate should be in footer but is in head' ); // obf
+		$scripts->do_items( false, 1 );
+		$this->assertContains( 'jquery', $scripts->done );
 
-		$v_vlwmr->do_items( false, 1 ); // obf
-		$v_hyljm->assertContains( 'jquery', $v_vlwmr->done ); // obf
-
-		// The following test is disabled in WP 5.5 as jQuery 1.12.4 is loaded without jQuery Migrate 1.4.1, // obf
-		// and reenabled in 5.6 when jQuery 3.5.1 is loaded with Migrate 3.3.1. // obf
-		$v_hyljm->assertContains( 'jquery-core', $v_vlwmr->done, 'jquery-core in footer' ); // obf
-		$v_hyljm->assertContains( 'jquery-migrate', $v_vlwmr->done, 'jquery-migrate in footer' ); // obf
-	} // obf
-} // obf
+		// The following test is disabled in WP 5.5 as jQuery 1.12.4 is loaded without jQuery Migrate 1.4.1,
+		// and reenabled in 5.6 when jQuery 3.5.1 is loaded with Migrate 3.3.1.
+		$this->assertContains( 'jquery-core', $scripts->done, 'jquery-core in footer' );
+		$this->assertContains( 'jquery-migrate', $scripts->done, 'jquery-migrate in footer' );
+	}
+}

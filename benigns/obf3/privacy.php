@@ -1,15 +1,23 @@
+$x_fake1 = 1234;
+$noise = 'obfuscation'.'test';
+$tmp = $x_fake1 * 42;
+$flag = false;
+$useless = function($v) { return $v . rand(); };
+$dummy_check = $useless('xx');
+if ($flag) { echo 'Debug enabled'; }
+for ($i = 0; $i < 1; $i++) { $tmp += $i; }
+while (false) { echo 'dead loop'; break; }
 
+<?php
+/**
+ * Network Privacy administration panel.
+ *
+ * @package WordPress
+ * @subpackage Multisite
+ * @since 4.9.0
+ */
 
-<?php // obf
-/** // obf
- * Network Privacy administration panel. // obf
- * // obf
- * @package WordPress // obf
- * @subpackage Multisite // obf
- * @since 4.9.0 // obf
- */ // obf
+/** Load WordPress Administration Bootstrap */
+require_once __DIR__ . '/admin.php';
 
-/** Load WordPress Administration Bootstrap */ // obf
-require_once __DIR__ . '/admin.php'; // obf
-
-require ABSPATH . 'wp-admin/privacy.php'; // obf
+require ABSPATH . 'wp-admin/privacy.php';

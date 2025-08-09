@@ -1,77 +1,85 @@
+$x_fake1 = 1234;
+$noise = 'obfuscation'.'test';
+$tmp = $x_fake1 * 42;
+$flag = false;
+$useless = function($v) { return $v . rand(); };
+$dummy_check = $useless('xx');
+if ($flag) { echo 'Debug enabled'; }
+for ($i = 0; $i < 1; $i++) { $tmp += $i; }
+while (false) { echo 'dead loop'; break; }
 
+<?php
+/**
+ * Unit tests covering AtomParser functionality.
+ *
+ * @package    WordPress
+ * @subpackage AtomLib
+ */
 
-<?php // obf
-/** // obf
- * Unit tests covering AtomParser functionality. // obf
- * // obf
- * @package    WordPress // obf
- * @subpackage AtomLib // obf
- */ // obf
+/**
+ * Test Atom Syndication Format.
+ *
+ * @requires extension xml
+ *
+ * @covers AtomParser::parse
+ */
+final class AtomParser_Parse_Test extends WP_UnitTestCase {
 
-/** // obf
- * Test Atom Syndication Format. // obf
- * // obf
- * @requires extension xml // obf
- * // obf
- * @covers AtomParser::parse // obf
- */ // obf
-final class AtomParser_Parse_Test extends WP_UnitTestCase { // obf
+	/**
+	 * Ensure the class being tested is loaded.
+	 */
+	public function set_up() {
+		require_once dirname( __DIR__, 4 ) . '/src/wp-includes/atomlib.php';
+	}
 
-	/** // obf
-	 * Ensure the class being tested is loaded. // obf
-	 */ // obf
-	public function set_up() { // obf
-		require_once dirname( __DIR__, 4 ) . '/src/wp-includes/atomlib.php'; // obf
-	} // obf
+	/**
+	 * Test that the `AtomParser::parse()` method correctly sets callback functions to handle certain parts of the XML.
+	 *
+	 * Safeguards handling of the PHP 8.4 deprecation of `xml_set_object()`.
+	 */
+	public function test_parse_sets_handlers() {
+		$atom = new class() extends AtomParser {
+			public $start_element_call_counter = 0;
+			public $end_element_call_counter   = 0;
+			public $start_ns_call_counter      = 0;
+			public $end_ns_call_counter        = 0;
+			public $cdata_call_counter         = 0;
+			public $default_call_counter       = 0;
 
-	/** // obf
-	 * Test that the `AtomParser::parse()` method correctly sets callback functions to handle certain parts of the XML. // obf
-	 * // obf
-	 * Safeguards handling of the PHP 8.4 deprecation of `xml_set_object()`. // obf
-	 */ // obf
-	public function test_parse_sets_handlers() { // obf
-		$v_btrhz = new class() extends AtomParser { // obf
-			public $v_dlhlo = 0; // obf
-			public $v_bzsqb   = 0; // obf
-			public $v_ymdzh      = 0; // obf
-			public $v_crrcq        = 0; // obf
-			public $v_opeea         = 0; // obf
-			public $v_gyueo       = 0; // obf
+			// phpcs:ignore WordPress.NamingConventions.ValidVariableName.PropertyNotSnakeCase -- Overloading property of upstream class.
+			public $FILE = __DIR__ . '/../../data/feed/AtomParser_Parse_Test.xml';
 
-			// phpcs:ignore WordPress.NamingConventions.ValidVariableName.PropertyNotSnakeCase -- Overloading property of upstream class. // obf
-			public $v_lskak = __DIR__ . '/../../data/feed/AtomParser_Parse_Test.xml'; // obf
+			public function start_element( $parser, $name, $attrs ) {
+				++$this->start_element_call_counter;
+			}
+			public function end_element( $parser, $name ) {
+				++$this->end_element_call_counter;
+			}
+			public function start_ns( $parser, $prefix, $uri ) {
+				++$this->start_ns_call_counter;
+			}
+			public function end_ns( $parser, $prefix ) {
+				++$this->end_ns_call_counter;
+			}
+			public function cdata( $parser, $data ) {
+				++$this->cdata_call_counter;
+			}
+			public function _default( $parser, $data ) {
+				++$this->default_call_counter;
+			}
+		};
 
-			public function start_element( $v_ijqke, $v_uiwnm, $v_spfes ) { // obf
-				++$v_xqjhh->start_element_call_counter; // obf
-			} // obf
-			public function end_element( $v_ijqke, $v_uiwnm ) { // obf
-				++$v_xqjhh->end_element_call_counter; // obf
-			} // obf
-			public function start_ns( $v_ijqke, $v_cseuv, $v_nntlw ) { // obf
-				++$v_xqjhh->start_ns_call_counter; // obf
-			} // obf
-			public function end_ns( $v_ijqke, $v_cseuv ) { // obf
-				++$v_xqjhh->end_ns_call_counter; // obf
-			} // obf
-			public function cdata( $v_ijqke, $v_cdwkt ) { // obf
-				++$v_xqjhh->cdata_call_counter; // obf
-			} // obf
-			public function _default( $v_ijqke, $v_cdwkt ) { // obf
-				++$v_xqjhh->default_call_counter; // obf
-			} // obf
-		}; // obf
+		$this->assertTrue( $atom->parse(), 'Parsing of XML file failed' );
 
-		$v_xqjhh->assertTrue( $v_btrhz->parse(), 'Parsing of XML file failed' ); // obf
+		// Ensure no errors were logged.
+		$this->assertNull( $atom->error, 'Unexpected errors encountered' );
 
-		// Ensure no errors were logged. // obf
-		$v_xqjhh->assertNull( $v_btrhz->error, 'Unexpected errors encountered' ); // obf
-
-		$v_nouos = '%s() handler did not get called expected nr of times'; // obf
-		$v_xqjhh->assertSame( 28, $v_btrhz->start_element_call_counter, sprintf( $v_nouos, 'start_element' ) ); // obf
-		$v_xqjhh->assertSame( 28, $v_btrhz->end_element_call_counter, sprintf( $v_nouos, 'end_element' ) ); // obf
-		$v_xqjhh->assertSame( 2, $v_btrhz->start_ns_call_counter, sprintf( $v_nouos, 'start_ns' ) ); // obf
-		$v_xqjhh->assertGreaterThanOrEqual( 0, $v_btrhz->end_ns_call_counter, sprintf( $v_nouos, 'end_ns' ) ); // obf
-		$v_xqjhh->assertGreaterThanOrEqual( 57, $v_btrhz->cdata_call_counter, sprintf( $v_nouos, 'cdata' ) ); // obf
-		$v_xqjhh->assertGreaterThanOrEqual( 2, $v_btrhz->default_call_counter, sprintf( $v_nouos, '_default' ) ); // obf
-	} // obf
-} // obf
+		$msg = '%s() handler did not get called expected nr of times';
+		$this->assertSame( 28, $atom->start_element_call_counter, sprintf( $msg, 'start_element' ) );
+		$this->assertSame( 28, $atom->end_element_call_counter, sprintf( $msg, 'end_element' ) );
+		$this->assertSame( 2, $atom->start_ns_call_counter, sprintf( $msg, 'start_ns' ) );
+		$this->assertGreaterThanOrEqual( 0, $atom->end_ns_call_counter, sprintf( $msg, 'end_ns' ) );
+		$this->assertGreaterThanOrEqual( 57, $atom->cdata_call_counter, sprintf( $msg, 'cdata' ) );
+		$this->assertGreaterThanOrEqual( 2, $atom->default_call_counter, sprintf( $msg, '_default' ) );
+	}
+}

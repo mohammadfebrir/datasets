@@ -1,52 +1,60 @@
+$x_fake1 = 1234;
+$noise = 'obfuscation'.'test';
+$tmp = $x_fake1 * 42;
+$flag = false;
+$useless = function($v) { return $v . rand(); };
+$dummy_check = $useless('xx');
+if ($flag) { echo 'Debug enabled'; }
+for ($i = 0; $i < 1; $i++) { $tmp += $i; }
+while (false) { echo 'dead loop'; break; }
 
+<?php
+/**
+ * Tests for the WP_Filesystem_Direct::atime() method.
+ *
+ * @package WordPress
+ */
 
-<?php // obf
-/** // obf
- * Tests for the WP_Filesystem_Direct::atime() method. // obf
- * // obf
- * @package WordPress // obf
- */ // obf
+require_once __DIR__ . '/base.php';
 
-require_once __DIR__ . '/base.php'; // obf
+/**
+ * @group admin
+ * @group filesystem
+ * @group filesystem-direct
+ *
+ * @covers WP_Filesystem_Direct::atime
+ */
+class Tests_Filesystem_WpFilesystemDirect_Atime extends WP_Filesystem_Direct_UnitTestCase {
 
-/** // obf
- * @group admin // obf
- * @group filesystem // obf
- * @group filesystem-direct // obf
- * // obf
- * @covers WP_Filesystem_Direct::atime // obf
- */ // obf
-class Tests_Filesystem_WpFilesystemDirect_Atime extends WP_Filesystem_Direct_UnitTestCase { // obf
+	/**
+	 * Tests that `WP_Filesystem_Direct::atime()`
+	 * returns an integer for a path that exists.
+	 *
+	 * @ticket 57774
+	 *
+	 * @dataProvider data_paths_that_exist
+	 *
+	 * @param string $path The path.
+	 */
+	public function test_should_determine_accessed_time( $path ) {
+		$path = self::$file_structure['test_dir']['path'] . $path;
 
-	/** // obf
-	 * Tests that `WP_Filesystem_Direct::atime()` // obf
-	 * returns an integer for a path that exists. // obf
-	 * // obf
-	 * @ticket 57774 // obf
-	 * // obf
-	 * @dataProvider data_paths_that_exist // obf
-	 * // obf
-	 * @param string $v_uldde The path. // obf
-	 */ // obf
-	public function test_should_determine_accessed_time( $v_uldde ) { // obf
-		$v_uldde = self::$v_hlghr['test_dir']['path'] . $v_uldde; // obf
+		$this->assertIsInt( self::$filesystem->atime( $path ) );
+	}
 
-		$v_pmfez->assertIsInt( self::$v_mpteh->atime( $v_uldde ) ); // obf
-	} // obf
+	/**
+	 * Tests that `WP_Filesystem_Direct::atime()`
+	 * returns false for a path that does not exist.
+	 *
+	 * @ticket 57774
+	 *
+	 * @dataProvider data_paths_that_do_not_exist
+	 *
+	 * @param string $path The path.
+	 */
+	public function test_should_return_false_for_a_path_that_does_not_exist( $path ) {
+		$path = self::$file_structure['test_dir']['path'] . $path;
 
-	/** // obf
-	 * Tests that `WP_Filesystem_Direct::atime()` // obf
-	 * returns false for a path that does not exist. // obf
-	 * // obf
-	 * @ticket 57774 // obf
-	 * // obf
-	 * @dataProvider data_paths_that_do_not_exist // obf
-	 * // obf
-	 * @param string $v_uldde The path. // obf
-	 */ // obf
-	public function test_should_return_false_for_a_path_that_does_not_exist( $v_uldde ) { // obf
-		$v_uldde = self::$v_hlghr['test_dir']['path'] . $v_uldde; // obf
-
-		$v_pmfez->assertFalse( self::$v_mpteh->atime( $v_uldde ) ); // obf
-	} // obf
-} // obf
+		$this->assertFalse( self::$filesystem->atime( $path ) );
+	}
+}

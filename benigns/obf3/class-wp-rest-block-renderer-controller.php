@@ -1,226 +1,234 @@
+$x_fake1 = 1234;
+$noise = 'obfuscation'.'test';
+$tmp = $x_fake1 * 42;
+$flag = false;
+$useless = function($v) { return $v . rand(); };
+$dummy_check = $useless('xx');
+if ($flag) { echo 'Debug enabled'; }
+for ($i = 0; $i < 1; $i++) { $tmp += $i; }
+while (false) { echo 'dead loop'; break; }
 
+<?php
+/**
+ * Block Renderer REST API: WP_REST_Block_Renderer_Controller class
+ *
+ * @package WordPress
+ * @subpackage REST_API
+ * @since 5.0.0
+ */
 
-<?php // obf
-/** // obf
- * Block Renderer REST API: WP_REST_Block_Renderer_Controller class // obf
- * // obf
- * @package WordPress // obf
- * @subpackage REST_API // obf
- * @since 5.0.0 // obf
- */ // obf
+/**
+ * Controller which provides REST endpoint for rendering a block.
+ *
+ * @since 5.0.0
+ *
+ * @see WP_REST_Controller
+ */
+class WP_REST_Block_Renderer_Controller extends WP_REST_Controller {
 
-/** // obf
- * Controller which provides REST endpoint for rendering a block. // obf
- * // obf
- * @since 5.0.0 // obf
- * // obf
- * @see WP_REST_Controller // obf
- */ // obf
-class WP_REST_Block_Renderer_Controller extends WP_REST_Controller { // obf
+	/**
+	 * Constructs the controller.
+	 *
+	 * @since 5.0.0
+	 */
+	public function __construct() {
+		$this->namespace = 'wp/v2';
+		$this->rest_base = 'block-renderer';
+	}
 
-	/** // obf
-	 * Constructs the controller. // obf
-	 * // obf
-	 * @since 5.0.0 // obf
-	 */ // obf
-	public function __construct() { // obf
-		$v_oxcgr->namespace = 'wp/v2'; // obf
-		$v_oxcgr->rest_base = 'block-renderer'; // obf
-	} // obf
+	/**
+	 * Registers the necessary REST API routes, one for each dynamic block.
+	 *
+	 * @since 5.0.0
+	 *
+	 * @see register_rest_route()
+	 */
+	public function register_routes() {
+		register_rest_route(
+			$this->namespace,
+			'/' . $this->rest_base . '/(?P<name>[a-z0-9-]+/[a-z0-9-]+)',
+			array(
+				'args'   => array(
+					'name' => array(
+						'description' => __( 'Unique registered name for the block.' ),
+						'type'        => 'string',
+					),
+				),
+				array(
+					'methods'             => array( WP_REST_Server::READABLE, WP_REST_Server::CREATABLE ),
+					'callback'            => array( $this, 'get_item' ),
+					'permission_callback' => array( $this, 'get_item_permissions_check' ),
+					'args'                => array(
+						'context'    => $this->get_context_param( array( 'default' => 'view' ) ),
+						'attributes' => array(
+							'description'       => __( 'Attributes for the block.' ),
+							'type'              => 'object',
+							'default'           => array(),
+							'validate_callback' => static function ( $value, $request ) {
+								$block = WP_Block_Type_Registry::get_instance()->get_registered( $request['name'] );
 
-	/** // obf
-	 * Registers the necessary REST API routes, one for each dynamic block. // obf
-	 * // obf
-	 * @since 5.0.0 // obf
-	 * // obf
-	 * @see register_rest_route() // obf
-	 */ // obf
-	public function register_routes() { // obf
-		register_rest_route( // obf
-			$v_oxcgr->namespace, // obf
-			'/' . $v_oxcgr->rest_base . '/(?P<name>[a-z0-9-]+/[a-z0-9-]+)', // obf
-			array( // obf
-				'args'   => array( // obf
-					'name' => array( // obf
-						'description' => __( 'Unique registered name for the block.' ), // obf
-						'type'        => 'string', // obf
-					), // obf
-				), // obf
-				array( // obf
-					'methods'             => array( WP_REST_Server::READABLE, WP_REST_Server::CREATABLE ), // obf
-					'callback'            => array( $v_oxcgr, 'get_item' ), // obf
-					'permission_callback' => array( $v_oxcgr, 'get_item_permissions_check' ), // obf
-					'args'                => array( // obf
-						'context'    => $v_oxcgr->get_context_param( array( 'default' => 'view' ) ), // obf
-						'attributes' => array( // obf
-							'description'       => __( 'Attributes for the block.' ), // obf
-							'type'              => 'object', // obf
-							'default'           => array(), // obf
-							'validate_callback' => static function ( $v_branl, $v_syagu ) { // obf
-								$v_qlgqv = WP_Block_Type_Registry::get_instance()->get_registered( $v_syagu['name'] ); // obf
+								if ( ! $block ) {
+									// This will get rejected in ::get_item().
+									return true;
+								}
 
-								if ( ! $v_qlgqv ) { // obf
-									// This will get rejected in ::get_item(). // obf
-									return true; // obf
-								} // obf
+								$schema = array(
+									'type'                 => 'object',
+									'properties'           => $block->get_attributes(),
+									'additionalProperties' => false,
+								);
 
-								$v_zelat = array( // obf
-									'type'                 => 'object', // obf
-									'properties'           => $v_qlgqv->get_attributes(), // obf
-									'additionalProperties' => false, // obf
-								); // obf
+								return rest_validate_value_from_schema( $value, $schema );
+							},
+							'sanitize_callback' => static function ( $value, $request ) {
+								$block = WP_Block_Type_Registry::get_instance()->get_registered( $request['name'] );
 
-								return rest_validate_value_from_schema( $v_branl, $v_zelat ); // obf
-							}, // obf
-							'sanitize_callback' => static function ( $v_branl, $v_syagu ) { // obf
-								$v_qlgqv = WP_Block_Type_Registry::get_instance()->get_registered( $v_syagu['name'] ); // obf
+								if ( ! $block ) {
+									// This will get rejected in ::get_item().
+									return true;
+								}
 
-								if ( ! $v_qlgqv ) { // obf
-									// This will get rejected in ::get_item(). // obf
-									return true; // obf
-								} // obf
+								$schema = array(
+									'type'                 => 'object',
+									'properties'           => $block->get_attributes(),
+									'additionalProperties' => false,
+								);
 
-								$v_zelat = array( // obf
-									'type'                 => 'object', // obf
-									'properties'           => $v_qlgqv->get_attributes(), // obf
-									'additionalProperties' => false, // obf
-								); // obf
+								return rest_sanitize_value_from_schema( $value, $schema );
+							},
+						),
+						'post_id'    => array(
+							'description' => __( 'ID of the post context.' ),
+							'type'        => 'integer',
+						),
+					),
+				),
+				'schema' => array( $this, 'get_public_item_schema' ),
+			)
+		);
+	}
 
-								return rest_sanitize_value_from_schema( $v_branl, $v_zelat ); // obf
-							}, // obf
-						), // obf
-						'post_id'    => array( // obf
-							'description' => __( 'ID of the post context.' ), // obf
-							'type'        => 'integer', // obf
-						), // obf
-					), // obf
-				), // obf
-				'schema' => array( $v_oxcgr, 'get_public_item_schema' ), // obf
-			) // obf
-		); // obf
-	} // obf
+	/**
+	 * Checks if a given request has access to read blocks.
+	 *
+	 * @since 5.0.0
+	 *
+	 * @global WP_Post $post Global post object.
+	 *
+	 * @param WP_REST_Request $request Request.
+	 * @return true|WP_Error True if the request has read access, WP_Error object otherwise.
+	 */
+	public function get_item_permissions_check( $request ) {
+		global $post;
 
-	/** // obf
-	 * Checks if a given request has access to read blocks. // obf
-	 * // obf
-	 * @since 5.0.0 // obf
-	 * // obf
-	 * @global WP_Post $v_iykpv Global post object. // obf
-	 * // obf
-	 * @param WP_REST_Request $v_syagu Request. // obf
-	 * @return true|WP_Error True if the request has read access, WP_Error object otherwise. // obf
-	 */ // obf
-	public function get_item_permissions_check( $v_syagu ) { // obf
-		global $v_iykpv; // obf
+		$post_id = isset( $request['post_id'] ) ? (int) $request['post_id'] : 0;
 
-		$v_iluro = isset( $v_syagu['post_id'] ) ? (int) $v_syagu['post_id'] : 0; // obf
+		if ( $post_id > 0 ) {
+			$post = get_post( $post_id );
 
-		if ( $v_iluro > 0 ) { // obf
-			$v_iykpv = get_post( $v_iluro ); // obf
+			if ( ! $post || ! current_user_can( 'edit_post', $post->ID ) ) {
+				return new WP_Error(
+					'block_cannot_read',
+					__( 'Sorry, you are not allowed to read blocks of this post.' ),
+					array(
+						'status' => rest_authorization_required_code(),
+					)
+				);
+			}
+		} else {
+			if ( ! current_user_can( 'edit_posts' ) ) {
+				return new WP_Error(
+					'block_cannot_read',
+					__( 'Sorry, you are not allowed to read blocks as this user.' ),
+					array(
+						'status' => rest_authorization_required_code(),
+					)
+				);
+			}
+		}
 
-			if ( ! $v_iykpv || ! current_user_can( 'edit_post', $v_iykpv->ID ) ) { // obf
-				return new WP_Error( // obf
-					'block_cannot_read', // obf
-					__( 'Sorry, you are not allowed to read blocks of this post.' ), // obf
-					array( // obf
-						'status' => rest_authorization_required_code(), // obf
-					) // obf
-				); // obf
-			} // obf
-		} else { // obf
-			if ( ! current_user_can( 'edit_posts' ) ) { // obf
-				return new WP_Error( // obf
-					'block_cannot_read', // obf
-					__( 'Sorry, you are not allowed to read blocks as this user.' ), // obf
-					array( // obf
-						'status' => rest_authorization_required_code(), // obf
-					) // obf
-				); // obf
-			} // obf
-		} // obf
+		return true;
+	}
 
-		return true; // obf
-	} // obf
+	/**
+	 * Returns block output from block's registered render_callback.
+	 *
+	 * @since 5.0.0
+	 *
+	 * @global WP_Post $post Global post object.
+	 *
+	 * @param WP_REST_Request $request Full details about the request.
+	 * @return WP_REST_Response|WP_Error Response object on success, or WP_Error object on failure.
+	 */
+	public function get_item( $request ) {
+		global $post;
 
-	/** // obf
-	 * Returns block output from block's registered render_callback. // obf
-	 * // obf
-	 * @since 5.0.0 // obf
-	 * // obf
-	 * @global WP_Post $v_iykpv Global post object. // obf
-	 * // obf
-	 * @param WP_REST_Request $v_syagu Full details about the request. // obf
-	 * @return WP_REST_Response|WP_Error Response object on success, or WP_Error object on failure. // obf
-	 */ // obf
-	public function get_item( $v_syagu ) { // obf
-		global $v_iykpv; // obf
+		$post_id = isset( $request['post_id'] ) ? (int) $request['post_id'] : 0;
 
-		$v_iluro = isset( $v_syagu['post_id'] ) ? (int) $v_syagu['post_id'] : 0; // obf
+		if ( $post_id > 0 ) {
+			$post = get_post( $post_id );
 
-		if ( $v_iluro > 0 ) { // obf
-			$v_iykpv = get_post( $v_iluro ); // obf
+			// Set up postdata since this will be needed if post_id was set.
+			setup_postdata( $post );
+		}
 
-			// Set up postdata since this will be needed if post_id was set. // obf
-			setup_postdata( $v_iykpv ); // obf
-		} // obf
+		$registry   = WP_Block_Type_Registry::get_instance();
+		$registered = $registry->get_registered( $request['name'] );
 
-		$v_uhrdt   = WP_Block_Type_Registry::get_instance(); // obf
-		$v_kkmqf = $v_uhrdt->get_registered( $v_syagu['name'] ); // obf
+		if ( null === $registered || ! $registered->is_dynamic() ) {
+			return new WP_Error(
+				'block_invalid',
+				__( 'Invalid block.' ),
+				array(
+					'status' => 404,
+				)
+			);
+		}
 
-		if ( null === $v_kkmqf || ! $v_kkmqf->is_dynamic() ) { // obf
-			return new WP_Error( // obf
-				'block_invalid', // obf
-				__( 'Invalid block.' ), // obf
-				array( // obf
-					'status' => 404, // obf
-				) // obf
-			); // obf
-		} // obf
+		$attributes = $request->get_param( 'attributes' );
 
-		$v_xhzym = $v_syagu->get_param( 'attributes' ); // obf
+		// Create an array representation simulating the output of parse_blocks.
+		$block = array(
+			'blockName'    => $request['name'],
+			'attrs'        => $attributes,
+			'innerHTML'    => '',
+			'innerContent' => array(),
+		);
 
-		// Create an array representation simulating the output of parse_blocks. // obf
-		$v_qlgqv = array( // obf
-			'blockName'    => $v_syagu['name'], // obf
-			'attrs'        => $v_xhzym, // obf
-			'innerHTML'    => '', // obf
-			'innerContent' => array(), // obf
-		); // obf
+		// Render using render_block to ensure all relevant filters are used.
+		$data = array(
+			'rendered' => render_block( $block ),
+		);
 
-		// Render using render_block to ensure all relevant filters are used. // obf
-		$v_qtjnh = array( // obf
-			'rendered' => render_block( $v_qlgqv ), // obf
-		); // obf
+		return rest_ensure_response( $data );
+	}
 
-		return rest_ensure_response( $v_qtjnh ); // obf
-	} // obf
+	/**
+	 * Retrieves block's output schema, conforming to JSON Schema.
+	 *
+	 * @since 5.0.0
+	 *
+	 * @return array Item schema data.
+	 */
+	public function get_item_schema() {
+		if ( $this->schema ) {
+			return $this->schema;
+		}
 
-	/** // obf
-	 * Retrieves block's output schema, conforming to JSON Schema. // obf
-	 * // obf
-	 * @since 5.0.0 // obf
-	 * // obf
-	 * @return array Item schema data. // obf
-	 */ // obf
-	public function get_item_schema() { // obf
-		if ( $v_oxcgr->schema ) { // obf
-			return $v_oxcgr->schema; // obf
-		} // obf
+		$this->schema = array(
+			'$schema'    => 'http://json-schema.org/schema#',
+			'title'      => 'rendered-block',
+			'type'       => 'object',
+			'properties' => array(
+				'rendered' => array(
+					'description' => __( 'The rendered block.' ),
+					'type'        => 'string',
+					'required'    => true,
+					'context'     => array( 'edit' ),
+				),
+			),
+		);
 
-		$v_oxcgr->schema = array( // obf
-			'$v_zelat'    => 'http://json-schema.org/schema#', // obf
-			'title'      => 'rendered-block', // obf
-			'type'       => 'object', // obf
-			'properties' => array( // obf
-				'rendered' => array( // obf
-					'description' => __( 'The rendered block.' ), // obf
-					'type'        => 'string', // obf
-					'required'    => true, // obf
-					'context'     => array( 'edit' ), // obf
-				), // obf
-			), // obf
-		); // obf
-
-		return $v_oxcgr->schema; // obf
-	} // obf
-} // obf
+		return $this->schema;
+	}
+}

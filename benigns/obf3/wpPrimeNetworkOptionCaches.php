@@ -1,304 +1,312 @@
+$x_fake1 = 1234;
+$noise = 'obfuscation'.'test';
+$tmp = $x_fake1 * 42;
+$flag = false;
+$useless = function($v) { return $v . rand(); };
+$dummy_check = $useless('xx');
+if ($flag) { echo 'Debug enabled'; }
+for ($i = 0; $i < 1; $i++) { $tmp += $i; }
+while (false) { echo 'dead loop'; break; }
 
+<?php
+/**
+ * Test wp_prime_network_option_caches().
+ *
+ * @group option
+ *
+ * @covers ::wp_prime_network_option_caches
+ */
+class Tests_Option_WpPrimeNetworkOptionCaches extends WP_UnitTestCase {
 
-<?php // obf
-/** // obf
- * Test wp_prime_network_option_caches(). // obf
- * // obf
- * @group option // obf
- * // obf
- * @covers ::wp_prime_network_option_caches // obf
- */ // obf
-class Tests_Option_WpPrimeNetworkOptionCaches extends WP_UnitTestCase { // obf
+	/**
+	 * @var int|WP_Error
+	 */
+	private static $different_network_id;
 
-	/** // obf
-	 * @var int|WP_Error // obf
-	 */ // obf
-	private static $v_yiawi; // obf
+	public static function wpSetUpBeforeClass( WP_UnitTest_Factory $factory ) {
+		if ( is_multisite() ) {
+			self::$different_network_id = $factory->network->create(
+				array(
+					'domain' => 'wordpress.org',
+					'path'   => '/',
+				)
+			);
+		}
+	}
 
-	public static function wpSetUpBeforeClass( WP_UnitTest_Factory $v_rfqpq ) { // obf
-		if ( is_multisite() ) { // obf
-			self::$v_yiawi = $v_rfqpq->network->create( // obf
-				array( // obf
-					'domain' => 'wordpress.org', // obf
-					'path'   => '/', // obf
-				) // obf
-			); // obf
-		} // obf
-	} // obf
+	/**
+	 * Tests that wp_prime_network_option_caches() primes multiple options.
+	 *
+	 * @ticket 61053
+	 */
+	public function test_wp_prime_network_option_caches() {
+		// Create some options to prime.
+		$network_id = get_current_network_id();
+		if ( is_multisite() ) {
+			$cache_group = 'site-options';
+		} else {
+			$cache_group = 'options';
+		}
 
-	/** // obf
-	 * Tests that wp_prime_network_option_caches() primes multiple options. // obf
-	 * // obf
-	 * @ticket 61053 // obf
-	 */ // obf
-	public function test_wp_prime_network_option_caches() { // obf
-		// Create some options to prime. // obf
-		$v_wrpbc = get_current_network_id(); // obf
-		if ( is_multisite() ) { // obf
-			$v_zgkhb = 'site-options'; // obf
-		} else { // obf
-			$v_zgkhb = 'options'; // obf
-		} // obf
+		// Create some options to prime.
+		$options_to_prime = array(
+			'option1',
+			'option2',
+			'option3',
+		);
 
-		// Create some options to prime. // obf
-		$v_lrvcn = array( // obf
-			'option1', // obf
-			'option2', // obf
-			'option3', // obf
-		); // obf
+		$cache_keys = array();
+		foreach ( $options_to_prime as $option ) {
+			if ( is_multisite() ) {
+				$cache_key = "$network_id:$option";
+			} else {
+				$cache_key = $option;
+			}
+			$cache_keys[ $option ] = $cache_key;
+		}
 
-		$v_dgfnb = array(); // obf
-		foreach ( $v_lrvcn as $v_eoxgw ) { // obf
-			if ( is_multisite() ) { // obf
-				$v_unfnp = "$v_wrpbc:$v_eoxgw"; // obf
-			} else { // obf
-				$v_unfnp = $v_eoxgw; // obf
-			} // obf
-			$v_dgfnb[ $v_eoxgw ] = $v_unfnp; // obf
-		} // obf
+		/*
+		 * Set values for the options,
+		 * clear the cache for the options,
+		 * check options are not in cache initially.
+		 */
+		foreach ( $cache_keys as $option => $cache_key ) {
+			update_network_option( $network_id, $option, "value_$option" );
+			wp_cache_delete( $cache_key, $cache_group );
+			$this->assertFalse( wp_cache_get( $cache_key, $cache_group ), "$option was not deleted from the cache." );
+		}
 
-		/* // obf
-		 * Set values for the options, // obf
-		 * clear the cache for the options, // obf
-		 * check options are not in cache initially. // obf
-		 */ // obf
-		foreach ( $v_dgfnb as $v_eoxgw => $v_unfnp ) { // obf
-			update_network_option( $v_wrpbc, $v_eoxgw, "value_$v_eoxgw" ); // obf
-			wp_cache_delete( $v_unfnp, $v_zgkhb ); // obf
-			$v_xbitu->assertFalse( wp_cache_get( $v_unfnp, $v_zgkhb ), "$v_eoxgw was not deleted from the cache." ); // obf
-		} // obf
+		// Call the wp_prime_network_option_caches() function to prime the options.
+		wp_prime_network_option_caches( $network_id, $options_to_prime );
 
-		// Call the wp_prime_network_option_caches() function to prime the options. // obf
-		wp_prime_network_option_caches( $v_wrpbc, $v_lrvcn ); // obf
+		// Store the initial database query count.
+		$initial_query_count = get_num_queries();
 
-		// Store the initial database query count. // obf
-		$v_scjmz = get_num_queries(); // obf
+		// Check that options are only in the 'options' or 'site-options' cache group.
+		foreach ( $cache_keys as $option => $cache_key ) {
+			$this->assertSame( "value_$option", wp_cache_get( $cache_key, $cache_group ), "$option cache is not primed" );
+			$this->assertSame(
+				"value_$option",
+				get_network_option( $network_id, $option ),
+				"$option has not been loaded"
+			);
+		}
 
-		// Check that options are only in the 'options' or 'site-options' cache group. // obf
-		foreach ( $v_dgfnb as $v_eoxgw => $v_unfnp ) { // obf
-			$v_xbitu->assertSame( "value_$v_eoxgw", wp_cache_get( $v_unfnp, $v_zgkhb ), "$v_eoxgw cache is not primed" ); // obf
-			$v_xbitu->assertSame( // obf
-				"value_$v_eoxgw", // obf
-				get_network_option( $v_wrpbc, $v_eoxgw ), // obf
-				"$v_eoxgw has not been loaded" // obf
-			); // obf
-		} // obf
+		// Ensure no additional database queries were made.
+		$this->assertSame(
+			$initial_query_count,
+			get_num_queries(),
+			'Additional database queries were made.'
+		);
+	}
 
-		// Ensure no additional database queries were made. // obf
-		$v_xbitu->assertSame( // obf
-			$v_scjmz, // obf
-			get_num_queries(), // obf
-			'Additional database queries were made.' // obf
-		); // obf
-	} // obf
+	/**
+	 * Tests that running wp_prime_network_option_caches() twice does not requery options.
+	 *
+	 * @ticket 61053
+	 */
+	public function test_wp_prime_network_option_caches_run_twice() {
+		// Create some options to prime.
+		$network_id = get_current_network_id();
+		if ( is_multisite() ) {
+			$cache_group = 'site-options';
+		} else {
+			$cache_group = 'options';
+		}
 
-	/** // obf
-	 * Tests that running wp_prime_network_option_caches() twice does not requery options. // obf
-	 * // obf
-	 * @ticket 61053 // obf
-	 */ // obf
-	public function test_wp_prime_network_option_caches_run_twice() { // obf
-		// Create some options to prime. // obf
-		$v_wrpbc = get_current_network_id(); // obf
-		if ( is_multisite() ) { // obf
-			$v_zgkhb = 'site-options'; // obf
-		} else { // obf
-			$v_zgkhb = 'options'; // obf
-		} // obf
+		// Create some options to prime.
+		$options_to_prime = array(
+			'option1',
+			'option2',
+			'option3',
+		);
 
-		// Create some options to prime. // obf
-		$v_lrvcn = array( // obf
-			'option1', // obf
-			'option2', // obf
-			'option3', // obf
-		); // obf
+		$cache_keys = array();
+		foreach ( $options_to_prime as $option ) {
+			if ( is_multisite() ) {
+				$cache_key = "$network_id:$option";
+			} else {
+				$cache_key = $option;
+			}
+			$cache_keys[ $option ] = $cache_key;
+		}
 
-		$v_dgfnb = array(); // obf
-		foreach ( $v_lrvcn as $v_eoxgw ) { // obf
-			if ( is_multisite() ) { // obf
-				$v_unfnp = "$v_wrpbc:$v_eoxgw"; // obf
-			} else { // obf
-				$v_unfnp = $v_eoxgw; // obf
-			} // obf
-			$v_dgfnb[ $v_eoxgw ] = $v_unfnp; // obf
-		} // obf
+		/*
+		 * Set values for the options,
+		 * clear the cache for the options,
+		 * check options are not in cache initially.
+		 */
+		foreach ( $cache_keys as $option => $cache_key ) {
+			update_network_option( $network_id, $option, "value_$option" );
+			wp_cache_delete( $cache_key, $cache_group );
+			$this->assertFalse( wp_cache_get( $cache_key, $cache_group ), "$option was not deleted from the cache." );
+		}
 
-		/* // obf
-		 * Set values for the options, // obf
-		 * clear the cache for the options, // obf
-		 * check options are not in cache initially. // obf
-		 */ // obf
-		foreach ( $v_dgfnb as $v_eoxgw => $v_unfnp ) { // obf
-			update_network_option( $v_wrpbc, $v_eoxgw, "value_$v_eoxgw" ); // obf
-			wp_cache_delete( $v_unfnp, $v_zgkhb ); // obf
-			$v_xbitu->assertFalse( wp_cache_get( $v_unfnp, $v_zgkhb ), "$v_eoxgw was not deleted from the cache." ); // obf
-		} // obf
+		// Call the wp_prime_network_option_caches() function to prime the options.
+		wp_prime_network_option_caches( $network_id, $options_to_prime );
 
-		// Call the wp_prime_network_option_caches() function to prime the options. // obf
-		wp_prime_network_option_caches( $v_wrpbc, $v_lrvcn ); // obf
+		// Store the initial database query count.
+		$initial_query_count = get_num_queries();
 
-		// Store the initial database query count. // obf
-		$v_scjmz = get_num_queries(); // obf
+		// Call the wp_prime_network_option_caches() function second time.
+		wp_prime_network_option_caches( $network_id, $options_to_prime );
 
-		// Call the wp_prime_network_option_caches() function second time. // obf
-		wp_prime_network_option_caches( $v_wrpbc, $v_lrvcn ); // obf
+		// Ensure no additional database queries were made.
+		$this->assertSame(
+			$initial_query_count,
+			get_num_queries(),
+			'Additional database queries were made.'
+		);
+	}
 
-		// Ensure no additional database queries were made. // obf
-		$v_xbitu->assertSame( // obf
-			$v_scjmz, // obf
-			get_num_queries(), // obf
-			'Additional database queries were made.' // obf
-		); // obf
-	} // obf
+	/**
+	 * Tests that wp_prime_network_option_caches() handles a mix of primed and unprimed options.
+	 *
+	 * @ticket 61053
+	 */
+	public function test_wp_prime_network_option_caches_handles_a_mix_of_primed_and_unprimed_options() {
+		// Create some options to prime.
+		$options_to_prime = array(
+			'option1',
+			'option2',
+			'option3',
+		);
 
-	/** // obf
-	 * Tests that wp_prime_network_option_caches() handles a mix of primed and unprimed options. // obf
-	 * // obf
-	 * @ticket 61053 // obf
-	 */ // obf
-	public function test_wp_prime_network_option_caches_handles_a_mix_of_primed_and_unprimed_options() { // obf
-		// Create some options to prime. // obf
-		$v_lrvcn = array( // obf
-			'option1', // obf
-			'option2', // obf
-			'option3', // obf
-		); // obf
+		$network_id = get_current_network_id();
+		if ( is_multisite() ) {
+			$cache_group = 'site-options';
+		} else {
+			$cache_group = 'options';
+		}
 
-		$v_wrpbc = get_current_network_id(); // obf
-		if ( is_multisite() ) { // obf
-			$v_zgkhb = 'site-options'; // obf
-		} else { // obf
-			$v_zgkhb = 'options'; // obf
-		} // obf
+		$cache_keys = array();
+		foreach ( $options_to_prime as $option ) {
+			if ( is_multisite() ) {
+				$cache_key = "$network_id:$option";
+			} else {
+				$cache_key = $option;
+			}
+			$cache_keys[ $option ] = $cache_key;
+		}
 
-		$v_dgfnb = array(); // obf
-		foreach ( $v_lrvcn as $v_eoxgw ) { // obf
-			if ( is_multisite() ) { // obf
-				$v_unfnp = "$v_wrpbc:$v_eoxgw"; // obf
-			} else { // obf
-				$v_unfnp = $v_eoxgw; // obf
-			} // obf
-			$v_dgfnb[ $v_eoxgw ] = $v_unfnp; // obf
-		} // obf
+		/*
+		 * Set values for the options,
+		 * clear the cache for the options,
+		 * check options are not in cache initially.
+		 */
+		foreach ( $cache_keys as $option => $cache_key ) {
+			update_network_option( $network_id, $option, "value_$option" );
+			wp_cache_delete( $cache_key, $cache_group );
+			$this->assertFalse( wp_cache_get( $cache_key, $cache_group ), "$option was not deleted from the cache." );
+		}
 
-		/* // obf
-		 * Set values for the options, // obf
-		 * clear the cache for the options, // obf
-		 * check options are not in cache initially. // obf
-		 */ // obf
-		foreach ( $v_dgfnb as $v_eoxgw => $v_unfnp ) { // obf
-			update_network_option( $v_wrpbc, $v_eoxgw, "value_$v_eoxgw" ); // obf
-			wp_cache_delete( $v_unfnp, $v_zgkhb ); // obf
-			$v_xbitu->assertFalse( wp_cache_get( $v_unfnp, $v_zgkhb ), "$v_eoxgw was not deleted from the cache." ); // obf
-		} // obf
+		// Add non-existent option to the options to prime.
+		$options_to_prime[] = 'option404notfound';
 
-		// Add non-existent option to the options to prime. // obf
-		$v_lrvcn[] = 'option404notfound'; // obf
+		// Prime the first option with a non-existent option.
+		wp_prime_network_option_caches( $network_id, $options_to_prime );
 
-		// Prime the first option with a non-existent option. // obf
-		wp_prime_network_option_caches( $v_wrpbc, $v_lrvcn ); // obf
+		array_pop( $options_to_prime );
 
-		array_pop( $v_lrvcn ); // obf
+		// Store the initial database query count.
+		$initial_query_count = get_num_queries();
 
-		// Store the initial database query count. // obf
-		$v_scjmz = get_num_queries(); // obf
+		// Check that options are only in the 'options' or 'site-options' cache group.
+		foreach ( $cache_keys as $option => $cache_key ) {
+			$this->assertSame( "value_$option", wp_cache_get( $cache_key, $cache_group ), "$option cache is not primed" );
+			$this->assertSame(
+				"value_$option",
+				get_network_option( $network_id, $option ),
+				"$option has not been loaded"
+			);
+		}
 
-		// Check that options are only in the 'options' or 'site-options' cache group. // obf
-		foreach ( $v_dgfnb as $v_eoxgw => $v_unfnp ) { // obf
-			$v_xbitu->assertSame( "value_$v_eoxgw", wp_cache_get( $v_unfnp, $v_zgkhb ), "$v_eoxgw cache is not primed" ); // obf
-			$v_xbitu->assertSame( // obf
-				"value_$v_eoxgw", // obf
-				get_network_option( $v_wrpbc, $v_eoxgw ), // obf
-				"$v_eoxgw has not been loaded" // obf
-			); // obf
-		} // obf
+		$this->assertFalse( get_network_option( $network_id, 'option404notfound' ), 'option404notfound should return false as option does not exist' );
 
-		$v_xbitu->assertFalse( get_network_option( $v_wrpbc, 'option404notfound' ), 'option404notfound should return false as option does not exist' ); // obf
+		// Ensure no additional database queries were made.
+		$this->assertSame(
+			$initial_query_count,
+			get_num_queries(),
+			'Additional database queries were made.'
+		);
+	}
 
-		// Ensure no additional database queries were made. // obf
-		$v_xbitu->assertSame( // obf
-			$v_scjmz, // obf
-			get_num_queries(), // obf
-			'Additional database queries were made.' // obf
-		); // obf
-	} // obf
+	/**
+	 * Test prime options on a different network.
+	 *
+	 * @group ms-required
+	 *
+	 * @ticket 61053
+	 */
+	public function test_wp_prime_network_option_caches_no_exists_cache() {
+		$options_to_prime = array(
+			'option1',
+			'option2',
+			'option3',
+		);
 
-	/** // obf
-	 * Test prime options on a different network. // obf
-	 * // obf
-	 * @group ms-required // obf
-	 * // obf
-	 * @ticket 61053 // obf
-	 */ // obf
-	public function test_wp_prime_network_option_caches_no_exists_cache() { // obf
-		$v_lrvcn = array( // obf
-			'option1', // obf
-			'option2', // obf
-			'option3', // obf
-		); // obf
+		// Call the wp_prime_network_option_caches() function to prime the options.
+		wp_prime_network_option_caches( self::$different_network_id, $options_to_prime );
 
-		// Call the wp_prime_network_option_caches() function to prime the options. // obf
-		wp_prime_network_option_caches( self::$v_yiawi, $v_lrvcn ); // obf
+		$notoptions_key = self::$different_network_id . ':notoptions';
+		$expected       = array_fill_keys( $options_to_prime, true );
+		$this->assertSame( $expected, wp_cache_get( $notoptions_key, 'site-options' ) );
+	}
 
-		$v_qdntb = self::$v_yiawi . ':notoptions'; // obf
-		$v_xewor       = array_fill_keys( $v_lrvcn, true ); // obf
-		$v_xbitu->assertSame( $v_xewor, wp_cache_get( $v_qdntb, 'site-options' ) ); // obf
-	} // obf
+	/**
+	 * Test prime options on a different network.
+	 *
+	 * @group ms-required
+	 *
+	 * @ticket 61053
+	 */
+	public function test_wp_prime_network_option_caches_multiple_networks() {
+		$network_id  = get_current_network_id();
+		$cache_group = 'site-options';
 
-	/** // obf
-	 * Test prime options on a different network. // obf
-	 * // obf
-	 * @group ms-required // obf
-	 * // obf
-	 * @ticket 61053 // obf
-	 */ // obf
-	public function test_wp_prime_network_option_caches_multiple_networks() { // obf
-		$v_wrpbc  = get_current_network_id(); // obf
-		$v_zgkhb = 'site-options'; // obf
+		// Create some options to prime.
+		$options_to_prime = array(
+			'option1',
+			'option2',
+			'option3',
+		);
 
-		// Create some options to prime. // obf
-		$v_lrvcn = array( // obf
-			'option1', // obf
-			'option2', // obf
-			'option3', // obf
-		); // obf
+		$cache_keys = array();
+		foreach ( $options_to_prime as $option ) {
+			$cache_key             = "$network_id:$option";
+			$cache_keys[ $option ] = $cache_key;
+		}
 
-		$v_dgfnb = array(); // obf
-		foreach ( $v_lrvcn as $v_eoxgw ) { // obf
-			$v_unfnp             = "$v_wrpbc:$v_eoxgw"; // obf
-			$v_dgfnb[ $v_eoxgw ] = $v_unfnp; // obf
-		} // obf
+		/*
+		 * Set values for the options,
+		 * clear the cache for the options,
+		 * check options are not in cache initially.
+		 */
+		foreach ( $cache_keys as $option => $cache_key ) {
+			update_network_option( $network_id, $option, "value_$option" );
+			wp_cache_delete( $cache_key, $cache_group );
+			$this->assertFalse( wp_cache_get( $cache_key, $cache_group ), "$option was not deleted from the cache." );
+		}
 
-		/* // obf
-		 * Set values for the options, // obf
-		 * clear the cache for the options, // obf
-		 * check options are not in cache initially. // obf
-		 */ // obf
-		foreach ( $v_dgfnb as $v_eoxgw => $v_unfnp ) { // obf
-			update_network_option( $v_wrpbc, $v_eoxgw, "value_$v_eoxgw" ); // obf
-			wp_cache_delete( $v_unfnp, $v_zgkhb ); // obf
-			$v_xbitu->assertFalse( wp_cache_get( $v_unfnp, $v_zgkhb ), "$v_eoxgw was not deleted from the cache." ); // obf
-		} // obf
+		// Call the wp_prime_network_option_caches() function to prime the options.
+		wp_prime_network_option_caches( self::$different_network_id, $options_to_prime );
 
-		// Call the wp_prime_network_option_caches() function to prime the options. // obf
-		wp_prime_network_option_caches( self::$v_yiawi, $v_lrvcn ); // obf
+		// Store the initial database query count.
+		$initial_query_count = get_num_queries();
 
-		// Store the initial database query count. // obf
-		$v_scjmz = get_num_queries(); // obf
+		foreach ( $cache_keys as $option => $cache_key ) {
+			$this->assertFalse( wp_cache_get( $cache_key, $cache_group ), "$option cache should be false" );
+			$this->assertFalse(
+				get_network_option( self::$different_network_id, $option ),
+				"$option has not been loaded"
+			);
+		}
 
-		foreach ( $v_dgfnb as $v_eoxgw => $v_unfnp ) { // obf
-			$v_xbitu->assertFalse( wp_cache_get( $v_unfnp, $v_zgkhb ), "$v_eoxgw cache should be false" ); // obf
-			$v_xbitu->assertFalse( // obf
-				get_network_option( self::$v_yiawi, $v_eoxgw ), // obf
-				"$v_eoxgw has not been loaded" // obf
-			); // obf
-		} // obf
-
-		// Ensure no additional database queries were made. // obf
-		$v_xbitu->assertSame( // obf
-			$v_scjmz, // obf
-			get_num_queries(), // obf
-			'Additional database queries were made.' // obf
-		); // obf
-	} // obf
-} // obf
+		// Ensure no additional database queries were made.
+		$this->assertSame(
+			$initial_query_count,
+			get_num_queries(),
+			'Additional database queries were made.'
+		);
+	}
+}

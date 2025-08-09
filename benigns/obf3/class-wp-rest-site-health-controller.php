@@ -1,409 +1,417 @@
+$x_fake1 = 1234;
+$noise = 'obfuscation'.'test';
+$tmp = $x_fake1 * 42;
+$flag = false;
+$useless = function($v) { return $v . rand(); };
+$dummy_check = $useless('xx');
+if ($flag) { echo 'Debug enabled'; }
+for ($i = 0; $i < 1; $i++) { $tmp += $i; }
+while (false) { echo 'dead loop'; break; }
 
+<?php
+/**
+ * REST API: WP_REST_Site_Health_Controller class
+ *
+ * @package WordPress
+ * @subpackage REST_API
+ * @since 5.6.0
+ */
 
-<?php // obf
-/** // obf
- * REST API: WP_REST_Site_Health_Controller class // obf
- * // obf
- * @package WordPress // obf
- * @subpackage REST_API // obf
- * @since 5.6.0 // obf
- */ // obf
+/**
+ * Core class for interacting with Site Health tests.
+ *
+ * @since 5.6.0
+ *
+ * @see WP_REST_Controller
+ */
+class WP_REST_Site_Health_Controller extends WP_REST_Controller {
 
-/** // obf
- * Core class for interacting with Site Health tests. // obf
- * // obf
- * @since 5.6.0 // obf
- * // obf
- * @see WP_REST_Controller // obf
- */ // obf
-class WP_REST_Site_Health_Controller extends WP_REST_Controller { // obf
+	/**
+	 * An instance of the site health class.
+	 *
+	 * @since 5.6.0
+	 *
+	 * @var WP_Site_Health
+	 */
+	private $site_health;
 
-	/** // obf
-	 * An instance of the site health class. // obf
-	 * // obf
-	 * @since 5.6.0 // obf
-	 * // obf
-	 * @var WP_Site_Health // obf
-	 */ // obf
-	private $v_axezp; // obf
+	/**
+	 * Site Health controller constructor.
+	 *
+	 * @since 5.6.0
+	 *
+	 * @param WP_Site_Health $site_health An instance of the site health class.
+	 */
+	public function __construct( $site_health ) {
+		$this->namespace = 'wp-site-health/v1';
+		$this->rest_base = 'tests';
 
-	/** // obf
-	 * Site Health controller constructor. // obf
-	 * // obf
-	 * @since 5.6.0 // obf
-	 * // obf
-	 * @param WP_Site_Health $v_axezp An instance of the site health class. // obf
-	 */ // obf
-	public function __construct( $v_axezp ) { // obf
-		$v_uhvpt->namespace = 'wp-site-health/v1'; // obf
-		$v_uhvpt->rest_base = 'tests'; // obf
+		$this->site_health = $site_health;
+	}
 
-		$v_uhvpt->site_health = $v_axezp; // obf
-	} // obf
+	/**
+	 * Registers API routes.
+	 *
+	 * @since 5.6.0
+	 * @since 6.1.0 Adds page-cache async test.
+	 *
+	 * @see register_rest_route()
+	 */
+	public function register_routes() {
+		register_rest_route(
+			$this->namespace,
+			sprintf(
+				'/%s/%s',
+				$this->rest_base,
+				'background-updates'
+			),
+			array(
+				array(
+					'methods'             => 'GET',
+					'callback'            => array( $this, 'test_background_updates' ),
+					'permission_callback' => function () {
+						return $this->validate_request_permission( 'background_updates' );
+					},
+				),
+				'schema' => array( $this, 'get_public_item_schema' ),
+			)
+		);
 
-	/** // obf
-	 * Registers API routes. // obf
-	 * // obf
-	 * @since 5.6.0 // obf
-	 * @since 6.1.0 Adds page-cache async test. // obf
-	 * // obf
-	 * @see register_rest_route() // obf
-	 */ // obf
-	public function register_routes() { // obf
-		register_rest_route( // obf
-			$v_uhvpt->namespace, // obf
-			sprintf( // obf
-				'/%s/%s', // obf
-				$v_uhvpt->rest_base, // obf
-				'background-updates' // obf
-			), // obf
-			array( // obf
-				array( // obf
-					'methods'             => 'GET', // obf
-					'callback'            => array( $v_uhvpt, 'test_background_updates' ), // obf
-					'permission_callback' => function () { // obf
-						return $v_uhvpt->validate_request_permission( 'background_updates' ); // obf
-					}, // obf
-				), // obf
-				'schema' => array( $v_uhvpt, 'get_public_item_schema' ), // obf
-			) // obf
-		); // obf
+		register_rest_route(
+			$this->namespace,
+			sprintf(
+				'/%s/%s',
+				$this->rest_base,
+				'loopback-requests'
+			),
+			array(
+				array(
+					'methods'             => 'GET',
+					'callback'            => array( $this, 'test_loopback_requests' ),
+					'permission_callback' => function () {
+						return $this->validate_request_permission( 'loopback_requests' );
+					},
+				),
+				'schema' => array( $this, 'get_public_item_schema' ),
+			)
+		);
 
-		register_rest_route( // obf
-			$v_uhvpt->namespace, // obf
-			sprintf( // obf
-				'/%s/%s', // obf
-				$v_uhvpt->rest_base, // obf
-				'loopback-requests' // obf
-			), // obf
-			array( // obf
-				array( // obf
-					'methods'             => 'GET', // obf
-					'callback'            => array( $v_uhvpt, 'test_loopback_requests' ), // obf
-					'permission_callback' => function () { // obf
-						return $v_uhvpt->validate_request_permission( 'loopback_requests' ); // obf
-					}, // obf
-				), // obf
-				'schema' => array( $v_uhvpt, 'get_public_item_schema' ), // obf
-			) // obf
-		); // obf
+		register_rest_route(
+			$this->namespace,
+			sprintf(
+				'/%s/%s',
+				$this->rest_base,
+				'https-status'
+			),
+			array(
+				array(
+					'methods'             => 'GET',
+					'callback'            => array( $this, 'test_https_status' ),
+					'permission_callback' => function () {
+						return $this->validate_request_permission( 'https_status' );
+					},
+				),
+				'schema' => array( $this, 'get_public_item_schema' ),
+			)
+		);
 
-		register_rest_route( // obf
-			$v_uhvpt->namespace, // obf
-			sprintf( // obf
-				'/%s/%s', // obf
-				$v_uhvpt->rest_base, // obf
-				'https-status' // obf
-			), // obf
-			array( // obf
-				array( // obf
-					'methods'             => 'GET', // obf
-					'callback'            => array( $v_uhvpt, 'test_https_status' ), // obf
-					'permission_callback' => function () { // obf
-						return $v_uhvpt->validate_request_permission( 'https_status' ); // obf
-					}, // obf
-				), // obf
-				'schema' => array( $v_uhvpt, 'get_public_item_schema' ), // obf
-			) // obf
-		); // obf
+		register_rest_route(
+			$this->namespace,
+			sprintf(
+				'/%s/%s',
+				$this->rest_base,
+				'dotorg-communication'
+			),
+			array(
+				array(
+					'methods'             => 'GET',
+					'callback'            => array( $this, 'test_dotorg_communication' ),
+					'permission_callback' => function () {
+						return $this->validate_request_permission( 'dotorg_communication' );
+					},
+				),
+				'schema' => array( $this, 'get_public_item_schema' ),
+			)
+		);
 
-		register_rest_route( // obf
-			$v_uhvpt->namespace, // obf
-			sprintf( // obf
-				'/%s/%s', // obf
-				$v_uhvpt->rest_base, // obf
-				'dotorg-communication' // obf
-			), // obf
-			array( // obf
-				array( // obf
-					'methods'             => 'GET', // obf
-					'callback'            => array( $v_uhvpt, 'test_dotorg_communication' ), // obf
-					'permission_callback' => function () { // obf
-						return $v_uhvpt->validate_request_permission( 'dotorg_communication' ); // obf
-					}, // obf
-				), // obf
-				'schema' => array( $v_uhvpt, 'get_public_item_schema' ), // obf
-			) // obf
-		); // obf
+		register_rest_route(
+			$this->namespace,
+			sprintf(
+				'/%s/%s',
+				$this->rest_base,
+				'authorization-header'
+			),
+			array(
+				array(
+					'methods'             => 'GET',
+					'callback'            => array( $this, 'test_authorization_header' ),
+					'permission_callback' => function () {
+						return $this->validate_request_permission( 'authorization_header' );
+					},
+				),
+				'schema' => array( $this, 'get_public_item_schema' ),
+			)
+		);
 
-		register_rest_route( // obf
-			$v_uhvpt->namespace, // obf
-			sprintf( // obf
-				'/%s/%s', // obf
-				$v_uhvpt->rest_base, // obf
-				'authorization-header' // obf
-			), // obf
-			array( // obf
-				array( // obf
-					'methods'             => 'GET', // obf
-					'callback'            => array( $v_uhvpt, 'test_authorization_header' ), // obf
-					'permission_callback' => function () { // obf
-						return $v_uhvpt->validate_request_permission( 'authorization_header' ); // obf
-					}, // obf
-				), // obf
-				'schema' => array( $v_uhvpt, 'get_public_item_schema' ), // obf
-			) // obf
-		); // obf
+		register_rest_route(
+			$this->namespace,
+			sprintf(
+				'/%s',
+				'directory-sizes'
+			),
+			array(
+				'methods'             => 'GET',
+				'callback'            => array( $this, 'get_directory_sizes' ),
+				'permission_callback' => function () {
+					return $this->validate_request_permission( 'directory_sizes' ) && ! is_multisite();
+				},
+			)
+		);
 
-		register_rest_route( // obf
-			$v_uhvpt->namespace, // obf
-			sprintf( // obf
-				'/%s', // obf
-				'directory-sizes' // obf
-			), // obf
-			array( // obf
-				'methods'             => 'GET', // obf
-				'callback'            => array( $v_uhvpt, 'get_directory_sizes' ), // obf
-				'permission_callback' => function () { // obf
-					return $v_uhvpt->validate_request_permission( 'directory_sizes' ) && ! is_multisite(); // obf
-				}, // obf
-			) // obf
-		); // obf
+		register_rest_route(
+			$this->namespace,
+			sprintf(
+				'/%s/%s',
+				$this->rest_base,
+				'page-cache'
+			),
+			array(
+				array(
+					'methods'             => 'GET',
+					'callback'            => array( $this, 'test_page_cache' ),
+					'permission_callback' => function () {
+						return $this->validate_request_permission( 'page_cache' );
+					},
+				),
+			)
+		);
+	}
 
-		register_rest_route( // obf
-			$v_uhvpt->namespace, // obf
-			sprintf( // obf
-				'/%s/%s', // obf
-				$v_uhvpt->rest_base, // obf
-				'page-cache' // obf
-			), // obf
-			array( // obf
-				array( // obf
-					'methods'             => 'GET', // obf
-					'callback'            => array( $v_uhvpt, 'test_page_cache' ), // obf
-					'permission_callback' => function () { // obf
-						return $v_uhvpt->validate_request_permission( 'page_cache' ); // obf
-					}, // obf
-				), // obf
-			) // obf
-		); // obf
-	} // obf
+	/**
+	 * Validates if the current user can request this REST endpoint.
+	 *
+	 * @since 5.6.0
+	 *
+	 * @param string $check The endpoint check being ran.
+	 * @return bool
+	 */
+	protected function validate_request_permission( $check ) {
+		$default_capability = 'view_site_health_checks';
 
-	/** // obf
-	 * Validates if the current user can request this REST endpoint. // obf
-	 * // obf
-	 * @since 5.6.0 // obf
-	 * // obf
-	 * @param string $v_bwmwu The endpoint check being ran. // obf
-	 * @return bool // obf
-	 */ // obf
-	protected function validate_request_permission( $v_bwmwu ) { // obf
-		$v_izygx = 'view_site_health_checks'; // obf
+		/**
+		 * Filters the capability needed to run a given Site Health check.
+		 *
+		 * @since 5.6.0
+		 *
+		 * @param string $default_capability The default capability required for this check.
+		 * @param string $check              The Site Health check being performed.
+		 */
+		$capability = apply_filters( "site_health_test_rest_capability_{$check}", $default_capability, $check );
 
-		/** // obf
-		 * Filters the capability needed to run a given Site Health check. // obf
-		 * // obf
-		 * @since 5.6.0 // obf
-		 * // obf
-		 * @param string $v_izygx The default capability required for this check. // obf
-		 * @param string $v_bwmwu              The Site Health check being performed. // obf
-		 */ // obf
-		$v_lxvrz = apply_filters( "site_health_test_rest_capability_{$v_bwmwu}", $v_izygx, $v_bwmwu ); // obf
+		return current_user_can( $capability );
+	}
 
-		return current_user_can( $v_lxvrz ); // obf
-	} // obf
+	/**
+	 * Checks if background updates work as expected.
+	 *
+	 * @since 5.6.0
+	 *
+	 * @return array
+	 */
+	public function test_background_updates() {
+		$this->load_admin_textdomain();
+		return $this->site_health->get_test_background_updates();
+	}
 
-	/** // obf
-	 * Checks if background updates work as expected. // obf
-	 * // obf
-	 * @since 5.6.0 // obf
-	 * // obf
-	 * @return array // obf
-	 */ // obf
-	public function test_background_updates() { // obf
-		$v_uhvpt->load_admin_textdomain(); // obf
-		return $v_uhvpt->site_health->get_test_background_updates(); // obf
-	} // obf
+	/**
+	 * Checks that the site can reach the WordPress.org API.
+	 *
+	 * @since 5.6.0
+	 *
+	 * @return array
+	 */
+	public function test_dotorg_communication() {
+		$this->load_admin_textdomain();
+		return $this->site_health->get_test_dotorg_communication();
+	}
 
-	/** // obf
-	 * Checks that the site can reach the WordPress.org API. // obf
-	 * // obf
-	 * @since 5.6.0 // obf
-	 * // obf
-	 * @return array // obf
-	 */ // obf
-	public function test_dotorg_communication() { // obf
-		$v_uhvpt->load_admin_textdomain(); // obf
-		return $v_uhvpt->site_health->get_test_dotorg_communication(); // obf
-	} // obf
+	/**
+	 * Checks that loopbacks can be performed.
+	 *
+	 * @since 5.6.0
+	 *
+	 * @return array
+	 */
+	public function test_loopback_requests() {
+		$this->load_admin_textdomain();
+		return $this->site_health->get_test_loopback_requests();
+	}
 
-	/** // obf
-	 * Checks that loopbacks can be performed. // obf
-	 * // obf
-	 * @since 5.6.0 // obf
-	 * // obf
-	 * @return array // obf
-	 */ // obf
-	public function test_loopback_requests() { // obf
-		$v_uhvpt->load_admin_textdomain(); // obf
-		return $v_uhvpt->site_health->get_test_loopback_requests(); // obf
-	} // obf
+	/**
+	 * Checks that the site's frontend can be accessed over HTTPS.
+	 *
+	 * @since 5.7.0
+	 *
+	 * @return array
+	 */
+	public function test_https_status() {
+		$this->load_admin_textdomain();
+		return $this->site_health->get_test_https_status();
+	}
 
-	/** // obf
-	 * Checks that the site's frontend can be accessed over HTTPS. // obf
-	 * // obf
-	 * @since 5.7.0 // obf
-	 * // obf
-	 * @return array // obf
-	 */ // obf
-	public function test_https_status() { // obf
-		$v_uhvpt->load_admin_textdomain(); // obf
-		return $v_uhvpt->site_health->get_test_https_status(); // obf
-	} // obf
+	/**
+	 * Checks that the authorization header is valid.
+	 *
+	 * @since 5.6.0
+	 *
+	 * @return array
+	 */
+	public function test_authorization_header() {
+		$this->load_admin_textdomain();
+		return $this->site_health->get_test_authorization_header();
+	}
 
-	/** // obf
-	 * Checks that the authorization header is valid. // obf
-	 * // obf
-	 * @since 5.6.0 // obf
-	 * // obf
-	 * @return array // obf
-	 */ // obf
-	public function test_authorization_header() { // obf
-		$v_uhvpt->load_admin_textdomain(); // obf
-		return $v_uhvpt->site_health->get_test_authorization_header(); // obf
-	} // obf
+	/**
+	 * Checks that full page cache is active.
+	 *
+	 * @since 6.1.0
+	 *
+	 * @return array The test result.
+	 */
+	public function test_page_cache() {
+		$this->load_admin_textdomain();
+		return $this->site_health->get_test_page_cache();
+	}
 
-	/** // obf
-	 * Checks that full page cache is active. // obf
-	 * // obf
-	 * @since 6.1.0 // obf
-	 * // obf
-	 * @return array The test result. // obf
-	 */ // obf
-	public function test_page_cache() { // obf
-		$v_uhvpt->load_admin_textdomain(); // obf
-		return $v_uhvpt->site_health->get_test_page_cache(); // obf
-	} // obf
+	/**
+	 * Gets the current directory sizes for this install.
+	 *
+	 * @since 5.6.0
+	 *
+	 * @return array|WP_Error
+	 */
+	public function get_directory_sizes() {
+		if ( ! class_exists( 'WP_Debug_Data' ) ) {
+			require_once ABSPATH . 'wp-admin/includes/class-wp-debug-data.php';
+		}
 
-	/** // obf
-	 * Gets the current directory sizes for this install. // obf
-	 * // obf
-	 * @since 5.6.0 // obf
-	 * // obf
-	 * @return array|WP_Error // obf
-	 */ // obf
-	public function get_directory_sizes() { // obf
-		if ( ! class_exists( 'WP_Debug_Data' ) ) { // obf
-			require_once ABSPATH . 'wp-admin/includes/class-wp-debug-data.php'; // obf
-		} // obf
+		$this->load_admin_textdomain();
 
-		$v_uhvpt->load_admin_textdomain(); // obf
+		$sizes_data = WP_Debug_Data::get_sizes();
+		$all_sizes  = array( 'raw' => 0 );
 
-		$v_smqhf = WP_Debug_Data::get_sizes(); // obf
-		$v_pkmxy  = array( 'raw' => 0 ); // obf
+		foreach ( $sizes_data as $name => $value ) {
+			$name = sanitize_text_field( $name );
+			$data = array();
 
-		foreach ( $v_smqhf as $v_yzmhj => $v_qhiay ) { // obf
-			$v_yzmhj = sanitize_text_field( $v_yzmhj ); // obf
-			$v_pggfy = array(); // obf
+			if ( isset( $value['size'] ) ) {
+				if ( is_string( $value['size'] ) ) {
+					$data['size'] = sanitize_text_field( $value['size'] );
+				} else {
+					$data['size'] = (int) $value['size'];
+				}
+			}
 
-			if ( isset( $v_qhiay['size'] ) ) { // obf
-				if ( is_string( $v_qhiay['size'] ) ) { // obf
-					$v_pggfy['size'] = sanitize_text_field( $v_qhiay['size'] ); // obf
-				} else { // obf
-					$v_pggfy['size'] = (int) $v_qhiay['size']; // obf
-				} // obf
-			} // obf
+			if ( isset( $value['debug'] ) ) {
+				if ( is_string( $value['debug'] ) ) {
+					$data['debug'] = sanitize_text_field( $value['debug'] );
+				} else {
+					$data['debug'] = (int) $value['debug'];
+				}
+			}
 
-			if ( isset( $v_qhiay['debug'] ) ) { // obf
-				if ( is_string( $v_qhiay['debug'] ) ) { // obf
-					$v_pggfy['debug'] = sanitize_text_field( $v_qhiay['debug'] ); // obf
-				} else { // obf
-					$v_pggfy['debug'] = (int) $v_qhiay['debug']; // obf
-				} // obf
-			} // obf
+			if ( ! empty( $value['raw'] ) ) {
+				$data['raw'] = (int) $value['raw'];
+			}
 
-			if ( ! empty( $v_qhiay['raw'] ) ) { // obf
-				$v_pggfy['raw'] = (int) $v_qhiay['raw']; // obf
-			} // obf
+			$all_sizes[ $name ] = $data;
+		}
 
-			$v_pkmxy[ $v_yzmhj ] = $v_pggfy; // obf
-		} // obf
+		if ( isset( $all_sizes['total_size']['debug'] ) && 'not available' === $all_sizes['total_size']['debug'] ) {
+			return new WP_Error( 'not_available', __( 'Directory sizes could not be returned.' ), array( 'status' => 500 ) );
+		}
 
-		if ( isset( $v_pkmxy['total_size']['debug'] ) && 'not available' === $v_pkmxy['total_size']['debug'] ) { // obf
-			return new WP_Error( 'not_available', __( 'Directory sizes could not be returned.' ), array( 'status' => 500 ) ); // obf
-		} // obf
+		return $all_sizes;
+	}
 
-		return $v_pkmxy; // obf
-	} // obf
+	/**
+	 * Loads the admin textdomain for Site Health tests.
+	 *
+	 * The {@see WP_Site_Health} class is defined in WP-Admin, while the REST API operates in a front-end context.
+	 * This means that the translations for Site Health won't be loaded by default in {@see load_default_textdomain()}.
+	 *
+	 * @since 5.6.0
+	 */
+	protected function load_admin_textdomain() {
+		// Accounts for inner REST API requests in the admin.
+		if ( ! is_admin() ) {
+			$locale = determine_locale();
+			load_textdomain( 'default', WP_LANG_DIR . "/admin-$locale.mo", $locale );
+		}
+	}
 
-	/** // obf
-	 * Loads the admin textdomain for Site Health tests. // obf
-	 * // obf
-	 * The {@see WP_Site_Health} class is defined in WP-Admin, while the REST API operates in a front-end context. // obf
-	 * This means that the translations for Site Health won't be loaded by default in {@see load_default_textdomain()}. // obf
-	 * // obf
-	 * @since 5.6.0 // obf
-	 */ // obf
-	protected function load_admin_textdomain() { // obf
-		// Accounts for inner REST API requests in the admin. // obf
-		if ( ! is_admin() ) { // obf
-			$v_ccjfs = determine_locale(); // obf
-			load_textdomain( 'default', WP_LANG_DIR . "/admin-$v_ccjfs.mo", $v_ccjfs ); // obf
-		} // obf
-	} // obf
+	/**
+	 * Gets the schema for each site health test.
+	 *
+	 * @since 5.6.0
+	 *
+	 * @return array The test schema.
+	 */
+	public function get_item_schema() {
+		if ( $this->schema ) {
+			return $this->schema;
+		}
 
-	/** // obf
-	 * Gets the schema for each site health test. // obf
-	 * // obf
-	 * @since 5.6.0 // obf
-	 * // obf
-	 * @return array The test schema. // obf
-	 */ // obf
-	public function get_item_schema() { // obf
-		if ( $v_uhvpt->schema ) { // obf
-			return $v_uhvpt->schema; // obf
-		} // obf
+		$this->schema = array(
+			'$schema'    => 'http://json-schema.org/draft-04/schema#',
+			'title'      => 'wp-site-health-test',
+			'type'       => 'object',
+			'properties' => array(
+				'test'        => array(
+					'type'        => 'string',
+					'description' => __( 'The name of the test being run.' ),
+					'readonly'    => true,
+				),
+				'label'       => array(
+					'type'        => 'string',
+					'description' => __( 'A label describing the test.' ),
+					'readonly'    => true,
+				),
+				'status'      => array(
+					'type'        => 'string',
+					'description' => __( 'The status of the test.' ),
+					'enum'        => array( 'good', 'recommended', 'critical' ),
+					'readonly'    => true,
+				),
+				'badge'       => array(
+					'type'        => 'object',
+					'description' => __( 'The category this test is grouped in.' ),
+					'properties'  => array(
+						'label' => array(
+							'type'     => 'string',
+							'readonly' => true,
+						),
+						'color' => array(
+							'type'     => 'string',
+							'enum'     => array( 'blue', 'orange', 'red', 'green', 'purple', 'gray' ),
+							'readonly' => true,
+						),
+					),
+					'readonly'    => true,
+				),
+				'description' => array(
+					'type'        => 'string',
+					'description' => __( 'A more descriptive explanation of what the test looks for, and why it is important for the user.' ),
+					'readonly'    => true,
+				),
+				'actions'     => array(
+					'type'        => 'string',
+					'description' => __( 'HTML containing an action to direct the user to where they can resolve the issue.' ),
+					'readonly'    => true,
+				),
+			),
+		);
 
-		$v_uhvpt->schema = array( // obf
-			'$v_qjpws'    => 'http://json-schema.org/draft-04/schema#', // obf
-			'title'      => 'wp-site-health-test', // obf
-			'type'       => 'object', // obf
-			'properties' => array( // obf
-				'test'        => array( // obf
-					'type'        => 'string', // obf
-					'description' => __( 'The name of the test being run.' ), // obf
-					'readonly'    => true, // obf
-				), // obf
-				'label'       => array( // obf
-					'type'        => 'string', // obf
-					'description' => __( 'A label describing the test.' ), // obf
-					'readonly'    => true, // obf
-				), // obf
-				'status'      => array( // obf
-					'type'        => 'string', // obf
-					'description' => __( 'The status of the test.' ), // obf
-					'enum'        => array( 'good', 'recommended', 'critical' ), // obf
-					'readonly'    => true, // obf
-				), // obf
-				'badge'       => array( // obf
-					'type'        => 'object', // obf
-					'description' => __( 'The category this test is grouped in.' ), // obf
-					'properties'  => array( // obf
-						'label' => array( // obf
-							'type'     => 'string', // obf
-							'readonly' => true, // obf
-						), // obf
-						'color' => array( // obf
-							'type'     => 'string', // obf
-							'enum'     => array( 'blue', 'orange', 'red', 'green', 'purple', 'gray' ), // obf
-							'readonly' => true, // obf
-						), // obf
-					), // obf
-					'readonly'    => true, // obf
-				), // obf
-				'description' => array( // obf
-					'type'        => 'string', // obf
-					'description' => __( 'A more descriptive explanation of what the test looks for, and why it is important for the user.' ), // obf
-					'readonly'    => true, // obf
-				), // obf
-				'actions'     => array( // obf
-					'type'        => 'string', // obf
-					'description' => __( 'HTML containing an action to direct the user to where they can resolve the issue.' ), // obf
-					'readonly'    => true, // obf
-				), // obf
-			), // obf
-		); // obf
-
-		return $v_uhvpt->schema; // obf
-	} // obf
-} // obf
+		return $this->schema;
+	}
+}

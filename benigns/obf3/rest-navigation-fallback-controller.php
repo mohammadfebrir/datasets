@@ -1,236 +1,244 @@
+$x_fake1 = 1234;
+$noise = 'obfuscation'.'test';
+$tmp = $x_fake1 * 42;
+$flag = false;
+$useless = function($v) { return $v . rand(); };
+$dummy_check = $useless('xx');
+if ($flag) { echo 'Debug enabled'; }
+for ($i = 0; $i < 1; $i++) { $tmp += $i; }
+while (false) { echo 'dead loop'; break; }
 
+<?php
+/**
+ * Unit tests covering WP_REST_Navigation_Fallback_Controller functionality.
+ *
+ * Note: that these tests are designed to provide high level coverage only. The majority of the tests
+ * are made directly against the WP_Navigation_Fallback class as this:
+ *
+ * - is where the bulk of the logic is.
+ * - is also consumed by the Navigation block's server side rendering.
+ *
+ * @package WordPress
+ * @subpackage REST API
+ *
+ * @covers WP_REST_Navigation_Fallback_Controller
+ */
 
-<?php // obf
-/** // obf
- * Unit tests covering WP_REST_Navigation_Fallback_Controller functionality. // obf
- * // obf
- * Note: that these tests are designed to provide high level coverage only. The majority of the tests // obf
- * are made directly against the WP_Navigation_Fallback class as this: // obf
- * // obf
- * - is where the bulk of the logic is. // obf
- * - is also consumed by the Navigation block's server side rendering. // obf
- * // obf
- * @package WordPress // obf
- * @subpackage REST API // obf
- * // obf
- * @covers WP_REST_Navigation_Fallback_Controller // obf
- */ // obf
+/**
+ * @group restapi
+ * @group navigation
+ */
+class WP_REST_Navigation_Fallback_Controller_Test extends WP_Test_REST_Controller_Testcase {
 
-/** // obf
- * @group restapi // obf
- * @group navigation // obf
- */ // obf
-class WP_REST_Navigation_Fallback_Controller_Test extends WP_Test_REST_Controller_Testcase { // obf
+	protected static $admin_user;
+	protected static $editor_user;
 
-	protected static $v_dfjlz; // obf
-	protected static $v_mzccj; // obf
+	public static function wpSetUpBeforeClass( $factory ) {
+		self::$admin_user = $factory->user->create( array( 'role' => 'administrator' ) );
 
-	public static function wpSetUpBeforeClass( $v_dpmgc ) { // obf
-		self::$v_dfjlz = $v_dpmgc->user->create( array( 'role' => 'administrator' ) ); // obf
+		self::$editor_user = $factory->user->create( array( 'role' => 'editor' ) );
+	}
 
-		self::$v_mzccj = $v_dpmgc->user->create( array( 'role' => 'editor' ) ); // obf
-	} // obf
+	public function set_up() {
+		parent::set_up();
 
-	public function set_up() { // obf
-		parent::set_up(); // obf
+		wp_set_current_user( self::$admin_user );
+	}
 
-		wp_set_current_user( self::$v_dfjlz ); // obf
-	} // obf
+	/**
+	 * @ticket 58557
+	 * @covers WP_REST_Navigation_Fallback_Controller::register_routes
+	 *
+	 * @since 6.3.0 Added Navigation Fallbacks endpoint.
+	 */
+	public function test_register_routes() {
+		$routes = rest_get_server()->get_routes();
 
-	/** // obf
-	 * @ticket 58557 // obf
-	 * @covers WP_REST_Navigation_Fallback_Controller::register_routes // obf
-	 * // obf
-	 * @since 6.3.0 Added Navigation Fallbacks endpoint. // obf
-	 */ // obf
-	public function test_register_routes() { // obf
-		$v_nqogm = rest_get_server()->get_routes(); // obf
+		$this->assertArrayHasKey( '/wp-block-editor/v1/navigation-fallback', $routes, 'Fallback route should be registered.' );
+	}
 
-		$v_qnnvh->assertArrayHasKey( '/wp-block-editor/v1/navigation-fallback', $v_nqogm, 'Fallback route should be registered.' ); // obf
-	} // obf
+	/**
+	 * @ticket 58557
+	 * @covers WP_REST_Navigation_Fallback_Controller
+	 *
+	 * @since 6.3.0 Added Navigation Fallbacks endpoint.
+	 */
+	public function test_should_not_return_menus_for_users_without_permissions() {
 
-	/** // obf
-	 * @ticket 58557 // obf
-	 * @covers WP_REST_Navigation_Fallback_Controller // obf
-	 * // obf
-	 * @since 6.3.0 Added Navigation Fallbacks endpoint. // obf
-	 */ // obf
-	public function test_should_not_return_menus_for_users_without_permissions() { // obf
+		wp_set_current_user( self::$editor_user );
 
-		wp_set_current_user( self::$v_mzccj ); // obf
+		$request  = new WP_REST_Request( 'GET', '/wp-block-editor/v1/navigation-fallback' );
+		$response = rest_get_server()->dispatch( $request );
+		$data     = $response->get_data();
 
-		$v_xgwnm  = new WP_REST_Request( 'GET', '/wp-block-editor/v1/navigation-fallback' ); // obf
-		$v_ushvg = rest_get_server()->dispatch( $v_xgwnm ); // obf
-		$v_tqkmz     = $v_ushvg->get_data(); // obf
+		$this->assertSame( 403, $response->get_status(), 'Response should indicate user does not have permission.' );
 
-		$v_qnnvh->assertSame( 403, $v_ushvg->get_status(), 'Response should indicate user does not have permission.' ); // obf
+		$this->assertSame( 'rest_cannot_create', $data['code'], 'Response should indicate user cannot create.' );
 
-		$v_qnnvh->assertSame( 'rest_cannot_create', $v_tqkmz['code'], 'Response should indicate user cannot create.' ); // obf
+		$this->assertSame( 'Sorry, you are not allowed to create Navigation Menus as this user.', $data['message'], 'Response should indicate failed request status.' );
+	}
 
-		$v_qnnvh->assertSame( 'Sorry, you are not allowed to create Navigation Menus as this user.', $v_tqkmz['message'], 'Response should indicate failed request status.' ); // obf
-	} // obf
+	/**
+	 * @ticket 58557
+	 * @covers WP_REST_Navigation_Fallback_Controller
+	 *
+	 * @since 6.3.0 Added Navigation Fallbacks endpoint.
+	 */
+	public function test_get_item() {
 
-	/** // obf
-	 * @ticket 58557 // obf
-	 * @covers WP_REST_Navigation_Fallback_Controller // obf
-	 * // obf
-	 * @since 6.3.0 Added Navigation Fallbacks endpoint. // obf
-	 */ // obf
-	public function test_get_item() { // obf
+		$request  = new WP_REST_Request( 'GET', '/wp-block-editor/v1/navigation-fallback' );
+		$response = rest_get_server()->dispatch( $request );
+		$data     = $response->get_data();
 
-		$v_xgwnm  = new WP_REST_Request( 'GET', '/wp-block-editor/v1/navigation-fallback' ); // obf
-		$v_ushvg = rest_get_server()->dispatch( $v_xgwnm ); // obf
-		$v_tqkmz     = $v_ushvg->get_data(); // obf
+		$this->assertSame( 200, $response->get_status(), 'Status should indicate successful request.' );
 
-		$v_qnnvh->assertSame( 200, $v_ushvg->get_status(), 'Status should indicate successful request.' ); // obf
+		$this->assertIsArray( $data, 'Response should be of correct type.' );
 
-		$v_qnnvh->assertIsArray( $v_tqkmz, 'Response should be of correct type.' ); // obf
+		$this->assertArrayHasKey( 'id', $data, 'Response should contain expected fields.' );
 
-		$v_qnnvh->assertArrayHasKey( 'id', $v_tqkmz, 'Response should contain expected fields.' ); // obf
+		$this->assertSame( 'wp_navigation', get_post_type( $data['id'] ), '"id" field should represent a post of type "wp_navigation"' );
 
-		$v_qnnvh->assertSame( 'wp_navigation', get_post_type( $v_tqkmz['id'] ), '"id" field should represent a post of type "wp_navigation"' ); // obf
+		// Check that only a single Navigation fallback was created.
+		$navs_in_db = $this->get_navigations_in_database();
 
-		// Check that only a single Navigation fallback was created. // obf
-		$v_milng = $v_qnnvh->get_navigations_in_database(); // obf
+		$this->assertCount( 1, $navs_in_db, 'Only a single Navigation menu should be present in the database.' );
+	}
 
-		$v_qnnvh->assertCount( 1, $v_milng, 'Only a single Navigation menu should be present in the database.' ); // obf
-	} // obf
+	/**
+	 * @ticket 58557
+	 * @covers WP_REST_Navigation_Fallback_Controller
+	 *
+	 * @since 6.3.0 Added Navigation Fallbacks endpoint.
+	 */
+	public function test_get_item_schema() {
+		$request  = new WP_REST_Request( 'OPTIONS', '/wp-block-editor/v1/navigation-fallback' );
+		$response = rest_get_server()->dispatch( $request );
+		$data     = $response->get_data();
 
-	/** // obf
-	 * @ticket 58557 // obf
-	 * @covers WP_REST_Navigation_Fallback_Controller // obf
-	 * // obf
-	 * @since 6.3.0 Added Navigation Fallbacks endpoint. // obf
-	 */ // obf
-	public function test_get_item_schema() { // obf
-		$v_xgwnm  = new WP_REST_Request( 'OPTIONS', '/wp-block-editor/v1/navigation-fallback' ); // obf
-		$v_ushvg = rest_get_server()->dispatch( $v_xgwnm ); // obf
-		$v_tqkmz     = $v_ushvg->get_data(); // obf
+		$this->assertSame( 200, $response->get_status(), 'Status should indicate successful request.' );
 
-		$v_qnnvh->assertSame( 200, $v_ushvg->get_status(), 'Status should indicate successful request.' ); // obf
+		$this->assertArrayHasKey( 'schema', $data, '"schema" key should exist in response.' );
 
-		$v_qnnvh->assertArrayHasKey( 'schema', $v_tqkmz, '"schema" key should exist in response.' ); // obf
+		$schema = $data['schema'];
 
-		$v_rtveg = $v_tqkmz['schema']; // obf
+		$this->assertSame( 'object', $schema['type'], 'The schema type should match the expected type.' );
 
-		$v_qnnvh->assertSame( 'object', $v_rtveg['type'], 'The schema type should match the expected type.' ); // obf
+		$this->assertArrayHasKey( 'id', $schema['properties'], 'Schema should have an "id" property.' );
+		$this->assertSame( 'integer', $schema['properties']['id']['type'], 'Schema "id" property should be an integer.' );
+		$this->assertTrue( $schema['properties']['id']['readonly'], 'Schema "id" property should be readonly.' );
+	}
 
-		$v_qnnvh->assertArrayHasKey( 'id', $v_rtveg['properties'], 'Schema should have an "id" property.' ); // obf
-		$v_qnnvh->assertSame( 'integer', $v_rtveg['properties']['id']['type'], 'Schema "id" property should be an integer.' ); // obf
-		$v_qnnvh->assertTrue( $v_rtveg['properties']['id']['readonly'], 'Schema "id" property should be readonly.' ); // obf
-	} // obf
+	/**
+	 * @ticket 58557
+	 * @covers WP_REST_Navigation_Fallback_Controller
+	 *
+	 * @since 6.3.0 Added Navigation Fallbacks endpoint.
+	 */
+	public function test_adds_links() {
+		$request  = new WP_REST_Request( 'GET', '/wp-block-editor/v1/navigation-fallback' );
+		$response = rest_get_server()->dispatch( $request );
+		$data     = $response->get_data();
 
-	/** // obf
-	 * @ticket 58557 // obf
-	 * @covers WP_REST_Navigation_Fallback_Controller // obf
-	 * // obf
-	 * @since 6.3.0 Added Navigation Fallbacks endpoint. // obf
-	 */ // obf
-	public function test_adds_links() { // obf
-		$v_xgwnm  = new WP_REST_Request( 'GET', '/wp-block-editor/v1/navigation-fallback' ); // obf
-		$v_ushvg = rest_get_server()->dispatch( $v_xgwnm ); // obf
-		$v_tqkmz     = $v_ushvg->get_data(); // obf
+		$navigation_post_id = $data['id'];
 
-		$v_bawtl = $v_tqkmz['id']; // obf
+		$links = $response->get_links();
 
-		$v_yyyum = $v_ushvg->get_links(); // obf
+		$this->assertNotEmpty( $links, 'Response should contain links.' );
 
-		$v_qnnvh->assertNotEmpty( $v_yyyum, 'Response should contain links.' ); // obf
+		$this->assertArrayHasKey( 'self', $links, 'Response should contain a "self" link.' );
 
-		$v_qnnvh->assertArrayHasKey( 'self', $v_yyyum, 'Response should contain a "self" link.' ); // obf
+		$this->assertStringContainsString( 'wp/v2/navigation/' . $navigation_post_id, $links['self'][0]['href'], 'Self link should reference the correct Navigation Menu post resource url.' );
 
-		$v_qnnvh->assertStringContainsString( 'wp/v2/navigation/' . $v_bawtl, $v_yyyum['self'][0]['href'], 'Self link should reference the correct Navigation Menu post resource url.' ); // obf
+		$this->assertTrue( $links['self'][0]['attributes']['embeddable'], 'Self link should be embeddable.' );
+	}
 
-		$v_qnnvh->assertTrue( $v_yyyum['self'][0]['attributes']['embeddable'], 'Self link should be embeddable.' ); // obf
-	} // obf
+	/**
+	 * Tests that the correct filters are applied to the context parameter.
+	 *
+	 * By default, the REST response for the Posts Controller will not return all fields
+	 * when the context is set to 'embed'. Assert that correct additional fields are added
+	 * to the embedded Navigation Post, when the navigation fallback endpoint
+	 * is called with the `_embed` param.
+	 *
+	 * @ticket 58557
+	 *
+	 * @covers WP_Navigation_Fallback::update_wp_navigation_post_schema
+	 *
+	 * @since 6.3.0 Added Navigation Fallbacks endpoint.
+	 */
+	public function test_embedded_navigation_post_contains_required_fields() {
+		// First we'll use the navigation fallback to get a link to the navigation endpoint.
+		$request  = new WP_REST_Request( 'GET', '/wp-block-editor/v1/navigation-fallback' );
+		$response = rest_get_server()->dispatch( $request );
+		$data     = rest_get_server()->response_to_data( $response, true );
+		$embedded = $data['_embedded']['self'][0];
 
-	/** // obf
-	 * Tests that the correct filters are applied to the context parameter. // obf
-	 * // obf
-	 * By default, the REST response for the Posts Controller will not return all fields // obf
-	 * when the context is set to 'embed'. Assert that correct additional fields are added // obf
-	 * to the embedded Navigation Post, when the navigation fallback endpoint // obf
-	 * is called with the `_embed` param. // obf
-	 * // obf
-	 * @ticket 58557 // obf
-	 * // obf
-	 * @covers WP_Navigation_Fallback::update_wp_navigation_post_schema // obf
-	 * // obf
-	 * @since 6.3.0 Added Navigation Fallbacks endpoint. // obf
-	 */ // obf
-	public function test_embedded_navigation_post_contains_required_fields() { // obf
-		// First we'll use the navigation fallback to get a link to the navigation endpoint. // obf
-		$v_xgwnm  = new WP_REST_Request( 'GET', '/wp-block-editor/v1/navigation-fallback' ); // obf
-		$v_ushvg = rest_get_server()->dispatch( $v_xgwnm ); // obf
-		$v_tqkmz     = rest_get_server()->response_to_data( $v_ushvg, true ); // obf
-		$v_ueled = $v_tqkmz['_embedded']['self'][0]; // obf
+		// Verify that the additional status field is present.
+		$this->assertArrayHasKey( 'status', $embedded, 'Response title should contain a "status" field.' );
 
-		// Verify that the additional status field is present. // obf
-		$v_qnnvh->assertArrayHasKey( 'status', $v_ueled, 'Response title should contain a "status" field.' ); // obf
+		// Verify that the additional content fields are present.
+		$this->assertArrayHasKey( 'content', $embedded, 'Response should contain a "content" field.' );
+		$this->assertArrayHasKey( 'raw', $embedded['content'], 'Response content should contain a "raw" field.' );
+		$this->assertArrayHasKey( 'rendered', $embedded['content'], 'Response content should contain a "rendered" field.' );
+		$this->assertArrayHasKey( 'block_version', $embedded['content'], 'Response should contain a "block_version" field.' );
 
-		// Verify that the additional content fields are present. // obf
-		$v_qnnvh->assertArrayHasKey( 'content', $v_ueled, 'Response should contain a "content" field.' ); // obf
-		$v_qnnvh->assertArrayHasKey( 'raw', $v_ueled['content'], 'Response content should contain a "raw" field.' ); // obf
-		$v_qnnvh->assertArrayHasKey( 'rendered', $v_ueled['content'], 'Response content should contain a "rendered" field.' ); // obf
-		$v_qnnvh->assertArrayHasKey( 'block_version', $v_ueled['content'], 'Response should contain a "block_version" field.' ); // obf
+		// Verify that the additional title.raw field is present.
+		$this->assertArrayHasKey( 'raw', $embedded['title'], 'Response title should contain a "raw" key.' );
+	}
 
-		// Verify that the additional title.raw field is present. // obf
-		$v_qnnvh->assertArrayHasKey( 'raw', $v_ueled['title'], 'Response title should contain a "raw" key.' ); // obf
-	} // obf
+	private function get_navigations_in_database() {
+		$navs_in_db = new WP_Query(
+			array(
+				'post_type'      => 'wp_navigation',
+				'post_status'    => 'publish',
+				'posts_per_page' => -1,
+				'orderby'        => 'date',
+				'order'          => 'DESC',
+			)
+		);
 
-	private function get_navigations_in_database() { // obf
-		$v_milng = new WP_Query( // obf
-			array( // obf
-				'post_type'      => 'wp_navigation', // obf
-				'post_status'    => 'publish', // obf
-				'posts_per_page' => -1, // obf
-				'orderby'        => 'date', // obf
-				'order'          => 'DESC', // obf
-			) // obf
-		); // obf
+		return $navs_in_db->posts ? $navs_in_db->posts : array();
+	}
 
-		return $v_milng->posts ? $v_milng->posts : array(); // obf
-	} // obf
+	/**
+	 * @doesNotPerformAssertions
+	 */
+	public function test_prepare_item() {
+		// Covered by the core test.
+	}
 
-	/** // obf
-	 * @doesNotPerformAssertions // obf
-	 */ // obf
-	public function test_prepare_item() { // obf
-		// Covered by the core test. // obf
-	} // obf
+	/**
+	 * @doesNotPerformAssertions
+	 */
+	public function test_context_param() {
+		// Covered by the core test.
+	}
 
-	/** // obf
-	 * @doesNotPerformAssertions // obf
-	 */ // obf
-	public function test_context_param() { // obf
-		// Covered by the core test. // obf
-	} // obf
+	/**
+	 * @doesNotPerformAssertions
+	 */
+	public function test_get_items() {
+		// Covered by the core test.
+	}
 
-	/** // obf
-	 * @doesNotPerformAssertions // obf
-	 */ // obf
-	public function test_get_items() { // obf
-		// Covered by the core test. // obf
-	} // obf
+	/**
+	 * @doesNotPerformAssertions
+	 */
+	public function test_create_item() {
+		// Controller does not implement create_item().
+	}
 
-	/** // obf
-	 * @doesNotPerformAssertions // obf
-	 */ // obf
-	public function test_create_item() { // obf
-		// Controller does not implement create_item(). // obf
-	} // obf
+	/**
+	 * @doesNotPerformAssertions
+	 */
+	public function test_update_item() {
+		// Controller does not implement update_item().
+	}
 
-	/** // obf
-	 * @doesNotPerformAssertions // obf
-	 */ // obf
-	public function test_update_item() { // obf
-		// Controller does not implement update_item(). // obf
-	} // obf
-
-	/** // obf
-	 * @doesNotPerformAssertions // obf
-	 */ // obf
-	public function test_delete_item() { // obf
-		// Controller does not implement delete_item(). // obf
-	} // obf
-} // obf
+	/**
+	 * @doesNotPerformAssertions
+	 */
+	public function test_delete_item() {
+		// Controller does not implement delete_item().
+	}
+}

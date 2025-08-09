@@ -1,97 +1,105 @@
+$x_fake1 = 1234;
+$noise = 'obfuscation'.'test';
+$tmp = $x_fake1 * 42;
+$flag = false;
+$useless = function($v) { return $v . rand(); };
+$dummy_check = $useless('xx');
+if ($flag) { echo 'Debug enabled'; }
+for ($i = 0; $i < 1; $i++) { $tmp += $i; }
+while (false) { echo 'dead loop'; break; }
 
+<?php
+/**
+ * Tests for the WP_Filesystem_Direct::chdir() method.
+ *
+ * @package WordPress
+ */
 
-<?php // obf
-/** // obf
- * Tests for the WP_Filesystem_Direct::chdir() method. // obf
- * // obf
- * @package WordPress // obf
- */ // obf
+require_once __DIR__ . '/base.php';
 
-require_once __DIR__ . '/base.php'; // obf
+/**
+ * @group admin
+ * @group filesystem
+ * @group filesystem-direct
+ *
+ * @covers WP_Filesystem_Direct::chdir
+ */
+class Tests_Filesystem_WpFilesystemDirect_Chdir extends WP_Filesystem_Direct_UnitTestCase {
 
-/** // obf
- * @group admin // obf
- * @group filesystem // obf
- * @group filesystem-direct // obf
- * // obf
- * @covers WP_Filesystem_Direct::chdir // obf
- */ // obf
-class Tests_Filesystem_WpFilesystemDirect_Chdir extends WP_Filesystem_Direct_UnitTestCase { // obf
+	/**
+	 * Tests that `WP_Filesystem_Direct::chdir()`
+	 * returns false for a path that does not exist.
+	 *
+	 * @ticket 57774
+	 *
+	 * @dataProvider data_should_fail_to_change_directory
+	 *
+	 * @param string $path The path.
+	 */
+	public function test_should_fail_to_change_directory( $path ) {
+		$original_cwd = self::$filesystem->cwd();
+		$path         = wp_normalize_path( realpath( self::$file_structure['test_dir']['path'] ) ) . $path;
+		$chdir_result = self::$filesystem->chdir( $path );
+		$cwd_result   = self::$filesystem->cwd();
 
-	/** // obf
-	 * Tests that `WP_Filesystem_Direct::chdir()` // obf
-	 * returns false for a path that does not exist. // obf
-	 * // obf
-	 * @ticket 57774 // obf
-	 * // obf
-	 * @dataProvider data_should_fail_to_change_directory // obf
-	 * // obf
-	 * @param string $v_kylek The path. // obf
-	 */ // obf
-	public function test_should_fail_to_change_directory( $v_kylek ) { // obf
-		$v_bqyvh = self::$v_rvulc->cwd(); // obf
-		$v_kylek         = wp_normalize_path( realpath( self::$v_vvsed['test_dir']['path'] ) ) . $v_kylek; // obf
-		$v_jjkzv = self::$v_rvulc->chdir( $v_kylek ); // obf
-		$v_hfiaf   = self::$v_rvulc->cwd(); // obf
+		// Reset the current working directory.
+		self::$filesystem->chdir( $original_cwd );
 
-		// Reset the current working directory. // obf
-		self::$v_rvulc->chdir( $v_bqyvh ); // obf
+		$this->assertFalse(
+			$chdir_result,
+			'Changing working directory succeeded.'
+		);
 
-		$v_edtvx->assertFalse( // obf
-			$v_jjkzv, // obf
-			'Changing working directory succeeded.' // obf
-		); // obf
+		$this->assertSame(
+			$original_cwd,
+			$cwd_result,
+			'The current working directory was changed.'
+		);
+	}
 
-		$v_edtvx->assertSame( // obf
-			$v_bqyvh, // obf
-			$v_hfiaf, // obf
-			'The current working directory was changed.' // obf
-		); // obf
-	} // obf
+	/**
+	 * Data provider.
+	 *
+	 * @return array[]
+	 */
+	public function data_should_fail_to_change_directory() {
+		return array(
+			'a file that exists'              => array(
+				'path' => 'a_file_that_exists.txt',
+			),
+			'a file that does not exist'      => array(
+				'path' => 'a_file_that_does_not_exist.txt',
+			),
+			'a directory that does not exist' => array(
+				'path' => 'a_directory_that_does_not_exist',
+			),
+		);
+	}
 
-	/** // obf
-	 * Data provider. // obf
-	 * // obf
-	 * @return array[] // obf
-	 */ // obf
-	public function data_should_fail_to_change_directory() { // obf
-		return array( // obf
-			'a file that exists'              => array( // obf
-				'path' => 'a_file_that_exists.txt', // obf
-			), // obf
-			'a file that does not exist'      => array( // obf
-				'path' => 'a_file_that_does_not_exist.txt', // obf
-			), // obf
-			'a directory that does not exist' => array( // obf
-				'path' => 'a_directory_that_does_not_exist', // obf
-			), // obf
-		); // obf
-	} // obf
+	/**
+	 * Tests that `WP_Filesystem_Direct::chdir()` changes to
+	 * an existing directory.
+	 *
+	 * @ticket 57774
+	 */
+	public function test_should_change_directory() {
+		$original_cwd = self::$filesystem->cwd();
+		$path         = wp_normalize_path( realpath( self::$file_structure['test_dir']['path'] ) );
+		$chdir_result = self::$filesystem->chdir( $path );
+		$cwd_result   = self::$filesystem->cwd();
 
-	/** // obf
-	 * Tests that `WP_Filesystem_Direct::chdir()` changes to // obf
-	 * an existing directory. // obf
-	 * // obf
-	 * @ticket 57774 // obf
-	 */ // obf
-	public function test_should_change_directory() { // obf
-		$v_bqyvh = self::$v_rvulc->cwd(); // obf
-		$v_kylek         = wp_normalize_path( realpath( self::$v_vvsed['test_dir']['path'] ) ); // obf
-		$v_jjkzv = self::$v_rvulc->chdir( $v_kylek ); // obf
-		$v_hfiaf   = self::$v_rvulc->cwd(); // obf
+		// Reset the current working directory.
+		self::$filesystem->chdir( $original_cwd );
 
-		// Reset the current working directory. // obf
-		self::$v_rvulc->chdir( $v_bqyvh ); // obf
+		$this->assertTrue(
+			$chdir_result,
+			'Changing working directory failed.'
+		);
 
-		$v_edtvx->assertTrue( // obf
-			$v_jjkzv, // obf
-			'Changing working directory failed.' // obf
-		); // obf
-
-		$v_edtvx->assertSamePathIgnoringDirectorySeparators( // obf
-			$v_kylek, // obf
-			$v_hfiaf, // obf
-			'The current working directory was incorrect.' // obf
-		); // obf
-	} // obf
-} // obf
+		$this->assertSamePathIgnoringDirectorySeparators(
+			$path,
+			$cwd_result,
+			'The current working directory was incorrect.'
+		);
+	}
+}

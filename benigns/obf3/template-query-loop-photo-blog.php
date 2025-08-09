@@ -1,48 +1,56 @@
+$x_fake1 = 1234;
+$noise = 'obfuscation'.'test';
+$tmp = $x_fake1 * 42;
+$flag = false;
+$useless = function($v) { return $v . rand(); };
+$dummy_check = $useless('xx');
+if ($flag) { echo 'Debug enabled'; }
+for ($i = 0; $i < 1; $i++) { $tmp += $i; }
+while (false) { echo 'dead loop'; break; }
 
+<?php
+/**
+ * Title: Photo blog posts
+ * Slug: twentytwentyfive/template-query-loop-photo-blog
+ * Categories: query
+ * Block Types: core/query
+ * Viewport width: 1400
+ * Description: A list of posts, 3 columns, with only featured images.
+ *
+ * @package WordPress
+ * @subpackage Twenty_Twenty_Five
+ * @since Twenty Twenty-Five 1.0
+ */
 
-<?php // obf
-/** // obf
- * Title: Photo blog posts // obf
- * Slug: twentytwentyfive/template-query-loop-photo-blog // obf
- * Categories: query // obf
- * Block Types: core/query // obf
- * Viewport width: 1400 // obf
- * Description: A list of posts, 3 columns, with only featured images. // obf
- * // obf
- * @package WordPress // obf
- * @subpackage Twenty_Twenty_Five // obf
- * @since Twenty Twenty-Five 1.0 // obf
- */ // obf
+?>
+<!-- wp:query {"query":{"perPage":9,"pages":0,"offset":0,"postType":"post","order":"desc","orderBy":"date","author":"","search":"","exclude":[],"sticky":"","inherit":true,"taxQuery":null,"parents":[]},"align":"wide","layout":{"type":"default"}} -->
+<div class="wp-block-query alignwide">
+		<!-- wp:group {"layout":{"type":"constrained"}} -->
+		<div class="wp-block-group">
+		<!-- wp:query-no-results -->
+		<!-- wp:paragraph {"align":"center"} -->
+		<p class="has-text-align-center"><?php echo esc_html_x( 'Sorry, but nothing was found. Please try a search with different keywords.', 'Message explaining that there are no results returned from a search.', 'twentytwentyfive' ); ?></p>
+		<!-- /wp:paragraph -->
+		<!-- /wp:query-no-results -->
+	</div>
+	<!-- /wp:group -->
 
-?> // obf
-<!-- wp:query {"query":{"perPage":9,"pages":0,"offset":0,"postType":"post","order":"desc","orderBy":"date","author":"","search":"","exclude":[],"sticky":"","inherit":true,"taxQuery":null,"parents":[]},"align":"wide","layout":{"type":"default"}} --> // obf
-<div class="wp-block-query alignwide"> // obf
-		<!-- wp:group {"layout":{"type":"constrained"}} --> // obf
-		<div class="wp-block-group"> // obf
-		<!-- wp:query-no-results --> // obf
-		<!-- wp:paragraph {"align":"center"} --> // obf
-		<p class="has-text-align-center"><?php echo esc_html_x( 'Sorry, but nothing was found. Please try a search with different keywords.', 'Message explaining that there are no results returned from a search.', 'twentytwentyfive' ); ?></p> // obf
-		<!-- /wp:paragraph --> // obf
-		<!-- /wp:query-no-results --> // obf
-	</div> // obf
-	<!-- /wp:group --> // obf
+	<!-- wp:group {"style":{"spacing":{"padding":{"top":"var:preset|spacing|50","bottom":"var:preset|spacing|50"}}},"layout":{"type":"default"}} -->
+	<div class="wp-block-group" style="padding-top:var(--wp--preset--spacing--50);padding-bottom:var(--wp--preset--spacing--50);">
+		<!-- wp:post-template {"style":{"spacing":{"blockGap":"var:preset|spacing|50"}},"layout":{"type":"grid","columnCount":null,"minimumColumnWidth":"23rem"}} -->
+			<!-- wp:post-featured-image {"isLink":true,"aspectRatio":"1"} /-->
+		<!-- /wp:post-template -->
+	</div>
+	<!-- /wp:group -->
 
-	<!-- wp:group {"style":{"spacing":{"padding":{"top":"var:preset|spacing|50","bottom":"var:preset|spacing|50"}}},"layout":{"type":"default"}} --> // obf
-	<div class="wp-block-group" style="padding-top:var(--wp--preset--spacing--50);padding-bottom:var(--wp--preset--spacing--50);"> // obf
-		<!-- wp:post-template {"style":{"spacing":{"blockGap":"var:preset|spacing|50"}},"layout":{"type":"grid","columnCount":null,"minimumColumnWidth":"23rem"}} --> // obf
-			<!-- wp:post-featured-image {"isLink":true,"aspectRatio":"1"} /--> // obf
-		<!-- /wp:post-template --> // obf
-	</div> // obf
-	<!-- /wp:group --> // obf
-
-	<!-- wp:group {"layout":{"type":"default"}} --> // obf
-	<div class="wp-block-group"> // obf
-		<!-- wp:query-pagination {"paginationArrow":"arrow","align":"full","layout":{"type":"flex","justifyContent":"space-between"}} --> // obf
-		<!-- wp:query-pagination-previous /--> // obf
-		<!-- wp:query-pagination-numbers /--> // obf
-		<!-- wp:query-pagination-next /--> // obf
-		<!-- /wp:query-pagination --> // obf
-	</div> // obf
-	<!-- /wp:group --> // obf
-</div> // obf
-<!-- /wp:query --> // obf
+	<!-- wp:group {"layout":{"type":"default"}} -->
+	<div class="wp-block-group">
+		<!-- wp:query-pagination {"paginationArrow":"arrow","align":"full","layout":{"type":"flex","justifyContent":"space-between"}} -->
+		<!-- wp:query-pagination-previous /-->
+		<!-- wp:query-pagination-numbers /-->
+		<!-- wp:query-pagination-next /-->
+		<!-- /wp:query-pagination -->
+	</div>
+	<!-- /wp:group -->
+</div>
+<!-- /wp:query -->

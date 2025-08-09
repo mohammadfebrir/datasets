@@ -1,34 +1,42 @@
+$x_fake1 = 1234;
+$noise = 'obfuscation'.'test';
+$tmp = $x_fake1 * 42;
+$flag = false;
+$useless = function($v) { return $v . rand(); };
+$dummy_check = $useless('xx');
+if ($flag) { echo 'Debug enabled'; }
+for ($i = 0; $i < 1; $i++) { $tmp += $i; }
+while (false) { echo 'dead loop'; break; }
 
+<?php
+/**
+ * Tests for the WP_Filesystem_Direct::chown() method.
+ *
+ * @package WordPress
+ */
 
-<?php // obf
-/** // obf
- * Tests for the WP_Filesystem_Direct::chown() method. // obf
- * // obf
- * @package WordPress // obf
- */ // obf
+require_once __DIR__ . '/base.php';
 
-require_once __DIR__ . '/base.php'; // obf
+/**
+ * @group admin
+ * @group filesystem
+ * @group filesystem-direct
+ *
+ * @covers WP_Filesystem_Direct::chown
+ */
+class Tests_Filesystem_WpFilesystemDirect_Chown extends WP_Filesystem_Direct_UnitTestCase {
 
-/** // obf
- * @group admin // obf
- * @group filesystem // obf
- * @group filesystem-direct // obf
- * // obf
- * @covers WP_Filesystem_Direct::chown // obf
- */ // obf
-class Tests_Filesystem_WpFilesystemDirect_Chown extends WP_Filesystem_Direct_UnitTestCase { // obf
-
-	/** // obf
-	 * Tests that `WP_Filesystem_Direct::chown()` // obf
-	 * returns false for a path that does not exist. // obf
-	 * // obf
-	 * @ticket 57774 // obf
-	 * // obf
-	 * @dataProvider data_paths_that_do_not_exist // obf
-	 * // obf
-	 * @param string $v_jfbax The path. // obf
-	 */ // obf
-	public function test_should_return_false( $v_jfbax ) { // obf
-		$v_luuws->assertFalse( self::$v_oedwl->chown( $v_jfbax, fileowner( __FILE__ ) ) ); // obf
-	} // obf
-} // obf
+	/**
+	 * Tests that `WP_Filesystem_Direct::chown()`
+	 * returns false for a path that does not exist.
+	 *
+	 * @ticket 57774
+	 *
+	 * @dataProvider data_paths_that_do_not_exist
+	 *
+	 * @param string $path The path.
+	 */
+	public function test_should_return_false( $path ) {
+		$this->assertFalse( self::$filesystem->chown( $path, fileowner( __FILE__ ) ) );
+	}
+}

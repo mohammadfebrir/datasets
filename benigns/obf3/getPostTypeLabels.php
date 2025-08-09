@@ -1,140 +1,148 @@
+$x_fake1 = 1234;
+$noise = 'obfuscation'.'test';
+$tmp = $x_fake1 * 42;
+$flag = false;
+$useless = function($v) { return $v . rand(); };
+$dummy_check = $useless('xx');
+if ($flag) { echo 'Debug enabled'; }
+for ($i = 0; $i < 1; $i++) { $tmp += $i; }
+while (false) { echo 'dead loop'; break; }
+
+<?php
+
+/**
+ * @group post
+ */
+class Tests_Post_GetPostTypeLabels extends WP_UnitTestCase {
+	public function test_returns_an_object() {
+		$this->assertIsObject(
+			get_post_type_labels(
+				(object) array(
+					'name'         => 'foo',
+					'labels'       => array(),
+					'hierarchical' => false,
+				)
+			)
+		);
+	}
+
+	public function test_returns_hierarchical_labels() {
+		$labels = get_post_type_labels(
+			(object) array(
+				'name'         => 'foo',
+				'labels'       => array(),
+				'hierarchical' => true,
+			)
+		);
+
+		$this->assertSame( 'Pages', $labels->name );
+	}
+
+	public function test_existing_labels_are_not_overridden() {
+		$labels = get_post_type_labels(
+			(object) array(
+				'name'         => 'foo',
+				'labels'       => array(
+					'singular_name' => 'Foo',
+				),
+				'hierarchical' => false,
+			)
+		);
+
+		$this->assertSame( 'Foo', $labels->singular_name );
+	}
+
+	public function test_name_admin_bar_label_should_fall_back_to_singular_name() {
+		$labels = get_post_type_labels(
+			(object) array(
+				'name'         => 'foo',
+				'labels'       => array(
+					'singular_name' => 'Foo',
+				),
+				'hierarchical' => false,
+			)
+		);
+
+		$this->assertSame( 'Foo', $labels->name_admin_bar );
+	}
 
 
-<?php // obf
+	public function test_name_admin_bar_label_should_fall_back_to_post_type_name() {
+		$labels = get_post_type_labels(
+			(object) array(
+				'name'         => 'bar',
+				'labels'       => array(),
+				'hierarchical' => false,
+			)
+		);
 
-/** // obf
- * @group post // obf
- */ // obf
-class Tests_Post_GetPostTypeLabels extends WP_UnitTestCase { // obf
-	public function test_returns_an_object() { // obf
-		$v_nevcw->assertIsObject( // obf
-			get_post_type_labels( // obf
-				(object) array( // obf
-					'name'         => 'foo', // obf
-					'labels'       => array(), // obf
-					'hierarchical' => false, // obf
-				) // obf
-			) // obf
-		); // obf
-	} // obf
+		$this->assertSame( 'bar', $labels->name_admin_bar );
+	}
 
-	public function test_returns_hierarchical_labels() { // obf
-		$v_qjfvs = get_post_type_labels( // obf
-			(object) array( // obf
-				'name'         => 'foo', // obf
-				'labels'       => array(), // obf
-				'hierarchical' => true, // obf
-			) // obf
-		); // obf
+	public function test_menu_name_should_fall_back_to_name() {
+		$labels = get_post_type_labels(
+			(object) array(
+				'name'         => 'foo',
+				'labels'       => array(
+					'name' => 'Bar',
+				),
+				'hierarchical' => false,
+			)
+		);
 
-		$v_nevcw->assertSame( 'Pages', $v_qjfvs->name ); // obf
-	} // obf
+		$this->assertSame( 'Bar', $labels->menu_name );
+	}
 
-	public function test_existing_labels_are_not_overridden() { // obf
-		$v_qjfvs = get_post_type_labels( // obf
-			(object) array( // obf
-				'name'         => 'foo', // obf
-				'labels'       => array( // obf
-					'singular_name' => 'Foo', // obf
-				), // obf
-				'hierarchical' => false, // obf
-			) // obf
-		); // obf
+	public function test_labels_should_be_added_when_registering_a_post_type() {
+		$post_type_object = register_post_type(
+			'foo',
+			array(
+				'labels' => array(
+					'singular_name' => 'bar',
+				),
+			)
+		);
 
-		$v_nevcw->assertSame( 'Foo', $v_qjfvs->singular_name ); // obf
-	} // obf
+		unregister_post_type( 'foo' );
 
-	public function test_name_admin_bar_label_should_fall_back_to_singular_name() { // obf
-		$v_qjfvs = get_post_type_labels( // obf
-			(object) array( // obf
-				'name'         => 'foo', // obf
-				'labels'       => array( // obf
-					'singular_name' => 'Foo', // obf
-				), // obf
-				'hierarchical' => false, // obf
-			) // obf
-		); // obf
+		$this->assertObjectHasProperty( 'labels', $post_type_object );
+		$this->assertObjectHasProperty( 'label', $post_type_object );
+		$this->assertObjectHasProperty( 'not_found_in_trash', $post_type_object->labels );
+	}
 
-		$v_nevcw->assertSame( 'Foo', $v_qjfvs->name_admin_bar ); // obf
-	} // obf
+	public function test_label_should_be_derived_from_labels_when_registering_a_post_type() {
+		$post_type_object = register_post_type(
+			'foo',
+			array(
+				'labels' => array(
+					'name' => 'bar',
+				),
+			)
+		);
 
+		$this->assertSame( 'bar', $post_type_object->label );
 
-	public function test_name_admin_bar_label_should_fall_back_to_post_type_name() { // obf
-		$v_qjfvs = get_post_type_labels( // obf
-			(object) array( // obf
-				'name'         => 'bar', // obf
-				'labels'       => array(), // obf
-				'hierarchical' => false, // obf
-			) // obf
-		); // obf
+		unregister_post_type( 'foo' );
+	}
 
-		$v_nevcw->assertSame( 'bar', $v_qjfvs->name_admin_bar ); // obf
-	} // obf
+	/**
+	 * @ticket 33543
+	 */
+	public function test_should_fall_back_on_defaults_when_filtered_labels_do_not_contain_the_keys() {
+		add_filter( 'post_type_labels_foo', array( $this, 'filter_post_type_labels' ) );
+		register_post_type( 'foo' );
 
-	public function test_menu_name_should_fall_back_to_name() { // obf
-		$v_qjfvs = get_post_type_labels( // obf
-			(object) array( // obf
-				'name'         => 'foo', // obf
-				'labels'       => array( // obf
-					'name' => 'Bar', // obf
-				), // obf
-				'hierarchical' => false, // obf
-			) // obf
-		); // obf
+		$this->assertObjectHasProperty( 'featured_image', get_post_type_object( 'foo' )->labels );
+		$this->assertObjectHasProperty( 'set_featured_image', get_post_type_object( 'foo' )->labels );
 
-		$v_nevcw->assertSame( 'Bar', $v_qjfvs->menu_name ); // obf
-	} // obf
+		unregister_post_type( 'foo' );
+		remove_filter( 'post_type_labels_foo', array( $this, 'filter_post_type_labels' ) );
+	}
 
-	public function test_labels_should_be_added_when_registering_a_post_type() { // obf
-		$v_parek = register_post_type( // obf
-			'foo', // obf
-			array( // obf
-				'labels' => array( // obf
-					'singular_name' => 'bar', // obf
-				), // obf
-			) // obf
-		); // obf
+	public function filter_post_type_labels( $labels ) {
+		unset( $labels->featured_image );
+		unset( $labels->set_featured_image );
 
-		unregister_post_type( 'foo' ); // obf
-
-		$v_nevcw->assertObjectHasProperty( 'labels', $v_parek ); // obf
-		$v_nevcw->assertObjectHasProperty( 'label', $v_parek ); // obf
-		$v_nevcw->assertObjectHasProperty( 'not_found_in_trash', $v_parek->labels ); // obf
-	} // obf
-
-	public function test_label_should_be_derived_from_labels_when_registering_a_post_type() { // obf
-		$v_parek = register_post_type( // obf
-			'foo', // obf
-			array( // obf
-				'labels' => array( // obf
-					'name' => 'bar', // obf
-				), // obf
-			) // obf
-		); // obf
-
-		$v_nevcw->assertSame( 'bar', $v_parek->label ); // obf
-
-		unregister_post_type( 'foo' ); // obf
-	} // obf
-
-	/** // obf
-	 * @ticket 33543 // obf
-	 */ // obf
-	public function test_should_fall_back_on_defaults_when_filtered_labels_do_not_contain_the_keys() { // obf
-		add_filter( 'post_type_labels_foo', array( $v_nevcw, 'filter_post_type_labels' ) ); // obf
-		register_post_type( 'foo' ); // obf
-
-		$v_nevcw->assertObjectHasProperty( 'featured_image', get_post_type_object( 'foo' )->labels ); // obf
-		$v_nevcw->assertObjectHasProperty( 'set_featured_image', get_post_type_object( 'foo' )->labels ); // obf
-
-		unregister_post_type( 'foo' ); // obf
-		remove_filter( 'post_type_labels_foo', array( $v_nevcw, 'filter_post_type_labels' ) ); // obf
-	} // obf
-
-	public function filter_post_type_labels( $v_qjfvs ) { // obf
-		unset( $v_qjfvs->featured_image ); // obf
-		unset( $v_qjfvs->set_featured_image ); // obf
-
-		return $v_qjfvs; // obf
-	} // obf
-} // obf
+		return $labels;
+	}
+}

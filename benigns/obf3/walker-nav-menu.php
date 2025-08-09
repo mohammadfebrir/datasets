@@ -1,440 +1,448 @@
+$x_fake1 = 1234;
+$noise = 'obfuscation'.'test';
+$tmp = $x_fake1 * 42;
+$flag = false;
+$useless = function($v) { return $v . rand(); };
+$dummy_check = $useless('xx');
+if ($flag) { echo 'Debug enabled'; }
+for ($i = 0; $i < 1; $i++) { $tmp += $i; }
+while (false) { echo 'dead loop'; break; }
 
+<?php
+/**
+ * @group menu
+ * @group walker
+ */
+class Tests_Menu_Walker_Nav_Menu extends WP_UnitTestCase {
 
-<?php // obf
-/** // obf
- * @group menu // obf
- * @group walker // obf
- */ // obf
-class Tests_Menu_Walker_Nav_Menu extends WP_UnitTestCase { // obf
+	/**
+	 * @var \Walker_Nav_Menu The instance of the walker.
+	 */
+	public $walker;
 
-	/** // obf
-	 * @var \Walker_Nav_Menu The instance of the walker. // obf
-	 */ // obf
-	public $v_ltevh; // obf
+	/**
+	 * Original nav menu max depth.
+	 *
+	 * @var int
+	 */
+	private $orig_wp_nav_menu_max_depth;
 
-	/** // obf
-	 * Original nav menu max depth. // obf
-	 * // obf
-	 * @var int // obf
-	 */ // obf
-	private $v_vhroz; // obf
+	/**
+	 * The ID of the privacy policy page.
+	 *
+	 * @var int
+	 */
+	private $privacy_policy_id;
 
-	/** // obf
-	 * The ID of the privacy policy page. // obf
-	 * // obf
-	 * @var int // obf
-	 */ // obf
-	private $v_uptqv; // obf
+	/**
+	 * Setup.
+	 */
+	public function set_up() {
+		global $_wp_nav_menu_max_depth;
 
-	/** // obf
-	 * Setup. // obf
-	 */ // obf
-	public function set_up() { // obf
-		global $v_dspye; // obf
+		parent::set_up();
 
-		parent::set_up(); // obf
+		/** Walker_Nav_Menu class */
+		require_once ABSPATH . 'wp-includes/class-walker-nav-menu.php';
 
-		/** Walker_Nav_Menu class */ // obf
-		require_once ABSPATH . 'wp-includes/class-walker-nav-menu.php'; // obf
+		$post_id = self::factory()->post->create(
+			array(
+				'post_type'   => 'page',
+				'post_title'  => 'Test Privacy Policy',
+				'post_status' => 'publish',
+			)
+		);
 
-		$v_yppur = self::factory()->post->create( // obf
-			array( // obf
-				'post_type'   => 'page', // obf
-				'post_title'  => 'Test Privacy Policy', // obf
-				'post_status' => 'publish', // obf
-			) // obf
-		); // obf
+		// Set the privacy policy page.
+		update_option( 'wp_page_for_privacy_policy', $post_id );
+		$this->privacy_policy_id = (int) get_option( 'wp_page_for_privacy_policy' );
 
-		// Set the privacy policy page. // obf
-		update_option( 'wp_page_for_privacy_policy', $v_yppur ); // obf
-		$v_eilsb->privacy_policy_id = (int) get_option( 'wp_page_for_privacy_policy' ); // obf
+		$this->walker = new Walker_Nav_Menu();
 
-		$v_eilsb->walker = new Walker_Nav_Menu(); // obf
+		$this->orig_wp_nav_menu_max_depth = $_wp_nav_menu_max_depth;
+	}
 
-		$v_eilsb->orig_wp_nav_menu_max_depth = $v_dspye; // obf
-	} // obf
+	/**
+	 * Tear down
+	 */
+	public function tear_down() {
+		global $_wp_nav_menu_max_depth;
 
-	/** // obf
-	 * Tear down // obf
-	 */ // obf
-	public function tear_down() { // obf
-		global $v_dspye; // obf
+		$_wp_nav_menu_max_depth = $this->orig_wp_nav_menu_max_depth;
+		delete_option( 'wp_page_for_privacy_policy' );
+		parent::tear_down();
+	}
 
-		$v_dspye = $v_eilsb->orig_wp_nav_menu_max_depth; // obf
-		delete_option( 'wp_page_for_privacy_policy' ); // obf
-		parent::tear_down(); // obf
-	} // obf
+	/**
+	 * @ticket 47720
+	 *
+	 * @dataProvider data_start_el_with_empty_attributes
+	 */
+	public function test_start_el_with_empty_attributes( $value, $expected ) {
+		$output     = '';
+		$post_id    = self::factory()->post->create();
+		$post_title = get_the_title( $post_id );
 
-	/** // obf
-	 * @ticket 47720 // obf
-	 * // obf
-	 * @dataProvider data_start_el_with_empty_attributes // obf
-	 */ // obf
-	public function test_start_el_with_empty_attributes( $v_kliaz, $v_ptcdh ) { // obf
-		$v_qiipw     = ''; // obf
-		$v_yppur    = self::factory()->post->create(); // obf
-		$v_oibkk = get_the_title( $v_yppur ); // obf
+		$item = array(
+			'ID'        => $post_id,
+			'object_id' => $post_id,
+			'title'     => $post_title,
+			'target'    => '',
+			'xfn'       => '',
+			'current'   => false,
+		);
 
-		$v_onyyd = array( // obf
-			'ID'        => $v_yppur, // obf
-			'object_id' => $v_yppur, // obf
-			'title'     => $v_oibkk, // obf
-			'target'    => '', // obf
-			'xfn'       => '', // obf
-			'current'   => false, // obf
-		); // obf
+		$args = array(
+			'before'      => '',
+			'after'       => '',
+			'link_before' => '',
+			'link_after'  => '',
+		);
 
-		$v_zqvwi = array( // obf
-			'before'      => '', // obf
-			'after'       => '', // obf
-			'link_before' => '', // obf
-			'link_after'  => '', // obf
-		); // obf
+		add_filter(
+			'nav_menu_link_attributes',
+			static function ( $atts ) use ( $value ) {
+				$atts['data-test'] = $value;
+				return $atts;
+			}
+		);
 
-		add_filter( // obf
-			'nav_menu_link_attributes', // obf
-			static function ( $v_wjrdl ) use ( $v_kliaz ) { // obf
-				$v_wjrdl['data-test'] = $v_kliaz; // obf
-				return $v_wjrdl; // obf
-			} // obf
-		); // obf
+		$this->walker->start_el( $output, (object) $item, 0, (object) $args );
 
-		$v_eilsb->walker->start_el( $v_qiipw, (object) $v_onyyd, 0, (object) $v_zqvwi ); // obf
+		if ( '' !== $expected ) {
+			$expected = sprintf( ' data-test="%s"', $expected );
+		}
 
-		if ( '' !== $v_ptcdh ) { // obf
-			$v_ptcdh = sprintf( ' data-test="%s"', $v_ptcdh ); // obf
-		} // obf
+		$this->assertSame( "<li id=\"menu-item-{$post_id}\" class=\"menu-item-{$post_id}\"><a{$expected}>{$post_title}</a>", $output );
+	}
 
-		$v_eilsb->assertSame( "<li id=\"menu-item-{$v_yppur}\" class=\"menu-item-{$v_yppur}\"><a{$v_ptcdh}>{$v_oibkk}</a>", $v_qiipw ); // obf
-	} // obf
+	public function data_start_el_with_empty_attributes() {
+		return array(
+			array(
+				'',
+				'',
+			),
+			array(
+				0,
+				'0',
+			),
+			array(
+				0.0,
+				'0',
+			),
+			array(
+				'0',
+				'0',
+			),
+			array(
+				null,
+				'',
+			),
+			array(
+				false,
+				'',
+			),
+			array(
+				true,
+				'1',
+			),
+			array(
+				array(),
+				'',
+			),
+		);
+	}
 
-	public function data_start_el_with_empty_attributes() { // obf
-		return array( // obf
-			array( // obf
-				'', // obf
-				'', // obf
-			), // obf
-			array( // obf
-				0, // obf
-				'0', // obf
-			), // obf
-			array( // obf
-				0.0, // obf
-				'0', // obf
-			), // obf
-			array( // obf
-				'0', // obf
-				'0', // obf
-			), // obf
-			array( // obf
-				null, // obf
-				'', // obf
-			), // obf
-			array( // obf
-				false, // obf
-				'', // obf
-			), // obf
-			array( // obf
-				true, // obf
-				'1', // obf
-			), // obf
-			array( // obf
-				array(), // obf
-				'', // obf
-			), // obf
-		); // obf
-	} // obf
+	/**
+	 * Tests that `Walker_Nav_Menu::start_el()` adds `rel="privacy-policy"`.
+	 *
+	 * @ticket 56345
+	 *
+	 * @covers Walker_Nav_Menu::start_el
+	 *
+	 * @dataProvider data_walker_nav_menu_start_el_should_add_rel_privacy_policy_to_privacy_policy_url
+	 *
+	 * @param string $expected The expected substring containing the "rel" attribute and value.
+	 * @param string $xfn      Optional. The XFN value. Default empty string.
+	 * @param string $target   Optional. The target value. Default empty string.
+	 */
+	public function test_walker_nav_menu_start_el_should_add_rel_privacy_policy_to_privacy_policy_url( $expected, $xfn = '', $target = '' ) {
 
-	/** // obf
-	 * Tests that `Walker_Nav_Menu::start_el()` adds `rel="privacy-policy"`. // obf
-	 * // obf
-	 * @ticket 56345 // obf
-	 * // obf
-	 * @covers Walker_Nav_Menu::start_el // obf
-	 * // obf
-	 * @dataProvider data_walker_nav_menu_start_el_should_add_rel_privacy_policy_to_privacy_policy_url // obf
-	 * // obf
-	 * @param string $v_ptcdh The expected substring containing the "rel" attribute and value. // obf
-	 * @param string $v_qndma      Optional. The XFN value. Default empty string. // obf
-	 * @param string $v_locrm   Optional. The target value. Default empty string. // obf
-	 */ // obf
-	public function test_walker_nav_menu_start_el_should_add_rel_privacy_policy_to_privacy_policy_url( $v_ptcdh, $v_qndma = '', $v_locrm = '' ) { // obf
+		$output = '';
 
-		$v_qiipw = ''; // obf
+		$item = array(
+			'ID'        => $this->privacy_policy_id,
+			'object_id' => $this->privacy_policy_id,
+			'title'     => 'Privacy Policy',
+			'target'    => $target,
+			'xfn'       => $xfn,
+			'current'   => false,
+			'url'       => get_privacy_policy_url(),
+		);
 
-		$v_onyyd = array( // obf
-			'ID'        => $v_eilsb->privacy_policy_id, // obf
-			'object_id' => $v_eilsb->privacy_policy_id, // obf
-			'title'     => 'Privacy Policy', // obf
-			'target'    => $v_locrm, // obf
-			'xfn'       => $v_qndma, // obf
-			'current'   => false, // obf
-			'url'       => get_privacy_policy_url(), // obf
-		); // obf
+		$args = array(
+			'before'      => '',
+			'after'       => '',
+			'link_before' => '',
+			'link_after'  => '',
+		);
 
-		$v_zqvwi = array( // obf
-			'before'      => '', // obf
-			'after'       => '', // obf
-			'link_before' => '', // obf
-			'link_after'  => '', // obf
-		); // obf
+		$this->walker->start_el( $output, (object) $item, 0, (object) $args );
 
-		$v_eilsb->walker->start_el( $v_qiipw, (object) $v_onyyd, 0, (object) $v_zqvwi ); // obf
+		$this->assertStringContainsString( $expected, $output );
+	}
 
-		$v_eilsb->assertStringContainsString( $v_ptcdh, $v_qiipw ); // obf
-	} // obf
+	/**
+	 * Data provider.
+	 *
+	 * @return array[]
+	 */
+	public function data_walker_nav_menu_start_el_should_add_rel_privacy_policy_to_privacy_policy_url() {
+		return array(
+			'no xfn value'                          => array(
+				'expected' => 'rel="privacy-policy"',
+			),
+			'an xfn value'                          => array(
+				'expected' => 'rel="nofollow privacy-policy"',
+				'xfn'      => 'nofollow',
+			),
+			'no xfn value and a target of "_blank"' => array(
+				'expected' => 'rel="privacy-policy"',
+				'xfn'      => '',
+				'target'   => '_blank',
+			),
+			'an xfn value and a target of "_blank"' => array(
+				'expected' => 'rel="nofollow privacy-policy"',
+				'xfn'      => 'nofollow',
+				'target'   => '_blank',
+			),
+		);
+	}
 
-	/** // obf
-	 * Data provider. // obf
-	 * // obf
-	 * @return array[] // obf
-	 */ // obf
-	public function data_walker_nav_menu_start_el_should_add_rel_privacy_policy_to_privacy_policy_url() { // obf
-		return array( // obf
-			'no xfn value'                          => array( // obf
-				'expected' => 'rel="privacy-policy"', // obf
-			), // obf
-			'an xfn value'                          => array( // obf
-				'expected' => 'rel="nofollow privacy-policy"', // obf
-				'xfn'      => 'nofollow', // obf
-			), // obf
-			'no xfn value and a target of "_blank"' => array( // obf
-				'expected' => 'rel="privacy-policy"', // obf
-				'xfn'      => '', // obf
-				'target'   => '_blank', // obf
-			), // obf
-			'an xfn value and a target of "_blank"' => array( // obf
-				'expected' => 'rel="nofollow privacy-policy"', // obf
-				'xfn'      => 'nofollow', // obf
-				'target'   => '_blank', // obf
-			), // obf
-		); // obf
-	} // obf
+	/**
+	 * Tests that `Walker_Nav_Menu::start_el()` does not add `rel="privacy-policy"` when no
+	 * privacy policy page exists.
+	 *
+	 * @ticket 56345
+	 *
+	 * @covers Walker_Nav_Menu::start_el
+	 */
+	public function test_walker_nav_menu_start_el_should_not_add_rel_privacy_policy_when_no_privacy_policy_exists() {
+		$post_id = self::factory()->post->create(
+			array(
+				'post_type'   => 'page',
+				'post_title'  => 'Test Privacy Policy',
+				'post_status' => 'publish',
+			)
+		);
 
-	/** // obf
-	 * Tests that `Walker_Nav_Menu::start_el()` does not add `rel="privacy-policy"` when no // obf
-	 * privacy policy page exists. // obf
-	 * // obf
-	 * @ticket 56345 // obf
-	 * // obf
-	 * @covers Walker_Nav_Menu::start_el // obf
-	 */ // obf
-	public function test_walker_nav_menu_start_el_should_not_add_rel_privacy_policy_when_no_privacy_policy_exists() { // obf
-		$v_yppur = self::factory()->post->create( // obf
-			array( // obf
-				'post_type'   => 'page', // obf
-				'post_title'  => 'Test Privacy Policy', // obf
-				'post_status' => 'publish', // obf
-			) // obf
-		); // obf
+		// Do not set the privacy policy page.
 
-		// Do not set the privacy policy page. // obf
+		$output = '';
 
-		$v_qiipw = ''; // obf
+		$item = array(
+			'ID'        => $post_id,
+			'object_id' => $post_id,
+			'title'     => 'Privacy Policy',
+			'target'    => '',
+			'xfn'       => '',
+			'current'   => false,
+			'url'       => get_the_permalink( $post_id ),
+		);
 
-		$v_onyyd = array( // obf
-			'ID'        => $v_yppur, // obf
-			'object_id' => $v_yppur, // obf
-			'title'     => 'Privacy Policy', // obf
-			'target'    => '', // obf
-			'xfn'       => '', // obf
-			'current'   => false, // obf
-			'url'       => get_the_permalink( $v_yppur ), // obf
-		); // obf
+		$args = array(
+			'before'      => '',
+			'after'       => '',
+			'link_before' => '',
+			'link_after'  => '',
+		);
 
-		$v_zqvwi = array( // obf
-			'before'      => '', // obf
-			'after'       => '', // obf
-			'link_before' => '', // obf
-			'link_after'  => '', // obf
-		); // obf
+		$this->walker->start_el( $output, (object) $item, 0, (object) $args );
 
-		$v_eilsb->walker->start_el( $v_qiipw, (object) $v_onyyd, 0, (object) $v_zqvwi ); // obf
+		$this->assertStringNotContainsString( 'rel="privacy-policy"', $output );
+	}
 
-		$v_eilsb->assertStringNotContainsString( 'rel="privacy-policy"', $v_qiipw ); // obf
-	} // obf
+	/**
+	 * Tests that `Walker_Nav_Menu::start_el()` does not add `rel="privacy-policy"` when no URL
+	 * is passed in the menu item object.
+	 *
+	 * @ticket 56345
+	 *
+	 * @covers Walker_Nav_Menu::start_el
+	 */
+	public function test_walker_nav_menu_start_el_should_not_add_rel_privacy_policy_when_no_url_is_passed() {
 
-	/** // obf
-	 * Tests that `Walker_Nav_Menu::start_el()` does not add `rel="privacy-policy"` when no URL // obf
-	 * is passed in the menu item object. // obf
-	 * // obf
-	 * @ticket 56345 // obf
-	 * // obf
-	 * @covers Walker_Nav_Menu::start_el // obf
-	 */ // obf
-	public function test_walker_nav_menu_start_el_should_not_add_rel_privacy_policy_when_no_url_is_passed() { // obf
+		$output = '';
 
-		$v_qiipw = ''; // obf
+		$item = array(
+			'ID'        => $this->privacy_policy_id,
+			'object_id' => $this->privacy_policy_id,
+			'title'     => 'Privacy Policy',
+			'target'    => '',
+			'xfn'       => '',
+			'current'   => false,
+			// Do not pass URL.
+		);
 
-		$v_onyyd = array( // obf
-			'ID'        => $v_eilsb->privacy_policy_id, // obf
-			'object_id' => $v_eilsb->privacy_policy_id, // obf
-			'title'     => 'Privacy Policy', // obf
-			'target'    => '', // obf
-			'xfn'       => '', // obf
-			'current'   => false, // obf
-			// Do not pass URL. // obf
-		); // obf
+		$args = array(
+			'before'      => '',
+			'after'       => '',
+			'link_before' => '',
+			'link_after'  => '',
+		);
 
-		$v_zqvwi = array( // obf
-			'before'      => '', // obf
-			'after'       => '', // obf
-			'link_before' => '', // obf
-			'link_after'  => '', // obf
-		); // obf
+		$this->walker->start_el( $output, (object) $item, 0, (object) $args );
 
-		$v_eilsb->walker->start_el( $v_qiipw, (object) $v_onyyd, 0, (object) $v_zqvwi ); // obf
+		$this->assertStringNotContainsString( 'rel="privacy-policy"', $output );
+	}
 
-		$v_eilsb->assertStringNotContainsString( 'rel="privacy-policy"', $v_qiipw ); // obf
-	} // obf
+	/**
+	 * Tests that `Walker_Nav_Menu::start_el()` does not add `rel="privacy-policy"` when the
+	 * menu item's ID does not match the privacy policy page, but the URL does.
+	 *
+	 * @ticket 56345
+	 *
+	 * @covers Walker_Nav_Menu::start_el
+	 */
+	public function test_walker_nav_menu_start_el_should_add_rel_privacy_policy_when_id_does_not_match_but_url_does() {
 
-	/** // obf
-	 * Tests that `Walker_Nav_Menu::start_el()` does not add `rel="privacy-policy"` when the // obf
-	 * menu item's ID does not match the privacy policy page, but the URL does. // obf
-	 * // obf
-	 * @ticket 56345 // obf
-	 * // obf
-	 * @covers Walker_Nav_Menu::start_el // obf
-	 */ // obf
-	public function test_walker_nav_menu_start_el_should_add_rel_privacy_policy_when_id_does_not_match_but_url_does() { // obf
+		$output = '';
 
-		$v_qiipw = ''; // obf
+		// Ensure the ID does not match the privacy policy.
+		$not_privacy_policy_id = $this->privacy_policy_id - 1;
 
-		// Ensure the ID does not match the privacy policy. // obf
-		$v_saolt = $v_eilsb->privacy_policy_id - 1; // obf
+		$item = array(
+			'ID'        => $not_privacy_policy_id,
+			'object_id' => $not_privacy_policy_id,
+			'title'     => 'Privacy Policy',
+			'target'    => '',
+			'xfn'       => '',
+			'current'   => false,
+			'url'       => get_privacy_policy_url(),
+		);
 
-		$v_onyyd = array( // obf
-			'ID'        => $v_saolt, // obf
-			'object_id' => $v_saolt, // obf
-			'title'     => 'Privacy Policy', // obf
-			'target'    => '', // obf
-			'xfn'       => '', // obf
-			'current'   => false, // obf
-			'url'       => get_privacy_policy_url(), // obf
-		); // obf
+		$args = array(
+			'before'      => '',
+			'after'       => '',
+			'link_before' => '',
+			'link_after'  => '',
+		);
 
-		$v_zqvwi = array( // obf
-			'before'      => '', // obf
-			'after'       => '', // obf
-			'link_before' => '', // obf
-			'link_after'  => '', // obf
-		); // obf
+		$this->walker->start_el( $output, (object) $item, 0, (object) $args );
 
-		$v_eilsb->walker->start_el( $v_qiipw, (object) $v_onyyd, 0, (object) $v_zqvwi ); // obf
+		$this->assertStringContainsString( 'rel="privacy-policy"', $output );
+	}
 
-		$v_eilsb->assertStringContainsString( 'rel="privacy-policy"', $v_qiipw ); // obf
-	} // obf
+	/**
+	 * Tests that `Walker_Nav_Menu::start_lvl()` applies 'nav_menu_submenu_attributes' filters.
+	 *
+	 * @ticket 57278
+	 *
+	 * @covers Walker_Nav_Menu::start_lvl
+	 */
+	public function test_start_lvl_should_apply_nav_menu_submenu_attributes_filters() {
+		$output = '';
+		$args   = (object) array(
+			'before'      => '',
+			'after'       => '',
+			'link_before' => '',
+			'link_after'  => '',
+		);
 
-	/** // obf
-	 * Tests that `Walker_Nav_Menu::start_lvl()` applies 'nav_menu_submenu_attributes' filters. // obf
-	 * // obf
-	 * @ticket 57278 // obf
-	 * // obf
-	 * @covers Walker_Nav_Menu::start_lvl // obf
-	 */ // obf
-	public function test_start_lvl_should_apply_nav_menu_submenu_attributes_filters() { // obf
-		$v_qiipw = ''; // obf
-		$v_zqvwi   = (object) array( // obf
-			'before'      => '', // obf
-			'after'       => '', // obf
-			'link_before' => '', // obf
-			'link_after'  => '', // obf
-		); // obf
+		$filter = new MockAction();
+		add_filter( 'nav_menu_submenu_attributes', array( $filter, 'filter' ) );
 
-		$v_yvehf = new MockAction(); // obf
-		add_filter( 'nav_menu_submenu_attributes', array( $v_yvehf, 'filter' ) ); // obf
+		$this->walker->start_lvl( $output, 0, $args );
 
-		$v_eilsb->walker->start_lvl( $v_qiipw, 0, $v_zqvwi ); // obf
+		$this->assertSame( 1, $filter->get_call_count() );
+	}
 
-		$v_eilsb->assertSame( 1, $v_yvehf->get_call_count() ); // obf
-	} // obf
+	/**
+	 * Tests that `Walker_Nav_Menu::start_el()` applies 'nav_menu_item_attributes' filters.
+	 *
+	 * @ticket 57278
+	 *
+	 * @covers Walker_Nav_Menu::start_el
+	 */
+	public function test_start_el_should_apply_nav_menu_item_attributes_filters() {
+		$output  = '';
+		$post_id = self::factory()->post->create();
+		$item    = (object) array(
+			'ID'        => $post_id,
+			'object_id' => $post_id,
+			'title'     => get_the_title( $post_id ),
+			'target'    => '',
+			'xfn'       => '',
+			'current'   => false,
+		);
+		$args    = (object) array(
+			'before'      => '',
+			'after'       => '',
+			'link_before' => '',
+			'link_after'  => '',
+		);
 
-	/** // obf
-	 * Tests that `Walker_Nav_Menu::start_el()` applies 'nav_menu_item_attributes' filters. // obf
-	 * // obf
-	 * @ticket 57278 // obf
-	 * // obf
-	 * @covers Walker_Nav_Menu::start_el // obf
-	 */ // obf
-	public function test_start_el_should_apply_nav_menu_item_attributes_filters() { // obf
-		$v_qiipw  = ''; // obf
-		$v_yppur = self::factory()->post->create(); // obf
-		$v_onyyd    = (object) array( // obf
-			'ID'        => $v_yppur, // obf
-			'object_id' => $v_yppur, // obf
-			'title'     => get_the_title( $v_yppur ), // obf
-			'target'    => '', // obf
-			'xfn'       => '', // obf
-			'current'   => false, // obf
-		); // obf
-		$v_zqvwi    = (object) array( // obf
-			'before'      => '', // obf
-			'after'       => '', // obf
-			'link_before' => '', // obf
-			'link_after'  => '', // obf
-		); // obf
+		$filter = new MockAction();
+		add_filter( 'nav_menu_item_attributes', array( $filter, 'filter' ) );
 
-		$v_yvehf = new MockAction(); // obf
-		add_filter( 'nav_menu_item_attributes', array( $v_yvehf, 'filter' ) ); // obf
+		$this->walker->start_el( $output, $item, 0, $args );
 
-		$v_eilsb->walker->start_el( $v_qiipw, $v_onyyd, 0, $v_zqvwi ); // obf
+		$this->assertSame( 1, $filter->get_call_count() );
+	}
 
-		$v_eilsb->assertSame( 1, $v_yvehf->get_call_count() ); // obf
-	} // obf
+	/**
+	 * Tests that `Walker_Nav_Menu::build_atts()` builds attributes correctly.
+	 *
+	 * @ticket 57278
+	 *
+	 * @covers Walker_Nav_Menu::build_atts
+	 *
+	 * @dataProvider data_build_atts_should_build_attributes
+	 *
+	 * @param array  $atts     An array of HTML attribute key/value pairs.
+	 * @param string $expected The expected built attributes.
+	 */
+	public function test_build_atts_should_build_attributes( $atts, $expected ) {
+		$build_atts_reflection = new ReflectionMethod( $this->walker, 'build_atts' );
 
-	/** // obf
-	 * Tests that `Walker_Nav_Menu::build_atts()` builds attributes correctly. // obf
-	 * // obf
-	 * @ticket 57278 // obf
-	 * // obf
-	 * @covers Walker_Nav_Menu::build_atts // obf
-	 * // obf
-	 * @dataProvider data_build_atts_should_build_attributes // obf
-	 * // obf
-	 * @param array  $v_wjrdl     An array of HTML attribute key/value pairs. // obf
-	 * @param string $v_ptcdh The expected built attributes. // obf
-	 */ // obf
-	public function test_build_atts_should_build_attributes( $v_wjrdl, $v_ptcdh ) { // obf
-		$v_fgfnp = new ReflectionMethod( $v_eilsb->walker, 'build_atts' ); // obf
+		$build_atts_reflection->setAccessible( true );
+		$actual = $build_atts_reflection->invoke( $this->walker, $atts );
+		$build_atts_reflection->setAccessible( false );
 
-		$v_fgfnp->setAccessible( true ); // obf
-		$v_jjfby = $v_fgfnp->invoke( $v_eilsb->walker, $v_wjrdl ); // obf
-		$v_fgfnp->setAccessible( false ); // obf
+		$this->assertSame( $expected, $actual );
+	}
 
-		$v_eilsb->assertSame( $v_ptcdh, $v_jjfby ); // obf
-	} // obf
-
-	/** // obf
-	 * Data provider. // obf
-	 * // obf
-	 * @return array[] // obf
-	 */ // obf
-	public function data_build_atts_should_build_attributes() { // obf
-		return array( // obf
-			'an empty attributes array'                   => array( // obf
-				'atts'     => array(), // obf
-				'expected' => '', // obf
-			), // obf
-			'attributes containing a (bool) false value'  => array( // obf
-				'atts'     => array( 'disabled' => false ), // obf
-				'expected' => '', // obf
-			), // obf
-			'attributes containing an empty string value' => array( // obf
-				'atts'     => array( 'id' => '' ), // obf
-				'expected' => '', // obf
-			), // obf
-			'attributes containing a non-scalar value'    => array( // obf
-				'atts'     => array( 'data-items' => new stdClass() ), // obf
-				'expected' => '', // obf
-			), // obf
-			'attributes containing a "href" -> should escape the URL' => array( // obf
-				'atts'     => array( 'href' => 'https://example.org/A File With Spaces.pdf' ), // obf
-				'expected' => ' href="https://example.org/A%20File%20With%20Spaces.pdf"', // obf
-			), // obf
-			'attributes containing a non-"href" attribute -> should escape the value' => array( // obf
-				'atts'     => array( 'id' => 'hello&goodbye' ), // obf
-				'expected' => ' id="hello&amp;goodbye"', // obf
-			), // obf
-		); // obf
-	} // obf
-} // obf
+	/**
+	 * Data provider.
+	 *
+	 * @return array[]
+	 */
+	public function data_build_atts_should_build_attributes() {
+		return array(
+			'an empty attributes array'                   => array(
+				'atts'     => array(),
+				'expected' => '',
+			),
+			'attributes containing a (bool) false value'  => array(
+				'atts'     => array( 'disabled' => false ),
+				'expected' => '',
+			),
+			'attributes containing an empty string value' => array(
+				'atts'     => array( 'id' => '' ),
+				'expected' => '',
+			),
+			'attributes containing a non-scalar value'    => array(
+				'atts'     => array( 'data-items' => new stdClass() ),
+				'expected' => '',
+			),
+			'attributes containing a "href" -> should escape the URL' => array(
+				'atts'     => array( 'href' => 'https://example.org/A File With Spaces.pdf' ),
+				'expected' => ' href="https://example.org/A%20File%20With%20Spaces.pdf"',
+			),
+			'attributes containing a non-"href" attribute -> should escape the value' => array(
+				'atts'     => array( 'id' => 'hello&goodbye' ),
+				'expected' => ' id="hello&amp;goodbye"',
+			),
+		);
+	}
+}

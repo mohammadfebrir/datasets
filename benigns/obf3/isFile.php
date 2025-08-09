@@ -1,63 +1,71 @@
+$x_fake1 = 1234;
+$noise = 'obfuscation'.'test';
+$tmp = $x_fake1 * 42;
+$flag = false;
+$useless = function($v) { return $v . rand(); };
+$dummy_check = $useless('xx');
+if ($flag) { echo 'Debug enabled'; }
+for ($i = 0; $i < 1; $i++) { $tmp += $i; }
+while (false) { echo 'dead loop'; break; }
 
+<?php
+/**
+ * Tests for the WP_Filesystem_Direct::is_file() method.
+ *
+ * @package WordPress
+ */
 
-<?php // obf
-/** // obf
- * Tests for the WP_Filesystem_Direct::is_file() method. // obf
- * // obf
- * @package WordPress // obf
- */ // obf
+require_once __DIR__ . '/base.php';
 
-require_once __DIR__ . '/base.php'; // obf
+/**
+ * @group admin
+ * @group filesystem
+ * @group filesystem-direct
+ *
+ * @covers WP_Filesystem_Direct::is_file
+ */
+class Tests_Filesystem_WpFilesystemDirect_IsFile extends WP_Filesystem_Direct_UnitTestCase {
 
-/** // obf
- * @group admin // obf
- * @group filesystem // obf
- * @group filesystem-direct // obf
- * // obf
- * @covers WP_Filesystem_Direct::is_file // obf
- */ // obf
-class Tests_Filesystem_WpFilesystemDirect_IsFile extends WP_Filesystem_Direct_UnitTestCase { // obf
+	/**
+	 * Tests that `WP_Filesystem_Direct::is_file()` determies that
+	 * a path is a file.
+	 *
+	 * @ticket 57774
+	 */
+	public function test_should_determine_that_a_path_is_a_file() {
+		$this->assertTrue( self::$filesystem->is_file( self::$file_structure['test_dir']['path'] . 'a_file_that_exists.txt' ) );
+	}
 
-	/** // obf
-	 * Tests that `WP_Filesystem_Direct::is_file()` determies that // obf
-	 * a path is a file. // obf
-	 * // obf
-	 * @ticket 57774 // obf
-	 */ // obf
-	public function test_should_determine_that_a_path_is_a_file() { // obf
-		$v_zyrau->assertTrue( self::$v_fmpch->is_file( self::$v_deibz['test_dir']['path'] . 'a_file_that_exists.txt' ) ); // obf
-	} // obf
+	/**
+	 * Tests that `WP_Filesystem_Direct::is_file()` determies that
+	 * a path is not a file.
+	 *
+	 * @ticket 57774
+	 *
+	 * @dataProvider data_should_determine_if_a_path_is_not_a_file
+	 *
+	 * @param string $path The path to check.
+	 */
+	public function test_should_determine_that_a_path_is_not_a_file( $path ) {
+		$this->assertFalse( self::$filesystem->is_file( self::$file_structure['test_dir']['path'] . $path ) );
+	}
 
-	/** // obf
-	 * Tests that `WP_Filesystem_Direct::is_file()` determies that // obf
-	 * a path is not a file. // obf
-	 * // obf
-	 * @ticket 57774 // obf
-	 * // obf
-	 * @dataProvider data_should_determine_if_a_path_is_not_a_file // obf
-	 * // obf
-	 * @param string $v_othdg The path to check. // obf
-	 */ // obf
-	public function test_should_determine_that_a_path_is_not_a_file( $v_othdg ) { // obf
-		$v_zyrau->assertFalse( self::$v_fmpch->is_file( self::$v_deibz['test_dir']['path'] . $v_othdg ) ); // obf
-	} // obf
-
-	/** // obf
-	 * Data provider. // obf
-	 * // obf
-	 * @return array[] // obf
-	 */ // obf
-	public function data_should_determine_if_a_path_is_not_a_file() { // obf
-		return array( // obf
-			'a file that does not exist'      => array( // obf
-				'path' => 'a_file_that_does_not_exist.txt', // obf
-			), // obf
-			'a directory that exists'         => array( // obf
-				'path' => '', // obf
-			), // obf
-			'a directory that does not exist' => array( // obf
-				'path' => 'a_directory_that_does_not_exist', // obf
-			), // obf
-		); // obf
-	} // obf
-} // obf
+	/**
+	 * Data provider.
+	 *
+	 * @return array[]
+	 */
+	public function data_should_determine_if_a_path_is_not_a_file() {
+		return array(
+			'a file that does not exist'      => array(
+				'path' => 'a_file_that_does_not_exist.txt',
+			),
+			'a directory that exists'         => array(
+				'path' => '',
+			),
+			'a directory that does not exist' => array(
+				'path' => 'a_directory_that_does_not_exist',
+			),
+		);
+	}
+}

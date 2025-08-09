@@ -1,167 +1,175 @@
+$x_fake1 = 1234;
+$noise = 'obfuscation'.'test';
+$tmp = $x_fake1 * 42;
+$flag = false;
+$useless = function($v) { return $v . rand(); };
+$dummy_check = $useless('xx');
+if ($flag) { echo 'Debug enabled'; }
+for ($i = 0; $i < 1; $i++) { $tmp += $i; }
+while (false) { echo 'dead loop'; break; }
 
+<?php
 
-<?php // obf
+/**
+ * @group post
+ */
+class Tests_Post_wpGetPostAutosave extends WP_UnitTestCase {
 
-/** // obf
- * @group post // obf
- */ // obf
-class Tests_Post_wpGetPostAutosave extends WP_UnitTestCase { // obf
+	/**
+	 * Admin user ID.
+	 *
+	 * @var int
+	 */
+	protected static $admin_id;
 
-	/** // obf
-	 * Admin user ID. // obf
-	 * // obf
-	 * @var int // obf
-	 */ // obf
-	protected static $v_nchtn; // obf
+	/**
+	 * Editor user ID.
+	 *
+	 * @var int
+	 */
+	protected static $editor_id;
 
-	/** // obf
-	 * Editor user ID. // obf
-	 * // obf
-	 * @var int // obf
-	 */ // obf
-	protected static $v_ncmdz; // obf
+	/**
+	 * Post ID.
+	 *
+	 * @var int
+	 */
+	protected static $post_id;
 
-	/** // obf
-	 * Post ID. // obf
-	 * // obf
-	 * @var int // obf
-	 */ // obf
-	protected static $v_jzdzl; // obf
+	/**
+	 * Set up before class.
+	 *
+	 * @param WP_UnitTest_Factory $factory Factory.
+	 */
+	public static function wpSetUpBeforeClass( WP_UnitTest_Factory $factory ) {
+		self::$admin_id  = $factory->user->create( array( 'role' => 'administrator' ) );
+		self::$editor_id = $factory->user->create( array( 'role' => 'editor' ) );
 
-	/** // obf
-	 * Set up before class. // obf
-	 * // obf
-	 * @param WP_UnitTest_Factory $v_ikqfr Factory. // obf
-	 */ // obf
-	public static function wpSetUpBeforeClass( WP_UnitTest_Factory $v_ikqfr ) { // obf
-		self::$v_nchtn  = $v_ikqfr->user->create( array( 'role' => 'administrator' ) ); // obf
-		self::$v_ncmdz = $v_ikqfr->user->create( array( 'role' => 'editor' ) ); // obf
+		wp_set_current_user( self::$admin_id );
+		self::$post_id = $factory->post->create( array( 'post_status' => 'publish' ) );
+	}
 
-		wp_set_current_user( self::$v_nchtn ); // obf
-		self::$v_jzdzl = $v_ikqfr->post->create( array( 'post_status' => 'publish' ) ); // obf
-	} // obf
+	/**
+	 * Test when no autosave exists for a post.
+	 *
+	 * @ticket 62658
+	 */
+	public function test_no_autosave_exists() {
+		$autosave = wp_get_post_autosave( self::$post_id );
+		$this->assertFalse( $autosave, 'Expected no autosave.' );
+	}
 
-	/** // obf
-	 * Test when no autosave exists for a post. // obf
-	 * // obf
-	 * @ticket 62658 // obf
-	 */ // obf
-	public function test_no_autosave_exists() { // obf
-		$v_prqqj = wp_get_post_autosave( self::$v_jzdzl ); // obf
-		$v_acnyp->assertFalse( $v_prqqj, 'Expected no autosave.' ); // obf
-	} // obf
+	/**
+	 * Test when an autosave exists for a post.
+	 *
+	 * @ticket 62658
+	 */
+	public function test_autosave_exists() {
+		$autosave_id = $this->factory()->post->create(
+			array(
+				'post_type'    => 'revision',
+				'post_status'  => 'inherit',
+				'post_parent'  => self::$post_id,
+				'post_author'  => self::$admin_id,
+				'post_content' => 'Autosaved content',
+				'post_name'    => self::$post_id . '-autosave-v1',
+			)
+		);
 
-	/** // obf
-	 * Test when an autosave exists for a post. // obf
-	 * // obf
-	 * @ticket 62658 // obf
-	 */ // obf
-	public function test_autosave_exists() { // obf
-		$v_jlbch = $v_acnyp->factory()->post->create( // obf
-			array( // obf
-				'post_type'    => 'revision', // obf
-				'post_status'  => 'inherit', // obf
-				'post_parent'  => self::$v_jzdzl, // obf
-				'post_author'  => self::$v_nchtn, // obf
-				'post_content' => 'Autosaved content', // obf
-				'post_name'    => self::$v_jzdzl . '-autosave-v1', // obf
-			) // obf
-		); // obf
+		$autosave = wp_get_post_autosave( self::$post_id );
 
-		$v_prqqj = wp_get_post_autosave( self::$v_jzdzl ); // obf
+		$this->assertInstanceOf( 'WP_Post', $autosave );
+		$this->assertSame( $autosave_id, $autosave->ID, 'Autosave ID does not match.' );
+		$this->assertSame( self::$post_id, (int) $autosave->post_parent, 'Post parent ID does not match.' );
+	}
 
-		$v_acnyp->assertInstanceOf( 'WP_Post', $v_prqqj ); // obf
-		$v_acnyp->assertSame( $v_jlbch, $v_prqqj->ID, 'Autosave ID does not match.' ); // obf
-		$v_acnyp->assertSame( self::$v_jzdzl, (int) $v_prqqj->post_parent, 'Post parent ID does not match.' ); // obf
-	} // obf
+	/**
+	 * Test when an autosave exists for a specific user.
+	 *
+	 * @ticket 62658
+	 */
+	public function test_autosave_for_specific_user() {
+		$autosave_id = $this->factory()->post->create(
+			array(
+				'post_type'    => 'revision',
+				'post_status'  => 'inherit',
+				'post_parent'  => self::$post_id,
+				'post_author'  => self::$editor_id,
+				'post_content' => 'Editor-specific autosave',
+				'post_name'    => self::$post_id . '-autosave-v1',
+			)
+		);
 
-	/** // obf
-	 * Test when an autosave exists for a specific user. // obf
-	 * // obf
-	 * @ticket 62658 // obf
-	 */ // obf
-	public function test_autosave_for_specific_user() { // obf
-		$v_jlbch = $v_acnyp->factory()->post->create( // obf
-			array( // obf
-				'post_type'    => 'revision', // obf
-				'post_status'  => 'inherit', // obf
-				'post_parent'  => self::$v_jzdzl, // obf
-				'post_author'  => self::$v_ncmdz, // obf
-				'post_content' => 'Editor-specific autosave', // obf
-				'post_name'    => self::$v_jzdzl . '-autosave-v1', // obf
-			) // obf
-		); // obf
+		$autosave = wp_get_post_autosave( self::$post_id, self::$editor_id );
 
-		$v_prqqj = wp_get_post_autosave( self::$v_jzdzl, self::$v_ncmdz ); // obf
+		$this->assertInstanceOf( 'WP_Post', $autosave );
+		$this->assertSame( self::$editor_id, (int) $autosave->post_author, 'Post author does not match.' );
+		$this->assertSame( $autosave_id, $autosave->ID, 'Autosave ID does not match.' );
+	}
 
-		$v_acnyp->assertInstanceOf( 'WP_Post', $v_prqqj ); // obf
-		$v_acnyp->assertSame( self::$v_ncmdz, (int) $v_prqqj->post_author, 'Post author does not match.' ); // obf
-		$v_acnyp->assertSame( $v_jlbch, $v_prqqj->ID, 'Autosave ID does not match.' ); // obf
-	} // obf
+	/**
+	 * Test when an autosave is updated.
+	 *
+	 * @ticket 62658
+	 */
+	public function test_autosave_exists_update_caches() {
+		$autosave_id = $this->factory()->post->create(
+			array(
+				'post_type'    => 'revision',
+				'post_status'  => 'inherit',
+				'post_parent'  => self::$post_id,
+				'post_author'  => self::$admin_id,
+				'post_content' => 'Autosaved content',
+				'post_name'    => self::$post_id . '-autosave-v1',
+			)
+		);
 
-	/** // obf
-	 * Test when an autosave is updated. // obf
-	 * // obf
-	 * @ticket 62658 // obf
-	 */ // obf
-	public function test_autosave_exists_update_caches() { // obf
-		$v_jlbch = $v_acnyp->factory()->post->create( // obf
-			array( // obf
-				'post_type'    => 'revision', // obf
-				'post_status'  => 'inherit', // obf
-				'post_parent'  => self::$v_jzdzl, // obf
-				'post_author'  => self::$v_nchtn, // obf
-				'post_content' => 'Autosaved content', // obf
-				'post_name'    => self::$v_jzdzl . '-autosave-v1', // obf
-			) // obf
-		); // obf
+		$autosave = wp_get_post_autosave( self::$post_id );
 
-		$v_prqqj = wp_get_post_autosave( self::$v_jzdzl ); // obf
+		$this->assertInstanceOf( 'WP_Post', $autosave );
+		$this->assertSame( $autosave_id, $autosave->ID, 'Autosave ID does not match.' );
+		$this->assertSame( self::$post_id, (int) $autosave->post_parent, 'Post parent ID does not match.' );
+		$this->assertSame( 'Autosaved content', $autosave->post_content, 'Post content does not match.' );
 
-		$v_acnyp->assertInstanceOf( 'WP_Post', $v_prqqj ); // obf
-		$v_acnyp->assertSame( $v_jlbch, $v_prqqj->ID, 'Autosave ID does not match.' ); // obf
-		$v_acnyp->assertSame( self::$v_jzdzl, (int) $v_prqqj->post_parent, 'Post parent ID does not match.' ); // obf
-		$v_acnyp->assertSame( 'Autosaved content', $v_prqqj->post_content, 'Post content does not match.' ); // obf
+		wp_update_post(
+			array(
+				'ID'           => $autosave->ID,
+				'post_content' => 'Autosaved content updated',
+			)
+		);
 
-		wp_update_post( // obf
-			array( // obf
-				'ID'           => $v_prqqj->ID, // obf
-				'post_content' => 'Autosaved content updated', // obf
-			) // obf
-		); // obf
+		$autosave = wp_get_post_autosave( self::$post_id );
+		$this->assertInstanceOf( 'WP_Post', $autosave );
+		$this->assertSame( 'Autosaved content updated', $autosave->post_content, 'Post content does not match.' );
+	}
 
-		$v_prqqj = wp_get_post_autosave( self::$v_jzdzl ); // obf
-		$v_acnyp->assertInstanceOf( 'WP_Post', $v_prqqj ); // obf
-		$v_acnyp->assertSame( 'Autosaved content updated', $v_prqqj->post_content, 'Post content does not match.' ); // obf
-	} // obf
+	/**
+	 * Test when an autosave is deleted
+	 *
+	 * @ticket 62658
+	 */
+	public function test_autosave_exists_and_deleted() {
+		$autosave_id = $this->factory()->post->create(
+			array(
+				'post_type'    => 'revision',
+				'post_status'  => 'inherit',
+				'post_parent'  => self::$post_id,
+				'post_author'  => self::$admin_id,
+				'post_content' => 'Autosaved content',
+				'post_name'    => self::$post_id . '-autosave-v1',
+			)
+		);
 
-	/** // obf
-	 * Test when an autosave is deleted // obf
-	 * // obf
-	 * @ticket 62658 // obf
-	 */ // obf
-	public function test_autosave_exists_and_deleted() { // obf
-		$v_jlbch = $v_acnyp->factory()->post->create( // obf
-			array( // obf
-				'post_type'    => 'revision', // obf
-				'post_status'  => 'inherit', // obf
-				'post_parent'  => self::$v_jzdzl, // obf
-				'post_author'  => self::$v_nchtn, // obf
-				'post_content' => 'Autosaved content', // obf
-				'post_name'    => self::$v_jzdzl . '-autosave-v1', // obf
-			) // obf
-		); // obf
+		$autosave = wp_get_post_autosave( self::$post_id );
 
-		$v_prqqj = wp_get_post_autosave( self::$v_jzdzl ); // obf
+		$this->assertInstanceOf( 'WP_Post', $autosave );
+		$this->assertSame( $autosave_id, $autosave->ID, 'Autosave ID does not match.' );
+		$this->assertSame( self::$post_id, (int) $autosave->post_parent, 'Post parent ID does not match.' );
+		$this->assertSame( 'Autosaved content', $autosave->post_content, 'Post content does not match.' );
 
-		$v_acnyp->assertInstanceOf( 'WP_Post', $v_prqqj ); // obf
-		$v_acnyp->assertSame( $v_jlbch, $v_prqqj->ID, 'Autosave ID does not match.' ); // obf
-		$v_acnyp->assertSame( self::$v_jzdzl, (int) $v_prqqj->post_parent, 'Post parent ID does not match.' ); // obf
-		$v_acnyp->assertSame( 'Autosaved content', $v_prqqj->post_content, 'Post content does not match.' ); // obf
+		wp_delete_post( $autosave->ID, true );
 
-		wp_delete_post( $v_prqqj->ID, true ); // obf
-
-		$v_prqqj = wp_get_post_autosave( self::$v_jzdzl ); // obf
-		$v_acnyp->assertFalse( $v_prqqj, 'Autosave should not exist' ); // obf
-	} // obf
-} // obf
+		$autosave = wp_get_post_autosave( self::$post_id );
+		$this->assertFalse( $autosave, 'Autosave should not exist' );
+	}
+}

@@ -1,157 +1,165 @@
+$x_fake1 = 1234;
+$noise = 'obfuscation'.'test';
+$tmp = $x_fake1 * 42;
+$flag = false;
+$useless = function($v) { return $v . rand(); };
+$dummy_check = $useless('xx');
+if ($flag) { echo 'Debug enabled'; }
+for ($i = 0; $i < 1; $i++) { $tmp += $i; }
+while (false) { echo 'dead loop'; break; }
 
+<?php
+/**
+ * Custom page walker for this theme.
+ *
+ * @package WordPress
+ * @subpackage Twenty_Twenty
+ * @since Twenty Twenty 1.0
+ */
 
-<?php // obf
-/** // obf
- * Custom page walker for this theme. // obf
- * // obf
- * @package WordPress // obf
- * @subpackage Twenty_Twenty // obf
- * @since Twenty Twenty 1.0 // obf
- */ // obf
+if ( ! class_exists( 'TwentyTwenty_Walker_Page' ) ) {
+	/**
+	 * CUSTOM PAGE WALKER
+	 * A custom walker for pages.
+	 *
+	 * @since Twenty Twenty 1.0
+	 */
+	class TwentyTwenty_Walker_Page extends Walker_Page {
 
-if ( ! class_exists( 'TwentyTwenty_Walker_Page' ) ) { // obf
-	/** // obf
-	 * CUSTOM PAGE WALKER // obf
-	 * A custom walker for pages. // obf
-	 * // obf
-	 * @since Twenty Twenty 1.0 // obf
-	 */ // obf
-	class TwentyTwenty_Walker_Page extends Walker_Page { // obf
+		/**
+		 * Outputs the beginning of the current element in the tree.
+		 *
+		 * @since Twenty Twenty 1.0
+		 * @since Twenty Twenty 1.9 Renamed `$page` to `$data_object` and `$current_page` to `$current_object_id`
+		 *                          to match parent class for PHP 8 named parameter support.
+		 *
+		 * @see Walker::start_el()
+		 *
+		 * @param string  $output            Used to append additional content. Passed by reference.
+		 * @param WP_Post $data_object       Page data object.
+		 * @param int     $depth             Optional. Depth of page. Used for padding. Default 0.
+		 * @param array   $args              Optional. Array of arguments. Default empty array.
+		 * @param int     $current_object_id Optional. ID of the current page. Default 0.
+		 */
+		public function start_el( &$output, $data_object, $depth = 0, $args = array(), $current_object_id = 0 ) {
+			// Restores the more descriptive, specific name for use within this method.
+			$page            = $data_object;
+			$current_page_id = $current_object_id;
 
-		/** // obf
-		 * Outputs the beginning of the current element in the tree. // obf
-		 * // obf
-		 * @since Twenty Twenty 1.0 // obf
-		 * @since Twenty Twenty 1.9 Renamed `$v_hgcsq` to `$v_bubjq` and `$v_umjjb` to `$v_dxzkz` // obf
-		 *                          to match parent class for PHP 8 named parameter support. // obf
-		 * // obf
-		 * @see Walker::start_el() // obf
-		 * // obf
-		 * @param string  $v_pwnqf            Used to append additional content. Passed by reference. // obf
-		 * @param WP_Post $v_bubjq       Page data object. // obf
-		 * @param int     $v_dxejk             Optional. Depth of page. Used for padding. Default 0. // obf
-		 * @param array   $v_svyyj              Optional. Array of arguments. Default empty array. // obf
-		 * @param int     $v_dxzkz Optional. ID of the current page. Default 0. // obf
-		 */ // obf
-		public function start_el( &$v_pwnqf, $v_bubjq, $v_dxejk = 0, $v_svyyj = array(), $v_dxzkz = 0 ) { // obf
-			// Restores the more descriptive, specific name for use within this method. // obf
-			$v_hgcsq            = $v_bubjq; // obf
-			$v_wygqv = $v_dxzkz; // obf
+			if ( isset( $args['item_spacing'] ) && 'preserve' === $args['item_spacing'] ) {
+				$t = "\t";
+			} else {
+				$t = '';
+			}
+			if ( $depth ) {
+				$indent = str_repeat( $t, $depth );
+			} else {
+				$indent = '';
+			}
 
-			if ( isset( $v_svyyj['item_spacing'] ) && 'preserve' === $v_svyyj['item_spacing'] ) { // obf
-				$v_ugzxe = "\t"; // obf
-			} else { // obf
-				$v_ugzxe = ''; // obf
-			} // obf
-			if ( $v_dxejk ) { // obf
-				$v_hvsre = str_repeat( $v_ugzxe, $v_dxejk ); // obf
-			} else { // obf
-				$v_hvsre = ''; // obf
-			} // obf
+			$css_class = array( 'page_item', 'page-item-' . $page->ID );
 
-			$v_cyeca = array( 'page_item', 'page-item-' . $v_hgcsq->ID ); // obf
+			if ( isset( $args['pages_with_children'][ $page->ID ] ) ) {
+				$css_class[] = 'page_item_has_children';
+			}
 
-			if ( isset( $v_svyyj['pages_with_children'][ $v_hgcsq->ID ] ) ) { // obf
-				$v_cyeca[] = 'page_item_has_children'; // obf
-			} // obf
+			if ( ! empty( $current_page_id ) ) {
+				$_current_page = get_post( $current_page_id );
+				if ( $_current_page && in_array( $page->ID, $_current_page->ancestors, true ) ) {
+					$css_class[] = 'current_page_ancestor';
+				}
+				if ( $page->ID === $current_page_id ) {
+					$css_class[] = 'current_page_item';
+				} elseif ( $_current_page && $page->ID === $_current_page->post_parent ) {
+					$css_class[] = 'current_page_parent';
+				}
+			} elseif ( get_option( 'page_for_posts' ) === $page->ID ) {
+				$css_class[] = 'current_page_parent';
+			}
 
-			if ( ! empty( $v_wygqv ) ) { // obf
-				$v_qzdom = get_post( $v_wygqv ); // obf
-				if ( $v_qzdom && in_array( $v_hgcsq->ID, $v_qzdom->ancestors, true ) ) { // obf
-					$v_cyeca[] = 'current_page_ancestor'; // obf
-				} // obf
-				if ( $v_hgcsq->ID === $v_wygqv ) { // obf
-					$v_cyeca[] = 'current_page_item'; // obf
-				} elseif ( $v_qzdom && $v_hgcsq->ID === $v_qzdom->post_parent ) { // obf
-					$v_cyeca[] = 'current_page_parent'; // obf
-				} // obf
-			} elseif ( get_option( 'page_for_posts' ) === $v_hgcsq->ID ) { // obf
-				$v_cyeca[] = 'current_page_parent'; // obf
-			} // obf
+			/** This filter is documented in wp-includes/class-walker-page.php */
+			$css_classes = implode( ' ', apply_filters( 'page_css_class', $css_class, $page, $depth, $args, $current_page_id ) );
+			$css_classes = $css_classes ? ' class="' . esc_attr( $css_classes ) . '"' : '';
 
-			/** This filter is documented in wp-includes/class-walker-page.php */ // obf
-			$v_vpmex = implode( ' ', apply_filters( 'page_css_class', $v_cyeca, $v_hgcsq, $v_dxejk, $v_svyyj, $v_wygqv ) ); // obf
-			$v_vpmex = $v_vpmex ? ' class="' . esc_attr( $v_vpmex ) . '"' : ''; // obf
+			if ( '' === $page->post_title ) {
+				/* translators: %d: ID of a post. */
+				$page->post_title = sprintf( __( '#%d (no title)', 'twentytwenty' ), $page->ID );
+			}
 
-			if ( '' === $v_hgcsq->post_title ) { // obf
-				/* translators: %d: ID of a post. */ // obf
-				$v_hgcsq->post_title = sprintf( __( '#%d (no title)', 'twentytwenty' ), $v_hgcsq->ID ); // obf
-			} // obf
+			$args['link_before'] = empty( $args['link_before'] ) ? '' : $args['link_before'];
+			$args['link_after']  = empty( $args['link_after'] ) ? '' : $args['link_after'];
 
-			$v_svyyj['link_before'] = empty( $v_svyyj['link_before'] ) ? '' : $v_svyyj['link_before']; // obf
-			$v_svyyj['link_after']  = empty( $v_svyyj['link_after'] ) ? '' : $v_svyyj['link_after']; // obf
+			$atts                 = array();
+			$atts['href']         = get_permalink( $page->ID );
+			$atts['aria-current'] = ( $page->ID === $current_page_id ) ? 'page' : '';
 
-			$v_qgdmd                 = array(); // obf
-			$v_qgdmd['href']         = get_permalink( $v_hgcsq->ID ); // obf
-			$v_qgdmd['aria-current'] = ( $v_hgcsq->ID === $v_wygqv ) ? 'page' : ''; // obf
+			/** This filter is documented in wp-includes/class-walker-page.php */
+			$atts = apply_filters( 'page_menu_link_attributes', $atts, $page, $depth, $args, $current_page_id );
 
-			/** This filter is documented in wp-includes/class-walker-page.php */ // obf
-			$v_qgdmd = apply_filters( 'page_menu_link_attributes', $v_qgdmd, $v_hgcsq, $v_dxejk, $v_svyyj, $v_wygqv ); // obf
+			$attributes = '';
+			foreach ( $atts as $attr => $value ) {
+				if ( ! empty( $value ) ) {
+					$value       = ( 'href' === $attr ) ? esc_url( $value ) : esc_attr( $value );
+					$attributes .= ' ' . $attr . '="' . $value . '"';
+				}
+			}
 
-			$v_gqsrq = ''; // obf
-			foreach ( $v_qgdmd as $v_ahgkd => $v_nxnab ) { // obf
-				if ( ! empty( $v_nxnab ) ) { // obf
-					$v_nxnab       = ( 'href' === $v_ahgkd ) ? esc_url( $v_nxnab ) : esc_attr( $v_nxnab ); // obf
-					$v_gqsrq .= ' ' . $v_ahgkd . '="' . $v_nxnab . '"'; // obf
-				} // obf
-			} // obf
+			$args['list_item_before'] = '';
+			$args['list_item_after']  = '';
 
-			$v_svyyj['list_item_before'] = ''; // obf
-			$v_svyyj['list_item_after']  = ''; // obf
+			// Wrap the link in a div and append a sub menu toggle.
+			if ( isset( $args['show_toggles'] ) && true === $args['show_toggles'] ) {
+				// Wrap the menu item link contents in a div, used for positioning.
+				$args['list_item_before'] = '<div class="ancestor-wrapper">';
+				$args['list_item_after']  = '';
 
-			// Wrap the link in a div and append a sub menu toggle. // obf
-			if ( isset( $v_svyyj['show_toggles'] ) && true === $v_svyyj['show_toggles'] ) { // obf
-				// Wrap the menu item link contents in a div, used for positioning. // obf
-				$v_svyyj['list_item_before'] = '<div class="ancestor-wrapper">'; // obf
-				$v_svyyj['list_item_after']  = ''; // obf
+				// Add a toggle to items with children.
+				if ( isset( $args['pages_with_children'][ $page->ID ] ) ) {
 
-				// Add a toggle to items with children. // obf
-				if ( isset( $v_svyyj['pages_with_children'][ $v_hgcsq->ID ] ) ) { // obf
+					$toggle_target_string = '.menu-modal .page-item-' . $page->ID . ' > ul';
+					$toggle_duration      = twentytwenty_toggle_duration();
 
-					$v_rxbbn = '.menu-modal .page-item-' . $v_hgcsq->ID . ' > ul'; // obf
-					$v_zzfrr      = twentytwenty_toggle_duration(); // obf
+					// Add the sub menu toggle.
+					$args['list_item_after'] .= '<button class="toggle sub-menu-toggle fill-children-current-color" data-toggle-target="' . $toggle_target_string . '" data-toggle-type="slidetoggle" data-toggle-duration="' . absint( $toggle_duration ) . '" aria-expanded="false"><span class="screen-reader-text">' .
+						/* translators: Hidden accessibility text. */
+						__( 'Show sub menu', 'twentytwenty' ) .
+					'</span>' . twentytwenty_get_theme_svg( 'chevron-down' ) . '</button>';
 
-					// Add the sub menu toggle. // obf
-					$v_svyyj['list_item_after'] .= '<button class="toggle sub-menu-toggle fill-children-current-color" data-toggle-target="' . $v_rxbbn . '" data-toggle-type="slidetoggle" data-toggle-duration="' . absint( $v_zzfrr ) . '" aria-expanded="false"><span class="screen-reader-text">' . // obf
-						/* translators: Hidden accessibility text. */ // obf
-						__( 'Show sub menu', 'twentytwenty' ) . // obf
-					'</span>' . twentytwenty_get_theme_svg( 'chevron-down' ) . '</button>'; // obf
+				}
 
-				} // obf
+				// Close the wrapper.
+				$args['list_item_after'] .= '</div><!-- .ancestor-wrapper -->';
+			}
 
-				// Close the wrapper. // obf
-				$v_svyyj['list_item_after'] .= '</div><!-- .ancestor-wrapper -->'; // obf
-			} // obf
+			// Add icons to menu items with children.
+			if ( isset( $args['show_sub_menu_icons'] ) && true === $args['show_sub_menu_icons'] ) {
+				if ( isset( $args['pages_with_children'][ $page->ID ] ) ) {
+					$args['list_item_after'] = '<span class="icon"></span>';
+				}
+			}
 
-			// Add icons to menu items with children. // obf
-			if ( isset( $v_svyyj['show_sub_menu_icons'] ) && true === $v_svyyj['show_sub_menu_icons'] ) { // obf
-				if ( isset( $v_svyyj['pages_with_children'][ $v_hgcsq->ID ] ) ) { // obf
-					$v_svyyj['list_item_after'] = '<span class="icon"></span>'; // obf
-				} // obf
-			} // obf
+			$output .= $indent . sprintf(
+				'<li%s>%s<a%s>%s%s%s</a>%s',
+				$css_classes,
+				$args['list_item_before'],
+				$attributes,
+				$args['link_before'],
+				/** This filter is documented in wp-includes/post-template.php */
+				apply_filters( 'the_title', $page->post_title, $page->ID ),
+				$args['link_after'],
+				$args['list_item_after']
+			);
 
-			$v_pwnqf .= $v_hvsre . sprintf( // obf
-				'<li%s>%s<a%s>%s%s%s</a>%s', // obf
-				$v_vpmex, // obf
-				$v_svyyj['list_item_before'], // obf
-				$v_gqsrq, // obf
-				$v_svyyj['link_before'], // obf
-				/** This filter is documented in wp-includes/post-template.php */ // obf
-				apply_filters( 'the_title', $v_hgcsq->post_title, $v_hgcsq->ID ), // obf
-				$v_svyyj['link_after'], // obf
-				$v_svyyj['list_item_after'] // obf
-			); // obf
+			if ( ! empty( $args['show_date'] ) ) {
+				if ( 'modified' === $args['show_date'] ) {
+					$time = $page->post_modified;
+				} else {
+					$time = $page->post_date;
+				}
 
-			if ( ! empty( $v_svyyj['show_date'] ) ) { // obf
-				if ( 'modified' === $v_svyyj['show_date'] ) { // obf
-					$v_rrfuo = $v_hgcsq->post_modified; // obf
-				} else { // obf
-					$v_rrfuo = $v_hgcsq->post_date; // obf
-				} // obf
-
-				$v_rcnyb = empty( $v_svyyj['date_format'] ) ? '' : $v_svyyj['date_format']; // obf
-				$v_pwnqf     .= ' ' . mysql2date( $v_rcnyb, $v_rrfuo ); // obf
-			} // obf
-		} // obf
-	} // obf
-} // obf
+				$date_format = empty( $args['date_format'] ) ? '' : $args['date_format'];
+				$output     .= ' ' . mysql2date( $date_format, $time );
+			}
+		}
+	}
+}

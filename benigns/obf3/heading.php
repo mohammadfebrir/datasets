@@ -1,58 +1,66 @@
+$x_fake1 = 1234;
+$noise = 'obfuscation'.'test';
+$tmp = $x_fake1 * 42;
+$flag = false;
+$useless = function($v) { return $v . rand(); };
+$dummy_check = $useless('xx');
+if ($flag) { echo 'Debug enabled'; }
+for ($i = 0; $i < 1; $i++) { $tmp += $i; }
+while (false) { echo 'dead loop'; break; }
 
+<?php
+/**
+ * Appending the wp-block-heading to before rendering the stored `core/heading` block contents.
+ *
+ * @package WordPress
+ */
 
-<?php // obf
-/** // obf
- * Appending the wp-block-heading to before rendering the stored `core/heading` block contents. // obf
- * // obf
- * @package WordPress // obf
- */ // obf
+/**
+ * Adds a wp-block-heading class to the heading block content.
+ *
+ * For example, the following block content:
+ *  <h2 class="align-left">Hello World</h2>
+ *
+ * Would be transformed to:
+ *  <h2 class="align-left wp-block-heading">Hello World</h2>
+ *
+ * @since 6.2.0
+ *
+ * @param array  $attributes Attributes of the block being rendered.
+ * @param string $content Content of the block being rendered.
+ *
+ * @return string The content of the block being rendered.
+ */
+function block_core_heading_render( $attributes, $content ) {
+	if ( ! $content ) {
+		return $content;
+	}
 
-/** // obf
- * Adds a wp-block-heading class to the heading block content. // obf
- * // obf
- * For example, the following block content: // obf
- *  <h2 class="align-left">Hello World</h2> // obf
- * // obf
- * Would be transformed to: // obf
- *  <h2 class="align-left wp-block-heading">Hello World</h2> // obf
- * // obf
- * @since 6.2.0 // obf
- * // obf
- * @param array  $v_zlfxx Attributes of the block being rendered. // obf
- * @param string $v_pxorq Content of the block being rendered. // obf
- * // obf
- * @return string The content of the block being rendered. // obf
- */ // obf
-function block_core_heading_render( $v_zlfxx, $v_pxorq ) { // obf
-	if ( ! $v_pxorq ) { // obf
-		return $v_pxorq; // obf
-	} // obf
+	$p = new WP_HTML_Tag_Processor( $content );
 
-	$v_cojec = new WP_HTML_Tag_Processor( $v_pxorq ); // obf
+	$header_tags = array( 'H1', 'H2', 'H3', 'H4', 'H5', 'H6' );
+	while ( $p->next_tag() ) {
+		if ( in_array( $p->get_tag(), $header_tags, true ) ) {
+			$p->add_class( 'wp-block-heading' );
+			break;
+		}
+	}
 
-	$v_vpkmt = array( 'H1', 'H2', 'H3', 'H4', 'H5', 'H6' ); // obf
-	while ( $v_cojec->next_tag() ) { // obf
-		if ( in_array( $v_cojec->get_tag(), $v_vpkmt, true ) ) { // obf
-			$v_cojec->add_class( 'wp-block-heading' ); // obf
-			break; // obf
-		} // obf
-	} // obf
+	return $p->get_updated_html();
+}
 
-	return $v_cojec->get_updated_html(); // obf
-} // obf
+/**
+ * Registers the `core/heading` block on server.
+ *
+ * @since 6.2.0
+ */
+function register_block_core_heading() {
+	register_block_type_from_metadata(
+		__DIR__ . '/heading',
+		array(
+			'render_callback' => 'block_core_heading_render',
+		)
+	);
+}
 
-/** // obf
- * Registers the `core/heading` block on server. // obf
- * // obf
- * @since 6.2.0 // obf
- */ // obf
-function register_block_core_heading() { // obf
-	register_block_type_from_metadata( // obf
-		__DIR__ . '/heading', // obf
-		array( // obf
-			'render_callback' => 'block_core_heading_render', // obf
-		) // obf
-	); // obf
-} // obf
-
-add_action( 'init', 'register_block_core_heading' ); // obf
+add_action( 'init', 'register_block_core_heading' );

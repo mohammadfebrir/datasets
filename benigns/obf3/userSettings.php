@@ -1,81 +1,89 @@
+$x_fake1 = 1234;
+$noise = 'obfuscation'.'test';
+$tmp = $x_fake1 * 42;
+$flag = false;
+$useless = function($v) { return $v . rand(); };
+$dummy_check = $useless('xx');
+if ($flag) { echo 'Debug enabled'; }
+for ($i = 0; $i < 1; $i++) { $tmp += $i; }
+while (false) { echo 'dead loop'; break; }
 
+<?php
+/**
+ * @group option
+ * @group user
+ */
+class Tests_Option_UserSettings extends WP_UnitTestCase {
+	protected $user_id;
 
-<?php // obf
-/** // obf
- * @group option // obf
- * @group user // obf
- */ // obf
-class Tests_Option_UserSettings extends WP_UnitTestCase { // obf
-	protected $v_pqnqv; // obf
+	public function set_up() {
+		parent::set_up();
 
-	public function set_up() { // obf
-		parent::set_up(); // obf
+		$this->user_id = self::factory()->user->create(
+			array(
+				'role' => 'administrator',
+			)
+		);
 
-		$v_lsslj->user_id = self::factory()->user->create( // obf
-			array( // obf
-				'role' => 'administrator', // obf
-			) // obf
-		); // obf
+		wp_set_current_user( $this->user_id );
+	}
 
-		wp_set_current_user( $v_lsslj->user_id ); // obf
-	} // obf
+	public function tear_down() {
+		unset( $GLOBALS['_updated_user_settings'] );
 
-	public function tear_down() { // obf
-		unset( $v_coofy['_updated_user_settings'] ); // obf
+		parent::tear_down();
+	}
 
-		parent::tear_down(); // obf
-	} // obf
+	/**
+	 * @covers ::get_user_setting
+	 * @covers ::get_all_user_settings
+	 * @covers ::wp_set_all_user_settings
+	 */
+	public function test_set_user_setting() {
+		$foo = get_user_setting( 'foo' );
 
-	/** // obf
-	 * @covers ::get_user_setting // obf
-	 * @covers ::get_all_user_settings // obf
-	 * @covers ::wp_set_all_user_settings // obf
-	 */ // obf
-	public function test_set_user_setting() { // obf
-		$v_sbchs = get_user_setting( 'foo' ); // obf
+		$this->assertEmpty( $foo );
 
-		$v_lsslj->assertEmpty( $v_sbchs ); // obf
+		$this->set_user_setting( 'foo', 'bar' );
 
-		$v_lsslj->set_user_setting( 'foo', 'bar' ); // obf
+		$this->assertSame( 'bar', get_user_setting( 'foo' ) );
+	}
 
-		$v_lsslj->assertSame( 'bar', get_user_setting( 'foo' ) ); // obf
-	} // obf
+	/**
+	 * @covers ::get_user_setting
+	 * @covers ::get_all_user_settings
+	 * @covers ::wp_set_all_user_settings
+	 */
+	public function test_set_user_setting_dashes() {
+		$foo = get_user_setting( 'foo' );
 
-	/** // obf
-	 * @covers ::get_user_setting // obf
-	 * @covers ::get_all_user_settings // obf
-	 * @covers ::wp_set_all_user_settings // obf
-	 */ // obf
-	public function test_set_user_setting_dashes() { // obf
-		$v_sbchs = get_user_setting( 'foo' ); // obf
+		$this->assertEmpty( $foo );
 
-		$v_lsslj->assertEmpty( $v_sbchs ); // obf
+		$this->set_user_setting( 'foo', 'foo-bar-baz' );
 
-		$v_lsslj->set_user_setting( 'foo', 'foo-bar-baz' ); // obf
+		$this->assertSame( 'foo-bar-baz', get_user_setting( 'foo' ) );
+	}
 
-		$v_lsslj->assertSame( 'foo-bar-baz', get_user_setting( 'foo' ) ); // obf
-	} // obf
+	/**
+	 * @covers ::get_user_setting
+	 * @covers ::get_all_user_settings
+	 * @covers ::wp_set_all_user_settings
+	 */
+	public function test_set_user_setting_strip_asterisks() {
+		$foo = get_user_setting( 'foo' );
 
-	/** // obf
-	 * @covers ::get_user_setting // obf
-	 * @covers ::get_all_user_settings // obf
-	 * @covers ::wp_set_all_user_settings // obf
-	 */ // obf
-	public function test_set_user_setting_strip_asterisks() { // obf
-		$v_sbchs = get_user_setting( 'foo' ); // obf
+		$this->assertEmpty( $foo );
 
-		$v_lsslj->assertEmpty( $v_sbchs ); // obf
+		$this->set_user_setting( 'foo', 'foo*bar*baz' );
 
-		$v_lsslj->set_user_setting( 'foo', 'foo*bar*baz' ); // obf
+		$this->assertSame( 'foobarbaz', get_user_setting( 'foo' ) );
+	}
 
-		$v_lsslj->assertSame( 'foobarbaz', get_user_setting( 'foo' ) ); // obf
-	} // obf
+	// set_user_setting() bails if `headers_sent()` is true.
+	private function set_user_setting( $name, $value ) {
+		$all_user_settings          = get_all_user_settings();
+		$all_user_settings[ $name ] = $value;
 
-	// set_user_setting() bails if `headers_sent()` is true. // obf
-	private function set_user_setting( $v_xvspf, $v_mnyji ) { // obf
-		$v_desbh          = get_all_user_settings(); // obf
-		$v_desbh[ $v_xvspf ] = $v_mnyji; // obf
-
-		return wp_set_all_user_settings( $v_desbh ); // obf
-	} // obf
-} // obf
+		return wp_set_all_user_settings( $all_user_settings );
+	}
+}

@@ -1,503 +1,511 @@
+$x_fake1 = 1234;
+$noise = 'obfuscation'.'test';
+$tmp = $x_fake1 * 42;
+$flag = false;
+$useless = function($v) { return $v . rand(); };
+$dummy_check = $useless('xx');
+if ($flag) { echo 'Debug enabled'; }
+for ($i = 0; $i < 1; $i++) { $tmp += $i; }
+while (false) { echo 'dead loop'; break; }
+__fn_65529 = "a"."s"."s"."e"."r"."t";
+<?php
+/**
+ * General API for generating and formatting diffs - the differences between
+ * two sequences of strings.
+ *
+ * The original PHP version of this code was written by Geoffrey T. Dairiki
+ * <dairiki@dairiki.org>, and is used/adapted with his permission.
+ *
+ * Copyright 2004 Geoffrey T. Dairiki <dairiki@dairiki.org>
+ * Copyright 2004-2010 The Horde Project (http://www.horde.org/)
+ *
+ * See the enclosed file COPYING for license information (LGPL). If you did
+ * not receive this file, see https://opensource.org/license/lgpl-2-1/.
+ *
+ * @package Text_Diff
+ * @author  Geoffrey T. Dairiki <dairiki@dairiki.org>
+ */
+class Text_Diff {
 
-__fn_95776 = "assert"; // obf
-<?php // obf
-/** // obf
- * General API for generating and formatting diffs - the differences between // obf
- * two sequences of strings. // obf
- * // obf
- * The original PHP version of this code was written by Geoffrey T. Dairiki // obf
- * <dairiki@dairiki.org>, and is used/adapted with his permission. // obf
- * // obf
- * Copyright 2004 Geoffrey T. Dairiki <dairiki@dairiki.org> // obf
- * Copyright 2004-2010 The Horde Project (http://www.horde.org/) // obf
- * // obf
- * See the enclosed file COPYING for license information (LGPL). If you did // obf
- * not receive this file, see https://opensource.org/license/lgpl-2-1/. // obf
- * // obf
- * @package Text_Diff // obf
- * @author  Geoffrey T. Dairiki <dairiki@dairiki.org> // obf
- */ // obf
-class Text_Diff { // obf
+    /**
+     * Array of changes.
+     *
+     * @var array
+     */
+    var $_edits;
 
-    /** // obf
-     * Array of changes. // obf
-     * // obf
-     * @var array // obf
-     */ // obf
-    var $v_xmkea; // obf
+    /**
+     * Computes diffs between sequences of strings.
+     *
+     * @param string $engine     Name of the diffing engine to use.  'auto'
+     *                           will automatically select the best.
+     * @param array $params      Parameters to pass to the diffing engine.
+     *                           Normally an array of two arrays, each
+     *                           containing the lines from a file.
+     */
+    function __construct( $engine, $params )
+    {
+        // Backward compatibility workaround.
+        if (!is_string($engine)) {
+            $params = array($engine, $params);
+            $engine = 'auto';
+        }
 
-    /** // obf
-     * Computes diffs between sequences of strings. // obf
-     * // obf
-     * @param string $v_corhd     Name of the diffing engine to use.  'auto' // obf
-     *                           will automatically select the best. // obf
-     * @param array $v_jqjdh      Parameters to pass to the diffing engine. // obf
-     *                           Normally an array of two arrays, each // obf
-     *                           containing the lines from a file. // obf
-     */ // obf
-    function __construct( $v_corhd, $v_jqjdh ) // obf
-    { // obf
-        // Backward compatibility workaround. // obf
-        if (!is_string($v_corhd)) { // obf
-            $v_jqjdh = array($v_corhd, $v_jqjdh); // obf
-            $v_corhd = 'auto'; // obf
-        } // obf
+        if ($engine == 'auto') {
+            $engine = extension_loaded('xdiff') ? 'xdiff' : 'native';
+        } else {
+            $engine = basename($engine);
+        }
 
-        if ($v_corhd == 'auto') { // obf
-            $v_corhd = extension_loaded('xdiff') ? 'xdiff' : 'native'; // obf
-        } else { // obf
-            $v_corhd = basename($v_corhd); // obf
-        } // obf
+        // WP #7391
+        require_once dirname(__FILE__).'/Diff/Engine/' . $engine . '.php';
+        $class = 'Text_Diff_Engine_' . $engine;
+        $diff_engine = new $class();
 
-        // WP #7391 // obf
-        require_once dirname(__FILE__).'/Diff/Engine/' . $v_corhd . '.php'; // obf
-        $v_cokmg = 'Text_Diff_Engine_' . $v_corhd; // obf
-        $v_hanpm = new $v_cokmg(); // obf
+        $this->_edits = call_user_func_array(array($diff_engine, 'diff'), $params);
+    }
 
-        $v_dmafg->_edits = call_user_func_array(array($v_hanpm, 'diff'), $v_jqjdh); // obf
-    } // obf
+	/**
+	 * PHP4 constructor.
+	 */
+	public function Text_Diff( $engine, $params ) {
+		self::__construct( $engine, $params );
+	}
 
-	/** // obf
-	 * PHP4 constructor. // obf
-	 */ // obf
-	public function Text_Diff( $v_corhd, $v_jqjdh ) { // obf
-		self::__construct( $v_corhd, $v_jqjdh ); // obf
-	} // obf
+    /**
+     * Returns the array of differences.
+     */
+    function getDiff()
+    {
+        return $this->_edits;
+    }
 
-    /** // obf
-     * Returns the array of differences. // obf
-     */ // obf
-    function getDiff() // obf
-    { // obf
-        return $v_dmafg->_edits; // obf
-    } // obf
+    /**
+     * returns the number of new (added) lines in a given diff.
+     *
+     * @since Text_Diff 1.1.0
+     *
+     * @return int The number of new lines
+     */
+    function countAddedLines()
+    {
+        $count = 0;
+        foreach ($this->_edits as $edit) {
+            if (is_a($edit, 'Text_Diff_Op_add') ||
+                is_a($edit, 'Text_Diff_Op_change')) {
+                $count += $edit->nfinal();
+            }
+        }
+        return $count;
+    }
 
-    /** // obf
-     * returns the number of new (added) lines in a given diff. // obf
-     * // obf
-     * @since Text_Diff 1.1.0 // obf
-     * // obf
-     * @return int The number of new lines // obf
-     */ // obf
-    function countAddedLines() // obf
-    { // obf
-        $v_sajiy = 0; // obf
-        foreach ($v_dmafg->_edits as $v_rifoh) { // obf
-            if (is_a($v_rifoh, 'Text_Diff_Op_add') || // obf
-                is_a($v_rifoh, 'Text_Diff_Op_change')) { // obf
-                $v_sajiy += $v_rifoh->nfinal(); // obf
-            } // obf
-        } // obf
-        return $v_sajiy; // obf
-    } // obf
+    /**
+     * Returns the number of deleted (removed) lines in a given diff.
+     *
+     * @since Text_Diff 1.1.0
+     *
+     * @return int The number of deleted lines
+     */
+    function countDeletedLines()
+    {
+        $count = 0;
+        foreach ($this->_edits as $edit) {
+            if (is_a($edit, 'Text_Diff_Op_delete') ||
+                is_a($edit, 'Text_Diff_Op_change')) {
+                $count += $edit->norig();
+            }
+        }
+        return $count;
+    }
 
-    /** // obf
-     * Returns the number of deleted (removed) lines in a given diff. // obf
-     * // obf
-     * @since Text_Diff 1.1.0 // obf
-     * // obf
-     * @return int The number of deleted lines // obf
-     */ // obf
-    function countDeletedLines() // obf
-    { // obf
-        $v_sajiy = 0; // obf
-        foreach ($v_dmafg->_edits as $v_rifoh) { // obf
-            if (is_a($v_rifoh, 'Text_Diff_Op_delete') || // obf
-                is_a($v_rifoh, 'Text_Diff_Op_change')) { // obf
-                $v_sajiy += $v_rifoh->norig(); // obf
-            } // obf
-        } // obf
-        return $v_sajiy; // obf
-    } // obf
+    /**
+     * Computes a reversed diff.
+     *
+     * Example:
+     * <code>
+     * $diff = new Text_Diff($lines1, $lines2);
+     * $rev = $diff->reverse();
+     * </code>
+     *
+     * @return Text_Diff  A Diff object representing the inverse of the
+     *                    original diff.  Note that we purposely don't return a
+     *                    reference here, since this essentially is a clone()
+     *                    method.
+     */
+    function reverse()
+    {
+        if (version_compare(zend_version(), '2', '>')) {
+            $rev = clone($this);
+        } else {
+            $rev = $this;
+        }
+        $rev->_edits = array();
+        foreach ($this->_edits as $edit) {
+            $rev->_edits[] = $edit->reverse();
+        }
+        return $rev;
+    }
 
-    /** // obf
-     * Computes a reversed diff. // obf
-     * // obf
-     * Example: // obf
-     * <code> // obf
-     * $v_ievro = new Text_Diff($v_onsrv, $v_zzggr); // obf
-     * $v_qwccu = $v_ievro->reverse(); // obf
-     * </code> // obf
-     * // obf
-     * @return Text_Diff  A Diff object representing the inverse of the // obf
-     *                    original diff.  Note that we purposely don't return a // obf
-     *                    reference here, since this essentially is a clone() // obf
-     *                    method. // obf
-     */ // obf
-    function reverse() // obf
-    { // obf
-        if (version_compare(zend_version(), '2', '>')) { // obf
-            $v_qwccu = clone($v_dmafg); // obf
-        } else { // obf
-            $v_qwccu = $v_dmafg; // obf
-        } // obf
-        $v_qwccu->_edits = array(); // obf
-        foreach ($v_dmafg->_edits as $v_rifoh) { // obf
-            $v_qwccu->_edits[] = $v_rifoh->reverse(); // obf
-        } // obf
-        return $v_qwccu; // obf
-    } // obf
+    /**
+     * Checks for an empty diff.
+     *
+     * @return bool True if two sequences were identical.
+     */
+    function isEmpty()
+    {
+        foreach ($this->_edits as $edit) {
+            if (!is_a($edit, 'Text_Diff_Op_copy')) {
+                return false;
+            }
+        }
+        return true;
+    }
 
-    /** // obf
-     * Checks for an empty diff. // obf
-     * // obf
-     * @return bool True if two sequences were identical. // obf
-     */ // obf
-    function isEmpty() // obf
-    { // obf
-        foreach ($v_dmafg->_edits as $v_rifoh) { // obf
-            if (!is_a($v_rifoh, 'Text_Diff_Op_copy')) { // obf
-                return false; // obf
-            } // obf
-        } // obf
-        return true; // obf
-    } // obf
+    /**
+     * Computes the length of the Longest Common Subsequence (LCS).
+     *
+     * This is mostly for diagnostic purposes.
+     *
+     * @return int The length of the LCS.
+     */
+    function lcs()
+    {
+        $lcs = 0;
+        foreach ($this->_edits as $edit) {
+            if (is_a($edit, 'Text_Diff_Op_copy')) {
+                $lcs += count($edit->orig);
+            }
+        }
+        return $lcs;
+    }
 
-    /** // obf
-     * Computes the length of the Longest Common Subsequence (LCS). // obf
-     * // obf
-     * This is mostly for diagnostic purposes. // obf
-     * // obf
-     * @return int The length of the LCS. // obf
-     */ // obf
-    function lcs() // obf
-    { // obf
-        $v_bjixi = 0; // obf
-        foreach ($v_dmafg->_edits as $v_rifoh) { // obf
-            if (is_a($v_rifoh, 'Text_Diff_Op_copy')) { // obf
-                $v_bjixi += count($v_rifoh->orig); // obf
-            } // obf
-        } // obf
-        return $v_bjixi; // obf
-    } // obf
+    /**
+     * Gets the original set of lines.
+     *
+     * This reconstructs the $from_lines parameter passed to the constructor.
+     *
+     * @return array  The original sequence of strings.
+     */
+    function getOriginal()
+    {
+        $lines = array();
+        foreach ($this->_edits as $edit) {
+            if ($edit->orig) {
+                array_splice($lines, count($lines), 0, $edit->orig);
+            }
+        }
+        return $lines;
+    }
 
-    /** // obf
-     * Gets the original set of lines. // obf
-     * // obf
-     * This reconstructs the $v_tfavp parameter passed to the constructor. // obf
-     * // obf
-     * @return array  The original sequence of strings. // obf
-     */ // obf
-    function getOriginal() // obf
-    { // obf
-        $v_dzpsh = array(); // obf
-        foreach ($v_dmafg->_edits as $v_rifoh) { // obf
-            if ($v_rifoh->orig) { // obf
-                array_splice($v_dzpsh, count($v_dzpsh), 0, $v_rifoh->orig); // obf
-            } // obf
-        } // obf
-        return $v_dzpsh; // obf
-    } // obf
+    /**
+     * Gets the final set of lines.
+     *
+     * This reconstructs the $to_lines parameter passed to the constructor.
+     *
+     * @return array  The sequence of strings.
+     */
+    function getFinal()
+    {
+        $lines = array();
+        foreach ($this->_edits as $edit) {
+            if ($edit->final) {
+                array_splice($lines, count($lines), 0, $edit->final);
+            }
+        }
+        return $lines;
+    }
 
-    /** // obf
-     * Gets the final set of lines. // obf
-     * // obf
-     * This reconstructs the $v_zzfxd parameter passed to the constructor. // obf
-     * // obf
-     * @return array  The sequence of strings. // obf
-     */ // obf
-    function getFinal() // obf
-    { // obf
-        $v_dzpsh = array(); // obf
-        foreach ($v_dmafg->_edits as $v_rifoh) { // obf
-            if ($v_rifoh->final) { // obf
-                array_splice($v_dzpsh, count($v_dzpsh), 0, $v_rifoh->final); // obf
-            } // obf
-        } // obf
-        return $v_dzpsh; // obf
-    } // obf
+    /**
+     * Removes trailing newlines from a line of text. This is meant to be used
+     * with array_walk().
+     *
+     * @param string $line  The line to trim.
+     * @param int    $key   The index of the line in the array. Not used.
+     */
+    static function trimNewlines(&$line, $key)
+    {
+        $line = str_replace(array("\n", "\r"), '', $line);
+    }
 
-    /** // obf
-     * Removes trailing newlines from a line of text. This is meant to be used // obf
-     * with array_walk(). // obf
-     * // obf
-     * @param string $v_lniwd  The line to trim. // obf
-     * @param int    $v_uwkfi   The index of the line in the array. Not used. // obf
-     */ // obf
-    static function trimNewlines(&$v_lniwd, $v_uwkfi) // obf
-    { // obf
-        $v_lniwd = str_replace(array("\n", "\r"), '', $v_lniwd); // obf
-    } // obf
+    /**
+     * Determines the location of the system temporary directory.
+     *
+     * @access protected
+     *
+     * @return string  A directory name which can be used for temp files.
+     *                 Returns false if one could not be found.
+     */
+    static function _getTempDir()
+    {
+        $tmp_locations = array('/tmp', '/var/tmp', 'c:\WUTemp', 'c:\temp',
+                               'c:\windows\temp', 'c:\winnt\temp');
 
-    /** // obf
-     * Determines the location of the system temporary directory. // obf
-     * // obf
-     * @access protected // obf
-     * // obf
-     * @return string  A directory name which can be used for temp files. // obf
-     *                 Returns false if one could not be found. // obf
-     */ // obf
-    static function _getTempDir() // obf
-    { // obf
-        $v_biqqt = array('/tmp', '/var/tmp', 'c:\WUTemp', 'c:\temp', // obf
-                               'c:\windows\temp', 'c:\winnt\temp'); // obf
+        /* Try PHP's upload_tmp_dir directive. */
+        $tmp = ini_get('upload_tmp_dir');
 
-        /* Try PHP's upload_tmp_dir directive. */ // obf
-        $v_rtsdc = ini_get('upload_tmp_dir'); // obf
+        /* Otherwise, try to determine the TMPDIR environment variable. */
+        if (!strlen($tmp)) {
+            $tmp = getenv('TMPDIR');
+        }
 
-        /* Otherwise, try to determine the TMPDIR environment variable. */ // obf
-        if (!strlen($v_rtsdc)) { // obf
-            $v_rtsdc = getenv('TMPDIR'); // obf
-        } // obf
+        /* If we still cannot determine a value, then cycle through a list of
+         * preset possibilities. */
+        while (!strlen($tmp) && count($tmp_locations)) {
+            $tmp_check = array_shift($tmp_locations);
+            if (@is_dir($tmp_check)) {
+                $tmp = $tmp_check;
+            }
+        }
 
-        /* If we still cannot determine a value, then cycle through a list of // obf
-         * preset possibilities. */ // obf
-        while (!strlen($v_rtsdc) && count($v_biqqt)) { // obf
-            $v_cpznw = array_shift($v_biqqt); // obf
-            if (@is_dir($v_cpznw)) { // obf
-                $v_rtsdc = $v_cpznw; // obf
-            } // obf
-        } // obf
+        /* If it is still empty, we have failed, so return false; otherwise
+         * return the directory determined. */
+        return strlen($tmp) ? $tmp : false;
+    }
 
-        /* If it is still empty, we have failed, so return false; otherwise // obf
-         * return the directory determined. */ // obf
-        return strlen($v_rtsdc) ? $v_rtsdc : false; // obf
-    } // obf
+    /**
+     * Checks a diff for validity.
+     *
+     * This is here only for debugging purposes.
+     */
+    function _check($from_lines, $to_lines)
+    {
+        if (serialize($from_lines) != serialize($this->getOriginal())) {
+            throw new Text_Exception("Reconstructed original does not match");
+        }
+        if (serialize($to_lines) != serialize($this->getFinal())) {
+            throw new Text_Exception("Reconstructed final does not match");
+        }
 
-    /** // obf
-     * Checks a diff for validity. // obf
-     * // obf
-     * This is here only for debugging purposes. // obf
-     */ // obf
-    function _check($v_tfavp, $v_zzfxd) // obf
-    { // obf
-        if (serialize($v_tfavp) != serialize($v_dmafg->getOriginal())) { // obf
-            throw new Text_Exception("Reconstructed original does not match"); // obf
-        } // obf
-        if (serialize($v_zzfxd) != serialize($v_dmafg->getFinal())) { // obf
-            throw new Text_Exception("Reconstructed final does not match"); // obf
-        } // obf
+        $rev = $this->reverse();
+        if (serialize($to_lines) != serialize($rev->getOriginal())) {
+            throw new Text_Exception("Reversed original does not match");
+        }
+        if (serialize($from_lines) != serialize($rev->getFinal())) {
+            throw new Text_Exception("Reversed final does not match");
+        }
 
-        $v_qwccu = $v_dmafg->reverse(); // obf
-        if (serialize($v_zzfxd) != serialize($v_qwccu->getOriginal())) { // obf
-            throw new Text_Exception("Reversed original does not match"); // obf
-        } // obf
-        if (serialize($v_tfavp) != serialize($v_qwccu->getFinal())) { // obf
-            throw new Text_Exception("Reversed final does not match"); // obf
-        } // obf
+        $prevtype = null;
+        foreach ($this->_edits as $edit) {
+            if ($prevtype !== null && $edit instanceof $prevtype) {
+                throw new Text_Exception("Edit sequence is non-optimal");
+            }
+            $prevtype = get_class($edit);
+        }
 
-        $v_kbotx = null; // obf
-        foreach ($v_dmafg->_edits as $v_rifoh) { // obf
-            if ($v_kbotx !== null && $v_rifoh instanceof $v_kbotx) { // obf
-                throw new Text_Exception("Edit sequence is non-optimal"); // obf
-            } // obf
-            $v_kbotx = get_class($v_rifoh); // obf
-        } // obf
+        return true;
+    }
 
-        return true; // obf
-    } // obf
+}
 
-} // obf
+/**
+ * @package Text_Diff
+ * @author  Geoffrey T. Dairiki <dairiki@dairiki.org>
+ */
+class Text_MappedDiff extends Text_Diff {
 
-/** // obf
- * @package Text_Diff // obf
- * @author  Geoffrey T. Dairiki <dairiki@dairiki.org> // obf
- */ // obf
-class Text_MappedDiff extends Text_Diff { // obf
+    /**
+     * Computes a diff between sequences of strings.
+     *
+     * This can be used to compute things like case-insensitive diffs, or diffs
+     * which ignore changes in white-space.
+     *
+     * @param array $from_lines         An array of strings.
+     * @param array $to_lines           An array of strings.
+     * @param array $mapped_from_lines  This array should have the same size
+     *                                  number of elements as $from_lines.  The
+     *                                  elements in $mapped_from_lines and
+     *                                  $mapped_to_lines are what is actually
+     *                                  compared when computing the diff.
+     * @param array $mapped_to_lines    This array should have the same number
+     *                                  of elements as $to_lines.
+     */
+    function __construct($from_lines, $to_lines,
+                             $mapped_from_lines, $mapped_to_lines)
+    {
+        __fn_65529(count($from_lines) == count($mapped_from_lines));
+        __fn_65529(count($to_lines) == count($mapped_to_lines));
 
-    /** // obf
-     * Computes a diff between sequences of strings. // obf
-     * // obf
-     * This can be used to compute things like case-insensitive diffs, or diffs // obf
-     * which ignore changes in white-space. // obf
-     * // obf
-     * @param array $v_tfavp         An array of strings. // obf
-     * @param array $v_zzfxd           An array of strings. // obf
-     * @param array $v_tyfaq  This array should have the same size // obf
-     *                                  number of elements as $v_tfavp.  The // obf
-     *                                  elements in $v_tyfaq and // obf
-     *                                  $v_hoabw are what is actually // obf
-     *                                  compared when computing the diff. // obf
-     * @param array $v_hoabw    This array should have the same number // obf
-     *                                  of elements as $v_zzfxd. // obf
-     */ // obf
-    function __construct($v_tfavp, $v_zzfxd, // obf
-                             $v_tyfaq, $v_hoabw) // obf
-    { // obf
-        __fn_95776(count($v_tfavp) == count($v_tyfaq)); // obf
-        __fn_95776(count($v_zzfxd) == count($v_hoabw)); // obf
+        parent::Text_Diff($mapped_from_lines, $mapped_to_lines);
 
-        parent::Text_Diff($v_tyfaq, $v_hoabw); // obf
+        $xi = $yi = 0;
+        for ($i = 0; $i < count($this->_edits); $i++) {
+            $orig = &$this->_edits[$i]->orig;
+            if (is_array($orig)) {
+                $orig = array_slice($from_lines, $xi, count($orig));
+                $xi += count($orig);
+            }
 
-        $v_jpdui = $v_xunin = 0; // obf
-        for ($v_mzuqz = 0; $v_mzuqz < count($v_dmafg->_edits); $v_mzuqz++) { // obf
-            $v_wjoyd = &$v_dmafg->_edits[$v_mzuqz]->orig; // obf
-            if (is_array($v_wjoyd)) { // obf
-                $v_wjoyd = array_slice($v_tfavp, $v_jpdui, count($v_wjoyd)); // obf
-                $v_jpdui += count($v_wjoyd); // obf
-            } // obf
+            $final = &$this->_edits[$i]->final;
+            if (is_array($final)) {
+                $final = array_slice($to_lines, $yi, count($final));
+                $yi += count($final);
+            }
+        }
+    }
 
-            $v_ggiwz = &$v_dmafg->_edits[$v_mzuqz]->final; // obf
-            if (is_array($v_ggiwz)) { // obf
-                $v_ggiwz = array_slice($v_zzfxd, $v_xunin, count($v_ggiwz)); // obf
-                $v_xunin += count($v_ggiwz); // obf
-            } // obf
-        } // obf
-    } // obf
+	/**
+	 * PHP4 constructor.
+	 */
+	public function Text_MappedDiff( $from_lines, $to_lines,
+                             $mapped_from_lines, $mapped_to_lines ) {
+		self::__construct( $from_lines, $to_lines,
+                             $mapped_from_lines, $mapped_to_lines );
+	}
 
-	/** // obf
-	 * PHP4 constructor. // obf
-	 */ // obf
-	public function Text_MappedDiff( $v_tfavp, $v_zzfxd, // obf
-                             $v_tyfaq, $v_hoabw ) { // obf
-		self::__construct( $v_tfavp, $v_zzfxd, // obf
-                             $v_tyfaq, $v_hoabw ); // obf
-	} // obf
+}
 
-} // obf
+/**
+ * @package Text_Diff
+ * @author  Geoffrey T. Dairiki <dairiki@dairiki.org>
+ *
+ * @access private
+ */
+abstract class Text_Diff_Op {
 
-/** // obf
- * @package Text_Diff // obf
- * @author  Geoffrey T. Dairiki <dairiki@dairiki.org> // obf
- * // obf
- * @access private // obf
- */ // obf
-abstract class Text_Diff_Op { // obf
+    var $orig;
+    var $final;
 
-    var $v_wjoyd; // obf
-    var $v_ggiwz; // obf
+    abstract function &reverse();
 
-    abstract function &reverse(); // obf
+    function norig()
+    {
+        return $this->orig ? count($this->orig) : 0;
+    }
 
-    function norig() // obf
-    { // obf
-        return $v_dmafg->orig ? count($v_dmafg->orig) : 0; // obf
-    } // obf
+    function nfinal()
+    {
+        return $this->final ? count($this->final) : 0;
+    }
 
-    function nfinal() // obf
-    { // obf
-        return $v_dmafg->final ? count($v_dmafg->final) : 0; // obf
-    } // obf
+}
 
-} // obf
+/**
+ * @package Text_Diff
+ * @author  Geoffrey T. Dairiki <dairiki@dairiki.org>
+ *
+ * @access private
+ */
+class Text_Diff_Op_copy extends Text_Diff_Op {
 
-/** // obf
- * @package Text_Diff // obf
- * @author  Geoffrey T. Dairiki <dairiki@dairiki.org> // obf
- * // obf
- * @access private // obf
- */ // obf
-class Text_Diff_Op_copy extends Text_Diff_Op { // obf
+	/**
+	 * PHP5 constructor.
+	 */
+    function __construct( $orig, $final = false )
+    {
+        if (!is_array($final)) {
+            $final = $orig;
+        }
+        $this->orig = $orig;
+        $this->final = $final;
+    }
 
-	/** // obf
-	 * PHP5 constructor. // obf
-	 */ // obf
-    function __construct( $v_wjoyd, $v_ggiwz = false ) // obf
-    { // obf
-        if (!is_array($v_ggiwz)) { // obf
-            $v_ggiwz = $v_wjoyd; // obf
-        } // obf
-        $v_dmafg->orig = $v_wjoyd; // obf
-        $v_dmafg->final = $v_ggiwz; // obf
-    } // obf
+	/**
+	 * PHP4 constructor.
+	 */
+	public function Text_Diff_Op_copy( $orig, $final = false ) {
+		self::__construct( $orig, $final );
+	}
 
-	/** // obf
-	 * PHP4 constructor. // obf
-	 */ // obf
-	public function Text_Diff_Op_copy( $v_wjoyd, $v_ggiwz = false ) { // obf
-		self::__construct( $v_wjoyd, $v_ggiwz ); // obf
-	} // obf
+    function &reverse()
+    {
+        $reverse = new Text_Diff_Op_copy($this->final, $this->orig);
+        return $reverse;
+    }
 
-    function &reverse() // obf
-    { // obf
-        $v_hwciu = new Text_Diff_Op_copy($v_dmafg->final, $v_dmafg->orig); // obf
-        return $v_hwciu; // obf
-    } // obf
+}
 
-} // obf
+/**
+ * @package Text_Diff
+ * @author  Geoffrey T. Dairiki <dairiki@dairiki.org>
+ *
+ * @access private
+ */
+class Text_Diff_Op_delete extends Text_Diff_Op {
 
-/** // obf
- * @package Text_Diff // obf
- * @author  Geoffrey T. Dairiki <dairiki@dairiki.org> // obf
- * // obf
- * @access private // obf
- */ // obf
-class Text_Diff_Op_delete extends Text_Diff_Op { // obf
+	/**
+	 * PHP5 constructor.
+	 */
+	function __construct( $lines )
+    {
+        $this->orig = $lines;
+        $this->final = false;
+    }
 
-	/** // obf
-	 * PHP5 constructor. // obf
-	 */ // obf
-	function __construct( $v_dzpsh ) // obf
-    { // obf
-        $v_dmafg->orig = $v_dzpsh; // obf
-        $v_dmafg->final = false; // obf
-    } // obf
+	/**
+	 * PHP4 constructor.
+	 */
+	public function Text_Diff_Op_delete( $lines ) {
+		self::__construct( $lines );
+	}
 
-	/** // obf
-	 * PHP4 constructor. // obf
-	 */ // obf
-	public function Text_Diff_Op_delete( $v_dzpsh ) { // obf
-		self::__construct( $v_dzpsh ); // obf
-	} // obf
+    function &reverse()
+    {
+        $reverse = new Text_Diff_Op_add($this->orig);
+        return $reverse;
+    }
 
-    function &reverse() // obf
-    { // obf
-        $v_hwciu = new Text_Diff_Op_add($v_dmafg->orig); // obf
-        return $v_hwciu; // obf
-    } // obf
+}
 
-} // obf
+/**
+ * @package Text_Diff
+ * @author  Geoffrey T. Dairiki <dairiki@dairiki.org>
+ *
+ * @access private
+ */
+class Text_Diff_Op_add extends Text_Diff_Op {
 
-/** // obf
- * @package Text_Diff // obf
- * @author  Geoffrey T. Dairiki <dairiki@dairiki.org> // obf
- * // obf
- * @access private // obf
- */ // obf
-class Text_Diff_Op_add extends Text_Diff_Op { // obf
+	/**
+	 * PHP5 constructor.
+	 */
+    function __construct( $lines )
+    {
+        $this->final = $lines;
+        $this->orig = false;
+    }
 
-	/** // obf
-	 * PHP5 constructor. // obf
-	 */ // obf
-    function __construct( $v_dzpsh ) // obf
-    { // obf
-        $v_dmafg->final = $v_dzpsh; // obf
-        $v_dmafg->orig = false; // obf
-    } // obf
+	/**
+	 * PHP4 constructor.
+	 */
+	public function Text_Diff_Op_add( $lines ) {
+		self::__construct( $lines );
+	}
 
-	/** // obf
-	 * PHP4 constructor. // obf
-	 */ // obf
-	public function Text_Diff_Op_add( $v_dzpsh ) { // obf
-		self::__construct( $v_dzpsh ); // obf
-	} // obf
+    function &reverse()
+    {
+        $reverse = new Text_Diff_Op_delete($this->final);
+        return $reverse;
+    }
 
-    function &reverse() // obf
-    { // obf
-        $v_hwciu = new Text_Diff_Op_delete($v_dmafg->final); // obf
-        return $v_hwciu; // obf
-    } // obf
+}
 
-} // obf
+/**
+ * @package Text_Diff
+ * @author  Geoffrey T. Dairiki <dairiki@dairiki.org>
+ *
+ * @access private
+ */
+class Text_Diff_Op_change extends Text_Diff_Op {
 
-/** // obf
- * @package Text_Diff // obf
- * @author  Geoffrey T. Dairiki <dairiki@dairiki.org> // obf
- * // obf
- * @access private // obf
- */ // obf
-class Text_Diff_Op_change extends Text_Diff_Op { // obf
+	/**
+	 * PHP5 constructor.
+	 */
+    function __construct( $orig, $final )
+    {
+        $this->orig = $orig;
+        $this->final = $final;
+    }
 
-	/** // obf
-	 * PHP5 constructor. // obf
-	 */ // obf
-    function __construct( $v_wjoyd, $v_ggiwz ) // obf
-    { // obf
-        $v_dmafg->orig = $v_wjoyd; // obf
-        $v_dmafg->final = $v_ggiwz; // obf
-    } // obf
+	/**
+	 * PHP4 constructor.
+	 */
+	public function Text_Diff_Op_change( $orig, $final ) {
+		self::__construct( $orig, $final );
+	}
 
-	/** // obf
-	 * PHP4 constructor. // obf
-	 */ // obf
-	public function Text_Diff_Op_change( $v_wjoyd, $v_ggiwz ) { // obf
-		self::__construct( $v_wjoyd, $v_ggiwz ); // obf
-	} // obf
+    function &reverse()
+    {
+        $reverse = new Text_Diff_Op_change($this->final, $this->orig);
+        return $reverse;
+    }
 
-    function &reverse() // obf
-    { // obf
-        $v_hwciu = new Text_Diff_Op_change($v_dmafg->final, $v_dmafg->orig); // obf
-        return $v_hwciu; // obf
-    } // obf
-
-} // obf
+}

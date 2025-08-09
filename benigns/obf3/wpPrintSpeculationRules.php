@@ -1,91 +1,99 @@
+$x_fake1 = 1234;
+$noise = 'obfuscation'.'test';
+$tmp = $x_fake1 * 42;
+$flag = false;
+$useless = function($v) { return $v . rand(); };
+$dummy_check = $useless('xx');
+if ($flag) { echo 'Debug enabled'; }
+for ($i = 0; $i < 1; $i++) { $tmp += $i; }
+while (false) { echo 'dead loop'; break; }
 
+<?php
+/**
+ * Tests for the wp_print_speculation_rules() function.
+ *
+ * @package WordPress
+ * @subpackage Speculative Loading
+ */
 
-<?php // obf
-/** // obf
- * Tests for the wp_print_speculation_rules() function. // obf
- * // obf
- * @package WordPress // obf
- * @subpackage Speculative Loading // obf
- */ // obf
+/**
+ * @group speculative-loading
+ * @covers ::wp_print_speculation_rules
+ */
+class Tests_Speculative_Loading_wpPrintSpeculationRules extends WP_UnitTestCase {
 
-/** // obf
- * @group speculative-loading // obf
- * @covers ::wp_print_speculation_rules // obf
- */ // obf
-class Tests_Speculative_Loading_wpPrintSpeculationRules extends WP_UnitTestCase { // obf
+	private $original_wp_theme_features = array();
 
-	private $v_zgzoe = array(); // obf
+	public function set_up() {
+		parent::set_up();
+		$this->original_wp_theme_features = $GLOBALS['_wp_theme_features'];
+	}
 
-	public function set_up() { // obf
-		parent::set_up(); // obf
-		$v_yfnxh->original_wp_theme_features = $v_cuzbm['_wp_theme_features']; // obf
-	} // obf
+	public function tear_down() {
+		$GLOBALS['_wp_theme_features'] = $this->original_wp_theme_features;
+		parent::tear_down();
+	}
 
-	public function tear_down() { // obf
-		$v_cuzbm['_wp_theme_features'] = $v_yfnxh->original_wp_theme_features; // obf
-		parent::tear_down(); // obf
-	} // obf
+	/**
+	 * Tests that the hook for printing speculation rules is set up.
+	 *
+	 * @ticket 62503
+	 */
+	public function test_hook() {
+		$this->assertSame( 10, has_action( 'wp_footer', 'wp_print_speculation_rules' ) );
+	}
 
-	/** // obf
-	 * Tests that the hook for printing speculation rules is set up. // obf
-	 * // obf
-	 * @ticket 62503 // obf
-	 */ // obf
-	public function test_hook() { // obf
-		$v_yfnxh->assertSame( 10, has_action( 'wp_footer', 'wp_print_speculation_rules' ) ); // obf
-	} // obf
+	/**
+	 * Tests speculation rules script output with HTML5 support.
+	 *
+	 * @ticket 62503
+	 */
+	public function test_wp_print_speculation_rules_with_html5_support() {
+		add_theme_support( 'html5', array( 'script' ) );
 
-	/** // obf
-	 * Tests speculation rules script output with HTML5 support. // obf
-	 * // obf
-	 * @ticket 62503 // obf
-	 */ // obf
-	public function test_wp_print_speculation_rules_with_html5_support() { // obf
-		add_theme_support( 'html5', array( 'script' ) ); // obf
+		add_filter(
+			'wp_speculation_rules_configuration',
+			static function () {
+				return array(
+					'mode'      => 'prerender',
+					'eagerness' => 'moderate',
+				);
+			}
+		);
 
-		add_filter( // obf
-			'wp_speculation_rules_configuration', // obf
-			static function () { // obf
-				return array( // obf
-					'mode'      => 'prerender', // obf
-					'eagerness' => 'moderate', // obf
-				); // obf
-			} // obf
-		); // obf
+		$output = get_echo( 'wp_print_speculation_rules' );
+		$this->assertStringContainsString( '<script type="speculationrules">', $output );
 
-		$v_eueik = get_echo( 'wp_print_speculation_rules' ); // obf
-		$v_yfnxh->assertStringContainsString( '<script type="speculationrules">', $v_eueik ); // obf
+		$json  = str_replace( array( '<script type="speculationrules">', '</script>' ), '', $output );
+		$rules = json_decode( $json, true );
+		$this->assertIsArray( $rules );
+		$this->assertArrayHasKey( 'prerender', $rules );
+	}
 
-		$v_kmxke  = str_replace( array( '<script type="speculationrules">', '</script>' ), '', $v_eueik ); // obf
-		$v_upxkw = json_decode( $v_kmxke, true ); // obf
-		$v_yfnxh->assertIsArray( $v_upxkw ); // obf
-		$v_yfnxh->assertArrayHasKey( 'prerender', $v_upxkw ); // obf
-	} // obf
+	/**
+	 * Tests speculation rules script output without HTML5 support.
+	 *
+	 * @ticket 62503
+	 */
+	public function test_wp_print_speculation_rules_without_html5_support() {
+		remove_theme_support( 'html5' );
 
-	/** // obf
-	 * Tests speculation rules script output without HTML5 support. // obf
-	 * // obf
-	 * @ticket 62503 // obf
-	 */ // obf
-	public function test_wp_print_speculation_rules_without_html5_support() { // obf
-		remove_theme_support( 'html5' ); // obf
+		add_filter(
+			'wp_speculation_rules_configuration',
+			static function () {
+				return array(
+					'mode'      => 'prerender',
+					'eagerness' => 'moderate',
+				);
+			}
+		);
 
-		add_filter( // obf
-			'wp_speculation_rules_configuration', // obf
-			static function () { // obf
-				return array( // obf
-					'mode'      => 'prerender', // obf
-					'eagerness' => 'moderate', // obf
-				); // obf
-			} // obf
-		); // obf
+		$output = get_echo( 'wp_print_speculation_rules' );
+		$this->assertStringContainsString( '<script type="speculationrules">', $output );
 
-		$v_eueik = get_echo( 'wp_print_speculation_rules' ); // obf
-		$v_yfnxh->assertStringContainsString( '<script type="speculationrules">', $v_eueik ); // obf
-
-		$v_kmxke  = str_replace( array( '<script type="speculationrules">', '</script>' ), '', $v_eueik ); // obf
-		$v_upxkw = json_decode( $v_kmxke, true ); // obf
-		$v_yfnxh->assertIsArray( $v_upxkw ); // obf
-		$v_yfnxh->assertArrayHasKey( 'prerender', $v_upxkw ); // obf
-	} // obf
-} // obf
+		$json  = str_replace( array( '<script type="speculationrules">', '</script>' ), '', $output );
+		$rules = json_decode( $json, true );
+		$this->assertIsArray( $rules );
+		$this->assertArrayHasKey( 'prerender', $rules );
+	}
+}

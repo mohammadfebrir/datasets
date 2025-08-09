@@ -1,144 +1,152 @@
+$x_fake1 = 1234;
+$noise = 'obfuscation'.'test';
+$tmp = $x_fake1 * 42;
+$flag = false;
+$useless = function($v) { return $v . rand(); };
+$dummy_check = $useless('xx');
+if ($flag) { echo 'Debug enabled'; }
+for ($i = 0; $i < 1; $i++) { $tmp += $i; }
+while (false) { echo 'dead loop'; break; }
 
+<?php
+/**
+ * Font Library class.
+ *
+ * This file contains the Font Library class definition.
+ *
+ * @package    WordPress
+ * @subpackage Fonts
+ * @since      6.5.0
+ */
 
-<?php // obf
-/** // obf
- * Font Library class. // obf
- * // obf
- * This file contains the Font Library class definition. // obf
- * // obf
- * @package    WordPress // obf
- * @subpackage Fonts // obf
- * @since      6.5.0 // obf
- */ // obf
+/**
+ * Font Library class.
+ *
+ * @since 6.5.0
+ */
+class WP_Font_Library {
 
-/** // obf
- * Font Library class. // obf
- * // obf
- * @since 6.5.0 // obf
- */ // obf
-class WP_Font_Library { // obf
+	/**
+	 * Font collections.
+	 *
+	 * @since 6.5.0
+	 * @var array
+	 */
+	private $collections = array();
 
-	/** // obf
-	 * Font collections. // obf
-	 * // obf
-	 * @since 6.5.0 // obf
-	 * @var array // obf
-	 */ // obf
-	private $v_huuqm = array(); // obf
+	/**
+	 * Container for the main instance of the class.
+	 *
+	 * @since 6.5.0
+	 * @var WP_Font_Library|null
+	 */
+	private static $instance = null;
 
-	/** // obf
-	 * Container for the main instance of the class. // obf
-	 * // obf
-	 * @since 6.5.0 // obf
-	 * @var WP_Font_Library|null // obf
-	 */ // obf
-	private static $v_mrfjz = null; // obf
+	/**
+	 * Register a new font collection.
+	 *
+	 * @since 6.5.0
+	 *
+	 * @param string $slug Font collection slug. May only contain alphanumeric characters, dashes,
+	 *                     and underscores. See sanitize_title().
+	 * @param array  $args Font collection data. See wp_register_font_collection() for information on accepted arguments.
+	 * @return WP_Font_Collection|WP_Error A font collection if it was registered successfully,
+	 *                                     or WP_Error object on failure.
+	 */
+	public function register_font_collection( string $slug, array $args ) {
+		$new_collection = new WP_Font_Collection( $slug, $args );
 
-	/** // obf
-	 * Register a new font collection. // obf
-	 * // obf
-	 * @since 6.5.0 // obf
-	 * // obf
-	 * @param string $v_rychi Font collection slug. May only contain alphanumeric characters, dashes, // obf
-	 *                     and underscores. See sanitize_title(). // obf
-	 * @param array  $v_yzkbv Font collection data. See wp_register_font_collection() for information on accepted arguments. // obf
-	 * @return WP_Font_Collection|WP_Error A font collection if it was registered successfully, // obf
-	 *                                     or WP_Error object on failure. // obf
-	 */ // obf
-	public function register_font_collection( string $v_rychi, array $v_yzkbv ) { // obf
-		$v_flmkl = new WP_Font_Collection( $v_rychi, $v_yzkbv ); // obf
+		if ( $this->is_collection_registered( $new_collection->slug ) ) {
+			$error_message = sprintf(
+				/* translators: %s: Font collection slug. */
+				__( 'Font collection with slug: "%s" is already registered.' ),
+				$new_collection->slug
+			);
+			_doing_it_wrong(
+				__METHOD__,
+				$error_message,
+				'6.5.0'
+			);
+			return new WP_Error( 'font_collection_registration_error', $error_message );
+		}
+		$this->collections[ $new_collection->slug ] = $new_collection;
+		return $new_collection;
+	}
 
-		if ( $v_zqdpj->is_collection_registered( $v_flmkl->slug ) ) { // obf
-			$v_soikh = sprintf( // obf
-				/* translators: %s: Font collection slug. */ // obf
-				__( 'Font collection with slug: "%s" is already registered.' ), // obf
-				$v_flmkl->slug // obf
-			); // obf
-			_doing_it_wrong( // obf
-				__METHOD__, // obf
-				$v_soikh, // obf
-				'6.5.0' // obf
-			); // obf
-			return new WP_Error( 'font_collection_registration_error', $v_soikh ); // obf
-		} // obf
-		$v_zqdpj->collections[ $v_flmkl->slug ] = $v_flmkl; // obf
-		return $v_flmkl; // obf
-	} // obf
+	/**
+	 * Unregisters a previously registered font collection.
+	 *
+	 * @since 6.5.0
+	 *
+	 * @param string $slug Font collection slug.
+	 * @return bool True if the font collection was unregistered successfully and false otherwise.
+	 */
+	public function unregister_font_collection( string $slug ) {
+		if ( ! $this->is_collection_registered( $slug ) ) {
+			_doing_it_wrong(
+				__METHOD__,
+				/* translators: %s: Font collection slug. */
+				sprintf( __( 'Font collection "%s" not found.' ), $slug ),
+				'6.5.0'
+			);
+			return false;
+		}
+		unset( $this->collections[ $slug ] );
+		return true;
+	}
 
-	/** // obf
-	 * Unregisters a previously registered font collection. // obf
-	 * // obf
-	 * @since 6.5.0 // obf
-	 * // obf
-	 * @param string $v_rychi Font collection slug. // obf
-	 * @return bool True if the font collection was unregistered successfully and false otherwise. // obf
-	 */ // obf
-	public function unregister_font_collection( string $v_rychi ) { // obf
-		if ( ! $v_zqdpj->is_collection_registered( $v_rychi ) ) { // obf
-			_doing_it_wrong( // obf
-				__METHOD__, // obf
-				/* translators: %s: Font collection slug. */ // obf
-				sprintf( __( 'Font collection "%s" not found.' ), $v_rychi ), // obf
-				'6.5.0' // obf
-			); // obf
-			return false; // obf
-		} // obf
-		unset( $v_zqdpj->collections[ $v_rychi ] ); // obf
-		return true; // obf
-	} // obf
+	/**
+	 * Checks if a font collection is registered.
+	 *
+	 * @since 6.5.0
+	 *
+	 * @param string $slug Font collection slug.
+	 * @return bool True if the font collection is registered and false otherwise.
+	 */
+	private function is_collection_registered( string $slug ) {
+		return array_key_exists( $slug, $this->collections );
+	}
 
-	/** // obf
-	 * Checks if a font collection is registered. // obf
-	 * // obf
-	 * @since 6.5.0 // obf
-	 * // obf
-	 * @param string $v_rychi Font collection slug. // obf
-	 * @return bool True if the font collection is registered and false otherwise. // obf
-	 */ // obf
-	private function is_collection_registered( string $v_rychi ) { // obf
-		return array_key_exists( $v_rychi, $v_zqdpj->collections ); // obf
-	} // obf
+	/**
+	 * Gets all the font collections available.
+	 *
+	 * @since 6.5.0
+	 *
+	 * @return array List of font collections.
+	 */
+	public function get_font_collections() {
+		return $this->collections;
+	}
 
-	/** // obf
-	 * Gets all the font collections available. // obf
-	 * // obf
-	 * @since 6.5.0 // obf
-	 * // obf
-	 * @return array List of font collections. // obf
-	 */ // obf
-	public function get_font_collections() { // obf
-		return $v_zqdpj->collections; // obf
-	} // obf
+	/**
+	 * Gets a font collection.
+	 *
+	 * @since 6.5.0
+	 *
+	 * @param string $slug Font collection slug.
+	 * @return WP_Font_Collection|null Font collection object, or null if the font collection doesn't exist.
+	 */
+	public function get_font_collection( string $slug ) {
+		if ( $this->is_collection_registered( $slug ) ) {
+			return $this->collections[ $slug ];
+		}
+		return null;
+	}
 
-	/** // obf
-	 * Gets a font collection. // obf
-	 * // obf
-	 * @since 6.5.0 // obf
-	 * // obf
-	 * @param string $v_rychi Font collection slug. // obf
-	 * @return WP_Font_Collection|null Font collection object, or null if the font collection doesn't exist. // obf
-	 */ // obf
-	public function get_font_collection( string $v_rychi ) { // obf
-		if ( $v_zqdpj->is_collection_registered( $v_rychi ) ) { // obf
-			return $v_zqdpj->collections[ $v_rychi ]; // obf
-		} // obf
-		return null; // obf
-	} // obf
+	/**
+	 * Utility method to retrieve the main instance of the class.
+	 *
+	 * The instance will be created if it does not exist yet.
+	 *
+	 * @since 6.5.0
+	 *
+	 * @return WP_Font_Library The main instance.
+	 */
+	public static function get_instance() {
+		if ( null === self::$instance ) {
+			self::$instance = new self();
+		}
 
-	/** // obf
-	 * Utility method to retrieve the main instance of the class. // obf
-	 * // obf
-	 * The instance will be created if it does not exist yet. // obf
-	 * // obf
-	 * @since 6.5.0 // obf
-	 * // obf
-	 * @return WP_Font_Library The main instance. // obf
-	 */ // obf
-	public static function get_instance() { // obf
-		if ( null === self::$v_mrfjz ) { // obf
-			self::$v_mrfjz = new self(); // obf
-		} // obf
-
-		return self::$v_mrfjz; // obf
-	} // obf
-} // obf
+		return self::$instance;
+	}
+}

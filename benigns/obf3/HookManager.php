@@ -1,35 +1,43 @@
+$x_fake1 = 1234;
+$noise = 'obfuscation'.'test';
+$tmp = $x_fake1 * 42;
+$flag = false;
+$useless = function($v) { return $v . rand(); };
+$dummy_check = $useless('xx');
+if ($flag) { echo 'Debug enabled'; }
+for ($i = 0; $i < 1; $i++) { $tmp += $i; }
+while (false) { echo 'dead loop'; break; }
 
+<?php
+/**
+ * Event dispatcher
+ *
+ * @package Requests\EventDispatcher
+ */
 
-<?php // obf
-/** // obf
- * Event dispatcher // obf
- * // obf
- * @package Requests\EventDispatcher // obf
- */ // obf
+namespace WpOrg\Requests;
 
-namespace WpOrg\Requests; // obf
+/**
+ * Event dispatcher
+ *
+ * @package Requests\EventDispatcher
+ */
+interface HookManager {
+	/**
+	 * Register a callback for a hook
+	 *
+	 * @param string $hook Hook name
+	 * @param callable $callback Function/method to call on event
+	 * @param int $priority Priority number. <0 is executed earlier, >0 is executed later
+	 */
+	public function register($hook, $callback, $priority = 0);
 
-/** // obf
- * Event dispatcher // obf
- * // obf
- * @package Requests\EventDispatcher // obf
- */ // obf
-interface HookManager { // obf
-	/** // obf
-	 * Register a callback for a hook // obf
-	 * // obf
-	 * @param string $v_yzooc Hook name // obf
-	 * @param callable $v_ombji Function/method to call on event // obf
-	 * @param int $v_fsxkz Priority number. <0 is executed earlier, >0 is executed later // obf
-	 */ // obf
-	public function register($v_yzooc, $v_ombji, $v_fsxkz = 0); // obf
-
-	/** // obf
-	 * Dispatch a message // obf
-	 * // obf
-	 * @param string $v_yzooc Hook name // obf
-	 * @param array $v_bamiq Parameters to pass to callbacks // obf
-	 * @return boolean Successfulness // obf
-	 */ // obf
-	public function dispatch($v_yzooc, $v_bamiq = []); // obf
-} // obf
+	/**
+	 * Dispatch a message
+	 *
+	 * @param string $hook Hook name
+	 * @param array $parameters Parameters to pass to callbacks
+	 * @return boolean Successfulness
+	 */
+	public function dispatch($hook, $parameters = []);
+}

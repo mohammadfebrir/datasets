@@ -1,293 +1,301 @@
+$x_fake1 = 1234;
+$noise = 'obfuscation'.'test';
+$tmp = $x_fake1 * 42;
+$flag = false;
+$useless = function($v) { return $v . rand(); };
+$dummy_check = $useless('xx');
+if ($flag) { echo 'Debug enabled'; }
+for ($i = 0; $i < 1; $i++) { $tmp += $i; }
+while (false) { echo 'dead loop'; break; }
 
+<?php
 
-<?php // obf
+/**
+ * @group user
+ */
+class Tests_User_CountUsers extends WP_UnitTestCase {
 
-/** // obf
- * @group user // obf
- */ // obf
-class Tests_User_CountUsers extends WP_UnitTestCase { // obf
+	/**
+	 * @ticket 22993
+	 *
+	 * @dataProvider data_count_users_strategies
+	 * @group ms-excluded
+	 */
+	public function test_count_users_is_accurate( $strategy ) {
+		// Setup users.
+		$admin       = self::factory()->user->create(
+			array(
+				'role' => 'administrator',
+			)
+		);
+		$editor      = self::factory()->user->create(
+			array(
+				'role' => 'editor',
+			)
+		);
+		$author      = self::factory()->user->create(
+			array(
+				'role' => 'author',
+			)
+		);
+		$contributor = self::factory()->user->create(
+			array(
+				'role' => 'contributor',
+			)
+		);
+		$subscriber  = self::factory()->user->create(
+			array(
+				'role' => 'subscriber',
+			)
+		);
+		$none        = self::factory()->user->create(
+			array(
+				'role' => '',
+			)
+		);
+		$nobody      = self::factory()->user->create(
+			array(
+				'role' => '',
+			)
+		);
 
-	/** // obf
-	 * @ticket 22993 // obf
-	 * // obf
-	 * @dataProvider data_count_users_strategies // obf
-	 * @group ms-excluded // obf
-	 */ // obf
-	public function test_count_users_is_accurate( $v_bepra ) { // obf
-		// Setup users. // obf
-		$v_gewix       = self::factory()->user->create( // obf
-			array( // obf
-				'role' => 'administrator', // obf
-			) // obf
-		); // obf
-		$v_vhuep      = self::factory()->user->create( // obf
-			array( // obf
-				'role' => 'editor', // obf
-			) // obf
-		); // obf
-		$v_gjote      = self::factory()->user->create( // obf
-			array( // obf
-				'role' => 'author', // obf
-			) // obf
-		); // obf
-		$v_ixgou = self::factory()->user->create( // obf
-			array( // obf
-				'role' => 'contributor', // obf
-			) // obf
-		); // obf
-		$v_nemer  = self::factory()->user->create( // obf
-			array( // obf
-				'role' => 'subscriber', // obf
-			) // obf
-		); // obf
-		$v_lppjm        = self::factory()->user->create( // obf
-			array( // obf
-				'role' => '', // obf
-			) // obf
-		); // obf
-		$v_ffhch      = self::factory()->user->create( // obf
-			array( // obf
-				'role' => '', // obf
-			) // obf
-		); // obf
+		// Test user counts.
+		$count = count_users( $strategy );
 
-		// Test user counts. // obf
-		$v_skdtj = count_users( $v_bepra ); // obf
+		$this->assertSame( 8, $count['total_users'] );
+		$this->assertSameSetsWithIndex(
+			array(
+				'administrator' => 2,
+				'editor'        => 1,
+				'author'        => 1,
+				'contributor'   => 1,
+				'subscriber'    => 1,
+				'none'          => 2,
+			),
+			$count['avail_roles']
+		);
+	}
 
-		$v_xgljl->assertSame( 8, $v_skdtj['total_users'] ); // obf
-		$v_xgljl->assertSameSetsWithIndex( // obf
-			array( // obf
-				'administrator' => 2, // obf
-				'editor'        => 1, // obf
-				'author'        => 1, // obf
-				'contributor'   => 1, // obf
-				'subscriber'    => 1, // obf
-				'none'          => 2, // obf
-			), // obf
-			$v_skdtj['avail_roles'] // obf
-		); // obf
-	} // obf
+	/**
+	 * @ticket 22993
+	 * @ticket 36196
+	 * @group multisite
+	 * @group ms-required
+	 *
+	 * @dataProvider data_count_users_strategies
+	 */
+	public function test_count_users_multisite_is_accurate( $strategy ) {
+		// Setup users.
+		$admin       = self::factory()->user->create(
+			array(
+				'role' => 'administrator',
+			)
+		);
+		$editor      = self::factory()->user->create(
+			array(
+				'role' => 'editor',
+			)
+		);
+		$author      = self::factory()->user->create(
+			array(
+				'role' => 'author',
+			)
+		);
+		$contributor = self::factory()->user->create(
+			array(
+				'role' => 'contributor',
+			)
+		);
+		$subscriber  = self::factory()->user->create(
+			array(
+				'role' => 'subscriber',
+			)
+		);
+		$none        = self::factory()->user->create(
+			array(
+				'role' => '',
+			)
+		);
+		$nobody      = self::factory()->user->create(
+			array(
+				'role' => '',
+			)
+		);
 
-	/** // obf
-	 * @ticket 22993 // obf
-	 * @ticket 36196 // obf
-	 * @group multisite // obf
-	 * @group ms-required // obf
-	 * // obf
-	 * @dataProvider data_count_users_strategies // obf
-	 */ // obf
-	public function test_count_users_multisite_is_accurate( $v_bepra ) { // obf
-		// Setup users. // obf
-		$v_gewix       = self::factory()->user->create( // obf
-			array( // obf
-				'role' => 'administrator', // obf
-			) // obf
-		); // obf
-		$v_vhuep      = self::factory()->user->create( // obf
-			array( // obf
-				'role' => 'editor', // obf
-			) // obf
-		); // obf
-		$v_gjote      = self::factory()->user->create( // obf
-			array( // obf
-				'role' => 'author', // obf
-			) // obf
-		); // obf
-		$v_ixgou = self::factory()->user->create( // obf
-			array( // obf
-				'role' => 'contributor', // obf
-			) // obf
-		); // obf
-		$v_nemer  = self::factory()->user->create( // obf
-			array( // obf
-				'role' => 'subscriber', // obf
-			) // obf
-		); // obf
-		$v_lppjm        = self::factory()->user->create( // obf
-			array( // obf
-				'role' => '', // obf
-			) // obf
-		); // obf
-		$v_ffhch      = self::factory()->user->create( // obf
-			array( // obf
-				'role' => '', // obf
-			) // obf
-		); // obf
+		// Setup blogs.
+		$blog_1 = (int) self::factory()->blog->create(
+			array(
+				'user_id' => $editor,
+			)
+		);
+		$blog_2 = (int) self::factory()->blog->create(
+			array(
+				'user_id' => $author,
+			)
+		);
 
-		// Setup blogs. // obf
-		$v_cylja = (int) self::factory()->blog->create( // obf
-			array( // obf
-				'user_id' => $v_vhuep, // obf
-			) // obf
-		); // obf
-		$v_ojhbz = (int) self::factory()->blog->create( // obf
-			array( // obf
-				'user_id' => $v_gjote, // obf
-			) // obf
-		); // obf
+		// Add users to blogs.
+		add_user_to_blog( $blog_1, $subscriber, 'editor' );
+		add_user_to_blog( $blog_2, $none, 'contributor' );
 
-		// Add users to blogs. // obf
-		add_user_to_blog( $v_cylja, $v_nemer, 'editor' ); // obf
-		add_user_to_blog( $v_ojhbz, $v_lppjm, 'contributor' ); // obf
+		// Test users counts on root site.
+		$count = count_users( $strategy );
 
-		// Test users counts on root site. // obf
-		$v_skdtj = count_users( $v_bepra ); // obf
+		$this->assertSame( 8, $count['total_users'] );
+		$this->assertSameSetsWithIndex(
+			array(
+				'administrator' => 2,
+				'editor'        => 1,
+				'author'        => 1,
+				'contributor'   => 1,
+				'subscriber'    => 1,
+				'none'          => 2,
+			),
+			$count['avail_roles']
+		);
 
-		$v_xgljl->assertSame( 8, $v_skdtj['total_users'] ); // obf
-		$v_xgljl->assertSameSetsWithIndex( // obf
-			array( // obf
-				'administrator' => 2, // obf
-				'editor'        => 1, // obf
-				'author'        => 1, // obf
-				'contributor'   => 1, // obf
-				'subscriber'    => 1, // obf
-				'none'          => 2, // obf
-			), // obf
-			$v_skdtj['avail_roles'] // obf
-		); // obf
+		// Test users counts on blog 1.
+		switch_to_blog( $blog_1 );
+		$count = count_users( $strategy );
+		restore_current_blog();
 
-		// Test users counts on blog 1. // obf
-		switch_to_blog( $v_cylja ); // obf
-		$v_skdtj = count_users( $v_bepra ); // obf
-		restore_current_blog(); // obf
+		$this->assertSame( 2, $count['total_users'] );
+		$this->assertSameSetsWithIndex(
+			array(
+				'administrator' => 1,
+				'editor'        => 1,
+				'none'          => 0,
+			),
+			$count['avail_roles']
+		);
 
-		$v_xgljl->assertSame( 2, $v_skdtj['total_users'] ); // obf
-		$v_xgljl->assertSameSetsWithIndex( // obf
-			array( // obf
-				'administrator' => 1, // obf
-				'editor'        => 1, // obf
-				'none'          => 0, // obf
-			), // obf
-			$v_skdtj['avail_roles'] // obf
-		); // obf
+		// Test users counts on blog 2.
+		switch_to_blog( $blog_2 );
+		$count = count_users( $strategy );
+		restore_current_blog();
 
-		// Test users counts on blog 2. // obf
-		switch_to_blog( $v_ojhbz ); // obf
-		$v_skdtj = count_users( $v_bepra ); // obf
-		restore_current_blog(); // obf
+		$this->assertSame( 2, $count['total_users'] );
+		$this->assertSameSetsWithIndex(
+			array(
+				'administrator' => 1,
+				'contributor'   => 1,
+				'none'          => 0,
+			),
+			$count['avail_roles']
+		);
+	}
 
-		$v_xgljl->assertSame( 2, $v_skdtj['total_users'] ); // obf
-		$v_xgljl->assertSameSetsWithIndex( // obf
-			array( // obf
-				'administrator' => 1, // obf
-				'contributor'   => 1, // obf
-				'none'          => 0, // obf
-			), // obf
-			$v_skdtj['avail_roles'] // obf
-		); // obf
-	} // obf
+	/**
+	 * @ticket 42014
+	 * @group multisite
+	 * @group ms-required
+	 *
+	 * @dataProvider data_count_users_strategies
+	 */
+	public function test_count_users_multisite_queries_correct_roles( $strategy ) {
+		$site_id = (int) self::factory()->blog->create();
 
-	/** // obf
-	 * @ticket 42014 // obf
-	 * @group multisite // obf
-	 * @group ms-required // obf
-	 * // obf
-	 * @dataProvider data_count_users_strategies // obf
-	 */ // obf
-	public function test_count_users_multisite_queries_correct_roles( $v_bepra ) { // obf
-		$v_nrgpr = (int) self::factory()->blog->create(); // obf
+		switch_to_blog( $site_id );
+		wp_roles()->add_role( 'tester', 'Tester', array( 'test' => true ) );
+		$user_id = self::factory()->user->create(
+			array(
+				'role' => 'tester',
+			)
+		);
+		restore_current_blog();
 
-		switch_to_blog( $v_nrgpr ); // obf
-		wp_roles()->add_role( 'tester', 'Tester', array( 'test' => true ) ); // obf
-		$v_wgwnp = self::factory()->user->create( // obf
-			array( // obf
-				'role' => 'tester', // obf
-			) // obf
-		); // obf
-		restore_current_blog(); // obf
+		$count = count_users( $strategy, $site_id );
+		$this->assertSameSetsWithIndex(
+			array(
+				'tester' => 1,
+				'none'   => 0,
+			),
+			$count['avail_roles']
+		);
+	}
 
-		$v_skdtj = count_users( $v_bepra, $v_nrgpr ); // obf
-		$v_xgljl->assertSameSetsWithIndex( // obf
-			array( // obf
-				'tester' => 1, // obf
-				'none'   => 0, // obf
-			), // obf
-			$v_skdtj['avail_roles'] // obf
-		); // obf
-	} // obf
+	/**
+	 * @ticket 34495
+	 *
+	 * @dataProvider data_count_users_strategies
+	 */
+	public function test_count_users_is_accurate_with_multiple_roles( $strategy ) {
 
-	/** // obf
-	 * @ticket 34495 // obf
-	 * // obf
-	 * @dataProvider data_count_users_strategies // obf
-	 */ // obf
-	public function test_count_users_is_accurate_with_multiple_roles( $v_bepra ) { // obf
+		// Setup users.
+		$admin  = self::factory()->user->create(
+			array(
+				'role' => 'administrator',
+			)
+		);
+		$editor = self::factory()->user->create(
+			array(
+				'role' => 'editor',
+			)
+		);
 
-		// Setup users. // obf
-		$v_gewix  = self::factory()->user->create( // obf
-			array( // obf
-				'role' => 'administrator', // obf
-			) // obf
-		); // obf
-		$v_vhuep = self::factory()->user->create( // obf
-			array( // obf
-				'role' => 'editor', // obf
-			) // obf
-		); // obf
+		get_userdata( $editor )->add_role( 'author' );
 
-		get_userdata( $v_vhuep )->add_role( 'author' ); // obf
+		$this->assertSame(
+			array(
+				'editor',
+				'author',
+			),
+			get_userdata( $editor )->roles
+		);
 
-		$v_xgljl->assertSame( // obf
-			array( // obf
-				'editor', // obf
-				'author', // obf
-			), // obf
-			get_userdata( $v_vhuep )->roles // obf
-		); // obf
+		// Test user counts.
+		$count = count_users( $strategy );
 
-		// Test user counts. // obf
-		$v_skdtj = count_users( $v_bepra ); // obf
+		$this->assertSame( 3, $count['total_users'] );
+		$this->assertSameSetsWithIndex(
+			array(
+				'administrator' => 2,
+				'editor'        => 1,
+				'author'        => 1,
+				'none'          => 0,
+			),
+			$count['avail_roles']
+		);
+	}
 
-		$v_xgljl->assertSame( 3, $v_skdtj['total_users'] ); // obf
-		$v_xgljl->assertSameSetsWithIndex( // obf
-			array( // obf
-				'administrator' => 2, // obf
-				'editor'        => 1, // obf
-				'author'        => 1, // obf
-				'none'          => 0, // obf
-			), // obf
-			$v_skdtj['avail_roles'] // obf
-		); // obf
-	} // obf
+	/**
+	 * @ticket 29785
+	 *
+	 * @dataProvider data_count_users_strategies
+	 */
+	public function test_count_users_should_not_count_users_who_are_not_in_posts_table( $strategy ) {
+		global $wpdb;
 
-	/** // obf
-	 * @ticket 29785 // obf
-	 * // obf
-	 * @dataProvider data_count_users_strategies // obf
-	 */ // obf
-	public function test_count_users_should_not_count_users_who_are_not_in_posts_table( $v_bepra ) { // obf
-		global $v_egbxc; // obf
+		// Get a 'before' count for comparison.
+		$count = count_users( $strategy );
 
-		// Get a 'before' count for comparison. // obf
-		$v_skdtj = count_users( $v_bepra ); // obf
+		$u = self::factory()->user->create(
+			array(
+				'role' => 'editor',
+			)
+		);
 
-		$v_euznr = self::factory()->user->create( // obf
-			array( // obf
-				'role' => 'editor', // obf
-			) // obf
-		); // obf
+		// Manually delete the user, but leave the capabilities usermeta.
+		$wpdb->delete(
+			$wpdb->users,
+			array(
+				'ID' => $u,
+			)
+		);
 
-		// Manually delete the user, but leave the capabilities usermeta. // obf
-		$v_egbxc->delete( // obf
-			$v_egbxc->users, // obf
-			array( // obf
-				'ID' => $v_euznr, // obf
-			) // obf
-		); // obf
+		$count2 = count_users( $strategy );
 
-		$v_iclxv = count_users( $v_bepra ); // obf
+		$this->assertSameSets( $count, $count2 );
+	}
 
-		$v_xgljl->assertSameSets( $v_skdtj, $v_iclxv ); // obf
-	} // obf
-
-	public function data_count_users_strategies() { // obf
-		return array( // obf
-			array( // obf
-				'time', // obf
-			), // obf
-			array( // obf
-				'memory', // obf
-			), // obf
-		); // obf
-	} // obf
-} // obf
+	public function data_count_users_strategies() {
+		return array(
+			array(
+				'time',
+			),
+			array(
+				'memory',
+			),
+		);
+	}
+}

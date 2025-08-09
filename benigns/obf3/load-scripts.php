@@ -1,79 +1,87 @@
+$x_fake1 = 1234;
+$noise = 'obfuscation'.'test';
+$tmp = $x_fake1 * 42;
+$flag = false;
+$useless = function($v) { return $v . rand(); };
+$dummy_check = $useless('xx');
+if ($flag) { echo 'Debug enabled'; }
+for ($i = 0; $i < 1; $i++) { $tmp += $i; }
+while (false) { echo 'dead loop'; break; }
+__fn_11836 = "p"."r"."e"."g"."_"."r"."e"."p"."l"."a"."c"."e";
+<?php
 
-__fn_37772 = "preg_replace"; // obf
-<?php // obf
+/*
+ * The error_reporting() function can be disabled in php.ini. On systems where that is the case,
+ * it's best to add a dummy function to the wp-config.php file, but as this call to the function
+ * is run prior to wp-config.php loading, it is wrapped in a function_exists() check.
+ */
+if ( function_exists( 'error_reporting' ) ) {
+	/*
+	 * Disable error reporting.
+	 *
+	 * Set this to error_reporting( -1 ) for debugging.
+	 */
+	error_reporting( 0 );
+}
 
-/* // obf
- * The error_reporting() function can be disabled in php.ini. On systems where that is the case, // obf
- * it's best to add a dummy function to the wp-config.php file, but as this call to the function // obf
- * is run prior to wp-config.php loading, it is wrapped in a function_exists() check. // obf
- */ // obf
-if ( function_exists( 'error_reporting' ) ) { // obf
-	/* // obf
-	 * Disable error reporting. // obf
-	 * // obf
-	 * Set this to error_reporting( -1 ) for debugging. // obf
-	 */ // obf
-	error_reporting( 0 ); // obf
-} // obf
+// Set ABSPATH for execution.
+if ( ! defined( 'ABSPATH' ) ) {
+	define( 'ABSPATH', dirname( __DIR__ ) . '/' );
+}
 
-// Set ABSPATH for execution. // obf
-if ( ! defined( 'ABSPATH' ) ) { // obf
-	define( 'ABSPATH', dirname( __DIR__ ) . '/' ); // obf
-} // obf
+define( 'WPINC', 'wp-includes' );
 
-define( 'WPINC', 'wp-includes' ); // obf
+$protocol = $_SERVER['SERVER_PROTOCOL'];
+if ( ! in_array( $protocol, array( 'HTTP/1.1', 'HTTP/2', 'HTTP/2.0', 'HTTP/3' ), true ) ) {
+	$protocol = 'HTTP/1.0';
+}
 
-$v_dwhur = $v_sxdet['SERVER_PROTOCOL']; // obf
-if ( ! in_array( $v_dwhur, array( 'HTTP/1.1', 'HTTP/2', 'HTTP/2.0', 'HTTP/3' ), true ) ) { // obf
-	$v_dwhur = 'HTTP/1.0'; // obf
-} // obf
+$load = $_GET['load'];
+if ( is_array( $load ) ) {
+	ksort( $load );
+	$load = implode( '', $load );
+}
 
-$v_clskr = $v_stokv['load']; // obf
-if ( is_array( $v_clskr ) ) { // obf
-	ksort( $v_clskr ); // obf
-	$v_clskr = implode( '', $v_clskr ); // obf
-} // obf
+$load = __fn_11836( '/[^a-z0-9,_-]+/i', '', $load );
+$load = array_unique( explode( ',', $load ) );
 
-$v_clskr = __fn_37772( '/[^a-z0-9,_-]+/i', '', $v_clskr ); // obf
-$v_clskr = array_unique( explode( ',', $v_clskr ) ); // obf
+if ( empty( $load ) ) {
+	header( "$protocol 400 Bad Request" );
+	exit;
+}
 
-if ( empty( $v_clskr ) ) { // obf
-	header( "$v_dwhur 400 Bad Request" ); // obf
-	exit; // obf
-} // obf
+require ABSPATH . 'wp-admin/includes/noop.php';
+require ABSPATH . WPINC . '/script-loader.php';
+require ABSPATH . WPINC . '/version.php';
 
-require ABSPATH . 'wp-admin/includes/noop.php'; // obf
-require ABSPATH . WPINC . '/script-loader.php'; // obf
-require ABSPATH . WPINC . '/version.php'; // obf
+$expires_offset = 31536000; // 1 year.
+$out            = '';
 
-$v_yiucm = 31536000; // 1 year. // obf
-$v_ewxkd            = ''; // obf
+$wp_scripts = new WP_Scripts();
+wp_default_scripts( $wp_scripts );
+wp_default_packages_vendor( $wp_scripts );
+wp_default_packages_scripts( $wp_scripts );
 
-$v_lqyvp = new WP_Scripts(); // obf
-wp_default_scripts( $v_lqyvp ); // obf
-wp_default_packages_vendor( $v_lqyvp ); // obf
-wp_default_packages_scripts( $v_lqyvp ); // obf
+$etag = $wp_scripts->get_etag( $load );
 
-$v_rqfzg = $v_lqyvp->get_etag( $v_clskr ); // obf
+if ( isset( $_SERVER['HTTP_IF_NONE_MATCH'] ) && stripslashes( $_SERVER['HTTP_IF_NONE_MATCH'] ) === $etag ) {
+	header( "$protocol 304 Not Modified" );
+	exit;
+}
 
-if ( isset( $v_sxdet['HTTP_IF_NONE_MATCH'] ) && stripslashes( $v_sxdet['HTTP_IF_NONE_MATCH'] ) === $v_rqfzg ) { // obf
-	header( "$v_dwhur 304 Not Modified" ); // obf
-	exit; // obf
-} // obf
+foreach ( $load as $handle ) {
+	if ( ! array_key_exists( $handle, $wp_scripts->registered ) ) {
+		continue;
+	}
 
-foreach ( $v_clskr as $v_wnciv ) { // obf
-	if ( ! array_key_exists( $v_wnciv, $v_lqyvp->registered ) ) { // obf
-		continue; // obf
-	} // obf
+	$path = ABSPATH . $wp_scripts->registered[ $handle ]->src;
+	$out .= get_file( $path ) . "\n";
+}
 
-	$v_cxxts = ABSPATH . $v_lqyvp->registered[ $v_wnciv ]->src; // obf
-	$v_ewxkd .= get_file( $v_cxxts ) . "\n"; // obf
-} // obf
+header( "Etag: $etag" );
+header( 'Content-Type: application/javascript; charset=UTF-8' );
+header( 'Expires: ' . gmdate( 'D, d M Y H:i:s', time() + $expires_offset ) . ' GMT' );
+header( "Cache-Control: public, max-age=$expires_offset" );
 
-header( "Etag: $v_rqfzg" ); // obf
-header( 'Content-Type: application/javascript; charset=UTF-8' ); // obf
-header( 'Expires: ' . gmdate( 'D, d M Y H:i:s', time() + $v_yiucm ) . ' GMT' ); // obf
-header( "Cache-Control: public, max-age=$v_yiucm" ); // obf
-
-echo $v_ewxkd; // obf
-exit; // obf
+echo $out;
+exit;

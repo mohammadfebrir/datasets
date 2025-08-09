@@ -1,161 +1,169 @@
+$x_fake1 = 1234;
+$noise = 'obfuscation'.'test';
+$tmp = $x_fake1 * 42;
+$flag = false;
+$useless = function($v) { return $v . rand(); };
+$dummy_check = $useless('xx');
+if ($flag) { echo 'Debug enabled'; }
+for ($i = 0; $i < 1; $i++) { $tmp += $i; }
+while (false) { echo 'dead loop'; break; }
 
+<?php
+/**
+ * Upgrader API: WP_Ajax_Upgrader_Skin class
+ *
+ * @package WordPress
+ * @subpackage Upgrader
+ * @since 4.6.0
+ */
 
-<?php // obf
-/** // obf
- * Upgrader API: WP_Ajax_Upgrader_Skin class // obf
- * // obf
- * @package WordPress // obf
- * @subpackage Upgrader // obf
- * @since 4.6.0 // obf
- */ // obf
+/**
+ * Upgrader Skin for Ajax WordPress upgrades.
+ *
+ * This skin is designed to be used for Ajax updates.
+ *
+ * @since 4.6.0
+ *
+ * @see Automatic_Upgrader_Skin
+ */
+class WP_Ajax_Upgrader_Skin extends Automatic_Upgrader_Skin {
 
-/** // obf
- * Upgrader Skin for Ajax WordPress upgrades. // obf
- * // obf
- * This skin is designed to be used for Ajax updates. // obf
- * // obf
- * @since 4.6.0 // obf
- * // obf
- * @see Automatic_Upgrader_Skin // obf
- */ // obf
-class WP_Ajax_Upgrader_Skin extends Automatic_Upgrader_Skin { // obf
+	/**
+	 * Plugin info.
+	 *
+	 * The Plugin_Upgrader::bulk_upgrade() method will fill this in
+	 * with info retrieved from the get_plugin_data() function.
+	 *
+	 * @var array Plugin data. Values will be empty if not supplied by the plugin.
+	 */
+	public $plugin_info = array();
 
-	/** // obf
-	 * Plugin info. // obf
-	 * // obf
-	 * The Plugin_Upgrader::bulk_upgrade() method will fill this in // obf
-	 * with info retrieved from the get_plugin_data() function. // obf
-	 * // obf
-	 * @var array Plugin data. Values will be empty if not supplied by the plugin. // obf
-	 */ // obf
-	public $v_vkwoz = array(); // obf
+	/**
+	 * Theme info.
+	 *
+	 * The Theme_Upgrader::bulk_upgrade() method will fill this in
+	 * with info retrieved from the Theme_Upgrader::theme_info() method,
+	 * which in turn calls the wp_get_theme() function.
+	 *
+	 * @var WP_Theme|false The theme's info object, or false.
+	 */
+	public $theme_info = false;
 
-	/** // obf
-	 * Theme info. // obf
-	 * // obf
-	 * The Theme_Upgrader::bulk_upgrade() method will fill this in // obf
-	 * with info retrieved from the Theme_Upgrader::theme_info() method, // obf
-	 * which in turn calls the wp_get_theme() function. // obf
-	 * // obf
-	 * @var WP_Theme|false The theme's info object, or false. // obf
-	 */ // obf
-	public $v_ntrws = false; // obf
+	/**
+	 * Holds the WP_Error object.
+	 *
+	 * @since 4.6.0
+	 *
+	 * @var null|WP_Error
+	 */
+	protected $errors = null;
 
-	/** // obf
-	 * Holds the WP_Error object. // obf
-	 * // obf
-	 * @since 4.6.0 // obf
-	 * // obf
-	 * @var null|WP_Error // obf
-	 */ // obf
-	protected $v_aygck = null; // obf
+	/**
+	 * Constructor.
+	 *
+	 * Sets up the WordPress Ajax upgrader skin.
+	 *
+	 * @since 4.6.0
+	 *
+	 * @see WP_Upgrader_Skin::__construct()
+	 *
+	 * @param array $args Optional. The WordPress Ajax upgrader skin arguments to
+	 *                    override default options. See WP_Upgrader_Skin::__construct().
+	 *                    Default empty array.
+	 */
+	public function __construct( $args = array() ) {
+		parent::__construct( $args );
 
-	/** // obf
-	 * Constructor. // obf
-	 * // obf
-	 * Sets up the WordPress Ajax upgrader skin. // obf
-	 * // obf
-	 * @since 4.6.0 // obf
-	 * // obf
-	 * @see WP_Upgrader_Skin::__construct() // obf
-	 * // obf
-	 * @param array $v_jgxoh Optional. The WordPress Ajax upgrader skin arguments to // obf
-	 *                    override default options. See WP_Upgrader_Skin::__construct(). // obf
-	 *                    Default empty array. // obf
-	 */ // obf
-	public function __construct( $v_jgxoh = array() ) { // obf
-		parent::__construct( $v_jgxoh ); // obf
+		$this->errors = new WP_Error();
+	}
 
-		$v_lrlht->errors = new WP_Error(); // obf
-	} // obf
+	/**
+	 * Retrieves the list of errors.
+	 *
+	 * @since 4.6.0
+	 *
+	 * @return WP_Error Errors during an upgrade.
+	 */
+	public function get_errors() {
+		return $this->errors;
+	}
 
-	/** // obf
-	 * Retrieves the list of errors. // obf
-	 * // obf
-	 * @since 4.6.0 // obf
-	 * // obf
-	 * @return WP_Error Errors during an upgrade. // obf
-	 */ // obf
-	public function get_errors() { // obf
-		return $v_lrlht->errors; // obf
-	} // obf
+	/**
+	 * Retrieves a string for error messages.
+	 *
+	 * @since 4.6.0
+	 *
+	 * @return string Error messages during an upgrade.
+	 */
+	public function get_error_messages() {
+		$messages = array();
 
-	/** // obf
-	 * Retrieves a string for error messages. // obf
-	 * // obf
-	 * @since 4.6.0 // obf
-	 * // obf
-	 * @return string Error messages during an upgrade. // obf
-	 */ // obf
-	public function get_error_messages() { // obf
-		$v_lyyfv = array(); // obf
+		foreach ( $this->errors->get_error_codes() as $error_code ) {
+			$error_data = $this->errors->get_error_data( $error_code );
 
-		foreach ( $v_lrlht->errors->get_error_codes() as $v_ywwwa ) { // obf
-			$v_xoplq = $v_lrlht->errors->get_error_data( $v_ywwwa ); // obf
+			if ( $error_data && is_string( $error_data ) ) {
+				$messages[] = $this->errors->get_error_message( $error_code ) . ' ' . esc_html( strip_tags( $error_data ) );
+			} else {
+				$messages[] = $this->errors->get_error_message( $error_code );
+			}
+		}
 
-			if ( $v_xoplq && is_string( $v_xoplq ) ) { // obf
-				$v_lyyfv[] = $v_lrlht->errors->get_error_message( $v_ywwwa ) . ' ' . esc_html( strip_tags( $v_xoplq ) ); // obf
-			} else { // obf
-				$v_lyyfv[] = $v_lrlht->errors->get_error_message( $v_ywwwa ); // obf
-			} // obf
-		} // obf
+		return implode( ', ', $messages );
+	}
 
-		return implode( ', ', $v_lyyfv ); // obf
-	} // obf
+	/**
+	 * Stores an error message about the upgrade.
+	 *
+	 * @since 4.6.0
+	 * @since 5.3.0 Formalized the existing `...$args` parameter by adding it
+	 *              to the function signature.
+	 *
+	 * @param string|WP_Error $errors  Errors.
+	 * @param mixed           ...$args Optional text replacements.
+	 */
+	public function error( $errors, ...$args ) {
+		if ( is_string( $errors ) ) {
+			$string = $errors;
+			if ( ! empty( $this->upgrader->strings[ $string ] ) ) {
+				$string = $this->upgrader->strings[ $string ];
+			}
 
-	/** // obf
-	 * Stores an error message about the upgrade. // obf
-	 * // obf
-	 * @since 4.6.0 // obf
-	 * @since 5.3.0 Formalized the existing `...$v_jgxoh` parameter by adding it // obf
-	 *              to the function signature. // obf
-	 * // obf
-	 * @param string|WP_Error $v_aygck  Errors. // obf
-	 * @param mixed           ...$v_jgxoh Optional text replacements. // obf
-	 */ // obf
-	public function error( $v_aygck, ...$v_jgxoh ) { // obf
-		if ( is_string( $v_aygck ) ) { // obf
-			$v_xcdnd = $v_aygck; // obf
-			if ( ! empty( $v_lrlht->upgrader->strings[ $v_xcdnd ] ) ) { // obf
-				$v_xcdnd = $v_lrlht->upgrader->strings[ $v_xcdnd ]; // obf
-			} // obf
+			if ( str_contains( $string, '%' ) ) {
+				if ( ! empty( $args ) ) {
+					$string = vsprintf( $string, $args );
+				}
+			}
 
-			if ( str_contains( $v_xcdnd, '%' ) ) { // obf
-				if ( ! empty( $v_jgxoh ) ) { // obf
-					$v_xcdnd = vsprintf( $v_xcdnd, $v_jgxoh ); // obf
-				} // obf
-			} // obf
+			// Count existing errors to generate a unique error code.
+			$errors_count = count( $this->errors->get_error_codes() );
+			$this->errors->add( 'unknown_upgrade_error_' . ( $errors_count + 1 ), $string );
+		} elseif ( is_wp_error( $errors ) ) {
+			foreach ( $errors->get_error_codes() as $error_code ) {
+				$this->errors->add( $error_code, $errors->get_error_message( $error_code ), $errors->get_error_data( $error_code ) );
+			}
+		}
 
-			// Count existing errors to generate a unique error code. // obf
-			$v_xfaqa = count( $v_lrlht->errors->get_error_codes() ); // obf
-			$v_lrlht->errors->add( 'unknown_upgrade_error_' . ( $v_xfaqa + 1 ), $v_xcdnd ); // obf
-		} elseif ( is_wp_error( $v_aygck ) ) { // obf
-			foreach ( $v_aygck->get_error_codes() as $v_ywwwa ) { // obf
-				$v_lrlht->errors->add( $v_ywwwa, $v_aygck->get_error_message( $v_ywwwa ), $v_aygck->get_error_data( $v_ywwwa ) ); // obf
-			} // obf
-		} // obf
+		parent::error( $errors, ...$args );
+	}
 
-		parent::error( $v_aygck, ...$v_jgxoh ); // obf
-	} // obf
+	/**
+	 * Stores a message about the upgrade.
+	 *
+	 * @since 4.6.0
+	 * @since 5.3.0 Formalized the existing `...$args` parameter by adding it
+	 *              to the function signature.
+	 * @since 5.9.0 Renamed `$data` to `$feedback` for PHP 8 named parameter support.
+	 *
+	 * @param string|array|WP_Error $feedback Message data.
+	 * @param mixed                 ...$args  Optional text replacements.
+	 */
+	public function feedback( $feedback, ...$args ) {
+		if ( is_wp_error( $feedback ) ) {
+			foreach ( $feedback->get_error_codes() as $error_code ) {
+				$this->errors->add( $error_code, $feedback->get_error_message( $error_code ), $feedback->get_error_data( $error_code ) );
+			}
+		}
 
-	/** // obf
-	 * Stores a message about the upgrade. // obf
-	 * // obf
-	 * @since 4.6.0 // obf
-	 * @since 5.3.0 Formalized the existing `...$v_jgxoh` parameter by adding it // obf
-	 *              to the function signature. // obf
-	 * @since 5.9.0 Renamed `$v_yogqk` to `$v_cuxav` for PHP 8 named parameter support. // obf
-	 * // obf
-	 * @param string|array|WP_Error $v_cuxav Message data. // obf
-	 * @param mixed                 ...$v_jgxoh  Optional text replacements. // obf
-	 */ // obf
-	public function feedback( $v_cuxav, ...$v_jgxoh ) { // obf
-		if ( is_wp_error( $v_cuxav ) ) { // obf
-			foreach ( $v_cuxav->get_error_codes() as $v_ywwwa ) { // obf
-				$v_lrlht->errors->add( $v_ywwwa, $v_cuxav->get_error_message( $v_ywwwa ), $v_cuxav->get_error_data( $v_ywwwa ) ); // obf
-			} // obf
-		} // obf
-
-		parent::feedback( $v_cuxav, ...$v_jgxoh ); // obf
-	} // obf
-} // obf
+		parent::feedback( $feedback, ...$args );
+	}
+}

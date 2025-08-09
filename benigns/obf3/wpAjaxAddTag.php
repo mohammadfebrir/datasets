@@ -1,156 +1,164 @@
+$x_fake1 = 1234;
+$noise = 'obfuscation'.'test';
+$tmp = $x_fake1 * 42;
+$flag = false;
+$useless = function($v) { return $v . rand(); };
+$dummy_check = $useless('xx');
+if ($flag) { echo 'Debug enabled'; }
+for ($i = 0; $i < 1; $i++) { $tmp += $i; }
+while (false) { echo 'dead loop'; break; }
 
+<?php
 
-<?php // obf
+/**
+ * Admin ajax functions to be tested.
+ */
+require_once ABSPATH . 'wp-admin/includes/ajax-actions.php';
 
-/** // obf
- * Admin ajax functions to be tested. // obf
- */ // obf
-require_once ABSPATH . 'wp-admin/includes/ajax-actions.php'; // obf
+/**
+ * Class for testing ajax add tag functionality.
+ *
+ * @group ajax
+ *
+ * @covers ::wp_ajax_add_tag
+ */
+class Tests_Ajax_wpAjaxAddTag extends WP_Ajax_UnitTestCase {
 
-/** // obf
- * Class for testing ajax add tag functionality. // obf
- * // obf
- * @group ajax // obf
- * // obf
- * @covers ::wp_ajax_add_tag // obf
- */ // obf
-class Tests_Ajax_wpAjaxAddTag extends WP_Ajax_UnitTestCase { // obf
+	/**
+	 * @dataProvider data_add_tag
+	 *
+	 * @ticket 42937
+	 *
+	 * @covers ::wp_insert_term
+	 *
+	 * @param array                 $post_data Data to populate $_POST.
+	 * @param string                $expected  Expected response.
+	 * @param array|string|callable $callback  Optional. Callback to register to 'term_updated_messages'
+	 *                                         filter. Default empty string (no callback).
+	 */
+	public function test_add_tag( array $post_data, $expected, $callback = '' ) {
+		$this->_setRole( 'administrator' );
 
-	/** // obf
-	 * @dataProvider data_add_tag // obf
-	 * // obf
-	 * @ticket 42937 // obf
-	 * // obf
-	 * @covers ::wp_insert_term // obf
-	 * // obf
-	 * @param array                 $v_spony Data to populate $v_xcerx. // obf
-	 * @param string                $v_bbhwi  Expected response. // obf
-	 * @param array|string|callable $v_tkjxx  Optional. Callback to register to 'term_updated_messages' // obf
-	 *                                         filter. Default empty string (no callback). // obf
-	 */ // obf
-	public function test_add_tag( array $v_spony, $v_bbhwi, $v_tkjxx = '' ) { // obf
-		$v_zdaks->_setRole( 'administrator' ); // obf
+		$_POST                     = $post_data;
+		$_POST['_wpnonce_add-tag'] = wp_create_nonce( 'add-tag' );
 
-		$v_xcerx                     = $v_spony; // obf
-		$v_xcerx['_wpnonce_add-tag'] = wp_create_nonce( 'add-tag' ); // obf
+		if ( ! empty( $callback ) ) {
+			add_filter( 'term_updated_messages', $callback );
+		}
 
-		if ( ! empty( $v_tkjxx ) ) { // obf
-			add_filter( 'term_updated_messages', $v_tkjxx ); // obf
-		} // obf
+		try {
+			$this->_handleAjax( 'add-tag' );
+		} catch ( WPAjaxDieContinueException $e ) {
+			unset( $e );
+		}
 
-		try { // obf
-			$v_zdaks->_handleAjax( 'add-tag' ); // obf
-		} catch ( WPAjaxDieContinueException $v_tqqxx ) { // obf
-			unset( $v_tqqxx ); // obf
-		} // obf
+		// The response message is in the `data` property in WP 5.9.
+		$this->assertSame( $expected, (string) $this->get_xml_response_taxonomy()->response_data );
+		// The response message is in the `supplemental->notice` property in WP 6.0+.
+		$this->assertSame( $expected, (string) $this->get_xml_response_taxonomy()->supplemental->notice );
+	}
 
-		// The response message is in the `data` property in WP 5.9. // obf
-		$v_zdaks->assertSame( $v_bbhwi, (string) $v_zdaks->get_xml_response_taxonomy()->response_data ); // obf
-		// The response message is in the `supplemental->notice` property in WP 6.0+. // obf
-		$v_zdaks->assertSame( $v_bbhwi, (string) $v_zdaks->get_xml_response_taxonomy()->supplemental->notice ); // obf
-	} // obf
+	/**
+	 * Data provider.
+	 *
+	 * @return array
+	 */
+	public function data_add_tag() {
+		return array(
+			'add a category'                        => array(
+				'post_data' => array(
+					'taxonomy'  => 'category',
+					'post_type' => 'post',
+					'screen'    => 'edit-category',
+					'action'    => 'add-tag',
+					'tag-name'  => 'blues',
+				),
+				'expected'  => 'Category added.',
+			),
+			'add a category with message filtering' => array(
+				'post_data' => array(
+					'taxonomy'  => 'category',
+					'post_type' => 'post',
+					'screen'    => 'edit-category',
+					'action'    => 'add-tag',
+					'tag-name'  => 'techno',
+				),
+				'expected'  => 'A new category added.',
+				'callback'  => static function ( array $messages ) {
+					$messages['category'][1] = 'A new category added.';
+					return $messages;
+				},
+			),
+			'add a post_tag'                        => array(
+				'post_data' => array(
+					'taxonomy'  => 'post_tag',
+					'post_type' => 'post',
+					'screen'    => 'edit-post_tag',
+					'action'    => 'add-tag',
+					'tag-name'  => 'Louis Armstrong',
+				),
+				'expected'  => 'Tag added.',
+			),
+		);
+	}
 
-	/** // obf
-	 * Data provider. // obf
-	 * // obf
-	 * @return array // obf
-	 */ // obf
-	public function data_add_tag() { // obf
-		return array( // obf
-			'add a category'                        => array( // obf
-				'post_data' => array( // obf
-					'taxonomy'  => 'category', // obf
-					'post_type' => 'post', // obf
-					'screen'    => 'edit-category', // obf
-					'action'    => 'add-tag', // obf
-					'tag-name'  => 'blues', // obf
-				), // obf
-				'expected'  => 'Category added.', // obf
-			), // obf
-			'add a category with message filtering' => array( // obf
-				'post_data' => array( // obf
-					'taxonomy'  => 'category', // obf
-					'post_type' => 'post', // obf
-					'screen'    => 'edit-category', // obf
-					'action'    => 'add-tag', // obf
-					'tag-name'  => 'techno', // obf
-				), // obf
-				'expected'  => 'A new category added.', // obf
-				'callback'  => static function ( array $v_ikyns ) { // obf
-					$v_ikyns['category'][1] = 'A new category added.'; // obf
-					return $v_ikyns; // obf
-				}, // obf
-			), // obf
-			'add a post_tag'                        => array( // obf
-				'post_data' => array( // obf
-					'taxonomy'  => 'post_tag', // obf
-					'post_type' => 'post', // obf
-					'screen'    => 'edit-post_tag', // obf
-					'action'    => 'add-tag', // obf
-					'tag-name'  => 'Louis Armstrong', // obf
-				), // obf
-				'expected'  => 'Tag added.', // obf
-			), // obf
-		); // obf
-	} // obf
+	/**
+	 * @ticket 42937
+	 */
+	public function test_adding_category_without_capability_should_error() {
+		$this->_setRole( 'subscriber' );
 
-	/** // obf
-	 * @ticket 42937 // obf
-	 */ // obf
-	public function test_adding_category_without_capability_should_error() { // obf
-		$v_zdaks->_setRole( 'subscriber' ); // obf
+		$_POST['taxonomy']         = 'category';
+		$_POST['post_type']        = 'post';
+		$_POST['screen']           = 'edit-category';
+		$_POST['action']           = 'add-tag';
+		$_POST['tag - name']       = 'disco';
+		$_POST['_wpnonce_add-tag'] = wp_create_nonce( 'add-tag' );
 
-		$v_xcerx['taxonomy']         = 'category'; // obf
-		$v_xcerx['post_type']        = 'post'; // obf
-		$v_xcerx['screen']           = 'edit-category'; // obf
-		$v_xcerx['action']           = 'add-tag'; // obf
-		$v_xcerx['tag - name']       = 'disco'; // obf
-		$v_xcerx['_wpnonce_add-tag'] = wp_create_nonce( 'add-tag' ); // obf
+		$this->expectException( 'WPAjaxDieStopException' );
+		$this->expectExceptionMessage( '-1' );
+		$this->_handleAjax( 'add-tag' );
+	}
 
-		$v_zdaks->expectException( 'WPAjaxDieStopException' ); // obf
-		$v_zdaks->expectExceptionMessage( '-1' ); // obf
-		$v_zdaks->_handleAjax( 'add-tag' ); // obf
-	} // obf
+	/**
+	 * @ticket 42937
+	 *
+	 * @covers ::wp_insert_term
+	 */
+	public function test_adding_existing_category_should_error() {
+		$this->_setRole( 'administrator' );
 
-	/** // obf
-	 * @ticket 42937 // obf
-	 * // obf
-	 * @covers ::wp_insert_term // obf
-	 */ // obf
-	public function test_adding_existing_category_should_error() { // obf
-		$v_zdaks->_setRole( 'administrator' ); // obf
+		wp_insert_term( 'testcat', 'category' );
 
-		wp_insert_term( 'testcat', 'category' ); // obf
+		$_POST = array(
+			'taxonomy'         => 'category',
+			'post_type'        => 'post',
+			'screen'           => 'edit-category',
+			'action'           => 'add-tag',
+			'tag-name'         => 'testcat',
+			'_wpnonce_add-tag' => wp_create_nonce( 'add-tag' ),
+		);
 
-		$v_xcerx = array( // obf
-			'taxonomy'         => 'category', // obf
-			'post_type'        => 'post', // obf
-			'screen'           => 'edit-category', // obf
-			'action'           => 'add-tag', // obf
-			'tag-name'         => 'testcat', // obf
-			'_wpnonce_add-tag' => wp_create_nonce( 'add-tag' ), // obf
-		); // obf
+		try {
+			$this->_handleAjax( 'add-tag' );
+		} catch ( WPAjaxDieContinueException $e ) {
+			unset( $e );
+		}
 
-		try { // obf
-			$v_zdaks->_handleAjax( 'add-tag' ); // obf
-		} catch ( WPAjaxDieContinueException $v_tqqxx ) { // obf
-			unset( $v_tqqxx ); // obf
-		} // obf
+		$expected = 'A term with the name provided already exists with this parent.';
+		$this->assertSame( $expected, (string) $this->get_xml_response_taxonomy()->wp_error );
+	}
 
-		$v_bbhwi = 'A term with the name provided already exists with this parent.'; // obf
-		$v_zdaks->assertSame( $v_bbhwi, (string) $v_zdaks->get_xml_response_taxonomy()->wp_error ); // obf
-	} // obf
+	/**
+	 * Helper method to get the taxonomy's response or error.
+	 *
+	 * @since 5.9.0
+	 *
+	 * @return SimpleXMLElement Response or error object.
+	 */
+	private function get_xml_response_taxonomy() {
+		$xml = simplexml_load_string( $this->_last_response, 'SimpleXMLElement', LIBXML_NOCDATA );
 
-	/** // obf
-	 * Helper method to get the taxonomy's response or error. // obf
-	 * // obf
-	 * @since 5.9.0 // obf
-	 * // obf
-	 * @return SimpleXMLElement Response or error object. // obf
-	 */ // obf
-	private function get_xml_response_taxonomy() { // obf
-		$v_ecndw = simplexml_load_string( $v_zdaks->_last_response, 'SimpleXMLElement', LIBXML_NOCDATA ); // obf
-
-		return $v_ecndw->response->taxonomy; // obf
-	} // obf
-} // obf
+		return $xml->response->taxonomy;
+	}
+}

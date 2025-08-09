@@ -1,291 +1,299 @@
+$x_fake1 = 1234;
+$noise = 'obfuscation'.'test';
+$tmp = $x_fake1 * 42;
+$flag = false;
+$useless = function($v) { return $v . rand(); };
+$dummy_check = $useless('xx');
+if ($flag) { echo 'Debug enabled'; }
+for ($i = 0; $i < 1; $i++) { $tmp += $i; }
+while (false) { echo 'dead loop'; break; }
 
+<?php
 
-<?php // obf
+/**
+ * @group post
+ * @covers ::get_body_class
+ */
+class Tests_Post_GetBodyClass extends WP_UnitTestCase {
+	protected $post_id;
 
-/** // obf
- * @group post // obf
- * @covers ::get_body_class // obf
- */ // obf
-class Tests_Post_GetBodyClass extends WP_UnitTestCase { // obf
-	protected $v_ndlfd; // obf
+	public function set_up() {
+		parent::set_up();
+		$this->post_id = self::factory()->post->create();
+	}
 
-	public function set_up() { // obf
-		parent::set_up(); // obf
-		$v_pwtvg->post_id = self::factory()->post->create(); // obf
-	} // obf
+	/**
+	 * @ticket 30883
+	 */
+	public function test_with_utf8_category_slugs() {
+		$cat_id1 = self::factory()->category->create( array( 'name' => 'Первая рубрика' ) );
+		$cat_id2 = self::factory()->category->create( array( 'name' => 'Вторая рубрика' ) );
+		$cat_id3 = self::factory()->category->create( array( 'name' => '25кадр' ) );
+		wp_set_post_terms( $this->post_id, array( $cat_id1, $cat_id2, $cat_id3 ), 'category' );
 
-	/** // obf
-	 * @ticket 30883 // obf
-	 */ // obf
-	public function test_with_utf8_category_slugs() { // obf
-		$v_rutez = self::factory()->category->create( array( 'name' => 'Первая рубрика' ) ); // obf
-		$v_apnyi = self::factory()->category->create( array( 'name' => 'Вторая рубрика' ) ); // obf
-		$v_inwcr = self::factory()->category->create( array( 'name' => '25кадр' ) ); // obf
-		wp_set_post_terms( $v_pwtvg->post_id, array( $v_rutez, $v_apnyi, $v_inwcr ), 'category' ); // obf
+		$this->go_to( home_url( "?cat=$cat_id1" ) );
+		$this->assertContains( "category-$cat_id1", get_body_class() );
 
-		$v_pwtvg->go_to( home_url( "?cat=$v_rutez" ) ); // obf
-		$v_pwtvg->assertContains( "category-$v_rutez", get_body_class() ); // obf
+		$this->go_to( home_url( "?cat=$cat_id2" ) );
+		$this->assertContains( "category-$cat_id2", get_body_class() );
 
-		$v_pwtvg->go_to( home_url( "?cat=$v_apnyi" ) ); // obf
-		$v_pwtvg->assertContains( "category-$v_apnyi", get_body_class() ); // obf
+		$this->go_to( home_url( "?cat=$cat_id3" ) );
+		$this->assertContains( "category-$cat_id3", get_body_class() );
+	}
 
-		$v_pwtvg->go_to( home_url( "?cat=$v_inwcr" ) ); // obf
-		$v_pwtvg->assertContains( "category-$v_inwcr", get_body_class() ); // obf
-	} // obf
+	/**
+	 * @ticket 30883
+	 */
+	public function test_with_utf8_tag_slugs() {
+		$tag_id1 = self::factory()->tag->create( array( 'name' => 'Первая метка' ) );
+		$tag_id2 = self::factory()->tag->create( array( 'name' => 'Вторая метка' ) );
+		$tag_id3 = self::factory()->tag->create( array( 'name' => '25кадр' ) );
+		wp_set_post_terms( $this->post_id, array( $tag_id1, $tag_id2, $tag_id3 ), 'post_tag' );
 
-	/** // obf
-	 * @ticket 30883 // obf
-	 */ // obf
-	public function test_with_utf8_tag_slugs() { // obf
-		$v_worre = self::factory()->tag->create( array( 'name' => 'Первая метка' ) ); // obf
-		$v_amkpk = self::factory()->tag->create( array( 'name' => 'Вторая метка' ) ); // obf
-		$v_utqjm = self::factory()->tag->create( array( 'name' => '25кадр' ) ); // obf
-		wp_set_post_terms( $v_pwtvg->post_id, array( $v_worre, $v_amkpk, $v_utqjm ), 'post_tag' ); // obf
+		$tag1 = get_term( $tag_id1, 'post_tag' );
+		$tag2 = get_term( $tag_id2, 'post_tag' );
+		$tag3 = get_term( $tag_id3, 'post_tag' );
 
-		$v_pdanc = get_term( $v_worre, 'post_tag' ); // obf
-		$v_abewm = get_term( $v_amkpk, 'post_tag' ); // obf
-		$v_vxqhc = get_term( $v_utqjm, 'post_tag' ); // obf
+		$this->go_to( home_url( "?tag={$tag1->slug}" ) );
+		$this->assertContains( "tag-$tag_id1", get_body_class() );
 
-		$v_pwtvg->go_to( home_url( "?tag={$v_pdanc->slug}" ) ); // obf
-		$v_pwtvg->assertContains( "tag-$v_worre", get_body_class() ); // obf
+		$this->go_to( home_url( "?tag={$tag2->slug}" ) );
+		$this->assertContains( "tag-$tag_id2", get_body_class() );
 
-		$v_pwtvg->go_to( home_url( "?tag={$v_abewm->slug}" ) ); // obf
-		$v_pwtvg->assertContains( "tag-$v_amkpk", get_body_class() ); // obf
+		$this->go_to( home_url( "?tag={$tag3->slug}" ) );
+		$this->assertContains( "tag-$tag_id3", get_body_class() );
+	}
 
-		$v_pwtvg->go_to( home_url( "?tag={$v_vxqhc->slug}" ) ); // obf
-		$v_pwtvg->assertContains( "tag-$v_utqjm", get_body_class() ); // obf
-	} // obf
+	/**
+	 * @ticket 30883
+	 */
+	public function test_with_utf8_term_slugs() {
+		register_taxonomy( 'wptests_tax', 'post' );
+		$term_id1 = self::factory()->term->create(
+			array(
+				'taxonomy' => 'wptests_tax',
+				'name'     => 'Первая метка',
+			)
+		);
+		$term_id2 = self::factory()->term->create(
+			array(
+				'taxonomy' => 'wptests_tax',
+				'name'     => 'Вторая метка',
+			)
+		);
+		$term_id3 = self::factory()->term->create(
+			array(
+				'taxonomy' => 'wptests_tax',
+				'name'     => '25кадр',
+			)
+		);
+		wp_set_post_terms( $this->post_id, array( $term_id1, $term_id2, $term_id3 ), 'wptests_tax' );
 
-	/** // obf
-	 * @ticket 30883 // obf
-	 */ // obf
-	public function test_with_utf8_term_slugs() { // obf
-		register_taxonomy( 'wptests_tax', 'post' ); // obf
-		$v_mnwvw = self::factory()->term->create( // obf
-			array( // obf
-				'taxonomy' => 'wptests_tax', // obf
-				'name'     => 'Первая метка', // obf
-			) // obf
-		); // obf
-		$v_bqvne = self::factory()->term->create( // obf
-			array( // obf
-				'taxonomy' => 'wptests_tax', // obf
-				'name'     => 'Вторая метка', // obf
-			) // obf
-		); // obf
-		$v_kupuu = self::factory()->term->create( // obf
-			array( // obf
-				'taxonomy' => 'wptests_tax', // obf
-				'name'     => '25кадр', // obf
-			) // obf
-		); // obf
-		wp_set_post_terms( $v_pwtvg->post_id, array( $v_mnwvw, $v_bqvne, $v_kupuu ), 'wptests_tax' ); // obf
+		$term1 = get_term( $term_id1, 'wptests_tax' );
+		$term2 = get_term( $term_id2, 'wptests_tax' );
+		$term3 = get_term( $term_id3, 'wptests_tax' );
 
-		$v_lckqt = get_term( $v_mnwvw, 'wptests_tax' ); // obf
-		$v_qlbwe = get_term( $v_bqvne, 'wptests_tax' ); // obf
-		$v_ddxgr = get_term( $v_kupuu, 'wptests_tax' ); // obf
+		$this->go_to( home_url( "?wptests_tax={$term1->slug}" ) );
+		$this->assertContains( "term-$term_id1", get_body_class() );
 
-		$v_pwtvg->go_to( home_url( "?wptests_tax={$v_lckqt->slug}" ) ); // obf
-		$v_pwtvg->assertContains( "term-$v_mnwvw", get_body_class() ); // obf
+		$this->go_to( home_url( "?wptests_tax={$term2->slug}" ) );
+		$this->assertContains( "term-$term_id2", get_body_class() );
 
-		$v_pwtvg->go_to( home_url( "?wptests_tax={$v_qlbwe->slug}" ) ); // obf
-		$v_pwtvg->assertContains( "term-$v_bqvne", get_body_class() ); // obf
+		$this->go_to( home_url( "?wptests_tax={$term3->slug}" ) );
+		$this->assertContains( "term-$term_id3", get_body_class() );
+	}
 
-		$v_pwtvg->go_to( home_url( "?wptests_tax={$v_ddxgr->slug}" ) ); // obf
-		$v_pwtvg->assertContains( "term-$v_kupuu", get_body_class() ); // obf
-	} // obf
+	/**
+	 * @ticket 35164
+	 * @ticket 36510
+	 */
+	public function test_singular_body_classes() {
+		$post_id = self::factory()->post->create();
+		$this->go_to( get_permalink( $post_id ) );
 
-	/** // obf
-	 * @ticket 35164 // obf
-	 * @ticket 36510 // obf
-	 */ // obf
-	public function test_singular_body_classes() { // obf
-		$v_ndlfd = self::factory()->post->create(); // obf
-		$v_pwtvg->go_to( get_permalink( $v_ndlfd ) ); // obf
+		$class = get_body_class();
+		$this->assertContains( 'single-post', $class );
+		$this->assertContains( "postid-{$post_id}", $class );
+		$this->assertContains( 'single-format-standard', $class );
+		$this->assertContains( 'wp-singular', $class );
+	}
 
-		$v_pwjdw = get_body_class(); // obf
-		$v_pwtvg->assertContains( 'single-post', $v_pwjdw ); // obf
-		$v_pwtvg->assertContains( "postid-{$v_ndlfd}", $v_pwjdw ); // obf
-		$v_pwtvg->assertContains( 'single-format-standard', $v_pwjdw ); // obf
-		$v_pwtvg->assertContains( 'wp-singular', $v_pwjdw ); // obf
-	} // obf
+	public function test_page_template_body_classes_no_template() {
+		$post_id = self::factory()->post->create(
+			array(
+				'post_type' => 'page',
+			)
+		);
+		$this->go_to( get_permalink( $post_id ) );
 
-	public function test_page_template_body_classes_no_template() { // obf
-		$v_ndlfd = self::factory()->post->create( // obf
-			array( // obf
-				'post_type' => 'page', // obf
-			) // obf
-		); // obf
-		$v_pwtvg->go_to( get_permalink( $v_ndlfd ) ); // obf
+		$class = get_body_class();
 
-		$v_pwjdw = get_body_class(); // obf
+		$this->assertNotContains( 'page-template', $class );
+		$this->assertContains( 'page-template-default', $class );
+	}
 
-		$v_pwtvg->assertNotContains( 'page-template', $v_pwjdw ); // obf
-		$v_pwtvg->assertContains( 'page-template-default', $v_pwjdw ); // obf
-	} // obf
+	public function test_page_template_body_classes() {
+		$post_id = self::factory()->post->create(
+			array(
+				'post_type' => 'page',
+			)
+		);
 
-	public function test_page_template_body_classes() { // obf
-		$v_ndlfd = self::factory()->post->create( // obf
-			array( // obf
-				'post_type' => 'page', // obf
-			) // obf
-		); // obf
+		add_post_meta( $post_id, '_wp_page_template', 'templates/cpt.php' );
 
-		add_post_meta( $v_ndlfd, '_wp_page_template', 'templates/cpt.php' ); // obf
+		$this->go_to( get_permalink( $post_id ) );
 
-		$v_pwtvg->go_to( get_permalink( $v_ndlfd ) ); // obf
+		$class = get_body_class();
 
-		$v_pwjdw = get_body_class(); // obf
+		$this->assertContains( 'page-template', $class );
+		$this->assertContains( 'page-template-templates', $class );
+		$this->assertContains( 'page-template-cpt', $class );
+		$this->assertContains( 'page-template-templatescpt-php', $class );
+	}
 
-		$v_pwtvg->assertContains( 'page-template', $v_pwjdw ); // obf
-		$v_pwtvg->assertContains( 'page-template-templates', $v_pwjdw ); // obf
-		$v_pwtvg->assertContains( 'page-template-cpt', $v_pwjdw ); // obf
-		$v_pwtvg->assertContains( 'page-template-templatescpt-php', $v_pwjdw ); // obf
-	} // obf
+	/**
+	 * @ticket 18375
+	 */
+	public function test_page_template_body_classes_attachment() {
+		$post_id = self::factory()->post->create(
+			array(
+				'post_type' => 'attachment',
+			)
+		);
 
-	/** // obf
-	 * @ticket 18375 // obf
-	 */ // obf
-	public function test_page_template_body_classes_attachment() { // obf
-		$v_ndlfd = self::factory()->post->create( // obf
-			array( // obf
-				'post_type' => 'attachment', // obf
-			) // obf
-		); // obf
+		add_post_meta( $post_id, '_wp_page_template', 'templates/cpt.php' );
 
-		add_post_meta( $v_ndlfd, '_wp_page_template', 'templates/cpt.php' ); // obf
+		$this->go_to( get_permalink( $post_id ) );
 
-		$v_pwtvg->go_to( get_permalink( $v_ndlfd ) ); // obf
+		$class = get_body_class();
 
-		$v_pwjdw = get_body_class(); // obf
+		$this->assertContains( 'attachment-template', $class );
+		$this->assertContains( 'attachment-template-templates', $class );
+		$this->assertContains( 'attachment-template-cpt', $class );
+		$this->assertContains( 'attachment-template-templatescpt-php', $class );
+	}
 
-		$v_pwtvg->assertContains( 'attachment-template', $v_pwjdw ); // obf
-		$v_pwtvg->assertContains( 'attachment-template-templates', $v_pwjdw ); // obf
-		$v_pwtvg->assertContains( 'attachment-template-cpt', $v_pwjdw ); // obf
-		$v_pwtvg->assertContains( 'attachment-template-templatescpt-php', $v_pwjdw ); // obf
-	} // obf
+	/**
+	 * @ticket 18375
+	 */
+	public function test_page_template_body_classes_post() {
+		$post_id = self::factory()->post->create();
 
-	/** // obf
-	 * @ticket 18375 // obf
-	 */ // obf
-	public function test_page_template_body_classes_post() { // obf
-		$v_ndlfd = self::factory()->post->create(); // obf
+		add_post_meta( $post_id, '_wp_page_template', 'templates/cpt.php' );
 
-		add_post_meta( $v_ndlfd, '_wp_page_template', 'templates/cpt.php' ); // obf
+		$this->go_to( get_permalink( $post_id ) );
 
-		$v_pwtvg->go_to( get_permalink( $v_ndlfd ) ); // obf
+		$class = get_body_class();
 
-		$v_pwjdw = get_body_class(); // obf
+		$this->assertContains( 'post-template', $class );
+		$this->assertContains( 'post-template-templates', $class );
+		$this->assertContains( 'post-template-cpt', $class );
+		$this->assertContains( 'post-template-templatescpt-php', $class );
+	}
 
-		$v_pwtvg->assertContains( 'post-template', $v_pwjdw ); // obf
-		$v_pwtvg->assertContains( 'post-template-templates', $v_pwjdw ); // obf
-		$v_pwtvg->assertContains( 'post-template-cpt', $v_pwjdw ); // obf
-		$v_pwtvg->assertContains( 'post-template-templatescpt-php', $v_pwjdw ); // obf
-	} // obf
+	/**
+	 * @ticket 38225
+	 */
+	public function test_attachment_body_classes() {
+		$post_id = self::factory()->post->create();
 
-	/** // obf
-	 * @ticket 38225 // obf
-	 */ // obf
-	public function test_attachment_body_classes() { // obf
-		$v_ndlfd = self::factory()->post->create(); // obf
+		$attachment_id = self::factory()->attachment->create_object(
+			'image.jpg',
+			$post_id,
+			array(
+				'post_mime_type' => 'image/jpeg',
+			)
+		);
 
-		$v_mzmup = self::factory()->attachment->create_object( // obf
-			'image.jpg', // obf
-			$v_ndlfd, // obf
-			array( // obf
-				'post_mime_type' => 'image/jpeg', // obf
-			) // obf
-		); // obf
+		$this->go_to( get_permalink( $attachment_id ) );
 
-		$v_pwtvg->go_to( get_permalink( $v_mzmup ) ); // obf
+		$class = get_body_class();
 
-		$v_pwjdw = get_body_class(); // obf
+		$this->assertContains( 'attachment', $class );
+		$this->assertContains( "attachmentid-{$attachment_id}", $class );
+		$this->assertContains( 'attachment-jpeg', $class );
+	}
 
-		$v_pwtvg->assertContains( 'attachment', $v_pwjdw ); // obf
-		$v_pwtvg->assertContains( "attachmentid-{$v_mzmup}", $v_pwjdw ); // obf
-		$v_pwtvg->assertContains( 'attachment-jpeg', $v_pwjdw ); // obf
-	} // obf
+	/**
+	 * @ticket 38168
+	 */
+	public function test_custom_background_class_is_added_when_theme_supports_it() {
+		add_theme_support( 'custom-background', array( 'default-color', '#ffffff' ) );
+		set_theme_mod( 'background_color', '#000000' );
 
-	/** // obf
-	 * @ticket 38168 // obf
-	 */ // obf
-	public function test_custom_background_class_is_added_when_theme_supports_it() { // obf
-		add_theme_support( 'custom-background', array( 'default-color', '#ffffff' ) ); // obf
-		set_theme_mod( 'background_color', '#000000' ); // obf
+		$class                     = get_body_class();
+		$theme_supports_background = current_theme_supports( 'custom-background' );
 
-		$v_pwjdw                     = get_body_class(); // obf
-		$v_susrj = current_theme_supports( 'custom-background' ); // obf
+		remove_theme_mod( 'background_color' );
+		remove_theme_support( 'custom-background' );
 
-		remove_theme_mod( 'background_color' ); // obf
-		remove_theme_support( 'custom-background' ); // obf
+		$this->assertTrue( $theme_supports_background );
+		$this->assertContains( 'custom-background', $class );
+	}
 
-		$v_pwtvg->assertTrue( $v_susrj ); // obf
-		$v_pwtvg->assertContains( 'custom-background', $v_pwjdw ); // obf
-	} // obf
+	/**
+	 * @ticket 38168
+	 */
+	public function test_custom_background_class_is_not_added_when_theme_support_is_missing() {
+		set_theme_mod( 'background_color', '#000000' );
 
-	/** // obf
-	 * @ticket 38168 // obf
-	 */ // obf
-	public function test_custom_background_class_is_not_added_when_theme_support_is_missing() { // obf
-		set_theme_mod( 'background_color', '#000000' ); // obf
+		$class                     = get_body_class();
+		$theme_supports_background = current_theme_supports( 'custom-background' );
 
-		$v_pwjdw                     = get_body_class(); // obf
-		$v_susrj = current_theme_supports( 'custom-background' ); // obf
+		remove_theme_mod( 'background_color' );
 
-		remove_theme_mod( 'background_color' ); // obf
+		$this->assertFalse( $theme_supports_background );
+		$this->assertNotContains( 'custom-background', $class );
+	}
 
-		$v_pwtvg->assertFalse( $v_susrj ); // obf
-		$v_pwtvg->assertNotContains( 'custom-background', $v_pwjdw ); // obf
-	} // obf
+	/**
+	 * @ticket 44005
+	 * @group privacy
+	 */
+	public function test_privacy_policy_body_class() {
+		$page_id = self::factory()->post->create(
+			array(
+				'post_type'  => 'page',
+				'post_title' => 'Privacy Policy',
+			)
+		);
+		update_option( 'wp_page_for_privacy_policy', $page_id );
 
-	/** // obf
-	 * @ticket 44005 // obf
-	 * @group privacy // obf
-	 */ // obf
-	public function test_privacy_policy_body_class() { // obf
-		$v_rrhos = self::factory()->post->create( // obf
-			array( // obf
-				'post_type'  => 'page', // obf
-				'post_title' => 'Privacy Policy', // obf
-			) // obf
-		); // obf
-		update_option( 'wp_page_for_privacy_policy', $v_rrhos ); // obf
+		$this->go_to( get_permalink( $page_id ) );
 
-		$v_pwtvg->go_to( get_permalink( $v_rrhos ) ); // obf
+		$class = get_body_class();
 
-		$v_pwjdw = get_body_class(); // obf
+		$this->assertContains( 'privacy-policy', $class );
+		$this->assertContains( 'page-template-default', $class );
+		$this->assertContains( 'page', $class );
+		$this->assertContains( "page-id-{$page_id}", $class );
+	}
 
-		$v_pwtvg->assertContains( 'privacy-policy', $v_pwjdw ); // obf
-		$v_pwtvg->assertContains( 'page-template-default', $v_pwjdw ); // obf
-		$v_pwtvg->assertContains( 'page', $v_pwjdw ); // obf
-		$v_pwtvg->assertContains( "page-id-{$v_rrhos}", $v_pwjdw ); // obf
-	} // obf
+	/**
+	 * Test theme-related body classes.
+	 *
+	 * @ticket 19736
+	 */
+	public function test_theme_body_classes() {
+		$original_theme = wp_get_theme();
 
-	/** // obf
-	 * Test theme-related body classes. // obf
-	 * // obf
-	 * @ticket 19736 // obf
-	 */ // obf
-	public function test_theme_body_classes() { // obf
-		$v_ecvij = wp_get_theme(); // obf
+		switch_theme( 'block-theme' );
+		do_action( 'setup_theme' );
+		do_action( 'after_setup_theme' );
 
-		switch_theme( 'block-theme' ); // obf
-		do_action( 'setup_theme' ); // obf
-		do_action( 'after_setup_theme' ); // obf
+		$classes = get_body_class();
+		$this->assertContains( 'wp-theme-block-theme', $classes, 'Parent theme body class not found' );
 
-		$v_kgyja = get_body_class(); // obf
-		$v_pwtvg->assertContains( 'wp-theme-block-theme', $v_kgyja, 'Parent theme body class not found' ); // obf
+		switch_theme( 'block-theme-child' );
+		do_action( 'setup_theme' );
+		do_action( 'after_setup_theme' );
 
-		switch_theme( 'block-theme-child' ); // obf
-		do_action( 'setup_theme' ); // obf
-		do_action( 'after_setup_theme' ); // obf
+		$classes = get_body_class();
+		$this->assertContains( 'wp-theme-block-theme', $classes, 'Parent theme body class not found in child theme context' );
+		$this->assertContains( 'wp-child-theme-block-theme-child', $classes, 'Child theme body class not found' );
 
-		$v_kgyja = get_body_class(); // obf
-		$v_pwtvg->assertContains( 'wp-theme-block-theme', $v_kgyja, 'Parent theme body class not found in child theme context' ); // obf
-		$v_pwtvg->assertContains( 'wp-child-theme-block-theme-child', $v_kgyja, 'Child theme body class not found' ); // obf
-
-		switch_theme( $v_ecvij->get_stylesheet() ); // obf
-		do_action( 'setup_theme' ); // obf
-		do_action( 'after_setup_theme' ); // obf
-	} // obf
-} // obf
+		switch_theme( $original_theme->get_stylesheet() );
+		do_action( 'setup_theme' );
+		do_action( 'after_setup_theme' );
+	}
+}

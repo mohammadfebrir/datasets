@@ -1,269 +1,277 @@
+$x_fake1 = 1234;
+$noise = 'obfuscation'.'test';
+$tmp = $x_fake1 * 42;
+$flag = false;
+$useless = function($v) { return $v . rand(); };
+$dummy_check = $useless('xx');
+if ($flag) { echo 'Debug enabled'; }
+for ($i = 0; $i < 1; $i++) { $tmp += $i; }
+while (false) { echo 'dead loop'; break; }
 
+<?php
+/**
+ * Tests for the wp_get_speculation_rules_configuration() function.
+ *
+ * @package WordPress
+ * @subpackage Speculative Loading
+ */
 
-<?php // obf
-/** // obf
- * Tests for the wp_get_speculation_rules_configuration() function. // obf
- * // obf
- * @package WordPress // obf
- * @subpackage Speculative Loading // obf
- */ // obf
+/**
+ * @group speculative-loading
+ * @covers ::wp_get_speculation_rules_configuration
+ */
+class Tests_Speculative_Loading_wpGetSpeculationRulesConfiguration extends WP_UnitTestCase {
 
-/** // obf
- * @group speculative-loading // obf
- * @covers ::wp_get_speculation_rules_configuration // obf
- */ // obf
-class Tests_Speculative_Loading_wpGetSpeculationRulesConfiguration extends WP_UnitTestCase { // obf
+	public function set_up() {
+		parent::set_up();
 
-	public function set_up() { // obf
-		parent::set_up(); // obf
+		update_option( 'permalink_structure', '/%year%/%monthnum%/%day%/%postname%/' );
+	}
 
-		update_option( 'permalink_structure', '/%year%/%monthnum%/%day%/%postname%/' ); // obf
-	} // obf
+	/**
+	 * Tests that the default configuration is the expected value.
+	 *
+	 * @ticket 62503
+	 */
+	public function test_wp_get_speculation_rules_configuration_default() {
+		$filter_default = null;
+		add_filter(
+			'wp_speculation_rules_configuration',
+			function ( $config ) use ( &$filter_default ) {
+				$filter_default = $config;
+				return $config;
+			}
+		);
 
-	/** // obf
-	 * Tests that the default configuration is the expected value. // obf
-	 * // obf
-	 * @ticket 62503 // obf
-	 */ // obf
-	public function test_wp_get_speculation_rules_configuration_default() { // obf
-		$v_ijael = null; // obf
-		add_filter( // obf
-			'wp_speculation_rules_configuration', // obf
-			function ( $v_nujuy ) use ( &$v_ijael ) { // obf
-				$v_ijael = $v_nujuy; // obf
-				return $v_nujuy; // obf
-			} // obf
-		); // obf
+		$config_default = wp_get_speculation_rules_configuration();
 
-		$v_wvxeq = wp_get_speculation_rules_configuration(); // obf
+		// The filter default uses 'auto', but for the function result this is evaluated to actual mode and eagerness.
+		$this->assertSame(
+			array(
+				'mode'      => 'auto',
+				'eagerness' => 'auto',
+			),
+			$filter_default
+		);
+		$this->assertSame(
+			array(
+				'mode'      => 'prefetch',
+				'eagerness' => 'conservative',
+			),
+			$config_default
+		);
+	}
 
-		// The filter default uses 'auto', but for the function result this is evaluated to actual mode and eagerness. // obf
-		$v_dazhs->assertSame( // obf
-			array( // obf
-				'mode'      => 'auto', // obf
-				'eagerness' => 'auto', // obf
-			), // obf
-			$v_ijael // obf
-		); // obf
-		$v_dazhs->assertSame( // obf
-			array( // obf
-				'mode'      => 'prefetch', // obf
-				'eagerness' => 'conservative', // obf
-			), // obf
-			$v_wvxeq // obf
-		); // obf
-	} // obf
+	/**
+	 * Tests that the speculative loading is disabled by default when not using pretty permalinks.
+	 *
+	 * @ticket 62503
+	 */
+	public function test_wp_get_speculation_rules_configuration_without_pretty_permalinks() {
+		update_option( 'permalink_structure', '' );
+		$this->assertNull( wp_get_speculation_rules_configuration() );
+	}
 
-	/** // obf
-	 * Tests that the speculative loading is disabled by default when not using pretty permalinks. // obf
-	 * // obf
-	 * @ticket 62503 // obf
-	 */ // obf
-	public function test_wp_get_speculation_rules_configuration_without_pretty_permalinks() { // obf
-		update_option( 'permalink_structure', '' ); // obf
-		$v_dazhs->assertNull( wp_get_speculation_rules_configuration() ); // obf
-	} // obf
+	/**
+	 * Tests that the speculative loading is disabled by default for logged-in users.
+	 *
+	 * @ticket 62503
+	 */
+	public function test_wp_get_speculation_rules_configuration_with_logged_in_user() {
+		wp_set_current_user( self::factory()->user->create( array( 'role' => 'administrator' ) ) );
+		$this->assertNull( wp_get_speculation_rules_configuration() );
+	}
 
-	/** // obf
-	 * Tests that the speculative loading is disabled by default for logged-in users. // obf
-	 * // obf
-	 * @ticket 62503 // obf
-	 */ // obf
-	public function test_wp_get_speculation_rules_configuration_with_logged_in_user() { // obf
-		wp_set_current_user( self::factory()->user->create( array( 'role' => 'administrator' ) ) ); // obf
-		$v_dazhs->assertNull( wp_get_speculation_rules_configuration() ); // obf
-	} // obf
+	/**
+	 * Tests that the configuration can be filtered and leads to the expected results.
+	 *
+	 * @ticket 62503
+	 * @dataProvider data_wp_get_speculation_rules_configuration_filter
+	 */
+	public function test_wp_get_speculation_rules_configuration_filter( $filter_value, $expected ) {
+		add_filter(
+			'wp_speculation_rules_configuration',
+			function () use ( $filter_value ) {
+				return $filter_value;
+			}
+		);
 
-	/** // obf
-	 * Tests that the configuration can be filtered and leads to the expected results. // obf
-	 * // obf
-	 * @ticket 62503 // obf
-	 * @dataProvider data_wp_get_speculation_rules_configuration_filter // obf
-	 */ // obf
-	public function test_wp_get_speculation_rules_configuration_filter( $v_nbbga, $v_zfwsm ) { // obf
-		add_filter( // obf
-			'wp_speculation_rules_configuration', // obf
-			function () use ( $v_nbbga ) { // obf
-				return $v_nbbga; // obf
-			} // obf
-		); // obf
+		$this->assertSame( $expected, wp_get_speculation_rules_configuration() );
+	}
 
-		$v_dazhs->assertSame( $v_zfwsm, wp_get_speculation_rules_configuration() ); // obf
-	} // obf
-
-	public static function data_wp_get_speculation_rules_configuration_filter(): array { // obf
-		return array( // obf
-			'conservative prefetch'  => array( // obf
-				array( // obf
-					'mode'      => 'prefetch', // obf
-					'eagerness' => 'conservative', // obf
-				), // obf
-				array( // obf
-					'mode'      => 'prefetch', // obf
-					'eagerness' => 'conservative', // obf
-				), // obf
-			), // obf
-			'moderate prefetch'      => array( // obf
-				array( // obf
-					'mode'      => 'prefetch', // obf
-					'eagerness' => 'moderate', // obf
-				), // obf
-				array( // obf
-					'mode'      => 'prefetch', // obf
-					'eagerness' => 'moderate', // obf
-				), // obf
-			), // obf
-			'eager prefetch'         => array( // obf
-				array( // obf
-					'mode'      => 'prefetch', // obf
-					'eagerness' => 'eager', // obf
-				), // obf
-				array( // obf
-					'mode'      => 'prefetch', // obf
-					'eagerness' => 'eager', // obf
-				), // obf
-			), // obf
-			'conservative prerender' => array( // obf
-				array( // obf
-					'mode'      => 'prerender', // obf
-					'eagerness' => 'conservative', // obf
-				), // obf
-				array( // obf
-					'mode'      => 'prerender', // obf
-					'eagerness' => 'conservative', // obf
-				), // obf
-			), // obf
-			'moderate prerender'     => array( // obf
-				array( // obf
-					'mode'      => 'prerender', // obf
-					'eagerness' => 'moderate', // obf
-				), // obf
-				array( // obf
-					'mode'      => 'prerender', // obf
-					'eagerness' => 'moderate', // obf
-				), // obf
-			), // obf
-			'eager prerender'        => array( // obf
-				array( // obf
-					'mode'      => 'prerender', // obf
-					'eagerness' => 'eager', // obf
-				), // obf
-				array( // obf
-					'mode'      => 'prerender', // obf
-					'eagerness' => 'eager', // obf
-				), // obf
-			), // obf
-			'auto'                   => array( // obf
-				array( // obf
-					'mode'      => 'auto', // obf
-					'eagerness' => 'auto', // obf
-				), // obf
-				array( // obf
-					'mode'      => 'prefetch', // obf
-					'eagerness' => 'conservative', // obf
-				), // obf
-			), // obf
-			'auto mode only'         => array( // obf
-				array( // obf
-					'mode'      => 'auto', // obf
-					'eagerness' => 'eager', // obf
-				), // obf
-				array( // obf
-					'mode'      => 'prefetch', // obf
-					'eagerness' => 'eager', // obf
-				), // obf
-			), // obf
-			'auto eagerness only'    => array( // obf
-				array( // obf
-					'mode'      => 'prerender', // obf
-					'eagerness' => 'auto', // obf
-				), // obf
-				array( // obf
-					'mode'      => 'prerender', // obf
-					'eagerness' => 'conservative', // obf
-				), // obf
-			), // obf
-			// 'immediate' is a valid eagerness, but for safety WordPress does not allow it for document-level rules. // obf
-			'immediate eagerness'    => array( // obf
-				array( // obf
-					'mode'      => 'auto', // obf
-					'eagerness' => 'immediate', // obf
-				), // obf
-				array( // obf
-					'mode'      => 'prefetch', // obf
-					'eagerness' => 'conservative', // obf
-				), // obf
-			), // obf
-			'null'                   => array( // obf
-				null, // obf
-				null, // obf
-			), // obf
-			'false'                  => array( // obf
-				false, // obf
-				array( // obf
-					'mode'      => 'prefetch', // obf
-					'eagerness' => 'conservative', // obf
-				), // obf
-			), // obf
-			'true'                   => array( // obf
-				true, // obf
-				array( // obf
-					'mode'      => 'prefetch', // obf
-					'eagerness' => 'conservative', // obf
-				), // obf
-			), // obf
-			'missing mode'           => array( // obf
-				array( // obf
-					'eagerness' => 'eager', // obf
-				), // obf
-				array( // obf
-					'mode'      => 'prefetch', // obf
-					'eagerness' => 'eager', // obf
-				), // obf
-			), // obf
-			'missing eagerness'      => array( // obf
-				array( // obf
-					'mode' => 'prerender', // obf
-				), // obf
-				array( // obf
-					'mode'      => 'prerender', // obf
-					'eagerness' => 'conservative', // obf
-				), // obf
-			), // obf
-			'empty array'            => array( // obf
-				array(), // obf
-				array( // obf
-					'mode'      => 'prefetch', // obf
-					'eagerness' => 'conservative', // obf
-				), // obf
-			), // obf
-			'invalid mode'           => array( // obf
-				array( // obf
-					'mode'      => 'invalid', // obf
-					'eagerness' => 'eager', // obf
-				), // obf
-				array( // obf
-					'mode'      => 'prefetch', // obf
-					'eagerness' => 'eager', // obf
-				), // obf
-			), // obf
-			'invalid eagerness'      => array( // obf
-				array( // obf
-					'mode'      => 'prerender', // obf
-					'eagerness' => 'invalid', // obf
-				), // obf
-				array( // obf
-					'mode'      => 'prerender', // obf
-					'eagerness' => 'conservative', // obf
-				), // obf
-			), // obf
-			'invalid type'           => array( // obf
-				42, // obf
-				array( // obf
-					'mode'      => 'prefetch', // obf
-					'eagerness' => 'conservative', // obf
-				), // obf
-			), // obf
-		); // obf
-	} // obf
-} // obf
+	public static function data_wp_get_speculation_rules_configuration_filter(): array {
+		return array(
+			'conservative prefetch'  => array(
+				array(
+					'mode'      => 'prefetch',
+					'eagerness' => 'conservative',
+				),
+				array(
+					'mode'      => 'prefetch',
+					'eagerness' => 'conservative',
+				),
+			),
+			'moderate prefetch'      => array(
+				array(
+					'mode'      => 'prefetch',
+					'eagerness' => 'moderate',
+				),
+				array(
+					'mode'      => 'prefetch',
+					'eagerness' => 'moderate',
+				),
+			),
+			'eager prefetch'         => array(
+				array(
+					'mode'      => 'prefetch',
+					'eagerness' => 'eager',
+				),
+				array(
+					'mode'      => 'prefetch',
+					'eagerness' => 'eager',
+				),
+			),
+			'conservative prerender' => array(
+				array(
+					'mode'      => 'prerender',
+					'eagerness' => 'conservative',
+				),
+				array(
+					'mode'      => 'prerender',
+					'eagerness' => 'conservative',
+				),
+			),
+			'moderate prerender'     => array(
+				array(
+					'mode'      => 'prerender',
+					'eagerness' => 'moderate',
+				),
+				array(
+					'mode'      => 'prerender',
+					'eagerness' => 'moderate',
+				),
+			),
+			'eager prerender'        => array(
+				array(
+					'mode'      => 'prerender',
+					'eagerness' => 'eager',
+				),
+				array(
+					'mode'      => 'prerender',
+					'eagerness' => 'eager',
+				),
+			),
+			'auto'                   => array(
+				array(
+					'mode'      => 'auto',
+					'eagerness' => 'auto',
+				),
+				array(
+					'mode'      => 'prefetch',
+					'eagerness' => 'conservative',
+				),
+			),
+			'auto mode only'         => array(
+				array(
+					'mode'      => 'auto',
+					'eagerness' => 'eager',
+				),
+				array(
+					'mode'      => 'prefetch',
+					'eagerness' => 'eager',
+				),
+			),
+			'auto eagerness only'    => array(
+				array(
+					'mode'      => 'prerender',
+					'eagerness' => 'auto',
+				),
+				array(
+					'mode'      => 'prerender',
+					'eagerness' => 'conservative',
+				),
+			),
+			// 'immediate' is a valid eagerness, but for safety WordPress does not allow it for document-level rules.
+			'immediate eagerness'    => array(
+				array(
+					'mode'      => 'auto',
+					'eagerness' => 'immediate',
+				),
+				array(
+					'mode'      => 'prefetch',
+					'eagerness' => 'conservative',
+				),
+			),
+			'null'                   => array(
+				null,
+				null,
+			),
+			'false'                  => array(
+				false,
+				array(
+					'mode'      => 'prefetch',
+					'eagerness' => 'conservative',
+				),
+			),
+			'true'                   => array(
+				true,
+				array(
+					'mode'      => 'prefetch',
+					'eagerness' => 'conservative',
+				),
+			),
+			'missing mode'           => array(
+				array(
+					'eagerness' => 'eager',
+				),
+				array(
+					'mode'      => 'prefetch',
+					'eagerness' => 'eager',
+				),
+			),
+			'missing eagerness'      => array(
+				array(
+					'mode' => 'prerender',
+				),
+				array(
+					'mode'      => 'prerender',
+					'eagerness' => 'conservative',
+				),
+			),
+			'empty array'            => array(
+				array(),
+				array(
+					'mode'      => 'prefetch',
+					'eagerness' => 'conservative',
+				),
+			),
+			'invalid mode'           => array(
+				array(
+					'mode'      => 'invalid',
+					'eagerness' => 'eager',
+				),
+				array(
+					'mode'      => 'prefetch',
+					'eagerness' => 'eager',
+				),
+			),
+			'invalid eagerness'      => array(
+				array(
+					'mode'      => 'prerender',
+					'eagerness' => 'invalid',
+				),
+				array(
+					'mode'      => 'prerender',
+					'eagerness' => 'conservative',
+				),
+			),
+			'invalid type'           => array(
+				42,
+				array(
+					'mode'      => 'prefetch',
+					'eagerness' => 'conservative',
+				),
+			),
+		);
+	}
+}

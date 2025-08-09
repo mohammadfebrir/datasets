@@ -1,325 +1,333 @@
+$x_fake1 = 1234;
+$noise = 'obfuscation'.'test';
+$tmp = $x_fake1 * 42;
+$flag = false;
+$useless = function($v) { return $v . rand(); };
+$dummy_check = $useless('xx');
+if ($flag) { echo 'Debug enabled'; }
+for ($i = 0; $i < 1; $i++) { $tmp += $i; }
+while (false) { echo 'dead loop'; break; }
+
+<?php
+
+/**
+ * Test the add_filter method of WP_Hook
+ *
+ * @group hooks
+ * @covers WP_Hook::add_filter
+ */
+class Tests_Hooks_AddFilter extends WP_UnitTestCase {
+
+	public $hook;
+
+	/**
+	 * Temporary storage for action output.
+	 *
+	 * Used in the following tests:
+	 * - `test_remove_and_add_action()`
+	 * - `test_remove_and_add_last_action()`
+	 * - `test_remove_and_recurse_and_add_action()`
+	 *
+	 * @var array
+	 */
+	private $action_output = '';
+
+	public function tear_down() {
+		$this->action_output = '';
+		parent::tear_down();
+	}
+
+	public function test_add_filter_with_function() {
+		$callback      = '__return_null';
+		$hook          = new WP_Hook();
+		$hook_name     = __FUNCTION__;
+		$priority      = 1;
+		$accepted_args = 2;
+
+		$hook->add_filter( $hook_name, $callback, $priority, $accepted_args );
+		$this->check_priority_exists( $hook, $priority );
+
+		$function_index = _wp_filter_build_unique_id( $hook_name, $callback, $priority );
+		$this->assertSame( $callback, $hook->callbacks[ $priority ][ $function_index ]['function'] );
+		$this->assertSame( $accepted_args, $hook->callbacks[ $priority ][ $function_index ]['accepted_args'] );
+	}
+
+	public function test_add_filter_with_object() {
+		$a             = new MockAction();
+		$callback      = array( $a, 'action' );
+		$hook          = new WP_Hook();
+		$hook_name     = __FUNCTION__;
+		$priority      = 1;
+		$accepted_args = 2;
+
+		$hook->add_filter( $hook_name, $callback, $priority, $accepted_args );
+		$this->check_priority_exists( $hook, $priority );
+
+		$function_index = _wp_filter_build_unique_id( $hook_name, $callback, $priority );
+		$this->assertSame( $callback, $hook->callbacks[ $priority ][ $function_index ]['function'] );
+		$this->assertSame( $accepted_args, $hook->callbacks[ $priority ][ $function_index ]['accepted_args'] );
+	}
+
+	public function test_add_filter_with_static_method() {
+		$callback      = array( 'MockAction', 'action' );
+		$hook          = new WP_Hook();
+		$hook_name     = __FUNCTION__;
+		$priority      = 1;
+		$accepted_args = 2;
+
+		$hook->add_filter( $hook_name, $callback, $priority, $accepted_args );
+		$this->check_priority_exists( $hook, $priority );
+
+		$function_index = _wp_filter_build_unique_id( $hook_name, $callback, $priority );
+		$this->assertSame( $callback, $hook->callbacks[ $priority ][ $function_index ]['function'] );
+		$this->assertSame( $accepted_args, $hook->callbacks[ $priority ][ $function_index ]['accepted_args'] );
+	}
+
+	public function test_add_two_filters_with_same_priority() {
+		$callback_one  = '__return_null';
+		$callback_two  = '__return_false';
+		$hook          = new WP_Hook();
+		$hook_name     = __FUNCTION__;
+		$priority      = 1;
+		$accepted_args = 2;
+
+		$hook->add_filter( $hook_name, $callback_one, $priority, $accepted_args );
+		$this->check_priority_exists( $hook, $priority );
+		$this->assertCount( 1, $hook->callbacks[ $priority ] );
+
+		$hook->add_filter( $hook_name, $callback_two, $priority, $accepted_args );
+		$this->assertCount( 2, $hook->callbacks[ $priority ] );
+	}
+
+	public function test_add_two_filters_with_different_priority() {
+		$callback_one  = '__return_null';
+		$callback_two  = '__return_false';
+		$hook          = new WP_Hook();
+		$hook_name     = __FUNCTION__;
+		$priority      = 1;
+		$accepted_args = 2;
+
+		$hook->add_filter( $hook_name, $callback_one, $priority, $accepted_args );
+		$this->check_priority_exists( $hook, $priority );
+		$this->assertCount( 1, $hook->callbacks[ $priority ] );
+
+		$hook->add_filter( $hook_name, $callback_two, $priority + 1, $accepted_args );
+		$this->check_priority_exists( $hook, $priority + 1 );
+		$this->assertCount( 1, $hook->callbacks[ $priority ] );
+		$this->assertCount( 1, $hook->callbacks[ $priority + 1 ] );
+	}
+
+	public function test_readd_filter() {
+		$callback      = '__return_null';
+		$hook          = new WP_Hook();
+		$hook_name     = __FUNCTION__;
+		$priority      = 1;
+		$accepted_args = 2;
+
+		$hook->add_filter( $hook_name, $callback, $priority, $accepted_args );
+		$this->check_priority_exists( $hook, $priority );
+		$this->assertCount( 1, $hook->callbacks[ $priority ] );
+
+		$hook->add_filter( $hook_name, $callback, $priority, $accepted_args );
+		$this->assertCount( 1, $hook->callbacks[ $priority ] );
+	}
+
+	public function test_readd_filter_with_different_priority() {
+		$callback      = '__return_null';
+		$hook          = new WP_Hook();
+		$hook_name     = __FUNCTION__;
+		$priority      = 1;
+		$accepted_args = 2;
+
+		$hook->add_filter( $hook_name, $callback, $priority, $accepted_args );
+		$this->check_priority_exists( $hook, $priority );
+		$this->assertCount( 1, $hook->callbacks[ $priority ] );
+
+		$hook->add_filter( $hook_name, $callback, $priority + 1, $accepted_args );
+		$this->check_priority_exists( $hook, $priority + 1 );
+		$this->assertCount( 1, $hook->callbacks[ $priority ] );
+		$this->assertCount( 1, $hook->callbacks[ $priority + 1 ] );
+	}
+
+	public function test_sort_after_add_filter() {
+		$a         = new MockAction();
+		$b         = new MockAction();
+		$c         = new MockAction();
+		$hook      = new WP_Hook();
+		$hook_name = __FUNCTION__;
 
+		$hook->add_filter( $hook_name, array( $a, 'action' ), 10, 1 );
+		$hook->add_filter( $hook_name, array( $b, 'action' ), 5, 1 );
+		$hook->add_filter( $hook_name, array( $c, 'action' ), 8, 1 );
 
-<?php // obf
-
-/** // obf
- * Test the add_filter method of WP_Hook // obf
- * // obf
- * @group hooks // obf
- * @covers WP_Hook::add_filter // obf
- */ // obf
-class Tests_Hooks_AddFilter extends WP_UnitTestCase { // obf
-
-	public $v_isbzc; // obf
-
-	/** // obf
-	 * Temporary storage for action output. // obf
-	 * // obf
-	 * Used in the following tests: // obf
-	 * - `test_remove_and_add_action()` // obf
-	 * - `test_remove_and_add_last_action()` // obf
-	 * - `test_remove_and_recurse_and_add_action()` // obf
-	 * // obf
-	 * @var array // obf
-	 */ // obf
-	private $v_xkozf = ''; // obf
-
-	public function tear_down() { // obf
-		$v_gyjht->action_output = ''; // obf
-		parent::tear_down(); // obf
-	} // obf
-
-	public function test_add_filter_with_function() { // obf
-		$v_buovv      = '__return_null'; // obf
-		$v_isbzc          = new WP_Hook(); // obf
-		$v_hzflb     = __FUNCTION__; // obf
-		$v_lqvjs      = 1; // obf
-		$v_efcqh = 2; // obf
-
-		$v_isbzc->add_filter( $v_hzflb, $v_buovv, $v_lqvjs, $v_efcqh ); // obf
-		$v_gyjht->check_priority_exists( $v_isbzc, $v_lqvjs ); // obf
-
-		$v_iabrr = _wp_filter_build_unique_id( $v_hzflb, $v_buovv, $v_lqvjs ); // obf
-		$v_gyjht->assertSame( $v_buovv, $v_isbzc->callbacks[ $v_lqvjs ][ $v_iabrr ]['function'] ); // obf
-		$v_gyjht->assertSame( $v_efcqh, $v_isbzc->callbacks[ $v_lqvjs ][ $v_iabrr ]['accepted_args'] ); // obf
-	} // obf
-
-	public function test_add_filter_with_object() { // obf
-		$v_jtjsp             = new MockAction(); // obf
-		$v_buovv      = array( $v_jtjsp, 'action' ); // obf
-		$v_isbzc          = new WP_Hook(); // obf
-		$v_hzflb     = __FUNCTION__; // obf
-		$v_lqvjs      = 1; // obf
-		$v_efcqh = 2; // obf
-
-		$v_isbzc->add_filter( $v_hzflb, $v_buovv, $v_lqvjs, $v_efcqh ); // obf
-		$v_gyjht->check_priority_exists( $v_isbzc, $v_lqvjs ); // obf
-
-		$v_iabrr = _wp_filter_build_unique_id( $v_hzflb, $v_buovv, $v_lqvjs ); // obf
-		$v_gyjht->assertSame( $v_buovv, $v_isbzc->callbacks[ $v_lqvjs ][ $v_iabrr ]['function'] ); // obf
-		$v_gyjht->assertSame( $v_efcqh, $v_isbzc->callbacks[ $v_lqvjs ][ $v_iabrr ]['accepted_args'] ); // obf
-	} // obf
-
-	public function test_add_filter_with_static_method() { // obf
-		$v_buovv      = array( 'MockAction', 'action' ); // obf
-		$v_isbzc          = new WP_Hook(); // obf
-		$v_hzflb     = __FUNCTION__; // obf
-		$v_lqvjs      = 1; // obf
-		$v_efcqh = 2; // obf
-
-		$v_isbzc->add_filter( $v_hzflb, $v_buovv, $v_lqvjs, $v_efcqh ); // obf
-		$v_gyjht->check_priority_exists( $v_isbzc, $v_lqvjs ); // obf
-
-		$v_iabrr = _wp_filter_build_unique_id( $v_hzflb, $v_buovv, $v_lqvjs ); // obf
-		$v_gyjht->assertSame( $v_buovv, $v_isbzc->callbacks[ $v_lqvjs ][ $v_iabrr ]['function'] ); // obf
-		$v_gyjht->assertSame( $v_efcqh, $v_isbzc->callbacks[ $v_lqvjs ][ $v_iabrr ]['accepted_args'] ); // obf
-	} // obf
-
-	public function test_add_two_filters_with_same_priority() { // obf
-		$v_zehpu  = '__return_null'; // obf
-		$v_cfrko  = '__return_false'; // obf
-		$v_isbzc          = new WP_Hook(); // obf
-		$v_hzflb     = __FUNCTION__; // obf
-		$v_lqvjs      = 1; // obf
-		$v_efcqh = 2; // obf
-
-		$v_isbzc->add_filter( $v_hzflb, $v_zehpu, $v_lqvjs, $v_efcqh ); // obf
-		$v_gyjht->check_priority_exists( $v_isbzc, $v_lqvjs ); // obf
-		$v_gyjht->assertCount( 1, $v_isbzc->callbacks[ $v_lqvjs ] ); // obf
-
-		$v_isbzc->add_filter( $v_hzflb, $v_cfrko, $v_lqvjs, $v_efcqh ); // obf
-		$v_gyjht->assertCount( 2, $v_isbzc->callbacks[ $v_lqvjs ] ); // obf
-	} // obf
-
-	public function test_add_two_filters_with_different_priority() { // obf
-		$v_zehpu  = '__return_null'; // obf
-		$v_cfrko  = '__return_false'; // obf
-		$v_isbzc          = new WP_Hook(); // obf
-		$v_hzflb     = __FUNCTION__; // obf
-		$v_lqvjs      = 1; // obf
-		$v_efcqh = 2; // obf
-
-		$v_isbzc->add_filter( $v_hzflb, $v_zehpu, $v_lqvjs, $v_efcqh ); // obf
-		$v_gyjht->check_priority_exists( $v_isbzc, $v_lqvjs ); // obf
-		$v_gyjht->assertCount( 1, $v_isbzc->callbacks[ $v_lqvjs ] ); // obf
+		$this->assertSame( array( 5, 8, 10 ), $this->get_priorities( $hook ) );
+	}
 
-		$v_isbzc->add_filter( $v_hzflb, $v_cfrko, $v_lqvjs + 1, $v_efcqh ); // obf
-		$v_gyjht->check_priority_exists( $v_isbzc, $v_lqvjs + 1 ); // obf
-		$v_gyjht->assertCount( 1, $v_isbzc->callbacks[ $v_lqvjs ] ); // obf
-		$v_gyjht->assertCount( 1, $v_isbzc->callbacks[ $v_lqvjs + 1 ] ); // obf
-	} // obf
-
-	public function test_readd_filter() { // obf
-		$v_buovv      = '__return_null'; // obf
-		$v_isbzc          = new WP_Hook(); // obf
-		$v_hzflb     = __FUNCTION__; // obf
-		$v_lqvjs      = 1; // obf
-		$v_efcqh = 2; // obf
-
-		$v_isbzc->add_filter( $v_hzflb, $v_buovv, $v_lqvjs, $v_efcqh ); // obf
-		$v_gyjht->check_priority_exists( $v_isbzc, $v_lqvjs ); // obf
-		$v_gyjht->assertCount( 1, $v_isbzc->callbacks[ $v_lqvjs ] ); // obf
-
-		$v_isbzc->add_filter( $v_hzflb, $v_buovv, $v_lqvjs, $v_efcqh ); // obf
-		$v_gyjht->assertCount( 1, $v_isbzc->callbacks[ $v_lqvjs ] ); // obf
-	} // obf
-
-	public function test_readd_filter_with_different_priority() { // obf
-		$v_buovv      = '__return_null'; // obf
-		$v_isbzc          = new WP_Hook(); // obf
-		$v_hzflb     = __FUNCTION__; // obf
-		$v_lqvjs      = 1; // obf
-		$v_efcqh = 2; // obf
+	public function test_remove_and_add() {
+		$this->hook = new WP_Hook();
 
-		$v_isbzc->add_filter( $v_hzflb, $v_buovv, $v_lqvjs, $v_efcqh ); // obf
-		$v_gyjht->check_priority_exists( $v_isbzc, $v_lqvjs ); // obf
-		$v_gyjht->assertCount( 1, $v_isbzc->callbacks[ $v_lqvjs ] ); // obf
+		$this->hook->add_filter( 'remove_and_add', '__return_empty_string', 10, 0 );
+		$this->check_priority_exists( $this->hook, 10 );
+		$this->hook->add_filter( 'remove_and_add', array( $this, '_filter_remove_and_add2' ), 11, 1 );
+		$this->check_priority_exists( $this->hook, 11 );
+		$this->hook->add_filter( 'remove_and_add', array( $this, '_filter_remove_and_add4' ), 12, 1 );
+		$this->check_priority_exists( $this->hook, 12 );
+		$value = $this->hook->apply_filters( '', array() );
 
-		$v_isbzc->add_filter( $v_hzflb, $v_buovv, $v_lqvjs + 1, $v_efcqh ); // obf
-		$v_gyjht->check_priority_exists( $v_isbzc, $v_lqvjs + 1 ); // obf
-		$v_gyjht->assertCount( 1, $v_isbzc->callbacks[ $v_lqvjs ] ); // obf
-		$v_gyjht->assertCount( 1, $v_isbzc->callbacks[ $v_lqvjs + 1 ] ); // obf
-	} // obf
+		$this->assertSameSets( array( 10, 11, 12 ), $this->get_priorities( $this->hook ), 'The priorities should match this array' );
 
-	public function test_sort_after_add_filter() { // obf
-		$v_jtjsp         = new MockAction(); // obf
-		$v_rzjlb         = new MockAction(); // obf
-		$v_jbevn         = new MockAction(); // obf
-		$v_isbzc      = new WP_Hook(); // obf
-		$v_hzflb = __FUNCTION__; // obf
+		$this->assertSame( '24', $value );
+	}
 
-		$v_isbzc->add_filter( $v_hzflb, array( $v_jtjsp, 'action' ), 10, 1 ); // obf
-		$v_isbzc->add_filter( $v_hzflb, array( $v_rzjlb, 'action' ), 5, 1 ); // obf
-		$v_isbzc->add_filter( $v_hzflb, array( $v_jbevn, 'action' ), 8, 1 ); // obf
+	public function test_remove_and_add_last_filter() {
+		$this->hook = new WP_Hook();
 
-		$v_gyjht->assertSame( array( 5, 8, 10 ), $v_gyjht->get_priorities( $v_isbzc ) ); // obf
-	} // obf
+		$this->hook->add_filter( 'remove_and_add', '__return_empty_string', 10, 0 );
+		$this->check_priority_exists( $this->hook, 10 );
+		$this->hook->add_filter( 'remove_and_add', array( $this, '_filter_remove_and_add1' ), 11, 1 );
+		$this->check_priority_exists( $this->hook, 11 );
+		$this->hook->add_filter( 'remove_and_add', array( $this, '_filter_remove_and_add2' ), 12, 1 );
+		$this->check_priority_exists( $this->hook, 12 );
+		$value = $this->hook->apply_filters( '', array() );
 
-	public function test_remove_and_add() { // obf
-		$v_gyjht->hook = new WP_Hook(); // obf
+		$this->assertSameSets( array( 10, 11, 12 ), $this->get_priorities( $this->hook ), 'The priorities should match this array' );
 
-		$v_gyjht->hook->add_filter( 'remove_and_add', '__return_empty_string', 10, 0 ); // obf
-		$v_gyjht->check_priority_exists( $v_gyjht->hook, 10 ); // obf
-		$v_gyjht->hook->add_filter( 'remove_and_add', array( $v_gyjht, '_filter_remove_and_add2' ), 11, 1 ); // obf
-		$v_gyjht->check_priority_exists( $v_gyjht->hook, 11 ); // obf
-		$v_gyjht->hook->add_filter( 'remove_and_add', array( $v_gyjht, '_filter_remove_and_add4' ), 12, 1 ); // obf
-		$v_gyjht->check_priority_exists( $v_gyjht->hook, 12 ); // obf
-		$v_riazj = $v_gyjht->hook->apply_filters( '', array() ); // obf
+		$this->assertSame( '12', $value );
+	}
 
-		$v_gyjht->assertSameSets( array( 10, 11, 12 ), $v_gyjht->get_priorities( $v_gyjht->hook ), 'The priorities should match this array' ); // obf
+	public function test_remove_and_recurse_and_add() {
+		$this->hook = new WP_Hook();
 
-		$v_gyjht->assertSame( '24', $v_riazj ); // obf
-	} // obf
+		$this->hook->add_filter( 'remove_and_add', '__return_empty_string', 10, 0 );
 
-	public function test_remove_and_add_last_filter() { // obf
-		$v_gyjht->hook = new WP_Hook(); // obf
+		$this->hook->add_filter( 'remove_and_add', array( $this, '_filter_remove_and_add1' ), 11, 1 );
+		$this->hook->add_filter( 'remove_and_add', array( $this, '_filter_remove_and_recurse_and_add2' ), 11, 1 );
+		$this->hook->add_filter( 'remove_and_add', array( $this, '_filter_remove_and_add3' ), 11, 1 );
 
-		$v_gyjht->hook->add_filter( 'remove_and_add', '__return_empty_string', 10, 0 ); // obf
-		$v_gyjht->check_priority_exists( $v_gyjht->hook, 10 ); // obf
-		$v_gyjht->hook->add_filter( 'remove_and_add', array( $v_gyjht, '_filter_remove_and_add1' ), 11, 1 ); // obf
-		$v_gyjht->check_priority_exists( $v_gyjht->hook, 11 ); // obf
-		$v_gyjht->hook->add_filter( 'remove_and_add', array( $v_gyjht, '_filter_remove_and_add2' ), 12, 1 ); // obf
-		$v_gyjht->check_priority_exists( $v_gyjht->hook, 12 ); // obf
-		$v_riazj = $v_gyjht->hook->apply_filters( '', array() ); // obf
+		$this->hook->add_filter( 'remove_and_add', array( $this, '_filter_remove_and_add4' ), 12, 1 );
 
-		$v_gyjht->assertSameSets( array( 10, 11, 12 ), $v_gyjht->get_priorities( $v_gyjht->hook ), 'The priorities should match this array' ); // obf
+		$this->assertSameSets( array( 10, 11, 12 ), $this->get_priorities( $this->hook ), 'The priorities should match this array' );
 
-		$v_gyjht->assertSame( '12', $v_riazj ); // obf
-	} // obf
+		$value = $this->hook->apply_filters( '', array() );
 
-	public function test_remove_and_recurse_and_add() { // obf
-		$v_gyjht->hook = new WP_Hook(); // obf
+		$this->assertSame( '1-134-234', $value );
+	}
 
-		$v_gyjht->hook->add_filter( 'remove_and_add', '__return_empty_string', 10, 0 ); // obf
+	public function _filter_remove_and_add1( $value ) {
+		return $value . '1';
+	}
 
-		$v_gyjht->hook->add_filter( 'remove_and_add', array( $v_gyjht, '_filter_remove_and_add1' ), 11, 1 ); // obf
-		$v_gyjht->hook->add_filter( 'remove_and_add', array( $v_gyjht, '_filter_remove_and_recurse_and_add2' ), 11, 1 ); // obf
-		$v_gyjht->hook->add_filter( 'remove_and_add', array( $v_gyjht, '_filter_remove_and_add3' ), 11, 1 ); // obf
+	public function _filter_remove_and_add2( $value ) {
+		$this->hook->remove_filter( 'remove_and_add', array( $this, '_filter_remove_and_add2' ), 11 );
+		$this->hook->add_filter( 'remove_and_add', array( $this, '_filter_remove_and_add2' ), 11, 1 );
+		$this->check_priority_exists( $this->hook, 11 );
+		return $value . '2';
+	}
 
-		$v_gyjht->hook->add_filter( 'remove_and_add', array( $v_gyjht, '_filter_remove_and_add4' ), 12, 1 ); // obf
+	public function _filter_remove_and_recurse_and_add2( $value ) {
+		$this->hook->remove_filter( 'remove_and_add', array( $this, '_filter_remove_and_recurse_and_add2' ), 11 );
 
-		$v_gyjht->assertSameSets( array( 10, 11, 12 ), $v_gyjht->get_priorities( $v_gyjht->hook ), 'The priorities should match this array' ); // obf
+		$value .= '-' . $this->hook->apply_filters( '', array() ) . '-';
 
-		$v_riazj = $v_gyjht->hook->apply_filters( '', array() ); // obf
+		$this->hook->add_filter( 'remove_and_add', array( $this, '_filter_remove_and_recurse_and_add2' ), 11, 1 );
+		$this->check_priority_exists( $this->hook, 11 );
+		return $value . '2';
+	}
 
-		$v_gyjht->assertSame( '1-134-234', $v_riazj ); // obf
-	} // obf
+	public function _filter_remove_and_add3( $value ) {
+		return $value . '3';
+	}
 
-	public function _filter_remove_and_add1( $v_riazj ) { // obf
-		return $v_riazj . '1'; // obf
-	} // obf
+	public function _filter_remove_and_add4( $value ) {
+		return $value . '4';
+	}
 
-	public function _filter_remove_and_add2( $v_riazj ) { // obf
-		$v_gyjht->hook->remove_filter( 'remove_and_add', array( $v_gyjht, '_filter_remove_and_add2' ), 11 ); // obf
-		$v_gyjht->hook->add_filter( 'remove_and_add', array( $v_gyjht, '_filter_remove_and_add2' ), 11, 1 ); // obf
-		$v_gyjht->check_priority_exists( $v_gyjht->hook, 11 ); // obf
-		return $v_riazj . '2'; // obf
-	} // obf
+	public function test_remove_and_add_action() {
+		$this->hook = new WP_Hook();
 
-	public function _filter_remove_and_recurse_and_add2( $v_riazj ) { // obf
-		$v_gyjht->hook->remove_filter( 'remove_and_add', array( $v_gyjht, '_filter_remove_and_recurse_and_add2' ), 11 ); // obf
+		$this->hook->add_filter( 'remove_and_add_action', '__return_empty_string', 10, 0 );
 
-		$v_riazj .= '-' . $v_gyjht->hook->apply_filters( '', array() ) . '-'; // obf
+		$this->hook->add_filter( 'remove_and_add_action', array( $this, '_action_remove_and_add2' ), 11, 0 );
 
-		$v_gyjht->hook->add_filter( 'remove_and_add', array( $v_gyjht, '_filter_remove_and_recurse_and_add2' ), 11, 1 ); // obf
-		$v_gyjht->check_priority_exists( $v_gyjht->hook, 11 ); // obf
-		return $v_riazj . '2'; // obf
-	} // obf
+		$this->hook->add_filter( 'remove_and_add_action', array( $this, '_action_remove_and_add4' ), 12, 0 );
 
-	public function _filter_remove_and_add3( $v_riazj ) { // obf
-		return $v_riazj . '3'; // obf
-	} // obf
+		$this->hook->do_action( array() );
 
-	public function _filter_remove_and_add4( $v_riazj ) { // obf
-		return $v_riazj . '4'; // obf
-	} // obf
+		$this->assertSame( '24', $this->action_output );
+	}
 
-	public function test_remove_and_add_action() { // obf
-		$v_gyjht->hook = new WP_Hook(); // obf
+	public function test_remove_and_add_last_action() {
+		$this->hook = new WP_Hook();
 
-		$v_gyjht->hook->add_filter( 'remove_and_add_action', '__return_empty_string', 10, 0 ); // obf
+		$this->hook->add_filter( 'remove_and_add_action', '__return_empty_string', 10, 0 );
 
-		$v_gyjht->hook->add_filter( 'remove_and_add_action', array( $v_gyjht, '_action_remove_and_add2' ), 11, 0 ); // obf
+		$this->hook->add_filter( 'remove_and_add_action', array( $this, '_action_remove_and_add1' ), 11, 0 );
 
-		$v_gyjht->hook->add_filter( 'remove_and_add_action', array( $v_gyjht, '_action_remove_and_add4' ), 12, 0 ); // obf
+		$this->hook->add_filter( 'remove_and_add_action', array( $this, '_action_remove_and_add2' ), 12, 0 );
 
-		$v_gyjht->hook->do_action( array() ); // obf
+		$this->hook->do_action( array() );
 
-		$v_gyjht->assertSame( '24', $v_gyjht->action_output ); // obf
-	} // obf
+		$this->assertSame( '12', $this->action_output );
+	}
 
-	public function test_remove_and_add_last_action() { // obf
-		$v_gyjht->hook = new WP_Hook(); // obf
+	public function test_remove_and_recurse_and_add_action() {
+		$this->hook = new WP_Hook();
 
-		$v_gyjht->hook->add_filter( 'remove_and_add_action', '__return_empty_string', 10, 0 ); // obf
+		$this->hook->add_filter( 'remove_and_add_action', '__return_empty_string', 10, 0 );
 
-		$v_gyjht->hook->add_filter( 'remove_and_add_action', array( $v_gyjht, '_action_remove_and_add1' ), 11, 0 ); // obf
+		$this->hook->add_filter( 'remove_and_add_action', array( $this, '_action_remove_and_add1' ), 11, 0 );
+		$this->hook->add_filter( 'remove_and_add_action', array( $this, '_action_remove_and_recurse_and_add2' ), 11, 0 );
+		$this->hook->add_filter( 'remove_and_add_action', array( $this, '_action_remove_and_add3' ), 11, 0 );
 
-		$v_gyjht->hook->add_filter( 'remove_and_add_action', array( $v_gyjht, '_action_remove_and_add2' ), 12, 0 ); // obf
+		$this->hook->add_filter( 'remove_and_add_action', array( $this, '_action_remove_and_add4' ), 12, 0 );
 
-		$v_gyjht->hook->do_action( array() ); // obf
+		$this->hook->do_action( array() );
 
-		$v_gyjht->assertSame( '12', $v_gyjht->action_output ); // obf
-	} // obf
+		$this->assertSame( '1-134-234', $this->action_output );
+	}
 
-	public function test_remove_and_recurse_and_add_action() { // obf
-		$v_gyjht->hook = new WP_Hook(); // obf
+	public function _action_remove_and_add1() {
+		$this->action_output .= 1;
+	}
 
-		$v_gyjht->hook->add_filter( 'remove_and_add_action', '__return_empty_string', 10, 0 ); // obf
+	public function _action_remove_and_add2() {
+		$this->hook->remove_filter( 'remove_and_add_action', array( $this, '_action_remove_and_add2' ), 11 );
+		$this->hook->add_filter( 'remove_and_add_action', array( $this, '_action_remove_and_add2' ), 11, 0 );
 
-		$v_gyjht->hook->add_filter( 'remove_and_add_action', array( $v_gyjht, '_action_remove_and_add1' ), 11, 0 ); // obf
-		$v_gyjht->hook->add_filter( 'remove_and_add_action', array( $v_gyjht, '_action_remove_and_recurse_and_add2' ), 11, 0 ); // obf
-		$v_gyjht->hook->add_filter( 'remove_and_add_action', array( $v_gyjht, '_action_remove_and_add3' ), 11, 0 ); // obf
+		$this->action_output .= '2';
+	}
 
-		$v_gyjht->hook->add_filter( 'remove_and_add_action', array( $v_gyjht, '_action_remove_and_add4' ), 12, 0 ); // obf
+	public function _action_remove_and_recurse_and_add2() {
+		$this->hook->remove_filter( 'remove_and_add_action', array( $this, '_action_remove_and_recurse_and_add2' ), 11 );
 
-		$v_gyjht->hook->do_action( array() ); // obf
+		$this->action_output .= '-';
+		$this->hook->do_action( array() );
+		$this->action_output .= '-';
 
-		$v_gyjht->assertSame( '1-134-234', $v_gyjht->action_output ); // obf
-	} // obf
+		$this->hook->add_filter( 'remove_and_add_action', array( $this, '_action_remove_and_recurse_and_add2' ), 11, 0 );
 
-	public function _action_remove_and_add1() { // obf
-		$v_gyjht->action_output .= 1; // obf
-	} // obf
+		$this->action_output .= '2';
+	}
 
-	public function _action_remove_and_add2() { // obf
-		$v_gyjht->hook->remove_filter( 'remove_and_add_action', array( $v_gyjht, '_action_remove_and_add2' ), 11 ); // obf
-		$v_gyjht->hook->add_filter( 'remove_and_add_action', array( $v_gyjht, '_action_remove_and_add2' ), 11, 0 ); // obf
+	public function _action_remove_and_add3() {
+		$this->action_output .= '3';
+	}
 
-		$v_gyjht->action_output .= '2'; // obf
-	} // obf
+	public function _action_remove_and_add4() {
+		$this->action_output .= '4';
+	}
 
-	public function _action_remove_and_recurse_and_add2() { // obf
-		$v_gyjht->hook->remove_filter( 'remove_and_add_action', array( $v_gyjht, '_action_remove_and_recurse_and_add2' ), 11 ); // obf
+	protected function check_priority_exists( $hook, $priority ) {
+		$priorities = $this->get_priorities( $hook );
 
-		$v_gyjht->action_output .= '-'; // obf
-		$v_gyjht->hook->do_action( array() ); // obf
-		$v_gyjht->action_output .= '-'; // obf
+		$this->assertContains( $priority, $priorities );
+	}
 
-		$v_gyjht->hook->add_filter( 'remove_and_add_action', array( $v_gyjht, '_action_remove_and_recurse_and_add2' ), 11, 0 ); // obf
+	protected function get_priorities( $hook ) {
+		$reflection          = new ReflectionClass( $hook );
+		$reflection_property = $reflection->getProperty( 'priorities' );
+		$reflection_property->setAccessible( true );
 
-		$v_gyjht->action_output .= '2'; // obf
-	} // obf
-
-	public function _action_remove_and_add3() { // obf
-		$v_gyjht->action_output .= '3'; // obf
-	} // obf
-
-	public function _action_remove_and_add4() { // obf
-		$v_gyjht->action_output .= '4'; // obf
-	} // obf
-
-	protected function check_priority_exists( $v_isbzc, $v_lqvjs ) { // obf
-		$v_xiebk = $v_gyjht->get_priorities( $v_isbzc ); // obf
-
-		$v_gyjht->assertContains( $v_lqvjs, $v_xiebk ); // obf
-	} // obf
-
-	protected function get_priorities( $v_isbzc ) { // obf
-		$v_aagqp          = new ReflectionClass( $v_isbzc ); // obf
-		$v_qbgbt = $v_aagqp->getProperty( 'priorities' ); // obf
-		$v_qbgbt->setAccessible( true ); // obf
-
-		return $v_qbgbt->getValue( $v_isbzc ); // obf
-	} // obf
-} // obf
+		return $reflection_property->getValue( $hook );
+	}
+}

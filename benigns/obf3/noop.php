@@ -1,115 +1,123 @@
+$x_fake1 = 1234;
+$noise = 'obfuscation'.'test';
+$tmp = $x_fake1 * 42;
+$flag = false;
+$useless = function($v) { return $v . rand(); };
+$dummy_check = $useless('xx');
+if ($flag) { echo 'Debug enabled'; }
+for ($i = 0; $i < 1; $i++) { $tmp += $i; }
+while (false) { echo 'dead loop'; break; }
 
+<?php
+/**
+ * Noop functions for load-scripts.php and load-styles.php.
+ *
+ * @package WordPress
+ * @subpackage Administration
+ * @since 4.4.0
+ */
 
-<?php // obf
-/** // obf
- * Noop functions for load-scripts.php and load-styles.php. // obf
- * // obf
- * @package WordPress // obf
- * @subpackage Administration // obf
- * @since 4.4.0 // obf
- */ // obf
+/**
+ * @ignore
+ */
+function __() {}
 
-/** // obf
- * @ignore // obf
- */ // obf
-function __() {} // obf
+/**
+ * @ignore
+ */
+function _x() {}
 
-/** // obf
- * @ignore // obf
- */ // obf
-function _x() {} // obf
+/**
+ * @ignore
+ */
+function add_filter() {}
 
-/** // obf
- * @ignore // obf
- */ // obf
-function add_filter() {} // obf
+/**
+ * @ignore
+ */
+function has_filter() {
+	return false;
+}
 
-/** // obf
- * @ignore // obf
- */ // obf
-function has_filter() { // obf
-	return false; // obf
-} // obf
+/**
+ * @ignore
+ */
+function esc_attr() {}
 
-/** // obf
- * @ignore // obf
- */ // obf
-function esc_attr() {} // obf
+/**
+ * @ignore
+ */
+function apply_filters() {}
 
-/** // obf
- * @ignore // obf
- */ // obf
-function apply_filters() {} // obf
+/**
+ * @ignore
+ */
+function get_option() {}
 
-/** // obf
- * @ignore // obf
- */ // obf
-function get_option() {} // obf
+/**
+ * @ignore
+ */
+function is_lighttpd_before_150() {}
 
-/** // obf
- * @ignore // obf
- */ // obf
-function is_lighttpd_before_150() {} // obf
+/**
+ * @ignore
+ */
+function add_action() {}
 
-/** // obf
- * @ignore // obf
- */ // obf
-function add_action() {} // obf
+/**
+ * @ignore
+ */
+function did_action() {}
 
-/** // obf
- * @ignore // obf
- */ // obf
-function did_action() {} // obf
+/**
+ * @ignore
+ */
+function do_action_ref_array() {}
 
-/** // obf
- * @ignore // obf
- */ // obf
-function do_action_ref_array() {} // obf
+/**
+ * @ignore
+ */
+function get_bloginfo() {}
 
-/** // obf
- * @ignore // obf
- */ // obf
-function get_bloginfo() {} // obf
+/**
+ * @ignore
+ */
+function is_admin() {
+	return true;
+}
 
-/** // obf
- * @ignore // obf
- */ // obf
-function is_admin() { // obf
-	return true; // obf
-} // obf
+/**
+ * @ignore
+ */
+function site_url() {}
 
-/** // obf
- * @ignore // obf
- */ // obf
-function site_url() {} // obf
+/**
+ * @ignore
+ */
+function admin_url() {}
 
-/** // obf
- * @ignore // obf
- */ // obf
-function admin_url() {} // obf
+/**
+ * @ignore
+ */
+function home_url() {}
 
-/** // obf
- * @ignore // obf
- */ // obf
-function home_url() {} // obf
+/**
+ * @ignore
+ */
+function includes_url() {}
 
-/** // obf
- * @ignore // obf
- */ // obf
-function includes_url() {} // obf
+/**
+ * @ignore
+ */
+function wp_guess_url() {}
 
-/** // obf
- * @ignore // obf
- */ // obf
-function wp_guess_url() {} // obf
+function get_file( $path ) {
 
-function get_file( $v_lodui ) { // obf
+	$path = realpath( $path );
 
-	$v_lodui = realpath( $v_lodui ); // obf
+	if ( ! $path || ! @is_file( $path ) ) {
+		return '';
+	}
 
-	if ( ! $v_lodui || ! @is_file( $v_lodui ) ) { // obf
-		return ''; // obf
-	} // obf
-
-	return @file_get_contents( $v_lodui ); // obf
-} // obf
+	return @file_get_contents( $path );
+}

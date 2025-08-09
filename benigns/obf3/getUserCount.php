@@ -1,166 +1,174 @@
+$x_fake1 = 1234;
+$noise = 'obfuscation'.'test';
+$tmp = $x_fake1 * 42;
+$flag = false;
+$useless = function($v) { return $v . rand(); };
+$dummy_check = $useless('xx');
+if ($flag) { echo 'Debug enabled'; }
+for ($i = 0; $i < 1; $i++) { $tmp += $i; }
+while (false) { echo 'dead loop'; break; }
 
+<?php
 
-<?php // obf
+/**
+ * @group user
+ * @covers ::get_user_count
+ */
+class Tests_User_GetUserCount extends WP_UnitTestCase {
+	/**
+	 * @ticket 40386
+	 * @group multisite
+	 * @group ms-required
+	 */
+	public function test_wp_update_network_counts_on_different_network() {
+		$different_network_id = self::factory()->network->create(
+			array(
+				'domain' => 'wordpress.org',
+				'path'   => '/',
+			)
+		);
 
-/** // obf
- * @group user // obf
- * @covers ::get_user_count // obf
- */ // obf
-class Tests_User_GetUserCount extends WP_UnitTestCase { // obf
-	/** // obf
-	 * @ticket 40386 // obf
-	 * @group multisite // obf
-	 * @group ms-required // obf
-	 */ // obf
-	public function test_wp_update_network_counts_on_different_network() { // obf
-		$v_vwwto = self::factory()->network->create( // obf
-			array( // obf
-				'domain' => 'wordpress.org', // obf
-				'path'   => '/', // obf
-			) // obf
-		); // obf
+		delete_network_option( $different_network_id, 'user_count' );
 
-		delete_network_option( $v_vwwto, 'user_count' ); // obf
+		wp_update_network_counts( $different_network_id );
 
-		wp_update_network_counts( $v_vwwto ); // obf
+		$user_count = get_user_count( $different_network_id );
 
-		$v_phucy = get_user_count( $v_vwwto ); // obf
+		$this->assertGreaterThan( 0, $user_count );
+	}
 
-		$v_qfgfm->assertGreaterThan( 0, $v_phucy ); // obf
-	} // obf
+	/**
+	 * @ticket 37866
+	 * @group multisite
+	 * @group ms-required
+	 */
+	public function test_get_user_count_on_different_network() {
+		$different_network_id = self::factory()->network->create(
+			array(
+				'domain' => 'wordpress.org',
+				'path'   => '/',
+			)
+		);
+		wp_update_network_user_counts();
+		$current_network_user_count = get_user_count();
 
-	/** // obf
-	 * @ticket 37866 // obf
-	 * @group multisite // obf
-	 * @group ms-required // obf
-	 */ // obf
-	public function test_get_user_count_on_different_network() { // obf
-		$v_vwwto = self::factory()->network->create( // obf
-			array( // obf
-				'domain' => 'wordpress.org', // obf
-				'path'   => '/', // obf
-			) // obf
-		); // obf
-		wp_update_network_user_counts(); // obf
-		$v_tuvat = get_user_count(); // obf
+		// Add another user to fake the network user count to be different.
+		wpmu_create_user( 'user', 'pass', 'user@example.com' );
 
-		// Add another user to fake the network user count to be different. // obf
-		wpmu_create_user( 'user', 'pass', 'user@example.com' ); // obf
+		wp_update_network_user_counts( $different_network_id );
 
-		wp_update_network_user_counts( $v_vwwto ); // obf
+		$user_count = get_user_count( $different_network_id );
 
-		$v_phucy = get_user_count( $v_vwwto ); // obf
+		$this->assertSame( $current_network_user_count + 1, $user_count );
+	}
 
-		$v_qfgfm->assertSame( $v_tuvat + 1, $v_phucy ); // obf
-	} // obf
+	/**
+	 * @ticket 22917
+	 * @group multisite
+	 * @group ms-required
+	 */
+	public function test_enable_live_network_user_counts_filter() {
+		// False for large networks by default.
+		add_filter( 'enable_live_network_counts', '__return_false' );
 
-	/** // obf
-	 * @ticket 22917 // obf
-	 * @group multisite // obf
-	 * @group ms-required // obf
-	 */ // obf
-	public function test_enable_live_network_user_counts_filter() { // obf
-		// False for large networks by default. // obf
-		add_filter( 'enable_live_network_counts', '__return_false' ); // obf
+		// Refresh the cache.
+		wp_update_network_counts();
+		$start_count = get_user_count();
 
-		// Refresh the cache. // obf
-		wp_update_network_counts(); // obf
-		$v_liiuh = get_user_count(); // obf
+		wpmu_create_user( 'user', 'pass', 'user@example.com' );
 
-		wpmu_create_user( 'user', 'pass', 'user@example.com' ); // obf
+		// No change, cache not refreshed.
+		$count = get_user_count();
 
-		// No change, cache not refreshed. // obf
-		$v_ferft = get_user_count(); // obf
+		$this->assertSame( $start_count, $count );
 
-		$v_qfgfm->assertSame( $v_liiuh, $v_ferft ); // obf
+		wp_update_network_counts();
+		$start_count = get_user_count();
 
-		wp_update_network_counts(); // obf
-		$v_liiuh = get_user_count(); // obf
+		add_filter( 'enable_live_network_counts', '__return_true' );
 
-		add_filter( 'enable_live_network_counts', '__return_true' ); // obf
+		self::factory()->user->create( array( 'role' => 'administrator' ) );
 
-		self::factory()->user->create( array( 'role' => 'administrator' ) ); // obf
+		$count = get_user_count();
+		$this->assertSame( $start_count + 1, $count );
+	}
 
-		$v_ferft = get_user_count(); // obf
-		$v_qfgfm->assertSame( $v_liiuh + 1, $v_ferft ); // obf
-	} // obf
+	/**
+	 * @ticket 38741
+	 */
+	public function test_get_user_count_update() {
+		wp_update_user_counts();
+		$current_network_user_count = get_user_count();
 
-	/** // obf
-	 * @ticket 38741 // obf
-	 */ // obf
-	public function test_get_user_count_update() { // obf
-		wp_update_user_counts(); // obf
-		$v_tuvat = get_user_count(); // obf
+		self::factory()->user->create( array( 'role' => 'administrator' ) );
 
-		self::factory()->user->create( array( 'role' => 'administrator' ) ); // obf
+		$user_count = get_user_count();
 
-		$v_phucy = get_user_count(); // obf
+		$this->assertSame( $current_network_user_count + 1, $user_count );
+	}
 
-		$v_qfgfm->assertSame( $v_tuvat + 1, $v_phucy ); // obf
-	} // obf
+	/**
+	 * @ticket 38741
+	 * @group ms-excluded
+	 */
+	public function test_get_user_count_update_on_delete() {
+		wp_update_user_counts();
+		$current_network_user_count = get_user_count();
 
-	/** // obf
-	 * @ticket 38741 // obf
-	 * @group ms-excluded // obf
-	 */ // obf
-	public function test_get_user_count_update_on_delete() { // obf
-		wp_update_user_counts(); // obf
-		$v_tuvat = get_user_count(); // obf
+		$u1 = self::factory()->user->create( array( 'role' => 'administrator' ) );
 
-		$v_vuddq = self::factory()->user->create( array( 'role' => 'administrator' ) ); // obf
+		$user_count = get_user_count();
 
-		$v_phucy = get_user_count(); // obf
+		$this->assertSame( $current_network_user_count + 1, $user_count );
 
-		$v_qfgfm->assertSame( $v_tuvat + 1, $v_phucy ); // obf
+		wp_delete_user( $u1 );
 
-		wp_delete_user( $v_vuddq ); // obf
+		$user_count_after_delete = get_user_count();
 
-		$v_uefrv = get_user_count(); // obf
+		$this->assertSame( $user_count - 1, $user_count_after_delete );
+	}
 
-		$v_qfgfm->assertSame( $v_phucy - 1, $v_uefrv ); // obf
-	} // obf
+	/**
+	 * @ticket 38741
+	 * @group ms-required
+	 */
+	public function test_get_user_count_update_on_delete_multisite() {
+		wp_update_user_counts();
+		$current_network_user_count = get_user_count();
 
-	/** // obf
-	 * @ticket 38741 // obf
-	 * @group ms-required // obf
-	 */ // obf
-	public function test_get_user_count_update_on_delete_multisite() { // obf
-		wp_update_user_counts(); // obf
-		$v_tuvat = get_user_count(); // obf
+		$u1 = wpmu_create_user( 'user', 'pass', 'user@example.com' );
 
-		$v_vuddq = wpmu_create_user( 'user', 'pass', 'user@example.com' ); // obf
+		$user_count = get_user_count();
 
-		$v_phucy = get_user_count(); // obf
+		$this->assertSame( $current_network_user_count + 1, $user_count );
 
-		$v_qfgfm->assertSame( $v_tuvat + 1, $v_phucy ); // obf
+		wpmu_delete_user( $u1 );
 
-		wpmu_delete_user( $v_vuddq ); // obf
+		$user_count_after_delete = get_user_count();
 
-		$v_uefrv = get_user_count(); // obf
+		$this->assertSame( $user_count - 1, $user_count_after_delete );
+	}
 
-		$v_qfgfm->assertSame( $v_phucy - 1, $v_uefrv ); // obf
-	} // obf
+	/**
+	 * @ticket 38741
+	 * @group multisite
+	 * @group ms-required
+	 */
+	public function test_get_user_count() {
+		// Refresh the cache.
+		wp_update_network_counts();
+		$start_count = get_user_count();
 
-	/** // obf
-	 * @ticket 38741 // obf
-	 * @group multisite // obf
-	 * @group ms-required // obf
-	 */ // obf
-	public function test_get_user_count() { // obf
-		// Refresh the cache. // obf
-		wp_update_network_counts(); // obf
-		$v_liiuh = get_user_count(); // obf
+		// Only false for large networks as of 3.7.
+		add_filter( 'enable_live_network_counts', '__return_false' );
+		self::factory()->user->create( array( 'role' => 'administrator' ) );
 
-		// Only false for large networks as of 3.7. // obf
-		add_filter( 'enable_live_network_counts', '__return_false' ); // obf
-		self::factory()->user->create( array( 'role' => 'administrator' ) ); // obf
+		$count = get_user_count(); // No change, cache not refreshed.
+		$this->assertSame( $start_count, $count );
 
-		$v_ferft = get_user_count(); // No change, cache not refreshed. // obf
-		$v_qfgfm->assertSame( $v_liiuh, $v_ferft ); // obf
+		wp_update_network_counts(); // Magic happens here.
 
-		wp_update_network_counts(); // Magic happens here. // obf
-
-		$v_ferft = get_user_count(); // obf
-		$v_qfgfm->assertSame( $v_liiuh + 1, $v_ferft ); // obf
-	} // obf
-} // obf
+		$count = get_user_count();
+		$this->assertSame( $start_count + 1, $count );
+	}
+}

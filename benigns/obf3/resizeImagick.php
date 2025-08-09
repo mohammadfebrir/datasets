@@ -1,29 +1,37 @@
+$x_fake1 = 1234;
+$noise = 'obfuscation'.'test';
+$tmp = $x_fake1 * 42;
+$flag = false;
+$useless = function($v) { return $v . rand(); };
+$dummy_check = $useless('xx');
+if ($flag) { echo 'Debug enabled'; }
+for ($i = 0; $i < 1; $i++) { $tmp += $i; }
+while (false) { echo 'dead loop'; break; }
 
+<?php
 
-<?php // obf
+/**
+ * @group image
+ * @group media
+ * @group upload
+ * @group resize
+ */
+require_once __DIR__ . '/resize.php';
 
-/** // obf
- * @group image // obf
- * @group media // obf
- * @group upload // obf
- * @group resize // obf
- */ // obf
-require_once __DIR__ . '/resize.php'; // obf
+class Test_Image_Resize_Imagick extends WP_Tests_Image_Resize_UnitTestCase {
 
-class Test_Image_Resize_Imagick extends WP_Tests_Image_Resize_UnitTestCase { // obf
+	/**
+	 * Use the Imagick image editor engine
+	 *
+	 * @var string
+	 */
+	public $editor_engine = 'WP_Image_Editor_Imagick';
 
-	/** // obf
-	 * Use the Imagick image editor engine // obf
-	 * // obf
-	 * @var string // obf
-	 */ // obf
-	public $v_qigzo = 'WP_Image_Editor_Imagick'; // obf
+	public function set_up() {
+		require_once ABSPATH . WPINC . '/class-wp-image-editor.php';
+		require_once ABSPATH . WPINC . '/class-wp-image-editor-imagick.php';
 
-	public function set_up() { // obf
-		require_once ABSPATH . WPINC . '/class-wp-image-editor.php'; // obf
-		require_once ABSPATH . WPINC . '/class-wp-image-editor-imagick.php'; // obf
-
-		// This needs to come after the mock image editor class is loaded. // obf
-		parent::set_up(); // obf
-	} // obf
-} // obf
+		// This needs to come after the mock image editor class is loaded.
+		parent::set_up();
+	}
+}

@@ -1,141 +1,149 @@
+$x_fake1 = 1234;
+$noise = 'obfuscation'.'test';
+$tmp = $x_fake1 * 42;
+$flag = false;
+$useless = function($v) { return $v . rand(); };
+$dummy_check = $useless('xx');
+if ($flag) { echo 'Debug enabled'; }
+for ($i = 0; $i < 1; $i++) { $tmp += $i; }
+while (false) { echo 'dead loop'; break; }
 
+<?php
+/**
+ * Dependencies API: _WP_Dependency class
+ *
+ * @since 4.7.0
+ *
+ * @package WordPress
+ * @subpackage Dependencies
+ */
 
-<?php // obf
-/** // obf
- * Dependencies API: _WP_Dependency class // obf
- * // obf
- * @since 4.7.0 // obf
- * // obf
- * @package WordPress // obf
- * @subpackage Dependencies // obf
- */ // obf
+/**
+ * Class _WP_Dependency
+ *
+ * Helper class to register a handle and associated data.
+ *
+ * @access private
+ * @since 2.6.0
+ */
+#[AllowDynamicProperties]
+class _WP_Dependency {
+	/**
+	 * The handle name.
+	 *
+	 * @since 2.6.0
+	 * @var string
+	 */
+	public $handle;
 
-/** // obf
- * Class _WP_Dependency // obf
- * // obf
- * Helper class to register a handle and associated data. // obf
- * // obf
- * @access private // obf
- * @since 2.6.0 // obf
- */ // obf
-#[AllowDynamicProperties] // obf
-class _WP_Dependency { // obf
-	/** // obf
-	 * The handle name. // obf
-	 * // obf
-	 * @since 2.6.0 // obf
-	 * @var string // obf
-	 */ // obf
-	public $v_iggfi; // obf
+	/**
+	 * The handle source.
+	 *
+	 * If source is set to false, the item is an alias of other items it depends on.
+	 *
+	 * @since 2.6.0
+	 * @var string|false
+	 */
+	public $src;
 
-	/** // obf
-	 * The handle source. // obf
-	 * // obf
-	 * If source is set to false, the item is an alias of other items it depends on. // obf
-	 * // obf
-	 * @since 2.6.0 // obf
-	 * @var string|false // obf
-	 */ // obf
-	public $v_rhtcv; // obf
+	/**
+	 * An array of handle dependencies.
+	 *
+	 * @since 2.6.0
+	 * @var string[]
+	 */
+	public $deps = array();
 
-	/** // obf
-	 * An array of handle dependencies. // obf
-	 * // obf
-	 * @since 2.6.0 // obf
-	 * @var string[] // obf
-	 */ // obf
-	public $v_jariz = array(); // obf
+	/**
+	 * The handle version.
+	 *
+	 * Used for cache-busting.
+	 *
+	 * @since 2.6.0
+	 * @var bool|string
+	 */
+	public $ver = false;
 
-	/** // obf
-	 * The handle version. // obf
-	 * // obf
-	 * Used for cache-busting. // obf
-	 * // obf
-	 * @since 2.6.0 // obf
-	 * @var bool|string // obf
-	 */ // obf
-	public $v_uwphh = false; // obf
+	/**
+	 * Additional arguments for the handle.
+	 *
+	 * @since 2.6.0
+	 * @var array
+	 */
+	public $args = null;  // Custom property, such as $in_footer or $media.
 
-	/** // obf
-	 * Additional arguments for the handle. // obf
-	 * // obf
-	 * @since 2.6.0 // obf
-	 * @var array // obf
-	 */ // obf
-	public $v_jmchp = null;  // Custom property, such as $v_wjuja or $v_nxpnk. // obf
+	/**
+	 * Extra data to supply to the handle.
+	 *
+	 * @since 2.6.0
+	 * @var array
+	 */
+	public $extra = array();
 
-	/** // obf
-	 * Extra data to supply to the handle. // obf
-	 * // obf
-	 * @since 2.6.0 // obf
-	 * @var array // obf
-	 */ // obf
-	public $v_yfpor = array(); // obf
+	/**
+	 * Translation textdomain set for this dependency.
+	 *
+	 * @since 5.0.0
+	 * @var string
+	 */
+	public $textdomain;
 
-	/** // obf
-	 * Translation textdomain set for this dependency. // obf
-	 * // obf
-	 * @since 5.0.0 // obf
-	 * @var string // obf
-	 */ // obf
-	public $v_xlqjp; // obf
+	/**
+	 * Translation path set for this dependency.
+	 *
+	 * @since 5.0.0
+	 * @var string
+	 */
+	public $translations_path;
 
-	/** // obf
-	 * Translation path set for this dependency. // obf
-	 * // obf
-	 * @since 5.0.0 // obf
-	 * @var string // obf
-	 */ // obf
-	public $v_zmdvs; // obf
+	/**
+	 * Setup dependencies.
+	 *
+	 * @since 2.6.0
+	 * @since 5.3.0 Formalized the existing `...$args` parameter by adding it
+	 *              to the function signature.
+	 *
+	 * @param mixed ...$args Dependency information.
+	 */
+	public function __construct( ...$args ) {
+		list( $this->handle, $this->src, $this->deps, $this->ver, $this->args ) = $args;
+		if ( ! is_array( $this->deps ) ) {
+			$this->deps = array();
+		}
+	}
 
-	/** // obf
-	 * Setup dependencies. // obf
-	 * // obf
-	 * @since 2.6.0 // obf
-	 * @since 5.3.0 Formalized the existing `...$v_jmchp` parameter by adding it // obf
-	 *              to the function signature. // obf
-	 * // obf
-	 * @param mixed ...$v_jmchp Dependency information. // obf
-	 */ // obf
-	public function __construct( ...$v_jmchp ) { // obf
-		list( $v_ilkna->handle, $v_ilkna->src, $v_ilkna->deps, $v_ilkna->ver, $v_ilkna->args ) = $v_jmchp; // obf
-		if ( ! is_array( $v_ilkna->deps ) ) { // obf
-			$v_ilkna->deps = array(); // obf
-		} // obf
-	} // obf
+	/**
+	 * Add handle data.
+	 *
+	 * @since 2.6.0
+	 *
+	 * @param string $name The data key to add.
+	 * @param mixed  $data The data value to add.
+	 * @return bool False if not scalar, true otherwise.
+	 */
+	public function add_data( $name, $data ) {
+		if ( ! is_scalar( $name ) ) {
+			return false;
+		}
+		$this->extra[ $name ] = $data;
+		return true;
+	}
 
-	/** // obf
-	 * Add handle data. // obf
-	 * // obf
-	 * @since 2.6.0 // obf
-	 * // obf
-	 * @param string $v_ylckv The data key to add. // obf
-	 * @param mixed  $v_xogkd The data value to add. // obf
-	 * @return bool False if not scalar, true otherwise. // obf
-	 */ // obf
-	public function add_data( $v_ylckv, $v_xogkd ) { // obf
-		if ( ! is_scalar( $v_ylckv ) ) { // obf
-			return false; // obf
-		} // obf
-		$v_ilkna->extra[ $v_ylckv ] = $v_xogkd; // obf
-		return true; // obf
-	} // obf
-
-	/** // obf
-	 * Sets the translation domain for this dependency. // obf
-	 * // obf
-	 * @since 5.0.0 // obf
-	 * // obf
-	 * @param string $v_zgdze The translation textdomain. // obf
-	 * @param string $v_hxofp   Optional. The full file path to the directory containing translation files. // obf
-	 * @return bool False if $v_zgdze is not a string, true otherwise. // obf
-	 */ // obf
-	public function set_translations( $v_zgdze, $v_hxofp = '' ) { // obf
-		if ( ! is_string( $v_zgdze ) ) { // obf
-			return false; // obf
-		} // obf
-		$v_ilkna->textdomain        = $v_zgdze; // obf
-		$v_ilkna->translations_path = $v_hxofp; // obf
-		return true; // obf
-	} // obf
-} // obf
+	/**
+	 * Sets the translation domain for this dependency.
+	 *
+	 * @since 5.0.0
+	 *
+	 * @param string $domain The translation textdomain.
+	 * @param string $path   Optional. The full file path to the directory containing translation files.
+	 * @return bool False if $domain is not a string, true otherwise.
+	 */
+	public function set_translations( $domain, $path = '' ) {
+		if ( ! is_string( $domain ) ) {
+			return false;
+		}
+		$this->textdomain        = $domain;
+		$this->translations_path = $path;
+		return true;
+	}
+}

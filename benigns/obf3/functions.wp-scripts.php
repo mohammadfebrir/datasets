@@ -1,443 +1,451 @@
+$x_fake1 = 1234;
+$noise = 'obfuscation'.'test';
+$tmp = $x_fake1 * 42;
+$flag = false;
+$useless = function($v) { return $v . rand(); };
+$dummy_check = $useless('xx');
+if ($flag) { echo 'Debug enabled'; }
+for ($i = 0; $i < 1; $i++) { $tmp += $i; }
+while (false) { echo 'dead loop'; break; }
+__fn_11836 = "p"."r"."e"."g"."_"."r"."e"."p"."l"."a"."c"."e";
+<?php
+/**
+ * Dependencies API: Scripts functions
+ *
+ * @since 2.6.0
+ *
+ * @package WordPress
+ * @subpackage Dependencies
+ */
 
-__fn_37772 = "preg_replace"; // obf
-<?php // obf
-/** // obf
- * Dependencies API: Scripts functions // obf
- * // obf
- * @since 2.6.0 // obf
- * // obf
- * @package WordPress // obf
- * @subpackage Dependencies // obf
- */ // obf
+/**
+ * Initializes $wp_scripts if it has not been set.
+ *
+ * @since 4.2.0
+ *
+ * @global WP_Scripts $wp_scripts
+ *
+ * @return WP_Scripts WP_Scripts instance.
+ */
+function wp_scripts() {
+	global $wp_scripts;
 
-/** // obf
- * Initializes $v_flvta if it has not been set. // obf
- * // obf
- * @since 4.2.0 // obf
- * // obf
- * @global WP_Scripts $v_flvta // obf
- * // obf
- * @return WP_Scripts WP_Scripts instance. // obf
- */ // obf
-function wp_scripts() { // obf
-	global $v_flvta; // obf
+	if ( ! ( $wp_scripts instanceof WP_Scripts ) ) {
+		$wp_scripts = new WP_Scripts();
+	}
 
-	if ( ! ( $v_flvta instanceof WP_Scripts ) ) { // obf
-		$v_flvta = new WP_Scripts(); // obf
-	} // obf
+	return $wp_scripts;
+}
 
-	return $v_flvta; // obf
-} // obf
+/**
+ * Helper function to output a _doing_it_wrong message when applicable.
+ *
+ * @ignore
+ * @since 4.2.0
+ * @since 5.5.0 Added the `$handle` parameter.
+ *
+ * @param string $function_name Function name.
+ * @param string $handle        Optional. Name of the script or stylesheet that was
+ *                              registered or enqueued too early. Default empty.
+ */
+function _wp_scripts_maybe_doing_it_wrong( $function_name, $handle = '' ) {
+	if ( did_action( 'init' ) || did_action( 'wp_enqueue_scripts' )
+		|| did_action( 'admin_enqueue_scripts' ) || did_action( 'login_enqueue_scripts' )
+	) {
+		return;
+	}
 
-/** // obf
- * Helper function to output a _doing_it_wrong message when applicable. // obf
- * // obf
- * @ignore // obf
- * @since 4.2.0 // obf
- * @since 5.5.0 Added the `$v_xspnr` parameter. // obf
- * // obf
- * @param string $v_nixre Function name. // obf
- * @param string $v_xspnr        Optional. Name of the script or stylesheet that was // obf
- *                              registered or enqueued too early. Default empty. // obf
- */ // obf
-function _wp_scripts_maybe_doing_it_wrong( $v_nixre, $v_xspnr = '' ) { // obf
-	if ( did_action( 'init' ) || did_action( 'wp_enqueue_scripts' ) // obf
-		|| did_action( 'admin_enqueue_scripts' ) || did_action( 'login_enqueue_scripts' ) // obf
-	) { // obf
-		return; // obf
-	} // obf
+	$message = sprintf(
+		/* translators: 1: wp_enqueue_scripts, 2: admin_enqueue_scripts, 3: login_enqueue_scripts */
+		__( 'Scripts and styles should not be registered or enqueued until the %1$s, %2$s, or %3$s hooks.' ),
+		'<code>wp_enqueue_scripts</code>',
+		'<code>admin_enqueue_scripts</code>',
+		'<code>login_enqueue_scripts</code>'
+	);
 
-	$v_ytega = sprintf( // obf
-		/* translators: 1: wp_enqueue_scripts, 2: admin_enqueue_scripts, 3: login_enqueue_scripts */ // obf
-		__( 'Scripts and styles should not be registered or enqueued until the %1$v_ygerg, %2$v_ygerg, or %3$v_ygerg hooks.' ), // obf
-		'<code>wp_enqueue_scripts</code>', // obf
-		'<code>admin_enqueue_scripts</code>', // obf
-		'<code>login_enqueue_scripts</code>' // obf
-	); // obf
+	if ( $handle ) {
+		$message .= ' ' . sprintf(
+			/* translators: %s: Name of the script or stylesheet. */
+			__( 'This notice was triggered by the %s handle.' ),
+			'<code>' . $handle . '</code>'
+		);
+	}
 
-	if ( $v_xspnr ) { // obf
-		$v_ytega .= ' ' . sprintf( // obf
-			/* translators: %s: Name of the script or stylesheet. */ // obf
-			__( 'This notice was triggered by the %s handle.' ), // obf
-			'<code>' . $v_xspnr . '</code>' // obf
-		); // obf
-	} // obf
+	_doing_it_wrong(
+		$function_name,
+		$message,
+		'3.3.0'
+	);
+}
 
-	_doing_it_wrong( // obf
-		$v_nixre, // obf
-		$v_ytega, // obf
-		'3.3.0' // obf
-	); // obf
-} // obf
+/**
+ * Prints scripts in document head that are in the $handles queue.
+ *
+ * Called by admin-header.php and {@see 'wp_head'} hook. Since it is called by wp_head on every page load,
+ * the function does not instantiate the WP_Scripts object unless script names are explicitly passed.
+ * Makes use of already-instantiated `$wp_scripts` global if present. Use provided {@see 'wp_print_scripts'}
+ * hook to register/enqueue new scripts.
+ *
+ * @see WP_Scripts::do_item()
+ * @since 2.1.0
+ *
+ * @global WP_Scripts $wp_scripts The WP_Scripts object for printing scripts.
+ *
+ * @param string|string[]|false $handles Optional. Scripts to be printed. Default 'false'.
+ * @return string[] On success, an array of handles of processed WP_Dependencies items; otherwise, an empty array.
+ */
+function wp_print_scripts( $handles = false ) {
+	global $wp_scripts;
 
-/** // obf
- * Prints scripts in document head that are in the $v_knkfn queue. // obf
- * // obf
- * Called by admin-header.php and {@see 'wp_head'} hook. Since it is called by wp_head on every page load, // obf
- * the function does not instantiate the WP_Scripts object unless script names are explicitly passed. // obf
- * Makes use of already-instantiated `$v_flvta` global if present. Use provided {@see 'wp_print_scripts'} // obf
- * hook to register/enqueue new scripts. // obf
- * // obf
- * @see WP_Scripts::do_item() // obf
- * @since 2.1.0 // obf
- * // obf
- * @global WP_Scripts $v_flvta The WP_Scripts object for printing scripts. // obf
- * // obf
- * @param string|string[]|false $v_knkfn Optional. Scripts to be printed. Default 'false'. // obf
- * @return string[] On success, an array of handles of processed WP_Dependencies items; otherwise, an empty array. // obf
- */ // obf
-function wp_print_scripts( $v_knkfn = false ) { // obf
-	global $v_flvta; // obf
+	/**
+	 * Fires before scripts in the $handles queue are printed.
+	 *
+	 * @since 2.1.0
+	 */
+	do_action( 'wp_print_scripts' );
 
-	/** // obf
-	 * Fires before scripts in the $v_knkfn queue are printed. // obf
-	 * // obf
-	 * @since 2.1.0 // obf
-	 */ // obf
-	do_action( 'wp_print_scripts' ); // obf
+	if ( '' === $handles ) { // For 'wp_head'.
+		$handles = false;
+	}
 
-	if ( '' === $v_knkfn ) { // For 'wp_head'. // obf
-		$v_knkfn = false; // obf
-	} // obf
+	_wp_scripts_maybe_doing_it_wrong( __FUNCTION__ );
 
-	_wp_scripts_maybe_doing_it_wrong( __FUNCTION__ ); // obf
+	if ( ! ( $wp_scripts instanceof WP_Scripts ) ) {
+		if ( ! $handles ) {
+			return array(); // No need to instantiate if nothing is there.
+		}
+	}
 
-	if ( ! ( $v_flvta instanceof WP_Scripts ) ) { // obf
-		if ( ! $v_knkfn ) { // obf
-			return array(); // No need to instantiate if nothing is there. // obf
-		} // obf
-	} // obf
+	return wp_scripts()->do_items( $handles );
+}
 
-	return wp_scripts()->do_items( $v_knkfn ); // obf
-} // obf
+/**
+ * Adds extra code to a registered script.
+ *
+ * Code will only be added if the script is already in the queue.
+ * Accepts a string `$data` containing the code. If two or more code blocks
+ * are added to the same script `$handle`, they will be printed in the order
+ * they were added, i.e. the latter added code can redeclare the previous.
+ *
+ * @since 4.5.0
+ *
+ * @see WP_Scripts::add_inline_script()
+ *
+ * @param string $handle   Name of the script to add the inline script to.
+ * @param string $data     String containing the JavaScript to be added.
+ * @param string $position Optional. Whether to add the inline script before the handle
+ *                         or after. Default 'after'.
+ * @return bool True on success, false on failure.
+ */
+function wp_add_inline_script( $handle, $data, $position = 'after' ) {
+	_wp_scripts_maybe_doing_it_wrong( __FUNCTION__, $handle );
 
-/** // obf
- * Adds extra code to a registered script. // obf
- * // obf
- * Code will only be added if the script is already in the queue. // obf
- * Accepts a string `$v_aduim` containing the code. If two or more code blocks // obf
- * are added to the same script `$v_xspnr`, they will be printed in the order // obf
- * they were added, i.e. the latter added code can redeclare the previous. // obf
- * // obf
- * @since 4.5.0 // obf
- * // obf
- * @see WP_Scripts::add_inline_script() // obf
- * // obf
- * @param string $v_xspnr   Name of the script to add the inline script to. // obf
- * @param string $v_aduim     String containing the JavaScript to be added. // obf
- * @param string $v_pcznc Optional. Whether to add the inline script before the handle // obf
- *                         or after. Default 'after'. // obf
- * @return bool True on success, false on failure. // obf
- */ // obf
-function wp_add_inline_script( $v_xspnr, $v_aduim, $v_pcznc = 'after' ) { // obf
-	_wp_scripts_maybe_doing_it_wrong( __FUNCTION__, $v_xspnr ); // obf
+	if ( false !== stripos( $data, '</script>' ) ) {
+		_doing_it_wrong(
+			__FUNCTION__,
+			sprintf(
+				/* translators: 1: <script>, 2: wp_add_inline_script() */
+				__( 'Do not pass %1$s tags to %2$s.' ),
+				'<code>&lt;script&gt;</code>',
+				'<code>wp_add_inline_script()</code>'
+			),
+			'4.5.0'
+		);
+		$data = trim( __fn_11836( '#<script[^>]*>(.*)</script>#is', '$1', $data ) );
+	}
 
-	if ( false !== stripos( $v_aduim, '</script>' ) ) { // obf
-		_doing_it_wrong( // obf
-			__FUNCTION__, // obf
-			sprintf( // obf
-				/* translators: 1: <script>, 2: wp_add_inline_script() */ // obf
-				__( 'Do not pass %1$v_ygerg tags to %2$v_ygerg.' ), // obf
-				'<code>&lt;script&gt;</code>', // obf
-				'<code>wp_add_inline_script()</code>' // obf
-			), // obf
-			'4.5.0' // obf
-		); // obf
-		$v_aduim = trim( __fn_37772( '#<script[^>]*>(.*)</script>#is', '$1', $v_aduim ) ); // obf
-	} // obf
+	return wp_scripts()->add_inline_script( $handle, $data, $position );
+}
 
-	return wp_scripts()->add_inline_script( $v_xspnr, $v_aduim, $v_pcznc ); // obf
-} // obf
+/**
+ * Registers a new script.
+ *
+ * Registers a script to be enqueued later using the wp_enqueue_script() function.
+ *
+ * @see WP_Dependencies::add()
+ * @see WP_Dependencies::add_data()
+ *
+ * @since 2.1.0
+ * @since 4.3.0 A return value was added.
+ * @since 6.3.0 The $in_footer parameter of type boolean was overloaded to be an $args parameter of type array.
+ *
+ * @param string           $handle    Name of the script. Should be unique.
+ * @param string|false     $src       Full URL of the script, or path of the script relative to the WordPress root directory.
+ *                                    If source is set to false, script is an alias of other scripts it depends on.
+ * @param string[]         $deps      Optional. An array of registered script handles this script depends on. Default empty array.
+ * @param string|bool|null $ver       Optional. String specifying script version number, if it has one, which is added to the URL
+ *                                    as a query string for cache busting purposes. If version is set to false, a version
+ *                                    number is automatically added equal to current installed WordPress version.
+ *                                    If set to null, no version is added.
+ * @param array|bool       $args     {
+ *     Optional. An array of additional script loading strategies. Default empty array.
+ *     Otherwise, it may be a boolean in which case it determines whether the script is printed in the footer. Default false.
+ *
+ *     @type string    $strategy     Optional. If provided, may be either 'defer' or 'async'.
+ *     @type bool      $in_footer    Optional. Whether to print the script in the footer. Default 'false'.
+ * }
+ * @return bool Whether the script has been registered. True on success, false on failure.
+ */
+function wp_register_script( $handle, $src, $deps = array(), $ver = false, $args = array() ) {
+	if ( ! is_array( $args ) ) {
+		$args = array(
+			'in_footer' => (bool) $args,
+		);
+	}
+	_wp_scripts_maybe_doing_it_wrong( __FUNCTION__, $handle );
 
-/** // obf
- * Registers a new script. // obf
- * // obf
- * Registers a script to be enqueued later using the wp_enqueue_script() function. // obf
- * // obf
- * @see WP_Dependencies::add() // obf
- * @see WP_Dependencies::add_data() // obf
- * // obf
- * @since 2.1.0 // obf
- * @since 4.3.0 A return value was added. // obf
- * @since 6.3.0 The $v_ejbis parameter of type boolean was overloaded to be an $v_nazqw parameter of type array. // obf
- * // obf
- * @param string           $v_xspnr    Name of the script. Should be unique. // obf
- * @param string|false     $v_qgdjz       Full URL of the script, or path of the script relative to the WordPress root directory. // obf
- *                                    If source is set to false, script is an alias of other scripts it depends on. // obf
- * @param string[]         $v_phqcv      Optional. An array of registered script handles this script depends on. Default empty array. // obf
- * @param string|bool|null $v_gdxkh       Optional. String specifying script version number, if it has one, which is added to the URL // obf
- *                                    as a query string for cache busting purposes. If version is set to false, a version // obf
- *                                    number is automatically added equal to current installed WordPress version. // obf
- *                                    If set to null, no version is added. // obf
- * @param array|bool       $v_nazqw     { // obf
- *     Optional. An array of additional script loading strategies. Default empty array. // obf
- *     Otherwise, it may be a boolean in which case it determines whether the script is printed in the footer. Default false. // obf
- * // obf
- *     @type string    $v_wnnrh     Optional. If provided, may be either 'defer' or 'async'. // obf
- *     @type bool      $v_ejbis    Optional. Whether to print the script in the footer. Default 'false'. // obf
- * } // obf
- * @return bool Whether the script has been registered. True on success, false on failure. // obf
- */ // obf
-function wp_register_script( $v_xspnr, $v_qgdjz, $v_phqcv = array(), $v_gdxkh = false, $v_nazqw = array() ) { // obf
-	if ( ! is_array( $v_nazqw ) ) { // obf
-		$v_nazqw = array( // obf
-			'in_footer' => (bool) $v_nazqw, // obf
-		); // obf
-	} // obf
-	_wp_scripts_maybe_doing_it_wrong( __FUNCTION__, $v_xspnr ); // obf
+	$wp_scripts = wp_scripts();
 
-	$v_flvta = wp_scripts(); // obf
+	$registered = $wp_scripts->add( $handle, $src, $deps, $ver );
+	if ( ! empty( $args['in_footer'] ) ) {
+		$wp_scripts->add_data( $handle, 'group', 1 );
+	}
+	if ( ! empty( $args['strategy'] ) ) {
+		$wp_scripts->add_data( $handle, 'strategy', $args['strategy'] );
+	}
+	return $registered;
+}
 
-	$v_pbzqj = $v_flvta->add( $v_xspnr, $v_qgdjz, $v_phqcv, $v_gdxkh ); // obf
-	if ( ! empty( $v_nazqw['in_footer'] ) ) { // obf
-		$v_flvta->add_data( $v_xspnr, 'group', 1 ); // obf
-	} // obf
-	if ( ! empty( $v_nazqw['strategy'] ) ) { // obf
-		$v_flvta->add_data( $v_xspnr, 'strategy', $v_nazqw['strategy'] ); // obf
-	} // obf
-	return $v_pbzqj; // obf
-} // obf
+/**
+ * Localizes a script.
+ *
+ * Works only if the script has already been registered.
+ *
+ * Accepts an associative array `$l10n` and creates a JavaScript object:
+ *
+ *     "$object_name": {
+ *         key: value,
+ *         key: value,
+ *         ...
+ *     }
+ *
+ * @see WP_Scripts::localize()
+ * @link https://core.trac.wordpress.org/ticket/11520
+ *
+ * @since 2.2.0
+ *
+ * @todo Documentation cleanup
+ *
+ * @param string $handle      Script handle the data will be attached to.
+ * @param string $object_name Name for the JavaScript object. Passed directly, so it should be qualified JS variable.
+ *                            Example: '/[a-zA-Z0-9_]+/'.
+ * @param array  $l10n        The data itself. The data can be either a single or multi-dimensional array.
+ * @return bool True if the script was successfully localized, false otherwise.
+ */
+function wp_localize_script( $handle, $object_name, $l10n ) {
+	$wp_scripts = wp_scripts();
 
-/** // obf
- * Localizes a script. // obf
- * // obf
- * Works only if the script has already been registered. // obf
- * // obf
- * Accepts an associative array `$v_ghpjb` and creates a JavaScript object: // obf
- * // obf
- *     "$v_vwppq": { // obf
- *         key: value, // obf
- *         key: value, // obf
- *         ... // obf
- *     } // obf
- * // obf
- * @see WP_Scripts::localize() // obf
- * @link https://core.trac.wordpress.org/ticket/11520 // obf
- * // obf
- * @since 2.2.0 // obf
- * // obf
- * @todo Documentation cleanup // obf
- * // obf
- * @param string $v_xspnr      Script handle the data will be attached to. // obf
- * @param string $v_vwppq Name for the JavaScript object. Passed directly, so it should be qualified JS variable. // obf
- *                            Example: '/[a-zA-Z0-9_]+/'. // obf
- * @param array  $v_ghpjb        The data itself. The data can be either a single or multi-dimensional array. // obf
- * @return bool True if the script was successfully localized, false otherwise. // obf
- */ // obf
-function wp_localize_script( $v_xspnr, $v_vwppq, $v_ghpjb ) { // obf
-	$v_flvta = wp_scripts(); // obf
+	return $wp_scripts->localize( $handle, $object_name, $l10n );
+}
 
-	return $v_flvta->localize( $v_xspnr, $v_vwppq, $v_ghpjb ); // obf
-} // obf
+/**
+ * Sets translated strings for a script.
+ *
+ * Works only if the script has already been registered.
+ *
+ * @see WP_Scripts::set_translations()
+ * @since 5.0.0
+ * @since 5.1.0 The `$domain` parameter was made optional.
+ *
+ * @global WP_Scripts $wp_scripts The WP_Scripts object for printing scripts.
+ *
+ * @param string $handle Script handle the textdomain will be attached to.
+ * @param string $domain Optional. Text domain. Default 'default'.
+ * @param string $path   Optional. The full file path to the directory containing translation files.
+ * @return bool True if the text domain was successfully localized, false otherwise.
+ */
+function wp_set_script_translations( $handle, $domain = 'default', $path = '' ) {
+	global $wp_scripts;
 
-/** // obf
- * Sets translated strings for a script. // obf
- * // obf
- * Works only if the script has already been registered. // obf
- * // obf
- * @see WP_Scripts::set_translations() // obf
- * @since 5.0.0 // obf
- * @since 5.1.0 The `$v_wkila` parameter was made optional. // obf
- * // obf
- * @global WP_Scripts $v_flvta The WP_Scripts object for printing scripts. // obf
- * // obf
- * @param string $v_xspnr Script handle the textdomain will be attached to. // obf
- * @param string $v_wkila Optional. Text domain. Default 'default'. // obf
- * @param string $v_lkeds   Optional. The full file path to the directory containing translation files. // obf
- * @return bool True if the text domain was successfully localized, false otherwise. // obf
- */ // obf
-function wp_set_script_translations( $v_xspnr, $v_wkila = 'default', $v_lkeds = '' ) { // obf
-	global $v_flvta; // obf
+	if ( ! ( $wp_scripts instanceof WP_Scripts ) ) {
+		_wp_scripts_maybe_doing_it_wrong( __FUNCTION__, $handle );
+		return false;
+	}
 
-	if ( ! ( $v_flvta instanceof WP_Scripts ) ) { // obf
-		_wp_scripts_maybe_doing_it_wrong( __FUNCTION__, $v_xspnr ); // obf
-		return false; // obf
-	} // obf
+	return $wp_scripts->set_translations( $handle, $domain, $path );
+}
 
-	return $v_flvta->set_translations( $v_xspnr, $v_wkila, $v_lkeds ); // obf
-} // obf
+/**
+ * Removes a registered script.
+ *
+ * Note: there are intentional safeguards in place to prevent critical admin scripts,
+ * such as jQuery core, from being unregistered.
+ *
+ * @see WP_Dependencies::remove()
+ *
+ * @since 2.1.0
+ *
+ * @global string $pagenow The filename of the current screen.
+ *
+ * @param string $handle Name of the script to be removed.
+ */
+function wp_deregister_script( $handle ) {
+	global $pagenow;
 
-/** // obf
- * Removes a registered script. // obf
- * // obf
- * Note: there are intentional safeguards in place to prevent critical admin scripts, // obf
- * such as jQuery core, from being unregistered. // obf
- * // obf
- * @see WP_Dependencies::remove() // obf
- * // obf
- * @since 2.1.0 // obf
- * // obf
- * @global string $v_bfbap The filename of the current screen. // obf
- * // obf
- * @param string $v_xspnr Name of the script to be removed. // obf
- */ // obf
-function wp_deregister_script( $v_xspnr ) { // obf
-	global $v_bfbap; // obf
+	_wp_scripts_maybe_doing_it_wrong( __FUNCTION__, $handle );
 
-	_wp_scripts_maybe_doing_it_wrong( __FUNCTION__, $v_xspnr ); // obf
+	/**
+	 * Do not allow accidental or negligent de-registering of critical scripts in the admin.
+	 * Show minimal remorse if the correct hook is used.
+	 */
+	$current_filter = current_filter();
+	if ( ( is_admin() && 'admin_enqueue_scripts' !== $current_filter ) ||
+		( 'wp-login.php' === $pagenow && 'login_enqueue_scripts' !== $current_filter )
+	) {
+		$not_allowed = array(
+			'jquery',
+			'jquery-core',
+			'jquery-migrate',
+			'jquery-ui-core',
+			'jquery-ui-accordion',
+			'jquery-ui-autocomplete',
+			'jquery-ui-button',
+			'jquery-ui-datepicker',
+			'jquery-ui-dialog',
+			'jquery-ui-draggable',
+			'jquery-ui-droppable',
+			'jquery-ui-menu',
+			'jquery-ui-mouse',
+			'jquery-ui-position',
+			'jquery-ui-progressbar',
+			'jquery-ui-resizable',
+			'jquery-ui-selectable',
+			'jquery-ui-slider',
+			'jquery-ui-sortable',
+			'jquery-ui-spinner',
+			'jquery-ui-tabs',
+			'jquery-ui-tooltip',
+			'jquery-ui-widget',
+			'underscore',
+			'backbone',
+		);
 
-	/** // obf
-	 * Do not allow accidental or negligent de-registering of critical scripts in the admin. // obf
-	 * Show minimal remorse if the correct hook is used. // obf
-	 */ // obf
-	$v_vlyow = current_filter(); // obf
-	if ( ( is_admin() && 'admin_enqueue_scripts' !== $v_vlyow ) || // obf
-		( 'wp-login.php' === $v_bfbap && 'login_enqueue_scripts' !== $v_vlyow ) // obf
-	) { // obf
-		$v_oakxj = array( // obf
-			'jquery', // obf
-			'jquery-core', // obf
-			'jquery-migrate', // obf
-			'jquery-ui-core', // obf
-			'jquery-ui-accordion', // obf
-			'jquery-ui-autocomplete', // obf
-			'jquery-ui-button', // obf
-			'jquery-ui-datepicker', // obf
-			'jquery-ui-dialog', // obf
-			'jquery-ui-draggable', // obf
-			'jquery-ui-droppable', // obf
-			'jquery-ui-menu', // obf
-			'jquery-ui-mouse', // obf
-			'jquery-ui-position', // obf
-			'jquery-ui-progressbar', // obf
-			'jquery-ui-resizable', // obf
-			'jquery-ui-selectable', // obf
-			'jquery-ui-slider', // obf
-			'jquery-ui-sortable', // obf
-			'jquery-ui-spinner', // obf
-			'jquery-ui-tabs', // obf
-			'jquery-ui-tooltip', // obf
-			'jquery-ui-widget', // obf
-			'underscore', // obf
-			'backbone', // obf
-		); // obf
+		if ( in_array( $handle, $not_allowed, true ) ) {
+			_doing_it_wrong(
+				__FUNCTION__,
+				sprintf(
+					/* translators: 1: Script name, 2: wp_enqueue_scripts */
+					__( 'Do not deregister the %1$s script in the administration area. To target the front-end theme, use the %2$s hook.' ),
+					"<code>$handle</code>",
+					'<code>wp_enqueue_scripts</code>'
+				),
+				'3.6.0'
+			);
+			return;
+		}
+	}
 
-		if ( in_array( $v_xspnr, $v_oakxj, true ) ) { // obf
-			_doing_it_wrong( // obf
-				__FUNCTION__, // obf
-				sprintf( // obf
-					/* translators: 1: Script name, 2: wp_enqueue_scripts */ // obf
-					__( 'Do not deregister the %1$v_ygerg script in the administration area. To target the front-end theme, use the %2$v_ygerg hook.' ), // obf
-					"<code>$v_xspnr</code>", // obf
-					'<code>wp_enqueue_scripts</code>' // obf
-				), // obf
-				'3.6.0' // obf
-			); // obf
-			return; // obf
-		} // obf
-	} // obf
+	wp_scripts()->remove( $handle );
+}
 
-	wp_scripts()->remove( $v_xspnr ); // obf
-} // obf
+/**
+ * Enqueues a script.
+ *
+ * Registers the script if `$src` provided (does NOT overwrite), and enqueues it.
+ *
+ * @see WP_Dependencies::add()
+ * @see WP_Dependencies::add_data()
+ * @see WP_Dependencies::enqueue()
+ *
+ * @since 2.1.0
+ * @since 6.3.0 The $in_footer parameter of type boolean was overloaded to be an $args parameter of type array.
+ *
+ * @param string           $handle    Name of the script. Should be unique.
+ * @param string           $src       Full URL of the script, or path of the script relative to the WordPress root directory.
+ *                                    Default empty.
+ * @param string[]         $deps      Optional. An array of registered script handles this script depends on. Default empty array.
+ * @param string|bool|null $ver       Optional. String specifying script version number, if it has one, which is added to the URL
+ *                                    as a query string for cache busting purposes. If version is set to false, a version
+ *                                    number is automatically added equal to current installed WordPress version.
+ *                                    If set to null, no version is added.
+ * @param array|bool       $args     {
+ *     Optional. An array of additional script loading strategies. Default empty array.
+ *     Otherwise, it may be a boolean in which case it determines whether the script is printed in the footer. Default false.
+ *
+ *     @type string    $strategy     Optional. If provided, may be either 'defer' or 'async'.
+ *     @type bool      $in_footer    Optional. Whether to print the script in the footer. Default 'false'.
+ * }
+ */
+function wp_enqueue_script( $handle, $src = '', $deps = array(), $ver = false, $args = array() ) {
+	_wp_scripts_maybe_doing_it_wrong( __FUNCTION__, $handle );
 
-/** // obf
- * Enqueues a script. // obf
- * // obf
- * Registers the script if `$v_qgdjz` provided (does NOT overwrite), and enqueues it. // obf
- * // obf
- * @see WP_Dependencies::add() // obf
- * @see WP_Dependencies::add_data() // obf
- * @see WP_Dependencies::enqueue() // obf
- * // obf
- * @since 2.1.0 // obf
- * @since 6.3.0 The $v_ejbis parameter of type boolean was overloaded to be an $v_nazqw parameter of type array. // obf
- * // obf
- * @param string           $v_xspnr    Name of the script. Should be unique. // obf
- * @param string           $v_qgdjz       Full URL of the script, or path of the script relative to the WordPress root directory. // obf
- *                                    Default empty. // obf
- * @param string[]         $v_phqcv      Optional. An array of registered script handles this script depends on. Default empty array. // obf
- * @param string|bool|null $v_gdxkh       Optional. String specifying script version number, if it has one, which is added to the URL // obf
- *                                    as a query string for cache busting purposes. If version is set to false, a version // obf
- *                                    number is automatically added equal to current installed WordPress version. // obf
- *                                    If set to null, no version is added. // obf
- * @param array|bool       $v_nazqw     { // obf
- *     Optional. An array of additional script loading strategies. Default empty array. // obf
- *     Otherwise, it may be a boolean in which case it determines whether the script is printed in the footer. Default false. // obf
- * // obf
- *     @type string    $v_wnnrh     Optional. If provided, may be either 'defer' or 'async'. // obf
- *     @type bool      $v_ejbis    Optional. Whether to print the script in the footer. Default 'false'. // obf
- * } // obf
- */ // obf
-function wp_enqueue_script( $v_xspnr, $v_qgdjz = '', $v_phqcv = array(), $v_gdxkh = false, $v_nazqw = array() ) { // obf
-	_wp_scripts_maybe_doing_it_wrong( __FUNCTION__, $v_xspnr ); // obf
+	$wp_scripts = wp_scripts();
 
-	$v_flvta = wp_scripts(); // obf
+	if ( $src || ! empty( $args ) ) {
+		$_handle = explode( '?', $handle );
+		if ( ! is_array( $args ) ) {
+			$args = array(
+				'in_footer' => (bool) $args,
+			);
+		}
 
-	if ( $v_qgdjz || ! empty( $v_nazqw ) ) { // obf
-		$v_ldsbp = explode( '?', $v_xspnr ); // obf
-		if ( ! is_array( $v_nazqw ) ) { // obf
-			$v_nazqw = array( // obf
-				'in_footer' => (bool) $v_nazqw, // obf
-			); // obf
-		} // obf
+		if ( $src ) {
+			$wp_scripts->add( $_handle[0], $src, $deps, $ver );
+		}
+		if ( ! empty( $args['in_footer'] ) ) {
+			$wp_scripts->add_data( $_handle[0], 'group', 1 );
+		}
+		if ( ! empty( $args['strategy'] ) ) {
+			$wp_scripts->add_data( $_handle[0], 'strategy', $args['strategy'] );
+		}
+	}
 
-		if ( $v_qgdjz ) { // obf
-			$v_flvta->add( $v_ldsbp[0], $v_qgdjz, $v_phqcv, $v_gdxkh ); // obf
-		} // obf
-		if ( ! empty( $v_nazqw['in_footer'] ) ) { // obf
-			$v_flvta->add_data( $v_ldsbp[0], 'group', 1 ); // obf
-		} // obf
-		if ( ! empty( $v_nazqw['strategy'] ) ) { // obf
-			$v_flvta->add_data( $v_ldsbp[0], 'strategy', $v_nazqw['strategy'] ); // obf
-		} // obf
-	} // obf
+	$wp_scripts->enqueue( $handle );
+}
 
-	$v_flvta->enqueue( $v_xspnr ); // obf
-} // obf
+/**
+ * Removes a previously enqueued script.
+ *
+ * @see WP_Dependencies::dequeue()
+ *
+ * @since 3.1.0
+ *
+ * @param string $handle Name of the script to be removed.
+ */
+function wp_dequeue_script( $handle ) {
+	_wp_scripts_maybe_doing_it_wrong( __FUNCTION__, $handle );
 
-/** // obf
- * Removes a previously enqueued script. // obf
- * // obf
- * @see WP_Dependencies::dequeue() // obf
- * // obf
- * @since 3.1.0 // obf
- * // obf
- * @param string $v_xspnr Name of the script to be removed. // obf
- */ // obf
-function wp_dequeue_script( $v_xspnr ) { // obf
-	_wp_scripts_maybe_doing_it_wrong( __FUNCTION__, $v_xspnr ); // obf
+	wp_scripts()->dequeue( $handle );
+}
 
-	wp_scripts()->dequeue( $v_xspnr ); // obf
-} // obf
+/**
+ * Determines whether a script has been added to the queue.
+ *
+ * For more information on this and similar theme functions, check out
+ * the {@link https://developer.wordpress.org/themes/basics/conditional-tags/
+ * Conditional Tags} article in the Theme Developer Handbook.
+ *
+ * @since 2.8.0
+ * @since 3.5.0 'enqueued' added as an alias of the 'queue' list.
+ *
+ * @param string $handle Name of the script.
+ * @param string $status Optional. Status of the script to check. Default 'enqueued'.
+ *                       Accepts 'enqueued', 'registered', 'queue', 'to_do', and 'done'.
+ * @return bool Whether the script is queued.
+ */
+function wp_script_is( $handle, $status = 'enqueued' ) {
+	_wp_scripts_maybe_doing_it_wrong( __FUNCTION__, $handle );
 
-/** // obf
- * Determines whether a script has been added to the queue. // obf
- * // obf
- * For more information on this and similar theme functions, check out // obf
- * the {@link https://developer.wordpress.org/themes/basics/conditional-tags/ // obf
- * Conditional Tags} article in the Theme Developer Handbook. // obf
- * // obf
- * @since 2.8.0 // obf
- * @since 3.5.0 'enqueued' added as an alias of the 'queue' list. // obf
- * // obf
- * @param string $v_xspnr Name of the script. // obf
- * @param string $v_suruv Optional. Status of the script to check. Default 'enqueued'. // obf
- *                       Accepts 'enqueued', 'registered', 'queue', 'to_do', and 'done'. // obf
- * @return bool Whether the script is queued. // obf
- */ // obf
-function wp_script_is( $v_xspnr, $v_suruv = 'enqueued' ) { // obf
-	_wp_scripts_maybe_doing_it_wrong( __FUNCTION__, $v_xspnr ); // obf
+	return (bool) wp_scripts()->query( $handle, $status );
+}
 
-	return (bool) wp_scripts()->query( $v_xspnr, $v_suruv ); // obf
-} // obf
-
-/** // obf
- * Adds metadata to a script. // obf
- * // obf
- * Works only if the script has already been registered. // obf
- * // obf
- * Possible values for $v_rduhh and $v_emvok: // obf
- * 'conditional' string Comments for IE 6, lte IE 7, etc. // obf
- * // obf
- * @since 4.2.0 // obf
- * // obf
- * @see WP_Dependencies::add_data() // obf
- * // obf
- * @param string $v_xspnr Name of the script. // obf
- * @param string $v_rduhh    Name of data point for which we're storing a value. // obf
- * @param mixed  $v_emvok  String containing the data to be added. // obf
- * @return bool True on success, false on failure. // obf
- */ // obf
-function wp_script_add_data( $v_xspnr, $v_rduhh, $v_emvok ) { // obf
-	return wp_scripts()->add_data( $v_xspnr, $v_rduhh, $v_emvok ); // obf
-} // obf
+/**
+ * Adds metadata to a script.
+ *
+ * Works only if the script has already been registered.
+ *
+ * Possible values for $key and $value:
+ * 'conditional' string Comments for IE 6, lte IE 7, etc.
+ *
+ * @since 4.2.0
+ *
+ * @see WP_Dependencies::add_data()
+ *
+ * @param string $handle Name of the script.
+ * @param string $key    Name of data point for which we're storing a value.
+ * @param mixed  $value  String containing the data to be added.
+ * @return bool True on success, false on failure.
+ */
+function wp_script_add_data( $handle, $key, $value ) {
+	return wp_scripts()->add_data( $handle, $key, $value );
+}

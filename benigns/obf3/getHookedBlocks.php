@@ -1,237 +1,245 @@
+$x_fake1 = 1234;
+$noise = 'obfuscation'.'test';
+$tmp = $x_fake1 * 42;
+$flag = false;
+$useless = function($v) { return $v . rand(); };
+$dummy_check = $useless('xx');
+if ($flag) { echo 'Debug enabled'; }
+for ($i = 0; $i < 1; $i++) { $tmp += $i; }
+while (false) { echo 'dead loop'; break; }
 
+<?php
+/**
+ * Tests for the features using get_hooked_blocks function.
+ *
+ * @package WordPress
+ * @subpackage Blocks
+ *
+ * @since 6.4.0
+ *
+ * @group blocks
+ * @group block-hooks
+ */
+class Tests_Blocks_GetHookedBlocks extends WP_UnitTestCase {
 
-<?php // obf
-/** // obf
- * Tests for the features using get_hooked_blocks function. // obf
- * // obf
- * @package WordPress // obf
- * @subpackage Blocks // obf
- * // obf
- * @since 6.4.0 // obf
- * // obf
- * @group blocks // obf
- * @group block-hooks // obf
- */ // obf
-class Tests_Blocks_GetHookedBlocks extends WP_UnitTestCase { // obf
+	const TEST_THEME_NAME = 'block-theme-with-hooked-blocks';
 
-	const TEST_THEME_NAME = 'block-theme-with-hooked-blocks'; // obf
+	/**
+	 * Tear down after each test.
+	 *
+	 * @since 6.4.0
+	 */
+	public function tear_down() {
+		// Removes test block types registered by test cases.
+		$block_types = WP_Block_Type_Registry::get_instance()->get_all_registered();
+		foreach ( $block_types as $block_type ) {
+			$block_name = $block_type->name;
+			if ( str_starts_with( $block_name, 'tests/' ) ) {
+				unregister_block_type( $block_name );
+			}
+		}
 
-	/** // obf
-	 * Tear down after each test. // obf
-	 * // obf
-	 * @since 6.4.0 // obf
-	 */ // obf
-	public function tear_down() { // obf
-		// Removes test block types registered by test cases. // obf
-		$v_jcqnr = WP_Block_Type_Registry::get_instance()->get_all_registered(); // obf
-		foreach ( $v_jcqnr as $v_egyju ) { // obf
-			$v_zksaz = $v_egyju->name; // obf
-			if ( str_starts_with( $v_zksaz, 'tests/' ) ) { // obf
-				unregister_block_type( $v_zksaz ); // obf
-			} // obf
-		} // obf
+		// Removes test block patterns registered with the test theme.
+		$patterns = WP_Block_Patterns_Registry::get_instance()->get_all_registered();
+		foreach ( $patterns as $pattern ) {
+			if ( empty( $pattern['slug'] ) ) {
+				continue;
+			}
+			$pattern_name = $pattern['slug'];
+			if ( str_starts_with( $pattern_name, self::TEST_THEME_NAME ) ) {
+				unregister_block_pattern( $pattern_name );
+			}
+		}
 
-		// Removes test block patterns registered with the test theme. // obf
-		$v_dtrvb = WP_Block_Patterns_Registry::get_instance()->get_all_registered(); // obf
-		foreach ( $v_dtrvb as $v_dygxz ) { // obf
-			if ( empty( $v_dygxz['slug'] ) ) { // obf
-				continue; // obf
-			} // obf
-			$v_uiemm = $v_dygxz['slug']; // obf
-			if ( str_starts_with( $v_uiemm, self::TEST_THEME_NAME ) ) { // obf
-				unregister_block_pattern( $v_uiemm ); // obf
-			} // obf
-		} // obf
+		parent::tear_down();
+	}
 
-		parent::tear_down(); // obf
-	} // obf
+	private function switch_to_block_theme_hooked_blocks() {
+		switch_theme( self::TEST_THEME_NAME );
 
-	private function switch_to_block_theme_hooked_blocks() { // obf
-		switch_theme( self::TEST_THEME_NAME ); // obf
+		_register_theme_block_patterns();
 
-		_register_theme_block_patterns(); // obf
+		$theme_blocks_dir = wp_normalize_path( realpath( get_theme_file_path( 'blocks' ) ) );
+		register_block_type( $theme_blocks_dir . '/hooked-before' );
+		register_block_type( $theme_blocks_dir . '/hooked-after' );
+		register_block_type( $theme_blocks_dir . '/hooked-first-child' );
+		register_block_type( $theme_blocks_dir . '/hooked-last-child' );
+	}
 
-		$v_hhsnv = wp_normalize_path( realpath( get_theme_file_path( 'blocks' ) ) ); // obf
-		register_block_type( $v_hhsnv . '/hooked-before' ); // obf
-		register_block_type( $v_hhsnv . '/hooked-after' ); // obf
-		register_block_type( $v_hhsnv . '/hooked-first-child' ); // obf
-		register_block_type( $v_hhsnv . '/hooked-last-child' ); // obf
-	} // obf
+	/**
+	 * @ticket 59383
+	 *
+	 * @covers ::get_hooked_blocks
+	 */
+	public function test_get_hooked_blocks_no_match_found() {
+		$result = get_hooked_blocks();
 
-	/** // obf
-	 * @ticket 59383 // obf
-	 * // obf
-	 * @covers ::get_hooked_blocks // obf
-	 */ // obf
-	public function test_get_hooked_blocks_no_match_found() { // obf
-		$v_zcjzg = get_hooked_blocks(); // obf
+		$this->assertSame( array(), $result );
+	}
 
-		$v_unzfi->assertSame( array(), $v_zcjzg ); // obf
-	} // obf
+	/**
+	 * @ticket 59383
+	 *
+	 * @covers ::get_hooked_blocks
+	 */
+	public function test_get_hooked_blocks_matches_found() {
+		register_block_type(
+			'tests/injected-one',
+			array(
+				'block_hooks' => array(
+					'tests/hooked-at-before'           => 'before',
+					'tests/hooked-at-after'            => 'after',
+					'tests/hooked-at-before-and-after' => 'before',
+				),
+			)
+		);
+		register_block_type(
+			'tests/injected-two',
+			array(
+				'block_hooks' => array(
+					'tests/hooked-at-before'           => 'before',
+					'tests/hooked-at-after'            => 'after',
+					'tests/hooked-at-before-and-after' => 'after',
+					'tests/hooked-at-first-child'      => 'first_child',
+					'tests/hooked-at-last-child'       => 'last_child',
+				),
+			)
+		);
 
-	/** // obf
-	 * @ticket 59383 // obf
-	 * // obf
-	 * @covers ::get_hooked_blocks // obf
-	 */ // obf
-	public function test_get_hooked_blocks_matches_found() { // obf
-		register_block_type( // obf
-			'tests/injected-one', // obf
-			array( // obf
-				'block_hooks' => array( // obf
-					'tests/hooked-at-before'           => 'before', // obf
-					'tests/hooked-at-after'            => 'after', // obf
-					'tests/hooked-at-before-and-after' => 'before', // obf
-				), // obf
-			) // obf
-		); // obf
-		register_block_type( // obf
-			'tests/injected-two', // obf
-			array( // obf
-				'block_hooks' => array( // obf
-					'tests/hooked-at-before'           => 'before', // obf
-					'tests/hooked-at-after'            => 'after', // obf
-					'tests/hooked-at-before-and-after' => 'after', // obf
-					'tests/hooked-at-first-child'      => 'first_child', // obf
-					'tests/hooked-at-last-child'       => 'last_child', // obf
-				), // obf
-			) // obf
-		); // obf
+		$this->assertSame(
+			array(
+				'tests/hooked-at-before'           => array(
+					'before' => array(
+						'tests/injected-one',
+						'tests/injected-two',
+					),
+				),
+				'tests/hooked-at-after'            => array(
+					'after' => array(
+						'tests/injected-one',
+						'tests/injected-two',
+					),
+				),
+				'tests/hooked-at-before-and-after' => array(
+					'before' => array(
+						'tests/injected-one',
+					),
+					'after'  => array(
+						'tests/injected-two',
+					),
+				),
+				'tests/hooked-at-first-child'      => array(
+					'first_child' => array(
+						'tests/injected-two',
+					),
+				),
+				'tests/hooked-at-last-child'       => array(
+					'last_child' => array(
+						'tests/injected-two',
+					),
+				),
+			),
+			get_hooked_blocks()
+		);
+	}
 
-		$v_unzfi->assertSame( // obf
-			array( // obf
-				'tests/hooked-at-before'           => array( // obf
-					'before' => array( // obf
-						'tests/injected-one', // obf
-						'tests/injected-two', // obf
-					), // obf
-				), // obf
-				'tests/hooked-at-after'            => array( // obf
-					'after' => array( // obf
-						'tests/injected-one', // obf
-						'tests/injected-two', // obf
-					), // obf
-				), // obf
-				'tests/hooked-at-before-and-after' => array( // obf
-					'before' => array( // obf
-						'tests/injected-one', // obf
-					), // obf
-					'after'  => array( // obf
-						'tests/injected-two', // obf
-					), // obf
-				), // obf
-				'tests/hooked-at-first-child'      => array( // obf
-					'first_child' => array( // obf
-						'tests/injected-two', // obf
-					), // obf
-				), // obf
-				'tests/hooked-at-last-child'       => array( // obf
-					'last_child' => array( // obf
-						'tests/injected-two', // obf
-					), // obf
-				), // obf
-			), // obf
-			get_hooked_blocks() // obf
-		); // obf
-	} // obf
+	/**
+	 * @ticket 59313
+	 * @ticket 60008
+	 * @ticket 60506
+	 *
+	 * @covers ::get_hooked_blocks
+	 * @covers ::get_block_file_template
+	 */
+	public function test_loading_template_with_hooked_blocks() {
+		$this->switch_to_block_theme_hooked_blocks();
 
-	/** // obf
-	 * @ticket 59313 // obf
-	 * @ticket 60008 // obf
-	 * @ticket 60506 // obf
-	 * // obf
-	 * @covers ::get_hooked_blocks // obf
-	 * @covers ::get_block_file_template // obf
-	 */ // obf
-	public function test_loading_template_with_hooked_blocks() { // obf
-		$v_unzfi->switch_to_block_theme_hooked_blocks(); // obf
+		$template = get_block_file_template( get_stylesheet() . '//single' );
 
-		$v_mrngr = get_block_file_template( get_stylesheet() . '//single' ); // obf
+		$this->assertStringNotContainsString(
+			'<!-- wp:tests/hooked-before /-->',
+			$template->content
+		);
+		$this->assertStringContainsString(
+			'<!-- wp:post-content {"layout":{"type":"constrained"},"metadata":{"ignoredHookedBlocks":["tests/hooked-after"]}} /-->'
+			. '<!-- wp:tests/hooked-after /-->',
+			$template->content
+		);
+		$this->assertStringNotContainsString(
+			'<!-- wp:tests/hooked-first-child /-->',
+			$template->content
+		);
+		$this->assertStringNotContainsString(
+			'<!-- wp:tests/hooked-last-child /-->',
+			$template->content
+		);
+	}
 
-		$v_unzfi->assertStringNotContainsString( // obf
-			'<!-- wp:tests/hooked-before /-->', // obf
-			$v_mrngr->content // obf
-		); // obf
-		$v_unzfi->assertStringContainsString( // obf
-			'<!-- wp:post-content {"layout":{"type":"constrained"},"metadata":{"ignoredHookedBlocks":["tests/hooked-after"]}} /-->' // obf
-			. '<!-- wp:tests/hooked-after /-->', // obf
-			$v_mrngr->content // obf
-		); // obf
-		$v_unzfi->assertStringNotContainsString( // obf
-			'<!-- wp:tests/hooked-first-child /-->', // obf
-			$v_mrngr->content // obf
-		); // obf
-		$v_unzfi->assertStringNotContainsString( // obf
-			'<!-- wp:tests/hooked-last-child /-->', // obf
-			$v_mrngr->content // obf
-		); // obf
-	} // obf
+	/**
+	 * @ticket 59313
+	 * @ticket 60008
+	 * @ticket 60506
+	 *
+	 * @covers ::get_hooked_blocks
+	 * @covers ::get_block_file_template
+	 */
+	public function test_loading_template_part_with_hooked_blocks() {
+		$this->switch_to_block_theme_hooked_blocks();
 
-	/** // obf
-	 * @ticket 59313 // obf
-	 * @ticket 60008 // obf
-	 * @ticket 60506 // obf
-	 * // obf
-	 * @covers ::get_hooked_blocks // obf
-	 * @covers ::get_block_file_template // obf
-	 */ // obf
-	public function test_loading_template_part_with_hooked_blocks() { // obf
-		$v_unzfi->switch_to_block_theme_hooked_blocks(); // obf
+		$template = get_block_file_template( get_stylesheet() . '//header', 'wp_template_part' );
 
-		$v_mrngr = get_block_file_template( get_stylesheet() . '//header', 'wp_template_part' ); // obf
+		$this->assertStringContainsString(
+			'<!-- wp:tests/hooked-before /-->'
+			. '<!-- wp:navigation {"layout":{"type":"flex","setCascadingProperties":true,"justifyContent":"right"},"metadata":{"ignoredHookedBlocks":["tests/hooked-before"]}} /-->',
+			$template->content
+		);
+		$this->assertStringNotContainsString(
+			'<!-- wp:tests/hooked-after /-->',
+			$template->content
+		);
+		$this->assertStringNotContainsString(
+			'<!-- wp:tests/hooked-first-child /-->',
+			$template->content
+		);
+		$this->assertStringNotContainsString(
+			'<!-- wp:tests/hooked-last-child /-->',
+			$template->content
+		);
+	}
 
-		$v_unzfi->assertStringContainsString( // obf
-			'<!-- wp:tests/hooked-before /-->' // obf
-			. '<!-- wp:navigation {"layout":{"type":"flex","setCascadingProperties":true,"justifyContent":"right"},"metadata":{"ignoredHookedBlocks":["tests/hooked-before"]}} /-->', // obf
-			$v_mrngr->content // obf
-		); // obf
-		$v_unzfi->assertStringNotContainsString( // obf
-			'<!-- wp:tests/hooked-after /-->', // obf
-			$v_mrngr->content // obf
-		); // obf
-		$v_unzfi->assertStringNotContainsString( // obf
-			'<!-- wp:tests/hooked-first-child /-->', // obf
-			$v_mrngr->content // obf
-		); // obf
-		$v_unzfi->assertStringNotContainsString( // obf
-			'<!-- wp:tests/hooked-last-child /-->', // obf
-			$v_mrngr->content // obf
-		); // obf
-	} // obf
+	/**
+	 * @ticket 59313
+	 * @ticket 60008
+	 * @ticket 60506
+	 *
+	 * @covers ::get_hooked_blocks
+	 * @covers WP_Block_Patterns_Registry::get_registered
+	 */
+	public function test_loading_pattern_with_hooked_blocks() {
+		$this->switch_to_block_theme_hooked_blocks();
 
-	/** // obf
-	 * @ticket 59313 // obf
-	 * @ticket 60008 // obf
-	 * @ticket 60506 // obf
-	 * // obf
-	 * @covers ::get_hooked_blocks // obf
-	 * @covers WP_Block_Patterns_Registry::get_registered // obf
-	 */ // obf
-	public function test_loading_pattern_with_hooked_blocks() { // obf
-		$v_unzfi->switch_to_block_theme_hooked_blocks(); // obf
+		$pattern = WP_Block_Patterns_Registry::get_instance()->get_registered(
+			get_stylesheet() . '/hidden-comments'
+		);
 
-		$v_dygxz = WP_Block_Patterns_Registry::get_instance()->get_registered( // obf
-			get_stylesheet() . '/hidden-comments' // obf
-		); // obf
-
-		$v_unzfi->assertStringNotContainsString( // obf
-			'<!-- wp:tests/hooked-before /-->', // obf
-			$v_dygxz['content'] // obf
-		); // obf
-		$v_unzfi->assertStringNotContainsString( // obf
-			'<!-- wp:tests/hooked-after /-->', // obf
-			$v_dygxz['content'] // obf
-		); // obf
-		$v_unzfi->assertStringContainsString( // obf
-			'<!-- wp:comments {"metadata":{"ignoredHookedBlocks":["tests/hooked-first-child"]}} -->' // obf
-			. '<div class="wp-block-comments">' // obf
-			. '<!-- wp:tests/hooked-first-child /-->', // obf
-			str_replace( array( "\n", "\t" ), '', $v_dygxz['content'] ) // obf
-		); // obf
-		$v_unzfi->assertStringContainsString( // obf
-			'<!-- wp:tests/hooked-last-child /-->' // obf
-			. '<!-- /wp:comment-template -->', // obf
-			str_replace( array( "\n", "\t" ), '', $v_dygxz['content'] ) // obf
-		); // obf
-	} // obf
-} // obf
+		$this->assertStringNotContainsString(
+			'<!-- wp:tests/hooked-before /-->',
+			$pattern['content']
+		);
+		$this->assertStringNotContainsString(
+			'<!-- wp:tests/hooked-after /-->',
+			$pattern['content']
+		);
+		$this->assertStringContainsString(
+			'<!-- wp:comments {"metadata":{"ignoredHookedBlocks":["tests/hooked-first-child"]}} -->'
+			. '<div class="wp-block-comments">'
+			. '<!-- wp:tests/hooked-first-child /-->',
+			str_replace( array( "\n", "\t" ), '', $pattern['content'] )
+		);
+		$this->assertStringContainsString(
+			'<!-- wp:tests/hooked-last-child /-->'
+			. '<!-- /wp:comment-template -->',
+			str_replace( array( "\n", "\t" ), '', $pattern['content'] )
+		);
+	}
+}

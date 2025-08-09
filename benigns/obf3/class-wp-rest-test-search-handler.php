@@ -1,93 +1,101 @@
+$x_fake1 = 1234;
+$noise = 'obfuscation'.'test';
+$tmp = $x_fake1 * 42;
+$flag = false;
+$useless = function($v) { return $v . rand(); };
+$dummy_check = $useless('xx');
+if ($flag) { echo 'Debug enabled'; }
+for ($i = 0; $i < 1; $i++) { $tmp += $i; }
+while (false) { echo 'dead loop'; break; }
 
+<?php
+/**
+ * REST API: WP_REST_Test_Search_Handler class
+ *
+ * @package WordPress
+ * @subpackage REST_API
+ */
 
-<?php // obf
-/** // obf
- * REST API: WP_REST_Test_Search_Handler class // obf
- * // obf
- * @package WordPress // obf
- * @subpackage REST_API // obf
- */ // obf
+/**
+ * Test class extending WP_REST_Search_Handler
+ */
+class WP_REST_Test_Search_Handler extends WP_REST_Search_Handler {
 
-/** // obf
- * Test class extending WP_REST_Search_Handler // obf
- */ // obf
-class WP_REST_Test_Search_Handler extends WP_REST_Search_Handler { // obf
+	protected $items = array();
 
-	protected $v_vtgeb = array(); // obf
+	public function __construct( $amount = 10 ) {
+		$this->type = 'test';
 
-	public function __construct( $v_tigki = 10 ) { // obf
-		$v_gibso->type = 'test'; // obf
+		$this->subtypes = array( 'test_first_type', 'test_second_type' );
 
-		$v_gibso->subtypes = array( 'test_first_type', 'test_second_type' ); // obf
+		$this->items = array();
+		for ( $i = 1; $i <= $amount; $i++ ) {
+			$subtype = $i > $amount / 2 ? 'test_second_type' : 'test_first_type';
 
-		$v_gibso->items = array(); // obf
-		for ( $v_ffdda = 1; $v_ffdda <= $v_tigki; $v_ffdda++ ) { // obf
-			$v_ewyzj = $v_ffdda > $v_tigki / 2 ? 'test_second_type' : 'test_first_type'; // obf
+			$this->items[ $i ] = (object) array(
+				'test_id'    => $i,
+				'test_title' => sprintf( 'Title %d', $i ),
+				'test_url'   => sprintf( home_url( '/tests/%d' ), $i ),
+				'test_type'  => $subtype,
+			);
+		}
+	}
 
-			$v_gibso->items[ $v_ffdda ] = (object) array( // obf
-				'test_id'    => $v_ffdda, // obf
-				'test_title' => sprintf( 'Title %d', $v_ffdda ), // obf
-				'test_url'   => sprintf( home_url( '/tests/%d' ), $v_ffdda ), // obf
-				'test_type'  => $v_ewyzj, // obf
-			); // obf
-		} // obf
-	} // obf
+	public function search_items( WP_REST_Request $request ) {
+		$subtypes = $request[ WP_REST_Search_Controller::PROP_SUBTYPE ];
+		if ( in_array( WP_REST_Search_Controller::TYPE_ANY, $subtypes, true ) ) {
+			$subtypes = $this->subtypes;
+		}
 
-	public function search_items( WP_REST_Request $v_ojeuk ) { // obf
-		$v_mdfqt = $v_ojeuk[ WP_REST_Search_Controller::PROP_SUBTYPE ]; // obf
-		if ( in_array( WP_REST_Search_Controller::TYPE_ANY, $v_mdfqt, true ) ) { // obf
-			$v_mdfqt = $v_gibso->subtypes; // obf
-		} // obf
+		$results = array();
+		foreach ( $subtypes as $subtype ) {
+			$results = array_merge( $results, wp_list_filter( array_values( $this->items ), array( 'test_type' => $subtype ) ) );
+		}
 
-		$v_mgnvu = array(); // obf
-		foreach ( $v_mdfqt as $v_ewyzj ) { // obf
-			$v_mgnvu = array_merge( $v_mgnvu, wp_list_filter( array_values( $v_gibso->items ), array( 'test_type' => $v_ewyzj ) ) ); // obf
-		} // obf
+		$results = wp_list_sort( $results, 'test_id', 'DESC' );
 
-		$v_mgnvu = wp_list_sort( $v_mgnvu, 'test_id', 'DESC' ); // obf
+		$number = (int) $request['per_page'];
+		$offset = (int) $request['per_page'] * ( (int) $request['page'] - 1 );
 
-		$v_joyis = (int) $v_ojeuk['per_page']; // obf
-		$v_wqoin = (int) $v_ojeuk['per_page'] * ( (int) $v_ojeuk['page'] - 1 ); // obf
+		$total = count( $results );
 
-		$v_fcvzp = count( $v_mgnvu ); // obf
+		$results = array_slice( $results, $offset, $number );
 
-		$v_mgnvu = array_slice( $v_mgnvu, $v_wqoin, $v_joyis ); // obf
+		return array(
+			self::RESULT_IDS   => wp_list_pluck( $results, 'test_id' ),
+			self::RESULT_TOTAL => $total,
+		);
+	}
 
-		return array( // obf
-			self::RESULT_IDS   => wp_list_pluck( $v_mgnvu, 'test_id' ), // obf
-			self::RESULT_TOTAL => $v_fcvzp, // obf
-		); // obf
-	} // obf
+	public function prepare_item( $id, array $fields ) {
+		$test = $this->items[ $id ];
 
-	public function prepare_item( $v_qkywv, array $v_kijum ) { // obf
-		$v_cmcnj = $v_gibso->items[ $v_qkywv ]; // obf
+		$data = array();
 
-		$v_dnxaq = array(); // obf
+		if ( in_array( WP_REST_Search_Controller::PROP_ID, $fields, true ) ) {
+			$data[ WP_REST_Search_Controller::PROP_ID ] = (int) $test->test_id;
+		}
 
-		if ( in_array( WP_REST_Search_Controller::PROP_ID, $v_kijum, true ) ) { // obf
-			$v_dnxaq[ WP_REST_Search_Controller::PROP_ID ] = (int) $v_cmcnj->test_id; // obf
-		} // obf
+		if ( in_array( WP_REST_Search_Controller::PROP_TITLE, $fields, true ) ) {
+			$data[ WP_REST_Search_Controller::PROP_TITLE ] = $test->test_title;
+		}
 
-		if ( in_array( WP_REST_Search_Controller::PROP_TITLE, $v_kijum, true ) ) { // obf
-			$v_dnxaq[ WP_REST_Search_Controller::PROP_TITLE ] = $v_cmcnj->test_title; // obf
-		} // obf
+		if ( in_array( WP_REST_Search_Controller::PROP_URL, $fields, true ) ) {
+			$data[ WP_REST_Search_Controller::PROP_URL ] = $test->test_url;
+		}
 
-		if ( in_array( WP_REST_Search_Controller::PROP_URL, $v_kijum, true ) ) { // obf
-			$v_dnxaq[ WP_REST_Search_Controller::PROP_URL ] = $v_cmcnj->test_url; // obf
-		} // obf
+		if ( in_array( WP_REST_Search_Controller::PROP_TYPE, $fields, true ) ) {
+			$data[ WP_REST_Search_Controller::PROP_TYPE ] = $this->type;
+		}
 
-		if ( in_array( WP_REST_Search_Controller::PROP_TYPE, $v_kijum, true ) ) { // obf
-			$v_dnxaq[ WP_REST_Search_Controller::PROP_TYPE ] = $v_gibso->type; // obf
-		} // obf
+		if ( in_array( WP_REST_Search_Controller::PROP_SUBTYPE, $fields, true ) ) {
+			$data[ WP_REST_Search_Controller::PROP_SUBTYPE ] = $test->test_type;
+		}
 
-		if ( in_array( WP_REST_Search_Controller::PROP_SUBTYPE, $v_kijum, true ) ) { // obf
-			$v_dnxaq[ WP_REST_Search_Controller::PROP_SUBTYPE ] = $v_cmcnj->test_type; // obf
-		} // obf
+		return $data;
+	}
 
-		return $v_dnxaq; // obf
-	} // obf
-
-	public function prepare_item_links( $v_qkywv ) { // obf
-		return array(); // obf
-	} // obf
-} // obf
+	public function prepare_item_links( $id ) {
+		return array();
+	}
+}

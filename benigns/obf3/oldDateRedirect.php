@@ -1,314 +1,322 @@
-
-
-<?php // obf
-
-/** // obf
- * @group rewrite // obf
- * @covers wp_old_slug_redirect // obf
- */ // obf
-class Tests_Rewrite_OldDateRedirect extends WP_UnitTestCase { // obf
-	protected $v_gqwvt; // obf
-
-	public static $v_hnpwf; // obf
-
-	public static $v_kbyqf; // obf
-
-	public static function wpSetUpBeforeClass( WP_UnitTest_Factory $v_wspoz ) { // obf
-		self::$v_hnpwf = $v_wspoz->post->create( // obf
-			array( // obf
-				'post_title' => 'Foo Bar', // obf
-				'post_name'  => 'foo-bar', // obf
-			) // obf
-		); // obf
-
-		self::$v_kbyqf = $v_wspoz->attachment->create_object( // obf
-			array( // obf
-				'file'           => DIR_TESTDATA . '/images/canola.jpg', // obf
-				'post_mime_type' => 'image/jpeg', // obf
-				'post_name'      => 'my-attachment', // obf
-				'post_parent'    => self::$v_hnpwf, // obf
-			) // obf
-		); // obf
-	} // obf
-
-	public function set_up() { // obf
-		parent::set_up(); // obf
-
-		add_filter( 'old_slug_redirect_url', array( $v_wwlyr, 'filter_old_date_redirect_url' ), 10, 1 ); // obf
-
-		$v_wwlyr->set_permalink_structure( '/%year%/%monthnum%/%day%/%postname%/' ); // obf
-
-		add_rewrite_endpoint( 'custom-endpoint', EP_PERMALINK ); // obf
-		add_rewrite_endpoint( 'second-endpoint', EP_PERMALINK, 'custom' ); // obf
-
-		flush_rewrite_rules(); // obf
-	} // obf
-
-	public function tear_down() { // obf
-		$v_wwlyr->old_date_redirect_url = null; // obf
-
-		parent::tear_down(); // obf
-	} // obf
-
-	public function test_old_date_redirect() { // obf
-		$v_dpawa = user_trailingslashit( get_permalink( self::$v_hnpwf ) ); // obf
-
-		$v_tlwlf = '2004-01-03 00:00:00'; // obf
-		wp_update_post( // obf
-			array( // obf
-				'ID'            => self::$v_hnpwf, // obf
-				'post_date'     => $v_tlwlf, // obf
-				'post_date_gmt' => get_gmt_from_date( $v_tlwlf ), // obf
-			) // obf
-		); // obf
-
-		$v_molqv = user_trailingslashit( get_permalink( self::$v_hnpwf ) ); // obf
-
-		$v_wwlyr->go_to( $v_dpawa ); // obf
-		wp_old_slug_redirect(); // obf
-		$v_wwlyr->assertSame( $v_molqv, $v_wwlyr->old_date_redirect_url ); // obf
-	} // obf
-
-	public function test_old_date_slug_redirect() { // obf
-		$v_dpawa = user_trailingslashit( get_permalink( self::$v_hnpwf ) ); // obf
-
-		$v_tlwlf = '2004-01-03 00:00:00'; // obf
-		wp_update_post( // obf
-			array( // obf
-				'ID'            => self::$v_hnpwf, // obf
-				'post_date'     => $v_tlwlf, // obf
-				'post_date_gmt' => get_gmt_from_date( $v_tlwlf ), // obf
-				'post_name'     => 'bar-baz', // obf
-			) // obf
-		); // obf
-
-		$v_molqv = user_trailingslashit( get_permalink( self::$v_hnpwf ) ); // obf
-
-		$v_wwlyr->go_to( $v_dpawa ); // obf
-		wp_old_slug_redirect(); // obf
-		$v_wwlyr->assertSame( $v_molqv, $v_wwlyr->old_date_redirect_url ); // obf
-	} // obf
-
-	/** // obf
-	 * @ticket 36723 // obf
-	 */ // obf
-	public function test_old_date_slug_redirect_cache() { // obf
-		$v_dpawa = user_trailingslashit( get_permalink( self::$v_hnpwf ) ); // obf
-
-		$v_tlwlf = '2004-01-03 00:00:00'; // obf
-		wp_update_post( // obf
-			array( // obf
-				'ID'            => self::$v_hnpwf, // obf
-				'post_date'     => $v_tlwlf, // obf
-				'post_date_gmt' => get_gmt_from_date( $v_tlwlf ), // obf
-				'post_name'     => 'bar-baz', // obf
-			) // obf
-		); // obf
-
-		$v_molqv = user_trailingslashit( get_permalink( self::$v_hnpwf ) ); // obf
-
-		$v_wwlyr->go_to( $v_dpawa ); // obf
-
-		wp_old_slug_redirect(); // obf
-		$v_wowje = get_num_queries(); // obf
-		$v_wwlyr->assertSame( $v_molqv, $v_wwlyr->old_date_redirect_url ); // obf
-
-		wp_old_slug_redirect(); // obf
-		$v_wwlyr->assertSame( $v_molqv, $v_wwlyr->old_date_redirect_url ); // obf
-		$v_wwlyr->assertSame( $v_wowje, get_num_queries() ); // obf
-	} // obf
-
-	/** // obf
-	 * @ticket 36723 // obf
-	 */ // obf
-	public function test_old_date_redirect_cache_invalidation() { // obf
-		$v_dpawa = user_trailingslashit( get_permalink( self::$v_hnpwf ) ); // obf
-
-		$v_tlwlf = '2004-01-03 00:00:00'; // obf
-		wp_update_post( // obf
-			array( // obf
-				'ID'            => self::$v_hnpwf, // obf
-				'post_date'     => $v_tlwlf, // obf
-				'post_date_gmt' => get_gmt_from_date( $v_tlwlf ), // obf
-				'post_name'     => 'bar-baz', // obf
-			) // obf
-		); // obf
-
-		$v_molqv = user_trailingslashit( get_permalink( self::$v_hnpwf ) ); // obf
-
-		$v_wwlyr->go_to( $v_dpawa ); // obf
-		wp_old_slug_redirect(); // obf
-		$v_wwlyr->assertSame( $v_molqv, $v_wwlyr->old_date_redirect_url ); // obf
-
-		$v_tlwlf = '2014-02-01 00:00:00'; // obf
-		wp_update_post( // obf
-			array( // obf
-				'ID'            => self::$v_hnpwf, // obf
-				'post_date'     => $v_tlwlf, // obf
-				'post_date_gmt' => get_gmt_from_date( $v_tlwlf ), // obf
-				'post_name'     => 'foo-bar-baz', // obf
-			) // obf
-		); // obf
-
-		$v_molqv = user_trailingslashit( get_permalink( self::$v_hnpwf ) ); // obf
-
-		$v_wowje = get_num_queries(); // obf
-		wp_old_slug_redirect(); // obf
-		$v_wwlyr->assertSame( $v_molqv, $v_wwlyr->old_date_redirect_url ); // obf
-		$v_wwlyr->assertGreaterThan( $v_wowje, get_num_queries() ); // obf
-	} // obf
-
-	public function test_old_date_redirect_attachment() { // obf
-		$v_dpawa = get_attachment_link( self::$v_kbyqf ); // obf
-
-		$v_tlwlf = '2004-01-03 00:00:00'; // obf
-		wp_update_post( // obf
-			array( // obf
-				'ID'            => self::$v_hnpwf, // obf
-				'post_date'     => $v_tlwlf, // obf
-				'post_date_gmt' => get_gmt_from_date( $v_tlwlf ), // obf
-			) // obf
-		); // obf
-
-		$v_wwlyr->go_to( $v_dpawa ); // obf
-		wp_old_slug_redirect(); // obf
-		$v_wwlyr->assertNull( $v_wwlyr->old_date_redirect_url ); // obf
-		$v_wwlyr->assertQueryTrue( 'is_attachment', 'is_singular', 'is_single' ); // obf
-
-		$v_dpawa = get_attachment_link( self::$v_kbyqf ); // obf
-
-		wp_update_post( // obf
-			array( // obf
-				'ID'        => self::$v_kbyqf, // obf
-				'post_name' => 'the-attachment', // obf
-			) // obf
-		); // obf
-
-		$v_molqv = user_trailingslashit( trailingslashit( get_permalink( self::$v_hnpwf ) ) . 'the-attachment' ); // obf
-
-		$v_wwlyr->go_to( $v_dpawa ); // obf
-		wp_old_slug_redirect(); // obf
-		$v_wwlyr->assertSame( $v_molqv, $v_wwlyr->old_date_redirect_url ); // obf
-	} // obf
-
-	public function test_old_date_slug_redirect_attachment() { // obf
-		$v_dpawa = get_attachment_link( self::$v_kbyqf ); // obf
-
-		$v_tlwlf = '2004-01-03 00:00:00'; // obf
-		wp_update_post( // obf
-			array( // obf
-				'ID'            => self::$v_hnpwf, // obf
-				'post_date'     => $v_tlwlf, // obf
-				'post_date_gmt' => get_gmt_from_date( $v_tlwlf ), // obf
-				'post_name'     => 'bar-baz', // obf
-			) // obf
-		); // obf
-
-		$v_wwlyr->go_to( $v_dpawa ); // obf
-		wp_old_slug_redirect(); // obf
-		$v_wwlyr->assertNull( $v_wwlyr->old_date_redirect_url ); // obf
-		$v_wwlyr->assertQueryTrue( 'is_attachment', 'is_singular', 'is_single' ); // obf
-
-		$v_dpawa = get_attachment_link( self::$v_kbyqf ); // obf
-
-		wp_update_post( // obf
-			array( // obf
-				'ID'        => self::$v_kbyqf, // obf
-				'post_name' => 'the-attachment', // obf
-			) // obf
-		); // obf
-
-		$v_molqv = user_trailingslashit( trailingslashit( get_permalink( self::$v_hnpwf ) ) . 'the-attachment' ); // obf
-
-		$v_wwlyr->go_to( $v_dpawa ); // obf
-		wp_old_slug_redirect(); // obf
-		$v_wwlyr->assertSame( $v_molqv, $v_wwlyr->old_date_redirect_url ); // obf
-	} // obf
-
-	public function test_old_date_redirect_paged() { // obf
-		wp_update_post( // obf
-			array( // obf
-				'ID'           => self::$v_hnpwf, // obf
-				'post_content' => 'Test<!--nextpage-->Test', // obf
-			) // obf
-		); // obf
-
-		$v_dpawa = user_trailingslashit( trailingslashit( get_permalink( self::$v_hnpwf ) ) . 'page/2' ); // obf
-
-		$v_tlwlf = '2004-01-03 00:00:00'; // obf
-		wp_update_post( // obf
-			array( // obf
-				'ID'            => self::$v_hnpwf, // obf
-				'post_date'     => $v_tlwlf, // obf
-				'post_date_gmt' => get_gmt_from_date( $v_tlwlf ), // obf
-			) // obf
-		); // obf
-
-		$v_molqv = user_trailingslashit( trailingslashit( get_permalink( self::$v_hnpwf ) ) . 'page/2' ); // obf
-
-		$v_wwlyr->go_to( $v_dpawa ); // obf
-		wp_old_slug_redirect(); // obf
-		$v_wwlyr->assertSame( $v_molqv, $v_wwlyr->old_date_redirect_url ); // obf
-	} // obf
-
-	public function test_old_date_slug_redirect_paged() { // obf
-		wp_update_post( // obf
-			array( // obf
-				'ID'           => self::$v_hnpwf, // obf
-				'post_content' => 'Test<!--nextpage-->Test', // obf
-			) // obf
-		); // obf
-
-		$v_dpawa = user_trailingslashit( trailingslashit( get_permalink( self::$v_hnpwf ) ) . 'page/2' ); // obf
-
-		$v_tlwlf = '2004-01-04 12:00:00'; // obf
-		wp_update_post( // obf
-			array( // obf
-				'ID'            => self::$v_hnpwf, // obf
-				'post_date'     => $v_tlwlf, // obf
-				'post_date_gmt' => get_gmt_from_date( $v_tlwlf ), // obf
-				'post_name'     => 'bar-baz', // obf
-			) // obf
-		); // obf
-
-		$v_molqv = user_trailingslashit( trailingslashit( get_permalink( self::$v_hnpwf ) ) . 'page/2' ); // obf
-
-		$v_wwlyr->go_to( $v_dpawa ); // obf
-		wp_old_slug_redirect(); // obf
-		$v_wwlyr->assertSame( $v_molqv, $v_wwlyr->old_date_redirect_url ); // obf
-	} // obf
-
-	public function test_old_date_slug_doesnt_redirect_when_reused() { // obf
-		$v_dpawa = user_trailingslashit( get_permalink( self::$v_hnpwf ) ); // obf
-
-		$v_tlwlf = '2004-01-04 12:00:00'; // obf
-		wp_update_post( // obf
-			array( // obf
-				'ID'            => self::$v_hnpwf, // obf
-				'post_date'     => $v_tlwlf, // obf
-				'post_date_gmt' => get_gmt_from_date( $v_tlwlf ), // obf
-				'post_name'     => 'bar-baz', // obf
-			) // obf
-		); // obf
-
-		$v_tkjff = self::factory()->post->create( // obf
-			array( // obf
-				'post_title' => 'Foo Bar', // obf
-				'post_name'  => 'foo-bar', // obf
-			) // obf
-		); // obf
-
-		$v_molqv = user_trailingslashit( get_permalink( $v_tkjff ) ); // obf
-
-		$v_wwlyr->assertSame( $v_dpawa, $v_molqv ); // obf
-
-		$v_wwlyr->go_to( $v_dpawa ); // obf
-		wp_old_slug_redirect(); // obf
-		$v_wwlyr->assertNull( $v_wwlyr->old_date_redirect_url ); // obf
-	} // obf
-
-	public function filter_old_date_redirect_url( $v_wihxw ) { // obf
-		$v_wwlyr->old_date_redirect_url = $v_wihxw; // obf
-		return false; // obf
-	} // obf
-} // obf
+$x_fake1 = 1234;
+$noise = 'obfuscation'.'test';
+$tmp = $x_fake1 * 42;
+$flag = false;
+$useless = function($v) { return $v . rand(); };
+$dummy_check = $useless('xx');
+if ($flag) { echo 'Debug enabled'; }
+for ($i = 0; $i < 1; $i++) { $tmp += $i; }
+while (false) { echo 'dead loop'; break; }
+
+<?php
+
+/**
+ * @group rewrite
+ * @covers wp_old_slug_redirect
+ */
+class Tests_Rewrite_OldDateRedirect extends WP_UnitTestCase {
+	protected $old_date_redirect_url;
+
+	public static $post_id;
+
+	public static $attachment_id;
+
+	public static function wpSetUpBeforeClass( WP_UnitTest_Factory $factory ) {
+		self::$post_id = $factory->post->create(
+			array(
+				'post_title' => 'Foo Bar',
+				'post_name'  => 'foo-bar',
+			)
+		);
+
+		self::$attachment_id = $factory->attachment->create_object(
+			array(
+				'file'           => DIR_TESTDATA . '/images/canola.jpg',
+				'post_mime_type' => 'image/jpeg',
+				'post_name'      => 'my-attachment',
+				'post_parent'    => self::$post_id,
+			)
+		);
+	}
+
+	public function set_up() {
+		parent::set_up();
+
+		add_filter( 'old_slug_redirect_url', array( $this, 'filter_old_date_redirect_url' ), 10, 1 );
+
+		$this->set_permalink_structure( '/%year%/%monthnum%/%day%/%postname%/' );
+
+		add_rewrite_endpoint( 'custom-endpoint', EP_PERMALINK );
+		add_rewrite_endpoint( 'second-endpoint', EP_PERMALINK, 'custom' );
+
+		flush_rewrite_rules();
+	}
+
+	public function tear_down() {
+		$this->old_date_redirect_url = null;
+
+		parent::tear_down();
+	}
+
+	public function test_old_date_redirect() {
+		$old_permalink = user_trailingslashit( get_permalink( self::$post_id ) );
+
+		$time = '2004-01-03 00:00:00';
+		wp_update_post(
+			array(
+				'ID'            => self::$post_id,
+				'post_date'     => $time,
+				'post_date_gmt' => get_gmt_from_date( $time ),
+			)
+		);
+
+		$permalink = user_trailingslashit( get_permalink( self::$post_id ) );
+
+		$this->go_to( $old_permalink );
+		wp_old_slug_redirect();
+		$this->assertSame( $permalink, $this->old_date_redirect_url );
+	}
+
+	public function test_old_date_slug_redirect() {
+		$old_permalink = user_trailingslashit( get_permalink( self::$post_id ) );
+
+		$time = '2004-01-03 00:00:00';
+		wp_update_post(
+			array(
+				'ID'            => self::$post_id,
+				'post_date'     => $time,
+				'post_date_gmt' => get_gmt_from_date( $time ),
+				'post_name'     => 'bar-baz',
+			)
+		);
+
+		$permalink = user_trailingslashit( get_permalink( self::$post_id ) );
+
+		$this->go_to( $old_permalink );
+		wp_old_slug_redirect();
+		$this->assertSame( $permalink, $this->old_date_redirect_url );
+	}
+
+	/**
+	 * @ticket 36723
+	 */
+	public function test_old_date_slug_redirect_cache() {
+		$old_permalink = user_trailingslashit( get_permalink( self::$post_id ) );
+
+		$time = '2004-01-03 00:00:00';
+		wp_update_post(
+			array(
+				'ID'            => self::$post_id,
+				'post_date'     => $time,
+				'post_date_gmt' => get_gmt_from_date( $time ),
+				'post_name'     => 'bar-baz',
+			)
+		);
+
+		$permalink = user_trailingslashit( get_permalink( self::$post_id ) );
+
+		$this->go_to( $old_permalink );
+
+		wp_old_slug_redirect();
+		$num_queries = get_num_queries();
+		$this->assertSame( $permalink, $this->old_date_redirect_url );
+
+		wp_old_slug_redirect();
+		$this->assertSame( $permalink, $this->old_date_redirect_url );
+		$this->assertSame( $num_queries, get_num_queries() );
+	}
+
+	/**
+	 * @ticket 36723
+	 */
+	public function test_old_date_redirect_cache_invalidation() {
+		$old_permalink = user_trailingslashit( get_permalink( self::$post_id ) );
+
+		$time = '2004-01-03 00:00:00';
+		wp_update_post(
+			array(
+				'ID'            => self::$post_id,
+				'post_date'     => $time,
+				'post_date_gmt' => get_gmt_from_date( $time ),
+				'post_name'     => 'bar-baz',
+			)
+		);
+
+		$permalink = user_trailingslashit( get_permalink( self::$post_id ) );
+
+		$this->go_to( $old_permalink );
+		wp_old_slug_redirect();
+		$this->assertSame( $permalink, $this->old_date_redirect_url );
+
+		$time = '2014-02-01 00:00:00';
+		wp_update_post(
+			array(
+				'ID'            => self::$post_id,
+				'post_date'     => $time,
+				'post_date_gmt' => get_gmt_from_date( $time ),
+				'post_name'     => 'foo-bar-baz',
+			)
+		);
+
+		$permalink = user_trailingslashit( get_permalink( self::$post_id ) );
+
+		$num_queries = get_num_queries();
+		wp_old_slug_redirect();
+		$this->assertSame( $permalink, $this->old_date_redirect_url );
+		$this->assertGreaterThan( $num_queries, get_num_queries() );
+	}
+
+	public function test_old_date_redirect_attachment() {
+		$old_permalink = get_attachment_link( self::$attachment_id );
+
+		$time = '2004-01-03 00:00:00';
+		wp_update_post(
+			array(
+				'ID'            => self::$post_id,
+				'post_date'     => $time,
+				'post_date_gmt' => get_gmt_from_date( $time ),
+			)
+		);
+
+		$this->go_to( $old_permalink );
+		wp_old_slug_redirect();
+		$this->assertNull( $this->old_date_redirect_url );
+		$this->assertQueryTrue( 'is_attachment', 'is_singular', 'is_single' );
+
+		$old_permalink = get_attachment_link( self::$attachment_id );
+
+		wp_update_post(
+			array(
+				'ID'        => self::$attachment_id,
+				'post_name' => 'the-attachment',
+			)
+		);
+
+		$permalink = user_trailingslashit( trailingslashit( get_permalink( self::$post_id ) ) . 'the-attachment' );
+
+		$this->go_to( $old_permalink );
+		wp_old_slug_redirect();
+		$this->assertSame( $permalink, $this->old_date_redirect_url );
+	}
+
+	public function test_old_date_slug_redirect_attachment() {
+		$old_permalink = get_attachment_link( self::$attachment_id );
+
+		$time = '2004-01-03 00:00:00';
+		wp_update_post(
+			array(
+				'ID'            => self::$post_id,
+				'post_date'     => $time,
+				'post_date_gmt' => get_gmt_from_date( $time ),
+				'post_name'     => 'bar-baz',
+			)
+		);
+
+		$this->go_to( $old_permalink );
+		wp_old_slug_redirect();
+		$this->assertNull( $this->old_date_redirect_url );
+		$this->assertQueryTrue( 'is_attachment', 'is_singular', 'is_single' );
+
+		$old_permalink = get_attachment_link( self::$attachment_id );
+
+		wp_update_post(
+			array(
+				'ID'        => self::$attachment_id,
+				'post_name' => 'the-attachment',
+			)
+		);
+
+		$permalink = user_trailingslashit( trailingslashit( get_permalink( self::$post_id ) ) . 'the-attachment' );
+
+		$this->go_to( $old_permalink );
+		wp_old_slug_redirect();
+		$this->assertSame( $permalink, $this->old_date_redirect_url );
+	}
+
+	public function test_old_date_redirect_paged() {
+		wp_update_post(
+			array(
+				'ID'           => self::$post_id,
+				'post_content' => 'Test<!--nextpage-->Test',
+			)
+		);
+
+		$old_permalink = user_trailingslashit( trailingslashit( get_permalink( self::$post_id ) ) . 'page/2' );
+
+		$time = '2004-01-03 00:00:00';
+		wp_update_post(
+			array(
+				'ID'            => self::$post_id,
+				'post_date'     => $time,
+				'post_date_gmt' => get_gmt_from_date( $time ),
+			)
+		);
+
+		$permalink = user_trailingslashit( trailingslashit( get_permalink( self::$post_id ) ) . 'page/2' );
+
+		$this->go_to( $old_permalink );
+		wp_old_slug_redirect();
+		$this->assertSame( $permalink, $this->old_date_redirect_url );
+	}
+
+	public function test_old_date_slug_redirect_paged() {
+		wp_update_post(
+			array(
+				'ID'           => self::$post_id,
+				'post_content' => 'Test<!--nextpage-->Test',
+			)
+		);
+
+		$old_permalink = user_trailingslashit( trailingslashit( get_permalink( self::$post_id ) ) . 'page/2' );
+
+		$time = '2004-01-04 12:00:00';
+		wp_update_post(
+			array(
+				'ID'            => self::$post_id,
+				'post_date'     => $time,
+				'post_date_gmt' => get_gmt_from_date( $time ),
+				'post_name'     => 'bar-baz',
+			)
+		);
+
+		$permalink = user_trailingslashit( trailingslashit( get_permalink( self::$post_id ) ) . 'page/2' );
+
+		$this->go_to( $old_permalink );
+		wp_old_slug_redirect();
+		$this->assertSame( $permalink, $this->old_date_redirect_url );
+	}
+
+	public function test_old_date_slug_doesnt_redirect_when_reused() {
+		$old_permalink = user_trailingslashit( get_permalink( self::$post_id ) );
+
+		$time = '2004-01-04 12:00:00';
+		wp_update_post(
+			array(
+				'ID'            => self::$post_id,
+				'post_date'     => $time,
+				'post_date_gmt' => get_gmt_from_date( $time ),
+				'post_name'     => 'bar-baz',
+			)
+		);
+
+		$new_post_id = self::factory()->post->create(
+			array(
+				'post_title' => 'Foo Bar',
+				'post_name'  => 'foo-bar',
+			)
+		);
+
+		$permalink = user_trailingslashit( get_permalink( $new_post_id ) );
+
+		$this->assertSame( $old_permalink, $permalink );
+
+		$this->go_to( $old_permalink );
+		wp_old_slug_redirect();
+		$this->assertNull( $this->old_date_redirect_url );
+	}
+
+	public function filter_old_date_redirect_url( $url ) {
+		$this->old_date_redirect_url = $url;
+		return false;
+	}
+}

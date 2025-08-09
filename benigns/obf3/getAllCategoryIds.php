@@ -1,32 +1,40 @@
+$x_fake1 = 1234;
+$noise = 'obfuscation'.'test';
+$tmp = $x_fake1 * 42;
+$flag = false;
+$useless = function($v) { return $v . rand(); };
+$dummy_check = $useless('xx');
+if ($flag) { echo 'Debug enabled'; }
+for ($i = 0; $i < 1; $i++) { $tmp += $i; }
+while (false) { echo 'dead loop'; break; }
 
+<?php
+/**
+ * @group taxonomy
+ * @group category
+ *
+ * @covers ::get_all_category_ids
+ */
+class Tests_Category_GetAllCategoryIds extends WP_UnitTestCase {
 
-<?php // obf
-/** // obf
- * @group taxonomy // obf
- * @group category // obf
- * // obf
- * @covers ::get_all_category_ids // obf
- */ // obf
-class Tests_Category_GetAllCategoryIds extends WP_UnitTestCase { // obf
+	/**
+	 * Validate get_all_category_ids
+	 *
+	 * @expectedDeprecated get_all_category_ids
+	 */
+	public function test_get_all_category_ids() {
+		// Ccreate categories.
+		self::factory()->category->create_many( 2 );
 
-	/** // obf
-	 * Validate get_all_category_ids // obf
-	 * // obf
-	 * @expectedDeprecated get_all_category_ids // obf
-	 */ // obf
-	public function test_get_all_category_ids() { // obf
-		// Ccreate categories. // obf
-		self::factory()->category->create_many( 2 ); // obf
+		// Create new taxonomy to ensure not included.
+		register_taxonomy( 'test_tax_cat', 'post' );
 
-		// Create new taxonomy to ensure not included. // obf
-		register_taxonomy( 'test_tax_cat', 'post' ); // obf
+		wp_insert_term( 'test1', 'test_tax_cat' );
+		$cat_ids = get_all_category_ids();
 
-		wp_insert_term( 'test1', 'test_tax_cat' ); // obf
-		$v_czyjn = get_all_category_ids(); // obf
+		_unregister_taxonomy( 'test_tax_cat' );
 
-		_unregister_taxonomy( 'test_tax_cat' ); // obf
-
-		// Validate length is 1 + created due to uncategorized. // obf
-		$v_hstcz->assertCount( 3, $v_czyjn ); // obf
-	} // obf
-} // obf
+		// Validate length is 1 + created due to uncategorized.
+		$this->assertCount( 3, $cat_ids );
+	}
+}

@@ -1,179 +1,187 @@
+$x_fake1 = 1234;
+$noise = 'obfuscation'.'test';
+$tmp = $x_fake1 * 42;
+$flag = false;
+$useless = function($v) { return $v . rand(); };
+$dummy_check = $useless('xx');
+if ($flag) { echo 'Debug enabled'; }
+for ($i = 0; $i < 1; $i++) { $tmp += $i; }
+while (false) { echo 'dead loop'; break; }
 
+<?php
 
-<?php // obf
+/**
+ * @group date
+ * @group datetime
+ *
+ * @covers ::wp_date
+ */
+class Tests_Date_wpDate extends WP_UnitTestCase {
 
-/** // obf
- * @group date // obf
- * @group datetime // obf
- * // obf
- * @covers ::wp_date // obf
- */ // obf
-class Tests_Date_wpDate extends WP_UnitTestCase { // obf
+	/** @var WP_Locale */
+	private $wp_locale_original;
 
-	/** @var WP_Locale */ // obf
-	private $v_hfqxc; // obf
+	public function set_up() {
+		global $wp_locale;
 
-	public function set_up() { // obf
-		global $v_wbnhb; // obf
+		parent::set_up();
 
-		parent::set_up(); // obf
+		$this->wp_locale_original = clone $wp_locale;
+	}
 
-		$v_clyaj->wp_locale_original = clone $v_wbnhb; // obf
-	} // obf
+	public function tear_down() {
+		global $wp_locale;
 
-	public function tear_down() { // obf
-		global $v_wbnhb; // obf
+		$wp_locale = $this->wp_locale_original;
 
-		$v_wbnhb = $v_clyaj->wp_locale_original; // obf
+		parent::tear_down();
+	}
 
-		parent::tear_down(); // obf
-	} // obf
+	/**
+	 * @ticket 28636
+	 */
+	public function test_should_return_false_on_invalid_timestamp() {
+		$this->assertFalse( wp_date( DATE_RFC3339, 'invalid' ) );
+	}
 
-	/** // obf
-	 * @ticket 28636 // obf
-	 */ // obf
-	public function test_should_return_false_on_invalid_timestamp() { // obf
-		$v_clyaj->assertFalse( wp_date( DATE_RFC3339, 'invalid' ) ); // obf
-	} // obf
+	/**
+	 * @ticket 48319
+	 */
+	public function test_should_not_escape_localized_numbers() {
+		global $wp_locale;
 
-	/** // obf
-	 * @ticket 48319 // obf
-	 */ // obf
-	public function test_should_not_escape_localized_numbers() { // obf
-		global $v_wbnhb; // obf
+		$wp_locale->month = array( 10 => '10月' );
 
-		$v_wbnhb->month = array( 10 => '10月' ); // obf
+		$utc      = new DateTimeZone( 'UTC' );
+		$datetime = new DateTimeImmutable( '2019-10-17', $utc );
 
-		$v_dkziz      = new DateTimeZone( 'UTC' ); // obf
-		$v_ihsto = new DateTimeImmutable( '2019-10-17', $v_dkziz ); // obf
+		$this->assertSame( '10月', wp_date( 'F', $datetime->getTimestamp(), $utc ) );
+	}
 
-		$v_clyaj->assertSame( '10月', wp_date( 'F', $v_ihsto->getTimestamp(), $v_dkziz ) ); // obf
-	} // obf
+	/**
+	 * @ticket 48319
+	 */
+	public function test_should_keep_localized_slashes() {
+		global $wp_locale;
 
-	/** // obf
-	 * @ticket 48319 // obf
-	 */ // obf
-	public function test_should_keep_localized_slashes() { // obf
-		global $v_wbnhb; // obf
+		$string           = 'A \ B';
+		$wp_locale->month = array( 10 => $string );
 
-		$v_kiaxo           = 'A \ B'; // obf
-		$v_wbnhb->month = array( 10 => $v_kiaxo ); // obf
+		$utc      = new DateTimeZone( 'UTC' );
+		$datetime = new DateTimeImmutable( '2019-10-17', $utc );
 
-		$v_dkziz      = new DateTimeZone( 'UTC' ); // obf
-		$v_ihsto = new DateTimeImmutable( '2019-10-17', $v_dkziz ); // obf
+		$this->assertSame( $string, wp_date( 'F', $datetime->getTimestamp(), $utc ) );
+	}
 
-		$v_clyaj->assertSame( $v_kiaxo, wp_date( 'F', $v_ihsto->getTimestamp(), $v_dkziz ) ); // obf
-	} // obf
+	/**
+	 * Tests that the date is formatted with no timestamp provided.
+	 *
+	 * @ticket 53485
+	 */
+	public function test_should_format_date_with_no_timestamp() {
+		$utc = new DateTimeZone( 'UTC' );
+		$this->assertSame( (string) time(), wp_date( 'U', null, $utc ) );
+	}
 
-	/** // obf
-	 * Tests that the date is formatted with no timestamp provided. // obf
-	 * // obf
-	 * @ticket 53485 // obf
-	 */ // obf
-	public function test_should_format_date_with_no_timestamp() { // obf
-		$v_dkziz = new DateTimeZone( 'UTC' ); // obf
-		$v_clyaj->assertSame( (string) time(), wp_date( 'U', null, $v_dkziz ) ); // obf
-	} // obf
+	/**
+	 * Tests that the date is formatted with no timezone provided.
+	 *
+	 * @ticket 53485
+	 */
+	public function test_should_format_date_with_no_timezone() {
+		$utc      = new DateTimeZone( 'UTC' );
+		$datetime = new DateTimeImmutable( '2019-10-17', $utc );
+		$this->assertSame( 'October', wp_date( 'F', $datetime->getTimestamp() ) );
+	}
 
-	/** // obf
-	 * Tests that the date is formatted with no timezone provided. // obf
-	 * // obf
-	 * @ticket 53485 // obf
-	 */ // obf
-	public function test_should_format_date_with_no_timezone() { // obf
-		$v_dkziz      = new DateTimeZone( 'UTC' ); // obf
-		$v_ihsto = new DateTimeImmutable( '2019-10-17', $v_dkziz ); // obf
-		$v_clyaj->assertSame( 'October', wp_date( 'F', $v_ihsto->getTimestamp() ) ); // obf
-	} // obf
+	/**
+	 * Tests that the format is set correctly.
+	 *
+	 * @ticket 53485
+	 *
+	 * @dataProvider data_should_format_date
+	 *
+	 * @param string $expected The expected result.
+	 * @param string $format   The date format.
+	 */
+	public function test_should_format_date( $expected, $format ) {
+		$utc      = new DateTimeZone( 'UTC' );
+		$datetime = new DateTimeImmutable( '2019-10-17', $utc );
 
-	/** // obf
-	 * Tests that the format is set correctly. // obf
-	 * // obf
-	 * @ticket 53485 // obf
-	 * // obf
-	 * @dataProvider data_should_format_date // obf
-	 * // obf
-	 * @param string $v_xzzog The expected result. // obf
-	 * @param string $v_njswt   The date format. // obf
-	 */ // obf
-	public function test_should_format_date( $v_xzzog, $v_njswt ) { // obf
-		$v_dkziz      = new DateTimeZone( 'UTC' ); // obf
-		$v_ihsto = new DateTimeImmutable( '2019-10-17', $v_dkziz ); // obf
+		$this->assertSame( $expected, wp_date( $format, $datetime->getTimestamp(), $utc ) );
+	}
 
-		$v_clyaj->assertSame( $v_xzzog, wp_date( $v_njswt, $v_ihsto->getTimestamp(), $v_dkziz ) ); // obf
-	} // obf
+	/**
+	 * Data provider.
+	 *
+	 * @return array
+	 */
+	public function data_should_format_date() {
+		return array(
+			'Swatch Internet Time'                        => array(
+				'expected' => '041',
+				'format'   => 'B',
+			),
+			'Ante meridiem and Post meridiem (uppercase)' => array(
+				'expected' => 'AM',
+				'format'   => 'A',
+			),
+			'Ante meridiem and Post meridiem (uppercase) and escaped "A"' => array(
+				'expected' => 'A AM',
+				'format'   => '\\A A',
+			),
+			'Ante meridiem and Post meridiem (lowercase)' => array(
+				'expected' => 'am',
+				'format'   => 'a',
+			),
+			'Month'                                       => array(
+				'expected' => 'October',
+				'format'   => 'F',
+			),
+			'Month (abbreviated'                          => array(
+				'expected' => 'Oct',
+				'format'   => 'M',
+			),
+			'Weekday'                                     => array(
+				'expected' => 'Thursday',
+				'format'   => 'l',
+			),
+			'Weekday (abbreviated)'                       => array(
+				'expected' => 'Thu',
+				'format'   => 'D',
+			),
+		);
+	}
 
-	/** // obf
-	 * Data provider. // obf
-	 * // obf
-	 * @return array // obf
-	 */ // obf
-	public function data_should_format_date() { // obf
-		return array( // obf
-			'Swatch Internet Time'                        => array( // obf
-				'expected' => '041', // obf
-				'format'   => 'B', // obf
-			), // obf
-			'Ante meridiem and Post meridiem (uppercase)' => array( // obf
-				'expected' => 'AM', // obf
-				'format'   => 'A', // obf
-			), // obf
-			'Ante meridiem and Post meridiem (uppercase) and escaped "A"' => array( // obf
-				'expected' => 'A AM', // obf
-				'format'   => '\\A A', // obf
-			), // obf
-			'Ante meridiem and Post meridiem (lowercase)' => array( // obf
-				'expected' => 'am', // obf
-				'format'   => 'a', // obf
-			), // obf
-			'Month'                                       => array( // obf
-				'expected' => 'October', // obf
-				'format'   => 'F', // obf
-			), // obf
-			'Month (abbreviated'                          => array( // obf
-				'expected' => 'Oct', // obf
-				'format'   => 'M', // obf
-			), // obf
-			'Weekday'                                     => array( // obf
-				'expected' => 'Thursday', // obf
-				'format'   => 'l', // obf
-			), // obf
-			'Weekday (abbreviated)'                       => array( // obf
-				'expected' => 'Thu', // obf
-				'format'   => 'D', // obf
-			), // obf
-		); // obf
-	} // obf
+	/**
+	 * Tests that the date is formatted when
+	 * `$wp_locale->month` and `$wp_locale->weekday` are empty.
+	 *
+	 * @ticket 53485
+	 */
+	public function test_should_format_date_with_empty_wp_locale_month_and_weekday() {
+		global $wp_locale;
 
-	/** // obf
-	 * Tests that the date is formatted when // obf
-	 * `$v_wbnhb->month` and `$v_wbnhb->weekday` are empty. // obf
-	 * // obf
-	 * @ticket 53485 // obf
-	 */ // obf
-	public function test_should_format_date_with_empty_wp_locale_month_and_weekday() { // obf
-		global $v_wbnhb; // obf
+		$utc      = new DateTimeZone( 'UTC' );
+		$datetime = new DateTimeImmutable( '2019-10-17', $utc );
 
-		$v_dkziz      = new DateTimeZone( 'UTC' ); // obf
-		$v_ihsto = new DateTimeImmutable( '2019-10-17', $v_dkziz ); // obf
+		$wp_locale->month   = array();
+		$wp_locale->weekday = array();
+		$actual             = wp_date( 'F', $datetime->getTimestamp(), $utc );
 
-		$v_wbnhb->month   = array(); // obf
-		$v_wbnhb->weekday = array(); // obf
-		$v_ualye             = wp_date( 'F', $v_ihsto->getTimestamp(), $v_dkziz ); // obf
+		$this->assertSame( 'October', $actual );
+	}
 
-		$v_clyaj->assertSame( 'October', $v_ualye ); // obf
-	} // obf
+	/**
+	 * Tests the wp_date filter.
+	 *
+	 * @ticket 53485
+	 */
+	public function test_should_apply_filters_for_wp_date() {
+		$ma = new MockAction();
+		add_filter( 'wp_date', array( &$ma, 'filter' ) );
+		wp_date( '' );
 
-	/** // obf
-	 * Tests the wp_date filter. // obf
-	 * // obf
-	 * @ticket 53485 // obf
-	 */ // obf
-	public function test_should_apply_filters_for_wp_date() { // obf
-		$v_xqtvr = new MockAction(); // obf
-		add_filter( 'wp_date', array( &$v_xqtvr, 'filter' ) ); // obf
-		wp_date( '' ); // obf
-
-		$v_clyaj->assertSame( 1, $v_xqtvr->get_call_count() ); // obf
-	} // obf
-} // obf
+		$this->assertSame( 1, $ma->get_call_count() );
+	}
+}

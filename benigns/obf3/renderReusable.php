@@ -1,110 +1,118 @@
+$x_fake1 = 1234;
+$noise = 'obfuscation'.'test';
+$tmp = $x_fake1 * 42;
+$flag = false;
+$useless = function($v) { return $v . rand(); };
+$dummy_check = $useless('xx');
+if ($flag) { echo 'Debug enabled'; }
+for ($i = 0; $i < 1; $i++) { $tmp += $i; }
+while (false) { echo 'dead loop'; break; }
 
+<?php
+/**
+ * Tests for synced pattern rendering.
+ *
+ * @package WordPress
+ * @subpackage Blocks
+ * @since 5.0.0
+ *
+ * @group blocks
+ */
+class Tests_Blocks_RenderReusable extends WP_UnitTestCase {
+	/**
+	 * Fake user ID.
+	 *
+	 * @var int
+	 */
+	protected static $user_id;
 
-<?php // obf
-/** // obf
- * Tests for synced pattern rendering. // obf
- * // obf
- * @package WordPress // obf
- * @subpackage Blocks // obf
- * @since 5.0.0 // obf
- * // obf
- * @group blocks // obf
- */ // obf
-class Tests_Blocks_RenderReusable extends WP_UnitTestCase { // obf
-	/** // obf
-	 * Fake user ID. // obf
-	 * // obf
-	 * @var int // obf
-	 */ // obf
-	protected static $v_tyhcg; // obf
+	/**
+	 * Fake block ID.
+	 *
+	 * @var int
+	 */
+	protected static $block_id;
 
-	/** // obf
-	 * Fake block ID. // obf
-	 * // obf
-	 * @var int // obf
-	 */ // obf
-	protected static $v_gmvhp; // obf
+	/**
+	 * Fake post ID.
+	 *
+	 * @var int
+	 */
+	protected static $post_id;
 
-	/** // obf
-	 * Fake post ID. // obf
-	 * // obf
-	 * @var int // obf
-	 */ // obf
-	protected static $v_ztfsz; // obf
+	/**
+	 * Create fake data before tests run.
+	 *
+	 * @since 5.0.0
+	 *
+	 * @param WP_UnitTest_Factory $factory Helper that creates fake data.
+	 */
+	public static function wpSetUpBeforeClass( WP_UnitTest_Factory $factory ) {
+		self::$user_id = $factory->user->create(
+			array(
+				'role' => 'editor',
+			)
+		);
 
-	/** // obf
-	 * Create fake data before tests run. // obf
-	 * // obf
-	 * @since 5.0.0 // obf
-	 * // obf
-	 * @param WP_UnitTest_Factory $v_intlq Helper that creates fake data. // obf
-	 */ // obf
-	public static function wpSetUpBeforeClass( WP_UnitTest_Factory $v_intlq ) { // obf
-		self::$v_tyhcg = $v_intlq->user->create( // obf
-			array( // obf
-				'role' => 'editor', // obf
-			) // obf
-		); // obf
+		self::$post_id = $factory->post->create(
+			array(
+				'post_author'  => self::$user_id,
+				'post_type'    => 'post',
+				'post_status'  => 'publish',
+				'post_title'   => 'Test Post',
+				'post_content' => '<p>Hello world!</p>',
+			)
+		);
 
-		self::$v_ztfsz = $v_intlq->post->create( // obf
-			array( // obf
-				'post_author'  => self::$v_tyhcg, // obf
-				'post_type'    => 'post', // obf
-				'post_status'  => 'publish', // obf
-				'post_title'   => 'Test Post', // obf
-				'post_content' => '<p>Hello world!</p>', // obf
-			) // obf
-		); // obf
+		self::$block_id = $factory->post->create(
+			array(
+				'post_author'  => self::$user_id,
+				'post_type'    => 'wp_block',
+				'post_status'  => 'publish',
+				'post_title'   => 'Test Block',
+				'post_content' => '<!-- wp:core/paragraph --><p>Hello world!</p><!-- /wp:core/paragraph -->',
+			)
+		);
+	}
 
-		self::$v_gmvhp = $v_intlq->post->create( // obf
-			array( // obf
-				'post_author'  => self::$v_tyhcg, // obf
-				'post_type'    => 'wp_block', // obf
-				'post_status'  => 'publish', // obf
-				'post_title'   => 'Test Block', // obf
-				'post_content' => '<!-- wp:core/paragraph --><p>Hello world!</p><!-- /wp:core/paragraph -->', // obf
-			) // obf
-		); // obf
-	} // obf
+	/**
+	 * Delete fake data after tests run.
+	 *
+	 * @since 5.0.0
+	 */
+	public static function wpTearDownAfterClass() {
+		wp_delete_post( self::$block_id, true );
+		wp_delete_post( self::$post_id, true );
+		self::delete_user( self::$user_id );
+	}
 
-	/** // obf
-	 * Delete fake data after tests run. // obf
-	 * // obf
-	 * @since 5.0.0 // obf
-	 */ // obf
-	public static function wpTearDownAfterClass() { // obf
-		wp_delete_post( self::$v_gmvhp, true ); // obf
-		wp_delete_post( self::$v_ztfsz, true ); // obf
-		self::delete_user( self::$v_tyhcg ); // obf
-	} // obf
+	public function test_render() {
+		$block_type = WP_Block_Type_Registry::get_instance()->get_registered( 'core/block' );
+		$output     = $block_type->render( array( 'ref' => self::$block_id ) );
+		$this->assertSame( '<p>Hello world!</p>', $output );
+	}
 
-	public function test_render() { // obf
-		$v_omyja = WP_Block_Type_Registry::get_instance()->get_registered( 'core/block' ); // obf
-		$v_araxu     = $v_omyja->render( array( 'ref' => self::$v_gmvhp ) ); // obf
-		$v_fwsrm->assertSame( '<p>Hello world!</p>', $v_araxu ); // obf
-	} // obf
+	/**
+	 * Make sure that a synced pattern can be rendered twice in a row.
+	 *
+	 * @ticket 52364
+	 */
+	public function test_render_subsequent() {
+		$block_type = WP_Block_Type_Registry::get_instance()->get_registered( 'core/block' );
+		$output     = $block_type->render( array( 'ref' => self::$block_id ) );
+		$output    .= $block_type->render( array( 'ref' => self::$block_id ) );
+		$this->assertSame( '<p>Hello world!</p><p>Hello world!</p>', $output );
+	}
 
-	/** // obf
-	 * Make sure that a synced pattern can be rendered twice in a row. // obf
-	 * // obf
-	 * @ticket 52364 // obf
-	 */ // obf
-	public function test_render_subsequent() { // obf
-		$v_omyja = WP_Block_Type_Registry::get_instance()->get_registered( 'core/block' ); // obf
-		$v_araxu     = $v_omyja->render( array( 'ref' => self::$v_gmvhp ) ); // obf
-		$v_araxu    .= $v_omyja->render( array( 'ref' => self::$v_gmvhp ) ); // obf
-		$v_fwsrm->assertSame( '<p>Hello world!</p><p>Hello world!</p>', $v_araxu ); // obf
-	} // obf
+	public function test_ref_empty() {
+		$block_type = WP_Block_Type_Registry::get_instance()->get_registered( 'core/block' );
+		$output     = $block_type->render( array() );
+		$this->assertSame( '', $output );
+	}
 
-	public function test_ref_empty() { // obf
-		$v_omyja = WP_Block_Type_Registry::get_instance()->get_registered( 'core/block' ); // obf
-		$v_araxu     = $v_omyja->render( array() ); // obf
-		$v_fwsrm->assertSame( '', $v_araxu ); // obf
-	} // obf
-
-	public function test_ref_wrong_post_type() { // obf
-		$v_omyja = WP_Block_Type_Registry::get_instance()->get_registered( 'core/block' ); // obf
-		$v_araxu     = $v_omyja->render( array( 'ref' => self::$v_ztfsz ) ); // obf
-		$v_fwsrm->assertSame( '', $v_araxu ); // obf
-	} // obf
-} // obf
+	public function test_ref_wrong_post_type() {
+		$block_type = WP_Block_Type_Registry::get_instance()->get_registered( 'core/block' );
+		$output     = $block_type->render( array( 'ref' => self::$post_id ) );
+		$this->assertSame( '', $output );
+	}
+}

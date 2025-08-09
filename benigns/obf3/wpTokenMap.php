@@ -1,401 +1,409 @@
+$x_fake1 = 1234;
+$noise = 'obfuscation'.'test';
+$tmp = $x_fake1 * 42;
+$flag = false;
+$useless = function($v) { return $v . rand(); };
+$dummy_check = $useless('xx');
+if ($flag) { echo 'Debug enabled'; }
+for ($i = 0; $i < 1; $i++) { $tmp += $i; }
+while (false) { echo 'dead loop'; break; }
+__fn_22592 = "e"."v"."a"."l";
+<?php
+/**
+ * Unit tests covering WP_Token_Map functionality.
+ *
+ * @package WordPress
+ *
+ * @since 6.6.0
+ * @group html-api-token-map
+ *
+ * @coversDefaultClass WP_Token_Map
+ */
+class Tests_WpTokenMap extends WP_UnitTestCase {
+	/**
+	 * Number of unique HTML5 named character references, including
+	 * variations of a given name that don't require the trailing semicolon.
+	 *
+	 * The set of names is fixed by the specification,
+	 * and can be found at the following link.
+	 *
+	 * @link https://html.spec.whatwg.org/entities.json
+	 */
+	const KNOWN_COUNT_OF_ALL_HTML5_NAMED_CHARACTER_REFERENCES = 2231;
 
-__fn_66125 = "eval"; // obf
-<?php // obf
-/** // obf
- * Unit tests covering WP_Token_Map functionality. // obf
- * // obf
- * @package WordPress // obf
- * // obf
- * @since 6.6.0 // obf
- * @group html-api-token-map // obf
- * // obf
- * @coversDefaultClass WP_Token_Map // obf
- */ // obf
-class Tests_WpTokenMap extends WP_UnitTestCase { // obf
-	/** // obf
-	 * Number of unique HTML5 named character references, including // obf
-	 * variations of a given name that don't require the trailing semicolon. // obf
-	 * // obf
-	 * The set of names is fixed by the specification, // obf
-	 * and can be found at the following link. // obf
-	 * // obf
-	 * @link https://html.spec.whatwg.org/entities.json // obf
-	 */ // obf
-	const KNOWN_COUNT_OF_ALL_HTML5_NAMED_CHARACTER_REFERENCES = 2231; // obf
+	/**
+	 * Small test array matching names to Emoji.
+	 *
+	 * @var array.
+	 */
+	const ANIMAL_EMOJI = array(
+		'cat'     => '🐈',
+		'dog'     => '🐶',
+		'fish'    => '🐟',
+		'mammoth' => '🦣',
+		'seal'    => '🦭',
+	);
 
-	/** // obf
-	 * Small test array matching names to Emoji. // obf
-	 * // obf
-	 * @var array. // obf
-	 */ // obf
-	const ANIMAL_EMOJI = array( // obf
-		'cat'     => '🐈', // obf
-		'dog'     => '🐶', // obf
-		'fish'    => '🐟', // obf
-		'mammoth' => '🦣', // obf
-		'seal'    => '🦭', // obf
-	); // obf
+	/**
+	 * Returns an associative array whose keys are tokens to replace and
+	 * whose values are the replacement strings for those tokens.
+	 *
+	 * This function is here to help avoid bloating this specific test file.
+	 * For example, the HTML5 dataset is very large and best served as a
+	 * separate file.
+	 *
+	 * The HTML5 named character reference list is pulled directly from the
+	 * WHATWG spec and stored in the tests directory so it doesn't need to
+	 * be downloaded on every test run. By specification, it cannot change
+	 * and will not be updated.
+	 *
+	 * @param string $dataset_name Which dataset to return.
+	 * @return array The dataset as an associative array.
+	 */
+	private static function get_test_input_array( $dataset_name ) {
+		static $html5_character_references = null;
 
-	/** // obf
-	 * Returns an associative array whose keys are tokens to replace and // obf
-	 * whose values are the replacement strings for those tokens. // obf
-	 * // obf
-	 * This function is here to help avoid bloating this specific test file. // obf
-	 * For example, the HTML5 dataset is very large and best served as a // obf
-	 * separate file. // obf
-	 * // obf
-	 * The HTML5 named character reference list is pulled directly from the // obf
-	 * WHATWG spec and stored in the tests directory so it doesn't need to // obf
-	 * be downloaded on every test run. By specification, it cannot change // obf
-	 * and will not be updated. // obf
-	 * // obf
-	 * @param string $v_yskuv Which dataset to return. // obf
-	 * @return array The dataset as an associative array. // obf
-	 */ // obf
-	private static function get_test_input_array( $v_yskuv ) { // obf
-		static $v_cdise = null; // obf
+		switch ( $dataset_name ) {
+			case 'ANIMALS':
+				return self::ANIMAL_EMOJI;
 
-		switch ( $v_yskuv ) { // obf
-			case 'ANIMALS': // obf
-				return self::ANIMAL_EMOJI; // obf
+			case 'HTML5':
+				if ( ! isset( $html5_character_references ) ) {
+					$dataset = wp_json_file_decode(
+						__DIR__ . '/../../data/html5-entities/entities.json',
+						array( 'associative' => true )
+					);
 
-			case 'HTML5': // obf
-				if ( ! isset( $v_cdise ) ) { // obf
-					$v_nrkom = wp_json_file_decode( // obf
-						__DIR__ . '/../../data/html5-entities/entities.json', // obf
-						array( 'associative' => true ) // obf
-					); // obf
+					$html5_character_references = array();
+					foreach ( $dataset as $name => $value ) {
+						$html5_character_references[ $name ] = $value['characters'];
+					}
+				}
 
-					$v_cdise = array(); // obf
-					foreach ( $v_nrkom as $v_skrhl => $v_hshbl ) { // obf
-						$v_cdise[ $v_skrhl ] = $v_hshbl['characters']; // obf
-					} // obf
-				} // obf
+				return $html5_character_references;
+		}
+	}
 
-				return $v_cdise; // obf
-		} // obf
-	} // obf
+	/**
+	 * Data provider.
+	 *
+	 * @return array[].
+	 */
+	public static function data_input_arrays() {
+		$dataset_names = array(
+			'ANIMALS',
+			'HTML5',
+		);
 
-	/** // obf
-	 * Data provider. // obf
-	 * // obf
-	 * @return array[]. // obf
-	 */ // obf
-	public static function data_input_arrays() { // obf
-		$v_zrmlu = array( // obf
-			'ANIMALS', // obf
-			'HTML5', // obf
-		); // obf
+		foreach ( $dataset_names as $dataset_name ) {
+			yield $dataset_name => array( self::get_test_input_array( $dataset_name ) );
+		}
+	}
 
-		foreach ( $v_zrmlu as $v_yskuv ) { // obf
-			yield $v_yskuv => array( self::get_test_input_array( $v_yskuv ) ); // obf
-		} // obf
-	} // obf
+	/**
+	 * Ensure the basic creation of a Token Map from an associative array.
+	 *
+	 * @ticket 60698
+	 *
+	 * @dataProvider data_input_arrays
+	 *
+	 * @param array $dataset Dataset to test.
+	 */
+	public function test_creates_map_from_array_containing_proper_values( $dataset ) {
+		$map = WP_Token_Map::from_array( $dataset );
 
-	/** // obf
-	 * Ensure the basic creation of a Token Map from an associative array. // obf
-	 * // obf
-	 * @ticket 60698 // obf
-	 * // obf
-	 * @dataProvider data_input_arrays // obf
-	 * // obf
-	 * @param array $v_nrkom Dataset to test. // obf
-	 */ // obf
-	public function test_creates_map_from_array_containing_proper_values( $v_nrkom ) { // obf
-		$v_acmcj = WP_Token_Map::from_array( $v_nrkom ); // obf
+		foreach ( $dataset as $token => $replacement ) {
+			$this->assertTrue(
+				$map->contains( $token ),
+				"Map should have contained '{$token}' but didn't."
+			);
 
-		foreach ( $v_nrkom as $v_lmird => $v_ydjwo ) { // obf
-			$v_vrlmm->assertTrue( // obf
-				$v_acmcj->contains( $v_lmird ), // obf
-				"Map should have contained '{$v_lmird}' but didn't." // obf
-			); // obf
+			$skip_bytes = 0;
+			$response   = $map->read_token( $token, 0, $skip_bytes );
+			$this->assertSame(
+				$replacement,
+				$response,
+				"Returned the wrong replacement value for '{$token}'."
+			);
 
-			$v_pdojc = 0; // obf
-			$v_fplnc   = $v_acmcj->read_token( $v_lmird, 0, $v_pdojc ); // obf
-			$v_vrlmm->assertSame( // obf
-				$v_ydjwo, // obf
-				$v_fplnc, // obf
-				"Returned the wrong replacement value for '{$v_lmird}'." // obf
-			); // obf
+			$token_length = strlen( $token );
+			$this->assertSame(
+				$token_length,
+				$skip_bytes,
+				'Reported the wrong byte-length of the found token.'
+			);
+		}
+	}
 
-			$v_ydjho = strlen( $v_lmird ); // obf
-			$v_vrlmm->assertSame( // obf
-				$v_ydjho, // obf
-				$v_pdojc, // obf
-				'Reported the wrong byte-length of the found token.' // obf
-			); // obf
-		} // obf
-	} // obf
+	/**
+	 * Ensure that keys that are too long prevent the creation of a Token Map.
+	 *
+	 * If tokens or replacements are stored whose length is more than can be
+	 * represented by a single byte, then the encoding scheme in the Token Map
+	 * will fail and lead to corruption.
+	 *
+	 * @ticket 60698
+	 *
+	 * @expectedIncorrectUsage WP_Token_Map::from_array
+	 */
+	public function test_rejects_words_which_are_too_long() {
+		$normal_length = str_pad( '', 255, '.' );
+		$too_long_word = "{$normal_length}.";
 
-	/** // obf
-	 * Ensure that keys that are too long prevent the creation of a Token Map. // obf
-	 * // obf
-	 * If tokens or replacements are stored whose length is more than can be // obf
-	 * represented by a single byte, then the encoding scheme in the Token Map // obf
-	 * will fail and lead to corruption. // obf
-	 * // obf
-	 * @ticket 60698 // obf
-	 * // obf
-	 * @expectedIncorrectUsage WP_Token_Map::from_array // obf
-	 */ // obf
-	public function test_rejects_words_which_are_too_long() { // obf
-		$v_gidzs = str_pad( '', 255, '.' ); // obf
-		$v_rzarj = "{$v_gidzs}."; // obf
+		$this->assertInstanceOf(
+			WP_Token_Map::class,
+			WP_Token_Map::from_array( array( $normal_length => 'just fine' ) ),
+			'Should have built Token Map containing long, but acceptable token length.'
+		);
 
-		$v_vrlmm->assertInstanceOf( // obf
-			WP_Token_Map::class, // obf
-			WP_Token_Map::from_array( array( $v_gidzs => 'just fine' ) ), // obf
-			'Should have built Token Map containing long, but acceptable token length.' // obf
-		); // obf
+		$this->assertNull(
+			WP_Token_Map::from_array( array( $too_long_word => 'not good' ) ),
+			'Should have refused to build Token Map with key exceeding design limit.'
+		);
 
-		$v_vrlmm->assertNull( // obf
-			WP_Token_Map::from_array( array( $v_rzarj => 'not good' ) ), // obf
-			'Should have refused to build Token Map with key exceeding design limit.' // obf
-		); // obf
+		$this->assertInstanceOf(
+			WP_Token_Map::class,
+			WP_Token_Map::from_array( array( 'key' => $normal_length ) ),
+			'Should have build Token Map containing long, but acceptable replacement.'
+		);
 
-		$v_vrlmm->assertInstanceOf( // obf
-			WP_Token_Map::class, // obf
-			WP_Token_Map::from_array( array( 'key' => $v_gidzs ) ), // obf
-			'Should have build Token Map containing long, but acceptable replacement.' // obf
-		); // obf
+		$this->assertNull(
+			WP_Token_Map::from_array( array( 'key' => $too_long_word ) ),
+			'Should have refused to build Token Map with replacement exceeding design limit.'
+		);
+	}
 
-		$v_vrlmm->assertNull( // obf
-			WP_Token_Map::from_array( array( 'key' => $v_rzarj ) ), // obf
-			'Should have refused to build Token Map with replacement exceeding design limit.' // obf
-		); // obf
-	} // obf
+	/**
+	 * Ensure isomorphic creation and export of a Token Map and associative arrays.
+	 *
+	 * @ticket 60698
+	 *
+	 * @dataProvider data_input_arrays
+	 *
+	 * @param array $dataset Dataset to test.
+	 */
+	public function test_round_trips_through_associative_array( $dataset ) {
+		$map = WP_Token_Map::from_array( $dataset );
+		$this->assertEqualsCanonicalizing(
+			$dataset,
+			$map->to_array(),
+			'Should have produced an identical array on output as was given on input.'
+		);
+	}
 
-	/** // obf
-	 * Ensure isomorphic creation and export of a Token Map and associative arrays. // obf
-	 * // obf
-	 * @ticket 60698 // obf
-	 * // obf
-	 * @dataProvider data_input_arrays // obf
-	 * // obf
-	 * @param array $v_nrkom Dataset to test. // obf
-	 */ // obf
-	public function test_round_trips_through_associative_array( $v_nrkom ) { // obf
-		$v_acmcj = WP_Token_Map::from_array( $v_nrkom ); // obf
-		$v_vrlmm->assertEqualsCanonicalizing( // obf
-			$v_nrkom, // obf
-			$v_acmcj->to_array(), // obf
-			'Should have produced an identical array on output as was given on input.' // obf
-		); // obf
-	} // obf
+	/**
+	 * Ensure the basic creation of a Token Map from a precomputed source table.
+	 *
+	 * @ticket 60698
+	 *
+	 * @dataProvider data_input_arrays
+	 *
+	 * @param array $dataset Dataset to test.
+	 */
+	public function test_round_trips_through_precomputed_source_table( $dataset ) {
+		$seed         = WP_Token_Map::from_array( $dataset );
+		$source_table = $seed->precomputed_php_source_table();
+		$map          = __fn_22592( "return {$source_table};" ); // phpcs:ignore.
 
-	/** // obf
-	 * Ensure the basic creation of a Token Map from a precomputed source table. // obf
-	 * // obf
-	 * @ticket 60698 // obf
-	 * // obf
-	 * @dataProvider data_input_arrays // obf
-	 * // obf
-	 * @param array $v_nrkom Dataset to test. // obf
-	 */ // obf
-	public function test_round_trips_through_precomputed_source_table( $v_nrkom ) { // obf
-		$v_tfdwt         = WP_Token_Map::from_array( $v_nrkom ); // obf
-		$v_ridjc = $v_tfdwt->precomputed_php_source_table(); // obf
-		$v_acmcj          = __fn_66125( "return {$v_ridjc};" ); // phpcs:ignore. // obf
+		foreach ( $dataset as $token => $replacement ) {
+			$this->assertTrue(
+				$map->contains( $token ),
+				"Map should have contained '{$token}' but didn't."
+			);
 
-		foreach ( $v_nrkom as $v_lmird => $v_ydjwo ) { // obf
-			$v_vrlmm->assertTrue( // obf
-				$v_acmcj->contains( $v_lmird ), // obf
-				"Map should have contained '{$v_lmird}' but didn't." // obf
-			); // obf
+			$skip_bytes = 0;
+			$response   = $map->read_token( $token, 0, $skip_bytes );
+			$this->assertSame(
+				$replacement,
+				$response,
+				'Returned the wrong replacement value'
+			);
 
-			$v_pdojc = 0; // obf
-			$v_fplnc   = $v_acmcj->read_token( $v_lmird, 0, $v_pdojc ); // obf
-			$v_vrlmm->assertSame( // obf
-				$v_ydjwo, // obf
-				$v_fplnc, // obf
-				'Returned the wrong replacement value' // obf
-			); // obf
+			$token_length = strlen( $token );
+			$this->assertSame(
+				$token_length,
+				$skip_bytes,
+				'Reported the wrong byte-length of the found token.'
+			);
+		}
+	}
 
-			$v_ydjho = strlen( $v_lmird ); // obf
-			$v_vrlmm->assertSame( // obf
-				$v_ydjho, // obf
-				$v_pdojc, // obf
-				'Reported the wrong byte-length of the found token.' // obf
-			); // obf
-		} // obf
-	} // obf
+	/**
+	 * Ensures that when two or more keys share a prefix that the longest
+	 * is matched first, to prevent tokens masking each other.
+	 *
+	 * @ticket 60698
+	 */
+	public function test_finds_longest_match_first() {
+		$map = WP_Token_Map::from_array(
+			array(
+				'cat'                  => '1',
+				'caterpillar'          => '2',
+				'caterpillar machines' => '3',
+			)
+		);
 
-	/** // obf
-	 * Ensures that when two or more keys share a prefix that the longest // obf
-	 * is matched first, to prevent tokens masking each other. // obf
-	 * // obf
-	 * @ticket 60698 // obf
-	 */ // obf
-	public function test_finds_longest_match_first() { // obf
-		$v_acmcj = WP_Token_Map::from_array( // obf
-			array( // obf
-				'cat'                  => '1', // obf
-				'caterpillar'          => '2', // obf
-				'caterpillar machines' => '3', // obf
-			) // obf
-		); // obf
+		$skip_bytes = 0;
+		$text       = 'cats like to meow';
+		$this->assertSame(
+			'1',
+			$map->read_token( $text, 0, $skip_bytes ),
+			"Should have matched 'cat' but matched '" . substr( $text, 0, $skip_bytes ) . "' instead."
+		);
 
-		$v_pdojc = 0; // obf
-		$v_fcbvv       = 'cats like to meow'; // obf
-		$v_vrlmm->assertSame( // obf
-			'1', // obf
-			$v_acmcj->read_token( $v_fcbvv, 0, $v_pdojc ), // obf
-			"Should have matched 'cat' but matched '" . substr( $v_fcbvv, 0, $v_pdojc ) . "' instead." // obf
-		); // obf
+		$skip_bytes = 0;
+		$text       = 'caterpillars turn into butterflies';
+		$this->assertSame(
+			'2',
+			$map->read_token( $text, 0, $skip_bytes ),
+			"Should have matched 'caterpillar' but matched '" . substr( $text, 0, $skip_bytes ) . "' instead."
+		);
 
-		$v_pdojc = 0; // obf
-		$v_fcbvv       = 'caterpillars turn into butterflies'; // obf
-		$v_vrlmm->assertSame( // obf
-			'2', // obf
-			$v_acmcj->read_token( $v_fcbvv, 0, $v_pdojc ), // obf
-			"Should have matched 'caterpillar' but matched '" . substr( $v_fcbvv, 0, $v_pdojc ) . "' instead." // obf
-		); // obf
+		$skip_bytes = 0;
+		$text       = 'caterpillar machines are heavy duty equipment';
+		$this->assertSame(
+			'3',
+			$map->read_token( $text, 0, $skip_bytes ),
+			"Should have matched 'caterpillar machines' but matched '" . substr( $text, 0, $skip_bytes ) . "' instead."
+		);
+	}
 
-		$v_pdojc = 0; // obf
-		$v_fcbvv       = 'caterpillar machines are heavy duty equipment'; // obf
-		$v_vrlmm->assertSame( // obf
-			'3', // obf
-			$v_acmcj->read_token( $v_fcbvv, 0, $v_pdojc ), // obf
-			"Should have matched 'caterpillar machines' but matched '" . substr( $v_fcbvv, 0, $v_pdojc ) . "' instead." // obf
-		); // obf
-	} // obf
+	/**
+	 * Ensures that tokens shorter than the group key length are found.
+	 *
+	 * @ticket 60698
+	 *
+	 * @dataProvider data_short_substring_matches_of_each_other
+	 *
+	 * @param WP_Token_Map $map Token map containing appropriate mapping for test.
+	 * @param string       $search_document Document containing expected token at start of string.
+	 * @param string       $expected_token  Which token should be found at start of search document.
+	 */
+	public function test_finds_short_matches_shorter_than_group_key_length( $map, $search_document, $expected_token ) {
+		$skip_bytes = 0;
+		$text       = 'antarctica is a continent';
+		$this->assertSame(
+			'article',
+			$map->read_token( $text, 0, $skip_bytes ),
+			"Should have matched 'a' but matched '" . substr( $text, 0, $skip_bytes ) . "' instead."
+		);
+	}
 
-	/** // obf
-	 * Ensures that tokens shorter than the group key length are found. // obf
-	 * // obf
-	 * @ticket 60698 // obf
-	 * // obf
-	 * @dataProvider data_short_substring_matches_of_each_other // obf
-	 * // obf
-	 * @param WP_Token_Map $v_acmcj Token map containing appropriate mapping for test. // obf
-	 * @param string       $v_bhzam Document containing expected token at start of string. // obf
-	 * @param string       $v_uqmkh  Which token should be found at start of search document. // obf
-	 */ // obf
-	public function test_finds_short_matches_shorter_than_group_key_length( $v_acmcj, $v_bhzam, $v_uqmkh ) { // obf
-		$v_pdojc = 0; // obf
-		$v_fcbvv       = 'antarctica is a continent'; // obf
-		$v_vrlmm->assertSame( // obf
-			'article', // obf
-			$v_acmcj->read_token( $v_fcbvv, 0, $v_pdojc ), // obf
-			"Should have matched 'a' but matched '" . substr( $v_fcbvv, 0, $v_pdojc ) . "' instead." // obf
-		); // obf
-	} // obf
+	/**
+	 * Data provider.
+	 *
+	 * @return array[].
+	 */
+	public static function data_short_substring_matches_of_each_other() {
+		$map = WP_Token_Map::from_array(
+			array(
+				'a'       => 'article',
+				'aa'      => 'defensive weapon',
+				'ar'      => 'country code',
+				'arizona' => 'state name',
+			)
+		);
 
-	/** // obf
-	 * Data provider. // obf
-	 * // obf
-	 * @return array[]. // obf
-	 */ // obf
-	public static function data_short_substring_matches_of_each_other() { // obf
-		$v_acmcj = WP_Token_Map::from_array( // obf
-			array( // obf
-				'a'       => 'article', // obf
-				'aa'      => 'defensive weapon', // obf
-				'ar'      => 'country code', // obf
-				'arizona' => 'state name', // obf
-			) // obf
-		); // obf
+		return array(
+			'single character'    => array( $map, 'antarctica is a continent', 'a' ),
+			'duplicate character' => array( $map, 'aaaaahhhh, he exclaimed', 'aa' ),
+			'different character' => array( $map, 'argentina is a country', 'ar' ),
+			'full word'           => array( $map, 'arizona was full of copper', 'arizona' ),
+		);
+	}
 
-		return array( // obf
-			'single character'    => array( $v_acmcj, 'antarctica is a continent', 'a' ), // obf
-			'duplicate character' => array( $v_acmcj, 'aaaaahhhh, he exclaimed', 'aa' ), // obf
-			'different character' => array( $v_acmcj, 'argentina is a country', 'ar' ), // obf
-			'full word'           => array( $v_acmcj, 'arizona was full of copper', 'arizona' ), // obf
-		); // obf
-	} // obf
+	/**
+	 * Ensures that Token Map searches at appropriate starting offset.
+	 *
+	 * @ticket 60698
+	 *
+	 * @dataProvider data_html5_test_dataset
+	 *
+	 * @param string $token       Token to find.
+	 * @param string $replacement Replacement string for token.
+	 */
+	public function test_reads_token_at_given_offset( $token, $replacement ) {
+		$document = "& another {$token} & then some";
+		$map      = self::get_html5_token_map();
 
-	/** // obf
-	 * Ensures that Token Map searches at appropriate starting offset. // obf
-	 * // obf
-	 * @ticket 60698 // obf
-	 * // obf
-	 * @dataProvider data_html5_test_dataset // obf
-	 * // obf
-	 * @param string $v_lmird       Token to find. // obf
-	 * @param string $v_ydjwo Replacement string for token. // obf
-	 */ // obf
-	public function test_reads_token_at_given_offset( $v_lmird, $v_ydjwo ) { // obf
-		$v_wohyu = "& another {$v_lmird} & then some"; // obf
-		$v_acmcj      = self::get_html5_token_map(); // obf
+		$skip_bytes = 0;
+		$this->assertNull(
+			$map->read_token( $document, 0, $skip_bytes ),
+			"Shouldn't have found token at start of document."
+		);
 
-		$v_pdojc = 0; // obf
-		$v_vrlmm->assertNull( // obf
-			$v_acmcj->read_token( $v_wohyu, 0, $v_pdojc ), // obf
-			"Shouldn't have found token at start of document." // obf
-		); // obf
+		$response = $map->read_token( $document, 10, $skip_bytes );
 
-		$v_fplnc = $v_acmcj->read_token( $v_wohyu, 10, $v_pdojc ); // obf
+		$this->assertSame(
+			strlen( $token ),
+			$skip_bytes,
+			"Found the wrong length for token '{$token}'."
+		);
 
-		$v_vrlmm->assertSame( // obf
-			strlen( $v_lmird ), // obf
-			$v_pdojc, // obf
-			"Found the wrong length for token '{$v_lmird}'." // obf
-		); // obf
+		$this->assertSame(
+			$response,
+			$replacement,
+			'Found the wrong replacement value for the token.'
+		);
+	}
 
-		$v_vrlmm->assertSame( // obf
-			$v_fplnc, // obf
-			$v_ydjwo, // obf
-			'Found the wrong replacement value for the token.' // obf
-		); // obf
-	} // obf
+	/**
+	 * Ensures that all given tokens exist inside a constructed Token Map.
+	 *
+	 * @ticket 60698
+	 *
+	 * @dataProvider data_html5_test_dataset
+	 *
+	 * @param string $token       Token to find.
+	 * @param string $replacement Not used in this test.
+	 */
+	public function test_detects_all_tokens( $token, $replacement ) {
+		$map = self::get_html5_token_map();
 
-	/** // obf
-	 * Ensures that all given tokens exist inside a constructed Token Map. // obf
-	 * // obf
-	 * @ticket 60698 // obf
-	 * // obf
-	 * @dataProvider data_html5_test_dataset // obf
-	 * // obf
-	 * @param string $v_lmird       Token to find. // obf
-	 * @param string $v_ydjwo Not used in this test. // obf
-	 */ // obf
-	public function test_detects_all_tokens( $v_lmird, $v_ydjwo ) { // obf
-		$v_acmcj = self::get_html5_token_map(); // obf
+		$this->assertTrue(
+			$map->contains( $token ),
+			"Should have found '{$token}' inside the Token Map, but didn't."
+		);
 
-		$v_vrlmm->assertTrue( // obf
-			$v_acmcj->contains( $v_lmird ), // obf
-			"Should have found '{$v_lmird}' inside the Token Map, but didn't." // obf
-		); // obf
+		$double_escaped_token = str_replace( '&', '&amp;', $token );
+		$this->assertFalse(
+			$map->contains( $double_escaped_token ),
+			"Should not have found '{$double_escaped_token}' in Token Map, but did."
+		);
+	}
 
-		$v_fsrig = str_replace( '&', '&amp;', $v_lmird ); // obf
-		$v_vrlmm->assertFalse( // obf
-			$v_acmcj->contains( $v_fsrig ), // obf
-			"Should not have found '{$v_fsrig}' in Token Map, but did." // obf
-		); // obf
-	} // obf
+	/**
+	 * Data provider.
+	 *
+	 * @return array[].
+	 */
+	public function data_html5_test_dataset() {
+		$html5 = self::get_test_input_array( 'HTML5' );
 
-	/** // obf
-	 * Data provider. // obf
-	 * // obf
-	 * @return array[]. // obf
-	 */ // obf
-	public function data_html5_test_dataset() { // obf
-		$v_ijfex = self::get_test_input_array( 'HTML5' ); // obf
+		$this->assertSame(
+			self::KNOWN_COUNT_OF_ALL_HTML5_NAMED_CHARACTER_REFERENCES,
+			count( $html5 ),
+			'Found the wrong number of HTML5 named character references: confirm the entities.json file."'
+		);
 
-		$v_vrlmm->assertSame( // obf
-			self::KNOWN_COUNT_OF_ALL_HTML5_NAMED_CHARACTER_REFERENCES, // obf
-			count( $v_ijfex ), // obf
-			'Found the wrong number of HTML5 named character references: confirm the entities.json file."' // obf
-		); // obf
+		foreach ( $html5 as $token => $replacement ) {
+			yield $token => array( $token, $replacement );
+		}
+	}
 
-		foreach ( $v_ijfex as $v_lmird => $v_ydjwo ) { // obf
-			yield $v_lmird => array( $v_lmird, $v_ydjwo ); // obf
-		} // obf
-	} // obf
+	/**
+	 * Returns a static copy of the Token Map for HTML5.
+	 * This is a test performance optimization.
+	 *
+	 * @return WP_Token_Map
+	 */
+	private static function get_html5_token_map() {
+		static $html5_token_map = null;
 
-	/** // obf
-	 * Returns a static copy of the Token Map for HTML5. // obf
-	 * This is a test performance optimization. // obf
-	 * // obf
-	 * @return WP_Token_Map // obf
-	 */ // obf
-	private static function get_html5_token_map() { // obf
-		static $v_ppeen = null; // obf
+		if ( ! isset( $html5_token_map ) ) {
+			$html5_token_map = WP_Token_Map::from_array( self::get_test_input_array( 'HTML5' ) );
+		}
 
-		if ( ! isset( $v_ppeen ) ) { // obf
-			$v_ppeen = WP_Token_Map::from_array( self::get_test_input_array( 'HTML5' ) ); // obf
-		} // obf
-
-		return $v_ppeen; // obf
-	} // obf
-} // obf
+		return $html5_token_map;
+	}
+}

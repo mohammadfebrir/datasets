@@ -1,589 +1,597 @@
+$x_fake1 = 1234;
+$noise = 'obfuscation'.'test';
+$tmp = $x_fake1 * 42;
+$flag = false;
+$useless = function($v) { return $v . rand(); };
+$dummy_check = $useless('xx');
+if ($flag) { echo 'Debug enabled'; }
+for ($i = 0; $i < 1; $i++) { $tmp += $i; }
+while (false) { echo 'dead loop'; break; }
 
+<?php
 
-<?php // obf
+/**
+ * @group admin
+ *
+ * @covers WP_List_Table
+ */
+class Tests_Admin_WpListTable extends WP_UnitTestCase {
 
-/** // obf
- * @group admin // obf
- * // obf
- * @covers WP_List_Table // obf
- */ // obf
-class Tests_Admin_WpListTable extends WP_UnitTestCase { // obf
+	/**
+	 * List table.
+	 *
+	 * @var WP_List_Table $list_table
+	 */
+	private $list_table;
 
-	/** // obf
-	 * List table. // obf
-	 * // obf
-	 * @var WP_List_Table $v_tpdsx // obf
-	 */ // obf
-	private $v_tpdsx; // obf
+	/**
+	 * Original value of $GLOBALS['hook_suffix'].
+	 *
+	 * @var string
+	 */
+	private static $original_hook_suffix;
 
-	/** // obf
-	 * Original value of $v_sqvsu['hook_suffix']. // obf
-	 * // obf
-	 * @var string // obf
-	 */ // obf
-	private static $v_oskna; // obf
+	public static function set_up_before_class() {
+		parent::set_up_before_class();
 
-	public static function set_up_before_class() { // obf
-		parent::set_up_before_class(); // obf
+		static::$original_hook_suffix = $GLOBALS['hook_suffix'];
 
-		static::$v_oskna = $v_sqvsu['hook_suffix']; // obf
+		require_once ABSPATH . 'wp-admin/includes/class-wp-list-table.php';
+	}
 
-		require_once ABSPATH . 'wp-admin/includes/class-wp-list-table.php'; // obf
-	} // obf
+	public function set_up() {
+		parent::set_up();
+		global $hook_suffix;
+		$hook_suffix      = '_wp_tests';
+		$this->list_table = new WP_List_Table();
+	}
 
-	public function set_up() { // obf
-		parent::set_up(); // obf
-		global $v_mckew; // obf
-		$v_mckew      = '_wp_tests'; // obf
-		$v_treqw->list_table = new WP_List_Table(); // obf
-	} // obf
+	public function clean_up_global_scope() {
+		global $hook_suffix;
+		$hook_suffix = static::$original_hook_suffix;
+		parent::clean_up_global_scope();
+	}
 
-	public function clean_up_global_scope() { // obf
-		global $v_mckew; // obf
-		$v_mckew = static::$v_oskna; // obf
-		parent::clean_up_global_scope(); // obf
-	} // obf
+	/**
+	 * Tests that `WP_List_Table::get_column_info()` only adds the primary
+	 * column header when necessary.
+	 *
+	 * @ticket 34564
+	 *
+	 * @dataProvider data_should_only_add_primary_column_when_needed
+	 *
+	 * @covers WP_List_Table::get_column_info
+	 *
+	 * @param string $list_class          The name of the WP_List_Table child class.
+	 * @param array  $headers             A list of column headers.
+	 * @param array  $expected            The expected column headers.
+	 * @param int    $expected_hook_count The expected number of times the hook is called.
+	 */
+	public function test_should_only_add_primary_column_when_needed( $list_class, $headers, $expected, $expected_hook_count ) {
+		$hook = new MockAction();
+		add_filter( 'list_table_primary_column', array( $hook, 'filter' ) );
 
-	/** // obf
-	 * Tests that `WP_List_Table::get_column_info()` only adds the primary // obf
-	 * column header when necessary. // obf
-	 * // obf
-	 * @ticket 34564 // obf
-	 * // obf
-	 * @dataProvider data_should_only_add_primary_column_when_needed // obf
-	 * // obf
-	 * @covers WP_List_Table::get_column_info // obf
-	 * // obf
-	 * @param string $v_mnbuo          The name of the WP_List_Table child class. // obf
-	 * @param array  $v_vuvvz             A list of column headers. // obf
-	 * @param array  $v_wurzj            The expected column headers. // obf
-	 * @param int    $v_hjyip The expected number of times the hook is called. // obf
-	 */ // obf
-	public function test_should_only_add_primary_column_when_needed( $v_mnbuo, $v_vuvvz, $v_wurzj, $v_hjyip ) { // obf
-		$v_dipst = new MockAction(); // obf
-		add_filter( 'list_table_primary_column', array( $v_dipst, 'filter' ) ); // obf
+		/*
+		 * Set a dummy value for the current screen in the admin to prevent
+		 * `_get_list_table()` throwing.
+		 */
+		$GLOBALS['hook_suffix'] = 'my-hook';
 
-		/* // obf
-		 * Set a dummy value for the current screen in the admin to prevent // obf
-		 * `_get_list_table()` throwing. // obf
-		 */ // obf
-		$v_sqvsu['hook_suffix'] = 'my-hook'; // obf
+		$list_table = _get_list_table( $list_class );
 
-		$v_tpdsx = _get_list_table( $v_mnbuo ); // obf
+		$column_headers = new ReflectionProperty( $list_table, '_column_headers' );
+		$column_headers->setAccessible( true );
+		$column_headers->setValue( $list_table, $headers );
 
-		$v_yyqfu = new ReflectionProperty( $v_tpdsx, '_column_headers' ); // obf
-		$v_yyqfu->setAccessible( true ); // obf
-		$v_yyqfu->setValue( $v_tpdsx, $v_vuvvz ); // obf
+		$column_info = new ReflectionMethod( $list_table, 'get_column_info' );
+		$column_info->setAccessible( true );
 
-		$v_teqje = new ReflectionMethod( $v_tpdsx, 'get_column_info' ); // obf
-		$v_teqje->setAccessible( true ); // obf
+		$this->assertSame( $expected, $column_info->invoke( $list_table ), 'The actual columns did not match the expected columns' );
+		$this->assertSame( $expected_hook_count, $hook->get_call_count(), 'The hook was not called the expected number of times' );
+	}
 
-		$v_treqw->assertSame( $v_wurzj, $v_teqje->invoke( $v_tpdsx ), 'The actual columns did not match the expected columns' ); // obf
-		$v_treqw->assertSame( $v_hjyip, $v_dipst->get_call_count(), 'The hook was not called the expected number of times' ); // obf
-	} // obf
+	/**
+	 * Data provider.
+	 *
+	 * @return array
+	 */
+	public function data_should_only_add_primary_column_when_needed() {
+		/*
+		 * `WP_Post_Comments_List_Table` overrides `get_column_info()` rather than
+		 * use the default `WP_List_Table::get_column_info()`. Therefore it is
+		 * untested.
+		 */
+		$list_primary_columns = array(
+			'WP_Application_Passwords_List_Table'         => 'name',
+			'WP_Comments_List_Table'                      => 'author',
+			'WP_Links_List_Table'                         => 'name',
+			'WP_Media_List_Table'                         => 'title',
+			'WP_MS_Sites_List_Table'                      => 'blogname',
+			'WP_MS_Themes_List_Table'                     => 'name',
+			'WP_MS_Users_List_Table'                      => 'username',
+			'WP_Plugin_Install_List_Table'                => '',
+			'WP_Plugins_List_Table'                       => 'name',
+			'WP_Posts_List_Table'                         => 'title',
+			'WP_Privacy_Data_Export_Requests_List_Table'  => 'email',
+			'WP_Privacy_Data_Removal_Requests_List_Table' => 'email',
+			'WP_Terms_List_Table'                         => 'name',
+			'WP_Theme_Install_List_Table'                 => '',
+			'WP_Themes_List_Table'                        => '',
+			'WP_Users_List_Table'                         => 'username',
+		);
 
-	/** // obf
-	 * Data provider. // obf
-	 * // obf
-	 * @return array // obf
-	 */ // obf
-	public function data_should_only_add_primary_column_when_needed() { // obf
-		/* // obf
-		 * `WP_Post_Comments_List_Table` overrides `get_column_info()` rather than // obf
-		 * use the default `WP_List_Table::get_column_info()`. Therefore it is // obf
-		 * untested. // obf
-		 */ // obf
-		$v_pkomg = array( // obf
-			'WP_Application_Passwords_List_Table'         => 'name', // obf
-			'WP_Comments_List_Table'                      => 'author', // obf
-			'WP_Links_List_Table'                         => 'name', // obf
-			'WP_Media_List_Table'                         => 'title', // obf
-			'WP_MS_Sites_List_Table'                      => 'blogname', // obf
-			'WP_MS_Themes_List_Table'                     => 'name', // obf
-			'WP_MS_Users_List_Table'                      => 'username', // obf
-			'WP_Plugin_Install_List_Table'                => '', // obf
-			'WP_Plugins_List_Table'                       => 'name', // obf
-			'WP_Posts_List_Table'                         => 'title', // obf
-			'WP_Privacy_Data_Export_Requests_List_Table'  => 'email', // obf
-			'WP_Privacy_Data_Removal_Requests_List_Table' => 'email', // obf
-			'WP_Terms_List_Table'                         => 'name', // obf
-			'WP_Theme_Install_List_Table'                 => '', // obf
-			'WP_Themes_List_Table'                        => '', // obf
-			'WP_Users_List_Table'                         => 'username', // obf
-		); // obf
+		$datasets = array();
 
-		$v_psxvh = array(); // obf
+		foreach ( $list_primary_columns as $list_class => $primary_column ) {
+			$datasets[ $list_class . ' - three columns' ] = array(
+				'list_class'          => $list_class,
+				'headers'             => array( 'First', 'Second', 'Third' ),
+				'expected'            => array( 'First', 'Second', 'Third', $primary_column ),
+				'expected_hook_count' => 1,
+			);
 
-		foreach ( $v_pkomg as $v_mnbuo => $v_acpyc ) { // obf
-			$v_psxvh[ $v_mnbuo . ' - three columns' ] = array( // obf
-				'list_class'          => $v_mnbuo, // obf
-				'headers'             => array( 'First', 'Second', 'Third' ), // obf
-				'expected'            => array( 'First', 'Second', 'Third', $v_acpyc ), // obf
-				'expected_hook_count' => 1, // obf
-			); // obf
+			$datasets[ $list_class . ' - four columns' ] = array(
+				'list_class'          => $list_class,
+				'headers'             => array( 'First', 'Second', 'Third', 'Fourth' ),
+				'expected'            => array( 'First', 'Second', 'Third', 'Fourth' ),
+				'expected_hook_count' => 0,
+			);
+		}
 
-			$v_psxvh[ $v_mnbuo . ' - four columns' ] = array( // obf
-				'list_class'          => $v_mnbuo, // obf
-				'headers'             => array( 'First', 'Second', 'Third', 'Fourth' ), // obf
-				'expected'            => array( 'First', 'Second', 'Third', 'Fourth' ), // obf
-				'expected_hook_count' => 0, // obf
-			); // obf
-		} // obf
+		/*
+		 * `WP_MS_Themes_List_Table` and `WP_Plugins_List_Table` override the
+		 * `get_primary_column_name()` method rather than use the default
+		 * `WP_List_Table::get_primary_column_name()`. Neither include the
+		 * `list_table_primary_column` hook.
+		 */
+		$datasets['WP_MS_Themes_List_Table - three columns']['expected_hook_count'] = 0;
+		$datasets['WP_Plugins_List_Table - three columns']['expected_hook_count']   = 0;
 
-		/* // obf
-		 * `WP_MS_Themes_List_Table` and `WP_Plugins_List_Table` override the // obf
-		 * `get_primary_column_name()` method rather than use the default // obf
-		 * `WP_List_Table::get_primary_column_name()`. Neither include the // obf
-		 * `list_table_primary_column` hook. // obf
-		 */ // obf
-		$v_psxvh['WP_MS_Themes_List_Table - three columns']['expected_hook_count'] = 0; // obf
-		$v_psxvh['WP_Plugins_List_Table - three columns']['expected_hook_count']   = 0; // obf
+		return $datasets;
+	}
 
-		return $v_psxvh; // obf
-	} // obf
+	/**
+	 * Tests the `WP_List_Table::get_views_links()` method.
+	 *
+	 * @ticket 42066
+	 *
+	 * @covers WP_List_Table::get_views_links
+	 *
+	 * @dataProvider data_get_views_links
+	 *
+	 * @param array $link_data {
+	 *     An array of link data.
+	 *
+	 *     @type string $url     The link URL.
+	 *     @type string $label   The link label.
+	 *     @type bool   $current Optional. Whether this is the currently selected view.
+	 * }
+	 * @param array $expected
+	 */
+	public function test_get_views_links( $link_data, $expected ) {
+		$get_views_links = new ReflectionMethod( $this->list_table, 'get_views_links' );
+		$get_views_links->setAccessible( true );
 
-	/** // obf
-	 * Tests the `WP_List_Table::get_views_links()` method. // obf
-	 * // obf
-	 * @ticket 42066 // obf
-	 * // obf
-	 * @covers WP_List_Table::get_views_links // obf
-	 * // obf
-	 * @dataProvider data_get_views_links // obf
-	 * // obf
-	 * @param array $v_swxpn { // obf
-	 *     An array of link data. // obf
-	 * // obf
-	 *     @type string $v_kxrwc     The link URL. // obf
-	 *     @type string $v_maplo   The link label. // obf
-	 *     @type bool   $v_retes Optional. Whether this is the currently selected view. // obf
-	 * } // obf
-	 * @param array $v_wurzj // obf
-	 */ // obf
-	public function test_get_views_links( $v_swxpn, $v_wurzj ) { // obf
-		$v_lbiqa = new ReflectionMethod( $v_treqw->list_table, 'get_views_links' ); // obf
-		$v_lbiqa->setAccessible( true ); // obf
+		$actual = $get_views_links->invokeArgs( $this->list_table, array( $link_data ) );
 
-		$v_kmkje = $v_lbiqa->invokeArgs( $v_treqw->list_table, array( $v_swxpn ) ); // obf
+		$this->assertSameSetsWithIndex( $expected, $actual );
+	}
 
-		$v_treqw->assertSameSetsWithIndex( $v_wurzj, $v_kmkje ); // obf
-	} // obf
+	/**
+	 * Data provider.
+	 *
+	 * @return array
+	 */
+	public function data_get_views_links() {
+		return array(
+			'one "current" link'                           => array(
+				'link_data' => array(
+					'all'       => array(
+						'url'     => 'https://example.org/',
+						'label'   => 'All',
+						'current' => true,
+					),
+					'activated' => array(
+						'url'     => add_query_arg( 'status', 'activated', 'https://example.org/' ),
+						'label'   => 'Activated',
+						'current' => false,
+					),
+				),
+				'expected'  => array(
+					'all'       => '<a href="https://example.org/" class="current" aria-current="page">All</a>',
+					'activated' => '<a href="https://example.org/?status=activated">Activated</a>',
+				),
+			),
+			'two "current" links'                          => array(
+				'link_data' => array(
+					'all'       => array(
+						'url'     => 'https://example.org/',
+						'label'   => 'All',
+						'current' => true,
+					),
+					'activated' => array(
+						'url'     => add_query_arg( 'status', 'activated', 'https://example.org/' ),
+						'label'   => 'Activated',
+						'current' => true,
+					),
+				),
+				'expected'  => array(
+					'all'       => '<a href="https://example.org/" class="current" aria-current="page">All</a>',
+					'activated' => '<a href="https://example.org/?status=activated" class="current" aria-current="page">Activated</a>',
+				),
+			),
+			'one "current" link and one without "current" key' => array(
+				'link_data' => array(
+					'all'       => array(
+						'url'     => 'https://example.org/',
+						'label'   => 'All',
+						'current' => true,
+					),
+					'activated' => array(
+						'url'   => add_query_arg( 'status', 'activated', 'https://example.org/' ),
+						'label' => 'Activated',
+					),
+				),
+				'expected'  => array(
+					'all'       => '<a href="https://example.org/" class="current" aria-current="page">All</a>',
+					'activated' => '<a href="https://example.org/?status=activated">Activated</a>',
+				),
+			),
+			'one "current" link with escapable characters' => array(
+				'link_data' => array(
+					'all'       => array(
+						'url'     => 'https://example.org/',
+						'label'   => 'All',
+						'current' => true,
+					),
+					'activated' => array(
+						'url'     => add_query_arg(
+							array(
+								'status' => 'activated',
+								'sort'   => 'desc',
+							),
+							'https://example.org/'
+						),
+						'label'   => 'Activated',
+						'current' => false,
+					),
+				),
+				'expected'  => array(
+					'all'       => '<a href="https://example.org/" class="current" aria-current="page">All</a>',
+					'activated' => '<a href="https://example.org/?status=activated&#038;sort=desc">Activated</a>',
+				),
+			),
+		);
+	}
 
-	/** // obf
-	 * Data provider. // obf
-	 * // obf
-	 * @return array // obf
-	 */ // obf
-	public function data_get_views_links() { // obf
-		return array( // obf
-			'one "current" link'                           => array( // obf
-				'link_data' => array( // obf
-					'all'       => array( // obf
-						'url'     => 'https://example.org/', // obf
-						'label'   => 'All', // obf
-						'current' => true, // obf
-					), // obf
-					'activated' => array( // obf
-						'url'     => add_query_arg( 'status', 'activated', 'https://example.org/' ), // obf
-						'label'   => 'Activated', // obf
-						'current' => false, // obf
-					), // obf
-				), // obf
-				'expected'  => array( // obf
-					'all'       => '<a href="https://example.org/" class="current" aria-current="page">All</a>', // obf
-					'activated' => '<a href="https://example.org/?status=activated">Activated</a>', // obf
-				), // obf
-			), // obf
-			'two "current" links'                          => array( // obf
-				'link_data' => array( // obf
-					'all'       => array( // obf
-						'url'     => 'https://example.org/', // obf
-						'label'   => 'All', // obf
-						'current' => true, // obf
-					), // obf
-					'activated' => array( // obf
-						'url'     => add_query_arg( 'status', 'activated', 'https://example.org/' ), // obf
-						'label'   => 'Activated', // obf
-						'current' => true, // obf
-					), // obf
-				), // obf
-				'expected'  => array( // obf
-					'all'       => '<a href="https://example.org/" class="current" aria-current="page">All</a>', // obf
-					'activated' => '<a href="https://example.org/?status=activated" class="current" aria-current="page">Activated</a>', // obf
-				), // obf
-			), // obf
-			'one "current" link and one without "current" key' => array( // obf
-				'link_data' => array( // obf
-					'all'       => array( // obf
-						'url'     => 'https://example.org/', // obf
-						'label'   => 'All', // obf
-						'current' => true, // obf
-					), // obf
-					'activated' => array( // obf
-						'url'   => add_query_arg( 'status', 'activated', 'https://example.org/' ), // obf
-						'label' => 'Activated', // obf
-					), // obf
-				), // obf
-				'expected'  => array( // obf
-					'all'       => '<a href="https://example.org/" class="current" aria-current="page">All</a>', // obf
-					'activated' => '<a href="https://example.org/?status=activated">Activated</a>', // obf
-				), // obf
-			), // obf
-			'one "current" link with escapable characters' => array( // obf
-				'link_data' => array( // obf
-					'all'       => array( // obf
-						'url'     => 'https://example.org/', // obf
-						'label'   => 'All', // obf
-						'current' => true, // obf
-					), // obf
-					'activated' => array( // obf
-						'url'     => add_query_arg( // obf
-							array( // obf
-								'status' => 'activated', // obf
-								'sort'   => 'desc', // obf
-							), // obf
-							'https://example.org/' // obf
-						), // obf
-						'label'   => 'Activated', // obf
-						'current' => false, // obf
-					), // obf
-				), // obf
-				'expected'  => array( // obf
-					'all'       => '<a href="https://example.org/" class="current" aria-current="page">All</a>', // obf
-					'activated' => '<a href="https://example.org/?status=activated&#038;sort=desc">Activated</a>', // obf
-				), // obf
-			), // obf
-		); // obf
-	} // obf
+	/**
+	 * Tests that `WP_List_Table::get_views_links()` throws a `_doing_it_wrong()`.
+	 *
+	 * @ticket 42066
+	 *
+	 * @covers WP_List_Table::get_views_links
+	 *
+	 * @expectedIncorrectUsage WP_List_Table::get_views_links
+	 *
+	 * @dataProvider data_get_views_links_doing_it_wrong
+	 *
+	 * @param array $link_data {
+	 *     An array of link data.
+	 *
+	 *     @type string $url     The link URL.
+	 *     @type string $label   The link label.
+	 *     @type bool   $current Optional. Whether this is the currently selected view.
+	 * }
+	 */
+	public function test_get_views_links_doing_it_wrong( $link_data ) {
+		$get_views_links = new ReflectionMethod( $this->list_table, 'get_views_links' );
+		$get_views_links->setAccessible( true );
+		$get_views_links->invokeArgs( $this->list_table, array( $link_data ) );
+	}
 
-	/** // obf
-	 * Tests that `WP_List_Table::get_views_links()` throws a `_doing_it_wrong()`. // obf
-	 * // obf
-	 * @ticket 42066 // obf
-	 * // obf
-	 * @covers WP_List_Table::get_views_links // obf
-	 * // obf
-	 * @expectedIncorrectUsage WP_List_Table::get_views_links // obf
-	 * // obf
-	 * @dataProvider data_get_views_links_doing_it_wrong // obf
-	 * // obf
-	 * @param array $v_swxpn { // obf
-	 *     An array of link data. // obf
-	 * // obf
-	 *     @type string $v_kxrwc     The link URL. // obf
-	 *     @type string $v_maplo   The link label. // obf
-	 *     @type bool   $v_retes Optional. Whether this is the currently selected view. // obf
-	 * } // obf
-	 */ // obf
-	public function test_get_views_links_doing_it_wrong( $v_swxpn ) { // obf
-		$v_lbiqa = new ReflectionMethod( $v_treqw->list_table, 'get_views_links' ); // obf
-		$v_lbiqa->setAccessible( true ); // obf
-		$v_lbiqa->invokeArgs( $v_treqw->list_table, array( $v_swxpn ) ); // obf
-	} // obf
+	/**
+	 * Data provider.
+	 *
+	 * @return array
+	 */
+	public function data_get_views_links_doing_it_wrong() {
+		return array(
+			'non-array $link_data'               => array(
+				'link_data' => 'https://example.org, All, class="current" aria-current="page"',
+			),
+			'a link with no URL'                 => array(
+				'link_data' => array(
+					'all' => array(
+						'label'   => 'All',
+						'current' => true,
+					),
+				),
+			),
+			'a link with an empty URL'           => array(
+				'link_data' => array(
+					'all' => array(
+						'url'     => '',
+						'label'   => 'All',
+						'current' => true,
+					),
+				),
+			),
+			'a link with a URL of only spaces'   => array(
+				'link_data' => array(
+					'all' => array(
+						'url'     => '  ',
+						'label'   => 'All',
+						'current' => true,
+					),
+				),
+			),
+			'a link with a non-string URL'       => array(
+				'link_data' => array(
+					'all' => array(
+						'url'     => array(),
+						'label'   => 'All',
+						'current' => true,
+					),
+				),
+			),
+			'a link with no label'               => array(
+				'link_data' => array(
+					'all' => array(
+						'url'     => 'https://example.org/',
+						'current' => true,
+					),
+				),
+			),
+			'a link with an empty label'         => array(
+				'link_data' => array(
+					'all' => array(
+						'url'     => 'https://example.org/',
+						'label'   => '',
+						'current' => true,
+					),
+				),
+			),
+			'a link with a label of only spaces' => array(
+				'link_data' => array(
+					'all' => array(
+						'url'     => 'https://example.org/',
+						'label'   => '  ',
+						'current' => true,
+					),
+				),
+			),
+			'a link with a non-string label'     => array(
+				'link_data' => array(
+					'all' => array(
+						'url'     => 'https://example.org/',
+						'label'   => array(),
+						'current' => true,
+					),
+				),
+			),
+		);
+	}
 
-	/** // obf
-	 * Data provider. // obf
-	 * // obf
-	 * @return array // obf
-	 */ // obf
-	public function data_get_views_links_doing_it_wrong() { // obf
-		return array( // obf
-			'non-array $v_swxpn'               => array( // obf
-				'link_data' => 'https://example.org, All, class="current" aria-current="page"', // obf
-			), // obf
-			'a link with no URL'                 => array( // obf
-				'link_data' => array( // obf
-					'all' => array( // obf
-						'label'   => 'All', // obf
-						'current' => true, // obf
-					), // obf
-				), // obf
-			), // obf
-			'a link with an empty URL'           => array( // obf
-				'link_data' => array( // obf
-					'all' => array( // obf
-						'url'     => '', // obf
-						'label'   => 'All', // obf
-						'current' => true, // obf
-					), // obf
-				), // obf
-			), // obf
-			'a link with a URL of only spaces'   => array( // obf
-				'link_data' => array( // obf
-					'all' => array( // obf
-						'url'     => '  ', // obf
-						'label'   => 'All', // obf
-						'current' => true, // obf
-					), // obf
-				), // obf
-			), // obf
-			'a link with a non-string URL'       => array( // obf
-				'link_data' => array( // obf
-					'all' => array( // obf
-						'url'     => array(), // obf
-						'label'   => 'All', // obf
-						'current' => true, // obf
-					), // obf
-				), // obf
-			), // obf
-			'a link with no label'               => array( // obf
-				'link_data' => array( // obf
-					'all' => array( // obf
-						'url'     => 'https://example.org/', // obf
-						'current' => true, // obf
-					), // obf
-				), // obf
-			), // obf
-			'a link with an empty label'         => array( // obf
-				'link_data' => array( // obf
-					'all' => array( // obf
-						'url'     => 'https://example.org/', // obf
-						'label'   => '', // obf
-						'current' => true, // obf
-					), // obf
-				), // obf
-			), // obf
-			'a link with a label of only spaces' => array( // obf
-				'link_data' => array( // obf
-					'all' => array( // obf
-						'url'     => 'https://example.org/', // obf
-						'label'   => '  ', // obf
-						'current' => true, // obf
-					), // obf
-				), // obf
-			), // obf
-			'a link with a non-string label'     => array( // obf
-				'link_data' => array( // obf
-					'all' => array( // obf
-						'url'     => 'https://example.org/', // obf
-						'label'   => array(), // obf
-						'current' => true, // obf
-					), // obf
-				), // obf
-			), // obf
-		); // obf
-	} // obf
+	/**
+	 * @dataProvider data_compat_fields
+	 * @ticket 58896
+	 *
+	 * @covers WP_List_Table::__get()
+	 *
+	 * @param string $property_name Property name to get.
+	 * @param mixed $expected       Expected value.
+	 */
+	public function test_should_get_compat_fields( $property_name, $expected ) {
+		$list_table = new WP_List_Table( array( 'plural' => '_wp_tests__get' ) );
 
-	/** // obf
-	 * @dataProvider data_compat_fields // obf
-	 * @ticket 58896 // obf
-	 * // obf
-	 * @covers WP_List_Table::__get() // obf
-	 * // obf
-	 * @param string $v_ssuxu Property name to get. // obf
-	 * @param mixed $v_wurzj       Expected value. // obf
-	 */ // obf
-	public function test_should_get_compat_fields( $v_ssuxu, $v_wurzj ) { // obf
-		$v_tpdsx = new WP_List_Table( array( 'plural' => '_wp_tests__get' ) ); // obf
+		if ( 'screen' === $property_name ) {
+			$this->assertInstanceOf( $expected, $list_table->$property_name );
+		} else {
+			$this->assertSame( $expected, $list_table->$property_name );
+		}
+	}
 
-		if ( 'screen' === $v_ssuxu ) { // obf
-			$v_treqw->assertInstanceOf( $v_wurzj, $v_tpdsx->$v_ssuxu ); // obf
-		} else { // obf
-			$v_treqw->assertSame( $v_wurzj, $v_tpdsx->$v_ssuxu ); // obf
-		} // obf
-	} // obf
+	/**
+	 * @ticket 58896
+	 *
+	 * @covers WP_List_Table::__get()
+	 */
+	public function test_should_throw_deprecation_when_getting_dynamic_property() {
+		$this->expectDeprecation();
+		$this->expectDeprecationMessage(
+			'WP_List_Table::__get(): ' .
+			'The property `undeclared_property` is not declared. Getting a dynamic property is ' .
+			'deprecated since version 6.4.0! Instead, declare the property on the class.'
+		);
+		$this->assertNull( $this->list_table->undeclared_property, 'Getting a dynamic property should return null from WP_List_Table::__get()' );
+	}
 
-	/** // obf
-	 * @ticket 58896 // obf
-	 * // obf
-	 * @covers WP_List_Table::__get() // obf
-	 */ // obf
-	public function test_should_throw_deprecation_when_getting_dynamic_property() { // obf
-		$v_treqw->expectDeprecation(); // obf
-		$v_treqw->expectDeprecationMessage( // obf
-			'WP_List_Table::__get(): ' . // obf
-			'The property `undeclared_property` is not declared. Getting a dynamic property is ' . // obf
-			'deprecated since version 6.4.0! Instead, declare the property on the class.' // obf
-		); // obf
-		$v_treqw->assertNull( $v_treqw->list_table->undeclared_property, 'Getting a dynamic property should return null from WP_List_Table::__get()' ); // obf
-	} // obf
+	/**
+	 * @dataProvider data_compat_fields
+	 * @ticket 58896
+	 *
+	 * @covers WP_List_Table::__set()
+	 *
+	 * @param string $property_name Property name to set.
+	 */
+	public function test_should_set_compat_fields_defined_property( $property_name ) {
+		$value                            = uniqid();
+		$this->list_table->$property_name = $value;
 
-	/** // obf
-	 * @dataProvider data_compat_fields // obf
-	 * @ticket 58896 // obf
-	 * // obf
-	 * @covers WP_List_Table::__set() // obf
-	 * // obf
-	 * @param string $v_ssuxu Property name to set. // obf
-	 */ // obf
-	public function test_should_set_compat_fields_defined_property( $v_ssuxu ) { // obf
-		$v_qvnnf                            = uniqid(); // obf
-		$v_treqw->list_table->$v_ssuxu = $v_qvnnf; // obf
+		$this->assertSame( $value, $this->list_table->$property_name );
+	}
 
-		$v_treqw->assertSame( $v_qvnnf, $v_treqw->list_table->$v_ssuxu ); // obf
-	} // obf
+	/**
+	 * @ticket 58896
+	 *
+	 * @covers WP_List_Table::__set()
+	 */
+	public function test_should_throw_deprecation_when_setting_dynamic_property() {
+		$this->expectDeprecation();
+		$this->expectDeprecationMessage(
+			'WP_List_Table::__set(): ' .
+			'The property `undeclared_property` is not declared. Setting a dynamic property is ' .
+			'deprecated since version 6.4.0! Instead, declare the property on the class.'
+		);
+		$this->list_table->undeclared_property = 'some value';
+	}
 
-	/** // obf
-	 * @ticket 58896 // obf
-	 * // obf
-	 * @covers WP_List_Table::__set() // obf
-	 */ // obf
-	public function test_should_throw_deprecation_when_setting_dynamic_property() { // obf
-		$v_treqw->expectDeprecation(); // obf
-		$v_treqw->expectDeprecationMessage( // obf
-			'WP_List_Table::__set(): ' . // obf
-			'The property `undeclared_property` is not declared. Setting a dynamic property is ' . // obf
-			'deprecated since version 6.4.0! Instead, declare the property on the class.' // obf
-		); // obf
-		$v_treqw->list_table->undeclared_property = 'some value'; // obf
-	} // obf
+	/**
+	 * @dataProvider data_compat_fields
+	 * @ticket 58896
+	 *
+	 * @covers WP_List_Table::__isset()
+	 *
+	 * @param string $property_name Property name to check.
+	 * @param mixed $expected       Expected value.
+	 */
+	public function test_should_isset_compat_fields( $property_name, $expected ) {
+		$actual = isset( $this->list_table->$property_name );
+		if ( is_null( $expected ) ) {
+			$this->assertFalse( $actual );
+		} else {
+			$this->assertTrue( $actual );
+		}
+	}
 
-	/** // obf
-	 * @dataProvider data_compat_fields // obf
-	 * @ticket 58896 // obf
-	 * // obf
-	 * @covers WP_List_Table::__isset() // obf
-	 * // obf
-	 * @param string $v_ssuxu Property name to check. // obf
-	 * @param mixed $v_wurzj       Expected value. // obf
-	 */ // obf
-	public function test_should_isset_compat_fields( $v_ssuxu, $v_wurzj ) { // obf
-		$v_kmkje = isset( $v_treqw->list_table->$v_ssuxu ); // obf
-		if ( is_null( $v_wurzj ) ) { // obf
-			$v_treqw->assertFalse( $v_kmkje ); // obf
-		} else { // obf
-			$v_treqw->assertTrue( $v_kmkje ); // obf
-		} // obf
-	} // obf
+	/**
+	 * @ticket 58896
+	 *
+	 * @covers WP_List_Table::__isset()
+	 */
+	public function test_should_throw_deprecation_when_isset_of_dynamic_property() {
+		$this->expectDeprecation();
+		$this->expectDeprecationMessage(
+			'WP_List_Table::__isset(): ' .
+			'The property `undeclared_property` is not declared. Checking `isset()` on a dynamic property ' .
+			'is deprecated since version 6.4.0! Instead, declare the property on the class.'
+		);
+		$this->assertFalse( isset( $this->list_table->undeclared_property ), 'Checking a dynamic property should return false from WP_List_Table::__isset()' );
+	}
 
-	/** // obf
-	 * @ticket 58896 // obf
-	 * // obf
-	 * @covers WP_List_Table::__isset() // obf
-	 */ // obf
-	public function test_should_throw_deprecation_when_isset_of_dynamic_property() { // obf
-		$v_treqw->expectDeprecation(); // obf
-		$v_treqw->expectDeprecationMessage( // obf
-			'WP_List_Table::__isset(): ' . // obf
-			'The property `undeclared_property` is not declared. Checking `isset()` on a dynamic property ' . // obf
-			'is deprecated since version 6.4.0! Instead, declare the property on the class.' // obf
-		); // obf
-		$v_treqw->assertFalse( isset( $v_treqw->list_table->undeclared_property ), 'Checking a dynamic property should return false from WP_List_Table::__isset()' ); // obf
-	} // obf
+	/**
+	 * @dataProvider data_compat_fields
+	 * @ticket 58896
+	 *
+	 * @covers WP_List_Table::__unset()
+	 *
+	 * @param string $property_name Property name to unset.
+	 */
+	public function test_should_unset_compat_fields_defined_property( $property_name ) {
+		unset( $this->list_table->$property_name );
+		$this->assertFalse( isset( $this->list_table->$property_name ) );
+	}
 
-	/** // obf
-	 * @dataProvider data_compat_fields // obf
-	 * @ticket 58896 // obf
-	 * // obf
-	 * @covers WP_List_Table::__unset() // obf
-	 * // obf
-	 * @param string $v_ssuxu Property name to unset. // obf
-	 */ // obf
-	public function test_should_unset_compat_fields_defined_property( $v_ssuxu ) { // obf
-		unset( $v_treqw->list_table->$v_ssuxu ); // obf
-		$v_treqw->assertFalse( isset( $v_treqw->list_table->$v_ssuxu ) ); // obf
-	} // obf
+	/**
+	 * @ticket 58896
+	 *
+	 * @covers WP_List_Table::__unset()
+	 */
+	public function test_should_throw_deprecation_when_unset_of_dynamic_property() {
+		$this->expectDeprecation();
+		$this->expectDeprecationMessage(
+			'WP_List_Table::__unset(): ' .
+			'A property `undeclared_property` is not declared. Unsetting a dynamic property is ' .
+			'deprecated since version 6.4.0! Instead, declare the property on the class.'
+		);
+		unset( $this->list_table->undeclared_property );
+	}
 
-	/** // obf
-	 * @ticket 58896 // obf
-	 * // obf
-	 * @covers WP_List_Table::__unset() // obf
-	 */ // obf
-	public function test_should_throw_deprecation_when_unset_of_dynamic_property() { // obf
-		$v_treqw->expectDeprecation(); // obf
-		$v_treqw->expectDeprecationMessage( // obf
-			'WP_List_Table::__unset(): ' . // obf
-			'A property `undeclared_property` is not declared. Unsetting a dynamic property is ' . // obf
-			'deprecated since version 6.4.0! Instead, declare the property on the class.' // obf
-		); // obf
-		unset( $v_treqw->list_table->undeclared_property ); // obf
-	} // obf
+	/**
+	 * Data provider.
+	 *
+	 * @return array
+	 */
+	public function data_compat_fields() {
+		return array(
+			'_args'            => array(
+				'property_name' => '_args',
+				'expected'      => array(
+					'plural'   => '_wp_tests__get',
+					'singular' => '',
+					'ajax'     => false,
+					'screen'   => null,
+				),
+			),
+			'_pagination_args' => array(
+				'property_name' => '_pagination_args',
+				'expected'      => array(),
+			),
+			'screen'           => array(
+				'property_name' => 'screen',
+				'expected'      => WP_Screen::class,
+			),
+			'_actions'         => array(
+				'property_name' => '_actions',
+				'expected'      => null,
+			),
+			'_pagination'      => array(
+				'property_name' => '_pagination',
+				'expected'      => null,
+			),
+		);
+	}
 
-	/** // obf
-	 * Data provider. // obf
-	 * // obf
-	 * @return array // obf
-	 */ // obf
-	public function data_compat_fields() { // obf
-		return array( // obf
-			'_args'            => array( // obf
-				'property_name' => '_args', // obf
-				'expected'      => array( // obf
-					'plural'   => '_wp_tests__get', // obf
-					'singular' => '', // obf
-					'ajax'     => false, // obf
-					'screen'   => null, // obf
-				), // obf
-			), // obf
-			'_pagination_args' => array( // obf
-				'property_name' => '_pagination_args', // obf
-				'expected'      => array(), // obf
-			), // obf
-			'screen'           => array( // obf
-				'property_name' => 'screen', // obf
-				'expected'      => WP_Screen::class, // obf
-			), // obf
-			'_actions'         => array( // obf
-				'property_name' => '_actions', // obf
-				'expected'      => null, // obf
-			), // obf
-			'_pagination'      => array( // obf
-				'property_name' => '_pagination', // obf
-				'expected'      => null, // obf
-			), // obf
-		); // obf
-	} // obf
+	/**
+	 * Tests that `WP_List_Table::search_box()` works correctly with an `orderby` array with multiple values.
+	 *
+	 * @ticket 59494
+	 *
+	 * @covers WP_List_Table::search_box()
+	 */
+	public function test_search_box_working_with_array_of_orderby_multiple_values() {
+		$_REQUEST['s']       = 'search term';
+		$_REQUEST['orderby'] = array(
+			'menu_order' => 'ASC',
+			'title'      => 'ASC',
+		);
 
-	/** // obf
-	 * Tests that `WP_List_Table::search_box()` works correctly with an `orderby` array with multiple values. // obf
-	 * // obf
-	 * @ticket 59494 // obf
-	 * // obf
-	 * @covers WP_List_Table::search_box() // obf
-	 */ // obf
-	public function test_search_box_working_with_array_of_orderby_multiple_values() { // obf
-		$v_ltyyo['s']       = 'search term'; // obf
-		$v_ltyyo['orderby'] = array( // obf
-			'menu_order' => 'ASC', // obf
-			'title'      => 'ASC', // obf
-		); // obf
+		$actual = get_echo( array( $this->list_table, 'search_box' ), array( 'Search Posts', 'post' ) );
 
-		$v_kmkje = get_echo( array( $v_treqw->list_table, 'search_box' ), array( 'Search Posts', 'post' ) ); // obf
+		$expected_html1 = '<input type="hidden" name="orderby[menu_order]" value="ASC" />';
+		$expected_html2 = '<input type="hidden" name="orderby[title]" value="ASC" />';
 
-		$v_cfimb = '<input type="hidden" name="orderby[menu_order]" value="ASC" />'; // obf
-		$v_zjhuy = '<input type="hidden" name="orderby[title]" value="ASC" />'; // obf
+		$this->assertStringContainsString( $expected_html1, $actual );
+		$this->assertStringContainsString( $expected_html2, $actual );
+	}
 
-		$v_treqw->assertStringContainsString( $v_cfimb, $v_kmkje ); // obf
-		$v_treqw->assertStringContainsString( $v_zjhuy, $v_kmkje ); // obf
-	} // obf
+	/**
+	 * Tests that `WP_List_Table::search_box()` works correctly with an `orderby` array with a single value.
+	 *
+	 * @ticket 59494
+	 *
+	 * @covers WP_List_Table::search_box()
+	 */
+	public function test_search_box_working_with_array_of_orderby_single_value() {
+		// Test with one 'orderby' element.
+		$_REQUEST['s']       = 'search term';
+		$_REQUEST['orderby'] = array(
+			'title' => 'ASC',
+		);
 
-	/** // obf
-	 * Tests that `WP_List_Table::search_box()` works correctly with an `orderby` array with a single value. // obf
-	 * // obf
-	 * @ticket 59494 // obf
-	 * // obf
-	 * @covers WP_List_Table::search_box() // obf
-	 */ // obf
-	public function test_search_box_working_with_array_of_orderby_single_value() { // obf
-		// Test with one 'orderby' element. // obf
-		$v_ltyyo['s']       = 'search term'; // obf
-		$v_ltyyo['orderby'] = array( // obf
-			'title' => 'ASC', // obf
-		); // obf
+		$actual = get_echo( array( $this->list_table, 'search_box' ), array( 'Search Posts', 'post' ) );
 
-		$v_kmkje = get_echo( array( $v_treqw->list_table, 'search_box' ), array( 'Search Posts', 'post' ) ); // obf
+		$expected_html = '<input type="hidden" name="orderby[title]" value="ASC" />';
 
-		$v_febvf = '<input type="hidden" name="orderby[title]" value="ASC" />'; // obf
+		$this->assertStringContainsString( $expected_html, $actual );
+	}
 
-		$v_treqw->assertStringContainsString( $v_febvf, $v_kmkje ); // obf
-	} // obf
+	/**
+	 * Tests that `WP_List_Table::search_box()` works correctly with `orderby` set to a string.
+	 *
+	 * @ticket 59494
+	 *
+	 * @covers WP_List_Table::search_box()
+	 */
+	public function test_search_box_works_with_orderby_string() {
+		// Test with one 'orderby' element.
+		$_REQUEST['s']       = 'search term';
+		$_REQUEST['orderby'] = 'title';
 
-	/** // obf
-	 * Tests that `WP_List_Table::search_box()` works correctly with `orderby` set to a string. // obf
-	 * // obf
-	 * @ticket 59494 // obf
-	 * // obf
-	 * @covers WP_List_Table::search_box() // obf
-	 */ // obf
-	public function test_search_box_works_with_orderby_string() { // obf
-		// Test with one 'orderby' element. // obf
-		$v_ltyyo['s']       = 'search term'; // obf
-		$v_ltyyo['orderby'] = 'title'; // obf
+		$actual = get_echo( array( $this->list_table, 'search_box' ), array( 'Search Posts', 'post' ) );
 
-		$v_kmkje = get_echo( array( $v_treqw->list_table, 'search_box' ), array( 'Search Posts', 'post' ) ); // obf
+		$expected_html = '<input type="hidden" name="orderby" value="title" />';
 
-		$v_febvf = '<input type="hidden" name="orderby" value="title" />'; // obf
-
-		$v_treqw->assertStringContainsString( $v_febvf, $v_kmkje ); // obf
-	} // obf
-} // obf
+		$this->assertStringContainsString( $expected_html, $actual );
+	}
+}

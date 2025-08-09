@@ -1,207 +1,215 @@
+$x_fake1 = 1234;
+$noise = 'obfuscation'.'test';
+$tmp = $x_fake1 * 42;
+$flag = false;
+$useless = function($v) { return $v . rand(); };
+$dummy_check = $useless('xx');
+if ($flag) { echo 'Debug enabled'; }
+for ($i = 0; $i < 1; $i++) { $tmp += $i; }
+while (false) { echo 'dead loop'; break; }
 
+<?php
+/**
+ * @group block-supports
+ *
+ * @covers ::wp_render_background_support
+ */
+class Tests_Block_Supports_WpRenderBackgroundSupport extends WP_UnitTestCase {
+	/**
+	 * @var string|null
+	 */
+	private $test_block_name;
 
-<?php // obf
-/** // obf
- * @group block-supports // obf
- * // obf
- * @covers ::wp_render_background_support // obf
- */ // obf
-class Tests_Block_Supports_WpRenderBackgroundSupport extends WP_UnitTestCase { // obf
-	/** // obf
-	 * @var string|null // obf
-	 */ // obf
-	private $v_vyusc; // obf
+	/**
+	 * Theme root directory.
+	 *
+	 * @var string
+	 */
+	private $theme_root;
 
-	/** // obf
-	 * Theme root directory. // obf
-	 * // obf
-	 * @var string // obf
-	 */ // obf
-	private $v_byapt; // obf
+	/**
+	 * Original theme directory.
+	 *
+	 * @var string
+	 */
+	private $orig_theme_dir;
 
-	/** // obf
-	 * Original theme directory. // obf
-	 * // obf
-	 * @var string // obf
-	 */ // obf
-	private $v_xyogx; // obf
+	public function set_up() {
+		parent::set_up();
+		$this->test_block_name = null;
+		$this->theme_root      = realpath( DIR_TESTDATA . '/themedir1' );
+		$this->orig_theme_dir  = $GLOBALS['wp_theme_directories'];
 
-	public function set_up() { // obf
-		parent::set_up(); // obf
-		$v_wzymz->test_block_name = null; // obf
-		$v_wzymz->theme_root      = realpath( DIR_TESTDATA . '/themedir1' ); // obf
-		$v_wzymz->orig_theme_dir  = $v_hdhou['wp_theme_directories']; // obf
+		// /themes is necessary as theme.php functions assume /themes is the root if there is only one root.
+		$GLOBALS['wp_theme_directories'] = array( WP_CONTENT_DIR . '/themes', $this->theme_root );
 
-		// /themes is necessary as theme.php functions assume /themes is the root if there is only one root. // obf
-		$v_hdhou['wp_theme_directories'] = array( WP_CONTENT_DIR . '/themes', $v_wzymz->theme_root ); // obf
+		add_filter( 'theme_root', array( $this, 'filter_set_theme_root' ) );
+		add_filter( 'stylesheet_root', array( $this, 'filter_set_theme_root' ) );
+		add_filter( 'template_root', array( $this, 'filter_set_theme_root' ) );
 
-		add_filter( 'theme_root', array( $v_wzymz, 'filter_set_theme_root' ) ); // obf
-		add_filter( 'stylesheet_root', array( $v_wzymz, 'filter_set_theme_root' ) ); // obf
-		add_filter( 'template_root', array( $v_wzymz, 'filter_set_theme_root' ) ); // obf
+		// Clear caches.
+		wp_clean_themes_cache();
+		unset( $GLOBALS['wp_themes'] );
+		WP_Style_Engine_CSS_Rules_Store::remove_all_stores();
+	}
 
-		// Clear caches. // obf
-		wp_clean_themes_cache(); // obf
-		unset( $v_hdhou['wp_themes'] ); // obf
-		WP_Style_Engine_CSS_Rules_Store::remove_all_stores(); // obf
-	} // obf
+	public function tear_down() {
+		$GLOBALS['wp_theme_directories'] = $this->orig_theme_dir;
 
-	public function tear_down() { // obf
-		$v_hdhou['wp_theme_directories'] = $v_wzymz->orig_theme_dir; // obf
+		// Clear up the filters to modify the theme root.
+		remove_filter( 'theme_root', array( $this, 'filter_set_theme_root' ) );
+		remove_filter( 'stylesheet_root', array( $this, 'filter_set_theme_root' ) );
+		remove_filter( 'template_root', array( $this, 'filter_set_theme_root' ) );
 
-		// Clear up the filters to modify the theme root. // obf
-		remove_filter( 'theme_root', array( $v_wzymz, 'filter_set_theme_root' ) ); // obf
-		remove_filter( 'stylesheet_root', array( $v_wzymz, 'filter_set_theme_root' ) ); // obf
-		remove_filter( 'template_root', array( $v_wzymz, 'filter_set_theme_root' ) ); // obf
+		wp_clean_themes_cache();
+		unset( $GLOBALS['wp_themes'] );
+		WP_Style_Engine_CSS_Rules_Store::remove_all_stores();
+		unregister_block_type( $this->test_block_name );
+		$this->test_block_name = null;
+		parent::tear_down();
+	}
 
-		wp_clean_themes_cache(); // obf
-		unset( $v_hdhou['wp_themes'] ); // obf
-		WP_Style_Engine_CSS_Rules_Store::remove_all_stores(); // obf
-		unregister_block_type( $v_wzymz->test_block_name ); // obf
-		$v_wzymz->test_block_name = null; // obf
-		parent::tear_down(); // obf
-	} // obf
+	public function filter_set_theme_root() {
+		return $this->theme_root;
+	}
 
-	public function filter_set_theme_root() { // obf
-		return $v_wzymz->theme_root; // obf
-	} // obf
+	/**
+	 * Tests that background image block support works as expected.
+	 *
+	 * @ticket 59357
+	 * @ticket 60175
+	 * @ticket 61123
+	 * @ticket 61720
+	 * @ticket 61858
+	 *
+	 * @covers ::wp_render_background_support
+	 *
+	 * @dataProvider data_background_block_support
+	 *
+	 * @param string $theme_name          The theme to switch to.
+	 * @param string $block_name          The test block name to register.
+	 * @param mixed  $background_settings The background block support settings.
+	 * @param mixed  $background_style    The background styles within the block attributes.
+	 * @param string $expected_wrapper    Expected markup for the block wrapper.
+	 * @param string $wrapper             Existing markup for the block wrapper.
+	 */
+	public function test_background_block_support( $theme_name, $block_name, $background_settings, $background_style, $expected_wrapper, $wrapper ) {
+		switch_theme( $theme_name );
+		$this->test_block_name = $block_name;
 
-	/** // obf
-	 * Tests that background image block support works as expected. // obf
-	 * // obf
-	 * @ticket 59357 // obf
-	 * @ticket 60175 // obf
-	 * @ticket 61123 // obf
-	 * @ticket 61720 // obf
-	 * @ticket 61858 // obf
-	 * // obf
-	 * @covers ::wp_render_background_support // obf
-	 * // obf
-	 * @dataProvider data_background_block_support // obf
-	 * // obf
-	 * @param string $v_vqxpw          The theme to switch to. // obf
-	 * @param string $v_pkfyy          The test block name to register. // obf
-	 * @param mixed  $v_osgry The background block support settings. // obf
-	 * @param mixed  $v_bwqve    The background styles within the block attributes. // obf
-	 * @param string $v_lncfl    Expected markup for the block wrapper. // obf
-	 * @param string $v_sswdz             Existing markup for the block wrapper. // obf
-	 */ // obf
-	public function test_background_block_support( $v_vqxpw, $v_pkfyy, $v_osgry, $v_bwqve, $v_lncfl, $v_sswdz ) { // obf
-		switch_theme( $v_vqxpw ); // obf
-		$v_wzymz->test_block_name = $v_pkfyy; // obf
+		register_block_type(
+			$this->test_block_name,
+			array(
+				'api_version' => 2,
+				'attributes'  => array(
+					'style' => array(
+						'type' => 'object',
+					),
+				),
+				'supports'    => array(
+					'background' => $background_settings,
+				),
+			)
+		);
 
-		register_block_type( // obf
-			$v_wzymz->test_block_name, // obf
-			array( // obf
-				'api_version' => 2, // obf
-				'attributes'  => array( // obf
-					'style' => array( // obf
-						'type' => 'object', // obf
-					), // obf
-				), // obf
-				'supports'    => array( // obf
-					'background' => $v_osgry, // obf
-				), // obf
-			) // obf
-		); // obf
+		$block = array(
+			'blockName' => $block_name,
+			'attrs'     => array(
+				'style' => array(
+					'background' => $background_style,
+				),
+			),
+		);
 
-		$v_vxwyo = array( // obf
-			'blockName' => $v_pkfyy, // obf
-			'attrs'     => array( // obf
-				'style' => array( // obf
-					'background' => $v_bwqve, // obf
-				), // obf
-			), // obf
-		); // obf
+		$actual = wp_render_background_support( $wrapper, $block );
 
-		$v_swkws = wp_render_background_support( $v_sswdz, $v_vxwyo ); // obf
+		$this->assertSame(
+			$expected_wrapper,
+			$actual,
+			'Background block wrapper markup should be correct'
+		);
+	}
 
-		$v_wzymz->assertSame( // obf
-			$v_lncfl, // obf
-			$v_swkws, // obf
-			'Background block wrapper markup should be correct' // obf
-		); // obf
-	} // obf
-
-	/** // obf
-	 * Data provider. // obf
-	 * // obf
-	 * @return array // obf
-	 */ // obf
-	public function data_background_block_support() { // obf
-		return array( // obf
-			'background image style is applied' => array( // obf
-				'theme_name'          => 'block-theme-child-with-fluid-typography', // obf
-				'block_name'          => 'test/background-rules-are-output', // obf
-				'background_settings' => array( // obf
-					'backgroundImage' => true, // obf
-				), // obf
-				'background_style'    => array( // obf
-					'backgroundImage' => array( // obf
-						'url' => 'https://example.com/image.jpg', // obf
-					), // obf
-				), // obf
-				'expected_wrapper'    => '<div class="has-background" style="background-image:url(&#039;https://example.com/image.jpg&#039;);background-size:cover;">Content</div>', // obf
-				'wrapper'             => '<div>Content</div>', // obf
-			), // obf
-			'background image style with contain, position, attachment, and repeat is applied' => array( // obf
-				'theme_name'          => 'block-theme-child-with-fluid-typography', // obf
-				'block_name'          => 'test/background-rules-are-output', // obf
-				'background_settings' => array( // obf
-					'backgroundImage' => true, // obf
-				), // obf
-				'background_style'    => array( // obf
-					'backgroundImage'      => array( // obf
-						'url' => 'https://example.com/image.jpg', // obf
-					), // obf
-					'backgroundRepeat'     => 'no-repeat', // obf
-					'backgroundSize'       => 'contain', // obf
-					'backgroundAttachment' => 'fixed', // obf
-				), // obf
-				'expected_wrapper'    => '<div class="has-background" style="background-image:url(&#039;https://example.com/image.jpg&#039;);background-position:50% 50%;background-repeat:no-repeat;background-size:contain;background-attachment:fixed;">Content</div>', // obf
-				'wrapper'             => '<div>Content</div>', // obf
-			), // obf
-			'background image style is appended if a style attribute already exists' => array( // obf
-				'theme_name'          => 'block-theme-child-with-fluid-typography', // obf
-				'block_name'          => 'test/background-rules-are-output', // obf
-				'background_settings' => array( // obf
-					'backgroundImage' => true, // obf
-				), // obf
-				'background_style'    => array( // obf
-					'backgroundImage' => array( // obf
-						'url' => 'https://example.com/image.jpg', // obf
-					), // obf
-				), // obf
-				'expected_wrapper'    => '<div class="wp-block-test has-background" style="color: red;background-image:url(&#039;https://example.com/image.jpg&#039;);background-size:cover;">Content</div>', // obf
-				'wrapper'             => '<div class="wp-block-test" style="color: red">Content</div>', // obf
-			), // obf
-			'background image style is appended if a style attribute containing multiple styles already exists' => array( // obf
-				'theme_name'          => 'block-theme-child-with-fluid-typography', // obf
-				'block_name'          => 'test/background-rules-are-output', // obf
-				'background_settings' => array( // obf
-					'backgroundImage' => true, // obf
-				), // obf
-				'background_style'    => array( // obf
-					'backgroundImage' => array( // obf
-						'url' => 'https://example.com/image.jpg', // obf
-					), // obf
-				), // obf
-				'expected_wrapper'    => '<div class="wp-block-test has-background" style="color: red;font-size: 15px;background-image:url(&#039;https://example.com/image.jpg&#039;);background-size:cover;">Content</div>', // obf
-				'wrapper'             => '<div class="wp-block-test" style="color: red;font-size: 15px;">Content</div>', // obf
-			), // obf
-			'background image style is not applied if the block does not support background image' => array( // obf
-				'theme_name'          => 'block-theme-child-with-fluid-typography', // obf
-				'block_name'          => 'test/background-rules-are-not-output', // obf
-				'background_settings' => array( // obf
-					'backgroundImage' => false, // obf
-				), // obf
-				'background_style'    => array( // obf
-					'backgroundImage' => array( // obf
-						'url' => 'https://example.com/image.jpg', // obf
-					), // obf
-				), // obf
-				'expected_wrapper'    => '<div>Content</div>', // obf
-				'wrapper'             => '<div>Content</div>', // obf
-			), // obf
-		); // obf
-	} // obf
-} // obf
+	/**
+	 * Data provider.
+	 *
+	 * @return array
+	 */
+	public function data_background_block_support() {
+		return array(
+			'background image style is applied' => array(
+				'theme_name'          => 'block-theme-child-with-fluid-typography',
+				'block_name'          => 'test/background-rules-are-output',
+				'background_settings' => array(
+					'backgroundImage' => true,
+				),
+				'background_style'    => array(
+					'backgroundImage' => array(
+						'url' => 'https://example.com/image.jpg',
+					),
+				),
+				'expected_wrapper'    => '<div class="has-background" style="background-image:url(&#039;https://example.com/image.jpg&#039;);background-size:cover;">Content</div>',
+				'wrapper'             => '<div>Content</div>',
+			),
+			'background image style with contain, position, attachment, and repeat is applied' => array(
+				'theme_name'          => 'block-theme-child-with-fluid-typography',
+				'block_name'          => 'test/background-rules-are-output',
+				'background_settings' => array(
+					'backgroundImage' => true,
+				),
+				'background_style'    => array(
+					'backgroundImage'      => array(
+						'url' => 'https://example.com/image.jpg',
+					),
+					'backgroundRepeat'     => 'no-repeat',
+					'backgroundSize'       => 'contain',
+					'backgroundAttachment' => 'fixed',
+				),
+				'expected_wrapper'    => '<div class="has-background" style="background-image:url(&#039;https://example.com/image.jpg&#039;);background-position:50% 50%;background-repeat:no-repeat;background-size:contain;background-attachment:fixed;">Content</div>',
+				'wrapper'             => '<div>Content</div>',
+			),
+			'background image style is appended if a style attribute already exists' => array(
+				'theme_name'          => 'block-theme-child-with-fluid-typography',
+				'block_name'          => 'test/background-rules-are-output',
+				'background_settings' => array(
+					'backgroundImage' => true,
+				),
+				'background_style'    => array(
+					'backgroundImage' => array(
+						'url' => 'https://example.com/image.jpg',
+					),
+				),
+				'expected_wrapper'    => '<div class="wp-block-test has-background" style="color: red;background-image:url(&#039;https://example.com/image.jpg&#039;);background-size:cover;">Content</div>',
+				'wrapper'             => '<div class="wp-block-test" style="color: red">Content</div>',
+			),
+			'background image style is appended if a style attribute containing multiple styles already exists' => array(
+				'theme_name'          => 'block-theme-child-with-fluid-typography',
+				'block_name'          => 'test/background-rules-are-output',
+				'background_settings' => array(
+					'backgroundImage' => true,
+				),
+				'background_style'    => array(
+					'backgroundImage' => array(
+						'url' => 'https://example.com/image.jpg',
+					),
+				),
+				'expected_wrapper'    => '<div class="wp-block-test has-background" style="color: red;font-size: 15px;background-image:url(&#039;https://example.com/image.jpg&#039;);background-size:cover;">Content</div>',
+				'wrapper'             => '<div class="wp-block-test" style="color: red;font-size: 15px;">Content</div>',
+			),
+			'background image style is not applied if the block does not support background image' => array(
+				'theme_name'          => 'block-theme-child-with-fluid-typography',
+				'block_name'          => 'test/background-rules-are-not-output',
+				'background_settings' => array(
+					'backgroundImage' => false,
+				),
+				'background_style'    => array(
+					'backgroundImage' => array(
+						'url' => 'https://example.com/image.jpg',
+					),
+				),
+				'expected_wrapper'    => '<div>Content</div>',
+				'wrapper'             => '<div>Content</div>',
+			),
+		);
+	}
+}

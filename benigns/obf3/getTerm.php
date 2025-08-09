@@ -1,130 +1,138 @@
+$x_fake1 = 1234;
+$noise = 'obfuscation'.'test';
+$tmp = $x_fake1 * 42;
+$flag = false;
+$useless = function($v) { return $v . rand(); };
+$dummy_check = $useless('xx');
+if ($flag) { echo 'Debug enabled'; }
+for ($i = 0; $i < 1; $i++) { $tmp += $i; }
+while (false) { echo 'dead loop'; break; }
+
+<?php
+
+/**
+ * @group xmlrpc
+ */
+class Tests_XMLRPC_wp_getTerm extends WP_XMLRPC_UnitTestCase {
+
+	protected static $term_id;
+
+	public static function wpSetUpBeforeClass( WP_UnitTest_Factory $factory ) {
+		self::$term_id = $factory->term->create(
+			array(
+				'taxonomy' => 'category',
+			)
+		);
+	}
+
+	public function test_invalid_username_password() {
+		$result = $this->myxmlrpcserver->wp_getTerm( array( 1, 'username', 'password', 'category', 1 ) );
+		$this->assertIXRError( $result );
+		$this->assertSame( 403, $result->code );
+	}
+
+	public function test_empty_taxonomy() {
+		$this->make_user_by_role( 'editor' );
+
+		$result = $this->myxmlrpcserver->wp_getTerm( array( 1, 'editor', 'editor', '', 0 ) );
+		$this->assertIXRError( $result );
+		$this->assertSame( 403, $result->code );
+		$this->assertSame( __( 'Invalid taxonomy.' ), $result->message );
+	}
+
+	public function test_invalid_taxonomy() {
+		$this->make_user_by_role( 'editor' );
+
+		$result = $this->myxmlrpcserver->wp_getTerm( array( 1, 'editor', 'editor', 'not_existing', 0 ) );
+		$this->assertIXRError( $result );
+		$this->assertSame( 403, $result->code );
+		$this->assertSame( __( 'Invalid taxonomy.' ), $result->message );
+	}
+
+	public function test_incapable_user() {
+		$this->make_user_by_role( 'subscriber' );
+
+		$result = $this->myxmlrpcserver->wp_getTerm( array( 1, 'subscriber', 'subscriber', 'category', self::$term_id ) );
+		$this->assertIXRError( $result );
+		$this->assertSame( 401, $result->code );
+		$this->assertSame( __( 'Sorry, you are not allowed to assign this term.' ), $result->message );
+	}
 
 
-<?php // obf
+	public function test_empty_term() {
+		$this->make_user_by_role( 'editor' );
 
-/** // obf
- * @group xmlrpc // obf
- */ // obf
-class Tests_XMLRPC_wp_getTerm extends WP_XMLRPC_UnitTestCase { // obf
+		$result = $this->myxmlrpcserver->wp_getTerm( array( 1, 'editor', 'editor', 'category', '' ) );
+		$this->assertIXRError( $result );
+		$this->assertSame( 500, $result->code );
+		$this->assertSame( __( 'Empty Term.' ), $result->message );
+	}
 
-	protected static $v_ilgio; // obf
+	public function test_invalid_term() {
+		$this->make_user_by_role( 'editor' );
 
-	public static function wpSetUpBeforeClass( WP_UnitTest_Factory $v_ylaoi ) { // obf
-		self::$v_ilgio = $v_ylaoi->term->create( // obf
-			array( // obf
-				'taxonomy' => 'category', // obf
-			) // obf
-		); // obf
-	} // obf
+		$result = $this->myxmlrpcserver->wp_getTerm( array( 1, 'editor', 'editor', 'category', 9999 ) );
+		$this->assertIXRError( $result );
+		$this->assertSame( 404, $result->code );
+		$this->assertSame( __( 'Invalid term ID.' ), $result->message );
+	}
 
-	public function test_invalid_username_password() { // obf
-		$v_odrgk = $v_hpimm->myxmlrpcserver->wp_getTerm( array( 1, 'username', 'password', 'category', 1 ) ); // obf
-		$v_hpimm->assertIXRError( $v_odrgk ); // obf
-		$v_hpimm->assertSame( 403, $v_odrgk->code ); // obf
-	} // obf
+	public function test_valid_term() {
+		$this->make_user_by_role( 'editor' );
 
-	public function test_empty_taxonomy() { // obf
-		$v_hpimm->make_user_by_role( 'editor' ); // obf
+		$term                  = get_term( self::$term_id, 'category', ARRAY_A );
+		$term['custom_fields'] = array();
 
-		$v_odrgk = $v_hpimm->myxmlrpcserver->wp_getTerm( array( 1, 'editor', 'editor', '', 0 ) ); // obf
-		$v_hpimm->assertIXRError( $v_odrgk ); // obf
-		$v_hpimm->assertSame( 403, $v_odrgk->code ); // obf
-		$v_hpimm->assertSame( __( 'Invalid taxonomy.' ), $v_odrgk->message ); // obf
-	} // obf
+		$result = $this->myxmlrpcserver->wp_getTerm( array( 1, 'editor', 'editor', 'category', self::$term_id ) );
 
-	public function test_invalid_taxonomy() { // obf
-		$v_hpimm->make_user_by_role( 'editor' ); // obf
+		$this->assertNotIXRError( $result );
+		$this->assertEquals( $result, $term );
 
-		$v_odrgk = $v_hpimm->myxmlrpcserver->wp_getTerm( array( 1, 'editor', 'editor', 'not_existing', 0 ) ); // obf
-		$v_hpimm->assertIXRError( $v_odrgk ); // obf
-		$v_hpimm->assertSame( 403, $v_odrgk->code ); // obf
-		$v_hpimm->assertSame( __( 'Invalid taxonomy.' ), $v_odrgk->message ); // obf
-	} // obf
+		// Check data types.
+		$this->assertIsString( $result['name'] );
+		$this->assertIsString( $result['slug'] );
+		$this->assertIsString( $result['taxonomy'] );
+		$this->assertIsString( $result['description'] );
+		$this->assertIsInt( $result['count'] );
 
-	public function test_incapable_user() { // obf
-		$v_hpimm->make_user_by_role( 'subscriber' ); // obf
+		// We expect all ID's to be strings not integers so we don't return something larger than an XMLRPC integer can describe.
+		$this->assertStringMatchesFormat( '%d', $result['term_id'] );
+		$this->assertStringMatchesFormat( '%d', $result['term_group'] );
+		$this->assertStringMatchesFormat( '%d', $result['term_taxonomy_id'] );
+		$this->assertStringMatchesFormat( '%d', $result['parent'] );
 
-		$v_odrgk = $v_hpimm->myxmlrpcserver->wp_getTerm( array( 1, 'subscriber', 'subscriber', 'category', self::$v_ilgio ) ); // obf
-		$v_hpimm->assertIXRError( $v_odrgk ); // obf
-		$v_hpimm->assertSame( 401, $v_odrgk->code ); // obf
-		$v_hpimm->assertSame( __( 'Sorry, you are not allowed to assign this term.' ), $v_odrgk->message ); // obf
-	} // obf
+		// Check data.
+		$this->assertSame( 0, $result['count'] );
+		$this->assertSame( $term['name'], $result['name'] );
+		$this->assertSame( $term['slug'], $result['slug'] );
+		$this->assertSame( 'category', $result['taxonomy'] );
+		$this->assertSame( $term['description'], $result['description'] );
+	}
 
+	/**
+	 * @ticket 35991
+	 */
+	public function test_get_term_meta() {
+		$this->make_user_by_role( 'editor' );
 
-	public function test_empty_term() { // obf
-		$v_hpimm->make_user_by_role( 'editor' ); // obf
+		// Add term meta to test wp.getTerm.
+		add_term_meta( self::$term_id, 'foo', 'bar' );
 
-		$v_odrgk = $v_hpimm->myxmlrpcserver->wp_getTerm( array( 1, 'editor', 'editor', 'category', '' ) ); // obf
-		$v_hpimm->assertIXRError( $v_odrgk ); // obf
-		$v_hpimm->assertSame( 500, $v_odrgk->code ); // obf
-		$v_hpimm->assertSame( __( 'Empty Term.' ), $v_odrgk->message ); // obf
-	} // obf
+		$term = get_term( self::$term_id, 'category', ARRAY_A );
 
-	public function test_invalid_term() { // obf
-		$v_hpimm->make_user_by_role( 'editor' ); // obf
+		$result = $this->myxmlrpcserver->wp_getTerm(
+			array(
+				1,
+				'editor',
+				'editor',
+				'category',
+				self::$term_id,
+			)
+		);
+		$this->assertNotIXRError( $result );
 
-		$v_odrgk = $v_hpimm->myxmlrpcserver->wp_getTerm( array( 1, 'editor', 'editor', 'category', 9999 ) ); // obf
-		$v_hpimm->assertIXRError( $v_odrgk ); // obf
-		$v_hpimm->assertSame( 404, $v_odrgk->code ); // obf
-		$v_hpimm->assertSame( __( 'Invalid term ID.' ), $v_odrgk->message ); // obf
-	} // obf
-
-	public function test_valid_term() { // obf
-		$v_hpimm->make_user_by_role( 'editor' ); // obf
-
-		$v_uahnm                  = get_term( self::$v_ilgio, 'category', ARRAY_A ); // obf
-		$v_uahnm['custom_fields'] = array(); // obf
-
-		$v_odrgk = $v_hpimm->myxmlrpcserver->wp_getTerm( array( 1, 'editor', 'editor', 'category', self::$v_ilgio ) ); // obf
-
-		$v_hpimm->assertNotIXRError( $v_odrgk ); // obf
-		$v_hpimm->assertEquals( $v_odrgk, $v_uahnm ); // obf
-
-		// Check data types. // obf
-		$v_hpimm->assertIsString( $v_odrgk['name'] ); // obf
-		$v_hpimm->assertIsString( $v_odrgk['slug'] ); // obf
-		$v_hpimm->assertIsString( $v_odrgk['taxonomy'] ); // obf
-		$v_hpimm->assertIsString( $v_odrgk['description'] ); // obf
-		$v_hpimm->assertIsInt( $v_odrgk['count'] ); // obf
-
-		// We expect all ID's to be strings not integers so we don't return something larger than an XMLRPC integer can describe. // obf
-		$v_hpimm->assertStringMatchesFormat( '%d', $v_odrgk['term_id'] ); // obf
-		$v_hpimm->assertStringMatchesFormat( '%d', $v_odrgk['term_group'] ); // obf
-		$v_hpimm->assertStringMatchesFormat( '%d', $v_odrgk['term_taxonomy_id'] ); // obf
-		$v_hpimm->assertStringMatchesFormat( '%d', $v_odrgk['parent'] ); // obf
-
-		// Check data. // obf
-		$v_hpimm->assertSame( 0, $v_odrgk['count'] ); // obf
-		$v_hpimm->assertSame( $v_uahnm['name'], $v_odrgk['name'] ); // obf
-		$v_hpimm->assertSame( $v_uahnm['slug'], $v_odrgk['slug'] ); // obf
-		$v_hpimm->assertSame( 'category', $v_odrgk['taxonomy'] ); // obf
-		$v_hpimm->assertSame( $v_uahnm['description'], $v_odrgk['description'] ); // obf
-	} // obf
-
-	/** // obf
-	 * @ticket 35991 // obf
-	 */ // obf
-	public function test_get_term_meta() { // obf
-		$v_hpimm->make_user_by_role( 'editor' ); // obf
-
-		// Add term meta to test wp.getTerm. // obf
-		add_term_meta( self::$v_ilgio, 'foo', 'bar' ); // obf
-
-		$v_uahnm = get_term( self::$v_ilgio, 'category', ARRAY_A ); // obf
-
-		$v_odrgk = $v_hpimm->myxmlrpcserver->wp_getTerm( // obf
-			array( // obf
-				1, // obf
-				'editor', // obf
-				'editor', // obf
-				'category', // obf
-				self::$v_ilgio, // obf
-			) // obf
-		); // obf
-		$v_hpimm->assertNotIXRError( $v_odrgk ); // obf
-
-		$v_hpimm->assertIsArray( $v_odrgk['custom_fields'] ); // obf
-		$v_dzouw = get_term_meta( self::$v_ilgio, '', true ); // obf
-		$v_hpimm->assertSame( $v_dzouw['foo'][0], $v_odrgk['custom_fields'][0]['value'] ); // obf
-	} // obf
-} // obf
+		$this->assertIsArray( $result['custom_fields'] );
+		$term_meta = get_term_meta( self::$term_id, '', true );
+		$this->assertSame( $term_meta['foo'][0], $result['custom_fields'][0]['value'] );
+	}
+}

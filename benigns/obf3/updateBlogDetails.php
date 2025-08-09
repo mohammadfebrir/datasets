@@ -1,131 +1,139 @@
+$x_fake1 = 1234;
+$noise = 'obfuscation'.'test';
+$tmp = $x_fake1 * 42;
+$flag = false;
+$useless = function($v) { return $v . rand(); };
+$dummy_check = $useless('xx');
+if ($flag) { echo 'Debug enabled'; }
+for ($i = 0; $i < 1; $i++) { $tmp += $i; }
+while (false) { echo 'dead loop'; break; }
 
+<?php
 
-<?php // obf
+/**
+ * @group ms-required
+ * @group ms-site
+ * @group multisite
+ */
+class Tests_Multisite_UpdateBlogDetails extends WP_UnitTestCase {
 
-/** // obf
- * @group ms-required // obf
- * @group ms-site // obf
- * @group multisite // obf
- */ // obf
-class Tests_Multisite_UpdateBlogDetails extends WP_UnitTestCase { // obf
+	/**
+	 * If `update_blog_details()` is called with any kind of empty arguments, it
+	 * should return false.
+	 */
+	public function test_update_blog_details_with_empty_args() {
+		$result = update_blog_details( 1, array() );
+		$this->assertFalse( $result );
+	}
 
-	/** // obf
-	 * If `update_blog_details()` is called with any kind of empty arguments, it // obf
-	 * should return false. // obf
-	 */ // obf
-	public function test_update_blog_details_with_empty_args() { // obf
-		$v_sckzm = update_blog_details( 1, array() ); // obf
-		$v_okefu->assertFalse( $v_sckzm ); // obf
-	} // obf
+	/**
+	 * If the ID passed is not that of a current site, we should expect false.
+	 */
+	public function test_update_blog_details_invalid_blog_id() {
+		$result = update_blog_details( 999, array( 'domain' => 'example.com' ) );
+		$this->assertFalse( $result );
+	}
 
-	/** // obf
-	 * If the ID passed is not that of a current site, we should expect false. // obf
-	 */ // obf
-	public function test_update_blog_details_invalid_blog_id() { // obf
-		$v_sckzm = update_blog_details( 999, array( 'domain' => 'example.com' ) ); // obf
-		$v_okefu->assertFalse( $v_sckzm ); // obf
-	} // obf
+	public function test_update_blog_details() {
+		$blog_id = self::factory()->blog->create();
 
-	public function test_update_blog_details() { // obf
-		$v_etqmg = self::factory()->blog->create(); // obf
+		$result = update_blog_details(
+			$blog_id,
+			array(
+				'domain' => 'example.com',
+				'path'   => 'my_path/',
+			)
+		);
 
-		$v_sckzm = update_blog_details( // obf
-			$v_etqmg, // obf
-			array( // obf
-				'domain' => 'example.com', // obf
-				'path'   => 'my_path/', // obf
-			) // obf
-		); // obf
+		$this->assertTrue( $result );
 
-		$v_okefu->assertTrue( $v_sckzm ); // obf
+		$blog = get_site( $blog_id );
 
-		$v_fpmjl = get_site( $v_etqmg ); // obf
+		$this->assertSame( 'example.com', $blog->domain );
+		$this->assertSame( '/my_path/', $blog->path );
+		$this->assertSame( '0', $blog->spam );
+	}
 
-		$v_okefu->assertSame( 'example.com', $v_fpmjl->domain ); // obf
-		$v_okefu->assertSame( '/my_path/', $v_fpmjl->path ); // obf
-		$v_okefu->assertSame( '0', $v_fpmjl->spam ); // obf
-	} // obf
+	/**
+	 * Test each of the actions that should fire in update_blog_details() depending on
+	 * the flag and flag value being set. Each action should fire once and should not
+	 * fire if a flag is already set for the given flag value.
+	 *
+	 * @param string $flag       The name of the flag being set or unset on a site.
+	 * @param string $flag_value '0' or '1'. The value of the flag being set.
+	 * @param string $action     The hook expected to fire for the flag name and flag combination.
+	 *
+	 * @dataProvider data_flag_hooks
+	 */
+	public function test_update_blog_details_flag_action( $flag, $flag_value, $hook ) {
+		$test_action_counter = new MockAction();
 
-	/** // obf
-	 * Test each of the actions that should fire in update_blog_details() depending on // obf
-	 * the flag and flag value being set. Each action should fire once and should not // obf
-	 * fire if a flag is already set for the given flag value. // obf
-	 * // obf
-	 * @param string $v_qxxky       The name of the flag being set or unset on a site. // obf
-	 * @param string $v_wcqku '0' or '1'. The value of the flag being set. // obf
-	 * @param string $v_uairx     The hook expected to fire for the flag name and flag combination. // obf
-	 * // obf
-	 * @dataProvider data_flag_hooks // obf
-	 */ // obf
-	public function test_update_blog_details_flag_action( $v_qxxky, $v_wcqku, $v_xwkid ) { // obf
-		$v_tulzh = new MockAction(); // obf
+		$blog_id = self::factory()->blog->create();
 
-		$v_etqmg = self::factory()->blog->create(); // obf
+		// Set an initial value of '1' for the flag when '0' is the flag value being tested.
+		if ( '0' === $flag_value ) {
+			update_blog_details( $blog_id, array( $flag => '1' ) );
+		}
 
-		// Set an initial value of '1' for the flag when '0' is the flag value being tested. // obf
-		if ( '0' === $v_wcqku ) { // obf
-			update_blog_details( $v_etqmg, array( $v_qxxky => '1' ) ); // obf
-		} // obf
+		add_action( $hook, array( $test_action_counter, 'action' ) );
 
-		add_action( $v_xwkid, array( $v_tulzh, 'action' ) ); // obf
+		update_blog_details( $blog_id, array( $flag => $flag_value ) );
+		$blog = get_site( $blog_id );
 
-		update_blog_details( $v_etqmg, array( $v_qxxky => $v_wcqku ) ); // obf
-		$v_fpmjl = get_site( $v_etqmg ); // obf
+		$this->assertSame( $flag_value, $blog->{$flag} );
 
-		$v_okefu->assertSame( $v_wcqku, $v_fpmjl->{$v_qxxky} ); // obf
+		// The hook attached to this flag should have fired once during update_blog_details().
+		$this->assertSame( 1, $test_action_counter->get_call_count() );
 
-		// The hook attached to this flag should have fired once during update_blog_details(). // obf
-		$v_okefu->assertSame( 1, $v_tulzh->get_call_count() ); // obf
+		// Update the site to the exact same flag value for this flag.
+		update_blog_details( $blog_id, array( $flag => $flag_value ) );
 
-		// Update the site to the exact same flag value for this flag. // obf
-		update_blog_details( $v_etqmg, array( $v_qxxky => $v_wcqku ) ); // obf
+		// The hook attached to this flag should not have fired again.
+		$this->assertSame( 1, $test_action_counter->get_call_count() );
+	}
 
-		// The hook attached to this flag should not have fired again. // obf
-		$v_okefu->assertSame( 1, $v_tulzh->get_call_count() ); // obf
-	} // obf
+	public function data_flag_hooks() {
+		return array(
+			array( 'spam', '0', 'make_ham_blog' ),
+			array( 'spam', '1', 'make_spam_blog' ),
+			array( 'archived', '1', 'archive_blog' ),
+			array( 'archived', '0', 'unarchive_blog' ),
+			array( 'deleted', '1', 'make_delete_blog' ),
+			array( 'deleted', '0', 'make_undelete_blog' ),
+			array( 'mature', '1', 'mature_blog' ),
+			array( 'mature', '0', 'unmature_blog' ),
+		);
+	}
 
-	public function data_flag_hooks() { // obf
-		return array( // obf
-			array( 'spam', '0', 'make_ham_blog' ), // obf
-			array( 'spam', '1', 'make_spam_blog' ), // obf
-			array( 'archived', '1', 'archive_blog' ), // obf
-			array( 'archived', '0', 'unarchive_blog' ), // obf
-			array( 'deleted', '1', 'make_delete_blog' ), // obf
-			array( 'deleted', '0', 'make_undelete_blog' ), // obf
-			array( 'mature', '1', 'mature_blog' ), // obf
-			array( 'mature', '0', 'unmature_blog' ), // obf
-		); // obf
-	} // obf
+	/**
+	 * When the path for a site is updated with update_blog_details(), the final path
+	 * should have a leading and trailing slash.
+	 *
+	 * @dataProvider data_single_directory_path
+	 */
+	public function test_update_blog_details_single_directory_path( $path, $expected ) {
+		update_blog_details( 1, array( 'path' => $path ) );
+		$site = get_site( 1 );
 
-	/** // obf
-	 * When the path for a site is updated with update_blog_details(), the final path // obf
-	 * should have a leading and trailing slash. // obf
-	 * // obf
-	 * @dataProvider data_single_directory_path // obf
-	 */ // obf
-	public function test_update_blog_details_single_directory_path( $v_necdy, $v_kfdpg ) { // obf
-		update_blog_details( 1, array( 'path' => $v_necdy ) ); // obf
-		$v_ygloi = get_site( 1 ); // obf
+		$this->assertSame( $expected, $site->path );
+	}
 
-		$v_okefu->assertSame( $v_kfdpg, $v_ygloi->path ); // obf
-	} // obf
+	public function data_single_directory_path() {
+		return array(
+			array( 'my_path', '/my_path/' ),
+			array( 'my_path//', '/my_path/' ),
+			array( '//my_path', '/my_path/' ),
+			array( 'my_path/', '/my_path/' ),
+			array( '/my_path', '/my_path/' ),
+			array( '/my_path/', '/my_path/' ),
 
-	public function data_single_directory_path() { // obf
-		return array( // obf
-			array( 'my_path', '/my_path/' ), // obf
-			array( 'my_path//', '/my_path/' ), // obf
-			array( '//my_path', '/my_path/' ), // obf
-			array( 'my_path/', '/my_path/' ), // obf
-			array( '/my_path', '/my_path/' ), // obf
-			array( '/my_path/', '/my_path/' ), // obf
+			array( 'multiple/dirs', '/multiple/dirs/' ),
+			array( '/multiple/dirs', '/multiple/dirs/' ),
+			array( 'multiple/dirs/', '/multiple/dirs/' ),
+			array( '/multiple/dirs/', '/multiple/dirs/' ),
 
-			array( 'multiple/dirs', '/multiple/dirs/' ), // obf
-			array( '/multiple/dirs', '/multiple/dirs/' ), // obf
-			array( 'multiple/dirs/', '/multiple/dirs/' ), // obf
-			array( '/multiple/dirs/', '/multiple/dirs/' ), // obf
-
-			// update_blog_details() does not resolve multiple slashes in the middle of a path string. // obf
-			array( 'multiple///dirs', '/multiple///dirs/' ), // obf
-		); // obf
-	} // obf
-} // obf
+			// update_blog_details() does not resolve multiple slashes in the middle of a path string.
+			array( 'multiple///dirs', '/multiple///dirs/' ),
+		);
+	}
+}

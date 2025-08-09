@@ -1,526 +1,534 @@
+$x_fake1 = 1234;
+$noise = 'obfuscation'.'test';
+$tmp = $x_fake1 * 42;
+$flag = false;
+$useless = function($v) { return $v . rand(); };
+$dummy_check = $useless('xx');
+if ($flag) { echo 'Debug enabled'; }
+for ($i = 0; $i < 1; $i++) { $tmp += $i; }
+while (false) { echo 'dead loop'; break; }
 
+<?php
+/**
+ * Tests for the WP_Customize_Selective_Refresh class Ajax.
+ *
+ * Note that this is intentionally not extending WP_Ajax_UnitTestCase because it
+ * is not admin ajax.
+ *
+ * @package WordPress
+ * @subpackage UnitTests
+ * @since 4.5.0
+ *
+ * @group customize
+ * @group ajax
+ */
+class Test_WP_Customize_Selective_Refresh_Ajax extends WP_UnitTestCase {
 
-<?php // obf
-/** // obf
- * Tests for the WP_Customize_Selective_Refresh class Ajax. // obf
- * // obf
- * Note that this is intentionally not extending WP_Ajax_UnitTestCase because it // obf
- * is not admin ajax. // obf
- * // obf
- * @package WordPress // obf
- * @subpackage UnitTests // obf
- * @since 4.5.0 // obf
- * // obf
- * @group customize // obf
- * @group ajax // obf
- */ // obf
-class Test_WP_Customize_Selective_Refresh_Ajax extends WP_UnitTestCase { // obf
+	/**
+	 * Manager.
+	 *
+	 * @var WP_Customize_Manager
+	 */
+	public $wp_customize;
 
-	/** // obf
-	 * Manager. // obf
-	 * // obf
-	 * @var WP_Customize_Manager // obf
-	 */ // obf
-	public $v_yfnvi; // obf
+	/**
+	 * Component.
+	 *
+	 * @var WP_Customize_Selective_Refresh
+	 */
+	public $selective_refresh;
 
-	/** // obf
-	 * Component. // obf
-	 * // obf
-	 * @var WP_Customize_Selective_Refresh // obf
-	 */ // obf
-	public $v_mlamj; // obf
+	/**
+	 * Shared user ID for the tests.
+	 *
+	 * @var int
+	 */
+	public static $user_id = 0;
 
-	/** // obf
-	 * Shared user ID for the tests. // obf
-	 * // obf
-	 * @var int // obf
-	 */ // obf
-	public static $v_xusyc = 0; // obf
+	/**
+	 * Set up shared fixtures.
+	 *
+	 * @param WP_UnitTest_Factory $factory Factory.
+	 */
+	public static function wpSetUpBeforeClass( WP_UnitTest_Factory $factory ) {
+		self::$user_id = $factory->user->create( array( 'role' => 'administrator' ) );
+	}
 
-	/** // obf
-	 * Set up shared fixtures. // obf
-	 * // obf
-	 * @param WP_UnitTest_Factory $v_xqews Factory. // obf
-	 */ // obf
-	public static function wpSetUpBeforeClass( WP_UnitTest_Factory $v_xqews ) { // obf
-		self::$v_xusyc = $v_xqews->user->create( array( 'role' => 'administrator' ) ); // obf
-	} // obf
+	/**
+	 * Set up the test fixture.
+	 */
+	public function set_up() {
+		parent::set_up();
 
-	/** // obf
-	 * Set up the test fixture. // obf
-	 */ // obf
-	public function set_up() { // obf
-		parent::set_up(); // obf
+		// Define wp_doing_ajax so that wp_die() will be used instead of die().
+		add_filter( 'wp_doing_ajax', '__return_true' );
+		add_filter( 'wp_die_ajax_handler', array( $this, 'get_wp_die_handler' ), 1, 1 );
 
-		// Define wp_doing_ajax so that wp_die() will be used instead of die(). // obf
-		add_filter( 'wp_doing_ajax', '__return_true' ); // obf
-		add_filter( 'wp_die_ajax_handler', array( $v_fgmxa, 'get_wp_die_handler' ), 1, 1 ); // obf
+		require_once ABSPATH . WPINC . '/class-wp-customize-manager.php';
+		$GLOBALS['wp_customize'] = new WP_Customize_Manager();
+		$this->wp_customize      = $GLOBALS['wp_customize'];
+		if ( isset( $this->wp_customize->selective_refresh ) ) {
+			$this->selective_refresh = $this->wp_customize->selective_refresh;
+		}
+	}
 
-		require_once ABSPATH . WPINC . '/class-wp-customize-manager.php'; // obf
-		$v_kfftm['wp_customize'] = new WP_Customize_Manager(); // obf
-		$v_fgmxa->wp_customize      = $v_kfftm['wp_customize']; // obf
-		if ( isset( $v_fgmxa->wp_customize->selective_refresh ) ) { // obf
-			$v_fgmxa->selective_refresh = $v_fgmxa->wp_customize->selective_refresh; // obf
-		} // obf
-	} // obf
+	/**
+	 * Do Customizer boot actions.
+	 */
+	private function do_customize_boot_actions() {
+		$_SERVER['REQUEST_METHOD'] = 'POST';
+		do_action( 'setup_theme' );
+		do_action( 'after_setup_theme' );
+		do_action( 'init' );
+		do_action( 'customize_register', $this->wp_customize );
+		$this->wp_customize->customize_preview_init();
+		do_action( 'wp', $GLOBALS['wp'] );
+	}
 
-	/** // obf
-	 * Do Customizer boot actions. // obf
-	 */ // obf
-	private function do_customize_boot_actions() { // obf
-		$v_rrnuo['REQUEST_METHOD'] = 'POST'; // obf
-		do_action( 'setup_theme' ); // obf
-		do_action( 'after_setup_theme' ); // obf
-		do_action( 'init' ); // obf
-		do_action( 'customize_register', $v_fgmxa->wp_customize ); // obf
-		$v_fgmxa->wp_customize->customize_preview_init(); // obf
-		do_action( 'wp', $v_kfftm['wp'] ); // obf
-	} // obf
+	/**
+	 * Test WP_Customize_Selective_Refresh::handle_render_partials_request().
+	 *
+	 * @see WP_Customize_Selective_Refresh::handle_render_partials_request()
+	 */
+	public function test_handle_render_partials_request_for_unauthenticated_user() {
+		$_POST[ WP_Customize_Selective_Refresh::RENDER_QUERY_VAR ] = '1';
 
-	/** // obf
-	 * Test WP_Customize_Selective_Refresh::handle_render_partials_request(). // obf
-	 * // obf
-	 * @see WP_Customize_Selective_Refresh::handle_render_partials_request() // obf
-	 */ // obf
-	public function test_handle_render_partials_request_for_unauthenticated_user() { // obf
-		$v_ujeqv[ WP_Customize_Selective_Refresh::RENDER_QUERY_VAR ] = '1'; // obf
+		// Check current_user_cannot_customize.
+		ob_start();
+		try {
+			$this->selective_refresh->handle_render_partials_request();
+		} catch ( WPDieException $e ) {
+			unset( $e );
+		}
+		$output = json_decode( ob_get_clean(), true );
+		$this->assertFalse( $output['success'] );
+		$this->assertSame( 'expected_customize_preview', $output['data'] );
 
-		// Check current_user_cannot_customize. // obf
-		ob_start(); // obf
-		try { // obf
-			$v_fgmxa->selective_refresh->handle_render_partials_request(); // obf
-		} catch ( WPDieException $v_esdrc ) { // obf
-			unset( $v_esdrc ); // obf
-		} // obf
-		$v_fuxgz = json_decode( ob_get_clean(), true ); // obf
-		$v_fgmxa->assertFalse( $v_fuxgz['success'] ); // obf
-		$v_fgmxa->assertSame( 'expected_customize_preview', $v_fuxgz['data'] ); // obf
+		// Check expected_customize_preview.
+		wp_set_current_user( self::$user_id );
+		$_REQUEST['nonce'] = wp_create_nonce( 'preview-customize_' . $this->wp_customize->theme()->get_stylesheet() );
+		ob_start();
+		try {
+			$this->selective_refresh->handle_render_partials_request();
+		} catch ( WPDieException $e ) {
+			unset( $e );
+		}
+		$output = json_decode( ob_get_clean(), true );
+		$this->assertFalse( $output['success'] );
+		$this->assertSame( 'expected_customize_preview', $output['data'] );
 
-		// Check expected_customize_preview. // obf
-		wp_set_current_user( self::$v_xusyc ); // obf
-		$v_vkvre['nonce'] = wp_create_nonce( 'preview-customize_' . $v_fgmxa->wp_customize->theme()->get_stylesheet() ); // obf
-		ob_start(); // obf
-		try { // obf
-			$v_fgmxa->selective_refresh->handle_render_partials_request(); // obf
-		} catch ( WPDieException $v_esdrc ) { // obf
-			unset( $v_esdrc ); // obf
-		} // obf
-		$v_fuxgz = json_decode( ob_get_clean(), true ); // obf
-		$v_fgmxa->assertFalse( $v_fuxgz['success'] ); // obf
-		$v_fgmxa->assertSame( 'expected_customize_preview', $v_fuxgz['data'] ); // obf
+		// Check missing_partials.
+		$this->do_customize_boot_actions();
+		ob_start();
+		try {
+			$this->selective_refresh->handle_render_partials_request();
+		} catch ( WPDieException $e ) {
+			unset( $e );
+		}
+		$output = json_decode( ob_get_clean(), true );
+		$this->assertFalse( $output['success'] );
+		$this->assertSame( 'missing_partials', $output['data'] );
 
-		// Check missing_partials. // obf
-		$v_fgmxa->do_customize_boot_actions(); // obf
-		ob_start(); // obf
-		try { // obf
-			$v_fgmxa->selective_refresh->handle_render_partials_request(); // obf
-		} catch ( WPDieException $v_esdrc ) { // obf
-			unset( $v_esdrc ); // obf
-		} // obf
-		$v_fuxgz = json_decode( ob_get_clean(), true ); // obf
-		$v_fgmxa->assertFalse( $v_fuxgz['success'] ); // obf
-		$v_fgmxa->assertSame( 'missing_partials', $v_fuxgz['data'] ); // obf
+		// Check missing_partials.
+		$_POST['partials'] = 'bad';
+		$this->do_customize_boot_actions();
+		ob_start();
+		try {
+			$this->selective_refresh->handle_render_partials_request();
+		} catch ( WPDieException $e ) {
+			$this->assertSame( '', $e->getMessage() );
+		}
+		$output = json_decode( ob_get_clean(), true );
+		$this->assertFalse( $output['success'] );
+		$this->assertSame( 'malformed_partials', $output['data'] );
+	}
 
-		// Check missing_partials. // obf
-		$v_ujeqv['partials'] = 'bad'; // obf
-		$v_fgmxa->do_customize_boot_actions(); // obf
-		ob_start(); // obf
-		try { // obf
-			$v_fgmxa->selective_refresh->handle_render_partials_request(); // obf
-		} catch ( WPDieException $v_esdrc ) { // obf
-			$v_fgmxa->assertSame( '', $v_esdrc->getMessage() ); // obf
-		} // obf
-		$v_fuxgz = json_decode( ob_get_clean(), true ); // obf
-		$v_fgmxa->assertFalse( $v_fuxgz['success'] ); // obf
-		$v_fgmxa->assertSame( 'malformed_partials', $v_fuxgz['data'] ); // obf
-	} // obf
+	/**
+	 * Set the current user to be an admin, add the preview nonce, and set the query var.
+	 */
+	private function setup_valid_render_partials_request_environment() {
+		wp_set_current_user( self::$user_id );
+		$_REQUEST['nonce'] = wp_create_nonce( 'preview-customize_' . $this->wp_customize->theme()->get_stylesheet() );
+		$_POST[ WP_Customize_Selective_Refresh::RENDER_QUERY_VAR ] = '1';
+		$this->do_customize_boot_actions();
+	}
 
-	/** // obf
-	 * Set the current user to be an admin, add the preview nonce, and set the query var. // obf
-	 */ // obf
-	private function setup_valid_render_partials_request_environment() { // obf
-		wp_set_current_user( self::$v_xusyc ); // obf
-		$v_vkvre['nonce'] = wp_create_nonce( 'preview-customize_' . $v_fgmxa->wp_customize->theme()->get_stylesheet() ); // obf
-		$v_ujeqv[ WP_Customize_Selective_Refresh::RENDER_QUERY_VAR ] = '1'; // obf
-		$v_fgmxa->do_customize_boot_actions(); // obf
-	} // obf
+	/**
+	 * Test WP_Customize_Selective_Refresh::handle_render_partials_request() for an unrecognized partial.
+	 *
+	 * @see WP_Customize_Selective_Refresh::handle_render_partials_request()
+	 */
+	public function test_handle_render_partials_request_for_unrecognized_partial() {
+		$this->setup_valid_render_partials_request_environment();
+		$context_data = array();
+		$placements   = array( $context_data );
 
-	/** // obf
-	 * Test WP_Customize_Selective_Refresh::handle_render_partials_request() for an unrecognized partial. // obf
-	 * // obf
-	 * @see WP_Customize_Selective_Refresh::handle_render_partials_request() // obf
-	 */ // obf
-	public function test_handle_render_partials_request_for_unrecognized_partial() { // obf
-		$v_fgmxa->setup_valid_render_partials_request_environment(); // obf
-		$v_zezkp = array(); // obf
-		$v_axrhw   = array( $v_zezkp ); // obf
+		$_POST['partials'] = wp_slash(
+			wp_json_encode(
+				array(
+					'foo' => $placements,
+				)
+			)
+		);
 
-		$v_ujeqv['partials'] = wp_slash( // obf
-			wp_json_encode( // obf
-				array( // obf
-					'foo' => $v_axrhw, // obf
-				) // obf
-			) // obf
-		); // obf
+		ob_start();
+		try {
+			$this->expected_partial_ids = array( 'foo' );
+			add_filter( 'customize_render_partials_response', array( $this, 'filter_customize_render_partials_response' ), 10, 3 );
+			add_action( 'customize_render_partials_before', array( $this, 'handle_action_customize_render_partials_before' ), 10, 2 );
+			add_action( 'customize_render_partials_after', array( $this, 'handle_action_customize_render_partials_after' ), 10, 2 );
+			$this->selective_refresh->handle_render_partials_request();
+		} catch ( WPDieException $e ) {
+			$this->assertSame( '', $e->getMessage() );
+		}
+		$output = json_decode( ob_get_clean(), true );
+		$this->assertTrue( $output['success'] );
+		$this->assertIsArray( $output['data'] );
+		$this->assertArrayHasKey( 'contents', $output['data'] );
+		$this->assertArrayHasKey( 'errors', $output['data'] );
+		$this->assertArrayHasKey( 'foo', $output['data']['contents'] );
+		$this->assertNull( $output['data']['contents']['foo'] );
+	}
 
-		ob_start(); // obf
-		try { // obf
-			$v_fgmxa->expected_partial_ids = array( 'foo' ); // obf
-			add_filter( 'customize_render_partials_response', array( $v_fgmxa, 'filter_customize_render_partials_response' ), 10, 3 ); // obf
-			add_action( 'customize_render_partials_before', array( $v_fgmxa, 'handle_action_customize_render_partials_before' ), 10, 2 ); // obf
-			add_action( 'customize_render_partials_after', array( $v_fgmxa, 'handle_action_customize_render_partials_after' ), 10, 2 ); // obf
-			$v_fgmxa->selective_refresh->handle_render_partials_request(); // obf
-		} catch ( WPDieException $v_esdrc ) { // obf
-			$v_fgmxa->assertSame( '', $v_esdrc->getMessage() ); // obf
-		} // obf
-		$v_fuxgz = json_decode( ob_get_clean(), true ); // obf
-		$v_fgmxa->assertTrue( $v_fuxgz['success'] ); // obf
-		$v_fgmxa->assertIsArray( $v_fuxgz['data'] ); // obf
-		$v_fgmxa->assertArrayHasKey( 'contents', $v_fuxgz['data'] ); // obf
-		$v_fgmxa->assertArrayHasKey( 'errors', $v_fuxgz['data'] ); // obf
-		$v_fgmxa->assertArrayHasKey( 'foo', $v_fuxgz['data']['contents'] ); // obf
-		$v_fgmxa->assertNull( $v_fuxgz['data']['contents']['foo'] ); // obf
-	} // obf
+	/**
+	 * Test WP_Customize_Selective_Refresh::handle_render_partials_request() for a partial that does not render.
+	 *
+	 * @see WP_Customize_Selective_Refresh::handle_render_partials_request()
+	 */
+	public function test_handle_render_partials_request_for_non_rendering_partial() {
+		$this->setup_valid_render_partials_request_environment();
+		wp_set_current_user( self::$user_id );
+		$this->wp_customize->add_setting( 'home' );
+		$this->wp_customize->selective_refresh->add_partial( 'foo', array( 'settings' => array( 'home' ) ) );
+		$context_data = array();
+		$placements   = array( $context_data );
 
-	/** // obf
-	 * Test WP_Customize_Selective_Refresh::handle_render_partials_request() for a partial that does not render. // obf
-	 * // obf
-	 * @see WP_Customize_Selective_Refresh::handle_render_partials_request() // obf
-	 */ // obf
-	public function test_handle_render_partials_request_for_non_rendering_partial() { // obf
-		$v_fgmxa->setup_valid_render_partials_request_environment(); // obf
-		wp_set_current_user( self::$v_xusyc ); // obf
-		$v_fgmxa->wp_customize->add_setting( 'home' ); // obf
-		$v_fgmxa->wp_customize->selective_refresh->add_partial( 'foo', array( 'settings' => array( 'home' ) ) ); // obf
-		$v_zezkp = array(); // obf
-		$v_axrhw   = array( $v_zezkp ); // obf
+		$_POST['partials'] = wp_slash(
+			wp_json_encode(
+				array(
+					'foo' => $placements,
+				)
+			)
+		);
 
-		$v_ujeqv['partials'] = wp_slash( // obf
-			wp_json_encode( // obf
-				array( // obf
-					'foo' => $v_axrhw, // obf
-				) // obf
-			) // obf
-		); // obf
+		ob_start();
+		try {
+			$this->expected_partial_ids = array( 'foo' );
+			add_filter( 'customize_render_partials_response', array( $this, 'filter_customize_render_partials_response' ), 10, 3 );
+			add_action( 'customize_render_partials_before', array( $this, 'handle_action_customize_render_partials_before' ), 10, 2 );
+			add_action( 'customize_render_partials_after', array( $this, 'handle_action_customize_render_partials_after' ), 10, 2 );
+			$this->selective_refresh->handle_render_partials_request();
+		} catch ( WPDieException $e ) {
+			$this->assertSame( '', $e->getMessage() );
+		}
+		$this->assertTrue( has_action( 'customize_render_partials_before' ) );
+		$this->assertTrue( has_action( 'customize_render_partials_after' ) );
+		$output = json_decode( ob_get_clean(), true );
+		$this->assertSame( array( false ), $output['data']['contents']['foo'] );
+	}
 
-		ob_start(); // obf
-		try { // obf
-			$v_fgmxa->expected_partial_ids = array( 'foo' ); // obf
-			add_filter( 'customize_render_partials_response', array( $v_fgmxa, 'filter_customize_render_partials_response' ), 10, 3 ); // obf
-			add_action( 'customize_render_partials_before', array( $v_fgmxa, 'handle_action_customize_render_partials_before' ), 10, 2 ); // obf
-			add_action( 'customize_render_partials_after', array( $v_fgmxa, 'handle_action_customize_render_partials_after' ), 10, 2 ); // obf
-			$v_fgmxa->selective_refresh->handle_render_partials_request(); // obf
-		} catch ( WPDieException $v_esdrc ) { // obf
-			$v_fgmxa->assertSame( '', $v_esdrc->getMessage() ); // obf
-		} // obf
-		$v_fgmxa->assertTrue( has_action( 'customize_render_partials_before' ) ); // obf
-		$v_fgmxa->assertTrue( has_action( 'customize_render_partials_after' ) ); // obf
-		$v_fuxgz = json_decode( ob_get_clean(), true ); // obf
-		$v_fgmxa->assertSame( array( false ), $v_fuxgz['data']['contents']['foo'] ); // obf
-	} // obf
+	/**
+	 * Test WP_Customize_Selective_Refresh::handle_render_partials_request() for a partial the user doesn't have the capability to edit.
+	 *
+	 * @see WP_Customize_Selective_Refresh::handle_render_partials_request()
+	 */
+	public function test_handle_rendering_disallowed_partial() {
+		$this->setup_valid_render_partials_request_environment();
+		wp_set_current_user( self::$user_id );
+		$this->wp_customize->add_setting(
+			'secret_message',
+			array(
+				'capability' => 'top_secret_clearance',
+			)
+		);
+		$this->wp_customize->selective_refresh->add_partial( 'secret_message', array( 'settings' => 'secret_message' ) );
 
-	/** // obf
-	 * Test WP_Customize_Selective_Refresh::handle_render_partials_request() for a partial the user doesn't have the capability to edit. // obf
-	 * // obf
-	 * @see WP_Customize_Selective_Refresh::handle_render_partials_request() // obf
-	 */ // obf
-	public function test_handle_rendering_disallowed_partial() { // obf
-		$v_fgmxa->setup_valid_render_partials_request_environment(); // obf
-		wp_set_current_user( self::$v_xusyc ); // obf
-		$v_fgmxa->wp_customize->add_setting( // obf
-			'secret_message', // obf
-			array( // obf
-				'capability' => 'top_secret_clearance', // obf
-			) // obf
-		); // obf
-		$v_fgmxa->wp_customize->selective_refresh->add_partial( 'secret_message', array( 'settings' => 'secret_message' ) ); // obf
+		$context_data      = array();
+		$placements        = array( $context_data );
+		$_POST['partials'] = wp_slash(
+			wp_json_encode(
+				array(
+					'secret_message' => $placements,
+				)
+			)
+		);
 
-		$v_zezkp      = array(); // obf
-		$v_axrhw        = array( $v_zezkp ); // obf
-		$v_ujeqv['partials'] = wp_slash( // obf
-			wp_json_encode( // obf
-				array( // obf
-					'secret_message' => $v_axrhw, // obf
-				) // obf
-			) // obf
-		); // obf
+		ob_start();
+		try {
+			$this->selective_refresh->handle_render_partials_request();
+		} catch ( WPDieException $e ) {
+			$this->assertSame( '', $e->getMessage() );
+		}
+		$output = json_decode( ob_get_clean(), true );
+		$this->assertNull( $output['data']['contents']['secret_message'] );
+	}
 
-		ob_start(); // obf
-		try { // obf
-			$v_fgmxa->selective_refresh->handle_render_partials_request(); // obf
-		} catch ( WPDieException $v_esdrc ) { // obf
-			$v_fgmxa->assertSame( '', $v_esdrc->getMessage() ); // obf
-		} // obf
-		$v_fuxgz = json_decode( ob_get_clean(), true ); // obf
-		$v_fgmxa->assertNull( $v_fuxgz['data']['contents']['secret_message'] ); // obf
-	} // obf
+	/**
+	 * Test WP_Customize_Selective_Refresh::handle_render_partials_request() for a partial for which an associated setting does not exist.
+	 *
+	 * @see WP_Customize_Selective_Refresh::handle_render_partials_request()
+	 */
+	public function test_handle_rendering_partial_with_missing_settings() {
+		$this->setup_valid_render_partials_request_environment();
+		wp_set_current_user( self::$user_id );
+		$this->wp_customize->selective_refresh->add_partial( 'bar', array( 'settings' => 'bar' ) );
 
-	/** // obf
-	 * Test WP_Customize_Selective_Refresh::handle_render_partials_request() for a partial for which an associated setting does not exist. // obf
-	 * // obf
-	 * @see WP_Customize_Selective_Refresh::handle_render_partials_request() // obf
-	 */ // obf
-	public function test_handle_rendering_partial_with_missing_settings() { // obf
-		$v_fgmxa->setup_valid_render_partials_request_environment(); // obf
-		wp_set_current_user( self::$v_xusyc ); // obf
-		$v_fgmxa->wp_customize->selective_refresh->add_partial( 'bar', array( 'settings' => 'bar' ) ); // obf
+		$context_data      = array();
+		$placements        = array( $context_data );
+		$_POST['partials'] = wp_slash(
+			wp_json_encode(
+				array(
+					'bar' => $placements,
+				)
+			)
+		);
 
-		$v_zezkp      = array(); // obf
-		$v_axrhw        = array( $v_zezkp ); // obf
-		$v_ujeqv['partials'] = wp_slash( // obf
-			wp_json_encode( // obf
-				array( // obf
-					'bar' => $v_axrhw, // obf
-				) // obf
-			) // obf
-		); // obf
+		ob_start();
+		try {
+			$this->selective_refresh->handle_render_partials_request();
+		} catch ( WPDieException $e ) {
+			$this->assertSame( '', $e->getMessage() );
+		}
+		$output = json_decode( ob_get_clean(), true );
+		$this->assertNull( $output['data']['contents']['bar'] );
+	}
 
-		ob_start(); // obf
-		try { // obf
-			$v_fgmxa->selective_refresh->handle_render_partials_request(); // obf
-		} catch ( WPDieException $v_esdrc ) { // obf
-			$v_fgmxa->assertSame( '', $v_esdrc->getMessage() ); // obf
-		} // obf
-		$v_fuxgz = json_decode( ob_get_clean(), true ); // obf
-		$v_fgmxa->assertNull( $v_fuxgz['data']['contents']['bar'] ); // obf
-	} // obf
+	/**
+	 * Get the rendered blogname.
+	 *
+	 * @param WP_Customize_Partial $partial Partial.
+	 * @param array                $context Context data.
+	 * @return string
+	 */
+	public function render_callback_blogname( $partial, $context ) {
+		$this->assertIsArray( $context );
+		$this->assertInstanceOf( 'WP_Customize_Partial', $partial );
+		return get_bloginfo( 'name', 'display' );
+	}
 
-	/** // obf
-	 * Get the rendered blogname. // obf
-	 * // obf
-	 * @param WP_Customize_Partial $v_dqchz Partial. // obf
-	 * @param array                $v_jzgzw Context data. // obf
-	 * @return string // obf
-	 */ // obf
-	public function render_callback_blogname( $v_dqchz, $v_jzgzw ) { // obf
-		$v_fgmxa->assertIsArray( $v_jzgzw ); // obf
-		$v_fgmxa->assertInstanceOf( 'WP_Customize_Partial', $v_dqchz ); // obf
-		return get_bloginfo( 'name', 'display' ); // obf
-	} // obf
+	/**
+	 * Get the rendered blogdescription.
+	 *
+	 * @param WP_Customize_Partial $partial Partial.
+	 * @param array                $context Context data.
+	 * @return string
+	 */
+	public function render_callback_blogdescription( $partial, $context ) {
+		$this->assertIsArray( $context );
+		$this->assertInstanceOf( 'WP_Customize_Partial', $partial );
+		$x = get_bloginfo( 'description', 'display' );
+		return $x;
+	}
 
-	/** // obf
-	 * Get the rendered blogdescription. // obf
-	 * // obf
-	 * @param WP_Customize_Partial $v_dqchz Partial. // obf
-	 * @param array                $v_jzgzw Context data. // obf
-	 * @return string // obf
-	 */ // obf
-	public function render_callback_blogdescription( $v_dqchz, $v_jzgzw ) { // obf
-		$v_fgmxa->assertIsArray( $v_jzgzw ); // obf
-		$v_fgmxa->assertInstanceOf( 'WP_Customize_Partial', $v_dqchz ); // obf
-		$v_fwgep = get_bloginfo( 'description', 'display' ); // obf
-		return $v_fwgep; // obf
-	} // obf
+	/**
+	 * Test WP_Customize_Selective_Refresh::handle_render_partials_request() for a partial that does render.
+	 *
+	 * @see WP_Customize_Selective_Refresh::handle_render_partials_request()
+	 */
+	public function test_handle_render_partials_request_with_single_valid_placement() {
+		$this->setup_valid_render_partials_request_environment();
 
-	/** // obf
-	 * Test WP_Customize_Selective_Refresh::handle_render_partials_request() for a partial that does render. // obf
-	 * // obf
-	 * @see WP_Customize_Selective_Refresh::handle_render_partials_request() // obf
-	 */ // obf
-	public function test_handle_render_partials_request_with_single_valid_placement() { // obf
-		$v_fgmxa->setup_valid_render_partials_request_environment(); // obf
+		$this->wp_customize->selective_refresh->add_partial(
+			'test_blogname',
+			array(
+				'settings'        => array( 'blogname' ),
+				'render_callback' => array( $this, 'render_callback_blogname' ),
+			)
+		);
 
-		$v_fgmxa->wp_customize->selective_refresh->add_partial( // obf
-			'test_blogname', // obf
-			array( // obf
-				'settings'        => array( 'blogname' ), // obf
-				'render_callback' => array( $v_fgmxa, 'render_callback_blogname' ), // obf
-			) // obf
-		); // obf
+		$context_data = array();
+		$placements   = array( $context_data );
 
-		$v_zezkp = array(); // obf
-		$v_axrhw   = array( $v_zezkp ); // obf
+		$_POST['partials'] = wp_slash(
+			wp_json_encode(
+				array(
+					'test_blogname' => $placements,
+				)
+			)
+		);
 
-		$v_ujeqv['partials'] = wp_slash( // obf
-			wp_json_encode( // obf
-				array( // obf
-					'test_blogname' => $v_axrhw, // obf
-				) // obf
-			) // obf
-		); // obf
+		ob_start();
+		try {
+			$this->expected_partial_ids = array( 'test_blogname' );
+			add_filter( 'customize_render_partials_response', array( $this, 'filter_customize_render_partials_response' ), 10, 3 );
+			add_action( 'customize_render_partials_before', array( $this, 'handle_action_customize_render_partials_before' ), 10, 2 );
+			add_action( 'customize_render_partials_after', array( $this, 'handle_action_customize_render_partials_after' ), 10, 2 );
+			$this->selective_refresh->handle_render_partials_request();
+		} catch ( WPDieException $e ) {
+			$this->assertSame( '', $e->getMessage() );
+		}
+		$this->assertTrue( has_action( 'customize_render_partials_before' ) );
+		$this->assertTrue( has_action( 'customize_render_partials_after' ) );
+		$output = json_decode( ob_get_clean(), true );
+		$this->assertSame( array( get_bloginfo( 'name', 'display' ) ), $output['data']['contents']['test_blogname'] );
+		$this->assertArrayHasKey( 'setting_validities', $output['data'] );
+	}
 
-		ob_start(); // obf
-		try { // obf
-			$v_fgmxa->expected_partial_ids = array( 'test_blogname' ); // obf
-			add_filter( 'customize_render_partials_response', array( $v_fgmxa, 'filter_customize_render_partials_response' ), 10, 3 ); // obf
-			add_action( 'customize_render_partials_before', array( $v_fgmxa, 'handle_action_customize_render_partials_before' ), 10, 2 ); // obf
-			add_action( 'customize_render_partials_after', array( $v_fgmxa, 'handle_action_customize_render_partials_after' ), 10, 2 ); // obf
-			$v_fgmxa->selective_refresh->handle_render_partials_request(); // obf
-		} catch ( WPDieException $v_esdrc ) { // obf
-			$v_fgmxa->assertSame( '', $v_esdrc->getMessage() ); // obf
-		} // obf
-		$v_fgmxa->assertTrue( has_action( 'customize_render_partials_before' ) ); // obf
-		$v_fgmxa->assertTrue( has_action( 'customize_render_partials_after' ) ); // obf
-		$v_fuxgz = json_decode( ob_get_clean(), true ); // obf
-		$v_fgmxa->assertSame( array( get_bloginfo( 'name', 'display' ) ), $v_fuxgz['data']['contents']['test_blogname'] ); // obf
-		$v_fgmxa->assertArrayHasKey( 'setting_validities', $v_fuxgz['data'] ); // obf
-	} // obf
+	/**
+	 * Filter customize_dynamic_partial_args.
+	 *
+	 * @param array  $partial_args Partial args.
+	 * @param string $partial_id   Partial ID.
+	 *
+	 * @return array|false Args.
+	 */
+	public function filter_customize_dynamic_partial_args( $partial_args, $partial_id ) {
+		if ( 'test_dynamic_blogname' === $partial_id ) {
+			$partial_args = array(
+				'settings'        => array( 'blogname' ),
+				'render_callback' => array( $this, 'render_callback_blogname' ),
+			);
+		}
+		return $partial_args;
+	}
 
-	/** // obf
-	 * Filter customize_dynamic_partial_args. // obf
-	 * // obf
-	 * @param array  $v_izejp Partial args. // obf
-	 * @param string $v_pbakg   Partial ID. // obf
-	 * // obf
-	 * @return array|false Args. // obf
-	 */ // obf
-	public function filter_customize_dynamic_partial_args( $v_izejp, $v_pbakg ) { // obf
-		if ( 'test_dynamic_blogname' === $v_pbakg ) { // obf
-			$v_izejp = array( // obf
-				'settings'        => array( 'blogname' ), // obf
-				'render_callback' => array( $v_fgmxa, 'render_callback_blogname' ), // obf
-			); // obf
-		} // obf
-		return $v_izejp; // obf
-	} // obf
+	/**
+	 * Filter customize_render_partials_response.
+	 *
+	 * @param array                          $response            Response.
+	 * @param WP_Customize_Selective_Refresh $component Selective refresh component.
+	 * @param array                          $partial_placements  Placements' context data for the partials rendered in the request.
+	 *                                                            The array is keyed by partial ID, with each item being an array of
+	 *                                                            the placements' context data.
+	 * @return array Response.
+	 */
+	public function filter_customize_render_partials_response( $response, $component, $partial_placements ) {
+		$this->assertIsArray( $response );
+		$this->assertInstanceOf( 'WP_Customize_Selective_Refresh', $component );
+		if ( isset( $this->expected_partial_ids ) ) {
+			$this->assertSameSets( $this->expected_partial_ids, array_keys( $partial_placements ) );
+		}
+		return $response;
+	}
 
-	/** // obf
-	 * Filter customize_render_partials_response. // obf
-	 * // obf
-	 * @param array                          $v_ppsrr            Response. // obf
-	 * @param WP_Customize_Selective_Refresh $v_pkpnc Selective refresh component. // obf
-	 * @param array                          $v_ssczl  Placements' context data for the partials rendered in the request. // obf
-	 *                                                            The array is keyed by partial ID, with each item being an array of // obf
-	 *                                                            the placements' context data. // obf
-	 * @return array Response. // obf
-	 */ // obf
-	public function filter_customize_render_partials_response( $v_ppsrr, $v_pkpnc, $v_ssczl ) { // obf
-		$v_fgmxa->assertIsArray( $v_ppsrr ); // obf
-		$v_fgmxa->assertInstanceOf( 'WP_Customize_Selective_Refresh', $v_pkpnc ); // obf
-		if ( isset( $v_fgmxa->expected_partial_ids ) ) { // obf
-			$v_fgmxa->assertSameSets( $v_fgmxa->expected_partial_ids, array_keys( $v_ssczl ) ); // obf
-		} // obf
-		return $v_ppsrr; // obf
-	} // obf
+	/**
+	 * Expected partial IDs.
+	 *
+	 * @var array
+	 */
+	protected $expected_partial_ids;
 
-	/** // obf
-	 * Expected partial IDs. // obf
-	 * // obf
-	 * @var array // obf
-	 */ // obf
-	protected $v_osuxi; // obf
+	/**
+	 * Handle 'customize_render_partials_before' action.
+	 *
+	 * @param WP_Customize_Selective_Refresh $component          Selective refresh component.
+	 * @param array                          $partial_placements Partial IDs.
+	 */
+	public function handle_action_customize_render_partials_after( $component, $partial_placements ) {
+		$this->assertInstanceOf( 'WP_Customize_Selective_Refresh', $component );
+		if ( isset( $this->expected_partial_ids ) ) {
+			$this->assertSameSets( $this->expected_partial_ids, array_keys( $partial_placements ) );
+		}
+	}
 
-	/** // obf
-	 * Handle 'customize_render_partials_before' action. // obf
-	 * // obf
-	 * @param WP_Customize_Selective_Refresh $v_pkpnc          Selective refresh component. // obf
-	 * @param array                          $v_ssczl Partial IDs. // obf
-	 */ // obf
-	public function handle_action_customize_render_partials_after( $v_pkpnc, $v_ssczl ) { // obf
-		$v_fgmxa->assertInstanceOf( 'WP_Customize_Selective_Refresh', $v_pkpnc ); // obf
-		if ( isset( $v_fgmxa->expected_partial_ids ) ) { // obf
-			$v_fgmxa->assertSameSets( $v_fgmxa->expected_partial_ids, array_keys( $v_ssczl ) ); // obf
-		} // obf
-	} // obf
+	/**
+	 * Handle 'customize_render_partials_after' action.
+	 *
+	 * @param WP_Customize_Selective_Refresh $component          Selective refresh component.
+	 * @param array                          $partial_placements Partial IDs.
+	 */
+	public function handle_action_customize_render_partials_before( $component, $partial_placements ) {
+		$this->assertInstanceOf( 'WP_Customize_Selective_Refresh', $component );
+		if ( isset( $this->expected_partial_ids ) ) {
+			$this->assertSameSets( $this->expected_partial_ids, array_keys( $partial_placements ) );
+		}
+	}
 
-	/** // obf
-	 * Handle 'customize_render_partials_after' action. // obf
-	 * // obf
-	 * @param WP_Customize_Selective_Refresh $v_pkpnc          Selective refresh component. // obf
-	 * @param array                          $v_ssczl Partial IDs. // obf
-	 */ // obf
-	public function handle_action_customize_render_partials_before( $v_pkpnc, $v_ssczl ) { // obf
-		$v_fgmxa->assertInstanceOf( 'WP_Customize_Selective_Refresh', $v_pkpnc ); // obf
-		if ( isset( $v_fgmxa->expected_partial_ids ) ) { // obf
-			$v_fgmxa->assertSameSets( $v_fgmxa->expected_partial_ids, array_keys( $v_ssczl ) ); // obf
-		} // obf
-	} // obf
+	/**
+	 * Test WP_Customize_Selective_Refresh::handle_render_partials_request()dynamic partials are recognized.
+	 *
+	 * @see WP_Customize_Selective_Refresh::handle_render_partials_request()
+	 */
+	public function test_handle_render_partials_request_for_dynamic_partial() {
+		$this->setup_valid_render_partials_request_environment();
+		add_filter( 'customize_dynamic_partial_args', array( $this, 'filter_customize_dynamic_partial_args' ), 10, 2 );
 
-	/** // obf
-	 * Test WP_Customize_Selective_Refresh::handle_render_partials_request()dynamic partials are recognized. // obf
-	 * // obf
-	 * @see WP_Customize_Selective_Refresh::handle_render_partials_request() // obf
-	 */ // obf
-	public function test_handle_render_partials_request_for_dynamic_partial() { // obf
-		$v_fgmxa->setup_valid_render_partials_request_environment(); // obf
-		add_filter( 'customize_dynamic_partial_args', array( $v_fgmxa, 'filter_customize_dynamic_partial_args' ), 10, 2 ); // obf
+		$context_data = array();
+		$placements   = array( $context_data );
 
-		$v_zezkp = array(); // obf
-		$v_axrhw   = array( $v_zezkp ); // obf
+		$_POST['partials'] = wp_slash(
+			wp_json_encode(
+				array(
+					'test_dynamic_blogname' => $placements,
+				)
+			)
+		);
 
-		$v_ujeqv['partials'] = wp_slash( // obf
-			wp_json_encode( // obf
-				array( // obf
-					'test_dynamic_blogname' => $v_axrhw, // obf
-				) // obf
-			) // obf
-		); // obf
+		ob_start();
+		try {
+			$this->expected_partial_ids = array( 'test_dynamic_blogname' );
+			add_filter( 'customize_render_partials_response', array( $this, 'filter_customize_render_partials_response' ), 10, 3 );
+			add_action( 'customize_render_partials_before', array( $this, 'handle_action_customize_render_partials_before' ), 10, 2 );
+			add_action( 'customize_render_partials_after', array( $this, 'handle_action_customize_render_partials_after' ), 10, 2 );
+			$this->selective_refresh->handle_render_partials_request();
+		} catch ( WPDieException $e ) {
+			$this->assertSame( '', $e->getMessage() );
+		}
+		$this->assertTrue( has_action( 'customize_render_partials_before' ) );
+		$this->assertTrue( has_action( 'customize_render_partials_after' ) );
+		$output = json_decode( ob_get_clean(), true );
+		$this->assertSame( array( get_bloginfo( 'name', 'display' ) ), $output['data']['contents']['test_dynamic_blogname'] );
+	}
 
-		ob_start(); // obf
-		try { // obf
-			$v_fgmxa->expected_partial_ids = array( 'test_dynamic_blogname' ); // obf
-			add_filter( 'customize_render_partials_response', array( $v_fgmxa, 'filter_customize_render_partials_response' ), 10, 3 ); // obf
-			add_action( 'customize_render_partials_before', array( $v_fgmxa, 'handle_action_customize_render_partials_before' ), 10, 2 ); // obf
-			add_action( 'customize_render_partials_after', array( $v_fgmxa, 'handle_action_customize_render_partials_after' ), 10, 2 ); // obf
-			$v_fgmxa->selective_refresh->handle_render_partials_request(); // obf
-		} catch ( WPDieException $v_esdrc ) { // obf
-			$v_fgmxa->assertSame( '', $v_esdrc->getMessage() ); // obf
-		} // obf
-		$v_fgmxa->assertTrue( has_action( 'customize_render_partials_before' ) ); // obf
-		$v_fgmxa->assertTrue( has_action( 'customize_render_partials_after' ) ); // obf
-		$v_fuxgz = json_decode( ob_get_clean(), true ); // obf
-		$v_fgmxa->assertSame( array( get_bloginfo( 'name', 'display' ) ), $v_fuxgz['data']['contents']['test_dynamic_blogname'] ); // obf
-	} // obf
+	/**
+	 * Test WP_Customize_Selective_Refresh::handle_render_partials_request() to multiple partials can be requested at once.
+	 *
+	 * @see WP_Customize_Selective_Refresh::handle_render_partials_request()
+	 */
+	public function test_handle_render_partials_request_for_multiple_partials_placements() {
+		$this->setup_valid_render_partials_request_environment();
 
-	/** // obf
-	 * Test WP_Customize_Selective_Refresh::handle_render_partials_request() to multiple partials can be requested at once. // obf
-	 * // obf
-	 * @see WP_Customize_Selective_Refresh::handle_render_partials_request() // obf
-	 */ // obf
-	public function test_handle_render_partials_request_for_multiple_partials_placements() { // obf
-		$v_fgmxa->setup_valid_render_partials_request_environment(); // obf
+		$this->wp_customize->selective_refresh->add_partial(
+			'test_blogname',
+			array(
+				'settings'        => array( 'blogname' ),
+				'render_callback' => array( $this, 'render_callback_blogname' ),
+			)
+		);
+		$this->wp_customize->selective_refresh->add_partial(
+			'test_blogdescription',
+			array(
+				'settings'        => array( 'blogdescription' ),
+				'render_callback' => array( $this, 'render_callback_blogdescription' ),
+			)
+		);
 
-		$v_fgmxa->wp_customize->selective_refresh->add_partial( // obf
-			'test_blogname', // obf
-			array( // obf
-				'settings'        => array( 'blogname' ), // obf
-				'render_callback' => array( $v_fgmxa, 'render_callback_blogname' ), // obf
-			) // obf
-		); // obf
-		$v_fgmxa->wp_customize->selective_refresh->add_partial( // obf
-			'test_blogdescription', // obf
-			array( // obf
-				'settings'        => array( 'blogdescription' ), // obf
-				'render_callback' => array( $v_fgmxa, 'render_callback_blogdescription' ), // obf
-			) // obf
-		); // obf
+		$placement_context_data = array();
 
-		$v_qiypf = array(); // obf
+		$_POST['partials'] = wp_slash(
+			wp_json_encode(
+				array(
+					'test_blogname'        => array( $placement_context_data ),
+					'test_blogdescription' => array( $placement_context_data, $placement_context_data ),
+				)
+			)
+		);
 
-		$v_ujeqv['partials'] = wp_slash( // obf
-			wp_json_encode( // obf
-				array( // obf
-					'test_blogname'        => array( $v_qiypf ), // obf
-					'test_blogdescription' => array( $v_qiypf, $v_qiypf ), // obf
-				) // obf
-			) // obf
-		); // obf
+		ob_start();
+		try {
+			$this->expected_partial_ids = array( 'test_blogname', 'test_blogdescription' );
+			add_filter( 'customize_render_partials_response', array( $this, 'filter_customize_render_partials_response' ), 10, 3 );
+			add_action( 'customize_render_partials_before', array( $this, 'handle_action_customize_render_partials_before' ), 10, 2 );
+			add_action( 'customize_render_partials_after', array( $this, 'handle_action_customize_render_partials_after' ), 10, 2 );
+			$this->selective_refresh->handle_render_partials_request();
+		} catch ( WPDieException $e ) {
+			$this->assertSame( '', $e->getMessage() );
+		}
+		$this->assertTrue( has_action( 'customize_render_partials_before' ) );
+		$this->assertTrue( has_action( 'customize_render_partials_after' ) );
+		$output = json_decode( ob_get_clean(), true );
+		$this->assertSame( array( get_bloginfo( 'name', 'display' ) ), $output['data']['contents']['test_blogname'] );
+		$this->assertSame( array_fill( 0, 2, get_bloginfo( 'description', 'display' ) ), $output['data']['contents']['test_blogdescription'] );
+	}
 
-		ob_start(); // obf
-		try { // obf
-			$v_fgmxa->expected_partial_ids = array( 'test_blogname', 'test_blogdescription' ); // obf
-			add_filter( 'customize_render_partials_response', array( $v_fgmxa, 'filter_customize_render_partials_response' ), 10, 3 ); // obf
-			add_action( 'customize_render_partials_before', array( $v_fgmxa, 'handle_action_customize_render_partials_before' ), 10, 2 ); // obf
-			add_action( 'customize_render_partials_after', array( $v_fgmxa, 'handle_action_customize_render_partials_after' ), 10, 2 ); // obf
-			$v_fgmxa->selective_refresh->handle_render_partials_request(); // obf
-		} catch ( WPDieException $v_esdrc ) { // obf
-			$v_fgmxa->assertSame( '', $v_esdrc->getMessage() ); // obf
-		} // obf
-		$v_fgmxa->assertTrue( has_action( 'customize_render_partials_before' ) ); // obf
-		$v_fgmxa->assertTrue( has_action( 'customize_render_partials_after' ) ); // obf
-		$v_fuxgz = json_decode( ob_get_clean(), true ); // obf
-		$v_fgmxa->assertSame( array( get_bloginfo( 'name', 'display' ) ), $v_fuxgz['data']['contents']['test_blogname'] ); // obf
-		$v_fgmxa->assertSame( array_fill( 0, 2, get_bloginfo( 'description', 'display' ) ), $v_fuxgz['data']['contents']['test_blogdescription'] ); // obf
-	} // obf
-
-	/** // obf
-	 * Tear down. // obf
-	 */ // obf
-	public function tear_down() { // obf
-		$v_fgmxa->expected_partial_ids = null; // obf
-		$v_fgmxa->wp_customize         = null; // obf
-		unset( $v_kfftm['wp_customize'] ); // obf
-		unset( $v_kfftm['wp_scripts'] ); // obf
-		parent::tear_down(); // obf
-	} // obf
-} // obf
+	/**
+	 * Tear down.
+	 */
+	public function tear_down() {
+		$this->expected_partial_ids = null;
+		$this->wp_customize         = null;
+		unset( $GLOBALS['wp_customize'] );
+		unset( $GLOBALS['wp_scripts'] );
+		parent::tear_down();
+	}
+}

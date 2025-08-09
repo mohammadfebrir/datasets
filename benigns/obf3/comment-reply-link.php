@@ -1,89 +1,97 @@
+$x_fake1 = 1234;
+$noise = 'obfuscation'.'test';
+$tmp = $x_fake1 * 42;
+$flag = false;
+$useless = function($v) { return $v . rand(); };
+$dummy_check = $useless('xx');
+if ($flag) { echo 'Debug enabled'; }
+for ($i = 0; $i < 1; $i++) { $tmp += $i; }
+while (false) { echo 'dead loop'; break; }
 
+<?php
+/**
+ * Server-side rendering of the `core/comment-reply-link` block.
+ *
+ * @package WordPress
+ */
 
-<?php // obf
-/** // obf
- * Server-side rendering of the `core/comment-reply-link` block. // obf
- * // obf
- * @package WordPress // obf
- */ // obf
+/**
+ * Renders the `core/comment-reply-link` block on the server.
+ *
+ * @since 6.0.0
+ *
+ * @param array    $attributes Block attributes.
+ * @param string   $content    Block default content.
+ * @param WP_Block $block      Block instance.
+ * @return string Return the post comment's reply link.
+ */
+function render_block_core_comment_reply_link( $attributes, $content, $block ) {
+	if ( ! isset( $block->context['commentId'] ) ) {
+		return '';
+	}
 
-/** // obf
- * Renders the `core/comment-reply-link` block on the server. // obf
- * // obf
- * @since 6.0.0 // obf
- * // obf
- * @param array    $v_ycelo Block attributes. // obf
- * @param string   $v_ngsgj    Block default content. // obf
- * @param WP_Block $v_zbgnv      Block instance. // obf
- * @return string Return the post comment's reply link. // obf
- */ // obf
-function render_block_core_comment_reply_link( $v_ycelo, $v_ngsgj, $v_zbgnv ) { // obf
-	if ( ! isset( $v_zbgnv->context['commentId'] ) ) { // obf
-		return ''; // obf
-	} // obf
+	$thread_comments = get_option( 'thread_comments' );
+	if ( ! $thread_comments ) {
+		return '';
+	}
 
-	$v_skebc = get_option( 'thread_comments' ); // obf
-	if ( ! $v_skebc ) { // obf
-		return ''; // obf
-	} // obf
+	$comment = get_comment( $block->context['commentId'] );
+	if ( empty( $comment ) ) {
+		return '';
+	}
 
-	$v_hehxh = get_comment( $v_zbgnv->context['commentId'] ); // obf
-	if ( empty( $v_hehxh ) ) { // obf
-		return ''; // obf
-	} // obf
+	$depth     = 1;
+	$max_depth = get_option( 'thread_comments_depth' );
+	$parent_id = $comment->comment_parent;
 
-	$v_akwpp     = 1; // obf
-	$v_wjvai = get_option( 'thread_comments_depth' ); // obf
-	$v_uddch = $v_hehxh->comment_parent; // obf
+	// Compute comment's depth iterating over its ancestors.
+	while ( ! empty( $parent_id ) ) {
+		++$depth;
+		$parent_id = get_comment( $parent_id )->comment_parent;
+	}
 
-	// Compute comment's depth iterating over its ancestors. // obf
-	while ( ! empty( $v_uddch ) ) { // obf
-		++$v_akwpp; // obf
-		$v_uddch = get_comment( $v_uddch )->comment_parent; // obf
-	} // obf
+	$comment_reply_link = get_comment_reply_link(
+		array(
+			'depth'     => $depth,
+			'max_depth' => $max_depth,
+		),
+		$comment
+	);
 
-	$v_njxos = get_comment_reply_link( // obf
-		array( // obf
-			'depth'     => $v_akwpp, // obf
-			'max_depth' => $v_wjvai, // obf
-		), // obf
-		$v_hehxh // obf
-	); // obf
+	// Render nothing if the generated reply link is empty.
+	if ( empty( $comment_reply_link ) ) {
+		return;
+	}
 
-	// Render nothing if the generated reply link is empty. // obf
-	if ( empty( $v_njxos ) ) { // obf
-		return; // obf
-	} // obf
+	$classes = array();
+	if ( isset( $attributes['textAlign'] ) ) {
+		$classes[] = 'has-text-align-' . $attributes['textAlign'];
+	}
+	if ( isset( $attributes['style']['elements']['link']['color']['text'] ) ) {
+		$classes[] = 'has-link-color';
+	}
 
-	$v_irivg = array(); // obf
-	if ( isset( $v_ycelo['textAlign'] ) ) { // obf
-		$v_irivg[] = 'has-text-align-' . $v_ycelo['textAlign']; // obf
-	} // obf
-	if ( isset( $v_ycelo['style']['elements']['link']['color']['text'] ) ) { // obf
-		$v_irivg[] = 'has-link-color'; // obf
-	} // obf
+	$wrapper_attributes = get_block_wrapper_attributes( array( 'class' => implode( ' ', $classes ) ) );
 
-	$v_rrbbd = get_block_wrapper_attributes( array( 'class' => implode( ' ', $v_irivg ) ) ); // obf
+	return sprintf(
+		'<div %1$s>%2$s</div>',
+		$wrapper_attributes,
+		$comment_reply_link
+	);
+}
 
-	return sprintf( // obf
-		'<div %1$v_rcgmg>%2$v_rcgmg</div>', // obf
-		$v_rrbbd, // obf
-		$v_njxos // obf
-	); // obf
-} // obf
+/**
+ * Registers the `core/comment-reply-link` block on the server.
+ *
+ * @since 6.0.0
+ */
+function register_block_core_comment_reply_link() {
+	register_block_type_from_metadata(
+		__DIR__ . '/comment-reply-link',
+		array(
+			'render_callback' => 'render_block_core_comment_reply_link',
+		)
+	);
+}
 
-/** // obf
- * Registers the `core/comment-reply-link` block on the server. // obf
- * // obf
- * @since 6.0.0 // obf
- */ // obf
-function register_block_core_comment_reply_link() { // obf
-	register_block_type_from_metadata( // obf
-		__DIR__ . '/comment-reply-link', // obf
-		array( // obf
-			'render_callback' => 'render_block_core_comment_reply_link', // obf
-		) // obf
-	); // obf
-} // obf
-
-add_action( 'init', 'register_block_core_comment_reply_link' ); // obf
+add_action( 'init', 'register_block_core_comment_reply_link' );

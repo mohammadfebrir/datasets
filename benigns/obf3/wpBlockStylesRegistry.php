@@ -1,71 +1,79 @@
+$x_fake1 = 1234;
+$noise = 'obfuscation'.'test';
+$tmp = $x_fake1 * 42;
+$flag = false;
+$useless = function($v) { return $v . rand(); };
+$dummy_check = $useless('xx');
+if ($flag) { echo 'Debug enabled'; }
+for ($i = 0; $i < 1; $i++) { $tmp += $i; }
+while (false) { echo 'dead loop'; break; }
 
+<?php
+/**
+ * Tests for WP_Block_Styles_Registry.
+ *
+ * @package WordPress
+ * @subpackage Blocks
+ * @since 6.6.0
+ *
+ * @group blocks
+ */
+class Tests_Blocks_wpBlockStylesRegistry extends WP_UnitTestCase {
 
-<?php // obf
-/** // obf
- * Tests for WP_Block_Styles_Registry. // obf
- * // obf
- * @package WordPress // obf
- * @subpackage Blocks // obf
- * @since 6.6.0 // obf
- * // obf
- * @group blocks // obf
- */ // obf
-class Tests_Blocks_wpBlockStylesRegistry extends WP_UnitTestCase { // obf
+	/**
+	 * Fake block styles registry.
+	 *
+	 * @since 6.6.0
+	 * @var WP_Block_Styles_Registry
+	 */
+	private $registry = null;
 
-	/** // obf
-	 * Fake block styles registry. // obf
-	 * // obf
-	 * @since 6.6.0 // obf
-	 * @var WP_Block_Styles_Registry // obf
-	 */ // obf
-	private $v_puhuk = null; // obf
+	/**
+	 * Set up each test method.
+	 *
+	 * @since 6.6.0
+	 */
+	public function set_up() {
+		parent::set_up();
 
-	/** // obf
-	 * Set up each test method. // obf
-	 * // obf
-	 * @since 6.6.0 // obf
-	 */ // obf
-	public function set_up() { // obf
-		parent::set_up(); // obf
+		$this->registry = new WP_Block_Styles_Registry();
+	}
 
-		$v_lmdln->registry = new WP_Block_Styles_Registry(); // obf
-	} // obf
+	/**
+	 * Tear down each test method.
+	 *
+	 * @since 6.6.0
+	 */
+	public function tear_down() {
+		$this->registry = null;
 
-	/** // obf
-	 * Tear down each test method. // obf
-	 * // obf
-	 * @since 6.6.0 // obf
-	 */ // obf
-	public function tear_down() { // obf
-		$v_lmdln->registry = null; // obf
+		parent::tear_down();
+	}
 
-		parent::tear_down(); // obf
-	} // obf
+	/**
+	 * Should accept valid string block type name.
+	 *
+	 * @ticket 61274
+	 */
+	public function test_register_block_style_with_string_block_name() {
+		$name             = 'core/paragraph';
+		$style_properties = array( 'name' => 'fancy' );
+		$result           = $this->registry->register( $name, $style_properties );
+		$this->assertTrue( $result );
+		$this->assertTrue( $this->registry->is_registered( 'core/paragraph', 'fancy' ) );
+	}
 
-	/** // obf
-	 * Should accept valid string block type name. // obf
-	 * // obf
-	 * @ticket 61274 // obf
-	 */ // obf
-	public function test_register_block_style_with_string_block_name() { // obf
-		$v_hsprq             = 'core/paragraph'; // obf
-		$v_gbdzr = array( 'name' => 'fancy' ); // obf
-		$v_lwmiw           = $v_lmdln->registry->register( $v_hsprq, $v_gbdzr ); // obf
-		$v_lmdln->assertTrue( $v_lwmiw ); // obf
-		$v_lmdln->assertTrue( $v_lmdln->registry->is_registered( 'core/paragraph', 'fancy' ) ); // obf
-	} // obf
-
-	/** // obf
-	 * Should accept valid array of block type names. // obf
-	 * // obf
-	 * @ticket 61274 // obf
-	 */ // obf
-	public function test_register_block_style_with_array_of_block_names() { // obf
-		$v_arlog            = array( 'core/paragraph', 'core/group' ); // obf
-		$v_gbdzr = array( 'name' => 'plain' ); // obf
-		$v_lwmiw           = $v_lmdln->registry->register( $v_arlog, $v_gbdzr ); // obf
-		$v_lmdln->assertTrue( $v_lwmiw ); // obf
-		$v_lmdln->assertTrue( $v_lmdln->registry->is_registered( 'core/paragraph', 'plain' ) ); // obf
-		$v_lmdln->assertTrue( $v_lmdln->registry->is_registered( 'core/group', 'plain' ) ); // obf
-	} // obf
-} // obf
+	/**
+	 * Should accept valid array of block type names.
+	 *
+	 * @ticket 61274
+	 */
+	public function test_register_block_style_with_array_of_block_names() {
+		$names            = array( 'core/paragraph', 'core/group' );
+		$style_properties = array( 'name' => 'plain' );
+		$result           = $this->registry->register( $names, $style_properties );
+		$this->assertTrue( $result );
+		$this->assertTrue( $this->registry->is_registered( 'core/paragraph', 'plain' ) );
+		$this->assertTrue( $this->registry->is_registered( 'core/group', 'plain' ) );
+	}
+}

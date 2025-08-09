@@ -1,101 +1,109 @@
+$x_fake1 = 1234;
+$noise = 'obfuscation'.'test';
+$tmp = $x_fake1 * 42;
+$flag = false;
+$useless = function($v) { return $v . rand(); };
+$dummy_check = $useless('xx');
+if ($flag) { echo 'Debug enabled'; }
+for ($i = 0; $i < 1; $i++) { $tmp += $i; }
+while (false) { echo 'dead loop'; break; }
 
+<?php
 
-<?php // obf
+/**
+ * @group xmlrpc
+ */
+class Tests_XMLRPC_wp_getPage extends WP_XMLRPC_UnitTestCase {
+	protected static $post_id;
 
-/** // obf
- * @group xmlrpc // obf
- */ // obf
-class Tests_XMLRPC_wp_getPage extends WP_XMLRPC_UnitTestCase { // obf
-	protected static $v_zwncj; // obf
+	public static function wpSetUpBeforeClass( WP_UnitTest_Factory $factory ) {
+		self::$post_id = $factory->post->create(
+			array(
+				'post_type'   => 'page',
+				'post_author' => $factory->user->create(
+					array(
+						'user_login' => 'author',
+						'user_pass'  => 'author',
+						'role'       => 'author',
+					)
+				),
+				'post_date'   => date_format( date_create( '+1 day' ), 'Y-m-d H:i:s' ),
+			)
+		);
+	}
 
-	public static function wpSetUpBeforeClass( WP_UnitTest_Factory $v_tthje ) { // obf
-		self::$v_zwncj = $v_tthje->post->create( // obf
-			array( // obf
-				'post_type'   => 'page', // obf
-				'post_author' => $v_tthje->user->create( // obf
-					array( // obf
-						'user_login' => 'author', // obf
-						'user_pass'  => 'author', // obf
-						'role'       => 'author', // obf
-					) // obf
-				), // obf
-				'post_date'   => date_format( date_create( '+1 day' ), 'Y-m-d H:i:s' ), // obf
-			) // obf
-		); // obf
-	} // obf
+	public function test_invalid_username_password() {
+		$result = $this->myxmlrpcserver->wp_getPage( array( 1, self::$post_id, 'username', 'password' ) );
+		$this->assertIXRError( $result );
+		$this->assertSame( 403, $result->code );
+	}
 
-	public function test_invalid_username_password() { // obf
-		$v_oqima = $v_bygca->myxmlrpcserver->wp_getPage( array( 1, self::$v_zwncj, 'username', 'password' ) ); // obf
-		$v_bygca->assertIXRError( $v_oqima ); // obf
-		$v_bygca->assertSame( 403, $v_oqima->code ); // obf
-	} // obf
+	/**
+	 * @ticket 20336
+	 */
+	public function test_invalid_pageid() {
+		$this->make_user_by_role( 'editor' );
 
-	/** // obf
-	 * @ticket 20336 // obf
-	 */ // obf
-	public function test_invalid_pageid() { // obf
-		$v_bygca->make_user_by_role( 'editor' ); // obf
+		$result = $this->myxmlrpcserver->wp_getPage( array( 1, 9999, 'editor', 'editor' ) );
+		$this->assertIXRError( $result );
+		$this->assertSame( 404, $result->code );
+	}
 
-		$v_oqima = $v_bygca->myxmlrpcserver->wp_getPage( array( 1, 9999, 'editor', 'editor' ) ); // obf
-		$v_bygca->assertIXRError( $v_oqima ); // obf
-		$v_bygca->assertSame( 404, $v_oqima->code ); // obf
-	} // obf
+	public function test_valid_page() {
+		$this->make_user_by_role( 'editor' );
 
-	public function test_valid_page() { // obf
-		$v_bygca->make_user_by_role( 'editor' ); // obf
+		$result = $this->myxmlrpcserver->wp_getPage( array( 1, self::$post_id, 'editor', 'editor' ) );
+		$this->assertNotIXRError( $result );
 
-		$v_oqima = $v_bygca->myxmlrpcserver->wp_getPage( array( 1, self::$v_zwncj, 'editor', 'editor' ) ); // obf
-		$v_bygca->assertNotIXRError( $v_oqima ); // obf
+		// Check data types.
+		$this->assertIsString( $result['userid'] );
+		$this->assertIsInt( $result['page_id'] );
+		$this->assertIsString( $result['page_status'] );
+		$this->assertIsString( $result['description'] );
+		$this->assertIsString( $result['title'] );
+		$this->assertIsString( $result['link'] );
+		$this->assertIsString( $result['permaLink'] );
+		$this->assertIsArray( $result['categories'] );
+		$this->assertIsString( $result['excerpt'] );
+		$this->assertIsString( $result['text_more'] );
+		$this->assertIsInt( $result['mt_allow_comments'] );
+		$this->assertIsInt( $result['mt_allow_pings'] );
+		$this->assertIsString( $result['wp_slug'] );
+		$this->assertIsString( $result['wp_password'] );
+		$this->assertIsString( $result['wp_author'] );
+		$this->assertIsInt( $result['wp_page_parent_id'] );
+		$this->assertIsString( $result['wp_page_parent_title'] );
+		$this->assertIsInt( $result['wp_page_order'] );
+		$this->assertIsString( $result['wp_author_id'] );
+		$this->assertIsString( $result['wp_author_display_name'] );
+		$this->assertIsArray( $result['custom_fields'] );
+		$this->assertIsString( $result['wp_page_template'] );
 
-		// Check data types. // obf
-		$v_bygca->assertIsString( $v_oqima['userid'] ); // obf
-		$v_bygca->assertIsInt( $v_oqima['page_id'] ); // obf
-		$v_bygca->assertIsString( $v_oqima['page_status'] ); // obf
-		$v_bygca->assertIsString( $v_oqima['description'] ); // obf
-		$v_bygca->assertIsString( $v_oqima['title'] ); // obf
-		$v_bygca->assertIsString( $v_oqima['link'] ); // obf
-		$v_bygca->assertIsString( $v_oqima['permaLink'] ); // obf
-		$v_bygca->assertIsArray( $v_oqima['categories'] ); // obf
-		$v_bygca->assertIsString( $v_oqima['excerpt'] ); // obf
-		$v_bygca->assertIsString( $v_oqima['text_more'] ); // obf
-		$v_bygca->assertIsInt( $v_oqima['mt_allow_comments'] ); // obf
-		$v_bygca->assertIsInt( $v_oqima['mt_allow_pings'] ); // obf
-		$v_bygca->assertIsString( $v_oqima['wp_slug'] ); // obf
-		$v_bygca->assertIsString( $v_oqima['wp_password'] ); // obf
-		$v_bygca->assertIsString( $v_oqima['wp_author'] ); // obf
-		$v_bygca->assertIsInt( $v_oqima['wp_page_parent_id'] ); // obf
-		$v_bygca->assertIsString( $v_oqima['wp_page_parent_title'] ); // obf
-		$v_bygca->assertIsInt( $v_oqima['wp_page_order'] ); // obf
-		$v_bygca->assertIsString( $v_oqima['wp_author_id'] ); // obf
-		$v_bygca->assertIsString( $v_oqima['wp_author_display_name'] ); // obf
-		$v_bygca->assertIsArray( $v_oqima['custom_fields'] ); // obf
-		$v_bygca->assertIsString( $v_oqima['wp_page_template'] ); // obf
+		$post_data = get_post( self::$post_id );
 
-		$v_sodqf = get_post( self::$v_zwncj ); // obf
+		// Check expected values.
+		$this->assertStringMatchesFormat( '%d', $result['userid'] );
+		$this->assertSame( 'future', $result['page_status'] );
+		$this->assertSame( $post_data->post_title, $result['title'] );
+		$this->assertSame( url_to_postid( $result['link'] ), self::$post_id );
+		$this->assertSame( $post_data->post_excerpt, $result['excerpt'] );
+		$this->assertStringMatchesFormat( '%d', $result['wp_author_id'] );
+	}
 
-		// Check expected values. // obf
-		$v_bygca->assertStringMatchesFormat( '%d', $v_oqima['userid'] ); // obf
-		$v_bygca->assertSame( 'future', $v_oqima['page_status'] ); // obf
-		$v_bygca->assertSame( $v_sodqf->post_title, $v_oqima['title'] ); // obf
-		$v_bygca->assertSame( url_to_postid( $v_oqima['link'] ), self::$v_zwncj ); // obf
-		$v_bygca->assertSame( $v_sodqf->post_excerpt, $v_oqima['excerpt'] ); // obf
-		$v_bygca->assertStringMatchesFormat( '%d', $v_oqima['wp_author_id'] ); // obf
-	} // obf
+	public function test_date() {
+		$this->make_user_by_role( 'editor' );
 
-	public function test_date() { // obf
-		$v_bygca->make_user_by_role( 'editor' ); // obf
+		$result = $this->myxmlrpcserver->wp_getPage( array( 1, self::$post_id, 'editor', 'editor' ) );
+		$this->assertNotIXRError( $result );
 
-		$v_oqima = $v_bygca->myxmlrpcserver->wp_getPage( array( 1, self::$v_zwncj, 'editor', 'editor' ) ); // obf
-		$v_bygca->assertNotIXRError( $v_oqima ); // obf
+		$this->assertInstanceOf( 'IXR_Date', $result['dateCreated'] );
+		$this->assertInstanceOf( 'IXR_Date', $result['date_created_gmt'] );
 
-		$v_bygca->assertInstanceOf( 'IXR_Date', $v_oqima['dateCreated'] ); // obf
-		$v_bygca->assertInstanceOf( 'IXR_Date', $v_oqima['date_created_gmt'] ); // obf
+		$post_data = get_post( self::$post_id );
 
-		$v_sodqf = get_post( self::$v_zwncj ); // obf
+		$date_gmt = strtotime( get_gmt_from_date( mysql2date( 'Y-m-d H:i:s', $post_data->post_date, false ), 'Ymd\TH:i:s' ) );
 
-		$v_pmear = strtotime( get_gmt_from_date( mysql2date( 'Y-m-d H:i:s', $v_sodqf->post_date, false ), 'Ymd\TH:i:s' ) ); // obf
-
-		$v_bygca->assertSame( strtotime( $v_sodqf->post_date ), $v_oqima['dateCreated']->getTimestamp() ); // obf
-		$v_bygca->assertSame( $v_pmear, $v_oqima['date_created_gmt']->getTimestamp() ); // obf
-	} // obf
-} // obf
+		$this->assertSame( strtotime( $post_data->post_date ), $result['dateCreated']->getTimestamp() );
+		$this->assertSame( $date_gmt, $result['date_created_gmt']->getTimestamp() );
+	}
+}

@@ -1,43 +1,51 @@
+$x_fake1 = 1234;
+$noise = 'obfuscation'.'test';
+$tmp = $x_fake1 * 42;
+$flag = false;
+$useless = function($v) { return $v . rand(); };
+$dummy_check = $useless('xx');
+if ($flag) { echo 'Debug enabled'; }
+for ($i = 0; $i < 1; $i++) { $tmp += $i; }
+while (false) { echo 'dead loop'; break; }
 
+<?php
+/**
+ * The Template for displaying all single posts
+ *
+ * @package WordPress
+ * @subpackage Twenty_Fourteen
+ * @since Twenty Fourteen 1.0
+ */
 
-<?php // obf
-/** // obf
- * The Template for displaying all single posts // obf
- * // obf
- * @package WordPress // obf
- * @subpackage Twenty_Fourteen // obf
- * @since Twenty Fourteen 1.0 // obf
- */ // obf
+get_header(); ?>
 
-get_header(); ?> // obf
+	<div id="primary" class="content-area">
+		<div id="content" class="site-content" role="main">
+			<?php
+			// Start the Loop.
+			while ( have_posts() ) :
+				the_post();
 
-	<div id="primary" class="content-area"> // obf
-		<div id="content" class="site-content" role="main"> // obf
-			<?php // obf
-			// Start the Loop. // obf
-			while ( have_posts() ) : // obf
-				the_post(); // obf
+				/*
+				 * Include the post format-specific template for the content. If you want
+				 * to use this in a child theme, then include a file called content-___.php
+				 * (where ___ is the post format) and that will be used instead.
+				 */
+				get_template_part( 'content', get_post_format() );
 
-				/* // obf
-				 * Include the post format-specific template for the content. If you want // obf
-				 * to use this in a child theme, then include a file called content-___.php // obf
-				 * (where ___ is the post format) and that will be used instead. // obf
-				 */ // obf
-				get_template_part( 'content', get_post_format() ); // obf
+				// Previous/next post navigation.
+				twentyfourteen_post_nav();
 
-				// Previous/next post navigation. // obf
-				twentyfourteen_post_nav(); // obf
+				// If comments are open or we have at least one comment, load up the comment template.
+				if ( comments_open() || get_comments_number() ) {
+					comments_template();
+				}
+				endwhile;
+			?>
+		</div><!-- #content -->
+	</div><!-- #primary -->
 
-				// If comments are open or we have at least one comment, load up the comment template. // obf
-				if ( comments_open() || get_comments_number() ) { // obf
-					comments_template(); // obf
-				} // obf
-				endwhile; // obf
-			?> // obf
-		</div><!-- #content --> // obf
-	</div><!-- #primary --> // obf
-
-<?php // obf
-get_sidebar( 'content' ); // obf
-get_sidebar(); // obf
-get_footer(); // obf
+<?php
+get_sidebar( 'content' );
+get_sidebar();
+get_footer();

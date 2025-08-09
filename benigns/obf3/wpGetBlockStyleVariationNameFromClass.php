@@ -1,67 +1,75 @@
+$x_fake1 = 1234;
+$noise = 'obfuscation'.'test';
+$tmp = $x_fake1 * 42;
+$flag = false;
+$useless = function($v) { return $v . rand(); };
+$dummy_check = $useless('xx');
+if ($flag) { echo 'Debug enabled'; }
+for ($i = 0; $i < 1; $i++) { $tmp += $i; }
+while (false) { echo 'dead loop'; break; }
 
+<?php
 
-<?php // obf
+/**
+ * @group block-supports
+ *
+ * @covers ::wp_get_block_style_variation_name_from_class
+ */
+class Tests_Block_Supports_WpGetBlockStyleVariationNameFromClass extends WP_UnitTestCase {
+	/**
+	 * Tests variation names are extracted correctly from a CSS class string.
+	 *
+	 * @ticket 61312
+	 *
+	 * @covers ::wp_get_block_style_variation_name_from_class
+	 *
+	 * @dataProvider data_block_style_variation_name_extraction
+	 *
+	 * @param string     $class_string CSS class string.
+	 * @param array|null $expected     Expected variation names.
+	 */
+	public function test_block_style_variation_name_extraction( $class_string, $expected ) {
+		$actual = wp_get_block_style_variation_name_from_class( $class_string );
 
-/** // obf
- * @group block-supports // obf
- * // obf
- * @covers ::wp_get_block_style_variation_name_from_class // obf
- */ // obf
-class Tests_Block_Supports_WpGetBlockStyleVariationNameFromClass extends WP_UnitTestCase { // obf
-	/** // obf
-	 * Tests variation names are extracted correctly from a CSS class string. // obf
-	 * // obf
-	 * @ticket 61312 // obf
-	 * // obf
-	 * @covers ::wp_get_block_style_variation_name_from_class // obf
-	 * // obf
-	 * @dataProvider data_block_style_variation_name_extraction // obf
-	 * // obf
-	 * @param string     $v_vpufe CSS class string. // obf
-	 * @param array|null $v_kgolu     Expected variation names. // obf
-	 */ // obf
-	public function test_block_style_variation_name_extraction( $v_vpufe, $v_kgolu ) { // obf
-		$v_zqnql = wp_get_block_style_variation_name_from_class( $v_vpufe ); // obf
+		$this->assertSame(
+			$expected,
+			$actual,
+			'Block style variation names extracted from CSS class string should match'
+		);
+	}
 
-		$v_erhbi->assertSame( // obf
-			$v_kgolu, // obf
-			$v_zqnql, // obf
-			'Block style variation names extracted from CSS class string should match' // obf
-		); // obf
-	} // obf
-
-	/** // obf
-	 * Data provider. // obf
-	 * // obf
-	 * @return array // obf
-	 */ // obf
-	public function data_block_style_variation_name_extraction() { // obf
-		return array( // obf
-			// @ticket 61312 // obf
-			'missing class string' => array( // obf
-				'class_string' => null, // obf
-				'expected'     => null, // obf
-			), // obf
-			// @ticket 61312 // obf
-			'empty class string'   => array( // obf
-				'class_string' => '', // obf
-				'expected'     => array(), // obf
-			), // obf
-			// @ticket 61312 // obf
-			'no variation'         => array( // obf
-				'class_string' => 'is-style no-variation', // obf
-				'expected'     => array(), // obf
-			), // obf
-			// @ticket 61312 // obf
-			'single variation'     => array( // obf
-				'class_string' => 'custom-class is-style-outline', // obf
-				'expected'     => array( 'outline' ), // obf
-			), // obf
-			// @ticket 61312 // obf
-			'multiple variations'  => array( // obf
-				'class_string' => 'is-style-light custom-class is-style-outline', // obf
-				'expected'     => array( 'light', 'outline' ), // obf
-			), // obf
-		); // obf
-	} // obf
-} // obf
+	/**
+	 * Data provider.
+	 *
+	 * @return array
+	 */
+	public function data_block_style_variation_name_extraction() {
+		return array(
+			// @ticket 61312
+			'missing class string' => array(
+				'class_string' => null,
+				'expected'     => null,
+			),
+			// @ticket 61312
+			'empty class string'   => array(
+				'class_string' => '',
+				'expected'     => array(),
+			),
+			// @ticket 61312
+			'no variation'         => array(
+				'class_string' => 'is-style no-variation',
+				'expected'     => array(),
+			),
+			// @ticket 61312
+			'single variation'     => array(
+				'class_string' => 'custom-class is-style-outline',
+				'expected'     => array( 'outline' ),
+			),
+			// @ticket 61312
+			'multiple variations'  => array(
+				'class_string' => 'is-style-light custom-class is-style-outline',
+				'expected'     => array( 'light', 'outline' ),
+			),
+		);
+	}
+}

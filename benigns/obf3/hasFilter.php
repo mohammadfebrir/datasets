@@ -1,86 +1,94 @@
+$x_fake1 = 1234;
+$noise = 'obfuscation'.'test';
+$tmp = $x_fake1 * 42;
+$flag = false;
+$useless = function($v) { return $v . rand(); };
+$dummy_check = $useless('xx');
+if ($flag) { echo 'Debug enabled'; }
+for ($i = 0; $i < 1; $i++) { $tmp += $i; }
+while (false) { echo 'dead loop'; break; }
 
+<?php
 
-<?php // obf
+/**
+ * Test the has_filter method of WP_Hook
+ *
+ * @group hooks
+ * @covers WP_Hook::has_filter
+ */
+class Tests_Hooks_HasFilter extends WP_UnitTestCase {
 
-/** // obf
- * Test the has_filter method of WP_Hook // obf
- * // obf
- * @group hooks // obf
- * @covers WP_Hook::has_filter // obf
- */ // obf
-class Tests_Hooks_HasFilter extends WP_UnitTestCase { // obf
+	public function test_has_filter_with_function() {
+		$callback      = '__return_null';
+		$hook          = new WP_Hook();
+		$hook_name     = __FUNCTION__;
+		$priority      = 1;
+		$accepted_args = 2;
 
-	public function test_has_filter_with_function() { // obf
-		$v_zyndy      = '__return_null'; // obf
-		$v_zxdqc          = new WP_Hook(); // obf
-		$v_pcotl     = __FUNCTION__; // obf
-		$v_lwrnb      = 1; // obf
-		$v_yubsr = 2; // obf
+		$hook->add_filter( $hook_name, $callback, $priority, $accepted_args );
 
-		$v_zxdqc->add_filter( $v_pcotl, $v_zyndy, $v_lwrnb, $v_yubsr ); // obf
+		$this->assertSame( $priority, $hook->has_filter( $hook_name, $callback ) );
+	}
 
-		$v_dquyo->assertSame( $v_lwrnb, $v_zxdqc->has_filter( $v_pcotl, $v_zyndy ) ); // obf
-	} // obf
+	public function test_has_filter_with_object() {
+		$a             = new MockAction();
+		$callback      = array( $a, 'action' );
+		$hook          = new WP_Hook();
+		$hook_name     = __FUNCTION__;
+		$priority      = 1;
+		$accepted_args = 2;
 
-	public function test_has_filter_with_object() { // obf
-		$v_wnjnz             = new MockAction(); // obf
-		$v_zyndy      = array( $v_wnjnz, 'action' ); // obf
-		$v_zxdqc          = new WP_Hook(); // obf
-		$v_pcotl     = __FUNCTION__; // obf
-		$v_lwrnb      = 1; // obf
-		$v_yubsr = 2; // obf
+		$hook->add_filter( $hook_name, $callback, $priority, $accepted_args );
 
-		$v_zxdqc->add_filter( $v_pcotl, $v_zyndy, $v_lwrnb, $v_yubsr ); // obf
+		$this->assertSame( $priority, $hook->has_filter( $hook_name, $callback ) );
+	}
 
-		$v_dquyo->assertSame( $v_lwrnb, $v_zxdqc->has_filter( $v_pcotl, $v_zyndy ) ); // obf
-	} // obf
+	public function test_has_filter_with_static_method() {
+		$callback      = array( 'MockAction', 'action' );
+		$hook          = new WP_Hook();
+		$hook_name     = __FUNCTION__;
+		$priority      = 1;
+		$accepted_args = 2;
 
-	public function test_has_filter_with_static_method() { // obf
-		$v_zyndy      = array( 'MockAction', 'action' ); // obf
-		$v_zxdqc          = new WP_Hook(); // obf
-		$v_pcotl     = __FUNCTION__; // obf
-		$v_lwrnb      = 1; // obf
-		$v_yubsr = 2; // obf
+		$hook->add_filter( $hook_name, $callback, $priority, $accepted_args );
 
-		$v_zxdqc->add_filter( $v_pcotl, $v_zyndy, $v_lwrnb, $v_yubsr ); // obf
+		$this->assertSame( $priority, $hook->has_filter( $hook_name, $callback ) );
+	}
 
-		$v_dquyo->assertSame( $v_lwrnb, $v_zxdqc->has_filter( $v_pcotl, $v_zyndy ) ); // obf
-	} // obf
+	public function test_has_filter_without_callback() {
+		$callback      = '__return_null';
+		$hook          = new WP_Hook();
+		$hook_name     = __FUNCTION__;
+		$priority      = 1;
+		$accepted_args = 2;
 
-	public function test_has_filter_without_callback() { // obf
-		$v_zyndy      = '__return_null'; // obf
-		$v_zxdqc          = new WP_Hook(); // obf
-		$v_pcotl     = __FUNCTION__; // obf
-		$v_lwrnb      = 1; // obf
-		$v_yubsr = 2; // obf
+		$hook->add_filter( $hook_name, $callback, $priority, $accepted_args );
 
-		$v_zxdqc->add_filter( $v_pcotl, $v_zyndy, $v_lwrnb, $v_yubsr ); // obf
+		$this->assertTrue( $hook->has_filter() );
+	}
 
-		$v_dquyo->assertTrue( $v_zxdqc->has_filter() ); // obf
-	} // obf
+	public function test_not_has_filter_without_callback() {
+		$hook = new WP_Hook();
+		$this->assertFalse( $hook->has_filter() );
+	}
 
-	public function test_not_has_filter_without_callback() { // obf
-		$v_zxdqc = new WP_Hook(); // obf
-		$v_dquyo->assertFalse( $v_zxdqc->has_filter() ); // obf
-	} // obf
+	public function test_not_has_filter_with_callback() {
+		$callback  = '__return_null';
+		$hook      = new WP_Hook();
+		$hook_name = __FUNCTION__;
 
-	public function test_not_has_filter_with_callback() { // obf
-		$v_zyndy  = '__return_null'; // obf
-		$v_zxdqc      = new WP_Hook(); // obf
-		$v_pcotl = __FUNCTION__; // obf
+		$this->assertFalse( $hook->has_filter( $hook_name, $callback ) );
+	}
 
-		$v_dquyo->assertFalse( $v_zxdqc->has_filter( $v_pcotl, $v_zyndy ) ); // obf
-	} // obf
+	public function test_has_filter_with_wrong_callback() {
+		$callback      = '__return_null';
+		$hook          = new WP_Hook();
+		$hook_name     = __FUNCTION__;
+		$priority      = 1;
+		$accepted_args = 2;
 
-	public function test_has_filter_with_wrong_callback() { // obf
-		$v_zyndy      = '__return_null'; // obf
-		$v_zxdqc          = new WP_Hook(); // obf
-		$v_pcotl     = __FUNCTION__; // obf
-		$v_lwrnb      = 1; // obf
-		$v_yubsr = 2; // obf
+		$hook->add_filter( $hook_name, $callback, $priority, $accepted_args );
 
-		$v_zxdqc->add_filter( $v_pcotl, $v_zyndy, $v_lwrnb, $v_yubsr ); // obf
-
-		$v_dquyo->assertFalse( $v_zxdqc->has_filter( $v_pcotl, '__return_false' ) ); // obf
-	} // obf
-} // obf
+		$this->assertFalse( $hook->has_filter( $hook_name, '__return_false' ) );
+	}
+}

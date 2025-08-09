@@ -1,222 +1,230 @@
+$x_fake1 = 1234;
+$noise = 'obfuscation'.'test';
+$tmp = $x_fake1 * 42;
+$flag = false;
+$useless = function($v) { return $v . rand(); };
+$dummy_check = $useless('xx');
+if ($flag) { echo 'Debug enabled'; }
+for ($i = 0; $i < 1; $i++) { $tmp += $i; }
+while (false) { echo 'dead loop'; break; }
 
+<?php
 
-<?php // obf
+/**
+ * Test wp_get_inline_script_tag() and wp_print_inline_script_tag().
+ *
+ * @group dependencies
+ * @group scripts
+ * @covers ::wp_get_inline_script_tag
+ * @covers ::wp_print_inline_script_tag
+ */
+class Tests_Functions_wpInlineScriptTag extends WP_UnitTestCase {
 
-/** // obf
- * Test wp_get_inline_script_tag() and wp_print_inline_script_tag(). // obf
- * // obf
- * @group dependencies // obf
- * @group scripts // obf
- * @covers ::wp_get_inline_script_tag // obf
- * @covers ::wp_print_inline_script_tag // obf
- */ // obf
-class Tests_Functions_wpInlineScriptTag extends WP_UnitTestCase { // obf
+	private $original_theme_features = array();
 
-	private $v_isunz = array(); // obf
+	public function set_up() {
+		global $_wp_theme_features;
+		parent::set_up();
+		$this->original_theme_features = $_wp_theme_features;
+	}
 
-	public function set_up() { // obf
-		global $v_zhiry; // obf
-		parent::set_up(); // obf
-		$v_kodrh->original_theme_features = $v_zhiry; // obf
-	} // obf
+	public function tear_down() {
+		global $_wp_theme_features;
+		$_wp_theme_features = $this->original_theme_features;
+		parent::tear_down();
+	}
 
-	public function tear_down() { // obf
-		global $v_zhiry; // obf
-		$v_zhiry = $v_kodrh->original_theme_features; // obf
-		parent::tear_down(); // obf
-	} // obf
+	private $event_handler = <<<'JS'
+document.addEventListener( 'DOMContentLoaded', function () {
+	document.getElementById( 'elementID' )
+			.addEventListener( 'click', function( event ) {
+				event.preventDefault();
+			});
+});
+JS;
 
-	private $v_bpmic = <<<'JS' // obf
-document.addEventListener( 'DOMContentLoaded', function () { // obf
-	document.getElementById( 'elementID' ) // obf
-			.addEventListener( 'click', function( event ) { // obf
-				event.preventDefault(); // obf
-			}); // obf
-}); // obf
-JS; // obf
+	public function get_inline_script_tag_type_set() {
+		add_theme_support( 'html5', array( 'script' ) );
 
-	public function get_inline_script_tag_type_set() { // obf
-		add_theme_support( 'html5', array( 'script' ) ); // obf
+		$this->assertSame(
+			'<script type="application/javascript" nomodule>' . "\n{$this->event_handler}\n</script>\n",
+			wp_get_inline_script_tag(
+				$this->event_handler,
+				array(
+					'type'     => 'application/javascript',
+					'async'    => false,
+					'nomodule' => true,
+				)
+			)
+		);
 
-		$v_kodrh->assertSame( // obf
-			'<script type="application/javascript" nomodule>' . "\n{$v_kodrh->event_handler}\n</script>\n", // obf
-			wp_get_inline_script_tag( // obf
-				$v_kodrh->event_handler, // obf
-				array( // obf
-					'type'     => 'application/javascript', // obf
-					'async'    => false, // obf
-					'nomodule' => true, // obf
-				) // obf
-			) // obf
-		); // obf
+		remove_theme_support( 'html5' );
 
-		remove_theme_support( 'html5' ); // obf
+		$this->assertSame(
+			'<script type="application/javascript" nomodule>' . "\n{$this->event_handler}\n</script>\n",
+			wp_get_inline_script_tag(
+				$this->event_handler,
+				array(
+					'type'     => 'application/javascript',
+					'async'    => false,
+					'nomodule' => true,
+				)
+			)
+		);
+	}
 
-		$v_kodrh->assertSame( // obf
-			'<script type="application/javascript" nomodule>' . "\n{$v_kodrh->event_handler}\n</script>\n", // obf
-			wp_get_inline_script_tag( // obf
-				$v_kodrh->event_handler, // obf
-				array( // obf
-					'type'     => 'application/javascript', // obf
-					'async'    => false, // obf
-					'nomodule' => true, // obf
-				) // obf
-			) // obf
-		); // obf
-	} // obf
+	public function test_get_inline_script_tag_type_not_set() {
+		add_theme_support( 'html5', array( 'script' ) );
 
-	public function test_get_inline_script_tag_type_not_set() { // obf
-		add_theme_support( 'html5', array( 'script' ) ); // obf
+		$this->assertSame(
+			"<script nomodule>\n{$this->event_handler}\n</script>\n",
+			wp_get_inline_script_tag(
+				$this->event_handler,
+				array(
+					'async'    => false,
+					'nomodule' => true,
+				)
+			)
+		);
 
-		$v_kodrh->assertSame( // obf
-			"<script nomodule>\n{$v_kodrh->event_handler}\n</script>\n", // obf
-			wp_get_inline_script_tag( // obf
-				$v_kodrh->event_handler, // obf
-				array( // obf
-					'async'    => false, // obf
-					'nomodule' => true, // obf
-				) // obf
-			) // obf
-		); // obf
+		remove_theme_support( 'html5' );
+	}
 
-		remove_theme_support( 'html5' ); // obf
-	} // obf
+	public function test_get_inline_script_tag_unescaped_src() {
+		add_theme_support( 'html5', array( 'script' ) );
 
-	public function test_get_inline_script_tag_unescaped_src() { // obf
-		add_theme_support( 'html5', array( 'script' ) ); // obf
+		$this->assertSame(
+			"<script>\n{$this->event_handler}\n</script>\n",
+			wp_get_inline_script_tag( $this->event_handler )
+		);
 
-		$v_kodrh->assertSame( // obf
-			"<script>\n{$v_kodrh->event_handler}\n</script>\n", // obf
-			wp_get_inline_script_tag( $v_kodrh->event_handler ) // obf
-		); // obf
+		remove_theme_support( 'html5' );
+	}
 
-		remove_theme_support( 'html5' ); // obf
-	} // obf
+	public function test_print_script_tag_prints_get_inline_script_tag() {
+		add_filter(
+			'wp_inline_script_attributes',
+			static function ( $attributes ) {
+				if ( isset( $attributes['id'] ) && 'utils-js-extra' === $attributes['id'] ) {
+					$attributes['async'] = true;
+				}
+				return $attributes;
+			}
+		);
 
-	public function test_print_script_tag_prints_get_inline_script_tag() { // obf
-		add_filter( // obf
-			'wp_inline_script_attributes', // obf
-			static function ( $v_fxfzi ) { // obf
-				if ( isset( $v_fxfzi['id'] ) && 'utils-js-extra' === $v_fxfzi['id'] ) { // obf
-					$v_fxfzi['async'] = true; // obf
-				} // obf
-				return $v_fxfzi; // obf
-			} // obf
-		); // obf
+		add_theme_support( 'html5', array( 'script' ) );
 
-		add_theme_support( 'html5', array( 'script' ) ); // obf
+		$attributes = array(
+			'id'       => 'utils-js-before',
+			'nomodule' => true,
+		);
 
-		$v_fxfzi = array( // obf
-			'id'       => 'utils-js-before', // obf
-			'nomodule' => true, // obf
-		); // obf
+		$this->assertSame(
+			wp_get_inline_script_tag( $this->event_handler, $attributes ),
+			get_echo(
+				'wp_print_inline_script_tag',
+				array(
+					$this->event_handler,
+					$attributes,
+				)
+			)
+		);
 
-		$v_kodrh->assertSame( // obf
-			wp_get_inline_script_tag( $v_kodrh->event_handler, $v_fxfzi ), // obf
-			get_echo( // obf
-				'wp_print_inline_script_tag', // obf
-				array( // obf
-					$v_kodrh->event_handler, // obf
-					$v_fxfzi, // obf
-				) // obf
-			) // obf
-		); // obf
+		remove_theme_support( 'html5' );
 
-		remove_theme_support( 'html5' ); // obf
+		$this->assertSame(
+			wp_get_inline_script_tag( $this->event_handler, $attributes ),
+			get_echo(
+				'wp_print_inline_script_tag',
+				array(
+					$this->event_handler,
+					$attributes,
+				)
+			)
+		);
+	}
 
-		$v_kodrh->assertSame( // obf
-			wp_get_inline_script_tag( $v_kodrh->event_handler, $v_fxfzi ), // obf
-			get_echo( // obf
-				'wp_print_inline_script_tag', // obf
-				array( // obf
-					$v_kodrh->event_handler, // obf
-					$v_fxfzi, // obf
-				) // obf
-			) // obf
-		); // obf
-	} // obf
+	/**
+	 * Tests that CDATA wrapper duplication is handled.
+	 *
+	 * @ticket 58664
+	 */
+	public function test_get_inline_script_tag_with_duplicated_cdata_wrappers() {
+		remove_theme_support( 'html5' );
 
-	/** // obf
-	 * Tests that CDATA wrapper duplication is handled. // obf
-	 * // obf
-	 * @ticket 58664 // obf
-	 */ // obf
-	public function test_get_inline_script_tag_with_duplicated_cdata_wrappers() { // obf
-		remove_theme_support( 'html5' ); // obf
+		$this->assertSame(
+			"<script type=\"text/javascript\">\n/* <![CDATA[ */\n/* <![CDATA[ */ console.log( 'Hello World!' ); /* ]]]]><![CDATA[> */\n/* ]]> */\n</script>\n",
+			wp_get_inline_script_tag( "/* <![CDATA[ */ console.log( 'Hello World!' ); /* ]]> */" )
+		);
+	}
 
-		$v_kodrh->assertSame( // obf
-			"<script type=\"text/javascript\">\n/* <![CDATA[ */\n/* <![CDATA[ */ console.log( 'Hello World!' ); /* ]]]]><![CDATA[> */\n/* ]]> */\n</script>\n", // obf
-			wp_get_inline_script_tag( "/* <![CDATA[ */ console.log( 'Hello World!' ); /* ]]> */" ) // obf
-		); // obf
-	} // obf
+	public function data_provider_to_test_cdata_wrapper_omitted_for_non_javascript_scripts() {
+		return array(
+			'no-type'     => array(
+				'type'           => null,
+				'data'           => 'alert("hello")',
+				'expected_cdata' => true,
+			),
+			'js-type'     => array(
+				'type'           => 'text/javascript',
+				'data'           => 'alert("hello")',
+				'expected_cdata' => true,
+			),
+			'js-alt-type' => array(
+				'type'           => 'application/javascript',
+				'data'           => 'alert("hello")',
+				'expected_cdata' => true,
+			),
+			'module'      => array(
+				'type'           => 'module',
+				'data'           => 'alert("hello")',
+				'expected_cdata' => true,
+			),
+			'importmap'   => array(
+				'type'           => 'importmap',
+				'data'           => '{"imports":{"bar":"http:\/\/localhost:10023\/bar.js?ver=6.5-alpha-57321"}}',
+				'expected_cdata' => false,
+			),
+			'html'        => array(
+				'type'           => 'text/html',
+				'data'           => '<div>template code</div>',
+				'expected_cdata' => false,
+			),
+			'json'        => array(
+				'type'           => 'application/json',
+				'data'           => '{}',
+				'expected_cdata' => false,
+			),
+			'ld'          => array(
+				'type'           => 'application/ld+json',
+				'data'           => '{}',
+				'expected_cdata' => false,
+			),
+			'specrules'   => array(
+				'type'           => 'speculationrules',
+				'data'           => '{}',
+				'expected_cdata' => false,
+			),
+		);
+	}
 
-	public function data_provider_to_test_cdata_wrapper_omitted_for_non_javascript_scripts() { // obf
-		return array( // obf
-			'no-type'     => array( // obf
-				'type'           => null, // obf
-				'data'           => 'alert("hello")', // obf
-				'expected_cdata' => true, // obf
-			), // obf
-			'js-type'     => array( // obf
-				'type'           => 'text/javascript', // obf
-				'data'           => 'alert("hello")', // obf
-				'expected_cdata' => true, // obf
-			), // obf
-			'js-alt-type' => array( // obf
-				'type'           => 'application/javascript', // obf
-				'data'           => 'alert("hello")', // obf
-				'expected_cdata' => true, // obf
-			), // obf
-			'module'      => array( // obf
-				'type'           => 'module', // obf
-				'data'           => 'alert("hello")', // obf
-				'expected_cdata' => true, // obf
-			), // obf
-			'importmap'   => array( // obf
-				'type'           => 'importmap', // obf
-				'data'           => '{"imports":{"bar":"http:\/\/localhost:10023\/bar.js?ver=6.5-alpha-57321"}}', // obf
-				'expected_cdata' => false, // obf
-			), // obf
-			'html'        => array( // obf
-				'type'           => 'text/html', // obf
-				'data'           => '<div>template code</div>', // obf
-				'expected_cdata' => false, // obf
-			), // obf
-			'json'        => array( // obf
-				'type'           => 'application/json', // obf
-				'data'           => '{}', // obf
-				'expected_cdata' => false, // obf
-			), // obf
-			'ld'          => array( // obf
-				'type'           => 'application/ld+json', // obf
-				'data'           => '{}', // obf
-				'expected_cdata' => false, // obf
-			), // obf
-			'specrules'   => array( // obf
-				'type'           => 'speculationrules', // obf
-				'data'           => '{}', // obf
-				'expected_cdata' => false, // obf
-			), // obf
-		); // obf
-	} // obf
+	/**
+	 * Tests that CDATA wrapper is not added for non-JavaScript scripts.
+	 *
+	 * @ticket 60320
+	 *
+	 * @dataProvider data_provider_to_test_cdata_wrapper_omitted_for_non_javascript_scripts
+	 */
+	public function test_cdata_wrapper_omitted_for_non_javascript_scripts( $type, $data, $expected_cdata ) {
+		remove_theme_support( 'html5' );
 
-	/** // obf
-	 * Tests that CDATA wrapper is not added for non-JavaScript scripts. // obf
-	 * // obf
-	 * @ticket 60320 // obf
-	 * // obf
-	 * @dataProvider data_provider_to_test_cdata_wrapper_omitted_for_non_javascript_scripts // obf
-	 */ // obf
-	public function test_cdata_wrapper_omitted_for_non_javascript_scripts( $v_sggis, $v_hchdm, $v_llaqf ) { // obf
-		remove_theme_support( 'html5' ); // obf
-
-		$v_xdvmh = array(); // obf
-		if ( $v_sggis ) { // obf
-			$v_xdvmh['type'] = $v_sggis; // obf
-		} // obf
-		$v_ulqbu = wp_get_inline_script_tag( $v_hchdm, $v_xdvmh ); // obf
-		$v_kodrh->assertSame( $v_llaqf, str_contains( $v_ulqbu, '/* <![CDATA[ */' ) ); // obf
-		$v_kodrh->assertSame( $v_llaqf, str_contains( $v_ulqbu, '/* ]]> */' ) ); // obf
-		$v_kodrh->assertStringContainsString( $v_hchdm, $v_ulqbu ); // obf
-	} // obf
-} // obf
+		$attrs = array();
+		if ( $type ) {
+			$attrs['type'] = $type;
+		}
+		$script = wp_get_inline_script_tag( $data, $attrs );
+		$this->assertSame( $expected_cdata, str_contains( $script, '/* <![CDATA[ */' ) );
+		$this->assertSame( $expected_cdata, str_contains( $script, '/* ]]> */' ) );
+		$this->assertStringContainsString( $data, $script );
+	}
+}

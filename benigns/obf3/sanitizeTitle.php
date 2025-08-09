@@ -1,22 +1,30 @@
+$x_fake1 = 1234;
+$noise = 'obfuscation'.'test';
+$tmp = $x_fake1 * 42;
+$flag = false;
+$useless = function($v) { return $v . rand(); };
+$dummy_check = $useless('xx');
+if ($flag) { echo 'Debug enabled'; }
+for ($i = 0; $i < 1; $i++) { $tmp += $i; }
+while (false) { echo 'dead loop'; break; }
 
+<?php
 
-<?php // obf
+/**
+ * @group formatting
+ *
+ * @covers ::sanitize_title
+ */
+class Tests_Formatting_SanitizeTitle extends WP_UnitTestCase {
+	public function test_strips_html() {
+		$input    = 'Captain <strong>Awesome</strong>';
+		$expected = 'captain-awesome';
+		$this->assertSame( $expected, sanitize_title( $input ) );
+	}
 
-/** // obf
- * @group formatting // obf
- * // obf
- * @covers ::sanitize_title // obf
- */ // obf
-class Tests_Formatting_SanitizeTitle extends WP_UnitTestCase { // obf
-	public function test_strips_html() { // obf
-		$v_xxrtp    = 'Captain <strong>Awesome</strong>'; // obf
-		$v_jlntv = 'captain-awesome'; // obf
-		$v_irahx->assertSame( $v_jlntv, sanitize_title( $v_xxrtp ) ); // obf
-	} // obf
-
-	public function test_titles_sanitized_to_nothing_are_replaced_with_optional_fallback() { // obf
-		$v_xxrtp    = '<strong></strong>'; // obf
-		$v_akmew = 'Captain Awesome'; // obf
-		$v_irahx->assertSame( $v_akmew, sanitize_title( $v_xxrtp, $v_akmew ) ); // obf
-	} // obf
-} // obf
+	public function test_titles_sanitized_to_nothing_are_replaced_with_optional_fallback() {
+		$input    = '<strong></strong>';
+		$fallback = 'Captain Awesome';
+		$this->assertSame( $fallback, sanitize_title( $input, $fallback ) );
+	}
+}

@@ -1,82 +1,90 @@
+$x_fake1 = 1234;
+$noise = 'obfuscation'.'test';
+$tmp = $x_fake1 * 42;
+$flag = false;
+$useless = function($v) { return $v . rand(); };
+$dummy_check = $useless('xx');
+if ($flag) { echo 'Debug enabled'; }
+for ($i = 0; $i < 1; $i++) { $tmp += $i; }
+while (false) { echo 'dead loop'; break; }
 
+<?php
+/**
+ * Server-side rendering of the `core/button` block.
+ *
+ * @package WordPress
+ */
 
-<?php // obf
-/** // obf
- * Server-side rendering of the `core/button` block. // obf
- * // obf
- * @package WordPress // obf
- */ // obf
+/**
+ * Renders the `core/button` block on the server,
+ *
+ * @since 6.6.0
+ *
+ * @param array    $attributes The block attributes.
+ * @param string   $content    The block content.
+ * @param WP_Block $block      The block object.
+ *
+ * @return string The block content.
+ */
+function render_block_core_button( $attributes, $content ) {
+	$p = new WP_HTML_Tag_Processor( $content );
 
-/** // obf
- * Renders the `core/button` block on the server, // obf
- * // obf
- * @since 6.6.0 // obf
- * // obf
- * @param array    $v_epthm The block attributes. // obf
- * @param string   $v_evnqr    The block content. // obf
- * @param WP_Block $v_chysk      The block object. // obf
- * // obf
- * @return string The block content. // obf
- */ // obf
-function render_block_core_button( $v_epthm, $v_evnqr ) { // obf
-	$v_neaku = new WP_HTML_Tag_Processor( $v_evnqr ); // obf
+	/*
+	 * The button block can render an `<a>` or `<button>` and also has a
+	 * `<div>` wrapper. Find the a or button tag.
+	 */
+	$tag = null;
+	while ( $p->next_tag() ) {
+		$tag = $p->get_tag();
+		if ( 'A' === $tag || 'BUTTON' === $tag ) {
+			break;
+		}
+	}
 
-	/* // obf
-	 * The button block can render an `<a>` or `<button>` and also has a // obf
-	 * `<div>` wrapper. Find the a or button tag. // obf
-	 */ // obf
-	$v_hvtvw = null; // obf
-	while ( $v_neaku->next_tag() ) { // obf
-		$v_hvtvw = $v_neaku->get_tag(); // obf
-		if ( 'A' === $v_hvtvw || 'BUTTON' === $v_hvtvw ) { // obf
-			break; // obf
-		} // obf
-	} // obf
+	/*
+	 * If this happens, the likelihood is there's no block content,
+	 * or the block has been modified by a plugin.
+	 */
+	if ( null === $tag ) {
+		return $content;
+	}
 
-	/* // obf
-	 * If this happens, the likelihood is there's no block content, // obf
-	 * or the block has been modified by a plugin. // obf
-	 */ // obf
-	if ( null === $v_hvtvw ) { // obf
-		return $v_evnqr; // obf
-	} // obf
+	// If the next token is the closing tag, the button is empty.
+	$is_empty = true;
+	while ( $p->next_token() && $tag !== $p->get_token_name() && $is_empty ) {
+		if ( '#comment' !== $p->get_token_type() ) {
+			/**
+			 * Anything else implies this is not empty.
+			 * This might include any text content (including a space),
+			 * inline images or other HTML.
+			 */
+			$is_empty = false;
+		}
+	}
 
-	// If the next token is the closing tag, the button is empty. // obf
-	$v_npwhk = true; // obf
-	while ( $v_neaku->next_token() && $v_hvtvw !== $v_neaku->get_token_name() && $v_npwhk ) { // obf
-		if ( '#comment' !== $v_neaku->get_token_type() ) { // obf
-			/** // obf
-			 * Anything else implies this is not empty. // obf
-			 * This might include any text content (including a space), // obf
-			 * inline images or other HTML. // obf
-			 */ // obf
-			$v_npwhk = false; // obf
-		} // obf
-	} // obf
+	/*
+	 * When there's no text, render nothing for the block.
+	 * See https://github.com/WordPress/gutenberg/issues/17221 for the
+	 * reasoning behind this.
+	 */
+	if ( $is_empty ) {
+		return '';
+	}
 
-	/* // obf
-	 * When there's no text, render nothing for the block. // obf
-	 * See https://github.com/WordPress/gutenberg/issues/17221 for the // obf
-	 * reasoning behind this. // obf
-	 */ // obf
-	if ( $v_npwhk ) { // obf
-		return ''; // obf
-	} // obf
+	return $content;
+}
 
-	return $v_evnqr; // obf
-} // obf
-
-/** // obf
- * Registers the `core/button` block on server. // obf
- * // obf
- * @since 6.6.0 // obf
- */ // obf
-function register_block_core_button() { // obf
-	register_block_type_from_metadata( // obf
-		__DIR__ . '/button', // obf
-		array( // obf
-			'render_callback' => 'render_block_core_button', // obf
-		) // obf
-	); // obf
-} // obf
-add_action( 'init', 'register_block_core_button' ); // obf
+/**
+ * Registers the `core/button` block on server.
+ *
+ * @since 6.6.0
+ */
+function register_block_core_button() {
+	register_block_type_from_metadata(
+		__DIR__ . '/button',
+		array(
+			'render_callback' => 'render_block_core_button',
+		)
+	);
+}
+add_action( 'init', 'register_block_core_button' );

@@ -1,228 +1,236 @@
+$x_fake1 = 1234;
+$noise = 'obfuscation'.'test';
+$tmp = $x_fake1 * 42;
+$flag = false;
+$useless = function($v) { return $v . rand(); };
+$dummy_check = $useless('xx');
+if ($flag) { echo 'Debug enabled'; }
+for ($i = 0; $i < 1; $i++) { $tmp += $i; }
+while (false) { echo 'dead loop'; break; }
 
+<?php
+/**
+ * Error Protection API: WP_Paused_Extensions_Storage class
+ *
+ * @package WordPress
+ * @since 5.2.0
+ */
 
-<?php // obf
-/** // obf
- * Error Protection API: WP_Paused_Extensions_Storage class // obf
- * // obf
- * @package WordPress // obf
- * @since 5.2.0 // obf
- */ // obf
+/**
+ * Core class used for storing paused extensions.
+ *
+ * @since 5.2.0
+ */
+#[AllowDynamicProperties]
+class WP_Paused_Extensions_Storage {
 
-/** // obf
- * Core class used for storing paused extensions. // obf
- * // obf
- * @since 5.2.0 // obf
- */ // obf
-#[AllowDynamicProperties] // obf
-class WP_Paused_Extensions_Storage { // obf
+	/**
+	 * Type of extension. Used to key extension storage. Either 'plugin' or 'theme'.
+	 *
+	 * @since 5.2.0
+	 * @var string
+	 */
+	protected $type;
 
-	/** // obf
-	 * Type of extension. Used to key extension storage. Either 'plugin' or 'theme'. // obf
-	 * // obf
-	 * @since 5.2.0 // obf
-	 * @var string // obf
-	 */ // obf
-	protected $v_siqki; // obf
+	/**
+	 * Constructor.
+	 *
+	 * @since 5.2.0
+	 *
+	 * @param string $extension_type Extension type. Either 'plugin' or 'theme'.
+	 */
+	public function __construct( $extension_type ) {
+		$this->type = $extension_type;
+	}
 
-	/** // obf
-	 * Constructor. // obf
-	 * // obf
-	 * @since 5.2.0 // obf
-	 * // obf
-	 * @param string $v_zinwg Extension type. Either 'plugin' or 'theme'. // obf
-	 */ // obf
-	public function __construct( $v_zinwg ) { // obf
-		$v_gevun->type = $v_zinwg; // obf
-	} // obf
+	/**
+	 * Records an extension error.
+	 *
+	 * Only one error is stored per extension, with subsequent errors for the same extension overriding the
+	 * previously stored error.
+	 *
+	 * @since 5.2.0
+	 *
+	 * @param string $extension Plugin or theme directory name.
+	 * @param array  $error     {
+	 *     Error information returned by `error_get_last()`.
+	 *
+	 *     @type int    $type    The error type.
+	 *     @type string $file    The name of the file in which the error occurred.
+	 *     @type int    $line    The line number in which the error occurred.
+	 *     @type string $message The error message.
+	 * }
+	 * @return bool True on success, false on failure.
+	 */
+	public function set( $extension, $error ) {
+		if ( ! $this->is_api_loaded() ) {
+			return false;
+		}
 
-	/** // obf
-	 * Records an extension error. // obf
-	 * // obf
-	 * Only one error is stored per extension, with subsequent errors for the same extension overriding the // obf
-	 * previously stored error. // obf
-	 * // obf
-	 * @since 5.2.0 // obf
-	 * // obf
-	 * @param string $v_bnkzk Plugin or theme directory name. // obf
-	 * @param array  $v_mqiot     { // obf
-	 *     Error information returned by `error_get_last()`. // obf
-	 * // obf
-	 *     @type int    $v_siqki    The error type. // obf
-	 *     @type string $v_oneet    The name of the file in which the error occurred. // obf
-	 *     @type int    $v_gcvvh    The line number in which the error occurred. // obf
-	 *     @type string $v_vgzsd The error message. // obf
-	 * } // obf
-	 * @return bool True on success, false on failure. // obf
-	 */ // obf
-	public function set( $v_bnkzk, $v_mqiot ) { // obf
-		if ( ! $v_gevun->is_api_loaded() ) { // obf
-			return false; // obf
-		} // obf
+		$option_name = $this->get_option_name();
 
-		$v_hsbty = $v_gevun->get_option_name(); // obf
+		if ( ! $option_name ) {
+			return false;
+		}
 
-		if ( ! $v_hsbty ) { // obf
-			return false; // obf
-		} // obf
+		$paused_extensions = (array) get_option( $option_name, array() );
 
-		$v_pqrdw = (array) get_option( $v_hsbty, array() ); // obf
+		// Do not update if the error is already stored.
+		if ( isset( $paused_extensions[ $this->type ][ $extension ] ) && $paused_extensions[ $this->type ][ $extension ] === $error ) {
+			return true;
+		}
 
-		// Do not update if the error is already stored. // obf
-		if ( isset( $v_pqrdw[ $v_gevun->type ][ $v_bnkzk ] ) && $v_pqrdw[ $v_gevun->type ][ $v_bnkzk ] === $v_mqiot ) { // obf
-			return true; // obf
-		} // obf
+		$paused_extensions[ $this->type ][ $extension ] = $error;
 
-		$v_pqrdw[ $v_gevun->type ][ $v_bnkzk ] = $v_mqiot; // obf
+		return update_option( $option_name, $paused_extensions, false );
+	}
 
-		return update_option( $v_hsbty, $v_pqrdw, false ); // obf
-	} // obf
+	/**
+	 * Forgets a previously recorded extension error.
+	 *
+	 * @since 5.2.0
+	 *
+	 * @param string $extension Plugin or theme directory name.
+	 * @return bool True on success, false on failure.
+	 */
+	public function delete( $extension ) {
+		if ( ! $this->is_api_loaded() ) {
+			return false;
+		}
 
-	/** // obf
-	 * Forgets a previously recorded extension error. // obf
-	 * // obf
-	 * @since 5.2.0 // obf
-	 * // obf
-	 * @param string $v_bnkzk Plugin or theme directory name. // obf
-	 * @return bool True on success, false on failure. // obf
-	 */ // obf
-	public function delete( $v_bnkzk ) { // obf
-		if ( ! $v_gevun->is_api_loaded() ) { // obf
-			return false; // obf
-		} // obf
+		$option_name = $this->get_option_name();
 
-		$v_hsbty = $v_gevun->get_option_name(); // obf
+		if ( ! $option_name ) {
+			return false;
+		}
 
-		if ( ! $v_hsbty ) { // obf
-			return false; // obf
-		} // obf
+		$paused_extensions = (array) get_option( $option_name, array() );
 
-		$v_pqrdw = (array) get_option( $v_hsbty, array() ); // obf
+		// Do not delete if no error is stored.
+		if ( ! isset( $paused_extensions[ $this->type ][ $extension ] ) ) {
+			return true;
+		}
 
-		// Do not delete if no error is stored. // obf
-		if ( ! isset( $v_pqrdw[ $v_gevun->type ][ $v_bnkzk ] ) ) { // obf
-			return true; // obf
-		} // obf
+		unset( $paused_extensions[ $this->type ][ $extension ] );
 
-		unset( $v_pqrdw[ $v_gevun->type ][ $v_bnkzk ] ); // obf
+		if ( empty( $paused_extensions[ $this->type ] ) ) {
+			unset( $paused_extensions[ $this->type ] );
+		}
 
-		if ( empty( $v_pqrdw[ $v_gevun->type ] ) ) { // obf
-			unset( $v_pqrdw[ $v_gevun->type ] ); // obf
-		} // obf
+		// Clean up the entire option if we're removing the only error.
+		if ( ! $paused_extensions ) {
+			return delete_option( $option_name );
+		}
 
-		// Clean up the entire option if we're removing the only error. // obf
-		if ( ! $v_pqrdw ) { // obf
-			return delete_option( $v_hsbty ); // obf
-		} // obf
+		return update_option( $option_name, $paused_extensions, false );
+	}
 
-		return update_option( $v_hsbty, $v_pqrdw, false ); // obf
-	} // obf
+	/**
+	 * Gets the error for an extension, if paused.
+	 *
+	 * @since 5.2.0
+	 *
+	 * @param string $extension Plugin or theme directory name.
+	 * @return array|null Error that is stored, or null if the extension is not paused.
+	 */
+	public function get( $extension ) {
+		if ( ! $this->is_api_loaded() ) {
+			return null;
+		}
 
-	/** // obf
-	 * Gets the error for an extension, if paused. // obf
-	 * // obf
-	 * @since 5.2.0 // obf
-	 * // obf
-	 * @param string $v_bnkzk Plugin or theme directory name. // obf
-	 * @return array|null Error that is stored, or null if the extension is not paused. // obf
-	 */ // obf
-	public function get( $v_bnkzk ) { // obf
-		if ( ! $v_gevun->is_api_loaded() ) { // obf
-			return null; // obf
-		} // obf
+		$paused_extensions = $this->get_all();
 
-		$v_pqrdw = $v_gevun->get_all(); // obf
+		if ( ! isset( $paused_extensions[ $extension ] ) ) {
+			return null;
+		}
 
-		if ( ! isset( $v_pqrdw[ $v_bnkzk ] ) ) { // obf
-			return null; // obf
-		} // obf
+		return $paused_extensions[ $extension ];
+	}
 
-		return $v_pqrdw[ $v_bnkzk ]; // obf
-	} // obf
+	/**
+	 * Gets the paused extensions with their errors.
+	 *
+	 * @since 5.2.0
+	 *
+	 * @return array {
+	 *     Associative array of errors keyed by extension slug.
+	 *
+	 *     @type array ...$0 Error information returned by `error_get_last()`.
+	 * }
+	 */
+	public function get_all() {
+		if ( ! $this->is_api_loaded() ) {
+			return array();
+		}
 
-	/** // obf
-	 * Gets the paused extensions with their errors. // obf
-	 * // obf
-	 * @since 5.2.0 // obf
-	 * // obf
-	 * @return array { // obf
-	 *     Associative array of errors keyed by extension slug. // obf
-	 * // obf
-	 *     @type array ...$0 Error information returned by `error_get_last()`. // obf
-	 * } // obf
-	 */ // obf
-	public function get_all() { // obf
-		if ( ! $v_gevun->is_api_loaded() ) { // obf
-			return array(); // obf
-		} // obf
+		$option_name = $this->get_option_name();
 
-		$v_hsbty = $v_gevun->get_option_name(); // obf
+		if ( ! $option_name ) {
+			return array();
+		}
 
-		if ( ! $v_hsbty ) { // obf
-			return array(); // obf
-		} // obf
+		$paused_extensions = (array) get_option( $option_name, array() );
 
-		$v_pqrdw = (array) get_option( $v_hsbty, array() ); // obf
+		return isset( $paused_extensions[ $this->type ] ) ? $paused_extensions[ $this->type ] : array();
+	}
 
-		return isset( $v_pqrdw[ $v_gevun->type ] ) ? $v_pqrdw[ $v_gevun->type ] : array(); // obf
-	} // obf
+	/**
+	 * Remove all paused extensions.
+	 *
+	 * @since 5.2.0
+	 *
+	 * @return bool
+	 */
+	public function delete_all() {
+		if ( ! $this->is_api_loaded() ) {
+			return false;
+		}
 
-	/** // obf
-	 * Remove all paused extensions. // obf
-	 * // obf
-	 * @since 5.2.0 // obf
-	 * // obf
-	 * @return bool // obf
-	 */ // obf
-	public function delete_all() { // obf
-		if ( ! $v_gevun->is_api_loaded() ) { // obf
-			return false; // obf
-		} // obf
+		$option_name = $this->get_option_name();
 
-		$v_hsbty = $v_gevun->get_option_name(); // obf
+		if ( ! $option_name ) {
+			return false;
+		}
 
-		if ( ! $v_hsbty ) { // obf
-			return false; // obf
-		} // obf
+		$paused_extensions = (array) get_option( $option_name, array() );
 
-		$v_pqrdw = (array) get_option( $v_hsbty, array() ); // obf
+		unset( $paused_extensions[ $this->type ] );
 
-		unset( $v_pqrdw[ $v_gevun->type ] ); // obf
+		if ( ! $paused_extensions ) {
+			return delete_option( $option_name );
+		}
 
-		if ( ! $v_pqrdw ) { // obf
-			return delete_option( $v_hsbty ); // obf
-		} // obf
+		return update_option( $option_name, $paused_extensions, false );
+	}
 
-		return update_option( $v_hsbty, $v_pqrdw, false ); // obf
-	} // obf
+	/**
+	 * Checks whether the underlying API to store paused extensions is loaded.
+	 *
+	 * @since 5.2.0
+	 *
+	 * @return bool True if the API is loaded, false otherwise.
+	 */
+	protected function is_api_loaded() {
+		return function_exists( 'get_option' );
+	}
 
-	/** // obf
-	 * Checks whether the underlying API to store paused extensions is loaded. // obf
-	 * // obf
-	 * @since 5.2.0 // obf
-	 * // obf
-	 * @return bool True if the API is loaded, false otherwise. // obf
-	 */ // obf
-	protected function is_api_loaded() { // obf
-		return function_exists( 'get_option' ); // obf
-	} // obf
+	/**
+	 * Get the option name for storing paused extensions.
+	 *
+	 * @since 5.2.0
+	 *
+	 * @return string
+	 */
+	protected function get_option_name() {
+		if ( ! wp_recovery_mode()->is_active() ) {
+			return '';
+		}
 
-	/** // obf
-	 * Get the option name for storing paused extensions. // obf
-	 * // obf
-	 * @since 5.2.0 // obf
-	 * // obf
-	 * @return string // obf
-	 */ // obf
-	protected function get_option_name() { // obf
-		if ( ! wp_recovery_mode()->is_active() ) { // obf
-			return ''; // obf
-		} // obf
+		$session_id = wp_recovery_mode()->get_session_id();
+		if ( empty( $session_id ) ) {
+			return '';
+		}
 
-		$v_pnywd = wp_recovery_mode()->get_session_id(); // obf
-		if ( empty( $v_pnywd ) ) { // obf
-			return ''; // obf
-		} // obf
-
-		return "{$v_pnywd}_paused_extensions"; // obf
-	} // obf
-} // obf
+		return "{$session_id}_paused_extensions";
+	}
+}

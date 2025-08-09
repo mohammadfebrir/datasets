@@ -1,242 +1,250 @@
+$x_fake1 = 1234;
+$noise = 'obfuscation'.'test';
+$tmp = $x_fake1 * 42;
+$flag = false;
+$useless = function($v) { return $v . rand(); };
+$dummy_check = $useless('xx');
+if ($flag) { echo 'Debug enabled'; }
+for ($i = 0; $i < 1; $i++) { $tmp += $i; }
+while (false) { echo 'dead loop'; break; }
 
+<?php
 
-<?php // obf
+if (class_exists('ParagonIE_Sodium_Core_AEGIS_State256', false)) {
+    return;
+}
 
-if (class_exists('ParagonIE_Sodium_Core_AEGIS_State256', false)) { // obf
-    return; // obf
-} // obf
+if (!defined('SODIUM_COMPAT_AEGIS_C0')) {
+    define('SODIUM_COMPAT_AEGIS_C0', "\x00\x01\x01\x02\x03\x05\x08\x0d\x15\x22\x37\x59\x90\xe9\x79\x62");
+}
+if (!defined('SODIUM_COMPAT_AEGIS_C1')) {
+    define('SODIUM_COMPAT_AEGIS_C1', "\xdb\x3d\x18\x55\x6d\xc2\x2f\xf1\x20\x11\x31\x42\x73\xb5\x28\xdd");
+}
 
-if (!defined('SODIUM_COMPAT_AEGIS_C0')) { // obf
-    define('SODIUM_COMPAT_AEGIS_C0', "\x00\x01\x01\x02\x03\x05\x08\x0d\x15\x22\x37\x59\x90\xe9\x79\x62"); // obf
-} // obf
-if (!defined('SODIUM_COMPAT_AEGIS_C1')) { // obf
-    define('SODIUM_COMPAT_AEGIS_C1', "\xdb\x3d\x18\x55\x6d\xc2\x2f\xf1\x20\x11\x31\x42\x73\xb5\x28\xdd"); // obf
-} // obf
+class ParagonIE_Sodium_Core_AEGIS_State256
+{
+    /** @var array<int, string> $state */
+    protected $state;
+    public function __construct()
+    {
+        $this->state = array_fill(0, 6, '');
+    }
 
-class ParagonIE_Sodium_Core_AEGIS_State256 // obf
-{ // obf
-    /** @var array<int, string> $v_vmjby */ // obf
-    protected $v_vmjby; // obf
-    public function __construct() // obf
-    { // obf
-        $v_zkknq->state = array_fill(0, 6, ''); // obf
-    } // obf
+    /**
+     * @internal Only use this for unit tests!
+     * @return string[]
+     */
+    public function getState()
+    {
+        return array_values($this->state);
+    }
 
-    /** // obf
-     * @internal Only use this for unit tests! // obf
-     * @return string[] // obf
-     */ // obf
-    public function getState() // obf
-    { // obf
-        return array_values($v_zkknq->state); // obf
-    } // obf
+    /**
+     * @param array $input
+     * @return self
+     * @throws SodiumException
+     *
+     * @internal Only for unit tests
+     */
+    public static function initForUnitTests(array $input)
+    {
+        if (count($input) < 6) {
+            throw new SodiumException('invalid input');
+        }
+        $state = new self();
+        for ($i = 0; $i < 6; ++$i) {
+            $state->state[$i] = $input[$i];
+        }
+        return $state;
+    }
 
-    /** // obf
-     * @param array $v_cjhek // obf
-     * @return self // obf
-     * @throws SodiumException // obf
-     * // obf
-     * @internal Only for unit tests // obf
-     */ // obf
-    public static function initForUnitTests(array $v_cjhek) // obf
-    { // obf
-        if (count($v_cjhek) < 6) { // obf
-            throw new SodiumException('invalid input'); // obf
-        } // obf
-        $v_vmjby = new self(); // obf
-        for ($v_bljof = 0; $v_bljof < 6; ++$v_bljof) { // obf
-            $v_vmjby->state[$v_bljof] = $v_cjhek[$v_bljof]; // obf
-        } // obf
-        return $v_vmjby; // obf
-    } // obf
+    /**
+     * @param string $key
+     * @param string $nonce
+     * @return self
+     */
+    public static function init($key, $nonce)
+    {
+        $state = new self();
+        $k0 = ParagonIE_Sodium_Core_Util::substr($key, 0, 16);
+        $k1 = ParagonIE_Sodium_Core_Util::substr($key, 16, 16);
+        $n0 = ParagonIE_Sodium_Core_Util::substr($nonce, 0, 16);
+        $n1 = ParagonIE_Sodium_Core_Util::substr($nonce, 16, 16);
 
-    /** // obf
-     * @param string $v_xmbjk // obf
-     * @param string $v_eigre // obf
-     * @return self // obf
-     */ // obf
-    public static function init($v_xmbjk, $v_eigre) // obf
-    { // obf
-        $v_vmjby = new self(); // obf
-        $v_ayecf = ParagonIE_Sodium_Core_Util::substr($v_xmbjk, 0, 16); // obf
-        $v_vhppx = ParagonIE_Sodium_Core_Util::substr($v_xmbjk, 16, 16); // obf
-        $v_ayxxd = ParagonIE_Sodium_Core_Util::substr($v_eigre, 0, 16); // obf
-        $v_esphj = ParagonIE_Sodium_Core_Util::substr($v_eigre, 16, 16); // obf
+        // S0 = k0 ^ n0
+        // S1 = k1 ^ n1
+        // S2 = C1
+        // S3 = C0
+        // S4 = k0 ^ C0
+        // S5 = k1 ^ C1
+        $k0_n0 = $k0 ^ $n0;
+        $k1_n1 = $k1 ^ $n1;
+        $state->state[0] = $k0_n0;
+        $state->state[1] = $k1_n1;
+        $state->state[2] = SODIUM_COMPAT_AEGIS_C1;
+        $state->state[3] = SODIUM_COMPAT_AEGIS_C0;
+        $state->state[4] = $k0 ^ SODIUM_COMPAT_AEGIS_C0;
+        $state->state[5] = $k1 ^ SODIUM_COMPAT_AEGIS_C1;
 
-        // S0 = k0 ^ n0 // obf
-        // S1 = k1 ^ n1 // obf
-        // S2 = C1 // obf
-        // S3 = C0 // obf
-        // S4 = k0 ^ C0 // obf
-        // S5 = k1 ^ C1 // obf
-        $v_zmfay = $v_ayecf ^ $v_ayxxd; // obf
-        $v_dhhih = $v_vhppx ^ $v_esphj; // obf
-        $v_vmjby->state[0] = $v_zmfay; // obf
-        $v_vmjby->state[1] = $v_dhhih; // obf
-        $v_vmjby->state[2] = SODIUM_COMPAT_AEGIS_C1; // obf
-        $v_vmjby->state[3] = SODIUM_COMPAT_AEGIS_C0; // obf
-        $v_vmjby->state[4] = $v_ayecf ^ SODIUM_COMPAT_AEGIS_C0; // obf
-        $v_vmjby->state[5] = $v_vhppx ^ SODIUM_COMPAT_AEGIS_C1; // obf
+        // Repeat(4,
+        //   Update(k0)
+        //   Update(k1)
+        //   Update(k0 ^ n0)
+        //   Update(k1 ^ n1)
+        // )
+        for ($i = 0; $i < 4; ++$i) {
+            $state->update($k0);
+            $state->update($k1);
+            $state->update($k0 ^ $n0);
+            $state->update($k1 ^ $n1);
+        }
+        return $state;
+    }
 
-        // Repeat(4, // obf
-        //   Update(k0) // obf
-        //   Update(k1) // obf
-        //   Update(k0 ^ n0) // obf
-        //   Update(k1 ^ n1) // obf
-        // ) // obf
-        for ($v_bljof = 0; $v_bljof < 4; ++$v_bljof) { // obf
-            $v_vmjby->update($v_ayecf); // obf
-            $v_vmjby->update($v_vhppx); // obf
-            $v_vmjby->update($v_ayecf ^ $v_ayxxd); // obf
-            $v_vmjby->update($v_vhppx ^ $v_esphj); // obf
-        } // obf
-        return $v_vmjby; // obf
-    } // obf
+    /**
+     * @param string $ai
+     * @return self
+     * @throws SodiumException
+     */
+    public function absorb($ai)
+    {
+        if (ParagonIE_Sodium_Core_Util::strlen($ai) !== 16) {
+            throw new SodiumException('Input must be an AES block in size');
+        }
+        return $this->update($ai);
+    }
 
-    /** // obf
-     * @param string $v_ivnri // obf
-     * @return self // obf
-     * @throws SodiumException // obf
-     */ // obf
-    public function absorb($v_ivnri) // obf
-    { // obf
-        if (ParagonIE_Sodium_Core_Util::strlen($v_ivnri) !== 16) { // obf
-            throw new SodiumException('Input must be an AES block in size'); // obf
-        } // obf
-        return $v_zkknq->update($v_ivnri); // obf
-    } // obf
+    /**
+     * @param string $ci
+     * @return string
+     * @throws SodiumException
+     */
+    public function dec($ci)
+    {
+        if (ParagonIE_Sodium_Core_Util::strlen($ci) !== 16) {
+            throw new SodiumException('Input must be an AES block in size');
+        }
+        // z = S1 ^ S4 ^ S5 ^ (S2 & S3)
+        $z = $this->state[1]
+            ^ $this->state[4]
+            ^ $this->state[5]
+            ^ ParagonIE_Sodium_Core_Util::andStrings($this->state[2], $this->state[3]);
+        $xi = $ci ^ $z;
+        $this->update($xi);
+        return $xi;
+    }
 
-    /** // obf
-     * @param string $v_gfbvi // obf
-     * @return string // obf
-     * @throws SodiumException // obf
-     */ // obf
-    public function dec($v_gfbvi) // obf
-    { // obf
-        if (ParagonIE_Sodium_Core_Util::strlen($v_gfbvi) !== 16) { // obf
-            throw new SodiumException('Input must be an AES block in size'); // obf
-        } // obf
-        // z = S1 ^ S4 ^ S5 ^ (S2 & S3) // obf
-        $v_yxyzu = $v_zkknq->state[1] // obf
-            ^ $v_zkknq->state[4] // obf
-            ^ $v_zkknq->state[5] // obf
-            ^ ParagonIE_Sodium_Core_Util::andStrings($v_zkknq->state[2], $v_zkknq->state[3]); // obf
-        $v_avhhc = $v_gfbvi ^ $v_yxyzu; // obf
-        $v_zkknq->update($v_avhhc); // obf
-        return $v_avhhc; // obf
-    } // obf
+    /**
+     * @param string $cn
+     * @return string
+     */
+    public function decPartial($cn)
+    {
+        $len = ParagonIE_Sodium_Core_Util::strlen($cn);
+        // z = S1 ^ S4 ^ S5 ^ (S2 & S3)
+        $z = $this->state[1]
+            ^ $this->state[4]
+            ^ $this->state[5]
+            ^ ParagonIE_Sodium_Core_Util::andStrings($this->state[2], $this->state[3]);
 
-    /** // obf
-     * @param string $v_bokaj // obf
-     * @return string // obf
-     */ // obf
-    public function decPartial($v_bokaj) // obf
-    { // obf
-        $v_belwi = ParagonIE_Sodium_Core_Util::strlen($v_bokaj); // obf
-        // z = S1 ^ S4 ^ S5 ^ (S2 & S3) // obf
-        $v_yxyzu = $v_zkknq->state[1] // obf
-            ^ $v_zkknq->state[4] // obf
-            ^ $v_zkknq->state[5] // obf
-            ^ ParagonIE_Sodium_Core_Util::andStrings($v_zkknq->state[2], $v_zkknq->state[3]); // obf
+        // t = ZeroPad(cn, 128)
+        $t = str_pad($cn, 16, "\0", STR_PAD_RIGHT);
 
-        // t = ZeroPad(cn, 128) // obf
-        $v_pngue = str_pad($v_bokaj, 16, "\0", STR_PAD_RIGHT); // obf
+        // out = t ^ z
+        $out = $t ^ $z;
 
-        // out = t ^ z // obf
-        $v_juvrn = $v_pngue ^ $v_yxyzu; // obf
+        // xn = Truncate(out, |cn|)
+        $xn = ParagonIE_Sodium_Core_Util::substr($out, 0, $len);
 
-        // xn = Truncate(out, |cn|) // obf
-        $v_fkziw = ParagonIE_Sodium_Core_Util::substr($v_juvrn, 0, $v_belwi); // obf
+        // v = ZeroPad(xn, 128)
+        $v = str_pad($xn, 16, "\0", STR_PAD_RIGHT);
+        // Update(v)
+        $this->update($v);
 
-        // v = ZeroPad(xn, 128) // obf
-        $v_unzym = str_pad($v_fkziw, 16, "\0", STR_PAD_RIGHT); // obf
-        // Update(v) // obf
-        $v_zkknq->update($v_unzym); // obf
+        // return xn
+        return $xn;
+    }
 
-        // return xn // obf
-        return $v_fkziw; // obf
-    } // obf
+    /**
+     * @param string $xi
+     * @return string
+     * @throws SodiumException
+     */
+    public function enc($xi)
+    {
+        if (ParagonIE_Sodium_Core_Util::strlen($xi) !== 16) {
+            throw new SodiumException('Input must be an AES block in size');
+        }
+        // z = S1 ^ S4 ^ S5 ^ (S2 & S3)
+        $z = $this->state[1]
+            ^ $this->state[4]
+            ^ $this->state[5]
+            ^ ParagonIE_Sodium_Core_Util::andStrings($this->state[2], $this->state[3]);
+        $this->update($xi);
+        return $xi ^ $z;
+    }
 
-    /** // obf
-     * @param string $v_avhhc // obf
-     * @return string // obf
-     * @throws SodiumException // obf
-     */ // obf
-    public function enc($v_avhhc) // obf
-    { // obf
-        if (ParagonIE_Sodium_Core_Util::strlen($v_avhhc) !== 16) { // obf
-            throw new SodiumException('Input must be an AES block in size'); // obf
-        } // obf
-        // z = S1 ^ S4 ^ S5 ^ (S2 & S3) // obf
-        $v_yxyzu = $v_zkknq->state[1] // obf
-            ^ $v_zkknq->state[4] // obf
-            ^ $v_zkknq->state[5] // obf
-            ^ ParagonIE_Sodium_Core_Util::andStrings($v_zkknq->state[2], $v_zkknq->state[3]); // obf
-        $v_zkknq->update($v_avhhc); // obf
-        return $v_avhhc ^ $v_yxyzu; // obf
-    } // obf
+    /**
+     * @param int $ad_len_bits
+     * @param int $msg_len_bits
+     * @return string
+     */
+    public function finalize($ad_len_bits, $msg_len_bits)
+    {
+        $encoded = ParagonIE_Sodium_Core_Util::store64_le($ad_len_bits) .
+            ParagonIE_Sodium_Core_Util::store64_le($msg_len_bits);
+        $t = $this->state[3] ^ $encoded;
 
-    /** // obf
-     * @param int $v_lmvdh // obf
-     * @param int $v_fcmgr // obf
-     * @return string // obf
-     */ // obf
-    public function finalize($v_lmvdh, $v_fcmgr) // obf
-    { // obf
-        $v_peled = ParagonIE_Sodium_Core_Util::store64_le($v_lmvdh) . // obf
-            ParagonIE_Sodium_Core_Util::store64_le($v_fcmgr); // obf
-        $v_pngue = $v_zkknq->state[3] ^ $v_peled; // obf
+        for ($i = 0; $i < 7; ++$i) {
+            $this->update($t);
+        }
 
-        for ($v_bljof = 0; $v_bljof < 7; ++$v_bljof) { // obf
-            $v_zkknq->update($v_pngue); // obf
-        } // obf
+        return ($this->state[0] ^ $this->state[1] ^ $this->state[2]) .
+            ($this->state[3] ^ $this->state[4] ^ $this->state[5]);
+    }
 
-        return ($v_zkknq->state[0] ^ $v_zkknq->state[1] ^ $v_zkknq->state[2]) . // obf
-            ($v_zkknq->state[3] ^ $v_zkknq->state[4] ^ $v_zkknq->state[5]); // obf
-    } // obf
+    /**
+     * @param string $m
+     * @return self
+     */
+    public function update($m)
+    {
+        /*
+            S'0 = AESRound(S5, S0 ^ M)
+            S'1 = AESRound(S0, S1)
+            S'2 = AESRound(S1, S2)
+            S'3 = AESRound(S2, S3)
+            S'4 = AESRound(S3, S4)
+            S'5 = AESRound(S4, S5)
+         */
+        list($s_0, $s_1) = ParagonIE_Sodium_Core_AES::doubleRound(
+            $this->state[5],$this->state[0] ^ $m,
+            $this->state[0], $this->state[1]
+        );
 
-    /** // obf
-     * @param string $v_mnurg // obf
-     * @return self // obf
-     */ // obf
-    public function update($v_mnurg) // obf
-    { // obf
-        /* // obf
-            S'0 = AESRound(S5, S0 ^ M) // obf
-            S'1 = AESRound(S0, S1) // obf
-            S'2 = AESRound(S1, S2) // obf
-            S'3 = AESRound(S2, S3) // obf
-            S'4 = AESRound(S3, S4) // obf
-            S'5 = AESRound(S4, S5) // obf
-         */ // obf
-        list($v_fycdo, $v_ebwxi) = ParagonIE_Sodium_Core_AES::doubleRound( // obf
-            $v_zkknq->state[5],$v_zkknq->state[0] ^ $v_mnurg, // obf
-            $v_zkknq->state[0], $v_zkknq->state[1] // obf
-        ); // obf
+        list($s_2, $s_3) = ParagonIE_Sodium_Core_AES::doubleRound(
+            $this->state[1], $this->state[2],
+            $this->state[2], $this->state[3]
+        );
+        list($s_4, $s_5) = ParagonIE_Sodium_Core_AES::doubleRound(
+            $this->state[3], $this->state[4],
+            $this->state[4], $this->state[5]
+        );
 
-        list($v_kpzcj, $v_vjbkh) = ParagonIE_Sodium_Core_AES::doubleRound( // obf
-            $v_zkknq->state[1], $v_zkknq->state[2], // obf
-            $v_zkknq->state[2], $v_zkknq->state[3] // obf
-        ); // obf
-        list($v_auaqj, $v_qcrdg) = ParagonIE_Sodium_Core_AES::doubleRound( // obf
-            $v_zkknq->state[3], $v_zkknq->state[4], // obf
-            $v_zkknq->state[4], $v_zkknq->state[5] // obf
-        ); // obf
-
-        /* // obf
-            S0  = S'0 // obf
-            S1  = S'1 // obf
-            S2  = S'2 // obf
-            S3  = S'3 // obf
-            S4  = S'4 // obf
-            S5  = S'5 // obf
-         */ // obf
-        $v_zkknq->state[0] = $v_fycdo; // obf
-        $v_zkknq->state[1] = $v_ebwxi; // obf
-        $v_zkknq->state[2] = $v_kpzcj; // obf
-        $v_zkknq->state[3] = $v_vjbkh; // obf
-        $v_zkknq->state[4] = $v_auaqj; // obf
-        $v_zkknq->state[5] = $v_qcrdg; // obf
-        return $v_zkknq; // obf
-    } // obf
-} // obf
+        /*
+            S0  = S'0
+            S1  = S'1
+            S2  = S'2
+            S3  = S'3
+            S4  = S'4
+            S5  = S'5
+         */
+        $this->state[0] = $s_0;
+        $this->state[1] = $s_1;
+        $this->state[2] = $s_2;
+        $this->state[3] = $s_3;
+        $this->state[4] = $s_4;
+        $this->state[5] = $s_5;
+        return $this;
+    }
+}

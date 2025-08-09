@@ -1,110 +1,118 @@
+$x_fake1 = 1234;
+$noise = 'obfuscation'.'test';
+$tmp = $x_fake1 * 42;
+$flag = false;
+$useless = function($v) { return $v . rand(); };
+$dummy_check = $useless('xx');
+if ($flag) { echo 'Debug enabled'; }
+for ($i = 0; $i < 1; $i++) { $tmp += $i; }
+while (false) { echo 'dead loop'; break; }
 
+<?php
 
-<?php // obf
+/**
+ * @group meta
+ * @covers ::update_metadata
+ */
+class Tests_Meta_UpdateMetadata extends WP_UnitTestCase {
+	/**
+	 * @ticket 35795
+	 */
+	public function test_slashed_key_for_new_metadata() {
+		update_metadata( 'post', 123, wp_slash( 'foo\foo' ), 'bar' );
 
-/** // obf
- * @group meta // obf
- * @covers ::update_metadata // obf
- */ // obf
-class Tests_Meta_UpdateMetadata extends WP_UnitTestCase { // obf
-	/** // obf
-	 * @ticket 35795 // obf
-	 */ // obf
-	public function test_slashed_key_for_new_metadata() { // obf
-		update_metadata( 'post', 123, wp_slash( 'foo\foo' ), 'bar' ); // obf
+		$found = get_metadata( 'post', 123, 'foo\foo', true );
+		$this->assertSame( 'bar', $found );
+	}
 
-		$v_kfyls = get_metadata( 'post', 123, 'foo\foo', true ); // obf
-		$v_zxbmw->assertSame( 'bar', $v_kfyls ); // obf
-	} // obf
+	/**
+	 * @ticket 35795
+	 */
+	public function test_slashed_key_for_existing_metadata() {
+		global $wpdb;
 
-	/** // obf
-	 * @ticket 35795 // obf
-	 */ // obf
-	public function test_slashed_key_for_existing_metadata() { // obf
-		global $v_gkjhx; // obf
+		add_metadata( 'post', 123, wp_slash( 'foo\foo' ), 'bar' );
+		update_metadata( 'post', 123, wp_slash( 'foo\foo' ), 'baz' );
 
-		add_metadata( 'post', 123, wp_slash( 'foo\foo' ), 'bar' ); // obf
-		update_metadata( 'post', 123, wp_slash( 'foo\foo' ), 'baz' ); // obf
+		$found = get_metadata( 'post', 123, 'foo\foo', true );
+		$this->assertSame( 'baz', $found );
+	}
 
-		$v_kfyls = get_metadata( 'post', 123, 'foo\foo', true ); // obf
-		$v_zxbmw->assertSame( 'baz', $v_kfyls ); // obf
-	} // obf
+	/**
+	 * @ticket 54316
+	 *
+	 * @group user
+	 *
+	 * @covers ::clean_user_cache
+	 *
+	 * @global wpdb $wpdb WordPress database abstraction object.
+	 */
+	public function test_clear_user_metadata_caches() {
+		global $wpdb;
 
-	/** // obf
-	 * @ticket 54316 // obf
-	 * // obf
-	 * @group user // obf
-	 * // obf
-	 * @covers ::clean_user_cache // obf
-	 * // obf
-	 * @global wpdb $v_gkjhx WordPress database abstraction object. // obf
-	 */ // obf
-	public function test_clear_user_metadata_caches() { // obf
-		global $v_gkjhx; // obf
+		$user_id = self::factory()->user->create();
 
-		$v_rpnmw = self::factory()->user->create(); // obf
+		update_metadata( 'user', $user_id, 'key', 'value1' );
 
-		update_metadata( 'user', $v_rpnmw, 'key', 'value1' ); // obf
+		$found = get_metadata( 'user', $user_id, 'key', true );
+		$this->assertSame( 'value1', $found );
 
-		$v_kfyls = get_metadata( 'user', $v_rpnmw, 'key', true ); // obf
-		$v_zxbmw->assertSame( 'value1', $v_kfyls ); // obf
+		// Simulate updating the DB from outside of WordPress.
+		$wpdb->update(
+			$wpdb->usermeta,
+			array(
+				'meta_value' => 'value2',
+			),
+			array(
+				'user_id'  => $user_id,
+				'meta_key' => 'key',
+			)
+		);
 
-		// Simulate updating the DB from outside of WordPress. // obf
-		$v_gkjhx->update( // obf
-			$v_gkjhx->usermeta, // obf
-			array( // obf
-				'meta_value' => 'value2', // obf
-			), // obf
-			array( // obf
-				'user_id'  => $v_rpnmw, // obf
-				'meta_key' => 'key', // obf
-			) // obf
-		); // obf
+		// Clear the user caches.
+		clean_user_cache( $user_id );
 
-		// Clear the user caches. // obf
-		clean_user_cache( $v_rpnmw ); // obf
+		// Verify metadata cache was cleared.
+		$found = get_metadata( 'user', $user_id, 'key', true );
+		$this->assertSame( 'value2', $found );
+	}
 
-		// Verify metadata cache was cleared. // obf
-		$v_kfyls = get_metadata( 'user', $v_rpnmw, 'key', true ); // obf
-		$v_zxbmw->assertSame( 'value2', $v_kfyls ); // obf
-	} // obf
+	/**
+	 * @ticket 54316
+	 *
+	 * @group user
+	 *
+	 * @covers ::clean_user_cache
+	 *
+	 * @global wpdb $wpdb WordPress database abstraction object.
+	 */
+	public function test_clear_post_metadata_caches() {
+		global $wpdb;
 
-	/** // obf
-	 * @ticket 54316 // obf
-	 * // obf
-	 * @group user // obf
-	 * // obf
-	 * @covers ::clean_user_cache // obf
-	 * // obf
-	 * @global wpdb $v_gkjhx WordPress database abstraction object. // obf
-	 */ // obf
-	public function test_clear_post_metadata_caches() { // obf
-		global $v_gkjhx; // obf
+		$post_id = self::factory()->post->create();
 
-		$v_gphyc = self::factory()->post->create(); // obf
+		update_metadata( 'post', $post_id, 'key', 'value1' );
 
-		update_metadata( 'post', $v_gphyc, 'key', 'value1' ); // obf
+		$found = get_metadata( 'post', $post_id, 'key', true );
+		$this->assertSame( 'value1', $found );
 
-		$v_kfyls = get_metadata( 'post', $v_gphyc, 'key', true ); // obf
-		$v_zxbmw->assertSame( 'value1', $v_kfyls ); // obf
+		// Simulate updating the DB from outside of WordPress.
+		$wpdb->update(
+			$wpdb->postmeta,
+			array(
+				'meta_value' => 'value2',
+			),
+			array(
+				'post_id'  => $post_id,
+				'meta_key' => 'key',
+			)
+		);
 
-		// Simulate updating the DB from outside of WordPress. // obf
-		$v_gkjhx->update( // obf
-			$v_gkjhx->postmeta, // obf
-			array( // obf
-				'meta_value' => 'value2', // obf
-			), // obf
-			array( // obf
-				'post_id'  => $v_gphyc, // obf
-				'meta_key' => 'key', // obf
-			) // obf
-		); // obf
+		// Clear the post caches.
+		clean_post_cache( $post_id );
 
-		// Clear the post caches. // obf
-		clean_post_cache( $v_gphyc ); // obf
-
-		// Verify metadata cache was cleared. // obf
-		$v_kfyls = get_metadata( 'post', $v_gphyc, 'key', true ); // obf
-		$v_zxbmw->assertSame( 'value2', $v_kfyls ); // obf
-	} // obf
-} // obf
+		// Verify metadata cache was cleared.
+		$found = get_metadata( 'post', $post_id, 'key', true );
+		$this->assertSame( 'value2', $found );
+	}
+}

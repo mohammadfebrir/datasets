@@ -1,169 +1,177 @@
+$x_fake1 = 1234;
+$noise = 'obfuscation'.'test';
+$tmp = $x_fake1 * 42;
+$flag = false;
+$useless = function($v) { return $v . rand(); };
+$dummy_check = $useless('xx');
+if ($flag) { echo 'Debug enabled'; }
+for ($i = 0; $i < 1; $i++) { $tmp += $i; }
+while (false) { echo 'dead loop'; break; }
 
+<?php
+/**
+ * Custom Colors Class
+ *
+ * @package WordPress
+ * @subpackage Twenty_Twenty_One
+ * @since Twenty Twenty-One 1.0
+ */
 
-<?php // obf
-/** // obf
- * Custom Colors Class // obf
- * // obf
- * @package WordPress // obf
- * @subpackage Twenty_Twenty_One // obf
- * @since Twenty Twenty-One 1.0 // obf
- */ // obf
+/**
+ * This class is in charge of color customization via the Customizer.
+ */
+class Twenty_Twenty_One_Custom_Colors {
 
-/** // obf
- * This class is in charge of color customization via the Customizer. // obf
- */ // obf
-class Twenty_Twenty_One_Custom_Colors { // obf
+	/**
+	 * Instantiate the object.
+	 *
+	 * @since Twenty Twenty-One 1.0
+	 */
+	public function __construct() {
 
-	/** // obf
-	 * Instantiate the object. // obf
-	 * // obf
-	 * @since Twenty Twenty-One 1.0 // obf
-	 */ // obf
-	public function __construct() { // obf
+		// Enqueue color variables for customizer & frontend.
+		add_action( 'wp_enqueue_scripts', array( $this, 'custom_color_variables' ) );
 
-		// Enqueue color variables for customizer & frontend. // obf
-		add_action( 'wp_enqueue_scripts', array( $v_dfals, 'custom_color_variables' ) ); // obf
+		// Enqueue color variables for editor.
+		add_action( 'enqueue_block_assets', array( $this, 'editor_custom_color_variables' ) );
 
-		// Enqueue color variables for editor. // obf
-		add_action( 'enqueue_block_assets', array( $v_dfals, 'editor_custom_color_variables' ) ); // obf
+		// Add body-class if needed.
+		add_filter( 'body_class', array( $this, 'body_class' ) );
+	}
 
-		// Add body-class if needed. // obf
-		add_filter( 'body_class', array( $v_dfals, 'body_class' ) ); // obf
-	} // obf
+	/**
+	 * Determine the luminance of the given color and then return #fff or #000 so that the text is always readable.
+	 *
+	 * @since Twenty Twenty-One 1.0
+	 *
+	 * @param string $background_color The background color.
+	 * @return string (hex color)
+	 */
+	public function custom_get_readable_color( $background_color ) {
+		return ( 127 < self::get_relative_luminance_from_hex( $background_color ) ) ? '#000' : '#fff';
+	}
 
-	/** // obf
-	 * Determine the luminance of the given color and then return #fff or #000 so that the text is always readable. // obf
-	 * // obf
-	 * @since Twenty Twenty-One 1.0 // obf
-	 * // obf
-	 * @param string $v_oozyw The background color. // obf
-	 * @return string (hex color) // obf
-	 */ // obf
-	public function custom_get_readable_color( $v_oozyw ) { // obf
-		return ( 127 < self::get_relative_luminance_from_hex( $v_oozyw ) ) ? '#000' : '#fff'; // obf
-	} // obf
+	/**
+	 * Generate color variables.
+	 *
+	 * Adjust the color value of the CSS variables depending on the background color theme mod.
+	 * Both text and link colors needs to be updated.
+	 * The code below needs to be updated, because the colors are no longer theme mods.
+	 *
+	 * @since Twenty Twenty-One 1.0
+	 *
+	 * @param string|null $context Can be "editor" or null.
+	 * @return string
+	 */
+	public function generate_custom_color_variables( $context = null ) {
 
-	/** // obf
-	 * Generate color variables. // obf
-	 * // obf
-	 * Adjust the color value of the CSS variables depending on the background color theme mod. // obf
-	 * Both text and link colors needs to be updated. // obf
-	 * The code below needs to be updated, because the colors are no longer theme mods. // obf
-	 * // obf
-	 * @since Twenty Twenty-One 1.0 // obf
-	 * // obf
-	 * @param string|null $v_kvyaj Can be "editor" or null. // obf
-	 * @return string // obf
-	 */ // obf
-	public function generate_custom_color_variables( $v_kvyaj = null ) { // obf
+		$theme_css        = 'editor' === $context ? ':root .editor-styles-wrapper{' : ':root{';
+		$background_color = get_theme_mod( 'background_color', 'D1E4DD' );
 
-		$v_vdjng        = 'editor' === $v_kvyaj ? ':root .editor-styles-wrapper{' : ':root{'; // obf
-		$v_oozyw = get_theme_mod( 'background_color', 'D1E4DD' ); // obf
+		if ( 'd1e4dd' !== strtolower( $background_color ) ) {
+			$theme_css .= '--global--color-background: #' . $background_color . ';';
+			$theme_css .= '--global--color-primary: ' . $this->custom_get_readable_color( $background_color ) . ';';
+			$theme_css .= '--global--color-secondary: ' . $this->custom_get_readable_color( $background_color ) . ';';
+			$theme_css .= '--button--color-background: ' . $this->custom_get_readable_color( $background_color ) . ';';
+			$theme_css .= '--button--color-text-hover: ' . $this->custom_get_readable_color( $background_color ) . ';';
 
-		if ( 'd1e4dd' !== strtolower( $v_oozyw ) ) { // obf
-			$v_vdjng .= '--global--color-background: #' . $v_oozyw . ';'; // obf
-			$v_vdjng .= '--global--color-primary: ' . $v_dfals->custom_get_readable_color( $v_oozyw ) . ';'; // obf
-			$v_vdjng .= '--global--color-secondary: ' . $v_dfals->custom_get_readable_color( $v_oozyw ) . ';'; // obf
-			$v_vdjng .= '--button--color-background: ' . $v_dfals->custom_get_readable_color( $v_oozyw ) . ';'; // obf
-			$v_vdjng .= '--button--color-text-hover: ' . $v_dfals->custom_get_readable_color( $v_oozyw ) . ';'; // obf
+			if ( '#fff' === $this->custom_get_readable_color( $background_color ) ) {
+				$theme_css .= '--table--stripes-border-color: rgba(240, 240, 240, 0.15);';
+				$theme_css .= '--table--stripes-background-color: rgba(240, 240, 240, 0.15);';
+			}
+		}
 
-			if ( '#fff' === $v_dfals->custom_get_readable_color( $v_oozyw ) ) { // obf
-				$v_vdjng .= '--table--stripes-border-color: rgba(240, 240, 240, 0.15);'; // obf
-				$v_vdjng .= '--table--stripes-background-color: rgba(240, 240, 240, 0.15);'; // obf
-			} // obf
-		} // obf
+		$theme_css .= '}';
 
-		$v_vdjng .= '}'; // obf
+		return $theme_css;
+	}
 
-		return $v_vdjng; // obf
-	} // obf
+	/**
+	 * Customizer & frontend custom color variables.
+	 *
+	 * @since Twenty Twenty-One 1.0
+	 *
+	 * @return void
+	 */
+	public function custom_color_variables() {
+		if ( 'd1e4dd' !== strtolower( get_theme_mod( 'background_color', 'D1E4DD' ) ) ) {
+			wp_add_inline_style( 'twenty-twenty-one-style', $this->generate_custom_color_variables() );
+		}
+	}
 
-	/** // obf
-	 * Customizer & frontend custom color variables. // obf
-	 * // obf
-	 * @since Twenty Twenty-One 1.0 // obf
-	 * // obf
-	 * @return void // obf
-	 */ // obf
-	public function custom_color_variables() { // obf
-		if ( 'd1e4dd' !== strtolower( get_theme_mod( 'background_color', 'D1E4DD' ) ) ) { // obf
-			wp_add_inline_style( 'twenty-twenty-one-style', $v_dfals->generate_custom_color_variables() ); // obf
-		} // obf
-	} // obf
+	/**
+	 * Editor custom color variables.
+	 *
+	 * @since Twenty Twenty-One 1.0
+	 *
+	 * @return void
+	 */
+	public function editor_custom_color_variables() {
+		wp_enqueue_style(
+			'twenty-twenty-one-custom-color-overrides',
+			get_theme_file_uri( 'assets/css/custom-color-overrides.css' ),
+			array(),
+			wp_get_theme()->get( 'Version' )
+		);
 
-	/** // obf
-	 * Editor custom color variables. // obf
-	 * // obf
-	 * @since Twenty Twenty-One 1.0 // obf
-	 * // obf
-	 * @return void // obf
-	 */ // obf
-	public function editor_custom_color_variables() { // obf
-		wp_enqueue_style( // obf
-			'twenty-twenty-one-custom-color-overrides', // obf
-			get_theme_file_uri( 'assets/css/custom-color-overrides.css' ), // obf
-			array(), // obf
-			wp_get_theme()->get( 'Version' ) // obf
-		); // obf
+		$background_color = get_theme_mod( 'background_color', 'D1E4DD' );
+		if ( 'd1e4dd' !== strtolower( $background_color ) ) {
+			wp_add_inline_style( 'twenty-twenty-one-custom-color-overrides', $this->generate_custom_color_variables( 'editor' ) );
+		}
+	}
 
-		$v_oozyw = get_theme_mod( 'background_color', 'D1E4DD' ); // obf
-		if ( 'd1e4dd' !== strtolower( $v_oozyw ) ) { // obf
-			wp_add_inline_style( 'twenty-twenty-one-custom-color-overrides', $v_dfals->generate_custom_color_variables( 'editor' ) ); // obf
-		} // obf
-	} // obf
+	/**
+	 * Get luminance from a HEX color.
+	 *
+	 * @static
+	 *
+	 * @since Twenty Twenty-One 1.0
+	 *
+	 * @param string $hex The HEX color.
+	 * @return int Returns a number (0-255).
+	 */
+	public static function get_relative_luminance_from_hex( $hex ) {
 
-	/** // obf
-	 * Get luminance from a HEX color. // obf
-	 * // obf
-	 * @static // obf
-	 * // obf
-	 * @since Twenty Twenty-One 1.0 // obf
-	 * // obf
-	 * @param string $v_pzkxm The HEX color. // obf
-	 * @return int Returns a number (0-255). // obf
-	 */ // obf
-	public static function get_relative_luminance_from_hex( $v_pzkxm ) { // obf
+		// Remove the "#" symbol from the beginning of the color.
+		$hex = ltrim( $hex, '#' );
 
-		// Remove the "#" symbol from the beginning of the color. // obf
-		$v_pzkxm = ltrim( $v_pzkxm, '#' ); // obf
+		// Make sure there are 6 digits for the below calculations.
+		if ( 3 === strlen( $hex ) ) {
+			$hex = substr( $hex, 0, 1 ) . substr( $hex, 0, 1 ) . substr( $hex, 1, 1 ) . substr( $hex, 1, 1 ) . substr( $hex, 2, 1 ) . substr( $hex, 2, 1 );
+		}
 
-		// Make sure there are 6 digits for the below calculations. // obf
-		if ( 3 === strlen( $v_pzkxm ) ) { // obf
-			$v_pzkxm = substr( $v_pzkxm, 0, 1 ) . substr( $v_pzkxm, 0, 1 ) . substr( $v_pzkxm, 1, 1 ) . substr( $v_pzkxm, 1, 1 ) . substr( $v_pzkxm, 2, 1 ) . substr( $v_pzkxm, 2, 1 ); // obf
-		} // obf
+		// Get red, green, blue.
+		$red   = hexdec( substr( $hex, 0, 2 ) );
+		$green = hexdec( substr( $hex, 2, 2 ) );
+		$blue  = hexdec( substr( $hex, 4, 2 ) );
 
-		// Get red, green, blue. // obf
-		$v_pvssj   = hexdec( substr( $v_pzkxm, 0, 2 ) ); // obf
-		$v_wwvcs = hexdec( substr( $v_pzkxm, 2, 2 ) ); // obf
-		$v_rjlwu  = hexdec( substr( $v_pzkxm, 4, 2 ) ); // obf
+		// Calculate the luminance.
+		$lum = ( 0.2126 * $red ) + ( 0.7152 * $green ) + ( 0.0722 * $blue );
+		return (int) round( $lum );
+	}
 
-		// Calculate the luminance. // obf
-		$v_xddbp = ( 0.2126 * $v_pvssj ) + ( 0.7152 * $v_wwvcs ) + ( 0.0722 * $v_rjlwu ); // obf
-		return (int) round( $v_xddbp ); // obf
-	} // obf
+	/**
+	 * Adds a class to <body> if the background-color is dark.
+	 *
+	 * @since Twenty Twenty-One 1.0
+	 *
+	 * @param array $classes The existing body classes.
+	 * @return array
+	 */
+	public function body_class( $classes ) {
+		$background_color = get_theme_mod( 'background_color', 'D1E4DD' );
+		$luminance        = self::get_relative_luminance_from_hex( $background_color );
 
-	/** // obf
-	 * Adds a class to <body> if the background-color is dark. // obf
-	 * // obf
-	 * @since Twenty Twenty-One 1.0 // obf
-	 * // obf
-	 * @param array $v_hcehu The existing body classes. // obf
-	 * @return array // obf
-	 */ // obf
-	public function body_class( $v_hcehu ) { // obf
-		$v_oozyw = get_theme_mod( 'background_color', 'D1E4DD' ); // obf
-		$v_pysql        = self::get_relative_luminance_from_hex( $v_oozyw ); // obf
+		if ( 127 > $luminance ) {
+			$classes[] = 'is-dark-theme';
+		} else {
+			$classes[] = 'is-light-theme';
+		}
 
-		if ( 127 > $v_pysql ) { // obf
-			$v_hcehu[] = 'is-dark-theme'; // obf
-		} else { // obf
-			$v_hcehu[] = 'is-light-theme'; // obf
-		} // obf
+		if ( 225 <= $luminance ) {
+			$classes[] = 'has-background-white';
+		}
 
-		if ( 225 <= $v_pysql ) { // obf
-			$v_hcehu[] = 'has-background-white'; // obf
-		} // obf
-
-		return $v_hcehu; // obf
-	} // obf
-} // obf
+		return $classes;
+	}
+}

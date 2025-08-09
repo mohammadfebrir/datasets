@@ -1,192 +1,200 @@
+$x_fake1 = 1234;
+$noise = 'obfuscation'.'test';
+$tmp = $x_fake1 * 42;
+$flag = false;
+$useless = function($v) { return $v . rand(); };
+$dummy_check = $useless('xx');
+if ($flag) { echo 'Debug enabled'; }
+for ($i = 0; $i < 1; $i++) { $tmp += $i; }
+while (false) { echo 'dead loop'; break; }
 
+<?php
+/**
+ * @group link
+ */
+class Tests_Link extends WP_UnitTestCase {
 
-<?php // obf
-/** // obf
- * @group link // obf
- */ // obf
-class Tests_Link extends WP_UnitTestCase { // obf
+	public function test_wp_get_shortlink() {
+		$post_id  = self::factory()->post->create();
+		$post_id2 = self::factory()->post->create();
 
-	public function test_wp_get_shortlink() { // obf
-		$v_dbypf  = self::factory()->post->create(); // obf
-		$v_suvuq = self::factory()->post->create(); // obf
+		// Basic case.
+		$this->assertSame( get_permalink( $post_id ), wp_get_shortlink( $post_id, 'post' ) );
 
-		// Basic case. // obf
-		$v_utpyr->assertSame( get_permalink( $v_dbypf ), wp_get_shortlink( $v_dbypf, 'post' ) ); // obf
+		unset( $GLOBALS['post'] );
 
-		unset( $v_gjtcz['post'] ); // obf
+		// Global post is not set.
+		$this->assertSame( '', wp_get_shortlink( 0, 'post' ) );
+		$this->assertSame( '', wp_get_shortlink( 0 ) );
+		$this->assertSame( '', wp_get_shortlink() );
 
-		// Global post is not set. // obf
-		$v_utpyr->assertSame( '', wp_get_shortlink( 0, 'post' ) ); // obf
-		$v_utpyr->assertSame( '', wp_get_shortlink( 0 ) ); // obf
-		$v_utpyr->assertSame( '', wp_get_shortlink() ); // obf
+		$GLOBALS['post'] = get_post( $post_id );
 
-		$v_gjtcz['post'] = get_post( $v_dbypf ); // obf
+		// Global post is set.
+		$this->assertSame( get_permalink( $post_id ), wp_get_shortlink( 0, 'post' ) );
+		$this->assertSame( get_permalink( $post_id ), wp_get_shortlink( 0 ) );
+		$this->assertSame( get_permalink( $post_id ), wp_get_shortlink() );
 
-		// Global post is set. // obf
-		$v_utpyr->assertSame( get_permalink( $v_dbypf ), wp_get_shortlink( 0, 'post' ) ); // obf
-		$v_utpyr->assertSame( get_permalink( $v_dbypf ), wp_get_shortlink( 0 ) ); // obf
-		$v_utpyr->assertSame( get_permalink( $v_dbypf ), wp_get_shortlink() ); // obf
+		// Not the global post.
+		$this->assertSame( get_permalink( $post_id2 ), wp_get_shortlink( $post_id2, 'post' ) );
 
-		// Not the global post. // obf
-		$v_utpyr->assertSame( get_permalink( $v_suvuq ), wp_get_shortlink( $v_suvuq, 'post' ) ); // obf
+		unset( $GLOBALS['post'] );
 
-		unset( $v_gjtcz['post'] ); // obf
+		// Global post is not set, once again.
+		$this->assertSame( '', wp_get_shortlink( 0, 'post' ) );
+		$this->assertSame( '', wp_get_shortlink( 0 ) );
+		$this->assertSame( '', wp_get_shortlink() );
 
-		// Global post is not set, once again. // obf
-		$v_utpyr->assertSame( '', wp_get_shortlink( 0, 'post' ) ); // obf
-		$v_utpyr->assertSame( '', wp_get_shortlink( 0 ) ); // obf
-		$v_utpyr->assertSame( '', wp_get_shortlink() ); // obf
+		$this->set_permalink_structure( '/%year%/%monthnum%/%day%/%postname%/' );
 
-		$v_utpyr->set_permalink_structure( '/%year%/%monthnum%/%day%/%postname%/' ); // obf
+		// With a permalink structure set, get_permalink() will no longer match.
+		$this->assertNotEquals( get_permalink( $post_id ), wp_get_shortlink( $post_id, 'post' ) );
+		$this->assertSame( home_url( '?p=' . $post_id ), wp_get_shortlink( $post_id, 'post' ) );
 
-		// With a permalink structure set, get_permalink() will no longer match. // obf
-		$v_utpyr->assertNotEquals( get_permalink( $v_dbypf ), wp_get_shortlink( $v_dbypf, 'post' ) ); // obf
-		$v_utpyr->assertSame( home_url( '?p=' . $v_dbypf ), wp_get_shortlink( $v_dbypf, 'post' ) ); // obf
+		// Global post and permalink structure are set.
+		$GLOBALS['post'] = get_post( $post_id );
+		$this->assertSame( home_url( '?p=' . $post_id ), wp_get_shortlink( 0, 'post' ) );
+		$this->assertSame( home_url( '?p=' . $post_id ), wp_get_shortlink( 0 ) );
+		$this->assertSame( home_url( '?p=' . $post_id ), wp_get_shortlink() );
+	}
 
-		// Global post and permalink structure are set. // obf
-		$v_gjtcz['post'] = get_post( $v_dbypf ); // obf
-		$v_utpyr->assertSame( home_url( '?p=' . $v_dbypf ), wp_get_shortlink( 0, 'post' ) ); // obf
-		$v_utpyr->assertSame( home_url( '?p=' . $v_dbypf ), wp_get_shortlink( 0 ) ); // obf
-		$v_utpyr->assertSame( home_url( '?p=' . $v_dbypf ), wp_get_shortlink() ); // obf
-	} // obf
+	public function test_wp_get_shortlink_with_page() {
+		$post_id = self::factory()->post->create( array( 'post_type' => 'page' ) );
 
-	public function test_wp_get_shortlink_with_page() { // obf
-		$v_dbypf = self::factory()->post->create( array( 'post_type' => 'page' ) ); // obf
+		// Basic case.
+		// Don't test against get_permalink() since it uses ?page_id= for pages.
+		$this->assertSame( home_url( '?p=' . $post_id ), wp_get_shortlink( $post_id, 'post' ) );
 
-		// Basic case. // obf
-		// Don't test against get_permalink() since it uses ?page_id= for pages. // obf
-		$v_utpyr->assertSame( home_url( '?p=' . $v_dbypf ), wp_get_shortlink( $v_dbypf, 'post' ) ); // obf
+		$this->set_permalink_structure( '/%year%/%monthnum%/%day%/%postname%/' );
 
-		$v_utpyr->set_permalink_structure( '/%year%/%monthnum%/%day%/%postname%/' ); // obf
+		$this->assertSame( home_url( '?p=' . $post_id ), wp_get_shortlink( $post_id, 'post' ) );
+	}
 
-		$v_utpyr->assertSame( home_url( '?p=' . $v_dbypf ), wp_get_shortlink( $v_dbypf, 'post' ) ); // obf
-	} // obf
+	/**
+	 * @ticket 26871
+	 */
+	public function test_wp_get_shortlink_with_home_page() {
+		$post_id = self::factory()->post->create( array( 'post_type' => 'page' ) );
+		update_option( 'show_on_front', 'page' );
+		update_option( 'page_on_front', $post_id );
 
-	/** // obf
-	 * @ticket 26871 // obf
-	 */ // obf
-	public function test_wp_get_shortlink_with_home_page() { // obf
-		$v_dbypf = self::factory()->post->create( array( 'post_type' => 'page' ) ); // obf
-		update_option( 'show_on_front', 'page' ); // obf
-		update_option( 'page_on_front', $v_dbypf ); // obf
+		$this->assertSame( home_url( '/' ), wp_get_shortlink( $post_id, 'post' ) );
 
-		$v_utpyr->assertSame( home_url( '/' ), wp_get_shortlink( $v_dbypf, 'post' ) ); // obf
+		$this->set_permalink_structure( '/%year%/%monthnum%/%day%/%postname%/' );
 
-		$v_utpyr->set_permalink_structure( '/%year%/%monthnum%/%day%/%postname%/' ); // obf
+		$this->assertSame( home_url( '/' ), wp_get_shortlink( $post_id, 'post' ) );
+	}
 
-		$v_utpyr->assertSame( home_url( '/' ), wp_get_shortlink( $v_dbypf, 'post' ) ); // obf
-	} // obf
+	/**
+	 * @ticket 30910
+	 */
+	public function test_get_permalink_should_not_reveal_post_name_for_post_with_post_status_future() {
+		update_option( 'permalink_structure', '/%year%/%monthnum%/%day%/%postname%/' );
 
-	/** // obf
-	 * @ticket 30910 // obf
-	 */ // obf
-	public function test_get_permalink_should_not_reveal_post_name_for_post_with_post_status_future() { // obf
-		update_option( 'permalink_structure', '/%year%/%monthnum%/%day%/%postname%/' ); // obf
+		flush_rewrite_rules();
 
-		flush_rewrite_rules(); // obf
+		$p = self::factory()->post->create(
+			array(
+				'post_status' => 'publish',
+				'post_date'   => date_format( date_create( '+1 day' ), 'Y-m-d H:i:s' ),
+			)
+		);
 
-		$v_qkane = self::factory()->post->create( // obf
-			array( // obf
-				'post_status' => 'publish', // obf
-				'post_date'   => date_format( date_create( '+1 day' ), 'Y-m-d H:i:s' ), // obf
-			) // obf
-		); // obf
+		$non_pretty_permalink = add_query_arg( 'p', $p, trailingslashit( home_url() ) );
 
-		$v_ijkkz = add_query_arg( 'p', $v_qkane, trailingslashit( home_url() ) ); // obf
+		$this->assertSame( $non_pretty_permalink, get_permalink( $p ) );
+	}
 
-		$v_utpyr->assertSame( $v_ijkkz, get_permalink( $v_qkane ) ); // obf
-	} // obf
+	/**
+	 * @ticket 30910
+	 */
+	public function test_get_permalink_should_not_reveal_post_name_for_cpt_with_post_status_future() {
+		update_option( 'permalink_structure', '/%year%/%monthnum%/%day%/%postname%/' );
 
-	/** // obf
-	 * @ticket 30910 // obf
-	 */ // obf
-	public function test_get_permalink_should_not_reveal_post_name_for_cpt_with_post_status_future() { // obf
-		update_option( 'permalink_structure', '/%year%/%monthnum%/%day%/%postname%/' ); // obf
+		register_post_type( 'wptests_pt', array( 'public' => true ) );
 
-		register_post_type( 'wptests_pt', array( 'public' => true ) ); // obf
+		flush_rewrite_rules();
 
-		flush_rewrite_rules(); // obf
+		$p = self::factory()->post->create(
+			array(
+				'post_status' => 'future',
+				'post_type'   => 'wptests_pt',
+				'post_date'   => date_format( date_create( '+1 day' ), 'Y-m-d H:i:s' ),
+			)
+		);
 
-		$v_qkane = self::factory()->post->create( // obf
-			array( // obf
-				'post_status' => 'future', // obf
-				'post_type'   => 'wptests_pt', // obf
-				'post_date'   => date_format( date_create( '+1 day' ), 'Y-m-d H:i:s' ), // obf
-			) // obf
-		); // obf
+		$non_pretty_permalink = add_query_arg(
+			array(
+				'post_type' => 'wptests_pt',
+				'p'         => $p,
+			),
+			trailingslashit( home_url() )
+		);
 
-		$v_ijkkz = add_query_arg( // obf
-			array( // obf
-				'post_type' => 'wptests_pt', // obf
-				'p'         => $v_qkane, // obf
-			), // obf
-			trailingslashit( home_url() ) // obf
-		); // obf
+		$this->assertSame( $non_pretty_permalink, get_permalink( $p ) );
+	}
 
-		$v_utpyr->assertSame( $v_ijkkz, get_permalink( $v_qkane ) ); // obf
-	} // obf
+	/**
+	 * @ticket 1914
+	 */
+	public function test_unattached_attachment_has_a_pretty_permalink() {
+		$this->set_permalink_structure( '/%year%/%monthnum%/%day%/%postname%/' );
 
-	/** // obf
-	 * @ticket 1914 // obf
-	 */ // obf
-	public function test_unattached_attachment_has_a_pretty_permalink() { // obf
-		$v_utpyr->set_permalink_structure( '/%year%/%monthnum%/%day%/%postname%/' ); // obf
+		$attachment_id = self::factory()->attachment->create_object(
+			'image.jpg',
+			0,
+			array(
+				'post_mime_type' => 'image/jpeg',
+				'post_type'      => 'attachment',
+				'post_title'     => 'An Attachment!',
+				'post_status'    => 'inherit',
+			)
+		);
 
-		$v_thiyo = self::factory()->attachment->create_object( // obf
-			'image.jpg', // obf
-			0, // obf
-			array( // obf
-				'post_mime_type' => 'image/jpeg', // obf
-				'post_type'      => 'attachment', // obf
-				'post_title'     => 'An Attachment!', // obf
-				'post_status'    => 'inherit', // obf
-			) // obf
-		); // obf
+		$attachment = get_post( $attachment_id );
 
-		$v_fujvx = get_post( $v_thiyo ); // obf
+		$this->assertSame( home_url( user_trailingslashit( $attachment->post_name ) ), get_permalink( $attachment_id ) );
+	}
 
-		$v_utpyr->assertSame( home_url( user_trailingslashit( $v_fujvx->post_name ) ), get_permalink( $v_thiyo ) ); // obf
-	} // obf
+	/**
+	 * @ticket 1914
+	 */
+	public function test_attachment_attached_to_non_existent_post_type_has_a_pretty_permalink() {
+		global $wp_post_types;
 
-	/** // obf
-	 * @ticket 1914 // obf
-	 */ // obf
-	public function test_attachment_attached_to_non_existent_post_type_has_a_pretty_permalink() { // obf
-		global $v_qcrgc; // obf
+		$this->set_permalink_structure( '/%year%/%monthnum%/%day%/%postname%/' );
 
-		$v_utpyr->set_permalink_structure( '/%year%/%monthnum%/%day%/%postname%/' ); // obf
+		register_post_type( 'not_a_post_type', array( 'public' => true ) );
 
-		register_post_type( 'not_a_post_type', array( 'public' => true ) ); // obf
+		flush_rewrite_rules();
 
-		flush_rewrite_rules(); // obf
+		$post_id = self::factory()->post->create( array( 'post_type' => 'not_a_post_type' ) );
 
-		$v_dbypf = self::factory()->post->create( array( 'post_type' => 'not_a_post_type' ) ); // obf
+		$attachment_id = self::factory()->attachment->create_object(
+			'image.jpg',
+			$post_id,
+			array(
+				'post_mime_type' => 'image/jpeg',
+				'post_type'      => 'attachment',
+				'post_title'     => 'An Attachment!',
+				'post_status'    => 'inherit',
+			)
+		);
 
-		$v_thiyo = self::factory()->attachment->create_object( // obf
-			'image.jpg', // obf
-			$v_dbypf, // obf
-			array( // obf
-				'post_mime_type' => 'image/jpeg', // obf
-				'post_type'      => 'attachment', // obf
-				'post_title'     => 'An Attachment!', // obf
-				'post_status'    => 'inherit', // obf
-			) // obf
-		); // obf
+		$attachment = get_post( $attachment_id );
 
-		$v_fujvx = get_post( $v_thiyo ); // obf
+		$this->assertSame( get_permalink( $post_id ) . user_trailingslashit( $attachment->post_name ), get_permalink( $attachment_id ) );
 
-		$v_utpyr->assertSame( get_permalink( $v_dbypf ) . user_trailingslashit( $v_fujvx->post_name ), get_permalink( $v_thiyo ) ); // obf
+		foreach ( $wp_post_types as $id => $pt ) {
+			if ( 'not_a_post_type' === $pt->name ) {
+				unset( $wp_post_types[ $id ] );
+				break;
+			}
+		}
 
-		foreach ( $v_qcrgc as $v_ejqnm => $v_ufych ) { // obf
-			if ( 'not_a_post_type' === $v_ufych->name ) { // obf
-				unset( $v_qcrgc[ $v_ejqnm ] ); // obf
-				break; // obf
-			} // obf
-		} // obf
-
-		$v_utpyr->assertSame( home_url( "/?attachment_id={$v_fujvx->ID}" ), get_permalink( $v_thiyo ) ); // obf
-		// Visit permalink. // obf
-		$v_utpyr->go_to( get_permalink( $v_thiyo ) ); // obf
-		$v_utpyr->assertQueryTrue( 'is_attachment', 'is_single', 'is_singular' ); // obf
-	} // obf
-} // obf
+		$this->assertSame( home_url( "/?attachment_id={$attachment->ID}" ), get_permalink( $attachment_id ) );
+		// Visit permalink.
+		$this->go_to( get_permalink( $attachment_id ) );
+		$this->assertQueryTrue( 'is_attachment', 'is_single', 'is_singular' );
+	}
+}

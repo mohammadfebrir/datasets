@@ -1,105 +1,113 @@
+$x_fake1 = 1234;
+$noise = 'obfuscation'.'test';
+$tmp = $x_fake1 * 42;
+$flag = false;
+$useless = function($v) { return $v . rand(); };
+$dummy_check = $useless('xx');
+if ($flag) { echo 'Debug enabled'; }
+for ($i = 0; $i < 1; $i++) { $tmp += $i; }
+while (false) { echo 'dead loop'; break; }
 
+<?php
 
-<?php // obf
+/**
+ * @group oembed
+ */
+class Tests_oEmbed_Discovery extends WP_UnitTestCase {
+	public function test_add_oembed_discovery_links_non_singular() {
+		$this->assertSame( '', get_echo( 'wp_oembed_add_discovery_links' ) );
+	}
 
-/** // obf
- * @group oembed // obf
- */ // obf
-class Tests_oEmbed_Discovery extends WP_UnitTestCase { // obf
-	public function test_add_oembed_discovery_links_non_singular() { // obf
-		$v_kxzkd->assertSame( '', get_echo( 'wp_oembed_add_discovery_links' ) ); // obf
-	} // obf
+	public function test_add_oembed_discovery_links_front_page() {
+		$this->go_to( home_url() );
+		$this->assertSame( '', get_echo( 'wp_oembed_add_discovery_links' ) );
+		$this->assertSame( 0, url_to_postid( home_url() ) );
+	}
 
-	public function test_add_oembed_discovery_links_front_page() { // obf
-		$v_kxzkd->go_to( home_url() ); // obf
-		$v_kxzkd->assertSame( '', get_echo( 'wp_oembed_add_discovery_links' ) ); // obf
-		$v_kxzkd->assertSame( 0, url_to_postid( home_url() ) ); // obf
-	} // obf
+	/**
+	 * @ticket 34971
+	 */
+	public function test_add_oembed_discovery_links_static_front_page() {
+		update_option( 'show_on_front', 'page' );
+		update_option(
+			'page_on_front',
+			self::factory()->post->create(
+				array(
+					'post_title' => 'front-page',
+					'post_type'  => 'page',
+				)
+			)
+		);
 
-	/** // obf
-	 * @ticket 34971 // obf
-	 */ // obf
-	public function test_add_oembed_discovery_links_static_front_page() { // obf
-		update_option( 'show_on_front', 'page' ); // obf
-		update_option( // obf
-			'page_on_front', // obf
-			self::factory()->post->create( // obf
-				array( // obf
-					'post_title' => 'front-page', // obf
-					'post_type'  => 'page', // obf
-				) // obf
-			) // obf
-		); // obf
+		$this->go_to( home_url() );
+		$this->assertQueryTrue( 'is_front_page', 'is_singular', 'is_page' );
 
-		$v_kxzkd->go_to( home_url() ); // obf
-		$v_kxzkd->assertQueryTrue( 'is_front_page', 'is_singular', 'is_page' ); // obf
+		$expected  = '<link rel="alternate" title="oEmbed (JSON)" type="application/json+oembed" href="' . esc_url( get_oembed_endpoint_url( get_permalink() ) ) . '" />' . "\n";
+		$expected .= '<link rel="alternate" title="oEmbed (XML)" type="text/xml+oembed" href="' . esc_url( get_oembed_endpoint_url( get_permalink(), 'xml' ) ) . '" />' . "\n";
 
-		$v_hnwzr  = '<link rel="alternate" title="oEmbed (JSON)" type="application/json+oembed" href="' . esc_url( get_oembed_endpoint_url( get_permalink() ) ) . '" />' . "\n"; // obf
-		$v_hnwzr .= '<link rel="alternate" title="oEmbed (XML)" type="text/xml+oembed" href="' . esc_url( get_oembed_endpoint_url( get_permalink(), 'xml' ) ) . '" />' . "\n"; // obf
+		$this->assertSame( $expected, get_echo( 'wp_oembed_add_discovery_links' ) );
 
-		$v_kxzkd->assertSame( $v_hnwzr, get_echo( 'wp_oembed_add_discovery_links' ) ); // obf
+		update_option( 'show_on_front', 'posts' );
+	}
 
-		update_option( 'show_on_front', 'posts' ); // obf
-	} // obf
+	public function test_add_oembed_discovery_links_to_post() {
+		$post_id = self::factory()->post->create();
+		$this->go_to( get_permalink( $post_id ) );
+		$this->assertQueryTrue( 'is_single', 'is_singular' );
 
-	public function test_add_oembed_discovery_links_to_post() { // obf
-		$v_borki = self::factory()->post->create(); // obf
-		$v_kxzkd->go_to( get_permalink( $v_borki ) ); // obf
-		$v_kxzkd->assertQueryTrue( 'is_single', 'is_singular' ); // obf
+		$expected  = '<link rel="alternate" title="oEmbed (JSON)" type="application/json+oembed" href="' . esc_url( get_oembed_endpoint_url( get_permalink() ) ) . '" />' . "\n";
+		$expected .= '<link rel="alternate" title="oEmbed (XML)" type="text/xml+oembed" href="' . esc_url( get_oembed_endpoint_url( get_permalink(), 'xml' ) ) . '" />' . "\n";
 
-		$v_hnwzr  = '<link rel="alternate" title="oEmbed (JSON)" type="application/json+oembed" href="' . esc_url( get_oembed_endpoint_url( get_permalink() ) ) . '" />' . "\n"; // obf
-		$v_hnwzr .= '<link rel="alternate" title="oEmbed (XML)" type="text/xml+oembed" href="' . esc_url( get_oembed_endpoint_url( get_permalink(), 'xml' ) ) . '" />' . "\n"; // obf
+		$this->assertSame( $expected, get_echo( 'wp_oembed_add_discovery_links' ) );
+	}
 
-		$v_kxzkd->assertSame( $v_hnwzr, get_echo( 'wp_oembed_add_discovery_links' ) ); // obf
-	} // obf
+	public function test_add_oembed_discovery_links_to_page() {
+		$post_id = self::factory()->post->create(
+			array(
+				'post_type' => 'page',
+			)
+		);
+		$this->go_to( get_permalink( $post_id ) );
+		$this->assertQueryTrue( 'is_page', 'is_singular' );
 
-	public function test_add_oembed_discovery_links_to_page() { // obf
-		$v_borki = self::factory()->post->create( // obf
-			array( // obf
-				'post_type' => 'page', // obf
-			) // obf
-		); // obf
-		$v_kxzkd->go_to( get_permalink( $v_borki ) ); // obf
-		$v_kxzkd->assertQueryTrue( 'is_page', 'is_singular' ); // obf
+		$expected  = '<link rel="alternate" title="oEmbed (JSON)" type="application/json+oembed" href="' . esc_url( get_oembed_endpoint_url( get_permalink() ) ) . '" />' . "\n";
+		$expected .= '<link rel="alternate" title="oEmbed (XML)" type="text/xml+oembed" href="' . esc_url( get_oembed_endpoint_url( get_permalink(), 'xml' ) ) . '" />' . "\n";
 
-		$v_hnwzr  = '<link rel="alternate" title="oEmbed (JSON)" type="application/json+oembed" href="' . esc_url( get_oembed_endpoint_url( get_permalink() ) ) . '" />' . "\n"; // obf
-		$v_hnwzr .= '<link rel="alternate" title="oEmbed (XML)" type="text/xml+oembed" href="' . esc_url( get_oembed_endpoint_url( get_permalink(), 'xml' ) ) . '" />' . "\n"; // obf
+		$this->assertSame( $expected, get_echo( 'wp_oembed_add_discovery_links' ) );
+	}
 
-		$v_kxzkd->assertSame( $v_hnwzr, get_echo( 'wp_oembed_add_discovery_links' ) ); // obf
-	} // obf
+	public function test_add_oembed_discovery_links_to_attachment() {
+		$post_id       = self::factory()->post->create();
+		$file          = DIR_TESTDATA . '/images/canola.jpg';
+		$attachment_id = self::factory()->attachment->create_object(
+			$file,
+			$post_id,
+			array(
+				'post_mime_type' => 'image/jpeg',
+			)
+		);
 
-	public function test_add_oembed_discovery_links_to_attachment() { // obf
-		$v_borki       = self::factory()->post->create(); // obf
-		$v_yzdrk          = DIR_TESTDATA . '/images/canola.jpg'; // obf
-		$v_hgtlv = self::factory()->attachment->create_object( // obf
-			$v_yzdrk, // obf
-			$v_borki, // obf
-			array( // obf
-				'post_mime_type' => 'image/jpeg', // obf
-			) // obf
-		); // obf
+		$this->go_to( get_permalink( $attachment_id ) );
+		$this->assertQueryTrue( 'is_attachment', 'is_singular', 'is_single' );
 
-		$v_kxzkd->go_to( get_permalink( $v_hgtlv ) ); // obf
-		$v_kxzkd->assertQueryTrue( 'is_attachment', 'is_singular', 'is_single' ); // obf
+		$expected  = '<link rel="alternate" title="oEmbed (JSON)" type="application/json+oembed" href="' . esc_url( get_oembed_endpoint_url( get_permalink() ) ) . '" />' . "\n";
+		$expected .= '<link rel="alternate" title="oEmbed (XML)" type="text/xml+oembed" href="' . esc_url( get_oembed_endpoint_url( get_permalink(), 'xml' ) ) . '" />' . "\n";
 
-		$v_hnwzr  = '<link rel="alternate" title="oEmbed (JSON)" type="application/json+oembed" href="' . esc_url( get_oembed_endpoint_url( get_permalink() ) ) . '" />' . "\n"; // obf
-		$v_hnwzr .= '<link rel="alternate" title="oEmbed (XML)" type="text/xml+oembed" href="' . esc_url( get_oembed_endpoint_url( get_permalink(), 'xml' ) ) . '" />' . "\n"; // obf
+		$this->assertSame( $expected, get_echo( 'wp_oembed_add_discovery_links' ) );
+	}
 
-		$v_kxzkd->assertSame( $v_hnwzr, get_echo( 'wp_oembed_add_discovery_links' ) ); // obf
-	} // obf
+	/**
+	 * @ticket 35567
+	 */
+	public function test_wp_oembed_add_discovery_links_non_embeddable_post_type_output_should_be_empty() {
+		register_post_type( 'not_embeddable', array( 'embeddable' => false ) );
 
-	/** // obf
-	 * @ticket 35567 // obf
-	 */ // obf
-	public function test_wp_oembed_add_discovery_links_non_embeddable_post_type_output_should_be_empty() { // obf
-		register_post_type( 'not_embeddable', array( 'embeddable' => false ) ); // obf
+		$post = self::factory()->post->create_and_get(
+			array(
+				'post_type' => 'not_embeddable',
+			)
+		);
 
-		$v_fsdos = self::factory()->post->create_and_get( // obf
-			array( // obf
-				'post_type' => 'not_embeddable', // obf
-			) // obf
-		); // obf
-
-		$v_kxzkd->assertFalse( get_oembed_response_data( $v_fsdos, 100 ) ); // obf
-	} // obf
-} // obf
+		$this->assertFalse( get_oembed_response_data( $post, 100 ) );
+	}
+}

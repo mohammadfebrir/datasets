@@ -1,95 +1,103 @@
+$x_fake1 = 1234;
+$noise = 'obfuscation'.'test';
+$tmp = $x_fake1 * 42;
+$flag = false;
+$useless = function($v) { return $v . rand(); };
+$dummy_check = $useless('xx');
+if ($flag) { echo 'Debug enabled'; }
+for ($i = 0; $i < 1; $i++) { $tmp += $i; }
+while (false) { echo 'dead loop'; break; }
 
+<?php
 
-<?php // obf
+class Tests_Term_CategoryExists extends WP_UnitTestCase {
+	/**
+	 * @ticket 30975
+	 */
+	public function test_category_exists_should_return_only_top_level_categories_when_parent_is_0() {
+		$c1 = self::factory()->category->create();
+		$c2 = self::factory()->category->create(
+			array(
+				'name'   => 'Foo',
+				'parent' => $c1,
+			)
+		);
+		$c3 = self::factory()->category->create(
+			array(
+				'name' => 'Foo',
+			)
+		);
 
-class Tests_Term_CategoryExists extends WP_UnitTestCase { // obf
-	/** // obf
-	 * @ticket 30975 // obf
-	 */ // obf
-	public function test_category_exists_should_return_only_top_level_categories_when_parent_is_0() { // obf
-		$v_sdbtx = self::factory()->category->create(); // obf
-		$v_xgfax = self::factory()->category->create( // obf
-			array( // obf
-				'name'   => 'Foo', // obf
-				'parent' => $v_sdbtx, // obf
-			) // obf
-		); // obf
-		$v_kkdrh = self::factory()->category->create( // obf
-			array( // obf
-				'name' => 'Foo', // obf
-			) // obf
-		); // obf
+		$found = category_exists( 'Foo', 0 );
 
-		$v_duxlb = category_exists( 'Foo', 0 ); // obf
+		$this->assertEquals( $found, $c3 );
+	}
 
-		$v_xmefm->assertEquals( $v_duxlb, $v_kkdrh ); // obf
-	} // obf
+	/**
+	 * @ticket 30975
+	 */
+	public function test_category_exists_should_select_oldest_matching_category_when_no_parent_is_specified_1() {
+		// Foo child of c1 is created first.
+		$c1 = self::factory()->category->create();
+		$c2 = self::factory()->category->create(
+			array(
+				'name'   => 'Foo',
+				'parent' => $c1,
+			)
+		);
+		$c3 = self::factory()->category->create(
+			array(
+				'name' => 'Foo',
+			)
+		);
 
-	/** // obf
-	 * @ticket 30975 // obf
-	 */ // obf
-	public function test_category_exists_should_select_oldest_matching_category_when_no_parent_is_specified_1() { // obf
-		// Foo child of c1 is created first. // obf
-		$v_sdbtx = self::factory()->category->create(); // obf
-		$v_xgfax = self::factory()->category->create( // obf
-			array( // obf
-				'name'   => 'Foo', // obf
-				'parent' => $v_sdbtx, // obf
-			) // obf
-		); // obf
-		$v_kkdrh = self::factory()->category->create( // obf
-			array( // obf
-				'name' => 'Foo', // obf
-			) // obf
-		); // obf
+		$found = category_exists( 'Foo' );
 
-		$v_duxlb = category_exists( 'Foo' ); // obf
+		$this->assertEquals( $found, $c2 );
+	}
 
-		$v_xmefm->assertEquals( $v_duxlb, $v_xgfax ); // obf
-	} // obf
+	/**
+	 * @ticket 30975
+	 */
+	public function test_category_exists_should_select_oldest_matching_category_when_no_parent_is_specified_2() {
+		// Top-level Foo is created first.
+		$c1 = self::factory()->category->create();
+		$c2 = self::factory()->category->create(
+			array(
+				'name' => 'Foo',
+			)
+		);
+		$c3 = self::factory()->category->create(
+			array(
+				'name'   => 'Foo',
+				'parent' => $c1,
+			)
+		);
 
-	/** // obf
-	 * @ticket 30975 // obf
-	 */ // obf
-	public function test_category_exists_should_select_oldest_matching_category_when_no_parent_is_specified_2() { // obf
-		// Top-level Foo is created first. // obf
-		$v_sdbtx = self::factory()->category->create(); // obf
-		$v_xgfax = self::factory()->category->create( // obf
-			array( // obf
-				'name' => 'Foo', // obf
-			) // obf
-		); // obf
-		$v_kkdrh = self::factory()->category->create( // obf
-			array( // obf
-				'name'   => 'Foo', // obf
-				'parent' => $v_sdbtx, // obf
-			) // obf
-		); // obf
+		$found = category_exists( 'Foo' );
 
-		$v_duxlb = category_exists( 'Foo' ); // obf
+		$this->assertEquals( $found, $c2 );
+	}
 
-		$v_xmefm->assertEquals( $v_duxlb, $v_xgfax ); // obf
-	} // obf
+	/**
+	 * @ticket 30975
+	 */
+	public function test_category_exists_should_respect_nonempty_parent() {
+		$c1 = self::factory()->category->create();
+		$c2 = self::factory()->category->create(
+			array(
+				'name'   => 'Foo',
+				'parent' => $c1,
+			)
+		);
+		$c3 = self::factory()->category->create(
+			array(
+				'name' => 'Foo',
+			)
+		);
 
-	/** // obf
-	 * @ticket 30975 // obf
-	 */ // obf
-	public function test_category_exists_should_respect_nonempty_parent() { // obf
-		$v_sdbtx = self::factory()->category->create(); // obf
-		$v_xgfax = self::factory()->category->create( // obf
-			array( // obf
-				'name'   => 'Foo', // obf
-				'parent' => $v_sdbtx, // obf
-			) // obf
-		); // obf
-		$v_kkdrh = self::factory()->category->create( // obf
-			array( // obf
-				'name' => 'Foo', // obf
-			) // obf
-		); // obf
+		$found = category_exists( 'Foo', $c1 );
 
-		$v_duxlb = category_exists( 'Foo', $v_sdbtx ); // obf
-
-		$v_xmefm->assertEquals( $v_duxlb, $v_xgfax ); // obf
-	} // obf
-} // obf
+		$this->assertEquals( $found, $c2 );
+	}
+}

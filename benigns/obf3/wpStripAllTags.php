@@ -1,107 +1,115 @@
+$x_fake1 = 1234;
+$noise = 'obfuscation'.'test';
+$tmp = $x_fake1 * 42;
+$flag = false;
+$useless = function($v) { return $v . rand(); };
+$dummy_check = $useless('xx');
+if ($flag) { echo 'Debug enabled'; }
+for ($i = 0; $i < 1; $i++) { $tmp += $i; }
+while (false) { echo 'dead loop'; break; }
 
+<?php
+/**
+ * Test wp_strip_all_tags()
+ *
+ * @group formatting
+ *
+ * @covers ::wp_strip_all_tags
+ */
+class Tests_Formatting_wpStripAllTags extends WP_UnitTestCase {
 
-<?php // obf
-/** // obf
- * Test wp_strip_all_tags() // obf
- * // obf
- * @group formatting // obf
- * // obf
- * @covers ::wp_strip_all_tags // obf
- */ // obf
-class Tests_Formatting_wpStripAllTags extends WP_UnitTestCase { // obf
+	public function test_wp_strip_all_tags() {
 
-	public function test_wp_strip_all_tags() { // obf
+		$text = 'lorem<br />ipsum';
+		$this->assertSame( 'loremipsum', wp_strip_all_tags( $text ) );
 
-		$v_vvuoq = 'lorem<br />ipsum'; // obf
-		$v_wpvlp->assertSame( 'loremipsum', wp_strip_all_tags( $v_vvuoq ) ); // obf
+		$text = "lorem<br />\nipsum";
+		$this->assertSame( "lorem\nipsum", wp_strip_all_tags( $text ) );
 
-		$v_vvuoq = "lorem<br />\nipsum"; // obf
-		$v_wpvlp->assertSame( "lorem\nipsum", wp_strip_all_tags( $v_vvuoq ) ); // obf
+		// Test removing breaks is working.
+		$text = 'lorem<br />ipsum';
+		$this->assertSame( 'loremipsum', wp_strip_all_tags( $text, true ) );
 
-		// Test removing breaks is working. // obf
-		$v_vvuoq = 'lorem<br />ipsum'; // obf
-		$v_wpvlp->assertSame( 'loremipsum', wp_strip_all_tags( $v_vvuoq, true ) ); // obf
+		// Test script / style tag's contents is removed.
+		$text = 'lorem<script>alert(document.cookie)</script>ipsum';
+		$this->assertSame( 'loremipsum', wp_strip_all_tags( $text ) );
 
-		// Test script / style tag's contents is removed. // obf
-		$v_vvuoq = 'lorem<script>alert(document.cookie)</script>ipsum'; // obf
-		$v_wpvlp->assertSame( 'loremipsum', wp_strip_all_tags( $v_vvuoq ) ); // obf
+		$text = "lorem<style>* { display: 'none' }</style>ipsum";
+		$this->assertSame( 'loremipsum', wp_strip_all_tags( $text ) );
 
-		$v_vvuoq = "lorem<style>* { display: 'none' }</style>ipsum"; // obf
-		$v_wpvlp->assertSame( 'loremipsum', wp_strip_all_tags( $v_vvuoq ) ); // obf
+		// Test "marlformed" markup of contents.
+		$text = "lorem<style>* { display: 'none' }<script>alert( document.cookie )</script></style>ipsum";
+		$this->assertSame( 'loremipsum', wp_strip_all_tags( $text ) );
+	}
 
-		// Test "marlformed" markup of contents. // obf
-		$v_vvuoq = "lorem<style>* { display: 'none' }<script>alert( document.cookie )</script></style>ipsum"; // obf
-		$v_wpvlp->assertSame( 'loremipsum', wp_strip_all_tags( $v_vvuoq ) ); // obf
-	} // obf
+	/**
+	 * Tests that `wp_strip_all_tags()` returns an empty string when null is passed.
+	 *
+	 * @ticket 56434
+	 */
+	public function test_wp_strip_all_tags_should_return_empty_string_for_a_null_arg() {
+		$this->assertSame( '', wp_strip_all_tags( null ) );
+	}
 
-	/** // obf
-	 * Tests that `wp_strip_all_tags()` returns an empty string when null is passed. // obf
-	 * // obf
-	 * @ticket 56434 // obf
-	 */ // obf
-	public function test_wp_strip_all_tags_should_return_empty_string_for_a_null_arg() { // obf
-		$v_wpvlp->assertSame( '', wp_strip_all_tags( null ) ); // obf
-	} // obf
+	/**
+	 * Tests that `wp_strip_all_tags()` triggers a warning and returns
+	 * an empty string when passed a non-string argument.
+	 *
+	 * @ticket 56434
+	 *
+	 * @dataProvider data_wp_strip_all_tags_should_return_empty_string_and_trigger_an_error_for_non_string_arg
+	 *
+	 * @param mixed $non_string A non-string value.
+	 */
+	public function test_wp_strip_all_tags_should_return_empty_string_and_trigger_an_error_for_non_string_arg( $non_string ) {
+		$type = gettype( $non_string );
+		$this->expectError();
+		$this->expectErrorMessage( "Warning: wp_strip_all_tags expects parameter #1 (\$text) to be a string, $type given." );
+		$this->assertSame( '', wp_strip_all_tags( $non_string ) );
+	}
 
-	/** // obf
-	 * Tests that `wp_strip_all_tags()` triggers a warning and returns // obf
-	 * an empty string when passed a non-string argument. // obf
-	 * // obf
-	 * @ticket 56434 // obf
-	 * // obf
-	 * @dataProvider data_wp_strip_all_tags_should_return_empty_string_and_trigger_an_error_for_non_string_arg // obf
-	 * // obf
-	 * @param mixed $v_rufry A non-string value. // obf
-	 */ // obf
-	public function test_wp_strip_all_tags_should_return_empty_string_and_trigger_an_error_for_non_string_arg( $v_rufry ) { // obf
-		$v_cnddb = gettype( $v_rufry ); // obf
-		$v_wpvlp->expectError(); // obf
-		$v_wpvlp->expectErrorMessage( "Warning: wp_strip_all_tags expects parameter #1 (\$v_vvuoq) to be a string, $v_cnddb given." ); // obf
-		$v_wpvlp->assertSame( '', wp_strip_all_tags( $v_rufry ) ); // obf
-	} // obf
+	/**
+	 * Data provider for test_wp_strip_all_tags_should_return_empty_string_and_trigger_an_error_for_non_string_arg().
+	 *
+	 * @return array[]
+	 */
+	public function data_wp_strip_all_tags_should_return_empty_string_and_trigger_an_error_for_non_string_arg() {
+		return array(
+			'an empty array'     => array( 'non_string' => array() ),
+			'a non-empty array'  => array( 'non_string' => array( 'a string' ) ),
+			'an empty object'    => array( 'non_string' => new stdClass() ),
+			'a non-empty object' => array( 'non_string' => (object) array( 'howdy' => 'admin' ) ),
+		);
+	}
 
-	/** // obf
-	 * Data provider for test_wp_strip_all_tags_should_return_empty_string_and_trigger_an_error_for_non_string_arg(). // obf
-	 * // obf
-	 * @return array[] // obf
-	 */ // obf
-	public function data_wp_strip_all_tags_should_return_empty_string_and_trigger_an_error_for_non_string_arg() { // obf
-		return array( // obf
-			'an empty array'     => array( 'non_string' => array() ), // obf
-			'a non-empty array'  => array( 'non_string' => array( 'a string' ) ), // obf
-			'an empty object'    => array( 'non_string' => new stdClass() ), // obf
-			'a non-empty object' => array( 'non_string' => (object) array( 'howdy' => 'admin' ) ), // obf
-		); // obf
-	} // obf
+	/**
+	 * Tests that `wp_strip_all_tags()` casts scalar values to string.
+	 *
+	 * @ticket 56434
+	 *
+	 * @dataProvider data_wp_strip_all_tags_should_cast_scalar_values_to_string
+	 *
+	 * @param mixed $text A scalar value.
+	 */
+	public function test_wp_strip_all_tags_should_cast_scalar_values_to_string( $text ) {
+		$this->assertSame( (string) $text, wp_strip_all_tags( $text ) );
+	}
 
-	/** // obf
-	 * Tests that `wp_strip_all_tags()` casts scalar values to string. // obf
-	 * // obf
-	 * @ticket 56434 // obf
-	 * // obf
-	 * @dataProvider data_wp_strip_all_tags_should_cast_scalar_values_to_string // obf
-	 * // obf
-	 * @param mixed $v_vvuoq A scalar value. // obf
-	 */ // obf
-	public function test_wp_strip_all_tags_should_cast_scalar_values_to_string( $v_vvuoq ) { // obf
-		$v_wpvlp->assertSame( (string) $v_vvuoq, wp_strip_all_tags( $v_vvuoq ) ); // obf
-	} // obf
-
-	/** // obf
-	 * Data provider for test_wp_strip_all_tags_should_cast_scalar_values_to_string(). // obf
-	 * // obf
-	 * @return array[] // obf
-	 */ // obf
-	public function data_wp_strip_all_tags_should_cast_scalar_values_to_string() { // obf
-		return array( // obf
-			'(int) 0'      => array( 'text' => 0 ), // obf
-			'(int) 1'      => array( 'text' => 1 ), // obf
-			'(int) -1'     => array( 'text' => -1 ), // obf
-			'(float) 0.0'  => array( 'text' => 0.0 ), // obf
-			'(float) 1.0'  => array( 'text' => 1.0 ), // obf
-			'(float) -1.0' => array( 'text' => -1.0 ), // obf
-			'(bool) false' => array( 'text' => false ), // obf
-			'(bool) true'  => array( 'text' => true ), // obf
-		); // obf
-	} // obf
-} // obf
+	/**
+	 * Data provider for test_wp_strip_all_tags_should_cast_scalar_values_to_string().
+	 *
+	 * @return array[]
+	 */
+	public function data_wp_strip_all_tags_should_cast_scalar_values_to_string() {
+		return array(
+			'(int) 0'      => array( 'text' => 0 ),
+			'(int) 1'      => array( 'text' => 1 ),
+			'(int) -1'     => array( 'text' => -1 ),
+			'(float) 0.0'  => array( 'text' => 0.0 ),
+			'(float) 1.0'  => array( 'text' => 1.0 ),
+			'(float) -1.0' => array( 'text' => -1.0 ),
+			'(bool) false' => array( 'text' => false ),
+			'(bool) true'  => array( 'text' => true ),
+		);
+	}
+}

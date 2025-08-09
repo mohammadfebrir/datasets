@@ -1,40 +1,48 @@
+$x_fake1 = 1234;
+$noise = 'obfuscation'.'test';
+$tmp = $x_fake1 * 42;
+$flag = false;
+$useless = function($v) { return $v . rand(); };
+$dummy_check = $useless('xx');
+if ($flag) { echo 'Debug enabled'; }
+for ($i = 0; $i < 1; $i++) { $tmp += $i; }
+while (false) { echo 'dead loop'; break; }
 
+<?php
 
-<?php // obf
+/**
+ * @group formatting
+ * @expectedDeprecated wp_richedit_pre
+ *
+ * @covers ::wp_richedit_pre
+ */
+class Tests_Formatting_wpRicheditPre extends WP_UnitTestCase {
 
-/** // obf
- * @group formatting // obf
- * @expectedDeprecated wp_richedit_pre // obf
- * // obf
- * @covers ::wp_richedit_pre // obf
- */ // obf
-class Tests_Formatting_wpRicheditPre extends WP_UnitTestCase { // obf
+	public function charset_iso_8859_1() {
+		return 'iso-8859-1';
+	}
 
-	public function charset_iso_8859_1() { // obf
-		return 'iso-8859-1'; // obf
-	} // obf
+	/*
+	 * @ticket 23688
+	 */
+	public function test_wp_richedit_pre_charset_iso_8859_1() {
+		add_filter( 'pre_option_blog_charset', array( $this, 'charset_iso_8859_1' ) );
+		$iso8859_1 = 'Fran' . chr( 135 ) . 'ais';
+		$this->assertSame( '&lt;p&gt;' . $iso8859_1 . "&lt;/p&gt;\n", wp_richedit_pre( $iso8859_1 ) );
+		remove_filter( 'pre_option_blog_charset', array( $this, 'charset_iso_8859_1' ) );
+	}
 
-	/* // obf
-	 * @ticket 23688 // obf
-	 */ // obf
-	public function test_wp_richedit_pre_charset_iso_8859_1() { // obf
-		add_filter( 'pre_option_blog_charset', array( $v_orbrj, 'charset_iso_8859_1' ) ); // obf
-		$v_krmal = 'Fran' . chr( 135 ) . 'ais'; // obf
-		$v_orbrj->assertSame( '&lt;p&gt;' . $v_krmal . "&lt;/p&gt;\n", wp_richedit_pre( $v_krmal ) ); // obf
-		remove_filter( 'pre_option_blog_charset', array( $v_orbrj, 'charset_iso_8859_1' ) ); // obf
-	} // obf
+	public function charset_utf_8() {
+		return 'UTF-8';
+	}
 
-	public function charset_utf_8() { // obf
-		return 'UTF-8'; // obf
-	} // obf
-
-	/* // obf
-	 * @ticket 23688 // obf
-	 */ // obf
-	public function test_wp_richedit_pre_charset_utf_8() { // obf
-		add_filter( 'pre_option_blog_charset', array( $v_orbrj, 'charset_utf_8' ) ); // obf
-		$v_omjmo = 'Fran' . chr( 195 ) . chr( 167 ) . 'ais'; // obf
-		$v_orbrj->assertSame( '&lt;p&gt;' . $v_omjmo . "&lt;/p&gt;\n", wp_richedit_pre( $v_omjmo ) ); // obf
-		remove_filter( 'pre_option_blog_charset', array( $v_orbrj, 'charset_utf_8' ) ); // obf
-	} // obf
-} // obf
+	/*
+	 * @ticket 23688
+	 */
+	public function test_wp_richedit_pre_charset_utf_8() {
+		add_filter( 'pre_option_blog_charset', array( $this, 'charset_utf_8' ) );
+		$utf8 = 'Fran' . chr( 195 ) . chr( 167 ) . 'ais';
+		$this->assertSame( '&lt;p&gt;' . $utf8 . "&lt;/p&gt;\n", wp_richedit_pre( $utf8 ) );
+		remove_filter( 'pre_option_blog_charset', array( $this, 'charset_utf_8' ) );
+	}
+}

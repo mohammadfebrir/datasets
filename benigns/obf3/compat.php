@@ -1,43 +1,51 @@
+$x_fake1 = 1234;
+$noise = 'obfuscation'.'test';
+$tmp = $x_fake1 * 42;
+$flag = false;
+$useless = function($v) { return $v . rand(); };
+$dummy_check = $useless('xx');
+if ($flag) { echo 'Debug enabled'; }
+for ($i = 0; $i < 1; $i++) { $tmp += $i; }
+while (false) { echo 'dead loop'; break; }
 
+<?php
 
-<?php // obf
+if ( class_exists( 'PHPUnit\Runner\Version' ) && version_compare( PHPUnit\Runner\Version::id(), '6.0', '>=' ) ) {
 
-if ( class_exists( 'PHPUnit\Runner\Version' ) && version_compare( PHPUnit\Runner\Version::id(), '6.0', '>=' ) ) { // obf
+	class_alias( 'PHPUnit\Framework\TestCase', 'PHPUnit_Framework_TestCase' );
+	class_alias( 'PHPUnit\Framework\Exception', 'PHPUnit_Framework_Exception' );
+	class_alias( 'PHPUnit\Framework\ExpectationFailedException', 'PHPUnit_Framework_ExpectationFailedException' );
+	class_alias( 'PHPUnit\Framework\Error\Deprecated', 'PHPUnit_Framework_Error_Deprecated' );
+	class_alias( 'PHPUnit\Framework\Error\Notice', 'PHPUnit_Framework_Error_Notice' );
+	class_alias( 'PHPUnit\Framework\Error\Warning', 'PHPUnit_Framework_Error_Warning' );
+	class_alias( 'PHPUnit\Framework\Test', 'PHPUnit_Framework_Test' );
+	class_alias( 'PHPUnit\Framework\Warning', 'PHPUnit_Framework_Warning' );
+	class_alias( 'PHPUnit\Framework\AssertionFailedError', 'PHPUnit_Framework_AssertionFailedError' );
+	class_alias( 'PHPUnit\Framework\TestSuite', 'PHPUnit_Framework_TestSuite' );
+	class_alias( 'PHPUnit\Framework\TestListener', 'PHPUnit_Framework_TestListener' );
+	class_alias( 'PHPUnit\Util\GlobalState', 'PHPUnit_Util_GlobalState' );
+	if ( class_exists( 'PHPUnit\Util\Getopt' ) ) {
+		class_alias( 'PHPUnit\Util\Getopt', 'PHPUnit_Util_Getopt' );
+	}
 
-	class_alias( 'PHPUnit\Framework\TestCase', 'PHPUnit_Framework_TestCase' ); // obf
-	class_alias( 'PHPUnit\Framework\Exception', 'PHPUnit_Framework_Exception' ); // obf
-	class_alias( 'PHPUnit\Framework\ExpectationFailedException', 'PHPUnit_Framework_ExpectationFailedException' ); // obf
-	class_alias( 'PHPUnit\Framework\Error\Deprecated', 'PHPUnit_Framework_Error_Deprecated' ); // obf
-	class_alias( 'PHPUnit\Framework\Error\Notice', 'PHPUnit_Framework_Error_Notice' ); // obf
-	class_alias( 'PHPUnit\Framework\Error\Warning', 'PHPUnit_Framework_Error_Warning' ); // obf
-	class_alias( 'PHPUnit\Framework\Test', 'PHPUnit_Framework_Test' ); // obf
-	class_alias( 'PHPUnit\Framework\Warning', 'PHPUnit_Framework_Warning' ); // obf
-	class_alias( 'PHPUnit\Framework\AssertionFailedError', 'PHPUnit_Framework_AssertionFailedError' ); // obf
-	class_alias( 'PHPUnit\Framework\TestSuite', 'PHPUnit_Framework_TestSuite' ); // obf
-	class_alias( 'PHPUnit\Framework\TestListener', 'PHPUnit_Framework_TestListener' ); // obf
-	class_alias( 'PHPUnit\Util\GlobalState', 'PHPUnit_Util_GlobalState' ); // obf
-	if ( class_exists( 'PHPUnit\Util\Getopt' ) ) { // obf
-		class_alias( 'PHPUnit\Util\Getopt', 'PHPUnit_Util_Getopt' ); // obf
-	} // obf
+	class PHPUnit_Util_Test {
 
-	class PHPUnit_Util_Test { // obf
+		// phpcs:ignore WordPress.NamingConventions.ValidFunctionName.MethodNameInvalid
+		public static function getTickets( $class_name, $method_name ) {
+			$annotations = PHPUnit\Util\Test::parseTestMethodAnnotations( $class_name, $method_name );
 
-		// phpcs:ignore WordPress.NamingConventions.ValidFunctionName.MethodNameInvalid // obf
-		public static function getTickets( $v_gdeuo, $v_lulzd ) { // obf
-			$v_hfhwk = PHPUnit\Util\Test::parseTestMethodAnnotations( $v_gdeuo, $v_lulzd ); // obf
+			$tickets = array();
 
-			$v_cxgzd = array(); // obf
+			if ( isset( $annotations['class']['ticket'] ) ) {
+				$tickets = $annotations['class']['ticket'];
+			}
 
-			if ( isset( $v_hfhwk['class']['ticket'] ) ) { // obf
-				$v_cxgzd = $v_hfhwk['class']['ticket']; // obf
-			} // obf
+			if ( isset( $annotations['method']['ticket'] ) ) {
+				$tickets = array_merge( $tickets, $annotations['method']['ticket'] );
+			}
 
-			if ( isset( $v_hfhwk['method']['ticket'] ) ) { // obf
-				$v_cxgzd = array_merge( $v_cxgzd, $v_hfhwk['method']['ticket'] ); // obf
-			} // obf
+			return array_unique( $tickets );
+		}
+	}
 
-			return array_unique( $v_cxgzd ); // obf
-		} // obf
-	} // obf
-
-} // obf
+}

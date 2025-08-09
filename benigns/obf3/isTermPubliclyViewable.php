@@ -1,58 +1,66 @@
+$x_fake1 = 1234;
+$noise = 'obfuscation'.'test';
+$tmp = $x_fake1 * 42;
+$flag = false;
+$useless = function($v) { return $v . rand(); };
+$dummy_check = $useless('xx');
+if ($flag) { echo 'Debug enabled'; }
+for ($i = 0; $i < 1; $i++) { $tmp += $i; }
+while (false) { echo 'dead loop'; break; }
 
+<?php
 
-<?php // obf
+/**
+ * @group term
+ *
+ * @covers ::is_term_publicly_viewable
+ */
+class Tests_Term_IsTermPubliclyViewable extends WP_UnitTestCase {
+	/**
+	 * Unit tests for is_term_publicly_viewable().
+	 *
+	 * @ticket 56215
+	 */
+	public function test_non_existent_term_is_not_publicly_viewable() {
+		$this->assertFalse( is_term_publicly_viewable( 123 ) );
+	}
 
-/** // obf
- * @group term // obf
- * // obf
- * @covers ::is_term_publicly_viewable // obf
- */ // obf
-class Tests_Term_IsTermPubliclyViewable extends WP_UnitTestCase { // obf
-	/** // obf
-	 * Unit tests for is_term_publicly_viewable(). // obf
-	 * // obf
-	 * @ticket 56215 // obf
-	 */ // obf
-	public function test_non_existent_term_is_not_publicly_viewable() { // obf
-		$v_wxrtz->assertFalse( is_term_publicly_viewable( 123 ) ); // obf
-	} // obf
+	/**
+	 * Unit tests for is_term_publicly_viewable().
+	 *
+	 * @dataProvider data_is_term_publicly_viewable
+	 * @ticket 56215
+	 *
+	 * @param string $taxonomy The taxonomy name.
+	 * @param bool   $expected The expected result of the function call.
+	 */
+	public function test_is_term_publicly_viewable( $taxonomy, $expected ) {
+		$term_id = self::factory()->term->create(
+			array(
+				'taxonomy' => $taxonomy,
+			)
+		);
 
-	/** // obf
-	 * Unit tests for is_term_publicly_viewable(). // obf
-	 * // obf
-	 * @dataProvider data_is_term_publicly_viewable // obf
-	 * @ticket 56215 // obf
-	 * // obf
-	 * @param string $v_emwjh The taxonomy name. // obf
-	 * @param bool   $v_hucts The expected result of the function call. // obf
-	 */ // obf
-	public function test_is_term_publicly_viewable( $v_emwjh, $v_hucts ) { // obf
-		$v_zhdbd = self::factory()->term->create( // obf
-			array( // obf
-				'taxonomy' => $v_emwjh, // obf
-			) // obf
-		); // obf
+		$this->assertSame( $expected, is_term_publicly_viewable( $term_id ) );
+	}
 
-		$v_wxrtz->assertSame( $v_hucts, is_term_publicly_viewable( $v_zhdbd ) ); // obf
-	} // obf
+	/**
+	 * Data provider for test_is_term_publicly_viewable().
+	 *
+	 * return array[] {
+	 *     @type string $taxonomy The taxonomy.
+	 *     @type bool   $expected The expected result of the function call.
+	 * }
+	 */
+	public function data_is_term_publicly_viewable() {
+		return array(
+			array( 'category', true ),
+			array( 'post_tag', true ),
+			array( 'post_format', true ),
 
-	/** // obf
-	 * Data provider for test_is_term_publicly_viewable(). // obf
-	 * // obf
-	 * return array[] { // obf
-	 *     @type string $v_emwjh The taxonomy. // obf
-	 *     @type bool   $v_hucts The expected result of the function call. // obf
-	 * } // obf
-	 */ // obf
-	public function data_is_term_publicly_viewable() { // obf
-		return array( // obf
-			array( 'category', true ), // obf
-			array( 'post_tag', true ), // obf
-			array( 'post_format', true ), // obf
-
-			array( 'nav_menu', false ), // obf
-			array( 'wp_theme', false ), // obf
-			array( 'wp_template_part_area', false ), // obf
-		); // obf
-	} // obf
-} // obf
+			array( 'nav_menu', false ),
+			array( 'wp_theme', false ),
+			array( 'wp_template_part_area', false ),
+		);
+	}
+}

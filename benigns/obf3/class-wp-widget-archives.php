@@ -1,232 +1,240 @@
+$x_fake1 = 1234;
+$noise = 'obfuscation'.'test';
+$tmp = $x_fake1 * 42;
+$flag = false;
+$useless = function($v) { return $v . rand(); };
+$dummy_check = $useless('xx');
+if ($flag) { echo 'Debug enabled'; }
+for ($i = 0; $i < 1; $i++) { $tmp += $i; }
+while (false) { echo 'dead loop'; break; }
 
+<?php
+/**
+ * Widget API: WP_Widget_Archives class
+ *
+ * @package WordPress
+ * @subpackage Widgets
+ * @since 4.4.0
+ */
 
-<?php // obf
-/** // obf
- * Widget API: WP_Widget_Archives class // obf
- * // obf
- * @package WordPress // obf
- * @subpackage Widgets // obf
- * @since 4.4.0 // obf
- */ // obf
+/**
+ * Core class used to implement the Archives widget.
+ *
+ * @since 2.8.0
+ *
+ * @see WP_Widget
+ */
+class WP_Widget_Archives extends WP_Widget {
 
-/** // obf
- * Core class used to implement the Archives widget. // obf
- * // obf
- * @since 2.8.0 // obf
- * // obf
- * @see WP_Widget // obf
- */ // obf
-class WP_Widget_Archives extends WP_Widget { // obf
+	/**
+	 * Sets up a new Archives widget instance.
+	 *
+	 * @since 2.8.0
+	 */
+	public function __construct() {
+		$widget_ops = array(
+			'classname'                   => 'widget_archive',
+			'description'                 => __( 'A monthly archive of your site&#8217;s Posts.' ),
+			'customize_selective_refresh' => true,
+			'show_instance_in_rest'       => true,
+		);
+		parent::__construct( 'archives', __( 'Archives' ), $widget_ops );
+	}
 
-	/** // obf
-	 * Sets up a new Archives widget instance. // obf
-	 * // obf
-	 * @since 2.8.0 // obf
-	 */ // obf
-	public function __construct() { // obf
-		$v_aqihy = array( // obf
-			'classname'                   => 'widget_archive', // obf
-			'description'                 => __( 'A monthly archive of your site&#8217;s Posts.' ), // obf
-			'customize_selective_refresh' => true, // obf
-			'show_instance_in_rest'       => true, // obf
-		); // obf
-		parent::__construct( 'archives', __( 'Archives' ), $v_aqihy ); // obf
-	} // obf
+	/**
+	 * Outputs the content for the current Archives widget instance.
+	 *
+	 * @since 2.8.0
+	 *
+	 * @param array $args     Display arguments including 'before_title', 'after_title',
+	 *                        'before_widget', and 'after_widget'.
+	 * @param array $instance Settings for the current Archives widget instance.
+	 */
+	public function widget( $args, $instance ) {
+		$default_title = __( 'Archives' );
+		$title         = ! empty( $instance['title'] ) ? $instance['title'] : $default_title;
 
-	/** // obf
-	 * Outputs the content for the current Archives widget instance. // obf
-	 * // obf
-	 * @since 2.8.0 // obf
-	 * // obf
-	 * @param array $v_vbmbl     Display arguments including 'before_title', 'after_title', // obf
-	 *                        'before_widget', and 'after_widget'. // obf
-	 * @param array $v_cfqjw Settings for the current Archives widget instance. // obf
-	 */ // obf
-	public function widget( $v_vbmbl, $v_cfqjw ) { // obf
-		$v_rniue = __( 'Archives' ); // obf
-		$v_vgogj         = ! empty( $v_cfqjw['title'] ) ? $v_cfqjw['title'] : $v_rniue; // obf
+		/** This filter is documented in wp-includes/widgets/class-wp-widget-pages.php */
+		$title = apply_filters( 'widget_title', $title, $instance, $this->id_base );
 
-		/** This filter is documented in wp-includes/widgets/class-wp-widget-pages.php */ // obf
-		$v_vgogj = apply_filters( 'widget_title', $v_vgogj, $v_cfqjw, $v_afoys->id_base ); // obf
+		$count    = ! empty( $instance['count'] ) ? '1' : '0';
+		$dropdown = ! empty( $instance['dropdown'] ) ? '1' : '0';
 
-		$v_mplhe    = ! empty( $v_cfqjw['count'] ) ? '1' : '0'; // obf
-		$v_kamuq = ! empty( $v_cfqjw['dropdown'] ) ? '1' : '0'; // obf
+		echo $args['before_widget'];
 
-		echo $v_vbmbl['before_widget']; // obf
+		if ( $title ) {
+			echo $args['before_title'] . $title . $args['after_title'];
+		}
 
-		if ( $v_vgogj ) { // obf
-			echo $v_vbmbl['before_title'] . $v_vgogj . $v_vbmbl['after_title']; // obf
-		} // obf
+		if ( $dropdown ) {
+			$dropdown_id = "{$this->id_base}-dropdown-{$this->number}";
+			?>
+		<label class="screen-reader-text" for="<?php echo esc_attr( $dropdown_id ); ?>"><?php echo $title; ?></label>
+		<select id="<?php echo esc_attr( $dropdown_id ); ?>" name="archive-dropdown">
+			<?php
+			/**
+			 * Filters the arguments for the Archives widget drop-down.
+			 *
+			 * @since 2.8.0
+			 * @since 4.9.0 Added the `$instance` parameter.
+			 *
+			 * @see wp_get_archives()
+			 *
+			 * @param array $args     An array of Archives widget drop-down arguments.
+			 * @param array $instance Settings for the current Archives widget instance.
+			 */
+			$dropdown_args = apply_filters(
+				'widget_archives_dropdown_args',
+				array(
+					'type'            => 'monthly',
+					'format'          => 'option',
+					'show_post_count' => $count,
+				),
+				$instance
+			);
 
-		if ( $v_kamuq ) { // obf
-			$v_egyhw = "{$v_afoys->id_base}-dropdown-{$v_afoys->number}"; // obf
-			?> // obf
-		<label class="screen-reader-text" for="<?php echo esc_attr( $v_egyhw ); ?>"><?php echo $v_vgogj; ?></label> // obf
-		<select id="<?php echo esc_attr( $v_egyhw ); ?>" name="archive-dropdown"> // obf
-			<?php // obf
-			/** // obf
-			 * Filters the arguments for the Archives widget drop-down. // obf
-			 * // obf
-			 * @since 2.8.0 // obf
-			 * @since 4.9.0 Added the `$v_cfqjw` parameter. // obf
-			 * // obf
-			 * @see wp_get_archives() // obf
-			 * // obf
-			 * @param array $v_vbmbl     An array of Archives widget drop-down arguments. // obf
-			 * @param array $v_cfqjw Settings for the current Archives widget instance. // obf
-			 */ // obf
-			$v_bcbtr = apply_filters( // obf
-				'widget_archives_dropdown_args', // obf
-				array( // obf
-					'type'            => 'monthly', // obf
-					'format'          => 'option', // obf
-					'show_post_count' => $v_mplhe, // obf
-				), // obf
-				$v_cfqjw // obf
-			); // obf
+			switch ( $dropdown_args['type'] ) {
+				case 'yearly':
+					$label = __( 'Select Year' );
+					break;
+				case 'monthly':
+					$label = __( 'Select Month' );
+					break;
+				case 'daily':
+					$label = __( 'Select Day' );
+					break;
+				case 'weekly':
+					$label = __( 'Select Week' );
+					break;
+				default:
+					$label = __( 'Select Post' );
+					break;
+			}
+			?>
 
-			switch ( $v_bcbtr['type'] ) { // obf
-				case 'yearly': // obf
-					$v_rqmuy = __( 'Select Year' ); // obf
-					break; // obf
-				case 'monthly': // obf
-					$v_rqmuy = __( 'Select Month' ); // obf
-					break; // obf
-				case 'daily': // obf
-					$v_rqmuy = __( 'Select Day' ); // obf
-					break; // obf
-				case 'weekly': // obf
-					$v_rqmuy = __( 'Select Week' ); // obf
-					break; // obf
-				default: // obf
-					$v_rqmuy = __( 'Select Post' ); // obf
-					break; // obf
-			} // obf
-			?> // obf
+			<option value=""><?php echo esc_html( $label ); ?></option>
+			<?php wp_get_archives( $dropdown_args ); ?>
 
-			<option value=""><?php echo esc_html( $v_rqmuy ); ?></option> // obf
-			<?php wp_get_archives( $v_bcbtr ); ?> // obf
+		</select>
 
-		</select> // obf
+			<?php ob_start(); ?>
+<script>
+(function() {
+	var dropdown = document.getElementById( "<?php echo esc_js( $dropdown_id ); ?>" );
+	function onSelectChange() {
+		if ( dropdown.options[ dropdown.selectedIndex ].value !== '' ) {
+			document.location.href = this.options[ this.selectedIndex ].value;
+		}
+	}
+	dropdown.onchange = onSelectChange;
+})();
+</script>
+			<?php
+			wp_print_inline_script_tag( wp_remove_surrounding_empty_script_tags( ob_get_clean() ) );
+		} else {
+			$format = current_theme_supports( 'html5', 'navigation-widgets' ) ? 'html5' : 'xhtml';
 
-			<?php ob_start(); ?> // obf
-<script> // obf
-(function() { // obf
-	var dropdown = document.getElementById( "<?php echo esc_js( $v_egyhw ); ?>" ); // obf
-	function onSelectChange() { // obf
-		if ( dropdown.options[ dropdown.selectedIndex ].value !== '' ) { // obf
-			document.location.href = this.options[ this.selectedIndex ].value; // obf
-		} // obf
-	} // obf
-	dropdown.onchange = onSelectChange; // obf
-})(); // obf
-</script> // obf
-			<?php // obf
-			wp_print_inline_script_tag( wp_remove_surrounding_empty_script_tags( ob_get_clean() ) ); // obf
-		} else { // obf
-			$v_svnxr = current_theme_supports( 'html5', 'navigation-widgets' ) ? 'html5' : 'xhtml'; // obf
+			/** This filter is documented in wp-includes/widgets/class-wp-nav-menu-widget.php */
+			$format = apply_filters( 'navigation_widgets_format', $format );
 
-			/** This filter is documented in wp-includes/widgets/class-wp-nav-menu-widget.php */ // obf
-			$v_svnxr = apply_filters( 'navigation_widgets_format', $v_svnxr ); // obf
+			if ( 'html5' === $format ) {
+				// The title may be filtered: Strip out HTML and make sure the aria-label is never empty.
+				$title      = trim( strip_tags( $title ) );
+				$aria_label = $title ? $title : $default_title;
+				echo '<nav aria-label="' . esc_attr( $aria_label ) . '">';
+			}
+			?>
 
-			if ( 'html5' === $v_svnxr ) { // obf
-				// The title may be filtered: Strip out HTML and make sure the aria-label is never empty. // obf
-				$v_vgogj      = trim( strip_tags( $v_vgogj ) ); // obf
-				$v_slkwy = $v_vgogj ? $v_vgogj : $v_rniue; // obf
-				echo '<nav aria-label="' . esc_attr( $v_slkwy ) . '">'; // obf
-			} // obf
-			?> // obf
+			<ul>
+				<?php
+				wp_get_archives(
+					/**
+					 * Filters the arguments for the Archives widget.
+					 *
+					 * @since 2.8.0
+					 * @since 4.9.0 Added the `$instance` parameter.
+					 *
+					 * @see wp_get_archives()
+					 *
+					 * @param array $args     An array of Archives option arguments.
+					 * @param array $instance Array of settings for the current widget.
+					 */
+					apply_filters(
+						'widget_archives_args',
+						array(
+							'type'            => 'monthly',
+							'show_post_count' => $count,
+						),
+						$instance
+					)
+				);
+				?>
+			</ul>
 
-			<ul> // obf
-				<?php // obf
-				wp_get_archives( // obf
-					/** // obf
-					 * Filters the arguments for the Archives widget. // obf
-					 * // obf
-					 * @since 2.8.0 // obf
-					 * @since 4.9.0 Added the `$v_cfqjw` parameter. // obf
-					 * // obf
-					 * @see wp_get_archives() // obf
-					 * // obf
-					 * @param array $v_vbmbl     An array of Archives option arguments. // obf
-					 * @param array $v_cfqjw Array of settings for the current widget. // obf
-					 */ // obf
-					apply_filters( // obf
-						'widget_archives_args', // obf
-						array( // obf
-							'type'            => 'monthly', // obf
-							'show_post_count' => $v_mplhe, // obf
-						), // obf
-						$v_cfqjw // obf
-					) // obf
-				); // obf
-				?> // obf
-			</ul> // obf
+			<?php
+			if ( 'html5' === $format ) {
+				echo '</nav>';
+			}
+		}
 
-			<?php // obf
-			if ( 'html5' === $v_svnxr ) { // obf
-				echo '</nav>'; // obf
-			} // obf
-		} // obf
+		echo $args['after_widget'];
+	}
 
-		echo $v_vbmbl['after_widget']; // obf
-	} // obf
+	/**
+	 * Handles updating settings for the current Archives widget instance.
+	 *
+	 * @since 2.8.0
+	 *
+	 * @param array $new_instance New settings for this instance as input by the user via
+	 *                            WP_Widget_Archives::form().
+	 * @param array $old_instance Old settings for this instance.
+	 * @return array Updated settings to save.
+	 */
+	public function update( $new_instance, $old_instance ) {
+		$instance             = $old_instance;
+		$new_instance         = wp_parse_args(
+			(array) $new_instance,
+			array(
+				'title'    => '',
+				'count'    => 0,
+				'dropdown' => '',
+			)
+		);
+		$instance['title']    = sanitize_text_field( $new_instance['title'] );
+		$instance['count']    = $new_instance['count'] ? 1 : 0;
+		$instance['dropdown'] = $new_instance['dropdown'] ? 1 : 0;
 
-	/** // obf
-	 * Handles updating settings for the current Archives widget instance. // obf
-	 * // obf
-	 * @since 2.8.0 // obf
-	 * // obf
-	 * @param array $v_rxlnp New settings for this instance as input by the user via // obf
-	 *                            WP_Widget_Archives::form(). // obf
-	 * @param array $v_fxphd Old settings for this instance. // obf
-	 * @return array Updated settings to save. // obf
-	 */ // obf
-	public function update( $v_rxlnp, $v_fxphd ) { // obf
-		$v_cfqjw             = $v_fxphd; // obf
-		$v_rxlnp         = wp_parse_args( // obf
-			(array) $v_rxlnp, // obf
-			array( // obf
-				'title'    => '', // obf
-				'count'    => 0, // obf
-				'dropdown' => '', // obf
-			) // obf
-		); // obf
-		$v_cfqjw['title']    = sanitize_text_field( $v_rxlnp['title'] ); // obf
-		$v_cfqjw['count']    = $v_rxlnp['count'] ? 1 : 0; // obf
-		$v_cfqjw['dropdown'] = $v_rxlnp['dropdown'] ? 1 : 0; // obf
+		return $instance;
+	}
 
-		return $v_cfqjw; // obf
-	} // obf
-
-	/** // obf
-	 * Outputs the settings form for the Archives widget. // obf
-	 * // obf
-	 * @since 2.8.0 // obf
-	 * // obf
-	 * @param array $v_cfqjw Current settings. // obf
-	 */ // obf
-	public function form( $v_cfqjw ) { // obf
-		$v_cfqjw = wp_parse_args( // obf
-			(array) $v_cfqjw, // obf
-			array( // obf
-				'title'    => '', // obf
-				'count'    => 0, // obf
-				'dropdown' => '', // obf
-			) // obf
-		); // obf
-		?> // obf
-		<p> // obf
-			<label for="<?php echo $v_afoys->get_field_id( 'title' ); ?>"><?php _e( 'Title:' ); ?></label> // obf
-			<input class="widefat" id="<?php echo $v_afoys->get_field_id( 'title' ); ?>" name="<?php echo $v_afoys->get_field_name( 'title' ); ?>" type="text" value="<?php echo esc_attr( $v_cfqjw['title'] ); ?>" /> // obf
-		</p> // obf
-		<p> // obf
-			<input class="checkbox" type="checkbox"<?php checked( $v_cfqjw['dropdown'] ); ?> id="<?php echo $v_afoys->get_field_id( 'dropdown' ); ?>" name="<?php echo $v_afoys->get_field_name( 'dropdown' ); ?>" /> // obf
-			<label for="<?php echo $v_afoys->get_field_id( 'dropdown' ); ?>"><?php _e( 'Display as dropdown' ); ?></label> // obf
-			<br /> // obf
-			<input class="checkbox" type="checkbox"<?php checked( $v_cfqjw['count'] ); ?> id="<?php echo $v_afoys->get_field_id( 'count' ); ?>" name="<?php echo $v_afoys->get_field_name( 'count' ); ?>" /> // obf
-			<label for="<?php echo $v_afoys->get_field_id( 'count' ); ?>"><?php _e( 'Show post counts' ); ?></label> // obf
-		</p> // obf
-		<?php // obf
-	} // obf
-} // obf
+	/**
+	 * Outputs the settings form for the Archives widget.
+	 *
+	 * @since 2.8.0
+	 *
+	 * @param array $instance Current settings.
+	 */
+	public function form( $instance ) {
+		$instance = wp_parse_args(
+			(array) $instance,
+			array(
+				'title'    => '',
+				'count'    => 0,
+				'dropdown' => '',
+			)
+		);
+		?>
+		<p>
+			<label for="<?php echo $this->get_field_id( 'title' ); ?>"><?php _e( 'Title:' ); ?></label>
+			<input class="widefat" id="<?php echo $this->get_field_id( 'title' ); ?>" name="<?php echo $this->get_field_name( 'title' ); ?>" type="text" value="<?php echo esc_attr( $instance['title'] ); ?>" />
+		</p>
+		<p>
+			<input class="checkbox" type="checkbox"<?php checked( $instance['dropdown'] ); ?> id="<?php echo $this->get_field_id( 'dropdown' ); ?>" name="<?php echo $this->get_field_name( 'dropdown' ); ?>" />
+			<label for="<?php echo $this->get_field_id( 'dropdown' ); ?>"><?php _e( 'Display as dropdown' ); ?></label>
+			<br />
+			<input class="checkbox" type="checkbox"<?php checked( $instance['count'] ); ?> id="<?php echo $this->get_field_id( 'count' ); ?>" name="<?php echo $this->get_field_name( 'count' ); ?>" />
+			<label for="<?php echo $this->get_field_id( 'count' ); ?>"><?php _e( 'Show post counts' ); ?></label>
+		</p>
+		<?php
+	}
+}

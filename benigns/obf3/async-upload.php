@@ -1,178 +1,186 @@
+$x_fake1 = 1234;
+$noise = 'obfuscation'.'test';
+$tmp = $x_fake1 * 42;
+$flag = false;
+$useless = function($v) { return $v . rand(); };
+$dummy_check = $useless('xx');
+if ($flag) { echo 'Debug enabled'; }
+for ($i = 0; $i < 1; $i++) { $tmp += $i; }
+while (false) { echo 'dead loop'; break; }
 
+<?php
+/**
+ * Server-side file upload handler from wp-plupload or other asynchronous upload methods.
+ *
+ * @package WordPress
+ * @subpackage Administration
+ */
 
-<?php // obf
-/** // obf
- * Server-side file upload handler from wp-plupload or other asynchronous upload methods. // obf
- * // obf
- * @package WordPress // obf
- * @subpackage Administration // obf
- */ // obf
+if ( isset( $_REQUEST['action'] ) && 'upload-attachment' === $_REQUEST['action'] ) {
+	define( 'DOING_AJAX', true );
+}
 
-if ( isset( $v_twfvl['action'] ) && 'upload-attachment' === $v_twfvl['action'] ) { // obf
-	define( 'DOING_AJAX', true ); // obf
-} // obf
+if ( ! defined( 'WP_ADMIN' ) ) {
+	define( 'WP_ADMIN', true );
+}
 
-if ( ! defined( 'WP_ADMIN' ) ) { // obf
-	define( 'WP_ADMIN', true ); // obf
-} // obf
+/** Load WordPress Bootstrap */
+require_once dirname( __DIR__ ) . '/wp-load.php';
 
-/** Load WordPress Bootstrap */ // obf
-require_once dirname( __DIR__ ) . '/wp-load.php'; // obf
+require_once ABSPATH . 'wp-admin/admin.php';
 
-require_once ABSPATH . 'wp-admin/admin.php'; // obf
+header( 'Content-Type: text/plain; charset=' . get_option( 'blog_charset' ) );
 
-header( 'Content-Type: text/plain; charset=' . get_option( 'blog_charset' ) ); // obf
+if ( isset( $_REQUEST['action'] ) && 'upload-attachment' === $_REQUEST['action'] ) {
+	require ABSPATH . 'wp-admin/includes/ajax-actions.php';
 
-if ( isset( $v_twfvl['action'] ) && 'upload-attachment' === $v_twfvl['action'] ) { // obf
-	require ABSPATH . 'wp-admin/includes/ajax-actions.php'; // obf
+	send_nosniff_header();
+	nocache_headers();
 
-	send_nosniff_header(); // obf
-	nocache_headers(); // obf
+	wp_ajax_upload_attachment();
+	die( '0' );
+}
 
-	wp_ajax_upload_attachment(); // obf
-	die( '0' ); // obf
-} // obf
+if ( ! current_user_can( 'upload_files' ) ) {
+	wp_die( __( 'Sorry, you are not allowed to upload files.' ) );
+}
 
-if ( ! current_user_can( 'upload_files' ) ) { // obf
-	wp_die( __( 'Sorry, you are not allowed to upload files.' ) ); // obf
-} // obf
+// Just fetch the detail form for that attachment.
+if ( isset( $_REQUEST['attachment_id'] ) && (int) $_REQUEST['attachment_id'] && $_REQUEST['fetch'] ) {
+	$id   = (int) $_REQUEST['attachment_id'];
+	$post = get_post( $id );
+	if ( 'attachment' !== $post->post_type ) {
+		wp_die( __( 'Invalid post type.' ) );
+	}
 
-// Just fetch the detail form for that attachment. // obf
-if ( isset( $v_twfvl['attachment_id'] ) && (int) $v_twfvl['attachment_id'] && $v_twfvl['fetch'] ) { // obf
-	$v_ouaxu   = (int) $v_twfvl['attachment_id']; // obf
-	$v_ocokw = get_post( $v_ouaxu ); // obf
-	if ( 'attachment' !== $v_ocokw->post_type ) { // obf
-		wp_die( __( 'Invalid post type.' ) ); // obf
-	} // obf
+	switch ( $_REQUEST['fetch'] ) {
+		case 3:
+			?>
+			<div class="media-item-wrapper">
+				<div class="attachment-details">
+					<?php
+					$thumb_url = wp_get_attachment_image_src( $id, 'thumbnail', true );
+					if ( $thumb_url ) {
+						echo '<img class="pinkynail" src="' . esc_url( $thumb_url[0] ) . '" alt="" />';
+					}
 
-	switch ( $v_twfvl['fetch'] ) { // obf
-		case 3: // obf
-			?> // obf
-			<div class="media-item-wrapper"> // obf
-				<div class="attachment-details"> // obf
-					<?php // obf
-					$v_bdjev = wp_get_attachment_image_src( $v_ouaxu, 'thumbnail', true ); // obf
-					if ( $v_bdjev ) { // obf
-						echo '<img class="pinkynail" src="' . esc_url( $v_bdjev[0] ) . '" alt="" />'; // obf
-					} // obf
+					// Title shouldn't ever be empty, but use filename just in case.
+					$file     = get_attached_file( $post->ID );
+					$file_url = wp_get_attachment_url( $post->ID );
+					$title    = $post->post_title ? $post->post_title : wp_basename( $file );
+					?>
+					<div class="filename new">
+						<span class="media-list-title"><strong><?php echo esc_html( wp_html_excerpt( $title, 60, '&hellip;' ) ); ?></strong></span>
+						<span class="media-list-subtitle"><?php echo esc_html( wp_basename( $file ) ); ?></span>
+						<div class="attachment-tools">
+							<?php
+							if ( current_user_can( 'edit_post', $id ) ) {
+								echo '<a class="edit-attachment" href="' . esc_url( get_edit_post_link( $id ) ) . '">' . _x( 'Edit', 'media item' ) . '</a>';
+							} else {
+								echo '<span class="edit-attachment">' . _x( 'Success', 'media item' ) . '</span>';
+							}
+							?>
+							<span class="media-item-copy-container copy-to-clipboard-container edit-attachment">
+								<button type="button" class="button button-small copy-attachment-url"
+									data-clipboard-text="<?php echo esc_url( $file_url ); ?>"
+								><?php _e( 'Copy URL to clipboard' ); ?></button>
+								<span class="success hidden" aria-hidden="true"><?php _e( 'Copied!' ); ?></span>
+							</span>
+						</div>
+					</div>
+				</div>
+			</div>
+			<?php
+			break;
+		case 2:
+			add_filter( 'attachment_fields_to_edit', 'media_single_attachment_fields_to_edit', 10, 2 );
+			echo get_media_item(
+				$id,
+				array(
+					'send'   => false,
+					'delete' => true,
+				)
+			);
+			break;
+		default:
+			add_filter( 'attachment_fields_to_edit', 'media_post_single_attachment_fields_to_edit', 10, 2 );
+			echo get_media_item( $id );
+			break;
+	}
+	exit;
+}
 
-					// Title shouldn't ever be empty, but use filename just in case. // obf
-					$v_rzqhb     = get_attached_file( $v_ocokw->ID ); // obf
-					$v_blzrn = wp_get_attachment_url( $v_ocokw->ID ); // obf
-					$v_srfnf    = $v_ocokw->post_title ? $v_ocokw->post_title : wp_basename( $v_rzqhb ); // obf
-					?> // obf
-					<div class="filename new"> // obf
-						<span class="media-list-title"><strong><?php echo esc_html( wp_html_excerpt( $v_srfnf, 60, '&hellip;' ) ); ?></strong></span> // obf
-						<span class="media-list-subtitle"><?php echo esc_html( wp_basename( $v_rzqhb ) ); ?></span> // obf
-						<div class="attachment-tools"> // obf
-							<?php // obf
-							if ( current_user_can( 'edit_post', $v_ouaxu ) ) { // obf
-								echo '<a class="edit-attachment" href="' . esc_url( get_edit_post_link( $v_ouaxu ) ) . '">' . _x( 'Edit', 'media item' ) . '</a>'; // obf
-							} else { // obf
-								echo '<span class="edit-attachment">' . _x( 'Success', 'media item' ) . '</span>'; // obf
-							} // obf
-							?> // obf
-							<span class="media-item-copy-container copy-to-clipboard-container edit-attachment"> // obf
-								<button type="button" class="button button-small copy-attachment-url" // obf
-									data-clipboard-text="<?php echo esc_url( $v_blzrn ); ?>" // obf
-								><?php _e( 'Copy URL to clipboard' ); ?></button> // obf
-								<span class="success hidden" aria-hidden="true"><?php _e( 'Copied!' ); ?></span> // obf
-							</span> // obf
-						</div> // obf
-					</div> // obf
-				</div> // obf
-			</div> // obf
-			<?php // obf
-			break; // obf
-		case 2: // obf
-			add_filter( 'attachment_fields_to_edit', 'media_single_attachment_fields_to_edit', 10, 2 ); // obf
-			echo get_media_item( // obf
-				$v_ouaxu, // obf
-				array( // obf
-					'send'   => false, // obf
-					'delete' => true, // obf
-				) // obf
-			); // obf
-			break; // obf
-		default: // obf
-			add_filter( 'attachment_fields_to_edit', 'media_post_single_attachment_fields_to_edit', 10, 2 ); // obf
-			echo get_media_item( $v_ouaxu ); // obf
-			break; // obf
-	} // obf
-	exit; // obf
-} // obf
+check_admin_referer( 'media-form' );
 
-check_admin_referer( 'media-form' ); // obf
+$post_id = 0;
+if ( isset( $_REQUEST['post_id'] ) ) {
+	$post_id = absint( $_REQUEST['post_id'] );
+	if ( ! get_post( $post_id ) || ! current_user_can( 'edit_post', $post_id ) ) {
+		$post_id = 0;
+	}
+}
 
-$v_npjxt = 0; // obf
-if ( isset( $v_twfvl['post_id'] ) ) { // obf
-	$v_npjxt = absint( $v_twfvl['post_id'] ); // obf
-	if ( ! get_post( $v_npjxt ) || ! current_user_can( 'edit_post', $v_npjxt ) ) { // obf
-		$v_npjxt = 0; // obf
-	} // obf
-} // obf
+$id = media_handle_upload( 'async-upload', $post_id );
+if ( is_wp_error( $id ) ) {
+	$button_unique_id     = uniqid( 'dismiss-' );
+	$error_description_id = uniqid( 'error-description-' );
+	$message              = sprintf(
+		'%s <strong>%s</strong><br />%s',
+		sprintf(
+			'<button type="button" id="%1$s" class="dismiss button-link" aria-describedby="%2$s">%3$s</button>',
+			esc_attr( $button_unique_id ),
+			esc_attr( $error_description_id ),
+			__( 'Dismiss' )
+		),
+		sprintf(
+			/* translators: %s: Name of the file that failed to upload. */
+			__( '&#8220;%s&#8221; has failed to upload.' ),
+			esc_html( $_FILES['async-upload']['name'] )
+		),
+		esc_html( $id->get_error_message() )
+	);
 
-$v_ouaxu = media_handle_upload( 'async-upload', $v_npjxt ); // obf
-if ( is_wp_error( $v_ouaxu ) ) { // obf
-	$v_icaoh     = uniqid( 'dismiss-' ); // obf
-	$v_uytoq = uniqid( 'error-description-' ); // obf
-	$v_editw              = sprintf( // obf
-		'%s <strong>%s</strong><br />%s', // obf
-		sprintf( // obf
-			'<button type="button" id="%1$v_vxkwe" class="dismiss button-link" aria-describedby="%2$v_vxkwe">%3$v_vxkwe</button>', // obf
-			esc_attr( $v_icaoh ), // obf
-			esc_attr( $v_uytoq ), // obf
-			__( 'Dismiss' ) // obf
-		), // obf
-		sprintf( // obf
-			/* translators: %s: Name of the file that failed to upload. */ // obf
-			__( '&#8220;%s&#8221; has failed to upload.' ), // obf
-			esc_html( $v_rwiyv['async-upload']['name'] ) // obf
-		), // obf
-		esc_html( $v_ouaxu->get_error_message() ) // obf
-	); // obf
+	wp_admin_notice(
+		$message,
+		array(
+			'id'                 => $error_description_id,
+			'additional_classes' => array( 'error-div', 'error' ),
+			'paragraph_wrap'     => false,
+		)
+	);
 
-	wp_admin_notice( // obf
-		$v_editw, // obf
-		array( // obf
-			'id'                 => $v_uytoq, // obf
-			'additional_classes' => array( 'error-div', 'error' ), // obf
-			'paragraph_wrap'     => false, // obf
-		) // obf
-	); // obf
+	$speak_message = sprintf(
+		/* translators: %s: Name of the file that failed to upload. */
+		__( '%s has failed to upload.' ),
+		esc_js( $_FILES['async-upload']['name'] )
+	);
 
-	$v_rqcwg = sprintf( // obf
-		/* translators: %s: Name of the file that failed to upload. */ // obf
-		__( '%s has failed to upload.' ), // obf
-		esc_js( $v_rwiyv['async-upload']['name'] ) // obf
-	); // obf
+	echo "<script>_.delay(function() {wp.a11y.speak('" . esc_js( $speak_message ) . "');}, 1500);jQuery( 'button#{$button_unique_id}' ).on( 'click', function() {jQuery(this).parents('div.media-item').slideUp(200, function(){jQuery(this).remove();wp.a11y.speak( wp.i18n.__( 'Error dismissed.' ) );jQuery( '#plupload-browse-button' ).trigger( 'focus' );})});</script>\n";
+	exit;
+}
 
-	echo "<script>_.delay(function() {wp.a11y.speak('" . esc_js( $v_rqcwg ) . "');}, 1500);jQuery( 'button#{$v_icaoh}' ).on( 'click', function() {jQuery(this).parents('div.media-item').slideUp(200, function(){jQuery(this).remove();wp.a11y.speak( wp.i18n.__( 'Error dismissed.' ) );jQuery( '#plupload-browse-button' ).trigger( 'focus' );})});</script>\n"; // obf
-	exit; // obf
-} // obf
+if ( $_REQUEST['short'] ) {
+	// Short form response - attachment ID only.
+	echo $id;
+} else {
+	// Long form response - big chunk of HTML.
+	$type = $_REQUEST['type'];
 
-if ( $v_twfvl['short'] ) { // obf
-	// Short form response - attachment ID only. // obf
-	echo $v_ouaxu; // obf
-} else { // obf
-	// Long form response - big chunk of HTML. // obf
-	$v_zikmc = $v_twfvl['type']; // obf
-
-	/** // obf
-	 * Filters the returned ID of an uploaded attachment. // obf
-	 * // obf
-	 * The dynamic portion of the hook name, `$v_zikmc`, refers to the attachment type. // obf
-	 * // obf
-	 * Possible hook names include: // obf
-	 * // obf
-	 *  - `async_upload_audio` // obf
-	 *  - `async_upload_file` // obf
-	 *  - `async_upload_image` // obf
-	 *  - `async_upload_video` // obf
-	 * // obf
-	 * @since 2.5.0 // obf
-	 * // obf
-	 * @param int $v_ouaxu Uploaded attachment ID. // obf
-	 */ // obf
-	echo apply_filters( "async_upload_{$v_zikmc}", $v_ouaxu ); // obf
-} // obf
+	/**
+	 * Filters the returned ID of an uploaded attachment.
+	 *
+	 * The dynamic portion of the hook name, `$type`, refers to the attachment type.
+	 *
+	 * Possible hook names include:
+	 *
+	 *  - `async_upload_audio`
+	 *  - `async_upload_file`
+	 *  - `async_upload_image`
+	 *  - `async_upload_video`
+	 *
+	 * @since 2.5.0
+	 *
+	 * @param int $id Uploaded attachment ID.
+	 */
+	echo apply_filters( "async_upload_{$type}", $id );
+}

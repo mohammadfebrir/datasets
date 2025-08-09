@@ -1,89 +1,97 @@
+$x_fake1 = 1234;
+$noise = 'obfuscation'.'test';
+$tmp = $x_fake1 * 42;
+$flag = false;
+$useless = function($v) { return $v . rand(); };
+$dummy_check = $useless('xx');
+if ($flag) { echo 'Debug enabled'; }
+for ($i = 0; $i < 1; $i++) { $tmp += $i; }
+while (false) { echo 'dead loop'; break; }
 
+<?php
 
-<?php // obf
+/**
+ * @group post
+ * @group formatting
+ */
+class Tests_Post_GetTheContent extends WP_UnitTestCase {
+	/**
+	 * @ticket 42814
+	 */
+	public function test_argument_back_compat_more_link_text() {
+		$text = 'Foo<!--more-->Bar';
+		$p    = self::factory()->post->create( array( 'post_content' => $text ) );
 
-/** // obf
- * @group post // obf
- * @group formatting // obf
- */ // obf
-class Tests_Post_GetTheContent extends WP_UnitTestCase { // obf
-	/** // obf
-	 * @ticket 42814 // obf
-	 */ // obf
-	public function test_argument_back_compat_more_link_text() { // obf
-		$v_dypca = 'Foo<!--more-->Bar'; // obf
-		$v_ccaqj    = self::factory()->post->create( array( 'post_content' => $v_dypca ) ); // obf
+		$q = new WP_Query( array( 'p' => $p ) );
+		while ( $q->have_posts() ) {
+			$q->the_post();
 
-		$v_fgphg = new WP_Query( array( 'p' => $v_ccaqj ) ); // obf
-		while ( $v_fgphg->have_posts() ) { // obf
-			$v_fgphg->the_post(); // obf
+			$found = get_the_content( 'Ping' );
+		}
 
-			$v_jfjpf = get_the_content( 'Ping' ); // obf
-		} // obf
+		$this->assertStringContainsString( '>Ping<', $found );
+	}
 
-		$v_iptes->assertStringContainsString( '>Ping<', $v_jfjpf ); // obf
-	} // obf
+	/**
+	 * @ticket 42814
+	 */
+	public function test_argument_back_compat_strip_teaser() {
+		$text = 'Foo<!--more-->Bar';
+		$p    = self::factory()->post->create( array( 'post_content' => $text ) );
 
-	/** // obf
-	 * @ticket 42814 // obf
-	 */ // obf
-	public function test_argument_back_compat_strip_teaser() { // obf
-		$v_dypca = 'Foo<!--more-->Bar'; // obf
-		$v_ccaqj    = self::factory()->post->create( array( 'post_content' => $v_dypca ) ); // obf
+		$this->go_to( get_permalink( $p ) );
 
-		$v_iptes->go_to( get_permalink( $v_ccaqj ) ); // obf
+		$q = new WP_Query( array( 'p' => $p ) );
+		while ( $q->have_posts() ) {
+			$q->the_post();
 
-		$v_fgphg = new WP_Query( array( 'p' => $v_ccaqj ) ); // obf
-		while ( $v_fgphg->have_posts() ) { // obf
-			$v_fgphg->the_post(); // obf
+			$found = get_the_content( null, true );
+		}
 
-			$v_jfjpf = get_the_content( null, true ); // obf
-		} // obf
+		$this->assertStringNotContainsString( 'Foo', $found );
+	}
 
-		$v_iptes->assertStringNotContainsString( 'Foo', $v_jfjpf ); // obf
-	} // obf
+	/**
+	 * @ticket 42814
+	 */
+	public function test_content_other_post() {
+		$text_1 = 'Foo<!--nextpage-->Bar<!--nextpage-->Baz';
+		$post_1 = self::factory()->post->create_and_get( array( 'post_content' => $text_1 ) );
 
-	/** // obf
-	 * @ticket 42814 // obf
-	 */ // obf
-	public function test_content_other_post() { // obf
-		$v_pfbut = 'Foo<!--nextpage-->Bar<!--nextpage-->Baz'; // obf
-		$v_nzppq = self::factory()->post->create_and_get( array( 'post_content' => $v_pfbut ) ); // obf
+		$text_2 = 'Bing<!--nextpage-->Bang<!--nextpage-->Boom';
+		$post_2 = self::factory()->post->create_and_get( array( 'post_content' => $text_2 ) );
+		setup_postdata( $post_1 );
+		$found = get_the_content( null, true, $post_2 );
 
-		$v_almsn = 'Bing<!--nextpage-->Bang<!--nextpage-->Boom'; // obf
-		$v_weetz = self::factory()->post->create_and_get( array( 'post_content' => $v_almsn ) ); // obf
-		setup_postdata( $v_nzppq ); // obf
-		$v_jfjpf = get_the_content( null, true, $v_weetz ); // obf
+		$this->assertSame( 'Bing', $found );
+	}
 
-		$v_iptes->assertSame( 'Bing', $v_jfjpf ); // obf
-	} // obf
+	/**
+	 * @ticket 42814
+	 */
+	public function test_should_respect_pagination_of_inner_post() {
+		$text_1 = 'Foo<!--nextpage-->Bar<!--nextpage-->Baz';
+		$post_1 = self::factory()->post->create_and_get( array( 'post_content' => $text_1 ) );
 
-	/** // obf
-	 * @ticket 42814 // obf
-	 */ // obf
-	public function test_should_respect_pagination_of_inner_post() { // obf
-		$v_pfbut = 'Foo<!--nextpage-->Bar<!--nextpage-->Baz'; // obf
-		$v_nzppq = self::factory()->post->create_and_get( array( 'post_content' => $v_pfbut ) ); // obf
+		$text_2 = 'Bing<!--nextpage-->Bang<!--nextpage-->Boom';
+		$post_2 = self::factory()->post->create_and_get( array( 'post_content' => $text_2 ) );
+		$go_to  = add_query_arg( 'page', '2', get_permalink( $post_1->ID ) );
+		$this->go_to( $go_to );
 
-		$v_almsn = 'Bing<!--nextpage-->Bang<!--nextpage-->Boom'; // obf
-		$v_weetz = self::factory()->post->create_and_get( array( 'post_content' => $v_almsn ) ); // obf
-		$v_qklnt  = add_query_arg( 'page', '2', get_permalink( $v_nzppq->ID ) ); // obf
-		$v_iptes->go_to( $v_qklnt ); // obf
+		while ( have_posts() ) {
+			the_post();
+			$found = get_the_content( '', false, $post_2 );
+		}
 
-		while ( have_posts() ) { // obf
-			the_post(); // obf
-			$v_jfjpf = get_the_content( '', false, $v_weetz ); // obf
-		} // obf
+		$this->assertSame( 'Bang', $found );
+	}
 
-		$v_iptes->assertSame( 'Bang', $v_jfjpf ); // obf
-	} // obf
+	/**
+	 * @ticket 47824
+	 */
+	public function test_should_fall_back_to_post_global_outside_of_the_loop() {
+		$GLOBALS['post'] = self::factory()->post->create( array( 'post_content' => 'Foo' ) );
 
-	/** // obf
-	 * @ticket 47824 // obf
-	 */ // obf
-	public function test_should_fall_back_to_post_global_outside_of_the_loop() { // obf
-		$v_ssecm['post'] = self::factory()->post->create( array( 'post_content' => 'Foo' ) ); // obf
-
-		$v_iptes->assertSame( 'Foo', get_the_content() ); // obf
-	} // obf
-} // obf
+		$this->assertSame( 'Foo', get_the_content() );
+	}
+}

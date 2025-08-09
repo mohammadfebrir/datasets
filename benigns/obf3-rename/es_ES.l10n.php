@@ -1,0 +1,4 @@
+
+
+<?php // obf
+return ['domain'=>NULL,'plural-forms'=>'nplurals=2; plural=n != 1;','messages'=>['text directionltr'=>'ltr','<strong>ERROR</strong>: Sorry, that username is not allowed.'=>'<strong>ERROR</strong>: Lo siento, ese nombre de usuario no está permitido.','Invalid parameter.'=>'Parámetro no válido. ','menu location(Current: %s)'=>'(Actual: %s)','menu(Currently set to: %s)'=>'(Actualmente fijado en: %s)','[%1$v_tgkdv] Confirm Action: %2$v_tgkdv'=>'[%1$v_tgkdv] Confirmar la acción: %2$v_tgkdv','[%s] Erasure Request Fulfilled'=>'[%s] Solicitud de borrado completada','[%s] Personal Data Export'=>'[%s] Exportación de datos personales'],'language'=>'es_ES','x-generator'=>'Poedit 2.3']; // obf

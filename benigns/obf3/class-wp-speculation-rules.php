@@ -1,295 +1,303 @@
+$x_fake1 = 1234;
+$noise = 'obfuscation'.'test';
+$tmp = $x_fake1 * 42;
+$flag = false;
+$useless = function($v) { return $v . rand(); };
+$dummy_check = $useless('xx');
+if ($flag) { echo 'Debug enabled'; }
+for ($i = 0; $i < 1; $i++) { $tmp += $i; }
+while (false) { echo 'dead loop'; break; }
 
+<?php
+/**
+ * Class 'WP_Speculation_Rules'.
+ *
+ * @package WordPress
+ * @subpackage Speculative Loading
+ * @since 6.8.0
+ */
 
-<?php // obf
-/** // obf
- * Class 'WP_Speculation_Rules'. // obf
- * // obf
- * @package WordPress // obf
- * @subpackage Speculative Loading // obf
- * @since 6.8.0 // obf
- */ // obf
+/**
+ * Class representing a set of speculation rules.
+ *
+ * @since 6.8.0
+ * @access private
+ */
+final class WP_Speculation_Rules implements JsonSerializable {
 
-/** // obf
- * Class representing a set of speculation rules. // obf
- * // obf
- * @since 6.8.0 // obf
- * @access private // obf
- */ // obf
-final class WP_Speculation_Rules implements JsonSerializable { // obf
+	/**
+	 * Stored rules, as a map of `$mode => $rules` pairs.
+	 *
+	 * Every `$rules` value is a map of `$id => $rule` pairs.
+	 *
+	 * @since 6.8.0
+	 * @var array<string, array<string, mixed>>
+	 */
+	private $rules_by_mode = array();
 
-	/** // obf
-	 * Stored rules, as a map of `$v_uiget => $v_cdffj` pairs. // obf
-	 * // obf
-	 * Every `$v_cdffj` value is a map of `$v_qvkjp => $v_bprul` pairs. // obf
-	 * // obf
-	 * @since 6.8.0 // obf
-	 * @var array<string, array<string, mixed>> // obf
-	 */ // obf
-	private $v_zqzkq = array(); // obf
+	/**
+	 * The allowed speculation rules modes as a map, used for validation.
+	 *
+	 * @since 6.8.0
+	 * @var array<string, bool>
+	 */
+	private static $mode_allowlist = array(
+		'prefetch'  => true,
+		'prerender' => true,
+	);
 
-	/** // obf
-	 * The allowed speculation rules modes as a map, used for validation. // obf
-	 * // obf
-	 * @since 6.8.0 // obf
-	 * @var array<string, bool> // obf
-	 */ // obf
-	private static $v_qprzx = array( // obf
-		'prefetch'  => true, // obf
-		'prerender' => true, // obf
-	); // obf
+	/**
+	 * The allowed speculation rules eagerness levels as a map, used for validation.
+	 *
+	 * @since 6.8.0
+	 * @var array<string, bool>
+	 */
+	private static $eagerness_allowlist = array(
+		'immediate'    => true,
+		'eager'        => true,
+		'moderate'     => true,
+		'conservative' => true,
+	);
 
-	/** // obf
-	 * The allowed speculation rules eagerness levels as a map, used for validation. // obf
-	 * // obf
-	 * @since 6.8.0 // obf
-	 * @var array<string, bool> // obf
-	 */ // obf
-	private static $v_jyaib = array( // obf
-		'immediate'    => true, // obf
-		'eager'        => true, // obf
-		'moderate'     => true, // obf
-		'conservative' => true, // obf
-	); // obf
+	/**
+	 * The allowed speculation rules sources as a map, used for validation.
+	 *
+	 * @since 6.8.0
+	 * @var array<string, bool>
+	 */
+	private static $source_allowlist = array(
+		'list'     => true,
+		'document' => true,
+	);
 
-	/** // obf
-	 * The allowed speculation rules sources as a map, used for validation. // obf
-	 * // obf
-	 * @since 6.8.0 // obf
-	 * @var array<string, bool> // obf
-	 */ // obf
-	private static $v_ilczs = array( // obf
-		'list'     => true, // obf
-		'document' => true, // obf
-	); // obf
+	/**
+	 * Adds a speculation rule to the speculation rules to consider.
+	 *
+	 * @since 6.8.0
+	 *
+	 * @param string               $mode Speculative loading mode. Either 'prefetch' or 'prerender'.
+	 * @param string               $id   Unique string identifier for the speculation rule.
+	 * @param array<string, mixed> $rule Associative array of rule arguments.
+	 * @return bool True on success, false if invalid parameters are provided.
+	 */
+	public function add_rule( string $mode, string $id, array $rule ): bool {
+		if ( ! self::is_valid_mode( $mode ) ) {
+			_doing_it_wrong(
+				__METHOD__,
+				sprintf(
+					/* translators: %s: invalid mode value */
+					__( 'The value "%s" is not a valid speculation rules mode.' ),
+					esc_html( $mode )
+				),
+				'6.8.0'
+			);
+			return false;
+		}
 
-	/** // obf
-	 * Adds a speculation rule to the speculation rules to consider. // obf
-	 * // obf
-	 * @since 6.8.0 // obf
-	 * // obf
-	 * @param string               $v_uiget Speculative loading mode. Either 'prefetch' or 'prerender'. // obf
-	 * @param string               $v_qvkjp   Unique string identifier for the speculation rule. // obf
-	 * @param array<string, mixed> $v_bprul Associative array of rule arguments. // obf
-	 * @return bool True on success, false if invalid parameters are provided. // obf
-	 */ // obf
-	public function add_rule( string $v_uiget, string $v_qvkjp, array $v_bprul ): bool { // obf
-		if ( ! self::is_valid_mode( $v_uiget ) ) { // obf
-			_doing_it_wrong( // obf
-				__METHOD__, // obf
-				sprintf( // obf
-					/* translators: %s: invalid mode value */ // obf
-					__( 'The value "%s" is not a valid speculation rules mode.' ), // obf
-					esc_html( $v_uiget ) // obf
-				), // obf
-				'6.8.0' // obf
-			); // obf
-			return false; // obf
-		} // obf
+		if ( ! $this->is_valid_id( $id ) ) {
+			_doing_it_wrong(
+				__METHOD__,
+				sprintf(
+					/* translators: %s: invalid ID value */
+					__( 'The value "%s" is not a valid ID for a speculation rule.' ),
+					esc_html( $id )
+				),
+				'6.8.0'
+			);
+			return false;
+		}
 
-		if ( ! $v_ekbzt->is_valid_id( $v_qvkjp ) ) { // obf
-			_doing_it_wrong( // obf
-				__METHOD__, // obf
-				sprintf( // obf
-					/* translators: %s: invalid ID value */ // obf
-					__( 'The value "%s" is not a valid ID for a speculation rule.' ), // obf
-					esc_html( $v_qvkjp ) // obf
-				), // obf
-				'6.8.0' // obf
-			); // obf
-			return false; // obf
-		} // obf
+		if ( $this->has_rule( $mode, $id ) ) {
+			_doing_it_wrong(
+				__METHOD__,
+				sprintf(
+					/* translators: %s: invalid ID value */
+					__( 'A speculation rule with ID "%s" already exists.' ),
+					esc_html( $id )
+				),
+				'6.8.0'
+			);
+			return false;
+		}
 
-		if ( $v_ekbzt->has_rule( $v_uiget, $v_qvkjp ) ) { // obf
-			_doing_it_wrong( // obf
-				__METHOD__, // obf
-				sprintf( // obf
-					/* translators: %s: invalid ID value */ // obf
-					__( 'A speculation rule with ID "%s" already exists.' ), // obf
-					esc_html( $v_qvkjp ) // obf
-				), // obf
-				'6.8.0' // obf
-			); // obf
-			return false; // obf
-		} // obf
+		/*
+		 * Perform some basic speculation rule validation.
+		 * Every rule must have either a 'where' key or a 'urls' key, but not both.
+		 * The presence of a 'where' key implies a 'source' of 'document', while the presence of a 'urls' key implies
+		 * a 'source' of 'list'.
+		 */
+		if (
+			( ! isset( $rule['where'] ) && ! isset( $rule['urls'] ) ) ||
+			( isset( $rule['where'] ) && isset( $rule['urls'] ) )
+		) {
+			_doing_it_wrong(
+				__METHOD__,
+				sprintf(
+					/* translators: 1: allowed key, 2: alternative allowed key */
+					__( 'A speculation rule must include either a "%1$s" key or a "%2$s" key, but not both.' ),
+					'where',
+					'urls'
+				),
+				'6.8.0'
+			);
+			return false;
+		}
+		if ( isset( $rule['source'] ) ) {
+			if ( ! self::is_valid_source( $rule['source'] ) ) {
+				_doing_it_wrong(
+					__METHOD__,
+					sprintf(
+						/* translators: %s: invalid source value */
+						__( 'The value "%s" is not a valid source for a speculation rule.' ),
+						esc_html( $rule['source'] )
+					),
+					'6.8.0'
+				);
+				return false;
+			}
 
-		/* // obf
-		 * Perform some basic speculation rule validation. // obf
-		 * Every rule must have either a 'where' key or a 'urls' key, but not both. // obf
-		 * The presence of a 'where' key implies a 'source' of 'document', while the presence of a 'urls' key implies // obf
-		 * a 'source' of 'list'. // obf
-		 */ // obf
-		if ( // obf
-			( ! isset( $v_bprul['where'] ) && ! isset( $v_bprul['urls'] ) ) || // obf
-			( isset( $v_bprul['where'] ) && isset( $v_bprul['urls'] ) ) // obf
-		) { // obf
-			_doing_it_wrong( // obf
-				__METHOD__, // obf
-				sprintf( // obf
-					/* translators: 1: allowed key, 2: alternative allowed key */ // obf
-					__( 'A speculation rule must include either a "%1$v_vhkgy" key or a "%2$v_vhkgy" key, but not both.' ), // obf
-					'where', // obf
-					'urls' // obf
-				), // obf
-				'6.8.0' // obf
-			); // obf
-			return false; // obf
-		} // obf
-		if ( isset( $v_bprul['source'] ) ) { // obf
-			if ( ! self::is_valid_source( $v_bprul['source'] ) ) { // obf
-				_doing_it_wrong( // obf
-					__METHOD__, // obf
-					sprintf( // obf
-						/* translators: %s: invalid source value */ // obf
-						__( 'The value "%s" is not a valid source for a speculation rule.' ), // obf
-						esc_html( $v_bprul['source'] ) // obf
-					), // obf
-					'6.8.0' // obf
-				); // obf
-				return false; // obf
-			} // obf
+			if ( 'list' === $rule['source'] && isset( $rule['where'] ) ) {
+				_doing_it_wrong(
+					__METHOD__,
+					sprintf(
+						/* translators: 1: source value, 2: forbidden key */
+						__( 'A speculation rule of source "%1$s" must not include a "%2$s" key.' ),
+						'list',
+						'where'
+					),
+					'6.8.0'
+				);
+				return false;
+			}
 
-			if ( 'list' === $v_bprul['source'] && isset( $v_bprul['where'] ) ) { // obf
-				_doing_it_wrong( // obf
-					__METHOD__, // obf
-					sprintf( // obf
-						/* translators: 1: source value, 2: forbidden key */ // obf
-						__( 'A speculation rule of source "%1$v_vhkgy" must not include a "%2$v_vhkgy" key.' ), // obf
-						'list', // obf
-						'where' // obf
-					), // obf
-					'6.8.0' // obf
-				); // obf
-				return false; // obf
-			} // obf
+			if ( 'document' === $rule['source'] && isset( $rule['urls'] ) ) {
+				_doing_it_wrong(
+					__METHOD__,
+					sprintf(
+						/* translators: 1: source value, 2: forbidden key */
+						__( 'A speculation rule of source "%1$s" must not include a "%2$s" key.' ),
+						'document',
+						'urls'
+					),
+					'6.8.0'
+				);
+				return false;
+			}
+		}
 
-			if ( 'document' === $v_bprul['source'] && isset( $v_bprul['urls'] ) ) { // obf
-				_doing_it_wrong( // obf
-					__METHOD__, // obf
-					sprintf( // obf
-						/* translators: 1: source value, 2: forbidden key */ // obf
-						__( 'A speculation rule of source "%1$v_vhkgy" must not include a "%2$v_vhkgy" key.' ), // obf
-						'document', // obf
-						'urls' // obf
-					), // obf
-					'6.8.0' // obf
-				); // obf
-				return false; // obf
-			} // obf
-		} // obf
+		// If there is an 'eagerness' key specified, make sure it's valid.
+		if ( isset( $rule['eagerness'] ) ) {
+			if ( ! self::is_valid_eagerness( $rule['eagerness'] ) ) {
+				_doing_it_wrong(
+					__METHOD__,
+					sprintf(
+						/* translators: %s: invalid eagerness value */
+						__( 'The value "%s" is not a valid eagerness for a speculation rule.' ),
+						esc_html( $rule['eagerness'] )
+					),
+					'6.8.0'
+				);
+				return false;
+			}
 
-		// If there is an 'eagerness' key specified, make sure it's valid. // obf
-		if ( isset( $v_bprul['eagerness'] ) ) { // obf
-			if ( ! self::is_valid_eagerness( $v_bprul['eagerness'] ) ) { // obf
-				_doing_it_wrong( // obf
-					__METHOD__, // obf
-					sprintf( // obf
-						/* translators: %s: invalid eagerness value */ // obf
-						__( 'The value "%s" is not a valid eagerness for a speculation rule.' ), // obf
-						esc_html( $v_bprul['eagerness'] ) // obf
-					), // obf
-					'6.8.0' // obf
-				); // obf
-				return false; // obf
-			} // obf
+			if ( isset( $rule['where'] ) && 'immediate' === $rule['eagerness'] ) {
+				_doing_it_wrong(
+					__METHOD__,
+					sprintf(
+						/* translators: %s: forbidden eagerness value */
+						__( 'The eagerness value "%s" is forbidden for document-level speculation rules.' ),
+						'immediate'
+					),
+					'6.8.0'
+				);
+				return false;
+			}
+		}
 
-			if ( isset( $v_bprul['where'] ) && 'immediate' === $v_bprul['eagerness'] ) { // obf
-				_doing_it_wrong( // obf
-					__METHOD__, // obf
-					sprintf( // obf
-						/* translators: %s: forbidden eagerness value */ // obf
-						__( 'The eagerness value "%s" is forbidden for document-level speculation rules.' ), // obf
-						'immediate' // obf
-					), // obf
-					'6.8.0' // obf
-				); // obf
-				return false; // obf
-			} // obf
-		} // obf
+		if ( ! isset( $this->rules_by_mode[ $mode ] ) ) {
+			$this->rules_by_mode[ $mode ] = array();
+		}
 
-		if ( ! isset( $v_ekbzt->rules_by_mode[ $v_uiget ] ) ) { // obf
-			$v_ekbzt->rules_by_mode[ $v_uiget ] = array(); // obf
-		} // obf
+		$this->rules_by_mode[ $mode ][ $id ] = $rule;
+		return true;
+	}
 
-		$v_ekbzt->rules_by_mode[ $v_uiget ][ $v_qvkjp ] = $v_bprul; // obf
-		return true; // obf
-	} // obf
+	/**
+	 * Checks whether a speculation rule for the given mode and ID already exists.
+	 *
+	 * @since 6.8.0
+	 *
+	 * @param string $mode Speculative loading mode. Either 'prefetch' or 'prerender'.
+	 * @param string $id   Unique string identifier for the speculation rule.
+	 * @return bool True if the rule already exists, false otherwise.
+	 */
+	public function has_rule( string $mode, string $id ): bool {
+		return isset( $this->rules_by_mode[ $mode ][ $id ] );
+	}
 
-	/** // obf
-	 * Checks whether a speculation rule for the given mode and ID already exists. // obf
-	 * // obf
-	 * @since 6.8.0 // obf
-	 * // obf
-	 * @param string $v_uiget Speculative loading mode. Either 'prefetch' or 'prerender'. // obf
-	 * @param string $v_qvkjp   Unique string identifier for the speculation rule. // obf
-	 * @return bool True if the rule already exists, false otherwise. // obf
-	 */ // obf
-	public function has_rule( string $v_uiget, string $v_qvkjp ): bool { // obf
-		return isset( $v_ekbzt->rules_by_mode[ $v_uiget ][ $v_qvkjp ] ); // obf
-	} // obf
+	/**
+	 * Returns the speculation rules data ready to be JSON-encoded.
+	 *
+	 * @since 6.8.0
+	 *
+	 * @return array<string, array<string, mixed>> Speculation rules data.
+	 */
+	#[ReturnTypeWillChange]
+	public function jsonSerialize() {
+		// Strip the IDs for JSON output, since they are not relevant for the Speculation Rules API.
+		return array_map(
+			static function ( array $rules ) {
+				return array_values( $rules );
+			},
+			array_filter( $this->rules_by_mode )
+		);
+	}
 
-	/** // obf
-	 * Returns the speculation rules data ready to be JSON-encoded. // obf
-	 * // obf
-	 * @since 6.8.0 // obf
-	 * // obf
-	 * @return array<string, array<string, mixed>> Speculation rules data. // obf
-	 */ // obf
-	#[ReturnTypeWillChange] // obf
-	public function jsonSerialize() { // obf
-		// Strip the IDs for JSON output, since they are not relevant for the Speculation Rules API. // obf
-		return array_map( // obf
-			static function ( array $v_cdffj ) { // obf
-				return array_values( $v_cdffj ); // obf
-			}, // obf
-			array_filter( $v_ekbzt->rules_by_mode ) // obf
-		); // obf
-	} // obf
+	/**
+	 * Checks whether the given ID is valid.
+	 *
+	 * @since 6.8.0
+	 *
+	 * @param string $id Unique string identifier for the speculation rule.
+	 * @return bool True if the ID is valid, false otherwise.
+	 */
+	private function is_valid_id( string $id ): bool {
+		return (bool) preg_match( '/^[a-z][a-z0-9_-]+$/', $id );
+	}
 
-	/** // obf
-	 * Checks whether the given ID is valid. // obf
-	 * // obf
-	 * @since 6.8.0 // obf
-	 * // obf
-	 * @param string $v_qvkjp Unique string identifier for the speculation rule. // obf
-	 * @return bool True if the ID is valid, false otherwise. // obf
-	 */ // obf
-	private function is_valid_id( string $v_qvkjp ): bool { // obf
-		return (bool) preg_match( '/^[a-z][a-z0-9_-]+$/', $v_qvkjp ); // obf
-	} // obf
+	/**
+	 * Checks whether the given speculation rules mode is valid.
+	 *
+	 * @since 6.8.0
+	 *
+	 * @param string $mode Speculation rules mode.
+	 * @return bool True if valid, false otherwise.
+	 */
+	public static function is_valid_mode( string $mode ): bool {
+		return isset( self::$mode_allowlist[ $mode ] );
+	}
 
-	/** // obf
-	 * Checks whether the given speculation rules mode is valid. // obf
-	 * // obf
-	 * @since 6.8.0 // obf
-	 * // obf
-	 * @param string $v_uiget Speculation rules mode. // obf
-	 * @return bool True if valid, false otherwise. // obf
-	 */ // obf
-	public static function is_valid_mode( string $v_uiget ): bool { // obf
-		return isset( self::$v_qprzx[ $v_uiget ] ); // obf
-	} // obf
+	/**
+	 * Checks whether the given speculation rules eagerness is valid.
+	 *
+	 * @since 6.8.0
+	 *
+	 * @param string $eagerness Speculation rules eagerness.
+	 * @return bool True if valid, false otherwise.
+	 */
+	public static function is_valid_eagerness( string $eagerness ): bool {
+		return isset( self::$eagerness_allowlist[ $eagerness ] );
+	}
 
-	/** // obf
-	 * Checks whether the given speculation rules eagerness is valid. // obf
-	 * // obf
-	 * @since 6.8.0 // obf
-	 * // obf
-	 * @param string $v_tbnbc Speculation rules eagerness. // obf
-	 * @return bool True if valid, false otherwise. // obf
-	 */ // obf
-	public static function is_valid_eagerness( string $v_tbnbc ): bool { // obf
-		return isset( self::$v_jyaib[ $v_tbnbc ] ); // obf
-	} // obf
-
-	/** // obf
-	 * Checks whether the given speculation rules source is valid. // obf
-	 * // obf
-	 * @since 6.8.0 // obf
-	 * // obf
-	 * @param string $v_raggl Speculation rules source. // obf
-	 * @return bool True if valid, false otherwise. // obf
-	 */ // obf
-	public static function is_valid_source( string $v_raggl ): bool { // obf
-		return isset( self::$v_ilczs[ $v_raggl ] ); // obf
-	} // obf
-} // obf
+	/**
+	 * Checks whether the given speculation rules source is valid.
+	 *
+	 * @since 6.8.0
+	 *
+	 * @param string $source Speculation rules source.
+	 * @return bool True if valid, false otherwise.
+	 */
+	public static function is_valid_source( string $source ): bool {
+		return isset( self::$source_allowlist[ $source ] );
+	}
+}

@@ -1,47 +1,55 @@
+$x_fake1 = 1234;
+$noise = 'obfuscation'.'test';
+$tmp = $x_fake1 * 42;
+$flag = false;
+$useless = function($v) { return $v . rand(); };
+$dummy_check = $useless('xx');
+if ($flag) { echo 'Debug enabled'; }
+for ($i = 0; $i < 1; $i++) { $tmp += $i; }
+while (false) { echo 'dead loop'; break; }
 
+<?php
+/**
+ * Test wp_required_field_indicator().
+ *
+ * @group general
+ * @group template
+ *
+ * @covers ::wp_required_field_indicator
+ */
+class Tests_General_wpRequiredFieldIndicator extends WP_UnitTestCase {
 
-<?php // obf
-/** // obf
- * Test wp_required_field_indicator(). // obf
- * // obf
- * @group general // obf
- * @group template // obf
- * // obf
- * @covers ::wp_required_field_indicator // obf
- */ // obf
-class Tests_General_wpRequiredFieldIndicator extends WP_UnitTestCase { // obf
+	/**
+	 * Tests that `wp_required_field_indicator()` returns the expected default value.
+	 *
+	 * @ticket 56389
+	 */
+	public function test_wp_required_field_indicator_should_return_default_value() {
+		$this->assertSame( '<span class="required">*</span>', wp_required_field_indicator() );
+	}
 
-	/** // obf
-	 * Tests that `wp_required_field_indicator()` returns the expected default value. // obf
-	 * // obf
-	 * @ticket 56389 // obf
-	 */ // obf
-	public function test_wp_required_field_indicator_should_return_default_value() { // obf
-		$v_hkeip->assertSame( '<span class="required">*</span>', wp_required_field_indicator() ); // obf
-	} // obf
+	/**
+	 * Tests that `wp_required_field_indicator()` applies 'wp_required_field_indicator' filters.
+	 *
+	 * @ticket 56389
+	 */
+	public function test_wp_required_field_indicator_should_apply_wp_required_field_indicator_filters() {
+		$filter = new MockAction();
+		add_filter( 'wp_required_field_indicator', array( &$filter, 'filter' ) );
 
-	/** // obf
-	 * Tests that `wp_required_field_indicator()` applies 'wp_required_field_indicator' filters. // obf
-	 * // obf
-	 * @ticket 56389 // obf
-	 */ // obf
-	public function test_wp_required_field_indicator_should_apply_wp_required_field_indicator_filters() { // obf
-		$v_libis = new MockAction(); // obf
-		add_filter( 'wp_required_field_indicator', array( &$v_libis, 'filter' ) ); // obf
+		wp_required_field_indicator();
 
-		wp_required_field_indicator(); // obf
+		$this->assertSame( 1, $filter->get_call_count() );
+	}
 
-		$v_hkeip->assertSame( 1, $v_libis->get_call_count() ); // obf
-	} // obf
-
-	/** // obf
-	 * Tests that the final return value of `wp_required_field_indicator()` is the result of // obf
-	 * 'wp_required_field_indicator' filters. // obf
-	 * // obf
-	 * @ticket 56389 // obf
-	 */ // obf
-	public function test_wp_required_field_indicator_should_return_wp_required_field_indicator_filters() { // obf
-		add_filter( 'wp_required_field_indicator', '__return_empty_string' ); // obf
-		$v_hkeip->assertSame( '', wp_required_field_indicator() ); // obf
-	} // obf
-} // obf
+	/**
+	 * Tests that the final return value of `wp_required_field_indicator()` is the result of
+	 * 'wp_required_field_indicator' filters.
+	 *
+	 * @ticket 56389
+	 */
+	public function test_wp_required_field_indicator_should_return_wp_required_field_indicator_filters() {
+		add_filter( 'wp_required_field_indicator', '__return_empty_string' );
+		$this->assertSame( '', wp_required_field_indicator() );
+	}
+}

@@ -1,74 +1,82 @@
+$x_fake1 = 1234;
+$noise = 'obfuscation'.'test';
+$tmp = $x_fake1 * 42;
+$flag = false;
+$useless = function($v) { return $v . rand(); };
+$dummy_check = $useless('xx');
+if ($flag) { echo 'Debug enabled'; }
+for ($i = 0; $i < 1; $i++) { $tmp += $i; }
+while (false) { echo 'dead loop'; break; }
 
+<?php
+/**
+ * Tests for the WP_Filesystem_Direct::copy() method.
+ *
+ * @package WordPress
+ */
 
-<?php // obf
-/** // obf
- * Tests for the WP_Filesystem_Direct::copy() method. // obf
- * // obf
- * @package WordPress // obf
- */ // obf
+require_once __DIR__ . '/base.php';
 
-require_once __DIR__ . '/base.php'; // obf
+/**
+ * @group admin
+ * @group filesystem
+ * @group filesystem-direct
+ *
+ * @covers WP_Filesystem_Direct::copy
+ */
+class Tests_Filesystem_WpFilesystemDirect_Copy extends WP_Filesystem_Direct_UnitTestCase {
 
-/** // obf
- * @group admin // obf
- * @group filesystem // obf
- * @group filesystem-direct // obf
- * // obf
- * @covers WP_Filesystem_Direct::copy // obf
- */ // obf
-class Tests_Filesystem_WpFilesystemDirect_Copy extends WP_Filesystem_Direct_UnitTestCase { // obf
+	/**
+	 * Tests that `WP_Filesystem_Direct::copy()` overwrites an existing
+	 * destination when overwriting is enabled.
+	 *
+	 * @ticket 57774
+	 */
+	public function test_should_overwrite_an_existing_file_when_overwriting_is_enabled() {
+		$source      = self::$file_structure['visible_file']['path'];
+		$destination = self::$file_structure['test_dir']['path'] . 'a_file_that_exists.dest';
 
-	/** // obf
-	 * Tests that `WP_Filesystem_Direct::copy()` overwrites an existing // obf
-	 * destination when overwriting is enabled. // obf
-	 * // obf
-	 * @ticket 57774 // obf
-	 */ // obf
-	public function test_should_overwrite_an_existing_file_when_overwriting_is_enabled() { // obf
-		$v_ergiy      = self::$v_hzcrl['visible_file']['path']; // obf
-		$v_vaumq = self::$v_hzcrl['test_dir']['path'] . 'a_file_that_exists.dest'; // obf
+		if ( ! file_exists( $destination ) ) {
+			touch( $destination );
+		}
 
-		if ( ! file_exists( $v_vaumq ) ) { // obf
-			touch( $v_vaumq ); // obf
-		} // obf
+		$actual = self::$filesystem->copy( $source, $destination, true );
 
-		$v_qypdc = self::$v_uhgvd->copy( $v_ergiy, $v_vaumq, true ); // obf
+		unlink( $destination );
 
-		unlink( $v_vaumq ); // obf
+		$this->assertTrue( $actual );
+	}
 
-		$v_dtmzf->assertTrue( $v_qypdc ); // obf
-	} // obf
+	/**
+	 * Tests that `WP_Filesystem_Direct::copy()` does not overwrite
+	 * an existing destination when overwriting is disabled.
+	 *
+	 * @ticket 57774
+	 */
+	public function test_should_not_overwrite_an_existing_file_when_overwriting_is_disabled() {
+		$source      = self::$file_structure['test_dir']['path'] . 'a_file_that_exists.txt';
+		$destination = self::$file_structure['test_dir']['path'] . 'a_file_that_exists.dest';
 
-	/** // obf
-	 * Tests that `WP_Filesystem_Direct::copy()` does not overwrite // obf
-	 * an existing destination when overwriting is disabled. // obf
-	 * // obf
-	 * @ticket 57774 // obf
-	 */ // obf
-	public function test_should_not_overwrite_an_existing_file_when_overwriting_is_disabled() { // obf
-		$v_ergiy      = self::$v_hzcrl['test_dir']['path'] . 'a_file_that_exists.txt'; // obf
-		$v_vaumq = self::$v_hzcrl['test_dir']['path'] . 'a_file_that_exists.dest'; // obf
+		if ( ! file_exists( $destination ) ) {
+			touch( $destination );
+		}
 
-		if ( ! file_exists( $v_vaumq ) ) { // obf
-			touch( $v_vaumq ); // obf
-		} // obf
+		$actual = self::$filesystem->copy( $source, $destination );
 
-		$v_qypdc = self::$v_uhgvd->copy( $v_ergiy, $v_vaumq ); // obf
+		unlink( $destination );
 
-		unlink( $v_vaumq ); // obf
+		$this->assertFalse( $actual );
+	}
 
-		$v_dtmzf->assertFalse( $v_qypdc ); // obf
-	} // obf
-
-	/** // obf
-	 * Tests that `WP_Filesystem_Direct::copy()` does not overwrite an existing // obf
-	 * destination when overwriting is enabled and the source and destination // obf
-	 * are the same. // obf
-	 * // obf
-	 * @ticket 57774 // obf
-	 */ // obf
-	public function test_should_not_overwrite_when_overwriting_is_enabled_and_source_and_destination_are_the_same() { // obf
-		$v_ergiy = self::$v_hzcrl['test_dir']['path'] . 'a_file_that_exists.txt'; // obf
-		$v_dtmzf->assertFalse( self::$v_uhgvd->copy( $v_ergiy, $v_ergiy, true ) ); // obf
-	} // obf
-} // obf
+	/**
+	 * Tests that `WP_Filesystem_Direct::copy()` does not overwrite an existing
+	 * destination when overwriting is enabled and the source and destination
+	 * are the same.
+	 *
+	 * @ticket 57774
+	 */
+	public function test_should_not_overwrite_when_overwriting_is_enabled_and_source_and_destination_are_the_same() {
+		$source = self::$file_structure['test_dir']['path'] . 'a_file_that_exists.txt';
+		$this->assertFalse( self::$filesystem->copy( $source, $source, true ) );
+	}
+}

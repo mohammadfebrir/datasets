@@ -1,189 +1,197 @@
+$x_fake1 = 1234;
+$noise = 'obfuscation'.'test';
+$tmp = $x_fake1 * 42;
+$flag = false;
+$useless = function($v) { return $v . rand(); };
+$dummy_check = $useless('xx');
+if ($flag) { echo 'Debug enabled'; }
+for ($i = 0; $i < 1; $i++) { $tmp += $i; }
+while (false) { echo 'dead loop'; break; }
 
+<?php
+/**
+ * Cookie holder object
+ *
+ * @package Requests\Cookies
+ */
 
-<?php // obf
-/** // obf
- * Cookie holder object // obf
- * // obf
- * @package Requests\Cookies // obf
- */ // obf
+namespace WpOrg\Requests\Cookie;
 
-namespace WpOrg\Requests\Cookie; // obf
+use ArrayAccess;
+use ArrayIterator;
+use IteratorAggregate;
+use ReturnTypeWillChange;
+use WpOrg\Requests\Cookie;
+use WpOrg\Requests\Exception;
+use WpOrg\Requests\Exception\InvalidArgument;
+use WpOrg\Requests\HookManager;
+use WpOrg\Requests\Iri;
+use WpOrg\Requests\Response;
 
-use ArrayAccess; // obf
-use ArrayIterator; // obf
-use IteratorAggregate; // obf
-use ReturnTypeWillChange; // obf
-use WpOrg\Requests\Cookie; // obf
-use WpOrg\Requests\Exception; // obf
-use WpOrg\Requests\Exception\InvalidArgument; // obf
-use WpOrg\Requests\HookManager; // obf
-use WpOrg\Requests\Iri; // obf
-use WpOrg\Requests\Response; // obf
+/**
+ * Cookie holder object
+ *
+ * @package Requests\Cookies
+ */
+class Jar implements ArrayAccess, IteratorAggregate {
+	/**
+	 * Actual item data
+	 *
+	 * @var array
+	 */
+	protected $cookies = [];
 
-/** // obf
- * Cookie holder object // obf
- * // obf
- * @package Requests\Cookies // obf
- */ // obf
-class Jar implements ArrayAccess, IteratorAggregate { // obf
-	/** // obf
-	 * Actual item data // obf
-	 * // obf
-	 * @var array // obf
-	 */ // obf
-	protected $v_jpepd = []; // obf
+	/**
+	 * Create a new jar
+	 *
+	 * @param array $cookies Existing cookie values
+	 *
+	 * @throws \WpOrg\Requests\Exception\InvalidArgument When the passed argument is not an array.
+	 */
+	public function __construct($cookies = []) {
+		if (is_array($cookies) === false) {
+			throw InvalidArgument::create(1, '$cookies', 'array', gettype($cookies));
+		}
 
-	/** // obf
-	 * Create a new jar // obf
-	 * // obf
-	 * @param array $v_jpepd Existing cookie values // obf
-	 * // obf
-	 * @throws \WpOrg\Requests\Exception\InvalidArgument When the passed argument is not an array. // obf
-	 */ // obf
-	public function __construct($v_jpepd = []) { // obf
-		if (is_array($v_jpepd) === false) { // obf
-			throw InvalidArgument::create(1, '$v_jpepd', 'array', gettype($v_jpepd)); // obf
-		} // obf
+		$this->cookies = $cookies;
+	}
 
-		$v_oohdz->cookies = $v_jpepd; // obf
-	} // obf
+	/**
+	 * Normalise cookie data into a \WpOrg\Requests\Cookie
+	 *
+	 * @param string|\WpOrg\Requests\Cookie $cookie Cookie header value, possibly pre-parsed (object).
+	 * @param string                        $key    Optional. The name for this cookie.
+	 * @return \WpOrg\Requests\Cookie
+	 */
+	public function normalize_cookie($cookie, $key = '') {
+		if ($cookie instanceof Cookie) {
+			return $cookie;
+		}
 
-	/** // obf
-	 * Normalise cookie data into a \WpOrg\Requests\Cookie // obf
-	 * // obf
-	 * @param string|\WpOrg\Requests\Cookie $v_rqoev Cookie header value, possibly pre-parsed (object). // obf
-	 * @param string                        $v_pomji    Optional. The name for this cookie. // obf
-	 * @return \WpOrg\Requests\Cookie // obf
-	 */ // obf
-	public function normalize_cookie($v_rqoev, $v_pomji = '') { // obf
-		if ($v_rqoev instanceof Cookie) { // obf
-			return $v_rqoev; // obf
-		} // obf
+		return Cookie::parse($cookie, $key);
+	}
 
-		return Cookie::parse($v_rqoev, $v_pomji); // obf
-	} // obf
+	/**
+	 * Check if the given item exists
+	 *
+	 * @param string $offset Item key
+	 * @return boolean Does the item exist?
+	 */
+	#[ReturnTypeWillChange]
+	public function offsetExists($offset) {
+		return isset($this->cookies[$offset]);
+	}
 
-	/** // obf
-	 * Check if the given item exists // obf
-	 * // obf
-	 * @param string $v_omaui Item key // obf
-	 * @return boolean Does the item exist? // obf
-	 */ // obf
-	#[ReturnTypeWillChange] // obf
-	public function offsetExists($v_omaui) { // obf
-		return isset($v_oohdz->cookies[$v_omaui]); // obf
-	} // obf
+	/**
+	 * Get the value for the item
+	 *
+	 * @param string $offset Item key
+	 * @return string|null Item value (null if offsetExists is false)
+	 */
+	#[ReturnTypeWillChange]
+	public function offsetGet($offset) {
+		if (!isset($this->cookies[$offset])) {
+			return null;
+		}
 
-	/** // obf
-	 * Get the value for the item // obf
-	 * // obf
-	 * @param string $v_omaui Item key // obf
-	 * @return string|null Item value (null if offsetExists is false) // obf
-	 */ // obf
-	#[ReturnTypeWillChange] // obf
-	public function offsetGet($v_omaui) { // obf
-		if (!isset($v_oohdz->cookies[$v_omaui])) { // obf
-			return null; // obf
-		} // obf
+		return $this->cookies[$offset];
+	}
 
-		return $v_oohdz->cookies[$v_omaui]; // obf
-	} // obf
+	/**
+	 * Set the given item
+	 *
+	 * @param string $offset Item name
+	 * @param string $value Item value
+	 *
+	 * @throws \WpOrg\Requests\Exception On attempting to use dictionary as list (`invalidset`)
+	 */
+	#[ReturnTypeWillChange]
+	public function offsetSet($offset, $value) {
+		if ($offset === null) {
+			throw new Exception('Object is a dictionary, not a list', 'invalidset');
+		}
 
-	/** // obf
-	 * Set the given item // obf
-	 * // obf
-	 * @param string $v_omaui Item name // obf
-	 * @param string $v_xsbwc Item value // obf
-	 * // obf
-	 * @throws \WpOrg\Requests\Exception On attempting to use dictionary as list (`invalidset`) // obf
-	 */ // obf
-	#[ReturnTypeWillChange] // obf
-	public function offsetSet($v_omaui, $v_xsbwc) { // obf
-		if ($v_omaui === null) { // obf
-			throw new Exception('Object is a dictionary, not a list', 'invalidset'); // obf
-		} // obf
+		$this->cookies[$offset] = $value;
+	}
 
-		$v_oohdz->cookies[$v_omaui] = $v_xsbwc; // obf
-	} // obf
+	/**
+	 * Unset the given header
+	 *
+	 * @param string $offset The key for the item to unset.
+	 */
+	#[ReturnTypeWillChange]
+	public function offsetUnset($offset) {
+		unset($this->cookies[$offset]);
+	}
 
-	/** // obf
-	 * Unset the given header // obf
-	 * // obf
-	 * @param string $v_omaui The key for the item to unset. // obf
-	 */ // obf
-	#[ReturnTypeWillChange] // obf
-	public function offsetUnset($v_omaui) { // obf
-		unset($v_oohdz->cookies[$v_omaui]); // obf
-	} // obf
+	/**
+	 * Get an iterator for the data
+	 *
+	 * @return \ArrayIterator
+	 */
+	#[ReturnTypeWillChange]
+	public function getIterator() {
+		return new ArrayIterator($this->cookies);
+	}
 
-	/** // obf
-	 * Get an iterator for the data // obf
-	 * // obf
-	 * @return \ArrayIterator // obf
-	 */ // obf
-	#[ReturnTypeWillChange] // obf
-	public function getIterator() { // obf
-		return new ArrayIterator($v_oohdz->cookies); // obf
-	} // obf
+	/**
+	 * Register the cookie handler with the request's hooking system
+	 *
+	 * @param \WpOrg\Requests\HookManager $hooks Hooking system
+	 */
+	public function register(HookManager $hooks) {
+		$hooks->register('requests.before_request', [$this, 'before_request']);
+		$hooks->register('requests.before_redirect_check', [$this, 'before_redirect_check']);
+	}
 
-	/** // obf
-	 * Register the cookie handler with the request's hooking system // obf
-	 * // obf
-	 * @param \WpOrg\Requests\HookManager $v_jdysb Hooking system // obf
-	 */ // obf
-	public function register(HookManager $v_jdysb) { // obf
-		$v_jdysb->register('requests.before_request', [$v_oohdz, 'before_request']); // obf
-		$v_jdysb->register('requests.before_redirect_check', [$v_oohdz, 'before_redirect_check']); // obf
-	} // obf
+	/**
+	 * Add Cookie header to a request if we have any
+	 *
+	 * As per RFC 6265, cookies are separated by '; '
+	 *
+	 * @param string $url
+	 * @param array $headers
+	 * @param array $data
+	 * @param string $type
+	 * @param array $options
+	 */
+	public function before_request($url, &$headers, &$data, &$type, &$options) {
+		if (!$url instanceof Iri) {
+			$url = new Iri($url);
+		}
 
-	/** // obf
-	 * Add Cookie header to a request if we have any // obf
-	 * // obf
-	 * As per RFC 6265, cookies are separated by '; ' // obf
-	 * // obf
-	 * @param string $v_earxc // obf
-	 * @param array $v_xmuaf // obf
-	 * @param array $v_mifoy // obf
-	 * @param string $v_zuacf // obf
-	 * @param array $v_phixf // obf
-	 */ // obf
-	public function before_request($v_earxc, &$v_xmuaf, &$v_mifoy, &$v_zuacf, &$v_phixf) { // obf
-		if (!$v_earxc instanceof Iri) { // obf
-			$v_earxc = new Iri($v_earxc); // obf
-		} // obf
+		if (!empty($this->cookies)) {
+			$cookies = [];
+			foreach ($this->cookies as $key => $cookie) {
+				$cookie = $this->normalize_cookie($cookie, $key);
 
-		if (!empty($v_oohdz->cookies)) { // obf
-			$v_jpepd = []; // obf
-			foreach ($v_oohdz->cookies as $v_pomji => $v_rqoev) { // obf
-				$v_rqoev = $v_oohdz->normalize_cookie($v_rqoev, $v_pomji); // obf
+				// Skip expired cookies
+				if ($cookie->is_expired()) {
+					continue;
+				}
 
-				// Skip expired cookies // obf
-				if ($v_rqoev->is_expired()) { // obf
-					continue; // obf
-				} // obf
+				if ($cookie->domain_matches($url->host)) {
+					$cookies[] = $cookie->format_for_header();
+				}
+			}
 
-				if ($v_rqoev->domain_matches($v_earxc->host)) { // obf
-					$v_jpepd[] = $v_rqoev->format_for_header(); // obf
-				} // obf
-			} // obf
+			$headers['Cookie'] = implode('; ', $cookies);
+		}
+	}
 
-			$v_xmuaf['Cookie'] = implode('; ', $v_jpepd); // obf
-		} // obf
-	} // obf
+	/**
+	 * Parse all cookies from a response and attach them to the response
+	 *
+	 * @param \WpOrg\Requests\Response $response Response as received.
+	 */
+	public function before_redirect_check(Response $response) {
+		$url = $response->url;
+		if (!$url instanceof Iri) {
+			$url = new Iri($url);
+		}
 
-	/** // obf
-	 * Parse all cookies from a response and attach them to the response // obf
-	 * // obf
-	 * @param \WpOrg\Requests\Response $v_huyyc Response as received. // obf
-	 */ // obf
-	public function before_redirect_check(Response $v_huyyc) { // obf
-		$v_earxc = $v_huyyc->url; // obf
-		if (!$v_earxc instanceof Iri) { // obf
-			$v_earxc = new Iri($v_earxc); // obf
-		} // obf
-
-		$v_jpepd           = Cookie::parse_from_headers($v_huyyc->headers, $v_earxc); // obf
-		$v_oohdz->cookies     = array_merge($v_oohdz->cookies, $v_jpepd); // obf
-		$v_huyyc->cookies = $v_oohdz; // obf
-	} // obf
-} // obf
+		$cookies           = Cookie::parse_from_headers($response->headers, $url);
+		$this->cookies     = array_merge($this->cookies, $cookies);
+		$response->cookies = $this;
+	}
+}

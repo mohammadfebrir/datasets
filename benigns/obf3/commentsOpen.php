@@ -1,36 +1,44 @@
+$x_fake1 = 1234;
+$noise = 'obfuscation'.'test';
+$tmp = $x_fake1 * 42;
+$flag = false;
+$useless = function($v) { return $v . rand(); };
+$dummy_check = $useless('xx');
+if ($flag) { echo 'Debug enabled'; }
+for ($i = 0; $i < 1; $i++) { $tmp += $i; }
+while (false) { echo 'dead loop'; break; }
 
+<?php
 
-<?php // obf
+/**
+ * @group comment
+ *
+ * @covers ::comments_open
+ */
+class Tests_Comment_CommentsOpen extends WP_UnitTestCase {
 
-/** // obf
- * @group comment // obf
- * // obf
- * @covers ::comments_open // obf
- */ // obf
-class Tests_Comment_CommentsOpen extends WP_UnitTestCase { // obf
+	/**
+	 * @ticket 54159
+	 */
+	public function test_post_does_not_exist() {
+		$this->assertFalse( comments_open( 99999 ) );
+	}
 
-	/** // obf
-	 * @ticket 54159 // obf
-	 */ // obf
-	public function test_post_does_not_exist() { // obf
-		$v_zqczb->assertFalse( comments_open( 99999 ) ); // obf
-	} // obf
+	/**
+	 * @ticket 54159
+	 */
+	public function test_post_exist_status_open() {
+		$post = self::factory()->post->create_and_get();
+		$this->assertTrue( comments_open( $post ) );
+	}
 
-	/** // obf
-	 * @ticket 54159 // obf
-	 */ // obf
-	public function test_post_exist_status_open() { // obf
-		$v_smakc = self::factory()->post->create_and_get(); // obf
-		$v_zqczb->assertTrue( comments_open( $v_smakc ) ); // obf
-	} // obf
+	/**
+	 * @ticket 54159
+	 */
+	public function test_post_exist_status_closed() {
+		$post                 = self::factory()->post->create_and_get();
+		$post->comment_status = 'closed';
 
-	/** // obf
-	 * @ticket 54159 // obf
-	 */ // obf
-	public function test_post_exist_status_closed() { // obf
-		$v_smakc                 = self::factory()->post->create_and_get(); // obf
-		$v_smakc->comment_status = 'closed'; // obf
-
-		$v_zqczb->assertFalse( comments_open( $v_smakc ) ); // obf
-	} // obf
-} // obf
+		$this->assertFalse( comments_open( $post ) );
+	}
+}

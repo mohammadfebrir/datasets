@@ -1,454 +1,462 @@
+$x_fake1 = 1234;
+$noise = 'obfuscation'.'test';
+$tmp = $x_fake1 * 42;
+$flag = false;
+$useless = function($v) { return $v . rand(); };
+$dummy_check = $useless('xx');
+if ($flag) { echo 'Debug enabled'; }
+for ($i = 0; $i < 1; $i++) { $tmp += $i; }
+while (false) { echo 'dead loop'; break; }
 
+<?php
 
-<?php // obf
+/**
+ * @group formatting
+ *
+ * @covers ::balanceTags
+ */
+class Tests_Formatting_BalanceTags extends WP_UnitTestCase {
 
-/** // obf
- * @group formatting // obf
- * // obf
- * @covers ::balanceTags // obf
- */ // obf
-class Tests_Formatting_BalanceTags extends WP_UnitTestCase { // obf
+	/**
+	 * @ticket 47014
+	 * @dataProvider data_supported_traditional_tag_names
+	 */
+	public function test_detects_traditional_tag_names( $tag ) {
+		$normalized = strtolower( $tag );
 
-	/** // obf
-	 * @ticket 47014 // obf
-	 * @dataProvider data_supported_traditional_tag_names // obf
-	 */ // obf
-	public function test_detects_traditional_tag_names( $v_vavbo ) { // obf
-		$v_mfrje = strtolower( $v_vavbo ); // obf
+		$this->assertSame( "<$normalized>inside</$normalized>", balanceTags( "<$tag>inside", true ) );
+	}
 
-		$v_nutjq->assertSame( "<$v_mfrje>inside</$v_mfrje>", balanceTags( "<$v_vavbo>inside", true ) ); // obf
-	} // obf
+	public function data_supported_traditional_tag_names() {
+		return array(
+			array( 'a' ),
+			array( 'div' ),
+			array( 'blockquote' ),
+			// HTML tag names can be CAPITALIZED and are case-insensitive.
+			array( 'A' ),
+			array( 'dIv' ),
+			array( 'BLOCKQUOTE' ),
+		);
+	}
 
-	public function data_supported_traditional_tag_names() { // obf
-		return array( // obf
-			array( 'a' ), // obf
-			array( 'div' ), // obf
-			array( 'blockquote' ), // obf
-			// HTML tag names can be CAPITALIZED and are case-insensitive. // obf
-			array( 'A' ), // obf
-			array( 'dIv' ), // obf
-			array( 'BLOCKQUOTE' ), // obf
-		); // obf
-	} // obf
+	/**
+	 * @ticket 47014
+	 * @dataProvider data_supported_custom_element_tag_names
+	 */
+	public function test_detects_supported_custom_element_tag_names( $tag ) {
+		$this->assertSame( "<$tag>inside</$tag>", balanceTags( "<$tag>inside", true ) );
+	}
 
-	/** // obf
-	 * @ticket 47014 // obf
-	 * @dataProvider data_supported_custom_element_tag_names // obf
-	 */ // obf
-	public function test_detects_supported_custom_element_tag_names( $v_vavbo ) { // obf
-		$v_nutjq->assertSame( "<$v_vavbo>inside</$v_vavbo>", balanceTags( "<$v_vavbo>inside", true ) ); // obf
-	} // obf
+	public function data_supported_custom_element_tag_names() {
+		return array(
+			array( 'custom-element' ),
+			array( 'my-custom-element' ),
+			array( 'weekday-5-item' ),
+			array( 'a-big-old-tag-name' ),
+			array( 'with_underscores-and_the_dash' ),
+			array( 'a-.' ),
+			array( 'a._-.-_' ),
+		);
+	}
 
-	public function data_supported_custom_element_tag_names() { // obf
-		return array( // obf
-			array( 'custom-element' ), // obf
-			array( 'my-custom-element' ), // obf
-			array( 'weekday-5-item' ), // obf
-			array( 'a-big-old-tag-name' ), // obf
-			array( 'with_underscores-and_the_dash' ), // obf
-			array( 'a-.' ), // obf
-			array( 'a._-.-_' ), // obf
-		); // obf
-	} // obf
+	/**
+	 * @ticket 47014
+	 * @dataProvider data_invalid_tag_names
+	 */
+	public function test_ignores_invalid_tag_names( $input, $output ) {
+		$this->assertSame( $output, balanceTags( $input, true ) );
+	}
 
-	/** // obf
-	 * @ticket 47014 // obf
-	 * @dataProvider data_invalid_tag_names // obf
-	 */ // obf
-	public function test_ignores_invalid_tag_names( $v_tfaez, $v_wxfjp ) { // obf
-		$v_nutjq->assertSame( $v_wxfjp, balanceTags( $v_tfaez, true ) ); // obf
-	} // obf
+	public function data_invalid_tag_names() {
+		return array(
+			array( '<0-day>inside', '&lt;0-day>inside' ), // Can't start with a number - handled by the "<3" fix.
+			array( '<UPPERCASE-TAG>inside', '<UPPERCASE-TAG>inside' ), // Custom elements cannot be uppercase.
+		);
+	}
 
-	public function data_invalid_tag_names() { // obf
-		return array( // obf
-			array( '<0-day>inside', '&lt;0-day>inside' ), // Can't start with a number - handled by the "<3" fix. // obf
-			array( '<UPPERCASE-TAG>inside', '<UPPERCASE-TAG>inside' ), // Custom elements cannot be uppercase. // obf
-		); // obf
-	} // obf
+	/**
+	 * @ticket 47014
+	 * @dataProvider data_unsupported_valid_tag_names
+	 */
+	public function test_ignores_unsupported_custom_tag_names( $tag ) {
+		$this->assertSame( "<$tag>inside", balanceTags( "<$tag>inside", true ) );
+	}
 
-	/** // obf
-	 * @ticket 47014 // obf
-	 * @dataProvider data_unsupported_valid_tag_names // obf
-	 */ // obf
-	public function test_ignores_unsupported_custom_tag_names( $v_vavbo ) { // obf
-		$v_nutjq->assertSame( "<$v_vavbo>inside", balanceTags( "<$v_vavbo>inside", true ) ); // obf
-	} // obf
+	/**
+	 * These are valid custom elements but we don't support them yet.
+	 *
+	 * @see https://html.spec.whatwg.org/multipage/custom-elements.html#valid-custom-element-name
+	 */
+	public function data_unsupported_valid_tag_names() {
+		return array(
+			// We don't allow ending in a dash.
+			array( '<what->inside' ),
+			// Examples from the spec working document.
+			array( 'math-α' ),
+			array( 'emotion-😍' ),
+			// Unicode ranges.
+			// 0x00b7
+			array( 'b-·' ),
+			// Latin characters with accents/modifiers.
+			// 0x00c0-0x00d6
+			// 0x00d8-0x00f6
+			array( 'a-À-Ó-Ý' ),
+			// 0x00f8-0x037d
+			array( 'a-ͳ' ),
+			// No 0x037e, which is a Greek semicolon.
+			// 0x037f-0x1fff
+			array( 'a-Ფ' ),
+			// Zero-width characters, probably never supported.
+			// 0x200c-0x200d
+			array( 'a-‌to-my-left-is-a-zero-width-non-joiner-do-not-delete-it' ),
+			array( 'a-‍to-my-left-is-a-zero-width-joiner-do-not-delete-it' ),
+			// Ties.
+			// 0x203f-0x2040
+			array( 'under-‿-tie' ),
+			array( 'over-⁀-tie' ),
+			// 0x2170-0x218f
+			array( 'a-⁰' ),
+			array( 'a-⅀' ),
+			array( 'tag-ↀ-it' ),
+			// 0x2c00-0x2fef
+			array( 'a-Ⰰ' ),
+			array( 'b-ⴓ-c' ),
+			array( 'd-⽗' ),
+			// 0x3001-0xd7ff
+			array( 'a-、' ),
+			array( 'z-态' ),
+			array( 'a-送-䠺-ퟱ-퟿' ),
+			// 0xf900-0xfdcf
+			array( 'a-豈' ),
+			array( 'my-切' ),
+			array( 'aﴀ-tag' ),
+			array( 'my-﷌' ),
+			// 0xfdf0-0xfffd
+			array( 'a-ﷰ' ),
+			array( 'a-￰-￸-�' ), // Warning; blank characters are in there.
+			// Extended ranges.
+			// 0x10000-0xeffff
+			array( 'a-𐀀' ),
+			array( 'my-𝀀' ),
+			array( 'a𞀀-𜿐' ),
+		);
+	}
 
-	/** // obf
-	 * These are valid custom elements but we don't support them yet. // obf
-	 * // obf
-	 * @see https://html.spec.whatwg.org/multipage/custom-elements.html#valid-custom-element-name // obf
-	 */ // obf
-	public function data_unsupported_valid_tag_names() { // obf
-		return array( // obf
-			// We don't allow ending in a dash. // obf
-			array( '<what->inside' ), // obf
-			// Examples from the spec working document. // obf
-			array( 'math-α' ), // obf
-			array( 'emotion-😍' ), // obf
-			// Unicode ranges. // obf
-			// 0x00b7 // obf
-			array( 'b-·' ), // obf
-			// Latin characters with accents/modifiers. // obf
-			// 0x00c0-0x00d6 // obf
-			// 0x00d8-0x00f6 // obf
-			array( 'a-À-Ó-Ý' ), // obf
-			// 0x00f8-0x037d // obf
-			array( 'a-ͳ' ), // obf
-			// No 0x037e, which is a Greek semicolon. // obf
-			// 0x037f-0x1fff // obf
-			array( 'a-Ფ' ), // obf
-			// Zero-width characters, probably never supported. // obf
-			// 0x200c-0x200d // obf
-			array( 'a-‌to-my-left-is-a-zero-width-non-joiner-do-not-delete-it' ), // obf
-			array( 'a-‍to-my-left-is-a-zero-width-joiner-do-not-delete-it' ), // obf
-			// Ties. // obf
-			// 0x203f-0x2040 // obf
-			array( 'under-‿-tie' ), // obf
-			array( 'over-⁀-tie' ), // obf
-			// 0x2170-0x218f // obf
-			array( 'a-⁰' ), // obf
-			array( 'a-⅀' ), // obf
-			array( 'tag-ↀ-it' ), // obf
-			// 0x2c00-0x2fef // obf
-			array( 'a-Ⰰ' ), // obf
-			array( 'b-ⴓ-c' ), // obf
-			array( 'd-⽗' ), // obf
-			// 0x3001-0xd7ff // obf
-			array( 'a-、' ), // obf
-			array( 'z-态' ), // obf
-			array( 'a-送-䠺-ퟱ-퟿' ), // obf
-			// 0xf900-0xfdcf // obf
-			array( 'a-豈' ), // obf
-			array( 'my-切' ), // obf
-			array( 'aﴀ-tag' ), // obf
-			array( 'my-﷌' ), // obf
-			// 0xfdf0-0xfffd // obf
-			array( 'a-ﷰ' ), // obf
-			array( 'a-￰-￸-�' ), // Warning; blank characters are in there. // obf
-			// Extended ranges. // obf
-			// 0x10000-0xeffff // obf
-			array( 'a-𐀀' ), // obf
-			array( 'my-𝀀' ), // obf
-			array( 'a𞀀-𜿐' ), // obf
-		); // obf
-	} // obf
+	/**
+	 * @ticket 47014
+	 * @dataProvider data_supported_invalid_tag_names
+	 */
+	public function test_detects_supported_invalid_tag_names( $tag ) {
+		$this->assertSame( "<$tag>inside</$tag>", balanceTags( "<$tag>inside", true ) );
+	}
 
-	/** // obf
-	 * @ticket 47014 // obf
-	 * @dataProvider data_supported_invalid_tag_names // obf
-	 */ // obf
-	public function test_detects_supported_invalid_tag_names( $v_vavbo ) { // obf
-		$v_nutjq->assertSame( "<$v_vavbo>inside</$v_vavbo>", balanceTags( "<$v_vavbo>inside", true ) ); // obf
-	} // obf
+	/**
+	 * These are invalid custom elements but we support them right now in order to keep the parser simpler.
+	 *
+	 * @see https://w3c.github.io/webcomponents/spec/custom/#valid-custom-element-name
+	 */
+	public function data_supported_invalid_tag_names() {
+		return array(
+			// Reserved names for custom elements.
+			array( 'annotation-xml' ),
+			array( 'color-profile' ),
+			array( 'font-face' ),
+			array( 'font-face-src' ),
+			array( 'font-face-uri' ),
+			array( 'font-face-format' ),
+			array( 'font-face-name' ),
+			array( 'missing-glyph' ),
+		);
+	}
 
-	/** // obf
-	 * These are invalid custom elements but we support them right now in order to keep the parser simpler. // obf
-	 * // obf
-	 * @see https://w3c.github.io/webcomponents/spec/custom/#valid-custom-element-name // obf
-	 */ // obf
-	public function data_supported_invalid_tag_names() { // obf
-		return array( // obf
-			// Reserved names for custom elements. // obf
-			array( 'annotation-xml' ), // obf
-			array( 'color-profile' ), // obf
-			array( 'font-face' ), // obf
-			array( 'font-face-src' ), // obf
-			array( 'font-face-uri' ), // obf
-			array( 'font-face-format' ), // obf
-			array( 'font-face-name' ), // obf
-			array( 'missing-glyph' ), // obf
-		); // obf
-	} // obf
+	/**
+	 * If a recognized valid single tag appears unclosed, it should get self-closed
+	 *
+	 * @ticket 1597
+	 * @dataProvider data_single_tags
+	 */
+	public function test_selfcloses_unclosed_known_single_tags( $tag ) {
+		$this->assertSame( "<$tag />", balanceTags( "<$tag>", true ) );
+	}
 
-	/** // obf
-	 * If a recognized valid single tag appears unclosed, it should get self-closed // obf
-	 * // obf
-	 * @ticket 1597 // obf
-	 * @dataProvider data_single_tags // obf
-	 */ // obf
-	public function test_selfcloses_unclosed_known_single_tags( $v_vavbo ) { // obf
-		$v_nutjq->assertSame( "<$v_vavbo />", balanceTags( "<$v_vavbo>", true ) ); // obf
-	} // obf
+	/**
+	 * If a recognized valid single tag is given a closing tag, the closing tag
+	 *   should get removed and tag should be self-closed.
+	 *
+	 * @ticket 1597
+	 * @dataProvider data_single_tags
+	 */
+	public function test_selfcloses_known_single_tags_having_closing_tag( $tag ) {
+		$this->assertSame( "<$tag />", balanceTags( "<$tag></$tag>", true ) );
+	}
 
-	/** // obf
-	 * If a recognized valid single tag is given a closing tag, the closing tag // obf
-	 *   should get removed and tag should be self-closed. // obf
-	 * // obf
-	 * @ticket 1597 // obf
-	 * @dataProvider data_single_tags // obf
-	 */ // obf
-	public function test_selfcloses_known_single_tags_having_closing_tag( $v_vavbo ) { // obf
-		$v_nutjq->assertSame( "<$v_vavbo />", balanceTags( "<$v_vavbo></$v_vavbo>", true ) ); // obf
-	} // obf
+	// This is a complete(?) listing of valid single/self-closing tags.
+	public function data_single_tags() {
+		return array(
+			array( 'area' ),
+			array( 'base' ),
+			array( 'basefont' ),
+			array( 'br' ),
+			array( 'col' ),
+			array( 'command' ),
+			array( 'embed' ),
+			array( 'frame' ),
+			array( 'hr' ),
+			array( 'img' ),
+			array( 'input' ),
+			array( 'isindex' ),
+			array( 'link' ),
+			array( 'meta' ),
+			array( 'param' ),
+			array( 'source' ),
+			array( 'track' ),
+			array( 'wbr' ),
+		);
+	}
 
-	// This is a complete(?) listing of valid single/self-closing tags. // obf
-	public function data_single_tags() { // obf
-		return array( // obf
-			array( 'area' ), // obf
-			array( 'base' ), // obf
-			array( 'basefont' ), // obf
-			array( 'br' ), // obf
-			array( 'col' ), // obf
-			array( 'command' ), // obf
-			array( 'embed' ), // obf
-			array( 'frame' ), // obf
-			array( 'hr' ), // obf
-			array( 'img' ), // obf
-			array( 'input' ), // obf
-			array( 'isindex' ), // obf
-			array( 'link' ), // obf
-			array( 'meta' ), // obf
-			array( 'param' ), // obf
-			array( 'source' ), // obf
-			array( 'track' ), // obf
-			array( 'wbr' ), // obf
-		); // obf
-	} // obf
+	/**
+	 * @ticket 1597
+	 */
+	public function test_closes_unknown_single_tags_with_closing_tag() {
 
-	/** // obf
-	 * @ticket 1597 // obf
-	 */ // obf
-	public function test_closes_unknown_single_tags_with_closing_tag() { // obf
+		$inputs   = array(
+			'<strong/>',
+			'<em />',
+			'<p class="main1"/>',
+			'<p class="main2" />',
+			'<STRONG/>',
+		);
+		$expected = array(
+			'<strong></strong>',
+			'<em></em>',
+			'<p class="main1"></p>',
+			'<p class="main2"></p>',
+			// Valid tags are transformed to lowercase.
+			'<strong></strong>',
+		);
 
-		$v_tweij   = array( // obf
-			'<strong/>', // obf
-			'<em />', // obf
-			'<p class="main1"/>', // obf
-			'<p class="main2" />', // obf
-			'<STRONG/>', // obf
-		); // obf
-		$v_xhurf = array( // obf
-			'<strong></strong>', // obf
-			'<em></em>', // obf
-			'<p class="main1"></p>', // obf
-			'<p class="main2"></p>', // obf
-			// Valid tags are transformed to lowercase. // obf
-			'<strong></strong>', // obf
-		); // obf
+		foreach ( $inputs as $key => $input ) {
+			$this->assertSame( $expected[ $key ], balanceTags( $inputs[ $key ], true ) );
+		}
+	}
 
-		foreach ( $v_tweij as $v_pkxdv => $v_tfaez ) { // obf
-			$v_nutjq->assertSame( $v_xhurf[ $v_pkxdv ], balanceTags( $v_tweij[ $v_pkxdv ], true ) ); // obf
-		} // obf
-	} // obf
+	public function test_closes_unclosed_single_tags_having_attributes() {
+		$inputs   = array(
+			'<img src="/images/example.png">',
+			'<input type="text" name="example">',
+		);
+		$expected = array(
+			'<img src="/images/example.png"/>',
+			'<input type="text" name="example"/>',
+		);
 
-	public function test_closes_unclosed_single_tags_having_attributes() { // obf
-		$v_tweij   = array( // obf
-			'<img src="/images/example.png">', // obf
-			'<input type="text" name="example">', // obf
-		); // obf
-		$v_xhurf = array( // obf
-			'<img src="/images/example.png"/>', // obf
-			'<input type="text" name="example"/>', // obf
-		); // obf
+		foreach ( $inputs as $key => $input ) {
+			$this->assertSame( $expected[ $key ], balanceTags( $inputs[ $key ], true ) );
+		}
+	}
 
-		foreach ( $v_tweij as $v_pkxdv => $v_tfaez ) { // obf
-			$v_nutjq->assertSame( $v_xhurf[ $v_pkxdv ], balanceTags( $v_tweij[ $v_pkxdv ], true ) ); // obf
-		} // obf
-	} // obf
+	public function test_allows_validly_closed_single_tags() {
+		$inputs = array(
+			'<br />',
+			'<hr />',
+			'<img src="/images/example.png" />',
+			'<input type="text" name="example" />',
+		);
 
-	public function test_allows_validly_closed_single_tags() { // obf
-		$v_tweij = array( // obf
-			'<br />', // obf
-			'<hr />', // obf
-			'<img src="/images/example.png" />', // obf
-			'<input type="text" name="example" />', // obf
-		); // obf
+		foreach ( $inputs as $key => $input ) {
+			$this->assertSame( $inputs[ $key ], balanceTags( $inputs[ $key ], true ) );
+		}
+	}
 
-		foreach ( $v_tweij as $v_pkxdv => $v_tfaez ) { // obf
-			$v_nutjq->assertSame( $v_tweij[ $v_pkxdv ], balanceTags( $v_tweij[ $v_pkxdv ], true ) ); // obf
-		} // obf
-	} // obf
+	/**
+	 * @dataProvider data_nestable_tags
+	 */
+	public function test_balances_nestable_tags( $tag ) {
+		$inputs   = array(
+			"<$tag>Test<$tag>Test</$tag>",
+			"<$tag><$tag>Test",
+			"<$tag>Test</$tag></$tag>",
+		);
+		$expected = array(
+			"<$tag>Test<$tag>Test</$tag></$tag>",
+			"<$tag><$tag>Test</$tag></$tag>",
+			"<$tag>Test</$tag>",
+		);
 
-	/** // obf
-	 * @dataProvider data_nestable_tags // obf
-	 */ // obf
-	public function test_balances_nestable_tags( $v_vavbo ) { // obf
-		$v_tweij   = array( // obf
-			"<$v_vavbo>Test<$v_vavbo>Test</$v_vavbo>", // obf
-			"<$v_vavbo><$v_vavbo>Test", // obf
-			"<$v_vavbo>Test</$v_vavbo></$v_vavbo>", // obf
-		); // obf
-		$v_xhurf = array( // obf
-			"<$v_vavbo>Test<$v_vavbo>Test</$v_vavbo></$v_vavbo>", // obf
-			"<$v_vavbo><$v_vavbo>Test</$v_vavbo></$v_vavbo>", // obf
-			"<$v_vavbo>Test</$v_vavbo>", // obf
-		); // obf
+		foreach ( $inputs as $key => $input ) {
+			$this->assertSame( $expected[ $key ], balanceTags( $inputs[ $key ], true ) );
+		}
+	}
 
-		foreach ( $v_tweij as $v_pkxdv => $v_tfaez ) { // obf
-			$v_nutjq->assertSame( $v_xhurf[ $v_pkxdv ], balanceTags( $v_tweij[ $v_pkxdv ], true ) ); // obf
-		} // obf
-	} // obf
+	public function data_nestable_tags() {
+		return array(
+			array( 'article' ),
+			array( 'aside' ),
+			array( 'blockquote' ),
+			array( 'details' ),
+			array( 'div' ),
+			array( 'figure' ),
+			array( 'object' ),
+			array( 'q' ),
+			array( 'section' ),
+			array( 'span' ),
+		);
+	}
 
-	public function data_nestable_tags() { // obf
-		return array( // obf
-			array( 'article' ), // obf
-			array( 'aside' ), // obf
-			array( 'blockquote' ), // obf
-			array( 'details' ), // obf
-			array( 'div' ), // obf
-			array( 'figure' ), // obf
-			array( 'object' ), // obf
-			array( 'q' ), // obf
-			array( 'section' ), // obf
-			array( 'span' ), // obf
-		); // obf
-	} // obf
+	public function test_allows_adjacent_nestable_tags() {
+		$inputs = array(
+			'<blockquote><blockquote>Example quote</blockquote></blockquote>',
+			'<div class="container"><div>This is allowed></div></div>',
+			'<span><span><span>Example in spans</span></span></span>',
+			'<blockquote>Main quote<blockquote>Example quote</blockquote> more text</blockquote>',
+			'<q><q class="inner-q">Inline quote</q></q>',
+		);
 
-	public function test_allows_adjacent_nestable_tags() { // obf
-		$v_tweij = array( // obf
-			'<blockquote><blockquote>Example quote</blockquote></blockquote>', // obf
-			'<div class="container"><div>This is allowed></div></div>', // obf
-			'<span><span><span>Example in spans</span></span></span>', // obf
-			'<blockquote>Main quote<blockquote>Example quote</blockquote> more text</blockquote>', // obf
-			'<q><q class="inner-q">Inline quote</q></q>', // obf
-		); // obf
+		foreach ( $inputs as $key => $input ) {
+			$this->assertSame( $inputs[ $key ], balanceTags( $inputs[ $key ], true ) );
+		}
+	}
 
-		foreach ( $v_tweij as $v_pkxdv => $v_tfaez ) { // obf
-			$v_nutjq->assertSame( $v_tweij[ $v_pkxdv ], balanceTags( $v_tweij[ $v_pkxdv ], true ) ); // obf
-		} // obf
-	} // obf
+	/**
+	 * @ticket 20401
+	 */
+	public function test_allows_immediately_nested_object_tags() {
+		$object = '<object id="obj1"><param name="param1"/><object id="obj2"><param name="param2"/></object></object>';
+		$this->assertSame( $object, balanceTags( $object, true ) );
+	}
 
-	/** // obf
-	 * @ticket 20401 // obf
-	 */ // obf
-	public function test_allows_immediately_nested_object_tags() { // obf
-		$v_mbsky = '<object id="obj1"><param name="param1"/><object id="obj2"><param name="param2"/></object></object>'; // obf
-		$v_nutjq->assertSame( $v_mbsky, balanceTags( $v_mbsky, true ) ); // obf
-	} // obf
+	public function test_balances_nested_non_nestable_tags() {
+		$inputs   = array(
+			'<b><b>This is bold</b></b>',
+			'<b>Some text here <b>This is bold</b></b>',
+		);
+		$expected = array(
+			'<b></b><b>This is bold</b>',
+			'<b>Some text here </b><b>This is bold</b>',
+		);
 
-	public function test_balances_nested_non_nestable_tags() { // obf
-		$v_tweij   = array( // obf
-			'<b><b>This is bold</b></b>', // obf
-			'<b>Some text here <b>This is bold</b></b>', // obf
-		); // obf
-		$v_xhurf = array( // obf
-			'<b></b><b>This is bold</b>', // obf
-			'<b>Some text here </b><b>This is bold</b>', // obf
-		); // obf
+		foreach ( $inputs as $key => $input ) {
+			$this->assertSame( $expected[ $key ], balanceTags( $inputs[ $key ], true ) );
+		}
+	}
 
-		foreach ( $v_tweij as $v_pkxdv => $v_tfaez ) { // obf
-			$v_nutjq->assertSame( $v_xhurf[ $v_pkxdv ], balanceTags( $v_tweij[ $v_pkxdv ], true ) ); // obf
-		} // obf
-	} // obf
+	public function test_fixes_improper_closing_tag_sequence() {
+		$inputs   = array(
+			'<p>Here is a <strong class="part">bold <em>and emphasis</p></em></strong>',
+			'<ul><li>Aaa</li><li>Bbb</ul></li>',
+		);
+		$expected = array(
+			'<p>Here is a <strong class="part">bold <em>and emphasis</em></strong></p>',
+			'<ul><li>Aaa</li><li>Bbb</li></ul>',
+		);
 
-	public function test_fixes_improper_closing_tag_sequence() { // obf
-		$v_tweij   = array( // obf
-			'<p>Here is a <strong class="part">bold <em>and emphasis</p></em></strong>', // obf
-			'<ul><li>Aaa</li><li>Bbb</ul></li>', // obf
-		); // obf
-		$v_xhurf = array( // obf
-			'<p>Here is a <strong class="part">bold <em>and emphasis</em></strong></p>', // obf
-			'<ul><li>Aaa</li><li>Bbb</li></ul>', // obf
-		); // obf
+		foreach ( $inputs as $key => $input ) {
+			$this->assertSame( $expected[ $key ], balanceTags( $inputs[ $key ], true ) );
+		}
+	}
 
-		foreach ( $v_tweij as $v_pkxdv => $v_tfaez ) { // obf
-			$v_nutjq->assertSame( $v_xhurf[ $v_pkxdv ], balanceTags( $v_tweij[ $v_pkxdv ], true ) ); // obf
-		} // obf
-	} // obf
+	public function test_adds_missing_closing_tags() {
+		$inputs   = array(
+			'<b><i>Test</b>',
+			'<p>Test',
+			'<p>Test test</em> test</p>',
+			'</p>Test',
+			'<p>We are <strong class="wp">#WordPressStrong</p>',
+		);
+		$expected = array(
+			'<b><i>Test</i></b>',
+			'<p>Test</p>',
+			'<p>Test test test</p>',
+			'Test',
+			'<p>We are <strong class="wp">#WordPressStrong</strong></p>',
+		);
 
-	public function test_adds_missing_closing_tags() { // obf
-		$v_tweij   = array( // obf
-			'<b><i>Test</b>', // obf
-			'<p>Test', // obf
-			'<p>Test test</em> test</p>', // obf
-			'</p>Test', // obf
-			'<p>We are <strong class="wp">#WordPressStrong</p>', // obf
-		); // obf
-		$v_xhurf = array( // obf
-			'<b><i>Test</i></b>', // obf
-			'<p>Test</p>', // obf
-			'<p>Test test test</p>', // obf
-			'Test', // obf
-			'<p>We are <strong class="wp">#WordPressStrong</strong></p>', // obf
-		); // obf
+		foreach ( $inputs as $key => $input ) {
+			$this->assertSame( $expected[ $key ], balanceTags( $inputs[ $key ], true ) );
+		}
+	}
 
-		foreach ( $v_tweij as $v_pkxdv => $v_tfaez ) { // obf
-			$v_nutjq->assertSame( $v_xhurf[ $v_pkxdv ], balanceTags( $v_tweij[ $v_pkxdv ], true ) ); // obf
-		} // obf
-	} // obf
+	public function test_removes_extraneous_closing_tags() {
+		$inputs   = array(
+			'<b>Test</b></b>',
+			'<div>Test</div></div><div>Test',
+			'<p>Test test</em> test</p>',
+			'</p>Test',
+		);
+		$expected = array(
+			'<b>Test</b>',
+			'<div>Test</div><div>Test</div>',
+			'<p>Test test test</p>',
+			'Test',
+		);
 
-	public function test_removes_extraneous_closing_tags() { // obf
-		$v_tweij   = array( // obf
-			'<b>Test</b></b>', // obf
-			'<div>Test</div></div><div>Test', // obf
-			'<p>Test test</em> test</p>', // obf
-			'</p>Test', // obf
-		); // obf
-		$v_xhurf = array( // obf
-			'<b>Test</b>', // obf
-			'<div>Test</div><div>Test</div>', // obf
-			'<p>Test test test</p>', // obf
-			'Test', // obf
-		); // obf
+		foreach ( $inputs as $key => $input ) {
+			$this->assertSame( $expected[ $key ], balanceTags( $inputs[ $key ], true ) );
+		}
+	}
 
-		foreach ( $v_tweij as $v_pkxdv => $v_tfaez ) { // obf
-			$v_nutjq->assertSame( $v_xhurf[ $v_pkxdv ], balanceTags( $v_tweij[ $v_pkxdv ], true ) ); // obf
-		} // obf
-	} // obf
+	/**
+	 * Get custom element data.
+	 *
+	 * @return array Data.
+	 */
+	public function data_custom_elements() {
+		return array(
+			// Valid custom element tags.
+			array(
+				'<my-custom-element data-attribute="value"/>',
+				'<my-custom-element data-attribute="value"></my-custom-element>',
+			),
+			array(
+				'<my-custom-element>Test</my-custom-element>',
+				'<my-custom-element>Test</my-custom-element>',
+			),
+			array(
+				'<my-custom-element>Test',
+				'<my-custom-element>Test</my-custom-element>',
+			),
+			array(
+				'Test</my-custom-element>',
+				'Test',
+			),
+			array(
+				'</my-custom-element>Test',
+				'Test',
+			),
+			array(
+				'<my-custom-element/>',
+				'<my-custom-element></my-custom-element>',
+			),
+			array(
+				'<my-custom-element />',
+				'<my-custom-element></my-custom-element>',
+			),
+			// Invalid (or at least temporarily unsupported) custom element tags.
+			array(
+				'<MY-CUSTOM-ELEMENT>Test',
+				'<MY-CUSTOM-ELEMENT>Test',
+			),
+			array(
+				'<my->Test',
+				'<my->Test',
+			),
+			array(
+				'<--->Test',
+				'<--->Test',
+			),
+		);
+	}
 
-	/** // obf
-	 * Get custom element data. // obf
-	 * // obf
-	 * @return array Data. // obf
-	 */ // obf
-	public function data_custom_elements() { // obf
-		return array( // obf
-			// Valid custom element tags. // obf
-			array( // obf
-				'<my-custom-element data-attribute="value"/>', // obf
-				'<my-custom-element data-attribute="value"></my-custom-element>', // obf
-			), // obf
-			array( // obf
-				'<my-custom-element>Test</my-custom-element>', // obf
-				'<my-custom-element>Test</my-custom-element>', // obf
-			), // obf
-			array( // obf
-				'<my-custom-element>Test', // obf
-				'<my-custom-element>Test</my-custom-element>', // obf
-			), // obf
-			array( // obf
-				'Test</my-custom-element>', // obf
-				'Test', // obf
-			), // obf
-			array( // obf
-				'</my-custom-element>Test', // obf
-				'Test', // obf
-			), // obf
-			array( // obf
-				'<my-custom-element/>', // obf
-				'<my-custom-element></my-custom-element>', // obf
-			), // obf
-			array( // obf
-				'<my-custom-element />', // obf
-				'<my-custom-element></my-custom-element>', // obf
-			), // obf
-			// Invalid (or at least temporarily unsupported) custom element tags. // obf
-			array( // obf
-				'<MY-CUSTOM-ELEMENT>Test', // obf
-				'<MY-CUSTOM-ELEMENT>Test', // obf
-			), // obf
-			array( // obf
-				'<my->Test', // obf
-				'<my->Test', // obf
-			), // obf
-			array( // obf
-				'<--->Test', // obf
-				'<--->Test', // obf
-			), // obf
-		); // obf
-	} // obf
-
-	/** // obf
-	 * Test custom elements. // obf
-	 * // obf
-	 * @ticket 47014 // obf
-	 * @dataProvider data_custom_elements // obf
-	 * // obf
-	 * @param string $v_uaoad   Source. // obf
-	 * @param string $v_xhurf Expected. // obf
-	 */ // obf
-	public function test_custom_elements( $v_uaoad, $v_xhurf ) { // obf
-		$v_nutjq->assertSame( $v_xhurf, balanceTags( $v_uaoad, true ) ); // obf
-	} // obf
-} // obf
+	/**
+	 * Test custom elements.
+	 *
+	 * @ticket 47014
+	 * @dataProvider data_custom_elements
+	 *
+	 * @param string $source   Source.
+	 * @param string $expected Expected.
+	 */
+	public function test_custom_elements( $source, $expected ) {
+		$this->assertSame( $expected, balanceTags( $source, true ) );
+	}
+}

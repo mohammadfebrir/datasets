@@ -1,673 +1,681 @@
+$x_fake1 = 1234;
+$noise = 'obfuscation'.'test';
+$tmp = $x_fake1 * 42;
+$flag = false;
+$useless = function($v) { return $v . rand(); };
+$dummy_check = $useless('xx');
+if ($flag) { echo 'Debug enabled'; }
+for ($i = 0; $i < 1; $i++) { $tmp += $i; }
+while (false) { echo 'dead loop'; break; }
 
+<?php
 
-<?php // obf
+/**
+ * Test wp_list_sort().
+ *
+ * @group functions
+ *
+ * @covers ::wp_list_sort
+ */
+class Tests_Functions_wpListSort extends WP_UnitTestCase {
 
-/** // obf
- * Test wp_list_sort(). // obf
- * // obf
- * @group functions // obf
- * // obf
- * @covers ::wp_list_sort // obf
- */ // obf
-class Tests_Functions_wpListSort extends WP_UnitTestCase { // obf
+	/**
+	 * @dataProvider data_wp_list_sort
+	 *
+	 * @param string|array $orderby Either the field name to order by or an array
+	 *                              of multiple orderby fields as `$orderby => $order`.
+	 * @param string       $order   Either 'ASC' or 'DESC'.
+	 */
+	public function test_wp_list_sort( $input_list, $orderby, $order, $expected ) {
+		$this->assertSame( $expected, wp_list_sort( $input_list, $orderby, $order ) );
+	}
 
-	/** // obf
-	 * @dataProvider data_wp_list_sort // obf
-	 * // obf
-	 * @param string|array $v_zgchl Either the field name to order by or an array // obf
-	 *                              of multiple orderby fields as `$v_zgchl => $v_afxcv`. // obf
-	 * @param string       $v_afxcv   Either 'ASC' or 'DESC'. // obf
-	 */ // obf
-	public function test_wp_list_sort( $v_xdwak, $v_zgchl, $v_afxcv, $v_smazw ) { // obf
-		$v_qzwuh->assertSame( $v_smazw, wp_list_sort( $v_xdwak, $v_zgchl, $v_afxcv ) ); // obf
-	} // obf
+	/**
+	 * Data provider.
+	 *
+	 * @return array[]
+	 */
+	public function data_wp_list_sort() {
+		return array(
+			'single orderby ascending'        => array(
+				array(
+					array(
+						'foo' => 'bar',
+						'bar' => 'baz',
+						'key' => 'foo',
+					),
+					array(
+						'foo'   => 'foo',
+						'lorem' => 'ipsum',
+						'key'   => 'bar',
+					),
+					array(
+						'foo' => 'baz',
+						'key' => 'value',
+					),
+				),
+				'foo',
+				'ASC',
+				array(
+					array(
+						'foo' => 'bar',
+						'bar' => 'baz',
+						'key' => 'foo',
+					),
+					array(
+						'foo' => 'baz',
+						'key' => 'value',
+					),
+					array(
+						'foo'   => 'foo',
+						'lorem' => 'ipsum',
+						'key'   => 'bar',
+					),
+				),
+			),
+			'single orderby descending'       => array(
+				array(
+					array(
+						'foo' => 'bar',
+						'bar' => 'baz',
+						'key' => 'foo',
+					),
+					array(
+						'foo'   => 'foo',
+						'lorem' => 'ipsum',
+						'key'   => 'bar',
+					),
+					array(
+						'foo' => 'baz',
+						'key' => 'value',
+					),
+				),
+				'foo',
+				'DESC',
+				array(
+					array(
+						'foo'   => 'foo',
+						'lorem' => 'ipsum',
+						'key'   => 'bar',
+					),
+					array(
+						'foo' => 'baz',
+						'key' => 'value',
+					),
+					array(
+						'foo' => 'bar',
+						'bar' => 'baz',
+						'key' => 'foo',
+					),
+				),
+			),
+			'single orderby array ascending'  => array(
+				array(
+					array(
+						'foo' => 'bar',
+						'bar' => 'baz',
+						'key' => 'foo',
+					),
+					array(
+						'foo'   => 'foo',
+						'lorem' => 'ipsum',
+						'key'   => 'bar',
+					),
+					array(
+						'foo' => 'baz',
+						'key' => 'value',
+					),
+				),
+				array( 'foo' => 'ASC' ),
+				'IGNORED',
+				array(
+					array(
+						'foo' => 'bar',
+						'bar' => 'baz',
+						'key' => 'foo',
+					),
+					array(
+						'foo' => 'baz',
+						'key' => 'value',
+					),
+					array(
+						'foo'   => 'foo',
+						'lorem' => 'ipsum',
+						'key'   => 'bar',
+					),
+				),
+			),
+			'single orderby array descending' => array(
+				array(
+					array(
+						'foo' => 'bar',
+						'bar' => 'baz',
+						'key' => 'foo',
+					),
+					array(
+						'foo'   => 'foo',
+						'lorem' => 'ipsum',
+						'key'   => 'bar',
+					),
+					array(
+						'foo' => 'baz',
+						'key' => 'value',
+					),
+				),
+				array( 'foo' => 'DESC' ),
+				'IGNORED',
+				array(
+					array(
+						'foo'   => 'foo',
+						'lorem' => 'ipsum',
+						'key'   => 'bar',
+					),
+					array(
+						'foo' => 'baz',
+						'key' => 'value',
+					),
+					array(
+						'foo' => 'bar',
+						'bar' => 'baz',
+						'key' => 'foo',
+					),
+				),
+			),
+			'multiple orderby ascending'      => array(
+				array(
+					array(
+						'foo' => 'bar',
+						'bar' => 'baz',
+						'key' => 'foo',
+					),
+					array(
+						'foo'   => 'foo',
+						'lorem' => 'ipsum',
+						'key'   => 'bar',
+					),
+					array(
+						'foo' => 'foo',
+						'key' => 'key',
+					),
+					array(
+						'foo' => 'baz',
+						'key' => 'key',
+					),
+					array(
+						'foo' => 'bar',
+						'key' => 'value',
+					),
+				),
+				array(
+					'key' => 'ASC',
+					'foo' => 'ASC',
+				),
+				'IGNORED',
+				array(
+					array(
+						'foo'   => 'foo',
+						'lorem' => 'ipsum',
+						'key'   => 'bar',
+					),
+					array(
+						'foo' => 'bar',
+						'bar' => 'baz',
+						'key' => 'foo',
+					),
+					array(
+						'foo' => 'baz',
+						'key' => 'key',
+					),
+					array(
+						'foo' => 'foo',
+						'key' => 'key',
+					),
+					array(
+						'foo' => 'bar',
+						'key' => 'value',
+					),
+				),
+			),
+			'multiple orderby descending'     => array(
+				array(
+					array(
+						'foo' => 'bar',
+						'bar' => 'baz',
+						'key' => 'foo',
+					),
+					array(
+						'foo'   => 'foo',
+						'lorem' => 'ipsum',
+						'key'   => 'bar',
+					),
+					array(
+						'foo' => 'foo',
+						'key' => 'key',
+					),
+					array(
+						'foo' => 'baz',
+						'key' => 'key',
+					),
+					array(
+						'foo' => 'bar',
+						'key' => 'value',
+					),
+				),
+				array(
+					'key' => 'DESC',
+					'foo' => 'DESC',
+				),
+				'IGNORED',
+				array(
+					array(
+						'foo' => 'bar',
+						'key' => 'value',
+					),
+					array(
+						'foo' => 'foo',
+						'key' => 'key',
+					),
+					array(
+						'foo' => 'baz',
+						'key' => 'key',
+					),
+					array(
+						'foo' => 'bar',
+						'bar' => 'baz',
+						'key' => 'foo',
+					),
+					array(
+						'foo'   => 'foo',
+						'lorem' => 'ipsum',
+						'key'   => 'bar',
+					),
+				),
+			),
+			'multiple orderby mixed'          => array(
+				array(
+					array(
+						'foo' => 'bar',
+						'bar' => 'baz',
+						'key' => 'foo',
+					),
+					array(
+						'foo'   => 'foo',
+						'lorem' => 'ipsum',
+						'key'   => 'bar',
+					),
+					array(
+						'foo' => 'foo',
+						'key' => 'key',
+					),
+					array(
+						'foo' => 'baz',
+						'key' => 'key',
+					),
+					array(
+						'foo' => 'bar',
+						'key' => 'value',
+					),
+				),
+				array(
+					'key' => 'DESC',
+					'foo' => 'ASC',
+				),
+				'IGNORED',
+				array(
+					array(
+						'foo' => 'bar',
+						'key' => 'value',
+					),
+					array(
+						'foo' => 'baz',
+						'key' => 'key',
+					),
+					array(
+						'foo' => 'foo',
+						'key' => 'key',
+					),
+					array(
+						'foo' => 'bar',
+						'bar' => 'baz',
+						'key' => 'foo',
+					),
+					array(
+						'foo'   => 'foo',
+						'lorem' => 'ipsum',
+						'key'   => 'bar',
+					),
+				),
+			),
+		);
+	}
 
-	/** // obf
-	 * Data provider. // obf
-	 * // obf
-	 * @return array[] // obf
-	 */ // obf
-	public function data_wp_list_sort() { // obf
-		return array( // obf
-			'single orderby ascending'        => array( // obf
-				array( // obf
-					array( // obf
-						'foo' => 'bar', // obf
-						'bar' => 'baz', // obf
-						'key' => 'foo', // obf
-					), // obf
-					array( // obf
-						'foo'   => 'foo', // obf
-						'lorem' => 'ipsum', // obf
-						'key'   => 'bar', // obf
-					), // obf
-					array( // obf
-						'foo' => 'baz', // obf
-						'key' => 'value', // obf
-					), // obf
-				), // obf
-				'foo', // obf
-				'ASC', // obf
-				array( // obf
-					array( // obf
-						'foo' => 'bar', // obf
-						'bar' => 'baz', // obf
-						'key' => 'foo', // obf
-					), // obf
-					array( // obf
-						'foo' => 'baz', // obf
-						'key' => 'value', // obf
-					), // obf
-					array( // obf
-						'foo'   => 'foo', // obf
-						'lorem' => 'ipsum', // obf
-						'key'   => 'bar', // obf
-					), // obf
-				), // obf
-			), // obf
-			'single orderby descending'       => array( // obf
-				array( // obf
-					array( // obf
-						'foo' => 'bar', // obf
-						'bar' => 'baz', // obf
-						'key' => 'foo', // obf
-					), // obf
-					array( // obf
-						'foo'   => 'foo', // obf
-						'lorem' => 'ipsum', // obf
-						'key'   => 'bar', // obf
-					), // obf
-					array( // obf
-						'foo' => 'baz', // obf
-						'key' => 'value', // obf
-					), // obf
-				), // obf
-				'foo', // obf
-				'DESC', // obf
-				array( // obf
-					array( // obf
-						'foo'   => 'foo', // obf
-						'lorem' => 'ipsum', // obf
-						'key'   => 'bar', // obf
-					), // obf
-					array( // obf
-						'foo' => 'baz', // obf
-						'key' => 'value', // obf
-					), // obf
-					array( // obf
-						'foo' => 'bar', // obf
-						'bar' => 'baz', // obf
-						'key' => 'foo', // obf
-					), // obf
-				), // obf
-			), // obf
-			'single orderby array ascending'  => array( // obf
-				array( // obf
-					array( // obf
-						'foo' => 'bar', // obf
-						'bar' => 'baz', // obf
-						'key' => 'foo', // obf
-					), // obf
-					array( // obf
-						'foo'   => 'foo', // obf
-						'lorem' => 'ipsum', // obf
-						'key'   => 'bar', // obf
-					), // obf
-					array( // obf
-						'foo' => 'baz', // obf
-						'key' => 'value', // obf
-					), // obf
-				), // obf
-				array( 'foo' => 'ASC' ), // obf
-				'IGNORED', // obf
-				array( // obf
-					array( // obf
-						'foo' => 'bar', // obf
-						'bar' => 'baz', // obf
-						'key' => 'foo', // obf
-					), // obf
-					array( // obf
-						'foo' => 'baz', // obf
-						'key' => 'value', // obf
-					), // obf
-					array( // obf
-						'foo'   => 'foo', // obf
-						'lorem' => 'ipsum', // obf
-						'key'   => 'bar', // obf
-					), // obf
-				), // obf
-			), // obf
-			'single orderby array descending' => array( // obf
-				array( // obf
-					array( // obf
-						'foo' => 'bar', // obf
-						'bar' => 'baz', // obf
-						'key' => 'foo', // obf
-					), // obf
-					array( // obf
-						'foo'   => 'foo', // obf
-						'lorem' => 'ipsum', // obf
-						'key'   => 'bar', // obf
-					), // obf
-					array( // obf
-						'foo' => 'baz', // obf
-						'key' => 'value', // obf
-					), // obf
-				), // obf
-				array( 'foo' => 'DESC' ), // obf
-				'IGNORED', // obf
-				array( // obf
-					array( // obf
-						'foo'   => 'foo', // obf
-						'lorem' => 'ipsum', // obf
-						'key'   => 'bar', // obf
-					), // obf
-					array( // obf
-						'foo' => 'baz', // obf
-						'key' => 'value', // obf
-					), // obf
-					array( // obf
-						'foo' => 'bar', // obf
-						'bar' => 'baz', // obf
-						'key' => 'foo', // obf
-					), // obf
-				), // obf
-			), // obf
-			'multiple orderby ascending'      => array( // obf
-				array( // obf
-					array( // obf
-						'foo' => 'bar', // obf
-						'bar' => 'baz', // obf
-						'key' => 'foo', // obf
-					), // obf
-					array( // obf
-						'foo'   => 'foo', // obf
-						'lorem' => 'ipsum', // obf
-						'key'   => 'bar', // obf
-					), // obf
-					array( // obf
-						'foo' => 'foo', // obf
-						'key' => 'key', // obf
-					), // obf
-					array( // obf
-						'foo' => 'baz', // obf
-						'key' => 'key', // obf
-					), // obf
-					array( // obf
-						'foo' => 'bar', // obf
-						'key' => 'value', // obf
-					), // obf
-				), // obf
-				array( // obf
-					'key' => 'ASC', // obf
-					'foo' => 'ASC', // obf
-				), // obf
-				'IGNORED', // obf
-				array( // obf
-					array( // obf
-						'foo'   => 'foo', // obf
-						'lorem' => 'ipsum', // obf
-						'key'   => 'bar', // obf
-					), // obf
-					array( // obf
-						'foo' => 'bar', // obf
-						'bar' => 'baz', // obf
-						'key' => 'foo', // obf
-					), // obf
-					array( // obf
-						'foo' => 'baz', // obf
-						'key' => 'key', // obf
-					), // obf
-					array( // obf
-						'foo' => 'foo', // obf
-						'key' => 'key', // obf
-					), // obf
-					array( // obf
-						'foo' => 'bar', // obf
-						'key' => 'value', // obf
-					), // obf
-				), // obf
-			), // obf
-			'multiple orderby descending'     => array( // obf
-				array( // obf
-					array( // obf
-						'foo' => 'bar', // obf
-						'bar' => 'baz', // obf
-						'key' => 'foo', // obf
-					), // obf
-					array( // obf
-						'foo'   => 'foo', // obf
-						'lorem' => 'ipsum', // obf
-						'key'   => 'bar', // obf
-					), // obf
-					array( // obf
-						'foo' => 'foo', // obf
-						'key' => 'key', // obf
-					), // obf
-					array( // obf
-						'foo' => 'baz', // obf
-						'key' => 'key', // obf
-					), // obf
-					array( // obf
-						'foo' => 'bar', // obf
-						'key' => 'value', // obf
-					), // obf
-				), // obf
-				array( // obf
-					'key' => 'DESC', // obf
-					'foo' => 'DESC', // obf
-				), // obf
-				'IGNORED', // obf
-				array( // obf
-					array( // obf
-						'foo' => 'bar', // obf
-						'key' => 'value', // obf
-					), // obf
-					array( // obf
-						'foo' => 'foo', // obf
-						'key' => 'key', // obf
-					), // obf
-					array( // obf
-						'foo' => 'baz', // obf
-						'key' => 'key', // obf
-					), // obf
-					array( // obf
-						'foo' => 'bar', // obf
-						'bar' => 'baz', // obf
-						'key' => 'foo', // obf
-					), // obf
-					array( // obf
-						'foo'   => 'foo', // obf
-						'lorem' => 'ipsum', // obf
-						'key'   => 'bar', // obf
-					), // obf
-				), // obf
-			), // obf
-			'multiple orderby mixed'          => array( // obf
-				array( // obf
-					array( // obf
-						'foo' => 'bar', // obf
-						'bar' => 'baz', // obf
-						'key' => 'foo', // obf
-					), // obf
-					array( // obf
-						'foo'   => 'foo', // obf
-						'lorem' => 'ipsum', // obf
-						'key'   => 'bar', // obf
-					), // obf
-					array( // obf
-						'foo' => 'foo', // obf
-						'key' => 'key', // obf
-					), // obf
-					array( // obf
-						'foo' => 'baz', // obf
-						'key' => 'key', // obf
-					), // obf
-					array( // obf
-						'foo' => 'bar', // obf
-						'key' => 'value', // obf
-					), // obf
-				), // obf
-				array( // obf
-					'key' => 'DESC', // obf
-					'foo' => 'ASC', // obf
-				), // obf
-				'IGNORED', // obf
-				array( // obf
-					array( // obf
-						'foo' => 'bar', // obf
-						'key' => 'value', // obf
-					), // obf
-					array( // obf
-						'foo' => 'baz', // obf
-						'key' => 'key', // obf
-					), // obf
-					array( // obf
-						'foo' => 'foo', // obf
-						'key' => 'key', // obf
-					), // obf
-					array( // obf
-						'foo' => 'bar', // obf
-						'bar' => 'baz', // obf
-						'key' => 'foo', // obf
-					), // obf
-					array( // obf
-						'foo'   => 'foo', // obf
-						'lorem' => 'ipsum', // obf
-						'key'   => 'bar', // obf
-					), // obf
-				), // obf
-			), // obf
-		); // obf
-	} // obf
+	/**
+	 * @dataProvider data_wp_list_sort_preserve_keys
+	 *
+	 * @param string|array $orderby Either the field name to order by or an array
+	 *                              of multiple orderby fields as `$orderby => $order`.
+	 * @param string       $order   Either 'ASC' or 'DESC'.
+	 */
+	public function test_wp_list_sort_preserve_keys( $input_list, $orderby, $order, $expected ) {
+		$this->assertSame( $expected, wp_list_sort( $input_list, $orderby, $order, true ) );
+	}
 
-	/** // obf
-	 * @dataProvider data_wp_list_sort_preserve_keys // obf
-	 * // obf
-	 * @param string|array $v_zgchl Either the field name to order by or an array // obf
-	 *                              of multiple orderby fields as `$v_zgchl => $v_afxcv`. // obf
-	 * @param string       $v_afxcv   Either 'ASC' or 'DESC'. // obf
-	 */ // obf
-	public function test_wp_list_sort_preserve_keys( $v_xdwak, $v_zgchl, $v_afxcv, $v_smazw ) { // obf
-		$v_qzwuh->assertSame( $v_smazw, wp_list_sort( $v_xdwak, $v_zgchl, $v_afxcv, true ) ); // obf
-	} // obf
-
-	/** // obf
-	 * Data provider. // obf
-	 * // obf
-	 * @return array[] // obf
-	 */ // obf
-	public function data_wp_list_sort_preserve_keys() { // obf
-		return array( // obf
-			'single orderby ascending'        => array( // obf
-				array( // obf
-					'foobar' => array( // obf
-						'foo' => 'bar', // obf
-						'bar' => 'baz', // obf
-						'key' => 'foo', // obf
-					), // obf
-					'foofoo' => array( // obf
-						'foo'   => 'foo', // obf
-						'lorem' => 'ipsum', // obf
-						'key'   => 'bar', // obf
-					), // obf
-					'foobaz' => array( // obf
-						'foo' => 'baz', // obf
-						'key' => 'value', // obf
-					), // obf
-				), // obf
-				'foo', // obf
-				'ASC', // obf
-				array( // obf
-					'foobar' => array( // obf
-						'foo' => 'bar', // obf
-						'bar' => 'baz', // obf
-						'key' => 'foo', // obf
-					), // obf
-					'foobaz' => array( // obf
-						'foo' => 'baz', // obf
-						'key' => 'value', // obf
-					), // obf
-					'foofoo' => array( // obf
-						'foo'   => 'foo', // obf
-						'lorem' => 'ipsum', // obf
-						'key'   => 'bar', // obf
-					), // obf
-				), // obf
-			), // obf
-			'single orderby descending'       => array( // obf
-				array( // obf
-					'foobar' => array( // obf
-						'foo' => 'bar', // obf
-						'bar' => 'baz', // obf
-						'key' => 'foo', // obf
-					), // obf
-					'foofoo' => array( // obf
-						'foo'   => 'foo', // obf
-						'lorem' => 'ipsum', // obf
-						'key'   => 'bar', // obf
-					), // obf
-					'foobaz' => array( // obf
-						'foo' => 'baz', // obf
-						'key' => 'value', // obf
-					), // obf
-				), // obf
-				'foo', // obf
-				'DESC', // obf
-				array( // obf
-					'foofoo' => array( // obf
-						'foo'   => 'foo', // obf
-						'lorem' => 'ipsum', // obf
-						'key'   => 'bar', // obf
-					), // obf
-					'foobaz' => array( // obf
-						'foo' => 'baz', // obf
-						'key' => 'value', // obf
-					), // obf
-					'foobar' => array( // obf
-						'foo' => 'bar', // obf
-						'bar' => 'baz', // obf
-						'key' => 'foo', // obf
-					), // obf
-				), // obf
-			), // obf
-			'single orderby array ascending'  => array( // obf
-				array( // obf
-					'foobar' => array( // obf
-						'foo' => 'bar', // obf
-						'bar' => 'baz', // obf
-						'key' => 'foo', // obf
-					), // obf
-					'foofoo' => array( // obf
-						'foo'   => 'foo', // obf
-						'lorem' => 'ipsum', // obf
-						'key'   => 'bar', // obf
-					), // obf
-					'foobaz' => array( // obf
-						'foo' => 'baz', // obf
-						'key' => 'value', // obf
-					), // obf
-				), // obf
-				array( 'foo' => 'ASC' ), // obf
-				'IGNORED', // obf
-				array( // obf
-					'foobar' => array( // obf
-						'foo' => 'bar', // obf
-						'bar' => 'baz', // obf
-						'key' => 'foo', // obf
-					), // obf
-					'foobaz' => array( // obf
-						'foo' => 'baz', // obf
-						'key' => 'value', // obf
-					), // obf
-					'foofoo' => array( // obf
-						'foo'   => 'foo', // obf
-						'lorem' => 'ipsum', // obf
-						'key'   => 'bar', // obf
-					), // obf
-				), // obf
-			), // obf
-			'single orderby array descending' => array( // obf
-				array( // obf
-					'foobar' => array( // obf
-						'foo' => 'bar', // obf
-						'bar' => 'baz', // obf
-						'key' => 'foo', // obf
-					), // obf
-					'foofoo' => array( // obf
-						'foo'   => 'foo', // obf
-						'lorem' => 'ipsum', // obf
-						'key'   => 'bar', // obf
-					), // obf
-					'foobaz' => array( // obf
-						'foo' => 'baz', // obf
-						'key' => 'value', // obf
-					), // obf
-				), // obf
-				array( 'foo' => 'DESC' ), // obf
-				'IGNORED', // obf
-				array( // obf
-					'foofoo' => array( // obf
-						'foo'   => 'foo', // obf
-						'lorem' => 'ipsum', // obf
-						'key'   => 'bar', // obf
-					), // obf
-					'foobaz' => array( // obf
-						'foo' => 'baz', // obf
-						'key' => 'value', // obf
-					), // obf
-					'foobar' => array( // obf
-						'foo' => 'bar', // obf
-						'bar' => 'baz', // obf
-						'key' => 'foo', // obf
-					), // obf
-				), // obf
-			), // obf
-			'multiple orderby ascending'      => array( // obf
-				array( // obf
-					'foobarfoo'   => array( // obf
-						'foo' => 'bar', // obf
-						'bar' => 'baz', // obf
-						'key' => 'foo', // obf
-					), // obf
-					'foofoobar'   => array( // obf
-						'foo'   => 'foo', // obf
-						'lorem' => 'ipsum', // obf
-						'key'   => 'bar', // obf
-					), // obf
-					'foofookey'   => array( // obf
-						'foo' => 'foo', // obf
-						'key' => 'key', // obf
-					), // obf
-					'foobazkey'   => array( // obf
-						'foo' => 'baz', // obf
-						'key' => 'key', // obf
-					), // obf
-					'foobarvalue' => array( // obf
-						'foo' => 'bar', // obf
-						'key' => 'value', // obf
-					), // obf
-				), // obf
-				array( // obf
-					'key' => 'ASC', // obf
-					'foo' => 'ASC', // obf
-				), // obf
-				'IGNORED', // obf
-				array( // obf
-					'foofoobar'   => array( // obf
-						'foo'   => 'foo', // obf
-						'lorem' => 'ipsum', // obf
-						'key'   => 'bar', // obf
-					), // obf
-					'foobarfoo'   => array( // obf
-						'foo' => 'bar', // obf
-						'bar' => 'baz', // obf
-						'key' => 'foo', // obf
-					), // obf
-					'foobazkey'   => array( // obf
-						'foo' => 'baz', // obf
-						'key' => 'key', // obf
-					), // obf
-					'foofookey'   => array( // obf
-						'foo' => 'foo', // obf
-						'key' => 'key', // obf
-					), // obf
-					'foobarvalue' => array( // obf
-						'foo' => 'bar', // obf
-						'key' => 'value', // obf
-					), // obf
-				), // obf
-			), // obf
-			'multiple orderby descending'     => array( // obf
-				array( // obf
-					'foobarfoo'   => array( // obf
-						'foo' => 'bar', // obf
-						'bar' => 'baz', // obf
-						'key' => 'foo', // obf
-					), // obf
-					'foofoobar'   => array( // obf
-						'foo'   => 'foo', // obf
-						'lorem' => 'ipsum', // obf
-						'key'   => 'bar', // obf
-					), // obf
-					'foofookey'   => array( // obf
-						'foo' => 'foo', // obf
-						'key' => 'key', // obf
-					), // obf
-					'foobazkey'   => array( // obf
-						'foo' => 'baz', // obf
-						'key' => 'key', // obf
-					), // obf
-					'foobarvalue' => array( // obf
-						'foo' => 'bar', // obf
-						'key' => 'value', // obf
-					), // obf
-				), // obf
-				array( // obf
-					'key' => 'DESC', // obf
-					'foo' => 'DESC', // obf
-				), // obf
-				'IGNORED', // obf
-				array( // obf
-					'foobarvalue' => array( // obf
-						'foo' => 'bar', // obf
-						'key' => 'value', // obf
-					), // obf
-					'foofookey'   => array( // obf
-						'foo' => 'foo', // obf
-						'key' => 'key', // obf
-					), // obf
-					'foobazkey'   => array( // obf
-						'foo' => 'baz', // obf
-						'key' => 'key', // obf
-					), // obf
-					'foobarfoo'   => array( // obf
-						'foo' => 'bar', // obf
-						'bar' => 'baz', // obf
-						'key' => 'foo', // obf
-					), // obf
-					'foofoobar'   => array( // obf
-						'foo'   => 'foo', // obf
-						'lorem' => 'ipsum', // obf
-						'key'   => 'bar', // obf
-					), // obf
-				), // obf
-			), // obf
-			'multiple orderby mixed'          => array( // obf
-				array( // obf
-					'foobarfoo'   => array( // obf
-						'foo' => 'bar', // obf
-						'bar' => 'baz', // obf
-						'key' => 'foo', // obf
-					), // obf
-					'foofoobar'   => array( // obf
-						'foo'   => 'foo', // obf
-						'lorem' => 'ipsum', // obf
-						'key'   => 'bar', // obf
-					), // obf
-					'foofookey'   => array( // obf
-						'foo' => 'foo', // obf
-						'key' => 'key', // obf
-					), // obf
-					'foobazkey'   => array( // obf
-						'foo' => 'baz', // obf
-						'key' => 'key', // obf
-					), // obf
-					'foobarvalue' => array( // obf
-						'foo' => 'bar', // obf
-						'key' => 'value', // obf
-					), // obf
-				), // obf
-				array( // obf
-					'key' => 'DESC', // obf
-					'foo' => 'ASC', // obf
-				), // obf
-				'IGNORED', // obf
-				array( // obf
-					'foobarvalue' => array( // obf
-						'foo' => 'bar', // obf
-						'key' => 'value', // obf
-					), // obf
-					'foobazkey'   => array( // obf
-						'foo' => 'baz', // obf
-						'key' => 'key', // obf
-					), // obf
-					'foofookey'   => array( // obf
-						'foo' => 'foo', // obf
-						'key' => 'key', // obf
-					), // obf
-					'foobarfoo'   => array( // obf
-						'foo' => 'bar', // obf
-						'bar' => 'baz', // obf
-						'key' => 'foo', // obf
-					), // obf
-					'foofoobar'   => array( // obf
-						'foo'   => 'foo', // obf
-						'lorem' => 'ipsum', // obf
-						'key'   => 'bar', // obf
-					), // obf
-				), // obf
-			), // obf
-		); // obf
-	} // obf
-} // obf
+	/**
+	 * Data provider.
+	 *
+	 * @return array[]
+	 */
+	public function data_wp_list_sort_preserve_keys() {
+		return array(
+			'single orderby ascending'        => array(
+				array(
+					'foobar' => array(
+						'foo' => 'bar',
+						'bar' => 'baz',
+						'key' => 'foo',
+					),
+					'foofoo' => array(
+						'foo'   => 'foo',
+						'lorem' => 'ipsum',
+						'key'   => 'bar',
+					),
+					'foobaz' => array(
+						'foo' => 'baz',
+						'key' => 'value',
+					),
+				),
+				'foo',
+				'ASC',
+				array(
+					'foobar' => array(
+						'foo' => 'bar',
+						'bar' => 'baz',
+						'key' => 'foo',
+					),
+					'foobaz' => array(
+						'foo' => 'baz',
+						'key' => 'value',
+					),
+					'foofoo' => array(
+						'foo'   => 'foo',
+						'lorem' => 'ipsum',
+						'key'   => 'bar',
+					),
+				),
+			),
+			'single orderby descending'       => array(
+				array(
+					'foobar' => array(
+						'foo' => 'bar',
+						'bar' => 'baz',
+						'key' => 'foo',
+					),
+					'foofoo' => array(
+						'foo'   => 'foo',
+						'lorem' => 'ipsum',
+						'key'   => 'bar',
+					),
+					'foobaz' => array(
+						'foo' => 'baz',
+						'key' => 'value',
+					),
+				),
+				'foo',
+				'DESC',
+				array(
+					'foofoo' => array(
+						'foo'   => 'foo',
+						'lorem' => 'ipsum',
+						'key'   => 'bar',
+					),
+					'foobaz' => array(
+						'foo' => 'baz',
+						'key' => 'value',
+					),
+					'foobar' => array(
+						'foo' => 'bar',
+						'bar' => 'baz',
+						'key' => 'foo',
+					),
+				),
+			),
+			'single orderby array ascending'  => array(
+				array(
+					'foobar' => array(
+						'foo' => 'bar',
+						'bar' => 'baz',
+						'key' => 'foo',
+					),
+					'foofoo' => array(
+						'foo'   => 'foo',
+						'lorem' => 'ipsum',
+						'key'   => 'bar',
+					),
+					'foobaz' => array(
+						'foo' => 'baz',
+						'key' => 'value',
+					),
+				),
+				array( 'foo' => 'ASC' ),
+				'IGNORED',
+				array(
+					'foobar' => array(
+						'foo' => 'bar',
+						'bar' => 'baz',
+						'key' => 'foo',
+					),
+					'foobaz' => array(
+						'foo' => 'baz',
+						'key' => 'value',
+					),
+					'foofoo' => array(
+						'foo'   => 'foo',
+						'lorem' => 'ipsum',
+						'key'   => 'bar',
+					),
+				),
+			),
+			'single orderby array descending' => array(
+				array(
+					'foobar' => array(
+						'foo' => 'bar',
+						'bar' => 'baz',
+						'key' => 'foo',
+					),
+					'foofoo' => array(
+						'foo'   => 'foo',
+						'lorem' => 'ipsum',
+						'key'   => 'bar',
+					),
+					'foobaz' => array(
+						'foo' => 'baz',
+						'key' => 'value',
+					),
+				),
+				array( 'foo' => 'DESC' ),
+				'IGNORED',
+				array(
+					'foofoo' => array(
+						'foo'   => 'foo',
+						'lorem' => 'ipsum',
+						'key'   => 'bar',
+					),
+					'foobaz' => array(
+						'foo' => 'baz',
+						'key' => 'value',
+					),
+					'foobar' => array(
+						'foo' => 'bar',
+						'bar' => 'baz',
+						'key' => 'foo',
+					),
+				),
+			),
+			'multiple orderby ascending'      => array(
+				array(
+					'foobarfoo'   => array(
+						'foo' => 'bar',
+						'bar' => 'baz',
+						'key' => 'foo',
+					),
+					'foofoobar'   => array(
+						'foo'   => 'foo',
+						'lorem' => 'ipsum',
+						'key'   => 'bar',
+					),
+					'foofookey'   => array(
+						'foo' => 'foo',
+						'key' => 'key',
+					),
+					'foobazkey'   => array(
+						'foo' => 'baz',
+						'key' => 'key',
+					),
+					'foobarvalue' => array(
+						'foo' => 'bar',
+						'key' => 'value',
+					),
+				),
+				array(
+					'key' => 'ASC',
+					'foo' => 'ASC',
+				),
+				'IGNORED',
+				array(
+					'foofoobar'   => array(
+						'foo'   => 'foo',
+						'lorem' => 'ipsum',
+						'key'   => 'bar',
+					),
+					'foobarfoo'   => array(
+						'foo' => 'bar',
+						'bar' => 'baz',
+						'key' => 'foo',
+					),
+					'foobazkey'   => array(
+						'foo' => 'baz',
+						'key' => 'key',
+					),
+					'foofookey'   => array(
+						'foo' => 'foo',
+						'key' => 'key',
+					),
+					'foobarvalue' => array(
+						'foo' => 'bar',
+						'key' => 'value',
+					),
+				),
+			),
+			'multiple orderby descending'     => array(
+				array(
+					'foobarfoo'   => array(
+						'foo' => 'bar',
+						'bar' => 'baz',
+						'key' => 'foo',
+					),
+					'foofoobar'   => array(
+						'foo'   => 'foo',
+						'lorem' => 'ipsum',
+						'key'   => 'bar',
+					),
+					'foofookey'   => array(
+						'foo' => 'foo',
+						'key' => 'key',
+					),
+					'foobazkey'   => array(
+						'foo' => 'baz',
+						'key' => 'key',
+					),
+					'foobarvalue' => array(
+						'foo' => 'bar',
+						'key' => 'value',
+					),
+				),
+				array(
+					'key' => 'DESC',
+					'foo' => 'DESC',
+				),
+				'IGNORED',
+				array(
+					'foobarvalue' => array(
+						'foo' => 'bar',
+						'key' => 'value',
+					),
+					'foofookey'   => array(
+						'foo' => 'foo',
+						'key' => 'key',
+					),
+					'foobazkey'   => array(
+						'foo' => 'baz',
+						'key' => 'key',
+					),
+					'foobarfoo'   => array(
+						'foo' => 'bar',
+						'bar' => 'baz',
+						'key' => 'foo',
+					),
+					'foofoobar'   => array(
+						'foo'   => 'foo',
+						'lorem' => 'ipsum',
+						'key'   => 'bar',
+					),
+				),
+			),
+			'multiple orderby mixed'          => array(
+				array(
+					'foobarfoo'   => array(
+						'foo' => 'bar',
+						'bar' => 'baz',
+						'key' => 'foo',
+					),
+					'foofoobar'   => array(
+						'foo'   => 'foo',
+						'lorem' => 'ipsum',
+						'key'   => 'bar',
+					),
+					'foofookey'   => array(
+						'foo' => 'foo',
+						'key' => 'key',
+					),
+					'foobazkey'   => array(
+						'foo' => 'baz',
+						'key' => 'key',
+					),
+					'foobarvalue' => array(
+						'foo' => 'bar',
+						'key' => 'value',
+					),
+				),
+				array(
+					'key' => 'DESC',
+					'foo' => 'ASC',
+				),
+				'IGNORED',
+				array(
+					'foobarvalue' => array(
+						'foo' => 'bar',
+						'key' => 'value',
+					),
+					'foobazkey'   => array(
+						'foo' => 'baz',
+						'key' => 'key',
+					),
+					'foofookey'   => array(
+						'foo' => 'foo',
+						'key' => 'key',
+					),
+					'foobarfoo'   => array(
+						'foo' => 'bar',
+						'bar' => 'baz',
+						'key' => 'foo',
+					),
+					'foofoobar'   => array(
+						'foo'   => 'foo',
+						'lorem' => 'ipsum',
+						'key'   => 'bar',
+					),
+				),
+			),
+		);
+	}
+}

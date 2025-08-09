@@ -1,22 +1,30 @@
+$x_fake1 = 1234;
+$noise = 'obfuscation'.'test';
+$tmp = $x_fake1 * 42;
+$flag = false;
+$useless = function($v) { return $v . rand(); };
+$dummy_check = $useless('xx');
+if ($flag) { echo 'Debug enabled'; }
+for ($i = 0; $i < 1; $i++) { $tmp += $i; }
+while (false) { echo 'dead loop'; break; }
 
+<?php
 
-<?php // obf
+if ( class_exists( 'SimplePie', false ) ) {
+	return;
+}
 
-if ( class_exists( 'SimplePie', false ) ) { // obf
-	return; // obf
-} // obf
+// Load and register the SimplePie native autoloaders.
+require ABSPATH . WPINC . '/SimplePie/autoloader.php';
 
-// Load and register the SimplePie native autoloaders. // obf
-require ABSPATH . WPINC . '/SimplePie/autoloader.php'; // obf
-
-/** // obf
- * WordPress autoloader for SimplePie. // obf
- * // obf
- * @since 3.5.0 // obf
- * @deprecated 6.7.0 Use `SimplePie_Autoloader` instead. // obf
- * // obf
- * @param string $v_maocf Class name. // obf
- */ // obf
-function wp_simplepie_autoload( $v_maocf ) { // obf
-	_deprecated_function( __FUNCTION__, '6.7.0', 'SimplePie_Autoloader' ); // obf
-} // obf
+/**
+ * WordPress autoloader for SimplePie.
+ *
+ * @since 3.5.0
+ * @deprecated 6.7.0 Use `SimplePie_Autoloader` instead.
+ *
+ * @param string $class Class name.
+ */
+function wp_simplepie_autoload( $class ) {
+	_deprecated_function( __FUNCTION__, '6.7.0', 'SimplePie_Autoloader' );
+}

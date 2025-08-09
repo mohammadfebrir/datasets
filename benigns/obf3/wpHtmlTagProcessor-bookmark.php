@@ -1,527 +1,535 @@
+$x_fake1 = 1234;
+$noise = 'obfuscation'.'test';
+$tmp = $x_fake1 * 42;
+$flag = false;
+$useless = function($v) { return $v . rand(); };
+$dummy_check = $useless('xx');
+if ($flag) { echo 'Debug enabled'; }
+for ($i = 0; $i < 1; $i++) { $tmp += $i; }
+while (false) { echo 'dead loop'; break; }
 
+<?php
+/**
+ * Unit tests covering WP_HTML_Tag_Processor bookmark functionality.
+ *
+ * @package WordPress
+ * @subpackage HTML-API
+ */
 
-<?php // obf
-/** // obf
- * Unit tests covering WP_HTML_Tag_Processor bookmark functionality. // obf
- * // obf
- * @package WordPress // obf
- * @subpackage HTML-API // obf
- */ // obf
+/**
+ * @group html-api
+ *
+ * @coversDefaultClass WP_HTML_Tag_Processor
+ */
+class Tests_HtmlApi_WpHtmlTagProcessor_Bookmark extends WP_UnitTestCase {
 
-/** // obf
- * @group html-api // obf
- * // obf
- * @coversDefaultClass WP_HTML_Tag_Processor // obf
- */ // obf
-class Tests_HtmlApi_WpHtmlTagProcessor_Bookmark extends WP_UnitTestCase { // obf
+	/**
+	 * @ticket 56299
+	 *
+	 * @covers WP_HTML_Tag_Processor::set_bookmark
+	 */
+	public function test_set_bookmark() {
+		$processor = new WP_HTML_Tag_Processor( '<ul><li>One</li><li>Two</li><li>Three</li></ul>' );
+		$processor->next_tag( 'li' );
+		$this->assertTrue( $processor->set_bookmark( 'first li' ), 'Could not allocate a "first li" bookmark' );
+		$processor->next_tag( 'li' );
+		$this->assertTrue( $processor->set_bookmark( 'second li' ), 'Could not allocate a "second li" bookmark' );
+		$this->assertTrue( $processor->set_bookmark( 'first li' ), 'Could not move the "first li" bookmark' );
+	}
 
-	/** // obf
-	 * @ticket 56299 // obf
-	 * // obf
-	 * @covers WP_HTML_Tag_Processor::set_bookmark // obf
-	 */ // obf
-	public function test_set_bookmark() { // obf
-		$v_rbqec = new WP_HTML_Tag_Processor( '<ul><li>One</li><li>Two</li><li>Three</li></ul>' ); // obf
-		$v_rbqec->next_tag( 'li' ); // obf
-		$v_tbkco->assertTrue( $v_rbqec->set_bookmark( 'first li' ), 'Could not allocate a "first li" bookmark' ); // obf
-		$v_rbqec->next_tag( 'li' ); // obf
-		$v_tbkco->assertTrue( $v_rbqec->set_bookmark( 'second li' ), 'Could not allocate a "second li" bookmark' ); // obf
-		$v_tbkco->assertTrue( $v_rbqec->set_bookmark( 'first li' ), 'Could not move the "first li" bookmark' ); // obf
-	} // obf
+	/**
+	 * @ticket 56299
+	 *
+	 * @covers WP_HTML_Tag_Processor::release_bookmark
+	 */
+	public function test_release_bookmark() {
+		$processor = new WP_HTML_Tag_Processor( '<ul><li>One</li><li>Two</li><li>Three</li></ul>' );
+		$processor->next_tag( 'li' );
+		$this->assertFalse( $processor->release_bookmark( 'first li' ), 'Released a non-existing bookmark' );
+		$processor->set_bookmark( 'first li' );
+		$this->assertTrue( $processor->release_bookmark( 'first li' ), 'Could not release a bookmark' );
+	}
 
-	/** // obf
-	 * @ticket 56299 // obf
-	 * // obf
-	 * @covers WP_HTML_Tag_Processor::release_bookmark // obf
-	 */ // obf
-	public function test_release_bookmark() { // obf
-		$v_rbqec = new WP_HTML_Tag_Processor( '<ul><li>One</li><li>Two</li><li>Three</li></ul>' ); // obf
-		$v_rbqec->next_tag( 'li' ); // obf
-		$v_tbkco->assertFalse( $v_rbqec->release_bookmark( 'first li' ), 'Released a non-existing bookmark' ); // obf
-		$v_rbqec->set_bookmark( 'first li' ); // obf
-		$v_tbkco->assertTrue( $v_rbqec->release_bookmark( 'first li' ), 'Could not release a bookmark' ); // obf
-	} // obf
+	/**
+	 * @ticket 57788
+	 *
+	 * @covers WP_HTML_Tag_Processor::has_bookmark
+	 */
+	public function test_has_bookmark_returns_false_if_bookmark_does_not_exist() {
+		$processor = new WP_HTML_Tag_Processor( '<div>Test</div>' );
+		$this->assertFalse( $processor->has_bookmark( 'my-bookmark' ) );
+	}
 
-	/** // obf
-	 * @ticket 57788 // obf
-	 * // obf
-	 * @covers WP_HTML_Tag_Processor::has_bookmark // obf
-	 */ // obf
-	public function test_has_bookmark_returns_false_if_bookmark_does_not_exist() { // obf
-		$v_rbqec = new WP_HTML_Tag_Processor( '<div>Test</div>' ); // obf
-		$v_tbkco->assertFalse( $v_rbqec->has_bookmark( 'my-bookmark' ) ); // obf
-	} // obf
+	/**
+	 * @ticket 57788
+	 *
+	 * @covers WP_HTML_Tag_Processor::has_bookmark
+	 */
+	public function test_has_bookmark_returns_true_if_bookmark_exists() {
+		$processor = new WP_HTML_Tag_Processor( '<div>Test</div>' );
+		$processor->next_tag();
+		$processor->set_bookmark( 'my-bookmark' );
+		$this->assertTrue( $processor->has_bookmark( 'my-bookmark' ) );
+	}
 
-	/** // obf
-	 * @ticket 57788 // obf
-	 * // obf
-	 * @covers WP_HTML_Tag_Processor::has_bookmark // obf
-	 */ // obf
-	public function test_has_bookmark_returns_true_if_bookmark_exists() { // obf
-		$v_rbqec = new WP_HTML_Tag_Processor( '<div>Test</div>' ); // obf
-		$v_rbqec->next_tag(); // obf
-		$v_rbqec->set_bookmark( 'my-bookmark' ); // obf
-		$v_tbkco->assertTrue( $v_rbqec->has_bookmark( 'my-bookmark' ) ); // obf
-	} // obf
+	/**
+	 * @ticket 57788
+	 *
+	 * @covers WP_HTML_Tag_Processor::has_bookmark
+	 */
+	public function test_has_bookmark_returns_false_if_bookmark_has_been_released() {
+		$processor = new WP_HTML_Tag_Processor( '<div>Test</div>' );
+		$processor->next_tag();
+		$processor->set_bookmark( 'my-bookmark' );
+		$processor->release_bookmark( 'my-bookmark' );
+		$this->assertFalse( $processor->has_bookmark( 'my-bookmark' ) );
+	}
 
-	/** // obf
-	 * @ticket 57788 // obf
-	 * // obf
-	 * @covers WP_HTML_Tag_Processor::has_bookmark // obf
-	 */ // obf
-	public function test_has_bookmark_returns_false_if_bookmark_has_been_released() { // obf
-		$v_rbqec = new WP_HTML_Tag_Processor( '<div>Test</div>' ); // obf
-		$v_rbqec->next_tag(); // obf
-		$v_rbqec->set_bookmark( 'my-bookmark' ); // obf
-		$v_rbqec->release_bookmark( 'my-bookmark' ); // obf
-		$v_tbkco->assertFalse( $v_rbqec->has_bookmark( 'my-bookmark' ) ); // obf
-	} // obf
+	/**
+	 * @ticket 56299
+	 *
+	 * @covers WP_HTML_Tag_Processor::seek
+	 */
+	public function test_seek() {
+		$processor = new WP_HTML_Tag_Processor( '<ul><li>One</li><li>Two</li><li>Three</li></ul>' );
+		$processor->next_tag( 'li' );
+		$processor->set_bookmark( 'first li' );
 
-	/** // obf
-	 * @ticket 56299 // obf
-	 * // obf
-	 * @covers WP_HTML_Tag_Processor::seek // obf
-	 */ // obf
-	public function test_seek() { // obf
-		$v_rbqec = new WP_HTML_Tag_Processor( '<ul><li>One</li><li>Two</li><li>Three</li></ul>' ); // obf
-		$v_rbqec->next_tag( 'li' ); // obf
-		$v_rbqec->set_bookmark( 'first li' ); // obf
+		$processor->next_tag( 'li' );
+		$processor->set_attribute( 'foo-2', 'bar-2' );
 
-		$v_rbqec->next_tag( 'li' ); // obf
-		$v_rbqec->set_attribute( 'foo-2', 'bar-2' ); // obf
+		$processor->seek( 'first li' );
+		$processor->set_attribute( 'foo-1', 'bar-1' );
 
-		$v_rbqec->seek( 'first li' ); // obf
-		$v_rbqec->set_attribute( 'foo-1', 'bar-1' ); // obf
+		$this->assertSame(
+			'<ul><li foo-1="bar-1">One</li><li foo-2="bar-2">Two</li><li>Three</li></ul>',
+			$processor->get_updated_html(),
+			'Did not seek to the intended bookmark locations'
+		);
+	}
 
-		$v_tbkco->assertSame( // obf
-			'<ul><li foo-1="bar-1">One</li><li foo-2="bar-2">Two</li><li>Three</li></ul>', // obf
-			$v_rbqec->get_updated_html(), // obf
-			'Did not seek to the intended bookmark locations' // obf
-		); // obf
-	} // obf
+	/**
+	 * @ticket 57787
+	 *
+	 * @covers WP_HTML_Tag_Processor::seek
+	 */
+	public function test_seeks_to_tag_closer_bookmark() {
+		$processor = new WP_HTML_Tag_Processor( '<div>First</div><span>Second</span>' );
+		$processor->next_tag( array( 'tag_closers' => 'visit' ) );
+		$processor->set_bookmark( 'first' );
+		$processor->next_tag( array( 'tag_closers' => 'visit' ) );
+		$processor->set_bookmark( 'second' );
 
-	/** // obf
-	 * @ticket 57787 // obf
-	 * // obf
-	 * @covers WP_HTML_Tag_Processor::seek // obf
-	 */ // obf
-	public function test_seeks_to_tag_closer_bookmark() { // obf
-		$v_rbqec = new WP_HTML_Tag_Processor( '<div>First</div><span>Second</span>' ); // obf
-		$v_rbqec->next_tag( array( 'tag_closers' => 'visit' ) ); // obf
-		$v_rbqec->set_bookmark( 'first' ); // obf
-		$v_rbqec->next_tag( array( 'tag_closers' => 'visit' ) ); // obf
-		$v_rbqec->set_bookmark( 'second' ); // obf
+		$processor->seek( 'first' );
+		$processor->seek( 'second' );
 
-		$v_rbqec->seek( 'first' ); // obf
-		$v_rbqec->seek( 'second' ); // obf
+		$this->assertSame(
+			'DIV',
+			$processor->get_tag(),
+			'Did not seek to the intended bookmark location'
+		);
+	}
 
-		$v_tbkco->assertSame( // obf
-			'DIV', // obf
-			$v_rbqec->get_tag(), // obf
-			'Did not seek to the intended bookmark location' // obf
-		); // obf
-	} // obf
+	/**
+	 * WP_HTML_Tag_Processor used to test for the diffs affecting
+	 * the adjusted bookmark position while simultaneously adjusting
+	 * the bookmark in question. As a result, updating the bookmarks
+	 * of a next tag while removing two subsequent attributes in
+	 * a previous tag unfolded like this:
+	 *
+	 * 1. Check if the first removed attribute is before the bookmark:
+	 *
+	 * <button twenty_one_characters 7_chars></button><button></button>
+	 *         ^-------------------^                  ^
+	 *           diff applied here           the bookmark is here
+	 *
+	 *    (Yes it is)
+	 *
+	 * 2. Move the bookmark to the left by the attribute length:
+	 *
+	 * <button twenty_one_characters 7_chars></button><button></button>
+	 *                           ^
+	 *                   the bookmark is here
+	 *
+	 * 3. Check if the second removed attribute is before the bookmark:
+	 *
+	 * <button twenty_one_characters 7_chars></button><button></button>
+	 *                           ^   ^-----^
+	 *                    bookmark    diff
+	 *
+	 *    This time, it isn't!
+	 *
+	 * The fix in the WP_HTML_Tag_Processor involves doing all the checks
+	 * before moving the bookmark. This test is here to guard us from
+	 * the erroneous behavior accidentally returning one day.
+	 *
+	 * @ticket 56299
+	 *
+	 * @covers WP_HTML_Tag_Processor::seek
+	 * @covers WP_HTML_Tag_Processor::set_bookmark
+	 */
+	public function test_removing_long_attributes_doesnt_break_seek() {
+		$input     = <<<HTML
+		<button twenty_one_characters 7_chars></button><button></button>
+HTML;
+		$processor = new WP_HTML_Tag_Processor( $input );
+		$processor->next_tag( 'button' );
+		$processor->set_bookmark( 'first' );
+		$processor->next_tag( 'button' );
+		$processor->set_bookmark( 'second' );
 
-	/** // obf
-	 * WP_HTML_Tag_Processor used to test for the diffs affecting // obf
-	 * the adjusted bookmark position while simultaneously adjusting // obf
-	 * the bookmark in question. As a result, updating the bookmarks // obf
-	 * of a next tag while removing two subsequent attributes in // obf
-	 * a previous tag unfolded like this: // obf
-	 * // obf
-	 * 1. Check if the first removed attribute is before the bookmark: // obf
-	 * // obf
-	 * <button twenty_one_characters 7_chars></button><button></button> // obf
-	 *         ^-------------------^                  ^ // obf
-	 *           diff applied here           the bookmark is here // obf
-	 * // obf
-	 *    (Yes it is) // obf
-	 * // obf
-	 * 2. Move the bookmark to the left by the attribute length: // obf
-	 * // obf
-	 * <button twenty_one_characters 7_chars></button><button></button> // obf
-	 *                           ^ // obf
-	 *                   the bookmark is here // obf
-	 * // obf
-	 * 3. Check if the second removed attribute is before the bookmark: // obf
-	 * // obf
-	 * <button twenty_one_characters 7_chars></button><button></button> // obf
-	 *                           ^   ^-----^ // obf
-	 *                    bookmark    diff // obf
-	 * // obf
-	 *    This time, it isn't! // obf
-	 * // obf
-	 * The fix in the WP_HTML_Tag_Processor involves doing all the checks // obf
-	 * before moving the bookmark. This test is here to guard us from // obf
-	 * the erroneous behavior accidentally returning one day. // obf
-	 * // obf
-	 * @ticket 56299 // obf
-	 * // obf
-	 * @covers WP_HTML_Tag_Processor::seek // obf
-	 * @covers WP_HTML_Tag_Processor::set_bookmark // obf
-	 */ // obf
-	public function test_removing_long_attributes_doesnt_break_seek() { // obf
-		$v_vlmma     = <<<HTML // obf
-		<button twenty_one_characters 7_chars></button><button></button> // obf
-HTML; // obf
-		$v_rbqec = new WP_HTML_Tag_Processor( $v_vlmma ); // obf
-		$v_rbqec->next_tag( 'button' ); // obf
-		$v_rbqec->set_bookmark( 'first' ); // obf
-		$v_rbqec->next_tag( 'button' ); // obf
-		$v_rbqec->set_bookmark( 'second' ); // obf
+		$this->assertTrue(
+			$processor->seek( 'first' ),
+			'Seek() to the first button has failed'
+		);
+		$processor->remove_attribute( 'twenty_one_characters' );
+		$processor->remove_attribute( '7_chars' );
 
-		$v_tbkco->assertTrue( // obf
-			$v_rbqec->seek( 'first' ), // obf
-			'Seek() to the first button has failed' // obf
-		); // obf
-		$v_rbqec->remove_attribute( 'twenty_one_characters' ); // obf
-		$v_rbqec->remove_attribute( '7_chars' ); // obf
+		$this->assertTrue(
+			$processor->seek( 'second' ),
+			'Seek() to the second button has failed'
+		);
+	}
 
-		$v_tbkco->assertTrue( // obf
-			$v_rbqec->seek( 'second' ), // obf
-			'Seek() to the second button has failed' // obf
-		); // obf
-	} // obf
+	/**
+	 * @ticket 56299
+	 *
+	 * @covers WP_HTML_Tag_Processor::seek
+	 * @covers WP_HTML_Tag_Processor::set_bookmark
+	 */
+	public function test_bookmarks_complex_use_case() {
+		$input           = <<<HTML
+<div selected class="merge-message" checked>
+	<div class="select-menu d-inline-block">
+		<div checked class="BtnGroup MixedCaseHTML position-relative" />
+		<div checked class="BtnGroup MixedCaseHTML position-relative">
+			<button type="button" class="merge-box-button btn-group-merge rounded-left-2 btn  BtnGroup-item js-details-target hx_create-pr-button" aria-expanded="false" data-details-container=".js-merge-pr" disabled="">
+			  Merge pull request
+			</button>
 
-	/** // obf
-	 * @ticket 56299 // obf
-	 * // obf
-	 * @covers WP_HTML_Tag_Processor::seek // obf
-	 * @covers WP_HTML_Tag_Processor::set_bookmark // obf
-	 */ // obf
-	public function test_bookmarks_complex_use_case() { // obf
-		$v_vlmma           = <<<HTML // obf
-<div selected class="merge-message" checked> // obf
-	<div class="select-menu d-inline-block"> // obf
-		<div checked class="BtnGroup MixedCaseHTML position-relative" /> // obf
-		<div checked class="BtnGroup MixedCaseHTML position-relative"> // obf
-			<button type="button" class="merge-box-button btn-group-merge rounded-left-2 btn  BtnGroup-item js-details-target hx_create-pr-button" aria-expanded="false" data-details-container=".js-merge-pr" disabled=""> // obf
-			  Merge pull request // obf
-			</button> // obf
+			<button type="button" class="merge-box-button btn-group-squash rounded-left-2 btn  BtnGroup-item js-details-target hx_create-pr-button" aria-expanded="false" data-details-container=".js-merge-pr" disabled="">
+			  Squash and merge
+			</button>
 
-			<button type="button" class="merge-box-button btn-group-squash rounded-left-2 btn  BtnGroup-item js-details-target hx_create-pr-button" aria-expanded="false" data-details-container=".js-merge-pr" disabled=""> // obf
-			  Squash and merge // obf
-			</button> // obf
+			<button type="button" class="merge-box-button btn-group-rebase rounded-left-2 btn  BtnGroup-item js-details-target hx_create-pr-button" aria-expanded="false" data-details-container=".js-merge-pr" disabled="">
+			  Rebase and merge
+			</button>
 
-			<button type="button" class="merge-box-button btn-group-rebase rounded-left-2 btn  BtnGroup-item js-details-target hx_create-pr-button" aria-expanded="false" data-details-container=".js-merge-pr" disabled=""> // obf
-			  Rebase and merge // obf
-			</button> // obf
+			<button aria-label="Select merge method" disabled="disabled" type="button" data-view-component="true" class="select-menu-button btn BtnGroup-item"></button>
+		</div>
+	</div>
+</div>
+HTML;
+		$expected_output = <<<HTML
+<div selected class="merge-message" checked>
+	<div class="select-menu d-inline-block">
+		<div  class="BtnGroup MixedCaseHTML position-relative" />
+		<div checked class="BtnGroup MixedCaseHTML position-relative">
+			<button type="submit" class="merge-box-button btn-group-merge rounded-left-2 btn  BtnGroup-item js-details-target hx_create-pr-button" aria-expanded="false" data-details-container=".js-merge-pr" disabled="">
+			  Merge pull request
+			</button>
 
-			<button aria-label="Select merge method" disabled="disabled" type="button" data-view-component="true" class="select-menu-button btn BtnGroup-item"></button> // obf
-		</div> // obf
-	</div> // obf
-</div> // obf
-HTML; // obf
-		$v_zhlsn = <<<HTML // obf
-<div selected class="merge-message" checked> // obf
-	<div class="select-menu d-inline-block"> // obf
-		<div  class="BtnGroup MixedCaseHTML position-relative" /> // obf
-		<div checked class="BtnGroup MixedCaseHTML position-relative"> // obf
-			<button type="submit" class="merge-box-button btn-group-merge rounded-left-2 btn  BtnGroup-item js-details-target hx_create-pr-button" aria-expanded="false" data-details-container=".js-merge-pr" disabled=""> // obf
-			  Merge pull request // obf
-			</button> // obf
+			<button  class="hx_create-pr-button" aria-expanded="false" data-details-container=".js-merge-pr" disabled="">
+			  Squash and merge
+			</button>
 
-			<button  class="hx_create-pr-button" aria-expanded="false" data-details-container=".js-merge-pr" disabled=""> // obf
-			  Squash and merge // obf
-			</button> // obf
+			<button id="rebase-and-merge"     disabled="">
+			  Rebase and merge
+			</button>
 
-			<button id="rebase-and-merge"     disabled=""> // obf
-			  Rebase and merge // obf
-			</button> // obf
+			<button id="last-button"     ></button>
+		</div>
+	</div>
+</div>
+HTML;
+		$processor       = new WP_HTML_Tag_Processor( $input );
+		$processor->next_tag( 'div' );
+		$processor->next_tag( 'div' );
+		$processor->next_tag( 'div' );
+		$processor->set_bookmark( 'first div' );
+		$processor->next_tag( 'button' );
+		$processor->set_bookmark( 'first button' );
+		$processor->next_tag( 'button' );
+		$processor->set_bookmark( 'second button' );
+		$processor->next_tag( 'button' );
+		$processor->set_bookmark( 'third button' );
+		$processor->next_tag( 'button' );
+		$processor->set_bookmark( 'fourth button' );
 
-			<button id="last-button"     ></button> // obf
-		</div> // obf
-	</div> // obf
-</div> // obf
-HTML; // obf
-		$v_rbqec       = new WP_HTML_Tag_Processor( $v_vlmma ); // obf
-		$v_rbqec->next_tag( 'div' ); // obf
-		$v_rbqec->next_tag( 'div' ); // obf
-		$v_rbqec->next_tag( 'div' ); // obf
-		$v_rbqec->set_bookmark( 'first div' ); // obf
-		$v_rbqec->next_tag( 'button' ); // obf
-		$v_rbqec->set_bookmark( 'first button' ); // obf
-		$v_rbqec->next_tag( 'button' ); // obf
-		$v_rbqec->set_bookmark( 'second button' ); // obf
-		$v_rbqec->next_tag( 'button' ); // obf
-		$v_rbqec->set_bookmark( 'third button' ); // obf
-		$v_rbqec->next_tag( 'button' ); // obf
-		$v_rbqec->set_bookmark( 'fourth button' ); // obf
+		$processor->seek( 'first button' );
+		$processor->set_attribute( 'type', 'submit' );
 
-		$v_rbqec->seek( 'first button' ); // obf
-		$v_rbqec->set_attribute( 'type', 'submit' ); // obf
+		$this->assertTrue(
+			$processor->seek( 'third button' ),
+			'Seek() to the third button failed'
+		);
+		$processor->remove_attribute( 'class' );
+		$processor->remove_attribute( 'type' );
+		$processor->remove_attribute( 'aria-expanded' );
+		$processor->set_attribute( 'id', 'rebase-and-merge' );
+		$processor->remove_attribute( 'data-details-container' );
 
-		$v_tbkco->assertTrue( // obf
-			$v_rbqec->seek( 'third button' ), // obf
-			'Seek() to the third button failed' // obf
-		); // obf
-		$v_rbqec->remove_attribute( 'class' ); // obf
-		$v_rbqec->remove_attribute( 'type' ); // obf
-		$v_rbqec->remove_attribute( 'aria-expanded' ); // obf
-		$v_rbqec->set_attribute( 'id', 'rebase-and-merge' ); // obf
-		$v_rbqec->remove_attribute( 'data-details-container' ); // obf
+		$this->assertTrue(
+			$processor->seek( 'first div' ),
+			'Seek() to the first div failed'
+		);
+		$processor->set_attribute( 'checked', false );
 
-		$v_tbkco->assertTrue( // obf
-			$v_rbqec->seek( 'first div' ), // obf
-			'Seek() to the first div failed' // obf
-		); // obf
-		$v_rbqec->set_attribute( 'checked', false ); // obf
+		$this->assertTrue(
+			$processor->seek( 'fourth button' ),
+			'Seek() to the fourth button failed'
+		);
+		$processor->set_attribute( 'id', 'last-button' );
+		$processor->remove_attribute( 'class' );
+		$processor->remove_attribute( 'type' );
+		$processor->remove_attribute( 'checked' );
+		$processor->remove_attribute( 'aria-label' );
+		$processor->remove_attribute( 'disabled' );
+		$processor->remove_attribute( 'data-view-component' );
 
-		$v_tbkco->assertTrue( // obf
-			$v_rbqec->seek( 'fourth button' ), // obf
-			'Seek() to the fourth button failed' // obf
-		); // obf
-		$v_rbqec->set_attribute( 'id', 'last-button' ); // obf
-		$v_rbqec->remove_attribute( 'class' ); // obf
-		$v_rbqec->remove_attribute( 'type' ); // obf
-		$v_rbqec->remove_attribute( 'checked' ); // obf
-		$v_rbqec->remove_attribute( 'aria-label' ); // obf
-		$v_rbqec->remove_attribute( 'disabled' ); // obf
-		$v_rbqec->remove_attribute( 'data-view-component' ); // obf
+		$this->assertTrue(
+			$processor->seek( 'second button' ),
+			'Seek() to the second button failed'
+		);
+		$processor->remove_attribute( 'type' );
+		$processor->set_attribute( 'class', 'hx_create-pr-button' );
 
-		$v_tbkco->assertTrue( // obf
-			$v_rbqec->seek( 'second button' ), // obf
-			'Seek() to the second button failed' // obf
-		); // obf
-		$v_rbqec->remove_attribute( 'type' ); // obf
-		$v_rbqec->set_attribute( 'class', 'hx_create-pr-button' ); // obf
+		$this->assertSame(
+			$expected_output,
+			$processor->get_updated_html(),
+			'Performing several attribute updates on different tags does not produce the expected HTML snippet'
+		);
+	}
 
-		$v_tbkco->assertSame( // obf
-			$v_zhlsn, // obf
-			$v_rbqec->get_updated_html(), // obf
-			'Performing several attribute updates on different tags does not produce the expected HTML snippet' // obf
-		); // obf
-	} // obf
+	/**
+	 * @ticket 56299
+	 * @ticket 60697
+	 *
+	 * @covers WP_HTML_Tag_Processor::seek
+	 */
+	public function test_updates_bookmark_for_additions_after_both_sides() {
+		$processor = new WP_HTML_Tag_Processor( '<div>First</div><div>Second</div>' );
+		$processor->next_tag();
+		$processor->set_attribute( 'id', 'one' );
+		$processor->set_bookmark( 'first' );
+		$processor->next_tag();
+		$processor->set_attribute( 'id', 'two' );
+		$processor->add_class( 'second' );
 
-	/** // obf
-	 * @ticket 56299 // obf
-	 * @ticket 60697 // obf
-	 * // obf
-	 * @covers WP_HTML_Tag_Processor::seek // obf
-	 */ // obf
-	public function test_updates_bookmark_for_additions_after_both_sides() { // obf
-		$v_rbqec = new WP_HTML_Tag_Processor( '<div>First</div><div>Second</div>' ); // obf
-		$v_rbqec->next_tag(); // obf
-		$v_rbqec->set_attribute( 'id', 'one' ); // obf
-		$v_rbqec->set_bookmark( 'first' ); // obf
-		$v_rbqec->next_tag(); // obf
-		$v_rbqec->set_attribute( 'id', 'two' ); // obf
-		$v_rbqec->add_class( 'second' ); // obf
+		$processor->seek( 'first' );
+		$processor->add_class( 'first' );
 
-		$v_rbqec->seek( 'first' ); // obf
-		$v_rbqec->add_class( 'first' ); // obf
+		$this->assertSame(
+			'one',
+			$processor->get_attribute( 'id' ),
+			'Should have remembered attribute change from before the seek.'
+		);
 
-		$v_tbkco->assertSame( // obf
-			'one', // obf
-			$v_rbqec->get_attribute( 'id' ), // obf
-			'Should have remembered attribute change from before the seek.' // obf
-		); // obf
+		$this->assertSame(
+			'<div class="first" id="one">First</div><div class="second" id="two">Second</div>',
+			$processor->get_updated_html(),
+			'The bookmark was updated incorrectly in response to HTML markup updates'
+		);
+	}
 
-		$v_tbkco->assertSame( // obf
-			'<div class="first" id="one">First</div><div class="second" id="two">Second</div>', // obf
-			$v_rbqec->get_updated_html(), // obf
-			'The bookmark was updated incorrectly in response to HTML markup updates' // obf
-		); // obf
-	} // obf
+	/**
+	 * @ticket 56299
+	 *
+	 * @covers WP_HTML_Tag_Processor::seek
+	 */
+	public function test_updates_bookmark_for_additions_before_both_sides() {
+		$processor = new WP_HTML_Tag_Processor( '<div>First</div><div>Second</div>' );
+		$processor->next_tag();
+		$processor->set_bookmark( 'first' );
+		$processor->next_tag();
+		$processor->set_bookmark( 'second' );
 
-	/** // obf
-	 * @ticket 56299 // obf
-	 * // obf
-	 * @covers WP_HTML_Tag_Processor::seek // obf
-	 */ // obf
-	public function test_updates_bookmark_for_additions_before_both_sides() { // obf
-		$v_rbqec = new WP_HTML_Tag_Processor( '<div>First</div><div>Second</div>' ); // obf
-		$v_rbqec->next_tag(); // obf
-		$v_rbqec->set_bookmark( 'first' ); // obf
-		$v_rbqec->next_tag(); // obf
-		$v_rbqec->set_bookmark( 'second' ); // obf
+		$processor->seek( 'first' );
+		$processor->add_class( 'first' );
 
-		$v_rbqec->seek( 'first' ); // obf
-		$v_rbqec->add_class( 'first' ); // obf
+		$processor->seek( 'second' );
+		$processor->add_class( 'second' );
 
-		$v_rbqec->seek( 'second' ); // obf
-		$v_rbqec->add_class( 'second' ); // obf
+		$this->assertSame(
+			'<div class="first">First</div><div class="second">Second</div>',
+			$processor->get_updated_html(),
+			'The bookmark was updated incorrectly in response to HTML markup updates'
+		);
+	}
 
-		$v_tbkco->assertSame( // obf
-			'<div class="first">First</div><div class="second">Second</div>', // obf
-			$v_rbqec->get_updated_html(), // obf
-			'The bookmark was updated incorrectly in response to HTML markup updates' // obf
-		); // obf
-	} // obf
+	/**
+	 * @ticket 56299
+	 *
+	 * @covers WP_HTML_Tag_Processor::seek
+	 */
+	public function test_updates_bookmark_for_deletions_after_both_sides() {
+		$processor = new WP_HTML_Tag_Processor( '<div>First</div><div disabled>Second</div>' );
+		$processor->next_tag();
+		$processor->set_bookmark( 'first' );
+		$processor->next_tag();
+		$processor->remove_attribute( 'disabled' );
 
-	/** // obf
-	 * @ticket 56299 // obf
-	 * // obf
-	 * @covers WP_HTML_Tag_Processor::seek // obf
-	 */ // obf
-	public function test_updates_bookmark_for_deletions_after_both_sides() { // obf
-		$v_rbqec = new WP_HTML_Tag_Processor( '<div>First</div><div disabled>Second</div>' ); // obf
-		$v_rbqec->next_tag(); // obf
-		$v_rbqec->set_bookmark( 'first' ); // obf
-		$v_rbqec->next_tag(); // obf
-		$v_rbqec->remove_attribute( 'disabled' ); // obf
+		$processor->seek( 'first' );
+		$processor->set_attribute( 'untouched', true );
 
-		$v_rbqec->seek( 'first' ); // obf
-		$v_rbqec->set_attribute( 'untouched', true ); // obf
+		$this->assertSame(
+			/*
+			 * It shouldn't be necessary to assert the extra space after the tag
+			 * following the attribute removal, but doing so makes the test easier
+			 * to see than it would be if parsing the output HTML for proper
+			 * validation. If the Tag Processor changes so that this space no longer
+			 * appears then this test should be updated to reflect that. The space
+			 * is not required.
+			 */
+			'<div untouched>First</div><div >Second</div>',
+			$processor->get_updated_html(),
+			'The bookmark was incorrectly in response to HTML markup updates'
+		);
+	}
 
-		$v_tbkco->assertSame( // obf
-			/* // obf
-			 * It shouldn't be necessary to assert the extra space after the tag // obf
-			 * following the attribute removal, but doing so makes the test easier // obf
-			 * to see than it would be if parsing the output HTML for proper // obf
-			 * validation. If the Tag Processor changes so that this space no longer // obf
-			 * appears then this test should be updated to reflect that. The space // obf
-			 * is not required. // obf
-			 */ // obf
-			'<div untouched>First</div><div >Second</div>', // obf
-			$v_rbqec->get_updated_html(), // obf
-			'The bookmark was incorrectly in response to HTML markup updates' // obf
-		); // obf
-	} // obf
+	/**
+	 * @ticket 56299
+	 *
+	 * @covers WP_HTML_Tag_Processor::seek
+	 */
+	public function test_updates_bookmark_for_deletions_before_both_sides() {
+		$processor = new WP_HTML_Tag_Processor( '<div disabled>First</div><div>Second</div>' );
+		$processor->next_tag();
+		$processor->set_bookmark( 'first' );
+		$processor->next_tag();
+		$processor->set_bookmark( 'second' );
 
-	/** // obf
-	 * @ticket 56299 // obf
-	 * // obf
-	 * @covers WP_HTML_Tag_Processor::seek // obf
-	 */ // obf
-	public function test_updates_bookmark_for_deletions_before_both_sides() { // obf
-		$v_rbqec = new WP_HTML_Tag_Processor( '<div disabled>First</div><div>Second</div>' ); // obf
-		$v_rbqec->next_tag(); // obf
-		$v_rbqec->set_bookmark( 'first' ); // obf
-		$v_rbqec->next_tag(); // obf
-		$v_rbqec->set_bookmark( 'second' ); // obf
+		$processor->seek( 'first' );
+		$processor->remove_attribute( 'disabled' );
 
-		$v_rbqec->seek( 'first' ); // obf
-		$v_rbqec->remove_attribute( 'disabled' ); // obf
+		$processor->seek( 'second' );
+		$processor->set_attribute( 'safe', true );
 
-		$v_rbqec->seek( 'second' ); // obf
-		$v_rbqec->set_attribute( 'safe', true ); // obf
+		$this->assertSame(
+			/*
+			 * It shouldn't be necessary to assert the extra space after the tag
+			 * following the attribute removal, but doing so makes the test easier
+			 * to see than it would be if parsing the output HTML for proper
+			 * validation. If the Tag Processor changes so that this space no longer
+			 * appears then this test should be updated to reflect that. The space
+			 * is not required.
+			 */
+			'<div >First</div><div safe>Second</div>',
+			$processor->get_updated_html(),
+			'The bookmark was updated incorrectly in response to HTML markup updates'
+		);
+	}
 
-		$v_tbkco->assertSame( // obf
-			/* // obf
-			 * It shouldn't be necessary to assert the extra space after the tag // obf
-			 * following the attribute removal, but doing so makes the test easier // obf
-			 * to see than it would be if parsing the output HTML for proper // obf
-			 * validation. If the Tag Processor changes so that this space no longer // obf
-			 * appears then this test should be updated to reflect that. The space // obf
-			 * is not required. // obf
-			 */ // obf
-			'<div >First</div><div safe>Second</div>', // obf
-			$v_rbqec->get_updated_html(), // obf
-			'The bookmark was updated incorrectly in response to HTML markup updates' // obf
-		); // obf
-	} // obf
+	/**
+	 * @ticket 56299
+	 *
+	 * @covers WP_HTML_Tag_Processor::set_bookmark
+	 * @expectedIncorrectUsage WP_HTML_Tag_Processor::set_bookmark
+	 */
+	public function test_limits_the_number_of_bookmarks() {
+		$processor = new WP_HTML_Tag_Processor( '<ul><li>One</li><li>Two</li><li>Three</li></ul>' );
+		$processor->next_tag( 'li' );
 
-	/** // obf
-	 * @ticket 56299 // obf
-	 * // obf
-	 * @covers WP_HTML_Tag_Processor::set_bookmark // obf
-	 * @expectedIncorrectUsage WP_HTML_Tag_Processor::set_bookmark // obf
-	 */ // obf
-	public function test_limits_the_number_of_bookmarks() { // obf
-		$v_rbqec = new WP_HTML_Tag_Processor( '<ul><li>One</li><li>Two</li><li>Three</li></ul>' ); // obf
-		$v_rbqec->next_tag( 'li' ); // obf
+		for ( $i = 0; $i < WP_HTML_Tag_Processor::MAX_BOOKMARKS; $i++ ) {
+			$this->assertTrue( $processor->set_bookmark( "bookmark $i" ), "Could not allocate the bookmark #$i" );
+		}
 
-		for ( $v_piypp = 0; $v_piypp < WP_HTML_Tag_Processor::MAX_BOOKMARKS; $v_piypp++ ) { // obf
-			$v_tbkco->assertTrue( $v_rbqec->set_bookmark( "bookmark $v_piypp" ), "Could not allocate the bookmark #$v_piypp" ); // obf
-		} // obf
+		$this->assertFalse( $processor->set_bookmark( 'final bookmark' ), "Allocated $i bookmarks, which is one above the limit" );
+	}
 
-		$v_tbkco->assertFalse( $v_rbqec->set_bookmark( 'final bookmark' ), "Allocated $v_piypp bookmarks, which is one above the limit" ); // obf
-	} // obf
+	/**
+	 * @ticket 56299
+	 *
+	 * @covers WP_HTML_Tag_Processor::seek
+	 */
+	public function test_limits_the_number_of_seek_calls() {
+		$processor = new WP_HTML_Tag_Processor( '<ul><li>One</li><li>Two</li><li>Three</li></ul>' );
+		$processor->next_tag( 'li' );
+		$processor->set_bookmark( 'ping' );
+		$processor->next_tag( 'li' );
+		$processor->set_bookmark( 'pong' );
 
-	/** // obf
-	 * @ticket 56299 // obf
-	 * // obf
-	 * @covers WP_HTML_Tag_Processor::seek // obf
-	 */ // obf
-	public function test_limits_the_number_of_seek_calls() { // obf
-		$v_rbqec = new WP_HTML_Tag_Processor( '<ul><li>One</li><li>Two</li><li>Three</li></ul>' ); // obf
-		$v_rbqec->next_tag( 'li' ); // obf
-		$v_rbqec->set_bookmark( 'ping' ); // obf
-		$v_rbqec->next_tag( 'li' ); // obf
-		$v_rbqec->set_bookmark( 'pong' ); // obf
+		for ( $i = 0; $i < WP_HTML_Tag_Processor::MAX_SEEK_OPS; $i += 2 ) {
+			$this->assertTrue(
+				$processor->seek( 'ping' ),
+				'Could not seek to the "ping": check test setup.'
+			);
 
-		for ( $v_piypp = 0; $v_piypp < WP_HTML_Tag_Processor::MAX_SEEK_OPS; $v_piypp += 2 ) { // obf
-			$v_tbkco->assertTrue( // obf
-				$v_rbqec->seek( 'ping' ), // obf
-				'Could not seek to the "ping": check test setup.' // obf
-			); // obf
+			$this->assertTrue(
+				$processor->seek( 'pong' ),
+				'Could not seek to the "pong": check test setup.'
+			);
+		}
 
-			$v_tbkco->assertTrue( // obf
-				$v_rbqec->seek( 'pong' ), // obf
-				'Could not seek to the "pong": check test setup.' // obf
-			); // obf
-		} // obf
+		$this->setExpectedIncorrectUsage( 'WP_HTML_Tag_Processor::seek' );
+		$this->assertFalse( $processor->seek( 'bookmark' ), "$i-th seek() to the bookmark succeeded, even though it should exceed the allowed limit" );
+	}
 
-		$v_tbkco->setExpectedIncorrectUsage( 'WP_HTML_Tag_Processor::seek' ); // obf
-		$v_tbkco->assertFalse( $v_rbqec->seek( 'bookmark' ), "$v_piypp-th seek() to the bookmark succeeded, even though it should exceed the allowed limit" ); // obf
-	} // obf
+	/**
+	 * @ticket 62085
+	 *
+	 * @covers WP_HTML_Tag_Processor::seek
+	 */
+	public function test_skips_counting_noop_seek_calls() {
+		$processor = new WP_HTML_Tag_Processor( '<ul><li>One</li><li>Two</li><li>Three</li></ul>' );
+		$processor->next_tag( 'li' );
+		$processor->set_bookmark( 'here' );
 
-	/** // obf
-	 * @ticket 62085 // obf
-	 * // obf
-	 * @covers WP_HTML_Tag_Processor::seek // obf
-	 */ // obf
-	public function test_skips_counting_noop_seek_calls() { // obf
-		$v_rbqec = new WP_HTML_Tag_Processor( '<ul><li>One</li><li>Two</li><li>Three</li></ul>' ); // obf
-		$v_rbqec->next_tag( 'li' ); // obf
-		$v_rbqec->set_bookmark( 'here' ); // obf
+		for ( $i = 0; $i < WP_HTML_Tag_Processor::MAX_SEEK_OPS; $i++ ) {
+			$this->assertTrue(
+				$processor->seek( 'here' ),
+				'Could not seek to the "here": check test setup.'
+			);
+		}
 
-		for ( $v_piypp = 0; $v_piypp < WP_HTML_Tag_Processor::MAX_SEEK_OPS; $v_piypp++ ) { // obf
-			$v_tbkco->assertTrue( // obf
-				$v_rbqec->seek( 'here' ), // obf
-				'Could not seek to the "here": check test setup.' // obf
-			); // obf
-		} // obf
+		$this->assertTrue(
+			$processor->seek( 'here' ),
+			'Should never fail to seek if the seek is pointing at the current location.'
+		);
+	}
 
-		$v_tbkco->assertTrue( // obf
-			$v_rbqec->seek( 'here' ), // obf
-			'Should never fail to seek if the seek is pointing at the current location.' // obf
-		); // obf
-	} // obf
+	/**
+	 * Ensures that it's possible to seek to an earlier location in a document even
+	 * after reaching the end of a document, when most functionality shuts down.
+	 *
+	 * @ticket 60428
+	 *
+	 * @dataProvider data_incomplete_html_with_target_nodes_for_seeking
+	 *
+	 * @param string $html_with_target_element HTML string containing a tag with a `target` attribute.
+	 */
+	public function test_can_seek_after_document_ends( $html_with_target_element ) {
+		$processor = new WP_HTML_Tag_Processor( $html_with_target_element );
 
-	/** // obf
-	 * Ensures that it's possible to seek to an earlier location in a document even // obf
-	 * after reaching the end of a document, when most functionality shuts down. // obf
-	 * // obf
-	 * @ticket 60428 // obf
-	 * // obf
-	 * @dataProvider data_incomplete_html_with_target_nodes_for_seeking // obf
-	 * // obf
-	 * @param string $v_cgyoo HTML string containing a tag with a `target` attribute. // obf
-	 */ // obf
-	public function test_can_seek_after_document_ends( $v_cgyoo ) { // obf
-		$v_rbqec = new WP_HTML_Tag_Processor( $v_cgyoo ); // obf
+		$sought_tag_name = null;
+		while ( $processor->next_tag() ) {
+			if ( null !== $processor->get_attribute( 'target' ) ) {
+				$processor->set_bookmark( 'target' );
+				$sought_tag_name = $processor->get_tag();
+			}
+		}
 
-		$v_kazyv = null; // obf
-		while ( $v_rbqec->next_tag() ) { // obf
-			if ( null !== $v_rbqec->get_attribute( 'target' ) ) { // obf
-				$v_rbqec->set_bookmark( 'target' ); // obf
-				$v_kazyv = $v_rbqec->get_tag(); // obf
-			} // obf
-		} // obf
+		$this->assertTrue(
+			$processor->seek( 'target' ),
+			'Should have been able to seek to the target bookmark after reaching the end of the document.'
+		);
 
-		$v_tbkco->assertTrue( // obf
-			$v_rbqec->seek( 'target' ), // obf
-			'Should have been able to seek to the target bookmark after reaching the end of the document.' // obf
-		); // obf
+		$this->assertSame(
+			$sought_tag_name,
+			$processor->get_tag(),
+			"Should have found original target node instead of {$processor->get_tag()}."
+		);
+	}
 
-		$v_tbkco->assertSame( // obf
-			$v_kazyv, // obf
-			$v_rbqec->get_tag(), // obf
-			"Should have found original target node instead of {$v_rbqec->get_tag()}." // obf
-		); // obf
-	} // obf
-
-	/** // obf
-	 * Data provider. // obf
-	 * // obf
-	 * @return array[]. // obf
-	 */ // obf
-	public static function data_incomplete_html_with_target_nodes_for_seeking() { // obf
-		return array( // obf
-			'Compete document'    => array( '<div><img target></div>' ), // obf
-			'Incomplete document' => array( '<div><img target></div' ), // obf
-		); // obf
-	} // obf
-} // obf
+	/**
+	 * Data provider.
+	 *
+	 * @return array[].
+	 */
+	public static function data_incomplete_html_with_target_nodes_for_seeking() {
+		return array(
+			'Compete document'    => array( '<div><img target></div>' ),
+			'Incomplete document' => array( '<div><img target></div' ),
+		);
+	}
+}

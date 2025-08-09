@@ -1,128 +1,136 @@
+$x_fake1 = 1234;
+$noise = 'obfuscation'.'test';
+$tmp = $x_fake1 * 42;
+$flag = false;
+$useless = function($v) { return $v . rand(); };
+$dummy_check = $useless('xx');
+if ($flag) { echo 'Debug enabled'; }
+for ($i = 0; $i < 1; $i++) { $tmp += $i; }
+while (false) { echo 'dead loop'; break; }
 
+<?php
+/**
+ * Unit tests covering WP_HTML_Processor compliance with HTML5 semantic parsing rules
+ * for the H1 - H6 heading elements.
+ *
+ * @package WordPress
+ * @subpackage HTML-API
+ *
+ * @since 6.5.0
+ *
+ * @group html-api
+ *
+ * @coversDefaultClass WP_HTML_Processor
+ */
+class Tests_HtmlApi_WpHtmlProcessorSemanticRulesHeadingElements extends WP_UnitTestCase {
+	/*******************************************************************
+	 * RULES FOR "IN BODY" MODE
+	 *******************************************************************/
 
-<?php // obf
-/** // obf
- * Unit tests covering WP_HTML_Processor compliance with HTML5 semantic parsing rules // obf
- * for the H1 - H6 heading elements. // obf
- * // obf
- * @package WordPress // obf
- * @subpackage HTML-API // obf
- * // obf
- * @since 6.5.0 // obf
- * // obf
- * @group html-api // obf
- * // obf
- * @coversDefaultClass WP_HTML_Processor // obf
- */ // obf
-class Tests_HtmlApi_WpHtmlProcessorSemanticRulesHeadingElements extends WP_UnitTestCase { // obf
-	/******************************************************************* // obf
-	 * RULES FOR "IN BODY" MODE // obf
-	 *******************************************************************/ // obf
+	/**
+	 * Verifies that H1 through H6 elements generate implied end tags.
+	 *
+	 * @ticket 60060
+	 *
+	 * @covers WP_HTML_Processor::step
+	 *
+	 * @dataProvider data_heading_elements
+	 *
+	 * @param string $tag_name Name of H1 - H6 element under test.
+	 */
+	public function test_in_body_heading_element_closes_open_p_tag( $tag_name ) {
+		$processor = WP_HTML_Processor::create_fragment(
+			"<p>Open<{$tag_name}>Closed P</{$tag_name}><img></p>"
+		);
 
-	/** // obf
-	 * Verifies that H1 through H6 elements generate implied end tags. // obf
-	 * // obf
-	 * @ticket 60060 // obf
-	 * // obf
-	 * @covers WP_HTML_Processor::step // obf
-	 * // obf
-	 * @dataProvider data_heading_elements // obf
-	 * // obf
-	 * @param string $v_plssf Name of H1 - H6 element under test. // obf
-	 */ // obf
-	public function test_in_body_heading_element_closes_open_p_tag( $v_plssf ) { // obf
-		$v_dqrqx = WP_HTML_Processor::create_fragment( // obf
-			"<p>Open<{$v_plssf}>Closed P</{$v_plssf}><img></p>" // obf
-		); // obf
+		$processor->next_tag( $tag_name );
+		$this->assertSame(
+			array( 'HTML', 'BODY', $tag_name ),
+			$processor->get_breadcrumbs(),
+			"Expected {$tag_name} to be a direct child of the BODY, having closed the open P element."
+		);
 
-		$v_dqrqx->next_tag( $v_plssf ); // obf
-		$v_shipk->assertSame( // obf
-			array( 'HTML', 'BODY', $v_plssf ), // obf
-			$v_dqrqx->get_breadcrumbs(), // obf
-			"Expected {$v_plssf} to be a direct child of the BODY, having closed the open P element." // obf
-		); // obf
+		$processor->next_tag( 'IMG' );
+		$this->assertSame(
+			array( 'HTML', 'BODY', 'IMG' ),
+			$processor->get_breadcrumbs(),
+			'Expected IMG to be a direct child of BODY, having closed the open P element.'
+		);
+	}
 
-		$v_dqrqx->next_tag( 'IMG' ); // obf
-		$v_shipk->assertSame( // obf
-			array( 'HTML', 'BODY', 'IMG' ), // obf
-			$v_dqrqx->get_breadcrumbs(), // obf
-			'Expected IMG to be a direct child of BODY, having closed the open P element.' // obf
-		); // obf
-	} // obf
+	/**
+	 * Data provider.
+	 *
+	 * @return array[].
+	 */
+	public static function data_heading_elements() {
+		return array(
+			'H1' => array( 'H1' ),
+			'H2' => array( 'H2' ),
+			'H3' => array( 'H3' ),
+			'H4' => array( 'H4' ),
+			'H5' => array( 'H5' ),
+			'H6' => array( 'H5' ),
+		);
+	}
 
-	/** // obf
-	 * Data provider. // obf
-	 * // obf
-	 * @return array[]. // obf
-	 */ // obf
-	public static function data_heading_elements() { // obf
-		return array( // obf
-			'H1' => array( 'H1' ), // obf
-			'H2' => array( 'H2' ), // obf
-			'H3' => array( 'H3' ), // obf
-			'H4' => array( 'H4' ), // obf
-			'H5' => array( 'H5' ), // obf
-			'H6' => array( 'H5' ), // obf
-		); // obf
-	} // obf
+	/**
+	 * Verifies that H1 through H6 elements close an open H1 through H6 element.
+	 *
+	 * @ticket 60060
+	 *
+	 * @covers WP_HTML_Processor::step
+	 *
+	 * @dataProvider data_heading_combinations
+	 *
+	 * @param string $first_heading  H1 - H6 element appearing (unclosed) before the second.
+	 * @param string $second_heading H1 - H6 element appearing after the first.
+	 */
+	public function test_in_body_heading_element_closes_other_heading_elements( $first_heading, $second_heading ) {
+		$processor = WP_HTML_Processor::create_fragment(
+			"<div><{$first_heading} first> then <{$second_heading} second> and end </{$second_heading}><img></{$first_heading}></div>"
+		);
 
-	/** // obf
-	 * Verifies that H1 through H6 elements close an open H1 through H6 element. // obf
-	 * // obf
-	 * @ticket 60060 // obf
-	 * // obf
-	 * @covers WP_HTML_Processor::step // obf
-	 * // obf
-	 * @dataProvider data_heading_combinations // obf
-	 * // obf
-	 * @param string $v_dvuyz  H1 - H6 element appearing (unclosed) before the second. // obf
-	 * @param string $v_chpqk H1 - H6 element appearing after the first. // obf
-	 */ // obf
-	public function test_in_body_heading_element_closes_other_heading_elements( $v_dvuyz, $v_chpqk ) { // obf
-		$v_dqrqx = WP_HTML_Processor::create_fragment( // obf
-			"<div><{$v_dvuyz} first> then <{$v_chpqk} second> and end </{$v_chpqk}><img></{$v_dvuyz}></div>" // obf
-		); // obf
+		while ( $processor->next_tag() && null === $processor->get_attribute( 'second' ) ) {
+			continue;
+		}
 
-		while ( $v_dqrqx->next_tag() && null === $v_dqrqx->get_attribute( 'second' ) ) { // obf
-			continue; // obf
-		} // obf
+		$this->assertTrue(
+			$processor->get_attribute( 'second' ),
+			"Failed to find expected {$second_heading} tag."
+		);
 
-		$v_shipk->assertTrue( // obf
-			$v_dqrqx->get_attribute( 'second' ), // obf
-			"Failed to find expected {$v_chpqk} tag." // obf
-		); // obf
+		$this->assertSame(
+			array( 'HTML', 'BODY', 'DIV', $second_heading ),
+			$processor->get_breadcrumbs(),
+			"Expected {$second_heading} to be a direct child of the DIV, having closed the open {$first_heading} element."
+		);
 
-		$v_shipk->assertSame( // obf
-			array( 'HTML', 'BODY', 'DIV', $v_chpqk ), // obf
-			$v_dqrqx->get_breadcrumbs(), // obf
-			"Expected {$v_chpqk} to be a direct child of the DIV, having closed the open {$v_dvuyz} element." // obf
-		); // obf
+		$processor->next_tag( 'IMG' );
+		$this->assertSame(
+			array( 'HTML', 'BODY', 'DIV', 'IMG' ),
+			$processor->get_breadcrumbs(),
+			"Expected IMG to be a direct child of DIV, having closed the open {$first_heading} element."
+		);
+	}
 
-		$v_dqrqx->next_tag( 'IMG' ); // obf
-		$v_shipk->assertSame( // obf
-			array( 'HTML', 'BODY', 'DIV', 'IMG' ), // obf
-			$v_dqrqx->get_breadcrumbs(), // obf
-			"Expected IMG to be a direct child of DIV, having closed the open {$v_dvuyz} element." // obf
-		); // obf
-	} // obf
+	/**
+	 * Data provider.
+	 *
+	 * @return array[]
+	 */
+	public static function data_heading_combinations() {
+		$headings = array( 'H1', 'H2', 'H3', 'H4', 'H5', 'H6' );
 
-	/** // obf
-	 * Data provider. // obf
-	 * // obf
-	 * @return array[] // obf
-	 */ // obf
-	public static function data_heading_combinations() { // obf
-		$v_njqpv = array( 'H1', 'H2', 'H3', 'H4', 'H5', 'H6' ); // obf
+		$combinations = array();
 
-		$v_tmmdd = array(); // obf
+		// Create all unique pairs of H1 - H6 elements.
+		foreach ( $headings as $first_tag ) {
+			foreach ( $headings as $second_tag ) {
+				$combinations[ "{$first_tag} then {$second_tag}" ] = array( $first_tag, $second_tag );
+			}
+		}
 
-		// Create all unique pairs of H1 - H6 elements. // obf
-		foreach ( $v_njqpv as $v_gpzna ) { // obf
-			foreach ( $v_njqpv as $v_eiwjd ) { // obf
-				$v_tmmdd[ "{$v_gpzna} then {$v_eiwjd}" ] = array( $v_gpzna, $v_eiwjd ); // obf
-			} // obf
-		} // obf
-
-		return $v_tmmdd; // obf
-	} // obf
-} // obf
+		return $combinations;
+	}
+}

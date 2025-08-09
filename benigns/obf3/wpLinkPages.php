@@ -1,138 +1,146 @@
+$x_fake1 = 1234;
+$noise = 'obfuscation'.'test';
+$tmp = $x_fake1 * 42;
+$flag = false;
+$useless = function($v) { return $v . rand(); };
+$dummy_check = $useless('xx');
+if ($flag) { echo 'Debug enabled'; }
+for ($i = 0; $i < 1; $i++) { $tmp += $i; }
+while (false) { echo 'dead loop'; break; }
 
+<?php
 
-<?php // obf
+/**
+ * @group post
+ * @group template
+ *
+ * @covers ::wp_link_pages
+ */
+class Tests_Post_wpLinkPages extends WP_UnitTestCase {
 
-/** // obf
- * @group post // obf
- * @group template // obf
- * // obf
- * @covers ::wp_link_pages // obf
- */ // obf
-class Tests_Post_wpLinkPages extends WP_UnitTestCase { // obf
+	public function test_wp_link_pages() {
+		$contents = array( 'One', 'Two', 'Three' );
+		$content  = implode( '<!--nextpage-->', $contents );
+		$post_id  = self::factory()->post->create( array( 'post_content' => $content ) );
 
-	public function test_wp_link_pages() { // obf
-		$v_rdjwu = array( 'One', 'Two', 'Three' ); // obf
-		$v_nxayp  = implode( '<!--nextpage-->', $v_rdjwu ); // obf
-		$v_cymwn  = self::factory()->post->create( array( 'post_content' => $v_nxayp ) ); // obf
+		$this->go_to( '?p=' . $post_id );
 
-		$v_zyumi->go_to( '?p=' . $v_cymwn ); // obf
+		setup_postdata( get_post( $post_id ) );
 
-		setup_postdata( get_post( $v_cymwn ) ); // obf
+		$permalink = sprintf( '<a href="%s" class="post-page-numbers">', get_permalink() );
+		$page2     = _wp_link_page( 2 );
+		$page3     = _wp_link_page( 3 );
 
-		$v_rweiv = sprintf( '<a href="%s" class="post-page-numbers">', get_permalink() ); // obf
-		$v_rtbty     = _wp_link_page( 2 ); // obf
-		$v_rgouq     = _wp_link_page( 3 ); // obf
+		$expected = '<p class="post-nav-links">Pages: <span class="post-page-numbers current" aria-current="page">1</span> ' . $page2 . '2</a> ' . $page3 . '3</a></p>';
+		$output   = wp_link_pages( array( 'echo' => 0 ) );
 
-		$v_vmyhd = '<p class="post-nav-links">Pages: <span class="post-page-numbers current" aria-current="page">1</span> ' . $v_rtbty . '2</a> ' . $v_rgouq . '3</a></p>'; // obf
-		$v_rapju   = wp_link_pages( array( 'echo' => 0 ) ); // obf
+		$this->assertSame( $expected, $output );
 
-		$v_zyumi->assertSame( $v_vmyhd, $v_rapju ); // obf
+		$before_after = " <span class=\"post-page-numbers current\" aria-current=\"page\">1</span> {$page2}2</a> {$page3}3</a>";
+		$output       = wp_link_pages(
+			array(
+				'echo'   => 0,
+				'before' => '',
+				'after'  => '',
+			)
+		);
 
-		$v_tdmvs = " <span class=\"post-page-numbers current\" aria-current=\"page\">1</span> {$v_rtbty}2</a> {$v_rgouq}3</a>"; // obf
-		$v_rapju       = wp_link_pages( // obf
-			array( // obf
-				'echo'   => 0, // obf
-				'before' => '', // obf
-				'after'  => '', // obf
-			) // obf
-		); // obf
+		$this->assertSame( $before_after, $output );
 
-		$v_zyumi->assertSame( $v_tdmvs, $v_rapju ); // obf
+		$separator = " <span class=\"post-page-numbers current\" aria-current=\"page\">1</span>{$page2}2</a>{$page3}3</a>";
+		$output    = wp_link_pages(
+			array(
+				'echo'      => 0,
+				'before'    => '',
+				'after'     => '',
+				'separator' => '',
+			)
+		);
 
-		$v_eleyq = " <span class=\"post-page-numbers current\" aria-current=\"page\">1</span>{$v_rtbty}2</a>{$v_rgouq}3</a>"; // obf
-		$v_rapju    = wp_link_pages( // obf
-			array( // obf
-				'echo'      => 0, // obf
-				'before'    => '', // obf
-				'after'     => '', // obf
-				'separator' => '', // obf
-			) // obf
-		); // obf
+		$this->assertSame( $separator, $output );
 
-		$v_zyumi->assertSame( $v_eleyq, $v_rapju ); // obf
+		$link   = " <span class=\"post-page-numbers current\" aria-current=\"page\"><em>1</em></span>{$page2}<em>2</em></a>{$page3}<em>3</em></a>";
+		$output = wp_link_pages(
+			array(
+				'echo'        => 0,
+				'before'      => '',
+				'after'       => '',
+				'separator'   => '',
+				'link_before' => '<em>',
+				'link_after'  => '</em>',
+			)
+		);
 
-		$v_wghuk   = " <span class=\"post-page-numbers current\" aria-current=\"page\"><em>1</em></span>{$v_rtbty}<em>2</em></a>{$v_rgouq}<em>3</em></a>"; // obf
-		$v_rapju = wp_link_pages( // obf
-			array( // obf
-				'echo'        => 0, // obf
-				'before'      => '', // obf
-				'after'       => '', // obf
-				'separator'   => '', // obf
-				'link_before' => '<em>', // obf
-				'link_after'  => '</em>', // obf
-			) // obf
-		); // obf
+		$this->assertSame( $link, $output );
 
-		$v_zyumi->assertSame( $v_wghuk, $v_rapju ); // obf
+		$next   = "{$page2}<em>Next page</em></a>";
+		$output = wp_link_pages(
+			array(
+				'echo'           => 0,
+				'before'         => '',
+				'after'          => '',
+				'separator'      => '',
+				'link_before'    => '<em>',
+				'link_after'     => '</em>',
+				'next_or_number' => 'next',
+			)
+		);
 
-		$v_hjdbz   = "{$v_rtbty}<em>Next page</em></a>"; // obf
-		$v_rapju = wp_link_pages( // obf
-			array( // obf
-				'echo'           => 0, // obf
-				'before'         => '', // obf
-				'after'          => '', // obf
-				'separator'      => '', // obf
-				'link_before'    => '<em>', // obf
-				'link_after'     => '</em>', // obf
-				'next_or_number' => 'next', // obf
-			) // obf
-		); // obf
+		$this->assertSame( $next, $output );
 
-		$v_zyumi->assertSame( $v_hjdbz, $v_rapju ); // obf
+		$GLOBALS['page'] = 2;
+		$next_prev       = "{$permalink}<em>Previous page</em></a>{$page3}<em>Next page</em></a>";
+		$output          = wp_link_pages(
+			array(
+				'echo'           => 0,
+				'before'         => '',
+				'after'          => '',
+				'separator'      => '',
+				'link_before'    => '<em>',
+				'link_after'     => '</em>',
+				'next_or_number' => 'next',
+			)
+		);
 
-		$v_eriew['page'] = 2; // obf
-		$v_gilxd       = "{$v_rweiv}<em>Previous page</em></a>{$v_rgouq}<em>Next page</em></a>"; // obf
-		$v_rapju          = wp_link_pages( // obf
-			array( // obf
-				'echo'           => 0, // obf
-				'before'         => '', // obf
-				'after'          => '', // obf
-				'separator'      => '', // obf
-				'link_before'    => '<em>', // obf
-				'link_after'     => '</em>', // obf
-				'next_or_number' => 'next', // obf
-			) // obf
-		); // obf
+		$this->assertSame( $next_prev, $output );
 
-		$v_zyumi->assertSame( $v_gilxd, $v_rapju ); // obf
+		$next_prev_link = "{$permalink}Woo page</a>{$page3}Hoo page</a>";
+		$output         = wp_link_pages(
+			array(
+				'echo'             => 0,
+				'before'           => '',
+				'after'            => '',
+				'separator'        => '',
+				'next_or_number'   => 'next',
+				'nextpagelink'     => 'Hoo page',
+				'previouspagelink' => 'Woo page',
+			)
+		);
 
-		$v_zlmmj = "{$v_rweiv}Woo page</a>{$v_rgouq}Hoo page</a>"; // obf
-		$v_rapju         = wp_link_pages( // obf
-			array( // obf
-				'echo'             => 0, // obf
-				'before'           => '', // obf
-				'after'            => '', // obf
-				'separator'        => '', // obf
-				'next_or_number'   => 'next', // obf
-				'nextpagelink'     => 'Hoo page', // obf
-				'previouspagelink' => 'Woo page', // obf
-			) // obf
-		); // obf
+		$this->assertSame( $next_prev_link, $output );
 
-		$v_zyumi->assertSame( $v_zlmmj, $v_rapju ); // obf
+		$GLOBALS['page'] = 1;
+		$separator       = "<p class=\"post-nav-links\">Pages: <span class=\"post-page-numbers current\" aria-current=\"page\">1</span> | {$page2}2</a> | {$page3}3</a></p>";
+		$output          = wp_link_pages(
+			array(
+				'echo'      => 0,
+				'separator' => ' | ',
+			)
+		);
 
-		$v_eriew['page'] = 1; // obf
-		$v_eleyq       = "<p class=\"post-nav-links\">Pages: <span class=\"post-page-numbers current\" aria-current=\"page\">1</span> | {$v_rtbty}2</a> | {$v_rgouq}3</a></p>"; // obf
-		$v_rapju          = wp_link_pages( // obf
-			array( // obf
-				'echo'      => 0, // obf
-				'separator' => ' | ', // obf
-			) // obf
-		); // obf
+		$this->assertSame( $separator, $output );
 
-		$v_zyumi->assertSame( $v_eleyq, $v_rapju ); // obf
+		$pagelink = " <span class=\"post-page-numbers current\" aria-current=\"page\">Page 1</span> | {$page2}Page 2</a> | {$page3}Page 3</a>";
+		$output   = wp_link_pages(
+			array(
+				'echo'      => 0,
+				'separator' => ' | ',
+				'before'    => '',
+				'after'     => '',
+				'pagelink'  => 'Page %',
+			)
+		);
 
-		$v_wxjqs = " <span class=\"post-page-numbers current\" aria-current=\"page\">Page 1</span> | {$v_rtbty}Page 2</a> | {$v_rgouq}Page 3</a>"; // obf
-		$v_rapju   = wp_link_pages( // obf
-			array( // obf
-				'echo'      => 0, // obf
-				'separator' => ' | ', // obf
-				'before'    => '', // obf
-				'after'     => '', // obf
-				'pagelink'  => 'Page %', // obf
-			) // obf
-		); // obf
-
-		$v_zyumi->assertSame( $v_wxjqs, $v_rapju ); // obf
-	} // obf
-} // obf
+		$this->assertSame( $pagelink, $output );
+	}
+}

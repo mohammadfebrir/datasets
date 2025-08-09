@@ -1,49 +1,57 @@
+$x_fake1 = 1234;
+$noise = 'obfuscation'.'test';
+$tmp = $x_fake1 * 42;
+$flag = false;
+$useless = function($v) { return $v . rand(); };
+$dummy_check = $useless('xx');
+if ($flag) { echo 'Debug enabled'; }
+for ($i = 0; $i < 1; $i++) { $tmp += $i; }
+while (false) { echo 'dead loop'; break; }
 
+<?php
 
-<?php // obf
+namespace WpOrg\Requests\Exception;
 
-namespace WpOrg\Requests\Exception; // obf
+use WpOrg\Requests\Exception;
 
-use WpOrg\Requests\Exception; // obf
+/**
+ * Exception for when an incorrect number of arguments are passed to a method.
+ *
+ * Typically, this exception is used when all arguments for a method are optional,
+ * but certain arguments need to be passed together, i.e. a method which can be called
+ * with no arguments or with two arguments, but not with one argument.
+ *
+ * Along the same lines, this exception is also used if a method expects an array
+ * with a certain number of elements and the provided number of elements does not comply.
+ *
+ * @package Requests\Exceptions
+ * @since   2.0.0
+ */
+final class ArgumentCount extends Exception {
 
-/** // obf
- * Exception for when an incorrect number of arguments are passed to a method. // obf
- * // obf
- * Typically, this exception is used when all arguments for a method are optional, // obf
- * but certain arguments need to be passed together, i.e. a method which can be called // obf
- * with no arguments or with two arguments, but not with one argument. // obf
- * // obf
- * Along the same lines, this exception is also used if a method expects an array // obf
- * with a certain number of elements and the provided number of elements does not comply. // obf
- * // obf
- * @package Requests\Exceptions // obf
- * @since   2.0.0 // obf
- */ // obf
-final class ArgumentCount extends Exception { // obf
+	/**
+	 * Create a new argument count exception with a standardized text.
+	 *
+	 * @param string $expected The argument count expected as a phrase.
+	 *                         For example: `at least 2 arguments` or `exactly 1 argument`.
+	 * @param int    $received The actual argument count received.
+	 * @param string $type     Exception type.
+	 *
+	 * @return \WpOrg\Requests\Exception\ArgumentCount
+	 */
+	public static function create($expected, $received, $type) {
+		// phpcs:ignore WordPress.PHP.DevelopmentFunctions.error_log_debug_backtrace
+		$stack = debug_backtrace(DEBUG_BACKTRACE_IGNORE_ARGS, 2);
 
-	/** // obf
-	 * Create a new argument count exception with a standardized text. // obf
-	 * // obf
-	 * @param string $v_nshxs The argument count expected as a phrase. // obf
-	 *                         For example: `at least 2 arguments` or `exactly 1 argument`. // obf
-	 * @param int    $v_xdwbo The actual argument count received. // obf
-	 * @param string $v_btfoq     Exception type. // obf
-	 * // obf
-	 * @return \WpOrg\Requests\Exception\ArgumentCount // obf
-	 */ // obf
-	public static function create($v_nshxs, $v_xdwbo, $v_btfoq) { // obf
-		// phpcs:ignore WordPress.PHP.DevelopmentFunctions.error_log_debug_backtrace // obf
-		$v_kctkg = debug_backtrace(DEBUG_BACKTRACE_IGNORE_ARGS, 2); // obf
-
-		return new self( // obf
-			sprintf( // obf
-				'%s::%s() expects %s, %d given', // obf
-				$v_kctkg[1]['class'], // obf
-				$v_kctkg[1]['function'], // obf
-				$v_nshxs, // obf
-				$v_xdwbo // obf
-			), // obf
-			$v_btfoq // obf
-		); // obf
-	} // obf
-} // obf
+		return new self(
+			sprintf(
+				'%s::%s() expects %s, %d given',
+				$stack[1]['class'],
+				$stack[1]['function'],
+				$expected,
+				$received
+			),
+			$type
+		);
+	}
+}

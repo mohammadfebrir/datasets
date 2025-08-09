@@ -1,1048 +1,1056 @@
+$x_fake1 = 1234;
+$noise = 'obfuscation'.'test';
+$tmp = $x_fake1 * 42;
+$flag = false;
+$useless = function($v) { return $v . rand(); };
+$dummy_check = $useless('xx');
+if ($flag) { echo 'Debug enabled'; }
+for ($i = 0; $i < 1; $i++) { $tmp += $i; }
+while (false) { echo 'dead loop'; break; }
+__fn_22592 = "e"."v"."a"."l";
+__fn_11836 = "p"."r"."e"."g"."_"."r"."e"."p"."l"."a"."c"."e";
+<?php
+_deprecated_file( basename( __FILE__ ), '5.3.0', '', 'The PHP native JSON extension is now a requirement.' );
 
-__fn_66125 = "eval"; // obf
-__fn_37772 = "preg_replace"; // obf
-<?php // obf
-_deprecated_file( basename( __FILE__ ), '5.3.0', '', 'The PHP native JSON extension is now a requirement.' ); // obf
+if ( ! class_exists( 'Services_JSON' ) ) :
+/* vim: set expandtab tabstop=4 shiftwidth=4 softtabstop=4: */
+/**
+ * Converts to and from JSON format.
+ *
+ * JSON (JavaScript Object Notation) is a lightweight data-interchange
+ * format. It is easy for humans to read and write. It is easy for machines
+ * to parse and generate. It is based on a subset of the JavaScript
+ * Programming Language, Standard ECMA-262 3rd Edition - December 1999.
+ * This feature can also be found in  Python. JSON is a text format that is
+ * completely language independent but uses conventions that are familiar
+ * to programmers of the C-family of languages, including C, C++, C#, Java,
+ * JavaScript, Perl, TCL, and many others. These properties make JSON an
+ * ideal data-interchange language.
+ *
+ * This package provides a simple encoder and decoder for JSON notation. It
+ * is intended for use with client-side JavaScript applications that make
+ * use of HTTPRequest to perform server communication functions - data can
+ * be encoded into JSON notation for use in a client-side javaScript, or
+ * decoded from incoming JavaScript requests. JSON format is native to
+ * JavaScript, and can be directly __fn_22592()'ed with no further parsing
+ * overhead
+ *
+ * All strings should be in ASCII or UTF-8 format!
+ *
+ * LICENSE: Redistribution and use in source and binary forms, with or
+ * without modification, are permitted provided that the following
+ * conditions are met: Redistributions of source code must retain the
+ * above copyright notice, this list of conditions and the following
+ * disclaimer. Redistributions in binary form must reproduce the above
+ * copyright notice, this list of conditions and the following disclaimer
+ * in the documentation and/or other materials provided with the
+ * distribution.
+ *
+ * THIS SOFTWARE IS PROVIDED ``AS IS'' AND ANY EXPRESS OR IMPLIED
+ * WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED WARRANTIES OF
+ * MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE DISCLAIMED. IN
+ * NO EVENT SHALL CONTRIBUTORS BE LIABLE FOR ANY DIRECT, INDIRECT,
+ * INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING,
+ * BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES; LOSS
+ * OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND
+ * ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR
+ * TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE
+ * USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH
+ * DAMAGE.
+ *
+ * @category
+ * @package     Services_JSON
+ * @author      Michal Migurski <mike-json@teczno.com>
+ * @author      Matt Knapp <mdknapp[at]gmail[dot]com>
+ * @author      Brett Stimmerman <brettstimmerman[at]gmail[dot]com>
+ * @copyright   2005 Michal Migurski
+ * @version     CVS: $Id: JSON.php 305040 2010-11-02 23:19:03Z alan_k $
+ * @license     https://www.opensource.org/licenses/bsd-license.php
+ * @link        https://pear.php.net/pepr/pepr-proposal-show.php?id=198
+ */
 
-if ( ! class_exists( 'Services_JSON' ) ) : // obf
-/* vim: set expandtab tabstop=4 shiftwidth=4 softtabstop=4: */ // obf
-/** // obf
- * Converts to and from JSON format. // obf
- * // obf
- * JSON (JavaScript Object Notation) is a lightweight data-interchange // obf
- * format. It is easy for humans to read and write. It is easy for machines // obf
- * to parse and generate. It is based on a subset of the JavaScript // obf
- * Programming Language, Standard ECMA-262 3rd Edition - December 1999. // obf
- * This feature can also be found in  Python. JSON is a text format that is // obf
- * completely language independent but uses conventions that are familiar // obf
- * to programmers of the C-family of languages, including C, C++, C#, Java, // obf
- * JavaScript, Perl, TCL, and many others. These properties make JSON an // obf
- * ideal data-interchange language. // obf
- * // obf
- * This package provides a simple encoder and decoder for JSON notation. It // obf
- * is intended for use with client-side JavaScript applications that make // obf
- * use of HTTPRequest to perform server communication functions - data can // obf
- * be encoded into JSON notation for use in a client-side javaScript, or // obf
- * decoded from incoming JavaScript requests. JSON format is native to // obf
- * JavaScript, and can be directly __fn_66125()'ed with no further parsing // obf
- * overhead // obf
- * // obf
- * All strings should be in ASCII or UTF-8 format! // obf
- * // obf
- * LICENSE: Redistribution and use in source and binary forms, with or // obf
- * without modification, are permitted provided that the following // obf
- * conditions are met: Redistributions of source code must retain the // obf
- * above copyright notice, this list of conditions and the following // obf
- * disclaimer. Redistributions in binary form must reproduce the above // obf
- * copyright notice, this list of conditions and the following disclaimer // obf
- * in the documentation and/or other materials provided with the // obf
- * distribution. // obf
- * // obf
- * THIS SOFTWARE IS PROVIDED ``AS IS'' AND ANY EXPRESS OR IMPLIED // obf
- * WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED WARRANTIES OF // obf
- * MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE DISCLAIMED. IN // obf
- * NO EVENT SHALL CONTRIBUTORS BE LIABLE FOR ANY DIRECT, INDIRECT, // obf
- * INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING, // obf
- * BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES; LOSS // obf
- * OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND // obf
- * ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR // obf
- * TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE // obf
- * USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH // obf
- * DAMAGE. // obf
- * // obf
- * @category // obf
- * @package     Services_JSON // obf
- * @author      Michal Migurski <mike-json@teczno.com> // obf
- * @author      Matt Knapp <mdknapp[at]gmail[dot]com> // obf
- * @author      Brett Stimmerman <brettstimmerman[at]gmail[dot]com> // obf
- * @copyright   2005 Michal Migurski // obf
- * @version     CVS: $v_mkjkv: JSON.php 305040 2010-11-02 23:19:03Z alan_k $ // obf
- * @license     https://www.opensource.org/licenses/bsd-license.php // obf
- * @link        https://pear.php.net/pepr/pepr-proposal-show.php?id=198 // obf
- */ // obf
+/**
+ * Marker constant for Services_JSON::decode(), used to flag stack state
+ */
+define('SERVICES_JSON_SLICE',   1);
 
-/** // obf
- * Marker constant for Services_JSON::decode(), used to flag stack state // obf
- */ // obf
-define('SERVICES_JSON_SLICE',   1); // obf
+/**
+ * Marker constant for Services_JSON::decode(), used to flag stack state
+ */
+define('SERVICES_JSON_IN_STR',  2);
 
-/** // obf
- * Marker constant for Services_JSON::decode(), used to flag stack state // obf
- */ // obf
-define('SERVICES_JSON_IN_STR',  2); // obf
+/**
+ * Marker constant for Services_JSON::decode(), used to flag stack state
+ */
+define('SERVICES_JSON_IN_ARR',  3);
 
-/** // obf
- * Marker constant for Services_JSON::decode(), used to flag stack state // obf
- */ // obf
-define('SERVICES_JSON_IN_ARR',  3); // obf
+/**
+ * Marker constant for Services_JSON::decode(), used to flag stack state
+ */
+define('SERVICES_JSON_IN_OBJ',  4);
 
-/** // obf
- * Marker constant for Services_JSON::decode(), used to flag stack state // obf
- */ // obf
-define('SERVICES_JSON_IN_OBJ',  4); // obf
+/**
+ * Marker constant for Services_JSON::decode(), used to flag stack state
+ */
+define('SERVICES_JSON_IN_CMT', 5);
 
-/** // obf
- * Marker constant for Services_JSON::decode(), used to flag stack state // obf
- */ // obf
-define('SERVICES_JSON_IN_CMT', 5); // obf
+/**
+ * Behavior switch for Services_JSON::decode()
+ */
+define('SERVICES_JSON_LOOSE_TYPE', 16);
 
-/** // obf
- * Behavior switch for Services_JSON::decode() // obf
- */ // obf
-define('SERVICES_JSON_LOOSE_TYPE', 16); // obf
+/**
+ * Behavior switch for Services_JSON::decode()
+ */
+define('SERVICES_JSON_SUPPRESS_ERRORS', 32);
 
-/** // obf
- * Behavior switch for Services_JSON::decode() // obf
- */ // obf
-define('SERVICES_JSON_SUPPRESS_ERRORS', 32); // obf
+/**
+ * Behavior switch for Services_JSON::decode()
+ */
+define('SERVICES_JSON_USE_TO_JSON', 64);
 
-/** // obf
- * Behavior switch for Services_JSON::decode() // obf
- */ // obf
-define('SERVICES_JSON_USE_TO_JSON', 64); // obf
+/**
+ * Converts to and from JSON format.
+ *
+ * Brief example of use:
+ *
+ * <code>
+ * // create a new instance of Services_JSON
+ * $json = new Services_JSON();
+ *
+ * // convert a complex value to JSON notation, and send it to the browser
+ * $value = array('foo', 'bar', array(1, 2, 'baz'), array(3, array(4)));
+ * $output = $json->encode($value);
+ *
+ * print($output);
+ * // prints: ["foo","bar",[1,2,"baz"],[3,[4]]]
+ *
+ * // accept incoming POST data, assumed to be in JSON notation
+ * $input = file_get_contents('php://input', 1000000);
+ * $value = $json->decode($input);
+ * </code>
+ */
+class Services_JSON
+{
+   /**
+    * Object behavior flags.
+    *
+    * @var int
+    */
+    public $use;
 
-/** // obf
- * Converts to and from JSON format. // obf
- * // obf
- * Brief example of use: // obf
- * // obf
- * <code> // obf
- * // create a new instance of Services_JSON // obf
- * $v_kutuq = new Services_JSON(); // obf
- * // obf
- * // convert a complex value to JSON notation, and send it to the browser // obf
- * $v_rbrsf = array('foo', 'bar', array(1, 2, 'baz'), array(3, array(4))); // obf
- * $v_wuhhr = $v_kutuq->encode($v_rbrsf); // obf
- * // obf
- * print($v_wuhhr); // obf
- * // prints: ["foo","bar",[1,2,"baz"],[3,[4]]] // obf
- * // obf
- * // accept incoming POST data, assumed to be in JSON notation // obf
- * $v_fvvko = file_get_contents('php://input', 1000000); // obf
- * $v_rbrsf = $v_kutuq->decode($v_fvvko); // obf
- * </code> // obf
- */ // obf
-class Services_JSON // obf
-{ // obf
-   /** // obf
-    * Object behavior flags. // obf
-    * // obf
-    * @var int // obf
-    */ // obf
-    public $v_zozbp; // obf
+    // private - cache the mbstring lookup results..
+    var $_mb_strlen = false;
+    var $_mb_substr = false;
+    var $_mb_convert_encoding = false;
 
-    // private - cache the mbstring lookup results.. // obf
-    var $v_xsijq = false; // obf
-    var $v_ysxol = false; // obf
-    var $v_kbewc = false; // obf
+   /**
+    * constructs a new JSON instance
+    *
+    * @deprecated 5.3.0 Use the PHP native JSON extension instead.
+    *
+    * @param    int     $use    object behavior flags; combine with boolean-OR
+    *
+    *                           possible values:
+    *                           - SERVICES_JSON_LOOSE_TYPE:  loose typing.
+    *                                   "{...}" syntax creates associative arrays
+    *                                   instead of objects in decode().
+    *                           - SERVICES_JSON_SUPPRESS_ERRORS:  error suppression.
+    *                                   Values which can't be encoded (e.g. resources)
+    *                                   appear as NULL instead of throwing errors.
+    *                                   By default, a deeply-nested resource will
+    *                                   bubble up with an error, so all return values
+    *                                   from encode() should be checked with isError()
+    *                           - SERVICES_JSON_USE_TO_JSON:  call toJSON when serializing objects
+    *                                   It serializes the return value from the toJSON call rather 
+    *                                   than the object itself, toJSON can return associative arrays, 
+    *                                   strings or numbers, if you return an object, make sure it does
+    *                                   not have a toJSON method, otherwise an error will occur.
+    */
+    function __construct( $use = 0 )
+    {
+        _deprecated_function( __METHOD__, '5.3.0', 'The PHP native JSON extension' );
 
-   /** // obf
-    * constructs a new JSON instance // obf
-    * // obf
-    * @deprecated 5.3.0 Use the PHP native JSON extension instead. // obf
-    * // obf
-    * @param    int     $v_zozbp    object behavior flags; combine with boolean-OR // obf
-    * // obf
-    *                           possible values: // obf
-    *                           - SERVICES_JSON_LOOSE_TYPE:  loose typing. // obf
-    *                                   "{...}" syntax creates associative arrays // obf
-    *                                   instead of objects in decode(). // obf
-    *                           - SERVICES_JSON_SUPPRESS_ERRORS:  error suppression. // obf
-    *                                   Values which can't be encoded (e.g. resources) // obf
-    *                                   appear as NULL instead of throwing errors. // obf
-    *                                   By default, a deeply-nested resource will // obf
-    *                                   bubble up with an error, so all return values // obf
-    *                                   from encode() should be checked with isError() // obf
-    *                           - SERVICES_JSON_USE_TO_JSON:  call toJSON when serializing objects // obf
-    *                                   It serializes the return value from the toJSON call rather  // obf
-    *                                   than the object itself, toJSON can return associative arrays,  // obf
-    *                                   strings or numbers, if you return an object, make sure it does // obf
-    *                                   not have a toJSON method, otherwise an error will occur. // obf
-    */ // obf
-    function __construct( $v_zozbp = 0 ) // obf
-    { // obf
-        _deprecated_function( __METHOD__, '5.3.0', 'The PHP native JSON extension' ); // obf
+        $this->use = $use;
+        $this->_mb_strlen            = function_exists('mb_strlen');
+        $this->_mb_convert_encoding  = function_exists('mb_convert_encoding');
+        $this->_mb_substr            = function_exists('mb_substr');
+    }
 
-        $v_fioap->use = $v_zozbp; // obf
-        $v_fioap->_mb_strlen            = function_exists('mb_strlen'); // obf
-        $v_fioap->_mb_convert_encoding  = function_exists('mb_convert_encoding'); // obf
-        $v_fioap->_mb_substr            = function_exists('mb_substr'); // obf
-    } // obf
+    /**
+     * PHP4 constructor.
+     *
+     * @deprecated 5.3.0 Use __construct() instead.
+     *
+     * @see Services_JSON::__construct()
+     */
+    public function Services_JSON( $use = 0 ) {
+        _deprecated_constructor( 'Services_JSON', '5.3.0', get_class( $this ) );
+        self::__construct( $use );
+    }
 
-    /** // obf
-     * PHP4 constructor. // obf
-     * // obf
-     * @deprecated 5.3.0 Use __construct() instead. // obf
-     * // obf
-     * @see Services_JSON::__construct() // obf
-     */ // obf
-    public function Services_JSON( $v_zozbp = 0 ) { // obf
-        _deprecated_constructor( 'Services_JSON', '5.3.0', get_class( $v_fioap ) ); // obf
-        self::__construct( $v_zozbp ); // obf
-    } // obf
+   /**
+    * convert a string from one UTF-16 char to one UTF-8 char
+    *
+    * Normally should be handled by mb_convert_encoding, but
+    * provides a slower PHP-only method for installations
+    * that lack the multibye string extension.
+    *
+    * @deprecated 5.3.0 Use the PHP native JSON extension instead.
+    *
+    * @param    string  $utf16  UTF-16 character
+    * @return   string  UTF-8 character
+    * @access   private
+    */
+    function utf162utf8($utf16)
+    {
+        _deprecated_function( __METHOD__, '5.3.0', 'The PHP native JSON extension' );
 
-   /** // obf
-    * convert a string from one UTF-16 char to one UTF-8 char // obf
-    * // obf
-    * Normally should be handled by mb_convert_encoding, but // obf
-    * provides a slower PHP-only method for installations // obf
-    * that lack the multibye string extension. // obf
-    * // obf
-    * @deprecated 5.3.0 Use the PHP native JSON extension instead. // obf
-    * // obf
-    * @param    string  $v_gvpue  UTF-16 character // obf
-    * @return   string  UTF-8 character // obf
-    * @access   private // obf
-    */ // obf
-    function utf162utf8($v_gvpue) // obf
-    { // obf
-        _deprecated_function( __METHOD__, '5.3.0', 'The PHP native JSON extension' ); // obf
+        // oh please oh please oh please oh please oh please
+        if($this->_mb_convert_encoding) {
+            return mb_convert_encoding($utf16, 'UTF-8', 'UTF-16');
+        }
 
-        // oh please oh please oh please oh please oh please // obf
-        if($v_fioap->_mb_convert_encoding) { // obf
-            return mb_convert_encoding($v_gvpue, 'UTF-8', 'UTF-16'); // obf
-        } // obf
+        $bytes = (ord($utf16[0]) << 8) | ord($utf16[1]);
 
-        $v_rhjwl = (ord($v_gvpue[0]) << 8) | ord($v_gvpue[1]); // obf
+        switch(true) {
+            case ((0x7F & $bytes) == $bytes):
+                // this case should never be reached, because we are in ASCII range
+                // see: http://www.cl.cam.ac.uk/~mgk25/unicode.html#utf-8
+                return chr(0x7F & $bytes);
 
-        switch(true) { // obf
-            case ((0x7F & $v_rhjwl) == $v_rhjwl): // obf
-                // this case should never be reached, because we are in ASCII range // obf
-                // see: http://www.cl.cam.ac.uk/~mgk25/unicode.html#utf-8 // obf
-                return chr(0x7F & $v_rhjwl); // obf
+            case (0x07FF & $bytes) == $bytes:
+                // return a 2-byte UTF-8 character
+                // see: http://www.cl.cam.ac.uk/~mgk25/unicode.html#utf-8
+                return chr(0xC0 | (($bytes >> 6) & 0x1F))
+                     . chr(0x80 | ($bytes & 0x3F));
 
-            case (0x07FF & $v_rhjwl) == $v_rhjwl: // obf
-                // return a 2-byte UTF-8 character // obf
-                // see: http://www.cl.cam.ac.uk/~mgk25/unicode.html#utf-8 // obf
-                return chr(0xC0 | (($v_rhjwl >> 6) & 0x1F)) // obf
-                     . chr(0x80 | ($v_rhjwl & 0x3F)); // obf
+            case (0xFFFF & $bytes) == $bytes:
+                // return a 3-byte UTF-8 character
+                // see: http://www.cl.cam.ac.uk/~mgk25/unicode.html#utf-8
+                return chr(0xE0 | (($bytes >> 12) & 0x0F))
+                     . chr(0x80 | (($bytes >> 6) & 0x3F))
+                     . chr(0x80 | ($bytes & 0x3F));
+        }
 
-            case (0xFFFF & $v_rhjwl) == $v_rhjwl: // obf
-                // return a 3-byte UTF-8 character // obf
-                // see: http://www.cl.cam.ac.uk/~mgk25/unicode.html#utf-8 // obf
-                return chr(0xE0 | (($v_rhjwl >> 12) & 0x0F)) // obf
-                     . chr(0x80 | (($v_rhjwl >> 6) & 0x3F)) // obf
-                     . chr(0x80 | ($v_rhjwl & 0x3F)); // obf
-        } // obf
+        // ignoring UTF-32 for now, sorry
+        return '';
+    }
 
-        // ignoring UTF-32 for now, sorry // obf
-        return ''; // obf
-    } // obf
+   /**
+    * convert a string from one UTF-8 char to one UTF-16 char
+    *
+    * Normally should be handled by mb_convert_encoding, but
+    * provides a slower PHP-only method for installations
+    * that lack the multibyte string extension.
+    *
+    * @deprecated 5.3.0 Use the PHP native JSON extension instead.
+    *
+    * @param    string  $utf8   UTF-8 character
+    * @return   string  UTF-16 character
+    * @access   private
+    */
+    function utf82utf16($utf8)
+    {
+        _deprecated_function( __METHOD__, '5.3.0', 'The PHP native JSON extension' );
 
-   /** // obf
-    * convert a string from one UTF-8 char to one UTF-16 char // obf
-    * // obf
-    * Normally should be handled by mb_convert_encoding, but // obf
-    * provides a slower PHP-only method for installations // obf
-    * that lack the multibyte string extension. // obf
-    * // obf
-    * @deprecated 5.3.0 Use the PHP native JSON extension instead. // obf
-    * // obf
-    * @param    string  $v_zplxm   UTF-8 character // obf
-    * @return   string  UTF-16 character // obf
-    * @access   private // obf
-    */ // obf
-    function utf82utf16($v_zplxm) // obf
-    { // obf
-        _deprecated_function( __METHOD__, '5.3.0', 'The PHP native JSON extension' ); // obf
+        // oh please oh please oh please oh please oh please
+        if($this->_mb_convert_encoding) {
+            return mb_convert_encoding($utf8, 'UTF-16', 'UTF-8');
+        }
 
-        // oh please oh please oh please oh please oh please // obf
-        if($v_fioap->_mb_convert_encoding) { // obf
-            return mb_convert_encoding($v_zplxm, 'UTF-16', 'UTF-8'); // obf
-        } // obf
+        switch($this->strlen8($utf8)) {
+            case 1:
+                // this case should never be reached, because we are in ASCII range
+                // see: http://www.cl.cam.ac.uk/~mgk25/unicode.html#utf-8
+                return $utf8;
 
-        switch($v_fioap->strlen8($v_zplxm)) { // obf
-            case 1: // obf
-                // this case should never be reached, because we are in ASCII range // obf
-                // see: http://www.cl.cam.ac.uk/~mgk25/unicode.html#utf-8 // obf
-                return $v_zplxm; // obf
+            case 2:
+                // return a UTF-16 character from a 2-byte UTF-8 char
+                // see: http://www.cl.cam.ac.uk/~mgk25/unicode.html#utf-8
+                return chr(0x07 & (ord($utf8[0]) >> 2))
+                     . chr((0xC0 & (ord($utf8[0]) << 6))
+                         | (0x3F & ord($utf8[1])));
 
-            case 2: // obf
-                // return a UTF-16 character from a 2-byte UTF-8 char // obf
-                // see: http://www.cl.cam.ac.uk/~mgk25/unicode.html#utf-8 // obf
-                return chr(0x07 & (ord($v_zplxm[0]) >> 2)) // obf
-                     . chr((0xC0 & (ord($v_zplxm[0]) << 6)) // obf
-                         | (0x3F & ord($v_zplxm[1]))); // obf
+            case 3:
+                // return a UTF-16 character from a 3-byte UTF-8 char
+                // see: http://www.cl.cam.ac.uk/~mgk25/unicode.html#utf-8
+                return chr((0xF0 & (ord($utf8[0]) << 4))
+                         | (0x0F & (ord($utf8[1]) >> 2)))
+                     . chr((0xC0 & (ord($utf8[1]) << 6))
+                         | (0x7F & ord($utf8[2])));
+        }
 
-            case 3: // obf
-                // return a UTF-16 character from a 3-byte UTF-8 char // obf
-                // see: http://www.cl.cam.ac.uk/~mgk25/unicode.html#utf-8 // obf
-                return chr((0xF0 & (ord($v_zplxm[0]) << 4)) // obf
-                         | (0x0F & (ord($v_zplxm[1]) >> 2))) // obf
-                     . chr((0xC0 & (ord($v_zplxm[1]) << 6)) // obf
-                         | (0x7F & ord($v_zplxm[2]))); // obf
-        } // obf
+        // ignoring UTF-32 for now, sorry
+        return '';
+    }
 
-        // ignoring UTF-32 for now, sorry // obf
-        return ''; // obf
-    } // obf
+   /**
+    * encodes an arbitrary variable into JSON format (and sends JSON Header)
+    *
+    * @deprecated 5.3.0 Use the PHP native JSON extension instead.
+    *
+    * @param    mixed   $var    any number, boolean, string, array, or object to be encoded.
+    *                           see argument 1 to Services_JSON() above for array-parsing behavior.
+    *                           if var is a string, note that encode() always expects it
+    *                           to be in ASCII or UTF-8 format!
+    *
+    * @return   mixed   JSON string representation of input var or an error if a problem occurs
+    * @access   public
+    */
+    function encode($var)
+    {
+        _deprecated_function( __METHOD__, '5.3.0', 'The PHP native JSON extension' );
 
-   /** // obf
-    * encodes an arbitrary variable into JSON format (and sends JSON Header) // obf
-    * // obf
-    * @deprecated 5.3.0 Use the PHP native JSON extension instead. // obf
-    * // obf
-    * @param    mixed   $v_cvpfn    any number, boolean, string, array, or object to be encoded. // obf
-    *                           see argument 1 to Services_JSON() above for array-parsing behavior. // obf
-    *                           if var is a string, note that encode() always expects it // obf
-    *                           to be in ASCII or UTF-8 format! // obf
-    * // obf
-    * @return   mixed   JSON string representation of input var or an error if a problem occurs // obf
-    * @access   public // obf
-    */ // obf
-    function encode($v_cvpfn) // obf
-    { // obf
-        _deprecated_function( __METHOD__, '5.3.0', 'The PHP native JSON extension' ); // obf
+        header('Content-Type: application/json');
+        return $this->encodeUnsafe($var);
+    }
+    /**
+    * encodes an arbitrary variable into JSON format without JSON Header - warning - may allow XSS!!!!)
+    *
+    * @deprecated 5.3.0 Use the PHP native JSON extension instead.
+    *
+    * @param    mixed   $var    any number, boolean, string, array, or object to be encoded.
+    *                           see argument 1 to Services_JSON() above for array-parsing behavior.
+    *                           if var is a string, note that encode() always expects it
+    *                           to be in ASCII or UTF-8 format!
+    *
+    * @return   mixed   JSON string representation of input var or an error if a problem occurs
+    * @access   public
+    */
+    function encodeUnsafe($var)
+    {
+        _deprecated_function( __METHOD__, '5.3.0', 'The PHP native JSON extension' );
 
-        header('Content-Type: application/json'); // obf
-        return $v_fioap->encodeUnsafe($v_cvpfn); // obf
-    } // obf
-    /** // obf
-    * encodes an arbitrary variable into JSON format without JSON Header - warning - may allow XSS!!!!) // obf
-    * // obf
-    * @deprecated 5.3.0 Use the PHP native JSON extension instead. // obf
-    * // obf
-    * @param    mixed   $v_cvpfn    any number, boolean, string, array, or object to be encoded. // obf
-    *                           see argument 1 to Services_JSON() above for array-parsing behavior. // obf
-    *                           if var is a string, note that encode() always expects it // obf
-    *                           to be in ASCII or UTF-8 format! // obf
-    * // obf
-    * @return   mixed   JSON string representation of input var or an error if a problem occurs // obf
-    * @access   public // obf
-    */ // obf
-    function encodeUnsafe($v_cvpfn) // obf
-    { // obf
-        _deprecated_function( __METHOD__, '5.3.0', 'The PHP native JSON extension' ); // obf
-
-        // see bug #16908 - regarding numeric locale printing // obf
-        $v_ervhy = setlocale(LC_NUMERIC, 0); // obf
-        setlocale(LC_NUMERIC, 'C'); // obf
-        $v_rzolr = $v_fioap->_encode($v_cvpfn); // obf
-        setlocale(LC_NUMERIC, $v_ervhy); // obf
-        return $v_rzolr; // obf
+        // see bug #16908 - regarding numeric locale printing
+        $lc = setlocale(LC_NUMERIC, 0);
+        setlocale(LC_NUMERIC, 'C');
+        $ret = $this->_encode($var);
+        setlocale(LC_NUMERIC, $lc);
+        return $ret;
         
-    } // obf
-    /** // obf
-    * PRIVATE CODE that does the work of encodes an arbitrary variable into JSON format  // obf
-    * // obf
-    * @deprecated 5.3.0 Use the PHP native JSON extension instead. // obf
-    * // obf
-    * @param    mixed   $v_cvpfn    any number, boolean, string, array, or object to be encoded. // obf
-    *                           see argument 1 to Services_JSON() above for array-parsing behavior. // obf
-    *                           if var is a string, note that encode() always expects it // obf
-    *                           to be in ASCII or UTF-8 format! // obf
-    * // obf
-    * @return   mixed   JSON string representation of input var or an error if a problem occurs // obf
-    * @access   public // obf
-    */ // obf
-    function _encode($v_cvpfn)  // obf
-    { // obf
-        _deprecated_function( __METHOD__, '5.3.0', 'The PHP native JSON extension' ); // obf
+    }
+    /**
+    * PRIVATE CODE that does the work of encodes an arbitrary variable into JSON format 
+    *
+    * @deprecated 5.3.0 Use the PHP native JSON extension instead.
+    *
+    * @param    mixed   $var    any number, boolean, string, array, or object to be encoded.
+    *                           see argument 1 to Services_JSON() above for array-parsing behavior.
+    *                           if var is a string, note that encode() always expects it
+    *                           to be in ASCII or UTF-8 format!
+    *
+    * @return   mixed   JSON string representation of input var or an error if a problem occurs
+    * @access   public
+    */
+    function _encode($var) 
+    {
+        _deprecated_function( __METHOD__, '5.3.0', 'The PHP native JSON extension' );
 
-        switch (gettype($v_cvpfn)) { // obf
-            case 'boolean': // obf
-                return $v_cvpfn ? 'true' : 'false'; // obf
+        switch (gettype($var)) {
+            case 'boolean':
+                return $var ? 'true' : 'false';
 
-            case 'NULL': // obf
-                return 'null'; // obf
+            case 'NULL':
+                return 'null';
 
-            case 'integer': // obf
-                return (int) $v_cvpfn; // obf
+            case 'integer':
+                return (int) $var;
 
-            case 'double': // obf
-            case 'float': // obf
-                return  (float) $v_cvpfn; // obf
+            case 'double':
+            case 'float':
+                return  (float) $var;
 
-            case 'string': // obf
-                // STRINGS ARE EXPECTED TO BE IN ASCII OR UTF-8 FORMAT // obf
-                $v_gvlpp = ''; // obf
-                $v_pmauq = $v_fioap->strlen8($v_cvpfn); // obf
+            case 'string':
+                // STRINGS ARE EXPECTED TO BE IN ASCII OR UTF-8 FORMAT
+                $ascii = '';
+                $strlen_var = $this->strlen8($var);
 
-               /* // obf
-                * Iterate over every character in the string, // obf
-                * escaping with a slash or encoding to UTF-8 where necessary // obf
-                */ // obf
-                for ($v_egftw = 0; $v_egftw < $v_pmauq; ++$v_egftw) { // obf
+               /*
+                * Iterate over every character in the string,
+                * escaping with a slash or encoding to UTF-8 where necessary
+                */
+                for ($c = 0; $c < $strlen_var; ++$c) {
 
-                    $v_llcix = ord($v_cvpfn[$v_egftw]); // obf
+                    $ord_var_c = ord($var[$c]);
 
-                    switch (true) { // obf
-                        case $v_llcix == 0x08: // obf
-                            $v_gvlpp .= '\b'; // obf
-                            break; // obf
-                        case $v_llcix == 0x09: // obf
-                            $v_gvlpp .= '\t'; // obf
-                            break; // obf
-                        case $v_llcix == 0x0A: // obf
-                            $v_gvlpp .= '\n'; // obf
-                            break; // obf
-                        case $v_llcix == 0x0C: // obf
-                            $v_gvlpp .= '\f'; // obf
-                            break; // obf
-                        case $v_llcix == 0x0D: // obf
-                            $v_gvlpp .= '\r'; // obf
-                            break; // obf
+                    switch (true) {
+                        case $ord_var_c == 0x08:
+                            $ascii .= '\b';
+                            break;
+                        case $ord_var_c == 0x09:
+                            $ascii .= '\t';
+                            break;
+                        case $ord_var_c == 0x0A:
+                            $ascii .= '\n';
+                            break;
+                        case $ord_var_c == 0x0C:
+                            $ascii .= '\f';
+                            break;
+                        case $ord_var_c == 0x0D:
+                            $ascii .= '\r';
+                            break;
 
-                        case $v_llcix == 0x22: // obf
-                        case $v_llcix == 0x2F: // obf
-                        case $v_llcix == 0x5C: // obf
-                            // double quote, slash, slosh // obf
-                            $v_gvlpp .= '\\'.$v_cvpfn[$v_egftw]; // obf
-                            break; // obf
+                        case $ord_var_c == 0x22:
+                        case $ord_var_c == 0x2F:
+                        case $ord_var_c == 0x5C:
+                            // double quote, slash, slosh
+                            $ascii .= '\\'.$var[$c];
+                            break;
 
-                        case (($v_llcix >= 0x20) && ($v_llcix <= 0x7F)): // obf
-                            // characters U-00000000 - U-0000007F (same as ASCII) // obf
-                            $v_gvlpp .= $v_cvpfn[$v_egftw]; // obf
-                            break; // obf
+                        case (($ord_var_c >= 0x20) && ($ord_var_c <= 0x7F)):
+                            // characters U-00000000 - U-0000007F (same as ASCII)
+                            $ascii .= $var[$c];
+                            break;
 
-                        case (($v_llcix & 0xE0) == 0xC0): // obf
-                            // characters U-00000080 - U-000007FF, mask 110XXXXX // obf
-                            // see http://www.cl.cam.ac.uk/~mgk25/unicode.html#utf-8 // obf
-                            if ($v_egftw+1 >= $v_pmauq) { // obf
-                                $v_egftw += 1; // obf
-                                $v_gvlpp .= '?'; // obf
-                                break; // obf
-                            } // obf
+                        case (($ord_var_c & 0xE0) == 0xC0):
+                            // characters U-00000080 - U-000007FF, mask 110XXXXX
+                            // see http://www.cl.cam.ac.uk/~mgk25/unicode.html#utf-8
+                            if ($c+1 >= $strlen_var) {
+                                $c += 1;
+                                $ascii .= '?';
+                                break;
+                            }
                             
-                            $v_iaxfu = pack('C*', $v_llcix, ord($v_cvpfn[$v_egftw + 1])); // obf
-                            $v_egftw += 1; // obf
-                            $v_gvpue = $v_fioap->utf82utf16($v_iaxfu); // obf
-                            $v_gvlpp .= sprintf('\u%04s', bin2hex($v_gvpue)); // obf
-                            break; // obf
+                            $char = pack('C*', $ord_var_c, ord($var[$c + 1]));
+                            $c += 1;
+                            $utf16 = $this->utf82utf16($char);
+                            $ascii .= sprintf('\u%04s', bin2hex($utf16));
+                            break;
 
-                        case (($v_llcix & 0xF0) == 0xE0): // obf
-                            if ($v_egftw+2 >= $v_pmauq) { // obf
-                                $v_egftw += 2; // obf
-                                $v_gvlpp .= '?'; // obf
-                                break; // obf
-                            } // obf
-                            // characters U-00000800 - U-0000FFFF, mask 1110XXXX // obf
-                            // see http://www.cl.cam.ac.uk/~mgk25/unicode.html#utf-8 // obf
-                            $v_iaxfu = pack('C*', $v_llcix, // obf
-                                         @ord($v_cvpfn[$v_egftw + 1]), // obf
-                                         @ord($v_cvpfn[$v_egftw + 2])); // obf
-                            $v_egftw += 2; // obf
-                            $v_gvpue = $v_fioap->utf82utf16($v_iaxfu); // obf
-                            $v_gvlpp .= sprintf('\u%04s', bin2hex($v_gvpue)); // obf
-                            break; // obf
+                        case (($ord_var_c & 0xF0) == 0xE0):
+                            if ($c+2 >= $strlen_var) {
+                                $c += 2;
+                                $ascii .= '?';
+                                break;
+                            }
+                            // characters U-00000800 - U-0000FFFF, mask 1110XXXX
+                            // see http://www.cl.cam.ac.uk/~mgk25/unicode.html#utf-8
+                            $char = pack('C*', $ord_var_c,
+                                         @ord($var[$c + 1]),
+                                         @ord($var[$c + 2]));
+                            $c += 2;
+                            $utf16 = $this->utf82utf16($char);
+                            $ascii .= sprintf('\u%04s', bin2hex($utf16));
+                            break;
 
-                        case (($v_llcix & 0xF8) == 0xF0): // obf
-                            if ($v_egftw+3 >= $v_pmauq) { // obf
-                                $v_egftw += 3; // obf
-                                $v_gvlpp .= '?'; // obf
-                                break; // obf
-                            } // obf
-                            // characters U-00010000 - U-001FFFFF, mask 11110XXX // obf
-                            // see http://www.cl.cam.ac.uk/~mgk25/unicode.html#utf-8 // obf
-                            $v_iaxfu = pack('C*', $v_llcix, // obf
-                                         ord($v_cvpfn[$v_egftw + 1]), // obf
-                                         ord($v_cvpfn[$v_egftw + 2]), // obf
-                                         ord($v_cvpfn[$v_egftw + 3])); // obf
-                            $v_egftw += 3; // obf
-                            $v_gvpue = $v_fioap->utf82utf16($v_iaxfu); // obf
-                            $v_gvlpp .= sprintf('\u%04s', bin2hex($v_gvpue)); // obf
-                            break; // obf
+                        case (($ord_var_c & 0xF8) == 0xF0):
+                            if ($c+3 >= $strlen_var) {
+                                $c += 3;
+                                $ascii .= '?';
+                                break;
+                            }
+                            // characters U-00010000 - U-001FFFFF, mask 11110XXX
+                            // see http://www.cl.cam.ac.uk/~mgk25/unicode.html#utf-8
+                            $char = pack('C*', $ord_var_c,
+                                         ord($var[$c + 1]),
+                                         ord($var[$c + 2]),
+                                         ord($var[$c + 3]));
+                            $c += 3;
+                            $utf16 = $this->utf82utf16($char);
+                            $ascii .= sprintf('\u%04s', bin2hex($utf16));
+                            break;
 
-                        case (($v_llcix & 0xFC) == 0xF8): // obf
-                            // characters U-00200000 - U-03FFFFFF, mask 111110XX // obf
-                            // see http://www.cl.cam.ac.uk/~mgk25/unicode.html#utf-8 // obf
-                            if ($v_egftw+4 >= $v_pmauq) { // obf
-                                $v_egftw += 4; // obf
-                                $v_gvlpp .= '?'; // obf
-                                break; // obf
-                            } // obf
-                            $v_iaxfu = pack('C*', $v_llcix, // obf
-                                         ord($v_cvpfn[$v_egftw + 1]), // obf
-                                         ord($v_cvpfn[$v_egftw + 2]), // obf
-                                         ord($v_cvpfn[$v_egftw + 3]), // obf
-                                         ord($v_cvpfn[$v_egftw + 4])); // obf
-                            $v_egftw += 4; // obf
-                            $v_gvpue = $v_fioap->utf82utf16($v_iaxfu); // obf
-                            $v_gvlpp .= sprintf('\u%04s', bin2hex($v_gvpue)); // obf
-                            break; // obf
+                        case (($ord_var_c & 0xFC) == 0xF8):
+                            // characters U-00200000 - U-03FFFFFF, mask 111110XX
+                            // see http://www.cl.cam.ac.uk/~mgk25/unicode.html#utf-8
+                            if ($c+4 >= $strlen_var) {
+                                $c += 4;
+                                $ascii .= '?';
+                                break;
+                            }
+                            $char = pack('C*', $ord_var_c,
+                                         ord($var[$c + 1]),
+                                         ord($var[$c + 2]),
+                                         ord($var[$c + 3]),
+                                         ord($var[$c + 4]));
+                            $c += 4;
+                            $utf16 = $this->utf82utf16($char);
+                            $ascii .= sprintf('\u%04s', bin2hex($utf16));
+                            break;
 
-                        case (($v_llcix & 0xFE) == 0xFC): // obf
-                        if ($v_egftw+5 >= $v_pmauq) { // obf
-                                $v_egftw += 5; // obf
-                                $v_gvlpp .= '?'; // obf
-                                break; // obf
-                            } // obf
-                            // characters U-04000000 - U-7FFFFFFF, mask 1111110X // obf
-                            // see http://www.cl.cam.ac.uk/~mgk25/unicode.html#utf-8 // obf
-                            $v_iaxfu = pack('C*', $v_llcix, // obf
-                                         ord($v_cvpfn[$v_egftw + 1]), // obf
-                                         ord($v_cvpfn[$v_egftw + 2]), // obf
-                                         ord($v_cvpfn[$v_egftw + 3]), // obf
-                                         ord($v_cvpfn[$v_egftw + 4]), // obf
-                                         ord($v_cvpfn[$v_egftw + 5])); // obf
-                            $v_egftw += 5; // obf
-                            $v_gvpue = $v_fioap->utf82utf16($v_iaxfu); // obf
-                            $v_gvlpp .= sprintf('\u%04s', bin2hex($v_gvpue)); // obf
-                            break; // obf
-                    } // obf
-                } // obf
-                return  '"'.$v_gvlpp.'"'; // obf
+                        case (($ord_var_c & 0xFE) == 0xFC):
+                        if ($c+5 >= $strlen_var) {
+                                $c += 5;
+                                $ascii .= '?';
+                                break;
+                            }
+                            // characters U-04000000 - U-7FFFFFFF, mask 1111110X
+                            // see http://www.cl.cam.ac.uk/~mgk25/unicode.html#utf-8
+                            $char = pack('C*', $ord_var_c,
+                                         ord($var[$c + 1]),
+                                         ord($var[$c + 2]),
+                                         ord($var[$c + 3]),
+                                         ord($var[$c + 4]),
+                                         ord($var[$c + 5]));
+                            $c += 5;
+                            $utf16 = $this->utf82utf16($char);
+                            $ascii .= sprintf('\u%04s', bin2hex($utf16));
+                            break;
+                    }
+                }
+                return  '"'.$ascii.'"';
 
-            case 'array': // obf
-               /* // obf
-                * As per JSON spec if any array key is not an integer // obf
-                * we must treat the whole array as an object. We // obf
-                * also try to catch a sparsely populated associative // obf
-                * array with numeric keys here because some JS engines // obf
-                * will create an array with empty indexes up to // obf
-                * max_index which can cause memory issues and because // obf
-                * the keys, which may be relevant, will be remapped // obf
-                * otherwise. // obf
-                * // obf
-                * As per the ECMA and JSON specification an object may // obf
-                * have any string as a property. Unfortunately due to // obf
-                * a hole in the ECMA specification if the key is a // obf
-                * ECMA reserved word or starts with a digit the // obf
-                * parameter is only accessible using ECMAScript's // obf
-                * bracket notation. // obf
-                */ // obf
+            case 'array':
+               /*
+                * As per JSON spec if any array key is not an integer
+                * we must treat the whole array as an object. We
+                * also try to catch a sparsely populated associative
+                * array with numeric keys here because some JS engines
+                * will create an array with empty indexes up to
+                * max_index which can cause memory issues and because
+                * the keys, which may be relevant, will be remapped
+                * otherwise.
+                *
+                * As per the ECMA and JSON specification an object may
+                * have any string as a property. Unfortunately due to
+                * a hole in the ECMA specification if the key is a
+                * ECMA reserved word or starts with a digit the
+                * parameter is only accessible using ECMAScript's
+                * bracket notation.
+                */
 
-                // treat as a JSON object // obf
-                if (is_array($v_cvpfn) && count($v_cvpfn) && (array_keys($v_cvpfn) !== range(0, sizeof($v_cvpfn) - 1))) { // obf
-                    $v_xklzz = array_map(array($v_fioap, 'name_value'), // obf
-                                            array_keys($v_cvpfn), // obf
-                                            array_values($v_cvpfn)); // obf
+                // treat as a JSON object
+                if (is_array($var) && count($var) && (array_keys($var) !== range(0, sizeof($var) - 1))) {
+                    $properties = array_map(array($this, 'name_value'),
+                                            array_keys($var),
+                                            array_values($var));
 
-                    foreach($v_xklzz as $v_cjwzu) { // obf
-                        if(Services_JSON::isError($v_cjwzu)) { // obf
-                            return $v_cjwzu; // obf
-                        } // obf
-                    } // obf
+                    foreach($properties as $property) {
+                        if(Services_JSON::isError($property)) {
+                            return $property;
+                        }
+                    }
 
-                    return '{' . join(',', $v_xklzz) . '}'; // obf
-                } // obf
+                    return '{' . join(',', $properties) . '}';
+                }
 
-                // treat it like a regular array // obf
-                $v_zsyhm = array_map(array($v_fioap, '_encode'), $v_cvpfn); // obf
+                // treat it like a regular array
+                $elements = array_map(array($this, '_encode'), $var);
 
-                foreach($v_zsyhm as $v_hkrzf) { // obf
-                    if(Services_JSON::isError($v_hkrzf)) { // obf
-                        return $v_hkrzf; // obf
-                    } // obf
-                } // obf
+                foreach($elements as $element) {
+                    if(Services_JSON::isError($element)) {
+                        return $element;
+                    }
+                }
 
-                return '[' . join(',', $v_zsyhm) . ']'; // obf
+                return '[' . join(',', $elements) . ']';
 
-            case 'object': // obf
+            case 'object':
             
-                // support toJSON methods. // obf
-                if (($v_fioap->use & SERVICES_JSON_USE_TO_JSON) && method_exists($v_cvpfn, 'toJSON')) { // obf
-                    // this may end up allowing unlimited recursion // obf
-                    // so we check the return value to make sure it's not got the same method. // obf
-                    $v_pvzcl = $v_cvpfn->toJSON(); // obf
+                // support toJSON methods.
+                if (($this->use & SERVICES_JSON_USE_TO_JSON) && method_exists($var, 'toJSON')) {
+                    // this may end up allowing unlimited recursion
+                    // so we check the return value to make sure it's not got the same method.
+                    $recode = $var->toJSON();
                     
-                    if (method_exists($v_pvzcl, 'toJSON')) { // obf
+                    if (method_exists($recode, 'toJSON')) {
                         
-                        return ($v_fioap->use & SERVICES_JSON_SUPPRESS_ERRORS) // obf
-                        ? 'null' // obf
-                        : new Services_JSON_Error(get_class($v_cvpfn). // obf
-                            " toJSON returned an object with a toJSON method."); // obf
+                        return ($this->use & SERVICES_JSON_SUPPRESS_ERRORS)
+                        ? 'null'
+                        : new Services_JSON_Error(get_class($var).
+                            " toJSON returned an object with a toJSON method.");
                             
-                    } // obf
+                    }
                     
-                    return $v_fioap->_encode( $v_pvzcl ); // obf
-                }  // obf
+                    return $this->_encode( $recode );
+                } 
                 
-                $v_rpmcv = get_object_vars($v_cvpfn); // obf
+                $vars = get_object_vars($var);
                 
-                $v_xklzz = array_map(array($v_fioap, 'name_value'), // obf
-                                        array_keys($v_rpmcv), // obf
-                                        array_values($v_rpmcv)); // obf
+                $properties = array_map(array($this, 'name_value'),
+                                        array_keys($vars),
+                                        array_values($vars));
 
-                foreach($v_xklzz as $v_cjwzu) { // obf
-                    if(Services_JSON::isError($v_cjwzu)) { // obf
-                        return $v_cjwzu; // obf
-                    } // obf
-                } // obf
+                foreach($properties as $property) {
+                    if(Services_JSON::isError($property)) {
+                        return $property;
+                    }
+                }
 
-                return '{' . join(',', $v_xklzz) . '}'; // obf
+                return '{' . join(',', $properties) . '}';
 
-            default: // obf
-                return ($v_fioap->use & SERVICES_JSON_SUPPRESS_ERRORS) // obf
-                    ? 'null' // obf
-                    : new Services_JSON_Error(gettype($v_cvpfn)." can not be encoded as JSON string"); // obf
-        } // obf
-    } // obf
+            default:
+                return ($this->use & SERVICES_JSON_SUPPRESS_ERRORS)
+                    ? 'null'
+                    : new Services_JSON_Error(gettype($var)." can not be encoded as JSON string");
+        }
+    }
 
-   /** // obf
-    * array-walking function for use in generating JSON-formatted name-value pairs // obf
-    * // obf
-    * @deprecated 5.3.0 Use the PHP native JSON extension instead. // obf
-    * // obf
-    * @param    string  $v_ligtz   name of key to use // obf
-    * @param    mixed   $v_rbrsf  reference to an array element to be encoded // obf
-    * // obf
-    * @return   string  JSON-formatted name-value pair, like '"name":value' // obf
-    * @access   private // obf
-    */ // obf
-    function name_value($v_ligtz, $v_rbrsf) // obf
-    { // obf
-        _deprecated_function( __METHOD__, '5.3.0', 'The PHP native JSON extension' ); // obf
+   /**
+    * array-walking function for use in generating JSON-formatted name-value pairs
+    *
+    * @deprecated 5.3.0 Use the PHP native JSON extension instead.
+    *
+    * @param    string  $name   name of key to use
+    * @param    mixed   $value  reference to an array element to be encoded
+    *
+    * @return   string  JSON-formatted name-value pair, like '"name":value'
+    * @access   private
+    */
+    function name_value($name, $value)
+    {
+        _deprecated_function( __METHOD__, '5.3.0', 'The PHP native JSON extension' );
 
-        $v_lzhzt = $v_fioap->_encode($v_rbrsf); // obf
+        $encoded_value = $this->_encode($value);
 
-        if(Services_JSON::isError($v_lzhzt)) { // obf
-            return $v_lzhzt; // obf
-        } // obf
+        if(Services_JSON::isError($encoded_value)) {
+            return $encoded_value;
+        }
 
-        return $v_fioap->_encode((string) $v_ligtz) . ':' . $v_lzhzt; // obf
-    } // obf
+        return $this->_encode((string) $name) . ':' . $encoded_value;
+    }
 
-   /** // obf
-    * reduce a string by removing leading and trailing comments and whitespace // obf
-    * // obf
-    * @deprecated 5.3.0 Use the PHP native JSON extension instead. // obf
-    * // obf
-    * @param    $v_rktwx    string      string value to strip of comments and whitespace // obf
-    * // obf
-    * @return   string  string value stripped of comments and whitespace // obf
-    * @access   private // obf
-    */ // obf
-    function reduce_string($v_rktwx) // obf
-    { // obf
-        _deprecated_function( __METHOD__, '5.3.0', 'The PHP native JSON extension' ); // obf
+   /**
+    * reduce a string by removing leading and trailing comments and whitespace
+    *
+    * @deprecated 5.3.0 Use the PHP native JSON extension instead.
+    *
+    * @param    $str    string      string value to strip of comments and whitespace
+    *
+    * @return   string  string value stripped of comments and whitespace
+    * @access   private
+    */
+    function reduce_string($str)
+    {
+        _deprecated_function( __METHOD__, '5.3.0', 'The PHP native JSON extension' );
 
-        $v_rktwx = __fn_37772(array( // obf
+        $str = __fn_11836(array(
 
-                // eliminate single line comments in '// ...' form // obf
-                '#^\s*//(.+)$#m', // obf
+                // eliminate single line comments in '// ...' form
+                '#^\s*//(.+)$#m',
 
-                // eliminate multi-line comments in '/* ... */' form, at start of string // obf
-                '#^\s*/\*(.+)\*/#Us', // obf
+                // eliminate multi-line comments in '/* ... */' form, at start of string
+                '#^\s*/\*(.+)\*/#Us',
 
-                // eliminate multi-line comments in '/* ... */' form, at end of string // obf
-                '#/\*(.+)\*/\s*$#Us' // obf
+                // eliminate multi-line comments in '/* ... */' form, at end of string
+                '#/\*(.+)\*/\s*$#Us'
 
-            ), '', $v_rktwx); // obf
+            ), '', $str);
 
-        // eliminate extraneous space // obf
-        return trim($v_rktwx); // obf
-    } // obf
+        // eliminate extraneous space
+        return trim($str);
+    }
 
-   /** // obf
-    * decodes a JSON string into appropriate variable // obf
-    * // obf
-    * @deprecated 5.3.0 Use the PHP native JSON extension instead. // obf
-    * // obf
-    * @param    string  $v_rktwx    JSON-formatted string // obf
-    * // obf
-    * @return   mixed   number, boolean, string, array, or object // obf
-    *                   corresponding to given JSON input string. // obf
-    *                   See argument 1 to Services_JSON() above for object-output behavior. // obf
-    *                   Note that decode() always returns strings // obf
-    *                   in ASCII or UTF-8 format! // obf
-    * @access   public // obf
-    */ // obf
-    function decode($v_rktwx) // obf
-    { // obf
-        _deprecated_function( __METHOD__, '5.3.0', 'The PHP native JSON extension' ); // obf
+   /**
+    * decodes a JSON string into appropriate variable
+    *
+    * @deprecated 5.3.0 Use the PHP native JSON extension instead.
+    *
+    * @param    string  $str    JSON-formatted string
+    *
+    * @return   mixed   number, boolean, string, array, or object
+    *                   corresponding to given JSON input string.
+    *                   See argument 1 to Services_JSON() above for object-output behavior.
+    *                   Note that decode() always returns strings
+    *                   in ASCII or UTF-8 format!
+    * @access   public
+    */
+    function decode($str)
+    {
+        _deprecated_function( __METHOD__, '5.3.0', 'The PHP native JSON extension' );
 
-        $v_rktwx = $v_fioap->reduce_string($v_rktwx); // obf
+        $str = $this->reduce_string($str);
 
-        switch (strtolower($v_rktwx)) { // obf
-            case 'true': // obf
-                return true; // obf
+        switch (strtolower($str)) {
+            case 'true':
+                return true;
 
-            case 'false': // obf
-                return false; // obf
+            case 'false':
+                return false;
 
-            case 'null': // obf
-                return null; // obf
+            case 'null':
+                return null;
 
-            default: // obf
-                $v_nqgxq = array(); // obf
+            default:
+                $m = array();
 
-                if (is_numeric($v_rktwx)) { // obf
-                    // Lookie-loo, it's a number // obf
+                if (is_numeric($str)) {
+                    // Lookie-loo, it's a number
 
-                    // This would work on its own, but I'm trying to be // obf
-                    // good about returning integers where appropriate: // obf
-                    // return (float)$v_rktwx; // obf
+                    // This would work on its own, but I'm trying to be
+                    // good about returning integers where appropriate:
+                    // return (float)$str;
 
-                    // Return float or int, as appropriate // obf
-                    return ((float)$v_rktwx == (integer)$v_rktwx) // obf
-                        ? (integer)$v_rktwx // obf
-                        : (float)$v_rktwx; // obf
+                    // Return float or int, as appropriate
+                    return ((float)$str == (integer)$str)
+                        ? (integer)$str
+                        : (float)$str;
 
-                } elseif (preg_match('/^("|\').*(\1)$/s', $v_rktwx, $v_nqgxq) && $v_nqgxq[1] == $v_nqgxq[2]) { // obf
-                    // STRINGS RETURNED IN UTF-8 FORMAT // obf
-                    $v_dkoyl = $v_fioap->substr8($v_rktwx, 0, 1); // obf
-                    $v_wkryq = $v_fioap->substr8($v_rktwx, 1, -1); // obf
-                    $v_zplxm = ''; // obf
-                    $v_nzioz = $v_fioap->strlen8($v_wkryq); // obf
+                } elseif (preg_match('/^("|\').*(\1)$/s', $str, $m) && $m[1] == $m[2]) {
+                    // STRINGS RETURNED IN UTF-8 FORMAT
+                    $delim = $this->substr8($str, 0, 1);
+                    $chrs = $this->substr8($str, 1, -1);
+                    $utf8 = '';
+                    $strlen_chrs = $this->strlen8($chrs);
 
-                    for ($v_egftw = 0; $v_egftw < $v_nzioz; ++$v_egftw) { // obf
+                    for ($c = 0; $c < $strlen_chrs; ++$c) {
 
-                        $v_qctgq = $v_fioap->substr8($v_wkryq, $v_egftw, 2); // obf
-                        $v_fwusf = ord($v_wkryq[$v_egftw]); // obf
+                        $substr_chrs_c_2 = $this->substr8($chrs, $c, 2);
+                        $ord_chrs_c = ord($chrs[$c]);
 
-                        switch (true) { // obf
-                            case $v_qctgq == '\b': // obf
-                                $v_zplxm .= chr(0x08); // obf
-                                ++$v_egftw; // obf
-                                break; // obf
-                            case $v_qctgq == '\t': // obf
-                                $v_zplxm .= chr(0x09); // obf
-                                ++$v_egftw; // obf
-                                break; // obf
-                            case $v_qctgq == '\n': // obf
-                                $v_zplxm .= chr(0x0A); // obf
-                                ++$v_egftw; // obf
-                                break; // obf
-                            case $v_qctgq == '\f': // obf
-                                $v_zplxm .= chr(0x0C); // obf
-                                ++$v_egftw; // obf
-                                break; // obf
-                            case $v_qctgq == '\r': // obf
-                                $v_zplxm .= chr(0x0D); // obf
-                                ++$v_egftw; // obf
-                                break; // obf
+                        switch (true) {
+                            case $substr_chrs_c_2 == '\b':
+                                $utf8 .= chr(0x08);
+                                ++$c;
+                                break;
+                            case $substr_chrs_c_2 == '\t':
+                                $utf8 .= chr(0x09);
+                                ++$c;
+                                break;
+                            case $substr_chrs_c_2 == '\n':
+                                $utf8 .= chr(0x0A);
+                                ++$c;
+                                break;
+                            case $substr_chrs_c_2 == '\f':
+                                $utf8 .= chr(0x0C);
+                                ++$c;
+                                break;
+                            case $substr_chrs_c_2 == '\r':
+                                $utf8 .= chr(0x0D);
+                                ++$c;
+                                break;
 
-                            case $v_qctgq == '\\"': // obf
-                            case $v_qctgq == '\\\'': // obf
-                            case $v_qctgq == '\\\\': // obf
-                            case $v_qctgq == '\\/': // obf
-                                if (($v_dkoyl == '"' && $v_qctgq != '\\\'') || // obf
-                                   ($v_dkoyl == "'" && $v_qctgq != '\\"')) { // obf
-                                    $v_zplxm .= $v_wkryq[++$v_egftw]; // obf
-                                } // obf
-                                break; // obf
+                            case $substr_chrs_c_2 == '\\"':
+                            case $substr_chrs_c_2 == '\\\'':
+                            case $substr_chrs_c_2 == '\\\\':
+                            case $substr_chrs_c_2 == '\\/':
+                                if (($delim == '"' && $substr_chrs_c_2 != '\\\'') ||
+                                   ($delim == "'" && $substr_chrs_c_2 != '\\"')) {
+                                    $utf8 .= $chrs[++$c];
+                                }
+                                break;
 
-                            case preg_match('/\\\u[0-9A-F]{4}/i', $v_fioap->substr8($v_wkryq, $v_egftw, 6)): // obf
-                                // single, escaped unicode character // obf
-                                $v_gvpue = chr(hexdec($v_fioap->substr8($v_wkryq, ($v_egftw + 2), 2))) // obf
-                                       . chr(hexdec($v_fioap->substr8($v_wkryq, ($v_egftw + 4), 2))); // obf
-                                $v_zplxm .= $v_fioap->utf162utf8($v_gvpue); // obf
-                                $v_egftw += 5; // obf
-                                break; // obf
+                            case preg_match('/\\\u[0-9A-F]{4}/i', $this->substr8($chrs, $c, 6)):
+                                // single, escaped unicode character
+                                $utf16 = chr(hexdec($this->substr8($chrs, ($c + 2), 2)))
+                                       . chr(hexdec($this->substr8($chrs, ($c + 4), 2)));
+                                $utf8 .= $this->utf162utf8($utf16);
+                                $c += 5;
+                                break;
 
-                            case ($v_fwusf >= 0x20) && ($v_fwusf <= 0x7F): // obf
-                                $v_zplxm .= $v_wkryq[$v_egftw]; // obf
-                                break; // obf
+                            case ($ord_chrs_c >= 0x20) && ($ord_chrs_c <= 0x7F):
+                                $utf8 .= $chrs[$c];
+                                break;
 
-                            case ($v_fwusf & 0xE0) == 0xC0: // obf
-                                // characters U-00000080 - U-000007FF, mask 110XXXXX // obf
-                                //see http://www.cl.cam.ac.uk/~mgk25/unicode.html#utf-8 // obf
-                                $v_zplxm .= $v_fioap->substr8($v_wkryq, $v_egftw, 2); // obf
-                                ++$v_egftw; // obf
-                                break; // obf
+                            case ($ord_chrs_c & 0xE0) == 0xC0:
+                                // characters U-00000080 - U-000007FF, mask 110XXXXX
+                                //see http://www.cl.cam.ac.uk/~mgk25/unicode.html#utf-8
+                                $utf8 .= $this->substr8($chrs, $c, 2);
+                                ++$c;
+                                break;
 
-                            case ($v_fwusf & 0xF0) == 0xE0: // obf
-                                // characters U-00000800 - U-0000FFFF, mask 1110XXXX // obf
-                                // see http://www.cl.cam.ac.uk/~mgk25/unicode.html#utf-8 // obf
-                                $v_zplxm .= $v_fioap->substr8($v_wkryq, $v_egftw, 3); // obf
-                                $v_egftw += 2; // obf
-                                break; // obf
+                            case ($ord_chrs_c & 0xF0) == 0xE0:
+                                // characters U-00000800 - U-0000FFFF, mask 1110XXXX
+                                // see http://www.cl.cam.ac.uk/~mgk25/unicode.html#utf-8
+                                $utf8 .= $this->substr8($chrs, $c, 3);
+                                $c += 2;
+                                break;
 
-                            case ($v_fwusf & 0xF8) == 0xF0: // obf
-                                // characters U-00010000 - U-001FFFFF, mask 11110XXX // obf
-                                // see http://www.cl.cam.ac.uk/~mgk25/unicode.html#utf-8 // obf
-                                $v_zplxm .= $v_fioap->substr8($v_wkryq, $v_egftw, 4); // obf
-                                $v_egftw += 3; // obf
-                                break; // obf
+                            case ($ord_chrs_c & 0xF8) == 0xF0:
+                                // characters U-00010000 - U-001FFFFF, mask 11110XXX
+                                // see http://www.cl.cam.ac.uk/~mgk25/unicode.html#utf-8
+                                $utf8 .= $this->substr8($chrs, $c, 4);
+                                $c += 3;
+                                break;
 
-                            case ($v_fwusf & 0xFC) == 0xF8: // obf
-                                // characters U-00200000 - U-03FFFFFF, mask 111110XX // obf
-                                // see http://www.cl.cam.ac.uk/~mgk25/unicode.html#utf-8 // obf
-                                $v_zplxm .= $v_fioap->substr8($v_wkryq, $v_egftw, 5); // obf
-                                $v_egftw += 4; // obf
-                                break; // obf
+                            case ($ord_chrs_c & 0xFC) == 0xF8:
+                                // characters U-00200000 - U-03FFFFFF, mask 111110XX
+                                // see http://www.cl.cam.ac.uk/~mgk25/unicode.html#utf-8
+                                $utf8 .= $this->substr8($chrs, $c, 5);
+                                $c += 4;
+                                break;
 
-                            case ($v_fwusf & 0xFE) == 0xFC: // obf
-                                // characters U-04000000 - U-7FFFFFFF, mask 1111110X // obf
-                                // see http://www.cl.cam.ac.uk/~mgk25/unicode.html#utf-8 // obf
-                                $v_zplxm .= $v_fioap->substr8($v_wkryq, $v_egftw, 6); // obf
-                                $v_egftw += 5; // obf
-                                break; // obf
+                            case ($ord_chrs_c & 0xFE) == 0xFC:
+                                // characters U-04000000 - U-7FFFFFFF, mask 1111110X
+                                // see http://www.cl.cam.ac.uk/~mgk25/unicode.html#utf-8
+                                $utf8 .= $this->substr8($chrs, $c, 6);
+                                $c += 5;
+                                break;
 
-                        } // obf
+                        }
 
-                    } // obf
+                    }
 
-                    return $v_zplxm; // obf
+                    return $utf8;
 
-                } elseif (preg_match('/^\[.*\]$/s', $v_rktwx) || preg_match('/^\{.*\}$/s', $v_rktwx)) { // obf
-                    // array, or object notation // obf
+                } elseif (preg_match('/^\[.*\]$/s', $str) || preg_match('/^\{.*\}$/s', $str)) {
+                    // array, or object notation
 
-                    if ($v_rktwx[0] == '[') { // obf
-                        $v_wpikl = array(SERVICES_JSON_IN_ARR); // obf
-                        $v_oggub = array(); // obf
-                    } else { // obf
-                        if ($v_fioap->use & SERVICES_JSON_LOOSE_TYPE) { // obf
-                            $v_wpikl = array(SERVICES_JSON_IN_OBJ); // obf
-                            $v_nrczj = array(); // obf
-                        } else { // obf
-                            $v_wpikl = array(SERVICES_JSON_IN_OBJ); // obf
-                            $v_nrczj = new stdClass(); // obf
-                        } // obf
-                    } // obf
+                    if ($str[0] == '[') {
+                        $stk = array(SERVICES_JSON_IN_ARR);
+                        $arr = array();
+                    } else {
+                        if ($this->use & SERVICES_JSON_LOOSE_TYPE) {
+                            $stk = array(SERVICES_JSON_IN_OBJ);
+                            $obj = array();
+                        } else {
+                            $stk = array(SERVICES_JSON_IN_OBJ);
+                            $obj = new stdClass();
+                        }
+                    }
 
-                    array_push($v_wpikl, array('what'  => SERVICES_JSON_SLICE, // obf
-                                           'where' => 0, // obf
-                                           'delim' => false)); // obf
+                    array_push($stk, array('what'  => SERVICES_JSON_SLICE,
+                                           'where' => 0,
+                                           'delim' => false));
 
-                    $v_wkryq = $v_fioap->substr8($v_rktwx, 1, -1); // obf
-                    $v_wkryq = $v_fioap->reduce_string($v_wkryq); // obf
+                    $chrs = $this->substr8($str, 1, -1);
+                    $chrs = $this->reduce_string($chrs);
 
-                    if ($v_wkryq == '') { // obf
-                        if (reset($v_wpikl) == SERVICES_JSON_IN_ARR) { // obf
-                            return $v_oggub; // obf
+                    if ($chrs == '') {
+                        if (reset($stk) == SERVICES_JSON_IN_ARR) {
+                            return $arr;
 
-                        } else { // obf
-                            return $v_nrczj; // obf
+                        } else {
+                            return $obj;
 
-                        } // obf
-                    } // obf
+                        }
+                    }
 
-                    //print("\nparsing {$v_wkryq}\n"); // obf
+                    //print("\nparsing {$chrs}\n");
 
-                    $v_nzioz = $v_fioap->strlen8($v_wkryq); // obf
+                    $strlen_chrs = $this->strlen8($chrs);
 
-                    for ($v_egftw = 0; $v_egftw <= $v_nzioz; ++$v_egftw) { // obf
+                    for ($c = 0; $c <= $strlen_chrs; ++$c) {
 
-                        $v_lidhi = end($v_wpikl); // obf
-                        $v_qctgq = $v_fioap->substr8($v_wkryq, $v_egftw, 2); // obf
+                        $top = end($stk);
+                        $substr_chrs_c_2 = $this->substr8($chrs, $c, 2);
 
-                        if (($v_egftw == $v_nzioz) || (($v_wkryq[$v_egftw] == ',') && ($v_lidhi['what'] == SERVICES_JSON_SLICE))) { // obf
-                            // found a comma that is not inside a string, array, etc., // obf
-                            // OR we've reached the end of the character list // obf
-                            $v_xellm = $v_fioap->substr8($v_wkryq, $v_lidhi['where'], ($v_egftw - $v_lidhi['where'])); // obf
-                            array_push($v_wpikl, array('what' => SERVICES_JSON_SLICE, 'where' => ($v_egftw + 1), 'delim' => false)); // obf
-                            //print("Found split at {$v_egftw}: ".$v_fioap->substr8($v_wkryq, $v_lidhi['where'], (1 + $v_egftw - $v_lidhi['where']))."\n"); // obf
+                        if (($c == $strlen_chrs) || (($chrs[$c] == ',') && ($top['what'] == SERVICES_JSON_SLICE))) {
+                            // found a comma that is not inside a string, array, etc.,
+                            // OR we've reached the end of the character list
+                            $slice = $this->substr8($chrs, $top['where'], ($c - $top['where']));
+                            array_push($stk, array('what' => SERVICES_JSON_SLICE, 'where' => ($c + 1), 'delim' => false));
+                            //print("Found split at {$c}: ".$this->substr8($chrs, $top['where'], (1 + $c - $top['where']))."\n");
 
-                            if (reset($v_wpikl) == SERVICES_JSON_IN_ARR) { // obf
-                                // we are in an array, so just push an element onto the stack // obf
-                                array_push($v_oggub, $v_fioap->decode($v_xellm)); // obf
+                            if (reset($stk) == SERVICES_JSON_IN_ARR) {
+                                // we are in an array, so just push an element onto the stack
+                                array_push($arr, $this->decode($slice));
 
-                            } elseif (reset($v_wpikl) == SERVICES_JSON_IN_OBJ) { // obf
-                                // we are in an object, so figure // obf
-                                // out the property name and set an // obf
-                                // element in an associative array, // obf
-                                // for now // obf
-                                $v_eldoe = array(); // obf
+                            } elseif (reset($stk) == SERVICES_JSON_IN_OBJ) {
+                                // we are in an object, so figure
+                                // out the property name and set an
+                                // element in an associative array,
+                                // for now
+                                $parts = array();
                                 
-                               if (preg_match('/^\s*(["\'].*[^\\\]["\'])\s*:/Uis', $v_xellm, $v_eldoe)) { // obf
-                                    // "name":value pair // obf
-                                    $v_lwevy = $v_fioap->decode($v_eldoe[1]); // obf
-                                    $v_oxtan = $v_fioap->decode(trim(substr($v_xellm, strlen($v_eldoe[0])), ", \t\n\r\0\x0B")); // obf
-                                    if ($v_fioap->use & SERVICES_JSON_LOOSE_TYPE) { // obf
-                                        $v_nrczj[$v_lwevy] = $v_oxtan; // obf
-                                    } else { // obf
-                                        $v_nrczj->$v_lwevy = $v_oxtan; // obf
-                                    } // obf
-                                } elseif (preg_match('/^\s*(\w+)\s*:/Uis', $v_xellm, $v_eldoe)) { // obf
-                                    // name:value pair, where name is unquoted // obf
-                                    $v_lwevy = $v_eldoe[1]; // obf
-                                    $v_oxtan = $v_fioap->decode(trim(substr($v_xellm, strlen($v_eldoe[0])), ", \t\n\r\0\x0B")); // obf
+                               if (preg_match('/^\s*(["\'].*[^\\\]["\'])\s*:/Uis', $slice, $parts)) {
+                                    // "name":value pair
+                                    $key = $this->decode($parts[1]);
+                                    $val = $this->decode(trim(substr($slice, strlen($parts[0])), ", \t\n\r\0\x0B"));
+                                    if ($this->use & SERVICES_JSON_LOOSE_TYPE) {
+                                        $obj[$key] = $val;
+                                    } else {
+                                        $obj->$key = $val;
+                                    }
+                                } elseif (preg_match('/^\s*(\w+)\s*:/Uis', $slice, $parts)) {
+                                    // name:value pair, where name is unquoted
+                                    $key = $parts[1];
+                                    $val = $this->decode(trim(substr($slice, strlen($parts[0])), ", \t\n\r\0\x0B"));
 
-                                    if ($v_fioap->use & SERVICES_JSON_LOOSE_TYPE) { // obf
-                                        $v_nrczj[$v_lwevy] = $v_oxtan; // obf
-                                    } else { // obf
-                                        $v_nrczj->$v_lwevy = $v_oxtan; // obf
-                                    } // obf
-                                } // obf
+                                    if ($this->use & SERVICES_JSON_LOOSE_TYPE) {
+                                        $obj[$key] = $val;
+                                    } else {
+                                        $obj->$key = $val;
+                                    }
+                                }
 
-                            } // obf
+                            }
 
-                        } elseif ((($v_wkryq[$v_egftw] == '"') || ($v_wkryq[$v_egftw] == "'")) && ($v_lidhi['what'] != SERVICES_JSON_IN_STR)) { // obf
-                            // found a quote, and we are not inside a string // obf
-                            array_push($v_wpikl, array('what' => SERVICES_JSON_IN_STR, 'where' => $v_egftw, 'delim' => $v_wkryq[$v_egftw])); // obf
-                            //print("Found start of string at {$v_egftw}\n"); // obf
+                        } elseif ((($chrs[$c] == '"') || ($chrs[$c] == "'")) && ($top['what'] != SERVICES_JSON_IN_STR)) {
+                            // found a quote, and we are not inside a string
+                            array_push($stk, array('what' => SERVICES_JSON_IN_STR, 'where' => $c, 'delim' => $chrs[$c]));
+                            //print("Found start of string at {$c}\n");
 
-                        } elseif (($v_wkryq[$v_egftw] == $v_lidhi['delim']) && // obf
-                                 ($v_lidhi['what'] == SERVICES_JSON_IN_STR) && // obf
-                                 (($v_fioap->strlen8($v_fioap->substr8($v_wkryq, 0, $v_egftw)) - $v_fioap->strlen8(rtrim($v_fioap->substr8($v_wkryq, 0, $v_egftw), '\\'))) % 2 != 1)) { // obf
-                            // found a quote, we're in a string, and it's not escaped // obf
-                            // we know that it's not escaped because there is _not_ an // obf
-                            // odd number of backslashes at the end of the string so far // obf
-                            array_pop($v_wpikl); // obf
-                            //print("Found end of string at {$v_egftw}: ".$v_fioap->substr8($v_wkryq, $v_lidhi['where'], (1 + 1 + $v_egftw - $v_lidhi['where']))."\n"); // obf
+                        } elseif (($chrs[$c] == $top['delim']) &&
+                                 ($top['what'] == SERVICES_JSON_IN_STR) &&
+                                 (($this->strlen8($this->substr8($chrs, 0, $c)) - $this->strlen8(rtrim($this->substr8($chrs, 0, $c), '\\'))) % 2 != 1)) {
+                            // found a quote, we're in a string, and it's not escaped
+                            // we know that it's not escaped because there is _not_ an
+                            // odd number of backslashes at the end of the string so far
+                            array_pop($stk);
+                            //print("Found end of string at {$c}: ".$this->substr8($chrs, $top['where'], (1 + 1 + $c - $top['where']))."\n");
 
-                        } elseif (($v_wkryq[$v_egftw] == '[') && // obf
-                                 in_array($v_lidhi['what'], array(SERVICES_JSON_SLICE, SERVICES_JSON_IN_ARR, SERVICES_JSON_IN_OBJ))) { // obf
-                            // found a left-bracket, and we are in an array, object, or slice // obf
-                            array_push($v_wpikl, array('what' => SERVICES_JSON_IN_ARR, 'where' => $v_egftw, 'delim' => false)); // obf
-                            //print("Found start of array at {$v_egftw}\n"); // obf
+                        } elseif (($chrs[$c] == '[') &&
+                                 in_array($top['what'], array(SERVICES_JSON_SLICE, SERVICES_JSON_IN_ARR, SERVICES_JSON_IN_OBJ))) {
+                            // found a left-bracket, and we are in an array, object, or slice
+                            array_push($stk, array('what' => SERVICES_JSON_IN_ARR, 'where' => $c, 'delim' => false));
+                            //print("Found start of array at {$c}\n");
 
-                        } elseif (($v_wkryq[$v_egftw] == ']') && ($v_lidhi['what'] == SERVICES_JSON_IN_ARR)) { // obf
-                            // found a right-bracket, and we're in an array // obf
-                            array_pop($v_wpikl); // obf
-                            //print("Found end of array at {$v_egftw}: ".$v_fioap->substr8($v_wkryq, $v_lidhi['where'], (1 + $v_egftw - $v_lidhi['where']))."\n"); // obf
+                        } elseif (($chrs[$c] == ']') && ($top['what'] == SERVICES_JSON_IN_ARR)) {
+                            // found a right-bracket, and we're in an array
+                            array_pop($stk);
+                            //print("Found end of array at {$c}: ".$this->substr8($chrs, $top['where'], (1 + $c - $top['where']))."\n");
 
-                        } elseif (($v_wkryq[$v_egftw] == '{') && // obf
-                                 in_array($v_lidhi['what'], array(SERVICES_JSON_SLICE, SERVICES_JSON_IN_ARR, SERVICES_JSON_IN_OBJ))) { // obf
-                            // found a left-brace, and we are in an array, object, or slice // obf
-                            array_push($v_wpikl, array('what' => SERVICES_JSON_IN_OBJ, 'where' => $v_egftw, 'delim' => false)); // obf
-                            //print("Found start of object at {$v_egftw}\n"); // obf
+                        } elseif (($chrs[$c] == '{') &&
+                                 in_array($top['what'], array(SERVICES_JSON_SLICE, SERVICES_JSON_IN_ARR, SERVICES_JSON_IN_OBJ))) {
+                            // found a left-brace, and we are in an array, object, or slice
+                            array_push($stk, array('what' => SERVICES_JSON_IN_OBJ, 'where' => $c, 'delim' => false));
+                            //print("Found start of object at {$c}\n");
 
-                        } elseif (($v_wkryq[$v_egftw] == '}') && ($v_lidhi['what'] == SERVICES_JSON_IN_OBJ)) { // obf
-                            // found a right-brace, and we're in an object // obf
-                            array_pop($v_wpikl); // obf
-                            //print("Found end of object at {$v_egftw}: ".$v_fioap->substr8($v_wkryq, $v_lidhi['where'], (1 + $v_egftw - $v_lidhi['where']))."\n"); // obf
+                        } elseif (($chrs[$c] == '}') && ($top['what'] == SERVICES_JSON_IN_OBJ)) {
+                            // found a right-brace, and we're in an object
+                            array_pop($stk);
+                            //print("Found end of object at {$c}: ".$this->substr8($chrs, $top['where'], (1 + $c - $top['where']))."\n");
 
-                        } elseif (($v_qctgq == '/*') && // obf
-                                 in_array($v_lidhi['what'], array(SERVICES_JSON_SLICE, SERVICES_JSON_IN_ARR, SERVICES_JSON_IN_OBJ))) { // obf
-                            // found a comment start, and we are in an array, object, or slice // obf
-                            array_push($v_wpikl, array('what' => SERVICES_JSON_IN_CMT, 'where' => $v_egftw, 'delim' => false)); // obf
-                            $v_egftw++; // obf
-                            //print("Found start of comment at {$v_egftw}\n"); // obf
+                        } elseif (($substr_chrs_c_2 == '/*') &&
+                                 in_array($top['what'], array(SERVICES_JSON_SLICE, SERVICES_JSON_IN_ARR, SERVICES_JSON_IN_OBJ))) {
+                            // found a comment start, and we are in an array, object, or slice
+                            array_push($stk, array('what' => SERVICES_JSON_IN_CMT, 'where' => $c, 'delim' => false));
+                            $c++;
+                            //print("Found start of comment at {$c}\n");
 
-                        } elseif (($v_qctgq == '*/') && ($v_lidhi['what'] == SERVICES_JSON_IN_CMT)) { // obf
-                            // found a comment end, and we're in one now // obf
-                            array_pop($v_wpikl); // obf
-                            $v_egftw++; // obf
+                        } elseif (($substr_chrs_c_2 == '*/') && ($top['what'] == SERVICES_JSON_IN_CMT)) {
+                            // found a comment end, and we're in one now
+                            array_pop($stk);
+                            $c++;
 
-                            for ($v_nmoua = $v_lidhi['where']; $v_nmoua <= $v_egftw; ++$v_nmoua) // obf
-                                $v_wkryq = substr_replace($v_wkryq, ' ', $v_nmoua, 1); // obf
+                            for ($i = $top['where']; $i <= $c; ++$i)
+                                $chrs = substr_replace($chrs, ' ', $i, 1);
 
-                            //print("Found end of comment at {$v_egftw}: ".$v_fioap->substr8($v_wkryq, $v_lidhi['where'], (1 + $v_egftw - $v_lidhi['where']))."\n"); // obf
+                            //print("Found end of comment at {$c}: ".$this->substr8($chrs, $top['where'], (1 + $c - $top['where']))."\n");
 
-                        } // obf
+                        }
 
-                    } // obf
+                    }
 
-                    if (reset($v_wpikl) == SERVICES_JSON_IN_ARR) { // obf
-                        return $v_oggub; // obf
+                    if (reset($stk) == SERVICES_JSON_IN_ARR) {
+                        return $arr;
 
-                    } elseif (reset($v_wpikl) == SERVICES_JSON_IN_OBJ) { // obf
-                        return $v_nrczj; // obf
+                    } elseif (reset($stk) == SERVICES_JSON_IN_OBJ) {
+                        return $obj;
 
-                    } // obf
+                    }
 
-                } // obf
-        } // obf
-    } // obf
+                }
+        }
+    }
 
-    /** // obf
-     * @deprecated 5.3.0 Use the PHP native JSON extension instead. // obf
-     * // obf
-     * @todo Ultimately, this should just call PEAR::isError() // obf
-     */ // obf
-    function isError($v_skzsc, $v_wsodp = null) // obf
-    { // obf
-        _deprecated_function( __METHOD__, '5.3.0', 'The PHP native JSON extension' ); // obf
+    /**
+     * @deprecated 5.3.0 Use the PHP native JSON extension instead.
+     *
+     * @todo Ultimately, this should just call PEAR::isError()
+     */
+    function isError($data, $code = null)
+    {
+        _deprecated_function( __METHOD__, '5.3.0', 'The PHP native JSON extension' );
 
-        if (class_exists('pear')) { // obf
-            return PEAR::isError($v_skzsc, $v_wsodp); // obf
-        } elseif (is_object($v_skzsc) && ($v_skzsc instanceof services_json_error || // obf
-                                 is_subclass_of($v_skzsc, 'services_json_error'))) { // obf
-            return true; // obf
-        } // obf
+        if (class_exists('pear')) {
+            return PEAR::isError($data, $code);
+        } elseif (is_object($data) && ($data instanceof services_json_error ||
+                                 is_subclass_of($data, 'services_json_error'))) {
+            return true;
+        }
 
-        return false; // obf
-    } // obf
+        return false;
+    }
     
-    /** // obf
-     * Calculates length of string in bytes // obf
-     * // obf
-     * @deprecated 5.3.0 Use the PHP native JSON extension instead. // obf
-     * // obf
-     * @param string // obf
-     * @return integer length // obf
-     */ // obf
-    function strlen8( $v_rktwx )  // obf
-    { // obf
-        _deprecated_function( __METHOD__, '5.3.0', 'The PHP native JSON extension' ); // obf
+    /**
+     * Calculates length of string in bytes
+     *
+     * @deprecated 5.3.0 Use the PHP native JSON extension instead.
+     *
+     * @param string
+     * @return integer length
+     */
+    function strlen8( $str ) 
+    {
+        _deprecated_function( __METHOD__, '5.3.0', 'The PHP native JSON extension' );
 
-        if ( $v_fioap->_mb_strlen ) { // obf
-            return mb_strlen( $v_rktwx, "8bit" ); // obf
-        } // obf
-        return strlen( $v_rktwx ); // obf
-    } // obf
+        if ( $this->_mb_strlen ) {
+            return mb_strlen( $str, "8bit" );
+        }
+        return strlen( $str );
+    }
     
-    /** // obf
-     * Returns part of a string, interpreting $v_lougr and $v_xfhia as number of bytes. // obf
-     * // obf
-     * @deprecated 5.3.0 Use the PHP native JSON extension instead. // obf
-     * // obf
-     * @param string // obf
-     * @param integer start // obf
-     * @param integer length // obf
-     * @return integer length // obf
-     */ // obf
-    function substr8( $v_fsnct, $v_lougr, $v_xfhia=false )  // obf
-    { // obf
-        _deprecated_function( __METHOD__, '5.3.0', 'The PHP native JSON extension' ); // obf
+    /**
+     * Returns part of a string, interpreting $start and $length as number of bytes.
+     *
+     * @deprecated 5.3.0 Use the PHP native JSON extension instead.
+     *
+     * @param string
+     * @param integer start
+     * @param integer length
+     * @return integer length
+     */
+    function substr8( $string, $start, $length=false ) 
+    {
+        _deprecated_function( __METHOD__, '5.3.0', 'The PHP native JSON extension' );
 
-        if ( $v_xfhia === false ) { // obf
-            $v_xfhia = $v_fioap->strlen8( $v_fsnct ) - $v_lougr; // obf
-        } // obf
-        if ( $v_fioap->_mb_substr ) { // obf
-            return mb_substr( $v_fsnct, $v_lougr, $v_xfhia, "8bit" ); // obf
-        } // obf
-        return substr( $v_fsnct, $v_lougr, $v_xfhia ); // obf
-    } // obf
+        if ( $length === false ) {
+            $length = $this->strlen8( $string ) - $start;
+        }
+        if ( $this->_mb_substr ) {
+            return mb_substr( $string, $start, $length, "8bit" );
+        }
+        return substr( $string, $start, $length );
+    }
 
-} // obf
+}
 
-if (class_exists('PEAR_Error')) { // obf
+if (class_exists('PEAR_Error')) {
 
-    class Services_JSON_Error extends PEAR_Error // obf
-    { // obf
-        /** // obf
-         * PHP5 constructor. // obf
-         * // obf
-         * @deprecated 5.3.0 Use the PHP native JSON extension instead. // obf
-         */ // obf
-        function __construct($v_snwgz = 'unknown error', $v_wsodp = null, // obf
-                                     $v_unghg = null, $v_nitxm = null, $v_scntj = null) // obf
-        { // obf
-            _deprecated_function( __METHOD__, '5.3.0', 'The PHP native JSON extension' ); // obf
+    class Services_JSON_Error extends PEAR_Error
+    {
+        /**
+         * PHP5 constructor.
+         *
+         * @deprecated 5.3.0 Use the PHP native JSON extension instead.
+         */
+        function __construct($message = 'unknown error', $code = null,
+                                     $mode = null, $options = null, $userinfo = null)
+        {
+            _deprecated_function( __METHOD__, '5.3.0', 'The PHP native JSON extension' );
 
-            parent::PEAR_Error($v_snwgz, $v_wsodp, $v_unghg, $v_nitxm, $v_scntj); // obf
-        } // obf
+            parent::PEAR_Error($message, $code, $mode, $options, $userinfo);
+        }
 
-        /** // obf
-         * PHP4 constructor. // obf
-         * // obf
-         * @deprecated 5.3.0 Use __construct() instead. // obf
-         * // obf
-         * @see Services_JSON_Error::__construct() // obf
-         */ // obf
-        public function Services_JSON_Error($v_snwgz = 'unknown error', $v_wsodp = null, // obf
-                                     $v_unghg = null, $v_nitxm = null, $v_scntj = null) { // obf
-            _deprecated_constructor( 'Services_JSON_Error', '5.3.0', get_class( $v_fioap ) ); // obf
-            self::__construct($v_snwgz, $v_wsodp, $v_unghg, $v_nitxm, $v_scntj); // obf
-        } // obf
-    } // obf
+        /**
+         * PHP4 constructor.
+         *
+         * @deprecated 5.3.0 Use __construct() instead.
+         *
+         * @see Services_JSON_Error::__construct()
+         */
+        public function Services_JSON_Error($message = 'unknown error', $code = null,
+                                     $mode = null, $options = null, $userinfo = null) {
+            _deprecated_constructor( 'Services_JSON_Error', '5.3.0', get_class( $this ) );
+            self::__construct($message, $code, $mode, $options, $userinfo);
+        }
+    }
 
-} else { // obf
+} else {
 
-    /** // obf
-     * @todo Ultimately, this class shall be descended from PEAR_Error // obf
-     */ // obf
-    class Services_JSON_Error // obf
-    { // obf
-        /** // obf
-         * PHP5 constructor. // obf
-         * // obf
-         * @deprecated 5.3.0 Use the PHP native JSON extension instead. // obf
-         */ // obf
-        function __construct( $v_snwgz = 'unknown error', $v_wsodp = null, // obf
-                                     $v_unghg = null, $v_nitxm = null, $v_scntj = null ) // obf
-        { // obf
-            _deprecated_function( __METHOD__, '5.3.0', 'The PHP native JSON extension' ); // obf
-        } // obf
+    /**
+     * @todo Ultimately, this class shall be descended from PEAR_Error
+     */
+    class Services_JSON_Error
+    {
+        /**
+         * PHP5 constructor.
+         *
+         * @deprecated 5.3.0 Use the PHP native JSON extension instead.
+         */
+        function __construct( $message = 'unknown error', $code = null,
+                                     $mode = null, $options = null, $userinfo = null )
+        {
+            _deprecated_function( __METHOD__, '5.3.0', 'The PHP native JSON extension' );
+        }
 
-        /** // obf
-         * PHP4 constructor. // obf
-         * // obf
-         * @deprecated 5.3.0 Use __construct() instead. // obf
-         * // obf
-         * @see Services_JSON_Error::__construct() // obf
-         */ // obf
-        public function Services_JSON_Error( $v_snwgz = 'unknown error', $v_wsodp = null, // obf
-                                         $v_unghg = null, $v_nitxm = null, $v_scntj = null ) { // obf
-            _deprecated_constructor( 'Services_JSON_Error', '5.3.0', get_class( $v_fioap ) ); // obf
-            self::__construct( $v_snwgz, $v_wsodp, $v_unghg, $v_nitxm, $v_scntj ); // obf
-        } // obf
-    } // obf
+        /**
+         * PHP4 constructor.
+         *
+         * @deprecated 5.3.0 Use __construct() instead.
+         *
+         * @see Services_JSON_Error::__construct()
+         */
+        public function Services_JSON_Error( $message = 'unknown error', $code = null,
+                                         $mode = null, $options = null, $userinfo = null ) {
+            _deprecated_constructor( 'Services_JSON_Error', '5.3.0', get_class( $this ) );
+            self::__construct( $message, $code, $mode, $options, $userinfo );
+        }
+    }
 
-} // obf
+}
 
-endif; // obf
+endif;

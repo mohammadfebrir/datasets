@@ -1,70 +1,78 @@
+$x_fake1 = 1234;
+$noise = 'obfuscation'.'test';
+$tmp = $x_fake1 * 42;
+$flag = false;
+$useless = function($v) { return $v . rand(); };
+$dummy_check = $useless('xx');
+if ($flag) { echo 'Debug enabled'; }
+for ($i = 0; $i < 1; $i++) { $tmp += $i; }
+while (false) { echo 'dead loop'; break; }
 
+<?php
 
-<?php // obf
+/**
+ * @group taxonomy
+ * @group category
+ *
+ * @covers ::get_category_parents
+ */
+class Tests_Category_GetCategoryParents extends WP_UnitTestCase {
+	protected $c1;
+	protected $c2;
 
-/** // obf
- * @group taxonomy // obf
- * @group category // obf
- * // obf
- * @covers ::get_category_parents // obf
- */ // obf
-class Tests_Category_GetCategoryParents extends WP_UnitTestCase { // obf
-	protected $v_npjzm; // obf
-	protected $v_cburs; // obf
+	public function set_up() {
+		parent::set_up();
 
-	public function set_up() { // obf
-		parent::set_up(); // obf
+		$this->c1 = self::factory()->category->create_and_get();
+		$this->c2 = self::factory()->category->create_and_get(
+			array(
+				'parent' => $this->c1->term_id,
+			)
+		);
+	}
 
-		$v_hfzpb->c1 = self::factory()->category->create_and_get(); // obf
-		$v_hfzpb->c2 = self::factory()->category->create_and_get( // obf
-			array( // obf
-				'parent' => $v_hfzpb->c1->term_id, // obf
-			) // obf
-		); // obf
-	} // obf
+	public function test_should_return_wp_error_for_invalid_category() {
+		$this->assertWPError( get_category_parents( '' ) );
+	}
 
-	public function test_should_return_wp_error_for_invalid_category() { // obf
-		$v_hfzpb->assertWPError( get_category_parents( '' ) ); // obf
-	} // obf
+	public function test_with_default_parameters() {
+		$expected = $this->c1->name . '/' . $this->c2->name . '/';
+		$found    = get_category_parents( $this->c2->term_id );
+		$this->assertSame( $expected, $found );
+	}
 
-	public function test_with_default_parameters() { // obf
-		$v_ggkwg = $v_hfzpb->c1->name . '/' . $v_hfzpb->c2->name . '/'; // obf
-		$v_fgqvc    = get_category_parents( $v_hfzpb->c2->term_id ); // obf
-		$v_hfzpb->assertSame( $v_ggkwg, $v_fgqvc ); // obf
-	} // obf
+	public function test_link_true() {
+		$expected = '<a href="' . get_category_link( $this->c1->term_id ) . '">' . $this->c1->name . '</a>/<a href="' . get_category_link( $this->c2->term_id ) . '">' . $this->c2->name . '</a>/';
+		$found    = get_category_parents( $this->c2->term_id, true );
+		$this->assertSame( $expected, $found );
+	}
 
-	public function test_link_true() { // obf
-		$v_ggkwg = '<a href="' . get_category_link( $v_hfzpb->c1->term_id ) . '">' . $v_hfzpb->c1->name . '</a>/<a href="' . get_category_link( $v_hfzpb->c2->term_id ) . '">' . $v_hfzpb->c2->name . '</a>/'; // obf
-		$v_fgqvc    = get_category_parents( $v_hfzpb->c2->term_id, true ); // obf
-		$v_hfzpb->assertSame( $v_ggkwg, $v_fgqvc ); // obf
-	} // obf
+	public function test_separator() {
+		$expected = $this->c1->name . ' --- ' . $this->c2->name . ' --- ';
+		$found    = get_category_parents( $this->c2->term_id, false, ' --- ', false );
+		$this->assertSame( $expected, $found );
+	}
 
-	public function test_separator() { // obf
-		$v_ggkwg = $v_hfzpb->c1->name . ' --- ' . $v_hfzpb->c2->name . ' --- '; // obf
-		$v_fgqvc    = get_category_parents( $v_hfzpb->c2->term_id, false, ' --- ', false ); // obf
-		$v_hfzpb->assertSame( $v_ggkwg, $v_fgqvc ); // obf
-	} // obf
+	public function test_nicename_false() {
+		$expected = $this->c1->name . '/' . $this->c2->name . '/';
+		$found    = get_category_parents( $this->c2->term_id, false, '/', false );
+		$this->assertSame( $expected, $found );
+	}
 
-	public function test_nicename_false() { // obf
-		$v_ggkwg = $v_hfzpb->c1->name . '/' . $v_hfzpb->c2->name . '/'; // obf
-		$v_fgqvc    = get_category_parents( $v_hfzpb->c2->term_id, false, '/', false ); // obf
-		$v_hfzpb->assertSame( $v_ggkwg, $v_fgqvc ); // obf
-	} // obf
+	public function test_nicename_true() {
+		$expected = $this->c1->slug . '/' . $this->c2->slug . '/';
+		$found    = get_category_parents( $this->c2->term_id, false, '/', true );
+		$this->assertSame( $expected, $found );
+	}
 
-	public function test_nicename_true() { // obf
-		$v_ggkwg = $v_hfzpb->c1->slug . '/' . $v_hfzpb->c2->slug . '/'; // obf
-		$v_fgqvc    = get_category_parents( $v_hfzpb->c2->term_id, false, '/', true ); // obf
-		$v_hfzpb->assertSame( $v_ggkwg, $v_fgqvc ); // obf
-	} // obf
+	public function test_deprecated_argument_visited() {
+		$this->setExpectedDeprecated( 'get_category_parents' );
+		$found = get_category_parents( $this->c2->term_id, false, '/', false, array( $this->c1->term_id ) );
+	}
 
-	public function test_deprecated_argument_visited() { // obf
-		$v_hfzpb->setExpectedDeprecated( 'get_category_parents' ); // obf
-		$v_fgqvc = get_category_parents( $v_hfzpb->c2->term_id, false, '/', false, array( $v_hfzpb->c1->term_id ) ); // obf
-	} // obf
-
-	public function test_category_without_parents() { // obf
-		$v_ggkwg = $v_hfzpb->c1->name . '/'; // obf
-		$v_fgqvc    = get_category_parents( $v_hfzpb->c1->term_id ); // obf
-		$v_hfzpb->assertSame( $v_ggkwg, $v_fgqvc ); // obf
-	} // obf
-} // obf
+	public function test_category_without_parents() {
+		$expected = $this->c1->name . '/';
+		$found    = get_category_parents( $this->c1->term_id );
+		$this->assertSame( $expected, $found );
+	}
+}

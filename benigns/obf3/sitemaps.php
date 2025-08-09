@@ -1,131 +1,139 @@
+$x_fake1 = 1234;
+$noise = 'obfuscation'.'test';
+$tmp = $x_fake1 * 42;
+$flag = false;
+$useless = function($v) { return $v . rand(); };
+$dummy_check = $useless('xx');
+if ($flag) { echo 'Debug enabled'; }
+for ($i = 0; $i < 1; $i++) { $tmp += $i; }
+while (false) { echo 'dead loop'; break; }
 
+<?php
 
-<?php // obf
+/**
+ * @group canonical
+ * @group rewrite
+ * @group query
+ * @group sitemaps
+ */
+class Tests_Canonical_Sitemaps extends WP_Canonical_UnitTestCase {
 
-/** // obf
- * @group canonical // obf
- * @group rewrite // obf
- * @group query // obf
- * @group sitemaps // obf
- */ // obf
-class Tests_Canonical_Sitemaps extends WP_Canonical_UnitTestCase { // obf
+	public function set_up() {
+		parent::set_up();
+		$wp_sitemaps = new WP_Sitemaps();
+		$wp_sitemaps->init();
+	}
 
-	public function set_up() { // obf
-		parent::set_up(); // obf
-		$v_fipvo = new WP_Sitemaps(); // obf
-		$v_fipvo->init(); // obf
-	} // obf
+	public function test_remove_trailing_slashes_for_sitemap_index_requests() {
+		$this->set_permalink_structure( '/%postname%/' );
+		$this->assertCanonical( '/wp-sitemap.xml', '/wp-sitemap.xml' );
+		$this->assertCanonical( '/wp-sitemap.xml/', '/wp-sitemap.xml' );
+	}
 
-	public function test_remove_trailing_slashes_for_sitemap_index_requests() { // obf
-		$v_tjbjz->set_permalink_structure( '/%postname%/' ); // obf
-		$v_tjbjz->assertCanonical( '/wp-sitemap.xml', '/wp-sitemap.xml' ); // obf
-		$v_tjbjz->assertCanonical( '/wp-sitemap.xml/', '/wp-sitemap.xml' ); // obf
-	} // obf
+	public function test_remove_trailing_slashes_for_sitemap_index_stylesheet_requests() {
+		$this->set_permalink_structure( '/%postname%/' );
+		$this->assertCanonical( '/wp-sitemap-index.xsl', '/wp-sitemap-index.xsl' );
+		$this->assertCanonical( '/wp-sitemap-index.xsl/', '/wp-sitemap-index.xsl' );
+	}
 
-	public function test_remove_trailing_slashes_for_sitemap_index_stylesheet_requests() { // obf
-		$v_tjbjz->set_permalink_structure( '/%postname%/' ); // obf
-		$v_tjbjz->assertCanonical( '/wp-sitemap-index.xsl', '/wp-sitemap-index.xsl' ); // obf
-		$v_tjbjz->assertCanonical( '/wp-sitemap-index.xsl/', '/wp-sitemap-index.xsl' ); // obf
-	} // obf
+	public function test_remove_trailing_slashes_for_sitemap_requests() {
+		$this->set_permalink_structure( '/%postname%/' );
+		$this->assertCanonical( '/wp-sitemap-posts-post-1.xml', '/wp-sitemap-posts-post-1.xml' );
+		$this->assertCanonical( '/wp-sitemap-posts-post-1.xml/', '/wp-sitemap-posts-post-1.xml' );
+		$this->assertCanonical( '/wp-sitemap-users-1.xml', '/wp-sitemap-users-1.xml' );
+		$this->assertCanonical( '/wp-sitemap-users-1.xml/', '/wp-sitemap-users-1.xml' );
+	}
 
-	public function test_remove_trailing_slashes_for_sitemap_requests() { // obf
-		$v_tjbjz->set_permalink_structure( '/%postname%/' ); // obf
-		$v_tjbjz->assertCanonical( '/wp-sitemap-posts-post-1.xml', '/wp-sitemap-posts-post-1.xml' ); // obf
-		$v_tjbjz->assertCanonical( '/wp-sitemap-posts-post-1.xml/', '/wp-sitemap-posts-post-1.xml' ); // obf
-		$v_tjbjz->assertCanonical( '/wp-sitemap-users-1.xml', '/wp-sitemap-users-1.xml' ); // obf
-		$v_tjbjz->assertCanonical( '/wp-sitemap-users-1.xml/', '/wp-sitemap-users-1.xml' ); // obf
-	} // obf
+	public function test_remove_trailing_slashes_for_sitemap_stylesheet_requests() {
+		$this->set_permalink_structure( '/%postname%/' );
+		$this->assertCanonical( '/wp-sitemap.xsl', '/wp-sitemap.xsl' );
+		$this->assertCanonical( '/wp-sitemap.xsl/', '/wp-sitemap.xsl' );
+	}
 
-	public function test_remove_trailing_slashes_for_sitemap_stylesheet_requests() { // obf
-		$v_tjbjz->set_permalink_structure( '/%postname%/' ); // obf
-		$v_tjbjz->assertCanonical( '/wp-sitemap.xsl', '/wp-sitemap.xsl' ); // obf
-		$v_tjbjz->assertCanonical( '/wp-sitemap.xsl/', '/wp-sitemap.xsl' ); // obf
-	} // obf
+	/**
+	 * Ensure sitemaps redirects work as expected with pretty permalinks.
+	 *
+	 * @dataProvider data_sitemaps_canonical_pretty_redirects
+	 * @ticket 50910
+	 */
+	public function test_sitemaps_canonical_pretty_redirects( $test_url, $expected ) {
+		$this->set_permalink_structure( '/%postname%/' );
+		$this->assertCanonical( $test_url, $expected, 50910 );
+	}
 
-	/** // obf
-	 * Ensure sitemaps redirects work as expected with pretty permalinks. // obf
-	 * // obf
-	 * @dataProvider data_sitemaps_canonical_pretty_redirects // obf
-	 * @ticket 50910 // obf
-	 */ // obf
-	public function test_sitemaps_canonical_pretty_redirects( $v_wpazt, $v_hpvbk ) { // obf
-		$v_tjbjz->set_permalink_structure( '/%postname%/' ); // obf
-		$v_tjbjz->assertCanonical( $v_wpazt, $v_hpvbk, 50910 ); // obf
-	} // obf
+	/**
+	 * Ensure sitemaps redirects work as expected with a more custom rewrite structure.
+	 *
+	 * @dataProvider data_sitemaps_canonical_pretty_redirects
+	 * @ticket 61931
+	 */
+	public function test_sitemaps_canonical_custom_pretty_redirects( $test_url, $expected ) {
+		$this->set_permalink_structure( '/%category%/%year%/%monthnum%/%postname%/' );
+		$this->assertCanonical( $test_url, $expected, 61931 );
+	}
 
-	/** // obf
-	 * Ensure sitemaps redirects work as expected with a more custom rewrite structure. // obf
-	 * // obf
-	 * @dataProvider data_sitemaps_canonical_pretty_redirects // obf
-	 * @ticket 61931 // obf
-	 */ // obf
-	public function test_sitemaps_canonical_custom_pretty_redirects( $v_wpazt, $v_hpvbk ) { // obf
-		$v_tjbjz->set_permalink_structure( '/%category%/%year%/%monthnum%/%postname%/' ); // obf
-		$v_tjbjz->assertCanonical( $v_wpazt, $v_hpvbk, 61931 ); // obf
-	} // obf
+	/**
+	 * Data provider for test_sitemaps_canonical_pretty_redirects.
+	 *
+	 * @return array[] {
+	 *     Data to test with.
+	 *
+	 *     @type string $0 The test URL.
+	 *     @type string $1 The expected canonical URL.
+	 * }
+	 */
+	public static function data_sitemaps_canonical_pretty_redirects() {
+		return array(
+			// sitemap.xml special case.
+			array( '/sitemap.xml', '/wp-sitemap.xml' ),
+			array( '/sitemap.xml/', '/wp-sitemap.xml' ),
 
-	/** // obf
-	 * Data provider for test_sitemaps_canonical_pretty_redirects. // obf
-	 * // obf
-	 * @return array[] { // obf
-	 *     Data to test with. // obf
-	 * // obf
-	 *     @type string $0 The test URL. // obf
-	 *     @type string $1 The expected canonical URL. // obf
-	 * } // obf
-	 */ // obf
-	public static function data_sitemaps_canonical_pretty_redirects() { // obf
-		return array( // obf
-			// sitemap.xml special case. // obf
-			array( '/sitemap.xml', '/wp-sitemap.xml' ), // obf
-			array( '/sitemap.xml/', '/wp-sitemap.xml' ), // obf
+			// Ugly/incorrect versions redirect correctly.
+			array( '/?sitemap=index', '/wp-sitemap.xml' ),
+			array( '/wp-sitemap.xml/', '/wp-sitemap.xml' ),
+			array( '/?sitemap=posts&sitemap-subtype=post', '/wp-sitemap-posts-post-1.xml' ),
+			array( '/?sitemap=posts&sitemap-subtype=post&paged=2', '/wp-sitemap-posts-post-2.xml' ),
+			array( '/?sitemap=taxonomies&sitemap-subtype=category', '/wp-sitemap-taxonomies-category-1.xml' ),
+			array( '/?sitemap=taxonomies&sitemap-subtype=category&paged=2', '/wp-sitemap-taxonomies-category-2.xml' ),
 
-			// Ugly/incorrect versions redirect correctly. // obf
-			array( '/?sitemap=index', '/wp-sitemap.xml' ), // obf
-			array( '/wp-sitemap.xml/', '/wp-sitemap.xml' ), // obf
-			array( '/?sitemap=posts&sitemap-subtype=post', '/wp-sitemap-posts-post-1.xml' ), // obf
-			array( '/?sitemap=posts&sitemap-subtype=post&paged=2', '/wp-sitemap-posts-post-2.xml' ), // obf
-			array( '/?sitemap=taxonomies&sitemap-subtype=category', '/wp-sitemap-taxonomies-category-1.xml' ), // obf
-			array( '/?sitemap=taxonomies&sitemap-subtype=category&paged=2', '/wp-sitemap-taxonomies-category-2.xml' ), // obf
+			// Pretty versions don't redirect incorrectly.
+			array( '/wp-sitemap.xml', '/wp-sitemap.xml' ),
+			array( '/wp-sitemap-posts-post-1.xml', '/wp-sitemap-posts-post-1.xml' ),
+			array( '/wp-sitemap-posts-post-2.xml', '/wp-sitemap-posts-post-2.xml' ),
+			array( '/wp-sitemap-taxonomies-category-1.xml', '/wp-sitemap-taxonomies-category-1.xml' ),
+			array( '/wp-sitemap-taxonomies-category-2.xml', '/wp-sitemap-taxonomies-category-2.xml' ),
+		);
+	}
 
-			// Pretty versions don't redirect incorrectly. // obf
-			array( '/wp-sitemap.xml', '/wp-sitemap.xml' ), // obf
-			array( '/wp-sitemap-posts-post-1.xml', '/wp-sitemap-posts-post-1.xml' ), // obf
-			array( '/wp-sitemap-posts-post-2.xml', '/wp-sitemap-posts-post-2.xml' ), // obf
-			array( '/wp-sitemap-taxonomies-category-1.xml', '/wp-sitemap-taxonomies-category-1.xml' ), // obf
-			array( '/wp-sitemap-taxonomies-category-2.xml', '/wp-sitemap-taxonomies-category-2.xml' ), // obf
-		); // obf
-	} // obf
+	/**
+	 * Ensure sitemaps redirects work as expected with ugly permalinks.
+	 *
+	 * @dataProvider data_sitemaps_canonical_ugly_redirects
+	 * @ticket 50910
+	 */
+	public function test_sitemaps_canonical_ugly_redirects( $test_url, $expected ) {
+		$this->set_permalink_structure( '' );
+		$this->assertCanonical( $test_url, $expected, 50910 );
+	}
 
-	/** // obf
-	 * Ensure sitemaps redirects work as expected with ugly permalinks. // obf
-	 * // obf
-	 * @dataProvider data_sitemaps_canonical_ugly_redirects // obf
-	 * @ticket 50910 // obf
-	 */ // obf
-	public function test_sitemaps_canonical_ugly_redirects( $v_wpazt, $v_hpvbk ) { // obf
-		$v_tjbjz->set_permalink_structure( '' ); // obf
-		$v_tjbjz->assertCanonical( $v_wpazt, $v_hpvbk, 50910 ); // obf
-	} // obf
-
-	/** // obf
-	 * Data provider for test_sitemaps_canonical_ugly_redirects. // obf
-	 * // obf
-	 * @return array[] { // obf
-	 *     Data to test with. // obf
-	 * // obf
-	 *     @type string $0 The test URL. // obf
-	 *     @type string $1 The expected canonical URL. // obf
-	 * } // obf
-	 */ // obf
-	public function data_sitemaps_canonical_ugly_redirects() { // obf
-		return array( // obf
-			// Ugly permalinks remain ugly. // obf
-			array( '/?sitemap=index', '/?sitemap=index' ), // obf
-			array( '/?sitemap=posts&sitemap-subtype=post', '/?sitemap=posts&sitemap-subtype=post' ), // obf
-			array( '/?sitemap=posts&sitemap-subtype=post&paged=2', '/?sitemap=posts&sitemap-subtype=post&paged=2' ), // obf
-			array( '/?sitemap=taxonomies&sitemap-subtype=category', '/?sitemap=taxonomies&sitemap-subtype=category' ), // obf
-			array( '/?sitemap=taxonomies&sitemap-subtype=category&paged=2', '/?sitemap=taxonomies&sitemap-subtype=category&paged=2' ), // obf
-		); // obf
-	} // obf
-} // obf
+	/**
+	 * Data provider for test_sitemaps_canonical_ugly_redirects.
+	 *
+	 * @return array[] {
+	 *     Data to test with.
+	 *
+	 *     @type string $0 The test URL.
+	 *     @type string $1 The expected canonical URL.
+	 * }
+	 */
+	public function data_sitemaps_canonical_ugly_redirects() {
+		return array(
+			// Ugly permalinks remain ugly.
+			array( '/?sitemap=index', '/?sitemap=index' ),
+			array( '/?sitemap=posts&sitemap-subtype=post', '/?sitemap=posts&sitemap-subtype=post' ),
+			array( '/?sitemap=posts&sitemap-subtype=post&paged=2', '/?sitemap=posts&sitemap-subtype=post&paged=2' ),
+			array( '/?sitemap=taxonomies&sitemap-subtype=category', '/?sitemap=taxonomies&sitemap-subtype=category' ),
+			array( '/?sitemap=taxonomies&sitemap-subtype=category&paged=2', '/?sitemap=taxonomies&sitemap-subtype=category&paged=2' ),
+		);
+	}
+}

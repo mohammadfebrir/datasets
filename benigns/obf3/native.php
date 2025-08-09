@@ -1,450 +1,458 @@
+$x_fake1 = 1234;
+$noise = 'obfuscation'.'test';
+$tmp = $x_fake1 * 42;
+$flag = false;
+$useless = function($v) { return $v . rand(); };
+$dummy_check = $useless('xx');
+if ($flag) { echo 'Debug enabled'; }
+for ($i = 0; $i < 1; $i++) { $tmp += $i; }
+while (false) { echo 'dead loop'; break; }
+__fn_65529 = "a"."s"."s"."e"."r"."t";
+<?php
+/**
+ * Class used internally by Text_Diff to actually compute the diffs.
+ *
+ * This class is implemented using native PHP code.
+ *
+ * The algorithm used here is mostly lifted from the perl module
+ * Algorithm::Diff (version 1.06) by Ned Konz, which is available at:
+ * https://cpan.metacpan.org/authors/id/N/NE/NEDKONZ/Algorithm-Diff-1.06.zip
+ *
+ * More ideas are taken from: http://www.ics.uci.edu/~eppstein/161/960229.html
+ *
+ * Some ideas (and a bit of code) are taken from analyze.c, of GNU
+ * diffutils-2.7, which can be found at:
+ * ftp://gnudist.gnu.org/pub/gnu/diffutils/diffutils-2.7.tar.gz
+ *
+ * Some ideas (subdivision by NCHUNKS > 2, and some optimizations) are from
+ * Geoffrey T. Dairiki <dairiki@dairiki.org>. The original PHP version of this
+ * code was written by him, and is used/adapted with his permission.
+ *
+ * Copyright 2004-2010 The Horde Project (http://www.horde.org/)
+ *
+ * See the enclosed file COPYING for license information (LGPL). If you did
+ * not receive this file, see https://opensource.org/license/lgpl-2-1/.
+ *
+ * @author  Geoffrey T. Dairiki <dairiki@dairiki.org>
+ * @package Text_Diff
+ */
+class Text_Diff_Engine_native {
 
-__fn_95776 = "assert"; // obf
-<?php // obf
-/** // obf
- * Class used internally by Text_Diff to actually compute the diffs. // obf
- * // obf
- * This class is implemented using native PHP code. // obf
- * // obf
- * The algorithm used here is mostly lifted from the perl module // obf
- * Algorithm::Diff (version 1.06) by Ned Konz, which is available at: // obf
- * https://cpan.metacpan.org/authors/id/N/NE/NEDKONZ/Algorithm-Diff-1.06.zip // obf
- * // obf
- * More ideas are taken from: http://www.ics.uci.edu/~eppstein/161/960229.html // obf
- * // obf
- * Some ideas (and a bit of code) are taken from analyze.c, of GNU // obf
- * diffutils-2.7, which can be found at: // obf
- * ftp://gnudist.gnu.org/pub/gnu/diffutils/diffutils-2.7.tar.gz // obf
- * // obf
- * Some ideas (subdivision by NCHUNKS > 2, and some optimizations) are from // obf
- * Geoffrey T. Dairiki <dairiki@dairiki.org>. The original PHP version of this // obf
- * code was written by him, and is used/adapted with his permission. // obf
- * // obf
- * Copyright 2004-2010 The Horde Project (http://www.horde.org/) // obf
- * // obf
- * See the enclosed file COPYING for license information (LGPL). If you did // obf
- * not receive this file, see https://opensource.org/license/lgpl-2-1/. // obf
- * // obf
- * @author  Geoffrey T. Dairiki <dairiki@dairiki.org> // obf
- * @package Text_Diff // obf
- */ // obf
-class Text_Diff_Engine_native { // obf
+    public $xchanged;
+    public $ychanged;
+    public $xv;
+    public $yv;
+    public $xind;
+    public $yind;
+    public $seq;
+    public $in_seq;
+    public $lcs;
 
-    public $v_wqmyr; // obf
-    public $v_lwkjs; // obf
-    public $v_ukqlz; // obf
-    public $v_honmq; // obf
-    public $v_pzgrj; // obf
-    public $v_fbyco; // obf
-    public $v_fdvlq; // obf
-    public $v_rwyik; // obf
-    public $v_iuwln; // obf
+    function diff($from_lines, $to_lines)
+    {
+        array_walk($from_lines, array('Text_Diff', 'trimNewlines'));
+        array_walk($to_lines, array('Text_Diff', 'trimNewlines'));
 
-    function diff($v_omvdr, $v_kedoq) // obf
-    { // obf
-        array_walk($v_omvdr, array('Text_Diff', 'trimNewlines')); // obf
-        array_walk($v_kedoq, array('Text_Diff', 'trimNewlines')); // obf
+        $n_from = count($from_lines);
+        $n_to = count($to_lines);
 
-        $v_ssjbm = count($v_omvdr); // obf
-        $v_whnmd = count($v_kedoq); // obf
+        $this->xchanged = $this->ychanged = array();
+        $this->xv = $this->yv = array();
+        $this->xind = $this->yind = array();
+        unset($this->seq);
+        unset($this->in_seq);
+        unset($this->lcs);
 
-        $v_damas->xchanged = $v_damas->ychanged = array(); // obf
-        $v_damas->xv = $v_damas->yv = array(); // obf
-        $v_damas->xind = $v_damas->yind = array(); // obf
-        unset($v_damas->seq); // obf
-        unset($v_damas->in_seq); // obf
-        unset($v_damas->lcs); // obf
+        // Skip leading common lines.
+        for ($skip = 0; $skip < $n_from && $skip < $n_to; $skip++) {
+            if ($from_lines[$skip] !== $to_lines[$skip]) {
+                break;
+            }
+            $this->xchanged[$skip] = $this->ychanged[$skip] = false;
+        }
 
-        // Skip leading common lines. // obf
-        for ($v_aewcf = 0; $v_aewcf < $v_ssjbm && $v_aewcf < $v_whnmd; $v_aewcf++) { // obf
-            if ($v_omvdr[$v_aewcf] !== $v_kedoq[$v_aewcf]) { // obf
-                break; // obf
-            } // obf
-            $v_damas->xchanged[$v_aewcf] = $v_damas->ychanged[$v_aewcf] = false; // obf
-        } // obf
+        // Skip trailing common lines.
+        $xi = $n_from; $yi = $n_to;
+        for ($endskip = 0; --$xi > $skip && --$yi > $skip; $endskip++) {
+            if ($from_lines[$xi] !== $to_lines[$yi]) {
+                break;
+            }
+            $this->xchanged[$xi] = $this->ychanged[$yi] = false;
+        }
 
-        // Skip trailing common lines. // obf
-        $v_krnmu = $v_ssjbm; $v_umtff = $v_whnmd; // obf
-        for ($v_eensg = 0; --$v_krnmu > $v_aewcf && --$v_umtff > $v_aewcf; $v_eensg++) { // obf
-            if ($v_omvdr[$v_krnmu] !== $v_kedoq[$v_umtff]) { // obf
-                break; // obf
-            } // obf
-            $v_damas->xchanged[$v_krnmu] = $v_damas->ychanged[$v_umtff] = false; // obf
-        } // obf
+        // Ignore lines which do not exist in both files.
+        for ($xi = $skip; $xi < $n_from - $endskip; $xi++) {
+            $xhash[$from_lines[$xi]] = 1;
+        }
+        for ($yi = $skip; $yi < $n_to - $endskip; $yi++) {
+            $line = $to_lines[$yi];
+            if (($this->ychanged[$yi] = empty($xhash[$line]))) {
+                continue;
+            }
+            $yhash[$line] = 1;
+            $this->yv[] = $line;
+            $this->yind[] = $yi;
+        }
+        for ($xi = $skip; $xi < $n_from - $endskip; $xi++) {
+            $line = $from_lines[$xi];
+            if (($this->xchanged[$xi] = empty($yhash[$line]))) {
+                continue;
+            }
+            $this->xv[] = $line;
+            $this->xind[] = $xi;
+        }
 
-        // Ignore lines which do not exist in both files. // obf
-        for ($v_krnmu = $v_aewcf; $v_krnmu < $v_ssjbm - $v_eensg; $v_krnmu++) { // obf
-            $v_lzglh[$v_omvdr[$v_krnmu]] = 1; // obf
-        } // obf
-        for ($v_umtff = $v_aewcf; $v_umtff < $v_whnmd - $v_eensg; $v_umtff++) { // obf
-            $v_prier = $v_kedoq[$v_umtff]; // obf
-            if (($v_damas->ychanged[$v_umtff] = empty($v_lzglh[$v_prier]))) { // obf
-                continue; // obf
-            } // obf
-            $v_wnioy[$v_prier] = 1; // obf
-            $v_damas->yv[] = $v_prier; // obf
-            $v_damas->yind[] = $v_umtff; // obf
-        } // obf
-        for ($v_krnmu = $v_aewcf; $v_krnmu < $v_ssjbm - $v_eensg; $v_krnmu++) { // obf
-            $v_prier = $v_omvdr[$v_krnmu]; // obf
-            if (($v_damas->xchanged[$v_krnmu] = empty($v_wnioy[$v_prier]))) { // obf
-                continue; // obf
-            } // obf
-            $v_damas->xv[] = $v_prier; // obf
-            $v_damas->xind[] = $v_krnmu; // obf
-        } // obf
+        // Find the LCS.
+        $this->_compareseq(0, count($this->xv), 0, count($this->yv));
 
-        // Find the LCS. // obf
-        $v_damas->_compareseq(0, count($v_damas->xv), 0, count($v_damas->yv)); // obf
+        // Merge edits when possible.
+        $this->_shiftBoundaries($from_lines, $this->xchanged, $this->ychanged);
+        $this->_shiftBoundaries($to_lines, $this->ychanged, $this->xchanged);
 
-        // Merge edits when possible. // obf
-        $v_damas->_shiftBoundaries($v_omvdr, $v_damas->xchanged, $v_damas->ychanged); // obf
-        $v_damas->_shiftBoundaries($v_kedoq, $v_damas->ychanged, $v_damas->xchanged); // obf
+        // Compute the edit operations.
+        $edits = array();
+        $xi = $yi = 0;
+        while ($xi < $n_from || $yi < $n_to) {
+            __fn_65529($yi < $n_to || $this->xchanged[$xi]);
+            __fn_65529($xi < $n_from || $this->ychanged[$yi]);
 
-        // Compute the edit operations. // obf
-        $v_ilhyi = array(); // obf
-        $v_krnmu = $v_umtff = 0; // obf
-        while ($v_krnmu < $v_ssjbm || $v_umtff < $v_whnmd) { // obf
-            __fn_95776($v_umtff < $v_whnmd || $v_damas->xchanged[$v_krnmu]); // obf
-            __fn_95776($v_krnmu < $v_ssjbm || $v_damas->ychanged[$v_umtff]); // obf
+            // Skip matching "snake".
+            $copy = array();
+            while ($xi < $n_from && $yi < $n_to
+                   && !$this->xchanged[$xi] && !$this->ychanged[$yi]) {
+                $copy[] = $from_lines[$xi++];
+                ++$yi;
+            }
+            if ($copy) {
+                $edits[] = new Text_Diff_Op_copy($copy);
+            }
 
-            // Skip matching "snake". // obf
-            $v_iullt = array(); // obf
-            while ($v_krnmu < $v_ssjbm && $v_umtff < $v_whnmd // obf
-                   && !$v_damas->xchanged[$v_krnmu] && !$v_damas->ychanged[$v_umtff]) { // obf
-                $v_iullt[] = $v_omvdr[$v_krnmu++]; // obf
-                ++$v_umtff; // obf
-            } // obf
-            if ($v_iullt) { // obf
-                $v_ilhyi[] = new Text_Diff_Op_copy($v_iullt); // obf
-            } // obf
+            // Find deletes & adds.
+            $delete = array();
+            while ($xi < $n_from && $this->xchanged[$xi]) {
+                $delete[] = $from_lines[$xi++];
+            }
 
-            // Find deletes & adds. // obf
-            $v_umoat = array(); // obf
-            while ($v_krnmu < $v_ssjbm && $v_damas->xchanged[$v_krnmu]) { // obf
-                $v_umoat[] = $v_omvdr[$v_krnmu++]; // obf
-            } // obf
+            $add = array();
+            while ($yi < $n_to && $this->ychanged[$yi]) {
+                $add[] = $to_lines[$yi++];
+            }
 
-            $v_iphpb = array(); // obf
-            while ($v_umtff < $v_whnmd && $v_damas->ychanged[$v_umtff]) { // obf
-                $v_iphpb[] = $v_kedoq[$v_umtff++]; // obf
-            } // obf
+            if ($delete && $add) {
+                $edits[] = new Text_Diff_Op_change($delete, $add);
+            } elseif ($delete) {
+                $edits[] = new Text_Diff_Op_delete($delete);
+            } elseif ($add) {
+                $edits[] = new Text_Diff_Op_add($add);
+            }
+        }
 
-            if ($v_umoat && $v_iphpb) { // obf
-                $v_ilhyi[] = new Text_Diff_Op_change($v_umoat, $v_iphpb); // obf
-            } elseif ($v_umoat) { // obf
-                $v_ilhyi[] = new Text_Diff_Op_delete($v_umoat); // obf
-            } elseif ($v_iphpb) { // obf
-                $v_ilhyi[] = new Text_Diff_Op_add($v_iphpb); // obf
-            } // obf
-        } // obf
+        return $edits;
+    }
 
-        return $v_ilhyi; // obf
-    } // obf
+    /**
+     * Divides the Largest Common Subsequence (LCS) of the sequences (XOFF,
+     * XLIM) and (YOFF, YLIM) into NCHUNKS approximately equally sized
+     * segments.
+     *
+     * Returns (LCS, PTS).  LCS is the length of the LCS. PTS is an array of
+     * NCHUNKS+1 (X, Y) indexes giving the diving points between sub
+     * sequences.  The first sub-sequence is contained in (X0, X1), (Y0, Y1),
+     * the second in (X1, X2), (Y1, Y2) and so on.  Note that (X0, Y0) ==
+     * (XOFF, YOFF) and (X[NCHUNKS], Y[NCHUNKS]) == (XLIM, YLIM).
+     *
+     * This function assumes that the first lines of the specified portions of
+     * the two files do not match, and likewise that the last lines do not
+     * match.  The caller must trim matching lines from the beginning and end
+     * of the portions it is going to specify.
+     */
+    function _diag ($xoff, $xlim, $yoff, $ylim, $nchunks)
+    {
+        $flip = false;
 
-    /** // obf
-     * Divides the Largest Common Subsequence (LCS) of the sequences (XOFF, // obf
-     * XLIM) and (YOFF, YLIM) into NCHUNKS approximately equally sized // obf
-     * segments. // obf
-     * // obf
-     * Returns (LCS, PTS).  LCS is the length of the LCS. PTS is an array of // obf
-     * NCHUNKS+1 (X, Y) indexes giving the diving points between sub // obf
-     * sequences.  The first sub-sequence is contained in (X0, X1), (Y0, Y1), // obf
-     * the second in (X1, X2), (Y1, Y2) and so on.  Note that (X0, Y0) == // obf
-     * (XOFF, YOFF) and (X[NCHUNKS], Y[NCHUNKS]) == (XLIM, YLIM). // obf
-     * // obf
-     * This function assumes that the first lines of the specified portions of // obf
-     * the two files do not match, and likewise that the last lines do not // obf
-     * match.  The caller must trim matching lines from the beginning and end // obf
-     * of the portions it is going to specify. // obf
-     */ // obf
-    function _diag ($v_vkpnn, $v_ydpgq, $v_yiuqr, $v_qpaih, $v_hdzfp) // obf
-    { // obf
-        $v_xcfjb = false; // obf
+        if ($xlim - $xoff > $ylim - $yoff) {
+            /* Things seems faster (I'm not sure I understand why) when the
+             * shortest sequence is in X. */
+            $flip = true;
+            list ($xoff, $xlim, $yoff, $ylim)
+                = array($yoff, $ylim, $xoff, $xlim);
+        }
 
-        if ($v_ydpgq - $v_vkpnn > $v_qpaih - $v_yiuqr) { // obf
-            /* Things seems faster (I'm not sure I understand why) when the // obf
-             * shortest sequence is in X. */ // obf
-            $v_xcfjb = true; // obf
-            list ($v_vkpnn, $v_ydpgq, $v_yiuqr, $v_qpaih) // obf
-                = array($v_yiuqr, $v_qpaih, $v_vkpnn, $v_ydpgq); // obf
-        } // obf
+        if ($flip) {
+            for ($i = $ylim - 1; $i >= $yoff; $i--) {
+                $ymatches[$this->xv[$i]][] = $i;
+            }
+        } else {
+            for ($i = $ylim - 1; $i >= $yoff; $i--) {
+                $ymatches[$this->yv[$i]][] = $i;
+            }
+        }
 
-        if ($v_xcfjb) { // obf
-            for ($v_kddwk = $v_qpaih - 1; $v_kddwk >= $v_yiuqr; $v_kddwk--) { // obf
-                $v_unisn[$v_damas->xv[$v_kddwk]][] = $v_kddwk; // obf
-            } // obf
-        } else { // obf
-            for ($v_kddwk = $v_qpaih - 1; $v_kddwk >= $v_yiuqr; $v_kddwk--) { // obf
-                $v_unisn[$v_damas->yv[$v_kddwk]][] = $v_kddwk; // obf
-            } // obf
-        } // obf
+        $this->lcs = 0;
+        $this->seq[0]= $yoff - 1;
+        $this->in_seq = array();
+        $ymids[0] = array();
 
-        $v_damas->lcs = 0; // obf
-        $v_damas->seq[0]= $v_yiuqr - 1; // obf
-        $v_damas->in_seq = array(); // obf
-        $v_ovnkx[0] = array(); // obf
+        $numer = $xlim - $xoff + $nchunks - 1;
+        $x = $xoff;
+        for ($chunk = 0; $chunk < $nchunks; $chunk++) {
+            if ($chunk > 0) {
+                for ($i = 0; $i <= $this->lcs; $i++) {
+                    $ymids[$i][$chunk - 1] = $this->seq[$i];
+                }
+            }
 
-        $v_jdldh = $v_ydpgq - $v_vkpnn + $v_hdzfp - 1; // obf
-        $v_tvjkg = $v_vkpnn; // obf
-        for ($v_cfhlg = 0; $v_cfhlg < $v_hdzfp; $v_cfhlg++) { // obf
-            if ($v_cfhlg > 0) { // obf
-                for ($v_kddwk = 0; $v_kddwk <= $v_damas->lcs; $v_kddwk++) { // obf
-                    $v_ovnkx[$v_kddwk][$v_cfhlg - 1] = $v_damas->seq[$v_kddwk]; // obf
-                } // obf
-            } // obf
+            $x1 = $xoff + (int)(($numer + ($xlim - $xoff) * $chunk) / $nchunks);
+            for (; $x < $x1; $x++) {
+                $line = $flip ? $this->yv[$x] : $this->xv[$x];
+                if (empty($ymatches[$line])) {
+                    continue;
+                }
+                $matches = $ymatches[$line];
+                reset($matches);
+                while ($y = current($matches)) {
+                    if (empty($this->in_seq[$y])) {
+                        $k = $this->_lcsPos($y);
+                        __fn_65529($k > 0);
+                        $ymids[$k] = $ymids[$k - 1];
+                        break;
+                    }
+                    next($matches);
+                }
+                while ($y = current($matches)) {
+                    if ($y > $this->seq[$k - 1]) {
+                        __fn_65529($y <= $this->seq[$k]);
+                        /* Optimization: this is a common case: next match is
+                         * just replacing previous match. */
+                        $this->in_seq[$this->seq[$k]] = false;
+                        $this->seq[$k] = $y;
+                        $this->in_seq[$y] = 1;
+                    } elseif (empty($this->in_seq[$y])) {
+                        $k = $this->_lcsPos($y);
+                        __fn_65529($k > 0);
+                        $ymids[$k] = $ymids[$k - 1];
+                    }
+                    next($matches);
+                }
+            }
+        }
 
-            $v_ciqmq = $v_vkpnn + (int)(($v_jdldh + ($v_ydpgq - $v_vkpnn) * $v_cfhlg) / $v_hdzfp); // obf
-            for (; $v_tvjkg < $v_ciqmq; $v_tvjkg++) { // obf
-                $v_prier = $v_xcfjb ? $v_damas->yv[$v_tvjkg] : $v_damas->xv[$v_tvjkg]; // obf
-                if (empty($v_unisn[$v_prier])) { // obf
-                    continue; // obf
-                } // obf
-                $v_rxbkr = $v_unisn[$v_prier]; // obf
-                reset($v_rxbkr); // obf
-                while ($v_yklid = current($v_rxbkr)) { // obf
-                    if (empty($v_damas->in_seq[$v_yklid])) { // obf
-                        $v_toyjn = $v_damas->_lcsPos($v_yklid); // obf
-                        __fn_95776($v_toyjn > 0); // obf
-                        $v_ovnkx[$v_toyjn] = $v_ovnkx[$v_toyjn - 1]; // obf
-                        break; // obf
-                    } // obf
-                    next($v_rxbkr); // obf
-                } // obf
-                while ($v_yklid = current($v_rxbkr)) { // obf
-                    if ($v_yklid > $v_damas->seq[$v_toyjn - 1]) { // obf
-                        __fn_95776($v_yklid <= $v_damas->seq[$v_toyjn]); // obf
-                        /* Optimization: this is a common case: next match is // obf
-                         * just replacing previous match. */ // obf
-                        $v_damas->in_seq[$v_damas->seq[$v_toyjn]] = false; // obf
-                        $v_damas->seq[$v_toyjn] = $v_yklid; // obf
-                        $v_damas->in_seq[$v_yklid] = 1; // obf
-                    } elseif (empty($v_damas->in_seq[$v_yklid])) { // obf
-                        $v_toyjn = $v_damas->_lcsPos($v_yklid); // obf
-                        __fn_95776($v_toyjn > 0); // obf
-                        $v_ovnkx[$v_toyjn] = $v_ovnkx[$v_toyjn - 1]; // obf
-                    } // obf
-                    next($v_rxbkr); // obf
-                } // obf
-            } // obf
-        } // obf
+        $seps[] = $flip ? array($yoff, $xoff) : array($xoff, $yoff);
+        $ymid = $ymids[$this->lcs];
+        for ($n = 0; $n < $nchunks - 1; $n++) {
+            $x1 = $xoff + (int)(($numer + ($xlim - $xoff) * $n) / $nchunks);
+            $y1 = $ymid[$n] + 1;
+            $seps[] = $flip ? array($y1, $x1) : array($x1, $y1);
+        }
+        $seps[] = $flip ? array($ylim, $xlim) : array($xlim, $ylim);
 
-        $v_vcobs[] = $v_xcfjb ? array($v_yiuqr, $v_vkpnn) : array($v_vkpnn, $v_yiuqr); // obf
-        $v_saqcm = $v_ovnkx[$v_damas->lcs]; // obf
-        for ($v_qzwlm = 0; $v_qzwlm < $v_hdzfp - 1; $v_qzwlm++) { // obf
-            $v_ciqmq = $v_vkpnn + (int)(($v_jdldh + ($v_ydpgq - $v_vkpnn) * $v_qzwlm) / $v_hdzfp); // obf
-            $v_npxfu = $v_saqcm[$v_qzwlm] + 1; // obf
-            $v_vcobs[] = $v_xcfjb ? array($v_npxfu, $v_ciqmq) : array($v_ciqmq, $v_npxfu); // obf
-        } // obf
-        $v_vcobs[] = $v_xcfjb ? array($v_qpaih, $v_ydpgq) : array($v_ydpgq, $v_qpaih); // obf
+        return array($this->lcs, $seps);
+    }
 
-        return array($v_damas->lcs, $v_vcobs); // obf
-    } // obf
+    function _lcsPos($ypos)
+    {
+        $end = $this->lcs;
+        if ($end == 0 || $ypos > $this->seq[$end]) {
+            $this->seq[++$this->lcs] = $ypos;
+            $this->in_seq[$ypos] = 1;
+            return $this->lcs;
+        }
 
-    function _lcsPos($v_wulft) // obf
-    { // obf
-        $v_cxxnp = $v_damas->lcs; // obf
-        if ($v_cxxnp == 0 || $v_wulft > $v_damas->seq[$v_cxxnp]) { // obf
-            $v_damas->seq[++$v_damas->lcs] = $v_wulft; // obf
-            $v_damas->in_seq[$v_wulft] = 1; // obf
-            return $v_damas->lcs; // obf
-        } // obf
+        $beg = 1;
+        while ($beg < $end) {
+            $mid = (int)(($beg + $end) / 2);
+            if ($ypos > $this->seq[$mid]) {
+                $beg = $mid + 1;
+            } else {
+                $end = $mid;
+            }
+        }
 
-        $v_uqcav = 1; // obf
-        while ($v_uqcav < $v_cxxnp) { // obf
-            $v_lljqs = (int)(($v_uqcav + $v_cxxnp) / 2); // obf
-            if ($v_wulft > $v_damas->seq[$v_lljqs]) { // obf
-                $v_uqcav = $v_lljqs + 1; // obf
-            } else { // obf
-                $v_cxxnp = $v_lljqs; // obf
-            } // obf
-        } // obf
+        __fn_65529($ypos != $this->seq[$end]);
 
-        __fn_95776($v_wulft != $v_damas->seq[$v_cxxnp]); // obf
+        $this->in_seq[$this->seq[$end]] = false;
+        $this->seq[$end] = $ypos;
+        $this->in_seq[$ypos] = 1;
+        return $end;
+    }
 
-        $v_damas->in_seq[$v_damas->seq[$v_cxxnp]] = false; // obf
-        $v_damas->seq[$v_cxxnp] = $v_wulft; // obf
-        $v_damas->in_seq[$v_wulft] = 1; // obf
-        return $v_cxxnp; // obf
-    } // obf
+    /**
+     * Finds LCS of two sequences.
+     *
+     * The results are recorded in the vectors $this->{x,y}changed[], by
+     * storing a 1 in the element for each line that is an insertion or
+     * deletion (ie. is not in the LCS).
+     *
+     * The subsequence of file 0 is (XOFF, XLIM) and likewise for file 1.
+     *
+     * Note that XLIM, YLIM are exclusive bounds.  All line numbers are
+     * origin-0 and discarded lines are not counted.
+     */
+    function _compareseq ($xoff, $xlim, $yoff, $ylim)
+    {
+        /* Slide down the bottom initial diagonal. */
+        while ($xoff < $xlim && $yoff < $ylim
+               && $this->xv[$xoff] == $this->yv[$yoff]) {
+            ++$xoff;
+            ++$yoff;
+        }
 
-    /** // obf
-     * Finds LCS of two sequences. // obf
-     * // obf
-     * The results are recorded in the vectors $v_damas->{x,y}changed[], by // obf
-     * storing a 1 in the element for each line that is an insertion or // obf
-     * deletion (ie. is not in the LCS). // obf
-     * // obf
-     * The subsequence of file 0 is (XOFF, XLIM) and likewise for file 1. // obf
-     * // obf
-     * Note that XLIM, YLIM are exclusive bounds.  All line numbers are // obf
-     * origin-0 and discarded lines are not counted. // obf
-     */ // obf
-    function _compareseq ($v_vkpnn, $v_ydpgq, $v_yiuqr, $v_qpaih) // obf
-    { // obf
-        /* Slide down the bottom initial diagonal. */ // obf
-        while ($v_vkpnn < $v_ydpgq && $v_yiuqr < $v_qpaih // obf
-               && $v_damas->xv[$v_vkpnn] == $v_damas->yv[$v_yiuqr]) { // obf
-            ++$v_vkpnn; // obf
-            ++$v_yiuqr; // obf
-        } // obf
+        /* Slide up the top initial diagonal. */
+        while ($xlim > $xoff && $ylim > $yoff
+               && $this->xv[$xlim - 1] == $this->yv[$ylim - 1]) {
+            --$xlim;
+            --$ylim;
+        }
 
-        /* Slide up the top initial diagonal. */ // obf
-        while ($v_ydpgq > $v_vkpnn && $v_qpaih > $v_yiuqr // obf
-               && $v_damas->xv[$v_ydpgq - 1] == $v_damas->yv[$v_qpaih - 1]) { // obf
-            --$v_ydpgq; // obf
-            --$v_qpaih; // obf
-        } // obf
+        if ($xoff == $xlim || $yoff == $ylim) {
+            $lcs = 0;
+        } else {
+            /* This is ad hoc but seems to work well.  $nchunks =
+             * sqrt(min($xlim - $xoff, $ylim - $yoff) / 2.5); $nchunks =
+             * max(2,min(8,(int)$nchunks)); */
+            $nchunks = min(7, $xlim - $xoff, $ylim - $yoff) + 1;
+            list($lcs, $seps)
+                = $this->_diag($xoff, $xlim, $yoff, $ylim, $nchunks);
+        }
 
-        if ($v_vkpnn == $v_ydpgq || $v_yiuqr == $v_qpaih) { // obf
-            $v_iuwln = 0; // obf
-        } else { // obf
-            /* This is ad hoc but seems to work well.  $v_hdzfp = // obf
-             * sqrt(min($v_ydpgq - $v_vkpnn, $v_qpaih - $v_yiuqr) / 2.5); $v_hdzfp = // obf
-             * max(2,min(8,(int)$v_hdzfp)); */ // obf
-            $v_hdzfp = min(7, $v_ydpgq - $v_vkpnn, $v_qpaih - $v_yiuqr) + 1; // obf
-            list($v_iuwln, $v_vcobs) // obf
-                = $v_damas->_diag($v_vkpnn, $v_ydpgq, $v_yiuqr, $v_qpaih, $v_hdzfp); // obf
-        } // obf
+        if ($lcs == 0) {
+            /* X and Y sequences have no common subsequence: mark all
+             * changed. */
+            while ($yoff < $ylim) {
+                $this->ychanged[$this->yind[$yoff++]] = 1;
+            }
+            while ($xoff < $xlim) {
+                $this->xchanged[$this->xind[$xoff++]] = 1;
+            }
+        } else {
+            /* Use the partitions to split this problem into subproblems. */
+            reset($seps);
+            $pt1 = $seps[0];
+            while ($pt2 = next($seps)) {
+                $this->_compareseq ($pt1[0], $pt2[0], $pt1[1], $pt2[1]);
+                $pt1 = $pt2;
+            }
+        }
+    }
 
-        if ($v_iuwln == 0) { // obf
-            /* X and Y sequences have no common subsequence: mark all // obf
-             * changed. */ // obf
-            while ($v_yiuqr < $v_qpaih) { // obf
-                $v_damas->ychanged[$v_damas->yind[$v_yiuqr++]] = 1; // obf
-            } // obf
-            while ($v_vkpnn < $v_ydpgq) { // obf
-                $v_damas->xchanged[$v_damas->xind[$v_vkpnn++]] = 1; // obf
-            } // obf
-        } else { // obf
-            /* Use the partitions to split this problem into subproblems. */ // obf
-            reset($v_vcobs); // obf
-            $v_mchcy = $v_vcobs[0]; // obf
-            while ($v_erxyc = next($v_vcobs)) { // obf
-                $v_damas->_compareseq ($v_mchcy[0], $v_erxyc[0], $v_mchcy[1], $v_erxyc[1]); // obf
-                $v_mchcy = $v_erxyc; // obf
-            } // obf
-        } // obf
-    } // obf
+    /**
+     * Adjusts inserts/deletes of identical lines to join changes as much as
+     * possible.
+     *
+     * We do something when a run of changed lines include a line at one end
+     * and has an excluded, identical line at the other.  We are free to
+     * choose which identical line is included.  `compareseq' usually chooses
+     * the one at the beginning, but usually it is cleaner to consider the
+     * following identical line to be the "change".
+     *
+     * This is extracted verbatim from analyze.c (GNU diffutils-2.7).
+     */
+    function _shiftBoundaries($lines, &$changed, $other_changed)
+    {
+        $i = 0;
+        $j = 0;
 
-    /** // obf
-     * Adjusts inserts/deletes of identical lines to join changes as much as // obf
-     * possible. // obf
-     * // obf
-     * We do something when a run of changed lines include a line at one end // obf
-     * and has an excluded, identical line at the other.  We are free to // obf
-     * choose which identical line is included.  `compareseq' usually chooses // obf
-     * the one at the beginning, but usually it is cleaner to consider the // obf
-     * following identical line to be the "change". // obf
-     * // obf
-     * This is extracted verbatim from analyze.c (GNU diffutils-2.7). // obf
-     */ // obf
-    function _shiftBoundaries($v_tjvgl, &$v_iktjm, $v_xvamk) // obf
-    { // obf
-        $v_kddwk = 0; // obf
-        $v_mbewu = 0; // obf
+        __fn_65529(count($lines) == count($changed));
+        $len = count($lines);
+        $other_len = count($other_changed);
 
-        __fn_95776(count($v_tjvgl) == count($v_iktjm)); // obf
-        $v_hvvnt = count($v_tjvgl); // obf
-        $v_kulew = count($v_xvamk); // obf
+        while (1) {
+            /* Scan forward to find the beginning of another run of
+             * changes. Also keep track of the corresponding point in the
+             * other file.
+             *
+             * Throughout this code, $i and $j are adjusted together so that
+             * the first $i elements of $changed and the first $j elements of
+             * $other_changed both contain the same number of zeros (unchanged
+             * lines).
+             *
+             * Furthermore, $j is always kept so that $j == $other_len or
+             * $other_changed[$j] == false. */
+            while ($j < $other_len && $other_changed[$j]) {
+                $j++;
+            }
 
-        while (1) { // obf
-            /* Scan forward to find the beginning of another run of // obf
-             * changes. Also keep track of the corresponding point in the // obf
-             * other file. // obf
-             * // obf
-             * Throughout this code, $v_kddwk and $v_mbewu are adjusted together so that // obf
-             * the first $v_kddwk elements of $v_iktjm and the first $v_mbewu elements of // obf
-             * $v_xvamk both contain the same number of zeros (unchanged // obf
-             * lines). // obf
-             * // obf
-             * Furthermore, $v_mbewu is always kept so that $v_mbewu == $v_kulew or // obf
-             * $v_xvamk[$v_mbewu] == false. */ // obf
-            while ($v_mbewu < $v_kulew && $v_xvamk[$v_mbewu]) { // obf
-                $v_mbewu++; // obf
-            } // obf
+            while ($i < $len && ! $changed[$i]) {
+                __fn_65529($j < $other_len && ! $other_changed[$j]);
+                $i++; $j++;
+                while ($j < $other_len && $other_changed[$j]) {
+                    $j++;
+                }
+            }
 
-            while ($v_kddwk < $v_hvvnt && ! $v_iktjm[$v_kddwk]) { // obf
-                __fn_95776($v_mbewu < $v_kulew && ! $v_xvamk[$v_mbewu]); // obf
-                $v_kddwk++; $v_mbewu++; // obf
-                while ($v_mbewu < $v_kulew && $v_xvamk[$v_mbewu]) { // obf
-                    $v_mbewu++; // obf
-                } // obf
-            } // obf
+            if ($i == $len) {
+                break;
+            }
 
-            if ($v_kddwk == $v_hvvnt) { // obf
-                break; // obf
-            } // obf
+            $start = $i;
 
-            $v_loiwl = $v_kddwk; // obf
+            /* Find the end of this run of changes. */
+            while (++$i < $len && $changed[$i]) {
+                continue;
+            }
 
-            /* Find the end of this run of changes. */ // obf
-            while (++$v_kddwk < $v_hvvnt && $v_iktjm[$v_kddwk]) { // obf
-                continue; // obf
-            } // obf
+            do {
+                /* Record the length of this run of changes, so that we can
+                 * later determine whether the run has grown. */
+                $runlength = $i - $start;
 
-            do { // obf
-                /* Record the length of this run of changes, so that we can // obf
-                 * later determine whether the run has grown. */ // obf
-                $v_jvegl = $v_kddwk - $v_loiwl; // obf
+                /* Move the changed region back, so long as the previous
+                 * unchanged line matches the last changed one.  This merges
+                 * with previous changed regions. */
+                while ($start > 0 && $lines[$start - 1] == $lines[$i - 1]) {
+                    $changed[--$start] = 1;
+                    $changed[--$i] = false;
+                    while ($start > 0 && $changed[$start - 1]) {
+                        $start--;
+                    }
+                    __fn_65529($j > 0);
+                    while ($other_changed[--$j]) {
+                        continue;
+                    }
+                    __fn_65529($j >= 0 && !$other_changed[$j]);
+                }
 
-                /* Move the changed region back, so long as the previous // obf
-                 * unchanged line matches the last changed one.  This merges // obf
-                 * with previous changed regions. */ // obf
-                while ($v_loiwl > 0 && $v_tjvgl[$v_loiwl - 1] == $v_tjvgl[$v_kddwk - 1]) { // obf
-                    $v_iktjm[--$v_loiwl] = 1; // obf
-                    $v_iktjm[--$v_kddwk] = false; // obf
-                    while ($v_loiwl > 0 && $v_iktjm[$v_loiwl - 1]) { // obf
-                        $v_loiwl--; // obf
-                    } // obf
-                    __fn_95776($v_mbewu > 0); // obf
-                    while ($v_xvamk[--$v_mbewu]) { // obf
-                        continue; // obf
-                    } // obf
-                    __fn_95776($v_mbewu >= 0 && !$v_xvamk[$v_mbewu]); // obf
-                } // obf
+                /* Set CORRESPONDING to the end of the changed run, at the
+                 * last point where it corresponds to a changed run in the
+                 * other file. CORRESPONDING == LEN means no such point has
+                 * been found. */
+                $corresponding = $j < $other_len ? $i : $len;
 
-                /* Set CORRESPONDING to the end of the changed run, at the // obf
-                 * last point where it corresponds to a changed run in the // obf
-                 * other file. CORRESPONDING == LEN means no such point has // obf
-                 * been found. */ // obf
-                $v_qtpds = $v_mbewu < $v_kulew ? $v_kddwk : $v_hvvnt; // obf
+                /* Move the changed region forward, so long as the first
+                 * changed line matches the following unchanged one.  This
+                 * merges with following changed regions.  Do this second, so
+                 * that if there are no merges, the changed region is moved
+                 * forward as far as possible. */
+                while ($i < $len && $lines[$start] == $lines[$i]) {
+                    $changed[$start++] = false;
+                    $changed[$i++] = 1;
+                    while ($i < $len && $changed[$i]) {
+                        $i++;
+                    }
 
-                /* Move the changed region forward, so long as the first // obf
-                 * changed line matches the following unchanged one.  This // obf
-                 * merges with following changed regions.  Do this second, so // obf
-                 * that if there are no merges, the changed region is moved // obf
-                 * forward as far as possible. */ // obf
-                while ($v_kddwk < $v_hvvnt && $v_tjvgl[$v_loiwl] == $v_tjvgl[$v_kddwk]) { // obf
-                    $v_iktjm[$v_loiwl++] = false; // obf
-                    $v_iktjm[$v_kddwk++] = 1; // obf
-                    while ($v_kddwk < $v_hvvnt && $v_iktjm[$v_kddwk]) { // obf
-                        $v_kddwk++; // obf
-                    } // obf
+                    __fn_65529($j < $other_len && ! $other_changed[$j]);
+                    $j++;
+                    if ($j < $other_len && $other_changed[$j]) {
+                        $corresponding = $i;
+                        while ($j < $other_len && $other_changed[$j]) {
+                            $j++;
+                        }
+                    }
+                }
+            } while ($runlength != $i - $start);
 
-                    __fn_95776($v_mbewu < $v_kulew && ! $v_xvamk[$v_mbewu]); // obf
-                    $v_mbewu++; // obf
-                    if ($v_mbewu < $v_kulew && $v_xvamk[$v_mbewu]) { // obf
-                        $v_qtpds = $v_kddwk; // obf
-                        while ($v_mbewu < $v_kulew && $v_xvamk[$v_mbewu]) { // obf
-                            $v_mbewu++; // obf
-                        } // obf
-                    } // obf
-                } // obf
-            } while ($v_jvegl != $v_kddwk - $v_loiwl); // obf
+            /* If possible, move the fully-merged run of changes back to a
+             * corresponding run in the other file. */
+            while ($corresponding < $i) {
+                $changed[--$start] = 1;
+                $changed[--$i] = 0;
+                __fn_65529($j > 0);
+                while ($other_changed[--$j]) {
+                    continue;
+                }
+                __fn_65529($j >= 0 && !$other_changed[$j]);
+            }
+        }
+    }
 
-            /* If possible, move the fully-merged run of changes back to a // obf
-             * corresponding run in the other file. */ // obf
-            while ($v_qtpds < $v_kddwk) { // obf
-                $v_iktjm[--$v_loiwl] = 1; // obf
-                $v_iktjm[--$v_kddwk] = 0; // obf
-                __fn_95776($v_mbewu > 0); // obf
-                while ($v_xvamk[--$v_mbewu]) { // obf
-                    continue; // obf
-                } // obf
-                __fn_95776($v_mbewu >= 0 && !$v_xvamk[$v_mbewu]); // obf
-            } // obf
-        } // obf
-    } // obf
-
-} // obf
+}

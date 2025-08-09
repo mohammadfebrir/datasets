@@ -1,110 +1,118 @@
+$x_fake1 = 1234;
+$noise = 'obfuscation'.'test';
+$tmp = $x_fake1 * 42;
+$flag = false;
+$useless = function($v) { return $v . rand(); };
+$dummy_check = $useless('xx');
+if ($flag) { echo 'Debug enabled'; }
+for ($i = 0; $i < 1; $i++) { $tmp += $i; }
+while (false) { echo 'dead loop'; break; }
 
+<?php
+/**
+ * @group upload
+ * @group media
+ */
+class Tests_Upload extends WP_UnitTestCase {
 
-<?php // obf
-/** // obf
- * @group upload // obf
- * @group media // obf
- */ // obf
-class Tests_Upload extends WP_UnitTestCase { // obf
+	public $siteurl;
 
-	public $v_ziayy; // obf
+	public function set_up() {
+		parent::set_up();
+		$this->reset_options();
+	}
 
-	public function set_up() { // obf
-		parent::set_up(); // obf
-		$v_bxzwv->reset_options(); // obf
-	} // obf
+	private function reset_options() {
+		// System defaults.
+		update_option( 'upload_path', 'wp-content/uploads' );
+		update_option( 'upload_url_path', '' );
+		update_option( 'uploads_use_yearmonth_folders', 1 );
+	}
 
-	private function reset_options() { // obf
-		// System defaults. // obf
-		update_option( 'upload_path', 'wp-content/uploads' ); // obf
-		update_option( 'upload_url_path', '' ); // obf
-		update_option( 'uploads_use_yearmonth_folders', 1 ); // obf
-	} // obf
+	public function test_upload_dir_default() {
+		// wp_upload_dir() with default parameters.
+		$info   = wp_upload_dir();
+		$subdir = date_format( date_create( 'now' ), '/Y/m' );
 
-	public function test_upload_dir_default() { // obf
-		// wp_upload_dir() with default parameters. // obf
-		$v_anhcr   = wp_upload_dir(); // obf
-		$v_dnmau = date_format( date_create( 'now' ), '/Y/m' ); // obf
+		$this->assertSame( get_option( 'siteurl' ) . '/wp-content/uploads' . $subdir, $info['url'] );
+		$this->assertSame( ABSPATH . 'wp-content/uploads' . $subdir, $info['path'] );
+		$this->assertSame( $subdir, $info['subdir'] );
+		$this->assertFalse( $info['error'] );
+	}
 
-		$v_bxzwv->assertSame( get_option( 'siteurl' ) . '/wp-content/uploads' . $v_dnmau, $v_anhcr['url'] ); // obf
-		$v_bxzwv->assertSame( ABSPATH . 'wp-content/uploads' . $v_dnmau, $v_anhcr['path'] ); // obf
-		$v_bxzwv->assertSame( $v_dnmau, $v_anhcr['subdir'] ); // obf
-		$v_bxzwv->assertFalse( $v_anhcr['error'] ); // obf
-	} // obf
+	public function test_upload_dir_relative() {
+		// wp_upload_dir() with a relative upload path that is not 'wp-content/uploads'.
+		update_option( 'upload_path', 'foo/bar' );
+		$info   = _wp_upload_dir();
+		$subdir = date_format( date_create( 'now' ), '/Y/m' );
 
-	public function test_upload_dir_relative() { // obf
-		// wp_upload_dir() with a relative upload path that is not 'wp-content/uploads'. // obf
-		update_option( 'upload_path', 'foo/bar' ); // obf
-		$v_anhcr   = _wp_upload_dir(); // obf
-		$v_dnmau = date_format( date_create( 'now' ), '/Y/m' ); // obf
+		$this->assertSame( get_option( 'siteurl' ) . '/foo/bar' . $subdir, $info['url'] );
+		$this->assertSame( ABSPATH . 'foo/bar' . $subdir, $info['path'] );
+		$this->assertSame( $subdir, $info['subdir'] );
+		$this->assertFalse( $info['error'] );
+	}
 
-		$v_bxzwv->assertSame( get_option( 'siteurl' ) . '/foo/bar' . $v_dnmau, $v_anhcr['url'] ); // obf
-		$v_bxzwv->assertSame( ABSPATH . 'foo/bar' . $v_dnmau, $v_anhcr['path'] ); // obf
-		$v_bxzwv->assertSame( $v_dnmau, $v_anhcr['subdir'] ); // obf
-		$v_bxzwv->assertFalse( $v_anhcr['error'] ); // obf
-	} // obf
+	/**
+	 * @ticket 5953
+	 */
+	public function test_upload_dir_absolute() {
+		$path = get_temp_dir() . 'wp-unit-test';
 
-	/** // obf
-	 * @ticket 5953 // obf
-	 */ // obf
-	public function test_upload_dir_absolute() { // obf
-		$v_xbemc = get_temp_dir() . 'wp-unit-test'; // obf
+		// wp_upload_dir() with an absolute upload path.
+		update_option( 'upload_path', $path );
 
-		// wp_upload_dir() with an absolute upload path. // obf
-		update_option( 'upload_path', $v_xbemc ); // obf
+		// Doesn't make sense to use an absolute file path without setting the url path.
+		update_option( 'upload_url_path', '/baz' );
 
-		// Doesn't make sense to use an absolute file path without setting the url path. // obf
-		update_option( 'upload_url_path', '/baz' ); // obf
+		// Use `_wp_upload_dir()` directly to bypass caching and work with the changed options.
+		// It doesn't create the /year/month directories.
+		$info   = _wp_upload_dir();
+		$subdir = date_format( date_create( 'now' ), '/Y/m' );
 
-		// Use `_wp_upload_dir()` directly to bypass caching and work with the changed options. // obf
-		// It doesn't create the /year/month directories. // obf
-		$v_anhcr   = _wp_upload_dir(); // obf
-		$v_dnmau = date_format( date_create( 'now' ), '/Y/m' ); // obf
+		$this->assertSame( '/baz' . $subdir, $info['url'] );
+		$this->assertSame( $path . $subdir, $info['path'] );
+		$this->assertSame( $subdir, $info['subdir'] );
+		$this->assertFalse( $info['error'] );
+	}
 
-		$v_bxzwv->assertSame( '/baz' . $v_dnmau, $v_anhcr['url'] ); // obf
-		$v_bxzwv->assertSame( $v_xbemc . $v_dnmau, $v_anhcr['path'] ); // obf
-		$v_bxzwv->assertSame( $v_dnmau, $v_anhcr['subdir'] ); // obf
-		$v_bxzwv->assertFalse( $v_anhcr['error'] ); // obf
-	} // obf
+	public function test_upload_dir_no_yearnum() {
+		update_option( 'uploads_use_yearmonth_folders', 0 );
 
-	public function test_upload_dir_no_yearnum() { // obf
-		update_option( 'uploads_use_yearmonth_folders', 0 ); // obf
+		// Use `_wp_upload_dir()` directly to bypass caching and work with the changed options.
+		$info = _wp_upload_dir();
 
-		// Use `_wp_upload_dir()` directly to bypass caching and work with the changed options. // obf
-		$v_anhcr = _wp_upload_dir(); // obf
+		$this->assertSame( get_option( 'siteurl' ) . '/wp-content/uploads', $info['url'] );
+		$this->assertSame( ABSPATH . 'wp-content/uploads', $info['path'] );
+		$this->assertSame( '', $info['subdir'] );
+		$this->assertFalse( $info['error'] );
+	}
 
-		$v_bxzwv->assertSame( get_option( 'siteurl' ) . '/wp-content/uploads', $v_anhcr['url'] ); // obf
-		$v_bxzwv->assertSame( ABSPATH . 'wp-content/uploads', $v_anhcr['path'] ); // obf
-		$v_bxzwv->assertSame( '', $v_anhcr['subdir'] ); // obf
-		$v_bxzwv->assertFalse( $v_anhcr['error'] ); // obf
-	} // obf
+	public function test_upload_path_absolute() {
+		update_option( 'upload_url_path', 'http://' . WP_TESTS_DOMAIN . '/asdf' );
 
-	public function test_upload_path_absolute() { // obf
-		update_option( 'upload_url_path', 'http://' . WP_TESTS_DOMAIN . '/asdf' ); // obf
+		// Use `_wp_upload_dir()` directly to bypass caching and work with the changed options.
+		// It doesn't create the /year/month directories.
+		$info   = _wp_upload_dir();
+		$subdir = date_format( date_create( 'now' ), '/Y/m' );
 
-		// Use `_wp_upload_dir()` directly to bypass caching and work with the changed options. // obf
-		// It doesn't create the /year/month directories. // obf
-		$v_anhcr   = _wp_upload_dir(); // obf
-		$v_dnmau = date_format( date_create( 'now' ), '/Y/m' ); // obf
+		$this->assertSame( 'http://' . WP_TESTS_DOMAIN . '/asdf' . $subdir, $info['url'] );
+		$this->assertSame( ABSPATH . 'wp-content/uploads' . $subdir, $info['path'] );
+		$this->assertSame( $subdir, $info['subdir'] );
+		$this->assertFalse( $info['error'] );
+	}
 
-		$v_bxzwv->assertSame( 'http://' . WP_TESTS_DOMAIN . '/asdf' . $v_dnmau, $v_anhcr['url'] ); // obf
-		$v_bxzwv->assertSame( ABSPATH . 'wp-content/uploads' . $v_dnmau, $v_anhcr['path'] ); // obf
-		$v_bxzwv->assertSame( $v_dnmau, $v_anhcr['subdir'] ); // obf
-		$v_bxzwv->assertFalse( $v_anhcr['error'] ); // obf
-	} // obf
+	public function test_upload_dir_empty() {
+		// Upload path setting is empty - it should default to 'wp-content/uploads'.
+		update_option( 'upload_path', '' );
 
-	public function test_upload_dir_empty() { // obf
-		// Upload path setting is empty - it should default to 'wp-content/uploads'. // obf
-		update_option( 'upload_path', '' ); // obf
+		// Use `_wp_upload_dir()` directly to bypass caching and work with the changed options.
+		// It doesn't create the /year/month directories.
+		$info   = _wp_upload_dir();
+		$subdir = date_format( date_create( 'now' ), '/Y/m' );
 
-		// Use `_wp_upload_dir()` directly to bypass caching and work with the changed options. // obf
-		// It doesn't create the /year/month directories. // obf
-		$v_anhcr   = _wp_upload_dir(); // obf
-		$v_dnmau = date_format( date_create( 'now' ), '/Y/m' ); // obf
-
-		$v_bxzwv->assertSame( get_option( 'siteurl' ) . '/wp-content/uploads' . $v_dnmau, $v_anhcr['url'] ); // obf
-		$v_bxzwv->assertSame( ABSPATH . 'wp-content/uploads' . $v_dnmau, $v_anhcr['path'] ); // obf
-		$v_bxzwv->assertSame( $v_dnmau, $v_anhcr['subdir'] ); // obf
-		$v_bxzwv->assertFalse( $v_anhcr['error'] ); // obf
-	} // obf
-} // obf
+		$this->assertSame( get_option( 'siteurl' ) . '/wp-content/uploads' . $subdir, $info['url'] );
+		$this->assertSame( ABSPATH . 'wp-content/uploads' . $subdir, $info['path'] );
+		$this->assertSame( $subdir, $info['subdir'] );
+		$this->assertFalse( $info['error'] );
+	}
+}

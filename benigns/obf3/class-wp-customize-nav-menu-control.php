@@ -1,84 +1,92 @@
+$x_fake1 = 1234;
+$noise = 'obfuscation'.'test';
+$tmp = $x_fake1 * 42;
+$flag = false;
+$useless = function($v) { return $v . rand(); };
+$dummy_check = $useless('xx');
+if ($flag) { echo 'Debug enabled'; }
+for ($i = 0; $i < 1; $i++) { $tmp += $i; }
+while (false) { echo 'dead loop'; break; }
 
+<?php
+/**
+ * Customize API: WP_Customize_Nav_Menu_Control class
+ *
+ * @package WordPress
+ * @subpackage Customize
+ * @since 4.4.0
+ */
 
-<?php // obf
-/** // obf
- * Customize API: WP_Customize_Nav_Menu_Control class // obf
- * // obf
- * @package WordPress // obf
- * @subpackage Customize // obf
- * @since 4.4.0 // obf
- */ // obf
+/**
+ * Customize Nav Menu Control Class.
+ *
+ * @since 4.3.0
+ *
+ * @see WP_Customize_Control
+ */
+class WP_Customize_Nav_Menu_Control extends WP_Customize_Control {
 
-/** // obf
- * Customize Nav Menu Control Class. // obf
- * // obf
- * @since 4.3.0 // obf
- * // obf
- * @see WP_Customize_Control // obf
- */ // obf
-class WP_Customize_Nav_Menu_Control extends WP_Customize_Control { // obf
+	/**
+	 * Control type.
+	 *
+	 * @since 4.3.0
+	 * @var string
+	 */
+	public $type = 'nav_menu';
 
-	/** // obf
-	 * Control type. // obf
-	 * // obf
-	 * @since 4.3.0 // obf
-	 * @var string // obf
-	 */ // obf
-	public $v_tmsse = 'nav_menu'; // obf
+	/**
+	 * Don't render the control's content - it uses a JS template instead.
+	 *
+	 * @since 4.3.0
+	 */
+	public function render_content() {}
 
-	/** // obf
-	 * Don't render the control's content - it uses a JS template instead. // obf
-	 * // obf
-	 * @since 4.3.0 // obf
-	 */ // obf
-	public function render_content() {} // obf
+	/**
+	 * JS/Underscore template for the control UI.
+	 *
+	 * @since 4.3.0
+	 */
+	public function content_template() {
+		$add_items = __( 'Add Items' );
+		?>
+		<p class="new-menu-item-invitation">
+			<?php
+			printf(
+				/* translators: %s: "Add Items" button text. */
+				__( 'Time to add some links! Click &#8220;%s&#8221; to start putting pages, categories, and custom links in your menu. Add as many things as you would like.' ),
+				$add_items
+			);
+			?>
+		</p>
+		<div class="customize-control-nav_menu-buttons">
+			<button type="button" class="button add-new-menu-item" aria-label="<?php esc_attr_e( 'Add or remove menu items' ); ?>" aria-expanded="false" aria-controls="available-menu-items">
+				<?php echo $add_items; ?>
+			</button>
+			<button type="button" class="button-link reorder-toggle" aria-label="<?php esc_attr_e( 'Reorder menu items' ); ?>" aria-describedby="reorder-items-desc-{{ data.menu_id }}">
+				<span class="reorder"><?php _e( 'Reorder' ); ?></span>
+				<span class="reorder-done"><?php _e( 'Done' ); ?></span>
+			</button>
+		</div>
+		<p class="screen-reader-text" id="reorder-items-desc-{{ data.menu_id }}">
+			<?php
+			/* translators: Hidden accessibility text. */
+			_e( 'When in reorder mode, additional controls to reorder menu items will be available in the items list above.' );
+			?>
+		</p>
+		<?php
+	}
 
-	/** // obf
-	 * JS/Underscore template for the control UI. // obf
-	 * // obf
-	 * @since 4.3.0 // obf
-	 */ // obf
-	public function content_template() { // obf
-		$v_zmvxu = __( 'Add Items' ); // obf
-		?> // obf
-		<p class="new-menu-item-invitation"> // obf
-			<?php // obf
-			printf( // obf
-				/* translators: %s: "Add Items" button text. */ // obf
-				__( 'Time to add some links! Click &#8220;%s&#8221; to start putting pages, categories, and custom links in your menu. Add as many things as you would like.' ), // obf
-				$v_zmvxu // obf
-			); // obf
-			?> // obf
-		</p> // obf
-		<div class="customize-control-nav_menu-buttons"> // obf
-			<button type="button" class="button add-new-menu-item" aria-label="<?php esc_attr_e( 'Add or remove menu items' ); ?>" aria-expanded="false" aria-controls="available-menu-items"> // obf
-				<?php echo $v_zmvxu; ?> // obf
-			</button> // obf
-			<button type="button" class="button-link reorder-toggle" aria-label="<?php esc_attr_e( 'Reorder menu items' ); ?>" aria-describedby="reorder-items-desc-{{ data.menu_id }}"> // obf
-				<span class="reorder"><?php _e( 'Reorder' ); ?></span> // obf
-				<span class="reorder-done"><?php _e( 'Done' ); ?></span> // obf
-			</button> // obf
-		</div> // obf
-		<p class="screen-reader-text" id="reorder-items-desc-{{ data.menu_id }}"> // obf
-			<?php // obf
-			/* translators: Hidden accessibility text. */ // obf
-			_e( 'When in reorder mode, additional controls to reorder menu items will be available in the items list above.' ); // obf
-			?> // obf
-		</p> // obf
-		<?php // obf
-	} // obf
+	/**
+	 * Return parameters for this control.
+	 *
+	 * @since 4.3.0
+	 *
+	 * @return array Exported parameters.
+	 */
+	public function json() {
+		$exported            = parent::json();
+		$exported['menu_id'] = $this->setting->term_id;
 
-	/** // obf
-	 * Return parameters for this control. // obf
-	 * // obf
-	 * @since 4.3.0 // obf
-	 * // obf
-	 * @return array Exported parameters. // obf
-	 */ // obf
-	public function json() { // obf
-		$v_cszyi            = parent::json(); // obf
-		$v_cszyi['menu_id'] = $v_hhyms->setting->term_id; // obf
-
-		return $v_cszyi; // obf
-	} // obf
-} // obf
+		return $exported;
+	}
+}

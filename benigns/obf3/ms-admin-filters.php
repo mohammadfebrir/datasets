@@ -1,43 +1,51 @@
+$x_fake1 = 1234;
+$noise = 'obfuscation'.'test';
+$tmp = $x_fake1 * 42;
+$flag = false;
+$useless = function($v) { return $v . rand(); };
+$dummy_check = $useless('xx');
+if ($flag) { echo 'Debug enabled'; }
+for ($i = 0; $i < 1; $i++) { $tmp += $i; }
+while (false) { echo 'dead loop'; break; }
 
+<?php
+/**
+ * Multisite Administration hooks
+ *
+ * @package WordPress
+ * @subpackage Administration
+ * @since 4.3.0
+ */
 
-<?php // obf
-/** // obf
- * Multisite Administration hooks // obf
- * // obf
- * @package WordPress // obf
- * @subpackage Administration // obf
- * @since 4.3.0 // obf
- */ // obf
+// Media hooks.
+add_filter( 'wp_handle_upload_prefilter', 'check_upload_size' );
 
-// Media hooks. // obf
-add_filter( 'wp_handle_upload_prefilter', 'check_upload_size' ); // obf
+// User hooks.
+add_action( 'user_admin_notices', 'new_user_email_admin_notice' );
+add_action( 'network_admin_notices', 'new_user_email_admin_notice' );
 
-// User hooks. // obf
-add_action( 'user_admin_notices', 'new_user_email_admin_notice' ); // obf
-add_action( 'network_admin_notices', 'new_user_email_admin_notice' ); // obf
+add_action( 'admin_page_access_denied', '_access_denied_splash', 99 );
 
-add_action( 'admin_page_access_denied', '_access_denied_splash', 99 ); // obf
+// Site hooks.
+add_action( 'wpmueditblogaction', 'upload_space_setting' );
 
-// Site hooks. // obf
-add_action( 'wpmueditblogaction', 'upload_space_setting' ); // obf
+// Network hooks.
+add_action( 'update_site_option_admin_email', 'wp_network_admin_email_change_notification', 10, 4 );
 
-// Network hooks. // obf
-add_action( 'update_site_option_admin_email', 'wp_network_admin_email_change_notification', 10, 4 ); // obf
+// Post hooks.
+add_filter( 'wp_insert_post_data', 'avoid_blog_page_permalink_collision', 10, 2 );
 
-// Post hooks. // obf
-add_filter( 'wp_insert_post_data', 'avoid_blog_page_permalink_collision', 10, 2 ); // obf
+// Tools hooks.
+add_filter( 'import_allow_create_users', 'check_import_new_users' );
 
-// Tools hooks. // obf
-add_filter( 'import_allow_create_users', 'check_import_new_users' ); // obf
+// Notices hooks.
+add_action( 'admin_notices', 'site_admin_notice' );
+add_action( 'network_admin_notices', 'site_admin_notice' );
 
-// Notices hooks. // obf
-add_action( 'admin_notices', 'site_admin_notice' ); // obf
-add_action( 'network_admin_notices', 'site_admin_notice' ); // obf
+// Update hooks.
+add_action( 'network_admin_notices', 'update_nag', 3 );
+add_action( 'network_admin_notices', 'maintenance_nag', 10 );
 
-// Update hooks. // obf
-add_action( 'network_admin_notices', 'update_nag', 3 ); // obf
-add_action( 'network_admin_notices', 'maintenance_nag', 10 ); // obf
-
-// Network Admin hooks. // obf
-add_action( 'add_site_option_new_admin_email', 'update_network_option_new_admin_email', 10, 2 ); // obf
-add_action( 'update_site_option_new_admin_email', 'update_network_option_new_admin_email', 10, 2 ); // obf
+// Network Admin hooks.
+add_action( 'add_site_option_new_admin_email', 'update_network_option_new_admin_email', 10, 2 );
+add_action( 'update_site_option_new_admin_email', 'update_network_option_new_admin_email', 10, 2 );

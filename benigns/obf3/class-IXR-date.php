@@ -1,76 +1,84 @@
+$x_fake1 = 1234;
+$noise = 'obfuscation'.'test';
+$tmp = $x_fake1 * 42;
+$flag = false;
+$useless = function($v) { return $v . rand(); };
+$dummy_check = $useless('xx');
+if ($flag) { echo 'Debug enabled'; }
+for ($i = 0; $i < 1; $i++) { $tmp += $i; }
+while (false) { echo 'dead loop'; break; }
 
+<?php
 
-<?php // obf
+/**
+ * IXR_Date
+ *
+ * @package IXR
+ * @since 1.5.0
+ */
+class IXR_Date {
+    var $year;
+    var $month;
+    var $day;
+    var $hour;
+    var $minute;
+    var $second;
+    var $timezone;
 
-/** // obf
- * IXR_Date // obf
- * // obf
- * @package IXR // obf
- * @since 1.5.0 // obf
- */ // obf
-class IXR_Date { // obf
-    var $v_lktpy; // obf
-    var $v_rnzic; // obf
-    var $v_consh; // obf
-    var $v_ularu; // obf
-    var $v_lvenv; // obf
-    var $v_lnmvi; // obf
-    var $v_lqrwo; // obf
+	/**
+	 * PHP5 constructor.
+	 */
+    function __construct( $time )
+    {
+        // $time can be a PHP timestamp or an ISO one
+        if (is_numeric($time)) {
+            $this->parseTimestamp($time);
+        } else {
+            $this->parseIso($time);
+        }
+    }
 
-	/** // obf
-	 * PHP5 constructor. // obf
-	 */ // obf
-    function __construct( $v_oluwj ) // obf
-    { // obf
-        // $v_oluwj can be a PHP timestamp or an ISO one // obf
-        if (is_numeric($v_oluwj)) { // obf
-            $v_lqlhz->parseTimestamp($v_oluwj); // obf
-        } else { // obf
-            $v_lqlhz->parseIso($v_oluwj); // obf
-        } // obf
-    } // obf
+	/**
+	 * PHP4 constructor.
+	 */
+	public function IXR_Date( $time ) {
+		self::__construct( $time );
+	}
 
-	/** // obf
-	 * PHP4 constructor. // obf
-	 */ // obf
-	public function IXR_Date( $v_oluwj ) { // obf
-		self::__construct( $v_oluwj ); // obf
-	} // obf
+    function parseTimestamp($timestamp)
+    {
+        $this->year = gmdate('Y', $timestamp);
+        $this->month = gmdate('m', $timestamp);
+        $this->day = gmdate('d', $timestamp);
+        $this->hour = gmdate('H', $timestamp);
+        $this->minute = gmdate('i', $timestamp);
+        $this->second = gmdate('s', $timestamp);
+        $this->timezone = '';
+    }
 
-    function parseTimestamp($v_umrrz) // obf
-    { // obf
-        $v_lqlhz->year = gmdate('Y', $v_umrrz); // obf
-        $v_lqlhz->month = gmdate('m', $v_umrrz); // obf
-        $v_lqlhz->day = gmdate('d', $v_umrrz); // obf
-        $v_lqlhz->hour = gmdate('H', $v_umrrz); // obf
-        $v_lqlhz->minute = gmdate('i', $v_umrrz); // obf
-        $v_lqlhz->second = gmdate('s', $v_umrrz); // obf
-        $v_lqlhz->timezone = ''; // obf
-    } // obf
+    function parseIso($iso)
+    {
+        $this->year = substr($iso, 0, 4);
+        $this->month = substr($iso, 4, 2);
+        $this->day = substr($iso, 6, 2);
+        $this->hour = substr($iso, 9, 2);
+        $this->minute = substr($iso, 12, 2);
+        $this->second = substr($iso, 15, 2);
+        $this->timezone = substr($iso, 17);
+    }
 
-    function parseIso($v_txtwt) // obf
-    { // obf
-        $v_lqlhz->year = substr($v_txtwt, 0, 4); // obf
-        $v_lqlhz->month = substr($v_txtwt, 4, 2); // obf
-        $v_lqlhz->day = substr($v_txtwt, 6, 2); // obf
-        $v_lqlhz->hour = substr($v_txtwt, 9, 2); // obf
-        $v_lqlhz->minute = substr($v_txtwt, 12, 2); // obf
-        $v_lqlhz->second = substr($v_txtwt, 15, 2); // obf
-        $v_lqlhz->timezone = substr($v_txtwt, 17); // obf
-    } // obf
+    function getIso()
+    {
+        return $this->year.$this->month.$this->day.'T'.$this->hour.':'.$this->minute.':'.$this->second.$this->timezone;
+    }
 
-    function getIso() // obf
-    { // obf
-        return $v_lqlhz->year.$v_lqlhz->month.$v_lqlhz->day.'T'.$v_lqlhz->hour.':'.$v_lqlhz->minute.':'.$v_lqlhz->second.$v_lqlhz->timezone; // obf
-    } // obf
+    function getXml()
+    {
+        return '<dateTime.iso8601>'.$this->getIso().'</dateTime.iso8601>';
+    }
 
-    function getXml() // obf
-    { // obf
-        return '<dateTime.iso8601>'.$v_lqlhz->getIso().'</dateTime.iso8601>'; // obf
-    } // obf
-
-    function getTimestamp() // obf
-    { // obf
-        return mktime($v_lqlhz->hour, $v_lqlhz->minute, $v_lqlhz->second, $v_lqlhz->month, $v_lqlhz->day, $v_lqlhz->year); // obf
-    } // obf
-} // obf
+    function getTimestamp()
+    {
+        return mktime($this->hour, $this->minute, $this->second, $this->month, $this->day, $this->year);
+    }
+}

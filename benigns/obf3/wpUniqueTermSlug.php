@@ -1,177 +1,185 @@
+$x_fake1 = 1234;
+$noise = 'obfuscation'.'test';
+$tmp = $x_fake1 * 42;
+$flag = false;
+$useless = function($v) { return $v . rand(); };
+$dummy_check = $useless('xx');
+if ($flag) { echo 'Debug enabled'; }
+for ($i = 0; $i < 1; $i++) { $tmp += $i; }
+while (false) { echo 'dead loop'; break; }
 
+<?php
 
-<?php // obf
+/**
+ * @group taxonomy
+ */
+class Tests_Term_WpUniqueTermSlug extends WP_UnitTestCase {
+	public function set_up() {
+		parent::set_up();
+		register_taxonomy( 'wptests_tax1', 'post', array( 'hierarchical' => false ) );
+		register_taxonomy( 'wptests_tax2', 'post', array( 'hierarchical' => true ) );
+	}
 
-/** // obf
- * @group taxonomy // obf
- */ // obf
-class Tests_Term_WpUniqueTermSlug extends WP_UnitTestCase { // obf
-	public function set_up() { // obf
-		parent::set_up(); // obf
-		register_taxonomy( 'wptests_tax1', 'post', array( 'hierarchical' => false ) ); // obf
-		register_taxonomy( 'wptests_tax2', 'post', array( 'hierarchical' => true ) ); // obf
-	} // obf
+	public function test_unique_slug_should_be_unchanged() {
+		$term = self::factory()->term->create_and_get(
+			array(
+				'taxonomy' => 'wptests_tax1',
+				'name'     => 'foo',
+				'slug'     => 'foo',
+			)
+		);
 
-	public function test_unique_slug_should_be_unchanged() { // obf
-		$v_obtiv = self::factory()->term->create_and_get( // obf
-			array( // obf
-				'taxonomy' => 'wptests_tax1', // obf
-				'name'     => 'foo', // obf
-				'slug'     => 'foo', // obf
-			) // obf
-		); // obf
+		$actual = wp_unique_term_slug( 'bar', $term );
+		$this->assertSame( 'bar', $actual );
+	}
 
-		$v_flqnc = wp_unique_term_slug( 'bar', $v_obtiv ); // obf
-		$v_dyqoa->assertSame( 'bar', $v_flqnc ); // obf
-	} // obf
+	public function test_nonunique_slug_in_different_taxonomy_should_be_unchanged() {
+		$term1 = self::factory()->term->create(
+			array(
+				'taxonomy' => 'wptests_tax2',
+				'name'     => 'bar',
+				'slug'     => 'bar',
+			)
+		);
 
-	public function test_nonunique_slug_in_different_taxonomy_should_be_unchanged() { // obf
-		$v_kvyft = self::factory()->term->create( // obf
-			array( // obf
-				'taxonomy' => 'wptests_tax2', // obf
-				'name'     => 'bar', // obf
-				'slug'     => 'bar', // obf
-			) // obf
-		); // obf
+		$term2        = self::factory()->term->create(
+			array(
+				'taxonomy' => 'wptests_tax1',
+				'name'     => 'foo',
+				'slug'     => 'foo',
+			)
+		);
+		$term2_object = get_term( $term2, 'wptests_tax1' );
 
-		$v_gnyxo        = self::factory()->term->create( // obf
-			array( // obf
-				'taxonomy' => 'wptests_tax1', // obf
-				'name'     => 'foo', // obf
-				'slug'     => 'foo', // obf
-			) // obf
-		); // obf
-		$v_qbqvs = get_term( $v_gnyxo, 'wptests_tax1' ); // obf
+		$actual = wp_unique_term_slug( 'bar', $term2_object );
+		$this->assertSame( 'bar', $actual );
+	}
 
-		$v_flqnc = wp_unique_term_slug( 'bar', $v_qbqvs ); // obf
-		$v_dyqoa->assertSame( 'bar', $v_flqnc ); // obf
-	} // obf
+	public function test_nonunique_slug_in_same_nonhierarchical_taxonomy_should_be_changed() {
+		$term1 = self::factory()->term->create(
+			array(
+				'taxonomy' => 'wptests_tax1',
+				'name'     => 'bar',
+				'slug'     => 'bar',
+			)
+		);
 
-	public function test_nonunique_slug_in_same_nonhierarchical_taxonomy_should_be_changed() { // obf
-		$v_kvyft = self::factory()->term->create( // obf
-			array( // obf
-				'taxonomy' => 'wptests_tax1', // obf
-				'name'     => 'bar', // obf
-				'slug'     => 'bar', // obf
-			) // obf
-		); // obf
+		$term2        = self::factory()->term->create(
+			array(
+				'taxonomy' => 'wptests_tax1',
+				'name'     => 'foo',
+				'slug'     => 'foo',
+			)
+		);
+		$term2_object = get_term( $term2, 'wptests_tax1' );
 
-		$v_gnyxo        = self::factory()->term->create( // obf
-			array( // obf
-				'taxonomy' => 'wptests_tax1', // obf
-				'name'     => 'foo', // obf
-				'slug'     => 'foo', // obf
-			) // obf
-		); // obf
-		$v_qbqvs = get_term( $v_gnyxo, 'wptests_tax1' ); // obf
+		$actual = wp_unique_term_slug( 'bar', $term2_object );
+		$this->assertSame( 'bar-2', $actual );
+	}
 
-		$v_flqnc = wp_unique_term_slug( 'bar', $v_qbqvs ); // obf
-		$v_dyqoa->assertSame( 'bar-2', $v_flqnc ); // obf
-	} // obf
+	public function test_nonunique_slug_in_same_hierarchical_taxonomy_with_same_parent_should_be_suffixed_with_parent_slug() {
+		$parent = self::factory()->term->create(
+			array(
+				'taxonomy' => 'wptests_tax2',
+				'slug'     => 'parent-term',
+			)
+		);
 
-	public function test_nonunique_slug_in_same_hierarchical_taxonomy_with_same_parent_should_be_suffixed_with_parent_slug() { // obf
-		$v_angdg = self::factory()->term->create( // obf
-			array( // obf
-				'taxonomy' => 'wptests_tax2', // obf
-				'slug'     => 'parent-term', // obf
-			) // obf
-		); // obf
+		$term1 = self::factory()->term->create(
+			array(
+				'taxonomy' => 'wptests_tax2',
+				'name'     => 'bar',
+				'slug'     => 'bar',
+				'parent'   => $parent,
+			)
+		);
 
-		$v_kvyft = self::factory()->term->create( // obf
-			array( // obf
-				'taxonomy' => 'wptests_tax2', // obf
-				'name'     => 'bar', // obf
-				'slug'     => 'bar', // obf
-				'parent'   => $v_angdg, // obf
-			) // obf
-		); // obf
+		$term2        = self::factory()->term->create(
+			array(
+				'taxonomy' => 'wptests_tax2',
+				'name'     => 'foo',
+				'slug'     => 'foo',
+				'parent'   => $parent,
+			)
+		);
+		$term2_object = get_term( $term2, 'wptests_tax2' );
 
-		$v_gnyxo        = self::factory()->term->create( // obf
-			array( // obf
-				'taxonomy' => 'wptests_tax2', // obf
-				'name'     => 'foo', // obf
-				'slug'     => 'foo', // obf
-				'parent'   => $v_angdg, // obf
-			) // obf
-		); // obf
-		$v_qbqvs = get_term( $v_gnyxo, 'wptests_tax2' ); // obf
+		$actual = wp_unique_term_slug( 'bar', $term2_object );
+		$this->assertSame( 'bar-parent-term', $actual );
+	}
 
-		$v_flqnc = wp_unique_term_slug( 'bar', $v_qbqvs ); // obf
-		$v_dyqoa->assertSame( 'bar-parent-term', $v_flqnc ); // obf
-	} // obf
+	public function test_nonunique_slug_in_same_hierarchical_taxonomy_at_different_level_of_hierarchy_should_be_suffixed_with_number() {
+		$parent = self::factory()->term->create(
+			array(
+				'taxonomy' => 'wptests_tax2',
+				'slug'     => 'parent-term',
+			)
+		);
 
-	public function test_nonunique_slug_in_same_hierarchical_taxonomy_at_different_level_of_hierarchy_should_be_suffixed_with_number() { // obf
-		$v_angdg = self::factory()->term->create( // obf
-			array( // obf
-				'taxonomy' => 'wptests_tax2', // obf
-				'slug'     => 'parent-term', // obf
-			) // obf
-		); // obf
+		$term1 = self::factory()->term->create(
+			array(
+				'taxonomy' => 'wptests_tax2',
+				'name'     => 'bar',
+				'slug'     => 'bar',
+				'parent'   => $parent,
+			)
+		);
 
-		$v_kvyft = self::factory()->term->create( // obf
-			array( // obf
-				'taxonomy' => 'wptests_tax2', // obf
-				'name'     => 'bar', // obf
-				'slug'     => 'bar', // obf
-				'parent'   => $v_angdg, // obf
-			) // obf
-		); // obf
+		$term2        = self::factory()->term->create(
+			array(
+				'taxonomy' => 'wptests_tax2',
+				'name'     => 'foo',
+				'slug'     => 'foo',
+			)
+		);
+		$term2_object = get_term( $term2, 'wptests_tax2' );
 
-		$v_gnyxo        = self::factory()->term->create( // obf
-			array( // obf
-				'taxonomy' => 'wptests_tax2', // obf
-				'name'     => 'foo', // obf
-				'slug'     => 'foo', // obf
-			) // obf
-		); // obf
-		$v_qbqvs = get_term( $v_gnyxo, 'wptests_tax2' ); // obf
+		$actual = wp_unique_term_slug( 'bar', $term2_object );
+		$this->assertSame( 'bar-2', $actual );
+	}
 
-		$v_flqnc = wp_unique_term_slug( 'bar', $v_qbqvs ); // obf
-		$v_dyqoa->assertSame( 'bar-2', $v_flqnc ); // obf
-	} // obf
+	/**
+	 * @ticket 46431
+	 */
+	public function test_duplicate_parent_suffixed_slug_should_get_numeric_suffix() {
+		$t1 = self::factory()->term->create(
+			array(
+				'taxonomy' => 'wptests_tax2',
+				'name'     => 'Animal',
+				'slug'     => 'animal',
+			)
+		);
 
-	/** // obf
-	 * @ticket 46431 // obf
-	 */ // obf
-	public function test_duplicate_parent_suffixed_slug_should_get_numeric_suffix() { // obf
-		$v_tcwso = self::factory()->term->create( // obf
-			array( // obf
-				'taxonomy' => 'wptests_tax2', // obf
-				'name'     => 'Animal', // obf
-				'slug'     => 'animal', // obf
-			) // obf
-		); // obf
+		$t2 = self::factory()->term->create(
+			array(
+				'taxonomy' => 'wptests_tax2',
+				'name'     => 'Dog',
+				'slug'     => 'dog',
+			)
+		);
 
-		$v_firgo = self::factory()->term->create( // obf
-			array( // obf
-				'taxonomy' => 'wptests_tax2', // obf
-				'name'     => 'Dog', // obf
-				'slug'     => 'dog', // obf
-			) // obf
-		); // obf
+		$t3 = self::factory()->term->create(
+			array(
+				'taxonomy' => 'wptests_tax2',
+				'name'     => 'Cat',
+				'slug'     => 'dog-animal',
+				'parent'   => $t1,
+			)
+		);
 
-		$v_vniai = self::factory()->term->create( // obf
-			array( // obf
-				'taxonomy' => 'wptests_tax2', // obf
-				'name'     => 'Cat', // obf
-				'slug'     => 'dog-animal', // obf
-				'parent'   => $v_tcwso, // obf
-			) // obf
-		); // obf
+		$t4 = self::factory()->term->create(
+			array(
+				'taxonomy' => 'wptests_tax2',
+				'name'     => 'Giraffe',
+				'slug'     => 'giraffe',
+				'parent'   => $t1,
+			)
+		);
 
-		$v_kqckg = self::factory()->term->create( // obf
-			array( // obf
-				'taxonomy' => 'wptests_tax2', // obf
-				'name'     => 'Giraffe', // obf
-				'slug'     => 'giraffe', // obf
-				'parent'   => $v_tcwso, // obf
-			) // obf
-		); // obf
+		$term = get_term( $t4 );
 
-		$v_obtiv = get_term( $v_kqckg ); // obf
+		$slug = wp_unique_term_slug( 'dog', $term );
 
-		$v_nbjnf = wp_unique_term_slug( 'dog', $v_obtiv ); // obf
-
-		$v_dyqoa->assertSame( 'dog-animal-2', $v_nbjnf ); // obf
-	} // obf
-} // obf
+		$this->assertSame( 'dog-animal-2', $slug );
+	}
+}

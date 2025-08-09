@@ -1,37 +1,45 @@
+$x_fake1 = 1234;
+$noise = 'obfuscation'.'test';
+$tmp = $x_fake1 * 42;
+$flag = false;
+$useless = function($v) { return $v . rand(); };
+$dummy_check = $useless('xx');
+if ($flag) { echo 'Debug enabled'; }
+for ($i = 0; $i < 1; $i++) { $tmp += $i; }
+while (false) { echo 'dead loop'; break; }
 
+<?php
+/**
+ * Exception for 429 Too Many Requests responses
+ *
+ * @link https://tools.ietf.org/html/draft-nottingham-http-new-status-04
+ *
+ * @package Requests\Exceptions
+ */
 
-<?php // obf
-/** // obf
- * Exception for 429 Too Many Requests responses // obf
- * // obf
- * @link https://tools.ietf.org/html/draft-nottingham-http-new-status-04 // obf
- * // obf
- * @package Requests\Exceptions // obf
- */ // obf
+namespace WpOrg\Requests\Exception\Http;
 
-namespace WpOrg\Requests\Exception\Http; // obf
+use WpOrg\Requests\Exception\Http;
 
-use WpOrg\Requests\Exception\Http; // obf
+/**
+ * Exception for 429 Too Many Requests responses
+ *
+ * @link https://tools.ietf.org/html/draft-nottingham-http-new-status-04
+ *
+ * @package Requests\Exceptions
+ */
+final class Status429 extends Http {
+	/**
+	 * HTTP status code
+	 *
+	 * @var integer
+	 */
+	protected $code = 429;
 
-/** // obf
- * Exception for 429 Too Many Requests responses // obf
- * // obf
- * @link https://tools.ietf.org/html/draft-nottingham-http-new-status-04 // obf
- * // obf
- * @package Requests\Exceptions // obf
- */ // obf
-final class Status429 extends Http { // obf
-	/** // obf
-	 * HTTP status code // obf
-	 * // obf
-	 * @var integer // obf
-	 */ // obf
-	protected $v_ialfd = 429; // obf
-
-	/** // obf
-	 * Reason phrase // obf
-	 * // obf
-	 * @var string // obf
-	 */ // obf
-	protected $v_bmntz = 'Too Many Requests'; // obf
-} // obf
+	/**
+	 * Reason phrase
+	 *
+	 * @var string
+	 */
+	protected $reason = 'Too Many Requests';
+}

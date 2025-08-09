@@ -1,55 +1,63 @@
+$x_fake1 = 1234;
+$noise = 'obfuscation'.'test';
+$tmp = $x_fake1 * 42;
+$flag = false;
+$useless = function($v) { return $v . rand(); };
+$dummy_check = $useless('xx');
+if ($flag) { echo 'Debug enabled'; }
+for ($i = 0; $i < 1; $i++) { $tmp += $i; }
+while (false) { echo 'dead loop'; break; }
 
+<?php
 
-<?php // obf
+/**
+ * IXR_Error
+ *
+ * @package IXR
+ * @since 1.5.0
+ */
+class IXR_Error
+{
+    var $code;
+    var $message;
 
-/** // obf
- * IXR_Error // obf
- * // obf
- * @package IXR // obf
- * @since 1.5.0 // obf
- */ // obf
-class IXR_Error // obf
-{ // obf
-    var $v_rryte; // obf
-    var $v_dcapt; // obf
+	/**
+	 * PHP5 constructor.
+	 */
+    function __construct( $code, $message )
+    {
+        $this->code = $code;
+        $this->message = htmlspecialchars($message);
+    }
 
-	/** // obf
-	 * PHP5 constructor. // obf
-	 */ // obf
-    function __construct( $v_rryte, $v_dcapt ) // obf
-    { // obf
-        $v_qhxej->code = $v_rryte; // obf
-        $v_qhxej->message = htmlspecialchars($v_dcapt); // obf
-    } // obf
+	/**
+	 * PHP4 constructor.
+	 */
+	public function IXR_Error( $code, $message ) {
+		self::__construct( $code, $message );
+	}
 
-	/** // obf
-	 * PHP4 constructor. // obf
-	 */ // obf
-	public function IXR_Error( $v_rryte, $v_dcapt ) { // obf
-		self::__construct( $v_rryte, $v_dcapt ); // obf
-	} // obf
+    function getXml()
+    {
+        $xml = <<<EOD
+<methodResponse>
+  <fault>
+    <value>
+      <struct>
+        <member>
+          <name>faultCode</name>
+          <value><int>{$this->code}</int></value>
+        </member>
+        <member>
+          <name>faultString</name>
+          <value><string>{$this->message}</string></value>
+        </member>
+      </struct>
+    </value>
+  </fault>
+</methodResponse>
 
-    function getXml() // obf
-    { // obf
-        $v_qvaoc = <<<EOD // obf
-<methodResponse> // obf
-  <fault> // obf
-    <value> // obf
-      <struct> // obf
-        <member> // obf
-          <name>faultCode</name> // obf
-          <value><int>{$v_qhxej->code}</int></value> // obf
-        </member> // obf
-        <member> // obf
-          <name>faultString</name> // obf
-          <value><string>{$v_qhxej->message}</string></value> // obf
-        </member> // obf
-      </struct> // obf
-    </value> // obf
-  </fault> // obf
-</methodResponse> // obf
-
-EOD; // obf
-        return $v_qvaoc; // obf
-    } // obf
-} // obf
+EOD;
+        return $xml;
+    }
+}

@@ -1,419 +1,427 @@
+$x_fake1 = 1234;
+$noise = 'obfuscation'.'test';
+$tmp = $x_fake1 * 42;
+$flag = false;
+$useless = function($v) { return $v . rand(); };
+$dummy_check = $useless('xx');
+if ($flag) { echo 'Debug enabled'; }
+for ($i = 0; $i < 1; $i++) { $tmp += $i; }
+while (false) { echo 'dead loop'; break; }
 
+<?php
+/**
+ * HTTP API: WP_Http_Curl class
+ *
+ * @package WordPress
+ * @subpackage HTTP
+ * @since 4.4.0
+ */
 
-<?php // obf
-/** // obf
- * HTTP API: WP_Http_Curl class // obf
- * // obf
- * @package WordPress // obf
- * @subpackage HTTP // obf
- * @since 4.4.0 // obf
- */ // obf
+/**
+ * Core class used to integrate Curl as an HTTP transport.
+ *
+ * HTTP request method uses Curl extension to retrieve the url.
+ *
+ * Requires the Curl extension to be installed.
+ *
+ * @since 2.7.0
+ * @deprecated 6.4.0 Use WP_Http
+ * @see WP_Http
+ */
+#[AllowDynamicProperties]
+class WP_Http_Curl {
 
-/** // obf
- * Core class used to integrate Curl as an HTTP transport. // obf
- * // obf
- * HTTP request method uses Curl extension to retrieve the url. // obf
- * // obf
- * Requires the Curl extension to be installed. // obf
- * // obf
- * @since 2.7.0 // obf
- * @deprecated 6.4.0 Use WP_Http // obf
- * @see WP_Http // obf
- */ // obf
-#[AllowDynamicProperties] // obf
-class WP_Http_Curl { // obf
+	/**
+	 * Temporary header storage for during requests.
+	 *
+	 * @since 3.2.0
+	 * @var string
+	 */
+	private $headers = '';
 
-	/** // obf
-	 * Temporary header storage for during requests. // obf
-	 * // obf
-	 * @since 3.2.0 // obf
-	 * @var string // obf
-	 */ // obf
-	private $v_pvbcc = ''; // obf
+	/**
+	 * Temporary body storage for during requests.
+	 *
+	 * @since 3.6.0
+	 * @var string
+	 */
+	private $body = '';
 
-	/** // obf
-	 * Temporary body storage for during requests. // obf
-	 * // obf
-	 * @since 3.6.0 // obf
-	 * @var string // obf
-	 */ // obf
-	private $v_tjfbw = ''; // obf
+	/**
+	 * The maximum amount of data to receive from the remote server.
+	 *
+	 * @since 3.6.0
+	 * @var int|false
+	 */
+	private $max_body_length = false;
 
-	/** // obf
-	 * The maximum amount of data to receive from the remote server. // obf
-	 * // obf
-	 * @since 3.6.0 // obf
-	 * @var int|false // obf
-	 */ // obf
-	private $v_zkpje = false; // obf
+	/**
+	 * The file resource used for streaming to file.
+	 *
+	 * @since 3.6.0
+	 * @var resource|false
+	 */
+	private $stream_handle = false;
 
-	/** // obf
-	 * The file resource used for streaming to file. // obf
-	 * // obf
-	 * @since 3.6.0 // obf
-	 * @var resource|false // obf
-	 */ // obf
-	private $v_euffn = false; // obf
+	/**
+	 * The total bytes written in the current request.
+	 *
+	 * @since 4.1.0
+	 * @var int
+	 */
+	private $bytes_written_total = 0;
 
-	/** // obf
-	 * The total bytes written in the current request. // obf
-	 * // obf
-	 * @since 4.1.0 // obf
-	 * @var int // obf
-	 */ // obf
-	private $v_siudq = 0; // obf
+	/**
+	 * Send a HTTP request to a URI using cURL extension.
+	 *
+	 * @since 2.7.0
+	 *
+	 * @param string       $url  The request URL.
+	 * @param string|array $args Optional. Override the defaults.
+	 * @return array|WP_Error Array containing 'headers', 'body', 'response', 'cookies', 'filename'. A WP_Error instance upon error
+	 */
+	public function request( $url, $args = array() ) {
+		$defaults = array(
+			'method'      => 'GET',
+			'timeout'     => 5,
+			'redirection' => 5,
+			'httpversion' => '1.0',
+			'blocking'    => true,
+			'headers'     => array(),
+			'body'        => null,
+			'cookies'     => array(),
+			'decompress'  => false,
+			'stream'      => false,
+			'filename'    => null,
+		);
 
-	/** // obf
-	 * Send a HTTP request to a URI using cURL extension. // obf
-	 * // obf
-	 * @since 2.7.0 // obf
-	 * // obf
-	 * @param string       $v_nudty  The request URL. // obf
-	 * @param string|array $v_ubyof Optional. Override the defaults. // obf
-	 * @return array|WP_Error Array containing 'headers', 'body', 'response', 'cookies', 'filename'. A WP_Error instance upon error // obf
-	 */ // obf
-	public function request( $v_nudty, $v_ubyof = array() ) { // obf
-		$v_ewcsl = array( // obf
-			'method'      => 'GET', // obf
-			'timeout'     => 5, // obf
-			'redirection' => 5, // obf
-			'httpversion' => '1.0', // obf
-			'blocking'    => true, // obf
-			'headers'     => array(), // obf
-			'body'        => null, // obf
-			'cookies'     => array(), // obf
-			'decompress'  => false, // obf
-			'stream'      => false, // obf
-			'filename'    => null, // obf
-		); // obf
+		$parsed_args = wp_parse_args( $args, $defaults );
 
-		$v_lcykd = wp_parse_args( $v_ubyof, $v_ewcsl ); // obf
+		if ( isset( $parsed_args['headers']['User-Agent'] ) ) {
+			$parsed_args['user-agent'] = $parsed_args['headers']['User-Agent'];
+			unset( $parsed_args['headers']['User-Agent'] );
+		} elseif ( isset( $parsed_args['headers']['user-agent'] ) ) {
+			$parsed_args['user-agent'] = $parsed_args['headers']['user-agent'];
+			unset( $parsed_args['headers']['user-agent'] );
+		}
 
-		if ( isset( $v_lcykd['headers']['User-Agent'] ) ) { // obf
-			$v_lcykd['user-agent'] = $v_lcykd['headers']['User-Agent']; // obf
-			unset( $v_lcykd['headers']['User-Agent'] ); // obf
-		} elseif ( isset( $v_lcykd['headers']['user-agent'] ) ) { // obf
-			$v_lcykd['user-agent'] = $v_lcykd['headers']['user-agent']; // obf
-			unset( $v_lcykd['headers']['user-agent'] ); // obf
-		} // obf
+		// Construct Cookie: header if any cookies are set.
+		WP_Http::buildCookieHeader( $parsed_args );
 
-		// Construct Cookie: header if any cookies are set. // obf
-		WP_Http::buildCookieHeader( $v_lcykd ); // obf
+		$handle = curl_init();
 
-		$v_pzfmo = curl_init(); // obf
+		// cURL offers really easy proxy support.
+		$proxy = new WP_HTTP_Proxy();
 
-		// cURL offers really easy proxy support. // obf
-		$v_ckqqp = new WP_HTTP_Proxy(); // obf
+		if ( $proxy->is_enabled() && $proxy->send_through_proxy( $url ) ) {
 
-		if ( $v_ckqqp->is_enabled() && $v_ckqqp->send_through_proxy( $v_nudty ) ) { // obf
+			curl_setopt( $handle, CURLOPT_PROXYTYPE, CURLPROXY_HTTP );
+			curl_setopt( $handle, CURLOPT_PROXY, $proxy->host() );
+			curl_setopt( $handle, CURLOPT_PROXYPORT, $proxy->port() );
 
-			curl_setopt( $v_pzfmo, CURLOPT_PROXYTYPE, CURLPROXY_HTTP ); // obf
-			curl_setopt( $v_pzfmo, CURLOPT_PROXY, $v_ckqqp->host() ); // obf
-			curl_setopt( $v_pzfmo, CURLOPT_PROXYPORT, $v_ckqqp->port() ); // obf
+			if ( $proxy->use_authentication() ) {
+				curl_setopt( $handle, CURLOPT_PROXYAUTH, CURLAUTH_ANY );
+				curl_setopt( $handle, CURLOPT_PROXYUSERPWD, $proxy->authentication() );
+			}
+		}
 
-			if ( $v_ckqqp->use_authentication() ) { // obf
-				curl_setopt( $v_pzfmo, CURLOPT_PROXYAUTH, CURLAUTH_ANY ); // obf
-				curl_setopt( $v_pzfmo, CURLOPT_PROXYUSERPWD, $v_ckqqp->authentication() ); // obf
-			} // obf
-		} // obf
+		$is_local   = isset( $parsed_args['local'] ) && $parsed_args['local'];
+		$ssl_verify = isset( $parsed_args['sslverify'] ) && $parsed_args['sslverify'];
+		if ( $is_local ) {
+			/** This filter is documented in wp-includes/class-wp-http-streams.php */
+			$ssl_verify = apply_filters( 'https_local_ssl_verify', $ssl_verify, $url );
+		} elseif ( ! $is_local ) {
+			/** This filter is documented in wp-includes/class-wp-http.php */
+			$ssl_verify = apply_filters( 'https_ssl_verify', $ssl_verify, $url );
+		}
 
-		$v_bmgtp   = isset( $v_lcykd['local'] ) && $v_lcykd['local']; // obf
-		$v_sbrlu = isset( $v_lcykd['sslverify'] ) && $v_lcykd['sslverify']; // obf
-		if ( $v_bmgtp ) { // obf
-			/** This filter is documented in wp-includes/class-wp-http-streams.php */ // obf
-			$v_sbrlu = apply_filters( 'https_local_ssl_verify', $v_sbrlu, $v_nudty ); // obf
-		} elseif ( ! $v_bmgtp ) { // obf
-			/** This filter is documented in wp-includes/class-wp-http.php */ // obf
-			$v_sbrlu = apply_filters( 'https_ssl_verify', $v_sbrlu, $v_nudty ); // obf
-		} // obf
+		/*
+		 * CURLOPT_TIMEOUT and CURLOPT_CONNECTTIMEOUT expect integers. Have to use ceil since.
+		 * a value of 0 will allow an unlimited timeout.
+		 */
+		$timeout = (int) ceil( $parsed_args['timeout'] );
+		curl_setopt( $handle, CURLOPT_CONNECTTIMEOUT, $timeout );
+		curl_setopt( $handle, CURLOPT_TIMEOUT, $timeout );
 
-		/* // obf
-		 * CURLOPT_TIMEOUT and CURLOPT_CONNECTTIMEOUT expect integers. Have to use ceil since. // obf
-		 * a value of 0 will allow an unlimited timeout. // obf
-		 */ // obf
-		$v_kispt = (int) ceil( $v_lcykd['timeout'] ); // obf
-		curl_setopt( $v_pzfmo, CURLOPT_CONNECTTIMEOUT, $v_kispt ); // obf
-		curl_setopt( $v_pzfmo, CURLOPT_TIMEOUT, $v_kispt ); // obf
+		curl_setopt( $handle, CURLOPT_URL, $url );
+		curl_setopt( $handle, CURLOPT_RETURNTRANSFER, true );
+		curl_setopt( $handle, CURLOPT_SSL_VERIFYHOST, ( true === $ssl_verify ) ? 2 : false );
+		curl_setopt( $handle, CURLOPT_SSL_VERIFYPEER, $ssl_verify );
 
-		curl_setopt( $v_pzfmo, CURLOPT_URL, $v_nudty ); // obf
-		curl_setopt( $v_pzfmo, CURLOPT_RETURNTRANSFER, true ); // obf
-		curl_setopt( $v_pzfmo, CURLOPT_SSL_VERIFYHOST, ( true === $v_sbrlu ) ? 2 : false ); // obf
-		curl_setopt( $v_pzfmo, CURLOPT_SSL_VERIFYPEER, $v_sbrlu ); // obf
+		if ( $ssl_verify ) {
+			curl_setopt( $handle, CURLOPT_CAINFO, $parsed_args['sslcertificates'] );
+		}
 
-		if ( $v_sbrlu ) { // obf
-			curl_setopt( $v_pzfmo, CURLOPT_CAINFO, $v_lcykd['sslcertificates'] ); // obf
-		} // obf
+		curl_setopt( $handle, CURLOPT_USERAGENT, $parsed_args['user-agent'] );
 
-		curl_setopt( $v_pzfmo, CURLOPT_USERAGENT, $v_lcykd['user-agent'] ); // obf
+		/*
+		 * The option doesn't work with safe mode or when open_basedir is set, and there's
+		 * a bug #17490 with redirected POST requests, so handle redirections outside Curl.
+		 */
+		curl_setopt( $handle, CURLOPT_FOLLOWLOCATION, false );
+		curl_setopt( $handle, CURLOPT_PROTOCOLS, CURLPROTO_HTTP | CURLPROTO_HTTPS );
 
-		/* // obf
-		 * The option doesn't work with safe mode or when open_basedir is set, and there's // obf
-		 * a bug #17490 with redirected POST requests, so handle redirections outside Curl. // obf
-		 */ // obf
-		curl_setopt( $v_pzfmo, CURLOPT_FOLLOWLOCATION, false ); // obf
-		curl_setopt( $v_pzfmo, CURLOPT_PROTOCOLS, CURLPROTO_HTTP | CURLPROTO_HTTPS ); // obf
+		switch ( $parsed_args['method'] ) {
+			case 'HEAD':
+				curl_setopt( $handle, CURLOPT_NOBODY, true );
+				break;
+			case 'POST':
+				curl_setopt( $handle, CURLOPT_POST, true );
+				curl_setopt( $handle, CURLOPT_POSTFIELDS, $parsed_args['body'] );
+				break;
+			case 'PUT':
+				curl_setopt( $handle, CURLOPT_CUSTOMREQUEST, 'PUT' );
+				curl_setopt( $handle, CURLOPT_POSTFIELDS, $parsed_args['body'] );
+				break;
+			default:
+				curl_setopt( $handle, CURLOPT_CUSTOMREQUEST, $parsed_args['method'] );
+				if ( ! is_null( $parsed_args['body'] ) ) {
+					curl_setopt( $handle, CURLOPT_POSTFIELDS, $parsed_args['body'] );
+				}
+				break;
+		}
 
-		switch ( $v_lcykd['method'] ) { // obf
-			case 'HEAD': // obf
-				curl_setopt( $v_pzfmo, CURLOPT_NOBODY, true ); // obf
-				break; // obf
-			case 'POST': // obf
-				curl_setopt( $v_pzfmo, CURLOPT_POST, true ); // obf
-				curl_setopt( $v_pzfmo, CURLOPT_POSTFIELDS, $v_lcykd['body'] ); // obf
-				break; // obf
-			case 'PUT': // obf
-				curl_setopt( $v_pzfmo, CURLOPT_CUSTOMREQUEST, 'PUT' ); // obf
-				curl_setopt( $v_pzfmo, CURLOPT_POSTFIELDS, $v_lcykd['body'] ); // obf
-				break; // obf
-			default: // obf
-				curl_setopt( $v_pzfmo, CURLOPT_CUSTOMREQUEST, $v_lcykd['method'] ); // obf
-				if ( ! is_null( $v_lcykd['body'] ) ) { // obf
-					curl_setopt( $v_pzfmo, CURLOPT_POSTFIELDS, $v_lcykd['body'] ); // obf
-				} // obf
-				break; // obf
-		} // obf
+		if ( true === $parsed_args['blocking'] ) {
+			curl_setopt( $handle, CURLOPT_HEADERFUNCTION, array( $this, 'stream_headers' ) );
+			curl_setopt( $handle, CURLOPT_WRITEFUNCTION, array( $this, 'stream_body' ) );
+		}
 
-		if ( true === $v_lcykd['blocking'] ) { // obf
-			curl_setopt( $v_pzfmo, CURLOPT_HEADERFUNCTION, array( $v_olxdd, 'stream_headers' ) ); // obf
-			curl_setopt( $v_pzfmo, CURLOPT_WRITEFUNCTION, array( $v_olxdd, 'stream_body' ) ); // obf
-		} // obf
+		curl_setopt( $handle, CURLOPT_HEADER, false );
 
-		curl_setopt( $v_pzfmo, CURLOPT_HEADER, false ); // obf
+		if ( isset( $parsed_args['limit_response_size'] ) ) {
+			$this->max_body_length = (int) $parsed_args['limit_response_size'];
+		} else {
+			$this->max_body_length = false;
+		}
 
-		if ( isset( $v_lcykd['limit_response_size'] ) ) { // obf
-			$v_olxdd->max_body_length = (int) $v_lcykd['limit_response_size']; // obf
-		} else { // obf
-			$v_olxdd->max_body_length = false; // obf
-		} // obf
+		// If streaming to a file open a file handle, and setup our curl streaming handler.
+		if ( $parsed_args['stream'] ) {
+			if ( ! WP_DEBUG ) {
+				$this->stream_handle = @fopen( $parsed_args['filename'], 'w+' );
+			} else {
+				$this->stream_handle = fopen( $parsed_args['filename'], 'w+' );
+			}
+			if ( ! $this->stream_handle ) {
+				return new WP_Error(
+					'http_request_failed',
+					sprintf(
+						/* translators: 1: fopen(), 2: File name. */
+						__( 'Could not open handle for %1$s to %2$s.' ),
+						'fopen()',
+						$parsed_args['filename']
+					)
+				);
+			}
+		} else {
+			$this->stream_handle = false;
+		}
 
-		// If streaming to a file open a file handle, and setup our curl streaming handler. // obf
-		if ( $v_lcykd['stream'] ) { // obf
-			if ( ! WP_DEBUG ) { // obf
-				$v_olxdd->stream_handle = @fopen( $v_lcykd['filename'], 'w+' ); // obf
-			} else { // obf
-				$v_olxdd->stream_handle = fopen( $v_lcykd['filename'], 'w+' ); // obf
-			} // obf
-			if ( ! $v_olxdd->stream_handle ) { // obf
-				return new WP_Error( // obf
-					'http_request_failed', // obf
-					sprintf( // obf
-						/* translators: 1: fopen(), 2: File name. */ // obf
-						__( 'Could not open handle for %1$v_mgiyk to %2$v_mgiyk.' ), // obf
-						'fopen()', // obf
-						$v_lcykd['filename'] // obf
-					) // obf
-				); // obf
-			} // obf
-		} else { // obf
-			$v_olxdd->stream_handle = false; // obf
-		} // obf
+		if ( ! empty( $parsed_args['headers'] ) ) {
+			// cURL expects full header strings in each element.
+			$headers = array();
+			foreach ( $parsed_args['headers'] as $name => $value ) {
+				$headers[] = "{$name}: $value";
+			}
+			curl_setopt( $handle, CURLOPT_HTTPHEADER, $headers );
+		}
 
-		if ( ! empty( $v_lcykd['headers'] ) ) { // obf
-			// cURL expects full header strings in each element. // obf
-			$v_pvbcc = array(); // obf
-			foreach ( $v_lcykd['headers'] as $v_yobeq => $v_bidai ) { // obf
-				$v_pvbcc[] = "{$v_yobeq}: $v_bidai"; // obf
-			} // obf
-			curl_setopt( $v_pzfmo, CURLOPT_HTTPHEADER, $v_pvbcc ); // obf
-		} // obf
+		if ( '1.0' === $parsed_args['httpversion'] ) {
+			curl_setopt( $handle, CURLOPT_HTTP_VERSION, CURL_HTTP_VERSION_1_0 );
+		} else {
+			curl_setopt( $handle, CURLOPT_HTTP_VERSION, CURL_HTTP_VERSION_1_1 );
+		}
 
-		if ( '1.0' === $v_lcykd['httpversion'] ) { // obf
-			curl_setopt( $v_pzfmo, CURLOPT_HTTP_VERSION, CURL_HTTP_VERSION_1_0 ); // obf
-		} else { // obf
-			curl_setopt( $v_pzfmo, CURLOPT_HTTP_VERSION, CURL_HTTP_VERSION_1_1 ); // obf
-		} // obf
+		/**
+		 * Fires before the cURL request is executed.
+		 *
+		 * Cookies are not currently handled by the HTTP API. This action allows
+		 * plugins to handle cookies themselves.
+		 *
+		 * @since 2.8.0
+		 *
+		 * @param resource $handle      The cURL handle returned by curl_init() (passed by reference).
+		 * @param array    $parsed_args The HTTP request arguments.
+		 * @param string   $url         The request URL.
+		 */
+		do_action_ref_array( 'http_api_curl', array( &$handle, $parsed_args, $url ) );
 
-		/** // obf
-		 * Fires before the cURL request is executed. // obf
-		 * // obf
-		 * Cookies are not currently handled by the HTTP API. This action allows // obf
-		 * plugins to handle cookies themselves. // obf
-		 * // obf
-		 * @since 2.8.0 // obf
-		 * // obf
-		 * @param resource $v_pzfmo      The cURL handle returned by curl_init() (passed by reference). // obf
-		 * @param array    $v_lcykd The HTTP request arguments. // obf
-		 * @param string   $v_nudty         The request URL. // obf
-		 */ // obf
-		do_action_ref_array( 'http_api_curl', array( &$v_pzfmo, $v_lcykd, $v_nudty ) ); // obf
+		// We don't need to return the body, so don't. Just execute request and return.
+		if ( ! $parsed_args['blocking'] ) {
+			curl_exec( $handle );
 
-		// We don't need to return the body, so don't. Just execute request and return. // obf
-		if ( ! $v_lcykd['blocking'] ) { // obf
-			curl_exec( $v_pzfmo ); // obf
+			$curl_error = curl_error( $handle );
+			if ( $curl_error ) {
+				curl_close( $handle );
+				return new WP_Error( 'http_request_failed', $curl_error );
+			}
+			if ( in_array( curl_getinfo( $handle, CURLINFO_HTTP_CODE ), array( 301, 302 ), true ) ) {
+				curl_close( $handle );
+				return new WP_Error( 'http_request_failed', __( 'Too many redirects.' ) );
+			}
 
-			$v_aivft = curl_error( $v_pzfmo ); // obf
-			if ( $v_aivft ) { // obf
-				curl_close( $v_pzfmo ); // obf
-				return new WP_Error( 'http_request_failed', $v_aivft ); // obf
-			} // obf
-			if ( in_array( curl_getinfo( $v_pzfmo, CURLINFO_HTTP_CODE ), array( 301, 302 ), true ) ) { // obf
-				curl_close( $v_pzfmo ); // obf
-				return new WP_Error( 'http_request_failed', __( 'Too many redirects.' ) ); // obf
-			} // obf
+			curl_close( $handle );
+			return array(
+				'headers'  => array(),
+				'body'     => '',
+				'response' => array(
+					'code'    => false,
+					'message' => false,
+				),
+				'cookies'  => array(),
+			);
+		}
 
-			curl_close( $v_pzfmo ); // obf
-			return array( // obf
-				'headers'  => array(), // obf
-				'body'     => '', // obf
-				'response' => array( // obf
-					'code'    => false, // obf
-					'message' => false, // obf
-				), // obf
-				'cookies'  => array(), // obf
-			); // obf
-		} // obf
+		curl_exec( $handle );
 
-		curl_exec( $v_pzfmo ); // obf
+		$processed_headers   = WP_Http::processHeaders( $this->headers, $url );
+		$body                = $this->body;
+		$bytes_written_total = $this->bytes_written_total;
 
-		$v_imrth   = WP_Http::processHeaders( $v_olxdd->headers, $v_nudty ); // obf
-		$v_tjfbw                = $v_olxdd->body; // obf
-		$v_siudq = $v_olxdd->bytes_written_total; // obf
+		$this->headers             = '';
+		$this->body                = '';
+		$this->bytes_written_total = 0;
 
-		$v_olxdd->headers             = ''; // obf
-		$v_olxdd->body                = ''; // obf
-		$v_olxdd->bytes_written_total = 0; // obf
+		$curl_error = curl_errno( $handle );
 
-		$v_aivft = curl_errno( $v_pzfmo ); // obf
+		// If an error occurred, or, no response.
+		if ( $curl_error || ( 0 === strlen( $body ) && empty( $processed_headers['headers'] ) ) ) {
+			if ( CURLE_WRITE_ERROR /* 23 */ === $curl_error ) {
+				if ( ! $this->max_body_length || $this->max_body_length !== $bytes_written_total ) {
+					if ( $parsed_args['stream'] ) {
+						curl_close( $handle );
+						fclose( $this->stream_handle );
+						return new WP_Error( 'http_request_failed', __( 'Failed to write request to temporary file.' ) );
+					} else {
+						curl_close( $handle );
+						return new WP_Error( 'http_request_failed', curl_error( $handle ) );
+					}
+				}
+			} else {
+				$curl_error = curl_error( $handle );
+				if ( $curl_error ) {
+					curl_close( $handle );
+					return new WP_Error( 'http_request_failed', $curl_error );
+				}
+			}
+			if ( in_array( curl_getinfo( $handle, CURLINFO_HTTP_CODE ), array( 301, 302 ), true ) ) {
+				curl_close( $handle );
+				return new WP_Error( 'http_request_failed', __( 'Too many redirects.' ) );
+			}
+		}
 
-		// If an error occurred, or, no response. // obf
-		if ( $v_aivft || ( 0 === strlen( $v_tjfbw ) && empty( $v_imrth['headers'] ) ) ) { // obf
-			if ( CURLE_WRITE_ERROR /* 23 */ === $v_aivft ) { // obf
-				if ( ! $v_olxdd->max_body_length || $v_olxdd->max_body_length !== $v_siudq ) { // obf
-					if ( $v_lcykd['stream'] ) { // obf
-						curl_close( $v_pzfmo ); // obf
-						fclose( $v_olxdd->stream_handle ); // obf
-						return new WP_Error( 'http_request_failed', __( 'Failed to write request to temporary file.' ) ); // obf
-					} else { // obf
-						curl_close( $v_pzfmo ); // obf
-						return new WP_Error( 'http_request_failed', curl_error( $v_pzfmo ) ); // obf
-					} // obf
-				} // obf
-			} else { // obf
-				$v_aivft = curl_error( $v_pzfmo ); // obf
-				if ( $v_aivft ) { // obf
-					curl_close( $v_pzfmo ); // obf
-					return new WP_Error( 'http_request_failed', $v_aivft ); // obf
-				} // obf
-			} // obf
-			if ( in_array( curl_getinfo( $v_pzfmo, CURLINFO_HTTP_CODE ), array( 301, 302 ), true ) ) { // obf
-				curl_close( $v_pzfmo ); // obf
-				return new WP_Error( 'http_request_failed', __( 'Too many redirects.' ) ); // obf
-			} // obf
-		} // obf
+		curl_close( $handle );
 
-		curl_close( $v_pzfmo ); // obf
+		if ( $parsed_args['stream'] ) {
+			fclose( $this->stream_handle );
+		}
 
-		if ( $v_lcykd['stream'] ) { // obf
-			fclose( $v_olxdd->stream_handle ); // obf
-		} // obf
+		$response = array(
+			'headers'  => $processed_headers['headers'],
+			'body'     => null,
+			'response' => $processed_headers['response'],
+			'cookies'  => $processed_headers['cookies'],
+			'filename' => $parsed_args['filename'],
+		);
 
-		$v_fnjve = array( // obf
-			'headers'  => $v_imrth['headers'], // obf
-			'body'     => null, // obf
-			'response' => $v_imrth['response'], // obf
-			'cookies'  => $v_imrth['cookies'], // obf
-			'filename' => $v_lcykd['filename'], // obf
-		); // obf
+		// Handle redirects.
+		$redirect_response = WP_Http::handle_redirects( $url, $parsed_args, $response );
+		if ( false !== $redirect_response ) {
+			return $redirect_response;
+		}
 
-		// Handle redirects. // obf
-		$v_zcgth = WP_Http::handle_redirects( $v_nudty, $v_lcykd, $v_fnjve ); // obf
-		if ( false !== $v_zcgth ) { // obf
-			return $v_zcgth; // obf
-		} // obf
+		if ( true === $parsed_args['decompress']
+			&& true === WP_Http_Encoding::should_decode( $processed_headers['headers'] )
+		) {
+			$body = WP_Http_Encoding::decompress( $body );
+		}
 
-		if ( true === $v_lcykd['decompress'] // obf
-			&& true === WP_Http_Encoding::should_decode( $v_imrth['headers'] ) // obf
-		) { // obf
-			$v_tjfbw = WP_Http_Encoding::decompress( $v_tjfbw ); // obf
-		} // obf
+		$response['body'] = $body;
 
-		$v_fnjve['body'] = $v_tjfbw; // obf
+		return $response;
+	}
 
-		return $v_fnjve; // obf
-	} // obf
+	/**
+	 * Grabs the headers of the cURL request.
+	 *
+	 * Each header is sent individually to this callback, and is appended to the `$header` property
+	 * for temporary storage.
+	 *
+	 * @since 3.2.0
+	 *
+	 * @param resource $handle  cURL handle.
+	 * @param string   $headers cURL request headers.
+	 * @return int Length of the request headers.
+	 */
+	private function stream_headers( $handle, $headers ) {
+		$this->headers .= $headers;
+		return strlen( $headers );
+	}
 
-	/** // obf
-	 * Grabs the headers of the cURL request. // obf
-	 * // obf
-	 * Each header is sent individually to this callback, and is appended to the `$v_afuzi` property // obf
-	 * for temporary storage. // obf
-	 * // obf
-	 * @since 3.2.0 // obf
-	 * // obf
-	 * @param resource $v_pzfmo  cURL handle. // obf
-	 * @param string   $v_pvbcc cURL request headers. // obf
-	 * @return int Length of the request headers. // obf
-	 */ // obf
-	private function stream_headers( $v_pzfmo, $v_pvbcc ) { // obf
-		$v_olxdd->headers .= $v_pvbcc; // obf
-		return strlen( $v_pvbcc ); // obf
-	} // obf
+	/**
+	 * Grabs the body of the cURL request.
+	 *
+	 * The contents of the document are passed in chunks, and are appended to the `$body`
+	 * property for temporary storage. Returning a length shorter than the length of
+	 * `$data` passed in will cause cURL to abort the request with `CURLE_WRITE_ERROR`.
+	 *
+	 * @since 3.6.0
+	 *
+	 * @param resource $handle cURL handle.
+	 * @param string   $data   cURL request body.
+	 * @return int Total bytes of data written.
+	 */
+	private function stream_body( $handle, $data ) {
+		$data_length = strlen( $data );
 
-	/** // obf
-	 * Grabs the body of the cURL request. // obf
-	 * // obf
-	 * The contents of the document are passed in chunks, and are appended to the `$v_tjfbw` // obf
-	 * property for temporary storage. Returning a length shorter than the length of // obf
-	 * `$v_tqhrt` passed in will cause cURL to abort the request with `CURLE_WRITE_ERROR`. // obf
-	 * // obf
-	 * @since 3.6.0 // obf
-	 * // obf
-	 * @param resource $v_pzfmo cURL handle. // obf
-	 * @param string   $v_tqhrt   cURL request body. // obf
-	 * @return int Total bytes of data written. // obf
-	 */ // obf
-	private function stream_body( $v_pzfmo, $v_tqhrt ) { // obf
-		$v_gfthr = strlen( $v_tqhrt ); // obf
+		if ( $this->max_body_length && ( $this->bytes_written_total + $data_length ) > $this->max_body_length ) {
+			$data_length = ( $this->max_body_length - $this->bytes_written_total );
+			$data        = substr( $data, 0, $data_length );
+		}
 
-		if ( $v_olxdd->max_body_length && ( $v_olxdd->bytes_written_total + $v_gfthr ) > $v_olxdd->max_body_length ) { // obf
-			$v_gfthr = ( $v_olxdd->max_body_length - $v_olxdd->bytes_written_total ); // obf
-			$v_tqhrt        = substr( $v_tqhrt, 0, $v_gfthr ); // obf
-		} // obf
+		if ( $this->stream_handle ) {
+			$bytes_written = fwrite( $this->stream_handle, $data );
+		} else {
+			$this->body   .= $data;
+			$bytes_written = $data_length;
+		}
 
-		if ( $v_olxdd->stream_handle ) { // obf
-			$v_qvfri = fwrite( $v_olxdd->stream_handle, $v_tqhrt ); // obf
-		} else { // obf
-			$v_olxdd->body   .= $v_tqhrt; // obf
-			$v_qvfri = $v_gfthr; // obf
-		} // obf
+		$this->bytes_written_total += $bytes_written;
 
-		$v_olxdd->bytes_written_total += $v_qvfri; // obf
+		// Upon event of this function returning less than strlen( $data ) curl will error with CURLE_WRITE_ERROR.
+		return $bytes_written;
+	}
 
-		// Upon event of this function returning less than strlen( $v_tqhrt ) curl will error with CURLE_WRITE_ERROR. // obf
-		return $v_qvfri; // obf
-	} // obf
+	/**
+	 * Determines whether this class can be used for retrieving a URL.
+	 *
+	 * @since 2.7.0
+	 *
+	 * @param array $args Optional. Array of request arguments. Default empty array.
+	 * @return bool False means this class can not be used, true means it can.
+	 */
+	public static function test( $args = array() ) {
+		if ( ! function_exists( 'curl_init' ) || ! function_exists( 'curl_exec' ) ) {
+			return false;
+		}
 
-	/** // obf
-	 * Determines whether this class can be used for retrieving a URL. // obf
-	 * // obf
-	 * @since 2.7.0 // obf
-	 * // obf
-	 * @param array $v_ubyof Optional. Array of request arguments. Default empty array. // obf
-	 * @return bool False means this class can not be used, true means it can. // obf
-	 */ // obf
-	public static function test( $v_ubyof = array() ) { // obf
-		if ( ! function_exists( 'curl_init' ) || ! function_exists( 'curl_exec' ) ) { // obf
-			return false; // obf
-		} // obf
+		$is_ssl = isset( $args['ssl'] ) && $args['ssl'];
 
-		$v_nijsa = isset( $v_ubyof['ssl'] ) && $v_ubyof['ssl']; // obf
+		if ( $is_ssl ) {
+			$curl_version = curl_version();
+			// Check whether this cURL version support SSL requests.
+			if ( ! ( CURL_VERSION_SSL & $curl_version['features'] ) ) {
+				return false;
+			}
+		}
 
-		if ( $v_nijsa ) { // obf
-			$v_lrlti = curl_version(); // obf
-			// Check whether this cURL version support SSL requests. // obf
-			if ( ! ( CURL_VERSION_SSL & $v_lrlti['features'] ) ) { // obf
-				return false; // obf
-			} // obf
-		} // obf
-
-		/** // obf
-		 * Filters whether cURL can be used as a transport for retrieving a URL. // obf
-		 * // obf
-		 * @since 2.7.0 // obf
-		 * // obf
-		 * @param bool  $v_yictg Whether the class can be used. Default true. // obf
-		 * @param array $v_ubyof      An array of request arguments. // obf
-		 */ // obf
-		return apply_filters( 'use_curl_transport', true, $v_ubyof ); // obf
-	} // obf
-} // obf
+		/**
+		 * Filters whether cURL can be used as a transport for retrieving a URL.
+		 *
+		 * @since 2.7.0
+		 *
+		 * @param bool  $use_class Whether the class can be used. Default true.
+		 * @param array $args      An array of request arguments.
+		 */
+		return apply_filters( 'use_curl_transport', true, $args );
+	}
+}

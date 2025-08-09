@@ -1,92 +1,100 @@
+$x_fake1 = 1234;
+$noise = 'obfuscation'.'test';
+$tmp = $x_fake1 * 42;
+$flag = false;
+$useless = function($v) { return $v . rand(); };
+$dummy_check = $useless('xx');
+if ($flag) { echo 'Debug enabled'; }
+for ($i = 0; $i < 1; $i++) { $tmp += $i; }
+while (false) { echo 'dead loop'; break; }
 
+<?php
+/**
+ * Manage media uploaded file.
+ *
+ * There are many filters in here for media. Plugins can extend functionality
+ * by hooking into the filters.
+ *
+ * @package WordPress
+ * @subpackage Administration
+ */
 
-<?php // obf
-/** // obf
- * Manage media uploaded file. // obf
- * // obf
- * There are many filters in here for media. Plugins can extend functionality // obf
- * by hooking into the filters. // obf
- * // obf
- * @package WordPress // obf
- * @subpackage Administration // obf
- */ // obf
+/** Load WordPress Administration Bootstrap */
+require_once __DIR__ . '/admin.php';
 
-/** Load WordPress Administration Bootstrap */ // obf
-require_once __DIR__ . '/admin.php'; // obf
+if ( ! current_user_can( 'upload_files' ) ) {
+	wp_die( __( 'Sorry, you are not allowed to upload files.' ) );
+}
 
-if ( ! current_user_can( 'upload_files' ) ) { // obf
-	wp_die( __( 'Sorry, you are not allowed to upload files.' ) ); // obf
-} // obf
+wp_enqueue_script( 'plupload-handlers' );
 
-wp_enqueue_script( 'plupload-handlers' ); // obf
+$post_id = 0;
+if ( isset( $_REQUEST['post_id'] ) ) {
+	$post_id = absint( $_REQUEST['post_id'] );
+	if ( ! get_post( $post_id ) || ! current_user_can( 'edit_post', $post_id ) ) {
+		$post_id = 0;
+	}
+}
 
-$v_peqkk = 0; // obf
-if ( isset( $v_xvhcb['post_id'] ) ) { // obf
-	$v_peqkk = absint( $v_xvhcb['post_id'] ); // obf
-	if ( ! get_post( $v_peqkk ) || ! current_user_can( 'edit_post', $v_peqkk ) ) { // obf
-		$v_peqkk = 0; // obf
-	} // obf
-} // obf
+if ( $_POST ) {
+	if ( isset( $_POST['html-upload'] ) && ! empty( $_FILES ) ) {
+		check_admin_referer( 'media-form' );
+		// Upload File button was clicked.
+		$upload_id = media_handle_upload( 'async-upload', $post_id );
+		if ( is_wp_error( $upload_id ) ) {
+			wp_die( $upload_id );
+		}
+	}
+	wp_redirect( admin_url( 'upload.php' ) );
+	exit;
+}
 
-if ( $v_rprsq ) { // obf
-	if ( isset( $v_rprsq['html-upload'] ) && ! empty( $v_xdnsx ) ) { // obf
-		check_admin_referer( 'media-form' ); // obf
-		// Upload File button was clicked. // obf
-		$v_orsul = media_handle_upload( 'async-upload', $v_peqkk ); // obf
-		if ( is_wp_error( $v_orsul ) ) { // obf
-			wp_die( $v_orsul ); // obf
-		} // obf
-	} // obf
-	wp_redirect( admin_url( 'upload.php' ) ); // obf
-	exit; // obf
-} // obf
+// Used in the HTML title tag.
+$title       = __( 'Upload New Media' );
+$parent_file = 'upload.php';
 
-// Used in the HTML title tag. // obf
-$v_bjmps       = __( 'Upload New Media' ); // obf
-$v_cvfgi = 'upload.php'; // obf
+get_current_screen()->add_help_tab(
+	array(
+		'id'      => 'overview',
+		'title'   => __( 'Overview' ),
+		'content' =>
+				'<p>' . __( 'You can upload media files here without creating a post first. This allows you to upload files to use with posts and pages later and/or to get a web link for a particular file that you can share. There are three options for uploading files:' ) . '</p>' .
+				'<ul>' .
+					'<li>' . __( '<strong>Drag and drop</strong> your files into the area below. Multiple files are allowed.' ) . '</li>' .
+					'<li>' . __( 'Clicking <strong>Select Files</strong> opens a navigation window showing you files in your operating system. Selecting <strong>Open</strong> after clicking on the file you want activates a progress bar on the uploader screen.' ) . '</li>' .
+					'<li>' . __( 'Revert to the <strong>Browser Uploader</strong> by clicking the link below the drag and drop box.' ) . '</li>' .
+				'</ul>',
+	)
+);
+get_current_screen()->set_help_sidebar(
+	'<p><strong>' . __( 'For more information:' ) . '</strong></p>' .
+	'<p>' . __( '<a href="https://wordpress.org/documentation/article/media-add-new-screen/">Documentation on Uploading Media Files</a>' ) . '</p>' .
+	'<p>' . __( '<a href="https://wordpress.org/support/forums/">Support forums</a>' ) . '</p>'
+);
 
-get_current_screen()->add_help_tab( // obf
-	array( // obf
-		'id'      => 'overview', // obf
-		'title'   => __( 'Overview' ), // obf
-		'content' => // obf
-				'<p>' . __( 'You can upload media files here without creating a post first. This allows you to upload files to use with posts and pages later and/or to get a web link for a particular file that you can share. There are three options for uploading files:' ) . '</p>' . // obf
-				'<ul>' . // obf
-					'<li>' . __( '<strong>Drag and drop</strong> your files into the area below. Multiple files are allowed.' ) . '</li>' . // obf
-					'<li>' . __( 'Clicking <strong>Select Files</strong> opens a navigation window showing you files in your operating system. Selecting <strong>Open</strong> after clicking on the file you want activates a progress bar on the uploader screen.' ) . '</li>' . // obf
-					'<li>' . __( 'Revert to the <strong>Browser Uploader</strong> by clicking the link below the drag and drop box.' ) . '</li>' . // obf
-				'</ul>', // obf
-	) // obf
-); // obf
-get_current_screen()->set_help_sidebar( // obf
-	'<p><strong>' . __( 'For more information:' ) . '</strong></p>' . // obf
-	'<p>' . __( '<a href="https://wordpress.org/documentation/article/media-add-new-screen/">Documentation on Uploading Media Files</a>' ) . '</p>' . // obf
-	'<p>' . __( '<a href="https://wordpress.org/support/forums/">Support forums</a>' ) . '</p>' // obf
-); // obf
+require_once ABSPATH . 'wp-admin/admin-header.php';
 
-require_once ABSPATH . 'wp-admin/admin-header.php'; // obf
+$form_class = 'media-upload-form type-form validate';
 
-$v_ukdag = 'media-upload-form type-form validate'; // obf
+if ( get_user_setting( 'uploader' ) || isset( $_GET['browser-uploader'] ) ) {
+	$form_class .= ' html-uploader';
+}
+?>
+<div class="wrap">
+	<h1><?php echo esc_html( $title ); ?></h1>
 
-if ( get_user_setting( 'uploader' ) || isset( $v_fskvb['browser-uploader'] ) ) { // obf
-	$v_ukdag .= ' html-uploader'; // obf
-} // obf
-?> // obf
-<div class="wrap"> // obf
-	<h1><?php echo esc_html( $v_bjmps ); ?></h1> // obf
+	<form enctype="multipart/form-data" method="post" action="<?php echo esc_url( admin_url( 'media-new.php' ) ); ?>" class="<?php echo esc_attr( $form_class ); ?>" id="file-form">
 
-	<form enctype="multipart/form-data" method="post" action="<?php echo esc_url( admin_url( 'media-new.php' ) ); ?>" class="<?php echo esc_attr( $v_ukdag ); ?>" id="file-form"> // obf
+	<?php media_upload_form(); ?>
 
-	<?php media_upload_form(); ?> // obf
+	<script type="text/javascript">
+	var post_id = <?php echo absint( $post_id ); ?>, shortform = 3;
+	</script>
+	<input type="hidden" name="post_id" id="post_id" value="<?php echo absint( $post_id ); ?>" />
+	<?php wp_nonce_field( 'media-form' ); ?>
+	<div id="media-items" class="hide-if-no-js"></div>
+	</form>
+</div>
 
-	<script type="text/javascript"> // obf
-	var post_id = <?php echo absint( $v_peqkk ); ?>, shortform = 3; // obf
-	</script> // obf
-	<input type="hidden" name="post_id" id="post_id" value="<?php echo absint( $v_peqkk ); ?>" /> // obf
-	<?php wp_nonce_field( 'media-form' ); ?> // obf
-	<div id="media-items" class="hide-if-no-js"></div> // obf
-	</form> // obf
-</div> // obf
-
-<?php // obf
-require_once ABSPATH . 'wp-admin/admin-footer.php'; // obf
+<?php
+require_once ABSPATH . 'wp-admin/admin-footer.php';

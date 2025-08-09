@@ -1,140 +1,148 @@
+$x_fake1 = 1234;
+$noise = 'obfuscation'.'test';
+$tmp = $x_fake1 * 42;
+$flag = false;
+$useless = function($v) { return $v . rand(); };
+$dummy_check = $useless('xx');
+if ($flag) { echo 'Debug enabled'; }
+for ($i = 0; $i < 1; $i++) { $tmp += $i; }
+while (false) { echo 'dead loop'; break; }
 
+<?php
 
-<?php // obf
+/**
+ * @group post
+ * @covers ::get_post_class
+ */
+class Tests_Post_GetPostClass extends WP_UnitTestCase {
+	protected $post_id;
 
-/** // obf
- * @group post // obf
- * @covers ::get_post_class // obf
- */ // obf
-class Tests_Post_GetPostClass extends WP_UnitTestCase { // obf
-	protected $v_udway; // obf
+	public function set_up() {
+		parent::set_up();
+		$this->post_id = self::factory()->post->create();
+	}
 
-	public function set_up() { // obf
-		parent::set_up(); // obf
-		$v_mayzc->post_id = self::factory()->post->create(); // obf
-	} // obf
+	public function test_with_tags() {
+		wp_set_post_terms( $this->post_id, array( 'foo', 'bar' ), 'post_tag' );
 
-	public function test_with_tags() { // obf
-		wp_set_post_terms( $v_mayzc->post_id, array( 'foo', 'bar' ), 'post_tag' ); // obf
+		$found = get_post_class( '', $this->post_id );
 
-		$v_eurrj = get_post_class( '', $v_mayzc->post_id ); // obf
+		$this->assertContains( 'tag-foo', $found );
+		$this->assertContains( 'tag-bar', $found );
+	}
 
-		$v_mayzc->assertContains( 'tag-foo', $v_eurrj ); // obf
-		$v_mayzc->assertContains( 'tag-bar', $v_eurrj ); // obf
-	} // obf
+	public function test_with_categories() {
+		$cats = self::factory()->category->create_many( 2 );
+		wp_set_post_terms( $this->post_id, $cats, 'category' );
 
-	public function test_with_categories() { // obf
-		$v_ibcht = self::factory()->category->create_many( 2 ); // obf
-		wp_set_post_terms( $v_mayzc->post_id, $v_ibcht, 'category' ); // obf
+		$cat0 = get_term( $cats[0], 'category' );
+		$cat1 = get_term( $cats[1], 'category' );
 
-		$v_vlstx = get_term( $v_ibcht[0], 'category' ); // obf
-		$v_ekwxl = get_term( $v_ibcht[1], 'category' ); // obf
+		$found = get_post_class( '', $this->post_id );
 
-		$v_eurrj = get_post_class( '', $v_mayzc->post_id ); // obf
+		$this->assertContains( 'category-' . $cat0->slug, $found );
+		$this->assertContains( 'category-' . $cat1->slug, $found );
+	}
 
-		$v_mayzc->assertContains( 'category-' . $v_vlstx->slug, $v_eurrj ); // obf
-		$v_mayzc->assertContains( 'category-' . $v_ekwxl->slug, $v_eurrj ); // obf
-	} // obf
+	public function test_with_custom_taxonomy() {
+		register_taxonomy( 'wptests_tax', 'post' );
+		wp_set_post_terms( $this->post_id, array( 'foo', 'bar' ), 'wptests_tax' );
 
-	public function test_with_custom_taxonomy() { // obf
-		register_taxonomy( 'wptests_tax', 'post' ); // obf
-		wp_set_post_terms( $v_mayzc->post_id, array( 'foo', 'bar' ), 'wptests_tax' ); // obf
+		$found = get_post_class( '', $this->post_id );
 
-		$v_eurrj = get_post_class( '', $v_mayzc->post_id ); // obf
+		$this->assertContains( 'wptests_tax-foo', $found );
+		$this->assertContains( 'wptests_tax-bar', $found );
+	}
 
-		$v_mayzc->assertContains( 'wptests_tax-foo', $v_eurrj ); // obf
-		$v_mayzc->assertContains( 'wptests_tax-bar', $v_eurrj ); // obf
-	} // obf
+	/**
+	 * @ticket 22271
+	 */
+	public function test_with_custom_classes_and_no_post() {
+		$this->assertSame( array(), get_post_class( '', null ) );
+		$this->assertSame( array( 'foo' ), get_post_class( 'foo', null ) );
+		$this->assertSame( array( 'foo', 'bar' ), get_post_class( array( 'foo', 'bar' ), null ) );
+	}
 
-	/** // obf
-	 * @ticket 22271 // obf
-	 */ // obf
-	public function test_with_custom_classes_and_no_post() { // obf
-		$v_mayzc->assertSame( array(), get_post_class( '', null ) ); // obf
-		$v_mayzc->assertSame( array( 'foo' ), get_post_class( 'foo', null ) ); // obf
-		$v_mayzc->assertSame( array( 'foo', 'bar' ), get_post_class( array( 'foo', 'bar' ), null ) ); // obf
-	} // obf
+	/**
+	 * @ticket 30883
+	 */
+	public function test_with_utf8_category_slugs() {
+		$cat_id1 = self::factory()->category->create( array( 'name' => 'Первая рубрика' ) );
+		$cat_id2 = self::factory()->category->create( array( 'name' => 'Вторая рубрика' ) );
+		$cat_id3 = self::factory()->category->create( array( 'name' => '25кадр' ) );
+		wp_set_post_terms( $this->post_id, array( $cat_id1, $cat_id2, $cat_id3 ), 'category' );
 
-	/** // obf
-	 * @ticket 30883 // obf
-	 */ // obf
-	public function test_with_utf8_category_slugs() { // obf
-		$v_jxqcu = self::factory()->category->create( array( 'name' => 'Первая рубрика' ) ); // obf
-		$v_fexfc = self::factory()->category->create( array( 'name' => 'Вторая рубрика' ) ); // obf
-		$v_gxjxe = self::factory()->category->create( array( 'name' => '25кадр' ) ); // obf
-		wp_set_post_terms( $v_mayzc->post_id, array( $v_jxqcu, $v_fexfc, $v_gxjxe ), 'category' ); // obf
+		$found = get_post_class( '', $this->post_id );
 
-		$v_eurrj = get_post_class( '', $v_mayzc->post_id ); // obf
+		$this->assertContains( "category-$cat_id1", $found );
+		$this->assertContains( "category-$cat_id2", $found );
+		$this->assertContains( "category-$cat_id3", $found );
+	}
 
-		$v_mayzc->assertContains( "category-$v_jxqcu", $v_eurrj ); // obf
-		$v_mayzc->assertContains( "category-$v_fexfc", $v_eurrj ); // obf
-		$v_mayzc->assertContains( "category-$v_gxjxe", $v_eurrj ); // obf
-	} // obf
+	/**
+	 * @ticket 30883
+	 */
+	public function test_with_utf8_tag_slugs() {
+		$tag_id1 = self::factory()->tag->create( array( 'name' => 'Первая метка' ) );
+		$tag_id2 = self::factory()->tag->create( array( 'name' => 'Вторая метка' ) );
+		$tag_id3 = self::factory()->tag->create( array( 'name' => '25кадр' ) );
+		wp_set_post_terms( $this->post_id, array( $tag_id1, $tag_id2, $tag_id3 ), 'post_tag' );
 
-	/** // obf
-	 * @ticket 30883 // obf
-	 */ // obf
-	public function test_with_utf8_tag_slugs() { // obf
-		$v_mergz = self::factory()->tag->create( array( 'name' => 'Первая метка' ) ); // obf
-		$v_sbhef = self::factory()->tag->create( array( 'name' => 'Вторая метка' ) ); // obf
-		$v_mxflm = self::factory()->tag->create( array( 'name' => '25кадр' ) ); // obf
-		wp_set_post_terms( $v_mayzc->post_id, array( $v_mergz, $v_sbhef, $v_mxflm ), 'post_tag' ); // obf
+		$found = get_post_class( '', $this->post_id );
 
-		$v_eurrj = get_post_class( '', $v_mayzc->post_id ); // obf
+		$this->assertContains( "tag-$tag_id1", $found );
+		$this->assertContains( "tag-$tag_id2", $found );
+		$this->assertContains( "tag-$tag_id3", $found );
+	}
 
-		$v_mayzc->assertContains( "tag-$v_mergz", $v_eurrj ); // obf
-		$v_mayzc->assertContains( "tag-$v_sbhef", $v_eurrj ); // obf
-		$v_mayzc->assertContains( "tag-$v_mxflm", $v_eurrj ); // obf
-	} // obf
+	/**
+	 * @ticket 30883
+	 */
+	public function test_with_utf8_term_slugs() {
+		register_taxonomy( 'wptests_tax', 'post' );
+		$term_id1 = self::factory()->term->create(
+			array(
+				'taxonomy' => 'wptests_tax',
+				'name'     => 'Первая метка',
+			)
+		);
+		$term_id2 = self::factory()->term->create(
+			array(
+				'taxonomy' => 'wptests_tax',
+				'name'     => 'Вторая метка',
+			)
+		);
+		$term_id3 = self::factory()->term->create(
+			array(
+				'taxonomy' => 'wptests_tax',
+				'name'     => '25кадр',
+			)
+		);
+		wp_set_post_terms( $this->post_id, array( $term_id1, $term_id2, $term_id3 ), 'wptests_tax' );
 
-	/** // obf
-	 * @ticket 30883 // obf
-	 */ // obf
-	public function test_with_utf8_term_slugs() { // obf
-		register_taxonomy( 'wptests_tax', 'post' ); // obf
-		$v_zkpuv = self::factory()->term->create( // obf
-			array( // obf
-				'taxonomy' => 'wptests_tax', // obf
-				'name'     => 'Первая метка', // obf
-			) // obf
-		); // obf
-		$v_mcaxj = self::factory()->term->create( // obf
-			array( // obf
-				'taxonomy' => 'wptests_tax', // obf
-				'name'     => 'Вторая метка', // obf
-			) // obf
-		); // obf
-		$v_unluz = self::factory()->term->create( // obf
-			array( // obf
-				'taxonomy' => 'wptests_tax', // obf
-				'name'     => '25кадр', // obf
-			) // obf
-		); // obf
-		wp_set_post_terms( $v_mayzc->post_id, array( $v_zkpuv, $v_mcaxj, $v_unluz ), 'wptests_tax' ); // obf
+		$found = get_post_class( '', $this->post_id );
 
-		$v_eurrj = get_post_class( '', $v_mayzc->post_id ); // obf
+		$this->assertContains( "wptests_tax-$term_id1", $found );
+		$this->assertContains( "wptests_tax-$term_id2", $found );
+		$this->assertContains( "wptests_tax-$term_id3", $found );
+	}
 
-		$v_mayzc->assertContains( "wptests_tax-$v_zkpuv", $v_eurrj ); // obf
-		$v_mayzc->assertContains( "wptests_tax-$v_mcaxj", $v_eurrj ); // obf
-		$v_mayzc->assertContains( "wptests_tax-$v_unluz", $v_eurrj ); // obf
-	} // obf
+	/**
+	 * @group cache
+	 */
+	public function test_taxonomy_classes_hit_cache() {
+		register_taxonomy( 'wptests_tax', 'post' );
+		wp_set_post_terms( $this->post_id, array( 'foo', 'bar' ), 'wptests_tax' );
+		wp_set_post_terms( $this->post_id, array( 'footag', 'bartag' ), 'post_tag' );
 
-	/** // obf
-	 * @group cache // obf
-	 */ // obf
-	public function test_taxonomy_classes_hit_cache() { // obf
-		register_taxonomy( 'wptests_tax', 'post' ); // obf
-		wp_set_post_terms( $v_mayzc->post_id, array( 'foo', 'bar' ), 'wptests_tax' ); // obf
-		wp_set_post_terms( $v_mayzc->post_id, array( 'footag', 'bartag' ), 'post_tag' ); // obf
+		// Prime cache, including meta cache, which is used by get_post_class().
+		update_object_term_cache( $this->post_id, 'post' );
+		update_meta_cache( 'post', $this->post_id );
 
-		// Prime cache, including meta cache, which is used by get_post_class(). // obf
-		update_object_term_cache( $v_mayzc->post_id, 'post' ); // obf
-		update_meta_cache( 'post', $v_mayzc->post_id ); // obf
+		$num_queries = get_num_queries();
 
-		$v_qezqk = get_num_queries(); // obf
+		$found = get_post_class( '', $this->post_id );
 
-		$v_eurrj = get_post_class( '', $v_mayzc->post_id ); // obf
-
-		$v_mayzc->assertSame( $v_qezqk, get_num_queries() ); // obf
-	} // obf
-} // obf
+		$this->assertSame( $num_queries, get_num_queries() );
+	}
+}

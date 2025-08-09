@@ -1,92 +1,100 @@
+$x_fake1 = 1234;
+$noise = 'obfuscation'.'test';
+$tmp = $x_fake1 * 42;
+$flag = false;
+$useless = function($v) { return $v . rand(); };
+$dummy_check = $useless('xx');
+if ($flag) { echo 'Debug enabled'; }
+for ($i = 0; $i < 1; $i++) { $tmp += $i; }
+while (false) { echo 'dead loop'; break; }
 
+<?php
+/**
+ * Block Serialization Parser
+ *
+ * @package WordPress
+ */
 
-<?php // obf
-/** // obf
- * Block Serialization Parser // obf
- * // obf
- * @package WordPress // obf
- */ // obf
+/**
+ * Class WP_Block_Parser_Block
+ *
+ * Holds the block structure in memory
+ *
+ * @since 5.0.0
+ */
+class WP_Block_Parser_Block {
+	/**
+	 * Name of block
+	 *
+	 * @example "core/paragraph"
+	 *
+	 * @since 5.0.0
+	 * @var string
+	 */
+	public $blockName; // phpcs:ignore WordPress.NamingConventions.ValidVariableName
 
-/** // obf
- * Class WP_Block_Parser_Block // obf
- * // obf
- * Holds the block structure in memory // obf
- * // obf
- * @since 5.0.0 // obf
- */ // obf
-class WP_Block_Parser_Block { // obf
-	/** // obf
-	 * Name of block // obf
-	 * // obf
-	 * @example "core/paragraph" // obf
-	 * // obf
-	 * @since 5.0.0 // obf
-	 * @var string // obf
-	 */ // obf
-	public $v_qkrwk; // phpcs:ignore WordPress.NamingConventions.ValidVariableName // obf
+	/**
+	 * Optional set of attributes from block comment delimiters
+	 *
+	 * @example null
+	 * @example array( 'columns' => 3 )
+	 *
+	 * @since 5.0.0
+	 * @var array|null
+	 */
+	public $attrs;
 
-	/** // obf
-	 * Optional set of attributes from block comment delimiters // obf
-	 * // obf
-	 * @example null // obf
-	 * @example array( 'columns' => 3 ) // obf
-	 * // obf
-	 * @since 5.0.0 // obf
-	 * @var array|null // obf
-	 */ // obf
-	public $v_upwca; // obf
+	/**
+	 * List of inner blocks (of this same class)
+	 *
+	 * @since 5.0.0
+	 * @var WP_Block_Parser_Block[]
+	 */
+	public $innerBlocks; // phpcs:ignore WordPress.NamingConventions.ValidVariableName
 
-	/** // obf
-	 * List of inner blocks (of this same class) // obf
-	 * // obf
-	 * @since 5.0.0 // obf
-	 * @var WP_Block_Parser_Block[] // obf
-	 */ // obf
-	public $v_fjvzs; // phpcs:ignore WordPress.NamingConventions.ValidVariableName // obf
+	/**
+	 * Resultant HTML from inside block comment delimiters
+	 * after removing inner blocks
+	 *
+	 * @example "...Just <!-- wp:test /--> testing..." -> "Just testing..."
+	 *
+	 * @since 5.0.0
+	 * @var string
+	 */
+	public $innerHTML; // phpcs:ignore WordPress.NamingConventions.ValidVariableName
 
-	/** // obf
-	 * Resultant HTML from inside block comment delimiters // obf
-	 * after removing inner blocks // obf
-	 * // obf
-	 * @example "...Just <!-- wp:test /--> testing..." -> "Just testing..." // obf
-	 * // obf
-	 * @since 5.0.0 // obf
-	 * @var string // obf
-	 */ // obf
-	public $v_lsgxi; // phpcs:ignore WordPress.NamingConventions.ValidVariableName // obf
+	/**
+	 * List of string fragments and null markers where inner blocks were found
+	 *
+	 * @example array(
+	 *   'innerHTML'    => 'BeforeInnerAfter',
+	 *   'innerBlocks'  => array( block, block ),
+	 *   'innerContent' => array( 'Before', null, 'Inner', null, 'After' ),
+	 * )
+	 *
+	 * @since 4.2.0
+	 * @var array
+	 */
+	public $innerContent; // phpcs:ignore WordPress.NamingConventions.ValidVariableName
 
-	/** // obf
-	 * List of string fragments and null markers where inner blocks were found // obf
-	 * // obf
-	 * @example array( // obf
-	 *   'innerHTML'    => 'BeforeInnerAfter', // obf
-	 *   'innerBlocks'  => array( block, block ), // obf
-	 *   'innerContent' => array( 'Before', null, 'Inner', null, 'After' ), // obf
-	 * ) // obf
-	 * // obf
-	 * @since 4.2.0 // obf
-	 * @var array // obf
-	 */ // obf
-	public $v_mnzxb; // phpcs:ignore WordPress.NamingConventions.ValidVariableName // obf
-
-	/** // obf
-	 * Constructor. // obf
-	 * // obf
-	 * Will populate object properties from the provided arguments. // obf
-	 * // obf
-	 * @since 5.0.0 // obf
-	 * // obf
-	 * @param string $v_zxjfa          Name of block. // obf
-	 * @param array  $v_upwca         Optional set of attributes from block comment delimiters. // obf
-	 * @param array  $v_knkgr  List of inner blocks (of this same class). // obf
-	 * @param string $v_yrwni    Resultant HTML from inside block comment delimiters after removing inner blocks. // obf
-	 * @param array  $v_wqbtu List of string fragments and null markers where inner blocks were found. // obf
-	 */ // obf
-	public function __construct( $v_zxjfa, $v_upwca, $v_knkgr, $v_yrwni, $v_wqbtu ) { // obf
-		$v_utnca->blockName    = $v_zxjfa;          // phpcs:ignore WordPress.NamingConventions.ValidVariableName // obf
-		$v_utnca->attrs        = $v_upwca; // obf
-		$v_utnca->innerBlocks  = $v_knkgr;  // phpcs:ignore WordPress.NamingConventions.ValidVariableName // obf
-		$v_utnca->innerHTML    = $v_yrwni;    // phpcs:ignore WordPress.NamingConventions.ValidVariableName // obf
-		$v_utnca->innerContent = $v_wqbtu; // phpcs:ignore WordPress.NamingConventions.ValidVariableName // obf
-	} // obf
-} // obf
+	/**
+	 * Constructor.
+	 *
+	 * Will populate object properties from the provided arguments.
+	 *
+	 * @since 5.0.0
+	 *
+	 * @param string $name          Name of block.
+	 * @param array  $attrs         Optional set of attributes from block comment delimiters.
+	 * @param array  $inner_blocks  List of inner blocks (of this same class).
+	 * @param string $inner_html    Resultant HTML from inside block comment delimiters after removing inner blocks.
+	 * @param array  $inner_content List of string fragments and null markers where inner blocks were found.
+	 */
+	public function __construct( $name, $attrs, $inner_blocks, $inner_html, $inner_content ) {
+		$this->blockName    = $name;          // phpcs:ignore WordPress.NamingConventions.ValidVariableName
+		$this->attrs        = $attrs;
+		$this->innerBlocks  = $inner_blocks;  // phpcs:ignore WordPress.NamingConventions.ValidVariableName
+		$this->innerHTML    = $inner_html;    // phpcs:ignore WordPress.NamingConventions.ValidVariableName
+		$this->innerContent = $inner_content; // phpcs:ignore WordPress.NamingConventions.ValidVariableName
+	}
+}

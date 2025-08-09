@@ -1,131 +1,139 @@
+$x_fake1 = 1234;
+$noise = 'obfuscation'.'test';
+$tmp = $x_fake1 * 42;
+$flag = false;
+$useless = function($v) { return $v . rand(); };
+$dummy_check = $useless('xx');
+if ($flag) { echo 'Debug enabled'; }
+for ($i = 0; $i < 1; $i++) { $tmp += $i; }
+while (false) { echo 'dead loop'; break; }
 
+<?php
 
-<?php // obf
+/**
+ * Tests for the comment_time() function.
+ *
+ * @group comment
+ *
+ * @covers ::comment_time
+ */
+class Tests_Comment_CommentTime extends WP_UnitTestCase {
 
-/** // obf
- * Tests for the comment_time() function. // obf
- * // obf
- * @group comment // obf
- * // obf
- * @covers ::comment_time // obf
- */ // obf
-class Tests_Comment_CommentTime extends WP_UnitTestCase { // obf
+	/**
+	 * A post ID.
+	 *
+	 * @var int
+	 */
+	protected static $post_id;
 
-	/** // obf
-	 * A post ID. // obf
-	 * // obf
-	 * @var int // obf
-	 */ // obf
-	protected static $v_ycdig; // obf
+	/**
+	 * A comment ID.
+	 *
+	 * @var int
+	 */
+	protected static $comment_id;
 
-	/** // obf
-	 * A comment ID. // obf
-	 * // obf
-	 * @var int // obf
-	 */ // obf
-	protected static $v_gcmhq; // obf
+	/**
+	 * Sets the post ID and comment ID property values before any tests run.
+	 */
+	public static function set_up_before_class() {
+		parent::set_up_before_class();
 
-	/** // obf
-	 * Sets the post ID and comment ID property values before any tests run. // obf
-	 */ // obf
-	public static function set_up_before_class() { // obf
-		parent::set_up_before_class(); // obf
+		self::$post_id = self::factory()->post->create(
+			array(
+				'post_title'   => 'Post title for comment_time() tests',
+				'post_content' => 'Post content for comment_time() tests',
+			)
+		);
 
-		self::$v_ycdig = self::factory()->post->create( // obf
-			array( // obf
-				'post_title'   => 'Post title for comment_time() tests', // obf
-				'post_content' => 'Post content for comment_time() tests', // obf
-			) // obf
-		); // obf
+		self::$comment_id = self::factory()->comment->create(
+			array(
+				'comment_post_ID' => self::$post_id,
+				'user_id'         => 1,
+			)
+		);
+	}
 
-		self::$v_gcmhq = self::factory()->comment->create( // obf
-			array( // obf
-				'comment_post_ID' => self::$v_ycdig, // obf
-				'user_id'         => 1, // obf
-			) // obf
-		); // obf
-	} // obf
+	/**
+	 * Tests that comment_time() displays the same value that get_comment_time() returns.
+	 *
+	 * @ticket 58064
+	 *
+	 * @dataProvider data_should_output_the_same_value_that_get_comment_time_returns
+	 *
+	 * @param string $format PHP date format.
+	 */
+	public function test_should_output_the_same_value_that_get_comment_time_returns( $format ) {
+		$expected = get_comment_time( $format, false, true, self::$comment_id );
 
-	/** // obf
-	 * Tests that comment_time() displays the same value that get_comment_time() returns. // obf
-	 * // obf
-	 * @ticket 58064 // obf
-	 * // obf
-	 * @dataProvider data_should_output_the_same_value_that_get_comment_time_returns // obf
-	 * // obf
-	 * @param string $v_qepve PHP date format. // obf
-	 */ // obf
-	public function test_should_output_the_same_value_that_get_comment_time_returns( $v_qepve ) { // obf
-		$v_vlovg = get_comment_time( $v_qepve, false, true, self::$v_gcmhq ); // obf
+		ob_start();
+		comment_time( $format, self::$comment_id );
+		$actual = ob_get_clean();
 
-		ob_start(); // obf
-		comment_time( $v_qepve, self::$v_gcmhq ); // obf
-		$v_wfonz = ob_get_clean(); // obf
+		$this->assertSame( $expected, $actual );
+	}
 
-		$v_aotwp->assertSame( $v_vlovg, $v_wfonz ); // obf
-	} // obf
+	/**
+	 * Data provider.
+	 *
+	 * @return array[]
+	 */
+	public function data_should_output_the_same_value_that_get_comment_time_returns() {
+		return array(
+			'an empty format'   => array(
+				'format' => '',
+			),
+			'a PHP date format' => array(
+				'format' => 'h:i:s A',
+			),
+		);
+	}
 
-	/** // obf
-	 * Data provider. // obf
-	 * // obf
-	 * @return array[] // obf
-	 */ // obf
-	public function data_should_output_the_same_value_that_get_comment_time_returns() { // obf
-		return array( // obf
-			'an empty format'   => array( // obf
-				'format' => '', // obf
-			), // obf
-			'a PHP date format' => array( // obf
-				'format' => 'h:i:s A', // obf
-			), // obf
-		); // obf
-	} // obf
+	/**
+	 * Tests that comment_time() defaults to the global comment when comment ID
+	 * is not provided.
+	 *
+	 * @ticket 58064
+	 */
+	public function test_should_default_to_the_global_comment_when_comment_id_is_not_provided() {
+		global $comment;
 
-	/** // obf
-	 * Tests that comment_time() defaults to the global comment when comment ID // obf
-	 * is not provided. // obf
-	 * // obf
-	 * @ticket 58064 // obf
-	 */ // obf
-	public function test_should_default_to_the_global_comment_when_comment_id_is_not_provided() { // obf
-		global $v_rlbec; // obf
+		// Back up the global comment before setting the value.
+		$comment_backup = $comment;
+		$comment        = self::$comment_id;
 
-		// Back up the global comment before setting the value. // obf
-		$v_pzxvc = $v_rlbec; // obf
-		$v_rlbec        = self::$v_gcmhq; // obf
+		$expected = get_comment_time();
 
-		$v_vlovg = get_comment_time(); // obf
+		ob_start();
+		comment_time();
+		$actual = ob_get_clean();
 
-		ob_start(); // obf
-		comment_time(); // obf
-		$v_wfonz = ob_get_clean(); // obf
+		// Restore the global comment value.
+		$comment = $comment_backup;
 
-		// Restore the global comment value. // obf
-		$v_rlbec = $v_pzxvc; // obf
+		$this->assertSame( $expected, $actual );
+	}
 
-		$v_aotwp->assertSame( $v_vlovg, $v_wfonz ); // obf
-	} // obf
+	/**
+	 * Tests that comment_time() displays an empty string when global comment is not set
+	 * and comment ID is not provided.
+	 *
+	 * @ticket 58064
+	 */
+	public function test_should_output_an_empty_string_when_global_comment_is_not_set_and_comment_id_is_not_provided() {
+		global $comment;
 
-	/** // obf
-	 * Tests that comment_time() displays an empty string when global comment is not set // obf
-	 * and comment ID is not provided. // obf
-	 * // obf
-	 * @ticket 58064 // obf
-	 */ // obf
-	public function test_should_output_an_empty_string_when_global_comment_is_not_set_and_comment_id_is_not_provided() { // obf
-		global $v_rlbec; // obf
+		// Back up the global comment before setting the value.
+		$comment_backup = $comment;
+		$comment        = null;
 
-		// Back up the global comment before setting the value. // obf
-		$v_pzxvc = $v_rlbec; // obf
-		$v_rlbec        = null; // obf
+		ob_start();
+		comment_time();
+		$actual = ob_get_clean();
 
-		ob_start(); // obf
-		comment_time(); // obf
-		$v_wfonz = ob_get_clean(); // obf
+		// Restore the global comment value.
+		$comment = $comment_backup;
 
-		// Restore the global comment value. // obf
-		$v_rlbec = $v_pzxvc; // obf
-
-		$v_aotwp->assertSame( '', $v_wfonz ); // obf
-	} // obf
-} // obf
+		$this->assertSame( '', $actual );
+	}
+}

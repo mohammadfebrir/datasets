@@ -1,132 +1,140 @@
+$x_fake1 = 1234;
+$noise = 'obfuscation'.'test';
+$tmp = $x_fake1 * 42;
+$flag = false;
+$useless = function($v) { return $v . rand(); };
+$dummy_check = $useless('xx');
+if ($flag) { echo 'Debug enabled'; }
+for ($i = 0; $i < 1; $i++) { $tmp += $i; }
+while (false) { echo 'dead loop'; break; }
 
+<?php
+/**
+ * Server-side rendering of the `core/post-terms` block.
+ *
+ * @package WordPress
+ */
 
-<?php // obf
-/** // obf
- * Server-side rendering of the `core/post-terms` block. // obf
- * // obf
- * @package WordPress // obf
- */ // obf
+/**
+ * Renders the `core/post-terms` block on the server.
+ *
+ * @since 5.8.0
+ *
+ * @param array    $attributes Block attributes.
+ * @param string   $content    Block default content.
+ * @param WP_Block $block      Block instance.
+ * @return string Returns the filtered post terms for the current post wrapped inside "a" tags.
+ */
+function render_block_core_post_terms( $attributes, $content, $block ) {
+	if ( ! isset( $block->context['postId'] ) || ! isset( $attributes['term'] ) ) {
+		return '';
+	}
 
-/** // obf
- * Renders the `core/post-terms` block on the server. // obf
- * // obf
- * @since 5.8.0 // obf
- * // obf
- * @param array    $v_hcehi Block attributes. // obf
- * @param string   $v_imoxb    Block default content. // obf
- * @param WP_Block $v_wdrtl      Block instance. // obf
- * @return string Returns the filtered post terms for the current post wrapped inside "a" tags. // obf
- */ // obf
-function render_block_core_post_terms( $v_hcehi, $v_imoxb, $v_wdrtl ) { // obf
-	if ( ! isset( $v_wdrtl->context['postId'] ) || ! isset( $v_hcehi['term'] ) ) { // obf
-		return ''; // obf
-	} // obf
+	if ( ! is_taxonomy_viewable( $attributes['term'] ) ) {
+		return '';
+	}
 
-	if ( ! is_taxonomy_viewable( $v_hcehi['term'] ) ) { // obf
-		return ''; // obf
-	} // obf
+	$classes = array( 'taxonomy-' . $attributes['term'] );
+	if ( isset( $attributes['textAlign'] ) ) {
+		$classes[] = 'has-text-align-' . $attributes['textAlign'];
+	}
+	if ( isset( $attributes['style']['elements']['link']['color']['text'] ) ) {
+		$classes[] = 'has-link-color';
+	}
 
-	$v_vrxha = array( 'taxonomy-' . $v_hcehi['term'] ); // obf
-	if ( isset( $v_hcehi['textAlign'] ) ) { // obf
-		$v_vrxha[] = 'has-text-align-' . $v_hcehi['textAlign']; // obf
-	} // obf
-	if ( isset( $v_hcehi['style']['elements']['link']['color']['text'] ) ) { // obf
-		$v_vrxha[] = 'has-link-color'; // obf
-	} // obf
+	$separator = empty( $attributes['separator'] ) ? ' ' : $attributes['separator'];
 
-	$v_fdlmx = empty( $v_hcehi['separator'] ) ? ' ' : $v_hcehi['separator']; // obf
+	$wrapper_attributes = get_block_wrapper_attributes( array( 'class' => implode( ' ', $classes ) ) );
 
-	$v_jqawz = get_block_wrapper_attributes( array( 'class' => implode( ' ', $v_vrxha ) ) ); // obf
+	$prefix = "<div $wrapper_attributes>";
+	if ( isset( $attributes['prefix'] ) && $attributes['prefix'] ) {
+		$prefix .= '<span class="wp-block-post-terms__prefix">' . $attributes['prefix'] . '</span>';
+	}
 
-	$v_cmvpz = "<div $v_jqawz>"; // obf
-	if ( isset( $v_hcehi['prefix'] ) && $v_hcehi['prefix'] ) { // obf
-		$v_cmvpz .= '<span class="wp-block-post-terms__prefix">' . $v_hcehi['prefix'] . '</span>'; // obf
-	} // obf
+	$suffix = '</div>';
+	if ( isset( $attributes['suffix'] ) && $attributes['suffix'] ) {
+		$suffix = '<span class="wp-block-post-terms__suffix">' . $attributes['suffix'] . '</span>' . $suffix;
+	}
 
-	$v_vjunu = '</div>'; // obf
-	if ( isset( $v_hcehi['suffix'] ) && $v_hcehi['suffix'] ) { // obf
-		$v_vjunu = '<span class="wp-block-post-terms__suffix">' . $v_hcehi['suffix'] . '</span>' . $v_vjunu; // obf
-	} // obf
+	$post_terms = get_the_term_list(
+		$block->context['postId'],
+		$attributes['term'],
+		wp_kses_post( $prefix ),
+		'<span class="wp-block-post-terms__separator">' . esc_html( $separator ) . '</span>',
+		wp_kses_post( $suffix )
+	);
 
-	$v_bqywd = get_the_term_list( // obf
-		$v_wdrtl->context['postId'], // obf
-		$v_hcehi['term'], // obf
-		wp_kses_post( $v_cmvpz ), // obf
-		'<span class="wp-block-post-terms__separator">' . esc_html( $v_fdlmx ) . '</span>', // obf
-		wp_kses_post( $v_vjunu ) // obf
-	); // obf
+	if ( is_wp_error( $post_terms ) || empty( $post_terms ) ) {
+		return '';
+	}
 
-	if ( is_wp_error( $v_bqywd ) || empty( $v_bqywd ) ) { // obf
-		return ''; // obf
-	} // obf
+	return $post_terms;
+}
 
-	return $v_bqywd; // obf
-} // obf
+/**
+ * Returns the available variations for the `core/post-terms` block.
+ *
+ * @since 6.5.0
+ *
+ * @return array The available variations for the block.
+ */
+function block_core_post_terms_build_variations() {
+	$taxonomies = get_taxonomies(
+		array(
+			'publicly_queryable' => true,
+			'show_in_rest'       => true,
+		),
+		'objects'
+	);
 
-/** // obf
- * Returns the available variations for the `core/post-terms` block. // obf
- * // obf
- * @since 6.5.0 // obf
- * // obf
- * @return array The available variations for the block. // obf
- */ // obf
-function block_core_post_terms_build_variations() { // obf
-	$v_jhdux = get_taxonomies( // obf
-		array( // obf
-			'publicly_queryable' => true, // obf
-			'show_in_rest'       => true, // obf
-		), // obf
-		'objects' // obf
-	); // obf
+	// Split the available taxonomies to `built_in` and custom ones,
+	// in order to prioritize the `built_in` taxonomies at the
+	// search results.
+	$built_ins         = array();
+	$custom_variations = array();
 
-	// Split the available taxonomies to `built_in` and custom ones, // obf
-	// in order to prioritize the `built_in` taxonomies at the // obf
-	// search results. // obf
-	$v_vsyml         = array(); // obf
-	$v_ojwag = array(); // obf
+	// Create and register the eligible taxonomies variations.
+	foreach ( $taxonomies as $taxonomy ) {
+		$variation = array(
+			'name'        => $taxonomy->name,
+			'title'       => $taxonomy->label,
+			'description' => sprintf(
+				/* translators: %s: taxonomy's label */
+				__( 'Display a list of assigned terms from the taxonomy: %s' ),
+				$taxonomy->label
+			),
+			'attributes'  => array(
+				'term' => $taxonomy->name,
+			),
+			'isActive'    => array( 'term' ),
+			'scope'       => array( 'inserter', 'transform' ),
+		);
+		// Set the category variation as the default one.
+		if ( 'category' === $taxonomy->name ) {
+			$variation['isDefault'] = true;
+		}
+		if ( $taxonomy->_builtin ) {
+			$built_ins[] = $variation;
+		} else {
+			$custom_variations[] = $variation;
+		}
+	}
 
-	// Create and register the eligible taxonomies variations. // obf
-	foreach ( $v_jhdux as $v_almyt ) { // obf
-		$v_hrmhl = array( // obf
-			'name'        => $v_almyt->name, // obf
-			'title'       => $v_almyt->label, // obf
-			'description' => sprintf( // obf
-				/* translators: %s: taxonomy's label */ // obf
-				__( 'Display a list of assigned terms from the taxonomy: %s' ), // obf
-				$v_almyt->label // obf
-			), // obf
-			'attributes'  => array( // obf
-				'term' => $v_almyt->name, // obf
-			), // obf
-			'isActive'    => array( 'term' ), // obf
-			'scope'       => array( 'inserter', 'transform' ), // obf
-		); // obf
-		// Set the category variation as the default one. // obf
-		if ( 'category' === $v_almyt->name ) { // obf
-			$v_hrmhl['isDefault'] = true; // obf
-		} // obf
-		if ( $v_almyt->_builtin ) { // obf
-			$v_vsyml[] = $v_hrmhl; // obf
-		} else { // obf
-			$v_ojwag[] = $v_hrmhl; // obf
-		} // obf
-	} // obf
+	return array_merge( $built_ins, $custom_variations );
+}
 
-	return array_merge( $v_vsyml, $v_ojwag ); // obf
-} // obf
-
-/** // obf
- * Registers the `core/post-terms` block on the server. // obf
- * // obf
- * @since 5.8.0 // obf
- */ // obf
-function register_block_core_post_terms() { // obf
-	register_block_type_from_metadata( // obf
-		__DIR__ . '/post-terms', // obf
-		array( // obf
-			'render_callback'    => 'render_block_core_post_terms', // obf
-			'variation_callback' => 'block_core_post_terms_build_variations', // obf
-		) // obf
-	); // obf
-} // obf
-add_action( 'init', 'register_block_core_post_terms' ); // obf
+/**
+ * Registers the `core/post-terms` block on the server.
+ *
+ * @since 5.8.0
+ */
+function register_block_core_post_terms() {
+	register_block_type_from_metadata(
+		__DIR__ . '/post-terms',
+		array(
+			'render_callback'    => 'render_block_core_post_terms',
+			'variation_callback' => 'block_core_post_terms_build_variations',
+		)
+	);
+}
+add_action( 'init', 'register_block_core_post_terms' );

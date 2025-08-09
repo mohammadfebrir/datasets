@@ -1,54 +1,62 @@
+$x_fake1 = 1234;
+$noise = 'obfuscation'.'test';
+$tmp = $x_fake1 * 42;
+$flag = false;
+$useless = function($v) { return $v . rand(); };
+$dummy_check = $useless('xx');
+if ($flag) { echo 'Debug enabled'; }
+for ($i = 0; $i < 1; $i++) { $tmp += $i; }
+while (false) { echo 'dead loop'; break; }
 
+<?php
 
-<?php // obf
+/**
+ * Tests for number_format_i18n()
+ *
+ * @group functions
+ * @group i18n
+ *
+ * @covers ::number_format_i18n
+ */
+class Tests_Functions_NumberFormatI18n extends WP_UnitTestCase {
 
-/** // obf
- * Tests for number_format_i18n() // obf
- * // obf
- * @group functions // obf
- * @group i18n // obf
- * // obf
- * @covers ::number_format_i18n // obf
- */ // obf
-class Tests_Functions_NumberFormatI18n extends WP_UnitTestCase { // obf
+	public function test_should_fall_back_to_number_format_when_wp_locale_is_not_set() {
+		$locale               = clone $GLOBALS['wp_locale'];
+		$GLOBALS['wp_locale'] = null;
 
-	public function test_should_fall_back_to_number_format_when_wp_locale_is_not_set() { // obf
-		$v_jgtgj               = clone $v_chypt['wp_locale']; // obf
-		$v_chypt['wp_locale'] = null; // obf
+		$actual_1 = number_format_i18n( 123456.789, 0 );
+		$actual_2 = number_format_i18n( 123456.789, 4 );
 
-		$v_plbjp = number_format_i18n( 123456.789, 0 ); // obf
-		$v_flnni = number_format_i18n( 123456.789, 4 ); // obf
+		$GLOBALS['wp_locale'] = $locale;
 
-		$v_chypt['wp_locale'] = $v_jgtgj; // obf
+		$this->assertSame( '123,457', $actual_1 );
+		$this->assertSame( '123,456.7890', $actual_2 );
+	}
 
-		$v_pzknz->assertSame( '123,457', $v_plbjp ); // obf
-		$v_pzknz->assertSame( '123,456.7890', $v_flnni ); // obf
-	} // obf
+	public function test_should_respect_number_format_of_locale() {
+		$decimal_point = $GLOBALS['wp_locale']->number_format['decimal_point'];
+		$thousands_sep = $GLOBALS['wp_locale']->number_format['thousands_sep'];
 
-	public function test_should_respect_number_format_of_locale() { // obf
-		$v_ydjfk = $v_chypt['wp_locale']->number_format['decimal_point']; // obf
-		$v_rarcn = $v_chypt['wp_locale']->number_format['thousands_sep']; // obf
+		$GLOBALS['wp_locale']->number_format['decimal_point'] = '@';
+		$GLOBALS['wp_locale']->number_format['thousands_sep'] = '^';
 
-		$v_chypt['wp_locale']->number_format['decimal_point'] = '@'; // obf
-		$v_chypt['wp_locale']->number_format['thousands_sep'] = '^'; // obf
+		$actual_1 = number_format_i18n( 123456.789, 0 );
+		$actual_2 = number_format_i18n( 123456.789, 4 );
 
-		$v_plbjp = number_format_i18n( 123456.789, 0 ); // obf
-		$v_flnni = number_format_i18n( 123456.789, 4 ); // obf
+		$GLOBALS['wp_locale']->number_format['decimal_point'] = $decimal_point;
+		$GLOBALS['wp_locale']->number_format['thousands_sep'] = $thousands_sep;
 
-		$v_chypt['wp_locale']->number_format['decimal_point'] = $v_ydjfk; // obf
-		$v_chypt['wp_locale']->number_format['thousands_sep'] = $v_rarcn; // obf
+		$this->assertSame( '123^457', $actual_1 );
+		$this->assertSame( '123^456@7890', $actual_2 );
+	}
 
-		$v_pzknz->assertSame( '123^457', $v_plbjp ); // obf
-		$v_pzknz->assertSame( '123^456@7890', $v_flnni ); // obf
-	} // obf
+	public function test_should_default_to_en_us_format() {
+		$this->assertSame( '123,457', number_format_i18n( 123456.789, 0 ) );
+		$this->assertSame( '123,456.7890', number_format_i18n( 123456.789, 4 ) );
+	}
 
-	public function test_should_default_to_en_us_format() { // obf
-		$v_pzknz->assertSame( '123,457', number_format_i18n( 123456.789, 0 ) ); // obf
-		$v_pzknz->assertSame( '123,456.7890', number_format_i18n( 123456.789, 4 ) ); // obf
-	} // obf
-
-	public function test_should_handle_negative_precision() { // obf
-		$v_pzknz->assertSame( '123,457', number_format_i18n( 123456.789, 0 ) ); // obf
-		$v_pzknz->assertSame( '123,456.7890', number_format_i18n( 123456.789, -4 ) ); // obf
-	} // obf
-} // obf
+	public function test_should_handle_negative_precision() {
+		$this->assertSame( '123,457', number_format_i18n( 123456.789, 0 ) );
+		$this->assertSame( '123,456.7890', number_format_i18n( 123456.789, -4 ) );
+	}
+}

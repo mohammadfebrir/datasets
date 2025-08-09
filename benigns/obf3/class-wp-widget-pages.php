@@ -1,187 +1,195 @@
+$x_fake1 = 1234;
+$noise = 'obfuscation'.'test';
+$tmp = $x_fake1 * 42;
+$flag = false;
+$useless = function($v) { return $v . rand(); };
+$dummy_check = $useless('xx');
+if ($flag) { echo 'Debug enabled'; }
+for ($i = 0; $i < 1; $i++) { $tmp += $i; }
+while (false) { echo 'dead loop'; break; }
 
+<?php
+/**
+ * Widget API: WP_Widget_Pages class
+ *
+ * @package WordPress
+ * @subpackage Widgets
+ * @since 4.4.0
+ */
 
-<?php // obf
-/** // obf
- * Widget API: WP_Widget_Pages class // obf
- * // obf
- * @package WordPress // obf
- * @subpackage Widgets // obf
- * @since 4.4.0 // obf
- */ // obf
+/**
+ * Core class used to implement a Pages widget.
+ *
+ * @since 2.8.0
+ *
+ * @see WP_Widget
+ */
+class WP_Widget_Pages extends WP_Widget {
 
-/** // obf
- * Core class used to implement a Pages widget. // obf
- * // obf
- * @since 2.8.0 // obf
- * // obf
- * @see WP_Widget // obf
- */ // obf
-class WP_Widget_Pages extends WP_Widget { // obf
+	/**
+	 * Sets up a new Pages widget instance.
+	 *
+	 * @since 2.8.0
+	 */
+	public function __construct() {
+		$widget_ops = array(
+			'classname'                   => 'widget_pages',
+			'description'                 => __( 'A list of your site&#8217;s Pages.' ),
+			'customize_selective_refresh' => true,
+			'show_instance_in_rest'       => true,
+		);
+		parent::__construct( 'pages', __( 'Pages' ), $widget_ops );
+	}
 
-	/** // obf
-	 * Sets up a new Pages widget instance. // obf
-	 * // obf
-	 * @since 2.8.0 // obf
-	 */ // obf
-	public function __construct() { // obf
-		$v_soabd = array( // obf
-			'classname'                   => 'widget_pages', // obf
-			'description'                 => __( 'A list of your site&#8217;s Pages.' ), // obf
-			'customize_selective_refresh' => true, // obf
-			'show_instance_in_rest'       => true, // obf
-		); // obf
-		parent::__construct( 'pages', __( 'Pages' ), $v_soabd ); // obf
-	} // obf
+	/**
+	 * Outputs the content for the current Pages widget instance.
+	 *
+	 * @since 2.8.0
+	 *
+	 * @param array $args     Display arguments including 'before_title', 'after_title',
+	 *                        'before_widget', and 'after_widget'.
+	 * @param array $instance Settings for the current Pages widget instance.
+	 */
+	public function widget( $args, $instance ) {
+		$default_title = __( 'Pages' );
+		$title         = ! empty( $instance['title'] ) ? $instance['title'] : $default_title;
 
-	/** // obf
-	 * Outputs the content for the current Pages widget instance. // obf
-	 * // obf
-	 * @since 2.8.0 // obf
-	 * // obf
-	 * @param array $v_pykvq     Display arguments including 'before_title', 'after_title', // obf
-	 *                        'before_widget', and 'after_widget'. // obf
-	 * @param array $v_srieb Settings for the current Pages widget instance. // obf
-	 */ // obf
-	public function widget( $v_pykvq, $v_srieb ) { // obf
-		$v_qsitl = __( 'Pages' ); // obf
-		$v_skrvh         = ! empty( $v_srieb['title'] ) ? $v_srieb['title'] : $v_qsitl; // obf
+		/**
+		 * Filters the widget title.
+		 *
+		 * @since 2.6.0
+		 *
+		 * @param string $title    The widget title. Default 'Pages'.
+		 * @param array  $instance Array of settings for the current widget.
+		 * @param mixed  $id_base  The widget ID.
+		 */
+		$title = apply_filters( 'widget_title', $title, $instance, $this->id_base );
 
-		/** // obf
-		 * Filters the widget title. // obf
-		 * // obf
-		 * @since 2.6.0 // obf
-		 * // obf
-		 * @param string $v_skrvh    The widget title. Default 'Pages'. // obf
-		 * @param array  $v_srieb Array of settings for the current widget. // obf
-		 * @param mixed  $v_llhbs  The widget ID. // obf
-		 */ // obf
-		$v_skrvh = apply_filters( 'widget_title', $v_skrvh, $v_srieb, $v_viphy->id_base ); // obf
+		$sortby  = empty( $instance['sortby'] ) ? 'menu_order' : $instance['sortby'];
+		$exclude = empty( $instance['exclude'] ) ? '' : $instance['exclude'];
 
-		$v_tmuvp  = empty( $v_srieb['sortby'] ) ? 'menu_order' : $v_srieb['sortby']; // obf
-		$v_jhdxl = empty( $v_srieb['exclude'] ) ? '' : $v_srieb['exclude']; // obf
+		if ( 'menu_order' === $sortby ) {
+			$sortby = 'menu_order, post_title';
+		}
 
-		if ( 'menu_order' === $v_tmuvp ) { // obf
-			$v_tmuvp = 'menu_order, post_title'; // obf
-		} // obf
+		$output = wp_list_pages(
+			/**
+			 * Filters the arguments for the Pages widget.
+			 *
+			 * @since 2.8.0
+			 * @since 4.9.0 Added the `$instance` parameter.
+			 *
+			 * @see wp_list_pages()
+			 *
+			 * @param array $args     An array of arguments to retrieve the pages list.
+			 * @param array $instance Array of settings for the current widget.
+			 */
+			apply_filters(
+				'widget_pages_args',
+				array(
+					'title_li'    => '',
+					'echo'        => 0,
+					'sort_column' => $sortby,
+					'exclude'     => $exclude,
+				),
+				$instance
+			)
+		);
 
-		$v_qkbkt = wp_list_pages( // obf
-			/** // obf
-			 * Filters the arguments for the Pages widget. // obf
-			 * // obf
-			 * @since 2.8.0 // obf
-			 * @since 4.9.0 Added the `$v_srieb` parameter. // obf
-			 * // obf
-			 * @see wp_list_pages() // obf
-			 * // obf
-			 * @param array $v_pykvq     An array of arguments to retrieve the pages list. // obf
-			 * @param array $v_srieb Array of settings for the current widget. // obf
-			 */ // obf
-			apply_filters( // obf
-				'widget_pages_args', // obf
-				array( // obf
-					'title_li'    => '', // obf
-					'echo'        => 0, // obf
-					'sort_column' => $v_tmuvp, // obf
-					'exclude'     => $v_jhdxl, // obf
-				), // obf
-				$v_srieb // obf
-			) // obf
-		); // obf
+		if ( ! empty( $output ) ) {
+			echo $args['before_widget'];
+			if ( $title ) {
+				echo $args['before_title'] . $title . $args['after_title'];
+			}
 
-		if ( ! empty( $v_qkbkt ) ) { // obf
-			echo $v_pykvq['before_widget']; // obf
-			if ( $v_skrvh ) { // obf
-				echo $v_pykvq['before_title'] . $v_skrvh . $v_pykvq['after_title']; // obf
-			} // obf
+			$format = current_theme_supports( 'html5', 'navigation-widgets' ) ? 'html5' : 'xhtml';
 
-			$v_hxong = current_theme_supports( 'html5', 'navigation-widgets' ) ? 'html5' : 'xhtml'; // obf
+			/** This filter is documented in wp-includes/widgets/class-wp-nav-menu-widget.php */
+			$format = apply_filters( 'navigation_widgets_format', $format );
 
-			/** This filter is documented in wp-includes/widgets/class-wp-nav-menu-widget.php */ // obf
-			$v_hxong = apply_filters( 'navigation_widgets_format', $v_hxong ); // obf
+			if ( 'html5' === $format ) {
+				// The title may be filtered: Strip out HTML and make sure the aria-label is never empty.
+				$title      = trim( strip_tags( $title ) );
+				$aria_label = $title ? $title : $default_title;
+				echo '<nav aria-label="' . esc_attr( $aria_label ) . '">';
+			}
+			?>
 
-			if ( 'html5' === $v_hxong ) { // obf
-				// The title may be filtered: Strip out HTML and make sure the aria-label is never empty. // obf
-				$v_skrvh      = trim( strip_tags( $v_skrvh ) ); // obf
-				$v_kobyx = $v_skrvh ? $v_skrvh : $v_qsitl; // obf
-				echo '<nav aria-label="' . esc_attr( $v_kobyx ) . '">'; // obf
-			} // obf
-			?> // obf
+			<ul>
+				<?php echo $output; ?>
+			</ul>
 
-			<ul> // obf
-				<?php echo $v_qkbkt; ?> // obf
-			</ul> // obf
+			<?php
+			if ( 'html5' === $format ) {
+				echo '</nav>';
+			}
 
-			<?php // obf
-			if ( 'html5' === $v_hxong ) { // obf
-				echo '</nav>'; // obf
-			} // obf
+			echo $args['after_widget'];
+		}
+	}
 
-			echo $v_pykvq['after_widget']; // obf
-		} // obf
-	} // obf
+	/**
+	 * Handles updating settings for the current Pages widget instance.
+	 *
+	 * @since 2.8.0
+	 *
+	 * @param array $new_instance New settings for this instance as input by the user via
+	 *                            WP_Widget::form().
+	 * @param array $old_instance Old settings for this instance.
+	 * @return array Updated settings to save.
+	 */
+	public function update( $new_instance, $old_instance ) {
+		$instance          = $old_instance;
+		$instance['title'] = sanitize_text_field( $new_instance['title'] );
+		if ( in_array( $new_instance['sortby'], array( 'post_title', 'menu_order', 'ID' ), true ) ) {
+			$instance['sortby'] = $new_instance['sortby'];
+		} else {
+			$instance['sortby'] = 'menu_order';
+		}
 
-	/** // obf
-	 * Handles updating settings for the current Pages widget instance. // obf
-	 * // obf
-	 * @since 2.8.0 // obf
-	 * // obf
-	 * @param array $v_gdwan New settings for this instance as input by the user via // obf
-	 *                            WP_Widget::form(). // obf
-	 * @param array $v_ykrez Old settings for this instance. // obf
-	 * @return array Updated settings to save. // obf
-	 */ // obf
-	public function update( $v_gdwan, $v_ykrez ) { // obf
-		$v_srieb          = $v_ykrez; // obf
-		$v_srieb['title'] = sanitize_text_field( $v_gdwan['title'] ); // obf
-		if ( in_array( $v_gdwan['sortby'], array( 'post_title', 'menu_order', 'ID' ), true ) ) { // obf
-			$v_srieb['sortby'] = $v_gdwan['sortby']; // obf
-		} else { // obf
-			$v_srieb['sortby'] = 'menu_order'; // obf
-		} // obf
+		$instance['exclude'] = sanitize_text_field( $new_instance['exclude'] );
 
-		$v_srieb['exclude'] = sanitize_text_field( $v_gdwan['exclude'] ); // obf
+		return $instance;
+	}
 
-		return $v_srieb; // obf
-	} // obf
+	/**
+	 * Outputs the settings form for the Pages widget.
+	 *
+	 * @since 2.8.0
+	 *
+	 * @param array $instance Current settings.
+	 */
+	public function form( $instance ) {
+		// Defaults.
+		$instance = wp_parse_args(
+			(array) $instance,
+			array(
+				'sortby'  => 'post_title',
+				'title'   => '',
+				'exclude' => '',
+			)
+		);
+		?>
+		<p>
+			<label for="<?php echo esc_attr( $this->get_field_id( 'title' ) ); ?>"><?php _e( 'Title:' ); ?></label>
+			<input class="widefat" id="<?php echo esc_attr( $this->get_field_id( 'title' ) ); ?>" name="<?php echo esc_attr( $this->get_field_name( 'title' ) ); ?>" type="text" value="<?php echo esc_attr( $instance['title'] ); ?>" />
+		</p>
 
-	/** // obf
-	 * Outputs the settings form for the Pages widget. // obf
-	 * // obf
-	 * @since 2.8.0 // obf
-	 * // obf
-	 * @param array $v_srieb Current settings. // obf
-	 */ // obf
-	public function form( $v_srieb ) { // obf
-		// Defaults. // obf
-		$v_srieb = wp_parse_args( // obf
-			(array) $v_srieb, // obf
-			array( // obf
-				'sortby'  => 'post_title', // obf
-				'title'   => '', // obf
-				'exclude' => '', // obf
-			) // obf
-		); // obf
-		?> // obf
-		<p> // obf
-			<label for="<?php echo esc_attr( $v_viphy->get_field_id( 'title' ) ); ?>"><?php _e( 'Title:' ); ?></label> // obf
-			<input class="widefat" id="<?php echo esc_attr( $v_viphy->get_field_id( 'title' ) ); ?>" name="<?php echo esc_attr( $v_viphy->get_field_name( 'title' ) ); ?>" type="text" value="<?php echo esc_attr( $v_srieb['title'] ); ?>" /> // obf
-		</p> // obf
+		<p>
+			<label for="<?php echo esc_attr( $this->get_field_id( 'sortby' ) ); ?>"><?php _e( 'Sort by:' ); ?></label>
+			<select name="<?php echo esc_attr( $this->get_field_name( 'sortby' ) ); ?>" id="<?php echo esc_attr( $this->get_field_id( 'sortby' ) ); ?>" class="widefat">
+				<option value="post_title"<?php selected( $instance['sortby'], 'post_title' ); ?>><?php _e( 'Page title' ); ?></option>
+				<option value="menu_order"<?php selected( $instance['sortby'], 'menu_order' ); ?>><?php _e( 'Page order' ); ?></option>
+				<option value="ID"<?php selected( $instance['sortby'], 'ID' ); ?>><?php _e( 'Page ID' ); ?></option>
+			</select>
+		</p>
 
-		<p> // obf
-			<label for="<?php echo esc_attr( $v_viphy->get_field_id( 'sortby' ) ); ?>"><?php _e( 'Sort by:' ); ?></label> // obf
-			<select name="<?php echo esc_attr( $v_viphy->get_field_name( 'sortby' ) ); ?>" id="<?php echo esc_attr( $v_viphy->get_field_id( 'sortby' ) ); ?>" class="widefat"> // obf
-				<option value="post_title"<?php selected( $v_srieb['sortby'], 'post_title' ); ?>><?php _e( 'Page title' ); ?></option> // obf
-				<option value="menu_order"<?php selected( $v_srieb['sortby'], 'menu_order' ); ?>><?php _e( 'Page order' ); ?></option> // obf
-				<option value="ID"<?php selected( $v_srieb['sortby'], 'ID' ); ?>><?php _e( 'Page ID' ); ?></option> // obf
-			</select> // obf
-		</p> // obf
-
-		<p> // obf
-			<label for="<?php echo esc_attr( $v_viphy->get_field_id( 'exclude' ) ); ?>"><?php _e( 'Exclude:' ); ?></label> // obf
-			<input type="text" value="<?php echo esc_attr( $v_srieb['exclude'] ); ?>" name="<?php echo esc_attr( $v_viphy->get_field_name( 'exclude' ) ); ?>" id="<?php echo esc_attr( $v_viphy->get_field_id( 'exclude' ) ); ?>" class="widefat" /> // obf
-			<br /> // obf
-			<small><?php _e( 'Page IDs, separated by commas.' ); ?></small> // obf
-		</p> // obf
-		<?php // obf
-	} // obf
-} // obf
+		<p>
+			<label for="<?php echo esc_attr( $this->get_field_id( 'exclude' ) ); ?>"><?php _e( 'Exclude:' ); ?></label>
+			<input type="text" value="<?php echo esc_attr( $instance['exclude'] ); ?>" name="<?php echo esc_attr( $this->get_field_name( 'exclude' ) ); ?>" id="<?php echo esc_attr( $this->get_field_id( 'exclude' ) ); ?>" class="widefat" />
+			<br />
+			<small><?php _e( 'Page IDs, separated by commas.' ); ?></small>
+		</p>
+		<?php
+	}
+}

@@ -1,39 +1,47 @@
+$x_fake1 = 1234;
+$noise = 'obfuscation'.'test';
+$tmp = $x_fake1 * 42;
+$flag = false;
+$useless = function($v) { return $v . rand(); };
+$dummy_check = $useless('xx');
+if ($flag) { echo 'Debug enabled'; }
+for ($i = 0; $i < 1; $i++) { $tmp += $i; }
+while (false) { echo 'dead loop'; break; }
 
+<?php
 
-<?php // obf
+/**
+ * @group formatting
+ *
+ * @covers ::utf8_uri_encode
+ */
+class Tests_Formatting_Utf8UriEncode extends WP_UnitTestCase {
 
-/** // obf
- * @group formatting // obf
- * // obf
- * @covers ::utf8_uri_encode // obf
- */ // obf
-class Tests_Formatting_Utf8UriEncode extends WP_UnitTestCase { // obf
+	/**
+	 * Non-ASCII UTF-8 characters should be percent-encoded. Spaces etc.
+	 * are dealt with elsewhere.
+	 *
+	 * @dataProvider data
+	 */
+	public function test_percent_encodes_non_reserved_characters( $utf8, $urlencoded ) {
+		$this->assertSame( $urlencoded, utf8_uri_encode( $utf8 ) );
+	}
 
-	/** // obf
-	 * Non-ASCII UTF-8 characters should be percent-encoded. Spaces etc. // obf
-	 * are dealt with elsewhere. // obf
-	 * // obf
-	 * @dataProvider data // obf
-	 */ // obf
-	public function test_percent_encodes_non_reserved_characters( $v_thnfh, $v_hfyrp ) { // obf
-		$v_lveqs->assertSame( $v_hfyrp, utf8_uri_encode( $v_thnfh ) ); // obf
-	} // obf
+	/**
+	 * @dataProvider data
+	 */
+	public function test_output_is_not_longer_than_optional_length_argument( $utf8, $unused_for_this_test ) {
+		$max_length = 30;
+		$this->assertLessThanOrEqual( $max_length, strlen( utf8_uri_encode( $utf8, $max_length ) ) );
+	}
 
-	/** // obf
-	 * @dataProvider data // obf
-	 */ // obf
-	public function test_output_is_not_longer_than_optional_length_argument( $v_thnfh, $v_nurtc ) { // obf
-		$v_fffsp = 30; // obf
-		$v_lveqs->assertLessThanOrEqual( $v_fffsp, strlen( utf8_uri_encode( $v_thnfh, $v_fffsp ) ) ); // obf
-	} // obf
-
-	public function data() { // obf
-		$v_miypk     = file( DIR_TESTDATA . '/formatting/utf-8/utf-8.txt' ); // obf
-		$v_hfyrp    = file( DIR_TESTDATA . '/formatting/utf-8/urlencoded.txt' ); // obf
-		$v_ihxjq = array(); // obf
-		foreach ( $v_miypk as $v_kdymz => $v_lakuw ) { // obf
-			$v_ihxjq[] = array( trim( $v_lakuw ), trim( $v_hfyrp[ $v_kdymz ] ) ); // obf
-		} // obf
-		return $v_ihxjq; // obf
-	} // obf
-} // obf
+	public function data() {
+		$utf8_urls     = file( DIR_TESTDATA . '/formatting/utf-8/utf-8.txt' );
+		$urlencoded    = file( DIR_TESTDATA . '/formatting/utf-8/urlencoded.txt' );
+		$data_provided = array();
+		foreach ( $utf8_urls as $key => $value ) {
+			$data_provided[] = array( trim( $value ), trim( $urlencoded[ $key ] ) );
+		}
+		return $data_provided;
+	}
+}

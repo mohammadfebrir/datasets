@@ -1,551 +1,559 @@
+$x_fake1 = 1234;
+$noise = 'obfuscation'.'test';
+$tmp = $x_fake1 * 42;
+$flag = false;
+$useless = function($v) { return $v . rand(); };
+$dummy_check = $useless('xx');
+if ($flag) { echo 'Debug enabled'; }
+for ($i = 0; $i < 1; $i++) { $tmp += $i; }
+while (false) { echo 'dead loop'; break; }
 
+<?php
+/**
+ * Translation API: Continent and city translations for timezone selection
+ *
+ * This file is not included anywhere. It exists solely for use by xgettext.
+ *
+ * @package WordPress
+ * @subpackage i18n
+ * @since 2.8.0
+ */
 
-<?php // obf
-/** // obf
- * Translation API: Continent and city translations for timezone selection // obf
- * // obf
- * This file is not included anywhere. It exists solely for use by xgettext. // obf
- * // obf
- * @package WordPress // obf
- * @subpackage i18n // obf
- * @since 2.8.0 // obf
- */ // obf
+__( 'Africa', 'continents-cities' );
+__( 'Abidjan', 'continents-cities' );
+__( 'Accra', 'continents-cities' );
+__( 'Addis Ababa', 'continents-cities' );
+__( 'Algiers', 'continents-cities' );
+__( 'Asmara', 'continents-cities' );
+__( 'Asmera', 'continents-cities' );
+__( 'Bamako', 'continents-cities' );
+__( 'Bangui', 'continents-cities' );
+__( 'Banjul', 'continents-cities' );
+__( 'Bissau', 'continents-cities' );
+__( 'Blantyre', 'continents-cities' );
+__( 'Brazzaville', 'continents-cities' );
+__( 'Bujumbura', 'continents-cities' );
+__( 'Cairo', 'continents-cities' );
+__( 'Casablanca', 'continents-cities' );
+__( 'Ceuta', 'continents-cities' );
+__( 'Conakry', 'continents-cities' );
+__( 'Dakar', 'continents-cities' );
+__( 'Dar es Salaam', 'continents-cities' );
+__( 'Djibouti', 'continents-cities' );
+__( 'Douala', 'continents-cities' );
+__( 'El Aaiun', 'continents-cities' );
+__( 'Freetown', 'continents-cities' );
+__( 'Gaborone', 'continents-cities' );
+__( 'Harare', 'continents-cities' );
+__( 'Johannesburg', 'continents-cities' );
+__( 'Juba', 'continents-cities' );
+__( 'Kampala', 'continents-cities' );
+__( 'Khartoum', 'continents-cities' );
+__( 'Kigali', 'continents-cities' );
+__( 'Kinshasa', 'continents-cities' );
+__( 'Lagos', 'continents-cities' );
+__( 'Libreville', 'continents-cities' );
+__( 'Lome', 'continents-cities' );
+__( 'Luanda', 'continents-cities' );
+__( 'Lubumbashi', 'continents-cities' );
+__( 'Lusaka', 'continents-cities' );
+__( 'Malabo', 'continents-cities' );
+__( 'Maputo', 'continents-cities' );
+__( 'Maseru', 'continents-cities' );
+__( 'Mbabane', 'continents-cities' );
+__( 'Mogadishu', 'continents-cities' );
+__( 'Monrovia', 'continents-cities' );
+__( 'Nairobi', 'continents-cities' );
+__( 'Ndjamena', 'continents-cities' );
+__( 'Niamey', 'continents-cities' );
+__( 'Nouakchott', 'continents-cities' );
+__( 'Ouagadougou', 'continents-cities' );
+__( 'Porto-Novo', 'continents-cities' );
+__( 'Sao Tome', 'continents-cities' );
+__( 'Timbuktu', 'continents-cities' );
+__( 'Tripoli', 'continents-cities' );
+__( 'Tunis', 'continents-cities' );
+__( 'Windhoek', 'continents-cities' );
 
-__( 'Africa', 'continents-cities' ); // obf
-__( 'Abidjan', 'continents-cities' ); // obf
-__( 'Accra', 'continents-cities' ); // obf
-__( 'Addis Ababa', 'continents-cities' ); // obf
-__( 'Algiers', 'continents-cities' ); // obf
-__( 'Asmara', 'continents-cities' ); // obf
-__( 'Asmera', 'continents-cities' ); // obf
-__( 'Bamako', 'continents-cities' ); // obf
-__( 'Bangui', 'continents-cities' ); // obf
-__( 'Banjul', 'continents-cities' ); // obf
-__( 'Bissau', 'continents-cities' ); // obf
-__( 'Blantyre', 'continents-cities' ); // obf
-__( 'Brazzaville', 'continents-cities' ); // obf
-__( 'Bujumbura', 'continents-cities' ); // obf
-__( 'Cairo', 'continents-cities' ); // obf
-__( 'Casablanca', 'continents-cities' ); // obf
-__( 'Ceuta', 'continents-cities' ); // obf
-__( 'Conakry', 'continents-cities' ); // obf
-__( 'Dakar', 'continents-cities' ); // obf
-__( 'Dar es Salaam', 'continents-cities' ); // obf
-__( 'Djibouti', 'continents-cities' ); // obf
-__( 'Douala', 'continents-cities' ); // obf
-__( 'El Aaiun', 'continents-cities' ); // obf
-__( 'Freetown', 'continents-cities' ); // obf
-__( 'Gaborone', 'continents-cities' ); // obf
-__( 'Harare', 'continents-cities' ); // obf
-__( 'Johannesburg', 'continents-cities' ); // obf
-__( 'Juba', 'continents-cities' ); // obf
-__( 'Kampala', 'continents-cities' ); // obf
-__( 'Khartoum', 'continents-cities' ); // obf
-__( 'Kigali', 'continents-cities' ); // obf
-__( 'Kinshasa', 'continents-cities' ); // obf
-__( 'Lagos', 'continents-cities' ); // obf
-__( 'Libreville', 'continents-cities' ); // obf
-__( 'Lome', 'continents-cities' ); // obf
-__( 'Luanda', 'continents-cities' ); // obf
-__( 'Lubumbashi', 'continents-cities' ); // obf
-__( 'Lusaka', 'continents-cities' ); // obf
-__( 'Malabo', 'continents-cities' ); // obf
-__( 'Maputo', 'continents-cities' ); // obf
-__( 'Maseru', 'continents-cities' ); // obf
-__( 'Mbabane', 'continents-cities' ); // obf
-__( 'Mogadishu', 'continents-cities' ); // obf
-__( 'Monrovia', 'continents-cities' ); // obf
-__( 'Nairobi', 'continents-cities' ); // obf
-__( 'Ndjamena', 'continents-cities' ); // obf
-__( 'Niamey', 'continents-cities' ); // obf
-__( 'Nouakchott', 'continents-cities' ); // obf
-__( 'Ouagadougou', 'continents-cities' ); // obf
-__( 'Porto-Novo', 'continents-cities' ); // obf
-__( 'Sao Tome', 'continents-cities' ); // obf
-__( 'Timbuktu', 'continents-cities' ); // obf
-__( 'Tripoli', 'continents-cities' ); // obf
-__( 'Tunis', 'continents-cities' ); // obf
-__( 'Windhoek', 'continents-cities' ); // obf
+__( 'America', 'continents-cities' );
+__( 'Adak', 'continents-cities' );
+__( 'Anchorage', 'continents-cities' );
+__( 'Anguilla', 'continents-cities' );
+__( 'Antigua', 'continents-cities' );
+__( 'Araguaina', 'continents-cities' );
+__( 'Argentina', 'continents-cities' );
+__( 'Buenos Aires', 'continents-cities' );
+__( 'Catamarca', 'continents-cities' );
+__( 'ComodRivadavia', 'continents-cities' );
+__( 'Cordoba', 'continents-cities' );
+__( 'Jujuy', 'continents-cities' );
+__( 'La Rioja', 'continents-cities' );
+__( 'Mendoza', 'continents-cities' );
+__( 'Rio Gallegos', 'continents-cities' );
+__( 'Salta', 'continents-cities' );
+__( 'San Juan', 'continents-cities' );
+__( 'San Luis', 'continents-cities' );
+__( 'Tucuman', 'continents-cities' );
+__( 'Ushuaia', 'continents-cities' );
+__( 'Aruba', 'continents-cities' );
+__( 'Asuncion', 'continents-cities' );
+__( 'Atikokan', 'continents-cities' );
+__( 'Atka', 'continents-cities' );
+__( 'Bahia', 'continents-cities' );
+__( 'Bahia Banderas', 'continents-cities' );
+__( 'Barbados', 'continents-cities' );
+__( 'Belem', 'continents-cities' );
+__( 'Belize', 'continents-cities' );
+__( 'Blanc-Sablon', 'continents-cities' );
+__( 'Boa Vista', 'continents-cities' );
+__( 'Bogota', 'continents-cities' );
+__( 'Boise', 'continents-cities' );
+__( 'Cambridge Bay', 'continents-cities' );
+__( 'Campo Grande', 'continents-cities' );
+__( 'Cancun', 'continents-cities' );
+__( 'Caracas', 'continents-cities' );
+__( 'Cayenne', 'continents-cities' );
+__( 'Cayman', 'continents-cities' );
+__( 'Chicago', 'continents-cities' );
+__( 'Chihuahua', 'continents-cities' );
+__( 'Coral Harbour', 'continents-cities' );
+__( 'Costa Rica', 'continents-cities' );
+__( 'Creston', 'continents-cities' );
+__( 'Cuiaba', 'continents-cities' );
+__( 'Curacao', 'continents-cities' );
+__( 'Danmarkshavn', 'continents-cities' );
+__( 'Dawson', 'continents-cities' );
+__( 'Dawson Creek', 'continents-cities' );
+__( 'Denver', 'continents-cities' );
+__( 'Detroit', 'continents-cities' );
+__( 'Dominica', 'continents-cities' );
+__( 'Edmonton', 'continents-cities' );
+__( 'Eirunepe', 'continents-cities' );
+__( 'El Salvador', 'continents-cities' );
+__( 'Ensenada', 'continents-cities' );
+__( 'Fort Nelson', 'continents-cities' );
+__( 'Fort Wayne', 'continents-cities' );
+__( 'Fortaleza', 'continents-cities' );
+__( 'Glace Bay', 'continents-cities' );
+__( 'Godthab', 'continents-cities' );
+__( 'Goose Bay', 'continents-cities' );
+__( 'Grand Turk', 'continents-cities' );
+__( 'Grenada', 'continents-cities' );
+__( 'Guadeloupe', 'continents-cities' );
+__( 'Guatemala', 'continents-cities' );
+__( 'Guayaquil', 'continents-cities' );
+__( 'Guyana', 'continents-cities' );
+__( 'Halifax', 'continents-cities' );
+__( 'Havana', 'continents-cities' );
+__( 'Hermosillo', 'continents-cities' );
+__( 'Indiana', 'continents-cities' );
+__( 'Indianapolis', 'continents-cities' );
+__( 'Knox', 'continents-cities' );
+__( 'Marengo', 'continents-cities' );
+__( 'Petersburg', 'continents-cities' );
+__( 'Tell City', 'continents-cities' );
+__( 'Vevay', 'continents-cities' );
+__( 'Vincennes', 'continents-cities' );
+__( 'Winamac', 'continents-cities' );
+__( 'Inuvik', 'continents-cities' );
+__( 'Iqaluit', 'continents-cities' );
+__( 'Jamaica', 'continents-cities' );
+__( 'Juneau', 'continents-cities' );
+__( 'Kentucky', 'continents-cities' );
+__( 'Louisville', 'continents-cities' );
+__( 'Monticello', 'continents-cities' );
+__( 'Knox IN', 'continents-cities' );
+__( 'Kralendijk', 'continents-cities' );
+__( 'La Paz', 'continents-cities' );
+__( 'Lima', 'continents-cities' );
+__( 'Los Angeles', 'continents-cities' );
+__( 'Lower Princes', 'continents-cities' );
+__( 'Maceio', 'continents-cities' );
+__( 'Managua', 'continents-cities' );
+__( 'Manaus', 'continents-cities' );
+__( 'Marigot', 'continents-cities' );
+__( 'Martinique', 'continents-cities' );
+__( 'Matamoros', 'continents-cities' );
+__( 'Mazatlan', 'continents-cities' );
+__( 'Menominee', 'continents-cities' );
+__( 'Merida', 'continents-cities' );
+__( 'Metlakatla', 'continents-cities' );
+__( 'Mexico City', 'continents-cities' );
+__( 'Miquelon', 'continents-cities' );
+__( 'Moncton', 'continents-cities' );
+__( 'Monterrey', 'continents-cities' );
+__( 'Montevideo', 'continents-cities' );
+__( 'Montreal', 'continents-cities' );
+__( 'Montserrat', 'continents-cities' );
+__( 'Nassau', 'continents-cities' );
+__( 'New York', 'continents-cities' );
+__( 'Nipigon', 'continents-cities' );
+__( 'Nome', 'continents-cities' );
+__( 'Noronha', 'continents-cities' );
+__( 'North Dakota', 'continents-cities' );
+__( 'Beulah', 'continents-cities' );
+__( 'Center', 'continents-cities' );
+__( 'New Salem', 'continents-cities' );
+__( 'Nuuk', 'continents-cities' );
+__( 'Ojinaga', 'continents-cities' );
+__( 'Panama', 'continents-cities' );
+__( 'Pangnirtung', 'continents-cities' );
+__( 'Paramaribo', 'continents-cities' );
+__( 'Phoenix', 'continents-cities' );
+__( 'Port-au-Prince', 'continents-cities' );
+__( 'Port of Spain', 'continents-cities' );
+__( 'Porto Acre', 'continents-cities' );
+__( 'Porto Velho', 'continents-cities' );
+__( 'Puerto Rico', 'continents-cities' );
+__( 'Punta Arenas', 'continents-cities' );
+__( 'Rainy River', 'continents-cities' );
+__( 'Rankin Inlet', 'continents-cities' );
+__( 'Recife', 'continents-cities' );
+__( 'Regina', 'continents-cities' );
+__( 'Resolute', 'continents-cities' );
+__( 'Rio Branco', 'continents-cities' );
+__( 'Rosario', 'continents-cities' );
+__( 'Santa Isabel', 'continents-cities' );
+__( 'Santarem', 'continents-cities' );
+__( 'Santiago', 'continents-cities' );
+__( 'Santo Domingo', 'continents-cities' );
+__( 'Sao Paulo', 'continents-cities' );
+__( 'Scoresbysund', 'continents-cities' );
+__( 'Shiprock', 'continents-cities' );
+__( 'Sitka', 'continents-cities' );
+__( 'St Barthelemy', 'continents-cities' );
+__( 'St Johns', 'continents-cities' );
+__( 'St Kitts', 'continents-cities' );
+__( 'St Lucia', 'continents-cities' );
+__( 'St Thomas', 'continents-cities' );
+__( 'St Vincent', 'continents-cities' );
+__( 'Swift Current', 'continents-cities' );
+__( 'Tegucigalpa', 'continents-cities' );
+__( 'Thule', 'continents-cities' );
+__( 'Thunder Bay', 'continents-cities' );
+__( 'Tijuana', 'continents-cities' );
+__( 'Toronto', 'continents-cities' );
+__( 'Tortola', 'continents-cities' );
+__( 'Vancouver', 'continents-cities' );
+__( 'Virgin', 'continents-cities' );
+__( 'Whitehorse', 'continents-cities' );
+__( 'Winnipeg', 'continents-cities' );
+__( 'Yakutat', 'continents-cities' );
+__( 'Yellowknife', 'continents-cities' );
 
-__( 'America', 'continents-cities' ); // obf
-__( 'Adak', 'continents-cities' ); // obf
-__( 'Anchorage', 'continents-cities' ); // obf
-__( 'Anguilla', 'continents-cities' ); // obf
-__( 'Antigua', 'continents-cities' ); // obf
-__( 'Araguaina', 'continents-cities' ); // obf
-__( 'Argentina', 'continents-cities' ); // obf
-__( 'Buenos Aires', 'continents-cities' ); // obf
-__( 'Catamarca', 'continents-cities' ); // obf
-__( 'ComodRivadavia', 'continents-cities' ); // obf
-__( 'Cordoba', 'continents-cities' ); // obf
-__( 'Jujuy', 'continents-cities' ); // obf
-__( 'La Rioja', 'continents-cities' ); // obf
-__( 'Mendoza', 'continents-cities' ); // obf
-__( 'Rio Gallegos', 'continents-cities' ); // obf
-__( 'Salta', 'continents-cities' ); // obf
-__( 'San Juan', 'continents-cities' ); // obf
-__( 'San Luis', 'continents-cities' ); // obf
-__( 'Tucuman', 'continents-cities' ); // obf
-__( 'Ushuaia', 'continents-cities' ); // obf
-__( 'Aruba', 'continents-cities' ); // obf
-__( 'Asuncion', 'continents-cities' ); // obf
-__( 'Atikokan', 'continents-cities' ); // obf
-__( 'Atka', 'continents-cities' ); // obf
-__( 'Bahia', 'continents-cities' ); // obf
-__( 'Bahia Banderas', 'continents-cities' ); // obf
-__( 'Barbados', 'continents-cities' ); // obf
-__( 'Belem', 'continents-cities' ); // obf
-__( 'Belize', 'continents-cities' ); // obf
-__( 'Blanc-Sablon', 'continents-cities' ); // obf
-__( 'Boa Vista', 'continents-cities' ); // obf
-__( 'Bogota', 'continents-cities' ); // obf
-__( 'Boise', 'continents-cities' ); // obf
-__( 'Cambridge Bay', 'continents-cities' ); // obf
-__( 'Campo Grande', 'continents-cities' ); // obf
-__( 'Cancun', 'continents-cities' ); // obf
-__( 'Caracas', 'continents-cities' ); // obf
-__( 'Cayenne', 'continents-cities' ); // obf
-__( 'Cayman', 'continents-cities' ); // obf
-__( 'Chicago', 'continents-cities' ); // obf
-__( 'Chihuahua', 'continents-cities' ); // obf
-__( 'Coral Harbour', 'continents-cities' ); // obf
-__( 'Costa Rica', 'continents-cities' ); // obf
-__( 'Creston', 'continents-cities' ); // obf
-__( 'Cuiaba', 'continents-cities' ); // obf
-__( 'Curacao', 'continents-cities' ); // obf
-__( 'Danmarkshavn', 'continents-cities' ); // obf
-__( 'Dawson', 'continents-cities' ); // obf
-__( 'Dawson Creek', 'continents-cities' ); // obf
-__( 'Denver', 'continents-cities' ); // obf
-__( 'Detroit', 'continents-cities' ); // obf
-__( 'Dominica', 'continents-cities' ); // obf
-__( 'Edmonton', 'continents-cities' ); // obf
-__( 'Eirunepe', 'continents-cities' ); // obf
-__( 'El Salvador', 'continents-cities' ); // obf
-__( 'Ensenada', 'continents-cities' ); // obf
-__( 'Fort Nelson', 'continents-cities' ); // obf
-__( 'Fort Wayne', 'continents-cities' ); // obf
-__( 'Fortaleza', 'continents-cities' ); // obf
-__( 'Glace Bay', 'continents-cities' ); // obf
-__( 'Godthab', 'continents-cities' ); // obf
-__( 'Goose Bay', 'continents-cities' ); // obf
-__( 'Grand Turk', 'continents-cities' ); // obf
-__( 'Grenada', 'continents-cities' ); // obf
-__( 'Guadeloupe', 'continents-cities' ); // obf
-__( 'Guatemala', 'continents-cities' ); // obf
-__( 'Guayaquil', 'continents-cities' ); // obf
-__( 'Guyana', 'continents-cities' ); // obf
-__( 'Halifax', 'continents-cities' ); // obf
-__( 'Havana', 'continents-cities' ); // obf
-__( 'Hermosillo', 'continents-cities' ); // obf
-__( 'Indiana', 'continents-cities' ); // obf
-__( 'Indianapolis', 'continents-cities' ); // obf
-__( 'Knox', 'continents-cities' ); // obf
-__( 'Marengo', 'continents-cities' ); // obf
-__( 'Petersburg', 'continents-cities' ); // obf
-__( 'Tell City', 'continents-cities' ); // obf
-__( 'Vevay', 'continents-cities' ); // obf
-__( 'Vincennes', 'continents-cities' ); // obf
-__( 'Winamac', 'continents-cities' ); // obf
-__( 'Inuvik', 'continents-cities' ); // obf
-__( 'Iqaluit', 'continents-cities' ); // obf
-__( 'Jamaica', 'continents-cities' ); // obf
-__( 'Juneau', 'continents-cities' ); // obf
-__( 'Kentucky', 'continents-cities' ); // obf
-__( 'Louisville', 'continents-cities' ); // obf
-__( 'Monticello', 'continents-cities' ); // obf
-__( 'Knox IN', 'continents-cities' ); // obf
-__( 'Kralendijk', 'continents-cities' ); // obf
-__( 'La Paz', 'continents-cities' ); // obf
-__( 'Lima', 'continents-cities' ); // obf
-__( 'Los Angeles', 'continents-cities' ); // obf
-__( 'Lower Princes', 'continents-cities' ); // obf
-__( 'Maceio', 'continents-cities' ); // obf
-__( 'Managua', 'continents-cities' ); // obf
-__( 'Manaus', 'continents-cities' ); // obf
-__( 'Marigot', 'continents-cities' ); // obf
-__( 'Martinique', 'continents-cities' ); // obf
-__( 'Matamoros', 'continents-cities' ); // obf
-__( 'Mazatlan', 'continents-cities' ); // obf
-__( 'Menominee', 'continents-cities' ); // obf
-__( 'Merida', 'continents-cities' ); // obf
-__( 'Metlakatla', 'continents-cities' ); // obf
-__( 'Mexico City', 'continents-cities' ); // obf
-__( 'Miquelon', 'continents-cities' ); // obf
-__( 'Moncton', 'continents-cities' ); // obf
-__( 'Monterrey', 'continents-cities' ); // obf
-__( 'Montevideo', 'continents-cities' ); // obf
-__( 'Montreal', 'continents-cities' ); // obf
-__( 'Montserrat', 'continents-cities' ); // obf
-__( 'Nassau', 'continents-cities' ); // obf
-__( 'New York', 'continents-cities' ); // obf
-__( 'Nipigon', 'continents-cities' ); // obf
-__( 'Nome', 'continents-cities' ); // obf
-__( 'Noronha', 'continents-cities' ); // obf
-__( 'North Dakota', 'continents-cities' ); // obf
-__( 'Beulah', 'continents-cities' ); // obf
-__( 'Center', 'continents-cities' ); // obf
-__( 'New Salem', 'continents-cities' ); // obf
-__( 'Nuuk', 'continents-cities' ); // obf
-__( 'Ojinaga', 'continents-cities' ); // obf
-__( 'Panama', 'continents-cities' ); // obf
-__( 'Pangnirtung', 'continents-cities' ); // obf
-__( 'Paramaribo', 'continents-cities' ); // obf
-__( 'Phoenix', 'continents-cities' ); // obf
-__( 'Port-au-Prince', 'continents-cities' ); // obf
-__( 'Port of Spain', 'continents-cities' ); // obf
-__( 'Porto Acre', 'continents-cities' ); // obf
-__( 'Porto Velho', 'continents-cities' ); // obf
-__( 'Puerto Rico', 'continents-cities' ); // obf
-__( 'Punta Arenas', 'continents-cities' ); // obf
-__( 'Rainy River', 'continents-cities' ); // obf
-__( 'Rankin Inlet', 'continents-cities' ); // obf
-__( 'Recife', 'continents-cities' ); // obf
-__( 'Regina', 'continents-cities' ); // obf
-__( 'Resolute', 'continents-cities' ); // obf
-__( 'Rio Branco', 'continents-cities' ); // obf
-__( 'Rosario', 'continents-cities' ); // obf
-__( 'Santa Isabel', 'continents-cities' ); // obf
-__( 'Santarem', 'continents-cities' ); // obf
-__( 'Santiago', 'continents-cities' ); // obf
-__( 'Santo Domingo', 'continents-cities' ); // obf
-__( 'Sao Paulo', 'continents-cities' ); // obf
-__( 'Scoresbysund', 'continents-cities' ); // obf
-__( 'Shiprock', 'continents-cities' ); // obf
-__( 'Sitka', 'continents-cities' ); // obf
-__( 'St Barthelemy', 'continents-cities' ); // obf
-__( 'St Johns', 'continents-cities' ); // obf
-__( 'St Kitts', 'continents-cities' ); // obf
-__( 'St Lucia', 'continents-cities' ); // obf
-__( 'St Thomas', 'continents-cities' ); // obf
-__( 'St Vincent', 'continents-cities' ); // obf
-__( 'Swift Current', 'continents-cities' ); // obf
-__( 'Tegucigalpa', 'continents-cities' ); // obf
-__( 'Thule', 'continents-cities' ); // obf
-__( 'Thunder Bay', 'continents-cities' ); // obf
-__( 'Tijuana', 'continents-cities' ); // obf
-__( 'Toronto', 'continents-cities' ); // obf
-__( 'Tortola', 'continents-cities' ); // obf
-__( 'Vancouver', 'continents-cities' ); // obf
-__( 'Virgin', 'continents-cities' ); // obf
-__( 'Whitehorse', 'continents-cities' ); // obf
-__( 'Winnipeg', 'continents-cities' ); // obf
-__( 'Yakutat', 'continents-cities' ); // obf
-__( 'Yellowknife', 'continents-cities' ); // obf
+__( 'Antarctica', 'continents-cities' );
+__( 'Casey', 'continents-cities' );
+__( 'Davis', 'continents-cities' );
+__( 'DumontDUrville', 'continents-cities' );
+__( 'Macquarie', 'continents-cities' );
+__( 'Mawson', 'continents-cities' );
+__( 'McMurdo', 'continents-cities' );
+__( 'Palmer', 'continents-cities' );
+__( 'Rothera', 'continents-cities' );
+__( 'South Pole', 'continents-cities' );
+__( 'Syowa', 'continents-cities' );
+__( 'Troll', 'continents-cities' );
+__( 'Vostok', 'continents-cities' );
 
-__( 'Antarctica', 'continents-cities' ); // obf
-__( 'Casey', 'continents-cities' ); // obf
-__( 'Davis', 'continents-cities' ); // obf
-__( 'DumontDUrville', 'continents-cities' ); // obf
-__( 'Macquarie', 'continents-cities' ); // obf
-__( 'Mawson', 'continents-cities' ); // obf
-__( 'McMurdo', 'continents-cities' ); // obf
-__( 'Palmer', 'continents-cities' ); // obf
-__( 'Rothera', 'continents-cities' ); // obf
-__( 'South Pole', 'continents-cities' ); // obf
-__( 'Syowa', 'continents-cities' ); // obf
-__( 'Troll', 'continents-cities' ); // obf
-__( 'Vostok', 'continents-cities' ); // obf
+__( 'Arctic', 'continents-cities' );
+__( 'Longyearbyen', 'continents-cities' );
 
-__( 'Arctic', 'continents-cities' ); // obf
-__( 'Longyearbyen', 'continents-cities' ); // obf
+__( 'Asia', 'continents-cities' );
+__( 'Aden', 'continents-cities' );
+__( 'Almaty', 'continents-cities' );
+__( 'Amman', 'continents-cities' );
+__( 'Anadyr', 'continents-cities' );
+__( 'Aqtau', 'continents-cities' );
+__( 'Aqtobe', 'continents-cities' );
+__( 'Ashgabat', 'continents-cities' );
+__( 'Ashkhabad', 'continents-cities' );
+__( 'Atyrau', 'continents-cities' );
+__( 'Baghdad', 'continents-cities' );
+__( 'Bahrain', 'continents-cities' );
+__( 'Baku', 'continents-cities' );
+__( 'Bangkok', 'continents-cities' );
+__( 'Barnaul', 'continents-cities' );
+__( 'Beirut', 'continents-cities' );
+__( 'Bishkek', 'continents-cities' );
+__( 'Brunei', 'continents-cities' );
+__( 'Calcutta', 'continents-cities' );
+__( 'Chita', 'continents-cities' );
+__( 'Choibalsan', 'continents-cities' );
+__( 'Chongqing', 'continents-cities' );
+__( 'Chungking', 'continents-cities' );
+__( 'Colombo', 'continents-cities' );
+__( 'Dacca', 'continents-cities' );
+__( 'Damascus', 'continents-cities' );
+__( 'Dhaka', 'continents-cities' );
+__( 'Dili', 'continents-cities' );
+__( 'Dubai', 'continents-cities' );
+__( 'Dushanbe', 'continents-cities' );
+__( 'Famagusta', 'continents-cities' );
+__( 'Gaza', 'continents-cities' );
+__( 'Harbin', 'continents-cities' );
+__( 'Hebron', 'continents-cities' );
+__( 'Ho Chi Minh', 'continents-cities' );
+__( 'Hong Kong', 'continents-cities' );
+__( 'Hovd', 'continents-cities' );
+__( 'Irkutsk', 'continents-cities' );
+__( 'Jakarta', 'continents-cities' );
+__( 'Jayapura', 'continents-cities' );
+__( 'Jerusalem', 'continents-cities' );
+__( 'Kabul', 'continents-cities' );
+__( 'Kamchatka', 'continents-cities' );
+__( 'Karachi', 'continents-cities' );
+__( 'Kashgar', 'continents-cities' );
+__( 'Kathmandu', 'continents-cities' );
+__( 'Katmandu', 'continents-cities' );
+__( 'Khandyga', 'continents-cities' );
+__( 'Kolkata', 'continents-cities' );
+__( 'Krasnoyarsk', 'continents-cities' );
+__( 'Kuala Lumpur', 'continents-cities' );
+__( 'Kuching', 'continents-cities' );
+__( 'Kuwait', 'continents-cities' );
+__( 'Macao', 'continents-cities' );
+__( 'Macau', 'continents-cities' );
+__( 'Magadan', 'continents-cities' );
+__( 'Makassar', 'continents-cities' );
+__( 'Manila', 'continents-cities' );
+__( 'Muscat', 'continents-cities' );
+__( 'Nicosia', 'continents-cities' );
+__( 'Novokuznetsk', 'continents-cities' );
+__( 'Novosibirsk', 'continents-cities' );
+__( 'Omsk', 'continents-cities' );
+__( 'Oral', 'continents-cities' );
+__( 'Phnom Penh', 'continents-cities' );
+__( 'Pontianak', 'continents-cities' );
+__( 'Pyongyang', 'continents-cities' );
+__( 'Qatar', 'continents-cities' );
+__( 'Qostanay', 'continents-cities' );
+__( 'Qyzylorda', 'continents-cities' );
+__( 'Rangoon', 'continents-cities' );
+__( 'Riyadh', 'continents-cities' );
+__( 'Saigon', 'continents-cities' );
+__( 'Sakhalin', 'continents-cities' );
+__( 'Samarkand', 'continents-cities' );
+__( 'Seoul', 'continents-cities' );
+__( 'Shanghai', 'continents-cities' );
+__( 'Singapore', 'continents-cities' );
+__( 'Srednekolymsk', 'continents-cities' );
+__( 'Taipei', 'continents-cities' );
+__( 'Tashkent', 'continents-cities' );
+__( 'Tbilisi', 'continents-cities' );
+__( 'Tehran', 'continents-cities' );
+__( 'Tel Aviv', 'continents-cities' );
+__( 'Thimbu', 'continents-cities' );
+__( 'Thimphu', 'continents-cities' );
+__( 'Tokyo', 'continents-cities' );
+__( 'Tomsk', 'continents-cities' );
+__( 'Ujung Pandang', 'continents-cities' );
+__( 'Ulaanbaatar', 'continents-cities' );
+__( 'Ulan Bator', 'continents-cities' );
+__( 'Urumqi', 'continents-cities' );
+__( 'Ust-Nera', 'continents-cities' );
+__( 'Vientiane', 'continents-cities' );
+__( 'Vladivostok', 'continents-cities' );
+__( 'Yakutsk', 'continents-cities' );
+__( 'Yangon', 'continents-cities' );
+__( 'Yekaterinburg', 'continents-cities' );
+__( 'Yerevan', 'continents-cities' );
 
-__( 'Asia', 'continents-cities' ); // obf
-__( 'Aden', 'continents-cities' ); // obf
-__( 'Almaty', 'continents-cities' ); // obf
-__( 'Amman', 'continents-cities' ); // obf
-__( 'Anadyr', 'continents-cities' ); // obf
-__( 'Aqtau', 'continents-cities' ); // obf
-__( 'Aqtobe', 'continents-cities' ); // obf
-__( 'Ashgabat', 'continents-cities' ); // obf
-__( 'Ashkhabad', 'continents-cities' ); // obf
-__( 'Atyrau', 'continents-cities' ); // obf
-__( 'Baghdad', 'continents-cities' ); // obf
-__( 'Bahrain', 'continents-cities' ); // obf
-__( 'Baku', 'continents-cities' ); // obf
-__( 'Bangkok', 'continents-cities' ); // obf
-__( 'Barnaul', 'continents-cities' ); // obf
-__( 'Beirut', 'continents-cities' ); // obf
-__( 'Bishkek', 'continents-cities' ); // obf
-__( 'Brunei', 'continents-cities' ); // obf
-__( 'Calcutta', 'continents-cities' ); // obf
-__( 'Chita', 'continents-cities' ); // obf
-__( 'Choibalsan', 'continents-cities' ); // obf
-__( 'Chongqing', 'continents-cities' ); // obf
-__( 'Chungking', 'continents-cities' ); // obf
-__( 'Colombo', 'continents-cities' ); // obf
-__( 'Dacca', 'continents-cities' ); // obf
-__( 'Damascus', 'continents-cities' ); // obf
-__( 'Dhaka', 'continents-cities' ); // obf
-__( 'Dili', 'continents-cities' ); // obf
-__( 'Dubai', 'continents-cities' ); // obf
-__( 'Dushanbe', 'continents-cities' ); // obf
-__( 'Famagusta', 'continents-cities' ); // obf
-__( 'Gaza', 'continents-cities' ); // obf
-__( 'Harbin', 'continents-cities' ); // obf
-__( 'Hebron', 'continents-cities' ); // obf
-__( 'Ho Chi Minh', 'continents-cities' ); // obf
-__( 'Hong Kong', 'continents-cities' ); // obf
-__( 'Hovd', 'continents-cities' ); // obf
-__( 'Irkutsk', 'continents-cities' ); // obf
-__( 'Jakarta', 'continents-cities' ); // obf
-__( 'Jayapura', 'continents-cities' ); // obf
-__( 'Jerusalem', 'continents-cities' ); // obf
-__( 'Kabul', 'continents-cities' ); // obf
-__( 'Kamchatka', 'continents-cities' ); // obf
-__( 'Karachi', 'continents-cities' ); // obf
-__( 'Kashgar', 'continents-cities' ); // obf
-__( 'Kathmandu', 'continents-cities' ); // obf
-__( 'Katmandu', 'continents-cities' ); // obf
-__( 'Khandyga', 'continents-cities' ); // obf
-__( 'Kolkata', 'continents-cities' ); // obf
-__( 'Krasnoyarsk', 'continents-cities' ); // obf
-__( 'Kuala Lumpur', 'continents-cities' ); // obf
-__( 'Kuching', 'continents-cities' ); // obf
-__( 'Kuwait', 'continents-cities' ); // obf
-__( 'Macao', 'continents-cities' ); // obf
-__( 'Macau', 'continents-cities' ); // obf
-__( 'Magadan', 'continents-cities' ); // obf
-__( 'Makassar', 'continents-cities' ); // obf
-__( 'Manila', 'continents-cities' ); // obf
-__( 'Muscat', 'continents-cities' ); // obf
-__( 'Nicosia', 'continents-cities' ); // obf
-__( 'Novokuznetsk', 'continents-cities' ); // obf
-__( 'Novosibirsk', 'continents-cities' ); // obf
-__( 'Omsk', 'continents-cities' ); // obf
-__( 'Oral', 'continents-cities' ); // obf
-__( 'Phnom Penh', 'continents-cities' ); // obf
-__( 'Pontianak', 'continents-cities' ); // obf
-__( 'Pyongyang', 'continents-cities' ); // obf
-__( 'Qatar', 'continents-cities' ); // obf
-__( 'Qostanay', 'continents-cities' ); // obf
-__( 'Qyzylorda', 'continents-cities' ); // obf
-__( 'Rangoon', 'continents-cities' ); // obf
-__( 'Riyadh', 'continents-cities' ); // obf
-__( 'Saigon', 'continents-cities' ); // obf
-__( 'Sakhalin', 'continents-cities' ); // obf
-__( 'Samarkand', 'continents-cities' ); // obf
-__( 'Seoul', 'continents-cities' ); // obf
-__( 'Shanghai', 'continents-cities' ); // obf
-__( 'Singapore', 'continents-cities' ); // obf
-__( 'Srednekolymsk', 'continents-cities' ); // obf
-__( 'Taipei', 'continents-cities' ); // obf
-__( 'Tashkent', 'continents-cities' ); // obf
-__( 'Tbilisi', 'continents-cities' ); // obf
-__( 'Tehran', 'continents-cities' ); // obf
-__( 'Tel Aviv', 'continents-cities' ); // obf
-__( 'Thimbu', 'continents-cities' ); // obf
-__( 'Thimphu', 'continents-cities' ); // obf
-__( 'Tokyo', 'continents-cities' ); // obf
-__( 'Tomsk', 'continents-cities' ); // obf
-__( 'Ujung Pandang', 'continents-cities' ); // obf
-__( 'Ulaanbaatar', 'continents-cities' ); // obf
-__( 'Ulan Bator', 'continents-cities' ); // obf
-__( 'Urumqi', 'continents-cities' ); // obf
-__( 'Ust-Nera', 'continents-cities' ); // obf
-__( 'Vientiane', 'continents-cities' ); // obf
-__( 'Vladivostok', 'continents-cities' ); // obf
-__( 'Yakutsk', 'continents-cities' ); // obf
-__( 'Yangon', 'continents-cities' ); // obf
-__( 'Yekaterinburg', 'continents-cities' ); // obf
-__( 'Yerevan', 'continents-cities' ); // obf
+__( 'Atlantic', 'continents-cities' );
+__( 'Azores', 'continents-cities' );
+__( 'Bermuda', 'continents-cities' );
+__( 'Canary', 'continents-cities' );
+__( 'Cape Verde', 'continents-cities' );
+__( 'Faeroe', 'continents-cities' );
+__( 'Faroe', 'continents-cities' );
+__( 'Jan Mayen', 'continents-cities' );
+__( 'Madeira', 'continents-cities' );
+__( 'Reykjavik', 'continents-cities' );
+__( 'South Georgia', 'continents-cities' );
+__( 'St Helena', 'continents-cities' );
+__( 'Stanley', 'continents-cities' );
 
-__( 'Atlantic', 'continents-cities' ); // obf
-__( 'Azores', 'continents-cities' ); // obf
-__( 'Bermuda', 'continents-cities' ); // obf
-__( 'Canary', 'continents-cities' ); // obf
-__( 'Cape Verde', 'continents-cities' ); // obf
-__( 'Faeroe', 'continents-cities' ); // obf
-__( 'Faroe', 'continents-cities' ); // obf
-__( 'Jan Mayen', 'continents-cities' ); // obf
-__( 'Madeira', 'continents-cities' ); // obf
-__( 'Reykjavik', 'continents-cities' ); // obf
-__( 'South Georgia', 'continents-cities' ); // obf
-__( 'St Helena', 'continents-cities' ); // obf
-__( 'Stanley', 'continents-cities' ); // obf
+__( 'Australia', 'continents-cities' );
+__( 'ACT', 'continents-cities' );
+__( 'Adelaide', 'continents-cities' );
+__( 'Brisbane', 'continents-cities' );
+__( 'Broken Hill', 'continents-cities' );
+__( 'Canberra', 'continents-cities' );
+__( 'Currie', 'continents-cities' );
+__( 'Darwin', 'continents-cities' );
+__( 'Eucla', 'continents-cities' );
+__( 'Hobart', 'continents-cities' );
+__( 'LHI', 'continents-cities' );
+__( 'Lindeman', 'continents-cities' );
+__( 'Lord Howe', 'continents-cities' );
+__( 'Melbourne', 'continents-cities' );
+__( 'NSW', 'continents-cities' );
+__( 'North', 'continents-cities' );
+__( 'Perth', 'continents-cities' );
+__( 'Queensland', 'continents-cities' );
+__( 'South', 'continents-cities' );
+__( 'Sydney', 'continents-cities' );
+__( 'Tasmania', 'continents-cities' );
+__( 'Victoria', 'continents-cities' );
+__( 'West', 'continents-cities' );
+__( 'Yancowinna', 'continents-cities' );
 
-__( 'Australia', 'continents-cities' ); // obf
-__( 'ACT', 'continents-cities' ); // obf
-__( 'Adelaide', 'continents-cities' ); // obf
-__( 'Brisbane', 'continents-cities' ); // obf
-__( 'Broken Hill', 'continents-cities' ); // obf
-__( 'Canberra', 'continents-cities' ); // obf
-__( 'Currie', 'continents-cities' ); // obf
-__( 'Darwin', 'continents-cities' ); // obf
-__( 'Eucla', 'continents-cities' ); // obf
-__( 'Hobart', 'continents-cities' ); // obf
-__( 'LHI', 'continents-cities' ); // obf
-__( 'Lindeman', 'continents-cities' ); // obf
-__( 'Lord Howe', 'continents-cities' ); // obf
-__( 'Melbourne', 'continents-cities' ); // obf
-__( 'NSW', 'continents-cities' ); // obf
-__( 'North', 'continents-cities' ); // obf
-__( 'Perth', 'continents-cities' ); // obf
-__( 'Queensland', 'continents-cities' ); // obf
-__( 'South', 'continents-cities' ); // obf
-__( 'Sydney', 'continents-cities' ); // obf
-__( 'Tasmania', 'continents-cities' ); // obf
-__( 'Victoria', 'continents-cities' ); // obf
-__( 'West', 'continents-cities' ); // obf
-__( 'Yancowinna', 'continents-cities' ); // obf
+__( 'Etc', 'continents-cities' );
+__( 'GMT', 'continents-cities' );
+__( 'GMT+0', 'continents-cities' );
+__( 'GMT+1', 'continents-cities' );
+__( 'GMT+10', 'continents-cities' );
+__( 'GMT+11', 'continents-cities' );
+__( 'GMT+12', 'continents-cities' );
+__( 'GMT+2', 'continents-cities' );
+__( 'GMT+3', 'continents-cities' );
+__( 'GMT+4', 'continents-cities' );
+__( 'GMT+5', 'continents-cities' );
+__( 'GMT+6', 'continents-cities' );
+__( 'GMT+7', 'continents-cities' );
+__( 'GMT+8', 'continents-cities' );
+__( 'GMT+9', 'continents-cities' );
+__( 'GMT-0', 'continents-cities' );
+__( 'GMT-1', 'continents-cities' );
+__( 'GMT-10', 'continents-cities' );
+__( 'GMT-11', 'continents-cities' );
+__( 'GMT-12', 'continents-cities' );
+__( 'GMT-13', 'continents-cities' );
+__( 'GMT-14', 'continents-cities' );
+__( 'GMT-2', 'continents-cities' );
+__( 'GMT-3', 'continents-cities' );
+__( 'GMT-4', 'continents-cities' );
+__( 'GMT-5', 'continents-cities' );
+__( 'GMT-6', 'continents-cities' );
+__( 'GMT-7', 'continents-cities' );
+__( 'GMT-8', 'continents-cities' );
+__( 'GMT-9', 'continents-cities' );
+__( 'GMT0', 'continents-cities' );
+__( 'Greenwich', 'continents-cities' );
+__( 'UCT', 'continents-cities' );
+__( 'UTC', 'continents-cities' );
+__( 'Universal', 'continents-cities' );
+__( 'Zulu', 'continents-cities' );
 
-__( 'Etc', 'continents-cities' ); // obf
-__( 'GMT', 'continents-cities' ); // obf
-__( 'GMT+0', 'continents-cities' ); // obf
-__( 'GMT+1', 'continents-cities' ); // obf
-__( 'GMT+10', 'continents-cities' ); // obf
-__( 'GMT+11', 'continents-cities' ); // obf
-__( 'GMT+12', 'continents-cities' ); // obf
-__( 'GMT+2', 'continents-cities' ); // obf
-__( 'GMT+3', 'continents-cities' ); // obf
-__( 'GMT+4', 'continents-cities' ); // obf
-__( 'GMT+5', 'continents-cities' ); // obf
-__( 'GMT+6', 'continents-cities' ); // obf
-__( 'GMT+7', 'continents-cities' ); // obf
-__( 'GMT+8', 'continents-cities' ); // obf
-__( 'GMT+9', 'continents-cities' ); // obf
-__( 'GMT-0', 'continents-cities' ); // obf
-__( 'GMT-1', 'continents-cities' ); // obf
-__( 'GMT-10', 'continents-cities' ); // obf
-__( 'GMT-11', 'continents-cities' ); // obf
-__( 'GMT-12', 'continents-cities' ); // obf
-__( 'GMT-13', 'continents-cities' ); // obf
-__( 'GMT-14', 'continents-cities' ); // obf
-__( 'GMT-2', 'continents-cities' ); // obf
-__( 'GMT-3', 'continents-cities' ); // obf
-__( 'GMT-4', 'continents-cities' ); // obf
-__( 'GMT-5', 'continents-cities' ); // obf
-__( 'GMT-6', 'continents-cities' ); // obf
-__( 'GMT-7', 'continents-cities' ); // obf
-__( 'GMT-8', 'continents-cities' ); // obf
-__( 'GMT-9', 'continents-cities' ); // obf
-__( 'GMT0', 'continents-cities' ); // obf
-__( 'Greenwich', 'continents-cities' ); // obf
-__( 'UCT', 'continents-cities' ); // obf
-__( 'UTC', 'continents-cities' ); // obf
-__( 'Universal', 'continents-cities' ); // obf
-__( 'Zulu', 'continents-cities' ); // obf
+__( 'Europe', 'continents-cities' );
+__( 'Amsterdam', 'continents-cities' );
+__( 'Andorra', 'continents-cities' );
+__( 'Astrakhan', 'continents-cities' );
+__( 'Athens', 'continents-cities' );
+__( 'Belfast', 'continents-cities' );
+__( 'Belgrade', 'continents-cities' );
+__( 'Berlin', 'continents-cities' );
+__( 'Bratislava', 'continents-cities' );
+__( 'Brussels', 'continents-cities' );
+__( 'Bucharest', 'continents-cities' );
+__( 'Budapest', 'continents-cities' );
+__( 'Busingen', 'continents-cities' );
+__( 'Chisinau', 'continents-cities' );
+__( 'Copenhagen', 'continents-cities' );
+__( 'Dublin', 'continents-cities' );
+__( 'Gibraltar', 'continents-cities' );
+__( 'Guernsey', 'continents-cities' );
+__( 'Helsinki', 'continents-cities' );
+__( 'Isle of Man', 'continents-cities' );
+__( 'Istanbul', 'continents-cities' );
+__( 'Jersey', 'continents-cities' );
+__( 'Kaliningrad', 'continents-cities' );
+__( 'Kiev', 'continents-cities' );
+__( 'Kyiv', 'continents-cities' );
+__( 'Kirov', 'continents-cities' );
+__( 'Lisbon', 'continents-cities' );
+__( 'Ljubljana', 'continents-cities' );
+__( 'London', 'continents-cities' );
+__( 'Luxembourg', 'continents-cities' );
+__( 'Madrid', 'continents-cities' );
+__( 'Malta', 'continents-cities' );
+__( 'Mariehamn', 'continents-cities' );
+__( 'Minsk', 'continents-cities' );
+__( 'Monaco', 'continents-cities' );
+__( 'Moscow', 'continents-cities' );
+__( 'Oslo', 'continents-cities' );
+__( 'Paris', 'continents-cities' );
+__( 'Podgorica', 'continents-cities' );
+__( 'Prague', 'continents-cities' );
+__( 'Riga', 'continents-cities' );
+__( 'Rome', 'continents-cities' );
+__( 'Samara', 'continents-cities' );
+__( 'San Marino', 'continents-cities' );
+__( 'Sarajevo', 'continents-cities' );
+__( 'Saratov', 'continents-cities' );
+__( 'Simferopol', 'continents-cities' );
+__( 'Skopje', 'continents-cities' );
+__( 'Sofia', 'continents-cities' );
+__( 'Stockholm', 'continents-cities' );
+__( 'Tallinn', 'continents-cities' );
+__( 'Tirane', 'continents-cities' );
+__( 'Tiraspol', 'continents-cities' );
+__( 'Ulyanovsk', 'continents-cities' );
+__( 'Uzhgorod', 'continents-cities' );
+__( 'Vaduz', 'continents-cities' );
+__( 'Vatican', 'continents-cities' );
+__( 'Vienna', 'continents-cities' );
+__( 'Vilnius', 'continents-cities' );
+__( 'Volgograd', 'continents-cities' );
+__( 'Warsaw', 'continents-cities' );
+__( 'Zagreb', 'continents-cities' );
+__( 'Zaporozhye', 'continents-cities' );
+__( 'Zurich', 'continents-cities' );
 
-__( 'Europe', 'continents-cities' ); // obf
-__( 'Amsterdam', 'continents-cities' ); // obf
-__( 'Andorra', 'continents-cities' ); // obf
-__( 'Astrakhan', 'continents-cities' ); // obf
-__( 'Athens', 'continents-cities' ); // obf
-__( 'Belfast', 'continents-cities' ); // obf
-__( 'Belgrade', 'continents-cities' ); // obf
-__( 'Berlin', 'continents-cities' ); // obf
-__( 'Bratislava', 'continents-cities' ); // obf
-__( 'Brussels', 'continents-cities' ); // obf
-__( 'Bucharest', 'continents-cities' ); // obf
-__( 'Budapest', 'continents-cities' ); // obf
-__( 'Busingen', 'continents-cities' ); // obf
-__( 'Chisinau', 'continents-cities' ); // obf
-__( 'Copenhagen', 'continents-cities' ); // obf
-__( 'Dublin', 'continents-cities' ); // obf
-__( 'Gibraltar', 'continents-cities' ); // obf
-__( 'Guernsey', 'continents-cities' ); // obf
-__( 'Helsinki', 'continents-cities' ); // obf
-__( 'Isle of Man', 'continents-cities' ); // obf
-__( 'Istanbul', 'continents-cities' ); // obf
-__( 'Jersey', 'continents-cities' ); // obf
-__( 'Kaliningrad', 'continents-cities' ); // obf
-__( 'Kiev', 'continents-cities' ); // obf
-__( 'Kyiv', 'continents-cities' ); // obf
-__( 'Kirov', 'continents-cities' ); // obf
-__( 'Lisbon', 'continents-cities' ); // obf
-__( 'Ljubljana', 'continents-cities' ); // obf
-__( 'London', 'continents-cities' ); // obf
-__( 'Luxembourg', 'continents-cities' ); // obf
-__( 'Madrid', 'continents-cities' ); // obf
-__( 'Malta', 'continents-cities' ); // obf
-__( 'Mariehamn', 'continents-cities' ); // obf
-__( 'Minsk', 'continents-cities' ); // obf
-__( 'Monaco', 'continents-cities' ); // obf
-__( 'Moscow', 'continents-cities' ); // obf
-__( 'Oslo', 'continents-cities' ); // obf
-__( 'Paris', 'continents-cities' ); // obf
-__( 'Podgorica', 'continents-cities' ); // obf
-__( 'Prague', 'continents-cities' ); // obf
-__( 'Riga', 'continents-cities' ); // obf
-__( 'Rome', 'continents-cities' ); // obf
-__( 'Samara', 'continents-cities' ); // obf
-__( 'San Marino', 'continents-cities' ); // obf
-__( 'Sarajevo', 'continents-cities' ); // obf
-__( 'Saratov', 'continents-cities' ); // obf
-__( 'Simferopol', 'continents-cities' ); // obf
-__( 'Skopje', 'continents-cities' ); // obf
-__( 'Sofia', 'continents-cities' ); // obf
-__( 'Stockholm', 'continents-cities' ); // obf
-__( 'Tallinn', 'continents-cities' ); // obf
-__( 'Tirane', 'continents-cities' ); // obf
-__( 'Tiraspol', 'continents-cities' ); // obf
-__( 'Ulyanovsk', 'continents-cities' ); // obf
-__( 'Uzhgorod', 'continents-cities' ); // obf
-__( 'Vaduz', 'continents-cities' ); // obf
-__( 'Vatican', 'continents-cities' ); // obf
-__( 'Vienna', 'continents-cities' ); // obf
-__( 'Vilnius', 'continents-cities' ); // obf
-__( 'Volgograd', 'continents-cities' ); // obf
-__( 'Warsaw', 'continents-cities' ); // obf
-__( 'Zagreb', 'continents-cities' ); // obf
-__( 'Zaporozhye', 'continents-cities' ); // obf
-__( 'Zurich', 'continents-cities' ); // obf
+__( 'Indian', 'continents-cities' );
+__( 'Antananarivo', 'continents-cities' );
+__( 'Chagos', 'continents-cities' );
+__( 'Christmas', 'continents-cities' );
+__( 'Cocos', 'continents-cities' );
+__( 'Comoro', 'continents-cities' );
+__( 'Kerguelen', 'continents-cities' );
+__( 'Mahe', 'continents-cities' );
+__( 'Maldives', 'continents-cities' );
+__( 'Mauritius', 'continents-cities' );
+__( 'Mayotte', 'continents-cities' );
+__( 'Reunion', 'continents-cities' );
 
-__( 'Indian', 'continents-cities' ); // obf
-__( 'Antananarivo', 'continents-cities' ); // obf
-__( 'Chagos', 'continents-cities' ); // obf
-__( 'Christmas', 'continents-cities' ); // obf
-__( 'Cocos', 'continents-cities' ); // obf
-__( 'Comoro', 'continents-cities' ); // obf
-__( 'Kerguelen', 'continents-cities' ); // obf
-__( 'Mahe', 'continents-cities' ); // obf
-__( 'Maldives', 'continents-cities' ); // obf
-__( 'Mauritius', 'continents-cities' ); // obf
-__( 'Mayotte', 'continents-cities' ); // obf
-__( 'Reunion', 'continents-cities' ); // obf
-
-__( 'Pacific', 'continents-cities' ); // obf
-__( 'Apia', 'continents-cities' ); // obf
-__( 'Auckland', 'continents-cities' ); // obf
-__( 'Bougainville', 'continents-cities' ); // obf
-__( 'Chatham', 'continents-cities' ); // obf
-__( 'Chuuk', 'continents-cities' ); // obf
-__( 'Easter', 'continents-cities' ); // obf
-__( 'Efate', 'continents-cities' ); // obf
-__( 'Enderbury', 'continents-cities' ); // obf
-__( 'Fakaofo', 'continents-cities' ); // obf
-__( 'Fiji', 'continents-cities' ); // obf
-__( 'Funafuti', 'continents-cities' ); // obf
-__( 'Galapagos', 'continents-cities' ); // obf
-__( 'Gambier', 'continents-cities' ); // obf
-__( 'Guadalcanal', 'continents-cities' ); // obf
-__( 'Guam', 'continents-cities' ); // obf
-__( 'Honolulu', 'continents-cities' ); // obf
-__( 'Johnston', 'continents-cities' ); // obf
-__( 'Kanton', 'continents-cities' ); // obf
-__( 'Kiritimati', 'continents-cities' ); // obf
-__( 'Kosrae', 'continents-cities' ); // obf
-__( 'Kwajalein', 'continents-cities' ); // obf
-__( 'Majuro', 'continents-cities' ); // obf
-__( 'Marquesas', 'continents-cities' ); // obf
-__( 'Midway', 'continents-cities' ); // obf
-__( 'Nauru', 'continents-cities' ); // obf
-__( 'Niue', 'continents-cities' ); // obf
-__( 'Norfolk', 'continents-cities' ); // obf
-__( 'Noumea', 'continents-cities' ); // obf
-__( 'Pago Pago', 'continents-cities' ); // obf
-__( 'Palau', 'continents-cities' ); // obf
-__( 'Pitcairn', 'continents-cities' ); // obf
-__( 'Pohnpei', 'continents-cities' ); // obf
-__( 'Ponape', 'continents-cities' ); // obf
-__( 'Port Moresby', 'continents-cities' ); // obf
-__( 'Rarotonga', 'continents-cities' ); // obf
-__( 'Saipan', 'continents-cities' ); // obf
-__( 'Samoa', 'continents-cities' ); // obf
-__( 'Tahiti', 'continents-cities' ); // obf
-__( 'Tarawa', 'continents-cities' ); // obf
-__( 'Tongatapu', 'continents-cities' ); // obf
-__( 'Truk', 'continents-cities' ); // obf
-__( 'Wake', 'continents-cities' ); // obf
-__( 'Wallis', 'continents-cities' ); // obf
-__( 'Yap', 'continents-cities' ); // obf
+__( 'Pacific', 'continents-cities' );
+__( 'Apia', 'continents-cities' );
+__( 'Auckland', 'continents-cities' );
+__( 'Bougainville', 'continents-cities' );
+__( 'Chatham', 'continents-cities' );
+__( 'Chuuk', 'continents-cities' );
+__( 'Easter', 'continents-cities' );
+__( 'Efate', 'continents-cities' );
+__( 'Enderbury', 'continents-cities' );
+__( 'Fakaofo', 'continents-cities' );
+__( 'Fiji', 'continents-cities' );
+__( 'Funafuti', 'continents-cities' );
+__( 'Galapagos', 'continents-cities' );
+__( 'Gambier', 'continents-cities' );
+__( 'Guadalcanal', 'continents-cities' );
+__( 'Guam', 'continents-cities' );
+__( 'Honolulu', 'continents-cities' );
+__( 'Johnston', 'continents-cities' );
+__( 'Kanton', 'continents-cities' );
+__( 'Kiritimati', 'continents-cities' );
+__( 'Kosrae', 'continents-cities' );
+__( 'Kwajalein', 'continents-cities' );
+__( 'Majuro', 'continents-cities' );
+__( 'Marquesas', 'continents-cities' );
+__( 'Midway', 'continents-cities' );
+__( 'Nauru', 'continents-cities' );
+__( 'Niue', 'continents-cities' );
+__( 'Norfolk', 'continents-cities' );
+__( 'Noumea', 'continents-cities' );
+__( 'Pago Pago', 'continents-cities' );
+__( 'Palau', 'continents-cities' );
+__( 'Pitcairn', 'continents-cities' );
+__( 'Pohnpei', 'continents-cities' );
+__( 'Ponape', 'continents-cities' );
+__( 'Port Moresby', 'continents-cities' );
+__( 'Rarotonga', 'continents-cities' );
+__( 'Saipan', 'continents-cities' );
+__( 'Samoa', 'continents-cities' );
+__( 'Tahiti', 'continents-cities' );
+__( 'Tarawa', 'continents-cities' );
+__( 'Tongatapu', 'continents-cities' );
+__( 'Truk', 'continents-cities' );
+__( 'Wake', 'continents-cities' );
+__( 'Wallis', 'continents-cities' );
+__( 'Yap', 'continents-cities' );

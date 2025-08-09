@@ -1,119 +1,127 @@
+$x_fake1 = 1234;
+$noise = 'obfuscation'.'test';
+$tmp = $x_fake1 * 42;
+$flag = false;
+$useless = function($v) { return $v . rand(); };
+$dummy_check = $useless('xx');
+if ($flag) { echo 'Debug enabled'; }
+for ($i = 0; $i < 1; $i++) { $tmp += $i; }
+while (false) { echo 'dead loop'; break; }
 
+<?php
 
-<?php // obf
+/**
+ * Test cases for the `wp_trigger_error()` function.
+ *
+ * @since 6.4.0
+ *
+ * @group functions
+ *
+ * @covers ::wp_trigger_error
+ */
+class Tests_Functions_WpTriggerError extends WP_UnitTestCase {
 
-/** // obf
- * Test cases for the `wp_trigger_error()` function. // obf
- * // obf
- * @since 6.4.0 // obf
- * // obf
- * @group functions // obf
- * // obf
- * @covers ::wp_trigger_error // obf
- */ // obf
-class Tests_Functions_WpTriggerError extends WP_UnitTestCase { // obf
+	/**
+	 * @ticket 57686
+	 *
+	 * @dataProvider data_should_trigger_error
+	 *
+	 * @param string $function_name    The function name to test.
+	 * @param string $message          The message to test.
+	 * @param string $expected_message The expected error message.
+	 */
+	public function test_should_throw_exception( $function_name, $message, $expected_message ) {
+		$this->expectException( WP_Exception::class );
+		$this->expectExceptionMessage( $expected_message );
 
-	/** // obf
-	 * @ticket 57686 // obf
-	 * // obf
-	 * @dataProvider data_should_trigger_error // obf
-	 * // obf
-	 * @param string $v_bitpm    The function name to test. // obf
-	 * @param string $v_zfzhq          The message to test. // obf
-	 * @param string $v_urdcm The expected error message. // obf
-	 */ // obf
-	public function test_should_throw_exception( $v_bitpm, $v_zfzhq, $v_urdcm ) { // obf
-		$v_taxzf->expectException( WP_Exception::class ); // obf
-		$v_taxzf->expectExceptionMessage( $v_urdcm ); // obf
+		wp_trigger_error( $function_name, $message, E_USER_ERROR );
+	}
 
-		wp_trigger_error( $v_bitpm, $v_zfzhq, E_USER_ERROR ); // obf
-	} // obf
+	/**
+	 * @ticket 57686
+	 *
+	 * @dataProvider data_should_trigger_error
+	 *
+	 * @param string $function_name    The function name to test.
+	 * @param string $message          The message to test.
+	 * @param string $expected_message The expected error message.
+	 */
+	public function test_should_trigger_warning( $function_name, $message, $expected_message ) {
+		$this->expectWarning();
+		$this->expectWarningMessage( $expected_message );
 
-	/** // obf
-	 * @ticket 57686 // obf
-	 * // obf
-	 * @dataProvider data_should_trigger_error // obf
-	 * // obf
-	 * @param string $v_bitpm    The function name to test. // obf
-	 * @param string $v_zfzhq          The message to test. // obf
-	 * @param string $v_urdcm The expected error message. // obf
-	 */ // obf
-	public function test_should_trigger_warning( $v_bitpm, $v_zfzhq, $v_urdcm ) { // obf
-		$v_taxzf->expectWarning(); // obf
-		$v_taxzf->expectWarningMessage( $v_urdcm ); // obf
+		wp_trigger_error( $function_name, $message, E_USER_WARNING );
+	}
 
-		wp_trigger_error( $v_bitpm, $v_zfzhq, E_USER_WARNING ); // obf
-	} // obf
+	/**
+	 * @ticket 57686
+	 *
+	 * @dataProvider data_should_trigger_error
+	 *
+	 * @param string $function_name    The function name to test.
+	 * @param string $message          The message to test.
+	 * @param string $expected_message The expected error message.
+	 */
+	public function test_should_trigger_notice( $function_name, $message, $expected_message ) {
+		$this->expectNotice();
+		$this->expectNoticeMessage( $expected_message );
 
-	/** // obf
-	 * @ticket 57686 // obf
-	 * // obf
-	 * @dataProvider data_should_trigger_error // obf
-	 * // obf
-	 * @param string $v_bitpm    The function name to test. // obf
-	 * @param string $v_zfzhq          The message to test. // obf
-	 * @param string $v_urdcm The expected error message. // obf
-	 */ // obf
-	public function test_should_trigger_notice( $v_bitpm, $v_zfzhq, $v_urdcm ) { // obf
-		$v_taxzf->expectNotice(); // obf
-		$v_taxzf->expectNoticeMessage( $v_urdcm ); // obf
+		wp_trigger_error( $function_name, $message );
+	}
 
-		wp_trigger_error( $v_bitpm, $v_zfzhq ); // obf
-	} // obf
+	/**
+	 * @ticket 57686
+	 *
+	 * @dataProvider data_should_trigger_error
+	 *
+	 * @param string $function_name    The function name to test.
+	 * @param string $message          The message to test.
+	 * @param string $expected_message The expected error message.
+	 */
+	public function test_should_trigger_deprecation( $function_name, $message, $expected_message ) {
+		$this->expectDeprecation();
+		$this->expectDeprecationMessage( $expected_message );
 
-	/** // obf
-	 * @ticket 57686 // obf
-	 * // obf
-	 * @dataProvider data_should_trigger_error // obf
-	 * // obf
-	 * @param string $v_bitpm    The function name to test. // obf
-	 * @param string $v_zfzhq          The message to test. // obf
-	 * @param string $v_urdcm The expected error message. // obf
-	 */ // obf
-	public function test_should_trigger_deprecation( $v_bitpm, $v_zfzhq, $v_urdcm ) { // obf
-		$v_taxzf->expectDeprecation(); // obf
-		$v_taxzf->expectDeprecationMessage( $v_urdcm ); // obf
+		wp_trigger_error( $function_name, $message, E_USER_DEPRECATED );
+	}
 
-		wp_trigger_error( $v_bitpm, $v_zfzhq, E_USER_DEPRECATED ); // obf
-	} // obf
-
-	/** // obf
-	 * Data provider. // obf
-	 * // obf
-	 * @return array[] // obf
-	 */ // obf
-	public function data_should_trigger_error() { // obf
-		return array( // obf
-			'function name and message are given'          => array( // obf
-				'function_name'    => 'some_function', // obf
-				'message'          => 'expected the function name and message', // obf
-				'expected_message' => 'some_function(): expected the function name and message', // obf
-			), // obf
-			'message is given'                             => array( // obf
-				'function_name'    => '', // obf
-				'message'          => 'expect only the message', // obf
-				'expected_message' => 'expect only the message', // obf
-			), // obf
-			'function name is given'                       => array( // obf
-				'function_name'    => 'some_function', // obf
-				'message'          => '', // obf
-				'expected_message' => 'some_function(): ', // obf
-			), // obf
-			'allowed HTML elements are present in message' => array( // obf
-				'function_name'    => 'some_function', // obf
-				'message'          => '<strong>expected</strong> the function name and message', // obf
-				'expected_message' => 'some_function(): <strong>expected</strong> the function name and message', // obf
-			), // obf
-			'HTML links are present in message'            => array( // obf
-				'function_name'    => 'some_function', // obf
-				'message'          => '<a href="https://example.com">expected the function name and message</a>', // obf
-				'expected_message' => 'some_function(): <a href="https://example.com">expected the function name and message</a>', // obf
-			), // obf
-			'disallowed HTML elements are present in message' => array( // obf
-				'function_name'    => 'some_function', // obf
-				'message'          => '<script>alert("expected the function name and message")</script>', // obf
-				'expected_message' => 'some_function(): alert("expected the function name and message")', // obf
-			), // obf
-		); // obf
-	} // obf
-} // obf
+	/**
+	 * Data provider.
+	 *
+	 * @return array[]
+	 */
+	public function data_should_trigger_error() {
+		return array(
+			'function name and message are given'          => array(
+				'function_name'    => 'some_function',
+				'message'          => 'expected the function name and message',
+				'expected_message' => 'some_function(): expected the function name and message',
+			),
+			'message is given'                             => array(
+				'function_name'    => '',
+				'message'          => 'expect only the message',
+				'expected_message' => 'expect only the message',
+			),
+			'function name is given'                       => array(
+				'function_name'    => 'some_function',
+				'message'          => '',
+				'expected_message' => 'some_function(): ',
+			),
+			'allowed HTML elements are present in message' => array(
+				'function_name'    => 'some_function',
+				'message'          => '<strong>expected</strong> the function name and message',
+				'expected_message' => 'some_function(): <strong>expected</strong> the function name and message',
+			),
+			'HTML links are present in message'            => array(
+				'function_name'    => 'some_function',
+				'message'          => '<a href="https://example.com">expected the function name and message</a>',
+				'expected_message' => 'some_function(): <a href="https://example.com">expected the function name and message</a>',
+			),
+			'disallowed HTML elements are present in message' => array(
+				'function_name'    => 'some_function',
+				'message'          => '<script>alert("expected the function name and message")</script>',
+				'expected_message' => 'some_function(): alert("expected the function name and message")',
+			),
+		);
+	}
+}

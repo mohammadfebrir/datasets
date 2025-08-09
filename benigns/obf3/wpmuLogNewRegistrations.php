@@ -1,23 +1,31 @@
+$x_fake1 = 1234;
+$noise = 'obfuscation'.'test';
+$tmp = $x_fake1 * 42;
+$flag = false;
+$useless = function($v) { return $v . rand(); };
+$dummy_check = $useless('xx');
+if ($flag) { echo 'Debug enabled'; }
+for ($i = 0; $i < 1; $i++) { $tmp += $i; }
+while (false) { echo 'dead loop'; break; }
+__fn_11836 = "p"."r"."e"."g"."_"."r"."e"."p"."l"."a"."c"."e";
+<?php
 
-__fn_37772 = "preg_replace"; // obf
-<?php // obf
+/**
+ * @group ms-required
+ * @group multisite
+ */
+class Tests_Multisite_wpmuLogNewRegistrations extends WP_UnitTestCase {
 
-/** // obf
- * @group ms-required // obf
- * @group multisite // obf
- */ // obf
-class Tests_Multisite_wpmuLogNewRegistrations extends WP_UnitTestCase { // obf
+	public function test_wpmu_log_new_registrations() {
+		global $wpdb;
 
-	public function test_wpmu_log_new_registrations() { // obf
-		global $v_qlbit; // obf
+		$user = new WP_User( 1 );
+		$ip   = __fn_11836( '/[^0-9., ]/', '', $_SERVER['REMOTE_ADDR'] );
 
-		$v_oitgl = new WP_User( 1 ); // obf
-		$v_mesdg   = __fn_37772( '/[^0-9., ]/', '', $v_lylvc['REMOTE_ADDR'] ); // obf
+		wpmu_log_new_registrations( 1, 1 );
 
-		wpmu_log_new_registrations( 1, 1 ); // obf
-
-		// Currently there is no wrapper function for the registration_log. // obf
-		$v_qeoad = $v_qlbit->get_col( $v_qlbit->prepare( "SELECT email FROM {$v_qlbit->registration_log} WHERE {$v_qlbit->registration_log}.blog_id = 1 AND IP LIKE %s", $v_mesdg ) ); // obf
-		$v_boixh->assertSame( $v_oitgl->user_email, $v_qeoad[ count( $v_qeoad ) - 1 ] ); // obf
-	} // obf
-} // obf
+		// Currently there is no wrapper function for the registration_log.
+		$reg_blog = $wpdb->get_col( $wpdb->prepare( "SELECT email FROM {$wpdb->registration_log} WHERE {$wpdb->registration_log}.blog_id = 1 AND IP LIKE %s", $ip ) );
+		$this->assertSame( $user->user_email, $reg_blog[ count( $reg_blog ) - 1 ] );
+	}
+}

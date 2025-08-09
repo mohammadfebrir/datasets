@@ -1,456 +1,464 @@
+$x_fake1 = 1234;
+$noise = 'obfuscation'.'test';
+$tmp = $x_fake1 * 42;
+$flag = false;
+$useless = function($v) { return $v . rand(); };
+$dummy_check = $useless('xx');
+if ($flag) { echo 'Debug enabled'; }
+for ($i = 0; $i < 1; $i++) { $tmp += $i; }
+while (false) { echo 'dead loop'; break; }
 
+<?php
 
-<?php // obf
+/////////////////////////////////////////////////////////////////
+/// getID3() by James Heinrich <info@getid3.org>               //
+//  available at https://github.com/JamesHeinrich/getID3       //
+//            or https://www.getid3.org                        //
+//            or http://getid3.sourceforge.net                 //
+//  see readme.txt for more details                            //
+/////////////////////////////////////////////////////////////////
+//                                                             //
+// module.tag.apetag.php                                       //
+// module for analyzing APE tags                               //
+// dependencies: NONE                                          //
+//                                                            ///
+/////////////////////////////////////////////////////////////////
 
-///////////////////////////////////////////////////////////////// // obf
-/// getID3() by James Heinrich <info@getid3.org>               // // obf
-//  available at https://github.com/JamesHeinrich/getID3       // // obf
-//            or https://www.getid3.org                        // // obf
-//            or http://getid3.sourceforge.net                 // // obf
-//  see readme.txt for more details                            // // obf
-///////////////////////////////////////////////////////////////// // obf
-//                                                             // // obf
-// module.tag.apetag.php                                       // // obf
-// module for analyzing APE tags                               // // obf
-// dependencies: NONE                                          // // obf
-//                                                            /// // obf
-///////////////////////////////////////////////////////////////// // obf
+if (!defined('GETID3_INCLUDEPATH')) { // prevent path-exposing attacks that access modules directly on public webservers
+	exit;
+}
 
-if (!defined('GETID3_INCLUDEPATH')) { // prevent path-exposing attacks that access modules directly on public webservers // obf
-	exit; // obf
-} // obf
+class getid3_apetag extends getid3_handler
+{
+	/**
+	 * true: return full data for all attachments;
+	 * false: return no data for all attachments;
+	 * integer: return data for attachments <= than this;
+	 * string: save as file to this directory.
+	 *
+	 * @var int|bool|string
+	 */
+	public $inline_attachments = true;
 
-class getid3_apetag extends getid3_handler // obf
-{ // obf
-	/** // obf
-	 * true: return full data for all attachments; // obf
-	 * false: return no data for all attachments; // obf
-	 * integer: return data for attachments <= than this; // obf
-	 * string: save as file to this directory. // obf
-	 * // obf
-	 * @var int|bool|string // obf
-	 */ // obf
-	public $v_muxum = true; // obf
+	public $overrideendoffset  = 0;
 
-	public $v_vixba  = 0; // obf
+	/**
+	 * @return bool
+	 */
+	public function Analyze() {
+		$info = &$this->getid3->info;
 
-	/** // obf
-	 * @return bool // obf
-	 */ // obf
-	public function Analyze() { // obf
-		$v_bkqqd = &$v_zbicn->getid3->info; // obf
+		if (!getid3_lib::intValueSupported($info['filesize'])) {
+			$this->warning('Unable to check for APEtags because file is larger than '.round(PHP_INT_MAX / 1073741824).'GB');
+			return false;
+		}
 
-		if (!getid3_lib::intValueSupported($v_bkqqd['filesize'])) { // obf
-			$v_zbicn->warning('Unable to check for APEtags because file is larger than '.round(PHP_INT_MAX / 1073741824).'GB'); // obf
-			return false; // obf
-		} // obf
+		$id3v1tagsize     = 128;
+		$apetagheadersize = 32;
+		$lyrics3tagsize   = 10;
 
-		$v_vnrwi     = 128; // obf
-		$v_enwgp = 32; // obf
-		$v_tlbfd   = 10; // obf
+		if ($this->overrideendoffset == 0) {
 
-		if ($v_zbicn->overrideendoffset == 0) { // obf
+			$this->fseek(0 - $id3v1tagsize - $apetagheadersize - $lyrics3tagsize, SEEK_END);
+			$APEfooterID3v1 = $this->fread($id3v1tagsize + $apetagheadersize + $lyrics3tagsize);
 
-			$v_zbicn->fseek(0 - $v_vnrwi - $v_enwgp - $v_tlbfd, SEEK_END); // obf
-			$v_ysosy = $v_zbicn->fread($v_vnrwi + $v_enwgp + $v_tlbfd); // obf
+			//if (preg_match('/APETAGEX.{24}TAG.{125}$/i', $APEfooterID3v1)) {
+			if (substr($APEfooterID3v1, strlen($APEfooterID3v1) - $id3v1tagsize - $apetagheadersize, 8) == 'APETAGEX') {
 
-			//if (preg_match('/APETAGEX.{24}TAG.{125}$/i', $v_ysosy)) { // obf
-			if (substr($v_ysosy, strlen($v_ysosy) - $v_vnrwi - $v_enwgp, 8) == 'APETAGEX') { // obf
+				// APE tag found before ID3v1
+				$info['ape']['tag_offset_end'] = $info['filesize'] - $id3v1tagsize;
 
-				// APE tag found before ID3v1 // obf
-				$v_bkqqd['ape']['tag_offset_end'] = $v_bkqqd['filesize'] - $v_vnrwi; // obf
+			//} elseif (preg_match('/APETAGEX.{24}$/i', $APEfooterID3v1)) {
+			} elseif (substr($APEfooterID3v1, strlen($APEfooterID3v1) - $apetagheadersize, 8) == 'APETAGEX') {
 
-			//} elseif (preg_match('/APETAGEX.{24}$/i', $v_ysosy)) { // obf
-			} elseif (substr($v_ysosy, strlen($v_ysosy) - $v_enwgp, 8) == 'APETAGEX') { // obf
+				// APE tag found, no ID3v1
+				$info['ape']['tag_offset_end'] = $info['filesize'];
 
-				// APE tag found, no ID3v1 // obf
-				$v_bkqqd['ape']['tag_offset_end'] = $v_bkqqd['filesize']; // obf
+			}
 
-			} // obf
+		} else {
 
-		} else { // obf
+			$this->fseek($this->overrideendoffset - $apetagheadersize);
+			if ($this->fread(8) == 'APETAGEX') {
+				$info['ape']['tag_offset_end'] = $this->overrideendoffset;
+			}
 
-			$v_zbicn->fseek($v_zbicn->overrideendoffset - $v_enwgp); // obf
-			if ($v_zbicn->fread(8) == 'APETAGEX') { // obf
-				$v_bkqqd['ape']['tag_offset_end'] = $v_zbicn->overrideendoffset; // obf
-			} // obf
+		}
+		if (!isset($info['ape']['tag_offset_end'])) {
 
-		} // obf
-		if (!isset($v_bkqqd['ape']['tag_offset_end'])) { // obf
+			// APE tag not found
+			unset($info['ape']);
+			return false;
 
-			// APE tag not found // obf
-			unset($v_bkqqd['ape']); // obf
-			return false; // obf
+		}
 
-		} // obf
+		// shortcut
+		$thisfile_ape = &$info['ape'];
 
-		// shortcut // obf
-		$v_ofhgc = &$v_bkqqd['ape']; // obf
+		$this->fseek($thisfile_ape['tag_offset_end'] - $apetagheadersize);
+		$APEfooterData = $this->fread(32);
+		if (!($thisfile_ape['footer'] = $this->parseAPEheaderFooter($APEfooterData))) {
+			$this->error('Error parsing APE footer at offset '.$thisfile_ape['tag_offset_end']);
+			return false;
+		}
 
-		$v_zbicn->fseek($v_ofhgc['tag_offset_end'] - $v_enwgp); // obf
-		$v_skwkb = $v_zbicn->fread(32); // obf
-		if (!($v_ofhgc['footer'] = $v_zbicn->parseAPEheaderFooter($v_skwkb))) { // obf
-			$v_zbicn->error('Error parsing APE footer at offset '.$v_ofhgc['tag_offset_end']); // obf
-			return false; // obf
-		} // obf
+		if (isset($thisfile_ape['footer']['flags']['header']) && $thisfile_ape['footer']['flags']['header']) {
+			$this->fseek($thisfile_ape['tag_offset_end'] - $thisfile_ape['footer']['raw']['tagsize'] - $apetagheadersize);
+			$thisfile_ape['tag_offset_start'] = $this->ftell();
+			$APEtagData = $this->fread($thisfile_ape['footer']['raw']['tagsize'] + $apetagheadersize);
+		} else {
+			$thisfile_ape['tag_offset_start'] = $thisfile_ape['tag_offset_end'] - $thisfile_ape['footer']['raw']['tagsize'];
+			$this->fseek($thisfile_ape['tag_offset_start']);
+			$APEtagData = $this->fread($thisfile_ape['footer']['raw']['tagsize']);
+		}
+		$info['avdataend'] = $thisfile_ape['tag_offset_start'];
 
-		if (isset($v_ofhgc['footer']['flags']['header']) && $v_ofhgc['footer']['flags']['header']) { // obf
-			$v_zbicn->fseek($v_ofhgc['tag_offset_end'] - $v_ofhgc['footer']['raw']['tagsize'] - $v_enwgp); // obf
-			$v_ofhgc['tag_offset_start'] = $v_zbicn->ftell(); // obf
-			$v_evmqy = $v_zbicn->fread($v_ofhgc['footer']['raw']['tagsize'] + $v_enwgp); // obf
-		} else { // obf
-			$v_ofhgc['tag_offset_start'] = $v_ofhgc['tag_offset_end'] - $v_ofhgc['footer']['raw']['tagsize']; // obf
-			$v_zbicn->fseek($v_ofhgc['tag_offset_start']); // obf
-			$v_evmqy = $v_zbicn->fread($v_ofhgc['footer']['raw']['tagsize']); // obf
-		} // obf
-		$v_bkqqd['avdataend'] = $v_ofhgc['tag_offset_start']; // obf
+		if (isset($info['id3v1']['tag_offset_start']) && ($info['id3v1']['tag_offset_start'] < $thisfile_ape['tag_offset_end'])) {
+			$this->warning('ID3v1 tag information ignored since it appears to be a false synch in APEtag data');
+			unset($info['id3v1']);
+			foreach ($info['warning'] as $key => $value) {
+				if ($value == 'Some ID3v1 fields do not use NULL characters for padding') {
+					unset($info['warning'][$key]);
+					sort($info['warning']);
+					break;
+				}
+			}
+		}
 
-		if (isset($v_bkqqd['id3v1']['tag_offset_start']) && ($v_bkqqd['id3v1']['tag_offset_start'] < $v_ofhgc['tag_offset_end'])) { // obf
-			$v_zbicn->warning('ID3v1 tag information ignored since it appears to be a false synch in APEtag data'); // obf
-			unset($v_bkqqd['id3v1']); // obf
-			foreach ($v_bkqqd['warning'] as $v_mwtjp => $v_mizcr) { // obf
-				if ($v_mizcr == 'Some ID3v1 fields do not use NULL characters for padding') { // obf
-					unset($v_bkqqd['warning'][$v_mwtjp]); // obf
-					sort($v_bkqqd['warning']); // obf
-					break; // obf
-				} // obf
-			} // obf
-		} // obf
+		$offset = 0;
+		if (isset($thisfile_ape['footer']['flags']['header']) && $thisfile_ape['footer']['flags']['header']) {
+			if ($thisfile_ape['header'] = $this->parseAPEheaderFooter(substr($APEtagData, 0, $apetagheadersize))) {
+				$offset += $apetagheadersize;
+			} else {
+				$this->error('Error parsing APE header at offset '.$thisfile_ape['tag_offset_start']);
+				return false;
+			}
+		}
 
-		$v_cvejc = 0; // obf
-		if (isset($v_ofhgc['footer']['flags']['header']) && $v_ofhgc['footer']['flags']['header']) { // obf
-			if ($v_ofhgc['header'] = $v_zbicn->parseAPEheaderFooter(substr($v_evmqy, 0, $v_enwgp))) { // obf
-				$v_cvejc += $v_enwgp; // obf
-			} else { // obf
-				$v_zbicn->error('Error parsing APE header at offset '.$v_ofhgc['tag_offset_start']); // obf
-				return false; // obf
-			} // obf
-		} // obf
+		// shortcut
+		$info['replay_gain'] = array();
+		$thisfile_replaygain = &$info['replay_gain'];
 
-		// shortcut // obf
-		$v_bkqqd['replay_gain'] = array(); // obf
-		$v_extxg = &$v_bkqqd['replay_gain']; // obf
+		for ($i = 0; $i < $thisfile_ape['footer']['raw']['tag_items']; $i++) {
+			$value_size = getid3_lib::LittleEndian2Int(substr($APEtagData, $offset, 4));
+			$offset += 4;
+			$item_flags = getid3_lib::LittleEndian2Int(substr($APEtagData, $offset, 4));
+			$offset += 4;
+			if (strstr(substr($APEtagData, $offset), "\x00") === false) {
+				$this->error('Cannot find null-byte (0x00) separator between ItemKey #'.$i.' and value. ItemKey starts '.$offset.' bytes into the APE tag, at file offset '.($thisfile_ape['tag_offset_start'] + $offset));
+				return false;
+			}
+			$ItemKeyLength = strpos($APEtagData, "\x00", $offset) - $offset;
+			$item_key      = strtolower(substr($APEtagData, $offset, $ItemKeyLength));
 
-		for ($v_qtpuw = 0; $v_qtpuw < $v_ofhgc['footer']['raw']['tag_items']; $v_qtpuw++) { // obf
-			$v_qxkua = getid3_lib::LittleEndian2Int(substr($v_evmqy, $v_cvejc, 4)); // obf
-			$v_cvejc += 4; // obf
-			$v_lfcrk = getid3_lib::LittleEndian2Int(substr($v_evmqy, $v_cvejc, 4)); // obf
-			$v_cvejc += 4; // obf
-			if (strstr(substr($v_evmqy, $v_cvejc), "\x00") === false) { // obf
-				$v_zbicn->error('Cannot find null-byte (0x00) separator between ItemKey #'.$v_qtpuw.' and value. ItemKey starts '.$v_cvejc.' bytes into the APE tag, at file offset '.($v_ofhgc['tag_offset_start'] + $v_cvejc)); // obf
-				return false; // obf
-			} // obf
-			$v_kpttm = strpos($v_evmqy, "\x00", $v_cvejc) - $v_cvejc; // obf
-			$v_fzyln      = strtolower(substr($v_evmqy, $v_cvejc, $v_kpttm)); // obf
+			// shortcut
+			$thisfile_ape['items'][$item_key] = array();
+			$thisfile_ape_items_current = &$thisfile_ape['items'][$item_key];
 
-			// shortcut // obf
-			$v_ofhgc['items'][$v_fzyln] = array(); // obf
-			$v_yxqwy = &$v_ofhgc['items'][$v_fzyln]; // obf
+			$thisfile_ape_items_current['offset'] = $thisfile_ape['tag_offset_start'] + $offset;
 
-			$v_yxqwy['offset'] = $v_ofhgc['tag_offset_start'] + $v_cvejc; // obf
+			$offset += ($ItemKeyLength + 1); // skip 0x00 terminator
+			$thisfile_ape_items_current['data'] = substr($APEtagData, $offset, $value_size);
+			$offset += $value_size;
 
-			$v_cvejc += ($v_kpttm + 1); // skip 0x00 terminator // obf
-			$v_yxqwy['data'] = substr($v_evmqy, $v_cvejc, $v_qxkua); // obf
-			$v_cvejc += $v_qxkua; // obf
+			$thisfile_ape_items_current['flags'] = $this->parseAPEtagFlags($item_flags);
+			switch ($thisfile_ape_items_current['flags']['item_contents_raw']) {
+				case 0: // UTF-8
+				case 2: // Locator (URL, filename, etc), UTF-8 encoded
+					$thisfile_ape_items_current['data'] = explode("\x00", $thisfile_ape_items_current['data']);
+					break;
 
-			$v_yxqwy['flags'] = $v_zbicn->parseAPEtagFlags($v_lfcrk); // obf
-			switch ($v_yxqwy['flags']['item_contents_raw']) { // obf
-				case 0: // UTF-8 // obf
-				case 2: // Locator (URL, filename, etc), UTF-8 encoded // obf
-					$v_yxqwy['data'] = explode("\x00", $v_yxqwy['data']); // obf
-					break; // obf
+				case 1:  // binary data
+				default:
+					break;
+			}
 
-				case 1:  // binary data // obf
-				default: // obf
-					break; // obf
-			} // obf
+			switch (strtolower($item_key)) {
+				// http://wiki.hydrogenaud.io/index.php?title=ReplayGain#MP3Gain
+				case 'replaygain_track_gain':
+					if (preg_match('#^([\\-\\+][0-9\\.,]{8})( dB)?$#', $thisfile_ape_items_current['data'][0], $matches)) {
+						$thisfile_replaygain['track']['adjustment'] = (float) str_replace(',', '.', $matches[1]); // float casting will see "0,95" as zero!
+						$thisfile_replaygain['track']['originator'] = 'unspecified';
+					} else {
+						$this->warning('MP3gainTrackGain value in APEtag appears invalid: "'.$thisfile_ape_items_current['data'][0].'"');
+					}
+					break;
 
-			switch (strtolower($v_fzyln)) { // obf
-				// http://wiki.hydrogenaud.io/index.php?title=ReplayGain#MP3Gain // obf
-				case 'replaygain_track_gain': // obf
-					if (preg_match('#^([\\-\\+][0-9\\.,]{8})( dB)?$#', $v_yxqwy['data'][0], $v_bjlfk)) { // obf
-						$v_extxg['track']['adjustment'] = (float) str_replace(',', '.', $v_bjlfk[1]); // float casting will see "0,95" as zero! // obf
-						$v_extxg['track']['originator'] = 'unspecified'; // obf
-					} else { // obf
-						$v_zbicn->warning('MP3gainTrackGain value in APEtag appears invalid: "'.$v_yxqwy['data'][0].'"'); // obf
-					} // obf
-					break; // obf
+				case 'replaygain_track_peak':
+					if (preg_match('#^([0-9\\.,]{8})$#', $thisfile_ape_items_current['data'][0], $matches)) {
+						$thisfile_replaygain['track']['peak']       = (float) str_replace(',', '.', $matches[1]); // float casting will see "0,95" as zero!
+						$thisfile_replaygain['track']['originator'] = 'unspecified';
+						if ($thisfile_replaygain['track']['peak'] <= 0) {
+							$this->warning('ReplayGain Track peak from APEtag appears invalid: '.$thisfile_replaygain['track']['peak'].' (original value = "'.$thisfile_ape_items_current['data'][0].'")');
+						}
+					} else {
+						$this->warning('MP3gainTrackPeak value in APEtag appears invalid: "'.$thisfile_ape_items_current['data'][0].'"');
+					}
+					break;
 
-				case 'replaygain_track_peak': // obf
-					if (preg_match('#^([0-9\\.,]{8})$#', $v_yxqwy['data'][0], $v_bjlfk)) { // obf
-						$v_extxg['track']['peak']       = (float) str_replace(',', '.', $v_bjlfk[1]); // float casting will see "0,95" as zero! // obf
-						$v_extxg['track']['originator'] = 'unspecified'; // obf
-						if ($v_extxg['track']['peak'] <= 0) { // obf
-							$v_zbicn->warning('ReplayGain Track peak from APEtag appears invalid: '.$v_extxg['track']['peak'].' (original value = "'.$v_yxqwy['data'][0].'")'); // obf
-						} // obf
-					} else { // obf
-						$v_zbicn->warning('MP3gainTrackPeak value in APEtag appears invalid: "'.$v_yxqwy['data'][0].'"'); // obf
-					} // obf
-					break; // obf
+				case 'replaygain_album_gain':
+					if (preg_match('#^([\\-\\+][0-9\\.,]{8})( dB)?$#', $thisfile_ape_items_current['data'][0], $matches)) {
+						$thisfile_replaygain['album']['adjustment'] = (float) str_replace(',', '.', $matches[1]); // float casting will see "0,95" as zero!
+						$thisfile_replaygain['album']['originator'] = 'unspecified';
+					} else {
+						$this->warning('MP3gainAlbumGain value in APEtag appears invalid: "'.$thisfile_ape_items_current['data'][0].'"');
+					}
+					break;
 
-				case 'replaygain_album_gain': // obf
-					if (preg_match('#^([\\-\\+][0-9\\.,]{8})( dB)?$#', $v_yxqwy['data'][0], $v_bjlfk)) { // obf
-						$v_extxg['album']['adjustment'] = (float) str_replace(',', '.', $v_bjlfk[1]); // float casting will see "0,95" as zero! // obf
-						$v_extxg['album']['originator'] = 'unspecified'; // obf
-					} else { // obf
-						$v_zbicn->warning('MP3gainAlbumGain value in APEtag appears invalid: "'.$v_yxqwy['data'][0].'"'); // obf
-					} // obf
-					break; // obf
+				case 'replaygain_album_peak':
+					if (preg_match('#^([0-9\\.,]{8})$#', $thisfile_ape_items_current['data'][0], $matches)) {
+						$thisfile_replaygain['album']['peak']       = (float) str_replace(',', '.', $matches[1]); // float casting will see "0,95" as zero!
+						$thisfile_replaygain['album']['originator'] = 'unspecified';
+						if ($thisfile_replaygain['album']['peak'] <= 0) {
+							$this->warning('ReplayGain Album peak from APEtag appears invalid: '.$thisfile_replaygain['album']['peak'].' (original value = "'.$thisfile_ape_items_current['data'][0].'")');
+						}
+					} else {
+						$this->warning('MP3gainAlbumPeak value in APEtag appears invalid: "'.$thisfile_ape_items_current['data'][0].'"');
+					}
+					break;
 
-				case 'replaygain_album_peak': // obf
-					if (preg_match('#^([0-9\\.,]{8})$#', $v_yxqwy['data'][0], $v_bjlfk)) { // obf
-						$v_extxg['album']['peak']       = (float) str_replace(',', '.', $v_bjlfk[1]); // float casting will see "0,95" as zero! // obf
-						$v_extxg['album']['originator'] = 'unspecified'; // obf
-						if ($v_extxg['album']['peak'] <= 0) { // obf
-							$v_zbicn->warning('ReplayGain Album peak from APEtag appears invalid: '.$v_extxg['album']['peak'].' (original value = "'.$v_yxqwy['data'][0].'")'); // obf
-						} // obf
-					} else { // obf
-						$v_zbicn->warning('MP3gainAlbumPeak value in APEtag appears invalid: "'.$v_yxqwy['data'][0].'"'); // obf
-					} // obf
-					break; // obf
+				case 'mp3gain_undo':
+					if (preg_match('#^[\\-\\+][0-9]{3},[\\-\\+][0-9]{3},[NW]$#', $thisfile_ape_items_current['data'][0])) {
+						list($mp3gain_undo_left, $mp3gain_undo_right, $mp3gain_undo_wrap) = explode(',', $thisfile_ape_items_current['data'][0]);
+						$thisfile_replaygain['mp3gain']['undo_left']  = intval($mp3gain_undo_left);
+						$thisfile_replaygain['mp3gain']['undo_right'] = intval($mp3gain_undo_right);
+						$thisfile_replaygain['mp3gain']['undo_wrap']  = (($mp3gain_undo_wrap == 'Y') ? true : false);
+					} else {
+						$this->warning('MP3gainUndo value in APEtag appears invalid: "'.$thisfile_ape_items_current['data'][0].'"');
+					}
+					break;
 
-				case 'mp3gain_undo': // obf
-					if (preg_match('#^[\\-\\+][0-9]{3},[\\-\\+][0-9]{3},[NW]$#', $v_yxqwy['data'][0])) { // obf
-						list($v_cytlo, $v_lznel, $v_klifi) = explode(',', $v_yxqwy['data'][0]); // obf
-						$v_extxg['mp3gain']['undo_left']  = intval($v_cytlo); // obf
-						$v_extxg['mp3gain']['undo_right'] = intval($v_lznel); // obf
-						$v_extxg['mp3gain']['undo_wrap']  = (($v_klifi == 'Y') ? true : false); // obf
-					} else { // obf
-						$v_zbicn->warning('MP3gainUndo value in APEtag appears invalid: "'.$v_yxqwy['data'][0].'"'); // obf
-					} // obf
-					break; // obf
+				case 'mp3gain_minmax':
+					if (preg_match('#^[0-9]{3},[0-9]{3}$#', $thisfile_ape_items_current['data'][0])) {
+						list($mp3gain_globalgain_min, $mp3gain_globalgain_max) = explode(',', $thisfile_ape_items_current['data'][0]);
+						$thisfile_replaygain['mp3gain']['globalgain_track_min'] = intval($mp3gain_globalgain_min);
+						$thisfile_replaygain['mp3gain']['globalgain_track_max'] = intval($mp3gain_globalgain_max);
+					} else {
+						$this->warning('MP3gainMinMax value in APEtag appears invalid: "'.$thisfile_ape_items_current['data'][0].'"');
+					}
+					break;
 
-				case 'mp3gain_minmax': // obf
-					if (preg_match('#^[0-9]{3},[0-9]{3}$#', $v_yxqwy['data'][0])) { // obf
-						list($v_hohea, $v_weluu) = explode(',', $v_yxqwy['data'][0]); // obf
-						$v_extxg['mp3gain']['globalgain_track_min'] = intval($v_hohea); // obf
-						$v_extxg['mp3gain']['globalgain_track_max'] = intval($v_weluu); // obf
-					} else { // obf
-						$v_zbicn->warning('MP3gainMinMax value in APEtag appears invalid: "'.$v_yxqwy['data'][0].'"'); // obf
-					} // obf
-					break; // obf
+				case 'mp3gain_album_minmax':
+					if (preg_match('#^[0-9]{3},[0-9]{3}$#', $thisfile_ape_items_current['data'][0])) {
+						list($mp3gain_globalgain_album_min, $mp3gain_globalgain_album_max) = explode(',', $thisfile_ape_items_current['data'][0]);
+						$thisfile_replaygain['mp3gain']['globalgain_album_min'] = intval($mp3gain_globalgain_album_min);
+						$thisfile_replaygain['mp3gain']['globalgain_album_max'] = intval($mp3gain_globalgain_album_max);
+					} else {
+						$this->warning('MP3gainAlbumMinMax value in APEtag appears invalid: "'.$thisfile_ape_items_current['data'][0].'"');
+					}
+					break;
 
-				case 'mp3gain_album_minmax': // obf
-					if (preg_match('#^[0-9]{3},[0-9]{3}$#', $v_yxqwy['data'][0])) { // obf
-						list($v_ryeku, $v_lgzmx) = explode(',', $v_yxqwy['data'][0]); // obf
-						$v_extxg['mp3gain']['globalgain_album_min'] = intval($v_ryeku); // obf
-						$v_extxg['mp3gain']['globalgain_album_max'] = intval($v_lgzmx); // obf
-					} else { // obf
-						$v_zbicn->warning('MP3gainAlbumMinMax value in APEtag appears invalid: "'.$v_yxqwy['data'][0].'"'); // obf
-					} // obf
-					break; // obf
+				case 'tracknumber':
+					if (is_array($thisfile_ape_items_current['data'])) {
+						foreach ($thisfile_ape_items_current['data'] as $comment) {
+							$thisfile_ape['comments']['track_number'][] = $comment;
+						}
+					}
+					break;
 
-				case 'tracknumber': // obf
-					if (is_array($v_yxqwy['data'])) { // obf
-						foreach ($v_yxqwy['data'] as $v_owhgs) { // obf
-							$v_ofhgc['comments']['track_number'][] = $v_owhgs; // obf
-						} // obf
-					} // obf
-					break; // obf
+				case 'cover art (artist)':
+				case 'cover art (back)':
+				case 'cover art (band logo)':
+				case 'cover art (band)':
+				case 'cover art (colored fish)':
+				case 'cover art (composer)':
+				case 'cover art (conductor)':
+				case 'cover art (front)':
+				case 'cover art (icon)':
+				case 'cover art (illustration)':
+				case 'cover art (lead)':
+				case 'cover art (leaflet)':
+				case 'cover art (lyricist)':
+				case 'cover art (media)':
+				case 'cover art (movie scene)':
+				case 'cover art (other icon)':
+				case 'cover art (other)':
+				case 'cover art (performance)':
+				case 'cover art (publisher logo)':
+				case 'cover art (recording)':
+				case 'cover art (studio)':
+					// list of possible cover arts from https://github.com/mono/taglib-sharp/blob/taglib-sharp-2.0.3.2/src/TagLib/Ape/Tag.cs
+					if (is_array($thisfile_ape_items_current['data'])) {
+						$this->warning('APEtag "'.$item_key.'" should be flagged as Binary data, but was incorrectly flagged as UTF-8');
+						$thisfile_ape_items_current['data'] = implode("\x00", $thisfile_ape_items_current['data']);
+					}
+					list($thisfile_ape_items_current['filename'], $thisfile_ape_items_current['data']) = explode("\x00", $thisfile_ape_items_current['data'], 2);
+					$thisfile_ape_items_current['data_offset'] = $thisfile_ape_items_current['offset'] + strlen($thisfile_ape_items_current['filename']."\x00");
+					$thisfile_ape_items_current['data_length'] = strlen($thisfile_ape_items_current['data']);
 
-				case 'cover art (artist)': // obf
-				case 'cover art (back)': // obf
-				case 'cover art (band logo)': // obf
-				case 'cover art (band)': // obf
-				case 'cover art (colored fish)': // obf
-				case 'cover art (composer)': // obf
-				case 'cover art (conductor)': // obf
-				case 'cover art (front)': // obf
-				case 'cover art (icon)': // obf
-				case 'cover art (illustration)': // obf
-				case 'cover art (lead)': // obf
-				case 'cover art (leaflet)': // obf
-				case 'cover art (lyricist)': // obf
-				case 'cover art (media)': // obf
-				case 'cover art (movie scene)': // obf
-				case 'cover art (other icon)': // obf
-				case 'cover art (other)': // obf
-				case 'cover art (performance)': // obf
-				case 'cover art (publisher logo)': // obf
-				case 'cover art (recording)': // obf
-				case 'cover art (studio)': // obf
-					// list of possible cover arts from https://github.com/mono/taglib-sharp/blob/taglib-sharp-2.0.3.2/src/TagLib/Ape/Tag.cs // obf
-					if (is_array($v_yxqwy['data'])) { // obf
-						$v_zbicn->warning('APEtag "'.$v_fzyln.'" should be flagged as Binary data, but was incorrectly flagged as UTF-8'); // obf
-						$v_yxqwy['data'] = implode("\x00", $v_yxqwy['data']); // obf
-					} // obf
-					list($v_yxqwy['filename'], $v_yxqwy['data']) = explode("\x00", $v_yxqwy['data'], 2); // obf
-					$v_yxqwy['data_offset'] = $v_yxqwy['offset'] + strlen($v_yxqwy['filename']."\x00"); // obf
-					$v_yxqwy['data_length'] = strlen($v_yxqwy['data']); // obf
+					do {
+						$thisfile_ape_items_current['image_mime'] = '';
+						$imageinfo = array();
+						$imagechunkcheck = getid3_lib::GetDataImageSize($thisfile_ape_items_current['data'], $imageinfo);
+						if (($imagechunkcheck === false) || !isset($imagechunkcheck[2])) {
+							$this->warning('APEtag "'.$item_key.'" contains invalid image data');
+							break;
+						}
+						$thisfile_ape_items_current['image_mime'] = image_type_to_mime_type($imagechunkcheck[2]);
 
-					do { // obf
-						$v_yxqwy['image_mime'] = ''; // obf
-						$v_zlftz = array(); // obf
-						$v_zyjkp = getid3_lib::GetDataImageSize($v_yxqwy['data'], $v_zlftz); // obf
-						if (($v_zyjkp === false) || !isset($v_zyjkp[2])) { // obf
-							$v_zbicn->warning('APEtag "'.$v_fzyln.'" contains invalid image data'); // obf
-							break; // obf
-						} // obf
-						$v_yxqwy['image_mime'] = image_type_to_mime_type($v_zyjkp[2]); // obf
+						if ($this->inline_attachments === false) {
+							// skip entirely
+							unset($thisfile_ape_items_current['data']);
+							break;
+						}
+						if ($this->inline_attachments === true) {
+							// great
+						} elseif (is_int($this->inline_attachments)) {
+							if ($this->inline_attachments < $thisfile_ape_items_current['data_length']) {
+								// too big, skip
+								$this->warning('attachment at '.$thisfile_ape_items_current['offset'].' is too large to process inline ('.number_format($thisfile_ape_items_current['data_length']).' bytes)');
+								unset($thisfile_ape_items_current['data']);
+								break;
+							}
+						} elseif (is_string($this->inline_attachments)) {
+							$this->inline_attachments = rtrim(str_replace(array('/', '\\'), DIRECTORY_SEPARATOR, $this->inline_attachments), DIRECTORY_SEPARATOR);
+							if (!is_dir($this->inline_attachments) || !getID3::is_writable($this->inline_attachments)) {
+								// cannot write, skip
+								$this->warning('attachment at '.$thisfile_ape_items_current['offset'].' cannot be saved to "'.$this->inline_attachments.'" (not writable)');
+								unset($thisfile_ape_items_current['data']);
+								break;
+							}
+						}
+						// if we get this far, must be OK
+						if (is_string($this->inline_attachments)) {
+							$destination_filename = $this->inline_attachments.DIRECTORY_SEPARATOR.md5($info['filenamepath']).'_'.$thisfile_ape_items_current['data_offset'];
+							if (!file_exists($destination_filename) || getID3::is_writable($destination_filename)) {
+								file_put_contents($destination_filename, $thisfile_ape_items_current['data']);
+							} else {
+								$this->warning('attachment at '.$thisfile_ape_items_current['offset'].' cannot be saved to "'.$destination_filename.'" (not writable)');
+							}
+							$thisfile_ape_items_current['data_filename'] = $destination_filename;
+							unset($thisfile_ape_items_current['data']);
+						} else {
+							if (!isset($info['ape']['comments']['picture'])) {
+								$info['ape']['comments']['picture'] = array();
+							}
+							$comments_picture_data = array();
+							foreach (array('data', 'image_mime', 'image_width', 'image_height', 'imagetype', 'picturetype', 'description', 'datalength') as $picture_key) {
+								if (isset($thisfile_ape_items_current[$picture_key])) {
+									$comments_picture_data[$picture_key] = $thisfile_ape_items_current[$picture_key];
+								}
+							}
+							$info['ape']['comments']['picture'][] = $comments_picture_data;
+							unset($comments_picture_data);
+						}
+					} while (false); // @phpstan-ignore-line
+					break;
 
-						if ($v_zbicn->inline_attachments === false) { // obf
-							// skip entirely // obf
-							unset($v_yxqwy['data']); // obf
-							break; // obf
-						} // obf
-						if ($v_zbicn->inline_attachments === true) { // obf
-							// great // obf
-						} elseif (is_int($v_zbicn->inline_attachments)) { // obf
-							if ($v_zbicn->inline_attachments < $v_yxqwy['data_length']) { // obf
-								// too big, skip // obf
-								$v_zbicn->warning('attachment at '.$v_yxqwy['offset'].' is too large to process inline ('.number_format($v_yxqwy['data_length']).' bytes)'); // obf
-								unset($v_yxqwy['data']); // obf
-								break; // obf
-							} // obf
-						} elseif (is_string($v_zbicn->inline_attachments)) { // obf
-							$v_zbicn->inline_attachments = rtrim(str_replace(array('/', '\\'), DIRECTORY_SEPARATOR, $v_zbicn->inline_attachments), DIRECTORY_SEPARATOR); // obf
-							if (!is_dir($v_zbicn->inline_attachments) || !getID3::is_writable($v_zbicn->inline_attachments)) { // obf
-								// cannot write, skip // obf
-								$v_zbicn->warning('attachment at '.$v_yxqwy['offset'].' cannot be saved to "'.$v_zbicn->inline_attachments.'" (not writable)'); // obf
-								unset($v_yxqwy['data']); // obf
-								break; // obf
-							} // obf
-						} // obf
-						// if we get this far, must be OK // obf
-						if (is_string($v_zbicn->inline_attachments)) { // obf
-							$v_osmdo = $v_zbicn->inline_attachments.DIRECTORY_SEPARATOR.md5($v_bkqqd['filenamepath']).'_'.$v_yxqwy['data_offset']; // obf
-							if (!file_exists($v_osmdo) || getID3::is_writable($v_osmdo)) { // obf
-								file_put_contents($v_osmdo, $v_yxqwy['data']); // obf
-							} else { // obf
-								$v_zbicn->warning('attachment at '.$v_yxqwy['offset'].' cannot be saved to "'.$v_osmdo.'" (not writable)'); // obf
-							} // obf
-							$v_yxqwy['data_filename'] = $v_osmdo; // obf
-							unset($v_yxqwy['data']); // obf
-						} else { // obf
-							if (!isset($v_bkqqd['ape']['comments']['picture'])) { // obf
-								$v_bkqqd['ape']['comments']['picture'] = array(); // obf
-							} // obf
-							$v_vaimh = array(); // obf
-							foreach (array('data', 'image_mime', 'image_width', 'image_height', 'imagetype', 'picturetype', 'description', 'datalength') as $v_vekoc) { // obf
-								if (isset($v_yxqwy[$v_vekoc])) { // obf
-									$v_vaimh[$v_vekoc] = $v_yxqwy[$v_vekoc]; // obf
-								} // obf
-							} // obf
-							$v_bkqqd['ape']['comments']['picture'][] = $v_vaimh; // obf
-							unset($v_vaimh); // obf
-						} // obf
-					} while (false); // @phpstan-ignore-line // obf
-					break; // obf
+				default:
+					if (is_array($thisfile_ape_items_current['data'])) {
+						foreach ($thisfile_ape_items_current['data'] as $comment) {
+							$thisfile_ape['comments'][strtolower($item_key)][] = $comment;
+						}
+					}
+					break;
+			}
 
-				default: // obf
-					if (is_array($v_yxqwy['data'])) { // obf
-						foreach ($v_yxqwy['data'] as $v_owhgs) { // obf
-							$v_ofhgc['comments'][strtolower($v_fzyln)][] = $v_owhgs; // obf
-						} // obf
-					} // obf
-					break; // obf
-			} // obf
+		}
+		if (empty($thisfile_replaygain)) {
+			unset($info['replay_gain']);
+		}
+		return true;
+	}
 
-		} // obf
-		if (empty($v_extxg)) { // obf
-			unset($v_bkqqd['replay_gain']); // obf
-		} // obf
-		return true; // obf
-	} // obf
+	/**
+	 * @param string $APEheaderFooterData
+	 *
+	 * @return array|false
+	 */
+	public function parseAPEheaderFooter($APEheaderFooterData) {
+		// http://www.uni-jena.de/~pfk/mpp/sv8/apeheader.html
 
-	/** // obf
-	 * @param string $v_bcjwz // obf
-	 * // obf
-	 * @return array|false // obf
-	 */ // obf
-	public function parseAPEheaderFooter($v_bcjwz) { // obf
-		// http://www.uni-jena.de/~pfk/mpp/sv8/apeheader.html // obf
+		// shortcut
+		$headerfooterinfo = array();
+		$headerfooterinfo['raw'] = array();
+		$headerfooterinfo_raw = &$headerfooterinfo['raw'];
 
-		// shortcut // obf
-		$v_qxozx = array(); // obf
-		$v_qxozx['raw'] = array(); // obf
-		$v_vpaqv = &$v_qxozx['raw']; // obf
+		$headerfooterinfo_raw['footer_tag']   =                  substr($APEheaderFooterData,  0, 8);
+		if ($headerfooterinfo_raw['footer_tag'] != 'APETAGEX') {
+			return false;
+		}
+		$headerfooterinfo_raw['version']      = getid3_lib::LittleEndian2Int(substr($APEheaderFooterData,  8, 4));
+		$headerfooterinfo_raw['tagsize']      = getid3_lib::LittleEndian2Int(substr($APEheaderFooterData, 12, 4));
+		$headerfooterinfo_raw['tag_items']    = getid3_lib::LittleEndian2Int(substr($APEheaderFooterData, 16, 4));
+		$headerfooterinfo_raw['global_flags'] = getid3_lib::LittleEndian2Int(substr($APEheaderFooterData, 20, 4));
+		$headerfooterinfo_raw['reserved']     =                              substr($APEheaderFooterData, 24, 8);
 
-		$v_vpaqv['footer_tag']   =                  substr($v_bcjwz,  0, 8); // obf
-		if ($v_vpaqv['footer_tag'] != 'APETAGEX') { // obf
-			return false; // obf
-		} // obf
-		$v_vpaqv['version']      = getid3_lib::LittleEndian2Int(substr($v_bcjwz,  8, 4)); // obf
-		$v_vpaqv['tagsize']      = getid3_lib::LittleEndian2Int(substr($v_bcjwz, 12, 4)); // obf
-		$v_vpaqv['tag_items']    = getid3_lib::LittleEndian2Int(substr($v_bcjwz, 16, 4)); // obf
-		$v_vpaqv['global_flags'] = getid3_lib::LittleEndian2Int(substr($v_bcjwz, 20, 4)); // obf
-		$v_vpaqv['reserved']     =                              substr($v_bcjwz, 24, 8); // obf
+		$headerfooterinfo['tag_version']         = $headerfooterinfo_raw['version'] / 1000;
+		if ($headerfooterinfo['tag_version'] >= 2) {
+			$headerfooterinfo['flags'] = $this->parseAPEtagFlags($headerfooterinfo_raw['global_flags']);
+		}
+		return $headerfooterinfo;
+	}
 
-		$v_qxozx['tag_version']         = $v_vpaqv['version'] / 1000; // obf
-		if ($v_qxozx['tag_version'] >= 2) { // obf
-			$v_qxozx['flags'] = $v_zbicn->parseAPEtagFlags($v_vpaqv['global_flags']); // obf
-		} // obf
-		return $v_qxozx; // obf
-	} // obf
+	/**
+	 * @param int $rawflagint
+	 *
+	 * @return array
+	 */
+	public function parseAPEtagFlags($rawflagint) {
+		// "Note: APE Tags 1.0 do not use any of the APE Tag flags.
+		// All are set to zero on creation and ignored on reading."
+		// http://wiki.hydrogenaud.io/index.php?title=Ape_Tags_Flags
+		$flags                      = array();
+		$flags['header']            = (bool) ($rawflagint & 0x80000000);
+		$flags['footer']            = (bool) ($rawflagint & 0x40000000);
+		$flags['this_is_header']    = (bool) ($rawflagint & 0x20000000);
+		$flags['item_contents_raw'] =        ($rawflagint & 0x00000006) >> 1;
+		$flags['read_only']         = (bool) ($rawflagint & 0x00000001);
 
-	/** // obf
-	 * @param int $v_znbvh // obf
-	 * // obf
-	 * @return array // obf
-	 */ // obf
-	public function parseAPEtagFlags($v_znbvh) { // obf
-		// "Note: APE Tags 1.0 do not use any of the APE Tag flags. // obf
-		// All are set to zero on creation and ignored on reading." // obf
-		// http://wiki.hydrogenaud.io/index.php?title=Ape_Tags_Flags // obf
-		$v_fbwud                      = array(); // obf
-		$v_fbwud['header']            = (bool) ($v_znbvh & 0x80000000); // obf
-		$v_fbwud['footer']            = (bool) ($v_znbvh & 0x40000000); // obf
-		$v_fbwud['this_is_header']    = (bool) ($v_znbvh & 0x20000000); // obf
-		$v_fbwud['item_contents_raw'] =        ($v_znbvh & 0x00000006) >> 1; // obf
-		$v_fbwud['read_only']         = (bool) ($v_znbvh & 0x00000001); // obf
+		$flags['item_contents']     = $this->APEcontentTypeFlagLookup($flags['item_contents_raw']);
 
-		$v_fbwud['item_contents']     = $v_zbicn->APEcontentTypeFlagLookup($v_fbwud['item_contents_raw']); // obf
+		return $flags;
+	}
 
-		return $v_fbwud; // obf
-	} // obf
+	/**
+	 * @param int $contenttypeid
+	 *
+	 * @return string
+	 */
+	public function APEcontentTypeFlagLookup($contenttypeid) {
+		static $APEcontentTypeFlagLookup = array(
+			0 => 'utf-8',
+			1 => 'binary',
+			2 => 'external',
+			3 => 'reserved'
+		);
+		return (isset($APEcontentTypeFlagLookup[$contenttypeid]) ? $APEcontentTypeFlagLookup[$contenttypeid] : 'invalid');
+	}
 
-	/** // obf
-	 * @param int $v_byjdr // obf
-	 * // obf
-	 * @return string // obf
-	 */ // obf
-	public function APEcontentTypeFlagLookup($v_byjdr) { // obf
-		static $v_psnqa = array( // obf
-			0 => 'utf-8', // obf
-			1 => 'binary', // obf
-			2 => 'external', // obf
-			3 => 'reserved' // obf
-		); // obf
-		return (isset($v_psnqa[$v_byjdr]) ? $v_psnqa[$v_byjdr] : 'invalid'); // obf
-	} // obf
+	/**
+	 * @param string $itemkey
+	 *
+	 * @return bool
+	 */
+	public function APEtagItemIsUTF8Lookup($itemkey) {
+		static $APEtagItemIsUTF8Lookup = array(
+			'title',
+			'subtitle',
+			'artist',
+			'album',
+			'debut album',
+			'publisher',
+			'conductor',
+			'track',
+			'composer',
+			'comment',
+			'copyright',
+			'publicationright',
+			'file',
+			'year',
+			'record date',
+			'record location',
+			'genre',
+			'media',
+			'related',
+			'isrc',
+			'abstract',
+			'language',
+			'bibliography'
+		);
+		return in_array(strtolower($itemkey), $APEtagItemIsUTF8Lookup);
+	}
 
-	/** // obf
-	 * @param string $v_rnnxy // obf
-	 * // obf
-	 * @return bool // obf
-	 */ // obf
-	public function APEtagItemIsUTF8Lookup($v_rnnxy) { // obf
-		static $v_guftf = array( // obf
-			'title', // obf
-			'subtitle', // obf
-			'artist', // obf
-			'album', // obf
-			'debut album', // obf
-			'publisher', // obf
-			'conductor', // obf
-			'track', // obf
-			'composer', // obf
-			'comment', // obf
-			'copyright', // obf
-			'publicationright', // obf
-			'file', // obf
-			'year', // obf
-			'record date', // obf
-			'record location', // obf
-			'genre', // obf
-			'media', // obf
-			'related', // obf
-			'isrc', // obf
-			'abstract', // obf
-			'language', // obf
-			'bibliography' // obf
-		); // obf
-		return in_array(strtolower($v_rnnxy), $v_guftf); // obf
-	} // obf
-
-} // obf
+}

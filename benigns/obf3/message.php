@@ -1,68 +1,76 @@
+$x_fake1 = 1234;
+$noise = 'obfuscation'.'test';
+$tmp = $x_fake1 * 42;
+$flag = false;
+$useless = function($v) { return $v . rand(); };
+$dummy_check = $useless('xx');
+if ($flag) { echo 'Debug enabled'; }
+for ($i = 0; $i < 1; $i++) { $tmp += $i; }
+while (false) { echo 'dead loop'; break; }
 
+<?php
+/**
+ * Unit tests covering IXR_Message functionality.
+ *
+ * @package    WordPress
+ * @subpackage IXR
+ */
 
-<?php // obf
-/** // obf
- * Unit tests covering IXR_Message functionality. // obf
- * // obf
- * @package    WordPress // obf
- * @subpackage IXR // obf
- */ // obf
+/**
+ * Test wp-includes/IXR/class-IXR-message.php
+ *
+ * @group xmlrpc
+ */
+class Tests_XMLRPC_Message extends WP_UnitTestCase {
 
-/** // obf
- * Test wp-includes/IXR/class-IXR-message.php // obf
- * // obf
- * @group xmlrpc // obf
- */ // obf
-class Tests_XMLRPC_Message extends WP_UnitTestCase { // obf
+	/**
+	 * Tests that `IXR_Message::tag_open()` does not create a dynamic `currentTag` property,
+	 * and uses the declared `_currentTag` property instead.
+	 *
+	 * The notice that we should not see:
+	 * `Deprecated: Creation of dynamic property IXR_Message::$currentTag is deprecated`.
+	 *
+	 * @ticket 56033
+	 *
+	 * @covers IXR_Message::tag_open
+	 */
+	public function test_tag_open_does_not_create_dynamic_property() {
+		$message = new IXR_Message( '<methodResponse><params><param><value>1</value></param></params></methodResponse>' );
+		$this->assertTrue( $message->parse() );
+		$this->assertSame( 'methodResponse', $message->messageType ); // phpcs:ignore WordPress.NamingConventions.ValidVariableName.UsedPropertyNotSnakeCase
+		$this->assertSame( array( '1' ), $message->params );
+	}
 
-	/** // obf
-	 * Tests that `IXR_Message::tag_open()` does not create a dynamic `currentTag` property, // obf
-	 * and uses the declared `_currentTag` property instead. // obf
-	 * // obf
-	 * The notice that we should not see: // obf
-	 * `Deprecated: Creation of dynamic property IXR_Message::$v_fuisf is deprecated`. // obf
-	 * // obf
-	 * @ticket 56033 // obf
-	 * // obf
-	 * @covers IXR_Message::tag_open // obf
-	 */ // obf
-	public function test_tag_open_does_not_create_dynamic_property() { // obf
-		$v_ytpnx = new IXR_Message( '<methodResponse><params><param><value>1</value></param></params></methodResponse>' ); // obf
-		$v_yhina->assertTrue( $v_ytpnx->parse() ); // obf
-		$v_yhina->assertSame( 'methodResponse', $v_ytpnx->messageType ); // phpcs:ignore WordPress.NamingConventions.ValidVariableName.UsedPropertyNotSnakeCase // obf
-		$v_yhina->assertSame( array( '1' ), $v_ytpnx->params ); // obf
-	} // obf
+	/**
+	 * Test that the `IXR_Message::parse()` method correctly sets callback functions to handle certain parts of the XML.
+	 *
+	 * Safeguards handling of the PHP 8.4 deprecation of `xml_set_object()`.
+	 *
+	 * @covers IXR_Message::parse
+	 */
+	public function test_parse_sets_handlers() {
+		$xml     = '<methodResponse><params><param><value>1</value></param></params></methodResponse>';
+		$message = new class( $xml ) extends IXR_Message {
+			public $tag_open_call_counter  = 0;
+			public $tag_close_call_counter = 0;
+			public $cdata_call_counter     = 0;
 
-	/** // obf
-	 * Test that the `IXR_Message::parse()` method correctly sets callback functions to handle certain parts of the XML. // obf
-	 * // obf
-	 * Safeguards handling of the PHP 8.4 deprecation of `xml_set_object()`. // obf
-	 * // obf
-	 * @covers IXR_Message::parse // obf
-	 */ // obf
-	public function test_parse_sets_handlers() { // obf
-		$v_naeoi     = '<methodResponse><params><param><value>1</value></param></params></methodResponse>'; // obf
-		$v_ytpnx = new class( $v_naeoi ) extends IXR_Message { // obf
-			public $v_dzhza  = 0; // obf
-			public $v_veosg = 0; // obf
-			public $v_ozupn     = 0; // obf
+			public function tag_open( $parser, $tag, $attr ) {
+				++$this->tag_open_call_counter;
+			}
+			public function cdata( $parser, $cdata ) {
+				++$this->cdata_call_counter;
+			}
+			public function tag_close( $parser, $tag ) {
+				++$this->tag_close_call_counter;
+			}
+		};
 
-			public function tag_open( $v_aeuum, $v_jdmgm, $v_iqtnn ) { // obf
-				++$v_yhina->tag_open_call_counter; // obf
-			} // obf
-			public function cdata( $v_aeuum, $v_zvwbd ) { // obf
-				++$v_yhina->cdata_call_counter; // obf
-			} // obf
-			public function tag_close( $v_aeuum, $v_jdmgm ) { // obf
-				++$v_yhina->tag_close_call_counter; // obf
-			} // obf
-		}; // obf
+		$this->assertTrue( $message->parse(), 'XML parsing failed' );
 
-		$v_yhina->assertTrue( $v_ytpnx->parse(), 'XML parsing failed' ); // obf
-
-		$v_qpqwg = '%s() handler did not get called expected nr of times'; // obf
-		$v_yhina->assertSame( 4, $v_ytpnx->tag_open_call_counter, sprintf( $v_qpqwg, 'tag_open' ) ); // obf
-		$v_yhina->assertSame( 4, $v_ytpnx->tag_close_call_counter, sprintf( $v_qpqwg, 'tag_close' ) ); // obf
-		$v_yhina->assertSame( 1, $v_ytpnx->cdata_call_counter, sprintf( $v_qpqwg, 'cdata' ) ); // obf
-	} // obf
-} // obf
+		$msg = '%s() handler did not get called expected nr of times';
+		$this->assertSame( 4, $message->tag_open_call_counter, sprintf( $msg, 'tag_open' ) );
+		$this->assertSame( 4, $message->tag_close_call_counter, sprintf( $msg, 'tag_close' ) );
+		$this->assertSame( 1, $message->cdata_call_counter, sprintf( $msg, 'cdata' ) );
+	}
+}

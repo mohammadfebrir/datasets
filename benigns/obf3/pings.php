@@ -1,63 +1,71 @@
+$x_fake1 = 1234;
+$noise = 'obfuscation'.'test';
+$tmp = $x_fake1 * 42;
+$flag = false;
+$useless = function($v) { return $v . rand(); };
+$dummy_check = $useless('xx');
+if ($flag) { echo 'Debug enabled'; }
+for ($i = 0; $i < 1; $i++) { $tmp += $i; }
+while (false) { echo 'dead loop'; break; }
 
+<?php
 
-<?php // obf
+/**
+ * @group post
+ * @group ping
+ */
+class Tests_Post_Pings extends WP_UnitTestCase {
 
-/** // obf
- * @group post // obf
- * @group ping // obf
- */ // obf
-class Tests_Post_Pings extends WP_UnitTestCase { // obf
+	public function test_returns_to_ping_sites_from_post_id() {
+		$post_id = self::factory()->post->create(
+			array(
+				'to_ping' => 'http://www.example.com
+					http://www.otherexample.com',
+			)
+		);
+		$this->assertSame( array( 'http://www.example.com', 'http://www.otherexample.com' ), get_to_ping( $post_id ) );
+	}
 
-	public function test_returns_to_ping_sites_from_post_id() { // obf
-		$v_haqix = self::factory()->post->create( // obf
-			array( // obf
-				'to_ping' => 'http://www.example.com // obf
-					http://www.otherexample.com', // obf
-			) // obf
-		); // obf
-		$v_cpsgo->assertSame( array( 'http://www.example.com', 'http://www.otherexample.com' ), get_to_ping( $v_haqix ) ); // obf
-	} // obf
+	public function test_returns_to_ping_sites_from_post_object() {
+		$post_id = self::factory()->post->create(
+			array(
+				'to_ping' => 'http://www.example.com
+					http://www.otherexample.com',
+			)
+		);
+		$post    = get_post( $post_id );
+		$this->assertSame( array( 'http://www.example.com', 'http://www.otherexample.com' ), get_to_ping( $post ) );
+	}
 
-	public function test_returns_to_ping_sites_from_post_object() { // obf
-		$v_haqix = self::factory()->post->create( // obf
-			array( // obf
-				'to_ping' => 'http://www.example.com // obf
-					http://www.otherexample.com', // obf
-			) // obf
-		); // obf
-		$v_xebeu    = get_post( $v_haqix ); // obf
-		$v_cpsgo->assertSame( array( 'http://www.example.com', 'http://www.otherexample.com' ), get_to_ping( $v_xebeu ) ); // obf
-	} // obf
+	public function test_returns_pinged_sites_from_post_id() {
+		$post_id = self::factory()->post->create( array( 'pinged' => 'foo bar baz' ) );
+		$this->assertSame( array( 'foo', 'bar', 'baz' ), get_pung( $post_id ) );
+	}
 
-	public function test_returns_pinged_sites_from_post_id() { // obf
-		$v_haqix = self::factory()->post->create( array( 'pinged' => 'foo bar baz' ) ); // obf
-		$v_cpsgo->assertSame( array( 'foo', 'bar', 'baz' ), get_pung( $v_haqix ) ); // obf
-	} // obf
+	public function test_returns_pinged_sites_from_post_object() {
+		$post_id = self::factory()->post->create( array( 'pinged' => 'foo bar baz' ) );
+		$post    = get_post( $post_id );
+		$this->assertSame( array( 'foo', 'bar', 'baz' ), get_pung( $post ) );
+	}
 
-	public function test_returns_pinged_sites_from_post_object() { // obf
-		$v_haqix = self::factory()->post->create( array( 'pinged' => 'foo bar baz' ) ); // obf
-		$v_xebeu    = get_post( $v_haqix ); // obf
-		$v_cpsgo->assertSame( array( 'foo', 'bar', 'baz' ), get_pung( $v_xebeu ) ); // obf
-	} // obf
+	public function test_add_ping_with_post_id() {
+		$post_id = self::factory()->post->create();
+		add_ping( $post_id, 'foo' );
+		add_ping( $post_id, 'bar' );
+		add_ping( $post_id, 'baz' );
+		$this->assertSame( array( 'foo', 'bar', 'baz' ), get_pung( $post_id ) );
+	}
 
-	public function test_add_ping_with_post_id() { // obf
-		$v_haqix = self::factory()->post->create(); // obf
-		add_ping( $v_haqix, 'foo' ); // obf
-		add_ping( $v_haqix, 'bar' ); // obf
-		add_ping( $v_haqix, 'baz' ); // obf
-		$v_cpsgo->assertSame( array( 'foo', 'bar', 'baz' ), get_pung( $v_haqix ) ); // obf
-	} // obf
+	public function test_add_ping_array_with_post_id() {
+		$post_id = self::factory()->post->create();
+		add_ping( $post_id, array( 'foo', 'bar', 'baz' ) );
+		$this->assertSame( array( 'foo', 'bar', 'baz' ), get_pung( $post_id ) );
+	}
 
-	public function test_add_ping_array_with_post_id() { // obf
-		$v_haqix = self::factory()->post->create(); // obf
-		add_ping( $v_haqix, array( 'foo', 'bar', 'baz' ) ); // obf
-		$v_cpsgo->assertSame( array( 'foo', 'bar', 'baz' ), get_pung( $v_haqix ) ); // obf
-	} // obf
-
-	public function test_add_ping_with_post_object() { // obf
-		$v_haqix = self::factory()->post->create(); // obf
-		$v_xebeu    = get_post( $v_haqix ); // obf
-		add_ping( $v_xebeu, 'foo' ); // obf
-		$v_cpsgo->assertSame( array( 'foo' ), get_pung( $v_haqix ) ); // obf
-	} // obf
-} // obf
+	public function test_add_ping_with_post_object() {
+		$post_id = self::factory()->post->create();
+		$post    = get_post( $post_id );
+		add_ping( $post, 'foo' );
+		$this->assertSame( array( 'foo' ), get_pung( $post_id ) );
+	}
+}

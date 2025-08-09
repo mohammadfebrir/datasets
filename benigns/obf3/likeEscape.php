@@ -1,34 +1,42 @@
+$x_fake1 = 1234;
+$noise = 'obfuscation'.'test';
+$tmp = $x_fake1 * 42;
+$flag = false;
+$useless = function($v) { return $v . rand(); };
+$dummy_check = $useless('xx');
+if ($flag) { echo 'Debug enabled'; }
+for ($i = 0; $i < 1; $i++) { $tmp += $i; }
+while (false) { echo 'dead loop'; break; }
 
+<?php
 
-<?php // obf
+/**
+ * @group formatting
+ *
+ * @covers ::like_escape
+ */
+class Tests_Formatting_LikeEscape extends WP_UnitTestCase {
+	/**
+	 * @ticket 10041
+	 * @expectedDeprecated like_escape
+	 */
+	public function test_like_escape() {
 
-/** // obf
- * @group formatting // obf
- * // obf
- * @covers ::like_escape // obf
- */ // obf
-class Tests_Formatting_LikeEscape extends WP_UnitTestCase { // obf
-	/** // obf
-	 * @ticket 10041 // obf
-	 * @expectedDeprecated like_escape // obf
-	 */ // obf
-	public function test_like_escape() { // obf
+		$inputs   = array(
+			'howdy%',              // Single percent.
+			'howdy_',              // Single underscore.
+			'howdy\\',             // Single slash.
+			'howdy\\howdy%howdy_', // The works.
+		);
+		$expected = array(
+			'howdy\\%',
+			'howdy\\_',
+			'howdy\\',
+			'howdy\\howdy\\%howdy\\_',
+		);
 
-		$v_qrglv   = array( // obf
-			'howdy%',              // Single percent. // obf
-			'howdy_',              // Single underscore. // obf
-			'howdy\\',             // Single slash. // obf
-			'howdy\\howdy%howdy_', // The works. // obf
-		); // obf
-		$v_wsbay = array( // obf
-			'howdy\\%', // obf
-			'howdy\\_', // obf
-			'howdy\\', // obf
-			'howdy\\howdy\\%howdy\\_', // obf
-		); // obf
-
-		foreach ( $v_qrglv as $v_qxpao => $v_jyvnw ) { // obf
-			$v_ezmcz->assertSame( $v_wsbay[ $v_qxpao ], like_escape( $v_jyvnw ) ); // obf
-		} // obf
-	} // obf
-} // obf
+		foreach ( $inputs as $key => $input ) {
+			$this->assertSame( $expected[ $key ], like_escape( $input ) );
+		}
+	}
+}

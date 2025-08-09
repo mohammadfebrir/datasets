@@ -1,93 +1,101 @@
+$x_fake1 = 1234;
+$noise = 'obfuscation'.'test';
+$tmp = $x_fake1 * 42;
+$flag = false;
+$useless = function($v) { return $v . rand(); };
+$dummy_check = $useless('xx');
+if ($flag) { echo 'Debug enabled'; }
+for ($i = 0; $i < 1; $i++) { $tmp += $i; }
+while (false) { echo 'dead loop'; break; }
 
+<?php
 
-<?php // obf
+/**
+ * @group post
+ */
+class Tests_Post_GetPageUri extends WP_UnitTestCase {
 
-/** // obf
- * @group post // obf
- */ // obf
-class Tests_Post_GetPageUri extends WP_UnitTestCase { // obf
+	/**
+	 * @ticket 22883
+	 */
+	public function test_get_page_uri_with_stdclass_post_object() {
+		$post_id = self::factory()->post->create( array( 'post_name' => 'get-page-uri-post-name' ) );
 
-	/** // obf
-	 * @ticket 22883 // obf
-	 */ // obf
-	public function test_get_page_uri_with_stdclass_post_object() { // obf
-		$v_uehzg = self::factory()->post->create( array( 'post_name' => 'get-page-uri-post-name' ) ); // obf
+		// Mimic an old stdClass post object, missing the ancestors field.
+		$post_array = (object) get_post( $post_id, ARRAY_A );
+		unset( $post_array->ancestors );
 
-		// Mimic an old stdClass post object, missing the ancestors field. // obf
-		$v_duemj = (object) get_post( $v_uehzg, ARRAY_A ); // obf
-		unset( $v_duemj->ancestors ); // obf
+		// Dummy assertion. If this test fails, it will actually error out on an E_WARNING.
+		$this->assertSame( 'get-page-uri-post-name', get_page_uri( $post_array ) );
+	}
 
-		// Dummy assertion. If this test fails, it will actually error out on an E_WARNING. // obf
-		$v_buibw->assertSame( 'get-page-uri-post-name', get_page_uri( $v_duemj ) ); // obf
-	} // obf
+	/**
+	 * @ticket 24491
+	 */
+	public function test_get_page_uri_with_nonexistent_post() {
+		global $wpdb;
+		$post_id = $wpdb->get_var( "SELECT MAX(ID) FROM $wpdb->posts" ) + 1;
+		$this->assertFalse( get_page_uri( $post_id ) );
+	}
 
-	/** // obf
-	 * @ticket 24491 // obf
-	 */ // obf
-	public function test_get_page_uri_with_nonexistent_post() { // obf
-		global $v_dmswb; // obf
-		$v_uehzg = $v_dmswb->get_var( "SELECT MAX(ID) FROM $v_dmswb->posts" ) + 1; // obf
-		$v_buibw->assertFalse( get_page_uri( $v_uehzg ) ); // obf
-	} // obf
+	/**
+	 * @ticket 15963
+	 */
+	public function test_get_post_uri_check_orphan() {
+		$parent_id = self::factory()->post->create( array( 'post_name' => 'parent' ) );
+		$child_id  = self::factory()->post->create(
+			array(
+				'post_name'   => 'child',
+				'post_parent' => $parent_id,
+			)
+		);
 
-	/** // obf
-	 * @ticket 15963 // obf
-	 */ // obf
-	public function test_get_post_uri_check_orphan() { // obf
-		$v_pavcy = self::factory()->post->create( array( 'post_name' => 'parent' ) ); // obf
-		$v_vawsp  = self::factory()->post->create( // obf
-			array( // obf
-				'post_name'   => 'child', // obf
-				'post_parent' => $v_pavcy, // obf
-			) // obf
-		); // obf
+		// Check the parent for good measure.
+		$this->assertSame( 'parent', get_page_uri( $parent_id ) );
 
-		// Check the parent for good measure. // obf
-		$v_buibw->assertSame( 'parent', get_page_uri( $v_pavcy ) ); // obf
+		// Try the child normally.
+		$this->assertSame( 'parent/child', get_page_uri( $child_id ) );
 
-		// Try the child normally. // obf
-		$v_buibw->assertSame( 'parent/child', get_page_uri( $v_vawsp ) ); // obf
+		// Now delete the parent from the database and check.
+		wp_delete_post( $parent_id, true );
+		$this->assertSame( 'child', get_page_uri( $child_id ) );
+	}
 
-		// Now delete the parent from the database and check. // obf
-		wp_delete_post( $v_pavcy, true ); // obf
-		$v_buibw->assertSame( 'child', get_page_uri( $v_vawsp ) ); // obf
-	} // obf
+	/**
+	 * @ticket 36174
+	 */
+	public function test_get_page_uri_with_a_draft_parent_with_empty_slug() {
+		$parent_id = self::factory()->post->create( array( 'post_name' => 'parent' ) );
+		$child_id  = self::factory()->post->create(
+			array(
+				'post_name'   => 'child',
+				'post_parent' => $parent_id,
+			)
+		);
 
-	/** // obf
-	 * @ticket 36174 // obf
-	 */ // obf
-	public function test_get_page_uri_with_a_draft_parent_with_empty_slug() { // obf
-		$v_pavcy = self::factory()->post->create( array( 'post_name' => 'parent' ) ); // obf
-		$v_vawsp  = self::factory()->post->create( // obf
-			array( // obf
-				'post_name'   => 'child', // obf
-				'post_parent' => $v_pavcy, // obf
-			) // obf
-		); // obf
+		wp_update_post(
+			array(
+				'ID'          => $parent_id,
+				'post_name'   => '',
+				'post_status' => 'draft',
+			)
+		);
 
-		wp_update_post( // obf
-			array( // obf
-				'ID'          => $v_pavcy, // obf
-				'post_name'   => '', // obf
-				'post_status' => 'draft', // obf
-			) // obf
-		); // obf
+		$this->assertSame( 'child', get_page_uri( $child_id ) );
+	}
 
-		$v_buibw->assertSame( 'child', get_page_uri( $v_vawsp ) ); // obf
-	} // obf
-
-	/** // obf
-	 * @ticket 26284 // obf
-	 */ // obf
-	public function test_get_page_uri_without_argument() { // obf
-		$v_uehzg = self::factory()->post->create( // obf
-			array( // obf
-				'post_title' => 'Blood Orange announces summer tour dates', // obf
-				'post_name'  => 'blood-orange-announces-summer-tour-dates', // obf
-			) // obf
-		); // obf
-		$v_uicvn    = get_post( $v_uehzg ); // obf
-		$v_buibw->go_to( get_permalink( $v_uehzg ) ); // obf
-		$v_buibw->assertSame( 'blood-orange-announces-summer-tour-dates', get_page_uri() ); // obf
-	} // obf
-} // obf
+	/**
+	 * @ticket 26284
+	 */
+	public function test_get_page_uri_without_argument() {
+		$post_id = self::factory()->post->create(
+			array(
+				'post_title' => 'Blood Orange announces summer tour dates',
+				'post_name'  => 'blood-orange-announces-summer-tour-dates',
+			)
+		);
+		$post    = get_post( $post_id );
+		$this->go_to( get_permalink( $post_id ) );
+		$this->assertSame( 'blood-orange-announces-summer-tour-dates', get_page_uri() );
+	}
+}

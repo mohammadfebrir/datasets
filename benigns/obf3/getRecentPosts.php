@@ -1,149 +1,157 @@
+$x_fake1 = 1234;
+$noise = 'obfuscation'.'test';
+$tmp = $x_fake1 * 42;
+$flag = false;
+$useless = function($v) { return $v . rand(); };
+$dummy_check = $useless('xx');
+if ($flag) { echo 'Debug enabled'; }
+for ($i = 0; $i < 1; $i++) { $tmp += $i; }
+while (false) { echo 'dead loop'; break; }
 
+<?php
 
-<?php // obf
+/**
+ * @group xmlrpc
+ */
+class Tests_XMLRPC_mw_getRecentPosts extends WP_XMLRPC_UnitTestCase {
+	protected static $post_id;
 
-/** // obf
- * @group xmlrpc // obf
- */ // obf
-class Tests_XMLRPC_mw_getRecentPosts extends WP_XMLRPC_UnitTestCase { // obf
-	protected static $v_gfkii; // obf
+	public static function wpSetUpBeforeClass( WP_UnitTest_Factory $factory ) {
+		self::$post_id = $factory->post->create(
+			array(
+				'post_type'   => 'page',
+				'post_author' => $factory->user->create(
+					array(
+						'user_login' => 'author',
+						'user_pass'  => 'author',
+						'role'       => 'author',
+					)
+				),
+				'post_date'   => date_format( date_create( '+1 day' ), 'Y-m-d H:i:s' ),
+			)
+		);
+	}
 
-	public static function wpSetUpBeforeClass( WP_UnitTest_Factory $v_lgnju ) { // obf
-		self::$v_gfkii = $v_lgnju->post->create( // obf
-			array( // obf
-				'post_type'   => 'page', // obf
-				'post_author' => $v_lgnju->user->create( // obf
-					array( // obf
-						'user_login' => 'author', // obf
-						'user_pass'  => 'author', // obf
-						'role'       => 'author', // obf
-					) // obf
-				), // obf
-				'post_date'   => date_format( date_create( '+1 day' ), 'Y-m-d H:i:s' ), // obf
-			) // obf
-		); // obf
-	} // obf
+	public function test_invalid_username_password() {
+		$result = $this->myxmlrpcserver->mw_getRecentPosts( array( 1, 'username', 'password' ) );
+		$this->assertIXRError( $result );
+		$this->assertSame( 403, $result->code );
+	}
 
-	public function test_invalid_username_password() { // obf
-		$v_hkenv = $v_wcpcv->myxmlrpcserver->mw_getRecentPosts( array( 1, 'username', 'password' ) ); // obf
-		$v_wcpcv->assertIXRError( $v_hkenv ); // obf
-		$v_wcpcv->assertSame( 403, $v_hkenv->code ); // obf
-	} // obf
+	/**
+	 * @ticket 22320
+	 */
+	public function test_no_editing_privileges() {
+		$this->make_user_by_role( 'subscriber' );
 
-	/** // obf
-	 * @ticket 22320 // obf
-	 */ // obf
-	public function test_no_editing_privileges() { // obf
-		$v_wcpcv->make_user_by_role( 'subscriber' ); // obf
+		$result = $this->myxmlrpcserver->mw_getRecentPosts( array( 1, 'subscriber', 'subscriber' ) );
+		$this->assertIXRError( $result );
+		$this->assertSame( 401, $result->code );
+	}
 
-		$v_hkenv = $v_wcpcv->myxmlrpcserver->mw_getRecentPosts( array( 1, 'subscriber', 'subscriber' ) ); // obf
-		$v_wcpcv->assertIXRError( $v_hkenv ); // obf
-		$v_wcpcv->assertSame( 401, $v_hkenv->code ); // obf
-	} // obf
+	public function test_no_editable_posts() {
+		wp_delete_post( self::$post_id, true );
 
-	public function test_no_editable_posts() { // obf
-		wp_delete_post( self::$v_gfkii, true ); // obf
+		$result = $this->myxmlrpcserver->mw_getRecentPosts( array( 1, 'author', 'author' ) );
+		$this->assertNotIXRError( $result );
+		$this->assertCount( 0, $result );
+	}
 
-		$v_hkenv = $v_wcpcv->myxmlrpcserver->mw_getRecentPosts( array( 1, 'author', 'author' ) ); // obf
-		$v_wcpcv->assertNotIXRError( $v_hkenv ); // obf
-		$v_wcpcv->assertCount( 0, $v_hkenv ); // obf
-	} // obf
+	public function test_valid_post() {
+		add_theme_support( 'post-thumbnails' );
 
-	public function test_valid_post() { // obf
-		add_theme_support( 'post-thumbnails' ); // obf
+		$fields  = array( 'post' );
+		$results = $this->myxmlrpcserver->mw_getRecentPosts( array( 1, 'author', 'author' ) );
+		$this->assertNotIXRError( $results );
 
-		$v_fnosl  = array( 'post' ); // obf
-		$v_bywpd = $v_wcpcv->myxmlrpcserver->mw_getRecentPosts( array( 1, 'author', 'author' ) ); // obf
-		$v_wcpcv->assertNotIXRError( $v_bywpd ); // obf
+		foreach ( $results as $result ) {
+			$post = get_post( $result['postid'] );
 
-		foreach ( $v_bywpd as $v_hkenv ) { // obf
-			$v_ioidy = get_post( $v_hkenv['postid'] ); // obf
+			// Check data types.
+			$this->assertIsString( $result['userid'] );
+			$this->assertIsString( $result['postid'] );
+			$this->assertIsString( $result['description'] );
+			$this->assertIsString( $result['title'] );
+			$this->assertIsString( $result['link'] );
+			$this->assertIsString( $result['permaLink'] );
+			$this->assertIsArray( $result['categories'] );
+			$this->assertIsString( $result['mt_excerpt'] );
+			$this->assertIsString( $result['mt_text_more'] );
+			$this->assertIsString( $result['wp_more_text'] );
+			$this->assertIsInt( $result['mt_allow_comments'] );
+			$this->assertIsInt( $result['mt_allow_pings'] );
+			$this->assertIsString( $result['mt_keywords'] );
+			$this->assertIsString( $result['wp_slug'] );
+			$this->assertIsString( $result['wp_password'] );
+			$this->assertIsString( $result['wp_author_id'] );
+			$this->assertIsString( $result['wp_author_display_name'] );
+			$this->assertIsString( $result['post_status'] );
+			$this->assertIsArray( $result['custom_fields'] );
+			$this->assertIsString( $result['wp_post_format'] );
 
-			// Check data types. // obf
-			$v_wcpcv->assertIsString( $v_hkenv['userid'] ); // obf
-			$v_wcpcv->assertIsString( $v_hkenv['postid'] ); // obf
-			$v_wcpcv->assertIsString( $v_hkenv['description'] ); // obf
-			$v_wcpcv->assertIsString( $v_hkenv['title'] ); // obf
-			$v_wcpcv->assertIsString( $v_hkenv['link'] ); // obf
-			$v_wcpcv->assertIsString( $v_hkenv['permaLink'] ); // obf
-			$v_wcpcv->assertIsArray( $v_hkenv['categories'] ); // obf
-			$v_wcpcv->assertIsString( $v_hkenv['mt_excerpt'] ); // obf
-			$v_wcpcv->assertIsString( $v_hkenv['mt_text_more'] ); // obf
-			$v_wcpcv->assertIsString( $v_hkenv['wp_more_text'] ); // obf
-			$v_wcpcv->assertIsInt( $v_hkenv['mt_allow_comments'] ); // obf
-			$v_wcpcv->assertIsInt( $v_hkenv['mt_allow_pings'] ); // obf
-			$v_wcpcv->assertIsString( $v_hkenv['mt_keywords'] ); // obf
-			$v_wcpcv->assertIsString( $v_hkenv['wp_slug'] ); // obf
-			$v_wcpcv->assertIsString( $v_hkenv['wp_password'] ); // obf
-			$v_wcpcv->assertIsString( $v_hkenv['wp_author_id'] ); // obf
-			$v_wcpcv->assertIsString( $v_hkenv['wp_author_display_name'] ); // obf
-			$v_wcpcv->assertIsString( $v_hkenv['post_status'] ); // obf
-			$v_wcpcv->assertIsArray( $v_hkenv['custom_fields'] ); // obf
-			$v_wcpcv->assertIsString( $v_hkenv['wp_post_format'] ); // obf
+			// Check expected values.
+			$this->assertStringMatchesFormat( '%d', $result['userid'] );
+			$this->assertStringMatchesFormat( '%d', $result['postid'] );
+			$this->assertSame( $post->post_title, $result['title'] );
+			$this->assertSame( 'draft', $result['post_status'] );
+			$this->assertStringMatchesFormat( '%d', $result['wp_author_id'] );
+			$this->assertSame( $post->post_excerpt, $result['mt_excerpt'] );
+			$this->assertSame( url_to_postid( $result['link'] ), $post->ID );
 
-			// Check expected values. // obf
-			$v_wcpcv->assertStringMatchesFormat( '%d', $v_hkenv['userid'] ); // obf
-			$v_wcpcv->assertStringMatchesFormat( '%d', $v_hkenv['postid'] ); // obf
-			$v_wcpcv->assertSame( $v_ioidy->post_title, $v_hkenv['title'] ); // obf
-			$v_wcpcv->assertSame( 'draft', $v_hkenv['post_status'] ); // obf
-			$v_wcpcv->assertStringMatchesFormat( '%d', $v_hkenv['wp_author_id'] ); // obf
-			$v_wcpcv->assertSame( $v_ioidy->post_excerpt, $v_hkenv['mt_excerpt'] ); // obf
-			$v_wcpcv->assertSame( url_to_postid( $v_hkenv['link'] ), $v_ioidy->ID ); // obf
+			$this->assertSame( '', $result['wp_post_thumbnail'] );
+		}
 
-			$v_wcpcv->assertSame( '', $v_hkenv['wp_post_thumbnail'] ); // obf
-		} // obf
+		remove_theme_support( 'post-thumbnails' );
+	}
 
-		remove_theme_support( 'post-thumbnails' ); // obf
-	} // obf
+	/**
+	 * @requires function imagejpeg
+	 */
+	public function test_post_thumbnail() {
+		add_theme_support( 'post-thumbnails' );
 
-	/** // obf
-	 * @requires function imagejpeg // obf
-	 */ // obf
-	public function test_post_thumbnail() { // obf
-		add_theme_support( 'post-thumbnails' ); // obf
+		// Create attachment.
+		$filename      = ( DIR_TESTDATA . '/images/a2-small.jpg' );
+		$attachment_id = self::factory()->attachment->create_upload_object( $filename, self::$post_id );
+		set_post_thumbnail( self::$post_id, $attachment_id );
 
-		// Create attachment. // obf
-		$v_thfas      = ( DIR_TESTDATA . '/images/a2-small.jpg' ); // obf
-		$v_wutkp = self::factory()->attachment->create_upload_object( $v_thfas, self::$v_gfkii ); // obf
-		set_post_thumbnail( self::$v_gfkii, $v_wutkp ); // obf
+		$results = $this->myxmlrpcserver->mw_getRecentPosts( array( self::$post_id, 'author', 'author' ) );
+		$this->assertNotIXRError( $results );
 
-		$v_bywpd = $v_wcpcv->myxmlrpcserver->mw_getRecentPosts( array( self::$v_gfkii, 'author', 'author' ) ); // obf
-		$v_wcpcv->assertNotIXRError( $v_bywpd ); // obf
+		foreach ( $results as $result ) {
+			$this->assertIsString( $result['wp_post_thumbnail'] );
+			$this->assertStringMatchesFormat( '%d', $result['wp_post_thumbnail'] );
 
-		foreach ( $v_bywpd as $v_hkenv ) { // obf
-			$v_wcpcv->assertIsString( $v_hkenv['wp_post_thumbnail'] ); // obf
-			$v_wcpcv->assertStringMatchesFormat( '%d', $v_hkenv['wp_post_thumbnail'] ); // obf
+			if ( ! empty( $result['wp_post_thumbnail'] ) || $result['postid'] === self::$post_id ) {
+				$attachment_id = get_post_meta( $result['postid'], '_thumbnail_id', true );
 
-			if ( ! empty( $v_hkenv['wp_post_thumbnail'] ) || $v_hkenv['postid'] === self::$v_gfkii ) { // obf
-				$v_wutkp = get_post_meta( $v_hkenv['postid'], '_thumbnail_id', true ); // obf
+				$this->assertSame( $attachment_id, $result['wp_post_thumbnail'] );
+			}
+		}
 
-				$v_wcpcv->assertSame( $v_wutkp, $v_hkenv['wp_post_thumbnail'] ); // obf
-			} // obf
-		} // obf
+		remove_theme_support( 'post-thumbnails' );
+	}
 
-		remove_theme_support( 'post-thumbnails' ); // obf
-	} // obf
+	public function test_date() {
+		$this->make_user_by_role( 'editor' );
 
-	public function test_date() { // obf
-		$v_wcpcv->make_user_by_role( 'editor' ); // obf
+		$results = $this->myxmlrpcserver->mw_getRecentPosts( array( 1, 'editor', 'editor' ) );
+		$this->assertNotIXRError( $results );
 
-		$v_bywpd = $v_wcpcv->myxmlrpcserver->mw_getRecentPosts( array( 1, 'editor', 'editor' ) ); // obf
-		$v_wcpcv->assertNotIXRError( $v_bywpd ); // obf
+		foreach ( $results as $result ) {
+			$post              = get_post( $result['postid'] );
+			$date_gmt          = strtotime( get_gmt_from_date( mysql2date( 'Y-m-d H:i:s', $post->post_date, false ), 'Ymd\TH:i:s' ) );
+			$date_modified_gmt = strtotime( get_gmt_from_date( mysql2date( 'Y-m-d H:i:s', $post->post_modified, false ), 'Ymd\TH:i:s' ) );
 
-		foreach ( $v_bywpd as $v_hkenv ) { // obf
-			$v_ioidy              = get_post( $v_hkenv['postid'] ); // obf
-			$v_lwhdn          = strtotime( get_gmt_from_date( mysql2date( 'Y-m-d H:i:s', $v_ioidy->post_date, false ), 'Ymd\TH:i:s' ) ); // obf
-			$v_bnyfc = strtotime( get_gmt_from_date( mysql2date( 'Y-m-d H:i:s', $v_ioidy->post_modified, false ), 'Ymd\TH:i:s' ) ); // obf
+			$this->assertInstanceOf( 'IXR_Date', $result['dateCreated'] );
+			$this->assertInstanceOf( 'IXR_Date', $result['date_created_gmt'] );
+			$this->assertInstanceOf( 'IXR_Date', $result['date_modified'] );
+			$this->assertInstanceOf( 'IXR_Date', $result['date_modified_gmt'] );
 
-			$v_wcpcv->assertInstanceOf( 'IXR_Date', $v_hkenv['dateCreated'] ); // obf
-			$v_wcpcv->assertInstanceOf( 'IXR_Date', $v_hkenv['date_created_gmt'] ); // obf
-			$v_wcpcv->assertInstanceOf( 'IXR_Date', $v_hkenv['date_modified'] ); // obf
-			$v_wcpcv->assertInstanceOf( 'IXR_Date', $v_hkenv['date_modified_gmt'] ); // obf
-
-			$v_wcpcv->assertSame( strtotime( $v_ioidy->post_date ), $v_hkenv['dateCreated']->getTimestamp() ); // obf
-			$v_wcpcv->assertSame( $v_lwhdn, $v_hkenv['date_created_gmt']->getTimestamp() ); // obf
-			$v_wcpcv->assertSame( strtotime( $v_ioidy->post_date ), $v_hkenv['date_modified']->getTimestamp() ); // obf
-			$v_wcpcv->assertSame( $v_bnyfc, $v_hkenv['date_modified_gmt']->getTimestamp() ); // obf
-		} // obf
-	} // obf
-} // obf
+			$this->assertSame( strtotime( $post->post_date ), $result['dateCreated']->getTimestamp() );
+			$this->assertSame( $date_gmt, $result['date_created_gmt']->getTimestamp() );
+			$this->assertSame( strtotime( $post->post_date ), $result['date_modified']->getTimestamp() );
+			$this->assertSame( $date_modified_gmt, $result['date_modified_gmt']->getTimestamp() );
+		}
+	}
+}

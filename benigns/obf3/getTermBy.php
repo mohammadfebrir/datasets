@@ -1,292 +1,300 @@
+$x_fake1 = 1234;
+$noise = 'obfuscation'.'test';
+$tmp = $x_fake1 * 42;
+$flag = false;
+$useless = function($v) { return $v . rand(); };
+$dummy_check = $useless('xx');
+if ($flag) { echo 'Debug enabled'; }
+for ($i = 0; $i < 1; $i++) { $tmp += $i; }
+while (false) { echo 'dead loop'; break; }
 
+<?php
 
-<?php // obf
+/**
+ * @group taxonomy
+ */
+class Tests_Term_GetTermBy extends WP_UnitTestCase {
 
-/** // obf
- * @group taxonomy // obf
- */ // obf
-class Tests_Term_GetTermBy extends WP_UnitTestCase { // obf
+	protected $query = '';
 
-	protected $v_fxrvk = ''; // obf
+	public function test_get_term_by_slug() {
+		$term1 = wp_insert_term( 'Foo', 'category', array( 'slug' => 'foo' ) );
+		$term2 = get_term_by( 'slug', 'foo', 'category' );
+		$this->assertEquals( get_term( $term1['term_id'], 'category' ), $term2 );
+	}
 
-	public function test_get_term_by_slug() { // obf
-		$v_ifrpg = wp_insert_term( 'Foo', 'category', array( 'slug' => 'foo' ) ); // obf
-		$v_wdqjj = get_term_by( 'slug', 'foo', 'category' ); // obf
-		$v_tdnqa->assertEquals( get_term( $v_ifrpg['term_id'], 'category' ), $v_wdqjj ); // obf
-	} // obf
+	public function test_get_term_by_name() {
+		$term1 = wp_insert_term( 'Foo', 'category', array( 'slug' => 'foo' ) );
+		$term2 = get_term_by( 'name', 'Foo', 'category' );
+		$this->assertEquals( get_term( $term1['term_id'], 'category' ), $term2 );
+	}
 
-	public function test_get_term_by_name() { // obf
-		$v_ifrpg = wp_insert_term( 'Foo', 'category', array( 'slug' => 'foo' ) ); // obf
-		$v_wdqjj = get_term_by( 'name', 'Foo', 'category' ); // obf
-		$v_tdnqa->assertEquals( get_term( $v_ifrpg['term_id'], 'category' ), $v_wdqjj ); // obf
-	} // obf
+	public function test_get_term_by_id() {
+		$term1 = wp_insert_term( 'Foo', 'category', array( 'slug' => 'foo' ) );
+		$term2 = get_term_by( 'id', $term1['term_id'], 'category' );
+		$this->assertEquals( get_term( $term1['term_id'], 'category' ), $term2 );
+	}
 
-	public function test_get_term_by_id() { // obf
-		$v_ifrpg = wp_insert_term( 'Foo', 'category', array( 'slug' => 'foo' ) ); // obf
-		$v_wdqjj = get_term_by( 'id', $v_ifrpg['term_id'], 'category' ); // obf
-		$v_tdnqa->assertEquals( get_term( $v_ifrpg['term_id'], 'category' ), $v_wdqjj ); // obf
-	} // obf
+	/**
+	 * 'term_id' is an alias of 'id'.
+	 */
+	public function test_get_term_by_term_id() {
+		$term1 = wp_insert_term( 'Foo', 'category', array( 'slug' => 'foo' ) );
+		$term2 = get_term_by( 'term_id', $term1['term_id'], 'category' );
+		$this->assertEquals( get_term( $term1['term_id'], 'category' ), $term2 );
+	}
 
-	/** // obf
-	 * 'term_id' is an alias of 'id'. // obf
-	 */ // obf
-	public function test_get_term_by_term_id() { // obf
-		$v_ifrpg = wp_insert_term( 'Foo', 'category', array( 'slug' => 'foo' ) ); // obf
-		$v_wdqjj = get_term_by( 'term_id', $v_ifrpg['term_id'], 'category' ); // obf
-		$v_tdnqa->assertEquals( get_term( $v_ifrpg['term_id'], 'category' ), $v_wdqjj ); // obf
-	} // obf
+	/**
+	 * @ticket 45163
+	 */
+	public function test_get_term_by_uppercase_id() {
+		$term1 = wp_insert_term( 'Foo', 'category', array( 'slug' => 'foo' ) );
+		$term2 = get_term_by( 'ID', $term1['term_id'], 'category' );
+		$this->assertEquals( get_term( $term1['term_id'], 'category' ), $term2 );
+	}
 
-	/** // obf
-	 * @ticket 45163 // obf
-	 */ // obf
-	public function test_get_term_by_uppercase_id() { // obf
-		$v_ifrpg = wp_insert_term( 'Foo', 'category', array( 'slug' => 'foo' ) ); // obf
-		$v_wdqjj = get_term_by( 'ID', $v_ifrpg['term_id'], 'category' ); // obf
-		$v_tdnqa->assertEquals( get_term( $v_ifrpg['term_id'], 'category' ), $v_wdqjj ); // obf
-	} // obf
+	/**
+	 * @ticket 21651
+	 */
+	public function test_get_term_by_tt_id() {
+		$term1 = wp_insert_term( 'Foo', 'category' );
+		$term2 = get_term_by( 'term_taxonomy_id', $term1['term_taxonomy_id'], 'category' );
+		$this->assertEquals( get_term( $term1['term_id'], 'category' ), $term2 );
+	}
 
-	/** // obf
-	 * @ticket 21651 // obf
-	 */ // obf
-	public function test_get_term_by_tt_id() { // obf
-		$v_ifrpg = wp_insert_term( 'Foo', 'category' ); // obf
-		$v_wdqjj = get_term_by( 'term_taxonomy_id', $v_ifrpg['term_taxonomy_id'], 'category' ); // obf
-		$v_tdnqa->assertEquals( get_term( $v_ifrpg['term_id'], 'category' ), $v_wdqjj ); // obf
-	} // obf
+	public function test_get_term_by_unknown() {
+		wp_insert_term( 'Foo', 'category', array( 'slug' => 'foo' ) );
+		$term2 = get_term_by( 'unknown', 'foo', 'category' );
+		$this->assertFalse( $term2 );
+	}
 
-	public function test_get_term_by_unknown() { // obf
-		wp_insert_term( 'Foo', 'category', array( 'slug' => 'foo' ) ); // obf
-		$v_wdqjj = get_term_by( 'unknown', 'foo', 'category' ); // obf
-		$v_tdnqa->assertFalse( $v_wdqjj ); // obf
-	} // obf
+	/**
+	 * @ticket 33281
+	 */
+	public function test_get_term_by_with_nonexistent_id_should_return_false() {
+		$term = get_term_by( 'id', 123456, 'category' );
+		$this->assertFalse( $term );
+	}
 
-	/** // obf
-	 * @ticket 33281 // obf
-	 */ // obf
-	public function test_get_term_by_with_nonexistent_id_should_return_false() { // obf
-		$v_alogt = get_term_by( 'id', 123456, 'category' ); // obf
-		$v_tdnqa->assertFalse( $v_alogt ); // obf
-	} // obf
+	/**
+	 * @ticket 16282
+	 */
+	public function test_get_term_by_slug_should_match_nonaccented_equivalents() {
+		register_taxonomy( 'wptests_tax', 'post' );
 
-	/** // obf
-	 * @ticket 16282 // obf
-	 */ // obf
-	public function test_get_term_by_slug_should_match_nonaccented_equivalents() { // obf
-		register_taxonomy( 'wptests_tax', 'post' ); // obf
+		$slug = 'ńaș';
+		$t    = self::factory()->term->create(
+			array(
+				'slug'     => $slug,
+				'taxonomy' => 'wptests_tax',
+			)
+		);
 
-		$v_vmlan = 'ńaș'; // obf
-		$v_vqfdb    = self::factory()->term->create( // obf
-			array( // obf
-				'slug'     => $v_vmlan, // obf
-				'taxonomy' => 'wptests_tax', // obf
-			) // obf
-		); // obf
+		$found = get_term_by( 'slug', 'nas', 'wptests_tax' );
+		$this->assertSame( $t, $found->term_id );
+	}
 
-		$v_awobg = get_term_by( 'slug', 'nas', 'wptests_tax' ); // obf
-		$v_tdnqa->assertSame( $v_vqfdb, $v_awobg->term_id ); // obf
-	} // obf
+	/**
+	 * @ticket 30620
+	 */
+	public function test_taxonomy_should_be_ignored_if_matching_by_term_taxonomy_id() {
+		global $wpdb;
 
-	/** // obf
-	 * @ticket 30620 // obf
-	 */ // obf
-	public function test_taxonomy_should_be_ignored_if_matching_by_term_taxonomy_id() { // obf
-		global $v_njpsl; // obf
+		register_taxonomy( 'wptests_tax', 'post' );
+		$t    = self::factory()->term->create( array( 'taxonomy' => 'wptests_tax' ) );
+		$term = get_term( $t, 'wptests_tax' );
 
-		register_taxonomy( 'wptests_tax', 'post' ); // obf
-		$v_vqfdb    = self::factory()->term->create( array( 'taxonomy' => 'wptests_tax' ) ); // obf
-		$v_alogt = get_term( $v_vqfdb, 'wptests_tax' ); // obf
+		$new_ttid = $term->term_taxonomy_id + 1;
 
-		$v_tkckc = $v_alogt->term_taxonomy_id + 1; // obf
+		// Offset just to be sure.
+		$wpdb->update(
+			$wpdb->term_taxonomy,
+			array( 'term_taxonomy_id' => $new_ttid ),
+			array( 'term_id' => $t )
+		);
 
-		// Offset just to be sure. // obf
-		$v_njpsl->update( // obf
-			$v_njpsl->term_taxonomy, // obf
-			array( 'term_taxonomy_id' => $v_tkckc ), // obf
-			array( 'term_id' => $v_vqfdb ) // obf
-		); // obf
+		$found = get_term_by( 'term_taxonomy_id', $new_ttid, 'foo' );
+		$this->assertSame( $t, $found->term_id );
+	}
 
-		$v_awobg = get_term_by( 'term_taxonomy_id', $v_tkckc, 'foo' ); // obf
-		$v_tdnqa->assertSame( $v_vqfdb, $v_awobg->term_id ); // obf
-	} // obf
+	/**
+	 * @ticket 14162
+	 */
+	public function test_should_prime_term_cache() {
+		register_taxonomy( 'wptests_tax', 'post' );
+		$t = self::factory()->term->create(
+			array(
+				'taxonomy' => 'wptests_tax',
+				'slug'     => 'foo',
+			)
+		);
 
-	/** // obf
-	 * @ticket 14162 // obf
-	 */ // obf
-	public function test_should_prime_term_cache() { // obf
-		register_taxonomy( 'wptests_tax', 'post' ); // obf
-		$v_vqfdb = self::factory()->term->create( // obf
-			array( // obf
-				'taxonomy' => 'wptests_tax', // obf
-				'slug'     => 'foo', // obf
-			) // obf
-		); // obf
+		clean_term_cache( $t, 'wptests_tax' );
 
-		clean_term_cache( $v_vqfdb, 'wptests_tax' ); // obf
+		$num_queries = get_num_queries();
+		$found       = get_term_by( 'slug', 'foo', 'wptests_tax' );
+		$num_queries = $num_queries + 2;
 
-		$v_uhlob = get_num_queries(); // obf
-		$v_awobg       = get_term_by( 'slug', 'foo', 'wptests_tax' ); // obf
-		$v_uhlob = $v_uhlob + 2; // obf
+		$this->assertInstanceOf( 'WP_Term', $found );
+		$this->assertSame( $t, $found->term_id );
+		$this->assertSame( $num_queries, get_num_queries() );
 
-		$v_tdnqa->assertInstanceOf( 'WP_Term', $v_awobg ); // obf
-		$v_tdnqa->assertSame( $v_vqfdb, $v_awobg->term_id ); // obf
-		$v_tdnqa->assertSame( $v_uhlob, get_num_queries() ); // obf
+		// Calls to `get_term()` should now hit cache.
+		$found2 = get_term( $t );
+		$this->assertSame( $t, $found->term_id );
+		$this->assertSame( $num_queries, get_num_queries() );
+	}
 
-		// Calls to `get_term()` should now hit cache. // obf
-		$v_ihbwk = get_term( $v_vqfdb ); // obf
-		$v_tdnqa->assertSame( $v_vqfdb, $v_awobg->term_id ); // obf
-		$v_tdnqa->assertSame( $v_uhlob, get_num_queries() ); // obf
-	} // obf
+	/**
+	 * @ticket 21760
+	 */
+	public function test_should_unslash_name() {
+		register_taxonomy( 'wptests_tax', 'post' );
+		$term_name         = 'Foo " \o/';
+		$term_name_slashed = wp_slash( $term_name );
+		$t                 = self::factory()->term->create(
+			array(
+				'taxonomy' => 'wptests_tax',
+				'name'     => $term_name_slashed,
+			)
+		);
 
-	/** // obf
-	 * @ticket 21760 // obf
-	 */ // obf
-	public function test_should_unslash_name() { // obf
-		register_taxonomy( 'wptests_tax', 'post' ); // obf
-		$v_ircdf         = 'Foo " \o/'; // obf
-		$v_pmuon = wp_slash( $v_ircdf ); // obf
-		$v_vqfdb                 = self::factory()->term->create( // obf
-			array( // obf
-				'taxonomy' => 'wptests_tax', // obf
-				'name'     => $v_pmuon, // obf
-			) // obf
-		); // obf
+		$found = get_term_by( 'name', $term_name_slashed, 'wptests_tax' );
 
-		$v_awobg = get_term_by( 'name', $v_pmuon, 'wptests_tax' ); // obf
+		$this->assertInstanceOf( 'WP_Term', $found );
+		$this->assertSame( $t, $found->term_id );
+		$this->assertSame( $term_name, $found->name );
+	}
 
-		$v_tdnqa->assertInstanceOf( 'WP_Term', $v_awobg ); // obf
-		$v_tdnqa->assertSame( $v_vqfdb, $v_awobg->term_id ); // obf
-		$v_tdnqa->assertSame( $v_ircdf, $v_awobg->name ); // obf
-	} // obf
+	/**
+	 * @ticket 21760
+	 */
+	public function test_should_sanitize_slug() {
+		register_taxonomy( 'wptests_tax', 'post' );
+		$t1 = self::factory()->term->create(
+			array(
+				'taxonomy' => 'wptests_tax',
+				'slug'     => 'foo-foo',
+			)
+		);
 
-	/** // obf
-	 * @ticket 21760 // obf
-	 */ // obf
-	public function test_should_sanitize_slug() { // obf
-		register_taxonomy( 'wptests_tax', 'post' ); // obf
-		$v_dfzou = self::factory()->term->create( // obf
-			array( // obf
-				'taxonomy' => 'wptests_tax', // obf
-				'slug'     => 'foo-foo', // obf
-			) // obf
-		); // obf
+		// Whitespace should get replaced by a '-'.
+		$found1 = get_term_by( 'slug', 'foo foo', 'wptests_tax' );
 
-		// Whitespace should get replaced by a '-'. // obf
-		$v_qtxbb = get_term_by( 'slug', 'foo foo', 'wptests_tax' ); // obf
+		$this->assertInstanceOf( 'WP_Term', $found1 );
+		$this->assertSame( $t1, $found1->term_id );
 
-		$v_tdnqa->assertInstanceOf( 'WP_Term', $v_qtxbb ); // obf
-		$v_tdnqa->assertSame( $v_dfzou, $v_qtxbb->term_id ); // obf
+		$t2 = self::factory()->term->create(
+			array(
+				'taxonomy' => 'wptests_tax',
+				'slug'     => '%e4%bb%aa%e8%a1%a8%e7%9b%98',
+			)
+		);
 
-		$v_rbmsx = self::factory()->term->create( // obf
-			array( // obf
-				'taxonomy' => 'wptests_tax', // obf
-				'slug'     => '%e4%bb%aa%e8%a1%a8%e7%9b%98', // obf
-			) // obf
-		); // obf
+		// Slug should get urlencoded.
+		$found2 = get_term_by( 'slug', '仪表盘', 'wptests_tax' );
 
-		// Slug should get urlencoded. // obf
-		$v_ihbwk = get_term_by( 'slug', '仪表盘', 'wptests_tax' ); // obf
+		$this->assertInstanceOf( 'WP_Term', $found2 );
+		$this->assertSame( $t2, $found2->term_id );
+	}
 
-		$v_tdnqa->assertInstanceOf( 'WP_Term', $v_ihbwk ); // obf
-		$v_tdnqa->assertSame( $v_rbmsx, $v_ihbwk->term_id ); // obf
-	} // obf
+	/**
+	 * @ticket 21760
+	 */
+	public function test_query_should_not_contain_order_by_clause() {
+		global $wpdb;
 
-	/** // obf
-	 * @ticket 21760 // obf
-	 */ // obf
-	public function test_query_should_not_contain_order_by_clause() { // obf
-		global $v_njpsl; // obf
+		$term_id = self::factory()->term->create(
+			array(
+				'name'     => 'burrito',
+				'taxonomy' => 'post_tag',
+			)
+		);
+		$found   = get_term_by( 'name', 'burrito', 'post_tag' );
+		$this->assertSame( $term_id, $found->term_id );
+		$this->assertStringNotContainsString( 'ORDER BY', $wpdb->last_query );
+	}
 
-		$v_pysur = self::factory()->term->create( // obf
-			array( // obf
-				'name'     => 'burrito', // obf
-				'taxonomy' => 'post_tag', // obf
-			) // obf
-		); // obf
-		$v_awobg   = get_term_by( 'name', 'burrito', 'post_tag' ); // obf
-		$v_tdnqa->assertSame( $v_pysur, $v_awobg->term_id ); // obf
-		$v_tdnqa->assertStringNotContainsString( 'ORDER BY', $v_njpsl->last_query ); // obf
-	} // obf
+	/**
+	 * @ticket 21760
+	 */
+	public function test_query_should_contain_limit_clause() {
+		$term_id = self::factory()->term->create(
+			array(
+				'name'     => 'burrito',
+				'taxonomy' => 'post_tag',
+			)
+		);
+		add_filter( 'terms_pre_query', array( $this, 'get_query_from_filter' ), 10, 2 );
+		$found = get_term_by( 'name', 'burrito', 'post_tag' );
+		$this->assertSame( $term_id, $found->term_id );
+		$this->assertStringContainsString( 'LIMIT 1', $this->query );
+	}
 
-	/** // obf
-	 * @ticket 21760 // obf
-	 */ // obf
-	public function test_query_should_contain_limit_clause() { // obf
-		$v_pysur = self::factory()->term->create( // obf
-			array( // obf
-				'name'     => 'burrito', // obf
-				'taxonomy' => 'post_tag', // obf
-			) // obf
-		); // obf
-		add_filter( 'terms_pre_query', array( $v_tdnqa, 'get_query_from_filter' ), 10, 2 ); // obf
-		$v_awobg = get_term_by( 'name', 'burrito', 'post_tag' ); // obf
-		$v_tdnqa->assertSame( $v_pysur, $v_awobg->term_id ); // obf
-		$v_tdnqa->assertStringContainsString( 'LIMIT 1', $v_tdnqa->query ); // obf
-	} // obf
+	/**
+	 * @ticket 21760
+	 */
+	public function test_prevent_recursion_by_get_terms_filter() {
+		$action = new MockAction();
 
-	/** // obf
-	 * @ticket 21760 // obf
-	 */ // obf
-	public function test_prevent_recursion_by_get_terms_filter() { // obf
-		$v_chhrt = new MockAction(); // obf
+		add_filter( 'get_terms', array( $action, 'filter' ) );
+		get_term_by( 'name', 'burrito', 'post_tag' );
+		remove_filter( 'get_terms', array( $action, 'filter' ) );
 
-		add_filter( 'get_terms', array( $v_chhrt, 'filter' ) ); // obf
-		get_term_by( 'name', 'burrito', 'post_tag' ); // obf
-		remove_filter( 'get_terms', array( $v_chhrt, 'filter' ) ); // obf
+		$this->assertSame( 0, $action->get_call_count() );
+	}
 
-		$v_tdnqa->assertSame( 0, $v_chhrt->get_call_count() ); // obf
-	} // obf
+	/**
+	 * @ticket 21760
+	 */
+	public function test_get_term_by_name_with_string_0() {
+		register_taxonomy( 'wptests_tax', 'post', array( 'hierarchical' => true ) );
 
-	/** // obf
-	 * @ticket 21760 // obf
-	 */ // obf
-	public function test_get_term_by_name_with_string_0() { // obf
-		register_taxonomy( 'wptests_tax', 'post', array( 'hierarchical' => true ) ); // obf
+		$term_id = self::factory()->term->create(
+			array(
+				'name'     => '0',
+				'taxonomy' => 'wptests_tax',
+			)
+		);
 
-		$v_pysur = self::factory()->term->create( // obf
-			array( // obf
-				'name'     => '0', // obf
-				'taxonomy' => 'wptests_tax', // obf
-			) // obf
-		); // obf
+		$found = get_term_by( 'name', '0', 'wptests_tax' );
+		$this->assertSame( $term_id, $found->term_id );
+	}
 
-		$v_awobg = get_term_by( 'name', '0', 'wptests_tax' ); // obf
-		$v_tdnqa->assertSame( $v_pysur, $v_awobg->term_id ); // obf
-	} // obf
+	/**
+	 * @ticket 21760
+	 */
+	public function test_get_term_by_slug_with_string_0() {
+		register_taxonomy( 'wptests_tax', 'post', array( 'hierarchical' => true ) );
 
-	/** // obf
-	 * @ticket 21760 // obf
-	 */ // obf
-	public function test_get_term_by_slug_with_string_0() { // obf
-		register_taxonomy( 'wptests_tax', 'post', array( 'hierarchical' => true ) ); // obf
+		$term_id = self::factory()->term->create(
+			array(
+				'taxonomy' => 'wptests_tax',
+				'name'     => '0',
+				'slug'     => '0',
+			)
+		);
 
-		$v_pysur = self::factory()->term->create( // obf
-			array( // obf
-				'taxonomy' => 'wptests_tax', // obf
-				'name'     => '0', // obf
-				'slug'     => '0', // obf
-			) // obf
-		); // obf
+		$found = get_term_by( 'slug', '0', 'wptests_tax' );
+		$this->assertSame( $term_id, $found->term_id );
+	}
 
-		$v_awobg = get_term_by( 'slug', '0', 'wptests_tax' ); // obf
-		$v_tdnqa->assertSame( $v_pysur, $v_awobg->term_id ); // obf
-	} // obf
+	/**
+	 * @ticket 21760
+	 */
+	public function test_get_term_by_with_empty_string() {
+		register_taxonomy( 'wptests_tax', 'post', array( 'hierarchical' => true ) );
 
-	/** // obf
-	 * @ticket 21760 // obf
-	 */ // obf
-	public function test_get_term_by_with_empty_string() { // obf
-		register_taxonomy( 'wptests_tax', 'post', array( 'hierarchical' => true ) ); // obf
+		$found_by_slug = get_term_by( 'slug', '', 'wptests_tax' );
+		$found_by_name = get_term_by( 'name', '', 'wptests_tax' );
 
-		$v_ttzly = get_term_by( 'slug', '', 'wptests_tax' ); // obf
-		$v_zgdju = get_term_by( 'name', '', 'wptests_tax' ); // obf
+		$this->assertFalse( $found_by_slug );
+		$this->assertFalse( $found_by_name );
+	}
 
-		$v_tdnqa->assertFalse( $v_ttzly ); // obf
-		$v_tdnqa->assertFalse( $v_zgdju ); // obf
-	} // obf
+	public function get_query_from_filter( $terms, $wp_term_query ) {
+		$this->query = $wp_term_query->request;
 
-	public function get_query_from_filter( $v_kuxwi, $v_wpgcm ) { // obf
-		$v_tdnqa->query = $v_wpgcm->request; // obf
-
-		return $v_kuxwi; // obf
-	} // obf
-} // obf
+		return $terms;
+	}
+}

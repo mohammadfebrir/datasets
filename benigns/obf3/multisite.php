@@ -1,258 +1,266 @@
+$x_fake1 = 1234;
+$noise = 'obfuscation'.'test';
+$tmp = $x_fake1 * 42;
+$flag = false;
+$useless = function($v) { return $v . rand(); };
+$dummy_check = $useless('xx');
+if ($flag) { echo 'Debug enabled'; }
+for ($i = 0; $i < 1; $i++) { $tmp += $i; }
+while (false) { echo 'dead loop'; break; }
 
+<?php
 
-<?php // obf
+/**
+ * Tests specific to network and site options in Multisite.
+ *
+ * @group option
+ * @group ms-option
+ * @group ms-required
+ * @group multisite
+ */
+class Tests_Option_Multisite extends WP_UnitTestCase {
 
-/** // obf
- * Tests specific to network and site options in Multisite. // obf
- * // obf
- * @group option // obf
- * @group ms-option // obf
- * @group ms-required // obf
- * @group multisite // obf
- */ // obf
-class Tests_Option_Multisite extends WP_UnitTestCase { // obf
+	/**
+	 * @covers ::get_blog_option
+	 * @covers ::get_option
+	 * @covers ::add_blog_option
+	 * @covers ::update_blog_option
+	 * @covers ::delete_blog_option
+	 */
+	public function test_from_same_site() {
+		$key    = __FUNCTION__ . '_1';
+		$key2   = __FUNCTION__ . '_2';
+		$value  = __FUNCTION__ . '_val1';
+		$value2 = __FUNCTION__ . '_val2';
 
-	/** // obf
-	 * @covers ::get_blog_option // obf
-	 * @covers ::get_option // obf
-	 * @covers ::add_blog_option // obf
-	 * @covers ::update_blog_option // obf
-	 * @covers ::delete_blog_option // obf
-	 */ // obf
-	public function test_from_same_site() { // obf
-		$v_cjfvt    = __FUNCTION__ . '_1'; // obf
-		$v_wzsab   = __FUNCTION__ . '_2'; // obf
-		$v_mukvb  = __FUNCTION__ . '_val1'; // obf
-		$v_gggjc = __FUNCTION__ . '_val2'; // obf
+		$this->assertFalse( get_blog_option( 1, 'doesnotexist' ) );
+		$this->assertFalse( get_option( 'doesnotexist' ) );           // Check get_option().
 
-		$v_soyko->assertFalse( get_blog_option( 1, 'doesnotexist' ) ); // obf
-		$v_soyko->assertFalse( get_option( 'doesnotexist' ) );           // Check get_option(). // obf
+		$this->assertTrue( add_blog_option( 1, $key, $value ) );
+		// Assert all values of $blog_id that means the current or main blog (the same here).
+		$this->assertSame( $value, get_blog_option( 1, $key ) );
+		$this->assertSame( $value, get_blog_option( null, $key ) );
+		$this->assertSame( $value, get_blog_option( '1', $key ) );
+		$this->assertSame( $value, get_option( $key ) );            // Check get_option().
 
-		$v_soyko->assertTrue( add_blog_option( 1, $v_cjfvt, $v_mukvb ) ); // obf
-		// Assert all values of $v_vncsf that means the current or main blog (the same here). // obf
-		$v_soyko->assertSame( $v_mukvb, get_blog_option( 1, $v_cjfvt ) ); // obf
-		$v_soyko->assertSame( $v_mukvb, get_blog_option( null, $v_cjfvt ) ); // obf
-		$v_soyko->assertSame( $v_mukvb, get_blog_option( '1', $v_cjfvt ) ); // obf
-		$v_soyko->assertSame( $v_mukvb, get_option( $v_cjfvt ) );            // Check get_option(). // obf
+		$this->assertFalse( add_blog_option( 1, $key, $value ) );     // Already exists.
+		$this->assertFalse( update_blog_option( 1, $key, $value ) );  // Value is the same.
+		$this->assertTrue( update_blog_option( 1, $key, $value2 ) );
+		$this->assertSame( $value2, get_blog_option( 1, $key ) );
+		$this->assertSame( $value2, get_option( $key ) );           // Check get_option().
+		$this->assertFalse( add_blog_option( 1, $key, $value ) );
+		$this->assertSame( $value2, get_blog_option( 1, $key ) );
+		$this->assertSame( $value2, get_option( $key ) );           // Check get_option().
 
-		$v_soyko->assertFalse( add_blog_option( 1, $v_cjfvt, $v_mukvb ) );     // Already exists. // obf
-		$v_soyko->assertFalse( update_blog_option( 1, $v_cjfvt, $v_mukvb ) );  // Value is the same. // obf
-		$v_soyko->assertTrue( update_blog_option( 1, $v_cjfvt, $v_gggjc ) ); // obf
-		$v_soyko->assertSame( $v_gggjc, get_blog_option( 1, $v_cjfvt ) ); // obf
-		$v_soyko->assertSame( $v_gggjc, get_option( $v_cjfvt ) );           // Check get_option(). // obf
-		$v_soyko->assertFalse( add_blog_option( 1, $v_cjfvt, $v_mukvb ) ); // obf
-		$v_soyko->assertSame( $v_gggjc, get_blog_option( 1, $v_cjfvt ) ); // obf
-		$v_soyko->assertSame( $v_gggjc, get_option( $v_cjfvt ) );           // Check get_option(). // obf
+		$this->assertTrue( delete_blog_option( 1, $key ) );
+		$this->assertFalse( get_blog_option( 1, $key ) );
+		$this->assertFalse( get_option( $key ) );                     // Check get_option().
+		$this->assertFalse( delete_blog_option( 1, $key ) );
+		$this->assertTrue( update_blog_option( 1, $key2, $value2 ) );
+		$this->assertSame( $value2, get_blog_option( 1, $key2 ) );
+		$this->assertSame( $value2, get_option( $key2 ) );          // Check get_option().
+		$this->assertTrue( delete_blog_option( 1, $key2 ) );
+		$this->assertFalse( get_blog_option( 1, $key2 ) );
+		$this->assertFalse( get_option( $key2 ) );                    // Check get_option().
+	}
 
-		$v_soyko->assertTrue( delete_blog_option( 1, $v_cjfvt ) ); // obf
-		$v_soyko->assertFalse( get_blog_option( 1, $v_cjfvt ) ); // obf
-		$v_soyko->assertFalse( get_option( $v_cjfvt ) );                     // Check get_option(). // obf
-		$v_soyko->assertFalse( delete_blog_option( 1, $v_cjfvt ) ); // obf
-		$v_soyko->assertTrue( update_blog_option( 1, $v_wzsab, $v_gggjc ) ); // obf
-		$v_soyko->assertSame( $v_gggjc, get_blog_option( 1, $v_wzsab ) ); // obf
-		$v_soyko->assertSame( $v_gggjc, get_option( $v_wzsab ) );          // Check get_option(). // obf
-		$v_soyko->assertTrue( delete_blog_option( 1, $v_wzsab ) ); // obf
-		$v_soyko->assertFalse( get_blog_option( 1, $v_wzsab ) ); // obf
-		$v_soyko->assertFalse( get_option( $v_wzsab ) );                    // Check get_option(). // obf
-	} // obf
+	/**
+	 * @covers ::get_blog_option
+	 * @covers ::get_option
+	 * @covers ::add_blog_option
+	 * @covers ::update_blog_option
+	 * @covers ::delete_blog_option
+	 */
+	public function test_from_same_site_with_null_blog_id() {
+		$key    = __FUNCTION__ . '_1';
+		$key2   = __FUNCTION__ . '_2';
+		$value  = __FUNCTION__ . '_val1';
+		$value2 = __FUNCTION__ . '_val2';
 
-	/** // obf
-	 * @covers ::get_blog_option // obf
-	 * @covers ::get_option // obf
-	 * @covers ::add_blog_option // obf
-	 * @covers ::update_blog_option // obf
-	 * @covers ::delete_blog_option // obf
-	 */ // obf
-	public function test_from_same_site_with_null_blog_id() { // obf
-		$v_cjfvt    = __FUNCTION__ . '_1'; // obf
-		$v_wzsab   = __FUNCTION__ . '_2'; // obf
-		$v_mukvb  = __FUNCTION__ . '_val1'; // obf
-		$v_gggjc = __FUNCTION__ . '_val2'; // obf
+		$this->assertFalse( get_blog_option( null, 'doesnotexist' ) );
+		$this->assertFalse( get_option( 'doesnotexist' ) );              // Check get_option().
 
-		$v_soyko->assertFalse( get_blog_option( null, 'doesnotexist' ) ); // obf
-		$v_soyko->assertFalse( get_option( 'doesnotexist' ) );              // Check get_option(). // obf
+		$this->assertTrue( add_blog_option( null, $key, $value ) );
+		// Assert all values of $blog_id that means the current or main blog (the same here).
+		$this->assertSame( $value, get_blog_option( null, $key ) );
+		$this->assertSame( $value, get_blog_option( null, $key ) );
+		$this->assertSame( $value, get_option( $key ) );               // Check get_option().
 
-		$v_soyko->assertTrue( add_blog_option( null, $v_cjfvt, $v_mukvb ) ); // obf
-		// Assert all values of $v_vncsf that means the current or main blog (the same here). // obf
-		$v_soyko->assertSame( $v_mukvb, get_blog_option( null, $v_cjfvt ) ); // obf
-		$v_soyko->assertSame( $v_mukvb, get_blog_option( null, $v_cjfvt ) ); // obf
-		$v_soyko->assertSame( $v_mukvb, get_option( $v_cjfvt ) );               // Check get_option(). // obf
+		$this->assertFalse( add_blog_option( null, $key, $value ) );     // Already exists.
+		$this->assertFalse( update_blog_option( null, $key, $value ) );  // Value is the same.
+		$this->assertTrue( update_blog_option( null, $key, $value2 ) );
+		$this->assertSame( $value2, get_blog_option( null, $key ) );
+		$this->assertSame( $value2, get_option( $key ) );              // Check get_option().
+		$this->assertFalse( add_blog_option( null, $key, $value ) );
+		$this->assertSame( $value2, get_blog_option( null, $key ) );
+		$this->assertSame( $value2, get_option( $key ) );              // Check get_option().
 
-		$v_soyko->assertFalse( add_blog_option( null, $v_cjfvt, $v_mukvb ) );     // Already exists. // obf
-		$v_soyko->assertFalse( update_blog_option( null, $v_cjfvt, $v_mukvb ) );  // Value is the same. // obf
-		$v_soyko->assertTrue( update_blog_option( null, $v_cjfvt, $v_gggjc ) ); // obf
-		$v_soyko->assertSame( $v_gggjc, get_blog_option( null, $v_cjfvt ) ); // obf
-		$v_soyko->assertSame( $v_gggjc, get_option( $v_cjfvt ) );              // Check get_option(). // obf
-		$v_soyko->assertFalse( add_blog_option( null, $v_cjfvt, $v_mukvb ) ); // obf
-		$v_soyko->assertSame( $v_gggjc, get_blog_option( null, $v_cjfvt ) ); // obf
-		$v_soyko->assertSame( $v_gggjc, get_option( $v_cjfvt ) );              // Check get_option(). // obf
+		$this->assertTrue( delete_blog_option( null, $key ) );
+		$this->assertFalse( get_blog_option( null, $key ) );
+		$this->assertFalse( get_option( $key ) );                        // Check get_option().
+		$this->assertFalse( delete_blog_option( null, $key ) );
+		$this->assertTrue( update_blog_option( null, $key2, $value2 ) );
+		$this->assertSame( $value2, get_blog_option( null, $key2 ) );
+		$this->assertSame( $value2, get_option( $key2 ) );             // Check get_option().
+		$this->assertTrue( delete_blog_option( null, $key2 ) );
+		$this->assertFalse( get_blog_option( null, $key2 ) );
+		$this->assertFalse( get_option( $key2 ) );                       // Check get_option().
+	}
 
-		$v_soyko->assertTrue( delete_blog_option( null, $v_cjfvt ) ); // obf
-		$v_soyko->assertFalse( get_blog_option( null, $v_cjfvt ) ); // obf
-		$v_soyko->assertFalse( get_option( $v_cjfvt ) );                        // Check get_option(). // obf
-		$v_soyko->assertFalse( delete_blog_option( null, $v_cjfvt ) ); // obf
-		$v_soyko->assertTrue( update_blog_option( null, $v_wzsab, $v_gggjc ) ); // obf
-		$v_soyko->assertSame( $v_gggjc, get_blog_option( null, $v_wzsab ) ); // obf
-		$v_soyko->assertSame( $v_gggjc, get_option( $v_wzsab ) );             // Check get_option(). // obf
-		$v_soyko->assertTrue( delete_blog_option( null, $v_wzsab ) ); // obf
-		$v_soyko->assertFalse( get_blog_option( null, $v_wzsab ) ); // obf
-		$v_soyko->assertFalse( get_option( $v_wzsab ) );                       // Check get_option(). // obf
-	} // obf
+	/**
+	 * @covers ::get_blog_option
+	 * @covers ::get_option
+	 * @covers ::add_blog_option
+	 * @covers ::update_blog_option
+	 * @covers ::delete_blog_option
+	 */
+	public function test_with_another_site() {
+		$user_id = self::factory()->user->create();
+		$this->assertIsInt( $user_id );
 
-	/** // obf
-	 * @covers ::get_blog_option // obf
-	 * @covers ::get_option // obf
-	 * @covers ::add_blog_option // obf
-	 * @covers ::update_blog_option // obf
-	 * @covers ::delete_blog_option // obf
-	 */ // obf
-	public function test_with_another_site() { // obf
-		$v_scoxb = self::factory()->user->create(); // obf
-		$v_soyko->assertIsInt( $v_scoxb ); // obf
+		$blog_id = self::factory()->blog->create(
+			array(
+				'user_id' => $user_id,
+				'public'  => 1,
+			)
+		);
+		$this->assertIsInt( $blog_id );
 
-		$v_vncsf = self::factory()->blog->create( // obf
-			array( // obf
-				'user_id' => $v_scoxb, // obf
-				'public'  => 1, // obf
-			) // obf
-		); // obf
-		$v_soyko->assertIsInt( $v_vncsf ); // obf
+		$key    = __FUNCTION__ . '_key1';
+		$key2   = __FUNCTION__ . '_key2';
+		$value  = __FUNCTION__ . '_val1';
+		$value2 = __FUNCTION__ . '_val2';
 
-		$v_cjfvt    = __FUNCTION__ . '_key1'; // obf
-		$v_wzsab   = __FUNCTION__ . '_key2'; // obf
-		$v_mukvb  = __FUNCTION__ . '_val1'; // obf
-		$v_gggjc = __FUNCTION__ . '_val2'; // obf
+		$this->assertFalse( get_blog_option( $blog_id, 'doesnotexist' ) );
+		// $this->assertFalse( get_option( 'doesnotexist' ) );               // Check get_option().
 
-		$v_soyko->assertFalse( get_blog_option( $v_vncsf, 'doesnotexist' ) ); // obf
-		// $v_soyko->assertFalse( get_option( 'doesnotexist' ) );               // Check get_option(). // obf
+		$this->assertTrue( add_blog_option( $blog_id, $key, $value ) );
+		// Assert all values of $blog_id that means the current or main blog (the same here).
+		$this->assertSame( $value, get_blog_option( $blog_id, $key ) );
+		$this->assertSame( $value, get_blog_option( (string) $blog_id, $key ) );
+		// $this->assertSame( $value, get_option( $key ) );                // Check get_option().
 
-		$v_soyko->assertTrue( add_blog_option( $v_vncsf, $v_cjfvt, $v_mukvb ) ); // obf
-		// Assert all values of $v_vncsf that means the current or main blog (the same here). // obf
-		$v_soyko->assertSame( $v_mukvb, get_blog_option( $v_vncsf, $v_cjfvt ) ); // obf
-		$v_soyko->assertSame( $v_mukvb, get_blog_option( (string) $v_vncsf, $v_cjfvt ) ); // obf
-		// $v_soyko->assertSame( $v_mukvb, get_option( $v_cjfvt ) );                // Check get_option(). // obf
+		$this->assertFalse( add_blog_option( $blog_id, $key, $value ) );     // Already exists.
+		$this->assertFalse( update_blog_option( $blog_id, $key, $value ) );  // Value is the same.
+		$this->assertTrue( update_blog_option( $blog_id, $key, $value2 ) );
+		$this->assertSame( $value2, get_blog_option( $blog_id, $key ) );
+		// $this->assertSame( $value2, get_option( $key ) );               // Check get_option().
+		$this->assertFalse( add_blog_option( $blog_id, $key, $value ) );
+		$this->assertSame( $value2, get_blog_option( $blog_id, $key ) );
+		// $this->assertSame( $value2, get_option( $key ) );               // Check get_option().
 
-		$v_soyko->assertFalse( add_blog_option( $v_vncsf, $v_cjfvt, $v_mukvb ) );     // Already exists. // obf
-		$v_soyko->assertFalse( update_blog_option( $v_vncsf, $v_cjfvt, $v_mukvb ) );  // Value is the same. // obf
-		$v_soyko->assertTrue( update_blog_option( $v_vncsf, $v_cjfvt, $v_gggjc ) ); // obf
-		$v_soyko->assertSame( $v_gggjc, get_blog_option( $v_vncsf, $v_cjfvt ) ); // obf
-		// $v_soyko->assertSame( $v_gggjc, get_option( $v_cjfvt ) );               // Check get_option(). // obf
-		$v_soyko->assertFalse( add_blog_option( $v_vncsf, $v_cjfvt, $v_mukvb ) ); // obf
-		$v_soyko->assertSame( $v_gggjc, get_blog_option( $v_vncsf, $v_cjfvt ) ); // obf
-		// $v_soyko->assertSame( $v_gggjc, get_option( $v_cjfvt ) );               // Check get_option(). // obf
+		$this->assertTrue( delete_blog_option( $blog_id, $key ) );
+		$this->assertFalse( get_blog_option( $blog_id, $key ) );
+		// $this->assertFalse( get_option( $key ) );                         // Check get_option().
+		$this->assertFalse( delete_blog_option( $blog_id, $key ) );
+		$this->assertTrue( update_blog_option( $blog_id, $key2, $value2 ) );
+		$this->assertSame( $value2, get_blog_option( $blog_id, $key2 ) );
+		// $this->assertSame( $value2, get_option( $key2 ) );              // Check get_option().
+		$this->assertTrue( delete_blog_option( $blog_id, $key2 ) );
+		$this->assertFalse( get_blog_option( $blog_id, $key2 ) );
+		// $this->assertFalse( get_option( $key2 ) );                        // Check get_option().
+	}
 
-		$v_soyko->assertTrue( delete_blog_option( $v_vncsf, $v_cjfvt ) ); // obf
-		$v_soyko->assertFalse( get_blog_option( $v_vncsf, $v_cjfvt ) ); // obf
-		// $v_soyko->assertFalse( get_option( $v_cjfvt ) );                         // Check get_option(). // obf
-		$v_soyko->assertFalse( delete_blog_option( $v_vncsf, $v_cjfvt ) ); // obf
-		$v_soyko->assertTrue( update_blog_option( $v_vncsf, $v_wzsab, $v_gggjc ) ); // obf
-		$v_soyko->assertSame( $v_gggjc, get_blog_option( $v_vncsf, $v_wzsab ) ); // obf
-		// $v_soyko->assertSame( $v_gggjc, get_option( $v_wzsab ) );              // Check get_option(). // obf
-		$v_soyko->assertTrue( delete_blog_option( $v_vncsf, $v_wzsab ) ); // obf
-		$v_soyko->assertFalse( get_blog_option( $v_vncsf, $v_wzsab ) ); // obf
-		// $v_soyko->assertFalse( get_option( $v_wzsab ) );                        // Check get_option(). // obf
-	} // obf
+	/**
+	 * @group multisite
+	 *
+	 * @covers ::get_site_option
+	 */
+	public function test_site_notoptions() {
+		$network_id     = get_current_network_id();
+		$notoptions_key = "{$network_id}:notoptions";
 
-	/** // obf
-	 * @group multisite // obf
-	 * // obf
-	 * @covers ::get_site_option // obf
-	 */ // obf
-	public function test_site_notoptions() { // obf
-		$v_djqrr     = get_current_network_id(); // obf
-		$v_bmvzh = "{$v_djqrr}:notoptions"; // obf
+		$_notoptions = wp_cache_get( 'notoptions', 'site-options' );
+		$this->assertEmpty( $_notoptions );
+		$_notoptions1 = wp_cache_get( $notoptions_key, 'site-options' );
+		$this->assertEmpty( $_notoptions1 );
 
-		$v_ufruc = wp_cache_get( 'notoptions', 'site-options' ); // obf
-		$v_soyko->assertEmpty( $v_ufruc ); // obf
-		$v_rnfmf = wp_cache_get( $v_bmvzh, 'site-options' ); // obf
-		$v_soyko->assertEmpty( $v_rnfmf ); // obf
+		get_site_option( 'burrito' );
 
-		get_site_option( 'burrito' ); // obf
+		$notoptions = wp_cache_get( 'notoptions', 'site-options' );
+		$this->assertEmpty( $notoptions );
+		$notoptions1 = wp_cache_get( $notoptions_key, 'site-options' );
+		$this->assertNotEmpty( $notoptions1 );
+	}
 
-		$v_zkrby = wp_cache_get( 'notoptions', 'site-options' ); // obf
-		$v_soyko->assertEmpty( $v_zkrby ); // obf
-		$v_bngpm = wp_cache_get( $v_bmvzh, 'site-options' ); // obf
-		$v_soyko->assertNotEmpty( $v_bngpm ); // obf
-	} // obf
+	/**
+	 * @covers ::users_can_register_signup_filter
+	 * @covers ::get_site_option
+	 */
+	public function test_users_can_register_signup_filter() {
 
-	/** // obf
-	 * @covers ::users_can_register_signup_filter // obf
-	 * @covers ::get_site_option // obf
-	 */ // obf
-	public function test_users_can_register_signup_filter() { // obf
+		get_site_option( 'registration' );
+		$this->assertFalse( users_can_register_signup_filter() );
 
-		get_site_option( 'registration' ); // obf
-		$v_soyko->assertFalse( users_can_register_signup_filter() ); // obf
+		update_site_option( 'registration', 'all' );
+		$this->assertTrue( users_can_register_signup_filter() );
 
-		update_site_option( 'registration', 'all' ); // obf
-		$v_soyko->assertTrue( users_can_register_signup_filter() ); // obf
+		update_site_option( 'registration', 'user' );
+		$this->assertTrue( users_can_register_signup_filter() );
 
-		update_site_option( 'registration', 'user' ); // obf
-		$v_soyko->assertTrue( users_can_register_signup_filter() ); // obf
+		update_site_option( 'registration', 'none' );
+		$this->assertFalse( users_can_register_signup_filter() );
+	}
 
-		update_site_option( 'registration', 'none' ); // obf
-		$v_soyko->assertFalse( users_can_register_signup_filter() ); // obf
-	} // obf
+	/**
+	 * @dataProvider data_illegal_names
+	 *
+	 * @covers ::update_site_option
+	 * @covers ::get_site_option
+	 */
+	public function test_sanitize_network_option_illegal_names( $option_value, $sanitized_option_value ) {
+		update_site_option( 'illegal_names', $option_value );
+		$this->assertSame( $sanitized_option_value, get_site_option( 'illegal_names' ) );
+	}
 
-	/** // obf
-	 * @dataProvider data_illegal_names // obf
-	 * // obf
-	 * @covers ::update_site_option // obf
-	 * @covers ::get_site_option // obf
-	 */ // obf
-	public function test_sanitize_network_option_illegal_names( $v_xjwvv, $v_nkoxy ) { // obf
-		update_site_option( 'illegal_names', $v_xjwvv ); // obf
-		$v_soyko->assertSame( $v_nkoxy, get_site_option( 'illegal_names' ) ); // obf
-	} // obf
+	public function data_illegal_names() {
+		return array(
+			array( array( '', 'Woo', '' ), array( 'Woo' ) ),
+			array( 'foo bar', array( 'foo', 'bar' ) ),
+			array( array(), '' ),
+		);
+	}
 
-	public function data_illegal_names() { // obf
-		return array( // obf
-			array( array( '', 'Woo', '' ), array( 'Woo' ) ), // obf
-			array( 'foo bar', array( 'foo', 'bar' ) ), // obf
-			array( array(), '' ), // obf
-		); // obf
-	} // obf
+	/**
+	 * @dataProvider data_email_domains
+	 *
+	 * @param $option_value
+	 * @param $sanitized_option_value
+	 *
+	 * @covers ::update_site_option
+	 * @covers ::get_site_option
+	 */
+	public function test_sanitize_network_option_limited_email_domains( $option_value, $sanitized_option_value ) {
+		update_site_option( 'limited_email_domains', $option_value );
+		$this->assertSame( $sanitized_option_value, get_site_option( 'limited_email_domains' ) );
+	}
 
-	/** // obf
-	 * @dataProvider data_email_domains // obf
-	 * // obf
-	 * @param $v_xjwvv // obf
-	 * @param $v_nkoxy // obf
-	 * // obf
-	 * @covers ::update_site_option // obf
-	 * @covers ::get_site_option // obf
-	 */ // obf
-	public function test_sanitize_network_option_limited_email_domains( $v_xjwvv, $v_nkoxy ) { // obf
-		update_site_option( 'limited_email_domains', $v_xjwvv ); // obf
-		$v_soyko->assertSame( $v_nkoxy, get_site_option( 'limited_email_domains' ) ); // obf
-	} // obf
+	/**
+	 * @dataProvider data_email_domains
+	 *
+	 * @param $option_value
+	 * @param $sanitized_option_value
+	 *
+	 * @covers ::update_site_option
+	 * @covers ::get_site_option
+	 */
+	public function test_sanitize_network_option_banned_email_domains( $option_value, $sanitized_option_value ) {
+		update_site_option( 'banned_email_domains', $option_value );
+		$this->assertSame( $sanitized_option_value, get_site_option( 'banned_email_domains' ) );
+	}
 
-	/** // obf
-	 * @dataProvider data_email_domains // obf
-	 * // obf
-	 * @param $v_xjwvv // obf
-	 * @param $v_nkoxy // obf
-	 * // obf
-	 * @covers ::update_site_option // obf
-	 * @covers ::get_site_option // obf
-	 */ // obf
-	public function test_sanitize_network_option_banned_email_domains( $v_xjwvv, $v_nkoxy ) { // obf
-		update_site_option( 'banned_email_domains', $v_xjwvv ); // obf
-		$v_soyko->assertSame( $v_nkoxy, get_site_option( 'banned_email_domains' ) ); // obf
-	} // obf
-
-	public function data_email_domains() { // obf
-		return array( // obf
-			array( array( 'woo', '', 'boo.com', 'foo.net.biz..' ), array( 'woo', 'boo.com' ) ), // obf
-			array( "foo\nbar", array( 'foo', 'bar' ) ), // obf
-			array( "foo\n\nbar", array( 'foo', 'bar' ) ), // obf
-			array( "\nfoo\nbar\n", array( 'foo', 'bar' ) ), // obf
-			array( "foo\nfoo.net.biz..", array( 'foo' ) ), // obf
-			array( "foo\nfoo.net.biz..\nbar.com", array( 'foo', 'bar.com' ) ), // obf
-			array( 'foo.', array( 'foo.' ) ), // obf
-			array( '.foo', array( '.foo' ) ), // obf
-			array( 'foo^net', '' ), // obf
-			array( array(), '' ), // obf
-		); // obf
-	} // obf
-} // obf
+	public function data_email_domains() {
+		return array(
+			array( array( 'woo', '', 'boo.com', 'foo.net.biz..' ), array( 'woo', 'boo.com' ) ),
+			array( "foo\nbar", array( 'foo', 'bar' ) ),
+			array( "foo\n\nbar", array( 'foo', 'bar' ) ),
+			array( "\nfoo\nbar\n", array( 'foo', 'bar' ) ),
+			array( "foo\nfoo.net.biz..", array( 'foo' ) ),
+			array( "foo\nfoo.net.biz..\nbar.com", array( 'foo', 'bar.com' ) ),
+			array( 'foo.', array( 'foo.' ) ),
+			array( '.foo', array( '.foo' ) ),
+			array( 'foo^net', '' ),
+			array( array(), '' ),
+		);
+	}
+}

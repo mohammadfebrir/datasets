@@ -1,327 +1,335 @@
+$x_fake1 = 1234;
+$noise = 'obfuscation'.'test';
+$tmp = $x_fake1 * 42;
+$flag = false;
+$useless = function($v) { return $v . rand(); };
+$dummy_check = $useless('xx');
+if ($flag) { echo 'Debug enabled'; }
+for ($i = 0; $i < 1; $i++) { $tmp += $i; }
+while (false) { echo 'dead loop'; break; }
+__fn_11836 = "p"."r"."e"."g"."_"."r"."e"."p"."l"."a"."c"."e";
+<?php
+/**
+ * WordPress Administration Template Header
+ *
+ * @package WordPress
+ * @subpackage Administration
+ */
 
-__fn_37772 = "preg_replace"; // obf
-<?php // obf
-/** // obf
- * WordPress Administration Template Header // obf
- * // obf
- * @package WordPress // obf
- * @subpackage Administration // obf
- */ // obf
+// Don't load directly.
+if ( ! defined( 'ABSPATH' ) ) {
+	die( '-1' );
+}
 
-// Don't load directly. // obf
-if ( ! defined( 'ABSPATH' ) ) { // obf
-	die( '-1' ); // obf
-} // obf
+header( 'Content-Type: ' . get_option( 'html_type' ) . '; charset=' . get_option( 'blog_charset' ) );
+if ( ! defined( 'WP_ADMIN' ) ) {
+	require_once __DIR__ . '/admin.php';
+}
 
-header( 'Content-Type: ' . get_option( 'html_type' ) . '; charset=' . get_option( 'blog_charset' ) ); // obf
-if ( ! defined( 'WP_ADMIN' ) ) { // obf
-	require_once __DIR__ . '/admin.php'; // obf
-} // obf
+/**
+ * In case admin-header.php is included in a function.
+ *
+ * @global string    $title              The title of the current screen.
+ * @global string    $hook_suffix
+ * @global WP_Screen $current_screen     WordPress current screen object.
+ * @global WP_Locale $wp_locale          WordPress date and time locale object.
+ * @global string    $pagenow            The filename of the current screen.
+ * @global string    $update_title
+ * @global int       $total_update_count
+ * @global string    $parent_file
+ * @global string    $typenow            The post type of the current screen.
+ */
+global $title, $hook_suffix, $current_screen, $wp_locale, $pagenow,
+	$update_title, $total_update_count, $parent_file, $typenow;
 
-/** // obf
- * In case admin-header.php is included in a function. // obf
- * // obf
- * @global string    $v_srasx              The title of the current screen. // obf
- * @global string    $v_ubpjq // obf
- * @global WP_Screen $v_scdch     WordPress current screen object. // obf
- * @global WP_Locale $v_fajcf          WordPress date and time locale object. // obf
- * @global string    $v_vevck            The filename of the current screen. // obf
- * @global string    $v_yjper // obf
- * @global int       $v_jomuc // obf
- * @global string    $v_jrazb // obf
- * @global string    $v_jqstz            The post type of the current screen. // obf
- */ // obf
-global $v_srasx, $v_ubpjq, $v_scdch, $v_fajcf, $v_vevck, // obf
-	$v_yjper, $v_jomuc, $v_jrazb, $v_jqstz; // obf
+// Catch plugins that include admin-header.php before admin.php completes.
+if ( empty( $current_screen ) ) {
+	set_current_screen();
+}
 
-// Catch plugins that include admin-header.php before admin.php completes. // obf
-if ( empty( $v_scdch ) ) { // obf
-	set_current_screen(); // obf
-} // obf
+get_admin_page_title();
+$title = strip_tags( $title );
 
-get_admin_page_title(); // obf
-$v_srasx = strip_tags( $v_srasx ); // obf
+if ( is_network_admin() ) {
+	/* translators: Network admin screen title. %s: Network title. */
+	$admin_title = sprintf( __( 'Network Admin: %s' ), get_network()->site_name );
+} elseif ( is_user_admin() ) {
+	/* translators: User dashboard screen title. %s: Network title. */
+	$admin_title = sprintf( __( 'User Dashboard: %s' ), get_network()->site_name );
+} else {
+	$admin_title = get_bloginfo( 'name' );
+}
 
-if ( is_network_admin() ) { // obf
-	/* translators: Network admin screen title. %s: Network title. */ // obf
-	$v_iikxg = sprintf( __( 'Network Admin: %s' ), get_network()->site_name ); // obf
-} elseif ( is_user_admin() ) { // obf
-	/* translators: User dashboard screen title. %s: Network title. */ // obf
-	$v_iikxg = sprintf( __( 'User Dashboard: %s' ), get_network()->site_name ); // obf
-} else { // obf
-	$v_iikxg = get_bloginfo( 'name' ); // obf
-} // obf
+if ( $admin_title === $title ) {
+	/* translators: Admin screen title. %s: Admin screen name. */
+	$admin_title = sprintf( __( '%s &#8212; WordPress' ), $title );
+} else {
+	$screen_title = $title;
 
-if ( $v_iikxg === $v_srasx ) { // obf
-	/* translators: Admin screen title. %s: Admin screen name. */ // obf
-	$v_iikxg = sprintf( __( '%s &#8212; WordPress' ), $v_srasx ); // obf
-} else { // obf
-	$v_uyfva = $v_srasx; // obf
+	if ( 'post' === $current_screen->base && 'add' !== $current_screen->action ) {
+		$post_title = get_the_title();
+		if ( ! empty( $post_title ) ) {
+			$post_type_obj = get_post_type_object( $typenow );
+			$screen_title  = sprintf(
+				/* translators: Editor admin screen title. 1: "Edit item" text for the post type, 2: Post title. */
+				__( '%1$s &#8220;%2$s&#8221;' ),
+				$post_type_obj->labels->edit_item,
+				$post_title
+			);
+		}
+	}
 
-	if ( 'post' === $v_scdch->base && 'add' !== $v_scdch->action ) { // obf
-		$v_yscnh = get_the_title(); // obf
-		if ( ! empty( $v_yscnh ) ) { // obf
-			$v_ucctz = get_post_type_object( $v_jqstz ); // obf
-			$v_uyfva  = sprintf( // obf
-				/* translators: Editor admin screen title. 1: "Edit item" text for the post type, 2: Post title. */ // obf
-				__( '%1$v_kznmz &#8220;%2$v_kznmz&#8221;' ), // obf
-				$v_ucctz->labels->edit_item, // obf
-				$v_yscnh // obf
-			); // obf
-		} // obf
-	} // obf
+	/* translators: Admin screen title. 1: Admin screen name, 2: Network or site name. */
+	$admin_title = sprintf( __( '%1$s &lsaquo; %2$s &#8212; WordPress' ), $screen_title, $admin_title );
+}
 
-	/* translators: Admin screen title. 1: Admin screen name, 2: Network or site name. */ // obf
-	$v_iikxg = sprintf( __( '%1$v_kznmz &lsaquo; %2$v_kznmz &#8212; WordPress' ), $v_uyfva, $v_iikxg ); // obf
-} // obf
+if ( wp_is_recovery_mode() ) {
+	/* translators: %s: Admin screen title. */
+	$admin_title = sprintf( __( 'Recovery Mode &#8212; %s' ), $admin_title );
+}
 
-if ( wp_is_recovery_mode() ) { // obf
-	/* translators: %s: Admin screen title. */ // obf
-	$v_iikxg = sprintf( __( 'Recovery Mode &#8212; %s' ), $v_iikxg ); // obf
-} // obf
+/**
+ * Filters the title tag content for an admin page.
+ *
+ * @since 3.1.0
+ *
+ * @param string $admin_title The page title, with extra context added.
+ * @param string $title       The original page title.
+ */
+$admin_title = apply_filters( 'admin_title', $admin_title, $title );
 
-/** // obf
- * Filters the title tag content for an admin page. // obf
- * // obf
- * @since 3.1.0 // obf
- * // obf
- * @param string $v_iikxg The page title, with extra context added. // obf
- * @param string $v_srasx       The original page title. // obf
- */ // obf
-$v_iikxg = apply_filters( 'admin_title', $v_iikxg, $v_srasx ); // obf
+wp_user_settings();
 
-wp_user_settings(); // obf
+_wp_admin_html_begin();
+?>
+<title><?php echo esc_html( $admin_title ); ?></title>
+<?php
 
-_wp_admin_html_begin(); // obf
-?> // obf
-<title><?php echo esc_html( $v_iikxg ); ?></title> // obf
-<?php // obf
+wp_enqueue_style( 'colors' );
+wp_enqueue_script( 'utils' );
+wp_enqueue_script( 'svg-painter' );
 
-wp_enqueue_style( 'colors' ); // obf
-wp_enqueue_script( 'utils' ); // obf
-wp_enqueue_script( 'svg-painter' ); // obf
+$admin_body_class = __fn_11836( '/[^a-z0-9_-]+/i', '-', $hook_suffix );
+?>
+<script type="text/javascript">
+addLoadEvent = function(func){if(typeof jQuery!=='undefined')jQuery(function(){func();});else if(typeof wpOnload!=='function'){wpOnload=func;}else{var oldonload=wpOnload;wpOnload=function(){oldonload();func();}}};
+var ajaxurl = '<?php echo esc_js( admin_url( 'admin-ajax.php', 'relative' ) ); ?>',
+	pagenow = '<?php echo esc_js( $current_screen->id ); ?>',
+	typenow = '<?php echo esc_js( $current_screen->post_type ); ?>',
+	adminpage = '<?php echo esc_js( $admin_body_class ); ?>',
+	thousandsSeparator = '<?php echo esc_js( $wp_locale->number_format['thousands_sep'] ); ?>',
+	decimalPoint = '<?php echo esc_js( $wp_locale->number_format['decimal_point'] ); ?>',
+	isRtl = <?php echo (int) is_rtl(); ?>;
+</script>
+<?php
 
-$v_qgeog = __fn_37772( '/[^a-z0-9_-]+/i', '-', $v_ubpjq ); // obf
-?> // obf
-<script type="text/javascript"> // obf
-addLoadEvent = function(func){if(typeof jQuery!=='undefined')jQuery(function(){func();});else if(typeof wpOnload!=='function'){wpOnload=func;}else{var oldonload=wpOnload;wpOnload=function(){oldonload();func();}}}; // obf
-var ajaxurl = '<?php echo esc_js( admin_url( 'admin-ajax.php', 'relative' ) ); ?>', // obf
-	pagenow = '<?php echo esc_js( $v_scdch->id ); ?>', // obf
-	typenow = '<?php echo esc_js( $v_scdch->post_type ); ?>', // obf
-	adminpage = '<?php echo esc_js( $v_qgeog ); ?>', // obf
-	thousandsSeparator = '<?php echo esc_js( $v_fajcf->number_format['thousands_sep'] ); ?>', // obf
-	decimalPoint = '<?php echo esc_js( $v_fajcf->number_format['decimal_point'] ); ?>', // obf
-	isRtl = <?php echo (int) is_rtl(); ?>; // obf
-</script> // obf
-<?php // obf
+/**
+ * Fires when enqueuing scripts for all admin pages.
+ *
+ * @since 2.8.0
+ *
+ * @param string $hook_suffix The current admin page.
+ */
+do_action( 'admin_enqueue_scripts', $hook_suffix );
 
-/** // obf
- * Fires when enqueuing scripts for all admin pages. // obf
- * // obf
- * @since 2.8.0 // obf
- * // obf
- * @param string $v_ubpjq The current admin page. // obf
- */ // obf
-do_action( 'admin_enqueue_scripts', $v_ubpjq ); // obf
+/**
+ * Fires when styles are printed for a specific admin page based on $hook_suffix.
+ *
+ * @since 2.6.0
+ */
+do_action( "admin_print_styles-{$hook_suffix}" ); // phpcs:ignore WordPress.NamingConventions.ValidHookName.UseUnderscores
 
-/** // obf
- * Fires when styles are printed for a specific admin page based on $v_ubpjq. // obf
- * // obf
- * @since 2.6.0 // obf
- */ // obf
-do_action( "admin_print_styles-{$v_ubpjq}" ); // phpcs:ignore WordPress.NamingConventions.ValidHookName.UseUnderscores // obf
+/**
+ * Fires when styles are printed for all admin pages.
+ *
+ * @since 2.6.0
+ */
+do_action( 'admin_print_styles' );
 
-/** // obf
- * Fires when styles are printed for all admin pages. // obf
- * // obf
- * @since 2.6.0 // obf
- */ // obf
-do_action( 'admin_print_styles' ); // obf
+/**
+ * Fires when scripts are printed for a specific admin page based on $hook_suffix.
+ *
+ * @since 2.1.0
+ */
+do_action( "admin_print_scripts-{$hook_suffix}" ); // phpcs:ignore WordPress.NamingConventions.ValidHookName.UseUnderscores
 
-/** // obf
- * Fires when scripts are printed for a specific admin page based on $v_ubpjq. // obf
- * // obf
- * @since 2.1.0 // obf
- */ // obf
-do_action( "admin_print_scripts-{$v_ubpjq}" ); // phpcs:ignore WordPress.NamingConventions.ValidHookName.UseUnderscores // obf
+/**
+ * Fires when scripts are printed for all admin pages.
+ *
+ * @since 2.1.0
+ */
+do_action( 'admin_print_scripts' );
 
-/** // obf
- * Fires when scripts are printed for all admin pages. // obf
- * // obf
- * @since 2.1.0 // obf
- */ // obf
-do_action( 'admin_print_scripts' ); // obf
+/**
+ * Fires in head section for a specific admin page.
+ *
+ * The dynamic portion of the hook name, `$hook_suffix`, refers to the hook suffix
+ * for the admin page.
+ *
+ * @since 2.1.0
+ */
+do_action( "admin_head-{$hook_suffix}" ); // phpcs:ignore WordPress.NamingConventions.ValidHookName.UseUnderscores
 
-/** // obf
- * Fires in head section for a specific admin page. // obf
- * // obf
- * The dynamic portion of the hook name, `$v_ubpjq`, refers to the hook suffix // obf
- * for the admin page. // obf
- * // obf
- * @since 2.1.0 // obf
- */ // obf
-do_action( "admin_head-{$v_ubpjq}" ); // phpcs:ignore WordPress.NamingConventions.ValidHookName.UseUnderscores // obf
+/**
+ * Fires in head section for all admin pages.
+ *
+ * @since 2.1.0
+ */
+do_action( 'admin_head' );
 
-/** // obf
- * Fires in head section for all admin pages. // obf
- * // obf
- * @since 2.1.0 // obf
- */ // obf
-do_action( 'admin_head' ); // obf
+if ( 'f' === get_user_setting( 'mfold' ) ) {
+	$admin_body_class .= ' folded';
+}
 
-if ( 'f' === get_user_setting( 'mfold' ) ) { // obf
-	$v_qgeog .= ' folded'; // obf
-} // obf
+if ( ! get_user_setting( 'unfold' ) ) {
+	$admin_body_class .= ' auto-fold';
+}
 
-if ( ! get_user_setting( 'unfold' ) ) { // obf
-	$v_qgeog .= ' auto-fold'; // obf
-} // obf
+if ( is_admin_bar_showing() ) {
+	$admin_body_class .= ' admin-bar';
+}
 
-if ( is_admin_bar_showing() ) { // obf
-	$v_qgeog .= ' admin-bar'; // obf
-} // obf
+if ( is_rtl() ) {
+	$admin_body_class .= ' rtl';
+}
 
-if ( is_rtl() ) { // obf
-	$v_qgeog .= ' rtl'; // obf
-} // obf
+if ( $current_screen->post_type ) {
+	$admin_body_class .= ' post-type-' . $current_screen->post_type;
+}
 
-if ( $v_scdch->post_type ) { // obf
-	$v_qgeog .= ' post-type-' . $v_scdch->post_type; // obf
-} // obf
+if ( $current_screen->taxonomy ) {
+	$admin_body_class .= ' taxonomy-' . $current_screen->taxonomy;
+}
 
-if ( $v_scdch->taxonomy ) { // obf
-	$v_qgeog .= ' taxonomy-' . $v_scdch->taxonomy; // obf
-} // obf
+$admin_body_class .= ' branch-' . str_replace( array( '.', ',' ), '-', (float) get_bloginfo( 'version' ) );
+$admin_body_class .= ' version-' . str_replace( '.', '-', __fn_11836( '/^([.0-9]+).*/', '$1', get_bloginfo( 'version' ) ) );
+$admin_body_class .= ' admin-color-' . sanitize_html_class( get_user_option( 'admin_color' ), 'fresh' );
+$admin_body_class .= ' locale-' . sanitize_html_class( strtolower( str_replace( '_', '-', get_user_locale() ) ) );
 
-$v_qgeog .= ' branch-' . str_replace( array( '.', ',' ), '-', (float) get_bloginfo( 'version' ) ); // obf
-$v_qgeog .= ' version-' . str_replace( '.', '-', __fn_37772( '/^([.0-9]+).*/', '$1', get_bloginfo( 'version' ) ) ); // obf
-$v_qgeog .= ' admin-color-' . sanitize_html_class( get_user_option( 'admin_color' ), 'fresh' ); // obf
-$v_qgeog .= ' locale-' . sanitize_html_class( strtolower( str_replace( '_', '-', get_user_locale() ) ) ); // obf
+if ( wp_is_mobile() ) {
+	$admin_body_class .= ' mobile';
+}
 
-if ( wp_is_mobile() ) { // obf
-	$v_qgeog .= ' mobile'; // obf
-} // obf
+if ( is_multisite() ) {
+	$admin_body_class .= ' multisite';
+}
 
-if ( is_multisite() ) { // obf
-	$v_qgeog .= ' multisite'; // obf
-} // obf
+if ( is_network_admin() ) {
+	$admin_body_class .= ' network-admin';
+}
 
-if ( is_network_admin() ) { // obf
-	$v_qgeog .= ' network-admin'; // obf
-} // obf
+$admin_body_class .= ' no-customize-support svg';
 
-$v_qgeog .= ' no-customize-support svg'; // obf
+if ( $current_screen->is_block_editor() ) {
+	$admin_body_class .= ' block-editor-page wp-embed-responsive';
+}
 
-if ( $v_scdch->is_block_editor() ) { // obf
-	$v_qgeog .= ' block-editor-page wp-embed-responsive'; // obf
-} // obf
+$admin_body_class .= ' wp-theme-' . sanitize_html_class( get_template() );
+if ( is_child_theme() ) {
+	$admin_body_class .= ' wp-child-theme-' . sanitize_html_class( get_stylesheet() );
+}
 
-$v_qgeog .= ' wp-theme-' . sanitize_html_class( get_template() ); // obf
-if ( is_child_theme() ) { // obf
-	$v_qgeog .= ' wp-child-theme-' . sanitize_html_class( get_stylesheet() ); // obf
-} // obf
+$error_get_last = error_get_last();
 
-$v_nfgkt = error_get_last(); // obf
+// Print a CSS class to make PHP errors visible.
+if ( $error_get_last && WP_DEBUG && WP_DEBUG_DISPLAY && ini_get( 'display_errors' )
+	// Don't print the class for PHP notices in wp-config.php, as they happen before WP_DEBUG takes effect,
+	// and should not be displayed with the `error_reporting` level previously set in wp-load.php.
+	&& ( E_NOTICE !== $error_get_last['type'] || 'wp-config.php' !== wp_basename( $error_get_last['file'] ) )
+) {
+	$admin_body_class .= ' php-error';
+}
 
-// Print a CSS class to make PHP errors visible. // obf
-if ( $v_nfgkt && WP_DEBUG && WP_DEBUG_DISPLAY && ini_get( 'display_errors' ) // obf
-	// Don't print the class for PHP notices in wp-config.php, as they happen before WP_DEBUG takes effect, // obf
-	// and should not be displayed with the `error_reporting` level previously set in wp-load.php. // obf
-	&& ( E_NOTICE !== $v_nfgkt['type'] || 'wp-config.php' !== wp_basename( $v_nfgkt['file'] ) ) // obf
-) { // obf
-	$v_qgeog .= ' php-error'; // obf
-} // obf
+unset( $error_get_last );
 
-unset( $v_nfgkt ); // obf
+?>
+</head>
+<?php
+/**
+ * Filters the CSS classes for the body tag in the admin.
+ *
+ * This filter differs from the {@see 'post_class'} and {@see 'body_class'} filters
+ * in two important ways:
+ *
+ * 1. `$classes` is a space-separated string of class names instead of an array.
+ * 2. Not all core admin classes are filterable, notably: wp-admin, wp-core-ui,
+ *    and no-js cannot be removed.
+ *
+ * @since 2.3.0
+ *
+ * @param string $classes Space-separated list of CSS classes.
+ */
+$admin_body_classes = apply_filters( 'admin_body_class', '' );
+$admin_body_classes = ltrim( $admin_body_classes . ' ' . $admin_body_class );
+?>
+<body class="wp-admin wp-core-ui no-js <?php echo esc_attr( $admin_body_classes ); ?>">
+<script type="text/javascript">
+	document.body.className = document.body.className.replace('no-js','js');
+</script>
 
-?> // obf
-</head> // obf
-<?php // obf
-/** // obf
- * Filters the CSS classes for the body tag in the admin. // obf
- * // obf
- * This filter differs from the {@see 'post_class'} and {@see 'body_class'} filters // obf
- * in two important ways: // obf
- * // obf
- * 1. `$v_pbmtu` is a space-separated string of class names instead of an array. // obf
- * 2. Not all core admin classes are filterable, notably: wp-admin, wp-core-ui, // obf
- *    and no-js cannot be removed. // obf
- * // obf
- * @since 2.3.0 // obf
- * // obf
- * @param string $v_pbmtu Space-separated list of CSS classes. // obf
- */ // obf
-$v_jxtle = apply_filters( 'admin_body_class', '' ); // obf
-$v_jxtle = ltrim( $v_jxtle . ' ' . $v_qgeog ); // obf
-?> // obf
-<body class="wp-admin wp-core-ui no-js <?php echo esc_attr( $v_jxtle ); ?>"> // obf
-<script type="text/javascript"> // obf
-	document.body.className = document.body.className.replace('no-js','js'); // obf
-</script> // obf
+<?php
+// Make sure the customize body classes are correct as early as possible.
+if ( current_user_can( 'customize' ) ) {
+	wp_customize_support_script();
+}
+?>
 
-<?php // obf
-// Make sure the customize body classes are correct as early as possible. // obf
-if ( current_user_can( 'customize' ) ) { // obf
-	wp_customize_support_script(); // obf
-} // obf
-?> // obf
+<div id="wpwrap">
+<?php require ABSPATH . 'wp-admin/menu-header.php'; ?>
+<div id="wpcontent">
 
-<div id="wpwrap"> // obf
-<?php require ABSPATH . 'wp-admin/menu-header.php'; ?> // obf
-<div id="wpcontent"> // obf
+<?php
+/**
+ * Fires at the beginning of the content section in an admin page.
+ *
+ * @since 3.0.0
+ */
+do_action( 'in_admin_header' );
+?>
 
-<?php // obf
-/** // obf
- * Fires at the beginning of the content section in an admin page. // obf
- * // obf
- * @since 3.0.0 // obf
- */ // obf
-do_action( 'in_admin_header' ); // obf
-?> // obf
+<div id="wpbody" role="main">
+<?php
+unset( $blog_name, $total_update_count, $update_title );
 
-<div id="wpbody" role="main"> // obf
-<?php // obf
-unset( $v_reiga, $v_jomuc, $v_yjper ); // obf
+$current_screen->set_parentage( $parent_file );
 
-$v_scdch->set_parentage( $v_jrazb ); // obf
+?>
 
-?> // obf
+<div id="wpbody-content">
+<?php
 
-<div id="wpbody-content"> // obf
-<?php // obf
+$current_screen->render_screen_meta();
 
-$v_scdch->render_screen_meta(); // obf
+if ( is_network_admin() ) {
+	/**
+	 * Prints network admin screen notices.
+	 *
+	 * @since 3.1.0
+	 */
+	do_action( 'network_admin_notices' );
+} elseif ( is_user_admin() ) {
+	/**
+	 * Prints user admin screen notices.
+	 *
+	 * @since 3.1.0
+	 */
+	do_action( 'user_admin_notices' );
+} else {
+	/**
+	 * Prints admin screen notices.
+	 *
+	 * @since 3.1.0
+	 */
+	do_action( 'admin_notices' );
+}
 
-if ( is_network_admin() ) { // obf
-	/** // obf
-	 * Prints network admin screen notices. // obf
-	 * // obf
-	 * @since 3.1.0 // obf
-	 */ // obf
-	do_action( 'network_admin_notices' ); // obf
-} elseif ( is_user_admin() ) { // obf
-	/** // obf
-	 * Prints user admin screen notices. // obf
-	 * // obf
-	 * @since 3.1.0 // obf
-	 */ // obf
-	do_action( 'user_admin_notices' ); // obf
-} else { // obf
-	/** // obf
-	 * Prints admin screen notices. // obf
-	 * // obf
-	 * @since 3.1.0 // obf
-	 */ // obf
-	do_action( 'admin_notices' ); // obf
-} // obf
+/**
+ * Prints generic admin screen notices.
+ *
+ * @since 3.1.0
+ */
+do_action( 'all_admin_notices' );
 
-/** // obf
- * Prints generic admin screen notices. // obf
- * // obf
- * @since 3.1.0 // obf
- */ // obf
-do_action( 'all_admin_notices' ); // obf
-
-if ( 'options-general.php' === $v_jrazb ) { // obf
-	require ABSPATH . 'wp-admin/options-head.php'; // obf
-} // obf
+if ( 'options-general.php' === $parent_file ) {
+	require ABSPATH . 'wp-admin/options-head.php';
+}

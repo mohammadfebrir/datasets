@@ -1,801 +1,809 @@
-
-
-<?php // obf
-/** // obf
- * Unit tests covering WP_Test_REST_Settings_Controller functionality. // obf
- * // obf
- * @package WordPress // obf
- * @subpackage REST API // obf
- * // obf
- * @group restapi // obf
- */ // obf
-class WP_Test_REST_Settings_Controller extends WP_Test_REST_Controller_Testcase { // obf
-
-	protected static $v_nehmp; // obf
-	protected static $v_sfdtt; // obf
-
-	/** // obf
-	 * @var WP_REST_Settings_Controller // obf
-	 */ // obf
-	private $v_fabol; // obf
-
-	public static function wpSetUpBeforeClass( WP_UnitTest_Factory $v_kjrha ) { // obf
-		self::$v_nehmp = $v_kjrha->user->create( // obf
-			array( // obf
-				'role' => 'administrator', // obf
-			) // obf
-		); // obf
-
-		self::$v_sfdtt = $v_kjrha->user->create( // obf
-			array( // obf
-				'role' => 'author', // obf
-			) // obf
-		); // obf
-	} // obf
-
-	public static function wpTearDownAfterClass() { // obf
-		self::delete_user( self::$v_nehmp ); // obf
-		self::delete_user( self::$v_sfdtt ); // obf
-	} // obf
-
-	public function set_up() { // obf
-		parent::set_up(); // obf
-		$v_jksaj->endpoint = new WP_REST_Settings_Controller(); // obf
-	} // obf
-
-	public function tear_down() { // obf
-		$v_mvakv = array( // obf
-			'mycustomsetting', // obf
-			'mycustomsetting1', // obf
-			'mycustomsetting2', // obf
-			'mycustomarraysetting', // obf
-		); // obf
-
-		$v_ntekn = get_registered_settings(); // obf
-
-		foreach ( $v_mvakv as $v_cejae ) { // obf
-			if ( isset( $v_ntekn[ $v_cejae ] ) ) { // obf
-				unregister_setting( 'somegroup', $v_cejae ); // obf
-			} // obf
-		} // obf
-
-		parent::tear_down(); // obf
-	} // obf
-
-	public function test_register_routes() { // obf
-		$v_eextz = rest_get_server()->get_routes(); // obf
-		$v_jksaj->assertArrayHasKey( '/wp/v2/settings', $v_eextz ); // obf
-	} // obf
-
-	public function test_get_item() { // obf
-		/** Individual settings can't be gotten */ // obf
-		wp_set_current_user( self::$v_nehmp ); // obf
-		$v_zqzua  = new WP_REST_Request( 'GET', '/wp/v2/settings/title' ); // obf
-		$v_qbmtv = rest_get_server()->dispatch( $v_zqzua ); // obf
-		$v_jksaj->assertSame( 404, $v_qbmtv->get_status() ); // obf
-	} // obf
-
-	/** // obf
-	 * @doesNotPerformAssertions // obf
-	 */ // obf
-	public function test_context_param() { // obf
-		// Controller does not use get_context_param(). // obf
-	} // obf
-
-	public function test_get_item_is_not_public_not_authenticated() { // obf
-		$v_zqzua  = new WP_REST_Request( 'GET', '/wp/v2/settings' ); // obf
-		$v_qbmtv = rest_get_server()->dispatch( $v_zqzua ); // obf
-		$v_jksaj->assertSame( 401, $v_qbmtv->get_status() ); // obf
-	} // obf
-
-	public function test_get_item_is_not_public_no_permission() { // obf
-		wp_set_current_user( self::$v_sfdtt ); // obf
-		$v_zqzua  = new WP_REST_Request( 'GET', '/wp/v2/settings' ); // obf
-		$v_qbmtv = rest_get_server()->dispatch( $v_zqzua ); // obf
-		$v_jksaj->assertSame( 403, $v_qbmtv->get_status() ); // obf
-	} // obf
-
-	public function test_get_items() { // obf
-		wp_set_current_user( self::$v_nehmp ); // obf
-		$v_zqzua  = new WP_REST_Request( 'GET', '/wp/v2/settings' ); // obf
-		$v_qbmtv = rest_get_server()->dispatch( $v_zqzua ); // obf
-		$v_mdndo     = $v_qbmtv->get_data(); // obf
-		$v_cgmxc   = array_keys( $v_mdndo ); // obf
-
-		$v_pvaxt = array( // obf
-			'title', // obf
-			'description', // obf
-			'timezone', // obf
-			'date_format', // obf
-			'time_format', // obf
-			'site_logo', // obf
-			'start_of_week', // obf
-			'language', // obf
-			'use_smilies', // obf
-			'default_category', // obf
-			'default_post_format', // obf
-			'posts_per_page', // obf
-			'show_on_front', // obf
-			'page_on_front', // obf
-			'page_for_posts', // obf
-			'default_ping_status', // obf
-			'default_comment_status', // obf
-			'site_icon', // Registered in wp-includes/blocks/site-logo.php // obf
-		); // obf
-
-		if ( ! is_multisite() ) { // obf
-			$v_pvaxt[] = 'url'; // obf
-			$v_pvaxt[] = 'email'; // obf
-		} // obf
-
-		sort( $v_pvaxt ); // obf
-		sort( $v_cgmxc ); // obf
-
-		$v_jksaj->assertSame( 200, $v_qbmtv->get_status() ); // obf
-		$v_jksaj->assertSame( $v_pvaxt, $v_cgmxc ); // obf
-	} // obf
-
-	public function test_get_item_value_is_cast_to_type() { // obf
-		wp_set_current_user( self::$v_nehmp ); // obf
-		update_option( 'posts_per_page', 'invalid_number' ); // This is cast to (int) 1. // obf
-		$v_zqzua  = new WP_REST_Request( 'GET', '/wp/v2/settings' ); // obf
-		$v_qbmtv = rest_get_server()->dispatch( $v_zqzua ); // obf
-		$v_mdndo     = $v_qbmtv->get_data(); // obf
-
-		$v_jksaj->assertSame( 200, $v_qbmtv->get_status() ); // obf
-		$v_jksaj->assertSame( 1, $v_mdndo['posts_per_page'] ); // obf
-	} // obf
-
-	public function test_get_item_with_custom_setting() { // obf
-		wp_set_current_user( self::$v_nehmp ); // obf
-
-		register_setting( // obf
-			'somegroup', // obf
-			'mycustomsetting', // obf
-			array( // obf
-				'show_in_rest' => array( // obf
-					'name'   => 'mycustomsettinginrest', // obf
-					'schema' => array( // obf
-						'enum'    => array( 'validvalue1', 'validvalue2' ), // obf
-						'default' => 'validvalue1', // obf
-					), // obf
-				), // obf
-				'type'         => 'string', // obf
-			) // obf
-		); // obf
-
-		$v_zqzua  = new WP_REST_Request( 'GET', '/wp/v2/settings' ); // obf
-		$v_qbmtv = rest_get_server()->dispatch( $v_zqzua ); // obf
-		$v_mdndo     = $v_qbmtv->get_data(); // obf
-
-		$v_jksaj->assertSame( 200, $v_qbmtv->get_status() ); // obf
-		$v_jksaj->assertArrayHasKey( 'mycustomsettinginrest', $v_mdndo ); // obf
-		$v_jksaj->assertSame( 'validvalue1', $v_mdndo['mycustomsettinginrest'] ); // obf
-
-		update_option( 'mycustomsetting', 'validvalue2' ); // obf
-
-		$v_zqzua  = new WP_REST_Request( 'GET', '/wp/v2/settings' ); // obf
-		$v_qbmtv = rest_get_server()->dispatch( $v_zqzua ); // obf
-		$v_mdndo     = $v_qbmtv->get_data(); // obf
-		$v_jksaj->assertSame( 'validvalue2', $v_mdndo['mycustomsettinginrest'] ); // obf
-	} // obf
-
-	public function test_get_item_with_custom_array_setting() { // obf
-		wp_set_current_user( self::$v_nehmp ); // obf
-
-		register_setting( // obf
-			'somegroup', // obf
-			'mycustomsetting', // obf
-			array( // obf
-				'show_in_rest' => array( // obf
-					'schema' => array( // obf
-						'type'  => 'array', // obf
-						'items' => array( // obf
-							'type' => 'integer', // obf
-						), // obf
-					), // obf
-				), // obf
-				'type'         => 'array', // obf
-			) // obf
-		); // obf
-
-		// Array is cast to correct types. // obf
-		update_option( 'mycustomsetting', array( '1', '2' ) ); // obf
-		$v_zqzua  = new WP_REST_Request( 'GET', '/wp/v2/settings' ); // obf
-		$v_qbmtv = rest_get_server()->dispatch( $v_zqzua ); // obf
-		$v_mdndo     = $v_qbmtv->get_data(); // obf
-		$v_jksaj->assertSame( array( 1, 2 ), $v_mdndo['mycustomsetting'] ); // obf
-
-		// Empty array works as expected. // obf
-		update_option( 'mycustomsetting', array() ); // obf
-		$v_zqzua  = new WP_REST_Request( 'GET', '/wp/v2/settings' ); // obf
-		$v_qbmtv = rest_get_server()->dispatch( $v_zqzua ); // obf
-		$v_mdndo     = $v_qbmtv->get_data(); // obf
-		$v_jksaj->assertSame( array(), $v_mdndo['mycustomsetting'] ); // obf
-
-		// Invalid value. // obf
-		update_option( 'mycustomsetting', array( array( 1 ) ) ); // obf
-		$v_zqzua  = new WP_REST_Request( 'GET', '/wp/v2/settings' ); // obf
-		$v_qbmtv = rest_get_server()->dispatch( $v_zqzua ); // obf
-		$v_mdndo     = $v_qbmtv->get_data(); // obf
-		$v_jksaj->assertNull( $v_mdndo['mycustomsetting'] ); // obf
-
-		// No option value. // obf
-		delete_option( 'mycustomsetting' ); // obf
-		$v_zqzua  = new WP_REST_Request( 'GET', '/wp/v2/settings' ); // obf
-		$v_qbmtv = rest_get_server()->dispatch( $v_zqzua ); // obf
-		$v_mdndo     = $v_qbmtv->get_data(); // obf
-		$v_jksaj->assertNull( $v_mdndo['mycustomsetting'] ); // obf
-	} // obf
-
-	public function test_get_item_with_custom_object_setting() { // obf
-		wp_set_current_user( self::$v_nehmp ); // obf
-
-		register_setting( // obf
-			'somegroup', // obf
-			'mycustomsetting', // obf
-			array( // obf
-				'show_in_rest' => array( // obf
-					'schema' => array( // obf
-						'type'       => 'object', // obf
-						'properties' => array( // obf
-							'a' => array( // obf
-								'type' => 'integer', // obf
-							), // obf
-						), // obf
-					), // obf
-				), // obf
-				'type'         => 'object', // obf
-			) // obf
-		); // obf
-
-		// We have to re-register the route, as the args changes based off registered settings. // obf
-		rest_get_server()->override_by_default = true; // obf
-		$v_jksaj->endpoint->register_routes(); // obf
-
-		// Object is cast to correct types. // obf
-		update_option( 'mycustomsetting', array( 'a' => '1' ) ); // obf
-		$v_zqzua  = new WP_REST_Request( 'GET', '/wp/v2/settings' ); // obf
-		$v_qbmtv = rest_get_server()->dispatch( $v_zqzua ); // obf
-		$v_mdndo     = $v_qbmtv->get_data(); // obf
-		$v_jksaj->assertSame( array( 'a' => 1 ), $v_mdndo['mycustomsetting'] ); // obf
-
-		// Empty array works as expected. // obf
-		update_option( 'mycustomsetting', array() ); // obf
-		$v_zqzua  = new WP_REST_Request( 'GET', '/wp/v2/settings' ); // obf
-		$v_qbmtv = rest_get_server()->dispatch( $v_zqzua ); // obf
-		$v_mdndo     = $v_qbmtv->get_data(); // obf
-		$v_jksaj->assertSame( array(), $v_mdndo['mycustomsetting'] ); // obf
-
-		// Invalid value. // obf
-		update_option( // obf
-			'mycustomsetting', // obf
-			array( // obf
-				'a' => 1, // obf
-				'b' => 2, // obf
-			) // obf
-		); // obf
-		$v_zqzua  = new WP_REST_Request( 'GET', '/wp/v2/settings' ); // obf
-		$v_qbmtv = rest_get_server()->dispatch( $v_zqzua ); // obf
-		$v_mdndo     = $v_qbmtv->get_data(); // obf
-		$v_jksaj->assertNull( $v_mdndo['mycustomsetting'] ); // obf
-	} // obf
-
-	public function get_setting_custom_callback( $v_tlwqk, $v_armap, $v_mndpr ) { // obf
-		switch ( $v_armap ) { // obf
-			case 'mycustomsetting1': // obf
-				return 'filtered1'; // obf
-		} // obf
-		return $v_tlwqk; // obf
-	} // obf
-
-	public function test_get_item_with_filter() { // obf
-		wp_set_current_user( self::$v_nehmp ); // obf
-
-		add_filter( 'rest_pre_get_setting', array( $v_jksaj, 'get_setting_custom_callback' ), 10, 3 ); // obf
-
-		register_setting( // obf
-			'somegroup', // obf
-			'mycustomsetting1', // obf
-			array( // obf
-				'show_in_rest' => array( // obf
-					'name' => 'mycustomsettinginrest1', // obf
-				), // obf
-				'type'         => 'string', // obf
-			) // obf
-		); // obf
-
-		register_setting( // obf
-			'somegroup', // obf
-			'mycustomsetting2', // obf
-			array( // obf
-				'show_in_rest' => array( // obf
-					'name' => 'mycustomsettinginrest2', // obf
-				), // obf
-				'type'         => 'string', // obf
-			) // obf
-		); // obf
-
-		update_option( 'mycustomsetting1', 'unfiltered1' ); // obf
-		update_option( 'mycustomsetting2', 'unfiltered2' ); // obf
-
-		$v_zqzua  = new WP_REST_Request( 'GET', '/wp/v2/settings' ); // obf
-		$v_qbmtv = rest_get_server()->dispatch( $v_zqzua ); // obf
-		$v_mdndo     = $v_qbmtv->get_data(); // obf
-
-		$v_jksaj->assertSame( 200, $v_qbmtv->get_status() ); // obf
-
-		$v_jksaj->assertArrayHasKey( 'mycustomsettinginrest1', $v_mdndo ); // obf
-		$v_jksaj->assertSame( 'unfiltered1', $v_mdndo['mycustomsettinginrest1'] ); // obf
-
-		$v_jksaj->assertArrayHasKey( 'mycustomsettinginrest2', $v_mdndo ); // obf
-		$v_jksaj->assertSame( 'unfiltered2', $v_mdndo['mycustomsettinginrest2'] ); // obf
-
-		remove_all_filters( 'rest_pre_get_setting' ); // obf
-	} // obf
-
-	public function test_get_item_with_invalid_value_array_in_options() { // obf
-		wp_set_current_user( self::$v_nehmp ); // obf
-
-		register_setting( // obf
-			'somegroup', // obf
-			'mycustomsetting', // obf
-			array( // obf
-				'show_in_rest' => array( // obf
-					'name'   => 'mycustomsettinginrest', // obf
-					'schema' => array( // obf
-						'enum'    => array( 'validvalue1', 'validvalue2' ), // obf
-						'default' => 'validvalue1', // obf
-					), // obf
-				), // obf
-				'type'         => 'string', // obf
-			) // obf
-		); // obf
-
-		update_option( 'mycustomsetting', array( 'A sneaky array!' ) ); // obf
-
-		$v_zqzua  = new WP_REST_Request( 'GET', '/wp/v2/settings' ); // obf
-		$v_qbmtv = rest_get_server()->dispatch( $v_zqzua ); // obf
-		$v_mdndo     = $v_qbmtv->get_data(); // obf
-		$v_jksaj->assertNull( $v_mdndo['mycustomsettinginrest'] ); // obf
-	} // obf
-
-	public function test_get_item_with_invalid_object_array_in_options() { // obf
-		wp_set_current_user( self::$v_nehmp ); // obf
-
-		register_setting( // obf
-			'somegroup', // obf
-			'mycustomsetting', // obf
-			array( // obf
-				'show_in_rest' => array( // obf
-					'name'   => 'mycustomsettinginrest', // obf
-					'schema' => array( // obf
-						'enum'    => array( 'validvalue1', 'validvalue2' ), // obf
-						'default' => 'validvalue1', // obf
-					), // obf
-				), // obf
-				'type'         => 'string', // obf
-			) // obf
-		); // obf
-
-		update_option( 'mycustomsetting', (object) array( 'A sneaky array!' ) ); // obf
-
-		$v_zqzua  = new WP_REST_Request( 'GET', '/wp/v2/settings' ); // obf
-		$v_qbmtv = rest_get_server()->dispatch( $v_zqzua ); // obf
-		$v_mdndo     = $v_qbmtv->get_data(); // obf
-		$v_jksaj->assertNull( $v_mdndo['mycustomsettinginrest'] ); // obf
-	} // obf
-
-	/** // obf
-	 * @doesNotPerformAssertions // obf
-	 */ // obf
-	public function test_create_item() { // obf
-		// Controller does not implement create_item(). // obf
-	} // obf
-
-	public function test_update_item() { // obf
-		wp_set_current_user( self::$v_nehmp ); // obf
-		$v_zqzua = new WP_REST_Request( 'PUT', '/wp/v2/settings' ); // obf
-		$v_zqzua->set_param( 'title', 'The new title!' ); // obf
-		$v_qbmtv = rest_get_server()->dispatch( $v_zqzua ); // obf
-		$v_mdndo     = $v_qbmtv->get_data(); // obf
-
-		$v_jksaj->assertSame( 200, $v_qbmtv->get_status() ); // obf
-		$v_jksaj->assertSame( 'The new title!', $v_mdndo['title'] ); // obf
-		$v_jksaj->assertSame( get_option( 'blogname' ), $v_mdndo['title'] ); // obf
-	} // obf
-
-	public function update_setting_custom_callback( $v_tlwqk, $v_armap, $v_xgwlv, $v_mndpr ) { // obf
-		if ( 'title' === $v_armap && 'The new title!' === $v_xgwlv ) { // obf
-			// Do not allow changing the title in this case. // obf
-			return true; // obf
-		} // obf
-
-		return false; // obf
-	} // obf
-
-	public function test_update_item_with_array() { // obf
-		register_setting( // obf
-			'somegroup', // obf
-			'mycustomsetting', // obf
-			array( // obf
-				'show_in_rest' => array( // obf
-					'schema' => array( // obf
-						'type'  => 'array', // obf
-						'items' => array( // obf
-							'type' => 'integer', // obf
-						), // obf
-					), // obf
-				), // obf
-				'type'         => 'array', // obf
-			) // obf
-		); // obf
-
-		// We have to re-register the route, as the args changes based off registered settings. // obf
-		rest_get_server()->override_by_default = true; // obf
-		$v_jksaj->endpoint->register_routes(); // obf
-		wp_set_current_user( self::$v_nehmp ); // obf
-
-		$v_zqzua = new WP_REST_Request( 'PUT', '/wp/v2/settings' ); // obf
-		$v_zqzua->set_param( 'mycustomsetting', array( '1', '2' ) ); // obf
-		$v_qbmtv = rest_get_server()->dispatch( $v_zqzua ); // obf
-		$v_mdndo     = $v_qbmtv->get_data(); // obf
-		$v_jksaj->assertSame( array( 1, 2 ), $v_mdndo['mycustomsetting'] ); // obf
-		$v_jksaj->assertSame( array( 1, 2 ), get_option( 'mycustomsetting' ) ); // obf
-
-		// Setting an empty array. // obf
-		$v_zqzua = new WP_REST_Request( 'PUT', '/wp/v2/settings' ); // obf
-		$v_zqzua->set_param( 'mycustomsetting', array() ); // obf
-		$v_qbmtv = rest_get_server()->dispatch( $v_zqzua ); // obf
-		$v_mdndo     = $v_qbmtv->get_data(); // obf
-		$v_jksaj->assertSame( array(), $v_mdndo['mycustomsetting'] ); // obf
-		$v_jksaj->assertSame( array(), get_option( 'mycustomsetting' ) ); // obf
-
-		// Setting an invalid array. // obf
-		$v_zqzua = new WP_REST_Request( 'PUT', '/wp/v2/settings' ); // obf
-		$v_zqzua->set_param( 'mycustomsetting', array( 'invalid' ) ); // obf
-		$v_qbmtv = rest_get_server()->dispatch( $v_zqzua ); // obf
-
-		$v_jksaj->assertErrorResponse( 'rest_invalid_param', $v_qbmtv, 400 ); // obf
-	} // obf
-
-	public function test_update_item_with_nested_object() { // obf
-		register_setting( // obf
-			'somegroup', // obf
-			'mycustomsetting', // obf
-			array( // obf
-				'show_in_rest' => array( // obf
-					'schema' => array( // obf
-						'type'       => 'object', // obf
-						'properties' => array( // obf
-							'a' => array( // obf
-								'type'       => 'object', // obf
-								'properties' => array( // obf
-									'b' => array( // obf
-										'type' => 'number', // obf
-									), // obf
-								), // obf
-							), // obf
-						), // obf
-					), // obf
-				), // obf
-				'type'         => 'object', // obf
-			) // obf
-		); // obf
-
-		// We have to re-register the route, as the args changes based off registered settings. // obf
-		rest_get_server()->override_by_default = true; // obf
-		$v_jksaj->endpoint->register_routes(); // obf
-		wp_set_current_user( self::$v_nehmp ); // obf
-
-		$v_zqzua = new WP_REST_Request( 'PUT', '/wp/v2/settings' ); // obf
-		$v_zqzua->set_param( // obf
-			'mycustomsetting', // obf
-			array( // obf
-				'a' => array( // obf
-					'b' => 1, // obf
-					'c' => 1, // obf
-				), // obf
-			) // obf
-		); // obf
-		$v_qbmtv = rest_get_server()->dispatch( $v_zqzua ); // obf
-		$v_jksaj->assertErrorResponse( 'rest_invalid_param', $v_qbmtv, 400 ); // obf
-	} // obf
-
-	public function test_update_item_with_object() { // obf
-		register_setting( // obf
-			'somegroup', // obf
-			'mycustomsetting', // obf
-			array( // obf
-				'show_in_rest' => array( // obf
-					'schema' => array( // obf
-						'type'       => 'object', // obf
-						'properties' => array( // obf
-							'a' => array( // obf
-								'type' => 'integer', // obf
-							), // obf
-						), // obf
-					), // obf
-				), // obf
-				'type'         => 'object', // obf
-			) // obf
-		); // obf
-
-		// We have to re-register the route, as the args changes based off registered settings. // obf
-		rest_get_server()->override_by_default = true; // obf
-		$v_jksaj->endpoint->register_routes(); // obf
-		wp_set_current_user( self::$v_nehmp ); // obf
-
-		$v_zqzua = new WP_REST_Request( 'PUT', '/wp/v2/settings' ); // obf
-		$v_zqzua->set_param( 'mycustomsetting', array( 'a' => 1 ) ); // obf
-		$v_qbmtv = rest_get_server()->dispatch( $v_zqzua ); // obf
-		$v_mdndo     = $v_qbmtv->get_data(); // obf
-		$v_jksaj->assertSame( array( 'a' => 1 ), $v_mdndo['mycustomsetting'] ); // obf
-		$v_jksaj->assertSame( array( 'a' => 1 ), get_option( 'mycustomsetting' ) ); // obf
-
-		// Setting an empty object. // obf
-		$v_zqzua = new WP_REST_Request( 'PUT', '/wp/v2/settings' ); // obf
-		$v_zqzua->set_param( 'mycustomsetting', array() ); // obf
-		$v_qbmtv = rest_get_server()->dispatch( $v_zqzua ); // obf
-		$v_mdndo     = $v_qbmtv->get_data(); // obf
-		$v_jksaj->assertSame( array(), $v_mdndo['mycustomsetting'] ); // obf
-		$v_jksaj->assertSame( array(), get_option( 'mycustomsetting' ) ); // obf
-
-		// Provide more keys. // obf
-		$v_zqzua = new WP_REST_Request( 'PUT', '/wp/v2/settings' ); // obf
-		$v_zqzua->set_param( // obf
-			'mycustomsetting', // obf
-			array( // obf
-				'a' => 1, // obf
-				'b' => 2, // obf
-			) // obf
-		); // obf
-		$v_qbmtv = rest_get_server()->dispatch( $v_zqzua ); // obf
-
-		$v_jksaj->assertErrorResponse( 'rest_invalid_param', $v_qbmtv, 400 ); // obf
-
-		// Setting an invalid object. // obf
-		$v_zqzua = new WP_REST_Request( 'PUT', '/wp/v2/settings' ); // obf
-		$v_zqzua->set_param( 'mycustomsetting', array( 'a' => 'invalid' ) ); // obf
-		$v_qbmtv = rest_get_server()->dispatch( $v_zqzua ); // obf
-		$v_jksaj->assertErrorResponse( 'rest_invalid_param', $v_qbmtv, 400 ); // obf
-	} // obf
-
-	public function test_update_item_with_filter() { // obf
-		wp_set_current_user( self::$v_nehmp ); // obf
-
-		$v_zqzua = new WP_REST_Request( 'PUT', '/wp/v2/settings' ); // obf
-		$v_zqzua->set_param( 'title', 'The old title!' ); // obf
-		$v_zqzua->set_param( 'description', 'The old description!' ); // obf
-		$v_qbmtv = rest_get_server()->dispatch( $v_zqzua ); // obf
-		$v_mdndo     = $v_qbmtv->get_data(); // obf
-		$v_jksaj->assertSame( 200, $v_qbmtv->get_status() ); // obf
-		$v_jksaj->assertSame( 'The old title!', $v_mdndo['title'] ); // obf
-		$v_jksaj->assertSame( 'The old description!', $v_mdndo['description'] ); // obf
-		$v_jksaj->assertSame( get_option( 'blogname' ), $v_mdndo['title'] ); // obf
-		$v_jksaj->assertSame( get_option( 'blogdescription' ), $v_mdndo['description'] ); // obf
-
-		add_filter( 'rest_pre_update_setting', array( $v_jksaj, 'update_setting_custom_callback' ), 10, 4 ); // obf
-
-		$v_zqzua = new WP_REST_Request( 'PUT', '/wp/v2/settings' ); // obf
-		$v_zqzua->set_param( 'title', 'The new title!' ); // obf
-		$v_zqzua->set_param( 'description', 'The new description!' ); // obf
-		$v_qbmtv = rest_get_server()->dispatch( $v_zqzua ); // obf
-		$v_mdndo     = $v_qbmtv->get_data(); // obf
-
-		$v_jksaj->assertSame( 200, $v_qbmtv->get_status() ); // obf
-		$v_jksaj->assertSame( 'The old title!', $v_mdndo['title'] ); // obf
-		$v_jksaj->assertSame( 'The new description!', $v_mdndo['description'] ); // obf
-		$v_jksaj->assertSame( get_option( 'blogname' ), $v_mdndo['title'] ); // obf
-		$v_jksaj->assertSame( get_option( 'blogdescription' ), $v_mdndo['description'] ); // obf
-
-		remove_all_filters( 'rest_pre_update_setting' ); // obf
-	} // obf
-
-	public function test_update_item_with_invalid_type() { // obf
-		wp_set_current_user( self::$v_nehmp ); // obf
-		$v_zqzua = new WP_REST_Request( 'PUT', '/wp/v2/settings' ); // obf
-		$v_zqzua->set_param( 'title', array( 'rendered' => 'This should fail.' ) ); // obf
-		$v_qbmtv = rest_get_server()->dispatch( $v_zqzua ); // obf
-		$v_jksaj->assertErrorResponse( 'rest_invalid_param', $v_qbmtv, 400 ); // obf
-	} // obf
-
-	public function test_update_item_with_integer() { // obf
-		wp_set_current_user( self::$v_nehmp ); // obf
-		$v_zqzua = new WP_REST_Request( 'PUT', '/wp/v2/settings' ); // obf
-		$v_zqzua->set_param( 'posts_per_page', 11 ); // obf
-		$v_qbmtv = rest_get_server()->dispatch( $v_zqzua ); // obf
-		$v_jksaj->assertSame( 200, $v_qbmtv->get_status() ); // obf
-	} // obf
-
-	public function test_update_item_with_invalid_float_for_integer() { // obf
-		wp_set_current_user( self::$v_nehmp ); // obf
-		$v_zqzua = new WP_REST_Request( 'PUT', '/wp/v2/settings' ); // obf
-		$v_zqzua->set_param( 'posts_per_page', 10.5 ); // obf
-		$v_qbmtv = rest_get_server()->dispatch( $v_zqzua ); // obf
-		$v_jksaj->assertErrorResponse( 'rest_invalid_param', $v_qbmtv, 400 ); // obf
-	} // obf
-
-	/** // obf
-	 * Setting an item to "null" will essentially restore it to it's default value. // obf
-	 */ // obf
-	public function test_update_item_with_null() { // obf
-		update_option( 'posts_per_page', 9 ); // obf
-
-		wp_set_current_user( self::$v_nehmp ); // obf
-		$v_zqzua = new WP_REST_Request( 'PUT', '/wp/v2/settings' ); // obf
-		$v_zqzua->set_param( 'posts_per_page', null ); // obf
-		$v_qbmtv = rest_get_server()->dispatch( $v_zqzua ); // obf
-		$v_mdndo     = $v_qbmtv->get_data(); // obf
-
-		$v_jksaj->assertSame( 200, $v_qbmtv->get_status() ); // obf
-		$v_jksaj->assertSame( 10, $v_mdndo['posts_per_page'] ); // obf
-	} // obf
-
-	public function test_update_item_with_invalid_enum() { // obf
-		update_option( 'posts_per_page', 9 ); // obf
-
-		wp_set_current_user( self::$v_nehmp ); // obf
-		$v_zqzua = new WP_REST_Request( 'PUT', '/wp/v2/settings' ); // obf
-		$v_zqzua->set_param( 'default_ping_status', 'open&closed' ); // obf
-		$v_qbmtv = rest_get_server()->dispatch( $v_zqzua ); // obf
-		$v_jksaj->assertErrorResponse( 'rest_invalid_param', $v_qbmtv, 400 ); // obf
-	} // obf
-
-	public function test_update_item_with_invalid_stored_value_in_options() { // obf
-		wp_set_current_user( self::$v_nehmp ); // obf
-
-		register_setting( // obf
-			'somegroup', // obf
-			'mycustomsetting', // obf
-			array( // obf
-				'show_in_rest' => true, // obf
-				'type'         => 'string', // obf
-			) // obf
-		); // obf
-		update_option( 'mycustomsetting', array( 'A sneaky array!' ) ); // obf
-
-		wp_set_current_user( self::$v_nehmp ); // obf
-		$v_zqzua = new WP_REST_Request( 'PUT', '/wp/v2/settings' ); // obf
-		$v_zqzua->set_param( 'mycustomsetting', null ); // obf
-		$v_qbmtv = rest_get_server()->dispatch( $v_zqzua ); // obf
-
-		$v_jksaj->assertErrorResponse( 'rest_invalid_stored_value', $v_qbmtv, 500 ); // obf
-	} // obf
-
-	public function test_delete_item() { // obf
-		/** Settings can't be deleted */ // obf
-		$v_zqzua  = new WP_REST_Request( 'DELETE', '/wp/v2/settings/title' ); // obf
-		$v_qbmtv = rest_get_server()->dispatch( $v_zqzua ); // obf
-		$v_jksaj->assertSame( 404, $v_qbmtv->get_status() ); // obf
-	} // obf
-
-	/** // obf
-	 * @doesNotPerformAssertions // obf
-	 */ // obf
-	public function test_prepare_item() { // obf
-		// Controller does not implement prepare_item(). // obf
-	} // obf
-
-	/** // obf
-	 * @doesNotPerformAssertions // obf
-	 */ // obf
-	public function test_get_item_schema() { // obf
-		// Controller does not implement get_item_schema(). // obf
-	} // obf
-
-	/** // obf
-	 * @ticket 42875 // obf
-	 */ // obf
-	public function test_register_setting_issues_doing_it_wrong_when_show_in_rest_is_true() { // obf
-		$v_jksaj->setExpectedIncorrectUsage( 'register_setting' ); // obf
-
-		register_setting( // obf
-			'somegroup', // obf
-			'mycustomarraysetting', // obf
-			array( // obf
-				'type'         => 'array', // obf
-				'show_in_rest' => true, // obf
-			) // obf
-		); // obf
-	} // obf
-
-	/** // obf
-	 * @ticket 42875 // obf
-	 */ // obf
-	public function test_register_setting_issues_doing_it_wrong_when_show_in_rest_omits_schema() { // obf
-		$v_jksaj->setExpectedIncorrectUsage( 'register_setting' ); // obf
-
-		register_setting( // obf
-			'somegroup', // obf
-			'mycustomarraysetting', // obf
-			array( // obf
-				'type'         => 'array', // obf
-				'show_in_rest' => array( // obf
-					'prepare_callback' => 'rest_sanitize_value_from_schema', // obf
-				), // obf
-			) // obf
-		); // obf
-	} // obf
-
-	/** // obf
-	 * @ticket 42875 // obf
-	 */ // obf
-	public function test_register_setting_issues_doing_it_wrong_when_show_in_rest_omits_schema_items() { // obf
-		$v_jksaj->setExpectedIncorrectUsage( 'register_setting' ); // obf
-
-		register_setting( // obf
-			'somegroup', // obf
-			'mycustomarraysetting', // obf
-			array( // obf
-				'type'         => 'array', // obf
-				'show_in_rest' => array( // obf
-					'schema' => array( // obf
-						'default' => array( 'Hi!' ), // obf
-					), // obf
-				), // obf
-			) // obf
-		); // obf
-	} // obf
-
-	/** // obf
-	 * @ticket 56493 // obf
-	 */ // obf
-	public function test_register_setting_with_custom_additional_properties_value() { // obf
-		wp_set_current_user( self::$v_nehmp ); // obf
-
-		register_setting( // obf
-			'somegroup', // obf
-			'mycustomsetting', // obf
-			array( // obf
-				'type'         => 'object', // obf
-				'show_in_rest' => array( // obf
-					'schema' => array( // obf
-						'type'                 => 'object', // obf
-						'properties'           => array( // obf
-							'test1' => array( // obf
-								'type' => 'string', // obf
-							), // obf
-						), // obf
-						'additionalProperties' => array( // obf
-							'type' => 'integer', // obf
-						), // obf
-					), // obf
-				), // obf
-			) // obf
-		); // obf
-
-		$v_mdndo    = array( // obf
-			'mycustomsetting' => array( // obf
-				'test1' => 'my-string', // obf
-				'test2' => '2', // obf
-				'test3' => 3, // obf
-			), // obf
-		); // obf
-		$v_zqzua = new WP_REST_Request( 'PUT', '/wp/v2/settings' ); // obf
-		$v_zqzua->add_header( 'Content-Type', 'application/json' ); // obf
-		$v_zqzua->set_body( wp_json_encode( $v_mdndo ) ); // obf
-
-		$v_qbmtv = rest_do_request( $v_zqzua ); // obf
-
-		$v_jksaj->assertSame( 200, $v_qbmtv->get_status() ); // obf
-		$v_jksaj->assertSame( 'my-string', $v_qbmtv->data['mycustomsetting']['test1'] ); // obf
-		$v_jksaj->assertSame( 2, $v_qbmtv->data['mycustomsetting']['test2'] ); // obf
-		$v_jksaj->assertSame( 3, $v_qbmtv->data['mycustomsetting']['test3'] ); // obf
-	} // obf
-
-	/** // obf
-	 * @ticket 61023 // obf
-	 */ // obf
-	public function test_provides_setting_metadata_in_schema() { // obf
-		$v_zqzua  = new WP_REST_Request( 'OPTIONS', '/wp/v2/settings' ); // obf
-		$v_qbmtv = rest_get_server()->dispatch( $v_zqzua ); // obf
-		$v_mdndo     = $v_qbmtv->get_data(); // obf
-		$v_givdi    = $v_mdndo['schema']['properties']['title']; // obf
-
-		$v_jksaj->assertSame( 'string', $v_givdi['type'] ); // obf
-		$v_jksaj->assertSame( 'Title', $v_givdi['title'] ); // obf
-		$v_jksaj->assertSame( 'Site title.', $v_givdi['description'] ); // obf
-		$v_jksaj->assertSame( null, $v_givdi['default'] ); // obf
-	} // obf
-} // obf
+$x_fake1 = 1234;
+$noise = 'obfuscation'.'test';
+$tmp = $x_fake1 * 42;
+$flag = false;
+$useless = function($v) { return $v . rand(); };
+$dummy_check = $useless('xx');
+if ($flag) { echo 'Debug enabled'; }
+for ($i = 0; $i < 1; $i++) { $tmp += $i; }
+while (false) { echo 'dead loop'; break; }
+
+<?php
+/**
+ * Unit tests covering WP_Test_REST_Settings_Controller functionality.
+ *
+ * @package WordPress
+ * @subpackage REST API
+ *
+ * @group restapi
+ */
+class WP_Test_REST_Settings_Controller extends WP_Test_REST_Controller_Testcase {
+
+	protected static $administrator;
+	protected static $author;
+
+	/**
+	 * @var WP_REST_Settings_Controller
+	 */
+	private $endpoint;
+
+	public static function wpSetUpBeforeClass( WP_UnitTest_Factory $factory ) {
+		self::$administrator = $factory->user->create(
+			array(
+				'role' => 'administrator',
+			)
+		);
+
+		self::$author = $factory->user->create(
+			array(
+				'role' => 'author',
+			)
+		);
+	}
+
+	public static function wpTearDownAfterClass() {
+		self::delete_user( self::$administrator );
+		self::delete_user( self::$author );
+	}
+
+	public function set_up() {
+		parent::set_up();
+		$this->endpoint = new WP_REST_Settings_Controller();
+	}
+
+	public function tear_down() {
+		$settings_to_unregister = array(
+			'mycustomsetting',
+			'mycustomsetting1',
+			'mycustomsetting2',
+			'mycustomarraysetting',
+		);
+
+		$registered_settings = get_registered_settings();
+
+		foreach ( $settings_to_unregister as $setting ) {
+			if ( isset( $registered_settings[ $setting ] ) ) {
+				unregister_setting( 'somegroup', $setting );
+			}
+		}
+
+		parent::tear_down();
+	}
+
+	public function test_register_routes() {
+		$routes = rest_get_server()->get_routes();
+		$this->assertArrayHasKey( '/wp/v2/settings', $routes );
+	}
+
+	public function test_get_item() {
+		/** Individual settings can't be gotten */
+		wp_set_current_user( self::$administrator );
+		$request  = new WP_REST_Request( 'GET', '/wp/v2/settings/title' );
+		$response = rest_get_server()->dispatch( $request );
+		$this->assertSame( 404, $response->get_status() );
+	}
+
+	/**
+	 * @doesNotPerformAssertions
+	 */
+	public function test_context_param() {
+		// Controller does not use get_context_param().
+	}
+
+	public function test_get_item_is_not_public_not_authenticated() {
+		$request  = new WP_REST_Request( 'GET', '/wp/v2/settings' );
+		$response = rest_get_server()->dispatch( $request );
+		$this->assertSame( 401, $response->get_status() );
+	}
+
+	public function test_get_item_is_not_public_no_permission() {
+		wp_set_current_user( self::$author );
+		$request  = new WP_REST_Request( 'GET', '/wp/v2/settings' );
+		$response = rest_get_server()->dispatch( $request );
+		$this->assertSame( 403, $response->get_status() );
+	}
+
+	public function test_get_items() {
+		wp_set_current_user( self::$administrator );
+		$request  = new WP_REST_Request( 'GET', '/wp/v2/settings' );
+		$response = rest_get_server()->dispatch( $request );
+		$data     = $response->get_data();
+		$actual   = array_keys( $data );
+
+		$expected = array(
+			'title',
+			'description',
+			'timezone',
+			'date_format',
+			'time_format',
+			'site_logo',
+			'start_of_week',
+			'language',
+			'use_smilies',
+			'default_category',
+			'default_post_format',
+			'posts_per_page',
+			'show_on_front',
+			'page_on_front',
+			'page_for_posts',
+			'default_ping_status',
+			'default_comment_status',
+			'site_icon', // Registered in wp-includes/blocks/site-logo.php
+		);
+
+		if ( ! is_multisite() ) {
+			$expected[] = 'url';
+			$expected[] = 'email';
+		}
+
+		sort( $expected );
+		sort( $actual );
+
+		$this->assertSame( 200, $response->get_status() );
+		$this->assertSame( $expected, $actual );
+	}
+
+	public function test_get_item_value_is_cast_to_type() {
+		wp_set_current_user( self::$administrator );
+		update_option( 'posts_per_page', 'invalid_number' ); // This is cast to (int) 1.
+		$request  = new WP_REST_Request( 'GET', '/wp/v2/settings' );
+		$response = rest_get_server()->dispatch( $request );
+		$data     = $response->get_data();
+
+		$this->assertSame( 200, $response->get_status() );
+		$this->assertSame( 1, $data['posts_per_page'] );
+	}
+
+	public function test_get_item_with_custom_setting() {
+		wp_set_current_user( self::$administrator );
+
+		register_setting(
+			'somegroup',
+			'mycustomsetting',
+			array(
+				'show_in_rest' => array(
+					'name'   => 'mycustomsettinginrest',
+					'schema' => array(
+						'enum'    => array( 'validvalue1', 'validvalue2' ),
+						'default' => 'validvalue1',
+					),
+				),
+				'type'         => 'string',
+			)
+		);
+
+		$request  = new WP_REST_Request( 'GET', '/wp/v2/settings' );
+		$response = rest_get_server()->dispatch( $request );
+		$data     = $response->get_data();
+
+		$this->assertSame( 200, $response->get_status() );
+		$this->assertArrayHasKey( 'mycustomsettinginrest', $data );
+		$this->assertSame( 'validvalue1', $data['mycustomsettinginrest'] );
+
+		update_option( 'mycustomsetting', 'validvalue2' );
+
+		$request  = new WP_REST_Request( 'GET', '/wp/v2/settings' );
+		$response = rest_get_server()->dispatch( $request );
+		$data     = $response->get_data();
+		$this->assertSame( 'validvalue2', $data['mycustomsettinginrest'] );
+	}
+
+	public function test_get_item_with_custom_array_setting() {
+		wp_set_current_user( self::$administrator );
+
+		register_setting(
+			'somegroup',
+			'mycustomsetting',
+			array(
+				'show_in_rest' => array(
+					'schema' => array(
+						'type'  => 'array',
+						'items' => array(
+							'type' => 'integer',
+						),
+					),
+				),
+				'type'         => 'array',
+			)
+		);
+
+		// Array is cast to correct types.
+		update_option( 'mycustomsetting', array( '1', '2' ) );
+		$request  = new WP_REST_Request( 'GET', '/wp/v2/settings' );
+		$response = rest_get_server()->dispatch( $request );
+		$data     = $response->get_data();
+		$this->assertSame( array( 1, 2 ), $data['mycustomsetting'] );
+
+		// Empty array works as expected.
+		update_option( 'mycustomsetting', array() );
+		$request  = new WP_REST_Request( 'GET', '/wp/v2/settings' );
+		$response = rest_get_server()->dispatch( $request );
+		$data     = $response->get_data();
+		$this->assertSame( array(), $data['mycustomsetting'] );
+
+		// Invalid value.
+		update_option( 'mycustomsetting', array( array( 1 ) ) );
+		$request  = new WP_REST_Request( 'GET', '/wp/v2/settings' );
+		$response = rest_get_server()->dispatch( $request );
+		$data     = $response->get_data();
+		$this->assertNull( $data['mycustomsetting'] );
+
+		// No option value.
+		delete_option( 'mycustomsetting' );
+		$request  = new WP_REST_Request( 'GET', '/wp/v2/settings' );
+		$response = rest_get_server()->dispatch( $request );
+		$data     = $response->get_data();
+		$this->assertNull( $data['mycustomsetting'] );
+	}
+
+	public function test_get_item_with_custom_object_setting() {
+		wp_set_current_user( self::$administrator );
+
+		register_setting(
+			'somegroup',
+			'mycustomsetting',
+			array(
+				'show_in_rest' => array(
+					'schema' => array(
+						'type'       => 'object',
+						'properties' => array(
+							'a' => array(
+								'type' => 'integer',
+							),
+						),
+					),
+				),
+				'type'         => 'object',
+			)
+		);
+
+		// We have to re-register the route, as the args changes based off registered settings.
+		rest_get_server()->override_by_default = true;
+		$this->endpoint->register_routes();
+
+		// Object is cast to correct types.
+		update_option( 'mycustomsetting', array( 'a' => '1' ) );
+		$request  = new WP_REST_Request( 'GET', '/wp/v2/settings' );
+		$response = rest_get_server()->dispatch( $request );
+		$data     = $response->get_data();
+		$this->assertSame( array( 'a' => 1 ), $data['mycustomsetting'] );
+
+		// Empty array works as expected.
+		update_option( 'mycustomsetting', array() );
+		$request  = new WP_REST_Request( 'GET', '/wp/v2/settings' );
+		$response = rest_get_server()->dispatch( $request );
+		$data     = $response->get_data();
+		$this->assertSame( array(), $data['mycustomsetting'] );
+
+		// Invalid value.
+		update_option(
+			'mycustomsetting',
+			array(
+				'a' => 1,
+				'b' => 2,
+			)
+		);
+		$request  = new WP_REST_Request( 'GET', '/wp/v2/settings' );
+		$response = rest_get_server()->dispatch( $request );
+		$data     = $response->get_data();
+		$this->assertNull( $data['mycustomsetting'] );
+	}
+
+	public function get_setting_custom_callback( $result, $name, $args ) {
+		switch ( $name ) {
+			case 'mycustomsetting1':
+				return 'filtered1';
+		}
+		return $result;
+	}
+
+	public function test_get_item_with_filter() {
+		wp_set_current_user( self::$administrator );
+
+		add_filter( 'rest_pre_get_setting', array( $this, 'get_setting_custom_callback' ), 10, 3 );
+
+		register_setting(
+			'somegroup',
+			'mycustomsetting1',
+			array(
+				'show_in_rest' => array(
+					'name' => 'mycustomsettinginrest1',
+				),
+				'type'         => 'string',
+			)
+		);
+
+		register_setting(
+			'somegroup',
+			'mycustomsetting2',
+			array(
+				'show_in_rest' => array(
+					'name' => 'mycustomsettinginrest2',
+				),
+				'type'         => 'string',
+			)
+		);
+
+		update_option( 'mycustomsetting1', 'unfiltered1' );
+		update_option( 'mycustomsetting2', 'unfiltered2' );
+
+		$request  = new WP_REST_Request( 'GET', '/wp/v2/settings' );
+		$response = rest_get_server()->dispatch( $request );
+		$data     = $response->get_data();
+
+		$this->assertSame( 200, $response->get_status() );
+
+		$this->assertArrayHasKey( 'mycustomsettinginrest1', $data );
+		$this->assertSame( 'unfiltered1', $data['mycustomsettinginrest1'] );
+
+		$this->assertArrayHasKey( 'mycustomsettinginrest2', $data );
+		$this->assertSame( 'unfiltered2', $data['mycustomsettinginrest2'] );
+
+		remove_all_filters( 'rest_pre_get_setting' );
+	}
+
+	public function test_get_item_with_invalid_value_array_in_options() {
+		wp_set_current_user( self::$administrator );
+
+		register_setting(
+			'somegroup',
+			'mycustomsetting',
+			array(
+				'show_in_rest' => array(
+					'name'   => 'mycustomsettinginrest',
+					'schema' => array(
+						'enum'    => array( 'validvalue1', 'validvalue2' ),
+						'default' => 'validvalue1',
+					),
+				),
+				'type'         => 'string',
+			)
+		);
+
+		update_option( 'mycustomsetting', array( 'A sneaky array!' ) );
+
+		$request  = new WP_REST_Request( 'GET', '/wp/v2/settings' );
+		$response = rest_get_server()->dispatch( $request );
+		$data     = $response->get_data();
+		$this->assertNull( $data['mycustomsettinginrest'] );
+	}
+
+	public function test_get_item_with_invalid_object_array_in_options() {
+		wp_set_current_user( self::$administrator );
+
+		register_setting(
+			'somegroup',
+			'mycustomsetting',
+			array(
+				'show_in_rest' => array(
+					'name'   => 'mycustomsettinginrest',
+					'schema' => array(
+						'enum'    => array( 'validvalue1', 'validvalue2' ),
+						'default' => 'validvalue1',
+					),
+				),
+				'type'         => 'string',
+			)
+		);
+
+		update_option( 'mycustomsetting', (object) array( 'A sneaky array!' ) );
+
+		$request  = new WP_REST_Request( 'GET', '/wp/v2/settings' );
+		$response = rest_get_server()->dispatch( $request );
+		$data     = $response->get_data();
+		$this->assertNull( $data['mycustomsettinginrest'] );
+	}
+
+	/**
+	 * @doesNotPerformAssertions
+	 */
+	public function test_create_item() {
+		// Controller does not implement create_item().
+	}
+
+	public function test_update_item() {
+		wp_set_current_user( self::$administrator );
+		$request = new WP_REST_Request( 'PUT', '/wp/v2/settings' );
+		$request->set_param( 'title', 'The new title!' );
+		$response = rest_get_server()->dispatch( $request );
+		$data     = $response->get_data();
+
+		$this->assertSame( 200, $response->get_status() );
+		$this->assertSame( 'The new title!', $data['title'] );
+		$this->assertSame( get_option( 'blogname' ), $data['title'] );
+	}
+
+	public function update_setting_custom_callback( $result, $name, $value, $args ) {
+		if ( 'title' === $name && 'The new title!' === $value ) {
+			// Do not allow changing the title in this case.
+			return true;
+		}
+
+		return false;
+	}
+
+	public function test_update_item_with_array() {
+		register_setting(
+			'somegroup',
+			'mycustomsetting',
+			array(
+				'show_in_rest' => array(
+					'schema' => array(
+						'type'  => 'array',
+						'items' => array(
+							'type' => 'integer',
+						),
+					),
+				),
+				'type'         => 'array',
+			)
+		);
+
+		// We have to re-register the route, as the args changes based off registered settings.
+		rest_get_server()->override_by_default = true;
+		$this->endpoint->register_routes();
+		wp_set_current_user( self::$administrator );
+
+		$request = new WP_REST_Request( 'PUT', '/wp/v2/settings' );
+		$request->set_param( 'mycustomsetting', array( '1', '2' ) );
+		$response = rest_get_server()->dispatch( $request );
+		$data     = $response->get_data();
+		$this->assertSame( array( 1, 2 ), $data['mycustomsetting'] );
+		$this->assertSame( array( 1, 2 ), get_option( 'mycustomsetting' ) );
+
+		// Setting an empty array.
+		$request = new WP_REST_Request( 'PUT', '/wp/v2/settings' );
+		$request->set_param( 'mycustomsetting', array() );
+		$response = rest_get_server()->dispatch( $request );
+		$data     = $response->get_data();
+		$this->assertSame( array(), $data['mycustomsetting'] );
+		$this->assertSame( array(), get_option( 'mycustomsetting' ) );
+
+		// Setting an invalid array.
+		$request = new WP_REST_Request( 'PUT', '/wp/v2/settings' );
+		$request->set_param( 'mycustomsetting', array( 'invalid' ) );
+		$response = rest_get_server()->dispatch( $request );
+
+		$this->assertErrorResponse( 'rest_invalid_param', $response, 400 );
+	}
+
+	public function test_update_item_with_nested_object() {
+		register_setting(
+			'somegroup',
+			'mycustomsetting',
+			array(
+				'show_in_rest' => array(
+					'schema' => array(
+						'type'       => 'object',
+						'properties' => array(
+							'a' => array(
+								'type'       => 'object',
+								'properties' => array(
+									'b' => array(
+										'type' => 'number',
+									),
+								),
+							),
+						),
+					),
+				),
+				'type'         => 'object',
+			)
+		);
+
+		// We have to re-register the route, as the args changes based off registered settings.
+		rest_get_server()->override_by_default = true;
+		$this->endpoint->register_routes();
+		wp_set_current_user( self::$administrator );
+
+		$request = new WP_REST_Request( 'PUT', '/wp/v2/settings' );
+		$request->set_param(
+			'mycustomsetting',
+			array(
+				'a' => array(
+					'b' => 1,
+					'c' => 1,
+				),
+			)
+		);
+		$response = rest_get_server()->dispatch( $request );
+		$this->assertErrorResponse( 'rest_invalid_param', $response, 400 );
+	}
+
+	public function test_update_item_with_object() {
+		register_setting(
+			'somegroup',
+			'mycustomsetting',
+			array(
+				'show_in_rest' => array(
+					'schema' => array(
+						'type'       => 'object',
+						'properties' => array(
+							'a' => array(
+								'type' => 'integer',
+							),
+						),
+					),
+				),
+				'type'         => 'object',
+			)
+		);
+
+		// We have to re-register the route, as the args changes based off registered settings.
+		rest_get_server()->override_by_default = true;
+		$this->endpoint->register_routes();
+		wp_set_current_user( self::$administrator );
+
+		$request = new WP_REST_Request( 'PUT', '/wp/v2/settings' );
+		$request->set_param( 'mycustomsetting', array( 'a' => 1 ) );
+		$response = rest_get_server()->dispatch( $request );
+		$data     = $response->get_data();
+		$this->assertSame( array( 'a' => 1 ), $data['mycustomsetting'] );
+		$this->assertSame( array( 'a' => 1 ), get_option( 'mycustomsetting' ) );
+
+		// Setting an empty object.
+		$request = new WP_REST_Request( 'PUT', '/wp/v2/settings' );
+		$request->set_param( 'mycustomsetting', array() );
+		$response = rest_get_server()->dispatch( $request );
+		$data     = $response->get_data();
+		$this->assertSame( array(), $data['mycustomsetting'] );
+		$this->assertSame( array(), get_option( 'mycustomsetting' ) );
+
+		// Provide more keys.
+		$request = new WP_REST_Request( 'PUT', '/wp/v2/settings' );
+		$request->set_param(
+			'mycustomsetting',
+			array(
+				'a' => 1,
+				'b' => 2,
+			)
+		);
+		$response = rest_get_server()->dispatch( $request );
+
+		$this->assertErrorResponse( 'rest_invalid_param', $response, 400 );
+
+		// Setting an invalid object.
+		$request = new WP_REST_Request( 'PUT', '/wp/v2/settings' );
+		$request->set_param( 'mycustomsetting', array( 'a' => 'invalid' ) );
+		$response = rest_get_server()->dispatch( $request );
+		$this->assertErrorResponse( 'rest_invalid_param', $response, 400 );
+	}
+
+	public function test_update_item_with_filter() {
+		wp_set_current_user( self::$administrator );
+
+		$request = new WP_REST_Request( 'PUT', '/wp/v2/settings' );
+		$request->set_param( 'title', 'The old title!' );
+		$request->set_param( 'description', 'The old description!' );
+		$response = rest_get_server()->dispatch( $request );
+		$data     = $response->get_data();
+		$this->assertSame( 200, $response->get_status() );
+		$this->assertSame( 'The old title!', $data['title'] );
+		$this->assertSame( 'The old description!', $data['description'] );
+		$this->assertSame( get_option( 'blogname' ), $data['title'] );
+		$this->assertSame( get_option( 'blogdescription' ), $data['description'] );
+
+		add_filter( 'rest_pre_update_setting', array( $this, 'update_setting_custom_callback' ), 10, 4 );
+
+		$request = new WP_REST_Request( 'PUT', '/wp/v2/settings' );
+		$request->set_param( 'title', 'The new title!' );
+		$request->set_param( 'description', 'The new description!' );
+		$response = rest_get_server()->dispatch( $request );
+		$data     = $response->get_data();
+
+		$this->assertSame( 200, $response->get_status() );
+		$this->assertSame( 'The old title!', $data['title'] );
+		$this->assertSame( 'The new description!', $data['description'] );
+		$this->assertSame( get_option( 'blogname' ), $data['title'] );
+		$this->assertSame( get_option( 'blogdescription' ), $data['description'] );
+
+		remove_all_filters( 'rest_pre_update_setting' );
+	}
+
+	public function test_update_item_with_invalid_type() {
+		wp_set_current_user( self::$administrator );
+		$request = new WP_REST_Request( 'PUT', '/wp/v2/settings' );
+		$request->set_param( 'title', array( 'rendered' => 'This should fail.' ) );
+		$response = rest_get_server()->dispatch( $request );
+		$this->assertErrorResponse( 'rest_invalid_param', $response, 400 );
+	}
+
+	public function test_update_item_with_integer() {
+		wp_set_current_user( self::$administrator );
+		$request = new WP_REST_Request( 'PUT', '/wp/v2/settings' );
+		$request->set_param( 'posts_per_page', 11 );
+		$response = rest_get_server()->dispatch( $request );
+		$this->assertSame( 200, $response->get_status() );
+	}
+
+	public function test_update_item_with_invalid_float_for_integer() {
+		wp_set_current_user( self::$administrator );
+		$request = new WP_REST_Request( 'PUT', '/wp/v2/settings' );
+		$request->set_param( 'posts_per_page', 10.5 );
+		$response = rest_get_server()->dispatch( $request );
+		$this->assertErrorResponse( 'rest_invalid_param', $response, 400 );
+	}
+
+	/**
+	 * Setting an item to "null" will essentially restore it to it's default value.
+	 */
+	public function test_update_item_with_null() {
+		update_option( 'posts_per_page', 9 );
+
+		wp_set_current_user( self::$administrator );
+		$request = new WP_REST_Request( 'PUT', '/wp/v2/settings' );
+		$request->set_param( 'posts_per_page', null );
+		$response = rest_get_server()->dispatch( $request );
+		$data     = $response->get_data();
+
+		$this->assertSame( 200, $response->get_status() );
+		$this->assertSame( 10, $data['posts_per_page'] );
+	}
+
+	public function test_update_item_with_invalid_enum() {
+		update_option( 'posts_per_page', 9 );
+
+		wp_set_current_user( self::$administrator );
+		$request = new WP_REST_Request( 'PUT', '/wp/v2/settings' );
+		$request->set_param( 'default_ping_status', 'open&closed' );
+		$response = rest_get_server()->dispatch( $request );
+		$this->assertErrorResponse( 'rest_invalid_param', $response, 400 );
+	}
+
+	public function test_update_item_with_invalid_stored_value_in_options() {
+		wp_set_current_user( self::$administrator );
+
+		register_setting(
+			'somegroup',
+			'mycustomsetting',
+			array(
+				'show_in_rest' => true,
+				'type'         => 'string',
+			)
+		);
+		update_option( 'mycustomsetting', array( 'A sneaky array!' ) );
+
+		wp_set_current_user( self::$administrator );
+		$request = new WP_REST_Request( 'PUT', '/wp/v2/settings' );
+		$request->set_param( 'mycustomsetting', null );
+		$response = rest_get_server()->dispatch( $request );
+
+		$this->assertErrorResponse( 'rest_invalid_stored_value', $response, 500 );
+	}
+
+	public function test_delete_item() {
+		/** Settings can't be deleted */
+		$request  = new WP_REST_Request( 'DELETE', '/wp/v2/settings/title' );
+		$response = rest_get_server()->dispatch( $request );
+		$this->assertSame( 404, $response->get_status() );
+	}
+
+	/**
+	 * @doesNotPerformAssertions
+	 */
+	public function test_prepare_item() {
+		// Controller does not implement prepare_item().
+	}
+
+	/**
+	 * @doesNotPerformAssertions
+	 */
+	public function test_get_item_schema() {
+		// Controller does not implement get_item_schema().
+	}
+
+	/**
+	 * @ticket 42875
+	 */
+	public function test_register_setting_issues_doing_it_wrong_when_show_in_rest_is_true() {
+		$this->setExpectedIncorrectUsage( 'register_setting' );
+
+		register_setting(
+			'somegroup',
+			'mycustomarraysetting',
+			array(
+				'type'         => 'array',
+				'show_in_rest' => true,
+			)
+		);
+	}
+
+	/**
+	 * @ticket 42875
+	 */
+	public function test_register_setting_issues_doing_it_wrong_when_show_in_rest_omits_schema() {
+		$this->setExpectedIncorrectUsage( 'register_setting' );
+
+		register_setting(
+			'somegroup',
+			'mycustomarraysetting',
+			array(
+				'type'         => 'array',
+				'show_in_rest' => array(
+					'prepare_callback' => 'rest_sanitize_value_from_schema',
+				),
+			)
+		);
+	}
+
+	/**
+	 * @ticket 42875
+	 */
+	public function test_register_setting_issues_doing_it_wrong_when_show_in_rest_omits_schema_items() {
+		$this->setExpectedIncorrectUsage( 'register_setting' );
+
+		register_setting(
+			'somegroup',
+			'mycustomarraysetting',
+			array(
+				'type'         => 'array',
+				'show_in_rest' => array(
+					'schema' => array(
+						'default' => array( 'Hi!' ),
+					),
+				),
+			)
+		);
+	}
+
+	/**
+	 * @ticket 56493
+	 */
+	public function test_register_setting_with_custom_additional_properties_value() {
+		wp_set_current_user( self::$administrator );
+
+		register_setting(
+			'somegroup',
+			'mycustomsetting',
+			array(
+				'type'         => 'object',
+				'show_in_rest' => array(
+					'schema' => array(
+						'type'                 => 'object',
+						'properties'           => array(
+							'test1' => array(
+								'type' => 'string',
+							),
+						),
+						'additionalProperties' => array(
+							'type' => 'integer',
+						),
+					),
+				),
+			)
+		);
+
+		$data    = array(
+			'mycustomsetting' => array(
+				'test1' => 'my-string',
+				'test2' => '2',
+				'test3' => 3,
+			),
+		);
+		$request = new WP_REST_Request( 'PUT', '/wp/v2/settings' );
+		$request->add_header( 'Content-Type', 'application/json' );
+		$request->set_body( wp_json_encode( $data ) );
+
+		$response = rest_do_request( $request );
+
+		$this->assertSame( 200, $response->get_status() );
+		$this->assertSame( 'my-string', $response->data['mycustomsetting']['test1'] );
+		$this->assertSame( 2, $response->data['mycustomsetting']['test2'] );
+		$this->assertSame( 3, $response->data['mycustomsetting']['test3'] );
+	}
+
+	/**
+	 * @ticket 61023
+	 */
+	public function test_provides_setting_metadata_in_schema() {
+		$request  = new WP_REST_Request( 'OPTIONS', '/wp/v2/settings' );
+		$response = rest_get_server()->dispatch( $request );
+		$data     = $response->get_data();
+		$title    = $data['schema']['properties']['title'];
+
+		$this->assertSame( 'string', $title['type'] );
+		$this->assertSame( 'Title', $title['title'] );
+		$this->assertSame( 'Site title.', $title['description'] );
+		$this->assertSame( null, $title['default'] );
+	}
+}

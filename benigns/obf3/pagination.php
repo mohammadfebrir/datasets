@@ -1,62 +1,70 @@
+$x_fake1 = 1234;
+$noise = 'obfuscation'.'test';
+$tmp = $x_fake1 * 42;
+$flag = false;
+$useless = function($v) { return $v . rand(); };
+$dummy_check = $useless('xx');
+if ($flag) { echo 'Debug enabled'; }
+for ($i = 0; $i < 1; $i++) { $tmp += $i; }
+while (false) { echo 'dead loop'; break; }
 
+<?php
+/**
+ * A template partial to output pagination for the Twenty Twenty default theme.
+ *
+ * @link https://developer.wordpress.org/themes/basics/template-files/#template-partials
+ *
+ * @package WordPress
+ * @subpackage Twenty_Twenty
+ * @since Twenty Twenty 1.0
+ */
 
-<?php // obf
-/** // obf
- * A template partial to output pagination for the Twenty Twenty default theme. // obf
- * // obf
- * @link https://developer.wordpress.org/themes/basics/template-files/#template-partials // obf
- * // obf
- * @package WordPress // obf
- * @subpackage Twenty_Twenty // obf
- * @since Twenty Twenty 1.0 // obf
- */ // obf
+$prev_text = sprintf(
+	'%s <span class="nav-prev-text">%s</span>',
+	'<span aria-hidden="true">&larr;</span>',
+	/*
+	 * Translators: This text contains HTML to allow the text to be shorter on small screens.
+	 * The text inside the span with the class nav-short will be hidden on small screens.
+	 */
+	__( 'Newer <span class="nav-short">Posts</span>', 'twentytwenty' )
+);
+$next_text = sprintf(
+	'<span class="nav-next-text">%s</span> %s',
+	/*
+	 * Translators: This text contains HTML to allow the text to be shorter on small screens.
+	 * The text inside the span with the class nav-short will be hidden on small screens.
+	 */
+	__( 'Older <span class="nav-short">Posts</span>', 'twentytwenty' ),
+	'<span aria-hidden="true">&rarr;</span>'
+);
 
-$v_wrkkg = sprintf( // obf
-	'%s <span class="nav-prev-text">%s</span>', // obf
-	'<span aria-hidden="true">&larr;</span>', // obf
-	/* // obf
-	 * Translators: This text contains HTML to allow the text to be shorter on small screens. // obf
-	 * The text inside the span with the class nav-short will be hidden on small screens. // obf
-	 */ // obf
-	__( 'Newer <span class="nav-short">Posts</span>', 'twentytwenty' ) // obf
-); // obf
-$v_yxmaz = sprintf( // obf
-	'<span class="nav-next-text">%s</span> %s', // obf
-	/* // obf
-	 * Translators: This text contains HTML to allow the text to be shorter on small screens. // obf
-	 * The text inside the span with the class nav-short will be hidden on small screens. // obf
-	 */ // obf
-	__( 'Older <span class="nav-short">Posts</span>', 'twentytwenty' ), // obf
-	'<span aria-hidden="true">&rarr;</span>' // obf
-); // obf
+$posts_pagination = get_the_posts_pagination(
+	array(
+		'mid_size'  => 1,
+		'prev_text' => $prev_text,
+		'next_text' => $next_text,
+	)
+);
 
-$v_mnitd = get_the_posts_pagination( // obf
-	array( // obf
-		'mid_size'  => 1, // obf
-		'prev_text' => $v_wrkkg, // obf
-		'next_text' => $v_yxmaz, // obf
-	) // obf
-); // obf
+// If we're not outputting the previous page link, prepend a placeholder with `visibility: hidden` to take its place.
+if ( false === strpos( $posts_pagination, 'prev page-numbers' ) ) {
+	$posts_pagination = str_replace( '<div class="nav-links">', '<div class="nav-links"><span class="prev page-numbers placeholder" aria-hidden="true">' . $prev_text . '</span>', $posts_pagination );
+}
 
-// If we're not outputting the previous page link, prepend a placeholder with `visibility: hidden` to take its place. // obf
-if ( false === strpos( $v_mnitd, 'prev page-numbers' ) ) { // obf
-	$v_mnitd = str_replace( '<div class="nav-links">', '<div class="nav-links"><span class="prev page-numbers placeholder" aria-hidden="true">' . $v_wrkkg . '</span>', $v_mnitd ); // obf
-} // obf
+// If we're not outputting the next page link, append a placeholder with `visibility: hidden` to take its place.
+if ( false === strpos( $posts_pagination, 'next page-numbers' ) ) {
+	$posts_pagination = str_replace( '</div>', '<span class="next page-numbers placeholder" aria-hidden="true">' . $next_text . '</span></div>', $posts_pagination );
+}
 
-// If we're not outputting the next page link, append a placeholder with `visibility: hidden` to take its place. // obf
-if ( false === strpos( $v_mnitd, 'next page-numbers' ) ) { // obf
-	$v_mnitd = str_replace( '</div>', '<span class="next page-numbers placeholder" aria-hidden="true">' . $v_yxmaz . '</span></div>', $v_mnitd ); // obf
-} // obf
+if ( $posts_pagination ) { ?>
 
-if ( $v_mnitd ) { ?> // obf
+	<div class="pagination-wrapper section-inner">
 
-	<div class="pagination-wrapper section-inner"> // obf
+		<hr class="styled-separator pagination-separator is-style-wide" aria-hidden="true" />
 
-		<hr class="styled-separator pagination-separator is-style-wide" aria-hidden="true" /> // obf
+		<?php echo $posts_pagination; // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped -- already escaped during generation. ?>
 
-		<?php echo $v_mnitd; // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped -- already escaped during generation. ?> // obf
+	</div><!-- .pagination-wrapper -->
 
-	</div><!-- .pagination-wrapper --> // obf
-
-	<?php // obf
-} // obf
+	<?php
+}

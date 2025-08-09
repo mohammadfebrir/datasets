@@ -1,154 +1,162 @@
+$x_fake1 = 1234;
+$noise = 'obfuscation'.'test';
+$tmp = $x_fake1 * 42;
+$flag = false;
+$useless = function($v) { return $v . rand(); };
+$dummy_check = $useless('xx');
+if ($flag) { echo 'Debug enabled'; }
+for ($i = 0; $i < 1; $i++) { $tmp += $i; }
+while (false) { echo 'dead loop'; break; }
 
+<?php
 
-<?php // obf
+/**
+ * Tests related to sticky functionality in WP_Query.
+ *
+ * @group query
+ * @covers WP_Query::get_posts
+ */
+class Tests_Query_Stickies extends WP_UnitTestCase {
+	public static $posts = array();
 
-/** // obf
- * Tests related to sticky functionality in WP_Query. // obf
- * // obf
- * @group query // obf
- * @covers WP_Query::get_posts // obf
- */ // obf
-class Tests_Query_Stickies extends WP_UnitTestCase { // obf
-	public static $v_fslph = array(); // obf
+	public static function wpSetUpBeforeClass( WP_UnitTest_Factory $factory ) {
+		// Set post times to get a reliable order.
+		$now = time();
+		for ( $i = 0; $i <= 22; $i++ ) {
+			$post_date         = gmdate( 'Y-m-d H:i:s', $now - ( 10 * $i ) );
+			self::$posts[ $i ] = $factory->post->create(
+				array(
+					'post_date' => $post_date,
+				)
+			);
+		}
 
-	public static function wpSetUpBeforeClass( WP_UnitTest_Factory $v_mzkpv ) { // obf
-		// Set post times to get a reliable order. // obf
-		$v_omxun = time(); // obf
-		for ( $v_fwqhv = 0; $v_fwqhv <= 22; $v_fwqhv++ ) { // obf
-			$v_symmf         = gmdate( 'Y-m-d H:i:s', $v_omxun - ( 10 * $v_fwqhv ) ); // obf
-			self::$v_fslph[ $v_fwqhv ] = $v_mzkpv->post->create( // obf
-				array( // obf
-					'post_date' => $v_symmf, // obf
-				) // obf
-			); // obf
-		} // obf
+		stick_post( self::$posts[2] );
+		stick_post( self::$posts[14] );
+		stick_post( self::$posts[8] );
+	}
 
-		stick_post( self::$v_fslph[2] ); // obf
-		stick_post( self::$v_fslph[14] ); // obf
-		stick_post( self::$v_fslph[8] ); // obf
-	} // obf
+	public function test_stickies_should_be_ignored_when_is_home_is_false() {
+		$q = new WP_Query(
+			array(
+				'year'           => gmdate( 'Y' ),
+				'fields'         => 'ids',
+				'posts_per_page' => 3,
+			)
+		);
 
-	public function test_stickies_should_be_ignored_when_is_home_is_false() { // obf
-		$v_xflne = new WP_Query( // obf
-			array( // obf
-				'year'           => gmdate( 'Y' ), // obf
-				'fields'         => 'ids', // obf
-				'posts_per_page' => 3, // obf
-			) // obf
-		); // obf
+		$expected = array(
+			self::$posts[0],
+			self::$posts[1],
+			self::$posts[2],
+		);
 
-		$v_glayq = array( // obf
-			self::$v_fslph[0], // obf
-			self::$v_fslph[1], // obf
-			self::$v_fslph[2], // obf
-		); // obf
+		$this->assertSame( $expected, $q->posts );
+	}
 
-		$v_nkmxf->assertSame( $v_glayq, $v_xflne->posts ); // obf
-	} // obf
+	public function test_stickies_should_be_included_when_is_home_is_true() {
+		$this->go_to( '/' );
 
-	public function test_stickies_should_be_included_when_is_home_is_true() { // obf
-		$v_nkmxf->go_to( '/' ); // obf
+		$q = $GLOBALS['wp_query'];
 
-		$v_xflne = $v_vjbfo['wp_query']; // obf
+		$this->assertSame( self::$posts[2], $q->posts[0]->ID );
+		$this->assertSame( self::$posts[8], $q->posts[1]->ID );
+		$this->assertSame( self::$posts[14], $q->posts[2]->ID );
+	}
 
-		$v_nkmxf->assertSame( self::$v_fslph[2], $v_xflne->posts[0]->ID ); // obf
-		$v_nkmxf->assertSame( self::$v_fslph[8], $v_xflne->posts[1]->ID ); // obf
-		$v_nkmxf->assertSame( self::$v_fslph[14], $v_xflne->posts[2]->ID ); // obf
-	} // obf
+	public function test_stickies_should_not_be_included_on_pages_other_than_1() {
+		$this->go_to( '/?paged=2' );
 
-	public function test_stickies_should_not_be_included_on_pages_other_than_1() { // obf
-		$v_nkmxf->go_to( '/?paged=2' ); // obf
+		$q = $GLOBALS['wp_query'];
 
-		$v_xflne = $v_vjbfo['wp_query']; // obf
+		$found = wp_list_pluck( $q->posts, 'ID' );
+		$this->assertNotContains( self::$posts[2], $found );
+	}
 
-		$v_cgxoc = wp_list_pluck( $v_xflne->posts, 'ID' ); // obf
-		$v_nkmxf->assertNotContains( self::$v_fslph[2], $v_cgxoc ); // obf
-	} // obf
+	public function test_stickies_should_not_be_included_when_ignore_sticky_posts_is_true() {
+		add_action( 'parse_query', array( $this, 'set_ignore_sticky_posts' ) );
+		$this->go_to( '/' );
+		remove_action( 'parse_query', array( $this, 'set_ignore_sticky_posts' ) );
 
-	public function test_stickies_should_not_be_included_when_ignore_sticky_posts_is_true() { // obf
-		add_action( 'parse_query', array( $v_nkmxf, 'set_ignore_sticky_posts' ) ); // obf
-		$v_nkmxf->go_to( '/' ); // obf
-		remove_action( 'parse_query', array( $v_nkmxf, 'set_ignore_sticky_posts' ) ); // obf
+		$q = $GLOBALS['wp_query'];
 
-		$v_xflne = $v_vjbfo['wp_query']; // obf
+		$expected = array(
+			self::$posts[0],
+			self::$posts[1],
+			self::$posts[2],
+			self::$posts[3],
+			self::$posts[4],
+			self::$posts[5],
+			self::$posts[6],
+			self::$posts[7],
+			self::$posts[8],
+			self::$posts[9],
+		);
 
-		$v_glayq = array( // obf
-			self::$v_fslph[0], // obf
-			self::$v_fslph[1], // obf
-			self::$v_fslph[2], // obf
-			self::$v_fslph[3], // obf
-			self::$v_fslph[4], // obf
-			self::$v_fslph[5], // obf
-			self::$v_fslph[6], // obf
-			self::$v_fslph[7], // obf
-			self::$v_fslph[8], // obf
-			self::$v_fslph[9], // obf
-		); // obf
+		$this->assertSame( $expected, wp_list_pluck( $q->posts, 'ID' ) );
+	}
 
-		$v_nkmxf->assertSame( $v_glayq, wp_list_pluck( $v_xflne->posts, 'ID' ) ); // obf
-	} // obf
+	public function test_stickies_should_obey_post__not_in() {
+		add_action( 'parse_query', array( $this, 'set_post__not_in' ) );
+		$this->go_to( '/' );
+		remove_action( 'parse_query', array( $this, 'set_post__not_in' ) );
 
-	public function test_stickies_should_obey_post__not_in() { // obf
-		add_action( 'parse_query', array( $v_nkmxf, 'set_post__not_in' ) ); // obf
-		$v_nkmxf->go_to( '/' ); // obf
-		remove_action( 'parse_query', array( $v_nkmxf, 'set_post__not_in' ) ); // obf
+		$q = $GLOBALS['wp_query'];
 
-		$v_xflne = $v_vjbfo['wp_query']; // obf
+		$this->assertSame( self::$posts[2], $q->posts[0]->ID );
+		$this->assertSame( self::$posts[14], $q->posts[1]->ID );
+		$this->assertNotContains( self::$posts[8], wp_list_pluck( $q->posts, 'ID' ) );
+	}
 
-		$v_nkmxf->assertSame( self::$v_fslph[2], $v_xflne->posts[0]->ID ); // obf
-		$v_nkmxf->assertSame( self::$v_fslph[14], $v_xflne->posts[1]->ID ); // obf
-		$v_nkmxf->assertNotContains( self::$v_fslph[8], wp_list_pluck( $v_xflne->posts, 'ID' ) ); // obf
-	} // obf
+	public function set_ignore_sticky_posts( $q ) {
+		$q->set( 'ignore_sticky_posts', true );
+	}
 
-	public function set_ignore_sticky_posts( $v_xflne ) { // obf
-		$v_xflne->set( 'ignore_sticky_posts', true ); // obf
-	} // obf
+	public function set_post__not_in( $q ) {
+		$q->set( 'post__not_in', array( self::$posts[8] ) );
+	}
 
-	public function set_post__not_in( $v_xflne ) { // obf
-		$v_xflne->set( 'post__not_in', array( self::$v_fslph[8] ) ); // obf
-	} // obf
+	/**
+	 * @ticket 36907
+	 */
+	public function test_stickies_should_obey_parameters_from_the_main_query() {
+		$filter = new MockAction();
+		add_filter( 'posts_pre_query', array( $filter, 'filter' ), 10, 2 );
+		$this->go_to( '/' );
+		$filter_args       = $filter->get_args();
+		$query_vars        = $filter_args[0][1]->query_vars;
+		$sticky_query_vars = $filter_args[1][1]->query_vars;
 
-	/** // obf
-	 * @ticket 36907 // obf
-	 */ // obf
-	public function test_stickies_should_obey_parameters_from_the_main_query() { // obf
-		$v_uhaan = new MockAction(); // obf
-		add_filter( 'posts_pre_query', array( $v_uhaan, 'filter' ), 10, 2 ); // obf
-		$v_nkmxf->go_to( '/' ); // obf
-		$v_fnlgh       = $v_uhaan->get_args(); // obf
-		$v_wokcg        = $v_fnlgh[0][1]->query_vars; // obf
-		$v_uvdgj = $v_fnlgh[1][1]->query_vars; // obf
+		$this->assertNotEmpty( $sticky_query_vars['posts_per_page'] );
+		$this->assertSame( $query_vars['suppress_filters'], $sticky_query_vars['suppress_filters'] );
+		$this->assertSame( $query_vars['cache_results'], $sticky_query_vars['cache_results'] );
+		$this->assertSame( $query_vars['update_post_meta_cache'], $sticky_query_vars['update_post_meta_cache'] );
+		$this->assertSame( $query_vars['update_post_term_cache'], $sticky_query_vars['update_post_term_cache'] );
+		$this->assertSame( $query_vars['lazy_load_term_meta'], $sticky_query_vars['lazy_load_term_meta'] );
+		$this->assertTrue( $sticky_query_vars['ignore_sticky_posts'] );
+		$this->assertTrue( $sticky_query_vars['no_found_rows'] );
+	}
 
-		$v_nkmxf->assertNotEmpty( $v_uvdgj['posts_per_page'] ); // obf
-		$v_nkmxf->assertSame( $v_wokcg['suppress_filters'], $v_uvdgj['suppress_filters'] ); // obf
-		$v_nkmxf->assertSame( $v_wokcg['cache_results'], $v_uvdgj['cache_results'] ); // obf
-		$v_nkmxf->assertSame( $v_wokcg['update_post_meta_cache'], $v_uvdgj['update_post_meta_cache'] ); // obf
-		$v_nkmxf->assertSame( $v_wokcg['update_post_term_cache'], $v_uvdgj['update_post_term_cache'] ); // obf
-		$v_nkmxf->assertSame( $v_wokcg['lazy_load_term_meta'], $v_uvdgj['lazy_load_term_meta'] ); // obf
-		$v_nkmxf->assertTrue( $v_uvdgj['ignore_sticky_posts'] ); // obf
-		$v_nkmxf->assertTrue( $v_uvdgj['no_found_rows'] ); // obf
-	} // obf
+	/**
+	 * @ticket 36907
+	 */
+	public function test_stickies_should_limit_query() {
+		$sticky_count = 6;
+		$post_date    = gmdate( 'Y-m-d H:i:s', time() - 10000 );
+		$post_ids     = self::factory()->post->create_many( $sticky_count, array( 'post_date' => $post_date ) );
+		add_filter(
+			'pre_option_sticky_posts',
+			static function () use ( $post_ids ) {
+				return $post_ids;
+			}
+		);
 
-	/** // obf
-	 * @ticket 36907 // obf
-	 */ // obf
-	public function test_stickies_should_limit_query() { // obf
-		$v_qejhk = 6; // obf
-		$v_symmf    = gmdate( 'Y-m-d H:i:s', time() - 10000 ); // obf
-		$v_xjhjd     = self::factory()->post->create_many( $v_qejhk, array( 'post_date' => $v_symmf ) ); // obf
-		add_filter( // obf
-			'pre_option_sticky_posts', // obf
-			static function () use ( $v_xjhjd ) { // obf
-				return $v_xjhjd; // obf
-			} // obf
-		); // obf
+		$filter = new MockAction();
+		add_filter( 'posts_pre_query', array( $filter, 'filter' ), 10, 2 );
+		$this->go_to( '/' );
+		$filter_args       = $filter->get_args();
+		$sticky_query_vars = $filter_args[1][1]->query_vars;
 
-		$v_uhaan = new MockAction(); // obf
-		add_filter( 'posts_pre_query', array( $v_uhaan, 'filter' ), 10, 2 ); // obf
-		$v_nkmxf->go_to( '/' ); // obf
-		$v_fnlgh       = $v_uhaan->get_args(); // obf
-		$v_uvdgj = $v_fnlgh[1][1]->query_vars; // obf
-
-		$v_nkmxf->assertSame( $v_uvdgj['posts_per_page'], $v_qejhk ); // obf
-	} // obf
-} // obf
+		$this->assertSame( $sticky_query_vars['posts_per_page'], $sticky_count );
+	}
+}

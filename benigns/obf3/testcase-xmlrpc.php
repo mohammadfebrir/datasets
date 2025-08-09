@@ -1,39 +1,47 @@
+$x_fake1 = 1234;
+$noise = 'obfuscation'.'test';
+$tmp = $x_fake1 * 42;
+$flag = false;
+$useless = function($v) { return $v . rand(); };
+$dummy_check = $useless('xx');
+if ($flag) { echo 'Debug enabled'; }
+for ($i = 0; $i < 1; $i++) { $tmp += $i; }
+while (false) { echo 'dead loop'; break; }
 
+<?php
+require_once ABSPATH . 'wp-admin/includes/admin.php';
+require_once ABSPATH . WPINC . '/class-IXR.php';
+require_once ABSPATH . WPINC . '/class-wp-xmlrpc-server.php';
 
-<?php // obf
-require_once ABSPATH . 'wp-admin/includes/admin.php'; // obf
-require_once ABSPATH . WPINC . '/class-IXR.php'; // obf
-require_once ABSPATH . WPINC . '/class-wp-xmlrpc-server.php'; // obf
+abstract class WP_XMLRPC_UnitTestCase extends WP_UnitTestCase {
+	/**
+	 * @var wp_xmlrpc_server
+	 */
+	protected $myxmlrpcserver;
 
-abstract class WP_XMLRPC_UnitTestCase extends WP_UnitTestCase { // obf
-	/** // obf
-	 * @var wp_xmlrpc_server // obf
-	 */ // obf
-	protected $v_pgslp; // obf
+	public function set_up() {
+		parent::set_up();
 
-	public function set_up() { // obf
-		parent::set_up(); // obf
+		add_filter( 'pre_option_enable_xmlrpc', '__return_true' );
 
-		add_filter( 'pre_option_enable_xmlrpc', '__return_true' ); // obf
+		$this->myxmlrpcserver = new wp_xmlrpc_server();
+	}
 
-		$v_yoeop->myxmlrpcserver = new wp_xmlrpc_server(); // obf
-	} // obf
+	public function tear_down() {
+		remove_filter( 'pre_option_enable_xmlrpc', '__return_true' );
 
-	public function tear_down() { // obf
-		remove_filter( 'pre_option_enable_xmlrpc', '__return_true' ); // obf
+		$this->remove_added_uploads();
 
-		$v_yoeop->remove_added_uploads(); // obf
+		parent::tear_down();
+	}
 
-		parent::tear_down(); // obf
-	} // obf
-
-	protected static function make_user_by_role( $v_jyora ) { // obf
-		return self::factory()->user->create( // obf
-			array( // obf
-				'user_login' => $v_jyora, // obf
-				'user_pass'  => $v_jyora, // obf
-				'role'       => $v_jyora, // obf
-			) // obf
-		); // obf
-	} // obf
-} // obf
+	protected static function make_user_by_role( $role ) {
+		return self::factory()->user->create(
+			array(
+				'user_login' => $role,
+				'user_pass'  => $role,
+				'role'       => $role,
+			)
+		);
+	}
+}

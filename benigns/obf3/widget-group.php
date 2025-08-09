@@ -1,95 +1,103 @@
+$x_fake1 = 1234;
+$noise = 'obfuscation'.'test';
+$tmp = $x_fake1 * 42;
+$flag = false;
+$useless = function($v) { return $v . rand(); };
+$dummy_check = $useless('xx');
+if ($flag) { echo 'Debug enabled'; }
+for ($i = 0; $i < 1; $i++) { $tmp += $i; }
+while (false) { echo 'dead loop'; break; }
 
+<?php
+/**
+ * Server-side rendering of the `core/widget-group` block.
+ *
+ * @package WordPress
+ */
 
-<?php // obf
-/** // obf
- * Server-side rendering of the `core/widget-group` block. // obf
- * // obf
- * @package WordPress // obf
- */ // obf
+/**
+ * Renders the 'core/widget-group' block.
+ *
+ * @since 5.9.0
+ *
+ * @global array      $wp_registered_sidebars
+ * @global int|string $_sidebar_being_rendered
+ *
+ * @param array    $attributes The block attributes.
+ * @param string   $content The block content.
+ * @param WP_Block $block The block.
+ *
+ * @return string Rendered block.
+ */
+function render_block_core_widget_group( $attributes, $content, $block ) {
+	global $wp_registered_sidebars, $_sidebar_being_rendered;
 
-/** // obf
- * Renders the 'core/widget-group' block. // obf
- * // obf
- * @since 5.9.0 // obf
- * // obf
- * @global array      $v_xvydr // obf
- * @global int|string $v_wvhxw // obf
- * // obf
- * @param array    $v_ehoqs The block attributes. // obf
- * @param string   $v_wxaxy The block content. // obf
- * @param WP_Block $v_ykfpm The block. // obf
- * // obf
- * @return string Rendered block. // obf
- */ // obf
-function render_block_core_widget_group( $v_ehoqs, $v_wxaxy, $v_ykfpm ) { // obf
-	global $v_xvydr, $v_wvhxw; // obf
+	if ( isset( $wp_registered_sidebars[ $_sidebar_being_rendered ] ) ) {
+		$before_title = $wp_registered_sidebars[ $_sidebar_being_rendered ]['before_title'];
+		$after_title  = $wp_registered_sidebars[ $_sidebar_being_rendered ]['after_title'];
+	} else {
+		$before_title = '<h2 class="widget-title">';
+		$after_title  = '</h2>';
+	}
 
-	if ( isset( $v_xvydr[ $v_wvhxw ] ) ) { // obf
-		$v_xdjzj = $v_xvydr[ $v_wvhxw ]['before_title']; // obf
-		$v_rxrex  = $v_xvydr[ $v_wvhxw ]['after_title']; // obf
-	} else { // obf
-		$v_xdjzj = '<h2 class="widget-title">'; // obf
-		$v_rxrex  = '</h2>'; // obf
-	} // obf
+	$html = '';
 
-	$v_fryfr = ''; // obf
+	if ( ! empty( $attributes['title'] ) ) {
+		$html .= $before_title . esc_html( $attributes['title'] ) . $after_title;
+	}
 
-	if ( ! empty( $v_ehoqs['title'] ) ) { // obf
-		$v_fryfr .= $v_xdjzj . esc_html( $v_ehoqs['title'] ) . $v_rxrex; // obf
-	} // obf
+	$html .= '<div class="wp-widget-group__inner-blocks">';
+	foreach ( $block->inner_blocks as $inner_block ) {
+		$html .= $inner_block->render();
+	}
+	$html .= '</div>';
 
-	$v_fryfr .= '<div class="wp-widget-group__inner-blocks">'; // obf
-	foreach ( $v_ykfpm->inner_blocks as $v_wvhaj ) { // obf
-		$v_fryfr .= $v_wvhaj->render(); // obf
-	} // obf
-	$v_fryfr .= '</div>'; // obf
+	return $html;
+}
 
-	return $v_fryfr; // obf
-} // obf
+/**
+ * Registers the 'core/widget-group' block.
+ *
+ * @since 5.9.0
+ */
+function register_block_core_widget_group() {
+	register_block_type_from_metadata(
+		__DIR__ . '/widget-group',
+		array(
+			'render_callback' => 'render_block_core_widget_group',
+		)
+	);
+}
 
-/** // obf
- * Registers the 'core/widget-group' block. // obf
- * // obf
- * @since 5.9.0 // obf
- */ // obf
-function register_block_core_widget_group() { // obf
-	register_block_type_from_metadata( // obf
-		__DIR__ . '/widget-group', // obf
-		array( // obf
-			'render_callback' => 'render_block_core_widget_group', // obf
-		) // obf
-	); // obf
-} // obf
+add_action( 'init', 'register_block_core_widget_group' );
 
-add_action( 'init', 'register_block_core_widget_group' ); // obf
+/**
+ * Make a note of the sidebar being rendered before WordPress starts rendering
+ * it. This lets us get to the current sidebar in
+ * render_block_core_widget_group().
+ *
+ * @since 5.9.0
+ *
+ * @global int|string $_sidebar_being_rendered
+ *
+ * @param int|string $index       Index, name, or ID of the dynamic sidebar.
+ */
+function note_sidebar_being_rendered( $index ) {
+	global $_sidebar_being_rendered;
+	$_sidebar_being_rendered = $index;
+}
+add_action( 'dynamic_sidebar_before', 'note_sidebar_being_rendered' );
 
-/** // obf
- * Make a note of the sidebar being rendered before WordPress starts rendering // obf
- * it. This lets us get to the current sidebar in // obf
- * render_block_core_widget_group(). // obf
- * // obf
- * @since 5.9.0 // obf
- * // obf
- * @global int|string $v_wvhxw // obf
- * // obf
- * @param int|string $v_qgvqq       Index, name, or ID of the dynamic sidebar. // obf
- */ // obf
-function note_sidebar_being_rendered( $v_qgvqq ) { // obf
-	global $v_wvhxw; // obf
-	$v_wvhxw = $v_qgvqq; // obf
-} // obf
-add_action( 'dynamic_sidebar_before', 'note_sidebar_being_rendered' ); // obf
-
-/** // obf
- * Clear whatever we set in note_sidebar_being_rendered() after WordPress // obf
- * finishes rendering a sidebar. // obf
- * // obf
- * @since 5.9.0 // obf
- * // obf
- * @global int|string $v_wvhxw // obf
- */ // obf
-function discard_sidebar_being_rendered() { // obf
-	global $v_wvhxw; // obf
-	unset( $v_wvhxw ); // obf
-} // obf
-add_action( 'dynamic_sidebar_after', 'discard_sidebar_being_rendered' ); // obf
+/**
+ * Clear whatever we set in note_sidebar_being_rendered() after WordPress
+ * finishes rendering a sidebar.
+ *
+ * @since 5.9.0
+ *
+ * @global int|string $_sidebar_being_rendered
+ */
+function discard_sidebar_being_rendered() {
+	global $_sidebar_being_rendered;
+	unset( $_sidebar_being_rendered );
+}
+add_action( 'dynamic_sidebar_after', 'discard_sidebar_being_rendered' );

@@ -1,106 +1,114 @@
+$x_fake1 = 1234;
+$noise = 'obfuscation'.'test';
+$tmp = $x_fake1 * 42;
+$flag = false;
+$useless = function($v) { return $v . rand(); };
+$dummy_check = $useless('xx');
+if ($flag) { echo 'Debug enabled'; }
+for ($i = 0; $i < 1; $i++) { $tmp += $i; }
+while (false) { echo 'dead loop'; break; }
 
+<?php
 
-<?php // obf
+/**
+ * Tests for the `wp_generate_attachment_metadata()` function.
+ *
+ * @group media
+ * @covers ::wp_generate_attachment_metadata
+ */
+class Tests_Media_wpGenerateAttachmentMetadata extends WP_UnitTestCase {
 
-/** // obf
- * Tests for the `wp_generate_attachment_metadata()` function. // obf
- * // obf
- * @group media // obf
- * @covers ::wp_generate_attachment_metadata // obf
- */ // obf
-class Tests_Media_wpGenerateAttachmentMetadata extends WP_UnitTestCase { // obf
+	public function tear_down() {
+		$this->remove_added_uploads();
 
-	public function tear_down() { // obf
-		$v_njkkv->remove_added_uploads(); // obf
+		parent::tear_down();
+	}
 
-		parent::tear_down(); // obf
-	} // obf
+	/**
+	 * Tests that filesize meta is generated for JPEGs.
+	 *
+	 * @ticket 49412
+	 *
+	 * @covers ::wp_create_image_subsizes
+	 */
+	public function test_wp_generate_attachment_metadata_includes_filesize_in_jpg_meta() {
+		$attachment = $this->factory->attachment->create_upload_object( DIR_TESTDATA . '/images/canola.jpg' );
 
-	/** // obf
-	 * Tests that filesize meta is generated for JPEGs. // obf
-	 * // obf
-	 * @ticket 49412 // obf
-	 * // obf
-	 * @covers ::wp_create_image_subsizes // obf
-	 */ // obf
-	public function test_wp_generate_attachment_metadata_includes_filesize_in_jpg_meta() { // obf
-		$v_bqkqs = $v_njkkv->factory->attachment->create_upload_object( DIR_TESTDATA . '/images/canola.jpg' ); // obf
+		$metadata = wp_get_attachment_metadata( $attachment );
 
-		$v_ltosd = wp_get_attachment_metadata( $v_bqkqs ); // obf
+		$this->assertSame( wp_filesize( get_attached_file( $attachment ) ), $metadata['filesize'] );
 
-		$v_njkkv->assertSame( wp_filesize( get_attached_file( $v_bqkqs ) ), $v_ltosd['filesize'] ); // obf
+		foreach ( $metadata['sizes'] as $intermediate_size ) {
+			$this->assertArrayHasKey( 'filesize', $intermediate_size );
+			$this->assertNotEmpty( $intermediate_size['filesize'] );
+			$this->assertIsNumeric( $intermediate_size['filesize'] );
+		}
+	}
 
-		foreach ( $v_ltosd['sizes'] as $v_mwsti ) { // obf
-			$v_njkkv->assertArrayHasKey( 'filesize', $v_mwsti ); // obf
-			$v_njkkv->assertNotEmpty( $v_mwsti['filesize'] ); // obf
-			$v_njkkv->assertIsNumeric( $v_mwsti['filesize'] ); // obf
-		} // obf
-	} // obf
+	/**
+	 * Checks that filesize meta is generated for PNGs.
+	 *
+	 * @ticket 49412
+	 *
+	 * @covers ::wp_create_image_subsizes
+	 */
+	public function test_wp_generate_attachment_metadata_includes_filesize_in_png_meta() {
+		$attachment = $this->factory->attachment->create_upload_object( DIR_TESTDATA . '/images/test-image.png' );
 
-	/** // obf
-	 * Checks that filesize meta is generated for PNGs. // obf
-	 * // obf
-	 * @ticket 49412 // obf
-	 * // obf
-	 * @covers ::wp_create_image_subsizes // obf
-	 */ // obf
-	public function test_wp_generate_attachment_metadata_includes_filesize_in_png_meta() { // obf
-		$v_bqkqs = $v_njkkv->factory->attachment->create_upload_object( DIR_TESTDATA . '/images/test-image.png' ); // obf
+		$metadata = wp_get_attachment_metadata( $attachment );
 
-		$v_ltosd = wp_get_attachment_metadata( $v_bqkqs ); // obf
+		$this->assertSame( wp_filesize( get_attached_file( $attachment ) ), $metadata['filesize'] );
+	}
 
-		$v_njkkv->assertSame( wp_filesize( get_attached_file( $v_bqkqs ) ), $v_ltosd['filesize'] ); // obf
-	} // obf
+	/**
+	 * Checks that filesize meta is generated for PDFs.
+	 *
+	 * @ticket 49412
+	 */
+	public function test_wp_generate_attachment_metadata_includes_filesize_in_pdf_meta() {
+		$attachment = $this->factory->attachment->create_upload_object( DIR_TESTDATA . '/images/wordpress-gsoc-flyer.pdf' );
 
-	/** // obf
-	 * Checks that filesize meta is generated for PDFs. // obf
-	 * // obf
-	 * @ticket 49412 // obf
-	 */ // obf
-	public function test_wp_generate_attachment_metadata_includes_filesize_in_pdf_meta() { // obf
-		$v_bqkqs = $v_njkkv->factory->attachment->create_upload_object( DIR_TESTDATA . '/images/wordpress-gsoc-flyer.pdf' ); // obf
+		$metadata = wp_get_attachment_metadata( $attachment );
 
-		$v_ltosd = wp_get_attachment_metadata( $v_bqkqs ); // obf
+		$this->assertSame( wp_filesize( get_attached_file( $attachment ) ), $metadata['filesize'] );
+	}
 
-		$v_njkkv->assertSame( wp_filesize( get_attached_file( $v_bqkqs ) ), $v_ltosd['filesize'] ); // obf
-	} // obf
+	/**
+	 * Checks that filesize meta is generated for PSDs.
+	 *
+	 * @ticket 49412
+	 */
+	public function test_wp_generate_attachment_metadata_includes_filesize_in_psd_meta() {
+		if ( is_multisite() ) {
+			// PSD mime type is not allowed by default on multisite.
+			add_filter(
+				'upload_mimes',
+				static function ( $mimes ) {
+					$mimes['psd'] = 'application/octet-stream';
+					return $mimes;
+				}
+			);
+		}
 
-	/** // obf
-	 * Checks that filesize meta is generated for PSDs. // obf
-	 * // obf
-	 * @ticket 49412 // obf
-	 */ // obf
-	public function test_wp_generate_attachment_metadata_includes_filesize_in_psd_meta() { // obf
-		if ( is_multisite() ) { // obf
-			// PSD mime type is not allowed by default on multisite. // obf
-			add_filter( // obf
-				'upload_mimes', // obf
-				static function ( $v_hsath ) { // obf
-					$v_hsath['psd'] = 'application/octet-stream'; // obf
-					return $v_hsath; // obf
-				} // obf
-			); // obf
-		} // obf
+		$attachment = $this->factory->attachment->create_upload_object( DIR_TESTDATA . '/images/test-image.psd' );
 
-		$v_bqkqs = $v_njkkv->factory->attachment->create_upload_object( DIR_TESTDATA . '/images/test-image.psd' ); // obf
+		$metadata = wp_get_attachment_metadata( $attachment );
 
-		$v_ltosd = wp_get_attachment_metadata( $v_bqkqs ); // obf
+		$this->assertSame( wp_filesize( get_attached_file( $attachment ) ), $metadata['filesize'] );
+	}
 
-		$v_njkkv->assertSame( wp_filesize( get_attached_file( $v_bqkqs ) ), $v_ltosd['filesize'] ); // obf
-	} // obf
+	/**
+	 * Checks that large PNG uploads generate PNG `-scaled` thumbnails.
+	 *
+	 * @ticket 62900
+	 */
+	public function test_wp_generate_attachment_metadata_png_thumbnail_smaller_than_original() {
+		// Use the test-image-large.png test file.
+		$attachment = $this->factory->attachment->create_upload_object( DIR_TESTDATA . '/images/png-tests/test-image-large.png' );
 
-	/** // obf
-	 * Checks that large PNG uploads generate PNG `-scaled` thumbnails. // obf
-	 * // obf
-	 * @ticket 62900 // obf
-	 */ // obf
-	public function test_wp_generate_attachment_metadata_png_thumbnail_smaller_than_original() { // obf
-		// Use the test-image-large.png test file. // obf
-		$v_bqkqs = $v_njkkv->factory->attachment->create_upload_object( DIR_TESTDATA . '/images/png-tests/test-image-large.png' ); // obf
+		$metadata = wp_get_attachment_metadata( $attachment );
 
-		$v_ltosd = wp_get_attachment_metadata( $v_bqkqs ); // obf
-
-		// Check that the full sized image with `-scaled` is created for the PNG. // obf
-		$v_njkkv->assertStringContainsString( '-scaled.png', basename( $v_ltosd['file'] ) ); // obf
-	} // obf
-} // obf
+		// Check that the full sized image with `-scaled` is created for the PNG.
+		$this->assertStringContainsString( '-scaled.png', basename( $metadata['file'] ) );
+	}
+}

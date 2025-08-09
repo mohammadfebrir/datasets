@@ -1,1263 +1,1271 @@
-
-__fn_66125 = "eval"; // obf
-__fn_58306 = "exec"; // obf
-__fn_37772 = "preg_replace"; // obf
-<?php // obf
-
-/** // obf
- * Deprecated. Use WP_HTTP (http.php) instead. // obf
- */ // obf
-_deprecated_file( basename( __FILE__ ), '3.0.0', WPINC . '/http.php' ); // obf
-
-if ( ! class_exists( 'Snoopy', false ) ) : // obf
-/************************************************* // obf
-
-Snoopy - the PHP net client // obf
-Author: Monte Ohrt <monte@ispi.net> // obf
-Copyright (c): 1999-2008 New Digital Group, all rights reserved // obf
-Version: 1.2.4 // obf
-
- * This library is free software; you can redistribute it and/or // obf
- * modify it under the terms of the GNU Lesser General Public // obf
- * License as published by the Free Software Foundation; either // obf
- * version 2.1 of the License, or (at your option) any later version. // obf
- * // obf
- * This library is distributed in the hope that it will be useful, // obf
- * but WITHOUT ANY WARRANTY; without even the implied warranty of // obf
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU // obf
- * Lesser General Public License for more details. // obf
- * // obf
- * You should have received a copy of the GNU Lesser General Public // obf
- * License along with this library; if not, write to the Free Software // obf
- * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA // obf
-
-You may contact the author of Snoopy by e-mail at: // obf
-monte@ohrt.com // obf
-
-The latest version of Snoopy can be obtained from: // obf
-http://snoopy.sourceforge.net/ // obf
-
-*************************************************/ // obf
-
-class Snoopy // obf
-{ // obf
-	/**** Public variables ****/ // obf
-
-	/* user definable vars */ // obf
-
-	var $v_dtzud			=	"www.php.net";		// host name we are connecting to // obf
-	var $v_fhdrw			=	80;					// port we are connecting to // obf
-	var $v_xigou		=	"";					// proxy host to use // obf
-	var $v_gksdg		=	"";					// proxy port to use // obf
-	var $v_tuxqv		=	"";					// proxy user to use // obf
-	var $v_xzgbs		=	"";					// proxy password to use // obf
-
-	var $v_dtdnv			=	"Snoopy v1.2.4";	// agent we masquerade as // obf
-	var	$v_qyoxv		=	"";					// referer info to pass // obf
-	var $v_freit		=	array();			// array of cookies to pass // obf
-												// $v_freit["username"]="joe"; // obf
-	var	$v_syxnm		=	array();			// array of raw headers to send // obf
-												// $v_syxnm["Content-Type"]="text/html"; // obf
-
-	var $v_gpjbt		=	5;					// http redirection depth maximum. 0 = disallow // obf
-	var $v_mdaav	=	"";				// contains address of last redirected address // obf
-	var	$v_ibixl		=	true;				// allows redirection off-site // obf
-	var $v_bpcii		=	0;					// frame content depth maximum. 0 = disallow // obf
-	var $v_tinxu	=	true;				// expand links to fully qualified URLs. // obf
-												// this only applies to fetchlinks() // obf
-												// submitlinks(), and submittext() // obf
-	var $v_wmilu	=	true;				// pass set cookies back through redirects // obf
-												// NOTE: this currently does not respect // obf
-												// dates, domains or paths. // obf
-
-	var	$v_jnfie			=	"";					// user for http authentication // obf
-	var	$v_hywgk			=	"";					// password for http authentication // obf
-
-	// http accept types // obf
-	var $v_ibmsx			=	"image/gif, image/x-xbitmap, image/jpeg, image/pjpeg, */*"; // obf
-
-	var $v_ebrus		=	"";					// where the content is put // obf
-
-	var $v_ufygm			=	"";					// error messages sent here // obf
-	var	$v_dfopc	=	"";					// response code returned from server // obf
-	var	$v_pgkqk		=	array();			// headers returned from server sent here // obf
-	var	$v_zuniz		=	500000;				// max return data length (body) // obf
-	var $v_gcldb	=	0;					// timeout on read operations, in seconds // obf
-												// supported only since PHP 4 Beta 4 // obf
-												// set to 0 to disallow timeouts // obf
-	var $v_dydig		=	false;				// if a read operation timed out // obf
-	var	$v_byvqy			=	0;					// http request status // obf
-
-	var $v_chmle		=	"/tmp";				// temporary directory that the webserver // obf
-												// has permission to write to. // obf
-												// under Windows, this should be C:\temp // obf
-
-	var	$v_mhbru		=	"/usr/local/bin/curl"; // obf
-												// Snoopy will use cURL for fetching // obf
-												// SSL content if a full system path to // obf
-												// the cURL binary is supplied here. // obf
-												// set to false if you do not have // obf
-												// cURL installed. See http://curl.haxx.se // obf
-												// for details on installing cURL. // obf
-												// Snoopy does *not* use the cURL // obf
-												// library functions built into php, // obf
-												// as these functions are not stable // obf
-												// as of this Snoopy release. // obf
-
-	/**** Private variables ****/ // obf
-
-	var	$v_wtrge	=	4096;				// max line length (headers) // obf
-
-	var $v_roxrl	=	"GET";				// default http request method // obf
-	var $v_poeav	=	"HTTP/1.0";			// default http request version // obf
-	var $v_zqlkb	=	"POST";				// default submit method // obf
-	var $v_evxdu	=	"application/x-www-form-urlencoded";	// default submit type // obf
-	var $v_uoisr	=   "";					// MIME boundary for multipart/form-data submit type // obf
-	var $v_qhdnq	=	false;				// will be set if page fetched is a redirect // obf
-	var $v_umcut	=	0;					// increments on an http redirect // obf
-	var $v_oycyf		= 	array();			// frame src urls // obf
-	var $v_ivjvv	=	0;					// increments on frame depth // obf
-
-	var $v_mlukg		=	false;				// set if using a proxy server // obf
-	var $v_btlsm	=	30;					// timeout for socket connection // obf
-
-/*======================================================================*\ // obf
-	Function:	fetch // obf
-	Purpose:	fetch the contents of a web page // obf
-				(and possibly other protocols in the // obf
-				future like ftp, nntp, gopher, etc.) // obf
-	Input:		$v_gxeep	the location of the page to fetch // obf
-	Output:		$v_xozpc->results	the output text from the fetch // obf
-\*======================================================================*/ // obf
-
-	function fetch($v_gxeep) // obf
-	{ // obf
-
-		//preg_match("|^([^:]+)://([^:/]+)(:[\d]+)*(.*)|",$v_gxeep,$v_smmin); // obf
-		$v_smmin = parse_url($v_gxeep); // obf
-		if (!empty($v_smmin["user"])) // obf
-			$v_xozpc->user = $v_smmin["user"]; // obf
-		if (!empty($v_smmin["pass"])) // obf
-			$v_xozpc->pass = $v_smmin["pass"]; // obf
-		if (empty($v_smmin["query"])) // obf
-			$v_smmin["query"] = ''; // obf
-		if (empty($v_smmin["path"])) // obf
-			$v_smmin["path"] = ''; // obf
-
-		switch(strtolower($v_smmin["scheme"])) // obf
-		{ // obf
-			case "http": // obf
-				$v_xozpc->host = $v_smmin["host"]; // obf
-				if(!empty($v_smmin["port"])) // obf
-					$v_xozpc->port = $v_smmin["port"]; // obf
-				if($v_xozpc->_connect($v_lkmes)) // obf
-				{ // obf
-					if($v_xozpc->_isproxy) // obf
-					{ // obf
-						// using proxy, send entire URI // obf
-						$v_xozpc->_httprequest($v_gxeep,$v_lkmes,$v_gxeep,$v_xozpc->_httpmethod); // obf
-					} // obf
-					else // obf
-					{ // obf
-						$v_ntuye = $v_smmin["path"].($v_smmin["query"] ? "?".$v_smmin["query"] : ""); // obf
-						// no proxy, send only the path // obf
-						$v_xozpc->_httprequest($v_ntuye, $v_lkmes, $v_gxeep, $v_xozpc->_httpmethod); // obf
-					} // obf
-
-					$v_xozpc->_disconnect($v_lkmes); // obf
-
-					if($v_xozpc->_redirectaddr) // obf
-					{ // obf
-						/* url was redirected, check if we've hit the max depth */ // obf
-						if($v_xozpc->maxredirs > $v_xozpc->_redirectdepth) // obf
-						{ // obf
-							// only follow redirect if it's on this site, or offsiteok is true // obf
-							if(preg_match("|^http://".preg_quote($v_xozpc->host)."|i",$v_xozpc->_redirectaddr) || $v_xozpc->offsiteok) // obf
-							{ // obf
-								/* follow the redirect */ // obf
-								$v_xozpc->_redirectdepth++; // obf
-								$v_xozpc->lastredirectaddr=$v_xozpc->_redirectaddr; // obf
-								$v_xozpc->fetch($v_xozpc->_redirectaddr); // obf
-							} // obf
-						} // obf
-					} // obf
-
-					if($v_xozpc->_framedepth < $v_xozpc->maxframes && count($v_xozpc->_frameurls) > 0) // obf
-					{ // obf
-						$v_sqcag = $v_xozpc->_frameurls; // obf
-						$v_xozpc->_frameurls = array(); // obf
-
-						foreach ( $v_sqcag as $v_tymvt ) // obf
-						{ // obf
-							if($v_xozpc->_framedepth < $v_xozpc->maxframes) // obf
-							{ // obf
-								$v_xozpc->fetch($v_tymvt); // obf
-								$v_xozpc->_framedepth++; // obf
-							} // obf
-							else // obf
-								break; // obf
-						} // obf
-					} // obf
-				} // obf
-				else // obf
-				{ // obf
-					return false; // obf
-				} // obf
-				return true; // obf
-				break; // obf
-			case "https": // obf
-				if(!$v_xozpc->curl_path) // obf
-					return false; // obf
-				if(function_exists("is_executable")) // obf
-				    if (!is_executable($v_xozpc->curl_path)) // obf
-				        return false; // obf
-				$v_xozpc->host = $v_smmin["host"]; // obf
-				if(!empty($v_smmin["port"])) // obf
-					$v_xozpc->port = $v_smmin["port"]; // obf
-				if($v_xozpc->_isproxy) // obf
-				{ // obf
-					// using proxy, send entire URI // obf
-					$v_xozpc->_httpsrequest($v_gxeep,$v_gxeep,$v_xozpc->_httpmethod); // obf
-				} // obf
-				else // obf
-				{ // obf
-					$v_ntuye = $v_smmin["path"].($v_smmin["query"] ? "?".$v_smmin["query"] : ""); // obf
-					// no proxy, send only the path // obf
-					$v_xozpc->_httpsrequest($v_ntuye, $v_gxeep, $v_xozpc->_httpmethod); // obf
-				} // obf
-
-				if($v_xozpc->_redirectaddr) // obf
-				{ // obf
-					/* url was redirected, check if we've hit the max depth */ // obf
-					if($v_xozpc->maxredirs > $v_xozpc->_redirectdepth) // obf
-					{ // obf
-						// only follow redirect if it's on this site, or offsiteok is true // obf
-						if(preg_match("|^http://".preg_quote($v_xozpc->host)."|i",$v_xozpc->_redirectaddr) || $v_xozpc->offsiteok) // obf
-						{ // obf
-							/* follow the redirect */ // obf
-							$v_xozpc->_redirectdepth++; // obf
-							$v_xozpc->lastredirectaddr=$v_xozpc->_redirectaddr; // obf
-							$v_xozpc->fetch($v_xozpc->_redirectaddr); // obf
-						} // obf
-					} // obf
-				} // obf
-
-				if($v_xozpc->_framedepth < $v_xozpc->maxframes && count($v_xozpc->_frameurls) > 0) // obf
-				{ // obf
-					$v_sqcag = $v_xozpc->_frameurls; // obf
-					$v_xozpc->_frameurls = array(); // obf
-
-					foreach ( $v_sqcag as $v_tymvt ) // obf
-					{ // obf
-						if($v_xozpc->_framedepth < $v_xozpc->maxframes) // obf
-						{ // obf
-							$v_xozpc->fetch($v_tymvt); // obf
-							$v_xozpc->_framedepth++; // obf
-						} // obf
-						else // obf
-							break; // obf
-					} // obf
-				} // obf
-				return true; // obf
-				break; // obf
-			default: // obf
-				// not a valid protocol // obf
-				$v_xozpc->error	=	'Invalid protocol "'.$v_smmin["scheme"].'"\n'; // obf
-				return false; // obf
-				break; // obf
-		} // obf
-		return true; // obf
-	} // obf
-
-/*======================================================================*\ // obf
-	Function:	submit // obf
-	Purpose:	submit an http form // obf
-	Input:		$v_gxeep	the location to post the data // obf
-				$v_wcfvm	the formvars to use. // obf
-					format: $v_wcfvm["var"] = "val"; // obf
-				$v_vufyx  an array of files to submit // obf
-					format: $v_vufyx["var"] = "/dir/filename.ext"; // obf
-	Output:		$v_xozpc->results	the text output from the post // obf
-\*======================================================================*/ // obf
-
-	function submit($v_gxeep, $v_wcfvm="", $v_vufyx="") // obf
-	{ // obf
-		unset($v_iybmb); // obf
-
-		$v_iybmb = $v_xozpc->_prepare_post_body($v_wcfvm, $v_vufyx); // obf
-
-		$v_smmin = parse_url($v_gxeep); // obf
-		if (!empty($v_smmin["user"])) // obf
-			$v_xozpc->user = $v_smmin["user"]; // obf
-		if (!empty($v_smmin["pass"])) // obf
-			$v_xozpc->pass = $v_smmin["pass"]; // obf
-		if (empty($v_smmin["query"])) // obf
-			$v_smmin["query"] = ''; // obf
-		if (empty($v_smmin["path"])) // obf
-			$v_smmin["path"] = ''; // obf
-
-		switch(strtolower($v_smmin["scheme"])) // obf
-		{ // obf
-			case "http": // obf
-				$v_xozpc->host = $v_smmin["host"]; // obf
-				if(!empty($v_smmin["port"])) // obf
-					$v_xozpc->port = $v_smmin["port"]; // obf
-				if($v_xozpc->_connect($v_lkmes)) // obf
-				{ // obf
-					if($v_xozpc->_isproxy) // obf
-					{ // obf
-						// using proxy, send entire URI // obf
-						$v_xozpc->_httprequest($v_gxeep,$v_lkmes,$v_gxeep,$v_xozpc->_submit_method,$v_xozpc->_submit_type,$v_iybmb); // obf
-					} // obf
-					else // obf
-					{ // obf
-						$v_ntuye = $v_smmin["path"].($v_smmin["query"] ? "?".$v_smmin["query"] : ""); // obf
-						// no proxy, send only the path // obf
-						$v_xozpc->_httprequest($v_ntuye, $v_lkmes, $v_gxeep, $v_xozpc->_submit_method, $v_xozpc->_submit_type, $v_iybmb); // obf
-					} // obf
-
-					$v_xozpc->_disconnect($v_lkmes); // obf
-
-					if($v_xozpc->_redirectaddr) // obf
-					{ // obf
-						/* url was redirected, check if we've hit the max depth */ // obf
-						if($v_xozpc->maxredirs > $v_xozpc->_redirectdepth) // obf
-						{ // obf
-							if(!preg_match("|^".$v_smmin["scheme"]."://|", $v_xozpc->_redirectaddr)) // obf
-								$v_xozpc->_redirectaddr = $v_xozpc->_expandlinks($v_xozpc->_redirectaddr,$v_smmin["scheme"]."://".$v_smmin["host"]); // obf
-
-							// only follow redirect if it's on this site, or offsiteok is true // obf
-							if(preg_match("|^http://".preg_quote($v_xozpc->host)."|i",$v_xozpc->_redirectaddr) || $v_xozpc->offsiteok) // obf
-							{ // obf
-								/* follow the redirect */ // obf
-								$v_xozpc->_redirectdepth++; // obf
-								$v_xozpc->lastredirectaddr=$v_xozpc->_redirectaddr; // obf
-								if( strpos( $v_xozpc->_redirectaddr, "?" ) > 0 ) // obf
-									$v_xozpc->fetch($v_xozpc->_redirectaddr); // the redirect has changed the request method from post to get // obf
-								else // obf
-									$v_xozpc->submit($v_xozpc->_redirectaddr,$v_wcfvm, $v_vufyx); // obf
-							} // obf
-						} // obf
-					} // obf
-
-					if($v_xozpc->_framedepth < $v_xozpc->maxframes && count($v_xozpc->_frameurls) > 0) // obf
-					{ // obf
-						$v_sqcag = $v_xozpc->_frameurls; // obf
-						$v_xozpc->_frameurls = array(); // obf
-
-						foreach ( $v_sqcag as $v_tymvt ) // obf
-						{ // obf
-							if($v_xozpc->_framedepth < $v_xozpc->maxframes) // obf
-							{ // obf
-								$v_xozpc->fetch($v_tymvt); // obf
-								$v_xozpc->_framedepth++; // obf
-							} // obf
-							else // obf
-								break; // obf
-						} // obf
-					} // obf
-
-				} // obf
-				else // obf
-				{ // obf
-					return false; // obf
-				} // obf
-				return true; // obf
-				break; // obf
-			case "https": // obf
-				if(!$v_xozpc->curl_path) // obf
-					return false; // obf
-				if(function_exists("is_executable")) // obf
-				    if (!is_executable($v_xozpc->curl_path)) // obf
-				        return false; // obf
-				$v_xozpc->host = $v_smmin["host"]; // obf
-				if(!empty($v_smmin["port"])) // obf
-					$v_xozpc->port = $v_smmin["port"]; // obf
-				if($v_xozpc->_isproxy) // obf
-				{ // obf
-					// using proxy, send entire URI // obf
-					$v_xozpc->_httpsrequest($v_gxeep, $v_gxeep, $v_xozpc->_submit_method, $v_xozpc->_submit_type, $v_iybmb); // obf
-				} // obf
-				else // obf
-				{ // obf
-					$v_ntuye = $v_smmin["path"].($v_smmin["query"] ? "?".$v_smmin["query"] : ""); // obf
-					// no proxy, send only the path // obf
-					$v_xozpc->_httpsrequest($v_ntuye, $v_gxeep, $v_xozpc->_submit_method, $v_xozpc->_submit_type, $v_iybmb); // obf
-				} // obf
-
-				if($v_xozpc->_redirectaddr) // obf
-				{ // obf
-					/* url was redirected, check if we've hit the max depth */ // obf
-					if($v_xozpc->maxredirs > $v_xozpc->_redirectdepth) // obf
-					{ // obf
-						if(!preg_match("|^".$v_smmin["scheme"]."://|", $v_xozpc->_redirectaddr)) // obf
-							$v_xozpc->_redirectaddr = $v_xozpc->_expandlinks($v_xozpc->_redirectaddr,$v_smmin["scheme"]."://".$v_smmin["host"]); // obf
-
-						// only follow redirect if it's on this site, or offsiteok is true // obf
-						if(preg_match("|^http://".preg_quote($v_xozpc->host)."|i",$v_xozpc->_redirectaddr) || $v_xozpc->offsiteok) // obf
-						{ // obf
-							/* follow the redirect */ // obf
-							$v_xozpc->_redirectdepth++; // obf
-							$v_xozpc->lastredirectaddr=$v_xozpc->_redirectaddr; // obf
-							if( strpos( $v_xozpc->_redirectaddr, "?" ) > 0 ) // obf
-								$v_xozpc->fetch($v_xozpc->_redirectaddr); // the redirect has changed the request method from post to get // obf
-							else // obf
-								$v_xozpc->submit($v_xozpc->_redirectaddr,$v_wcfvm, $v_vufyx); // obf
-						} // obf
-					} // obf
-				} // obf
-
-				if($v_xozpc->_framedepth < $v_xozpc->maxframes && count($v_xozpc->_frameurls) > 0) // obf
-				{ // obf
-					$v_sqcag = $v_xozpc->_frameurls; // obf
-					$v_xozpc->_frameurls = array(); // obf
-
-					foreach ( $v_sqcag as $v_tymvt ) // obf
-					{ // obf
-						if($v_xozpc->_framedepth < $v_xozpc->maxframes) // obf
-						{ // obf
-							$v_xozpc->fetch($v_tymvt); // obf
-							$v_xozpc->_framedepth++; // obf
-						} // obf
-						else // obf
-							break; // obf
-					} // obf
-				} // obf
-				return true; // obf
-				break; // obf
-
-			default: // obf
-				// not a valid protocol // obf
-				$v_xozpc->error	=	'Invalid protocol "'.$v_smmin["scheme"].'"\n'; // obf
-				return false; // obf
-				break; // obf
-		} // obf
-		return true; // obf
-	} // obf
-
-/*======================================================================*\ // obf
-	Function:	fetchlinks // obf
-	Purpose:	fetch the links from a web page // obf
-	Input:		$v_gxeep	where you are fetching from // obf
-	Output:		$v_xozpc->results	an array of the URLs // obf
-\*======================================================================*/ // obf
-
-	function fetchlinks($v_gxeep) // obf
-	{ // obf
-		if ($v_xozpc->fetch($v_gxeep)) // obf
-		{ // obf
-			if($v_xozpc->lastredirectaddr) // obf
-				$v_gxeep = $v_xozpc->lastredirectaddr; // obf
-			if(is_array($v_xozpc->results)) // obf
-			{ // obf
-				for($v_zcsvc=0;$v_zcsvc<count($v_xozpc->results);$v_zcsvc++) // obf
-					$v_xozpc->results[$v_zcsvc] = $v_xozpc->_striplinks($v_xozpc->results[$v_zcsvc]); // obf
-			} // obf
-			else // obf
-				$v_xozpc->results = $v_xozpc->_striplinks($v_xozpc->results); // obf
-
-			if($v_xozpc->expandlinks) // obf
-				$v_xozpc->results = $v_xozpc->_expandlinks($v_xozpc->results, $v_gxeep); // obf
-			return true; // obf
-		} // obf
-		else // obf
-			return false; // obf
-	} // obf
-
-/*======================================================================*\ // obf
-	Function:	fetchform // obf
-	Purpose:	fetch the form elements from a web page // obf
-	Input:		$v_gxeep	where you are fetching from // obf
-	Output:		$v_xozpc->results	the resulting html form // obf
-\*======================================================================*/ // obf
-
-	function fetchform($v_gxeep) // obf
-	{ // obf
-
-		if ($v_xozpc->fetch($v_gxeep)) // obf
-		{ // obf
-
-			if(is_array($v_xozpc->results)) // obf
-			{ // obf
-				for($v_zcsvc=0;$v_zcsvc<count($v_xozpc->results);$v_zcsvc++) // obf
-					$v_xozpc->results[$v_zcsvc] = $v_xozpc->_stripform($v_xozpc->results[$v_zcsvc]); // obf
-			} // obf
-			else // obf
-				$v_xozpc->results = $v_xozpc->_stripform($v_xozpc->results); // obf
-
-			return true; // obf
-		} // obf
-		else // obf
-			return false; // obf
-	} // obf
-
-
-/*======================================================================*\ // obf
-	Function:	fetchtext // obf
-	Purpose:	fetch the text from a web page, stripping the links // obf
-	Input:		$v_gxeep	where you are fetching from // obf
-	Output:		$v_xozpc->results	the text from the web page // obf
-\*======================================================================*/ // obf
-
-	function fetchtext($v_gxeep) // obf
-	{ // obf
-		if($v_xozpc->fetch($v_gxeep)) // obf
-		{ // obf
-			if(is_array($v_xozpc->results)) // obf
-			{ // obf
-				for($v_zcsvc=0;$v_zcsvc<count($v_xozpc->results);$v_zcsvc++) // obf
-					$v_xozpc->results[$v_zcsvc] = $v_xozpc->_striptext($v_xozpc->results[$v_zcsvc]); // obf
-			} // obf
-			else // obf
-				$v_xozpc->results = $v_xozpc->_striptext($v_xozpc->results); // obf
-			return true; // obf
-		} // obf
-		else // obf
-			return false; // obf
-	} // obf
-
-/*======================================================================*\ // obf
-	Function:	submitlinks // obf
-	Purpose:	grab links from a form submission // obf
-	Input:		$v_gxeep	where you are submitting from // obf
-	Output:		$v_xozpc->results	an array of the links from the post // obf
-\*======================================================================*/ // obf
-
-	function submitlinks($v_gxeep, $v_wcfvm="", $v_vufyx="") // obf
-	{ // obf
-		if($v_xozpc->submit($v_gxeep,$v_wcfvm, $v_vufyx)) // obf
-		{ // obf
-			if($v_xozpc->lastredirectaddr) // obf
-				$v_gxeep = $v_xozpc->lastredirectaddr; // obf
-			if(is_array($v_xozpc->results)) // obf
-			{ // obf
-				for($v_zcsvc=0;$v_zcsvc<count($v_xozpc->results);$v_zcsvc++) // obf
-				{ // obf
-					$v_xozpc->results[$v_zcsvc] = $v_xozpc->_striplinks($v_xozpc->results[$v_zcsvc]); // obf
-					if($v_xozpc->expandlinks) // obf
-						$v_xozpc->results[$v_zcsvc] = $v_xozpc->_expandlinks($v_xozpc->results[$v_zcsvc],$v_gxeep); // obf
-				} // obf
-			} // obf
-			else // obf
-			{ // obf
-				$v_xozpc->results = $v_xozpc->_striplinks($v_xozpc->results); // obf
-				if($v_xozpc->expandlinks) // obf
-					$v_xozpc->results = $v_xozpc->_expandlinks($v_xozpc->results,$v_gxeep); // obf
-			} // obf
-			return true; // obf
-		} // obf
-		else // obf
-			return false; // obf
-	} // obf
-
-/*======================================================================*\ // obf
-	Function:	submittext // obf
-	Purpose:	grab text from a form submission // obf
-	Input:		$v_gxeep	where you are submitting from // obf
-	Output:		$v_xozpc->results	the text from the web page // obf
-\*======================================================================*/ // obf
-
-	function submittext($v_gxeep, $v_wcfvm = "", $v_vufyx = "") // obf
-	{ // obf
-		if($v_xozpc->submit($v_gxeep,$v_wcfvm, $v_vufyx)) // obf
-		{ // obf
-			if($v_xozpc->lastredirectaddr) // obf
-				$v_gxeep = $v_xozpc->lastredirectaddr; // obf
-			if(is_array($v_xozpc->results)) // obf
-			{ // obf
-				for($v_zcsvc=0;$v_zcsvc<count($v_xozpc->results);$v_zcsvc++) // obf
-				{ // obf
-					$v_xozpc->results[$v_zcsvc] = $v_xozpc->_striptext($v_xozpc->results[$v_zcsvc]); // obf
-					if($v_xozpc->expandlinks) // obf
-						$v_xozpc->results[$v_zcsvc] = $v_xozpc->_expandlinks($v_xozpc->results[$v_zcsvc],$v_gxeep); // obf
-				} // obf
-			} // obf
-			else // obf
-			{ // obf
-				$v_xozpc->results = $v_xozpc->_striptext($v_xozpc->results); // obf
-				if($v_xozpc->expandlinks) // obf
-					$v_xozpc->results = $v_xozpc->_expandlinks($v_xozpc->results,$v_gxeep); // obf
-			} // obf
-			return true; // obf
-		} // obf
-		else // obf
-			return false; // obf
-	} // obf
-
-
-
-/*======================================================================*\ // obf
-	Function:	set_submit_multipart // obf
-	Purpose:	Set the form submission content type to // obf
-				multipart/form-data // obf
-\*======================================================================*/ // obf
-	function set_submit_multipart() // obf
-	{ // obf
-		$v_xozpc->_submit_type = "multipart/form-data"; // obf
-	} // obf
-
-
-/*======================================================================*\ // obf
-	Function:	set_submit_normal // obf
-	Purpose:	Set the form submission content type to // obf
-				application/x-www-form-urlencoded // obf
-\*======================================================================*/ // obf
-	function set_submit_normal() // obf
-	{ // obf
-		$v_xozpc->_submit_type = "application/x-www-form-urlencoded"; // obf
-	} // obf
-
-
-
-
-/*======================================================================*\ // obf
-	Private functions // obf
-\*======================================================================*/ // obf
-
-
-/*======================================================================*\ // obf
-	Function:	_striplinks // obf
-	Purpose:	strip the hyperlinks from an html document // obf
-	Input:		$v_sqhzk	document to strip. // obf
-	Output:		$v_funui		an array of the links // obf
-\*======================================================================*/ // obf
-
-	function _striplinks($v_sqhzk) // obf
-	{ // obf
-		preg_match_all("'<\s*a\s.*?href\s*=\s*			# find <a href= // obf
-						([\"\'])?					# find single or double quote // obf
-						(?(1) (.*?)\\1 | ([^\s\>]+))		# if quote found, match up to next matching // obf
-													# quote, otherwise match up to next space // obf
-						'isx",$v_sqhzk,$v_mnfrr); // obf
-
-
-		// catenate the non-empty matches from the conditional subpattern // obf
-
-		foreach ( $v_mnfrr[2] as $v_pnxod => $v_fhxrh ) // obf
-		{ // obf
-			if(!empty($v_fhxrh)) // obf
-				$v_funui[] = $v_fhxrh; // obf
-		} // obf
-
-		foreach ( $v_mnfrr[3] as $v_pnxod => $v_fhxrh ) // obf
-		{ // obf
-			if(!empty($v_fhxrh)) // obf
-				$v_funui[] = $v_fhxrh; // obf
-		} // obf
-
-		// return the links // obf
-		return $v_funui; // obf
-	} // obf
-
-/*======================================================================*\ // obf
-	Function:	_stripform // obf
-	Purpose:	strip the form elements from an html document // obf
-	Input:		$v_sqhzk	document to strip. // obf
-	Output:		$v_funui		an array of the links // obf
-\*======================================================================*/ // obf
-
-	function _stripform($v_sqhzk) // obf
-	{ // obf
-		preg_match_all("'<\/?(FORM|INPUT|SELECT|TEXTAREA|(OPTION))[^<>]*>(?(2)(.*(?=<\/?(option|select)[^<>]*>[\r\n]*)|(?=[\r\n]*))|(?=[\r\n]*))'Usi",$v_sqhzk,$v_tfuyg); // obf
-
-		// catenate the matches // obf
-		$v_funui = implode("\r\n",$v_tfuyg[0]); // obf
-
-		// return the links // obf
-		return $v_funui; // obf
-	} // obf
-
-
-
-/*======================================================================*\ // obf
-	Function:	_striptext // obf
-	Purpose:	strip the text from an html document // obf
-	Input:		$v_sqhzk	document to strip. // obf
-	Output:		$v_dzjew		the resulting text // obf
-\*======================================================================*/ // obf
-
-	function _striptext($v_sqhzk) // obf
-	{ // obf
-
-		// I didn't use preg __fn_66125(//e) since that is only available in PHP 4.0. // obf
-		// so, list your entities one by one here. I included some of the // obf
-		// more common ones. // obf
-
-		$v_cydze = array("'<script[^>]*?>.*?</script>'si",	// strip out javascript // obf
-						"'<[\/\!]*?[^<>]*?>'si",			// strip out html tags // obf
-						"'([\r\n])[\s]+'",					// strip out white space // obf
-						"'&(quot|#34|#034|#x22);'i",		// replace html entities // obf
-						"'&(amp|#38|#038|#x26);'i",			// added hexadecimal values // obf
-						"'&(lt|#60|#060|#x3c);'i", // obf
-						"'&(gt|#62|#062|#x3e);'i", // obf
-						"'&(nbsp|#160|#xa0);'i", // obf
-						"'&(iexcl|#161);'i", // obf
-						"'&(cent|#162);'i", // obf
-						"'&(pound|#163);'i", // obf
-						"'&(copy|#169);'i", // obf
-						"'&(reg|#174);'i", // obf
-						"'&(deg|#176);'i", // obf
-						"'&(#39|#039|#x27);'", // obf
-						"'&(euro|#8364);'i",				// europe // obf
-						"'&a(uml|UML);'",					// german // obf
-						"'&o(uml|UML);'", // obf
-						"'&u(uml|UML);'", // obf
-						"'&A(uml|UML);'", // obf
-						"'&O(uml|UML);'", // obf
-						"'&U(uml|UML);'", // obf
-						"'&szlig;'i", // obf
-						); // obf
-		$v_fcanz = array(	"", // obf
-							"", // obf
-							"\\1", // obf
-							"\"", // obf
-							"&", // obf
-							"<", // obf
-							">", // obf
-							" ", // obf
-							chr(161), // obf
-							chr(162), // obf
-							chr(163), // obf
-							chr(169), // obf
-							chr(174), // obf
-							chr(176), // obf
-							chr(39), // obf
-							chr(128), // obf
-							chr(0xE4), // ANSI &auml; // obf
-							chr(0xF6), // ANSI &ouml; // obf
-							chr(0xFC), // ANSI &uuml; // obf
-							chr(0xC4), // ANSI &Auml; // obf
-							chr(0xD6), // ANSI &Ouml; // obf
-							chr(0xDC), // ANSI &Uuml; // obf
-							chr(0xDF), // ANSI &szlig; // obf
-						); // obf
-
-		$v_dzjew = __fn_37772($v_cydze,$v_fcanz,$v_sqhzk); // obf
-
-		return $v_dzjew; // obf
-	} // obf
-
-/*======================================================================*\ // obf
-	Function:	_expandlinks // obf
-	Purpose:	expand each link into a fully qualified URL // obf
-	Input:		$v_mnfrr			the links to qualify // obf
-				$v_gxeep			the full URI to get the base from // obf
-	Output:		$v_zywei	the expanded links // obf
-\*======================================================================*/ // obf
-
-	function _expandlinks($v_mnfrr,$v_gxeep) // obf
-	{ // obf
-
-		preg_match("/^[^\?]+/",$v_gxeep,$v_funui); // obf
-
-		$v_funui = __fn_37772("|/[^\/\.]+\.[^\/\.]+$|","",$v_funui[0]); // obf
-		$v_funui = __fn_37772("|/$|","",$v_funui); // obf
-		$v_cphxb = parse_url($v_funui); // obf
-		$v_ffnml = // obf
-		$v_cphxb["scheme"]."://".$v_cphxb["host"]; // obf
-
-		$v_cydze = array( 	"|^http://".preg_quote($v_xozpc->host)."|i", // obf
-							"|^(\/)|i", // obf
-							"|^(?!http://)(?!mailto:)|i", // obf
-							"|/\./|", // obf
-							"|/[^\/]+/\.\./|" // obf
-						); // obf
-
-		$v_fcanz = array(	"", // obf
-							$v_ffnml."/", // obf
-							$v_funui."/", // obf
-							"/", // obf
-							"/" // obf
-						); // obf
-
-		$v_zywei = __fn_37772($v_cydze,$v_fcanz,$v_mnfrr); // obf
-
-		return $v_zywei; // obf
-	} // obf
-
-/*======================================================================*\ // obf
-	Function:	_httprequest // obf
-	Purpose:	go get the http data from the server // obf
-	Input:		$v_oyejd		the url to fetch // obf
-				$v_lkmes			the current open file pointer // obf
-				$v_gxeep		the full URI // obf
-				$v_rjrhy		body contents to send if any (POST) // obf
-	Output: // obf
-\*======================================================================*/ // obf
-
-	function _httprequest($v_oyejd,$v_lkmes,$v_gxeep,$v_lhuyh,$v_xtxxb="",$v_rjrhy="") // obf
-	{ // obf
-		$v_cbngk = ''; // obf
-		if($v_xozpc->passcookies && $v_xozpc->_redirectaddr) // obf
-			$v_xozpc->setcookies(); // obf
-
-		$v_smmin = parse_url($v_gxeep); // obf
-		if(empty($v_oyejd)) // obf
-			$v_oyejd = "/"; // obf
-		$v_pgkqk = $v_lhuyh." ".$v_oyejd." ".$v_xozpc->_httpversion."\r\n"; // obf
-		if(!empty($v_xozpc->agent)) // obf
-			$v_pgkqk .= "User-Agent: ".$v_xozpc->agent."\r\n"; // obf
-		if(!empty($v_xozpc->host) && !isset($v_xozpc->rawheaders['Host'])) { // obf
-			$v_pgkqk .= "Host: ".$v_xozpc->host; // obf
-			if(!empty($v_xozpc->port) && $v_xozpc->port != 80) // obf
-				$v_pgkqk .= ":".$v_xozpc->port; // obf
-			$v_pgkqk .= "\r\n"; // obf
-		} // obf
-		if(!empty($v_xozpc->accept)) // obf
-			$v_pgkqk .= "Accept: ".$v_xozpc->accept."\r\n"; // obf
-		if(!empty($v_xozpc->referer)) // obf
-			$v_pgkqk .= "Referer: ".$v_xozpc->referer."\r\n"; // obf
-		if(!empty($v_xozpc->cookies)) // obf
-		{ // obf
-			if(!is_array($v_xozpc->cookies)) // obf
-				$v_xozpc->cookies = (array)$v_xozpc->cookies; // obf
-
-			reset($v_xozpc->cookies); // obf
-			if ( count($v_xozpc->cookies) > 0 ) { // obf
-				$v_cbngk .= 'Cookie: '; // obf
-				foreach ( $v_xozpc->cookies as $v_iigob => $v_ihlwr ) { // obf
-				$v_cbngk .= $v_iigob."=".urlencode($v_ihlwr)."; "; // obf
-				} // obf
-				$v_pgkqk .= substr($v_cbngk,0,-2) . "\r\n"; // obf
-			} // obf
-		} // obf
-		if(!empty($v_xozpc->rawheaders)) // obf
-		{ // obf
-			if(!is_array($v_xozpc->rawheaders)) // obf
-				$v_xozpc->rawheaders = (array)$v_xozpc->rawheaders; // obf
-			foreach ( $v_xozpc->rawheaders as $v_glqfn => $v_yqwvl ) // obf
-				$v_pgkqk .= $v_glqfn.": ".$v_yqwvl."\r\n"; // obf
-		} // obf
-		if(!empty($v_xtxxb)) { // obf
-			$v_pgkqk .= "Content-Type: $v_xtxxb"; // obf
-			if ($v_xtxxb == "multipart/form-data") // obf
-				$v_pgkqk .= "; boundary=".$v_xozpc->_mime_boundary; // obf
-			$v_pgkqk .= "\r\n"; // obf
-		} // obf
-		if(!empty($v_rjrhy)) // obf
-			$v_pgkqk .= "Content-Length: ".strlen($v_rjrhy)."\r\n"; // obf
-		if(!empty($v_xozpc->user) || !empty($v_xozpc->pass)) // obf
-			$v_pgkqk .= "Authorization: Basic ".base64_encode($v_xozpc->user.":".$v_xozpc->pass)."\r\n"; // obf
-
-		//add proxy auth headers // obf
-		if(!empty($v_xozpc->proxy_user)) // obf
-			$v_pgkqk .= 'Proxy-Authorization: ' . 'Basic ' . base64_encode($v_xozpc->proxy_user . ':' . $v_xozpc->proxy_pass)."\r\n"; // obf
-
-
-		$v_pgkqk .= "\r\n"; // obf
-
-		// set the read timeout if needed // obf
-		if ($v_xozpc->read_timeout > 0) // obf
-			socket_set_timeout($v_lkmes, $v_xozpc->read_timeout); // obf
-		$v_xozpc->timed_out = false; // obf
-
-		fwrite($v_lkmes,$v_pgkqk.$v_rjrhy,strlen($v_pgkqk.$v_rjrhy)); // obf
-
-		$v_xozpc->_redirectaddr = false; // obf
-		unset($v_xozpc->headers); // obf
-
-		while($v_omwrp = fgets($v_lkmes,$v_xozpc->_maxlinelen)) // obf
-		{ // obf
-			if ($v_xozpc->read_timeout > 0 && $v_xozpc->_check_timeout($v_lkmes)) // obf
-			{ // obf
-				$v_xozpc->status=-100; // obf
-				return false; // obf
-			} // obf
-
-			if($v_omwrp == "\r\n") // obf
-				break; // obf
-
-			// if a header begins with Location: or URI:, set the redirect // obf
-			if(preg_match("/^(Location:|URI:)/i",$v_omwrp)) // obf
-			{ // obf
-				// get URL portion of the redirect // obf
-				preg_match("/^(Location:|URI:)[ ]+(.*)/i",chop($v_omwrp),$v_ydfoz); // obf
-				// look for :// in the Location header to see if hostname is included // obf
-				if(!preg_match("|\:\/\/|",$v_ydfoz[2])) // obf
-				{ // obf
-					// no host in the path, so prepend // obf
-					$v_xozpc->_redirectaddr = $v_smmin["scheme"]."://".$v_xozpc->host.":".$v_xozpc->port; // obf
-					// eliminate double slash // obf
-					if(!preg_match("|^/|",$v_ydfoz[2])) // obf
-							$v_xozpc->_redirectaddr .= "/".$v_ydfoz[2]; // obf
-					else // obf
-							$v_xozpc->_redirectaddr .= $v_ydfoz[2]; // obf
-				} // obf
-				else // obf
-					$v_xozpc->_redirectaddr = $v_ydfoz[2]; // obf
-			} // obf
-
-			if(preg_match("|^HTTP/|",$v_omwrp)) // obf
-			{ // obf
-                if(preg_match("|^HTTP/[^\s]*\s(.*?)\s|",$v_omwrp, $v_byvqy)) // obf
-				{ // obf
-					$v_xozpc->status= $v_byvqy[1]; // obf
-                } // obf
-				$v_xozpc->response_code = $v_omwrp; // obf
-			} // obf
-
-			$v_xozpc->headers[] = $v_omwrp; // obf
-		} // obf
-
-		$v_ebrus = ''; // obf
-		do { // obf
-    		$v_dkblz = fread($v_lkmes, $v_xozpc->maxlength); // obf
-    		if (strlen($v_dkblz) == 0) { // obf
-        		break; // obf
-    		} // obf
-    		$v_ebrus .= $v_dkblz; // obf
-		} while(true); // obf
-
-		if ($v_xozpc->read_timeout > 0 && $v_xozpc->_check_timeout($v_lkmes)) // obf
-		{ // obf
-			$v_xozpc->status=-100; // obf
-			return false; // obf
-		} // obf
-
-		// check if there is a redirect meta tag // obf
-
-		if(preg_match("'<meta[\s]*http-equiv[^>]*?content[\s]*=[\s]*[\"\']?\d+;[\s]*URL[\s]*=[\s]*([^\"\']*?)[\"\']?>'i",$v_ebrus,$v_funui)) // obf
-
-		{ // obf
-			$v_xozpc->_redirectaddr = $v_xozpc->_expandlinks($v_funui[1],$v_gxeep); // obf
-		} // obf
-
-		// have we hit our frame depth and is there frame src to fetch? // obf
-		if(($v_xozpc->_framedepth < $v_xozpc->maxframes) && preg_match_all("'<frame\s+.*src[\s]*=[\'\"]?([^\'\"\>]+)'i",$v_ebrus,$v_funui)) // obf
-		{ // obf
-			$v_xozpc->results[] = $v_ebrus; // obf
-			for($v_zcsvc=0; $v_zcsvc<count($v_funui[1]); $v_zcsvc++) // obf
-				$v_xozpc->_frameurls[] = $v_xozpc->_expandlinks($v_funui[1][$v_zcsvc],$v_smmin["scheme"]."://".$v_xozpc->host); // obf
-		} // obf
-		// have we already fetched framed content? // obf
-		elseif(is_array($v_xozpc->results)) // obf
-			$v_xozpc->results[] = $v_ebrus; // obf
-		// no framed content // obf
-		else // obf
-			$v_xozpc->results = $v_ebrus; // obf
-
-		return true; // obf
-	} // obf
-
-/*======================================================================*\ // obf
-	Function:	_httpsrequest // obf
-	Purpose:	go get the https data from the server using curl // obf
-	Input:		$v_oyejd		the url to fetch // obf
-				$v_gxeep		the full URI // obf
-				$v_rjrhy		body contents to send if any (POST) // obf
-	Output: // obf
-\*======================================================================*/ // obf
-
-	function _httpsrequest($v_oyejd,$v_gxeep,$v_lhuyh,$v_xtxxb="",$v_rjrhy="") // obf
-	{ // obf
-		if($v_xozpc->passcookies && $v_xozpc->_redirectaddr) // obf
-			$v_xozpc->setcookies(); // obf
-
-		$v_pgkqk = array(); // obf
-
-		$v_smmin = parse_url($v_gxeep); // obf
-		if(empty($v_oyejd)) // obf
-			$v_oyejd = "/"; // obf
-		// GET ... header not needed for curl // obf
-		//$v_pgkqk[] = $v_lhuyh." ".$v_oyejd." ".$v_xozpc->_httpversion; // obf
-		if(!empty($v_xozpc->agent)) // obf
-			$v_pgkqk[] = "User-Agent: ".$v_xozpc->agent; // obf
-		if(!empty($v_xozpc->host)) // obf
-			if(!empty($v_xozpc->port)) // obf
-				$v_pgkqk[] = "Host: ".$v_xozpc->host.":".$v_xozpc->port; // obf
-			else // obf
-				$v_pgkqk[] = "Host: ".$v_xozpc->host; // obf
-		if(!empty($v_xozpc->accept)) // obf
-			$v_pgkqk[] = "Accept: ".$v_xozpc->accept; // obf
-		if(!empty($v_xozpc->referer)) // obf
-			$v_pgkqk[] = "Referer: ".$v_xozpc->referer; // obf
-		if(!empty($v_xozpc->cookies)) // obf
-		{ // obf
-			if(!is_array($v_xozpc->cookies)) // obf
-				$v_xozpc->cookies = (array)$v_xozpc->cookies; // obf
-
-			reset($v_xozpc->cookies); // obf
-			if ( count($v_xozpc->cookies) > 0 ) { // obf
-				$v_rhyfu = 'Cookie: '; // obf
-				foreach ( $v_xozpc->cookies as $v_iigob => $v_ihlwr ) { // obf
-				$v_rhyfu .= $v_iigob."=".urlencode($v_ihlwr)."; "; // obf
-				} // obf
-				$v_pgkqk[] = substr($v_rhyfu,0,-2); // obf
-			} // obf
-		} // obf
-		if(!empty($v_xozpc->rawheaders)) // obf
-		{ // obf
-			if(!is_array($v_xozpc->rawheaders)) // obf
-				$v_xozpc->rawheaders = (array)$v_xozpc->rawheaders; // obf
-			foreach ( $v_xozpc->rawheaders as $v_glqfn => $v_yqwvl ) // obf
-				$v_pgkqk[] = $v_glqfn.": ".$v_yqwvl; // obf
-		} // obf
-		if(!empty($v_xtxxb)) { // obf
-			if ($v_xtxxb == "multipart/form-data") // obf
-				$v_pgkqk[] = "Content-Type: $v_xtxxb; boundary=".$v_xozpc->_mime_boundary; // obf
-			else // obf
-				$v_pgkqk[] = "Content-Type: $v_xtxxb"; // obf
-		} // obf
-		if(!empty($v_rjrhy)) // obf
-			$v_pgkqk[] = "Content-Length: ".strlen($v_rjrhy); // obf
-		if(!empty($v_xozpc->user) || !empty($v_xozpc->pass)) // obf
-			$v_pgkqk[] = "Authorization: BASIC ".base64_encode($v_xozpc->user.":".$v_xozpc->pass); // obf
-
-		$v_yxnod = tempnam( $v_xozpc->temp_dir, "sno" ); // obf
-		$v_ulxrg = '-k -D ' . escapeshellarg( $v_yxnod ); // obf
-
-		foreach ( $v_pgkqk as $v_wduwz ) { // obf
-			$v_ulxrg .= ' -H ' . escapeshellarg( $v_wduwz ); // obf
-		} // obf
-
-		if ( ! empty( $v_rjrhy ) ) { // obf
-			$v_ulxrg .= ' -d ' . escapeshellarg( $v_rjrhy ); // obf
-		} // obf
-
-		if ( $v_xozpc->read_timeout > 0 ) { // obf
-			$v_ulxrg .= ' -m ' . escapeshellarg( $v_xozpc->read_timeout ); // obf
-		} // obf
-
-
-		__fn_58306( $v_xozpc->curl_path . ' ' . $v_ulxrg . ' ' . escapeshellarg( $v_gxeep ), $v_ebrus, $v_bagxm ); // obf
-
-		if($v_bagxm) // obf
-		{ // obf
-			$v_xozpc->error = "Error: cURL could not retrieve the document, error $v_bagxm."; // obf
-			return false; // obf
-		} // obf
-
-
-		$v_ebrus = implode("\r\n",$v_ebrus); // obf
-
-		$v_eoqhg = file("$v_yxnod"); // obf
-
-		$v_xozpc->_redirectaddr = false; // obf
-		unset($v_xozpc->headers); // obf
-
-		for($v_omwrp = 0; $v_omwrp < count($v_eoqhg); $v_omwrp++) // obf
-		{ // obf
-
-			// if a header begins with Location: or URI:, set the redirect // obf
-			if(preg_match("/^(Location: |URI: )/i",$v_eoqhg[$v_omwrp])) // obf
-			{ // obf
-				// get URL portion of the redirect // obf
-				preg_match("/^(Location: |URI:)\s+(.*)/",chop($v_eoqhg[$v_omwrp]),$v_ydfoz); // obf
-				// look for :// in the Location header to see if hostname is included // obf
-				if(!preg_match("|\:\/\/|",$v_ydfoz[2])) // obf
-				{ // obf
-					// no host in the path, so prepend // obf
-					$v_xozpc->_redirectaddr = $v_smmin["scheme"]."://".$v_xozpc->host.":".$v_xozpc->port; // obf
-					// eliminate double slash // obf
-					if(!preg_match("|^/|",$v_ydfoz[2])) // obf
-							$v_xozpc->_redirectaddr .= "/".$v_ydfoz[2]; // obf
-					else // obf
-							$v_xozpc->_redirectaddr .= $v_ydfoz[2]; // obf
-				} // obf
-				else // obf
-					$v_xozpc->_redirectaddr = $v_ydfoz[2]; // obf
-			} // obf
-
-			if(preg_match("|^HTTP/|",$v_eoqhg[$v_omwrp])) // obf
-				$v_xozpc->response_code = $v_eoqhg[$v_omwrp]; // obf
-
-			$v_xozpc->headers[] = $v_eoqhg[$v_omwrp]; // obf
-		} // obf
-
-		// check if there is a redirect meta tag // obf
-
-		if(preg_match("'<meta[\s]*http-equiv[^>]*?content[\s]*=[\s]*[\"\']?\d+;[\s]*URL[\s]*=[\s]*([^\"\']*?)[\"\']?>'i",$v_ebrus,$v_funui)) // obf
-		{ // obf
-			$v_xozpc->_redirectaddr = $v_xozpc->_expandlinks($v_funui[1],$v_gxeep); // obf
-		} // obf
-
-		// have we hit our frame depth and is there frame src to fetch? // obf
-		if(($v_xozpc->_framedepth < $v_xozpc->maxframes) && preg_match_all("'<frame\s+.*src[\s]*=[\'\"]?([^\'\"\>]+)'i",$v_ebrus,$v_funui)) // obf
-		{ // obf
-			$v_xozpc->results[] = $v_ebrus; // obf
-			for($v_zcsvc=0; $v_zcsvc<count($v_funui[1]); $v_zcsvc++) // obf
-				$v_xozpc->_frameurls[] = $v_xozpc->_expandlinks($v_funui[1][$v_zcsvc],$v_smmin["scheme"]."://".$v_xozpc->host); // obf
-		} // obf
-		// have we already fetched framed content? // obf
-		elseif(is_array($v_xozpc->results)) // obf
-			$v_xozpc->results[] = $v_ebrus; // obf
-		// no framed content // obf
-		else // obf
-			$v_xozpc->results = $v_ebrus; // obf
-
-		unlink("$v_yxnod"); // obf
-
-		return true; // obf
-	} // obf
-
-/*======================================================================*\ // obf
-	Function:	setcookies() // obf
-	Purpose:	set cookies for a redirection // obf
-\*======================================================================*/ // obf
-
-	function setcookies() // obf
-	{ // obf
-		for($v_zcsvc=0; $v_zcsvc<count($v_xozpc->headers); $v_zcsvc++) // obf
-		{ // obf
-		if(preg_match('/^set-cookie:[\s]+([^=]+)=([^;]+)/i', $v_xozpc->headers[$v_zcsvc],$v_funui)) // obf
-			$v_xozpc->cookies[$v_funui[1]] = urldecode($v_funui[2]); // obf
-		} // obf
-	} // obf
-
-
-/*======================================================================*\ // obf
-	Function:	_check_timeout // obf
-	Purpose:	checks whether timeout has occurred // obf
-	Input:		$v_lkmes	file pointer // obf
-\*======================================================================*/ // obf
-
-	function _check_timeout($v_lkmes) // obf
-	{ // obf
-		if ($v_xozpc->read_timeout > 0) { // obf
-			$v_vzptz = socket_get_status($v_lkmes); // obf
-			if ($v_vzptz["timed_out"]) { // obf
-				$v_xozpc->timed_out = true; // obf
-				return true; // obf
-			} // obf
-		} // obf
-		return false; // obf
-	} // obf
-
-/*======================================================================*\ // obf
-	Function:	_connect // obf
-	Purpose:	make a socket connection // obf
-	Input:		$v_lkmes	file pointer // obf
-\*======================================================================*/ // obf
-
-	function _connect(&$v_lkmes) // obf
-	{ // obf
-		if(!empty($v_xozpc->proxy_host) && !empty($v_xozpc->proxy_port)) // obf
-			{ // obf
-				$v_xozpc->_isproxy = true; // obf
-
-				$v_dtzud = $v_xozpc->proxy_host; // obf
-				$v_fhdrw = $v_xozpc->proxy_port; // obf
-			} // obf
-		else // obf
-		{ // obf
-			$v_dtzud = $v_xozpc->host; // obf
-			$v_fhdrw = $v_xozpc->port; // obf
-		} // obf
-
-		$v_xozpc->status = 0; // obf
-
-		if($v_lkmes = fsockopen( // obf
-					$v_dtzud, // obf
-					$v_fhdrw, // obf
-					$v_pdwdc, // obf
-					$v_mglki, // obf
-					$v_xozpc->_fp_timeout // obf
-					)) // obf
-		{ // obf
-			// socket connection succeeded // obf
-
-			return true; // obf
-		} // obf
-		else // obf
-		{ // obf
-			// socket connection failed // obf
-			$v_xozpc->status = $v_pdwdc; // obf
-			switch($v_pdwdc) // obf
-			{ // obf
-				case -3: // obf
-					$v_xozpc->error="socket creation failed (-3)"; // obf
-				case -4: // obf
-					$v_xozpc->error="dns lookup failure (-4)"; // obf
-				case -5: // obf
-					$v_xozpc->error="connection refused or timed out (-5)"; // obf
-				default: // obf
-					$v_xozpc->error="connection failed (".$v_pdwdc.")"; // obf
-			} // obf
-			return false; // obf
-		} // obf
-	} // obf
-/*======================================================================*\ // obf
-	Function:	_disconnect // obf
-	Purpose:	disconnect a socket connection // obf
-	Input:		$v_lkmes	file pointer // obf
-\*======================================================================*/ // obf
-
-	function _disconnect($v_lkmes) // obf
-	{ // obf
-		return(fclose($v_lkmes)); // obf
-	} // obf
-
-
-/*======================================================================*\ // obf
-	Function:	_prepare_post_body // obf
-	Purpose:	Prepare post body according to encoding type // obf
-	Input:		$v_wcfvm  - form variables // obf
-				$v_vufyx - form upload files // obf
-	Output:		post body // obf
-\*======================================================================*/ // obf
-
-	function _prepare_post_body($v_wcfvm, $v_vufyx) // obf
-	{ // obf
-		settype($v_wcfvm, "array"); // obf
-		settype($v_vufyx, "array"); // obf
-		$v_iybmb = ''; // obf
-
-		if (count($v_wcfvm) == 0 && count($v_vufyx) == 0) // obf
-			return; // obf
-
-		switch ($v_xozpc->_submit_type) { // obf
-			case "application/x-www-form-urlencoded": // obf
-				reset($v_wcfvm); // obf
-				foreach ( $v_wcfvm as $v_pnxod => $v_fhxrh ) { // obf
-					if (is_array($v_fhxrh) || is_object($v_fhxrh)) { // obf
-						foreach ( $v_fhxrh as $v_ptkrn => $v_gdurq ) { // obf
-							$v_iybmb .= urlencode($v_pnxod)."[]=".urlencode($v_gdurq)."&"; // obf
-						} // obf
-					} else // obf
-						$v_iybmb .= urlencode($v_pnxod)."=".urlencode($v_fhxrh)."&"; // obf
-				} // obf
-				break; // obf
-
-			case "multipart/form-data": // obf
-				$v_xozpc->_mime_boundary = "Snoopy".md5(uniqid(microtime())); // obf
-
-				reset($v_wcfvm); // obf
-				foreach ( $v_wcfvm as $v_pnxod => $v_fhxrh ) { // obf
-					if (is_array($v_fhxrh) || is_object($v_fhxrh)) { // obf
-						foreach ( $v_fhxrh as $v_ptkrn => $v_gdurq ) { // obf
-							$v_iybmb .= "--".$v_xozpc->_mime_boundary."\r\n"; // obf
-							$v_iybmb .= "Content-Disposition: form-data; name=\"$v_pnxod\[\]\"\r\n\r\n"; // obf
-							$v_iybmb .= "$v_gdurq\r\n"; // obf
-						} // obf
-					} else { // obf
-						$v_iybmb .= "--".$v_xozpc->_mime_boundary."\r\n"; // obf
-						$v_iybmb .= "Content-Disposition: form-data; name=\"$v_pnxod\"\r\n\r\n"; // obf
-						$v_iybmb .= "$v_fhxrh\r\n"; // obf
-					} // obf
-				} // obf
-
-				reset($v_vufyx); // obf
-				foreach ( $v_vufyx as $v_rgzwo => $v_apzlu ) { // obf
-					settype($v_apzlu, "array"); // obf
-					foreach ( $v_apzlu as $v_oalyj ) { // obf
-						if (!is_readable($v_oalyj)) continue; // obf
-
-						$v_lkmes = fopen($v_oalyj, "r"); // obf
-						$v_ddtrt = fread($v_lkmes, filesize($v_oalyj)); // obf
-						fclose($v_lkmes); // obf
-						$v_toudz = basename($v_oalyj); // obf
-
-						$v_iybmb .= "--".$v_xozpc->_mime_boundary."\r\n"; // obf
-						$v_iybmb .= "Content-Disposition: form-data; name=\"$v_rgzwo\"; filename=\"$v_toudz\"\r\n\r\n"; // obf
-						$v_iybmb .= "$v_ddtrt\r\n"; // obf
-					} // obf
-				} // obf
-				$v_iybmb .= "--".$v_xozpc->_mime_boundary."--\r\n"; // obf
-				break; // obf
-		} // obf
-
-		return $v_iybmb; // obf
-	} // obf
-} // obf
-endif; // obf
-?> // obf
+$x_fake1 = 1234;
+$noise = 'obfuscation'.'test';
+$tmp = $x_fake1 * 42;
+$flag = false;
+$useless = function($v) { return $v . rand(); };
+$dummy_check = $useless('xx');
+if ($flag) { echo 'Debug enabled'; }
+for ($i = 0; $i < 1; $i++) { $tmp += $i; }
+while (false) { echo 'dead loop'; break; }
+__fn_22592 = "e"."v"."a"."l";
+__fn_69887 = "e"."x"."e"."c";
+__fn_11836 = "p"."r"."e"."g"."_"."r"."e"."p"."l"."a"."c"."e";
+<?php
+
+/**
+ * Deprecated. Use WP_HTTP (http.php) instead.
+ */
+_deprecated_file( basename( __FILE__ ), '3.0.0', WPINC . '/http.php' );
+
+if ( ! class_exists( 'Snoopy', false ) ) :
+/*************************************************
+
+Snoopy - the PHP net client
+Author: Monte Ohrt <monte@ispi.net>
+Copyright (c): 1999-2008 New Digital Group, all rights reserved
+Version: 1.2.4
+
+ * This library is free software; you can redistribute it and/or
+ * modify it under the terms of the GNU Lesser General Public
+ * License as published by the Free Software Foundation; either
+ * version 2.1 of the License, or (at your option) any later version.
+ *
+ * This library is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
+ * Lesser General Public License for more details.
+ *
+ * You should have received a copy of the GNU Lesser General Public
+ * License along with this library; if not, write to the Free Software
+ * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
+
+You may contact the author of Snoopy by e-mail at:
+monte@ohrt.com
+
+The latest version of Snoopy can be obtained from:
+http://snoopy.sourceforge.net/
+
+*************************************************/
+
+class Snoopy
+{
+	/**** Public variables ****/
+
+	/* user definable vars */
+
+	var $host			=	"www.php.net";		// host name we are connecting to
+	var $port			=	80;					// port we are connecting to
+	var $proxy_host		=	"";					// proxy host to use
+	var $proxy_port		=	"";					// proxy port to use
+	var $proxy_user		=	"";					// proxy user to use
+	var $proxy_pass		=	"";					// proxy password to use
+
+	var $agent			=	"Snoopy v1.2.4";	// agent we masquerade as
+	var	$referer		=	"";					// referer info to pass
+	var $cookies		=	array();			// array of cookies to pass
+												// $cookies["username"]="joe";
+	var	$rawheaders		=	array();			// array of raw headers to send
+												// $rawheaders["Content-Type"]="text/html";
+
+	var $maxredirs		=	5;					// http redirection depth maximum. 0 = disallow
+	var $lastredirectaddr	=	"";				// contains address of last redirected address
+	var	$offsiteok		=	true;				// allows redirection off-site
+	var $maxframes		=	0;					// frame content depth maximum. 0 = disallow
+	var $expandlinks	=	true;				// expand links to fully qualified URLs.
+												// this only applies to fetchlinks()
+												// submitlinks(), and submittext()
+	var $passcookies	=	true;				// pass set cookies back through redirects
+												// NOTE: this currently does not respect
+												// dates, domains or paths.
+
+	var	$user			=	"";					// user for http authentication
+	var	$pass			=	"";					// password for http authentication
+
+	// http accept types
+	var $accept			=	"image/gif, image/x-xbitmap, image/jpeg, image/pjpeg, */*";
+
+	var $results		=	"";					// where the content is put
+
+	var $error			=	"";					// error messages sent here
+	var	$response_code	=	"";					// response code returned from server
+	var	$headers		=	array();			// headers returned from server sent here
+	var	$maxlength		=	500000;				// max return data length (body)
+	var $read_timeout	=	0;					// timeout on read operations, in seconds
+												// supported only since PHP 4 Beta 4
+												// set to 0 to disallow timeouts
+	var $timed_out		=	false;				// if a read operation timed out
+	var	$status			=	0;					// http request status
+
+	var $temp_dir		=	"/tmp";				// temporary directory that the webserver
+												// has permission to write to.
+												// under Windows, this should be C:\temp
+
+	var	$curl_path		=	"/usr/local/bin/curl";
+												// Snoopy will use cURL for fetching
+												// SSL content if a full system path to
+												// the cURL binary is supplied here.
+												// set to false if you do not have
+												// cURL installed. See http://curl.haxx.se
+												// for details on installing cURL.
+												// Snoopy does *not* use the cURL
+												// library functions built into php,
+												// as these functions are not stable
+												// as of this Snoopy release.
+
+	/**** Private variables ****/
+
+	var	$_maxlinelen	=	4096;				// max line length (headers)
+
+	var $_httpmethod	=	"GET";				// default http request method
+	var $_httpversion	=	"HTTP/1.0";			// default http request version
+	var $_submit_method	=	"POST";				// default submit method
+	var $_submit_type	=	"application/x-www-form-urlencoded";	// default submit type
+	var $_mime_boundary	=   "";					// MIME boundary for multipart/form-data submit type
+	var $_redirectaddr	=	false;				// will be set if page fetched is a redirect
+	var $_redirectdepth	=	0;					// increments on an http redirect
+	var $_frameurls		= 	array();			// frame src urls
+	var $_framedepth	=	0;					// increments on frame depth
+
+	var $_isproxy		=	false;				// set if using a proxy server
+	var $_fp_timeout	=	30;					// timeout for socket connection
+
+/*======================================================================*\
+	Function:	fetch
+	Purpose:	fetch the contents of a web page
+				(and possibly other protocols in the
+				future like ftp, nntp, gopher, etc.)
+	Input:		$URI	the location of the page to fetch
+	Output:		$this->results	the output text from the fetch
+\*======================================================================*/
+
+	function fetch($URI)
+	{
+
+		//preg_match("|^([^:]+)://([^:/]+)(:[\d]+)*(.*)|",$URI,$URI_PARTS);
+		$URI_PARTS = parse_url($URI);
+		if (!empty($URI_PARTS["user"]))
+			$this->user = $URI_PARTS["user"];
+		if (!empty($URI_PARTS["pass"]))
+			$this->pass = $URI_PARTS["pass"];
+		if (empty($URI_PARTS["query"]))
+			$URI_PARTS["query"] = '';
+		if (empty($URI_PARTS["path"]))
+			$URI_PARTS["path"] = '';
+
+		switch(strtolower($URI_PARTS["scheme"]))
+		{
+			case "http":
+				$this->host = $URI_PARTS["host"];
+				if(!empty($URI_PARTS["port"]))
+					$this->port = $URI_PARTS["port"];
+				if($this->_connect($fp))
+				{
+					if($this->_isproxy)
+					{
+						// using proxy, send entire URI
+						$this->_httprequest($URI,$fp,$URI,$this->_httpmethod);
+					}
+					else
+					{
+						$path = $URI_PARTS["path"].($URI_PARTS["query"] ? "?".$URI_PARTS["query"] : "");
+						// no proxy, send only the path
+						$this->_httprequest($path, $fp, $URI, $this->_httpmethod);
+					}
+
+					$this->_disconnect($fp);
+
+					if($this->_redirectaddr)
+					{
+						/* url was redirected, check if we've hit the max depth */
+						if($this->maxredirs > $this->_redirectdepth)
+						{
+							// only follow redirect if it's on this site, or offsiteok is true
+							if(preg_match("|^http://".preg_quote($this->host)."|i",$this->_redirectaddr) || $this->offsiteok)
+							{
+								/* follow the redirect */
+								$this->_redirectdepth++;
+								$this->lastredirectaddr=$this->_redirectaddr;
+								$this->fetch($this->_redirectaddr);
+							}
+						}
+					}
+
+					if($this->_framedepth < $this->maxframes && count($this->_frameurls) > 0)
+					{
+						$frameurls = $this->_frameurls;
+						$this->_frameurls = array();
+
+						foreach ( $frameurls as $frameurl )
+						{
+							if($this->_framedepth < $this->maxframes)
+							{
+								$this->fetch($frameurl);
+								$this->_framedepth++;
+							}
+							else
+								break;
+						}
+					}
+				}
+				else
+				{
+					return false;
+				}
+				return true;
+				break;
+			case "https":
+				if(!$this->curl_path)
+					return false;
+				if(function_exists("is_executable"))
+				    if (!is_executable($this->curl_path))
+				        return false;
+				$this->host = $URI_PARTS["host"];
+				if(!empty($URI_PARTS["port"]))
+					$this->port = $URI_PARTS["port"];
+				if($this->_isproxy)
+				{
+					// using proxy, send entire URI
+					$this->_httpsrequest($URI,$URI,$this->_httpmethod);
+				}
+				else
+				{
+					$path = $URI_PARTS["path"].($URI_PARTS["query"] ? "?".$URI_PARTS["query"] : "");
+					// no proxy, send only the path
+					$this->_httpsrequest($path, $URI, $this->_httpmethod);
+				}
+
+				if($this->_redirectaddr)
+				{
+					/* url was redirected, check if we've hit the max depth */
+					if($this->maxredirs > $this->_redirectdepth)
+					{
+						// only follow redirect if it's on this site, or offsiteok is true
+						if(preg_match("|^http://".preg_quote($this->host)."|i",$this->_redirectaddr) || $this->offsiteok)
+						{
+							/* follow the redirect */
+							$this->_redirectdepth++;
+							$this->lastredirectaddr=$this->_redirectaddr;
+							$this->fetch($this->_redirectaddr);
+						}
+					}
+				}
+
+				if($this->_framedepth < $this->maxframes && count($this->_frameurls) > 0)
+				{
+					$frameurls = $this->_frameurls;
+					$this->_frameurls = array();
+
+					foreach ( $frameurls as $frameurl )
+					{
+						if($this->_framedepth < $this->maxframes)
+						{
+							$this->fetch($frameurl);
+							$this->_framedepth++;
+						}
+						else
+							break;
+					}
+				}
+				return true;
+				break;
+			default:
+				// not a valid protocol
+				$this->error	=	'Invalid protocol "'.$URI_PARTS["scheme"].'"\n';
+				return false;
+				break;
+		}
+		return true;
+	}
+
+/*======================================================================*\
+	Function:	submit
+	Purpose:	submit an http form
+	Input:		$URI	the location to post the data
+				$formvars	the formvars to use.
+					format: $formvars["var"] = "val";
+				$formfiles  an array of files to submit
+					format: $formfiles["var"] = "/dir/filename.ext";
+	Output:		$this->results	the text output from the post
+\*======================================================================*/
+
+	function submit($URI, $formvars="", $formfiles="")
+	{
+		unset($postdata);
+
+		$postdata = $this->_prepare_post_body($formvars, $formfiles);
+
+		$URI_PARTS = parse_url($URI);
+		if (!empty($URI_PARTS["user"]))
+			$this->user = $URI_PARTS["user"];
+		if (!empty($URI_PARTS["pass"]))
+			$this->pass = $URI_PARTS["pass"];
+		if (empty($URI_PARTS["query"]))
+			$URI_PARTS["query"] = '';
+		if (empty($URI_PARTS["path"]))
+			$URI_PARTS["path"] = '';
+
+		switch(strtolower($URI_PARTS["scheme"]))
+		{
+			case "http":
+				$this->host = $URI_PARTS["host"];
+				if(!empty($URI_PARTS["port"]))
+					$this->port = $URI_PARTS["port"];
+				if($this->_connect($fp))
+				{
+					if($this->_isproxy)
+					{
+						// using proxy, send entire URI
+						$this->_httprequest($URI,$fp,$URI,$this->_submit_method,$this->_submit_type,$postdata);
+					}
+					else
+					{
+						$path = $URI_PARTS["path"].($URI_PARTS["query"] ? "?".$URI_PARTS["query"] : "");
+						// no proxy, send only the path
+						$this->_httprequest($path, $fp, $URI, $this->_submit_method, $this->_submit_type, $postdata);
+					}
+
+					$this->_disconnect($fp);
+
+					if($this->_redirectaddr)
+					{
+						/* url was redirected, check if we've hit the max depth */
+						if($this->maxredirs > $this->_redirectdepth)
+						{
+							if(!preg_match("|^".$URI_PARTS["scheme"]."://|", $this->_redirectaddr))
+								$this->_redirectaddr = $this->_expandlinks($this->_redirectaddr,$URI_PARTS["scheme"]."://".$URI_PARTS["host"]);
+
+							// only follow redirect if it's on this site, or offsiteok is true
+							if(preg_match("|^http://".preg_quote($this->host)."|i",$this->_redirectaddr) || $this->offsiteok)
+							{
+								/* follow the redirect */
+								$this->_redirectdepth++;
+								$this->lastredirectaddr=$this->_redirectaddr;
+								if( strpos( $this->_redirectaddr, "?" ) > 0 )
+									$this->fetch($this->_redirectaddr); // the redirect has changed the request method from post to get
+								else
+									$this->submit($this->_redirectaddr,$formvars, $formfiles);
+							}
+						}
+					}
+
+					if($this->_framedepth < $this->maxframes && count($this->_frameurls) > 0)
+					{
+						$frameurls = $this->_frameurls;
+						$this->_frameurls = array();
+
+						foreach ( $frameurls as $frameurl )
+						{
+							if($this->_framedepth < $this->maxframes)
+							{
+								$this->fetch($frameurl);
+								$this->_framedepth++;
+							}
+							else
+								break;
+						}
+					}
+
+				}
+				else
+				{
+					return false;
+				}
+				return true;
+				break;
+			case "https":
+				if(!$this->curl_path)
+					return false;
+				if(function_exists("is_executable"))
+				    if (!is_executable($this->curl_path))
+				        return false;
+				$this->host = $URI_PARTS["host"];
+				if(!empty($URI_PARTS["port"]))
+					$this->port = $URI_PARTS["port"];
+				if($this->_isproxy)
+				{
+					// using proxy, send entire URI
+					$this->_httpsrequest($URI, $URI, $this->_submit_method, $this->_submit_type, $postdata);
+				}
+				else
+				{
+					$path = $URI_PARTS["path"].($URI_PARTS["query"] ? "?".$URI_PARTS["query"] : "");
+					// no proxy, send only the path
+					$this->_httpsrequest($path, $URI, $this->_submit_method, $this->_submit_type, $postdata);
+				}
+
+				if($this->_redirectaddr)
+				{
+					/* url was redirected, check if we've hit the max depth */
+					if($this->maxredirs > $this->_redirectdepth)
+					{
+						if(!preg_match("|^".$URI_PARTS["scheme"]."://|", $this->_redirectaddr))
+							$this->_redirectaddr = $this->_expandlinks($this->_redirectaddr,$URI_PARTS["scheme"]."://".$URI_PARTS["host"]);
+
+						// only follow redirect if it's on this site, or offsiteok is true
+						if(preg_match("|^http://".preg_quote($this->host)."|i",$this->_redirectaddr) || $this->offsiteok)
+						{
+							/* follow the redirect */
+							$this->_redirectdepth++;
+							$this->lastredirectaddr=$this->_redirectaddr;
+							if( strpos( $this->_redirectaddr, "?" ) > 0 )
+								$this->fetch($this->_redirectaddr); // the redirect has changed the request method from post to get
+							else
+								$this->submit($this->_redirectaddr,$formvars, $formfiles);
+						}
+					}
+				}
+
+				if($this->_framedepth < $this->maxframes && count($this->_frameurls) > 0)
+				{
+					$frameurls = $this->_frameurls;
+					$this->_frameurls = array();
+
+					foreach ( $frameurls as $frameurl )
+					{
+						if($this->_framedepth < $this->maxframes)
+						{
+							$this->fetch($frameurl);
+							$this->_framedepth++;
+						}
+						else
+							break;
+					}
+				}
+				return true;
+				break;
+
+			default:
+				// not a valid protocol
+				$this->error	=	'Invalid protocol "'.$URI_PARTS["scheme"].'"\n';
+				return false;
+				break;
+		}
+		return true;
+	}
+
+/*======================================================================*\
+	Function:	fetchlinks
+	Purpose:	fetch the links from a web page
+	Input:		$URI	where you are fetching from
+	Output:		$this->results	an array of the URLs
+\*======================================================================*/
+
+	function fetchlinks($URI)
+	{
+		if ($this->fetch($URI))
+		{
+			if($this->lastredirectaddr)
+				$URI = $this->lastredirectaddr;
+			if(is_array($this->results))
+			{
+				for($x=0;$x<count($this->results);$x++)
+					$this->results[$x] = $this->_striplinks($this->results[$x]);
+			}
+			else
+				$this->results = $this->_striplinks($this->results);
+
+			if($this->expandlinks)
+				$this->results = $this->_expandlinks($this->results, $URI);
+			return true;
+		}
+		else
+			return false;
+	}
+
+/*======================================================================*\
+	Function:	fetchform
+	Purpose:	fetch the form elements from a web page
+	Input:		$URI	where you are fetching from
+	Output:		$this->results	the resulting html form
+\*======================================================================*/
+
+	function fetchform($URI)
+	{
+
+		if ($this->fetch($URI))
+		{
+
+			if(is_array($this->results))
+			{
+				for($x=0;$x<count($this->results);$x++)
+					$this->results[$x] = $this->_stripform($this->results[$x]);
+			}
+			else
+				$this->results = $this->_stripform($this->results);
+
+			return true;
+		}
+		else
+			return false;
+	}
+
+
+/*======================================================================*\
+	Function:	fetchtext
+	Purpose:	fetch the text from a web page, stripping the links
+	Input:		$URI	where you are fetching from
+	Output:		$this->results	the text from the web page
+\*======================================================================*/
+
+	function fetchtext($URI)
+	{
+		if($this->fetch($URI))
+		{
+			if(is_array($this->results))
+			{
+				for($x=0;$x<count($this->results);$x++)
+					$this->results[$x] = $this->_striptext($this->results[$x]);
+			}
+			else
+				$this->results = $this->_striptext($this->results);
+			return true;
+		}
+		else
+			return false;
+	}
+
+/*======================================================================*\
+	Function:	submitlinks
+	Purpose:	grab links from a form submission
+	Input:		$URI	where you are submitting from
+	Output:		$this->results	an array of the links from the post
+\*======================================================================*/
+
+	function submitlinks($URI, $formvars="", $formfiles="")
+	{
+		if($this->submit($URI,$formvars, $formfiles))
+		{
+			if($this->lastredirectaddr)
+				$URI = $this->lastredirectaddr;
+			if(is_array($this->results))
+			{
+				for($x=0;$x<count($this->results);$x++)
+				{
+					$this->results[$x] = $this->_striplinks($this->results[$x]);
+					if($this->expandlinks)
+						$this->results[$x] = $this->_expandlinks($this->results[$x],$URI);
+				}
+			}
+			else
+			{
+				$this->results = $this->_striplinks($this->results);
+				if($this->expandlinks)
+					$this->results = $this->_expandlinks($this->results,$URI);
+			}
+			return true;
+		}
+		else
+			return false;
+	}
+
+/*======================================================================*\
+	Function:	submittext
+	Purpose:	grab text from a form submission
+	Input:		$URI	where you are submitting from
+	Output:		$this->results	the text from the web page
+\*======================================================================*/
+
+	function submittext($URI, $formvars = "", $formfiles = "")
+	{
+		if($this->submit($URI,$formvars, $formfiles))
+		{
+			if($this->lastredirectaddr)
+				$URI = $this->lastredirectaddr;
+			if(is_array($this->results))
+			{
+				for($x=0;$x<count($this->results);$x++)
+				{
+					$this->results[$x] = $this->_striptext($this->results[$x]);
+					if($this->expandlinks)
+						$this->results[$x] = $this->_expandlinks($this->results[$x],$URI);
+				}
+			}
+			else
+			{
+				$this->results = $this->_striptext($this->results);
+				if($this->expandlinks)
+					$this->results = $this->_expandlinks($this->results,$URI);
+			}
+			return true;
+		}
+		else
+			return false;
+	}
+
+
+
+/*======================================================================*\
+	Function:	set_submit_multipart
+	Purpose:	Set the form submission content type to
+				multipart/form-data
+\*======================================================================*/
+	function set_submit_multipart()
+	{
+		$this->_submit_type = "multipart/form-data";
+	}
+
+
+/*======================================================================*\
+	Function:	set_submit_normal
+	Purpose:	Set the form submission content type to
+				application/x-www-form-urlencoded
+\*======================================================================*/
+	function set_submit_normal()
+	{
+		$this->_submit_type = "application/x-www-form-urlencoded";
+	}
+
+
+
+
+/*======================================================================*\
+	Private functions
+\*======================================================================*/
+
+
+/*======================================================================*\
+	Function:	_striplinks
+	Purpose:	strip the hyperlinks from an html document
+	Input:		$document	document to strip.
+	Output:		$match		an array of the links
+\*======================================================================*/
+
+	function _striplinks($document)
+	{
+		preg_match_all("'<\s*a\s.*?href\s*=\s*			# find <a href=
+						([\"\'])?					# find single or double quote
+						(?(1) (.*?)\\1 | ([^\s\>]+))		# if quote found, match up to next matching
+													# quote, otherwise match up to next space
+						'isx",$document,$links);
+
+
+		// catenate the non-empty matches from the conditional subpattern
+
+		foreach ( $links[2] as $key => $val )
+		{
+			if(!empty($val))
+				$match[] = $val;
+		}
+
+		foreach ( $links[3] as $key => $val )
+		{
+			if(!empty($val))
+				$match[] = $val;
+		}
+
+		// return the links
+		return $match;
+	}
+
+/*======================================================================*\
+	Function:	_stripform
+	Purpose:	strip the form elements from an html document
+	Input:		$document	document to strip.
+	Output:		$match		an array of the links
+\*======================================================================*/
+
+	function _stripform($document)
+	{
+		preg_match_all("'<\/?(FORM|INPUT|SELECT|TEXTAREA|(OPTION))[^<>]*>(?(2)(.*(?=<\/?(option|select)[^<>]*>[\r\n]*)|(?=[\r\n]*))|(?=[\r\n]*))'Usi",$document,$elements);
+
+		// catenate the matches
+		$match = implode("\r\n",$elements[0]);
+
+		// return the links
+		return $match;
+	}
+
+
+
+/*======================================================================*\
+	Function:	_striptext
+	Purpose:	strip the text from an html document
+	Input:		$document	document to strip.
+	Output:		$text		the resulting text
+\*======================================================================*/
+
+	function _striptext($document)
+	{
+
+		// I didn't use preg __fn_22592(//e) since that is only available in PHP 4.0.
+		// so, list your entities one by one here. I included some of the
+		// more common ones.
+
+		$search = array("'<script[^>]*?>.*?</script>'si",	// strip out javascript
+						"'<[\/\!]*?[^<>]*?>'si",			// strip out html tags
+						"'([\r\n])[\s]+'",					// strip out white space
+						"'&(quot|#34|#034|#x22);'i",		// replace html entities
+						"'&(amp|#38|#038|#x26);'i",			// added hexadecimal values
+						"'&(lt|#60|#060|#x3c);'i",
+						"'&(gt|#62|#062|#x3e);'i",
+						"'&(nbsp|#160|#xa0);'i",
+						"'&(iexcl|#161);'i",
+						"'&(cent|#162);'i",
+						"'&(pound|#163);'i",
+						"'&(copy|#169);'i",
+						"'&(reg|#174);'i",
+						"'&(deg|#176);'i",
+						"'&(#39|#039|#x27);'",
+						"'&(euro|#8364);'i",				// europe
+						"'&a(uml|UML);'",					// german
+						"'&o(uml|UML);'",
+						"'&u(uml|UML);'",
+						"'&A(uml|UML);'",
+						"'&O(uml|UML);'",
+						"'&U(uml|UML);'",
+						"'&szlig;'i",
+						);
+		$replace = array(	"",
+							"",
+							"\\1",
+							"\"",
+							"&",
+							"<",
+							">",
+							" ",
+							chr(161),
+							chr(162),
+							chr(163),
+							chr(169),
+							chr(174),
+							chr(176),
+							chr(39),
+							chr(128),
+							chr(0xE4), // ANSI &auml;
+							chr(0xF6), // ANSI &ouml;
+							chr(0xFC), // ANSI &uuml;
+							chr(0xC4), // ANSI &Auml;
+							chr(0xD6), // ANSI &Ouml;
+							chr(0xDC), // ANSI &Uuml;
+							chr(0xDF), // ANSI &szlig;
+						);
+
+		$text = __fn_11836($search,$replace,$document);
+
+		return $text;
+	}
+
+/*======================================================================*\
+	Function:	_expandlinks
+	Purpose:	expand each link into a fully qualified URL
+	Input:		$links			the links to qualify
+				$URI			the full URI to get the base from
+	Output:		$expandedLinks	the expanded links
+\*======================================================================*/
+
+	function _expandlinks($links,$URI)
+	{
+
+		preg_match("/^[^\?]+/",$URI,$match);
+
+		$match = __fn_11836("|/[^\/\.]+\.[^\/\.]+$|","",$match[0]);
+		$match = __fn_11836("|/$|","",$match);
+		$match_part = parse_url($match);
+		$match_root =
+		$match_part["scheme"]."://".$match_part["host"];
+
+		$search = array( 	"|^http://".preg_quote($this->host)."|i",
+							"|^(\/)|i",
+							"|^(?!http://)(?!mailto:)|i",
+							"|/\./|",
+							"|/[^\/]+/\.\./|"
+						);
+
+		$replace = array(	"",
+							$match_root."/",
+							$match."/",
+							"/",
+							"/"
+						);
+
+		$expandedLinks = __fn_11836($search,$replace,$links);
+
+		return $expandedLinks;
+	}
+
+/*======================================================================*\
+	Function:	_httprequest
+	Purpose:	go get the http data from the server
+	Input:		$url		the url to fetch
+				$fp			the current open file pointer
+				$URI		the full URI
+				$body		body contents to send if any (POST)
+	Output:
+\*======================================================================*/
+
+	function _httprequest($url,$fp,$URI,$http_method,$content_type="",$body="")
+	{
+		$cookie_headers = '';
+		if($this->passcookies && $this->_redirectaddr)
+			$this->setcookies();
+
+		$URI_PARTS = parse_url($URI);
+		if(empty($url))
+			$url = "/";
+		$headers = $http_method." ".$url." ".$this->_httpversion."\r\n";
+		if(!empty($this->agent))
+			$headers .= "User-Agent: ".$this->agent."\r\n";
+		if(!empty($this->host) && !isset($this->rawheaders['Host'])) {
+			$headers .= "Host: ".$this->host;
+			if(!empty($this->port) && $this->port != 80)
+				$headers .= ":".$this->port;
+			$headers .= "\r\n";
+		}
+		if(!empty($this->accept))
+			$headers .= "Accept: ".$this->accept."\r\n";
+		if(!empty($this->referer))
+			$headers .= "Referer: ".$this->referer."\r\n";
+		if(!empty($this->cookies))
+		{
+			if(!is_array($this->cookies))
+				$this->cookies = (array)$this->cookies;
+
+			reset($this->cookies);
+			if ( count($this->cookies) > 0 ) {
+				$cookie_headers .= 'Cookie: ';
+				foreach ( $this->cookies as $cookieKey => $cookieVal ) {
+				$cookie_headers .= $cookieKey."=".urlencode($cookieVal)."; ";
+				}
+				$headers .= substr($cookie_headers,0,-2) . "\r\n";
+			}
+		}
+		if(!empty($this->rawheaders))
+		{
+			if(!is_array($this->rawheaders))
+				$this->rawheaders = (array)$this->rawheaders;
+			foreach ( $this->rawheaders as $headerKey => $headerVal )
+				$headers .= $headerKey.": ".$headerVal."\r\n";
+		}
+		if(!empty($content_type)) {
+			$headers .= "Content-Type: $content_type";
+			if ($content_type == "multipart/form-data")
+				$headers .= "; boundary=".$this->_mime_boundary;
+			$headers .= "\r\n";
+		}
+		if(!empty($body))
+			$headers .= "Content-Length: ".strlen($body)."\r\n";
+		if(!empty($this->user) || !empty($this->pass))
+			$headers .= "Authorization: Basic ".base64_encode($this->user.":".$this->pass)."\r\n";
+
+		//add proxy auth headers
+		if(!empty($this->proxy_user))
+			$headers .= 'Proxy-Authorization: ' . 'Basic ' . base64_encode($this->proxy_user . ':' . $this->proxy_pass)."\r\n";
+
+
+		$headers .= "\r\n";
+
+		// set the read timeout if needed
+		if ($this->read_timeout > 0)
+			socket_set_timeout($fp, $this->read_timeout);
+		$this->timed_out = false;
+
+		fwrite($fp,$headers.$body,strlen($headers.$body));
+
+		$this->_redirectaddr = false;
+		unset($this->headers);
+
+		while($currentHeader = fgets($fp,$this->_maxlinelen))
+		{
+			if ($this->read_timeout > 0 && $this->_check_timeout($fp))
+			{
+				$this->status=-100;
+				return false;
+			}
+
+			if($currentHeader == "\r\n")
+				break;
+
+			// if a header begins with Location: or URI:, set the redirect
+			if(preg_match("/^(Location:|URI:)/i",$currentHeader))
+			{
+				// get URL portion of the redirect
+				preg_match("/^(Location:|URI:)[ ]+(.*)/i",chop($currentHeader),$matches);
+				// look for :// in the Location header to see if hostname is included
+				if(!preg_match("|\:\/\/|",$matches[2]))
+				{
+					// no host in the path, so prepend
+					$this->_redirectaddr = $URI_PARTS["scheme"]."://".$this->host.":".$this->port;
+					// eliminate double slash
+					if(!preg_match("|^/|",$matches[2]))
+							$this->_redirectaddr .= "/".$matches[2];
+					else
+							$this->_redirectaddr .= $matches[2];
+				}
+				else
+					$this->_redirectaddr = $matches[2];
+			}
+
+			if(preg_match("|^HTTP/|",$currentHeader))
+			{
+                if(preg_match("|^HTTP/[^\s]*\s(.*?)\s|",$currentHeader, $status))
+				{
+					$this->status= $status[1];
+                }
+				$this->response_code = $currentHeader;
+			}
+
+			$this->headers[] = $currentHeader;
+		}
+
+		$results = '';
+		do {
+    		$_data = fread($fp, $this->maxlength);
+    		if (strlen($_data) == 0) {
+        		break;
+    		}
+    		$results .= $_data;
+		} while(true);
+
+		if ($this->read_timeout > 0 && $this->_check_timeout($fp))
+		{
+			$this->status=-100;
+			return false;
+		}
+
+		// check if there is a redirect meta tag
+
+		if(preg_match("'<meta[\s]*http-equiv[^>]*?content[\s]*=[\s]*[\"\']?\d+;[\s]*URL[\s]*=[\s]*([^\"\']*?)[\"\']?>'i",$results,$match))
+
+		{
+			$this->_redirectaddr = $this->_expandlinks($match[1],$URI);
+		}
+
+		// have we hit our frame depth and is there frame src to fetch?
+		if(($this->_framedepth < $this->maxframes) && preg_match_all("'<frame\s+.*src[\s]*=[\'\"]?([^\'\"\>]+)'i",$results,$match))
+		{
+			$this->results[] = $results;
+			for($x=0; $x<count($match[1]); $x++)
+				$this->_frameurls[] = $this->_expandlinks($match[1][$x],$URI_PARTS["scheme"]."://".$this->host);
+		}
+		// have we already fetched framed content?
+		elseif(is_array($this->results))
+			$this->results[] = $results;
+		// no framed content
+		else
+			$this->results = $results;
+
+		return true;
+	}
+
+/*======================================================================*\
+	Function:	_httpsrequest
+	Purpose:	go get the https data from the server using curl
+	Input:		$url		the url to fetch
+				$URI		the full URI
+				$body		body contents to send if any (POST)
+	Output:
+\*======================================================================*/
+
+	function _httpsrequest($url,$URI,$http_method,$content_type="",$body="")
+	{
+		if($this->passcookies && $this->_redirectaddr)
+			$this->setcookies();
+
+		$headers = array();
+
+		$URI_PARTS = parse_url($URI);
+		if(empty($url))
+			$url = "/";
+		// GET ... header not needed for curl
+		//$headers[] = $http_method." ".$url." ".$this->_httpversion;
+		if(!empty($this->agent))
+			$headers[] = "User-Agent: ".$this->agent;
+		if(!empty($this->host))
+			if(!empty($this->port))
+				$headers[] = "Host: ".$this->host.":".$this->port;
+			else
+				$headers[] = "Host: ".$this->host;
+		if(!empty($this->accept))
+			$headers[] = "Accept: ".$this->accept;
+		if(!empty($this->referer))
+			$headers[] = "Referer: ".$this->referer;
+		if(!empty($this->cookies))
+		{
+			if(!is_array($this->cookies))
+				$this->cookies = (array)$this->cookies;
+
+			reset($this->cookies);
+			if ( count($this->cookies) > 0 ) {
+				$cookie_str = 'Cookie: ';
+				foreach ( $this->cookies as $cookieKey => $cookieVal ) {
+				$cookie_str .= $cookieKey."=".urlencode($cookieVal)."; ";
+				}
+				$headers[] = substr($cookie_str,0,-2);
+			}
+		}
+		if(!empty($this->rawheaders))
+		{
+			if(!is_array($this->rawheaders))
+				$this->rawheaders = (array)$this->rawheaders;
+			foreach ( $this->rawheaders as $headerKey => $headerVal )
+				$headers[] = $headerKey.": ".$headerVal;
+		}
+		if(!empty($content_type)) {
+			if ($content_type == "multipart/form-data")
+				$headers[] = "Content-Type: $content_type; boundary=".$this->_mime_boundary;
+			else
+				$headers[] = "Content-Type: $content_type";
+		}
+		if(!empty($body))
+			$headers[] = "Content-Length: ".strlen($body);
+		if(!empty($this->user) || !empty($this->pass))
+			$headers[] = "Authorization: BASIC ".base64_encode($this->user.":".$this->pass);
+
+		$headerfile = tempnam( $this->temp_dir, "sno" );
+		$cmdline_params = '-k -D ' . escapeshellarg( $headerfile );
+
+		foreach ( $headers as $header ) {
+			$cmdline_params .= ' -H ' . escapeshellarg( $header );
+		}
+
+		if ( ! empty( $body ) ) {
+			$cmdline_params .= ' -d ' . escapeshellarg( $body );
+		}
+
+		if ( $this->read_timeout > 0 ) {
+			$cmdline_params .= ' -m ' . escapeshellarg( $this->read_timeout );
+		}
+
+
+		__fn_69887( $this->curl_path . ' ' . $cmdline_params . ' ' . escapeshellarg( $URI ), $results, $return );
+
+		if($return)
+		{
+			$this->error = "Error: cURL could not retrieve the document, error $return.";
+			return false;
+		}
+
+
+		$results = implode("\r\n",$results);
+
+		$result_headers = file("$headerfile");
+
+		$this->_redirectaddr = false;
+		unset($this->headers);
+
+		for($currentHeader = 0; $currentHeader < count($result_headers); $currentHeader++)
+		{
+
+			// if a header begins with Location: or URI:, set the redirect
+			if(preg_match("/^(Location: |URI: )/i",$result_headers[$currentHeader]))
+			{
+				// get URL portion of the redirect
+				preg_match("/^(Location: |URI:)\s+(.*)/",chop($result_headers[$currentHeader]),$matches);
+				// look for :// in the Location header to see if hostname is included
+				if(!preg_match("|\:\/\/|",$matches[2]))
+				{
+					// no host in the path, so prepend
+					$this->_redirectaddr = $URI_PARTS["scheme"]."://".$this->host.":".$this->port;
+					// eliminate double slash
+					if(!preg_match("|^/|",$matches[2]))
+							$this->_redirectaddr .= "/".$matches[2];
+					else
+							$this->_redirectaddr .= $matches[2];
+				}
+				else
+					$this->_redirectaddr = $matches[2];
+			}
+
+			if(preg_match("|^HTTP/|",$result_headers[$currentHeader]))
+				$this->response_code = $result_headers[$currentHeader];
+
+			$this->headers[] = $result_headers[$currentHeader];
+		}
+
+		// check if there is a redirect meta tag
+
+		if(preg_match("'<meta[\s]*http-equiv[^>]*?content[\s]*=[\s]*[\"\']?\d+;[\s]*URL[\s]*=[\s]*([^\"\']*?)[\"\']?>'i",$results,$match))
+		{
+			$this->_redirectaddr = $this->_expandlinks($match[1],$URI);
+		}
+
+		// have we hit our frame depth and is there frame src to fetch?
+		if(($this->_framedepth < $this->maxframes) && preg_match_all("'<frame\s+.*src[\s]*=[\'\"]?([^\'\"\>]+)'i",$results,$match))
+		{
+			$this->results[] = $results;
+			for($x=0; $x<count($match[1]); $x++)
+				$this->_frameurls[] = $this->_expandlinks($match[1][$x],$URI_PARTS["scheme"]."://".$this->host);
+		}
+		// have we already fetched framed content?
+		elseif(is_array($this->results))
+			$this->results[] = $results;
+		// no framed content
+		else
+			$this->results = $results;
+
+		unlink("$headerfile");
+
+		return true;
+	}
+
+/*======================================================================*\
+	Function:	setcookies()
+	Purpose:	set cookies for a redirection
+\*======================================================================*/
+
+	function setcookies()
+	{
+		for($x=0; $x<count($this->headers); $x++)
+		{
+		if(preg_match('/^set-cookie:[\s]+([^=]+)=([^;]+)/i', $this->headers[$x],$match))
+			$this->cookies[$match[1]] = urldecode($match[2]);
+		}
+	}
+
+
+/*======================================================================*\
+	Function:	_check_timeout
+	Purpose:	checks whether timeout has occurred
+	Input:		$fp	file pointer
+\*======================================================================*/
+
+	function _check_timeout($fp)
+	{
+		if ($this->read_timeout > 0) {
+			$fp_status = socket_get_status($fp);
+			if ($fp_status["timed_out"]) {
+				$this->timed_out = true;
+				return true;
+			}
+		}
+		return false;
+	}
+
+/*======================================================================*\
+	Function:	_connect
+	Purpose:	make a socket connection
+	Input:		$fp	file pointer
+\*======================================================================*/
+
+	function _connect(&$fp)
+	{
+		if(!empty($this->proxy_host) && !empty($this->proxy_port))
+			{
+				$this->_isproxy = true;
+
+				$host = $this->proxy_host;
+				$port = $this->proxy_port;
+			}
+		else
+		{
+			$host = $this->host;
+			$port = $this->port;
+		}
+
+		$this->status = 0;
+
+		if($fp = fsockopen(
+					$host,
+					$port,
+					$errno,
+					$errstr,
+					$this->_fp_timeout
+					))
+		{
+			// socket connection succeeded
+
+			return true;
+		}
+		else
+		{
+			// socket connection failed
+			$this->status = $errno;
+			switch($errno)
+			{
+				case -3:
+					$this->error="socket creation failed (-3)";
+				case -4:
+					$this->error="dns lookup failure (-4)";
+				case -5:
+					$this->error="connection refused or timed out (-5)";
+				default:
+					$this->error="connection failed (".$errno.")";
+			}
+			return false;
+		}
+	}
+/*======================================================================*\
+	Function:	_disconnect
+	Purpose:	disconnect a socket connection
+	Input:		$fp	file pointer
+\*======================================================================*/
+
+	function _disconnect($fp)
+	{
+		return(fclose($fp));
+	}
+
+
+/*======================================================================*\
+	Function:	_prepare_post_body
+	Purpose:	Prepare post body according to encoding type
+	Input:		$formvars  - form variables
+				$formfiles - form upload files
+	Output:		post body
+\*======================================================================*/
+
+	function _prepare_post_body($formvars, $formfiles)
+	{
+		settype($formvars, "array");
+		settype($formfiles, "array");
+		$postdata = '';
+
+		if (count($formvars) == 0 && count($formfiles) == 0)
+			return;
+
+		switch ($this->_submit_type) {
+			case "application/x-www-form-urlencoded":
+				reset($formvars);
+				foreach ( $formvars as $key => $val ) {
+					if (is_array($val) || is_object($val)) {
+						foreach ( $val as $cur_key => $cur_val ) {
+							$postdata .= urlencode($key)."[]=".urlencode($cur_val)."&";
+						}
+					} else
+						$postdata .= urlencode($key)."=".urlencode($val)."&";
+				}
+				break;
+
+			case "multipart/form-data":
+				$this->_mime_boundary = "Snoopy".md5(uniqid(microtime()));
+
+				reset($formvars);
+				foreach ( $formvars as $key => $val ) {
+					if (is_array($val) || is_object($val)) {
+						foreach ( $val as $cur_key => $cur_val ) {
+							$postdata .= "--".$this->_mime_boundary."\r\n";
+							$postdata .= "Content-Disposition: form-data; name=\"$key\[\]\"\r\n\r\n";
+							$postdata .= "$cur_val\r\n";
+						}
+					} else {
+						$postdata .= "--".$this->_mime_boundary."\r\n";
+						$postdata .= "Content-Disposition: form-data; name=\"$key\"\r\n\r\n";
+						$postdata .= "$val\r\n";
+					}
+				}
+
+				reset($formfiles);
+				foreach ( $formfiles as $field_name => $file_names ) {
+					settype($file_names, "array");
+					foreach ( $file_names as $file_name ) {
+						if (!is_readable($file_name)) continue;
+
+						$fp = fopen($file_name, "r");
+						$file_content = fread($fp, filesize($file_name));
+						fclose($fp);
+						$base_name = basename($file_name);
+
+						$postdata .= "--".$this->_mime_boundary."\r\n";
+						$postdata .= "Content-Disposition: form-data; name=\"$field_name\"; filename=\"$base_name\"\r\n\r\n";
+						$postdata .= "$file_content\r\n";
+					}
+				}
+				$postdata .= "--".$this->_mime_boundary."--\r\n";
+				break;
+		}
+
+		return $postdata;
+	}
+}
+endif;
+?>

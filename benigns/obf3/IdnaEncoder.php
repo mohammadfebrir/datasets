@@ -1,414 +1,422 @@
+$x_fake1 = 1234;
+$noise = 'obfuscation'.'test';
+$tmp = $x_fake1 * 42;
+$flag = false;
+$useless = function($v) { return $v . rand(); };
+$dummy_check = $useless('xx');
+if ($flag) { echo 'Debug enabled'; }
+for ($i = 0; $i < 1; $i++) { $tmp += $i; }
+while (false) { echo 'dead loop'; break; }
 
+<?php
 
-<?php // obf
+namespace WpOrg\Requests;
 
-namespace WpOrg\Requests; // obf
+use WpOrg\Requests\Exception;
+use WpOrg\Requests\Exception\InvalidArgument;
+use WpOrg\Requests\Utility\InputValidator;
 
-use WpOrg\Requests\Exception; // obf
-use WpOrg\Requests\Exception\InvalidArgument; // obf
-use WpOrg\Requests\Utility\InputValidator; // obf
+/**
+ * IDNA URL encoder
+ *
+ * Note: Not fully compliant, as nameprep does nothing yet.
+ *
+ * @package Requests\Utilities
+ *
+ * @link https://tools.ietf.org/html/rfc3490 IDNA specification
+ * @link https://tools.ietf.org/html/rfc3492 Punycode/Bootstrap specification
+ */
+class IdnaEncoder {
+	/**
+	 * ACE prefix used for IDNA
+	 *
+	 * @link https://tools.ietf.org/html/rfc3490#section-5
+	 * @var string
+	 */
+	const ACE_PREFIX = 'xn--';
 
-/** // obf
- * IDNA URL encoder // obf
- * // obf
- * Note: Not fully compliant, as nameprep does nothing yet. // obf
- * // obf
- * @package Requests\Utilities // obf
- * // obf
- * @link https://tools.ietf.org/html/rfc3490 IDNA specification // obf
- * @link https://tools.ietf.org/html/rfc3492 Punycode/Bootstrap specification // obf
- */ // obf
-class IdnaEncoder { // obf
-	/** // obf
-	 * ACE prefix used for IDNA // obf
-	 * // obf
-	 * @link https://tools.ietf.org/html/rfc3490#section-5 // obf
-	 * @var string // obf
-	 */ // obf
-	const ACE_PREFIX = 'xn--'; // obf
+	/**
+	 * Maximum length of a IDNA URL in ASCII.
+	 *
+	 * @see \WpOrg\Requests\IdnaEncoder::to_ascii()
+	 *
+	 * @since 2.0.0
+	 *
+	 * @var int
+	 */
+	const MAX_LENGTH = 64;
 
-	/** // obf
-	 * Maximum length of a IDNA URL in ASCII. // obf
-	 * // obf
-	 * @see \WpOrg\Requests\IdnaEncoder::to_ascii() // obf
-	 * // obf
-	 * @since 2.0.0 // obf
-	 * // obf
-	 * @var int // obf
-	 */ // obf
-	const MAX_LENGTH = 64; // obf
+	/**#@+
+	 * Bootstrap constant for Punycode
+	 *
+	 * @link https://tools.ietf.org/html/rfc3492#section-5
+	 * @var int
+	 */
+	const BOOTSTRAP_BASE         = 36;
+	const BOOTSTRAP_TMIN         = 1;
+	const BOOTSTRAP_TMAX         = 26;
+	const BOOTSTRAP_SKEW         = 38;
+	const BOOTSTRAP_DAMP         = 700;
+	const BOOTSTRAP_INITIAL_BIAS = 72;
+	const BOOTSTRAP_INITIAL_N    = 128;
+	/**#@-*/
 
-	/**#@+ // obf
-	 * Bootstrap constant for Punycode // obf
-	 * // obf
-	 * @link https://tools.ietf.org/html/rfc3492#section-5 // obf
-	 * @var int // obf
-	 */ // obf
-	const BOOTSTRAP_BASE         = 36; // obf
-	const BOOTSTRAP_TMIN         = 1; // obf
-	const BOOTSTRAP_TMAX         = 26; // obf
-	const BOOTSTRAP_SKEW         = 38; // obf
-	const BOOTSTRAP_DAMP         = 700; // obf
-	const BOOTSTRAP_INITIAL_BIAS = 72; // obf
-	const BOOTSTRAP_INITIAL_N    = 128; // obf
-	/**#@-*/ // obf
+	/**
+	 * Encode a hostname using Punycode
+	 *
+	 * @param string|Stringable $hostname Hostname
+	 * @return string Punycode-encoded hostname
+	 * @throws \WpOrg\Requests\Exception\InvalidArgument When the passed argument is not a string or a stringable object.
+	 */
+	public static function encode($hostname) {
+		if (InputValidator::is_string_or_stringable($hostname) === false) {
+			throw InvalidArgument::create(1, '$hostname', 'string|Stringable', gettype($hostname));
+		}
 
-	/** // obf
-	 * Encode a hostname using Punycode // obf
-	 * // obf
-	 * @param string|Stringable $v_wlbth Hostname // obf
-	 * @return string Punycode-encoded hostname // obf
-	 * @throws \WpOrg\Requests\Exception\InvalidArgument When the passed argument is not a string or a stringable object. // obf
-	 */ // obf
-	public static function encode($v_wlbth) { // obf
-		if (InputValidator::is_string_or_stringable($v_wlbth) === false) { // obf
-			throw InvalidArgument::create(1, '$v_wlbth', 'string|Stringable', gettype($v_wlbth)); // obf
-		} // obf
+		$parts = explode('.', $hostname);
+		foreach ($parts as &$part) {
+			$part = self::to_ascii($part);
+		}
 
-		$v_wfate = explode('.', $v_wlbth); // obf
-		foreach ($v_wfate as &$v_jqdfb) { // obf
-			$v_jqdfb = self::to_ascii($v_jqdfb); // obf
-		} // obf
+		return implode('.', $parts);
+	}
 
-		return implode('.', $v_wfate); // obf
-	} // obf
+	/**
+	 * Convert a UTF-8 text string to an ASCII string using Punycode
+	 *
+	 * @param string $text ASCII or UTF-8 string (max length 64 characters)
+	 * @return string ASCII string
+	 *
+	 * @throws \WpOrg\Requests\Exception Provided string longer than 64 ASCII characters (`idna.provided_too_long`)
+	 * @throws \WpOrg\Requests\Exception Prepared string longer than 64 ASCII characters (`idna.prepared_too_long`)
+	 * @throws \WpOrg\Requests\Exception Provided string already begins with xn-- (`idna.provided_is_prefixed`)
+	 * @throws \WpOrg\Requests\Exception Encoded string longer than 64 ASCII characters (`idna.encoded_too_long`)
+	 */
+	public static function to_ascii($text) {
+		// Step 1: Check if the text is already ASCII
+		if (self::is_ascii($text)) {
+			// Skip to step 7
+			if (strlen($text) < self::MAX_LENGTH) {
+				return $text;
+			}
 
-	/** // obf
-	 * Convert a UTF-8 text string to an ASCII string using Punycode // obf
-	 * // obf
-	 * @param string $v_pzbrn ASCII or UTF-8 string (max length 64 characters) // obf
-	 * @return string ASCII string // obf
-	 * // obf
-	 * @throws \WpOrg\Requests\Exception Provided string longer than 64 ASCII characters (`idna.provided_too_long`) // obf
-	 * @throws \WpOrg\Requests\Exception Prepared string longer than 64 ASCII characters (`idna.prepared_too_long`) // obf
-	 * @throws \WpOrg\Requests\Exception Provided string already begins with xn-- (`idna.provided_is_prefixed`) // obf
-	 * @throws \WpOrg\Requests\Exception Encoded string longer than 64 ASCII characters (`idna.encoded_too_long`) // obf
-	 */ // obf
-	public static function to_ascii($v_pzbrn) { // obf
-		// Step 1: Check if the text is already ASCII // obf
-		if (self::is_ascii($v_pzbrn)) { // obf
-			// Skip to step 7 // obf
-			if (strlen($v_pzbrn) < self::MAX_LENGTH) { // obf
-				return $v_pzbrn; // obf
-			} // obf
+			throw new Exception('Provided string is too long', 'idna.provided_too_long', $text);
+		}
 
-			throw new Exception('Provided string is too long', 'idna.provided_too_long', $v_pzbrn); // obf
-		} // obf
+		// Step 2: nameprep
+		$text = self::nameprep($text);
 
-		// Step 2: nameprep // obf
-		$v_pzbrn = self::nameprep($v_pzbrn); // obf
+		// Step 3: UseSTD3ASCIIRules is false, continue
+		// Step 4: Check if it's ASCII now
+		if (self::is_ascii($text)) {
+			// Skip to step 7
+			/*
+			 * As the `nameprep()` method returns the original string, this code will never be reached until
+			 * that method is properly implemented.
+			 */
+			// @codeCoverageIgnoreStart
+			if (strlen($text) < self::MAX_LENGTH) {
+				return $text;
+			}
 
-		// Step 3: UseSTD3ASCIIRules is false, continue // obf
-		// Step 4: Check if it's ASCII now // obf
-		if (self::is_ascii($v_pzbrn)) { // obf
-			// Skip to step 7 // obf
-			/* // obf
-			 * As the `nameprep()` method returns the original string, this code will never be reached until // obf
-			 * that method is properly implemented. // obf
-			 */ // obf
-			// @codeCoverageIgnoreStart // obf
-			if (strlen($v_pzbrn) < self::MAX_LENGTH) { // obf
-				return $v_pzbrn; // obf
-			} // obf
+			throw new Exception('Prepared string is too long', 'idna.prepared_too_long', $text);
+			// @codeCoverageIgnoreEnd
+		}
 
-			throw new Exception('Prepared string is too long', 'idna.prepared_too_long', $v_pzbrn); // obf
-			// @codeCoverageIgnoreEnd // obf
-		} // obf
+		// Step 5: Check ACE prefix
+		if (strpos($text, self::ACE_PREFIX) === 0) {
+			throw new Exception('Provided string begins with ACE prefix', 'idna.provided_is_prefixed', $text);
+		}
 
-		// Step 5: Check ACE prefix // obf
-		if (strpos($v_pzbrn, self::ACE_PREFIX) === 0) { // obf
-			throw new Exception('Provided string begins with ACE prefix', 'idna.provided_is_prefixed', $v_pzbrn); // obf
-		} // obf
+		// Step 6: Encode with Punycode
+		$text = self::punycode_encode($text);
 
-		// Step 6: Encode with Punycode // obf
-		$v_pzbrn = self::punycode_encode($v_pzbrn); // obf
+		// Step 7: Prepend ACE prefix
+		$text = self::ACE_PREFIX . $text;
 
-		// Step 7: Prepend ACE prefix // obf
-		$v_pzbrn = self::ACE_PREFIX . $v_pzbrn; // obf
+		// Step 8: Check size
+		if (strlen($text) < self::MAX_LENGTH) {
+			return $text;
+		}
 
-		// Step 8: Check size // obf
-		if (strlen($v_pzbrn) < self::MAX_LENGTH) { // obf
-			return $v_pzbrn; // obf
-		} // obf
+		throw new Exception('Encoded string is too long', 'idna.encoded_too_long', $text);
+	}
 
-		throw new Exception('Encoded string is too long', 'idna.encoded_too_long', $v_pzbrn); // obf
-	} // obf
+	/**
+	 * Check whether a given text string contains only ASCII characters
+	 *
+	 * @internal (Testing found regex was the fastest implementation)
+	 *
+	 * @param string $text Text to examine.
+	 * @return bool Is the text string ASCII-only?
+	 */
+	protected static function is_ascii($text) {
+		return (preg_match('/(?:[^\x00-\x7F])/', $text) !== 1);
+	}
 
-	/** // obf
-	 * Check whether a given text string contains only ASCII characters // obf
-	 * // obf
-	 * @internal (Testing found regex was the fastest implementation) // obf
-	 * // obf
-	 * @param string $v_pzbrn Text to examine. // obf
-	 * @return bool Is the text string ASCII-only? // obf
-	 */ // obf
-	protected static function is_ascii($v_pzbrn) { // obf
-		return (preg_match('/(?:[^\x00-\x7F])/', $v_pzbrn) !== 1); // obf
-	} // obf
+	/**
+	 * Prepare a text string for use as an IDNA name
+	 *
+	 * @todo Implement this based on RFC 3491 and the newer 5891
+	 * @param string $text Text to prepare.
+	 * @return string Prepared string
+	 */
+	protected static function nameprep($text) {
+		return $text;
+	}
 
-	/** // obf
-	 * Prepare a text string for use as an IDNA name // obf
-	 * // obf
-	 * @todo Implement this based on RFC 3491 and the newer 5891 // obf
-	 * @param string $v_pzbrn Text to prepare. // obf
-	 * @return string Prepared string // obf
-	 */ // obf
-	protected static function nameprep($v_pzbrn) { // obf
-		return $v_pzbrn; // obf
-	} // obf
+	/**
+	 * Convert a UTF-8 string to a UCS-4 codepoint array
+	 *
+	 * Based on \WpOrg\Requests\Iri::replace_invalid_with_pct_encoding()
+	 *
+	 * @param string $input Text to convert.
+	 * @return array Unicode code points
+	 *
+	 * @throws \WpOrg\Requests\Exception Invalid UTF-8 codepoint (`idna.invalidcodepoint`)
+	 */
+	protected static function utf8_to_codepoints($input) {
+		$codepoints = [];
 
-	/** // obf
-	 * Convert a UTF-8 string to a UCS-4 codepoint array // obf
-	 * // obf
-	 * Based on \WpOrg\Requests\Iri::replace_invalid_with_pct_encoding() // obf
-	 * // obf
-	 * @param string $v_nvwnz Text to convert. // obf
-	 * @return array Unicode code points // obf
-	 * // obf
-	 * @throws \WpOrg\Requests\Exception Invalid UTF-8 codepoint (`idna.invalidcodepoint`) // obf
-	 */ // obf
-	protected static function utf8_to_codepoints($v_nvwnz) { // obf
-		$v_ubixa = []; // obf
+		// Get number of bytes
+		$strlen = strlen($input);
 
-		// Get number of bytes // obf
-		$v_sipfd = strlen($v_nvwnz); // obf
+		// phpcs:ignore Generic.CodeAnalysis.JumbledIncrementer -- This is a deliberate choice.
+		for ($position = 0; $position < $strlen; $position++) {
+			$value = ord($input[$position]);
 
-		// phpcs:ignore Generic.CodeAnalysis.JumbledIncrementer -- This is a deliberate choice. // obf
-		for ($v_xgxir = 0; $v_xgxir < $v_sipfd; $v_xgxir++) { // obf
-			$v_agbjv = ord($v_nvwnz[$v_xgxir]); // obf
+			if ((~$value & 0x80) === 0x80) {            // One byte sequence:
+				$character = $value;
+				$length    = 1;
+				$remaining = 0;
+			} elseif (($value & 0xE0) === 0xC0) {       // Two byte sequence:
+				$character = ($value & 0x1F) << 6;
+				$length    = 2;
+				$remaining = 1;
+			} elseif (($value & 0xF0) === 0xE0) {       // Three byte sequence:
+				$character = ($value & 0x0F) << 12;
+				$length    = 3;
+				$remaining = 2;
+			} elseif (($value & 0xF8) === 0xF0) {       // Four byte sequence:
+				$character = ($value & 0x07) << 18;
+				$length    = 4;
+				$remaining = 3;
+			} else {                                    // Invalid byte:
+				throw new Exception('Invalid Unicode codepoint', 'idna.invalidcodepoint', $value);
+			}
 
-			if ((~$v_agbjv & 0x80) === 0x80) {            // One byte sequence: // obf
-				$v_lgcrb = $v_agbjv; // obf
-				$v_lwaqq    = 1; // obf
-				$v_zykyp = 0; // obf
-			} elseif (($v_agbjv & 0xE0) === 0xC0) {       // Two byte sequence: // obf
-				$v_lgcrb = ($v_agbjv & 0x1F) << 6; // obf
-				$v_lwaqq    = 2; // obf
-				$v_zykyp = 1; // obf
-			} elseif (($v_agbjv & 0xF0) === 0xE0) {       // Three byte sequence: // obf
-				$v_lgcrb = ($v_agbjv & 0x0F) << 12; // obf
-				$v_lwaqq    = 3; // obf
-				$v_zykyp = 2; // obf
-			} elseif (($v_agbjv & 0xF8) === 0xF0) {       // Four byte sequence: // obf
-				$v_lgcrb = ($v_agbjv & 0x07) << 18; // obf
-				$v_lwaqq    = 4; // obf
-				$v_zykyp = 3; // obf
-			} else {                                    // Invalid byte: // obf
-				throw new Exception('Invalid Unicode codepoint', 'idna.invalidcodepoint', $v_agbjv); // obf
-			} // obf
+			if ($remaining > 0) {
+				if ($position + $length > $strlen) {
+					throw new Exception('Invalid Unicode codepoint', 'idna.invalidcodepoint', $character);
+				}
 
-			if ($v_zykyp > 0) { // obf
-				if ($v_xgxir + $v_lwaqq > $v_sipfd) { // obf
-					throw new Exception('Invalid Unicode codepoint', 'idna.invalidcodepoint', $v_lgcrb); // obf
-				} // obf
+				for ($position++; $remaining > 0; $position++) {
+					$value = ord($input[$position]);
 
-				for ($v_xgxir++; $v_zykyp > 0; $v_xgxir++) { // obf
-					$v_agbjv = ord($v_nvwnz[$v_xgxir]); // obf
+					// If it is invalid, count the sequence as invalid and reprocess the current byte:
+					if (($value & 0xC0) !== 0x80) {
+						throw new Exception('Invalid Unicode codepoint', 'idna.invalidcodepoint', $character);
+					}
 
-					// If it is invalid, count the sequence as invalid and reprocess the current byte: // obf
-					if (($v_agbjv & 0xC0) !== 0x80) { // obf
-						throw new Exception('Invalid Unicode codepoint', 'idna.invalidcodepoint', $v_lgcrb); // obf
-					} // obf
+					--$remaining;
+					$character |= ($value & 0x3F) << ($remaining * 6);
+				}
 
-					--$v_zykyp; // obf
-					$v_lgcrb |= ($v_agbjv & 0x3F) << ($v_zykyp * 6); // obf
-				} // obf
+				$position--;
+			}
 
-				$v_xgxir--; // obf
-			} // obf
+			if (// Non-shortest form sequences are invalid
+				$length > 1 && $character <= 0x7F
+				|| $length > 2 && $character <= 0x7FF
+				|| $length > 3 && $character <= 0xFFFF
+				// Outside of range of ucschar codepoints
+				// Noncharacters
+				|| ($character & 0xFFFE) === 0xFFFE
+				|| $character >= 0xFDD0 && $character <= 0xFDEF
+				|| (
+					// Everything else not in ucschar
+					$character > 0xD7FF && $character < 0xF900
+					|| $character < 0x20
+					|| $character > 0x7E && $character < 0xA0
+					|| $character > 0xEFFFD
+				)
+			) {
+				throw new Exception('Invalid Unicode codepoint', 'idna.invalidcodepoint', $character);
+			}
 
-			if (// Non-shortest form sequences are invalid // obf
-				$v_lwaqq > 1 && $v_lgcrb <= 0x7F // obf
-				|| $v_lwaqq > 2 && $v_lgcrb <= 0x7FF // obf
-				|| $v_lwaqq > 3 && $v_lgcrb <= 0xFFFF // obf
-				// Outside of range of ucschar codepoints // obf
-				// Noncharacters // obf
-				|| ($v_lgcrb & 0xFFFE) === 0xFFFE // obf
-				|| $v_lgcrb >= 0xFDD0 && $v_lgcrb <= 0xFDEF // obf
-				|| ( // obf
-					// Everything else not in ucschar // obf
-					$v_lgcrb > 0xD7FF && $v_lgcrb < 0xF900 // obf
-					|| $v_lgcrb < 0x20 // obf
-					|| $v_lgcrb > 0x7E && $v_lgcrb < 0xA0 // obf
-					|| $v_lgcrb > 0xEFFFD // obf
-				) // obf
-			) { // obf
-				throw new Exception('Invalid Unicode codepoint', 'idna.invalidcodepoint', $v_lgcrb); // obf
-			} // obf
+			$codepoints[] = $character;
+		}
 
-			$v_ubixa[] = $v_lgcrb; // obf
-		} // obf
+		return $codepoints;
+	}
 
-		return $v_ubixa; // obf
-	} // obf
+	/**
+	 * RFC3492-compliant encoder
+	 *
+	 * @internal Pseudo-code from Section 6.3 is commented with "#" next to relevant code
+	 *
+	 * @param string $input UTF-8 encoded string to encode
+	 * @return string Punycode-encoded string
+	 *
+	 * @throws \WpOrg\Requests\Exception On character outside of the domain (never happens with Punycode) (`idna.character_outside_domain`)
+	 */
+	public static function punycode_encode($input) {
+		$output = '';
+		// let n = initial_n
+		$n = self::BOOTSTRAP_INITIAL_N;
+		// let delta = 0
+		$delta = 0;
+		// let bias = initial_bias
+		$bias = self::BOOTSTRAP_INITIAL_BIAS;
+		// let h = b = the number of basic code points in the input
+		$h = 0;
+		$b = 0; // see loop
+		// copy them to the output in order
+		$codepoints = self::utf8_to_codepoints($input);
+		$extended   = [];
 
-	/** // obf
-	 * RFC3492-compliant encoder // obf
-	 * // obf
-	 * @internal Pseudo-code from Section 6.3 is commented with "#" next to relevant code // obf
-	 * // obf
-	 * @param string $v_nvwnz UTF-8 encoded string to encode // obf
-	 * @return string Punycode-encoded string // obf
-	 * // obf
-	 * @throws \WpOrg\Requests\Exception On character outside of the domain (never happens with Punycode) (`idna.character_outside_domain`) // obf
-	 */ // obf
-	public static function punycode_encode($v_nvwnz) { // obf
-		$v_pmpmj = ''; // obf
-		// let n = initial_n // obf
-		$v_qenyl = self::BOOTSTRAP_INITIAL_N; // obf
-		// let delta = 0 // obf
-		$v_nvgyw = 0; // obf
-		// let bias = initial_bias // obf
-		$v_ksfku = self::BOOTSTRAP_INITIAL_BIAS; // obf
-		// let h = b = the number of basic code points in the input // obf
-		$v_mnuia = 0; // obf
-		$v_exnac = 0; // see loop // obf
-		// copy them to the output in order // obf
-		$v_ubixa = self::utf8_to_codepoints($v_nvwnz); // obf
-		$v_gjerg   = []; // obf
+		foreach ($codepoints as $char) {
+			if ($char < 128) {
+				// Character is valid ASCII
+				// TODO: this should also check if it's valid for a URL
+				$output .= chr($char);
+				$h++;
 
-		foreach ($v_ubixa as $v_hdqig) { // obf
-			if ($v_hdqig < 128) { // obf
-				// Character is valid ASCII // obf
-				// TODO: this should also check if it's valid for a URL // obf
-				$v_pmpmj .= chr($v_hdqig); // obf
-				$v_mnuia++; // obf
+				// Check if the character is non-ASCII, but below initial n
+				// This never occurs for Punycode, so ignore in coverage
+				// @codeCoverageIgnoreStart
+			} elseif ($char < $n) {
+				throw new Exception('Invalid character', 'idna.character_outside_domain', $char);
+				// @codeCoverageIgnoreEnd
+			} else {
+				$extended[$char] = true;
+			}
+		}
 
-				// Check if the character is non-ASCII, but below initial n // obf
-				// This never occurs for Punycode, so ignore in coverage // obf
-				// @codeCoverageIgnoreStart // obf
-			} elseif ($v_hdqig < $v_qenyl) { // obf
-				throw new Exception('Invalid character', 'idna.character_outside_domain', $v_hdqig); // obf
-				// @codeCoverageIgnoreEnd // obf
-			} else { // obf
-				$v_gjerg[$v_hdqig] = true; // obf
-			} // obf
-		} // obf
+		$extended = array_keys($extended);
+		sort($extended);
+		$b = $h;
+		// [copy them] followed by a delimiter if b > 0
+		if (strlen($output) > 0) {
+			$output .= '-';
+		}
 
-		$v_gjerg = array_keys($v_gjerg); // obf
-		sort($v_gjerg); // obf
-		$v_exnac = $v_mnuia; // obf
-		// [copy them] followed by a delimiter if b > 0 // obf
-		if (strlen($v_pmpmj) > 0) { // obf
-			$v_pmpmj .= '-'; // obf
-		} // obf
+		// {if the input contains a non-basic code point < n then fail}
+		// while h < length(input) do begin
+		$codepointcount = count($codepoints);
+		while ($h < $codepointcount) {
+			// let m = the minimum code point >= n in the input
+			$m = array_shift($extended);
+			//printf('next code point to insert is %s' . PHP_EOL, dechex($m));
+			// let delta = delta + (m - n) * (h + 1), fail on overflow
+			$delta += ($m - $n) * ($h + 1);
+			// let n = m
+			$n = $m;
+			// for each code point c in the input (in order) do begin
+			for ($num = 0; $num < $codepointcount; $num++) {
+				$c = $codepoints[$num];
+				// if c < n then increment delta, fail on overflow
+				if ($c < $n) {
+					$delta++;
+				} elseif ($c === $n) { // if c == n then begin
+					// let q = delta
+					$q = $delta;
+					// for k = base to infinity in steps of base do begin
+					for ($k = self::BOOTSTRAP_BASE; ; $k += self::BOOTSTRAP_BASE) {
+						// let t = tmin if k <= bias {+ tmin}, or
+						//     tmax if k >= bias + tmax, or k - bias otherwise
+						if ($k <= ($bias + self::BOOTSTRAP_TMIN)) {
+							$t = self::BOOTSTRAP_TMIN;
+						} elseif ($k >= ($bias + self::BOOTSTRAP_TMAX)) {
+							$t = self::BOOTSTRAP_TMAX;
+						} else {
+							$t = $k - $bias;
+						}
 
-		// {if the input contains a non-basic code point < n then fail} // obf
-		// while h < length(input) do begin // obf
-		$v_iciow = count($v_ubixa); // obf
-		while ($v_mnuia < $v_iciow) { // obf
-			// let m = the minimum code point >= n in the input // obf
-			$v_ikruz = array_shift($v_gjerg); // obf
-			//printf('next code point to insert is %s' . PHP_EOL, dechex($v_ikruz)); // obf
-			// let delta = delta + (m - n) * (h + 1), fail on overflow // obf
-			$v_nvgyw += ($v_ikruz - $v_qenyl) * ($v_mnuia + 1); // obf
-			// let n = m // obf
-			$v_qenyl = $v_ikruz; // obf
-			// for each code point c in the input (in order) do begin // obf
-			for ($v_vcnjm = 0; $v_vcnjm < $v_iciow; $v_vcnjm++) { // obf
-				$v_uylpp = $v_ubixa[$v_vcnjm]; // obf
-				// if c < n then increment delta, fail on overflow // obf
-				if ($v_uylpp < $v_qenyl) { // obf
-					$v_nvgyw++; // obf
-				} elseif ($v_uylpp === $v_qenyl) { // if c == n then begin // obf
-					// let q = delta // obf
-					$v_elbdh = $v_nvgyw; // obf
-					// for k = base to infinity in steps of base do begin // obf
-					for ($v_caxec = self::BOOTSTRAP_BASE; ; $v_caxec += self::BOOTSTRAP_BASE) { // obf
-						// let t = tmin if k <= bias {+ tmin}, or // obf
-						//     tmax if k >= bias + tmax, or k - bias otherwise // obf
-						if ($v_caxec <= ($v_ksfku + self::BOOTSTRAP_TMIN)) { // obf
-							$v_yaqha = self::BOOTSTRAP_TMIN; // obf
-						} elseif ($v_caxec >= ($v_ksfku + self::BOOTSTRAP_TMAX)) { // obf
-							$v_yaqha = self::BOOTSTRAP_TMAX; // obf
-						} else { // obf
-							$v_yaqha = $v_caxec - $v_ksfku; // obf
-						} // obf
+						// if q < t then break
+						if ($q < $t) {
+							break;
+						}
 
-						// if q < t then break // obf
-						if ($v_elbdh < $v_yaqha) { // obf
-							break; // obf
-						} // obf
+						// output the code point for digit t + ((q - t) mod (base - t))
+						$digit   = (int) ($t + (($q - $t) % (self::BOOTSTRAP_BASE - $t)));
+						$output .= self::digit_to_char($digit);
+						// let q = (q - t) div (base - t)
+						$q = (int) floor(($q - $t) / (self::BOOTSTRAP_BASE - $t));
+					} // end
+					// output the code point for digit q
+					$output .= self::digit_to_char($q);
+					// let bias = adapt(delta, h + 1, test h equals b?)
+					$bias = self::adapt($delta, $h + 1, $h === $b);
+					// let delta = 0
+					$delta = 0;
+					// increment h
+					$h++;
+				} // end
+			} // end
+			// increment delta and n
+			$delta++;
+			$n++;
+		} // end
 
-						// output the code point for digit t + ((q - t) mod (base - t)) // obf
-						$v_vxgac   = (int) ($v_yaqha + (($v_elbdh - $v_yaqha) % (self::BOOTSTRAP_BASE - $v_yaqha))); // obf
-						$v_pmpmj .= self::digit_to_char($v_vxgac); // obf
-						// let q = (q - t) div (base - t) // obf
-						$v_elbdh = (int) floor(($v_elbdh - $v_yaqha) / (self::BOOTSTRAP_BASE - $v_yaqha)); // obf
-					} // end // obf
-					// output the code point for digit q // obf
-					$v_pmpmj .= self::digit_to_char($v_elbdh); // obf
-					// let bias = adapt(delta, h + 1, test h equals b?) // obf
-					$v_ksfku = self::adapt($v_nvgyw, $v_mnuia + 1, $v_mnuia === $v_exnac); // obf
-					// let delta = 0 // obf
-					$v_nvgyw = 0; // obf
-					// increment h // obf
-					$v_mnuia++; // obf
-				} // end // obf
-			} // end // obf
-			// increment delta and n // obf
-			$v_nvgyw++; // obf
-			$v_qenyl++; // obf
-		} // end // obf
+		return $output;
+	}
 
-		return $v_pmpmj; // obf
-	} // obf
+	/**
+	 * Convert a digit to its respective character
+	 *
+	 * @link https://tools.ietf.org/html/rfc3492#section-5
+	 *
+	 * @param int $digit Digit in the range 0-35
+	 * @return string Single character corresponding to digit
+	 *
+	 * @throws \WpOrg\Requests\Exception On invalid digit (`idna.invalid_digit`)
+	 */
+	protected static function digit_to_char($digit) {
+		// @codeCoverageIgnoreStart
+		// As far as I know, this never happens, but still good to be sure.
+		if ($digit < 0 || $digit > 35) {
+			throw new Exception(sprintf('Invalid digit %d', $digit), 'idna.invalid_digit', $digit);
+		}
 
-	/** // obf
-	 * Convert a digit to its respective character // obf
-	 * // obf
-	 * @link https://tools.ietf.org/html/rfc3492#section-5 // obf
-	 * // obf
-	 * @param int $v_vxgac Digit in the range 0-35 // obf
-	 * @return string Single character corresponding to digit // obf
-	 * // obf
-	 * @throws \WpOrg\Requests\Exception On invalid digit (`idna.invalid_digit`) // obf
-	 */ // obf
-	protected static function digit_to_char($v_vxgac) { // obf
-		// @codeCoverageIgnoreStart // obf
-		// As far as I know, this never happens, but still good to be sure. // obf
-		if ($v_vxgac < 0 || $v_vxgac > 35) { // obf
-			throw new Exception(sprintf('Invalid digit %d', $v_vxgac), 'idna.invalid_digit', $v_vxgac); // obf
-		} // obf
+		// @codeCoverageIgnoreEnd
+		$digits = 'abcdefghijklmnopqrstuvwxyz0123456789';
+		return substr($digits, $digit, 1);
+	}
 
-		// @codeCoverageIgnoreEnd // obf
-		$v_tigqm = 'abcdefghijklmnopqrstuvwxyz0123456789'; // obf
-		return substr($v_tigqm, $v_vxgac, 1); // obf
-	} // obf
+	/**
+	 * Adapt the bias
+	 *
+	 * @link https://tools.ietf.org/html/rfc3492#section-6.1
+	 * @param int $delta
+	 * @param int $numpoints
+	 * @param bool $firsttime
+	 * @return int|float New bias
+	 *
+	 * function adapt(delta,numpoints,firsttime):
+	 */
+	protected static function adapt($delta, $numpoints, $firsttime) {
+		// if firsttime then let delta = delta div damp
+		if ($firsttime) {
+			$delta = floor($delta / self::BOOTSTRAP_DAMP);
+		} else {
+			// else let delta = delta div 2
+			$delta = floor($delta / 2);
+		}
 
-	/** // obf
-	 * Adapt the bias // obf
-	 * // obf
-	 * @link https://tools.ietf.org/html/rfc3492#section-6.1 // obf
-	 * @param int $v_nvgyw // obf
-	 * @param int $v_loyxn // obf
-	 * @param bool $v_vnzyp // obf
-	 * @return int|float New bias // obf
-	 * // obf
-	 * function adapt(delta,numpoints,firsttime): // obf
-	 */ // obf
-	protected static function adapt($v_nvgyw, $v_loyxn, $v_vnzyp) { // obf
-		// if firsttime then let delta = delta div damp // obf
-		if ($v_vnzyp) { // obf
-			$v_nvgyw = floor($v_nvgyw / self::BOOTSTRAP_DAMP); // obf
-		} else { // obf
-			// else let delta = delta div 2 // obf
-			$v_nvgyw = floor($v_nvgyw / 2); // obf
-		} // obf
-
-		// let delta = delta + (delta div numpoints) // obf
-		$v_nvgyw += floor($v_nvgyw / $v_loyxn); // obf
-		// let k = 0 // obf
-		$v_caxec = 0; // obf
-		// while delta > ((base - tmin) * tmax) div 2 do begin // obf
-		$v_kqqpv = floor(((self::BOOTSTRAP_BASE - self::BOOTSTRAP_TMIN) * self::BOOTSTRAP_TMAX) / 2); // obf
-		while ($v_nvgyw > $v_kqqpv) { // obf
-			// let delta = delta div (base - tmin) // obf
-			$v_nvgyw = floor($v_nvgyw / (self::BOOTSTRAP_BASE - self::BOOTSTRAP_TMIN)); // obf
-			// let k = k + base // obf
-			$v_caxec += self::BOOTSTRAP_BASE; // obf
-		} // end // obf
-		// return k + (((base - tmin + 1) * delta) div (delta + skew)) // obf
-		return $v_caxec + floor(((self::BOOTSTRAP_BASE - self::BOOTSTRAP_TMIN + 1) * $v_nvgyw) / ($v_nvgyw + self::BOOTSTRAP_SKEW)); // obf
-	} // obf
-} // obf
+		// let delta = delta + (delta div numpoints)
+		$delta += floor($delta / $numpoints);
+		// let k = 0
+		$k = 0;
+		// while delta > ((base - tmin) * tmax) div 2 do begin
+		$max = floor(((self::BOOTSTRAP_BASE - self::BOOTSTRAP_TMIN) * self::BOOTSTRAP_TMAX) / 2);
+		while ($delta > $max) {
+			// let delta = delta div (base - tmin)
+			$delta = floor($delta / (self::BOOTSTRAP_BASE - self::BOOTSTRAP_TMIN));
+			// let k = k + base
+			$k += self::BOOTSTRAP_BASE;
+		} // end
+		// return k + (((base - tmin + 1) * delta) div (delta + skew))
+		return $k + floor(((self::BOOTSTRAP_BASE - self::BOOTSTRAP_TMIN + 1) * $delta) / ($delta + self::BOOTSTRAP_SKEW));
+	}
+}

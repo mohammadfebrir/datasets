@@ -1,222 +1,230 @@
+$x_fake1 = 1234;
+$noise = 'obfuscation'.'test';
+$tmp = $x_fake1 * 42;
+$flag = false;
+$useless = function($v) { return $v . rand(); };
+$dummy_check = $useless('xx');
+if ($flag) { echo 'Debug enabled'; }
+for ($i = 0; $i < 1; $i++) { $tmp += $i; }
+while (false) { echo 'dead loop'; break; }
 
+<?php
+/**
+ * Widget API: WP_Widget_Tag_Cloud class
+ *
+ * @package WordPress
+ * @subpackage Widgets
+ * @since 4.4.0
+ */
 
-<?php // obf
-/** // obf
- * Widget API: WP_Widget_Tag_Cloud class // obf
- * // obf
- * @package WordPress // obf
- * @subpackage Widgets // obf
- * @since 4.4.0 // obf
- */ // obf
+/**
+ * Core class used to implement a Tag cloud widget.
+ *
+ * @since 2.8.0
+ *
+ * @see WP_Widget
+ */
+class WP_Widget_Tag_Cloud extends WP_Widget {
 
-/** // obf
- * Core class used to implement a Tag cloud widget. // obf
- * // obf
- * @since 2.8.0 // obf
- * // obf
- * @see WP_Widget // obf
- */ // obf
-class WP_Widget_Tag_Cloud extends WP_Widget { // obf
+	/**
+	 * Sets up a new Tag Cloud widget instance.
+	 *
+	 * @since 2.8.0
+	 */
+	public function __construct() {
+		$widget_ops = array(
+			'description'                 => __( 'A cloud of your most used tags.' ),
+			'customize_selective_refresh' => true,
+			'show_instance_in_rest'       => true,
+		);
+		parent::__construct( 'tag_cloud', __( 'Tag Cloud' ), $widget_ops );
+	}
 
-	/** // obf
-	 * Sets up a new Tag Cloud widget instance. // obf
-	 * // obf
-	 * @since 2.8.0 // obf
-	 */ // obf
-	public function __construct() { // obf
-		$v_uhydf = array( // obf
-			'description'                 => __( 'A cloud of your most used tags.' ), // obf
-			'customize_selective_refresh' => true, // obf
-			'show_instance_in_rest'       => true, // obf
-		); // obf
-		parent::__construct( 'tag_cloud', __( 'Tag Cloud' ), $v_uhydf ); // obf
-	} // obf
+	/**
+	 * Outputs the content for the current Tag Cloud widget instance.
+	 *
+	 * @since 2.8.0
+	 *
+	 * @param array $args     Display arguments including 'before_title', 'after_title',
+	 *                        'before_widget', and 'after_widget'.
+	 * @param array $instance Settings for the current Tag Cloud widget instance.
+	 */
+	public function widget( $args, $instance ) {
+		$current_taxonomy = $this->_get_current_taxonomy( $instance );
 
-	/** // obf
-	 * Outputs the content for the current Tag Cloud widget instance. // obf
-	 * // obf
-	 * @since 2.8.0 // obf
-	 * // obf
-	 * @param array $v_qvexy     Display arguments including 'before_title', 'after_title', // obf
-	 *                        'before_widget', and 'after_widget'. // obf
-	 * @param array $v_qclqs Settings for the current Tag Cloud widget instance. // obf
-	 */ // obf
-	public function widget( $v_qvexy, $v_qclqs ) { // obf
-		$v_gclmh = $v_aiziy->_get_current_taxonomy( $v_qclqs ); // obf
+		if ( ! empty( $instance['title'] ) ) {
+			$title = $instance['title'];
+		} else {
+			if ( 'post_tag' === $current_taxonomy ) {
+				$title = __( 'Tags' );
+			} else {
+				$tax   = get_taxonomy( $current_taxonomy );
+				$title = $tax->labels->name;
+			}
+		}
 
-		if ( ! empty( $v_qclqs['title'] ) ) { // obf
-			$v_dbtsd = $v_qclqs['title']; // obf
-		} else { // obf
-			if ( 'post_tag' === $v_gclmh ) { // obf
-				$v_dbtsd = __( 'Tags' ); // obf
-			} else { // obf
-				$v_wkijx   = get_taxonomy( $v_gclmh ); // obf
-				$v_dbtsd = $v_wkijx->labels->name; // obf
-			} // obf
-		} // obf
+		$default_title = $title;
 
-		$v_rynao = $v_dbtsd; // obf
+		$show_count = ! empty( $instance['count'] );
 
-		$v_vuujf = ! empty( $v_qclqs['count'] ); // obf
+		$tag_cloud = wp_tag_cloud(
+			/**
+			 * Filters the taxonomy used in the Tag Cloud widget.
+			 *
+			 * @since 2.8.0
+			 * @since 3.0.0 Added taxonomy drop-down.
+			 * @since 4.9.0 Added the `$instance` parameter.
+			 *
+			 * @see wp_tag_cloud()
+			 *
+			 * @param array $args     Args used for the tag cloud widget.
+			 * @param array $instance Array of settings for the current widget.
+			 */
+			apply_filters(
+				'widget_tag_cloud_args',
+				array(
+					'taxonomy'   => $current_taxonomy,
+					'echo'       => false,
+					'show_count' => $show_count,
+				),
+				$instance
+			)
+		);
 
-		$v_ewamd = wp_tag_cloud( // obf
-			/** // obf
-			 * Filters the taxonomy used in the Tag Cloud widget. // obf
-			 * // obf
-			 * @since 2.8.0 // obf
-			 * @since 3.0.0 Added taxonomy drop-down. // obf
-			 * @since 4.9.0 Added the `$v_qclqs` parameter. // obf
-			 * // obf
-			 * @see wp_tag_cloud() // obf
-			 * // obf
-			 * @param array $v_qvexy     Args used for the tag cloud widget. // obf
-			 * @param array $v_qclqs Array of settings for the current widget. // obf
-			 */ // obf
-			apply_filters( // obf
-				'widget_tag_cloud_args', // obf
-				array( // obf
-					'taxonomy'   => $v_gclmh, // obf
-					'echo'       => false, // obf
-					'show_count' => $v_vuujf, // obf
-				), // obf
-				$v_qclqs // obf
-			) // obf
-		); // obf
+		if ( empty( $tag_cloud ) ) {
+			return;
+		}
 
-		if ( empty( $v_ewamd ) ) { // obf
-			return; // obf
-		} // obf
+		/** This filter is documented in wp-includes/widgets/class-wp-widget-pages.php */
+		$title = apply_filters( 'widget_title', $title, $instance, $this->id_base );
 
-		/** This filter is documented in wp-includes/widgets/class-wp-widget-pages.php */ // obf
-		$v_dbtsd = apply_filters( 'widget_title', $v_dbtsd, $v_qclqs, $v_aiziy->id_base ); // obf
+		echo $args['before_widget'];
+		if ( $title ) {
+			echo $args['before_title'] . $title . $args['after_title'];
+		}
 
-		echo $v_qvexy['before_widget']; // obf
-		if ( $v_dbtsd ) { // obf
-			echo $v_qvexy['before_title'] . $v_dbtsd . $v_qvexy['after_title']; // obf
-		} // obf
+		$format = current_theme_supports( 'html5', 'navigation-widgets' ) ? 'html5' : 'xhtml';
 
-		$v_ftqgv = current_theme_supports( 'html5', 'navigation-widgets' ) ? 'html5' : 'xhtml'; // obf
+		/** This filter is documented in wp-includes/widgets/class-wp-nav-menu-widget.php */
+		$format = apply_filters( 'navigation_widgets_format', $format );
 
-		/** This filter is documented in wp-includes/widgets/class-wp-nav-menu-widget.php */ // obf
-		$v_ftqgv = apply_filters( 'navigation_widgets_format', $v_ftqgv ); // obf
+		if ( 'html5' === $format ) {
+			// The title may be filtered: Strip out HTML and make sure the aria-label is never empty.
+			$title      = trim( strip_tags( $title ) );
+			$aria_label = $title ? $title : $default_title;
+			echo '<nav aria-label="' . esc_attr( $aria_label ) . '">';
+		}
 
-		if ( 'html5' === $v_ftqgv ) { // obf
-			// The title may be filtered: Strip out HTML and make sure the aria-label is never empty. // obf
-			$v_dbtsd      = trim( strip_tags( $v_dbtsd ) ); // obf
-			$v_ywtio = $v_dbtsd ? $v_dbtsd : $v_rynao; // obf
-			echo '<nav aria-label="' . esc_attr( $v_ywtio ) . '">'; // obf
-		} // obf
+		echo '<div class="tagcloud">';
 
-		echo '<div class="tagcloud">'; // obf
+		echo $tag_cloud;
 
-		echo $v_ewamd; // obf
+		echo "</div>\n";
 
-		echo "</div>\n"; // obf
+		if ( 'html5' === $format ) {
+			echo '</nav>';
+		}
 
-		if ( 'html5' === $v_ftqgv ) { // obf
-			echo '</nav>'; // obf
-		} // obf
+		echo $args['after_widget'];
+	}
 
-		echo $v_qvexy['after_widget']; // obf
-	} // obf
+	/**
+	 * Handles updating settings for the current Tag Cloud widget instance.
+	 *
+	 * @since 2.8.0
+	 *
+	 * @param array $new_instance New settings for this instance as input by the user via
+	 *                            WP_Widget::form().
+	 * @param array $old_instance Old settings for this instance.
+	 * @return array Settings to save or bool false to cancel saving.
+	 */
+	public function update( $new_instance, $old_instance ) {
+		$instance             = array();
+		$instance['title']    = sanitize_text_field( $new_instance['title'] );
+		$instance['count']    = ! empty( $new_instance['count'] ) ? 1 : 0;
+		$instance['taxonomy'] = stripslashes( $new_instance['taxonomy'] );
+		return $instance;
+	}
 
-	/** // obf
-	 * Handles updating settings for the current Tag Cloud widget instance. // obf
-	 * // obf
-	 * @since 2.8.0 // obf
-	 * // obf
-	 * @param array $v_dgjjo New settings for this instance as input by the user via // obf
-	 *                            WP_Widget::form(). // obf
-	 * @param array $v_zktuk Old settings for this instance. // obf
-	 * @return array Settings to save or bool false to cancel saving. // obf
-	 */ // obf
-	public function update( $v_dgjjo, $v_zktuk ) { // obf
-		$v_qclqs             = array(); // obf
-		$v_qclqs['title']    = sanitize_text_field( $v_dgjjo['title'] ); // obf
-		$v_qclqs['count']    = ! empty( $v_dgjjo['count'] ) ? 1 : 0; // obf
-		$v_qclqs['taxonomy'] = stripslashes( $v_dgjjo['taxonomy'] ); // obf
-		return $v_qclqs; // obf
-	} // obf
+	/**
+	 * Outputs the Tag Cloud widget settings form.
+	 *
+	 * @since 2.8.0
+	 *
+	 * @param array $instance Current settings.
+	 */
+	public function form( $instance ) {
+		$title = ! empty( $instance['title'] ) ? $instance['title'] : '';
+		$count = isset( $instance['count'] ) ? (bool) $instance['count'] : false;
+		?>
+		<p>
+			<label for="<?php echo $this->get_field_id( 'title' ); ?>"><?php _e( 'Title:' ); ?></label>
+			<input type="text" class="widefat" id="<?php echo $this->get_field_id( 'title' ); ?>" name="<?php echo $this->get_field_name( 'title' ); ?>" value="<?php echo esc_attr( $title ); ?>" />
+		</p>
+		<?php
+		$taxonomies       = get_taxonomies( array( 'show_tagcloud' => true ), 'object' );
+		$current_taxonomy = $this->_get_current_taxonomy( $instance );
 
-	/** // obf
-	 * Outputs the Tag Cloud widget settings form. // obf
-	 * // obf
-	 * @since 2.8.0 // obf
-	 * // obf
-	 * @param array $v_qclqs Current settings. // obf
-	 */ // obf
-	public function form( $v_qclqs ) { // obf
-		$v_dbtsd = ! empty( $v_qclqs['title'] ) ? $v_qclqs['title'] : ''; // obf
-		$v_yzmib = isset( $v_qclqs['count'] ) ? (bool) $v_qclqs['count'] : false; // obf
-		?> // obf
-		<p> // obf
-			<label for="<?php echo $v_aiziy->get_field_id( 'title' ); ?>"><?php _e( 'Title:' ); ?></label> // obf
-			<input type="text" class="widefat" id="<?php echo $v_aiziy->get_field_id( 'title' ); ?>" name="<?php echo $v_aiziy->get_field_name( 'title' ); ?>" value="<?php echo esc_attr( $v_dbtsd ); ?>" /> // obf
-		</p> // obf
-		<?php // obf
-		$v_yapgx       = get_taxonomies( array( 'show_tagcloud' => true ), 'object' ); // obf
-		$v_gclmh = $v_aiziy->_get_current_taxonomy( $v_qclqs ); // obf
+		switch ( count( $taxonomies ) ) {
 
-		switch ( count( $v_yapgx ) ) { // obf
+			// No tag cloud supporting taxonomies found, display error message.
+			case 0:
+				?>
+				<input type="hidden" id="<?php echo $this->get_field_id( 'taxonomy' ); ?>" name="<?php echo $this->get_field_name( 'taxonomy' ); ?>" value="" />
+				<p>
+					<?php _e( 'The tag cloud will not be displayed since there are no taxonomies that support the tag cloud widget.' ); ?>
+				</p>
+				<?php
+				break;
 
-			// No tag cloud supporting taxonomies found, display error message. // obf
-			case 0: // obf
-				?> // obf
-				<input type="hidden" id="<?php echo $v_aiziy->get_field_id( 'taxonomy' ); ?>" name="<?php echo $v_aiziy->get_field_name( 'taxonomy' ); ?>" value="" /> // obf
-				<p> // obf
-					<?php _e( 'The tag cloud will not be displayed since there are no taxonomies that support the tag cloud widget.' ); ?> // obf
-				</p> // obf
-				<?php // obf
-				break; // obf
+			// Just a single tag cloud supporting taxonomy found, no need to display a select.
+			case 1:
+				$keys     = array_keys( $taxonomies );
+				$taxonomy = reset( $keys );
+				?>
+				<input type="hidden" id="<?php echo $this->get_field_id( 'taxonomy' ); ?>" name="<?php echo $this->get_field_name( 'taxonomy' ); ?>" value="<?php echo esc_attr( $taxonomy ); ?>" />
+				<?php
+				break;
 
-			// Just a single tag cloud supporting taxonomy found, no need to display a select. // obf
-			case 1: // obf
-				$v_guqbv     = array_keys( $v_yapgx ); // obf
-				$v_mpoqr = reset( $v_guqbv ); // obf
-				?> // obf
-				<input type="hidden" id="<?php echo $v_aiziy->get_field_id( 'taxonomy' ); ?>" name="<?php echo $v_aiziy->get_field_name( 'taxonomy' ); ?>" value="<?php echo esc_attr( $v_mpoqr ); ?>" /> // obf
-				<?php // obf
-				break; // obf
+			// More than one tag cloud supporting taxonomy found, display a select.
+			default:
+				?>
+				<p>
+					<label for="<?php echo $this->get_field_id( 'taxonomy' ); ?>"><?php _e( 'Taxonomy:' ); ?></label>
+					<select class="widefat" id="<?php echo $this->get_field_id( 'taxonomy' ); ?>" name="<?php echo $this->get_field_name( 'taxonomy' ); ?>">
+					<?php foreach ( $taxonomies as $taxonomy => $tax ) : ?>
+						<option value="<?php echo esc_attr( $taxonomy ); ?>" <?php selected( $taxonomy, $current_taxonomy ); ?>>
+							<?php echo esc_html( $tax->labels->name ); ?>
+						</option>
+					<?php endforeach; ?>
+					</select>
+				</p>
+				<?php
+		}
 
-			// More than one tag cloud supporting taxonomy found, display a select. // obf
-			default: // obf
-				?> // obf
-				<p> // obf
-					<label for="<?php echo $v_aiziy->get_field_id( 'taxonomy' ); ?>"><?php _e( 'Taxonomy:' ); ?></label> // obf
-					<select class="widefat" id="<?php echo $v_aiziy->get_field_id( 'taxonomy' ); ?>" name="<?php echo $v_aiziy->get_field_name( 'taxonomy' ); ?>"> // obf
-					<?php foreach ( $v_yapgx as $v_mpoqr => $v_wkijx ) : ?> // obf
-						<option value="<?php echo esc_attr( $v_mpoqr ); ?>" <?php selected( $v_mpoqr, $v_gclmh ); ?>> // obf
-							<?php echo esc_html( $v_wkijx->labels->name ); ?> // obf
-						</option> // obf
-					<?php endforeach; ?> // obf
-					</select> // obf
-				</p> // obf
-				<?php // obf
-		} // obf
+		if ( count( $taxonomies ) > 0 ) {
+			?>
+			<p>
+				<input type="checkbox" class="checkbox" id="<?php echo $this->get_field_id( 'count' ); ?>" name="<?php echo $this->get_field_name( 'count' ); ?>" <?php checked( $count, true ); ?> />
+				<label for="<?php echo $this->get_field_id( 'count' ); ?>"><?php _e( 'Show tag counts' ); ?></label>
+			</p>
+			<?php
+		}
+	}
 
-		if ( count( $v_yapgx ) > 0 ) { // obf
-			?> // obf
-			<p> // obf
-				<input type="checkbox" class="checkbox" id="<?php echo $v_aiziy->get_field_id( 'count' ); ?>" name="<?php echo $v_aiziy->get_field_name( 'count' ); ?>" <?php checked( $v_yzmib, true ); ?> /> // obf
-				<label for="<?php echo $v_aiziy->get_field_id( 'count' ); ?>"><?php _e( 'Show tag counts' ); ?></label> // obf
-			</p> // obf
-			<?php // obf
-		} // obf
-	} // obf
+	/**
+	 * Retrieves the taxonomy for the current Tag cloud widget instance.
+	 *
+	 * @since 4.4.0
+	 *
+	 * @param array $instance Current settings.
+	 * @return string Name of the current taxonomy if set, otherwise 'post_tag'.
+	 */
+	public function _get_current_taxonomy( $instance ) {
+		if ( ! empty( $instance['taxonomy'] ) && taxonomy_exists( $instance['taxonomy'] ) ) {
+			return $instance['taxonomy'];
+		}
 
-	/** // obf
-	 * Retrieves the taxonomy for the current Tag cloud widget instance. // obf
-	 * // obf
-	 * @since 4.4.0 // obf
-	 * // obf
-	 * @param array $v_qclqs Current settings. // obf
-	 * @return string Name of the current taxonomy if set, otherwise 'post_tag'. // obf
-	 */ // obf
-	public function _get_current_taxonomy( $v_qclqs ) { // obf
-		if ( ! empty( $v_qclqs['taxonomy'] ) && taxonomy_exists( $v_qclqs['taxonomy'] ) ) { // obf
-			return $v_qclqs['taxonomy']; // obf
-		} // obf
-
-		return 'post_tag'; // obf
-	} // obf
-} // obf
+		return 'post_tag';
+	}
+}

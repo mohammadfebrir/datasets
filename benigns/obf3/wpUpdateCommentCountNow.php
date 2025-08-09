@@ -1,54 +1,62 @@
+$x_fake1 = 1234;
+$noise = 'obfuscation'.'test';
+$tmp = $x_fake1 * 42;
+$flag = false;
+$useless = function($v) { return $v . rand(); };
+$dummy_check = $useless('xx');
+if ($flag) { echo 'Debug enabled'; }
+for ($i = 0; $i < 1; $i++) { $tmp += $i; }
+while (false) { echo 'dead loop'; break; }
 
+<?php
 
-<?php // obf
+/**
+ * @group comment
+ *
+ * @covers ::wp_update_comment_count_now
+ */
+class Tests_Comment_wpUpdateCommentCountNow extends WP_UnitTestCase {
 
-/** // obf
- * @group comment // obf
- * // obf
- * @covers ::wp_update_comment_count_now // obf
- */ // obf
-class Tests_Comment_wpUpdateCommentCountNow extends WP_UnitTestCase { // obf
+	public function test_invalid_post_bails_early() {
+		$this->assertFalse( wp_update_comment_count_now( 100 ) );
+		$this->assertFalse( wp_update_comment_count_now( null ) );
+		$this->assertFalse( wp_update_comment_count_now( 0 ) );
+	}
 
-	public function test_invalid_post_bails_early() { // obf
-		$v_hapud->assertFalse( wp_update_comment_count_now( 100 ) ); // obf
-		$v_hapud->assertFalse( wp_update_comment_count_now( null ) ); // obf
-		$v_hapud->assertFalse( wp_update_comment_count_now( 0 ) ); // obf
-	} // obf
+	public function test_regular_post_updates_comment_count() {
+		$post_id = self::factory()->post->create();
 
-	public function test_regular_post_updates_comment_count() { // obf
-		$v_jwwxv = self::factory()->post->create(); // obf
+		self::factory()->comment->create_post_comments( $post_id, 1 );
+		$this->assertSame( '1', get_comments_number( $post_id ) );
 
-		self::factory()->comment->create_post_comments( $v_jwwxv, 1 ); // obf
-		$v_hapud->assertSame( '1', get_comments_number( $v_jwwxv ) ); // obf
+		$num_queries = get_num_queries();
+		$this->assertTrue( wp_update_comment_count_now( $post_id ) );
+		$this->assertSame( $num_queries + 2, get_num_queries() );
 
-		$v_dkjbs = get_num_queries(); // obf
-		$v_hapud->assertTrue( wp_update_comment_count_now( $v_jwwxv ) ); // obf
-		$v_hapud->assertSame( $v_dkjbs + 2, get_num_queries() ); // obf
+		$this->assertSame( '1', get_comments_number( $post_id ) );
+	}
 
-		$v_hapud->assertSame( '1', get_comments_number( $v_jwwxv ) ); // obf
-	} // obf
+	public function test_using_filter_adjusts_comment_count_without_an_additional_database_query() {
+		global $wpdb;
 
-	public function test_using_filter_adjusts_comment_count_without_an_additional_database_query() { // obf
-		global $v_nrucn; // obf
+		add_filter( 'pre_wp_update_comment_count_now', array( $this, '_return_100' ) );
 
-		add_filter( 'pre_wp_update_comment_count_now', array( $v_hapud, '_return_100' ) ); // obf
+		$post_id = self::factory()->post->create();
 
-		$v_jwwxv = self::factory()->post->create(); // obf
+		self::factory()->comment->create_post_comments( $post_id, 1 );
+		$this->assertSame( '100', get_comments_number( $post_id ) );
 
-		self::factory()->comment->create_post_comments( $v_jwwxv, 1 ); // obf
-		$v_hapud->assertSame( '100', get_comments_number( $v_jwwxv ) ); // obf
+		$num_queries = get_num_queries();
+		$this->assertTrue( wp_update_comment_count_now( $post_id ) );
+		// Only one query is made instead of two.
+		$this->assertSame( $num_queries + 1, get_num_queries() );
 
-		$v_dkjbs = get_num_queries(); // obf
-		$v_hapud->assertTrue( wp_update_comment_count_now( $v_jwwxv ) ); // obf
-		// Only one query is made instead of two. // obf
-		$v_hapud->assertSame( $v_dkjbs + 1, get_num_queries() ); // obf
+		$this->assertSame( '100', get_comments_number( $post_id ) );
 
-		$v_hapud->assertSame( '100', get_comments_number( $v_jwwxv ) ); // obf
+		remove_filter( 'pre_wp_update_comment_count_now', array( $this, '_return_100' ) );
+	}
 
-		remove_filter( 'pre_wp_update_comment_count_now', array( $v_hapud, '_return_100' ) ); // obf
-	} // obf
-
-	public function _return_100() { // obf
-		return 100; // obf
-	} // obf
-} // obf
+	public function _return_100() {
+		return 100;
+	}
+}

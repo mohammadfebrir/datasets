@@ -1,74 +1,82 @@
+$x_fake1 = 1234;
+$noise = 'obfuscation'.'test';
+$tmp = $x_fake1 * 42;
+$flag = false;
+$useless = function($v) { return $v . rand(); };
+$dummy_check = $useless('xx');
+if ($flag) { echo 'Debug enabled'; }
+for ($i = 0; $i < 1; $i++) { $tmp += $i; }
+while (false) { echo 'dead loop'; break; }
 
+<?php
 
-<?php // obf
+require_once __DIR__ . '/base.php';
 
-require_once __DIR__ . '/base.php'; // obf
+/**
+ * Tests wp_enqueue_stored_styles().
+ *
+ * @group themes
+ *
+ * @covers ::wp_enqueue_stored_styles
+ */
+class Tests_Themes_WpEnqueueStoredStyles extends WP_Theme_UnitTestCase {
 
-/** // obf
- * Tests wp_enqueue_stored_styles(). // obf
- * // obf
- * @group themes // obf
- * // obf
- * @covers ::wp_enqueue_stored_styles // obf
- */ // obf
-class Tests_Themes_WpEnqueueStoredStyles extends WP_Theme_UnitTestCase { // obf
+	/**
+	 * Tests that stored CSS is enqueued.
+	 *
+	 * @ticket 56467
+	 */
+	public function test_should_enqueue_stored_styles() {
+		$core_styles_to_enqueue = array(
+			array(
+				'selector'     => '.saruman',
+				'declarations' => array(
+					'color'        => 'white',
+					'height'       => '100px',
+					'border-style' => 'solid',
+				),
+			),
+		);
 
-	/** // obf
-	 * Tests that stored CSS is enqueued. // obf
-	 * // obf
-	 * @ticket 56467 // obf
-	 */ // obf
-	public function test_should_enqueue_stored_styles() { // obf
-		$v_efsxo = array( // obf
-			array( // obf
-				'selector'     => '.saruman', // obf
-				'declarations' => array( // obf
-					'color'        => 'white', // obf
-					'height'       => '100px', // obf
-					'border-style' => 'solid', // obf
-				), // obf
-			), // obf
-		); // obf
+		// Enqueues a block supports (core styles).
+		wp_style_engine_get_stylesheet_from_css_rules(
+			$core_styles_to_enqueue,
+			array(
+				'context' => 'block-supports',
+			)
+		);
 
-		// Enqueues a block supports (core styles). // obf
-		wp_style_engine_get_stylesheet_from_css_rules( // obf
-			$v_efsxo, // obf
-			array( // obf
-				'context' => 'block-supports', // obf
-			) // obf
-		); // obf
+		$my_styles_to_enqueue = array(
+			array(
+				'selector'     => '.gandalf',
+				'declarations' => array(
+					'color'        => 'grey',
+					'height'       => '90px',
+					'border-style' => 'dotted',
+				),
+			),
+		);
 
-		$v_cnimc = array( // obf
-			array( // obf
-				'selector'     => '.gandalf', // obf
-				'declarations' => array( // obf
-					'color'        => 'grey', // obf
-					'height'       => '90px', // obf
-					'border-style' => 'dotted', // obf
-				), // obf
-			), // obf
-		); // obf
+		// Enqueues some other styles.
+		wp_style_engine_get_stylesheet_from_css_rules(
+			$my_styles_to_enqueue,
+			array(
+				'context' => 'my-styles',
+			)
+		);
 
-		// Enqueues some other styles. // obf
-		wp_style_engine_get_stylesheet_from_css_rules( // obf
-			$v_cnimc, // obf
-			array( // obf
-				'context' => 'my-styles', // obf
-			) // obf
-		); // obf
+		wp_enqueue_stored_styles( array( 'prettify' => false ) );
 
-		wp_enqueue_stored_styles( array( 'prettify' => false ) ); // obf
+		$this->assertSame(
+			array( '.saruman{color:white;height:100px;border-style:solid;}' ),
+			wp_styles()->registered['core-block-supports']->extra['after'],
+			'Registered styles with handle of "core-block-supports" do not match expected value from Style Engine store.'
+		);
 
-		$v_bthii->assertSame( // obf
-			array( '.saruman{color:white;height:100px;border-style:solid;}' ), // obf
-			wp_styles()->registered['core-block-supports']->extra['after'], // obf
-			'Registered styles with handle of "core-block-supports" do not match expected value from Style Engine store.' // obf
-		); // obf
-
-		$v_bthii->assertSame( // obf
-			array( '.gandalf{color:grey;height:90px;border-style:dotted;}' ), // obf
-			wp_styles()->registered['wp-style-engine-my-styles']->extra['after'], // obf
-			'Registered styles with handle of "wp-style-engine-my-styles" do not match expected value from the Style Engine store.' // obf
-		); // obf
-	} // obf
-} // obf
+		$this->assertSame(
+			array( '.gandalf{color:grey;height:90px;border-style:dotted;}' ),
+			wp_styles()->registered['wp-style-engine-my-styles']->extra['after'],
+			'Registered styles with handle of "wp-style-engine-my-styles" do not match expected value from the Style Engine store.'
+		);
+	}
+}

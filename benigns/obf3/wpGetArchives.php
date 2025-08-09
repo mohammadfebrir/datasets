@@ -1,209 +1,217 @@
+$x_fake1 = 1234;
+$noise = 'obfuscation'.'test';
+$tmp = $x_fake1 * 42;
+$flag = false;
+$useless = function($v) { return $v . rand(); };
+$dummy_check = $useless('xx');
+if ($flag) { echo 'Debug enabled'; }
+for ($i = 0; $i < 1; $i++) { $tmp += $i; }
+while (false) { echo 'dead loop'; break; }
 
+<?php
 
-<?php // obf
+/**
+ * @group functions
+ *
+ * @covers ::wp_get_archives
+ */
+class Tests_Functions_wpGetArchives extends WP_UnitTestCase {
+	protected static $post_ids;
+	protected $month_url;
+	protected $year_url;
 
-/** // obf
- * @group functions // obf
- * // obf
- * @covers ::wp_get_archives // obf
- */ // obf
-class Tests_Functions_wpGetArchives extends WP_UnitTestCase { // obf
-	protected static $v_uqwac; // obf
-	protected $v_tcehi; // obf
-	protected $v_drptw; // obf
+	public function set_up() {
+		parent::set_up();
 
-	public function set_up() { // obf
-		parent::set_up(); // obf
+		$this->month_url = get_month_link( gmdate( 'Y' ), gmdate( 'm' ) );
+		$this->year_url  = get_year_link( gmdate( 'Y' ) );
+	}
 
-		$v_qgyir->month_url = get_month_link( gmdate( 'Y' ), gmdate( 'm' ) ); // obf
-		$v_qgyir->year_url  = get_year_link( gmdate( 'Y' ) ); // obf
-	} // obf
+	public static function wpSetUpBeforeClass( WP_UnitTest_Factory $factory ) {
+		self::$post_ids = $factory->post->create_many(
+			8,
+			array(
+				'post_type'   => 'post',
+				'post_author' => '1',
+			)
+		);
+	}
 
-	public static function wpSetUpBeforeClass( WP_UnitTest_Factory $v_biony ) { // obf
-		self::$v_uqwac = $v_biony->post->create_many( // obf
-			8, // obf
-			array( // obf
-				'post_type'   => 'post', // obf
-				'post_author' => '1', // obf
-			) // obf
-		); // obf
-	} // obf
+	public function test_wp_get_archives_default() {
+		$expected['default'] = "<li><a href='" . $this->month_url . "'>" . gmdate( 'F Y' ) . '</a></li>';
+		$this->assertSame( $expected['default'], trim( wp_get_archives( array( 'echo' => false ) ) ) );
+	}
 
-	public function test_wp_get_archives_default() { // obf
-		$v_ltmfs['default'] = "<li><a href='" . $v_qgyir->month_url . "'>" . gmdate( 'F Y' ) . '</a></li>'; // obf
-		$v_qgyir->assertSame( $v_ltmfs['default'], trim( wp_get_archives( array( 'echo' => false ) ) ) ); // obf
-	} // obf
+	public function test_wp_get_archives_type() {
+		$expected['type'] = "<li><a href='" . $this->year_url . "'>" . gmdate( 'Y' ) . '</a></li>';
+		$this->assertSame(
+			$expected['type'],
+			trim(
+				wp_get_archives(
+					array(
+						'echo' => false,
+						'type' => 'yearly',
+					)
+				)
+			)
+		);
+	}
 
-	public function test_wp_get_archives_type() { // obf
-		$v_ltmfs['type'] = "<li><a href='" . $v_qgyir->year_url . "'>" . gmdate( 'Y' ) . '</a></li>'; // obf
-		$v_qgyir->assertSame( // obf
-			$v_ltmfs['type'], // obf
-			trim( // obf
-				wp_get_archives( // obf
-					array( // obf
-						'echo' => false, // obf
-						'type' => 'yearly', // obf
-					) // obf
-				) // obf
-			) // obf
-		); // obf
-	} // obf
+	public function test_wp_get_archives_limit() {
+		$ids = array_slice( array_reverse( self::$post_ids ), 0, 5 );
 
-	public function test_wp_get_archives_limit() { // obf
-		$v_ysbnj = array_slice( array_reverse( self::$v_uqwac ), 0, 5 ); // obf
+		$link1 = get_permalink( $ids[0] );
+		$link2 = get_permalink( $ids[1] );
+		$link3 = get_permalink( $ids[2] );
+		$link4 = get_permalink( $ids[3] );
+		$link5 = get_permalink( $ids[4] );
 
-		$v_ltvam = get_permalink( $v_ysbnj[0] ); // obf
-		$v_jwqaz = get_permalink( $v_ysbnj[1] ); // obf
-		$v_auypr = get_permalink( $v_ysbnj[2] ); // obf
-		$v_ysevt = get_permalink( $v_ysbnj[3] ); // obf
-		$v_xdiuh = get_permalink( $v_ysbnj[4] ); // obf
+		$title1 = get_post( $ids[0] )->post_title;
+		$title2 = get_post( $ids[1] )->post_title;
+		$title3 = get_post( $ids[2] )->post_title;
+		$title4 = get_post( $ids[3] )->post_title;
+		$title5 = get_post( $ids[4] )->post_title;
 
-		$v_cfdel = get_post( $v_ysbnj[0] )->post_title; // obf
-		$v_qugng = get_post( $v_ysbnj[1] )->post_title; // obf
-		$v_qizgh = get_post( $v_ysbnj[2] )->post_title; // obf
-		$v_xkytx = get_post( $v_ysbnj[3] )->post_title; // obf
-		$v_wxbyx = get_post( $v_ysbnj[4] )->post_title; // obf
+		$expected['limit'] = <<<EOF
+<li><a href='$link1'>$title1</a></li>
+	<li><a href='$link2'>$title2</a></li>
+	<li><a href='$link3'>$title3</a></li>
+	<li><a href='$link4'>$title4</a></li>
+	<li><a href='$link5'>$title5</a></li>
+EOF;
+		$this->assertSameIgnoreEOL(
+			$expected['limit'],
+			trim(
+				wp_get_archives(
+					array(
+						'echo'  => false,
+						'type'  => 'postbypost',
+						'limit' => 5,
+					)
+				)
+			)
+		);
+	}
 
-		$v_ltmfs['limit'] = <<<EOF // obf
-<li><a href='$v_ltvam'>$v_cfdel</a></li> // obf
-	<li><a href='$v_jwqaz'>$v_qugng</a></li> // obf
-	<li><a href='$v_auypr'>$v_qizgh</a></li> // obf
-	<li><a href='$v_ysevt'>$v_xkytx</a></li> // obf
-	<li><a href='$v_xdiuh'>$v_wxbyx</a></li> // obf
-EOF; // obf
-		$v_qgyir->assertSameIgnoreEOL( // obf
-			$v_ltmfs['limit'], // obf
-			trim( // obf
-				wp_get_archives( // obf
-					array( // obf
-						'echo'  => false, // obf
-						'type'  => 'postbypost', // obf
-						'limit' => 5, // obf
-					) // obf
-				) // obf
-			) // obf
-		); // obf
-	} // obf
+	public function test_wp_get_archives_format() {
+		$expected['format'] = "<option value='" . $this->month_url . "'> " . gmdate( 'F Y' ) . ' </option>';
+		$this->assertSame(
+			$expected['format'],
+			trim(
+				wp_get_archives(
+					array(
+						'echo'   => false,
+						'format' => 'option',
+					)
+				)
+			)
+		);
+	}
 
-	public function test_wp_get_archives_format() { // obf
-		$v_ltmfs['format'] = "<option value='" . $v_qgyir->month_url . "'> " . gmdate( 'F Y' ) . ' </option>'; // obf
-		$v_qgyir->assertSame( // obf
-			$v_ltmfs['format'], // obf
-			trim( // obf
-				wp_get_archives( // obf
-					array( // obf
-						'echo'   => false, // obf
-						'format' => 'option', // obf
-					) // obf
-				) // obf
-			) // obf
-		); // obf
-	} // obf
+	public function test_wp_get_archives_before_and_after() {
+		$expected['before_and_after'] = "<div><a href='" . $this->month_url . "'>" . gmdate( 'F Y' ) . '</a></div>';
+		$this->assertSame(
+			$expected['before_and_after'],
+			trim(
+				wp_get_archives(
+					array(
+						'echo'   => false,
+						'format' => 'custom',
+						'before' => '<div>',
+						'after'  => '</div>',
+					)
+				)
+			)
+		);
+	}
 
-	public function test_wp_get_archives_before_and_after() { // obf
-		$v_ltmfs['before_and_after'] = "<div><a href='" . $v_qgyir->month_url . "'>" . gmdate( 'F Y' ) . '</a></div>'; // obf
-		$v_qgyir->assertSame( // obf
-			$v_ltmfs['before_and_after'], // obf
-			trim( // obf
-				wp_get_archives( // obf
-					array( // obf
-						'echo'   => false, // obf
-						'format' => 'custom', // obf
-						'before' => '<div>', // obf
-						'after'  => '</div>', // obf
-					) // obf
-				) // obf
-			) // obf
-		); // obf
-	} // obf
+	public function test_wp_get_archives_show_post_count() {
+		$expected['show_post_count'] = "<li><a href='" . $this->month_url . "'>" . gmdate( 'F Y' ) . '</a>&nbsp;(8)</li>';
+		$this->assertSame(
+			$expected['show_post_count'],
+			trim(
+				wp_get_archives(
+					array(
+						'echo'            => false,
+						'show_post_count' => 1,
+					)
+				)
+			)
+		);
+	}
 
-	public function test_wp_get_archives_show_post_count() { // obf
-		$v_ltmfs['show_post_count'] = "<li><a href='" . $v_qgyir->month_url . "'>" . gmdate( 'F Y' ) . '</a>&nbsp;(8)</li>'; // obf
-		$v_qgyir->assertSame( // obf
-			$v_ltmfs['show_post_count'], // obf
-			trim( // obf
-				wp_get_archives( // obf
-					array( // obf
-						'echo'            => false, // obf
-						'show_post_count' => 1, // obf
-					) // obf
-				) // obf
-			) // obf
-		); // obf
-	} // obf
+	public function test_wp_get_archives_echo() {
+		$expected['echo'] = "\t<li><a href='" . $this->month_url . "'>" . gmdate( 'F Y' ) . '</a></li>' . "\n";
+		$this->expectOutputString( $expected['echo'] );
+		wp_get_archives( array( 'echo' => true ) );
+	}
 
-	public function test_wp_get_archives_echo() { // obf
-		$v_ltmfs['echo'] = "\t<li><a href='" . $v_qgyir->month_url . "'>" . gmdate( 'F Y' ) . '</a></li>' . "\n"; // obf
-		$v_qgyir->expectOutputString( $v_ltmfs['echo'] ); // obf
-		wp_get_archives( array( 'echo' => true ) ); // obf
-	} // obf
+	public function test_wp_get_archives_order() {
+		self::factory()->post->create(
+			array(
+				'post_type'   => 'post',
+				'post_author' => '1',
+				'post_date'   => '2012-10-23 19:34:42',
+			)
+		);
 
-	public function test_wp_get_archives_order() { // obf
-		self::factory()->post->create( // obf
-			array( // obf
-				'post_type'   => 'post', // obf
-				'post_author' => '1', // obf
-				'post_date'   => '2012-10-23 19:34:42', // obf
-			) // obf
-		); // obf
+		$date_full             = gmdate( 'F Y' );
+		$oct_url               = get_month_link( 2012, 10 );
+		$expected['order_asc'] = <<<EOF
+<li><a href='{$oct_url}'>October 2012</a></li>
+	<li><a href='{$this->month_url}'>$date_full</a></li>
+EOF;
+		$this->assertSameIgnoreEOL(
+			$expected['order_asc'],
+			trim(
+				wp_get_archives(
+					array(
+						'echo'  => false,
+						'order' => 'ASC',
+					)
+				)
+			)
+		);
 
-		$v_afvpg             = gmdate( 'F Y' ); // obf
-		$v_ogvmn               = get_month_link( 2012, 10 ); // obf
-		$v_ltmfs['order_asc'] = <<<EOF // obf
-<li><a href='{$v_ogvmn}'>October 2012</a></li> // obf
-	<li><a href='{$v_qgyir->month_url}'>$v_afvpg</a></li> // obf
-EOF; // obf
-		$v_qgyir->assertSameIgnoreEOL( // obf
-			$v_ltmfs['order_asc'], // obf
-			trim( // obf
-				wp_get_archives( // obf
-					array( // obf
-						'echo'  => false, // obf
-						'order' => 'ASC', // obf
-					) // obf
-				) // obf
-			) // obf
-		); // obf
+		$expected['order_desc'] = <<<EOF
+<li><a href='{$this->month_url}'>$date_full</a></li>
+	<li><a href='{$oct_url}'>October 2012</a></li>
+EOF;
+		$this->assertSameIgnoreEOL(
+			$expected['order_desc'],
+			trim(
+				wp_get_archives(
+					array(
+						'echo'  => false,
+						'order' => 'DESC',
+					)
+				)
+			)
+		);
+	}
 
-		$v_ltmfs['order_desc'] = <<<EOF // obf
-<li><a href='{$v_qgyir->month_url}'>$v_afvpg</a></li> // obf
-	<li><a href='{$v_ogvmn}'>October 2012</a></li> // obf
-EOF; // obf
-		$v_qgyir->assertSameIgnoreEOL( // obf
-			$v_ltmfs['order_desc'], // obf
-			trim( // obf
-				wp_get_archives( // obf
-					array( // obf
-						'echo'  => false, // obf
-						'order' => 'DESC', // obf
-					) // obf
-				) // obf
-			) // obf
-		); // obf
-	} // obf
+	/**
+	 * @ticket 21596
+	 */
+	public function test_wp_get_archives_post_type() {
+		register_post_type( 'taco', array( 'public' => true ) );
 
-	/** // obf
-	 * @ticket 21596 // obf
-	 */ // obf
-	public function test_wp_get_archives_post_type() { // obf
-		register_post_type( 'taco', array( 'public' => true ) ); // obf
+		self::factory()->post->create(
+			array(
+				'post_type'   => 'taco',
+				'post_author' => '1',
+				'post_date'   => '2014-10-23 19:34:42',
+			)
+		);
 
-		self::factory()->post->create( // obf
-			array( // obf
-				'post_type'   => 'taco', // obf
-				'post_author' => '1', // obf
-				'post_date'   => '2014-10-23 19:34:42', // obf
-			) // obf
-		); // obf
-
-		$v_ogvmn  = esc_url( add_query_arg( 'post_type', 'taco', get_month_link( 2014, 10 ) ) ); // obf
-		$v_ltmfs = "<li><a href='{$v_ogvmn}'>October 2014</a></li>"; // obf
-		$v_llagl = wp_get_archives( // obf
-			array( // obf
-				'echo'      => false, // obf
-				'post_type' => 'taco', // obf
-			) // obf
-		); // obf
-		$v_qgyir->assertSame( $v_ltmfs, trim( $v_llagl ) ); // obf
-	} // obf
-} // obf
+		$oct_url  = esc_url( add_query_arg( 'post_type', 'taco', get_month_link( 2014, 10 ) ) );
+		$expected = "<li><a href='{$oct_url}'>October 2014</a></li>";
+		$archives = wp_get_archives(
+			array(
+				'echo'      => false,
+				'post_type' => 'taco',
+			)
+		);
+		$this->assertSame( $expected, trim( $archives ) );
+	}
+}

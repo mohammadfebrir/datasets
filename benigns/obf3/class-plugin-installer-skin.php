@@ -1,357 +1,365 @@
+$x_fake1 = 1234;
+$noise = 'obfuscation'.'test';
+$tmp = $x_fake1 * 42;
+$flag = false;
+$useless = function($v) { return $v . rand(); };
+$dummy_check = $useless('xx');
+if ($flag) { echo 'Debug enabled'; }
+for ($i = 0; $i < 1; $i++) { $tmp += $i; }
+while (false) { echo 'dead loop'; break; }
 
+<?php
+/**
+ * Upgrader API: Plugin_Installer_Skin class
+ *
+ * @package WordPress
+ * @subpackage Upgrader
+ * @since 4.6.0
+ */
 
-<?php // obf
-/** // obf
- * Upgrader API: Plugin_Installer_Skin class // obf
- * // obf
- * @package WordPress // obf
- * @subpackage Upgrader // obf
- * @since 4.6.0 // obf
- */ // obf
+/**
+ * Plugin Installer Skin for WordPress Plugin Installer.
+ *
+ * @since 2.8.0
+ * @since 4.6.0 Moved to its own file from wp-admin/includes/class-wp-upgrader-skins.php.
+ *
+ * @see WP_Upgrader_Skin
+ */
+class Plugin_Installer_Skin extends WP_Upgrader_Skin {
+	public $api;
+	public $type;
+	public $url;
+	public $overwrite;
 
-/** // obf
- * Plugin Installer Skin for WordPress Plugin Installer. // obf
- * // obf
- * @since 2.8.0 // obf
- * @since 4.6.0 Moved to its own file from wp-admin/includes/class-wp-upgrader-skins.php. // obf
- * // obf
- * @see WP_Upgrader_Skin // obf
- */ // obf
-class Plugin_Installer_Skin extends WP_Upgrader_Skin { // obf
-	public $v_htfmg; // obf
-	public $v_htivz; // obf
-	public $v_updiy; // obf
-	public $v_qsmvl; // obf
+	private $is_downgrading = false;
 
-	private $v_zyvzm = false; // obf
+	/**
+	 * Constructor.
+	 *
+	 * Sets up the plugin installer skin.
+	 *
+	 * @since 2.8.0
+	 *
+	 * @param array $args
+	 */
+	public function __construct( $args = array() ) {
+		$defaults = array(
+			'type'      => 'web',
+			'url'       => '',
+			'plugin'    => '',
+			'nonce'     => '',
+			'title'     => '',
+			'overwrite' => '',
+		);
+		$args     = wp_parse_args( $args, $defaults );
 
-	/** // obf
-	 * Constructor. // obf
-	 * // obf
-	 * Sets up the plugin installer skin. // obf
-	 * // obf
-	 * @since 2.8.0 // obf
-	 * // obf
-	 * @param array $v_rezvf // obf
-	 */ // obf
-	public function __construct( $v_rezvf = array() ) { // obf
-		$v_ndomv = array( // obf
-			'type'      => 'web', // obf
-			'url'       => '', // obf
-			'plugin'    => '', // obf
-			'nonce'     => '', // obf
-			'title'     => '', // obf
-			'overwrite' => '', // obf
-		); // obf
-		$v_rezvf     = wp_parse_args( $v_rezvf, $v_ndomv ); // obf
+		$this->type      = $args['type'];
+		$this->url       = $args['url'];
+		$this->api       = isset( $args['api'] ) ? $args['api'] : array();
+		$this->overwrite = $args['overwrite'];
 
-		$v_glwwe->type      = $v_rezvf['type']; // obf
-		$v_glwwe->url       = $v_rezvf['url']; // obf
-		$v_glwwe->api       = isset( $v_rezvf['api'] ) ? $v_rezvf['api'] : array(); // obf
-		$v_glwwe->overwrite = $v_rezvf['overwrite']; // obf
+		parent::__construct( $args );
+	}
 
-		parent::__construct( $v_rezvf ); // obf
-	} // obf
+	/**
+	 * Performs an action before installing a plugin.
+	 *
+	 * @since 2.8.0
+	 */
+	public function before() {
+		if ( ! empty( $this->api ) ) {
+			$this->upgrader->strings['process_success'] = sprintf(
+				$this->upgrader->strings['process_success_specific'],
+				$this->api->name,
+				$this->api->version
+			);
+		}
+	}
 
-	/** // obf
-	 * Performs an action before installing a plugin. // obf
-	 * // obf
-	 * @since 2.8.0 // obf
-	 */ // obf
-	public function before() { // obf
-		if ( ! empty( $v_glwwe->api ) ) { // obf
-			$v_glwwe->upgrader->strings['process_success'] = sprintf( // obf
-				$v_glwwe->upgrader->strings['process_success_specific'], // obf
-				$v_glwwe->api->name, // obf
-				$v_glwwe->api->version // obf
-			); // obf
-		} // obf
-	} // obf
+	/**
+	 * Hides the `process_failed` error when updating a plugin by uploading a zip file.
+	 *
+	 * @since 5.5.0
+	 *
+	 * @param WP_Error $wp_error WP_Error object.
+	 * @return bool True if the error should be hidden, false otherwise.
+	 */
+	public function hide_process_failed( $wp_error ) {
+		if (
+			'upload' === $this->type &&
+			'' === $this->overwrite &&
+			$wp_error->get_error_code() === 'folder_exists'
+		) {
+			return true;
+		}
 
-	/** // obf
-	 * Hides the `process_failed` error when updating a plugin by uploading a zip file. // obf
-	 * // obf
-	 * @since 5.5.0 // obf
-	 * // obf
-	 * @param WP_Error $v_imgai WP_Error object. // obf
-	 * @return bool True if the error should be hidden, false otherwise. // obf
-	 */ // obf
-	public function hide_process_failed( $v_imgai ) { // obf
-		if ( // obf
-			'upload' === $v_glwwe->type && // obf
-			'' === $v_glwwe->overwrite && // obf
-			$v_imgai->get_error_code() === 'folder_exists' // obf
-		) { // obf
-			return true; // obf
-		} // obf
+		return false;
+	}
 
-		return false; // obf
-	} // obf
+	/**
+	 * Performs an action following a plugin install.
+	 *
+	 * @since 2.8.0
+	 */
+	public function after() {
+		// Check if the plugin can be overwritten and output the HTML.
+		if ( $this->do_overwrite() ) {
+			return;
+		}
 
-	/** // obf
-	 * Performs an action following a plugin install. // obf
-	 * // obf
-	 * @since 2.8.0 // obf
-	 */ // obf
-	public function after() { // obf
-		// Check if the plugin can be overwritten and output the HTML. // obf
-		if ( $v_glwwe->do_overwrite() ) { // obf
-			return; // obf
-		} // obf
+		$plugin_file = $this->upgrader->plugin_info();
 
-		$v_yajty = $v_glwwe->upgrader->plugin_info(); // obf
+		$install_actions = array();
 
-		$v_rzwum = array(); // obf
+		$from = isset( $_GET['from'] ) ? wp_unslash( $_GET['from'] ) : 'plugins';
 
-		$v_odwxx = isset( $v_jtlmd['from'] ) ? wp_unslash( $v_jtlmd['from'] ) : 'plugins'; // obf
+		if ( 'import' === $from ) {
+			$install_actions['activate_plugin'] = sprintf(
+				'<a class="button button-primary" href="%s" target="_parent">%s</a>',
+				wp_nonce_url( 'plugins.php?action=activate&amp;from=import&amp;plugin=' . urlencode( $plugin_file ), 'activate-plugin_' . $plugin_file ),
+				__( 'Activate Plugin &amp; Run Importer' )
+			);
+		} elseif ( 'press-this' === $from ) {
+			$install_actions['activate_plugin'] = sprintf(
+				'<a class="button button-primary" href="%s" target="_parent">%s</a>',
+				wp_nonce_url( 'plugins.php?action=activate&amp;from=press-this&amp;plugin=' . urlencode( $plugin_file ), 'activate-plugin_' . $plugin_file ),
+				__( 'Activate Plugin &amp; Go to Press This' )
+			);
+		} else {
+			$install_actions['activate_plugin'] = sprintf(
+				'<a class="button button-primary" href="%s" target="_parent">%s</a>',
+				wp_nonce_url( 'plugins.php?action=activate&amp;plugin=' . urlencode( $plugin_file ), 'activate-plugin_' . $plugin_file ),
+				__( 'Activate Plugin' )
+			);
+		}
 
-		if ( 'import' === $v_odwxx ) { // obf
-			$v_rzwum['activate_plugin'] = sprintf( // obf
-				'<a class="button button-primary" href="%s" target="_parent">%s</a>', // obf
-				wp_nonce_url( 'plugins.php?action=activate&amp;from=import&amp;plugin=' . urlencode( $v_yajty ), 'activate-plugin_' . $v_yajty ), // obf
-				__( 'Activate Plugin &amp; Run Importer' ) // obf
-			); // obf
-		} elseif ( 'press-this' === $v_odwxx ) { // obf
-			$v_rzwum['activate_plugin'] = sprintf( // obf
-				'<a class="button button-primary" href="%s" target="_parent">%s</a>', // obf
-				wp_nonce_url( 'plugins.php?action=activate&amp;from=press-this&amp;plugin=' . urlencode( $v_yajty ), 'activate-plugin_' . $v_yajty ), // obf
-				__( 'Activate Plugin &amp; Go to Press This' ) // obf
-			); // obf
-		} else { // obf
-			$v_rzwum['activate_plugin'] = sprintf( // obf
-				'<a class="button button-primary" href="%s" target="_parent">%s</a>', // obf
-				wp_nonce_url( 'plugins.php?action=activate&amp;plugin=' . urlencode( $v_yajty ), 'activate-plugin_' . $v_yajty ), // obf
-				__( 'Activate Plugin' ) // obf
-			); // obf
-		} // obf
+		if ( is_multisite() && current_user_can( 'manage_network_plugins' ) ) {
+			$install_actions['network_activate'] = sprintf(
+				'<a class="button button-primary" href="%s" target="_parent">%s</a>',
+				wp_nonce_url( 'plugins.php?action=activate&amp;networkwide=1&amp;plugin=' . urlencode( $plugin_file ), 'activate-plugin_' . $plugin_file ),
+				_x( 'Network Activate', 'plugin' )
+			);
+			unset( $install_actions['activate_plugin'] );
+		}
 
-		if ( is_multisite() && current_user_can( 'manage_network_plugins' ) ) { // obf
-			$v_rzwum['network_activate'] = sprintf( // obf
-				'<a class="button button-primary" href="%s" target="_parent">%s</a>', // obf
-				wp_nonce_url( 'plugins.php?action=activate&amp;networkwide=1&amp;plugin=' . urlencode( $v_yajty ), 'activate-plugin_' . $v_yajty ), // obf
-				_x( 'Network Activate', 'plugin' ) // obf
-			); // obf
-			unset( $v_rzwum['activate_plugin'] ); // obf
-		} // obf
+		if ( 'import' === $from ) {
+			$install_actions['importers_page'] = sprintf(
+				'<a href="%s" target="_parent">%s</a>',
+				admin_url( 'import.php' ),
+				__( 'Go to Importers' )
+			);
+		} elseif ( 'web' === $this->type ) {
+			$install_actions['plugins_page'] = sprintf(
+				'<a href="%s" target="_parent">%s</a>',
+				self_admin_url( 'plugin-install.php' ),
+				__( 'Go to Plugin Installer' )
+			);
+		} elseif ( 'upload' === $this->type && 'plugins' === $from ) {
+			$install_actions['plugins_page'] = sprintf(
+				'<a href="%s">%s</a>',
+				self_admin_url( 'plugin-install.php' ),
+				__( 'Go to Plugin Installer' )
+			);
+		} else {
+			$install_actions['plugins_page'] = sprintf(
+				'<a href="%s" target="_parent">%s</a>',
+				self_admin_url( 'plugins.php' ),
+				__( 'Go to Plugins page' )
+			);
+		}
 
-		if ( 'import' === $v_odwxx ) { // obf
-			$v_rzwum['importers_page'] = sprintf( // obf
-				'<a href="%s" target="_parent">%s</a>', // obf
-				admin_url( 'import.php' ), // obf
-				__( 'Go to Importers' ) // obf
-			); // obf
-		} elseif ( 'web' === $v_glwwe->type ) { // obf
-			$v_rzwum['plugins_page'] = sprintf( // obf
-				'<a href="%s" target="_parent">%s</a>', // obf
-				self_admin_url( 'plugin-install.php' ), // obf
-				__( 'Go to Plugin Installer' ) // obf
-			); // obf
-		} elseif ( 'upload' === $v_glwwe->type && 'plugins' === $v_odwxx ) { // obf
-			$v_rzwum['plugins_page'] = sprintf( // obf
-				'<a href="%s">%s</a>', // obf
-				self_admin_url( 'plugin-install.php' ), // obf
-				__( 'Go to Plugin Installer' ) // obf
-			); // obf
-		} else { // obf
-			$v_rzwum['plugins_page'] = sprintf( // obf
-				'<a href="%s" target="_parent">%s</a>', // obf
-				self_admin_url( 'plugins.php' ), // obf
-				__( 'Go to Plugins page' ) // obf
-			); // obf
-		} // obf
+		if ( ! $this->result || is_wp_error( $this->result ) ) {
+			unset( $install_actions['activate_plugin'], $install_actions['network_activate'] );
+		} elseif ( ! current_user_can( 'activate_plugin', $plugin_file ) || is_plugin_active( $plugin_file ) ) {
+			unset( $install_actions['activate_plugin'] );
+		}
 
-		if ( ! $v_glwwe->result || is_wp_error( $v_glwwe->result ) ) { // obf
-			unset( $v_rzwum['activate_plugin'], $v_rzwum['network_activate'] ); // obf
-		} elseif ( ! current_user_can( 'activate_plugin', $v_yajty ) || is_plugin_active( $v_yajty ) ) { // obf
-			unset( $v_rzwum['activate_plugin'] ); // obf
-		} // obf
+		/**
+		 * Filters the list of action links available following a single plugin installation.
+		 *
+		 * @since 2.7.0
+		 *
+		 * @param string[] $install_actions Array of plugin action links.
+		 * @param object   $api             Object containing WordPress.org API plugin data. Empty
+		 *                                  for non-API installs, such as when a plugin is installed
+		 *                                  via upload.
+		 * @param string   $plugin_file     Path to the plugin file relative to the plugins directory.
+		 */
+		$install_actions = apply_filters( 'install_plugin_complete_actions', $install_actions, $this->api, $plugin_file );
 
-		/** // obf
-		 * Filters the list of action links available following a single plugin installation. // obf
-		 * // obf
-		 * @since 2.7.0 // obf
-		 * // obf
-		 * @param string[] $v_rzwum Array of plugin action links. // obf
-		 * @param object   $v_htfmg             Object containing WordPress.org API plugin data. Empty // obf
-		 *                                  for non-API installs, such as when a plugin is installed // obf
-		 *                                  via upload. // obf
-		 * @param string   $v_yajty     Path to the plugin file relative to the plugins directory. // obf
-		 */ // obf
-		$v_rzwum = apply_filters( 'install_plugin_complete_actions', $v_rzwum, $v_glwwe->api, $v_yajty ); // obf
+		if ( ! empty( $install_actions ) ) {
+			$this->feedback( implode( ' ', (array) $install_actions ) );
+		}
+	}
 
-		if ( ! empty( $v_rzwum ) ) { // obf
-			$v_glwwe->feedback( implode( ' ', (array) $v_rzwum ) ); // obf
-		} // obf
-	} // obf
+	/**
+	 * Checks if the plugin can be overwritten and outputs the HTML for overwriting a plugin on upload.
+	 *
+	 * @since 5.5.0
+	 *
+	 * @return bool Whether the plugin can be overwritten and HTML was outputted.
+	 */
+	private function do_overwrite() {
+		if ( 'upload' !== $this->type || ! is_wp_error( $this->result ) || 'folder_exists' !== $this->result->get_error_code() ) {
+			return false;
+		}
 
-	/** // obf
-	 * Checks if the plugin can be overwritten and outputs the HTML for overwriting a plugin on upload. // obf
-	 * // obf
-	 * @since 5.5.0 // obf
-	 * // obf
-	 * @return bool Whether the plugin can be overwritten and HTML was outputted. // obf
-	 */ // obf
-	private function do_overwrite() { // obf
-		if ( 'upload' !== $v_glwwe->type || ! is_wp_error( $v_glwwe->result ) || 'folder_exists' !== $v_glwwe->result->get_error_code() ) { // obf
-			return false; // obf
-		} // obf
+		$folder = $this->result->get_error_data( 'folder_exists' );
+		$folder = ltrim( substr( $folder, strlen( WP_PLUGIN_DIR ) ), '/' );
 
-		$v_iitsj = $v_glwwe->result->get_error_data( 'folder_exists' ); // obf
-		$v_iitsj = ltrim( substr( $v_iitsj, strlen( WP_PLUGIN_DIR ) ), '/' ); // obf
+		$current_plugin_data = false;
+		$all_plugins         = get_plugins();
 
-		$v_wfklj = false; // obf
-		$v_uekdf         = get_plugins(); // obf
+		foreach ( $all_plugins as $plugin => $plugin_data ) {
+			if ( strrpos( $plugin, $folder ) !== 0 ) {
+				continue;
+			}
 
-		foreach ( $v_uekdf as $v_cyojd => $v_efahi ) { // obf
-			if ( strrpos( $v_cyojd, $v_iitsj ) !== 0 ) { // obf
-				continue; // obf
-			} // obf
+			$current_plugin_data = $plugin_data;
+		}
 
-			$v_wfklj = $v_efahi; // obf
-		} // obf
+		$new_plugin_data = $this->upgrader->new_plugin_data;
 
-		$v_tqlir = $v_glwwe->upgrader->new_plugin_data; // obf
+		if ( ! $current_plugin_data || ! $new_plugin_data ) {
+			return false;
+		}
 
-		if ( ! $v_wfklj || ! $v_tqlir ) { // obf
-			return false; // obf
-		} // obf
+		echo '<h2 class="update-from-upload-heading">' . esc_html__( 'This plugin is already installed.' ) . '</h2>';
 
-		echo '<h2 class="update-from-upload-heading">' . esc_html__( 'This plugin is already installed.' ) . '</h2>'; // obf
+		$this->is_downgrading = version_compare( $current_plugin_data['Version'], $new_plugin_data['Version'], '>' );
 
-		$v_glwwe->is_downgrading = version_compare( $v_wfklj['Version'], $v_tqlir['Version'], '>' ); // obf
+		$rows = array(
+			'Name'        => __( 'Plugin name' ),
+			'Version'     => __( 'Version' ),
+			'Author'      => __( 'Author' ),
+			'RequiresWP'  => __( 'Required WordPress version' ),
+			'RequiresPHP' => __( 'Required PHP version' ),
+		);
 
-		$v_xlbrq = array( // obf
-			'Name'        => __( 'Plugin name' ), // obf
-			'Version'     => __( 'Version' ), // obf
-			'Author'      => __( 'Author' ), // obf
-			'RequiresWP'  => __( 'Required WordPress version' ), // obf
-			'RequiresPHP' => __( 'Required PHP version' ), // obf
-		); // obf
+		$table  = '<table class="update-from-upload-comparison"><tbody>';
+		$table .= '<tr><th></th><th>' . esc_html_x( 'Current', 'plugin' ) . '</th>';
+		$table .= '<th>' . esc_html_x( 'Uploaded', 'plugin' ) . '</th></tr>';
 
-		$v_mkuxr  = '<table class="update-from-upload-comparison"><tbody>'; // obf
-		$v_mkuxr .= '<tr><th></th><th>' . esc_html_x( 'Current', 'plugin' ) . '</th>'; // obf
-		$v_mkuxr .= '<th>' . esc_html_x( 'Uploaded', 'plugin' ) . '</th></tr>'; // obf
+		$is_same_plugin = true; // Let's consider only these rows.
 
-		$v_jfvyf = true; // Let's consider only these rows. // obf
+		foreach ( $rows as $field => $label ) {
+			$old_value = ! empty( $current_plugin_data[ $field ] ) ? (string) $current_plugin_data[ $field ] : '-';
+			$new_value = ! empty( $new_plugin_data[ $field ] ) ? (string) $new_plugin_data[ $field ] : '-';
 
-		foreach ( $v_xlbrq as $v_qzxgz => $v_pbrjr ) { // obf
-			$v_gejnj = ! empty( $v_wfklj[ $v_qzxgz ] ) ? (string) $v_wfklj[ $v_qzxgz ] : '-'; // obf
-			$v_qcqrs = ! empty( $v_tqlir[ $v_qzxgz ] ) ? (string) $v_tqlir[ $v_qzxgz ] : '-'; // obf
+			$is_same_plugin = $is_same_plugin && ( $old_value === $new_value );
 
-			$v_jfvyf = $v_jfvyf && ( $v_gejnj === $v_qcqrs ); // obf
+			$diff_field   = ( 'Version' !== $field && $new_value !== $old_value );
+			$diff_version = ( 'Version' === $field && $this->is_downgrading );
 
-			$v_vpqum   = ( 'Version' !== $v_qzxgz && $v_qcqrs !== $v_gejnj ); // obf
-			$v_gfccu = ( 'Version' === $v_qzxgz && $v_glwwe->is_downgrading ); // obf
+			$table .= '<tr><td class="name-label">' . $label . '</td><td>' . wp_strip_all_tags( $old_value ) . '</td>';
+			$table .= ( $diff_field || $diff_version ) ? '<td class="warning">' : '<td>';
+			$table .= wp_strip_all_tags( $new_value ) . '</td></tr>';
+		}
 
-			$v_mkuxr .= '<tr><td class="name-label">' . $v_pbrjr . '</td><td>' . wp_strip_all_tags( $v_gejnj ) . '</td>'; // obf
-			$v_mkuxr .= ( $v_vpqum || $v_gfccu ) ? '<td class="warning">' : '<td>'; // obf
-			$v_mkuxr .= wp_strip_all_tags( $v_qcqrs ) . '</td></tr>'; // obf
-		} // obf
+		$table .= '</tbody></table>';
 
-		$v_mkuxr .= '</tbody></table>'; // obf
+		/**
+		 * Filters the compare table output for overwriting a plugin package on upload.
+		 *
+		 * @since 5.5.0
+		 *
+		 * @param string $table               The output table with Name, Version, Author, RequiresWP, and RequiresPHP info.
+		 * @param array  $current_plugin_data Array with current plugin data.
+		 * @param array  $new_plugin_data     Array with uploaded plugin data.
+		 */
+		echo apply_filters( 'install_plugin_overwrite_comparison', $table, $current_plugin_data, $new_plugin_data );
 
-		/** // obf
-		 * Filters the compare table output for overwriting a plugin package on upload. // obf
-		 * // obf
-		 * @since 5.5.0 // obf
-		 * // obf
-		 * @param string $v_mkuxr               The output table with Name, Version, Author, RequiresWP, and RequiresPHP info. // obf
-		 * @param array  $v_wfklj Array with current plugin data. // obf
-		 * @param array  $v_tqlir     Array with uploaded plugin data. // obf
-		 */ // obf
-		echo apply_filters( 'install_plugin_overwrite_comparison', $v_mkuxr, $v_wfklj, $v_tqlir ); // obf
+		$install_actions = array();
+		$can_update      = true;
 
-		$v_rzwum = array(); // obf
-		$v_toudz      = true; // obf
+		$blocked_message  = '<p>' . esc_html__( 'The plugin cannot be updated due to the following:' ) . '</p>';
+		$blocked_message .= '<ul class="ul-disc">';
 
-		$v_lfkcw  = '<p>' . esc_html__( 'The plugin cannot be updated due to the following:' ) . '</p>'; // obf
-		$v_lfkcw .= '<ul class="ul-disc">'; // obf
+		$requires_php = isset( $new_plugin_data['RequiresPHP'] ) ? $new_plugin_data['RequiresPHP'] : null;
+		$requires_wp  = isset( $new_plugin_data['RequiresWP'] ) ? $new_plugin_data['RequiresWP'] : null;
 
-		$v_qyvdd = isset( $v_tqlir['RequiresPHP'] ) ? $v_tqlir['RequiresPHP'] : null; // obf
-		$v_bvksz  = isset( $v_tqlir['RequiresWP'] ) ? $v_tqlir['RequiresWP'] : null; // obf
+		if ( ! is_php_version_compatible( $requires_php ) ) {
+			$error = sprintf(
+				/* translators: 1: Current PHP version, 2: Version required by the uploaded plugin. */
+				__( 'The PHP version on your server is %1$s, however the uploaded plugin requires %2$s.' ),
+				PHP_VERSION,
+				$requires_php
+			);
 
-		if ( ! is_php_version_compatible( $v_qyvdd ) ) { // obf
-			$v_qnjzk = sprintf( // obf
-				/* translators: 1: Current PHP version, 2: Version required by the uploaded plugin. */ // obf
-				__( 'The PHP version on your server is %1$v_ducfj, however the uploaded plugin requires %2$v_ducfj.' ), // obf
-				PHP_VERSION, // obf
-				$v_qyvdd // obf
-			); // obf
+			$blocked_message .= '<li>' . esc_html( $error ) . '</li>';
+			$can_update       = false;
+		}
 
-			$v_lfkcw .= '<li>' . esc_html( $v_qnjzk ) . '</li>'; // obf
-			$v_toudz       = false; // obf
-		} // obf
+		if ( ! is_wp_version_compatible( $requires_wp ) ) {
+			$error = sprintf(
+				/* translators: 1: Current WordPress version, 2: Version required by the uploaded plugin. */
+				__( 'Your WordPress version is %1$s, however the uploaded plugin requires %2$s.' ),
+				esc_html( wp_get_wp_version() ),
+				$requires_wp
+			);
 
-		if ( ! is_wp_version_compatible( $v_bvksz ) ) { // obf
-			$v_qnjzk = sprintf( // obf
-				/* translators: 1: Current WordPress version, 2: Version required by the uploaded plugin. */ // obf
-				__( 'Your WordPress version is %1$v_ducfj, however the uploaded plugin requires %2$v_ducfj.' ), // obf
-				esc_html( wp_get_wp_version() ), // obf
-				$v_bvksz // obf
-			); // obf
+			$blocked_message .= '<li>' . esc_html( $error ) . '</li>';
+			$can_update       = false;
+		}
 
-			$v_lfkcw .= '<li>' . esc_html( $v_qnjzk ) . '</li>'; // obf
-			$v_toudz       = false; // obf
-		} // obf
+		$blocked_message .= '</ul>';
 
-		$v_lfkcw .= '</ul>'; // obf
+		if ( $can_update ) {
+			if ( $this->is_downgrading ) {
+				$warning = sprintf(
+					/* translators: %s: Documentation URL. */
+					__( 'You are uploading an older version of a current plugin. You can continue to install the older version, but be sure to <a href="%s">back up your database and files</a> first.' ),
+					__( 'https://developer.wordpress.org/advanced-administration/security/backup/' )
+				);
+			} else {
+				$warning = sprintf(
+					/* translators: %s: Documentation URL. */
+					__( 'You are updating a plugin. Be sure to <a href="%s">back up your database and files</a> first.' ),
+					__( 'https://developer.wordpress.org/advanced-administration/security/backup/' )
+				);
+			}
 
-		if ( $v_toudz ) { // obf
-			if ( $v_glwwe->is_downgrading ) { // obf
-				$v_hvrwy = sprintf( // obf
-					/* translators: %s: Documentation URL. */ // obf
-					__( 'You are uploading an older version of a current plugin. You can continue to install the older version, but be sure to <a href="%s">back up your database and files</a> first.' ), // obf
-					__( 'https://developer.wordpress.org/advanced-administration/security/backup/' ) // obf
-				); // obf
-			} else { // obf
-				$v_hvrwy = sprintf( // obf
-					/* translators: %s: Documentation URL. */ // obf
-					__( 'You are updating a plugin. Be sure to <a href="%s">back up your database and files</a> first.' ), // obf
-					__( 'https://developer.wordpress.org/advanced-administration/security/backup/' ) // obf
-				); // obf
-			} // obf
+			echo '<p class="update-from-upload-notice">' . $warning . '</p>';
 
-			echo '<p class="update-from-upload-notice">' . $v_hvrwy . '</p>'; // obf
+			$overwrite = $this->is_downgrading ? 'downgrade-plugin' : 'update-plugin';
 
-			$v_qsmvl = $v_glwwe->is_downgrading ? 'downgrade-plugin' : 'update-plugin'; // obf
+			$install_actions['overwrite_plugin'] = sprintf(
+				'<a class="button button-primary update-from-upload-overwrite" href="%s" target="_parent">%s</a>',
+				wp_nonce_url( add_query_arg( 'overwrite', $overwrite, $this->url ), 'plugin-upload' ),
+				_x( 'Replace current with uploaded', 'plugin' )
+			);
+		} else {
+			echo $blocked_message;
+		}
 
-			$v_rzwum['overwrite_plugin'] = sprintf( // obf
-				'<a class="button button-primary update-from-upload-overwrite" href="%s" target="_parent">%s</a>', // obf
-				wp_nonce_url( add_query_arg( 'overwrite', $v_qsmvl, $v_glwwe->url ), 'plugin-upload' ), // obf
-				_x( 'Replace current with uploaded', 'plugin' ) // obf
-			); // obf
-		} else { // obf
-			echo $v_lfkcw; // obf
-		} // obf
+		$cancel_url = add_query_arg( 'action', 'upload-plugin-cancel-overwrite', $this->url );
 
-		$v_nsukb = add_query_arg( 'action', 'upload-plugin-cancel-overwrite', $v_glwwe->url ); // obf
+		$install_actions['plugins_page'] = sprintf(
+			'<a class="button" href="%s">%s</a>',
+			wp_nonce_url( $cancel_url, 'plugin-upload-cancel-overwrite' ),
+			__( 'Cancel and go back' )
+		);
 
-		$v_rzwum['plugins_page'] = sprintf( // obf
-			'<a class="button" href="%s">%s</a>', // obf
-			wp_nonce_url( $v_nsukb, 'plugin-upload-cancel-overwrite' ), // obf
-			__( 'Cancel and go back' ) // obf
-		); // obf
+		/**
+		 * Filters the list of action links available following a single plugin installation failure
+		 * when overwriting is allowed.
+		 *
+		 * @since 5.5.0
+		 *
+		 * @param string[] $install_actions Array of plugin action links.
+		 * @param object   $api             Object containing WordPress.org API plugin data.
+		 * @param array    $new_plugin_data Array with uploaded plugin data.
+		 */
+		$install_actions = apply_filters( 'install_plugin_overwrite_actions', $install_actions, $this->api, $new_plugin_data );
 
-		/** // obf
-		 * Filters the list of action links available following a single plugin installation failure // obf
-		 * when overwriting is allowed. // obf
-		 * // obf
-		 * @since 5.5.0 // obf
-		 * // obf
-		 * @param string[] $v_rzwum Array of plugin action links. // obf
-		 * @param object   $v_htfmg             Object containing WordPress.org API plugin data. // obf
-		 * @param array    $v_tqlir Array with uploaded plugin data. // obf
-		 */ // obf
-		$v_rzwum = apply_filters( 'install_plugin_overwrite_actions', $v_rzwum, $v_glwwe->api, $v_tqlir ); // obf
+		if ( ! empty( $install_actions ) ) {
+			printf(
+				'<p class="update-from-upload-expired hidden">%s</p>',
+				__( 'The uploaded file has expired. Please go back and upload it again.' )
+			);
+			echo '<p class="update-from-upload-actions">' . implode( ' ', (array) $install_actions ) . '</p>';
+		}
 
-		if ( ! empty( $v_rzwum ) ) { // obf
-			printf( // obf
-				'<p class="update-from-upload-expired hidden">%s</p>', // obf
-				__( 'The uploaded file has expired. Please go back and upload it again.' ) // obf
-			); // obf
-			echo '<p class="update-from-upload-actions">' . implode( ' ', (array) $v_rzwum ) . '</p>'; // obf
-		} // obf
-
-		return true; // obf
-	} // obf
-} // obf
+		return true;
+	}
+}

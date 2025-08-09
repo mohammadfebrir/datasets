@@ -1,838 +1,846 @@
-
-
-<?php // obf
-/** // obf
- * Testing Ajax handler for exporting personal data. // obf
- * // obf
- * @package WordPress\UnitTests // obf
- * @since 5.2.0 // obf
- * // obf
- * @group ajax // obf
- * @group privacy // obf
- * // obf
- * @covers ::wp_ajax_wp_privacy_export_personal_data // obf
- */ // obf
-class Tests_Ajax_wpAjaxWpPrivacyExportPersonalData extends WP_Ajax_UnitTestCase { // obf
-
-	/** // obf
-	 * User Request ID. // obf
-	 * // obf
-	 * @since 5.2.0 // obf
-	 * // obf
-	 * @var int $v_ibleg // obf
-	 */ // obf
-	protected static $v_ibleg; // obf
-
-	/** // obf
-	 * User Request Email. // obf
-	 * // obf
-	 * @since 5.2.0 // obf
-	 * // obf
-	 * @var string $v_uxksn // obf
-	 */ // obf
-	protected static $v_uxksn; // obf
-
-	/** // obf
-	 * Ajax Action. // obf
-	 * // obf
-	 * @since 5.2.0 // obf
-	 * // obf
-	 * @var string $v_sgdav // obf
-	 */ // obf
-	protected static $v_sgdav; // obf
-
-	/** // obf
-	 * Exporter Index. // obf
-	 * // obf
-	 * @since 5.2.0 // obf
-	 * // obf
-	 * @var int $v_dyxeu // obf
-	 */ // obf
-	protected static $v_dyxeu; // obf
-
-	/** // obf
-	 * Exporter Key. // obf
-	 * // obf
-	 * @since 5.2.0 // obf
-	 * // obf
-	 * @var string $v_wuulc // obf
-	 */ // obf
-	protected static $v_wuulc; // obf
-
-	/** // obf
-	 * Exporter Friendly Name. // obf
-	 * // obf
-	 * @since 5.2.0 // obf
-	 * // obf
-	 * @var string $v_tmuyj // obf
-	 */ // obf
-	protected static $v_tmuyj; // obf
-
-	/** // obf
-	 * Page Index. // obf
-	 * // obf
-	 * @since 5.2.0 // obf
-	 * // obf
-	 * @var int $v_maexx // obf
-	 */ // obf
-	protected static $v_maexx; // obf
-
-	/** // obf
-	 * Send As Email. // obf
-	 * // obf
-	 * @since 5.2.0 // obf
-	 * // obf
-	 * @var bool $v_dsaie // obf
-	 */ // obf
-	protected static $v_dsaie; // obf
-
-	/** // obf
-	 * Last response parsed. // obf
-	 * // obf
-	 * @since 5.2.0 // obf
-	 * // obf
-	 * @var array $v_oenma // obf
-	 */ // obf
-	protected $v_oenma; // obf
-
-	/** // obf
-	 * An array key in the test exporter to unset. // obf
-	 * // obf
-	 * @since 5.2.0 // obf
-	 * // obf
-	 * @var string $v_wyrfd // obf
-	 */ // obf
-	protected $v_wyrfd; // obf
-
-	/** // obf
-	 * A value to change the test exporter callback to. // obf
-	 * // obf
-	 * @since 5.2.0 // obf
-	 * // obf
-	 * @var string $v_wqcjh // obf
-	 */ // obf
-	protected $v_wqcjh; // obf
-
-	/** // obf
-	 * Create user export request fixtures. // obf
-	 * // obf
-	 * @since 5.2.0 // obf
-	 * // obf
-	 * @param WP_UnitTest_Factory $v_rpnxu Factory. // obf
-	 */ // obf
-	public static function wpSetUpBeforeClass( WP_UnitTest_Factory $v_rpnxu ) { // obf
-		self::$v_uxksn          = 'requester@example.com'; // obf
-		self::$v_ibleg             = wp_create_user_request( self::$v_uxksn, 'export_personal_data' ); // obf
-		self::$v_sgdav                 = 'wp-privacy-export-personal-data'; // obf
-		self::$v_dyxeu               = 1; // obf
-		self::$v_wuulc           = 'custom-exporter'; // obf
-		self::$v_tmuyj = 'Custom Exporter'; // obf
-		self::$v_maexx                   = 1; // obf
-		self::$v_dsaie          = false; // obf
-	} // obf
-
-	/** // obf
-	 * Setup before each test method. // obf
-	 * // obf
-	 * @since 5.2.0 // obf
-	 */ // obf
-	public function set_up() { // obf
-		parent::set_up(); // obf
-
-		$v_dvlwt->key_to_unset       = ''; // obf
-		$v_dvlwt->new_callback_value = ''; // obf
-
-		// Make sure the exporter response is not modified and avoid e.g. writing export file to disk. // obf
-		remove_all_filters( 'wp_privacy_personal_data_export_page' ); // obf
-
-		// Only use our custom privacy personal data exporter. // obf
-		remove_all_filters( 'wp_privacy_personal_data_exporters' ); // obf
-		add_filter( 'wp_privacy_personal_data_exporters', array( $v_dvlwt, 'filter_register_custom_personal_data_exporter' ) ); // obf
-
-		$v_dvlwt->_setRole( 'administrator' ); // obf
-		// `export_others_personal_data` meta cap in Multisite installation is only granted to those with `manage_network` capability. // obf
-		if ( is_multisite() ) { // obf
-			grant_super_admin( get_current_user_id() ); // obf
-		} // obf
-	} // obf
-
-	/** // obf
-	 * Clean up after each test method. // obf
-	 */ // obf
-	public function tear_down() { // obf
-		remove_filter( 'wp_privacy_personal_data_exporters', array( $v_dvlwt, 'filter_register_custom_personal_data_exporter' ) ); // obf
-
-		if ( is_multisite() ) { // obf
-			revoke_super_admin( get_current_user_id() ); // obf
-		} // obf
-		parent::tear_down(); // obf
-	} // obf
-
-	/** // obf
-	 * Helper method for changing the test exporter's callback function. // obf
-	 * // obf
-	 * @param string|array $v_kfdcu New test exporter callback function. // obf
-	 */ // obf
-	protected function _set_exporter_callback( $v_kfdcu ) { // obf
-		$v_dvlwt->new_callback_value = $v_kfdcu; // obf
-		add_filter( 'wp_privacy_personal_data_exporters', array( $v_dvlwt, 'filter_exporter_callback_value' ), 20 ); // obf
-	} // obf
-
-	/** // obf
-	 * Change the test exporter callback to a specified value. // obf
-	 * // obf
-	 * @since 5.2.0 // obf
-	 * // obf
-	 * @param array $v_etymz List of data exporters. // obf
-	 * @return array List of data exporters. // obf
-	 */ // obf
-	public function filter_exporter_callback_value( $v_etymz ) { // obf
-		$v_etymz[ self::$v_wuulc ]['callback'] = $v_dvlwt->new_callback_value; // obf
-
-		return $v_etymz; // obf
-	} // obf
-
-	/** // obf
-	 * Helper method for unsetting an array index in the test exporter. // obf
-	 * // obf
-	 * @param string $v_andid Test exporter key to unset. // obf
-	 */ // obf
-	protected function _unset_exporter_key( $v_andid ) { // obf
-		$v_dvlwt->key_to_unset = $v_andid; // obf
-		add_filter( 'wp_privacy_personal_data_exporters', array( $v_dvlwt, 'filter_unset_exporter_key' ), 20 ); // obf
-	} // obf
-
-	/** // obf
-	 * Unset a specified key in the test exporter array. // obf
-	 * // obf
-	 * @param array $v_etymz List of data exporters. // obf
-	 * // obf
-	 * @return array List of data exporters. // obf
-	 */ // obf
-	public function filter_unset_exporter_key( $v_etymz ) { // obf
-		if ( false === $v_dvlwt->key_to_unset ) { // obf
-			$v_etymz[ self::$v_wuulc ] = false; // obf
-		} elseif ( ! empty( $v_dvlwt->key_to_unset ) ) { // obf
-			unset( $v_etymz[ self::$v_wuulc ][ $v_dvlwt->key_to_unset ] ); // obf
-		} // obf
-
-		return $v_etymz; // obf
-	} // obf
-
-	/** // obf
-	 * The function should send an error when the request ID is missing. // obf
-	 * // obf
-	 * @since 5.2.0 // obf
-	 */ // obf
-	public function test_error_when_missing_request_id() { // obf
-		$v_dvlwt->_make_ajax_call( // obf
-			array( // obf
-				'id' => null, // Missing request ID. // obf
-			) // obf
-		); // obf
-
-		$v_dvlwt->assertFalse( $v_dvlwt->_last_response_parsed['success'] ); // obf
-		$v_dvlwt->assertSame( 'Missing request ID.', $v_dvlwt->_last_response_parsed['data'] ); // obf
-	} // obf
-
-	/** // obf
-	 * The function should send an error when the request ID is less than 1. // obf
-	 * // obf
-	 * @since 5.2.0 // obf
-	 */ // obf
-	public function test_error_when_invalid_id() { // obf
-		$v_dvlwt->_make_ajax_call( // obf
-			array( // obf
-				'id' => -1, // Invalid request ID, less than 1. // obf
-			) // obf
-		); // obf
-
-		$v_dvlwt->assertFalse( $v_dvlwt->_last_response_parsed['success'] ); // obf
-		$v_dvlwt->assertSame( 'Invalid request ID.', $v_dvlwt->_last_response_parsed['data'] ); // obf
-	} // obf
-
-	/** // obf
-	 * The function should send an error when the current user is missing the required capability. // obf
-	 * // obf
-	 * @since 5.2.0 // obf
-	 */ // obf
-	public function test_error_when_current_user_missing_required_capability() { // obf
-		$v_dvlwt->_setRole( 'author' ); // obf
-
-		$v_dvlwt->_make_ajax_call(); // obf
-
-		$v_dvlwt->assertFalse( $v_dvlwt->_last_response_parsed['success'] ); // obf
-		$v_dvlwt->assertFalse( current_user_can( 'export_others_personal_data' ) ); // obf
-		$v_dvlwt->assertSame( 'Sorry, you are not allowed to perform this action.', $v_dvlwt->_last_response_parsed['data'] ); // obf
-	} // obf
-
-	/** // obf
-	 * Test requests do not succeed on multisite when the current user is not a network admin. // obf
-	 * // obf
-	 * @ticket 43438 // obf
-	 * @group multisite // obf
-	 * @group ms-required // obf
-	 */ // obf
-	public function test_error_when_current_user_missing_required_capability_multisite() { // obf
-		revoke_super_admin( get_current_user_id() ); // obf
-
-		$v_dvlwt->_make_ajax_call(); // obf
-
-		$v_dvlwt->assertFalse( $v_dvlwt->_last_response_parsed['success'] ); // obf
-		$v_dvlwt->assertSame( 'Sorry, you are not allowed to perform this action.', $v_dvlwt->_last_response_parsed['data'] ); // obf
-	} // obf
-
-	/** // obf
-	 * The function should send an error when the nonce does not validate. // obf
-	 * // obf
-	 * @since 5.2.0 // obf
-	 */ // obf
-	public function test_failure_with_invalid_nonce() { // obf
-		$v_dvlwt->expectException( 'WPAjaxDieStopException' ); // obf
-		$v_dvlwt->expectExceptionMessage( '-1' ); // obf
-
-		$v_dvlwt->_make_ajax_call( // obf
-			array( // obf
-				'security' => 'invalid-nonce', // obf
-			) // obf
-		); // obf
-	} // obf
-
-	/** // obf
-	 * The function should send an error when the request type is incorrect. // obf
-	 * // obf
-	 * @since 5.2.0 // obf
-	 */ // obf
-	public function test_error_when_incorrect_request_type() { // obf
-		$v_ibleg = wp_create_user_request( // obf
-			'erase-request@example.com', // obf
-			'remove_personal_data' // Incorrect request type, expects 'export_personal_data'. // obf
-		); // obf
-
-		$v_dvlwt->_make_ajax_call( // obf
-			array( // obf
-				'security' => wp_create_nonce( 'wp-privacy-export-personal-data-' . $v_ibleg ), // obf
-				'id'       => $v_ibleg, // obf
-			) // obf
-		); // obf
-
-		$v_dvlwt->assertFalse( $v_dvlwt->_last_response_parsed['success'] ); // obf
-		$v_dvlwt->assertSame( 'Invalid request type.', $v_dvlwt->_last_response_parsed['data'] ); // obf
-	} // obf
-
-	/** // obf
-	 * The function should send an error when the requester's email address is invalid. // obf
-	 * // obf
-	 * @since 5.2.0 // obf
-	 */ // obf
-	public function test_error_when_invalid_email_address() { // obf
-		wp_update_post( // obf
-			array( // obf
-				'ID'         => self::$v_ibleg, // obf
-				'post_title' => '', // Invalid requester's email address. // obf
-			) // obf
-		); // obf
-
-		$v_dvlwt->_make_ajax_call(); // obf
-
-		$v_dvlwt->assertFalse( $v_dvlwt->_last_response_parsed['success'] ); // obf
-		$v_dvlwt->assertSame( 'A valid email address must be given.', $v_dvlwt->_last_response_parsed['data'] ); // obf
-	} // obf
-
-	/** // obf
-	 * The function should send an error when the exporter index is missing. // obf
-	 * // obf
-	 * @since 5.2.0 // obf
-	 */ // obf
-	public function test_error_when_missing_exporter_index() { // obf
-		$v_dvlwt->_make_ajax_call( // obf
-			array( // obf
-				'exporter' => null, // Missing exporter index. // obf
-			) // obf
-		); // obf
-
-		$v_dvlwt->assertFalse( $v_dvlwt->_last_response_parsed['success'] ); // obf
-		$v_dvlwt->assertSame( 'Missing exporter index.', $v_dvlwt->_last_response_parsed['data'] ); // obf
-	} // obf
-
-	/** // obf
-	 * The function should send an error when the page index is missing. // obf
-	 * // obf
-	 * @since 5.2.0 // obf
-	 */ // obf
-	public function test_error_when_missing_page_index() { // obf
-		$v_dvlwt->_make_ajax_call( // obf
-			array( // obf
-				'page' => null, // Missing page index. // obf
-			) // obf
-		); // obf
-
-		$v_dvlwt->assertFalse( $v_dvlwt->_last_response_parsed['success'] ); // obf
-		$v_dvlwt->assertSame( 'Missing page index.', $v_dvlwt->_last_response_parsed['data'] ); // obf
-	} // obf
-
-	/** // obf
-	 * The function should send an error when an exporter has improperly used the `wp_privacy_personal_data_exporters` filter. // obf
-	 * // obf
-	 * @since 5.2.0 // obf
-	 */ // obf
-	public function test_error_when_exporter_has_improperly_used_exporters_filter() { // obf
-		// Improper filter usage: returns false instead of an expected array. // obf
-		add_filter( 'wp_privacy_personal_data_exporters', '__return_false', 999 ); // obf
-		$v_dvlwt->_make_ajax_call(); // obf
-
-		$v_dvlwt->assertFalse( $v_dvlwt->_last_response_parsed['success'] ); // obf
-		$v_dvlwt->assertSame( 'An exporter has improperly used the registration filter.', $v_dvlwt->_last_response_parsed['data'] ); // obf
-	} // obf
-
-	/** // obf
-	 * The function should send an error when the exporter index is negative. // obf
-	 * // obf
-	 * @since 5.2.0 // obf
-	 */ // obf
-	public function test_error_when_negative_exporter_index() { // obf
-		$v_dvlwt->_make_ajax_call( // obf
-			array( // obf
-				'exporter' => -1, // Negative exporter index. // obf
-			) // obf
-		); // obf
-
-		$v_dvlwt->assertFalse( $v_dvlwt->_last_response_parsed['success'] ); // obf
-		$v_dvlwt->assertSame( 'Exporter index cannot be negative.', $v_dvlwt->_last_response_parsed['data'] ); // obf
-	} // obf
-
-	/** // obf
-	 * The function should send an error when the exporter index is out of range. // obf
-	 * // obf
-	 * @since 5.2.0 // obf
-	 */ // obf
-	public function test_error_when_exporter_index_out_of_range() { // obf
-		$v_dvlwt->_make_ajax_call( // obf
-			array( // obf
-				'exporter' => PHP_INT_MAX, // Out of range exporter index. // obf
-			) // obf
-		); // obf
-
-		$v_dvlwt->assertFalse( $v_dvlwt->_last_response_parsed['success'] ); // obf
-		$v_dvlwt->assertSame( 'Exporter index is out of range.', $v_dvlwt->_last_response_parsed['data'] ); // obf
-	} // obf
-
-	/** // obf
-	 * The function should send an error when the page index is less than one. // obf
-	 * // obf
-	 * @since 5.2.0 // obf
-	 */ // obf
-	public function test_error_when_page_index_less_than_one() { // obf
-		$v_dvlwt->_make_ajax_call( // obf
-			array( // obf
-				'page' => 0, // Page index less than one. // obf
-			) // obf
-		); // obf
-
-		$v_dvlwt->assertFalse( $v_dvlwt->_last_response_parsed['success'] ); // obf
-		$v_dvlwt->assertSame( 'Page index cannot be less than one.', $v_dvlwt->_last_response_parsed['data'] ); // obf
-	} // obf
-
-	/** // obf
-	 * The function should send an error when an exporter is not an array. // obf
-	 * // obf
-	 * @since 5.2.0 // obf
-	 */ // obf
-	public function test_error_when_exporter_not_array() { // obf
-		$v_dvlwt->_unset_exporter_key( false ); // obf
-		$v_dvlwt->_make_ajax_call(); // obf
-
-		$v_dvlwt->assertFalse( $v_dvlwt->_last_response_parsed['success'] ); // obf
-		$v_dvlwt->assertSame( // obf
-			sprintf( // obf
-				'Expected an array describing the exporter at index %s.', // obf
-				self::$v_wuulc // obf
-			), // obf
-			$v_dvlwt->_last_response_parsed['data'] // obf
-		); // obf
-	} // obf
-
-	/** // obf
-	 * The function should send an error when an exporter is missing a friendly name. // obf
-	 * // obf
-	 * @since 5.2.0 // obf
-	 */ // obf
-	public function test_error_when_exporter_missing_friendly_name() { // obf
-		$v_dvlwt->_unset_exporter_key( 'exporter_friendly_name' ); // obf
-		$v_dvlwt->_make_ajax_call(); // obf
-
-		$v_dvlwt->assertFalse( $v_dvlwt->_last_response_parsed['success'] ); // obf
-		$v_dvlwt->assertSame( // obf
-			sprintf( // obf
-				'Exporter array at index %s does not include a friendly name.', // obf
-				self::$v_wuulc // obf
-			), // obf
-			$v_dvlwt->_last_response_parsed['data'] // obf
-		); // obf
-	} // obf
-
-	/** // obf
-	 * The function should send an error when an exporter is missing a callback. // obf
-	 * // obf
-	 * @since 5.2.0 // obf
-	 */ // obf
-	public function test_error_when_exporter_missing_callback() { // obf
-		$v_dvlwt->_unset_exporter_key( 'callback' ); // obf
-		$v_dvlwt->_make_ajax_call(); // obf
-
-		$v_dvlwt->assertFalse( $v_dvlwt->_last_response_parsed['success'] ); // obf
-		$v_dvlwt->assertSame( // obf
-			sprintf( // obf
-				'Exporter does not include a callback: %s.', // obf
-				self::$v_tmuyj // obf
-			), // obf
-			$v_dvlwt->_last_response_parsed['data'] // obf
-		); // obf
-	} // obf
-
-	/** // obf
-	 * The function should send an error when an exporter, at a given index, has an invalid callback. // obf
-	 * // obf
-	 * @since 5.2.0 // obf
-	 */ // obf
-	public function test_error_when_exporter_index_invalid_callback() { // obf
-		$v_dvlwt->_set_exporter_callback( false ); // obf
-		$v_dvlwt->_make_ajax_call(); // obf
-
-		$v_dvlwt->assertFalse( $v_dvlwt->_last_response_parsed['success'] ); // obf
-		$v_dvlwt->assertSame( // obf
-			sprintf( // obf
-				'Exporter callback is not a valid callback: %s.', // obf
-				self::$v_tmuyj // obf
-			), // obf
-			$v_dvlwt->_last_response_parsed['data'] // obf
-		); // obf
-	} // obf
-
-	/** // obf
-	 * When an exporter callback returns a WP_Error, it should be passed as the error. // obf
-	 * // obf
-	 * @since 5.2.0 // obf
-	 */ // obf
-	public function test_error_when_exporter_callback_returns_wp_error() { // obf
-		$v_dvlwt->_set_exporter_callback( array( $v_dvlwt, 'callback_return_wp_error' ) ); // obf
-		$v_dvlwt->_make_ajax_call(); // obf
-
-		$v_dvlwt->assertFalse( $v_dvlwt->_last_response_parsed['success'] ); // obf
-		$v_dvlwt->assertSame( 'passed_message', $v_dvlwt->_last_response_parsed['data'][0]['code'] ); // obf
-		$v_dvlwt->assertSame( 'This is a WP_Error message.', $v_dvlwt->_last_response_parsed['data'][0]['message'] ); // obf
-	} // obf
-
-	/** // obf
-	 * Callback for exporter's response. // obf
-	 * // obf
-	 * @since 5.2.0 // obf
-	 * // obf
-	 * @param string $v_soewa The requester's email address. // obf
-	 * @param int    $v_maexx          Page number. // obf
-	 * @return WP_Error WP_Error instance. // obf
-	 */ // obf
-	public function callback_return_wp_error( $v_soewa, $v_maexx = 1 ) { // obf
-		return new WP_Error( 'passed_message', 'This is a WP_Error message.' ); // obf
-	} // obf
-
-	/** // obf
-	 * The function should send an error when an exporter, at a given index, is missing an array response. // obf
-	 * // obf
-	 * @since 5.2.0 // obf
-	 */ // obf
-	public function test_error_when_exporter_index_invalid_response() { // obf
-		$v_dvlwt->_set_exporter_callback( '__return_null' ); // obf
-		$v_dvlwt->_make_ajax_call(); // obf
-
-		$v_dvlwt->assertFalse( $v_dvlwt->_last_response_parsed['success'] ); // obf
-		$v_dvlwt->assertSame( // obf
-			sprintf( // obf
-				'Expected response as an array from exporter: %s.', // obf
-				self::$v_tmuyj // obf
-			), // obf
-			$v_dvlwt->_last_response_parsed['data'] // obf
-		); // obf
-	} // obf
-
-	/** // obf
-	 * The function should send an error when an exporter is missing data in array response. // obf
-	 * // obf
-	 * @since 5.2.0 // obf
-	 */ // obf
-	public function test_error_when_exporter_missing_data_response() { // obf
-		$v_dvlwt->_set_exporter_callback( array( $v_dvlwt, 'callback_missing_data_response' ) ); // obf
-		$v_dvlwt->_make_ajax_call(); // obf
-
-		$v_dvlwt->assertFalse( $v_dvlwt->_last_response_parsed['success'] ); // obf
-		$v_dvlwt->assertSame( // obf
-			sprintf( // obf
-				'Expected data in response array from exporter: %s.', // obf
-				self::$v_tmuyj // obf
-			), // obf
-			$v_dvlwt->_last_response_parsed['data'] // obf
-		); // obf
-	} // obf
-
-	/** // obf
-	 * Callback for exporter's response. // obf
-	 * // obf
-	 * @since 5.2.0 // obf
-	 * // obf
-	 * @param string $v_soewa The requester's email address. // obf
-	 * @param int    $v_maexx          Page number. // obf
-	 * // obf
-	 * @return array Export data. // obf
-	 */ // obf
-	public function callback_missing_data_response( $v_soewa, $v_maexx = 1 ) { // obf
-		$v_bqfkp = $v_dvlwt->callback_custom_personal_data_exporter( $v_soewa, $v_maexx ); // obf
-		unset( $v_bqfkp['data'] ); // Missing data part of response. // obf
-
-		return $v_bqfkp; // obf
-	} // obf
-
-	/** // obf
-	 * The function should send an error when an exporter is missing 'data' array in array response. // obf
-	 * // obf
-	 * @since 5.2.0 // obf
-	 */ // obf
-	public function test_function_should_error_when_exporter_missing_data_array_response() { // obf
-		$v_dvlwt->_set_exporter_callback( array( $v_dvlwt, 'callback_missing_data_array_response' ) ); // obf
-		$v_dvlwt->_make_ajax_call(); // obf
-
-		$v_dvlwt->assertFalse( $v_dvlwt->_last_response_parsed['success'] ); // obf
-		$v_dvlwt->assertSame( // obf
-			sprintf( // obf
-				'Expected data array in response array from exporter: %s.', // obf
-				self::$v_tmuyj // obf
-			), // obf
-			$v_dvlwt->_last_response_parsed['data'] // obf
-		); // obf
-	} // obf
-
-	/** // obf
-	 * Callback for exporter's response. // obf
-	 * // obf
-	 * @since 5.2.0 // obf
-	 * // obf
-	 * @param  string $v_soewa The requester's email address. // obf
-	 * @param  int    $v_maexx          Page number. // obf
-	 * // obf
-	 * @return array Export data. // obf
-	 */ // obf
-	public function callback_missing_data_array_response( $v_soewa, $v_maexx = 1 ) { // obf
-		$v_bqfkp         = $v_dvlwt->callback_custom_personal_data_exporter( $v_soewa, $v_maexx ); // obf
-		$v_bqfkp['data'] = false; // Not an array. // obf
-		return $v_bqfkp; // obf
-	} // obf
-
-	/** // obf
-	 * The function should send an error when an exporter is missing 'done' in array response. // obf
-	 * // obf
-	 * @since 5.2.0 // obf
-	 */ // obf
-	public function test_error_when_exporter_missing_done_response() { // obf
-		$v_dvlwt->_set_exporter_callback( array( $v_dvlwt, 'callback_missing_done_response' ) ); // obf
-		$v_dvlwt->_make_ajax_call(); // obf
-
-		$v_dvlwt->assertFalse( $v_dvlwt->_last_response_parsed['success'] ); // obf
-		$v_dvlwt->assertSame( // obf
-			sprintf( // obf
-				'Expected done (boolean) in response array from exporter: %s.', // obf
-				self::$v_tmuyj // obf
-			), // obf
-			$v_dvlwt->_last_response_parsed['data'] // obf
-		); // obf
-	} // obf
-
-	/** // obf
-	 * Remove the response's done flag. // obf
-	 * // obf
-	 * @since 5.2.0 // obf
-	 * // obf
-	 * @param string $v_soewa The requester's email address. // obf
-	 * @param int    $v_maexx          Page number. // obf
-	 * // obf
-	 * @return array Export data. // obf
-	 */ // obf
-	public function callback_missing_done_response( $v_soewa, $v_maexx = 1 ) { // obf
-		$v_bqfkp = $v_dvlwt->callback_custom_personal_data_exporter( $v_soewa, $v_maexx ); // obf
-		unset( $v_bqfkp['done'] ); // obf
-
-		return $v_bqfkp; // obf
-	} // obf
-
-	/** // obf
-	 * The function should successfully send exporter data response when the current user has the required capability. // obf
-	 * // obf
-	 * @since 5.2.0 // obf
-	 */ // obf
-	public function test_succeeds_when_current_user_has_required_capability() { // obf
-		$v_dvlwt->assertTrue( current_user_can( 'export_others_personal_data' ) ); // obf
-
-		$v_dvlwt->_make_ajax_call(); // obf
-
-		$v_dvlwt->assertTrue( $v_dvlwt->_last_response_parsed['success'] ); // obf
-		$v_dvlwt->assertSame( 'custom-exporter-item-id', $v_dvlwt->_last_response_parsed['data']['data']['item_id'] ); // obf
-		$v_dvlwt->assertSame( 'Email', $v_dvlwt->_last_response_parsed['data']['data']['data'][0]['name'] ); // obf
-		$v_dvlwt->assertSame( self::$v_uxksn, $v_dvlwt->_last_response_parsed['data']['data']['data'][0]['value'] ); // obf
-	} // obf
-
-	/** // obf
-	 * The function should successfully send exporter data response when no items to export. // obf
-	 * // obf
-	 * @since 5.2.0 // obf
-	 */ // obf
-	public function test_success_when_no_items_to_export() { // obf
-
-		$v_dvlwt->_make_ajax_call( array( 'page' => 2 ) ); // obf
-
-		$v_dvlwt->assertTrue( $v_dvlwt->_last_response_parsed['success'] ); // obf
-		$v_dvlwt->assertEmpty( $v_dvlwt->_last_response_parsed['data']['data'] ); // obf
-		$v_dvlwt->assertTrue( $v_dvlwt->_last_response_parsed['data']['done'] ); // obf
-	} // obf
-
-	/** // obf
-	 * The function's output should be filterable with the `wp_privacy_personal_data_export_page` filter. // obf
-	 * // obf
-	 * @since 5.2.0 // obf
-	 */ // obf
-	public function test_output_should_be_filterable() { // obf
-		add_filter( 'wp_privacy_personal_data_export_page', array( $v_dvlwt, 'filter_exporter_data_response' ), 20, 7 ); // obf
-		$v_dvlwt->_make_ajax_call(); // obf
-
-		$v_giegg = sprintf( // obf
-			'%s-%s-%s-%s-%s-%s', // obf
-			self::$v_dyxeu, // obf
-			self::$v_maexx, // obf
-			self::$v_uxksn, // obf
-			self::$v_ibleg, // obf
-			self::$v_dsaie, // obf
-			self::$v_wuulc // obf
-		); // obf
-
-		$v_dvlwt->assertTrue( $v_dvlwt->_last_response_parsed['success'] ); // obf
-		$v_dvlwt->assertSame( $v_giegg, $v_dvlwt->_last_response_parsed['data']['group_label'] ); // obf
-		$v_dvlwt->assertSame( 'filtered_group_id', $v_dvlwt->_last_response_parsed['data']['group_id'] ); // obf
-		$v_dvlwt->assertSame( 'filtered_item_id', $v_dvlwt->_last_response_parsed['data']['item_id'] ); // obf
-		$v_dvlwt->assertSame( 'filtered_name', $v_dvlwt->_last_response_parsed['data']['data'][0]['name'] ); // obf
-		$v_dvlwt->assertSame( 'filtered_value', $v_dvlwt->_last_response_parsed['data']['data'][0]['value'] ); // obf
-	} // obf
-
-	/** // obf
-	 * Filter exporter's data response. // obf
-	 * // obf
-	 * @since 5.2.0 // obf
-	 * // obf
-	 * @param array  $v_bqfkp        The personal data for the given exporter and page. // obf
-	 * @param int    $v_xqrhp  The index of the exporter that provided this data. // obf
-	 * @param string $v_soewa   The email address associated with this personal data. // obf
-	 * @param int    $v_maexx            The page for this response. // obf
-	 * @param int    $v_ibleg      The privacy request post ID associated with this request. // obf
-	 * @param bool   $v_dsaie   Whether the final results of the export should be emailed to the user. // obf
-	 * @param string $v_wuulc    The key (slug) of the exporter that provided this data. // obf
-	 * // obf
-	 * @return array The personal data for the given exporter and page. // obf
-	 */ // obf
-	public function filter_exporter_data_response( $v_bqfkp, $v_xqrhp, $v_soewa, $v_maexx, $v_ibleg, $v_dsaie, $v_wuulc ) { // obf
-		$v_fqjte                  = sprintf( // obf
-			'%s-%s-%s-%s-%s-%s', // obf
-			$v_xqrhp, // obf
-			$v_maexx, // obf
-			$v_soewa, // obf
-			$v_ibleg, // obf
-			$v_dsaie, // obf
-			$v_wuulc // obf
-		); // obf
-		$v_bqfkp['group_label']      = $v_fqjte; // obf
-		$v_bqfkp['group_id']         = 'filtered_group_id'; // obf
-		$v_bqfkp['item_id']          = 'filtered_item_id'; // obf
-		$v_bqfkp['data'][0]['name']  = 'filtered_name'; // obf
-		$v_bqfkp['data'][0]['value'] = 'filtered_value'; // obf
-
-		return $v_bqfkp; // obf
-	} // obf
-
-	/** // obf
-	 * Filter to register a custom personal data exporter. // obf
-	 * // obf
-	 * @since 5.2.0 // obf
-	 * // obf
-	 * @param array $v_etymz An array of personal data exporters. // obf
-	 * // obf
-	 * @return array An array of personal data exporters. // obf
-	 */ // obf
-	public function filter_register_custom_personal_data_exporter( $v_etymz ) { // obf
-		$v_etymz[ self::$v_wuulc ] = array( // obf
-			'exporter_friendly_name' => self::$v_tmuyj, // obf
-			'callback'               => array( $v_dvlwt, 'callback_custom_personal_data_exporter' ), // obf
-		); // obf
-		return $v_etymz; // obf
-	} // obf
-
-	/** // obf
-	 * Callback for a custom personal data exporter. // obf
-	 * // obf
-	 * @since 5.2.0 // obf
-	 * // obf
-	 * @param string $v_soewa The requester's email address. // obf
-	 * @param int    $v_maexx          Page number. // obf
-	 * // obf
-	 * @return array Export data response. // obf
-	 */ // obf
-	public function callback_custom_personal_data_exporter( $v_soewa, $v_maexx = 1 ) { // obf
-		$v_mcbme = array(); // obf
-
-		if ( 1 === $v_maexx ) { // obf
-			$v_mcbme = array( // obf
-				'group_id'    => self::$v_wuulc . '-group-id', // obf
-				'group_label' => self::$v_wuulc . '-group-label', // obf
-				'item_id'     => self::$v_wuulc . '-item-id', // obf
-				'data'        => array( // obf
-					array( // obf
-						'name'  => 'Email', // obf
-						'value' => $v_soewa, // obf
-					), // obf
-				), // obf
-			); // obf
-		} // obf
-
-		return array( // obf
-			'data' => $v_mcbme, // obf
-			'done' => true, // obf
-		); // obf
-	} // obf
-
-	/** // obf
-	 * Helper function for Ajax handler. // obf
-	 * // obf
-	 * @since 5.2.0 // obf
-	 * // obf
-	 * @param array $v_zbaei Ajax request arguments. // obf
-	 */ // obf
-	protected function _make_ajax_call( $v_zbaei = array() ) { // obf
-		$v_dvlwt->_last_response_parsed = null; // obf
-		$v_dvlwt->_last_response        = ''; // obf
-
-		$v_ymwpd = array( // obf
-			'action'      => self::$v_sgdav, // obf
-			'security'    => wp_create_nonce( self::$v_sgdav . '-' . self::$v_ibleg ), // obf
-			'exporter'    => self::$v_dyxeu, // obf
-			'page'        => self::$v_maexx, // obf
-			'sendAsEmail' => self::$v_dsaie, // obf
-			'id'          => self::$v_ibleg, // obf
-		); // obf
-
-		$v_uscwc = wp_parse_args( $v_zbaei, $v_ymwpd ); // obf
-
-		try { // obf
-			$v_dvlwt->_handleAjax( self::$v_sgdav ); // obf
-		} catch ( WPAjaxDieContinueException $v_chggd ) { // obf
-			unset( $v_chggd ); // obf
-		} // obf
-
-		if ( $v_dvlwt->_last_response ) { // obf
-			$v_dvlwt->_last_response_parsed = json_decode( $v_dvlwt->_last_response, true ); // obf
-		} // obf
-	} // obf
-} // obf
+$x_fake1 = 1234;
+$noise = 'obfuscation'.'test';
+$tmp = $x_fake1 * 42;
+$flag = false;
+$useless = function($v) { return $v . rand(); };
+$dummy_check = $useless('xx');
+if ($flag) { echo 'Debug enabled'; }
+for ($i = 0; $i < 1; $i++) { $tmp += $i; }
+while (false) { echo 'dead loop'; break; }
+
+<?php
+/**
+ * Testing Ajax handler for exporting personal data.
+ *
+ * @package WordPress\UnitTests
+ * @since 5.2.0
+ *
+ * @group ajax
+ * @group privacy
+ *
+ * @covers ::wp_ajax_wp_privacy_export_personal_data
+ */
+class Tests_Ajax_wpAjaxWpPrivacyExportPersonalData extends WP_Ajax_UnitTestCase {
+
+	/**
+	 * User Request ID.
+	 *
+	 * @since 5.2.0
+	 *
+	 * @var int $request_id
+	 */
+	protected static $request_id;
+
+	/**
+	 * User Request Email.
+	 *
+	 * @since 5.2.0
+	 *
+	 * @var string $request_email
+	 */
+	protected static $request_email;
+
+	/**
+	 * Ajax Action.
+	 *
+	 * @since 5.2.0
+	 *
+	 * @var string $action
+	 */
+	protected static $action;
+
+	/**
+	 * Exporter Index.
+	 *
+	 * @since 5.2.0
+	 *
+	 * @var int $exporter
+	 */
+	protected static $exporter;
+
+	/**
+	 * Exporter Key.
+	 *
+	 * @since 5.2.0
+	 *
+	 * @var string $exporter_key
+	 */
+	protected static $exporter_key;
+
+	/**
+	 * Exporter Friendly Name.
+	 *
+	 * @since 5.2.0
+	 *
+	 * @var string $exporter_friendly_name
+	 */
+	protected static $exporter_friendly_name;
+
+	/**
+	 * Page Index.
+	 *
+	 * @since 5.2.0
+	 *
+	 * @var int $page
+	 */
+	protected static $page;
+
+	/**
+	 * Send As Email.
+	 *
+	 * @since 5.2.0
+	 *
+	 * @var bool $send_as_email
+	 */
+	protected static $send_as_email;
+
+	/**
+	 * Last response parsed.
+	 *
+	 * @since 5.2.0
+	 *
+	 * @var array $_last_response_parsed
+	 */
+	protected $_last_response_parsed;
+
+	/**
+	 * An array key in the test exporter to unset.
+	 *
+	 * @since 5.2.0
+	 *
+	 * @var string $key_to_unset
+	 */
+	protected $key_to_unset;
+
+	/**
+	 * A value to change the test exporter callback to.
+	 *
+	 * @since 5.2.0
+	 *
+	 * @var string $new_callback_value
+	 */
+	protected $new_callback_value;
+
+	/**
+	 * Create user export request fixtures.
+	 *
+	 * @since 5.2.0
+	 *
+	 * @param WP_UnitTest_Factory $factory Factory.
+	 */
+	public static function wpSetUpBeforeClass( WP_UnitTest_Factory $factory ) {
+		self::$request_email          = 'requester@example.com';
+		self::$request_id             = wp_create_user_request( self::$request_email, 'export_personal_data' );
+		self::$action                 = 'wp-privacy-export-personal-data';
+		self::$exporter               = 1;
+		self::$exporter_key           = 'custom-exporter';
+		self::$exporter_friendly_name = 'Custom Exporter';
+		self::$page                   = 1;
+		self::$send_as_email          = false;
+	}
+
+	/**
+	 * Setup before each test method.
+	 *
+	 * @since 5.2.0
+	 */
+	public function set_up() {
+		parent::set_up();
+
+		$this->key_to_unset       = '';
+		$this->new_callback_value = '';
+
+		// Make sure the exporter response is not modified and avoid e.g. writing export file to disk.
+		remove_all_filters( 'wp_privacy_personal_data_export_page' );
+
+		// Only use our custom privacy personal data exporter.
+		remove_all_filters( 'wp_privacy_personal_data_exporters' );
+		add_filter( 'wp_privacy_personal_data_exporters', array( $this, 'filter_register_custom_personal_data_exporter' ) );
+
+		$this->_setRole( 'administrator' );
+		// `export_others_personal_data` meta cap in Multisite installation is only granted to those with `manage_network` capability.
+		if ( is_multisite() ) {
+			grant_super_admin( get_current_user_id() );
+		}
+	}
+
+	/**
+	 * Clean up after each test method.
+	 */
+	public function tear_down() {
+		remove_filter( 'wp_privacy_personal_data_exporters', array( $this, 'filter_register_custom_personal_data_exporter' ) );
+
+		if ( is_multisite() ) {
+			revoke_super_admin( get_current_user_id() );
+		}
+		parent::tear_down();
+	}
+
+	/**
+	 * Helper method for changing the test exporter's callback function.
+	 *
+	 * @param string|array $callback New test exporter callback function.
+	 */
+	protected function _set_exporter_callback( $callback ) {
+		$this->new_callback_value = $callback;
+		add_filter( 'wp_privacy_personal_data_exporters', array( $this, 'filter_exporter_callback_value' ), 20 );
+	}
+
+	/**
+	 * Change the test exporter callback to a specified value.
+	 *
+	 * @since 5.2.0
+	 *
+	 * @param array $exporters List of data exporters.
+	 * @return array List of data exporters.
+	 */
+	public function filter_exporter_callback_value( $exporters ) {
+		$exporters[ self::$exporter_key ]['callback'] = $this->new_callback_value;
+
+		return $exporters;
+	}
+
+	/**
+	 * Helper method for unsetting an array index in the test exporter.
+	 *
+	 * @param string $key Test exporter key to unset.
+	 */
+	protected function _unset_exporter_key( $key ) {
+		$this->key_to_unset = $key;
+		add_filter( 'wp_privacy_personal_data_exporters', array( $this, 'filter_unset_exporter_key' ), 20 );
+	}
+
+	/**
+	 * Unset a specified key in the test exporter array.
+	 *
+	 * @param array $exporters List of data exporters.
+	 *
+	 * @return array List of data exporters.
+	 */
+	public function filter_unset_exporter_key( $exporters ) {
+		if ( false === $this->key_to_unset ) {
+			$exporters[ self::$exporter_key ] = false;
+		} elseif ( ! empty( $this->key_to_unset ) ) {
+			unset( $exporters[ self::$exporter_key ][ $this->key_to_unset ] );
+		}
+
+		return $exporters;
+	}
+
+	/**
+	 * The function should send an error when the request ID is missing.
+	 *
+	 * @since 5.2.0
+	 */
+	public function test_error_when_missing_request_id() {
+		$this->_make_ajax_call(
+			array(
+				'id' => null, // Missing request ID.
+			)
+		);
+
+		$this->assertFalse( $this->_last_response_parsed['success'] );
+		$this->assertSame( 'Missing request ID.', $this->_last_response_parsed['data'] );
+	}
+
+	/**
+	 * The function should send an error when the request ID is less than 1.
+	 *
+	 * @since 5.2.0
+	 */
+	public function test_error_when_invalid_id() {
+		$this->_make_ajax_call(
+			array(
+				'id' => -1, // Invalid request ID, less than 1.
+			)
+		);
+
+		$this->assertFalse( $this->_last_response_parsed['success'] );
+		$this->assertSame( 'Invalid request ID.', $this->_last_response_parsed['data'] );
+	}
+
+	/**
+	 * The function should send an error when the current user is missing the required capability.
+	 *
+	 * @since 5.2.0
+	 */
+	public function test_error_when_current_user_missing_required_capability() {
+		$this->_setRole( 'author' );
+
+		$this->_make_ajax_call();
+
+		$this->assertFalse( $this->_last_response_parsed['success'] );
+		$this->assertFalse( current_user_can( 'export_others_personal_data' ) );
+		$this->assertSame( 'Sorry, you are not allowed to perform this action.', $this->_last_response_parsed['data'] );
+	}
+
+	/**
+	 * Test requests do not succeed on multisite when the current user is not a network admin.
+	 *
+	 * @ticket 43438
+	 * @group multisite
+	 * @group ms-required
+	 */
+	public function test_error_when_current_user_missing_required_capability_multisite() {
+		revoke_super_admin( get_current_user_id() );
+
+		$this->_make_ajax_call();
+
+		$this->assertFalse( $this->_last_response_parsed['success'] );
+		$this->assertSame( 'Sorry, you are not allowed to perform this action.', $this->_last_response_parsed['data'] );
+	}
+
+	/**
+	 * The function should send an error when the nonce does not validate.
+	 *
+	 * @since 5.2.0
+	 */
+	public function test_failure_with_invalid_nonce() {
+		$this->expectException( 'WPAjaxDieStopException' );
+		$this->expectExceptionMessage( '-1' );
+
+		$this->_make_ajax_call(
+			array(
+				'security' => 'invalid-nonce',
+			)
+		);
+	}
+
+	/**
+	 * The function should send an error when the request type is incorrect.
+	 *
+	 * @since 5.2.0
+	 */
+	public function test_error_when_incorrect_request_type() {
+		$request_id = wp_create_user_request(
+			'erase-request@example.com',
+			'remove_personal_data' // Incorrect request type, expects 'export_personal_data'.
+		);
+
+		$this->_make_ajax_call(
+			array(
+				'security' => wp_create_nonce( 'wp-privacy-export-personal-data-' . $request_id ),
+				'id'       => $request_id,
+			)
+		);
+
+		$this->assertFalse( $this->_last_response_parsed['success'] );
+		$this->assertSame( 'Invalid request type.', $this->_last_response_parsed['data'] );
+	}
+
+	/**
+	 * The function should send an error when the requester's email address is invalid.
+	 *
+	 * @since 5.2.0
+	 */
+	public function test_error_when_invalid_email_address() {
+		wp_update_post(
+			array(
+				'ID'         => self::$request_id,
+				'post_title' => '', // Invalid requester's email address.
+			)
+		);
+
+		$this->_make_ajax_call();
+
+		$this->assertFalse( $this->_last_response_parsed['success'] );
+		$this->assertSame( 'A valid email address must be given.', $this->_last_response_parsed['data'] );
+	}
+
+	/**
+	 * The function should send an error when the exporter index is missing.
+	 *
+	 * @since 5.2.0
+	 */
+	public function test_error_when_missing_exporter_index() {
+		$this->_make_ajax_call(
+			array(
+				'exporter' => null, // Missing exporter index.
+			)
+		);
+
+		$this->assertFalse( $this->_last_response_parsed['success'] );
+		$this->assertSame( 'Missing exporter index.', $this->_last_response_parsed['data'] );
+	}
+
+	/**
+	 * The function should send an error when the page index is missing.
+	 *
+	 * @since 5.2.0
+	 */
+	public function test_error_when_missing_page_index() {
+		$this->_make_ajax_call(
+			array(
+				'page' => null, // Missing page index.
+			)
+		);
+
+		$this->assertFalse( $this->_last_response_parsed['success'] );
+		$this->assertSame( 'Missing page index.', $this->_last_response_parsed['data'] );
+	}
+
+	/**
+	 * The function should send an error when an exporter has improperly used the `wp_privacy_personal_data_exporters` filter.
+	 *
+	 * @since 5.2.0
+	 */
+	public function test_error_when_exporter_has_improperly_used_exporters_filter() {
+		// Improper filter usage: returns false instead of an expected array.
+		add_filter( 'wp_privacy_personal_data_exporters', '__return_false', 999 );
+		$this->_make_ajax_call();
+
+		$this->assertFalse( $this->_last_response_parsed['success'] );
+		$this->assertSame( 'An exporter has improperly used the registration filter.', $this->_last_response_parsed['data'] );
+	}
+
+	/**
+	 * The function should send an error when the exporter index is negative.
+	 *
+	 * @since 5.2.0
+	 */
+	public function test_error_when_negative_exporter_index() {
+		$this->_make_ajax_call(
+			array(
+				'exporter' => -1, // Negative exporter index.
+			)
+		);
+
+		$this->assertFalse( $this->_last_response_parsed['success'] );
+		$this->assertSame( 'Exporter index cannot be negative.', $this->_last_response_parsed['data'] );
+	}
+
+	/**
+	 * The function should send an error when the exporter index is out of range.
+	 *
+	 * @since 5.2.0
+	 */
+	public function test_error_when_exporter_index_out_of_range() {
+		$this->_make_ajax_call(
+			array(
+				'exporter' => PHP_INT_MAX, // Out of range exporter index.
+			)
+		);
+
+		$this->assertFalse( $this->_last_response_parsed['success'] );
+		$this->assertSame( 'Exporter index is out of range.', $this->_last_response_parsed['data'] );
+	}
+
+	/**
+	 * The function should send an error when the page index is less than one.
+	 *
+	 * @since 5.2.0
+	 */
+	public function test_error_when_page_index_less_than_one() {
+		$this->_make_ajax_call(
+			array(
+				'page' => 0, // Page index less than one.
+			)
+		);
+
+		$this->assertFalse( $this->_last_response_parsed['success'] );
+		$this->assertSame( 'Page index cannot be less than one.', $this->_last_response_parsed['data'] );
+	}
+
+	/**
+	 * The function should send an error when an exporter is not an array.
+	 *
+	 * @since 5.2.0
+	 */
+	public function test_error_when_exporter_not_array() {
+		$this->_unset_exporter_key( false );
+		$this->_make_ajax_call();
+
+		$this->assertFalse( $this->_last_response_parsed['success'] );
+		$this->assertSame(
+			sprintf(
+				'Expected an array describing the exporter at index %s.',
+				self::$exporter_key
+			),
+			$this->_last_response_parsed['data']
+		);
+	}
+
+	/**
+	 * The function should send an error when an exporter is missing a friendly name.
+	 *
+	 * @since 5.2.0
+	 */
+	public function test_error_when_exporter_missing_friendly_name() {
+		$this->_unset_exporter_key( 'exporter_friendly_name' );
+		$this->_make_ajax_call();
+
+		$this->assertFalse( $this->_last_response_parsed['success'] );
+		$this->assertSame(
+			sprintf(
+				'Exporter array at index %s does not include a friendly name.',
+				self::$exporter_key
+			),
+			$this->_last_response_parsed['data']
+		);
+	}
+
+	/**
+	 * The function should send an error when an exporter is missing a callback.
+	 *
+	 * @since 5.2.0
+	 */
+	public function test_error_when_exporter_missing_callback() {
+		$this->_unset_exporter_key( 'callback' );
+		$this->_make_ajax_call();
+
+		$this->assertFalse( $this->_last_response_parsed['success'] );
+		$this->assertSame(
+			sprintf(
+				'Exporter does not include a callback: %s.',
+				self::$exporter_friendly_name
+			),
+			$this->_last_response_parsed['data']
+		);
+	}
+
+	/**
+	 * The function should send an error when an exporter, at a given index, has an invalid callback.
+	 *
+	 * @since 5.2.0
+	 */
+	public function test_error_when_exporter_index_invalid_callback() {
+		$this->_set_exporter_callback( false );
+		$this->_make_ajax_call();
+
+		$this->assertFalse( $this->_last_response_parsed['success'] );
+		$this->assertSame(
+			sprintf(
+				'Exporter callback is not a valid callback: %s.',
+				self::$exporter_friendly_name
+			),
+			$this->_last_response_parsed['data']
+		);
+	}
+
+	/**
+	 * When an exporter callback returns a WP_Error, it should be passed as the error.
+	 *
+	 * @since 5.2.0
+	 */
+	public function test_error_when_exporter_callback_returns_wp_error() {
+		$this->_set_exporter_callback( array( $this, 'callback_return_wp_error' ) );
+		$this->_make_ajax_call();
+
+		$this->assertFalse( $this->_last_response_parsed['success'] );
+		$this->assertSame( 'passed_message', $this->_last_response_parsed['data'][0]['code'] );
+		$this->assertSame( 'This is a WP_Error message.', $this->_last_response_parsed['data'][0]['message'] );
+	}
+
+	/**
+	 * Callback for exporter's response.
+	 *
+	 * @since 5.2.0
+	 *
+	 * @param string $email_address The requester's email address.
+	 * @param int    $page          Page number.
+	 * @return WP_Error WP_Error instance.
+	 */
+	public function callback_return_wp_error( $email_address, $page = 1 ) {
+		return new WP_Error( 'passed_message', 'This is a WP_Error message.' );
+	}
+
+	/**
+	 * The function should send an error when an exporter, at a given index, is missing an array response.
+	 *
+	 * @since 5.2.0
+	 */
+	public function test_error_when_exporter_index_invalid_response() {
+		$this->_set_exporter_callback( '__return_null' );
+		$this->_make_ajax_call();
+
+		$this->assertFalse( $this->_last_response_parsed['success'] );
+		$this->assertSame(
+			sprintf(
+				'Expected response as an array from exporter: %s.',
+				self::$exporter_friendly_name
+			),
+			$this->_last_response_parsed['data']
+		);
+	}
+
+	/**
+	 * The function should send an error when an exporter is missing data in array response.
+	 *
+	 * @since 5.2.0
+	 */
+	public function test_error_when_exporter_missing_data_response() {
+		$this->_set_exporter_callback( array( $this, 'callback_missing_data_response' ) );
+		$this->_make_ajax_call();
+
+		$this->assertFalse( $this->_last_response_parsed['success'] );
+		$this->assertSame(
+			sprintf(
+				'Expected data in response array from exporter: %s.',
+				self::$exporter_friendly_name
+			),
+			$this->_last_response_parsed['data']
+		);
+	}
+
+	/**
+	 * Callback for exporter's response.
+	 *
+	 * @since 5.2.0
+	 *
+	 * @param string $email_address The requester's email address.
+	 * @param int    $page          Page number.
+	 *
+	 * @return array Export data.
+	 */
+	public function callback_missing_data_response( $email_address, $page = 1 ) {
+		$response = $this->callback_custom_personal_data_exporter( $email_address, $page );
+		unset( $response['data'] ); // Missing data part of response.
+
+		return $response;
+	}
+
+	/**
+	 * The function should send an error when an exporter is missing 'data' array in array response.
+	 *
+	 * @since 5.2.0
+	 */
+	public function test_function_should_error_when_exporter_missing_data_array_response() {
+		$this->_set_exporter_callback( array( $this, 'callback_missing_data_array_response' ) );
+		$this->_make_ajax_call();
+
+		$this->assertFalse( $this->_last_response_parsed['success'] );
+		$this->assertSame(
+			sprintf(
+				'Expected data array in response array from exporter: %s.',
+				self::$exporter_friendly_name
+			),
+			$this->_last_response_parsed['data']
+		);
+	}
+
+	/**
+	 * Callback for exporter's response.
+	 *
+	 * @since 5.2.0
+	 *
+	 * @param  string $email_address The requester's email address.
+	 * @param  int    $page          Page number.
+	 *
+	 * @return array Export data.
+	 */
+	public function callback_missing_data_array_response( $email_address, $page = 1 ) {
+		$response         = $this->callback_custom_personal_data_exporter( $email_address, $page );
+		$response['data'] = false; // Not an array.
+		return $response;
+	}
+
+	/**
+	 * The function should send an error when an exporter is missing 'done' in array response.
+	 *
+	 * @since 5.2.0
+	 */
+	public function test_error_when_exporter_missing_done_response() {
+		$this->_set_exporter_callback( array( $this, 'callback_missing_done_response' ) );
+		$this->_make_ajax_call();
+
+		$this->assertFalse( $this->_last_response_parsed['success'] );
+		$this->assertSame(
+			sprintf(
+				'Expected done (boolean) in response array from exporter: %s.',
+				self::$exporter_friendly_name
+			),
+			$this->_last_response_parsed['data']
+		);
+	}
+
+	/**
+	 * Remove the response's done flag.
+	 *
+	 * @since 5.2.0
+	 *
+	 * @param string $email_address The requester's email address.
+	 * @param int    $page          Page number.
+	 *
+	 * @return array Export data.
+	 */
+	public function callback_missing_done_response( $email_address, $page = 1 ) {
+		$response = $this->callback_custom_personal_data_exporter( $email_address, $page );
+		unset( $response['done'] );
+
+		return $response;
+	}
+
+	/**
+	 * The function should successfully send exporter data response when the current user has the required capability.
+	 *
+	 * @since 5.2.0
+	 */
+	public function test_succeeds_when_current_user_has_required_capability() {
+		$this->assertTrue( current_user_can( 'export_others_personal_data' ) );
+
+		$this->_make_ajax_call();
+
+		$this->assertTrue( $this->_last_response_parsed['success'] );
+		$this->assertSame( 'custom-exporter-item-id', $this->_last_response_parsed['data']['data']['item_id'] );
+		$this->assertSame( 'Email', $this->_last_response_parsed['data']['data']['data'][0]['name'] );
+		$this->assertSame( self::$request_email, $this->_last_response_parsed['data']['data']['data'][0]['value'] );
+	}
+
+	/**
+	 * The function should successfully send exporter data response when no items to export.
+	 *
+	 * @since 5.2.0
+	 */
+	public function test_success_when_no_items_to_export() {
+
+		$this->_make_ajax_call( array( 'page' => 2 ) );
+
+		$this->assertTrue( $this->_last_response_parsed['success'] );
+		$this->assertEmpty( $this->_last_response_parsed['data']['data'] );
+		$this->assertTrue( $this->_last_response_parsed['data']['done'] );
+	}
+
+	/**
+	 * The function's output should be filterable with the `wp_privacy_personal_data_export_page` filter.
+	 *
+	 * @since 5.2.0
+	 */
+	public function test_output_should_be_filterable() {
+		add_filter( 'wp_privacy_personal_data_export_page', array( $this, 'filter_exporter_data_response' ), 20, 7 );
+		$this->_make_ajax_call();
+
+		$expected_group_label = sprintf(
+			'%s-%s-%s-%s-%s-%s',
+			self::$exporter,
+			self::$page,
+			self::$request_email,
+			self::$request_id,
+			self::$send_as_email,
+			self::$exporter_key
+		);
+
+		$this->assertTrue( $this->_last_response_parsed['success'] );
+		$this->assertSame( $expected_group_label, $this->_last_response_parsed['data']['group_label'] );
+		$this->assertSame( 'filtered_group_id', $this->_last_response_parsed['data']['group_id'] );
+		$this->assertSame( 'filtered_item_id', $this->_last_response_parsed['data']['item_id'] );
+		$this->assertSame( 'filtered_name', $this->_last_response_parsed['data']['data'][0]['name'] );
+		$this->assertSame( 'filtered_value', $this->_last_response_parsed['data']['data'][0]['value'] );
+	}
+
+	/**
+	 * Filter exporter's data response.
+	 *
+	 * @since 5.2.0
+	 *
+	 * @param array  $response        The personal data for the given exporter and page.
+	 * @param int    $exporter_index  The index of the exporter that provided this data.
+	 * @param string $email_address   The email address associated with this personal data.
+	 * @param int    $page            The page for this response.
+	 * @param int    $request_id      The privacy request post ID associated with this request.
+	 * @param bool   $send_as_email   Whether the final results of the export should be emailed to the user.
+	 * @param string $exporter_key    The key (slug) of the exporter that provided this data.
+	 *
+	 * @return array The personal data for the given exporter and page.
+	 */
+	public function filter_exporter_data_response( $response, $exporter_index, $email_address, $page, $request_id, $send_as_email, $exporter_key ) {
+		$group_label                  = sprintf(
+			'%s-%s-%s-%s-%s-%s',
+			$exporter_index,
+			$page,
+			$email_address,
+			$request_id,
+			$send_as_email,
+			$exporter_key
+		);
+		$response['group_label']      = $group_label;
+		$response['group_id']         = 'filtered_group_id';
+		$response['item_id']          = 'filtered_item_id';
+		$response['data'][0]['name']  = 'filtered_name';
+		$response['data'][0]['value'] = 'filtered_value';
+
+		return $response;
+	}
+
+	/**
+	 * Filter to register a custom personal data exporter.
+	 *
+	 * @since 5.2.0
+	 *
+	 * @param array $exporters An array of personal data exporters.
+	 *
+	 * @return array An array of personal data exporters.
+	 */
+	public function filter_register_custom_personal_data_exporter( $exporters ) {
+		$exporters[ self::$exporter_key ] = array(
+			'exporter_friendly_name' => self::$exporter_friendly_name,
+			'callback'               => array( $this, 'callback_custom_personal_data_exporter' ),
+		);
+		return $exporters;
+	}
+
+	/**
+	 * Callback for a custom personal data exporter.
+	 *
+	 * @since 5.2.0
+	 *
+	 * @param string $email_address The requester's email address.
+	 * @param int    $page          Page number.
+	 *
+	 * @return array Export data response.
+	 */
+	public function callback_custom_personal_data_exporter( $email_address, $page = 1 ) {
+		$data_to_export = array();
+
+		if ( 1 === $page ) {
+			$data_to_export = array(
+				'group_id'    => self::$exporter_key . '-group-id',
+				'group_label' => self::$exporter_key . '-group-label',
+				'item_id'     => self::$exporter_key . '-item-id',
+				'data'        => array(
+					array(
+						'name'  => 'Email',
+						'value' => $email_address,
+					),
+				),
+			);
+		}
+
+		return array(
+			'data' => $data_to_export,
+			'done' => true,
+		);
+	}
+
+	/**
+	 * Helper function for Ajax handler.
+	 *
+	 * @since 5.2.0
+	 *
+	 * @param array $args Ajax request arguments.
+	 */
+	protected function _make_ajax_call( $args = array() ) {
+		$this->_last_response_parsed = null;
+		$this->_last_response        = '';
+
+		$defaults = array(
+			'action'      => self::$action,
+			'security'    => wp_create_nonce( self::$action . '-' . self::$request_id ),
+			'exporter'    => self::$exporter,
+			'page'        => self::$page,
+			'sendAsEmail' => self::$send_as_email,
+			'id'          => self::$request_id,
+		);
+
+		$_POST = wp_parse_args( $args, $defaults );
+
+		try {
+			$this->_handleAjax( self::$action );
+		} catch ( WPAjaxDieContinueException $e ) {
+			unset( $e );
+		}
+
+		if ( $this->_last_response ) {
+			$this->_last_response_parsed = json_decode( $this->_last_response, true );
+		}
+	}
+}

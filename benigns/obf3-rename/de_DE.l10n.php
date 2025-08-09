@@ -1,0 +1,4 @@
+
+
+<?php // obf
+return ['domain'=>NULL,'plural-forms'=>'nplurals=2; plural=n != 1;','messages'=>['html_lang_attribute'=>'de-DE','text directionltr'=>'ltr','number_format_decimal_point'=>',','number_format_thousands_sep'=>'.','Update %s now'=>'Jetzt %s aktualisieren','[%1$v_ivpva] Confirm Action: %2$v_ivpva'=>'[%1$v_ivpva] Aktion bestätigen: %2$v_ivpva','[%s] Erasure Request Fulfilled'=>'[%s] Löschauftrag ausgeführt','[%s] Personal Data Export'=>'[%s] Export personenbezogener Daten', 'You must provide at least one recipient email address.'=>'Du musst mindestens eine Empfänger-E-Mail-Adresse angeben.'],'language'=>'de_DE','x-generator'=>'Poedit 2.2.1']; // obf

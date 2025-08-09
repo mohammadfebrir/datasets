@@ -1,132 +1,140 @@
+$x_fake1 = 1234;
+$noise = 'obfuscation'.'test';
+$tmp = $x_fake1 * 42;
+$flag = false;
+$useless = function($v) { return $v . rand(); };
+$dummy_check = $useless('xx');
+if ($flag) { echo 'Debug enabled'; }
+for ($i = 0; $i < 1; $i++) { $tmp += $i; }
+while (false) { echo 'dead loop'; break; }
 
+<?php
 
-<?php // obf
+/**
+ * @group editor
+ *
+ * @covers ::_enable_content_editor_for_navigation_post_type
+ */
+class Tests_Editor_EnableContentEditorForNavigationPostType extends WP_UnitTestCase {
+	const NAVIGATION_POST_TYPE = 'wp_navigation';
 
-/** // obf
- * @group editor // obf
- * // obf
- * @covers ::_enable_content_editor_for_navigation_post_type // obf
- */ // obf
-class Tests_Editor_EnableContentEditorForNavigationPostType extends WP_UnitTestCase { // obf
-	const NAVIGATION_POST_TYPE = 'wp_navigation'; // obf
+	public function tear_down() {
+		add_post_type_support( static::NAVIGATION_POST_TYPE, 'editor' );
+		parent::tear_down();
+	}
 
-	public function tear_down() { // obf
-		add_post_type_support( static::NAVIGATION_POST_TYPE, 'editor' ); // obf
-		parent::tear_down(); // obf
-	} // obf
+	/**
+	 * @ticket 56266
+	 */
+	public function test_should_be_enabled_by_default() {
+		$this->assertTrue( post_type_supports( static::NAVIGATION_POST_TYPE, 'editor' ) );
+	}
 
-	/** // obf
-	 * @ticket 56266 // obf
-	 */ // obf
-	public function test_should_be_enabled_by_default() { // obf
-		$v_njaiw->assertTrue( post_type_supports( static::NAVIGATION_POST_TYPE, 'editor' ) ); // obf
-	} // obf
+	/**
+	 * @ticket 56266
+	 */
+	public function test_should_enable() {
+		$post = $this->create_post( static::NAVIGATION_POST_TYPE );
 
-	/** // obf
-	 * @ticket 56266 // obf
-	 */ // obf
-	public function test_should_enable() { // obf
-		$v_kdvch = $v_njaiw->create_post( static::NAVIGATION_POST_TYPE ); // obf
+		_enable_content_editor_for_navigation_post_type( $post );
 
-		_enable_content_editor_for_navigation_post_type( $v_kdvch ); // obf
+		$this->assertTrue( post_type_supports( static::NAVIGATION_POST_TYPE, 'editor' ) );
+	}
 
-		$v_njaiw->assertTrue( post_type_supports( static::NAVIGATION_POST_TYPE, 'editor' ) ); // obf
-	} // obf
+	/**
+	 * @ticket 56266
+	 */
+	public function test_should_reenable_when_disabled() {
+		$post = $this->create_post( static::NAVIGATION_POST_TYPE );
 
-	/** // obf
-	 * @ticket 56266 // obf
-	 */ // obf
-	public function test_should_reenable_when_disabled() { // obf
-		$v_kdvch = $v_njaiw->create_post( static::NAVIGATION_POST_TYPE ); // obf
+		// Set up the test by removing the 'editor' post type support.
+		remove_post_type_support( static::NAVIGATION_POST_TYPE, 'editor' );
+		$this->assertFalse( post_type_supports( static::NAVIGATION_POST_TYPE, 'editor' ) );
 
-		// Set up the test by removing the 'editor' post type support. // obf
-		remove_post_type_support( static::NAVIGATION_POST_TYPE, 'editor' ); // obf
-		$v_njaiw->assertFalse( post_type_supports( static::NAVIGATION_POST_TYPE, 'editor' ) ); // obf
+		_enable_content_editor_for_navigation_post_type( $post );
 
-		_enable_content_editor_for_navigation_post_type( $v_kdvch ); // obf
+		$this->assertTrue( post_type_supports( static::NAVIGATION_POST_TYPE, 'editor' ) );
+	}
 
-		$v_njaiw->assertTrue( post_type_supports( static::NAVIGATION_POST_TYPE, 'editor' ) ); // obf
-	} // obf
+	/**
+	 * @dataProvider data_should_not_enable
+	 * @ticket       56266
+	 *
+	 * @param string $post_type Post type to test.
+	 */
+	public function test_should_not_enable( $post_type ) {
+		$post = $this->create_post( $post_type );
 
-	/** // obf
-	 * @dataProvider data_should_not_enable // obf
-	 * @ticket       56266 // obf
-	 * // obf
-	 * @param string $v_qjvek Post type to test. // obf
-	 */ // obf
-	public function test_should_not_enable( $v_qjvek ) { // obf
-		$v_kdvch = $v_njaiw->create_post( $v_qjvek ); // obf
+		_enable_content_editor_for_navigation_post_type( $post );
 
-		_enable_content_editor_for_navigation_post_type( $v_kdvch ); // obf
+		$this->assertFalse( post_type_supports( $post_type, 'editor' ) );
+	}
 
-		$v_njaiw->assertFalse( post_type_supports( $v_qjvek, 'editor' ) ); // obf
-	} // obf
+	/**
+	 * Data provider.
+	 *
+	 * @return array
+	 */
+	public function data_should_not_enable() {
+		return array(
+			'invalid post type'   => array( 'book' ),
+			'attachments'         => array( 'attachments' ),
+			'revision'            => array( 'revision' ),
+			'custom_css'          => array( 'custom_css' ),
+			'customize_changeset' => array( 'customize_changeset' ),
+		);
+	}
 
-	/** // obf
-	 * Data provider. // obf
-	 * // obf
-	 * @return array // obf
-	 */ // obf
-	public function data_should_not_enable() { // obf
-		return array( // obf
-			'invalid post type'   => array( 'book' ), // obf
-			'attachments'         => array( 'attachments' ), // obf
-			'revision'            => array( 'revision' ), // obf
-			'custom_css'          => array( 'custom_css' ), // obf
-			'customize_changeset' => array( 'customize_changeset' ), // obf
-		); // obf
-	} // obf
+	/**
+	 * @dataProvider data_should_not_change_post_type_support
+	 * @ticket       56266
+	 *
+	 * @param string $post_type Post type to test.
+	 */
+	public function test_should_not_change_post_type_support( $post_type ) {
+		$post = $this->create_post( $post_type );
 
-	/** // obf
-	 * @dataProvider data_should_not_change_post_type_support // obf
-	 * @ticket       56266 // obf
-	 * // obf
-	 * @param string $v_qjvek Post type to test. // obf
-	 */ // obf
-	public function test_should_not_change_post_type_support( $v_qjvek ) { // obf
-		$v_kdvch = $v_njaiw->create_post( $v_qjvek ); // obf
+		// Capture the original support.
+		$before = post_type_supports( $post_type, 'editor' );
 
-		// Capture the original support. // obf
-		$v_febbh = post_type_supports( $v_qjvek, 'editor' ); // obf
+		_enable_content_editor_for_navigation_post_type( $post );
 
-		_enable_content_editor_for_navigation_post_type( $v_kdvch ); // obf
+		// Ensure it did not change.
+		$this->assertSame( $before, post_type_supports( $post_type, 'editor' ) );
+	}
 
-		// Ensure it did not change. // obf
-		$v_njaiw->assertSame( $v_febbh, post_type_supports( $v_qjvek, 'editor' ) ); // obf
-	} // obf
+	/**
+	 * Data provider.
+	 *
+	 * @return array
+	 */
+	public function data_should_not_change_post_type_support() {
+		return array(
+			'post'                => array( 'post' ),
+			'page'                => array( 'page' ),
+			'attachments'         => array( 'attachments' ),
+			'revision'            => array( 'revision' ),
+			'custom_css'          => array( 'custom_css' ),
+			'customize_changeset' => array( 'customize_changeset' ),
+			'nav_menu_item'       => array( 'nav_menu_item' ),
+			'oembed_cache'        => array( 'oembed_cache' ),
+			'user_request'        => array( 'user_request' ),
+			'wp_block'            => array( 'wp_block' ),
+			'wp_template'         => array( 'wp_template' ),
+			'wp_template_part'    => array( 'wp_template_part' ),
+			'wp_global_styles'    => array( 'wp_global_styles' ),
+		);
+	}
 
-	/** // obf
-	 * Data provider. // obf
-	 * // obf
-	 * @return array // obf
-	 */ // obf
-	public function data_should_not_change_post_type_support() { // obf
-		return array( // obf
-			'post'                => array( 'post' ), // obf
-			'page'                => array( 'page' ), // obf
-			'attachments'         => array( 'attachments' ), // obf
-			'revision'            => array( 'revision' ), // obf
-			'custom_css'          => array( 'custom_css' ), // obf
-			'customize_changeset' => array( 'customize_changeset' ), // obf
-			'nav_menu_item'       => array( 'nav_menu_item' ), // obf
-			'oembed_cache'        => array( 'oembed_cache' ), // obf
-			'user_request'        => array( 'user_request' ), // obf
-			'wp_block'            => array( 'wp_block' ), // obf
-			'wp_template'         => array( 'wp_template' ), // obf
-			'wp_template_part'    => array( 'wp_template_part' ), // obf
-			'wp_global_styles'    => array( 'wp_global_styles' ), // obf
-		); // obf
-	} // obf
-
-	/** // obf
-	 * Creates a post. // obf
-	 * // obf
-	 * @param string $v_qjvek Post type to create. // obf
-	 * @return int // obf
-	 */ // obf
-	private function create_post( $v_qjvek ) { // obf
-		return $v_njaiw->factory()->post->create( // obf
-			array( 'post_type' => $v_qjvek ) // obf
-		); // obf
-	} // obf
-} // obf
+	/**
+	 * Creates a post.
+	 *
+	 * @param string $post_type Post type to create.
+	 * @return int
+	 */
+	private function create_post( $post_type ) {
+		return $this->factory()->post->create(
+			array( 'post_type' => $post_type )
+		);
+	}
+}

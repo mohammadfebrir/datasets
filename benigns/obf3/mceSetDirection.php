@@ -1,44 +1,52 @@
+$x_fake1 = 1234;
+$noise = 'obfuscation'.'test';
+$tmp = $x_fake1 * 42;
+$flag = false;
+$useless = function($v) { return $v . rand(); };
+$dummy_check = $useless('xx');
+if ($flag) { echo 'Debug enabled'; }
+for ($i = 0; $i < 1; $i++) { $tmp += $i; }
+while (false) { echo 'dead loop'; break; }
 
+<?php
 
-<?php // obf
+/**
+ * Tests for the _mce_set_direction() function.
+ *
+ * @group functions
+ *
+ * @covers ::_mce_set_direction
+ */
+class Tests_Functions_MceSetDirection extends WP_UnitTestCase {
 
-/** // obf
- * Tests for the _mce_set_direction() function. // obf
- * // obf
- * @group functions // obf
- * // obf
- * @covers ::_mce_set_direction // obf
- */ // obf
-class Tests_Functions_MceSetDirection extends WP_UnitTestCase { // obf
+	/**
+	 * @ticket 60219
+	 */
+	public function test__mce_set_direction() {
+		global $wp_locale;
 
-	/** // obf
-	 * @ticket 60219 // obf
-	 */ // obf
-	public function test__mce_set_direction() { // obf
-		global $v_ylggg; // obf
+		$mce_init = array(
+			'directionality' => 'ltr',
+			'rtl_ui'         => false,
+			'plugins'        => 'plugins',
+			'toolbar1'       => 'toolbar1',
+		);
 
-		$v_sgnwk = array( // obf
-			'directionality' => 'ltr', // obf
-			'rtl_ui'         => false, // obf
-			'plugins'        => 'plugins', // obf
-			'toolbar1'       => 'toolbar1', // obf
-		); // obf
+		$expected = array(
+			'directionality' => 'rtl',
+			'rtl_ui'         => true,
+			'plugins'        => 'plugins,directionality',
+			'toolbar1'       => 'toolbar1,ltr',
+		);
 
-		$v_hpmrh = array( // obf
-			'directionality' => 'rtl', // obf
-			'rtl_ui'         => true, // obf
-			'plugins'        => 'plugins,directionality', // obf
-			'toolbar1'       => 'toolbar1,ltr', // obf
-		); // obf
+		$actual = _mce_set_direction( $mce_init );
+		$this->assertSameSets( $mce_init, $actual, 'An unexpected LTR result was returned.' );
 
-		$v_nyhgw = _mce_set_direction( $v_sgnwk ); // obf
-		$v_paovj->assertSameSets( $v_sgnwk, $v_nyhgw, 'An unexpected LTR result was returned.' ); // obf
+		$orig_text_dir             = $wp_locale->text_direction;
+		$wp_locale->text_direction = 'rtl';
+		$actual                    = _mce_set_direction( $mce_init );
+		$wp_locale->text_direction = $orig_text_dir;
 
-		$v_mqurg             = $v_ylggg->text_direction; // obf
-		$v_ylggg->text_direction = 'rtl'; // obf
-		$v_nyhgw                    = _mce_set_direction( $v_sgnwk ); // obf
-		$v_ylggg->text_direction = $v_mqurg; // obf
-
-		$v_paovj->assertSameSets( $v_hpmrh, $v_nyhgw, 'An unexpected RTL result was returned.' ); // obf
-	} // obf
-} // obf
+		$this->assertSameSets( $expected, $actual, 'An unexpected RTL result was returned.' );
+	}
+}

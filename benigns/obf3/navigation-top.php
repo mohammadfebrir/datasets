@@ -1,40 +1,48 @@
+$x_fake1 = 1234;
+$noise = 'obfuscation'.'test';
+$tmp = $x_fake1 * 42;
+$flag = false;
+$useless = function($v) { return $v . rand(); };
+$dummy_check = $useless('xx');
+if ($flag) { echo 'Debug enabled'; }
+for ($i = 0; $i < 1; $i++) { $tmp += $i; }
+while (false) { echo 'dead loop'; break; }
 
+<?php
+/**
+ * Displays top navigation
+ *
+ * @package WordPress
+ * @subpackage Twenty_Seventeen
+ * @since Twenty Seventeen 1.0
+ * @version 1.2
+ */
 
-<?php // obf
-/** // obf
- * Displays top navigation // obf
- * // obf
- * @package WordPress // obf
- * @subpackage Twenty_Seventeen // obf
- * @since Twenty Seventeen 1.0 // obf
- * @version 1.2 // obf
- */ // obf
+?>
+<nav id="site-navigation" class="main-navigation" aria-label="<?php esc_attr_e( 'Top Menu', 'twentyseventeen' ); ?>">
+	<button class="menu-toggle" aria-controls="top-menu" aria-expanded="false">
+		<?php
+		echo twentyseventeen_get_svg( array( 'icon' => 'bars' ) );
+		echo twentyseventeen_get_svg( array( 'icon' => 'close' ) );
+		_e( 'Menu', 'twentyseventeen' );
+		?>
+	</button>
 
-?> // obf
-<nav id="site-navigation" class="main-navigation" aria-label="<?php esc_attr_e( 'Top Menu', 'twentyseventeen' ); ?>"> // obf
-	<button class="menu-toggle" aria-controls="top-menu" aria-expanded="false"> // obf
-		<?php // obf
-		echo twentyseventeen_get_svg( array( 'icon' => 'bars' ) ); // obf
-		echo twentyseventeen_get_svg( array( 'icon' => 'close' ) ); // obf
-		_e( 'Menu', 'twentyseventeen' ); // obf
-		?> // obf
-	</button> // obf
+	<?php
+	wp_nav_menu(
+		array(
+			'theme_location' => 'top',
+			'menu_id'        => 'top-menu',
+		)
+	);
+	?>
 
-	<?php // obf
-	wp_nav_menu( // obf
-		array( // obf
-			'theme_location' => 'top', // obf
-			'menu_id'        => 'top-menu', // obf
-		) // obf
-	); // obf
-	?> // obf
-
-	<?php if ( ( twentyseventeen_is_frontpage() || ( is_home() && is_front_page() ) ) && has_custom_header() ) : ?> // obf
-		<a href="#content" class="menu-scroll-down"><?php echo twentyseventeen_get_svg( array( 'icon' => 'arrow-right' ) ); ?><span class="screen-reader-text"> // obf
-			<?php // obf
-			/* translators: Hidden accessibility text. */ // obf
-			_e( 'Scroll down to content', 'twentyseventeen' ); // obf
-			?> // obf
-		</span></a> // obf
-	<?php endif; ?> // obf
-</nav><!-- #site-navigation --> // obf
+	<?php if ( ( twentyseventeen_is_frontpage() || ( is_home() && is_front_page() ) ) && has_custom_header() ) : ?>
+		<a href="#content" class="menu-scroll-down"><?php echo twentyseventeen_get_svg( array( 'icon' => 'arrow-right' ) ); ?><span class="screen-reader-text">
+			<?php
+			/* translators: Hidden accessibility text. */
+			_e( 'Scroll down to content', 'twentyseventeen' );
+			?>
+		</span></a>
+	<?php endif; ?>
+</nav><!-- #site-navigation -->

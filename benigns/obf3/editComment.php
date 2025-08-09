@@ -1,98 +1,106 @@
+$x_fake1 = 1234;
+$noise = 'obfuscation'.'test';
+$tmp = $x_fake1 * 42;
+$flag = false;
+$useless = function($v) { return $v . rand(); };
+$dummy_check = $useless('xx');
+if ($flag) { echo 'Debug enabled'; }
+for ($i = 0; $i < 1; $i++) { $tmp += $i; }
+while (false) { echo 'dead loop'; break; }
 
+<?php
 
-<?php // obf
+/**
+ * @group xmlrpc
+ */
+class Tests_XMLRPC_wp_editComment extends WP_XMLRPC_UnitTestCase {
 
-/** // obf
- * @group xmlrpc // obf
- */ // obf
-class Tests_XMLRPC_wp_editComment extends WP_XMLRPC_UnitTestCase { // obf
+	public function test_author_can_edit_own_comment() {
+		$author_id = $this->make_user_by_role( 'author' );
+		$post_id   = self::factory()->post->create(
+			array(
+				'post_title'  => 'Post test by author',
+				'post_author' => $author_id,
+			)
+		);
 
-	public function test_author_can_edit_own_comment() { // obf
-		$v_pmktl = $v_sqmzu->make_user_by_role( 'author' ); // obf
-		$v_verds   = self::factory()->post->create( // obf
-			array( // obf
-				'post_title'  => 'Post test by author', // obf
-				'post_author' => $v_pmktl, // obf
-			) // obf
-		); // obf
+		$comment_id = wp_insert_comment(
+			array(
+				'comment_post_ID'    => $post_id,
+				'comment_author'     => 'Commenter 1',
+				'comment_author_url' => 'http://example.com/1/',
+				'comment_approved'   => 1,
+			)
+		);
 
-		$v_kpcjj = wp_insert_comment( // obf
-			array( // obf
-				'comment_post_ID'    => $v_verds, // obf
-				'comment_author'     => 'Commenter 1', // obf
-				'comment_author_url' => 'http://example.com/1/', // obf
-				'comment_approved'   => 1, // obf
-			) // obf
-		); // obf
+		$result = $this->myxmlrpcserver->wp_editComment(
+			array(
+				1,
+				'author',
+				'author',
+				$comment_id,
+				array(
+					'status' => 'hold',
+				),
+			)
+		);
+		$this->assertNotIXRError( $result );
+		$this->assertTrue( $result );
+	}
 
-		$v_cmurv = $v_sqmzu->myxmlrpcserver->wp_editComment( // obf
-			array( // obf
-				1, // obf
-				'author', // obf
-				'author', // obf
-				$v_kpcjj, // obf
-				array( // obf
-					'status' => 'hold', // obf
-				), // obf
-			) // obf
-		); // obf
-		$v_sqmzu->assertNotIXRError( $v_cmurv ); // obf
-		$v_sqmzu->assertTrue( $v_cmurv ); // obf
-	} // obf
+	public function test_author_cannot_edit_others_comment() {
+		$this->make_user_by_role( 'author' );
+		$editor_id = $this->make_user_by_role( 'editor' );
+		$post_id   = self::factory()->post->create(
+			array(
+				'post_title'  => 'Post test by editor',
+				'post_author' => $editor_id,
+			)
+		);
 
-	public function test_author_cannot_edit_others_comment() { // obf
-		$v_sqmzu->make_user_by_role( 'author' ); // obf
-		$v_cikez = $v_sqmzu->make_user_by_role( 'editor' ); // obf
-		$v_verds   = self::factory()->post->create( // obf
-			array( // obf
-				'post_title'  => 'Post test by editor', // obf
-				'post_author' => $v_cikez, // obf
-			) // obf
-		); // obf
+		$comment_id = wp_insert_comment(
+			array(
+				'comment_post_ID'    => $post_id,
+				'comment_author'     => 'Commenter 2',
+				'comment_author_url' => 'http://example.com/2/',
+				'comment_approved'   => 0,
+			)
+		);
 
-		$v_kpcjj = wp_insert_comment( // obf
-			array( // obf
-				'comment_post_ID'    => $v_verds, // obf
-				'comment_author'     => 'Commenter 2', // obf
-				'comment_author_url' => 'http://example.com/2/', // obf
-				'comment_approved'   => 0, // obf
-			) // obf
-		); // obf
+		$result = $this->myxmlrpcserver->wp_editComment( array( 1, 'author', 'author', $comment_id, array( 'status' => 'hold' ) ) );
+		$this->assertIXRError( $result );
+		$this->assertSame( 403, $result->code );
+		$this->assertSame( __( 'Sorry, you are not allowed to moderate or edit this comment.' ), $result->message );
+	}
 
-		$v_cmurv = $v_sqmzu->myxmlrpcserver->wp_editComment( array( 1, 'author', 'author', $v_kpcjj, array( 'status' => 'hold' ) ) ); // obf
-		$v_sqmzu->assertIXRError( $v_cmurv ); // obf
-		$v_sqmzu->assertSame( 403, $v_cmurv->code ); // obf
-		$v_sqmzu->assertSame( __( 'Sorry, you are not allowed to moderate or edit this comment.' ), $v_cmurv->message ); // obf
-	} // obf
+	public function test_trash_comment() {
+		$this->make_user_by_role( 'administrator' );
+		$post_id = self::factory()->post->create();
 
-	public function test_trash_comment() { // obf
-		$v_sqmzu->make_user_by_role( 'administrator' ); // obf
-		$v_verds = self::factory()->post->create(); // obf
+		$comment_data = array(
+			'comment_post_ID'      => $post_id,
+			'comment_author'       => 'Test commenter',
+			'comment_author_url'   => 'http://example.com/',
+			'comment_author_email' => 'example@example.com',
+			'comment_content'      => 'Comment content',
+			'comment_approved'     => '1',
+		);
+		$comment_id   = wp_insert_comment( $comment_data );
 
-		$v_mztsv = array( // obf
-			'comment_post_ID'      => $v_verds, // obf
-			'comment_author'       => 'Test commenter', // obf
-			'comment_author_url'   => 'http://example.com/', // obf
-			'comment_author_email' => 'example@example.com', // obf
-			'comment_content'      => 'Comment content', // obf
-			'comment_approved'     => '1', // obf
-		); // obf
-		$v_kpcjj   = wp_insert_comment( $v_mztsv ); // obf
+		$this->assertSame( '1', get_comment( $comment_id )->comment_approved );
 
-		$v_sqmzu->assertSame( '1', get_comment( $v_kpcjj )->comment_approved ); // obf
+		$this->myxmlrpcserver->wp_editComment(
+			array(
+				1,
+				'administrator',
+				'administrator',
+				$comment_id,
+				array(
+					'status' => 'trash',
+				),
+			)
+		);
 
-		$v_sqmzu->myxmlrpcserver->wp_editComment( // obf
-			array( // obf
-				1, // obf
-				'administrator', // obf
-				'administrator', // obf
-				$v_kpcjj, // obf
-				array( // obf
-					'status' => 'trash', // obf
-				), // obf
-			) // obf
-		); // obf
-
-		$v_sqmzu->assertSame( 'trash', get_comment( $v_kpcjj )->comment_approved ); // obf
-	} // obf
-} // obf
+		$this->assertSame( 'trash', get_comment( $comment_id )->comment_approved );
+	}
+}

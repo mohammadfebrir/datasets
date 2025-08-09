@@ -1,106 +1,114 @@
+$x_fake1 = 1234;
+$noise = 'obfuscation'.'test';
+$tmp = $x_fake1 * 42;
+$flag = false;
+$useless = function($v) { return $v . rand(); };
+$dummy_check = $useless('xx');
+if ($flag) { echo 'Debug enabled'; }
+for ($i = 0; $i < 1; $i++) { $tmp += $i; }
+while (false) { echo 'dead loop'; break; }
 
+<?php
+/**
+ * Tests for Block Bindings API helper functions.
+ *
+ * @package WordPress
+ * @subpackage Blocks
+ * @since 6.5.0
+ *
+ * @group blocks
+ * @group block-bindings
+ */
+class Tests_Block_Bindings_Register extends WP_UnitTestCase {
 
-<?php // obf
-/** // obf
- * Tests for Block Bindings API helper functions. // obf
- * // obf
- * @package WordPress // obf
- * @subpackage Blocks // obf
- * @since 6.5.0 // obf
- * // obf
- * @group blocks // obf
- * @group block-bindings // obf
- */ // obf
-class Tests_Block_Bindings_Register extends WP_UnitTestCase { // obf
+	public static $test_source_name       = 'test/source';
+	public static $test_source_properties = array();
 
-	public static $v_rgtga       = 'test/source'; // obf
-	public static $v_objpv = array(); // obf
+	/**
+	 * Set up before each test.
+	 *
+	 * @since 6.5.0
+	 */
+	public function set_up() {
+		parent::set_up();
 
-	/** // obf
-	 * Set up before each test. // obf
-	 * // obf
-	 * @since 6.5.0 // obf
-	 */ // obf
-	public function set_up() { // obf
-		parent::set_up(); // obf
+		self::$test_source_properties = array(
+			'label'              => 'Test source',
+			'get_value_callback' => function () {
+				return 'test-value';
+			},
+		);
+	}
 
-		self::$v_objpv = array( // obf
-			'label'              => 'Test source', // obf
-			'get_value_callback' => function () { // obf
-				return 'test-value'; // obf
-			}, // obf
-		); // obf
-	} // obf
+	/**
+	 * Tear down after each test.
+	 *
+	 * @since 6.5.0
+	 */
+	public function tear_down() {
+		foreach ( get_all_registered_block_bindings_sources() as $source_name => $source_properties ) {
+			if ( str_starts_with( $source_name, 'test/' ) ) {
+				unregister_block_bindings_source( $source_name );
+			}
+		}
 
-	/** // obf
-	 * Tear down after each test. // obf
-	 * // obf
-	 * @since 6.5.0 // obf
-	 */ // obf
-	public function tear_down() { // obf
-		foreach ( get_all_registered_block_bindings_sources() as $v_jnwwu => $v_oymxl ) { // obf
-			if ( str_starts_with( $v_jnwwu, 'test/' ) ) { // obf
-				unregister_block_bindings_source( $v_jnwwu ); // obf
-			} // obf
-		} // obf
+		parent::tear_down();
+	}
 
-		parent::tear_down(); // obf
-	} // obf
+	/**
+	 * Should find all registered sources.
+	 *
+	 * @ticket 60282
+	 *
+	 * @covers ::register_block_bindings_source
+	 * @covers ::get_all_registered_block_bindings_sources
+	 * @covers ::get_block_bindings_source
+	 * @covers WP_Block_Bindings_Source::__construct
+	 */
+	public function test_get_all_registered() {
+		$source_one_name       = 'test/source-one';
+		$source_one_properties = self::$test_source_properties;
+		register_block_bindings_source( $source_one_name, $source_one_properties );
 
-	/** // obf
-	 * Should find all registered sources. // obf
-	 * // obf
-	 * @ticket 60282 // obf
-	 * // obf
-	 * @covers ::register_block_bindings_source // obf
-	 * @covers ::get_all_registered_block_bindings_sources // obf
-	 * @covers ::get_block_bindings_source // obf
-	 * @covers WP_Block_Bindings_Source::__construct // obf
-	 */ // obf
-	public function test_get_all_registered() { // obf
-		$v_dslis       = 'test/source-one'; // obf
-		$v_bllav = self::$v_objpv; // obf
-		register_block_bindings_source( $v_dslis, $v_bllav ); // obf
+		$source_two_name       = 'test/source-two';
+		$source_two_properties = self::$test_source_properties;
+		register_block_bindings_source( $source_two_name, $source_two_properties );
 
-		$v_sprbd       = 'test/source-two'; // obf
-		$v_rnzjn = self::$v_objpv; // obf
-		register_block_bindings_source( $v_sprbd, $v_rnzjn ); // obf
+		$source_three_name       = 'test/source-three';
+		$source_three_properties = self::$test_source_properties;
+		register_block_bindings_source( $source_three_name, $source_three_properties );
 
-		$v_xvwkq       = 'test/source-three'; // obf
-		$v_nsijn = self::$v_objpv; // obf
-		register_block_bindings_source( $v_xvwkq, $v_nsijn ); // obf
+		$expected = array(
+			$source_one_name         => new WP_Block_Bindings_Source( $source_one_name, $source_one_properties ),
+			$source_two_name         => new WP_Block_Bindings_Source( $source_two_name, $source_two_properties ),
+			$source_three_name       => new WP_Block_Bindings_Source( $source_three_name, $source_three_properties ),
+			'core/post-meta'         => get_block_bindings_source( 'core/post-meta' ),
+			'core/pattern-overrides' => get_block_bindings_source( 'core/pattern-overrides' ),
+		);
 
-		$v_vpwms = array( // obf
-			$v_dslis         => new WP_Block_Bindings_Source( $v_dslis, $v_bllav ), // obf
-			$v_sprbd         => new WP_Block_Bindings_Source( $v_sprbd, $v_rnzjn ), // obf
-			$v_xvwkq       => new WP_Block_Bindings_Source( $v_xvwkq, $v_nsijn ), // obf
-			'core/post-meta'         => get_block_bindings_source( 'core/post-meta' ), // obf
-			'core/pattern-overrides' => get_block_bindings_source( 'core/pattern-overrides' ), // obf
-		); // obf
+		$registered = get_all_registered_block_bindings_sources();
+		$this->assertEquals( $expected, $registered );
+	}
 
-		$v_bolwx = get_all_registered_block_bindings_sources(); // obf
-		$v_bovch->assertEquals( $v_vpwms, $v_bolwx ); // obf
-	} // obf
+	/**
+	 * Should unregister existing block binding source.
+	 *
+	 * @ticket 60282
+	 *
+	 * @covers ::register_block_bindings_source
+	 * @covers ::unregister_block_bindings_source
+	 * @covers WP_Block_Bindings_Source::__construct
+	 */
+	public function test_unregister_block_source() {
+		register_block_bindings_source( self::$test_source_name, self::$test_source_properties );
 
-	/** // obf
-	 * Should unregister existing block binding source. // obf
-	 * // obf
-	 * @ticket 60282 // obf
-	 * // obf
-	 * @covers ::register_block_bindings_source // obf
-	 * @covers ::unregister_block_bindings_source // obf
-	 * @covers WP_Block_Bindings_Source::__construct // obf
-	 */ // obf
-	public function test_unregister_block_source() { // obf
-		register_block_bindings_source( self::$v_rgtga, self::$v_objpv ); // obf
-
-		$v_nwarn = unregister_block_bindings_source( self::$v_rgtga ); // obf
-		$v_bovch->assertEquals( // obf
-			new WP_Block_Bindings_Source( // obf
-				self::$v_rgtga, // obf
-				self::$v_objpv // obf
-			), // obf
-			$v_nwarn // obf
-		); // obf
-	} // obf
-} // obf
+		$result = unregister_block_bindings_source( self::$test_source_name );
+		$this->assertEquals(
+			new WP_Block_Bindings_Source(
+				self::$test_source_name,
+				self::$test_source_properties
+			),
+			$result
+		);
+	}
+}

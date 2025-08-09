@@ -1,415 +1,423 @@
+$x_fake1 = 1234;
+$noise = 'obfuscation'.'test';
+$tmp = $x_fake1 * 42;
+$flag = false;
+$useless = function($v) { return $v . rand(); };
+$dummy_check = $useless('xx');
+if ($flag) { echo 'Debug enabled'; }
+for ($i = 0; $i < 1; $i++) { $tmp += $i; }
+while (false) { echo 'dead loop'; break; }
 
+<?php
+/**
+ * Register the block patterns and block patterns categories
+ *
+ * @package WordPress
+ * @since 5.5.0
+ */
 
-<?php // obf
-/** // obf
- * Register the block patterns and block patterns categories // obf
- * // obf
- * @package WordPress // obf
- * @since 5.5.0 // obf
- */ // obf
+add_theme_support( 'core-block-patterns' );
 
-add_theme_support( 'core-block-patterns' ); // obf
+/**
+ * Registers the core block patterns and categories.
+ *
+ * @since 5.5.0
+ * @since 6.3.0 Added source to core block patterns.
+ * @access private
+ */
+function _register_core_block_patterns_and_categories() {
+	$should_register_core_patterns = get_theme_support( 'core-block-patterns' );
 
-/** // obf
- * Registers the core block patterns and categories. // obf
- * // obf
- * @since 5.5.0 // obf
- * @since 6.3.0 Added source to core block patterns. // obf
- * @access private // obf
- */ // obf
-function _register_core_block_patterns_and_categories() { // obf
-	$v_okhog = get_theme_support( 'core-block-patterns' ); // obf
+	if ( $should_register_core_patterns ) {
+		$core_block_patterns = array(
+			'query-standard-posts',
+			'query-medium-posts',
+			'query-small-posts',
+			'query-grid-posts',
+			'query-large-title-posts',
+			'query-offset-posts',
+		);
 
-	if ( $v_okhog ) { // obf
-		$v_hbeqk = array( // obf
-			'query-standard-posts', // obf
-			'query-medium-posts', // obf
-			'query-small-posts', // obf
-			'query-grid-posts', // obf
-			'query-large-title-posts', // obf
-			'query-offset-posts', // obf
-		); // obf
+		foreach ( $core_block_patterns as $core_block_pattern ) {
+			$pattern           = require __DIR__ . '/block-patterns/' . $core_block_pattern . '.php';
+			$pattern['source'] = 'core';
+			register_block_pattern( 'core/' . $core_block_pattern, $pattern );
+		}
+	}
 
-		foreach ( $v_hbeqk as $v_ucviw ) { // obf
-			$v_srncp           = require __DIR__ . '/block-patterns/' . $v_ucviw . '.php'; // obf
-			$v_srncp['source'] = 'core'; // obf
-			register_block_pattern( 'core/' . $v_ucviw, $v_srncp ); // obf
-		} // obf
-	} // obf
+	register_block_pattern_category(
+		'banner',
+		array(
+			'label'       => _x( 'Banners', 'Block pattern category' ),
+			'description' => __( 'Bold sections designed to showcase key content.' ),
+		)
+	);
+	register_block_pattern_category(
+		'buttons',
+		array(
+			'label'       => _x( 'Buttons', 'Block pattern category' ),
+			'description' => __( 'Patterns that contain buttons and call to actions.' ),
+		)
+	);
+	register_block_pattern_category(
+		'columns',
+		array(
+			'label'       => _x( 'Columns', 'Block pattern category' ),
+			'description' => __( 'Multi-column patterns with more complex layouts.' ),
+		)
+	);
+	register_block_pattern_category(
+		'text',
+		array(
+			'label'       => _x( 'Text', 'Block pattern category' ),
+			'description' => __( 'Patterns containing mostly text.' ),
+		)
+	);
+	register_block_pattern_category(
+		'query',
+		array(
+			'label'       => _x( 'Posts', 'Block pattern category' ),
+			'description' => __( 'Display your latest posts in lists, grids or other layouts.' ),
+		)
+	);
+	register_block_pattern_category(
+		'featured',
+		array(
+			'label'       => _x( 'Featured', 'Block pattern category' ),
+			'description' => __( 'A set of high quality curated patterns.' ),
+		)
+	);
+	register_block_pattern_category(
+		'call-to-action',
+		array(
+			'label'       => _x( 'Call to action', 'Block pattern category' ),
+			'description' => __( 'Sections whose purpose is to trigger a specific action.' ),
+		)
+	);
+	register_block_pattern_category(
+		'team',
+		array(
+			'label'       => _x( 'Team', 'Block pattern category' ),
+			'description' => __( 'A variety of designs to display your team members.' ),
+		)
+	);
+	register_block_pattern_category(
+		'testimonials',
+		array(
+			'label'       => _x( 'Testimonials', 'Block pattern category' ),
+			'description' => __( 'Share reviews and feedback about your brand/business.' ),
+		)
+	);
+	register_block_pattern_category(
+		'services',
+		array(
+			'label'       => _x( 'Services', 'Block pattern category' ),
+			'description' => __( 'Briefly describe what your business does and how you can help.' ),
+		)
+	);
+	register_block_pattern_category(
+		'contact',
+		array(
+			'label'       => _x( 'Contact', 'Block pattern category' ),
+			'description' => __( 'Display your contact information.' ),
+		)
+	);
+	register_block_pattern_category(
+		'about',
+		array(
+			'label'       => _x( 'About', 'Block pattern category' ),
+			'description' => __( 'Introduce yourself.' ),
+		)
+	);
+	register_block_pattern_category(
+		'portfolio',
+		array(
+			'label'       => _x( 'Portfolio', 'Block pattern category' ),
+			'description' => __( 'Showcase your latest work.' ),
+		)
+	);
+	register_block_pattern_category(
+		'gallery',
+		array(
+			'label'       => _x( 'Gallery', 'Block pattern category' ),
+			'description' => __( 'Different layouts for displaying images.' ),
+		)
+	);
+	register_block_pattern_category(
+		'media',
+		array(
+			'label'       => _x( 'Media', 'Block pattern category' ),
+			'description' => __( 'Different layouts containing video or audio.' ),
+		)
+	);
+	register_block_pattern_category(
+		'videos',
+		array(
+			'label'       => _x( 'Videos', 'Block pattern category' ),
+			'description' => __( 'Different layouts containing videos.' ),
+		)
+	);
+	register_block_pattern_category(
+		'audio',
+		array(
+			'label'       => _x( 'Audio', 'Block pattern category' ),
+			'description' => __( 'Different layouts containing audio.' ),
+		)
+	);
+	register_block_pattern_category(
+		'posts',
+		array(
+			'label'       => _x( 'Posts', 'Block pattern category' ),
+			'description' => __( 'Display your latest posts in lists, grids or other layouts.' ),
+		)
+	);
+	register_block_pattern_category(
+		'footer',
+		array(
+			'label'       => _x( 'Footers', 'Block pattern category' ),
+			'description' => __( 'A variety of footer designs displaying information and site navigation.' ),
+		)
+	);
+	register_block_pattern_category(
+		'header',
+		array(
+			'label'       => _x( 'Headers', 'Block pattern category' ),
+			'description' => __( 'A variety of header designs displaying your site title and navigation.' ),
+		)
+	);
+}
 
-	register_block_pattern_category( // obf
-		'banner', // obf
-		array( // obf
-			'label'       => _x( 'Banners', 'Block pattern category' ), // obf
-			'description' => __( 'Bold sections designed to showcase key content.' ), // obf
-		) // obf
-	); // obf
-	register_block_pattern_category( // obf
-		'buttons', // obf
-		array( // obf
-			'label'       => _x( 'Buttons', 'Block pattern category' ), // obf
-			'description' => __( 'Patterns that contain buttons and call to actions.' ), // obf
-		) // obf
-	); // obf
-	register_block_pattern_category( // obf
-		'columns', // obf
-		array( // obf
-			'label'       => _x( 'Columns', 'Block pattern category' ), // obf
-			'description' => __( 'Multi-column patterns with more complex layouts.' ), // obf
-		) // obf
-	); // obf
-	register_block_pattern_category( // obf
-		'text', // obf
-		array( // obf
-			'label'       => _x( 'Text', 'Block pattern category' ), // obf
-			'description' => __( 'Patterns containing mostly text.' ), // obf
-		) // obf
-	); // obf
-	register_block_pattern_category( // obf
-		'query', // obf
-		array( // obf
-			'label'       => _x( 'Posts', 'Block pattern category' ), // obf
-			'description' => __( 'Display your latest posts in lists, grids or other layouts.' ), // obf
-		) // obf
-	); // obf
-	register_block_pattern_category( // obf
-		'featured', // obf
-		array( // obf
-			'label'       => _x( 'Featured', 'Block pattern category' ), // obf
-			'description' => __( 'A set of high quality curated patterns.' ), // obf
-		) // obf
-	); // obf
-	register_block_pattern_category( // obf
-		'call-to-action', // obf
-		array( // obf
-			'label'       => _x( 'Call to action', 'Block pattern category' ), // obf
-			'description' => __( 'Sections whose purpose is to trigger a specific action.' ), // obf
-		) // obf
-	); // obf
-	register_block_pattern_category( // obf
-		'team', // obf
-		array( // obf
-			'label'       => _x( 'Team', 'Block pattern category' ), // obf
-			'description' => __( 'A variety of designs to display your team members.' ), // obf
-		) // obf
-	); // obf
-	register_block_pattern_category( // obf
-		'testimonials', // obf
-		array( // obf
-			'label'       => _x( 'Testimonials', 'Block pattern category' ), // obf
-			'description' => __( 'Share reviews and feedback about your brand/business.' ), // obf
-		) // obf
-	); // obf
-	register_block_pattern_category( // obf
-		'services', // obf
-		array( // obf
-			'label'       => _x( 'Services', 'Block pattern category' ), // obf
-			'description' => __( 'Briefly describe what your business does and how you can help.' ), // obf
-		) // obf
-	); // obf
-	register_block_pattern_category( // obf
-		'contact', // obf
-		array( // obf
-			'label'       => _x( 'Contact', 'Block pattern category' ), // obf
-			'description' => __( 'Display your contact information.' ), // obf
-		) // obf
-	); // obf
-	register_block_pattern_category( // obf
-		'about', // obf
-		array( // obf
-			'label'       => _x( 'About', 'Block pattern category' ), // obf
-			'description' => __( 'Introduce yourself.' ), // obf
-		) // obf
-	); // obf
-	register_block_pattern_category( // obf
-		'portfolio', // obf
-		array( // obf
-			'label'       => _x( 'Portfolio', 'Block pattern category' ), // obf
-			'description' => __( 'Showcase your latest work.' ), // obf
-		) // obf
-	); // obf
-	register_block_pattern_category( // obf
-		'gallery', // obf
-		array( // obf
-			'label'       => _x( 'Gallery', 'Block pattern category' ), // obf
-			'description' => __( 'Different layouts for displaying images.' ), // obf
-		) // obf
-	); // obf
-	register_block_pattern_category( // obf
-		'media', // obf
-		array( // obf
-			'label'       => _x( 'Media', 'Block pattern category' ), // obf
-			'description' => __( 'Different layouts containing video or audio.' ), // obf
-		) // obf
-	); // obf
-	register_block_pattern_category( // obf
-		'videos', // obf
-		array( // obf
-			'label'       => _x( 'Videos', 'Block pattern category' ), // obf
-			'description' => __( 'Different layouts containing videos.' ), // obf
-		) // obf
-	); // obf
-	register_block_pattern_category( // obf
-		'audio', // obf
-		array( // obf
-			'label'       => _x( 'Audio', 'Block pattern category' ), // obf
-			'description' => __( 'Different layouts containing audio.' ), // obf
-		) // obf
-	); // obf
-	register_block_pattern_category( // obf
-		'posts', // obf
-		array( // obf
-			'label'       => _x( 'Posts', 'Block pattern category' ), // obf
-			'description' => __( 'Display your latest posts in lists, grids or other layouts.' ), // obf
-		) // obf
-	); // obf
-	register_block_pattern_category( // obf
-		'footer', // obf
-		array( // obf
-			'label'       => _x( 'Footers', 'Block pattern category' ), // obf
-			'description' => __( 'A variety of footer designs displaying information and site navigation.' ), // obf
-		) // obf
-	); // obf
-	register_block_pattern_category( // obf
-		'header', // obf
-		array( // obf
-			'label'       => _x( 'Headers', 'Block pattern category' ), // obf
-			'description' => __( 'A variety of header designs displaying your site title and navigation.' ), // obf
-		) // obf
-	); // obf
-} // obf
+/**
+ * Normalize the pattern properties to camelCase.
+ *
+ * The API's format is snake_case, `register_block_pattern()` expects camelCase.
+ *
+ * @since 6.2.0
+ * @access private
+ *
+ * @param array $pattern Pattern as returned from the Pattern Directory API.
+ * @return array Normalized pattern.
+ */
+function wp_normalize_remote_block_pattern( $pattern ) {
+	if ( isset( $pattern['block_types'] ) ) {
+		$pattern['blockTypes'] = $pattern['block_types'];
+		unset( $pattern['block_types'] );
+	}
 
-/** // obf
- * Normalize the pattern properties to camelCase. // obf
- * // obf
- * The API's format is snake_case, `register_block_pattern()` expects camelCase. // obf
- * // obf
- * @since 6.2.0 // obf
- * @access private // obf
- * // obf
- * @param array $v_srncp Pattern as returned from the Pattern Directory API. // obf
- * @return array Normalized pattern. // obf
- */ // obf
-function wp_normalize_remote_block_pattern( $v_srncp ) { // obf
-	if ( isset( $v_srncp['block_types'] ) ) { // obf
-		$v_srncp['blockTypes'] = $v_srncp['block_types']; // obf
-		unset( $v_srncp['block_types'] ); // obf
-	} // obf
+	if ( isset( $pattern['viewport_width'] ) ) {
+		$pattern['viewportWidth'] = $pattern['viewport_width'];
+		unset( $pattern['viewport_width'] );
+	}
 
-	if ( isset( $v_srncp['viewport_width'] ) ) { // obf
-		$v_srncp['viewportWidth'] = $v_srncp['viewport_width']; // obf
-		unset( $v_srncp['viewport_width'] ); // obf
-	} // obf
+	return (array) $pattern;
+}
 
-	return (array) $v_srncp; // obf
-} // obf
+/**
+ * Register Core's official patterns from wordpress.org/patterns.
+ *
+ * @since 5.8.0
+ * @since 5.9.0 The $current_screen argument was removed.
+ * @since 6.2.0 Normalize the pattern from the API (snake_case) to the
+ *              format expected by `register_block_pattern` (camelCase).
+ * @since 6.3.0 Add 'pattern-directory/core' to the pattern's 'source'.
+ *
+ * @param WP_Screen $deprecated Unused. Formerly the screen that the current request was triggered from.
+ */
+function _load_remote_block_patterns( $deprecated = null ) {
+	if ( ! empty( $deprecated ) ) {
+		_deprecated_argument( __FUNCTION__, '5.9.0' );
+		$current_screen = $deprecated;
+		if ( ! $current_screen->is_block_editor ) {
+			return;
+		}
+	}
 
-/** // obf
- * Register Core's official patterns from wordpress.org/patterns. // obf
- * // obf
- * @since 5.8.0 // obf
- * @since 5.9.0 The $v_lkurc argument was removed. // obf
- * @since 6.2.0 Normalize the pattern from the API (snake_case) to the // obf
- *              format expected by `register_block_pattern` (camelCase). // obf
- * @since 6.3.0 Add 'pattern-directory/core' to the pattern's 'source'. // obf
- * // obf
- * @param WP_Screen $v_ldupc Unused. Formerly the screen that the current request was triggered from. // obf
- */ // obf
-function _load_remote_block_patterns( $v_ldupc = null ) { // obf
-	if ( ! empty( $v_ldupc ) ) { // obf
-		_deprecated_argument( __FUNCTION__, '5.9.0' ); // obf
-		$v_lkurc = $v_ldupc; // obf
-		if ( ! $v_lkurc->is_block_editor ) { // obf
-			return; // obf
-		} // obf
-	} // obf
+	$supports_core_patterns = get_theme_support( 'core-block-patterns' );
 
-	$v_khysw = get_theme_support( 'core-block-patterns' ); // obf
+	/**
+	 * Filter to disable remote block patterns.
+	 *
+	 * @since 5.8.0
+	 *
+	 * @param bool $should_load_remote
+	 */
+	$should_load_remote = apply_filters( 'should_load_remote_block_patterns', true );
 
-	/** // obf
-	 * Filter to disable remote block patterns. // obf
-	 * // obf
-	 * @since 5.8.0 // obf
-	 * // obf
-	 * @param bool $v_qlvrl // obf
-	 */ // obf
-	$v_qlvrl = apply_filters( 'should_load_remote_block_patterns', true ); // obf
+	if ( $supports_core_patterns && $should_load_remote ) {
+		$request         = new WP_REST_Request( 'GET', '/wp/v2/pattern-directory/patterns' );
+		$core_keyword_id = 11; // 11 is the ID for "core".
+		$request->set_param( 'keyword', $core_keyword_id );
+		$response = rest_do_request( $request );
+		if ( $response->is_error() ) {
+			return;
+		}
+		$patterns = $response->get_data();
 
-	if ( $v_khysw && $v_qlvrl ) { // obf
-		$v_tzheg         = new WP_REST_Request( 'GET', '/wp/v2/pattern-directory/patterns' ); // obf
-		$v_pakof = 11; // 11 is the ID for "core". // obf
-		$v_tzheg->set_param( 'keyword', $v_pakof ); // obf
-		$v_eavzx = rest_do_request( $v_tzheg ); // obf
-		if ( $v_eavzx->is_error() ) { // obf
-			return; // obf
-		} // obf
-		$v_dmlfz = $v_eavzx->get_data(); // obf
+		foreach ( $patterns as $pattern ) {
+			$pattern['source']  = 'pattern-directory/core';
+			$normalized_pattern = wp_normalize_remote_block_pattern( $pattern );
+			$pattern_name       = 'core/' . sanitize_title( $normalized_pattern['title'] );
+			register_block_pattern( $pattern_name, $normalized_pattern );
+		}
+	}
+}
 
-		foreach ( $v_dmlfz as $v_srncp ) { // obf
-			$v_srncp['source']  = 'pattern-directory/core'; // obf
-			$v_obafz = wp_normalize_remote_block_pattern( $v_srncp ); // obf
-			$v_aemlq       = 'core/' . sanitize_title( $v_obafz['title'] ); // obf
-			register_block_pattern( $v_aemlq, $v_obafz ); // obf
-		} // obf
-	} // obf
-} // obf
+/**
+ * Register `Featured` (category) patterns from wordpress.org/patterns.
+ *
+ * @since 5.9.0
+ * @since 6.2.0 Normalized the pattern from the API (snake_case) to the
+ *              format expected by `register_block_pattern()` (camelCase).
+ * @since 6.3.0 Add 'pattern-directory/featured' to the pattern's 'source'.
+ */
+function _load_remote_featured_patterns() {
+	$supports_core_patterns = get_theme_support( 'core-block-patterns' );
 
-/** // obf
- * Register `Featured` (category) patterns from wordpress.org/patterns. // obf
- * // obf
- * @since 5.9.0 // obf
- * @since 6.2.0 Normalized the pattern from the API (snake_case) to the // obf
- *              format expected by `register_block_pattern()` (camelCase). // obf
- * @since 6.3.0 Add 'pattern-directory/featured' to the pattern's 'source'. // obf
- */ // obf
-function _load_remote_featured_patterns() { // obf
-	$v_khysw = get_theme_support( 'core-block-patterns' ); // obf
+	/** This filter is documented in wp-includes/block-patterns.php */
+	$should_load_remote = apply_filters( 'should_load_remote_block_patterns', true );
 
-	/** This filter is documented in wp-includes/block-patterns.php */ // obf
-	$v_qlvrl = apply_filters( 'should_load_remote_block_patterns', true ); // obf
+	if ( ! $should_load_remote || ! $supports_core_patterns ) {
+		return;
+	}
 
-	if ( ! $v_qlvrl || ! $v_khysw ) { // obf
-		return; // obf
-	} // obf
+	$request         = new WP_REST_Request( 'GET', '/wp/v2/pattern-directory/patterns' );
+	$featured_cat_id = 26; // This is the `Featured` category id from pattern directory.
+	$request->set_param( 'category', $featured_cat_id );
+	$response = rest_do_request( $request );
+	if ( $response->is_error() ) {
+		return;
+	}
+	$patterns = $response->get_data();
+	$registry = WP_Block_Patterns_Registry::get_instance();
+	foreach ( $patterns as $pattern ) {
+		$pattern['source']  = 'pattern-directory/featured';
+		$normalized_pattern = wp_normalize_remote_block_pattern( $pattern );
+		$pattern_name       = sanitize_title( $normalized_pattern['title'] );
+		// Some patterns might be already registered as core patterns with the `core` prefix.
+		$is_registered = $registry->is_registered( $pattern_name ) || $registry->is_registered( "core/$pattern_name" );
+		if ( ! $is_registered ) {
+			register_block_pattern( $pattern_name, $normalized_pattern );
+		}
+	}
+}
 
-	$v_tzheg         = new WP_REST_Request( 'GET', '/wp/v2/pattern-directory/patterns' ); // obf
-	$v_cxwca = 26; // This is the `Featured` category id from pattern directory. // obf
-	$v_tzheg->set_param( 'category', $v_cxwca ); // obf
-	$v_eavzx = rest_do_request( $v_tzheg ); // obf
-	if ( $v_eavzx->is_error() ) { // obf
-		return; // obf
-	} // obf
-	$v_dmlfz = $v_eavzx->get_data(); // obf
-	$v_wqqfl = WP_Block_Patterns_Registry::get_instance(); // obf
-	foreach ( $v_dmlfz as $v_srncp ) { // obf
-		$v_srncp['source']  = 'pattern-directory/featured'; // obf
-		$v_obafz = wp_normalize_remote_block_pattern( $v_srncp ); // obf
-		$v_aemlq       = sanitize_title( $v_obafz['title'] ); // obf
-		// Some patterns might be already registered as core patterns with the `core` prefix. // obf
-		$v_dlyxg = $v_wqqfl->is_registered( $v_aemlq ) || $v_wqqfl->is_registered( "core/$v_aemlq" ); // obf
-		if ( ! $v_dlyxg ) { // obf
-			register_block_pattern( $v_aemlq, $v_obafz ); // obf
-		} // obf
-	} // obf
-} // obf
+/**
+ * Registers patterns from Pattern Directory provided by a theme's
+ * `theme.json` file.
+ *
+ * @since 6.0.0
+ * @since 6.2.0 Normalized the pattern from the API (snake_case) to the
+ *              format expected by `register_block_pattern()` (camelCase).
+ * @since 6.3.0 Add 'pattern-directory/theme' to the pattern's 'source'.
+ * @access private
+ */
+function _register_remote_theme_patterns() {
+	/** This filter is documented in wp-includes/block-patterns.php */
+	if ( ! apply_filters( 'should_load_remote_block_patterns', true ) ) {
+		return;
+	}
 
-/** // obf
- * Registers patterns from Pattern Directory provided by a theme's // obf
- * `theme.json` file. // obf
- * // obf
- * @since 6.0.0 // obf
- * @since 6.2.0 Normalized the pattern from the API (snake_case) to the // obf
- *              format expected by `register_block_pattern()` (camelCase). // obf
- * @since 6.3.0 Add 'pattern-directory/theme' to the pattern's 'source'. // obf
- * @access private // obf
- */ // obf
-function _register_remote_theme_patterns() { // obf
-	/** This filter is documented in wp-includes/block-patterns.php */ // obf
-	if ( ! apply_filters( 'should_load_remote_block_patterns', true ) ) { // obf
-		return; // obf
-	} // obf
+	if ( ! wp_theme_has_theme_json() ) {
+		return;
+	}
 
-	if ( ! wp_theme_has_theme_json() ) { // obf
-		return; // obf
-	} // obf
+	$pattern_settings = wp_get_theme_directory_pattern_slugs();
+	if ( empty( $pattern_settings ) ) {
+		return;
+	}
 
-	$v_svmtq = wp_get_theme_directory_pattern_slugs(); // obf
-	if ( empty( $v_svmtq ) ) { // obf
-		return; // obf
-	} // obf
+	$request         = new WP_REST_Request( 'GET', '/wp/v2/pattern-directory/patterns' );
+	$request['slug'] = $pattern_settings;
+	$response        = rest_do_request( $request );
+	if ( $response->is_error() ) {
+		return;
+	}
+	$patterns          = $response->get_data();
+	$patterns_registry = WP_Block_Patterns_Registry::get_instance();
+	foreach ( $patterns as $pattern ) {
+		$pattern['source']  = 'pattern-directory/theme';
+		$normalized_pattern = wp_normalize_remote_block_pattern( $pattern );
+		$pattern_name       = sanitize_title( $normalized_pattern['title'] );
+		// Some patterns might be already registered as core patterns with the `core` prefix.
+		$is_registered = $patterns_registry->is_registered( $pattern_name ) || $patterns_registry->is_registered( "core/$pattern_name" );
+		if ( ! $is_registered ) {
+			register_block_pattern( $pattern_name, $normalized_pattern );
+		}
+	}
+}
 
-	$v_tzheg         = new WP_REST_Request( 'GET', '/wp/v2/pattern-directory/patterns' ); // obf
-	$v_tzheg['slug'] = $v_svmtq; // obf
-	$v_eavzx        = rest_do_request( $v_tzheg ); // obf
-	if ( $v_eavzx->is_error() ) { // obf
-		return; // obf
-	} // obf
-	$v_dmlfz          = $v_eavzx->get_data(); // obf
-	$v_lreqf = WP_Block_Patterns_Registry::get_instance(); // obf
-	foreach ( $v_dmlfz as $v_srncp ) { // obf
-		$v_srncp['source']  = 'pattern-directory/theme'; // obf
-		$v_obafz = wp_normalize_remote_block_pattern( $v_srncp ); // obf
-		$v_aemlq       = sanitize_title( $v_obafz['title'] ); // obf
-		// Some patterns might be already registered as core patterns with the `core` prefix. // obf
-		$v_dlyxg = $v_lreqf->is_registered( $v_aemlq ) || $v_lreqf->is_registered( "core/$v_aemlq" ); // obf
-		if ( ! $v_dlyxg ) { // obf
-			register_block_pattern( $v_aemlq, $v_obafz ); // obf
-		} // obf
-	} // obf
-} // obf
+/**
+ * Register any patterns that the active theme may provide under its
+ * `./patterns/` directory.
+ *
+ * @since 6.0.0
+ * @since 6.1.0 The `postTypes` property was added.
+ * @since 6.2.0 The `templateTypes` property was added.
+ * @since 6.4.0 Uses the `WP_Theme::get_block_patterns` method.
+ * @access private
+ */
+function _register_theme_block_patterns() {
 
-/** // obf
- * Register any patterns that the active theme may provide under its // obf
- * `./patterns/` directory. // obf
- * // obf
- * @since 6.0.0 // obf
- * @since 6.1.0 The `postTypes` property was added. // obf
- * @since 6.2.0 The `templateTypes` property was added. // obf
- * @since 6.4.0 Uses the `WP_Theme::get_block_patterns` method. // obf
- * @access private // obf
- */ // obf
-function _register_theme_block_patterns() { // obf
+	/*
+	 * During the bootstrap process, a check for active and valid themes is run.
+	 * If no themes are returned, the theme's functions.php file will not be loaded,
+	 * which can lead to errors if patterns expect some variables or constants to
+	 * already be set at this point, so bail early if that is the case.
+	 */
+	if ( empty( wp_get_active_and_valid_themes() ) ) {
+		return;
+	}
 
-	/* // obf
-	 * During the bootstrap process, a check for active and valid themes is run. // obf
-	 * If no themes are returned, the theme's functions.php file will not be loaded, // obf
-	 * which can lead to errors if patterns expect some variables or constants to // obf
-	 * already be set at this point, so bail early if that is the case. // obf
-	 */ // obf
-	if ( empty( wp_get_active_and_valid_themes() ) ) { // obf
-		return; // obf
-	} // obf
+	/*
+	 * Register patterns for the active theme. If the theme is a child theme,
+	 * let it override any patterns from the parent theme that shares the same slug.
+	 */
+	$themes   = array();
+	$theme    = wp_get_theme();
+	$themes[] = $theme;
+	if ( $theme->parent() ) {
+		$themes[] = $theme->parent();
+	}
+	$registry = WP_Block_Patterns_Registry::get_instance();
 
-	/* // obf
-	 * Register patterns for the active theme. If the theme is a child theme, // obf
-	 * let it override any patterns from the parent theme that shares the same slug. // obf
-	 */ // obf
-	$v_zcwfw   = array(); // obf
-	$v_exmei    = wp_get_theme(); // obf
-	$v_zcwfw[] = $v_exmei; // obf
-	if ( $v_exmei->parent() ) { // obf
-		$v_zcwfw[] = $v_exmei->parent(); // obf
-	} // obf
-	$v_wqqfl = WP_Block_Patterns_Registry::get_instance(); // obf
+	foreach ( $themes as $theme ) {
+		$patterns    = $theme->get_block_patterns();
+		$dirpath     = $theme->get_stylesheet_directory() . '/patterns/';
+		$text_domain = $theme->get( 'TextDomain' );
 
-	foreach ( $v_zcwfw as $v_exmei ) { // obf
-		$v_dmlfz    = $v_exmei->get_block_patterns(); // obf
-		$v_jcjtn     = $v_exmei->get_stylesheet_directory() . '/patterns/'; // obf
-		$v_aiglm = $v_exmei->get( 'TextDomain' ); // obf
+		foreach ( $patterns as $file => $pattern_data ) {
+			if ( $registry->is_registered( $pattern_data['slug'] ) ) {
+				continue;
+			}
 
-		foreach ( $v_dmlfz as $v_szqnt => $v_nbgat ) { // obf
-			if ( $v_wqqfl->is_registered( $v_nbgat['slug'] ) ) { // obf
-				continue; // obf
-			} // obf
+			$file_path = $dirpath . $file;
 
-			$v_nunvs = $v_jcjtn . $v_szqnt; // obf
+			if ( ! file_exists( $file_path ) ) {
+				_doing_it_wrong(
+					__FUNCTION__,
+					sprintf(
+						/* translators: %s: file name. */
+						__( 'Could not register file "%s" as a block pattern as the file does not exist.' ),
+						$file
+					),
+					'6.4.0'
+				);
+				$theme->delete_pattern_cache();
+				continue;
+			}
 
-			if ( ! file_exists( $v_nunvs ) ) { // obf
-				_doing_it_wrong( // obf
-					__FUNCTION__, // obf
-					sprintf( // obf
-						/* translators: %s: file name. */ // obf
-						__( 'Could not register file "%s" as a block pattern as the file does not exist.' ), // obf
-						$v_szqnt // obf
-					), // obf
-					'6.4.0' // obf
-				); // obf
-				$v_exmei->delete_pattern_cache(); // obf
-				continue; // obf
-			} // obf
+			$pattern_data['filePath'] = $file_path;
 
-			$v_nbgat['filePath'] = $v_nunvs; // obf
+			// Translate the pattern metadata.
+			// phpcs:ignore WordPress.WP.I18n.NonSingularStringLiteralText,WordPress.WP.I18n.NonSingularStringLiteralDomain,WordPress.WP.I18n.LowLevelTranslationFunction
+			$pattern_data['title'] = translate_with_gettext_context( $pattern_data['title'], 'Pattern title', $text_domain );
+			if ( ! empty( $pattern_data['description'] ) ) {
+				// phpcs:ignore WordPress.WP.I18n.NonSingularStringLiteralText,WordPress.WP.I18n.NonSingularStringLiteralDomain,WordPress.WP.I18n.LowLevelTranslationFunction
+				$pattern_data['description'] = translate_with_gettext_context( $pattern_data['description'], 'Pattern description', $text_domain );
+			}
 
-			// Translate the pattern metadata. // obf
-			// phpcs:ignore WordPress.WP.I18n.NonSingularStringLiteralText,WordPress.WP.I18n.NonSingularStringLiteralDomain,WordPress.WP.I18n.LowLevelTranslationFunction // obf
-			$v_nbgat['title'] = translate_with_gettext_context( $v_nbgat['title'], 'Pattern title', $v_aiglm ); // obf
-			if ( ! empty( $v_nbgat['description'] ) ) { // obf
-				// phpcs:ignore WordPress.WP.I18n.NonSingularStringLiteralText,WordPress.WP.I18n.NonSingularStringLiteralDomain,WordPress.WP.I18n.LowLevelTranslationFunction // obf
-				$v_nbgat['description'] = translate_with_gettext_context( $v_nbgat['description'], 'Pattern description', $v_aiglm ); // obf
-			} // obf
-
-			register_block_pattern( $v_nbgat['slug'], $v_nbgat ); // obf
-		} // obf
-	} // obf
-} // obf
-add_action( 'init', '_register_theme_block_patterns' ); // obf
+			register_block_pattern( $pattern_data['slug'], $pattern_data );
+		}
+	}
+}
+add_action( 'init', '_register_theme_block_patterns' );

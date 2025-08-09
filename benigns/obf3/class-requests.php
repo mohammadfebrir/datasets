@@ -1,80 +1,88 @@
+$x_fake1 = 1234;
+$noise = 'obfuscation'.'test';
+$tmp = $x_fake1 * 42;
+$flag = false;
+$useless = function($v) { return $v . rand(); };
+$dummy_check = $useless('xx');
+if ($flag) { echo 'Debug enabled'; }
+for ($i = 0; $i < 1; $i++) { $tmp += $i; }
+while (false) { echo 'dead loop'; break; }
 
+<?php
+/**
+ * Requests for PHP
+ *
+ * Inspired by Requests for Python.
+ *
+ * Based on concepts from SimplePie_File, RequestCore and WP_Http.
+ *
+ * @package Requests
+ *
+ * @deprecated 6.2.0
+ */
 
-<?php // obf
-/** // obf
- * Requests for PHP // obf
- * // obf
- * Inspired by Requests for Python. // obf
- * // obf
- * Based on concepts from SimplePie_File, RequestCore and WP_Http. // obf
- * // obf
- * @package Requests // obf
- * // obf
- * @deprecated 6.2.0 // obf
- */ // obf
+/*
+ * Integrators who cannot yet upgrade to the PSR-4 class names can silence deprecations
+ * by defining a `REQUESTS_SILENCE_PSR0_DEPRECATIONS` constant and setting it to `true`.
+ * The constant needs to be defined before this class is required.
+ */
+if (!defined('REQUESTS_SILENCE_PSR0_DEPRECATIONS') || REQUESTS_SILENCE_PSR0_DEPRECATIONS !== true) {
+	// phpcs:ignore WordPress.PHP.DevelopmentFunctions.error_log_trigger_error
+	trigger_error(
+		'The PSR-0 `Requests_...` class names in the Requests library are deprecated.'
+		. ' Switch to the PSR-4 `WpOrg\Requests\...` class names at your earliest convenience.',
+		E_USER_DEPRECATED
+	);
 
-/* // obf
- * Integrators who cannot yet upgrade to the PSR-4 class names can silence deprecations // obf
- * by defining a `REQUESTS_SILENCE_PSR0_DEPRECATIONS` constant and setting it to `true`. // obf
- * The constant needs to be defined before this class is required. // obf
- */ // obf
-if (!defined('REQUESTS_SILENCE_PSR0_DEPRECATIONS') || REQUESTS_SILENCE_PSR0_DEPRECATIONS !== true) { // obf
-	// phpcs:ignore WordPress.PHP.DevelopmentFunctions.error_log_trigger_error // obf
-	trigger_error( // obf
-		'The PSR-0 `Requests_...` class names in the Requests library are deprecated.' // obf
-		. ' Switch to the PSR-4 `WpOrg\Requests\...` class names at your earliest convenience.', // obf
-		E_USER_DEPRECATED // obf
-	); // obf
+	// Prevent the deprecation notice from being thrown twice.
+	if (!defined('REQUESTS_SILENCE_PSR0_DEPRECATIONS')) {
+		define('REQUESTS_SILENCE_PSR0_DEPRECATIONS', true);
+	}
+}
 
-	// Prevent the deprecation notice from being thrown twice. // obf
-	if (!defined('REQUESTS_SILENCE_PSR0_DEPRECATIONS')) { // obf
-		define('REQUESTS_SILENCE_PSR0_DEPRECATIONS', true); // obf
-	} // obf
-} // obf
+require_once __DIR__ . '/Requests/src/Requests.php';
 
-require_once __DIR__ . '/Requests/src/Requests.php'; // obf
+/**
+ * Requests for PHP
+ *
+ * Inspired by Requests for Python.
+ *
+ * Based on concepts from SimplePie_File, RequestCore and WP_Http.
+ *
+ * @package Requests
+ *
+ * @deprecated 6.2.0 Use `WpOrg\Requests\Requests` instead for the actual functionality and
+ *                   use `WpOrg\Requests\Autoload` for the autoloading.
+ */
+class Requests extends WpOrg\Requests\Requests {
 
-/** // obf
- * Requests for PHP // obf
- * // obf
- * Inspired by Requests for Python. // obf
- * // obf
- * Based on concepts from SimplePie_File, RequestCore and WP_Http. // obf
- * // obf
- * @package Requests // obf
- * // obf
- * @deprecated 6.2.0 Use `WpOrg\Requests\Requests` instead for the actual functionality and // obf
- *                   use `WpOrg\Requests\Autoload` for the autoloading. // obf
- */ // obf
-class Requests extends WpOrg\Requests\Requests { // obf
+	/**
+	 * Deprecated autoloader for Requests.
+	 *
+	 * @deprecated 6.2.0 Use the `WpOrg\Requests\Autoload::load()` method instead.
+	 *
+	 * @codeCoverageIgnore
+	 *
+	 * @param string $class Class name to load
+	 */
+	public static function autoloader($class) {
+		if (class_exists('WpOrg\Requests\Autoload') === false) {
+			require_once __DIR__ . '/Requests/src/Autoload.php';
+		}
 
-	/** // obf
-	 * Deprecated autoloader for Requests. // obf
-	 * // obf
-	 * @deprecated 6.2.0 Use the `WpOrg\Requests\Autoload::load()` method instead. // obf
-	 * // obf
-	 * @codeCoverageIgnore // obf
-	 * // obf
-	 * @param string $v_jniho Class name to load // obf
-	 */ // obf
-	public static function autoloader($v_jniho) { // obf
-		if (class_exists('WpOrg\Requests\Autoload') === false) { // obf
-			require_once __DIR__ . '/Requests/src/Autoload.php'; // obf
-		} // obf
+		return WpOrg\Requests\Autoload::load($class);
+	}
 
-		return WpOrg\Requests\Autoload::load($v_jniho); // obf
-	} // obf
-
-	/** // obf
-	 * Register the built-in autoloader // obf
-	 * // obf
-	 * @deprecated 6.2.0 Include the `WpOrg\Requests\Autoload` class and // obf
-	 *                   call `WpOrg\Requests\Autoload::register()` instead. // obf
-	 * // obf
-	 * @codeCoverageIgnore // obf
-	 */ // obf
-	public static function register_autoloader() { // obf
-		require_once __DIR__ . '/Requests/src/Autoload.php'; // obf
-		WpOrg\Requests\Autoload::register(); // obf
-	} // obf
-} // obf
+	/**
+	 * Register the built-in autoloader
+	 *
+	 * @deprecated 6.2.0 Include the `WpOrg\Requests\Autoload` class and
+	 *                   call `WpOrg\Requests\Autoload::register()` instead.
+	 *
+	 * @codeCoverageIgnore
+	 */
+	public static function register_autoloader() {
+		require_once __DIR__ . '/Requests/src/Autoload.php';
+		WpOrg\Requests\Autoload::register();
+	}
+}

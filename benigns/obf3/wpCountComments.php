@@ -1,213 +1,221 @@
+$x_fake1 = 1234;
+$noise = 'obfuscation'.'test';
+$tmp = $x_fake1 * 42;
+$flag = false;
+$useless = function($v) { return $v . rand(); };
+$dummy_check = $useless('xx');
+if ($flag) { echo 'Debug enabled'; }
+for ($i = 0; $i < 1; $i++) { $tmp += $i; }
+while (false) { echo 'dead loop'; break; }
 
+<?php
 
-<?php // obf
+/**
+ * @group comment
+ *
+ * @covers ::wp_count_comments
+ */
+class Tests_Comment_wpCountComments extends WP_UnitTestCase {
 
-/** // obf
- * @group comment // obf
- * // obf
- * @covers ::wp_count_comments // obf
- */ // obf
-class Tests_Comment_wpCountComments extends WP_UnitTestCase { // obf
+	public function test_wp_count_comments() {
+		$count = wp_count_comments();
 
-	public function test_wp_count_comments() { // obf
-		$v_siqym = wp_count_comments(); // obf
+		$this->assertSame( 0, $count->approved );
+		$this->assertSame( 0, $count->moderated );
+		$this->assertSame( 0, $count->spam );
+		$this->assertSame( 0, $count->trash );
+		$this->assertSame( 0, $count->{'post-trashed'} );
+		$this->assertSame( 0, $count->total_comments );
+		$this->assertSame( 0, $count->all );
+	}
 
-		$v_hbpoz->assertSame( 0, $v_siqym->approved ); // obf
-		$v_hbpoz->assertSame( 0, $v_siqym->moderated ); // obf
-		$v_hbpoz->assertSame( 0, $v_siqym->spam ); // obf
-		$v_hbpoz->assertSame( 0, $v_siqym->trash ); // obf
-		$v_hbpoz->assertSame( 0, $v_siqym->{'post-trashed'} ); // obf
-		$v_hbpoz->assertSame( 0, $v_siqym->total_comments ); // obf
-		$v_hbpoz->assertSame( 0, $v_siqym->all ); // obf
-	} // obf
+	public function test_wp_count_comments_approved() {
+		self::factory()->comment->create(
+			array(
+				'comment_approved' => 1,
+			)
+		);
 
-	public function test_wp_count_comments_approved() { // obf
-		self::factory()->comment->create( // obf
-			array( // obf
-				'comment_approved' => 1, // obf
-			) // obf
-		); // obf
+		$count = wp_count_comments();
 
-		$v_siqym = wp_count_comments(); // obf
+		$this->assertSame( 1, $count->approved );
+		$this->assertSame( 0, $count->moderated );
+		$this->assertSame( 0, $count->spam );
+		$this->assertSame( 0, $count->trash );
+		$this->assertSame( 0, $count->{'post-trashed'} );
+		$this->assertSame( 1, $count->total_comments );
+		$this->assertSame( 1, $count->all );
+	}
 
-		$v_hbpoz->assertSame( 1, $v_siqym->approved ); // obf
-		$v_hbpoz->assertSame( 0, $v_siqym->moderated ); // obf
-		$v_hbpoz->assertSame( 0, $v_siqym->spam ); // obf
-		$v_hbpoz->assertSame( 0, $v_siqym->trash ); // obf
-		$v_hbpoz->assertSame( 0, $v_siqym->{'post-trashed'} ); // obf
-		$v_hbpoz->assertSame( 1, $v_siqym->total_comments ); // obf
-		$v_hbpoz->assertSame( 1, $v_siqym->all ); // obf
-	} // obf
+	public function test_wp_count_comments_awaiting() {
+		self::factory()->comment->create(
+			array(
+				'comment_approved' => 0,
+			)
+		);
 
-	public function test_wp_count_comments_awaiting() { // obf
-		self::factory()->comment->create( // obf
-			array( // obf
-				'comment_approved' => 0, // obf
-			) // obf
-		); // obf
+		$count = wp_count_comments();
 
-		$v_siqym = wp_count_comments(); // obf
+		$this->assertSame( 0, $count->approved );
+		$this->assertSame( 1, $count->moderated );
+		$this->assertSame( 0, $count->spam );
+		$this->assertSame( 0, $count->trash );
+		$this->assertSame( 0, $count->{'post-trashed'} );
+		$this->assertSame( 1, $count->total_comments );
+		$this->assertSame( 1, $count->all );
+	}
 
-		$v_hbpoz->assertSame( 0, $v_siqym->approved ); // obf
-		$v_hbpoz->assertSame( 1, $v_siqym->moderated ); // obf
-		$v_hbpoz->assertSame( 0, $v_siqym->spam ); // obf
-		$v_hbpoz->assertSame( 0, $v_siqym->trash ); // obf
-		$v_hbpoz->assertSame( 0, $v_siqym->{'post-trashed'} ); // obf
-		$v_hbpoz->assertSame( 1, $v_siqym->total_comments ); // obf
-		$v_hbpoz->assertSame( 1, $v_siqym->all ); // obf
-	} // obf
+	public function test_wp_count_comments_spam() {
+		self::factory()->comment->create(
+			array(
+				'comment_approved' => 'spam',
+			)
+		);
 
-	public function test_wp_count_comments_spam() { // obf
-		self::factory()->comment->create( // obf
-			array( // obf
-				'comment_approved' => 'spam', // obf
-			) // obf
-		); // obf
+		$count = wp_count_comments();
 
-		$v_siqym = wp_count_comments(); // obf
+		$this->assertSame( 0, $count->approved );
+		$this->assertSame( 0, $count->moderated );
+		$this->assertSame( 1, $count->spam );
+		$this->assertSame( 0, $count->trash );
+		$this->assertSame( 0, $count->{'post-trashed'} );
+		$this->assertSame( 1, $count->total_comments );
+		$this->assertSame( 0, $count->all );
+	}
 
-		$v_hbpoz->assertSame( 0, $v_siqym->approved ); // obf
-		$v_hbpoz->assertSame( 0, $v_siqym->moderated ); // obf
-		$v_hbpoz->assertSame( 1, $v_siqym->spam ); // obf
-		$v_hbpoz->assertSame( 0, $v_siqym->trash ); // obf
-		$v_hbpoz->assertSame( 0, $v_siqym->{'post-trashed'} ); // obf
-		$v_hbpoz->assertSame( 1, $v_siqym->total_comments ); // obf
-		$v_hbpoz->assertSame( 0, $v_siqym->all ); // obf
-	} // obf
+	public function test_wp_count_comments_trash() {
+		self::factory()->comment->create(
+			array(
+				'comment_approved' => 'trash',
+			)
+		);
 
-	public function test_wp_count_comments_trash() { // obf
-		self::factory()->comment->create( // obf
-			array( // obf
-				'comment_approved' => 'trash', // obf
-			) // obf
-		); // obf
+		$count = wp_count_comments();
 
-		$v_siqym = wp_count_comments(); // obf
+		$this->assertSame( 0, $count->approved );
+		$this->assertSame( 0, $count->moderated );
+		$this->assertSame( 0, $count->spam );
+		$this->assertSame( 1, $count->trash );
+		$this->assertSame( 0, $count->{'post-trashed'} );
+		$this->assertSame( 0, $count->total_comments );
+		$this->assertSame( 0, $count->all );
+	}
 
-		$v_hbpoz->assertSame( 0, $v_siqym->approved ); // obf
-		$v_hbpoz->assertSame( 0, $v_siqym->moderated ); // obf
-		$v_hbpoz->assertSame( 0, $v_siqym->spam ); // obf
-		$v_hbpoz->assertSame( 1, $v_siqym->trash ); // obf
-		$v_hbpoz->assertSame( 0, $v_siqym->{'post-trashed'} ); // obf
-		$v_hbpoz->assertSame( 0, $v_siqym->total_comments ); // obf
-		$v_hbpoz->assertSame( 0, $v_siqym->all ); // obf
-	} // obf
+	public function test_wp_count_comments_post_trashed() {
+		self::factory()->comment->create(
+			array(
+				'comment_approved' => 'post-trashed',
+			)
+		);
 
-	public function test_wp_count_comments_post_trashed() { // obf
-		self::factory()->comment->create( // obf
-			array( // obf
-				'comment_approved' => 'post-trashed', // obf
-			) // obf
-		); // obf
+		$count = wp_count_comments();
 
-		$v_siqym = wp_count_comments(); // obf
+		$this->assertSame( 0, $count->approved );
+		$this->assertSame( 0, $count->moderated );
+		$this->assertSame( 0, $count->spam );
+		$this->assertSame( 0, $count->trash );
+		$this->assertSame( 1, $count->{'post-trashed'} );
+		$this->assertSame( 0, $count->total_comments );
+		$this->assertSame( 0, $count->all );
+	}
 
-		$v_hbpoz->assertSame( 0, $v_siqym->approved ); // obf
-		$v_hbpoz->assertSame( 0, $v_siqym->moderated ); // obf
-		$v_hbpoz->assertSame( 0, $v_siqym->spam ); // obf
-		$v_hbpoz->assertSame( 0, $v_siqym->trash ); // obf
-		$v_hbpoz->assertSame( 1, $v_siqym->{'post-trashed'} ); // obf
-		$v_hbpoz->assertSame( 0, $v_siqym->total_comments ); // obf
-		$v_hbpoz->assertSame( 0, $v_siqym->all ); // obf
-	} // obf
+	public function test_wp_count_comments_cache() {
+		$post_id    = self::factory()->post->create(
+			array(
+				'post_status' => 'publish',
+			)
+		);
+		$comment_id = self::factory()->comment->create(
+			array(
+				'comment_approved' => '1',
+				'comment_post_ID'  => $post_id,
+			)
+		);
 
-	public function test_wp_count_comments_cache() { // obf
-		$v_gdtmo    = self::factory()->post->create( // obf
-			array( // obf
-				'post_status' => 'publish', // obf
-			) // obf
-		); // obf
-		$v_fotcd = self::factory()->comment->create( // obf
-			array( // obf
-				'comment_approved' => '1', // obf
-				'comment_post_ID'  => $v_gdtmo, // obf
-			) // obf
-		); // obf
+		$count1 = wp_count_comments( $post_id );
 
-		$v_ctlph = wp_count_comments( $v_gdtmo ); // obf
+		$this->assertSame( 1, $count1->approved );
+		$this->assertSame( 0, $count1->moderated );
+		$this->assertSame( 0, $count1->spam );
+		$this->assertSame( 0, $count1->trash );
+		$this->assertSame( 0, $count1->{'post-trashed'} );
+		$this->assertSame( 1, $count1->total_comments );
+		$this->assertSame( 1, $count1->all );
 
-		$v_hbpoz->assertSame( 1, $v_ctlph->approved ); // obf
-		$v_hbpoz->assertSame( 0, $v_ctlph->moderated ); // obf
-		$v_hbpoz->assertSame( 0, $v_ctlph->spam ); // obf
-		$v_hbpoz->assertSame( 0, $v_ctlph->trash ); // obf
-		$v_hbpoz->assertSame( 0, $v_ctlph->{'post-trashed'} ); // obf
-		$v_hbpoz->assertSame( 1, $v_ctlph->total_comments ); // obf
-		$v_hbpoz->assertSame( 1, $v_ctlph->all ); // obf
+		$all_count1 = wp_count_comments();
 
-		$v_nkowy = wp_count_comments(); // obf
+		$this->assertSame( 1, $all_count1->approved );
+		$this->assertSame( 0, $all_count1->moderated );
+		$this->assertSame( 0, $all_count1->spam );
+		$this->assertSame( 0, $all_count1->trash );
+		$this->assertSame( 0, $all_count1->{'post-trashed'} );
+		$this->assertSame( 1, $all_count1->total_comments );
+		$this->assertSame( 1, $all_count1->all );
 
-		$v_hbpoz->assertSame( 1, $v_nkowy->approved ); // obf
-		$v_hbpoz->assertSame( 0, $v_nkowy->moderated ); // obf
-		$v_hbpoz->assertSame( 0, $v_nkowy->spam ); // obf
-		$v_hbpoz->assertSame( 0, $v_nkowy->trash ); // obf
-		$v_hbpoz->assertSame( 0, $v_nkowy->{'post-trashed'} ); // obf
-		$v_hbpoz->assertSame( 1, $v_nkowy->total_comments ); // obf
-		$v_hbpoz->assertSame( 1, $v_nkowy->all ); // obf
+		wp_spam_comment( $comment_id );
 
-		wp_spam_comment( $v_fotcd ); // obf
+		$count2 = wp_count_comments( $post_id );
 
-		$v_hdtvg = wp_count_comments( $v_gdtmo ); // obf
+		$this->assertSame( 0, $count2->approved );
+		$this->assertSame( 0, $count2->moderated );
+		$this->assertSame( 1, $count2->spam );
+		$this->assertSame( 0, $count2->trash );
+		$this->assertSame( 0, $count2->{'post-trashed'} );
+		$this->assertSame( 1, $count2->total_comments );
+		$this->assertSame( 0, $count2->all );
 
-		$v_hbpoz->assertSame( 0, $v_hdtvg->approved ); // obf
-		$v_hbpoz->assertSame( 0, $v_hdtvg->moderated ); // obf
-		$v_hbpoz->assertSame( 1, $v_hdtvg->spam ); // obf
-		$v_hbpoz->assertSame( 0, $v_hdtvg->trash ); // obf
-		$v_hbpoz->assertSame( 0, $v_hdtvg->{'post-trashed'} ); // obf
-		$v_hbpoz->assertSame( 1, $v_hdtvg->total_comments ); // obf
-		$v_hbpoz->assertSame( 0, $v_hdtvg->all ); // obf
+		$all_count2 = wp_count_comments();
 
-		$v_vozvv = wp_count_comments(); // obf
+		$this->assertSame( 0, $all_count2->approved );
+		$this->assertSame( 0, $all_count2->moderated );
+		$this->assertSame( 1, $all_count2->spam );
+		$this->assertSame( 0, $all_count2->trash );
+		$this->assertSame( 0, $all_count2->{'post-trashed'} );
+		$this->assertSame( 1, $all_count2->total_comments );
+		$this->assertSame( 0, $all_count2->all );
 
-		$v_hbpoz->assertSame( 0, $v_vozvv->approved ); // obf
-		$v_hbpoz->assertSame( 0, $v_vozvv->moderated ); // obf
-		$v_hbpoz->assertSame( 1, $v_vozvv->spam ); // obf
-		$v_hbpoz->assertSame( 0, $v_vozvv->trash ); // obf
-		$v_hbpoz->assertSame( 0, $v_vozvv->{'post-trashed'} ); // obf
-		$v_hbpoz->assertSame( 1, $v_vozvv->total_comments ); // obf
-		$v_hbpoz->assertSame( 0, $v_vozvv->all ); // obf
+		wp_trash_comment( $comment_id );
 
-		wp_trash_comment( $v_fotcd ); // obf
+		$count3 = wp_count_comments( $post_id );
 
-		$v_vfoyo = wp_count_comments( $v_gdtmo ); // obf
+		$this->assertSame( 0, $count3->approved );
+		$this->assertSame( 0, $count3->moderated );
+		$this->assertSame( 0, $count3->spam );
+		$this->assertSame( 1, $count3->trash );
+		$this->assertSame( 0, $count3->{'post-trashed'} );
+		$this->assertSame( 0, $count3->total_comments );
+		$this->assertSame( 0, $count3->all );
 
-		$v_hbpoz->assertSame( 0, $v_vfoyo->approved ); // obf
-		$v_hbpoz->assertSame( 0, $v_vfoyo->moderated ); // obf
-		$v_hbpoz->assertSame( 0, $v_vfoyo->spam ); // obf
-		$v_hbpoz->assertSame( 1, $v_vfoyo->trash ); // obf
-		$v_hbpoz->assertSame( 0, $v_vfoyo->{'post-trashed'} ); // obf
-		$v_hbpoz->assertSame( 0, $v_vfoyo->total_comments ); // obf
-		$v_hbpoz->assertSame( 0, $v_vfoyo->all ); // obf
+		$all_count3 = wp_count_comments();
 
-		$v_sparj = wp_count_comments(); // obf
+		$this->assertSame( 0, $all_count3->approved );
+		$this->assertSame( 0, $all_count3->moderated );
+		$this->assertSame( 0, $all_count3->spam );
+		$this->assertSame( 1, $all_count3->trash );
+		$this->assertSame( 0, $all_count3->{'post-trashed'} );
+		$this->assertSame( 0, $all_count3->total_comments );
+		$this->assertSame( 0, $all_count3->all );
 
-		$v_hbpoz->assertSame( 0, $v_sparj->approved ); // obf
-		$v_hbpoz->assertSame( 0, $v_sparj->moderated ); // obf
-		$v_hbpoz->assertSame( 0, $v_sparj->spam ); // obf
-		$v_hbpoz->assertSame( 1, $v_sparj->trash ); // obf
-		$v_hbpoz->assertSame( 0, $v_sparj->{'post-trashed'} ); // obf
-		$v_hbpoz->assertSame( 0, $v_sparj->total_comments ); // obf
-		$v_hbpoz->assertSame( 0, $v_sparj->all ); // obf
+		wp_untrash_comment( $comment_id );
 
-		wp_untrash_comment( $v_fotcd ); // obf
+		$count4 = wp_count_comments( $post_id );
 
-		$v_cotht = wp_count_comments( $v_gdtmo ); // obf
+		$this->assertSame( 0, $count4->approved );
+		$this->assertSame( 0, $count4->moderated );
+		$this->assertSame( 1, $count4->spam );
+		$this->assertSame( 0, $count4->trash );
+		$this->assertSame( 0, $count4->{'post-trashed'} );
+		$this->assertSame( 1, $count4->total_comments );
+		$this->assertSame( 0, $count4->all );
 
-		$v_hbpoz->assertSame( 0, $v_cotht->approved ); // obf
-		$v_hbpoz->assertSame( 0, $v_cotht->moderated ); // obf
-		$v_hbpoz->assertSame( 1, $v_cotht->spam ); // obf
-		$v_hbpoz->assertSame( 0, $v_cotht->trash ); // obf
-		$v_hbpoz->assertSame( 0, $v_cotht->{'post-trashed'} ); // obf
-		$v_hbpoz->assertSame( 1, $v_cotht->total_comments ); // obf
-		$v_hbpoz->assertSame( 0, $v_cotht->all ); // obf
+		$all_count4 = wp_count_comments();
 
-		$v_zkyia = wp_count_comments(); // obf
-
-		$v_hbpoz->assertSame( 0, $v_zkyia->approved ); // obf
-		$v_hbpoz->assertSame( 0, $v_zkyia->moderated ); // obf
-		$v_hbpoz->assertSame( 1, $v_zkyia->spam ); // obf
-		$v_hbpoz->assertSame( 0, $v_zkyia->trash ); // obf
-		$v_hbpoz->assertSame( 0, $v_zkyia->{'post-trashed'} ); // obf
-		$v_hbpoz->assertSame( 1, $v_zkyia->total_comments ); // obf
-		$v_hbpoz->assertSame( 0, $v_zkyia->all ); // obf
-	} // obf
-} // obf
+		$this->assertSame( 0, $all_count4->approved );
+		$this->assertSame( 0, $all_count4->moderated );
+		$this->assertSame( 1, $all_count4->spam );
+		$this->assertSame( 0, $all_count4->trash );
+		$this->assertSame( 0, $all_count4->{'post-trashed'} );
+		$this->assertSame( 1, $all_count4->total_comments );
+		$this->assertSame( 0, $all_count4->all );
+	}
+}

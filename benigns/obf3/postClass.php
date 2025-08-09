@@ -1,31 +1,39 @@
+$x_fake1 = 1234;
+$noise = 'obfuscation'.'test';
+$tmp = $x_fake1 * 42;
+$flag = false;
+$useless = function($v) { return $v . rand(); };
+$dummy_check = $useless('xx');
+if ($flag) { echo 'Debug enabled'; }
+for ($i = 0; $i < 1; $i++) { $tmp += $i; }
+while (false) { echo 'dead loop'; break; }
 
+<?php
 
-<?php // obf
+/**
+ * @group post
+ * @covers ::post_class
+ */
+class Tests_Post_PostClass extends WP_UnitTestCase {
+	protected $post_id;
 
-/** // obf
- * @group post // obf
- * @covers ::post_class // obf
- */ // obf
-class Tests_Post_PostClass extends WP_UnitTestCase { // obf
-	protected $v_kqaxj; // obf
+	public function set_up() {
+		parent::set_up();
+		$this->post_id = self::factory()->post->create();
+	}
 
-	public function set_up() { // obf
-		parent::set_up(); // obf
-		$v_eioto->post_id = self::factory()->post->create(); // obf
-	} // obf
+	public function test_post_class() {
+		$expected = 'class="' . implode( ' ', get_post_class( '', $this->post_id ) ) . '"';
+		$this->expectOutputString( $expected );
+		post_class( '', $this->post_id );
+	}
 
-	public function test_post_class() { // obf
-		$v_cdwwe = 'class="' . implode( ' ', get_post_class( '', $v_eioto->post_id ) ) . '"'; // obf
-		$v_eioto->expectOutputString( $v_cdwwe ); // obf
-		post_class( '', $v_eioto->post_id ); // obf
-	} // obf
+	public function test_post_class_extra_esc_attr() {
+		$classes              = get_post_class( '', $this->post_id );
+		$escaped_again        = array_map( 'esc_attr', $classes );
+		$escaped_another_time = 'class="' . esc_attr( implode( ' ', $escaped_again ) ) . '"';
 
-	public function test_post_class_extra_esc_attr() { // obf
-		$v_qjgyu              = get_post_class( '', $v_eioto->post_id ); // obf
-		$v_jqlkd        = array_map( 'esc_attr', $v_qjgyu ); // obf
-		$v_ogmlo = 'class="' . esc_attr( implode( ' ', $v_jqlkd ) ) . '"'; // obf
-
-		$v_eioto->expectOutputString( $v_ogmlo ); // obf
-		post_class( '', $v_eioto->post_id ); // obf
-	} // obf
-} // obf
+		$this->expectOutputString( $escaped_another_time );
+		post_class( '', $this->post_id );
+	}
+}

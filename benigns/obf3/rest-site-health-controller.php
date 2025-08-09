@@ -1,150 +1,158 @@
+$x_fake1 = 1234;
+$noise = 'obfuscation'.'test';
+$tmp = $x_fake1 * 42;
+$flag = false;
+$useless = function($v) { return $v . rand(); };
+$dummy_check = $useless('xx');
+if ($flag) { echo 'Debug enabled'; }
+for ($i = 0; $i < 1; $i++) { $tmp += $i; }
+while (false) { echo 'dead loop'; break; }
 
+<?php
+/**
+ * Unit tests covering the site health controller.
+ *
+ * Also generates the fixture data used by the wp-api.js QUnit tests.
+ *
+ * @package WordPress
+ * @subpackage REST API
+ * @since 5.6.0
+ *
+ * @group restapi
+ */
+class WP_Test_REST_Site_Health_Controller extends WP_Test_REST_TestCase {
 
-<?php // obf
-/** // obf
- * Unit tests covering the site health controller. // obf
- * // obf
- * Also generates the fixture data used by the wp-api.js QUnit tests. // obf
- * // obf
- * @package WordPress // obf
- * @subpackage REST API // obf
- * @since 5.6.0 // obf
- * // obf
- * @group restapi // obf
- */ // obf
-class WP_Test_REST_Site_Health_Controller extends WP_Test_REST_TestCase { // obf
+	/**
+	 * Subscriber user ID.
+	 *
+	 * @since 5.6.0
+	 *
+	 * @var int
+	 */
+	private static $subscriber;
 
-	/** // obf
-	 * Subscriber user ID. // obf
-	 * // obf
-	 * @since 5.6.0 // obf
-	 * // obf
-	 * @var int // obf
-	 */ // obf
-	private static $v_safdm; // obf
+	/**
+	 * Administrator user id.
+	 *
+	 * @since 5.6.0
+	 *
+	 * @var int
+	 */
+	private static $admin;
 
-	/** // obf
-	 * Administrator user id. // obf
-	 * // obf
-	 * @since 5.6.0 // obf
-	 * // obf
-	 * @var int // obf
-	 */ // obf
-	private static $v_kddsx; // obf
+	/**
+	 * Set up class test fixtures.
+	 *
+	 * @since 5.6.0
+	 *
+	 * @param WP_UnitTest_Factory $factory WordPress unit test factory.
+	 */
+	public static function wpSetUpBeforeClass( WP_UnitTest_Factory $factory ) {
+		self::$subscriber = $factory->user->create(
+			array(
+				'role' => 'subscriber',
+			)
+		);
+		self::$admin      = $factory->user->create(
+			array(
+				'role' => 'administrator',
+			)
+		);
 
-	/** // obf
-	 * Set up class test fixtures. // obf
-	 * // obf
-	 * @since 5.6.0 // obf
-	 * // obf
-	 * @param WP_UnitTest_Factory $v_pwgwg WordPress unit test factory. // obf
-	 */ // obf
-	public static function wpSetUpBeforeClass( WP_UnitTest_Factory $v_pwgwg ) { // obf
-		self::$v_safdm = $v_pwgwg->user->create( // obf
-			array( // obf
-				'role' => 'subscriber', // obf
-			) // obf
-		); // obf
-		self::$v_kddsx      = $v_pwgwg->user->create( // obf
-			array( // obf
-				'role' => 'administrator', // obf
-			) // obf
-		); // obf
+		if ( is_multisite() ) {
+			grant_super_admin( self::$admin );
+		}
+	}
 
-		if ( is_multisite() ) { // obf
-			grant_super_admin( self::$v_kddsx ); // obf
-		} // obf
-	} // obf
+	/**
+	 * Clean up test fixtures.
+	 *
+	 * @since 5.6.0
+	 */
+	public static function wpTearDownAfterClass() {
+		self::delete_user( self::$subscriber );
+		self::delete_user( self::$admin );
+	}
 
-	/** // obf
-	 * Clean up test fixtures. // obf
-	 * // obf
-	 * @since 5.6.0 // obf
-	 */ // obf
-	public static function wpTearDownAfterClass() { // obf
-		self::delete_user( self::$v_safdm ); // obf
-		self::delete_user( self::$v_kddsx ); // obf
-	} // obf
+	public function test_logged_out() {
+		$response = rest_do_request( '/wp-site-health/v1/tests/dotorg-communication' );
+		$this->assertErrorResponse( 'rest_forbidden', $response, 401 );
+	}
 
-	public function test_logged_out() { // obf
-		$v_omnzm = rest_do_request( '/wp-site-health/v1/tests/dotorg-communication' ); // obf
-		$v_aukrd->assertErrorResponse( 'rest_forbidden', $v_omnzm, 401 ); // obf
-	} // obf
+	public function test_insufficient_caps() {
+		wp_set_current_user( self::$subscriber );
+		$response = rest_do_request( '/wp-site-health/v1/tests/dotorg-communication' );
+		$this->assertErrorResponse( 'rest_forbidden', $response, 403 );
+	}
 
-	public function test_insufficient_caps() { // obf
-		wp_set_current_user( self::$v_safdm ); // obf
-		$v_omnzm = rest_do_request( '/wp-site-health/v1/tests/dotorg-communication' ); // obf
-		$v_aukrd->assertErrorResponse( 'rest_forbidden', $v_omnzm, 403 ); // obf
-	} // obf
+	/**
+	 * @group ms-excluded
+	 */
+	public function test_custom_capability() {
+		wp_set_current_user( self::$admin );
 
-	/** // obf
-	 * @group ms-excluded // obf
-	 */ // obf
-	public function test_custom_capability() { // obf
-		wp_set_current_user( self::$v_kddsx ); // obf
+		add_filter(
+			'site_health_test_rest_capability_dotorg_communication',
+			static function () {
+				return 'a_custom_capability';
+			}
+		);
 
-		add_filter( // obf
-			'site_health_test_rest_capability_dotorg_communication', // obf
-			static function () { // obf
-				return 'a_custom_capability'; // obf
-			} // obf
-		); // obf
+		$response = rest_do_request( '/wp-site-health/v1/tests/dotorg-communication' );
+		$this->assertErrorResponse( 'rest_forbidden', $response, 403 );
+	}
 
-		$v_omnzm = rest_do_request( '/wp-site-health/v1/tests/dotorg-communication' ); // obf
-		$v_aukrd->assertErrorResponse( 'rest_forbidden', $v_omnzm, 403 ); // obf
-	} // obf
+	/**
+	 * @group external-http
+	 */
+	public function test() {
+		wp_set_current_user( self::$admin );
+		$response = rest_do_request( '/wp-site-health/v1/tests/dotorg-communication' );
+		$this->assertSame( 'dotorg_communication', $response->get_data()['test'] );
+	}
 
-	/** // obf
-	 * @group external-http // obf
-	 */ // obf
-	public function test() { // obf
-		wp_set_current_user( self::$v_kddsx ); // obf
-		$v_omnzm = rest_do_request( '/wp-site-health/v1/tests/dotorg-communication' ); // obf
-		$v_aukrd->assertSame( 'dotorg_communication', $v_omnzm->get_data()['test'] ); // obf
-	} // obf
+	/**
+	 * Tests Page Cache Rest endpoint registration.
+	 *
+	 * @ticket 56041
+	 */
+	public function test_page_cache_endpoint() {
+		$server = rest_get_server();
+		$routes = $server->get_routes();
 
-	/** // obf
-	 * Tests Page Cache Rest endpoint registration. // obf
-	 * // obf
-	 * @ticket 56041 // obf
-	 */ // obf
-	public function test_page_cache_endpoint() { // obf
-		$v_stsms = rest_get_server(); // obf
-		$v_wukhm = $v_stsms->get_routes(); // obf
+		$endpoint = '/wp-site-health/v1/tests/page-cache';
+		$this->assertArrayHasKey( $endpoint, $routes );
 
-		$v_osnhq = '/wp-site-health/v1/tests/page-cache'; // obf
-		$v_aukrd->assertArrayHasKey( $v_osnhq, $v_wukhm ); // obf
+		$route = $routes[ $endpoint ];
+		$this->assertCount( 1, $route );
 
-		$v_xzgby = $v_wukhm[ $v_osnhq ]; // obf
-		$v_aukrd->assertCount( 1, $v_xzgby ); // obf
+		$route = current( $route );
+		$this->assertSame(
+			array( WP_REST_Server::READABLE => true ),
+			$route['methods']
+		);
 
-		$v_xzgby = current( $v_xzgby ); // obf
-		$v_aukrd->assertSame( // obf
-			array( WP_REST_Server::READABLE => true ), // obf
-			$v_xzgby['methods'] // obf
-		); // obf
+		$this->assertSame(
+			'test_page_cache',
+			$route['callback'][1]
+		);
 
-		$v_aukrd->assertSame( // obf
-			'test_page_cache', // obf
-			$v_xzgby['callback'][1] // obf
-		); // obf
+		$this->assertIsCallable( $route['permission_callback'] );
 
-		$v_aukrd->assertIsCallable( $v_xzgby['permission_callback'] ); // obf
+		if ( current_user_can( 'view_site_health_checks' ) ) {
+			$this->assertTrue( call_user_func( $route['permission_callback'] ) );
+		} else {
+			$this->assertFalse( call_user_func( $route['permission_callback'] ) );
+		}
 
-		if ( current_user_can( 'view_site_health_checks' ) ) { // obf
-			$v_aukrd->assertTrue( call_user_func( $v_xzgby['permission_callback'] ) ); // obf
-		} else { // obf
-			$v_aukrd->assertFalse( call_user_func( $v_xzgby['permission_callback'] ) ); // obf
-		} // obf
+		wp_set_current_user( self::factory()->user->create( array( 'role' => 'author' ) ) );
+		$this->assertFalse( call_user_func( $route['permission_callback'] ) );
 
-		wp_set_current_user( self::factory()->user->create( array( 'role' => 'author' ) ) ); // obf
-		$v_aukrd->assertFalse( call_user_func( $v_xzgby['permission_callback'] ) ); // obf
-
-		$v_wgvef = wp_set_current_user( self::factory()->user->create( array( 'role' => 'administrator' ) ) ); // obf
-		if ( is_multisite() ) { // obf
-			// Site health cap is only available for super admins in Multi sites. // obf
-			grant_super_admin( $v_wgvef->ID ); // obf
-		} // obf
-		$v_aukrd->assertTrue( call_user_func( $v_xzgby['permission_callback'] ) ); // obf
-	} // obf
-} // obf
+		$user = wp_set_current_user( self::factory()->user->create( array( 'role' => 'administrator' ) ) );
+		if ( is_multisite() ) {
+			// Site health cap is only available for super admins in Multi sites.
+			grant_super_admin( $user->ID );
+		}
+		$this->assertTrue( call_user_func( $route['permission_callback'] ) );
+	}
+}

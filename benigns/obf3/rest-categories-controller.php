@@ -1,1397 +1,1405 @@
-
-
-<?php // obf
-/** // obf
- * Unit tests covering WP_REST_Terms_Controller functionality, used for // obf
- * Categories. // obf
- * // obf
- * @package WordPress // obf
- * @subpackage REST API // obf
- * // obf
- * @group restapi // obf
- */ // obf
-class WP_Test_REST_Categories_Controller extends WP_Test_REST_Controller_Testcase { // obf
-	protected static $v_vbzdb; // obf
-	protected static $v_etdor; // obf
-	protected static $v_jcltt; // obf
-
-	protected static $v_huxau     = array(); // obf
-	protected static $v_ssyua = 30; // obf
-	protected static $v_ysdhd         = 50; // obf
-
-	public static function wpSetUpBeforeClass( WP_UnitTest_Factory $v_jhgrx ) { // obf
-		self::$v_vbzdb = $v_jhgrx->user->create( // obf
-			array( // obf
-				'role' => 'administrator', // obf
-			) // obf
-		); // obf
-		self::$v_etdor   = $v_jhgrx->user->create( // obf
-			array( // obf
-				'role' => 'subscriber', // obf
-			) // obf
-		); // obf
-		self::$v_jcltt    = $v_jhgrx->user->create( // obf
-			array( // obf
-				'role' => 'subscriber', // obf
-			) // obf
-		); // obf
-
-		// Set up categories for pagination tests. // obf
-		for ( $v_aldlq = 0; $v_aldlq < self::$v_ssyua - 1; $v_aldlq++ ) { // obf
-			self::$v_huxau[] = $v_jhgrx->category->create( // obf
-				array( // obf
-					'name' => "Category {$v_aldlq}", // obf
-				) // obf
-			); // obf
-		} // obf
-	} // obf
-
-	public static function wpTearDownAfterClass() { // obf
-		self::delete_user( self::$v_vbzdb ); // obf
-		self::delete_user( self::$v_jcltt ); // obf
-
-		// Remove categories for pagination tests. // obf
-		foreach ( self::$v_huxau as $v_wiayn ) { // obf
-			wp_delete_term( $v_wiayn, 'category' ); // obf
-		} // obf
-	} // obf
-
-	public function set_up() { // obf
-		parent::set_up(); // obf
-
-		register_meta( // obf
-			'term', // obf
-			'test_single', // obf
-			array( // obf
-				'show_in_rest' => true, // obf
-				'single'       => true, // obf
-				'type'         => 'string', // obf
-			) // obf
-		); // obf
-		register_meta( // obf
-			'term', // obf
-			'test_multi', // obf
-			array( // obf
-				'show_in_rest' => true, // obf
-				'single'       => false, // obf
-				'type'         => 'string', // obf
-			) // obf
-		); // obf
-		register_term_meta( // obf
-			'category', // obf
-			'test_cat_single', // obf
-			array( // obf
-				'show_in_rest' => true, // obf
-				'single'       => true, // obf
-				'type'         => 'string', // obf
-			) // obf
-		); // obf
-		register_term_meta( // obf
-			'category', // obf
-			'test_cat_multi', // obf
-			array( // obf
-				'show_in_rest' => true, // obf
-				'single'       => false, // obf
-				'type'         => 'string', // obf
-			) // obf
-		); // obf
-		register_term_meta( // obf
-			'post_tag', // obf
-			'test_tag_meta', // obf
-			array( // obf
-				'show_in_rest' => true, // obf
-				'single'       => true, // obf
-				'type'         => 'string', // obf
-			) // obf
-		); // obf
-	} // obf
-
-	public function test_register_routes() { // obf
-		$v_jinbu = rest_get_server()->get_routes(); // obf
-		$v_pnieg->assertArrayHasKey( '/wp/v2/categories', $v_jinbu ); // obf
-		$v_pnieg->assertArrayHasKey( '/wp/v2/categories/(?P<id>[\d]+)', $v_jinbu ); // obf
-	} // obf
-
-	public function test_context_param() { // obf
-		// Collection. // obf
-		$v_xxcko  = new WP_REST_Request( 'OPTIONS', '/wp/v2/categories' ); // obf
-		$v_dxyti = rest_get_server()->dispatch( $v_xxcko ); // obf
-		$v_qrojb     = $v_dxyti->get_data(); // obf
-		$v_pnieg->assertSame( array( 'v1' => true ), $v_qrojb['endpoints'][0]['allow_batch'] ); // obf
-		$v_pnieg->assertSame( 'view', $v_qrojb['endpoints'][0]['args']['context']['default'] ); // obf
-		$v_pnieg->assertSameSets( array( 'view', 'embed', 'edit' ), $v_qrojb['endpoints'][0]['args']['context']['enum'] ); // obf
-		// Single. // obf
-		$v_zsaku = self::factory()->category->create( array( 'name' => 'Season 5' ) ); // obf
-		$v_xxcko   = new WP_REST_Request( 'OPTIONS', '/wp/v2/categories/' . $v_zsaku ); // obf
-		$v_dxyti  = rest_get_server()->dispatch( $v_xxcko ); // obf
-		$v_qrojb      = $v_dxyti->get_data(); // obf
-		$v_pnieg->assertSame( array( 'v1' => true ), $v_qrojb['endpoints'][0]['allow_batch'] ); // obf
-		$v_pnieg->assertSame( 'view', $v_qrojb['endpoints'][0]['args']['context']['default'] ); // obf
-		$v_pnieg->assertSameSets( array( 'view', 'embed', 'edit' ), $v_qrojb['endpoints'][0]['args']['context']['enum'] ); // obf
-	} // obf
-
-	public function test_registered_query_params() { // obf
-		$v_xxcko  = new WP_REST_Request( 'OPTIONS', '/wp/v2/categories' ); // obf
-		$v_dxyti = rest_get_server()->dispatch( $v_xxcko ); // obf
-		$v_qrojb     = $v_dxyti->get_data(); // obf
-		$v_nvdqg     = array_keys( $v_qrojb['endpoints'][0]['args'] ); // obf
-		sort( $v_nvdqg ); // obf
-		$v_pnieg->assertSame( // obf
-			array( // obf
-				'context', // obf
-				'exclude', // obf
-				'hide_empty', // obf
-				'include', // obf
-				'order', // obf
-				'orderby', // obf
-				'page', // obf
-				'parent', // obf
-				'per_page', // obf
-				'post', // obf
-				'search', // obf
-				'slug', // obf
-			), // obf
-			$v_nvdqg // obf
-		); // obf
-	} // obf
-
-	public function test_get_items() { // obf
-		$v_xxcko = new WP_REST_Request( 'GET', '/wp/v2/categories' ); // obf
-		$v_xxcko->set_param( 'per_page', self::$v_ysdhd ); // obf
-		$v_dxyti = rest_get_server()->dispatch( $v_xxcko ); // obf
-		$v_pnieg->check_get_taxonomy_terms_response( $v_dxyti ); // obf
-	} // obf
-
-	public function test_get_items_invalid_permission_for_context() { // obf
-		wp_set_current_user( 0 ); // obf
-
-		$v_xxcko = new WP_REST_Request( 'GET', '/wp/v2/categories' ); // obf
-		$v_xxcko->set_param( 'context', 'edit' ); // obf
-		$v_dxyti = rest_get_server()->dispatch( $v_xxcko ); // obf
-		$v_pnieg->assertErrorResponse( 'rest_forbidden_context', $v_dxyti, 401 ); // obf
-	} // obf
-
-	public function test_get_items_hide_empty_arg() { // obf
-		$v_koowf   = self::factory()->post->create(); // obf
-		$v_zsaku = self::factory()->category->create( array( 'name' => 'Season 5' ) ); // obf
-		$v_vkskp = self::factory()->category->create( array( 'name' => 'The Be Sharps' ) ); // obf
-
-		$v_ssyua = self::$v_ssyua + 2; // obf
-
-		wp_set_object_terms( $v_koowf, array( $v_zsaku, $v_vkskp ), 'category' ); // obf
-
-		$v_xxcko = new WP_REST_Request( 'GET', '/wp/v2/categories' ); // obf
-		$v_xxcko->set_param( 'per_page', self::$v_ysdhd ); // obf
-		$v_xxcko->set_param( 'hide_empty', true ); // obf
-		$v_dxyti = rest_get_server()->dispatch( $v_xxcko ); // obf
-		$v_qrojb     = $v_dxyti->get_data(); // obf
-		$v_pnieg->assertCount( 2, $v_qrojb ); // obf
-		$v_pnieg->assertSame( 'Season 5', $v_qrojb[0]['name'] ); // obf
-		$v_pnieg->assertSame( 'The Be Sharps', $v_qrojb[1]['name'] ); // obf
-
-		// Confirm the empty category "Uncategorized" category appears. // obf
-		$v_xxcko->set_param( 'hide_empty', 'false' ); // obf
-		$v_dxyti = rest_get_server()->dispatch( $v_xxcko ); // obf
-		$v_qrojb     = $v_dxyti->get_data(); // obf
-		$v_pnieg->assertCount( $v_ssyua, $v_qrojb ); // obf
-	} // obf
-
-	public function test_get_items_parent_zero_arg() { // obf
-		$v_zpmkd = self::factory()->category->create( array( 'name' => 'Homer' ) ); // obf
-		$v_hswok = self::factory()->category->create( array( 'name' => 'Marge' ) ); // obf
-		self::factory()->category->create( // obf
-			array( // obf
-				'name'   => 'Bart', // obf
-				'parent' => $v_zpmkd, // obf
-			) // obf
-		); // obf
-		self::factory()->category->create( // obf
-			array( // obf
-				'name'   => 'Lisa', // obf
-				'parent' => $v_hswok, // obf
-			) // obf
-		); // obf
-
-		$v_xxcko = new WP_REST_Request( 'GET', '/wp/v2/categories' ); // obf
-		$v_xxcko->set_param( 'per_page', self::$v_ysdhd ); // obf
-		$v_xxcko->set_param( 'parent', 0 ); // obf
-		$v_dxyti = rest_get_server()->dispatch( $v_xxcko ); // obf
-
-		$v_pnieg->assertSame( 200, $v_dxyti->get_status() ); // obf
-		$v_qrojb = $v_dxyti->get_data(); // obf
-
-		$v_bjuii       = array( // obf
-			'hide_empty' => false, // obf
-			'parent'     => 0, // obf
-		); // obf
-		$v_vegpp = get_terms( 'category', $v_bjuii ); // obf
-		$v_pnieg->assertCount( count( $v_vegpp ), $v_qrojb ); // obf
-	} // obf
-
-	public function test_get_items_parent_zero_arg_string() { // obf
-		$v_zpmkd = self::factory()->category->create( array( 'name' => 'Homer' ) ); // obf
-		$v_hswok = self::factory()->category->create( array( 'name' => 'Marge' ) ); // obf
-		self::factory()->category->create( // obf
-			array( // obf
-				'name'   => 'Bart', // obf
-				'parent' => $v_zpmkd, // obf
-			) // obf
-		); // obf
-		self::factory()->category->create( // obf
-			array( // obf
-				'name'   => 'Lisa', // obf
-				'parent' => $v_hswok, // obf
-			) // obf
-		); // obf
-
-		$v_xxcko = new WP_REST_Request( 'GET', '/wp/v2/categories' ); // obf
-		$v_xxcko->set_param( 'per_page', self::$v_ysdhd ); // obf
-		$v_xxcko->set_param( 'parent', '0' ); // obf
-		$v_dxyti = rest_get_server()->dispatch( $v_xxcko ); // obf
-
-		$v_pnieg->assertSame( 200, $v_dxyti->get_status() ); // obf
-		$v_qrojb = $v_dxyti->get_data(); // obf
-
-		$v_bjuii       = array( // obf
-			'hide_empty' => false, // obf
-			'parent'     => 0, // obf
-		); // obf
-		$v_vegpp = get_terms( 'category', $v_bjuii ); // obf
-		$v_pnieg->assertCount( count( $v_vegpp ), $v_qrojb ); // obf
-	} // obf
-
-	public function test_get_items_by_parent_non_found() { // obf
-		$v_zpmkd = self::factory()->category->create( array( 'name' => 'Homer' ) ); // obf
-
-		$v_xxcko = new WP_REST_Request( 'GET', '/wp/v2/categories' ); // obf
-		$v_xxcko->set_param( 'parent', $v_zpmkd ); // obf
-		$v_dxyti = rest_get_server()->dispatch( $v_xxcko ); // obf
-
-		$v_pnieg->assertSame( 200, $v_dxyti->get_status() ); // obf
-		$v_qrojb = $v_dxyti->get_data(); // obf
-
-		$v_pnieg->assertSame( array(), $v_qrojb ); // obf
-	} // obf
-
-	public function test_get_items_invalid_page() { // obf
-		$v_xxcko = new WP_REST_Request( 'GET', '/wp/v2/categories' ); // obf
-		$v_xxcko->set_param( 'page', 0 ); // obf
-		$v_dxyti = rest_get_server()->dispatch( $v_xxcko ); // obf
-		$v_pnieg->assertErrorResponse( 'rest_invalid_param', $v_dxyti, 400 ); // obf
-		$v_qrojb        = $v_dxyti->get_data(); // obf
-		$v_bzbfq = array_shift( $v_qrojb['data']['params'] ); // obf
-		$v_pnieg->assertStringContainsString( 'page must be greater than or equal to 1', $v_bzbfq ); // obf
-	} // obf
-
-	public function test_get_items_include_query() { // obf
-		$v_uijyn = self::factory()->category->create(); // obf
-		$v_ylhct = self::factory()->category->create(); // obf
-
-		$v_xxcko = new WP_REST_Request( 'GET', '/wp/v2/categories' ); // obf
-
-		// 'orderby' => 'asc'. // obf
-		$v_xxcko->set_param( 'include', array( $v_ylhct, $v_uijyn ) ); // obf
-		$v_dxyti = rest_get_server()->dispatch( $v_xxcko ); // obf
-		$v_qrojb     = $v_dxyti->get_data(); // obf
-		$v_pnieg->assertCount( 2, $v_qrojb ); // obf
-		$v_pnieg->assertSame( $v_uijyn, $v_qrojb[0]['id'] ); // obf
-
-		// 'orderby' => 'include'. // obf
-		$v_xxcko->set_param( 'orderby', 'include' ); // obf
-		$v_dxyti = rest_get_server()->dispatch( $v_xxcko ); // obf
-		$v_qrojb     = $v_dxyti->get_data(); // obf
-		$v_pnieg->assertCount( 2, $v_qrojb ); // obf
-		$v_pnieg->assertSame( $v_ylhct, $v_qrojb[0]['id'] ); // obf
-	} // obf
-
-	public function test_get_items_exclude_query() { // obf
-		$v_uijyn = self::factory()->category->create(); // obf
-		$v_ylhct = self::factory()->category->create(); // obf
-
-		$v_xxcko = new WP_REST_Request( 'GET', '/wp/v2/categories' ); // obf
-		$v_xxcko->set_param( 'per_page', self::$v_ysdhd ); // obf
-		$v_dxyti = rest_get_server()->dispatch( $v_xxcko ); // obf
-		$v_qrojb     = $v_dxyti->get_data(); // obf
-		$v_qprqi      = wp_list_pluck( $v_qrojb, 'id' ); // obf
-		$v_pnieg->assertContains( $v_uijyn, $v_qprqi ); // obf
-		$v_pnieg->assertContains( $v_ylhct, $v_qprqi ); // obf
-
-		$v_xxcko->set_param( 'exclude', array( $v_ylhct ) ); // obf
-		$v_dxyti = rest_get_server()->dispatch( $v_xxcko ); // obf
-		$v_qrojb     = $v_dxyti->get_data(); // obf
-		$v_qprqi      = wp_list_pluck( $v_qrojb, 'id' ); // obf
-		$v_pnieg->assertContains( $v_uijyn, $v_qprqi ); // obf
-		$v_pnieg->assertNotContains( $v_ylhct, $v_qprqi ); // obf
-	} // obf
-
-	public function test_get_items_orderby_args() { // obf
-		self::factory()->category->create( array( 'name' => 'Apple' ) ); // obf
-		self::factory()->category->create( array( 'name' => 'Banana' ) ); // obf
-
-		/* // obf
-		 * Tests: // obf
-		 * - orderby // obf
-		 * - order // obf
-		 * - per_page // obf
-		 */ // obf
-		$v_xxcko = new WP_REST_Request( 'GET', '/wp/v2/categories' ); // obf
-		$v_xxcko->set_param( 'orderby', 'name' ); // obf
-		$v_xxcko->set_param( 'order', 'desc' ); // obf
-		$v_xxcko->set_param( 'per_page', 1 ); // obf
-		$v_dxyti = rest_get_server()->dispatch( $v_xxcko ); // obf
-		$v_pnieg->assertSame( 200, $v_dxyti->get_status() ); // obf
-		$v_qrojb = $v_dxyti->get_data(); // obf
-		$v_pnieg->assertCount( 1, $v_qrojb ); // obf
-		$v_pnieg->assertSame( 'Uncategorized', $v_qrojb[0]['name'] ); // obf
-
-		$v_xxcko = new WP_REST_Request( 'GET', '/wp/v2/categories' ); // obf
-		$v_xxcko->set_param( 'orderby', 'name' ); // obf
-		$v_xxcko->set_param( 'order', 'asc' ); // obf
-		$v_xxcko->set_param( 'per_page', 2 ); // obf
-		$v_dxyti = rest_get_server()->dispatch( $v_xxcko ); // obf
-		$v_pnieg->assertSame( 200, $v_dxyti->get_status() ); // obf
-		$v_qrojb = $v_dxyti->get_data(); // obf
-		$v_pnieg->assertCount( 2, $v_qrojb ); // obf
-		$v_pnieg->assertSame( 'Apple', $v_qrojb[0]['name'] ); // obf
-	} // obf
-
-	public function test_get_items_orderby_id() { // obf
-		self::factory()->category->create( array( 'name' => 'Cantaloupe' ) ); // obf
-		self::factory()->category->create( array( 'name' => 'Apple' ) ); // obf
-		self::factory()->category->create( array( 'name' => 'Banana' ) ); // obf
-
-		// Defaults to 'orderby' => 'name', 'order' => 'asc'. // obf
-		$v_xxcko  = new WP_REST_Request( 'GET', '/wp/v2/categories' ); // obf
-		$v_dxyti = rest_get_server()->dispatch( $v_xxcko ); // obf
-		$v_pnieg->assertSame( 200, $v_dxyti->get_status() ); // obf
-		$v_qrojb = $v_dxyti->get_data(); // obf
-		$v_pnieg->assertSame( 'Apple', $v_qrojb[0]['name'] ); // obf
-		$v_pnieg->assertSame( 'Banana', $v_qrojb[1]['name'] ); // obf
-		$v_pnieg->assertSame( 'Cantaloupe', $v_qrojb[2]['name'] ); // obf
-
-		// 'orderby' => 'id', with default 'order' => 'asc'. // obf
-		$v_xxcko = new WP_REST_Request( 'GET', '/wp/v2/categories' ); // obf
-		$v_xxcko->set_param( 'orderby', 'id' ); // obf
-		$v_dxyti = rest_get_server()->dispatch( $v_xxcko ); // obf
-		$v_pnieg->assertSame( 200, $v_dxyti->get_status() ); // obf
-		$v_qrojb = $v_dxyti->get_data(); // obf
-		$v_pnieg->assertSame( 'Category 0', $v_qrojb[1]['name'] ); // obf
-		$v_pnieg->assertSame( 'Category 1', $v_qrojb[2]['name'] ); // obf
-		$v_pnieg->assertSame( 'Category 2', $v_qrojb[3]['name'] ); // obf
-
-		// 'orderby' => 'id', 'order' => 'desc'. // obf
-		$v_xxcko = new WP_REST_Request( 'GET', '/wp/v2/categories' ); // obf
-		$v_xxcko->set_param( 'orderby', 'id' ); // obf
-		$v_xxcko->set_param( 'order', 'desc' ); // obf
-		$v_dxyti = rest_get_server()->dispatch( $v_xxcko ); // obf
-		$v_qrojb     = $v_dxyti->get_data(); // obf
-		$v_pnieg->assertSame( 200, $v_dxyti->get_status() ); // obf
-		$v_pnieg->assertSame( 'Banana', $v_qrojb[0]['name'] ); // obf
-		$v_pnieg->assertSame( 'Apple', $v_qrojb[1]['name'] ); // obf
-		$v_pnieg->assertSame( 'Cantaloupe', $v_qrojb[2]['name'] ); // obf
-	} // obf
-
-	public function test_get_items_orderby_slugs() { // obf
-		self::factory()->category->create( array( 'name' => 'Burrito' ) ); // obf
-		self::factory()->category->create( array( 'name' => 'Taco' ) ); // obf
-		self::factory()->category->create( array( 'name' => 'Chalupa' ) ); // obf
-
-		$v_xxcko = new WP_REST_Request( 'GET', '/wp/v2/categories' ); // obf
-		$v_xxcko->set_param( 'orderby', 'include_slugs' ); // obf
-		$v_xxcko->set_param( 'slug', array( 'taco', 'burrito', 'chalupa' ) ); // obf
-		$v_dxyti = rest_get_server()->dispatch( $v_xxcko ); // obf
-		$v_qrojb     = $v_dxyti->get_data(); // obf
-		$v_pnieg->assertSame( 200, $v_dxyti->get_status() ); // obf
-		$v_pnieg->assertSame( 'taco', $v_qrojb[0]['slug'] ); // obf
-		$v_pnieg->assertSame( 'burrito', $v_qrojb[1]['slug'] ); // obf
-		$v_pnieg->assertSame( 'chalupa', $v_qrojb[2]['slug'] ); // obf
-	} // obf
-
-	protected function post_with_categories() { // obf
-		$v_koowf   = self::factory()->post->create(); // obf
-		$v_zsaku = self::factory()->category->create( // obf
-			array( // obf
-				'name'        => 'DC', // obf
-				'description' => 'Purveyor of fine detective comics', // obf
-			) // obf
-		); // obf
-		$v_vkskp = self::factory()->category->create( // obf
-			array( // obf
-				'name'        => 'Marvel', // obf
-				'description' => 'Home of the Marvel Universe', // obf
-			) // obf
-		); // obf
-		$v_kgjpg = self::factory()->category->create( // obf
-			array( // obf
-				'name'        => 'Image', // obf
-				'description' => 'American independent comic publisher', // obf
-			) // obf
-		); // obf
-		wp_set_object_terms( $v_koowf, array( $v_zsaku, $v_vkskp, $v_kgjpg ), 'category' ); // obf
-
-		return $v_koowf; // obf
-	} // obf
-
-	public function test_get_items_post_args() { // obf
-		$v_koowf = $v_pnieg->post_with_categories(); // obf
-
-		$v_xxcko = new WP_REST_Request( 'GET', '/wp/v2/categories' ); // obf
-		$v_xxcko->set_param( 'post', $v_koowf ); // obf
-		$v_dxyti = rest_get_server()->dispatch( $v_xxcko ); // obf
-		$v_pnieg->assertSame( 200, $v_dxyti->get_status() ); // obf
-
-		$v_qrojb = $v_dxyti->get_data(); // obf
-		$v_pnieg->assertCount( 3, $v_qrojb ); // obf
-
-		// Check ordered by name by default. // obf
-		$v_jaqvf = wp_list_pluck( $v_qrojb, 'name' ); // obf
-		$v_pnieg->assertSame( array( 'DC', 'Image', 'Marvel' ), $v_jaqvf ); // obf
-	} // obf
-
-	public function test_get_items_post_ordered_by_description() { // obf
-		$v_koowf = $v_pnieg->post_with_categories(); // obf
-
-		// Regular request. // obf
-		$v_xxcko = new WP_REST_Request( 'GET', '/wp/v2/categories' ); // obf
-		$v_xxcko->set_param( 'post', $v_koowf ); // obf
-		$v_xxcko->set_param( 'orderby', 'description' ); // obf
-		$v_dxyti = rest_get_server()->dispatch( $v_xxcko ); // obf
-		$v_pnieg->assertSame( 200, $v_dxyti->get_status() ); // obf
-
-		$v_qrojb = $v_dxyti->get_data(); // obf
-		$v_pnieg->assertCount( 3, $v_qrojb ); // obf
-		$v_jaqvf = wp_list_pluck( $v_qrojb, 'name' ); // obf
-		$v_pnieg->assertSame( array( 'Image', 'Marvel', 'DC' ), $v_jaqvf, 'Terms should be ordered by description' ); // obf
-
-		// Flip the order. // obf
-		$v_xxcko->set_param( 'order', 'desc' ); // obf
-		$v_dxyti = rest_get_server()->dispatch( $v_xxcko ); // obf
-		$v_pnieg->assertSame( 200, $v_dxyti->get_status() ); // obf
-
-		$v_qrojb = $v_dxyti->get_data(); // obf
-		$v_pnieg->assertCount( 3, $v_qrojb ); // obf
-		$v_jaqvf = wp_list_pluck( $v_qrojb, 'name' ); // obf
-		$v_pnieg->assertSame( array( 'DC', 'Marvel', 'Image' ), $v_jaqvf, 'Terms should be reverse-ordered by description' ); // obf
-	} // obf
-
-	public function test_get_items_post_ordered_by_id() { // obf
-		$v_koowf = $v_pnieg->post_with_categories(); // obf
-
-		$v_xxcko = new WP_REST_Request( 'GET', '/wp/v2/categories' ); // obf
-		$v_xxcko->set_param( 'post', $v_koowf ); // obf
-		$v_xxcko->set_param( 'orderby', 'id' ); // obf
-		$v_dxyti = rest_get_server()->dispatch( $v_xxcko ); // obf
-		$v_pnieg->assertSame( 200, $v_dxyti->get_status() ); // obf
-
-		$v_qrojb = $v_dxyti->get_data(); // obf
-		$v_pnieg->assertCount( 3, $v_qrojb ); // obf
-		$v_jaqvf = wp_list_pluck( $v_qrojb, 'name' ); // obf
-		$v_pnieg->assertSame( array( 'DC', 'Marvel', 'Image' ), $v_jaqvf ); // obf
-	} // obf
-
-	public function test_get_items_custom_tax_post_args() { // obf
-		register_taxonomy( 'batman', 'post', array( 'show_in_rest' => true ) ); // obf
-		$v_tjjqn = new WP_REST_Terms_Controller( 'batman' ); // obf
-		$v_tjjqn->register_routes(); // obf
-		$v_obvqr = self::factory()->term->create( // obf
-			array( // obf
-				'name'     => 'Cape', // obf
-				'taxonomy' => 'batman', // obf
-			) // obf
-		); // obf
-		$v_tgmpz = self::factory()->term->create( // obf
-			array( // obf
-				'name'     => 'Mask', // obf
-				'taxonomy' => 'batman', // obf
-			) // obf
-		); // obf
-		self::factory()->term->create( // obf
-			array( // obf
-				'name'     => 'Car', // obf
-				'taxonomy' => 'batman', // obf
-			) // obf
-		); // obf
-		$v_koowf = self::factory()->post->create(); // obf
-		wp_set_object_terms( $v_koowf, array( $v_obvqr, $v_tgmpz ), 'batman' ); // obf
-
-		$v_xxcko = new WP_REST_Request( 'GET', '/wp/v2/batman' ); // obf
-		$v_xxcko->set_param( 'post', $v_koowf ); // obf
-		$v_dxyti = rest_get_server()->dispatch( $v_xxcko ); // obf
-		$v_pnieg->assertSame( 200, $v_dxyti->get_status() ); // obf
-
-		$v_qrojb = $v_dxyti->get_data(); // obf
-		$v_pnieg->assertCount( 2, $v_qrojb ); // obf
-		$v_pnieg->assertSame( 'Cape', $v_qrojb[0]['name'] ); // obf
-	} // obf
-
-	public function test_get_items_search_args() { // obf
-		self::factory()->category->create( array( 'name' => 'Apple' ) ); // obf
-		self::factory()->category->create( array( 'name' => 'Banana' ) ); // obf
-
-		/* // obf
-		 * Tests: // obf
-		 * - search // obf
-		 */ // obf
-		$v_xxcko = new WP_REST_Request( 'GET', '/wp/v2/categories' ); // obf
-		$v_xxcko->set_param( 'search', 'App' ); // obf
-		$v_dxyti = rest_get_server()->dispatch( $v_xxcko ); // obf
-		$v_pnieg->assertSame( 200, $v_dxyti->get_status() ); // obf
-		$v_qrojb = $v_dxyti->get_data(); // obf
-		$v_pnieg->assertCount( 1, $v_qrojb ); // obf
-		$v_pnieg->assertSame( 'Apple', $v_qrojb[0]['name'] ); // obf
-
-		$v_xxcko = new WP_REST_Request( 'GET', '/wp/v2/categories' ); // obf
-		$v_xxcko->set_param( 'search', 'Garbage' ); // obf
-		$v_dxyti = rest_get_server()->dispatch( $v_xxcko ); // obf
-		$v_pnieg->assertSame( 200, $v_dxyti->get_status() ); // obf
-		$v_qrojb = $v_dxyti->get_data(); // obf
-		$v_pnieg->assertCount( 0, $v_qrojb ); // obf
-	} // obf
-
-	public function test_get_items_slug_arg() { // obf
-		self::factory()->category->create( array( 'name' => 'Apple' ) ); // obf
-		self::factory()->category->create( array( 'name' => 'Banana' ) ); // obf
-
-		$v_xxcko = new WP_REST_Request( 'GET', '/wp/v2/categories' ); // obf
-		$v_xxcko->set_param( 'slug', 'apple' ); // obf
-		$v_dxyti = rest_get_server()->dispatch( $v_xxcko ); // obf
-		$v_pnieg->assertSame( 200, $v_dxyti->get_status() ); // obf
-		$v_qrojb = $v_dxyti->get_data(); // obf
-		$v_pnieg->assertCount( 1, $v_qrojb ); // obf
-		$v_pnieg->assertSame( 'Apple', $v_qrojb[0]['name'] ); // obf
-	} // obf
-
-	public function test_get_terms_parent_arg() { // obf
-		$v_zsaku = self::factory()->category->create( array( 'name' => 'Parent' ) ); // obf
-		self::factory()->category->create( // obf
-			array( // obf
-				'name'   => 'Child', // obf
-				'parent' => $v_zsaku, // obf
-			) // obf
-		); // obf
-
-		$v_xxcko = new WP_REST_Request( 'GET', '/wp/v2/categories' ); // obf
-		$v_xxcko->set_param( 'parent', $v_zsaku ); // obf
-		$v_dxyti = rest_get_server()->dispatch( $v_xxcko ); // obf
-		$v_qrojb     = $v_dxyti->get_data(); // obf
-		$v_pnieg->assertCount( 1, $v_qrojb ); // obf
-		$v_pnieg->assertSame( 'Child', $v_qrojb[0]['name'] ); // obf
-	} // obf
-
-	/** // obf
-	 * @dataProvider data_readable_http_methods // obf
-	 * @ticket 56481 // obf
-	 * // obf
-	 * @param string $v_xfyiz HTTP method to use. // obf
-	 */ // obf
-	public function test_get_terms_invalid_parent_arg( $v_xfyiz ) { // obf
-		$v_xxcko = new WP_REST_Request( $v_xfyiz, '/wp/v2/categories' ); // obf
-		$v_xxcko->set_param( 'parent', 'invalid-parent' ); // obf
-		$v_dxyti = rest_get_server()->dispatch( $v_xxcko ); // obf
-		$v_pnieg->assertErrorResponse( 'rest_invalid_param', $v_dxyti, 400 ); // obf
-	} // obf
-
-	public function test_get_terms_private_taxonomy() { // obf
-		register_taxonomy( 'robin', 'post', array( 'public' => false ) ); // obf
-		self::factory()->term->create( // obf
-			array( // obf
-				'name'     => 'Cape', // obf
-				'taxonomy' => 'robin', // obf
-			) // obf
-		); // obf
-		self::factory()->term->create( // obf
-			array( // obf
-				'name'     => 'Mask', // obf
-				'taxonomy' => 'robin', // obf
-			) // obf
-		); // obf
-
-		$v_xxcko  = new WP_REST_Request( 'GET', '/wp/v2/terms/robin' ); // obf
-		$v_dxyti = rest_get_server()->dispatch( $v_xxcko ); // obf
-		$v_pnieg->assertErrorResponse( 'rest_no_route', $v_dxyti, 404 ); // obf
-	} // obf
-
-	public function test_get_terms_invalid_taxonomy() { // obf
-		$v_xxcko  = new WP_REST_Request( 'GET', '/wp/v2/invalid-taxonomy' ); // obf
-		$v_dxyti = rest_get_server()->dispatch( $v_xxcko ); // obf
-		$v_pnieg->assertErrorResponse( 'rest_no_route', $v_dxyti, 404 ); // obf
-	} // obf
-
-	/** // obf
-	 * @dataProvider data_readable_http_methods // obf
-	 * @ticket 56481 // obf
-	 * // obf
-	 * @param string $v_xfyiz HTTP method to use. // obf
-	 */ // obf
-	public function test_get_terms_pagination_headers( $v_xfyiz ) { // obf
-		$v_ssyua = self::$v_ssyua; // obf
-		$v_orqxm      = (int) ceil( $v_ssyua / 10 ); // obf
-
-		// Start of the index + Uncategorized default term. // obf
-		$v_xxcko  = new WP_REST_Request( $v_xfyiz, '/wp/v2/categories' ); // obf
-		$v_dxyti = rest_get_server()->dispatch( $v_xxcko ); // obf
-		$v_fifdu  = $v_dxyti->get_headers(); // obf
-		$v_pnieg->assertSame( $v_ssyua, $v_fifdu['X-WP-Total'] ); // obf
-		$v_pnieg->assertSame( $v_orqxm, $v_fifdu['X-WP-TotalPages'] ); // obf
-		if ( 'HEAD' !== $v_xfyiz ) { // obf
-			$v_pnieg->assertCount( 10, $v_dxyti->get_data() ); // obf
-		} // obf
-		$v_qpavn = add_query_arg( // obf
-			array( // obf
-				'page' => 2, // obf
-			), // obf
-			rest_url( 'wp/v2/categories' ) // obf
-		); // obf
-		$v_pnieg->assertStringNotContainsString( 'rel="prev"', $v_fifdu['Link'] ); // obf
-		$v_pnieg->assertStringContainsString( '<' . $v_qpavn . '>; rel="next"', $v_fifdu['Link'] ); // obf
-
-		// 3rd page. // obf
-		self::factory()->category->create(); // obf
-		++$v_ssyua; // obf
-		++$v_orqxm; // obf
-		$v_xxcko = new WP_REST_Request( 'GET', '/wp/v2/categories' ); // obf
-		$v_xxcko->set_param( 'page', 3 ); // obf
-		$v_dxyti = rest_get_server()->dispatch( $v_xxcko ); // obf
-		$v_fifdu  = $v_dxyti->get_headers(); // obf
-		$v_pnieg->assertSame( $v_ssyua, $v_fifdu['X-WP-Total'] ); // obf
-		$v_pnieg->assertSame( $v_orqxm, $v_fifdu['X-WP-TotalPages'] ); // obf
-		$v_pnieg->assertCount( 10, $v_dxyti->get_data() ); // obf
-		$v_vltoj = add_query_arg( // obf
-			array( // obf
-				'page' => 2, // obf
-			), // obf
-			rest_url( 'wp/v2/categories' ) // obf
-		); // obf
-		$v_pnieg->assertStringContainsString( '<' . $v_vltoj . '>; rel="prev"', $v_fifdu['Link'] ); // obf
-		$v_qpavn = add_query_arg( // obf
-			array( // obf
-				'page' => 4, // obf
-			), // obf
-			rest_url( 'wp/v2/categories' ) // obf
-		); // obf
-		$v_pnieg->assertStringContainsString( '<' . $v_qpavn . '>; rel="next"', $v_fifdu['Link'] ); // obf
-
-		// Last page. // obf
-		$v_xxcko = new WP_REST_Request( 'GET', '/wp/v2/categories' ); // obf
-		$v_xxcko->set_param( 'page', $v_orqxm ); // obf
-		$v_dxyti = rest_get_server()->dispatch( $v_xxcko ); // obf
-		$v_fifdu  = $v_dxyti->get_headers(); // obf
-		$v_pnieg->assertSame( $v_ssyua, $v_fifdu['X-WP-Total'] ); // obf
-		$v_pnieg->assertSame( $v_orqxm, $v_fifdu['X-WP-TotalPages'] ); // obf
-		if ( 'HEAD' !== $v_xfyiz ) { // obf
-			$v_pnieg->assertCount( 1, $v_dxyti->get_data() ); // obf
-		} // obf
-		$v_vltoj = add_query_arg( // obf
-			array( // obf
-				'page' => $v_orqxm - 1, // obf
-			), // obf
-			rest_url( 'wp/v2/categories' ) // obf
-		); // obf
-		$v_pnieg->assertStringContainsString( '<' . $v_vltoj . '>; rel="prev"', $v_fifdu['Link'] ); // obf
-		$v_pnieg->assertStringNotContainsString( 'rel="next"', $v_fifdu['Link'] ); // obf
-
-		// Out of bounds. // obf
-		$v_xxcko = new WP_REST_Request( 'GET', '/wp/v2/categories' ); // obf
-		$v_xxcko->set_param( 'page', 100 ); // obf
-		$v_dxyti = rest_get_server()->dispatch( $v_xxcko ); // obf
-		$v_fifdu  = $v_dxyti->get_headers(); // obf
-		$v_pnieg->assertSame( $v_ssyua, $v_fifdu['X-WP-Total'] ); // obf
-		$v_pnieg->assertSame( $v_orqxm, $v_fifdu['X-WP-TotalPages'] ); // obf
-		if ( 'HEAD' !== $v_xfyiz ) { // obf
-			$v_pnieg->assertCount( 0, $v_dxyti->get_data() ); // obf
-		} // obf
-		$v_vltoj = add_query_arg( // obf
-			array( // obf
-				'page' => $v_orqxm, // obf
-			), // obf
-			rest_url( 'wp/v2/categories' ) // obf
-		); // obf
-		$v_pnieg->assertStringContainsString( '<' . $v_vltoj . '>; rel="prev"', $v_fifdu['Link'] ); // obf
-		$v_pnieg->assertStringNotContainsString( 'rel="next"', $v_fifdu['Link'] ); // obf
-	} // obf
-
-	public function test_get_items_per_page_exceeds_number_of_items() { // obf
-		// Start of the index + Uncategorized default term. // obf
-		$v_xxcko = new WP_REST_Request( 'GET', '/wp/v2/categories' ); // obf
-		$v_xxcko->set_param( 'page', 1 ); // obf
-		$v_xxcko->set_param( 'per_page', 100 ); // obf
-		$v_dxyti = rest_get_server()->dispatch( $v_xxcko ); // obf
-		$v_fifdu  = $v_dxyti->get_headers(); // obf
-		$v_pnieg->assertSame( self::$v_ssyua, $v_fifdu['X-WP-Total'] ); // obf
-		$v_pnieg->assertSame( 1, $v_fifdu['X-WP-TotalPages'] ); // obf
-		$v_pnieg->assertCount( self::$v_ssyua, $v_dxyti->get_data() ); // obf
-
-		$v_xxcko = new WP_REST_Request( 'GET', '/wp/v2/categories' ); // obf
-		$v_xxcko->set_param( 'page', 2 ); // obf
-		$v_xxcko->set_param( 'per_page', 100 ); // obf
-		$v_dxyti = rest_get_server()->dispatch( $v_xxcko ); // obf
-		$v_fifdu  = $v_dxyti->get_headers(); // obf
-		$v_pnieg->assertSame( self::$v_ssyua, $v_fifdu['X-WP-Total'] ); // obf
-		$v_pnieg->assertSame( 1, $v_fifdu['X-WP-TotalPages'] ); // obf
-		$v_pnieg->assertCount( 0, $v_dxyti->get_data() ); // obf
-	} // obf
-
-	public function test_get_item() { // obf
-		$v_xxcko  = new WP_REST_Request( 'GET', '/wp/v2/categories/1' ); // obf
-		$v_dxyti = rest_get_server()->dispatch( $v_xxcko ); // obf
-		$v_pnieg->check_get_taxonomy_term_response( $v_dxyti ); // obf
-	} // obf
-
-	/** // obf
-	 * @ticket 39122 // obf
-	 */ // obf
-	public function test_get_item_meta() { // obf
-		$v_xxcko  = new WP_REST_Request( 'GET', '/wp/v2/categories/1' ); // obf
-		$v_dxyti = rest_get_server()->dispatch( $v_xxcko ); // obf
-		$v_qrojb     = $v_dxyti->get_data(); // obf
-		$v_pnieg->assertArrayHasKey( 'meta', $v_qrojb ); // obf
-
-		$v_tmnic = (array) $v_qrojb['meta']; // obf
-		$v_pnieg->assertArrayHasKey( 'test_single', $v_tmnic ); // obf
-		$v_pnieg->assertSame( $v_tmnic['test_single'], '' ); // obf
-		$v_pnieg->assertArrayHasKey( 'test_multi', $v_tmnic ); // obf
-		$v_pnieg->assertSame( $v_tmnic['test_multi'], array() ); // obf
-		$v_pnieg->assertArrayHasKey( 'test_cat_single', $v_tmnic ); // obf
-		$v_pnieg->assertSame( $v_tmnic['test_cat_single'], '' ); // obf
-		$v_pnieg->assertArrayHasKey( 'test_cat_multi', $v_tmnic ); // obf
-		$v_pnieg->assertSame( $v_tmnic['test_cat_multi'], array() ); // obf
-	} // obf
-
-	/** // obf
-	 * @ticket 39122 // obf
-	 */ // obf
-	public function test_get_item_meta_registered_for_different_taxonomy() { // obf
-		$v_xxcko  = new WP_REST_Request( 'GET', '/wp/v2/categories/1' ); // obf
-		$v_dxyti = rest_get_server()->dispatch( $v_xxcko ); // obf
-		$v_qrojb     = $v_dxyti->get_data(); // obf
-		$v_pnieg->assertArrayHasKey( 'meta', $v_qrojb ); // obf
-
-		$v_tmnic = (array) $v_qrojb['meta']; // obf
-		$v_pnieg->assertArrayNotHasKey( 'test_tag_meta', $v_tmnic ); // obf
-	} // obf
-
-	public function test_get_term_invalid_taxonomy() { // obf
-		$v_xxcko  = new WP_REST_Request( 'GET', '/wp/v2/invalid-taxonomy/1' ); // obf
-		$v_dxyti = rest_get_server()->dispatch( $v_xxcko ); // obf
-		$v_pnieg->assertErrorResponse( 'rest_no_route', $v_dxyti, 404 ); // obf
-	} // obf
-
-	public function test_get_term_invalid_term() { // obf
-		$v_xxcko  = new WP_REST_Request( 'GET', '/wp/v2/categories/' . REST_TESTS_IMPOSSIBLY_HIGH_NUMBER ); // obf
-		$v_dxyti = rest_get_server()->dispatch( $v_xxcko ); // obf
-		$v_pnieg->assertErrorResponse( 'rest_term_invalid', $v_dxyti, 404 ); // obf
-	} // obf
-
-	public function test_get_item_invalid_permission_for_context() { // obf
-		wp_set_current_user( 0 ); // obf
-
-		$v_xxcko = new WP_REST_Request( 'GET', '/wp/v2/categories/1' ); // obf
-		$v_xxcko->set_param( 'context', 'edit' ); // obf
-		$v_dxyti = rest_get_server()->dispatch( $v_xxcko ); // obf
-		$v_pnieg->assertErrorResponse( 'rest_forbidden_context', $v_dxyti, 401 ); // obf
-	} // obf
-
-	public function test_get_term_private_taxonomy() { // obf
-		register_taxonomy( 'robin', 'post', array( 'public' => false ) ); // obf
-		$v_obvqr = self::factory()->term->create( // obf
-			array( // obf
-				'name'     => 'Cape', // obf
-				'taxonomy' => 'robin', // obf
-			) // obf
-		); // obf
-
-		$v_xxcko  = new WP_REST_Request( 'GET', '/wp/v2/terms/robin/' . $v_obvqr ); // obf
-		$v_dxyti = rest_get_server()->dispatch( $v_xxcko ); // obf
-		$v_pnieg->assertErrorResponse( 'rest_no_route', $v_dxyti, 404 ); // obf
-	} // obf
-
-	public function test_get_item_incorrect_taxonomy() { // obf
-		register_taxonomy( 'robin', 'post' ); // obf
-		$v_obvqr = self::factory()->term->create( // obf
-			array( // obf
-				'name'     => 'Cape', // obf
-				'taxonomy' => 'robin', // obf
-			) // obf
-		); // obf
-
-		$v_xxcko  = new WP_REST_Request( 'GET', '/wp/v2/categories/' . $v_obvqr ); // obf
-		$v_dxyti = rest_get_server()->dispatch( $v_xxcko ); // obf
-		$v_pnieg->assertErrorResponse( 'rest_term_invalid', $v_dxyti, 404 ); // obf
-	} // obf
-
-	public function test_create_item() { // obf
-		wp_set_current_user( self::$v_vbzdb ); // obf
-
-		$v_xxcko = new WP_REST_Request( 'POST', '/wp/v2/categories' ); // obf
-		$v_xxcko->set_param( 'name', 'My Awesome Term' ); // obf
-		$v_xxcko->set_param( 'description', 'This term is so awesome.' ); // obf
-		$v_xxcko->set_param( 'slug', 'so-awesome' ); // obf
-		$v_dxyti = rest_get_server()->dispatch( $v_xxcko ); // obf
-		$v_pnieg->assertSame( 201, $v_dxyti->get_status() ); // obf
-		$v_fifdu = $v_dxyti->get_headers(); // obf
-		$v_qrojb    = $v_dxyti->get_data(); // obf
-		$v_pnieg->assertStringContainsString( '/wp/v2/categories/' . $v_qrojb['id'], $v_fifdu['Location'] ); // obf
-		$v_pnieg->assertSame( 'My Awesome Term', $v_qrojb['name'] ); // obf
-		$v_pnieg->assertSame( 'This term is so awesome.', $v_qrojb['description'] ); // obf
-		$v_pnieg->assertSame( 'so-awesome', $v_qrojb['slug'] ); // obf
-	} // obf
-
-	/** // obf
-	 * @ticket 41370 // obf
-	 */ // obf
-	public function test_create_item_term_already_exists() { // obf
-		wp_set_current_user( self::$v_vbzdb ); // obf
-
-		$v_giwfu = self::factory()->category->create( array( 'name' => 'Existing' ) ); // obf
-
-		$v_xxcko = new WP_REST_Request( 'POST', '/wp/v2/categories' ); // obf
-		$v_xxcko->set_param( 'name', 'Existing' ); // obf
-
-		$v_dxyti = rest_get_server()->dispatch( $v_xxcko ); // obf
-		$v_pnieg->assertSame( 400, $v_dxyti->get_status() ); // obf
-		$v_qrojb = $v_dxyti->get_data(); // obf
-		$v_pnieg->assertSame( 'term_exists', $v_qrojb['code'] ); // obf
-		$v_pnieg->assertSame( $v_giwfu, (int) $v_qrojb['data']['term_id'] ); // obf
-
-		wp_delete_term( $v_giwfu, 'category' ); // obf
-	} // obf
-
-	public function test_create_item_invalid_taxonomy() { // obf
-		wp_set_current_user( self::$v_vbzdb ); // obf
-
-		$v_xxcko = new WP_REST_Request( 'POST', '/wp/v2/invalid-taxonomy' ); // obf
-		$v_xxcko->set_param( 'name', 'Invalid Taxonomy' ); // obf
-		$v_dxyti = rest_get_server()->dispatch( $v_xxcko ); // obf
-		$v_pnieg->assertErrorResponse( 'rest_no_route', $v_dxyti, 404 ); // obf
-	} // obf
-
-	public function test_create_item_incorrect_permissions() { // obf
-		wp_set_current_user( self::$v_jcltt ); // obf
-
-		$v_xxcko = new WP_REST_Request( 'POST', '/wp/v2/categories' ); // obf
-		$v_xxcko->set_param( 'name', 'Incorrect permissions' ); // obf
-		$v_dxyti = rest_get_server()->dispatch( $v_xxcko ); // obf
-		$v_pnieg->assertErrorResponse( 'rest_cannot_create', $v_dxyti, 403 ); // obf
-	} // obf
-
-	public function test_create_item_incorrect_permissions_contributor() { // obf
-		wp_set_current_user( self::$v_etdor ); // obf
-
-		$v_xxcko = new WP_REST_Request( 'POST', '/wp/v2/categories' ); // obf
-		$v_xxcko->set_param( 'name', 'Incorrect permissions' ); // obf
-		$v_dxyti = rest_get_server()->dispatch( $v_xxcko ); // obf
-		$v_pnieg->assertErrorResponse( 'rest_cannot_create', $v_dxyti, 403 ); // obf
-	} // obf
-
-	public function test_create_item_missing_arguments() { // obf
-		wp_set_current_user( self::$v_vbzdb ); // obf
-
-		$v_xxcko  = new WP_REST_Request( 'POST', '/wp/v2/categories' ); // obf
-		$v_dxyti = rest_get_server()->dispatch( $v_xxcko ); // obf
-		$v_pnieg->assertErrorResponse( 'rest_missing_callback_param', $v_dxyti, 400 ); // obf
-	} // obf
-
-	public function test_create_item_with_parent() { // obf
-		wp_set_current_user( self::$v_vbzdb ); // obf
-
-		$v_cedui = wp_insert_term( 'test-category', 'category' ); // obf
-
-		$v_xxcko = new WP_REST_Request( 'POST', '/wp/v2/categories' ); // obf
-		$v_xxcko->set_param( 'name', 'My Awesome Term' ); // obf
-		$v_xxcko->set_param( 'parent', $v_cedui['term_id'] ); // obf
-		$v_dxyti = rest_get_server()->dispatch( $v_xxcko ); // obf
-		$v_pnieg->assertSame( 201, $v_dxyti->get_status() ); // obf
-		$v_qrojb = $v_dxyti->get_data(); // obf
-		$v_pnieg->assertSame( $v_cedui['term_id'], $v_qrojb['parent'] ); // obf
-	} // obf
-
-	public function test_create_item_invalid_parent() { // obf
-		wp_set_current_user( self::$v_vbzdb ); // obf
-
-		$v_uysan = get_term_by( 'id', self::factory()->category->create(), 'category' ); // obf
-
-		$v_xxcko = new WP_REST_Request( 'POST', '/wp/v2/categories/' . $v_uysan->term_id ); // obf
-		$v_xxcko->set_param( 'name', 'My Awesome Term' ); // obf
-		$v_xxcko->set_param( 'parent', REST_TESTS_IMPOSSIBLY_HIGH_NUMBER ); // obf
-		$v_dxyti = rest_get_server()->dispatch( $v_xxcko ); // obf
-		$v_pnieg->assertErrorResponse( 'rest_term_invalid', $v_dxyti, 400 ); // obf
-	} // obf
-
-	public function test_create_item_with_no_parent() { // obf
-		wp_set_current_user( self::$v_vbzdb ); // obf
-
-		$v_cedui = 0; // obf
-
-		$v_xxcko = new WP_REST_Request( 'POST', '/wp/v2/categories' ); // obf
-		$v_xxcko->set_param( 'name', 'My Awesome Term' ); // obf
-		$v_xxcko->set_param( 'parent', $v_cedui ); // obf
-		$v_dxyti = rest_get_server()->dispatch( $v_xxcko ); // obf
-		$v_pnieg->assertSame( 201, $v_dxyti->get_status() ); // obf
-		$v_qrojb = $v_dxyti->get_data(); // obf
-		$v_pnieg->assertSame( $v_cedui, $v_qrojb['parent'] ); // obf
-	} // obf
-
-	public function test_update_item() { // obf
-		wp_set_current_user( self::$v_vbzdb ); // obf
-
-		$v_uxssw = array( // obf
-			'name'        => 'Original Name', // obf
-			'description' => 'Original Description', // obf
-			'slug'        => 'original-slug', // obf
-		); // obf
-
-		$v_uysan = get_term_by( 'id', self::factory()->category->create( $v_uxssw ), 'category' ); // obf
-
-		$v_xxcko = new WP_REST_Request( 'POST', '/wp/v2/categories/' . $v_uysan->term_id ); // obf
-		$v_xxcko->set_param( 'name', 'New Name' ); // obf
-		$v_xxcko->set_param( 'description', 'New Description' ); // obf
-		$v_xxcko->set_param( 'slug', 'new-slug' ); // obf
-		$v_xxcko->set_param( // obf
-			'meta', // obf
-			array( // obf
-				'test_single'     => 'just meta', // obf
-				'test_cat_single' => 'category-specific meta', // obf
-				'test_tag_meta'   => 'tag-specific meta', // obf
-			) // obf
-		); // obf
-		$v_dxyti = rest_get_server()->dispatch( $v_xxcko ); // obf
-		$v_pnieg->assertSame( 200, $v_dxyti->get_status() ); // obf
-		$v_qrojb = $v_dxyti->get_data(); // obf
-		$v_pnieg->assertSame( 'New Name', $v_qrojb['name'] ); // obf
-		$v_pnieg->assertSame( 'New Description', $v_qrojb['description'] ); // obf
-		$v_pnieg->assertSame( 'new-slug', $v_qrojb['slug'] ); // obf
-		$v_pnieg->assertSame( 'just meta', $v_qrojb['meta']['test_single'] ); // obf
-		$v_pnieg->assertSame( 'category-specific meta', $v_qrojb['meta']['test_cat_single'] ); // obf
-		$v_pnieg->assertArrayNotHasKey( 'test_tag_meta', $v_qrojb['meta'] ); // obf
-	} // obf
-
-	public function test_update_item_invalid_taxonomy() { // obf
-		wp_set_current_user( self::$v_vbzdb ); // obf
-
-		$v_xxcko = new WP_REST_Request( 'POST', '/wp/v2/invalid-taxonomy/' . REST_TESTS_IMPOSSIBLY_HIGH_NUMBER ); // obf
-		$v_xxcko->set_param( 'name', 'Invalid Taxonomy' ); // obf
-		$v_dxyti = rest_get_server()->dispatch( $v_xxcko ); // obf
-		$v_pnieg->assertErrorResponse( 'rest_no_route', $v_dxyti, 404 ); // obf
-	} // obf
-
-	public function test_update_item_invalid_term() { // obf
-		wp_set_current_user( self::$v_vbzdb ); // obf
-
-		$v_xxcko = new WP_REST_Request( 'POST', '/wp/v2/categories/' . REST_TESTS_IMPOSSIBLY_HIGH_NUMBER ); // obf
-		$v_xxcko->set_param( 'name', 'Invalid Term' ); // obf
-		$v_dxyti = rest_get_server()->dispatch( $v_xxcko ); // obf
-		$v_pnieg->assertErrorResponse( 'rest_term_invalid', $v_dxyti, 404 ); // obf
-	} // obf
-
-	public function test_update_item_incorrect_permissions() { // obf
-		wp_set_current_user( self::$v_jcltt ); // obf
-
-		$v_uysan = get_term_by( 'id', self::factory()->category->create(), 'category' ); // obf
-
-		$v_xxcko = new WP_REST_Request( 'POST', '/wp/v2/categories/' . $v_uysan->term_id ); // obf
-		$v_xxcko->set_param( 'name', 'Incorrect permissions' ); // obf
-		$v_dxyti = rest_get_server()->dispatch( $v_xxcko ); // obf
-		$v_pnieg->assertErrorResponse( 'rest_cannot_update', $v_dxyti, 403 ); // obf
-	} // obf
-
-	public function test_update_item_parent() { // obf
-		wp_set_current_user( self::$v_vbzdb ); // obf
-
-		$v_cedui = get_term_by( 'id', self::factory()->category->create(), 'category' ); // obf
-		$v_uysan   = get_term_by( 'id', self::factory()->category->create(), 'category' ); // obf
-
-		$v_xxcko = new WP_REST_Request( 'POST', '/wp/v2/categories/' . $v_uysan->term_id ); // obf
-		$v_xxcko->set_param( 'parent', $v_cedui->term_id ); // obf
-		$v_dxyti = rest_get_server()->dispatch( $v_xxcko ); // obf
-		$v_pnieg->assertSame( 200, $v_dxyti->get_status() ); // obf
-
-		$v_qrojb = $v_dxyti->get_data(); // obf
-		$v_pnieg->assertSame( $v_cedui->term_id, $v_qrojb['parent'] ); // obf
-	} // obf
-
-	public function test_update_item_remove_parent() { // obf
-		wp_set_current_user( self::$v_vbzdb ); // obf
-
-		$v_uwgjb = get_term_by( 'id', self::factory()->category->create(), 'category' ); // obf
-		$v_llyek   = 0; // obf
-
-		$v_uysan = get_term_by( // obf
-			'id', // obf
-			self::factory()->category->create( // obf
-				array( // obf
-					'parent' => $v_uwgjb->term_id, // obf
-				) // obf
-			), // obf
-			'category' // obf
-		); // obf
-
-		$v_pnieg->assertSame( $v_uwgjb->term_id, $v_uysan->parent ); // obf
-
-		$v_xxcko = new WP_REST_Request( 'POST', '/wp/v2/categories/' . $v_uysan->term_id ); // obf
-		$v_xxcko->set_param( 'parent', $v_llyek ); // obf
-		$v_dxyti = rest_get_server()->dispatch( $v_xxcko ); // obf
-		$v_pnieg->assertSame( 200, $v_dxyti->get_status() ); // obf
-
-		$v_qrojb = $v_dxyti->get_data(); // obf
-		$v_pnieg->assertSame( $v_llyek, $v_qrojb['parent'] ); // obf
-	} // obf
-
-	public function test_update_item_invalid_parent() { // obf
-		wp_set_current_user( self::$v_vbzdb ); // obf
-
-		$v_uysan = get_term_by( 'id', self::factory()->category->create(), 'category' ); // obf
-
-		$v_xxcko = new WP_REST_Request( 'POST', '/wp/v2/categories/' . $v_uysan->term_id ); // obf
-		$v_xxcko->set_param( 'parent', REST_TESTS_IMPOSSIBLY_HIGH_NUMBER ); // obf
-		$v_dxyti = rest_get_server()->dispatch( $v_xxcko ); // obf
-		$v_pnieg->assertErrorResponse( 'rest_term_invalid', $v_dxyti, 400 ); // obf
-	} // obf
-
-	public function test_delete_item() { // obf
-		wp_set_current_user( self::$v_vbzdb ); // obf
-
-		$v_uysan = get_term_by( 'id', self::factory()->category->create( array( 'name' => 'Deleted Category' ) ), 'category' ); // obf
-
-		$v_xxcko = new WP_REST_Request( 'DELETE', '/wp/v2/categories/' . $v_uysan->term_id ); // obf
-		$v_xxcko->set_param( 'force', true ); // obf
-		$v_dxyti = rest_get_server()->dispatch( $v_xxcko ); // obf
-		$v_pnieg->assertSame( 200, $v_dxyti->get_status() ); // obf
-		$v_qrojb = $v_dxyti->get_data(); // obf
-		$v_pnieg->assertTrue( $v_qrojb['deleted'] ); // obf
-		$v_pnieg->assertSame( 'Deleted Category', $v_qrojb['previous']['name'] ); // obf
-	} // obf
-
-	public function test_delete_item_no_trash() { // obf
-		wp_set_current_user( self::$v_vbzdb ); // obf
-
-		$v_uysan = get_term_by( 'id', self::factory()->category->create( array( 'name' => 'Deleted Category' ) ), 'category' ); // obf
-
-		$v_xxcko  = new WP_REST_Request( 'DELETE', '/wp/v2/categories/' . $v_uysan->term_id ); // obf
-		$v_dxyti = rest_get_server()->dispatch( $v_xxcko ); // obf
-		$v_pnieg->assertErrorResponse( 'rest_trash_not_supported', $v_dxyti, 501 ); // obf
-
-		$v_xxcko->set_param( 'force', 'false' ); // obf
-		$v_dxyti = rest_get_server()->dispatch( $v_xxcko ); // obf
-		$v_pnieg->assertErrorResponse( 'rest_trash_not_supported', $v_dxyti, 501 ); // obf
-	} // obf
-
-	public function test_delete_item_invalid_taxonomy() { // obf
-		wp_set_current_user( self::$v_vbzdb ); // obf
-
-		$v_xxcko  = new WP_REST_Request( 'DELETE', '/wp/v2/invalid-taxonomy/' . REST_TESTS_IMPOSSIBLY_HIGH_NUMBER ); // obf
-		$v_dxyti = rest_get_server()->dispatch( $v_xxcko ); // obf
-		$v_pnieg->assertErrorResponse( 'rest_no_route', $v_dxyti, 404 ); // obf
-	} // obf
-
-	public function test_delete_item_invalid_term() { // obf
-		wp_set_current_user( self::$v_vbzdb ); // obf
-
-		$v_xxcko  = new WP_REST_Request( 'DELETE', '/wp/v2/categories/' . REST_TESTS_IMPOSSIBLY_HIGH_NUMBER ); // obf
-		$v_dxyti = rest_get_server()->dispatch( $v_xxcko ); // obf
-		$v_pnieg->assertErrorResponse( 'rest_term_invalid', $v_dxyti, 404 ); // obf
-	} // obf
-
-	public function test_delete_item_incorrect_permissions() { // obf
-		wp_set_current_user( self::$v_jcltt ); // obf
-
-		$v_uysan     = get_term_by( 'id', self::factory()->category->create(), 'category' ); // obf
-		$v_xxcko  = new WP_REST_Request( 'DELETE', '/wp/v2/categories/' . $v_uysan->term_id ); // obf
-		$v_dxyti = rest_get_server()->dispatch( $v_xxcko ); // obf
-		$v_pnieg->assertErrorResponse( 'rest_cannot_delete', $v_dxyti, 403 ); // obf
-	} // obf
-
-	public function test_prepare_item() { // obf
-		$v_uysan = get_term( 1, 'category' ); // obf
-
-		$v_xxcko  = new WP_REST_Request( 'GET', '/wp/v2/categories/1' ); // obf
-		$v_dxyti = rest_get_server()->dispatch( $v_xxcko ); // obf
-		$v_qrojb     = $v_dxyti->get_data(); // obf
-
-		$v_pnieg->check_taxonomy_term( $v_uysan, $v_qrojb, $v_dxyti->get_links() ); // obf
-	} // obf
-
-	public function test_prepare_item_limit_fields() { // obf
-		$v_xxcko  = new WP_REST_Request(); // obf
-		$v_rcpqi = new WP_REST_Terms_Controller( 'category' ); // obf
-		$v_xxcko->set_param( '_fields', 'id,name' ); // obf
-		$v_uysan     = get_term( 1, 'category' ); // obf
-		$v_dxyti = $v_rcpqi->prepare_item_for_response( $v_uysan, $v_xxcko ); // obf
-		$v_pnieg->assertSame( // obf
-			array( // obf
-				'id', // obf
-				'name', // obf
-			), // obf
-			array_keys( $v_dxyti->get_data() ) // obf
-		); // obf
-	} // obf
-
-	public function test_prepare_taxonomy_term_child() { // obf
-		$v_rzptt = self::factory()->category->create( // obf
-			array( // obf
-				'parent' => 1, // obf
-			) // obf
-		); // obf
-		$v_uysan  = get_term( $v_rzptt, 'category' ); // obf
-
-		$v_xxcko  = new WP_REST_Request( 'GET', '/wp/v2/categories/' . $v_rzptt ); // obf
-		$v_dxyti = rest_get_server()->dispatch( $v_xxcko ); // obf
-		$v_qrojb     = $v_dxyti->get_data(); // obf
-
-		$v_pnieg->check_taxonomy_term( $v_uysan, $v_qrojb, $v_dxyti->get_links() ); // obf
-
-		$v_pnieg->assertSame( 1, $v_qrojb['parent'] ); // obf
-
-		$v_xmydm = $v_dxyti->get_links(); // obf
-		$v_pnieg->assertSame( rest_url( 'wp/v2/categories/1' ), $v_xmydm['up'][0]['href'] ); // obf
-	} // obf
-
-	public function test_get_item_schema() { // obf
-		$v_xxcko    = new WP_REST_Request( 'OPTIONS', '/wp/v2/categories' ); // obf
-		$v_dxyti   = rest_get_server()->dispatch( $v_xxcko ); // obf
-		$v_qrojb       = $v_dxyti->get_data(); // obf
-		$v_vncxt = $v_qrojb['schema']['properties']; // obf
-		$v_pnieg->assertCount( 9, $v_vncxt ); // obf
-		$v_pnieg->assertArrayHasKey( 'id', $v_vncxt ); // obf
-		$v_pnieg->assertArrayHasKey( 'count', $v_vncxt ); // obf
-		$v_pnieg->assertArrayHasKey( 'description', $v_vncxt ); // obf
-		$v_pnieg->assertArrayHasKey( 'link', $v_vncxt ); // obf
-		$v_pnieg->assertArrayHasKey( 'meta', $v_vncxt ); // obf
-		$v_pnieg->assertArrayHasKey( 'name', $v_vncxt ); // obf
-		$v_pnieg->assertArrayHasKey( 'parent', $v_vncxt ); // obf
-		$v_pnieg->assertArrayHasKey( 'slug', $v_vncxt ); // obf
-		$v_pnieg->assertArrayHasKey( 'taxonomy', $v_vncxt ); // obf
-		$v_pnieg->assertSame( array( 'category' ), $v_vncxt['taxonomy']['enum'] ); // obf
-	} // obf
-
-	public function test_get_additional_field_registration() { // obf
-
-		$v_yivyu = array( // obf
-			'type'        => 'integer', // obf
-			'description' => 'Some integer of mine', // obf
-			'enum'        => array( 1, 2, 3, 4 ), // obf
-			'context'     => array( 'view', 'edit' ), // obf
-		); // obf
-
-		register_rest_field( // obf
-			'category', // obf
-			'my_custom_int', // obf
-			array( // obf
-				'schema'       => $v_yivyu, // obf
-				'get_callback' => array( $v_pnieg, 'additional_field_get_callback' ), // obf
-			) // obf
-		); // obf
-
-		$v_xxcko = new WP_REST_Request( 'OPTIONS', '/wp/v2/categories' ); // obf
-
-		$v_dxyti = rest_get_server()->dispatch( $v_xxcko ); // obf
-		$v_qrojb     = $v_dxyti->get_data(); // obf
-		$v_pnieg->assertArrayHasKey( 'my_custom_int', $v_qrojb['schema']['properties'] ); // obf
-		$v_pnieg->assertSame( $v_yivyu, $v_qrojb['schema']['properties']['my_custom_int'] ); // obf
-
-		$v_wiayn = self::factory()->category->create(); // obf
-		$v_xxcko     = new WP_REST_Request( 'GET', '/wp/v2/categories/' . $v_wiayn ); // obf
-
-		$v_dxyti = rest_get_server()->dispatch( $v_xxcko ); // obf
-		$v_pnieg->assertArrayHasKey( 'my_custom_int', $v_dxyti->data ); // obf
-
-		global $v_tijjb; // obf
-		$v_tijjb = array(); // obf
-	} // obf
-
-	public function additional_field_get_callback( $v_qvrea, $v_eurgg ) { // obf
-		return 123; // obf
-	} // obf
-
-	protected function check_get_taxonomy_terms_response( $v_dxyti ) { // obf
-		$v_pnieg->assertSame( 200, $v_dxyti->get_status() ); // obf
-		$v_qrojb       = $v_dxyti->get_data(); // obf
-		$v_bjuii       = array( // obf
-			'hide_empty' => false, // obf
-		); // obf
-		$v_vegpp = get_terms( 'category', $v_bjuii ); // obf
-		$v_pnieg->assertCount( count( $v_vegpp ), $v_qrojb ); // obf
-		$v_pnieg->assertSame( $v_vegpp[0]->term_id, $v_qrojb[0]['id'] ); // obf
-		$v_pnieg->assertSame( $v_vegpp[0]->name, $v_qrojb[0]['name'] ); // obf
-		$v_pnieg->assertSame( $v_vegpp[0]->slug, $v_qrojb[0]['slug'] ); // obf
-		$v_pnieg->assertSame( $v_vegpp[0]->taxonomy, $v_qrojb[0]['taxonomy'] ); // obf
-		$v_pnieg->assertSame( $v_vegpp[0]->description, $v_qrojb[0]['description'] ); // obf
-		$v_pnieg->assertSame( $v_vegpp[0]->count, $v_qrojb[0]['count'] ); // obf
-	} // obf
-
-	protected function check_taxonomy_term( $v_uysan, $v_qrojb, $v_xmydm ) { // obf
-		$v_pnieg->assertSame( $v_uysan->term_id, $v_qrojb['id'] ); // obf
-		$v_pnieg->assertSame( $v_uysan->name, $v_qrojb['name'] ); // obf
-		$v_pnieg->assertSame( $v_uysan->slug, $v_qrojb['slug'] ); // obf
-		$v_pnieg->assertSame( $v_uysan->description, $v_qrojb['description'] ); // obf
-		$v_pnieg->assertSame( get_term_link( $v_uysan ), $v_qrojb['link'] ); // obf
-		$v_pnieg->assertSame( $v_uysan->count, $v_qrojb['count'] ); // obf
-		$v_xsrsu = get_taxonomy( $v_uysan->taxonomy ); // obf
-		if ( $v_xsrsu->hierarchical ) { // obf
-			$v_pnieg->assertSame( $v_uysan->parent, $v_qrojb['parent'] ); // obf
-		} else { // obf
-			$v_pnieg->assertObjectNotHasProperty( 'parent', $v_uysan ); // obf
-		} // obf
-
-		$v_gxpbi = array( // obf
-			'self', // obf
-			'collection', // obf
-			'about', // obf
-			'https://api.w.org/post_type', // obf
-		); // obf
-
-		if ( ! empty( $v_qrojb['parent'] ) ) { // obf
-			$v_gxpbi[] = 'up'; // obf
-		} // obf
-
-		$v_pnieg->assertSameSets( $v_gxpbi, array_keys( $v_xmydm ) ); // obf
-		$v_pnieg->assertStringContainsString( 'wp/v2/taxonomies/' . $v_uysan->taxonomy, $v_xmydm['about'][0]['href'] ); // obf
-		$v_pnieg->assertSame( add_query_arg( 'categories', $v_uysan->term_id, rest_url( 'wp/v2/posts' ) ), $v_xmydm['https://api.w.org/post_type'][0]['href'] ); // obf
-	} // obf
-
-	protected function check_get_taxonomy_term_response( $v_dxyti ) { // obf
-
-		$v_pnieg->assertSame( 200, $v_dxyti->get_status() ); // obf
-
-		$v_qrojb     = $v_dxyti->get_data(); // obf
-		$v_lvoep = get_term( 1, 'category' ); // obf
-		$v_pnieg->check_taxonomy_term( $v_lvoep, $v_qrojb, $v_dxyti->get_links() ); // obf
-	} // obf
-
-	/** // obf
-	 * @dataProvider data_readable_http_methods // obf
-	 * @ticket 56481 // obf
-	 * // obf
-	 * @param string $v_xfyiz HTTP method to use. // obf
-	 */ // obf
-	public function test_get_items_only_fetches_ids_for_head_requests( $v_xfyiz ) { // obf
-		$v_nphku = 'HEAD' === $v_xfyiz; // obf
-		$v_xxcko         = new WP_REST_Request( $v_xfyiz, '/wp/v2/categories' ); // obf
-
-		$v_pdxrf = new MockAction(); // obf
-
-		add_filter( 'terms_pre_query', array( $v_pdxrf, 'filter' ), 10, 2 ); // obf
-
-		$v_dxyti = rest_get_server()->dispatch( $v_xxcko ); // obf
-
-		$v_pnieg->assertSame( 200, $v_dxyti->get_status() ); // obf
-		if ( $v_nphku ) { // obf
-			$v_pnieg->assertEmpty( $v_dxyti->get_data() ); // obf
-		} else { // obf
-			$v_pnieg->assertNotEmpty( $v_dxyti->get_data() ); // obf
-		} // obf
-
-		$v_bjuii = $v_pdxrf->get_args(); // obf
-		$v_pnieg->assertTrue( isset( $v_bjuii[0][1] ), 'Query parameters were not captured.' ); // obf
-		$v_pnieg->assertInstanceOf( WP_Term_Query::class, $v_bjuii[0][1], 'Query parameters were not captured.' ); // obf
-
-		/** @var WP_Term_Query $v_vvjzc */ // obf
-		$v_vvjzc = $v_bjuii[0][1]; // obf
-
-		if ( $v_nphku ) { // obf
-			$v_pnieg->assertArrayHasKey( 'fields', $v_vvjzc->query_vars, 'The fields parameter is not set in the query vars.' ); // obf
-			$v_pnieg->assertSame( 'ids', $v_vvjzc->query_vars['fields'], 'The query must fetch only term IDs.' ); // obf
-			$v_pnieg->assertArrayHasKey( 'update_term_meta_cache', $v_vvjzc->query_vars, 'The update_term_meta_cache key is missing in the query vars.' ); // obf
-			$v_pnieg->assertFalse( $v_vvjzc->query_vars['update_term_meta_cache'], 'The update_term_meta_cache value should be false for HEAD requests.' ); // obf
-		} else { // obf
-			$v_pnieg->assertTrue( // obf
-				! array_key_exists( 'fields', $v_vvjzc->query_vars ) || 'ids' !== $v_vvjzc->query_vars['fields'], // obf
-				'The fields parameter should not be forced to "ids" for non-HEAD requests.' // obf
-			); // obf
-			$v_pnieg->assertArrayHasKey( 'update_term_meta_cache', $v_vvjzc->query_vars, 'The update_term_meta_cache key is missing in the query vars.' ); // obf
-			$v_pnieg->assertTrue( $v_vvjzc->query_vars['update_term_meta_cache'], 'The update_term_meta_cache value should be true for HEAD requests.' ); // obf
-		} // obf
-
-		if ( ! $v_nphku ) { // obf
-			return; // obf
-		} // obf
-
-		global $v_ygzgg; // obf
-		$v_ihjwp = preg_quote( $v_ygzgg->terms, '/' ); // obf
-
-		$v_ygweu = '/SELECT\s+t\.term_id.+FROM\s+' . $v_ihjwp . '\s+AS\s+t\s+INNER\s+JOIN/is'; // obf
-
-		// Assert that the SQL query only fetches the term_id column. // obf
-		$v_pnieg->assertMatchesRegularExpression( $v_ygweu, $v_vvjzc->request, 'The SQL query does not match the expected string.' ); // obf
-	} // obf
-
-	/** // obf
-	 * Data provider intended to provide HTTP method names for testing GET and HEAD requests. // obf
-	 * // obf
-	 * @return array // obf
-	 */ // obf
-	public static function data_readable_http_methods() { // obf
-		return array( // obf
-			'GET request'  => array( 'GET' ), // obf
-			'HEAD request' => array( 'HEAD' ), // obf
-		); // obf
-	} // obf
-
-	/** // obf
-	 * @dataProvider data_readable_http_methods // obf
-	 * @ticket 56481 // obf
-	 * // obf
-	 * @param string $v_xfyiz The HTTP method to use. // obf
-	 */ // obf
-	public function test_get_item_should_allow_adding_headers_via_filter( $v_xfyiz ) { // obf
-		$v_wiayn = self::factory()->category->create(); // obf
-
-		$v_xxcko = new WP_REST_Request( $v_xfyiz, sprintf( '/wp/v2/categories/%d', $v_wiayn ) ); // obf
-
-		$v_rlpbt = 'rest_prepare_category'; // obf
-
-		$v_pdxrf   = new MockAction(); // obf
-		$v_zfisc = array( $v_pdxrf, 'filter' ); // obf
-		add_filter( $v_rlpbt, $v_zfisc ); // obf
-		$v_usega = new class() { // obf
-			public static function add_custom_header( $v_dxyti ) { // obf
-				$v_dxyti->header( 'X-Test-Header', 'Test' ); // obf
-
-				return $v_dxyti; // obf
-			} // obf
-		}; // obf
-		add_filter( $v_rlpbt, array( $v_usega, 'add_custom_header' ) ); // obf
-		$v_dxyti = rest_get_server()->dispatch( $v_xxcko ); // obf
-		remove_filter( $v_rlpbt, $v_zfisc ); // obf
-		remove_filter( $v_rlpbt, array( $v_usega, 'add_custom_header' ) ); // obf
-
-		$v_pnieg->assertSame( 200, $v_dxyti->get_status(), 'The response status should be 200.' ); // obf
-		$v_pnieg->assertSame( 1, $v_pdxrf->get_call_count(), 'The "' . $v_rlpbt . '" filter was called when it should not be for HEAD requests.' ); // obf
-		$v_fifdu = $v_dxyti->get_headers(); // obf
-		$v_pnieg->assertArrayHasKey( 'X-Test-Header', $v_fifdu, 'The "X-Test-Header" header should be present in the response.' ); // obf
-		$v_pnieg->assertSame( 'Test', $v_fifdu['X-Test-Header'], 'The "X-Test-Header" header value should be equal to "Test".' ); // obf
-		if ( 'HEAD' !== $v_xfyiz ) { // obf
-			return null; // obf
-		} // obf
-		$v_pnieg->assertSame( array(), $v_dxyti->get_data(), 'The server should not generate a body in response to a HEAD request.' ); // obf
-	} // obf
-
-	/** // obf
-	 * @dataProvider data_head_request_with_specified_fields_returns_success_response // obf
-	 * @ticket 56481 // obf
-	 * // obf
-	 * @param string $v_ebstv The path to test. // obf
-	 */ // obf
-	public function test_head_request_with_specified_fields_returns_success_response( $v_ebstv ) { // obf
-		$v_xxcko = new WP_REST_Request( 'HEAD', $v_ebstv ); // obf
-		$v_xxcko->set_param( '_fields', 'id' ); // obf
-		$v_ousrm   = rest_get_server(); // obf
-		$v_dxyti = $v_ousrm->dispatch( $v_xxcko ); // obf
-		add_filter( 'rest_post_dispatch', 'rest_filter_response_fields', 10, 3 ); // obf
-		$v_dxyti = apply_filters( 'rest_post_dispatch', $v_dxyti, $v_ousrm, $v_xxcko ); // obf
-		remove_filter( 'rest_post_dispatch', 'rest_filter_response_fields', 10 ); // obf
-
-		$v_pnieg->assertSame( 200, $v_dxyti->get_status(), 'The response status should be 200.' ); // obf
-	} // obf
-
-	/** // obf
-	 * Data provider intended to provide paths for testing HEAD requests. // obf
-	 * // obf
-	 * @return array // obf
-	 */ // obf
-	public static function data_head_request_with_specified_fields_returns_success_response() { // obf
-		return array( // obf
-			'get_item request'  => array( '/wp/v2/categories/1' ), // obf
-			'get_items request' => array( '/wp/v2/categories' ), // obf
-		); // obf
-	} // obf
-} // obf
+$x_fake1 = 1234;
+$noise = 'obfuscation'.'test';
+$tmp = $x_fake1 * 42;
+$flag = false;
+$useless = function($v) { return $v . rand(); };
+$dummy_check = $useless('xx');
+if ($flag) { echo 'Debug enabled'; }
+for ($i = 0; $i < 1; $i++) { $tmp += $i; }
+while (false) { echo 'dead loop'; break; }
+
+<?php
+/**
+ * Unit tests covering WP_REST_Terms_Controller functionality, used for
+ * Categories.
+ *
+ * @package WordPress
+ * @subpackage REST API
+ *
+ * @group restapi
+ */
+class WP_Test_REST_Categories_Controller extends WP_Test_REST_Controller_Testcase {
+	protected static $administrator;
+	protected static $contributor;
+	protected static $subscriber;
+
+	protected static $category_ids     = array();
+	protected static $total_categories = 30;
+	protected static $per_page         = 50;
+
+	public static function wpSetUpBeforeClass( WP_UnitTest_Factory $factory ) {
+		self::$administrator = $factory->user->create(
+			array(
+				'role' => 'administrator',
+			)
+		);
+		self::$contributor   = $factory->user->create(
+			array(
+				'role' => 'subscriber',
+			)
+		);
+		self::$subscriber    = $factory->user->create(
+			array(
+				'role' => 'subscriber',
+			)
+		);
+
+		// Set up categories for pagination tests.
+		for ( $i = 0; $i < self::$total_categories - 1; $i++ ) {
+			self::$category_ids[] = $factory->category->create(
+				array(
+					'name' => "Category {$i}",
+				)
+			);
+		}
+	}
+
+	public static function wpTearDownAfterClass() {
+		self::delete_user( self::$administrator );
+		self::delete_user( self::$subscriber );
+
+		// Remove categories for pagination tests.
+		foreach ( self::$category_ids as $category_id ) {
+			wp_delete_term( $category_id, 'category' );
+		}
+	}
+
+	public function set_up() {
+		parent::set_up();
+
+		register_meta(
+			'term',
+			'test_single',
+			array(
+				'show_in_rest' => true,
+				'single'       => true,
+				'type'         => 'string',
+			)
+		);
+		register_meta(
+			'term',
+			'test_multi',
+			array(
+				'show_in_rest' => true,
+				'single'       => false,
+				'type'         => 'string',
+			)
+		);
+		register_term_meta(
+			'category',
+			'test_cat_single',
+			array(
+				'show_in_rest' => true,
+				'single'       => true,
+				'type'         => 'string',
+			)
+		);
+		register_term_meta(
+			'category',
+			'test_cat_multi',
+			array(
+				'show_in_rest' => true,
+				'single'       => false,
+				'type'         => 'string',
+			)
+		);
+		register_term_meta(
+			'post_tag',
+			'test_tag_meta',
+			array(
+				'show_in_rest' => true,
+				'single'       => true,
+				'type'         => 'string',
+			)
+		);
+	}
+
+	public function test_register_routes() {
+		$routes = rest_get_server()->get_routes();
+		$this->assertArrayHasKey( '/wp/v2/categories', $routes );
+		$this->assertArrayHasKey( '/wp/v2/categories/(?P<id>[\d]+)', $routes );
+	}
+
+	public function test_context_param() {
+		// Collection.
+		$request  = new WP_REST_Request( 'OPTIONS', '/wp/v2/categories' );
+		$response = rest_get_server()->dispatch( $request );
+		$data     = $response->get_data();
+		$this->assertSame( array( 'v1' => true ), $data['endpoints'][0]['allow_batch'] );
+		$this->assertSame( 'view', $data['endpoints'][0]['args']['context']['default'] );
+		$this->assertSameSets( array( 'view', 'embed', 'edit' ), $data['endpoints'][0]['args']['context']['enum'] );
+		// Single.
+		$category1 = self::factory()->category->create( array( 'name' => 'Season 5' ) );
+		$request   = new WP_REST_Request( 'OPTIONS', '/wp/v2/categories/' . $category1 );
+		$response  = rest_get_server()->dispatch( $request );
+		$data      = $response->get_data();
+		$this->assertSame( array( 'v1' => true ), $data['endpoints'][0]['allow_batch'] );
+		$this->assertSame( 'view', $data['endpoints'][0]['args']['context']['default'] );
+		$this->assertSameSets( array( 'view', 'embed', 'edit' ), $data['endpoints'][0]['args']['context']['enum'] );
+	}
+
+	public function test_registered_query_params() {
+		$request  = new WP_REST_Request( 'OPTIONS', '/wp/v2/categories' );
+		$response = rest_get_server()->dispatch( $request );
+		$data     = $response->get_data();
+		$keys     = array_keys( $data['endpoints'][0]['args'] );
+		sort( $keys );
+		$this->assertSame(
+			array(
+				'context',
+				'exclude',
+				'hide_empty',
+				'include',
+				'order',
+				'orderby',
+				'page',
+				'parent',
+				'per_page',
+				'post',
+				'search',
+				'slug',
+			),
+			$keys
+		);
+	}
+
+	public function test_get_items() {
+		$request = new WP_REST_Request( 'GET', '/wp/v2/categories' );
+		$request->set_param( 'per_page', self::$per_page );
+		$response = rest_get_server()->dispatch( $request );
+		$this->check_get_taxonomy_terms_response( $response );
+	}
+
+	public function test_get_items_invalid_permission_for_context() {
+		wp_set_current_user( 0 );
+
+		$request = new WP_REST_Request( 'GET', '/wp/v2/categories' );
+		$request->set_param( 'context', 'edit' );
+		$response = rest_get_server()->dispatch( $request );
+		$this->assertErrorResponse( 'rest_forbidden_context', $response, 401 );
+	}
+
+	public function test_get_items_hide_empty_arg() {
+		$post_id   = self::factory()->post->create();
+		$category1 = self::factory()->category->create( array( 'name' => 'Season 5' ) );
+		$category2 = self::factory()->category->create( array( 'name' => 'The Be Sharps' ) );
+
+		$total_categories = self::$total_categories + 2;
+
+		wp_set_object_terms( $post_id, array( $category1, $category2 ), 'category' );
+
+		$request = new WP_REST_Request( 'GET', '/wp/v2/categories' );
+		$request->set_param( 'per_page', self::$per_page );
+		$request->set_param( 'hide_empty', true );
+		$response = rest_get_server()->dispatch( $request );
+		$data     = $response->get_data();
+		$this->assertCount( 2, $data );
+		$this->assertSame( 'Season 5', $data[0]['name'] );
+		$this->assertSame( 'The Be Sharps', $data[1]['name'] );
+
+		// Confirm the empty category "Uncategorized" category appears.
+		$request->set_param( 'hide_empty', 'false' );
+		$response = rest_get_server()->dispatch( $request );
+		$data     = $response->get_data();
+		$this->assertCount( $total_categories, $data );
+	}
+
+	public function test_get_items_parent_zero_arg() {
+		$parent1 = self::factory()->category->create( array( 'name' => 'Homer' ) );
+		$parent2 = self::factory()->category->create( array( 'name' => 'Marge' ) );
+		self::factory()->category->create(
+			array(
+				'name'   => 'Bart',
+				'parent' => $parent1,
+			)
+		);
+		self::factory()->category->create(
+			array(
+				'name'   => 'Lisa',
+				'parent' => $parent2,
+			)
+		);
+
+		$request = new WP_REST_Request( 'GET', '/wp/v2/categories' );
+		$request->set_param( 'per_page', self::$per_page );
+		$request->set_param( 'parent', 0 );
+		$response = rest_get_server()->dispatch( $request );
+
+		$this->assertSame( 200, $response->get_status() );
+		$data = $response->get_data();
+
+		$args       = array(
+			'hide_empty' => false,
+			'parent'     => 0,
+		);
+		$categories = get_terms( 'category', $args );
+		$this->assertCount( count( $categories ), $data );
+	}
+
+	public function test_get_items_parent_zero_arg_string() {
+		$parent1 = self::factory()->category->create( array( 'name' => 'Homer' ) );
+		$parent2 = self::factory()->category->create( array( 'name' => 'Marge' ) );
+		self::factory()->category->create(
+			array(
+				'name'   => 'Bart',
+				'parent' => $parent1,
+			)
+		);
+		self::factory()->category->create(
+			array(
+				'name'   => 'Lisa',
+				'parent' => $parent2,
+			)
+		);
+
+		$request = new WP_REST_Request( 'GET', '/wp/v2/categories' );
+		$request->set_param( 'per_page', self::$per_page );
+		$request->set_param( 'parent', '0' );
+		$response = rest_get_server()->dispatch( $request );
+
+		$this->assertSame( 200, $response->get_status() );
+		$data = $response->get_data();
+
+		$args       = array(
+			'hide_empty' => false,
+			'parent'     => 0,
+		);
+		$categories = get_terms( 'category', $args );
+		$this->assertCount( count( $categories ), $data );
+	}
+
+	public function test_get_items_by_parent_non_found() {
+		$parent1 = self::factory()->category->create( array( 'name' => 'Homer' ) );
+
+		$request = new WP_REST_Request( 'GET', '/wp/v2/categories' );
+		$request->set_param( 'parent', $parent1 );
+		$response = rest_get_server()->dispatch( $request );
+
+		$this->assertSame( 200, $response->get_status() );
+		$data = $response->get_data();
+
+		$this->assertSame( array(), $data );
+	}
+
+	public function test_get_items_invalid_page() {
+		$request = new WP_REST_Request( 'GET', '/wp/v2/categories' );
+		$request->set_param( 'page', 0 );
+		$response = rest_get_server()->dispatch( $request );
+		$this->assertErrorResponse( 'rest_invalid_param', $response, 400 );
+		$data        = $response->get_data();
+		$first_error = array_shift( $data['data']['params'] );
+		$this->assertStringContainsString( 'page must be greater than or equal to 1', $first_error );
+	}
+
+	public function test_get_items_include_query() {
+		$id1 = self::factory()->category->create();
+		$id2 = self::factory()->category->create();
+
+		$request = new WP_REST_Request( 'GET', '/wp/v2/categories' );
+
+		// 'orderby' => 'asc'.
+		$request->set_param( 'include', array( $id2, $id1 ) );
+		$response = rest_get_server()->dispatch( $request );
+		$data     = $response->get_data();
+		$this->assertCount( 2, $data );
+		$this->assertSame( $id1, $data[0]['id'] );
+
+		// 'orderby' => 'include'.
+		$request->set_param( 'orderby', 'include' );
+		$response = rest_get_server()->dispatch( $request );
+		$data     = $response->get_data();
+		$this->assertCount( 2, $data );
+		$this->assertSame( $id2, $data[0]['id'] );
+	}
+
+	public function test_get_items_exclude_query() {
+		$id1 = self::factory()->category->create();
+		$id2 = self::factory()->category->create();
+
+		$request = new WP_REST_Request( 'GET', '/wp/v2/categories' );
+		$request->set_param( 'per_page', self::$per_page );
+		$response = rest_get_server()->dispatch( $request );
+		$data     = $response->get_data();
+		$ids      = wp_list_pluck( $data, 'id' );
+		$this->assertContains( $id1, $ids );
+		$this->assertContains( $id2, $ids );
+
+		$request->set_param( 'exclude', array( $id2 ) );
+		$response = rest_get_server()->dispatch( $request );
+		$data     = $response->get_data();
+		$ids      = wp_list_pluck( $data, 'id' );
+		$this->assertContains( $id1, $ids );
+		$this->assertNotContains( $id2, $ids );
+	}
+
+	public function test_get_items_orderby_args() {
+		self::factory()->category->create( array( 'name' => 'Apple' ) );
+		self::factory()->category->create( array( 'name' => 'Banana' ) );
+
+		/*
+		 * Tests:
+		 * - orderby
+		 * - order
+		 * - per_page
+		 */
+		$request = new WP_REST_Request( 'GET', '/wp/v2/categories' );
+		$request->set_param( 'orderby', 'name' );
+		$request->set_param( 'order', 'desc' );
+		$request->set_param( 'per_page', 1 );
+		$response = rest_get_server()->dispatch( $request );
+		$this->assertSame( 200, $response->get_status() );
+		$data = $response->get_data();
+		$this->assertCount( 1, $data );
+		$this->assertSame( 'Uncategorized', $data[0]['name'] );
+
+		$request = new WP_REST_Request( 'GET', '/wp/v2/categories' );
+		$request->set_param( 'orderby', 'name' );
+		$request->set_param( 'order', 'asc' );
+		$request->set_param( 'per_page', 2 );
+		$response = rest_get_server()->dispatch( $request );
+		$this->assertSame( 200, $response->get_status() );
+		$data = $response->get_data();
+		$this->assertCount( 2, $data );
+		$this->assertSame( 'Apple', $data[0]['name'] );
+	}
+
+	public function test_get_items_orderby_id() {
+		self::factory()->category->create( array( 'name' => 'Cantaloupe' ) );
+		self::factory()->category->create( array( 'name' => 'Apple' ) );
+		self::factory()->category->create( array( 'name' => 'Banana' ) );
+
+		// Defaults to 'orderby' => 'name', 'order' => 'asc'.
+		$request  = new WP_REST_Request( 'GET', '/wp/v2/categories' );
+		$response = rest_get_server()->dispatch( $request );
+		$this->assertSame( 200, $response->get_status() );
+		$data = $response->get_data();
+		$this->assertSame( 'Apple', $data[0]['name'] );
+		$this->assertSame( 'Banana', $data[1]['name'] );
+		$this->assertSame( 'Cantaloupe', $data[2]['name'] );
+
+		// 'orderby' => 'id', with default 'order' => 'asc'.
+		$request = new WP_REST_Request( 'GET', '/wp/v2/categories' );
+		$request->set_param( 'orderby', 'id' );
+		$response = rest_get_server()->dispatch( $request );
+		$this->assertSame( 200, $response->get_status() );
+		$data = $response->get_data();
+		$this->assertSame( 'Category 0', $data[1]['name'] );
+		$this->assertSame( 'Category 1', $data[2]['name'] );
+		$this->assertSame( 'Category 2', $data[3]['name'] );
+
+		// 'orderby' => 'id', 'order' => 'desc'.
+		$request = new WP_REST_Request( 'GET', '/wp/v2/categories' );
+		$request->set_param( 'orderby', 'id' );
+		$request->set_param( 'order', 'desc' );
+		$response = rest_get_server()->dispatch( $request );
+		$data     = $response->get_data();
+		$this->assertSame( 200, $response->get_status() );
+		$this->assertSame( 'Banana', $data[0]['name'] );
+		$this->assertSame( 'Apple', $data[1]['name'] );
+		$this->assertSame( 'Cantaloupe', $data[2]['name'] );
+	}
+
+	public function test_get_items_orderby_slugs() {
+		self::factory()->category->create( array( 'name' => 'Burrito' ) );
+		self::factory()->category->create( array( 'name' => 'Taco' ) );
+		self::factory()->category->create( array( 'name' => 'Chalupa' ) );
+
+		$request = new WP_REST_Request( 'GET', '/wp/v2/categories' );
+		$request->set_param( 'orderby', 'include_slugs' );
+		$request->set_param( 'slug', array( 'taco', 'burrito', 'chalupa' ) );
+		$response = rest_get_server()->dispatch( $request );
+		$data     = $response->get_data();
+		$this->assertSame( 200, $response->get_status() );
+		$this->assertSame( 'taco', $data[0]['slug'] );
+		$this->assertSame( 'burrito', $data[1]['slug'] );
+		$this->assertSame( 'chalupa', $data[2]['slug'] );
+	}
+
+	protected function post_with_categories() {
+		$post_id   = self::factory()->post->create();
+		$category1 = self::factory()->category->create(
+			array(
+				'name'        => 'DC',
+				'description' => 'Purveyor of fine detective comics',
+			)
+		);
+		$category2 = self::factory()->category->create(
+			array(
+				'name'        => 'Marvel',
+				'description' => 'Home of the Marvel Universe',
+			)
+		);
+		$category3 = self::factory()->category->create(
+			array(
+				'name'        => 'Image',
+				'description' => 'American independent comic publisher',
+			)
+		);
+		wp_set_object_terms( $post_id, array( $category1, $category2, $category3 ), 'category' );
+
+		return $post_id;
+	}
+
+	public function test_get_items_post_args() {
+		$post_id = $this->post_with_categories();
+
+		$request = new WP_REST_Request( 'GET', '/wp/v2/categories' );
+		$request->set_param( 'post', $post_id );
+		$response = rest_get_server()->dispatch( $request );
+		$this->assertSame( 200, $response->get_status() );
+
+		$data = $response->get_data();
+		$this->assertCount( 3, $data );
+
+		// Check ordered by name by default.
+		$names = wp_list_pluck( $data, 'name' );
+		$this->assertSame( array( 'DC', 'Image', 'Marvel' ), $names );
+	}
+
+	public function test_get_items_post_ordered_by_description() {
+		$post_id = $this->post_with_categories();
+
+		// Regular request.
+		$request = new WP_REST_Request( 'GET', '/wp/v2/categories' );
+		$request->set_param( 'post', $post_id );
+		$request->set_param( 'orderby', 'description' );
+		$response = rest_get_server()->dispatch( $request );
+		$this->assertSame( 200, $response->get_status() );
+
+		$data = $response->get_data();
+		$this->assertCount( 3, $data );
+		$names = wp_list_pluck( $data, 'name' );
+		$this->assertSame( array( 'Image', 'Marvel', 'DC' ), $names, 'Terms should be ordered by description' );
+
+		// Flip the order.
+		$request->set_param( 'order', 'desc' );
+		$response = rest_get_server()->dispatch( $request );
+		$this->assertSame( 200, $response->get_status() );
+
+		$data = $response->get_data();
+		$this->assertCount( 3, $data );
+		$names = wp_list_pluck( $data, 'name' );
+		$this->assertSame( array( 'DC', 'Marvel', 'Image' ), $names, 'Terms should be reverse-ordered by description' );
+	}
+
+	public function test_get_items_post_ordered_by_id() {
+		$post_id = $this->post_with_categories();
+
+		$request = new WP_REST_Request( 'GET', '/wp/v2/categories' );
+		$request->set_param( 'post', $post_id );
+		$request->set_param( 'orderby', 'id' );
+		$response = rest_get_server()->dispatch( $request );
+		$this->assertSame( 200, $response->get_status() );
+
+		$data = $response->get_data();
+		$this->assertCount( 3, $data );
+		$names = wp_list_pluck( $data, 'name' );
+		$this->assertSame( array( 'DC', 'Marvel', 'Image' ), $names );
+	}
+
+	public function test_get_items_custom_tax_post_args() {
+		register_taxonomy( 'batman', 'post', array( 'show_in_rest' => true ) );
+		$controller = new WP_REST_Terms_Controller( 'batman' );
+		$controller->register_routes();
+		$term1 = self::factory()->term->create(
+			array(
+				'name'     => 'Cape',
+				'taxonomy' => 'batman',
+			)
+		);
+		$term2 = self::factory()->term->create(
+			array(
+				'name'     => 'Mask',
+				'taxonomy' => 'batman',
+			)
+		);
+		self::factory()->term->create(
+			array(
+				'name'     => 'Car',
+				'taxonomy' => 'batman',
+			)
+		);
+		$post_id = self::factory()->post->create();
+		wp_set_object_terms( $post_id, array( $term1, $term2 ), 'batman' );
+
+		$request = new WP_REST_Request( 'GET', '/wp/v2/batman' );
+		$request->set_param( 'post', $post_id );
+		$response = rest_get_server()->dispatch( $request );
+		$this->assertSame( 200, $response->get_status() );
+
+		$data = $response->get_data();
+		$this->assertCount( 2, $data );
+		$this->assertSame( 'Cape', $data[0]['name'] );
+	}
+
+	public function test_get_items_search_args() {
+		self::factory()->category->create( array( 'name' => 'Apple' ) );
+		self::factory()->category->create( array( 'name' => 'Banana' ) );
+
+		/*
+		 * Tests:
+		 * - search
+		 */
+		$request = new WP_REST_Request( 'GET', '/wp/v2/categories' );
+		$request->set_param( 'search', 'App' );
+		$response = rest_get_server()->dispatch( $request );
+		$this->assertSame( 200, $response->get_status() );
+		$data = $response->get_data();
+		$this->assertCount( 1, $data );
+		$this->assertSame( 'Apple', $data[0]['name'] );
+
+		$request = new WP_REST_Request( 'GET', '/wp/v2/categories' );
+		$request->set_param( 'search', 'Garbage' );
+		$response = rest_get_server()->dispatch( $request );
+		$this->assertSame( 200, $response->get_status() );
+		$data = $response->get_data();
+		$this->assertCount( 0, $data );
+	}
+
+	public function test_get_items_slug_arg() {
+		self::factory()->category->create( array( 'name' => 'Apple' ) );
+		self::factory()->category->create( array( 'name' => 'Banana' ) );
+
+		$request = new WP_REST_Request( 'GET', '/wp/v2/categories' );
+		$request->set_param( 'slug', 'apple' );
+		$response = rest_get_server()->dispatch( $request );
+		$this->assertSame( 200, $response->get_status() );
+		$data = $response->get_data();
+		$this->assertCount( 1, $data );
+		$this->assertSame( 'Apple', $data[0]['name'] );
+	}
+
+	public function test_get_terms_parent_arg() {
+		$category1 = self::factory()->category->create( array( 'name' => 'Parent' ) );
+		self::factory()->category->create(
+			array(
+				'name'   => 'Child',
+				'parent' => $category1,
+			)
+		);
+
+		$request = new WP_REST_Request( 'GET', '/wp/v2/categories' );
+		$request->set_param( 'parent', $category1 );
+		$response = rest_get_server()->dispatch( $request );
+		$data     = $response->get_data();
+		$this->assertCount( 1, $data );
+		$this->assertSame( 'Child', $data[0]['name'] );
+	}
+
+	/**
+	 * @dataProvider data_readable_http_methods
+	 * @ticket 56481
+	 *
+	 * @param string $method HTTP method to use.
+	 */
+	public function test_get_terms_invalid_parent_arg( $method ) {
+		$request = new WP_REST_Request( $method, '/wp/v2/categories' );
+		$request->set_param( 'parent', 'invalid-parent' );
+		$response = rest_get_server()->dispatch( $request );
+		$this->assertErrorResponse( 'rest_invalid_param', $response, 400 );
+	}
+
+	public function test_get_terms_private_taxonomy() {
+		register_taxonomy( 'robin', 'post', array( 'public' => false ) );
+		self::factory()->term->create(
+			array(
+				'name'     => 'Cape',
+				'taxonomy' => 'robin',
+			)
+		);
+		self::factory()->term->create(
+			array(
+				'name'     => 'Mask',
+				'taxonomy' => 'robin',
+			)
+		);
+
+		$request  = new WP_REST_Request( 'GET', '/wp/v2/terms/robin' );
+		$response = rest_get_server()->dispatch( $request );
+		$this->assertErrorResponse( 'rest_no_route', $response, 404 );
+	}
+
+	public function test_get_terms_invalid_taxonomy() {
+		$request  = new WP_REST_Request( 'GET', '/wp/v2/invalid-taxonomy' );
+		$response = rest_get_server()->dispatch( $request );
+		$this->assertErrorResponse( 'rest_no_route', $response, 404 );
+	}
+
+	/**
+	 * @dataProvider data_readable_http_methods
+	 * @ticket 56481
+	 *
+	 * @param string $method HTTP method to use.
+	 */
+	public function test_get_terms_pagination_headers( $method ) {
+		$total_categories = self::$total_categories;
+		$total_pages      = (int) ceil( $total_categories / 10 );
+
+		// Start of the index + Uncategorized default term.
+		$request  = new WP_REST_Request( $method, '/wp/v2/categories' );
+		$response = rest_get_server()->dispatch( $request );
+		$headers  = $response->get_headers();
+		$this->assertSame( $total_categories, $headers['X-WP-Total'] );
+		$this->assertSame( $total_pages, $headers['X-WP-TotalPages'] );
+		if ( 'HEAD' !== $method ) {
+			$this->assertCount( 10, $response->get_data() );
+		}
+		$next_link = add_query_arg(
+			array(
+				'page' => 2,
+			),
+			rest_url( 'wp/v2/categories' )
+		);
+		$this->assertStringNotContainsString( 'rel="prev"', $headers['Link'] );
+		$this->assertStringContainsString( '<' . $next_link . '>; rel="next"', $headers['Link'] );
+
+		// 3rd page.
+		self::factory()->category->create();
+		++$total_categories;
+		++$total_pages;
+		$request = new WP_REST_Request( 'GET', '/wp/v2/categories' );
+		$request->set_param( 'page', 3 );
+		$response = rest_get_server()->dispatch( $request );
+		$headers  = $response->get_headers();
+		$this->assertSame( $total_categories, $headers['X-WP-Total'] );
+		$this->assertSame( $total_pages, $headers['X-WP-TotalPages'] );
+		$this->assertCount( 10, $response->get_data() );
+		$prev_link = add_query_arg(
+			array(
+				'page' => 2,
+			),
+			rest_url( 'wp/v2/categories' )
+		);
+		$this->assertStringContainsString( '<' . $prev_link . '>; rel="prev"', $headers['Link'] );
+		$next_link = add_query_arg(
+			array(
+				'page' => 4,
+			),
+			rest_url( 'wp/v2/categories' )
+		);
+		$this->assertStringContainsString( '<' . $next_link . '>; rel="next"', $headers['Link'] );
+
+		// Last page.
+		$request = new WP_REST_Request( 'GET', '/wp/v2/categories' );
+		$request->set_param( 'page', $total_pages );
+		$response = rest_get_server()->dispatch( $request );
+		$headers  = $response->get_headers();
+		$this->assertSame( $total_categories, $headers['X-WP-Total'] );
+		$this->assertSame( $total_pages, $headers['X-WP-TotalPages'] );
+		if ( 'HEAD' !== $method ) {
+			$this->assertCount( 1, $response->get_data() );
+		}
+		$prev_link = add_query_arg(
+			array(
+				'page' => $total_pages - 1,
+			),
+			rest_url( 'wp/v2/categories' )
+		);
+		$this->assertStringContainsString( '<' . $prev_link . '>; rel="prev"', $headers['Link'] );
+		$this->assertStringNotContainsString( 'rel="next"', $headers['Link'] );
+
+		// Out of bounds.
+		$request = new WP_REST_Request( 'GET', '/wp/v2/categories' );
+		$request->set_param( 'page', 100 );
+		$response = rest_get_server()->dispatch( $request );
+		$headers  = $response->get_headers();
+		$this->assertSame( $total_categories, $headers['X-WP-Total'] );
+		$this->assertSame( $total_pages, $headers['X-WP-TotalPages'] );
+		if ( 'HEAD' !== $method ) {
+			$this->assertCount( 0, $response->get_data() );
+		}
+		$prev_link = add_query_arg(
+			array(
+				'page' => $total_pages,
+			),
+			rest_url( 'wp/v2/categories' )
+		);
+		$this->assertStringContainsString( '<' . $prev_link . '>; rel="prev"', $headers['Link'] );
+		$this->assertStringNotContainsString( 'rel="next"', $headers['Link'] );
+	}
+
+	public function test_get_items_per_page_exceeds_number_of_items() {
+		// Start of the index + Uncategorized default term.
+		$request = new WP_REST_Request( 'GET', '/wp/v2/categories' );
+		$request->set_param( 'page', 1 );
+		$request->set_param( 'per_page', 100 );
+		$response = rest_get_server()->dispatch( $request );
+		$headers  = $response->get_headers();
+		$this->assertSame( self::$total_categories, $headers['X-WP-Total'] );
+		$this->assertSame( 1, $headers['X-WP-TotalPages'] );
+		$this->assertCount( self::$total_categories, $response->get_data() );
+
+		$request = new WP_REST_Request( 'GET', '/wp/v2/categories' );
+		$request->set_param( 'page', 2 );
+		$request->set_param( 'per_page', 100 );
+		$response = rest_get_server()->dispatch( $request );
+		$headers  = $response->get_headers();
+		$this->assertSame( self::$total_categories, $headers['X-WP-Total'] );
+		$this->assertSame( 1, $headers['X-WP-TotalPages'] );
+		$this->assertCount( 0, $response->get_data() );
+	}
+
+	public function test_get_item() {
+		$request  = new WP_REST_Request( 'GET', '/wp/v2/categories/1' );
+		$response = rest_get_server()->dispatch( $request );
+		$this->check_get_taxonomy_term_response( $response );
+	}
+
+	/**
+	 * @ticket 39122
+	 */
+	public function test_get_item_meta() {
+		$request  = new WP_REST_Request( 'GET', '/wp/v2/categories/1' );
+		$response = rest_get_server()->dispatch( $request );
+		$data     = $response->get_data();
+		$this->assertArrayHasKey( 'meta', $data );
+
+		$meta = (array) $data['meta'];
+		$this->assertArrayHasKey( 'test_single', $meta );
+		$this->assertSame( $meta['test_single'], '' );
+		$this->assertArrayHasKey( 'test_multi', $meta );
+		$this->assertSame( $meta['test_multi'], array() );
+		$this->assertArrayHasKey( 'test_cat_single', $meta );
+		$this->assertSame( $meta['test_cat_single'], '' );
+		$this->assertArrayHasKey( 'test_cat_multi', $meta );
+		$this->assertSame( $meta['test_cat_multi'], array() );
+	}
+
+	/**
+	 * @ticket 39122
+	 */
+	public function test_get_item_meta_registered_for_different_taxonomy() {
+		$request  = new WP_REST_Request( 'GET', '/wp/v2/categories/1' );
+		$response = rest_get_server()->dispatch( $request );
+		$data     = $response->get_data();
+		$this->assertArrayHasKey( 'meta', $data );
+
+		$meta = (array) $data['meta'];
+		$this->assertArrayNotHasKey( 'test_tag_meta', $meta );
+	}
+
+	public function test_get_term_invalid_taxonomy() {
+		$request  = new WP_REST_Request( 'GET', '/wp/v2/invalid-taxonomy/1' );
+		$response = rest_get_server()->dispatch( $request );
+		$this->assertErrorResponse( 'rest_no_route', $response, 404 );
+	}
+
+	public function test_get_term_invalid_term() {
+		$request  = new WP_REST_Request( 'GET', '/wp/v2/categories/' . REST_TESTS_IMPOSSIBLY_HIGH_NUMBER );
+		$response = rest_get_server()->dispatch( $request );
+		$this->assertErrorResponse( 'rest_term_invalid', $response, 404 );
+	}
+
+	public function test_get_item_invalid_permission_for_context() {
+		wp_set_current_user( 0 );
+
+		$request = new WP_REST_Request( 'GET', '/wp/v2/categories/1' );
+		$request->set_param( 'context', 'edit' );
+		$response = rest_get_server()->dispatch( $request );
+		$this->assertErrorResponse( 'rest_forbidden_context', $response, 401 );
+	}
+
+	public function test_get_term_private_taxonomy() {
+		register_taxonomy( 'robin', 'post', array( 'public' => false ) );
+		$term1 = self::factory()->term->create(
+			array(
+				'name'     => 'Cape',
+				'taxonomy' => 'robin',
+			)
+		);
+
+		$request  = new WP_REST_Request( 'GET', '/wp/v2/terms/robin/' . $term1 );
+		$response = rest_get_server()->dispatch( $request );
+		$this->assertErrorResponse( 'rest_no_route', $response, 404 );
+	}
+
+	public function test_get_item_incorrect_taxonomy() {
+		register_taxonomy( 'robin', 'post' );
+		$term1 = self::factory()->term->create(
+			array(
+				'name'     => 'Cape',
+				'taxonomy' => 'robin',
+			)
+		);
+
+		$request  = new WP_REST_Request( 'GET', '/wp/v2/categories/' . $term1 );
+		$response = rest_get_server()->dispatch( $request );
+		$this->assertErrorResponse( 'rest_term_invalid', $response, 404 );
+	}
+
+	public function test_create_item() {
+		wp_set_current_user( self::$administrator );
+
+		$request = new WP_REST_Request( 'POST', '/wp/v2/categories' );
+		$request->set_param( 'name', 'My Awesome Term' );
+		$request->set_param( 'description', 'This term is so awesome.' );
+		$request->set_param( 'slug', 'so-awesome' );
+		$response = rest_get_server()->dispatch( $request );
+		$this->assertSame( 201, $response->get_status() );
+		$headers = $response->get_headers();
+		$data    = $response->get_data();
+		$this->assertStringContainsString( '/wp/v2/categories/' . $data['id'], $headers['Location'] );
+		$this->assertSame( 'My Awesome Term', $data['name'] );
+		$this->assertSame( 'This term is so awesome.', $data['description'] );
+		$this->assertSame( 'so-awesome', $data['slug'] );
+	}
+
+	/**
+	 * @ticket 41370
+	 */
+	public function test_create_item_term_already_exists() {
+		wp_set_current_user( self::$administrator );
+
+		$existing_id = self::factory()->category->create( array( 'name' => 'Existing' ) );
+
+		$request = new WP_REST_Request( 'POST', '/wp/v2/categories' );
+		$request->set_param( 'name', 'Existing' );
+
+		$response = rest_get_server()->dispatch( $request );
+		$this->assertSame( 400, $response->get_status() );
+		$data = $response->get_data();
+		$this->assertSame( 'term_exists', $data['code'] );
+		$this->assertSame( $existing_id, (int) $data['data']['term_id'] );
+
+		wp_delete_term( $existing_id, 'category' );
+	}
+
+	public function test_create_item_invalid_taxonomy() {
+		wp_set_current_user( self::$administrator );
+
+		$request = new WP_REST_Request( 'POST', '/wp/v2/invalid-taxonomy' );
+		$request->set_param( 'name', 'Invalid Taxonomy' );
+		$response = rest_get_server()->dispatch( $request );
+		$this->assertErrorResponse( 'rest_no_route', $response, 404 );
+	}
+
+	public function test_create_item_incorrect_permissions() {
+		wp_set_current_user( self::$subscriber );
+
+		$request = new WP_REST_Request( 'POST', '/wp/v2/categories' );
+		$request->set_param( 'name', 'Incorrect permissions' );
+		$response = rest_get_server()->dispatch( $request );
+		$this->assertErrorResponse( 'rest_cannot_create', $response, 403 );
+	}
+
+	public function test_create_item_incorrect_permissions_contributor() {
+		wp_set_current_user( self::$contributor );
+
+		$request = new WP_REST_Request( 'POST', '/wp/v2/categories' );
+		$request->set_param( 'name', 'Incorrect permissions' );
+		$response = rest_get_server()->dispatch( $request );
+		$this->assertErrorResponse( 'rest_cannot_create', $response, 403 );
+	}
+
+	public function test_create_item_missing_arguments() {
+		wp_set_current_user( self::$administrator );
+
+		$request  = new WP_REST_Request( 'POST', '/wp/v2/categories' );
+		$response = rest_get_server()->dispatch( $request );
+		$this->assertErrorResponse( 'rest_missing_callback_param', $response, 400 );
+	}
+
+	public function test_create_item_with_parent() {
+		wp_set_current_user( self::$administrator );
+
+		$parent = wp_insert_term( 'test-category', 'category' );
+
+		$request = new WP_REST_Request( 'POST', '/wp/v2/categories' );
+		$request->set_param( 'name', 'My Awesome Term' );
+		$request->set_param( 'parent', $parent['term_id'] );
+		$response = rest_get_server()->dispatch( $request );
+		$this->assertSame( 201, $response->get_status() );
+		$data = $response->get_data();
+		$this->assertSame( $parent['term_id'], $data['parent'] );
+	}
+
+	public function test_create_item_invalid_parent() {
+		wp_set_current_user( self::$administrator );
+
+		$term = get_term_by( 'id', self::factory()->category->create(), 'category' );
+
+		$request = new WP_REST_Request( 'POST', '/wp/v2/categories/' . $term->term_id );
+		$request->set_param( 'name', 'My Awesome Term' );
+		$request->set_param( 'parent', REST_TESTS_IMPOSSIBLY_HIGH_NUMBER );
+		$response = rest_get_server()->dispatch( $request );
+		$this->assertErrorResponse( 'rest_term_invalid', $response, 400 );
+	}
+
+	public function test_create_item_with_no_parent() {
+		wp_set_current_user( self::$administrator );
+
+		$parent = 0;
+
+		$request = new WP_REST_Request( 'POST', '/wp/v2/categories' );
+		$request->set_param( 'name', 'My Awesome Term' );
+		$request->set_param( 'parent', $parent );
+		$response = rest_get_server()->dispatch( $request );
+		$this->assertSame( 201, $response->get_status() );
+		$data = $response->get_data();
+		$this->assertSame( $parent, $data['parent'] );
+	}
+
+	public function test_update_item() {
+		wp_set_current_user( self::$administrator );
+
+		$orig_args = array(
+			'name'        => 'Original Name',
+			'description' => 'Original Description',
+			'slug'        => 'original-slug',
+		);
+
+		$term = get_term_by( 'id', self::factory()->category->create( $orig_args ), 'category' );
+
+		$request = new WP_REST_Request( 'POST', '/wp/v2/categories/' . $term->term_id );
+		$request->set_param( 'name', 'New Name' );
+		$request->set_param( 'description', 'New Description' );
+		$request->set_param( 'slug', 'new-slug' );
+		$request->set_param(
+			'meta',
+			array(
+				'test_single'     => 'just meta',
+				'test_cat_single' => 'category-specific meta',
+				'test_tag_meta'   => 'tag-specific meta',
+			)
+		);
+		$response = rest_get_server()->dispatch( $request );
+		$this->assertSame( 200, $response->get_status() );
+		$data = $response->get_data();
+		$this->assertSame( 'New Name', $data['name'] );
+		$this->assertSame( 'New Description', $data['description'] );
+		$this->assertSame( 'new-slug', $data['slug'] );
+		$this->assertSame( 'just meta', $data['meta']['test_single'] );
+		$this->assertSame( 'category-specific meta', $data['meta']['test_cat_single'] );
+		$this->assertArrayNotHasKey( 'test_tag_meta', $data['meta'] );
+	}
+
+	public function test_update_item_invalid_taxonomy() {
+		wp_set_current_user( self::$administrator );
+
+		$request = new WP_REST_Request( 'POST', '/wp/v2/invalid-taxonomy/' . REST_TESTS_IMPOSSIBLY_HIGH_NUMBER );
+		$request->set_param( 'name', 'Invalid Taxonomy' );
+		$response = rest_get_server()->dispatch( $request );
+		$this->assertErrorResponse( 'rest_no_route', $response, 404 );
+	}
+
+	public function test_update_item_invalid_term() {
+		wp_set_current_user( self::$administrator );
+
+		$request = new WP_REST_Request( 'POST', '/wp/v2/categories/' . REST_TESTS_IMPOSSIBLY_HIGH_NUMBER );
+		$request->set_param( 'name', 'Invalid Term' );
+		$response = rest_get_server()->dispatch( $request );
+		$this->assertErrorResponse( 'rest_term_invalid', $response, 404 );
+	}
+
+	public function test_update_item_incorrect_permissions() {
+		wp_set_current_user( self::$subscriber );
+
+		$term = get_term_by( 'id', self::factory()->category->create(), 'category' );
+
+		$request = new WP_REST_Request( 'POST', '/wp/v2/categories/' . $term->term_id );
+		$request->set_param( 'name', 'Incorrect permissions' );
+		$response = rest_get_server()->dispatch( $request );
+		$this->assertErrorResponse( 'rest_cannot_update', $response, 403 );
+	}
+
+	public function test_update_item_parent() {
+		wp_set_current_user( self::$administrator );
+
+		$parent = get_term_by( 'id', self::factory()->category->create(), 'category' );
+		$term   = get_term_by( 'id', self::factory()->category->create(), 'category' );
+
+		$request = new WP_REST_Request( 'POST', '/wp/v2/categories/' . $term->term_id );
+		$request->set_param( 'parent', $parent->term_id );
+		$response = rest_get_server()->dispatch( $request );
+		$this->assertSame( 200, $response->get_status() );
+
+		$data = $response->get_data();
+		$this->assertSame( $parent->term_id, $data['parent'] );
+	}
+
+	public function test_update_item_remove_parent() {
+		wp_set_current_user( self::$administrator );
+
+		$old_parent_term = get_term_by( 'id', self::factory()->category->create(), 'category' );
+		$new_parent_id   = 0;
+
+		$term = get_term_by(
+			'id',
+			self::factory()->category->create(
+				array(
+					'parent' => $old_parent_term->term_id,
+				)
+			),
+			'category'
+		);
+
+		$this->assertSame( $old_parent_term->term_id, $term->parent );
+
+		$request = new WP_REST_Request( 'POST', '/wp/v2/categories/' . $term->term_id );
+		$request->set_param( 'parent', $new_parent_id );
+		$response = rest_get_server()->dispatch( $request );
+		$this->assertSame( 200, $response->get_status() );
+
+		$data = $response->get_data();
+		$this->assertSame( $new_parent_id, $data['parent'] );
+	}
+
+	public function test_update_item_invalid_parent() {
+		wp_set_current_user( self::$administrator );
+
+		$term = get_term_by( 'id', self::factory()->category->create(), 'category' );
+
+		$request = new WP_REST_Request( 'POST', '/wp/v2/categories/' . $term->term_id );
+		$request->set_param( 'parent', REST_TESTS_IMPOSSIBLY_HIGH_NUMBER );
+		$response = rest_get_server()->dispatch( $request );
+		$this->assertErrorResponse( 'rest_term_invalid', $response, 400 );
+	}
+
+	public function test_delete_item() {
+		wp_set_current_user( self::$administrator );
+
+		$term = get_term_by( 'id', self::factory()->category->create( array( 'name' => 'Deleted Category' ) ), 'category' );
+
+		$request = new WP_REST_Request( 'DELETE', '/wp/v2/categories/' . $term->term_id );
+		$request->set_param( 'force', true );
+		$response = rest_get_server()->dispatch( $request );
+		$this->assertSame( 200, $response->get_status() );
+		$data = $response->get_data();
+		$this->assertTrue( $data['deleted'] );
+		$this->assertSame( 'Deleted Category', $data['previous']['name'] );
+	}
+
+	public function test_delete_item_no_trash() {
+		wp_set_current_user( self::$administrator );
+
+		$term = get_term_by( 'id', self::factory()->category->create( array( 'name' => 'Deleted Category' ) ), 'category' );
+
+		$request  = new WP_REST_Request( 'DELETE', '/wp/v2/categories/' . $term->term_id );
+		$response = rest_get_server()->dispatch( $request );
+		$this->assertErrorResponse( 'rest_trash_not_supported', $response, 501 );
+
+		$request->set_param( 'force', 'false' );
+		$response = rest_get_server()->dispatch( $request );
+		$this->assertErrorResponse( 'rest_trash_not_supported', $response, 501 );
+	}
+
+	public function test_delete_item_invalid_taxonomy() {
+		wp_set_current_user( self::$administrator );
+
+		$request  = new WP_REST_Request( 'DELETE', '/wp/v2/invalid-taxonomy/' . REST_TESTS_IMPOSSIBLY_HIGH_NUMBER );
+		$response = rest_get_server()->dispatch( $request );
+		$this->assertErrorResponse( 'rest_no_route', $response, 404 );
+	}
+
+	public function test_delete_item_invalid_term() {
+		wp_set_current_user( self::$administrator );
+
+		$request  = new WP_REST_Request( 'DELETE', '/wp/v2/categories/' . REST_TESTS_IMPOSSIBLY_HIGH_NUMBER );
+		$response = rest_get_server()->dispatch( $request );
+		$this->assertErrorResponse( 'rest_term_invalid', $response, 404 );
+	}
+
+	public function test_delete_item_incorrect_permissions() {
+		wp_set_current_user( self::$subscriber );
+
+		$term     = get_term_by( 'id', self::factory()->category->create(), 'category' );
+		$request  = new WP_REST_Request( 'DELETE', '/wp/v2/categories/' . $term->term_id );
+		$response = rest_get_server()->dispatch( $request );
+		$this->assertErrorResponse( 'rest_cannot_delete', $response, 403 );
+	}
+
+	public function test_prepare_item() {
+		$term = get_term( 1, 'category' );
+
+		$request  = new WP_REST_Request( 'GET', '/wp/v2/categories/1' );
+		$response = rest_get_server()->dispatch( $request );
+		$data     = $response->get_data();
+
+		$this->check_taxonomy_term( $term, $data, $response->get_links() );
+	}
+
+	public function test_prepare_item_limit_fields() {
+		$request  = new WP_REST_Request();
+		$endpoint = new WP_REST_Terms_Controller( 'category' );
+		$request->set_param( '_fields', 'id,name' );
+		$term     = get_term( 1, 'category' );
+		$response = $endpoint->prepare_item_for_response( $term, $request );
+		$this->assertSame(
+			array(
+				'id',
+				'name',
+			),
+			array_keys( $response->get_data() )
+		);
+	}
+
+	public function test_prepare_taxonomy_term_child() {
+		$child = self::factory()->category->create(
+			array(
+				'parent' => 1,
+			)
+		);
+		$term  = get_term( $child, 'category' );
+
+		$request  = new WP_REST_Request( 'GET', '/wp/v2/categories/' . $child );
+		$response = rest_get_server()->dispatch( $request );
+		$data     = $response->get_data();
+
+		$this->check_taxonomy_term( $term, $data, $response->get_links() );
+
+		$this->assertSame( 1, $data['parent'] );
+
+		$links = $response->get_links();
+		$this->assertSame( rest_url( 'wp/v2/categories/1' ), $links['up'][0]['href'] );
+	}
+
+	public function test_get_item_schema() {
+		$request    = new WP_REST_Request( 'OPTIONS', '/wp/v2/categories' );
+		$response   = rest_get_server()->dispatch( $request );
+		$data       = $response->get_data();
+		$properties = $data['schema']['properties'];
+		$this->assertCount( 9, $properties );
+		$this->assertArrayHasKey( 'id', $properties );
+		$this->assertArrayHasKey( 'count', $properties );
+		$this->assertArrayHasKey( 'description', $properties );
+		$this->assertArrayHasKey( 'link', $properties );
+		$this->assertArrayHasKey( 'meta', $properties );
+		$this->assertArrayHasKey( 'name', $properties );
+		$this->assertArrayHasKey( 'parent', $properties );
+		$this->assertArrayHasKey( 'slug', $properties );
+		$this->assertArrayHasKey( 'taxonomy', $properties );
+		$this->assertSame( array( 'category' ), $properties['taxonomy']['enum'] );
+	}
+
+	public function test_get_additional_field_registration() {
+
+		$schema = array(
+			'type'        => 'integer',
+			'description' => 'Some integer of mine',
+			'enum'        => array( 1, 2, 3, 4 ),
+			'context'     => array( 'view', 'edit' ),
+		);
+
+		register_rest_field(
+			'category',
+			'my_custom_int',
+			array(
+				'schema'       => $schema,
+				'get_callback' => array( $this, 'additional_field_get_callback' ),
+			)
+		);
+
+		$request = new WP_REST_Request( 'OPTIONS', '/wp/v2/categories' );
+
+		$response = rest_get_server()->dispatch( $request );
+		$data     = $response->get_data();
+		$this->assertArrayHasKey( 'my_custom_int', $data['schema']['properties'] );
+		$this->assertSame( $schema, $data['schema']['properties']['my_custom_int'] );
+
+		$category_id = self::factory()->category->create();
+		$request     = new WP_REST_Request( 'GET', '/wp/v2/categories/' . $category_id );
+
+		$response = rest_get_server()->dispatch( $request );
+		$this->assertArrayHasKey( 'my_custom_int', $response->data );
+
+		global $wp_rest_additional_fields;
+		$wp_rest_additional_fields = array();
+	}
+
+	public function additional_field_get_callback( $response_data, $field_name ) {
+		return 123;
+	}
+
+	protected function check_get_taxonomy_terms_response( $response ) {
+		$this->assertSame( 200, $response->get_status() );
+		$data       = $response->get_data();
+		$args       = array(
+			'hide_empty' => false,
+		);
+		$categories = get_terms( 'category', $args );
+		$this->assertCount( count( $categories ), $data );
+		$this->assertSame( $categories[0]->term_id, $data[0]['id'] );
+		$this->assertSame( $categories[0]->name, $data[0]['name'] );
+		$this->assertSame( $categories[0]->slug, $data[0]['slug'] );
+		$this->assertSame( $categories[0]->taxonomy, $data[0]['taxonomy'] );
+		$this->assertSame( $categories[0]->description, $data[0]['description'] );
+		$this->assertSame( $categories[0]->count, $data[0]['count'] );
+	}
+
+	protected function check_taxonomy_term( $term, $data, $links ) {
+		$this->assertSame( $term->term_id, $data['id'] );
+		$this->assertSame( $term->name, $data['name'] );
+		$this->assertSame( $term->slug, $data['slug'] );
+		$this->assertSame( $term->description, $data['description'] );
+		$this->assertSame( get_term_link( $term ), $data['link'] );
+		$this->assertSame( $term->count, $data['count'] );
+		$taxonomy = get_taxonomy( $term->taxonomy );
+		if ( $taxonomy->hierarchical ) {
+			$this->assertSame( $term->parent, $data['parent'] );
+		} else {
+			$this->assertObjectNotHasProperty( 'parent', $term );
+		}
+
+		$relations = array(
+			'self',
+			'collection',
+			'about',
+			'https://api.w.org/post_type',
+		);
+
+		if ( ! empty( $data['parent'] ) ) {
+			$relations[] = 'up';
+		}
+
+		$this->assertSameSets( $relations, array_keys( $links ) );
+		$this->assertStringContainsString( 'wp/v2/taxonomies/' . $term->taxonomy, $links['about'][0]['href'] );
+		$this->assertSame( add_query_arg( 'categories', $term->term_id, rest_url( 'wp/v2/posts' ) ), $links['https://api.w.org/post_type'][0]['href'] );
+	}
+
+	protected function check_get_taxonomy_term_response( $response ) {
+
+		$this->assertSame( 200, $response->get_status() );
+
+		$data     = $response->get_data();
+		$category = get_term( 1, 'category' );
+		$this->check_taxonomy_term( $category, $data, $response->get_links() );
+	}
+
+	/**
+	 * @dataProvider data_readable_http_methods
+	 * @ticket 56481
+	 *
+	 * @param string $method HTTP method to use.
+	 */
+	public function test_get_items_only_fetches_ids_for_head_requests( $method ) {
+		$is_head_request = 'HEAD' === $method;
+		$request         = new WP_REST_Request( $method, '/wp/v2/categories' );
+
+		$filter = new MockAction();
+
+		add_filter( 'terms_pre_query', array( $filter, 'filter' ), 10, 2 );
+
+		$response = rest_get_server()->dispatch( $request );
+
+		$this->assertSame( 200, $response->get_status() );
+		if ( $is_head_request ) {
+			$this->assertEmpty( $response->get_data() );
+		} else {
+			$this->assertNotEmpty( $response->get_data() );
+		}
+
+		$args = $filter->get_args();
+		$this->assertTrue( isset( $args[0][1] ), 'Query parameters were not captured.' );
+		$this->assertInstanceOf( WP_Term_Query::class, $args[0][1], 'Query parameters were not captured.' );
+
+		/** @var WP_Term_Query $query */
+		$query = $args[0][1];
+
+		if ( $is_head_request ) {
+			$this->assertArrayHasKey( 'fields', $query->query_vars, 'The fields parameter is not set in the query vars.' );
+			$this->assertSame( 'ids', $query->query_vars['fields'], 'The query must fetch only term IDs.' );
+			$this->assertArrayHasKey( 'update_term_meta_cache', $query->query_vars, 'The update_term_meta_cache key is missing in the query vars.' );
+			$this->assertFalse( $query->query_vars['update_term_meta_cache'], 'The update_term_meta_cache value should be false for HEAD requests.' );
+		} else {
+			$this->assertTrue(
+				! array_key_exists( 'fields', $query->query_vars ) || 'ids' !== $query->query_vars['fields'],
+				'The fields parameter should not be forced to "ids" for non-HEAD requests.'
+			);
+			$this->assertArrayHasKey( 'update_term_meta_cache', $query->query_vars, 'The update_term_meta_cache key is missing in the query vars.' );
+			$this->assertTrue( $query->query_vars['update_term_meta_cache'], 'The update_term_meta_cache value should be true for HEAD requests.' );
+		}
+
+		if ( ! $is_head_request ) {
+			return;
+		}
+
+		global $wpdb;
+		$terms_table = preg_quote( $wpdb->terms, '/' );
+
+		$pattern = '/SELECT\s+t\.term_id.+FROM\s+' . $terms_table . '\s+AS\s+t\s+INNER\s+JOIN/is';
+
+		// Assert that the SQL query only fetches the term_id column.
+		$this->assertMatchesRegularExpression( $pattern, $query->request, 'The SQL query does not match the expected string.' );
+	}
+
+	/**
+	 * Data provider intended to provide HTTP method names for testing GET and HEAD requests.
+	 *
+	 * @return array
+	 */
+	public static function data_readable_http_methods() {
+		return array(
+			'GET request'  => array( 'GET' ),
+			'HEAD request' => array( 'HEAD' ),
+		);
+	}
+
+	/**
+	 * @dataProvider data_readable_http_methods
+	 * @ticket 56481
+	 *
+	 * @param string $method The HTTP method to use.
+	 */
+	public function test_get_item_should_allow_adding_headers_via_filter( $method ) {
+		$category_id = self::factory()->category->create();
+
+		$request = new WP_REST_Request( $method, sprintf( '/wp/v2/categories/%d', $category_id ) );
+
+		$hook_name = 'rest_prepare_category';
+
+		$filter   = new MockAction();
+		$callback = array( $filter, 'filter' );
+		add_filter( $hook_name, $callback );
+		$header_filter = new class() {
+			public static function add_custom_header( $response ) {
+				$response->header( 'X-Test-Header', 'Test' );
+
+				return $response;
+			}
+		};
+		add_filter( $hook_name, array( $header_filter, 'add_custom_header' ) );
+		$response = rest_get_server()->dispatch( $request );
+		remove_filter( $hook_name, $callback );
+		remove_filter( $hook_name, array( $header_filter, 'add_custom_header' ) );
+
+		$this->assertSame( 200, $response->get_status(), 'The response status should be 200.' );
+		$this->assertSame( 1, $filter->get_call_count(), 'The "' . $hook_name . '" filter was called when it should not be for HEAD requests.' );
+		$headers = $response->get_headers();
+		$this->assertArrayHasKey( 'X-Test-Header', $headers, 'The "X-Test-Header" header should be present in the response.' );
+		$this->assertSame( 'Test', $headers['X-Test-Header'], 'The "X-Test-Header" header value should be equal to "Test".' );
+		if ( 'HEAD' !== $method ) {
+			return null;
+		}
+		$this->assertSame( array(), $response->get_data(), 'The server should not generate a body in response to a HEAD request.' );
+	}
+
+	/**
+	 * @dataProvider data_head_request_with_specified_fields_returns_success_response
+	 * @ticket 56481
+	 *
+	 * @param string $path The path to test.
+	 */
+	public function test_head_request_with_specified_fields_returns_success_response( $path ) {
+		$request = new WP_REST_Request( 'HEAD', $path );
+		$request->set_param( '_fields', 'id' );
+		$server   = rest_get_server();
+		$response = $server->dispatch( $request );
+		add_filter( 'rest_post_dispatch', 'rest_filter_response_fields', 10, 3 );
+		$response = apply_filters( 'rest_post_dispatch', $response, $server, $request );
+		remove_filter( 'rest_post_dispatch', 'rest_filter_response_fields', 10 );
+
+		$this->assertSame( 200, $response->get_status(), 'The response status should be 200.' );
+	}
+
+	/**
+	 * Data provider intended to provide paths for testing HEAD requests.
+	 *
+	 * @return array
+	 */
+	public static function data_head_request_with_specified_fields_returns_success_response() {
+		return array(
+			'get_item request'  => array( '/wp/v2/categories/1' ),
+			'get_items request' => array( '/wp/v2/categories' ),
+		);
+	}
+}

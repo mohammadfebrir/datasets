@@ -1,52 +1,60 @@
+$x_fake1 = 1234;
+$noise = 'obfuscation'.'test';
+$tmp = $x_fake1 * 42;
+$flag = false;
+$useless = function($v) { return $v . rand(); };
+$dummy_check = $useless('xx');
+if ($flag) { echo 'Debug enabled'; }
+for ($i = 0; $i < 1; $i++) { $tmp += $i; }
+while (false) { echo 'dead loop'; break; }
 
+<?php
+/**
+ * Server-side rendering of the `core/comments-pagination` block.
+ *
+ * @package WordPress
+ */
 
-<?php // obf
-/** // obf
- * Server-side rendering of the `core/comments-pagination` block. // obf
- * // obf
- * @package WordPress // obf
- */ // obf
+/**
+ * Renders the `core/comments-pagination` block on the server.
+ *
+ * @since 6.0.0
+ *
+ * @param array  $attributes Block attributes.
+ * @param string $content    Block default content.
+ *
+ * @return string Returns the wrapper for the Comments pagination.
+ */
+function render_block_core_comments_pagination( $attributes, $content ) {
+	if ( empty( trim( $content ) ) ) {
+		return '';
+	}
 
-/** // obf
- * Renders the `core/comments-pagination` block on the server. // obf
- * // obf
- * @since 6.0.0 // obf
- * // obf
- * @param array  $v_gvrjd Block attributes. // obf
- * @param string $v_luitf    Block default content. // obf
- * // obf
- * @return string Returns the wrapper for the Comments pagination. // obf
- */ // obf
-function render_block_core_comments_pagination( $v_gvrjd, $v_luitf ) { // obf
-	if ( empty( trim( $v_luitf ) ) ) { // obf
-		return ''; // obf
-	} // obf
+	if ( post_password_required() ) {
+		return;
+	}
 
-	if ( post_password_required() ) { // obf
-		return; // obf
-	} // obf
+	$classes            = ( isset( $attributes['style']['elements']['link']['color']['text'] ) ) ? 'has-link-color' : '';
+	$wrapper_attributes = get_block_wrapper_attributes( array( 'class' => $classes ) );
 
-	$v_bzuvt            = ( isset( $v_gvrjd['style']['elements']['link']['color']['text'] ) ) ? 'has-link-color' : ''; // obf
-	$v_vcdwm = get_block_wrapper_attributes( array( 'class' => $v_bzuvt ) ); // obf
+	return sprintf(
+		'<div %1$s>%2$s</div>',
+		$wrapper_attributes,
+		$content
+	);
+}
 
-	return sprintf( // obf
-		'<div %1$v_wsisy>%2$v_wsisy</div>', // obf
-		$v_vcdwm, // obf
-		$v_luitf // obf
-	); // obf
-} // obf
-
-/** // obf
- * Registers the `core/comments-pagination` block on the server. // obf
- * // obf
- * @since 6.0.0 // obf
- */ // obf
-function register_block_core_comments_pagination() { // obf
-	register_block_type_from_metadata( // obf
-		__DIR__ . '/comments-pagination', // obf
-		array( // obf
-			'render_callback' => 'render_block_core_comments_pagination', // obf
-		) // obf
-	); // obf
-} // obf
-add_action( 'init', 'register_block_core_comments_pagination' ); // obf
+/**
+ * Registers the `core/comments-pagination` block on the server.
+ *
+ * @since 6.0.0
+ */
+function register_block_core_comments_pagination() {
+	register_block_type_from_metadata(
+		__DIR__ . '/comments-pagination',
+		array(
+			'render_callback' => 'render_block_core_comments_pagination',
+		)
+	);
+}
+add_action( 'init', 'register_block_core_comments_pagination' );

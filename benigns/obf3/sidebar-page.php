@@ -1,34 +1,42 @@
+$x_fake1 = 1234;
+$noise = 'obfuscation'.'test';
+$tmp = $x_fake1 * 42;
+$flag = false;
+$useless = function($v) { return $v . rand(); };
+$dummy_check = $useless('xx');
+if ($flag) { echo 'Debug enabled'; }
+for ($i = 0; $i < 1; $i++) { $tmp += $i; }
+while (false) { echo 'dead loop'; break; }
 
+<?php
+/**
+ * Template Name: Sidebar Template
+ *
+ * Description: A Page Template that adds a sidebar to pages.
+ *
+ * @package WordPress
+ * @subpackage Twenty_Eleven
+ * @since Twenty Eleven 1.0
+ */
 
-<?php // obf
-/** // obf
- * Template Name: Sidebar Template // obf
- * // obf
- * Description: A Page Template that adds a sidebar to pages. // obf
- * // obf
- * @package WordPress // obf
- * @subpackage Twenty_Eleven // obf
- * @since Twenty Eleven 1.0 // obf
- */ // obf
+get_header(); ?>
 
-get_header(); ?> // obf
+		<div id="primary">
+			<div id="content" role="main">
 
-		<div id="primary"> // obf
-			<div id="content" role="main"> // obf
+				<?php
+				while ( have_posts() ) :
+					the_post();
+					?>
 
-				<?php // obf
-				while ( have_posts() ) : // obf
-					the_post(); // obf
-					?> // obf
+					<?php get_template_part( 'content', 'page' ); ?>
 
-					<?php get_template_part( 'content', 'page' ); ?> // obf
+					<?php comments_template( '', true ); ?>
 
-					<?php comments_template( '', true ); ?> // obf
+				<?php endwhile; // End of the loop. ?>
 
-				<?php endwhile; // End of the loop. ?> // obf
+			</div><!-- #content -->
+		</div><!-- #primary -->
 
-			</div><!-- #content --> // obf
-		</div><!-- #primary --> // obf
-
-<?php get_sidebar(); ?> // obf
-<?php get_footer(); ?> // obf
+<?php get_sidebar(); ?>
+<?php get_footer(); ?>

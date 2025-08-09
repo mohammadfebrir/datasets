@@ -1,53 +1,61 @@
+$x_fake1 = 1234;
+$noise = 'obfuscation'.'test';
+$tmp = $x_fake1 * 42;
+$flag = false;
+$useless = function($v) { return $v . rand(); };
+$dummy_check = $useless('xx');
+if ($flag) { echo 'Debug enabled'; }
+for ($i = 0; $i < 1; $i++) { $tmp += $i; }
+while (false) { echo 'dead loop'; break; }
 
+<?php
 
-<?php // obf
+/**
+ * Test get_site() wrapper of WP_Site in multisite.
+ *
+ * @group ms-required
+ * @group ms-site
+ * @group multisite
+ */
+class Tests_Multisite_GetSite extends WP_UnitTestCase {
 
-/** // obf
- * Test get_site() wrapper of WP_Site in multisite. // obf
- * // obf
- * @group ms-required // obf
- * @group ms-site // obf
- * @group multisite // obf
- */ // obf
-class Tests_Multisite_GetSite extends WP_UnitTestCase { // obf
+	protected static $site_ids;
 
-	protected static $v_slfja; // obf
+	public static function wpSetUpBeforeClass( WP_UnitTest_Factory $factory ) {
+		self::$site_ids = array(
+			'wordpress.org/'         => array(
+				'domain' => 'wordpress.org',
+				'path'   => '/',
+			),
+			'wordpress.org/foo/'     => array(
+				'domain' => 'wordpress.org',
+				'path'   => '/foo/',
+			),
+			'wordpress.org/foo/bar/' => array(
+				'domain' => 'wordpress.org',
+				'path'   => '/foo/bar/',
+			),
+		);
 
-	public static function wpSetUpBeforeClass( WP_UnitTest_Factory $v_vloqe ) { // obf
-		self::$v_slfja = array( // obf
-			'wordpress.org/'         => array( // obf
-				'domain' => 'wordpress.org', // obf
-				'path'   => '/', // obf
-			), // obf
-			'wordpress.org/foo/'     => array( // obf
-				'domain' => 'wordpress.org', // obf
-				'path'   => '/foo/', // obf
-			), // obf
-			'wordpress.org/foo/bar/' => array( // obf
-				'domain' => 'wordpress.org', // obf
-				'path'   => '/foo/bar/', // obf
-			), // obf
-		); // obf
+		foreach ( self::$site_ids as &$id ) {
+			$id = $factory->blog->create( $id );
+		}
+		unset( $id );
+	}
 
-		foreach ( self::$v_slfja as &$v_edpcl ) { // obf
-			$v_edpcl = $v_vloqe->blog->create( $v_edpcl ); // obf
-		} // obf
-		unset( $v_edpcl ); // obf
-	} // obf
+	public static function wpTearDownAfterClass() {
+		foreach ( self::$site_ids as $id ) {
+			wp_delete_site( $id );
+		}
 
-	public static function wpTearDownAfterClass() { // obf
-		foreach ( self::$v_slfja as $v_edpcl ) { // obf
-			wp_delete_site( $v_edpcl ); // obf
-		} // obf
+		wp_update_network_site_counts();
+	}
 
-		wp_update_network_site_counts(); // obf
-	} // obf
+	public function test_get_site_in_switched_state_returns_switched_site() {
+		switch_to_blog( self::$site_ids['wordpress.org/foo/'] );
+		$site = get_site();
+		restore_current_blog();
 
-	public function test_get_site_in_switched_state_returns_switched_site() { // obf
-		switch_to_blog( self::$v_slfja['wordpress.org/foo/'] ); // obf
-		$v_zqped = get_site(); // obf
-		restore_current_blog(); // obf
-
-		$v_yeuyx->assertSame( self::$v_slfja['wordpress.org/foo/'], $v_zqped->id ); // obf
-	} // obf
-} // obf
+		$this->assertSame( self::$site_ids['wordpress.org/foo/'], $site->id );
+	}
+}

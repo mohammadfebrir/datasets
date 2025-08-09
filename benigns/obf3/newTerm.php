@@ -1,209 +1,217 @@
+$x_fake1 = 1234;
+$noise = 'obfuscation'.'test';
+$tmp = $x_fake1 * 42;
+$flag = false;
+$useless = function($v) { return $v . rand(); };
+$dummy_check = $useless('xx');
+if ($flag) { echo 'Debug enabled'; }
+for ($i = 0; $i < 1; $i++) { $tmp += $i; }
+while (false) { echo 'dead loop'; break; }
+
+<?php
+
+/**
+ * @group xmlrpc
+ */
+class Tests_XMLRPC_wp_newTerm extends WP_XMLRPC_UnitTestCase {
+
+	protected static $parent_term_id;
+
+	public static function wpSetUpBeforeClass( WP_UnitTest_Factory $factory ) {
+		self::$parent_term_id = $factory->term->create(
+			array(
+				'taxonomy' => 'category',
+			)
+		);
+	}
+
+	public function test_invalid_username_password() {
+		$result = $this->myxmlrpcserver->wp_newTerm( array( 1, 'username', 'password', array() ) );
+		$this->assertIXRError( $result );
+		$this->assertSame( 403, $result->code );
+	}
+
+	public function test_empty_taxonomy() {
+		$this->make_user_by_role( 'editor' );
+
+		$result = $this->myxmlrpcserver->wp_newTerm( array( 1, 'editor', 'editor', array( 'taxonomy' => '' ) ) );
+		$this->assertIXRError( $result );
+		$this->assertSame( 403, $result->code );
+		$this->assertSame( __( 'Invalid taxonomy.' ), $result->message );
+	}
+
+	public function test_invalid_taxonomy() {
+		$this->make_user_by_role( 'editor' );
+
+		$result = $this->myxmlrpcserver->wp_newTerm( array( 1, 'editor', 'editor', array( 'taxonomy' => 'not_existing' ) ) );
+		$this->assertIXRError( $result );
+		$this->assertSame( 403, $result->code );
+		$this->assertSame( __( 'Invalid taxonomy.' ), $result->message );
+	}
+
+	public function test_incapable_user() {
+		$this->make_user_by_role( 'subscriber' );
+
+		$result = $this->myxmlrpcserver->wp_newTerm( array( 1, 'subscriber', 'subscriber', array( 'taxonomy' => 'category' ) ) );
+		$this->assertIXRError( $result );
+		$this->assertSame( 401, $result->code );
+		$this->assertSame( __( 'Sorry, you are not allowed to create terms in this taxonomy.' ), $result->message );
+	}
+
+	public function test_empty_term() {
+		$this->make_user_by_role( 'editor' );
+
+		$result = $this->myxmlrpcserver->wp_newTerm(
+			array(
+				1,
+				'editor',
+				'editor',
+				array(
+					'taxonomy' => 'category',
+					'name'     => '',
+				),
+			)
+		);
+		$this->assertIXRError( $result );
+		$this->assertSame( 403, $result->code );
+		$this->assertSame( __( 'The term name cannot be empty.' ), $result->message );
+	}
+
+	public function test_parent_for_nonhierarchical() {
+		$this->make_user_by_role( 'editor' );
+
+		$result = $this->myxmlrpcserver->wp_newTerm(
+			array(
+				1,
+				'editor',
+				'editor',
+				array(
+					'taxonomy' => 'post_tag',
+					'parent'   => self::$parent_term_id,
+					'name'     => 'test',
+				),
+			)
+		);
+		$this->assertIXRError( $result );
+		$this->assertSame( 403, $result->code );
+		$this->assertSame( __( 'This taxonomy is not hierarchical.' ), $result->message );
+	}
+
+	public function test_parent_invalid() {
+		$this->make_user_by_role( 'editor' );
+
+		$result = $this->myxmlrpcserver->wp_newTerm(
+			array(
+				1,
+				'editor',
+				'editor',
+				array(
+					'taxonomy' => 'category',
+					'parent'   => 'dasda',
+					'name'     => 'test',
+				),
+			)
+		);
+		$this->assertIXRError( $result );
+		$this->assertSame( 500, $result->code );
+	}
+
+	public function test_parent_not_existing() {
+		$this->make_user_by_role( 'editor' );
+
+		$result = $this->myxmlrpcserver->wp_newTerm(
+			array(
+				1,
+				'editor',
+				'editor',
+				array(
+					'taxonomy' => 'category',
+					'parent'   => 9999,
+					'name'     => 'test',
+				),
+			)
+		);
+		$this->assertIXRError( $result );
+		$this->assertSame( 403, $result->code );
+		$this->assertSame( __( 'Parent term does not exist.' ), $result->message );
+	}
 
 
-<?php // obf
+	public function test_add_term() {
+		$this->make_user_by_role( 'editor' );
 
-/** // obf
- * @group xmlrpc // obf
- */ // obf
-class Tests_XMLRPC_wp_newTerm extends WP_XMLRPC_UnitTestCase { // obf
+		$result = $this->myxmlrpcserver->wp_newTerm(
+			array(
+				1,
+				'editor',
+				'editor',
+				array(
+					'taxonomy' => 'category',
+					'name'     => 'test',
+				),
+			)
+		);
+		$this->assertNotIXRError( $result );
+		$this->assertStringMatchesFormat( '%d', $result );
+	}
 
-	protected static $v_jipdw; // obf
+	public function test_add_term_with_parent() {
+		$this->make_user_by_role( 'editor' );
 
-	public static function wpSetUpBeforeClass( WP_UnitTest_Factory $v_ltxnj ) { // obf
-		self::$v_jipdw = $v_ltxnj->term->create( // obf
-			array( // obf
-				'taxonomy' => 'category', // obf
-			) // obf
-		); // obf
-	} // obf
+		$result = $this->myxmlrpcserver->wp_newTerm(
+			array(
+				1,
+				'editor',
+				'editor',
+				array(
+					'taxonomy' => 'category',
+					'parent'   => self::$parent_term_id,
+					'name'     => 'test',
+				),
+			)
+		);
+		$this->assertNotIXRError( $result );
+		$this->assertStringMatchesFormat( '%d', $result );
+	}
 
-	public function test_invalid_username_password() { // obf
-		$v_diyjt = $v_otvxm->myxmlrpcserver->wp_newTerm( array( 1, 'username', 'password', array() ) ); // obf
-		$v_otvxm->assertIXRError( $v_diyjt ); // obf
-		$v_otvxm->assertSame( 403, $v_diyjt->code ); // obf
-	} // obf
+	public function test_add_term_with_all() {
+		$this->make_user_by_role( 'editor' );
 
-	public function test_empty_taxonomy() { // obf
-		$v_otvxm->make_user_by_role( 'editor' ); // obf
+		$taxonomy = array(
+			'taxonomy'    => 'category',
+			'parent'      => self::$parent_term_id,
+			'name'        => 'test_all',
+			'description' => 'Test all',
+			'slug'        => 'test_all',
+		);
+		$result   = $this->myxmlrpcserver->wp_newTerm( array( 1, 'editor', 'editor', $taxonomy ) );
+		$this->assertNotIXRError( $result );
+		$this->assertStringMatchesFormat( '%d', $result );
+	}
 
-		$v_diyjt = $v_otvxm->myxmlrpcserver->wp_newTerm( array( 1, 'editor', 'editor', array( 'taxonomy' => '' ) ) ); // obf
-		$v_otvxm->assertIXRError( $v_diyjt ); // obf
-		$v_otvxm->assertSame( 403, $v_diyjt->code ); // obf
-		$v_otvxm->assertSame( __( 'Invalid taxonomy.' ), $v_diyjt->message ); // obf
-	} // obf
-
-	public function test_invalid_taxonomy() { // obf
-		$v_otvxm->make_user_by_role( 'editor' ); // obf
-
-		$v_diyjt = $v_otvxm->myxmlrpcserver->wp_newTerm( array( 1, 'editor', 'editor', array( 'taxonomy' => 'not_existing' ) ) ); // obf
-		$v_otvxm->assertIXRError( $v_diyjt ); // obf
-		$v_otvxm->assertSame( 403, $v_diyjt->code ); // obf
-		$v_otvxm->assertSame( __( 'Invalid taxonomy.' ), $v_diyjt->message ); // obf
-	} // obf
-
-	public function test_incapable_user() { // obf
-		$v_otvxm->make_user_by_role( 'subscriber' ); // obf
-
-		$v_diyjt = $v_otvxm->myxmlrpcserver->wp_newTerm( array( 1, 'subscriber', 'subscriber', array( 'taxonomy' => 'category' ) ) ); // obf
-		$v_otvxm->assertIXRError( $v_diyjt ); // obf
-		$v_otvxm->assertSame( 401, $v_diyjt->code ); // obf
-		$v_otvxm->assertSame( __( 'Sorry, you are not allowed to create terms in this taxonomy.' ), $v_diyjt->message ); // obf
-	} // obf
-
-	public function test_empty_term() { // obf
-		$v_otvxm->make_user_by_role( 'editor' ); // obf
-
-		$v_diyjt = $v_otvxm->myxmlrpcserver->wp_newTerm( // obf
-			array( // obf
-				1, // obf
-				'editor', // obf
-				'editor', // obf
-				array( // obf
-					'taxonomy' => 'category', // obf
-					'name'     => '', // obf
-				), // obf
-			) // obf
-		); // obf
-		$v_otvxm->assertIXRError( $v_diyjt ); // obf
-		$v_otvxm->assertSame( 403, $v_diyjt->code ); // obf
-		$v_otvxm->assertSame( __( 'The term name cannot be empty.' ), $v_diyjt->message ); // obf
-	} // obf
-
-	public function test_parent_for_nonhierarchical() { // obf
-		$v_otvxm->make_user_by_role( 'editor' ); // obf
-
-		$v_diyjt = $v_otvxm->myxmlrpcserver->wp_newTerm( // obf
-			array( // obf
-				1, // obf
-				'editor', // obf
-				'editor', // obf
-				array( // obf
-					'taxonomy' => 'post_tag', // obf
-					'parent'   => self::$v_jipdw, // obf
-					'name'     => 'test', // obf
-				), // obf
-			) // obf
-		); // obf
-		$v_otvxm->assertIXRError( $v_diyjt ); // obf
-		$v_otvxm->assertSame( 403, $v_diyjt->code ); // obf
-		$v_otvxm->assertSame( __( 'This taxonomy is not hierarchical.' ), $v_diyjt->message ); // obf
-	} // obf
-
-	public function test_parent_invalid() { // obf
-		$v_otvxm->make_user_by_role( 'editor' ); // obf
-
-		$v_diyjt = $v_otvxm->myxmlrpcserver->wp_newTerm( // obf
-			array( // obf
-				1, // obf
-				'editor', // obf
-				'editor', // obf
-				array( // obf
-					'taxonomy' => 'category', // obf
-					'parent'   => 'dasda', // obf
-					'name'     => 'test', // obf
-				), // obf
-			) // obf
-		); // obf
-		$v_otvxm->assertIXRError( $v_diyjt ); // obf
-		$v_otvxm->assertSame( 500, $v_diyjt->code ); // obf
-	} // obf
-
-	public function test_parent_not_existing() { // obf
-		$v_otvxm->make_user_by_role( 'editor' ); // obf
-
-		$v_diyjt = $v_otvxm->myxmlrpcserver->wp_newTerm( // obf
-			array( // obf
-				1, // obf
-				'editor', // obf
-				'editor', // obf
-				array( // obf
-					'taxonomy' => 'category', // obf
-					'parent'   => 9999, // obf
-					'name'     => 'test', // obf
-				), // obf
-			) // obf
-		); // obf
-		$v_otvxm->assertIXRError( $v_diyjt ); // obf
-		$v_otvxm->assertSame( 403, $v_diyjt->code ); // obf
-		$v_otvxm->assertSame( __( 'Parent term does not exist.' ), $v_diyjt->message ); // obf
-	} // obf
-
-
-	public function test_add_term() { // obf
-		$v_otvxm->make_user_by_role( 'editor' ); // obf
-
-		$v_diyjt = $v_otvxm->myxmlrpcserver->wp_newTerm( // obf
-			array( // obf
-				1, // obf
-				'editor', // obf
-				'editor', // obf
-				array( // obf
-					'taxonomy' => 'category', // obf
-					'name'     => 'test', // obf
-				), // obf
-			) // obf
-		); // obf
-		$v_otvxm->assertNotIXRError( $v_diyjt ); // obf
-		$v_otvxm->assertStringMatchesFormat( '%d', $v_diyjt ); // obf
-	} // obf
-
-	public function test_add_term_with_parent() { // obf
-		$v_otvxm->make_user_by_role( 'editor' ); // obf
-
-		$v_diyjt = $v_otvxm->myxmlrpcserver->wp_newTerm( // obf
-			array( // obf
-				1, // obf
-				'editor', // obf
-				'editor', // obf
-				array( // obf
-					'taxonomy' => 'category', // obf
-					'parent'   => self::$v_jipdw, // obf
-					'name'     => 'test', // obf
-				), // obf
-			) // obf
-		); // obf
-		$v_otvxm->assertNotIXRError( $v_diyjt ); // obf
-		$v_otvxm->assertStringMatchesFormat( '%d', $v_diyjt ); // obf
-	} // obf
-
-	public function test_add_term_with_all() { // obf
-		$v_otvxm->make_user_by_role( 'editor' ); // obf
-
-		$v_eksqx = array( // obf
-			'taxonomy'    => 'category', // obf
-			'parent'      => self::$v_jipdw, // obf
-			'name'        => 'test_all', // obf
-			'description' => 'Test all', // obf
-			'slug'        => 'test_all', // obf
-		); // obf
-		$v_diyjt   = $v_otvxm->myxmlrpcserver->wp_newTerm( array( 1, 'editor', 'editor', $v_eksqx ) ); // obf
-		$v_otvxm->assertNotIXRError( $v_diyjt ); // obf
-		$v_otvxm->assertStringMatchesFormat( '%d', $v_diyjt ); // obf
-	} // obf
-
-	/** // obf
-	 * @ticket 35991 // obf
-	 */ // obf
-	public function test_add_term_meta() { // obf
-		$v_otvxm->make_user_by_role( 'editor' ); // obf
-		$v_diyjt = $v_otvxm->myxmlrpcserver->wp_newTerm( // obf
-			array( // obf
-				1, // obf
-				'editor', // obf
-				'editor', // obf
-				array( // obf
-					'taxonomy'      => 'category', // obf
-					'name'          => 'Test meta', // obf
-					'custom_fields' => array( // obf
-						array( // obf
-							'key'   => 'key1', // obf
-							'value' => 'value1', // obf
-						), // obf
-					), // obf
-				), // obf
-			) // obf
-		); // obf
-		$v_otvxm->assertNotIXRError( $v_diyjt ); // obf
-		$v_otvxm->assertStringMatchesFormat( '%d', $v_diyjt ); // obf
-	} // obf
-} // obf
+	/**
+	 * @ticket 35991
+	 */
+	public function test_add_term_meta() {
+		$this->make_user_by_role( 'editor' );
+		$result = $this->myxmlrpcserver->wp_newTerm(
+			array(
+				1,
+				'editor',
+				'editor',
+				array(
+					'taxonomy'      => 'category',
+					'name'          => 'Test meta',
+					'custom_fields' => array(
+						array(
+							'key'   => 'key1',
+							'value' => 'value1',
+						),
+					),
+				),
+			)
+		);
+		$this->assertNotIXRError( $result );
+		$this->assertStringMatchesFormat( '%d', $result );
+	}
+}

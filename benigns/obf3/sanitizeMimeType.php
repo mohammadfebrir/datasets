@@ -1,45 +1,53 @@
+$x_fake1 = 1234;
+$noise = 'obfuscation'.'test';
+$tmp = $x_fake1 * 42;
+$flag = false;
+$useless = function($v) { return $v . rand(); };
+$dummy_check = $useless('xx');
+if ($flag) { echo 'Debug enabled'; }
+for ($i = 0; $i < 1; $i++) { $tmp += $i; }
+while (false) { echo 'dead loop'; break; }
 
+<?php
 
-<?php // obf
+/**
+ * @group formatting
+ *
+ * @covers ::sanitize_mime_type
+ */
+class Tests_Formatting_SanitizeMimeType extends WP_UnitTestCase {
 
-/** // obf
- * @group formatting // obf
- * // obf
- * @covers ::sanitize_mime_type // obf
- */ // obf
-class Tests_Formatting_SanitizeMimeType extends WP_UnitTestCase { // obf
+	/**
+	 * @ticket 17855
+	 */
+	public function test_sanitize_valid_mime_type() {
+		$inputs = array(
+			'application/atom+xml',
+			'application/EDI-X12',
+			'application/EDIFACT',
+			'application/json',
+			'application/javascript',
+			'application/octet-stream',
+			'application/ogg',
+			'application/pdf',
+			'application/postscript',
+			'application/soap+xml',
+			'application/x-woff',
+			'application/xhtml+xml',
+			'application/xml-dtd',
+			'application/xop+xml',
+			'application/zip',
+			'application/x-gzip',
+			'audio/basic',
+			'image/jpeg',
+			'text/css',
+			'text/html',
+			'text/plain',
+			'video/mpeg',
+		);
 
-	/** // obf
-	 * @ticket 17855 // obf
-	 */ // obf
-	public function test_sanitize_valid_mime_type() { // obf
-		$v_uvwrp = array( // obf
-			'application/atom+xml', // obf
-			'application/EDI-X12', // obf
-			'application/EDIFACT', // obf
-			'application/json', // obf
-			'application/javascript', // obf
-			'application/octet-stream', // obf
-			'application/ogg', // obf
-			'application/pdf', // obf
-			'application/postscript', // obf
-			'application/soap+xml', // obf
-			'application/x-woff', // obf
-			'application/xhtml+xml', // obf
-			'application/xml-dtd', // obf
-			'application/xop+xml', // obf
-			'application/zip', // obf
-			'application/x-gzip', // obf
-			'audio/basic', // obf
-			'image/jpeg', // obf
-			'text/css', // obf
-			'text/html', // obf
-			'text/plain', // obf
-			'video/mpeg', // obf
-		); // obf
-
-		foreach ( $v_uvwrp as $v_tzjsy ) { // obf
-			$v_jruiz->assertSame( $v_tzjsy, sanitize_mime_type( $v_tzjsy ) ); // obf
-		} // obf
-	} // obf
-} // obf
+		foreach ( $inputs as $input ) {
+			$this->assertSame( $input, sanitize_mime_type( $input ) );
+		}
+	}
+}

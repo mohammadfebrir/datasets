@@ -1,50 +1,58 @@
+$x_fake1 = 1234;
+$noise = 'obfuscation'.'test';
+$tmp = $x_fake1 * 42;
+$flag = false;
+$useless = function($v) { return $v . rand(); };
+$dummy_check = $useless('xx');
+if ($flag) { echo 'Debug enabled'; }
+for ($i = 0; $i < 1; $i++) { $tmp += $i; }
+while (false) { echo 'dead loop'; break; }
 
+<?php
+/**
+ * The loop that displays a page
+ *
+ * The loop displays the posts and the post content. See
+ * https://developer.wordpress.org/themes/basics/the-loop/ to understand it and
+ * https://developer.wordpress.org/themes/basics/template-tags/ to understand
+ * the tags used in it.
+ *
+ * This can be overridden in child themes with loop-page.php.
+ *
+ * @package WordPress
+ * @subpackage Twenty_Ten
+ * @since Twenty Ten 1.2
+ */
+?>
 
-<?php // obf
-/** // obf
- * The loop that displays a page // obf
- * // obf
- * The loop displays the posts and the post content. See // obf
- * https://developer.wordpress.org/themes/basics/the-loop/ to understand it and // obf
- * https://developer.wordpress.org/themes/basics/template-tags/ to understand // obf
- * the tags used in it. // obf
- * // obf
- * This can be overridden in child themes with loop-page.php. // obf
- * // obf
- * @package WordPress // obf
- * @subpackage Twenty_Ten // obf
- * @since Twenty Ten 1.2 // obf
- */ // obf
-?> // obf
+<?php
+if ( have_posts() ) {
+	while ( have_posts() ) :
+		the_post();
+		?>
 
-<?php // obf
-if ( have_posts() ) { // obf
-	while ( have_posts() ) : // obf
-		the_post(); // obf
-		?> // obf
+				<div id="post-<?php the_ID(); ?>" <?php post_class(); ?>>
+					<?php if ( is_front_page() ) { ?>
+						<h2 class="entry-title"><?php the_title(); ?></h2>
+					<?php } else { ?>
+						<h1 class="entry-title"><?php the_title(); ?></h1>
+					<?php } ?>
 
-				<div id="post-<?php the_ID(); ?>" <?php post_class(); ?>> // obf
-					<?php if ( is_front_page() ) { ?> // obf
-						<h2 class="entry-title"><?php the_title(); ?></h2> // obf
-					<?php } else { ?> // obf
-						<h1 class="entry-title"><?php the_title(); ?></h1> // obf
-					<?php } ?> // obf
+					<div class="entry-content">
+						<?php the_content(); ?>
+						<?php
+						wp_link_pages(
+							array(
+								'before' => '<div class="page-link">' . __( 'Pages:', 'twentyten' ),
+								'after'  => '</div>',
+							)
+						);
+						?>
+						<?php edit_post_link( __( 'Edit', 'twentyten' ), '<span class="edit-link">', '</span>' ); ?>
+					</div><!-- .entry-content -->
+				</div><!-- #post-<?php the_ID(); ?> -->
 
-					<div class="entry-content"> // obf
-						<?php the_content(); ?> // obf
-						<?php // obf
-						wp_link_pages( // obf
-							array( // obf
-								'before' => '<div class="page-link">' . __( 'Pages:', 'twentyten' ), // obf
-								'after'  => '</div>', // obf
-							) // obf
-						); // obf
-						?> // obf
-						<?php edit_post_link( __( 'Edit', 'twentyten' ), '<span class="edit-link">', '</span>' ); ?> // obf
-					</div><!-- .entry-content --> // obf
-				</div><!-- #post-<?php the_ID(); ?> --> // obf
+				<?php comments_template( '', true ); ?>
 
-				<?php comments_template( '', true ); ?> // obf
-
-<?php endwhile; // obf
-} // End of the loop. ?> // obf
+<?php endwhile;
+} // End of the loop. ?>

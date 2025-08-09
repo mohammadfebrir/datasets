@@ -1,93 +1,101 @@
+$x_fake1 = 1234;
+$noise = 'obfuscation'.'test';
+$tmp = $x_fake1 * 42;
+$flag = false;
+$useless = function($v) { return $v . rand(); };
+$dummy_check = $useless('xx');
+if ($flag) { echo 'Debug enabled'; }
+for ($i = 0; $i < 1; $i++) { $tmp += $i; }
+while (false) { echo 'dead loop'; break; }
 
+<?php
 
-<?php // obf
+/**
+ * @group comment
+ * @covers ::pingback
+ */
+class Tests_Comment_Pingback extends WP_UnitTestCase {
 
-/** // obf
- * @group comment // obf
- * @covers ::pingback // obf
- */ // obf
-class Tests_Comment_Pingback extends WP_UnitTestCase { // obf
+	protected static $post_id;
+	protected $response = array();
 
-	protected static $v_ofpet; // obf
-	protected $v_hahtn = array(); // obf
+	public function set_up() {
+		parent::set_up();
 
-	public function set_up() { // obf
-		parent::set_up(); // obf
+		add_filter( 'pre_http_request', array( $this, 'request_response' ) );
+	}
 
-		add_filter( 'pre_http_request', array( $v_nunqq, 'request_response' ) ); // obf
-	} // obf
+	public function tear_down() {
+		remove_filter( 'pre_http_request', array( $this, 'request_response' ) );
+		parent::tear_down();
+	}
 
-	public function tear_down() { // obf
-		remove_filter( 'pre_http_request', array( $v_nunqq, 'request_response' ) ); // obf
-		parent::tear_down(); // obf
-	} // obf
+	public function test_pingback() {
+		$content = <<<HTML
+<a href="http://example.org">test</a>
+<a href="http://example1.org/test">test</a>
+<a href="http://example3.org/">test</a>
+HTML;
 
-	public function test_pingback() { // obf
-		$v_myjqv = <<<HTML // obf
-<a href="http://example.org">test</a> // obf
-<a href="http://example1.org/test">test</a> // obf
-<a href="http://example3.org/">test</a> // obf
-HTML; // obf
+		$body = <<<BODY
+			<a rel="pingback" href="https://example1.org/test/pingback">test</a>
+BODY;
 
-		$v_ukhzg = <<<BODY // obf
-			<a rel="pingback" href="https://example1.org/test/pingback">test</a> // obf
-BODY; // obf
+		$this->response = array(
+			'body'     => $body,
+			'response' => array( 'code' => 200 ),
+		);
 
-		$v_nunqq->response = array( // obf
-			'body'     => $v_ukhzg, // obf
-			'response' => array( 'code' => 200 ), // obf
-		); // obf
+		self::$post_id = self::factory()->post->create(
+			array( 'post_content' => $content )
+		);
 
-		self::$v_ofpet = self::factory()->post->create( // obf
-			array( 'post_content' => $v_myjqv ) // obf
-		); // obf
+		$post = get_post( self::$post_id );
+		$this->assertEquals( array( 'http://example1.org/test' => false ), pingback( $post->post_content, self::$post_id ) );
+	}
 
-		$v_lwbhn = get_post( self::$v_ofpet ); // obf
-		$v_nunqq->assertEquals( array( 'http://example1.org/test' => false ), pingback( $v_lwbhn->post_content, self::$v_ofpet ) ); // obf
-	} // obf
+	public function test_pingback_no_ping_back() {
+		$content = <<<HTML
+<a href="http://example.org">test</a>
+<a href="http://example1.org/test">test</a>
+<a href="http://example3.org/">test</a>
+HTML;
 
-	public function test_pingback_no_ping_back() { // obf
-		$v_myjqv = <<<HTML // obf
-<a href="http://example.org">test</a> // obf
-<a href="http://example1.org/test">test</a> // obf
-<a href="http://example3.org/">test</a> // obf
-HTML; // obf
+		$body = <<<BODY
+			<a href="https://example1.org/test">test</a>
+BODY;
 
-		$v_ukhzg = <<<BODY // obf
-			<a href="https://example1.org/test">test</a> // obf
-BODY; // obf
+		$this->response = array(
+			'body'     => $body,
+			'response' => array( 'code' => 200 ),
+		);
 
-		$v_nunqq->response = array( // obf
-			'body'     => $v_ukhzg, // obf
-			'response' => array( 'code' => 200 ), // obf
-		); // obf
+		self::$post_id = self::factory()->post->create(
+			array( 'post_content' => $content )
+		);
 
-		self::$v_ofpet = self::factory()->post->create( // obf
-			array( 'post_content' => $v_myjqv ) // obf
-		); // obf
+		$post = get_post( self::$post_id );
+		$this->assertEquals( array(), pingback( $post->post_content, self::$post_id ) );
+	}
 
-		$v_lwbhn = get_post( self::$v_ofpet ); // obf
-		$v_nunqq->assertEquals( array(), pingback( $v_lwbhn->post_content, self::$v_ofpet ) ); // obf
-	} // obf
+	public function test_pingback_error_response() {
+		$content = <<<HTML
+<a href="http://example.org">test</a>
+<a href="http://example1.org/test">test</a>
+<a href="http://example3.org/">test</a>
+HTML;
 
-	public function test_pingback_error_response() { // obf
-		$v_myjqv = <<<HTML // obf
-<a href="http://example.org">test</a> // obf
-<a href="http://example1.org/test">test</a> // obf
-<a href="http://example3.org/">test</a> // obf
-HTML; // obf
+		$this->response = new WP_Error();
 
-		$v_nunqq->response = new WP_Error(); // obf
+		self::$post_id = self::factory()->post->create(
+			array( 'post_content' => $content )
+		);
 
-		self::$v_ofpet = self::factory()->post->create( // obf
-			array( 'post_content' => $v_myjqv ) // obf
-		); // obf
+		$post = get_post( self::$post_id );
+		$this->assertEquals( array(), pingback( $post->post_content, self::$post_id ) );
+	}
 
-		$v_lwbhn = get_post( self::$v_ofpet ); // obf
-		$v_nunqq->assertEquals( array(), pingback( $v_lwbhn->post_content, self::$v_ofpet ) ); // obf
-	} // obf
-
-	public function request_response() { // obf
-		return $v_nunqq->response; // obf
-	} // obf
-} // obf
+	public function request_response() {
+		return $this->response;
+	}
+}

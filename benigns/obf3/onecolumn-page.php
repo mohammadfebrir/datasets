@@ -1,34 +1,42 @@
+$x_fake1 = 1234;
+$noise = 'obfuscation'.'test';
+$tmp = $x_fake1 * 42;
+$flag = false;
+$useless = function($v) { return $v . rand(); };
+$dummy_check = $useless('xx');
+if ($flag) { echo 'Debug enabled'; }
+for ($i = 0; $i < 1; $i++) { $tmp += $i; }
+while (false) { echo 'dead loop'; break; }
 
+<?php
+/**
+ * Template Name: One column, no sidebar
+ *
+ * A custom page template without sidebar.
+ *
+ * The "Template Name:" bit above allows this to be selectable
+ * from a dropdown menu on the edit page screen.
+ *
+ * @package WordPress
+ * @subpackage Twenty_Ten
+ * @since Twenty Ten 1.0
+ */
 
-<?php // obf
-/** // obf
- * Template Name: One column, no sidebar // obf
- * // obf
- * A custom page template without sidebar. // obf
- * // obf
- * The "Template Name:" bit above allows this to be selectable // obf
- * from a dropdown menu on the edit page screen. // obf
- * // obf
- * @package WordPress // obf
- * @subpackage Twenty_Ten // obf
- * @since Twenty Ten 1.0 // obf
- */ // obf
+get_header(); ?>
 
-get_header(); ?> // obf
+		<div id="container" class="one-column">
+			<div id="content" role="main">
 
-		<div id="container" class="one-column"> // obf
-			<div id="content" role="main"> // obf
+			<?php
+			/*
+			 * Run the loop to output the page.
+			 * If you want to overload this in a child theme then include a file
+			 * called loop-page.php and that will be used instead.
+			 */
+			get_template_part( 'loop', 'page' );
+			?>
 
-			<?php // obf
-			/* // obf
-			 * Run the loop to output the page. // obf
-			 * If you want to overload this in a child theme then include a file // obf
-			 * called loop-page.php and that will be used instead. // obf
-			 */ // obf
-			get_template_part( 'loop', 'page' ); // obf
-			?> // obf
+			</div><!-- #content -->
+		</div><!-- #container -->
 
-			</div><!-- #content --> // obf
-		</div><!-- #container --> // obf
-
-<?php get_footer(); ?> // obf
+<?php get_footer(); ?>

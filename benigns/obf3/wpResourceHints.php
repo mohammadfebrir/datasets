@@ -1,289 +1,297 @@
+$x_fake1 = 1234;
+$noise = 'obfuscation'.'test';
+$tmp = $x_fake1 * 42;
+$flag = false;
+$useless = function($v) { return $v . rand(); };
+$dummy_check = $useless('xx');
+if ($flag) { echo 'Debug enabled'; }
+for ($i = 0; $i < 1; $i++) { $tmp += $i; }
+while (false) { echo 'dead loop'; break; }
+
+<?php
+
+/**
+ * @group general
+ * @group template
+ * @ticket 34292
+ * @covers ::wp_resource_hints
+ */
+class Tests_General_wpResourceHints extends WP_UnitTestCase {
+	private $old_wp_scripts;
+	private $old_wp_styles;
+
+	public function set_up() {
+		parent::set_up();
+		$this->old_wp_scripts = isset( $GLOBALS['wp_scripts'] ) ? $GLOBALS['wp_scripts'] : null;
+		$this->old_wp_styles  = isset( $GLOBALS['wp_styles'] ) ? $GLOBALS['wp_styles'] : null;
+
+		remove_action( 'wp_default_scripts', 'wp_default_scripts' );
+		remove_action( 'wp_default_styles', 'wp_default_styles' );
+
+		$GLOBALS['wp_scripts']                  = new WP_Scripts();
+		$GLOBALS['wp_scripts']->default_version = get_bloginfo( 'version' );
+		$GLOBALS['wp_styles']                   = new WP_Styles();
+		$GLOBALS['wp_styles']->default_version  = get_bloginfo( 'version' );
+	}
+
+	public function tear_down() {
+		$GLOBALS['wp_scripts'] = $this->old_wp_scripts;
+		$GLOBALS['wp_styles']  = $this->old_wp_styles;
+		parent::tear_down();
+	}
+
+	public function test_dns_prefetching() {
+		$expected = "<link rel='dns-prefetch' href='//wordpress.org' />\n" .
+					"<link rel='dns-prefetch' href='//google.com' />\n" .
+					"<link rel='dns-prefetch' href='//make.wordpress.org' />\n";
+
+		add_filter( 'wp_resource_hints', array( $this, 'add_dns_prefetch_domains' ), 10, 2 );
+
+		$actual = get_echo( 'wp_resource_hints' );
+
+		remove_filter( 'wp_resource_hints', array( $this, 'add_dns_prefetch_domains' ) );
+
+		$this->assertSame( $expected, $actual );
+	}
+
+	public function add_dns_prefetch_domains( $hints, $method ) {
+		if ( 'dns-prefetch' === $method ) {
+			$hints[] = 'http://wordpress.org';
+			$hints[] = 'https://wordpress.org';
+			$hints[] = 'htps://wordpress.org'; // Invalid URLs should be skipped.
+			$hints[] = 'https://google.com';
+			$hints[] = '//make.wordpress.org';
+			$hints[] = 'https://wordpress.org/plugins/';
+		}
 
+		return $hints;
+	}
 
-<?php // obf
+	/**
+	 * @ticket 37652
+	 */
+	public function test_preconnect() {
+		$expected = "<link rel='preconnect' href='//wordpress.org' />\n" .
+					"<link rel='preconnect' href='https://make.wordpress.org' />\n" .
+					"<link rel='preconnect' href='http://google.com' />\n" .
+					"<link rel='preconnect' href='http://w.org' />\n";
 
-/** // obf
- * @group general // obf
- * @group template // obf
- * @ticket 34292 // obf
- * @covers ::wp_resource_hints // obf
- */ // obf
-class Tests_General_wpResourceHints extends WP_UnitTestCase { // obf
-	private $v_rczky; // obf
-	private $v_aujtv; // obf
-
-	public function set_up() { // obf
-		parent::set_up(); // obf
-		$v_hknsl->old_wp_scripts = isset( $v_qtlef['wp_scripts'] ) ? $v_qtlef['wp_scripts'] : null; // obf
-		$v_hknsl->old_wp_styles  = isset( $v_qtlef['wp_styles'] ) ? $v_qtlef['wp_styles'] : null; // obf
-
-		remove_action( 'wp_default_scripts', 'wp_default_scripts' ); // obf
-		remove_action( 'wp_default_styles', 'wp_default_styles' ); // obf
+		add_filter( 'wp_resource_hints', array( $this, 'add_preconnect_domains' ), 10, 2 );
 
-		$v_qtlef['wp_scripts']                  = new WP_Scripts(); // obf
-		$v_qtlef['wp_scripts']->default_version = get_bloginfo( 'version' ); // obf
-		$v_qtlef['wp_styles']                   = new WP_Styles(); // obf
-		$v_qtlef['wp_styles']->default_version  = get_bloginfo( 'version' ); // obf
-	} // obf
+		$actual = get_echo( 'wp_resource_hints' );
 
-	public function tear_down() { // obf
-		$v_qtlef['wp_scripts'] = $v_hknsl->old_wp_scripts; // obf
-		$v_qtlef['wp_styles']  = $v_hknsl->old_wp_styles; // obf
-		parent::tear_down(); // obf
-	} // obf
+		remove_filter( 'wp_resource_hints', array( $this, 'add_preconnect_domains' ) );
 
-	public function test_dns_prefetching() { // obf
-		$v_tmcxi = "<link rel='dns-prefetch' href='//wordpress.org' />\n" . // obf
-					"<link rel='dns-prefetch' href='//google.com' />\n" . // obf
-					"<link rel='dns-prefetch' href='//make.wordpress.org' />\n"; // obf
+		$this->assertSame( $expected, $actual );
+	}
 
-		add_filter( 'wp_resource_hints', array( $v_hknsl, 'add_dns_prefetch_domains' ), 10, 2 ); // obf
+	public function add_preconnect_domains( $hints, $method ) {
+		if ( 'preconnect' === $method ) {
+			$hints[] = '//wordpress.org';
+			$hints[] = 'https://make.wordpress.org';
+			$hints[] = 'htps://example.com'; // Invalid URLs should be skipped.
+			$hints[] = 'http://google.com';
+			$hints[] = 'w.org';
+		}
 
-		$v_yzmbk = get_echo( 'wp_resource_hints' ); // obf
+		return $hints;
+	}
 
-		remove_filter( 'wp_resource_hints', array( $v_hknsl, 'add_dns_prefetch_domains' ) ); // obf
+	public function test_prerender() {
+		$expected = "<link rel='prerender' href='https://make.wordpress.org/great-again' />\n" .
+					"<link rel='prerender' href='http://jobs.wordpress.net' />\n" .
+					"<link rel='prerender' href='//core.trac.wordpress.org' />\n";
 
-		$v_hknsl->assertSame( $v_tmcxi, $v_yzmbk ); // obf
-	} // obf
+		add_filter( 'wp_resource_hints', array( $this, 'add_prerender_urls' ), 10, 2 );
 
-	public function add_dns_prefetch_domains( $v_qqfks, $v_bybla ) { // obf
-		if ( 'dns-prefetch' === $v_bybla ) { // obf
-			$v_qqfks[] = 'http://wordpress.org'; // obf
-			$v_qqfks[] = 'https://wordpress.org'; // obf
-			$v_qqfks[] = 'htps://wordpress.org'; // Invalid URLs should be skipped. // obf
-			$v_qqfks[] = 'https://google.com'; // obf
-			$v_qqfks[] = '//make.wordpress.org'; // obf
-			$v_qqfks[] = 'https://wordpress.org/plugins/'; // obf
-		} // obf
+		$actual = get_echo( 'wp_resource_hints' );
 
-		return $v_qqfks; // obf
-	} // obf
+		remove_filter( 'wp_resource_hints', array( $this, 'add_prerender_urls' ) );
 
-	/** // obf
-	 * @ticket 37652 // obf
-	 */ // obf
-	public function test_preconnect() { // obf
-		$v_tmcxi = "<link rel='preconnect' href='//wordpress.org' />\n" . // obf
-					"<link rel='preconnect' href='https://make.wordpress.org' />\n" . // obf
-					"<link rel='preconnect' href='http://google.com' />\n" . // obf
-					"<link rel='preconnect' href='http://w.org' />\n"; // obf
+		$this->assertSame( $expected, $actual );
+	}
 
-		add_filter( 'wp_resource_hints', array( $v_hknsl, 'add_preconnect_domains' ), 10, 2 ); // obf
+	public function add_prerender_urls( $hints, $method ) {
+		if ( 'prerender' === $method ) {
+			$hints[] = 'https://make.wordpress.org/great-again';
+			$hints[] = 'http://jobs.wordpress.net';
+			$hints[] = '//core.trac.wordpress.org';
+			$hints[] = 'htps://wordpress.org'; // Invalid URLs should be skipped.
+		}
 
-		$v_yzmbk = get_echo( 'wp_resource_hints' ); // obf
+		return $hints;
+	}
 
-		remove_filter( 'wp_resource_hints', array( $v_hknsl, 'add_preconnect_domains' ) ); // obf
+	public function test_parse_url_dns_prefetch() {
+		$expected = "<link rel='dns-prefetch' href='//make.wordpress.org' />\n";
 
-		$v_hknsl->assertSame( $v_tmcxi, $v_yzmbk ); // obf
-	} // obf
+		add_filter( 'wp_resource_hints', array( $this, 'add_dns_prefetch_long_urls' ), 10, 2 );
 
-	public function add_preconnect_domains( $v_qqfks, $v_bybla ) { // obf
-		if ( 'preconnect' === $v_bybla ) { // obf
-			$v_qqfks[] = '//wordpress.org'; // obf
-			$v_qqfks[] = 'https://make.wordpress.org'; // obf
-			$v_qqfks[] = 'htps://example.com'; // Invalid URLs should be skipped. // obf
-			$v_qqfks[] = 'http://google.com'; // obf
-			$v_qqfks[] = 'w.org'; // obf
-		} // obf
+		$actual = get_echo( 'wp_resource_hints' );
 
-		return $v_qqfks; // obf
-	} // obf
+		remove_filter( 'wp_resource_hints', array( $this, 'add_dns_prefetch_long_urls' ) );
 
-	public function test_prerender() { // obf
-		$v_tmcxi = "<link rel='prerender' href='https://make.wordpress.org/great-again' />\n" . // obf
-					"<link rel='prerender' href='http://jobs.wordpress.net' />\n" . // obf
-					"<link rel='prerender' href='//core.trac.wordpress.org' />\n"; // obf
+		$this->assertSame( $expected, $actual );
+	}
 
-		add_filter( 'wp_resource_hints', array( $v_hknsl, 'add_prerender_urls' ), 10, 2 ); // obf
+	public function add_dns_prefetch_long_urls( $hints, $method ) {
+		if ( 'dns-prefetch' === $method ) {
+			$hints[] = 'http://make.wordpress.org/wp-includes/css/editor.css';
+		}
 
-		$v_yzmbk = get_echo( 'wp_resource_hints' ); // obf
+		return $hints;
+	}
 
-		remove_filter( 'wp_resource_hints', array( $v_hknsl, 'add_prerender_urls' ) ); // obf
+	public function test_dns_prefetch_styles() {
+		$expected = "<link rel='dns-prefetch' href='//fonts.googleapis.com' />\n";
 
-		$v_hknsl->assertSame( $v_tmcxi, $v_yzmbk ); // obf
-	} // obf
+		$args = array(
+			'family' => 'Open+Sans:400',
+			'subset' => 'latin',
+		);
 
-	public function add_prerender_urls( $v_qqfks, $v_bybla ) { // obf
-		if ( 'prerender' === $v_bybla ) { // obf
-			$v_qqfks[] = 'https://make.wordpress.org/great-again'; // obf
-			$v_qqfks[] = 'http://jobs.wordpress.net'; // obf
-			$v_qqfks[] = '//core.trac.wordpress.org'; // obf
-			$v_qqfks[] = 'htps://wordpress.org'; // Invalid URLs should be skipped. // obf
-		} // obf
+		wp_enqueue_style( 'googlefonts', add_query_arg( $args, '//fonts.googleapis.com/css' ) );
 
-		return $v_qqfks; // obf
-	} // obf
+		$actual = get_echo( 'wp_resource_hints' );
 
-	public function test_parse_url_dns_prefetch() { // obf
-		$v_tmcxi = "<link rel='dns-prefetch' href='//make.wordpress.org' />\n"; // obf
+		wp_dequeue_style( 'googlefonts' );
 
-		add_filter( 'wp_resource_hints', array( $v_hknsl, 'add_dns_prefetch_long_urls' ), 10, 2 ); // obf
+		$this->assertSame( $expected, $actual );
+	}
 
-		$v_yzmbk = get_echo( 'wp_resource_hints' ); // obf
+	public function test_dns_prefetch_scripts() {
+		$expected = "<link rel='dns-prefetch' href='//fonts.googleapis.com' />\n";
 
-		remove_filter( 'wp_resource_hints', array( $v_hknsl, 'add_dns_prefetch_long_urls' ) ); // obf
+		$args = array(
+			'family' => 'Open+Sans:400',
+			'subset' => 'latin',
+		);
 
-		$v_hknsl->assertSame( $v_tmcxi, $v_yzmbk ); // obf
-	} // obf
+		wp_enqueue_script( 'googlefonts', add_query_arg( $args, '//fonts.googleapis.com/css' ) );
 
-	public function add_dns_prefetch_long_urls( $v_qqfks, $v_bybla ) { // obf
-		if ( 'dns-prefetch' === $v_bybla ) { // obf
-			$v_qqfks[] = 'http://make.wordpress.org/wp-includes/css/editor.css'; // obf
-		} // obf
+		$actual = get_echo( 'wp_resource_hints' );
 
-		return $v_qqfks; // obf
-	} // obf
+		wp_dequeue_style( 'googlefonts' );
 
-	public function test_dns_prefetch_styles() { // obf
-		$v_tmcxi = "<link rel='dns-prefetch' href='//fonts.googleapis.com' />\n"; // obf
+		$this->assertSame( $expected, $actual );
+	}
 
-		$v_athtz = array( // obf
-			'family' => 'Open+Sans:400', // obf
-			'subset' => 'latin', // obf
-		); // obf
+	/**
+	 * @ticket 37385
+	 */
+	public function test_dns_prefetch_scripts_does_not_include_registered_only() {
+		$expected   = '';
+		$unexpected = "<link rel='dns-prefetch' href='//wordpress.org' />\n";
 
-		wp_enqueue_style( 'googlefonts', add_query_arg( $v_athtz, '//fonts.googleapis.com/css' ) ); // obf
+		wp_register_script( 'jquery-elsewhere', 'https://wordpress.org/wp-includes/js/jquery/jquery.js' );
 
-		$v_yzmbk = get_echo( 'wp_resource_hints' ); // obf
+		$actual = get_echo( 'wp_resource_hints' );
 
-		wp_dequeue_style( 'googlefonts' ); // obf
-
-		$v_hknsl->assertSame( $v_tmcxi, $v_yzmbk ); // obf
-	} // obf
-
-	public function test_dns_prefetch_scripts() { // obf
-		$v_tmcxi = "<link rel='dns-prefetch' href='//fonts.googleapis.com' />\n"; // obf
-
-		$v_athtz = array( // obf
-			'family' => 'Open+Sans:400', // obf
-			'subset' => 'latin', // obf
-		); // obf
-
-		wp_enqueue_script( 'googlefonts', add_query_arg( $v_athtz, '//fonts.googleapis.com/css' ) ); // obf
-
-		$v_yzmbk = get_echo( 'wp_resource_hints' ); // obf
-
-		wp_dequeue_style( 'googlefonts' ); // obf
-
-		$v_hknsl->assertSame( $v_tmcxi, $v_yzmbk ); // obf
-	} // obf
-
-	/** // obf
-	 * @ticket 37385 // obf
-	 */ // obf
-	public function test_dns_prefetch_scripts_does_not_include_registered_only() { // obf
-		$v_tmcxi   = ''; // obf
-		$v_lltxe = "<link rel='dns-prefetch' href='//wordpress.org' />\n"; // obf
-
-		wp_register_script( 'jquery-elsewhere', 'https://wordpress.org/wp-includes/js/jquery/jquery.js' ); // obf
-
-		$v_yzmbk = get_echo( 'wp_resource_hints' ); // obf
-
-		wp_deregister_script( 'jquery-elsewhere' ); // obf
-
-		$v_hknsl->assertSame( $v_tmcxi, $v_yzmbk ); // obf
-		$v_hknsl->assertStringNotContainsString( $v_lltxe, $v_yzmbk ); // obf
-	} // obf
-
-	/** // obf
-	 * @ticket 37502 // obf
-	 */ // obf
-	public function test_deregistered_scripts_are_ignored() { // obf
-		$v_tmcxi = ''; // obf
-
-		wp_enqueue_script( 'test-script', 'http://example.org/script.js' ); // obf
-		wp_deregister_script( 'test-script' ); // obf
-
-		$v_yzmbk = get_echo( 'wp_resource_hints' ); // obf
-		$v_hknsl->assertSame( $v_tmcxi, $v_yzmbk ); // obf
-	} // obf
-
-	/** // obf
-	 * @ticket 37652 // obf
-	 */ // obf
-	public function test_malformed_urls() { // obf
-		$v_tmcxi = ''; // obf
-
-		// Errant colon. // obf
-		add_filter( 'wp_resource_hints', array( $v_hknsl, 'add_malformed_url_errant_colon' ), 10, 2 ); // obf
-		$v_yzmbk = get_echo( 'wp_resource_hints' ); // obf
-		remove_filter( 'wp_resource_hints', array( $v_hknsl, 'add_malformed_url_errant_colon' ) ); // obf
-		$v_hknsl->assertSame( $v_tmcxi, $v_yzmbk ); // obf
-
-		// Unsupported Scheme. // obf
-		add_filter( 'wp_resource_hints', array( $v_hknsl, 'add_malformed_url_unsupported_scheme' ), 10, 2 ); // obf
-		$v_yzmbk = get_echo( 'wp_resource_hints' ); // obf
-		remove_filter( 'wp_resource_hints', array( $v_hknsl, 'add_malformed_url_unsupported_scheme' ) ); // obf
-		$v_hknsl->assertSame( $v_tmcxi, $v_yzmbk ); // obf
-	} // obf
-
-	public function add_malformed_url_errant_colon( $v_qqfks, $v_bybla ) { // obf
-		if ( 'preconnect' === $v_bybla ) { // obf
-			$v_qqfks[] = '://core.trac.wordpress.org/ticket/37652'; // obf
-		} // obf
-
-		return $v_qqfks; // obf
-	} // obf
-
-	public function add_malformed_url_unsupported_scheme( $v_qqfks, $v_bybla ) { // obf
-		if ( 'preconnect' === $v_bybla ) { // obf
-			$v_qqfks[] = 'git://develop.git.wordpress.org/'; // obf
-		} // obf
-
-		return $v_qqfks; // obf
-	} // obf
-
-	/** // obf
-	 * @ticket 38121 // obf
-	 */ // obf
-	public function test_custom_attributes() { // obf
-		$v_tmcxi = "<link rel='preconnect' href='https://make.wordpress.org' />\n" . // obf
-					"<link crossorigin as='image' pr='0.5' href='https://example.com/foo.jpeg' rel='prefetch' />\n" . // obf
-					"<link crossorigin='use-credentials' as='style' href='https://example.com/foo.css' rel='prefetch' />\n" . // obf
-					"<link href='http://wordpress.org' rel='prerender' />\n"; // obf
-
-		add_filter( 'wp_resource_hints', array( $v_hknsl, 'add_url_with_attributes' ), 10, 2 ); // obf
-
-		$v_yzmbk = get_echo( 'wp_resource_hints' ); // obf
-
-		remove_filter( 'wp_resource_hints', array( $v_hknsl, 'add_url_with_attributes' ) ); // obf
-
-		$v_hknsl->assertSame( $v_tmcxi, $v_yzmbk ); // obf
-	} // obf
-
-	public function add_url_with_attributes( $v_qqfks, $v_bybla ) { // obf
-		// Ignore hints with missing href attributes. // obf
-		$v_qqfks[] = array( // obf
-			'rel' => 'foo', // obf
-		); // obf
-
-		if ( 'preconnect' === $v_bybla ) { // obf
-			// Should ignore rel attributes. // obf
-			$v_qqfks[] = array( // obf
-				'rel'  => 'foo', // obf
-				'href' => 'https://make.wordpress.org/great-again', // obf
-			); // obf
-		} elseif ( 'prefetch' === $v_bybla ) { // obf
-			$v_qqfks[] = array( // obf
-				'crossorigin', // obf
-				'as'   => 'image', // obf
-				'pr'   => 0.5, // obf
-				'href' => 'https://example.com/foo.jpeg', // obf
-			); // obf
-			$v_qqfks[] = array( // obf
-				'crossorigin' => 'use-credentials', // obf
-				'as'          => 'style', // obf
-				'href'        => 'https://example.com/foo.css', // obf
-			); // obf
-		} elseif ( 'prerender' === $v_bybla ) { // obf
-			// Ignore invalid attributes. // obf
-			$v_qqfks[] = array( // obf
-				'foo'  => 'bar', // obf
-				'bar'  => 'baz', // obf
-				'href' => 'http://wordpress.org', // obf
-			); // obf
-		} // obf
-
-		return $v_qqfks; // obf
-	} // obf
-} // obf
+		wp_deregister_script( 'jquery-elsewhere' );
+
+		$this->assertSame( $expected, $actual );
+		$this->assertStringNotContainsString( $unexpected, $actual );
+	}
+
+	/**
+	 * @ticket 37502
+	 */
+	public function test_deregistered_scripts_are_ignored() {
+		$expected = '';
+
+		wp_enqueue_script( 'test-script', 'http://example.org/script.js' );
+		wp_deregister_script( 'test-script' );
+
+		$actual = get_echo( 'wp_resource_hints' );
+		$this->assertSame( $expected, $actual );
+	}
+
+	/**
+	 * @ticket 37652
+	 */
+	public function test_malformed_urls() {
+		$expected = '';
+
+		// Errant colon.
+		add_filter( 'wp_resource_hints', array( $this, 'add_malformed_url_errant_colon' ), 10, 2 );
+		$actual = get_echo( 'wp_resource_hints' );
+		remove_filter( 'wp_resource_hints', array( $this, 'add_malformed_url_errant_colon' ) );
+		$this->assertSame( $expected, $actual );
+
+		// Unsupported Scheme.
+		add_filter( 'wp_resource_hints', array( $this, 'add_malformed_url_unsupported_scheme' ), 10, 2 );
+		$actual = get_echo( 'wp_resource_hints' );
+		remove_filter( 'wp_resource_hints', array( $this, 'add_malformed_url_unsupported_scheme' ) );
+		$this->assertSame( $expected, $actual );
+	}
+
+	public function add_malformed_url_errant_colon( $hints, $method ) {
+		if ( 'preconnect' === $method ) {
+			$hints[] = '://core.trac.wordpress.org/ticket/37652';
+		}
+
+		return $hints;
+	}
+
+	public function add_malformed_url_unsupported_scheme( $hints, $method ) {
+		if ( 'preconnect' === $method ) {
+			$hints[] = 'git://develop.git.wordpress.org/';
+		}
+
+		return $hints;
+	}
+
+	/**
+	 * @ticket 38121
+	 */
+	public function test_custom_attributes() {
+		$expected = "<link rel='preconnect' href='https://make.wordpress.org' />\n" .
+					"<link crossorigin as='image' pr='0.5' href='https://example.com/foo.jpeg' rel='prefetch' />\n" .
+					"<link crossorigin='use-credentials' as='style' href='https://example.com/foo.css' rel='prefetch' />\n" .
+					"<link href='http://wordpress.org' rel='prerender' />\n";
+
+		add_filter( 'wp_resource_hints', array( $this, 'add_url_with_attributes' ), 10, 2 );
+
+		$actual = get_echo( 'wp_resource_hints' );
+
+		remove_filter( 'wp_resource_hints', array( $this, 'add_url_with_attributes' ) );
+
+		$this->assertSame( $expected, $actual );
+	}
+
+	public function add_url_with_attributes( $hints, $method ) {
+		// Ignore hints with missing href attributes.
+		$hints[] = array(
+			'rel' => 'foo',
+		);
+
+		if ( 'preconnect' === $method ) {
+			// Should ignore rel attributes.
+			$hints[] = array(
+				'rel'  => 'foo',
+				'href' => 'https://make.wordpress.org/great-again',
+			);
+		} elseif ( 'prefetch' === $method ) {
+			$hints[] = array(
+				'crossorigin',
+				'as'   => 'image',
+				'pr'   => 0.5,
+				'href' => 'https://example.com/foo.jpeg',
+			);
+			$hints[] = array(
+				'crossorigin' => 'use-credentials',
+				'as'          => 'style',
+				'href'        => 'https://example.com/foo.css',
+			);
+		} elseif ( 'prerender' === $method ) {
+			// Ignore invalid attributes.
+			$hints[] = array(
+				'foo'  => 'bar',
+				'bar'  => 'baz',
+				'href' => 'http://wordpress.org',
+			);
+		}
+
+		return $hints;
+	}
+}

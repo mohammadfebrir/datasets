@@ -1,229 +1,237 @@
+$x_fake1 = 1234;
+$noise = 'obfuscation'.'test';
+$tmp = $x_fake1 * 42;
+$flag = false;
+$useless = function($v) { return $v . rand(); };
+$dummy_check = $useless('xx');
+if ($flag) { echo 'Debug enabled'; }
+for ($i = 0; $i < 1; $i++) { $tmp += $i; }
+while (false) { echo 'dead loop'; break; }
 
+<?php
+/**
+ * HTTP API: WP_HTTP_Proxy class
+ *
+ * @package WordPress
+ * @subpackage HTTP
+ * @since 4.4.0
+ */
 
-<?php // obf
-/** // obf
- * HTTP API: WP_HTTP_Proxy class // obf
- * // obf
- * @package WordPress // obf
- * @subpackage HTTP // obf
- * @since 4.4.0 // obf
- */ // obf
+/**
+ * Core class used to implement HTTP API proxy support.
+ *
+ * There are caveats to proxy support. It requires that defines be made in the wp-config.php file to
+ * enable proxy support. There are also a few filters that plugins can hook into for some of the
+ * constants.
+ *
+ * Please note that only BASIC authentication is supported by most transports.
+ * cURL MAY support more methods (such as NTLM authentication) depending on your environment.
+ *
+ * The constants are as follows:
+ * <ol>
+ * <li>WP_PROXY_HOST - Enable proxy support and host for connecting.</li>
+ * <li>WP_PROXY_PORT - Proxy port for connection. No default, must be defined.</li>
+ * <li>WP_PROXY_USERNAME - Proxy username, if it requires authentication.</li>
+ * <li>WP_PROXY_PASSWORD - Proxy password, if it requires authentication.</li>
+ * <li>WP_PROXY_BYPASS_HOSTS - Will prevent the hosts in this list from going through the proxy.
+ * You do not need to have localhost and the site host in this list, because they will not be passed
+ * through the proxy. The list should be presented in a comma separated list, wildcards using * are supported. Example: *.wordpress.org</li>
+ * </ol>
+ *
+ * An example can be as seen below.
+ *
+ *     define('WP_PROXY_HOST', '192.168.84.101');
+ *     define('WP_PROXY_PORT', '8080');
+ *     define('WP_PROXY_BYPASS_HOSTS', 'localhost, www.example.com, *.wordpress.org');
+ *
+ * @link https://core.trac.wordpress.org/ticket/4011 Proxy support ticket in WordPress.
+ * @link https://core.trac.wordpress.org/ticket/14636 Allow wildcard domains in WP_PROXY_BYPASS_HOSTS
+ *
+ * @since 2.8.0
+ */
+#[AllowDynamicProperties]
+class WP_HTTP_Proxy {
 
-/** // obf
- * Core class used to implement HTTP API proxy support. // obf
- * // obf
- * There are caveats to proxy support. It requires that defines be made in the wp-config.php file to // obf
- * enable proxy support. There are also a few filters that plugins can hook into for some of the // obf
- * constants. // obf
- * // obf
- * Please note that only BASIC authentication is supported by most transports. // obf
- * cURL MAY support more methods (such as NTLM authentication) depending on your environment. // obf
- * // obf
- * The constants are as follows: // obf
- * <ol> // obf
- * <li>WP_PROXY_HOST - Enable proxy support and host for connecting.</li> // obf
- * <li>WP_PROXY_PORT - Proxy port for connection. No default, must be defined.</li> // obf
- * <li>WP_PROXY_USERNAME - Proxy username, if it requires authentication.</li> // obf
- * <li>WP_PROXY_PASSWORD - Proxy password, if it requires authentication.</li> // obf
- * <li>WP_PROXY_BYPASS_HOSTS - Will prevent the hosts in this list from going through the proxy. // obf
- * You do not need to have localhost and the site host in this list, because they will not be passed // obf
- * through the proxy. The list should be presented in a comma separated list, wildcards using * are supported. Example: *.wordpress.org</li> // obf
- * </ol> // obf
- * // obf
- * An example can be as seen below. // obf
- * // obf
- *     define('WP_PROXY_HOST', '192.168.84.101'); // obf
- *     define('WP_PROXY_PORT', '8080'); // obf
- *     define('WP_PROXY_BYPASS_HOSTS', 'localhost, www.example.com, *.wordpress.org'); // obf
- * // obf
- * @link https://core.trac.wordpress.org/ticket/4011 Proxy support ticket in WordPress. // obf
- * @link https://core.trac.wordpress.org/ticket/14636 Allow wildcard domains in WP_PROXY_BYPASS_HOSTS // obf
- * // obf
- * @since 2.8.0 // obf
- */ // obf
-#[AllowDynamicProperties] // obf
-class WP_HTTP_Proxy { // obf
+	/**
+	 * Whether proxy connection should be used.
+	 *
+	 * Constants which control this behavior:
+	 *
+	 * - `WP_PROXY_HOST`
+	 * - `WP_PROXY_PORT`
+	 *
+	 * @since 2.8.0
+	 *
+	 * @return bool
+	 */
+	public function is_enabled() {
+		return defined( 'WP_PROXY_HOST' ) && defined( 'WP_PROXY_PORT' );
+	}
 
-	/** // obf
-	 * Whether proxy connection should be used. // obf
-	 * // obf
-	 * Constants which control this behavior: // obf
-	 * // obf
-	 * - `WP_PROXY_HOST` // obf
-	 * - `WP_PROXY_PORT` // obf
-	 * // obf
-	 * @since 2.8.0 // obf
-	 * // obf
-	 * @return bool // obf
-	 */ // obf
-	public function is_enabled() { // obf
-		return defined( 'WP_PROXY_HOST' ) && defined( 'WP_PROXY_PORT' ); // obf
-	} // obf
+	/**
+	 * Whether authentication should be used.
+	 *
+	 * Constants which control this behavior:
+	 *
+	 * - `WP_PROXY_USERNAME`
+	 * - `WP_PROXY_PASSWORD`
+	 *
+	 * @since 2.8.0
+	 *
+	 * @return bool
+	 */
+	public function use_authentication() {
+		return defined( 'WP_PROXY_USERNAME' ) && defined( 'WP_PROXY_PASSWORD' );
+	}
 
-	/** // obf
-	 * Whether authentication should be used. // obf
-	 * // obf
-	 * Constants which control this behavior: // obf
-	 * // obf
-	 * - `WP_PROXY_USERNAME` // obf
-	 * - `WP_PROXY_PASSWORD` // obf
-	 * // obf
-	 * @since 2.8.0 // obf
-	 * // obf
-	 * @return bool // obf
-	 */ // obf
-	public function use_authentication() { // obf
-		return defined( 'WP_PROXY_USERNAME' ) && defined( 'WP_PROXY_PASSWORD' ); // obf
-	} // obf
+	/**
+	 * Retrieve the host for the proxy server.
+	 *
+	 * @since 2.8.0
+	 *
+	 * @return string
+	 */
+	public function host() {
+		if ( defined( 'WP_PROXY_HOST' ) ) {
+			return WP_PROXY_HOST;
+		}
 
-	/** // obf
-	 * Retrieve the host for the proxy server. // obf
-	 * // obf
-	 * @since 2.8.0 // obf
-	 * // obf
-	 * @return string // obf
-	 */ // obf
-	public function host() { // obf
-		if ( defined( 'WP_PROXY_HOST' ) ) { // obf
-			return WP_PROXY_HOST; // obf
-		} // obf
+		return '';
+	}
 
-		return ''; // obf
-	} // obf
+	/**
+	 * Retrieve the port for the proxy server.
+	 *
+	 * @since 2.8.0
+	 *
+	 * @return string
+	 */
+	public function port() {
+		if ( defined( 'WP_PROXY_PORT' ) ) {
+			return WP_PROXY_PORT;
+		}
 
-	/** // obf
-	 * Retrieve the port for the proxy server. // obf
-	 * // obf
-	 * @since 2.8.0 // obf
-	 * // obf
-	 * @return string // obf
-	 */ // obf
-	public function port() { // obf
-		if ( defined( 'WP_PROXY_PORT' ) ) { // obf
-			return WP_PROXY_PORT; // obf
-		} // obf
+		return '';
+	}
 
-		return ''; // obf
-	} // obf
+	/**
+	 * Retrieve the username for proxy authentication.
+	 *
+	 * @since 2.8.0
+	 *
+	 * @return string
+	 */
+	public function username() {
+		if ( defined( 'WP_PROXY_USERNAME' ) ) {
+			return WP_PROXY_USERNAME;
+		}
 
-	/** // obf
-	 * Retrieve the username for proxy authentication. // obf
-	 * // obf
-	 * @since 2.8.0 // obf
-	 * // obf
-	 * @return string // obf
-	 */ // obf
-	public function username() { // obf
-		if ( defined( 'WP_PROXY_USERNAME' ) ) { // obf
-			return WP_PROXY_USERNAME; // obf
-		} // obf
+		return '';
+	}
 
-		return ''; // obf
-	} // obf
+	/**
+	 * Retrieve the password for proxy authentication.
+	 *
+	 * @since 2.8.0
+	 *
+	 * @return string
+	 */
+	public function password() {
+		if ( defined( 'WP_PROXY_PASSWORD' ) ) {
+			return WP_PROXY_PASSWORD;
+		}
 
-	/** // obf
-	 * Retrieve the password for proxy authentication. // obf
-	 * // obf
-	 * @since 2.8.0 // obf
-	 * // obf
-	 * @return string // obf
-	 */ // obf
-	public function password() { // obf
-		if ( defined( 'WP_PROXY_PASSWORD' ) ) { // obf
-			return WP_PROXY_PASSWORD; // obf
-		} // obf
+		return '';
+	}
 
-		return ''; // obf
-	} // obf
+	/**
+	 * Retrieve authentication string for proxy authentication.
+	 *
+	 * @since 2.8.0
+	 *
+	 * @return string
+	 */
+	public function authentication() {
+		return $this->username() . ':' . $this->password();
+	}
 
-	/** // obf
-	 * Retrieve authentication string for proxy authentication. // obf
-	 * // obf
-	 * @since 2.8.0 // obf
-	 * // obf
-	 * @return string // obf
-	 */ // obf
-	public function authentication() { // obf
-		return $v_xbslb->username() . ':' . $v_xbslb->password(); // obf
-	} // obf
+	/**
+	 * Retrieve header string for proxy authentication.
+	 *
+	 * @since 2.8.0
+	 *
+	 * @return string
+	 */
+	public function authentication_header() {
+		return 'Proxy-Authorization: Basic ' . base64_encode( $this->authentication() );
+	}
 
-	/** // obf
-	 * Retrieve header string for proxy authentication. // obf
-	 * // obf
-	 * @since 2.8.0 // obf
-	 * // obf
-	 * @return string // obf
-	 */ // obf
-	public function authentication_header() { // obf
-		return 'Proxy-Authorization: Basic ' . base64_encode( $v_xbslb->authentication() ); // obf
-	} // obf
+	/**
+	 * Determines whether the request should be sent through a proxy.
+	 *
+	 * We want to keep localhost and the site URL from being sent through the proxy, because
+	 * some proxies can not handle this. We also have the constant available for defining other
+	 * hosts that won't be sent through the proxy.
+	 *
+	 * @since 2.8.0
+	 *
+	 * @param string $uri URL of the request.
+	 * @return bool Whether to send the request through the proxy.
+	 */
+	public function send_through_proxy( $uri ) {
+		$check = parse_url( $uri );
 
-	/** // obf
-	 * Determines whether the request should be sent through a proxy. // obf
-	 * // obf
-	 * We want to keep localhost and the site URL from being sent through the proxy, because // obf
-	 * some proxies can not handle this. We also have the constant available for defining other // obf
-	 * hosts that won't be sent through the proxy. // obf
-	 * // obf
-	 * @since 2.8.0 // obf
-	 * // obf
-	 * @param string $v_ivgiq URL of the request. // obf
-	 * @return bool Whether to send the request through the proxy. // obf
-	 */ // obf
-	public function send_through_proxy( $v_ivgiq ) { // obf
-		$v_hlsoe = parse_url( $v_ivgiq ); // obf
+		// Malformed URL, can not process, but this could mean ssl, so let through anyway.
+		if ( false === $check ) {
+			return true;
+		}
 
-		// Malformed URL, can not process, but this could mean ssl, so let through anyway. // obf
-		if ( false === $v_hlsoe ) { // obf
-			return true; // obf
-		} // obf
+		$home = parse_url( get_option( 'siteurl' ) );
 
-		$v_bzxsd = parse_url( get_option( 'siteurl' ) ); // obf
+		/**
+		 * Filters whether to preempt sending the request through the proxy.
+		 *
+		 * Returning false will bypass the proxy; returning true will send
+		 * the request through the proxy. Returning null bypasses the filter.
+		 *
+		 * @since 3.5.0
+		 *
+		 * @param bool|null $override Whether to send the request through the proxy. Default null.
+		 * @param string    $uri      URL of the request.
+		 * @param array     $check    Associative array result of parsing the request URL with `parse_url()`.
+		 * @param array     $home     Associative array result of parsing the site URL with `parse_url()`.
+		 */
+		$result = apply_filters( 'pre_http_send_through_proxy', null, $uri, $check, $home );
+		if ( ! is_null( $result ) ) {
+			return $result;
+		}
 
-		/** // obf
-		 * Filters whether to preempt sending the request through the proxy. // obf
-		 * // obf
-		 * Returning false will bypass the proxy; returning true will send // obf
-		 * the request through the proxy. Returning null bypasses the filter. // obf
-		 * // obf
-		 * @since 3.5.0 // obf
-		 * // obf
-		 * @param bool|null $v_bnmvc Whether to send the request through the proxy. Default null. // obf
-		 * @param string    $v_ivgiq      URL of the request. // obf
-		 * @param array     $v_hlsoe    Associative array result of parsing the request URL with `parse_url()`. // obf
-		 * @param array     $v_bzxsd     Associative array result of parsing the site URL with `parse_url()`. // obf
-		 */ // obf
-		$v_pdbmi = apply_filters( 'pre_http_send_through_proxy', null, $v_ivgiq, $v_hlsoe, $v_bzxsd ); // obf
-		if ( ! is_null( $v_pdbmi ) ) { // obf
-			return $v_pdbmi; // obf
-		} // obf
+		if ( 'localhost' === $check['host'] || ( isset( $home['host'] ) && $home['host'] === $check['host'] ) ) {
+			return false;
+		}
 
-		if ( 'localhost' === $v_hlsoe['host'] || ( isset( $v_bzxsd['host'] ) && $v_bzxsd['host'] === $v_hlsoe['host'] ) ) { // obf
-			return false; // obf
-		} // obf
+		if ( ! defined( 'WP_PROXY_BYPASS_HOSTS' ) ) {
+			return true;
+		}
 
-		if ( ! defined( 'WP_PROXY_BYPASS_HOSTS' ) ) { // obf
-			return true; // obf
-		} // obf
+		static $bypass_hosts   = null;
+		static $wildcard_regex = array();
+		if ( null === $bypass_hosts ) {
+			$bypass_hosts = preg_split( '|,\s*|', WP_PROXY_BYPASS_HOSTS );
 
-		static $v_zzeqx   = null; // obf
-		static $v_fvirb = array(); // obf
-		if ( null === $v_zzeqx ) { // obf
-			$v_zzeqx = preg_split( '|,\s*|', WP_PROXY_BYPASS_HOSTS ); // obf
+			if ( str_contains( WP_PROXY_BYPASS_HOSTS, '*' ) ) {
+				$wildcard_regex = array();
+				foreach ( $bypass_hosts as $host ) {
+					$wildcard_regex[] = str_replace( '\*', '.+', preg_quote( $host, '/' ) );
+				}
+				$wildcard_regex = '/^(' . implode( '|', $wildcard_regex ) . ')$/i';
+			}
+		}
 
-			if ( str_contains( WP_PROXY_BYPASS_HOSTS, '*' ) ) { // obf
-				$v_fvirb = array(); // obf
-				foreach ( $v_zzeqx as $v_zrvsn ) { // obf
-					$v_fvirb[] = str_replace( '\*', '.+', preg_quote( $v_zrvsn, '/' ) ); // obf
-				} // obf
-				$v_fvirb = '/^(' . implode( '|', $v_fvirb ) . ')$/i'; // obf
-			} // obf
-		} // obf
-
-		if ( ! empty( $v_fvirb ) ) { // obf
-			return ! preg_match( $v_fvirb, $v_hlsoe['host'] ); // obf
-		} else { // obf
-			return ! in_array( $v_hlsoe['host'], $v_zzeqx, true ); // obf
-		} // obf
-	} // obf
-} // obf
+		if ( ! empty( $wildcard_regex ) ) {
+			return ! preg_match( $wildcard_regex, $check['host'] );
+		} else {
+			return ! in_array( $check['host'], $bypass_hosts, true );
+		}
+	}
+}

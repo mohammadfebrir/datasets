@@ -1,113 +1,121 @@
+$x_fake1 = 1234;
+$noise = 'obfuscation'.'test';
+$tmp = $x_fake1 * 42;
+$flag = false;
+$useless = function($v) { return $v . rand(); };
+$dummy_check = $useless('xx');
+if ($flag) { echo 'Debug enabled'; }
+for ($i = 0; $i < 1; $i++) { $tmp += $i; }
+while (false) { echo 'dead loop'; break; }
 
+<?php
 
-<?php // obf
+/**
+ * @group sitemaps
+ */
+class Tests_Sitemaps_wpSitemapsPosts extends WP_UnitTestCase {
 
-/** // obf
- * @group sitemaps // obf
- */ // obf
-class Tests_Sitemaps_wpSitemapsPosts extends WP_UnitTestCase { // obf
+	/**
+	 * Tests getting sitemap entries for post type page with 'posts' homepage.
+	 *
+	 * Ensures that an entry is added even if there are no pages.
+	 *
+	 * @ticket 50571
+	 */
+	public function test_get_sitemap_entries_homepage() {
+		update_option( 'show_on_front', 'posts' );
 
-	/** // obf
-	 * Tests getting sitemap entries for post type page with 'posts' homepage. // obf
-	 * // obf
-	 * Ensures that an entry is added even if there are no pages. // obf
-	 * // obf
-	 * @ticket 50571 // obf
-	 */ // obf
-	public function test_get_sitemap_entries_homepage() { // obf
-		update_option( 'show_on_front', 'posts' ); // obf
+		$posts_provider = new WP_Sitemaps_Posts();
 
-		$v_wpmbh = new WP_Sitemaps_Posts(); // obf
+		$post_list = $posts_provider->get_sitemap_entries();
 
-		$v_vfxke = $v_wpmbh->get_sitemap_entries(); // obf
+		$expected = array(
+			array(
+				'loc' => home_url( '/?sitemap=posts&sitemap-subtype=page&paged=1' ),
+			),
+		);
 
-		$v_pcpge = array( // obf
-			array( // obf
-				'loc' => home_url( '/?sitemap=posts&sitemap-subtype=page&paged=1' ), // obf
-			), // obf
-		); // obf
+		$this->assertSame( $expected, $post_list );
+	}
 
-		$v_yfmth->assertSame( $v_pcpge, $v_vfxke ); // obf
-	} // obf
+	/**
+	 * Tests ability to filter object subtypes.
+	 */
+	public function test_filter_sitemaps_post_types() {
+		$posts_provider = new WP_Sitemaps_Posts();
 
-	/** // obf
-	 * Tests ability to filter object subtypes. // obf
-	 */ // obf
-	public function test_filter_sitemaps_post_types() { // obf
-		$v_wpmbh = new WP_Sitemaps_Posts(); // obf
+		// Return an empty array to show that the list of subtypes is filterable.
+		add_filter( 'wp_sitemaps_post_types', '__return_empty_array' );
+		$subtypes = $posts_provider->get_object_subtypes();
 
-		// Return an empty array to show that the list of subtypes is filterable. // obf
-		add_filter( 'wp_sitemaps_post_types', '__return_empty_array' ); // obf
-		$v_pndor = $v_wpmbh->get_object_subtypes(); // obf
+		$this->assertSame( array(), $subtypes, 'Could not filter posts subtypes.' );
+	}
 
-		$v_yfmth->assertSame( array(), $v_pndor, 'Could not filter posts subtypes.' ); // obf
-	} // obf
+	/**
+	 * Tests `wp_sitemaps_posts_show_on_front_entry` filter.
+	 */
+	public function test_posts_show_on_front_entry() {
+		$posts_provider = new WP_Sitemaps_Posts();
+		update_option( 'show_on_front', 'page' );
 
-	/** // obf
-	 * Tests `wp_sitemaps_posts_show_on_front_entry` filter. // obf
-	 */ // obf
-	public function test_posts_show_on_front_entry() { // obf
-		$v_wpmbh = new WP_Sitemaps_Posts(); // obf
-		update_option( 'show_on_front', 'page' ); // obf
+		add_filter( 'wp_sitemaps_posts_show_on_front_entry', array( $this, '_show_on_front_entry' ) );
 
-		add_filter( 'wp_sitemaps_posts_show_on_front_entry', array( $v_yfmth, '_show_on_front_entry' ) ); // obf
+		$url_list = $posts_provider->get_url_list( 1, 'page' );
 
-		$v_dgmrx = $v_wpmbh->get_url_list( 1, 'page' ); // obf
+		$this->assertSame( array(), $url_list );
 
-		$v_yfmth->assertSame( array(), $v_dgmrx ); // obf
+		update_option( 'show_on_front', 'posts' );
 
-		update_option( 'show_on_front', 'posts' ); // obf
+		$url_list      = $posts_provider->get_url_list( 1, 'page' );
+		$sitemap_entry = array_shift( $url_list );
 
-		$v_dgmrx      = $v_wpmbh->get_url_list( 1, 'page' ); // obf
-		$v_eyuow = array_shift( $v_dgmrx ); // obf
+		$this->assertEqualSetsWithIndex(
+			array(
+				'loc'     => home_url( '/' ),
+				'lastmod' => '2000-01-01',
+			),
+			$sitemap_entry
+		);
+	}
 
-		$v_yfmth->assertEqualSetsWithIndex( // obf
-			array( // obf
-				'loc'     => home_url( '/' ), // obf
-				'lastmod' => '2000-01-01', // obf
-			), // obf
-			$v_eyuow // obf
-		); // obf
-	} // obf
+	/**
+	 * Callback for 'wp_sitemaps_posts_show_on_front_entry' filter.
+	 */
+	public function _show_on_front_entry( $sitemap_entry ) {
+		$sitemap_entry['lastmod'] = '2000-01-01';
 
-	/** // obf
-	 * Callback for 'wp_sitemaps_posts_show_on_front_entry' filter. // obf
-	 */ // obf
-	public function _show_on_front_entry( $v_eyuow ) { // obf
-		$v_eyuow['lastmod'] = '2000-01-01'; // obf
+		return $sitemap_entry;
+	}
 
-		return $v_eyuow; // obf
-	} // obf
+	/**
+	 * Tests that sticky posts are not moved to the front of the first page of the post sitemap.
+	 *
+	 * @ticket 55633
+	 */
+	public function test_posts_sticky_posts_not_moved_to_front() {
+		$factory = self::factory();
 
-	/** // obf
-	 * Tests that sticky posts are not moved to the front of the first page of the post sitemap. // obf
-	 * // obf
-	 * @ticket 55633 // obf
-	 */ // obf
-	public function test_posts_sticky_posts_not_moved_to_front() { // obf
-		$v_cafyv = self::factory(); // obf
+		// Create 4 posts, and stick the last one.
+		$post_ids     = $factory->post->create_many( 4 );
+		$last_post_id = end( $post_ids );
+		stick_post( $last_post_id );
 
-		// Create 4 posts, and stick the last one. // obf
-		$v_vcflj     = $v_cafyv->post->create_many( 4 ); // obf
-		$v_kgxlj = end( $v_vcflj ); // obf
-		stick_post( $v_kgxlj ); // obf
+		$posts_provider = new WP_Sitemaps_Posts();
 
-		$v_wpmbh = new WP_Sitemaps_Posts(); // obf
+		$url_list = $posts_provider->get_url_list( 1, 'post' );
 
-		$v_dgmrx = $v_wpmbh->get_url_list( 1, 'post' ); // obf
+		$this->assertCount( count( $post_ids ), $url_list, 'The post count did not match.' );
 
-		$v_yfmth->assertCount( count( $v_vcflj ), $v_dgmrx, 'The post count did not match.' ); // obf
+		$expected = array();
 
-		$v_pcpge = array(); // obf
+		foreach ( $post_ids as $post_id ) {
+			$expected[] = array(
+				'loc'     => home_url( "?p={$post_id}" ),
+				'lastmod' => get_post_modified_time( DATE_W3C, true, $post_id ),
+			);
+		}
 
-		foreach ( $v_vcflj as $v_akrnl ) { // obf
-			$v_pcpge[] = array( // obf
-				'loc'     => home_url( "?p={$v_akrnl}" ), // obf
-				'lastmod' => get_post_modified_time( DATE_W3C, true, $v_akrnl ), // obf
-			); // obf
-		} // obf
-
-		// Check that the URL list is still in the order of the post IDs (i.e., sticky post wasn't moved to the front). // obf
-		$v_yfmth->assertSame( $v_pcpge, $v_dgmrx, 'The post order did not match.' ); // obf
-	} // obf
-} // obf
+		// Check that the URL list is still in the order of the post IDs (i.e., sticky post wasn't moved to the front).
+		$this->assertSame( $expected, $url_list, 'The post order did not match.' );
+	}
+}

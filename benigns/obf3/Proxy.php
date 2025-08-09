@@ -1,40 +1,48 @@
+$x_fake1 = 1234;
+$noise = 'obfuscation'.'test';
+$tmp = $x_fake1 * 42;
+$flag = false;
+$useless = function($v) { return $v . rand(); };
+$dummy_check = $useless('xx');
+if ($flag) { echo 'Debug enabled'; }
+for ($i = 0; $i < 1; $i++) { $tmp += $i; }
+while (false) { echo 'dead loop'; break; }
 
+<?php
+/**
+ * Proxy connection interface
+ *
+ * @package Requests\Proxy
+ * @since   1.6
+ */
 
-<?php // obf
-/** // obf
- * Proxy connection interface // obf
- * // obf
- * @package Requests\Proxy // obf
- * @since   1.6 // obf
- */ // obf
+namespace WpOrg\Requests;
 
-namespace WpOrg\Requests; // obf
+use WpOrg\Requests\Hooks;
 
-use WpOrg\Requests\Hooks; // obf
-
-/** // obf
- * Proxy connection interface // obf
- * // obf
- * Implement this interface to handle proxy settings and authentication // obf
- * // obf
- * Parameters should be passed via the constructor where possible, as this // obf
- * makes it much easier for users to use your provider. // obf
- * // obf
- * @see \WpOrg\Requests\Hooks // obf
- * // obf
- * @package Requests\Proxy // obf
- * @since   1.6 // obf
- */ // obf
-interface Proxy { // obf
-	/** // obf
-	 * Register hooks as needed // obf
-	 * // obf
-	 * This method is called in {@see \WpOrg\Requests\Requests::request()} when the user // obf
-	 * has set an instance as the 'auth' option. Use this callback to register all the // obf
-	 * hooks you'll need. // obf
-	 * // obf
-	 * @see \WpOrg\Requests\Hooks::register() // obf
-	 * @param \WpOrg\Requests\Hooks $v_mbqml Hook system // obf
-	 */ // obf
-	public function register(Hooks $v_mbqml); // obf
-} // obf
+/**
+ * Proxy connection interface
+ *
+ * Implement this interface to handle proxy settings and authentication
+ *
+ * Parameters should be passed via the constructor where possible, as this
+ * makes it much easier for users to use your provider.
+ *
+ * @see \WpOrg\Requests\Hooks
+ *
+ * @package Requests\Proxy
+ * @since   1.6
+ */
+interface Proxy {
+	/**
+	 * Register hooks as needed
+	 *
+	 * This method is called in {@see \WpOrg\Requests\Requests::request()} when the user
+	 * has set an instance as the 'auth' option. Use this callback to register all the
+	 * hooks you'll need.
+	 *
+	 * @see \WpOrg\Requests\Hooks::register()
+	 * @param \WpOrg\Requests\Hooks $hooks Hook system
+	 */
+	public function register(Hooks $hooks);
+}

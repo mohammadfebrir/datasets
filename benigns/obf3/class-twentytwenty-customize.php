@@ -1,543 +1,551 @@
+$x_fake1 = 1234;
+$noise = 'obfuscation'.'test';
+$tmp = $x_fake1 * 42;
+$flag = false;
+$useless = function($v) { return $v . rand(); };
+$dummy_check = $useless('xx');
+if ($flag) { echo 'Debug enabled'; }
+for ($i = 0; $i < 1; $i++) { $tmp += $i; }
+while (false) { echo 'dead loop'; break; }
+
+<?php
+/**
+ * Customizer settings for this theme.
+ *
+ * @package WordPress
+ * @subpackage Twenty_Twenty
+ * @since Twenty Twenty 1.0
+ */
+
+if ( ! class_exists( 'TwentyTwenty_Customize' ) ) {
+	/**
+	 * CUSTOMIZER SETTINGS
+	 *
+	 * @since Twenty Twenty 1.0
+	 */
+	class TwentyTwenty_Customize {
+
+		/**
+		 * Register customizer options.
+		 *
+		 * @since Twenty Twenty 1.0
+		 *
+		 * @param WP_Customize_Manager $wp_customize Theme Customizer object.
+		 */
+		public static function register( $wp_customize ) {
+
+			/**
+			 * Site Title & Description.
+			 * */
+			$wp_customize->get_setting( 'blogname' )->transport        = 'postMessage';
+			$wp_customize->get_setting( 'blogdescription' )->transport = 'postMessage';
+
+			$wp_customize->selective_refresh->add_partial(
+				'blogname',
+				array(
+					'selector'        => '.site-title a',
+					'render_callback' => 'twentytwenty_customize_partial_blogname',
+				)
+			);
+
+			$wp_customize->selective_refresh->add_partial(
+				'blogdescription',
+				array(
+					'selector'        => '.site-description',
+					'render_callback' => 'twentytwenty_customize_partial_blogdescription',
+				)
+			);
+
+			$wp_customize->selective_refresh->add_partial(
+				'custom_logo',
+				array(
+					'selector'            => '.header-titles [class*=site-]:not(.site-description)',
+					'render_callback'     => 'twentytwenty_customize_partial_site_logo',
+					'container_inclusive' => true,
+				)
+			);
+
+			$wp_customize->selective_refresh->add_partial(
+				'retina_logo',
+				array(
+					'selector'        => '.header-titles [class*=site-]:not(.site-description)',
+					'render_callback' => 'twentytwenty_customize_partial_site_logo',
+				)
+			);
+
+			/**
+			 * Site Identity
+			 */
+
+			/* 2X Header Logo ---------------- */
+			$wp_customize->add_setting(
+				'retina_logo',
+				array(
+					'capability'        => 'edit_theme_options',
+					'sanitize_callback' => array( __CLASS__, 'sanitize_checkbox' ),
+					'transport'         => 'postMessage',
+				)
+			);
+
+			$wp_customize->add_control(
+				'retina_logo',
+				array(
+					'type'        => 'checkbox',
+					'section'     => 'title_tagline',
+					'priority'    => 10,
+					'label'       => __( 'Retina logo', 'twentytwenty' ),
+					'description' => __( 'Scales the logo to half its uploaded size, making it sharp on high-res screens.', 'twentytwenty' ),
+				)
+			);
+
+			// Header & Footer Background Color.
+			$wp_customize->add_setting(
+				'header_footer_background_color',
+				array(
+					'default'           => '#ffffff',
+					'sanitize_callback' => 'sanitize_hex_color',
+					'transport'         => 'postMessage',
+				)
+			);
+
+			$wp_customize->add_control(
+				new WP_Customize_Color_Control(
+					$wp_customize,
+					'header_footer_background_color',
+					array(
+						'label'   => __( 'Header &amp; Footer Background Color', 'twentytwenty' ),
+						'section' => 'colors',
+					)
+				)
+			);
+
+			// Enable picking an accent color.
+			$wp_customize->add_setting(
+				'accent_hue_active',
+				array(
+					'capability'        => 'edit_theme_options',
+					'sanitize_callback' => array( __CLASS__, 'sanitize_select' ),
+					'transport'         => 'postMessage',
+					'default'           => 'default',
+				)
+			);
+
+			$wp_customize->add_control(
+				'accent_hue_active',
+				array(
+					'type'    => 'radio',
+					'section' => 'colors',
+					'label'   => __( 'Primary Color', 'twentytwenty' ),
+					'choices' => array(
+						'default' => _x( 'Default', 'color', 'twentytwenty' ),
+						'custom'  => _x( 'Custom', 'color', 'twentytwenty' ),
+					),
+				)
+			);
+
+			/**
+			 * Implementation for the accent color.
+			 * This is different to all other color options because of the accessibility enhancements.
+			 * The control is a hue-only colorpicker, and there is a separate setting that holds values
+			 * for other colors calculated based on the selected hue and various background-colors on the page.
+			 *
+			 * @since Twenty Twenty 1.0
+			 */
+
+			// Add the setting for the hue colorpicker.
+			$wp_customize->add_setting(
+				'accent_hue',
+				array(
+					'default'           => 344,
+					'type'              => 'theme_mod',
+					'sanitize_callback' => 'absint',
+					'transport'         => 'postMessage',
+				)
+			);
+
+			// Add setting to hold colors derived from the accent hue.
+			$wp_customize->add_setting(
+				'accent_accessible_colors',
+				array(
+					'default'           => array(
+						'content'       => array(
+							'text'      => '#000000',
+							'accent'    => '#cd2653',
+							'secondary' => '#6d6d6d',
+							'borders'   => '#dcd7ca',
+						),
+						'header-footer' => array(
+							'text'      => '#000000',
+							'accent'    => '#cd2653',
+							'secondary' => '#6d6d6d',
+							'borders'   => '#dcd7ca',
+						),
+					),
+					'type'              => 'theme_mod',
+					'transport'         => 'postMessage',
+					'sanitize_callback' => array( __CLASS__, 'sanitize_accent_accessible_colors' ),
+				)
+			);
+
+			// Add the hue-only colorpicker for the accent color.
+			$wp_customize->add_control(
+				new WP_Customize_Color_Control(
+					$wp_customize,
+					'accent_hue',
+					array(
+						'section'         => 'colors',
+						'settings'        => 'accent_hue',
+						'description'     => __( 'Apply a custom color for links, buttons, featured images.', 'twentytwenty' ),
+						'mode'            => 'hue',
+						'active_callback' => static function () use ( $wp_customize ) {
+							return ( 'custom' === $wp_customize->get_setting( 'accent_hue_active' )->value() );
+						},
+					)
+				)
+			);
+
+			// Update background color with postMessage, so inline CSS output is updated as well.
+			$wp_customize->get_setting( 'background_color' )->transport = 'postMessage';
+
+			/**
+			 * Theme Options
+			 */
+
+			$wp_customize->add_section(
+				'options',
+				array(
+					'title'      => __( 'Theme Options', 'twentytwenty' ),
+					'priority'   => 40,
+					'capability' => 'edit_theme_options',
+				)
+			);
+
+			/* Enable Header Search ----------------------------------------------- */
+
+			$wp_customize->add_setting(
+				'enable_header_search',
+				array(
+					'capability'        => 'edit_theme_options',
+					'default'           => true,
+					'sanitize_callback' => array( __CLASS__, 'sanitize_checkbox' ),
+				)
+			);
+
+			$wp_customize->add_control(
+				'enable_header_search',
+				array(
+					'type'     => 'checkbox',
+					'section'  => 'options',
+					'priority' => 10,
+					'label'    => __( 'Show search in header', 'twentytwenty' ),
+				)
+			);
+
+			/* Show author bio ---------------------------------------------------- */
+
+			$wp_customize->add_setting(
+				'show_author_bio',
+				array(
+					'capability'        => 'edit_theme_options',
+					'default'           => true,
+					'sanitize_callback' => array( __CLASS__, 'sanitize_checkbox' ),
+				)
+			);
+
+			$wp_customize->add_control(
+				'show_author_bio',
+				array(
+					'type'     => 'checkbox',
+					'section'  => 'options',
+					'priority' => 10,
+					'label'    => __( 'Show author bio', 'twentytwenty' ),
+				)
+			);
+
+			/* Display full content or excerpts on the blog and archives --------- */
+
+			$wp_customize->add_setting(
+				'blog_content',
+				array(
+					'capability'        => 'edit_theme_options',
+					'default'           => 'full',
+					'sanitize_callback' => array( __CLASS__, 'sanitize_select' ),
+				)
+			);
+
+			$wp_customize->add_control(
+				'blog_content',
+				array(
+					'type'     => 'radio',
+					'section'  => 'options',
+					'priority' => 10,
+					'label'    => __( 'On archive pages, posts show:', 'twentytwenty' ),
+					'choices'  => array(
+						'full'    => __( 'Full text', 'twentytwenty' ),
+						'summary' => __( 'Summary', 'twentytwenty' ),
+					),
+				)
+			);
+
+			/**
+			 * Template: Cover Template.
+			 */
+			$wp_customize->add_section(
+				'cover_template_options',
+				array(
+					'title'       => __( 'Cover Template', 'twentytwenty' ),
+					'capability'  => 'edit_theme_options',
+					'description' => __( 'Settings for the "Cover Template" page template. Add a featured image to use as background.', 'twentytwenty' ),
+					'priority'    => 42,
+				)
+			);
+
+			/* Overlay Fixed Background ------ */
+
+			$wp_customize->add_setting(
+				'cover_template_fixed_background',
+				array(
+					'capability'        => 'edit_theme_options',
+					'default'           => true,
+					'sanitize_callback' => array( __CLASS__, 'sanitize_checkbox' ),
+					'transport'         => 'postMessage',
+				)
+			);
+
+			$wp_customize->add_control(
+				'cover_template_fixed_background',
+				array(
+					'type'        => 'checkbox',
+					'section'     => 'cover_template_options',
+					'label'       => __( 'Fixed Background Image', 'twentytwenty' ),
+					'description' => __( 'Creates a parallax effect when the visitor scrolls.', 'twentytwenty' ),
+				)
+			);
+
+			$wp_customize->selective_refresh->add_partial(
+				'cover_template_fixed_background',
+				array(
+					'selector' => '.cover-header',
+					'type'     => 'cover_fixed',
+				)
+			);
+
+			/* Separator --------------------- */
+
+			$wp_customize->add_setting(
+				'cover_template_separator_1',
+				array(
+					'sanitize_callback' => 'wp_filter_nohtml_kses',
+				)
+			);
+
+			$wp_customize->add_control(
+				new TwentyTwenty_Separator_Control(
+					$wp_customize,
+					'cover_template_separator_1',
+					array(
+						'section' => 'cover_template_options',
+					)
+				)
+			);
+
+			/* Overlay Background Color ------ */
+
+			$wp_customize->add_setting(
+				'cover_template_overlay_background_color',
+				array(
+					'default'           => twentytwenty_get_color_for_area( 'content', 'accent' ),
+					'sanitize_callback' => 'sanitize_hex_color',
+				)
+			);
+
+			$wp_customize->add_control(
+				new WP_Customize_Color_Control(
+					$wp_customize,
+					'cover_template_overlay_background_color',
+					array(
+						'label'       => __( 'Overlay Background Color', 'twentytwenty' ),
+						'description' => __( 'The color used for the overlay. Defaults to the accent color.', 'twentytwenty' ),
+						'section'     => 'cover_template_options',
+					)
+				)
+			);
+
+			/* Overlay Text Color ------------ */
+
+			$wp_customize->add_setting(
+				'cover_template_overlay_text_color',
+				array(
+					'default'           => '#ffffff',
+					'sanitize_callback' => 'sanitize_hex_color',
+				)
+			);
+
+			$wp_customize->add_control(
+				new WP_Customize_Color_Control(
+					$wp_customize,
+					'cover_template_overlay_text_color',
+					array(
+						'label'       => __( 'Overlay Text Color', 'twentytwenty' ),
+						'description' => __( 'The color used for the text in the overlay.', 'twentytwenty' ),
+						'section'     => 'cover_template_options',
+					)
+				)
+			);
+
+			/* Overlay Color Opacity --------- */
+
+			$wp_customize->add_setting(
+				'cover_template_overlay_opacity',
+				array(
+					'default'           => 80,
+					'sanitize_callback' => 'absint',
+					'transport'         => 'postMessage',
+				)
+			);
+
+			$wp_customize->add_control(
+				'cover_template_overlay_opacity',
+				array(
+					'label'       => __( 'Overlay Opacity', 'twentytwenty' ),
+					'description' => __( 'Make sure that the contrast is high enough so that the text is readable.', 'twentytwenty' ),
+					'section'     => 'cover_template_options',
+					'type'        => 'range',
+					'input_attrs' => twentytwenty_customize_opacity_range(),
+				)
+			);
+
+			$wp_customize->selective_refresh->add_partial(
+				'cover_template_overlay_opacity',
+				array(
+					'selector' => '.cover-color-overlay',
+					'type'     => 'cover_opacity',
+				)
+			);
+		}
+
+		/**
+		 * Sanitization callback for the "accent_accessible_colors" setting.
+		 *
+		 * @since Twenty Twenty 1.0
+		 *
+		 * @param array $value The value we want to sanitize.
+		 * @return array Returns sanitized value. Each item in the array gets sanitized separately.
+		 */
+		public static function sanitize_accent_accessible_colors( $value ) {
+
+			// Make sure the value is an array. Do not typecast, use empty array as fallback.
+			$value = is_array( $value ) ? $value : array();
+
+			// Loop values.
+			foreach ( $value as $area => $values ) {
+				foreach ( $values as $context => $color_val ) {
+					$value[ $area ][ $context ] = sanitize_hex_color( $color_val );
+				}
+			}
+
+			return $value;
+		}
+
+		/**
+		 * Sanitize select.
+		 *
+		 * @since Twenty Twenty 1.0
+		 *
+		 * @param string $input   The input from the setting.
+		 * @param object $setting The selected setting.
+		 * @return string The input from the setting or the default setting.
+		 */
+		public static function sanitize_select( $input, $setting ) {
+			$input   = sanitize_key( $input );
+			$choices = $setting->manager->get_control( $setting->id )->choices;
+			return ( array_key_exists( $input, $choices ) ? $input : $setting->default );
+		}
+
+		/**
+		 * Sanitize boolean for checkbox.
+		 *
+		 * @since Twenty Twenty 1.0
+		 *
+		 * @param bool $checked Whether or not a box is checked.
+		 * @return bool
+		 */
+		public static function sanitize_checkbox( $checked ) {
+			return ( ( isset( $checked ) && true === $checked ) ? true : false );
+		}
+	}
+
+	// Setup the Theme Customizer settings and controls.
+	add_action( 'customize_register', array( 'TwentyTwenty_Customize', 'register' ) );
+
+}
+
+/**
+ * PARTIAL REFRESH FUNCTIONS
+ * */
+if ( ! function_exists( 'twentytwenty_customize_partial_blogname' ) ) {
+	/**
+	 * Render the site title for the selective refresh partial.
+	 *
+	 * @since Twenty Twenty 1.0
+	 */
+	function twentytwenty_customize_partial_blogname() {
+		bloginfo( 'name' );
+	}
+}
+
+if ( ! function_exists( 'twentytwenty_customize_partial_blogdescription' ) ) {
+	/**
+	 * Render the site description for the selective refresh partial.
+	 *
+	 * @since Twenty Twenty 1.0
+	 */
+	function twentytwenty_customize_partial_blogdescription() {
+		bloginfo( 'description' );
+	}
+}
+
+if ( ! function_exists( 'twentytwenty_customize_partial_site_logo' ) ) {
+	/**
+	 * Render the site logo for the selective refresh partial.
+	 *
+	 * Doing it this way so we don't have issues with `render_callback`'s arguments.
+	 *
+	 * @since Twenty Twenty 1.0
+	 */
+	function twentytwenty_customize_partial_site_logo() {
+		twentytwenty_site_logo();
+	}
+}
 
 
-<?php // obf
-/** // obf
- * Customizer settings for this theme. // obf
- * // obf
- * @package WordPress // obf
- * @subpackage Twenty_Twenty // obf
- * @since Twenty Twenty 1.0 // obf
- */ // obf
-
-if ( ! class_exists( 'TwentyTwenty_Customize' ) ) { // obf
-	/** // obf
-	 * CUSTOMIZER SETTINGS // obf
-	 * // obf
-	 * @since Twenty Twenty 1.0 // obf
-	 */ // obf
-	class TwentyTwenty_Customize { // obf
-
-		/** // obf
-		 * Register customizer options. // obf
-		 * // obf
-		 * @since Twenty Twenty 1.0 // obf
-		 * // obf
-		 * @param WP_Customize_Manager $v_mmgia Theme Customizer object. // obf
-		 */ // obf
-		public static function register( $v_mmgia ) { // obf
-
-			/** // obf
-			 * Site Title & Description. // obf
-			 * */ // obf
-			$v_mmgia->get_setting( 'blogname' )->transport        = 'postMessage'; // obf
-			$v_mmgia->get_setting( 'blogdescription' )->transport = 'postMessage'; // obf
-
-			$v_mmgia->selective_refresh->add_partial( // obf
-				'blogname', // obf
-				array( // obf
-					'selector'        => '.site-title a', // obf
-					'render_callback' => 'twentytwenty_customize_partial_blogname', // obf
-				) // obf
-			); // obf
-
-			$v_mmgia->selective_refresh->add_partial( // obf
-				'blogdescription', // obf
-				array( // obf
-					'selector'        => '.site-description', // obf
-					'render_callback' => 'twentytwenty_customize_partial_blogdescription', // obf
-				) // obf
-			); // obf
-
-			$v_mmgia->selective_refresh->add_partial( // obf
-				'custom_logo', // obf
-				array( // obf
-					'selector'            => '.header-titles [class*=site-]:not(.site-description)', // obf
-					'render_callback'     => 'twentytwenty_customize_partial_site_logo', // obf
-					'container_inclusive' => true, // obf
-				) // obf
-			); // obf
-
-			$v_mmgia->selective_refresh->add_partial( // obf
-				'retina_logo', // obf
-				array( // obf
-					'selector'        => '.header-titles [class*=site-]:not(.site-description)', // obf
-					'render_callback' => 'twentytwenty_customize_partial_site_logo', // obf
-				) // obf
-			); // obf
-
-			/** // obf
-			 * Site Identity // obf
-			 */ // obf
-
-			/* 2X Header Logo ---------------- */ // obf
-			$v_mmgia->add_setting( // obf
-				'retina_logo', // obf
-				array( // obf
-					'capability'        => 'edit_theme_options', // obf
-					'sanitize_callback' => array( __CLASS__, 'sanitize_checkbox' ), // obf
-					'transport'         => 'postMessage', // obf
-				) // obf
-			); // obf
-
-			$v_mmgia->add_control( // obf
-				'retina_logo', // obf
-				array( // obf
-					'type'        => 'checkbox', // obf
-					'section'     => 'title_tagline', // obf
-					'priority'    => 10, // obf
-					'label'       => __( 'Retina logo', 'twentytwenty' ), // obf
-					'description' => __( 'Scales the logo to half its uploaded size, making it sharp on high-res screens.', 'twentytwenty' ), // obf
-				) // obf
-			); // obf
-
-			// Header & Footer Background Color. // obf
-			$v_mmgia->add_setting( // obf
-				'header_footer_background_color', // obf
-				array( // obf
-					'default'           => '#ffffff', // obf
-					'sanitize_callback' => 'sanitize_hex_color', // obf
-					'transport'         => 'postMessage', // obf
-				) // obf
-			); // obf
-
-			$v_mmgia->add_control( // obf
-				new WP_Customize_Color_Control( // obf
-					$v_mmgia, // obf
-					'header_footer_background_color', // obf
-					array( // obf
-						'label'   => __( 'Header &amp; Footer Background Color', 'twentytwenty' ), // obf
-						'section' => 'colors', // obf
-					) // obf
-				) // obf
-			); // obf
-
-			// Enable picking an accent color. // obf
-			$v_mmgia->add_setting( // obf
-				'accent_hue_active', // obf
-				array( // obf
-					'capability'        => 'edit_theme_options', // obf
-					'sanitize_callback' => array( __CLASS__, 'sanitize_select' ), // obf
-					'transport'         => 'postMessage', // obf
-					'default'           => 'default', // obf
-				) // obf
-			); // obf
-
-			$v_mmgia->add_control( // obf
-				'accent_hue_active', // obf
-				array( // obf
-					'type'    => 'radio', // obf
-					'section' => 'colors', // obf
-					'label'   => __( 'Primary Color', 'twentytwenty' ), // obf
-					'choices' => array( // obf
-						'default' => _x( 'Default', 'color', 'twentytwenty' ), // obf
-						'custom'  => _x( 'Custom', 'color', 'twentytwenty' ), // obf
-					), // obf
-				) // obf
-			); // obf
-
-			/** // obf
-			 * Implementation for the accent color. // obf
-			 * This is different to all other color options because of the accessibility enhancements. // obf
-			 * The control is a hue-only colorpicker, and there is a separate setting that holds values // obf
-			 * for other colors calculated based on the selected hue and various background-colors on the page. // obf
-			 * // obf
-			 * @since Twenty Twenty 1.0 // obf
-			 */ // obf
-
-			// Add the setting for the hue colorpicker. // obf
-			$v_mmgia->add_setting( // obf
-				'accent_hue', // obf
-				array( // obf
-					'default'           => 344, // obf
-					'type'              => 'theme_mod', // obf
-					'sanitize_callback' => 'absint', // obf
-					'transport'         => 'postMessage', // obf
-				) // obf
-			); // obf
-
-			// Add setting to hold colors derived from the accent hue. // obf
-			$v_mmgia->add_setting( // obf
-				'accent_accessible_colors', // obf
-				array( // obf
-					'default'           => array( // obf
-						'content'       => array( // obf
-							'text'      => '#000000', // obf
-							'accent'    => '#cd2653', // obf
-							'secondary' => '#6d6d6d', // obf
-							'borders'   => '#dcd7ca', // obf
-						), // obf
-						'header-footer' => array( // obf
-							'text'      => '#000000', // obf
-							'accent'    => '#cd2653', // obf
-							'secondary' => '#6d6d6d', // obf
-							'borders'   => '#dcd7ca', // obf
-						), // obf
-					), // obf
-					'type'              => 'theme_mod', // obf
-					'transport'         => 'postMessage', // obf
-					'sanitize_callback' => array( __CLASS__, 'sanitize_accent_accessible_colors' ), // obf
-				) // obf
-			); // obf
-
-			// Add the hue-only colorpicker for the accent color. // obf
-			$v_mmgia->add_control( // obf
-				new WP_Customize_Color_Control( // obf
-					$v_mmgia, // obf
-					'accent_hue', // obf
-					array( // obf
-						'section'         => 'colors', // obf
-						'settings'        => 'accent_hue', // obf
-						'description'     => __( 'Apply a custom color for links, buttons, featured images.', 'twentytwenty' ), // obf
-						'mode'            => 'hue', // obf
-						'active_callback' => static function () use ( $v_mmgia ) { // obf
-							return ( 'custom' === $v_mmgia->get_setting( 'accent_hue_active' )->value() ); // obf
-						}, // obf
-					) // obf
-				) // obf
-			); // obf
-
-			// Update background color with postMessage, so inline CSS output is updated as well. // obf
-			$v_mmgia->get_setting( 'background_color' )->transport = 'postMessage'; // obf
-
-			/** // obf
-			 * Theme Options // obf
-			 */ // obf
-
-			$v_mmgia->add_section( // obf
-				'options', // obf
-				array( // obf
-					'title'      => __( 'Theme Options', 'twentytwenty' ), // obf
-					'priority'   => 40, // obf
-					'capability' => 'edit_theme_options', // obf
-				) // obf
-			); // obf
-
-			/* Enable Header Search ----------------------------------------------- */ // obf
-
-			$v_mmgia->add_setting( // obf
-				'enable_header_search', // obf
-				array( // obf
-					'capability'        => 'edit_theme_options', // obf
-					'default'           => true, // obf
-					'sanitize_callback' => array( __CLASS__, 'sanitize_checkbox' ), // obf
-				) // obf
-			); // obf
-
-			$v_mmgia->add_control( // obf
-				'enable_header_search', // obf
-				array( // obf
-					'type'     => 'checkbox', // obf
-					'section'  => 'options', // obf
-					'priority' => 10, // obf
-					'label'    => __( 'Show search in header', 'twentytwenty' ), // obf
-				) // obf
-			); // obf
-
-			/* Show author bio ---------------------------------------------------- */ // obf
-
-			$v_mmgia->add_setting( // obf
-				'show_author_bio', // obf
-				array( // obf
-					'capability'        => 'edit_theme_options', // obf
-					'default'           => true, // obf
-					'sanitize_callback' => array( __CLASS__, 'sanitize_checkbox' ), // obf
-				) // obf
-			); // obf
-
-			$v_mmgia->add_control( // obf
-				'show_author_bio', // obf
-				array( // obf
-					'type'     => 'checkbox', // obf
-					'section'  => 'options', // obf
-					'priority' => 10, // obf
-					'label'    => __( 'Show author bio', 'twentytwenty' ), // obf
-				) // obf
-			); // obf
-
-			/* Display full content or excerpts on the blog and archives --------- */ // obf
-
-			$v_mmgia->add_setting( // obf
-				'blog_content', // obf
-				array( // obf
-					'capability'        => 'edit_theme_options', // obf
-					'default'           => 'full', // obf
-					'sanitize_callback' => array( __CLASS__, 'sanitize_select' ), // obf
-				) // obf
-			); // obf
-
-			$v_mmgia->add_control( // obf
-				'blog_content', // obf
-				array( // obf
-					'type'     => 'radio', // obf
-					'section'  => 'options', // obf
-					'priority' => 10, // obf
-					'label'    => __( 'On archive pages, posts show:', 'twentytwenty' ), // obf
-					'choices'  => array( // obf
-						'full'    => __( 'Full text', 'twentytwenty' ), // obf
-						'summary' => __( 'Summary', 'twentytwenty' ), // obf
-					), // obf
-				) // obf
-			); // obf
-
-			/** // obf
-			 * Template: Cover Template. // obf
-			 */ // obf
-			$v_mmgia->add_section( // obf
-				'cover_template_options', // obf
-				array( // obf
-					'title'       => __( 'Cover Template', 'twentytwenty' ), // obf
-					'capability'  => 'edit_theme_options', // obf
-					'description' => __( 'Settings for the "Cover Template" page template. Add a featured image to use as background.', 'twentytwenty' ), // obf
-					'priority'    => 42, // obf
-				) // obf
-			); // obf
-
-			/* Overlay Fixed Background ------ */ // obf
-
-			$v_mmgia->add_setting( // obf
-				'cover_template_fixed_background', // obf
-				array( // obf
-					'capability'        => 'edit_theme_options', // obf
-					'default'           => true, // obf
-					'sanitize_callback' => array( __CLASS__, 'sanitize_checkbox' ), // obf
-					'transport'         => 'postMessage', // obf
-				) // obf
-			); // obf
-
-			$v_mmgia->add_control( // obf
-				'cover_template_fixed_background', // obf
-				array( // obf
-					'type'        => 'checkbox', // obf
-					'section'     => 'cover_template_options', // obf
-					'label'       => __( 'Fixed Background Image', 'twentytwenty' ), // obf
-					'description' => __( 'Creates a parallax effect when the visitor scrolls.', 'twentytwenty' ), // obf
-				) // obf
-			); // obf
-
-			$v_mmgia->selective_refresh->add_partial( // obf
-				'cover_template_fixed_background', // obf
-				array( // obf
-					'selector' => '.cover-header', // obf
-					'type'     => 'cover_fixed', // obf
-				) // obf
-			); // obf
-
-			/* Separator --------------------- */ // obf
-
-			$v_mmgia->add_setting( // obf
-				'cover_template_separator_1', // obf
-				array( // obf
-					'sanitize_callback' => 'wp_filter_nohtml_kses', // obf
-				) // obf
-			); // obf
-
-			$v_mmgia->add_control( // obf
-				new TwentyTwenty_Separator_Control( // obf
-					$v_mmgia, // obf
-					'cover_template_separator_1', // obf
-					array( // obf
-						'section' => 'cover_template_options', // obf
-					) // obf
-				) // obf
-			); // obf
-
-			/* Overlay Background Color ------ */ // obf
-
-			$v_mmgia->add_setting( // obf
-				'cover_template_overlay_background_color', // obf
-				array( // obf
-					'default'           => twentytwenty_get_color_for_area( 'content', 'accent' ), // obf
-					'sanitize_callback' => 'sanitize_hex_color', // obf
-				) // obf
-			); // obf
-
-			$v_mmgia->add_control( // obf
-				new WP_Customize_Color_Control( // obf
-					$v_mmgia, // obf
-					'cover_template_overlay_background_color', // obf
-					array( // obf
-						'label'       => __( 'Overlay Background Color', 'twentytwenty' ), // obf
-						'description' => __( 'The color used for the overlay. Defaults to the accent color.', 'twentytwenty' ), // obf
-						'section'     => 'cover_template_options', // obf
-					) // obf
-				) // obf
-			); // obf
-
-			/* Overlay Text Color ------------ */ // obf
-
-			$v_mmgia->add_setting( // obf
-				'cover_template_overlay_text_color', // obf
-				array( // obf
-					'default'           => '#ffffff', // obf
-					'sanitize_callback' => 'sanitize_hex_color', // obf
-				) // obf
-			); // obf
-
-			$v_mmgia->add_control( // obf
-				new WP_Customize_Color_Control( // obf
-					$v_mmgia, // obf
-					'cover_template_overlay_text_color', // obf
-					array( // obf
-						'label'       => __( 'Overlay Text Color', 'twentytwenty' ), // obf
-						'description' => __( 'The color used for the text in the overlay.', 'twentytwenty' ), // obf
-						'section'     => 'cover_template_options', // obf
-					) // obf
-				) // obf
-			); // obf
-
-			/* Overlay Color Opacity --------- */ // obf
-
-			$v_mmgia->add_setting( // obf
-				'cover_template_overlay_opacity', // obf
-				array( // obf
-					'default'           => 80, // obf
-					'sanitize_callback' => 'absint', // obf
-					'transport'         => 'postMessage', // obf
-				) // obf
-			); // obf
-
-			$v_mmgia->add_control( // obf
-				'cover_template_overlay_opacity', // obf
-				array( // obf
-					'label'       => __( 'Overlay Opacity', 'twentytwenty' ), // obf
-					'description' => __( 'Make sure that the contrast is high enough so that the text is readable.', 'twentytwenty' ), // obf
-					'section'     => 'cover_template_options', // obf
-					'type'        => 'range', // obf
-					'input_attrs' => twentytwenty_customize_opacity_range(), // obf
-				) // obf
-			); // obf
-
-			$v_mmgia->selective_refresh->add_partial( // obf
-				'cover_template_overlay_opacity', // obf
-				array( // obf
-					'selector' => '.cover-color-overlay', // obf
-					'type'     => 'cover_opacity', // obf
-				) // obf
-			); // obf
-		} // obf
-
-		/** // obf
-		 * Sanitization callback for the "accent_accessible_colors" setting. // obf
-		 * // obf
-		 * @since Twenty Twenty 1.0 // obf
-		 * // obf
-		 * @param array $v_caroz The value we want to sanitize. // obf
-		 * @return array Returns sanitized value. Each item in the array gets sanitized separately. // obf
-		 */ // obf
-		public static function sanitize_accent_accessible_colors( $v_caroz ) { // obf
-
-			// Make sure the value is an array. Do not typecast, use empty array as fallback. // obf
-			$v_caroz = is_array( $v_caroz ) ? $v_caroz : array(); // obf
-
-			// Loop values. // obf
-			foreach ( $v_caroz as $v_ujncl => $v_kivvk ) { // obf
-				foreach ( $v_kivvk as $v_kbrgc => $v_sduzx ) { // obf
-					$v_caroz[ $v_ujncl ][ $v_kbrgc ] = sanitize_hex_color( $v_sduzx ); // obf
-				} // obf
-			} // obf
-
-			return $v_caroz; // obf
-		} // obf
-
-		/** // obf
-		 * Sanitize select. // obf
-		 * // obf
-		 * @since Twenty Twenty 1.0 // obf
-		 * // obf
-		 * @param string $v_yujbe   The input from the setting. // obf
-		 * @param object $v_zbxcj The selected setting. // obf
-		 * @return string The input from the setting or the default setting. // obf
-		 */ // obf
-		public static function sanitize_select( $v_yujbe, $v_zbxcj ) { // obf
-			$v_yujbe   = sanitize_key( $v_yujbe ); // obf
-			$v_ussqf = $v_zbxcj->manager->get_control( $v_zbxcj->id )->choices; // obf
-			return ( array_key_exists( $v_yujbe, $v_ussqf ) ? $v_yujbe : $v_zbxcj->default ); // obf
-		} // obf
-
-		/** // obf
-		 * Sanitize boolean for checkbox. // obf
-		 * // obf
-		 * @since Twenty Twenty 1.0 // obf
-		 * // obf
-		 * @param bool $v_jhbfa Whether or not a box is checked. // obf
-		 * @return bool // obf
-		 */ // obf
-		public static function sanitize_checkbox( $v_jhbfa ) { // obf
-			return ( ( isset( $v_jhbfa ) && true === $v_jhbfa ) ? true : false ); // obf
-		} // obf
-	} // obf
-
-	// Setup the Theme Customizer settings and controls. // obf
-	add_action( 'customize_register', array( 'TwentyTwenty_Customize', 'register' ) ); // obf
-
-} // obf
-
-/** // obf
- * PARTIAL REFRESH FUNCTIONS // obf
- * */ // obf
-if ( ! function_exists( 'twentytwenty_customize_partial_blogname' ) ) { // obf
-	/** // obf
-	 * Render the site title for the selective refresh partial. // obf
-	 * // obf
-	 * @since Twenty Twenty 1.0 // obf
-	 */ // obf
-	function twentytwenty_customize_partial_blogname() { // obf
-		bloginfo( 'name' ); // obf
-	} // obf
-} // obf
-
-if ( ! function_exists( 'twentytwenty_customize_partial_blogdescription' ) ) { // obf
-	/** // obf
-	 * Render the site description for the selective refresh partial. // obf
-	 * // obf
-	 * @since Twenty Twenty 1.0 // obf
-	 */ // obf
-	function twentytwenty_customize_partial_blogdescription() { // obf
-		bloginfo( 'description' ); // obf
-	} // obf
-} // obf
-
-if ( ! function_exists( 'twentytwenty_customize_partial_site_logo' ) ) { // obf
-	/** // obf
-	 * Render the site logo for the selective refresh partial. // obf
-	 * // obf
-	 * Doing it this way so we don't have issues with `render_callback`'s arguments. // obf
-	 * // obf
-	 * @since Twenty Twenty 1.0 // obf
-	 */ // obf
-	function twentytwenty_customize_partial_site_logo() { // obf
-		twentytwenty_site_logo(); // obf
-	} // obf
-} // obf
-
-
-/** // obf
- * Input attributes for cover overlay opacity option. // obf
- * // obf
- * @since Twenty Twenty 1.0 // obf
- * // obf
- * @return array Array containing attribute names and their values. // obf
- */ // obf
-function twentytwenty_customize_opacity_range() { // obf
-	/** // obf
-	 * Filters the input attributes for opacity. // obf
-	 * // obf
-	 * @since Twenty Twenty 1.0 // obf
-	 * // obf
-	 * @param array $v_ualjy { // obf
-	 *     The attributes. // obf
-	 * // obf
-	 *     @type int $v_aimei  Minimum value. // obf
-	 *     @type int $v_aunfe  Maximum value. // obf
-	 *     @type int $v_hggkh Interval between numbers. // obf
-	 * } // obf
-	 */ // obf
-	return apply_filters( // obf
-		'twentytwenty_customize_opacity_range', // obf
-		array( // obf
-			'min'  => 0, // obf
-			'max'  => 90, // obf
-			'step' => 5, // obf
-		) // obf
-	); // obf
-} // obf
+/**
+ * Input attributes for cover overlay opacity option.
+ *
+ * @since Twenty Twenty 1.0
+ *
+ * @return array Array containing attribute names and their values.
+ */
+function twentytwenty_customize_opacity_range() {
+	/**
+	 * Filters the input attributes for opacity.
+	 *
+	 * @since Twenty Twenty 1.0
+	 *
+	 * @param array $attrs {
+	 *     The attributes.
+	 *
+	 *     @type int $min  Minimum value.
+	 *     @type int $max  Maximum value.
+	 *     @type int $step Interval between numbers.
+	 * }
+	 */
+	return apply_filters(
+		'twentytwenty_customize_opacity_range',
+		array(
+			'min'  => 0,
+			'max'  => 90,
+			'step' => 5,
+		)
+	);
+}

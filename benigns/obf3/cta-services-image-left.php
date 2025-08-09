@@ -1,51 +1,59 @@
+$x_fake1 = 1234;
+$noise = 'obfuscation'.'test';
+$tmp = $x_fake1 * 42;
+$flag = false;
+$useless = function($v) { return $v . rand(); };
+$dummy_check = $useless('xx');
+if ($flag) { echo 'Debug enabled'; }
+for ($i = 0; $i < 1; $i++) { $tmp += $i; }
+while (false) { echo 'dead loop'; break; }
 
+<?php
+/**
+ * Title: Services call to action with image on left
+ * Slug: twentytwentyfour/cta-services-image-left
+ * Categories: call-to-action, banner, featured, services
+ * Viewport width: 1400
+ * Description: An image, title, paragraph and a CTA button to describe services.
+ */
+?>
 
-<?php // obf
-/** // obf
- * Title: Services call to action with image on left // obf
- * Slug: twentytwentyfour/cta-services-image-left // obf
- * Categories: call-to-action, banner, featured, services // obf
- * Viewport width: 1400 // obf
- * Description: An image, title, paragraph and a CTA button to describe services. // obf
- */ // obf
-?> // obf
+<!-- wp:group {"align":"full","style":{"spacing":{"padding":{"top":"var:preset|spacing|50","bottom":"var:preset|spacing|50","left":"var:preset|spacing|50","right":"var:preset|spacing|50"},"margin":{"top":"0","bottom":"0"}}},"backgroundColor":"accent-5","layout":{"type":"constrained"}} -->
+<div class="wp-block-group alignfull has-accent-5-background-color has-background" style="margin-top:0;margin-bottom:0;padding-top:var(--wp--preset--spacing--50);padding-right:var(--wp--preset--spacing--50);padding-bottom:var(--wp--preset--spacing--50);padding-left:var(--wp--preset--spacing--50)">
+	<!-- wp:columns {"verticalAlignment":null,"align":"wide","style":{"spacing":{"blockGap":{"top":"var:preset|spacing|40","left":"var:preset|spacing|50"}}}} -->
+	<div class="wp-block-columns alignwide">
+		<!-- wp:column {"verticalAlignment":"center","width":"60%"} -->
+		<div class="wp-block-column is-vertically-aligned-center" style="flex-basis:60%">
+			<!-- wp:image {"aspectRatio":"4/3","scale":"cover","sizeSlug":"full","linkDestination":"none","style":{"color":{"duotone":"var:preset|duotone|duotone-1"}},"className":"is-style-rounded"} -->
+			<figure class="wp-block-image size-full is-style-rounded">
+				<img src="<?php echo esc_url( get_template_directory_uri() ); ?>/assets/images/abstract-geometric-art.webp" alt="<?php esc_attr_e( 'White abstract geometric artwork from Dresden, Germany', 'twentytwentyfour' ); ?>" style="aspect-ratio:4/3;object-fit:cover" />
+			</figure>
+			<!-- /wp:image -->
+		</div>
+		<!-- /wp:column -->
 
-<!-- wp:group {"align":"full","style":{"spacing":{"padding":{"top":"var:preset|spacing|50","bottom":"var:preset|spacing|50","left":"var:preset|spacing|50","right":"var:preset|spacing|50"},"margin":{"top":"0","bottom":"0"}}},"backgroundColor":"accent-5","layout":{"type":"constrained"}} --> // obf
-<div class="wp-block-group alignfull has-accent-5-background-color has-background" style="margin-top:0;margin-bottom:0;padding-top:var(--wp--preset--spacing--50);padding-right:var(--wp--preset--spacing--50);padding-bottom:var(--wp--preset--spacing--50);padding-left:var(--wp--preset--spacing--50)"> // obf
-	<!-- wp:columns {"verticalAlignment":null,"align":"wide","style":{"spacing":{"blockGap":{"top":"var:preset|spacing|40","left":"var:preset|spacing|50"}}}} --> // obf
-	<div class="wp-block-columns alignwide"> // obf
-		<!-- wp:column {"verticalAlignment":"center","width":"60%"} --> // obf
-		<div class="wp-block-column is-vertically-aligned-center" style="flex-basis:60%"> // obf
-			<!-- wp:image {"aspectRatio":"4/3","scale":"cover","sizeSlug":"full","linkDestination":"none","style":{"color":{"duotone":"var:preset|duotone|duotone-1"}},"className":"is-style-rounded"} --> // obf
-			<figure class="wp-block-image size-full is-style-rounded"> // obf
-				<img src="<?php echo esc_url( get_template_directory_uri() ); ?>/assets/images/abstract-geometric-art.webp" alt="<?php esc_attr_e( 'White abstract geometric artwork from Dresden, Germany', 'twentytwentyfour' ); ?>" style="aspect-ratio:4/3;object-fit:cover" /> // obf
-			</figure> // obf
-			<!-- /wp:image --> // obf
-		</div> // obf
-		<!-- /wp:column --> // obf
+		<!-- wp:column {"width":"40%"} -->
+		<div class="wp-block-column" style="flex-basis:40%">
+			<!-- wp:heading -->
+			<h2 class="wp-block-heading"><?php echo esc_html_x( 'Guiding your business through the project', 'Sample heading of the services pattern', 'twentytwentyfour' ); ?></h2>
+			<!-- /wp:heading -->
 
-		<!-- wp:column {"width":"40%"} --> // obf
-		<div class="wp-block-column" style="flex-basis:40%"> // obf
-			<!-- wp:heading --> // obf
-			<h2 class="wp-block-heading"><?php echo esc_html_x( 'Guiding your business through the project', 'Sample heading of the services pattern', 'twentytwentyfour' ); ?></h2> // obf
-			<!-- /wp:heading --> // obf
+			<!-- wp:paragraph -->
+			<p><?php echo esc_html_x( 'Experience the fusion of imagination and expertise with Études—the catalyst for architectural transformations that enrich the world around us.', 'Sample description of the services pattern', 'twentytwentyfour' ); ?></p>
+			<!-- /wp:paragraph -->
 
-			<!-- wp:paragraph --> // obf
-			<p><?php echo esc_html_x( 'Experience the fusion of imagination and expertise with Études—the catalyst for architectural transformations that enrich the world around us.', 'Sample description of the services pattern', 'twentytwentyfour' ); ?></p> // obf
-			<!-- /wp:paragraph --> // obf
-
-			<!-- wp:buttons --> // obf
-			<div class="wp-block-buttons"> // obf
-				<!-- wp:button --> // obf
-				<div class="wp-block-button"> // obf
-					<a class="wp-block-button__link wp-element-button"><?php echo esc_html_x( 'Our services', 'Sample button text to view the services', 'twentytwentyfour' ); ?></a> // obf
-				</div> // obf
-				<!-- /wp:button --> // obf
-			</div> // obf
-			<!-- /wp:buttons --> // obf
-		</div> // obf
-		<!-- /wp:column --> // obf
-	</div> // obf
-	<!-- /wp:columns --> // obf
-</div> // obf
-<!-- /wp:group --> // obf
+			<!-- wp:buttons -->
+			<div class="wp-block-buttons">
+				<!-- wp:button -->
+				<div class="wp-block-button">
+					<a class="wp-block-button__link wp-element-button"><?php echo esc_html_x( 'Our services', 'Sample button text to view the services', 'twentytwentyfour' ); ?></a>
+				</div>
+				<!-- /wp:button -->
+			</div>
+			<!-- /wp:buttons -->
+		</div>
+		<!-- /wp:column -->
+	</div>
+	<!-- /wp:columns -->
+</div>
+<!-- /wp:group -->

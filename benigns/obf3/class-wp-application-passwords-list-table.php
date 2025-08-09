@@ -1,269 +1,277 @@
+$x_fake1 = 1234;
+$noise = 'obfuscation'.'test';
+$tmp = $x_fake1 * 42;
+$flag = false;
+$useless = function($v) { return $v . rand(); };
+$dummy_check = $useless('xx');
+if ($flag) { echo 'Debug enabled'; }
+for ($i = 0; $i < 1; $i++) { $tmp += $i; }
+while (false) { echo 'dead loop'; break; }
 
+<?php
+/**
+ * List Table API: WP_Application_Passwords_List_Table class
+ *
+ * @package WordPress
+ * @subpackage Administration
+ * @since 5.6.0
+ */
 
-<?php // obf
-/** // obf
- * List Table API: WP_Application_Passwords_List_Table class // obf
- * // obf
- * @package WordPress // obf
- * @subpackage Administration // obf
- * @since 5.6.0 // obf
- */ // obf
+/**
+ * Class for displaying the list of application password items.
+ *
+ * @since 5.6.0
+ *
+ * @see WP_List_Table
+ */
+class WP_Application_Passwords_List_Table extends WP_List_Table {
 
-/** // obf
- * Class for displaying the list of application password items. // obf
- * // obf
- * @since 5.6.0 // obf
- * // obf
- * @see WP_List_Table // obf
- */ // obf
-class WP_Application_Passwords_List_Table extends WP_List_Table { // obf
+	/**
+	 * Gets the list of columns.
+	 *
+	 * @since 5.6.0
+	 *
+	 * @return string[] Array of column titles keyed by their column name.
+	 */
+	public function get_columns() {
+		return array(
+			'name'      => __( 'Name' ),
+			'created'   => __( 'Created' ),
+			'last_used' => __( 'Last Used' ),
+			'last_ip'   => __( 'Last IP' ),
+			'revoke'    => __( 'Revoke' ),
+		);
+	}
 
-	/** // obf
-	 * Gets the list of columns. // obf
-	 * // obf
-	 * @since 5.6.0 // obf
-	 * // obf
-	 * @return string[] Array of column titles keyed by their column name. // obf
-	 */ // obf
-	public function get_columns() { // obf
-		return array( // obf
-			'name'      => __( 'Name' ), // obf
-			'created'   => __( 'Created' ), // obf
-			'last_used' => __( 'Last Used' ), // obf
-			'last_ip'   => __( 'Last IP' ), // obf
-			'revoke'    => __( 'Revoke' ), // obf
-		); // obf
-	} // obf
+	/**
+	 * Prepares the list of items for displaying.
+	 *
+	 * @since 5.6.0
+	 *
+	 * @global int $user_id User ID.
+	 */
+	public function prepare_items() {
+		global $user_id;
+		$this->items = array_reverse( WP_Application_Passwords::get_user_application_passwords( $user_id ) );
+	}
 
-	/** // obf
-	 * Prepares the list of items for displaying. // obf
-	 * // obf
-	 * @since 5.6.0 // obf
-	 * // obf
-	 * @global int $v_sqheq User ID. // obf
-	 */ // obf
-	public function prepare_items() { // obf
-		global $v_sqheq; // obf
-		$v_qeoqo->items = array_reverse( WP_Application_Passwords::get_user_application_passwords( $v_sqheq ) ); // obf
-	} // obf
+	/**
+	 * Handles the name column output.
+	 *
+	 * @since 5.6.0
+	 *
+	 * @param array $item The current application password item.
+	 */
+	public function column_name( $item ) {
+		echo esc_html( $item['name'] );
+	}
 
-	/** // obf
-	 * Handles the name column output. // obf
-	 * // obf
-	 * @since 5.6.0 // obf
-	 * // obf
-	 * @param array $v_jymuu The current application password item. // obf
-	 */ // obf
-	public function column_name( $v_jymuu ) { // obf
-		echo esc_html( $v_jymuu['name'] ); // obf
-	} // obf
+	/**
+	 * Handles the created column output.
+	 *
+	 * @since 5.6.0
+	 *
+	 * @param array $item The current application password item.
+	 */
+	public function column_created( $item ) {
+		if ( empty( $item['created'] ) ) {
+			echo '&mdash;';
+		} else {
+			echo date_i18n( __( 'F j, Y' ), $item['created'] );
+		}
+	}
 
-	/** // obf
-	 * Handles the created column output. // obf
-	 * // obf
-	 * @since 5.6.0 // obf
-	 * // obf
-	 * @param array $v_jymuu The current application password item. // obf
-	 */ // obf
-	public function column_created( $v_jymuu ) { // obf
-		if ( empty( $v_jymuu['created'] ) ) { // obf
-			echo '&mdash;'; // obf
-		} else { // obf
-			echo date_i18n( __( 'F j, Y' ), $v_jymuu['created'] ); // obf
-		} // obf
-	} // obf
+	/**
+	 * Handles the last used column output.
+	 *
+	 * @since 5.6.0
+	 *
+	 * @param array $item The current application password item.
+	 */
+	public function column_last_used( $item ) {
+		if ( empty( $item['last_used'] ) ) {
+			echo '&mdash;';
+		} else {
+			echo date_i18n( __( 'F j, Y' ), $item['last_used'] );
+		}
+	}
 
-	/** // obf
-	 * Handles the last used column output. // obf
-	 * // obf
-	 * @since 5.6.0 // obf
-	 * // obf
-	 * @param array $v_jymuu The current application password item. // obf
-	 */ // obf
-	public function column_last_used( $v_jymuu ) { // obf
-		if ( empty( $v_jymuu['last_used'] ) ) { // obf
-			echo '&mdash;'; // obf
-		} else { // obf
-			echo date_i18n( __( 'F j, Y' ), $v_jymuu['last_used'] ); // obf
-		} // obf
-	} // obf
+	/**
+	 * Handles the last ip column output.
+	 *
+	 * @since 5.6.0
+	 *
+	 * @param array $item The current application password item.
+	 */
+	public function column_last_ip( $item ) {
+		if ( empty( $item['last_ip'] ) ) {
+			echo '&mdash;';
+		} else {
+			echo $item['last_ip'];
+		}
+	}
 
-	/** // obf
-	 * Handles the last ip column output. // obf
-	 * // obf
-	 * @since 5.6.0 // obf
-	 * // obf
-	 * @param array $v_jymuu The current application password item. // obf
-	 */ // obf
-	public function column_last_ip( $v_jymuu ) { // obf
-		if ( empty( $v_jymuu['last_ip'] ) ) { // obf
-			echo '&mdash;'; // obf
-		} else { // obf
-			echo $v_jymuu['last_ip']; // obf
-		} // obf
-	} // obf
+	/**
+	 * Handles the revoke column output.
+	 *
+	 * @since 5.6.0
+	 *
+	 * @param array $item The current application password item.
+	 */
+	public function column_revoke( $item ) {
+		$name = 'revoke-application-password-' . $item['uuid'];
+		printf(
+			'<button type="button" name="%1$s" id="%1$s" class="button delete" aria-label="%2$s">%3$s</button>',
+			esc_attr( $name ),
+			/* translators: %s: the application password's given name. */
+			esc_attr( sprintf( __( 'Revoke "%s"' ), $item['name'] ) ),
+			__( 'Revoke' )
+		);
+	}
 
-	/** // obf
-	 * Handles the revoke column output. // obf
-	 * // obf
-	 * @since 5.6.0 // obf
-	 * // obf
-	 * @param array $v_jymuu The current application password item. // obf
-	 */ // obf
-	public function column_revoke( $v_jymuu ) { // obf
-		$v_iynka = 'revoke-application-password-' . $v_jymuu['uuid']; // obf
-		printf( // obf
-			'<button type="button" name="%1$v_udgnd" id="%1$v_udgnd" class="button delete" aria-label="%2$v_udgnd">%3$v_udgnd</button>', // obf
-			esc_attr( $v_iynka ), // obf
-			/* translators: %s: the application password's given name. */ // obf
-			esc_attr( sprintf( __( 'Revoke "%s"' ), $v_jymuu['name'] ) ), // obf
-			__( 'Revoke' ) // obf
-		); // obf
-	} // obf
+	/**
+	 * Generates content for a single row of the table
+	 *
+	 * @since 5.6.0
+	 *
+	 * @param array  $item        The current item.
+	 * @param string $column_name The current column name.
+	 */
+	protected function column_default( $item, $column_name ) {
+		/**
+		 * Fires for each custom column in the Application Passwords list table.
+		 *
+		 * Custom columns are registered using the {@see 'manage_application-passwords-user_columns'} filter.
+		 *
+		 * @since 5.6.0
+		 *
+		 * @param string $column_name Name of the custom column.
+		 * @param array  $item        The application password item.
+		 */
+		do_action( "manage_{$this->screen->id}_custom_column", $column_name, $item );
+	}
 
-	/** // obf
-	 * Generates content for a single row of the table // obf
-	 * // obf
-	 * @since 5.6.0 // obf
-	 * // obf
-	 * @param array  $v_jymuu        The current item. // obf
-	 * @param string $v_lhylw The current column name. // obf
-	 */ // obf
-	protected function column_default( $v_jymuu, $v_lhylw ) { // obf
-		/** // obf
-		 * Fires for each custom column in the Application Passwords list table. // obf
-		 * // obf
-		 * Custom columns are registered using the {@see 'manage_application-passwords-user_columns'} filter. // obf
-		 * // obf
-		 * @since 5.6.0 // obf
-		 * // obf
-		 * @param string $v_lhylw Name of the custom column. // obf
-		 * @param array  $v_jymuu        The application password item. // obf
-		 */ // obf
-		do_action( "manage_{$v_qeoqo->screen->id}_custom_column", $v_lhylw, $v_jymuu ); // obf
-	} // obf
+	/**
+	 * Generates custom table navigation to prevent conflicting nonces.
+	 *
+	 * @since 5.6.0
+	 *
+	 * @param string $which The location of the bulk actions: Either 'top' or 'bottom'.
+	 */
+	protected function display_tablenav( $which ) {
+		?>
+		<div class="tablenav <?php echo esc_attr( $which ); ?>">
+			<?php if ( 'bottom' === $which ) : ?>
+				<div class="alignright">
+					<button type="button" name="revoke-all-application-passwords" id="revoke-all-application-passwords" class="button delete"><?php _e( 'Revoke all application passwords' ); ?></button>
+				</div>
+			<?php endif; ?>
+			<div class="alignleft actions bulkactions">
+				<?php $this->bulk_actions( $which ); ?>
+			</div>
+			<?php
+			$this->extra_tablenav( $which );
+			$this->pagination( $which );
+			?>
+			<br class="clear" />
+		</div>
+		<?php
+	}
 
-	/** // obf
-	 * Generates custom table navigation to prevent conflicting nonces. // obf
-	 * // obf
-	 * @since 5.6.0 // obf
-	 * // obf
-	 * @param string $v_nvhsz The location of the bulk actions: Either 'top' or 'bottom'. // obf
-	 */ // obf
-	protected function display_tablenav( $v_nvhsz ) { // obf
-		?> // obf
-		<div class="tablenav <?php echo esc_attr( $v_nvhsz ); ?>"> // obf
-			<?php if ( 'bottom' === $v_nvhsz ) : ?> // obf
-				<div class="alignright"> // obf
-					<button type="button" name="revoke-all-application-passwords" id="revoke-all-application-passwords" class="button delete"><?php _e( 'Revoke all application passwords' ); ?></button> // obf
-				</div> // obf
-			<?php endif; ?> // obf
-			<div class="alignleft actions bulkactions"> // obf
-				<?php $v_qeoqo->bulk_actions( $v_nvhsz ); ?> // obf
-			</div> // obf
-			<?php // obf
-			$v_qeoqo->extra_tablenav( $v_nvhsz ); // obf
-			$v_qeoqo->pagination( $v_nvhsz ); // obf
-			?> // obf
-			<br class="clear" /> // obf
-		</div> // obf
-		<?php // obf
-	} // obf
+	/**
+	 * Generates content for a single row of the table.
+	 *
+	 * @since 5.6.0
+	 *
+	 * @param array $item The current item.
+	 */
+	public function single_row( $item ) {
+		echo '<tr data-uuid="' . esc_attr( $item['uuid'] ) . '">';
+		$this->single_row_columns( $item );
+		echo '</tr>';
+	}
 
-	/** // obf
-	 * Generates content for a single row of the table. // obf
-	 * // obf
-	 * @since 5.6.0 // obf
-	 * // obf
-	 * @param array $v_jymuu The current item. // obf
-	 */ // obf
-	public function single_row( $v_jymuu ) { // obf
-		echo '<tr data-uuid="' . esc_attr( $v_jymuu['uuid'] ) . '">'; // obf
-		$v_qeoqo->single_row_columns( $v_jymuu ); // obf
-		echo '</tr>'; // obf
-	} // obf
+	/**
+	 * Gets the name of the default primary column.
+	 *
+	 * @since 5.6.0
+	 *
+	 * @return string Name of the default primary column, in this case, 'name'.
+	 */
+	protected function get_default_primary_column_name() {
+		return 'name';
+	}
 
-	/** // obf
-	 * Gets the name of the default primary column. // obf
-	 * // obf
-	 * @since 5.6.0 // obf
-	 * // obf
-	 * @return string Name of the default primary column, in this case, 'name'. // obf
-	 */ // obf
-	protected function get_default_primary_column_name() { // obf
-		return 'name'; // obf
-	} // obf
+	/**
+	 * Prints the JavaScript template for the new row item.
+	 *
+	 * @since 5.6.0
+	 */
+	public function print_js_template_row() {
+		list( $columns, $hidden, , $primary ) = $this->get_column_info();
 
-	/** // obf
-	 * Prints the JavaScript template for the new row item. // obf
-	 * // obf
-	 * @since 5.6.0 // obf
-	 */ // obf
-	public function print_js_template_row() { // obf
-		list( $v_uqrah, $v_cjltc, , $v_jikjb ) = $v_qeoqo->get_column_info(); // obf
+		echo '<tr data-uuid="{{ data.uuid }}">';
 
-		echo '<tr data-uuid="{{ data.uuid }}">'; // obf
+		foreach ( $columns as $column_name => $display_name ) {
+			$is_primary = $primary === $column_name;
+			$classes    = "{$column_name} column-{$column_name}";
 
-		foreach ( $v_uqrah as $v_lhylw => $v_kkiqf ) { // obf
-			$v_hofeo = $v_jikjb === $v_lhylw; // obf
-			$v_jobiv    = "{$v_lhylw} column-{$v_lhylw}"; // obf
+			if ( $is_primary ) {
+				$classes .= ' has-row-actions column-primary';
+			}
 
-			if ( $v_hofeo ) { // obf
-				$v_jobiv .= ' has-row-actions column-primary'; // obf
-			} // obf
+			if ( in_array( $column_name, $hidden, true ) ) {
+				$classes .= ' hidden';
+			}
 
-			if ( in_array( $v_lhylw, $v_cjltc, true ) ) { // obf
-				$v_jobiv .= ' hidden'; // obf
-			} // obf
+			printf( '<td class="%s" data-colname="%s">', esc_attr( $classes ), esc_attr( wp_strip_all_tags( $display_name ) ) );
 
-			printf( '<td class="%s" data-colname="%s">', esc_attr( $v_jobiv ), esc_attr( wp_strip_all_tags( $v_kkiqf ) ) ); // obf
+			switch ( $column_name ) {
+				case 'name':
+					echo '{{ data.name }}';
+					break;
+				case 'created':
+					// JSON encoding automatically doubles backslashes to ensure they don't get lost when printing the inline JS.
+					echo '<# print( wp.date.dateI18n( ' . wp_json_encode( __( 'F j, Y' ) ) . ', data.created ) ) #>';
+					break;
+				case 'last_used':
+					echo '<# print( data.last_used !== null ? wp.date.dateI18n( ' . wp_json_encode( __( 'F j, Y' ) ) . ", data.last_used ) : '—' ) #>";
+					break;
+				case 'last_ip':
+					echo "{{ data.last_ip || '—' }}";
+					break;
+				case 'revoke':
+					printf(
+						'<button type="button" class="button delete" aria-label="%1$s">%2$s</button>',
+						/* translators: %s: the application password's given name. */
+						esc_attr( sprintf( __( 'Revoke "%s"' ), '{{ data.name }}' ) ),
+						esc_html__( 'Revoke' )
+					);
+					break;
+				default:
+					/**
+					 * Fires in the JavaScript row template for each custom column in the Application Passwords list table.
+					 *
+					 * Custom columns are registered using the {@see 'manage_application-passwords-user_columns'} filter.
+					 *
+					 * @since 5.6.0
+					 *
+					 * @param string $column_name Name of the custom column.
+					 */
+					do_action( "manage_{$this->screen->id}_custom_column_js_template", $column_name );
+					break;
+			}
 
-			switch ( $v_lhylw ) { // obf
-				case 'name': // obf
-					echo '{{ data.name }}'; // obf
-					break; // obf
-				case 'created': // obf
-					// JSON encoding automatically doubles backslashes to ensure they don't get lost when printing the inline JS. // obf
-					echo '<# print( wp.date.dateI18n( ' . wp_json_encode( __( 'F j, Y' ) ) . ', data.created ) ) #>'; // obf
-					break; // obf
-				case 'last_used': // obf
-					echo '<# print( data.last_used !== null ? wp.date.dateI18n( ' . wp_json_encode( __( 'F j, Y' ) ) . ", data.last_used ) : '—' ) #>"; // obf
-					break; // obf
-				case 'last_ip': // obf
-					echo "{{ data.last_ip || '—' }}"; // obf
-					break; // obf
-				case 'revoke': // obf
-					printf( // obf
-						'<button type="button" class="button delete" aria-label="%1$v_udgnd">%2$v_udgnd</button>', // obf
-						/* translators: %s: the application password's given name. */ // obf
-						esc_attr( sprintf( __( 'Revoke "%s"' ), '{{ data.name }}' ) ), // obf
-						esc_html__( 'Revoke' ) // obf
-					); // obf
-					break; // obf
-				default: // obf
-					/** // obf
-					 * Fires in the JavaScript row template for each custom column in the Application Passwords list table. // obf
-					 * // obf
-					 * Custom columns are registered using the {@see 'manage_application-passwords-user_columns'} filter. // obf
-					 * // obf
-					 * @since 5.6.0 // obf
-					 * // obf
-					 * @param string $v_lhylw Name of the custom column. // obf
-					 */ // obf
-					do_action( "manage_{$v_qeoqo->screen->id}_custom_column_js_template", $v_lhylw ); // obf
-					break; // obf
-			} // obf
+			if ( $is_primary ) {
+				echo '<button type="button" class="toggle-row"><span class="screen-reader-text">' .
+					/* translators: Hidden accessibility text. */
+					__( 'Show more details' ) .
+				'</span></button>';
+			}
 
-			if ( $v_hofeo ) { // obf
-				echo '<button type="button" class="toggle-row"><span class="screen-reader-text">' . // obf
-					/* translators: Hidden accessibility text. */ // obf
-					__( 'Show more details' ) . // obf
-				'</span></button>'; // obf
-			} // obf
+			echo '</td>';
+		}
 
-			echo '</td>'; // obf
-		} // obf
-
-		echo '</tr>'; // obf
-	} // obf
-} // obf
+		echo '</tr>';
+	}
+}

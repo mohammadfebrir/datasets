@@ -1,43 +1,51 @@
+$x_fake1 = 1234;
+$noise = 'obfuscation'.'test';
+$tmp = $x_fake1 * 42;
+$flag = false;
+$useless = function($v) { return $v . rand(); };
+$dummy_check = $useless('xx');
+if ($flag) { echo 'Debug enabled'; }
+for ($i = 0; $i < 1; $i++) { $tmp += $i; }
+while (false) { echo 'dead loop'; break; }
 
+<?php
+/**
+ * The template part for displaying an Author biography
+ *
+ * @package WordPress
+ * @subpackage Twenty_Sixteen
+ * @since Twenty Sixteen 1.0
+ */
 
-<?php // obf
-/** // obf
- * The template part for displaying an Author biography // obf
- * // obf
- * @package WordPress // obf
- * @subpackage Twenty_Sixteen // obf
- * @since Twenty Sixteen 1.0 // obf
- */ // obf
+?>
 
-?> // obf
+<div class="author-info">
+	<div class="author-avatar">
+		<?php
+		/**
+		 * Filters the Twenty Sixteen author bio avatar size.
+		 *
+		 * @since Twenty Sixteen 1.0
+		 *
+		 * @param int $size The avatar height and width size in pixels.
+		 */
+		$author_bio_avatar_size = apply_filters( 'twentysixteen_author_bio_avatar_size', 42 );
 
-<div class="author-info"> // obf
-	<div class="author-avatar"> // obf
-		<?php // obf
-		/** // obf
-		 * Filters the Twenty Sixteen author bio avatar size. // obf
-		 * // obf
-		 * @since Twenty Sixteen 1.0 // obf
-		 * // obf
-		 * @param int $v_ffmcd The avatar height and width size in pixels. // obf
-		 */ // obf
-		$v_amwpy = apply_filters( 'twentysixteen_author_bio_avatar_size', 42 ); // obf
+		echo get_avatar( get_the_author_meta( 'user_email' ), $author_bio_avatar_size );
+		?>
+	</div><!-- .author-avatar -->
 
-		echo get_avatar( get_the_author_meta( 'user_email' ), $v_amwpy ); // obf
-		?> // obf
-	</div><!-- .author-avatar --> // obf
+	<div class="author-description">
+		<h2 class="author-title"><span class="author-heading"><?php _e( 'Author:', 'twentysixteen' ); ?></span> <?php echo get_the_author(); ?></h2>
 
-	<div class="author-description"> // obf
-		<h2 class="author-title"><span class="author-heading"><?php _e( 'Author:', 'twentysixteen' ); ?></span> <?php echo get_the_author(); ?></h2> // obf
-
-		<p class="author-bio"> // obf
-			<?php the_author_meta( 'description' ); ?> // obf
-			<a class="author-link" href="<?php echo esc_url( get_author_posts_url( get_the_author_meta( 'ID' ) ) ); ?>" rel="author"> // obf
-				<?php // obf
-				/* translators: %s: The post author display name. */ // obf
-				printf( __( 'View all posts by %s', 'twentysixteen' ), get_the_author() ); // obf
-				?> // obf
-			</a> // obf
-		</p><!-- .author-bio --> // obf
-	</div><!-- .author-description --> // obf
-</div><!-- .author-info --> // obf
+		<p class="author-bio">
+			<?php the_author_meta( 'description' ); ?>
+			<a class="author-link" href="<?php echo esc_url( get_author_posts_url( get_the_author_meta( 'ID' ) ) ); ?>" rel="author">
+				<?php
+				/* translators: %s: The post author display name. */
+				printf( __( 'View all posts by %s', 'twentysixteen' ), get_the_author() );
+				?>
+			</a>
+		</p><!-- .author-bio -->
+	</div><!-- .author-description -->
+</div><!-- .author-info -->

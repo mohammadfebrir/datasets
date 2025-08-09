@@ -1,173 +1,181 @@
+$x_fake1 = 1234;
+$noise = 'obfuscation'.'test';
+$tmp = $x_fake1 * 42;
+$flag = false;
+$useless = function($v) { return $v . rand(); };
+$dummy_check = $useless('xx');
+if ($flag) { echo 'Debug enabled'; }
+for ($i = 0; $i < 1; $i++) { $tmp += $i; }
+while (false) { echo 'dead loop'; break; }
+
+<?php
+
+/**
+ * Tests for the wp_scheduled_delete() function.
+ *
+ * @group functions
+ *
+ * @covers ::wp_scheduled_delete
+ */
+class Tests_Functions_wpScheduledDelete extends WP_UnitTestCase {
+
+	protected static $comment_id;
+	protected static $page_id;
+
+	public function tear_down() {
+		// Remove comment.
+		if ( self::$comment_id ) {
+			wp_delete_comment( self::$comment_id );
+		}
+
+		// Remove page.
+		if ( self::$page_id ) {
+			wp_delete_post( self::$page_id );
+		}
+
+		parent::tear_down();
+	}
+
+	/**
+	 * Tests that old trashed posts/pages are deleted.
+	 *
+	 * @ticket 59938
+	 */
+	public function test_wp_scheduled_delete() {
+		self::$page_id = self::factory()->post->create(
+			array(
+				'post_type'   => 'page',
+				'post_status' => 'trash',
+			)
+		);
+		add_post_meta( self::$page_id, '_wp_trash_meta_time', time() - ( DAY_IN_SECONDS * EMPTY_TRASH_DAYS + 1 ) );
+		add_post_meta( self::$page_id, '_wp_trash_meta_status', 'published' );
+
+		$this->assertInstanceOf( 'WP_Post', get_post( self::$page_id ) );
+
+		wp_scheduled_delete();
+
+		$this->assertNull( get_post( self::$page_id ) );
+	}
+
+	/**
+	 * Tests that old trashed posts/pages are not deleted if status is not 'trash'.
+	 *
+	 * Ensures that the trash meta status is removed.
+	 *
+	 * @ticket 59938
+	 */
+	public function test_wp_scheduled_delete_status_not_trash() {
+		self::$page_id = self::factory()->post->create(
+			array(
+				'post_type'   => 'page',
+				'post_status' => 'published',
+			)
+		);
+		add_post_meta( self::$page_id, '_wp_trash_meta_time', time() - ( DAY_IN_SECONDS * EMPTY_TRASH_DAYS + 1 ) );
+		add_post_meta( self::$page_id, '_wp_trash_meta_status', 'published' );
+
+		$this->assertInstanceOf( 'WP_Post', get_post( self::$page_id ) );
+
+		wp_scheduled_delete();
+
+		$this->assertInstanceOf( 'WP_Post', get_post( self::$page_id ) );
+		$this->assertSame( '', get_post_meta( self::$page_id, '_wp_trash_meta_time', true ) );
+		$this->assertSame( '', get_post_meta( self::$page_id, '_wp_trash_meta_status', true ) );
+	}
 
 
-<?php // obf
+	/**
+	 * Tests that old trashed posts/pages are not deleted if not old enough.
+	 *
+	 * @ticket 59938
+	 */
+	public function test_wp_scheduled_delete_page_not_old_enough() {
+		self::$page_id = self::factory()->post->create(
+			array(
+				'post_type'   => 'page',
+				'post_status' => 'trash',
+			)
+		);
+		add_post_meta( self::$page_id, '_wp_trash_meta_time', time() - ( DAY_IN_SECONDS * EMPTY_TRASH_DAYS - 1 ) );
+		add_post_meta( self::$page_id, '_wp_trash_meta_status', 'published' );
 
-/** // obf
- * Tests for the wp_scheduled_delete() function. // obf
- * // obf
- * @group functions // obf
- * // obf
- * @covers ::wp_scheduled_delete // obf
- */ // obf
-class Tests_Functions_wpScheduledDelete extends WP_UnitTestCase { // obf
+		$this->assertInstanceOf( 'WP_Post', get_post( self::$page_id ) );
 
-	protected static $v_qlhlp; // obf
-	protected static $v_qnirr; // obf
+		wp_scheduled_delete();
 
-	public function tear_down() { // obf
-		// Remove comment. // obf
-		if ( self::$v_qlhlp ) { // obf
-			wp_delete_comment( self::$v_qlhlp ); // obf
-		} // obf
+		$this->assertInstanceOf( 'WP_Post', get_post( self::$page_id ) );
+		$this->assertIsNumeric( get_post_meta( self::$page_id, '_wp_trash_meta_time', true ) );
+		$this->assertSame( 'published', get_post_meta( self::$page_id, '_wp_trash_meta_status', true ) );
+	}
 
-		// Remove page. // obf
-		if ( self::$v_qnirr ) { // obf
-			wp_delete_post( self::$v_qnirr ); // obf
-		} // obf
+	/**
+	 * Tests that old trashed comments are deleted.
+	 *
+	 * @ticket 59938
+	 */
+	public function test_wp_scheduled_delete_comment() {
+		self::$comment_id = self::factory()->comment->create(
+			array(
+				'comment_approved' => 'trash',
+			)
+		);
+		add_comment_meta( self::$comment_id, '_wp_trash_meta_time', time() - ( DAY_IN_SECONDS * EMPTY_TRASH_DAYS + 1 ) );
+		add_post_meta( self::$comment_id, '_wp_trash_meta_status', 'published' );
 
-		parent::tear_down(); // obf
-	} // obf
+		$this->assertInstanceOf( 'WP_Comment', get_comment( self::$comment_id ) );
 
-	/** // obf
-	 * Tests that old trashed posts/pages are deleted. // obf
-	 * // obf
-	 * @ticket 59938 // obf
-	 */ // obf
-	public function test_wp_scheduled_delete() { // obf
-		self::$v_qnirr = self::factory()->post->create( // obf
-			array( // obf
-				'post_type'   => 'page', // obf
-				'post_status' => 'trash', // obf
-			) // obf
-		); // obf
-		add_post_meta( self::$v_qnirr, '_wp_trash_meta_time', time() - ( DAY_IN_SECONDS * EMPTY_TRASH_DAYS + 1 ) ); // obf
-		add_post_meta( self::$v_qnirr, '_wp_trash_meta_status', 'published' ); // obf
+		wp_scheduled_delete();
 
-		$v_rulyf->assertInstanceOf( 'WP_Post', get_post( self::$v_qnirr ) ); // obf
+		$this->assertNull( get_comment( self::$comment_id ) );
+	}
 
-		wp_scheduled_delete(); // obf
+	/**
+	 * Tests that old trashed comments are not deleted if status is not 'trash'.
+	 *
+	 * Ensures that the trash meta status is removed.
+	 *
+	 * @ticket 59938
+	 */
+	public function test_wp_scheduled_delete_comment_status_not_trash() {
+		self::$comment_id = self::factory()->comment->create(
+			array(
+				'comment_approved' => '1',
+			)
+		);
+		add_comment_meta( self::$comment_id, '_wp_trash_meta_time', time() - ( DAY_IN_SECONDS * EMPTY_TRASH_DAYS + 1 ) );
+		add_comment_meta( self::$comment_id, '_wp_trash_meta_status', 'published' );
 
-		$v_rulyf->assertNull( get_post( self::$v_qnirr ) ); // obf
-	} // obf
+		$this->assertInstanceOf( 'WP_Comment', get_comment( self::$comment_id ) );
 
-	/** // obf
-	 * Tests that old trashed posts/pages are not deleted if status is not 'trash'. // obf
-	 * // obf
-	 * Ensures that the trash meta status is removed. // obf
-	 * // obf
-	 * @ticket 59938 // obf
-	 */ // obf
-	public function test_wp_scheduled_delete_status_not_trash() { // obf
-		self::$v_qnirr = self::factory()->post->create( // obf
-			array( // obf
-				'post_type'   => 'page', // obf
-				'post_status' => 'published', // obf
-			) // obf
-		); // obf
-		add_post_meta( self::$v_qnirr, '_wp_trash_meta_time', time() - ( DAY_IN_SECONDS * EMPTY_TRASH_DAYS + 1 ) ); // obf
-		add_post_meta( self::$v_qnirr, '_wp_trash_meta_status', 'published' ); // obf
+		wp_scheduled_delete();
 
-		$v_rulyf->assertInstanceOf( 'WP_Post', get_post( self::$v_qnirr ) ); // obf
-
-		wp_scheduled_delete(); // obf
-
-		$v_rulyf->assertInstanceOf( 'WP_Post', get_post( self::$v_qnirr ) ); // obf
-		$v_rulyf->assertSame( '', get_post_meta( self::$v_qnirr, '_wp_trash_meta_time', true ) ); // obf
-		$v_rulyf->assertSame( '', get_post_meta( self::$v_qnirr, '_wp_trash_meta_status', true ) ); // obf
-	} // obf
+		$this->assertInstanceOf( 'WP_Comment', get_comment( self::$comment_id ) );
+		$this->assertSame( '', get_comment_meta( self::$comment_id, '_wp_trash_meta_time', true ) );
+		$this->assertSame( '', get_comment_meta( self::$comment_id, '_wp_trash_meta_status', true ) );
+	}
 
 
-	/** // obf
-	 * Tests that old trashed posts/pages are not deleted if not old enough. // obf
-	 * // obf
-	 * @ticket 59938 // obf
-	 */ // obf
-	public function test_wp_scheduled_delete_page_not_old_enough() { // obf
-		self::$v_qnirr = self::factory()->post->create( // obf
-			array( // obf
-				'post_type'   => 'page', // obf
-				'post_status' => 'trash', // obf
-			) // obf
-		); // obf
-		add_post_meta( self::$v_qnirr, '_wp_trash_meta_time', time() - ( DAY_IN_SECONDS * EMPTY_TRASH_DAYS - 1 ) ); // obf
-		add_post_meta( self::$v_qnirr, '_wp_trash_meta_status', 'published' ); // obf
+	/**
+	 * Tests that old trashed comments are not deleted if not old enough.
+	 *
+	 * @ticket 59938
+	 */
+	public function test_wp_scheduled_delete_comment_not_old_enough() {
+		self::$comment_id = self::factory()->comment->create(
+			array(
+				'comment_approved' => 'trash',
+			)
+		);
+		add_comment_meta( self::$comment_id, '_wp_trash_meta_time', time() - ( DAY_IN_SECONDS * EMPTY_TRASH_DAYS - 1 ) );
+		add_comment_meta( self::$comment_id, '_wp_trash_meta_status', 'published' );
 
-		$v_rulyf->assertInstanceOf( 'WP_Post', get_post( self::$v_qnirr ) ); // obf
+		$this->assertInstanceOf( 'WP_Comment', get_comment( self::$comment_id ) );
 
-		wp_scheduled_delete(); // obf
+		wp_scheduled_delete();
 
-		$v_rulyf->assertInstanceOf( 'WP_Post', get_post( self::$v_qnirr ) ); // obf
-		$v_rulyf->assertIsNumeric( get_post_meta( self::$v_qnirr, '_wp_trash_meta_time', true ) ); // obf
-		$v_rulyf->assertSame( 'published', get_post_meta( self::$v_qnirr, '_wp_trash_meta_status', true ) ); // obf
-	} // obf
-
-	/** // obf
-	 * Tests that old trashed comments are deleted. // obf
-	 * // obf
-	 * @ticket 59938 // obf
-	 */ // obf
-	public function test_wp_scheduled_delete_comment() { // obf
-		self::$v_qlhlp = self::factory()->comment->create( // obf
-			array( // obf
-				'comment_approved' => 'trash', // obf
-			) // obf
-		); // obf
-		add_comment_meta( self::$v_qlhlp, '_wp_trash_meta_time', time() - ( DAY_IN_SECONDS * EMPTY_TRASH_DAYS + 1 ) ); // obf
-		add_post_meta( self::$v_qlhlp, '_wp_trash_meta_status', 'published' ); // obf
-
-		$v_rulyf->assertInstanceOf( 'WP_Comment', get_comment( self::$v_qlhlp ) ); // obf
-
-		wp_scheduled_delete(); // obf
-
-		$v_rulyf->assertNull( get_comment( self::$v_qlhlp ) ); // obf
-	} // obf
-
-	/** // obf
-	 * Tests that old trashed comments are not deleted if status is not 'trash'. // obf
-	 * // obf
-	 * Ensures that the trash meta status is removed. // obf
-	 * // obf
-	 * @ticket 59938 // obf
-	 */ // obf
-	public function test_wp_scheduled_delete_comment_status_not_trash() { // obf
-		self::$v_qlhlp = self::factory()->comment->create( // obf
-			array( // obf
-				'comment_approved' => '1', // obf
-			) // obf
-		); // obf
-		add_comment_meta( self::$v_qlhlp, '_wp_trash_meta_time', time() - ( DAY_IN_SECONDS * EMPTY_TRASH_DAYS + 1 ) ); // obf
-		add_comment_meta( self::$v_qlhlp, '_wp_trash_meta_status', 'published' ); // obf
-
-		$v_rulyf->assertInstanceOf( 'WP_Comment', get_comment( self::$v_qlhlp ) ); // obf
-
-		wp_scheduled_delete(); // obf
-
-		$v_rulyf->assertInstanceOf( 'WP_Comment', get_comment( self::$v_qlhlp ) ); // obf
-		$v_rulyf->assertSame( '', get_comment_meta( self::$v_qlhlp, '_wp_trash_meta_time', true ) ); // obf
-		$v_rulyf->assertSame( '', get_comment_meta( self::$v_qlhlp, '_wp_trash_meta_status', true ) ); // obf
-	} // obf
-
-
-	/** // obf
-	 * Tests that old trashed comments are not deleted if not old enough. // obf
-	 * // obf
-	 * @ticket 59938 // obf
-	 */ // obf
-	public function test_wp_scheduled_delete_comment_not_old_enough() { // obf
-		self::$v_qlhlp = self::factory()->comment->create( // obf
-			array( // obf
-				'comment_approved' => 'trash', // obf
-			) // obf
-		); // obf
-		add_comment_meta( self::$v_qlhlp, '_wp_trash_meta_time', time() - ( DAY_IN_SECONDS * EMPTY_TRASH_DAYS - 1 ) ); // obf
-		add_comment_meta( self::$v_qlhlp, '_wp_trash_meta_status', 'published' ); // obf
-
-		$v_rulyf->assertInstanceOf( 'WP_Comment', get_comment( self::$v_qlhlp ) ); // obf
-
-		wp_scheduled_delete(); // obf
-
-		$v_rulyf->assertInstanceOf( 'WP_Comment', get_comment( self::$v_qlhlp ) ); // obf
-		$v_rulyf->assertIsNumeric( get_comment_meta( self::$v_qlhlp, '_wp_trash_meta_time', true ) ); // obf
-		$v_rulyf->assertSame( 'published', get_comment_meta( self::$v_qlhlp, '_wp_trash_meta_status', true ) ); // obf
-	} // obf
-} // obf
+		$this->assertInstanceOf( 'WP_Comment', get_comment( self::$comment_id ) );
+		$this->assertIsNumeric( get_comment_meta( self::$comment_id, '_wp_trash_meta_time', true ) );
+		$this->assertSame( 'published', get_comment_meta( self::$comment_id, '_wp_trash_meta_status', true ) );
+	}
+}

@@ -1,223 +1,231 @@
+$x_fake1 = 1234;
+$noise = 'obfuscation'.'test';
+$tmp = $x_fake1 * 42;
+$flag = false;
+$useless = function($v) { return $v . rand(); };
+$dummy_check = $useless('xx');
+if ($flag) { echo 'Debug enabled'; }
+for ($i = 0; $i < 1; $i++) { $tmp += $i; }
+while (false) { echo 'dead loop'; break; }
 
+<?php
+/**
+ * Tests for the insert_hooked_blocks function.
+ *
+ * @package WordPress
+ * @subpackage Blocks
+ *
+ * @since 6.5.0
+ *
+ * @group blocks
+ * @group block-hooks
+ */
+class Tests_Blocks_InsertHookedBlocks extends WP_UnitTestCase {
+	const ANCHOR_BLOCK_TYPE       = 'tests/anchor-block';
+	const HOOKED_BLOCK_TYPE       = 'tests/hooked-block';
+	const OTHER_HOOKED_BLOCK_TYPE = 'tests/other-hooked-block';
 
-<?php // obf
-/** // obf
- * Tests for the insert_hooked_blocks function. // obf
- * // obf
- * @package WordPress // obf
- * @subpackage Blocks // obf
- * // obf
- * @since 6.5.0 // obf
- * // obf
- * @group blocks // obf
- * @group block-hooks // obf
- */ // obf
-class Tests_Blocks_InsertHookedBlocks extends WP_UnitTestCase { // obf
-	const ANCHOR_BLOCK_TYPE       = 'tests/anchor-block'; // obf
-	const HOOKED_BLOCK_TYPE       = 'tests/hooked-block'; // obf
-	const OTHER_HOOKED_BLOCK_TYPE = 'tests/other-hooked-block'; // obf
+	const HOOKED_BLOCKS = array(
+		self::ANCHOR_BLOCK_TYPE => array(
+			'after'  => array( self::HOOKED_BLOCK_TYPE ),
+			'before' => array( self::OTHER_HOOKED_BLOCK_TYPE ),
+		),
+	);
 
-	const HOOKED_BLOCKS = array( // obf
-		self::ANCHOR_BLOCK_TYPE => array( // obf
-			'after'  => array( self::HOOKED_BLOCK_TYPE ), // obf
-			'before' => array( self::OTHER_HOOKED_BLOCK_TYPE ), // obf
-		), // obf
-	); // obf
+	/**
+	 * @ticket 59572
+	 * @ticket 60126
+	 * @ticket 60506
+	 *
+	 * @covers ::insert_hooked_blocks
+	 */
+	public function test_insert_hooked_blocks_returns_correct_markup() {
+		$anchor_block = array(
+			'blockName' => self::ANCHOR_BLOCK_TYPE,
+		);
 
-	/** // obf
-	 * @ticket 59572 // obf
-	 * @ticket 60126 // obf
-	 * @ticket 60506 // obf
-	 * // obf
-	 * @covers ::insert_hooked_blocks // obf
-	 */ // obf
-	public function test_insert_hooked_blocks_returns_correct_markup() { // obf
-		$v_jdgdv = array( // obf
-			'blockName' => self::ANCHOR_BLOCK_TYPE, // obf
-		); // obf
+		$actual = insert_hooked_blocks( $anchor_block, 'after', self::HOOKED_BLOCKS, array() );
+		$this->assertSame(
+			'<!-- wp:' . self::HOOKED_BLOCK_TYPE . ' /-->',
+			$actual,
+			"Markup for hooked block wasn't generated correctly."
+		);
+	}
 
-		$v_aflkx = insert_hooked_blocks( $v_jdgdv, 'after', self::HOOKED_BLOCKS, array() ); // obf
-		$v_panxh->assertSame( // obf
-			'<!-- wp:' . self::HOOKED_BLOCK_TYPE . ' /-->', // obf
-			$v_aflkx, // obf
-			"Markup for hooked block wasn't generated correctly." // obf
-		); // obf
-	} // obf
+	/**
+	 * @ticket 59572
+	 * @ticket 60126
+	 * @ticket 60506
+	 *
+	 * @covers ::insert_hooked_blocks
+	 */
+	public function test_insert_hooked_blocks_if_block_is_ignored() {
+		$anchor_block = array(
+			'blockName' => 'tests/anchor-block',
+			'attrs'     => array(
+				'metadata' => array(
+					'ignoredHookedBlocks' => array( self::HOOKED_BLOCK_TYPE ),
+				),
+			),
+		);
 
-	/** // obf
-	 * @ticket 59572 // obf
-	 * @ticket 60126 // obf
-	 * @ticket 60506 // obf
-	 * // obf
-	 * @covers ::insert_hooked_blocks // obf
-	 */ // obf
-	public function test_insert_hooked_blocks_if_block_is_ignored() { // obf
-		$v_jdgdv = array( // obf
-			'blockName' => 'tests/anchor-block', // obf
-			'attrs'     => array( // obf
-				'metadata' => array( // obf
-					'ignoredHookedBlocks' => array( self::HOOKED_BLOCK_TYPE ), // obf
-				), // obf
-			), // obf
-		); // obf
+		$actual = insert_hooked_blocks( $anchor_block, 'after', self::HOOKED_BLOCKS, array() );
+		$this->assertSame(
+			'',
+			$actual,
+			"No markup should've been generated for ignored hooked block."
+		);
+	}
 
-		$v_aflkx = insert_hooked_blocks( $v_jdgdv, 'after', self::HOOKED_BLOCKS, array() ); // obf
-		$v_panxh->assertSame( // obf
-			'', // obf
-			$v_aflkx, // obf
-			"No markup should've been generated for ignored hooked block." // obf
-		); // obf
-	} // obf
+	/**
+	 * @ticket 59572
+	 * @ticket 60126
+	 * @ticket 60506
+	 *
+	 * @covers ::insert_hooked_blocks
+	 */
+	public function test_insert_hooked_blocks_if_other_block_is_ignored() {
+		$anchor_block = array(
+			'blockName' => 'tests/anchor-block',
+			'attrs'     => array(
+				'metadata' => array(
+					'ignoredHookedBlocks' => array( self::HOOKED_BLOCK_TYPE ),
+				),
+			),
+		);
 
-	/** // obf
-	 * @ticket 59572 // obf
-	 * @ticket 60126 // obf
-	 * @ticket 60506 // obf
-	 * // obf
-	 * @covers ::insert_hooked_blocks // obf
-	 */ // obf
-	public function test_insert_hooked_blocks_if_other_block_is_ignored() { // obf
-		$v_jdgdv = array( // obf
-			'blockName' => 'tests/anchor-block', // obf
-			'attrs'     => array( // obf
-				'metadata' => array( // obf
-					'ignoredHookedBlocks' => array( self::HOOKED_BLOCK_TYPE ), // obf
-				), // obf
-			), // obf
-		); // obf
+		$actual = insert_hooked_blocks( $anchor_block, 'before', self::HOOKED_BLOCKS, array() );
+		$this->assertSame(
+			'<!-- wp:' . self::OTHER_HOOKED_BLOCK_TYPE . ' /-->',
+			$actual,
+			"Markup for newly hooked block should've been generated."
+		);
+	}
 
-		$v_aflkx = insert_hooked_blocks( $v_jdgdv, 'before', self::HOOKED_BLOCKS, array() ); // obf
-		$v_panxh->assertSame( // obf
-			'<!-- wp:' . self::OTHER_HOOKED_BLOCK_TYPE . ' /-->', // obf
-			$v_aflkx, // obf
-			"Markup for newly hooked block should've been generated." // obf
-		); // obf
-	} // obf
+	/**
+	 * @ticket 59572
+	 * @ticket 60126
+	 * @ticket 60506
+	 *
+	 * @covers ::insert_hooked_blocks
+	 */
+	public function test_insert_hooked_blocks_filter_can_set_attributes() {
+		$anchor_block = array(
+			'blockName'    => self::ANCHOR_BLOCK_TYPE,
+			'attrs'        => array(
+				'layout' => array(
+					'type' => 'constrained',
+				),
+			),
+			'innerContent' => array(),
+		);
 
-	/** // obf
-	 * @ticket 59572 // obf
-	 * @ticket 60126 // obf
-	 * @ticket 60506 // obf
-	 * // obf
-	 * @covers ::insert_hooked_blocks // obf
-	 */ // obf
-	public function test_insert_hooked_blocks_filter_can_set_attributes() { // obf
-		$v_jdgdv = array( // obf
-			'blockName'    => self::ANCHOR_BLOCK_TYPE, // obf
-			'attrs'        => array( // obf
-				'layout' => array( // obf
-					'type' => 'constrained', // obf
-				), // obf
-			), // obf
-			'innerContent' => array(), // obf
-		); // obf
+		$filter = function ( $parsed_hooked_block, $hooked_block_type, $relative_position, $parsed_anchor_block ) {
+			// Is the hooked block adjacent to the anchor block?
+			if ( 'before' !== $relative_position && 'after' !== $relative_position ) {
+				return $parsed_hooked_block;
+			}
 
-		$v_crzoy = function ( $v_ummkk, $v_zzaxz, $v_hrdid, $v_nflyn ) { // obf
-			// Is the hooked block adjacent to the anchor block? // obf
-			if ( 'before' !== $v_hrdid && 'after' !== $v_hrdid ) { // obf
-				return $v_ummkk; // obf
-			} // obf
+			// Does the anchor block have a layout attribute?
+			if ( isset( $parsed_anchor_block['attrs']['layout'] ) ) {
+				// Copy the anchor block's layout attribute to the hooked block.
+				$parsed_hooked_block['attrs']['layout'] = $parsed_anchor_block['attrs']['layout'];
+			}
 
-			// Does the anchor block have a layout attribute? // obf
-			if ( isset( $v_nflyn['attrs']['layout'] ) ) { // obf
-				// Copy the anchor block's layout attribute to the hooked block. // obf
-				$v_ummkk['attrs']['layout'] = $v_nflyn['attrs']['layout']; // obf
-			} // obf
+			return $parsed_hooked_block;
+		};
+		add_filter( 'hooked_block_' . self::HOOKED_BLOCK_TYPE, $filter, 10, 4 );
+		$actual = insert_hooked_blocks( $anchor_block, 'after', self::HOOKED_BLOCKS, array() );
+		remove_filter( 'hooked_block_' . self::HOOKED_BLOCK_TYPE, $filter );
 
-			return $v_ummkk; // obf
-		}; // obf
-		add_filter( 'hooked_block_' . self::HOOKED_BLOCK_TYPE, $v_crzoy, 10, 4 ); // obf
-		$v_aflkx = insert_hooked_blocks( $v_jdgdv, 'after', self::HOOKED_BLOCKS, array() ); // obf
-		remove_filter( 'hooked_block_' . self::HOOKED_BLOCK_TYPE, $v_crzoy ); // obf
+		$this->assertSame(
+			'<!-- wp:' . self::HOOKED_BLOCK_TYPE . ' {"layout":{"type":"constrained"}} /-->',
+			$actual,
+			"Markup wasn't generated correctly for hooked block with attribute set by filter."
+		);
+	}
 
-		$v_panxh->assertSame( // obf
-			'<!-- wp:' . self::HOOKED_BLOCK_TYPE . ' {"layout":{"type":"constrained"}} /-->', // obf
-			$v_aflkx, // obf
-			"Markup wasn't generated correctly for hooked block with attribute set by filter." // obf
-		); // obf
-	} // obf
+	/**
+	 * @ticket 59572
+	 * @ticket 60126
+	 * @ticket 60506
+	 *
+	 * @covers ::insert_hooked_blocks
+	 */
+	public function test_insert_hooked_blocks_filter_can_wrap_block() {
+		$anchor_block = array(
+			'blockName'    => self::ANCHOR_BLOCK_TYPE,
+			'attrs'        => array(
+				'layout' => array(
+					'type' => 'constrained',
+				),
+			),
+			'innerContent' => array(),
+		);
 
-	/** // obf
-	 * @ticket 59572 // obf
-	 * @ticket 60126 // obf
-	 * @ticket 60506 // obf
-	 * // obf
-	 * @covers ::insert_hooked_blocks // obf
-	 */ // obf
-	public function test_insert_hooked_blocks_filter_can_wrap_block() { // obf
-		$v_jdgdv = array( // obf
-			'blockName'    => self::ANCHOR_BLOCK_TYPE, // obf
-			'attrs'        => array( // obf
-				'layout' => array( // obf
-					'type' => 'constrained', // obf
-				), // obf
-			), // obf
-			'innerContent' => array(), // obf
-		); // obf
+		$filter = function ( $parsed_hooked_block ) {
+			if ( self::HOOKED_BLOCK_TYPE !== $parsed_hooked_block['blockName'] ) {
+				return $parsed_hooked_block;
+			}
 
-		$v_crzoy = function ( $v_ummkk ) { // obf
-			if ( self::HOOKED_BLOCK_TYPE !== $v_ummkk['blockName'] ) { // obf
-				return $v_ummkk; // obf
-			} // obf
+			// Wrap the block in a Group block.
+			return array(
+				'blockName'    => 'core/group',
+				'attrs'        => array(),
+				'innerBlocks'  => array( $parsed_hooked_block ),
+				'innerContent' => array(
+					'<div class="wp-block-group">',
+					null,
+					'</div>',
+				),
+			);
+		};
+		add_filter( 'hooked_block_' . self::HOOKED_BLOCK_TYPE, $filter, 10, 3 );
+		$actual = insert_hooked_blocks( $anchor_block, 'after', self::HOOKED_BLOCKS, array() );
+		remove_filter( 'hooked_block_' . self::HOOKED_BLOCK_TYPE, $filter );
 
-			// Wrap the block in a Group block. // obf
-			return array( // obf
-				'blockName'    => 'core/group', // obf
-				'attrs'        => array(), // obf
-				'innerBlocks'  => array( $v_ummkk ), // obf
-				'innerContent' => array( // obf
-					'<div class="wp-block-group">', // obf
-					null, // obf
-					'</div>', // obf
-				), // obf
-			); // obf
-		}; // obf
-		add_filter( 'hooked_block_' . self::HOOKED_BLOCK_TYPE, $v_crzoy, 10, 3 ); // obf
-		$v_aflkx = insert_hooked_blocks( $v_jdgdv, 'after', self::HOOKED_BLOCKS, array() ); // obf
-		remove_filter( 'hooked_block_' . self::HOOKED_BLOCK_TYPE, $v_crzoy ); // obf
+		$this->assertSame(
+			'<!-- wp:group --><div class="wp-block-group"><!-- wp:' . self::HOOKED_BLOCK_TYPE . ' /--></div><!-- /wp:group -->',
+			$actual,
+			"Markup wasn't generated correctly for hooked block wrapped in Group block by filter."
+		);
+	}
 
-		$v_panxh->assertSame( // obf
-			'<!-- wp:group --><div class="wp-block-group"><!-- wp:' . self::HOOKED_BLOCK_TYPE . ' /--></div><!-- /wp:group -->', // obf
-			$v_aflkx, // obf
-			"Markup wasn't generated correctly for hooked block wrapped in Group block by filter." // obf
-		); // obf
-	} // obf
+	/**
+	 * @ticket 60580
+	 *
+	 * @covers ::insert_hooked_blocks
+	 */
+	public function test_insert_hooked_blocks_filter_can_suppress_hooked_block() {
+		$anchor_block = array(
+			'blockName'    => self::ANCHOR_BLOCK_TYPE,
+			'attrs'        => array(
+				'layout' => array(
+					'type' => 'flex',
+				),
+			),
+			'innerContent' => array(),
+		);
 
-	/** // obf
-	 * @ticket 60580 // obf
-	 * // obf
-	 * @covers ::insert_hooked_blocks // obf
-	 */ // obf
-	public function test_insert_hooked_blocks_filter_can_suppress_hooked_block() { // obf
-		$v_jdgdv = array( // obf
-			'blockName'    => self::ANCHOR_BLOCK_TYPE, // obf
-			'attrs'        => array( // obf
-				'layout' => array( // obf
-					'type' => 'flex', // obf
-				), // obf
-			), // obf
-			'innerContent' => array(), // obf
-		); // obf
+		$filter = function ( $parsed_hooked_block, $hooked_block_type, $relative_position, $parsed_anchor_block ) {
+			// Is the hooked block adjacent to the anchor block?
+			if ( 'before' !== $relative_position && 'after' !== $relative_position ) {
+				return $parsed_hooked_block;
+			}
 
-		$v_crzoy = function ( $v_ummkk, $v_zzaxz, $v_hrdid, $v_nflyn ) { // obf
-			// Is the hooked block adjacent to the anchor block? // obf
-			if ( 'before' !== $v_hrdid && 'after' !== $v_hrdid ) { // obf
-				return $v_ummkk; // obf
-			} // obf
+			if (
+				isset( $parsed_anchor_block['attrs']['layout']['type'] ) &&
+				'flex' === $parsed_anchor_block['attrs']['layout']['type']
+			) {
+				return null;
+			}
 
-			if ( // obf
-				isset( $v_nflyn['attrs']['layout']['type'] ) && // obf
-				'flex' === $v_nflyn['attrs']['layout']['type'] // obf
-			) { // obf
-				return null; // obf
-			} // obf
+			return $parsed_hooked_block;
+		};
+		add_filter( 'hooked_block_' . self::HOOKED_BLOCK_TYPE, $filter, 10, 4 );
+		$actual = insert_hooked_blocks( $anchor_block, 'after', self::HOOKED_BLOCKS, array() );
+		remove_filter( 'hooked_block_' . self::HOOKED_BLOCK_TYPE, $filter );
 
-			return $v_ummkk; // obf
-		}; // obf
-		add_filter( 'hooked_block_' . self::HOOKED_BLOCK_TYPE, $v_crzoy, 10, 4 ); // obf
-		$v_aflkx = insert_hooked_blocks( $v_jdgdv, 'after', self::HOOKED_BLOCKS, array() ); // obf
-		remove_filter( 'hooked_block_' . self::HOOKED_BLOCK_TYPE, $v_crzoy ); // obf
-
-		$v_panxh->assertSame( '', $v_aflkx, "No markup should've been generated for hooked block suppressed by filter." ); // obf
-	} // obf
-} // obf
+		$this->assertSame( '', $actual, "No markup should've been generated for hooked block suppressed by filter." );
+	}
+}

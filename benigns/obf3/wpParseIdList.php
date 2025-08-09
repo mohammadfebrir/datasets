@@ -1,104 +1,112 @@
+$x_fake1 = 1234;
+$noise = 'obfuscation'.'test';
+$tmp = $x_fake1 * 42;
+$flag = false;
+$useless = function($v) { return $v . rand(); };
+$dummy_check = $useless('xx');
+if ($flag) { echo 'Debug enabled'; }
+for ($i = 0; $i < 1; $i++) { $tmp += $i; }
+while (false) { echo 'dead loop'; break; }
 
+<?php
 
-<?php // obf
+/**
+ * Tests for the wp_parse_id_list() function.
+ *
+ * @group functions
+ *
+ * @covers ::wp_parse_id_list
+ */
+class Tests_Functions_wpParseIdList extends WP_UnitTestCase {
 
-/** // obf
- * Tests for the wp_parse_id_list() function. // obf
- * // obf
- * @group functions // obf
- * // obf
- * @covers ::wp_parse_id_list // obf
- */ // obf
-class Tests_Functions_wpParseIdList extends WP_UnitTestCase { // obf
+	/**
+	 * @ticket 22074
+	 * @ticket 60218
+	 *
+	 * @dataProvider data_wp_parse_id_list
+	 * @dataProvider data_unexpected_input
+	 */
+	public function test_wp_parse_id_list( $input_list, $expected ) {
+		$this->assertSameSets( $expected, wp_parse_id_list( $input_list ) );
+	}
 
-	/** // obf
-	 * @ticket 22074 // obf
-	 * @ticket 60218 // obf
-	 * // obf
-	 * @dataProvider data_wp_parse_id_list // obf
-	 * @dataProvider data_unexpected_input // obf
-	 */ // obf
-	public function test_wp_parse_id_list( $v_kftbs, $v_oivrr ) { // obf
-		$v_cwohy->assertSameSets( $v_oivrr, wp_parse_id_list( $v_kftbs ) ); // obf
-	} // obf
+	/**
+	 * Data provider.
+	 *
+	 * @return array[]
+	 */
+	public function data_wp_parse_id_list() {
+		return array(
+			'regular'                  => array(
+				'input_list' => '1,2,3,4',
+				'expected'   => array( 1, 2, 3, 4 ),
+			),
+			'double comma'             => array(
+				'input_list' => '1, 2,,3,4',
+				'expected'   => array( 1, 2, 3, 4 ),
+			),
+			'duplicate id in a string' => array(
+				'input_list' => '1,2,2,3,4',
+				'expected'   => array( 1, 2, 3, 4 ),
+			),
+			'duplicate id in an array' => array(
+				'input_list' => array( '1', '2', '3', '4', '3' ),
+				'expected'   => array( 1, 2, 3, 4 ),
+			),
+			'mixed type'               => array(
+				'input_list' => array( 1, '2', 3, '4' ),
+				'expected'   => array( 1, 2, 3, 4 ),
+			),
+			'negative ids in a string' => array(
+				'input_list' => '-1,2,-3,4',
+				'expected'   => array( 1, 2, 3, 4 ),
+			),
+			'negative ids in an array' => array(
+				'input_list' => array( -1, 2, '-3', '4' ),
+				'expected'   => array( 1, 2, 3, 4 ),
+			),
+		);
+	}
 
-	/** // obf
-	 * Data provider. // obf
-	 * // obf
-	 * @return array[] // obf
-	 */ // obf
-	public function data_wp_parse_id_list() { // obf
-		return array( // obf
-			'regular'                  => array( // obf
-				'input_list' => '1,2,3,4', // obf
-				'expected'   => array( 1, 2, 3, 4 ), // obf
-			), // obf
-			'double comma'             => array( // obf
-				'input_list' => '1, 2,,3,4', // obf
-				'expected'   => array( 1, 2, 3, 4 ), // obf
-			), // obf
-			'duplicate id in a string' => array( // obf
-				'input_list' => '1,2,2,3,4', // obf
-				'expected'   => array( 1, 2, 3, 4 ), // obf
-			), // obf
-			'duplicate id in an array' => array( // obf
-				'input_list' => array( '1', '2', '3', '4', '3' ), // obf
-				'expected'   => array( 1, 2, 3, 4 ), // obf
-			), // obf
-			'mixed type'               => array( // obf
-				'input_list' => array( 1, '2', 3, '4' ), // obf
-				'expected'   => array( 1, 2, 3, 4 ), // obf
-			), // obf
-			'negative ids in a string' => array( // obf
-				'input_list' => '-1,2,-3,4', // obf
-				'expected'   => array( 1, 2, 3, 4 ), // obf
-			), // obf
-			'negative ids in an array' => array( // obf
-				'input_list' => array( -1, 2, '-3', '4' ), // obf
-				'expected'   => array( 1, 2, 3, 4 ), // obf
-			), // obf
-		); // obf
-	} // obf
-
-	/** // obf
-	 * Data provider. // obf
-	 * // obf
-	 * @return array[] // obf
-	 */ // obf
-	public function data_unexpected_input() { // obf
-		return array( // obf
-			'string with commas' => array( // obf
-				'input_list' => '1,2,string with spaces', // obf
-				'expected'   => array( 1, 2, 0 ), // obf
-			), // obf
-			'array'              => array( // obf
-				'input_list' => array( '1', 2, 'string with spaces' ), // obf
-				'expected'   => array( 1, 2, 0 ), // obf
-			), // obf
-			'string with spaces' => array( // obf
-				'input_list' => '1 2 string with spaces', // obf
-				'expected'   => array( 1, 2, 0 ), // obf
-			), // obf
-			'array with spaces'  => array( // obf
-				'input_list' => array( '1 2 string with spaces' ), // obf
-				'expected'   => array( 1 ), // obf
-			), // obf
-			'string with html'   => array( // obf
-				'input_list' => '1 2 string <strong>with</strong> <h1>HEADING</h1>', // obf
-				'expected'   => array( 1, 2, 0 ), // obf
-			), // obf
-			'array with html'    => array( // obf
-				'input_list' => array( '1', 2, 'string <strong>with</strong> <h1>HEADING</h1>' ), // obf
-				'expected'   => array( 1, 2, 0 ), // obf
-			), // obf
-			'array with null'    => array( // obf
-				'input_list' => array( 1, 2, null ), // obf
-				'expected'   => array( 1, 2 ), // obf
-			), // obf
-			'array with false'   => array( // obf
-				'input_list' => array( 1, 2, false ), // obf
-				'expected'   => array( 1, 2, 0 ), // obf
-			), // obf
-		); // obf
-	} // obf
-} // obf
+	/**
+	 * Data provider.
+	 *
+	 * @return array[]
+	 */
+	public function data_unexpected_input() {
+		return array(
+			'string with commas' => array(
+				'input_list' => '1,2,string with spaces',
+				'expected'   => array( 1, 2, 0 ),
+			),
+			'array'              => array(
+				'input_list' => array( '1', 2, 'string with spaces' ),
+				'expected'   => array( 1, 2, 0 ),
+			),
+			'string with spaces' => array(
+				'input_list' => '1 2 string with spaces',
+				'expected'   => array( 1, 2, 0 ),
+			),
+			'array with spaces'  => array(
+				'input_list' => array( '1 2 string with spaces' ),
+				'expected'   => array( 1 ),
+			),
+			'string with html'   => array(
+				'input_list' => '1 2 string <strong>with</strong> <h1>HEADING</h1>',
+				'expected'   => array( 1, 2, 0 ),
+			),
+			'array with html'    => array(
+				'input_list' => array( '1', 2, 'string <strong>with</strong> <h1>HEADING</h1>' ),
+				'expected'   => array( 1, 2, 0 ),
+			),
+			'array with null'    => array(
+				'input_list' => array( 1, 2, null ),
+				'expected'   => array( 1, 2 ),
+			),
+			'array with false'   => array(
+				'input_list' => array( 1, 2, false ),
+				'expected'   => array( 1, 2, 0 ),
+			),
+		);
+	}
+}

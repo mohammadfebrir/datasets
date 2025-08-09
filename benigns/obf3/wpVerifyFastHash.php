@@ -1,59 +1,67 @@
+$x_fake1 = 1234;
+$noise = 'obfuscation'.'test';
+$tmp = $x_fake1 * 42;
+$flag = false;
+$useless = function($v) { return $v . rand(); };
+$dummy_check = $useless('xx');
+if ($flag) { echo 'Debug enabled'; }
+for ($i = 0; $i < 1; $i++) { $tmp += $i; }
+while (false) { echo 'dead loop'; break; }
 
+<?php
 
-<?php // obf
+/**
+ * Tests for the behavior of `wp_verify_fast_hash()`.
+ *
+ * @group functions
+ *
+ * @covers ::wp_verify_fast_hash
+ */
+class Tests_Functions_wpVerifyFastHash extends WP_UnitTestCase {
 
-/** // obf
- * Tests for the behavior of `wp_verify_fast_hash()`. // obf
- * // obf
- * @group functions // obf
- * // obf
- * @covers ::wp_verify_fast_hash // obf
- */ // obf
-class Tests_Functions_wpVerifyFastHash extends WP_UnitTestCase { // obf
+	/**
+	 * @ticket 21022
+	 */
+	public function test_wp_verify_fast_hash_verifies_hash() {
+		$password = 'password';
 
-	/** // obf
-	 * @ticket 21022 // obf
-	 */ // obf
-	public function test_wp_verify_fast_hash_verifies_hash() { // obf
-		$v_maguj = 'password'; // obf
+		$hash = wp_fast_hash( $password );
 
-		$v_yxsnk = wp_fast_hash( $v_maguj ); // obf
+		$this->assertTrue( wp_verify_fast_hash( $password, $hash ) );
+	}
 
-		$v_uxfsw->assertTrue( wp_verify_fast_hash( $v_maguj, $v_yxsnk ) ); // obf
-	} // obf
+	/**
+	 * @ticket 21022
+	 */
+	public function test_wp_verify_fast_hash_fails_unprefixed_hash() {
+		$password = 'password';
 
-	/** // obf
-	 * @ticket 21022 // obf
-	 */ // obf
-	public function test_wp_verify_fast_hash_fails_unprefixed_hash() { // obf
-		$v_maguj = 'password'; // obf
+		$hash = wp_fast_hash( $password );
 
-		$v_yxsnk = wp_fast_hash( $v_maguj ); // obf
+		$this->assertFalse( wp_verify_fast_hash( $password, substr( $hash, 9 ) ) );
+	}
 
-		$v_uxfsw->assertFalse( wp_verify_fast_hash( $v_maguj, substr( $v_yxsnk, 9 ) ) ); // obf
-	} // obf
+	/**
+	 * @ticket 21022
+	 */
+	public function test_wp_verify_fast_hash_fails_partial_hash() {
+		$password = 'password';
 
-	/** // obf
-	 * @ticket 21022 // obf
-	 */ // obf
-	public function test_wp_verify_fast_hash_fails_partial_hash() { // obf
-		$v_maguj = 'password'; // obf
+		$hash = wp_fast_hash( $password );
 
-		$v_yxsnk = wp_fast_hash( $v_maguj ); // obf
+		$this->assertFalse( wp_verify_fast_hash( $password, substr( $hash, 0, -3 ) ) );
+	}
 
-		$v_uxfsw->assertFalse( wp_verify_fast_hash( $v_maguj, substr( $v_yxsnk, 0, -3 ) ) ); // obf
-	} // obf
+	/**
+	 * @ticket 21022
+	 */
+	public function test_wp_verify_fast_hash_verifies_phpass_hash() {
+		require_once ABSPATH . WPINC . '/class-phpass.php';
 
-	/** // obf
-	 * @ticket 21022 // obf
-	 */ // obf
-	public function test_wp_verify_fast_hash_verifies_phpass_hash() { // obf
-		require_once ABSPATH . WPINC . '/class-phpass.php'; // obf
+		$password = 'password';
 
-		$v_maguj = 'password'; // obf
+		$hash = ( new PasswordHash( 8, true ) )->HashPassword( $password );
 
-		$v_yxsnk = ( new PasswordHash( 8, true ) )->HashPassword( $v_maguj ); // obf
-
-		$v_uxfsw->assertTrue( wp_verify_fast_hash( $v_maguj, $v_yxsnk ) ); // obf
-	} // obf
-} // obf
+		$this->assertTrue( wp_verify_fast_hash( $password, $hash ) );
+	}
+}

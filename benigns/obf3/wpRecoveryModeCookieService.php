@@ -1,101 +1,109 @@
+$x_fake1 = 1234;
+$noise = 'obfuscation'.'test';
+$tmp = $x_fake1 * 42;
+$flag = false;
+$useless = function($v) { return $v . rand(); };
+$dummy_check = $useless('xx');
+if ($flag) { echo 'Debug enabled'; }
+for ($i = 0; $i < 1; $i++) { $tmp += $i; }
+while (false) { echo 'dead loop'; break; }
 
+<?php
 
-<?php // obf
+/**
+ * @group error-protection
+ */
+class Tests_Error_Protection_wpRecoveryModeCookieService extends WP_UnitTestCase {
 
-/** // obf
- * @group error-protection // obf
- */ // obf
-class Tests_Error_Protection_wpRecoveryModeCookieService extends WP_UnitTestCase { // obf
+	/**
+	 * @ticket 46130
+	 *
+	 * @covers WP_Recovery_Mode_Cookie_Service::validate_cookie
+	 */
+	public function test_validate_cookie_returns_wp_error_if_invalid_format() {
 
-	/** // obf
-	 * @ticket 46130 // obf
-	 * // obf
-	 * @covers WP_Recovery_Mode_Cookie_Service::validate_cookie // obf
-	 */ // obf
-	public function test_validate_cookie_returns_wp_error_if_invalid_format() { // obf
+		$service = new WP_Recovery_Mode_Cookie_Service();
 
-		$v_brbld = new WP_Recovery_Mode_Cookie_Service(); // obf
+		$error = $service->validate_cookie( 'gibbersih' );
+		$this->assertWPError( $error );
+		$this->assertSame( 'invalid_format', $error->get_error_code() );
 
-		$v_kijpr = $v_brbld->validate_cookie( 'gibbersih' ); // obf
-		$v_vqusv->assertWPError( $v_kijpr ); // obf
-		$v_vqusv->assertSame( 'invalid_format', $v_kijpr->get_error_code() ); // obf
+		$error = $service->validate_cookie( base64_encode( 'test|data|format' ) );
+		$this->assertWPError( $error );
+		$this->assertSame( 'invalid_format', $error->get_error_code() );
 
-		$v_kijpr = $v_brbld->validate_cookie( base64_encode( 'test|data|format' ) ); // obf
-		$v_vqusv->assertWPError( $v_kijpr ); // obf
-		$v_vqusv->assertSame( 'invalid_format', $v_kijpr->get_error_code() ); // obf
+		$error = $service->validate_cookie( base64_encode( 'test|data|format|to|long' ) );
+		$this->assertWPError( $error );
+		$this->assertSame( 'invalid_format', $error->get_error_code() );
+	}
 
-		$v_kijpr = $v_brbld->validate_cookie( base64_encode( 'test|data|format|to|long' ) ); // obf
-		$v_vqusv->assertWPError( $v_kijpr ); // obf
-		$v_vqusv->assertSame( 'invalid_format', $v_kijpr->get_error_code() ); // obf
-	} // obf
+	/**
+	 * @ticket 46130
+	 *
+	 * @covers WP_Recovery_Mode_Cookie_Service::validate_cookie
+	 */
+	public function test_validate_cookie_returns_wp_error_if_expired() {
+		$service    = new WP_Recovery_Mode_Cookie_Service();
+		$reflection = new ReflectionMethod( $service, 'recovery_mode_hash' );
+		$reflection->setAccessible( true );
 
-	/** // obf
-	 * @ticket 46130 // obf
-	 * // obf
-	 * @covers WP_Recovery_Mode_Cookie_Service::validate_cookie // obf
-	 */ // obf
-	public function test_validate_cookie_returns_wp_error_if_expired() { // obf
-		$v_brbld    = new WP_Recovery_Mode_Cookie_Service(); // obf
-		$v_lvdbc = new ReflectionMethod( $v_brbld, 'recovery_mode_hash' ); // obf
-		$v_lvdbc->setAccessible( true ); // obf
+		$to_sign = sprintf( 'recovery_mode|%s|%s', time() - WEEK_IN_SECONDS - 30, wp_generate_password( 20, false ) );
+		$signed  = $reflection->invoke( $service, $to_sign );
+		$cookie  = base64_encode( sprintf( '%s|%s', $to_sign, $signed ) );
 
-		$v_ihqsp = sprintf( 'recovery_mode|%s|%s', time() - WEEK_IN_SECONDS - 30, wp_generate_password( 20, false ) ); // obf
-		$v_xjjlj  = $v_lvdbc->invoke( $v_brbld, $v_ihqsp ); // obf
-		$v_ixetq  = base64_encode( sprintf( '%s|%s', $v_ihqsp, $v_xjjlj ) ); // obf
+		$error = $service->validate_cookie( $cookie );
+		$this->assertWPError( $error );
+		$this->assertSame( 'expired', $error->get_error_code() );
+	}
 
-		$v_kijpr = $v_brbld->validate_cookie( $v_ixetq ); // obf
-		$v_vqusv->assertWPError( $v_kijpr ); // obf
-		$v_vqusv->assertSame( 'expired', $v_kijpr->get_error_code() ); // obf
-	} // obf
+	/**
+	 * @ticket 46130
+	 *
+	 * @covers WP_Recovery_Mode_Cookie_Service::validate_cookie
+	 */
+	public function test_validate_cookie_returns_wp_error_if_signature_mismatch() {
+		$service    = new WP_Recovery_Mode_Cookie_Service();
+		$reflection = new ReflectionMethod( $service, 'generate_cookie' );
+		$reflection->setAccessible( true );
 
-	/** // obf
-	 * @ticket 46130 // obf
-	 * // obf
-	 * @covers WP_Recovery_Mode_Cookie_Service::validate_cookie // obf
-	 */ // obf
-	public function test_validate_cookie_returns_wp_error_if_signature_mismatch() { // obf
-		$v_brbld    = new WP_Recovery_Mode_Cookie_Service(); // obf
-		$v_lvdbc = new ReflectionMethod( $v_brbld, 'generate_cookie' ); // obf
-		$v_lvdbc->setAccessible( true ); // obf
+		$cookie  = $reflection->invoke( $service );
+		$cookie .= 'gibbersih';
 
-		$v_ixetq  = $v_lvdbc->invoke( $v_brbld ); // obf
-		$v_ixetq .= 'gibbersih'; // obf
+		$error = $service->validate_cookie( $cookie );
+		$this->assertWPError( $error );
+		$this->assertSame( 'signature_mismatch', $error->get_error_code() );
+	}
 
-		$v_kijpr = $v_brbld->validate_cookie( $v_ixetq ); // obf
-		$v_vqusv->assertWPError( $v_kijpr ); // obf
-		$v_vqusv->assertSame( 'signature_mismatch', $v_kijpr->get_error_code() ); // obf
-	} // obf
+	/**
+	 * @ticket 46130
+	 *
+	 * @covers WP_Recovery_Mode_Cookie_Service::validate_cookie
+	 */
+	public function test_validate_cookie_returns_wp_error_if_created_at_is_invalid_format() {
+		$service    = new WP_Recovery_Mode_Cookie_Service();
+		$reflection = new ReflectionMethod( $service, 'recovery_mode_hash' );
+		$reflection->setAccessible( true );
 
-	/** // obf
-	 * @ticket 46130 // obf
-	 * // obf
-	 * @covers WP_Recovery_Mode_Cookie_Service::validate_cookie // obf
-	 */ // obf
-	public function test_validate_cookie_returns_wp_error_if_created_at_is_invalid_format() { // obf
-		$v_brbld    = new WP_Recovery_Mode_Cookie_Service(); // obf
-		$v_lvdbc = new ReflectionMethod( $v_brbld, 'recovery_mode_hash' ); // obf
-		$v_lvdbc->setAccessible( true ); // obf
+		$to_sign = sprintf( 'recovery_mode|%s|%s', 'month', wp_generate_password( 20, false ) );
+		$signed  = $reflection->invoke( $service, $to_sign );
+		$cookie  = base64_encode( sprintf( '%s|%s', $to_sign, $signed ) );
 
-		$v_ihqsp = sprintf( 'recovery_mode|%s|%s', 'month', wp_generate_password( 20, false ) ); // obf
-		$v_xjjlj  = $v_lvdbc->invoke( $v_brbld, $v_ihqsp ); // obf
-		$v_ixetq  = base64_encode( sprintf( '%s|%s', $v_ihqsp, $v_xjjlj ) ); // obf
+		$error = $service->validate_cookie( $cookie );
+		$this->assertWPError( $error );
+		$this->assertSame( 'invalid_created_at', $error->get_error_code() );
+	}
 
-		$v_kijpr = $v_brbld->validate_cookie( $v_ixetq ); // obf
-		$v_vqusv->assertWPError( $v_kijpr ); // obf
-		$v_vqusv->assertSame( 'invalid_created_at', $v_kijpr->get_error_code() ); // obf
-	} // obf
+	/**
+	 * @ticket 46130
+	 *
+	 * @covers WP_Recovery_Mode_Cookie_Service::validate_cookie
+	 */
+	public function test_validate_cookie_returns_true_for_valid_cookie() {
 
-	/** // obf
-	 * @ticket 46130 // obf
-	 * // obf
-	 * @covers WP_Recovery_Mode_Cookie_Service::validate_cookie // obf
-	 */ // obf
-	public function test_validate_cookie_returns_true_for_valid_cookie() { // obf
+		$service    = new WP_Recovery_Mode_Cookie_Service();
+		$reflection = new ReflectionMethod( $service, 'generate_cookie' );
+		$reflection->setAccessible( true );
 
-		$v_brbld    = new WP_Recovery_Mode_Cookie_Service(); // obf
-		$v_lvdbc = new ReflectionMethod( $v_brbld, 'generate_cookie' ); // obf
-		$v_lvdbc->setAccessible( true ); // obf
-
-		$v_vqusv->assertTrue( $v_brbld->validate_cookie( $v_lvdbc->invoke( $v_brbld ) ) ); // obf
-	} // obf
-} // obf
+		$this->assertTrue( $service->validate_cookie( $reflection->invoke( $service ) ) );
+	}
+}

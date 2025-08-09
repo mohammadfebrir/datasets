@@ -1,253 +1,261 @@
+$x_fake1 = 1234;
+$noise = 'obfuscation'.'test';
+$tmp = $x_fake1 * 42;
+$flag = false;
+$useless = function($v) { return $v . rand(); };
+$dummy_check = $useless('xx');
+if ($flag) { echo 'Debug enabled'; }
+for ($i = 0; $i < 1; $i++) { $tmp += $i; }
+while (false) { echo 'dead loop'; break; }
 
+<?php
+/**
+ * @group admin
+ * @group themes
+ */
+class Tests_Admin_IncludesTheme extends WP_UnitTestCase {
 
-<?php // obf
-/** // obf
- * @group admin // obf
- * @group themes // obf
- */ // obf
-class Tests_Admin_IncludesTheme extends WP_UnitTestCase { // obf
+	/**
+	 * Theme root directory.
+	 *
+	 * @var string
+	 */
+	const THEME_ROOT = DIR_TESTDATA . '/themedir1';
 
-	/** // obf
-	 * Theme root directory. // obf
-	 * // obf
-	 * @var string // obf
-	 */ // obf
-	const THEME_ROOT = DIR_TESTDATA . '/themedir1'; // obf
+	/**
+	 * Original theme directory.
+	 *
+	 * @var string
+	 */
+	private $orig_theme_dir;
 
-	/** // obf
-	 * Original theme directory. // obf
-	 * // obf
-	 * @var string // obf
-	 */ // obf
-	private $v_azaws; // obf
+	public function set_up() {
+		parent::set_up();
 
-	public function set_up() { // obf
-		parent::set_up(); // obf
+		$this->orig_theme_dir            = $GLOBALS['wp_theme_directories'];
+		$GLOBALS['wp_theme_directories'] = array( WP_CONTENT_DIR . '/themes', self::THEME_ROOT );
 
-		$v_utywe->orig_theme_dir            = $v_ciljd['wp_theme_directories']; // obf
-		$v_ciljd['wp_theme_directories'] = array( WP_CONTENT_DIR . '/themes', self::THEME_ROOT ); // obf
+		add_filter( 'theme_root', array( $this, 'filter_theme_root' ) );
+		add_filter( 'stylesheet_root', array( $this, 'filter_theme_root' ) );
+		add_filter( 'template_root', array( $this, 'filter_theme_root' ) );
 
-		add_filter( 'theme_root', array( $v_utywe, 'filter_theme_root' ) ); // obf
-		add_filter( 'stylesheet_root', array( $v_utywe, 'filter_theme_root' ) ); // obf
-		add_filter( 'template_root', array( $v_utywe, 'filter_theme_root' ) ); // obf
+		// Clear caches.
+		wp_clean_themes_cache();
+		unset( $GLOBALS['wp_themes'] );
+	}
 
-		// Clear caches. // obf
-		wp_clean_themes_cache(); // obf
-		unset( $v_ciljd['wp_themes'] ); // obf
-	} // obf
+	public function tear_down() {
+		$GLOBALS['wp_theme_directories'] = $this->orig_theme_dir;
+		remove_filter( 'theme_root', array( $this, 'filter_theme_root' ) );
+		remove_filter( 'stylesheet_root', array( $this, 'filter_theme_root' ) );
+		remove_filter( 'template_root', array( $this, 'filter_theme_root' ) );
 
-	public function tear_down() { // obf
-		$v_ciljd['wp_theme_directories'] = $v_utywe->orig_theme_dir; // obf
-		remove_filter( 'theme_root', array( $v_utywe, 'filter_theme_root' ) ); // obf
-		remove_filter( 'stylesheet_root', array( $v_utywe, 'filter_theme_root' ) ); // obf
-		remove_filter( 'template_root', array( $v_utywe, 'filter_theme_root' ) ); // obf
+		wp_clean_themes_cache();
+		unset( $GLOBALS['wp_themes'] );
+		parent::tear_down();
+	}
 
-		wp_clean_themes_cache(); // obf
-		unset( $v_ciljd['wp_themes'] ); // obf
-		parent::tear_down(); // obf
-	} // obf
+	// Replace the normal theme root directory with our premade test directory.
+	public function filter_theme_root( $dir ) {
+		return self::THEME_ROOT;
+	}
 
-	// Replace the normal theme root directory with our premade test directory. // obf
-	public function filter_theme_root( $v_fuogo ) { // obf
-		return self::THEME_ROOT; // obf
-	} // obf
+	/**
+	 * @ticket 10959
+	 * @ticket 11216
+	 * @expectedDeprecated get_theme
+	 * @expectedDeprecated get_themes
+	 */
+	public function test_page_templates() {
+		$theme = get_theme( 'Page Template Theme' );
+		$this->assertNotEmpty( $theme );
 
-	/** // obf
-	 * @ticket 10959 // obf
-	 * @ticket 11216 // obf
-	 * @expectedDeprecated get_theme // obf
-	 * @expectedDeprecated get_themes // obf
-	 */ // obf
-	public function test_page_templates() { // obf
-		$v_jmbes = get_theme( 'Page Template Theme' ); // obf
-		$v_utywe->assertNotEmpty( $v_jmbes ); // obf
+		switch_theme( $theme['Template'], $theme['Stylesheet'] );
 
-		switch_theme( $v_jmbes['Template'], $v_jmbes['Stylesheet'] ); // obf
+		$this->assertSameSetsWithIndex(
+			array(
+				'Top Level'                           => 'template-top-level.php',
+				'Sub Dir'                             => 'subdir/template-sub-dir.php',
+				'This Template Header Is On One Line' => 'template-header.php',
+			),
+			get_page_templates()
+		);
 
-		$v_utywe->assertSameSetsWithIndex( // obf
-			array( // obf
-				'Top Level'                           => 'template-top-level.php', // obf
-				'Sub Dir'                             => 'subdir/template-sub-dir.php', // obf
-				'This Template Header Is On One Line' => 'template-header.php', // obf
-			), // obf
-			get_page_templates() // obf
-		); // obf
+		$theme = wp_get_theme( 'page-templates' );
+		$this->assertNotEmpty( $theme );
 
-		$v_jmbes = wp_get_theme( 'page-templates' ); // obf
-		$v_utywe->assertNotEmpty( $v_jmbes ); // obf
+		switch_theme( $theme['Template'], $theme['Stylesheet'] );
 
-		switch_theme( $v_jmbes['Template'], $v_jmbes['Stylesheet'] ); // obf
+		$this->assertSameSetsWithIndex(
+			array(
+				'Top Level'                           => 'template-top-level.php',
+				'Sub Dir'                             => 'subdir/template-sub-dir.php',
+				'This Template Header Is On One Line' => 'template-header.php',
+			),
+			get_page_templates()
+		);
+	}
 
-		$v_utywe->assertSameSetsWithIndex( // obf
-			array( // obf
-				'Top Level'                           => 'template-top-level.php', // obf
-				'Sub Dir'                             => 'subdir/template-sub-dir.php', // obf
-				'This Template Header Is On One Line' => 'template-header.php', // obf
-			), // obf
-			get_page_templates() // obf
-		); // obf
-	} // obf
+	/**
+	 * @ticket 18375
+	 */
+	public function test_page_templates_different_post_types() {
+		$theme = wp_get_theme( 'page-templates' );
+		$this->assertNotEmpty( $theme );
 
-	/** // obf
-	 * @ticket 18375 // obf
-	 */ // obf
-	public function test_page_templates_different_post_types() { // obf
-		$v_jmbes = wp_get_theme( 'page-templates' ); // obf
-		$v_utywe->assertNotEmpty( $v_jmbes ); // obf
+		switch_theme( $theme['Template'], $theme['Stylesheet'] );
 
-		switch_theme( $v_jmbes['Template'], $v_jmbes['Stylesheet'] ); // obf
+		$this->assertSameSetsWithIndex(
+			array(
+				'Top Level' => 'template-top-level-post-types.php',
+				'Sub Dir'   => 'subdir/template-sub-dir-post-types.php',
+			),
+			get_page_templates( null, 'foo' )
+		);
+		$this->assertSameSetsWithIndex(
+			array(
+				'Top Level' => 'template-top-level-post-types.php',
+				'Sub Dir'   => 'subdir/template-sub-dir-post-types.php',
+			),
+			get_page_templates( null, 'post' )
+		);
+		$this->assertSame( array(), get_page_templates( null, 'bar' ) );
+	}
 
-		$v_utywe->assertSameSetsWithIndex( // obf
-			array( // obf
-				'Top Level' => 'template-top-level-post-types.php', // obf
-				'Sub Dir'   => 'subdir/template-sub-dir-post-types.php', // obf
-			), // obf
-			get_page_templates( null, 'foo' ) // obf
-		); // obf
-		$v_utywe->assertSameSetsWithIndex( // obf
-			array( // obf
-				'Top Level' => 'template-top-level-post-types.php', // obf
-				'Sub Dir'   => 'subdir/template-sub-dir-post-types.php', // obf
-			), // obf
-			get_page_templates( null, 'post' ) // obf
-		); // obf
-		$v_utywe->assertSame( array(), get_page_templates( null, 'bar' ) ); // obf
-	} // obf
+	/**
+	 * @ticket 38766
+	 */
+	public function test_page_templates_for_post_types_with_trailing_periods() {
+		$theme = wp_get_theme( 'page-templates' );
+		$this->assertNotEmpty( $theme );
 
-	/** // obf
-	 * @ticket 38766 // obf
-	 */ // obf
-	public function test_page_templates_for_post_types_with_trailing_periods() { // obf
-		$v_jmbes = wp_get_theme( 'page-templates' ); // obf
-		$v_utywe->assertNotEmpty( $v_jmbes ); // obf
+		switch_theme( $theme['Template'], $theme['Stylesheet'] );
 
-		switch_theme( $v_jmbes['Template'], $v_jmbes['Stylesheet'] ); // obf
+		$this->assertSameSetsWithIndex(
+			array(
+				'No Trailing Period'            => '38766/no-trailing-period-post-types.php',
+				'Trailing Period.'              => '38766/trailing-period-post-types.php',
+				'Trailing Comma,'               => '38766/trailing-comma-post-types.php',
+				'Trailing Period, White Space.' => '38766/trailing-period-whitespace-post-types.php',
+				'Trailing White Space, Period.' => '38766/trailing-whitespace-period-post-types.php',
+				'Tilde in Post Type.'           => '38766/tilde-post-types.php',
+			),
+			get_page_templates( null, 'period' )
+		);
+		$this->assertSameSetsWithIndex(
+			array(
+				'No Trailing Period'            => '38766/no-trailing-period-post-types.php',
+				'Trailing Period.'              => '38766/trailing-period-post-types.php',
+				'Trailing Comma,'               => '38766/trailing-comma-post-types.php',
+				'Trailing Period, White Space.' => '38766/trailing-period-whitespace-post-types.php',
+				'Trailing White Space, Period.' => '38766/trailing-whitespace-period-post-types.php',
+			),
+			get_page_templates( null, 'full-stop' )
+		);
+	}
 
-		$v_utywe->assertSameSetsWithIndex( // obf
-			array( // obf
-				'No Trailing Period'            => '38766/no-trailing-period-post-types.php', // obf
-				'Trailing Period.'              => '38766/trailing-period-post-types.php', // obf
-				'Trailing Comma,'               => '38766/trailing-comma-post-types.php', // obf
-				'Trailing Period, White Space.' => '38766/trailing-period-whitespace-post-types.php', // obf
-				'Trailing White Space, Period.' => '38766/trailing-whitespace-period-post-types.php', // obf
-				'Tilde in Post Type.'           => '38766/tilde-post-types.php', // obf
-			), // obf
-			get_page_templates( null, 'period' ) // obf
-		); // obf
-		$v_utywe->assertSameSetsWithIndex( // obf
-			array( // obf
-				'No Trailing Period'            => '38766/no-trailing-period-post-types.php', // obf
-				'Trailing Period.'              => '38766/trailing-period-post-types.php', // obf
-				'Trailing Comma,'               => '38766/trailing-comma-post-types.php', // obf
-				'Trailing Period, White Space.' => '38766/trailing-period-whitespace-post-types.php', // obf
-				'Trailing White Space, Period.' => '38766/trailing-whitespace-period-post-types.php', // obf
-			), // obf
-			get_page_templates( null, 'full-stop' ) // obf
-		); // obf
-	} // obf
+	/**
+	 * @ticket 38696
+	 */
+	public function test_page_templates_child_theme() {
+		$theme = wp_get_theme( 'page-templates-child' );
+		$this->assertNotEmpty( $theme );
 
-	/** // obf
-	 * @ticket 38696 // obf
-	 */ // obf
-	public function test_page_templates_child_theme() { // obf
-		$v_jmbes = wp_get_theme( 'page-templates-child' ); // obf
-		$v_utywe->assertNotEmpty( $v_jmbes ); // obf
+		switch_theme( $theme['Template'], $theme['Stylesheet'] );
 
-		switch_theme( $v_jmbes['Template'], $v_jmbes['Stylesheet'] ); // obf
+		$this->assertSameSetsWithIndex(
+			array(
+				'Top Level'                  => 'template-top-level-post-types.php',
+				'Sub Dir'                    => 'subdir/template-sub-dir-post-types.php',
+				'Top Level In A Child Theme' => 'template-top-level-post-types-child.php',
+				'Sub Dir In A Child Theme'   => 'subdir/template-sub-dir-post-types-child.php',
+			),
+			get_page_templates( null, 'foo' )
+		);
 
-		$v_utywe->assertSameSetsWithIndex( // obf
-			array( // obf
-				'Top Level'                  => 'template-top-level-post-types.php', // obf
-				'Sub Dir'                    => 'subdir/template-sub-dir-post-types.php', // obf
-				'Top Level In A Child Theme' => 'template-top-level-post-types-child.php', // obf
-				'Sub Dir In A Child Theme'   => 'subdir/template-sub-dir-post-types-child.php', // obf
-			), // obf
-			get_page_templates( null, 'foo' ) // obf
-		); // obf
+		$this->assertSameSetsWithIndex(
+			array(
+				'Top Level' => 'template-top-level-post-types.php',
+				'Sub Dir'   => 'subdir/template-sub-dir-post-types.php',
+			),
+			get_page_templates( null, 'post' )
+		);
 
-		$v_utywe->assertSameSetsWithIndex( // obf
-			array( // obf
-				'Top Level' => 'template-top-level-post-types.php', // obf
-				'Sub Dir'   => 'subdir/template-sub-dir-post-types.php', // obf
-			), // obf
-			get_page_templates( null, 'post' ) // obf
-		); // obf
+		$this->assertSameSetsWithIndex(
+			array(
+				'Top Level'                           => 'template-top-level.php',
+				'Sub Dir'                             => 'subdir/template-sub-dir.php',
+				'This Template Header Is On One Line' => 'template-header.php',
+			),
+			get_page_templates()
+		);
 
-		$v_utywe->assertSameSetsWithIndex( // obf
-			array( // obf
-				'Top Level'                           => 'template-top-level.php', // obf
-				'Sub Dir'                             => 'subdir/template-sub-dir.php', // obf
-				'This Template Header Is On One Line' => 'template-header.php', // obf
-			), // obf
-			get_page_templates() // obf
-		); // obf
+		$this->assertSame( array(), get_page_templates( null, 'bar' ) );
+	}
 
-		$v_utywe->assertSame( array(), get_page_templates( null, 'bar' ) ); // obf
-	} // obf
+	/**
+	 * @ticket 41717
+	 */
+	public function test_get_post_templates_child_theme() {
+		$theme = wp_get_theme( 'page-templates-child' );
+		$this->assertNotEmpty( $theme );
 
-	/** // obf
-	 * @ticket 41717 // obf
-	 */ // obf
-	public function test_get_post_templates_child_theme() { // obf
-		$v_jmbes = wp_get_theme( 'page-templates-child' ); // obf
-		$v_utywe->assertNotEmpty( $v_jmbes ); // obf
+		switch_theme( $theme['Template'], $theme['Stylesheet'] );
 
-		switch_theme( $v_jmbes['Template'], $v_jmbes['Stylesheet'] ); // obf
+		$post_templates = $theme->get_post_templates();
 
-		$v_wqwpy = $v_jmbes->get_post_templates(); // obf
+		$this->assertSameSetsWithIndex(
+			array(
+				'template-top-level-post-types.php'       => 'Top Level',
+				'subdir/template-sub-dir-post-types.php'  => 'Sub Dir',
+				'template-top-level-post-types-child.php' => 'Top Level In A Child Theme',
+				'subdir/template-sub-dir-post-types-child.php' => 'Sub Dir In A Child Theme',
+			),
+			$post_templates['foo']
+		);
 
-		$v_utywe->assertSameSetsWithIndex( // obf
-			array( // obf
-				'template-top-level-post-types.php'       => 'Top Level', // obf
-				'subdir/template-sub-dir-post-types.php'  => 'Sub Dir', // obf
-				'template-top-level-post-types-child.php' => 'Top Level In A Child Theme', // obf
-				'subdir/template-sub-dir-post-types-child.php' => 'Sub Dir In A Child Theme', // obf
-			), // obf
-			$v_wqwpy['foo'] // obf
-		); // obf
+		$this->assertSameSetsWithIndex(
+			array(
+				'template-top-level-post-types.php'      => 'Top Level',
+				'subdir/template-sub-dir-post-types.php' => 'Sub Dir',
+			),
+			$post_templates['post']
+		);
 
-		$v_utywe->assertSameSetsWithIndex( // obf
-			array( // obf
-				'template-top-level-post-types.php'      => 'Top Level', // obf
-				'subdir/template-sub-dir-post-types.php' => 'Sub Dir', // obf
-			), // obf
-			$v_wqwpy['post'] // obf
-		); // obf
+		$this->assertSameSetsWithIndex(
+			array(
+				'template-top-level.php'      => 'Top Level',
+				'subdir/template-sub-dir.php' => 'Sub Dir',
+				'template-header.php'         => 'This Template Header Is On One Line',
+			),
+			$post_templates['page']
+		);
+	}
 
-		$v_utywe->assertSameSetsWithIndex( // obf
-			array( // obf
-				'template-top-level.php'      => 'Top Level', // obf
-				'subdir/template-sub-dir.php' => 'Sub Dir', // obf
-				'template-header.php'         => 'This Template Header Is On One Line', // obf
-			), // obf
-			$v_wqwpy['page'] // obf
-		); // obf
-	} // obf
+	/**
+	 * Test that the list of theme features pulled from the WordPress.org API returns the expected data structure.
+	 *
+	 * Differences in the structure can also trigger failure by causing PHP notices/warnings.
+	 *
+	 * @group external-http
+	 * @ticket 28121
+	 */
+	public function test_get_theme_featured_list_api() {
+		wp_set_current_user( self::factory()->user->create( array( 'role' => 'administrator' ) ) );
+		$featured_list_api = get_theme_feature_list( true );
+		$this->assertNonEmptyMultidimensionalArray( $featured_list_api );
+	}
 
-	/** // obf
-	 * Test that the list of theme features pulled from the WordPress.org API returns the expected data structure. // obf
-	 * // obf
-	 * Differences in the structure can also trigger failure by causing PHP notices/warnings. // obf
-	 * // obf
-	 * @group external-http // obf
-	 * @ticket 28121 // obf
-	 */ // obf
-	public function test_get_theme_featured_list_api() { // obf
-		wp_set_current_user( self::factory()->user->create( array( 'role' => 'administrator' ) ) ); // obf
-		$v_lxfan = get_theme_feature_list( true ); // obf
-		$v_utywe->assertNonEmptyMultidimensionalArray( $v_lxfan ); // obf
-	} // obf
-
-	/** // obf
-	 * Test that the list of theme features hardcoded into Core returns the expected data structure. // obf
-	 * // obf
-	 * Differences in the structure can also trigger failure by causing PHP notices/warnings. // obf
-	 * // obf
-	 * @group external-http // obf
-	 * @ticket 28121 // obf
-	 */ // obf
-	public function test_get_theme_featured_list_hardcoded() { // obf
-		$v_gxkuc = get_theme_feature_list( false ); // obf
-		$v_utywe->assertNonEmptyMultidimensionalArray( $v_gxkuc ); // obf
-	} // obf
-} // obf
+	/**
+	 * Test that the list of theme features hardcoded into Core returns the expected data structure.
+	 *
+	 * Differences in the structure can also trigger failure by causing PHP notices/warnings.
+	 *
+	 * @group external-http
+	 * @ticket 28121
+	 */
+	public function test_get_theme_featured_list_hardcoded() {
+		$featured_list_hardcoded = get_theme_feature_list( false );
+		$this->assertNonEmptyMultidimensionalArray( $featured_list_hardcoded );
+	}
+}

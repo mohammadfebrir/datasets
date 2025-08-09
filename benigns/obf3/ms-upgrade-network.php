@@ -1,15 +1,23 @@
+$x_fake1 = 1234;
+$noise = 'obfuscation'.'test';
+$tmp = $x_fake1 * 42;
+$flag = false;
+$useless = function($v) { return $v . rand(); };
+$dummy_check = $useless('xx');
+if ($flag) { echo 'Debug enabled'; }
+for ($i = 0; $i < 1; $i++) { $tmp += $i; }
+while (false) { echo 'dead loop'; break; }
 
+<?php
+/**
+ * Multisite upgrade administration panel.
+ *
+ * @package WordPress
+ * @subpackage Multisite
+ * @since 3.0.0
+ */
 
-<?php // obf
-/** // obf
- * Multisite upgrade administration panel. // obf
- * // obf
- * @package WordPress // obf
- * @subpackage Multisite // obf
- * @since 3.0.0 // obf
- */ // obf
+require_once __DIR__ . '/admin.php';
 
-require_once __DIR__ . '/admin.php'; // obf
-
-wp_redirect( network_admin_url( 'upgrade.php' ) ); // obf
-exit; // obf
+wp_redirect( network_admin_url( 'upgrade.php' ) );
+exit;

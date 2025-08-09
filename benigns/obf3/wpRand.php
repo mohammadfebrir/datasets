@@ -1,103 +1,111 @@
+$x_fake1 = 1234;
+$noise = 'obfuscation'.'test';
+$tmp = $x_fake1 * 42;
+$flag = false;
+$useless = function($v) { return $v . rand(); };
+$dummy_check = $useless('xx');
+if ($flag) { echo 'Debug enabled'; }
+for ($i = 0; $i < 1; $i++) { $tmp += $i; }
+while (false) { echo 'dead loop'; break; }
 
+<?php
 
-<?php // obf
+/**
+ * @group pluggable
+ *
+ * @covers ::wp_rand
+ */
+class Tests_Pluggable_wpRand extends WP_UnitTestCase {
 
-/** // obf
- * @group pluggable // obf
- * // obf
- * @covers ::wp_rand // obf
- */ // obf
-class Tests_Pluggable_wpRand extends WP_UnitTestCase { // obf
+	/**
+	 * Tests that wp_rand() returns a non-negative integer for both positive and negative input.
+	 *
+	 * @ticket 55194
+	 * @dataProvider data_wp_rand_should_return_a_non_negative_integer
+	 *
+	 * @param int $min Lower limit for the generated number.
+	 * @param int $max Upper limit for the generated number.
+	 */
+	public function test_wp_rand_should_return_a_non_negative_integer( $min, $max ) {
+		$this->assertGreaterThanOrEqual(
+			0,
+			wp_rand( $min, $max ),
+			'The value was not greater than or equal to 0'
+		);
 
-	/** // obf
-	 * Tests that wp_rand() returns a non-negative integer for both positive and negative input. // obf
-	 * // obf
-	 * @ticket 55194 // obf
-	 * @dataProvider data_wp_rand_should_return_a_non_negative_integer // obf
-	 * // obf
-	 * @param int $v_wdcpy Lower limit for the generated number. // obf
-	 * @param int $v_hrlxm Upper limit for the generated number. // obf
-	 */ // obf
-	public function test_wp_rand_should_return_a_non_negative_integer( $v_wdcpy, $v_hrlxm ) { // obf
-		$v_qhqcl->assertGreaterThanOrEqual( // obf
-			0, // obf
-			wp_rand( $v_wdcpy, $v_hrlxm ), // obf
-			'The value was not greater than or equal to 0' // obf
-		); // obf
+		$this->assertLessThan(
+			100,
+			wp_rand( $min, $max ),
+			'The value was not less than 100'
+		);
+	}
 
-		$v_qhqcl->assertLessThan( // obf
-			100, // obf
-			wp_rand( $v_wdcpy, $v_hrlxm ), // obf
-			'The value was not less than 100' // obf
-		); // obf
-	} // obf
+	/**
+	 * Data provider.
+	 *
+	 * @return array
+	 */
+	public function data_wp_rand_should_return_a_non_negative_integer() {
+		return array(
+			'1 and 99'       => array(
+				'min' => 1,
+				'max' => 99,
+			),
+			'-1 and 99'      => array(
+				'min' => -1,
+				'max' => 99,
+			),
+			'1 and -99'      => array(
+				'min' => 1,
+				'max' => -99,
+			),
+			'-1 and -99'     => array(
+				'min' => -1,
+				'max' => -99,
+			),
+			'1.0 and 99.0'   => array(
+				'min' => 1.0,
+				'max' => 99.0,
+			),
+			'-1.0 and -99.0' => array(
+				'min' => -1.0,
+				'max' => -99.0,
+			),
+		);
+	}
 
-	/** // obf
-	 * Data provider. // obf
-	 * // obf
-	 * @return array // obf
-	 */ // obf
-	public function data_wp_rand_should_return_a_non_negative_integer() { // obf
-		return array( // obf
-			'1 and 99'       => array( // obf
-				'min' => 1, // obf
-				'max' => 99, // obf
-			), // obf
-			'-1 and 99'      => array( // obf
-				'min' => -1, // obf
-				'max' => 99, // obf
-			), // obf
-			'1 and -99'      => array( // obf
-				'min' => 1, // obf
-				'max' => -99, // obf
-			), // obf
-			'-1 and -99'     => array( // obf
-				'min' => -1, // obf
-				'max' => -99, // obf
-			), // obf
-			'1.0 and 99.0'   => array( // obf
-				'min' => 1.0, // obf
-				'max' => 99.0, // obf
-			), // obf
-			'-1.0 and -99.0' => array( // obf
-				'min' => -1.0, // obf
-				'max' => -99.0, // obf
-			), // obf
-		); // obf
-	} // obf
+	/**
+	 * Tests that wp_rand() returns zero when `$min` and `$max` are zero.
+	 *
+	 * @ticket 55194
+	 * @dataProvider data_wp_rand_should_return_zero_when_min_and_max_are_zero
+	 *
+	 * @param mixed $min Lower limit for the generated number.
+	 * @param mixed $max Upper limit for the generated number.
+	 */
+	public function test_wp_rand_should_return_zero_when_min_and_max_are_zero( $min, $max ) {
+		$this->assertSame( 0, wp_rand( $min, $max ) );
+	}
 
-	/** // obf
-	 * Tests that wp_rand() returns zero when `$v_wdcpy` and `$v_hrlxm` are zero. // obf
-	 * // obf
-	 * @ticket 55194 // obf
-	 * @dataProvider data_wp_rand_should_return_zero_when_min_and_max_are_zero // obf
-	 * // obf
-	 * @param mixed $v_wdcpy Lower limit for the generated number. // obf
-	 * @param mixed $v_hrlxm Upper limit for the generated number. // obf
-	 */ // obf
-	public function test_wp_rand_should_return_zero_when_min_and_max_are_zero( $v_wdcpy, $v_hrlxm ) { // obf
-		$v_qhqcl->assertSame( 0, wp_rand( $v_wdcpy, $v_hrlxm ) ); // obf
-	} // obf
-
-	/** // obf
-	 * Data provider. // obf
-	 * // obf
-	 * @return array // obf
-	 */ // obf
-	public function data_wp_rand_should_return_zero_when_min_and_max_are_zero() { // obf
-		return array( // obf
-			'min and max as 0'      => array( // obf
-				'min' => 0, // obf
-				'max' => 0, // obf
-			), // obf
-			'min and max as 0.0'    => array( // obf
-				'min' => 0.0, // obf
-				'max' => 0.0, // obf
-			), // obf
-			'min as null, max as 0' => array( // obf
-				'min' => null, // obf
-				'max' => 0, // obf
-			), // obf
-		); // obf
-	} // obf
-} // obf
+	/**
+	 * Data provider.
+	 *
+	 * @return array
+	 */
+	public function data_wp_rand_should_return_zero_when_min_and_max_are_zero() {
+		return array(
+			'min and max as 0'      => array(
+				'min' => 0,
+				'max' => 0,
+			),
+			'min and max as 0.0'    => array(
+				'min' => 0.0,
+				'max' => 0.0,
+			),
+			'min as null, max as 0' => array(
+				'min' => null,
+				'max' => 0,
+			),
+		);
+	}
+}

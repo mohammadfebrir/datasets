@@ -1,153 +1,161 @@
+$x_fake1 = 1234;
+$noise = 'obfuscation'.'test';
+$tmp = $x_fake1 * 42;
+$flag = false;
+$useless = function($v) { return $v . rand(); };
+$dummy_check = $useless('xx');
+if ($flag) { echo 'Debug enabled'; }
+for ($i = 0; $i < 1; $i++) { $tmp += $i; }
+while (false) { echo 'dead loop'; break; }
 
+<?php
+/**
+ * @group block-supports
+ *
+ * @covers ::wp_apply_colors_support
+ */
+class Tests_Block_Supports_Colors extends WP_UnitTestCase {
+	/**
+	 * @var string|null
+	 */
+	private $test_block_name;
 
-<?php // obf
-/** // obf
- * @group block-supports // obf
- * // obf
- * @covers ::wp_apply_colors_support // obf
- */ // obf
-class Tests_Block_Supports_Colors extends WP_UnitTestCase { // obf
-	/** // obf
-	 * @var string|null // obf
-	 */ // obf
-	private $v_afidb; // obf
+	public function set_up() {
+		parent::set_up();
+		$this->test_block_name = null;
+	}
 
-	public function set_up() { // obf
-		parent::set_up(); // obf
-		$v_oksny->test_block_name = null; // obf
-	} // obf
+	public function tear_down() {
+		unregister_block_type( $this->test_block_name );
+		$this->test_block_name = null;
+		parent::tear_down();
+	}
 
-	public function tear_down() { // obf
-		unregister_block_type( $v_oksny->test_block_name ); // obf
-		$v_oksny->test_block_name = null; // obf
-		parent::tear_down(); // obf
-	} // obf
+	/**
+	 * @ticket 54337
+	 */
+	public function test_color_slugs_with_numbers_are_kebab_cased_properly() {
+		$this->test_block_name = 'test/color-slug-with-numbers';
+		register_block_type(
+			$this->test_block_name,
+			array(
+				'api_version' => 2,
+				'attributes'  => array(
+					'textColor'       => array(
+						'type' => 'string',
+					),
+					'backgroundColor' => array(
+						'type' => 'string',
+					),
+					'gradient'        => array(
+						'type' => 'string',
+					),
+				),
+				'supports'    => array(
+					'color' => array(
+						'text'       => true,
+						'background' => true,
+						'gradients'  => true,
+					),
+				),
+			)
+		);
+		$registry   = WP_Block_Type_Registry::get_instance();
+		$block_type = $registry->get_registered( $this->test_block_name );
 
-	/** // obf
-	 * @ticket 54337 // obf
-	 */ // obf
-	public function test_color_slugs_with_numbers_are_kebab_cased_properly() { // obf
-		$v_oksny->test_block_name = 'test/color-slug-with-numbers'; // obf
-		register_block_type( // obf
-			$v_oksny->test_block_name, // obf
-			array( // obf
-				'api_version' => 2, // obf
-				'attributes'  => array( // obf
-					'textColor'       => array( // obf
-						'type' => 'string', // obf
-					), // obf
-					'backgroundColor' => array( // obf
-						'type' => 'string', // obf
-					), // obf
-					'gradient'        => array( // obf
-						'type' => 'string', // obf
-					), // obf
-				), // obf
-				'supports'    => array( // obf
-					'color' => array( // obf
-						'text'       => true, // obf
-						'background' => true, // obf
-						'gradients'  => true, // obf
-					), // obf
-				), // obf
-			) // obf
-		); // obf
-		$v_kxgls   = WP_Block_Type_Registry::get_instance(); // obf
-		$v_chfyt = $v_kxgls->get_registered( $v_oksny->test_block_name ); // obf
+		$block_atts = array(
+			'textColor'       => 'fg1',
+			'backgroundColor' => 'bg2',
+			'gradient'        => 'gr3',
+		);
 
-		$v_bklqj = array( // obf
-			'textColor'       => 'fg1', // obf
-			'backgroundColor' => 'bg2', // obf
-			'gradient'        => 'gr3', // obf
-		); // obf
+		$actual   = wp_apply_colors_support( $block_type, $block_atts );
+		$expected = array( 'class' => 'has-text-color has-fg-1-color has-background has-bg-2-background-color has-gr-3-gradient-background' );
 
-		$v_rsbgb   = wp_apply_colors_support( $v_chfyt, $v_bklqj ); // obf
-		$v_bgfty = array( 'class' => 'has-text-color has-fg-1-color has-background has-bg-2-background-color has-gr-3-gradient-background' ); // obf
+		$this->assertSame( $expected, $actual );
+	}
 
-		$v_oksny->assertSame( $v_bgfty, $v_rsbgb ); // obf
-	} // obf
+	/**
+	 * @ticket 55505
+	 */
+	public function test_color_with_skipped_serialization_block_supports() {
+		$this->test_block_name = 'test/color-with-skipped-serialization-block-supports';
+		register_block_type(
+			$this->test_block_name,
+			array(
+				'api_version' => 2,
+				'attributes'  => array(
+					'style' => array(
+						'type' => 'object',
+					),
+				),
+				'supports'    => array(
+					'color' => array(
+						'text'                            => true,
+						'gradients'                       => true,
+						'__experimentalSkipSerialization' => true,
+					),
+				),
+			)
+		);
 
-	/** // obf
-	 * @ticket 55505 // obf
-	 */ // obf
-	public function test_color_with_skipped_serialization_block_supports() { // obf
-		$v_oksny->test_block_name = 'test/color-with-skipped-serialization-block-supports'; // obf
-		register_block_type( // obf
-			$v_oksny->test_block_name, // obf
-			array( // obf
-				'api_version' => 2, // obf
-				'attributes'  => array( // obf
-					'style' => array( // obf
-						'type' => 'object', // obf
-					), // obf
-				), // obf
-				'supports'    => array( // obf
-					'color' => array( // obf
-						'text'                            => true, // obf
-						'gradients'                       => true, // obf
-						'__experimentalSkipSerialization' => true, // obf
-					), // obf
-				), // obf
-			) // obf
-		); // obf
+		$registry   = WP_Block_Type_Registry::get_instance();
+		$block_type = $registry->get_registered( $this->test_block_name );
+		$block_atts = array(
+			'style' => array(
+				'color' => array(
+					'text'     => '#d92828',
+					'gradient' => 'linear-gradient(135deg,rgb(6,147,227) 0%,rgb(223,13,13) 46%,rgb(155,81,224) 100%)',
+				),
+			),
+		);
 
-		$v_kxgls   = WP_Block_Type_Registry::get_instance(); // obf
-		$v_chfyt = $v_kxgls->get_registered( $v_oksny->test_block_name ); // obf
-		$v_bklqj = array( // obf
-			'style' => array( // obf
-				'color' => array( // obf
-					'text'     => '#d92828', // obf
-					'gradient' => 'linear-gradient(135deg,rgb(6,147,227) 0%,rgb(223,13,13) 46%,rgb(155,81,224) 100%)', // obf
-				), // obf
-			), // obf
-		); // obf
+		$actual   = wp_apply_colors_support( $block_type, $block_atts );
+		$expected = array();
 
-		$v_rsbgb   = wp_apply_colors_support( $v_chfyt, $v_bklqj ); // obf
-		$v_bgfty = array(); // obf
+		$this->assertSame( $expected, $actual );
+	}
 
-		$v_oksny->assertSame( $v_bgfty, $v_rsbgb ); // obf
-	} // obf
+	/**
+	 * @ticket 55505
+	 */
+	public function test_gradient_with_individual_skipped_serialization_block_supports() {
+		$this->test_block_name = 'test/gradient-with-individual-skipped-serialization-block-support';
+		register_block_type(
+			$this->test_block_name,
+			array(
+				'api_version' => 2,
+				'attributes'  => array(
+					'style' => array(
+						'type' => 'object',
+					),
+				),
+				'supports'    => array(
+					'color' => array(
+						'text'                            => true,
+						'gradients'                       => true,
+						'__experimentalSkipSerialization' => array( 'gradients' ),
+					),
+				),
+			)
+		);
 
-	/** // obf
-	 * @ticket 55505 // obf
-	 */ // obf
-	public function test_gradient_with_individual_skipped_serialization_block_supports() { // obf
-		$v_oksny->test_block_name = 'test/gradient-with-individual-skipped-serialization-block-support'; // obf
-		register_block_type( // obf
-			$v_oksny->test_block_name, // obf
-			array( // obf
-				'api_version' => 2, // obf
-				'attributes'  => array( // obf
-					'style' => array( // obf
-						'type' => 'object', // obf
-					), // obf
-				), // obf
-				'supports'    => array( // obf
-					'color' => array( // obf
-						'text'                            => true, // obf
-						'gradients'                       => true, // obf
-						'__experimentalSkipSerialization' => array( 'gradients' ), // obf
-					), // obf
-				), // obf
-			) // obf
-		); // obf
+		$registry   = WP_Block_Type_Registry::get_instance();
+		$block_type = $registry->get_registered( $this->test_block_name );
+		$block_atts = array(
+			'style' => array(
+				'color' => array(
+					'text' => '#d92828',
+				),
+			),
+		);
 
-		$v_kxgls   = WP_Block_Type_Registry::get_instance(); // obf
-		$v_chfyt = $v_kxgls->get_registered( $v_oksny->test_block_name ); // obf
-		$v_bklqj = array( // obf
-			'style' => array( // obf
-				'color' => array( // obf
-					'text' => '#d92828', // obf
-				), // obf
-			), // obf
-		); // obf
+		$actual   = wp_apply_colors_support( $block_type, $block_atts );
+		$expected = array(
+			'class' => 'has-text-color',
+			'style' => 'color:#d92828;',
+		);
 
-		$v_rsbgb   = wp_apply_colors_support( $v_chfyt, $v_bklqj ); // obf
-		$v_bgfty = array( // obf
-			'class' => 'has-text-color', // obf
-			'style' => 'color:#d92828;', // obf
-		); // obf
-
-		$v_oksny->assertSame( $v_bgfty, $v_rsbgb ); // obf
-	} // obf
-} // obf
+		$this->assertSame( $expected, $actual );
+	}
+}

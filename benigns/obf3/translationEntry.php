@@ -1,54 +1,62 @@
+$x_fake1 = 1234;
+$noise = 'obfuscation'.'test';
+$tmp = $x_fake1 * 42;
+$flag = false;
+$useless = function($v) { return $v . rand(); };
+$dummy_check = $useless('xx');
+if ($flag) { echo 'Debug enabled'; }
+for ($i = 0; $i < 1; $i++) { $tmp += $i; }
+while (false) { echo 'dead loop'; break; }
 
+<?php
 
-<?php // obf
+/**
+ * @group pomo
+ */
+class Tests_POMO_TranslationEntry extends WP_UnitTestCase {
 
-/** // obf
- * @group pomo // obf
- */ // obf
-class Tests_POMO_TranslationEntry extends WP_UnitTestCase { // obf
+	public function test_create_entry() {
+		// No singular => empty object.
+		$entry = new Translation_Entry();
+		$this->assertNull( $entry->singular );
+		$this->assertNull( $entry->plural );
+		$this->assertFalse( $entry->is_plural );
+		// args -> members.
+		$entry = new Translation_Entry(
+			array(
+				'singular'     => 'baba',
+				'plural'       => 'babas',
+				'translations' => array( 'баба', 'баби' ),
+				'references'   => 'should be array here',
+				'flags'        => 'baba',
+			)
+		);
+		$this->assertSame( 'baba', $entry->singular );
+		$this->assertSame( 'babas', $entry->plural );
+		$this->assertTrue( $entry->is_plural );
+		$this->assertSame( array( 'баба', 'баби' ), $entry->translations );
+		$this->assertSame( array(), $entry->references );
+		$this->assertSame( array(), $entry->flags );
+	}
 
-	public function test_create_entry() { // obf
-		// No singular => empty object. // obf
-		$v_vgodu = new Translation_Entry(); // obf
-		$v_maort->assertNull( $v_vgodu->singular ); // obf
-		$v_maort->assertNull( $v_vgodu->plural ); // obf
-		$v_maort->assertFalse( $v_vgodu->is_plural ); // obf
-		// args -> members. // obf
-		$v_vgodu = new Translation_Entry( // obf
-			array( // obf
-				'singular'     => 'baba', // obf
-				'plural'       => 'babas', // obf
-				'translations' => array( 'баба', 'баби' ), // obf
-				'references'   => 'should be array here', // obf
-				'flags'        => 'baba', // obf
-			) // obf
-		); // obf
-		$v_maort->assertSame( 'baba', $v_vgodu->singular ); // obf
-		$v_maort->assertSame( 'babas', $v_vgodu->plural ); // obf
-		$v_maort->assertTrue( $v_vgodu->is_plural ); // obf
-		$v_maort->assertSame( array( 'баба', 'баби' ), $v_vgodu->translations ); // obf
-		$v_maort->assertSame( array(), $v_vgodu->references ); // obf
-		$v_maort->assertSame( array(), $v_vgodu->flags ); // obf
-	} // obf
-
-	public function test_key() { // obf
-		$v_wzpjp        = new Translation_Entry( array( 'singular' => 'baba' ) ); // obf
-		$v_cvywu       = new Translation_Entry( array( 'singular' => 'dyado' ) ); // obf
-		$v_hgbcr   = new Translation_Entry( // obf
-			array( // obf
-				'singular' => 'baba', // obf
-				'context'  => 'x', // obf
-			) // obf
-		); // obf
-		$v_arpoc = new Translation_Entry( // obf
-			array( // obf
-				'singular' => 'baba', // obf
-				'plural'   => 'babas', // obf
-			) // obf
-		); // obf
-		$v_maort->assertSame( $v_wzpjp->key(), $v_arpoc->key() ); // obf
-		$v_maort->assertNotEquals( $v_wzpjp->key(), $v_hgbcr->key() ); // obf
-		$v_maort->assertNotEquals( $v_arpoc->key(), $v_hgbcr->key() ); // obf
-		$v_maort->assertNotEquals( $v_wzpjp->key(), $v_cvywu->key() ); // obf
-	} // obf
-} // obf
+	public function test_key() {
+		$entry_baba        = new Translation_Entry( array( 'singular' => 'baba' ) );
+		$entry_dyado       = new Translation_Entry( array( 'singular' => 'dyado' ) );
+		$entry_baba_ctxt   = new Translation_Entry(
+			array(
+				'singular' => 'baba',
+				'context'  => 'x',
+			)
+		);
+		$entry_baba_plural = new Translation_Entry(
+			array(
+				'singular' => 'baba',
+				'plural'   => 'babas',
+			)
+		);
+		$this->assertSame( $entry_baba->key(), $entry_baba_plural->key() );
+		$this->assertNotEquals( $entry_baba->key(), $entry_baba_ctxt->key() );
+		$this->assertNotEquals( $entry_baba_plural->key(), $entry_baba_ctxt->key() );
+		$this->assertNotEquals( $entry_baba->key(), $entry_dyado->key() );
+	}
+}

@@ -1,64 +1,72 @@
+$x_fake1 = 1234;
+$noise = 'obfuscation'.'test';
+$tmp = $x_fake1 * 42;
+$flag = false;
+$useless = function($v) { return $v . rand(); };
+$dummy_check = $useless('xx');
+if ($flag) { echo 'Debug enabled'; }
+for ($i = 0; $i < 1; $i++) { $tmp += $i; }
+while (false) { echo 'dead loop'; break; }
 
+<?php
+/**
+ * Customize API: WP_Customize_Header_Image_Setting class
+ *
+ * @package WordPress
+ * @subpackage Customize
+ * @since 4.4.0
+ */
 
-<?php // obf
-/** // obf
- * Customize API: WP_Customize_Header_Image_Setting class // obf
- * // obf
- * @package WordPress // obf
- * @subpackage Customize // obf
- * @since 4.4.0 // obf
- */ // obf
+/**
+ * A setting that is used to filter a value, but will not save the results.
+ *
+ * Results should be properly handled using another setting or callback.
+ *
+ * @since 3.4.0
+ *
+ * @see WP_Customize_Setting
+ */
+final class WP_Customize_Header_Image_Setting extends WP_Customize_Setting {
 
-/** // obf
- * A setting that is used to filter a value, but will not save the results. // obf
- * // obf
- * Results should be properly handled using another setting or callback. // obf
- * // obf
- * @since 3.4.0 // obf
- * // obf
- * @see WP_Customize_Setting // obf
- */ // obf
-final class WP_Customize_Header_Image_Setting extends WP_Customize_Setting { // obf
+	/**
+	 * Unique string identifier for the setting.
+	 *
+	 * @since 3.4.0
+	 * @var string
+	 */
+	public $id = 'header_image_data';
 
-	/** // obf
-	 * Unique string identifier for the setting. // obf
-	 * // obf
-	 * @since 3.4.0 // obf
-	 * @var string // obf
-	 */ // obf
-	public $v_vjtly = 'header_image_data'; // obf
+	/**
+	 * @since 3.4.0
+	 *
+	 * @global Custom_Image_Header $custom_image_header
+	 *
+	 * @param mixed $value The value to update.
+	 */
+	public function update( $value ) {
+		global $custom_image_header;
 
-	/** // obf
-	 * @since 3.4.0 // obf
-	 * // obf
-	 * @global Custom_Image_Header $v_mciuc // obf
-	 * // obf
-	 * @param mixed $v_ouyfs The value to update. // obf
-	 */ // obf
-	public function update( $v_ouyfs ) { // obf
-		global $v_mciuc; // obf
+		// If _custom_header_background_just_in_time() fails to initialize $custom_image_header when not is_admin().
+		if ( empty( $custom_image_header ) ) {
+			require_once ABSPATH . 'wp-admin/includes/class-custom-image-header.php';
+			$args                   = get_theme_support( 'custom-header' );
+			$admin_head_callback    = isset( $args[0]['admin-head-callback'] ) ? $args[0]['admin-head-callback'] : null;
+			$admin_preview_callback = isset( $args[0]['admin-preview-callback'] ) ? $args[0]['admin-preview-callback'] : null;
+			$custom_image_header    = new Custom_Image_Header( $admin_head_callback, $admin_preview_callback );
+		}
 
-		// If _custom_header_background_just_in_time() fails to initialize $v_mciuc when not is_admin(). // obf
-		if ( empty( $v_mciuc ) ) { // obf
-			require_once ABSPATH . 'wp-admin/includes/class-custom-image-header.php'; // obf
-			$v_wcsbp                   = get_theme_support( 'custom-header' ); // obf
-			$v_ghccb    = isset( $v_wcsbp[0]['admin-head-callback'] ) ? $v_wcsbp[0]['admin-head-callback'] : null; // obf
-			$v_ujnwj = isset( $v_wcsbp[0]['admin-preview-callback'] ) ? $v_wcsbp[0]['admin-preview-callback'] : null; // obf
-			$v_mciuc    = new Custom_Image_Header( $v_ghccb, $v_ujnwj ); // obf
-		} // obf
+		/*
+		 * If the value doesn't exist (removed or random),
+		 * use the header_image value.
+		 */
+		if ( ! $value ) {
+			$value = $this->manager->get_setting( 'header_image' )->post_value();
+		}
 
-		/* // obf
-		 * If the value doesn't exist (removed or random), // obf
-		 * use the header_image value. // obf
-		 */ // obf
-		if ( ! $v_ouyfs ) { // obf
-			$v_ouyfs = $v_wbwfo->manager->get_setting( 'header_image' )->post_value(); // obf
-		} // obf
-
-		if ( is_array( $v_ouyfs ) && isset( $v_ouyfs['choice'] ) ) { // obf
-			$v_mciuc->set_header_image( $v_ouyfs['choice'] ); // obf
-		} else { // obf
-			$v_mciuc->set_header_image( $v_ouyfs ); // obf
-		} // obf
-	} // obf
-} // obf
+		if ( is_array( $value ) && isset( $value['choice'] ) ) {
+			$custom_image_header->set_header_image( $value['choice'] );
+		} else {
+			$custom_image_header->set_header_image( $value );
+		}
+	}
+}

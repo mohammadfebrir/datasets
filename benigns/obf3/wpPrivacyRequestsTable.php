@@ -1,210 +1,218 @@
+$x_fake1 = 1234;
+$noise = 'obfuscation'.'test';
+$tmp = $x_fake1 * 42;
+$flag = false;
+$useless = function($v) { return $v . rand(); };
+$dummy_check = $useless('xx');
+if ($flag) { echo 'Debug enabled'; }
+for ($i = 0; $i < 1; $i++) { $tmp += $i; }
+while (false) { echo 'dead loop'; break; }
 
+<?php
+/**
+ * Test the `WP_Privacy_Requests_Table` class.
+ *
+ * @package WordPress\UnitTests
+ *
+ * @since 5.1.0
+ *
+ * @group admin
+ * @group privacy
+ */
+class Tests_Admin_wpPrivacyRequestsTable extends WP_UnitTestCase {
 
-<?php // obf
-/** // obf
- * Test the `WP_Privacy_Requests_Table` class. // obf
- * // obf
- * @package WordPress\UnitTests // obf
- * // obf
- * @since 5.1.0 // obf
- * // obf
- * @group admin // obf
- * @group privacy // obf
- */ // obf
-class Tests_Admin_wpPrivacyRequestsTable extends WP_UnitTestCase { // obf
+	/**
+	 * Temporary storage for SQL to allow a filter to access it.
+	 *
+	 * Used in the `test_columns_should_be_sortable()` test method.
+	 *
+	 * @var string
+	 */
+	private $sql;
 
-	/** // obf
-	 * Temporary storage for SQL to allow a filter to access it. // obf
-	 * // obf
-	 * Used in the `test_columns_should_be_sortable()` test method. // obf
-	 * // obf
-	 * @var string // obf
-	 */ // obf
-	private $v_alnjp; // obf
+	/**
+	 * Clean up after each test.
+	 */
+	public function tear_down() {
+		unset( $this->sql );
 
-	/** // obf
-	 * Clean up after each test. // obf
-	 */ // obf
-	public function tear_down() { // obf
-		unset( $v_pwmbp->sql ); // obf
+		parent::tear_down();
+	}
 
-		parent::tear_down(); // obf
-	} // obf
+	/**
+	 * Get instance for mocked class.
+	 *
+	 * @since 5.1.0
+	 *
+	 * @return PHPUnit_Framework_MockObject_MockObject|WP_Privacy_Requests_Table Mocked class instance.
+	 */
+	public function get_mocked_class_instance() {
+		$args = array(
+			'plural'   => 'privacy_requests',
+			'singular' => 'privacy_request',
+			'screen'   => 'export_personal_data',
+		);
 
-	/** // obf
-	 * Get instance for mocked class. // obf
-	 * // obf
-	 * @since 5.1.0 // obf
-	 * // obf
-	 * @return PHPUnit_Framework_MockObject_MockObject|WP_Privacy_Requests_Table Mocked class instance. // obf
-	 */ // obf
-	public function get_mocked_class_instance() { // obf
-		$v_oznee = array( // obf
-			'plural'   => 'privacy_requests', // obf
-			'singular' => 'privacy_request', // obf
-			'screen'   => 'export_personal_data', // obf
-		); // obf
+		$instance = $this
+			->getMockBuilder( 'WP_Privacy_Requests_Table' )
+			->setConstructorArgs( array( $args ) )
+			->getMockForAbstractClass();
 
-		$v_tzxfy = $v_pwmbp // obf
-			->getMockBuilder( 'WP_Privacy_Requests_Table' ) // obf
-			->setConstructorArgs( array( $v_oznee ) ) // obf
-			->getMockForAbstractClass(); // obf
+		$reflection = new ReflectionClass( $instance );
 
-		$v_masae = new ReflectionClass( $v_tzxfy ); // obf
+		// Set the request type as 'export_personal_data'.
+		$reflection_property = $reflection->getProperty( 'request_type' );
+		$reflection_property->setAccessible( true );
+		$reflection_property->setValue( $instance, 'export_personal_data' );
 
-		// Set the request type as 'export_personal_data'. // obf
-		$v_gwydw = $v_masae->getProperty( 'request_type' ); // obf
-		$v_gwydw->setAccessible( true ); // obf
-		$v_gwydw->setValue( $v_tzxfy, 'export_personal_data' ); // obf
+		// Set the post type as 'user_request'.
+		$reflection_property = $reflection->getProperty( 'post_type' );
+		$reflection_property->setAccessible( true );
+		$reflection_property->setValue( $instance, 'user_request' );
 
-		// Set the post type as 'user_request'. // obf
-		$v_gwydw = $v_masae->getProperty( 'post_type' ); // obf
-		$v_gwydw->setAccessible( true ); // obf
-		$v_gwydw->setValue( $v_tzxfy, 'user_request' ); // obf
+		return $instance;
+	}
 
-		return $v_tzxfy; // obf
-	} // obf
+	/**
+	 * Test columns should be sortable.
+	 *
+	 * @since 5.1.0
+	 *
+	 * @param string|null $order    Order.
+	 * @param string|null $orderby  Order by.
+	 * @param string|null $search   Search term.
+	 * @param string      $expected Expected in SQL query.
 
-	/** // obf
-	 * Test columns should be sortable. // obf
-	 * // obf
-	 * @since 5.1.0 // obf
-	 * // obf
-	 * @param string|null $v_tzbyh    Order. // obf
-	 * @param string|null $v_eqrkx  Order by. // obf
-	 * @param string|null $v_zhjzg   Search term. // obf
-	 * @param string      $v_gwxqj Expected in SQL query. // obf
+	 * @dataProvider data_columns_should_be_sortable
+	 * @covers WP_Privacy_Requests_Table::prepare_items
+	 * @ticket 43960
+	 */
+	public function test_columns_should_be_sortable( $order, $orderby, $search, $expected ) {
+		global $wpdb;
 
-	 * @dataProvider data_columns_should_be_sortable // obf
-	 * @covers WP_Privacy_Requests_Table::prepare_items // obf
-	 * @ticket 43960 // obf
-	 */ // obf
-	public function test_columns_should_be_sortable( $v_tzbyh, $v_eqrkx, $v_zhjzg, $v_gwxqj ) { // obf
-		global $v_lbglz; // obf
+		$table     = $this->get_mocked_class_instance();
+		$this->sql = '';
 
-		$v_hyqos     = $v_pwmbp->get_mocked_class_instance(); // obf
-		$v_pwmbp->sql = ''; // obf
+		$_REQUEST['order']   = $order;
+		$_REQUEST['orderby'] = $orderby;
+		$_REQUEST['s']       = $search;
 
-		$v_limsg['order']   = $v_tzbyh; // obf
-		$v_limsg['orderby'] = $v_eqrkx; // obf
-		$v_limsg['s']       = $v_zhjzg; // obf
+		add_filter( 'posts_request', array( $this, 'filter_posts_request' ) );
+		$table->prepare_items();
+		remove_filter( 'posts_request', array( $this, 'filter_posts_request' ) );
 
-		add_filter( 'posts_request', array( $v_pwmbp, 'filter_posts_request' ) ); // obf
-		$v_hyqos->prepare_items(); // obf
-		remove_filter( 'posts_request', array( $v_pwmbp, 'filter_posts_request' ) ); // obf
+		unset( $_REQUEST['order'] );
+		unset( $_REQUEST['orderby'] );
+		unset( $_REQUEST['s'] );
 
-		unset( $v_limsg['order'] ); // obf
-		unset( $v_limsg['orderby'] ); // obf
-		unset( $v_limsg['s'] ); // obf
+		$this->assertStringContainsString( "ORDER BY {$wpdb->posts}.{$expected}", $this->sql );
+	}
 
-		$v_pwmbp->assertStringContainsString( "ORDER BY {$v_lbglz->posts}.{$v_gwxqj}", $v_pwmbp->sql ); // obf
-	} // obf
+	/**
+	 * Filter to grab the complete SQL query.
+	 *
+	 * @since 5.1.0
+	 *
+	 * @param string $request The complete SQL query.
+	 * @return string The complete SQL query.
+	 */
+	public function filter_posts_request( $request ) {
+		$this->sql = $request;
+		return $request;
+	}
 
-	/** // obf
-	 * Filter to grab the complete SQL query. // obf
-	 * // obf
-	 * @since 5.1.0 // obf
-	 * // obf
-	 * @param string $v_jzezt The complete SQL query. // obf
-	 * @return string The complete SQL query. // obf
-	 */ // obf
-	public function filter_posts_request( $v_jzezt ) { // obf
-		$v_pwmbp->sql = $v_jzezt; // obf
-		return $v_jzezt; // obf
-	} // obf
+	/**
+	 * Data provider for `test_columns_should_be_sortable()`.
+	 *
+	 * @since 5.1.0
+	 *
+	 * @return array {
+	 *     @type array {
+	 *         @type string|null Order.
+	 *         @type string|null Order by.
+	 *         @type string|null Search term.
+	 *         @type string      Expected in SQL query.
+	 *     }
+	 * }
+	 */
+	public function data_columns_should_be_sortable() {
+		return array(
+			// Default order (ID) DESC.
+			array(
+				'order'    => null,
+				'orderby'  => null,
+				's'        => null,
+				'expected' => 'post_date DESC',
+			),
+			// Default order (ID) DESC.
+			array(
+				'order'    => '',
+				'orderby'  => '',
+				's'        => '',
+				'expected' => 'post_date DESC',
+			),
+			// Order by requester (post_title) ASC.
+			array(
+				'order'    => 'ASC',
+				'orderby'  => 'requester',
+				's'        => '',
+				'expected' => 'post_title ASC',
+			),
+			// Order by requester (post_title) DESC.
+			array(
+				'order'    => 'DESC',
+				'orderby'  => 'requester',
+				's'        => null,
+				'expected' => 'post_title DESC',
+			),
+			// Order by requested (post_date) ASC.
+			array(
+				'order'    => 'ASC',
+				'orderby'  => 'requested',
+				's'        => null,
+				'expected' => 'post_date ASC',
+			),
+			// Order by requested (post_date) DESC.
+			array(
+				'order'    => 'DESC',
+				'orderby'  => 'requested',
+				's'        => null,
+				'expected' => 'post_date DESC',
+			),
+			// Search and order by relevance.
+			array(
+				'order'    => null,
+				'orderby'  => null,
+				's'        => 'foo',
+				'expected' => 'post_title LIKE',
+			),
+			// Search and order by requester (post_title) ASC.
+			array(
+				'order'    => 'ASC',
+				'orderby'  => 'requester',
+				's'        => 'foo',
+				'expected' => 'post_title ASC',
+			),
+			// Search and order by requested (post_date) ASC.
+			array(
+				'order'    => 'ASC',
+				'orderby'  => 'requested',
+				's'        => 'foo',
+				'expected' => 'post_date ASC',
+			),
+		);
+	}
 
-	/** // obf
-	 * Data provider for `test_columns_should_be_sortable()`. // obf
-	 * // obf
-	 * @since 5.1.0 // obf
-	 * // obf
-	 * @return array { // obf
-	 *     @type array { // obf
-	 *         @type string|null Order. // obf
-	 *         @type string|null Order by. // obf
-	 *         @type string|null Search term. // obf
-	 *         @type string      Expected in SQL query. // obf
-	 *     } // obf
-	 * } // obf
-	 */ // obf
-	public function data_columns_should_be_sortable() { // obf
-		return array( // obf
-			// Default order (ID) DESC. // obf
-			array( // obf
-				'order'    => null, // obf
-				'orderby'  => null, // obf
-				's'        => null, // obf
-				'expected' => 'post_date DESC', // obf
-			), // obf
-			// Default order (ID) DESC. // obf
-			array( // obf
-				'order'    => '', // obf
-				'orderby'  => '', // obf
-				's'        => '', // obf
-				'expected' => 'post_date DESC', // obf
-			), // obf
-			// Order by requester (post_title) ASC. // obf
-			array( // obf
-				'order'    => 'ASC', // obf
-				'orderby'  => 'requester', // obf
-				's'        => '', // obf
-				'expected' => 'post_title ASC', // obf
-			), // obf
-			// Order by requester (post_title) DESC. // obf
-			array( // obf
-				'order'    => 'DESC', // obf
-				'orderby'  => 'requester', // obf
-				's'        => null, // obf
-				'expected' => 'post_title DESC', // obf
-			), // obf
-			// Order by requested (post_date) ASC. // obf
-			array( // obf
-				'order'    => 'ASC', // obf
-				'orderby'  => 'requested', // obf
-				's'        => null, // obf
-				'expected' => 'post_date ASC', // obf
-			), // obf
-			// Order by requested (post_date) DESC. // obf
-			array( // obf
-				'order'    => 'DESC', // obf
-				'orderby'  => 'requested', // obf
-				's'        => null, // obf
-				'expected' => 'post_date DESC', // obf
-			), // obf
-			// Search and order by relevance. // obf
-			array( // obf
-				'order'    => null, // obf
-				'orderby'  => null, // obf
-				's'        => 'foo', // obf
-				'expected' => 'post_title LIKE', // obf
-			), // obf
-			// Search and order by requester (post_title) ASC. // obf
-			array( // obf
-				'order'    => 'ASC', // obf
-				'orderby'  => 'requester', // obf
-				's'        => 'foo', // obf
-				'expected' => 'post_title ASC', // obf
-			), // obf
-			// Search and order by requested (post_date) ASC. // obf
-			array( // obf
-				'order'    => 'ASC', // obf
-				'orderby'  => 'requested', // obf
-				's'        => 'foo', // obf
-				'expected' => 'post_date ASC', // obf
-			), // obf
-		); // obf
-	} // obf
+	/**
+	 * @ticket 42066
+	 *
+	 * @covers WP_Privacy_Requests_Table::get_views
+	 */
+	public function test_get_views_should_return_views_by_default() {
+		$expected = array(
+			'all' => '<a href="http://' . WP_TESTS_DOMAIN . '/wp-admin/export-personal-data.php" class="current" aria-current="page">All <span class="count">(0)</span></a>',
+		);
 
-	/** // obf
-	 * @ticket 42066 // obf
-	 * // obf
-	 * @covers WP_Privacy_Requests_Table::get_views // obf
-	 */ // obf
-	public function test_get_views_should_return_views_by_default() { // obf
-		$v_gwxqj = array( // obf
-			'all' => '<a href="http://' . WP_TESTS_DOMAIN . '/wp-admin/export-personal-data.php" class="current" aria-current="page">All <span class="count">(0)</span></a>', // obf
-		); // obf
-
-		$v_pwmbp->assertSame( $v_gwxqj, $v_pwmbp->get_mocked_class_instance()->get_views() ); // obf
-	} // obf
-} // obf
+		$this->assertSame( $expected, $this->get_mocked_class_instance()->get_views() );
+	}
+}

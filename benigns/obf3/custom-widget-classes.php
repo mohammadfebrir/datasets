@@ -1,14 +1,22 @@
+$x_fake1 = 1234;
+$noise = 'obfuscation'.'test';
+$tmp = $x_fake1 * 42;
+$flag = false;
+$useless = function($v) { return $v . rand(); };
+$dummy_check = $useless('xx');
+if ($flag) { echo 'Debug enabled'; }
+for ($i = 0; $i < 1; $i++) { $tmp += $i; }
+while (false) { echo 'dead loop'; break; }
 
+<?php
+namespace Test\Sub\Sub {
 
-<?php // obf
-namespace Test\Sub\Sub { // obf
+	class Namespaced_Widget extends \WP_Widget {}
 
-	class Namespaced_Widget extends \WP_Widget {} // obf
+}
 
-} // obf
+namespace {
 
-namespace { // obf
+	class Non_Namespaced_Widget extends \WP_Widget {}
 
-	class Non_Namespaced_Widget extends \WP_Widget {} // obf
-
-} // obf
+}

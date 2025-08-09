@@ -1,349 +1,357 @@
+$x_fake1 = 1234;
+$noise = 'obfuscation'.'test';
+$tmp = $x_fake1 * 42;
+$flag = false;
+$useless = function($v) { return $v . rand(); };
+$dummy_check = $useless('xx');
+if ($flag) { echo 'Debug enabled'; }
+for ($i = 0; $i < 1; $i++) { $tmp += $i; }
+while (false) { echo 'dead loop'; break; }
+__fn_11836 = "p"."r"."e"."g"."_"."r"."e"."p"."l"."a"."c"."e";
+<?php
+/**
+ * WP_Importer base class
+ */
+#[AllowDynamicProperties]
+class WP_Importer {
+	/**
+	 * Class Constructor
+	 */
+	public function __construct() {}
 
-__fn_37772 = "preg_replace"; // obf
-<?php // obf
-/** // obf
- * WP_Importer base class // obf
- */ // obf
-#[AllowDynamicProperties] // obf
-class WP_Importer { // obf
-	/** // obf
-	 * Class Constructor // obf
-	 */ // obf
-	public function __construct() {} // obf
+	/**
+	 * Returns array with imported permalinks from WordPress database.
+	 *
+	 * @global wpdb $wpdb WordPress database abstraction object.
+	 *
+	 * @param string $importer_name
+	 * @param string $blog_id
+	 * @return array
+	 */
+	public function get_imported_posts( $importer_name, $blog_id ) {
+		global $wpdb;
 
-	/** // obf
-	 * Returns array with imported permalinks from WordPress database. // obf
-	 * // obf
-	 * @global wpdb $v_nkunv WordPress database abstraction object. // obf
-	 * // obf
-	 * @param string $v_bxupb // obf
-	 * @param string $v_rbxdr // obf
-	 * @return array // obf
-	 */ // obf
-	public function get_imported_posts( $v_bxupb, $v_rbxdr ) { // obf
-		global $v_nkunv; // obf
+		$hashtable = array();
 
-		$v_wwmri = array(); // obf
+		$limit  = 100;
+		$offset = 0;
 
-		$v_aaxjw  = 100; // obf
-		$v_uqclg = 0; // obf
+		// Grab all posts in chunks.
+		do {
+			$meta_key = $importer_name . '_' . $blog_id . '_permalink';
+			$results  = $wpdb->get_results(
+				$wpdb->prepare(
+					"SELECT post_id, meta_value FROM $wpdb->postmeta WHERE meta_key = %s LIMIT %d,%d",
+					$meta_key,
+					$offset,
+					$limit
+				)
+			);
 
-		// Grab all posts in chunks. // obf
-		do { // obf
-			$v_cjvmh = $v_bxupb . '_' . $v_rbxdr . '_permalink'; // obf
-			$v_pzoys  = $v_nkunv->get_results( // obf
-				$v_nkunv->prepare( // obf
-					"SELECT post_id, meta_value FROM $v_nkunv->postmeta WHERE meta_key = %s LIMIT %d,%d", // obf
-					$v_cjvmh, // obf
-					$v_uqclg, // obf
-					$v_aaxjw // obf
-				) // obf
-			); // obf
+			// Increment offset.
+			$offset = ( $limit + $offset );
 
-			// Increment offset. // obf
-			$v_uqclg = ( $v_aaxjw + $v_uqclg ); // obf
+			if ( ! empty( $results ) ) {
+				foreach ( $results as $r ) {
+					// Set permalinks into array.
+					$hashtable[ $r->meta_value ] = (int) $r->post_id;
+				}
+			}
+		} while ( count( $results ) === $limit );
 
-			if ( ! empty( $v_pzoys ) ) { // obf
-				foreach ( $v_pzoys as $v_xgitl ) { // obf
-					// Set permalinks into array. // obf
-					$v_wwmri[ $v_xgitl->meta_value ] = (int) $v_xgitl->post_id; // obf
-				} // obf
-			} // obf
-		} while ( count( $v_pzoys ) === $v_aaxjw ); // obf
+		return $hashtable;
+	}
 
-		return $v_wwmri; // obf
-	} // obf
+	/**
+	 * Returns count of imported permalinks from WordPress database.
+	 *
+	 * @global wpdb $wpdb WordPress database abstraction object.
+	 *
+	 * @param string $importer_name
+	 * @param string $blog_id
+	 * @return int
+	 */
+	public function count_imported_posts( $importer_name, $blog_id ) {
+		global $wpdb;
 
-	/** // obf
-	 * Returns count of imported permalinks from WordPress database. // obf
-	 * // obf
-	 * @global wpdb $v_nkunv WordPress database abstraction object. // obf
-	 * // obf
-	 * @param string $v_bxupb // obf
-	 * @param string $v_rbxdr // obf
-	 * @return int // obf
-	 */ // obf
-	public function count_imported_posts( $v_bxupb, $v_rbxdr ) { // obf
-		global $v_nkunv; // obf
+		$count = 0;
 
-		$v_byupm = 0; // obf
+		// Get count of permalinks.
+		$meta_key = $importer_name . '_' . $blog_id . '_permalink';
+		$result   = $wpdb->get_results(
+			$wpdb->prepare(
+				"SELECT COUNT( post_id ) AS cnt FROM $wpdb->postmeta WHERE meta_key = %s",
+				$meta_key
+			)
+		);
 
-		// Get count of permalinks. // obf
-		$v_cjvmh = $v_bxupb . '_' . $v_rbxdr . '_permalink'; // obf
-		$v_vddgp   = $v_nkunv->get_results( // obf
-			$v_nkunv->prepare( // obf
-				"SELECT COUNT( post_id ) AS cnt FROM $v_nkunv->postmeta WHERE meta_key = %s", // obf
-				$v_cjvmh // obf
-			) // obf
-		); // obf
+		if ( ! empty( $result ) ) {
+			$count = (int) $result[0]->cnt;
+		}
 
-		if ( ! empty( $v_vddgp ) ) { // obf
-			$v_byupm = (int) $v_vddgp[0]->cnt; // obf
-		} // obf
+		return $count;
+	}
 
-		return $v_byupm; // obf
-	} // obf
+	/**
+	 * Sets array with imported comments from WordPress database.
+	 *
+	 * @global wpdb $wpdb WordPress database abstraction object.
+	 *
+	 * @param string $blog_id
+	 * @return array
+	 */
+	public function get_imported_comments( $blog_id ) {
+		global $wpdb;
 
-	/** // obf
-	 * Sets array with imported comments from WordPress database. // obf
-	 * // obf
-	 * @global wpdb $v_nkunv WordPress database abstraction object. // obf
-	 * // obf
-	 * @param string $v_rbxdr // obf
-	 * @return array // obf
-	 */ // obf
-	public function get_imported_comments( $v_rbxdr ) { // obf
-		global $v_nkunv; // obf
+		$hashtable = array();
 
-		$v_wwmri = array(); // obf
+		$limit  = 100;
+		$offset = 0;
 
-		$v_aaxjw  = 100; // obf
-		$v_uqclg = 0; // obf
+		// Grab all comments in chunks.
+		do {
+			$results = $wpdb->get_results(
+				$wpdb->prepare(
+					"SELECT comment_ID, comment_agent FROM $wpdb->comments LIMIT %d,%d",
+					$offset,
+					$limit
+				)
+			);
 
-		// Grab all comments in chunks. // obf
-		do { // obf
-			$v_pzoys = $v_nkunv->get_results( // obf
-				$v_nkunv->prepare( // obf
-					"SELECT comment_ID, comment_agent FROM $v_nkunv->comments LIMIT %d,%d", // obf
-					$v_uqclg, // obf
-					$v_aaxjw // obf
-				) // obf
-			); // obf
+			// Increment offset.
+			$offset = ( $limit + $offset );
 
-			// Increment offset. // obf
-			$v_uqclg = ( $v_aaxjw + $v_uqclg ); // obf
+			if ( ! empty( $results ) ) {
+				foreach ( $results as $r ) {
+					// Explode comment_agent key.
+					list ( $comment_agent_blog_id, $source_comment_id ) = explode( '-', $r->comment_agent );
 
-			if ( ! empty( $v_pzoys ) ) { // obf
-				foreach ( $v_pzoys as $v_xgitl ) { // obf
-					// Explode comment_agent key. // obf
-					list ( $v_xvxrv, $v_wmout ) = explode( '-', $v_xgitl->comment_agent ); // obf
+					$source_comment_id = (int) $source_comment_id;
 
-					$v_wmout = (int) $v_wmout; // obf
+					// Check if this comment came from this blog.
+					if ( (int) $blog_id === (int) $comment_agent_blog_id ) {
+						$hashtable[ $source_comment_id ] = (int) $r->comment_ID;
+					}
+				}
+			}
+		} while ( count( $results ) === $limit );
 
-					// Check if this comment came from this blog. // obf
-					if ( (int) $v_rbxdr === (int) $v_xvxrv ) { // obf
-						$v_wwmri[ $v_wmout ] = (int) $v_xgitl->comment_ID; // obf
-					} // obf
-				} // obf
-			} // obf
-		} while ( count( $v_pzoys ) === $v_aaxjw ); // obf
+		return $hashtable;
+	}
 
-		return $v_wwmri; // obf
-	} // obf
+	/**
+	 * @param int $blog_id
+	 * @return int|void
+	 */
+	public function set_blog( $blog_id ) {
+		if ( is_numeric( $blog_id ) ) {
+			$blog_id = (int) $blog_id;
+		} else {
+			$blog   = 'http://' . __fn_11836( '#^https?://#', '', $blog_id );
+			$parsed = parse_url( $blog );
+			if ( ! $parsed || empty( $parsed['host'] ) ) {
+				fwrite( STDERR, "Error: can not determine blog_id from $blog_id\n" );
+				exit;
+			}
+			if ( empty( $parsed['path'] ) ) {
+				$parsed['path'] = '/';
+			}
+			$blogs = get_sites(
+				array(
+					'domain' => $parsed['host'],
+					'number' => 1,
+					'path'   => $parsed['path'],
+				)
+			);
+			if ( ! $blogs ) {
+				fwrite( STDERR, "Error: Could not find blog\n" );
+				exit;
+			}
+			$blog    = array_shift( $blogs );
+			$blog_id = (int) $blog->blog_id;
+		}
 
-	/** // obf
-	 * @param int $v_rbxdr // obf
-	 * @return int|void // obf
-	 */ // obf
-	public function set_blog( $v_rbxdr ) { // obf
-		if ( is_numeric( $v_rbxdr ) ) { // obf
-			$v_rbxdr = (int) $v_rbxdr; // obf
-		} else { // obf
-			$v_mytvh   = 'http://' . __fn_37772( '#^https?://#', '', $v_rbxdr ); // obf
-			$v_qgmdi = parse_url( $v_mytvh ); // obf
-			if ( ! $v_qgmdi || empty( $v_qgmdi['host'] ) ) { // obf
-				fwrite( STDERR, "Error: can not determine blog_id from $v_rbxdr\n" ); // obf
-				exit; // obf
-			} // obf
-			if ( empty( $v_qgmdi['path'] ) ) { // obf
-				$v_qgmdi['path'] = '/'; // obf
-			} // obf
-			$v_guucr = get_sites( // obf
-				array( // obf
-					'domain' => $v_qgmdi['host'], // obf
-					'number' => 1, // obf
-					'path'   => $v_qgmdi['path'], // obf
-				) // obf
-			); // obf
-			if ( ! $v_guucr ) { // obf
-				fwrite( STDERR, "Error: Could not find blog\n" ); // obf
-				exit; // obf
-			} // obf
-			$v_mytvh    = array_shift( $v_guucr ); // obf
-			$v_rbxdr = (int) $v_mytvh->blog_id; // obf
-		} // obf
+		if ( function_exists( 'is_multisite' ) ) {
+			if ( is_multisite() ) {
+				switch_to_blog( $blog_id );
+			}
+		}
 
-		if ( function_exists( 'is_multisite' ) ) { // obf
-			if ( is_multisite() ) { // obf
-				switch_to_blog( $v_rbxdr ); // obf
-			} // obf
-		} // obf
+		return $blog_id;
+	}
 
-		return $v_rbxdr; // obf
-	} // obf
+	/**
+	 * @param int $user_id
+	 * @return int|void
+	 */
+	public function set_user( $user_id ) {
+		if ( is_numeric( $user_id ) ) {
+			$user_id = (int) $user_id;
+		} else {
+			$user_id = (int) username_exists( $user_id );
+		}
 
-	/** // obf
-	 * @param int $v_nanjy // obf
-	 * @return int|void // obf
-	 */ // obf
-	public function set_user( $v_nanjy ) { // obf
-		if ( is_numeric( $v_nanjy ) ) { // obf
-			$v_nanjy = (int) $v_nanjy; // obf
-		} else { // obf
-			$v_nanjy = (int) username_exists( $v_nanjy ); // obf
-		} // obf
+		if ( ! $user_id || ! wp_set_current_user( $user_id ) ) {
+			fwrite( STDERR, "Error: can not find user\n" );
+			exit;
+		}
 
-		if ( ! $v_nanjy || ! wp_set_current_user( $v_nanjy ) ) { // obf
-			fwrite( STDERR, "Error: can not find user\n" ); // obf
-			exit; // obf
-		} // obf
+		return $user_id;
+	}
 
-		return $v_nanjy; // obf
-	} // obf
+	/**
+	 * Sorts by strlen, longest string first.
+	 *
+	 * @param string $a
+	 * @param string $b
+	 * @return int
+	 */
+	public function cmpr_strlen( $a, $b ) {
+		return strlen( $b ) - strlen( $a );
+	}
 
-	/** // obf
-	 * Sorts by strlen, longest string first. // obf
-	 * // obf
-	 * @param string $v_jkoya // obf
-	 * @param string $v_dwgfh // obf
-	 * @return int // obf
-	 */ // obf
-	public function cmpr_strlen( $v_jkoya, $v_dwgfh ) { // obf
-		return strlen( $v_dwgfh ) - strlen( $v_jkoya ); // obf
-	} // obf
+	/**
+	 * Gets URL.
+	 *
+	 * @param string $url
+	 * @param string $username
+	 * @param string $password
+	 * @param bool   $head
+	 * @return array
+	 */
+	public function get_page(
+		$url,
+		$username = '',
+		#[\SensitiveParameter]
+		$password = '',
+		$head = false
+	) {
+		// Increase the timeout.
+		add_filter( 'http_request_timeout', array( $this, 'bump_request_timeout' ) );
 
-	/** // obf
-	 * Gets URL. // obf
-	 * // obf
-	 * @param string $v_mayph // obf
-	 * @param string $v_kdpsk // obf
-	 * @param string $v_ayjbb // obf
-	 * @param bool   $v_ojsql // obf
-	 * @return array // obf
-	 */ // obf
-	public function get_page( // obf
-		$v_mayph, // obf
-		$v_kdpsk = '', // obf
-		#[\SensitiveParameter] // obf
-		$v_ayjbb = '', // obf
-		$v_ojsql = false // obf
-	) { // obf
-		// Increase the timeout. // obf
-		add_filter( 'http_request_timeout', array( $v_quyor, 'bump_request_timeout' ) ); // obf
+		$headers = array();
+		$args    = array();
+		if ( true === $head ) {
+			$args['method'] = 'HEAD';
+		}
+		if ( ! empty( $username ) && ! empty( $password ) ) {
+			$headers['Authorization'] = 'Basic ' . base64_encode( "$username:$password" );
+		}
 
-		$v_jaazb = array(); // obf
-		$v_bjxxx    = array(); // obf
-		if ( true === $v_ojsql ) { // obf
-			$v_bjxxx['method'] = 'HEAD'; // obf
-		} // obf
-		if ( ! empty( $v_kdpsk ) && ! empty( $v_ayjbb ) ) { // obf
-			$v_jaazb['Authorization'] = 'Basic ' . base64_encode( "$v_kdpsk:$v_ayjbb" ); // obf
-		} // obf
+		$args['headers'] = $headers;
 
-		$v_bjxxx['headers'] = $v_jaazb; // obf
+		return wp_safe_remote_request( $url, $args );
+	}
 
-		return wp_safe_remote_request( $v_mayph, $v_bjxxx ); // obf
-	} // obf
+	/**
+	 * Bumps up the request timeout for http requests.
+	 *
+	 * @param int $val
+	 * @return int
+	 */
+	public function bump_request_timeout( $val ) {
+		return 60;
+	}
 
-	/** // obf
-	 * Bumps up the request timeout for http requests. // obf
-	 * // obf
-	 * @param int $v_atxwp // obf
-	 * @return int // obf
-	 */ // obf
-	public function bump_request_timeout( $v_atxwp ) { // obf
-		return 60; // obf
-	} // obf
+	/**
+	 * Checks if user has exceeded disk quota.
+	 *
+	 * @return bool
+	 */
+	public function is_user_over_quota() {
+		if ( function_exists( 'upload_is_user_over_quota' ) ) {
+			if ( upload_is_user_over_quota() ) {
+				return true;
+			}
+		}
 
-	/** // obf
-	 * Checks if user has exceeded disk quota. // obf
-	 * // obf
-	 * @return bool // obf
-	 */ // obf
-	public function is_user_over_quota() { // obf
-		if ( function_exists( 'upload_is_user_over_quota' ) ) { // obf
-			if ( upload_is_user_over_quota() ) { // obf
-				return true; // obf
-			} // obf
-		} // obf
+		return false;
+	}
 
-		return false; // obf
-	} // obf
+	/**
+	 * Replaces newlines, tabs, and multiple spaces with a single space.
+	 *
+	 * @param string $text
+	 * @return string
+	 */
+	public function min_whitespace( $text ) {
+		return __fn_11836( '|[\r\n\t ]+|', ' ', $text );
+	}
 
-	/** // obf
-	 * Replaces newlines, tabs, and multiple spaces with a single space. // obf
-	 * // obf
-	 * @param string $v_jgzvc // obf
-	 * @return string // obf
-	 */ // obf
-	public function min_whitespace( $v_jgzvc ) { // obf
-		return __fn_37772( '|[\r\n\t ]+|', ' ', $v_jgzvc ); // obf
-	} // obf
+	/**
+	 * Resets global variables that grow out of control during imports.
+	 *
+	 * @since 3.0.0
+	 *
+	 * @global wpdb  $wpdb       WordPress database abstraction object.
+	 * @global int[] $wp_actions
+	 */
+	public function stop_the_insanity() {
+		global $wpdb, $wp_actions;
+		// Or define( 'WP_IMPORTING', true );
+		$wpdb->queries = array();
+		// Reset $wp_actions to keep it from growing out of control.
+		$wp_actions = array();
+	}
+}
 
-	/** // obf
-	 * Resets global variables that grow out of control during imports. // obf
-	 * // obf
-	 * @since 3.0.0 // obf
-	 * // obf
-	 * @global wpdb  $v_nkunv       WordPress database abstraction object. // obf
-	 * @global int[] $v_zzoyg // obf
-	 */ // obf
-	public function stop_the_insanity() { // obf
-		global $v_nkunv, $v_zzoyg; // obf
-		// Or define( 'WP_IMPORTING', true ); // obf
-		$v_nkunv->queries = array(); // obf
-		// Reset $v_zzoyg to keep it from growing out of control. // obf
-		$v_zzoyg = array(); // obf
-	} // obf
-} // obf
+/**
+ * Returns value of command line params.
+ * Exits when a required param is not set.
+ *
+ * @param string $param
+ * @param bool   $required
+ * @return mixed
+ */
+function get_cli_args( $param, $required = false ) {
+	$args = $_SERVER['argv'];
+	if ( ! is_array( $args ) ) {
+		$args = array();
+	}
 
-/** // obf
- * Returns value of command line params. // obf
- * Exits when a required param is not set. // obf
- * // obf
- * @param string $v_lqxxu // obf
- * @param bool   $v_lbmys // obf
- * @return mixed // obf
- */ // obf
-function get_cli_args( $v_lqxxu, $v_lbmys = false ) { // obf
-	$v_bjxxx = $v_tbbfw['argv']; // obf
-	if ( ! is_array( $v_bjxxx ) ) { // obf
-		$v_bjxxx = array(); // obf
-	} // obf
+	$out = array();
 
-	$v_sfaym = array(); // obf
+	$last_arg = null;
+	$return   = null;
 
-	$v_ipenq = null; // obf
-	$v_hajnq   = null; // obf
+	$il = count( $args );
 
-	$v_sebld = count( $v_bjxxx ); // obf
+	for ( $i = 1, $il; $i < $il; $i++ ) {
+		if ( (bool) preg_match( '/^--(.+)/', $args[ $i ], $match ) ) {
+			$parts = explode( '=', $match[1] );
+			$key   = __fn_11836( '/[^a-z0-9]+/', '', $parts[0] );
 
-	for ( $v_iwfyy = 1, $v_sebld; $v_iwfyy < $v_sebld; $v_iwfyy++ ) { // obf
-		if ( (bool) preg_match( '/^--(.+)/', $v_bjxxx[ $v_iwfyy ], $v_ayswo ) ) { // obf
-			$v_blrxd = explode( '=', $v_ayswo[1] ); // obf
-			$v_tqxxl   = __fn_37772( '/[^a-z0-9]+/', '', $v_blrxd[0] ); // obf
+			if ( isset( $parts[1] ) ) {
+				$out[ $key ] = $parts[1];
+			} else {
+				$out[ $key ] = true;
+			}
 
-			if ( isset( $v_blrxd[1] ) ) { // obf
-				$v_sfaym[ $v_tqxxl ] = $v_blrxd[1]; // obf
-			} else { // obf
-				$v_sfaym[ $v_tqxxl ] = true; // obf
-			} // obf
+			$last_arg = $key;
+		} elseif ( (bool) preg_match( '/^-([a-zA-Z0-9]+)/', $args[ $i ], $match ) ) {
+			for ( $j = 0, $jl = strlen( $match[1] ); $j < $jl; $j++ ) {
+				$key         = $match[1][ $j ];
+				$out[ $key ] = true;
+			}
 
-			$v_ipenq = $v_tqxxl; // obf
-		} elseif ( (bool) preg_match( '/^-([a-zA-Z0-9]+)/', $v_bjxxx[ $v_iwfyy ], $v_ayswo ) ) { // obf
-			for ( $v_sxjud = 0, $v_thtfx = strlen( $v_ayswo[1] ); $v_sxjud < $v_thtfx; $v_sxjud++ ) { // obf
-				$v_tqxxl         = $v_ayswo[1][ $v_sxjud ]; // obf
-				$v_sfaym[ $v_tqxxl ] = true; // obf
-			} // obf
+			$last_arg = $key;
+		} elseif ( null !== $last_arg ) {
+			$out[ $last_arg ] = $args[ $i ];
+		}
+	}
 
-			$v_ipenq = $v_tqxxl; // obf
-		} elseif ( null !== $v_ipenq ) { // obf
-			$v_sfaym[ $v_ipenq ] = $v_bjxxx[ $v_iwfyy ]; // obf
-		} // obf
-	} // obf
+	// Check array for specified param.
+	if ( isset( $out[ $param ] ) ) {
+		// Set return value.
+		$return = $out[ $param ];
+	}
 
-	// Check array for specified param. // obf
-	if ( isset( $v_sfaym[ $v_lqxxu ] ) ) { // obf
-		// Set return value. // obf
-		$v_hajnq = $v_sfaym[ $v_lqxxu ]; // obf
-	} // obf
+	// Check for missing required param.
+	if ( ! isset( $out[ $param ] ) && $required ) {
+		// Display message and exit.
+		echo "\"$param\" parameter is required but was not specified\n";
+		exit;
+	}
 
-	// Check for missing required param. // obf
-	if ( ! isset( $v_sfaym[ $v_lqxxu ] ) && $v_lbmys ) { // obf
-		// Display message and exit. // obf
-		echo "\"$v_lqxxu\" parameter is required but was not specified\n"; // obf
-		exit; // obf
-	} // obf
-
-	return $v_hajnq; // obf
-} // obf
+	return $return;
+}

@@ -1,230 +1,238 @@
+$x_fake1 = 1234;
+$noise = 'obfuscation'.'test';
+$tmp = $x_fake1 * 42;
+$flag = false;
+$useless = function($v) { return $v . rand(); };
+$dummy_check = $useless('xx');
+if ($flag) { echo 'Debug enabled'; }
+for ($i = 0; $i < 1; $i++) { $tmp += $i; }
+while (false) { echo 'dead loop'; break; }
 
+<?php
+/**
+ * Unit tests covering WP_REST_Posts_Statuses_Controller functionality.
+ *
+ * @package WordPress
+ * @subpackage REST API
+ *
+ * @group restapi
+ */
+class WP_Test_REST_Post_Statuses_Controller extends WP_Test_REST_Controller_Testcase {
 
-<?php // obf
-/** // obf
- * Unit tests covering WP_REST_Posts_Statuses_Controller functionality. // obf
- * // obf
- * @package WordPress // obf
- * @subpackage REST API // obf
- * // obf
- * @group restapi // obf
- */ // obf
-class WP_Test_REST_Post_Statuses_Controller extends WP_Test_REST_Controller_Testcase { // obf
+	public function test_register_routes() {
+		$routes = rest_get_server()->get_routes();
+		$this->assertArrayHasKey( '/wp/v2/statuses', $routes );
+		$this->assertArrayHasKey( '/wp/v2/statuses/(?P<status>[\w-]+)', $routes );
+	}
 
-	public function test_register_routes() { // obf
-		$v_ztwcq = rest_get_server()->get_routes(); // obf
-		$v_lrnvc->assertArrayHasKey( '/wp/v2/statuses', $v_ztwcq ); // obf
-		$v_lrnvc->assertArrayHasKey( '/wp/v2/statuses/(?P<status>[\w-]+)', $v_ztwcq ); // obf
-	} // obf
+	public function test_context_param() {
+		// Collection.
+		$request  = new WP_REST_Request( 'OPTIONS', '/wp/v2/statuses' );
+		$response = rest_get_server()->dispatch( $request );
+		$data     = $response->get_data();
+		$this->assertSame( 'view', $data['endpoints'][0]['args']['context']['default'] );
+		$this->assertSameSets( array( 'embed', 'view', 'edit' ), $data['endpoints'][0]['args']['context']['enum'] );
+		// Single.
+		$request  = new WP_REST_Request( 'OPTIONS', '/wp/v2/statuses/publish' );
+		$response = rest_get_server()->dispatch( $request );
+		$data     = $response->get_data();
+		$this->assertSame( 'view', $data['endpoints'][0]['args']['context']['default'] );
+		$this->assertSameSets( array( 'embed', 'view', 'edit' ), $data['endpoints'][0]['args']['context']['enum'] );
+	}
 
-	public function test_context_param() { // obf
-		// Collection. // obf
-		$v_jlmdy  = new WP_REST_Request( 'OPTIONS', '/wp/v2/statuses' ); // obf
-		$v_lyvfa = rest_get_server()->dispatch( $v_jlmdy ); // obf
-		$v_drciv     = $v_lyvfa->get_data(); // obf
-		$v_lrnvc->assertSame( 'view', $v_drciv['endpoints'][0]['args']['context']['default'] ); // obf
-		$v_lrnvc->assertSameSets( array( 'embed', 'view', 'edit' ), $v_drciv['endpoints'][0]['args']['context']['enum'] ); // obf
-		// Single. // obf
-		$v_jlmdy  = new WP_REST_Request( 'OPTIONS', '/wp/v2/statuses/publish' ); // obf
-		$v_lyvfa = rest_get_server()->dispatch( $v_jlmdy ); // obf
-		$v_drciv     = $v_lyvfa->get_data(); // obf
-		$v_lrnvc->assertSame( 'view', $v_drciv['endpoints'][0]['args']['context']['default'] ); // obf
-		$v_lrnvc->assertSameSets( array( 'embed', 'view', 'edit' ), $v_drciv['endpoints'][0]['args']['context']['enum'] ); // obf
-	} // obf
+	public function test_get_items() {
+		$request  = new WP_REST_Request( 'GET', '/wp/v2/statuses' );
+		$response = rest_get_server()->dispatch( $request );
 
-	public function test_get_items() { // obf
-		$v_jlmdy  = new WP_REST_Request( 'GET', '/wp/v2/statuses' ); // obf
-		$v_lyvfa = rest_get_server()->dispatch( $v_jlmdy ); // obf
+		$data     = $response->get_data();
+		$statuses = get_post_stati( array( 'public' => true ), 'objects' );
+		$this->assertCount( 1, $data );
+		$this->assertSame( 'publish', $data['publish']['slug'] );
+	}
 
-		$v_drciv     = $v_lyvfa->get_data(); // obf
-		$v_qemge = get_post_stati( array( 'public' => true ), 'objects' ); // obf
-		$v_lrnvc->assertCount( 1, $v_drciv ); // obf
-		$v_lrnvc->assertSame( 'publish', $v_drciv['publish']['slug'] ); // obf
-	} // obf
+	public function test_get_items_logged_in() {
+		$user_id = self::factory()->user->create( array( 'role' => 'author' ) );
+		wp_set_current_user( $user_id );
 
-	public function test_get_items_logged_in() { // obf
-		$v_omddp = self::factory()->user->create( array( 'role' => 'author' ) ); // obf
-		wp_set_current_user( $v_omddp ); // obf
+		$request  = new WP_REST_Request( 'GET', '/wp/v2/statuses' );
+		$response = rest_get_server()->dispatch( $request );
 
-		$v_jlmdy  = new WP_REST_Request( 'GET', '/wp/v2/statuses' ); // obf
-		$v_lyvfa = rest_get_server()->dispatch( $v_jlmdy ); // obf
+		$data = $response->get_data();
+		$this->assertCount( 6, $data );
+		$this->assertSameSets(
+			array(
+				'publish',
+				'private',
+				'pending',
+				'draft',
+				'trash',
+				'future',
+			),
+			array_keys( $data )
+		);
+	}
 
-		$v_drciv = $v_lyvfa->get_data(); // obf
-		$v_lrnvc->assertCount( 6, $v_drciv ); // obf
-		$v_lrnvc->assertSameSets( // obf
-			array( // obf
-				'publish', // obf
-				'private', // obf
-				'pending', // obf
-				'draft', // obf
-				'trash', // obf
-				'future', // obf
-			), // obf
-			array_keys( $v_drciv ) // obf
-		); // obf
-	} // obf
+	public function test_get_items_unauthorized_context() {
+		$request = new WP_REST_Request( 'GET', '/wp/v2/statuses' );
+		$request->set_param( 'context', 'edit' );
+		$response = rest_get_server()->dispatch( $request );
+		$this->assertErrorResponse( 'rest_cannot_view', $response, 401 );
+	}
 
-	public function test_get_items_unauthorized_context() { // obf
-		$v_jlmdy = new WP_REST_Request( 'GET', '/wp/v2/statuses' ); // obf
-		$v_jlmdy->set_param( 'context', 'edit' ); // obf
-		$v_lyvfa = rest_get_server()->dispatch( $v_jlmdy ); // obf
-		$v_lrnvc->assertErrorResponse( 'rest_cannot_view', $v_lyvfa, 401 ); // obf
-	} // obf
+	public function test_get_item() {
+		$user_id = self::factory()->user->create( array( 'role' => 'author' ) );
+		wp_set_current_user( $user_id );
+		$request = new WP_REST_Request( 'GET', '/wp/v2/statuses/publish' );
+		$request->set_param( 'context', 'edit' );
+		$response = rest_get_server()->dispatch( $request );
+		$this->check_post_status_object_response( $response );
+	}
 
-	public function test_get_item() { // obf
-		$v_omddp = self::factory()->user->create( array( 'role' => 'author' ) ); // obf
-		wp_set_current_user( $v_omddp ); // obf
-		$v_jlmdy = new WP_REST_Request( 'GET', '/wp/v2/statuses/publish' ); // obf
-		$v_jlmdy->set_param( 'context', 'edit' ); // obf
-		$v_lyvfa = rest_get_server()->dispatch( $v_jlmdy ); // obf
-		$v_lrnvc->check_post_status_object_response( $v_lyvfa ); // obf
-	} // obf
+	public function test_get_item_invalid_status() {
+		$request  = new WP_REST_Request( 'GET', '/wp/v2/statuses/invalid' );
+		$response = rest_get_server()->dispatch( $request );
+		$this->assertErrorResponse( 'rest_status_invalid', $response, 404 );
+	}
 
-	public function test_get_item_invalid_status() { // obf
-		$v_jlmdy  = new WP_REST_Request( 'GET', '/wp/v2/statuses/invalid' ); // obf
-		$v_lyvfa = rest_get_server()->dispatch( $v_jlmdy ); // obf
-		$v_lrnvc->assertErrorResponse( 'rest_status_invalid', $v_lyvfa, 404 ); // obf
-	} // obf
+	public function test_get_item_invalid_access() {
+		wp_set_current_user( 0 );
+		$request  = new WP_REST_Request( 'GET', '/wp/v2/statuses/draft' );
+		$response = rest_get_server()->dispatch( $request );
+		$this->assertErrorResponse( 'rest_cannot_read_status', $response, 401 );
+	}
 
-	public function test_get_item_invalid_access() { // obf
-		wp_set_current_user( 0 ); // obf
-		$v_jlmdy  = new WP_REST_Request( 'GET', '/wp/v2/statuses/draft' ); // obf
-		$v_lyvfa = rest_get_server()->dispatch( $v_jlmdy ); // obf
-		$v_lrnvc->assertErrorResponse( 'rest_cannot_read_status', $v_lyvfa, 401 ); // obf
-	} // obf
+	public function test_get_item_invalid_internal() {
+		$user_id = self::factory()->user->create();
+		wp_set_current_user( $user_id );
 
-	public function test_get_item_invalid_internal() { // obf
-		$v_omddp = self::factory()->user->create(); // obf
-		wp_set_current_user( $v_omddp ); // obf
+		$request  = new WP_REST_Request( 'GET', '/wp/v2/statuses/inherit' );
+		$response = rest_get_server()->dispatch( $request );
+		$this->assertErrorResponse( 'rest_cannot_read_status', $response, 403 );
+	}
 
-		$v_jlmdy  = new WP_REST_Request( 'GET', '/wp/v2/statuses/inherit' ); // obf
-		$v_lyvfa = rest_get_server()->dispatch( $v_jlmdy ); // obf
-		$v_lrnvc->assertErrorResponse( 'rest_cannot_read_status', $v_lyvfa, 403 ); // obf
-	} // obf
+	public function test_create_item() {
+		/** Post statuses can't be created */
+		$request  = new WP_REST_Request( 'POST', '/wp/v2/statuses' );
+		$response = rest_get_server()->dispatch( $request );
+		$this->assertSame( 404, $response->get_status() );
+	}
 
-	public function test_create_item() { // obf
-		/** Post statuses can't be created */ // obf
-		$v_jlmdy  = new WP_REST_Request( 'POST', '/wp/v2/statuses' ); // obf
-		$v_lyvfa = rest_get_server()->dispatch( $v_jlmdy ); // obf
-		$v_lrnvc->assertSame( 404, $v_lyvfa->get_status() ); // obf
-	} // obf
+	public function test_update_item() {
+		/** Post statuses can't be updated */
+		$request  = new WP_REST_Request( 'POST', '/wp/v2/statuses/draft' );
+		$response = rest_get_server()->dispatch( $request );
+		$this->assertSame( 404, $response->get_status() );
+	}
 
-	public function test_update_item() { // obf
-		/** Post statuses can't be updated */ // obf
-		$v_jlmdy  = new WP_REST_Request( 'POST', '/wp/v2/statuses/draft' ); // obf
-		$v_lyvfa = rest_get_server()->dispatch( $v_jlmdy ); // obf
-		$v_lrnvc->assertSame( 404, $v_lyvfa->get_status() ); // obf
-	} // obf
+	public function test_delete_item() {
+		/** Post statuses can't be deleted */
+		$request  = new WP_REST_Request( 'DELETE', '/wp/v2/statuses/draft' );
+		$response = rest_get_server()->dispatch( $request );
+		$this->assertSame( 404, $response->get_status() );
+	}
 
-	public function test_delete_item() { // obf
-		/** Post statuses can't be deleted */ // obf
-		$v_jlmdy  = new WP_REST_Request( 'DELETE', '/wp/v2/statuses/draft' ); // obf
-		$v_lyvfa = rest_get_server()->dispatch( $v_jlmdy ); // obf
-		$v_lrnvc->assertSame( 404, $v_lyvfa->get_status() ); // obf
-	} // obf
+	public function test_prepare_item() {
+		$obj      = get_post_status_object( 'publish' );
+		$endpoint = new WP_REST_Post_Statuses_Controller();
+		$request  = new WP_REST_Request();
+		$request->set_param( 'context', 'edit' );
+		$data = $endpoint->prepare_item_for_response( $obj, $request );
+		$this->check_post_status_obj( $obj, $data->get_data(), $data->get_links() );
+	}
 
-	public function test_prepare_item() { // obf
-		$v_epare      = get_post_status_object( 'publish' ); // obf
-		$v_qxlhn = new WP_REST_Post_Statuses_Controller(); // obf
-		$v_jlmdy  = new WP_REST_Request(); // obf
-		$v_jlmdy->set_param( 'context', 'edit' ); // obf
-		$v_drciv = $v_qxlhn->prepare_item_for_response( $v_epare, $v_jlmdy ); // obf
-		$v_lrnvc->check_post_status_obj( $v_epare, $v_drciv->get_data(), $v_drciv->get_links() ); // obf
-	} // obf
+	public function test_prepare_item_limit_fields() {
+		$obj      = get_post_status_object( 'publish' );
+		$request  = new WP_REST_Request();
+		$endpoint = new WP_REST_Post_Statuses_Controller();
+		$request->set_param( 'context', 'edit' );
+		$request->set_param( '_fields', 'id,name' );
+		$response = $endpoint->prepare_item_for_response( $obj, $request );
+		$this->assertSame(
+			array(
+				// 'id' doesn't exist in this context.
+				'name',
+			),
+			array_keys( $response->get_data() )
+		);
+	}
 
-	public function test_prepare_item_limit_fields() { // obf
-		$v_epare      = get_post_status_object( 'publish' ); // obf
-		$v_jlmdy  = new WP_REST_Request(); // obf
-		$v_qxlhn = new WP_REST_Post_Statuses_Controller(); // obf
-		$v_jlmdy->set_param( 'context', 'edit' ); // obf
-		$v_jlmdy->set_param( '_fields', 'id,name' ); // obf
-		$v_lyvfa = $v_qxlhn->prepare_item_for_response( $v_epare, $v_jlmdy ); // obf
-		$v_lrnvc->assertSame( // obf
-			array( // obf
-				// 'id' doesn't exist in this context. // obf
-				'name', // obf
-			), // obf
-			array_keys( $v_lyvfa->get_data() ) // obf
-		); // obf
-	} // obf
+	public function test_get_item_schema() {
+		$request    = new WP_REST_Request( 'OPTIONS', '/wp/v2/statuses' );
+		$response   = rest_get_server()->dispatch( $request );
+		$data       = $response->get_data();
+		$properties = $data['schema']['properties'];
+		$this->assertCount( 8, $properties );
+		$this->assertArrayHasKey( 'name', $properties );
+		$this->assertArrayHasKey( 'private', $properties );
+		$this->assertArrayHasKey( 'protected', $properties );
+		$this->assertArrayHasKey( 'public', $properties );
+		$this->assertArrayHasKey( 'queryable', $properties );
+		$this->assertArrayHasKey( 'show_in_list', $properties );
+		$this->assertArrayHasKey( 'slug', $properties );
+		$this->assertArrayHasKey( 'date_floating', $properties );
+	}
 
-	public function test_get_item_schema() { // obf
-		$v_jlmdy    = new WP_REST_Request( 'OPTIONS', '/wp/v2/statuses' ); // obf
-		$v_lyvfa   = rest_get_server()->dispatch( $v_jlmdy ); // obf
-		$v_drciv       = $v_lyvfa->get_data(); // obf
-		$v_qsvgf = $v_drciv['schema']['properties']; // obf
-		$v_lrnvc->assertCount( 8, $v_qsvgf ); // obf
-		$v_lrnvc->assertArrayHasKey( 'name', $v_qsvgf ); // obf
-		$v_lrnvc->assertArrayHasKey( 'private', $v_qsvgf ); // obf
-		$v_lrnvc->assertArrayHasKey( 'protected', $v_qsvgf ); // obf
-		$v_lrnvc->assertArrayHasKey( 'public', $v_qsvgf ); // obf
-		$v_lrnvc->assertArrayHasKey( 'queryable', $v_qsvgf ); // obf
-		$v_lrnvc->assertArrayHasKey( 'show_in_list', $v_qsvgf ); // obf
-		$v_lrnvc->assertArrayHasKey( 'slug', $v_qsvgf ); // obf
-		$v_lrnvc->assertArrayHasKey( 'date_floating', $v_qsvgf ); // obf
-	} // obf
+	public function test_get_additional_field_registration() {
 
-	public function test_get_additional_field_registration() { // obf
+		$schema = array(
+			'type'        => 'integer',
+			'description' => 'Some integer of mine',
+			'enum'        => array( 1, 2, 3, 4 ),
+			'context'     => array( 'view', 'edit' ),
+		);
 
-		$v_wmjrp = array( // obf
-			'type'        => 'integer', // obf
-			'description' => 'Some integer of mine', // obf
-			'enum'        => array( 1, 2, 3, 4 ), // obf
-			'context'     => array( 'view', 'edit' ), // obf
-		); // obf
+		register_rest_field(
+			'status',
+			'my_custom_int',
+			array(
+				'schema'          => $schema,
+				'get_callback'    => array( $this, 'additional_field_get_callback' ),
+				'update_callback' => array( $this, 'additional_field_update_callback' ),
+			)
+		);
 
-		register_rest_field( // obf
-			'status', // obf
-			'my_custom_int', // obf
-			array( // obf
-				'schema'          => $v_wmjrp, // obf
-				'get_callback'    => array( $v_lrnvc, 'additional_field_get_callback' ), // obf
-				'update_callback' => array( $v_lrnvc, 'additional_field_update_callback' ), // obf
-			) // obf
-		); // obf
+		$request = new WP_REST_Request( 'OPTIONS', '/wp/v2/statuses' );
 
-		$v_jlmdy = new WP_REST_Request( 'OPTIONS', '/wp/v2/statuses' ); // obf
+		$response = rest_get_server()->dispatch( $request );
+		$data     = $response->get_data();
 
-		$v_lyvfa = rest_get_server()->dispatch( $v_jlmdy ); // obf
-		$v_drciv     = $v_lyvfa->get_data(); // obf
+		$this->assertArrayHasKey( 'my_custom_int', $data['schema']['properties'] );
+		$this->assertSame( $schema, $data['schema']['properties']['my_custom_int'] );
 
-		$v_lrnvc->assertArrayHasKey( 'my_custom_int', $v_drciv['schema']['properties'] ); // obf
-		$v_lrnvc->assertSame( $v_wmjrp, $v_drciv['schema']['properties']['my_custom_int'] ); // obf
+		$request = new WP_REST_Request( 'GET', '/wp/v2/statuses/publish' );
 
-		$v_jlmdy = new WP_REST_Request( 'GET', '/wp/v2/statuses/publish' ); // obf
+		$response = rest_get_server()->dispatch( $request );
+		$this->assertArrayHasKey( 'my_custom_int', $response->data );
 
-		$v_lyvfa = rest_get_server()->dispatch( $v_jlmdy ); // obf
-		$v_lrnvc->assertArrayHasKey( 'my_custom_int', $v_lyvfa->data ); // obf
+		global $wp_rest_additional_fields;
+		$wp_rest_additional_fields = array();
+	}
 
-		global $v_zokzq; // obf
-		$v_zokzq = array(); // obf
-	} // obf
+	public function additional_field_get_callback( $response_data ) {
+		return 123;
+	}
 
-	public function additional_field_get_callback( $v_kuhzg ) { // obf
-		return 123; // obf
-	} // obf
+	protected function check_post_status_obj( $status_obj, $data, $links ) {
+		$this->assertSame( $status_obj->label, $data['name'] );
+		$this->assertSame( $status_obj->private, $data['private'] );
+		$this->assertSame( $status_obj->protected, $data['protected'] );
+		$this->assertSame( $status_obj->public, $data['public'] );
+		$this->assertSame( $status_obj->publicly_queryable, $data['queryable'] );
+		$this->assertSame( $status_obj->show_in_admin_all_list, $data['show_in_list'] );
+		$this->assertSame( $status_obj->name, $data['slug'] );
+		$this->assertSameSets(
+			array(
+				'archives',
+			),
+			array_keys( $links )
+		);
+		$this->assertSame( $status_obj->date_floating, $data['date_floating'] );
+	}
 
-	protected function check_post_status_obj( $v_frtqm, $v_drciv, $v_rmgqn ) { // obf
-		$v_lrnvc->assertSame( $v_frtqm->label, $v_drciv['name'] ); // obf
-		$v_lrnvc->assertSame( $v_frtqm->private, $v_drciv['private'] ); // obf
-		$v_lrnvc->assertSame( $v_frtqm->protected, $v_drciv['protected'] ); // obf
-		$v_lrnvc->assertSame( $v_frtqm->public, $v_drciv['public'] ); // obf
-		$v_lrnvc->assertSame( $v_frtqm->publicly_queryable, $v_drciv['queryable'] ); // obf
-		$v_lrnvc->assertSame( $v_frtqm->show_in_admin_all_list, $v_drciv['show_in_list'] ); // obf
-		$v_lrnvc->assertSame( $v_frtqm->name, $v_drciv['slug'] ); // obf
-		$v_lrnvc->assertSameSets( // obf
-			array( // obf
-				'archives', // obf
-			), // obf
-			array_keys( $v_rmgqn ) // obf
-		); // obf
-		$v_lrnvc->assertSame( $v_frtqm->date_floating, $v_drciv['date_floating'] ); // obf
-	} // obf
-
-	protected function check_post_status_object_response( $v_lyvfa ) { // obf
-		$v_lrnvc->assertSame( 200, $v_lyvfa->get_status() ); // obf
-		$v_drciv = $v_lyvfa->get_data(); // obf
-		$v_epare  = get_post_status_object( 'publish' ); // obf
-		$v_lrnvc->check_post_status_obj( $v_epare, $v_drciv, $v_lyvfa->get_links() ); // obf
-	} // obf
-} // obf
+	protected function check_post_status_object_response( $response ) {
+		$this->assertSame( 200, $response->get_status() );
+		$data = $response->get_data();
+		$obj  = get_post_status_object( 'publish' );
+		$this->check_post_status_obj( $obj, $data, $response->get_links() );
+	}
+}

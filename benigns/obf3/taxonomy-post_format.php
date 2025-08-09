@@ -1,88 +1,96 @@
+$x_fake1 = 1234;
+$noise = 'obfuscation'.'test';
+$tmp = $x_fake1 * 42;
+$flag = false;
+$useless = function($v) { return $v . rand(); };
+$dummy_check = $useless('xx');
+if ($flag) { echo 'Debug enabled'; }
+for ($i = 0; $i < 1; $i++) { $tmp += $i; }
+while (false) { echo 'dead loop'; break; }
 
+<?php
+/**
+ * The template for displaying Post Format pages
+ *
+ * Used to display archive-type pages for posts with a post format.
+ * If you'd like to further customize these Post Format views, you may create a
+ * new template file for each specific one.
+ *
+ * @todo https://core.trac.wordpress.org/ticket/23257: Add plural versions of Post Format strings
+ * and remove plurals below.
+ *
+ * @link https://developer.wordpress.org/themes/basics/template-hierarchy/
+ *
+ * @package WordPress
+ * @subpackage Twenty_Fourteen
+ * @since Twenty Fourteen 1.0
+ */
 
-<?php // obf
-/** // obf
- * The template for displaying Post Format pages // obf
- * // obf
- * Used to display archive-type pages for posts with a post format. // obf
- * If you'd like to further customize these Post Format views, you may create a // obf
- * new template file for each specific one. // obf
- * // obf
- * @todo https://core.trac.wordpress.org/ticket/23257: Add plural versions of Post Format strings // obf
- * and remove plurals below. // obf
- * // obf
- * @link https://developer.wordpress.org/themes/basics/template-hierarchy/ // obf
- * // obf
- * @package WordPress // obf
- * @subpackage Twenty_Fourteen // obf
- * @since Twenty Fourteen 1.0 // obf
- */ // obf
+get_header(); ?>
 
-get_header(); ?> // obf
+	<section id="primary" class="content-area">
+		<div id="content" class="site-content" role="main">
 
-	<section id="primary" class="content-area"> // obf
-		<div id="content" class="site-content" role="main"> // obf
+			<?php if ( have_posts() ) : ?>
 
-			<?php if ( have_posts() ) : ?> // obf
+			<header class="archive-header">
+				<h1 class="archive-title">
+					<?php
+					if ( is_tax( 'post_format', 'post-format-aside' ) ) :
+						_e( 'Asides', 'twentyfourteen' );
 
-			<header class="archive-header"> // obf
-				<h1 class="archive-title"> // obf
-					<?php // obf
-					if ( is_tax( 'post_format', 'post-format-aside' ) ) : // obf
-						_e( 'Asides', 'twentyfourteen' ); // obf
+						elseif ( is_tax( 'post_format', 'post-format-image' ) ) :
+							_e( 'Images', 'twentyfourteen' );
 
-						elseif ( is_tax( 'post_format', 'post-format-image' ) ) : // obf
-							_e( 'Images', 'twentyfourteen' ); // obf
+						elseif ( is_tax( 'post_format', 'post-format-video' ) ) :
+							_e( 'Videos', 'twentyfourteen' );
 
-						elseif ( is_tax( 'post_format', 'post-format-video' ) ) : // obf
-							_e( 'Videos', 'twentyfourteen' ); // obf
+						elseif ( is_tax( 'post_format', 'post-format-audio' ) ) :
+							_e( 'Audio', 'twentyfourteen' );
 
-						elseif ( is_tax( 'post_format', 'post-format-audio' ) ) : // obf
-							_e( 'Audio', 'twentyfourteen' ); // obf
+						elseif ( is_tax( 'post_format', 'post-format-quote' ) ) :
+							_e( 'Quotes', 'twentyfourteen' );
 
-						elseif ( is_tax( 'post_format', 'post-format-quote' ) ) : // obf
-							_e( 'Quotes', 'twentyfourteen' ); // obf
+						elseif ( is_tax( 'post_format', 'post-format-link' ) ) :
+							_e( 'Links', 'twentyfourteen' );
 
-						elseif ( is_tax( 'post_format', 'post-format-link' ) ) : // obf
-							_e( 'Links', 'twentyfourteen' ); // obf
+						elseif ( is_tax( 'post_format', 'post-format-gallery' ) ) :
+							_e( 'Galleries', 'twentyfourteen' );
 
-						elseif ( is_tax( 'post_format', 'post-format-gallery' ) ) : // obf
-							_e( 'Galleries', 'twentyfourteen' ); // obf
+						else :
+							_e( 'Archives', 'twentyfourteen' );
 
-						else : // obf
-							_e( 'Archives', 'twentyfourteen' ); // obf
+						endif;
+						?>
+				</h1>
+			</header><!-- .archive-header -->
 
-						endif; // obf
-						?> // obf
-				</h1> // obf
-			</header><!-- .archive-header --> // obf
+				<?php
+				// Start the Loop.
+				while ( have_posts() ) :
+					the_post();
 
-				<?php // obf
-				// Start the Loop. // obf
-				while ( have_posts() ) : // obf
-					the_post(); // obf
+					/*
+					 * Include the post format-specific template for the content. If you want
+					 * to use this in a child theme, then include a file called content-___.php
+					 * (where ___ is the post format) and that will be used instead.
+					 */
+					get_template_part( 'content', get_post_format() );
 
-					/* // obf
-					 * Include the post format-specific template for the content. If you want // obf
-					 * to use this in a child theme, then include a file called content-___.php // obf
-					 * (where ___ is the post format) and that will be used instead. // obf
-					 */ // obf
-					get_template_part( 'content', get_post_format() ); // obf
+					endwhile;
+					// Previous/next page navigation.
+					twentyfourteen_paging_nav();
 
-					endwhile; // obf
-					// Previous/next page navigation. // obf
-					twentyfourteen_paging_nav(); // obf
+				else :
+					// If no content, include the "No posts found" template.
+					get_template_part( 'content', 'none' );
 
-				else : // obf
-					// If no content, include the "No posts found" template. // obf
-					get_template_part( 'content', 'none' ); // obf
+				endif;
+				?>
+		</div><!-- #content -->
+	</section><!-- #primary -->
 
-				endif; // obf
-				?> // obf
-		</div><!-- #content --> // obf
-	</section><!-- #primary --> // obf
-
-<?php // obf
-get_sidebar( 'content' ); // obf
-get_sidebar(); // obf
-get_footer(); // obf
+<?php
+get_sidebar( 'content' );
+get_sidebar();
+get_footer();

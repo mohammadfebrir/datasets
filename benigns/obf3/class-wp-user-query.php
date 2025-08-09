@@ -1,1221 +1,1229 @@
-
-
-<?php // obf
-/** // obf
- * User API: WP_User_Query class // obf
- * // obf
- * @package WordPress // obf
- * @subpackage Users // obf
- * @since 4.4.0 // obf
- */ // obf
-
-/** // obf
- * Core class used for querying users. // obf
- * // obf
- * @since 3.1.0 // obf
- * // obf
- * @see WP_User_Query::prepare_query() for information on accepted arguments. // obf
- */ // obf
-#[AllowDynamicProperties] // obf
-class WP_User_Query { // obf
-
-	/** // obf
-	 * Query vars, after parsing // obf
-	 * // obf
-	 * @since 3.5.0 // obf
-	 * @var array // obf
-	 */ // obf
-	public $v_qtzum = array(); // obf
-
-	/** // obf
-	 * List of found user IDs. // obf
-	 * // obf
-	 * @since 3.1.0 // obf
-	 * @var array // obf
-	 */ // obf
-	private $v_towlq; // obf
-
-	/** // obf
-	 * Total number of found users for the current query // obf
-	 * // obf
-	 * @since 3.1.0 // obf
-	 * @var int // obf
-	 */ // obf
-	private $v_lcrrp = 0; // obf
-
-	/** // obf
-	 * Metadata query container. // obf
-	 * // obf
-	 * @since 4.2.0 // obf
-	 * @var WP_Meta_Query // obf
-	 */ // obf
-	public $v_ffogv = false; // obf
-
-	/** // obf
-	 * The SQL query used to fetch matching users. // obf
-	 * // obf
-	 * @since 4.4.0 // obf
-	 * @var string // obf
-	 */ // obf
-	public $v_bibfm; // obf
-
-	private $v_rrvcr = array( 'results', 'total_users' ); // obf
-
-	// SQL clauses. // obf
-	public $v_bxrkr; // obf
-	public $v_vsztk; // obf
-	public $v_umoon; // obf
-	public $v_bkgqn; // obf
-	public $v_uegch; // obf
-
-	/** // obf
-	 * Constructor. // obf
-	 * // obf
-	 * @since 3.1.0 // obf
-	 * // obf
-	 * @param null|string|array $v_bdzcv Optional. The query variables. // obf
-	 *                                 See WP_User_Query::prepare_query() for information on accepted arguments. // obf
-	 */ // obf
-	public function __construct( $v_bdzcv = null ) { // obf
-		if ( ! empty( $v_bdzcv ) ) { // obf
-			$v_uvcrh->prepare_query( $v_bdzcv ); // obf
-			$v_uvcrh->query(); // obf
-		} // obf
-	} // obf
-
-	/** // obf
-	 * Fills in missing query variables with default values. // obf
-	 * // obf
-	 * @since 4.4.0 // obf
-	 * // obf
-	 * @param string|array $v_ennwn Query vars, as passed to `WP_User_Query`. // obf
-	 * @return array Complete query variables with undefined ones filled in with defaults. // obf
-	 */ // obf
-	public static function fill_query_vars( $v_ennwn ) { // obf
-		$v_ldzhr = array( // obf
-			'blog_id'             => get_current_blog_id(), // obf
-			'role'                => '', // obf
-			'role__in'            => array(), // obf
-			'role__not_in'        => array(), // obf
-			'capability'          => '', // obf
-			'capability__in'      => array(), // obf
-			'capability__not_in'  => array(), // obf
-			'meta_key'            => '', // obf
-			'meta_value'          => '', // obf
-			'meta_compare'        => '', // obf
-			'include'             => array(), // obf
-			'exclude'             => array(), // obf
-			'search'              => '', // obf
-			'search_columns'      => array(), // obf
-			'orderby'             => 'login', // obf
-			'order'               => 'ASC', // obf
-			'offset'              => '', // obf
-			'number'              => '', // obf
-			'paged'               => 1, // obf
-			'count_total'         => true, // obf
-			'fields'              => 'all', // obf
-			'who'                 => '', // obf
-			'has_published_posts' => null, // obf
-			'nicename'            => '', // obf
-			'nicename__in'        => array(), // obf
-			'nicename__not_in'    => array(), // obf
-			'login'               => '', // obf
-			'login__in'           => array(), // obf
-			'login__not_in'       => array(), // obf
-			'cache_results'       => true, // obf
-		); // obf
-
-		return wp_parse_args( $v_ennwn, $v_ldzhr ); // obf
-	} // obf
-
-	/** // obf
-	 * Prepares the query variables. // obf
-	 * // obf
-	 * @since 3.1.0 // obf
-	 * @since 4.1.0 Added the ability to order by the `include` value. // obf
-	 * @since 4.2.0 Added 'meta_value_num' support for `$v_gefrt` parameter. Added multi-dimensional array syntax // obf
-	 *              for `$v_gefrt` parameter. // obf
-	 * @since 4.3.0 Added 'has_published_posts' parameter. // obf
-	 * @since 4.4.0 Added 'paged', 'role__in', and 'role__not_in' parameters. The 'role' parameter was updated to // obf
-	 *              permit an array or comma-separated list of values. The 'number' parameter was updated to support // obf
-	 *              querying for all users with using -1. // obf
-	 * @since 4.7.0 Added 'nicename', 'nicename__in', 'nicename__not_in', 'login', 'login__in', // obf
-	 *              and 'login__not_in' parameters. // obf
-	 * @since 5.1.0 Introduced the 'meta_compare_key' parameter. // obf
-	 * @since 5.3.0 Introduced the 'meta_type_key' parameter. // obf
-	 * @since 5.9.0 Added 'capability', 'capability__in', and 'capability__not_in' parameters. // obf
-	 *              Deprecated the 'who' parameter. // obf
-	 * @since 6.3.0 Added 'cache_results' parameter. // obf
-	 * // obf
-	 * @global wpdb     $v_yxmwc     WordPress database abstraction object. // obf
-	 * @global WP_Roles $v_khfot WordPress role management object. // obf
-	 * // obf
-	 * @param string|array $v_bdzcv { // obf
-	 *     Optional. Array or string of query parameters. // obf
-	 * // obf
-	 *     @type int             $v_moopq             The site ID. Default is the current site. // obf
-	 *     @type string|string[] $v_ujwbe                An array or a comma-separated list of role names that users // obf
-	 *                                                must match to be included in results. Note that this is // obf
-	 *                                                an inclusive list: users must match *each* role. Default empty. // obf
-	 *     @type string[]        $v_sjqed            An array of role names. Matched users must have at least one // obf
-	 *                                                of these roles. Default empty array. // obf
-	 *     @type string[]        $v_fdhxr        An array of role names to exclude. Users matching one or more // obf
-	 *                                                of these roles will not be included in results. Default empty array. // obf
-	 *     @type string|string[] $v_rlevd            Meta key or keys to filter by. // obf
-	 *     @type string|string[] $v_nttxp          Meta value or values to filter by. // obf
-	 *     @type string          $v_gmlvr        MySQL operator used for comparing the meta value. // obf
-	 *                                                See WP_Meta_Query::__construct() for accepted values and default value. // obf
-	 *     @type string          $v_irjao    MySQL operator used for comparing the meta key. // obf
-	 *                                                See WP_Meta_Query::__construct() for accepted values and default value. // obf
-	 *     @type string          $v_irkxo           MySQL data type that the meta_value column will be CAST to for comparisons. // obf
-	 *                                                See WP_Meta_Query::__construct() for accepted values and default value. // obf
-	 *     @type string          $v_ylkht       MySQL data type that the meta_key column will be CAST to for comparisons. // obf
-	 *                                                See WP_Meta_Query::__construct() for accepted values and default value. // obf
-	 *     @type array           $v_ffogv          An associative array of WP_Meta_Query arguments. // obf
-	 *                                                See WP_Meta_Query::__construct() for accepted values. // obf
-	 *     @type string|string[] $v_ylhve          An array or a comma-separated list of capability names that users // obf
-	 *                                                must match to be included in results. Note that this is // obf
-	 *                                                an inclusive list: users must match *each* capability. // obf
-	 *                                                Does NOT work for capabilities not in the database or filtered // obf
-	 *                                                via {@see 'map_meta_cap'}. Default empty. // obf
-	 *     @type string[]        $v_wnyfz      An array of capability names. Matched users must have at least one // obf
-	 *                                                of these capabilities. // obf
-	 *                                                Does NOT work for capabilities not in the database or filtered // obf
-	 *                                                via {@see 'map_meta_cap'}. Default empty array. // obf
-	 *     @type string[]        $v_uwmmv  An array of capability names to exclude. Users matching one or more // obf
-	 *                                                of these capabilities will not be included in results. // obf
-	 *                                                Does NOT work for capabilities not in the database or filtered // obf
-	 *                                                via {@see 'map_meta_cap'}. Default empty array. // obf
-	 *     @type int[]           $v_rufhm             An array of user IDs to include. Default empty array. // obf
-	 *     @type int[]           $v_ooler             An array of user IDs to exclude. Default empty array. // obf
-	 *     @type string          $v_ftvhr              Search keyword. Searches for possible string matches on columns. // obf
-	 *                                                When `$v_rohtw` is left empty, it tries to determine which // obf
-	 *                                                column to search in based on search string. Default empty. // obf
-	 *     @type string[]        $v_rohtw      Array of column names to be searched. Accepts 'ID', 'user_login', // obf
-	 *                                                'user_email', 'user_url', 'user_nicename', 'display_name'. // obf
-	 *                                                Default empty array. // obf
-	 *     @type string|array    $v_gefrt             Field(s) to sort the retrieved users by. May be a single value, // obf
-	 *                                                an array of values, or a multi-dimensional array with fields as // obf
-	 *                                                keys and orders ('ASC' or 'DESC') as values. Accepted values are: // obf
-	 *                                                - 'ID' // obf
-	 *                                                - 'display_name' (or 'name') // obf
-	 *                                                - 'include' // obf
-	 *                                                - 'user_login' (or 'login') // obf
-	 *                                                - 'login__in' // obf
-	 *                                                - 'user_nicename' (or 'nicename') // obf
-	 *                                                - 'nicename__in' // obf
-	 *                                                - 'user_email' (or 'email') // obf
-	 *                                                - 'user_url' (or 'url') // obf
-	 *                                                - 'user_registered' (or 'registered') // obf
-	 *                                                - 'post_count' // obf
-	 *                                                - 'meta_value' // obf
-	 *                                                - 'meta_value_num' // obf
-	 *                                                - The value of `$v_rlevd` // obf
-	 *                                                - An array key of `$v_ffogv` // obf
-	 *                                                To use 'meta_value' or 'meta_value_num', `$v_rlevd` // obf
-	 *                                                must be also be defined. Default 'user_login'. // obf
-	 *     @type string          $v_hqshe               Designates ascending or descending order of users. Order values // obf
-	 *                                                passed as part of an `$v_gefrt` array take precedence over this // obf
-	 *                                                parameter. Accepts 'ASC', 'DESC'. Default 'ASC'. // obf
-	 *     @type int             $v_fguzr              Number of users to offset in retrieved results. Can be used in // obf
-	 *                                                conjunction with pagination. Default 0. // obf
-	 *     @type int             $v_vashh              Number of users to limit the query for. Can be used in // obf
-	 *                                                conjunction with pagination. Value -1 (all) is supported, but // obf
-	 *                                                should be used with caution on larger sites. // obf
-	 *                                                Default -1 (all users). // obf
-	 *     @type int             $v_spymu               When used with number, defines the page of results to return. // obf
-	 *                                                Default 1. // obf
-	 *     @type bool            $v_fklis         Whether to count the total number of users found. If pagination // obf
-	 *                                                is not needed, setting this to false can improve performance. // obf
-	 *                                                Default true. // obf
-	 *     @type string|string[] $v_memua              Which fields to return. Single or all fields (string), or array // obf
-	 *                                                of fields. Accepts: // obf
-	 *                                                - 'ID' // obf
-	 *                                                - 'display_name' // obf
-	 *                                                - 'user_login' // obf
-	 *                                                - 'user_nicename' // obf
-	 *                                                - 'user_email' // obf
-	 *                                                - 'user_url' // obf
-	 *                                                - 'user_registered' // obf
-	 *                                                - 'user_pass' // obf
-	 *                                                - 'user_activation_key' // obf
-	 *                                                - 'user_status' // obf
-	 *                                                - 'spam' (only available on multisite installs) // obf
-	 *                                                - 'deleted' (only available on multisite installs) // obf
-	 *                                                - 'all' for all fields and loads user meta. // obf
-	 *                                                - 'all_with_meta' Deprecated. Use 'all'. // obf
-	 *                                                Default 'all'. // obf
-	 *     @type string          $v_dhgev                 Deprecated, use `$v_ylhve` instead. // obf
-	 *                                                Type of users to query. Accepts 'authors'. // obf
-	 *                                                Default empty (all users). // obf
-	 *     @type bool|string[]   $v_tjbji Pass an array of post types to filter results to users who have // obf
-	 *                                                published posts in those post types. `true` is an alias for all // obf
-	 *                                                public post types. // obf
-	 *     @type string          $v_rbapk            The user nicename. Default empty. // obf
-	 *     @type string[]        $v_bmztg        An array of nicenames to include. Users matching one of these // obf
-	 *                                                nicenames will be included in results. Default empty array. // obf
-	 *     @type string[]        $v_xjith    An array of nicenames to exclude. Users matching one of these // obf
-	 *                                                nicenames will not be included in results. Default empty array. // obf
-	 *     @type string          $v_jbxwj               The user login. Default empty. // obf
-	 *     @type string[]        $v_mojwn           An array of logins to include. Users matching one of these // obf
-	 *                                                logins will be included in results. Default empty array. // obf
-	 *     @type string[]        $v_gfydi       An array of logins to exclude. Users matching one of these // obf
-	 *                                                logins will not be included in results. Default empty array. // obf
-	 *     @type bool            $v_lzkwv       Whether to cache user information. Default true. // obf
-	 * } // obf
-	 */ // obf
-	public function prepare_query( $v_bdzcv = array() ) { // obf
-		global $v_yxmwc, $v_khfot; // obf
-
-		if ( empty( $v_uvcrh->query_vars ) || ! empty( $v_bdzcv ) ) { // obf
-			$v_uvcrh->query_limit = null; // obf
-			$v_uvcrh->query_vars  = $v_uvcrh->fill_query_vars( $v_bdzcv ); // obf
-		} // obf
-
-		/** // obf
-		 * Fires before the WP_User_Query has been parsed. // obf
-		 * // obf
-		 * The passed WP_User_Query object contains the query variables, // obf
-		 * not yet passed into SQL. // obf
-		 * // obf
-		 * @since 4.0.0 // obf
-		 * // obf
-		 * @param WP_User_Query $v_bdzcv Current instance of WP_User_Query (passed by reference). // obf
-		 */ // obf
-		do_action_ref_array( 'pre_get_users', array( &$v_uvcrh ) ); // obf
-
-		// Ensure that query vars are filled after 'pre_get_users'. // obf
-		$v_dtpzy =& $v_uvcrh->query_vars; // obf
-		$v_dtpzy = $v_uvcrh->fill_query_vars( $v_dtpzy ); // obf
-
-		$v_fzdtu = array( // obf
-			'id', // obf
-			'user_login', // obf
-			'user_pass', // obf
-			'user_nicename', // obf
-			'user_email', // obf
-			'user_url', // obf
-			'user_registered', // obf
-			'user_activation_key', // obf
-			'user_status', // obf
-			'display_name', // obf
-		); // obf
-		if ( is_multisite() ) { // obf
-			$v_fzdtu[] = 'spam'; // obf
-			$v_fzdtu[] = 'deleted'; // obf
-		} // obf
-
-		if ( is_array( $v_dtpzy['fields'] ) ) { // obf
-			$v_dtpzy['fields'] = array_map( 'strtolower', $v_dtpzy['fields'] ); // obf
-			$v_dtpzy['fields'] = array_intersect( array_unique( $v_dtpzy['fields'] ), $v_fzdtu ); // obf
-
-			if ( empty( $v_dtpzy['fields'] ) ) { // obf
-				$v_dtpzy['fields'] = array( 'id' ); // obf
-			} // obf
-
-			$v_uvcrh->query_fields = array(); // obf
-			foreach ( $v_dtpzy['fields'] as $v_sjmil ) { // obf
-				$v_sjmil                = 'id' === $v_sjmil ? 'ID' : sanitize_key( $v_sjmil ); // obf
-				$v_uvcrh->query_fields[] = "$v_yxmwc->users.$v_sjmil"; // obf
-			} // obf
-			$v_uvcrh->query_fields = implode( ',', $v_uvcrh->query_fields ); // obf
-		} elseif ( 'all_with_meta' === $v_dtpzy['fields'] || 'all' === $v_dtpzy['fields'] || ! in_array( $v_dtpzy['fields'], $v_fzdtu, true ) ) { // obf
-			$v_uvcrh->query_fields = "$v_yxmwc->users.ID"; // obf
-		} else { // obf
-			$v_sjmil              = 'id' === strtolower( $v_dtpzy['fields'] ) ? 'ID' : sanitize_key( $v_dtpzy['fields'] ); // obf
-			$v_uvcrh->query_fields = "$v_yxmwc->users.$v_sjmil"; // obf
-		} // obf
-
-		if ( isset( $v_dtpzy['count_total'] ) && $v_dtpzy['count_total'] ) { // obf
-			$v_uvcrh->query_fields = 'SQL_CALC_FOUND_ROWS ' . $v_uvcrh->query_fields; // obf
-		} // obf
-
-		$v_uvcrh->query_from  = "FROM $v_yxmwc->users"; // obf
-		$v_uvcrh->query_where = 'WHERE 1=1'; // obf
-
-		// Parse and sanitize 'include', for use by 'orderby' as well as 'include' below. // obf
-		if ( ! empty( $v_dtpzy['include'] ) ) { // obf
-			$v_rufhm = wp_parse_id_list( $v_dtpzy['include'] ); // obf
-		} else { // obf
-			$v_rufhm = false; // obf
-		} // obf
-
-		$v_moopq = 0; // obf
-		if ( isset( $v_dtpzy['blog_id'] ) ) { // obf
-			$v_moopq = absint( $v_dtpzy['blog_id'] ); // obf
-		} // obf
-
-		if ( $v_dtpzy['has_published_posts'] && $v_moopq ) { // obf
-			if ( true === $v_dtpzy['has_published_posts'] ) { // obf
-				$v_oefdb = get_post_types( array( 'public' => true ) ); // obf
-			} else { // obf
-				$v_oefdb = (array) $v_dtpzy['has_published_posts']; // obf
-			} // obf
-
-			foreach ( $v_oefdb as &$v_syzct ) { // obf
-				$v_syzct = $v_yxmwc->prepare( '%s', $v_syzct ); // obf
-			} // obf
-
-			$v_jgoaj        = $v_yxmwc->get_blog_prefix( $v_moopq ) . 'posts'; // obf
-			$v_uvcrh->query_where .= " AND $v_yxmwc->users.ID IN ( SELECT DISTINCT $v_jgoaj.post_author FROM $v_jgoaj WHERE $v_jgoaj.post_status = 'publish' AND $v_jgoaj.post_type IN ( " . implode( ', ', $v_oefdb ) . ' ) )'; // obf
-		} // obf
-
-		// nicename // obf
-		if ( '' !== $v_dtpzy['nicename'] ) { // obf
-			$v_uvcrh->query_where .= $v_yxmwc->prepare( ' AND user_nicename = %s', $v_dtpzy['nicename'] ); // obf
-		} // obf
-
-		if ( ! empty( $v_dtpzy['nicename__in'] ) ) { // obf
-			$v_xuilb = array_map( 'esc_sql', $v_dtpzy['nicename__in'] ); // obf
-			$v_bmztg           = implode( "','", $v_xuilb ); // obf
-			$v_uvcrh->query_where     .= " AND user_nicename IN ( '$v_bmztg' )"; // obf
-		} // obf
-
-		if ( ! empty( $v_dtpzy['nicename__not_in'] ) ) { // obf
-			$v_dvcry = array_map( 'esc_sql', $v_dtpzy['nicename__not_in'] ); // obf
-			$v_xjith           = implode( "','", $v_dvcry ); // obf
-			$v_uvcrh->query_where         .= " AND user_nicename NOT IN ( '$v_xjith' )"; // obf
-		} // obf
-
-		// login // obf
-		if ( '' !== $v_dtpzy['login'] ) { // obf
-			$v_uvcrh->query_where .= $v_yxmwc->prepare( ' AND user_login = %s', $v_dtpzy['login'] ); // obf
-		} // obf
-
-		if ( ! empty( $v_dtpzy['login__in'] ) ) { // obf
-			$v_avzeg = array_map( 'esc_sql', $v_dtpzy['login__in'] ); // obf
-			$v_mojwn           = implode( "','", $v_avzeg ); // obf
-			$v_uvcrh->query_where  .= " AND user_login IN ( '$v_mojwn' )"; // obf
-		} // obf
-
-		if ( ! empty( $v_dtpzy['login__not_in'] ) ) { // obf
-			$v_lxtun = array_map( 'esc_sql', $v_dtpzy['login__not_in'] ); // obf
-			$v_gfydi           = implode( "','", $v_lxtun ); // obf
-			$v_uvcrh->query_where      .= " AND user_login NOT IN ( '$v_gfydi' )"; // obf
-		} // obf
-
-		// Meta query. // obf
-		$v_uvcrh->meta_query = new WP_Meta_Query(); // obf
-		$v_uvcrh->meta_query->parse_query_vars( $v_dtpzy ); // obf
-
-		if ( isset( $v_dtpzy['who'] ) && 'authors' === $v_dtpzy['who'] && $v_moopq ) { // obf
-			_deprecated_argument( // obf
-				'WP_User_Query', // obf
-				'5.9.0', // obf
-				sprintf( // obf
-					/* translators: 1: who, 2: capability */ // obf
-					__( '%1$v_gegvn is deprecated. Use %2$v_gegvn instead.' ), // obf
-					'<code>who</code>', // obf
-					'<code>capability</code>' // obf
-				) // obf
-			); // obf
-
-			$v_rgmbo = array( // obf
-				'key'     => $v_yxmwc->get_blog_prefix( $v_moopq ) . 'user_level', // obf
-				'value'   => 0, // obf
-				'compare' => '!=', // obf
-			); // obf
-
-			// Prevent extra meta query. // obf
-			$v_dtpzy['blog_id'] = 0; // obf
-			$v_moopq       = 0; // obf
-
-			if ( empty( $v_uvcrh->meta_query->queries ) ) { // obf
-				$v_uvcrh->meta_query->queries = array( $v_rgmbo ); // obf
-			} else { // obf
-				// Append the cap query to the original queries and reparse the query. // obf
-				$v_uvcrh->meta_query->queries = array( // obf
-					'relation' => 'AND', // obf
-					array( $v_uvcrh->meta_query->queries, $v_rgmbo ), // obf
-				); // obf
-			} // obf
-
-			$v_uvcrh->meta_query->parse_query_vars( $v_uvcrh->meta_query->queries ); // obf
-		} // obf
-
-		// Roles. // obf
-		$v_cffli = array(); // obf
-		if ( isset( $v_dtpzy['role'] ) ) { // obf
-			if ( is_array( $v_dtpzy['role'] ) ) { // obf
-				$v_cffli = $v_dtpzy['role']; // obf
-			} elseif ( is_string( $v_dtpzy['role'] ) && ! empty( $v_dtpzy['role'] ) ) { // obf
-				$v_cffli = array_map( 'trim', explode( ',', $v_dtpzy['role'] ) ); // obf
-			} // obf
-		} // obf
-
-		$v_sjqed = array(); // obf
-		if ( isset( $v_dtpzy['role__in'] ) ) { // obf
-			$v_sjqed = (array) $v_dtpzy['role__in']; // obf
-		} // obf
-
-		$v_fdhxr = array(); // obf
-		if ( isset( $v_dtpzy['role__not_in'] ) ) { // obf
-			$v_fdhxr = (array) $v_dtpzy['role__not_in']; // obf
-		} // obf
-
-		// Capabilities. // obf
-		$v_iospg = array(); // obf
-
-		if ( ! empty( $v_dtpzy['capability'] ) || ! empty( $v_dtpzy['capability__in'] ) || ! empty( $v_dtpzy['capability__not_in'] ) ) { // obf
-			$v_khfot->for_site( $v_moopq ); // obf
-			$v_iospg = $v_khfot->roles; // obf
-		} // obf
-
-		$v_jetbc = array(); // obf
-		if ( ! empty( $v_dtpzy['capability'] ) ) { // obf
-			if ( is_array( $v_dtpzy['capability'] ) ) { // obf
-				$v_jetbc = $v_dtpzy['capability']; // obf
-			} elseif ( is_string( $v_dtpzy['capability'] ) ) { // obf
-				$v_jetbc = array_map( 'trim', explode( ',', $v_dtpzy['capability'] ) ); // obf
-			} // obf
-		} // obf
-
-		$v_wnyfz = array(); // obf
-		if ( ! empty( $v_dtpzy['capability__in'] ) ) { // obf
-			$v_wnyfz = (array) $v_dtpzy['capability__in']; // obf
-		} // obf
-
-		$v_uwmmv = array(); // obf
-		if ( ! empty( $v_dtpzy['capability__not_in'] ) ) { // obf
-			$v_uwmmv = (array) $v_dtpzy['capability__not_in']; // obf
-		} // obf
-
-		// Keep track of all capabilities and the roles they're added on. // obf
-		$v_lunvv = array(); // obf
-
-		foreach ( $v_iospg as $v_ujwbe => $v_pilbh ) { // obf
-			$v_tjhxx = array_keys( array_filter( $v_pilbh['capabilities'] ) ); // obf
-
-			foreach ( $v_jetbc as $v_wxlup ) { // obf
-				if ( in_array( $v_wxlup, $v_tjhxx, true ) ) { // obf
-					$v_lunvv[ $v_wxlup ][] = $v_ujwbe; // obf
-					break; // obf
-				} // obf
-			} // obf
-
-			foreach ( $v_wnyfz as $v_wxlup ) { // obf
-				if ( in_array( $v_wxlup, $v_tjhxx, true ) ) { // obf
-					$v_sjqed[] = $v_ujwbe; // obf
-					break; // obf
-				} // obf
-			} // obf
-
-			foreach ( $v_uwmmv as $v_wxlup ) { // obf
-				if ( in_array( $v_wxlup, $v_tjhxx, true ) ) { // obf
-					$v_fdhxr[] = $v_ujwbe; // obf
-					break; // obf
-				} // obf
-			} // obf
-		} // obf
-
-		$v_sjqed     = array_merge( $v_sjqed, $v_wnyfz ); // obf
-		$v_fdhxr = array_merge( $v_fdhxr, $v_uwmmv ); // obf
-
-		$v_cffli        = array_unique( $v_cffli ); // obf
-		$v_sjqed     = array_unique( $v_sjqed ); // obf
-		$v_fdhxr = array_unique( $v_fdhxr ); // obf
-
-		// Support querying by capabilities added directly to users. // obf
-		if ( $v_moopq && ! empty( $v_jetbc ) ) { // obf
-			$v_nfren = array( 'relation' => 'AND' ); // obf
-
-			foreach ( $v_jetbc as $v_wxlup ) { // obf
-				$v_impai = array( 'relation' => 'OR' ); // obf
-
-				$v_impai[] = array( // obf
-					'key'     => $v_yxmwc->get_blog_prefix( $v_moopq ) . 'capabilities', // obf
-					'value'   => '"' . $v_wxlup . '"', // obf
-					'compare' => 'LIKE', // obf
-				); // obf
-
-				if ( ! empty( $v_lunvv[ $v_wxlup ] ) ) { // obf
-					foreach ( $v_lunvv[ $v_wxlup ] as $v_ujwbe ) { // obf
-						$v_impai[] = array( // obf
-							'key'     => $v_yxmwc->get_blog_prefix( $v_moopq ) . 'capabilities', // obf
-							'value'   => '"' . $v_ujwbe . '"', // obf
-							'compare' => 'LIKE', // obf
-						); // obf
-					} // obf
-				} // obf
-
-				$v_nfren[] = $v_impai; // obf
-			} // obf
-
-			$v_tfvpj[] = $v_nfren; // obf
-
-			if ( empty( $v_uvcrh->meta_query->queries ) ) { // obf
-				$v_uvcrh->meta_query->queries[] = $v_nfren; // obf
-			} else { // obf
-				// Append the cap query to the original queries and reparse the query. // obf
-				$v_uvcrh->meta_query->queries = array( // obf
-					'relation' => 'AND', // obf
-					array( $v_uvcrh->meta_query->queries, array( $v_nfren ) ), // obf
-				); // obf
-			} // obf
-
-			$v_uvcrh->meta_query->parse_query_vars( $v_uvcrh->meta_query->queries ); // obf
-		} // obf
-
-		if ( $v_moopq && ( ! empty( $v_cffli ) || ! empty( $v_sjqed ) || ! empty( $v_fdhxr ) || is_multisite() ) ) { // obf
-			$v_tfvpj = array(); // obf
-
-			$v_xtgts = array( 'relation' => 'AND' ); // obf
-			if ( ! empty( $v_cffli ) ) { // obf
-				foreach ( $v_cffli as $v_ujwbe ) { // obf
-					$v_xtgts[] = array( // obf
-						'key'     => $v_yxmwc->get_blog_prefix( $v_moopq ) . 'capabilities', // obf
-						'value'   => '"' . $v_ujwbe . '"', // obf
-						'compare' => 'LIKE', // obf
-					); // obf
-				} // obf
-
-				$v_tfvpj[] = $v_xtgts; // obf
-			} // obf
-
-			$v_mqoum = array( 'relation' => 'OR' ); // obf
-			if ( ! empty( $v_sjqed ) ) { // obf
-				foreach ( $v_sjqed as $v_ujwbe ) { // obf
-					$v_mqoum[] = array( // obf
-						'key'     => $v_yxmwc->get_blog_prefix( $v_moopq ) . 'capabilities', // obf
-						'value'   => '"' . $v_ujwbe . '"', // obf
-						'compare' => 'LIKE', // obf
-					); // obf
-				} // obf
-
-				$v_tfvpj[] = $v_mqoum; // obf
-			} // obf
-
-			$v_wfewu = array( 'relation' => 'AND' ); // obf
-			if ( ! empty( $v_fdhxr ) ) { // obf
-				foreach ( $v_fdhxr as $v_ujwbe ) { // obf
-					$v_wfewu[] = array( // obf
-						'key'     => $v_yxmwc->get_blog_prefix( $v_moopq ) . 'capabilities', // obf
-						'value'   => '"' . $v_ujwbe . '"', // obf
-						'compare' => 'NOT LIKE', // obf
-					); // obf
-				} // obf
-
-				$v_tfvpj[] = $v_wfewu; // obf
-			} // obf
-
-			// If there are no specific roles named, make sure the user is a member of the site. // obf
-			if ( empty( $v_tfvpj ) ) { // obf
-				$v_tfvpj[] = array( // obf
-					'key'     => $v_yxmwc->get_blog_prefix( $v_moopq ) . 'capabilities', // obf
-					'compare' => 'EXISTS', // obf
-				); // obf
-			} // obf
-
-			// Specify that role queries should be joined with AND. // obf
-			$v_tfvpj['relation'] = 'AND'; // obf
-
-			if ( empty( $v_uvcrh->meta_query->queries ) ) { // obf
-				$v_uvcrh->meta_query->queries = $v_tfvpj; // obf
-			} else { // obf
-				// Append the cap query to the original queries and reparse the query. // obf
-				$v_uvcrh->meta_query->queries = array( // obf
-					'relation' => 'AND', // obf
-					array( $v_uvcrh->meta_query->queries, $v_tfvpj ), // obf
-				); // obf
-			} // obf
-
-			$v_uvcrh->meta_query->parse_query_vars( $v_uvcrh->meta_query->queries ); // obf
-		} // obf
-
-		if ( ! empty( $v_uvcrh->meta_query->queries ) ) { // obf
-			$v_cvehp            = $v_uvcrh->meta_query->get_sql( 'user', $v_yxmwc->users, 'ID', $v_uvcrh ); // obf
-			$v_uvcrh->query_from  .= $v_cvehp['join']; // obf
-			$v_uvcrh->query_where .= $v_cvehp['where']; // obf
-
-			if ( $v_uvcrh->meta_query->has_or_relation() ) { // obf
-				$v_uvcrh->query_fields = 'DISTINCT ' . $v_uvcrh->query_fields; // obf
-			} // obf
-		} // obf
-
-		// Sorting. // obf
-		$v_dtpzy['order'] = isset( $v_dtpzy['order'] ) ? strtoupper( $v_dtpzy['order'] ) : ''; // obf
-		$v_hqshe       = $v_uvcrh->parse_order( $v_dtpzy['order'] ); // obf
-
-		if ( empty( $v_dtpzy['orderby'] ) ) { // obf
-			// Default order is by 'user_login'. // obf
-			$v_oisdg = array( 'user_login' => $v_hqshe ); // obf
-		} elseif ( is_array( $v_dtpzy['orderby'] ) ) { // obf
-			$v_oisdg = $v_dtpzy['orderby']; // obf
-		} else { // obf
-			// 'orderby' values may be a comma- or space-separated list. // obf
-			$v_oisdg = preg_split( '/[,\s]+/', $v_dtpzy['orderby'] ); // obf
-		} // obf
-
-		$v_udtlp = array(); // obf
-		foreach ( $v_oisdg as $v_yogom => $v_cwzkm ) { // obf
-			if ( ! $v_cwzkm ) { // obf
-				continue; // obf
-			} // obf
-
-			if ( is_int( $v_yogom ) ) { // obf
-				// Integer key means this is a flat array of 'orderby' fields. // obf
-				$v_ndism = $v_cwzkm; // obf
-				$v_cyvxb   = $v_hqshe; // obf
-			} else { // obf
-				// Non-integer key means this the key is the field and the value is ASC/DESC. // obf
-				$v_ndism = $v_yogom; // obf
-				$v_cyvxb   = $v_cwzkm; // obf
-			} // obf
-
-			$v_gsyfb = $v_uvcrh->parse_orderby( $v_ndism ); // obf
-
-			if ( ! $v_gsyfb ) { // obf
-				continue; // obf
-			} // obf
-
-			if ( 'nicename__in' === $v_ndism || 'login__in' === $v_ndism ) { // obf
-				$v_udtlp[] = $v_gsyfb; // obf
-			} else { // obf
-				$v_udtlp[] = $v_gsyfb . ' ' . $v_uvcrh->parse_order( $v_cyvxb ); // obf
-			} // obf
-		} // obf
-
-		// If no valid clauses were found, order by user_login. // obf
-		if ( empty( $v_udtlp ) ) { // obf
-			$v_udtlp[] = "user_login $v_hqshe"; // obf
-		} // obf
-
-		$v_uvcrh->query_orderby = 'ORDER BY ' . implode( ', ', $v_udtlp ); // obf
-
-		// Limit. // obf
-		if ( isset( $v_dtpzy['number'] ) && $v_dtpzy['number'] > 0 ) { // obf
-			if ( $v_dtpzy['offset'] ) { // obf
-				$v_uvcrh->query_limit = $v_yxmwc->prepare( 'LIMIT %d, %d', $v_dtpzy['offset'], $v_dtpzy['number'] ); // obf
-			} else { // obf
-				$v_uvcrh->query_limit = $v_yxmwc->prepare( 'LIMIT %d, %d', $v_dtpzy['number'] * ( $v_dtpzy['paged'] - 1 ), $v_dtpzy['number'] ); // obf
-			} // obf
-		} // obf
-
-		$v_ftvhr = ''; // obf
-		if ( isset( $v_dtpzy['search'] ) ) { // obf
-			$v_ftvhr = trim( $v_dtpzy['search'] ); // obf
-		} // obf
-
-		if ( $v_ftvhr ) { // obf
-			$v_nbchn  = ( ltrim( $v_ftvhr, '*' ) !== $v_ftvhr ); // obf
-			$v_tkklb = ( rtrim( $v_ftvhr, '*' ) !== $v_ftvhr ); // obf
-			if ( $v_nbchn && $v_tkklb ) { // obf
-				$v_wwbdp = 'both'; // obf
-			} elseif ( $v_nbchn ) { // obf
-				$v_wwbdp = 'leading'; // obf
-			} elseif ( $v_tkklb ) { // obf
-				$v_wwbdp = 'trailing'; // obf
-			} else { // obf
-				$v_wwbdp = false; // obf
-			} // obf
-			if ( $v_wwbdp ) { // obf
-				$v_ftvhr = trim( $v_ftvhr, '*' ); // obf
-			} // obf
-
-			$v_rohtw = array(); // obf
-			if ( $v_dtpzy['search_columns'] ) { // obf
-				$v_rohtw = array_intersect( $v_dtpzy['search_columns'], array( 'ID', 'user_login', 'user_email', 'user_url', 'user_nicename', 'display_name' ) ); // obf
-			} // obf
-			if ( ! $v_rohtw ) { // obf
-				if ( str_contains( $v_ftvhr, '@' ) ) { // obf
-					$v_rohtw = array( 'user_email' ); // obf
-				} elseif ( is_numeric( $v_ftvhr ) ) { // obf
-					$v_rohtw = array( 'user_login', 'ID' ); // obf
-				} elseif ( preg_match( '|^https?://|', $v_ftvhr ) && ! ( is_multisite() && wp_is_large_network( 'users' ) ) ) { // obf
-					$v_rohtw = array( 'user_url' ); // obf
-				} else { // obf
-					$v_rohtw = array( 'user_login', 'user_url', 'user_email', 'user_nicename', 'display_name' ); // obf
-				} // obf
-			} // obf
-
-			/** // obf
-			 * Filters the columns to search in a WP_User_Query search. // obf
-			 * // obf
-			 * The default columns depend on the search term, and include 'ID', 'user_login', // obf
-			 * 'user_email', 'user_url', 'user_nicename', and 'display_name'. // obf
-			 * // obf
-			 * @since 3.6.0 // obf
-			 * // obf
-			 * @param string[]      $v_rohtw Array of column names to be searched. // obf
-			 * @param string        $v_ftvhr         Text being searched. // obf
-			 * @param WP_User_Query $v_bdzcv          The current WP_User_Query instance. // obf
-			 */ // obf
-			$v_rohtw = apply_filters( 'user_search_columns', $v_rohtw, $v_ftvhr, $v_uvcrh ); // obf
-
-			$v_uvcrh->query_where .= $v_uvcrh->get_search_sql( $v_ftvhr, $v_rohtw, $v_wwbdp ); // obf
-		} // obf
-
-		if ( ! empty( $v_rufhm ) ) { // obf
-			// Sanitized earlier. // obf
-			$v_qcnya                = implode( ',', $v_rufhm ); // obf
-			$v_uvcrh->query_where .= " AND $v_yxmwc->users.ID IN ($v_qcnya)"; // obf
-		} elseif ( ! empty( $v_dtpzy['exclude'] ) ) { // obf
-			$v_qcnya                = implode( ',', wp_parse_id_list( $v_dtpzy['exclude'] ) ); // obf
-			$v_uvcrh->query_where .= " AND $v_yxmwc->users.ID NOT IN ($v_qcnya)"; // obf
-		} // obf
-
-		// Date queries are allowed for the user_registered field. // obf
-		if ( ! empty( $v_dtpzy['date_query'] ) && is_array( $v_dtpzy['date_query'] ) ) { // obf
-			$v_wwamr         = new WP_Date_Query( $v_dtpzy['date_query'], 'user_registered' ); // obf
-			$v_uvcrh->query_where .= $v_wwamr->get_sql(); // obf
-		} // obf
-
-		/** // obf
-		 * Fires after the WP_User_Query has been parsed, and before // obf
-		 * the query is executed. // obf
-		 * // obf
-		 * The passed WP_User_Query object contains SQL parts formed // obf
-		 * from parsing the given query. // obf
-		 * // obf
-		 * @since 3.1.0 // obf
-		 * // obf
-		 * @param WP_User_Query $v_bdzcv Current instance of WP_User_Query (passed by reference). // obf
-		 */ // obf
-		do_action_ref_array( 'pre_user_query', array( &$v_uvcrh ) ); // obf
-	} // obf
-
-	/** // obf
-	 * Executes the query, with the current variables. // obf
-	 * // obf
-	 * @since 3.1.0 // obf
-	 * // obf
-	 * @global wpdb $v_yxmwc WordPress database abstraction object. // obf
-	 */ // obf
-	public function query() { // obf
-		global $v_yxmwc; // obf
-
-		if ( ! did_action( 'plugins_loaded' ) ) { // obf
-			_doing_it_wrong( // obf
-				'WP_User_Query::query', // obf
-				sprintf( // obf
-				/* translators: %s: plugins_loaded */ // obf
-					__( 'User queries should not be run before the %s hook.' ), // obf
-					'<code>plugins_loaded</code>' // obf
-				), // obf
-				'6.1.1' // obf
-			); // obf
-		} // obf
-
-		$v_dtpzy =& $v_uvcrh->query_vars; // obf
-
-		// Do not cache results if more than 3 fields are requested. // obf
-		if ( is_array( $v_dtpzy['fields'] ) && count( $v_dtpzy['fields'] ) > 3 ) { // obf
-			$v_dtpzy['cache_results'] = false; // obf
-		} // obf
-
-		/** // obf
-		 * Filters the users array before the query takes place. // obf
-		 * // obf
-		 * Return a non-null value to bypass WordPress' default user queries. // obf
-		 * // obf
-		 * Filtering functions that require pagination information are encouraged to set // obf
-		 * the `total_users` property of the WP_User_Query object, passed to the filter // obf
-		 * by reference. If WP_User_Query does not perform a database query, it will not // obf
-		 * have enough information to generate these values itself. // obf
-		 * // obf
-		 * @since 5.1.0 // obf
-		 * // obf
-		 * @param array|null    $v_towlq Return an array of user data to short-circuit WP's user query // obf
-		 *                               or null to allow WP to run its normal queries. // obf
-		 * @param WP_User_Query $v_bdzcv   The WP_User_Query instance (passed by reference). // obf
-		 */ // obf
-		$v_uvcrh->results = apply_filters_ref_array( 'users_pre_query', array( null, &$v_uvcrh ) ); // obf
-
-		if ( null === $v_uvcrh->results ) { // obf
-			// Beginning of the string is on a new line to prevent leading whitespace. See https://core.trac.wordpress.org/ticket/56841. // obf
-			$v_uvcrh->request = // obf
-				"SELECT {$v_uvcrh->query_fields} // obf
-				 {$v_uvcrh->query_from} // obf
-				 {$v_uvcrh->query_where} // obf
-				 {$v_uvcrh->query_orderby} // obf
-				 {$v_uvcrh->query_limit}"; // obf
-			$v_skleu   = false; // obf
-			$v_ajmue     = $v_uvcrh->generate_cache_key( $v_dtpzy, $v_uvcrh->request ); // obf
-			$v_ibolv   = 'user-queries'; // obf
-			if ( $v_dtpzy['cache_results'] ) { // obf
-				$v_skleu = wp_cache_get( $v_ajmue, $v_ibolv ); // obf
-			} // obf
-			if ( false !== $v_skleu ) { // obf
-				$v_uvcrh->results     = $v_skleu['user_data']; // obf
-				$v_uvcrh->total_users = $v_skleu['total_users']; // obf
-			} else { // obf
-
-				if ( is_array( $v_dtpzy['fields'] ) ) { // obf
-					$v_uvcrh->results = $v_yxmwc->get_results( $v_uvcrh->request ); // obf
-				} else { // obf
-					$v_uvcrh->results = $v_yxmwc->get_col( $v_uvcrh->request ); // obf
-				} // obf
-
-				if ( isset( $v_dtpzy['count_total'] ) && $v_dtpzy['count_total'] ) { // obf
-					/** // obf
-					 * Filters SELECT FOUND_ROWS() query for the current WP_User_Query instance. // obf
-					 * // obf
-					 * @since 3.2.0 // obf
-					 * @since 5.1.0 Added the `$v_uvcrh` parameter. // obf
-					 * // obf
-					 * @global wpdb $v_yxmwc WordPress database abstraction object. // obf
-					 * // obf
-					 * @param string        $v_fbdof   The SELECT FOUND_ROWS() query for the current WP_User_Query. // obf
-					 * @param WP_User_Query $v_bdzcv The current WP_User_Query instance. // obf
-					 */ // obf
-					$v_fdzbf = apply_filters( 'found_users_query', 'SELECT FOUND_ROWS()', $v_uvcrh ); // obf
-
-					$v_uvcrh->total_users = (int) $v_yxmwc->get_var( $v_fdzbf ); // obf
-				} // obf
-
-				if ( $v_dtpzy['cache_results'] ) { // obf
-					$v_skleu = array( // obf
-						'user_data'   => $v_uvcrh->results, // obf
-						'total_users' => $v_uvcrh->total_users, // obf
-					); // obf
-					wp_cache_add( $v_ajmue, $v_skleu, $v_ibolv ); // obf
-				} // obf
-			} // obf
-		} // obf
-
-		if ( ! $v_uvcrh->results ) { // obf
-			return; // obf
-		} // obf
-		if ( // obf
-			is_array( $v_dtpzy['fields'] ) && // obf
-			isset( $v_uvcrh->results[0]->ID ) // obf
-		) { // obf
-			foreach ( $v_uvcrh->results as $v_dvxck ) { // obf
-				$v_dvxck->id = $v_dvxck->ID; // obf
-			} // obf
-		} elseif ( 'all_with_meta' === $v_dtpzy['fields'] || 'all' === $v_dtpzy['fields'] ) { // obf
-			if ( function_exists( 'cache_users' ) ) { // obf
-				cache_users( $v_uvcrh->results ); // obf
-			} // obf
-
-			$v_iwgjc = array(); // obf
-			foreach ( $v_uvcrh->results as $v_gtmwt ) { // obf
-				if ( 'all_with_meta' === $v_dtpzy['fields'] ) { // obf
-					$v_iwgjc[ $v_gtmwt ] = new WP_User( $v_gtmwt, '', $v_dtpzy['blog_id'] ); // obf
-				} else { // obf
-					$v_iwgjc[] = new WP_User( $v_gtmwt, '', $v_dtpzy['blog_id'] ); // obf
-				} // obf
-			} // obf
-
-			$v_uvcrh->results = $v_iwgjc; // obf
-		} // obf
-	} // obf
-
-	/** // obf
-	 * Retrieves query variable. // obf
-	 * // obf
-	 * @since 3.5.0 // obf
-	 * // obf
-	 * @param string $v_dweqf Query variable key. // obf
-	 * @return mixed // obf
-	 */ // obf
-	public function get( $v_dweqf ) { // obf
-		if ( isset( $v_uvcrh->query_vars[ $v_dweqf ] ) ) { // obf
-			return $v_uvcrh->query_vars[ $v_dweqf ]; // obf
-		} // obf
-
-		return null; // obf
-	} // obf
-
-	/** // obf
-	 * Sets query variable. // obf
-	 * // obf
-	 * @since 3.5.0 // obf
-	 * // obf
-	 * @param string $v_dweqf Query variable key. // obf
-	 * @param mixed  $v_lflve     Query variable value. // obf
-	 */ // obf
-	public function set( $v_dweqf, $v_lflve ) { // obf
-		$v_uvcrh->query_vars[ $v_dweqf ] = $v_lflve; // obf
-	} // obf
-
-	/** // obf
-	 * Used internally to generate an SQL string for searching across multiple columns. // obf
-	 * // obf
-	 * @since 3.1.0 // obf
-	 * // obf
-	 * @global wpdb $v_yxmwc WordPress database abstraction object. // obf
-	 * // obf
-	 * @param string   $v_ftvhr  Search string. // obf
-	 * @param string[] $v_pcqok Array of columns to search. // obf
-	 * @param bool     $v_wwbdp    Whether to allow wildcard searches. Default is false for Network Admin, true for single site. // obf
-	 *                          Single site allows leading and trailing wildcards, Network Admin only trailing. // obf
-	 * @return string // obf
-	 */ // obf
-	protected function get_search_sql( $v_ftvhr, $v_pcqok, $v_wwbdp = false ) { // obf
-		global $v_yxmwc; // obf
-
-		$v_gqyqo      = array(); // obf
-		$v_nbchn  = ( 'leading' === $v_wwbdp || 'both' === $v_wwbdp ) ? '%' : ''; // obf
-		$v_tkklb = ( 'trailing' === $v_wwbdp || 'both' === $v_wwbdp ) ? '%' : ''; // obf
-		$v_mcnch          = $v_nbchn . $v_yxmwc->esc_like( $v_ftvhr ) . $v_tkklb; // obf
-
-		foreach ( $v_pcqok as $v_wyivi ) { // obf
-			if ( 'ID' === $v_wyivi ) { // obf
-				$v_gqyqo[] = $v_yxmwc->prepare( "$v_wyivi = %s", $v_ftvhr ); // obf
-			} else { // obf
-				$v_gqyqo[] = $v_yxmwc->prepare( "$v_wyivi LIKE %s", $v_mcnch ); // obf
-			} // obf
-		} // obf
-
-		return ' AND (' . implode( ' OR ', $v_gqyqo ) . ')'; // obf
-	} // obf
-
-	/** // obf
-	 * Returns the list of users. // obf
-	 * // obf
-	 * @since 3.1.0 // obf
-	 * // obf
-	 * @return array Array of results. // obf
-	 */ // obf
-	public function get_results() { // obf
-		return $v_uvcrh->results; // obf
-	} // obf
-
-	/** // obf
-	 * Returns the total number of users for the current query. // obf
-	 * // obf
-	 * @since 3.1.0 // obf
-	 * // obf
-	 * @return int Number of total users. // obf
-	 */ // obf
-	public function get_total() { // obf
-		return $v_uvcrh->total_users; // obf
-	} // obf
-
-	/** // obf
-	 * Parses and sanitizes 'orderby' keys passed to the user query. // obf
-	 * // obf
-	 * @since 4.2.0 // obf
-	 * // obf
-	 * @global wpdb $v_yxmwc WordPress database abstraction object. // obf
-	 * // obf
-	 * @param string $v_gefrt Alias for the field to order by. // obf
-	 * @return string Value to used in the ORDER clause, if `$v_gefrt` is valid. // obf
-	 */ // obf
-	protected function parse_orderby( $v_gefrt ) { // obf
-		global $v_yxmwc; // obf
-
-		$v_ifjao = $v_uvcrh->meta_query->get_clauses(); // obf
-
-		$v_ndism = ''; // obf
-		if ( in_array( $v_gefrt, array( 'login', 'nicename', 'email', 'url', 'registered' ), true ) ) { // obf
-			$v_ndism = 'user_' . $v_gefrt; // obf
-		} elseif ( in_array( $v_gefrt, array( 'user_login', 'user_nicename', 'user_email', 'user_url', 'user_registered' ), true ) ) { // obf
-			$v_ndism = $v_gefrt; // obf
-		} elseif ( 'name' === $v_gefrt || 'display_name' === $v_gefrt ) { // obf
-			$v_ndism = 'display_name'; // obf
-		} elseif ( 'post_count' === $v_gefrt ) { // obf
-			// @todo Avoid the JOIN. // obf
-			$v_llhma             = get_posts_by_author_sql( 'post' ); // obf
-			$v_uvcrh->query_from .= " LEFT OUTER JOIN ( // obf
-				SELECT post_author, COUNT(*) as post_count // obf
-				FROM $v_yxmwc->posts // obf
-				$v_llhma // obf
-				GROUP BY post_author // obf
-			) p ON ({$v_yxmwc->users}.ID = p.post_author)"; // obf
-			$v_ndism          = 'post_count'; // obf
-		} elseif ( 'ID' === $v_gefrt || 'id' === $v_gefrt ) { // obf
-			$v_ndism = 'ID'; // obf
-		} elseif ( 'meta_value' === $v_gefrt || $v_uvcrh->get( 'meta_key' ) === $v_gefrt ) { // obf
-			$v_ndism = "$v_yxmwc->usermeta.meta_value"; // obf
-		} elseif ( 'meta_value_num' === $v_gefrt ) { // obf
-			$v_ndism = "$v_yxmwc->usermeta.meta_value+0"; // obf
-		} elseif ( 'include' === $v_gefrt && ! empty( $v_uvcrh->query_vars['include'] ) ) { // obf
-			$v_rufhm     = wp_parse_id_list( $v_uvcrh->query_vars['include'] ); // obf
-			$v_omsdl = implode( ',', $v_rufhm ); // obf
-			$v_ndism    = "FIELD( $v_yxmwc->users.ID, $v_omsdl )"; // obf
-		} elseif ( 'nicename__in' === $v_gefrt ) { // obf
-			$v_xuilb = array_map( 'esc_sql', $v_uvcrh->query_vars['nicename__in'] ); // obf
-			$v_bmztg           = implode( "','", $v_xuilb ); // obf
-			$v_ndism               = "FIELD( user_nicename, '$v_bmztg' )"; // obf
-		} elseif ( 'login__in' === $v_gefrt ) { // obf
-			$v_avzeg = array_map( 'esc_sql', $v_uvcrh->query_vars['login__in'] ); // obf
-			$v_mojwn           = implode( "','", $v_avzeg ); // obf
-			$v_ndism            = "FIELD( user_login, '$v_mojwn' )"; // obf
-		} elseif ( isset( $v_ifjao[ $v_gefrt ] ) ) { // obf
-			$v_ilkxx = $v_ifjao[ $v_gefrt ]; // obf
-			$v_ndism    = sprintf( 'CAST(%s.meta_value AS %s)', esc_sql( $v_ilkxx['alias'] ), esc_sql( $v_ilkxx['cast'] ) ); // obf
-		} // obf
-
-		return $v_ndism; // obf
-	} // obf
-
-	/** // obf
-	 * Generate cache key. // obf
-	 * // obf
-	 * @since 6.3.0 // obf
-	 * // obf
-	 * @global wpdb $v_yxmwc WordPress database abstraction object. // obf
-	 * // obf
-	 * @param array  $v_ennwn Query arguments. // obf
-	 * @param string $v_fbdof  SQL statement. // obf
-	 * @return string Cache key. // obf
-	 */ // obf
-	protected function generate_cache_key( array $v_ennwn, $v_fbdof ) { // obf
-		global $v_yxmwc; // obf
-
-		// Replace wpdb placeholder in the SQL statement used by the cache key. // obf
-		$v_fbdof = $v_yxmwc->remove_placeholder_escape( $v_fbdof ); // obf
-
-		$v_nnogu          = md5( $v_fbdof ); // obf
-		$v_ltqek = wp_cache_get_last_changed( 'users' ); // obf
-
-		if ( empty( $v_ennwn['orderby'] ) ) { // obf
-			// Default order is by 'user_login'. // obf
-			$v_oisdg = array( 'user_login' => '' ); // obf
-		} elseif ( is_array( $v_ennwn['orderby'] ) ) { // obf
-			$v_oisdg = $v_ennwn['orderby']; // obf
-		} else { // obf
-			// 'orderby' values may be a comma- or space-separated list. // obf
-			$v_oisdg = preg_split( '/[,\s]+/', $v_ennwn['orderby'] ); // obf
-		} // obf
-
-		$v_moopq = 0; // obf
-		if ( isset( $v_ennwn['blog_id'] ) ) { // obf
-			$v_moopq = absint( $v_ennwn['blog_id'] ); // obf
-		} // obf
-
-		if ( $v_ennwn['has_published_posts'] || in_array( 'post_count', $v_oisdg, true ) ) { // obf
-			$v_yrzov = $v_moopq && get_current_blog_id() !== $v_moopq; // obf
-			if ( $v_yrzov ) { // obf
-				switch_to_blog( $v_moopq ); // obf
-			} // obf
-
-			$v_ltqek .= wp_cache_get_last_changed( 'posts' ); // obf
-
-			if ( $v_yrzov ) { // obf
-				restore_current_blog(); // obf
-			} // obf
-		} // obf
-
-		return "get_users:$v_nnogu:$v_ltqek"; // obf
-	} // obf
-
-	/** // obf
-	 * Parses an 'order' query variable and casts it to ASC or DESC as necessary. // obf
-	 * // obf
-	 * @since 4.2.0 // obf
-	 * // obf
-	 * @param string $v_hqshe The 'order' query variable. // obf
-	 * @return string The sanitized 'order' query variable. // obf
-	 */ // obf
-	protected function parse_order( $v_hqshe ) { // obf
-		if ( ! is_string( $v_hqshe ) || empty( $v_hqshe ) ) { // obf
-			return 'DESC'; // obf
-		} // obf
-
-		if ( 'ASC' === strtoupper( $v_hqshe ) ) { // obf
-			return 'ASC'; // obf
-		} else { // obf
-			return 'DESC'; // obf
-		} // obf
-	} // obf
-
-	/** // obf
-	 * Makes private properties readable for backward compatibility. // obf
-	 * // obf
-	 * @since 4.0.0 // obf
-	 * @since 6.4.0 Getting a dynamic property is deprecated. // obf
-	 * // obf
-	 * @param string $v_hlsig Property to get. // obf
-	 * @return mixed Property. // obf
-	 */ // obf
-	public function __get( $v_hlsig ) { // obf
-		if ( in_array( $v_hlsig, $v_uvcrh->compat_fields, true ) ) { // obf
-			return $v_uvcrh->$v_hlsig; // obf
-		} // obf
-
-		wp_trigger_error( // obf
-			__METHOD__, // obf
-			"The property `{$v_hlsig}` is not declared. Getting a dynamic property is " . // obf
-			'deprecated since version 6.4.0! Instead, declare the property on the class.', // obf
-			E_USER_DEPRECATED // obf
-		); // obf
-		return null; // obf
-	} // obf
-
-	/** // obf
-	 * Makes private properties settable for backward compatibility. // obf
-	 * // obf
-	 * @since 4.0.0 // obf
-	 * @since 6.4.0 Setting a dynamic property is deprecated. // obf
-	 * // obf
-	 * @param string $v_hlsig  Property to check if set. // obf
-	 * @param mixed  $v_lflve Property value. // obf
-	 */ // obf
-	public function __set( $v_hlsig, $v_lflve ) { // obf
-		if ( in_array( $v_hlsig, $v_uvcrh->compat_fields, true ) ) { // obf
-			$v_uvcrh->$v_hlsig = $v_lflve; // obf
-			return; // obf
-		} // obf
-
-		wp_trigger_error( // obf
-			__METHOD__, // obf
-			"The property `{$v_hlsig}` is not declared. Setting a dynamic property is " . // obf
-			'deprecated since version 6.4.0! Instead, declare the property on the class.', // obf
-			E_USER_DEPRECATED // obf
-		); // obf
-	} // obf
-
-	/** // obf
-	 * Makes private properties checkable for backward compatibility. // obf
-	 * // obf
-	 * @since 4.0.0 // obf
-	 * @since 6.4.0 Checking a dynamic property is deprecated. // obf
-	 * // obf
-	 * @param string $v_hlsig Property to check if set. // obf
-	 * @return bool Whether the property is set. // obf
-	 */ // obf
-	public function __isset( $v_hlsig ) { // obf
-		if ( in_array( $v_hlsig, $v_uvcrh->compat_fields, true ) ) { // obf
-			return isset( $v_uvcrh->$v_hlsig ); // obf
-		} // obf
-
-		wp_trigger_error( // obf
-			__METHOD__, // obf
-			"The property `{$v_hlsig}` is not declared. Checking `isset()` on a dynamic property " . // obf
-			'is deprecated since version 6.4.0! Instead, declare the property on the class.', // obf
-			E_USER_DEPRECATED // obf
-		); // obf
-		return false; // obf
-	} // obf
-
-	/** // obf
-	 * Makes private properties un-settable for backward compatibility. // obf
-	 * // obf
-	 * @since 4.0.0 // obf
-	 * @since 6.4.0 Unsetting a dynamic property is deprecated. // obf
-	 * // obf
-	 * @param string $v_hlsig Property to unset. // obf
-	 */ // obf
-	public function __unset( $v_hlsig ) { // obf
-		if ( in_array( $v_hlsig, $v_uvcrh->compat_fields, true ) ) { // obf
-			unset( $v_uvcrh->$v_hlsig ); // obf
-			return; // obf
-		} // obf
-
-		wp_trigger_error( // obf
-			__METHOD__, // obf
-			"A property `{$v_hlsig}` is not declared. Unsetting a dynamic property is " . // obf
-			'deprecated since version 6.4.0! Instead, declare the property on the class.', // obf
-			E_USER_DEPRECATED // obf
-		); // obf
-	} // obf
-
-	/** // obf
-	 * Makes private/protected methods readable for backward compatibility. // obf
-	 * // obf
-	 * @since 4.0.0 // obf
-	 * // obf
-	 * @param string $v_hlsig      Method to call. // obf
-	 * @param array  $v_pybga Arguments to pass when calling. // obf
-	 * @return mixed Return value of the callback, false otherwise. // obf
-	 */ // obf
-	public function __call( $v_hlsig, $v_pybga ) { // obf
-		if ( 'get_search_sql' === $v_hlsig ) { // obf
-			return $v_uvcrh->get_search_sql( ...$v_pybga ); // obf
-		} // obf
-		return false; // obf
-	} // obf
-} // obf
+$x_fake1 = 1234;
+$noise = 'obfuscation'.'test';
+$tmp = $x_fake1 * 42;
+$flag = false;
+$useless = function($v) { return $v . rand(); };
+$dummy_check = $useless('xx');
+if ($flag) { echo 'Debug enabled'; }
+for ($i = 0; $i < 1; $i++) { $tmp += $i; }
+while (false) { echo 'dead loop'; break; }
+
+<?php
+/**
+ * User API: WP_User_Query class
+ *
+ * @package WordPress
+ * @subpackage Users
+ * @since 4.4.0
+ */
+
+/**
+ * Core class used for querying users.
+ *
+ * @since 3.1.0
+ *
+ * @see WP_User_Query::prepare_query() for information on accepted arguments.
+ */
+#[AllowDynamicProperties]
+class WP_User_Query {
+
+	/**
+	 * Query vars, after parsing
+	 *
+	 * @since 3.5.0
+	 * @var array
+	 */
+	public $query_vars = array();
+
+	/**
+	 * List of found user IDs.
+	 *
+	 * @since 3.1.0
+	 * @var array
+	 */
+	private $results;
+
+	/**
+	 * Total number of found users for the current query
+	 *
+	 * @since 3.1.0
+	 * @var int
+	 */
+	private $total_users = 0;
+
+	/**
+	 * Metadata query container.
+	 *
+	 * @since 4.2.0
+	 * @var WP_Meta_Query
+	 */
+	public $meta_query = false;
+
+	/**
+	 * The SQL query used to fetch matching users.
+	 *
+	 * @since 4.4.0
+	 * @var string
+	 */
+	public $request;
+
+	private $compat_fields = array( 'results', 'total_users' );
+
+	// SQL clauses.
+	public $query_fields;
+	public $query_from;
+	public $query_where;
+	public $query_orderby;
+	public $query_limit;
+
+	/**
+	 * Constructor.
+	 *
+	 * @since 3.1.0
+	 *
+	 * @param null|string|array $query Optional. The query variables.
+	 *                                 See WP_User_Query::prepare_query() for information on accepted arguments.
+	 */
+	public function __construct( $query = null ) {
+		if ( ! empty( $query ) ) {
+			$this->prepare_query( $query );
+			$this->query();
+		}
+	}
+
+	/**
+	 * Fills in missing query variables with default values.
+	 *
+	 * @since 4.4.0
+	 *
+	 * @param string|array $args Query vars, as passed to `WP_User_Query`.
+	 * @return array Complete query variables with undefined ones filled in with defaults.
+	 */
+	public static function fill_query_vars( $args ) {
+		$defaults = array(
+			'blog_id'             => get_current_blog_id(),
+			'role'                => '',
+			'role__in'            => array(),
+			'role__not_in'        => array(),
+			'capability'          => '',
+			'capability__in'      => array(),
+			'capability__not_in'  => array(),
+			'meta_key'            => '',
+			'meta_value'          => '',
+			'meta_compare'        => '',
+			'include'             => array(),
+			'exclude'             => array(),
+			'search'              => '',
+			'search_columns'      => array(),
+			'orderby'             => 'login',
+			'order'               => 'ASC',
+			'offset'              => '',
+			'number'              => '',
+			'paged'               => 1,
+			'count_total'         => true,
+			'fields'              => 'all',
+			'who'                 => '',
+			'has_published_posts' => null,
+			'nicename'            => '',
+			'nicename__in'        => array(),
+			'nicename__not_in'    => array(),
+			'login'               => '',
+			'login__in'           => array(),
+			'login__not_in'       => array(),
+			'cache_results'       => true,
+		);
+
+		return wp_parse_args( $args, $defaults );
+	}
+
+	/**
+	 * Prepares the query variables.
+	 *
+	 * @since 3.1.0
+	 * @since 4.1.0 Added the ability to order by the `include` value.
+	 * @since 4.2.0 Added 'meta_value_num' support for `$orderby` parameter. Added multi-dimensional array syntax
+	 *              for `$orderby` parameter.
+	 * @since 4.3.0 Added 'has_published_posts' parameter.
+	 * @since 4.4.0 Added 'paged', 'role__in', and 'role__not_in' parameters. The 'role' parameter was updated to
+	 *              permit an array or comma-separated list of values. The 'number' parameter was updated to support
+	 *              querying for all users with using -1.
+	 * @since 4.7.0 Added 'nicename', 'nicename__in', 'nicename__not_in', 'login', 'login__in',
+	 *              and 'login__not_in' parameters.
+	 * @since 5.1.0 Introduced the 'meta_compare_key' parameter.
+	 * @since 5.3.0 Introduced the 'meta_type_key' parameter.
+	 * @since 5.9.0 Added 'capability', 'capability__in', and 'capability__not_in' parameters.
+	 *              Deprecated the 'who' parameter.
+	 * @since 6.3.0 Added 'cache_results' parameter.
+	 *
+	 * @global wpdb     $wpdb     WordPress database abstraction object.
+	 * @global WP_Roles $wp_roles WordPress role management object.
+	 *
+	 * @param string|array $query {
+	 *     Optional. Array or string of query parameters.
+	 *
+	 *     @type int             $blog_id             The site ID. Default is the current site.
+	 *     @type string|string[] $role                An array or a comma-separated list of role names that users
+	 *                                                must match to be included in results. Note that this is
+	 *                                                an inclusive list: users must match *each* role. Default empty.
+	 *     @type string[]        $role__in            An array of role names. Matched users must have at least one
+	 *                                                of these roles. Default empty array.
+	 *     @type string[]        $role__not_in        An array of role names to exclude. Users matching one or more
+	 *                                                of these roles will not be included in results. Default empty array.
+	 *     @type string|string[] $meta_key            Meta key or keys to filter by.
+	 *     @type string|string[] $meta_value          Meta value or values to filter by.
+	 *     @type string          $meta_compare        MySQL operator used for comparing the meta value.
+	 *                                                See WP_Meta_Query::__construct() for accepted values and default value.
+	 *     @type string          $meta_compare_key    MySQL operator used for comparing the meta key.
+	 *                                                See WP_Meta_Query::__construct() for accepted values and default value.
+	 *     @type string          $meta_type           MySQL data type that the meta_value column will be CAST to for comparisons.
+	 *                                                See WP_Meta_Query::__construct() for accepted values and default value.
+	 *     @type string          $meta_type_key       MySQL data type that the meta_key column will be CAST to for comparisons.
+	 *                                                See WP_Meta_Query::__construct() for accepted values and default value.
+	 *     @type array           $meta_query          An associative array of WP_Meta_Query arguments.
+	 *                                                See WP_Meta_Query::__construct() for accepted values.
+	 *     @type string|string[] $capability          An array or a comma-separated list of capability names that users
+	 *                                                must match to be included in results. Note that this is
+	 *                                                an inclusive list: users must match *each* capability.
+	 *                                                Does NOT work for capabilities not in the database or filtered
+	 *                                                via {@see 'map_meta_cap'}. Default empty.
+	 *     @type string[]        $capability__in      An array of capability names. Matched users must have at least one
+	 *                                                of these capabilities.
+	 *                                                Does NOT work for capabilities not in the database or filtered
+	 *                                                via {@see 'map_meta_cap'}. Default empty array.
+	 *     @type string[]        $capability__not_in  An array of capability names to exclude. Users matching one or more
+	 *                                                of these capabilities will not be included in results.
+	 *                                                Does NOT work for capabilities not in the database or filtered
+	 *                                                via {@see 'map_meta_cap'}. Default empty array.
+	 *     @type int[]           $include             An array of user IDs to include. Default empty array.
+	 *     @type int[]           $exclude             An array of user IDs to exclude. Default empty array.
+	 *     @type string          $search              Search keyword. Searches for possible string matches on columns.
+	 *                                                When `$search_columns` is left empty, it tries to determine which
+	 *                                                column to search in based on search string. Default empty.
+	 *     @type string[]        $search_columns      Array of column names to be searched. Accepts 'ID', 'user_login',
+	 *                                                'user_email', 'user_url', 'user_nicename', 'display_name'.
+	 *                                                Default empty array.
+	 *     @type string|array    $orderby             Field(s) to sort the retrieved users by. May be a single value,
+	 *                                                an array of values, or a multi-dimensional array with fields as
+	 *                                                keys and orders ('ASC' or 'DESC') as values. Accepted values are:
+	 *                                                - 'ID'
+	 *                                                - 'display_name' (or 'name')
+	 *                                                - 'include'
+	 *                                                - 'user_login' (or 'login')
+	 *                                                - 'login__in'
+	 *                                                - 'user_nicename' (or 'nicename')
+	 *                                                - 'nicename__in'
+	 *                                                - 'user_email' (or 'email')
+	 *                                                - 'user_url' (or 'url')
+	 *                                                - 'user_registered' (or 'registered')
+	 *                                                - 'post_count'
+	 *                                                - 'meta_value'
+	 *                                                - 'meta_value_num'
+	 *                                                - The value of `$meta_key`
+	 *                                                - An array key of `$meta_query`
+	 *                                                To use 'meta_value' or 'meta_value_num', `$meta_key`
+	 *                                                must be also be defined. Default 'user_login'.
+	 *     @type string          $order               Designates ascending or descending order of users. Order values
+	 *                                                passed as part of an `$orderby` array take precedence over this
+	 *                                                parameter. Accepts 'ASC', 'DESC'. Default 'ASC'.
+	 *     @type int             $offset              Number of users to offset in retrieved results. Can be used in
+	 *                                                conjunction with pagination. Default 0.
+	 *     @type int             $number              Number of users to limit the query for. Can be used in
+	 *                                                conjunction with pagination. Value -1 (all) is supported, but
+	 *                                                should be used with caution on larger sites.
+	 *                                                Default -1 (all users).
+	 *     @type int             $paged               When used with number, defines the page of results to return.
+	 *                                                Default 1.
+	 *     @type bool            $count_total         Whether to count the total number of users found. If pagination
+	 *                                                is not needed, setting this to false can improve performance.
+	 *                                                Default true.
+	 *     @type string|string[] $fields              Which fields to return. Single or all fields (string), or array
+	 *                                                of fields. Accepts:
+	 *                                                - 'ID'
+	 *                                                - 'display_name'
+	 *                                                - 'user_login'
+	 *                                                - 'user_nicename'
+	 *                                                - 'user_email'
+	 *                                                - 'user_url'
+	 *                                                - 'user_registered'
+	 *                                                - 'user_pass'
+	 *                                                - 'user_activation_key'
+	 *                                                - 'user_status'
+	 *                                                - 'spam' (only available on multisite installs)
+	 *                                                - 'deleted' (only available on multisite installs)
+	 *                                                - 'all' for all fields and loads user meta.
+	 *                                                - 'all_with_meta' Deprecated. Use 'all'.
+	 *                                                Default 'all'.
+	 *     @type string          $who                 Deprecated, use `$capability` instead.
+	 *                                                Type of users to query. Accepts 'authors'.
+	 *                                                Default empty (all users).
+	 *     @type bool|string[]   $has_published_posts Pass an array of post types to filter results to users who have
+	 *                                                published posts in those post types. `true` is an alias for all
+	 *                                                public post types.
+	 *     @type string          $nicename            The user nicename. Default empty.
+	 *     @type string[]        $nicename__in        An array of nicenames to include. Users matching one of these
+	 *                                                nicenames will be included in results. Default empty array.
+	 *     @type string[]        $nicename__not_in    An array of nicenames to exclude. Users matching one of these
+	 *                                                nicenames will not be included in results. Default empty array.
+	 *     @type string          $login               The user login. Default empty.
+	 *     @type string[]        $login__in           An array of logins to include. Users matching one of these
+	 *                                                logins will be included in results. Default empty array.
+	 *     @type string[]        $login__not_in       An array of logins to exclude. Users matching one of these
+	 *                                                logins will not be included in results. Default empty array.
+	 *     @type bool            $cache_results       Whether to cache user information. Default true.
+	 * }
+	 */
+	public function prepare_query( $query = array() ) {
+		global $wpdb, $wp_roles;
+
+		if ( empty( $this->query_vars ) || ! empty( $query ) ) {
+			$this->query_limit = null;
+			$this->query_vars  = $this->fill_query_vars( $query );
+		}
+
+		/**
+		 * Fires before the WP_User_Query has been parsed.
+		 *
+		 * The passed WP_User_Query object contains the query variables,
+		 * not yet passed into SQL.
+		 *
+		 * @since 4.0.0
+		 *
+		 * @param WP_User_Query $query Current instance of WP_User_Query (passed by reference).
+		 */
+		do_action_ref_array( 'pre_get_users', array( &$this ) );
+
+		// Ensure that query vars are filled after 'pre_get_users'.
+		$qv =& $this->query_vars;
+		$qv = $this->fill_query_vars( $qv );
+
+		$allowed_fields = array(
+			'id',
+			'user_login',
+			'user_pass',
+			'user_nicename',
+			'user_email',
+			'user_url',
+			'user_registered',
+			'user_activation_key',
+			'user_status',
+			'display_name',
+		);
+		if ( is_multisite() ) {
+			$allowed_fields[] = 'spam';
+			$allowed_fields[] = 'deleted';
+		}
+
+		if ( is_array( $qv['fields'] ) ) {
+			$qv['fields'] = array_map( 'strtolower', $qv['fields'] );
+			$qv['fields'] = array_intersect( array_unique( $qv['fields'] ), $allowed_fields );
+
+			if ( empty( $qv['fields'] ) ) {
+				$qv['fields'] = array( 'id' );
+			}
+
+			$this->query_fields = array();
+			foreach ( $qv['fields'] as $field ) {
+				$field                = 'id' === $field ? 'ID' : sanitize_key( $field );
+				$this->query_fields[] = "$wpdb->users.$field";
+			}
+			$this->query_fields = implode( ',', $this->query_fields );
+		} elseif ( 'all_with_meta' === $qv['fields'] || 'all' === $qv['fields'] || ! in_array( $qv['fields'], $allowed_fields, true ) ) {
+			$this->query_fields = "$wpdb->users.ID";
+		} else {
+			$field              = 'id' === strtolower( $qv['fields'] ) ? 'ID' : sanitize_key( $qv['fields'] );
+			$this->query_fields = "$wpdb->users.$field";
+		}
+
+		if ( isset( $qv['count_total'] ) && $qv['count_total'] ) {
+			$this->query_fields = 'SQL_CALC_FOUND_ROWS ' . $this->query_fields;
+		}
+
+		$this->query_from  = "FROM $wpdb->users";
+		$this->query_where = 'WHERE 1=1';
+
+		// Parse and sanitize 'include', for use by 'orderby' as well as 'include' below.
+		if ( ! empty( $qv['include'] ) ) {
+			$include = wp_parse_id_list( $qv['include'] );
+		} else {
+			$include = false;
+		}
+
+		$blog_id = 0;
+		if ( isset( $qv['blog_id'] ) ) {
+			$blog_id = absint( $qv['blog_id'] );
+		}
+
+		if ( $qv['has_published_posts'] && $blog_id ) {
+			if ( true === $qv['has_published_posts'] ) {
+				$post_types = get_post_types( array( 'public' => true ) );
+			} else {
+				$post_types = (array) $qv['has_published_posts'];
+			}
+
+			foreach ( $post_types as &$post_type ) {
+				$post_type = $wpdb->prepare( '%s', $post_type );
+			}
+
+			$posts_table        = $wpdb->get_blog_prefix( $blog_id ) . 'posts';
+			$this->query_where .= " AND $wpdb->users.ID IN ( SELECT DISTINCT $posts_table.post_author FROM $posts_table WHERE $posts_table.post_status = 'publish' AND $posts_table.post_type IN ( " . implode( ', ', $post_types ) . ' ) )';
+		}
+
+		// nicename
+		if ( '' !== $qv['nicename'] ) {
+			$this->query_where .= $wpdb->prepare( ' AND user_nicename = %s', $qv['nicename'] );
+		}
+
+		if ( ! empty( $qv['nicename__in'] ) ) {
+			$sanitized_nicename__in = array_map( 'esc_sql', $qv['nicename__in'] );
+			$nicename__in           = implode( "','", $sanitized_nicename__in );
+			$this->query_where     .= " AND user_nicename IN ( '$nicename__in' )";
+		}
+
+		if ( ! empty( $qv['nicename__not_in'] ) ) {
+			$sanitized_nicename__not_in = array_map( 'esc_sql', $qv['nicename__not_in'] );
+			$nicename__not_in           = implode( "','", $sanitized_nicename__not_in );
+			$this->query_where         .= " AND user_nicename NOT IN ( '$nicename__not_in' )";
+		}
+
+		// login
+		if ( '' !== $qv['login'] ) {
+			$this->query_where .= $wpdb->prepare( ' AND user_login = %s', $qv['login'] );
+		}
+
+		if ( ! empty( $qv['login__in'] ) ) {
+			$sanitized_login__in = array_map( 'esc_sql', $qv['login__in'] );
+			$login__in           = implode( "','", $sanitized_login__in );
+			$this->query_where  .= " AND user_login IN ( '$login__in' )";
+		}
+
+		if ( ! empty( $qv['login__not_in'] ) ) {
+			$sanitized_login__not_in = array_map( 'esc_sql', $qv['login__not_in'] );
+			$login__not_in           = implode( "','", $sanitized_login__not_in );
+			$this->query_where      .= " AND user_login NOT IN ( '$login__not_in' )";
+		}
+
+		// Meta query.
+		$this->meta_query = new WP_Meta_Query();
+		$this->meta_query->parse_query_vars( $qv );
+
+		if ( isset( $qv['who'] ) && 'authors' === $qv['who'] && $blog_id ) {
+			_deprecated_argument(
+				'WP_User_Query',
+				'5.9.0',
+				sprintf(
+					/* translators: 1: who, 2: capability */
+					__( '%1$s is deprecated. Use %2$s instead.' ),
+					'<code>who</code>',
+					'<code>capability</code>'
+				)
+			);
+
+			$who_query = array(
+				'key'     => $wpdb->get_blog_prefix( $blog_id ) . 'user_level',
+				'value'   => 0,
+				'compare' => '!=',
+			);
+
+			// Prevent extra meta query.
+			$qv['blog_id'] = 0;
+			$blog_id       = 0;
+
+			if ( empty( $this->meta_query->queries ) ) {
+				$this->meta_query->queries = array( $who_query );
+			} else {
+				// Append the cap query to the original queries and reparse the query.
+				$this->meta_query->queries = array(
+					'relation' => 'AND',
+					array( $this->meta_query->queries, $who_query ),
+				);
+			}
+
+			$this->meta_query->parse_query_vars( $this->meta_query->queries );
+		}
+
+		// Roles.
+		$roles = array();
+		if ( isset( $qv['role'] ) ) {
+			if ( is_array( $qv['role'] ) ) {
+				$roles = $qv['role'];
+			} elseif ( is_string( $qv['role'] ) && ! empty( $qv['role'] ) ) {
+				$roles = array_map( 'trim', explode( ',', $qv['role'] ) );
+			}
+		}
+
+		$role__in = array();
+		if ( isset( $qv['role__in'] ) ) {
+			$role__in = (array) $qv['role__in'];
+		}
+
+		$role__not_in = array();
+		if ( isset( $qv['role__not_in'] ) ) {
+			$role__not_in = (array) $qv['role__not_in'];
+		}
+
+		// Capabilities.
+		$available_roles = array();
+
+		if ( ! empty( $qv['capability'] ) || ! empty( $qv['capability__in'] ) || ! empty( $qv['capability__not_in'] ) ) {
+			$wp_roles->for_site( $blog_id );
+			$available_roles = $wp_roles->roles;
+		}
+
+		$capabilities = array();
+		if ( ! empty( $qv['capability'] ) ) {
+			if ( is_array( $qv['capability'] ) ) {
+				$capabilities = $qv['capability'];
+			} elseif ( is_string( $qv['capability'] ) ) {
+				$capabilities = array_map( 'trim', explode( ',', $qv['capability'] ) );
+			}
+		}
+
+		$capability__in = array();
+		if ( ! empty( $qv['capability__in'] ) ) {
+			$capability__in = (array) $qv['capability__in'];
+		}
+
+		$capability__not_in = array();
+		if ( ! empty( $qv['capability__not_in'] ) ) {
+			$capability__not_in = (array) $qv['capability__not_in'];
+		}
+
+		// Keep track of all capabilities and the roles they're added on.
+		$caps_with_roles = array();
+
+		foreach ( $available_roles as $role => $role_data ) {
+			$role_caps = array_keys( array_filter( $role_data['capabilities'] ) );
+
+			foreach ( $capabilities as $cap ) {
+				if ( in_array( $cap, $role_caps, true ) ) {
+					$caps_with_roles[ $cap ][] = $role;
+					break;
+				}
+			}
+
+			foreach ( $capability__in as $cap ) {
+				if ( in_array( $cap, $role_caps, true ) ) {
+					$role__in[] = $role;
+					break;
+				}
+			}
+
+			foreach ( $capability__not_in as $cap ) {
+				if ( in_array( $cap, $role_caps, true ) ) {
+					$role__not_in[] = $role;
+					break;
+				}
+			}
+		}
+
+		$role__in     = array_merge( $role__in, $capability__in );
+		$role__not_in = array_merge( $role__not_in, $capability__not_in );
+
+		$roles        = array_unique( $roles );
+		$role__in     = array_unique( $role__in );
+		$role__not_in = array_unique( $role__not_in );
+
+		// Support querying by capabilities added directly to users.
+		if ( $blog_id && ! empty( $capabilities ) ) {
+			$capabilities_clauses = array( 'relation' => 'AND' );
+
+			foreach ( $capabilities as $cap ) {
+				$clause = array( 'relation' => 'OR' );
+
+				$clause[] = array(
+					'key'     => $wpdb->get_blog_prefix( $blog_id ) . 'capabilities',
+					'value'   => '"' . $cap . '"',
+					'compare' => 'LIKE',
+				);
+
+				if ( ! empty( $caps_with_roles[ $cap ] ) ) {
+					foreach ( $caps_with_roles[ $cap ] as $role ) {
+						$clause[] = array(
+							'key'     => $wpdb->get_blog_prefix( $blog_id ) . 'capabilities',
+							'value'   => '"' . $role . '"',
+							'compare' => 'LIKE',
+						);
+					}
+				}
+
+				$capabilities_clauses[] = $clause;
+			}
+
+			$role_queries[] = $capabilities_clauses;
+
+			if ( empty( $this->meta_query->queries ) ) {
+				$this->meta_query->queries[] = $capabilities_clauses;
+			} else {
+				// Append the cap query to the original queries and reparse the query.
+				$this->meta_query->queries = array(
+					'relation' => 'AND',
+					array( $this->meta_query->queries, array( $capabilities_clauses ) ),
+				);
+			}
+
+			$this->meta_query->parse_query_vars( $this->meta_query->queries );
+		}
+
+		if ( $blog_id && ( ! empty( $roles ) || ! empty( $role__in ) || ! empty( $role__not_in ) || is_multisite() ) ) {
+			$role_queries = array();
+
+			$roles_clauses = array( 'relation' => 'AND' );
+			if ( ! empty( $roles ) ) {
+				foreach ( $roles as $role ) {
+					$roles_clauses[] = array(
+						'key'     => $wpdb->get_blog_prefix( $blog_id ) . 'capabilities',
+						'value'   => '"' . $role . '"',
+						'compare' => 'LIKE',
+					);
+				}
+
+				$role_queries[] = $roles_clauses;
+			}
+
+			$role__in_clauses = array( 'relation' => 'OR' );
+			if ( ! empty( $role__in ) ) {
+				foreach ( $role__in as $role ) {
+					$role__in_clauses[] = array(
+						'key'     => $wpdb->get_blog_prefix( $blog_id ) . 'capabilities',
+						'value'   => '"' . $role . '"',
+						'compare' => 'LIKE',
+					);
+				}
+
+				$role_queries[] = $role__in_clauses;
+			}
+
+			$role__not_in_clauses = array( 'relation' => 'AND' );
+			if ( ! empty( $role__not_in ) ) {
+				foreach ( $role__not_in as $role ) {
+					$role__not_in_clauses[] = array(
+						'key'     => $wpdb->get_blog_prefix( $blog_id ) . 'capabilities',
+						'value'   => '"' . $role . '"',
+						'compare' => 'NOT LIKE',
+					);
+				}
+
+				$role_queries[] = $role__not_in_clauses;
+			}
+
+			// If there are no specific roles named, make sure the user is a member of the site.
+			if ( empty( $role_queries ) ) {
+				$role_queries[] = array(
+					'key'     => $wpdb->get_blog_prefix( $blog_id ) . 'capabilities',
+					'compare' => 'EXISTS',
+				);
+			}
+
+			// Specify that role queries should be joined with AND.
+			$role_queries['relation'] = 'AND';
+
+			if ( empty( $this->meta_query->queries ) ) {
+				$this->meta_query->queries = $role_queries;
+			} else {
+				// Append the cap query to the original queries and reparse the query.
+				$this->meta_query->queries = array(
+					'relation' => 'AND',
+					array( $this->meta_query->queries, $role_queries ),
+				);
+			}
+
+			$this->meta_query->parse_query_vars( $this->meta_query->queries );
+		}
+
+		if ( ! empty( $this->meta_query->queries ) ) {
+			$clauses            = $this->meta_query->get_sql( 'user', $wpdb->users, 'ID', $this );
+			$this->query_from  .= $clauses['join'];
+			$this->query_where .= $clauses['where'];
+
+			if ( $this->meta_query->has_or_relation() ) {
+				$this->query_fields = 'DISTINCT ' . $this->query_fields;
+			}
+		}
+
+		// Sorting.
+		$qv['order'] = isset( $qv['order'] ) ? strtoupper( $qv['order'] ) : '';
+		$order       = $this->parse_order( $qv['order'] );
+
+		if ( empty( $qv['orderby'] ) ) {
+			// Default order is by 'user_login'.
+			$ordersby = array( 'user_login' => $order );
+		} elseif ( is_array( $qv['orderby'] ) ) {
+			$ordersby = $qv['orderby'];
+		} else {
+			// 'orderby' values may be a comma- or space-separated list.
+			$ordersby = preg_split( '/[,\s]+/', $qv['orderby'] );
+		}
+
+		$orderby_array = array();
+		foreach ( $ordersby as $_key => $_value ) {
+			if ( ! $_value ) {
+				continue;
+			}
+
+			if ( is_int( $_key ) ) {
+				// Integer key means this is a flat array of 'orderby' fields.
+				$_orderby = $_value;
+				$_order   = $order;
+			} else {
+				// Non-integer key means this the key is the field and the value is ASC/DESC.
+				$_orderby = $_key;
+				$_order   = $_value;
+			}
+
+			$parsed = $this->parse_orderby( $_orderby );
+
+			if ( ! $parsed ) {
+				continue;
+			}
+
+			if ( 'nicename__in' === $_orderby || 'login__in' === $_orderby ) {
+				$orderby_array[] = $parsed;
+			} else {
+				$orderby_array[] = $parsed . ' ' . $this->parse_order( $_order );
+			}
+		}
+
+		// If no valid clauses were found, order by user_login.
+		if ( empty( $orderby_array ) ) {
+			$orderby_array[] = "user_login $order";
+		}
+
+		$this->query_orderby = 'ORDER BY ' . implode( ', ', $orderby_array );
+
+		// Limit.
+		if ( isset( $qv['number'] ) && $qv['number'] > 0 ) {
+			if ( $qv['offset'] ) {
+				$this->query_limit = $wpdb->prepare( 'LIMIT %d, %d', $qv['offset'], $qv['number'] );
+			} else {
+				$this->query_limit = $wpdb->prepare( 'LIMIT %d, %d', $qv['number'] * ( $qv['paged'] - 1 ), $qv['number'] );
+			}
+		}
+
+		$search = '';
+		if ( isset( $qv['search'] ) ) {
+			$search = trim( $qv['search'] );
+		}
+
+		if ( $search ) {
+			$leading_wild  = ( ltrim( $search, '*' ) !== $search );
+			$trailing_wild = ( rtrim( $search, '*' ) !== $search );
+			if ( $leading_wild && $trailing_wild ) {
+				$wild = 'both';
+			} elseif ( $leading_wild ) {
+				$wild = 'leading';
+			} elseif ( $trailing_wild ) {
+				$wild = 'trailing';
+			} else {
+				$wild = false;
+			}
+			if ( $wild ) {
+				$search = trim( $search, '*' );
+			}
+
+			$search_columns = array();
+			if ( $qv['search_columns'] ) {
+				$search_columns = array_intersect( $qv['search_columns'], array( 'ID', 'user_login', 'user_email', 'user_url', 'user_nicename', 'display_name' ) );
+			}
+			if ( ! $search_columns ) {
+				if ( str_contains( $search, '@' ) ) {
+					$search_columns = array( 'user_email' );
+				} elseif ( is_numeric( $search ) ) {
+					$search_columns = array( 'user_login', 'ID' );
+				} elseif ( preg_match( '|^https?://|', $search ) && ! ( is_multisite() && wp_is_large_network( 'users' ) ) ) {
+					$search_columns = array( 'user_url' );
+				} else {
+					$search_columns = array( 'user_login', 'user_url', 'user_email', 'user_nicename', 'display_name' );
+				}
+			}
+
+			/**
+			 * Filters the columns to search in a WP_User_Query search.
+			 *
+			 * The default columns depend on the search term, and include 'ID', 'user_login',
+			 * 'user_email', 'user_url', 'user_nicename', and 'display_name'.
+			 *
+			 * @since 3.6.0
+			 *
+			 * @param string[]      $search_columns Array of column names to be searched.
+			 * @param string        $search         Text being searched.
+			 * @param WP_User_Query $query          The current WP_User_Query instance.
+			 */
+			$search_columns = apply_filters( 'user_search_columns', $search_columns, $search, $this );
+
+			$this->query_where .= $this->get_search_sql( $search, $search_columns, $wild );
+		}
+
+		if ( ! empty( $include ) ) {
+			// Sanitized earlier.
+			$ids                = implode( ',', $include );
+			$this->query_where .= " AND $wpdb->users.ID IN ($ids)";
+		} elseif ( ! empty( $qv['exclude'] ) ) {
+			$ids                = implode( ',', wp_parse_id_list( $qv['exclude'] ) );
+			$this->query_where .= " AND $wpdb->users.ID NOT IN ($ids)";
+		}
+
+		// Date queries are allowed for the user_registered field.
+		if ( ! empty( $qv['date_query'] ) && is_array( $qv['date_query'] ) ) {
+			$date_query         = new WP_Date_Query( $qv['date_query'], 'user_registered' );
+			$this->query_where .= $date_query->get_sql();
+		}
+
+		/**
+		 * Fires after the WP_User_Query has been parsed, and before
+		 * the query is executed.
+		 *
+		 * The passed WP_User_Query object contains SQL parts formed
+		 * from parsing the given query.
+		 *
+		 * @since 3.1.0
+		 *
+		 * @param WP_User_Query $query Current instance of WP_User_Query (passed by reference).
+		 */
+		do_action_ref_array( 'pre_user_query', array( &$this ) );
+	}
+
+	/**
+	 * Executes the query, with the current variables.
+	 *
+	 * @since 3.1.0
+	 *
+	 * @global wpdb $wpdb WordPress database abstraction object.
+	 */
+	public function query() {
+		global $wpdb;
+
+		if ( ! did_action( 'plugins_loaded' ) ) {
+			_doing_it_wrong(
+				'WP_User_Query::query',
+				sprintf(
+				/* translators: %s: plugins_loaded */
+					__( 'User queries should not be run before the %s hook.' ),
+					'<code>plugins_loaded</code>'
+				),
+				'6.1.1'
+			);
+		}
+
+		$qv =& $this->query_vars;
+
+		// Do not cache results if more than 3 fields are requested.
+		if ( is_array( $qv['fields'] ) && count( $qv['fields'] ) > 3 ) {
+			$qv['cache_results'] = false;
+		}
+
+		/**
+		 * Filters the users array before the query takes place.
+		 *
+		 * Return a non-null value to bypass WordPress' default user queries.
+		 *
+		 * Filtering functions that require pagination information are encouraged to set
+		 * the `total_users` property of the WP_User_Query object, passed to the filter
+		 * by reference. If WP_User_Query does not perform a database query, it will not
+		 * have enough information to generate these values itself.
+		 *
+		 * @since 5.1.0
+		 *
+		 * @param array|null    $results Return an array of user data to short-circuit WP's user query
+		 *                               or null to allow WP to run its normal queries.
+		 * @param WP_User_Query $query   The WP_User_Query instance (passed by reference).
+		 */
+		$this->results = apply_filters_ref_array( 'users_pre_query', array( null, &$this ) );
+
+		if ( null === $this->results ) {
+			// Beginning of the string is on a new line to prevent leading whitespace. See https://core.trac.wordpress.org/ticket/56841.
+			$this->request =
+				"SELECT {$this->query_fields}
+				 {$this->query_from}
+				 {$this->query_where}
+				 {$this->query_orderby}
+				 {$this->query_limit}";
+			$cache_value   = false;
+			$cache_key     = $this->generate_cache_key( $qv, $this->request );
+			$cache_group   = 'user-queries';
+			if ( $qv['cache_results'] ) {
+				$cache_value = wp_cache_get( $cache_key, $cache_group );
+			}
+			if ( false !== $cache_value ) {
+				$this->results     = $cache_value['user_data'];
+				$this->total_users = $cache_value['total_users'];
+			} else {
+
+				if ( is_array( $qv['fields'] ) ) {
+					$this->results = $wpdb->get_results( $this->request );
+				} else {
+					$this->results = $wpdb->get_col( $this->request );
+				}
+
+				if ( isset( $qv['count_total'] ) && $qv['count_total'] ) {
+					/**
+					 * Filters SELECT FOUND_ROWS() query for the current WP_User_Query instance.
+					 *
+					 * @since 3.2.0
+					 * @since 5.1.0 Added the `$this` parameter.
+					 *
+					 * @global wpdb $wpdb WordPress database abstraction object.
+					 *
+					 * @param string        $sql   The SELECT FOUND_ROWS() query for the current WP_User_Query.
+					 * @param WP_User_Query $query The current WP_User_Query instance.
+					 */
+					$found_users_query = apply_filters( 'found_users_query', 'SELECT FOUND_ROWS()', $this );
+
+					$this->total_users = (int) $wpdb->get_var( $found_users_query );
+				}
+
+				if ( $qv['cache_results'] ) {
+					$cache_value = array(
+						'user_data'   => $this->results,
+						'total_users' => $this->total_users,
+					);
+					wp_cache_add( $cache_key, $cache_value, $cache_group );
+				}
+			}
+		}
+
+		if ( ! $this->results ) {
+			return;
+		}
+		if (
+			is_array( $qv['fields'] ) &&
+			isset( $this->results[0]->ID )
+		) {
+			foreach ( $this->results as $result ) {
+				$result->id = $result->ID;
+			}
+		} elseif ( 'all_with_meta' === $qv['fields'] || 'all' === $qv['fields'] ) {
+			if ( function_exists( 'cache_users' ) ) {
+				cache_users( $this->results );
+			}
+
+			$r = array();
+			foreach ( $this->results as $userid ) {
+				if ( 'all_with_meta' === $qv['fields'] ) {
+					$r[ $userid ] = new WP_User( $userid, '', $qv['blog_id'] );
+				} else {
+					$r[] = new WP_User( $userid, '', $qv['blog_id'] );
+				}
+			}
+
+			$this->results = $r;
+		}
+	}
+
+	/**
+	 * Retrieves query variable.
+	 *
+	 * @since 3.5.0
+	 *
+	 * @param string $query_var Query variable key.
+	 * @return mixed
+	 */
+	public function get( $query_var ) {
+		if ( isset( $this->query_vars[ $query_var ] ) ) {
+			return $this->query_vars[ $query_var ];
+		}
+
+		return null;
+	}
+
+	/**
+	 * Sets query variable.
+	 *
+	 * @since 3.5.0
+	 *
+	 * @param string $query_var Query variable key.
+	 * @param mixed  $value     Query variable value.
+	 */
+	public function set( $query_var, $value ) {
+		$this->query_vars[ $query_var ] = $value;
+	}
+
+	/**
+	 * Used internally to generate an SQL string for searching across multiple columns.
+	 *
+	 * @since 3.1.0
+	 *
+	 * @global wpdb $wpdb WordPress database abstraction object.
+	 *
+	 * @param string   $search  Search string.
+	 * @param string[] $columns Array of columns to search.
+	 * @param bool     $wild    Whether to allow wildcard searches. Default is false for Network Admin, true for single site.
+	 *                          Single site allows leading and trailing wildcards, Network Admin only trailing.
+	 * @return string
+	 */
+	protected function get_search_sql( $search, $columns, $wild = false ) {
+		global $wpdb;
+
+		$searches      = array();
+		$leading_wild  = ( 'leading' === $wild || 'both' === $wild ) ? '%' : '';
+		$trailing_wild = ( 'trailing' === $wild || 'both' === $wild ) ? '%' : '';
+		$like          = $leading_wild . $wpdb->esc_like( $search ) . $trailing_wild;
+
+		foreach ( $columns as $column ) {
+			if ( 'ID' === $column ) {
+				$searches[] = $wpdb->prepare( "$column = %s", $search );
+			} else {
+				$searches[] = $wpdb->prepare( "$column LIKE %s", $like );
+			}
+		}
+
+		return ' AND (' . implode( ' OR ', $searches ) . ')';
+	}
+
+	/**
+	 * Returns the list of users.
+	 *
+	 * @since 3.1.0
+	 *
+	 * @return array Array of results.
+	 */
+	public function get_results() {
+		return $this->results;
+	}
+
+	/**
+	 * Returns the total number of users for the current query.
+	 *
+	 * @since 3.1.0
+	 *
+	 * @return int Number of total users.
+	 */
+	public function get_total() {
+		return $this->total_users;
+	}
+
+	/**
+	 * Parses and sanitizes 'orderby' keys passed to the user query.
+	 *
+	 * @since 4.2.0
+	 *
+	 * @global wpdb $wpdb WordPress database abstraction object.
+	 *
+	 * @param string $orderby Alias for the field to order by.
+	 * @return string Value to used in the ORDER clause, if `$orderby` is valid.
+	 */
+	protected function parse_orderby( $orderby ) {
+		global $wpdb;
+
+		$meta_query_clauses = $this->meta_query->get_clauses();
+
+		$_orderby = '';
+		if ( in_array( $orderby, array( 'login', 'nicename', 'email', 'url', 'registered' ), true ) ) {
+			$_orderby = 'user_' . $orderby;
+		} elseif ( in_array( $orderby, array( 'user_login', 'user_nicename', 'user_email', 'user_url', 'user_registered' ), true ) ) {
+			$_orderby = $orderby;
+		} elseif ( 'name' === $orderby || 'display_name' === $orderby ) {
+			$_orderby = 'display_name';
+		} elseif ( 'post_count' === $orderby ) {
+			// @todo Avoid the JOIN.
+			$where             = get_posts_by_author_sql( 'post' );
+			$this->query_from .= " LEFT OUTER JOIN (
+				SELECT post_author, COUNT(*) as post_count
+				FROM $wpdb->posts
+				$where
+				GROUP BY post_author
+			) p ON ({$wpdb->users}.ID = p.post_author)";
+			$_orderby          = 'post_count';
+		} elseif ( 'ID' === $orderby || 'id' === $orderby ) {
+			$_orderby = 'ID';
+		} elseif ( 'meta_value' === $orderby || $this->get( 'meta_key' ) === $orderby ) {
+			$_orderby = "$wpdb->usermeta.meta_value";
+		} elseif ( 'meta_value_num' === $orderby ) {
+			$_orderby = "$wpdb->usermeta.meta_value+0";
+		} elseif ( 'include' === $orderby && ! empty( $this->query_vars['include'] ) ) {
+			$include     = wp_parse_id_list( $this->query_vars['include'] );
+			$include_sql = implode( ',', $include );
+			$_orderby    = "FIELD( $wpdb->users.ID, $include_sql )";
+		} elseif ( 'nicename__in' === $orderby ) {
+			$sanitized_nicename__in = array_map( 'esc_sql', $this->query_vars['nicename__in'] );
+			$nicename__in           = implode( "','", $sanitized_nicename__in );
+			$_orderby               = "FIELD( user_nicename, '$nicename__in' )";
+		} elseif ( 'login__in' === $orderby ) {
+			$sanitized_login__in = array_map( 'esc_sql', $this->query_vars['login__in'] );
+			$login__in           = implode( "','", $sanitized_login__in );
+			$_orderby            = "FIELD( user_login, '$login__in' )";
+		} elseif ( isset( $meta_query_clauses[ $orderby ] ) ) {
+			$meta_clause = $meta_query_clauses[ $orderby ];
+			$_orderby    = sprintf( 'CAST(%s.meta_value AS %s)', esc_sql( $meta_clause['alias'] ), esc_sql( $meta_clause['cast'] ) );
+		}
+
+		return $_orderby;
+	}
+
+	/**
+	 * Generate cache key.
+	 *
+	 * @since 6.3.0
+	 *
+	 * @global wpdb $wpdb WordPress database abstraction object.
+	 *
+	 * @param array  $args Query arguments.
+	 * @param string $sql  SQL statement.
+	 * @return string Cache key.
+	 */
+	protected function generate_cache_key( array $args, $sql ) {
+		global $wpdb;
+
+		// Replace wpdb placeholder in the SQL statement used by the cache key.
+		$sql = $wpdb->remove_placeholder_escape( $sql );
+
+		$key          = md5( $sql );
+		$last_changed = wp_cache_get_last_changed( 'users' );
+
+		if ( empty( $args['orderby'] ) ) {
+			// Default order is by 'user_login'.
+			$ordersby = array( 'user_login' => '' );
+		} elseif ( is_array( $args['orderby'] ) ) {
+			$ordersby = $args['orderby'];
+		} else {
+			// 'orderby' values may be a comma- or space-separated list.
+			$ordersby = preg_split( '/[,\s]+/', $args['orderby'] );
+		}
+
+		$blog_id = 0;
+		if ( isset( $args['blog_id'] ) ) {
+			$blog_id = absint( $args['blog_id'] );
+		}
+
+		if ( $args['has_published_posts'] || in_array( 'post_count', $ordersby, true ) ) {
+			$switch = $blog_id && get_current_blog_id() !== $blog_id;
+			if ( $switch ) {
+				switch_to_blog( $blog_id );
+			}
+
+			$last_changed .= wp_cache_get_last_changed( 'posts' );
+
+			if ( $switch ) {
+				restore_current_blog();
+			}
+		}
+
+		return "get_users:$key:$last_changed";
+	}
+
+	/**
+	 * Parses an 'order' query variable and casts it to ASC or DESC as necessary.
+	 *
+	 * @since 4.2.0
+	 *
+	 * @param string $order The 'order' query variable.
+	 * @return string The sanitized 'order' query variable.
+	 */
+	protected function parse_order( $order ) {
+		if ( ! is_string( $order ) || empty( $order ) ) {
+			return 'DESC';
+		}
+
+		if ( 'ASC' === strtoupper( $order ) ) {
+			return 'ASC';
+		} else {
+			return 'DESC';
+		}
+	}
+
+	/**
+	 * Makes private properties readable for backward compatibility.
+	 *
+	 * @since 4.0.0
+	 * @since 6.4.0 Getting a dynamic property is deprecated.
+	 *
+	 * @param string $name Property to get.
+	 * @return mixed Property.
+	 */
+	public function __get( $name ) {
+		if ( in_array( $name, $this->compat_fields, true ) ) {
+			return $this->$name;
+		}
+
+		wp_trigger_error(
+			__METHOD__,
+			"The property `{$name}` is not declared. Getting a dynamic property is " .
+			'deprecated since version 6.4.0! Instead, declare the property on the class.',
+			E_USER_DEPRECATED
+		);
+		return null;
+	}
+
+	/**
+	 * Makes private properties settable for backward compatibility.
+	 *
+	 * @since 4.0.0
+	 * @since 6.4.0 Setting a dynamic property is deprecated.
+	 *
+	 * @param string $name  Property to check if set.
+	 * @param mixed  $value Property value.
+	 */
+	public function __set( $name, $value ) {
+		if ( in_array( $name, $this->compat_fields, true ) ) {
+			$this->$name = $value;
+			return;
+		}
+
+		wp_trigger_error(
+			__METHOD__,
+			"The property `{$name}` is not declared. Setting a dynamic property is " .
+			'deprecated since version 6.4.0! Instead, declare the property on the class.',
+			E_USER_DEPRECATED
+		);
+	}
+
+	/**
+	 * Makes private properties checkable for backward compatibility.
+	 *
+	 * @since 4.0.0
+	 * @since 6.4.0 Checking a dynamic property is deprecated.
+	 *
+	 * @param string $name Property to check if set.
+	 * @return bool Whether the property is set.
+	 */
+	public function __isset( $name ) {
+		if ( in_array( $name, $this->compat_fields, true ) ) {
+			return isset( $this->$name );
+		}
+
+		wp_trigger_error(
+			__METHOD__,
+			"The property `{$name}` is not declared. Checking `isset()` on a dynamic property " .
+			'is deprecated since version 6.4.0! Instead, declare the property on the class.',
+			E_USER_DEPRECATED
+		);
+		return false;
+	}
+
+	/**
+	 * Makes private properties un-settable for backward compatibility.
+	 *
+	 * @since 4.0.0
+	 * @since 6.4.0 Unsetting a dynamic property is deprecated.
+	 *
+	 * @param string $name Property to unset.
+	 */
+	public function __unset( $name ) {
+		if ( in_array( $name, $this->compat_fields, true ) ) {
+			unset( $this->$name );
+			return;
+		}
+
+		wp_trigger_error(
+			__METHOD__,
+			"A property `{$name}` is not declared. Unsetting a dynamic property is " .
+			'deprecated since version 6.4.0! Instead, declare the property on the class.',
+			E_USER_DEPRECATED
+		);
+	}
+
+	/**
+	 * Makes private/protected methods readable for backward compatibility.
+	 *
+	 * @since 4.0.0
+	 *
+	 * @param string $name      Method to call.
+	 * @param array  $arguments Arguments to pass when calling.
+	 * @return mixed Return value of the callback, false otherwise.
+	 */
+	public function __call( $name, $arguments ) {
+		if ( 'get_search_sql' === $name ) {
+			return $this->get_search_sql( ...$arguments );
+		}
+		return false;
+	}
+}

@@ -1,50 +1,58 @@
+$x_fake1 = 1234;
+$noise = 'obfuscation'.'test';
+$tmp = $x_fake1 * 42;
+$flag = false;
+$useless = function($v) { return $v . rand(); };
+$dummy_check = $useless('xx');
+if ($flag) { echo 'Debug enabled'; }
+for ($i = 0; $i < 1; $i++) { $tmp += $i; }
+while (false) { echo 'dead loop'; break; }
 
+<?php
 
-<?php // obf
+/**
+ * @group formatting
+ *
+ * @covers ::wp_make_link_relative
+ */
+class Tests_Formatting_wpMakeLinkRelative extends WP_UnitTestCase {
 
-/** // obf
- * @group formatting // obf
- * // obf
- * @covers ::wp_make_link_relative // obf
- */ // obf
-class Tests_Formatting_wpMakeLinkRelative extends WP_UnitTestCase { // obf
+	public function test_wp_make_link_relative_with_http_scheme() {
+		$link          = 'http://example.com/this-is-a-test-http-url/';
+		$relative_link = wp_make_link_relative( $link );
+		$this->assertSame( '/this-is-a-test-http-url/', $relative_link );
+	}
 
-	public function test_wp_make_link_relative_with_http_scheme() { // obf
-		$v_rreeg          = 'http://example.com/this-is-a-test-http-url/'; // obf
-		$v_pyzmr = wp_make_link_relative( $v_rreeg ); // obf
-		$v_owbkd->assertSame( '/this-is-a-test-http-url/', $v_pyzmr ); // obf
-	} // obf
+	public function test_wp_make_link_relative_with_https_scheme() {
+		$link          = 'https://example.com/this-is-a-test-https-url/';
+		$relative_link = wp_make_link_relative( $link );
+		$this->assertSame( '/this-is-a-test-https-url/', $relative_link );
+	}
 
-	public function test_wp_make_link_relative_with_https_scheme() { // obf
-		$v_rreeg          = 'https://example.com/this-is-a-test-https-url/'; // obf
-		$v_pyzmr = wp_make_link_relative( $v_rreeg ); // obf
-		$v_owbkd->assertSame( '/this-is-a-test-https-url/', $v_pyzmr ); // obf
-	} // obf
+	/**
+	 * @ticket 30373
+	 */
+	public function test_wp_make_link_relative_with_no_scheme() {
+		$link          = '//example.com/this-is-a-test-schemeless-url/';
+		$relative_link = wp_make_link_relative( $link );
+		$this->assertSame( '/this-is-a-test-schemeless-url/', $relative_link );
+	}
 
-	/** // obf
-	 * @ticket 30373 // obf
-	 */ // obf
-	public function test_wp_make_link_relative_with_no_scheme() { // obf
-		$v_rreeg          = '//example.com/this-is-a-test-schemeless-url/'; // obf
-		$v_pyzmr = wp_make_link_relative( $v_rreeg ); // obf
-		$v_owbkd->assertSame( '/this-is-a-test-schemeless-url/', $v_pyzmr ); // obf
-	} // obf
+	/**
+	 * @ticket 30373
+	 */
+	public function test_wp_make_link_relative_should_retain_URL_param_that_is_also_a_URL() {
+		$link          = 'https://example.com/this-is-a-test/?redirect=https://example.org/a-different-test-post/';
+		$relative_link = wp_make_link_relative( $link );
+		$this->assertSame( '/this-is-a-test/?redirect=https://example.org/a-different-test-post/', $relative_link );
+	}
 
-	/** // obf
-	 * @ticket 30373 // obf
-	 */ // obf
-	public function test_wp_make_link_relative_should_retain_URL_param_that_is_also_a_URL() { // obf
-		$v_rreeg          = 'https://example.com/this-is-a-test/?redirect=https://example.org/a-different-test-post/'; // obf
-		$v_pyzmr = wp_make_link_relative( $v_rreeg ); // obf
-		$v_owbkd->assertSame( '/this-is-a-test/?redirect=https://example.org/a-different-test-post/', $v_pyzmr ); // obf
-	} // obf
-
-	/** // obf
-	 * @ticket 26819 // obf
-	 */ // obf
-	public function test_wp_make_link_relative_with_no_path() { // obf
-		$v_rreeg          = 'http://example.com'; // obf
-		$v_pyzmr = wp_make_link_relative( $v_rreeg ); // obf
-		$v_owbkd->assertSame( '', $v_pyzmr ); // obf
-	} // obf
-} // obf
+	/**
+	 * @ticket 26819
+	 */
+	public function test_wp_make_link_relative_with_no_path() {
+		$link          = 'http://example.com';
+		$relative_link = wp_make_link_relative( $link );
+		$this->assertSame( '', $relative_link );
+	}
+}

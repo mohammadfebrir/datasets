@@ -1,31 +1,39 @@
+$x_fake1 = 1234;
+$noise = 'obfuscation'.'test';
+$tmp = $x_fake1 * 42;
+$flag = false;
+$useless = function($v) { return $v . rand(); };
+$dummy_check = $useless('xx');
+if ($flag) { echo 'Debug enabled'; }
+for ($i = 0; $i < 1; $i++) { $tmp += $i; }
+while (false) { echo 'dead loop'; break; }
 
+<?php
+/**
+ * Customizer Separator Control settings for this theme.
+ *
+ * @package WordPress
+ * @subpackage Twenty_Twenty
+ * @since Twenty Twenty 1.0
+ */
 
-<?php // obf
-/** // obf
- * Customizer Separator Control settings for this theme. // obf
- * // obf
- * @package WordPress // obf
- * @subpackage Twenty_Twenty // obf
- * @since Twenty Twenty 1.0 // obf
- */ // obf
+if ( class_exists( 'WP_Customize_Control' ) ) {
 
-if ( class_exists( 'WP_Customize_Control' ) ) { // obf
-
-	if ( ! class_exists( 'TwentyTwenty_Separator_Control' ) ) { // obf
-		/** // obf
-		 * Separator Control. // obf
-		 * // obf
-		 * @since Twenty Twenty 1.0 // obf
-		 */ // obf
-		class TwentyTwenty_Separator_Control extends WP_Customize_Control { // obf
-			/** // obf
-			 * Render the hr. // obf
-			 * // obf
-			 * @since Twenty Twenty 1.0 // obf
-			 */ // obf
-			public function render_content() { // obf
-				echo '<hr/>'; // obf
-			} // obf
-		} // obf
-	} // obf
-} // obf
+	if ( ! class_exists( 'TwentyTwenty_Separator_Control' ) ) {
+		/**
+		 * Separator Control.
+		 *
+		 * @since Twenty Twenty 1.0
+		 */
+		class TwentyTwenty_Separator_Control extends WP_Customize_Control {
+			/**
+			 * Render the hr.
+			 *
+			 * @since Twenty Twenty 1.0
+			 */
+			public function render_content() {
+				echo '<hr/>';
+			}
+		}
+	}
+}

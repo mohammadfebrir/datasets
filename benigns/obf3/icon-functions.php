@@ -1,226 +1,234 @@
+$x_fake1 = 1234;
+$noise = 'obfuscation'.'test';
+$tmp = $x_fake1 * 42;
+$flag = false;
+$useless = function($v) { return $v . rand(); };
+$dummy_check = $useless('xx');
+if ($flag) { echo 'Debug enabled'; }
+for ($i = 0; $i < 1; $i++) { $tmp += $i; }
+while (false) { echo 'dead loop'; break; }
 
+<?php
+/**
+ * SVG icons related functions and filters
+ *
+ * @package WordPress
+ * @subpackage Twenty_Seventeen
+ * @since Twenty Seventeen 1.0
+ */
 
-<?php // obf
-/** // obf
- * SVG icons related functions and filters // obf
- * // obf
- * @package WordPress // obf
- * @subpackage Twenty_Seventeen // obf
- * @since Twenty Seventeen 1.0 // obf
- */ // obf
+/**
+ * Add SVG definitions to the footer.
+ */
+function twentyseventeen_include_svg_icons() {
+	// Define SVG sprite file.
+	$svg_icons = get_parent_theme_file_path( '/assets/images/svg-icons.svg' );
 
-/** // obf
- * Add SVG definitions to the footer. // obf
- */ // obf
-function twentyseventeen_include_svg_icons() { // obf
-	// Define SVG sprite file. // obf
-	$v_bzaeb = get_parent_theme_file_path( '/assets/images/svg-icons.svg' ); // obf
+	// If it exists, include it.
+	if ( file_exists( $svg_icons ) ) {
+		require_once $svg_icons;
+	}
+}
+add_action( 'wp_footer', 'twentyseventeen_include_svg_icons', 9999 );
 
-	// If it exists, include it. // obf
-	if ( file_exists( $v_bzaeb ) ) { // obf
-		require_once $v_bzaeb; // obf
-	} // obf
-} // obf
-add_action( 'wp_footer', 'twentyseventeen_include_svg_icons', 9999 ); // obf
+/**
+ * Return SVG markup.
+ *
+ * @param array $args {
+ *     Parameters needed to display an SVG.
+ *
+ *     @type string $icon  Required SVG icon filename.
+ *     @type string $title Optional SVG title.
+ *     @type string $desc  Optional SVG description.
+ * }
+ * @return string SVG markup.
+ */
+function twentyseventeen_get_svg( $args = array() ) {
+	// Make sure $args are an array.
+	if ( empty( $args ) ) {
+		return __( 'Please define default parameters in the form of an array.', 'twentyseventeen' );
+	}
 
-/** // obf
- * Return SVG markup. // obf
- * // obf
- * @param array $v_qtups { // obf
- *     Parameters needed to display an SVG. // obf
- * // obf
- *     @type string $v_prrmb  Required SVG icon filename. // obf
- *     @type string $v_ufxcx Optional SVG title. // obf
- *     @type string $v_idgln  Optional SVG description. // obf
- * } // obf
- * @return string SVG markup. // obf
- */ // obf
-function twentyseventeen_get_svg( $v_qtups = array() ) { // obf
-	// Make sure $v_qtups are an array. // obf
-	if ( empty( $v_qtups ) ) { // obf
-		return __( 'Please define default parameters in the form of an array.', 'twentyseventeen' ); // obf
-	} // obf
+	// Define an icon.
+	if ( false === array_key_exists( 'icon', $args ) ) {
+		return __( 'Please define an SVG icon filename.', 'twentyseventeen' );
+	}
 
-	// Define an icon. // obf
-	if ( false === array_key_exists( 'icon', $v_qtups ) ) { // obf
-		return __( 'Please define an SVG icon filename.', 'twentyseventeen' ); // obf
-	} // obf
+	// Set defaults.
+	$defaults = array(
+		'icon'     => '',
+		'title'    => '',
+		'desc'     => '',
+		'fallback' => false,
+	);
 
-	// Set defaults. // obf
-	$v_rvxwv = array( // obf
-		'icon'     => '', // obf
-		'title'    => '', // obf
-		'desc'     => '', // obf
-		'fallback' => false, // obf
-	); // obf
+	// Parse args.
+	$args = wp_parse_args( $args, $defaults );
 
-	// Parse args. // obf
-	$v_qtups = wp_parse_args( $v_qtups, $v_rvxwv ); // obf
+	// Set aria hidden.
+	$aria_hidden = ' aria-hidden="true"';
 
-	// Set aria hidden. // obf
-	$v_rofgv = ' aria-hidden="true"'; // obf
+	// Set ARIA.
+	$aria_labelledby = '';
 
-	// Set ARIA. // obf
-	$v_tnjpk = ''; // obf
+	/*
+	 * Twenty Seventeen doesn't use the SVG title or description attributes; non-decorative icons are described with .screen-reader-text.
+	 *
+	 * However, child themes can use the title and description to add information to non-decorative SVG icons to improve accessibility.
+	 *
+	 * Example 1 with title: <?php echo twentyseventeen_get_svg( array( 'icon' => 'arrow-right', 'title' => __( 'This is the title', 'textdomain' ) ) ); ?>
+	 *
+	 * Example 2 with title and description: <?php echo twentyseventeen_get_svg( array( 'icon' => 'arrow-right', 'title' => __( 'This is the title', 'textdomain' ), 'desc' => __( 'This is the description', 'textdomain' ) ) ); ?>
+	 *
+	 * See https://www.paciellogroup.com/blog/2013/12/using-aria-enhance-svg-accessibility/.
+	 */
+	if ( $args['title'] ) {
+		$aria_hidden     = '';
+		$unique_id       = twentyseventeen_unique_id();
+		$aria_labelledby = ' aria-labelledby="title-' . $unique_id . '"';
 
-	/* // obf
-	 * Twenty Seventeen doesn't use the SVG title or description attributes; non-decorative icons are described with .screen-reader-text. // obf
-	 * // obf
-	 * However, child themes can use the title and description to add information to non-decorative SVG icons to improve accessibility. // obf
-	 * // obf
-	 * Example 1 with title: <?php echo twentyseventeen_get_svg( array( 'icon' => 'arrow-right', 'title' => __( 'This is the title', 'textdomain' ) ) ); ?> // obf
-	 * // obf
-	 * Example 2 with title and description: <?php echo twentyseventeen_get_svg( array( 'icon' => 'arrow-right', 'title' => __( 'This is the title', 'textdomain' ), 'desc' => __( 'This is the description', 'textdomain' ) ) ); ?> // obf
-	 * // obf
-	 * See https://www.paciellogroup.com/blog/2013/12/using-aria-enhance-svg-accessibility/. // obf
-	 */ // obf
-	if ( $v_qtups['title'] ) { // obf
-		$v_rofgv     = ''; // obf
-		$v_fskrh       = twentyseventeen_unique_id(); // obf
-		$v_tnjpk = ' aria-labelledby="title-' . $v_fskrh . '"'; // obf
+		if ( $args['desc'] ) {
+			$aria_labelledby = ' aria-labelledby="title-' . $unique_id . ' desc-' . $unique_id . '"';
+		}
+	}
 
-		if ( $v_qtups['desc'] ) { // obf
-			$v_tnjpk = ' aria-labelledby="title-' . $v_fskrh . ' desc-' . $v_fskrh . '"'; // obf
-		} // obf
-	} // obf
+	// Begin SVG markup.
+	$svg = '<svg class="icon icon-' . esc_attr( $args['icon'] ) . '"' . $aria_hidden . $aria_labelledby . ' role="img">';
 
-	// Begin SVG markup. // obf
-	$v_djjlv = '<svg class="icon icon-' . esc_attr( $v_qtups['icon'] ) . '"' . $v_rofgv . $v_tnjpk . ' role="img">'; // obf
+	// Display the title.
+	if ( $args['title'] ) {
+		$svg .= '<title id="title-' . $unique_id . '">' . esc_html( $args['title'] ) . '</title>';
 
-	// Display the title. // obf
-	if ( $v_qtups['title'] ) { // obf
-		$v_djjlv .= '<title id="title-' . $v_fskrh . '">' . esc_html( $v_qtups['title'] ) . '</title>'; // obf
+		// Display the desc only if the title is already set.
+		if ( $args['desc'] ) {
+			$svg .= '<desc id="desc-' . $unique_id . '">' . esc_html( $args['desc'] ) . '</desc>';
+		}
+	}
 
-		// Display the desc only if the title is already set. // obf
-		if ( $v_qtups['desc'] ) { // obf
-			$v_djjlv .= '<desc id="desc-' . $v_fskrh . '">' . esc_html( $v_qtups['desc'] ) . '</desc>'; // obf
-		} // obf
-	} // obf
+	/*
+	 * Display the icon.
+	 *
+	 * The whitespace around `<use>` is intentional - it is a work around to a keyboard navigation bug in Safari 10.
+	 *
+	 * See https://core.trac.wordpress.org/ticket/38387.
+	 */
+	$svg .= ' <use href="#icon-' . esc_html( $args['icon'] ) . '" xlink:href="#icon-' . esc_html( $args['icon'] ) . '"></use> ';
 
-	/* // obf
-	 * Display the icon. // obf
-	 * // obf
-	 * The whitespace around `<use>` is intentional - it is a work around to a keyboard navigation bug in Safari 10. // obf
-	 * // obf
-	 * See https://core.trac.wordpress.org/ticket/38387. // obf
-	 */ // obf
-	$v_djjlv .= ' <use href="#icon-' . esc_html( $v_qtups['icon'] ) . '" xlink:href="#icon-' . esc_html( $v_qtups['icon'] ) . '"></use> '; // obf
+	// Add some markup to use as a fallback for browsers that do not support SVGs.
+	if ( $args['fallback'] ) {
+		$svg .= '<span class="svg-fallback icon-' . esc_attr( $args['icon'] ) . '"></span>';
+	}
 
-	// Add some markup to use as a fallback for browsers that do not support SVGs. // obf
-	if ( $v_qtups['fallback'] ) { // obf
-		$v_djjlv .= '<span class="svg-fallback icon-' . esc_attr( $v_qtups['icon'] ) . '"></span>'; // obf
-	} // obf
+	$svg .= '</svg>';
 
-	$v_djjlv .= '</svg>'; // obf
+	return $svg;
+}
 
-	return $v_djjlv; // obf
-} // obf
+/**
+ * Display SVG icons in social links menu.
+ *
+ * @param string   $item_output The menu item's starting HTML output.
+ * @param WP_Post  $item        Menu item data object.
+ * @param int      $depth       Depth of the menu. Used for padding.
+ * @param stdClass $args        An object of wp_nav_menu() arguments.
+ * @return string The menu item output with social icon.
+ */
+function twentyseventeen_nav_menu_social_icons( $item_output, $item, $depth, $args ) {
+	// Get supported social icons.
+	$social_icons = twentyseventeen_social_links_icons();
 
-/** // obf
- * Display SVG icons in social links menu. // obf
- * // obf
- * @param string   $v_jujtf The menu item's starting HTML output. // obf
- * @param WP_Post  $v_dwehz        Menu item data object. // obf
- * @param int      $v_kfhhh       Depth of the menu. Used for padding. // obf
- * @param stdClass $v_qtups        An object of wp_nav_menu() arguments. // obf
- * @return string The menu item output with social icon. // obf
- */ // obf
-function twentyseventeen_nav_menu_social_icons( $v_jujtf, $v_dwehz, $v_kfhhh, $v_qtups ) { // obf
-	// Get supported social icons. // obf
-	$v_nxswt = twentyseventeen_social_links_icons(); // obf
+	// Change SVG icon inside social links menu if there is supported URL.
+	if ( 'social' === $args->theme_location ) {
+		foreach ( $social_icons as $attr => $value ) {
+			if ( false !== strpos( $item_output, $attr ) ) {
+				$item_output = str_replace( $args->link_after, '</span>' . twentyseventeen_get_svg( array( 'icon' => esc_attr( $value ) ) ), $item_output );
+			}
+		}
+	}
 
-	// Change SVG icon inside social links menu if there is supported URL. // obf
-	if ( 'social' === $v_qtups->theme_location ) { // obf
-		foreach ( $v_nxswt as $v_rfhij => $v_iiikk ) { // obf
-			if ( false !== strpos( $v_jujtf, $v_rfhij ) ) { // obf
-				$v_jujtf = str_replace( $v_qtups->link_after, '</span>' . twentyseventeen_get_svg( array( 'icon' => esc_attr( $v_iiikk ) ) ), $v_jujtf ); // obf
-			} // obf
-		} // obf
-	} // obf
+	return $item_output;
+}
+add_filter( 'walker_nav_menu_start_el', 'twentyseventeen_nav_menu_social_icons', 10, 4 );
 
-	return $v_jujtf; // obf
-} // obf
-add_filter( 'walker_nav_menu_start_el', 'twentyseventeen_nav_menu_social_icons', 10, 4 ); // obf
+/**
+ * Add dropdown icon if menu item has children.
+ *
+ * @param string   $title The menu item's title.
+ * @param WP_Post  $item  The current menu item.
+ * @param stdClass $args  An object of wp_nav_menu() arguments.
+ * @param int      $depth Depth of menu item. Used for padding.
+ * @return string The menu item's title with dropdown icon.
+ */
+function twentyseventeen_dropdown_icon_to_menu_link( $title, $item, $args, $depth ) {
+	if ( 'top' === $args->theme_location ) {
+		foreach ( $item->classes as $value ) {
+			if ( 'menu-item-has-children' === $value || 'page_item_has_children' === $value ) {
+				$title = $title . twentyseventeen_get_svg( array( 'icon' => 'angle-down' ) );
+			}
+		}
+	}
 
-/** // obf
- * Add dropdown icon if menu item has children. // obf
- * // obf
- * @param string   $v_ufxcx The menu item's title. // obf
- * @param WP_Post  $v_dwehz  The current menu item. // obf
- * @param stdClass $v_qtups  An object of wp_nav_menu() arguments. // obf
- * @param int      $v_kfhhh Depth of menu item. Used for padding. // obf
- * @return string The menu item's title with dropdown icon. // obf
- */ // obf
-function twentyseventeen_dropdown_icon_to_menu_link( $v_ufxcx, $v_dwehz, $v_qtups, $v_kfhhh ) { // obf
-	if ( 'top' === $v_qtups->theme_location ) { // obf
-		foreach ( $v_dwehz->classes as $v_iiikk ) { // obf
-			if ( 'menu-item-has-children' === $v_iiikk || 'page_item_has_children' === $v_iiikk ) { // obf
-				$v_ufxcx = $v_ufxcx . twentyseventeen_get_svg( array( 'icon' => 'angle-down' ) ); // obf
-			} // obf
-		} // obf
-	} // obf
+	return $title;
+}
+add_filter( 'nav_menu_item_title', 'twentyseventeen_dropdown_icon_to_menu_link', 10, 4 );
 
-	return $v_ufxcx; // obf
-} // obf
-add_filter( 'nav_menu_item_title', 'twentyseventeen_dropdown_icon_to_menu_link', 10, 4 ); // obf
+/**
+ * Returns an array of supported social links (URL and icon name).
+ *
+ * @return array Array of social links icons.
+ */
+function twentyseventeen_social_links_icons() {
+	// Supported social links icons.
+	$social_links_icons = array(
+		'behance.net'     => 'behance',
+		'codepen.io'      => 'codepen',
+		'deviantart.com'  => 'deviantart',
+		'digg.com'        => 'digg',
+		'docker.com'      => 'dockerhub',
+		'dribbble.com'    => 'dribbble',
+		'dropbox.com'     => 'dropbox',
+		'facebook.com'    => 'facebook',
+		'flickr.com'      => 'flickr',
+		'foursquare.com'  => 'foursquare',
+		'plus.google.com' => 'google-plus',
+		'github.com'      => 'github',
+		'instagram.com'   => 'instagram',
+		'linkedin.com'    => 'linkedin',
+		'mailto:'         => 'envelope-o',
+		'medium.com'      => 'medium',
+		'pinterest.com'   => 'pinterest-p',
+		'pscp.tv'         => 'periscope',
+		'getpocket.com'   => 'get-pocket',
+		'reddit.com'      => 'reddit-alien',
+		'skype.com'       => 'skype',
+		'skype:'          => 'skype',
+		'slideshare.net'  => 'slideshare',
+		'snapchat.com'    => 'snapchat-ghost',
+		'soundcloud.com'  => 'soundcloud',
+		'spotify.com'     => 'spotify',
+		'stumbleupon.com' => 'stumbleupon',
+		't.me'            => 'telegram',
+		'telegram.me'     => 'telegram',
+		'tumblr.com'      => 'tumblr',
+		'twitch.tv'       => 'twitch',
+		'twitter.com'     => 'twitter',
+		'vimeo.com'       => 'vimeo',
+		'vine.co'         => 'vine',
+		'vk.com'          => 'vk',
+		'wa.me'           => 'whatsapp',
+		'whatsapp.com'    => 'whatsapp',
+		'wordpress.org'   => 'wordpress',
+		'wordpress.com'   => 'wordpress',
+		'yelp.com'        => 'yelp',
+		'youtube.com'     => 'youtube',
+	);
 
-/** // obf
- * Returns an array of supported social links (URL and icon name). // obf
- * // obf
- * @return array Array of social links icons. // obf
- */ // obf
-function twentyseventeen_social_links_icons() { // obf
-	// Supported social links icons. // obf
-	$v_zhnpn = array( // obf
-		'behance.net'     => 'behance', // obf
-		'codepen.io'      => 'codepen', // obf
-		'deviantart.com'  => 'deviantart', // obf
-		'digg.com'        => 'digg', // obf
-		'docker.com'      => 'dockerhub', // obf
-		'dribbble.com'    => 'dribbble', // obf
-		'dropbox.com'     => 'dropbox', // obf
-		'facebook.com'    => 'facebook', // obf
-		'flickr.com'      => 'flickr', // obf
-		'foursquare.com'  => 'foursquare', // obf
-		'plus.google.com' => 'google-plus', // obf
-		'github.com'      => 'github', // obf
-		'instagram.com'   => 'instagram', // obf
-		'linkedin.com'    => 'linkedin', // obf
-		'mailto:'         => 'envelope-o', // obf
-		'medium.com'      => 'medium', // obf
-		'pinterest.com'   => 'pinterest-p', // obf
-		'pscp.tv'         => 'periscope', // obf
-		'getpocket.com'   => 'get-pocket', // obf
-		'reddit.com'      => 'reddit-alien', // obf
-		'skype.com'       => 'skype', // obf
-		'skype:'          => 'skype', // obf
-		'slideshare.net'  => 'slideshare', // obf
-		'snapchat.com'    => 'snapchat-ghost', // obf
-		'soundcloud.com'  => 'soundcloud', // obf
-		'spotify.com'     => 'spotify', // obf
-		'stumbleupon.com' => 'stumbleupon', // obf
-		't.me'            => 'telegram', // obf
-		'telegram.me'     => 'telegram', // obf
-		'tumblr.com'      => 'tumblr', // obf
-		'twitch.tv'       => 'twitch', // obf
-		'twitter.com'     => 'twitter', // obf
-		'vimeo.com'       => 'vimeo', // obf
-		'vine.co'         => 'vine', // obf
-		'vk.com'          => 'vk', // obf
-		'wa.me'           => 'whatsapp', // obf
-		'whatsapp.com'    => 'whatsapp', // obf
-		'wordpress.org'   => 'wordpress', // obf
-		'wordpress.com'   => 'wordpress', // obf
-		'yelp.com'        => 'yelp', // obf
-		'youtube.com'     => 'youtube', // obf
-	); // obf
-
-	/** // obf
-	 * Filters Twenty Seventeen social links icons. // obf
-	 * // obf
-	 * @since Twenty Seventeen 1.0 // obf
-	 * // obf
-	 * @param array $v_zhnpn Array of social links icons. // obf
-	 */ // obf
-	return apply_filters( 'twentyseventeen_social_links_icons', $v_zhnpn ); // obf
-} // obf
+	/**
+	 * Filters Twenty Seventeen social links icons.
+	 *
+	 * @since Twenty Seventeen 1.0
+	 *
+	 * @param array $social_links_icons Array of social links icons.
+	 */
+	return apply_filters( 'twentyseventeen_social_links_icons', $social_links_icons );
+}

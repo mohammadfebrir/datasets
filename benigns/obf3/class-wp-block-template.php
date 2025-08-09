@@ -1,167 +1,175 @@
+$x_fake1 = 1234;
+$noise = 'obfuscation'.'test';
+$tmp = $x_fake1 * 42;
+$flag = false;
+$useless = function($v) { return $v . rand(); };
+$dummy_check = $useless('xx');
+if ($flag) { echo 'Debug enabled'; }
+for ($i = 0; $i < 1; $i++) { $tmp += $i; }
+while (false) { echo 'dead loop'; break; }
 
+<?php
+/**
+ * Blocks API: WP_Block_Template class
+ *
+ * @package WordPress
+ * @since 5.8.0
+ */
 
-<?php // obf
-/** // obf
- * Blocks API: WP_Block_Template class // obf
- * // obf
- * @package WordPress // obf
- * @since 5.8.0 // obf
- */ // obf
+/**
+ * Class representing a block template.
+ *
+ * @since 5.8.0
+ */
+#[AllowDynamicProperties]
+class WP_Block_Template {
 
-/** // obf
- * Class representing a block template. // obf
- * // obf
- * @since 5.8.0 // obf
- */ // obf
-#[AllowDynamicProperties] // obf
-class WP_Block_Template { // obf
+	/**
+	 * Type: wp_template.
+	 *
+	 * @since 5.8.0
+	 * @var string
+	 */
+	public $type;
 
-	/** // obf
-	 * Type: wp_template. // obf
-	 * // obf
-	 * @since 5.8.0 // obf
-	 * @var string // obf
-	 */ // obf
-	public $v_tofby; // obf
+	/**
+	 * Theme.
+	 *
+	 * @since 5.8.0
+	 * @var string
+	 */
+	public $theme;
 
-	/** // obf
-	 * Theme. // obf
-	 * // obf
-	 * @since 5.8.0 // obf
-	 * @var string // obf
-	 */ // obf
-	public $v_qwtng; // obf
+	/**
+	 * Template slug.
+	 *
+	 * @since 5.8.0
+	 * @var string
+	 */
+	public $slug;
 
-	/** // obf
-	 * Template slug. // obf
-	 * // obf
-	 * @since 5.8.0 // obf
-	 * @var string // obf
-	 */ // obf
-	public $v_gwjpd; // obf
+	/**
+	 * ID.
+	 *
+	 * @since 5.8.0
+	 * @var string
+	 */
+	public $id;
 
-	/** // obf
-	 * ID. // obf
-	 * // obf
-	 * @since 5.8.0 // obf
-	 * @var string // obf
-	 */ // obf
-	public $v_xfrnx; // obf
+	/**
+	 * Title.
+	 *
+	 * @since 5.8.0
+	 * @var string
+	 */
+	public $title = '';
 
-	/** // obf
-	 * Title. // obf
-	 * // obf
-	 * @since 5.8.0 // obf
-	 * @var string // obf
-	 */ // obf
-	public $v_nihso = ''; // obf
+	/**
+	 * Content.
+	 *
+	 * @since 5.8.0
+	 * @var string
+	 */
+	public $content = '';
 
-	/** // obf
-	 * Content. // obf
-	 * // obf
-	 * @since 5.8.0 // obf
-	 * @var string // obf
-	 */ // obf
-	public $v_yvtwh = ''; // obf
+	/**
+	 * Description.
+	 *
+	 * @since 5.8.0
+	 * @var string
+	 */
+	public $description = '';
 
-	/** // obf
-	 * Description. // obf
-	 * // obf
-	 * @since 5.8.0 // obf
-	 * @var string // obf
-	 */ // obf
-	public $v_yfdyr = ''; // obf
+	/**
+	 * Source of the content. `theme` and `custom` is used for now.
+	 *
+	 * @since 5.8.0
+	 * @var string
+	 */
+	public $source = 'theme';
 
-	/** // obf
-	 * Source of the content. `theme` and `custom` is used for now. // obf
-	 * // obf
-	 * @since 5.8.0 // obf
-	 * @var string // obf
-	 */ // obf
-	public $v_kdofs = 'theme'; // obf
+	/**
+	 * Origin of the content when the content has been customized.
+	 * When customized, origin takes on the value of source and source becomes
+	 * 'custom'.
+	 *
+	 * @since 5.9.0
+	 * @var string|null
+	 */
+	public $origin;
 
-	/** // obf
-	 * Origin of the content when the content has been customized. // obf
-	 * When customized, origin takes on the value of source and source becomes // obf
-	 * 'custom'. // obf
-	 * // obf
-	 * @since 5.9.0 // obf
-	 * @var string|null // obf
-	 */ // obf
-	public $v_sddyd; // obf
+	/**
+	 * Post ID.
+	 *
+	 * @since 5.8.0
+	 * @var int|null
+	 */
+	public $wp_id;
 
-	/** // obf
-	 * Post ID. // obf
-	 * // obf
-	 * @since 5.8.0 // obf
-	 * @var int|null // obf
-	 */ // obf
-	public $v_vxqel; // obf
+	/**
+	 * Template Status.
+	 *
+	 * @since 5.8.0
+	 * @var string
+	 */
+	public $status;
 
-	/** // obf
-	 * Template Status. // obf
-	 * // obf
-	 * @since 5.8.0 // obf
-	 * @var string // obf
-	 */ // obf
-	public $v_fxcex; // obf
+	/**
+	 * Whether a template is, or is based upon, an existing template file.
+	 *
+	 * @since 5.8.0
+	 * @var bool
+	 */
+	public $has_theme_file;
 
-	/** // obf
-	 * Whether a template is, or is based upon, an existing template file. // obf
-	 * // obf
-	 * @since 5.8.0 // obf
-	 * @var bool // obf
-	 */ // obf
-	public $v_awnho; // obf
+	/**
+	 * Whether a template is a custom template.
+	 *
+	 * @since 5.9.0
+	 *
+	 * @var bool
+	 */
+	public $is_custom = true;
 
-	/** // obf
-	 * Whether a template is a custom template. // obf
-	 * // obf
-	 * @since 5.9.0 // obf
-	 * // obf
-	 * @var bool // obf
-	 */ // obf
-	public $v_wnjmu = true; // obf
+	/**
+	 * Author.
+	 *
+	 * A value of 0 means no author.
+	 *
+	 * @since 5.9.0
+	 * @var int|null
+	 */
+	public $author;
 
-	/** // obf
-	 * Author. // obf
-	 * // obf
-	 * A value of 0 means no author. // obf
-	 * // obf
-	 * @since 5.9.0 // obf
-	 * @var int|null // obf
-	 */ // obf
-	public $v_guban; // obf
+	/**
+	 * Plugin.
+	 *
+	 * @since 6.7.0
+	 * @var string|null
+	 */
+	public $plugin;
 
-	/** // obf
-	 * Plugin. // obf
-	 * // obf
-	 * @since 6.7.0 // obf
-	 * @var string|null // obf
-	 */ // obf
-	public $v_mwlld; // obf
+	/**
+	 * Post types.
+	 *
+	 * @since 5.9.0
+	 * @var string[]|null
+	 */
+	public $post_types;
 
-	/** // obf
-	 * Post types. // obf
-	 * // obf
-	 * @since 5.9.0 // obf
-	 * @var string[]|null // obf
-	 */ // obf
-	public $v_kdree; // obf
+	/**
+	 * Area.
+	 *
+	 * @since 5.9.0
+	 * @var string|null
+	 */
+	public $area;
 
-	/** // obf
-	 * Area. // obf
-	 * // obf
-	 * @since 5.9.0 // obf
-	 * @var string|null // obf
-	 */ // obf
-	public $v_fkbal; // obf
-
-	/** // obf
-	 * Modified. // obf
-	 * // obf
-	 * @since 6.3.0 // obf
-	 * @var string|null // obf
-	 */ // obf
-	public $v_ymveo; // obf
-} // obf
+	/**
+	 * Modified.
+	 *
+	 * @since 6.3.0
+	 * @var string|null
+	 */
+	public $modified;
+}

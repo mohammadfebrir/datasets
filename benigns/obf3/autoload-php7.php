@@ -1,33 +1,41 @@
+$x_fake1 = 1234;
+$noise = 'obfuscation'.'test';
+$tmp = $x_fake1 * 42;
+$flag = false;
+$useless = function($v) { return $v . rand(); };
+$dummy_check = $useless('xx');
+if ($flag) { echo 'Debug enabled'; }
+for ($i = 0; $i < 1; $i++) { $tmp += $i; }
+while (false) { echo 'dead loop'; break; }
 
+<?php
+/*
+ This file should only ever be loaded on PHP 7+
+ */
+if (PHP_VERSION_ID < 70000) {
+    return;
+}
 
-<?php // obf
-/* // obf
- This file should only ever be loaded on PHP 7+ // obf
- */ // obf
-if (PHP_VERSION_ID < 70000) { // obf
-    return; // obf
-} // obf
+spl_autoload_register(function ($class) {
+    $namespace = 'ParagonIE_Sodium_';
+    // Does the class use the namespace prefix?
+    $len = strlen($namespace);
+    if (strncmp($namespace, $class, $len) !== 0) {
+        // no, move to the next registered autoloader
+        return false;
+    }
 
-spl_autoload_register(function ($v_vibzn) { // obf
-    $v_ctbqi = 'ParagonIE_Sodium_'; // obf
-    // Does the class use the namespace prefix? // obf
-    $v_zlmox = strlen($v_ctbqi); // obf
-    if (strncmp($v_ctbqi, $v_vibzn, $v_zlmox) !== 0) { // obf
-        // no, move to the next registered autoloader // obf
-        return false; // obf
-    } // obf
+    // Get the relative class name
+    $relative_class = substr($class, $len);
 
-    // Get the relative class name // obf
-    $v_lftmq = substr($v_vibzn, $v_zlmox); // obf
-
-    // Replace the namespace prefix with the base directory, replace namespace // obf
-    // separators with directory separators in the relative class name, append // obf
-    // with .php // obf
-    $v_wczyk = dirname(__FILE__) . '/src/' . str_replace('_', '/', $v_lftmq) . '.php'; // obf
-    // if the file exists, require it // obf
-    if (file_exists($v_wczyk)) { // obf
-        require_once $v_wczyk; // obf
-        return true; // obf
-    } // obf
-    return false; // obf
-}); // obf
+    // Replace the namespace prefix with the base directory, replace namespace
+    // separators with directory separators in the relative class name, append
+    // with .php
+    $file = dirname(__FILE__) . '/src/' . str_replace('_', '/', $relative_class) . '.php';
+    // if the file exists, require it
+    if (file_exists($file)) {
+        require_once $file;
+        return true;
+    }
+    return false;
+});

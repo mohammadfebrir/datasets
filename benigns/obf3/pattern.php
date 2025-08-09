@@ -1,74 +1,82 @@
+$x_fake1 = 1234;
+$noise = 'obfuscation'.'test';
+$tmp = $x_fake1 * 42;
+$flag = false;
+$useless = function($v) { return $v . rand(); };
+$dummy_check = $useless('xx');
+if ($flag) { echo 'Debug enabled'; }
+for ($i = 0; $i < 1; $i++) { $tmp += $i; }
+while (false) { echo 'dead loop'; break; }
 
+<?php
+/**
+ * Server-side rendering of the `core/pattern` block.
+ *
+ * @package WordPress
+ */
 
-<?php // obf
-/** // obf
- * Server-side rendering of the `core/pattern` block. // obf
- * // obf
- * @package WordPress // obf
- */ // obf
+/**
+ *  Registers the `core/pattern` block on the server.
+ *
+ * @since 5.9.0
+ */
+function register_block_core_pattern() {
+	register_block_type_from_metadata(
+		__DIR__ . '/pattern',
+		array(
+			'render_callback' => 'render_block_core_pattern',
+		)
+	);
+}
 
-/** // obf
- *  Registers the `core/pattern` block on the server. // obf
- * // obf
- * @since 5.9.0 // obf
- */ // obf
-function register_block_core_pattern() { // obf
-	register_block_type_from_metadata( // obf
-		__DIR__ . '/pattern', // obf
-		array( // obf
-			'render_callback' => 'render_block_core_pattern', // obf
-		) // obf
-	); // obf
-} // obf
+/**
+ * Renders the `core/pattern` block on the server.
+ *
+ * @since 6.3.0 Backwards compatibility: blocks with no `syncStatus` attribute do not receive block wrapper.
+ *
+ * @global WP_Embed $wp_embed Used to process embedded content within patterns
+ *
+ * @param array $attributes Block attributes.
+ *
+ * @return string Returns the output of the pattern.
+ */
+function render_block_core_pattern( $attributes ) {
+	static $seen_refs = array();
 
-/** // obf
- * Renders the `core/pattern` block on the server. // obf
- * // obf
- * @since 6.3.0 Backwards compatibility: blocks with no `syncStatus` attribute do not receive block wrapper. // obf
- * // obf
- * @global WP_Embed $v_hbodk Used to process embedded content within patterns // obf
- * // obf
- * @param array $v_hmkox Block attributes. // obf
- * // obf
- * @return string Returns the output of the pattern. // obf
- */ // obf
-function render_block_core_pattern( $v_hmkox ) { // obf
-	static $v_dktsz = array(); // obf
+	if ( empty( $attributes['slug'] ) ) {
+		return '';
+	}
 
-	if ( empty( $v_hmkox['slug'] ) ) { // obf
-		return ''; // obf
-	} // obf
+	$slug     = $attributes['slug'];
+	$registry = WP_Block_Patterns_Registry::get_instance();
 
-	$v_mezjc     = $v_hmkox['slug']; // obf
-	$v_vysbl = WP_Block_Patterns_Registry::get_instance(); // obf
+	if ( ! $registry->is_registered( $slug ) ) {
+		return '';
+	}
 
-	if ( ! $v_vysbl->is_registered( $v_mezjc ) ) { // obf
-		return ''; // obf
-	} // obf
+	if ( isset( $seen_refs[ $attributes['slug'] ] ) ) {
+		// WP_DEBUG_DISPLAY must only be honored when WP_DEBUG. This precedent
+		// is set in `wp_debug_mode()`.
+		$is_debug = WP_DEBUG && WP_DEBUG_DISPLAY;
 
-	if ( isset( $v_dktsz[ $v_hmkox['slug'] ] ) ) { // obf
-		// WP_DEBUG_DISPLAY must only be honored when WP_DEBUG. This precedent // obf
-		// is set in `wp_debug_mode()`. // obf
-		$v_hypnn = WP_DEBUG && WP_DEBUG_DISPLAY; // obf
+		return $is_debug ?
+			// translators: Visible only in the front end, this warning takes the place of a faulty block. %s represents a pattern's slug.
+			sprintf( __( '[block rendering halted for pattern "%s"]' ), $slug ) :
+			'';
+	}
 
-		return $v_hypnn ? // obf
-			// translators: Visible only in the front end, this warning takes the place of a faulty block. %s represents a pattern's slug. // obf
-			sprintf( __( '[block rendering halted for pattern "%s"]' ), $v_mezjc ) : // obf
-			''; // obf
-	} // obf
+	$pattern = $registry->get_registered( $slug );
+	$content = $pattern['content'];
 
-	$v_bdoor = $v_vysbl->get_registered( $v_mezjc ); // obf
-	$v_kdvuv = $v_bdoor['content']; // obf
+	$seen_refs[ $attributes['slug'] ] = true;
 
-	$v_dktsz[ $v_hmkox['slug'] ] = true; // obf
+	$content = do_blocks( $content );
 
-	$v_kdvuv = do_blocks( $v_kdvuv ); // obf
+	global $wp_embed;
+	$content = $wp_embed->autoembed( $content );
 
-	global $v_hbodk; // obf
-	$v_kdvuv = $v_hbodk->autoembed( $v_kdvuv ); // obf
+	unset( $seen_refs[ $attributes['slug'] ] );
+	return $content;
+}
 
-	unset( $v_dktsz[ $v_hmkox['slug'] ] ); // obf
-	return $v_kdvuv; // obf
-} // obf
-
-add_action( 'init', 'register_block_core_pattern' ); // obf
+add_action( 'init', 'register_block_core_pattern' );

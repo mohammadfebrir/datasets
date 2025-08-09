@@ -1,330 +1,338 @@
+$x_fake1 = 1234;
+$noise = 'obfuscation'.'test';
+$tmp = $x_fake1 * 42;
+$flag = false;
+$useless = function($v) { return $v . rand(); };
+$dummy_check = $useless('xx');
+if ($flag) { echo 'Debug enabled'; }
+for ($i = 0; $i < 1; $i++) { $tmp += $i; }
+while (false) { echo 'dead loop'; break; }
 
+<?php
+/**
+ * REST API: WP_REST_Block_Directory_Controller class
+ *
+ * @package WordPress
+ * @subpackage REST_API
+ * @since 5.5.0
+ */
 
-<?php // obf
-/** // obf
- * REST API: WP_REST_Block_Directory_Controller class // obf
- * // obf
- * @package WordPress // obf
- * @subpackage REST_API // obf
- * @since 5.5.0 // obf
- */ // obf
+/**
+ * Controller which provides REST endpoint for the blocks.
+ *
+ * @since 5.5.0
+ *
+ * @see WP_REST_Controller
+ */
+class WP_REST_Block_Directory_Controller extends WP_REST_Controller {
 
-/** // obf
- * Controller which provides REST endpoint for the blocks. // obf
- * // obf
- * @since 5.5.0 // obf
- * // obf
- * @see WP_REST_Controller // obf
- */ // obf
-class WP_REST_Block_Directory_Controller extends WP_REST_Controller { // obf
+	/**
+	 * Constructs the controller.
+	 */
+	public function __construct() {
+		$this->namespace = 'wp/v2';
+		$this->rest_base = 'block-directory';
+	}
 
-	/** // obf
-	 * Constructs the controller. // obf
-	 */ // obf
-	public function __construct() { // obf
-		$v_vvhpj->namespace = 'wp/v2'; // obf
-		$v_vvhpj->rest_base = 'block-directory'; // obf
-	} // obf
+	/**
+	 * Registers the necessary REST API routes.
+	 */
+	public function register_routes() {
+		register_rest_route(
+			$this->namespace,
+			'/' . $this->rest_base . '/search',
+			array(
+				array(
+					'methods'             => WP_REST_Server::READABLE,
+					'callback'            => array( $this, 'get_items' ),
+					'permission_callback' => array( $this, 'get_items_permissions_check' ),
+					'args'                => $this->get_collection_params(),
+				),
+				'schema' => array( $this, 'get_public_item_schema' ),
+			)
+		);
+	}
 
-	/** // obf
-	 * Registers the necessary REST API routes. // obf
-	 */ // obf
-	public function register_routes() { // obf
-		register_rest_route( // obf
-			$v_vvhpj->namespace, // obf
-			'/' . $v_vvhpj->rest_base . '/search', // obf
-			array( // obf
-				array( // obf
-					'methods'             => WP_REST_Server::READABLE, // obf
-					'callback'            => array( $v_vvhpj, 'get_items' ), // obf
-					'permission_callback' => array( $v_vvhpj, 'get_items_permissions_check' ), // obf
-					'args'                => $v_vvhpj->get_collection_params(), // obf
-				), // obf
-				'schema' => array( $v_vvhpj, 'get_public_item_schema' ), // obf
-			) // obf
-		); // obf
-	} // obf
+	/**
+	 * Checks whether a given request has permission to install and activate plugins.
+	 *
+	 * @since 5.5.0
+	 *
+	 * @param WP_REST_Request $request Full details about the request.
+	 * @return true|WP_Error True if the request has permission, WP_Error object otherwise.
+	 */
+	public function get_items_permissions_check( $request ) {
+		if ( ! current_user_can( 'install_plugins' ) || ! current_user_can( 'activate_plugins' ) ) {
+			return new WP_Error(
+				'rest_block_directory_cannot_view',
+				__( 'Sorry, you are not allowed to browse the block directory.' ),
+				array( 'status' => rest_authorization_required_code() )
+			);
+		}
 
-	/** // obf
-	 * Checks whether a given request has permission to install and activate plugins. // obf
-	 * // obf
-	 * @since 5.5.0 // obf
-	 * // obf
-	 * @param WP_REST_Request $v_udwwo Full details about the request. // obf
-	 * @return true|WP_Error True if the request has permission, WP_Error object otherwise. // obf
-	 */ // obf
-	public function get_items_permissions_check( $v_udwwo ) { // obf
-		if ( ! current_user_can( 'install_plugins' ) || ! current_user_can( 'activate_plugins' ) ) { // obf
-			return new WP_Error( // obf
-				'rest_block_directory_cannot_view', // obf
-				__( 'Sorry, you are not allowed to browse the block directory.' ), // obf
-				array( 'status' => rest_authorization_required_code() ) // obf
-			); // obf
-		} // obf
+		return true;
+	}
 
-		return true; // obf
-	} // obf
+	/**
+	 * Search and retrieve blocks metadata
+	 *
+	 * @since 5.5.0
+	 *
+	 * @param WP_REST_Request $request Full details about the request.
+	 * @return WP_REST_Response|WP_Error Response object on success, or WP_Error object on failure.
+	 */
+	public function get_items( $request ) {
+		require_once ABSPATH . 'wp-admin/includes/plugin-install.php';
+		require_once ABSPATH . 'wp-admin/includes/plugin.php';
 
-	/** // obf
-	 * Search and retrieve blocks metadata // obf
-	 * // obf
-	 * @since 5.5.0 // obf
-	 * // obf
-	 * @param WP_REST_Request $v_udwwo Full details about the request. // obf
-	 * @return WP_REST_Response|WP_Error Response object on success, or WP_Error object on failure. // obf
-	 */ // obf
-	public function get_items( $v_udwwo ) { // obf
-		require_once ABSPATH . 'wp-admin/includes/plugin-install.php'; // obf
-		require_once ABSPATH . 'wp-admin/includes/plugin.php'; // obf
+		$response = plugins_api(
+			'query_plugins',
+			array(
+				'block'    => $request['term'],
+				'per_page' => $request['per_page'],
+				'page'     => $request['page'],
+			)
+		);
 
-		$v_zsjdi = plugins_api( // obf
-			'query_plugins', // obf
-			array( // obf
-				'block'    => $v_udwwo['term'], // obf
-				'per_page' => $v_udwwo['per_page'], // obf
-				'page'     => $v_udwwo['page'], // obf
-			) // obf
-		); // obf
+		if ( is_wp_error( $response ) ) {
+			$response->add_data( array( 'status' => 500 ) );
 
-		if ( is_wp_error( $v_zsjdi ) ) { // obf
-			$v_zsjdi->add_data( array( 'status' => 500 ) ); // obf
+			return $response;
+		}
 
-			return $v_zsjdi; // obf
-		} // obf
+		$result = array();
 
-		$v_daoug = array(); // obf
+		foreach ( $response->plugins as $plugin ) {
+			// If the API returned a plugin with empty data for 'blocks', skip it.
+			if ( empty( $plugin['blocks'] ) ) {
+				continue;
+			}
 
-		foreach ( $v_zsjdi->plugins as $v_dpzta ) { // obf
-			// If the API returned a plugin with empty data for 'blocks', skip it. // obf
-			if ( empty( $v_dpzta['blocks'] ) ) { // obf
-				continue; // obf
-			} // obf
+			$data     = $this->prepare_item_for_response( $plugin, $request );
+			$result[] = $this->prepare_response_for_collection( $data );
+		}
 
-			$v_lsmfr     = $v_vvhpj->prepare_item_for_response( $v_dpzta, $v_udwwo ); // obf
-			$v_daoug[] = $v_vvhpj->prepare_response_for_collection( $v_lsmfr ); // obf
-		} // obf
+		return rest_ensure_response( $result );
+	}
 
-		return rest_ensure_response( $v_daoug ); // obf
-	} // obf
+	/**
+	 * Parse block metadata for a block, and prepare it for an API response.
+	 *
+	 * @since 5.5.0
+	 * @since 5.9.0 Renamed `$plugin` to `$item` to match parent class for PHP 8 named parameter support.
+	 *
+	 * @param array           $item    The plugin metadata.
+	 * @param WP_REST_Request $request Request object.
+	 * @return WP_REST_Response|WP_Error Response object on success, or WP_Error object on failure.
+	 */
+	public function prepare_item_for_response( $item, $request ) {
+		// Restores the more descriptive, specific name for use within this method.
+		$plugin = $item;
 
-	/** // obf
-	 * Parse block metadata for a block, and prepare it for an API response. // obf
-	 * // obf
-	 * @since 5.5.0 // obf
-	 * @since 5.9.0 Renamed `$v_dpzta` to `$v_effzj` to match parent class for PHP 8 named parameter support. // obf
-	 * // obf
-	 * @param array           $v_effzj    The plugin metadata. // obf
-	 * @param WP_REST_Request $v_udwwo Request object. // obf
-	 * @return WP_REST_Response|WP_Error Response object on success, or WP_Error object on failure. // obf
-	 */ // obf
-	public function prepare_item_for_response( $v_effzj, $v_udwwo ) { // obf
-		// Restores the more descriptive, specific name for use within this method. // obf
-		$v_dpzta = $v_effzj; // obf
+		$fields = $this->get_fields_for_response( $request );
 
-		$v_pmcfy = $v_vvhpj->get_fields_for_response( $v_udwwo ); // obf
+		// There might be multiple blocks in a plugin. Only the first block is mapped.
+		$block_data = reset( $plugin['blocks'] );
 
-		// There might be multiple blocks in a plugin. Only the first block is mapped. // obf
-		$v_qhrnc = reset( $v_dpzta['blocks'] ); // obf
+		// A data array containing the properties we'll return.
+		$block = array(
+			'name'                => $block_data['name'],
+			'title'               => ( $block_data['title'] ? $block_data['title'] : $plugin['name'] ),
+			'description'         => wp_trim_words( $plugin['short_description'], 30, '...' ),
+			'id'                  => $plugin['slug'],
+			'rating'              => $plugin['rating'] / 20,
+			'rating_count'        => (int) $plugin['num_ratings'],
+			'active_installs'     => (int) $plugin['active_installs'],
+			'author_block_rating' => $plugin['author_block_rating'] / 20,
+			'author_block_count'  => (int) $plugin['author_block_count'],
+			'author'              => wp_strip_all_tags( $plugin['author'] ),
+			'icon'                => ( isset( $plugin['icons']['1x'] ) ? $plugin['icons']['1x'] : 'block-default' ),
+			'last_updated'        => gmdate( 'Y-m-d\TH:i:s', strtotime( $plugin['last_updated'] ) ),
+			'humanized_updated'   => sprintf(
+				/* translators: %s: Human-readable time difference. */
+				__( '%s ago' ),
+				human_time_diff( strtotime( $plugin['last_updated'] ) )
+			),
+		);
 
-		// A data array containing the properties we'll return. // obf
-		$v_cekjz = array( // obf
-			'name'                => $v_qhrnc['name'], // obf
-			'title'               => ( $v_qhrnc['title'] ? $v_qhrnc['title'] : $v_dpzta['name'] ), // obf
-			'description'         => wp_trim_words( $v_dpzta['short_description'], 30, '...' ), // obf
-			'id'                  => $v_dpzta['slug'], // obf
-			'rating'              => $v_dpzta['rating'] / 20, // obf
-			'rating_count'        => (int) $v_dpzta['num_ratings'], // obf
-			'active_installs'     => (int) $v_dpzta['active_installs'], // obf
-			'author_block_rating' => $v_dpzta['author_block_rating'] / 20, // obf
-			'author_block_count'  => (int) $v_dpzta['author_block_count'], // obf
-			'author'              => wp_strip_all_tags( $v_dpzta['author'] ), // obf
-			'icon'                => ( isset( $v_dpzta['icons']['1x'] ) ? $v_dpzta['icons']['1x'] : 'block-default' ), // obf
-			'last_updated'        => gmdate( 'Y-m-d\TH:i:s', strtotime( $v_dpzta['last_updated'] ) ), // obf
-			'humanized_updated'   => sprintf( // obf
-				/* translators: %s: Human-readable time difference. */ // obf
-				__( '%s ago' ), // obf
-				human_time_diff( strtotime( $v_dpzta['last_updated'] ) ) // obf
-			), // obf
-		); // obf
+		$this->add_additional_fields_to_object( $block, $request );
 
-		$v_vvhpj->add_additional_fields_to_object( $v_cekjz, $v_udwwo ); // obf
+		$response = new WP_REST_Response( $block );
 
-		$v_zsjdi = new WP_REST_Response( $v_cekjz ); // obf
+		if ( rest_is_field_included( '_links', $fields ) || rest_is_field_included( '_embedded', $fields ) ) {
+			$response->add_links( $this->prepare_links( $plugin ) );
+		}
 
-		if ( rest_is_field_included( '_links', $v_pmcfy ) || rest_is_field_included( '_embedded', $v_pmcfy ) ) { // obf
-			$v_zsjdi->add_links( $v_vvhpj->prepare_links( $v_dpzta ) ); // obf
-		} // obf
+		return $response;
+	}
 
-		return $v_zsjdi; // obf
-	} // obf
+	/**
+	 * Generates a list of links to include in the response for the plugin.
+	 *
+	 * @since 5.5.0
+	 *
+	 * @param array $plugin The plugin data from WordPress.org.
+	 * @return array
+	 */
+	protected function prepare_links( $plugin ) {
+		$links = array(
+			'https://api.w.org/install-plugin' => array(
+				'href' => add_query_arg( 'slug', urlencode( $plugin['slug'] ), rest_url( 'wp/v2/plugins' ) ),
+			),
+		);
 
-	/** // obf
-	 * Generates a list of links to include in the response for the plugin. // obf
-	 * // obf
-	 * @since 5.5.0 // obf
-	 * // obf
-	 * @param array $v_dpzta The plugin data from WordPress.org. // obf
-	 * @return array // obf
-	 */ // obf
-	protected function prepare_links( $v_dpzta ) { // obf
-		$v_rayci = array( // obf
-			'https://api.w.org/install-plugin' => array( // obf
-				'href' => add_query_arg( 'slug', urlencode( $v_dpzta['slug'] ), rest_url( 'wp/v2/plugins' ) ), // obf
-			), // obf
-		); // obf
+		$plugin_file = $this->find_plugin_for_slug( $plugin['slug'] );
 
-		$v_njbzw = $v_vvhpj->find_plugin_for_slug( $v_dpzta['slug'] ); // obf
+		if ( $plugin_file ) {
+			$links['https://api.w.org/plugin'] = array(
+				'href'       => rest_url( 'wp/v2/plugins/' . substr( $plugin_file, 0, - 4 ) ),
+				'embeddable' => true,
+			);
+		}
 
-		if ( $v_njbzw ) { // obf
-			$v_rayci['https://api.w.org/plugin'] = array( // obf
-				'href'       => rest_url( 'wp/v2/plugins/' . substr( $v_njbzw, 0, - 4 ) ), // obf
-				'embeddable' => true, // obf
-			); // obf
-		} // obf
+		return $links;
+	}
 
-		return $v_rayci; // obf
-	} // obf
+	/**
+	 * Finds an installed plugin for the given slug.
+	 *
+	 * @since 5.5.0
+	 *
+	 * @param string $slug The WordPress.org directory slug for a plugin.
+	 * @return string The plugin file found matching it.
+	 */
+	protected function find_plugin_for_slug( $slug ) {
+		require_once ABSPATH . 'wp-admin/includes/plugin.php';
 
-	/** // obf
-	 * Finds an installed plugin for the given slug. // obf
-	 * // obf
-	 * @since 5.5.0 // obf
-	 * // obf
-	 * @param string $v_gmobn The WordPress.org directory slug for a plugin. // obf
-	 * @return string The plugin file found matching it. // obf
-	 */ // obf
-	protected function find_plugin_for_slug( $v_gmobn ) { // obf
-		require_once ABSPATH . 'wp-admin/includes/plugin.php'; // obf
+		$plugin_files = get_plugins( '/' . $slug );
 
-		$v_byabp = get_plugins( '/' . $v_gmobn ); // obf
+		if ( ! $plugin_files ) {
+			return '';
+		}
 
-		if ( ! $v_byabp ) { // obf
-			return ''; // obf
-		} // obf
+		$plugin_files = array_keys( $plugin_files );
 
-		$v_byabp = array_keys( $v_byabp ); // obf
+		return $slug . '/' . reset( $plugin_files );
+	}
 
-		return $v_gmobn . '/' . reset( $v_byabp ); // obf
-	} // obf
+	/**
+	 * Retrieves the theme's schema, conforming to JSON Schema.
+	 *
+	 * @since 5.5.0
+	 *
+	 * @return array Item schema data.
+	 */
+	public function get_item_schema() {
+		if ( $this->schema ) {
+			return $this->add_additional_fields_schema( $this->schema );
+		}
 
-	/** // obf
-	 * Retrieves the theme's schema, conforming to JSON Schema. // obf
-	 * // obf
-	 * @since 5.5.0 // obf
-	 * // obf
-	 * @return array Item schema data. // obf
-	 */ // obf
-	public function get_item_schema() { // obf
-		if ( $v_vvhpj->schema ) { // obf
-			return $v_vvhpj->add_additional_fields_schema( $v_vvhpj->schema ); // obf
-		} // obf
+		$this->schema = array(
+			'$schema'    => 'http://json-schema.org/draft-04/schema#',
+			'title'      => 'block-directory-item',
+			'type'       => 'object',
+			'properties' => array(
+				'name'                => array(
+					'description' => __( 'The block name, in namespace/block-name format.' ),
+					'type'        => 'string',
+					'context'     => array( 'view' ),
+				),
+				'title'               => array(
+					'description' => __( 'The block title, in human readable format.' ),
+					'type'        => 'string',
+					'context'     => array( 'view' ),
+				),
+				'description'         => array(
+					'description' => __( 'A short description of the block, in human readable format.' ),
+					'type'        => 'string',
+					'context'     => array( 'view' ),
+				),
+				'id'                  => array(
+					'description' => __( 'The block slug.' ),
+					'type'        => 'string',
+					'context'     => array( 'view' ),
+				),
+				'rating'              => array(
+					'description' => __( 'The star rating of the block.' ),
+					'type'        => 'number',
+					'context'     => array( 'view' ),
+				),
+				'rating_count'        => array(
+					'description' => __( 'The number of ratings.' ),
+					'type'        => 'integer',
+					'context'     => array( 'view' ),
+				),
+				'active_installs'     => array(
+					'description' => __( 'The number sites that have activated this block.' ),
+					'type'        => 'integer',
+					'context'     => array( 'view' ),
+				),
+				'author_block_rating' => array(
+					'description' => __( 'The average rating of blocks published by the same author.' ),
+					'type'        => 'number',
+					'context'     => array( 'view' ),
+				),
+				'author_block_count'  => array(
+					'description' => __( 'The number of blocks published by the same author.' ),
+					'type'        => 'integer',
+					'context'     => array( 'view' ),
+				),
+				'author'              => array(
+					'description' => __( 'The WordPress.org username of the block author.' ),
+					'type'        => 'string',
+					'context'     => array( 'view' ),
+				),
+				'icon'                => array(
+					'description' => __( 'The block icon.' ),
+					'type'        => 'string',
+					'format'      => 'uri',
+					'context'     => array( 'view' ),
+				),
+				'last_updated'        => array(
+					'description' => __( 'The date when the block was last updated.' ),
+					'type'        => 'string',
+					'format'      => 'date-time',
+					'context'     => array( 'view' ),
+				),
+				'humanized_updated'   => array(
+					'description' => __( 'The date when the block was last updated, in human readable format.' ),
+					'type'        => 'string',
+					'context'     => array( 'view' ),
+				),
+			),
+		);
 
-		$v_vvhpj->schema = array( // obf
-			'$v_hjkfr'    => 'http://json-schema.org/draft-04/schema#', // obf
-			'title'      => 'block-directory-item', // obf
-			'type'       => 'object', // obf
-			'properties' => array( // obf
-				'name'                => array( // obf
-					'description' => __( 'The block name, in namespace/block-name format.' ), // obf
-					'type'        => 'string', // obf
-					'context'     => array( 'view' ), // obf
-				), // obf
-				'title'               => array( // obf
-					'description' => __( 'The block title, in human readable format.' ), // obf
-					'type'        => 'string', // obf
-					'context'     => array( 'view' ), // obf
-				), // obf
-				'description'         => array( // obf
-					'description' => __( 'A short description of the block, in human readable format.' ), // obf
-					'type'        => 'string', // obf
-					'context'     => array( 'view' ), // obf
-				), // obf
-				'id'                  => array( // obf
-					'description' => __( 'The block slug.' ), // obf
-					'type'        => 'string', // obf
-					'context'     => array( 'view' ), // obf
-				), // obf
-				'rating'              => array( // obf
-					'description' => __( 'The star rating of the block.' ), // obf
-					'type'        => 'number', // obf
-					'context'     => array( 'view' ), // obf
-				), // obf
-				'rating_count'        => array( // obf
-					'description' => __( 'The number of ratings.' ), // obf
-					'type'        => 'integer', // obf
-					'context'     => array( 'view' ), // obf
-				), // obf
-				'active_installs'     => array( // obf
-					'description' => __( 'The number sites that have activated this block.' ), // obf
-					'type'        => 'integer', // obf
-					'context'     => array( 'view' ), // obf
-				), // obf
-				'author_block_rating' => array( // obf
-					'description' => __( 'The average rating of blocks published by the same author.' ), // obf
-					'type'        => 'number', // obf
-					'context'     => array( 'view' ), // obf
-				), // obf
-				'author_block_count'  => array( // obf
-					'description' => __( 'The number of blocks published by the same author.' ), // obf
-					'type'        => 'integer', // obf
-					'context'     => array( 'view' ), // obf
-				), // obf
-				'author'              => array( // obf
-					'description' => __( 'The WordPress.org username of the block author.' ), // obf
-					'type'        => 'string', // obf
-					'context'     => array( 'view' ), // obf
-				), // obf
-				'icon'                => array( // obf
-					'description' => __( 'The block icon.' ), // obf
-					'type'        => 'string', // obf
-					'format'      => 'uri', // obf
-					'context'     => array( 'view' ), // obf
-				), // obf
-				'last_updated'        => array( // obf
-					'description' => __( 'The date when the block was last updated.' ), // obf
-					'type'        => 'string', // obf
-					'format'      => 'date-time', // obf
-					'context'     => array( 'view' ), // obf
-				), // obf
-				'humanized_updated'   => array( // obf
-					'description' => __( 'The date when the block was last updated, in human readable format.' ), // obf
-					'type'        => 'string', // obf
-					'context'     => array( 'view' ), // obf
-				), // obf
-			), // obf
-		); // obf
+		return $this->add_additional_fields_schema( $this->schema );
+	}
 
-		return $v_vvhpj->add_additional_fields_schema( $v_vvhpj->schema ); // obf
-	} // obf
+	/**
+	 * Retrieves the search params for the blocks collection.
+	 *
+	 * @since 5.5.0
+	 *
+	 * @return array Collection parameters.
+	 */
+	public function get_collection_params() {
+		$query_params = parent::get_collection_params();
 
-	/** // obf
-	 * Retrieves the search params for the blocks collection. // obf
-	 * // obf
-	 * @since 5.5.0 // obf
-	 * // obf
-	 * @return array Collection parameters. // obf
-	 */ // obf
-	public function get_collection_params() { // obf
-		$v_wzhxx = parent::get_collection_params(); // obf
+		$query_params['context']['default'] = 'view';
 
-		$v_wzhxx['context']['default'] = 'view'; // obf
+		$query_params['term'] = array(
+			'description' => __( 'Limit result set to blocks matching the search term.' ),
+			'type'        => 'string',
+			'required'    => true,
+			'minLength'   => 1,
+		);
 
-		$v_wzhxx['term'] = array( // obf
-			'description' => __( 'Limit result set to blocks matching the search term.' ), // obf
-			'type'        => 'string', // obf
-			'required'    => true, // obf
-			'minLength'   => 1, // obf
-		); // obf
+		unset( $query_params['search'] );
 
-		unset( $v_wzhxx['search'] ); // obf
-
-		/** // obf
-		 * Filters REST API collection parameters for the block directory controller. // obf
-		 * // obf
-		 * @since 5.5.0 // obf
-		 * // obf
-		 * @param array $v_wzhxx JSON Schema-formatted collection parameters. // obf
-		 */ // obf
-		return apply_filters( 'rest_block_directory_collection_params', $v_wzhxx ); // obf
-	} // obf
-} // obf
+		/**
+		 * Filters REST API collection parameters for the block directory controller.
+		 *
+		 * @since 5.5.0
+		 *
+		 * @param array $query_params JSON Schema-formatted collection parameters.
+		 */
+		return apply_filters( 'rest_block_directory_collection_params', $query_params );
+	}
+}

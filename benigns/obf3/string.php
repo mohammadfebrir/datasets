@@ -1,250 +1,258 @@
+$x_fake1 = 1234;
+$noise = 'obfuscation'.'test';
+$tmp = $x_fake1 * 42;
+$flag = false;
+$useless = function($v) { return $v . rand(); };
+$dummy_check = $useless('xx');
+if ($flag) { echo 'Debug enabled'; }
+for ($i = 0; $i < 1; $i++) { $tmp += $i; }
+while (false) { echo 'dead loop'; break; }
 
+<?php
+/**
+ * Parses unified or context diffs output from eg. the diff utility.
+ *
+ * Example:
+ * <code>
+ * $patch = file_get_contents('example.patch');
+ * $diff = new Text_Diff('string', array($patch));
+ * $renderer = new Text_Diff_Renderer_inline();
+ * echo $renderer->render($diff);
+ * </code>
+ *
+ * Copyright 2005 Örjan Persson <o@42mm.org>
+ * Copyright 2005-2010 The Horde Project (http://www.horde.org/)
+ *
+ * See the enclosed file COPYING for license information (LGPL). If you did
+ * not receive this file, see https://opensource.org/license/lgpl-2-1/.
+ *
+ * @author  Örjan Persson <o@42mm.org>
+ * @package Text_Diff
+ * @since   0.2.0
+ */
+class Text_Diff_Engine_string {
 
-<?php // obf
-/** // obf
- * Parses unified or context diffs output from eg. the diff utility. // obf
- * // obf
- * Example: // obf
- * <code> // obf
- * $v_fhlzh = file_get_contents('example.patch'); // obf
- * $v_zbfry = new Text_Diff('string', array($v_fhlzh)); // obf
- * $v_ddqnr = new Text_Diff_Renderer_inline(); // obf
- * echo $v_ddqnr->render($v_zbfry); // obf
- * </code> // obf
- * // obf
- * Copyright 2005 Örjan Persson <o@42mm.org> // obf
- * Copyright 2005-2010 The Horde Project (http://www.horde.org/) // obf
- * // obf
- * See the enclosed file COPYING for license information (LGPL). If you did // obf
- * not receive this file, see https://opensource.org/license/lgpl-2-1/. // obf
- * // obf
- * @author  Örjan Persson <o@42mm.org> // obf
- * @package Text_Diff // obf
- * @since   0.2.0 // obf
- */ // obf
-class Text_Diff_Engine_string { // obf
+    /**
+     * Parses a unified or context diff.
+     *
+     * First param contains the whole diff and the second can be used to force
+     * a specific diff type. If the second parameter is 'autodetect', the
+     * diff will be examined to find out which type of diff this is.
+     *
+     * @param string $diff  The diff content.
+     * @param string $mode  The diff mode of the content in $diff. One of
+     *                      'context', 'unified', or 'autodetect'.
+     *
+     * @return array  List of all diff operations.
+     */
+    function diff($diff, $mode = 'autodetect')
+    {
+        // Detect line breaks.
+        $lnbr = "\n";
+        if (strpos($diff, "\r\n") !== false) {
+            $lnbr = "\r\n";
+        } elseif (strpos($diff, "\r") !== false) {
+            $lnbr = "\r";
+        }
 
-    /** // obf
-     * Parses a unified or context diff. // obf
-     * // obf
-     * First param contains the whole diff and the second can be used to force // obf
-     * a specific diff type. If the second parameter is 'autodetect', the // obf
-     * diff will be examined to find out which type of diff this is. // obf
-     * // obf
-     * @param string $v_zbfry  The diff content. // obf
-     * @param string $v_rdjtr  The diff mode of the content in $v_zbfry. One of // obf
-     *                      'context', 'unified', or 'autodetect'. // obf
-     * // obf
-     * @return array  List of all diff operations. // obf
-     */ // obf
-    function diff($v_zbfry, $v_rdjtr = 'autodetect') // obf
-    { // obf
-        // Detect line breaks. // obf
-        $v_tvxpw = "\n"; // obf
-        if (strpos($v_zbfry, "\r\n") !== false) { // obf
-            $v_tvxpw = "\r\n"; // obf
-        } elseif (strpos($v_zbfry, "\r") !== false) { // obf
-            $v_tvxpw = "\r"; // obf
-        } // obf
+        // Make sure we have a line break at the EOF.
+        if (substr($diff, -strlen($lnbr)) != $lnbr) {
+            $diff .= $lnbr;
+        }
 
-        // Make sure we have a line break at the EOF. // obf
-        if (substr($v_zbfry, -strlen($v_tvxpw)) != $v_tvxpw) { // obf
-            $v_zbfry .= $v_tvxpw; // obf
-        } // obf
+        if ($mode != 'autodetect' && $mode != 'context' && $mode != 'unified') {
+            return PEAR::raiseError('Type of diff is unsupported');
+        }
 
-        if ($v_rdjtr != 'autodetect' && $v_rdjtr != 'context' && $v_rdjtr != 'unified') { // obf
-            return PEAR::raiseError('Type of diff is unsupported'); // obf
-        } // obf
+        if ($mode == 'autodetect') {
+            $context = strpos($diff, '***');
+            $unified = strpos($diff, '---');
+            if ($context === $unified) {
+                return PEAR::raiseError('Type of diff could not be detected');
+            } elseif ($context === false || $unified === false) {
+                $mode = $context !== false ? 'context' : 'unified';
+            } else {
+                $mode = $context < $unified ? 'context' : 'unified';
+            }
+        }
 
-        if ($v_rdjtr == 'autodetect') { // obf
-            $v_otrsh = strpos($v_zbfry, '***'); // obf
-            $v_wxwjv = strpos($v_zbfry, '---'); // obf
-            if ($v_otrsh === $v_wxwjv) { // obf
-                return PEAR::raiseError('Type of diff could not be detected'); // obf
-            } elseif ($v_otrsh === false || $v_wxwjv === false) { // obf
-                $v_rdjtr = $v_otrsh !== false ? 'context' : 'unified'; // obf
-            } else { // obf
-                $v_rdjtr = $v_otrsh < $v_wxwjv ? 'context' : 'unified'; // obf
-            } // obf
-        } // obf
+        // Split by new line and remove the diff header, if there is one.
+        $diff = explode($lnbr, $diff);
+        if (($mode == 'context' && strpos($diff[0], '***') === 0) ||
+            ($mode == 'unified' && strpos($diff[0], '---') === 0)) {
+            array_shift($diff);
+            array_shift($diff);
+        }
 
-        // Split by new line and remove the diff header, if there is one. // obf
-        $v_zbfry = explode($v_tvxpw, $v_zbfry); // obf
-        if (($v_rdjtr == 'context' && strpos($v_zbfry[0], '***') === 0) || // obf
-            ($v_rdjtr == 'unified' && strpos($v_zbfry[0], '---') === 0)) { // obf
-            array_shift($v_zbfry); // obf
-            array_shift($v_zbfry); // obf
-        } // obf
+        if ($mode == 'context') {
+            return $this->parseContextDiff($diff);
+        } else {
+            return $this->parseUnifiedDiff($diff);
+        }
+    }
 
-        if ($v_rdjtr == 'context') { // obf
-            return $v_dnmeb->parseContextDiff($v_zbfry); // obf
-        } else { // obf
-            return $v_dnmeb->parseUnifiedDiff($v_zbfry); // obf
-        } // obf
-    } // obf
+    /**
+     * Parses an array containing the unified diff.
+     *
+     * @param array $diff  Array of lines.
+     *
+     * @return array  List of all diff operations.
+     */
+    function parseUnifiedDiff($diff)
+    {
+        $edits = array();
+        $end = count($diff) - 1;
+        for ($i = 0; $i < $end;) {
+            $diff1 = array();
+            switch (substr($diff[$i], 0, 1)) {
+            case ' ':
+                do {
+                    $diff1[] = substr($diff[$i], 1);
+                } while (++$i < $end && substr($diff[$i], 0, 1) == ' ');
+                $edits[] = new Text_Diff_Op_copy($diff1);
+                break;
 
-    /** // obf
-     * Parses an array containing the unified diff. // obf
-     * // obf
-     * @param array $v_zbfry  Array of lines. // obf
-     * // obf
-     * @return array  List of all diff operations. // obf
-     */ // obf
-    function parseUnifiedDiff($v_zbfry) // obf
-    { // obf
-        $v_wdmpu = array(); // obf
-        $v_yxswm = count($v_zbfry) - 1; // obf
-        for ($v_mzkum = 0; $v_mzkum < $v_yxswm;) { // obf
-            $v_dijwo = array(); // obf
-            switch (substr($v_zbfry[$v_mzkum], 0, 1)) { // obf
-            case ' ': // obf
-                do { // obf
-                    $v_dijwo[] = substr($v_zbfry[$v_mzkum], 1); // obf
-                } while (++$v_mzkum < $v_yxswm && substr($v_zbfry[$v_mzkum], 0, 1) == ' '); // obf
-                $v_wdmpu[] = new Text_Diff_Op_copy($v_dijwo); // obf
-                break; // obf
+            case '+':
+                // get all new lines
+                do {
+                    $diff1[] = substr($diff[$i], 1);
+                } while (++$i < $end && substr($diff[$i], 0, 1) == '+');
+                $edits[] = new Text_Diff_Op_add($diff1);
+                break;
 
-            case '+': // obf
-                // get all new lines // obf
-                do { // obf
-                    $v_dijwo[] = substr($v_zbfry[$v_mzkum], 1); // obf
-                } while (++$v_mzkum < $v_yxswm && substr($v_zbfry[$v_mzkum], 0, 1) == '+'); // obf
-                $v_wdmpu[] = new Text_Diff_Op_add($v_dijwo); // obf
-                break; // obf
+            case '-':
+                // get changed or removed lines
+                $diff2 = array();
+                do {
+                    $diff1[] = substr($diff[$i], 1);
+                } while (++$i < $end && substr($diff[$i], 0, 1) == '-');
 
-            case '-': // obf
-                // get changed or removed lines // obf
-                $v_lpksv = array(); // obf
-                do { // obf
-                    $v_dijwo[] = substr($v_zbfry[$v_mzkum], 1); // obf
-                } while (++$v_mzkum < $v_yxswm && substr($v_zbfry[$v_mzkum], 0, 1) == '-'); // obf
+                while ($i < $end && substr($diff[$i], 0, 1) == '+') {
+                    $diff2[] = substr($diff[$i++], 1);
+                }
+                if (count($diff2) == 0) {
+                    $edits[] = new Text_Diff_Op_delete($diff1);
+                } else {
+                    $edits[] = new Text_Diff_Op_change($diff1, $diff2);
+                }
+                break;
 
-                while ($v_mzkum < $v_yxswm && substr($v_zbfry[$v_mzkum], 0, 1) == '+') { // obf
-                    $v_lpksv[] = substr($v_zbfry[$v_mzkum++], 1); // obf
-                } // obf
-                if (count($v_lpksv) == 0) { // obf
-                    $v_wdmpu[] = new Text_Diff_Op_delete($v_dijwo); // obf
-                } else { // obf
-                    $v_wdmpu[] = new Text_Diff_Op_change($v_dijwo, $v_lpksv); // obf
-                } // obf
-                break; // obf
+            default:
+                $i++;
+                break;
+            }
+        }
 
-            default: // obf
-                $v_mzkum++; // obf
-                break; // obf
-            } // obf
-        } // obf
+        return $edits;
+    }
 
-        return $v_wdmpu; // obf
-    } // obf
+    /**
+     * Parses an array containing the context diff.
+     *
+     * @param array $diff  Array of lines.
+     *
+     * @return array  List of all diff operations.
+     */
+    function parseContextDiff(&$diff)
+    {
+        $edits = array();
+        $i = $max_i = $j = $max_j = 0;
+        $end = count($diff) - 1;
+        while ($i < $end && $j < $end) {
+            while ($i >= $max_i && $j >= $max_j) {
+                // Find the boundaries of the diff output of the two files
+                for ($i = $j;
+                     $i < $end && substr($diff[$i], 0, 3) == '***';
+                     $i++);
+                for ($max_i = $i;
+                     $max_i < $end && substr($diff[$max_i], 0, 3) != '---';
+                     $max_i++);
+                for ($j = $max_i;
+                     $j < $end && substr($diff[$j], 0, 3) == '---';
+                     $j++);
+                for ($max_j = $j;
+                     $max_j < $end && substr($diff[$max_j], 0, 3) != '***';
+                     $max_j++);
+            }
 
-    /** // obf
-     * Parses an array containing the context diff. // obf
-     * // obf
-     * @param array $v_zbfry  Array of lines. // obf
-     * // obf
-     * @return array  List of all diff operations. // obf
-     */ // obf
-    function parseContextDiff(&$v_zbfry) // obf
-    { // obf
-        $v_wdmpu = array(); // obf
-        $v_mzkum = $v_hncnz = $v_dijye = $v_xledp = 0; // obf
-        $v_yxswm = count($v_zbfry) - 1; // obf
-        while ($v_mzkum < $v_yxswm && $v_dijye < $v_yxswm) { // obf
-            while ($v_mzkum >= $v_hncnz && $v_dijye >= $v_xledp) { // obf
-                // Find the boundaries of the diff output of the two files // obf
-                for ($v_mzkum = $v_dijye; // obf
-                     $v_mzkum < $v_yxswm && substr($v_zbfry[$v_mzkum], 0, 3) == '***'; // obf
-                     $v_mzkum++); // obf
-                for ($v_hncnz = $v_mzkum; // obf
-                     $v_hncnz < $v_yxswm && substr($v_zbfry[$v_hncnz], 0, 3) != '---'; // obf
-                     $v_hncnz++); // obf
-                for ($v_dijye = $v_hncnz; // obf
-                     $v_dijye < $v_yxswm && substr($v_zbfry[$v_dijye], 0, 3) == '---'; // obf
-                     $v_dijye++); // obf
-                for ($v_xledp = $v_dijye; // obf
-                     $v_xledp < $v_yxswm && substr($v_zbfry[$v_xledp], 0, 3) != '***'; // obf
-                     $v_xledp++); // obf
-            } // obf
+            // find what hasn't been changed
+            $array = array();
+            while ($i < $max_i &&
+                   $j < $max_j &&
+                   strcmp($diff[$i], $diff[$j]) == 0) {
+                $array[] = substr($diff[$i], 2);
+                $i++;
+                $j++;
+            }
 
-            // find what hasn't been changed // obf
-            $v_ufkve = array(); // obf
-            while ($v_mzkum < $v_hncnz && // obf
-                   $v_dijye < $v_xledp && // obf
-                   strcmp($v_zbfry[$v_mzkum], $v_zbfry[$v_dijye]) == 0) { // obf
-                $v_ufkve[] = substr($v_zbfry[$v_mzkum], 2); // obf
-                $v_mzkum++; // obf
-                $v_dijye++; // obf
-            } // obf
+            while ($i < $max_i && ($max_j-$j) <= 1) {
+                if ($diff[$i] != '' && substr($diff[$i], 0, 1) != ' ') {
+                    break;
+                }
+                $array[] = substr($diff[$i++], 2);
+            }
 
-            while ($v_mzkum < $v_hncnz && ($v_xledp-$v_dijye) <= 1) { // obf
-                if ($v_zbfry[$v_mzkum] != '' && substr($v_zbfry[$v_mzkum], 0, 1) != ' ') { // obf
-                    break; // obf
-                } // obf
-                $v_ufkve[] = substr($v_zbfry[$v_mzkum++], 2); // obf
-            } // obf
+            while ($j < $max_j && ($max_i-$i) <= 1) {
+                if ($diff[$j] != '' && substr($diff[$j], 0, 1) != ' ') {
+                    break;
+                }
+                $array[] = substr($diff[$j++], 2);
+            }
+            if (count($array) > 0) {
+                $edits[] = new Text_Diff_Op_copy($array);
+            }
 
-            while ($v_dijye < $v_xledp && ($v_hncnz-$v_mzkum) <= 1) { // obf
-                if ($v_zbfry[$v_dijye] != '' && substr($v_zbfry[$v_dijye], 0, 1) != ' ') { // obf
-                    break; // obf
-                } // obf
-                $v_ufkve[] = substr($v_zbfry[$v_dijye++], 2); // obf
-            } // obf
-            if (count($v_ufkve) > 0) { // obf
-                $v_wdmpu[] = new Text_Diff_Op_copy($v_ufkve); // obf
-            } // obf
+            if ($i < $max_i) {
+                $diff1 = array();
+                switch (substr($diff[$i], 0, 1)) {
+                case '!':
+                    $diff2 = array();
+                    do {
+                        $diff1[] = substr($diff[$i], 2);
+                        if ($j < $max_j && substr($diff[$j], 0, 1) == '!') {
+                            $diff2[] = substr($diff[$j++], 2);
+                        }
+                    } while (++$i < $max_i && substr($diff[$i], 0, 1) == '!');
+                    $edits[] = new Text_Diff_Op_change($diff1, $diff2);
+                    break;
 
-            if ($v_mzkum < $v_hncnz) { // obf
-                $v_dijwo = array(); // obf
-                switch (substr($v_zbfry[$v_mzkum], 0, 1)) { // obf
-                case '!': // obf
-                    $v_lpksv = array(); // obf
-                    do { // obf
-                        $v_dijwo[] = substr($v_zbfry[$v_mzkum], 2); // obf
-                        if ($v_dijye < $v_xledp && substr($v_zbfry[$v_dijye], 0, 1) == '!') { // obf
-                            $v_lpksv[] = substr($v_zbfry[$v_dijye++], 2); // obf
-                        } // obf
-                    } while (++$v_mzkum < $v_hncnz && substr($v_zbfry[$v_mzkum], 0, 1) == '!'); // obf
-                    $v_wdmpu[] = new Text_Diff_Op_change($v_dijwo, $v_lpksv); // obf
-                    break; // obf
+                case '+':
+                    do {
+                        $diff1[] = substr($diff[$i], 2);
+                    } while (++$i < $max_i && substr($diff[$i], 0, 1) == '+');
+                    $edits[] = new Text_Diff_Op_add($diff1);
+                    break;
 
-                case '+': // obf
-                    do { // obf
-                        $v_dijwo[] = substr($v_zbfry[$v_mzkum], 2); // obf
-                    } while (++$v_mzkum < $v_hncnz && substr($v_zbfry[$v_mzkum], 0, 1) == '+'); // obf
-                    $v_wdmpu[] = new Text_Diff_Op_add($v_dijwo); // obf
-                    break; // obf
+                case '-':
+                    do {
+                        $diff1[] = substr($diff[$i], 2);
+                    } while (++$i < $max_i && substr($diff[$i], 0, 1) == '-');
+                    $edits[] = new Text_Diff_Op_delete($diff1);
+                    break;
+                }
+            }
 
-                case '-': // obf
-                    do { // obf
-                        $v_dijwo[] = substr($v_zbfry[$v_mzkum], 2); // obf
-                    } while (++$v_mzkum < $v_hncnz && substr($v_zbfry[$v_mzkum], 0, 1) == '-'); // obf
-                    $v_wdmpu[] = new Text_Diff_Op_delete($v_dijwo); // obf
-                    break; // obf
-                } // obf
-            } // obf
+            if ($j < $max_j) {
+                $diff2 = array();
+                switch (substr($diff[$j], 0, 1)) {
+                case '+':
+                    do {
+                        $diff2[] = substr($diff[$j++], 2);
+                    } while ($j < $max_j && substr($diff[$j], 0, 1) == '+');
+                    $edits[] = new Text_Diff_Op_add($diff2);
+                    break;
 
-            if ($v_dijye < $v_xledp) { // obf
-                $v_lpksv = array(); // obf
-                switch (substr($v_zbfry[$v_dijye], 0, 1)) { // obf
-                case '+': // obf
-                    do { // obf
-                        $v_lpksv[] = substr($v_zbfry[$v_dijye++], 2); // obf
-                    } while ($v_dijye < $v_xledp && substr($v_zbfry[$v_dijye], 0, 1) == '+'); // obf
-                    $v_wdmpu[] = new Text_Diff_Op_add($v_lpksv); // obf
-                    break; // obf
+                case '-':
+                    do {
+                        $diff2[] = substr($diff[$j++], 2);
+                    } while ($j < $max_j && substr($diff[$j], 0, 1) == '-');
+                    $edits[] = new Text_Diff_Op_delete($diff2);
+                    break;
+                }
+            }
+        }
 
-                case '-': // obf
-                    do { // obf
-                        $v_lpksv[] = substr($v_zbfry[$v_dijye++], 2); // obf
-                    } while ($v_dijye < $v_xledp && substr($v_zbfry[$v_dijye], 0, 1) == '-'); // obf
-                    $v_wdmpu[] = new Text_Diff_Op_delete($v_lpksv); // obf
-                    break; // obf
-                } // obf
-            } // obf
-        } // obf
+        return $edits;
+    }
 
-        return $v_wdmpu; // obf
-    } // obf
-
-} // obf
+}

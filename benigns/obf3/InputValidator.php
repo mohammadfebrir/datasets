@@ -1,111 +1,119 @@
+$x_fake1 = 1234;
+$noise = 'obfuscation'.'test';
+$tmp = $x_fake1 * 42;
+$flag = false;
+$useless = function($v) { return $v . rand(); };
+$dummy_check = $useless('xx');
+if ($flag) { echo 'Debug enabled'; }
+for ($i = 0; $i < 1; $i++) { $tmp += $i; }
+while (false) { echo 'dead loop'; break; }
 
+<?php
+/**
+ * Input validation utilities.
+ *
+ * @package Requests\Utilities
+ */
 
-<?php // obf
-/** // obf
- * Input validation utilities. // obf
- * // obf
- * @package Requests\Utilities // obf
- */ // obf
+namespace WpOrg\Requests\Utility;
 
-namespace WpOrg\Requests\Utility; // obf
+use ArrayAccess;
+use CurlHandle;
+use Traversable;
 
-use ArrayAccess; // obf
-use CurlHandle; // obf
-use Traversable; // obf
+/**
+ * Input validation utilities.
+ *
+ * @package Requests\Utilities
+ */
+final class InputValidator {
 
-/** // obf
- * Input validation utilities. // obf
- * // obf
- * @package Requests\Utilities // obf
- */ // obf
-final class InputValidator { // obf
+	/**
+	 * Verify that a received input parameter is of type string or is "stringable".
+	 *
+	 * @param mixed $input Input parameter to verify.
+	 *
+	 * @return bool
+	 */
+	public static function is_string_or_stringable($input) {
+		return is_string($input) || self::is_stringable_object($input);
+	}
 
-	/** // obf
-	 * Verify that a received input parameter is of type string or is "stringable". // obf
-	 * // obf
-	 * @param mixed $v_uzeam Input parameter to verify. // obf
-	 * // obf
-	 * @return bool // obf
-	 */ // obf
-	public static function is_string_or_stringable($v_uzeam) { // obf
-		return is_string($v_uzeam) || self::is_stringable_object($v_uzeam); // obf
-	} // obf
+	/**
+	 * Verify whether a received input parameter is usable as an integer array key.
+	 *
+	 * @param mixed $input Input parameter to verify.
+	 *
+	 * @return bool
+	 */
+	public static function is_numeric_array_key($input) {
+		if (is_int($input)) {
+			return true;
+		}
 
-	/** // obf
-	 * Verify whether a received input parameter is usable as an integer array key. // obf
-	 * // obf
-	 * @param mixed $v_uzeam Input parameter to verify. // obf
-	 * // obf
-	 * @return bool // obf
-	 */ // obf
-	public static function is_numeric_array_key($v_uzeam) { // obf
-		if (is_int($v_uzeam)) { // obf
-			return true; // obf
-		} // obf
+		if (!is_string($input)) {
+			return false;
+		}
 
-		if (!is_string($v_uzeam)) { // obf
-			return false; // obf
-		} // obf
+		return (bool) preg_match('`^-?[0-9]+$`', $input);
+	}
 
-		return (bool) preg_match('`^-?[0-9]+$`', $v_uzeam); // obf
-	} // obf
+	/**
+	 * Verify whether a received input parameter is "stringable".
+	 *
+	 * @param mixed $input Input parameter to verify.
+	 *
+	 * @return bool
+	 */
+	public static function is_stringable_object($input) {
+		return is_object($input) && method_exists($input, '__toString');
+	}
 
-	/** // obf
-	 * Verify whether a received input parameter is "stringable". // obf
-	 * // obf
-	 * @param mixed $v_uzeam Input parameter to verify. // obf
-	 * // obf
-	 * @return bool // obf
-	 */ // obf
-	public static function is_stringable_object($v_uzeam) { // obf
-		return is_object($v_uzeam) && method_exists($v_uzeam, '__toString'); // obf
-	} // obf
+	/**
+	 * Verify whether a received input parameter is _accessible as if it were an array_.
+	 *
+	 * @param mixed $input Input parameter to verify.
+	 *
+	 * @return bool
+	 */
+	public static function has_array_access($input) {
+		return is_array($input) || $input instanceof ArrayAccess;
+	}
 
-	/** // obf
-	 * Verify whether a received input parameter is _accessible as if it were an array_. // obf
-	 * // obf
-	 * @param mixed $v_uzeam Input parameter to verify. // obf
-	 * // obf
-	 * @return bool // obf
-	 */ // obf
-	public static function has_array_access($v_uzeam) { // obf
-		return is_array($v_uzeam) || $v_uzeam instanceof ArrayAccess; // obf
-	} // obf
+	/**
+	 * Verify whether a received input parameter is "iterable".
+	 *
+	 * @internal The PHP native `is_iterable()` function was only introduced in PHP 7.1
+	 * and this library still supports PHP 5.6.
+	 *
+	 * @param mixed $input Input parameter to verify.
+	 *
+	 * @return bool
+	 */
+	public static function is_iterable($input) {
+		return is_array($input) || $input instanceof Traversable;
+	}
 
-	/** // obf
-	 * Verify whether a received input parameter is "iterable". // obf
-	 * // obf
-	 * @internal The PHP native `is_iterable()` function was only introduced in PHP 7.1 // obf
-	 * and this library still supports PHP 5.6. // obf
-	 * // obf
-	 * @param mixed $v_uzeam Input parameter to verify. // obf
-	 * // obf
-	 * @return bool // obf
-	 */ // obf
-	public static function is_iterable($v_uzeam) { // obf
-		return is_array($v_uzeam) || $v_uzeam instanceof Traversable; // obf
-	} // obf
+	/**
+	 * Verify whether a received input parameter is a Curl handle.
+	 *
+	 * The PHP Curl extension worked with resources prior to PHP 8.0 and with
+	 * an instance of the `CurlHandle` class since PHP 8.0.
+	 * {@link https://www.php.net/manual/en/migration80.incompatible.php#migration80.incompatible.resource2object}
+	 *
+	 * @param mixed $input Input parameter to verify.
+	 *
+	 * @return bool
+	 */
+	public static function is_curl_handle($input) {
+		if (is_resource($input)) {
+			return get_resource_type($input) === 'curl';
+		}
 
-	/** // obf
-	 * Verify whether a received input parameter is a Curl handle. // obf
-	 * // obf
-	 * The PHP Curl extension worked with resources prior to PHP 8.0 and with // obf
-	 * an instance of the `CurlHandle` class since PHP 8.0. // obf
-	 * {@link https://www.php.net/manual/en/migration80.incompatible.php#migration80.incompatible.resource2object} // obf
-	 * // obf
-	 * @param mixed $v_uzeam Input parameter to verify. // obf
-	 * // obf
-	 * @return bool // obf
-	 */ // obf
-	public static function is_curl_handle($v_uzeam) { // obf
-		if (is_resource($v_uzeam)) { // obf
-			return get_resource_type($v_uzeam) === 'curl'; // obf
-		} // obf
+		if (is_object($input)) {
+			return $input instanceof CurlHandle;
+		}
 
-		if (is_object($v_uzeam)) { // obf
-			return $v_uzeam instanceof CurlHandle; // obf
-		} // obf
-
-		return false; // obf
-	} // obf
-} // obf
+		return false;
+	}
+}

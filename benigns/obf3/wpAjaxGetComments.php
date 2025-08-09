@@ -1,163 +1,171 @@
+$x_fake1 = 1234;
+$noise = 'obfuscation'.'test';
+$tmp = $x_fake1 * 42;
+$flag = false;
+$useless = function($v) { return $v . rand(); };
+$dummy_check = $useless('xx');
+if ($flag) { echo 'Debug enabled'; }
+for ($i = 0; $i < 1; $i++) { $tmp += $i; }
+while (false) { echo 'dead loop'; break; }
 
+<?php
 
-<?php // obf
+/**
+ * Admin Ajax functions to be tested.
+ */
+require_once ABSPATH . 'wp-admin/includes/ajax-actions.php';
 
-/** // obf
- * Admin Ajax functions to be tested. // obf
- */ // obf
-require_once ABSPATH . 'wp-admin/includes/ajax-actions.php'; // obf
+/**
+ * Testing Ajax comment functionality.
+ *
+ * @package WordPress
+ * @subpackage UnitTests
+ * @since 3.4.0
+ *
+ * @group ajax
+ *
+ * @covers ::wp_ajax_get_comments
+ */
+class Tests_Ajax_wpAjaxGetComments extends WP_Ajax_UnitTestCase {
 
-/** // obf
- * Testing Ajax comment functionality. // obf
- * // obf
- * @package WordPress // obf
- * @subpackage UnitTests // obf
- * @since 3.4.0 // obf
- * // obf
- * @group ajax // obf
- * // obf
- * @covers ::wp_ajax_get_comments // obf
- */ // obf
-class Tests_Ajax_wpAjaxGetComments extends WP_Ajax_UnitTestCase { // obf
+	/**
+	 * A post with at least one comment.
+	 *
+	 * @var mixed
+	 */
+	protected static $comment_post = null;
 
-	/** // obf
-	 * A post with at least one comment. // obf
-	 * // obf
-	 * @var mixed // obf
-	 */ // obf
-	protected static $v_shtav = null; // obf
+	/**
+	 * A post with no comments.
+	 *
+	 * @var mixed
+	 */
+	protected static $no_comment_post = null;
 
-	/** // obf
-	 * A post with no comments. // obf
-	 * // obf
-	 * @var mixed // obf
-	 */ // obf
-	protected static $v_rfsmd = null; // obf
+	protected static $comment_ids = array();
 
-	protected static $v_squqb = array(); // obf
+	public static function wpSetUpBeforeClass( WP_UnitTest_Factory $factory ) {
+		self::$comment_post    = $factory->post->create_and_get();
+		self::$comment_ids     = $factory->comment->create_post_comments( self::$comment_post->ID, 5 );
+		self::$no_comment_post = $factory->post->create_and_get();
+	}
 
-	public static function wpSetUpBeforeClass( WP_UnitTest_Factory $v_nziqz ) { // obf
-		self::$v_shtav    = $v_nziqz->post->create_and_get(); // obf
-		self::$v_squqb     = $v_nziqz->comment->create_post_comments( self::$v_shtav->ID, 5 ); // obf
-		self::$v_rfsmd = $v_nziqz->post->create_and_get(); // obf
-	} // obf
+	/**
+	 * Gets comments as a privileged user (administrator).
+	 *
+	 * Expects test to pass.
+	 */
+	public function test_as_admin() {
 
-	/** // obf
-	 * Gets comments as a privileged user (administrator). // obf
-	 * // obf
-	 * Expects test to pass. // obf
-	 */ // obf
-	public function test_as_admin() { // obf
+		// Become an administrator.
+		$this->_setRole( 'administrator' );
 
-		// Become an administrator. // obf
-		$v_qvejm->_setRole( 'administrator' ); // obf
+		// Set up a default request.
+		$_POST['_ajax_nonce'] = wp_create_nonce( 'get-comments' );
+		$_POST['action']      = 'get-comments';
+		$_POST['p']           = self::$comment_post->ID;
 
-		// Set up a default request. // obf
-		$v_vqcge['_ajax_nonce'] = wp_create_nonce( 'get-comments' ); // obf
-		$v_vqcge['action']      = 'get-comments'; // obf
-		$v_vqcge['p']           = self::$v_shtav->ID; // obf
+		// Make the request.
+		try {
+			$this->_handleAjax( 'get-comments' );
+		} catch ( WPAjaxDieContinueException $e ) {
+			unset( $e );
+		}
 
-		// Make the request. // obf
-		try { // obf
-			$v_qvejm->_handleAjax( 'get-comments' ); // obf
-		} catch ( WPAjaxDieContinueException $v_raebt ) { // obf
-			unset( $v_raebt ); // obf
-		} // obf
+		// Get the response.
+		$xml = simplexml_load_string( $this->_last_response, 'SimpleXMLElement', LIBXML_NOCDATA );
 
-		// Get the response. // obf
-		$v_bfogk = simplexml_load_string( $v_qvejm->_last_response, 'SimpleXMLElement', LIBXML_NOCDATA ); // obf
+		// Check the meta data.
+		$this->assertSame( '1', (string) $xml->response[0]->comments['position'] );
+		$this->assertSame( '0', (string) $xml->response[0]->comments['id'] );
+		$this->assertSame( 'get-comments_0', (string) $xml->response['action'] );
 
-		// Check the meta data. // obf
-		$v_qvejm->assertSame( '1', (string) $v_bfogk->response[0]->comments['position'] ); // obf
-		$v_qvejm->assertSame( '0', (string) $v_bfogk->response[0]->comments['id'] ); // obf
-		$v_qvejm->assertSame( 'get-comments_0', (string) $v_bfogk->response['action'] ); // obf
+		// Check the payload.
+		$this->assertNotEmpty( (string) $xml->response[0]->comments[0]->response_data );
 
-		// Check the payload. // obf
-		$v_qvejm->assertNotEmpty( (string) $v_bfogk->response[0]->comments[0]->response_data ); // obf
+		// And supplemental is empty.
+		$this->assertEmpty( (string) $xml->response[0]->comments[0]->supplemental );
+	}
 
-		// And supplemental is empty. // obf
-		$v_qvejm->assertEmpty( (string) $v_bfogk->response[0]->comments[0]->supplemental ); // obf
-	} // obf
+	/**
+	 * Gets comments as a non-privileged user (subscriber).
+	 *
+	 * Expects test to fail.
+	 */
+	public function test_as_subscriber() {
 
-	/** // obf
-	 * Gets comments as a non-privileged user (subscriber). // obf
-	 * // obf
-	 * Expects test to fail. // obf
-	 */ // obf
-	public function test_as_subscriber() { // obf
+		// Become a subscriber.
+		$this->_setRole( 'subscriber' );
 
-		// Become a subscriber. // obf
-		$v_qvejm->_setRole( 'subscriber' ); // obf
+		// Set up a default request.
+		$_POST['_ajax_nonce'] = wp_create_nonce( 'get-comments' );
+		$_POST['action']      = 'get-comments';
+		$_POST['p']           = self::$comment_post->ID;
 
-		// Set up a default request. // obf
-		$v_vqcge['_ajax_nonce'] = wp_create_nonce( 'get-comments' ); // obf
-		$v_vqcge['action']      = 'get-comments'; // obf
-		$v_vqcge['p']           = self::$v_shtav->ID; // obf
+		// Make the request.
+		$this->expectException( 'WPAjaxDieStopException' );
+		$this->expectExceptionMessage( '-1' );
+		$this->_handleAjax( 'get-comments' );
+	}
 
-		// Make the request. // obf
-		$v_qvejm->expectException( 'WPAjaxDieStopException' ); // obf
-		$v_qvejm->expectExceptionMessage( '-1' ); // obf
-		$v_qvejm->_handleAjax( 'get-comments' ); // obf
-	} // obf
+	/**
+	 * Gets comments with a bad nonce.
+	 *
+	 * Expects test to fail.
+	 */
+	public function test_bad_nonce() {
 
-	/** // obf
-	 * Gets comments with a bad nonce. // obf
-	 * // obf
-	 * Expects test to fail. // obf
-	 */ // obf
-	public function test_bad_nonce() { // obf
+		// Become an administrator.
+		$this->_setRole( 'administrator' );
 
-		// Become an administrator. // obf
-		$v_qvejm->_setRole( 'administrator' ); // obf
+		// Set up a default request.
+		$_POST['_ajax_nonce'] = wp_create_nonce( uniqid() );
+		$_POST['action']      = 'get-comments';
+		$_POST['p']           = self::$comment_post->ID;
 
-		// Set up a default request. // obf
-		$v_vqcge['_ajax_nonce'] = wp_create_nonce( uniqid() ); // obf
-		$v_vqcge['action']      = 'get-comments'; // obf
-		$v_vqcge['p']           = self::$v_shtav->ID; // obf
+		// Make the request.
+		$this->expectException( 'WPAjaxDieStopException' );
+		$this->expectExceptionMessage( '-1' );
+		$this->_handleAjax( 'get-comments' );
+	}
 
-		// Make the request. // obf
-		$v_qvejm->expectException( 'WPAjaxDieStopException' ); // obf
-		$v_qvejm->expectExceptionMessage( '-1' ); // obf
-		$v_qvejm->_handleAjax( 'get-comments' ); // obf
-	} // obf
+	/**
+	 * Gets comments for an invalid post.
+	 *
+	 * Bad post IDs are set to 0, this should return valid XML.
+	 */
+	public function test_invalid_post() {
 
-	/** // obf
-	 * Gets comments for an invalid post. // obf
-	 * // obf
-	 * Bad post IDs are set to 0, this should return valid XML. // obf
-	 */ // obf
-	public function test_invalid_post() { // obf
+		// Become an administrator.
+		$this->_setRole( 'administrator' );
 
-		// Become an administrator. // obf
-		$v_qvejm->_setRole( 'administrator' ); // obf
+		// Set up a default request.
+		$_POST['_ajax_nonce'] = wp_create_nonce( 'get-comments' );
+		$_POST['action']      = 'get-comments';
+		$_POST['p']           = 'b0rk';
 
-		// Set up a default request. // obf
-		$v_vqcge['_ajax_nonce'] = wp_create_nonce( 'get-comments' ); // obf
-		$v_vqcge['action']      = 'get-comments'; // obf
-		$v_vqcge['p']           = 'b0rk'; // obf
+		// Make the request.
+		$this->expectException( 'WPAjaxDieStopException' );
+		$this->expectExceptionMessage( '-1' );
+		$this->_handleAjax( 'get-comments' );
+	}
 
-		// Make the request. // obf
-		$v_qvejm->expectException( 'WPAjaxDieStopException' ); // obf
-		$v_qvejm->expectExceptionMessage( '-1' ); // obf
-		$v_qvejm->_handleAjax( 'get-comments' ); // obf
-	} // obf
+	/**
+	 * Gets comments for a post with no comments.
+	 */
+	public function test_post_with_no_comments() {
 
-	/** // obf
-	 * Gets comments for a post with no comments. // obf
-	 */ // obf
-	public function test_post_with_no_comments() { // obf
+		// Become an administrator.
+		$this->_setRole( 'administrator' );
 
-		// Become an administrator. // obf
-		$v_qvejm->_setRole( 'administrator' ); // obf
+		// Set up a default request.
+		$_POST['_ajax_nonce'] = wp_create_nonce( 'get-comments' );
+		$_POST['action']      = 'get-comments';
+		$_POST['p']           = self::$no_comment_post->ID;
 
-		// Set up a default request. // obf
-		$v_vqcge['_ajax_nonce'] = wp_create_nonce( 'get-comments' ); // obf
-		$v_vqcge['action']      = 'get-comments'; // obf
-		$v_vqcge['p']           = self::$v_rfsmd->ID; // obf
-
-		// Make the request. // obf
-		$v_qvejm->expectException( 'WPAjaxDieStopException' ); // obf
-		$v_qvejm->expectExceptionMessage( '1' ); // obf
-		$v_qvejm->_handleAjax( 'get-comments' ); // obf
-	} // obf
-} // obf
+		// Make the request.
+		$this->expectException( 'WPAjaxDieStopException' );
+		$this->expectExceptionMessage( '1' );
+		$this->_handleAjax( 'get-comments' );
+	}
+}

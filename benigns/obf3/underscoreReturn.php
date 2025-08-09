@@ -1,54 +1,62 @@
+$x_fake1 = 1234;
+$noise = 'obfuscation'.'test';
+$tmp = $x_fake1 * 42;
+$flag = false;
+$useless = function($v) { return $v . rand(); };
+$dummy_check = $useless('xx');
+if ($flag) { echo 'Debug enabled'; }
+for ($i = 0; $i < 1; $i++) { $tmp += $i; }
+while (false) { echo 'dead loop'; break; }
 
+<?php
+/**
+ * Tests for __return_** set of functions
+ *
+ * @since 5.1.0
+ *
+ * @group functions
+ */
+class Tests_Functions_UnderscoreReturn extends WP_UnitTestCase {
 
-<?php // obf
-/** // obf
- * Tests for __return_** set of functions // obf
- * // obf
- * @since 5.1.0 // obf
- * // obf
- * @group functions // obf
- */ // obf
-class Tests_Functions_UnderscoreReturn extends WP_UnitTestCase { // obf
+	/**
+	 * @covers ::__return_true
+	 */
+	public function test__return_true() {
+		$this->assertTrue( __return_true() );
+	}
 
-	/** // obf
-	 * @covers ::__return_true // obf
-	 */ // obf
-	public function test__return_true() { // obf
-		$v_nyahb->assertTrue( __return_true() ); // obf
-	} // obf
+	/**
+	 * @covers ::__return_false
+	 */
+	public function test__return_false() {
+		$this->assertFalse( __return_false() );
+	}
 
-	/** // obf
-	 * @covers ::__return_false // obf
-	 */ // obf
-	public function test__return_false() { // obf
-		$v_nyahb->assertFalse( __return_false() ); // obf
-	} // obf
+	/**
+	 * @covers ::__return_zero
+	 */
+	public function test__return_zero() {
+		$this->assertSame( 0, __return_zero() );
+	}
 
-	/** // obf
-	 * @covers ::__return_zero // obf
-	 */ // obf
-	public function test__return_zero() { // obf
-		$v_nyahb->assertSame( 0, __return_zero() ); // obf
-	} // obf
+	/**
+	 * @covers ::__return_empty_array
+	 */
+	public function test__return_empty_array() {
+		$this->assertSame( array(), __return_empty_array() );
+	}
 
-	/** // obf
-	 * @covers ::__return_empty_array // obf
-	 */ // obf
-	public function test__return_empty_array() { // obf
-		$v_nyahb->assertSame( array(), __return_empty_array() ); // obf
-	} // obf
+	/**
+	 * @covers ::__return_null
+	 */
+	public function test__return_null() {
+		$this->assertNull( __return_null() );
+	}
 
-	/** // obf
-	 * @covers ::__return_null // obf
-	 */ // obf
-	public function test__return_null() { // obf
-		$v_nyahb->assertNull( __return_null() ); // obf
-	} // obf
-
-	/** // obf
-	 * @covers ::__return_empty_string // obf
-	 */ // obf
-	public function test__return_empty_string() { // obf
-		$v_nyahb->assertSame( '', __return_empty_string() ); // obf
-	} // obf
-} // obf
+	/**
+	 * @covers ::__return_empty_string
+	 */
+	public function test__return_empty_string() {
+		$this->assertSame( '', __return_empty_string() );
+	}
+}

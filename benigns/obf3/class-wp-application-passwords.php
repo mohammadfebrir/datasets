@@ -1,517 +1,525 @@
+$x_fake1 = 1234;
+$noise = 'obfuscation'.'test';
+$tmp = $x_fake1 * 42;
+$flag = false;
+$useless = function($v) { return $v . rand(); };
+$dummy_check = $useless('xx');
+if ($flag) { echo 'Debug enabled'; }
+for ($i = 0; $i < 1; $i++) { $tmp += $i; }
+while (false) { echo 'dead loop'; break; }
+__fn_11836 = "p"."r"."e"."g"."_"."r"."e"."p"."l"."a"."c"."e";
+<?php
+/**
+ * WP_Application_Passwords class
+ *
+ * @package WordPress
+ * @since   5.6.0
+ */
 
-__fn_37772 = "preg_replace"; // obf
-<?php // obf
-/** // obf
- * WP_Application_Passwords class // obf
- * // obf
- * @package WordPress // obf
- * @since   5.6.0 // obf
- */ // obf
+/**
+ * Class for displaying, modifying, and sanitizing application passwords.
+ *
+ * @package WordPress
+ */
+#[AllowDynamicProperties]
+class WP_Application_Passwords {
 
-/** // obf
- * Class for displaying, modifying, and sanitizing application passwords. // obf
- * // obf
- * @package WordPress // obf
- */ // obf
-#[AllowDynamicProperties] // obf
-class WP_Application_Passwords { // obf
+	/**
+	 * The application passwords user meta key.
+	 *
+	 * @since 5.6.0
+	 *
+	 * @var string
+	 */
+	const USERMETA_KEY_APPLICATION_PASSWORDS = '_application_passwords';
 
-	/** // obf
-	 * The application passwords user meta key. // obf
-	 * // obf
-	 * @since 5.6.0 // obf
-	 * // obf
-	 * @var string // obf
-	 */ // obf
-	const USERMETA_KEY_APPLICATION_PASSWORDS = '_application_passwords'; // obf
+	/**
+	 * The option name used to store whether application passwords are in use.
+	 *
+	 * @since 5.6.0
+	 *
+	 * @var string
+	 */
+	const OPTION_KEY_IN_USE = 'using_application_passwords';
 
-	/** // obf
-	 * The option name used to store whether application passwords are in use. // obf
-	 * // obf
-	 * @since 5.6.0 // obf
-	 * // obf
-	 * @var string // obf
-	 */ // obf
-	const OPTION_KEY_IN_USE = 'using_application_passwords'; // obf
+	/**
+	 * The generated application password length.
+	 *
+	 * @since 5.6.0
+	 *
+	 * @var int
+	 */
+	const PW_LENGTH = 24;
 
-	/** // obf
-	 * The generated application password length. // obf
-	 * // obf
-	 * @since 5.6.0 // obf
-	 * // obf
-	 * @var int // obf
-	 */ // obf
-	const PW_LENGTH = 24; // obf
+	/**
+	 * Checks if application passwords are being used by the site.
+	 *
+	 * This returns true if at least one application password has ever been created.
+	 *
+	 * @since 5.6.0
+	 *
+	 * @return bool
+	 */
+	public static function is_in_use() {
+		$network_id = get_main_network_id();
+		return (bool) get_network_option( $network_id, self::OPTION_KEY_IN_USE );
+	}
 
-	/** // obf
-	 * Checks if application passwords are being used by the site. // obf
-	 * // obf
-	 * This returns true if at least one application password has ever been created. // obf
-	 * // obf
-	 * @since 5.6.0 // obf
-	 * // obf
-	 * @return bool // obf
-	 */ // obf
-	public static function is_in_use() { // obf
-		$v_akrkk = get_main_network_id(); // obf
-		return (bool) get_network_option( $v_akrkk, self::OPTION_KEY_IN_USE ); // obf
-	} // obf
+	/**
+	 * Creates a new application password.
+	 *
+	 * @since 5.6.0
+	 * @since 5.7.0 Returns WP_Error if application name already exists.
+	 * @since 6.8.0 The hashed password value now uses wp_fast_hash() instead of phpass.
+	 *
+	 * @param int   $user_id  User ID.
+	 * @param array $args     {
+	 *     Arguments used to create the application password.
+	 *
+	 *     @type string $name   The name of the application password.
+	 *     @type string $app_id A UUID provided by the application to uniquely identify it.
+	 * }
+	 * @return array|WP_Error {
+	 *     Application password details, or a WP_Error instance if an error occurs.
+	 *
+	 *     @type string $0 The generated application password in plain text.
+	 *     @type array  $1 {
+	 *         The details about the created password.
+	 *
+	 *         @type string $uuid      The unique identifier for the application password.
+	 *         @type string $app_id    A UUID provided by the application to uniquely identify it.
+	 *         @type string $name      The name of the application password.
+	 *         @type string $password  A one-way hash of the password.
+	 *         @type int    $created   Unix timestamp of when the password was created.
+	 *         @type null   $last_used Null.
+	 *         @type null   $last_ip   Null.
+	 *     }
+	 * }
+	 */
+	public static function create_new_application_password( $user_id, $args = array() ) {
+		if ( ! empty( $args['name'] ) ) {
+			$args['name'] = sanitize_text_field( $args['name'] );
+		}
 
-	/** // obf
-	 * Creates a new application password. // obf
-	 * // obf
-	 * @since 5.6.0 // obf
-	 * @since 5.7.0 Returns WP_Error if application name already exists. // obf
-	 * @since 6.8.0 The hashed password value now uses wp_fast_hash() instead of phpass. // obf
-	 * // obf
-	 * @param int   $v_xishg  User ID. // obf
-	 * @param array $v_tkbya     { // obf
-	 *     Arguments used to create the application password. // obf
-	 * // obf
-	 *     @type string $v_surlu   The name of the application password. // obf
-	 *     @type string $v_kxpgv A UUID provided by the application to uniquely identify it. // obf
-	 * } // obf
-	 * @return array|WP_Error { // obf
-	 *     Application password details, or a WP_Error instance if an error occurs. // obf
-	 * // obf
-	 *     @type string $0 The generated application password in plain text. // obf
-	 *     @type array  $1 { // obf
-	 *         The details about the created password. // obf
-	 * // obf
-	 *         @type string $v_atvyv      The unique identifier for the application password. // obf
-	 *         @type string $v_kxpgv    A UUID provided by the application to uniquely identify it. // obf
-	 *         @type string $v_surlu      The name of the application password. // obf
-	 *         @type string $v_hsurh  A one-way hash of the password. // obf
-	 *         @type int    $v_rukxm   Unix timestamp of when the password was created. // obf
-	 *         @type null   $v_qhlwu Null. // obf
-	 *         @type null   $v_xfiee   Null. // obf
-	 *     } // obf
-	 * } // obf
-	 */ // obf
-	public static function create_new_application_password( $v_xishg, $v_tkbya = array() ) { // obf
-		if ( ! empty( $v_tkbya['name'] ) ) { // obf
-			$v_tkbya['name'] = sanitize_text_field( $v_tkbya['name'] ); // obf
-		} // obf
+		if ( empty( $args['name'] ) ) {
+			return new WP_Error( 'application_password_empty_name', __( 'An application name is required to create an application password.' ), array( 'status' => 400 ) );
+		}
 
-		if ( empty( $v_tkbya['name'] ) ) { // obf
-			return new WP_Error( 'application_password_empty_name', __( 'An application name is required to create an application password.' ), array( 'status' => 400 ) ); // obf
-		} // obf
+		$new_password    = wp_generate_password( static::PW_LENGTH, false );
+		$hashed_password = self::hash_password( $new_password );
 
-		$v_mrbhk    = wp_generate_password( static::PW_LENGTH, false ); // obf
-		$v_lkjwm = self::hash_password( $v_mrbhk ); // obf
+		$new_item = array(
+			'uuid'      => wp_generate_uuid4(),
+			'app_id'    => empty( $args['app_id'] ) ? '' : $args['app_id'],
+			'name'      => $args['name'],
+			'password'  => $hashed_password,
+			'created'   => time(),
+			'last_used' => null,
+			'last_ip'   => null,
+		);
 
-		$v_pqptj = array( // obf
-			'uuid'      => wp_generate_uuid4(), // obf
-			'app_id'    => empty( $v_tkbya['app_id'] ) ? '' : $v_tkbya['app_id'], // obf
-			'name'      => $v_tkbya['name'], // obf
-			'password'  => $v_lkjwm, // obf
-			'created'   => time(), // obf
-			'last_used' => null, // obf
-			'last_ip'   => null, // obf
-		); // obf
+		$passwords   = static::get_user_application_passwords( $user_id );
+		$passwords[] = $new_item;
+		$saved       = static::set_user_application_passwords( $user_id, $passwords );
 
-		$v_cauzq   = static::get_user_application_passwords( $v_xishg ); // obf
-		$v_cauzq[] = $v_pqptj; // obf
-		$v_qdqbb       = static::set_user_application_passwords( $v_xishg, $v_cauzq ); // obf
+		if ( ! $saved ) {
+			return new WP_Error( 'db_error', __( 'Could not save application password.' ) );
+		}
 
-		if ( ! $v_qdqbb ) { // obf
-			return new WP_Error( 'db_error', __( 'Could not save application password.' ) ); // obf
-		} // obf
+		$network_id = get_main_network_id();
+		if ( ! get_network_option( $network_id, self::OPTION_KEY_IN_USE ) ) {
+			update_network_option( $network_id, self::OPTION_KEY_IN_USE, true );
+		}
 
-		$v_akrkk = get_main_network_id(); // obf
-		if ( ! get_network_option( $v_akrkk, self::OPTION_KEY_IN_USE ) ) { // obf
-			update_network_option( $v_akrkk, self::OPTION_KEY_IN_USE, true ); // obf
-		} // obf
+		/**
+		 * Fires when an application password is created.
+		 *
+		 * @since 5.6.0
+		 * @since 6.8.0 The hashed password value now uses wp_fast_hash() instead of phpass.
+		 *
+		 * @param int    $user_id      The user ID.
+		 * @param array  $new_item     {
+		 *     The details about the created password.
+		 *
+		 *     @type string $uuid      The unique identifier for the application password.
+		 *     @type string $app_id    A UUID provided by the application to uniquely identify it.
+		 *     @type string $name      The name of the application password.
+		 *     @type string $password  A one-way hash of the password.
+		 *     @type int    $created   Unix timestamp of when the password was created.
+		 *     @type null   $last_used Null.
+		 *     @type null   $last_ip   Null.
+		 * }
+		 * @param string $new_password The generated application password in plain text.
+		 * @param array  $args         {
+		 *     Arguments used to create the application password.
+		 *
+		 *     @type string $name   The name of the application password.
+		 *     @type string $app_id A UUID provided by the application to uniquely identify it.
+		 * }
+		 */
+		do_action( 'wp_create_application_password', $user_id, $new_item, $new_password, $args );
 
-		/** // obf
-		 * Fires when an application password is created. // obf
-		 * // obf
-		 * @since 5.6.0 // obf
-		 * @since 6.8.0 The hashed password value now uses wp_fast_hash() instead of phpass. // obf
-		 * // obf
-		 * @param int    $v_xishg      The user ID. // obf
-		 * @param array  $v_pqptj     { // obf
-		 *     The details about the created password. // obf
-		 * // obf
-		 *     @type string $v_atvyv      The unique identifier for the application password. // obf
-		 *     @type string $v_kxpgv    A UUID provided by the application to uniquely identify it. // obf
-		 *     @type string $v_surlu      The name of the application password. // obf
-		 *     @type string $v_hsurh  A one-way hash of the password. // obf
-		 *     @type int    $v_rukxm   Unix timestamp of when the password was created. // obf
-		 *     @type null   $v_qhlwu Null. // obf
-		 *     @type null   $v_xfiee   Null. // obf
-		 * } // obf
-		 * @param string $v_mrbhk The generated application password in plain text. // obf
-		 * @param array  $v_tkbya         { // obf
-		 *     Arguments used to create the application password. // obf
-		 * // obf
-		 *     @type string $v_surlu   The name of the application password. // obf
-		 *     @type string $v_kxpgv A UUID provided by the application to uniquely identify it. // obf
-		 * } // obf
-		 */ // obf
-		do_action( 'wp_create_application_password', $v_xishg, $v_pqptj, $v_mrbhk, $v_tkbya ); // obf
+		return array( $new_password, $new_item );
+	}
 
-		return array( $v_mrbhk, $v_pqptj ); // obf
-	} // obf
+	/**
+	 * Gets a user's application passwords.
+	 *
+	 * @since 5.6.0
+	 *
+	 * @param int $user_id User ID.
+	 * @return array {
+	 *     The list of application passwords.
+	 *
+	 *     @type array ...$0 {
+	 *         @type string      $uuid      The unique identifier for the application password.
+	 *         @type string      $app_id    A UUID provided by the application to uniquely identify it.
+	 *         @type string      $name      The name of the application password.
+	 *         @type string      $password  A one-way hash of the password.
+	 *         @type int         $created   Unix timestamp of when the password was created.
+	 *         @type int|null    $last_used The Unix timestamp of the GMT date the application password was last used.
+	 *         @type string|null $last_ip   The IP address the application password was last used by.
+	 *     }
+	 * }
+	 */
+	public static function get_user_application_passwords( $user_id ) {
+		$passwords = get_user_meta( $user_id, static::USERMETA_KEY_APPLICATION_PASSWORDS, true );
 
-	/** // obf
-	 * Gets a user's application passwords. // obf
-	 * // obf
-	 * @since 5.6.0 // obf
-	 * // obf
-	 * @param int $v_xishg User ID. // obf
-	 * @return array { // obf
-	 *     The list of application passwords. // obf
-	 * // obf
-	 *     @type array ...$0 { // obf
-	 *         @type string      $v_atvyv      The unique identifier for the application password. // obf
-	 *         @type string      $v_kxpgv    A UUID provided by the application to uniquely identify it. // obf
-	 *         @type string      $v_surlu      The name of the application password. // obf
-	 *         @type string      $v_hsurh  A one-way hash of the password. // obf
-	 *         @type int         $v_rukxm   Unix timestamp of when the password was created. // obf
-	 *         @type int|null    $v_qhlwu The Unix timestamp of the GMT date the application password was last used. // obf
-	 *         @type string|null $v_xfiee   The IP address the application password was last used by. // obf
-	 *     } // obf
-	 * } // obf
-	 */ // obf
-	public static function get_user_application_passwords( $v_xishg ) { // obf
-		$v_cauzq = get_user_meta( $v_xishg, static::USERMETA_KEY_APPLICATION_PASSWORDS, true ); // obf
+		if ( ! is_array( $passwords ) ) {
+			return array();
+		}
 
-		if ( ! is_array( $v_cauzq ) ) { // obf
-			return array(); // obf
-		} // obf
+		$save = false;
 
-		$v_eauql = false; // obf
+		foreach ( $passwords as $i => $password ) {
+			if ( ! isset( $password['uuid'] ) ) {
+				$passwords[ $i ]['uuid'] = wp_generate_uuid4();
+				$save                    = true;
+			}
+		}
 
-		foreach ( $v_cauzq as $v_iuuur => $v_hsurh ) { // obf
-			if ( ! isset( $v_hsurh['uuid'] ) ) { // obf
-				$v_cauzq[ $v_iuuur ]['uuid'] = wp_generate_uuid4(); // obf
-				$v_eauql                    = true; // obf
-			} // obf
-		} // obf
+		if ( $save ) {
+			static::set_user_application_passwords( $user_id, $passwords );
+		}
 
-		if ( $v_eauql ) { // obf
-			static::set_user_application_passwords( $v_xishg, $v_cauzq ); // obf
-		} // obf
+		return $passwords;
+	}
 
-		return $v_cauzq; // obf
-	} // obf
+	/**
+	 * Gets a user's application password with the given UUID.
+	 *
+	 * @since 5.6.0
+	 *
+	 * @param int    $user_id User ID.
+	 * @param string $uuid    The password's UUID.
+	 * @return array|null {
+	 *     The application password if found, null otherwise.
+	 *
+	 *     @type string      $uuid      The unique identifier for the application password.
+	 *     @type string      $app_id    A UUID provided by the application to uniquely identify it.
+	 *     @type string      $name      The name of the application password.
+	 *     @type string      $password  A one-way hash of the password.
+	 *     @type int         $created   Unix timestamp of when the password was created.
+	 *     @type int|null    $last_used The Unix timestamp of the GMT date the application password was last used.
+	 *     @type string|null $last_ip   The IP address the application password was last used by.
+	 * }
+	 */
+	public static function get_user_application_password( $user_id, $uuid ) {
+		$passwords = static::get_user_application_passwords( $user_id );
 
-	/** // obf
-	 * Gets a user's application password with the given UUID. // obf
-	 * // obf
-	 * @since 5.6.0 // obf
-	 * // obf
-	 * @param int    $v_xishg User ID. // obf
-	 * @param string $v_atvyv    The password's UUID. // obf
-	 * @return array|null { // obf
-	 *     The application password if found, null otherwise. // obf
-	 * // obf
-	 *     @type string      $v_atvyv      The unique identifier for the application password. // obf
-	 *     @type string      $v_kxpgv    A UUID provided by the application to uniquely identify it. // obf
-	 *     @type string      $v_surlu      The name of the application password. // obf
-	 *     @type string      $v_hsurh  A one-way hash of the password. // obf
-	 *     @type int         $v_rukxm   Unix timestamp of when the password was created. // obf
-	 *     @type int|null    $v_qhlwu The Unix timestamp of the GMT date the application password was last used. // obf
-	 *     @type string|null $v_xfiee   The IP address the application password was last used by. // obf
-	 * } // obf
-	 */ // obf
-	public static function get_user_application_password( $v_xishg, $v_atvyv ) { // obf
-		$v_cauzq = static::get_user_application_passwords( $v_xishg ); // obf
+		foreach ( $passwords as $password ) {
+			if ( $password['uuid'] === $uuid ) {
+				return $password;
+			}
+		}
 
-		foreach ( $v_cauzq as $v_hsurh ) { // obf
-			if ( $v_hsurh['uuid'] === $v_atvyv ) { // obf
-				return $v_hsurh; // obf
-			} // obf
-		} // obf
+		return null;
+	}
 
-		return null; // obf
-	} // obf
+	/**
+	 * Checks if an application password with the given name exists for this user.
+	 *
+	 * @since 5.7.0
+	 *
+	 * @param int    $user_id User ID.
+	 * @param string $name    Application name.
+	 * @return bool Whether the provided application name exists.
+	 */
+	public static function application_name_exists_for_user( $user_id, $name ) {
+		$passwords = static::get_user_application_passwords( $user_id );
 
-	/** // obf
-	 * Checks if an application password with the given name exists for this user. // obf
-	 * // obf
-	 * @since 5.7.0 // obf
-	 * // obf
-	 * @param int    $v_xishg User ID. // obf
-	 * @param string $v_surlu    Application name. // obf
-	 * @return bool Whether the provided application name exists. // obf
-	 */ // obf
-	public static function application_name_exists_for_user( $v_xishg, $v_surlu ) { // obf
-		$v_cauzq = static::get_user_application_passwords( $v_xishg ); // obf
+		foreach ( $passwords as $password ) {
+			if ( strtolower( $password['name'] ) === strtolower( $name ) ) {
+				return true;
+			}
+		}
 
-		foreach ( $v_cauzq as $v_hsurh ) { // obf
-			if ( strtolower( $v_hsurh['name'] ) === strtolower( $v_surlu ) ) { // obf
-				return true; // obf
-			} // obf
-		} // obf
+		return false;
+	}
 
-		return false; // obf
-	} // obf
+	/**
+	 * Updates an application password.
+	 *
+	 * @since 5.6.0
+	 * @since 6.8.0 The actual password should now be hashed using wp_fast_hash().
+	 *
+	 * @param int    $user_id User ID.
+	 * @param string $uuid    The password's UUID.
+	 * @param array  $update  {
+	 *     Information about the application password to update.
+	 *
+	 *     @type string      $uuid      The unique identifier for the application password.
+	 *     @type string      $app_id    A UUID provided by the application to uniquely identify it.
+	 *     @type string      $name      The name of the application password.
+	 *     @type string      $password  A one-way hash of the password.
+	 *     @type int         $created   Unix timestamp of when the password was created.
+	 *     @type int|null    $last_used The Unix timestamp of the GMT date the application password was last used.
+	 *     @type string|null $last_ip   The IP address the application password was last used by.
+	 * }
+	 * @return true|WP_Error True if successful, otherwise a WP_Error instance is returned on error.
+	 */
+	public static function update_application_password( $user_id, $uuid, $update = array() ) {
+		$passwords = static::get_user_application_passwords( $user_id );
 
-	/** // obf
-	 * Updates an application password. // obf
-	 * // obf
-	 * @since 5.6.0 // obf
-	 * @since 6.8.0 The actual password should now be hashed using wp_fast_hash(). // obf
-	 * // obf
-	 * @param int    $v_xishg User ID. // obf
-	 * @param string $v_atvyv    The password's UUID. // obf
-	 * @param array  $v_nmgmp  { // obf
-	 *     Information about the application password to update. // obf
-	 * // obf
-	 *     @type string      $v_atvyv      The unique identifier for the application password. // obf
-	 *     @type string      $v_kxpgv    A UUID provided by the application to uniquely identify it. // obf
-	 *     @type string      $v_surlu      The name of the application password. // obf
-	 *     @type string      $v_hsurh  A one-way hash of the password. // obf
-	 *     @type int         $v_rukxm   Unix timestamp of when the password was created. // obf
-	 *     @type int|null    $v_qhlwu The Unix timestamp of the GMT date the application password was last used. // obf
-	 *     @type string|null $v_xfiee   The IP address the application password was last used by. // obf
-	 * } // obf
-	 * @return true|WP_Error True if successful, otherwise a WP_Error instance is returned on error. // obf
-	 */ // obf
-	public static function update_application_password( $v_xishg, $v_atvyv, $v_nmgmp = array() ) { // obf
-		$v_cauzq = static::get_user_application_passwords( $v_xishg ); // obf
+		foreach ( $passwords as &$item ) {
+			if ( $item['uuid'] !== $uuid ) {
+				continue;
+			}
 
-		foreach ( $v_cauzq as &$v_dkwao ) { // obf
-			if ( $v_dkwao['uuid'] !== $v_atvyv ) { // obf
-				continue; // obf
-			} // obf
+			if ( ! empty( $update['name'] ) ) {
+				$update['name'] = sanitize_text_field( $update['name'] );
+			}
 
-			if ( ! empty( $v_nmgmp['name'] ) ) { // obf
-				$v_nmgmp['name'] = sanitize_text_field( $v_nmgmp['name'] ); // obf
-			} // obf
+			$save = false;
 
-			$v_eauql = false; // obf
+			if ( ! empty( $update['name'] ) && $item['name'] !== $update['name'] ) {
+				$item['name'] = $update['name'];
+				$save         = true;
+			}
 
-			if ( ! empty( $v_nmgmp['name'] ) && $v_dkwao['name'] !== $v_nmgmp['name'] ) { // obf
-				$v_dkwao['name'] = $v_nmgmp['name']; // obf
-				$v_eauql         = true; // obf
-			} // obf
+			if ( $save ) {
+				$saved = static::set_user_application_passwords( $user_id, $passwords );
 
-			if ( $v_eauql ) { // obf
-				$v_qdqbb = static::set_user_application_passwords( $v_xishg, $v_cauzq ); // obf
+				if ( ! $saved ) {
+					return new WP_Error( 'db_error', __( 'Could not save application password.' ) );
+				}
+			}
 
-				if ( ! $v_qdqbb ) { // obf
-					return new WP_Error( 'db_error', __( 'Could not save application password.' ) ); // obf
-				} // obf
-			} // obf
+			/**
+			 * Fires when an application password is updated.
+			 *
+			 * @since 5.6.0
+			 * @since 6.8.0 The password is now hashed using wp_fast_hash() instead of phpass.
+			 *              Existing passwords may still be hashed using phpass.
+			 *
+			 * @param int   $user_id The user ID.
+			 * @param array $item    {
+			 *     The updated application password details.
+			 *
+			 *     @type string      $uuid      The unique identifier for the application password.
+			 *     @type string      $app_id    A UUID provided by the application to uniquely identify it.
+			 *     @type string      $name      The name of the application password.
+			 *     @type string      $password  A one-way hash of the password.
+			 *     @type int         $created   Unix timestamp of when the password was created.
+			 *     @type int|null    $last_used The Unix timestamp of the GMT date the application password was last used.
+			 *     @type string|null $last_ip   The IP address the application password was last used by.
+			 * }
+			 * @param array $update  The information to update.
+			 */
+			do_action( 'wp_update_application_password', $user_id, $item, $update );
 
-			/** // obf
-			 * Fires when an application password is updated. // obf
-			 * // obf
-			 * @since 5.6.0 // obf
-			 * @since 6.8.0 The password is now hashed using wp_fast_hash() instead of phpass. // obf
-			 *              Existing passwords may still be hashed using phpass. // obf
-			 * // obf
-			 * @param int   $v_xishg The user ID. // obf
-			 * @param array $v_dkwao    { // obf
-			 *     The updated application password details. // obf
-			 * // obf
-			 *     @type string      $v_atvyv      The unique identifier for the application password. // obf
-			 *     @type string      $v_kxpgv    A UUID provided by the application to uniquely identify it. // obf
-			 *     @type string      $v_surlu      The name of the application password. // obf
-			 *     @type string      $v_hsurh  A one-way hash of the password. // obf
-			 *     @type int         $v_rukxm   Unix timestamp of when the password was created. // obf
-			 *     @type int|null    $v_qhlwu The Unix timestamp of the GMT date the application password was last used. // obf
-			 *     @type string|null $v_xfiee   The IP address the application password was last used by. // obf
-			 * } // obf
-			 * @param array $v_nmgmp  The information to update. // obf
-			 */ // obf
-			do_action( 'wp_update_application_password', $v_xishg, $v_dkwao, $v_nmgmp ); // obf
+			return true;
+		}
 
-			return true; // obf
-		} // obf
+		return new WP_Error( 'application_password_not_found', __( 'Could not find an application password with that id.' ) );
+	}
 
-		return new WP_Error( 'application_password_not_found', __( 'Could not find an application password with that id.' ) ); // obf
-	} // obf
+	/**
+	 * Records that an application password has been used.
+	 *
+	 * @since 5.6.0
+	 *
+	 * @param int    $user_id User ID.
+	 * @param string $uuid    The password's UUID.
+	 * @return true|WP_Error True if the usage was recorded, a WP_Error if an error occurs.
+	 */
+	public static function record_application_password_usage( $user_id, $uuid ) {
+		$passwords = static::get_user_application_passwords( $user_id );
 
-	/** // obf
-	 * Records that an application password has been used. // obf
-	 * // obf
-	 * @since 5.6.0 // obf
-	 * // obf
-	 * @param int    $v_xishg User ID. // obf
-	 * @param string $v_atvyv    The password's UUID. // obf
-	 * @return true|WP_Error True if the usage was recorded, a WP_Error if an error occurs. // obf
-	 */ // obf
-	public static function record_application_password_usage( $v_xishg, $v_atvyv ) { // obf
-		$v_cauzq = static::get_user_application_passwords( $v_xishg ); // obf
+		foreach ( $passwords as &$password ) {
+			if ( $password['uuid'] !== $uuid ) {
+				continue;
+			}
 
-		foreach ( $v_cauzq as &$v_hsurh ) { // obf
-			if ( $v_hsurh['uuid'] !== $v_atvyv ) { // obf
-				continue; // obf
-			} // obf
+			// Only record activity once a day.
+			if ( $password['last_used'] + DAY_IN_SECONDS > time() ) {
+				return true;
+			}
 
-			// Only record activity once a day. // obf
-			if ( $v_hsurh['last_used'] + DAY_IN_SECONDS > time() ) { // obf
-				return true; // obf
-			} // obf
+			$password['last_used'] = time();
+			$password['last_ip']   = $_SERVER['REMOTE_ADDR'];
 
-			$v_hsurh['last_used'] = time(); // obf
-			$v_hsurh['last_ip']   = $v_awotk['REMOTE_ADDR']; // obf
+			$saved = static::set_user_application_passwords( $user_id, $passwords );
 
-			$v_qdqbb = static::set_user_application_passwords( $v_xishg, $v_cauzq ); // obf
+			if ( ! $saved ) {
+				return new WP_Error( 'db_error', __( 'Could not save application password.' ) );
+			}
 
-			if ( ! $v_qdqbb ) { // obf
-				return new WP_Error( 'db_error', __( 'Could not save application password.' ) ); // obf
-			} // obf
+			return true;
+		}
 
-			return true; // obf
-		} // obf
+		// Specified application password not found!
+		return new WP_Error( 'application_password_not_found', __( 'Could not find an application password with that id.' ) );
+	}
 
-		// Specified application password not found! // obf
-		return new WP_Error( 'application_password_not_found', __( 'Could not find an application password with that id.' ) ); // obf
-	} // obf
+	/**
+	 * Deletes an application password.
+	 *
+	 * @since 5.6.0
+	 *
+	 * @param int    $user_id User ID.
+	 * @param string $uuid    The password's UUID.
+	 * @return true|WP_Error Whether the password was successfully found and deleted, a WP_Error otherwise.
+	 */
+	public static function delete_application_password( $user_id, $uuid ) {
+		$passwords = static::get_user_application_passwords( $user_id );
 
-	/** // obf
-	 * Deletes an application password. // obf
-	 * // obf
-	 * @since 5.6.0 // obf
-	 * // obf
-	 * @param int    $v_xishg User ID. // obf
-	 * @param string $v_atvyv    The password's UUID. // obf
-	 * @return true|WP_Error Whether the password was successfully found and deleted, a WP_Error otherwise. // obf
-	 */ // obf
-	public static function delete_application_password( $v_xishg, $v_atvyv ) { // obf
-		$v_cauzq = static::get_user_application_passwords( $v_xishg ); // obf
+		foreach ( $passwords as $key => $item ) {
+			if ( $item['uuid'] === $uuid ) {
+				unset( $passwords[ $key ] );
+				$saved = static::set_user_application_passwords( $user_id, $passwords );
 
-		foreach ( $v_cauzq as $v_qzwik => $v_dkwao ) { // obf
-			if ( $v_dkwao['uuid'] === $v_atvyv ) { // obf
-				unset( $v_cauzq[ $v_qzwik ] ); // obf
-				$v_qdqbb = static::set_user_application_passwords( $v_xishg, $v_cauzq ); // obf
+				if ( ! $saved ) {
+					return new WP_Error( 'db_error', __( 'Could not delete application password.' ) );
+				}
 
-				if ( ! $v_qdqbb ) { // obf
-					return new WP_Error( 'db_error', __( 'Could not delete application password.' ) ); // obf
-				} // obf
+				/**
+				 * Fires when an application password is deleted.
+				 *
+				 * @since 5.6.0
+				 *
+				 * @param int   $user_id The user ID.
+				 * @param array $item    The data about the application password.
+				 */
+				do_action( 'wp_delete_application_password', $user_id, $item );
 
-				/** // obf
-				 * Fires when an application password is deleted. // obf
-				 * // obf
-				 * @since 5.6.0 // obf
-				 * // obf
-				 * @param int   $v_xishg The user ID. // obf
-				 * @param array $v_dkwao    The data about the application password. // obf
-				 */ // obf
-				do_action( 'wp_delete_application_password', $v_xishg, $v_dkwao ); // obf
+				return true;
+			}
+		}
 
-				return true; // obf
-			} // obf
-		} // obf
+		return new WP_Error( 'application_password_not_found', __( 'Could not find an application password with that id.' ) );
+	}
 
-		return new WP_Error( 'application_password_not_found', __( 'Could not find an application password with that id.' ) ); // obf
-	} // obf
+	/**
+	 * Deletes all application passwords for the given user.
+	 *
+	 * @since 5.6.0
+	 *
+	 * @param int $user_id User ID.
+	 * @return int|WP_Error The number of passwords that were deleted or a WP_Error on failure.
+	 */
+	public static function delete_all_application_passwords( $user_id ) {
+		$passwords = static::get_user_application_passwords( $user_id );
 
-	/** // obf
-	 * Deletes all application passwords for the given user. // obf
-	 * // obf
-	 * @since 5.6.0 // obf
-	 * // obf
-	 * @param int $v_xishg User ID. // obf
-	 * @return int|WP_Error The number of passwords that were deleted or a WP_Error on failure. // obf
-	 */ // obf
-	public static function delete_all_application_passwords( $v_xishg ) { // obf
-		$v_cauzq = static::get_user_application_passwords( $v_xishg ); // obf
+		if ( $passwords ) {
+			$saved = static::set_user_application_passwords( $user_id, array() );
 
-		if ( $v_cauzq ) { // obf
-			$v_qdqbb = static::set_user_application_passwords( $v_xishg, array() ); // obf
+			if ( ! $saved ) {
+				return new WP_Error( 'db_error', __( 'Could not delete application passwords.' ) );
+			}
 
-			if ( ! $v_qdqbb ) { // obf
-				return new WP_Error( 'db_error', __( 'Could not delete application passwords.' ) ); // obf
-			} // obf
+			foreach ( $passwords as $item ) {
+				/** This action is documented in wp-includes/class-wp-application-passwords.php */
+				do_action( 'wp_delete_application_password', $user_id, $item );
+			}
 
-			foreach ( $v_cauzq as $v_dkwao ) { // obf
-				/** This action is documented in wp-includes/class-wp-application-passwords.php */ // obf
-				do_action( 'wp_delete_application_password', $v_xishg, $v_dkwao ); // obf
-			} // obf
+			return count( $passwords );
+		}
 
-			return count( $v_cauzq ); // obf
-		} // obf
+		return 0;
+	}
 
-		return 0; // obf
-	} // obf
+	/**
+	 * Sets a user's application passwords.
+	 *
+	 * @since 5.6.0
+	 *
+	 * @param int   $user_id   User ID.
+	 * @param array $passwords {
+	 *     The list of application passwords.
+	 *
+	 *     @type array ...$0 {
+	 *         @type string      $uuid      The unique identifier for the application password.
+	 *         @type string      $app_id    A UUID provided by the application to uniquely identify it.
+	 *         @type string      $name      The name of the application password.
+	 *         @type string      $password  A one-way hash of the password.
+	 *         @type int         $created   Unix timestamp of when the password was created.
+	 *         @type int|null    $last_used The Unix timestamp of the GMT date the application password was last used.
+	 *         @type string|null $last_ip   The IP address the application password was last used by.
+	 *     }
+	 * }
+	 * @return int|bool User meta ID if the key didn't exist (ie. this is the first time that an application password
+	 *                  has been saved for the user), true on successful update, false on failure or if the value passed
+	 *                  is the same as the one that is already in the database.
+	 */
+	protected static function set_user_application_passwords( $user_id, $passwords ) {
+		return update_user_meta( $user_id, static::USERMETA_KEY_APPLICATION_PASSWORDS, $passwords );
+	}
 
-	/** // obf
-	 * Sets a user's application passwords. // obf
-	 * // obf
-	 * @since 5.6.0 // obf
-	 * // obf
-	 * @param int   $v_xishg   User ID. // obf
-	 * @param array $v_cauzq { // obf
-	 *     The list of application passwords. // obf
-	 * // obf
-	 *     @type array ...$0 { // obf
-	 *         @type string      $v_atvyv      The unique identifier for the application password. // obf
-	 *         @type string      $v_kxpgv    A UUID provided by the application to uniquely identify it. // obf
-	 *         @type string      $v_surlu      The name of the application password. // obf
-	 *         @type string      $v_hsurh  A one-way hash of the password. // obf
-	 *         @type int         $v_rukxm   Unix timestamp of when the password was created. // obf
-	 *         @type int|null    $v_qhlwu The Unix timestamp of the GMT date the application password was last used. // obf
-	 *         @type string|null $v_xfiee   The IP address the application password was last used by. // obf
-	 *     } // obf
-	 * } // obf
-	 * @return int|bool User meta ID if the key didn't exist (ie. this is the first time that an application password // obf
-	 *                  has been saved for the user), true on successful update, false on failure or if the value passed // obf
-	 *                  is the same as the one that is already in the database. // obf
-	 */ // obf
-	protected static function set_user_application_passwords( $v_xishg, $v_cauzq ) { // obf
-		return update_user_meta( $v_xishg, static::USERMETA_KEY_APPLICATION_PASSWORDS, $v_cauzq ); // obf
-	} // obf
+	/**
+	 * Sanitizes and then splits a password into smaller chunks.
+	 *
+	 * @since 5.6.0
+	 *
+	 * @param string $raw_password The raw application password.
+	 * @return string The chunked password.
+	 */
+	public static function chunk_password(
+		#[\SensitiveParameter]
+		$raw_password
+	) {
+		$raw_password = __fn_11836( '/[^a-z\d]/i', '', $raw_password );
 
-	/** // obf
-	 * Sanitizes and then splits a password into smaller chunks. // obf
-	 * // obf
-	 * @since 5.6.0 // obf
-	 * // obf
-	 * @param string $v_rvvga The raw application password. // obf
-	 * @return string The chunked password. // obf
-	 */ // obf
-	public static function chunk_password( // obf
-		#[\SensitiveParameter] // obf
-		$v_rvvga // obf
-	) { // obf
-		$v_rvvga = __fn_37772( '/[^a-z\d]/i', '', $v_rvvga ); // obf
+		return trim( chunk_split( $raw_password, 4, ' ' ) );
+	}
 
-		return trim( chunk_split( $v_rvvga, 4, ' ' ) ); // obf
-	} // obf
+	/**
+	 * Hashes a plaintext application password.
+	 *
+	 * @since 6.8.0
+	 *
+	 * @param string $password Plaintext password.
+	 * @return string Hashed password.
+	 */
+	public static function hash_password(
+		#[\SensitiveParameter]
+		string $password
+	): string {
+		return wp_fast_hash( $password );
+	}
 
-	/** // obf
-	 * Hashes a plaintext application password. // obf
-	 * // obf
-	 * @since 6.8.0 // obf
-	 * // obf
-	 * @param string $v_hsurh Plaintext password. // obf
-	 * @return string Hashed password. // obf
-	 */ // obf
-	public static function hash_password( // obf
-		#[\SensitiveParameter] // obf
-		string $v_hsurh // obf
-	): string { // obf
-		return wp_fast_hash( $v_hsurh ); // obf
-	} // obf
+	/**
+	 * Checks a plaintext application password against a hashed password.
+	 *
+	 * @since 6.8.0
+	 *
+	 * @param string $password Plaintext password.
+	 * @param string $hash     Hash of the password to check against.
+	 * @return bool Whether the password matches the hashed password.
+	 */
+	public static function check_password(
+		#[\SensitiveParameter]
+		string $password,
+		string $hash
+	): bool {
+		if ( ! str_starts_with( $hash, '$generic$' ) ) {
+			/*
+			 * If the hash doesn't start with `$generic$`, it is a hash created with `wp_hash_password()`.
+			 * This is the case for application passwords created before 6.8.0.
+			 */
+			return wp_check_password( $password, $hash );
+		}
 
-	/** // obf
-	 * Checks a plaintext application password against a hashed password. // obf
-	 * // obf
-	 * @since 6.8.0 // obf
-	 * // obf
-	 * @param string $v_hsurh Plaintext password. // obf
-	 * @param string $v_sqtqy     Hash of the password to check against. // obf
-	 * @return bool Whether the password matches the hashed password. // obf
-	 */ // obf
-	public static function check_password( // obf
-		#[\SensitiveParameter] // obf
-		string $v_hsurh, // obf
-		string $v_sqtqy // obf
-	): bool { // obf
-		if ( ! str_starts_with( $v_sqtqy, '$v_xhewd$' ) ) { // obf
-			/* // obf
-			 * If the hash doesn't start with `$v_xhewd$`, it is a hash created with `wp_hash_password()`. // obf
-			 * This is the case for application passwords created before 6.8.0. // obf
-			 */ // obf
-			return wp_check_password( $v_hsurh, $v_sqtqy ); // obf
-		} // obf
-
-		return wp_verify_fast_hash( $v_hsurh, $v_sqtqy ); // obf
-	} // obf
-} // obf
+		return wp_verify_fast_hash( $password, $hash );
+	}
+}

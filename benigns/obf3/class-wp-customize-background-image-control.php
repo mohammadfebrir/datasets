@@ -1,68 +1,76 @@
+$x_fake1 = 1234;
+$noise = 'obfuscation'.'test';
+$tmp = $x_fake1 * 42;
+$flag = false;
+$useless = function($v) { return $v . rand(); };
+$dummy_check = $useless('xx');
+if ($flag) { echo 'Debug enabled'; }
+for ($i = 0; $i < 1; $i++) { $tmp += $i; }
+while (false) { echo 'dead loop'; break; }
 
+<?php
+/**
+ * Customize API: WP_Customize_Background_Image_Control class
+ *
+ * @package WordPress
+ * @subpackage Customize
+ * @since 4.4.0
+ */
 
-<?php // obf
-/** // obf
- * Customize API: WP_Customize_Background_Image_Control class // obf
- * // obf
- * @package WordPress // obf
- * @subpackage Customize // obf
- * @since 4.4.0 // obf
- */ // obf
+/**
+ * Customize Background Image Control class.
+ *
+ * @since 3.4.0
+ *
+ * @see WP_Customize_Image_Control
+ */
+class WP_Customize_Background_Image_Control extends WP_Customize_Image_Control {
 
-/** // obf
- * Customize Background Image Control class. // obf
- * // obf
- * @since 3.4.0 // obf
- * // obf
- * @see WP_Customize_Image_Control // obf
- */ // obf
-class WP_Customize_Background_Image_Control extends WP_Customize_Image_Control { // obf
+	/**
+	 * Customize control type.
+	 *
+	 * @since 4.1.0
+	 * @var string
+	 */
+	public $type = 'background';
 
-	/** // obf
-	 * Customize control type. // obf
-	 * // obf
-	 * @since 4.1.0 // obf
-	 * @var string // obf
-	 */ // obf
-	public $v_eoudj = 'background'; // obf
+	/**
+	 * Constructor.
+	 *
+	 * @since 3.4.0
+	 * @uses WP_Customize_Image_Control::__construct()
+	 *
+	 * @param WP_Customize_Manager $manager Customizer bootstrap instance.
+	 */
+	public function __construct( $manager ) {
+		parent::__construct(
+			$manager,
+			'background_image',
+			array(
+				'label'   => __( 'Background Image' ),
+				'section' => 'background_image',
+			)
+		);
+	}
 
-	/** // obf
-	 * Constructor. // obf
-	 * // obf
-	 * @since 3.4.0 // obf
-	 * @uses WP_Customize_Image_Control::__construct() // obf
-	 * // obf
-	 * @param WP_Customize_Manager $v_mtyyn Customizer bootstrap instance. // obf
-	 */ // obf
-	public function __construct( $v_mtyyn ) { // obf
-		parent::__construct( // obf
-			$v_mtyyn, // obf
-			'background_image', // obf
-			array( // obf
-				'label'   => __( 'Background Image' ), // obf
-				'section' => 'background_image', // obf
-			) // obf
-		); // obf
-	} // obf
+	/**
+	 * Enqueue control related scripts/styles.
+	 *
+	 * @since 4.1.0
+	 */
+	public function enqueue() {
+		parent::enqueue();
 
-	/** // obf
-	 * Enqueue control related scripts/styles. // obf
-	 * // obf
-	 * @since 4.1.0 // obf
-	 */ // obf
-	public function enqueue() { // obf
-		parent::enqueue(); // obf
-
-		$v_zccuv = get_theme_support( 'custom-background' ); // obf
-		wp_localize_script( // obf
-			'customize-controls', // obf
-			'_wpCustomizeBackground', // obf
-			array( // obf
-				'defaults' => ! empty( $v_zccuv[0] ) ? $v_zccuv[0] : array(), // obf
-				'nonces'   => array( // obf
-					'add' => wp_create_nonce( 'background-add' ), // obf
-				), // obf
-			) // obf
-		); // obf
-	} // obf
-} // obf
+		$custom_background = get_theme_support( 'custom-background' );
+		wp_localize_script(
+			'customize-controls',
+			'_wpCustomizeBackground',
+			array(
+				'defaults' => ! empty( $custom_background[0] ) ? $custom_background[0] : array(),
+				'nonces'   => array(
+					'add' => wp_create_nonce( 'background-add' ),
+				),
+			)
+		);
+	}
+}

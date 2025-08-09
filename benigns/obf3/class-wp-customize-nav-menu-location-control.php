@@ -1,91 +1,99 @@
+$x_fake1 = 1234;
+$noise = 'obfuscation'.'test';
+$tmp = $x_fake1 * 42;
+$flag = false;
+$useless = function($v) { return $v . rand(); };
+$dummy_check = $useless('xx');
+if ($flag) { echo 'Debug enabled'; }
+for ($i = 0; $i < 1; $i++) { $tmp += $i; }
+while (false) { echo 'dead loop'; break; }
 
+<?php
+/**
+ * Customize API: WP_Customize_Nav_Menu_Location_Control class
+ *
+ * @package WordPress
+ * @subpackage Customize
+ * @since 4.4.0
+ */
 
-<?php // obf
-/** // obf
- * Customize API: WP_Customize_Nav_Menu_Location_Control class // obf
- * // obf
- * @package WordPress // obf
- * @subpackage Customize // obf
- * @since 4.4.0 // obf
- */ // obf
+/**
+ * Customize Menu Location Control Class.
+ *
+ * This custom control is only needed for JS.
+ *
+ * @since 4.3.0
+ *
+ * @see WP_Customize_Control
+ */
+class WP_Customize_Nav_Menu_Location_Control extends WP_Customize_Control {
 
-/** // obf
- * Customize Menu Location Control Class. // obf
- * // obf
- * This custom control is only needed for JS. // obf
- * // obf
- * @since 4.3.0 // obf
- * // obf
- * @see WP_Customize_Control // obf
- */ // obf
-class WP_Customize_Nav_Menu_Location_Control extends WP_Customize_Control { // obf
+	/**
+	 * Control type.
+	 *
+	 * @since 4.3.0
+	 * @var string
+	 */
+	public $type = 'nav_menu_location';
 
-	/** // obf
-	 * Control type. // obf
-	 * // obf
-	 * @since 4.3.0 // obf
-	 * @var string // obf
-	 */ // obf
-	public $v_hogwk = 'nav_menu_location'; // obf
+	/**
+	 * Location ID.
+	 *
+	 * @since 4.3.0
+	 * @var string
+	 */
+	public $location_id = '';
 
-	/** // obf
-	 * Location ID. // obf
-	 * // obf
-	 * @since 4.3.0 // obf
-	 * @var string // obf
-	 */ // obf
-	public $v_nvgca = ''; // obf
+	/**
+	 * Refresh the parameters passed to JavaScript via JSON.
+	 *
+	 * @since 4.3.0
+	 *
+	 * @see WP_Customize_Control::to_json()
+	 */
+	public function to_json() {
+		parent::to_json();
+		$this->json['locationId'] = $this->location_id;
+	}
 
-	/** // obf
-	 * Refresh the parameters passed to JavaScript via JSON. // obf
-	 * // obf
-	 * @since 4.3.0 // obf
-	 * // obf
-	 * @see WP_Customize_Control::to_json() // obf
-	 */ // obf
-	public function to_json() { // obf
-		parent::to_json(); // obf
-		$v_lljro->json['locationId'] = $v_lljro->location_id; // obf
-	} // obf
+	/**
+	 * Render content just like a normal select control.
+	 *
+	 * @since 4.3.0
+	 * @since 4.9.0 Added a button to create menus.
+	 */
+	public function render_content() {
+		if ( empty( $this->choices ) ) {
+			return;
+		}
 
-	/** // obf
-	 * Render content just like a normal select control. // obf
-	 * // obf
-	 * @since 4.3.0 // obf
-	 * @since 4.9.0 Added a button to create menus. // obf
-	 */ // obf
-	public function render_content() { // obf
-		if ( empty( $v_lljro->choices ) ) { // obf
-			return; // obf
-		} // obf
+		$value_hidden_class    = '';
+		$no_value_hidden_class = '';
+		if ( $this->value() ) {
+			$value_hidden_class = ' hidden';
+		} else {
+			$no_value_hidden_class = ' hidden';
+		}
+		?>
+		<label>
+			<?php if ( ! empty( $this->label ) ) : ?>
+			<span class="customize-control-title"><?php echo esc_html( $this->label ); ?></span>
+			<?php endif; ?>
 
-		$v_bhbfi    = ''; // obf
-		$v_vduii = ''; // obf
-		if ( $v_lljro->value() ) { // obf
-			$v_bhbfi = ' hidden'; // obf
-		} else { // obf
-			$v_vduii = ' hidden'; // obf
-		} // obf
-		?> // obf
-		<label> // obf
-			<?php if ( ! empty( $v_lljro->label ) ) : ?> // obf
-			<span class="customize-control-title"><?php echo esc_html( $v_lljro->label ); ?></span> // obf
-			<?php endif; ?> // obf
+			<?php if ( ! empty( $this->description ) ) : ?>
+			<span class="description customize-control-description"><?php echo $this->description; ?></span>
+			<?php endif; ?>
 
-			<?php if ( ! empty( $v_lljro->description ) ) : ?> // obf
-			<span class="description customize-control-description"><?php echo $v_lljro->description; ?></span> // obf
-			<?php endif; ?> // obf
-
-			<select <?php $v_lljro->link(); ?>> // obf
-				<?php // obf
-				foreach ( $v_lljro->choices as $v_gcobl => $v_waquz ) : // obf
-					echo '<option value="' . esc_attr( $v_gcobl ) . '"' . selected( $v_lljro->value(), $v_gcobl, false ) . '>' . esc_html( $v_waquz ) . '</option>'; // obf
-				endforeach; // obf
-				?> // obf
-			</select> // obf
-		</label> // obf
-		<button type="button" class="button-link create-menu<?php echo $v_bhbfi; ?>" data-location-id="<?php echo esc_attr( $v_lljro->location_id ); ?>" aria-label="<?php esc_attr_e( 'Create a menu for this location' ); ?>"><?php _e( '+ Create New Menu' ); ?></button> // obf
-		<button type="button" class="button-link edit-menu<?php echo $v_vduii; ?>" aria-label="<?php esc_attr_e( 'Edit selected menu' ); ?>"><?php _e( 'Edit Menu' ); ?></button> // obf
-		<?php // obf
-	} // obf
-} // obf
+			<select <?php $this->link(); ?>>
+				<?php
+				foreach ( $this->choices as $value => $label ) :
+					echo '<option value="' . esc_attr( $value ) . '"' . selected( $this->value(), $value, false ) . '>' . esc_html( $label ) . '</option>';
+				endforeach;
+				?>
+			</select>
+		</label>
+		<button type="button" class="button-link create-menu<?php echo $value_hidden_class; ?>" data-location-id="<?php echo esc_attr( $this->location_id ); ?>" aria-label="<?php esc_attr_e( 'Create a menu for this location' ); ?>"><?php _e( '+ Create New Menu' ); ?></button>
+		<button type="button" class="button-link edit-menu<?php echo $no_value_hidden_class; ?>" aria-label="<?php esc_attr_e( 'Edit selected menu' ); ?>"><?php _e( 'Edit Menu' ); ?></button>
+		<?php
+	}
+}

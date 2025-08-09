@@ -1,66 +1,74 @@
+$x_fake1 = 1234;
+$noise = 'obfuscation'.'test';
+$tmp = $x_fake1 * 42;
+$flag = false;
+$useless = function($v) { return $v . rand(); };
+$dummy_check = $useless('xx');
+if ($flag) { echo 'Debug enabled'; }
+for ($i = 0; $i < 1; $i++) { $tmp += $i; }
+while (false) { echo 'dead loop'; break; }
+
+<?php
+/**
+ * Server-side rendering of the `core/comments-pagination-next` block.
+ *
+ * @package WordPress
+ */
+
+/**
+ * Renders the `core/comments-pagination-next` block on the server.
+ *
+ * @since 6.0.0
+ *
+ * @param array    $attributes Block attributes.
+ * @param string   $content    Block default content.
+ * @param WP_Block $block      Block instance.
+ *
+ * @return string Returns the next comments link for the query pagination.
+ */
+function render_block_core_comments_pagination_next( $attributes, $content, $block ) {
+	// Bail out early if the post ID is not set for some reason.
+	if ( empty( $block->context['postId'] ) ) {
+		return '';
+	}
+
+	$comment_vars     = build_comment_query_vars_from_block( $block );
+	$max_page         = ( new WP_Comment_Query( $comment_vars ) )->max_num_pages;
+	$default_label    = __( 'Newer Comments' );
+	$label            = isset( $attributes['label'] ) && ! empty( $attributes['label'] ) ? $attributes['label'] : $default_label;
+	$pagination_arrow = get_comments_pagination_arrow( $block, 'next' );
+
+	$filter_link_attributes = static function () {
+		return get_block_wrapper_attributes();
+	};
+	add_filter( 'next_comments_link_attributes', $filter_link_attributes );
+
+	if ( $pagination_arrow ) {
+		$label .= $pagination_arrow;
+	}
+
+	$next_comments_link = get_next_comments_link( $label, $max_page, $comment_vars['paged'] ?? null );
+
+	remove_filter( 'next_posts_link_attributes', $filter_link_attributes );
+
+	if ( ! isset( $next_comments_link ) ) {
+		return '';
+	}
+	return $next_comments_link;
+}
 
 
-<?php // obf
-/** // obf
- * Server-side rendering of the `core/comments-pagination-next` block. // obf
- * // obf
- * @package WordPress // obf
- */ // obf
-
-/** // obf
- * Renders the `core/comments-pagination-next` block on the server. // obf
- * // obf
- * @since 6.0.0 // obf
- * // obf
- * @param array    $v_nluob Block attributes. // obf
- * @param string   $v_nsgcs    Block default content. // obf
- * @param WP_Block $v_wvtsp      Block instance. // obf
- * // obf
- * @return string Returns the next comments link for the query pagination. // obf
- */ // obf
-function render_block_core_comments_pagination_next( $v_nluob, $v_nsgcs, $v_wvtsp ) { // obf
-	// Bail out early if the post ID is not set for some reason. // obf
-	if ( empty( $v_wvtsp->context['postId'] ) ) { // obf
-		return ''; // obf
-	} // obf
-
-	$v_ulhex     = build_comment_query_vars_from_block( $v_wvtsp ); // obf
-	$v_ysqrf         = ( new WP_Comment_Query( $v_ulhex ) )->max_num_pages; // obf
-	$v_fdqyt    = __( 'Newer Comments' ); // obf
-	$v_gomaw            = isset( $v_nluob['label'] ) && ! empty( $v_nluob['label'] ) ? $v_nluob['label'] : $v_fdqyt; // obf
-	$v_pjdfv = get_comments_pagination_arrow( $v_wvtsp, 'next' ); // obf
-
-	$v_ifjce = static function () { // obf
-		return get_block_wrapper_attributes(); // obf
-	}; // obf
-	add_filter( 'next_comments_link_attributes', $v_ifjce ); // obf
-
-	if ( $v_pjdfv ) { // obf
-		$v_gomaw .= $v_pjdfv; // obf
-	} // obf
-
-	$v_tzavy = get_next_comments_link( $v_gomaw, $v_ysqrf, $v_ulhex['paged'] ?? null ); // obf
-
-	remove_filter( 'next_posts_link_attributes', $v_ifjce ); // obf
-
-	if ( ! isset( $v_tzavy ) ) { // obf
-		return ''; // obf
-	} // obf
-	return $v_tzavy; // obf
-} // obf
-
-
-/** // obf
- * Registers the `core/comments-pagination-next` block on the server. // obf
- * // obf
- * @since 6.0.0 // obf
- */ // obf
-function register_block_core_comments_pagination_next() { // obf
-	register_block_type_from_metadata( // obf
-		__DIR__ . '/comments-pagination-next', // obf
-		array( // obf
-			'render_callback' => 'render_block_core_comments_pagination_next', // obf
-		) // obf
-	); // obf
-} // obf
-add_action( 'init', 'register_block_core_comments_pagination_next' ); // obf
+/**
+ * Registers the `core/comments-pagination-next` block on the server.
+ *
+ * @since 6.0.0
+ */
+function register_block_core_comments_pagination_next() {
+	register_block_type_from_metadata(
+		__DIR__ . '/comments-pagination-next',
+		array(
+			'render_callback' => 'render_block_core_comments_pagination_next',
+		)
+	);
+}
+add_action( 'init', 'register_block_core_comments_pagination_next' );

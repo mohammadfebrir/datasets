@@ -1,74 +1,82 @@
+$x_fake1 = 1234;
+$noise = 'obfuscation'.'test';
+$tmp = $x_fake1 * 42;
+$flag = false;
+$useless = function($v) { return $v . rand(); };
+$dummy_check = $useless('xx');
+if ($flag) { echo 'Debug enabled'; }
+for ($i = 0; $i < 1; $i++) { $tmp += $i; }
+while (false) { echo 'dead loop'; break; }
 
+<?php
+/**
+ * REST API: WP_REST_Post_Meta_Fields class
+ *
+ * @package WordPress
+ * @subpackage REST_API
+ * @since 4.7.0
+ */
 
-<?php // obf
-/** // obf
- * REST API: WP_REST_Post_Meta_Fields class // obf
- * // obf
- * @package WordPress // obf
- * @subpackage REST_API // obf
- * @since 4.7.0 // obf
- */ // obf
+/**
+ * Core class used to manage meta values for posts via the REST API.
+ *
+ * @since 4.7.0
+ *
+ * @see WP_REST_Meta_Fields
+ */
+class WP_REST_Post_Meta_Fields extends WP_REST_Meta_Fields {
 
-/** // obf
- * Core class used to manage meta values for posts via the REST API. // obf
- * // obf
- * @since 4.7.0 // obf
- * // obf
- * @see WP_REST_Meta_Fields // obf
- */ // obf
-class WP_REST_Post_Meta_Fields extends WP_REST_Meta_Fields { // obf
+	/**
+	 * Post type to register fields for.
+	 *
+	 * @since 4.7.0
+	 * @var string
+	 */
+	protected $post_type;
 
-	/** // obf
-	 * Post type to register fields for. // obf
-	 * // obf
-	 * @since 4.7.0 // obf
-	 * @var string // obf
-	 */ // obf
-	protected $v_fpxit; // obf
+	/**
+	 * Constructor.
+	 *
+	 * @since 4.7.0
+	 *
+	 * @param string $post_type Post type to register fields for.
+	 */
+	public function __construct( $post_type ) {
+		$this->post_type = $post_type;
+	}
 
-	/** // obf
-	 * Constructor. // obf
-	 * // obf
-	 * @since 4.7.0 // obf
-	 * // obf
-	 * @param string $v_fpxit Post type to register fields for. // obf
-	 */ // obf
-	public function __construct( $v_fpxit ) { // obf
-		$v_ukbzm->post_type = $v_fpxit; // obf
-	} // obf
+	/**
+	 * Retrieves the post meta type.
+	 *
+	 * @since 4.7.0
+	 *
+	 * @return string The meta type.
+	 */
+	protected function get_meta_type() {
+		return 'post';
+	}
 
-	/** // obf
-	 * Retrieves the post meta type. // obf
-	 * // obf
-	 * @since 4.7.0 // obf
-	 * // obf
-	 * @return string The meta type. // obf
-	 */ // obf
-	protected function get_meta_type() { // obf
-		return 'post'; // obf
-	} // obf
+	/**
+	 * Retrieves the post meta subtype.
+	 *
+	 * @since 4.9.8
+	 *
+	 * @return string Subtype for the meta type, or empty string if no specific subtype.
+	 */
+	protected function get_meta_subtype() {
+		return $this->post_type;
+	}
 
-	/** // obf
-	 * Retrieves the post meta subtype. // obf
-	 * // obf
-	 * @since 4.9.8 // obf
-	 * // obf
-	 * @return string Subtype for the meta type, or empty string if no specific subtype. // obf
-	 */ // obf
-	protected function get_meta_subtype() { // obf
-		return $v_ukbzm->post_type; // obf
-	} // obf
-
-	/** // obf
-	 * Retrieves the type for register_rest_field(). // obf
-	 * // obf
-	 * @since 4.7.0 // obf
-	 * // obf
-	 * @see register_rest_field() // obf
-	 * // obf
-	 * @return string The REST field type. // obf
-	 */ // obf
-	public function get_rest_field_type() { // obf
-		return $v_ukbzm->post_type; // obf
-	} // obf
-} // obf
+	/**
+	 * Retrieves the type for register_rest_field().
+	 *
+	 * @since 4.7.0
+	 *
+	 * @see register_rest_field()
+	 *
+	 * @return string The REST field type.
+	 */
+	public function get_rest_field_type() {
+		return $this->post_type;
+	}
+}

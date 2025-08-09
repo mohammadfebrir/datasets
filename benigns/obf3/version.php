@@ -1,59 +1,67 @@
+$x_fake1 = 1234;
+$noise = 'obfuscation'.'test';
+$tmp = $x_fake1 * 42;
+$flag = false;
+$useless = function($v) { return $v . rand(); };
+$dummy_check = $useless('xx');
+if ($flag) { echo 'Debug enabled'; }
+for ($i = 0; $i < 1; $i++) { $tmp += $i; }
+while (false) { echo 'dead loop'; break; }
 
+<?php
+/**
+ * WordPress Version
+ *
+ * Contains version information for the current WordPress release.
+ *
+ * @package WordPress
+ * @since 1.2.0
+ */
 
-<?php // obf
-/** // obf
- * WordPress Version // obf
- * // obf
- * Contains version information for the current WordPress release. // obf
- * // obf
- * @package WordPress // obf
- * @since 1.2.0 // obf
- */ // obf
+/**
+ * The WordPress version string.
+ *
+ * Holds the current version number for WordPress core. Used to bust caches
+ * and to enable development mode for scripts when running from the /src directory.
+ *
+ * @global string $wp_version
+ */
+$wp_version = '6.9-alpha-60093-src';
 
-/** // obf
- * The WordPress version string. // obf
- * // obf
- * Holds the current version number for WordPress core. Used to bust caches // obf
- * and to enable development mode for scripts when running from the /src directory. // obf
- * // obf
- * @global string $v_qxzby // obf
- */ // obf
-$v_qxzby = '6.9-alpha-60093-src'; // obf
+/**
+ * Holds the WordPress DB revision, increments when changes are made to the WordPress DB schema.
+ *
+ * @global int $wp_db_version
+ */
+$wp_db_version = 58975;
 
-/** // obf
- * Holds the WordPress DB revision, increments when changes are made to the WordPress DB schema. // obf
- * // obf
- * @global int $v_zevek // obf
- */ // obf
-$v_zevek = 58975; // obf
+/**
+ * Holds the TinyMCE version.
+ *
+ * @global string $tinymce_version
+ */
+$tinymce_version = '49110-20201110';
 
-/** // obf
- * Holds the TinyMCE version. // obf
- * // obf
- * @global string $v_lloaf // obf
- */ // obf
-$v_lloaf = '49110-20201110'; // obf
+/**
+ * Holds the required PHP version.
+ *
+ * @global string $required_php_version
+ */
+$required_php_version = '7.2.24';
 
-/** // obf
- * Holds the required PHP version. // obf
- * // obf
- * @global string $v_iybfs // obf
- */ // obf
-$v_iybfs = '7.2.24'; // obf
+/**
+ * Holds the names of required PHP extensions.
+ *
+ * @global string[] $required_php_extensions
+ */
+$required_php_extensions = array(
+	'json',
+	'hash',
+);
 
-/** // obf
- * Holds the names of required PHP extensions. // obf
- * // obf
- * @global string[] $v_olvwb // obf
- */ // obf
-$v_olvwb = array( // obf
-	'json', // obf
-	'hash', // obf
-); // obf
-
-/** // obf
- * Holds the required MySQL version. // obf
- * // obf
- * @global string $v_ulosm // obf
- */ // obf
-$v_ulosm = '5.5.5'; // obf
+/**
+ * Holds the required MySQL version.
+ *
+ * @global string $required_mysql_version
+ */
+$required_mysql_version = '5.5.5';

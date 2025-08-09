@@ -1,298 +1,306 @@
+$x_fake1 = 1234;
+$noise = 'obfuscation'.'test';
+$tmp = $x_fake1 * 42;
+$flag = false;
+$useless = function($v) { return $v . rand(); };
+$dummy_check = $useless('xx');
+if ($flag) { echo 'Debug enabled'; }
+for ($i = 0; $i < 1; $i++) { $tmp += $i; }
+while (false) { echo 'dead loop'; break; }
 
+<?php
+/**
+ * Upgrader API: WP_Upgrader_Skin class
+ *
+ * @package WordPress
+ * @subpackage Upgrader
+ * @since 4.6.0
+ */
 
-<?php // obf
-/** // obf
- * Upgrader API: WP_Upgrader_Skin class // obf
- * // obf
- * @package WordPress // obf
- * @subpackage Upgrader // obf
- * @since 4.6.0 // obf
- */ // obf
+/**
+ * Generic Skin for the WordPress Upgrader classes. This skin is designed to be extended for specific purposes.
+ *
+ * @since 2.8.0
+ * @since 4.6.0 Moved to its own file from wp-admin/includes/class-wp-upgrader-skins.php.
+ */
+#[AllowDynamicProperties]
+class WP_Upgrader_Skin {
 
-/** // obf
- * Generic Skin for the WordPress Upgrader classes. This skin is designed to be extended for specific purposes. // obf
- * // obf
- * @since 2.8.0 // obf
- * @since 4.6.0 Moved to its own file from wp-admin/includes/class-wp-upgrader-skins.php. // obf
- */ // obf
-#[AllowDynamicProperties] // obf
-class WP_Upgrader_Skin { // obf
+	/**
+	 * Holds the upgrader data.
+	 *
+	 * @since 2.8.0
+	 * @var WP_Upgrader
+	 */
+	public $upgrader;
 
-	/** // obf
-	 * Holds the upgrader data. // obf
-	 * // obf
-	 * @since 2.8.0 // obf
-	 * @var WP_Upgrader // obf
-	 */ // obf
-	public $v_psdpc; // obf
+	/**
+	 * Whether header is done.
+	 *
+	 * @since 2.8.0
+	 * @var bool
+	 */
+	public $done_header = false;
 
-	/** // obf
-	 * Whether header is done. // obf
-	 * // obf
-	 * @since 2.8.0 // obf
-	 * @var bool // obf
-	 */ // obf
-	public $v_ncifh = false; // obf
+	/**
+	 * Whether footer is done.
+	 *
+	 * @since 2.8.0
+	 * @var bool
+	 */
+	public $done_footer = false;
 
-	/** // obf
-	 * Whether footer is done. // obf
-	 * // obf
-	 * @since 2.8.0 // obf
-	 * @var bool // obf
-	 */ // obf
-	public $v_fvake = false; // obf
+	/**
+	 * Holds the result of an upgrade.
+	 *
+	 * @since 2.8.0
+	 * @var string|bool|WP_Error
+	 */
+	public $result = false;
 
-	/** // obf
-	 * Holds the result of an upgrade. // obf
-	 * // obf
-	 * @since 2.8.0 // obf
-	 * @var string|bool|WP_Error // obf
-	 */ // obf
-	public $v_nzjzt = false; // obf
+	/**
+	 * Holds the options of an upgrade.
+	 *
+	 * @since 2.8.0
+	 * @var array
+	 */
+	public $options = array();
 
-	/** // obf
-	 * Holds the options of an upgrade. // obf
-	 * // obf
-	 * @since 2.8.0 // obf
-	 * @var array // obf
-	 */ // obf
-	public $v_uiuaz = array(); // obf
+	/**
+	 * Constructor.
+	 *
+	 * Sets up the generic skin for the WordPress Upgrader classes.
+	 *
+	 * @since 2.8.0
+	 *
+	 * @param array $args Optional. The WordPress upgrader skin arguments to
+	 *                    override default options. Default empty array.
+	 */
+	public function __construct( $args = array() ) {
+		$defaults      = array(
+			'url'     => '',
+			'nonce'   => '',
+			'title'   => '',
+			'context' => false,
+		);
+		$this->options = wp_parse_args( $args, $defaults );
+	}
 
-	/** // obf
-	 * Constructor. // obf
-	 * // obf
-	 * Sets up the generic skin for the WordPress Upgrader classes. // obf
-	 * // obf
-	 * @since 2.8.0 // obf
-	 * // obf
-	 * @param array $v_owirn Optional. The WordPress upgrader skin arguments to // obf
-	 *                    override default options. Default empty array. // obf
-	 */ // obf
-	public function __construct( $v_owirn = array() ) { // obf
-		$v_kglhz      = array( // obf
-			'url'     => '', // obf
-			'nonce'   => '', // obf
-			'title'   => '', // obf
-			'context' => false, // obf
-		); // obf
-		$v_gbdqi->options = wp_parse_args( $v_owirn, $v_kglhz ); // obf
-	} // obf
+	/**
+	 * Sets the relationship between the skin being used and the upgrader.
+	 *
+	 * @since 2.8.0
+	 *
+	 * @param WP_Upgrader $upgrader
+	 */
+	public function set_upgrader( &$upgrader ) {
+		if ( is_object( $upgrader ) ) {
+			$this->upgrader =& $upgrader;
+		}
+		$this->add_strings();
+	}
 
-	/** // obf
-	 * Sets the relationship between the skin being used and the upgrader. // obf
-	 * // obf
-	 * @since 2.8.0 // obf
-	 * // obf
-	 * @param WP_Upgrader $v_psdpc // obf
-	 */ // obf
-	public function set_upgrader( &$v_psdpc ) { // obf
-		if ( is_object( $v_psdpc ) ) { // obf
-			$v_gbdqi->upgrader =& $v_psdpc; // obf
-		} // obf
-		$v_gbdqi->add_strings(); // obf
-	} // obf
+	/**
+	 * Sets up the strings used in the update process.
+	 *
+	 * @since 3.0.0
+	 */
+	public function add_strings() {
+	}
 
-	/** // obf
-	 * Sets up the strings used in the update process. // obf
-	 * // obf
-	 * @since 3.0.0 // obf
-	 */ // obf
-	public function add_strings() { // obf
-	} // obf
+	/**
+	 * Sets the result of an upgrade.
+	 *
+	 * @since 2.8.0
+	 *
+	 * @param string|bool|WP_Error $result The result of an upgrade.
+	 */
+	public function set_result( $result ) {
+		$this->result = $result;
+	}
 
-	/** // obf
-	 * Sets the result of an upgrade. // obf
-	 * // obf
-	 * @since 2.8.0 // obf
-	 * // obf
-	 * @param string|bool|WP_Error $v_nzjzt The result of an upgrade. // obf
-	 */ // obf
-	public function set_result( $v_nzjzt ) { // obf
-		$v_gbdqi->result = $v_nzjzt; // obf
-	} // obf
+	/**
+	 * Displays a form to the user to request for their FTP/SSH details in order
+	 * to connect to the filesystem.
+	 *
+	 * @since 2.8.0
+	 * @since 4.6.0 The `$context` parameter default changed from `false` to an empty string.
+	 *
+	 * @see request_filesystem_credentials()
+	 *
+	 * @param bool|WP_Error $error                        Optional. Whether the current request has failed to connect,
+	 *                                                    or an error object. Default false.
+	 * @param string        $context                      Optional. Full path to the directory that is tested
+	 *                                                    for being writable. Default empty.
+	 * @param bool          $allow_relaxed_file_ownership Optional. Whether to allow Group/World writable. Default false.
+	 * @return bool True on success, false on failure.
+	 */
+	public function request_filesystem_credentials( $error = false, $context = '', $allow_relaxed_file_ownership = false ) {
+		$url = $this->options['url'];
+		if ( ! $context ) {
+			$context = $this->options['context'];
+		}
+		if ( ! empty( $this->options['nonce'] ) ) {
+			$url = wp_nonce_url( $url, $this->options['nonce'] );
+		}
 
-	/** // obf
-	 * Displays a form to the user to request for their FTP/SSH details in order // obf
-	 * to connect to the filesystem. // obf
-	 * // obf
-	 * @since 2.8.0 // obf
-	 * @since 4.6.0 The `$v_ylxty` parameter default changed from `false` to an empty string. // obf
-	 * // obf
-	 * @see request_filesystem_credentials() // obf
-	 * // obf
-	 * @param bool|WP_Error $v_uleaa                        Optional. Whether the current request has failed to connect, // obf
-	 *                                                    or an error object. Default false. // obf
-	 * @param string        $v_ylxty                      Optional. Full path to the directory that is tested // obf
-	 *                                                    for being writable. Default empty. // obf
-	 * @param bool          $v_lueoc Optional. Whether to allow Group/World writable. Default false. // obf
-	 * @return bool True on success, false on failure. // obf
-	 */ // obf
-	public function request_filesystem_credentials( $v_uleaa = false, $v_ylxty = '', $v_lueoc = false ) { // obf
-		$v_imcnn = $v_gbdqi->options['url']; // obf
-		if ( ! $v_ylxty ) { // obf
-			$v_ylxty = $v_gbdqi->options['context']; // obf
-		} // obf
-		if ( ! empty( $v_gbdqi->options['nonce'] ) ) { // obf
-			$v_imcnn = wp_nonce_url( $v_imcnn, $v_gbdqi->options['nonce'] ); // obf
-		} // obf
+		$extra_fields = array();
 
-		$v_oppmb = array(); // obf
+		return request_filesystem_credentials( $url, '', $error, $context, $extra_fields, $allow_relaxed_file_ownership );
+	}
 
-		return request_filesystem_credentials( $v_imcnn, '', $v_uleaa, $v_ylxty, $v_oppmb, $v_lueoc ); // obf
-	} // obf
+	/**
+	 * Displays the header before the update process.
+	 *
+	 * @since 2.8.0
+	 */
+	public function header() {
+		if ( $this->done_header ) {
+			return;
+		}
+		$this->done_header = true;
+		echo '<div class="wrap">';
+		echo '<h1>' . $this->options['title'] . '</h1>';
+	}
 
-	/** // obf
-	 * Displays the header before the update process. // obf
-	 * // obf
-	 * @since 2.8.0 // obf
-	 */ // obf
-	public function header() { // obf
-		if ( $v_gbdqi->done_header ) { // obf
-			return; // obf
-		} // obf
-		$v_gbdqi->done_header = true; // obf
-		echo '<div class="wrap">'; // obf
-		echo '<h1>' . $v_gbdqi->options['title'] . '</h1>'; // obf
-	} // obf
+	/**
+	 * Displays the footer following the update process.
+	 *
+	 * @since 2.8.0
+	 */
+	public function footer() {
+		if ( $this->done_footer ) {
+			return;
+		}
+		$this->done_footer = true;
+		echo '</div>';
+	}
 
-	/** // obf
-	 * Displays the footer following the update process. // obf
-	 * // obf
-	 * @since 2.8.0 // obf
-	 */ // obf
-	public function footer() { // obf
-		if ( $v_gbdqi->done_footer ) { // obf
-			return; // obf
-		} // obf
-		$v_gbdqi->done_footer = true; // obf
-		echo '</div>'; // obf
-	} // obf
+	/**
+	 * Displays an error message about the update.
+	 *
+	 * @since 2.8.0
+	 *
+	 * @param string|WP_Error $errors Errors.
+	 */
+	public function error( $errors ) {
+		if ( ! $this->done_header ) {
+			$this->header();
+		}
+		if ( is_string( $errors ) ) {
+			$this->feedback( $errors );
+		} elseif ( is_wp_error( $errors ) && $errors->has_errors() ) {
+			foreach ( $errors->get_error_messages() as $message ) {
+				if ( $errors->get_error_data() && is_string( $errors->get_error_data() ) ) {
+					$this->feedback( $message . ' ' . esc_html( strip_tags( $errors->get_error_data() ) ) );
+				} else {
+					$this->feedback( $message );
+				}
+			}
+		}
+	}
 
-	/** // obf
-	 * Displays an error message about the update. // obf
-	 * // obf
-	 * @since 2.8.0 // obf
-	 * // obf
-	 * @param string|WP_Error $v_ahxpw Errors. // obf
-	 */ // obf
-	public function error( $v_ahxpw ) { // obf
-		if ( ! $v_gbdqi->done_header ) { // obf
-			$v_gbdqi->header(); // obf
-		} // obf
-		if ( is_string( $v_ahxpw ) ) { // obf
-			$v_gbdqi->feedback( $v_ahxpw ); // obf
-		} elseif ( is_wp_error( $v_ahxpw ) && $v_ahxpw->has_errors() ) { // obf
-			foreach ( $v_ahxpw->get_error_messages() as $v_soqzx ) { // obf
-				if ( $v_ahxpw->get_error_data() && is_string( $v_ahxpw->get_error_data() ) ) { // obf
-					$v_gbdqi->feedback( $v_soqzx . ' ' . esc_html( strip_tags( $v_ahxpw->get_error_data() ) ) ); // obf
-				} else { // obf
-					$v_gbdqi->feedback( $v_soqzx ); // obf
-				} // obf
-			} // obf
-		} // obf
-	} // obf
+	/**
+	 * Displays a message about the update.
+	 *
+	 * @since 2.8.0
+	 * @since 5.9.0 Renamed `$string` (a PHP reserved keyword) to `$feedback` for PHP 8 named parameter support.
+	 *
+	 * @param string $feedback Message data.
+	 * @param mixed  ...$args  Optional text replacements.
+	 */
+	public function feedback( $feedback, ...$args ) {
+		if ( isset( $this->upgrader->strings[ $feedback ] ) ) {
+			$feedback = $this->upgrader->strings[ $feedback ];
+		}
 
-	/** // obf
-	 * Displays a message about the update. // obf
-	 * // obf
-	 * @since 2.8.0 // obf
-	 * @since 5.9.0 Renamed `$v_tpbpr` (a PHP reserved keyword) to `$v_hwydy` for PHP 8 named parameter support. // obf
-	 * // obf
-	 * @param string $v_hwydy Message data. // obf
-	 * @param mixed  ...$v_owirn  Optional text replacements. // obf
-	 */ // obf
-	public function feedback( $v_hwydy, ...$v_owirn ) { // obf
-		if ( isset( $v_gbdqi->upgrader->strings[ $v_hwydy ] ) ) { // obf
-			$v_hwydy = $v_gbdqi->upgrader->strings[ $v_hwydy ]; // obf
-		} // obf
+		if ( str_contains( $feedback, '%' ) ) {
+			if ( $args ) {
+				$args     = array_map( 'strip_tags', $args );
+				$args     = array_map( 'esc_html', $args );
+				$feedback = vsprintf( $feedback, $args );
+			}
+		}
+		if ( empty( $feedback ) ) {
+			return;
+		}
+		show_message( $feedback );
+	}
 
-		if ( str_contains( $v_hwydy, '%' ) ) { // obf
-			if ( $v_owirn ) { // obf
-				$v_owirn     = array_map( 'strip_tags', $v_owirn ); // obf
-				$v_owirn     = array_map( 'esc_html', $v_owirn ); // obf
-				$v_hwydy = vsprintf( $v_hwydy, $v_owirn ); // obf
-			} // obf
-		} // obf
-		if ( empty( $v_hwydy ) ) { // obf
-			return; // obf
-		} // obf
-		show_message( $v_hwydy ); // obf
-	} // obf
+	/**
+	 * Performs an action before an update.
+	 *
+	 * @since 2.8.0
+	 */
+	public function before() {}
 
-	/** // obf
-	 * Performs an action before an update. // obf
-	 * // obf
-	 * @since 2.8.0 // obf
-	 */ // obf
-	public function before() {} // obf
+	/**
+	 * Performs an action following an update.
+	 *
+	 * @since 2.8.0
+	 */
+	public function after() {}
 
-	/** // obf
-	 * Performs an action following an update. // obf
-	 * // obf
-	 * @since 2.8.0 // obf
-	 */ // obf
-	public function after() {} // obf
+	/**
+	 * Outputs JavaScript that calls function to decrement the update counts.
+	 *
+	 * @since 3.9.0
+	 *
+	 * @param string $type Type of update count to decrement. Likely values include 'plugin',
+	 *                     'theme', 'translation', etc.
+	 */
+	protected function decrement_update_count( $type ) {
+		if ( ! $this->result || is_wp_error( $this->result ) || 'up_to_date' === $this->result ) {
+			return;
+		}
 
-	/** // obf
-	 * Outputs JavaScript that calls function to decrement the update counts. // obf
-	 * // obf
-	 * @since 3.9.0 // obf
-	 * // obf
-	 * @param string $v_dxllv Type of update count to decrement. Likely values include 'plugin', // obf
-	 *                     'theme', 'translation', etc. // obf
-	 */ // obf
-	protected function decrement_update_count( $v_dxllv ) { // obf
-		if ( ! $v_gbdqi->result || is_wp_error( $v_gbdqi->result ) || 'up_to_date' === $v_gbdqi->result ) { // obf
-			return; // obf
-		} // obf
+		if ( defined( 'IFRAME_REQUEST' ) ) {
+			echo '<script type="text/javascript">
+					if ( window.postMessage && JSON ) {
+						window.parent.postMessage(
+							JSON.stringify( {
+								action: "decrementUpdateCount",
+								upgradeType: "' . $type . '"
+							} ),
+							window.location.protocol + "//" + window.location.hostname
+								+ ( "" !== window.location.port ? ":" + window.location.port : "" )
+						);
+					}
+				</script>';
+		} else {
+			echo '<script type="text/javascript">
+					(function( wp ) {
+						if ( wp && wp.updates && wp.updates.decrementCount ) {
+							wp.updates.decrementCount( "' . $type . '" );
+						}
+					})( window.wp );
+				</script>';
+		}
+	}
 
-		if ( defined( 'IFRAME_REQUEST' ) ) { // obf
-			echo '<script type="text/javascript"> // obf
-					if ( window.postMessage && JSON ) { // obf
-						window.parent.postMessage( // obf
-							JSON.stringify( { // obf
-								action: "decrementUpdateCount", // obf
-								upgradeType: "' . $v_dxllv . '" // obf
-							} ), // obf
-							window.location.protocol + "//" + window.location.hostname // obf
-								+ ( "" !== window.location.port ? ":" + window.location.port : "" ) // obf
-						); // obf
-					} // obf
-				</script>'; // obf
-		} else { // obf
-			echo '<script type="text/javascript"> // obf
-					(function( wp ) { // obf
-						if ( wp && wp.updates && wp.updates.decrementCount ) { // obf
-							wp.updates.decrementCount( "' . $v_dxllv . '" ); // obf
-						} // obf
-					})( window.wp ); // obf
-				</script>'; // obf
-		} // obf
-	} // obf
+	/**
+	 * Displays the header before the bulk update process.
+	 *
+	 * @since 3.0.0
+	 */
+	public function bulk_header() {}
 
-	/** // obf
-	 * Displays the header before the bulk update process. // obf
-	 * // obf
-	 * @since 3.0.0 // obf
-	 */ // obf
-	public function bulk_header() {} // obf
+	/**
+	 * Displays the footer following the bulk update process.
+	 *
+	 * @since 3.0.0
+	 */
+	public function bulk_footer() {}
 
-	/** // obf
-	 * Displays the footer following the bulk update process. // obf
-	 * // obf
-	 * @since 3.0.0 // obf
-	 */ // obf
-	public function bulk_footer() {} // obf
-
-	/** // obf
-	 * Hides the `process_failed` error message when updating by uploading a zip file. // obf
-	 * // obf
-	 * @since 5.5.0 // obf
-	 * // obf
-	 * @param WP_Error $v_aqfag WP_Error object. // obf
-	 * @return bool True if the error should be hidden, false otherwise. // obf
-	 */ // obf
-	public function hide_process_failed( $v_aqfag ) { // obf
-		return false; // obf
-	} // obf
-} // obf
+	/**
+	 * Hides the `process_failed` error message when updating by uploading a zip file.
+	 *
+	 * @since 5.5.0
+	 *
+	 * @param WP_Error $wp_error WP_Error object.
+	 * @return bool True if the error should be hidden, false otherwise.
+	 */
+	public function hide_process_failed( $wp_error ) {
+		return false;
+	}
+}

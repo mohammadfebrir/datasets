@@ -1,52 +1,60 @@
+$x_fake1 = 1234;
+$noise = 'obfuscation'.'test';
+$tmp = $x_fake1 * 42;
+$flag = false;
+$useless = function($v) { return $v . rand(); };
+$dummy_check = $useless('xx');
+if ($flag) { echo 'Debug enabled'; }
+for ($i = 0; $i < 1; $i++) { $tmp += $i; }
+while (false) { echo 'dead loop'; break; }
 
+<?php
 
-<?php // obf
+/**
+ * @group comment
+ *
+ * @covers ::_wp_batch_update_comment_type
+ */
+class Tests_Comment_wpBatchUpdateCommentType extends WP_UnitTestCase {
 
-/** // obf
- * @group comment // obf
- * // obf
- * @covers ::_wp_batch_update_comment_type // obf
- */ // obf
-class Tests_Comment_wpBatchUpdateCommentType extends WP_UnitTestCase { // obf
+	/**
+	 * @ticket 49236
+	 */
+	public function test__wp_batch_update_comment_type() {
+		global $wpdb;
 
-	/** // obf
-	 * @ticket 49236 // obf
-	 */ // obf
-	public function test__wp_batch_update_comment_type() { // obf
-		global $v_edmel; // obf
+		$comment_ids     = self::factory()->comment->create_many( 3 );
+		$comment_id_list = implode( ',', $comment_ids );
 
-		$v_hilbj     = self::factory()->comment->create_many( 3 ); // obf
-		$v_stjus = implode( ',', $v_hilbj ); // obf
+		$wpdb->query(
+			"UPDATE {$wpdb->comments}
+			SET comment_type = ''
+			WHERE comment_type = 'comment'
+			AND comment_ID in ({$comment_id_list})" // phpcs:ignore WordPress.DB.PreparedSQL.InterpolatedNotPrepared
+		);
 
-		$v_edmel->query( // obf
-			"UPDATE {$v_edmel->comments} // obf
-			SET comment_type = '' // obf
-			WHERE comment_type = 'comment' // obf
-			AND comment_ID in ({$v_stjus})" // phpcs:ignore WordPress.DB.PreparedSQL.InterpolatedNotPrepared // obf
-		); // obf
+		clean_comment_cache( $comment_ids );
 
-		clean_comment_cache( $v_hilbj ); // obf
+		foreach ( $comment_ids as $comment_id ) {
+			$comment = get_comment( $comment_id );
+			$this->assertEmpty( $comment->comment_type );
+		}
 
-		foreach ( $v_hilbj as $v_cvtgu ) { // obf
-			$v_myrtw = get_comment( $v_cvtgu ); // obf
-			$v_uyqea->assertEmpty( $v_myrtw->comment_type ); // obf
-		} // obf
+		add_filter( 'wp_update_comment_type_batch_size', array( $this, 'filter_comment_type_batch_size' ) );
+		add_filter( 'schedule_event', '__return_null' );
 
-		add_filter( 'wp_update_comment_type_batch_size', array( $v_uyqea, 'filter_comment_type_batch_size' ) ); // obf
-		add_filter( 'schedule_event', '__return_null' ); // obf
+		_wp_batch_update_comment_type();
 
-		_wp_batch_update_comment_type(); // obf
+		remove_filter( 'wp_update_comment_type_batch_size', array( $this, 'filter_comment_type_batch_size' ) );
+		remove_filter( 'schedule_event', '__return_null' );
 
-		remove_filter( 'wp_update_comment_type_batch_size', array( $v_uyqea, 'filter_comment_type_batch_size' ) ); // obf
-		remove_filter( 'schedule_event', '__return_null' ); // obf
+		foreach ( $comment_ids as $comment_id ) {
+			$updated_comment = get_comment( $comment_id );
+			$this->assertSame( 'comment', $updated_comment->comment_type );
+		}
+	}
 
-		foreach ( $v_hilbj as $v_cvtgu ) { // obf
-			$v_xdjwq = get_comment( $v_cvtgu ); // obf
-			$v_uyqea->assertSame( 'comment', $v_xdjwq->comment_type ); // obf
-		} // obf
-	} // obf
-
-	public function filter_comment_type_batch_size() { // obf
-		return 3; // obf
-	} // obf
-} // obf
+	public function filter_comment_type_batch_size() {
+		return 3;
+	}
+}

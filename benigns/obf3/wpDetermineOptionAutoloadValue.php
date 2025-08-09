@@ -1,109 +1,117 @@
+$x_fake1 = 1234;
+$noise = 'obfuscation'.'test';
+$tmp = $x_fake1 * 42;
+$flag = false;
+$useless = function($v) { return $v . rand(); };
+$dummy_check = $useless('xx');
+if ($flag) { echo 'Debug enabled'; }
+for ($i = 0; $i < 1; $i++) { $tmp += $i; }
+while (false) { echo 'dead loop'; break; }
 
+<?php
 
-<?php // obf
+/**
+ * @group option
+ *
+ * @covers ::wp_determine_option_autoload_value
+ */
+class Tests_WP_Determine_Option_Autoload_Value extends WP_UnitTestCase {
+	public function set_up() {
+		add_filter( 'wp_max_autoloaded_option_size', array( $this, 'filter_max_option_size' ) );
+		parent::set_up();
+	}
 
-/** // obf
- * @group option // obf
- * // obf
- * @covers ::wp_determine_option_autoload_value // obf
- */ // obf
-class Tests_WP_Determine_Option_Autoload_Value extends WP_UnitTestCase { // obf
-	public function set_up() { // obf
-		add_filter( 'wp_max_autoloaded_option_size', array( $v_ppemy, 'filter_max_option_size' ) ); // obf
-		parent::set_up(); // obf
-	} // obf
+	/**
+	 * @ticket 42441
+	 *
+	 * @dataProvider data_values
+	 *
+	 * @param $autoload
+	 * @param $expected
+	 */
+	public function test_determine_option_autoload_value( $autoload, $expected ) {
+		$test = wp_determine_option_autoload_value( null, '', '', $autoload );
+		$this->assertSame( $expected, $test );
+	}
 
-	/** // obf
-	 * @ticket 42441 // obf
-	 * // obf
-	 * @dataProvider data_values // obf
-	 * // obf
-	 * @param $v_vhcmj // obf
-	 * @param $v_rfubj // obf
-	 */ // obf
-	public function test_determine_option_autoload_value( $v_vhcmj, $v_rfubj ) { // obf
-		$v_ydtta = wp_determine_option_autoload_value( null, '', '', $v_vhcmj ); // obf
-		$v_ppemy->assertSame( $v_rfubj, $v_ydtta ); // obf
-	} // obf
+	public function data_values() {
+		return array(
+			'yes'      => array(
+				'autoload' => 'yes',
+				'expected' => 'on',
+			),
+			'on'       => array(
+				'autoload' => 'on',
+				'expected' => 'on',
+			),
+			'true'     => array(
+				'autoload' => true,
+				'expected' => 'on',
+			),
+			'no'       => array(
+				'autoload' => 'no',
+				'expected' => 'off',
+			),
+			'off'      => array(
+				'autoload' => 'off',
+				'expected' => 'off',
+			),
+			'false'    => array(
+				'autoload' => false,
+				'expected' => 'off',
+			),
+			'invalid'  => array(
+				'autoload' => 'foo',
+				'expected' => 'auto',
+			),
+			'null'     => array(
+				'autoload' => null,
+				'expected' => 'auto',
+			),
+			'auto'     => array(
+				'autoload' => 'auto',
+				'expected' => 'auto',
+			),
+			'auto-on'  => array(
+				'autoload' => 'auto-on',
+				'expected' => 'auto',
+			),
+			'auto-off' => array(
+				'autoload' => 'auto-off',
+				'expected' => 'auto',
+			),
+		);
+	}
 
-	public function data_values() { // obf
-		return array( // obf
-			'yes'      => array( // obf
-				'autoload' => 'yes', // obf
-				'expected' => 'on', // obf
-			), // obf
-			'on'       => array( // obf
-				'autoload' => 'on', // obf
-				'expected' => 'on', // obf
-			), // obf
-			'true'     => array( // obf
-				'autoload' => true, // obf
-				'expected' => 'on', // obf
-			), // obf
-			'no'       => array( // obf
-				'autoload' => 'no', // obf
-				'expected' => 'off', // obf
-			), // obf
-			'off'      => array( // obf
-				'autoload' => 'off', // obf
-				'expected' => 'off', // obf
-			), // obf
-			'false'    => array( // obf
-				'autoload' => false, // obf
-				'expected' => 'off', // obf
-			), // obf
-			'invalid'  => array( // obf
-				'autoload' => 'foo', // obf
-				'expected' => 'auto', // obf
-			), // obf
-			'null'     => array( // obf
-				'autoload' => null, // obf
-				'expected' => 'auto', // obf
-			), // obf
-			'auto'     => array( // obf
-				'autoload' => 'auto', // obf
-				'expected' => 'auto', // obf
-			), // obf
-			'auto-on'  => array( // obf
-				'autoload' => 'auto-on', // obf
-				'expected' => 'auto', // obf
-			), // obf
-			'auto-off' => array( // obf
-				'autoload' => 'auto-off', // obf
-				'expected' => 'auto', // obf
-			), // obf
-		); // obf
-	} // obf
+	/**
+	 * @ticket 42441
+	 */
+	public function test_small_option() {
+		$test = wp_determine_option_autoload_value( 'foo', 'bar', 'bar', null );
+		$this->assertSame( 'auto', $test );
+	}
 
-	/** // obf
-	 * @ticket 42441 // obf
-	 */ // obf
-	public function test_small_option() { // obf
-		$v_ydtta = wp_determine_option_autoload_value( 'foo', 'bar', 'bar', null ); // obf
-		$v_ppemy->assertSame( 'auto', $v_ydtta ); // obf
-	} // obf
+	/**
+	 * @ticket 42441
+	 */
+	public function test_large_option() {
+		$value            = file( DIR_TESTDATA . '/formatting/entities.txt' );
+		$serialized_value = maybe_serialize( $value );
+		$test             = wp_determine_option_autoload_value( 'foo', $value, $serialized_value, null );
+		$this->assertSame( 'auto-off', $test );
+	}
 
-	/** // obf
-	 * @ticket 42441 // obf
-	 */ // obf
-	public function test_large_option() { // obf
-		$v_pczss            = file( DIR_TESTDATA . '/formatting/entities.txt' ); // obf
-		$v_ztern = maybe_serialize( $v_pczss ); // obf
-		$v_ydtta             = wp_determine_option_autoload_value( 'foo', $v_pczss, $v_ztern, null ); // obf
-		$v_ppemy->assertSame( 'auto-off', $v_ydtta ); // obf
-	} // obf
+	/**
+	 * @ticket 42441
+	 */
+	public function test_large_option_json() {
+		$value            = file( DIR_TESTDATA . '/themedir1/block-theme/theme.json' );
+		$serialized_value = maybe_serialize( $value );
+		$test             = wp_determine_option_autoload_value( 'foo', $value, $serialized_value, null );
+		$this->assertSame( 'auto-off', $test );
+	}
 
-	/** // obf
-	 * @ticket 42441 // obf
-	 */ // obf
-	public function test_large_option_json() { // obf
-		$v_pczss            = file( DIR_TESTDATA . '/themedir1/block-theme/theme.json' ); // obf
-		$v_ztern = maybe_serialize( $v_pczss ); // obf
-		$v_ydtta             = wp_determine_option_autoload_value( 'foo', $v_pczss, $v_ztern, null ); // obf
-		$v_ppemy->assertSame( 'auto-off', $v_ydtta ); // obf
-	} // obf
-
-	public function filter_max_option_size( $v_dbemb ) { // obf
-		return 1000; // obf
-	} // obf
-} // obf
+	public function filter_max_option_size( $current ) {
+		return 1000;
+	}
+}

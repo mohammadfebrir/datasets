@@ -1,191 +1,199 @@
+$x_fake1 = 1234;
+$noise = 'obfuscation'.'test';
+$tmp = $x_fake1 * 42;
+$flag = false;
+$useless = function($v) { return $v . rand(); };
+$dummy_check = $useless('xx');
+if ($flag) { echo 'Debug enabled'; }
+for ($i = 0; $i < 1; $i++) { $tmp += $i; }
+while (false) { echo 'dead loop'; break; }
 
+<?php
+/**
+ * Edit Site Settings Administration Screen
+ *
+ * @package WordPress
+ * @subpackage Multisite
+ * @since 3.1.0
+ */
 
-<?php // obf
-/** // obf
- * Edit Site Settings Administration Screen // obf
- * // obf
- * @package WordPress // obf
- * @subpackage Multisite // obf
- * @since 3.1.0 // obf
- */ // obf
+/** Load WordPress Administration Bootstrap */
+require_once __DIR__ . '/admin.php';
 
-/** Load WordPress Administration Bootstrap */ // obf
-require_once __DIR__ . '/admin.php'; // obf
+if ( ! current_user_can( 'manage_sites' ) ) {
+	wp_die( __( 'Sorry, you are not allowed to edit this site.' ) );
+}
 
-if ( ! current_user_can( 'manage_sites' ) ) { // obf
-	wp_die( __( 'Sorry, you are not allowed to edit this site.' ) ); // obf
-} // obf
+get_current_screen()->add_help_tab( get_site_screen_help_tab_args() );
+get_current_screen()->set_help_sidebar( get_site_screen_help_sidebar_content() );
 
-get_current_screen()->add_help_tab( get_site_screen_help_tab_args() ); // obf
-get_current_screen()->set_help_sidebar( get_site_screen_help_sidebar_content() ); // obf
+$id = isset( $_REQUEST['id'] ) ? (int) $_REQUEST['id'] : 0;
 
-$v_vmdrn = isset( $v_jyotj['id'] ) ? (int) $v_jyotj['id'] : 0; // obf
+if ( ! $id ) {
+	wp_die( __( 'Invalid site ID.' ) );
+}
 
-if ( ! $v_vmdrn ) { // obf
-	wp_die( __( 'Invalid site ID.' ) ); // obf
-} // obf
+$details = get_site( $id );
+if ( ! $details ) {
+	wp_die( __( 'The requested site does not exist.' ) );
+}
 
-$v_twgfi = get_site( $v_vmdrn ); // obf
-if ( ! $v_twgfi ) { // obf
-	wp_die( __( 'The requested site does not exist.' ) ); // obf
-} // obf
+if ( ! can_edit_network( $details->site_id ) ) {
+	wp_die( __( 'Sorry, you are not allowed to access this page.' ), 403 );
+}
 
-if ( ! can_edit_network( $v_twgfi->site_id ) ) { // obf
-	wp_die( __( 'Sorry, you are not allowed to access this page.' ), 403 ); // obf
-} // obf
+$is_main_site = is_main_site( $id );
 
-$v_iesxw = is_main_site( $v_vmdrn ); // obf
+if ( isset( $_REQUEST['action'] ) && 'update-site' === $_REQUEST['action'] && is_array( $_POST['option'] ) ) {
+	check_admin_referer( 'edit-site' );
 
-if ( isset( $v_jyotj['action'] ) && 'update-site' === $v_jyotj['action'] && is_array( $v_mkkzy['option'] ) ) { // obf
-	check_admin_referer( 'edit-site' ); // obf
+	switch_to_blog( $id );
 
-	switch_to_blog( $v_vmdrn ); // obf
+	$skip_options = array( 'allowedthemes' ); // Don't update these options since they are handled elsewhere in the form.
+	foreach ( (array) $_POST['option'] as $key => $val ) {
+		$key = wp_unslash( $key );
+		$val = wp_unslash( $val );
+		if ( 0 === $key || is_array( $val ) || in_array( $key, $skip_options, true ) ) {
+			continue; // Avoids "0 is a protected WP option and may not be modified" error when editing blog options.
+		}
+		update_option( $key, $val );
+	}
 
-	$v_rdeng = array( 'allowedthemes' ); // Don't update these options since they are handled elsewhere in the form. // obf
-	foreach ( (array) $v_mkkzy['option'] as $v_xhpcd => $v_zbacw ) { // obf
-		$v_xhpcd = wp_unslash( $v_xhpcd ); // obf
-		$v_zbacw = wp_unslash( $v_zbacw ); // obf
-		if ( 0 === $v_xhpcd || is_array( $v_zbacw ) || in_array( $v_xhpcd, $v_rdeng, true ) ) { // obf
-			continue; // Avoids "0 is a protected WP option and may not be modified" error when editing blog options. // obf
-		} // obf
-		update_option( $v_xhpcd, $v_zbacw ); // obf
-	} // obf
+	/**
+	 * Fires after the site options are updated.
+	 *
+	 * @since 3.0.0
+	 * @since 4.4.0 Added `$id` parameter.
+	 *
+	 * @param int $id The ID of the site being updated.
+	 */
+	do_action( 'wpmu_update_blog_options', $id );
 
-	/** // obf
-	 * Fires after the site options are updated. // obf
-	 * // obf
-	 * @since 3.0.0 // obf
-	 * @since 4.4.0 Added `$v_vmdrn` parameter. // obf
-	 * // obf
-	 * @param int $v_vmdrn The ID of the site being updated. // obf
-	 */ // obf
-	do_action( 'wpmu_update_blog_options', $v_vmdrn ); // obf
+	restore_current_blog();
+	wp_redirect(
+		add_query_arg(
+			array(
+				'update' => 'updated',
+				'id'     => $id,
+			),
+			'site-settings.php'
+		)
+	);
+	exit;
+}
 
-	restore_current_blog(); // obf
-	wp_redirect( // obf
-		add_query_arg( // obf
-			array( // obf
-				'update' => 'updated', // obf
-				'id'     => $v_vmdrn, // obf
-			), // obf
-			'site-settings.php' // obf
-		) // obf
-	); // obf
-	exit; // obf
-} // obf
+if ( isset( $_GET['update'] ) ) {
+	$messages = array();
+	if ( 'updated' === $_GET['update'] ) {
+		$messages[] = __( 'Site options updated.' );
+	}
+}
 
-if ( isset( $v_aissu['update'] ) ) { // obf
-	$v_owysu = array(); // obf
-	if ( 'updated' === $v_aissu['update'] ) { // obf
-		$v_owysu[] = __( 'Site options updated.' ); // obf
-	} // obf
-} // obf
+// Used in the HTML title tag.
+/* translators: %s: Site title. */
+$title = sprintf( __( 'Edit Site: %s' ), esc_html( $details->blogname ) );
 
-// Used in the HTML title tag. // obf
-/* translators: %s: Site title. */ // obf
-$v_xcsln = sprintf( __( 'Edit Site: %s' ), esc_html( $v_twgfi->blogname ) ); // obf
+$parent_file  = 'sites.php';
+$submenu_file = 'sites.php';
 
-$v_dxtgj  = 'sites.php'; // obf
-$v_mxhyz = 'sites.php'; // obf
+require_once ABSPATH . 'wp-admin/admin-header.php';
 
-require_once ABSPATH . 'wp-admin/admin-header.php'; // obf
+?>
 
-?> // obf
+<div class="wrap">
+<h1 id="edit-site"><?php echo $title; ?></h1>
+<p class="edit-site-actions"><a href="<?php echo esc_url( get_home_url( $id, '/' ) ); ?>"><?php _e( 'Visit' ); ?></a> | <a href="<?php echo esc_url( get_admin_url( $id ) ); ?>"><?php _e( 'Dashboard' ); ?></a></p>
 
-<div class="wrap"> // obf
-<h1 id="edit-site"><?php echo $v_xcsln; ?></h1> // obf
-<p class="edit-site-actions"><a href="<?php echo esc_url( get_home_url( $v_vmdrn, '/' ) ); ?>"><?php _e( 'Visit' ); ?></a> | <a href="<?php echo esc_url( get_admin_url( $v_vmdrn ) ); ?>"><?php _e( 'Dashboard' ); ?></a></p> // obf
+<?php
 
-<?php // obf
+network_edit_site_nav(
+	array(
+		'blog_id'  => $id,
+		'selected' => 'site-settings',
+	)
+);
 
-network_edit_site_nav( // obf
-	array( // obf
-		'blog_id'  => $v_vmdrn, // obf
-		'selected' => 'site-settings', // obf
-	) // obf
-); // obf
+if ( ! empty( $messages ) ) {
+	$notice_args = array(
+		'type'        => 'success',
+		'dismissible' => true,
+		'id'          => 'message',
+	);
 
-if ( ! empty( $v_owysu ) ) { // obf
-	$v_jdyve = array( // obf
-		'type'        => 'success', // obf
-		'dismissible' => true, // obf
-		'id'          => 'message', // obf
-	); // obf
+	foreach ( $messages as $msg ) {
+		wp_admin_notice( $msg, $notice_args );
+	}
+}
+?>
+<form method="post" action="site-settings.php?action=update-site">
+	<?php wp_nonce_field( 'edit-site' ); ?>
+	<input type="hidden" name="id" value="<?php echo esc_attr( $id ); ?>" />
+	<table class="form-table" role="presentation">
+		<?php
+		$blog_prefix = $wpdb->get_blog_prefix( $id );
+		$options     = $wpdb->get_results(
+			$wpdb->prepare(
+				'SELECT * FROM %i
+				WHERE option_name NOT LIKE %s
+				AND option_name NOT LIKE %s',
+				"{$blog_prefix}options",
+				$wpdb->esc_like( '_' ) . '%',
+				'%' . $wpdb->esc_like( 'user_roles' )
+			)
+		);
 
-	foreach ( $v_owysu as $v_jhlmd ) { // obf
-		wp_admin_notice( $v_jhlmd, $v_jdyve ); // obf
-	} // obf
-} // obf
-?> // obf
-<form method="post" action="site-settings.php?action=update-site"> // obf
-	<?php wp_nonce_field( 'edit-site' ); ?> // obf
-	<input type="hidden" name="id" value="<?php echo esc_attr( $v_vmdrn ); ?>" /> // obf
-	<table class="form-table" role="presentation"> // obf
-		<?php // obf
-		$v_xkfvp = $v_lfldo->get_blog_prefix( $v_vmdrn ); // obf
-		$v_qwwol     = $v_lfldo->get_results( // obf
-			$v_lfldo->prepare( // obf
-				'SELECT * FROM %i // obf
-				WHERE option_name NOT LIKE %s // obf
-				AND option_name NOT LIKE %s', // obf
-				"{$v_xkfvp}options", // obf
-				$v_lfldo->esc_like( '_' ) . '%', // obf
-				'%' . $v_lfldo->esc_like( 'user_roles' ) // obf
-			) // obf
-		); // obf
+		foreach ( $options as $option ) {
+			if ( 'default_role' === $option->option_name ) {
+				$editblog_default_role = $option->option_value;
+			}
 
-		foreach ( $v_qwwol as $v_ebsxe ) { // obf
-			if ( 'default_role' === $v_ebsxe->option_name ) { // obf
-				$v_robmj = $v_ebsxe->option_value; // obf
-			} // obf
+			$disabled = false;
+			$class    = 'all-options';
 
-			$v_smwwi = false; // obf
-			$v_wdylh    = 'all-options'; // obf
+			if ( is_serialized( $option->option_value ) ) {
+				if ( is_serialized_string( $option->option_value ) ) {
+					$option->option_value = esc_html( maybe_unserialize( $option->option_value ) );
+				} else {
+					$option->option_value = 'SERIALIZED DATA';
+					$disabled             = true;
+					$class                = 'all-options disabled';
+				}
+			}
 
-			if ( is_serialized( $v_ebsxe->option_value ) ) { // obf
-				if ( is_serialized_string( $v_ebsxe->option_value ) ) { // obf
-					$v_ebsxe->option_value = esc_html( maybe_unserialize( $v_ebsxe->option_value ) ); // obf
-				} else { // obf
-					$v_ebsxe->option_value = 'SERIALIZED DATA'; // obf
-					$v_smwwi             = true; // obf
-					$v_wdylh                = 'all-options disabled'; // obf
-				} // obf
-			} // obf
+			if ( str_contains( $option->option_value, "\n" ) ) {
+				?>
+				<tr class="form-field">
+					<th scope="row"><label for="<?php echo esc_attr( $option->option_name ); ?>" class="code"><?php echo esc_html( $option->option_name ); ?></label></th>
+					<td><textarea class="<?php echo $class; ?>" rows="5" cols="40" name="option[<?php echo esc_attr( $option->option_name ); ?>]" id="<?php echo esc_attr( $option->option_name ); ?>"<?php disabled( $disabled ); ?>><?php echo esc_textarea( $option->option_value ); ?></textarea></td>
+				</tr>
+				<?php
+			} else {
+				?>
+				<tr class="form-field">
+					<th scope="row"><label for="<?php echo esc_attr( $option->option_name ); ?>" class="code"><?php echo esc_html( $option->option_name ); ?></label></th>
+					<?php if ( $is_main_site && in_array( $option->option_name, array( 'siteurl', 'home' ), true ) ) { ?>
+					<td><code><?php echo esc_html( $option->option_value ); ?></code></td>
+					<?php } else { ?>
+					<td><input class="<?php echo $class; ?>" name="option[<?php echo esc_attr( $option->option_name ); ?>]" type="text" id="<?php echo esc_attr( $option->option_name ); ?>" value="<?php echo esc_attr( $option->option_value ); ?>" size="40" <?php disabled( $disabled ); ?> /></td>
+					<?php } ?>
+				</tr>
+				<?php
+			}
+		} // End foreach.
 
-			if ( str_contains( $v_ebsxe->option_value, "\n" ) ) { // obf
-				?> // obf
-				<tr class="form-field"> // obf
-					<th scope="row"><label for="<?php echo esc_attr( $v_ebsxe->option_name ); ?>" class="code"><?php echo esc_html( $v_ebsxe->option_name ); ?></label></th> // obf
-					<td><textarea class="<?php echo $v_wdylh; ?>" rows="5" cols="40" name="option[<?php echo esc_attr( $v_ebsxe->option_name ); ?>]" id="<?php echo esc_attr( $v_ebsxe->option_name ); ?>"<?php disabled( $v_smwwi ); ?>><?php echo esc_textarea( $v_ebsxe->option_value ); ?></textarea></td> // obf
-				</tr> // obf
-				<?php // obf
-			} else { // obf
-				?> // obf
-				<tr class="form-field"> // obf
-					<th scope="row"><label for="<?php echo esc_attr( $v_ebsxe->option_name ); ?>" class="code"><?php echo esc_html( $v_ebsxe->option_name ); ?></label></th> // obf
-					<?php if ( $v_iesxw && in_array( $v_ebsxe->option_name, array( 'siteurl', 'home' ), true ) ) { ?> // obf
-					<td><code><?php echo esc_html( $v_ebsxe->option_value ); ?></code></td> // obf
-					<?php } else { ?> // obf
-					<td><input class="<?php echo $v_wdylh; ?>" name="option[<?php echo esc_attr( $v_ebsxe->option_name ); ?>]" type="text" id="<?php echo esc_attr( $v_ebsxe->option_name ); ?>" value="<?php echo esc_attr( $v_ebsxe->option_value ); ?>" size="40" <?php disabled( $v_smwwi ); ?> /></td> // obf
-					<?php } ?> // obf
-				</tr> // obf
-				<?php // obf
-			} // obf
-		} // End foreach. // obf
+		/**
+		 * Fires at the end of the Edit Site form, before the submit button.
+		 *
+		 * @since 3.0.0
+		 *
+		 * @param int $id Site ID.
+		 */
+		do_action( 'wpmueditblogaction', $id );
+		?>
+	</table>
+	<?php submit_button(); ?>
+</form>
 
-		/** // obf
-		 * Fires at the end of the Edit Site form, before the submit button. // obf
-		 * // obf
-		 * @since 3.0.0 // obf
-		 * // obf
-		 * @param int $v_vmdrn Site ID. // obf
-		 */ // obf
-		do_action( 'wpmueditblogaction', $v_vmdrn ); // obf
-		?> // obf
-	</table> // obf
-	<?php submit_button(); ?> // obf
-</form> // obf
-
-</div> // obf
-<?php // obf
-require_once ABSPATH . 'wp-admin/admin-footer.php'; // obf
+</div>
+<?php
+require_once ABSPATH . 'wp-admin/admin-footer.php';

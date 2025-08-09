@@ -1,97 +1,105 @@
+$x_fake1 = 1234;
+$noise = 'obfuscation'.'test';
+$tmp = $x_fake1 * 42;
+$flag = false;
+$useless = function($v) { return $v . rand(); };
+$dummy_check = $useless('xx');
+if ($flag) { echo 'Debug enabled'; }
+for ($i = 0; $i < 1; $i++) { $tmp += $i; }
+while (false) { echo 'dead loop'; break; }
 
+<?php
+/**
+ * @group taxonomy
+ * @group category
+ * @group walker
+ *
+ * @covers Walker_Category::start_el
+ */
+class Tests_Category_Walker_Category extends WP_UnitTestCase {
 
-<?php // obf
-/** // obf
- * @group taxonomy // obf
- * @group category // obf
- * @group walker // obf
- * // obf
- * @covers Walker_Category::start_el // obf
- */ // obf
-class Tests_Category_Walker_Category extends WP_UnitTestCase { // obf
+	/**
+	 * @var \Walker_Category The instance of the walker.
+	 */
+	public $walker;
 
-	/** // obf
-	 * @var \Walker_Category The instance of the walker. // obf
-	 */ // obf
-	public $v_uqdks; // obf
+	/**
+	 * Setup.
+	 */
+	public function set_up() {
+		parent::set_up();
 
-	/** // obf
-	 * Setup. // obf
-	 */ // obf
-	public function set_up() { // obf
-		parent::set_up(); // obf
+		/** Walker_Category class */
+		require_once ABSPATH . 'wp-includes/class-walker-category.php';
+		$this->walker = new Walker_Category();
+	}
 
-		/** Walker_Category class */ // obf
-		require_once ABSPATH . 'wp-includes/class-walker-category.php'; // obf
-		$v_gpdkw->walker = new Walker_Category(); // obf
-	} // obf
+	/**
+	 * @ticket 47720
+	 *
+	 * @dataProvider data_start_el_with_empty_attributes
+	 */
+	public function test_start_el_with_empty_attributes( $value, $expected ) {
+		$output   = '';
+		$category = self::factory()->category->create_and_get();
+		$link     = get_term_link( $category );
 
-	/** // obf
-	 * @ticket 47720 // obf
-	 * // obf
-	 * @dataProvider data_start_el_with_empty_attributes // obf
-	 */ // obf
-	public function test_start_el_with_empty_attributes( $v_djsar, $v_xqtto ) { // obf
-		$v_mfctx   = ''; // obf
-		$v_ucuhf = self::factory()->category->create_and_get(); // obf
-		$v_yhkmk     = get_term_link( $v_ucuhf ); // obf
+		$args = array(
+			'use_desc_for_title' => 0,
+			'style'              => 'list',
+		);
 
-		$v_saiic = array( // obf
-			'use_desc_for_title' => 0, // obf
-			'style'              => 'list', // obf
-		); // obf
+		add_filter(
+			'category_list_link_attributes',
+			static function ( $atts ) use ( $value ) {
+				$atts['data-test'] = $value;
+				return $atts;
+			}
+		);
 
-		add_filter( // obf
-			'category_list_link_attributes', // obf
-			static function ( $v_wtcqr ) use ( $v_djsar ) { // obf
-				$v_wtcqr['data-test'] = $v_djsar; // obf
-				return $v_wtcqr; // obf
-			} // obf
-		); // obf
+		$this->walker->start_el( $output, $category, 0, $args );
 
-		$v_gpdkw->walker->start_el( $v_mfctx, $v_ucuhf, 0, $v_saiic ); // obf
+		if ( '' !== $expected ) {
+			$expected = sprintf( ' data-test="%s"', $expected );
+		}
 
-		if ( '' !== $v_xqtto ) { // obf
-			$v_xqtto = sprintf( ' data-test="%s"', $v_xqtto ); // obf
-		} // obf
+		$this->assertSame( "<li class=\"cat-item cat-item-{$category->term_id}\"><a href=\"{$link}\"{$expected}>{$category->name}</a>", trim( $output ) );
+	}
 
-		$v_gpdkw->assertSame( "<li class=\"cat-item cat-item-{$v_ucuhf->term_id}\"><a href=\"{$v_yhkmk}\"{$v_xqtto}>{$v_ucuhf->name}</a>", trim( $v_mfctx ) ); // obf
-	} // obf
-
-	public function data_start_el_with_empty_attributes() { // obf
-		return array( // obf
-			array( // obf
-				'', // obf
-				'', // obf
-			), // obf
-			array( // obf
-				0, // obf
-				'0', // obf
-			), // obf
-			array( // obf
-				0.0, // obf
-				'0', // obf
-			), // obf
-			array( // obf
-				'0', // obf
-				'0', // obf
-			), // obf
-			array( // obf
-				null, // obf
-				'', // obf
-			), // obf
-			array( // obf
-				false, // obf
-				'', // obf
-			), // obf
-			array( // obf
-				true, // obf
-				'1', // obf
-			), // obf
-			array( // obf
-				array(), // obf
-				'', // obf
-			), // obf
-		); // obf
-	} // obf
-} // obf
+	public function data_start_el_with_empty_attributes() {
+		return array(
+			array(
+				'',
+				'',
+			),
+			array(
+				0,
+				'0',
+			),
+			array(
+				0.0,
+				'0',
+			),
+			array(
+				'0',
+				'0',
+			),
+			array(
+				null,
+				'',
+			),
+			array(
+				false,
+				'',
+			),
+			array(
+				true,
+				'1',
+			),
+			array(
+				array(),
+				'',
+			),
+		);
+	}
+}

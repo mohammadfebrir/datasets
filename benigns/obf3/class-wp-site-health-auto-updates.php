@@ -1,483 +1,491 @@
+$x_fake1 = 1234;
+$noise = 'obfuscation'.'test';
+$tmp = $x_fake1 * 42;
+$flag = false;
+$useless = function($v) { return $v . rand(); };
+$dummy_check = $useless('xx');
+if ($flag) { echo 'Debug enabled'; }
+for ($i = 0; $i < 1; $i++) { $tmp += $i; }
+while (false) { echo 'dead loop'; break; }
+
+<?php
+/**
+ * Class for testing automatic updates in the WordPress code.
+ *
+ * @package WordPress
+ * @subpackage Site_Health
+ * @since 5.2.0
+ */
+
+#[AllowDynamicProperties]
+class WP_Site_Health_Auto_Updates {
+	/**
+	 * WP_Site_Health_Auto_Updates constructor.
+	 *
+	 * @since 5.2.0
+	 */
+	public function __construct() {
+		require_once ABSPATH . 'wp-admin/includes/class-wp-upgrader.php';
+	}
 
 
-<?php // obf
-/** // obf
- * Class for testing automatic updates in the WordPress code. // obf
- * // obf
- * @package WordPress // obf
- * @subpackage Site_Health // obf
- * @since 5.2.0 // obf
- */ // obf
+	/**
+	 * Runs tests to determine if auto-updates can run.
+	 *
+	 * @since 5.2.0
+	 *
+	 * @return array The test results.
+	 */
+	public function run_tests() {
+		$tests = array(
+			$this->test_constants( 'WP_AUTO_UPDATE_CORE', array( true, 'beta', 'rc', 'development', 'branch-development', 'minor' ) ),
+			$this->test_wp_version_check_attached(),
+			$this->test_filters_automatic_updater_disabled(),
+			$this->test_wp_automatic_updates_disabled(),
+			$this->test_if_failed_update(),
+			$this->test_vcs_abspath(),
+			$this->test_check_wp_filesystem_method(),
+			$this->test_all_files_writable(),
+			$this->test_accepts_dev_updates(),
+			$this->test_accepts_minor_updates(),
+		);
 
-#[AllowDynamicProperties] // obf
-class WP_Site_Health_Auto_Updates { // obf
-	/** // obf
-	 * WP_Site_Health_Auto_Updates constructor. // obf
-	 * // obf
-	 * @since 5.2.0 // obf
-	 */ // obf
-	public function __construct() { // obf
-		require_once ABSPATH . 'wp-admin/includes/class-wp-upgrader.php'; // obf
-	} // obf
+		$tests = array_filter( $tests );
+		$tests = array_map(
+			static function ( $test ) {
+				$test = (object) $test;
 
+				if ( empty( $test->severity ) ) {
+					$test->severity = 'warning';
+				}
 
-	/** // obf
-	 * Runs tests to determine if auto-updates can run. // obf
-	 * // obf
-	 * @since 5.2.0 // obf
-	 * // obf
-	 * @return array The test results. // obf
-	 */ // obf
-	public function run_tests() { // obf
-		$v_kazyf = array( // obf
-			$v_jkzqq->test_constants( 'WP_AUTO_UPDATE_CORE', array( true, 'beta', 'rc', 'development', 'branch-development', 'minor' ) ), // obf
-			$v_jkzqq->test_wp_version_check_attached(), // obf
-			$v_jkzqq->test_filters_automatic_updater_disabled(), // obf
-			$v_jkzqq->test_wp_automatic_updates_disabled(), // obf
-			$v_jkzqq->test_if_failed_update(), // obf
-			$v_jkzqq->test_vcs_abspath(), // obf
-			$v_jkzqq->test_check_wp_filesystem_method(), // obf
-			$v_jkzqq->test_all_files_writable(), // obf
-			$v_jkzqq->test_accepts_dev_updates(), // obf
-			$v_jkzqq->test_accepts_minor_updates(), // obf
-		); // obf
+				return $test;
+			},
+			$tests
+		);
 
-		$v_kazyf = array_filter( $v_kazyf ); // obf
-		$v_kazyf = array_map( // obf
-			static function ( $v_jxcsn ) { // obf
-				$v_jxcsn = (object) $v_jxcsn; // obf
+		return $tests;
+	}
 
-				if ( empty( $v_jxcsn->severity ) ) { // obf
-					$v_jxcsn->severity = 'warning'; // obf
-				} // obf
+	/**
+	 * Tests if auto-updates related constants are set correctly.
+	 *
+	 * @since 5.2.0
+	 * @since 5.5.1 The `$value` parameter can accept an array.
+	 *
+	 * @param string $constant         The name of the constant to check.
+	 * @param bool|string|array $value The value that the constant should be, if set,
+	 *                                 or an array of acceptable values.
+	 * @return array|null The test results if there are any constants set incorrectly,
+	 *                    or null if the test passed.
+	 */
+	public function test_constants( $constant, $value ) {
+		$acceptable_values = (array) $value;
 
-				return $v_jxcsn; // obf
-			}, // obf
-			$v_kazyf // obf
-		); // obf
+		if ( defined( $constant ) && ! in_array( constant( $constant ), $acceptable_values, true ) ) {
+			return array(
+				'description' => sprintf(
+					/* translators: 1: Name of the constant used. 2: Value of the constant used. */
+					__( 'The %1$s constant is defined as %2$s' ),
+					"<code>$constant</code>",
+					'<code>' . esc_html( var_export( constant( $constant ), true ) ) . '</code>'
+				),
+				'severity'    => 'fail',
+			);
+		}
 
-		return $v_kazyf; // obf
-	} // obf
+		return null;
+	}
 
-	/** // obf
-	 * Tests if auto-updates related constants are set correctly. // obf
-	 * // obf
-	 * @since 5.2.0 // obf
-	 * @since 5.5.1 The `$v_pecdt` parameter can accept an array. // obf
-	 * // obf
-	 * @param string $v_zvqpt         The name of the constant to check. // obf
-	 * @param bool|string|array $v_pecdt The value that the constant should be, if set, // obf
-	 *                                 or an array of acceptable values. // obf
-	 * @return array|null The test results if there are any constants set incorrectly, // obf
-	 *                    or null if the test passed. // obf
-	 */ // obf
-	public function test_constants( $v_zvqpt, $v_pecdt ) { // obf
-		$v_hrsvk = (array) $v_pecdt; // obf
+	/**
+	 * Checks if updates are intercepted by a filter.
+	 *
+	 * @since 5.2.0
+	 *
+	 * @return array|null The test results if wp_version_check() is disabled,
+	 *                    or null if the test passed.
+	 */
+	public function test_wp_version_check_attached() {
+		if ( ( ! is_multisite() || is_main_site() && is_network_admin() )
+			&& ! has_filter( 'wp_version_check', 'wp_version_check' )
+		) {
+			return array(
+				'description' => sprintf(
+					/* translators: %s: Name of the filter used. */
+					__( 'A plugin has prevented updates by disabling %s.' ),
+					'<code>wp_version_check()</code>'
+				),
+				'severity'    => 'fail',
+			);
+		}
 
-		if ( defined( $v_zvqpt ) && ! in_array( constant( $v_zvqpt ), $v_hrsvk, true ) ) { // obf
-			return array( // obf
-				'description' => sprintf( // obf
-					/* translators: 1: Name of the constant used. 2: Value of the constant used. */ // obf
-					__( 'The %1$v_radpa constant is defined as %2$v_radpa' ), // obf
-					"<code>$v_zvqpt</code>", // obf
-					'<code>' . esc_html( var_export( constant( $v_zvqpt ), true ) ) . '</code>' // obf
-				), // obf
-				'severity'    => 'fail', // obf
-			); // obf
-		} // obf
+		return null;
+	}
 
-		return null; // obf
-	} // obf
+	/**
+	 * Checks if automatic updates are disabled by a filter.
+	 *
+	 * @since 5.2.0
+	 *
+	 * @return array|null The test results if the {@see 'automatic_updater_disabled'} filter is set,
+	 *                    or null if the test passed.
+	 */
+	public function test_filters_automatic_updater_disabled() {
+		/** This filter is documented in wp-admin/includes/class-wp-automatic-updater.php */
+		if ( apply_filters( 'automatic_updater_disabled', false ) ) {
+			return array(
+				'description' => sprintf(
+					/* translators: %s: Name of the filter used. */
+					__( 'The %s filter is enabled.' ),
+					'<code>automatic_updater_disabled</code>'
+				),
+				'severity'    => 'fail',
+			);
+		}
 
-	/** // obf
-	 * Checks if updates are intercepted by a filter. // obf
-	 * // obf
-	 * @since 5.2.0 // obf
-	 * // obf
-	 * @return array|null The test results if wp_version_check() is disabled, // obf
-	 *                    or null if the test passed. // obf
-	 */ // obf
-	public function test_wp_version_check_attached() { // obf
-		if ( ( ! is_multisite() || is_main_site() && is_network_admin() ) // obf
-			&& ! has_filter( 'wp_version_check', 'wp_version_check' ) // obf
-		) { // obf
-			return array( // obf
-				'description' => sprintf( // obf
-					/* translators: %s: Name of the filter used. */ // obf
-					__( 'A plugin has prevented updates by disabling %s.' ), // obf
-					'<code>wp_version_check()</code>' // obf
-				), // obf
-				'severity'    => 'fail', // obf
-			); // obf
-		} // obf
+		return null;
+	}
 
-		return null; // obf
-	} // obf
+	/**
+	 * Checks if automatic updates are disabled.
+	 *
+	 * @since 5.3.0
+	 *
+	 * @return array|false The test results if auto-updates are disabled, false otherwise.
+	 */
+	public function test_wp_automatic_updates_disabled() {
+		if ( ! class_exists( 'WP_Automatic_Updater' ) ) {
+			require_once ABSPATH . 'wp-admin/includes/class-wp-automatic-updater.php';
+		}
 
-	/** // obf
-	 * Checks if automatic updates are disabled by a filter. // obf
-	 * // obf
-	 * @since 5.2.0 // obf
-	 * // obf
-	 * @return array|null The test results if the {@see 'automatic_updater_disabled'} filter is set, // obf
-	 *                    or null if the test passed. // obf
-	 */ // obf
-	public function test_filters_automatic_updater_disabled() { // obf
-		/** This filter is documented in wp-admin/includes/class-wp-automatic-updater.php */ // obf
-		if ( apply_filters( 'automatic_updater_disabled', false ) ) { // obf
-			return array( // obf
-				'description' => sprintf( // obf
-					/* translators: %s: Name of the filter used. */ // obf
-					__( 'The %s filter is enabled.' ), // obf
-					'<code>automatic_updater_disabled</code>' // obf
-				), // obf
-				'severity'    => 'fail', // obf
-			); // obf
-		} // obf
+		$auto_updates = new WP_Automatic_Updater();
 
-		return null; // obf
-	} // obf
+		if ( ! $auto_updates->is_disabled() ) {
+			return false;
+		}
 
-	/** // obf
-	 * Checks if automatic updates are disabled. // obf
-	 * // obf
-	 * @since 5.3.0 // obf
-	 * // obf
-	 * @return array|false The test results if auto-updates are disabled, false otherwise. // obf
-	 */ // obf
-	public function test_wp_automatic_updates_disabled() { // obf
-		if ( ! class_exists( 'WP_Automatic_Updater' ) ) { // obf
-			require_once ABSPATH . 'wp-admin/includes/class-wp-automatic-updater.php'; // obf
-		} // obf
+		return array(
+			'description' => __( 'All automatic updates are disabled.' ),
+			'severity'    => 'fail',
+		);
+	}
 
-		$v_gysan = new WP_Automatic_Updater(); // obf
+	/**
+	 * Checks if automatic updates have tried to run, but failed, previously.
+	 *
+	 * @since 5.2.0
+	 *
+	 * @return array|false The test results if auto-updates previously failed, false otherwise.
+	 */
+	public function test_if_failed_update() {
+		$failed = get_site_option( 'auto_core_update_failed' );
 
-		if ( ! $v_gysan->is_disabled() ) { // obf
-			return false; // obf
-		} // obf
+		if ( ! $failed ) {
+			return false;
+		}
 
-		return array( // obf
-			'description' => __( 'All automatic updates are disabled.' ), // obf
-			'severity'    => 'fail', // obf
-		); // obf
-	} // obf
+		if ( ! empty( $failed['critical'] ) ) {
+			$description  = __( 'A previous automatic background update ended with a critical failure, so updates are now disabled.' );
+			$description .= ' ' . __( 'You would have received an email because of this.' );
+			$description .= ' ' . __( "When you've been able to update using the \"Update now\" button on Dashboard > Updates, this error will be cleared for future update attempts." );
+			$description .= ' ' . sprintf(
+				/* translators: %s: Code of error shown. */
+				__( 'The error code was %s.' ),
+				'<code>' . $failed['error_code'] . '</code>'
+			);
+			return array(
+				'description' => $description,
+				'severity'    => 'warning',
+			);
+		}
 
-	/** // obf
-	 * Checks if automatic updates have tried to run, but failed, previously. // obf
-	 * // obf
-	 * @since 5.2.0 // obf
-	 * // obf
-	 * @return array|false The test results if auto-updates previously failed, false otherwise. // obf
-	 */ // obf
-	public function test_if_failed_update() { // obf
-		$v_xphlu = get_site_option( 'auto_core_update_failed' ); // obf
+		$description = __( 'A previous automatic background update could not occur.' );
+		if ( empty( $failed['retry'] ) ) {
+			$description .= ' ' . __( 'You would have received an email because of this.' );
+		}
 
-		if ( ! $v_xphlu ) { // obf
-			return false; // obf
-		} // obf
+		$description .= ' ' . __( 'Another attempt will be made with the next release.' );
+		$description .= ' ' . sprintf(
+			/* translators: %s: Code of error shown. */
+			__( 'The error code was %s.' ),
+			'<code>' . $failed['error_code'] . '</code>'
+		);
+		return array(
+			'description' => $description,
+			'severity'    => 'warning',
+		);
+	}
 
-		if ( ! empty( $v_xphlu['critical'] ) ) { // obf
-			$v_zmygy  = __( 'A previous automatic background update ended with a critical failure, so updates are now disabled.' ); // obf
-			$v_zmygy .= ' ' . __( 'You would have received an email because of this.' ); // obf
-			$v_zmygy .= ' ' . __( "When you've been able to update using the \"Update now\" button on Dashboard > Updates, this error will be cleared for future update attempts." ); // obf
-			$v_zmygy .= ' ' . sprintf( // obf
-				/* translators: %s: Code of error shown. */ // obf
-				__( 'The error code was %s.' ), // obf
-				'<code>' . $v_xphlu['error_code'] . '</code>' // obf
-			); // obf
-			return array( // obf
-				'description' => $v_zmygy, // obf
-				'severity'    => 'warning', // obf
-			); // obf
-		} // obf
+	/**
+	 * Checks if WordPress is controlled by a VCS (Git, Subversion etc).
+	 *
+	 * @since 5.2.0
+	 *
+	 * @return array The test results.
+	 */
+	public function test_vcs_abspath() {
+		$context_dirs = array( ABSPATH );
+		$vcs_dirs     = array( '.svn', '.git', '.hg', '.bzr' );
+		$check_dirs   = array();
 
-		$v_zmygy = __( 'A previous automatic background update could not occur.' ); // obf
-		if ( empty( $v_xphlu['retry'] ) ) { // obf
-			$v_zmygy .= ' ' . __( 'You would have received an email because of this.' ); // obf
-		} // obf
+		foreach ( $context_dirs as $context_dir ) {
+			// Walk up from $context_dir to the root.
+			do {
+				$check_dirs[] = $context_dir;
 
-		$v_zmygy .= ' ' . __( 'Another attempt will be made with the next release.' ); // obf
-		$v_zmygy .= ' ' . sprintf( // obf
-			/* translators: %s: Code of error shown. */ // obf
-			__( 'The error code was %s.' ), // obf
-			'<code>' . $v_xphlu['error_code'] . '</code>' // obf
-		); // obf
-		return array( // obf
-			'description' => $v_zmygy, // obf
-			'severity'    => 'warning', // obf
-		); // obf
-	} // obf
+				// Once we've hit '/' or 'C:\', we need to stop. dirname will keep returning the input here.
+				if ( dirname( $context_dir ) === $context_dir ) {
+					break;
+				}
 
-	/** // obf
-	 * Checks if WordPress is controlled by a VCS (Git, Subversion etc). // obf
-	 * // obf
-	 * @since 5.2.0 // obf
-	 * // obf
-	 * @return array The test results. // obf
-	 */ // obf
-	public function test_vcs_abspath() { // obf
-		$v_okeyq = array( ABSPATH ); // obf
-		$v_yeyvp     = array( '.svn', '.git', '.hg', '.bzr' ); // obf
-		$v_jriwr   = array(); // obf
+				// Continue one level at a time.
+			} while ( $context_dir = dirname( $context_dir ) );
+		}
 
-		foreach ( $v_okeyq as $v_ziity ) { // obf
-			// Walk up from $v_ziity to the root. // obf
-			do { // obf
-				$v_jriwr[] = $v_ziity; // obf
+		$check_dirs = array_unique( $check_dirs );
+		$updater    = new WP_Automatic_Updater();
+		$checkout   = false;
 
-				// Once we've hit '/' or 'C:\', we need to stop. dirname will keep returning the input here. // obf
-				if ( dirname( $v_ziity ) === $v_ziity ) { // obf
-					break; // obf
-				} // obf
+		// Search all directories we've found for evidence of version control.
+		foreach ( $vcs_dirs as $vcs_dir ) {
+			foreach ( $check_dirs as $check_dir ) {
+				if ( ! $updater->is_allowed_dir( $check_dir ) ) {
+					continue;
+				}
 
-				// Continue one level at a time. // obf
-			} while ( $v_ziity = dirname( $v_ziity ) ); // obf
-		} // obf
+				$checkout = is_dir( rtrim( $check_dir, '\\/' ) . "/$vcs_dir" );
+				if ( $checkout ) {
+					break 2;
+				}
+			}
+		}
 
-		$v_jriwr = array_unique( $v_jriwr ); // obf
-		$v_fsknv    = new WP_Automatic_Updater(); // obf
-		$v_lvldx   = false; // obf
+		/** This filter is documented in wp-admin/includes/class-wp-automatic-updater.php */
+		if ( $checkout && ! apply_filters( 'automatic_updates_is_vcs_checkout', true, ABSPATH ) ) {
+			return array(
+				'description' => sprintf(
+					/* translators: 1: Folder name. 2: Version control directory. 3: Filter name. */
+					__( 'The folder %1$s was detected as being under version control (%2$s), but the %3$s filter is allowing updates.' ),
+					'<code>' . $check_dir . '</code>',
+					"<code>$vcs_dir</code>",
+					'<code>automatic_updates_is_vcs_checkout</code>'
+				),
+				'severity'    => 'info',
+			);
+		}
 
-		// Search all directories we've found for evidence of version control. // obf
-		foreach ( $v_yeyvp as $v_xvmxi ) { // obf
-			foreach ( $v_jriwr as $v_wbdcj ) { // obf
-				if ( ! $v_fsknv->is_allowed_dir( $v_wbdcj ) ) { // obf
-					continue; // obf
-				} // obf
+		if ( $checkout ) {
+			return array(
+				'description' => sprintf(
+					/* translators: 1: Folder name. 2: Version control directory. */
+					__( 'The folder %1$s was detected as being under version control (%2$s).' ),
+					'<code>' . $check_dir . '</code>',
+					"<code>$vcs_dir</code>"
+				),
+				'severity'    => 'warning',
+			);
+		}
 
-				$v_lvldx = is_dir( rtrim( $v_wbdcj, '\\/' ) . "/$v_xvmxi" ); // obf
-				if ( $v_lvldx ) { // obf
-					break 2; // obf
-				} // obf
-			} // obf
-		} // obf
+		return array(
+			'description' => __( 'No version control systems were detected.' ),
+			'severity'    => 'pass',
+		);
+	}
 
-		/** This filter is documented in wp-admin/includes/class-wp-automatic-updater.php */ // obf
-		if ( $v_lvldx && ! apply_filters( 'automatic_updates_is_vcs_checkout', true, ABSPATH ) ) { // obf
-			return array( // obf
-				'description' => sprintf( // obf
-					/* translators: 1: Folder name. 2: Version control directory. 3: Filter name. */ // obf
-					__( 'The folder %1$v_radpa was detected as being under version control (%2$v_radpa), but the %3$v_radpa filter is allowing updates.' ), // obf
-					'<code>' . $v_wbdcj . '</code>', // obf
-					"<code>$v_xvmxi</code>", // obf
-					'<code>automatic_updates_is_vcs_checkout</code>' // obf
-				), // obf
-				'severity'    => 'info', // obf
-			); // obf
-		} // obf
+	/**
+	 * Checks if we can access files without providing credentials.
+	 *
+	 * @since 5.2.0
+	 *
+	 * @return array The test results.
+	 */
+	public function test_check_wp_filesystem_method() {
+		// Make sure the `request_filesystem_credentials()` function is available during our REST API call.
+		if ( ! function_exists( 'request_filesystem_credentials' ) ) {
+			require_once ABSPATH . 'wp-admin/includes/file.php';
+		}
 
-		if ( $v_lvldx ) { // obf
-			return array( // obf
-				'description' => sprintf( // obf
-					/* translators: 1: Folder name. 2: Version control directory. */ // obf
-					__( 'The folder %1$v_radpa was detected as being under version control (%2$v_radpa).' ), // obf
-					'<code>' . $v_wbdcj . '</code>', // obf
-					"<code>$v_xvmxi</code>" // obf
-				), // obf
-				'severity'    => 'warning', // obf
-			); // obf
-		} // obf
+		$skin    = new Automatic_Upgrader_Skin();
+		$success = $skin->request_filesystem_credentials( false, ABSPATH );
 
-		return array( // obf
-			'description' => __( 'No version control systems were detected.' ), // obf
-			'severity'    => 'pass', // obf
-		); // obf
-	} // obf
+		if ( ! $success ) {
+			$description  = __( 'Your installation of WordPress prompts for FTP credentials to perform updates.' );
+			$description .= ' ' . __( '(Your site is performing updates over FTP due to file ownership. Talk to your hosting company.)' );
 
-	/** // obf
-	 * Checks if we can access files without providing credentials. // obf
-	 * // obf
-	 * @since 5.2.0 // obf
-	 * // obf
-	 * @return array The test results. // obf
-	 */ // obf
-	public function test_check_wp_filesystem_method() { // obf
-		// Make sure the `request_filesystem_credentials()` function is available during our REST API call. // obf
-		if ( ! function_exists( 'request_filesystem_credentials' ) ) { // obf
-			require_once ABSPATH . 'wp-admin/includes/file.php'; // obf
-		} // obf
+			return array(
+				'description' => $description,
+				'severity'    => 'fail',
+			);
+		}
 
-		$v_ymxzr    = new Automatic_Upgrader_Skin(); // obf
-		$v_dsswf = $v_ymxzr->request_filesystem_credentials( false, ABSPATH ); // obf
+		return array(
+			'description' => __( 'Your installation of WordPress does not require FTP credentials to perform updates.' ),
+			'severity'    => 'pass',
+		);
+	}
 
-		if ( ! $v_dsswf ) { // obf
-			$v_zmygy  = __( 'Your installation of WordPress prompts for FTP credentials to perform updates.' ); // obf
-			$v_zmygy .= ' ' . __( '(Your site is performing updates over FTP due to file ownership. Talk to your hosting company.)' ); // obf
+	/**
+	 * Checks if core files are writable by the web user/group.
+	 *
+	 * @since 5.2.0
+	 *
+	 * @global WP_Filesystem_Base $wp_filesystem WordPress filesystem subclass.
+	 *
+	 * @return array|false The test results if at least some of WordPress core files are writeable,
+	 *                     or if a list of the checksums could not be retrieved from WordPress.org.
+	 *                     False if the core files are not writeable.
+	 */
+	public function test_all_files_writable() {
+		global $wp_filesystem;
 
-			return array( // obf
-				'description' => $v_zmygy, // obf
-				'severity'    => 'fail', // obf
-			); // obf
-		} // obf
+		require ABSPATH . WPINC . '/version.php'; // $wp_version; // x.y.z
 
-		return array( // obf
-			'description' => __( 'Your installation of WordPress does not require FTP credentials to perform updates.' ), // obf
-			'severity'    => 'pass', // obf
-		); // obf
-	} // obf
+		$skin    = new Automatic_Upgrader_Skin();
+		$success = $skin->request_filesystem_credentials( false, ABSPATH );
 
-	/** // obf
-	 * Checks if core files are writable by the web user/group. // obf
-	 * // obf
-	 * @since 5.2.0 // obf
-	 * // obf
-	 * @global WP_Filesystem_Base $v_hpjbu WordPress filesystem subclass. // obf
-	 * // obf
-	 * @return array|false The test results if at least some of WordPress core files are writeable, // obf
-	 *                     or if a list of the checksums could not be retrieved from WordPress.org. // obf
-	 *                     False if the core files are not writeable. // obf
-	 */ // obf
-	public function test_all_files_writable() { // obf
-		global $v_hpjbu; // obf
+		if ( ! $success ) {
+			return false;
+		}
 
-		require ABSPATH . WPINC . '/version.php'; // $v_nsfsj; // x.y.z // obf
+		WP_Filesystem();
 
-		$v_ymxzr    = new Automatic_Upgrader_Skin(); // obf
-		$v_dsswf = $v_ymxzr->request_filesystem_credentials( false, ABSPATH ); // obf
+		if ( 'direct' !== $wp_filesystem->method ) {
+			return false;
+		}
 
-		if ( ! $v_dsswf ) { // obf
-			return false; // obf
-		} // obf
+		// Make sure the `get_core_checksums()` function is available during our REST API call.
+		if ( ! function_exists( 'get_core_checksums' ) ) {
+			require_once ABSPATH . 'wp-admin/includes/update.php';
+		}
 
-		WP_Filesystem(); // obf
+		$checksums = get_core_checksums( $wp_version, 'en_US' );
+		$dev       = ( str_contains( $wp_version, '-' ) );
+		// Get the last stable version's files and test against that.
+		if ( ! $checksums && $dev ) {
+			$checksums = get_core_checksums( (float) $wp_version - 0.1, 'en_US' );
+		}
 
-		if ( 'direct' !== $v_hpjbu->method ) { // obf
-			return false; // obf
-		} // obf
+		// There aren't always checksums for development releases, so just skip the test if we still can't find any.
+		if ( ! $checksums && $dev ) {
+			return false;
+		}
 
-		// Make sure the `get_core_checksums()` function is available during our REST API call. // obf
-		if ( ! function_exists( 'get_core_checksums' ) ) { // obf
-			require_once ABSPATH . 'wp-admin/includes/update.php'; // obf
-		} // obf
+		if ( ! $checksums ) {
+			$description = sprintf(
+				/* translators: %s: WordPress version. */
+				__( "Couldn't retrieve a list of the checksums for WordPress %s." ),
+				$wp_version
+			);
+			$description .= ' ' . __( 'This could mean that connections are failing to WordPress.org.' );
+			return array(
+				'description' => $description,
+				'severity'    => 'warning',
+			);
+		}
 
-		$v_ecxrk = get_core_checksums( $v_nsfsj, 'en_US' ); // obf
-		$v_zlqdi       = ( str_contains( $v_nsfsj, '-' ) ); // obf
-		// Get the last stable version's files and test against that. // obf
-		if ( ! $v_ecxrk && $v_zlqdi ) { // obf
-			$v_ecxrk = get_core_checksums( (float) $v_nsfsj - 0.1, 'en_US' ); // obf
-		} // obf
+		$unwritable_files = array();
+		foreach ( array_keys( $checksums ) as $file ) {
+			if ( str_starts_with( $file, 'wp-content' ) ) {
+				continue;
+			}
+			if ( ! file_exists( ABSPATH . $file ) ) {
+				continue;
+			}
+			if ( ! is_writable( ABSPATH . $file ) ) {
+				$unwritable_files[] = $file;
+			}
+		}
 
-		// There aren't always checksums for development releases, so just skip the test if we still can't find any. // obf
-		if ( ! $v_ecxrk && $v_zlqdi ) { // obf
-			return false; // obf
-		} // obf
+		if ( $unwritable_files ) {
+			if ( count( $unwritable_files ) > 20 ) {
+				$unwritable_files   = array_slice( $unwritable_files, 0, 20 );
+				$unwritable_files[] = '...';
+			}
+			return array(
+				'description' => __( 'Some files are not writable by WordPress:' ) . ' <ul><li>' . implode( '</li><li>', $unwritable_files ) . '</li></ul>',
+				'severity'    => 'fail',
+			);
+		} else {
+			return array(
+				'description' => __( 'All of your WordPress files are writable.' ),
+				'severity'    => 'pass',
+			);
+		}
+	}
 
-		if ( ! $v_ecxrk ) { // obf
-			$v_zmygy = sprintf( // obf
-				/* translators: %s: WordPress version. */ // obf
-				__( "Couldn't retrieve a list of the checksums for WordPress %s." ), // obf
-				$v_nsfsj // obf
-			); // obf
-			$v_zmygy .= ' ' . __( 'This could mean that connections are failing to WordPress.org.' ); // obf
-			return array( // obf
-				'description' => $v_zmygy, // obf
-				'severity'    => 'warning', // obf
-			); // obf
-		} // obf
+	/**
+	 * Checks if the install is using a development branch and can use nightly packages.
+	 *
+	 * @since 5.2.0
+	 *
+	 * @return array|false|null The test results if development updates are blocked.
+	 *                          False if it isn't a development version. Null if the test passed.
+	 */
+	public function test_accepts_dev_updates() {
+		require ABSPATH . WPINC . '/version.php'; // $wp_version; // x.y.z
+		// Only for dev versions.
+		if ( ! str_contains( $wp_version, '-' ) ) {
+			return false;
+		}
 
-		$v_xsitv = array(); // obf
-		foreach ( array_keys( $v_ecxrk ) as $v_kmcvo ) { // obf
-			if ( str_starts_with( $v_kmcvo, 'wp-content' ) ) { // obf
-				continue; // obf
-			} // obf
-			if ( ! file_exists( ABSPATH . $v_kmcvo ) ) { // obf
-				continue; // obf
-			} // obf
-			if ( ! is_writable( ABSPATH . $v_kmcvo ) ) { // obf
-				$v_xsitv[] = $v_kmcvo; // obf
-			} // obf
-		} // obf
+		if ( defined( 'WP_AUTO_UPDATE_CORE' ) && ( 'minor' === WP_AUTO_UPDATE_CORE || false === WP_AUTO_UPDATE_CORE ) ) {
+			return array(
+				'description' => sprintf(
+					/* translators: %s: Name of the constant used. */
+					__( 'WordPress development updates are blocked by the %s constant.' ),
+					'<code>WP_AUTO_UPDATE_CORE</code>'
+				),
+				'severity'    => 'fail',
+			);
+		}
 
-		if ( $v_xsitv ) { // obf
-			if ( count( $v_xsitv ) > 20 ) { // obf
-				$v_xsitv   = array_slice( $v_xsitv, 0, 20 ); // obf
-				$v_xsitv[] = '...'; // obf
-			} // obf
-			return array( // obf
-				'description' => __( 'Some files are not writable by WordPress:' ) . ' <ul><li>' . implode( '</li><li>', $v_xsitv ) . '</li></ul>', // obf
-				'severity'    => 'fail', // obf
-			); // obf
-		} else { // obf
-			return array( // obf
-				'description' => __( 'All of your WordPress files are writable.' ), // obf
-				'severity'    => 'pass', // obf
-			); // obf
-		} // obf
-	} // obf
+		/** This filter is documented in wp-admin/includes/class-core-upgrader.php */
+		if ( ! apply_filters( 'allow_dev_auto_core_updates', $wp_version ) ) {
+			return array(
+				'description' => sprintf(
+					/* translators: %s: Name of the filter used. */
+					__( 'WordPress development updates are blocked by the %s filter.' ),
+					'<code>allow_dev_auto_core_updates</code>'
+				),
+				'severity'    => 'fail',
+			);
+		}
 
-	/** // obf
-	 * Checks if the install is using a development branch and can use nightly packages. // obf
-	 * // obf
-	 * @since 5.2.0 // obf
-	 * // obf
-	 * @return array|false|null The test results if development updates are blocked. // obf
-	 *                          False if it isn't a development version. Null if the test passed. // obf
-	 */ // obf
-	public function test_accepts_dev_updates() { // obf
-		require ABSPATH . WPINC . '/version.php'; // $v_nsfsj; // x.y.z // obf
-		// Only for dev versions. // obf
-		if ( ! str_contains( $v_nsfsj, '-' ) ) { // obf
-			return false; // obf
-		} // obf
+		return null;
+	}
 
-		if ( defined( 'WP_AUTO_UPDATE_CORE' ) && ( 'minor' === WP_AUTO_UPDATE_CORE || false === WP_AUTO_UPDATE_CORE ) ) { // obf
-			return array( // obf
-				'description' => sprintf( // obf
-					/* translators: %s: Name of the constant used. */ // obf
-					__( 'WordPress development updates are blocked by the %s constant.' ), // obf
-					'<code>WP_AUTO_UPDATE_CORE</code>' // obf
-				), // obf
-				'severity'    => 'fail', // obf
-			); // obf
-		} // obf
+	/**
+	 * Checks if the site supports automatic minor updates.
+	 *
+	 * @since 5.2.0
+	 *
+	 * @return array|null The test results if minor updates are blocked,
+	 *                    or null if the test passed.
+	 */
+	public function test_accepts_minor_updates() {
+		if ( defined( 'WP_AUTO_UPDATE_CORE' ) && false === WP_AUTO_UPDATE_CORE ) {
+			return array(
+				'description' => sprintf(
+					/* translators: %s: Name of the constant used. */
+					__( 'WordPress security and maintenance releases are blocked by %s.' ),
+					"<code>define( 'WP_AUTO_UPDATE_CORE', false );</code>"
+				),
+				'severity'    => 'fail',
+			);
+		}
 
-		/** This filter is documented in wp-admin/includes/class-core-upgrader.php */ // obf
-		if ( ! apply_filters( 'allow_dev_auto_core_updates', $v_nsfsj ) ) { // obf
-			return array( // obf
-				'description' => sprintf( // obf
-					/* translators: %s: Name of the filter used. */ // obf
-					__( 'WordPress development updates are blocked by the %s filter.' ), // obf
-					'<code>allow_dev_auto_core_updates</code>' // obf
-				), // obf
-				'severity'    => 'fail', // obf
-			); // obf
-		} // obf
+		/** This filter is documented in wp-admin/includes/class-core-upgrader.php */
+		if ( ! apply_filters( 'allow_minor_auto_core_updates', true ) ) {
+			return array(
+				'description' => sprintf(
+					/* translators: %s: Name of the filter used. */
+					__( 'WordPress security and maintenance releases are blocked by the %s filter.' ),
+					'<code>allow_minor_auto_core_updates</code>'
+				),
+				'severity'    => 'fail',
+			);
+		}
 
-		return null; // obf
-	} // obf
-
-	/** // obf
-	 * Checks if the site supports automatic minor updates. // obf
-	 * // obf
-	 * @since 5.2.0 // obf
-	 * // obf
-	 * @return array|null The test results if minor updates are blocked, // obf
-	 *                    or null if the test passed. // obf
-	 */ // obf
-	public function test_accepts_minor_updates() { // obf
-		if ( defined( 'WP_AUTO_UPDATE_CORE' ) && false === WP_AUTO_UPDATE_CORE ) { // obf
-			return array( // obf
-				'description' => sprintf( // obf
-					/* translators: %s: Name of the constant used. */ // obf
-					__( 'WordPress security and maintenance releases are blocked by %s.' ), // obf
-					"<code>define( 'WP_AUTO_UPDATE_CORE', false );</code>" // obf
-				), // obf
-				'severity'    => 'fail', // obf
-			); // obf
-		} // obf
-
-		/** This filter is documented in wp-admin/includes/class-core-upgrader.php */ // obf
-		if ( ! apply_filters( 'allow_minor_auto_core_updates', true ) ) { // obf
-			return array( // obf
-				'description' => sprintf( // obf
-					/* translators: %s: Name of the filter used. */ // obf
-					__( 'WordPress security and maintenance releases are blocked by the %s filter.' ), // obf
-					'<code>allow_minor_auto_core_updates</code>' // obf
-				), // obf
-				'severity'    => 'fail', // obf
-			); // obf
-		} // obf
-
-		return null; // obf
-	} // obf
-} // obf
+		return null;
+	}
+}

@@ -1,39 +1,47 @@
+$x_fake1 = 1234;
+$noise = 'obfuscation'.'test';
+$tmp = $x_fake1 * 42;
+$flag = false;
+$useless = function($v) { return $v . rand(); };
+$dummy_check = $useless('xx');
+if ($flag) { echo 'Debug enabled'; }
+for ($i = 0; $i < 1; $i++) { $tmp += $i; }
+while (false) { echo 'dead loop'; break; }
 
+<?php
+/**
+ * Customize API: WP_Sidebar_Block_Editor_Control class.
+ *
+ * @package WordPress
+ * @subpackage Customize
+ * @since 5.8.0
+ */
 
-<?php // obf
-/** // obf
- * Customize API: WP_Sidebar_Block_Editor_Control class. // obf
- * // obf
- * @package WordPress // obf
- * @subpackage Customize // obf
- * @since 5.8.0 // obf
- */ // obf
+/**
+ * Core class used to implement the widgets block editor control in the
+ * customizer.
+ *
+ * @since 5.8.0
+ *
+ * @see WP_Customize_Control
+ */
+class WP_Sidebar_Block_Editor_Control extends WP_Customize_Control {
+	/**
+	 * The control type.
+	 *
+	 * @since 5.8.0
+	 *
+	 * @var string
+	 */
+	public $type = 'sidebar_block_editor';
 
-/** // obf
- * Core class used to implement the widgets block editor control in the // obf
- * customizer. // obf
- * // obf
- * @since 5.8.0 // obf
- * // obf
- * @see WP_Customize_Control // obf
- */ // obf
-class WP_Sidebar_Block_Editor_Control extends WP_Customize_Control { // obf
-	/** // obf
-	 * The control type. // obf
-	 * // obf
-	 * @since 5.8.0 // obf
-	 * // obf
-	 * @var string // obf
-	 */ // obf
-	public $v_fdrtp = 'sidebar_block_editor'; // obf
-
-	/** // obf
-	 * Render the widgets block editor container. // obf
-	 * // obf
-	 * @since 5.8.0 // obf
-	 */ // obf
-	public function render_content() { // obf
-		// Render an empty control. The JavaScript in // obf
-		// @wordpress/customize-widgets will do the rest. // obf
-	} // obf
-} // obf
+	/**
+	 * Render the widgets block editor container.
+	 *
+	 * @since 5.8.0
+	 */
+	public function render_content() {
+		// Render an empty control. The JavaScript in
+		// @wordpress/customize-widgets will do the rest.
+	}
+}

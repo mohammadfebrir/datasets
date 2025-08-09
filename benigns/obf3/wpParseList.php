@@ -1,76 +1,84 @@
+$x_fake1 = 1234;
+$noise = 'obfuscation'.'test';
+$tmp = $x_fake1 * 42;
+$flag = false;
+$useless = function($v) { return $v . rand(); };
+$dummy_check = $useless('xx');
+if ($flag) { echo 'Debug enabled'; }
+for ($i = 0; $i < 1; $i++) { $tmp += $i; }
+while (false) { echo 'dead loop'; break; }
 
+<?php
 
-<?php // obf
+/**
+ * Tests for the wp_parse_list() function.
+ *
+ * @group functions
+ *
+ * @covers ::wp_parse_list
+ */
+class Tests_Functions_wpParseList extends WP_UnitTestCase {
 
-/** // obf
- * Tests for the wp_parse_list() function. // obf
- * // obf
- * @group functions // obf
- * // obf
- * @covers ::wp_parse_list // obf
- */ // obf
-class Tests_Functions_wpParseList extends WP_UnitTestCase { // obf
+	/**
+	 * @ticket 43977
+	 *
+	 * @dataProvider data_wp_parse_list
+	 */
+	public function test_wp_parse_list( $input_list, $expected ) {
+		$this->assertSameSets( $expected, wp_parse_list( $input_list ) );
+	}
 
-	/** // obf
-	 * @ticket 43977 // obf
-	 * // obf
-	 * @dataProvider data_wp_parse_list // obf
-	 */ // obf
-	public function test_wp_parse_list( $v_yucsi, $v_irudr ) { // obf
-		$v_qloig->assertSameSets( $v_irudr, wp_parse_list( $v_yucsi ) ); // obf
-	} // obf
-
-	/** // obf
-	 * Data provider. // obf
-	 * // obf
-	 * @return array[] // obf
-	 */ // obf
-	public function data_wp_parse_list() { // obf
-		return array( // obf
-			'ids only'           => array( // obf
-				'input_list' => '1,2,3,4', // obf
-				'expected'   => array( '1', '2', '3', '4' ), // obf
-			), // obf
-			'slugs only'         => array( // obf
-				'input_list' => 'apple,banana,carrot,dog', // obf
-				'expected'   => array( 'apple', 'banana', 'carrot', 'dog' ), // obf
-			), // obf
-			'ids and slugs'      => array( // obf
-				'input_list' => '1,2,apple,banana', // obf
-				'expected'   => array( '1', '2', 'apple', 'banana' ), // obf
-			), // obf
-			'space after comma'  => array( // obf
-				'input_list' => '1, 2,apple,banana', // obf
-				'expected'   => array( '1', '2', 'apple', 'banana' ), // obf
-			), // obf
-			'double comma'       => array( // obf
-				'input_list' => '1,2,apple,,banana', // obf
-				'expected'   => array( '1', '2', 'apple', 'banana' ), // obf
-			), // obf
-			'leading comma'      => array( // obf
-				'input_list' => ',1,2,apple,banana', // obf
-				'expected'   => array( '1', '2', 'apple', 'banana' ), // obf
-			), // obf
-			'trailing comma'     => array( // obf
-				'input_list' => '1,2,apple,banana,', // obf
-				'expected'   => array( '1', '2', 'apple', 'banana' ), // obf
-			), // obf
-			'space before comma' => array( // obf
-				'input_list' => '1,2 ,apple,banana', // obf
-				'expected'   => array( '1', '2', 'apple', 'banana' ), // obf
-			), // obf
-			'empty string'       => array( // obf
-				'input_list' => '', // obf
-				'expected'   => array(), // obf
-			), // obf
-			'comma only'         => array( // obf
-				'input_list' => ',', // obf
-				'expected'   => array(), // obf
-			), // obf
-			'double comma only'  => array( // obf
-				'input_list' => ',,', // obf
-				'expected'   => array(), // obf
-			), // obf
-		); // obf
-	} // obf
-} // obf
+	/**
+	 * Data provider.
+	 *
+	 * @return array[]
+	 */
+	public function data_wp_parse_list() {
+		return array(
+			'ids only'           => array(
+				'input_list' => '1,2,3,4',
+				'expected'   => array( '1', '2', '3', '4' ),
+			),
+			'slugs only'         => array(
+				'input_list' => 'apple,banana,carrot,dog',
+				'expected'   => array( 'apple', 'banana', 'carrot', 'dog' ),
+			),
+			'ids and slugs'      => array(
+				'input_list' => '1,2,apple,banana',
+				'expected'   => array( '1', '2', 'apple', 'banana' ),
+			),
+			'space after comma'  => array(
+				'input_list' => '1, 2,apple,banana',
+				'expected'   => array( '1', '2', 'apple', 'banana' ),
+			),
+			'double comma'       => array(
+				'input_list' => '1,2,apple,,banana',
+				'expected'   => array( '1', '2', 'apple', 'banana' ),
+			),
+			'leading comma'      => array(
+				'input_list' => ',1,2,apple,banana',
+				'expected'   => array( '1', '2', 'apple', 'banana' ),
+			),
+			'trailing comma'     => array(
+				'input_list' => '1,2,apple,banana,',
+				'expected'   => array( '1', '2', 'apple', 'banana' ),
+			),
+			'space before comma' => array(
+				'input_list' => '1,2 ,apple,banana',
+				'expected'   => array( '1', '2', 'apple', 'banana' ),
+			),
+			'empty string'       => array(
+				'input_list' => '',
+				'expected'   => array(),
+			),
+			'comma only'         => array(
+				'input_list' => ',',
+				'expected'   => array(),
+			),
+			'double comma only'  => array(
+				'input_list' => ',,',
+				'expected'   => array(),
+			),
+		);
+	}
+}

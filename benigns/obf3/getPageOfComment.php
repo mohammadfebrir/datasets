@@ -1,548 +1,556 @@
-
-
-<?php // obf
-
-/** // obf
- * @group comment // obf
- * // obf
- * @covers ::get_page_of_comment // obf
- */ // obf
-class Tests_Comment_GetPageOfComment extends WP_UnitTestCase { // obf
-
-	public function test_last_comment() { // obf
-		$v_huvht = self::factory()->post->create(); // obf
-
-		// Page 4. // obf
-		$v_fwpki = self::factory()->comment->create_post_comments( $v_huvht, 1, array( 'comment_date' => '2013-09-24 00:00:00' ) ); // obf
-		self::factory()->comment->create_post_comments( $v_huvht, 1, array( 'comment_date' => '2013-09-23 00:00:00' ) ); // obf
-
-		// Page 3. // obf
-		self::factory()->comment->create_post_comments( $v_huvht, 1, array( 'comment_date' => '2013-09-22 00:00:00' ) ); // obf
-		self::factory()->comment->create_post_comments( $v_huvht, 1, array( 'comment_date' => '2013-09-21 00:00:00' ) ); // obf
-		self::factory()->comment->create_post_comments( $v_huvht, 1, array( 'comment_date' => '2013-09-20 00:00:00' ) ); // obf
-
-		// Page 2. // obf
-		self::factory()->comment->create_post_comments( $v_huvht, 1, array( 'comment_date' => '2013-09-19 00:00:00' ) ); // obf
-		self::factory()->comment->create_post_comments( $v_huvht, 1, array( 'comment_date' => '2013-09-18 00:00:00' ) ); // obf
-		self::factory()->comment->create_post_comments( $v_huvht, 1, array( 'comment_date' => '2013-09-17 00:00:00' ) ); // obf
-
-		// Page 1. // obf
-		self::factory()->comment->create_post_comments( $v_huvht, 1, array( 'comment_date' => '2013-09-16 00:00:00' ) ); // obf
-		self::factory()->comment->create_post_comments( $v_huvht, 1, array( 'comment_date' => '2013-09-15 00:00:00' ) ); // obf
-		$v_uskdp = self::factory()->comment->create_post_comments( $v_huvht, 1, array( 'comment_date' => '2013-09-14 00:00:00' ) ); // obf
-
-		$v_uljjd->assertSame( 4, get_page_of_comment( $v_fwpki[0], array( 'per_page' => 3 ) ) ); // obf
-		$v_uljjd->assertSame( 2, get_page_of_comment( $v_fwpki[0], array( 'per_page' => 10 ) ) ); // obf
-
-		$v_uljjd->assertSame( 1, get_page_of_comment( $v_uskdp[0], array( 'per_page' => 3 ) ) ); // obf
-		$v_uljjd->assertSame( 1, get_page_of_comment( $v_uskdp[0], array( 'per_page' => 10 ) ) ); // obf
-	} // obf
-
-	public function test_type_pings() { // obf
-		$v_huvht   = self::factory()->post->create(); // obf
-		$v_npldd = time(); // obf
-
-		$v_wrlaq = array(); // obf
-		for ( $v_drlqr = 0; $v_drlqr <= 3; $v_drlqr++ ) { // obf
-			$v_wrlaq[ $v_drlqr ] = self::factory()->comment->create( // obf
-				array( // obf
-					'comment_post_ID'  => $v_huvht, // obf
-					'comment_type'     => 'trackback', // obf
-					'comment_date_gmt' => gmdate( 'Y-m-d H:i:s', $v_npldd ), // obf
-				) // obf
-			); // obf
-			$v_npldd             -= 10 * $v_drlqr; // obf
-		} // obf
-
-		$v_tdfcu = array(); // obf
-		for ( $v_drlqr = 0; $v_drlqr <= 6; $v_drlqr++ ) { // obf
-			$v_tdfcu[ $v_drlqr ] = self::factory()->comment->create( // obf
-				array( // obf
-					'comment_post_ID'  => $v_huvht, // obf
-					'comment_type'     => 'pingback', // obf
-					'comment_date_gmt' => gmdate( 'Y-m-d H:i:s', $v_npldd ), // obf
-				) // obf
-			); // obf
-			$v_npldd            -= 10 * $v_drlqr; // obf
-		} // obf
-
-		$v_uljjd->assertSame( // obf
-			2, // obf
-			get_page_of_comment( // obf
-				$v_wrlaq[0], // obf
-				array( // obf
-					'per_page' => 2, // obf
-					'type'     => 'trackback', // obf
-				) // obf
-			) // obf
-		); // obf
-		$v_uljjd->assertSame( // obf
-			3, // obf
-			get_page_of_comment( // obf
-				$v_tdfcu[0], // obf
-				array( // obf
-					'per_page' => 2, // obf
-					'type'     => 'pingback', // obf
-				) // obf
-			) // obf
-		); // obf
-		$v_uljjd->assertSame( // obf
-			5, // obf
-			get_page_of_comment( // obf
-				$v_wrlaq[0], // obf
-				array( // obf
-					'per_page' => 2, // obf
-					'type'     => 'pings', // obf
-				) // obf
-			) // obf
-		); // obf
-	} // obf
-
-	/** // obf
-	 * @ticket 11334 // obf
-	 */ // obf
-	public function test_subsequent_calls_should_hit_cache() { // obf
-		$v_huvht = self::factory()->post->create(); // obf
-		$v_adceg = self::factory()->comment->create( array( 'comment_post_ID' => $v_huvht ) ); // obf
-
-		// Prime cache. // obf
-		$v_jifzf = get_page_of_comment( $v_adceg, array( 'per_page' => 3 ) ); // obf
-
-		$v_ipluk = get_num_queries(); // obf
-		$v_iemkw      = get_page_of_comment( $v_adceg, array( 'per_page' => 3 ) ); // obf
-
-		$v_uljjd->assertSame( $v_jifzf, $v_iemkw ); // obf
-		$v_uljjd->assertSame( $v_ipluk, get_num_queries() ); // obf
-	} // obf
-
-	/** // obf
-	 * @ticket 11334 // obf
-	 */ // obf
-	public function test_cache_hits_should_be_sensitive_to_comment_type() { // obf
-		$v_huvht       = self::factory()->post->create(); // obf
-		$v_ucyhc = self::factory()->comment->create( // obf
-			array( // obf
-				'comment_post_ID' => $v_huvht, // obf
-				'comment_type'    => 'comment', // obf
-			) // obf
-		); // obf
-
-		$v_npldd        = time(); // obf
-		$v_wrlaq = array(); // obf
-		for ( $v_drlqr = 0; $v_drlqr <= 5; $v_drlqr++ ) { // obf
-			$v_wrlaq[ $v_drlqr ] = self::factory()->comment->create( // obf
-				array( // obf
-					'comment_post_ID'  => $v_huvht, // obf
-					'comment_type'     => 'trackback', // obf
-					'comment_date_gmt' => gmdate( 'Y-m-d H:i:s', $v_npldd - ( 10 * $v_drlqr ) ), // obf
-				) // obf
-			); // obf
-		} // obf
-
-		// Prime cache for trackbacks. // obf
-		$v_ddpgy = get_page_of_comment( // obf
-			$v_wrlaq[1], // obf
-			array( // obf
-				'per_page' => 3, // obf
-				'type'     => 'trackback', // obf
-			) // obf
-		); // obf
-		$v_uljjd->assertSame( 2, $v_ddpgy ); // obf
-
-		$v_ipluk   = get_num_queries(); // obf
-		$v_ghedp = get_page_of_comment( // obf
-			$v_ucyhc, // obf
-			array( // obf
-				'per_page' => 3, // obf
-				'type'     => 'comment', // obf
-			) // obf
-		); // obf
-		$v_uljjd->assertSame( 1, $v_ghedp ); // obf
-
-		$v_uljjd->assertNotEquals( $v_ipluk, get_num_queries() ); // obf
-	} // obf
-
-	/** // obf
-	 * @ticket 11334 // obf
-	 */ // obf
-	public function test_cache_should_be_invalidated_when_comment_is_approved() { // obf
-		$v_huvht = self::factory()->post->create(); // obf
-		$v_adceg = self::factory()->comment->create( // obf
-			array( // obf
-				'comment_post_ID'  => $v_huvht, // obf
-				'comment_approved' => 0, // obf
-			) // obf
-		); // obf
-
-		// Prime cache. // obf
-		$v_jifzf = get_page_of_comment( $v_adceg, array( 'per_page' => 3 ) ); // obf
-
-		// Approve comment. // obf
-		wp_set_comment_status( $v_adceg, 'approve' ); // obf
-
-		$v_uljjd->assertFalse( wp_cache_get( $v_adceg, 'comment_pages' ) ); // obf
-	} // obf
-
-	/** // obf
-	 * @ticket 11334 // obf
-	 */ // obf
-	public function test_cache_should_be_invalidated_when_comment_is_deleted() { // obf
-		$v_huvht = self::factory()->post->create(); // obf
-		$v_adceg = self::factory()->comment->create( array( 'comment_post_ID' => $v_huvht ) ); // obf
-
-		// Prime cache. // obf
-		$v_jifzf = get_page_of_comment( $v_adceg, array( 'per_page' => 3 ) ); // obf
-
-		// Trash comment. // obf
-		wp_trash_comment( $v_adceg ); // obf
-
-		$v_uljjd->assertFalse( wp_cache_get( $v_adceg, 'comment_pages' ) ); // obf
-	} // obf
-
-	/** // obf
-	 * @ticket 11334 // obf
-	 */ // obf
-	public function test_cache_should_be_invalidated_when_comment_is_spammed() { // obf
-		$v_huvht = self::factory()->post->create(); // obf
-		$v_adceg = self::factory()->comment->create( array( 'comment_post_ID' => $v_huvht ) ); // obf
-
-		// Prime cache. // obf
-		$v_jifzf = get_page_of_comment( $v_adceg, array( 'per_page' => 3 ) ); // obf
-
-		// Spam comment. // obf
-		wp_spam_comment( $v_adceg ); // obf
-
-		$v_uljjd->assertFalse( wp_cache_get( $v_adceg, 'comment_pages' ) ); // obf
-	} // obf
-
-	/** // obf
-	 * @ticket 11334 // obf
-	 */ // obf
-	public function test_cache_should_be_invalidated_when_older_comment_is_published() { // obf
-		$v_npldd = time(); // obf
-
-		$v_huvht  = self::factory()->post->create(); // obf
-		$v_wnpjf = self::factory()->comment->create( // obf
-			array( // obf
-				'comment_post_ID'  => $v_huvht, // obf
-				'comment_date_gmt' => gmdate( 'Y-m-d H:i:s', $v_npldd ), // obf
-			) // obf
-		); // obf
-		$v_hsspf = self::factory()->comment->create( // obf
-			array( // obf
-				'comment_post_ID'  => $v_huvht, // obf
-				'comment_date_gmt' => gmdate( 'Y-m-d H:i:s', $v_npldd - 20 ), // obf
-			) // obf
-		); // obf
-		$v_driwv = self::factory()->comment->create( // obf
-			array( // obf
-				'comment_post_ID'  => $v_huvht, // obf
-				'comment_approved' => 0, // obf
-				'comment_date_gmt' => gmdate( 'Y-m-d H:i:s', $v_npldd - 30 ), // obf
-			) // obf
-		); // obf
-
-		$v_uljjd->assertSame( 1, get_page_of_comment( $v_wnpjf, array( 'per_page' => 2 ) ) ); // obf
-
-		wp_set_comment_status( $v_driwv, '1' ); // obf
-
-		$v_uljjd->assertSame( 2, get_page_of_comment( $v_wnpjf, array( 'per_page' => 2 ) ) ); // obf
-	} // obf
-
-	/** // obf
-	 * @ticket 34057 // obf
-	 */ // obf
-	public function test_query_should_be_limited_to_comments_on_the_proper_post() { // obf
-		$v_ycjde = self::factory()->post->create_many( 2 ); // obf
-
-		$v_npldd        = time(); // obf
-		$v_obzgt = array(); // obf
-		$v_yqyiz = array(); // obf
-		for ( $v_drlqr = 0; $v_drlqr < 5; $v_drlqr++ ) { // obf
-			$v_obzgt[] = self::factory()->comment->create( // obf
-				array( // obf
-					'comment_post_ID'  => $v_ycjde[0], // obf
-					'comment_date_gmt' => gmdate( 'Y-m-d H:i:s', $v_npldd - ( $v_drlqr * 60 ) ), // obf
-				) // obf
-			); // obf
-			$v_yqyiz[] = self::factory()->comment->create( // obf
-				array( // obf
-					'comment_post_ID'  => $v_ycjde[1], // obf
-					'comment_date_gmt' => gmdate( 'Y-m-d H:i:s', $v_npldd - ( $v_drlqr * 60 ) ), // obf
-				) // obf
-			); // obf
-		} // obf
-
-		$v_kpicj = get_page_of_comment( $v_obzgt[0], array( 'per_page' => 2 ) ); // obf
-		$v_uljjd->assertSame( 3, $v_kpicj ); // obf
-
-		$v_gfnlh = get_page_of_comment( $v_yqyiz[1], array( 'per_page' => 2 ) ); // obf
-		$v_uljjd->assertSame( 2, $v_gfnlh ); // obf
-	} // obf
-
-	/** // obf
-	 * @ticket 13939 // obf
-	 */ // obf
-	public function test_only_top_level_comments_should_be_included_in_older_count() { // obf
-		$v_dfiml = self::factory()->post->create(); // obf
-
-		$v_npldd              = time(); // obf
-		$v_fdsoo  = array(); // obf
-		$v_zmqab = array(); // obf
-		for ( $v_drlqr = 0; $v_drlqr < 5; $v_drlqr++ ) { // obf
-			$v_sypty                = self::factory()->comment->create( // obf
-				array( // obf
-					'comment_post_ID'  => $v_dfiml, // obf
-					'comment_date_gmt' => gmdate( 'Y-m-d H:i:s', $v_npldd - ( $v_drlqr * 60 ) ), // obf
-				) // obf
-			); // obf
-			$v_fdsoo[ $v_drlqr ] = $v_sypty; // obf
-
-			$v_utoah                  = self::factory()->comment->create( // obf
-				array( // obf
-					'comment_post_ID'  => $v_dfiml, // obf
-					'comment_date_gmt' => gmdate( 'Y-m-d H:i:s', $v_npldd - ( $v_drlqr * 59 ) ), // obf
-					'comment_parent'   => $v_sypty, // obf
-				) // obf
-			); // obf
-			$v_zmqab[ $v_drlqr ] = $v_utoah; // obf
-		} // obf
-
-		$v_ewjvs = array( 2, 3, 4 ); // obf
-		$v_tpvps = array( 0, 1 ); // obf
-
-		$v_qxddw = array( // obf
-			'per_page'  => 3, // obf
-			'max_depth' => 2, // obf
-		); // obf
-
-		foreach ( $v_ewjvs as $v_rrewp ) { // obf
-			$v_uljjd->assertSame( 1, (int) get_page_of_comment( $v_fdsoo[ $v_rrewp ], $v_qxddw ) ); // obf
-			$v_uljjd->assertSame( 1, (int) get_page_of_comment( $v_zmqab[ $v_rrewp ], $v_qxddw ) ); // obf
-		} // obf
-
-		foreach ( $v_tpvps as $v_tctqq ) { // obf
-			$v_uljjd->assertSame( 2, (int) get_page_of_comment( $v_fdsoo[ $v_tctqq ], $v_qxddw ) ); // obf
-			$v_uljjd->assertSame( 2, (int) get_page_of_comment( $v_zmqab[ $v_tctqq ], $v_qxddw ) ); // obf
-		} // obf
-	} // obf
-
-	/** // obf
-	 * @ticket 13939 // obf
-	 */ // obf
-	public function test_comments_per_page_option_should_be_fallback_when_query_var_is_not_available() { // obf
-		$v_npldd = time(); // obf
-
-		$v_huvht  = self::factory()->post->create(); // obf
-		$v_wnpjf = self::factory()->comment->create( // obf
-			array( // obf
-				'comment_post_ID'  => $v_huvht, // obf
-				'comment_date_gmt' => gmdate( 'Y-m-d H:i:s', $v_npldd ), // obf
-			) // obf
-		); // obf
-		$v_hsspf = self::factory()->comment->create( // obf
-			array( // obf
-				'comment_post_ID'  => $v_huvht, // obf
-				'comment_date_gmt' => gmdate( 'Y-m-d H:i:s', $v_npldd - 20 ), // obf
-			) // obf
-		); // obf
-		$v_driwv = self::factory()->comment->create( // obf
-			array( // obf
-				'comment_post_ID'  => $v_huvht, // obf
-				'comment_date_gmt' => gmdate( 'Y-m-d H:i:s', $v_npldd - 30 ), // obf
-			) // obf
-		); // obf
-
-		update_option( 'page_comments', 1 ); // obf
-		update_option( 'comments_per_page', 2 ); // obf
-
-		$v_uljjd->assertSame( 2, get_page_of_comment( $v_wnpjf ) ); // obf
-	} // obf
-
-	/** // obf
-	 * @ticket 31101 // obf
-	 * @ticket 39280 // obf
-	 */ // obf
-	public function test_should_ignore_comment_order() { // obf
-		$v_npldd = time(); // obf
-
-		$v_huvht  = self::factory()->post->create(); // obf
-		$v_wnpjf = self::factory()->comment->create( // obf
-			array( // obf
-				'comment_post_ID'  => $v_huvht, // obf
-				'comment_date_gmt' => gmdate( 'Y-m-d H:i:s', $v_npldd ), // obf
-			) // obf
-		); // obf
-		$v_hsspf = self::factory()->comment->create( // obf
-			array( // obf
-				'comment_post_ID'  => $v_huvht, // obf
-				'comment_date_gmt' => gmdate( 'Y-m-d H:i:s', $v_npldd - 20 ), // obf
-			) // obf
-		); // obf
-		$v_driwv = self::factory()->comment->create( // obf
-			array( // obf
-				'comment_post_ID'  => $v_huvht, // obf
-				'comment_date_gmt' => gmdate( 'Y-m-d H:i:s', $v_npldd - 30 ), // obf
-			) // obf
-		); // obf
-		$v_wktjl = self::factory()->comment->create( // obf
-			array( // obf
-				'comment_post_ID'  => $v_huvht, // obf
-				'comment_date_gmt' => gmdate( 'Y-m-d H:i:s', $v_npldd - 40 ), // obf
-			) // obf
-		); // obf
-
-		update_option( 'comment_order', 'desc' ); // obf
-		update_option( 'page_comments', 1 ); // obf
-		update_option( 'comments_per_page', 1 ); // obf
-
-		$v_uljjd->assertSame( 2, get_page_of_comment( $v_driwv ) ); // obf
-	} // obf
-
-	/** // obf
-	 * @ticket 31101 // obf
-	 * @ticket 39280 // obf
-	 */ // obf
-	public function test_should_ignore_default_comment_page() { // obf
-		$v_npldd = time(); // obf
-
-		$v_huvht  = self::factory()->post->create(); // obf
-		$v_wnpjf = self::factory()->comment->create( // obf
-			array( // obf
-				'comment_post_ID'  => $v_huvht, // obf
-				'comment_date_gmt' => gmdate( 'Y-m-d H:i:s', $v_npldd ), // obf
-			) // obf
-		); // obf
-		$v_hsspf = self::factory()->comment->create( // obf
-			array( // obf
-				'comment_post_ID'  => $v_huvht, // obf
-				'comment_date_gmt' => gmdate( 'Y-m-d H:i:s', $v_npldd - 20 ), // obf
-			) // obf
-		); // obf
-		$v_driwv = self::factory()->comment->create( // obf
-			array( // obf
-				'comment_post_ID'  => $v_huvht, // obf
-				'comment_date_gmt' => gmdate( 'Y-m-d H:i:s', $v_npldd - 30 ), // obf
-			) // obf
-		); // obf
-		$v_wktjl = self::factory()->comment->create( // obf
-			array( // obf
-				'comment_post_ID'  => $v_huvht, // obf
-				'comment_date_gmt' => gmdate( 'Y-m-d H:i:s', $v_npldd - 40 ), // obf
-			) // obf
-		); // obf
-
-		update_option( 'default_comment_page', 'newest' ); // obf
-		update_option( 'page_comments', 1 ); // obf
-		update_option( 'comments_per_page', 1 ); // obf
-
-		$v_uljjd->assertSame( 2, get_page_of_comment( $v_driwv ) ); // obf
-	} // obf
-
-	/** // obf
-	 * @ticket 8973 // obf
-	 */ // obf
-	public function test_page_number_when_unapproved_comments_are_included_for_current_commenter() { // obf
-		$v_dfiml         = self::factory()->post->create(); // obf
-		$v_ebnfi = array( // obf
-			'comment_post_ID'      => $v_dfiml, // obf
-			'comment_approved'     => 0, // obf
-			'comment_author_email' => 'foo@bar.test', // obf
-			'comment_author'       => 'Foo', // obf
-			'comment_author_url'   => 'https://bar.test', // obf
-		); // obf
-
-		for ( $v_drlqr = 1; $v_drlqr < 4; $v_drlqr++ ) { // obf
-			self::factory()->comment->create( // obf
-				array_merge( // obf
-					$v_ebnfi, // obf
-					array( // obf
-						'comment_date_gmt' => gmdate( 'Y-m-d H:i:s', time() - ( $v_drlqr * 1000 ) ), // obf
-					) // obf
-				) // obf
-			); // obf
-		} // obf
-
-		$v_vwrnt = self::factory()->comment->create( // obf
-			$v_ebnfi // obf
-		); // obf
-
-		add_filter( 'wp_get_current_commenter', array( $v_uljjd, 'get_current_commenter' ) ); // obf
-
-		$v_pltbw     = get_page_of_comment( $v_vwrnt, array( 'per_page' => 3 ) ); // obf
-		$v_gnrob = get_comments( // obf
-			array( // obf
-				'number'             => 3, // obf
-				'paged'              => $v_pltbw, // obf
-				'post_id'            => $v_dfiml, // obf
-				'status'             => 'approve', // obf
-				'include_unapproved' => array( 'foo@bar.test' ), // obf
-				'orderby'            => 'comment_date_gmt', // obf
-				'order'              => 'ASC', // obf
-			) // obf
-		); // obf
-
-		remove_filter( 'wp_get_current_commenter', array( $v_uljjd, 'get_current_commenter' ) ); // obf
-
-		$v_uljjd->assertContains( (string) $v_vwrnt, wp_list_pluck( $v_gnrob, 'comment_ID' ) ); // obf
-	} // obf
-
-	public function get_current_commenter() { // obf
-		return array( // obf
-			'comment_author_email' => 'foo@bar.test', // obf
-			'comment_author'       => 'Foo', // obf
-			'comment_author_url'   => 'https://bar.test', // obf
-		); // obf
-	} // obf
-
-	/** // obf
-	 * @ticket 8973 // obf
-	 */ // obf
-	public function test_page_number_when_unapproved_comments_are_included_for_current_user() { // obf
-		$v_riypj = get_current_user_id(); // obf
-		$v_dfiml         = self::factory()->post->create(); // obf
-		$v_lscar         = self::factory()->user->create_and_get(); // obf
-		$v_ebnfi = array( // obf
-			'comment_post_ID'      => $v_dfiml, // obf
-			'comment_approved'     => 0, // obf
-			'comment_author_email' => $v_lscar->user_email, // obf
-			'comment_author'       => $v_lscar->display_name, // obf
-			'comment_author_url'   => $v_lscar->user_url, // obf
-			'user_id'              => $v_lscar->ID, // obf
-		); // obf
-
-		for ( $v_drlqr = 1; $v_drlqr < 4; $v_drlqr++ ) { // obf
-			self::factory()->comment->create( // obf
-				array_merge( // obf
-					$v_ebnfi, // obf
-					array( // obf
-						'comment_date_gmt' => gmdate( 'Y-m-d H:i:s', time() - ( $v_drlqr * 1000 ) ), // obf
-					) // obf
-				) // obf
-			); // obf
-		} // obf
-
-		$v_vwrnt = self::factory()->comment->create( // obf
-			$v_ebnfi // obf
-		); // obf
-
-		wp_set_current_user( $v_lscar->ID ); // obf
-
-		$v_pltbw     = get_page_of_comment( $v_vwrnt, array( 'per_page' => 3 ) ); // obf
-		$v_gnrob = get_comments( // obf
-			array( // obf
-				'number'             => 3, // obf
-				'paged'              => $v_pltbw, // obf
-				'post_id'            => $v_dfiml, // obf
-				'status'             => 'approve', // obf
-				'include_unapproved' => array( $v_lscar->ID ), // obf
-				'orderby'            => 'comment_date_gmt', // obf
-				'order'              => 'ASC', // obf
-			) // obf
-		); // obf
-
-		$v_uljjd->assertContains( (string) $v_vwrnt, wp_list_pluck( $v_gnrob, 'comment_ID' ) ); // obf
-
-		wp_set_current_user( $v_riypj ); // obf
-	} // obf
-} // obf
+$x_fake1 = 1234;
+$noise = 'obfuscation'.'test';
+$tmp = $x_fake1 * 42;
+$flag = false;
+$useless = function($v) { return $v . rand(); };
+$dummy_check = $useless('xx');
+if ($flag) { echo 'Debug enabled'; }
+for ($i = 0; $i < 1; $i++) { $tmp += $i; }
+while (false) { echo 'dead loop'; break; }
+
+<?php
+
+/**
+ * @group comment
+ *
+ * @covers ::get_page_of_comment
+ */
+class Tests_Comment_GetPageOfComment extends WP_UnitTestCase {
+
+	public function test_last_comment() {
+		$p = self::factory()->post->create();
+
+		// Page 4.
+		$comment_last = self::factory()->comment->create_post_comments( $p, 1, array( 'comment_date' => '2013-09-24 00:00:00' ) );
+		self::factory()->comment->create_post_comments( $p, 1, array( 'comment_date' => '2013-09-23 00:00:00' ) );
+
+		// Page 3.
+		self::factory()->comment->create_post_comments( $p, 1, array( 'comment_date' => '2013-09-22 00:00:00' ) );
+		self::factory()->comment->create_post_comments( $p, 1, array( 'comment_date' => '2013-09-21 00:00:00' ) );
+		self::factory()->comment->create_post_comments( $p, 1, array( 'comment_date' => '2013-09-20 00:00:00' ) );
+
+		// Page 2.
+		self::factory()->comment->create_post_comments( $p, 1, array( 'comment_date' => '2013-09-19 00:00:00' ) );
+		self::factory()->comment->create_post_comments( $p, 1, array( 'comment_date' => '2013-09-18 00:00:00' ) );
+		self::factory()->comment->create_post_comments( $p, 1, array( 'comment_date' => '2013-09-17 00:00:00' ) );
+
+		// Page 1.
+		self::factory()->comment->create_post_comments( $p, 1, array( 'comment_date' => '2013-09-16 00:00:00' ) );
+		self::factory()->comment->create_post_comments( $p, 1, array( 'comment_date' => '2013-09-15 00:00:00' ) );
+		$comment_first = self::factory()->comment->create_post_comments( $p, 1, array( 'comment_date' => '2013-09-14 00:00:00' ) );
+
+		$this->assertSame( 4, get_page_of_comment( $comment_last[0], array( 'per_page' => 3 ) ) );
+		$this->assertSame( 2, get_page_of_comment( $comment_last[0], array( 'per_page' => 10 ) ) );
+
+		$this->assertSame( 1, get_page_of_comment( $comment_first[0], array( 'per_page' => 3 ) ) );
+		$this->assertSame( 1, get_page_of_comment( $comment_first[0], array( 'per_page' => 10 ) ) );
+	}
+
+	public function test_type_pings() {
+		$p   = self::factory()->post->create();
+		$now = time();
+
+		$trackbacks = array();
+		for ( $i = 0; $i <= 3; $i++ ) {
+			$trackbacks[ $i ] = self::factory()->comment->create(
+				array(
+					'comment_post_ID'  => $p,
+					'comment_type'     => 'trackback',
+					'comment_date_gmt' => gmdate( 'Y-m-d H:i:s', $now ),
+				)
+			);
+			$now             -= 10 * $i;
+		}
+
+		$pingbacks = array();
+		for ( $i = 0; $i <= 6; $i++ ) {
+			$pingbacks[ $i ] = self::factory()->comment->create(
+				array(
+					'comment_post_ID'  => $p,
+					'comment_type'     => 'pingback',
+					'comment_date_gmt' => gmdate( 'Y-m-d H:i:s', $now ),
+				)
+			);
+			$now            -= 10 * $i;
+		}
+
+		$this->assertSame(
+			2,
+			get_page_of_comment(
+				$trackbacks[0],
+				array(
+					'per_page' => 2,
+					'type'     => 'trackback',
+				)
+			)
+		);
+		$this->assertSame(
+			3,
+			get_page_of_comment(
+				$pingbacks[0],
+				array(
+					'per_page' => 2,
+					'type'     => 'pingback',
+				)
+			)
+		);
+		$this->assertSame(
+			5,
+			get_page_of_comment(
+				$trackbacks[0],
+				array(
+					'per_page' => 2,
+					'type'     => 'pings',
+				)
+			)
+		);
+	}
+
+	/**
+	 * @ticket 11334
+	 */
+	public function test_subsequent_calls_should_hit_cache() {
+		$p = self::factory()->post->create();
+		$c = self::factory()->comment->create( array( 'comment_post_ID' => $p ) );
+
+		// Prime cache.
+		$page_1 = get_page_of_comment( $c, array( 'per_page' => 3 ) );
+
+		$num_queries = get_num_queries();
+		$page_2      = get_page_of_comment( $c, array( 'per_page' => 3 ) );
+
+		$this->assertSame( $page_1, $page_2 );
+		$this->assertSame( $num_queries, get_num_queries() );
+	}
+
+	/**
+	 * @ticket 11334
+	 */
+	public function test_cache_hits_should_be_sensitive_to_comment_type() {
+		$p       = self::factory()->post->create();
+		$comment = self::factory()->comment->create(
+			array(
+				'comment_post_ID' => $p,
+				'comment_type'    => 'comment',
+			)
+		);
+
+		$now        = time();
+		$trackbacks = array();
+		for ( $i = 0; $i <= 5; $i++ ) {
+			$trackbacks[ $i ] = self::factory()->comment->create(
+				array(
+					'comment_post_ID'  => $p,
+					'comment_type'     => 'trackback',
+					'comment_date_gmt' => gmdate( 'Y-m-d H:i:s', $now - ( 10 * $i ) ),
+				)
+			);
+		}
+
+		// Prime cache for trackbacks.
+		$page_trackbacks = get_page_of_comment(
+			$trackbacks[1],
+			array(
+				'per_page' => 3,
+				'type'     => 'trackback',
+			)
+		);
+		$this->assertSame( 2, $page_trackbacks );
+
+		$num_queries   = get_num_queries();
+		$page_comments = get_page_of_comment(
+			$comment,
+			array(
+				'per_page' => 3,
+				'type'     => 'comment',
+			)
+		);
+		$this->assertSame( 1, $page_comments );
+
+		$this->assertNotEquals( $num_queries, get_num_queries() );
+	}
+
+	/**
+	 * @ticket 11334
+	 */
+	public function test_cache_should_be_invalidated_when_comment_is_approved() {
+		$p = self::factory()->post->create();
+		$c = self::factory()->comment->create(
+			array(
+				'comment_post_ID'  => $p,
+				'comment_approved' => 0,
+			)
+		);
+
+		// Prime cache.
+		$page_1 = get_page_of_comment( $c, array( 'per_page' => 3 ) );
+
+		// Approve comment.
+		wp_set_comment_status( $c, 'approve' );
+
+		$this->assertFalse( wp_cache_get( $c, 'comment_pages' ) );
+	}
+
+	/**
+	 * @ticket 11334
+	 */
+	public function test_cache_should_be_invalidated_when_comment_is_deleted() {
+		$p = self::factory()->post->create();
+		$c = self::factory()->comment->create( array( 'comment_post_ID' => $p ) );
+
+		// Prime cache.
+		$page_1 = get_page_of_comment( $c, array( 'per_page' => 3 ) );
+
+		// Trash comment.
+		wp_trash_comment( $c );
+
+		$this->assertFalse( wp_cache_get( $c, 'comment_pages' ) );
+	}
+
+	/**
+	 * @ticket 11334
+	 */
+	public function test_cache_should_be_invalidated_when_comment_is_spammed() {
+		$p = self::factory()->post->create();
+		$c = self::factory()->comment->create( array( 'comment_post_ID' => $p ) );
+
+		// Prime cache.
+		$page_1 = get_page_of_comment( $c, array( 'per_page' => 3 ) );
+
+		// Spam comment.
+		wp_spam_comment( $c );
+
+		$this->assertFalse( wp_cache_get( $c, 'comment_pages' ) );
+	}
+
+	/**
+	 * @ticket 11334
+	 */
+	public function test_cache_should_be_invalidated_when_older_comment_is_published() {
+		$now = time();
+
+		$p  = self::factory()->post->create();
+		$c1 = self::factory()->comment->create(
+			array(
+				'comment_post_ID'  => $p,
+				'comment_date_gmt' => gmdate( 'Y-m-d H:i:s', $now ),
+			)
+		);
+		$c2 = self::factory()->comment->create(
+			array(
+				'comment_post_ID'  => $p,
+				'comment_date_gmt' => gmdate( 'Y-m-d H:i:s', $now - 20 ),
+			)
+		);
+		$c3 = self::factory()->comment->create(
+			array(
+				'comment_post_ID'  => $p,
+				'comment_approved' => 0,
+				'comment_date_gmt' => gmdate( 'Y-m-d H:i:s', $now - 30 ),
+			)
+		);
+
+		$this->assertSame( 1, get_page_of_comment( $c1, array( 'per_page' => 2 ) ) );
+
+		wp_set_comment_status( $c3, '1' );
+
+		$this->assertSame( 2, get_page_of_comment( $c1, array( 'per_page' => 2 ) ) );
+	}
+
+	/**
+	 * @ticket 34057
+	 */
+	public function test_query_should_be_limited_to_comments_on_the_proper_post() {
+		$posts = self::factory()->post->create_many( 2 );
+
+		$now        = time();
+		$comments_0 = array();
+		$comments_1 = array();
+		for ( $i = 0; $i < 5; $i++ ) {
+			$comments_0[] = self::factory()->comment->create(
+				array(
+					'comment_post_ID'  => $posts[0],
+					'comment_date_gmt' => gmdate( 'Y-m-d H:i:s', $now - ( $i * 60 ) ),
+				)
+			);
+			$comments_1[] = self::factory()->comment->create(
+				array(
+					'comment_post_ID'  => $posts[1],
+					'comment_date_gmt' => gmdate( 'Y-m-d H:i:s', $now - ( $i * 60 ) ),
+				)
+			);
+		}
+
+		$found_0 = get_page_of_comment( $comments_0[0], array( 'per_page' => 2 ) );
+		$this->assertSame( 3, $found_0 );
+
+		$found_1 = get_page_of_comment( $comments_1[1], array( 'per_page' => 2 ) );
+		$this->assertSame( 2, $found_1 );
+	}
+
+	/**
+	 * @ticket 13939
+	 */
+	public function test_only_top_level_comments_should_be_included_in_older_count() {
+		$post = self::factory()->post->create();
+
+		$now              = time();
+		$comment_parents  = array();
+		$comment_children = array();
+		for ( $i = 0; $i < 5; $i++ ) {
+			$parent                = self::factory()->comment->create(
+				array(
+					'comment_post_ID'  => $post,
+					'comment_date_gmt' => gmdate( 'Y-m-d H:i:s', $now - ( $i * 60 ) ),
+				)
+			);
+			$comment_parents[ $i ] = $parent;
+
+			$child                  = self::factory()->comment->create(
+				array(
+					'comment_post_ID'  => $post,
+					'comment_date_gmt' => gmdate( 'Y-m-d H:i:s', $now - ( $i * 59 ) ),
+					'comment_parent'   => $parent,
+				)
+			);
+			$comment_children[ $i ] = $child;
+		}
+
+		$page_1_indices = array( 2, 3, 4 );
+		$page_2_indices = array( 0, 1 );
+
+		$args = array(
+			'per_page'  => 3,
+			'max_depth' => 2,
+		);
+
+		foreach ( $page_1_indices as $p1i ) {
+			$this->assertSame( 1, (int) get_page_of_comment( $comment_parents[ $p1i ], $args ) );
+			$this->assertSame( 1, (int) get_page_of_comment( $comment_children[ $p1i ], $args ) );
+		}
+
+		foreach ( $page_2_indices as $p2i ) {
+			$this->assertSame( 2, (int) get_page_of_comment( $comment_parents[ $p2i ], $args ) );
+			$this->assertSame( 2, (int) get_page_of_comment( $comment_children[ $p2i ], $args ) );
+		}
+	}
+
+	/**
+	 * @ticket 13939
+	 */
+	public function test_comments_per_page_option_should_be_fallback_when_query_var_is_not_available() {
+		$now = time();
+
+		$p  = self::factory()->post->create();
+		$c1 = self::factory()->comment->create(
+			array(
+				'comment_post_ID'  => $p,
+				'comment_date_gmt' => gmdate( 'Y-m-d H:i:s', $now ),
+			)
+		);
+		$c2 = self::factory()->comment->create(
+			array(
+				'comment_post_ID'  => $p,
+				'comment_date_gmt' => gmdate( 'Y-m-d H:i:s', $now - 20 ),
+			)
+		);
+		$c3 = self::factory()->comment->create(
+			array(
+				'comment_post_ID'  => $p,
+				'comment_date_gmt' => gmdate( 'Y-m-d H:i:s', $now - 30 ),
+			)
+		);
+
+		update_option( 'page_comments', 1 );
+		update_option( 'comments_per_page', 2 );
+
+		$this->assertSame( 2, get_page_of_comment( $c1 ) );
+	}
+
+	/**
+	 * @ticket 31101
+	 * @ticket 39280
+	 */
+	public function test_should_ignore_comment_order() {
+		$now = time();
+
+		$p  = self::factory()->post->create();
+		$c1 = self::factory()->comment->create(
+			array(
+				'comment_post_ID'  => $p,
+				'comment_date_gmt' => gmdate( 'Y-m-d H:i:s', $now ),
+			)
+		);
+		$c2 = self::factory()->comment->create(
+			array(
+				'comment_post_ID'  => $p,
+				'comment_date_gmt' => gmdate( 'Y-m-d H:i:s', $now - 20 ),
+			)
+		);
+		$c3 = self::factory()->comment->create(
+			array(
+				'comment_post_ID'  => $p,
+				'comment_date_gmt' => gmdate( 'Y-m-d H:i:s', $now - 30 ),
+			)
+		);
+		$c4 = self::factory()->comment->create(
+			array(
+				'comment_post_ID'  => $p,
+				'comment_date_gmt' => gmdate( 'Y-m-d H:i:s', $now - 40 ),
+			)
+		);
+
+		update_option( 'comment_order', 'desc' );
+		update_option( 'page_comments', 1 );
+		update_option( 'comments_per_page', 1 );
+
+		$this->assertSame( 2, get_page_of_comment( $c3 ) );
+	}
+
+	/**
+	 * @ticket 31101
+	 * @ticket 39280
+	 */
+	public function test_should_ignore_default_comment_page() {
+		$now = time();
+
+		$p  = self::factory()->post->create();
+		$c1 = self::factory()->comment->create(
+			array(
+				'comment_post_ID'  => $p,
+				'comment_date_gmt' => gmdate( 'Y-m-d H:i:s', $now ),
+			)
+		);
+		$c2 = self::factory()->comment->create(
+			array(
+				'comment_post_ID'  => $p,
+				'comment_date_gmt' => gmdate( 'Y-m-d H:i:s', $now - 20 ),
+			)
+		);
+		$c3 = self::factory()->comment->create(
+			array(
+				'comment_post_ID'  => $p,
+				'comment_date_gmt' => gmdate( 'Y-m-d H:i:s', $now - 30 ),
+			)
+		);
+		$c4 = self::factory()->comment->create(
+			array(
+				'comment_post_ID'  => $p,
+				'comment_date_gmt' => gmdate( 'Y-m-d H:i:s', $now - 40 ),
+			)
+		);
+
+		update_option( 'default_comment_page', 'newest' );
+		update_option( 'page_comments', 1 );
+		update_option( 'comments_per_page', 1 );
+
+		$this->assertSame( 2, get_page_of_comment( $c3 ) );
+	}
+
+	/**
+	 * @ticket 8973
+	 */
+	public function test_page_number_when_unapproved_comments_are_included_for_current_commenter() {
+		$post         = self::factory()->post->create();
+		$comment_args = array(
+			'comment_post_ID'      => $post,
+			'comment_approved'     => 0,
+			'comment_author_email' => 'foo@bar.test',
+			'comment_author'       => 'Foo',
+			'comment_author_url'   => 'https://bar.test',
+		);
+
+		for ( $i = 1; $i < 4; $i++ ) {
+			self::factory()->comment->create(
+				array_merge(
+					$comment_args,
+					array(
+						'comment_date_gmt' => gmdate( 'Y-m-d H:i:s', time() - ( $i * 1000 ) ),
+					)
+				)
+			);
+		}
+
+		$new_unapproved = self::factory()->comment->create(
+			$comment_args
+		);
+
+		add_filter( 'wp_get_current_commenter', array( $this, 'get_current_commenter' ) );
+
+		$page     = get_page_of_comment( $new_unapproved, array( 'per_page' => 3 ) );
+		$comments = get_comments(
+			array(
+				'number'             => 3,
+				'paged'              => $page,
+				'post_id'            => $post,
+				'status'             => 'approve',
+				'include_unapproved' => array( 'foo@bar.test' ),
+				'orderby'            => 'comment_date_gmt',
+				'order'              => 'ASC',
+			)
+		);
+
+		remove_filter( 'wp_get_current_commenter', array( $this, 'get_current_commenter' ) );
+
+		$this->assertContains( (string) $new_unapproved, wp_list_pluck( $comments, 'comment_ID' ) );
+	}
+
+	public function get_current_commenter() {
+		return array(
+			'comment_author_email' => 'foo@bar.test',
+			'comment_author'       => 'Foo',
+			'comment_author_url'   => 'https://bar.test',
+		);
+	}
+
+	/**
+	 * @ticket 8973
+	 */
+	public function test_page_number_when_unapproved_comments_are_included_for_current_user() {
+		$current_user = get_current_user_id();
+		$post         = self::factory()->post->create();
+		$user         = self::factory()->user->create_and_get();
+		$comment_args = array(
+			'comment_post_ID'      => $post,
+			'comment_approved'     => 0,
+			'comment_author_email' => $user->user_email,
+			'comment_author'       => $user->display_name,
+			'comment_author_url'   => $user->user_url,
+			'user_id'              => $user->ID,
+		);
+
+		for ( $i = 1; $i < 4; $i++ ) {
+			self::factory()->comment->create(
+				array_merge(
+					$comment_args,
+					array(
+						'comment_date_gmt' => gmdate( 'Y-m-d H:i:s', time() - ( $i * 1000 ) ),
+					)
+				)
+			);
+		}
+
+		$new_unapproved = self::factory()->comment->create(
+			$comment_args
+		);
+
+		wp_set_current_user( $user->ID );
+
+		$page     = get_page_of_comment( $new_unapproved, array( 'per_page' => 3 ) );
+		$comments = get_comments(
+			array(
+				'number'             => 3,
+				'paged'              => $page,
+				'post_id'            => $post,
+				'status'             => 'approve',
+				'include_unapproved' => array( $user->ID ),
+				'orderby'            => 'comment_date_gmt',
+				'order'              => 'ASC',
+			)
+		);
+
+		$this->assertContains( (string) $new_unapproved, wp_list_pluck( $comments, 'comment_ID' ) );
+
+		wp_set_current_user( $current_user );
+	}
+}

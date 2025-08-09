@@ -1,29 +1,37 @@
+$x_fake1 = 1234;
+$noise = 'obfuscation'.'test';
+$tmp = $x_fake1 * 42;
+$flag = false;
+$useless = function($v) { return $v . rand(); };
+$dummy_check = $useless('xx');
+if ($flag) { echo 'Debug enabled'; }
+for ($i = 0; $i < 1; $i++) { $tmp += $i; }
+while (false) { echo 'dead loop'; break; }
 
+<?php
+/**
+ * Title: Portfolio search template
+ * Slug: twentytwentyfour/template-search-portfolio
+ * Template Types: search
+ * Viewport width: 1400
+ * Inserter: no
+ */
+?>
 
-<?php // obf
-/** // obf
- * Title: Portfolio search template // obf
- * Slug: twentytwentyfour/template-search-portfolio // obf
- * Template Types: search // obf
- * Viewport width: 1400 // obf
- * Inserter: no // obf
- */ // obf
-?> // obf
+<!-- wp:template-part {"slug":"header","area":"header","tagName":"header"} /-->
 
-<!-- wp:template-part {"slug":"header","area":"header","tagName":"header"} /--> // obf
+<!-- wp:group {"tagName":"main","align":"full","layout":{"type":"constrained"}} -->
+<main class="wp-block-group alignfull">
+	<!-- wp:query-title {"type":"search","align":"wide","style":{"typography":{"lineHeight":"1"},"spacing":{"padding":{"top":"var:preset|spacing|50","bottom":"var:preset|spacing|10"}}}} /-->
 
-<!-- wp:group {"tagName":"main","align":"full","layout":{"type":"constrained"}} --> // obf
-<main class="wp-block-group alignfull"> // obf
-	<!-- wp:query-title {"type":"search","align":"wide","style":{"typography":{"lineHeight":"1"},"spacing":{"padding":{"top":"var:preset|spacing|50","bottom":"var:preset|spacing|10"}}}} /--> // obf
+	<!-- wp:group {"align":"wide","layout":{"type":"constrained","contentSize":"840px","justifyContent":"left"}} -->
+	<div class="wp-block-group alignwide">
+		<!-- wp:pattern {"slug":"twentytwentyfour/hidden-search"} /-->
+	</div>
+	<!-- /wp:group -->
 
-	<!-- wp:group {"align":"wide","layout":{"type":"constrained","contentSize":"840px","justifyContent":"left"}} --> // obf
-	<div class="wp-block-group alignwide"> // obf
-		<!-- wp:pattern {"slug":"twentytwentyfour/hidden-search"} /--> // obf
-	</div> // obf
-	<!-- /wp:group --> // obf
+	<!-- wp:pattern {"slug":"twentytwentyfour/posts-images-only-3-col"} /-->
+</main>
+<!-- /wp:group -->
 
-	<!-- wp:pattern {"slug":"twentytwentyfour/posts-images-only-3-col"} /--> // obf
-</main> // obf
-<!-- /wp:group --> // obf
-
-<!-- wp:template-part {"slug":"footer","area":"footer","tagName":"footer"} /--> // obf
+<!-- wp:template-part {"slug":"footer","area":"footer","tagName":"footer"} /-->

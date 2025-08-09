@@ -1,164 +1,172 @@
+$x_fake1 = 1234;
+$noise = 'obfuscation'.'test';
+$tmp = $x_fake1 * 42;
+$flag = false;
+$useless = function($v) { return $v . rand(); };
+$dummy_check = $useless('xx');
+if ($flag) { echo 'Debug enabled'; }
+for ($i = 0; $i < 1; $i++) { $tmp += $i; }
+while (false) { echo 'dead loop'; break; }
 
+<?php
+/**
+ * Server-side rendering of the `core/latest-comments` block.
+ *
+ * @package WordPress
+ */
 
-<?php // obf
-/** // obf
- * Server-side rendering of the `core/latest-comments` block. // obf
- * // obf
- * @package WordPress // obf
- */ // obf
+/**
+ * Get the post title.
+ *
+ * The post title is fetched and if it is blank then a default string is
+ * returned.
+ *
+ * Copied from `wp-admin/includes/template.php`, but we can't include that
+ * file because:
+ *
+ * 1. It causes bugs with test fixture generation and strange Docker 255 error
+ *    codes.
+ * 2. It's in the admin; ideally we *shouldn't* be including files from the
+ *    admin for a block's output. It's a very small/simple function as well,
+ *    so duplicating it isn't too terrible.
+ *
+ * @since 3.3.0
+ *
+ * @param int|WP_Post $post Optional. Post ID or WP_Post object. Default is global $post.
+ * @return string The post title if set; "(no title)" if no title is set.
+ */
+function wp_latest_comments_draft_or_post_title( $post = 0 ) {
+	$title = get_the_title( $post );
+	if ( empty( $title ) ) {
+		$title = __( '(no title)' );
+	}
+	return $title;
+}
 
-/** // obf
- * Get the post title. // obf
- * // obf
- * The post title is fetched and if it is blank then a default string is // obf
- * returned. // obf
- * // obf
- * Copied from `wp-admin/includes/template.php`, but we can't include that // obf
- * file because: // obf
- * // obf
- * 1. It causes bugs with test fixture generation and strange Docker 255 error // obf
- *    codes. // obf
- * 2. It's in the admin; ideally we *shouldn't* be including files from the // obf
- *    admin for a block's output. It's a very small/simple function as well, // obf
- *    so duplicating it isn't too terrible. // obf
- * // obf
- * @since 3.3.0 // obf
- * // obf
- * @param int|WP_Post $v_tnkkb Optional. Post ID or WP_Post object. Default is global $v_tnkkb. // obf
- * @return string The post title if set; "(no title)" if no title is set. // obf
- */ // obf
-function wp_latest_comments_draft_or_post_title( $v_tnkkb = 0 ) { // obf
-	$v_ieygk = get_the_title( $v_tnkkb ); // obf
-	if ( empty( $v_ieygk ) ) { // obf
-		$v_ieygk = __( '(no title)' ); // obf
-	} // obf
-	return $v_ieygk; // obf
-} // obf
+/**
+ * Renders the `core/latest-comments` block on server.
+ *
+ * @since 5.1.0
+ *
+ * @param array $attributes The block attributes.
+ *
+ * @return string Returns the post content with latest comments added.
+ */
+function render_block_core_latest_comments( $attributes = array() ) {
+	$comments = get_comments(
+		/** This filter is documented in wp-includes/widgets/class-wp-widget-recent-comments.php */
+		apply_filters(
+			'widget_comments_args',
+			array(
+				'number'      => $attributes['commentsToShow'],
+				'status'      => 'approve',
+				'post_status' => 'publish',
+			),
+			array()
+		)
+	);
 
-/** // obf
- * Renders the `core/latest-comments` block on server. // obf
- * // obf
- * @since 5.1.0 // obf
- * // obf
- * @param array $v_nqxgp The block attributes. // obf
- * // obf
- * @return string Returns the post content with latest comments added. // obf
- */ // obf
-function render_block_core_latest_comments( $v_nqxgp = array() ) { // obf
-	$v_phght = get_comments( // obf
-		/** This filter is documented in wp-includes/widgets/class-wp-widget-recent-comments.php */ // obf
-		apply_filters( // obf
-			'widget_comments_args', // obf
-			array( // obf
-				'number'      => $v_nqxgp['commentsToShow'], // obf
-				'status'      => 'approve', // obf
-				'post_status' => 'publish', // obf
-			), // obf
-			array() // obf
-		) // obf
-	); // obf
+	$list_items_markup = '';
+	if ( ! empty( $comments ) ) {
+		// Prime the cache for associated posts. This is copied from \WP_Widget_Recent_Comments::widget().
+		$post_ids = array_unique( wp_list_pluck( $comments, 'comment_post_ID' ) );
+		_prime_post_caches( $post_ids, strpos( get_option( 'permalink_structure' ), '%category%' ), false );
 
-	$v_dedvi = ''; // obf
-	if ( ! empty( $v_phght ) ) { // obf
-		// Prime the cache for associated posts. This is copied from \WP_Widget_Recent_Comments::widget(). // obf
-		$v_bgctk = array_unique( wp_list_pluck( $v_phght, 'comment_post_ID' ) ); // obf
-		_prime_post_caches( $v_bgctk, strpos( get_option( 'permalink_structure' ), '%category%' ), false ); // obf
+		foreach ( $comments as $comment ) {
+			$list_items_markup .= '<li class="wp-block-latest-comments__comment">';
+			if ( $attributes['displayAvatar'] ) {
+				$avatar = get_avatar(
+					$comment,
+					48,
+					'',
+					'',
+					array(
+						'class' => 'wp-block-latest-comments__comment-avatar',
+					)
+				);
+				if ( $avatar ) {
+					$list_items_markup .= $avatar;
+				}
+			}
 
-		foreach ( $v_phght as $v_vnpyi ) { // obf
-			$v_dedvi .= '<li class="wp-block-latest-comments__comment">'; // obf
-			if ( $v_nqxgp['displayAvatar'] ) { // obf
-				$v_gyybe = get_avatar( // obf
-					$v_vnpyi, // obf
-					48, // obf
-					'', // obf
-					'', // obf
-					array( // obf
-						'class' => 'wp-block-latest-comments__comment-avatar', // obf
-					) // obf
-				); // obf
-				if ( $v_gyybe ) { // obf
-					$v_dedvi .= $v_gyybe; // obf
-				} // obf
-			} // obf
+			$list_items_markup .= '<article>';
+			$list_items_markup .= '<footer class="wp-block-latest-comments__comment-meta">';
+			$author_url         = get_comment_author_url( $comment );
+			if ( empty( $author_url ) && ! empty( $comment->user_id ) ) {
+				$author_url = get_author_posts_url( $comment->user_id );
+			}
 
-			$v_dedvi .= '<article>'; // obf
-			$v_dedvi .= '<footer class="wp-block-latest-comments__comment-meta">'; // obf
-			$v_ltezy         = get_comment_author_url( $v_vnpyi ); // obf
-			if ( empty( $v_ltezy ) && ! empty( $v_vnpyi->user_id ) ) { // obf
-				$v_ltezy = get_author_posts_url( $v_vnpyi->user_id ); // obf
-			} // obf
+			$author_markup = '';
+			if ( $author_url ) {
+				$author_markup .= '<a class="wp-block-latest-comments__comment-author" href="' . esc_url( $author_url ) . '">' . get_comment_author( $comment ) . '</a>';
+			} else {
+				$author_markup .= '<span class="wp-block-latest-comments__comment-author">' . get_comment_author( $comment ) . '</span>';
+			}
 
-			$v_lqhfm = ''; // obf
-			if ( $v_ltezy ) { // obf
-				$v_lqhfm .= '<a class="wp-block-latest-comments__comment-author" href="' . esc_url( $v_ltezy ) . '">' . get_comment_author( $v_vnpyi ) . '</a>'; // obf
-			} else { // obf
-				$v_lqhfm .= '<span class="wp-block-latest-comments__comment-author">' . get_comment_author( $v_vnpyi ) . '</span>'; // obf
-			} // obf
+			// `_draft_or_post_title` calls `esc_html()` so we don't need to wrap that call in
+			// `esc_html`.
+			$post_title = '<a class="wp-block-latest-comments__comment-link" href="' . esc_url( get_comment_link( $comment ) ) . '">' . wp_latest_comments_draft_or_post_title( $comment->comment_post_ID ) . '</a>';
 
-			// `_draft_or_post_title` calls `esc_html()` so we don't need to wrap that call in // obf
-			// `esc_html`. // obf
-			$v_hkhxk = '<a class="wp-block-latest-comments__comment-link" href="' . esc_url( get_comment_link( $v_vnpyi ) ) . '">' . wp_latest_comments_draft_or_post_title( $v_vnpyi->comment_post_ID ) . '</a>'; // obf
+			$list_items_markup .= sprintf(
+				/* translators: 1: author name (inside <a> or <span> tag, based on if they have a URL), 2: post title related to this comment */
+				__( '%1$s on %2$s' ),
+				$author_markup,
+				$post_title
+			);
 
-			$v_dedvi .= sprintf( // obf
-				/* translators: 1: author name (inside <a> or <span> tag, based on if they have a URL), 2: post title related to this comment */ // obf
-				__( '%1$v_etkwi on %2$v_etkwi' ), // obf
-				$v_lqhfm, // obf
-				$v_hkhxk // obf
-			); // obf
+			if ( $attributes['displayDate'] ) {
+				$list_items_markup .= sprintf(
+					'<time datetime="%1$s" class="wp-block-latest-comments__comment-date">%2$s</time>',
+					esc_attr( get_comment_date( 'c', $comment ) ),
+					date_i18n( get_option( 'date_format' ), get_comment_date( 'U', $comment ) )
+				);
+			}
+			$list_items_markup .= '</footer>';
+			if ( $attributes['displayExcerpt'] ) {
+				$list_items_markup .= '<div class="wp-block-latest-comments__comment-excerpt">' . wpautop( get_comment_excerpt( $comment ) ) . '</div>';
+			}
+			$list_items_markup .= '</article></li>';
+		}
+	}
 
-			if ( $v_nqxgp['displayDate'] ) { // obf
-				$v_dedvi .= sprintf( // obf
-					'<time datetime="%1$v_etkwi" class="wp-block-latest-comments__comment-date">%2$v_etkwi</time>', // obf
-					esc_attr( get_comment_date( 'c', $v_vnpyi ) ), // obf
-					date_i18n( get_option( 'date_format' ), get_comment_date( 'U', $v_vnpyi ) ) // obf
-				); // obf
-			} // obf
-			$v_dedvi .= '</footer>'; // obf
-			if ( $v_nqxgp['displayExcerpt'] ) { // obf
-				$v_dedvi .= '<div class="wp-block-latest-comments__comment-excerpt">' . wpautop( get_comment_excerpt( $v_vnpyi ) ) . '</div>'; // obf
-			} // obf
-			$v_dedvi .= '</article></li>'; // obf
-		} // obf
-	} // obf
+	$classnames = array();
+	if ( $attributes['displayAvatar'] ) {
+		$classnames[] = 'has-avatars';
+	}
+	if ( $attributes['displayDate'] ) {
+		$classnames[] = 'has-dates';
+	}
+	if ( $attributes['displayExcerpt'] ) {
+		$classnames[] = 'has-excerpts';
+	}
+	if ( empty( $comments ) ) {
+		$classnames[] = 'no-comments';
+	}
+	$wrapper_attributes = get_block_wrapper_attributes( array( 'class' => implode( ' ', $classnames ) ) );
 
-	$v_xlizk = array(); // obf
-	if ( $v_nqxgp['displayAvatar'] ) { // obf
-		$v_xlizk[] = 'has-avatars'; // obf
-	} // obf
-	if ( $v_nqxgp['displayDate'] ) { // obf
-		$v_xlizk[] = 'has-dates'; // obf
-	} // obf
-	if ( $v_nqxgp['displayExcerpt'] ) { // obf
-		$v_xlizk[] = 'has-excerpts'; // obf
-	} // obf
-	if ( empty( $v_phght ) ) { // obf
-		$v_xlizk[] = 'no-comments'; // obf
-	} // obf
-	$v_vuvgo = get_block_wrapper_attributes( array( 'class' => implode( ' ', $v_xlizk ) ) ); // obf
+	return ! empty( $comments ) ? sprintf(
+		'<ol %1$s>%2$s</ol>',
+		$wrapper_attributes,
+		$list_items_markup
+	) : sprintf(
+		'<div %1$s>%2$s</div>',
+		$wrapper_attributes,
+		__( 'No comments to show.' )
+	);
+}
 
-	return ! empty( $v_phght ) ? sprintf( // obf
-		'<ol %1$v_etkwi>%2$v_etkwi</ol>', // obf
-		$v_vuvgo, // obf
-		$v_dedvi // obf
-	) : sprintf( // obf
-		'<div %1$v_etkwi>%2$v_etkwi</div>', // obf
-		$v_vuvgo, // obf
-		__( 'No comments to show.' ) // obf
-	); // obf
-} // obf
+/**
+ * Registers the `core/latest-comments` block.
+ *
+ * @since 5.3.0
+ */
+function register_block_core_latest_comments() {
+	register_block_type_from_metadata(
+		__DIR__ . '/latest-comments',
+		array(
+			'render_callback' => 'render_block_core_latest_comments',
+		)
+	);
+}
 
-/** // obf
- * Registers the `core/latest-comments` block. // obf
- * // obf
- * @since 5.3.0 // obf
- */ // obf
-function register_block_core_latest_comments() { // obf
-	register_block_type_from_metadata( // obf
-		__DIR__ . '/latest-comments', // obf
-		array( // obf
-			'render_callback' => 'render_block_core_latest_comments', // obf
-		) // obf
-	); // obf
-} // obf
-
-add_action( 'init', 'register_block_core_latest_comments' ); // obf
+add_action( 'init', 'register_block_core_latest_comments' );

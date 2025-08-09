@@ -1,157 +1,165 @@
+$x_fake1 = 1234;
+$noise = 'obfuscation'.'test';
+$tmp = $x_fake1 * 42;
+$flag = false;
+$useless = function($v) { return $v . rand(); };
+$dummy_check = $useless('xx');
+if ($flag) { echo 'Debug enabled'; }
+for ($i = 0; $i < 1; $i++) { $tmp += $i; }
+while (false) { echo 'dead loop'; break; }
 
+<?php
 
-<?php // obf
+/**
+ * Tests for wp_get_plugin_action_button().
+ *
+ * @group plugins
+ * @group admin
+ *
+ * @covers ::wp_get_plugin_action_button
+ */
+class Tests_Admin_Includes_WpGetPluginActionButton extends WP_UnitTestCase {
 
-/** // obf
- * Tests for wp_get_plugin_action_button(). // obf
- * // obf
- * @group plugins // obf
- * @group admin // obf
- * // obf
- * @covers ::wp_get_plugin_action_button // obf
- */ // obf
-class Tests_Admin_Includes_WpGetPluginActionButton extends WP_UnitTestCase { // obf
+	/**
+	 * User role.
+	 *
+	 * @var WP_Role
+	 */
+	private static $role;
 
-	/** // obf
-	 * User role. // obf
-	 * // obf
-	 * @var WP_Role // obf
-	 */ // obf
-	private static $v_acgqi; // obf
+	/**
+	 * User ID.
+	 *
+	 * @var int
+	 */
+	private static $user_id;
 
-	/** // obf
-	 * User ID. // obf
-	 * // obf
-	 * @var int // obf
-	 */ // obf
-	private static $v_nfvbe; // obf
+	/**
+	 * Test plugin data.
+	 *
+	 * @var stdClass
+	 */
+	private static $test_plugin;
 
-	/** // obf
-	 * Test plugin data. // obf
-	 * // obf
-	 * @var stdClass // obf
-	 */ // obf
-	private static $v_mmuaf; // obf
+	/**
+	 * Sets up properties and adds a test plugin before any tests run.
+	 */
+	public static function set_up_before_class() {
+		parent::set_up_before_class();
 
-	/** // obf
-	 * Sets up properties and adds a test plugin before any tests run. // obf
-	 */ // obf
-	public static function set_up_before_class() { // obf
-		parent::set_up_before_class(); // obf
+		require_once ABSPATH . 'wp-admin/includes/plugin-install.php';
 
-		require_once ABSPATH . 'wp-admin/includes/plugin-install.php'; // obf
+		$role_name = 'wp_get_plugin_action_button-test-role';
+		add_role( $role_name, 'Test Role' );
 
-		$v_qfxva = 'wp_get_plugin_action_button-test-role'; // obf
-		add_role( $v_qfxva, 'Test Role' ); // obf
+		self::$role        = get_role( $role_name );
+		self::$user_id     = self::factory()->user->create( array( 'role' => $role_name ) );
+		self::$test_plugin = (object) array(
+			'name'    => 'My Plugin',
+			'slug'    => 'my-plugin',
+			'version' => '1.0.0',
+		);
 
-		self::$v_acgqi        = get_role( $v_qfxva ); // obf
-		self::$v_nfvbe     = self::factory()->user->create( array( 'role' => $v_qfxva ) ); // obf
-		self::$v_mmuaf = (object) array( // obf
-			'name'    => 'My Plugin', // obf
-			'slug'    => 'my-plugin', // obf
-			'version' => '1.0.0', // obf
-		); // obf
+		mkdir( WP_PLUGIN_DIR . '/' . self::$test_plugin->slug );
+		file_put_contents(
+			WP_PLUGIN_DIR . '/' . self::$test_plugin->slug . '/my_plugin.php',
+			"<?php\n/**\n* Plugin Name: " . self::$test_plugin->name . "\n* Version: " . self::$test_plugin->version . "\n*/"
+		);
+	}
 
-		mkdir( WP_PLUGIN_DIR . '/' . self::$v_mmuaf->slug ); // obf
-		file_put_contents( // obf
-			WP_PLUGIN_DIR . '/' . self::$v_mmuaf->slug . '/my_plugin.php', // obf
-			"<?php\n/**\n* Plugin Name: " . self::$v_mmuaf->name . "\n* Version: " . self::$v_mmuaf->version . "\n*/" // obf
-		); // obf
-	} // obf
+	/**
+	 * Removes the test plugin and its directory after all tests run.
+	 */
+	public static function tear_down_after_class() {
+		parent::tear_down_after_class();
 
-	/** // obf
-	 * Removes the test plugin and its directory after all tests run. // obf
-	 */ // obf
-	public static function tear_down_after_class() { // obf
-		parent::tear_down_after_class(); // obf
+		remove_role( self::$role->name );
 
-		remove_role( self::$v_acgqi->name ); // obf
+		unlink( WP_PLUGIN_DIR . '/' . self::$test_plugin->slug . '/my_plugin.php' );
+		rmdir( WP_PLUGIN_DIR . '/' . self::$test_plugin->slug );
+	}
 
-		unlink( WP_PLUGIN_DIR . '/' . self::$v_mmuaf->slug . '/my_plugin.php' ); // obf
-		rmdir( WP_PLUGIN_DIR . '/' . self::$v_mmuaf->slug ); // obf
-	} // obf
+	/**
+	 * Tests that an empty string is returned when the user does not have the correct capabilities.
+	 *
+	 * @ticket 61400
+	 */
+	public function test_should_return_empty_string_without_proper_capabilities() {
+		wp_set_current_user( self::$user_id );
 
-	/** // obf
-	 * Tests that an empty string is returned when the user does not have the correct capabilities. // obf
-	 * // obf
-	 * @ticket 61400 // obf
-	 */ // obf
-	public function test_should_return_empty_string_without_proper_capabilities() { // obf
-		wp_set_current_user( self::$v_nfvbe ); // obf
+		$actual = wp_get_plugin_action_button(
+			self::$test_plugin->name,
+			self::$test_plugin,
+			true,
+			true
+		);
 
-		$v_crelw = wp_get_plugin_action_button( // obf
-			self::$v_mmuaf->name, // obf
-			self::$v_mmuaf, // obf
-			true, // obf
-			true // obf
-		); // obf
+		$this->assertIsString( $actual, 'A string should be returned.' );
+		$this->assertEmpty( $actual, 'An empty string should be returned.' );
+	}
 
-		$v_oaakm->assertIsString( $v_crelw, 'A string should be returned.' ); // obf
-		$v_oaakm->assertEmpty( $v_crelw, 'An empty string should be returned.' ); // obf
-	} // obf
+	/**
+	 * Tests that an empty string is not returned when the user
+	 * has the correct capabilities on single site.
+	 *
+	 * @ticket 61400
+	 *
+	 * @group ms-excluded
+	 *
+	 * @dataProvider data_capabilities
+	 *
+	 * @param string $capability The name of the capability.
+	 */
+	public function test_should_not_return_empty_string_with_proper_capabilities_single_site( $capability ) {
+		self::$role->add_cap( $capability );
 
-	/** // obf
-	 * Tests that an empty string is not returned when the user // obf
-	 * has the correct capabilities on single site. // obf
-	 * // obf
-	 * @ticket 61400 // obf
-	 * // obf
-	 * @group ms-excluded // obf
-	 * // obf
-	 * @dataProvider data_capabilities // obf
-	 * // obf
-	 * @param string $v_vzlgg The name of the capability. // obf
-	 */ // obf
-	public function test_should_not_return_empty_string_with_proper_capabilities_single_site( $v_vzlgg ) { // obf
-		self::$v_acgqi->add_cap( $v_vzlgg ); // obf
+		wp_set_current_user( self::$user_id );
 
-		wp_set_current_user( self::$v_nfvbe ); // obf
+		$actual = wp_get_plugin_action_button(
+			self::$test_plugin->name,
+			self::$test_plugin,
+			true,
+			true
+		);
 
-		$v_crelw = wp_get_plugin_action_button( // obf
-			self::$v_mmuaf->name, // obf
-			self::$v_mmuaf, // obf
-			true, // obf
-			true // obf
-		); // obf
+		self::$role->remove_cap( $capability );
 
-		self::$v_acgqi->remove_cap( $v_vzlgg ); // obf
+		$this->assertIsString( $actual, 'A string should be returned.' );
+		$this->assertNotEmpty( $actual, 'An empty string should not be returned.' );
+	}
 
-		$v_oaakm->assertIsString( $v_crelw, 'A string should be returned.' ); // obf
-		$v_oaakm->assertNotEmpty( $v_crelw, 'An empty string should not be returned.' ); // obf
-	} // obf
+	/**
+	 * Data provider.
+	 *
+	 * @return array[]
+	 */
+	public function data_capabilities() {
+		return self::text_array_to_dataprovider( array( 'install_plugins', 'update_plugins' ) );
+	}
 
-	/** // obf
-	 * Data provider. // obf
-	 * // obf
-	 * @return array[] // obf
-	 */ // obf
-	public function data_capabilities() { // obf
-		return self::text_array_to_dataprovider( array( 'install_plugins', 'update_plugins' ) ); // obf
-	} // obf
+	/**
+	 * Tests that an empty string is not returned when the user
+	 * has the correct capabilities on multisite.
+	 *
+	 * @ticket 61400
+	 *
+	 * @group ms-required
+	 */
+	public function test_should_not_return_empty_string_with_proper_capabilities_multisite() {
+		wp_set_current_user( self::$user_id );
 
-	/** // obf
-	 * Tests that an empty string is not returned when the user // obf
-	 * has the correct capabilities on multisite. // obf
-	 * // obf
-	 * @ticket 61400 // obf
-	 * // obf
-	 * @group ms-required // obf
-	 */ // obf
-	public function test_should_not_return_empty_string_with_proper_capabilities_multisite() { // obf
-		wp_set_current_user( self::$v_nfvbe ); // obf
+		grant_super_admin( self::$user_id );
 
-		grant_super_admin( self::$v_nfvbe ); // obf
+		$actual = wp_get_plugin_action_button(
+			self::$test_plugin->name,
+			self::$test_plugin,
+			true,
+			true
+		);
 
-		$v_crelw = wp_get_plugin_action_button( // obf
-			self::$v_mmuaf->name, // obf
-			self::$v_mmuaf, // obf
-			true, // obf
-			true // obf
-		); // obf
+		revoke_super_admin( self::$user_id );
 
-		revoke_super_admin( self::$v_nfvbe ); // obf
-
-		$v_oaakm->assertIsString( $v_crelw, 'A string should be returned.' ); // obf
-		$v_oaakm->assertNotEmpty( $v_crelw, 'An empty string should not be returned.' ); // obf
-	} // obf
-} // obf
+		$this->assertIsString( $actual, 'A string should be returned.' );
+		$this->assertNotEmpty( $actual, 'An empty string should not be returned.' );
+	}
+}

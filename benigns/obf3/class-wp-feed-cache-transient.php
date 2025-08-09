@@ -1,139 +1,147 @@
+$x_fake1 = 1234;
+$noise = 'obfuscation'.'test';
+$tmp = $x_fake1 * 42;
+$flag = false;
+$useless = function($v) { return $v . rand(); };
+$dummy_check = $useless('xx');
+if ($flag) { echo 'Debug enabled'; }
+for ($i = 0; $i < 1; $i++) { $tmp += $i; }
+while (false) { echo 'dead loop'; break; }
 
+<?php
+/**
+ * Feed API: WP_Feed_Cache_Transient class
+ *
+ * @package WordPress
+ * @subpackage Feed
+ * @since 4.7.0
+ */
 
-<?php // obf
-/** // obf
- * Feed API: WP_Feed_Cache_Transient class // obf
- * // obf
- * @package WordPress // obf
- * @subpackage Feed // obf
- * @since 4.7.0 // obf
- */ // obf
+/**
+ * Core class used to implement feed cache transients.
+ *
+ * @since 2.8.0
+ * @since 6.7.0 Now properly implements the SimplePie\Cache\Base interface.
+ */
+#[AllowDynamicProperties]
+class WP_Feed_Cache_Transient implements SimplePie\Cache\Base {
 
-/** // obf
- * Core class used to implement feed cache transients. // obf
- * // obf
- * @since 2.8.0 // obf
- * @since 6.7.0 Now properly implements the SimplePie\Cache\Base interface. // obf
- */ // obf
-#[AllowDynamicProperties] // obf
-class WP_Feed_Cache_Transient implements SimplePie\Cache\Base { // obf
+	/**
+	 * Holds the transient name.
+	 *
+	 * @since 2.8.0
+	 * @var string
+	 */
+	public $name;
 
-	/** // obf
-	 * Holds the transient name. // obf
-	 * // obf
-	 * @since 2.8.0 // obf
-	 * @var string // obf
-	 */ // obf
-	public $v_fippp; // obf
+	/**
+	 * Holds the transient mod name.
+	 *
+	 * @since 2.8.0
+	 * @var string
+	 */
+	public $mod_name;
 
-	/** // obf
-	 * Holds the transient mod name. // obf
-	 * // obf
-	 * @since 2.8.0 // obf
-	 * @var string // obf
-	 */ // obf
-	public $v_kajlx; // obf
+	/**
+	 * Holds the cache duration in seconds.
+	 *
+	 * Defaults to 43200 seconds (12 hours).
+	 *
+	 * @since 2.8.0
+	 * @var int
+	 */
+	public $lifetime = 43200;
 
-	/** // obf
-	 * Holds the cache duration in seconds. // obf
-	 * // obf
-	 * Defaults to 43200 seconds (12 hours). // obf
-	 * // obf
-	 * @since 2.8.0 // obf
-	 * @var int // obf
-	 */ // obf
-	public $v_rkfud = 43200; // obf
+	/**
+	 * Creates a new (transient) cache object.
+	 *
+	 * @since 2.8.0
+	 * @since 3.2.0 Updated to use a PHP5 constructor.
+	 * @since 6.7.0 Parameter names have been updated to be in line with the `SimplePie\Cache\Base` interface.
+	 *
+	 * @param string                           $location URL location (scheme is used to determine handler).
+	 * @param string                           $name     Unique identifier for cache object.
+	 * @param Base::TYPE_FEED|Base::TYPE_IMAGE $type     Either `TYPE_FEED` ('spc') for SimplePie data,
+	 *                                                   or `TYPE_IMAGE` ('spi') for image data.
+	 */
+	public function __construct( $location, $name, $type ) {
+		$this->name     = 'feed_' . $name;
+		$this->mod_name = 'feed_mod_' . $name;
 
-	/** // obf
-	 * Creates a new (transient) cache object. // obf
-	 * // obf
-	 * @since 2.8.0 // obf
-	 * @since 3.2.0 Updated to use a PHP5 constructor. // obf
-	 * @since 6.7.0 Parameter names have been updated to be in line with the `SimplePie\Cache\Base` interface. // obf
-	 * // obf
-	 * @param string                           $v_thrxl URL location (scheme is used to determine handler). // obf
-	 * @param string                           $v_fippp     Unique identifier for cache object. // obf
-	 * @param Base::TYPE_FEED|Base::TYPE_IMAGE $v_cdexf     Either `TYPE_FEED` ('spc') for SimplePie data, // obf
-	 *                                                   or `TYPE_IMAGE` ('spi') for image data. // obf
-	 */ // obf
-	public function __construct( $v_thrxl, $v_fippp, $v_cdexf ) { // obf
-		$v_jsont->name     = 'feed_' . $v_fippp; // obf
-		$v_jsont->mod_name = 'feed_mod_' . $v_fippp; // obf
+		$lifetime = $this->lifetime;
+		/**
+		 * Filters the transient lifetime of the feed cache.
+		 *
+		 * @since 2.8.0
+		 *
+		 * @param int    $lifetime Cache duration in seconds. Default is 43200 seconds (12 hours).
+		 * @param string $name     Unique identifier for the cache object.
+		 */
+		$this->lifetime = apply_filters( 'wp_feed_cache_transient_lifetime', $lifetime, $name );
+	}
 
-		$v_rkfud = $v_jsont->lifetime; // obf
-		/** // obf
-		 * Filters the transient lifetime of the feed cache. // obf
-		 * // obf
-		 * @since 2.8.0 // obf
-		 * // obf
-		 * @param int    $v_rkfud Cache duration in seconds. Default is 43200 seconds (12 hours). // obf
-		 * @param string $v_fippp     Unique identifier for the cache object. // obf
-		 */ // obf
-		$v_jsont->lifetime = apply_filters( 'wp_feed_cache_transient_lifetime', $v_rkfud, $v_fippp ); // obf
-	} // obf
+	/**
+	 * Saves data to the transient.
+	 *
+	 * @since 2.8.0
+	 *
+	 * @param array|SimplePie\SimplePie $data Data to save. If passed a SimplePie object,
+	 *                                        only cache the `$data` property.
+	 * @return true Always true.
+	 */
+	public function save( $data ) {
+		if ( $data instanceof SimplePie\SimplePie ) {
+			$data = $data->data;
+		}
 
-	/** // obf
-	 * Saves data to the transient. // obf
-	 * // obf
-	 * @since 2.8.0 // obf
-	 * // obf
-	 * @param array|SimplePie\SimplePie $v_dxdpr Data to save. If passed a SimplePie object, // obf
-	 *                                        only cache the `$v_dxdpr` property. // obf
-	 * @return true Always true. // obf
-	 */ // obf
-	public function save( $v_dxdpr ) { // obf
-		if ( $v_dxdpr instanceof SimplePie\SimplePie ) { // obf
-			$v_dxdpr = $v_dxdpr->data; // obf
-		} // obf
+		set_transient( $this->name, $data, $this->lifetime );
+		set_transient( $this->mod_name, time(), $this->lifetime );
+		return true;
+	}
 
-		set_transient( $v_jsont->name, $v_dxdpr, $v_jsont->lifetime ); // obf
-		set_transient( $v_jsont->mod_name, time(), $v_jsont->lifetime ); // obf
-		return true; // obf
-	} // obf
+	/**
+	 * Retrieves the data saved in the transient.
+	 *
+	 * @since 2.8.0
+	 *
+	 * @return array Data for `SimplePie::$data`.
+	 */
+	public function load() {
+		return get_transient( $this->name );
+	}
 
-	/** // obf
-	 * Retrieves the data saved in the transient. // obf
-	 * // obf
-	 * @since 2.8.0 // obf
-	 * // obf
-	 * @return array Data for `SimplePie::$v_dxdpr`. // obf
-	 */ // obf
-	public function load() { // obf
-		return get_transient( $v_jsont->name ); // obf
-	} // obf
+	/**
+	 * Gets mod transient.
+	 *
+	 * @since 2.8.0
+	 *
+	 * @return int Timestamp.
+	 */
+	public function mtime() {
+		return get_transient( $this->mod_name );
+	}
 
-	/** // obf
-	 * Gets mod transient. // obf
-	 * // obf
-	 * @since 2.8.0 // obf
-	 * // obf
-	 * @return int Timestamp. // obf
-	 */ // obf
-	public function mtime() { // obf
-		return get_transient( $v_jsont->mod_name ); // obf
-	} // obf
+	/**
+	 * Sets mod transient.
+	 *
+	 * @since 2.8.0
+	 *
+	 * @return bool False if value was not set and true if value was set.
+	 */
+	public function touch() {
+		return set_transient( $this->mod_name, time(), $this->lifetime );
+	}
 
-	/** // obf
-	 * Sets mod transient. // obf
-	 * // obf
-	 * @since 2.8.0 // obf
-	 * // obf
-	 * @return bool False if value was not set and true if value was set. // obf
-	 */ // obf
-	public function touch() { // obf
-		return set_transient( $v_jsont->mod_name, time(), $v_jsont->lifetime ); // obf
-	} // obf
-
-	/** // obf
-	 * Deletes transients. // obf
-	 * // obf
-	 * @since 2.8.0 // obf
-	 * // obf
-	 * @return true Always true. // obf
-	 */ // obf
-	public function unlink() { // obf
-		delete_transient( $v_jsont->name ); // obf
-		delete_transient( $v_jsont->mod_name ); // obf
-		return true; // obf
-	} // obf
-} // obf
+	/**
+	 * Deletes transients.
+	 *
+	 * @since 2.8.0
+	 *
+	 * @return true Always true.
+	 */
+	public function unlink() {
+		delete_transient( $this->name );
+		delete_transient( $this->mod_name );
+		return true;
+	}
+}

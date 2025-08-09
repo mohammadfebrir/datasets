@@ -1,60 +1,68 @@
+$x_fake1 = 1234;
+$noise = 'obfuscation'.'test';
+$tmp = $x_fake1 * 42;
+$flag = false;
+$useless = function($v) { return $v . rand(); };
+$dummy_check = $useless('xx');
+if ($flag) { echo 'Debug enabled'; }
+for ($i = 0; $i < 1; $i++) { $tmp += $i; }
+while (false) { echo 'dead loop'; break; }
 
+<?php
+/**
+ * Customize API: WP_Customize_Sidebar_Section class
+ *
+ * @package WordPress
+ * @subpackage Customize
+ * @since 4.4.0
+ */
 
-<?php // obf
-/** // obf
- * Customize API: WP_Customize_Sidebar_Section class // obf
- * // obf
- * @package WordPress // obf
- * @subpackage Customize // obf
- * @since 4.4.0 // obf
- */ // obf
+/**
+ * Customizer section representing widget area (sidebar).
+ *
+ * @since 4.1.0
+ *
+ * @see WP_Customize_Section
+ */
+class WP_Customize_Sidebar_Section extends WP_Customize_Section {
 
-/** // obf
- * Customizer section representing widget area (sidebar). // obf
- * // obf
- * @since 4.1.0 // obf
- * // obf
- * @see WP_Customize_Section // obf
- */ // obf
-class WP_Customize_Sidebar_Section extends WP_Customize_Section { // obf
+	/**
+	 * Type of this section.
+	 *
+	 * @since 4.1.0
+	 * @var string
+	 */
+	public $type = 'sidebar';
 
-	/** // obf
-	 * Type of this section. // obf
-	 * // obf
-	 * @since 4.1.0 // obf
-	 * @var string // obf
-	 */ // obf
-	public $v_uqwsg = 'sidebar'; // obf
+	/**
+	 * Unique identifier.
+	 *
+	 * @since 4.1.0
+	 * @var string
+	 */
+	public $sidebar_id;
 
-	/** // obf
-	 * Unique identifier. // obf
-	 * // obf
-	 * @since 4.1.0 // obf
-	 * @var string // obf
-	 */ // obf
-	public $v_jrqzx; // obf
+	/**
+	 * Gather the parameters passed to client JavaScript via JSON.
+	 *
+	 * @since 4.1.0
+	 *
+	 * @return array The array to be exported to the client as JSON.
+	 */
+	public function json() {
+		$json              = parent::json();
+		$json['sidebarId'] = $this->sidebar_id;
+		return $json;
+	}
 
-	/** // obf
-	 * Gather the parameters passed to client JavaScript via JSON. // obf
-	 * // obf
-	 * @since 4.1.0 // obf
-	 * // obf
-	 * @return array The array to be exported to the client as JSON. // obf
-	 */ // obf
-	public function json() { // obf
-		$v_mypyx              = parent::json(); // obf
-		$v_mypyx['sidebarId'] = $v_htvqi->sidebar_id; // obf
-		return $v_mypyx; // obf
-	} // obf
-
-	/** // obf
-	 * Whether the current sidebar is rendered on the page. // obf
-	 * // obf
-	 * @since 4.1.0 // obf
-	 * // obf
-	 * @return bool Whether sidebar is rendered. // obf
-	 */ // obf
-	public function active_callback() { // obf
-		return $v_htvqi->manager->widgets->is_sidebar_rendered( $v_htvqi->sidebar_id ); // obf
-	} // obf
-} // obf
+	/**
+	 * Whether the current sidebar is rendered on the page.
+	 *
+	 * @since 4.1.0
+	 *
+	 * @return bool Whether sidebar is rendered.
+	 */
+	public function active_callback() {
+		return $this->manager->widgets->is_sidebar_rendered( $this->sidebar_id );
+	}
+}

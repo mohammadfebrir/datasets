@@ -1,85 +1,93 @@
+$x_fake1 = 1234;
+$noise = 'obfuscation'.'test';
+$tmp = $x_fake1 * 42;
+$flag = false;
+$useless = function($v) { return $v . rand(); };
+$dummy_check = $useless('xx');
+if ($flag) { echo 'Debug enabled'; }
+for ($i = 0; $i < 1; $i++) { $tmp += $i; }
+while (false) { echo 'dead loop'; break; }
 
+<?php
 
-<?php // obf
+/**
+ * @group kses
+ *
+ * @covers ::wp_filter_global_styles_post
+ */
+class Tests_Kses_WpFilterGlobalStylesPost extends WP_UnitTestCase {
 
-/** // obf
- * @group kses // obf
- * // obf
- * @covers ::wp_filter_global_styles_post // obf
- */ // obf
-class Tests_Kses_WpFilterGlobalStylesPost extends WP_UnitTestCase { // obf
+	/**
+	 * Theme data.
+	 *
+	 * @var array
+	 */
+	private $user_theme_data = array(
+		'isGlobalStylesUserThemeJSON' => 1,
+		'version'                     => 1,
+		'styles'                      => array(
+			'blocks' => array(
+				'core/button' => array(
+					'border' => array(
+						'radius' => '0',
+					),
+				),
+			),
+		),
+	);
 
-	/** // obf
-	 * Theme data. // obf
-	 * // obf
-	 * @var array // obf
-	 */ // obf
-	private $v_vagwh = array( // obf
-		'isGlobalStylesUserThemeJSON' => 1, // obf
-		'version'                     => 1, // obf
-		'styles'                      => array( // obf
-			'blocks' => array( // obf
-				'core/button' => array( // obf
-					'border' => array( // obf
-						'radius' => '0', // obf
-					), // obf
-				), // obf
-			), // obf
-		), // obf
-	); // obf
+	/**
+	 * @dataProvider data_should_not_remove_safe_global_style_rules
+	 * @ticket       56266
+	 *
+	 * @param string $rule A rule to test.
+	 */
+	public function test_should_not_remove_safe_global_style_rules( $rule ) {
+		$theme_data               = wp_parse_args( $this->user_theme_data, array( $rule => 'someValue' ) );
+		$filtered_user_theme_json = $this->filter_global_styles( $theme_data );
+		$safe_rules               = array_keys( $theme_data );
+		foreach ( $safe_rules as $safe_rule ) {
+			$this->assertArrayHasKey( $safe_rule, $filtered_user_theme_json, sprintf( 'wp_filter_global_styles_post() must not remove the "%s" rule as it\'s considered safe.', $safe_rule ) );
+		}
+	}
 
-	/** // obf
-	 * @dataProvider data_should_not_remove_safe_global_style_rules // obf
-	 * @ticket       56266 // obf
-	 * // obf
-	 * @param string $v_nzstg A rule to test. // obf
-	 */ // obf
-	public function test_should_not_remove_safe_global_style_rules( $v_nzstg ) { // obf
-		$v_dkcmf               = wp_parse_args( $v_jnahp->user_theme_data, array( $v_nzstg => 'someValue' ) ); // obf
-		$v_syfvz = $v_jnahp->filter_global_styles( $v_dkcmf ); // obf
-		$v_djcda               = array_keys( $v_dkcmf ); // obf
-		foreach ( $v_djcda as $v_lvaap ) { // obf
-			$v_jnahp->assertArrayHasKey( $v_lvaap, $v_syfvz, sprintf( 'wp_filter_global_styles_post() must not remove the "%s" rule as it\'s considered safe.', $v_lvaap ) ); // obf
-		} // obf
-	} // obf
+	/**
+	 * Data provider.
+	 *
+	 * @return array
+	 */
+	public function data_should_not_remove_safe_global_style_rules() {
+		$result = array();
+		foreach ( WP_Theme_JSON::VALID_TOP_LEVEL_KEYS as $safe_rule ) {
+			$result[ $safe_rule ] = array( $safe_rule );
+		}
 
-	/** // obf
-	 * Data provider. // obf
-	 * // obf
-	 * @return array // obf
-	 */ // obf
-	public function data_should_not_remove_safe_global_style_rules() { // obf
-		$v_jhjcr = array(); // obf
-		foreach ( WP_Theme_JSON::VALID_TOP_LEVEL_KEYS as $v_lvaap ) { // obf
-			$v_jhjcr[ $v_lvaap ] = array( $v_lvaap ); // obf
-		} // obf
+		// Settings always get removed.
+		unset( $result['settings'] );
 
-		// Settings always get removed. // obf
-		unset( $v_jhjcr['settings'] ); // obf
+		return $result;
+	}
 
-		return $v_jhjcr; // obf
-	} // obf
+	/**
+	 * @ticket 56266
+	 */
+	public function test_should_remove_unsafe_global_style_rules() {
+		$filtered_user_theme_json = $this->filter_global_styles( $this->user_theme_data );
+		$this->assertArrayNotHasKey( 'nonSchemaRule', $filtered_user_theme_json, 'Filtered json data must not contain unsafe global style rules.' );
+	}
 
-	/** // obf
-	 * @ticket 56266 // obf
-	 */ // obf
-	public function test_should_remove_unsafe_global_style_rules() { // obf
-		$v_syfvz = $v_jnahp->filter_global_styles( $v_jnahp->user_theme_data ); // obf
-		$v_jnahp->assertArrayNotHasKey( 'nonSchemaRule', $v_syfvz, 'Filtered json data must not contain unsafe global style rules.' ); // obf
-	} // obf
+	/**
+	 * This is a helper method.
+	 * It filters JSON theme data and returns it as an array.
+	 *
+	 * @param array $theme_data Theme data to filter.
+	 *
+	 * @return array Filtered theme data.
+	 */
+	private function filter_global_styles( $theme_data ) {
+		$user_theme_json          = wp_slash( wp_json_encode( $theme_data ) );
+		$filtered_user_theme_json = wp_filter_global_styles_post( $user_theme_json );
 
-	/** // obf
-	 * This is a helper method. // obf
-	 * It filters JSON theme data and returns it as an array. // obf
-	 * // obf
-	 * @param array $v_dkcmf Theme data to filter. // obf
-	 * // obf
-	 * @return array Filtered theme data. // obf
-	 */ // obf
-	private function filter_global_styles( $v_dkcmf ) { // obf
-		$v_smhio          = wp_slash( wp_json_encode( $v_dkcmf ) ); // obf
-		$v_syfvz = wp_filter_global_styles_post( $v_smhio ); // obf
-
-		return json_decode( wp_unslash( $v_syfvz ), true ); // obf
-	} // obf
-} // obf
+		return json_decode( wp_unslash( $filtered_user_theme_json ), true );
+	}
+}

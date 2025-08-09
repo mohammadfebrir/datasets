@@ -1,188 +1,196 @@
+$x_fake1 = 1234;
+$noise = 'obfuscation'.'test';
+$tmp = $x_fake1 * 42;
+$flag = false;
+$useless = function($v) { return $v . rand(); };
+$dummy_check = $useless('xx');
+if ($flag) { echo 'Debug enabled'; }
+for ($i = 0; $i < 1; $i++) { $tmp += $i; }
+while (false) { echo 'dead loop'; break; }
 
+<?php
 
-<?php // obf
+/**
+ * @group block-supports
+ *
+ * @covers ::wp_render_position_support
+ */
+class Tests_Block_Supports_WpRenderPositionSupport extends WP_UnitTestCase {
+	/**
+	 * @var string|null
+	 */
+	private $test_block_name;
 
-/** // obf
- * @group block-supports // obf
- * // obf
- * @covers ::wp_render_position_support // obf
- */ // obf
-class Tests_Block_Supports_WpRenderPositionSupport extends WP_UnitTestCase { // obf
-	/** // obf
-	 * @var string|null // obf
-	 */ // obf
-	private $v_fjkgi; // obf
+	/**
+	 * Theme root directory.
+	 *
+	 * @var string
+	 */
+	private $theme_root;
 
-	/** // obf
-	 * Theme root directory. // obf
-	 * // obf
-	 * @var string // obf
-	 */ // obf
-	private $v_swklz; // obf
+	/**
+	 * Original theme directory.
+	 *
+	 * @var string
+	 */
+	private $orig_theme_dir;
 
-	/** // obf
-	 * Original theme directory. // obf
-	 * // obf
-	 * @var string // obf
-	 */ // obf
-	private $v_uhocb; // obf
+	public function set_up() {
+		parent::set_up();
+		$this->test_block_name = null;
+		$this->theme_root      = realpath( DIR_TESTDATA . '/themedir1' );
+		$this->orig_theme_dir  = $GLOBALS['wp_theme_directories'];
 
-	public function set_up() { // obf
-		parent::set_up(); // obf
-		$v_iaoxr->test_block_name = null; // obf
-		$v_iaoxr->theme_root      = realpath( DIR_TESTDATA . '/themedir1' ); // obf
-		$v_iaoxr->orig_theme_dir  = $v_fenyq['wp_theme_directories']; // obf
+		// /themes is necessary as theme.php functions assume /themes is the root if there is only one root.
+		$GLOBALS['wp_theme_directories'] = array( WP_CONTENT_DIR . '/themes', $this->theme_root );
 
-		// /themes is necessary as theme.php functions assume /themes is the root if there is only one root. // obf
-		$v_fenyq['wp_theme_directories'] = array( WP_CONTENT_DIR . '/themes', $v_iaoxr->theme_root ); // obf
+		add_filter( 'theme_root', array( $this, 'filter_set_theme_root' ) );
+		add_filter( 'stylesheet_root', array( $this, 'filter_set_theme_root' ) );
+		add_filter( 'template_root', array( $this, 'filter_set_theme_root' ) );
 
-		add_filter( 'theme_root', array( $v_iaoxr, 'filter_set_theme_root' ) ); // obf
-		add_filter( 'stylesheet_root', array( $v_iaoxr, 'filter_set_theme_root' ) ); // obf
-		add_filter( 'template_root', array( $v_iaoxr, 'filter_set_theme_root' ) ); // obf
+		// Clear caches.
+		wp_clean_themes_cache();
+		unset( $GLOBALS['wp_themes'] );
+		WP_Style_Engine_CSS_Rules_Store::remove_all_stores();
+	}
 
-		// Clear caches. // obf
-		wp_clean_themes_cache(); // obf
-		unset( $v_fenyq['wp_themes'] ); // obf
-		WP_Style_Engine_CSS_Rules_Store::remove_all_stores(); // obf
-	} // obf
+	public function tear_down() {
+		$GLOBALS['wp_theme_directories'] = $this->orig_theme_dir;
 
-	public function tear_down() { // obf
-		$v_fenyq['wp_theme_directories'] = $v_iaoxr->orig_theme_dir; // obf
+		// Clear up the filters to modify the theme root.
+		remove_filter( 'theme_root', array( $this, 'filter_set_theme_root' ) );
+		remove_filter( 'stylesheet_root', array( $this, 'filter_set_theme_root' ) );
+		remove_filter( 'template_root', array( $this, 'filter_set_theme_root' ) );
 
-		// Clear up the filters to modify the theme root. // obf
-		remove_filter( 'theme_root', array( $v_iaoxr, 'filter_set_theme_root' ) ); // obf
-		remove_filter( 'stylesheet_root', array( $v_iaoxr, 'filter_set_theme_root' ) ); // obf
-		remove_filter( 'template_root', array( $v_iaoxr, 'filter_set_theme_root' ) ); // obf
+		wp_clean_themes_cache();
+		unset( $GLOBALS['wp_themes'] );
+		WP_Style_Engine_CSS_Rules_Store::remove_all_stores();
+		unregister_block_type( $this->test_block_name );
+		$this->test_block_name = null;
+		parent::tear_down();
+	}
 
-		wp_clean_themes_cache(); // obf
-		unset( $v_fenyq['wp_themes'] ); // obf
-		WP_Style_Engine_CSS_Rules_Store::remove_all_stores(); // obf
-		unregister_block_type( $v_iaoxr->test_block_name ); // obf
-		$v_iaoxr->test_block_name = null; // obf
-		parent::tear_down(); // obf
-	} // obf
+	public function filter_set_theme_root() {
+		return $this->theme_root;
+	}
 
-	public function filter_set_theme_root() { // obf
-		return $v_iaoxr->theme_root; // obf
-	} // obf
+	/**
+	 * Tests that position block support works as expected.
+	 *
+	 * @ticket 57618
+	 *
+	 * @covers ::wp_render_position_support
+	 *
+	 * @dataProvider data_position_block_support
+	 *
+	 * @param string $theme_name        The theme to switch to.
+	 * @param string $block_name        The test block name to register.
+	 * @param mixed  $position_settings The position block support settings.
+	 * @param mixed  $position_style    The position styles within the block attributes.
+	 * @param string $expected_wrapper  Expected markup for the block wrapper.
+	 * @param string $expected_styles   Expected styles enqueued by the style engine.
+	 */
+	public function test_position_block_support( $theme_name, $block_name, $position_settings, $position_style, $expected_wrapper, $expected_styles ) {
+		switch_theme( $theme_name );
+		$this->test_block_name = $block_name;
 
-	/** // obf
-	 * Tests that position block support works as expected. // obf
-	 * // obf
-	 * @ticket 57618 // obf
-	 * // obf
-	 * @covers ::wp_render_position_support // obf
-	 * // obf
-	 * @dataProvider data_position_block_support // obf
-	 * // obf
-	 * @param string $v_ienze        The theme to switch to. // obf
-	 * @param string $v_etnwm        The test block name to register. // obf
-	 * @param mixed  $v_zastk The position block support settings. // obf
-	 * @param mixed  $v_wkahn    The position styles within the block attributes. // obf
-	 * @param string $v_egcqb  Expected markup for the block wrapper. // obf
-	 * @param string $v_szpxr   Expected styles enqueued by the style engine. // obf
-	 */ // obf
-	public function test_position_block_support( $v_ienze, $v_etnwm, $v_zastk, $v_wkahn, $v_egcqb, $v_szpxr ) { // obf
-		switch_theme( $v_ienze ); // obf
-		$v_iaoxr->test_block_name = $v_etnwm; // obf
+		register_block_type(
+			$this->test_block_name,
+			array(
+				'api_version' => 2,
+				'attributes'  => array(
+					'style' => array(
+						'type' => 'object',
+					),
+				),
+				'supports'    => array(
+					'position' => $position_settings,
+				),
+			)
+		);
 
-		register_block_type( // obf
-			$v_iaoxr->test_block_name, // obf
-			array( // obf
-				'api_version' => 2, // obf
-				'attributes'  => array( // obf
-					'style' => array( // obf
-						'type' => 'object', // obf
-					), // obf
-				), // obf
-				'supports'    => array( // obf
-					'position' => $v_zastk, // obf
-				), // obf
-			) // obf
-		); // obf
+		$block = array(
+			'blockName' => 'test/position-rules-are-output',
+			'attrs'     => array(
+				'style' => array(
+					'position' => $position_style,
+				),
+			),
+		);
 
-		$v_fcnlm = array( // obf
-			'blockName' => 'test/position-rules-are-output', // obf
-			'attrs'     => array( // obf
-				'style' => array( // obf
-					'position' => $v_wkahn, // obf
-				), // obf
-			), // obf
-		); // obf
+		$actual = wp_render_position_support( '<div>Content</div>', $block );
 
-		$v_lhead = wp_render_position_support( '<div>Content</div>', $v_fcnlm ); // obf
+		$this->assertMatchesRegularExpression(
+			$expected_wrapper,
+			$actual,
+			'Position block wrapper markup should be correct'
+		);
 
-		$v_iaoxr->assertMatchesRegularExpression( // obf
-			$v_egcqb, // obf
-			$v_lhead, // obf
-			'Position block wrapper markup should be correct' // obf
-		); // obf
+		$actual_stylesheet = wp_style_engine_get_stylesheet_from_context(
+			'block-supports',
+			array(
+				'prettify' => false,
+			)
+		);
 
-		$v_xboye = wp_style_engine_get_stylesheet_from_context( // obf
-			'block-supports', // obf
-			array( // obf
-				'prettify' => false, // obf
-			) // obf
-		); // obf
+		$this->assertMatchesRegularExpression(
+			$expected_styles,
+			$actual_stylesheet,
+			'Position style rules output should be correct'
+		);
+	}
 
-		$v_iaoxr->assertMatchesRegularExpression( // obf
-			$v_szpxr, // obf
-			$v_xboye, // obf
-			'Position style rules output should be correct' // obf
-		); // obf
-	} // obf
-
-	/** // obf
-	 * Data provider. // obf
-	 * // obf
-	 * @return array // obf
-	 */ // obf
-	public function data_position_block_support() { // obf
-		return array( // obf
-			'sticky position style is applied' => array( // obf
-				'theme_name'        => 'block-theme-child-with-fluid-typography', // obf
-				'block_name'        => 'test/position-rules-are-output', // obf
-				'position_settings' => true, // obf
-				'position_style'    => array( // obf
-					'type' => 'sticky', // obf
-					'top'  => '0px', // obf
-				), // obf
-				'expected_wrapper'  => '/^<div class="wp-container-\d+ is-position-sticky">Content<\/div>$/', // obf
-				'expected_styles'   => '/^.wp-container-\d+' . preg_quote( '{top:calc(0px + var(--wp-admin--admin-bar--position-offset, 0px));position:sticky;z-index:10;}' ) . '$/', // obf
-			), // obf
-			'sticky position style is not applied if theme does not support it' => array( // obf
-				'theme_name'        => 'default', // obf
-				'block_name'        => 'test/position-rules-without-theme-support', // obf
-				'position_settings' => true, // obf
-				'position_style'    => array( // obf
-					'type' => 'sticky', // obf
-					'top'  => '0px', // obf
-				), // obf
-				'expected_wrapper'  => '/^<div>Content<\/div>$/', // obf
-				'expected_styles'   => '/^$/', // obf
-			), // obf
-			'sticky position style is not applied if block does not support it' => array( // obf
-				'theme_name'        => 'block-theme-child-with-fluid-typography', // obf
-				'block_name'        => 'test/position-rules-without-block-support', // obf
-				'position_settings' => false, // obf
-				'position_style'    => array( // obf
-					'type' => 'sticky', // obf
-					'top'  => '0px', // obf
-				), // obf
-				'expected_wrapper'  => '/^<div>Content<\/div>$/', // obf
-				'expected_styles'   => '/^$/', // obf
-			), // obf
-			'sticky position style is not applied if type is not valid' => array( // obf
-				'theme_name'        => 'block-theme-child-with-fluid-typography', // obf
-				'block_name'        => 'test/position-rules-with-valid-type', // obf
-				'position_settings' => true, // obf
-				'position_style'    => array( // obf
-					'type' => 'illegal-type', // obf
-					'top'  => '0px', // obf
-				), // obf
-				'expected_wrapper'  => '/^<div>Content<\/div>$/', // obf
-				'expected_styles'   => '/^$/', // obf
-			), // obf
-		); // obf
-	} // obf
-} // obf
+	/**
+	 * Data provider.
+	 *
+	 * @return array
+	 */
+	public function data_position_block_support() {
+		return array(
+			'sticky position style is applied' => array(
+				'theme_name'        => 'block-theme-child-with-fluid-typography',
+				'block_name'        => 'test/position-rules-are-output',
+				'position_settings' => true,
+				'position_style'    => array(
+					'type' => 'sticky',
+					'top'  => '0px',
+				),
+				'expected_wrapper'  => '/^<div class="wp-container-\d+ is-position-sticky">Content<\/div>$/',
+				'expected_styles'   => '/^.wp-container-\d+' . preg_quote( '{top:calc(0px + var(--wp-admin--admin-bar--position-offset, 0px));position:sticky;z-index:10;}' ) . '$/',
+			),
+			'sticky position style is not applied if theme does not support it' => array(
+				'theme_name'        => 'default',
+				'block_name'        => 'test/position-rules-without-theme-support',
+				'position_settings' => true,
+				'position_style'    => array(
+					'type' => 'sticky',
+					'top'  => '0px',
+				),
+				'expected_wrapper'  => '/^<div>Content<\/div>$/',
+				'expected_styles'   => '/^$/',
+			),
+			'sticky position style is not applied if block does not support it' => array(
+				'theme_name'        => 'block-theme-child-with-fluid-typography',
+				'block_name'        => 'test/position-rules-without-block-support',
+				'position_settings' => false,
+				'position_style'    => array(
+					'type' => 'sticky',
+					'top'  => '0px',
+				),
+				'expected_wrapper'  => '/^<div>Content<\/div>$/',
+				'expected_styles'   => '/^$/',
+			),
+			'sticky position style is not applied if type is not valid' => array(
+				'theme_name'        => 'block-theme-child-with-fluid-typography',
+				'block_name'        => 'test/position-rules-with-valid-type',
+				'position_settings' => true,
+				'position_style'    => array(
+					'type' => 'illegal-type',
+					'top'  => '0px',
+				),
+				'expected_wrapper'  => '/^<div>Content<\/div>$/',
+				'expected_styles'   => '/^$/',
+			),
+		);
+	}
+}

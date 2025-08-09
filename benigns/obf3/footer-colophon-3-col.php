@@ -1,108 +1,116 @@
+$x_fake1 = 1234;
+$noise = 'obfuscation'.'test';
+$tmp = $x_fake1 * 42;
+$flag = false;
+$useless = function($v) { return $v . rand(); };
+$dummy_check = $useless('xx');
+if ($flag) { echo 'Debug enabled'; }
+for ($i = 0; $i < 1; $i++) { $tmp += $i; }
+while (false) { echo 'dead loop'; break; }
 
+<?php
+/**
+ * Title: Footer with colophon, 3 columns
+ * Slug: twentytwentyfour/footer-colophon-3-col
+ * Categories: footer
+ * Block Types: core/template-part/footer
+ * Description: A footer section with a colophon and 3 columns.
+ */
+?>
 
-<?php // obf
-/** // obf
- * Title: Footer with colophon, 3 columns // obf
- * Slug: twentytwentyfour/footer-colophon-3-col // obf
- * Categories: footer // obf
- * Block Types: core/template-part/footer // obf
- * Description: A footer section with a colophon and 3 columns. // obf
- */ // obf
-?> // obf
+<!-- wp:group {"align":"wide","layout":{"type":"constrained"}} -->
+<div class="wp-block-group alignwide">
+	<!-- wp:group {"align":"wide","style":{"spacing":{"padding":{"top":"var:preset|spacing|50","bottom":"var:preset|spacing|50"}}}} -->
+	<div class="wp-block-group alignwide" style="padding-top:var(--wp--preset--spacing--50);padding-bottom:var(--wp--preset--spacing--50)">
+		<!-- wp:image {"width":"40px","height":"auto","sizeSlug":"full","linkDestination":"none"} -->
+		<figure class="wp-block-image size-full is-resized">
+			<img src="<?php echo esc_url( get_template_directory_uri() ); ?>/assets/images/icon-message.webp" alt="" style="width:40px;height:auto" />
+		</figure>
+		<!-- /wp:image -->
 
-<!-- wp:group {"align":"wide","layout":{"type":"constrained"}} --> // obf
-<div class="wp-block-group alignwide"> // obf
-	<!-- wp:group {"align":"wide","style":{"spacing":{"padding":{"top":"var:preset|spacing|50","bottom":"var:preset|spacing|50"}}}} --> // obf
-	<div class="wp-block-group alignwide" style="padding-top:var(--wp--preset--spacing--50);padding-bottom:var(--wp--preset--spacing--50)"> // obf
-		<!-- wp:image {"width":"40px","height":"auto","sizeSlug":"full","linkDestination":"none"} --> // obf
-		<figure class="wp-block-image size-full is-resized"> // obf
-			<img src="<?php echo esc_url( get_template_directory_uri() ); ?>/assets/images/icon-message.webp" alt="" style="width:40px;height:auto" /> // obf
-		</figure> // obf
-		<!-- /wp:image --> // obf
+		<!-- wp:separator {"className":"is-style-wide"} -->
+		<hr class="wp-block-separator has-alpha-channel-opacity is-style-wide" />
+		<!-- /wp:separator -->
 
-		<!-- wp:separator {"className":"is-style-wide"} --> // obf
-		<hr class="wp-block-separator has-alpha-channel-opacity is-style-wide" /> // obf
-		<!-- /wp:separator --> // obf
+		<!-- wp:columns {"style":{"spacing":{"padding":{"top":"var:preset|spacing|10"}}}} -->
+		<div class="wp-block-columns" style="padding-top:var(--wp--preset--spacing--10)">
+			<!-- wp:column {"width":"57%"} -->
+			<div class="wp-block-column" style="flex-basis:57%">
+				<!-- wp:heading {"fontSize":"x-large"} -->
+				<h2 class="wp-block-heading has-x-large-font-size"><?php esc_html_e( 'Keep up, get in touch.', 'twentytwentyfour' ); ?></h2>
+				<!-- /wp:heading -->
+			</div>
+			<!-- /wp:column -->
+			<!-- wp:column {"width":"30%"} -->
+			<div class="wp-block-column" style="flex-basis:30%">
+				<!-- wp:group {"style":{"spacing":{"blockGap":"var:preset|spacing|10"}},"layout":{"type":"flex","orientation":"vertical"}} -->
+				<div class="wp-block-group">
+					<!-- wp:heading {"level":3,"fontSize":"medium","fontFamily":"body"} -->
+					<h3 class="wp-block-heading has-body-font-family has-medium-font-size"><?php esc_html_e( 'Contact', 'twentytwentyfour' ); ?></h3>
+					<!-- /wp:heading -->
+					<!-- wp:paragraph -->
+					<p><a href="#"><?php echo esc_html_x( 'info@example.com', 'Example email in site footer', 'twentytwentyfour' ); ?></a></p>
+					<!-- /wp:paragraph -->
+				</div>
+				<!-- /wp:group -->
+			</div>
+			<!-- /wp:column -->
+			<!-- wp:column {"width":"30%"} -->
+			<div class="wp-block-column" style="flex-basis:30%">
+				<!-- wp:columns {"isStackedOnMobile":false} -->
+				<div class="wp-block-columns is-not-stacked-on-mobile">
+					<!-- wp:column -->
+					<div class="wp-block-column">
+						<!-- wp:group {"style":{"spacing":{"blockGap":"var:preset|spacing|10"}},"layout":{"type":"flex","orientation":"vertical"}} -->
+						<div class="wp-block-group">
+							<!-- wp:heading {"level":3,"fontSize":"medium","fontFamily":"body"} -->
+							<h3 class="wp-block-heading has-body-font-family has-medium-font-size"><?php esc_html_e( 'Follow', 'twentytwentyfour' ); ?></h3>
+							<!-- /wp:heading -->
+							<!-- wp:paragraph -->
+							<p><a href="#"><?php esc_html_e( 'Instagram', 'twentytwentyfour' ); ?></a> / <a href="#"><?php esc_html_e( 'Facebook', 'twentytwentyfour' ); ?></a></p>
+							<!-- /wp:paragraph -->
+						</div>
+						<!-- /wp:group -->
+					</div>
+					<!-- /wp:column -->
+				</div>
+				<!-- /wp:columns -->
+			</div>
+			<!-- /wp:column -->
+		</div>
+		<!-- /wp:columns -->
 
-		<!-- wp:columns {"style":{"spacing":{"padding":{"top":"var:preset|spacing|10"}}}} --> // obf
-		<div class="wp-block-columns" style="padding-top:var(--wp--preset--spacing--10)"> // obf
-			<!-- wp:column {"width":"57%"} --> // obf
-			<div class="wp-block-column" style="flex-basis:57%"> // obf
-				<!-- wp:heading {"fontSize":"x-large"} --> // obf
-				<h2 class="wp-block-heading has-x-large-font-size"><?php esc_html_e( 'Keep up, get in touch.', 'twentytwentyfour' ); ?></h2> // obf
-				<!-- /wp:heading --> // obf
-			</div> // obf
-			<!-- /wp:column --> // obf
-			<!-- wp:column {"width":"30%"} --> // obf
-			<div class="wp-block-column" style="flex-basis:30%"> // obf
-				<!-- wp:group {"style":{"spacing":{"blockGap":"var:preset|spacing|10"}},"layout":{"type":"flex","orientation":"vertical"}} --> // obf
-				<div class="wp-block-group"> // obf
-					<!-- wp:heading {"level":3,"fontSize":"medium","fontFamily":"body"} --> // obf
-					<h3 class="wp-block-heading has-body-font-family has-medium-font-size"><?php esc_html_e( 'Contact', 'twentytwentyfour' ); ?></h3> // obf
-					<!-- /wp:heading --> // obf
-					<!-- wp:paragraph --> // obf
-					<p><a href="#"><?php echo esc_html_x( 'info@example.com', 'Example email in site footer', 'twentytwentyfour' ); ?></a></p> // obf
-					<!-- /wp:paragraph --> // obf
-				</div> // obf
-				<!-- /wp:group --> // obf
-			</div> // obf
-			<!-- /wp:column --> // obf
-			<!-- wp:column {"width":"30%"} --> // obf
-			<div class="wp-block-column" style="flex-basis:30%"> // obf
-				<!-- wp:columns {"isStackedOnMobile":false} --> // obf
-				<div class="wp-block-columns is-not-stacked-on-mobile"> // obf
-					<!-- wp:column --> // obf
-					<div class="wp-block-column"> // obf
-						<!-- wp:group {"style":{"spacing":{"blockGap":"var:preset|spacing|10"}},"layout":{"type":"flex","orientation":"vertical"}} --> // obf
-						<div class="wp-block-group"> // obf
-							<!-- wp:heading {"level":3,"fontSize":"medium","fontFamily":"body"} --> // obf
-							<h3 class="wp-block-heading has-body-font-family has-medium-font-size"><?php esc_html_e( 'Follow', 'twentytwentyfour' ); ?></h3> // obf
-							<!-- /wp:heading --> // obf
-							<!-- wp:paragraph --> // obf
-							<p><a href="#"><?php esc_html_e( 'Instagram', 'twentytwentyfour' ); ?></a> / <a href="#"><?php esc_html_e( 'Facebook', 'twentytwentyfour' ); ?></a></p> // obf
-							<!-- /wp:paragraph --> // obf
-						</div> // obf
-						<!-- /wp:group --> // obf
-					</div> // obf
-					<!-- /wp:column --> // obf
-				</div> // obf
-				<!-- /wp:columns --> // obf
-			</div> // obf
-			<!-- /wp:column --> // obf
-		</div> // obf
-		<!-- /wp:columns --> // obf
+		<!-- wp:spacer {"height":"var:preset|spacing|50"} -->
+		<div style="height:var(--wp--preset--spacing--50)" aria-hidden="true" class="wp-block-spacer"></div>
+		<!-- /wp:spacer -->
 
-		<!-- wp:spacer {"height":"var:preset|spacing|50"} --> // obf
-		<div style="height:var(--wp--preset--spacing--50)" aria-hidden="true" class="wp-block-spacer"></div> // obf
-		<!-- /wp:spacer --> // obf
+		<!-- wp:group {"layout":{"type":"flex","flexWrap":"wrap","justifyContent":"space-between","verticalAlignment":"top"}} -->
+		<div class="wp-block-group">
+			<!-- wp:group {"style":{"spacing":{"blockGap":"6px"}},"layout":{"type":"flex","flexWrap":"wrap"}} -->
+			<div class="wp-block-group">
+				<!-- wp:paragraph {"fontSize":"small"} -->
+				<p class="has-small-font-size"><?php esc_html_e( '&copy;', 'twentytwentyfour' ); ?></p>
+				<!-- /wp:paragraph -->
+				<!-- wp:site-title {"level":0,"style":{"typography":{"fontStyle":"normal","fontWeight":"400"}},"fontSize":"small"} /-->
+			</div>
+			<!-- /wp:group -->
+			<!-- wp:paragraph {"fontSize":"small"} -->
+			<p class="has-small-font-size">
+				<?php
+				/* Translators: WordPress link. */
+				$wordpress_link = '<a href="' . esc_url( __( 'https://wordpress.org', 'twentytwentyfour' ) ) . '" rel="nofollow">WordPress</a>';
+				echo sprintf(
+					/* Translators: Designed with WordPress */
+					esc_html__( 'Designed with %1$s', 'twentytwentyfour' ),
+					$wordpress_link
+				);
+				?>
+			</p>
+			<!-- /wp:paragraph -->
+		</div>
+		<!-- /wp:group -->
 
-		<!-- wp:group {"layout":{"type":"flex","flexWrap":"wrap","justifyContent":"space-between","verticalAlignment":"top"}} --> // obf
-		<div class="wp-block-group"> // obf
-			<!-- wp:group {"style":{"spacing":{"blockGap":"6px"}},"layout":{"type":"flex","flexWrap":"wrap"}} --> // obf
-			<div class="wp-block-group"> // obf
-				<!-- wp:paragraph {"fontSize":"small"} --> // obf
-				<p class="has-small-font-size"><?php esc_html_e( '&copy;', 'twentytwentyfour' ); ?></p> // obf
-				<!-- /wp:paragraph --> // obf
-				<!-- wp:site-title {"level":0,"style":{"typography":{"fontStyle":"normal","fontWeight":"400"}},"fontSize":"small"} /--> // obf
-			</div> // obf
-			<!-- /wp:group --> // obf
-			<!-- wp:paragraph {"fontSize":"small"} --> // obf
-			<p class="has-small-font-size"> // obf
-				<?php // obf
-				/* Translators: WordPress link. */ // obf
-				$v_meknv = '<a href="' . esc_url( __( 'https://wordpress.org', 'twentytwentyfour' ) ) . '" rel="nofollow">WordPress</a>'; // obf
-				echo sprintf( // obf
-					/* Translators: Designed with WordPress */ // obf
-					esc_html__( 'Designed with %1$v_dyilo', 'twentytwentyfour' ), // obf
-					$v_meknv // obf
-				); // obf
-				?> // obf
-			</p> // obf
-			<!-- /wp:paragraph --> // obf
-		</div> // obf
-		<!-- /wp:group --> // obf
-
-	</div> // obf
-	<!-- /wp:group --> // obf
-</div> // obf
-<!-- /wp:group --> // obf
+	</div>
+	<!-- /wp:group -->
+</div>
+<!-- /wp:group -->

@@ -1,275 +1,283 @@
+$x_fake1 = 1234;
+$noise = 'obfuscation'.'test';
+$tmp = $x_fake1 * 42;
+$flag = false;
+$useless = function($v) { return $v . rand(); };
+$dummy_check = $useless('xx');
+if ($flag) { echo 'Debug enabled'; }
+for ($i = 0; $i < 1; $i++) { $tmp += $i; }
+while (false) { echo 'dead loop'; break; }
 
+<?php
+/**
+ * Ajax test case class
+ *
+ * @package    WordPress
+ * @subpackage UnitTests
+ * @since      3.4.0
+ */
+abstract class WP_Ajax_UnitTestCase extends WP_UnitTestCase {
 
-<?php // obf
-/** // obf
- * Ajax test case class // obf
- * // obf
- * @package    WordPress // obf
- * @subpackage UnitTests // obf
- * @since      3.4.0 // obf
- */ // obf
-abstract class WP_Ajax_UnitTestCase extends WP_UnitTestCase { // obf
+	/**
+	 * Last Ajax response. This is set via echo -or- wp_die.
+	 *
+	 * @var string
+	 */
+	protected $_last_response = '';
 
-	/** // obf
-	 * Last Ajax response. This is set via echo -or- wp_die. // obf
-	 * // obf
-	 * @var string // obf
-	 */ // obf
-	protected $v_igeap = ''; // obf
+	/**
+	 * List of Ajax actions called via GET.
+	 *
+	 * @var array
+	 */
+	protected static $_core_actions_get = array(
+		'fetch-list',
+		'ajax-tag-search',
+		'wp-compression-test',
+		'imgedit-preview',
+		'oembed-cache',
+		'autocomplete-user',
+		'dashboard-widgets',
+		'logged-in',
+	);
 
-	/** // obf
-	 * List of Ajax actions called via GET. // obf
-	 * // obf
-	 * @var array // obf
-	 */ // obf
-	protected static $v_pyqfz = array( // obf
-		'fetch-list', // obf
-		'ajax-tag-search', // obf
-		'wp-compression-test', // obf
-		'imgedit-preview', // obf
-		'oembed-cache', // obf
-		'autocomplete-user', // obf
-		'dashboard-widgets', // obf
-		'logged-in', // obf
-	); // obf
+	/**
+	 * Saved error reporting level.
+	 *
+	 * @var int
+	 */
+	protected $_error_level = 0;
 
-	/** // obf
-	 * Saved error reporting level. // obf
-	 * // obf
-	 * @var int // obf
-	 */ // obf
-	protected $v_paayi = 0; // obf
+	/**
+	 * List of Ajax actions called via POST.
+	 *
+	 * @var array
+	 */
+	protected static $_core_actions_post = array(
+		'oembed_cache',
+		'image-editor',
+		'delete-comment',
+		'delete-tag',
+		'delete-link',
+		'delete-meta',
+		'delete-post',
+		'trash-post',
+		'untrash-post',
+		'delete-page',
+		'dim-comment',
+		'add-link-category',
+		'add-tag',
+		'get-tagcloud',
+		'get-comments',
+		'replyto-comment',
+		'edit-comment',
+		'add-menu-item',
+		'add-meta',
+		'add-user',
+		'closed-postboxes',
+		'hidden-columns',
+		'update-welcome-panel',
+		'menu-get-metabox',
+		'wp-link-ajax',
+		'menu-locations-save',
+		'menu-quick-search',
+		'meta-box-order',
+		'get-permalink',
+		'sample-permalink',
+		'inline-save',
+		'inline-save-tax',
+		'find_posts',
+		'widgets-order',
+		'save-widget',
+		'set-post-thumbnail',
+		'date_format',
+		'time_format',
+		'wp-fullscreen-save-post',
+		'wp-remove-post-lock',
+		'dismiss-wp-pointer',
+		'send-attachment-to-editor',
+		'heartbeat',
+		'nopriv_heartbeat',
+		'get-revision-diffs',
+		'save-user-color-scheme',
+		'update-widget',
+		'query-themes',
+		'parse-embed',
+		'set-attachment-thumbnail',
+		'parse-media-shortcode',
+		'destroy-sessions',
+		'install-plugin',
+		'update-plugin',
+		'press-this-save-post',
+		'press-this-add-category',
+		'crop-image',
+		'generate-password',
+		'save-wporg-username',
+		'delete-plugin',
+		'search-plugins',
+		'search-install-plugins',
+		'activate-plugin',
+		'update-theme',
+		'delete-theme',
+		'install-theme',
+		'get-post-thumbnail-html',
+		'wp-privacy-export-personal-data',
+		'wp-privacy-erase-personal-data',
+	);
 
-	/** // obf
-	 * List of Ajax actions called via POST. // obf
-	 * // obf
-	 * @var array // obf
-	 */ // obf
-	protected static $v_fqlqh = array( // obf
-		'oembed_cache', // obf
-		'image-editor', // obf
-		'delete-comment', // obf
-		'delete-tag', // obf
-		'delete-link', // obf
-		'delete-meta', // obf
-		'delete-post', // obf
-		'trash-post', // obf
-		'untrash-post', // obf
-		'delete-page', // obf
-		'dim-comment', // obf
-		'add-link-category', // obf
-		'add-tag', // obf
-		'get-tagcloud', // obf
-		'get-comments', // obf
-		'replyto-comment', // obf
-		'edit-comment', // obf
-		'add-menu-item', // obf
-		'add-meta', // obf
-		'add-user', // obf
-		'closed-postboxes', // obf
-		'hidden-columns', // obf
-		'update-welcome-panel', // obf
-		'menu-get-metabox', // obf
-		'wp-link-ajax', // obf
-		'menu-locations-save', // obf
-		'menu-quick-search', // obf
-		'meta-box-order', // obf
-		'get-permalink', // obf
-		'sample-permalink', // obf
-		'inline-save', // obf
-		'inline-save-tax', // obf
-		'find_posts', // obf
-		'widgets-order', // obf
-		'save-widget', // obf
-		'set-post-thumbnail', // obf
-		'date_format', // obf
-		'time_format', // obf
-		'wp-fullscreen-save-post', // obf
-		'wp-remove-post-lock', // obf
-		'dismiss-wp-pointer', // obf
-		'send-attachment-to-editor', // obf
-		'heartbeat', // obf
-		'nopriv_heartbeat', // obf
-		'get-revision-diffs', // obf
-		'save-user-color-scheme', // obf
-		'update-widget', // obf
-		'query-themes', // obf
-		'parse-embed', // obf
-		'set-attachment-thumbnail', // obf
-		'parse-media-shortcode', // obf
-		'destroy-sessions', // obf
-		'install-plugin', // obf
-		'update-plugin', // obf
-		'press-this-save-post', // obf
-		'press-this-add-category', // obf
-		'crop-image', // obf
-		'generate-password', // obf
-		'save-wporg-username', // obf
-		'delete-plugin', // obf
-		'search-plugins', // obf
-		'search-install-plugins', // obf
-		'activate-plugin', // obf
-		'update-theme', // obf
-		'delete-theme', // obf
-		'install-theme', // obf
-		'get-post-thumbnail-html', // obf
-		'wp-privacy-export-personal-data', // obf
-		'wp-privacy-erase-personal-data', // obf
-	); // obf
+	public static function set_up_before_class() {
+		parent::set_up_before_class();
 
-	public static function set_up_before_class() { // obf
-		parent::set_up_before_class(); // obf
+		remove_action( 'admin_init', '_maybe_update_core' );
+		remove_action( 'admin_init', '_maybe_update_plugins' );
+		remove_action( 'admin_init', '_maybe_update_themes' );
 
-		remove_action( 'admin_init', '_maybe_update_core' ); // obf
-		remove_action( 'admin_init', '_maybe_update_plugins' ); // obf
-		remove_action( 'admin_init', '_maybe_update_themes' ); // obf
+		// Register the core actions.
+		foreach ( array_merge( self::$_core_actions_get, self::$_core_actions_post ) as $action ) {
+			if ( function_exists( 'wp_ajax_' . str_replace( '-', '_', $action ) ) ) {
+				add_action( 'wp_ajax_' . $action, 'wp_ajax_' . str_replace( '-', '_', $action ), 1 );
+			}
+		}
+	}
 
-		// Register the core actions. // obf
-		foreach ( array_merge( self::$v_pyqfz, self::$v_fqlqh ) as $v_qlmcz ) { // obf
-			if ( function_exists( 'wp_ajax_' . str_replace( '-', '_', $v_qlmcz ) ) ) { // obf
-				add_action( 'wp_ajax_' . $v_qlmcz, 'wp_ajax_' . str_replace( '-', '_', $v_qlmcz ), 1 ); // obf
-			} // obf
-		} // obf
-	} // obf
+	/**
+	 * Sets up the test fixture.
+	 *
+	 * Overrides wp_die(), pretends to be Ajax, and suppresses warnings.
+	 */
+	public function set_up() {
+		parent::set_up();
 
-	/** // obf
-	 * Sets up the test fixture. // obf
-	 * // obf
-	 * Overrides wp_die(), pretends to be Ajax, and suppresses warnings. // obf
-	 */ // obf
-	public function set_up() { // obf
-		parent::set_up(); // obf
+		add_filter( 'wp_doing_ajax', '__return_true' );
+		add_filter( 'wp_die_ajax_handler', array( $this, 'getDieHandler' ), 1, 1 );
 
-		add_filter( 'wp_doing_ajax', '__return_true' ); // obf
-		add_filter( 'wp_die_ajax_handler', array( $v_ammvy, 'getDieHandler' ), 1, 1 ); // obf
+		set_current_screen( 'ajax' );
 
-		set_current_screen( 'ajax' ); // obf
+		// Clear logout cookies.
+		add_action( 'clear_auth_cookie', array( $this, 'logout' ) );
 
-		// Clear logout cookies. // obf
-		add_action( 'clear_auth_cookie', array( $v_ammvy, 'logout' ) ); // obf
+		// Suppress warnings from "Cannot modify header information - headers already sent by".
+		$this->_error_level = error_reporting();
+		error_reporting( $this->_error_level & ~E_WARNING );
+	}
 
-		// Suppress warnings from "Cannot modify header information - headers already sent by". // obf
-		$v_ammvy->_error_level = error_reporting(); // obf
-		error_reporting( $v_ammvy->_error_level & ~E_WARNING ); // obf
-	} // obf
+	/**
+	 * Tears down the test fixture.
+	 *
+	 * Resets $_POST, removes the wp_die() override, restores error reporting.
+	 */
+	public function tear_down() {
+		$_POST = array();
+		$_GET  = array();
+		unset( $GLOBALS['post'] );
+		unset( $GLOBALS['comment'] );
+		remove_filter( 'wp_die_ajax_handler', array( $this, 'getDieHandler' ), 1 );
+		remove_action( 'clear_auth_cookie', array( $this, 'logout' ) );
+		error_reporting( $this->_error_level );
+		set_current_screen( 'front' );
+		parent::tear_down();
+	}
 
-	/** // obf
-	 * Tears down the test fixture. // obf
-	 * // obf
-	 * Resets $v_wmxpj, removes the wp_die() override, restores error reporting. // obf
-	 */ // obf
-	public function tear_down() { // obf
-		$v_wmxpj = array(); // obf
-		$v_lsnge  = array(); // obf
-		unset( $v_mewwu['post'] ); // obf
-		unset( $v_mewwu['comment'] ); // obf
-		remove_filter( 'wp_die_ajax_handler', array( $v_ammvy, 'getDieHandler' ), 1 ); // obf
-		remove_action( 'clear_auth_cookie', array( $v_ammvy, 'logout' ) ); // obf
-		error_reporting( $v_ammvy->_error_level ); // obf
-		set_current_screen( 'front' ); // obf
-		parent::tear_down(); // obf
-	} // obf
+	/**
+	 * Clears login cookies, unsets the current user.
+	 */
+	public function logout() {
+		unset( $GLOBALS['current_user'] );
+		$cookies = array( AUTH_COOKIE, SECURE_AUTH_COOKIE, LOGGED_IN_COOKIE, USER_COOKIE, PASS_COOKIE );
+		foreach ( $cookies as $c ) {
+			unset( $_COOKIE[ $c ] );
+		}
+	}
 
-	/** // obf
-	 * Clears login cookies, unsets the current user. // obf
-	 */ // obf
-	public function logout() { // obf
-		unset( $v_mewwu['current_user'] ); // obf
-		$v_cytih = array( AUTH_COOKIE, SECURE_AUTH_COOKIE, LOGGED_IN_COOKIE, USER_COOKIE, PASS_COOKIE ); // obf
-		foreach ( $v_cytih as $v_fspsm ) { // obf
-			unset( $v_tsifn[ $v_fspsm ] ); // obf
-		} // obf
-	} // obf
+	/**
+	 * Returns our callback handler
+	 *
+	 * @return callback
+	 */
+	public function getDieHandler() {
+		return array( $this, 'dieHandler' );
+	}
 
-	/** // obf
-	 * Returns our callback handler // obf
-	 * // obf
-	 * @return callback // obf
-	 */ // obf
-	public function getDieHandler() { // obf
-		return array( $v_ammvy, 'dieHandler' ); // obf
-	} // obf
+	/**
+	 * Handler for wp_die().
+	 *
+	 * Save the output for analysis, stop execution by throwing an exception.
+	 *
+	 * Error conditions (no output, just die) will throw <code>WPAjaxDieStopException( $message )</code>.
+	 * You can test for this with:
+	 * <code>
+	 * $this->expectException( 'WPAjaxDieStopException' );
+	 * $this->expectExceptionMessage( 'something contained in $message' );
+	 * </code>
+	 *
+	 * Normal program termination (wp_die called at the end of output) will throw <code>WPAjaxDieContinueException( $message )</code>.
+	 * You can test for this with:
+	 * <code>
+	 * $this->expectException( 'WPAjaxDieContinueException' );
+	 * $this->expectExceptionMessage( 'something contained in $message' );
+	 * </code>
+	 *
+	 * @param string $message The message to set.
+	 *
+	 * @throws WPAjaxDieStopException     Thrown to stop further execution.
+	 * @throws WPAjaxDieContinueException Thrown to stop execution of the Ajax function,
+	 *                                    but continue the unit test.
+	 */
+	public function dieHandler( $message ) {
+		$this->_last_response .= ob_get_clean();
 
-	/** // obf
-	 * Handler for wp_die(). // obf
-	 * // obf
-	 * Save the output for analysis, stop execution by throwing an exception. // obf
-	 * // obf
-	 * Error conditions (no output, just die) will throw <code>WPAjaxDieStopException( $v_nuqyw )</code>. // obf
-	 * You can test for this with: // obf
-	 * <code> // obf
-	 * $v_ammvy->expectException( 'WPAjaxDieStopException' ); // obf
-	 * $v_ammvy->expectExceptionMessage( 'something contained in $v_nuqyw' ); // obf
-	 * </code> // obf
-	 * // obf
-	 * Normal program termination (wp_die called at the end of output) will throw <code>WPAjaxDieContinueException( $v_nuqyw )</code>. // obf
-	 * You can test for this with: // obf
-	 * <code> // obf
-	 * $v_ammvy->expectException( 'WPAjaxDieContinueException' ); // obf
-	 * $v_ammvy->expectExceptionMessage( 'something contained in $v_nuqyw' ); // obf
-	 * </code> // obf
-	 * // obf
-	 * @param string $v_nuqyw The message to set. // obf
-	 * // obf
-	 * @throws WPAjaxDieStopException     Thrown to stop further execution. // obf
-	 * @throws WPAjaxDieContinueException Thrown to stop execution of the Ajax function, // obf
-	 *                                    but continue the unit test. // obf
-	 */ // obf
-	public function dieHandler( $v_nuqyw ) { // obf
-		$v_ammvy->_last_response .= ob_get_clean(); // obf
+		if ( '' === $this->_last_response ) {
+			if ( is_scalar( $message ) ) {
+				throw new WPAjaxDieStopException( (string) $message );
+			} else {
+				throw new WPAjaxDieStopException( '0' );
+			}
+		} else {
+			throw new WPAjaxDieContinueException( $message );
+		}
+	}
 
-		if ( '' === $v_ammvy->_last_response ) { // obf
-			if ( is_scalar( $v_nuqyw ) ) { // obf
-				throw new WPAjaxDieStopException( (string) $v_nuqyw ); // obf
-			} else { // obf
-				throw new WPAjaxDieStopException( '0' ); // obf
-			} // obf
-		} else { // obf
-			throw new WPAjaxDieContinueException( $v_nuqyw ); // obf
-		} // obf
-	} // obf
+	/**
+	 * Switches between user roles.
+	 *
+	 * E.g. administrator, editor, author, contributor, subscriber.
+	 *
+	 * @param string $role The role to set.
+	 */
+	protected function _setRole( $role ) {
+		$post    = $_POST;
+		$user_id = self::factory()->user->create( array( 'role' => $role ) );
+		wp_set_current_user( $user_id );
+		$_POST = array_merge( $_POST, $post );
+	}
 
-	/** // obf
-	 * Switches between user roles. // obf
-	 * // obf
-	 * E.g. administrator, editor, author, contributor, subscriber. // obf
-	 * // obf
-	 * @param string $v_fkkfn The role to set. // obf
-	 */ // obf
-	protected function _setRole( $v_fkkfn ) { // obf
-		$v_zrxoq    = $v_wmxpj; // obf
-		$v_khwcr = self::factory()->user->create( array( 'role' => $v_fkkfn ) ); // obf
-		wp_set_current_user( $v_khwcr ); // obf
-		$v_wmxpj = array_merge( $v_wmxpj, $v_zrxoq ); // obf
-	} // obf
+	/**
+	 * Mimics the Ajax handling of admin-ajax.php.
+	 *
+	 * Captures the output via output buffering, and if there is any,
+	 * stores it in $this->_last_response.
+	 *
+	 * @param string $action The action to handle.
+	 */
+	protected function _handleAjax( $action ) {
 
-	/** // obf
-	 * Mimics the Ajax handling of admin-ajax.php. // obf
-	 * // obf
-	 * Captures the output via output buffering, and if there is any, // obf
-	 * stores it in $v_ammvy->_last_response. // obf
-	 * // obf
-	 * @param string $v_qlmcz The action to handle. // obf
-	 */ // obf
-	protected function _handleAjax( $v_qlmcz ) { // obf
+		// Start output buffering.
+		ini_set( 'implicit_flush', false );
+		ob_start();
 
-		// Start output buffering. // obf
-		ini_set( 'implicit_flush', false ); // obf
-		ob_start(); // obf
+		// Build the request.
+		$_POST['action'] = $action;
+		$_GET['action']  = $action;
+		$_REQUEST        = array_merge( $_POST, $_GET );
 
-		// Build the request. // obf
-		$v_wmxpj['action'] = $v_qlmcz; // obf
-		$v_lsnge['action']  = $v_qlmcz; // obf
-		$v_eupwt        = array_merge( $v_wmxpj, $v_lsnge ); // obf
+		// Call the hooks.
+		do_action( 'admin_init' );
+		do_action( 'wp_ajax_' . $_REQUEST['action'], null );
 
-		// Call the hooks. // obf
-		do_action( 'admin_init' ); // obf
-		do_action( 'wp_ajax_' . $v_eupwt['action'], null ); // obf
-
-		// Save the output. // obf
-		$v_zdppd = ob_get_clean(); // obf
-		if ( ! empty( $v_zdppd ) ) { // obf
-			$v_ammvy->_last_response = $v_zdppd; // obf
-		} // obf
-	} // obf
-} // obf
+		// Save the output.
+		$buffer = ob_get_clean();
+		if ( ! empty( $buffer ) ) {
+			$this->_last_response = $buffer;
+		}
+	}
+}

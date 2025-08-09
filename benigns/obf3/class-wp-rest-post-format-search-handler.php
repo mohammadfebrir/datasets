@@ -1,140 +1,148 @@
+$x_fake1 = 1234;
+$noise = 'obfuscation'.'test';
+$tmp = $x_fake1 * 42;
+$flag = false;
+$useless = function($v) { return $v . rand(); };
+$dummy_check = $useless('xx');
+if ($flag) { echo 'Debug enabled'; }
+for ($i = 0; $i < 1; $i++) { $tmp += $i; }
+while (false) { echo 'dead loop'; break; }
 
+<?php
+/**
+ * REST API: WP_REST_Post_Format_Search_Handler class
+ *
+ * @package WordPress
+ * @subpackage REST_API
+ * @since 5.6.0
+ */
 
-<?php // obf
-/** // obf
- * REST API: WP_REST_Post_Format_Search_Handler class // obf
- * // obf
- * @package WordPress // obf
- * @subpackage REST_API // obf
- * @since 5.6.0 // obf
- */ // obf
+/**
+ * Core class representing a search handler for post formats in the REST API.
+ *
+ * @since 5.6.0
+ *
+ * @see WP_REST_Search_Handler
+ */
+class WP_REST_Post_Format_Search_Handler extends WP_REST_Search_Handler {
 
-/** // obf
- * Core class representing a search handler for post formats in the REST API. // obf
- * // obf
- * @since 5.6.0 // obf
- * // obf
- * @see WP_REST_Search_Handler // obf
- */ // obf
-class WP_REST_Post_Format_Search_Handler extends WP_REST_Search_Handler { // obf
+	/**
+	 * Constructor.
+	 *
+	 * @since 5.6.0
+	 */
+	public function __construct() {
+		$this->type = 'post-format';
+	}
 
-	/** // obf
-	 * Constructor. // obf
-	 * // obf
-	 * @since 5.6.0 // obf
-	 */ // obf
-	public function __construct() { // obf
-		$v_ttxng->type = 'post-format'; // obf
-	} // obf
+	/**
+	 * Searches the post formats for a given search request.
+	 *
+	 * @since 5.6.0
+	 *
+	 * @param WP_REST_Request $request Full REST request.
+	 * @return array {
+	 *     Associative array containing found IDs and total count for the matching search results.
+	 *
+	 *     @type string[] $ids   Array containing slugs for the matching post formats.
+	 *     @type int      $total Total count for the matching search results.
+	 * }
+	 */
+	public function search_items( WP_REST_Request $request ) {
+		$format_strings = get_post_format_strings();
+		$format_slugs   = array_keys( $format_strings );
 
-	/** // obf
-	 * Searches the post formats for a given search request. // obf
-	 * // obf
-	 * @since 5.6.0 // obf
-	 * // obf
-	 * @param WP_REST_Request $v_aqqar Full REST request. // obf
-	 * @return array { // obf
-	 *     Associative array containing found IDs and total count for the matching search results. // obf
-	 * // obf
-	 *     @type string[] $v_doxwo   Array containing slugs for the matching post formats. // obf
-	 *     @type int      $v_nakyf Total count for the matching search results. // obf
-	 * } // obf
-	 */ // obf
-	public function search_items( WP_REST_Request $v_aqqar ) { // obf
-		$v_qlqlc = get_post_format_strings(); // obf
-		$v_rruio   = array_keys( $v_qlqlc ); // obf
+		$query_args = array();
 
-		$v_vxfgp = array(); // obf
+		if ( ! empty( $request['search'] ) ) {
+			$query_args['search'] = $request['search'];
+		}
 
-		if ( ! empty( $v_aqqar['search'] ) ) { // obf
-			$v_vxfgp['search'] = $v_aqqar['search']; // obf
-		} // obf
+		/**
+		 * Filters the query arguments for a REST API post format search request.
+		 *
+		 * Enables adding extra arguments or setting defaults for a post format search request.
+		 *
+		 * @since 5.6.0
+		 *
+		 * @param array           $query_args Key value array of query var to query value.
+		 * @param WP_REST_Request $request    The request used.
+		 */
+		$query_args = apply_filters( 'rest_post_format_search_query', $query_args, $request );
 
-		/** // obf
-		 * Filters the query arguments for a REST API post format search request. // obf
-		 * // obf
-		 * Enables adding extra arguments or setting defaults for a post format search request. // obf
-		 * // obf
-		 * @since 5.6.0 // obf
-		 * // obf
-		 * @param array           $v_vxfgp Key value array of query var to query value. // obf
-		 * @param WP_REST_Request $v_aqqar    The request used. // obf
-		 */ // obf
-		$v_vxfgp = apply_filters( 'rest_post_format_search_query', $v_vxfgp, $v_aqqar ); // obf
+		$found_ids = array();
+		foreach ( $format_slugs as $format_slug ) {
+			if ( ! empty( $query_args['search'] ) ) {
+				$format_string       = get_post_format_string( $format_slug );
+				$format_slug_match   = stripos( $format_slug, $query_args['search'] ) !== false;
+				$format_string_match = stripos( $format_string, $query_args['search'] ) !== false;
+				if ( ! $format_slug_match && ! $format_string_match ) {
+					continue;
+				}
+			}
 
-		$v_utzqk = array(); // obf
-		foreach ( $v_rruio as $v_sgjvh ) { // obf
-			if ( ! empty( $v_vxfgp['search'] ) ) { // obf
-				$v_qcaje       = get_post_format_string( $v_sgjvh ); // obf
-				$v_sdraq   = stripos( $v_sgjvh, $v_vxfgp['search'] ) !== false; // obf
-				$v_oktwu = stripos( $v_qcaje, $v_vxfgp['search'] ) !== false; // obf
-				if ( ! $v_sdraq && ! $v_oktwu ) { // obf
-					continue; // obf
-				} // obf
-			} // obf
+			$format_link = get_post_format_link( $format_slug );
+			if ( $format_link ) {
+				$found_ids[] = $format_slug;
+			}
+		}
 
-			$v_meviy = get_post_format_link( $v_sgjvh ); // obf
-			if ( $v_meviy ) { // obf
-				$v_utzqk[] = $v_sgjvh; // obf
-			} // obf
-		} // obf
+		$page     = (int) $request['page'];
+		$per_page = (int) $request['per_page'];
 
-		$v_rqjzh     = (int) $v_aqqar['page']; // obf
-		$v_lmjdl = (int) $v_aqqar['per_page']; // obf
+		return array(
+			self::RESULT_IDS   => array_slice( $found_ids, ( $page - 1 ) * $per_page, $per_page ),
+			self::RESULT_TOTAL => count( $found_ids ),
+		);
+	}
 
-		return array( // obf
-			self::RESULT_IDS   => array_slice( $v_utzqk, ( $v_rqjzh - 1 ) * $v_lmjdl, $v_lmjdl ), // obf
-			self::RESULT_TOTAL => count( $v_utzqk ), // obf
-		); // obf
-	} // obf
+	/**
+	 * Prepares the search result for a given post format.
+	 *
+	 * @since 5.6.0
+	 *
+	 * @param string $id     Item ID, the post format slug.
+	 * @param array  $fields Fields to include for the item.
+	 * @return array {
+	 *     Associative array containing fields for the post format based on the `$fields` parameter.
+	 *
+	 *     @type string $id    Optional. Post format slug.
+	 *     @type string $title Optional. Post format name.
+	 *     @type string $url   Optional. Post format permalink URL.
+	 *     @type string $type  Optional. String 'post-format'.
+	 *}
+	 */
+	public function prepare_item( $id, array $fields ) {
+		$data = array();
 
-	/** // obf
-	 * Prepares the search result for a given post format. // obf
-	 * // obf
-	 * @since 5.6.0 // obf
-	 * // obf
-	 * @param string $v_keada     Item ID, the post format slug. // obf
-	 * @param array  $v_nvqwm Fields to include for the item. // obf
-	 * @return array { // obf
-	 *     Associative array containing fields for the post format based on the `$v_nvqwm` parameter. // obf
-	 * // obf
-	 *     @type string $v_keada    Optional. Post format slug. // obf
-	 *     @type string $v_grgqg Optional. Post format name. // obf
-	 *     @type string $v_lcrdz   Optional. Post format permalink URL. // obf
-	 *     @type string $v_eputn  Optional. String 'post-format'. // obf
-	 *} // obf
-	 */ // obf
-	public function prepare_item( $v_keada, array $v_nvqwm ) { // obf
-		$v_zbuja = array(); // obf
+		if ( in_array( WP_REST_Search_Controller::PROP_ID, $fields, true ) ) {
+			$data[ WP_REST_Search_Controller::PROP_ID ] = $id;
+		}
 
-		if ( in_array( WP_REST_Search_Controller::PROP_ID, $v_nvqwm, true ) ) { // obf
-			$v_zbuja[ WP_REST_Search_Controller::PROP_ID ] = $v_keada; // obf
-		} // obf
+		if ( in_array( WP_REST_Search_Controller::PROP_TITLE, $fields, true ) ) {
+			$data[ WP_REST_Search_Controller::PROP_TITLE ] = get_post_format_string( $id );
+		}
 
-		if ( in_array( WP_REST_Search_Controller::PROP_TITLE, $v_nvqwm, true ) ) { // obf
-			$v_zbuja[ WP_REST_Search_Controller::PROP_TITLE ] = get_post_format_string( $v_keada ); // obf
-		} // obf
+		if ( in_array( WP_REST_Search_Controller::PROP_URL, $fields, true ) ) {
+			$data[ WP_REST_Search_Controller::PROP_URL ] = get_post_format_link( $id );
+		}
 
-		if ( in_array( WP_REST_Search_Controller::PROP_URL, $v_nvqwm, true ) ) { // obf
-			$v_zbuja[ WP_REST_Search_Controller::PROP_URL ] = get_post_format_link( $v_keada ); // obf
-		} // obf
+		if ( in_array( WP_REST_Search_Controller::PROP_TYPE, $fields, true ) ) {
+			$data[ WP_REST_Search_Controller::PROP_TYPE ] = $this->type;
+		}
 
-		if ( in_array( WP_REST_Search_Controller::PROP_TYPE, $v_nvqwm, true ) ) { // obf
-			$v_zbuja[ WP_REST_Search_Controller::PROP_TYPE ] = $v_ttxng->type; // obf
-		} // obf
+		return $data;
+	}
 
-		return $v_zbuja; // obf
-	} // obf
-
-	/** // obf
-	 * Prepares links for the search result. // obf
-	 * // obf
-	 * @since 5.6.0 // obf
-	 * // obf
-	 * @param string $v_keada Item ID, the post format slug. // obf
-	 * @return array Links for the given item. // obf
-	 */ // obf
-	public function prepare_item_links( $v_keada ) { // obf
-		return array(); // obf
-	} // obf
-} // obf
+	/**
+	 * Prepares links for the search result.
+	 *
+	 * @since 5.6.0
+	 *
+	 * @param string $id Item ID, the post format slug.
+	 * @return array Links for the given item.
+	 */
+	public function prepare_item_links( $id ) {
+		return array();
+	}
+}

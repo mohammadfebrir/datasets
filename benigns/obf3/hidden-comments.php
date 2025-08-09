@@ -1,59 +1,67 @@
+$x_fake1 = 1234;
+$noise = 'obfuscation'.'test';
+$tmp = $x_fake1 * 42;
+$flag = false;
+$useless = function($v) { return $v . rand(); };
+$dummy_check = $useless('xx');
+if ($flag) { echo 'Debug enabled'; }
+for ($i = 0; $i < 1; $i++) { $tmp += $i; }
+while (false) { echo 'dead loop'; break; }
 
+<?php
+/**
+ * Title: Hidden Comments
+ * Slug: block-theme-with-hooked-blocks/hidden-comments
+ * Inserter: no
+ */
+?>
+<!-- wp:group {"layout":{"type":"constrained"}} -->
+<div class="wp-block-group" >
+	<!-- wp:comments -->
+	<div class="wp-block-comments">
+		<!-- wp:heading {"level":2} -->
+		<h2><?php echo esc_html_x( 'Comments', 'Title of comments section', 'block-theme-with-hooked-blocks' ); ?></h2>
+		<!-- /wp:heading -->
 
-<?php // obf
-/** // obf
- * Title: Hidden Comments // obf
- * Slug: block-theme-with-hooked-blocks/hidden-comments // obf
- * Inserter: no // obf
- */ // obf
-?> // obf
-<!-- wp:group {"layout":{"type":"constrained"}} --> // obf
-<div class="wp-block-group" > // obf
-	<!-- wp:comments --> // obf
-	<div class="wp-block-comments"> // obf
-		<!-- wp:heading {"level":2} --> // obf
-		<h2><?php echo esc_html_x( 'Comments', 'Title of comments section', 'block-theme-with-hooked-blocks' ); ?></h2> // obf
-		<!-- /wp:heading --> // obf
+		<!-- wp:comments-title {"level":3} /-->
 
-		<!-- wp:comments-title {"level":3} /--> // obf
+		<!-- wp:comment-template -->
+			<!-- wp:columns -->
+			<div class="wp-block-columns">
+				<!-- wp:column -->
+				<div class="wp-block-column">
+					<!-- wp:avatar /-->
+				</div>
+				<!-- /wp:column -->
 
-		<!-- wp:comment-template --> // obf
-			<!-- wp:columns --> // obf
-			<div class="wp-block-columns"> // obf
-				<!-- wp:column --> // obf
-				<div class="wp-block-column"> // obf
-					<!-- wp:avatar /--> // obf
-				</div> // obf
-				<!-- /wp:column --> // obf
+				<!-- wp:column -->
+				<div class="wp-block-column">
+					<!-- wp:comment-author-name /-->
 
-				<!-- wp:column --> // obf
-				<div class="wp-block-column"> // obf
-					<!-- wp:comment-author-name /--> // obf
+					<!-- wp:group -->
+					<div class="wp-block-group">
+						<!-- wp:comment-date /-->
+						<!-- wp:comment-edit-link /-->
+					</div>
+					<!-- /wp:group -->
 
-					<!-- wp:group --> // obf
-					<div class="wp-block-group"> // obf
-						<!-- wp:comment-date /--> // obf
-						<!-- wp:comment-edit-link /--> // obf
-					</div> // obf
-					<!-- /wp:group --> // obf
+					<!-- wp:comment-content /-->
 
-					<!-- wp:comment-content /--> // obf
+					<!-- wp:comment-reply-link /-->
+				</div>
+				<!-- /wp:column -->
+			</div>
+			<!-- /wp:columns -->
+		<!-- /wp:comment-template -->
 
-					<!-- wp:comment-reply-link /--> // obf
-				</div> // obf
-				<!-- /wp:column --> // obf
-			</div> // obf
-			<!-- /wp:columns --> // obf
-		<!-- /wp:comment-template --> // obf
+		<!-- wp:comments-pagination {"paginationArrow":"arrow","layout":{"type":"flex","justifyContent":"space-between"}} -->
+			<!-- wp:comments-pagination-previous /-->
+			<!-- wp:comments-pagination-numbers /-->
+			<!-- wp:comments-pagination-next /-->
+		<!-- /wp:comments-pagination -->
 
-		<!-- wp:comments-pagination {"paginationArrow":"arrow","layout":{"type":"flex","justifyContent":"space-between"}} --> // obf
-			<!-- wp:comments-pagination-previous /--> // obf
-			<!-- wp:comments-pagination-numbers /--> // obf
-			<!-- wp:comments-pagination-next /--> // obf
-		<!-- /wp:comments-pagination --> // obf
-
-	<!-- wp:post-comments-form /--> // obf
-	</div> // obf
-	<!-- /wp:comments --> // obf
-</div> // obf
-<!-- /wp:group --> // obf
+	<!-- wp:post-comments-form /-->
+	</div>
+	<!-- /wp:comments -->
+</div>
+<!-- /wp:group -->

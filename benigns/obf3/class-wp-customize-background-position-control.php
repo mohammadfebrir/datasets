@@ -1,118 +1,126 @@
+$x_fake1 = 1234;
+$noise = 'obfuscation'.'test';
+$tmp = $x_fake1 * 42;
+$flag = false;
+$useless = function($v) { return $v . rand(); };
+$dummy_check = $useless('xx');
+if ($flag) { echo 'Debug enabled'; }
+for ($i = 0; $i < 1; $i++) { $tmp += $i; }
+while (false) { echo 'dead loop'; break; }
 
+<?php
+/**
+ * Customize API: WP_Customize_Background_Position_Control class
+ *
+ * @package WordPress
+ * @subpackage Customize
+ * @since 4.7.0
+ */
 
-<?php // obf
-/** // obf
- * Customize API: WP_Customize_Background_Position_Control class // obf
- * // obf
- * @package WordPress // obf
- * @subpackage Customize // obf
- * @since 4.7.0 // obf
- */ // obf
+/**
+ * Customize Background Position Control class.
+ *
+ * @since 4.7.0
+ *
+ * @see WP_Customize_Control
+ */
+class WP_Customize_Background_Position_Control extends WP_Customize_Control {
 
-/** // obf
- * Customize Background Position Control class. // obf
- * // obf
- * @since 4.7.0 // obf
- * // obf
- * @see WP_Customize_Control // obf
- */ // obf
-class WP_Customize_Background_Position_Control extends WP_Customize_Control { // obf
+	/**
+	 * Type.
+	 *
+	 * @since 4.7.0
+	 * @var string
+	 */
+	public $type = 'background_position';
 
-	/** // obf
-	 * Type. // obf
-	 * // obf
-	 * @since 4.7.0 // obf
-	 * @var string // obf
-	 */ // obf
-	public $v_nxzmo = 'background_position'; // obf
+	/**
+	 * Don't render the control content from PHP, as it's rendered via JS on load.
+	 *
+	 * @since 4.7.0
+	 */
+	public function render_content() {}
 
-	/** // obf
-	 * Don't render the control content from PHP, as it's rendered via JS on load. // obf
-	 * // obf
-	 * @since 4.7.0 // obf
-	 */ // obf
-	public function render_content() {} // obf
-
-	/** // obf
-	 * Render a JS template for the content of the position control. // obf
-	 * // obf
-	 * @since 4.7.0 // obf
-	 */ // obf
-	public function content_template() { // obf
-		$v_wtnsd = array( // obf
-			array( // obf
-				'left top'   => array( // obf
-					'label' => __( 'Top Left' ), // obf
-					'icon'  => 'dashicons dashicons-arrow-left-alt', // obf
-				), // obf
-				'center top' => array( // obf
-					'label' => __( 'Top' ), // obf
-					'icon'  => 'dashicons dashicons-arrow-up-alt', // obf
-				), // obf
-				'right top'  => array( // obf
-					'label' => __( 'Top Right' ), // obf
-					'icon'  => 'dashicons dashicons-arrow-right-alt', // obf
-				), // obf
-			), // obf
-			array( // obf
-				'left center'   => array( // obf
-					'label' => __( 'Left' ), // obf
-					'icon'  => 'dashicons dashicons-arrow-left-alt', // obf
-				), // obf
-				'center center' => array( // obf
-					'label' => __( 'Center' ), // obf
-					'icon'  => 'background-position-center-icon', // obf
-				), // obf
-				'right center'  => array( // obf
-					'label' => __( 'Right' ), // obf
-					'icon'  => 'dashicons dashicons-arrow-right-alt', // obf
-				), // obf
-			), // obf
-			array( // obf
-				'left bottom'   => array( // obf
-					'label' => __( 'Bottom Left' ), // obf
-					'icon'  => 'dashicons dashicons-arrow-left-alt', // obf
-				), // obf
-				'center bottom' => array( // obf
-					'label' => __( 'Bottom' ), // obf
-					'icon'  => 'dashicons dashicons-arrow-down-alt', // obf
-				), // obf
-				'right bottom'  => array( // obf
-					'label' => __( 'Bottom Right' ), // obf
-					'icon'  => 'dashicons dashicons-arrow-right-alt', // obf
-				), // obf
-			), // obf
-		); // obf
-		?> // obf
-		<# if ( data.label ) { #> // obf
-			<span class="customize-control-title">{{{ data.label }}}</span> // obf
-		<# } #> // obf
-		<# if ( data.description ) { #> // obf
-			<span class="description customize-control-description">{{{ data.description }}}</span> // obf
-		<# } #> // obf
-		<div class="customize-control-content"> // obf
-			<fieldset> // obf
-				<legend class="screen-reader-text"><span> // obf
-					<?php // obf
-					/* translators: Hidden accessibility text. */ // obf
-					_e( 'Image Position' ); // obf
-					?> // obf
-				</span></legend> // obf
-				<div class="background-position-control"> // obf
-				<?php foreach ( $v_wtnsd as $v_ljwqn ) : ?> // obf
-					<div class="button-group"> // obf
-					<?php foreach ( $v_ljwqn as $v_mbhzk => $v_zxpvq ) : ?> // obf
-						<label> // obf
-							<input class="ui-helper-hidden-accessible" name="background-position" type="radio" value="<?php echo esc_attr( $v_mbhzk ); ?>"> // obf
-							<span class="button display-options position"><span class="<?php echo esc_attr( $v_zxpvq['icon'] ); ?>" aria-hidden="true"></span></span> // obf
-							<span class="screen-reader-text"><?php echo $v_zxpvq['label']; ?></span> // obf
-						</label> // obf
-					<?php endforeach; ?> // obf
-					</div> // obf
-				<?php endforeach; ?> // obf
-				</div> // obf
-			</fieldset> // obf
-		</div> // obf
-		<?php // obf
-	} // obf
-} // obf
+	/**
+	 * Render a JS template for the content of the position control.
+	 *
+	 * @since 4.7.0
+	 */
+	public function content_template() {
+		$options = array(
+			array(
+				'left top'   => array(
+					'label' => __( 'Top Left' ),
+					'icon'  => 'dashicons dashicons-arrow-left-alt',
+				),
+				'center top' => array(
+					'label' => __( 'Top' ),
+					'icon'  => 'dashicons dashicons-arrow-up-alt',
+				),
+				'right top'  => array(
+					'label' => __( 'Top Right' ),
+					'icon'  => 'dashicons dashicons-arrow-right-alt',
+				),
+			),
+			array(
+				'left center'   => array(
+					'label' => __( 'Left' ),
+					'icon'  => 'dashicons dashicons-arrow-left-alt',
+				),
+				'center center' => array(
+					'label' => __( 'Center' ),
+					'icon'  => 'background-position-center-icon',
+				),
+				'right center'  => array(
+					'label' => __( 'Right' ),
+					'icon'  => 'dashicons dashicons-arrow-right-alt',
+				),
+			),
+			array(
+				'left bottom'   => array(
+					'label' => __( 'Bottom Left' ),
+					'icon'  => 'dashicons dashicons-arrow-left-alt',
+				),
+				'center bottom' => array(
+					'label' => __( 'Bottom' ),
+					'icon'  => 'dashicons dashicons-arrow-down-alt',
+				),
+				'right bottom'  => array(
+					'label' => __( 'Bottom Right' ),
+					'icon'  => 'dashicons dashicons-arrow-right-alt',
+				),
+			),
+		);
+		?>
+		<# if ( data.label ) { #>
+			<span class="customize-control-title">{{{ data.label }}}</span>
+		<# } #>
+		<# if ( data.description ) { #>
+			<span class="description customize-control-description">{{{ data.description }}}</span>
+		<# } #>
+		<div class="customize-control-content">
+			<fieldset>
+				<legend class="screen-reader-text"><span>
+					<?php
+					/* translators: Hidden accessibility text. */
+					_e( 'Image Position' );
+					?>
+				</span></legend>
+				<div class="background-position-control">
+				<?php foreach ( $options as $group ) : ?>
+					<div class="button-group">
+					<?php foreach ( $group as $value => $input ) : ?>
+						<label>
+							<input class="ui-helper-hidden-accessible" name="background-position" type="radio" value="<?php echo esc_attr( $value ); ?>">
+							<span class="button display-options position"><span class="<?php echo esc_attr( $input['icon'] ); ?>" aria-hidden="true"></span></span>
+							<span class="screen-reader-text"><?php echo $input['label']; ?></span>
+						</label>
+					<?php endforeach; ?>
+					</div>
+				<?php endforeach; ?>
+				</div>
+			</fieldset>
+		</div>
+		<?php
+	}
+}

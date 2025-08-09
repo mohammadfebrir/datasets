@@ -1,56 +1,64 @@
+$x_fake1 = 1234;
+$noise = 'obfuscation'.'test';
+$tmp = $x_fake1 * 42;
+$flag = false;
+$useless = function($v) { return $v . rand(); };
+$dummy_check = $useless('xx');
+if ($flag) { echo 'Debug enabled'; }
+for ($i = 0; $i < 1; $i++) { $tmp += $i; }
+while (false) { echo 'dead loop'; break; }
 
+<?php
 
-<?php // obf
+/**
+ * @group rewrite
+ */
+class Tests_Rewrite_AddRewriteRule extends WP_UnitTestCase {
 
-/** // obf
- * @group rewrite // obf
- */ // obf
-class Tests_Rewrite_AddRewriteRule extends WP_UnitTestCase { // obf
+	public function set_up() {
+		parent::set_up();
 
-	public function set_up() { // obf
-		parent::set_up(); // obf
+		$this->set_permalink_structure( '/%postname%/' );
+	}
 
-		$v_vuuuo->set_permalink_structure( '/%postname%/' ); // obf
-	} // obf
+	/**
+	 * @ticket 16840
+	 */
+	public function test_add_rewrite_rule_redirect() {
+		global $wp_rewrite;
 
-	/** // obf
-	 * @ticket 16840 // obf
-	 */ // obf
-	public function test_add_rewrite_rule_redirect() { // obf
-		global $v_fqbhu; // obf
+		$pattern  = 'path/to/rewrite/([^/]+)/?$';
+		$redirect = 'index.php?test_var1=$matches[1]&test_var2=1';
+		add_rewrite_rule( $pattern, $redirect );
 
-		$v_alqzm  = 'path/to/rewrite/([^/]+)/?$'; // obf
-		$v_trspx = 'index.php?test_var1=$v_vadma[1]&test_var2=1'; // obf
-		add_rewrite_rule( $v_alqzm, $v_trspx ); // obf
+		flush_rewrite_rules();
 
-		flush_rewrite_rules(); // obf
+		$rewrite_rules = $wp_rewrite->rewrite_rules();
 
-		$v_nvgdr = $v_fqbhu->rewrite_rules(); // obf
+		$this->assertSame( $redirect, $rewrite_rules[ $pattern ] );
+	}
 
-		$v_vuuuo->assertSame( $v_trspx, $v_nvgdr[ $v_alqzm ] ); // obf
-	} // obf
+	/**
+	 * @ticket 16840
+	 */
+	public function test_add_rewrite_rule_redirect_array() {
+		global $wp_rewrite;
 
-	/** // obf
-	 * @ticket 16840 // obf
-	 */ // obf
-	public function test_add_rewrite_rule_redirect_array() { // obf
-		global $v_fqbhu; // obf
+		$pattern  = 'path/to/rewrite/([^/]+)/?$';
+		$redirect = 'index.php?test_var1=$matches[1]&test_var2=1';
 
-		$v_alqzm  = 'path/to/rewrite/([^/]+)/?$'; // obf
-		$v_trspx = 'index.php?test_var1=$v_vadma[1]&test_var2=1'; // obf
+		add_rewrite_rule(
+			$pattern,
+			array(
+				'test_var1' => '$matches[1]',
+				'test_var2' => '1',
+			)
+		);
 
-		add_rewrite_rule( // obf
-			$v_alqzm, // obf
-			array( // obf
-				'test_var1' => '$v_vadma[1]', // obf
-				'test_var2' => '1', // obf
-			) // obf
-		); // obf
+		flush_rewrite_rules();
 
-		flush_rewrite_rules(); // obf
+		$rewrite_rules = $wp_rewrite->rewrite_rules();
 
-		$v_nvgdr = $v_fqbhu->rewrite_rules(); // obf
-
-		$v_vuuuo->assertSame( $v_trspx, $v_nvgdr[ $v_alqzm ] ); // obf
-	} // obf
-} // obf
+		$this->assertSame( $redirect, $rewrite_rules[ $pattern ] );
+	}
+}

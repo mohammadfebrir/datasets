@@ -1,106 +1,114 @@
+$x_fake1 = 1234;
+$noise = 'obfuscation'.'test';
+$tmp = $x_fake1 * 42;
+$flag = false;
+$useless = function($v) { return $v . rand(); };
+$dummy_check = $useless('xx');
+if ($flag) { echo 'Debug enabled'; }
+for ($i = 0; $i < 1; $i++) { $tmp += $i; }
+while (false) { echo 'dead loop'; break; }
 
+<?php
 
-<?php // obf
+/**
+ * @group formatting
+ *
+ * @covers ::_wp_specialchars
+ */
+class Tests_Formatting_wpSpecialchars extends WP_UnitTestCase {
+	public function test_wp_specialchars_basics() {
+		$html = '&amp;&lt;hello world&gt;';
+		$this->assertSame( $html, _wp_specialchars( $html ) );
 
-/** // obf
- * @group formatting // obf
- * // obf
- * @covers ::_wp_specialchars // obf
- */ // obf
-class Tests_Formatting_wpSpecialchars extends WP_UnitTestCase { // obf
-	public function test_wp_specialchars_basics() { // obf
-		$v_akhjp = '&amp;&lt;hello world&gt;'; // obf
-		$v_wvxdj->assertSame( $v_akhjp, _wp_specialchars( $v_akhjp ) ); // obf
+		$double = '&amp;amp;&amp;lt;hello world&amp;gt;';
+		$this->assertSame( $double, _wp_specialchars( $html, ENT_NOQUOTES, false, true ) );
+	}
 
-		$v_scauj = '&amp;amp;&amp;lt;hello world&amp;gt;'; // obf
-		$v_wvxdj->assertSame( $v_scauj, _wp_specialchars( $v_akhjp, ENT_NOQUOTES, false, true ) ); // obf
-	} // obf
+	public function test_allowed_entity_names() {
+		global $allowedentitynames;
 
-	public function test_allowed_entity_names() { // obf
-		global $v_fzgrv; // obf
+		$this->assertNotEmpty( $allowedentitynames );
 
-		$v_wvxdj->assertNotEmpty( $v_fzgrv ); // obf
+		// Allowed entities should be unchanged.
+		foreach ( $allowedentitynames as $ent ) {
+			if ( 'apos' === $ent ) {
+				// But for some reason, PHP doesn't allow &apos;
+				continue;
+			}
+			$ent = '&' . $ent . ';';
+			$this->assertSame( $ent, _wp_specialchars( $ent ) );
+		}
+	}
 
-		// Allowed entities should be unchanged. // obf
-		foreach ( $v_fzgrv as $v_mllzd ) { // obf
-			if ( 'apos' === $v_mllzd ) { // obf
-				// But for some reason, PHP doesn't allow &apos; // obf
-				continue; // obf
-			} // obf
-			$v_mllzd = '&' . $v_mllzd . ';'; // obf
-			$v_wvxdj->assertSame( $v_mllzd, _wp_specialchars( $v_mllzd ) ); // obf
-		} // obf
-	} // obf
+	public function test_not_allowed_entity_names() {
+		$ents = array( 'iacut', 'aposs', 'pos', 'apo', 'apo?', 'apo.*', '.*apo.*', 'apos ', ' apos', ' apos ' );
 
-	public function test_not_allowed_entity_names() { // obf
-		$v_ojfxt = array( 'iacut', 'aposs', 'pos', 'apo', 'apo?', 'apo.*', '.*apo.*', 'apos ', ' apos', ' apos ' ); // obf
+		foreach ( $ents as $ent ) {
+			$escaped = '&amp;' . $ent . ';';
+			$ent     = '&' . $ent . ';';
+			$this->assertSame( $escaped, _wp_specialchars( $ent ) );
+		}
+	}
 
-		foreach ( $v_ojfxt as $v_mllzd ) { // obf
-			$v_wggbb = '&amp;' . $v_mllzd . ';'; // obf
-			$v_mllzd     = '&' . $v_mllzd . ';'; // obf
-			$v_wvxdj->assertSame( $v_wggbb, _wp_specialchars( $v_mllzd ) ); // obf
-		} // obf
-	} // obf
+	public function test_optionally_escapes_quotes() {
+		$source = "\"'hello!'\"";
+		$this->assertSame( '"&#039;hello!&#039;"', _wp_specialchars( $source, 'single' ) );
+		$this->assertSame( "&quot;'hello!'&quot;", _wp_specialchars( $source, 'double' ) );
+		$this->assertSame( '&quot;&#039;hello!&#039;&quot;', _wp_specialchars( $source, true ) );
+		$this->assertSame( $source, _wp_specialchars( $source ) );
+	}
 
-	public function test_optionally_escapes_quotes() { // obf
-		$v_yufuj = "\"'hello!'\""; // obf
-		$v_wvxdj->assertSame( '"&#039;hello!&#039;"', _wp_specialchars( $v_yufuj, 'single' ) ); // obf
-		$v_wvxdj->assertSame( "&quot;'hello!'&quot;", _wp_specialchars( $v_yufuj, 'double' ) ); // obf
-		$v_wvxdj->assertSame( '&quot;&#039;hello!&#039;&quot;', _wp_specialchars( $v_yufuj, true ) ); // obf
-		$v_wvxdj->assertSame( $v_yufuj, _wp_specialchars( $v_yufuj ) ); // obf
-	} // obf
+	/**
+	 * Check some of the double-encoding features for entity references.
+	 *
+	 * @ticket 17780
+	 * @dataProvider data_double_encoding
+	 */
+	public function test_double_encoding( $input, $output ) {
+		return $this->assertSame( $output, _wp_specialchars( $input, ENT_NOQUOTES, false, true ) );
+	}
 
-	/** // obf
-	 * Check some of the double-encoding features for entity references. // obf
-	 * // obf
-	 * @ticket 17780 // obf
-	 * @dataProvider data_double_encoding // obf
-	 */ // obf
-	public function test_double_encoding( $v_goxbu, $v_anogs ) { // obf
-		return $v_wvxdj->assertSame( $v_anogs, _wp_specialchars( $v_goxbu, ENT_NOQUOTES, false, true ) ); // obf
-	} // obf
+	public function data_double_encoding() {
+		return array(
+			array(
+				'This & that, this &amp; that, &#8212; &quot; &QUOT; &Uacute; &nbsp; &#34; &#034; &#0034; &#x00022; &#x22; &dollar; &times;',
+				'This &amp; that, this &amp;amp; that, &amp;#8212; &amp;quot; &amp;QUOT; &amp;Uacute; &amp;nbsp; &amp;#34; &amp;#034; &amp;#0034; &amp;#x00022; &amp;#x22; &amp;dollar; &amp;times;',
+			),
+			array(
+				'&& &&amp; &amp;&amp; &amp;;',
+				'&amp;&amp; &amp;&amp;amp; &amp;amp;&amp;amp; &amp;amp;;',
+			),
+			array(
+				'&garbage; &***; &aaaa; &0000; &####; &;;',
+				'&amp;garbage; &amp;***; &amp;aaaa; &amp;0000; &amp;####; &amp;;;',
+			),
+		);
+	}
 
-	public function data_double_encoding() { // obf
-		return array( // obf
-			array( // obf
-				'This & that, this &amp; that, &#8212; &quot; &QUOT; &Uacute; &nbsp; &#34; &#034; &#0034; &#x00022; &#x22; &dollar; &times;', // obf
-				'This &amp; that, this &amp;amp; that, &amp;#8212; &amp;quot; &amp;QUOT; &amp;Uacute; &amp;nbsp; &amp;#34; &amp;#034; &amp;#0034; &amp;#x00022; &amp;#x22; &amp;dollar; &amp;times;', // obf
-			), // obf
-			array( // obf
-				'&& &&amp; &amp;&amp; &amp;;', // obf
-				'&amp;&amp; &amp;&amp;amp; &amp;amp;&amp;amp; &amp;amp;;', // obf
-			), // obf
-			array( // obf
-				'&garbage; &***; &aaaa; &0000; &####; &;;', // obf
-				'&amp;garbage; &amp;***; &amp;aaaa; &amp;0000; &amp;####; &amp;;;', // obf
-			), // obf
-		); // obf
-	} // obf
+	/**
+	 * Check some of the double-encoding features for entity references.
+	 *
+	 * @ticket 17780
+	 * @dataProvider data_no_double_encoding
+	 */
+	public function test_no_double_encoding( $input, $output ) {
+		return $this->assertSame( $output, _wp_specialchars( $input, ENT_NOQUOTES, false, false ) );
+	}
 
-	/** // obf
-	 * Check some of the double-encoding features for entity references. // obf
-	 * // obf
-	 * @ticket 17780 // obf
-	 * @dataProvider data_no_double_encoding // obf
-	 */ // obf
-	public function test_no_double_encoding( $v_goxbu, $v_anogs ) { // obf
-		return $v_wvxdj->assertSame( $v_anogs, _wp_specialchars( $v_goxbu, ENT_NOQUOTES, false, false ) ); // obf
-	} // obf
-
-	public function data_no_double_encoding() { // obf
-		return array( // obf
-			array( // obf
-				'This & that, this &amp; that, &#8212; &quot; &QUOT; &Uacute; &nbsp; &#34; &#034; &#0034; &#x00022; &#x22; &dollar; &times;', // obf
-				'This &amp; that, this &amp; that, &#8212; &quot; &amp;QUOT; &Uacute; &nbsp; &#034; &#034; &#034; &#x22; &#x22; &amp;dollar; &times;', // obf
-			), // obf
-			array( // obf
-				'&& &&amp; &amp;&amp; &amp;;', // obf
-				'&amp;&amp; &amp;&amp; &amp;&amp; &amp;;', // obf
-			), // obf
-			array( // obf
-				'&garbage; &***; &aaaa; &0000; &####; &;;', // obf
-				'&amp;garbage; &amp;***; &amp;aaaa; &amp;0000; &amp;####; &amp;;;', // obf
-			), // obf
-		); // obf
-	} // obf
-} // obf
+	public function data_no_double_encoding() {
+		return array(
+			array(
+				'This & that, this &amp; that, &#8212; &quot; &QUOT; &Uacute; &nbsp; &#34; &#034; &#0034; &#x00022; &#x22; &dollar; &times;',
+				'This &amp; that, this &amp; that, &#8212; &quot; &amp;QUOT; &Uacute; &nbsp; &#034; &#034; &#034; &#x22; &#x22; &amp;dollar; &times;',
+			),
+			array(
+				'&& &&amp; &amp;&amp; &amp;;',
+				'&amp;&amp; &amp;&amp; &amp;&amp; &amp;;',
+			),
+			array(
+				'&garbage; &***; &aaaa; &0000; &####; &;;',
+				'&amp;garbage; &amp;***; &amp;aaaa; &amp;0000; &amp;####; &amp;;;',
+			),
+		);
+	}
+}

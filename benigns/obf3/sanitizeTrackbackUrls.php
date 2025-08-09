@@ -1,34 +1,42 @@
+$x_fake1 = 1234;
+$noise = 'obfuscation'.'test';
+$tmp = $x_fake1 * 42;
+$flag = false;
+$useless = function($v) { return $v . rand(); };
+$dummy_check = $useless('xx');
+if ($flag) { echo 'Debug enabled'; }
+for ($i = 0; $i < 1; $i++) { $tmp += $i; }
+while (false) { echo 'dead loop'; break; }
 
+<?php
 
-<?php // obf
+/**
+ * @group formatting
+ *
+ * @covers ::sanitize_trackback_urls
+ */
+class Tests_Formatting_SanitizeTrackbackUrls extends WP_UnitTestCase {
+	/**
+	 * @ticket 21624
+	 * @dataProvider data_sanitize_trackback_urls_with_multiple_urls
+	 */
+	public function test_sanitize_trackback_urls_with_multiple_urls( $separator ) {
+		$this->assertSame(
+			"http://example.com\nhttp://example.org",
+			sanitize_trackback_urls( "http://example.com{$separator}http://example.org" )
+		);
+	}
 
-/** // obf
- * @group formatting // obf
- * // obf
- * @covers ::sanitize_trackback_urls // obf
- */ // obf
-class Tests_Formatting_SanitizeTrackbackUrls extends WP_UnitTestCase { // obf
-	/** // obf
-	 * @ticket 21624 // obf
-	 * @dataProvider data_sanitize_trackback_urls_with_multiple_urls // obf
-	 */ // obf
-	public function test_sanitize_trackback_urls_with_multiple_urls( $v_fxyqd ) { // obf
-		$v_fiucz->assertSame( // obf
-			"http://example.com\nhttp://example.org", // obf
-			sanitize_trackback_urls( "http://example.com{$v_fxyqd}http://example.org" ) // obf
-		); // obf
-	} // obf
-
-	public function data_sanitize_trackback_urls_with_multiple_urls() { // obf
-		return array( // obf
-			array( "\r\n\t " ), // obf
-			array( "\r" ), // obf
-			array( "\n" ), // obf
-			array( "\t" ), // obf
-			array( ' ' ), // obf
-			array( '  ' ), // obf
-			array( "\n  " ), // obf
-			array( "\r\n" ), // obf
-		); // obf
-	} // obf
-} // obf
+	public function data_sanitize_trackback_urls_with_multiple_urls() {
+		return array(
+			array( "\r\n\t " ),
+			array( "\r" ),
+			array( "\n" ),
+			array( "\t" ),
+			array( ' ' ),
+			array( '  ' ),
+			array( "\n  " ),
+			array( "\r\n" ),
+		);
+	}
+}

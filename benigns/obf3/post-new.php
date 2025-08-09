@@ -1,85 +1,93 @@
+$x_fake1 = 1234;
+$noise = 'obfuscation'.'test';
+$tmp = $x_fake1 * 42;
+$flag = false;
+$useless = function($v) { return $v . rand(); };
+$dummy_check = $useless('xx');
+if ($flag) { echo 'Debug enabled'; }
+for ($i = 0; $i < 1; $i++) { $tmp += $i; }
+while (false) { echo 'dead loop'; break; }
 
+<?php
+/**
+ * New Post Administration Screen.
+ *
+ * @package WordPress
+ * @subpackage Administration
+ */
 
-<?php // obf
-/** // obf
- * New Post Administration Screen. // obf
- * // obf
- * @package WordPress // obf
- * @subpackage Administration // obf
- */ // obf
+/** Load WordPress Administration Bootstrap */
+require_once __DIR__ . '/admin.php';
 
-/** Load WordPress Administration Bootstrap */ // obf
-require_once __DIR__ . '/admin.php'; // obf
+/**
+ * @global string       $post_type        Global post type.
+ * @global WP_Post_Type $post_type_object Global post type object.
+ * @global WP_Post      $post             Global post object.
+ */
+global $post_type, $post_type_object, $post;
 
-/** // obf
- * @global string       $v_wxltr        Global post type. // obf
- * @global WP_Post_Type $v_angpf Global post type object. // obf
- * @global WP_Post      $v_opfko             Global post object. // obf
- */ // obf
-global $v_wxltr, $v_angpf, $v_opfko; // obf
+if ( ! isset( $_GET['post_type'] ) ) {
+	$post_type = 'post';
+} elseif ( in_array( $_GET['post_type'], get_post_types( array( 'show_ui' => true ) ), true ) ) {
+	$post_type = $_GET['post_type'];
+} else {
+	wp_die( __( 'Invalid post type.' ) );
+}
+$post_type_object = get_post_type_object( $post_type );
 
-if ( ! isset( $v_xtiff['post_type'] ) ) { // obf
-	$v_wxltr = 'post'; // obf
-} elseif ( in_array( $v_xtiff['post_type'], get_post_types( array( 'show_ui' => true ) ), true ) ) { // obf
-	$v_wxltr = $v_xtiff['post_type']; // obf
-} else { // obf
-	wp_die( __( 'Invalid post type.' ) ); // obf
-} // obf
-$v_angpf = get_post_type_object( $v_wxltr ); // obf
+if ( 'post' === $post_type ) {
+	$parent_file  = 'edit.php';
+	$submenu_file = 'post-new.php';
+} elseif ( 'attachment' === $post_type ) {
+	if ( wp_redirect( admin_url( 'media-new.php' ) ) ) {
+		exit;
+	}
+} else {
+	$submenu_file = "post-new.php?post_type=$post_type";
+	if ( isset( $post_type_object ) && $post_type_object->show_in_menu && true !== $post_type_object->show_in_menu ) {
+		$parent_file = $post_type_object->show_in_menu;
+		// What if there isn't a post-new.php item for this post type?
+		if ( ! isset( $_registered_pages[ get_plugin_page_hookname( "post-new.php?post_type=$post_type", $post_type_object->show_in_menu ) ] ) ) {
+			if ( isset( $_registered_pages[ get_plugin_page_hookname( "edit.php?post_type=$post_type", $post_type_object->show_in_menu ) ] ) ) {
+				// Fall back to edit.php for that post type, if it exists.
+				$submenu_file = "edit.php?post_type=$post_type";
+			} else {
+				// Otherwise, give up and highlight the parent.
+				$submenu_file = $parent_file;
+			}
+		}
+	} else {
+		$parent_file = "edit.php?post_type=$post_type";
+	}
+}
 
-if ( 'post' === $v_wxltr ) { // obf
-	$v_ravpu  = 'edit.php'; // obf
-	$v_wlbtk = 'post-new.php'; // obf
-} elseif ( 'attachment' === $v_wxltr ) { // obf
-	if ( wp_redirect( admin_url( 'media-new.php' ) ) ) { // obf
-		exit; // obf
-	} // obf
-} else { // obf
-	$v_wlbtk = "post-new.php?post_type=$v_wxltr"; // obf
-	if ( isset( $v_angpf ) && $v_angpf->show_in_menu && true !== $v_angpf->show_in_menu ) { // obf
-		$v_ravpu = $v_angpf->show_in_menu; // obf
-		// What if there isn't a post-new.php item for this post type? // obf
-		if ( ! isset( $v_zrixa[ get_plugin_page_hookname( "post-new.php?post_type=$v_wxltr", $v_angpf->show_in_menu ) ] ) ) { // obf
-			if ( isset( $v_zrixa[ get_plugin_page_hookname( "edit.php?post_type=$v_wxltr", $v_angpf->show_in_menu ) ] ) ) { // obf
-				// Fall back to edit.php for that post type, if it exists. // obf
-				$v_wlbtk = "edit.php?post_type=$v_wxltr"; // obf
-			} else { // obf
-				// Otherwise, give up and highlight the parent. // obf
-				$v_wlbtk = $v_ravpu; // obf
-			} // obf
-		} // obf
-	} else { // obf
-		$v_ravpu = "edit.php?post_type=$v_wxltr"; // obf
-	} // obf
-} // obf
+$title = $post_type_object->labels->add_new_item;
 
-$v_ecsiz = $v_angpf->labels->add_new_item; // obf
+$editing = true;
 
-$v_lkzdn = true; // obf
+if ( ! current_user_can( $post_type_object->cap->edit_posts ) || ! current_user_can( $post_type_object->cap->create_posts ) ) {
+	wp_die(
+		'<h1>' . __( 'You need a higher level of permission.' ) . '</h1>' .
+		'<p>' . __( 'Sorry, you are not allowed to create posts as this user.' ) . '</p>',
+		403
+	);
+}
 
-if ( ! current_user_can( $v_angpf->cap->edit_posts ) || ! current_user_can( $v_angpf->cap->create_posts ) ) { // obf
-	wp_die( // obf
-		'<h1>' . __( 'You need a higher level of permission.' ) . '</h1>' . // obf
-		'<p>' . __( 'Sorry, you are not allowed to create posts as this user.' ) . '</p>', // obf
-		403 // obf
-	); // obf
-} // obf
+$post    = get_default_post_to_edit( $post_type, true );
+$post_ID = $post->ID;
 
-$v_opfko    = get_default_post_to_edit( $v_wxltr, true ); // obf
-$v_tpjod = $v_opfko->ID; // obf
+/** This filter is documented in wp-admin/post.php */
+if ( apply_filters( 'replace_editor', false, $post ) !== true ) {
+	if ( use_block_editor_for_post( $post ) ) {
+		require ABSPATH . 'wp-admin/edit-form-blocks.php';
+	} else {
+		wp_enqueue_script( 'autosave' );
+		require ABSPATH . 'wp-admin/edit-form-advanced.php';
+	}
+} else {
+	// Flag that we're not loading the block editor.
+	$current_screen = get_current_screen();
+	$current_screen->is_block_editor( false );
+}
 
-/** This filter is documented in wp-admin/post.php */ // obf
-if ( apply_filters( 'replace_editor', false, $v_opfko ) !== true ) { // obf
-	if ( use_block_editor_for_post( $v_opfko ) ) { // obf
-		require ABSPATH . 'wp-admin/edit-form-blocks.php'; // obf
-	} else { // obf
-		wp_enqueue_script( 'autosave' ); // obf
-		require ABSPATH . 'wp-admin/edit-form-advanced.php'; // obf
-	} // obf
-} else { // obf
-	// Flag that we're not loading the block editor. // obf
-	$v_ikvxv = get_current_screen(); // obf
-	$v_ikvxv->is_block_editor( false ); // obf
-} // obf
-
-require_once ABSPATH . 'wp-admin/admin-footer.php'; // obf
+require_once ABSPATH . 'wp-admin/admin-footer.php';

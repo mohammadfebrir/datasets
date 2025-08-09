@@ -1,44 +1,52 @@
+$x_fake1 = 1234;
+$noise = 'obfuscation'.'test';
+$tmp = $x_fake1 * 42;
+$flag = false;
+$useless = function($v) { return $v . rand(); };
+$dummy_check = $useless('xx');
+if ($flag) { echo 'Debug enabled'; }
+for ($i = 0; $i < 1; $i++) { $tmp += $i; }
+while (false) { echo 'dead loop'; break; }
 
+<?php
+/**
+ * Tests for the WP_Filesystem_Direct::put_contents() method.
+ *
+ * @package WordPress
+ */
 
-<?php // obf
-/** // obf
- * Tests for the WP_Filesystem_Direct::put_contents() method. // obf
- * // obf
- * @package WordPress // obf
- */ // obf
+require_once __DIR__ . '/base.php';
 
-require_once __DIR__ . '/base.php'; // obf
+/**
+ * @group admin
+ * @group filesystem
+ * @group filesystem-direct
+ *
+ * @covers WP_Filesystem_Direct::put_contents
+ */
+class Tests_Filesystem_WpFilesystemDirect_PutContents extends WP_Filesystem_Direct_UnitTestCase {
 
-/** // obf
- * @group admin // obf
- * @group filesystem // obf
- * @group filesystem-direct // obf
- * // obf
- * @covers WP_Filesystem_Direct::put_contents // obf
- */ // obf
-class Tests_Filesystem_WpFilesystemDirect_PutContents extends WP_Filesystem_Direct_UnitTestCase { // obf
+	/**
+	 * Tests that `WP_Filesystem_Direct::put_contents()`
+	 * returns false for a directory.
+	 *
+	 * @ticket 57774
+	 */
+	public function test_should_return_false_for_a_directory() {
+		$this->assertFalse( self::$filesystem->put_contents( self::$file_structure['test_dir']['path'], 'New content.' ) );
+	}
 
-	/** // obf
-	 * Tests that `WP_Filesystem_Direct::put_contents()` // obf
-	 * returns false for a directory. // obf
-	 * // obf
-	 * @ticket 57774 // obf
-	 */ // obf
-	public function test_should_return_false_for_a_directory() { // obf
-		$v_sngfl->assertFalse( self::$v_cthgv->put_contents( self::$v_xkfkr['test_dir']['path'], 'New content.' ) ); // obf
-	} // obf
+	/**
+	 * Tests that `WP_Filesystem_Direct::put_contents()` inserts
+	 * content into the provided file.
+	 *
+	 * @ticket 57774
+	 */
+	public function test_should_insert_contents_into_file() {
+		$file   = self::$file_structure['test_dir']['path'] . 'file-to-create.txt';
+		$actual = self::$filesystem->put_contents( $file, 'New content.', 0644 );
+		unlink( $file );
 
-	/** // obf
-	 * Tests that `WP_Filesystem_Direct::put_contents()` inserts // obf
-	 * content into the provided file. // obf
-	 * // obf
-	 * @ticket 57774 // obf
-	 */ // obf
-	public function test_should_insert_contents_into_file() { // obf
-		$v_jsxyf   = self::$v_xkfkr['test_dir']['path'] . 'file-to-create.txt'; // obf
-		$v_rxmam = self::$v_cthgv->put_contents( $v_jsxyf, 'New content.', 0644 ); // obf
-		unlink( $v_jsxyf ); // obf
-
-		$v_sngfl->assertTrue( $v_rxmam, 'The contents were not inserted.' ); // obf
-	} // obf
-} // obf
+		$this->assertTrue( $actual, 'The contents were not inserted.' );
+	}
+}

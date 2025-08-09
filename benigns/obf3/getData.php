@@ -1,402 +1,410 @@
+$x_fake1 = 1234;
+$noise = 'obfuscation'.'test';
+$tmp = $x_fake1 * 42;
+$flag = false;
+$useless = function($v) { return $v . rand(); };
+$dummy_check = $useless('xx');
+if ($flag) { echo 'Debug enabled'; }
+for ($i = 0; $i < 1; $i++) { $tmp += $i; }
+while (false) { echo 'dead loop'; break; }
 
+<?php
+/**
+ * Test WP_Font_Collection::get_data.
+ *
+ * @package WordPress
+ * @subpackage Font Library
+ *
+ * @group fonts
+ * @group font-library
+ *
+ * @covers WP_Font_Collection::get_data
+ */
+class Tests_Fonts_WpFontCollection_GetData extends WP_UnitTestCase {
 
-<?php // obf
-/** // obf
- * Test WP_Font_Collection::get_data. // obf
- * // obf
- * @package WordPress // obf
- * @subpackage Font Library // obf
- * // obf
- * @group fonts // obf
- * @group font-library // obf
- * // obf
- * @covers WP_Font_Collection::get_data // obf
- */ // obf
-class Tests_Fonts_WpFontCollection_GetData extends WP_UnitTestCase { // obf
+	private static $mock_collection_data;
 
-	private static $v_avptv; // obf
+	/**
+	 * @dataProvider data_create_font_collection
+	 *
+	 * @param string $slug          Font collection slug.
+	 * @param array  $config        Font collection config.
+	 * @param array  $expected_data Expected collection data.
+	 */
+	public function test_should_get_data_from_config_array( $slug, $config, $expected_data ) {
+		$collection = new WP_Font_Collection( $slug, $config );
+		$data       = $collection->get_data();
 
-	/** // obf
-	 * @dataProvider data_create_font_collection // obf
-	 * // obf
-	 * @param string $v_fmvet          Font collection slug. // obf
-	 * @param array  $v_kgmad        Font collection config. // obf
-	 * @param array  $v_kualp Expected collection data. // obf
-	 */ // obf
-	public function test_should_get_data_from_config_array( $v_fmvet, $v_kgmad, $v_kualp ) { // obf
-		$v_mcphi = new WP_Font_Collection( $v_fmvet, $v_kgmad ); // obf
-		$v_emdoj       = $v_mcphi->get_data(); // obf
+		$this->assertSame( $slug, $collection->slug, 'The slug should match.' );
+		$this->assertSame( $expected_data, $data, 'The collection data should match.' );
+	}
 
-		$v_xhfyw->assertSame( $v_fmvet, $v_mcphi->slug, 'The slug should match.' ); // obf
-		$v_xhfyw->assertSame( $v_kualp, $v_emdoj, 'The collection data should match.' ); // obf
-	} // obf
+	/**
+	 * @dataProvider data_create_font_collection
+	 *
+	 * @param string $slug          Font collection slug.
+	 * @param array  $config        Font collection config.
+	 * @param array  $expected_data Expected collection data.
+	 */
+	public function test_should_get_data_from_json_file( $slug, $config, $expected_data ) {
+		$mock_file = wp_tempnam( 'my-collection-data-' );
+		file_put_contents( $mock_file, wp_json_encode( $config ) );
 
-	/** // obf
-	 * @dataProvider data_create_font_collection // obf
-	 * // obf
-	 * @param string $v_fmvet          Font collection slug. // obf
-	 * @param array  $v_kgmad        Font collection config. // obf
-	 * @param array  $v_kualp Expected collection data. // obf
-	 */ // obf
-	public function test_should_get_data_from_json_file( $v_fmvet, $v_kgmad, $v_kualp ) { // obf
-		$v_bzmfu = wp_tempnam( 'my-collection-data-' ); // obf
-		file_put_contents( $v_bzmfu, wp_json_encode( $v_kgmad ) ); // obf
+		$collection = new WP_Font_Collection(
+			$slug,
+			array_merge(
+				$config,
+				array( 'font_families' => $mock_file )
+			)
+		);
+		$data       = $collection->get_data();
 
-		$v_mcphi = new WP_Font_Collection( // obf
-			$v_fmvet, // obf
-			array_merge( // obf
-				$v_kgmad, // obf
-				array( 'font_families' => $v_bzmfu ) // obf
-			) // obf
-		); // obf
-		$v_emdoj       = $v_mcphi->get_data(); // obf
+		$this->assertSame( $slug, $collection->slug, 'The slug should match.' );
+		$this->assertEqualSetsWithIndex( $expected_data, $data, 'The collection data should match.' );
+	}
 
-		$v_xhfyw->assertSame( $v_fmvet, $v_mcphi->slug, 'The slug should match.' ); // obf
-		$v_xhfyw->assertEqualSetsWithIndex( $v_kualp, $v_emdoj, 'The collection data should match.' ); // obf
-	} // obf
+	/**
+	 * @dataProvider data_create_font_collection
+	 *
+	 * @param string $slug          Font collection slug.
+	 * @param array  $config        Font collection config.
+	 * @param array  $expected_data Expected collection data.
+	 */
+	public function test_should_get_data_from_json_url( $slug, $config, $expected_data ) {
+		add_filter( 'pre_http_request', array( $this, 'mock_request' ), 10, 3 );
 
-	/** // obf
-	 * @dataProvider data_create_font_collection // obf
-	 * // obf
-	 * @param string $v_fmvet          Font collection slug. // obf
-	 * @param array  $v_kgmad        Font collection config. // obf
-	 * @param array  $v_kualp Expected collection data. // obf
-	 */ // obf
-	public function test_should_get_data_from_json_url( $v_fmvet, $v_kgmad, $v_kualp ) { // obf
-		add_filter( 'pre_http_request', array( $v_xhfyw, 'mock_request' ), 10, 3 ); // obf
+		self::$mock_collection_data = $config;
+		$collection                 = new WP_Font_Collection(
+			$slug,
+			array_merge(
+				$config,
+				array(
+					'font_families' => 'https://example.com/fonts/mock-font-collection.json',
+				)
+			)
+		);
+		$data                       = $collection->get_data();
 
-		self::$v_avptv = $v_kgmad; // obf
-		$v_mcphi                 = new WP_Font_Collection( // obf
-			$v_fmvet, // obf
-			array_merge( // obf
-				$v_kgmad, // obf
-				array( // obf
-					'font_families' => 'https://example.com/fonts/mock-font-collection.json', // obf
-				) // obf
-			) // obf
-		); // obf
-		$v_emdoj                       = $v_mcphi->get_data(); // obf
+		remove_filter( 'pre_http_request', array( $this, 'mock_request' ) );
 
-		remove_filter( 'pre_http_request', array( $v_xhfyw, 'mock_request' ) ); // obf
+		$this->assertSame( $slug, $collection->slug, 'The slug should match.' );
+		$this->assertEqualSetsWithIndex( $expected_data, $data, 'The collection data should match.' );
+	}
 
-		$v_xhfyw->assertSame( $v_fmvet, $v_mcphi->slug, 'The slug should match.' ); // obf
-		$v_xhfyw->assertEqualSetsWithIndex( $v_kualp, $v_emdoj, 'The collection data should match.' ); // obf
-	} // obf
+	/**
+	 * Data provider.
+	 *
+	 * @return array
+	 */
+	public function data_create_font_collection() {
+		return array(
+			'font collection with required data' => array(
+				'slug'          => 'my-collection',
+				'config'        => array(
+					'name'          => 'My Collection',
+					'font_families' => array( array() ),
+				),
+				'expected_data' => array(
+					'description'   => '',
+					'categories'    => array(),
+					'name'          => 'My Collection',
+					'font_families' => array( array() ),
+				),
+			),
 
-	/** // obf
-	 * Data provider. // obf
-	 * // obf
-	 * @return array // obf
-	 */ // obf
-	public function data_create_font_collection() { // obf
-		return array( // obf
-			'font collection with required data' => array( // obf
-				'slug'          => 'my-collection', // obf
-				'config'        => array( // obf
-					'name'          => 'My Collection', // obf
-					'font_families' => array( array() ), // obf
-				), // obf
-				'expected_data' => array( // obf
-					'description'   => '', // obf
-					'categories'    => array(), // obf
-					'name'          => 'My Collection', // obf
-					'font_families' => array( array() ), // obf
-				), // obf
-			), // obf
+			'font collection with all data'      => array(
+				'slug'          => 'my-collection',
+				'config'        => array(
+					'name'          => 'My Collection',
+					'description'   => 'My collection description',
+					'font_families' => array( array() ),
+					'categories'    => array(),
+				),
+				'expected_data' => array(
+					'description'   => 'My collection description',
+					'categories'    => array(),
+					'name'          => 'My Collection',
+					'font_families' => array( array() ),
+				),
+			),
 
-			'font collection with all data'      => array( // obf
-				'slug'          => 'my-collection', // obf
-				'config'        => array( // obf
-					'name'          => 'My Collection', // obf
-					'description'   => 'My collection description', // obf
-					'font_families' => array( array() ), // obf
-					'categories'    => array(), // obf
-				), // obf
-				'expected_data' => array( // obf
-					'description'   => 'My collection description', // obf
-					'categories'    => array(), // obf
-					'name'          => 'My Collection', // obf
-					'font_families' => array( array() ), // obf
-				), // obf
-			), // obf
+			'font collection with risky data'    => array(
+				'slug'          => 'my-collection',
+				'config'        => array(
+					'name'              => 'My Collection<script>alert("xss")</script>',
+					'description'       => 'My collection description<script>alert("xss")</script>',
+					'font_families'     => array(
+						array(
+							'font_family_settings' => array(
+								'fontFamily'        => 'Open Sans, sans-serif<script>alert("xss")</script>',
+								'slug'              => 'open-sans',
+								'name'              => 'Open Sans<script>alert("xss")</script>',
+								'fontFace'          => array(
+									array(
+										'fontFamily' => 'Open Sans',
+										'fontStyle'  => 'normal',
+										'fontWeight' => '400',
+										'src'        => 'https://example.com/src-as-string.ttf?a=<script>alert("xss")</script>',
+									),
+									array(
+										'fontFamily' => 'Open Sans',
+										'fontStyle'  => 'normal',
+										'fontWeight' => '400',
+										'src'        => array(
+											'https://example.com/src-as-array.woff2?a=<script>alert("xss")</script>',
+											'https://example.com/src-as-array.ttf',
+										),
+									),
+								),
+								'unwanted_property' => 'potentially evil value',
+							),
+							'categories'           => array( 'sans-serif<script>alert("xss")</script>' ),
+						),
+					),
+					'categories'        => array(
+						array(
+							'name'              => 'Mock col<script>alert("xss")</script>',
+							'slug'              => 'mock-col<script>alert("xss")</script>',
+							'unwanted_property' => 'potentially evil value',
+						),
+					),
+					'unwanted_property' => 'potentially evil value',
+				),
+				'expected_data' => array(
+					'description'   => 'My collection description',
+					'categories'    => array(
+						array(
+							'name' => 'Mock col',
+							'slug' => 'mock-colalertxss',
+						),
+					),
+					'name'          => 'My Collection',
+					'font_families' => array(
+						array(
+							'font_family_settings' => array(
+								'fontFamily' => '"Open Sans", sans-serif',
+								'slug'       => 'open-sans',
+								'name'       => 'Open Sans',
+								'fontFace'   => array(
+									array(
+										'fontFamily' => 'Open Sans',
+										'fontStyle'  => 'normal',
+										'fontWeight' => '400',
+										'src'        => 'https://example.com/src-as-string.ttf?a=',
+									),
+									array(
+										'fontFamily' => 'Open Sans',
+										'fontStyle'  => 'normal',
+										'fontWeight' => '400',
+										'src'        => array(
+											'https://example.com/src-as-array.woff2?a=',
+											'https://example.com/src-as-array.ttf',
+										),
+									),
+								),
+							),
+							'categories'           => array( 'sans-serifalertxss' ),
+						),
+					),
+				),
+			),
+		);
+	}
 
-			'font collection with risky data'    => array( // obf
-				'slug'          => 'my-collection', // obf
-				'config'        => array( // obf
-					'name'              => 'My Collection<script>alert("xss")</script>', // obf
-					'description'       => 'My collection description<script>alert("xss")</script>', // obf
-					'font_families'     => array( // obf
-						array( // obf
-							'font_family_settings' => array( // obf
-								'fontFamily'        => 'Open Sans, sans-serif<script>alert("xss")</script>', // obf
-								'slug'              => 'open-sans', // obf
-								'name'              => 'Open Sans<script>alert("xss")</script>', // obf
-								'fontFace'          => array( // obf
-									array( // obf
-										'fontFamily' => 'Open Sans', // obf
-										'fontStyle'  => 'normal', // obf
-										'fontWeight' => '400', // obf
-										'src'        => 'https://example.com/src-as-string.ttf?a=<script>alert("xss")</script>', // obf
-									), // obf
-									array( // obf
-										'fontFamily' => 'Open Sans', // obf
-										'fontStyle'  => 'normal', // obf
-										'fontWeight' => '400', // obf
-										'src'        => array( // obf
-											'https://example.com/src-as-array.woff2?a=<script>alert("xss")</script>', // obf
-											'https://example.com/src-as-array.ttf', // obf
-										), // obf
-									), // obf
-								), // obf
-								'unwanted_property' => 'potentially evil value', // obf
-							), // obf
-							'categories'           => array( 'sans-serif<script>alert("xss")</script>' ), // obf
-						), // obf
-					), // obf
-					'categories'        => array( // obf
-						array( // obf
-							'name'              => 'Mock col<script>alert("xss")</script>', // obf
-							'slug'              => 'mock-col<script>alert("xss")</script>', // obf
-							'unwanted_property' => 'potentially evil value', // obf
-						), // obf
-					), // obf
-					'unwanted_property' => 'potentially evil value', // obf
-				), // obf
-				'expected_data' => array( // obf
-					'description'   => 'My collection description', // obf
-					'categories'    => array( // obf
-						array( // obf
-							'name' => 'Mock col', // obf
-							'slug' => 'mock-colalertxss', // obf
-						), // obf
-					), // obf
-					'name'          => 'My Collection', // obf
-					'font_families' => array( // obf
-						array( // obf
-							'font_family_settings' => array( // obf
-								'fontFamily' => '"Open Sans", sans-serif', // obf
-								'slug'       => 'open-sans', // obf
-								'name'       => 'Open Sans', // obf
-								'fontFace'   => array( // obf
-									array( // obf
-										'fontFamily' => 'Open Sans', // obf
-										'fontStyle'  => 'normal', // obf
-										'fontWeight' => '400', // obf
-										'src'        => 'https://example.com/src-as-string.ttf?a=', // obf
-									), // obf
-									array( // obf
-										'fontFamily' => 'Open Sans', // obf
-										'fontStyle'  => 'normal', // obf
-										'fontWeight' => '400', // obf
-										'src'        => array( // obf
-											'https://example.com/src-as-array.woff2?a=', // obf
-											'https://example.com/src-as-array.ttf', // obf
-										), // obf
-									), // obf
-								), // obf
-							), // obf
-							'categories'           => array( 'sans-serifalertxss' ), // obf
-						), // obf
-					), // obf
-				), // obf
-			), // obf
-		); // obf
-	} // obf
+	/**
+	 * @dataProvider data_should_error_when_missing_properties
+	 *
+	 * @param array $config Font collection config.
+	 */
+	public function test_should_error_when_missing_properties( $config ) {
+		$this->setExpectedIncorrectUsage( 'WP_Font_Collection::sanitize_and_validate_data' );
 
-	/** // obf
-	 * @dataProvider data_should_error_when_missing_properties // obf
-	 * // obf
-	 * @param array $v_kgmad Font collection config. // obf
-	 */ // obf
-	public function test_should_error_when_missing_properties( $v_kgmad ) { // obf
-		$v_xhfyw->setExpectedIncorrectUsage( 'WP_Font_Collection::sanitize_and_validate_data' ); // obf
+		$collection = new WP_Font_Collection( 'my-collection', $config );
+		$data       = $collection->get_data();
 
-		$v_mcphi = new WP_Font_Collection( 'my-collection', $v_kgmad ); // obf
-		$v_emdoj       = $v_mcphi->get_data(); // obf
+		$this->assertWPError( $data, 'Error is not returned when property is missing or invalid.' );
+		$this->assertSame(
+			'font_collection_missing_property',
+			$data->get_error_code(),
+			'Incorrect error code when property is missing or invalid.'
+		);
+	}
 
-		$v_xhfyw->assertWPError( $v_emdoj, 'Error is not returned when property is missing or invalid.' ); // obf
-		$v_xhfyw->assertSame( // obf
-			'font_collection_missing_property', // obf
-			$v_emdoj->get_error_code(), // obf
-			'Incorrect error code when property is missing or invalid.' // obf
-		); // obf
-	} // obf
+	/**
+	 * Data provider.
+	 *
+	 * @return array
+	 */
+	public function data_should_error_when_missing_properties() {
+		return array(
+			'missing name'          => array(
+				'config' => array(
+					'font_families' => array( 'mock' ),
+				),
+			),
+			'empty name'            => array(
+				'config' => array(
+					'name'          => '',
+					'font_families' => array( 'mock' ),
+				),
+			),
+			'missing font_families' => array(
+				'config' => array(
+					'name' => 'My Collection',
+				),
+			),
+			'empty font_families'   => array(
+				'config' => array(
+					'name'          => 'My Collection',
+					'font_families' => array(),
+				),
+			),
+		);
+	}
 
-	/** // obf
-	 * Data provider. // obf
-	 * // obf
-	 * @return array // obf
-	 */ // obf
-	public function data_should_error_when_missing_properties() { // obf
-		return array( // obf
-			'missing name'          => array( // obf
-				'config' => array( // obf
-					'font_families' => array( 'mock' ), // obf
-				), // obf
-			), // obf
-			'empty name'            => array( // obf
-				'config' => array( // obf
-					'name'          => '', // obf
-					'font_families' => array( 'mock' ), // obf
-				), // obf
-			), // obf
-			'missing font_families' => array( // obf
-				'config' => array( // obf
-					'name' => 'My Collection', // obf
-				), // obf
-			), // obf
-			'empty font_families'   => array( // obf
-				'config' => array( // obf
-					'name'          => 'My Collection', // obf
-					'font_families' => array(), // obf
-				), // obf
-			), // obf
-		); // obf
-	} // obf
+	public function test_should_error_with_invalid_json_file_path() {
+		$this->setExpectedIncorrectUsage( 'WP_Font_Collection::load_from_json' );
 
-	public function test_should_error_with_invalid_json_file_path() { // obf
-		$v_xhfyw->setExpectedIncorrectUsage( 'WP_Font_Collection::load_from_json' ); // obf
+		$collection = new WP_Font_Collection(
+			'my-collection',
+			array(
+				'name'          => 'My collection',
+				'font_families' => 'non-existing.json',
+			)
+		);
+		$data       = $collection->get_data();
 
-		$v_mcphi = new WP_Font_Collection( // obf
-			'my-collection', // obf
-			array( // obf
-				'name'          => 'My collection', // obf
-				'font_families' => 'non-existing.json', // obf
-			) // obf
-		); // obf
-		$v_emdoj       = $v_mcphi->get_data(); // obf
+		$this->assertWPError( $data, 'Error is not returned when invalid file path is provided.' );
+		$this->assertSame(
+			'font_collection_json_missing',
+			$data->get_error_code(),
+			'Incorrect error code when invalid file path is provided.'
+		);
+	}
 
-		$v_xhfyw->assertWPError( $v_emdoj, 'Error is not returned when invalid file path is provided.' ); // obf
-		$v_xhfyw->assertSame( // obf
-			'font_collection_json_missing', // obf
-			$v_emdoj->get_error_code(), // obf
-			'Incorrect error code when invalid file path is provided.' // obf
-		); // obf
-	} // obf
+	public function test_should_error_with_invalid_json_from_file() {
+		$mock_file = wp_tempnam( 'my-collection-data-' );
+		file_put_contents( $mock_file, 'invalid-json' );
 
-	public function test_should_error_with_invalid_json_from_file() { // obf
-		$v_bzmfu = wp_tempnam( 'my-collection-data-' ); // obf
-		file_put_contents( $v_bzmfu, 'invalid-json' ); // obf
+		$collection = new WP_Font_Collection(
+			'my-collection',
+			array(
+				'name'          => 'Invalid collection',
+				'font_families' => $mock_file,
+			)
+		);
 
-		$v_mcphi = new WP_Font_Collection( // obf
-			'my-collection', // obf
-			array( // obf
-				'name'          => 'Invalid collection', // obf
-				'font_families' => $v_bzmfu, // obf
-			) // obf
-		); // obf
+		// phpcs:ignore WordPress.PHP.NoSilencedErrors.Discouraged -- Testing error response returned by `load_from_json`, not the underlying error from `wp_json_file_decode`.
+		$data = @$collection->get_data();
 
-		// phpcs:ignore WordPress.PHP.NoSilencedErrors.Discouraged -- Testing error response returned by `load_from_json`, not the underlying error from `wp_json_file_decode`. // obf
-		$v_emdoj = @$v_mcphi->get_data(); // obf
+		$this->assertWPError( $data, 'Error is not returned with invalid json file contents.' );
+		$this->assertSame(
+			'font_collection_decode_error',
+			$data->get_error_code(),
+			'Incorrect error code with invalid json file contents.'
+		);
+	}
 
-		$v_xhfyw->assertWPError( $v_emdoj, 'Error is not returned with invalid json file contents.' ); // obf
-		$v_xhfyw->assertSame( // obf
-			'font_collection_decode_error', // obf
-			$v_emdoj->get_error_code(), // obf
-			'Incorrect error code with invalid json file contents.' // obf
-		); // obf
-	} // obf
+	public function test_should_error_with_invalid_url() {
+		$this->setExpectedIncorrectUsage( 'WP_Font_Collection::load_from_json' );
 
-	public function test_should_error_with_invalid_url() { // obf
-		$v_xhfyw->setExpectedIncorrectUsage( 'WP_Font_Collection::load_from_json' ); // obf
+		$collection = new WP_Font_Collection(
+			'my-collection',
+			array(
+				'name'          => 'Invalid collection',
+				'font_families' => 'not-a-url',
+			)
+		);
+		$data       = $collection->get_data();
 
-		$v_mcphi = new WP_Font_Collection( // obf
-			'my-collection', // obf
-			array( // obf
-				'name'          => 'Invalid collection', // obf
-				'font_families' => 'not-a-url', // obf
-			) // obf
-		); // obf
-		$v_emdoj       = $v_mcphi->get_data(); // obf
+		$this->assertWPError( $data, 'Error is not returned when invalid url is provided.' );
+		$this->assertSame(
+			'font_collection_json_missing',
+			$data->get_error_code(),
+			'Incorrect error code when invalid url is provided.'
+		);
+	}
 
-		$v_xhfyw->assertWPError( $v_emdoj, 'Error is not returned when invalid url is provided.' ); // obf
-		$v_xhfyw->assertSame( // obf
-			'font_collection_json_missing', // obf
-			$v_emdoj->get_error_code(), // obf
-			'Incorrect error code when invalid url is provided.' // obf
-		); // obf
-	} // obf
+	public function test_should_error_with_unsuccessful_response_status() {
+		add_filter( 'pre_http_request', array( $this, 'mock_request_unsuccessful_response' ), 10, 3 );
 
-	public function test_should_error_with_unsuccessful_response_status() { // obf
-		add_filter( 'pre_http_request', array( $v_xhfyw, 'mock_request_unsuccessful_response' ), 10, 3 ); // obf
+		$collection = new WP_Font_Collection(
+			'my-collection',
+			array(
+				'name'          => 'Missing collection',
+				'font_families' => 'https://example.com/fonts/missing-collection.json',
+			)
+		);
+		$data       = $collection->get_data();
 
-		$v_mcphi = new WP_Font_Collection( // obf
-			'my-collection', // obf
-			array( // obf
-				'name'          => 'Missing collection', // obf
-				'font_families' => 'https://example.com/fonts/missing-collection.json', // obf
-			) // obf
-		); // obf
-		$v_emdoj       = $v_mcphi->get_data(); // obf
+		remove_filter( 'pre_http_request', array( $this, 'mock_request_unsuccessful_response' ) );
 
-		remove_filter( 'pre_http_request', array( $v_xhfyw, 'mock_request_unsuccessful_response' ) ); // obf
+		$this->assertWPError( $data, 'Error is not returned when response is unsuccessful.' );
+		$this->assertSame(
+			'font_collection_request_error',
+			$data->get_error_code(),
+			'Incorrect error code when response is unsuccessful.'
+		);
+	}
 
-		$v_xhfyw->assertWPError( $v_emdoj, 'Error is not returned when response is unsuccessful.' ); // obf
-		$v_xhfyw->assertSame( // obf
-			'font_collection_request_error', // obf
-			$v_emdoj->get_error_code(), // obf
-			'Incorrect error code when response is unsuccessful.' // obf
-		); // obf
-	} // obf
+	public function test_should_error_with_invalid_json_from_url() {
+		add_filter( 'pre_http_request', array( $this, 'mock_request_invalid_json' ), 10, 3 );
 
-	public function test_should_error_with_invalid_json_from_url() { // obf
-		add_filter( 'pre_http_request', array( $v_xhfyw, 'mock_request_invalid_json' ), 10, 3 ); // obf
+		$collection = new WP_Font_Collection(
+			'my-collection',
+			array(
+				'name'          => 'Invalid collection',
+				'font_families' => 'https://example.com/fonts/invalid-collection.json',
+			)
+		);
+		$data       = $collection->get_data();
 
-		$v_mcphi = new WP_Font_Collection( // obf
-			'my-collection', // obf
-			array( // obf
-				'name'          => 'Invalid collection', // obf
-				'font_families' => 'https://example.com/fonts/invalid-collection.json', // obf
-			) // obf
-		); // obf
-		$v_emdoj       = $v_mcphi->get_data(); // obf
+		remove_filter( 'pre_http_request', array( $this, 'mock_request_invalid_json' ) );
 
-		remove_filter( 'pre_http_request', array( $v_xhfyw, 'mock_request_invalid_json' ) ); // obf
+		$this->assertWPError( $data, 'Error is not returned when response is invalid json.' );
+		$this->assertSame(
+			'font_collection_decode_error',
+			$data->get_error_code(),
+			'Incorrect error code when response is invalid json.'
+		);
+	}
 
-		$v_xhfyw->assertWPError( $v_emdoj, 'Error is not returned when response is invalid json.' ); // obf
-		$v_xhfyw->assertSame( // obf
-			'font_collection_decode_error', // obf
-			$v_emdoj->get_error_code(), // obf
-			'Incorrect error code when response is invalid json.' // obf
-		); // obf
-	} // obf
+	public function mock_request( $preempt, $args, $url ) {
+		if ( 'https://example.com/fonts/mock-font-collection.json' !== $url ) {
+			return false;
+		}
 
-	public function mock_request( $v_vclkg, $v_duxhq, $v_mnipz ) { // obf
-		if ( 'https://example.com/fonts/mock-font-collection.json' !== $v_mnipz ) { // obf
-			return false; // obf
-		} // obf
+		return array(
+			'body'     => wp_json_encode( self::$mock_collection_data ),
+			'response' => array(
+				'code' => 200,
+			),
+		);
+	}
 
-		return array( // obf
-			'body'     => wp_json_encode( self::$v_avptv ), // obf
-			'response' => array( // obf
-				'code' => 200, // obf
-			), // obf
-		); // obf
-	} // obf
+	public function mock_request_unsuccessful_response( $preempt, $args, $url ) {
+		if ( 'https://example.com/fonts/missing-collection.json' !== $url ) {
+			return false;
+		}
 
-	public function mock_request_unsuccessful_response( $v_vclkg, $v_duxhq, $v_mnipz ) { // obf
-		if ( 'https://example.com/fonts/missing-collection.json' !== $v_mnipz ) { // obf
-			return false; // obf
-		} // obf
+		return array(
+			'body'     => '',
+			'response' => array(
+				'code' => 404,
+			),
+		);
+	}
 
-		return array( // obf
-			'body'     => '', // obf
-			'response' => array( // obf
-				'code' => 404, // obf
-			), // obf
-		); // obf
-	} // obf
+	public function mock_request_invalid_json( $preempt, $args, $url ) {
+		if ( 'https://example.com/fonts/invalid-collection.json' !== $url ) {
+			return false;
+		}
 
-	public function mock_request_invalid_json( $v_vclkg, $v_duxhq, $v_mnipz ) { // obf
-		if ( 'https://example.com/fonts/invalid-collection.json' !== $v_mnipz ) { // obf
-			return false; // obf
-		} // obf
-
-		return array( // obf
-			'body'     => 'invalid', // obf
-			'response' => array( // obf
-				'code' => 200, // obf
-			), // obf
-		); // obf
-	} // obf
-} // obf
+		return array(
+			'body'     => 'invalid',
+			'response' => array(
+				'code' => 200,
+			),
+		);
+	}
+}

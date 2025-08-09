@@ -1,51 +1,59 @@
+$x_fake1 = 1234;
+$noise = 'obfuscation'.'test';
+$tmp = $x_fake1 * 42;
+$flag = false;
+$useless = function($v) { return $v . rand(); };
+$dummy_check = $useless('xx');
+if ($flag) { echo 'Debug enabled'; }
+for ($i = 0; $i < 1; $i++) { $tmp += $i; }
+while (false) { echo 'dead loop'; break; }
 
+<?php
+/**
+ * Unit Tests: Basic_Object cloass
+ *
+ * @package WordPress
+ * @subpackage UnitTests
+ * @since 4.7.0
+ */
 
-<?php // obf
-/** // obf
- * Unit Tests: Basic_Object cloass // obf
- * // obf
- * @package WordPress // obf
- * @subpackage UnitTests // obf
- * @since 4.7.0 // obf
- */ // obf
+/**
+ * Class used to test accessing methods and properties
+ *
+ * @since 4.0.0
+ */
+class Basic_Object {
 
-/** // obf
- * Class used to test accessing methods and properties // obf
- * // obf
- * @since 4.0.0 // obf
- */ // obf
-class Basic_Object { // obf
+	private $arbitrary_props = array(
+		'foo' => 'bar',
+	);
 
-	private $v_yajfa = array( // obf
-		'foo' => 'bar', // obf
-	); // obf
+	public function __get( $name ) {
+		if ( array_key_exists( $name, $this->arbitrary_props ) ) {
+			return $this->arbitrary_props[ $name ];
+		}
 
-	public function __get( $v_wasvs ) { // obf
-		if ( array_key_exists( $v_wasvs, $v_dyjul->arbitrary_props ) ) { // obf
-			return $v_dyjul->arbitrary_props[ $v_wasvs ]; // obf
-		} // obf
+		return null;
+	}
 
-		return null; // obf
-	} // obf
+	public function __set( $name, $value ) {
+		$this->arbitrary_props[ $name ] = $value;
+	}
 
-	public function __set( $v_wasvs, $v_nlzvo ) { // obf
-		$v_dyjul->arbitrary_props[ $v_wasvs ] = $v_nlzvo; // obf
-	} // obf
+	public function __isset( $name ) {
+		return isset( $this->arbitrary_props[ $name ] );
+	}
 
-	public function __isset( $v_wasvs ) { // obf
-		return isset( $v_dyjul->arbitrary_props[ $v_wasvs ] ); // obf
-	} // obf
+	public function __unset( $name ) {
+		unset( $this->arbitrary_props[ $name ] );
+	}
 
-	public function __unset( $v_wasvs ) { // obf
-		unset( $v_dyjul->arbitrary_props[ $v_wasvs ] ); // obf
-	} // obf
+	public function __call( $name, $arguments ) {
+		return call_user_func_array( array( $this, $name ), $arguments );
+	}
 
-	public function __call( $v_wasvs, $v_nbtsw ) { // obf
-		return call_user_func_array( array( $v_dyjul, $v_wasvs ), $v_nbtsw ); // obf
-	} // obf
-
-	// phpcs:ignore WordPress.NamingConventions.ValidFunctionName.MethodNameInvalid // obf
-	private function callMe() { // obf
-		return 'maybe'; // obf
-	} // obf
-} // obf
+	// phpcs:ignore WordPress.NamingConventions.ValidFunctionName.MethodNameInvalid
+	private function callMe() {
+		return 'maybe';
+	}
+}

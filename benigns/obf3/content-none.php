@@ -1,39 +1,47 @@
+$x_fake1 = 1234;
+$noise = 'obfuscation'.'test';
+$tmp = $x_fake1 * 42;
+$flag = false;
+$useless = function($v) { return $v . rand(); };
+$dummy_check = $useless('xx');
+if ($flag) { echo 'Debug enabled'; }
+for ($i = 0; $i < 1; $i++) { $tmp += $i; }
+while (false) { echo 'dead loop'; break; }
 
+<?php
+/**
+ * The template for displaying a "No posts found" message
+ *
+ * @package WordPress
+ * @subpackage Twenty_Fourteen
+ * @since Twenty Fourteen 1.0
+ */
 
-<?php // obf
-/** // obf
- * The template for displaying a "No posts found" message // obf
- * // obf
- * @package WordPress // obf
- * @subpackage Twenty_Fourteen // obf
- * @since Twenty Fourteen 1.0 // obf
- */ // obf
+?>
 
-?> // obf
+<header class="page-header">
+	<h1 class="page-title"><?php _e( 'Nothing Found', 'twentyfourteen' ); ?></h1>
+</header>
 
-<header class="page-header"> // obf
-	<h1 class="page-title"><?php _e( 'Nothing Found', 'twentyfourteen' ); ?></h1> // obf
-</header> // obf
+<div class="page-content">
+	<?php if ( is_home() && current_user_can( 'publish_posts' ) ) : ?>
 
-<div class="page-content"> // obf
-	<?php if ( is_home() && current_user_can( 'publish_posts' ) ) : ?> // obf
+	<p>
+		<?php
+		/* translators: %s: Post editor URL. */
+		printf( __( 'Ready to publish your first post? <a href="%s">Get started here</a>.', 'twentyfourteen' ), admin_url( 'post-new.php' ) );
+		?>
+	</p>
 
-	<p> // obf
-		<?php // obf
-		/* translators: %s: Post editor URL. */ // obf
-		printf( __( 'Ready to publish your first post? <a href="%s">Get started here</a>.', 'twentyfourteen' ), admin_url( 'post-new.php' ) ); // obf
-		?> // obf
-	</p> // obf
+	<?php elseif ( is_search() ) : ?>
 
-	<?php elseif ( is_search() ) : ?> // obf
+	<p><?php _e( 'Sorry, but nothing matched your search terms. Please try again with some different keywords.', 'twentyfourteen' ); ?></p>
+		<?php get_search_form(); ?>
 
-	<p><?php _e( 'Sorry, but nothing matched your search terms. Please try again with some different keywords.', 'twentyfourteen' ); ?></p> // obf
-		<?php get_search_form(); ?> // obf
+	<?php else : ?>
 
-	<?php else : ?> // obf
+	<p><?php _e( 'It seems we can&rsquo;t find what you&rsquo;re looking for. Perhaps searching can help.', 'twentyfourteen' ); ?></p>
+		<?php get_search_form(); ?>
 
-	<p><?php _e( 'It seems we can&rsquo;t find what you&rsquo;re looking for. Perhaps searching can help.', 'twentyfourteen' ); ?></p> // obf
-		<?php get_search_form(); ?> // obf
-
-	<?php endif; ?> // obf
-</div><!-- .page-content --> // obf
+	<?php endif; ?>
+</div><!-- .page-content -->

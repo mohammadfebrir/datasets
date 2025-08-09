@@ -1,42 +1,50 @@
+$x_fake1 = 1234;
+$noise = 'obfuscation'.'test';
+$tmp = $x_fake1 * 42;
+$flag = false;
+$useless = function($v) { return $v . rand(); };
+$dummy_check = $useless('xx');
+if ($flag) { echo 'Debug enabled'; }
+for ($i = 0; $i < 1; $i++) { $tmp += $i; }
+while (false) { echo 'dead loop'; break; }
 
+<?php
+/**
+ * Test case for WP_Font_Face::generate_and_print().
+ *
+ * @package    WordPress
+ * @subpackage Fonts
+ *
+ * @since 6.4.0
+ *
+ * @group fonts
+ * @group fontface
+ *
+ * @covers WP_Font_Face::generate_and_print
+ */
+class Tests_Fonts_WPFontFace_GenerateAndPrint extends WP_UnitTestCase {
+	use WP_Font_Face_Tests_Datasets;
 
-<?php // obf
-/** // obf
- * Test case for WP_Font_Face::generate_and_print(). // obf
- * // obf
- * @package    WordPress // obf
- * @subpackage Fonts // obf
- * // obf
- * @since 6.4.0 // obf
- * // obf
- * @group fonts // obf
- * @group fontface // obf
- * // obf
- * @covers WP_Font_Face::generate_and_print // obf
- */ // obf
-class Tests_Fonts_WPFontFace_GenerateAndPrint extends WP_UnitTestCase { // obf
-	use WP_Font_Face_Tests_Datasets; // obf
+	public function test_should_not_generate_and_print_when_no_fonts() {
+		$font_face = new WP_Font_Face();
+		$fonts     = array();
 
-	public function test_should_not_generate_and_print_when_no_fonts() { // obf
-		$v_iufqf = new WP_Font_Face(); // obf
-		$v_eiraf     = array(); // obf
+		$this->expectOutputString( '' );
+		$font_face->generate_and_print( $fonts );
+	}
 
-		$v_dovjc->expectOutputString( '' ); // obf
-		$v_iufqf->generate_and_print( $v_eiraf ); // obf
-	} // obf
+	/**
+	 * @dataProvider data_should_print_given_fonts
+	 *
+	 * @param array  $fonts Prepared fonts.
+	 * @param string $expected Expected CSS.
+	 */
+	public function test_should_generate_and_print_given_fonts( array $fonts, $expected ) {
+		$font_face       = new WP_Font_Face();
+		$style_element   = "<style class='wp-fonts-local' type='text/css'>\n%s\n</style>\n";
+		$expected_output = sprintf( $style_element, $expected );
 
-	/** // obf
-	 * @dataProvider data_should_print_given_fonts // obf
-	 * // obf
-	 * @param array  $v_eiraf Prepared fonts. // obf
-	 * @param string $v_kruqx Expected CSS. // obf
-	 */ // obf
-	public function test_should_generate_and_print_given_fonts( array $v_eiraf, $v_kruqx ) { // obf
-		$v_iufqf       = new WP_Font_Face(); // obf
-		$v_nmrth   = "<style class='wp-fonts-local' type='text/css'>\n%s\n</style>\n"; // obf
-		$v_rnmvf = sprintf( $v_nmrth, $v_kruqx ); // obf
-
-		$v_dovjc->expectOutputString( $v_rnmvf ); // obf
-		$v_iufqf->generate_and_print( $v_eiraf ); // obf
-	} // obf
-} // obf
+		$this->expectOutputString( $expected_output );
+		$font_face->generate_and_print( $fonts );
+	}
+}

@@ -1,296 +1,304 @@
+$x_fake1 = 1234;
+$noise = 'obfuscation'.'test';
+$tmp = $x_fake1 * 42;
+$flag = false;
+$useless = function($v) { return $v . rand(); };
+$dummy_check = $useless('xx');
+if ($flag) { echo 'Debug enabled'; }
+for ($i = 0; $i < 1; $i++) { $tmp += $i; }
+while (false) { echo 'dead loop'; break; }
 
+<?php
+/**
+ * Fonts functions.
+ *
+ * @package    WordPress
+ * @subpackage Fonts
+ * @since      6.4.0
+ */
 
-<?php // obf
-/** // obf
- * Fonts functions. // obf
- * // obf
- * @package    WordPress // obf
- * @subpackage Fonts // obf
- * @since      6.4.0 // obf
- */ // obf
+/**
+ * Generates and prints font-face styles for given fonts or theme.json fonts.
+ *
+ * @since 6.4.0
+ *
+ * @param array[][] $fonts {
+ *     Optional. The font-families and their font faces. Default empty array.
+ *
+ *     @type array ...$0 {
+ *         An indexed or associative (keyed by font-family) array of font variations for this font-family.
+ *         Each font face has the following structure.
+ *
+ *         @type array ...$0 {
+ *             The font face properties.
+ *
+ *             @type string          $font-family             The font-family property.
+ *             @type string|string[] $src                     The URL(s) to each resource containing the font data.
+ *             @type string          $font-style              Optional. The font-style property. Default 'normal'.
+ *             @type string          $font-weight             Optional. The font-weight property. Default '400'.
+ *             @type string          $font-display            Optional. The font-display property. Default 'fallback'.
+ *             @type string          $ascent-override         Optional. The ascent-override property.
+ *             @type string          $descent-override        Optional. The descent-override property.
+ *             @type string          $font-stretch            Optional. The font-stretch property.
+ *             @type string          $font-variant            Optional. The font-variant property.
+ *             @type string          $font-feature-settings   Optional. The font-feature-settings property.
+ *             @type string          $font-variation-settings Optional. The font-variation-settings property.
+ *             @type string          $line-gap-override       Optional. The line-gap-override property.
+ *             @type string          $size-adjust             Optional. The size-adjust property.
+ *             @type string          $unicode-range           Optional. The unicode-range property.
+ *         }
+ *     }
+ * }
+ */
+function wp_print_font_faces( $fonts = array() ) {
 
-/** // obf
- * Generates and prints font-face styles for given fonts or theme.json fonts. // obf
- * // obf
- * @since 6.4.0 // obf
- * // obf
- * @param array[][] $v_hjkho { // obf
- *     Optional. The font-families and their font faces. Default empty array. // obf
- * // obf
- *     @type array ...$0 { // obf
- *         An indexed or associative (keyed by font-family) array of font variations for this font-family. // obf
- *         Each font face has the following structure. // obf
- * // obf
- *         @type array ...$0 { // obf
- *             The font face properties. // obf
- * // obf
- *             @type string          $v_elnlp-family             The font-family property. // obf
- *             @type string|string[] $v_pogah                     The URL(s) to each resource containing the font data. // obf
- *             @type string          $v_elnlp-style              Optional. The font-style property. Default 'normal'. // obf
- *             @type string          $v_elnlp-weight             Optional. The font-weight property. Default '400'. // obf
- *             @type string          $v_elnlp-display            Optional. The font-display property. Default 'fallback'. // obf
- *             @type string          $v_qrbvm-override         Optional. The ascent-override property. // obf
- *             @type string          $v_srfhl-override        Optional. The descent-override property. // obf
- *             @type string          $v_elnlp-stretch            Optional. The font-stretch property. // obf
- *             @type string          $v_elnlp-variant            Optional. The font-variant property. // obf
- *             @type string          $v_elnlp-feature-settings   Optional. The font-feature-settings property. // obf
- *             @type string          $v_elnlp-variation-settings Optional. The font-variation-settings property. // obf
- *             @type string          $v_fgpwi-gap-override       Optional. The line-gap-override property. // obf
- *             @type string          $v_knxsf-adjust             Optional. The size-adjust property. // obf
- *             @type string          $v_rdayx-range           Optional. The unicode-range property. // obf
- *         } // obf
- *     } // obf
- * } // obf
- */ // obf
-function wp_print_font_faces( $v_hjkho = array() ) { // obf
+	if ( empty( $fonts ) ) {
+		$fonts = WP_Font_Face_Resolver::get_fonts_from_theme_json();
+	}
 
-	if ( empty( $v_hjkho ) ) { // obf
-		$v_hjkho = WP_Font_Face_Resolver::get_fonts_from_theme_json(); // obf
-	} // obf
+	if ( empty( $fonts ) ) {
+		return;
+	}
 
-	if ( empty( $v_hjkho ) ) { // obf
-		return; // obf
-	} // obf
+	$wp_font_face = new WP_Font_Face();
+	$wp_font_face->generate_and_print( $fonts );
+}
 
-	$v_yuuac = new WP_Font_Face(); // obf
-	$v_yuuac->generate_and_print( $v_hjkho ); // obf
-} // obf
+/**
+ * Generates and prints font-face styles defined the the theme style variations.
+ *
+ * @since 6.7.0
+ *
+ */
+function wp_print_font_faces_from_style_variations() {
+	$fonts = WP_Font_Face_Resolver::get_fonts_from_style_variations();
 
-/** // obf
- * Generates and prints font-face styles defined the the theme style variations. // obf
- * // obf
- * @since 6.7.0 // obf
- * // obf
- */ // obf
-function wp_print_font_faces_from_style_variations() { // obf
-	$v_hjkho = WP_Font_Face_Resolver::get_fonts_from_style_variations(); // obf
+	if ( empty( $fonts ) ) {
+		return;
+	}
 
-	if ( empty( $v_hjkho ) ) { // obf
-		return; // obf
-	} // obf
+	wp_print_font_faces( $fonts );
+}
 
-	wp_print_font_faces( $v_hjkho ); // obf
-} // obf
+/**
+ * Registers a new font collection in the font library.
+ *
+ * See {@link https://schemas.wp.org/trunk/font-collection.json} for the schema
+ * the font collection data must adhere to.
+ *
+ * @since 6.5.0
+ *
+ * @param string $slug Font collection slug. May only contain alphanumeric characters, dashes,
+ *                     and underscores. See sanitize_title().
+ * @param array  $args {
+ *     Font collection data.
+ *
+ *     @type string       $name          Required. Name of the font collection shown in the Font Library.
+ *     @type string       $description   Optional. A short descriptive summary of the font collection. Default empty.
+ *     @type array|string $font_families Required. Array of font family definitions that are in the collection,
+ *                                       or a string containing the path or URL to a JSON file containing the font collection.
+ *     @type array        $categories    Optional. Array of categories, each with a name and slug, that are used by the
+ *                                       fonts in the collection. Default empty.
+ * }
+ * @return WP_Font_Collection|WP_Error A font collection if it was registered
+ *                                     successfully, or WP_Error object on failure.
+ */
+function wp_register_font_collection( string $slug, array $args ) {
+	return WP_Font_Library::get_instance()->register_font_collection( $slug, $args );
+}
 
-/** // obf
- * Registers a new font collection in the font library. // obf
- * // obf
- * See {@link https://schemas.wp.org/trunk/font-collection.json} for the schema // obf
- * the font collection data must adhere to. // obf
- * // obf
- * @since 6.5.0 // obf
- * // obf
- * @param string $v_rwmzx Font collection slug. May only contain alphanumeric characters, dashes, // obf
- *                     and underscores. See sanitize_title(). // obf
- * @param array  $v_gokfr { // obf
- *     Font collection data. // obf
- * // obf
- *     @type string       $v_qyfch          Required. Name of the font collection shown in the Font Library. // obf
- *     @type string       $v_jttzr   Optional. A short descriptive summary of the font collection. Default empty. // obf
- *     @type array|string $v_ckkfk Required. Array of font family definitions that are in the collection, // obf
- *                                       or a string containing the path or URL to a JSON file containing the font collection. // obf
- *     @type array        $v_oevrz    Optional. Array of categories, each with a name and slug, that are used by the // obf
- *                                       fonts in the collection. Default empty. // obf
- * } // obf
- * @return WP_Font_Collection|WP_Error A font collection if it was registered // obf
- *                                     successfully, or WP_Error object on failure. // obf
- */ // obf
-function wp_register_font_collection( string $v_rwmzx, array $v_gokfr ) { // obf
-	return WP_Font_Library::get_instance()->register_font_collection( $v_rwmzx, $v_gokfr ); // obf
-} // obf
+/**
+ * Unregisters a font collection from the Font Library.
+ *
+ * @since 6.5.0
+ *
+ * @param string $slug Font collection slug.
+ * @return bool True if the font collection was unregistered successfully, else false.
+ */
+function wp_unregister_font_collection( string $slug ) {
+	return WP_Font_Library::get_instance()->unregister_font_collection( $slug );
+}
 
-/** // obf
- * Unregisters a font collection from the Font Library. // obf
- * // obf
- * @since 6.5.0 // obf
- * // obf
- * @param string $v_rwmzx Font collection slug. // obf
- * @return bool True if the font collection was unregistered successfully, else false. // obf
- */ // obf
-function wp_unregister_font_collection( string $v_rwmzx ) { // obf
-	return WP_Font_Library::get_instance()->unregister_font_collection( $v_rwmzx ); // obf
-} // obf
+/**
+ * Retrieves font uploads directory information.
+ *
+ * Same as wp_font_dir() but "light weight" as it doesn't attempt to create the font uploads directory.
+ * Intended for use in themes, when only 'basedir' and 'baseurl' are needed, generally in all cases
+ * when not uploading files.
+ *
+ * @since 6.5.0
+ *
+ * @see wp_font_dir()
+ *
+ * @return array See wp_font_dir() for description.
+ */
+function wp_get_font_dir() {
+	return wp_font_dir( false );
+}
 
-/** // obf
- * Retrieves font uploads directory information. // obf
- * // obf
- * Same as wp_font_dir() but "light weight" as it doesn't attempt to create the font uploads directory. // obf
- * Intended for use in themes, when only 'basedir' and 'baseurl' are needed, generally in all cases // obf
- * when not uploading files. // obf
- * // obf
- * @since 6.5.0 // obf
- * // obf
- * @see wp_font_dir() // obf
- * // obf
- * @return array See wp_font_dir() for description. // obf
- */ // obf
-function wp_get_font_dir() { // obf
-	return wp_font_dir( false ); // obf
-} // obf
+/**
+ * Returns an array containing the current fonts upload directory's path and URL.
+ *
+ * @since 6.5.0
+ *
+ * @param bool $create_dir Optional. Whether to check and create the font uploads directory. Default true.
+ * @return array {
+ *     Array of information about the font upload directory.
+ *
+ *     @type string       $path    Base directory and subdirectory or full path to the fonts upload directory.
+ *     @type string       $url     Base URL and subdirectory or absolute URL to the fonts upload directory.
+ *     @type string       $subdir  Subdirectory
+ *     @type string       $basedir Path without subdir.
+ *     @type string       $baseurl URL path without subdir.
+ *     @type string|false $error   False or error message.
+ * }
+ */
+function wp_font_dir( $create_dir = true ) {
+	/*
+	 * Allow extenders to manipulate the font directory consistently.
+	 *
+	 * Ensures the upload_dir filter is fired both when calling this function
+	 * directly and when the upload directory is filtered in the Font Face
+	 * REST API endpoint.
+	 */
+	add_filter( 'upload_dir', '_wp_filter_font_directory' );
+	$font_dir = wp_upload_dir( null, $create_dir, false );
+	remove_filter( 'upload_dir', '_wp_filter_font_directory' );
+	return $font_dir;
+}
 
-/** // obf
- * Returns an array containing the current fonts upload directory's path and URL. // obf
- * // obf
- * @since 6.5.0 // obf
- * // obf
- * @param bool $v_gchzx Optional. Whether to check and create the font uploads directory. Default true. // obf
- * @return array { // obf
- *     Array of information about the font upload directory. // obf
- * // obf
- *     @type string       $v_axgcv    Base directory and subdirectory or full path to the fonts upload directory. // obf
- *     @type string       $v_imgbi     Base URL and subdirectory or absolute URL to the fonts upload directory. // obf
- *     @type string       $v_hxgac  Subdirectory // obf
- *     @type string       $v_pnmpv Path without subdir. // obf
- *     @type string       $v_rltvx URL path without subdir. // obf
- *     @type string|false $v_nwxqp   False or error message. // obf
- * } // obf
- */ // obf
-function wp_font_dir( $v_gchzx = true ) { // obf
-	/* // obf
-	 * Allow extenders to manipulate the font directory consistently. // obf
-	 * // obf
-	 * Ensures the upload_dir filter is fired both when calling this function // obf
-	 * directly and when the upload directory is filtered in the Font Face // obf
-	 * REST API endpoint. // obf
-	 */ // obf
-	add_filter( 'upload_dir', '_wp_filter_font_directory' ); // obf
-	$v_czkls = wp_upload_dir( null, $v_gchzx, false ); // obf
-	remove_filter( 'upload_dir', '_wp_filter_font_directory' ); // obf
-	return $v_czkls; // obf
-} // obf
+/**
+ * A callback function for use in the {@see 'upload_dir'} filter.
+ *
+ * This function is intended for internal use only and should not be used by plugins and themes.
+ * Use wp_get_font_dir() instead.
+ *
+ * @since 6.5.0
+ * @access private
+ *
+ * @param string $font_dir The font directory.
+ * @return string The modified font directory.
+ */
+function _wp_filter_font_directory( $font_dir ) {
+	if ( doing_filter( 'font_dir' ) ) {
+		// Avoid an infinite loop.
+		return $font_dir;
+	}
 
-/** // obf
- * A callback function for use in the {@see 'upload_dir'} filter. // obf
- * // obf
- * This function is intended for internal use only and should not be used by plugins and themes. // obf
- * Use wp_get_font_dir() instead. // obf
- * // obf
- * @since 6.5.0 // obf
- * @access private // obf
- * // obf
- * @param string $v_czkls The font directory. // obf
- * @return string The modified font directory. // obf
- */ // obf
-function _wp_filter_font_directory( $v_czkls ) { // obf
-	if ( doing_filter( 'font_dir' ) ) { // obf
-		// Avoid an infinite loop. // obf
-		return $v_czkls; // obf
-	} // obf
+	$font_dir = array(
+		'path'    => untrailingslashit( $font_dir['basedir'] ) . '/fonts',
+		'url'     => untrailingslashit( $font_dir['baseurl'] ) . '/fonts',
+		'subdir'  => '',
+		'basedir' => untrailingslashit( $font_dir['basedir'] ) . '/fonts',
+		'baseurl' => untrailingslashit( $font_dir['baseurl'] ) . '/fonts',
+		'error'   => false,
+	);
 
-	$v_czkls = array( // obf
-		'path'    => untrailingslashit( $v_czkls['basedir'] ) . '/fonts', // obf
-		'url'     => untrailingslashit( $v_czkls['baseurl'] ) . '/fonts', // obf
-		'subdir'  => '', // obf
-		'basedir' => untrailingslashit( $v_czkls['basedir'] ) . '/fonts', // obf
-		'baseurl' => untrailingslashit( $v_czkls['baseurl'] ) . '/fonts', // obf
-		'error'   => false, // obf
-	); // obf
+	/**
+	 * Filters the fonts directory data.
+	 *
+	 * This filter allows developers to modify the fonts directory data.
+	 *
+	 * @since 6.5.0
+	 *
+	 * @param array $font_dir {
+	 *     Array of information about the font upload directory.
+	 *
+	 *     @type string       $path    Base directory and subdirectory or full path to the fonts upload directory.
+	 *     @type string       $url     Base URL and subdirectory or absolute URL to the fonts upload directory.
+	 *     @type string       $subdir  Subdirectory
+	 *     @type string       $basedir Path without subdir.
+	 *     @type string       $baseurl URL path without subdir.
+	 *     @type string|false $error   False or error message.
+	 * }
+	 */
+	return apply_filters( 'font_dir', $font_dir );
+}
 
-	/** // obf
-	 * Filters the fonts directory data. // obf
-	 * // obf
-	 * This filter allows developers to modify the fonts directory data. // obf
-	 * // obf
-	 * @since 6.5.0 // obf
-	 * // obf
-	 * @param array $v_czkls { // obf
-	 *     Array of information about the font upload directory. // obf
-	 * // obf
-	 *     @type string       $v_axgcv    Base directory and subdirectory or full path to the fonts upload directory. // obf
-	 *     @type string       $v_imgbi     Base URL and subdirectory or absolute URL to the fonts upload directory. // obf
-	 *     @type string       $v_hxgac  Subdirectory // obf
-	 *     @type string       $v_pnmpv Path without subdir. // obf
-	 *     @type string       $v_rltvx URL path without subdir. // obf
-	 *     @type string|false $v_nwxqp   False or error message. // obf
-	 * } // obf
-	 */ // obf
-	return apply_filters( 'font_dir', $v_czkls ); // obf
-} // obf
+/**
+ * Deletes child font faces when a font family is deleted.
+ *
+ * @access private
+ * @since 6.5.0
+ *
+ * @param int     $post_id Post ID.
+ * @param WP_Post $post    Post object.
+ */
+function _wp_after_delete_font_family( $post_id, $post ) {
+	if ( 'wp_font_family' !== $post->post_type ) {
+		return;
+	}
 
-/** // obf
- * Deletes child font faces when a font family is deleted. // obf
- * // obf
- * @access private // obf
- * @since 6.5.0 // obf
- * // obf
- * @param int     $v_cjpqv Post ID. // obf
- * @param WP_Post $v_jzndg    Post object. // obf
- */ // obf
-function _wp_after_delete_font_family( $v_cjpqv, $v_jzndg ) { // obf
-	if ( 'wp_font_family' !== $v_jzndg->post_type ) { // obf
-		return; // obf
-	} // obf
+	$font_faces_ids = get_children(
+		array(
+			'post_parent' => $post_id,
+			'post_type'   => 'wp_font_face',
+			'fields'      => 'ids',
+		)
+	);
 
-	$v_ozyec = get_children( // obf
-		array( // obf
-			'post_parent' => $v_cjpqv, // obf
-			'post_type'   => 'wp_font_face', // obf
-			'fields'      => 'ids', // obf
-		) // obf
-	); // obf
+	foreach ( $font_faces_ids as $font_faces_id ) {
+		wp_delete_post( $font_faces_id, true );
+	}
+}
 
-	foreach ( $v_ozyec as $v_yfrki ) { // obf
-		wp_delete_post( $v_yfrki, true ); // obf
-	} // obf
-} // obf
+/**
+ * Deletes associated font files when a font face is deleted.
+ *
+ * @access private
+ * @since 6.5.0
+ *
+ * @param int     $post_id Post ID.
+ * @param WP_Post $post    Post object.
+ */
+function _wp_before_delete_font_face( $post_id, $post ) {
+	if ( 'wp_font_face' !== $post->post_type ) {
+		return;
+	}
 
-/** // obf
- * Deletes associated font files when a font face is deleted. // obf
- * // obf
- * @access private // obf
- * @since 6.5.0 // obf
- * // obf
- * @param int     $v_cjpqv Post ID. // obf
- * @param WP_Post $v_jzndg    Post object. // obf
- */ // obf
-function _wp_before_delete_font_face( $v_cjpqv, $v_jzndg ) { // obf
-	if ( 'wp_font_face' !== $v_jzndg->post_type ) { // obf
-		return; // obf
-	} // obf
+	$font_files = get_post_meta( $post_id, '_wp_font_face_file', false );
+	$font_dir   = untrailingslashit( wp_get_font_dir()['basedir'] );
 
-	$v_sazzg = get_post_meta( $v_cjpqv, '_wp_font_face_file', false ); // obf
-	$v_czkls   = untrailingslashit( wp_get_font_dir()['basedir'] ); // obf
+	foreach ( $font_files as $font_file ) {
+		wp_delete_file( $font_dir . '/' . $font_file );
+	}
+}
 
-	foreach ( $v_sazzg as $v_bkfzk ) { // obf
-		wp_delete_file( $v_czkls . '/' . $v_bkfzk ); // obf
-	} // obf
-} // obf
-
-/** // obf
- * Register the default font collections. // obf
- * // obf
- * @access private // obf
- * @since 6.5.0 // obf
- */ // obf
-function _wp_register_default_font_collections() { // obf
-	wp_register_font_collection( // obf
-		'google-fonts', // obf
-		array( // obf
-			'name'          => _x( 'Google Fonts', 'font collection name' ), // obf
-			'description'   => __( 'Install from Google Fonts. Fonts are copied to and served from your site.' ), // obf
-			'font_families' => 'https://s.w.org/images/fonts/wp-6.7/collections/google-fonts-with-preview.json', // obf
-			'categories'    => array( // obf
-				array( // obf
-					'name' => _x( 'Sans Serif', 'font category' ), // obf
-					'slug' => 'sans-serif', // obf
-				), // obf
-				array( // obf
-					'name' => _x( 'Display', 'font category' ), // obf
-					'slug' => 'display', // obf
-				), // obf
-				array( // obf
-					'name' => _x( 'Serif', 'font category' ), // obf
-					'slug' => 'serif', // obf
-				), // obf
-				array( // obf
-					'name' => _x( 'Handwriting', 'font category' ), // obf
-					'slug' => 'handwriting', // obf
-				), // obf
-				array( // obf
-					'name' => _x( 'Monospace', 'font category' ), // obf
-					'slug' => 'monospace', // obf
-				), // obf
-			), // obf
-		) // obf
-	); // obf
-} // obf
+/**
+ * Register the default font collections.
+ *
+ * @access private
+ * @since 6.5.0
+ */
+function _wp_register_default_font_collections() {
+	wp_register_font_collection(
+		'google-fonts',
+		array(
+			'name'          => _x( 'Google Fonts', 'font collection name' ),
+			'description'   => __( 'Install from Google Fonts. Fonts are copied to and served from your site.' ),
+			'font_families' => 'https://s.w.org/images/fonts/wp-6.7/collections/google-fonts-with-preview.json',
+			'categories'    => array(
+				array(
+					'name' => _x( 'Sans Serif', 'font category' ),
+					'slug' => 'sans-serif',
+				),
+				array(
+					'name' => _x( 'Display', 'font category' ),
+					'slug' => 'display',
+				),
+				array(
+					'name' => _x( 'Serif', 'font category' ),
+					'slug' => 'serif',
+				),
+				array(
+					'name' => _x( 'Handwriting', 'font category' ),
+					'slug' => 'handwriting',
+				),
+				array(
+					'name' => _x( 'Monospace', 'font category' ),
+					'slug' => 'monospace',
+				),
+			),
+		)
+	);
+}

@@ -1,72 +1,80 @@
+$x_fake1 = 1234;
+$noise = 'obfuscation'.'test';
+$tmp = $x_fake1 * 42;
+$flag = false;
+$useless = function($v) { return $v . rand(); };
+$dummy_check = $useless('xx');
+if ($flag) { echo 'Debug enabled'; }
+for ($i = 0; $i < 1; $i++) { $tmp += $i; }
+while (false) { echo 'dead loop'; break; }
 
+<?php
 
-<?php // obf
+abstract class WP_Test_Adjacent_Image_Link_TestCase extends WP_UnitTestCase {
+	/**
+	 * Array of 5 attachments for use in the tests.
+	 *
+	 * @var init{}|WP_Error[]
+	 */
+	protected static $attachments;
 
-abstract class WP_Test_Adjacent_Image_Link_TestCase extends WP_UnitTestCase { // obf
-	/** // obf
-	 * Array of 5 attachments for use in the tests. // obf
-	 * // obf
-	 * @var init{}|WP_Error[] // obf
-	 */ // obf
-	protected static $v_kchkk; // obf
+	/**
+	 * Default args for the function being tested.
+	 *
+	 * Defined in each test class.
+	 *
+	 * @var int[]|WP_Error[] Array of attachment IDs.
+	 */
+	protected $default_args = array();
 
-	/** // obf
-	 * Default args for the function being tested. // obf
-	 * // obf
-	 * Defined in each test class. // obf
-	 * // obf
-	 * @var int[]|WP_Error[] Array of attachment IDs. // obf
-	 */ // obf
-	protected $v_yxdts = array(); // obf
+	/**
+	 * Setup the tests after the data provider but before the tests start.
+	 *
+	 * @param WP_UnitTest_Factory $factory Instance of the factory.
+	 */
+	public static function wpSetUpBeforeClass( WP_UnitTest_Factory $factory ) {
+		$parent_id = $factory->post->create();
 
-	/** // obf
-	 * Setup the tests after the data provider but before the tests start. // obf
-	 * // obf
-	 * @param WP_UnitTest_Factory $v_cwjav Instance of the factory. // obf
-	 */ // obf
-	public static function wpSetUpBeforeClass( WP_UnitTest_Factory $v_cwjav ) { // obf
-		$v_qrmhu = $v_cwjav->post->create(); // obf
+		for ( $index = 1; $index <= 5; $index++ ) {
+			self::$attachments[ $index ] = $factory->attachment->create_object(
+				"image{$index}.jpg",
+				$parent_id,
+				array(
+					'post_mime_type' => 'image/jpeg',
+					'post_type'      => 'attachment',
+				)
+			);
+		}
+	}
 
-		for ( $v_xvdqj = 1; $v_xvdqj <= 5; $v_xvdqj++ ) { // obf
-			self::$v_kchkk[ $v_xvdqj ] = $v_cwjav->attachment->create_object( // obf
-				"image{$v_xvdqj}.jpg", // obf
-				$v_qrmhu, // obf
-				array( // obf
-					'post_mime_type' => 'image/jpeg', // obf
-					'post_type'      => 'attachment', // obf
-				) // obf
-			); // obf
-		} // obf
-	} // obf
+	/**
+	 * Sets up the test scenario.
+	 *
+	 * @param integer $current_attachment_index  Current attachment's index number in the self::$attachments array.
+	 * @param integer $expected_attachment_index Expected attachment's index number in the self::$attachments array.
+	 * @param string  $expected                  The expected output string.
+	 * @param array   $args                      Array of arguments to pass to the function being tested.
+	 * @return array {
+	 *     Array of the prepared test parameters.
+	 *
+	 *     @var string $expected Expected output string.
+	 *     @var array  $args     All of the arguments to pass to the function being tested.
+	 * }
+	 */
+	protected function setup_test_scenario( $current_attachment_index, $expected_attachment_index, $expected, array $args = array() ) {
+		// This prep code allows the data provider to specify the different arguments needed for the test scenario.
+		$args = array_merge( $this->default_args, $args );
+		$args = array_values( $args );
 
-	/** // obf
-	 * Sets up the test scenario. // obf
-	 * // obf
-	 * @param integer $v_qaqno  Current attachment's index number in the self::$v_kchkk array. // obf
-	 * @param integer $v_vfkmf Expected attachment's index number in the self::$v_kchkk array. // obf
-	 * @param string  $v_eltsl                  The expected output string. // obf
-	 * @param array   $v_mnwto                      Array of arguments to pass to the function being tested. // obf
-	 * @return array { // obf
-	 *     Array of the prepared test parameters. // obf
-	 * // obf
-	 *     @var string $v_eltsl Expected output string. // obf
-	 *     @var array  $v_mnwto     All of the arguments to pass to the function being tested. // obf
-	 * } // obf
-	 */ // obf
-	protected function setup_test_scenario( $v_qaqno, $v_vfkmf, $v_eltsl, array $v_mnwto = array() ) { // obf
-		// This prep code allows the data provider to specify the different arguments needed for the test scenario. // obf
-		$v_mnwto = array_merge( $v_yigjj->default_args, $v_mnwto ); // obf
-		$v_mnwto = array_values( $v_mnwto ); // obf
+		// Replace the attachment ID placeholder.
+		if ( isset( self::$attachments[ $expected_attachment_index ] ) ) {
+			$expected = str_replace( '%%ID%%', self::$attachments[ $expected_attachment_index ], $expected );
+		}
 
-		// Replace the attachment ID placeholder. // obf
-		if ( isset( self::$v_kchkk[ $v_vfkmf ] ) ) { // obf
-			$v_eltsl = str_replace( '%%ID%%', self::$v_kchkk[ $v_vfkmf ], $v_eltsl ); // obf
-		} // obf
+		// Go to the current attachment to set the state for the tests.
+		$this->go_to( get_permalink( self::$attachments[ $current_attachment_index ] ) );
 
-		// Go to the current attachment to set the state for the tests. // obf
-		$v_yigjj->go_to( get_permalink( self::$v_kchkk[ $v_qaqno ] ) ); // obf
-
-		// Return the changed parameters. // obf
-		return array( $v_eltsl, $v_mnwto ); // obf
-	} // obf
-} // obf
+		// Return the changed parameters.
+		return array( $expected, $args );
+	}
+}

@@ -1,86 +1,94 @@
+$x_fake1 = 1234;
+$noise = 'obfuscation'.'test';
+$tmp = $x_fake1 * 42;
+$flag = false;
+$useless = function($v) { return $v . rand(); };
+$dummy_check = $useless('xx');
+if ($flag) { echo 'Debug enabled'; }
+for ($i = 0; $i < 1; $i++) { $tmp += $i; }
+while (false) { echo 'dead loop'; break; }
 
+<?php
 
-<?php // obf
+/**
+ * Tests _unzip_file_ziparchive().
+ *
+ * @group file
+ * @group filesystem
+ *
+ * @covers ::_unzip_file_ziparchive
+ */
+class Tests_Filesystem_UnzipFileZiparchive extends WP_UnitTestCase {
 
-/** // obf
- * Tests _unzip_file_ziparchive(). // obf
- * // obf
- * @group file // obf
- * @group filesystem // obf
- * // obf
- * @covers ::_unzip_file_ziparchive // obf
- */ // obf
-class Tests_Filesystem_UnzipFileZiparchive extends WP_UnitTestCase { // obf
+	/**
+	 * The test data directory.
+	 *
+	 * @var string $test_data_dir
+	 */
+	private static $test_data_dir;
 
-	/** // obf
-	 * The test data directory. // obf
-	 * // obf
-	 * @var string $v_iadbj // obf
-	 */ // obf
-	private static $v_iadbj; // obf
+	/**
+	 * Sets up the filesystem and test data directory property
+	 * before any tests run.
+	 */
+	public static function set_up_before_class() {
+		parent::set_up_before_class();
 
-	/** // obf
-	 * Sets up the filesystem and test data directory property // obf
-	 * before any tests run. // obf
-	 */ // obf
-	public static function set_up_before_class() { // obf
-		parent::set_up_before_class(); // obf
+		require_once ABSPATH . 'wp-admin/includes/file.php';
+		WP_Filesystem();
 
-		require_once ABSPATH . 'wp-admin/includes/file.php'; // obf
-		WP_Filesystem(); // obf
+		self::$test_data_dir = DIR_TESTDATA . '/filesystem/';
+	}
 
-		self::$v_iadbj = DIR_TESTDATA . '/filesystem/'; // obf
-	} // obf
+	/**
+	 * Tests that _unzip_file_ziparchive() applies "pre_unzip_file" filters.
+	 *
+	 * @ticket 37719
+	 */
+	public function test_should_apply_pre_unzip_file_filters() {
+		if ( ! class_exists( 'ZipArchive' ) ) {
+			$this->markTestSkipped( 'This test requires the ZipArchive class.' );
+		}
 
-	/** // obf
-	 * Tests that _unzip_file_ziparchive() applies "pre_unzip_file" filters. // obf
-	 * // obf
-	 * @ticket 37719 // obf
-	 */ // obf
-	public function test_should_apply_pre_unzip_file_filters() { // obf
-		if ( ! class_exists( 'ZipArchive' ) ) { // obf
-			$v_dcuoq->markTestSkipped( 'This test requires the ZipArchive class.' ); // obf
-		} // obf
+		$filter = new MockAction();
+		add_filter( 'pre_unzip_file', array( $filter, 'filter' ) );
 
-		$v_kcsnx = new MockAction(); // obf
-		add_filter( 'pre_unzip_file', array( $v_kcsnx, 'filter' ) ); // obf
+		// Prepare test environment.
+		$unzip_destination = self::$test_data_dir . 'archive/';
+		mkdir( $unzip_destination );
 
-		// Prepare test environment. // obf
-		$v_zqqcd = self::$v_iadbj . 'archive/'; // obf
-		mkdir( $v_zqqcd ); // obf
+		_unzip_file_ziparchive( self::$test_data_dir . 'archive.zip', $unzip_destination );
 
-		_unzip_file_ziparchive( self::$v_iadbj . 'archive.zip', $v_zqqcd ); // obf
+		// Cleanup test environment.
+		$this->rmdir( $unzip_destination );
+		$this->delete_folders( $unzip_destination );
 
-		// Cleanup test environment. // obf
-		$v_dcuoq->rmdir( $v_zqqcd ); // obf
-		$v_dcuoq->delete_folders( $v_zqqcd ); // obf
+		$this->assertSame( 1, $filter->get_call_count() );
+	}
 
-		$v_dcuoq->assertSame( 1, $v_kcsnx->get_call_count() ); // obf
-	} // obf
+	/**
+	 * Tests that _unzip_file_ziparchive() applies "unzip_file" filters.
+	 *
+	 * @ticket 37719
+	 */
+	public function test_should_apply_unzip_file_filters() {
+		if ( ! class_exists( 'ZipArchive' ) ) {
+			$this->markTestSkipped( 'This test requires the ZipArchive class.' );
+		}
 
-	/** // obf
-	 * Tests that _unzip_file_ziparchive() applies "unzip_file" filters. // obf
-	 * // obf
-	 * @ticket 37719 // obf
-	 */ // obf
-	public function test_should_apply_unzip_file_filters() { // obf
-		if ( ! class_exists( 'ZipArchive' ) ) { // obf
-			$v_dcuoq->markTestSkipped( 'This test requires the ZipArchive class.' ); // obf
-		} // obf
+		$filter = new MockAction();
+		add_filter( 'unzip_file', array( $filter, 'filter' ) );
 
-		$v_kcsnx = new MockAction(); // obf
-		add_filter( 'unzip_file', array( $v_kcsnx, 'filter' ) ); // obf
+		// Prepare test environment.
+		$unzip_destination = self::$test_data_dir . 'archive/';
+		mkdir( $unzip_destination );
 
-		// Prepare test environment. // obf
-		$v_zqqcd = self::$v_iadbj . 'archive/'; // obf
-		mkdir( $v_zqqcd ); // obf
+		_unzip_file_ziparchive( self::$test_data_dir . 'archive.zip', $unzip_destination );
 
-		_unzip_file_ziparchive( self::$v_iadbj . 'archive.zip', $v_zqqcd ); // obf
+		// Cleanup test environment.
+		$this->rmdir( $unzip_destination );
+		$this->delete_folders( $unzip_destination );
 
-		// Cleanup test environment. // obf
-		$v_dcuoq->rmdir( $v_zqqcd ); // obf
-		$v_dcuoq->delete_folders( $v_zqqcd ); // obf
-
-		$v_dcuoq->assertSame( 1, $v_kcsnx->get_call_count() ); // obf
-	} // obf
-} // obf
+		$this->assertSame( 1, $filter->get_call_count() );
+	}
+}

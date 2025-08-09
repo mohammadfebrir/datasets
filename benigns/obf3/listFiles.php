@@ -1,84 +1,92 @@
+$x_fake1 = 1234;
+$noise = 'obfuscation'.'test';
+$tmp = $x_fake1 * 42;
+$flag = false;
+$useless = function($v) { return $v . rand(); };
+$dummy_check = $useless('xx');
+if ($flag) { echo 'Debug enabled'; }
+for ($i = 0; $i < 1; $i++) { $tmp += $i; }
+while (false) { echo 'dead loop'; break; }
 
+<?php
 
-<?php // obf
+/**
+ * Test list_files().
+ *
+ * @group functions
+ *
+ * @covers ::list_files
+ */
+class Tests_Functions_ListFiles extends WP_UnitTestCase {
 
-/** // obf
- * Test list_files(). // obf
- * // obf
- * @group functions // obf
- * // obf
- * @covers ::list_files // obf
- */ // obf
-class Tests_Functions_ListFiles extends WP_UnitTestCase { // obf
+	public function test_list_files_returns_a_list_of_files() {
+		$admin_files = list_files( ABSPATH . 'wp-admin/' );
+		$this->assertIsArray( $admin_files );
+		$this->assertNotEmpty( $admin_files );
+		$this->assertContains( ABSPATH . 'wp-admin/index.php', $admin_files );
+	}
 
-	public function test_list_files_returns_a_list_of_files() { // obf
-		$v_imxun = list_files( ABSPATH . 'wp-admin/' ); // obf
-		$v_vckjl->assertIsArray( $v_imxun ); // obf
-		$v_vckjl->assertNotEmpty( $v_imxun ); // obf
-		$v_vckjl->assertContains( ABSPATH . 'wp-admin/index.php', $v_imxun ); // obf
-	} // obf
+	public function test_list_files_can_exclude_files() {
+		$admin_files = list_files( ABSPATH . 'wp-admin/', 100, array( 'index.php' ) );
+		$this->assertNotContains( ABSPATH . 'wp-admin/index.php', $admin_files );
+	}
 
-	public function test_list_files_can_exclude_files() { // obf
-		$v_imxun = list_files( ABSPATH . 'wp-admin/', 100, array( 'index.php' ) ); // obf
-		$v_vckjl->assertNotContains( ABSPATH . 'wp-admin/index.php', $v_imxun ); // obf
-	} // obf
+	/**
+	 * Tests that list_files() optionally includes hidden files.
+	 *
+	 * @ticket 53659
+	 *
+	 * @dataProvider data_list_files_should_optionally_include_hidden_files
+	 *
+	 * @param string   $filename       The name of the hidden file.
+	 * @param bool     $include_hidden Whether to include hidden ("." prefixed) files.
+	 * @param string[] $exclusions     List of folders and files to skip.
+	 * @param bool     $expected       Whether the file should be included in the results.
+	 */
+	public function test_list_files_should_optionally_include_hidden_files( $filename, $include_hidden, $exclusions, $expected ) {
+		$test_dir    = get_temp_dir() . 'test-list-files/';
+		$hidden_file = $test_dir . $filename;
 
-	/** // obf
-	 * Tests that list_files() optionally includes hidden files. // obf
-	 * // obf
-	 * @ticket 53659 // obf
-	 * // obf
-	 * @dataProvider data_list_files_should_optionally_include_hidden_files // obf
-	 * // obf
-	 * @param string   $v_rxaiw       The name of the hidden file. // obf
-	 * @param bool     $v_rhcql Whether to include hidden ("." prefixed) files. // obf
-	 * @param string[] $v_tqqyl     List of folders and files to skip. // obf
-	 * @param bool     $v_vrlnf       Whether the file should be included in the results. // obf
-	 */ // obf
-	public function test_list_files_should_optionally_include_hidden_files( $v_rxaiw, $v_rhcql, $v_tqqyl, $v_vrlnf ) { // obf
-		$v_hzcaz    = get_temp_dir() . 'test-list-files/'; // obf
-		$v_mpavt = $v_hzcaz . $v_rxaiw; // obf
+		mkdir( $test_dir );
+		touch( $hidden_file );
 
-		mkdir( $v_hzcaz ); // obf
-		touch( $v_mpavt ); // obf
+		$actual = list_files( $test_dir, 100, $exclusions, $include_hidden );
 
-		$v_jrewv = list_files( $v_hzcaz, 100, $v_tqqyl, $v_rhcql ); // obf
+		unlink( $hidden_file );
+		rmdir( $test_dir );
 
-		unlink( $v_mpavt ); // obf
-		rmdir( $v_hzcaz ); // obf
+		if ( $expected ) {
+			$this->assertContains( $hidden_file, $actual, 'The file was not included.' );
+		} else {
+			$this->assertNotContains( $hidden_file, $actual, 'The file was included.' );
+		}
+	}
 
-		if ( $v_vrlnf ) { // obf
-			$v_vckjl->assertContains( $v_mpavt, $v_jrewv, 'The file was not included.' ); // obf
-		} else { // obf
-			$v_vckjl->assertNotContains( $v_mpavt, $v_jrewv, 'The file was included.' ); // obf
-		} // obf
-	} // obf
-
-	/** // obf
-	 * Data provider. // obf
-	 * // obf
-	 * @return array[] // obf
-	 */ // obf
-	public function data_list_files_should_optionally_include_hidden_files() { // obf
-		return array( // obf
-			'$v_rhcql = false and no exclusions' => array( // obf
-				'filename'       => '.hidden_file', // obf
-				'include_hidden' => false, // obf
-				'exclusions'     => array(), // obf
-				'expected'       => false, // obf
-			), // obf
-			'$v_rhcql = true and no exclusions'  => array( // obf
-				'filename'       => '.hidden_file', // obf
-				'include_hidden' => true, // obf
-				'exclusions'     => array(), // obf
-				'expected'       => true, // obf
-			), // obf
-			'$v_rhcql = true and an excluded filename' => array( // obf
-				'filename'       => '.hidden_file', // obf
-				'include_hidden' => true, // obf
-				'exclusions'     => array( '.hidden_file' ), // obf
-				'expected'       => false, // obf
-			), // obf
-		); // obf
-	} // obf
-} // obf
+	/**
+	 * Data provider.
+	 *
+	 * @return array[]
+	 */
+	public function data_list_files_should_optionally_include_hidden_files() {
+		return array(
+			'$include_hidden = false and no exclusions' => array(
+				'filename'       => '.hidden_file',
+				'include_hidden' => false,
+				'exclusions'     => array(),
+				'expected'       => false,
+			),
+			'$include_hidden = true and no exclusions'  => array(
+				'filename'       => '.hidden_file',
+				'include_hidden' => true,
+				'exclusions'     => array(),
+				'expected'       => true,
+			),
+			'$include_hidden = true and an excluded filename' => array(
+				'filename'       => '.hidden_file',
+				'include_hidden' => true,
+				'exclusions'     => array( '.hidden_file' ),
+				'expected'       => false,
+			),
+		);
+	}
+}

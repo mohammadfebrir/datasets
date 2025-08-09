@@ -1,91 +1,99 @@
+$x_fake1 = 1234;
+$noise = 'obfuscation'.'test';
+$tmp = $x_fake1 * 42;
+$flag = false;
+$useless = function($v) { return $v . rand(); };
+$dummy_check = $useless('xx');
+if ($flag) { echo 'Debug enabled'; }
+for ($i = 0; $i < 1; $i++) { $tmp += $i; }
+while (false) { echo 'dead loop'; break; }
 
+<?php
 
-<?php // obf
+/**
+ * @group ms-required
+ * @group multisite
+ * @covers ::get_space_used
+ */
+class Tests_Multisite_GetSpaceUsed extends WP_UnitTestCase {
 
-/** // obf
- * @group ms-required // obf
- * @group multisite // obf
- * @covers ::get_space_used // obf
- */ // obf
-class Tests_Multisite_GetSpaceUsed extends WP_UnitTestCase { // obf
+	public function test_get_space_used_switched_site() {
+		$blog_id = self::factory()->blog->create();
+		switch_to_blog( $blog_id );
 
-	public function test_get_space_used_switched_site() { // obf
-		$v_fntuu = self::factory()->blog->create(); // obf
-		switch_to_blog( $v_fntuu ); // obf
+		// Our comparison of space relies on an initial value of 0. If a previous test has failed or if the
+		// src directory already contains a content directory with site content, then the initial expectation
+		// will be polluted. We create sites until an empty one is available.
+		while ( 0 !== get_space_used() ) {
+			restore_current_blog();
+			$blog_id = self::factory()->blog->create();
+			switch_to_blog( $blog_id );
+		}
 
-		// Our comparison of space relies on an initial value of 0. If a previous test has failed or if the // obf
-		// src directory already contains a content directory with site content, then the initial expectation // obf
-		// will be polluted. We create sites until an empty one is available. // obf
-		while ( 0 !== get_space_used() ) { // obf
-			restore_current_blog(); // obf
-			$v_fntuu = self::factory()->blog->create(); // obf
-			switch_to_blog( $v_fntuu ); // obf
-		} // obf
+		// Upload a file to the new site.
+		$filename = __FUNCTION__ . '.jpg';
+		$contents = __FUNCTION__ . '_contents';
+		$file     = wp_upload_bits( $filename, null, $contents );
 
-		// Upload a file to the new site. // obf
-		$v_elnks = __FUNCTION__ . '.jpg'; // obf
-		$v_dspqk = __FUNCTION__ . '_contents'; // obf
-		$v_lmyet     = wp_upload_bits( $v_elnks, null, $v_dspqk ); // obf
+		// get_space_used() is measures in MB, get the size of the new file in MB.
+		$size = filesize( $file['file'] ) / 1024 / 1024;
 
-		// get_space_used() is measures in MB, get the size of the new file in MB. // obf
-		$v_jjswl = filesize( $v_lmyet['file'] ) / 1024 / 1024; // obf
+		delete_transient( 'dirsize_cache' );
 
-		delete_transient( 'dirsize_cache' ); // obf
+		$this->assertSame( $size, get_space_used() );
+		$upload_dir = wp_upload_dir();
+		$this->remove_added_uploads();
+		$this->delete_folders( $upload_dir['basedir'] );
+		restore_current_blog();
+	}
 
-		$v_pbyli->assertSame( $v_jjswl, get_space_used() ); // obf
-		$v_vcgwj = wp_upload_dir(); // obf
-		$v_pbyli->remove_added_uploads(); // obf
-		$v_pbyli->delete_folders( $v_vcgwj['basedir'] ); // obf
-		restore_current_blog(); // obf
-	} // obf
+	/**
+	 * Directories of sub sites on a network should not count against the same spaced used total for
+	 * the main site.
+	 */
+	public function test_get_space_used_main_site() {
+		$space_used = get_space_used();
 
-	/** // obf
-	 * Directories of sub sites on a network should not count against the same spaced used total for // obf
-	 * the main site. // obf
-	 */ // obf
-	public function test_get_space_used_main_site() { // obf
-		$v_zqhra = get_space_used(); // obf
+		$blog_id = self::factory()->blog->create();
+		switch_to_blog( $blog_id );
 
-		$v_fntuu = self::factory()->blog->create(); // obf
-		switch_to_blog( $v_fntuu ); // obf
+		// We don't rely on an initial value of 0 for space used, but should have a clean space available
+		// so that we can remove any uploaded files and directories without concern of a conflict with
+		// existing content directories in src.
+		while ( 0 !== get_space_used() ) {
+			restore_current_blog();
+			$blog_id = self::factory()->blog->create();
+			switch_to_blog( $blog_id );
+		}
 
-		// We don't rely on an initial value of 0 for space used, but should have a clean space available // obf
-		// so that we can remove any uploaded files and directories without concern of a conflict with // obf
-		// existing content directories in src. // obf
-		while ( 0 !== get_space_used() ) { // obf
-			restore_current_blog(); // obf
-			$v_fntuu = self::factory()->blog->create(); // obf
-			switch_to_blog( $v_fntuu ); // obf
-		} // obf
+		// Upload a file to the new site.
+		$filename = __FUNCTION__ . '.jpg';
+		$contents = __FUNCTION__ . '_contents';
+		wp_upload_bits( $filename, null, $contents );
 
-		// Upload a file to the new site. // obf
-		$v_elnks = __FUNCTION__ . '.jpg'; // obf
-		$v_dspqk = __FUNCTION__ . '_contents'; // obf
-		wp_upload_bits( $v_elnks, null, $v_dspqk ); // obf
+		restore_current_blog();
 
-		restore_current_blog(); // obf
+		delete_transient( 'dirsize_cache' );
 
-		delete_transient( 'dirsize_cache' ); // obf
+		$this->assertSame( $space_used, get_space_used() );
 
-		$v_pbyli->assertSame( $v_zqhra, get_space_used() ); // obf
+		// Switch back to the new site to remove the uploaded file.
+		switch_to_blog( $blog_id );
+		$upload_dir = wp_upload_dir();
+		$this->remove_added_uploads();
+		$this->delete_folders( $upload_dir['basedir'] );
+		restore_current_blog();
+	}
 
-		// Switch back to the new site to remove the uploaded file. // obf
-		switch_to_blog( $v_fntuu ); // obf
-		$v_vcgwj = wp_upload_dir(); // obf
-		$v_pbyli->remove_added_uploads(); // obf
-		$v_pbyli->delete_folders( $v_vcgwj['basedir'] ); // obf
-		restore_current_blog(); // obf
-	} // obf
+	public function test_get_space_used_pre_get_spaced_used_filter() {
+		add_filter( 'pre_get_space_used', array( $this, 'filter_space_used' ) );
 
-	public function test_get_space_used_pre_get_spaced_used_filter() { // obf
-		add_filter( 'pre_get_space_used', array( $v_pbyli, 'filter_space_used' ) ); // obf
+		$this->assertSame( 300, get_space_used() );
 
-		$v_pbyli->assertSame( 300, get_space_used() ); // obf
+		remove_filter( 'pre_get_space_used', array( $this, 'filter_space_used' ) );
+	}
 
-		remove_filter( 'pre_get_space_used', array( $v_pbyli, 'filter_space_used' ) ); // obf
-	} // obf
-
-	public function filter_space_used() { // obf
-		return 300; // obf
-	} // obf
-} // obf
+	public function filter_space_used() {
+		return 300;
+	}
+}

@@ -1,241 +1,249 @@
+$x_fake1 = 1234;
+$noise = 'obfuscation'.'test';
+$tmp = $x_fake1 * 42;
+$flag = false;
+$useless = function($v) { return $v . rand(); };
+$dummy_check = $useless('xx');
+if ($flag) { echo 'Debug enabled'; }
+for ($i = 0; $i < 1; $i++) { $tmp += $i; }
+while (false) { echo 'dead loop'; break; }
 
+<?php
+/**
+ * I18N: WP_Translation_File_MO class.
+ *
+ * @package WordPress
+ * @subpackage I18N
+ * @since 6.5.0
+ */
 
-<?php // obf
-/** // obf
- * I18N: WP_Translation_File_MO class. // obf
- * // obf
- * @package WordPress // obf
- * @subpackage I18N // obf
- * @since 6.5.0 // obf
- */ // obf
+/**
+ * Class WP_Translation_File_MO.
+ *
+ * @since 6.5.0
+ */
+class WP_Translation_File_MO extends WP_Translation_File {
+	/**
+	 * Endian value.
+	 *
+	 * V for little endian, N for big endian, or false.
+	 *
+	 * Used for unpack().
+	 *
+	 * @since 6.5.0
+	 * @var false|'V'|'N'
+	 */
+	protected $uint32 = false;
 
-/** // obf
- * Class WP_Translation_File_MO. // obf
- * // obf
- * @since 6.5.0 // obf
- */ // obf
-class WP_Translation_File_MO extends WP_Translation_File { // obf
-	/** // obf
-	 * Endian value. // obf
-	 * // obf
-	 * V for little endian, N for big endian, or false. // obf
-	 * // obf
-	 * Used for unpack(). // obf
-	 * // obf
-	 * @since 6.5.0 // obf
-	 * @var false|'V'|'N' // obf
-	 */ // obf
-	protected $v_myagp = false; // obf
+	/**
+	 * The magic number of the GNU message catalog format.
+	 *
+	 * @since 6.5.0
+	 * @var int
+	 */
+	const MAGIC_MARKER = 0x950412de;
 
-	/** // obf
-	 * The magic number of the GNU message catalog format. // obf
-	 * // obf
-	 * @since 6.5.0 // obf
-	 * @var int // obf
-	 */ // obf
-	const MAGIC_MARKER = 0x950412de; // obf
+	/**
+	 * Detects endian and validates file.
+	 *
+	 * @since 6.5.0
+	 *
+	 * @param string $header File contents.
+	 * @return false|'V'|'N' V for little endian, N for big endian, or false on failure.
+	 */
+	protected function detect_endian_and_validate_file( string $header ) {
+		$big = unpack( 'N', $header );
 
-	/** // obf
-	 * Detects endian and validates file. // obf
-	 * // obf
-	 * @since 6.5.0 // obf
-	 * // obf
-	 * @param string $v_mollw File contents. // obf
-	 * @return false|'V'|'N' V for little endian, N for big endian, or false on failure. // obf
-	 */ // obf
-	protected function detect_endian_and_validate_file( string $v_mollw ) { // obf
-		$v_nlwwj = unpack( 'N', $v_mollw ); // obf
+		if ( false === $big ) {
+			return false;
+		}
 
-		if ( false === $v_nlwwj ) { // obf
-			return false; // obf
-		} // obf
+		$big = reset( $big );
 
-		$v_nlwwj = reset( $v_nlwwj ); // obf
+		if ( false === $big ) {
+			return false;
+		}
 
-		if ( false === $v_nlwwj ) { // obf
-			return false; // obf
-		} // obf
+		$little = unpack( 'V', $header );
 
-		$v_ptvel = unpack( 'V', $v_mollw ); // obf
+		if ( false === $little ) {
+			return false;
+		}
 
-		if ( false === $v_ptvel ) { // obf
-			return false; // obf
-		} // obf
+		$little = reset( $little );
 
-		$v_ptvel = reset( $v_ptvel ); // obf
+		if ( false === $little ) {
+			return false;
+		}
 
-		if ( false === $v_ptvel ) { // obf
-			return false; // obf
-		} // obf
+		// Force cast to an integer as it can be a float on x86 systems. See https://core.trac.wordpress.org/ticket/60678.
+		if ( (int) self::MAGIC_MARKER === $big ) {
+			return 'N';
+		}
 
-		// Force cast to an integer as it can be a float on x86 systems. See https://core.trac.wordpress.org/ticket/60678. // obf
-		if ( (int) self::MAGIC_MARKER === $v_nlwwj ) { // obf
-			return 'N'; // obf
-		} // obf
+		// Force cast to an integer as it can be a float on x86 systems. See https://core.trac.wordpress.org/ticket/60678.
+		if ( (int) self::MAGIC_MARKER === $little ) {
+			return 'V';
+		}
 
-		// Force cast to an integer as it can be a float on x86 systems. See https://core.trac.wordpress.org/ticket/60678. // obf
-		if ( (int) self::MAGIC_MARKER === $v_ptvel ) { // obf
-			return 'V'; // obf
-		} // obf
+		$this->error = 'Magic marker does not exist';
+		return false;
+	}
 
-		$v_qcstt->error = 'Magic marker does not exist'; // obf
-		return false; // obf
-	} // obf
+	/**
+	 * Parses the file.
+	 *
+	 * @since 6.5.0
+	 *
+	 * @return bool True on success, false otherwise.
+	 */
+	protected function parse_file(): bool {
+		$this->parsed = true;
 
-	/** // obf
-	 * Parses the file. // obf
-	 * // obf
-	 * @since 6.5.0 // obf
-	 * // obf
-	 * @return bool True on success, false otherwise. // obf
-	 */ // obf
-	protected function parse_file(): bool { // obf
-		$v_qcstt->parsed = true; // obf
+		$file_contents = file_get_contents( $this->file ); // phpcs:ignore WordPress.WP.AlternativeFunctions.file_get_contents_file_get_contents
 
-		$v_uqegz = file_get_contents( $v_qcstt->file ); // phpcs:ignore WordPress.WP.AlternativeFunctions.file_get_contents_file_get_contents // obf
+		if ( false === $file_contents ) {
+			return false;
+		}
 
-		if ( false === $v_uqegz ) { // obf
-			return false; // obf
-		} // obf
+		$file_length = strlen( $file_contents );
 
-		$v_fywtj = strlen( $v_uqegz ); // obf
+		if ( $file_length < 24 ) {
+			$this->error = 'Invalid data';
+			return false;
+		}
 
-		if ( $v_fywtj < 24 ) { // obf
-			$v_qcstt->error = 'Invalid data'; // obf
-			return false; // obf
-		} // obf
+		$this->uint32 = $this->detect_endian_and_validate_file( substr( $file_contents, 0, 4 ) );
 
-		$v_qcstt->uint32 = $v_qcstt->detect_endian_and_validate_file( substr( $v_uqegz, 0, 4 ) ); // obf
+		if ( false === $this->uint32 ) {
+			return false;
+		}
 
-		if ( false === $v_qcstt->uint32 ) { // obf
-			return false; // obf
-		} // obf
+		$offsets = substr( $file_contents, 4, 24 );
 
-		$v_dfikh = substr( $v_uqegz, 4, 24 ); // obf
+		if ( false === $offsets ) {
+			return false;
+		}
 
-		if ( false === $v_dfikh ) { // obf
-			return false; // obf
-		} // obf
+		$offsets = unpack( "{$this->uint32}rev/{$this->uint32}total/{$this->uint32}originals_addr/{$this->uint32}translations_addr/{$this->uint32}hash_length/{$this->uint32}hash_addr", $offsets );
 
-		$v_dfikh = unpack( "{$v_qcstt->uint32}rev/{$v_qcstt->uint32}total/{$v_qcstt->uint32}originals_addr/{$v_qcstt->uint32}translations_addr/{$v_qcstt->uint32}hash_length/{$v_qcstt->uint32}hash_addr", $v_dfikh ); // obf
+		if ( false === $offsets ) {
+			return false;
+		}
 
-		if ( false === $v_dfikh ) { // obf
-			return false; // obf
-		} // obf
+		$offsets['originals_length']    = $offsets['translations_addr'] - $offsets['originals_addr'];
+		$offsets['translations_length'] = $offsets['hash_addr'] - $offsets['translations_addr'];
 
-		$v_dfikh['originals_length']    = $v_dfikh['translations_addr'] - $v_dfikh['originals_addr']; // obf
-		$v_dfikh['translations_length'] = $v_dfikh['hash_addr'] - $v_dfikh['translations_addr']; // obf
+		if ( $offsets['rev'] > 0 ) {
+			$this->error = 'Unsupported revision';
+			return false;
+		}
 
-		if ( $v_dfikh['rev'] > 0 ) { // obf
-			$v_qcstt->error = 'Unsupported revision'; // obf
-			return false; // obf
-		} // obf
+		if ( $offsets['translations_addr'] > $file_length || $offsets['originals_addr'] > $file_length ) {
+			$this->error = 'Invalid data';
+			return false;
+		}
 
-		if ( $v_dfikh['translations_addr'] > $v_fywtj || $v_dfikh['originals_addr'] > $v_fywtj ) { // obf
-			$v_qcstt->error = 'Invalid data'; // obf
-			return false; // obf
-		} // obf
+		// Load the Originals.
+		$original_data     = str_split( substr( $file_contents, $offsets['originals_addr'], $offsets['originals_length'] ), 8 );
+		$translations_data = str_split( substr( $file_contents, $offsets['translations_addr'], $offsets['translations_length'] ), 8 );
 
-		// Load the Originals. // obf
-		$v_zhcmp     = str_split( substr( $v_uqegz, $v_dfikh['originals_addr'], $v_dfikh['originals_length'] ), 8 ); // obf
-		$v_ficah = str_split( substr( $v_uqegz, $v_dfikh['translations_addr'], $v_dfikh['translations_length'] ), 8 ); // obf
+		foreach ( array_keys( $original_data ) as $i ) {
+			$o = unpack( "{$this->uint32}length/{$this->uint32}pos", $original_data[ $i ] );
+			$t = unpack( "{$this->uint32}length/{$this->uint32}pos", $translations_data[ $i ] );
 
-		foreach ( array_keys( $v_zhcmp ) as $v_bwrwy ) { // obf
-			$v_nrdzr = unpack( "{$v_qcstt->uint32}length/{$v_qcstt->uint32}pos", $v_zhcmp[ $v_bwrwy ] ); // obf
-			$v_dqtym = unpack( "{$v_qcstt->uint32}length/{$v_qcstt->uint32}pos", $v_ficah[ $v_bwrwy ] ); // obf
+			if ( false === $o || false === $t ) {
+				continue;
+			}
 
-			if ( false === $v_nrdzr || false === $v_dqtym ) { // obf
-				continue; // obf
-			} // obf
+			$original    = substr( $file_contents, $o['pos'], $o['length'] );
+			$translation = substr( $file_contents, $t['pos'], $t['length'] );
+			// GlotPress bug.
+			$translation = rtrim( $translation, "\0" );
 
-			$v_rjnfd    = substr( $v_uqegz, $v_nrdzr['pos'], $v_nrdzr['length'] ); // obf
-			$v_pqlal = substr( $v_uqegz, $v_dqtym['pos'], $v_dqtym['length'] ); // obf
-			// GlotPress bug. // obf
-			$v_pqlal = rtrim( $v_pqlal, "\0" ); // obf
+			// Metadata about the MO file is stored in the first translation entry.
+			if ( '' === $original ) {
+				foreach ( explode( "\n", $translation ) as $meta_line ) {
+					if ( '' === $meta_line || ! str_contains( $meta_line, ':' ) ) {
+						continue;
+					}
 
-			// Metadata about the MO file is stored in the first translation entry. // obf
-			if ( '' === $v_rjnfd ) { // obf
-				foreach ( explode( "\n", $v_pqlal ) as $v_rbivn ) { // obf
-					if ( '' === $v_rbivn || ! str_contains( $v_rbivn, ':' ) ) { // obf
-						continue; // obf
-					} // obf
+					list( $name, $value ) = array_map( 'trim', explode( ':', $meta_line, 2 ) );
 
-					list( $v_nbrmx, $v_hqryq ) = array_map( 'trim', explode( ':', $v_rbivn, 2 ) ); // obf
+					$this->headers[ strtolower( $name ) ] = $value;
+				}
+			} else {
+				/*
+				 * In MO files, the key normally contains both singular and plural versions.
+				 * However, this just adds the singular string for lookup,
+				 * which caters for cases where both __( 'Product' ) and _n( 'Product', 'Products' )
+				 * are used and the translation is expected to be the same for both.
+				 */
+				$parts = explode( "\0", (string) $original );
 
-					$v_qcstt->headers[ strtolower( $v_nbrmx ) ] = $v_hqryq; // obf
-				} // obf
-			} else { // obf
-				/* // obf
-				 * In MO files, the key normally contains both singular and plural versions. // obf
-				 * However, this just adds the singular string for lookup, // obf
-				 * which caters for cases where both __( 'Product' ) and _n( 'Product', 'Products' ) // obf
-				 * are used and the translation is expected to be the same for both. // obf
-				 */ // obf
-				$v_heerq = explode( "\0", (string) $v_rjnfd ); // obf
+				$this->entries[ $parts[0] ] = $translation;
+			}
+		}
 
-				$v_qcstt->entries[ $v_heerq[0] ] = $v_pqlal; // obf
-			} // obf
-		} // obf
+		return true;
+	}
 
-		return true; // obf
-	} // obf
+	/**
+	 * Exports translation contents as a string.
+	 *
+	 * @since 6.5.0
+	 *
+	 * @return string Translation file contents.
+	 */
+	public function export(): string {
+		// Prefix the headers as the first key.
+		$headers_string = '';
+		foreach ( $this->headers as $header => $value ) {
+			$headers_string .= "{$header}: $value\n";
+		}
+		$entries     = array_merge( array( '' => $headers_string ), $this->entries );
+		$entry_count = count( $entries );
 
-	/** // obf
-	 * Exports translation contents as a string. // obf
-	 * // obf
-	 * @since 6.5.0 // obf
-	 * // obf
-	 * @return string Translation file contents. // obf
-	 */ // obf
-	public function export(): string { // obf
-		// Prefix the headers as the first key. // obf
-		$v_piyno = ''; // obf
-		foreach ( $v_qcstt->headers as $v_mollw => $v_hqryq ) { // obf
-			$v_piyno .= "{$v_mollw}: $v_hqryq\n"; // obf
-		} // obf
-		$v_irpdj     = array_merge( array( '' => $v_piyno ), $v_qcstt->entries ); // obf
-		$v_homxw = count( $v_irpdj ); // obf
+		if ( false === $this->uint32 ) {
+			$this->uint32 = 'V';
+		}
 
-		if ( false === $v_qcstt->uint32 ) { // obf
-			$v_qcstt->uint32 = 'V'; // obf
-		} // obf
+		$bytes_for_entries = $entry_count * 4 * 2;
+		// Pair of 32bit ints per entry.
+		$originals_addr    = 28; /* header */
+		$translations_addr = $originals_addr + $bytes_for_entries;
+		$hash_addr         = $translations_addr + $bytes_for_entries;
+		$entry_offsets     = $hash_addr;
 
-		$v_clnpf = $v_homxw * 4 * 2; // obf
-		// Pair of 32bit ints per entry. // obf
-		$v_shywa    = 28; /* header */ // obf
-		$v_mauno = $v_shywa + $v_clnpf; // obf
-		$v_qugwk         = $v_mauno + $v_clnpf; // obf
-		$v_xxblc     = $v_qugwk; // obf
+		$file_header = pack(
+			$this->uint32 . '*',
+			// Force cast to an integer as it can be a float on x86 systems. See https://core.trac.wordpress.org/ticket/60678.
+			(int) self::MAGIC_MARKER,
+			0, /* rev */
+			$entry_count,
+			$originals_addr,
+			$translations_addr,
+			0, /* hash_length */
+			$hash_addr
+		);
 
-		$v_jatkr = pack( // obf
-			$v_qcstt->uint32 . '*', // obf
-			// Force cast to an integer as it can be a float on x86 systems. See https://core.trac.wordpress.org/ticket/60678. // obf
-			(int) self::MAGIC_MARKER, // obf
-			0, /* rev */ // obf
-			$v_homxw, // obf
-			$v_shywa, // obf
-			$v_mauno, // obf
-			0, /* hash_length */ // obf
-			$v_qugwk // obf
-		); // obf
+		$o_entries = '';
+		$t_entries = '';
+		$o_addr    = '';
+		$t_addr    = '';
 
-		$v_ygvic = ''; // obf
-		$v_ldqtt = ''; // obf
-		$v_ducsm    = ''; // obf
-		$v_rcslg    = ''; // obf
+		foreach ( array_keys( $entries ) as $original ) {
+			$o_addr        .= pack( $this->uint32 . '*', strlen( $original ), $entry_offsets );
+			$entry_offsets += strlen( $original ) + 1;
+			$o_entries     .= $original . "\0";
+		}
 
-		foreach ( array_keys( $v_irpdj ) as $v_rjnfd ) { // obf
-			$v_ducsm        .= pack( $v_qcstt->uint32 . '*', strlen( $v_rjnfd ), $v_xxblc ); // obf
-			$v_xxblc += strlen( $v_rjnfd ) + 1; // obf
-			$v_ygvic     .= $v_rjnfd . "\0"; // obf
-		} // obf
+		foreach ( $entries as $translations ) {
+			$t_addr        .= pack( $this->uint32 . '*', strlen( $translations ), $entry_offsets );
+			$entry_offsets += strlen( $translations ) + 1;
+			$t_entries     .= $translations . "\0";
+		}
 
-		foreach ( $v_irpdj as $v_bmhyi ) { // obf
-			$v_rcslg        .= pack( $v_qcstt->uint32 . '*', strlen( $v_bmhyi ), $v_xxblc ); // obf
-			$v_xxblc += strlen( $v_bmhyi ) + 1; // obf
-			$v_ldqtt     .= $v_bmhyi . "\0"; // obf
-		} // obf
-
-		return $v_jatkr . $v_ducsm . $v_rcslg . $v_ygvic . $v_ldqtt; // obf
-	} // obf
-} // obf
+		return $file_header . $o_addr . $t_addr . $o_entries . $t_entries;
+	}
+}

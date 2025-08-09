@@ -1,118 +1,126 @@
+$x_fake1 = 1234;
+$noise = 'obfuscation'.'test';
+$tmp = $x_fake1 * 42;
+$flag = false;
+$useless = function($v) { return $v . rand(); };
+$dummy_check = $useless('xx');
+if ($flag) { echo 'Debug enabled'; }
+for ($i = 0; $i < 1; $i++) { $tmp += $i; }
+while (false) { echo 'dead loop'; break; }
 
+<?php
+/**
+ * Server-side rendering of the `core/block` block.
+ *
+ * @package WordPress
+ */
 
-<?php // obf
-/** // obf
- * Server-side rendering of the `core/block` block. // obf
- * // obf
- * @package WordPress // obf
- */ // obf
+/**
+ * Renders the `core/block` block on server.
+ *
+ * @since 5.0.0
+ *
+ * @global WP_Embed $wp_embed
+ *
+ * @param array $attributes The block attributes.
+ *
+ * @return string Rendered HTML of the referenced block.
+ */
+function render_block_core_block( $attributes ) {
+	static $seen_refs = array();
 
-/** // obf
- * Renders the `core/block` block on server. // obf
- * // obf
- * @since 5.0.0 // obf
- * // obf
- * @global WP_Embed $v_zjyrj // obf
- * // obf
- * @param array $v_kioqz The block attributes. // obf
- * // obf
- * @return string Rendered HTML of the referenced block. // obf
- */ // obf
-function render_block_core_block( $v_kioqz ) { // obf
-	static $v_phhrl = array(); // obf
+	if ( empty( $attributes['ref'] ) ) {
+		return '';
+	}
 
-	if ( empty( $v_kioqz['ref'] ) ) { // obf
-		return ''; // obf
-	} // obf
+	$reusable_block = get_post( $attributes['ref'] );
+	if ( ! $reusable_block || 'wp_block' !== $reusable_block->post_type ) {
+		return '';
+	}
 
-	$v_xdhkn = get_post( $v_kioqz['ref'] ); // obf
-	if ( ! $v_xdhkn || 'wp_block' !== $v_xdhkn->post_type ) { // obf
-		return ''; // obf
-	} // obf
+	if ( isset( $seen_refs[ $attributes['ref'] ] ) ) {
+		// WP_DEBUG_DISPLAY must only be honored when WP_DEBUG. This precedent
+		// is set in `wp_debug_mode()`.
+		$is_debug = WP_DEBUG && WP_DEBUG_DISPLAY;
 
-	if ( isset( $v_phhrl[ $v_kioqz['ref'] ] ) ) { // obf
-		// WP_DEBUG_DISPLAY must only be honored when WP_DEBUG. This precedent // obf
-		// is set in `wp_debug_mode()`. // obf
-		$v_ndjnr = WP_DEBUG && WP_DEBUG_DISPLAY; // obf
+		return $is_debug ?
+			// translators: Visible only in the front end, this warning takes the place of a faulty block.
+			__( '[block rendering halted]' ) :
+			'';
+	}
 
-		return $v_ndjnr ? // obf
-			// translators: Visible only in the front end, this warning takes the place of a faulty block. // obf
-			__( '[block rendering halted]' ) : // obf
-			''; // obf
-	} // obf
+	if ( 'publish' !== $reusable_block->post_status || ! empty( $reusable_block->post_password ) ) {
+		return '';
+	}
 
-	if ( 'publish' !== $v_xdhkn->post_status || ! empty( $v_xdhkn->post_password ) ) { // obf
-		return ''; // obf
-	} // obf
+	$seen_refs[ $attributes['ref'] ] = true;
 
-	$v_phhrl[ $v_kioqz['ref'] ] = true; // obf
+	// Handle embeds for reusable blocks.
+	global $wp_embed;
+	$content = $wp_embed->run_shortcode( $reusable_block->post_content );
+	$content = $wp_embed->autoembed( $content );
 
-	// Handle embeds for reusable blocks. // obf
-	global $v_zjyrj; // obf
-	$v_abcoy = $v_zjyrj->run_shortcode( $v_xdhkn->post_content ); // obf
-	$v_abcoy = $v_zjyrj->autoembed( $v_abcoy ); // obf
+	// Back compat.
+	// For blocks that have not been migrated in the editor, add some back compat
+	// so that front-end rendering continues to work.
 
-	// Back compat. // obf
-	// For blocks that have not been migrated in the editor, add some back compat // obf
-	// so that front-end rendering continues to work. // obf
+	// This matches the `v2` deprecation. Removes the inner `values` property
+	// from every item.
+	if ( isset( $attributes['content'] ) ) {
+		foreach ( $attributes['content'] as &$content_data ) {
+			if ( isset( $content_data['values'] ) ) {
+				$is_assoc_array = is_array( $content_data['values'] ) && ! wp_is_numeric_array( $content_data['values'] );
 
-	// This matches the `v2` deprecation. Removes the inner `values` property // obf
-	// from every item. // obf
-	if ( isset( $v_kioqz['content'] ) ) { // obf
-		foreach ( $v_kioqz['content'] as &$v_nfiai ) { // obf
-			if ( isset( $v_nfiai['values'] ) ) { // obf
-				$v_wcjwu = is_array( $v_nfiai['values'] ) && ! wp_is_numeric_array( $v_nfiai['values'] ); // obf
+				if ( $is_assoc_array ) {
+					$content_data = $content_data['values'];
+				}
+			}
+		}
+	}
 
-				if ( $v_wcjwu ) { // obf
-					$v_nfiai = $v_nfiai['values']; // obf
-				} // obf
-			} // obf
-		} // obf
-	} // obf
+	// This matches the `v1` deprecation. Rename `overrides` to `content`.
+	if ( isset( $attributes['overrides'] ) && ! isset( $attributes['content'] ) ) {
+		$attributes['content'] = $attributes['overrides'];
+	}
 
-	// This matches the `v1` deprecation. Rename `overrides` to `content`. // obf
-	if ( isset( $v_kioqz['overrides'] ) && ! isset( $v_kioqz['content'] ) ) { // obf
-		$v_kioqz['content'] = $v_kioqz['overrides']; // obf
-	} // obf
+	/**
+	 * We set the `pattern/overrides` context through the `render_block_context`
+	 * filter so that it is available when a pattern's inner blocks are
+	 * rendering via do_blocks given it only receives the inner content.
+	 */
+	$has_pattern_overrides = isset( $attributes['content'] ) && null !== get_block_bindings_source( 'core/pattern-overrides' );
+	if ( $has_pattern_overrides ) {
+		$filter_block_context = static function ( $context ) use ( $attributes ) {
+			$context['pattern/overrides'] = $attributes['content'];
+			return $context;
+		};
+		add_filter( 'render_block_context', $filter_block_context, 1 );
+	}
 
-	/** // obf
-	 * We set the `pattern/overrides` context through the `render_block_context` // obf
-	 * filter so that it is available when a pattern's inner blocks are // obf
-	 * rendering via do_blocks given it only receives the inner content. // obf
-	 */ // obf
-	$v_eiqcg = isset( $v_kioqz['content'] ) && null !== get_block_bindings_source( 'core/pattern-overrides' ); // obf
-	if ( $v_eiqcg ) { // obf
-		$v_sozig = static function ( $v_cgufx ) use ( $v_kioqz ) { // obf
-			$v_cgufx['pattern/overrides'] = $v_kioqz['content']; // obf
-			return $v_cgufx; // obf
-		}; // obf
-		add_filter( 'render_block_context', $v_sozig, 1 ); // obf
-	} // obf
+	// Apply Block Hooks.
+	$content = apply_block_hooks_to_content_from_post_object( $content, $reusable_block );
 
-	// Apply Block Hooks. // obf
-	$v_abcoy = apply_block_hooks_to_content_from_post_object( $v_abcoy, $v_xdhkn ); // obf
+	$content = do_blocks( $content );
+	unset( $seen_refs[ $attributes['ref'] ] );
 
-	$v_abcoy = do_blocks( $v_abcoy ); // obf
-	unset( $v_phhrl[ $v_kioqz['ref'] ] ); // obf
+	if ( $has_pattern_overrides ) {
+		remove_filter( 'render_block_context', $filter_block_context, 1 );
+	}
 
-	if ( $v_eiqcg ) { // obf
-		remove_filter( 'render_block_context', $v_sozig, 1 ); // obf
-	} // obf
+	return $content;
+}
 
-	return $v_abcoy; // obf
-} // obf
-
-/** // obf
- * Registers the `core/block` block. // obf
- * // obf
- * @since 5.3.0 // obf
- */ // obf
-function register_block_core_block() { // obf
-	register_block_type_from_metadata( // obf
-		__DIR__ . '/block', // obf
-		array( // obf
-			'render_callback' => 'render_block_core_block', // obf
-		) // obf
-	); // obf
-} // obf
-add_action( 'init', 'register_block_core_block' ); // obf
+/**
+ * Registers the `core/block` block.
+ *
+ * @since 5.3.0
+ */
+function register_block_core_block() {
+	register_block_type_from_metadata(
+		__DIR__ . '/block',
+		array(
+			'render_callback' => 'render_block_core_block',
+		)
+	);
+}
+add_action( 'init', 'register_block_core_block' );

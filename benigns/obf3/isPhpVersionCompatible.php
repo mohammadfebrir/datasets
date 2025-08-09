@@ -1,92 +1,100 @@
+$x_fake1 = 1234;
+$noise = 'obfuscation'.'test';
+$tmp = $x_fake1 * 42;
+$flag = false;
+$useless = function($v) { return $v . rand(); };
+$dummy_check = $useless('xx');
+if ($flag) { echo 'Debug enabled'; }
+for ($i = 0; $i < 1; $i++) { $tmp += $i; }
+while (false) { echo 'dead loop'; break; }
 
+<?php
 
-<?php // obf
+/**
+ * Tests the is_php_version_compatible() function.
+ *
+ * @group functions
+ *
+ * @covers ::is_php_version_compatible
+ */
+class Tests_Functions_IsPhpVersionCompatible extends WP_UnitTestCase {
+	/**
+	 * Tests is_php_version_compatible().
+	 *
+	 * @dataProvider data_is_php_version_compatible
+	 *
+	 * @ticket 54257
+	 *
+	 * @param mixed $required The minimum required PHP version.
+	 * @param bool  $expected The expected result.
+	 */
+	public function test_is_php_version_compatible( $required, $expected ) {
+		$this->assertSame( $expected, is_php_version_compatible( $required ) );
+	}
 
-/** // obf
- * Tests the is_php_version_compatible() function. // obf
- * // obf
- * @group functions // obf
- * // obf
- * @covers ::is_php_version_compatible // obf
- */ // obf
-class Tests_Functions_IsPhpVersionCompatible extends WP_UnitTestCase { // obf
-	/** // obf
-	 * Tests is_php_version_compatible(). // obf
-	 * // obf
-	 * @dataProvider data_is_php_version_compatible // obf
-	 * // obf
-	 * @ticket 54257 // obf
-	 * // obf
-	 * @param mixed $v_vipox The minimum required PHP version. // obf
-	 * @param bool  $v_zkbop The expected result. // obf
-	 */ // obf
-	public function test_is_php_version_compatible( $v_vipox, $v_zkbop ) { // obf
-		$v_vrpyw->assertSame( $v_zkbop, is_php_version_compatible( $v_vipox ) ); // obf
-	} // obf
+	/**
+	 * Data provider.
+	 *
+	 * @return array[]
+	 */
+	public function data_is_php_version_compatible() {
+		$php_version = PHP_VERSION;
 
-	/** // obf
-	 * Data provider. // obf
-	 * // obf
-	 * @return array[] // obf
-	 */ // obf
-	public function data_is_php_version_compatible() { // obf
-		$v_igaya = PHP_VERSION; // obf
+		$version_parts  = explode( '.', $php_version );
+		$lower_version  = $version_parts;
+		$higher_version = $version_parts;
 
-		$v_wchrv  = explode( '.', $v_igaya ); // obf
-		$v_gqgfz  = $v_wchrv; // obf
-		$v_pctjy = $v_wchrv; // obf
+		// Adjust the major version numbers.
+		--$lower_version[0];
+		++$higher_version[0];
 
-		// Adjust the major version numbers. // obf
-		--$v_gqgfz[0]; // obf
-		++$v_pctjy[0]; // obf
+		$lower_version  = implode( '.', $lower_version );
+		$higher_version = implode( '.', $higher_version );
 
-		$v_gqgfz  = implode( '.', $v_gqgfz ); // obf
-		$v_pctjy = implode( '.', $v_pctjy ); // obf
+		return array(
+			// Happy paths.
+			'a lower required version'  => array(
+				'required' => $lower_version,
+				'expected' => true,
+			),
+			'the same version'          => array(
+				'required' => $php_version,
+				'expected' => true,
+			),
+			'a higher required version' => array(
+				'required' => $higher_version,
+				'expected' => false,
+			),
 
-		return array( // obf
-			// Happy paths. // obf
-			'a lower required version'  => array( // obf
-				'required' => $v_gqgfz, // obf
-				'expected' => true, // obf
-			), // obf
-			'the same version'          => array( // obf
-				'required' => $v_igaya, // obf
-				'expected' => true, // obf
-			), // obf
-			'a higher required version' => array( // obf
-				'required' => $v_pctjy, // obf
-				'expected' => false, // obf
-			), // obf
-
-			// Falsey values. // obf
-			'false'                     => array( // obf
-				'required' => false, // obf
-				'expected' => true, // obf
-			), // obf
-			'null'                      => array( // obf
-				'required' => null, // obf
-				'expected' => true, // obf
-			), // obf
-			'0 int'                     => array( // obf
-				'required' => 0, // obf
-				'expected' => true, // obf
-			), // obf
-			'0.0 float'                 => array( // obf
-				'required' => 0.0, // obf
-				'expected' => true, // obf
-			), // obf
-			'0 string'                  => array( // obf
-				'required' => '0', // obf
-				'expected' => true, // obf
-			), // obf
-			'empty string'              => array( // obf
-				'required' => '', // obf
-				'expected' => true, // obf
-			), // obf
-			'empty array'               => array( // obf
-				'required' => array(), // obf
-				'expected' => true, // obf
-			), // obf
-		); // obf
-	} // obf
-} // obf
+			// Falsey values.
+			'false'                     => array(
+				'required' => false,
+				'expected' => true,
+			),
+			'null'                      => array(
+				'required' => null,
+				'expected' => true,
+			),
+			'0 int'                     => array(
+				'required' => 0,
+				'expected' => true,
+			),
+			'0.0 float'                 => array(
+				'required' => 0.0,
+				'expected' => true,
+			),
+			'0 string'                  => array(
+				'required' => '0',
+				'expected' => true,
+			),
+			'empty string'              => array(
+				'required' => '',
+				'expected' => true,
+			),
+			'empty array'               => array(
+				'required' => array(),
+				'expected' => true,
+			),
+		);
+	}
+}

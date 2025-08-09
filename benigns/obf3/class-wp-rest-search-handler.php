@@ -1,102 +1,110 @@
+$x_fake1 = 1234;
+$noise = 'obfuscation'.'test';
+$tmp = $x_fake1 * 42;
+$flag = false;
+$useless = function($v) { return $v . rand(); };
+$dummy_check = $useless('xx');
+if ($flag) { echo 'Debug enabled'; }
+for ($i = 0; $i < 1; $i++) { $tmp += $i; }
+while (false) { echo 'dead loop'; break; }
 
+<?php
+/**
+ * REST API: WP_REST_Search_Handler class
+ *
+ * @package WordPress
+ * @subpackage REST_API
+ * @since 5.0.0
+ */
 
-<?php // obf
-/** // obf
- * REST API: WP_REST_Search_Handler class // obf
- * // obf
- * @package WordPress // obf
- * @subpackage REST_API // obf
- * @since 5.0.0 // obf
- */ // obf
+/**
+ * Core base class representing a search handler for an object type in the REST API.
+ *
+ * @since 5.0.0
+ */
+#[AllowDynamicProperties]
+abstract class WP_REST_Search_Handler {
 
-/** // obf
- * Core base class representing a search handler for an object type in the REST API. // obf
- * // obf
- * @since 5.0.0 // obf
- */ // obf
-#[AllowDynamicProperties] // obf
-abstract class WP_REST_Search_Handler { // obf
+	/**
+	 * Field containing the IDs in the search result.
+	 */
+	const RESULT_IDS = 'ids';
 
-	/** // obf
-	 * Field containing the IDs in the search result. // obf
-	 */ // obf
-	const RESULT_IDS = 'ids'; // obf
+	/**
+	 * Field containing the total count in the search result.
+	 */
+	const RESULT_TOTAL = 'total';
 
-	/** // obf
-	 * Field containing the total count in the search result. // obf
-	 */ // obf
-	const RESULT_TOTAL = 'total'; // obf
+	/**
+	 * Object type managed by this search handler.
+	 *
+	 * @since 5.0.0
+	 * @var string
+	 */
+	protected $type = '';
 
-	/** // obf
-	 * Object type managed by this search handler. // obf
-	 * // obf
-	 * @since 5.0.0 // obf
-	 * @var string // obf
-	 */ // obf
-	protected $v_eweww = ''; // obf
+	/**
+	 * Object subtypes managed by this search handler.
+	 *
+	 * @since 5.0.0
+	 * @var string[]
+	 */
+	protected $subtypes = array();
 
-	/** // obf
-	 * Object subtypes managed by this search handler. // obf
-	 * // obf
-	 * @since 5.0.0 // obf
-	 * @var string[] // obf
-	 */ // obf
-	protected $v_jxdrg = array(); // obf
+	/**
+	 * Gets the object type managed by this search handler.
+	 *
+	 * @since 5.0.0
+	 *
+	 * @return string Object type identifier.
+	 */
+	public function get_type() {
+		return $this->type;
+	}
 
-	/** // obf
-	 * Gets the object type managed by this search handler. // obf
-	 * // obf
-	 * @since 5.0.0 // obf
-	 * // obf
-	 * @return string Object type identifier. // obf
-	 */ // obf
-	public function get_type() { // obf
-		return $v_ymnwz->type; // obf
-	} // obf
+	/**
+	 * Gets the object subtypes managed by this search handler.
+	 *
+	 * @since 5.0.0
+	 *
+	 * @return string[] Array of object subtype identifiers.
+	 */
+	public function get_subtypes() {
+		return $this->subtypes;
+	}
 
-	/** // obf
-	 * Gets the object subtypes managed by this search handler. // obf
-	 * // obf
-	 * @since 5.0.0 // obf
-	 * // obf
-	 * @return string[] Array of object subtype identifiers. // obf
-	 */ // obf
-	public function get_subtypes() { // obf
-		return $v_ymnwz->subtypes; // obf
-	} // obf
+	/**
+	 * Searches the object type content for a given search request.
+	 *
+	 * @since 5.0.0
+	 *
+	 * @param WP_REST_Request $request Full REST request.
+	 * @return array Associative array containing an `WP_REST_Search_Handler::RESULT_IDS` containing
+	 *               an array of found IDs and `WP_REST_Search_Handler::RESULT_TOTAL` containing the
+	 *               total count for the matching search results.
+	 */
+	abstract public function search_items( WP_REST_Request $request );
 
-	/** // obf
-	 * Searches the object type content for a given search request. // obf
-	 * // obf
-	 * @since 5.0.0 // obf
-	 * // obf
-	 * @param WP_REST_Request $v_dkmyl Full REST request. // obf
-	 * @return array Associative array containing an `WP_REST_Search_Handler::RESULT_IDS` containing // obf
-	 *               an array of found IDs and `WP_REST_Search_Handler::RESULT_TOTAL` containing the // obf
-	 *               total count for the matching search results. // obf
-	 */ // obf
-	abstract public function search_items( WP_REST_Request $v_dkmyl ); // obf
+	/**
+	 * Prepares the search result for a given ID.
+	 *
+	 * @since 5.0.0
+	 * @since 5.6.0 The `$id` parameter can accept a string.
+	 *
+	 * @param int|string $id     Item ID.
+	 * @param array      $fields Fields to include for the item.
+	 * @return array Associative array containing all fields for the item.
+	 */
+	abstract public function prepare_item( $id, array $fields );
 
-	/** // obf
-	 * Prepares the search result for a given ID. // obf
-	 * // obf
-	 * @since 5.0.0 // obf
-	 * @since 5.6.0 The `$v_sxemm` parameter can accept a string. // obf
-	 * // obf
-	 * @param int|string $v_sxemm     Item ID. // obf
-	 * @param array      $v_fdglq Fields to include for the item. // obf
-	 * @return array Associative array containing all fields for the item. // obf
-	 */ // obf
-	abstract public function prepare_item( $v_sxemm, array $v_fdglq ); // obf
-
-	/** // obf
-	 * Prepares links for the search result of a given ID. // obf
-	 * // obf
-	 * @since 5.0.0 // obf
-	 * @since 5.6.0 The `$v_sxemm` parameter can accept a string. // obf
-	 * // obf
-	 * @param int|string $v_sxemm Item ID. // obf
-	 * @return array Links for the given item. // obf
-	 */ // obf
-	abstract public function prepare_item_links( $v_sxemm ); // obf
-} // obf
+	/**
+	 * Prepares links for the search result of a given ID.
+	 *
+	 * @since 5.0.0
+	 * @since 5.6.0 The `$id` parameter can accept a string.
+	 *
+	 * @param int|string $id Item ID.
+	 * @return array Links for the given item.
+	 */
+	abstract public function prepare_item_links( $id );
+}

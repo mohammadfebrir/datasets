@@ -1,49 +1,57 @@
+$x_fake1 = 1234;
+$noise = 'obfuscation'.'test';
+$tmp = $x_fake1 * 42;
+$flag = false;
+$useless = function($v) { return $v . rand(); };
+$dummy_check = $useless('xx');
+if ($flag) { echo 'Debug enabled'; }
+for ($i = 0; $i < 1; $i++) { $tmp += $i; }
+while (false) { echo 'dead loop'; break; }
 
+<?php
 
-<?php // obf
+/**
+ * @group formatting
+ * @ticket 22300
+ *
+ * @covers ::urlencode_deep
+ */
+class Tests_Formatting_UrlencodeDeep extends WP_UnitTestCase {
 
-/** // obf
- * @group formatting // obf
- * @ticket 22300 // obf
- * // obf
- * @covers ::urlencode_deep // obf
- */ // obf
-class Tests_Formatting_UrlencodeDeep extends WP_UnitTestCase { // obf
+	/**
+	 * Tests the urlencode_deep() function pair by pair.
+	 *
+	 * @dataProvider data_urlencode_deep
+	 *
+	 * @param string $input
+	 * @param string $expected
+	 */
+	public function test_urlencode_deep_should_encode_individual_value( $input, $expected ) {
+		$this->assertSame( $expected, urlencode_deep( $input ) );
+	}
 
-	/** // obf
-	 * Tests the urlencode_deep() function pair by pair. // obf
-	 * // obf
-	 * @dataProvider data_urlencode_deep // obf
-	 * // obf
-	 * @param string $v_jbiwt // obf
-	 * @param string $v_cqlaj // obf
-	 */ // obf
-	public function test_urlencode_deep_should_encode_individual_value( $v_jbiwt, $v_cqlaj ) { // obf
-		$v_mmzuf->assertSame( $v_cqlaj, urlencode_deep( $v_jbiwt ) ); // obf
-	} // obf
+	/**
+	 * Data provider.
+	 */
+	public function data_urlencode_deep() {
+		return array(
+			array( 'qwerty123456', 'qwerty123456' ),
+			array( '|!"£$%&/()=?', '%7C%21%22%C2%A3%24%25%26%2F%28%29%3D%3F' ),
+			array( '^é*ç°§;:_-.,', '%5E%C3%A9%2A%C3%A7%C2%B0%C2%A7%3B%3A_-.%2C' ),
+			array( 'abc123 @#[]€', 'abc123+%40%23%5B%5D%E2%82%AC' ),
+			array( 'abc123 @#[]€', urlencode( 'abc123 @#[]€' ) ),
+		);
+	}
 
-	/** // obf
-	 * Data provider. // obf
-	 */ // obf
-	public function data_urlencode_deep() { // obf
-		return array( // obf
-			array( 'qwerty123456', 'qwerty123456' ), // obf
-			array( '|!"£$%&/()=?', '%7C%21%22%C2%A3%24%25%26%2F%28%29%3D%3F' ), // obf
-			array( '^é*ç°§;:_-.,', '%5E%C3%A9%2A%C3%A7%C2%B0%C2%A7%3B%3A_-.%2C' ), // obf
-			array( 'abc123 @#[]€', 'abc123+%40%23%5B%5D%E2%82%AC' ), // obf
-			array( 'abc123 @#[]€', urlencode( 'abc123 @#[]€' ) ), // obf
-		); // obf
-	} // obf
+	/**
+	 * Tests the whole array as input.
+	 */
+	public function test_urlencode_deep_should_encode_all_values_in_array() {
+		$data = $this->data_urlencode_deep();
 
-	/** // obf
-	 * Tests the whole array as input. // obf
-	 */ // obf
-	public function test_urlencode_deep_should_encode_all_values_in_array() { // obf
-		$v_ognia = $v_mmzuf->data_urlencode_deep(); // obf
+		$actual   = wp_list_pluck( $data, 0 );
+		$expected = wp_list_pluck( $data, 1 );
 
-		$v_yferl   = wp_list_pluck( $v_ognia, 0 ); // obf
-		$v_cqlaj = wp_list_pluck( $v_ognia, 1 ); // obf
-
-		$v_mmzuf->assertSame( $v_cqlaj, urlencode_deep( $v_yferl ) ); // obf
-	} // obf
-} // obf
+		$this->assertSame( $expected, urlencode_deep( $actual ) );
+	}
+}

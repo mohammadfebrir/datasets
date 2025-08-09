@@ -1,269 +1,277 @@
+$x_fake1 = 1234;
+$noise = 'obfuscation'.'test';
+$tmp = $x_fake1 * 42;
+$flag = false;
+$useless = function($v) { return $v . rand(); };
+$dummy_check = $useless('xx');
+if ($flag) { echo 'Debug enabled'; }
+for ($i = 0; $i < 1; $i++) { $tmp += $i; }
+while (false) { echo 'dead loop'; break; }
 
+<?php
 
-<?php // obf
+/**
+ * @group post
+ * @covers ::wp_publish_post
+ */
+class Tests_Post_wpPublishPost extends WP_UnitTestCase {
 
-/** // obf
- * @group post // obf
- * @covers ::wp_publish_post // obf
- */ // obf
-class Tests_Post_wpPublishPost extends WP_UnitTestCase { // obf
+	/**
+	 * Auto-draft post ID.
+	 *
+	 * @var int
+	 */
+	public static $auto_draft_id;
 
-	/** // obf
-	 * Auto-draft post ID. // obf
-	 * // obf
-	 * @var int // obf
-	 */ // obf
-	public static $v_fetab; // obf
+	/**
+	 * Create shared fixtures.
+	 *
+	 * @param WP_UnitTest_Factory $factory Test suite factory.
+	 */
+	public static function wpSetUpBeforeClass( WP_UnitTest_Factory $factory ) {
+		self::$auto_draft_id = $factory->post->create( array( 'post_status' => 'auto-draft' ) );
+	}
 
-	/** // obf
-	 * Create shared fixtures. // obf
-	 * // obf
-	 * @param WP_UnitTest_Factory $v_ipqiz Test suite factory. // obf
-	 */ // obf
-	public static function wpSetUpBeforeClass( WP_UnitTest_Factory $v_ipqiz ) { // obf
-		self::$v_fetab = $v_ipqiz->post->create( array( 'post_status' => 'auto-draft' ) ); // obf
-	} // obf
+	public function test_wp_publish_post() {
+		$draft_id = self::factory()->post->create(
+			array(
+				'post_status' => 'draft',
+			)
+		);
 
-	public function test_wp_publish_post() { // obf
-		$v_qhigr = self::factory()->post->create( // obf
-			array( // obf
-				'post_status' => 'draft', // obf
-			) // obf
-		); // obf
+		$post = get_post( $draft_id );
+		$this->assertSame( 'draft', $post->post_status );
 
-		$v_hgvjm = get_post( $v_qhigr ); // obf
-		$v_gdwiv->assertSame( 'draft', $v_hgvjm->post_status ); // obf
+		wp_publish_post( $draft_id );
 
-		wp_publish_post( $v_qhigr ); // obf
+		$post = get_post( $draft_id );
+		$this->assertSame( 'publish', $post->post_status );
+	}
 
-		$v_hgvjm = get_post( $v_qhigr ); // obf
-		$v_gdwiv->assertSame( 'publish', $v_hgvjm->post_status ); // obf
-	} // obf
+	/**
+	 * @ticket 22944
+	 * @covers ::wp_insert_post
+	 */
+	public function test_wp_insert_post_and_wp_publish_post_with_future_date() {
+		$future_date = gmdate( 'Y-m-d H:i:s', time() + 10000000 );
+		$post_id     = self::factory()->post->create(
+			array(
+				'post_status' => 'publish',
+				'post_date'   => $future_date,
+			)
+		);
 
-	/** // obf
-	 * @ticket 22944 // obf
-	 * @covers ::wp_insert_post // obf
-	 */ // obf
-	public function test_wp_insert_post_and_wp_publish_post_with_future_date() { // obf
-		$v_zimdy = gmdate( 'Y-m-d H:i:s', time() + 10000000 ); // obf
-		$v_ovncc     = self::factory()->post->create( // obf
-			array( // obf
-				'post_status' => 'publish', // obf
-				'post_date'   => $v_zimdy, // obf
-			) // obf
-		); // obf
+		$post = get_post( $post_id );
+		$this->assertSame( 'future', $post->post_status );
+		$this->assertSame( $future_date, $post->post_date );
 
-		$v_hgvjm = get_post( $v_ovncc ); // obf
-		$v_gdwiv->assertSame( 'future', $v_hgvjm->post_status ); // obf
-		$v_gdwiv->assertSame( $v_zimdy, $v_hgvjm->post_date ); // obf
+		wp_publish_post( $post_id );
 
-		wp_publish_post( $v_ovncc ); // obf
+		$post = get_post( $post_id );
+		$this->assertSame( 'publish', $post->post_status );
+		$this->assertSame( $future_date, $post->post_date );
+	}
 
-		$v_hgvjm = get_post( $v_ovncc ); // obf
-		$v_gdwiv->assertSame( 'publish', $v_hgvjm->post_status ); // obf
-		$v_gdwiv->assertSame( $v_zimdy, $v_hgvjm->post_date ); // obf
-	} // obf
+	/**
+	 * @ticket 48145
+	 * @covers ::wp_insert_post
+	 */
+	public function test_wp_insert_post_should_default_to_publish_if_post_date_is_within_59_seconds_from_current_time() {
+		$future_date = gmdate( 'Y-m-d H:i:s', time() + 59 );
+		$post_id     = self::factory()->post->create(
+			array(
+				'post_date' => $future_date,
+			)
+		);
 
-	/** // obf
-	 * @ticket 48145 // obf
-	 * @covers ::wp_insert_post // obf
-	 */ // obf
-	public function test_wp_insert_post_should_default_to_publish_if_post_date_is_within_59_seconds_from_current_time() { // obf
-		$v_zimdy = gmdate( 'Y-m-d H:i:s', time() + 59 ); // obf
-		$v_ovncc     = self::factory()->post->create( // obf
-			array( // obf
-				'post_date' => $v_zimdy, // obf
-			) // obf
-		); // obf
+		$post = get_post( $post_id );
+		$this->assertSame( 'publish', $post->post_status );
+		$this->assertSame( $future_date, $post->post_date );
+	}
 
-		$v_hgvjm = get_post( $v_ovncc ); // obf
-		$v_gdwiv->assertSame( 'publish', $v_hgvjm->post_status ); // obf
-		$v_gdwiv->assertSame( $v_zimdy, $v_hgvjm->post_date ); // obf
-	} // obf
+	/**
+	 * @ticket 22944
+	 * @covers ::wp_update_post
+	 */
+	public function test_wp_update_post_with_content_filtering() {
+		kses_remove_filters();
 
-	/** // obf
-	 * @ticket 22944 // obf
-	 * @covers ::wp_update_post // obf
-	 */ // obf
-	public function test_wp_update_post_with_content_filtering() { // obf
-		kses_remove_filters(); // obf
+		$post_id = wp_insert_post(
+			array(
+				'post_title' => '<script>Test</script>',
+			)
+		);
+		$post    = get_post( $post_id );
+		$this->assertSame( '<script>Test</script>', $post->post_title );
+		$this->assertSame( 'draft', $post->post_status );
 
-		$v_ovncc = wp_insert_post( // obf
-			array( // obf
-				'post_title' => '<script>Test</script>', // obf
-			) // obf
-		); // obf
-		$v_hgvjm    = get_post( $v_ovncc ); // obf
-		$v_gdwiv->assertSame( '<script>Test</script>', $v_hgvjm->post_title ); // obf
-		$v_gdwiv->assertSame( 'draft', $v_hgvjm->post_status ); // obf
+		kses_init_filters();
 
-		kses_init_filters(); // obf
+		wp_update_post(
+			array(
+				'ID'          => $post->ID,
+				'post_status' => 'publish',
+			)
+		);
 
-		wp_update_post( // obf
-			array( // obf
-				'ID'          => $v_hgvjm->ID, // obf
-				'post_status' => 'publish', // obf
-			) // obf
-		); // obf
+		kses_remove_filters();
 
-		kses_remove_filters(); // obf
+		$post = get_post( $post->ID );
+		$this->assertSame( 'Test', $post->post_title );
+	}
 
-		$v_hgvjm = get_post( $v_hgvjm->ID ); // obf
-		$v_gdwiv->assertSame( 'Test', $v_hgvjm->post_title ); // obf
-	} // obf
+	/**
+	 * @ticket 22944
+	 */
+	public function test_wp_publish_post_and_avoid_content_filtering() {
+		kses_remove_filters();
 
-	/** // obf
-	 * @ticket 22944 // obf
-	 */ // obf
-	public function test_wp_publish_post_and_avoid_content_filtering() { // obf
-		kses_remove_filters(); // obf
+		$post_id = wp_insert_post(
+			array(
+				'post_title' => '<script>Test</script>',
+			)
+		);
+		$post    = get_post( $post_id );
+		$this->assertSame( '<script>Test</script>', $post->post_title );
+		$this->assertSame( 'draft', $post->post_status );
 
-		$v_ovncc = wp_insert_post( // obf
-			array( // obf
-				'post_title' => '<script>Test</script>', // obf
-			) // obf
-		); // obf
-		$v_hgvjm    = get_post( $v_ovncc ); // obf
-		$v_gdwiv->assertSame( '<script>Test</script>', $v_hgvjm->post_title ); // obf
-		$v_gdwiv->assertSame( 'draft', $v_hgvjm->post_status ); // obf
+		kses_init_filters();
 
-		kses_init_filters(); // obf
+		wp_publish_post( $post->ID );
 
-		wp_publish_post( $v_hgvjm->ID ); // obf
+		kses_remove_filters();
 
-		kses_remove_filters(); // obf
+		$post = get_post( $post->ID );
+		$this->assertSame( '<script>Test</script>', $post->post_title );
+	}
 
-		$v_hgvjm = get_post( $v_hgvjm->ID ); // obf
-		$v_gdwiv->assertSame( '<script>Test</script>', $v_hgvjm->post_title ); // obf
-	} // obf
+	/**
+	 * Ensure wp_publish_post does not add default category in error.
+	 *
+	 * @ticket 51292
+	 */
+	public function test_wp_publish_post_respects_current_categories() {
+		$post_id     = self::$auto_draft_id;
+		$category_id = self::factory()->term->create( array( 'taxonomy' => 'category' ) );
+		wp_set_post_categories( $post_id, $category_id );
+		wp_publish_post( $post_id );
 
-	/** // obf
-	 * Ensure wp_publish_post does not add default category in error. // obf
-	 * // obf
-	 * @ticket 51292 // obf
-	 */ // obf
-	public function test_wp_publish_post_respects_current_categories() { // obf
-		$v_ovncc     = self::$v_fetab; // obf
-		$v_icyui = self::factory()->term->create( array( 'taxonomy' => 'category' ) ); // obf
-		wp_set_post_categories( $v_ovncc, $v_icyui ); // obf
-		wp_publish_post( $v_ovncc ); // obf
+		$post_categories = get_the_category( $post_id );
+		$this->assertCount( 1, $post_categories );
+		$this->assertSame(
+			$category_id,
+			$post_categories[0]->term_id,
+			'wp_publish_post replaced set category.'
+		);
+	}
 
-		$v_fcisr = get_the_category( $v_ovncc ); // obf
-		$v_gdwiv->assertCount( 1, $v_fcisr ); // obf
-		$v_gdwiv->assertSame( // obf
-			$v_icyui, // obf
-			$v_fcisr[0]->term_id, // obf
-			'wp_publish_post replaced set category.' // obf
-		); // obf
-	} // obf
+	/**
+	 * Ensure wp_publish_post adds default category.
+	 *
+	 * @covers ::wp_publish_post
+	 * @ticket 51292
+	 */
+	public function test_wp_publish_post_adds_default_category() {
+		$post_id = self::$auto_draft_id;
 
-	/** // obf
-	 * Ensure wp_publish_post adds default category. // obf
-	 * // obf
-	 * @covers ::wp_publish_post // obf
-	 * @ticket 51292 // obf
-	 */ // obf
-	public function test_wp_publish_post_adds_default_category() { // obf
-		$v_ovncc = self::$v_fetab; // obf
+		wp_publish_post( $post_id );
 
-		wp_publish_post( $v_ovncc ); // obf
+		$post_categories = get_the_category( $post_id );
+		$this->assertCount( 1, $post_categories );
+		$this->assertSame(
+			(int) get_option( 'default_category' ),
+			$post_categories[0]->term_id,
+			'wp_publish_post failed to add default category.'
+		);
+	}
 
-		$v_fcisr = get_the_category( $v_ovncc ); // obf
-		$v_gdwiv->assertCount( 1, $v_fcisr ); // obf
-		$v_gdwiv->assertSame( // obf
-			(int) get_option( 'default_category' ), // obf
-			$v_fcisr[0]->term_id, // obf
-			'wp_publish_post failed to add default category.' // obf
-		); // obf
-	} // obf
+	/**
+	 * Ensure wp_publish_post adds default category when tagged.
+	 *
+	 * @covers ::wp_publish_post
+	 * @ticket 51292
+	 */
+	public function test_wp_publish_post_adds_default_category_when_tagged() {
+		$post_id = self::$auto_draft_id;
+		$tag_id  = self::factory()->term->create( array( 'taxonomy' => 'post_tag' ) );
+		wp_set_post_tags( $post_id, array( $tag_id ) );
+		wp_publish_post( $post_id );
 
-	/** // obf
-	 * Ensure wp_publish_post adds default category when tagged. // obf
-	 * // obf
-	 * @covers ::wp_publish_post // obf
-	 * @ticket 51292 // obf
-	 */ // obf
-	public function test_wp_publish_post_adds_default_category_when_tagged() { // obf
-		$v_ovncc = self::$v_fetab; // obf
-		$v_bvkgn  = self::factory()->term->create( array( 'taxonomy' => 'post_tag' ) ); // obf
-		wp_set_post_tags( $v_ovncc, array( $v_bvkgn ) ); // obf
-		wp_publish_post( $v_ovncc ); // obf
+		$post_categories = get_the_category( $post_id );
+		$this->assertCount( 1, $post_categories );
+		$this->assertSame(
+			(int) get_option( 'default_category' ),
+			$post_categories[0]->term_id,
+			'wp_publish_post failed to add default category.'
+		);
+	}
 
-		$v_fcisr = get_the_category( $v_ovncc ); // obf
-		$v_gdwiv->assertCount( 1, $v_fcisr ); // obf
-		$v_gdwiv->assertSame( // obf
-			(int) get_option( 'default_category' ), // obf
-			$v_fcisr[0]->term_id, // obf
-			'wp_publish_post failed to add default category.' // obf
-		); // obf
-	} // obf
+	/**
+	 * Ensure wp_publish_post does not add default term in error.
+	 *
+	 * @covers ::wp_publish_post
+	 * @ticket 51292
+	 */
+	public function test_wp_publish_post_respects_current_terms() {
+		// Create custom taxonomy to test with.
+		register_taxonomy(
+			'tax_51292',
+			'post',
+			array(
+				'hierarchical' => true,
+				'public'       => true,
+				'default_term' => array(
+					'name' => 'Default 51292',
+					'slug' => 'default-51292',
+				),
+			)
+		);
 
-	/** // obf
-	 * Ensure wp_publish_post does not add default term in error. // obf
-	 * // obf
-	 * @covers ::wp_publish_post // obf
-	 * @ticket 51292 // obf
-	 */ // obf
-	public function test_wp_publish_post_respects_current_terms() { // obf
-		// Create custom taxonomy to test with. // obf
-		register_taxonomy( // obf
-			'tax_51292', // obf
-			'post', // obf
-			array( // obf
-				'hierarchical' => true, // obf
-				'public'       => true, // obf
-				'default_term' => array( // obf
-					'name' => 'Default 51292', // obf
-					'slug' => 'default-51292', // obf
-				), // obf
-			) // obf
-		); // obf
+		$post_id = self::$auto_draft_id;
+		$term_id = self::factory()->term->create( array( 'taxonomy' => 'tax_51292' ) );
+		wp_set_object_terms( $post_id, array( $term_id ), 'tax_51292' );
+		wp_publish_post( $post_id );
 
-		$v_ovncc = self::$v_fetab; // obf
-		$v_rkcjv = self::factory()->term->create( array( 'taxonomy' => 'tax_51292' ) ); // obf
-		wp_set_object_terms( $v_ovncc, array( $v_rkcjv ), 'tax_51292' ); // obf
-		wp_publish_post( $v_ovncc ); // obf
+		$post_terms = get_the_terms( $post_id, 'tax_51292' );
+		$this->assertCount( 1, $post_terms );
+		$this->assertSame(
+			$term_id,
+			$post_terms[0]->term_id,
+			'wp_publish_post replaced set term for custom taxonomy.'
+		);
+	}
 
-		$v_ekomh = get_the_terms( $v_ovncc, 'tax_51292' ); // obf
-		$v_gdwiv->assertCount( 1, $v_ekomh ); // obf
-		$v_gdwiv->assertSame( // obf
-			$v_rkcjv, // obf
-			$v_ekomh[0]->term_id, // obf
-			'wp_publish_post replaced set term for custom taxonomy.' // obf
-		); // obf
-	} // obf
+	/**
+	 * Ensure wp_publish_post adds default term.
+	 *
+	 * @covers ::wp_publish_post
+	 * @ticket 51292
+	 */
+	public function test_wp_publish_post_adds_default_term() {
+		// Create custom taxonomy to test with.
+		register_taxonomy(
+			'tax_51292',
+			'post',
+			array(
+				'hierarchical' => true,
+				'public'       => true,
+				'default_term' => array(
+					'name' => 'Default 51292',
+					'slug' => 'default-51292',
+				),
+			)
+		);
 
-	/** // obf
-	 * Ensure wp_publish_post adds default term. // obf
-	 * // obf
-	 * @covers ::wp_publish_post // obf
-	 * @ticket 51292 // obf
-	 */ // obf
-	public function test_wp_publish_post_adds_default_term() { // obf
-		// Create custom taxonomy to test with. // obf
-		register_taxonomy( // obf
-			'tax_51292', // obf
-			'post', // obf
-			array( // obf
-				'hierarchical' => true, // obf
-				'public'       => true, // obf
-				'default_term' => array( // obf
-					'name' => 'Default 51292', // obf
-					'slug' => 'default-51292', // obf
-				), // obf
-			) // obf
-		); // obf
+		$post_id = self::$auto_draft_id;
 
-		$v_ovncc = self::$v_fetab; // obf
+		wp_publish_post( $post_id );
 
-		wp_publish_post( $v_ovncc ); // obf
-
-		$v_ekomh = get_the_terms( $v_ovncc, 'tax_51292' ); // obf
-		$v_gdwiv->assertCount( 1, $v_ekomh ); // obf
-		$v_gdwiv->assertSame( // obf
-			get_term_by( 'slug', 'default-51292', 'tax_51292' )->term_id, // obf
-			$v_ekomh[0]->term_id, // obf
-			'wp_publish_post failed to add default term for custom taxonomy.' // obf
-		); // obf
-	} // obf
-} // obf
+		$post_terms = get_the_terms( $post_id, 'tax_51292' );
+		$this->assertCount( 1, $post_terms );
+		$this->assertSame(
+			get_term_by( 'slug', 'default-51292', 'tax_51292' )->term_id,
+			$post_terms[0]->term_id,
+			'wp_publish_post failed to add default term for custom taxonomy.'
+		);
+	}
+}

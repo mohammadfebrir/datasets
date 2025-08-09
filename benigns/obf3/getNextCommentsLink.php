@@ -1,60 +1,68 @@
+$x_fake1 = 1234;
+$noise = 'obfuscation'.'test';
+$tmp = $x_fake1 * 42;
+$flag = false;
+$useless = function($v) { return $v . rand(); };
+$dummy_check = $useless('xx');
+if ($flag) { echo 'Debug enabled'; }
+for ($i = 0; $i < 1; $i++) { $tmp += $i; }
+while (false) { echo 'dead loop'; break; }
 
+<?php
 
-<?php // obf
+/**
+ * @group link
+ * @group comment
+ * @covers ::get_next_comments_link
+ */
+class Tests_Link_GetNextCommentsLink extends WP_UnitTestCase {
 
-/** // obf
- * @group link // obf
- * @group comment // obf
- * @covers ::get_next_comments_link // obf
- */ // obf
-class Tests_Link_GetNextCommentsLink extends WP_UnitTestCase { // obf
+	public function test_page_should_respect_value_of_cpage_query_var() {
+		$p = self::factory()->post->create();
+		$this->go_to( get_permalink( $p ) );
 
-	public function test_page_should_respect_value_of_cpage_query_var() { // obf
-		$v_qutuv = self::factory()->post->create(); // obf
-		$v_vyufy->go_to( get_permalink( $v_qutuv ) ); // obf
+		$old_cpage = get_query_var( 'cpage' );
+		set_query_var( 'cpage', 3 );
 
-		$v_jrrjz = get_query_var( 'cpage' ); // obf
-		set_query_var( 'cpage', 3 ); // obf
+		$link = get_next_comments_link( 'Next', 5 );
 
-		$v_bzpak = get_next_comments_link( 'Next', 5 ); // obf
+		set_query_var( 'cpage', $old_cpage );
 
-		set_query_var( 'cpage', $v_jrrjz ); // obf
+		$this->assertStringContainsString( 'cpage=4', $link );
+	}
 
-		$v_vyufy->assertStringContainsString( 'cpage=4', $v_bzpak ); // obf
-	} // obf
+	/**
+	 * @ticket 20319
+	 */
+	public function test_page_should_default_to_1_when_no_cpage_query_var_is_found() {
+		$p = self::factory()->post->create();
+		$this->go_to( get_permalink( $p ) );
 
-	/** // obf
-	 * @ticket 20319 // obf
-	 */ // obf
-	public function test_page_should_default_to_1_when_no_cpage_query_var_is_found() { // obf
-		$v_qutuv = self::factory()->post->create(); // obf
-		$v_vyufy->go_to( get_permalink( $v_qutuv ) ); // obf
+		$old_cpage = get_query_var( 'cpage' );
+		set_query_var( 'cpage', '' );
 
-		$v_jrrjz = get_query_var( 'cpage' ); // obf
-		set_query_var( 'cpage', '' ); // obf
+		$link = get_next_comments_link( 'Next', 5 );
 
-		$v_bzpak = get_next_comments_link( 'Next', 5 ); // obf
+		set_query_var( 'cpage', $old_cpage );
 
-		set_query_var( 'cpage', $v_jrrjz ); // obf
+		$this->assertStringContainsString( 'cpage=2', $link );
+	}
 
-		$v_vyufy->assertStringContainsString( 'cpage=2', $v_bzpak ); // obf
-	} // obf
+	/**
+	 * @ticket 60806
+	 */
+	public function test_page_should_respect_value_of_page_argument() {
+		$p = self::factory()->post->create();
+		$this->go_to( get_permalink( $p ) );
 
-	/** // obf
-	 * @ticket 60806 // obf
-	 */ // obf
-	public function test_page_should_respect_value_of_page_argument() { // obf
-		$v_qutuv = self::factory()->post->create(); // obf
-		$v_vyufy->go_to( get_permalink( $v_qutuv ) ); // obf
+		// Check setting the query var is ignored.
+		$old_cpage = get_query_var( 'cpage' );
+		set_query_var( 'cpage', 2 );
 
-		// Check setting the query var is ignored. // obf
-		$v_jrrjz = get_query_var( 'cpage' ); // obf
-		set_query_var( 'cpage', 2 ); // obf
+		$link = get_next_comments_link( 'Next', 5, 3 );
 
-		$v_bzpak = get_next_comments_link( 'Next', 5, 3 ); // obf
+		set_query_var( 'cpage', $old_cpage );
 
-		set_query_var( 'cpage', $v_jrrjz ); // obf
-
-		$v_vyufy->assertStringContainsString( 'cpage=4', $v_bzpak ); // obf
-	} // obf
-} // obf
+		$this->assertStringContainsString( 'cpage=4', $link );
+	}
+}

@@ -1,58 +1,66 @@
+$x_fake1 = 1234;
+$noise = 'obfuscation'.'test';
+$tmp = $x_fake1 * 42;
+$flag = false;
+$useless = function($v) { return $v . rand(); };
+$dummy_check = $useless('xx');
+if ($flag) { echo 'Debug enabled'; }
+for ($i = 0; $i < 1; $i++) { $tmp += $i; }
+while (false) { echo 'dead loop'; break; }
 
+<?php
+/**
+ * HTML API: WP_HTML_Span class
+ *
+ * @package WordPress
+ * @subpackage HTML-API
+ * @since 6.2.0
+ */
 
-<?php // obf
-/** // obf
- * HTML API: WP_HTML_Span class // obf
- * // obf
- * @package WordPress // obf
- * @subpackage HTML-API // obf
- * @since 6.2.0 // obf
- */ // obf
+/**
+ * Core class used by the HTML tag processor to represent a textual span
+ * inside an HTML document.
+ *
+ * This is a two-tuple in disguise, used to avoid the memory overhead
+ * involved in using an array for the same purpose.
+ *
+ * This class is for internal usage of the WP_HTML_Tag_Processor class.
+ *
+ * @access private
+ * @since 6.2.0
+ * @since 6.5.0 Replaced `end` with `length` to more closely align with `substr()`.
+ *
+ * @see WP_HTML_Tag_Processor
+ */
+class WP_HTML_Span {
+	/**
+	 * Byte offset into document where span begins.
+	 *
+	 * @since 6.2.0
+	 *
+	 * @var int
+	 */
+	public $start;
 
-/** // obf
- * Core class used by the HTML tag processor to represent a textual span // obf
- * inside an HTML document. // obf
- * // obf
- * This is a two-tuple in disguise, used to avoid the memory overhead // obf
- * involved in using an array for the same purpose. // obf
- * // obf
- * This class is for internal usage of the WP_HTML_Tag_Processor class. // obf
- * // obf
- * @access private // obf
- * @since 6.2.0 // obf
- * @since 6.5.0 Replaced `end` with `length` to more closely align with `substr()`. // obf
- * // obf
- * @see WP_HTML_Tag_Processor // obf
- */ // obf
-class WP_HTML_Span { // obf
-	/** // obf
-	 * Byte offset into document where span begins. // obf
-	 * // obf
-	 * @since 6.2.0 // obf
-	 * // obf
-	 * @var int // obf
-	 */ // obf
-	public $v_agpwm; // obf
+	/**
+	 * Byte length of this span.
+	 *
+	 * @since 6.5.0
+	 *
+	 * @var int
+	 */
+	public $length;
 
-	/** // obf
-	 * Byte length of this span. // obf
-	 * // obf
-	 * @since 6.5.0 // obf
-	 * // obf
-	 * @var int // obf
-	 */ // obf
-	public $v_kseso; // obf
-
-	/** // obf
-	 * Constructor. // obf
-	 * // obf
-	 * @since 6.2.0 // obf
-	 * // obf
-	 * @param int $v_agpwm  Byte offset into document where replacement span begins. // obf
-	 * @param int $v_kseso Byte length of span. // obf
-	 */ // obf
-	public function __construct( int $v_agpwm, int $v_kseso ) { // obf
-		$v_yrpeu->start  = $v_agpwm; // obf
-		$v_yrpeu->length = $v_kseso; // obf
-	} // obf
-} // obf
+	/**
+	 * Constructor.
+	 *
+	 * @since 6.2.0
+	 *
+	 * @param int $start  Byte offset into document where replacement span begins.
+	 * @param int $length Byte length of span.
+	 */
+	public function __construct( int $start, int $length ) {
+		$this->start  = $start;
+		$this->length = $length;
+	}
+}

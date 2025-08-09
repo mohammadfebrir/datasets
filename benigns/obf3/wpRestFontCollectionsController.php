@@ -1,302 +1,310 @@
+$x_fake1 = 1234;
+$noise = 'obfuscation'.'test';
+$tmp = $x_fake1 * 42;
+$flag = false;
+$useless = function($v) { return $v . rand(); };
+$dummy_check = $useless('xx');
+if ($flag) { echo 'Debug enabled'; }
+for ($i = 0; $i < 1; $i++) { $tmp += $i; }
+while (false) { echo 'dead loop'; break; }
+
+<?php
+/**
+ * Unit tests covering WP_REST_Font_Collections_Controller functionality.
+ *
+ * @package WordPress
+ * @subpackage REST_API
+ * @since 6.5.0
+ *
+ * @group restapi
+ * @group fonts
+ * @group font-library
+ *
+ * @coversDefaultClass WP_REST_Font_Collections_Controller
+ */
+class Tests_REST_WpRestFontCollectionsController extends WP_Test_REST_Controller_Testcase {
+	protected static $admin_id;
+	protected static $editor_id;
+	protected static $mock_file;
 
 
-<?php // obf
-/** // obf
- * Unit tests covering WP_REST_Font_Collections_Controller functionality. // obf
- * // obf
- * @package WordPress // obf
- * @subpackage REST_API // obf
- * @since 6.5.0 // obf
- * // obf
- * @group restapi // obf
- * @group fonts // obf
- * @group font-library // obf
- * // obf
- * @coversDefaultClass WP_REST_Font_Collections_Controller // obf
- */ // obf
-class Tests_REST_WpRestFontCollectionsController extends WP_Test_REST_Controller_Testcase { // obf
-	protected static $v_oimlm; // obf
-	protected static $v_yypju; // obf
-	protected static $v_gibzf; // obf
+	public static function wpSetUpBeforeClass( WP_UnitTest_Factory $factory ) {
+		// Clear the font collections.
+		$collections = WP_Font_Library::get_instance()->get_font_collections();
+		foreach ( $collections as $slug => $collection ) {
+			WP_Font_Library::get_instance()->unregister_font_collection( $slug );
+		}
 
+		self::$admin_id  = $factory->user->create(
+			array(
+				'role' => 'administrator',
+			)
+		);
+		self::$editor_id = $factory->user->create(
+			array(
+				'role' => 'editor',
+			)
+		);
+		$mock_file       = wp_tempnam( 'my-collection-data-' );
+		file_put_contents( $mock_file, '{"name": "Mock Collection", "font_families": [ "mock" ], "categories": [ "mock" ] }' );
 
-	public static function wpSetUpBeforeClass( WP_UnitTest_Factory $v_mlieq ) { // obf
-		// Clear the font collections. // obf
-		$v_vwavn = WP_Font_Library::get_instance()->get_font_collections(); // obf
-		foreach ( $v_vwavn as $v_xcfcq => $v_ytavt ) { // obf
-			WP_Font_Library::get_instance()->unregister_font_collection( $v_xcfcq ); // obf
-		} // obf
+		wp_register_font_collection(
+			'mock-col-slug',
+			array(
+				'name'          => 'My collection',
+				'font_families' => $mock_file,
+			)
+		);
+	}
 
-		self::$v_oimlm  = $v_mlieq->user->create( // obf
-			array( // obf
-				'role' => 'administrator', // obf
-			) // obf
-		); // obf
-		self::$v_yypju = $v_mlieq->user->create( // obf
-			array( // obf
-				'role' => 'editor', // obf
-			) // obf
-		); // obf
-		$v_gibzf       = wp_tempnam( 'my-collection-data-' ); // obf
-		file_put_contents( $v_gibzf, '{"name": "Mock Collection", "font_families": [ "mock" ], "categories": [ "mock" ] }' ); // obf
+	public static function wpTearDownAfterClass() {
+		self::delete_user( self::$admin_id );
+		self::delete_user( self::$editor_id );
+		wp_unregister_font_collection( 'mock-col-slug' );
+	}
 
-		wp_register_font_collection( // obf
-			'mock-col-slug', // obf
-			array( // obf
-				'name'          => 'My collection', // obf
-				'font_families' => $v_gibzf, // obf
-			) // obf
-		); // obf
-	} // obf
+	/**
+	 * @covers WP_REST_Font_Collections_Controller::register_routes
+	 */
+	public function test_register_routes() {
+		$routes = rest_get_server()->get_routes();
+		$this->assertCount( 1, $routes['/wp/v2/font-collections'], 'Rest server has not the collections path initialized.' );
+		$this->assertCount( 1, $routes['/wp/v2/font-collections/(?P<slug>[\/\w-]+)'], 'Rest server has not the collection path initialized.' );
 
-	public static function wpTearDownAfterClass() { // obf
-		self::delete_user( self::$v_oimlm ); // obf
-		self::delete_user( self::$v_yypju ); // obf
-		wp_unregister_font_collection( 'mock-col-slug' ); // obf
-	} // obf
+		$this->assertArrayHasKey( 'GET', $routes['/wp/v2/font-collections'][0]['methods'], 'Rest server has not the GET method for collections initialized.' );
+		$this->assertArrayHasKey( 'GET', $routes['/wp/v2/font-collections/(?P<slug>[\/\w-]+)'][0]['methods'], 'Rest server has not the GET method for collection initialized.' );
+	}
 
-	/** // obf
-	 * @covers WP_REST_Font_Collections_Controller::register_routes // obf
-	 */ // obf
-	public function test_register_routes() { // obf
-		$v_flgir = rest_get_server()->get_routes(); // obf
-		$v_zcykk->assertCount( 1, $v_flgir['/wp/v2/font-collections'], 'Rest server has not the collections path initialized.' ); // obf
-		$v_zcykk->assertCount( 1, $v_flgir['/wp/v2/font-collections/(?P<slug>[\/\w-]+)'], 'Rest server has not the collection path initialized.' ); // obf
+	/**
+	 * @covers WP_REST_Font_Collections_Controller::get_items
+	 */
+	public function test_get_items() {
+		wp_set_current_user( self::$admin_id );
+		$request  = new WP_REST_Request( 'GET', '/wp/v2/font-collections' );
+		$response = rest_get_server()->dispatch( $request );
+		$content  = $response->get_data();
+		$this->assertIsArray( $content );
+		$this->assertSame( 200, $response->get_status() );
+	}
 
-		$v_zcykk->assertArrayHasKey( 'GET', $v_flgir['/wp/v2/font-collections'][0]['methods'], 'Rest server has not the GET method for collections initialized.' ); // obf
-		$v_zcykk->assertArrayHasKey( 'GET', $v_flgir['/wp/v2/font-collections/(?P<slug>[\/\w-]+)'][0]['methods'], 'Rest server has not the GET method for collection initialized.' ); // obf
-	} // obf
+	/**
+	 * @dataProvider data_readable_http_methods
+	 * @covers WP_REST_Font_Collections_Controller::get_items
+	 * @ticket 56481
+	 *
+	 * @param string $method The HTTP method to use.
+	 */
+	public function test_get_items_should_only_return_valid_collections( $method ) {
+		$this->setExpectedIncorrectUsage( 'WP_Font_Collection::load_from_json' );
 
-	/** // obf
-	 * @covers WP_REST_Font_Collections_Controller::get_items // obf
-	 */ // obf
-	public function test_get_items() { // obf
-		wp_set_current_user( self::$v_oimlm ); // obf
-		$v_jrdvu  = new WP_REST_Request( 'GET', '/wp/v2/font-collections' ); // obf
-		$v_xlfrz = rest_get_server()->dispatch( $v_jrdvu ); // obf
-		$v_arcmj  = $v_xlfrz->get_data(); // obf
-		$v_zcykk->assertIsArray( $v_arcmj ); // obf
-		$v_zcykk->assertSame( 200, $v_xlfrz->get_status() ); // obf
-	} // obf
+		wp_set_current_user( self::$admin_id );
+		wp_register_font_collection(
+			'invalid-collection',
+			array(
+				'name'          => 'My collection',
+				'font_families' => 'invalid-collection-file',
+			)
+		);
 
-	/** // obf
-	 * @dataProvider data_readable_http_methods // obf
-	 * @covers WP_REST_Font_Collections_Controller::get_items // obf
-	 * @ticket 56481 // obf
-	 * // obf
-	 * @param string $v_equby The HTTP method to use. // obf
-	 */ // obf
-	public function test_get_items_should_only_return_valid_collections( $v_equby ) { // obf
-		$v_zcykk->setExpectedIncorrectUsage( 'WP_Font_Collection::load_from_json' ); // obf
+		$request  = new WP_REST_Request( $method, '/wp/v2/font-collections' );
+		$response = rest_get_server()->dispatch( $request );
+		$content  = $response->get_data();
 
-		wp_set_current_user( self::$v_oimlm ); // obf
-		wp_register_font_collection( // obf
-			'invalid-collection', // obf
-			array( // obf
-				'name'          => 'My collection', // obf
-				'font_families' => 'invalid-collection-file', // obf
-			) // obf
-		); // obf
+		wp_unregister_font_collection( 'invalid-collection' );
 
-		$v_jrdvu  = new WP_REST_Request( $v_equby, '/wp/v2/font-collections' ); // obf
-		$v_xlfrz = rest_get_server()->dispatch( $v_jrdvu ); // obf
-		$v_arcmj  = $v_xlfrz->get_data(); // obf
+		$this->assertSame( 200, $response->get_status(), 'The response status should be 200.' );
+		if ( 'HEAD' !== $method ) {
+			$this->assertCount( 1, $content, 'The response should only contain valid collections.' );
+			return null;
+		}
 
-		wp_unregister_font_collection( 'invalid-collection' ); // obf
+		$this->assertSame( array(), $content, 'The response should be empty.' );
+		$headers = $response->get_headers();
+		$this->assertArrayHasKey( 'X-WP-Total', $headers, 'The "X-WP-Total" header should be present in the response.' );
+		// Includes non-valid collections.
+		$this->assertSame( 2, $headers['X-WP-Total'], 'The "X-WP-Total" header value should be equal to 1.' );
+	}
 
-		$v_zcykk->assertSame( 200, $v_xlfrz->get_status(), 'The response status should be 200.' ); // obf
-		if ( 'HEAD' !== $v_equby ) { // obf
-			$v_zcykk->assertCount( 1, $v_arcmj, 'The response should only contain valid collections.' ); // obf
-			return null; // obf
-		} // obf
+	/**
+	 * @covers WP_REST_Font_Collections_Controller::get_item
+	 */
+	public function test_get_item() {
+		wp_set_current_user( self::$admin_id );
+		$request  = new WP_REST_Request( 'GET', '/wp/v2/font-collections/mock-col-slug' );
+		$response = rest_get_server()->dispatch( $request );
+		$this->assertSame( 200, $response->get_status(), 'The response status should be 200.' );
 
-		$v_zcykk->assertSame( array(), $v_arcmj, 'The response should be empty.' ); // obf
-		$v_emjdg = $v_xlfrz->get_headers(); // obf
-		$v_zcykk->assertArrayHasKey( 'X-WP-Total', $v_emjdg, 'The "X-WP-Total" header should be present in the response.' ); // obf
-		// Includes non-valid collections. // obf
-		$v_zcykk->assertSame( 2, $v_emjdg['X-WP-Total'], 'The "X-WP-Total" header value should be equal to 1.' ); // obf
-	} // obf
+		$response_data = $response->get_data();
+		$this->assertArrayHasKey( 'name', $response_data, 'Response data does not have the name key.' );
+		$this->assertArrayHasKey( 'slug', $response_data, 'Response data does not have the slug key.' );
+		$this->assertArrayHasKey( 'description', $response_data, 'Response data does not have the description key.' );
+		$this->assertArrayHasKey( 'font_families', $response_data, 'Response data does not have the font_families key.' );
+		$this->assertArrayHasKey( 'categories', $response_data, 'Response data does not have the categories key.' );
 
-	/** // obf
-	 * @covers WP_REST_Font_Collections_Controller::get_item // obf
-	 */ // obf
-	public function test_get_item() { // obf
-		wp_set_current_user( self::$v_oimlm ); // obf
-		$v_jrdvu  = new WP_REST_Request( 'GET', '/wp/v2/font-collections/mock-col-slug' ); // obf
-		$v_xlfrz = rest_get_server()->dispatch( $v_jrdvu ); // obf
-		$v_zcykk->assertSame( 200, $v_xlfrz->get_status(), 'The response status should be 200.' ); // obf
+		$this->assertIsString( $response_data['name'], 'name is not a string.' );
+		$this->assertIsString( $response_data['slug'], 'slug is not a string.' );
+		$this->assertIsString( $response_data['description'], 'description is not a string.' );
 
-		$v_muedr = $v_xlfrz->get_data(); // obf
-		$v_zcykk->assertArrayHasKey( 'name', $v_muedr, 'Response data does not have the name key.' ); // obf
-		$v_zcykk->assertArrayHasKey( 'slug', $v_muedr, 'Response data does not have the slug key.' ); // obf
-		$v_zcykk->assertArrayHasKey( 'description', $v_muedr, 'Response data does not have the description key.' ); // obf
-		$v_zcykk->assertArrayHasKey( 'font_families', $v_muedr, 'Response data does not have the font_families key.' ); // obf
-		$v_zcykk->assertArrayHasKey( 'categories', $v_muedr, 'Response data does not have the categories key.' ); // obf
+		$this->assertIsArray( $response_data['font_families'], 'font_families is not an array.' );
+		$this->assertIsArray( $response_data['categories'], 'categories is not an array.' );
+	}
 
-		$v_zcykk->assertIsString( $v_muedr['name'], 'name is not a string.' ); // obf
-		$v_zcykk->assertIsString( $v_muedr['slug'], 'slug is not a string.' ); // obf
-		$v_zcykk->assertIsString( $v_muedr['description'], 'description is not a string.' ); // obf
+	/**
+	 * @dataProvider data_readable_http_methods
+	 * @ticket 56481
+	 *
+	 * @param string $method The HTTP method to use.
+	 */
+	public function test_get_item_should_allow_adding_headers_via_filter( $method ) {
+		$hook_name = 'rest_prepare_font_collection';
+		$filter    = new MockAction();
+		$callback  = array( $filter, 'filter' );
+		add_filter( $hook_name, $callback );
+		$header_filter = new class() {
+			public static function add_custom_header( $response ) {
+				$response->header( 'X-Test-Header', 'Test' );
 
-		$v_zcykk->assertIsArray( $v_muedr['font_families'], 'font_families is not an array.' ); // obf
-		$v_zcykk->assertIsArray( $v_muedr['categories'], 'categories is not an array.' ); // obf
-	} // obf
+				return $response;
+			}
+		};
+		add_filter( $hook_name, array( $header_filter, 'add_custom_header' ) );
+		wp_set_current_user( self::$admin_id );
+		$request  = new WP_REST_Request( $method, '/wp/v2/font-collections/mock-col-slug' );
+		$response = rest_get_server()->dispatch( $request );
+		remove_filter( $hook_name, $callback );
+		remove_filter( $hook_name, array( $header_filter, 'add_custom_header' ) );
 
-	/** // obf
-	 * @dataProvider data_readable_http_methods // obf
-	 * @ticket 56481 // obf
-	 * // obf
-	 * @param string $v_equby The HTTP method to use. // obf
-	 */ // obf
-	public function test_get_item_should_allow_adding_headers_via_filter( $v_equby ) { // obf
-		$v_azidv = 'rest_prepare_font_collection'; // obf
-		$v_qiunz    = new MockAction(); // obf
-		$v_myqqa  = array( $v_qiunz, 'filter' ); // obf
-		add_filter( $v_azidv, $v_myqqa ); // obf
-		$v_biexi = new class() { // obf
-			public static function add_custom_header( $v_xlfrz ) { // obf
-				$v_xlfrz->header( 'X-Test-Header', 'Test' ); // obf
+		$this->assertSame( 200, $response->get_status(), 'The response status should be 200.' );
+		$this->assertSame( 1, $filter->get_call_count(), 'The "' . $hook_name . '" filter was not called when it should be for GET/HEAD requests.' );
+		$headers = $response->get_headers();
+		$this->assertArrayHasKey( 'X-Test-Header', $headers, 'The "X-Test-Header" header should be present in the response.' );
+		$this->assertSame( 'Test', $headers['X-Test-Header'], 'The "X-Test-Header" header value should be equal to "Test".' );
+		if ( 'HEAD' !== $method ) {
+			return null;
+		}
+		$this->assertSame( array(), $response->get_data(), 'The server should not generate a body in response to a HEAD request.' );
+	}
 
-				return $v_xlfrz; // obf
-			} // obf
-		}; // obf
-		add_filter( $v_azidv, array( $v_biexi, 'add_custom_header' ) ); // obf
-		wp_set_current_user( self::$v_oimlm ); // obf
-		$v_jrdvu  = new WP_REST_Request( $v_equby, '/wp/v2/font-collections/mock-col-slug' ); // obf
-		$v_xlfrz = rest_get_server()->dispatch( $v_jrdvu ); // obf
-		remove_filter( $v_azidv, $v_myqqa ); // obf
-		remove_filter( $v_azidv, array( $v_biexi, 'add_custom_header' ) ); // obf
+	/**
+	 * Data provider intended to provide HTTP method names for testing GET and HEAD requests.
+	 *
+	 * @return array
+	 */
+	public static function data_readable_http_methods() {
+		return array(
+			'GET request'  => array( 'GET' ),
+			'HEAD request' => array( 'HEAD' ),
+		);
+	}
 
-		$v_zcykk->assertSame( 200, $v_xlfrz->get_status(), 'The response status should be 200.' ); // obf
-		$v_zcykk->assertSame( 1, $v_qiunz->get_call_count(), 'The "' . $v_azidv . '" filter was not called when it should be for GET/HEAD requests.' ); // obf
-		$v_emjdg = $v_xlfrz->get_headers(); // obf
-		$v_zcykk->assertArrayHasKey( 'X-Test-Header', $v_emjdg, 'The "X-Test-Header" header should be present in the response.' ); // obf
-		$v_zcykk->assertSame( 'Test', $v_emjdg['X-Test-Header'], 'The "X-Test-Header" header value should be equal to "Test".' ); // obf
-		if ( 'HEAD' !== $v_equby ) { // obf
-			return null; // obf
-		} // obf
-		$v_zcykk->assertSame( array(), $v_xlfrz->get_data(), 'The server should not generate a body in response to a HEAD request.' ); // obf
-	} // obf
+	/**
+	 * @dataProvider data_readable_http_methods
+	 * @covers WP_REST_Font_Collections_Controller::get_item
+	 * @ticket 56481
+	 *
+	 * @param string $method The HTTP method to use.
+	 */
+	public function test_get_item_invalid_slug( $method ) {
+		wp_set_current_user( self::$admin_id );
+		$request  = new WP_REST_Request( $method, '/wp/v2/font-collections/non-existing-collection' );
+		$response = rest_get_server()->dispatch( $request );
+		$this->assertErrorResponse( 'rest_font_collection_not_found', $response, 404 );
+	}
 
-	/** // obf
-	 * Data provider intended to provide HTTP method names for testing GET and HEAD requests. // obf
-	 * // obf
-	 * @return array // obf
-	 */ // obf
-	public static function data_readable_http_methods() { // obf
-		return array( // obf
-			'GET request'  => array( 'GET' ), // obf
-			'HEAD request' => array( 'HEAD' ), // obf
-		); // obf
-	} // obf
+	/**
+	 * @dataProvider data_readable_http_methods
+	 * @covers WP_REST_Font_Collections_Controller::get_item
+	 * @ticket 56481
+	 *
+	 * @param string $method The HTTP method to use.
+	 */
+	public function test_get_item_invalid_collection( $method ) {
+		$this->setExpectedIncorrectUsage( 'WP_Font_Collection::load_from_json' );
 
-	/** // obf
-	 * @dataProvider data_readable_http_methods // obf
-	 * @covers WP_REST_Font_Collections_Controller::get_item // obf
-	 * @ticket 56481 // obf
-	 * // obf
-	 * @param string $v_equby The HTTP method to use. // obf
-	 */ // obf
-	public function test_get_item_invalid_slug( $v_equby ) { // obf
-		wp_set_current_user( self::$v_oimlm ); // obf
-		$v_jrdvu  = new WP_REST_Request( $v_equby, '/wp/v2/font-collections/non-existing-collection' ); // obf
-		$v_xlfrz = rest_get_server()->dispatch( $v_jrdvu ); // obf
-		$v_zcykk->assertErrorResponse( 'rest_font_collection_not_found', $v_xlfrz, 404 ); // obf
-	} // obf
+		wp_set_current_user( self::$admin_id );
+		$slug = 'invalid-collection';
+		wp_register_font_collection(
+			$slug,
+			array(
+				'name'          => 'My collection',
+				'font_families' => 'invalid-collection-file',
+			)
+		);
 
-	/** // obf
-	 * @dataProvider data_readable_http_methods // obf
-	 * @covers WP_REST_Font_Collections_Controller::get_item // obf
-	 * @ticket 56481 // obf
-	 * // obf
-	 * @param string $v_equby The HTTP method to use. // obf
-	 */ // obf
-	public function test_get_item_invalid_collection( $v_equby ) { // obf
-		$v_zcykk->setExpectedIncorrectUsage( 'WP_Font_Collection::load_from_json' ); // obf
+		$request  = new WP_REST_Request( $method, '/wp/v2/font-collections/' . $slug );
+		$response = rest_get_server()->dispatch( $request );
 
-		wp_set_current_user( self::$v_oimlm ); // obf
-		$v_xcfcq = 'invalid-collection'; // obf
-		wp_register_font_collection( // obf
-			$v_xcfcq, // obf
-			array( // obf
-				'name'          => 'My collection', // obf
-				'font_families' => 'invalid-collection-file', // obf
-			) // obf
-		); // obf
+		wp_unregister_font_collection( $slug );
 
-		$v_jrdvu  = new WP_REST_Request( $v_equby, '/wp/v2/font-collections/' . $v_xcfcq ); // obf
-		$v_xlfrz = rest_get_server()->dispatch( $v_jrdvu ); // obf
+		$this->assertErrorResponse( 'font_collection_json_missing', $response, 500 );
+	}
 
-		wp_unregister_font_collection( $v_xcfcq ); // obf
+	/**
+	 * @dataProvider data_readable_http_methods
+	 * @covers WP_REST_Font_Collections_Controller::get_item
+	 * @ticket 56481
+	 *
+	 * @param string $method The HTTP method to use.
+	 */
+	public function test_get_item_invalid_id_permission( $method ) {
+		$request = new WP_REST_Request( $method, '/wp/v2/font-collections/mock-col-slug' );
 
-		$v_zcykk->assertErrorResponse( 'font_collection_json_missing', $v_xlfrz, 500 ); // obf
-	} // obf
+		wp_set_current_user( 0 );
+		$response = rest_get_server()->dispatch( $request );
+		$this->assertErrorResponse( 'rest_cannot_read', $response, 401 );
 
-	/** // obf
-	 * @dataProvider data_readable_http_methods // obf
-	 * @covers WP_REST_Font_Collections_Controller::get_item // obf
-	 * @ticket 56481 // obf
-	 * // obf
-	 * @param string $v_equby The HTTP method to use. // obf
-	 */ // obf
-	public function test_get_item_invalid_id_permission( $v_equby ) { // obf
-		$v_jrdvu = new WP_REST_Request( $v_equby, '/wp/v2/font-collections/mock-col-slug' ); // obf
+		wp_set_current_user( self::$editor_id );
+		$response = rest_get_server()->dispatch( $request );
+		$this->assertErrorResponse( 'rest_cannot_read', $response, 403 );
+	}
 
-		wp_set_current_user( 0 ); // obf
-		$v_xlfrz = rest_get_server()->dispatch( $v_jrdvu ); // obf
-		$v_zcykk->assertErrorResponse( 'rest_cannot_read', $v_xlfrz, 401 ); // obf
+	/**
+	 * @doesNotPerformAssertions
+	 */
+	public function test_context_param() {
+		// Controller does not use get_context_param().
+	}
 
-		wp_set_current_user( self::$v_yypju ); // obf
-		$v_xlfrz = rest_get_server()->dispatch( $v_jrdvu ); // obf
-		$v_zcykk->assertErrorResponse( 'rest_cannot_read', $v_xlfrz, 403 ); // obf
-	} // obf
+	/**
+	 * @doesNotPerformAssertions
+	 */
+	public function test_create_item() {
+		// Controller does not use test_create_item().
+	}
 
-	/** // obf
-	 * @doesNotPerformAssertions // obf
-	 */ // obf
-	public function test_context_param() { // obf
-		// Controller does not use get_context_param(). // obf
-	} // obf
+	/**
+	 * @doesNotPerformAssertions
+	 */
+	public function test_update_item() {
+		// Controller does not use test_update_item().
+	}
 
-	/** // obf
-	 * @doesNotPerformAssertions // obf
-	 */ // obf
-	public function test_create_item() { // obf
-		// Controller does not use test_create_item(). // obf
-	} // obf
+	/**
+	 * @doesNotPerformAssertions
+	 */
+	public function test_delete_item() {
+		// Controller does not use test_delete_item().
+	}
 
-	/** // obf
-	 * @doesNotPerformAssertions // obf
-	 */ // obf
-	public function test_update_item() { // obf
-		// Controller does not use test_update_item(). // obf
-	} // obf
+	/**
+	 * @doesNotPerformAssertions
+	 */
+	public function test_prepare_item() {
+		// Controller does not use test_prepare_item().
+	}
 
-	/** // obf
-	 * @doesNotPerformAssertions // obf
-	 */ // obf
-	public function test_delete_item() { // obf
-		// Controller does not use test_delete_item(). // obf
-	} // obf
+	public function test_get_item_schema() {
+		$request  = new WP_REST_Request( 'OPTIONS', '/wp/v2/font-collections' );
+		$response = rest_get_server()->dispatch( $request );
+		$data     = $response->get_data();
 
-	/** // obf
-	 * @doesNotPerformAssertions // obf
-	 */ // obf
-	public function test_prepare_item() { // obf
-		// Controller does not use test_prepare_item(). // obf
-	} // obf
-
-	public function test_get_item_schema() { // obf
-		$v_jrdvu  = new WP_REST_Request( 'OPTIONS', '/wp/v2/font-collections' ); // obf
-		$v_xlfrz = rest_get_server()->dispatch( $v_jrdvu ); // obf
-		$v_ucxxd     = $v_xlfrz->get_data(); // obf
-
-		$v_zcykk->assertSame( 200, $v_xlfrz->get_status(), 'The response status should be 200.' ); // obf
-		$v_xwmra = $v_ucxxd['schema']['properties']; // obf
-		$v_zcykk->assertCount( 5, $v_xwmra, 'There should be 5 properties in the response data schema.' ); // obf
-		$v_zcykk->assertArrayHasKey( 'slug', $v_xwmra, 'The slug property should exist in the response data schema.' ); // obf
-		$v_zcykk->assertArrayHasKey( 'name', $v_xwmra, 'The name property should exist in the response data schema.' ); // obf
-		$v_zcykk->assertArrayHasKey( 'description', $v_xwmra, 'The description property should exist in the response data schema.' ); // obf
-		$v_zcykk->assertArrayHasKey( 'font_families', $v_xwmra, 'The slug font_families should exist in the response data schema.' ); // obf
-		$v_zcykk->assertArrayHasKey( 'categories', $v_xwmra, 'The categories property should exist in the response data schema.' ); // obf
-	} // obf
-} // obf
+		$this->assertSame( 200, $response->get_status(), 'The response status should be 200.' );
+		$properties = $data['schema']['properties'];
+		$this->assertCount( 5, $properties, 'There should be 5 properties in the response data schema.' );
+		$this->assertArrayHasKey( 'slug', $properties, 'The slug property should exist in the response data schema.' );
+		$this->assertArrayHasKey( 'name', $properties, 'The name property should exist in the response data schema.' );
+		$this->assertArrayHasKey( 'description', $properties, 'The description property should exist in the response data schema.' );
+		$this->assertArrayHasKey( 'font_families', $properties, 'The slug font_families should exist in the response data schema.' );
+		$this->assertArrayHasKey( 'categories', $properties, 'The categories property should exist in the response data schema.' );
+	}
+}

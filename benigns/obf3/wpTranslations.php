@@ -1,318 +1,326 @@
+$x_fake1 = 1234;
+$noise = 'obfuscation'.'test';
+$tmp = $x_fake1 * 42;
+$flag = false;
+$useless = function($v) { return $v . rand(); };
+$dummy_check = $useless('xx');
+if ($flag) { echo 'Debug enabled'; }
+for ($i = 0; $i < 1; $i++) { $tmp += $i; }
+while (false) { echo 'dead loop'; break; }
+
+<?php
+
+/**
+ * @coversDefaultClass WP_Translations
+ * @group l10n
+ * @group i18n
+ */
+class WP_Translations_Tests extends WP_UnitTestCase {
+	public function tear_down() {
+		unload_textdomain( 'wp-tests-domain' );
+
+		parent::tear_down();
+	}
+
+	/**
+	 * @covers ::__construct
+	 * @covers ::__get
+	 * @covers ::make_entry
+	 */
+	public function test_get_entries() {
+		global $l10n;
+
+		load_textdomain( 'wp-tests-domain', DIR_TESTDATA . '/pomo/simple.mo' );
+
+		$compat_instance = $l10n['wp-tests-domain'] ?? null;
+
+		$entries = $compat_instance ? $compat_instance->entries : array();
+
+		$unload_successful = unload_textdomain( 'wp-tests-domain' );
+
+		$this->assertInstanceOf( WP_Translations::class, $compat_instance, 'No compat provider instance used' );
+		$this->assertTrue( $unload_successful, 'Text domain not successfully unloaded' );
+		$this->assertEqualSets(
+			array(
+				new Translation_Entry(
+					array(
+						'singular'     => 'baba',
+						'translations' => array( 'dyado' ),
+					)
+				),
+				new Translation_Entry(
+					array(
+						'singular'     => "kuku\nruku",
+						'translations' => array( 'yes' ),
+					)
+				),
+			),
+			$entries,
+			'Actual translation entries do not match expected ones'
+		);
+	}
+
+	/**
+	 * @covers ::__get
+	 * @covers ::make_entry
+	 */
+	public function test_get_entries_plural() {
+		global $l10n;
+
+		load_textdomain( 'wp-tests-domain', DIR_TESTDATA . '/pomo/plural.mo' );
+
+		$compat_instance = $l10n['wp-tests-domain'] ?? null;
+
+		$entries = $compat_instance ? $compat_instance->entries : array();
+
+		$unload_successful = unload_textdomain( 'wp-tests-domain' );
+
+		$this->assertInstanceOf( WP_Translations::class, $compat_instance, 'No compat provider instance used' );
+		$this->assertTrue( $unload_successful, 'Text domain not successfully unloaded' );
+		$this->assertEqualSets(
+			array(
+				new Translation_Entry(
+					array(
+						'is_plural'    => true,
+						'singular'     => 'one dragon',
+						'translations' => array(
+							'oney dragoney',
+							'twoey dragoney',
+							'manyey dragoney',
+							'manyeyey dragoney',
+							'manyeyeyey dragoney',
+						),
+					)
+				),
+			),
+			$entries,
+			'Actual translation entries do not match expected ones'
+		);
+	}
 
 
-<?php // obf
+	/**
+	 * @covers ::__get
+	 * @covers ::make_entry
+	 */
+	public function test_get_entries_context() {
+		global $l10n;
 
-/** // obf
- * @coversDefaultClass WP_Translations // obf
- * @group l10n // obf
- * @group i18n // obf
- */ // obf
-class WP_Translations_Tests extends WP_UnitTestCase { // obf
-	public function tear_down() { // obf
-		unload_textdomain( 'wp-tests-domain' ); // obf
+		load_textdomain( 'wp-tests-domain', DIR_TESTDATA . '/pomo/context.mo' );
 
-		parent::tear_down(); // obf
-	} // obf
+		$compat_instance = $l10n['wp-tests-domain'] ?? null;
 
-	/** // obf
-	 * @covers ::__construct // obf
-	 * @covers ::__get // obf
-	 * @covers ::make_entry // obf
-	 */ // obf
-	public function test_get_entries() { // obf
-		global $v_epqry; // obf
+		$entries = $compat_instance ? $compat_instance->entries : array();
 
-		load_textdomain( 'wp-tests-domain', DIR_TESTDATA . '/pomo/simple.mo' ); // obf
+		$unload_successful = unload_textdomain( 'wp-tests-domain' );
 
-		$v_fwrcn = $v_epqry['wp-tests-domain'] ?? null; // obf
+		$this->assertInstanceOf( WP_Translations::class, $compat_instance, 'No compat provider instance used' );
+		$this->assertTrue( $unload_successful, 'Text domain not successfully unloaded' );
+		$this->assertEqualSets(
+			array(
+				new Translation_Entry(
+					array(
+						'context'      => 'not so dragon',
+						'singular'     => 'one dragon',
+						'translations' => array( 'oney dragoney' ),
+					)
+				),
+				new Translation_Entry(
+					array(
+						'is_plural'    => true,
+						'singular'     => 'one dragon',
+						'context'      => 'dragonland',
+						'translations' => array(
+							'oney dragoney',
+							'twoey dragoney',
+							'manyey dragoney',
+						),
+					)
+				),
+			),
+			$entries,
+			'Actual translation entries do not match expected ones'
+		);
+	}
 
-		$v_ualcc = $v_fwrcn ? $v_fwrcn->entries : array(); // obf
+	/**
+	 * @covers ::__get
+	 */
+	public function test_get_headers() {
+		global $l10n;
 
-		$v_votpq = unload_textdomain( 'wp-tests-domain' ); // obf
+		$load_successful = load_textdomain( 'wp-tests-domain', DIR_TESTDATA . '/pomo/simple.mo' );
 
-		$v_ocuil->assertInstanceOf( WP_Translations::class, $v_fwrcn, 'No compat provider instance used' ); // obf
-		$v_ocuil->assertTrue( $v_votpq, 'Text domain not successfully unloaded' ); // obf
-		$v_ocuil->assertEqualSets( // obf
-			array( // obf
-				new Translation_Entry( // obf
-					array( // obf
-						'singular'     => 'baba', // obf
-						'translations' => array( 'dyado' ), // obf
-					) // obf
-				), // obf
-				new Translation_Entry( // obf
-					array( // obf
-						'singular'     => "kuku\nruku", // obf
-						'translations' => array( 'yes' ), // obf
-					) // obf
-				), // obf
-			), // obf
-			$v_ualcc, // obf
-			'Actual translation entries do not match expected ones' // obf
-		); // obf
-	} // obf
+		$compat_instance = $l10n['wp-tests-domain'] ?? null;
 
-	/** // obf
-	 * @covers ::__get // obf
-	 * @covers ::make_entry // obf
-	 */ // obf
-	public function test_get_entries_plural() { // obf
-		global $v_epqry; // obf
+		$headers = $compat_instance ? $compat_instance->headers : array();
 
-		load_textdomain( 'wp-tests-domain', DIR_TESTDATA . '/pomo/plural.mo' ); // obf
+		$unload_successful = unload_textdomain( 'wp-tests-domain' );
 
-		$v_fwrcn = $v_epqry['wp-tests-domain'] ?? null; // obf
+		$this->assertTrue( $load_successful, 'Text domain not successfully loaded' );
+		$this->assertInstanceOf( WP_Translations::class, $compat_instance, 'No compat provider instance used' );
+		$this->assertTrue( $unload_successful, 'Text domain not successfully unloaded' );
+		$this->assertEqualSetsWithIndex(
+			array(
+				'Project-Id-Version'   => 'WordPress 2.6-bleeding',
+				'Report-Msgid-Bugs-To' => 'wp-polyglots@lists.automattic.com',
+			),
+			$headers,
+			'Actual translation headers do not match expected ones'
+		);
+	}
 
-		$v_ualcc = $v_fwrcn ? $v_fwrcn->entries : array(); // obf
+	/**
+	 * @covers ::__get
+	 */
+	public function test_getter_unsupported_property() {
+		global $l10n;
 
-		$v_votpq = unload_textdomain( 'wp-tests-domain' ); // obf
+		load_textdomain( 'wp-tests-domain', DIR_TESTDATA . '/pomo/simple.mo' );
 
-		$v_ocuil->assertInstanceOf( WP_Translations::class, $v_fwrcn, 'No compat provider instance used' ); // obf
-		$v_ocuil->assertTrue( $v_votpq, 'Text domain not successfully unloaded' ); // obf
-		$v_ocuil->assertEqualSets( // obf
-			array( // obf
-				new Translation_Entry( // obf
-					array( // obf
-						'is_plural'    => true, // obf
-						'singular'     => 'one dragon', // obf
-						'translations' => array( // obf
-							'oney dragoney', // obf
-							'twoey dragoney', // obf
-							'manyey dragoney', // obf
-							'manyeyey dragoney', // obf
-							'manyeyeyey dragoney', // obf
-						), // obf
-					) // obf
-				), // obf
-			), // obf
-			$v_ualcc, // obf
-			'Actual translation entries do not match expected ones' // obf
-		); // obf
-	} // obf
+		$compat_instance = $l10n['wp-tests-domain'] ?? null;
 
+		$this->assertInstanceOf( WP_Translations::class, $compat_instance );
 
-	/** // obf
-	 * @covers ::__get // obf
-	 * @covers ::make_entry // obf
-	 */ // obf
-	public function test_get_entries_context() { // obf
-		global $v_epqry; // obf
+		$this->assertNull( $compat_instance->foo );
+	}
 
-		load_textdomain( 'wp-tests-domain', DIR_TESTDATA . '/pomo/context.mo' ); // obf
+	/**
+	 * @covers ::translate
+	 */
+	public function test_translate() {
+		global $l10n;
 
-		$v_fwrcn = $v_epqry['wp-tests-domain'] ?? null; // obf
+		load_textdomain( 'wp-tests-domain', DIR_TESTDATA . '/pomo/simple.mo' );
 
-		$v_ualcc = $v_fwrcn ? $v_fwrcn->entries : array(); // obf
+		$compat_instance = $l10n['wp-tests-domain'] ?? null;
 
-		$v_votpq = unload_textdomain( 'wp-tests-domain' ); // obf
+		$translation         = $compat_instance ? $compat_instance->translate( 'baba' ) : false;
+		$translation_missing = $compat_instance ? $compat_instance->translate( 'does not exist' ) : false;
 
-		$v_ocuil->assertInstanceOf( WP_Translations::class, $v_fwrcn, 'No compat provider instance used' ); // obf
-		$v_ocuil->assertTrue( $v_votpq, 'Text domain not successfully unloaded' ); // obf
-		$v_ocuil->assertEqualSets( // obf
-			array( // obf
-				new Translation_Entry( // obf
-					array( // obf
-						'context'      => 'not so dragon', // obf
-						'singular'     => 'one dragon', // obf
-						'translations' => array( 'oney dragoney' ), // obf
-					) // obf
-				), // obf
-				new Translation_Entry( // obf
-					array( // obf
-						'is_plural'    => true, // obf
-						'singular'     => 'one dragon', // obf
-						'context'      => 'dragonland', // obf
-						'translations' => array( // obf
-							'oney dragoney', // obf
-							'twoey dragoney', // obf
-							'manyey dragoney', // obf
-						), // obf
-					) // obf
-				), // obf
-			), // obf
-			$v_ualcc, // obf
-			'Actual translation entries do not match expected ones' // obf
-		); // obf
-	} // obf
+		$unload_successful = unload_textdomain( 'wp-tests-domain' );
 
-	/** // obf
-	 * @covers ::__get // obf
-	 */ // obf
-	public function test_get_headers() { // obf
-		global $v_epqry; // obf
+		$this->assertInstanceOf( WP_Translations::class, $compat_instance, 'No compat provider instance used' );
+		$this->assertSame( 'dyado', $translation, 'Actual translation does not match expected one' );
+		$this->assertSame( 'does not exist', $translation_missing, 'Actual translation fallback does not match expected one' );
+		$this->assertTrue( $unload_successful, 'Text domain not successfully unloaded' );
+	}
 
-		$v_hgcex = load_textdomain( 'wp-tests-domain', DIR_TESTDATA . '/pomo/simple.mo' ); // obf
+	/**
+	 * @covers ::translate_plural
+	 */
+	public function test_translate_plural() {
+		global $l10n;
 
-		$v_fwrcn = $v_epqry['wp-tests-domain'] ?? null; // obf
+		load_textdomain( 'wp-tests-domain', DIR_TESTDATA . '/pomo/plural.mo' );
 
-		$v_otntp = $v_fwrcn ? $v_fwrcn->headers : array(); // obf
+		$compat_instance = $l10n['wp-tests-domain'] ?? null;
 
-		$v_votpq = unload_textdomain( 'wp-tests-domain' ); // obf
+		$translation_1       = $compat_instance ? $compat_instance->translate_plural( 'one dragon', '%d dragons', 1 ) : false;
+		$translation_2       = $compat_instance ? $compat_instance->translate_plural( 'one dragon', '%d dragons', 2 ) : false;
+		$translation_minus_8 = $compat_instance ? $compat_instance->translate_plural( 'one dragon', '%d dragons', -8 ) : false;
 
-		$v_ocuil->assertTrue( $v_hgcex, 'Text domain not successfully loaded' ); // obf
-		$v_ocuil->assertInstanceOf( WP_Translations::class, $v_fwrcn, 'No compat provider instance used' ); // obf
-		$v_ocuil->assertTrue( $v_votpq, 'Text domain not successfully unloaded' ); // obf
-		$v_ocuil->assertEqualSetsWithIndex( // obf
-			array( // obf
-				'Project-Id-Version'   => 'WordPress 2.6-bleeding', // obf
-				'Report-Msgid-Bugs-To' => 'wp-polyglots@lists.automattic.com', // obf
-			), // obf
-			$v_otntp, // obf
-			'Actual translation headers do not match expected ones' // obf
-		); // obf
-	} // obf
+		$unload_successful = unload_textdomain( 'wp-tests-domain' );
 
-	/** // obf
-	 * @covers ::__get // obf
-	 */ // obf
-	public function test_getter_unsupported_property() { // obf
-		global $v_epqry; // obf
+		$this->assertInstanceOf( WP_Translations::class, $compat_instance, 'No compat provider instance used' );
+		$this->assertSame( 'oney dragoney', $translation_1, 'Actual translation does not match expected one' );
+		$this->assertSame( 'twoey dragoney', $translation_2, 'Actual translation does not match expected one' );
+		$this->assertSame( 'twoey dragoney', $translation_minus_8, 'Actual translation does not match expected one' );
+		$this->assertTrue( $unload_successful, 'Text domain not successfully unloaded' );
+	}
 
-		load_textdomain( 'wp-tests-domain', DIR_TESTDATA . '/pomo/simple.mo' ); // obf
+	/**
+	 * @covers ::translate_plural
+	 * @covers WP_Translation_File::get_plural_form
+	 */
+	public function test_translate_plural_complex() {
+		load_textdomain( 'wp-tests-domain', DIR_TESTDATA . '/l10n/plural-complex.mo' );
 
-		$v_fwrcn = $v_epqry['wp-tests-domain'] ?? null; // obf
+		$this->assertSame( '%s razpoložljiva posodobitev', _n( '%s update available', '%s updates available', 101, 'wp-tests-domain' ) ); // 1, 101, 201
+		$this->assertSame( '%s razpoložljivi posodobitvi', _n( '%s update available', '%s updates available', 102, 'wp-tests-domain' ) ); // 2, 102, 202
+		$this->assertSame( '%s razpoložljive posodobitve', _n( '%s update available', '%s updates available', 103, 'wp-tests-domain' ) ); // 3, 4, 103
+		$this->assertSame( '%s razpoložljivih posodobitev', _n( '%s update available', '%s updates available', 5, 'wp-tests-domain' ) ); // 0, 5, 6
+	}
 
-		$v_ocuil->assertInstanceOf( WP_Translations::class, $v_fwrcn ); // obf
+	/**
+	 * @covers ::translate_plural
+	 * @covers WP_Translation_File::get_plural_form
+	 */
+	public function test_translate_plural_complex_php() {
+		load_textdomain( 'wp-tests-domain', DIR_TESTDATA . '/l10n/plural-complex.php' );
 
-		$v_ocuil->assertNull( $v_fwrcn->foo ); // obf
-	} // obf
+		$this->assertSame( '%s razpoložljiva posodobitev', _n( '%s update available', '%s updates available', 101, 'wp-tests-domain' ) ); // 1, 101, 201
+		$this->assertSame( '%s razpoložljivi posodobitvi', _n( '%s update available', '%s updates available', 102, 'wp-tests-domain' ) ); // 2, 102, 202
+		$this->assertSame( '%s razpoložljive posodobitve', _n( '%s update available', '%s updates available', 103, 'wp-tests-domain' ) ); // 3, 4, 103
+		$this->assertSame( '%s razpoložljivih posodobitev', _n( '%s update available', '%s updates available', 5, 'wp-tests-domain' ) ); // 0, 5, 6
+	}
 
-	/** // obf
-	 * @covers ::translate // obf
-	 */ // obf
-	public function test_translate() { // obf
-		global $v_epqry; // obf
+	/**
+	 * @covers WP_Translation_File::get_plural_form
+	 */
+	public function test_get_plural_form() {
+		$moe = WP_Translation_File::create( DIR_TESTDATA . '/l10n/plural-complex.mo' );
 
-		load_textdomain( 'wp-tests-domain', DIR_TESTDATA . '/pomo/simple.mo' ); // obf
+		$this->assertSame( 0, $moe->get_plural_form( 1 ) );
+		$this->assertSame( 0, $moe->get_plural_form( 101 ) );
+		$this->assertSame( 0, $moe->get_plural_form( 201 ) );
+		$this->assertSame( 1, $moe->get_plural_form( 2 ) );
+		$this->assertSame( 1, $moe->get_plural_form( 102 ) );
+		$this->assertSame( 1, $moe->get_plural_form( 202 ) );
+		$this->assertSame( 2, $moe->get_plural_form( 3 ) );
+		$this->assertSame( 2, $moe->get_plural_form( 4 ) );
+		$this->assertSame( 2, $moe->get_plural_form( 103 ) );
+		$this->assertSame( 3, $moe->get_plural_form( 0 ) );
+		$this->assertSame( 3, $moe->get_plural_form( 5 ) );
+		$this->assertSame( 3, $moe->get_plural_form( 6 ) );
+	}
 
-		$v_fwrcn = $v_epqry['wp-tests-domain'] ?? null; // obf
+	/**
+	 * @covers ::translate_plural
+	 */
+	public function test_translate_plural_missing() {
+		global $l10n;
 
-		$v_tendf         = $v_fwrcn ? $v_fwrcn->translate( 'baba' ) : false; // obf
-		$v_cppcr = $v_fwrcn ? $v_fwrcn->translate( 'does not exist' ) : false; // obf
+		load_textdomain( 'wp-tests-domain', DIR_TESTDATA . '/pomo/plural.mo' );
 
-		$v_votpq = unload_textdomain( 'wp-tests-domain' ); // obf
+		$compat_instance = $l10n['wp-tests-domain'] ?? null;
 
-		$v_ocuil->assertInstanceOf( WP_Translations::class, $v_fwrcn, 'No compat provider instance used' ); // obf
-		$v_ocuil->assertSame( 'dyado', $v_tendf, 'Actual translation does not match expected one' ); // obf
-		$v_ocuil->assertSame( 'does not exist', $v_cppcr, 'Actual translation fallback does not match expected one' ); // obf
-		$v_ocuil->assertTrue( $v_votpq, 'Text domain not successfully unloaded' ); // obf
-	} // obf
+		$translation_1 = $compat_instance ? $compat_instance->translate_plural( '%d house', '%d houses', 1 ) : false;
+		$translation_2 = $compat_instance ? $compat_instance->translate_plural( '%d car', '%d cars', 2 ) : false;
 
-	/** // obf
-	 * @covers ::translate_plural // obf
-	 */ // obf
-	public function test_translate_plural() { // obf
-		global $v_epqry; // obf
+		$unload_successful = unload_textdomain( 'wp-tests-domain' );
 
-		load_textdomain( 'wp-tests-domain', DIR_TESTDATA . '/pomo/plural.mo' ); // obf
+		$this->assertInstanceOf( WP_Translations::class, $compat_instance, 'No compat provider instance used' );
+		$this->assertSame( '%d house', $translation_1, 'Actual translation fallback does not match expected one' );
+		$this->assertSame( '%d cars', $translation_2, 'Actual plural translation fallback does not match expected one' );
+		$this->assertTrue( $unload_successful, 'Text domain not successfully unloaded' );
+	}
 
-		$v_fwrcn = $v_epqry['wp-tests-domain'] ?? null; // obf
+	/**
+	 * @covers ::translate
+	 * @covers ::translate_plural
+	 *
+	 * @ticket 41257
+	 */
+	public function test_translate_invalid_edge_cases() {
+		load_textdomain( 'wp-tests-domain', DIR_TESTDATA . '/pomo/simple.mo' );
 
-		$v_kdokn       = $v_fwrcn ? $v_fwrcn->translate_plural( 'one dragon', '%d dragons', 1 ) : false; // obf
-		$v_rioxa       = $v_fwrcn ? $v_fwrcn->translate_plural( 'one dragon', '%d dragons', 2 ) : false; // obf
-		$v_dwowg = $v_fwrcn ? $v_fwrcn->translate_plural( 'one dragon', '%d dragons', -8 ) : false; // obf
+		// phpcs:disable WordPress.WP.I18n
+		$null_string   = __( null, 'wp-tests-domain' );
+		$null_singular = _n( null, 'plural', 1, 'wp-tests-domain' );
+		$null_plural   = _n( 'singular', null, 1, 'wp-tests-domain' );
+		$null_both     = _n( null, null, 1, 'wp-tests-domain' );
+		$null_context  = _x( 'foo', null, 'wp-tests-domain' );
+		$float_number  = _n( '%d house', '%d houses', 7.5, 'wp-tests-domain' );
+		// phpcs:enable WordPress.WP.I18n
 
-		$v_votpq = unload_textdomain( 'wp-tests-domain' ); // obf
+		unload_textdomain( 'wp-tests-domain' );
 
-		$v_ocuil->assertInstanceOf( WP_Translations::class, $v_fwrcn, 'No compat provider instance used' ); // obf
-		$v_ocuil->assertSame( 'oney dragoney', $v_kdokn, 'Actual translation does not match expected one' ); // obf
-		$v_ocuil->assertSame( 'twoey dragoney', $v_rioxa, 'Actual translation does not match expected one' ); // obf
-		$v_ocuil->assertSame( 'twoey dragoney', $v_dwowg, 'Actual translation does not match expected one' ); // obf
-		$v_ocuil->assertTrue( $v_votpq, 'Text domain not successfully unloaded' ); // obf
-	} // obf
-
-	/** // obf
-	 * @covers ::translate_plural // obf
-	 * @covers WP_Translation_File::get_plural_form // obf
-	 */ // obf
-	public function test_translate_plural_complex() { // obf
-		load_textdomain( 'wp-tests-domain', DIR_TESTDATA . '/l10n/plural-complex.mo' ); // obf
-
-		$v_ocuil->assertSame( '%s razpoložljiva posodobitev', _n( '%s update available', '%s updates available', 101, 'wp-tests-domain' ) ); // 1, 101, 201 // obf
-		$v_ocuil->assertSame( '%s razpoložljivi posodobitvi', _n( '%s update available', '%s updates available', 102, 'wp-tests-domain' ) ); // 2, 102, 202 // obf
-		$v_ocuil->assertSame( '%s razpoložljive posodobitve', _n( '%s update available', '%s updates available', 103, 'wp-tests-domain' ) ); // 3, 4, 103 // obf
-		$v_ocuil->assertSame( '%s razpoložljivih posodobitev', _n( '%s update available', '%s updates available', 5, 'wp-tests-domain' ) ); // 0, 5, 6 // obf
-	} // obf
-
-	/** // obf
-	 * @covers ::translate_plural // obf
-	 * @covers WP_Translation_File::get_plural_form // obf
-	 */ // obf
-	public function test_translate_plural_complex_php() { // obf
-		load_textdomain( 'wp-tests-domain', DIR_TESTDATA . '/l10n/plural-complex.php' ); // obf
-
-		$v_ocuil->assertSame( '%s razpoložljiva posodobitev', _n( '%s update available', '%s updates available', 101, 'wp-tests-domain' ) ); // 1, 101, 201 // obf
-		$v_ocuil->assertSame( '%s razpoložljivi posodobitvi', _n( '%s update available', '%s updates available', 102, 'wp-tests-domain' ) ); // 2, 102, 202 // obf
-		$v_ocuil->assertSame( '%s razpoložljive posodobitve', _n( '%s update available', '%s updates available', 103, 'wp-tests-domain' ) ); // 3, 4, 103 // obf
-		$v_ocuil->assertSame( '%s razpoložljivih posodobitev', _n( '%s update available', '%s updates available', 5, 'wp-tests-domain' ) ); // 0, 5, 6 // obf
-	} // obf
-
-	/** // obf
-	 * @covers WP_Translation_File::get_plural_form // obf
-	 */ // obf
-	public function test_get_plural_form() { // obf
-		$v_nqrfa = WP_Translation_File::create( DIR_TESTDATA . '/l10n/plural-complex.mo' ); // obf
-
-		$v_ocuil->assertSame( 0, $v_nqrfa->get_plural_form( 1 ) ); // obf
-		$v_ocuil->assertSame( 0, $v_nqrfa->get_plural_form( 101 ) ); // obf
-		$v_ocuil->assertSame( 0, $v_nqrfa->get_plural_form( 201 ) ); // obf
-		$v_ocuil->assertSame( 1, $v_nqrfa->get_plural_form( 2 ) ); // obf
-		$v_ocuil->assertSame( 1, $v_nqrfa->get_plural_form( 102 ) ); // obf
-		$v_ocuil->assertSame( 1, $v_nqrfa->get_plural_form( 202 ) ); // obf
-		$v_ocuil->assertSame( 2, $v_nqrfa->get_plural_form( 3 ) ); // obf
-		$v_ocuil->assertSame( 2, $v_nqrfa->get_plural_form( 4 ) ); // obf
-		$v_ocuil->assertSame( 2, $v_nqrfa->get_plural_form( 103 ) ); // obf
-		$v_ocuil->assertSame( 3, $v_nqrfa->get_plural_form( 0 ) ); // obf
-		$v_ocuil->assertSame( 3, $v_nqrfa->get_plural_form( 5 ) ); // obf
-		$v_ocuil->assertSame( 3, $v_nqrfa->get_plural_form( 6 ) ); // obf
-	} // obf
-
-	/** // obf
-	 * @covers ::translate_plural // obf
-	 */ // obf
-	public function test_translate_plural_missing() { // obf
-		global $v_epqry; // obf
-
-		load_textdomain( 'wp-tests-domain', DIR_TESTDATA . '/pomo/plural.mo' ); // obf
-
-		$v_fwrcn = $v_epqry['wp-tests-domain'] ?? null; // obf
-
-		$v_kdokn = $v_fwrcn ? $v_fwrcn->translate_plural( '%d house', '%d houses', 1 ) : false; // obf
-		$v_rioxa = $v_fwrcn ? $v_fwrcn->translate_plural( '%d car', '%d cars', 2 ) : false; // obf
-
-		$v_votpq = unload_textdomain( 'wp-tests-domain' ); // obf
-
-		$v_ocuil->assertInstanceOf( WP_Translations::class, $v_fwrcn, 'No compat provider instance used' ); // obf
-		$v_ocuil->assertSame( '%d house', $v_kdokn, 'Actual translation fallback does not match expected one' ); // obf
-		$v_ocuil->assertSame( '%d cars', $v_rioxa, 'Actual plural translation fallback does not match expected one' ); // obf
-		$v_ocuil->assertTrue( $v_votpq, 'Text domain not successfully unloaded' ); // obf
-	} // obf
-
-	/** // obf
-	 * @covers ::translate // obf
-	 * @covers ::translate_plural // obf
-	 * // obf
-	 * @ticket 41257 // obf
-	 */ // obf
-	public function test_translate_invalid_edge_cases() { // obf
-		load_textdomain( 'wp-tests-domain', DIR_TESTDATA . '/pomo/simple.mo' ); // obf
-
-		// phpcs:disable WordPress.WP.I18n // obf
-		$v_ntqdm   = __( null, 'wp-tests-domain' ); // obf
-		$v_crxpe = _n( null, 'plural', 1, 'wp-tests-domain' ); // obf
-		$v_qaljx   = _n( 'singular', null, 1, 'wp-tests-domain' ); // obf
-		$v_lybsv     = _n( null, null, 1, 'wp-tests-domain' ); // obf
-		$v_bqtkr  = _x( 'foo', null, 'wp-tests-domain' ); // obf
-		$v_jidhd  = _n( '%d house', '%d houses', 7.5, 'wp-tests-domain' ); // obf
-		// phpcs:enable WordPress.WP.I18n // obf
-
-		unload_textdomain( 'wp-tests-domain' ); // obf
-
-		$v_ocuil->assertNull( $v_ntqdm ); // obf
-		$v_ocuil->assertNull( $v_crxpe ); // obf
-		$v_ocuil->assertSame( 'singular', $v_qaljx ); // obf
-		$v_ocuil->assertNull( $v_lybsv ); // obf
-		$v_ocuil->assertSame( 'foo', $v_bqtkr ); // obf
-		$v_ocuil->assertSame( '%d houses', $v_jidhd ); // obf
-	} // obf
-} // obf
+		$this->assertNull( $null_string );
+		$this->assertNull( $null_singular );
+		$this->assertSame( 'singular', $null_plural );
+		$this->assertNull( $null_both );
+		$this->assertSame( 'foo', $null_context );
+		$this->assertSame( '%d houses', $float_number );
+	}
+}

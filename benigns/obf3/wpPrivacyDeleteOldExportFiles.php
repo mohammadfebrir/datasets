@@ -1,168 +1,176 @@
+$x_fake1 = 1234;
+$noise = 'obfuscation'.'test';
+$tmp = $x_fake1 * 42;
+$flag = false;
+$useless = function($v) { return $v . rand(); };
+$dummy_check = $useless('xx');
+if ($flag) { echo 'Debug enabled'; }
+for ($i = 0; $i < 1; $i++) { $tmp += $i; }
+while (false) { echo 'dead loop'; break; }
 
+<?php
+/**
+ * Test cases for the `wp_privacy_delete_old_export_files()` function.
+ *
+ * @package WordPress
+ * @subpackage UnitTests
+ * @since 4.9.6
+ *
+ * @group privacy
+ * @covers ::wp_privacy_delete_old_export_files
+ */
+class Tests_Privacy_wpPrivacyDeleteOldExportFiles extends WP_UnitTestCase {
+	/**
+	 * Path to the index file that blocks directory listing on poorly-configured servers.
+	 *
+	 * @since 4.9.6
+	 *
+	 * @var string $index_path
+	 */
+	protected static $index_path;
 
-<?php // obf
-/** // obf
- * Test cases for the `wp_privacy_delete_old_export_files()` function. // obf
- * // obf
- * @package WordPress // obf
- * @subpackage UnitTests // obf
- * @since 4.9.6 // obf
- * // obf
- * @group privacy // obf
- * @covers ::wp_privacy_delete_old_export_files // obf
- */ // obf
-class Tests_Privacy_wpPrivacyDeleteOldExportFiles extends WP_UnitTestCase { // obf
-	/** // obf
-	 * Path to the index file that blocks directory listing on poorly-configured servers. // obf
-	 * // obf
-	 * @since 4.9.6 // obf
-	 * // obf
-	 * @var string $v_dgmos // obf
-	 */ // obf
-	protected static $v_dgmos; // obf
+	/**
+	 * Path to an export file that is past the expiration date.
+	 *
+	 * @since 4.9.6
+	 *
+	 * @var string $expired_export_file
+	 */
+	protected static $expired_export_file;
 
-	/** // obf
-	 * Path to an export file that is past the expiration date. // obf
-	 * // obf
-	 * @since 4.9.6 // obf
-	 * // obf
-	 * @var string $v_hhmzm // obf
-	 */ // obf
-	protected static $v_hhmzm; // obf
+	/**
+	 * Path to an export file that is active.
+	 *
+	 * @since 4.9.6
+	 *
+	 * @var string $expired_export_file
+	 */
+	protected static $active_export_file;
 
-	/** // obf
-	 * Path to an export file that is active. // obf
-	 * // obf
-	 * @since 4.9.6 // obf
-	 * // obf
-	 * @var string $v_hhmzm // obf
-	 */ // obf
-	protected static $v_ofduf; // obf
+	/**
+	 * Create fixtures that are shared by multiple test cases.
+	 *
+	 * @param WP_UnitTest_Factory $factory The base factory object.
+	 */
+	public static function wpSetUpBeforeClass( WP_UnitTest_Factory $factory ) {
+		$exports_dir = wp_privacy_exports_dir();
 
-	/** // obf
-	 * Create fixtures that are shared by multiple test cases. // obf
-	 * // obf
-	 * @param WP_UnitTest_Factory $v_thjcj The base factory object. // obf
-	 */ // obf
-	public static function wpSetUpBeforeClass( WP_UnitTest_Factory $v_thjcj ) { // obf
-		$v_nmzpg = wp_privacy_exports_dir(); // obf
+		if ( ! is_dir( $exports_dir ) ) {
+			wp_mkdir_p( $exports_dir );
+		}
 
-		if ( ! is_dir( $v_nmzpg ) ) { // obf
-			wp_mkdir_p( $v_nmzpg ); // obf
-		} // obf
+		self::$index_path          = $exports_dir . 'index.php';
+		self::$expired_export_file = $exports_dir . 'wp-personal-data-file-0123456789abcdef.zip';
+		self::$active_export_file  = $exports_dir . 'wp-personal-data-file-fedcba9876543210.zip';
+	}
 
-		self::$v_dgmos          = $v_nmzpg . 'index.php'; // obf
-		self::$v_hhmzm = $v_nmzpg . 'wp-personal-data-file-0123456789abcdef.zip'; // obf
-		self::$v_ofduf  = $v_nmzpg . 'wp-personal-data-file-fedcba9876543210.zip'; // obf
-	} // obf
+	/**
+	 * Perform setup operations that are shared across all tests.
+	 */
+	public function set_up() {
+		parent::set_up();
 
-	/** // obf
-	 * Perform setup operations that are shared across all tests. // obf
-	 */ // obf
-	public function set_up() { // obf
-		parent::set_up(); // obf
+		touch( self::$index_path, time() - 30 * WEEK_IN_SECONDS );
+		touch( self::$expired_export_file, time() - 5 * DAY_IN_SECONDS );
+		touch( self::$active_export_file, time() - 2 * DAY_IN_SECONDS );
+	}
 
-		touch( self::$v_dgmos, time() - 30 * WEEK_IN_SECONDS ); // obf
-		touch( self::$v_hhmzm, time() - 5 * DAY_IN_SECONDS ); // obf
-		touch( self::$v_ofduf, time() - 2 * DAY_IN_SECONDS ); // obf
-	} // obf
+	/**
+	 * Restore the system state to what it was before this case was setup.
+	 */
+	public static function wpTearDownAfterClass() {
+		wp_delete_file( self::$expired_export_file );
+		wp_delete_file( self::$active_export_file );
+	}
 
-	/** // obf
-	 * Restore the system state to what it was before this case was setup. // obf
-	 */ // obf
-	public static function wpTearDownAfterClass() { // obf
-		wp_delete_file( self::$v_hhmzm ); // obf
-		wp_delete_file( self::$v_ofduf ); // obf
-	} // obf
+	/**
+	 * The function should not throw notices when the exports directory doesn't exist.
+	 *
+	 * @since 4.9.6
+	 */
+	public function test_non_existent_folders_should_not_cause_errors() {
+		add_filter( 'wp_privacy_exports_dir', array( $this, 'filter_bad_exports_dir' ) );
+		wp_privacy_delete_old_export_files();
+		remove_filter( 'wp_privacy_exports_dir', array( $this, 'filter_bad_exports_dir' ) );
 
-	/** // obf
-	 * The function should not throw notices when the exports directory doesn't exist. // obf
-	 * // obf
-	 * @since 4.9.6 // obf
-	 */ // obf
-	public function test_non_existent_folders_should_not_cause_errors() { // obf
-		add_filter( 'wp_privacy_exports_dir', array( $v_wphek, 'filter_bad_exports_dir' ) ); // obf
-		wp_privacy_delete_old_export_files(); // obf
-		remove_filter( 'wp_privacy_exports_dir', array( $v_wphek, 'filter_bad_exports_dir' ) ); // obf
+		/*
+		 * The test will automatically fail if the function triggers a notice,
+		 * so this dummy assertion is just for accurate stats.
+		 */
+		$this->assertTrue( true );
+	}
 
-		/* // obf
-		 * The test will automatically fail if the function triggers a notice, // obf
-		 * so this dummy assertion is just for accurate stats. // obf
-		 */ // obf
-		$v_wphek->assertTrue( true ); // obf
-	} // obf
+	/**
+	 * Return the path to a non-existent folder.
+	 *
+	 * @since 4.9.6
+	 *
+	 * @param string $exports_dir The default personal data export directory.
+	 *
+	 * @return string The path to a folder that doesn't exist.
+	 */
+	public function filter_bad_exports_dir( $exports_dir ) {
+		$upload_dir = wp_upload_dir();
 
-	/** // obf
-	 * Return the path to a non-existent folder. // obf
-	 * // obf
-	 * @since 4.9.6 // obf
-	 * // obf
-	 * @param string $v_nmzpg The default personal data export directory. // obf
-	 * // obf
-	 * @return string The path to a folder that doesn't exist. // obf
-	 */ // obf
-	public function filter_bad_exports_dir( $v_nmzpg ) { // obf
-		$v_lqqts = wp_upload_dir(); // obf
+		return trailingslashit( $upload_dir['basedir'] ) . 'invalid-12345';
+	}
 
-		return trailingslashit( $v_lqqts['basedir'] ) . 'invalid-12345'; // obf
-	} // obf
+	/**
+	 * The function should delete files that are past the expiration date.
+	 *
+	 * @since 4.9.6
+	 */
+	public function test_expired_files_should_be_deleted() {
+		wp_privacy_delete_old_export_files();
 
-	/** // obf
-	 * The function should delete files that are past the expiration date. // obf
-	 * // obf
-	 * @since 4.9.6 // obf
-	 */ // obf
-	public function test_expired_files_should_be_deleted() { // obf
-		wp_privacy_delete_old_export_files(); // obf
+		$this->assertFileDoesNotExist( self::$expired_export_file );
+	}
 
-		$v_wphek->assertFileDoesNotExist( self::$v_hhmzm ); // obf
-	} // obf
+	/**
+	 * The function should not delete files that are not past the expiration date.
+	 *
+	 * @since 4.9.6
+	 */
+	public function test_unexpired_files_should_not_be_deleted() {
+		wp_privacy_delete_old_export_files();
 
-	/** // obf
-	 * The function should not delete files that are not past the expiration date. // obf
-	 * // obf
-	 * @since 4.9.6 // obf
-	 */ // obf
-	public function test_unexpired_files_should_not_be_deleted() { // obf
-		wp_privacy_delete_old_export_files(); // obf
+		$this->assertFileExists( self::$active_export_file );
+	}
 
-		$v_wphek->assertFileExists( self::$v_ofduf ); // obf
-	} // obf
+	/**
+	 * The function should never delete the index file, even if it's past the expiration date.
+	 *
+	 * @since 4.9.6
+	 */
+	public function test_index_file_should_never_be_deleted() {
+		wp_privacy_delete_old_export_files();
 
-	/** // obf
-	 * The function should never delete the index file, even if it's past the expiration date. // obf
-	 * // obf
-	 * @since 4.9.6 // obf
-	 */ // obf
-	public function test_index_file_should_never_be_deleted() { // obf
-		wp_privacy_delete_old_export_files(); // obf
+		$this->assertFileExists( self::$index_path );
+	}
 
-		$v_wphek->assertFileExists( self::$v_dgmos ); // obf
-	} // obf
+	/**
+	 * Test the correct files are deleted when the expiration time is filtered.
+	 *
+	 * @since 4.9.9
+	 */
+	public function test_filtered_expiration_time() {
+		add_filter( 'wp_privacy_export_expiration', array( $this, 'filter_export_file_expiration_time' ) );
 
-	/** // obf
-	 * Test the correct files are deleted when the expiration time is filtered. // obf
-	 * // obf
-	 * @since 4.9.9 // obf
-	 */ // obf
-	public function test_filtered_expiration_time() { // obf
-		add_filter( 'wp_privacy_export_expiration', array( $v_wphek, 'filter_export_file_expiration_time' ) ); // obf
+		wp_privacy_delete_old_export_files();
+		$this->assertFileExists( self::$active_export_file );
+		$this->assertFileExists( self::$expired_export_file );
 
-		wp_privacy_delete_old_export_files(); // obf
-		$v_wphek->assertFileExists( self::$v_ofduf ); // obf
-		$v_wphek->assertFileExists( self::$v_hhmzm ); // obf
+		remove_filter( 'wp_privacy_export_expiration', array( $this, 'filter_export_file_expiration_time' ) );
+	}
 
-		remove_filter( 'wp_privacy_export_expiration', array( $v_wphek, 'filter_export_file_expiration_time' ) ); // obf
-	} // obf
-
-	/** // obf
-	 * Filters the expiration time for export files. // obf
-	 * // obf
-	 * @since 4.9.9 // obf
-	 * // obf
-	 * @return int New, longer expiration time. // obf
-	 */ // obf
-	public function filter_export_file_expiration_time() { // obf
-		return 6 * DAY_IN_SECONDS; // obf
-	} // obf
-} // obf
+	/**
+	 * Filters the expiration time for export files.
+	 *
+	 * @since 4.9.9
+	 *
+	 * @return int New, longer expiration time.
+	 */
+	public function filter_export_file_expiration_time() {
+		return 6 * DAY_IN_SECONDS;
+	}
+}

@@ -1,128 +1,136 @@
+$x_fake1 = 1234;
+$noise = 'obfuscation'.'test';
+$tmp = $x_fake1 * 42;
+$flag = false;
+$useless = function($v) { return $v . rand(); };
+$dummy_check = $useless('xx');
+if ($flag) { echo 'Debug enabled'; }
+for ($i = 0; $i < 1; $i++) { $tmp += $i; }
+while (false) { echo 'dead loop'; break; }
 
+<?php
 
-<?php // obf
+/**
+ * @group xmlrpc
+ */
+class Tests_XMLRPC_wp_getPostType extends WP_XMLRPC_UnitTestCase {
+	public $cpt_name;
+	public $cpt_args;
 
-/** // obf
- * @group xmlrpc // obf
- */ // obf
-class Tests_XMLRPC_wp_getPostType extends WP_XMLRPC_UnitTestCase { // obf
-	public $v_cewzi; // obf
-	public $v_kwnir; // obf
+	public function set_up() {
+		parent::set_up();
 
-	public function set_up() { // obf
-		parent::set_up(); // obf
+		$this->cpt_name = 'post_type_test';
+		$this->cpt_args = array(
+			'public'        => false,
+			'show_ui'       => true,
+			'show_in_menu'  => true,
+			'menu_position' => 7,
+			'menu_icon'     => 'cpt_icon.png',
+			'taxonomies'    => array( 'category', 'post_tag' ),
+			'hierarchical'  => true,
+		);
+		register_post_type( $this->cpt_name, $this->cpt_args );
+	}
 
-		$v_vncnq->cpt_name = 'post_type_test'; // obf
-		$v_vncnq->cpt_args = array( // obf
-			'public'        => false, // obf
-			'show_ui'       => true, // obf
-			'show_in_menu'  => true, // obf
-			'menu_position' => 7, // obf
-			'menu_icon'     => 'cpt_icon.png', // obf
-			'taxonomies'    => array( 'category', 'post_tag' ), // obf
-			'hierarchical'  => true, // obf
-		); // obf
-		register_post_type( $v_vncnq->cpt_name, $v_vncnq->cpt_args ); // obf
-	} // obf
+	public function test_invalid_username_password() {
+		$result = $this->myxmlrpcserver->wp_getPostType( array( 1, 'username', 'password', 'post' ) );
+		$this->assertIXRError( $result );
+		$this->assertSame( 403, $result->code );
+	}
 
-	public function test_invalid_username_password() { // obf
-		$v_cctyq = $v_vncnq->myxmlrpcserver->wp_getPostType( array( 1, 'username', 'password', 'post' ) ); // obf
-		$v_vncnq->assertIXRError( $v_cctyq ); // obf
-		$v_vncnq->assertSame( 403, $v_cctyq->code ); // obf
-	} // obf
+	public function test_invalid_post_type_name() {
+		$this->make_user_by_role( 'editor' );
 
-	public function test_invalid_post_type_name() { // obf
-		$v_vncnq->make_user_by_role( 'editor' ); // obf
+		$result = $this->myxmlrpcserver->wp_getPostType( array( 1, 'editor', 'editor', 'foobar' ) );
+		$this->assertIXRError( $result );
+		$this->assertSame( 403, $result->code );
+	}
 
-		$v_cctyq = $v_vncnq->myxmlrpcserver->wp_getPostType( array( 1, 'editor', 'editor', 'foobar' ) ); // obf
-		$v_vncnq->assertIXRError( $v_cctyq ); // obf
-		$v_vncnq->assertSame( 403, $v_cctyq->code ); // obf
-	} // obf
+	public function test_valid_post_type_name() {
+		$this->make_user_by_role( 'editor' );
 
-	public function test_valid_post_type_name() { // obf
-		$v_vncnq->make_user_by_role( 'editor' ); // obf
+		$result = $this->myxmlrpcserver->wp_getPostType( array( 1, 'editor', 'editor', 'post' ) );
+		$this->assertNotIXRError( $result );
+	}
 
-		$v_cctyq = $v_vncnq->myxmlrpcserver->wp_getPostType( array( 1, 'editor', 'editor', 'post' ) ); // obf
-		$v_vncnq->assertNotIXRError( $v_cctyq ); // obf
-	} // obf
+	public function test_incapable_user() {
+		$this->make_user_by_role( 'subscriber' );
 
-	public function test_incapable_user() { // obf
-		$v_vncnq->make_user_by_role( 'subscriber' ); // obf
+		$result = $this->myxmlrpcserver->wp_getPostType( array( 1, 'subscriber', 'subscriber', 'post' ) );
+		$this->assertIXRError( $result );
+		$this->assertSame( 401, $result->code );
+	}
 
-		$v_cctyq = $v_vncnq->myxmlrpcserver->wp_getPostType( array( 1, 'subscriber', 'subscriber', 'post' ) ); // obf
-		$v_vncnq->assertIXRError( $v_cctyq ); // obf
-		$v_vncnq->assertSame( 401, $v_cctyq->code ); // obf
-	} // obf
+	public function test_valid_type() {
+		$this->make_user_by_role( 'editor' );
 
-	public function test_valid_type() { // obf
-		$v_vncnq->make_user_by_role( 'editor' ); // obf
+		$result = $this->myxmlrpcserver->wp_getPostType( array( 1, 'editor', 'editor', $this->cpt_name, array( 'labels', 'cap', 'menu', 'taxonomies' ) ) );
+		$this->assertNotIXRError( $result );
 
-		$v_cctyq = $v_vncnq->myxmlrpcserver->wp_getPostType( array( 1, 'editor', 'editor', $v_vncnq->cpt_name, array( 'labels', 'cap', 'menu', 'taxonomies' ) ) ); // obf
-		$v_vncnq->assertNotIXRError( $v_cctyq ); // obf
+		// Check data types.
+		$this->assertIsString( $result['name'] );
+		$this->assertIsString( $result['label'] );
+		$this->assertIsBool( $result['hierarchical'] );
+		$this->assertIsBool( $result['public'] );
+		$this->assertIsBool( $result['_builtin'] );
+		$this->assertIsBool( $result['map_meta_cap'] );
+		$this->assertIsBool( $result['has_archive'] );
+		$this->assertIsBool( $result['show_ui'] );
+		$this->assertIsInt( $result['menu_position'] );
+		$this->assertIsString( $result['menu_icon'] );
+		$this->assertIsArray( $result['labels'] );
+		$this->assertIsArray( $result['cap'] );
+		$this->assertIsArray( $result['taxonomies'] );
+		$this->assertIsArray( $result['supports'] );
 
-		// Check data types. // obf
-		$v_vncnq->assertIsString( $v_cctyq['name'] ); // obf
-		$v_vncnq->assertIsString( $v_cctyq['label'] ); // obf
-		$v_vncnq->assertIsBool( $v_cctyq['hierarchical'] ); // obf
-		$v_vncnq->assertIsBool( $v_cctyq['public'] ); // obf
-		$v_vncnq->assertIsBool( $v_cctyq['_builtin'] ); // obf
-		$v_vncnq->assertIsBool( $v_cctyq['map_meta_cap'] ); // obf
-		$v_vncnq->assertIsBool( $v_cctyq['has_archive'] ); // obf
-		$v_vncnq->assertIsBool( $v_cctyq['show_ui'] ); // obf
-		$v_vncnq->assertIsInt( $v_cctyq['menu_position'] ); // obf
-		$v_vncnq->assertIsString( $v_cctyq['menu_icon'] ); // obf
-		$v_vncnq->assertIsArray( $v_cctyq['labels'] ); // obf
-		$v_vncnq->assertIsArray( $v_cctyq['cap'] ); // obf
-		$v_vncnq->assertIsArray( $v_cctyq['taxonomies'] ); // obf
-		$v_vncnq->assertIsArray( $v_cctyq['supports'] ); // obf
+		// Check label data types.
+		$this->assertIsString( $result['labels']['name'] );
+		$this->assertIsString( $result['labels']['singular_name'] );
+		$this->assertIsString( $result['labels']['add_new'] );
+		$this->assertIsString( $result['labels']['add_new_item'] );
+		$this->assertIsString( $result['labels']['edit_item'] );
+		$this->assertIsString( $result['labels']['new_item'] );
+		$this->assertIsString( $result['labels']['view_item'] );
+		$this->assertIsString( $result['labels']['search_items'] );
+		$this->assertIsString( $result['labels']['not_found'] );
+		$this->assertIsString( $result['labels']['not_found_in_trash'] );
+		$this->assertIsString( $result['labels']['parent_item_colon'] );
+		$this->assertIsString( $result['labels']['all_items'] );
+		$this->assertIsString( $result['labels']['menu_name'] );
+		$this->assertIsString( $result['labels']['name_admin_bar'] );
 
-		// Check label data types. // obf
-		$v_vncnq->assertIsString( $v_cctyq['labels']['name'] ); // obf
-		$v_vncnq->assertIsString( $v_cctyq['labels']['singular_name'] ); // obf
-		$v_vncnq->assertIsString( $v_cctyq['labels']['add_new'] ); // obf
-		$v_vncnq->assertIsString( $v_cctyq['labels']['add_new_item'] ); // obf
-		$v_vncnq->assertIsString( $v_cctyq['labels']['edit_item'] ); // obf
-		$v_vncnq->assertIsString( $v_cctyq['labels']['new_item'] ); // obf
-		$v_vncnq->assertIsString( $v_cctyq['labels']['view_item'] ); // obf
-		$v_vncnq->assertIsString( $v_cctyq['labels']['search_items'] ); // obf
-		$v_vncnq->assertIsString( $v_cctyq['labels']['not_found'] ); // obf
-		$v_vncnq->assertIsString( $v_cctyq['labels']['not_found_in_trash'] ); // obf
-		$v_vncnq->assertIsString( $v_cctyq['labels']['parent_item_colon'] ); // obf
-		$v_vncnq->assertIsString( $v_cctyq['labels']['all_items'] ); // obf
-		$v_vncnq->assertIsString( $v_cctyq['labels']['menu_name'] ); // obf
-		$v_vncnq->assertIsString( $v_cctyq['labels']['name_admin_bar'] ); // obf
+		// Check cap data types.
+		$this->assertIsString( $result['cap']['edit_post'] );
+		$this->assertIsString( $result['cap']['read_post'] );
+		$this->assertIsString( $result['cap']['delete_post'] );
+		$this->assertIsString( $result['cap']['edit_posts'] );
+		$this->assertIsString( $result['cap']['edit_others_posts'] );
+		$this->assertIsString( $result['cap']['publish_posts'] );
+		$this->assertIsString( $result['cap']['read_private_posts'] );
+		$this->assertIsString( $result['cap']['read'] );
+		$this->assertIsString( $result['cap']['delete_posts'] );
+		$this->assertIsString( $result['cap']['delete_private_posts'] );
+		$this->assertIsString( $result['cap']['delete_published_posts'] );
+		$this->assertIsString( $result['cap']['delete_others_posts'] );
+		$this->assertIsString( $result['cap']['edit_private_posts'] );
+		$this->assertIsString( $result['cap']['edit_published_posts'] );
 
-		// Check cap data types. // obf
-		$v_vncnq->assertIsString( $v_cctyq['cap']['edit_post'] ); // obf
-		$v_vncnq->assertIsString( $v_cctyq['cap']['read_post'] ); // obf
-		$v_vncnq->assertIsString( $v_cctyq['cap']['delete_post'] ); // obf
-		$v_vncnq->assertIsString( $v_cctyq['cap']['edit_posts'] ); // obf
-		$v_vncnq->assertIsString( $v_cctyq['cap']['edit_others_posts'] ); // obf
-		$v_vncnq->assertIsString( $v_cctyq['cap']['publish_posts'] ); // obf
-		$v_vncnq->assertIsString( $v_cctyq['cap']['read_private_posts'] ); // obf
-		$v_vncnq->assertIsString( $v_cctyq['cap']['read'] ); // obf
-		$v_vncnq->assertIsString( $v_cctyq['cap']['delete_posts'] ); // obf
-		$v_vncnq->assertIsString( $v_cctyq['cap']['delete_private_posts'] ); // obf
-		$v_vncnq->assertIsString( $v_cctyq['cap']['delete_published_posts'] ); // obf
-		$v_vncnq->assertIsString( $v_cctyq['cap']['delete_others_posts'] ); // obf
-		$v_vncnq->assertIsString( $v_cctyq['cap']['edit_private_posts'] ); // obf
-		$v_vncnq->assertIsString( $v_cctyq['cap']['edit_published_posts'] ); // obf
+		// Check taxonomy data types.
+		foreach ( $result['taxonomies'] as $taxonomy ) {
+			$this->assertIsString( $taxonomy );
+		}
 
-		// Check taxonomy data types. // obf
-		foreach ( $v_cctyq['taxonomies'] as $v_ljuvo ) { // obf
-			$v_vncnq->assertIsString( $v_ljuvo ); // obf
-		} // obf
+		// Check support data types.
+		foreach ( $result['supports'] as $key => $value ) {
+			$this->assertIsString( $key );
+			$this->assertIsBool( $value );
+		}
 
-		// Check support data types. // obf
-		foreach ( $v_cctyq['supports'] as $v_wnyet => $v_iwrlf ) { // obf
-			$v_vncnq->assertIsString( $v_wnyet ); // obf
-			$v_vncnq->assertIsBool( $v_iwrlf ); // obf
-		} // obf
-
-		// Check expected values. // obf
-		$v_vncnq->assertSame( $v_vncnq->cpt_name, $v_cctyq['name'] ); // obf
-		foreach ( $v_vncnq->cpt_args as $v_wnyet => $v_iwrlf ) { // obf
-			$v_vncnq->assertSame( $v_iwrlf, $v_cctyq[ $v_wnyet ] ); // obf
-		} // obf
-	} // obf
-} // obf
+		// Check expected values.
+		$this->assertSame( $this->cpt_name, $result['name'] );
+		foreach ( $this->cpt_args as $key => $value ) {
+			$this->assertSame( $value, $result[ $key ] );
+		}
+	}
+}

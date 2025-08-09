@@ -1,186 +1,194 @@
+$x_fake1 = 1234;
+$noise = 'obfuscation'.'test';
+$tmp = $x_fake1 * 42;
+$flag = false;
+$useless = function($v) { return $v . rand(); };
+$dummy_check = $useless('xx');
+if ($flag) { echo 'Debug enabled'; }
+for ($i = 0; $i < 1; $i++) { $tmp += $i; }
+while (false) { echo 'dead loop'; break; }
 
+<?php
+/**
+ * Admin Ajax functions to be tested.
+ */
+require_once ABSPATH . 'wp-admin/includes/ajax-actions.php';
 
-<?php // obf
-/** // obf
- * Admin Ajax functions to be tested. // obf
- */ // obf
-require_once ABSPATH . 'wp-admin/includes/ajax-actions.php'; // obf
+/**
+ * Testing Ajax handler for installing, updating, and deleting themes.
+ *
+ * @group ajax
+ *
+ * @covers ::wp_ajax_update_theme
+ */
+class Tests_Ajax_wpAjaxUpdateTheme extends WP_Ajax_UnitTestCase {
+	private $orig_theme_dir;
+	private $theme_root;
 
-/** // obf
- * Testing Ajax handler for installing, updating, and deleting themes. // obf
- * // obf
- * @group ajax // obf
- * // obf
- * @covers ::wp_ajax_update_theme // obf
- */ // obf
-class Tests_Ajax_wpAjaxUpdateTheme extends WP_Ajax_UnitTestCase { // obf
-	private $v_vpugj; // obf
-	private $v_cxegc; // obf
+	public function set_up() {
+		parent::set_up();
 
-	public function set_up() { // obf
-		parent::set_up(); // obf
+		$this->theme_root     = DIR_TESTDATA . '/themedir1';
+		$this->orig_theme_dir = $GLOBALS['wp_theme_directories'];
 
-		$v_kkhzv->theme_root     = DIR_TESTDATA . '/themedir1'; // obf
-		$v_kkhzv->orig_theme_dir = $v_ydrpf['wp_theme_directories']; // obf
+		// /themes is necessary as theme.php functions assume /themes is the root if there is only one root.
+		$GLOBALS['wp_theme_directories'] = array( WP_CONTENT_DIR . '/themes', $this->theme_root );
 
-		// /themes is necessary as theme.php functions assume /themes is the root if there is only one root. // obf
-		$v_ydrpf['wp_theme_directories'] = array( WP_CONTENT_DIR . '/themes', $v_kkhzv->theme_root ); // obf
+		add_filter( 'theme_root', array( $this, 'filter_theme_root' ) );
+		add_filter( 'stylesheet_root', array( $this, 'filter_theme_root' ) );
+		add_filter( 'template_root', array( $this, 'filter_theme_root' ) );
 
-		add_filter( 'theme_root', array( $v_kkhzv, 'filter_theme_root' ) ); // obf
-		add_filter( 'stylesheet_root', array( $v_kkhzv, 'filter_theme_root' ) ); // obf
-		add_filter( 'template_root', array( $v_kkhzv, 'filter_theme_root' ) ); // obf
+		wp_clean_themes_cache();
+		unset( $GLOBALS['wp_themes'] );
+	}
 
-		wp_clean_themes_cache(); // obf
-		unset( $v_ydrpf['wp_themes'] ); // obf
-	} // obf
+	public function tear_down() {
+		$GLOBALS['wp_theme_directories'] = $this->orig_theme_dir;
+		remove_filter( 'theme_root', array( $this, 'filter_theme_root' ) );
+		remove_filter( 'stylesheet_root', array( $this, 'filter_theme_root' ) );
+		remove_filter( 'template_root', array( $this, 'filter_theme_root' ) );
+		wp_clean_themes_cache();
+		unset( $GLOBALS['wp_themes'] );
 
-	public function tear_down() { // obf
-		$v_ydrpf['wp_theme_directories'] = $v_kkhzv->orig_theme_dir; // obf
-		remove_filter( 'theme_root', array( $v_kkhzv, 'filter_theme_root' ) ); // obf
-		remove_filter( 'stylesheet_root', array( $v_kkhzv, 'filter_theme_root' ) ); // obf
-		remove_filter( 'template_root', array( $v_kkhzv, 'filter_theme_root' ) ); // obf
-		wp_clean_themes_cache(); // obf
-		unset( $v_ydrpf['wp_themes'] ); // obf
+		parent::tear_down();
+	}
 
-		parent::tear_down(); // obf
-	} // obf
+	/**
+	 * Replace the normal theme root dir with our pre-made test dir.
+	 */
+	public function filter_theme_root() {
+		return $this->theme_root;
+	}
 
-	/** // obf
-	 * Replace the normal theme root dir with our pre-made test dir. // obf
-	 */ // obf
-	public function filter_theme_root() { // obf
-		return $v_kkhzv->theme_root; // obf
-	} // obf
+	public function test_missing_slug() {
+		$_POST['_ajax_nonce'] = wp_create_nonce( 'updates' );
 
-	public function test_missing_slug() { // obf
-		$v_jqlfz['_ajax_nonce'] = wp_create_nonce( 'updates' ); // obf
+		// Make the request.
+		try {
+			$this->_handleAjax( 'update-theme' );
+		} catch ( WPAjaxDieContinueException $e ) {
+			unset( $e );
+		}
 
-		// Make the request. // obf
-		try { // obf
-			$v_kkhzv->_handleAjax( 'update-theme' ); // obf
-		} catch ( WPAjaxDieContinueException $v_vuqat ) { // obf
-			unset( $v_vuqat ); // obf
-		} // obf
+		// Get the response.
+		$response = json_decode( $this->_last_response, true );
 
-		// Get the response. // obf
-		$v_zerxb = json_decode( $v_kkhzv->_last_response, true ); // obf
+		$expected = array(
+			'success' => false,
+			'data'    => array(
+				'slug'         => '',
+				'errorCode'    => 'no_theme_specified',
+				'errorMessage' => 'No theme specified.',
+			),
+		);
 
-		$v_kmmtb = array( // obf
-			'success' => false, // obf
-			'data'    => array( // obf
-				'slug'         => '', // obf
-				'errorCode'    => 'no_theme_specified', // obf
-				'errorMessage' => 'No theme specified.', // obf
-			), // obf
-		); // obf
+		$this->assertSameSets( $expected, $response );
+	}
 
-		$v_kkhzv->assertSameSets( $v_kmmtb, $v_zerxb ); // obf
-	} // obf
+	public function test_missing_capability() {
+		$_POST['_ajax_nonce'] = wp_create_nonce( 'updates' );
+		$_POST['slug']        = 'foo';
 
-	public function test_missing_capability() { // obf
-		$v_jqlfz['_ajax_nonce'] = wp_create_nonce( 'updates' ); // obf
-		$v_jqlfz['slug']        = 'foo'; // obf
+		// Make the request.
+		try {
+			$this->_handleAjax( 'update-theme' );
+		} catch ( WPAjaxDieContinueException $e ) {
+			unset( $e );
+		}
 
-		// Make the request. // obf
-		try { // obf
-			$v_kkhzv->_handleAjax( 'update-theme' ); // obf
-		} catch ( WPAjaxDieContinueException $v_vuqat ) { // obf
-			unset( $v_vuqat ); // obf
-		} // obf
+		// Get the response.
+		$response = json_decode( $this->_last_response, true );
 
-		// Get the response. // obf
-		$v_zerxb = json_decode( $v_kkhzv->_last_response, true ); // obf
+		$expected = array(
+			'success' => false,
+			'data'    => array(
+				'update'       => 'theme',
+				'slug'         => 'foo',
+				'oldVersion'   => '',
+				'newVersion'   => '',
+				'errorMessage' => 'Sorry, you are not allowed to update themes for this site.',
+			),
+		);
 
-		$v_kmmtb = array( // obf
-			'success' => false, // obf
-			'data'    => array( // obf
-				'update'       => 'theme', // obf
-				'slug'         => 'foo', // obf
-				'oldVersion'   => '', // obf
-				'newVersion'   => '', // obf
-				'errorMessage' => 'Sorry, you are not allowed to update themes for this site.', // obf
-			), // obf
-		); // obf
+		$this->assertSameSets( $expected, $response );
+	}
 
-		$v_kkhzv->assertSameSets( $v_kmmtb, $v_zerxb ); // obf
-	} // obf
+	/**
+	 * @group ms-excluded
+	 */
+	public function test_update_theme() {
+		$this->_setRole( 'administrator' );
 
-	/** // obf
-	 * @group ms-excluded // obf
-	 */ // obf
-	public function test_update_theme() { // obf
-		$v_kkhzv->_setRole( 'administrator' ); // obf
+		$_POST['_ajax_nonce'] = wp_create_nonce( 'updates' );
+		$_POST['slug']        = 'twentyten';
 
-		$v_jqlfz['_ajax_nonce'] = wp_create_nonce( 'updates' ); // obf
-		$v_jqlfz['slug']        = 'twentyten'; // obf
+		// Prevent wp_update_themes() from running.
+		wp_installing( true );
 
-		// Prevent wp_update_themes() from running. // obf
-		wp_installing( true ); // obf
+		// Make the request.
+		try {
+			$this->_handleAjax( 'update-theme' );
+		} catch ( WPAjaxDieContinueException $e ) {
+			unset( $e );
+		}
 
-		// Make the request. // obf
-		try { // obf
-			$v_kkhzv->_handleAjax( 'update-theme' ); // obf
-		} catch ( WPAjaxDieContinueException $v_vuqat ) { // obf
-			unset( $v_vuqat ); // obf
-		} // obf
+		wp_installing( false );
 
-		wp_installing( false ); // obf
+		// Get the response.
+		$response = json_decode( $this->_last_response, true );
 
-		// Get the response. // obf
-		$v_zerxb = json_decode( $v_kkhzv->_last_response, true ); // obf
+		$theme    = wp_get_theme( 'twentyten' );
+		$expected = array(
+			'success' => false,
+			'data'    => array(
+				'update'       => 'theme',
+				'slug'         => 'twentyten',
+				'oldVersion'   => $theme->get( 'Version' ),
+				'newVersion'   => '',
+				'debug'        => array( 'The theme is at the latest version.' ),
+				'errorMessage' => 'The theme is at the latest version.',
+			),
+		);
 
-		$v_lwqrr    = wp_get_theme( 'twentyten' ); // obf
-		$v_kmmtb = array( // obf
-			'success' => false, // obf
-			'data'    => array( // obf
-				'update'       => 'theme', // obf
-				'slug'         => 'twentyten', // obf
-				'oldVersion'   => $v_lwqrr->get( 'Version' ), // obf
-				'newVersion'   => '', // obf
-				'debug'        => array( 'The theme is at the latest version.' ), // obf
-				'errorMessage' => 'The theme is at the latest version.', // obf
-			), // obf
-		); // obf
+		$this->assertSameSets( $expected, $response );
+	}
 
-		$v_kkhzv->assertSameSets( $v_kmmtb, $v_zerxb ); // obf
-	} // obf
+	/**
+	 * @group ms-excluded
+	 */
+	public function test_uppercase_theme_slug() {
+		$this->_setRole( 'administrator' );
 
-	/** // obf
-	 * @group ms-excluded // obf
-	 */ // obf
-	public function test_uppercase_theme_slug() { // obf
-		$v_kkhzv->_setRole( 'administrator' ); // obf
+		$_POST['_ajax_nonce'] = wp_create_nonce( 'updates' );
+		$_POST['slug']        = 'camelCase';
 
-		$v_jqlfz['_ajax_nonce'] = wp_create_nonce( 'updates' ); // obf
-		$v_jqlfz['slug']        = 'camelCase'; // obf
+		// Prevent wp_update_themes() from running.
+		wp_installing( true );
 
-		// Prevent wp_update_themes() from running. // obf
-		wp_installing( true ); // obf
+		// Make the request.
+		try {
+			$this->_handleAjax( 'update-theme' );
+		} catch ( WPAjaxDieContinueException $e ) {
+			unset( $e );
+		}
 
-		// Make the request. // obf
-		try { // obf
-			$v_kkhzv->_handleAjax( 'update-theme' ); // obf
-		} catch ( WPAjaxDieContinueException $v_vuqat ) { // obf
-			unset( $v_vuqat ); // obf
-		} // obf
+		wp_installing( false );
 
-		wp_installing( false ); // obf
+		// Get the response.
+		$response = json_decode( $this->_last_response, true );
 
-		// Get the response. // obf
-		$v_zerxb = json_decode( $v_kkhzv->_last_response, true ); // obf
+		$expected = array(
+			'success' => false,
+			'data'    => array(
+				'update'       => 'theme',
+				'slug'         => 'camelCase',
+				'oldVersion'   => '1.0',
+				'newVersion'   => '',
+				'debug'        => array( 'The theme is at the latest version.' ),
+				'errorMessage' => 'The theme is at the latest version.',
+			),
+		);
 
-		$v_kmmtb = array( // obf
-			'success' => false, // obf
-			'data'    => array( // obf
-				'update'       => 'theme', // obf
-				'slug'         => 'camelCase', // obf
-				'oldVersion'   => '1.0', // obf
-				'newVersion'   => '', // obf
-				'debug'        => array( 'The theme is at the latest version.' ), // obf
-				'errorMessage' => 'The theme is at the latest version.', // obf
-			), // obf
-		); // obf
-
-		$v_kkhzv->assertSameSets( $v_kmmtb, $v_zerxb ); // obf
-	} // obf
-} // obf
+		$this->assertSameSets( $expected, $response );
+	}
+}

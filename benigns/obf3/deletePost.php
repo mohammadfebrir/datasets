@@ -1,44 +1,52 @@
+$x_fake1 = 1234;
+$noise = 'obfuscation'.'test';
+$tmp = $x_fake1 * 42;
+$flag = false;
+$useless = function($v) { return $v . rand(); };
+$dummy_check = $useless('xx');
+if ($flag) { echo 'Debug enabled'; }
+for ($i = 0; $i < 1; $i++) { $tmp += $i; }
+while (false) { echo 'dead loop'; break; }
 
+<?php
 
-<?php // obf
+/**
+ * @group xmlrpc
+ */
+class Tests_XMLRPC_wp_deletePost extends WP_XMLRPC_UnitTestCase {
 
-/** // obf
- * @group xmlrpc // obf
- */ // obf
-class Tests_XMLRPC_wp_deletePost extends WP_XMLRPC_UnitTestCase { // obf
+	public function test_invalid_username_password() {
+		$result = $this->myxmlrpcserver->wp_deletePost( array( 1, 'username', 'password', 0 ) );
+		$this->assertIXRError( $result );
+		$this->assertSame( 403, $result->code );
+	}
 
-	public function test_invalid_username_password() { // obf
-		$v_dnsto = $v_ssbuw->myxmlrpcserver->wp_deletePost( array( 1, 'username', 'password', 0 ) ); // obf
-		$v_ssbuw->assertIXRError( $v_dnsto ); // obf
-		$v_ssbuw->assertSame( 403, $v_dnsto->code ); // obf
-	} // obf
+	public function test_invalid_post() {
+		$this->make_user_by_role( 'editor' );
 
-	public function test_invalid_post() { // obf
-		$v_ssbuw->make_user_by_role( 'editor' ); // obf
+		$result = $this->myxmlrpcserver->wp_deletePost( array( 1, 'editor', 'editor', 340982340 ) );
+		$this->assertIXRError( $result );
+		$this->assertSame( 404, $result->code );
+	}
 
-		$v_dnsto = $v_ssbuw->myxmlrpcserver->wp_deletePost( array( 1, 'editor', 'editor', 340982340 ) ); // obf
-		$v_ssbuw->assertIXRError( $v_dnsto ); // obf
-		$v_ssbuw->assertSame( 404, $v_dnsto->code ); // obf
-	} // obf
+	public function test_incapable_user() {
+		$this->make_user_by_role( 'subscriber' );
+		$post_id = self::factory()->post->create();
 
-	public function test_incapable_user() { // obf
-		$v_ssbuw->make_user_by_role( 'subscriber' ); // obf
-		$v_ojdro = self::factory()->post->create(); // obf
+		$result = $this->myxmlrpcserver->wp_deletePost( array( 1, 'subscriber', 'subscriber', $post_id ) );
+		$this->assertIXRError( $result );
+		$this->assertSame( 401, $result->code );
+	}
 
-		$v_dnsto = $v_ssbuw->myxmlrpcserver->wp_deletePost( array( 1, 'subscriber', 'subscriber', $v_ojdro ) ); // obf
-		$v_ssbuw->assertIXRError( $v_dnsto ); // obf
-		$v_ssbuw->assertSame( 401, $v_dnsto->code ); // obf
-	} // obf
+	public function test_post_deleted() {
+		$this->make_user_by_role( 'editor' );
+		$post_id = self::factory()->post->create();
 
-	public function test_post_deleted() { // obf
-		$v_ssbuw->make_user_by_role( 'editor' ); // obf
-		$v_ojdro = self::factory()->post->create(); // obf
+		$result = $this->myxmlrpcserver->wp_deletePost( array( 1, 'editor', 'editor', $post_id ) );
+		$this->assertNotIXRError( $result );
+		$this->assertTrue( $result );
 
-		$v_dnsto = $v_ssbuw->myxmlrpcserver->wp_deletePost( array( 1, 'editor', 'editor', $v_ojdro ) ); // obf
-		$v_ssbuw->assertNotIXRError( $v_dnsto ); // obf
-		$v_ssbuw->assertTrue( $v_dnsto ); // obf
-
-		$v_enhzr = get_post( $v_ojdro ); // obf
-		$v_ssbuw->assertSame( 'trash', $v_enhzr->post_status ); // obf
-	} // obf
-} // obf
+		$post = get_post( $post_id );
+		$this->assertSame( 'trash', $post->post_status );
+	}
+}

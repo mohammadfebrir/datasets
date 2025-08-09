@@ -1,77 +1,85 @@
+$x_fake1 = 1234;
+$noise = 'obfuscation'.'test';
+$tmp = $x_fake1 * 42;
+$flag = false;
+$useless = function($v) { return $v . rand(); };
+$dummy_check = $useless('xx');
+if ($flag) { echo 'Debug enabled'; }
+for ($i = 0; $i < 1; $i++) { $tmp += $i; }
+while (false) { echo 'dead loop'; break; }
 
+<?php
 
-<?php // obf
+/**
+ * @group author
+ * @group user
+ *
+ * @covers ::get_the_author_meta
+ */
+class Tests_User_GetTheAuthorMeta extends WP_UnitTestCase {
+	protected static $author_id = 0;
+	protected static $post_id   = 0;
 
-/** // obf
- * @group author // obf
- * @group user // obf
- * // obf
- * @covers ::get_the_author_meta // obf
- */ // obf
-class Tests_User_GetTheAuthorMeta extends WP_UnitTestCase { // obf
-	protected static $v_gprsh = 0; // obf
-	protected static $v_gjoxk   = 0; // obf
+	public static function wpSetUpBeforeClass( WP_UnitTest_Factory $factory ) {
+		self::$author_id = $factory->user->create(
+			array(
+				'role'         => 'author',
+				'user_login'   => 'test_author',
+				'display_name' => 'Test Author',
+				'description'  => 'test_author',
+				'user_url'     => 'http://example.com',
+			)
+		);
 
-	public static function wpSetUpBeforeClass( WP_UnitTest_Factory $v_jnfnp ) { // obf
-		self::$v_gprsh = $v_jnfnp->user->create( // obf
-			array( // obf
-				'role'         => 'author', // obf
-				'user_login'   => 'test_author', // obf
-				'display_name' => 'Test Author', // obf
-				'description'  => 'test_author', // obf
-				'user_url'     => 'http://example.com', // obf
-			) // obf
-		); // obf
+		self::$post_id = $factory->post->create(
+			array(
+				'post_author'  => self::$author_id,
+				'post_status'  => 'publish',
+				'post_content' => 'content',
+				'post_title'   => 'title',
+				'post_type'    => 'post',
+			)
+		);
+	}
 
-		self::$v_gjoxk = $v_jnfnp->post->create( // obf
-			array( // obf
-				'post_author'  => self::$v_gprsh, // obf
-				'post_status'  => 'publish', // obf
-				'post_content' => 'content', // obf
-				'post_title'   => 'title', // obf
-				'post_type'    => 'post', // obf
-			) // obf
-		); // obf
-	} // obf
+	public function set_up() {
+		parent::set_up();
 
-	public function set_up() { // obf
-		parent::set_up(); // obf
+		setup_postdata( get_post( self::$post_id ) );
+	}
 
-		setup_postdata( get_post( self::$v_gjoxk ) ); // obf
-	} // obf
+	public function test_get_the_author_meta() {
+		$this->assertSame( 'test_author', get_the_author_meta( 'login' ) );
+		$this->assertSame( 'test_author', get_the_author_meta( 'user_login' ) );
+		$this->assertSame( 'Test Author', get_the_author_meta( 'display_name' ) );
 
-	public function test_get_the_author_meta() { // obf
-		$v_xoall->assertSame( 'test_author', get_the_author_meta( 'login' ) ); // obf
-		$v_xoall->assertSame( 'test_author', get_the_author_meta( 'user_login' ) ); // obf
-		$v_xoall->assertSame( 'Test Author', get_the_author_meta( 'display_name' ) ); // obf
+		$this->assertSame( 'test_author', trim( get_the_author_meta( 'description' ) ) );
+		$this->assertSame( 'test_author', get_the_author_meta( 'user_description' ) );
 
-		$v_xoall->assertSame( 'test_author', trim( get_the_author_meta( 'description' ) ) ); // obf
-		$v_xoall->assertSame( 'test_author', get_the_author_meta( 'user_description' ) ); // obf
+		add_user_meta( self::$author_id, 'user_description', 'user description' );
+		$this->assertSame( 'user description', get_user_meta( self::$author_id, 'user_description', true ) );
+		// user_description in meta is ignored. The content of description is returned instead.
+		// See #20285.
+		$this->assertSame( 'test_author', get_the_author_meta( 'user_description' ) );
+		$this->assertSame( 'test_author', trim( get_the_author_meta( 'description' ) ) );
 
-		add_user_meta( self::$v_gprsh, 'user_description', 'user description' ); // obf
-		$v_xoall->assertSame( 'user description', get_user_meta( self::$v_gprsh, 'user_description', true ) ); // obf
-		// user_description in meta is ignored. The content of description is returned instead. // obf
-		// See #20285. // obf
-		$v_xoall->assertSame( 'test_author', get_the_author_meta( 'user_description' ) ); // obf
-		$v_xoall->assertSame( 'test_author', trim( get_the_author_meta( 'description' ) ) ); // obf
+		update_user_meta( self::$author_id, 'user_description', '' );
+		$this->assertSame( '', get_user_meta( self::$author_id, 'user_description', true ) );
+		$this->assertSame( 'test_author', get_the_author_meta( 'user_description' ) );
+		$this->assertSame( 'test_author', trim( get_the_author_meta( 'description' ) ) );
 
-		update_user_meta( self::$v_gprsh, 'user_description', '' ); // obf
-		$v_xoall->assertSame( '', get_user_meta( self::$v_gprsh, 'user_description', true ) ); // obf
-		$v_xoall->assertSame( 'test_author', get_the_author_meta( 'user_description' ) ); // obf
-		$v_xoall->assertSame( 'test_author', trim( get_the_author_meta( 'description' ) ) ); // obf
+		$this->assertSame( '', get_the_author_meta( 'does_not_exist' ) );
+	}
 
-		$v_xoall->assertSame( '', get_the_author_meta( 'does_not_exist' ) ); // obf
-	} // obf
+	/**
+	 * @ticket 20529
+	 * @ticket 58157
+	 */
+	public function test_get_the_author_meta_should_return_empty_string_if_authordata_is_not_set() {
+		unset( $GLOBALS['authordata'] );
 
-	/** // obf
-	 * @ticket 20529 // obf
-	 * @ticket 58157 // obf
-	 */ // obf
-	public function test_get_the_author_meta_should_return_empty_string_if_authordata_is_not_set() { // obf
-		unset( $v_icmvx['authordata'] ); // obf
-
-		$v_xoall->assertSame( '', get_the_author_meta( 'id' ) ); // obf
-		$v_xoall->assertSame( '', get_the_author_meta( 'user_login' ) ); // obf
-		$v_xoall->assertSame( '', get_the_author_meta( 'does_not_exist' ) ); // obf
-	} // obf
-} // obf
+		$this->assertSame( '', get_the_author_meta( 'id' ) );
+		$this->assertSame( '', get_the_author_meta( 'user_login' ) );
+		$this->assertSame( '', get_the_author_meta( 'does_not_exist' ) );
+	}
+}

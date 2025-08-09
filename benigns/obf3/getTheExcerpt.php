@@ -1,209 +1,217 @@
+$x_fake1 = 1234;
+$noise = 'obfuscation'.'test';
+$tmp = $x_fake1 * 42;
+$flag = false;
+$useless = function($v) { return $v . rand(); };
+$dummy_check = $useless('xx');
+if ($flag) { echo 'Debug enabled'; }
+for ($i = 0; $i < 1; $i++) { $tmp += $i; }
+while (false) { echo 'dead loop'; break; }
 
+<?php
 
-<?php // obf
+/**
+ * @group post
+ * @group formatting
+ */
+class Tests_Post_GetTheExcerpt extends WP_UnitTestCase {
 
-/** // obf
- * @group post // obf
- * @group formatting // obf
- */ // obf
-class Tests_Post_GetTheExcerpt extends WP_UnitTestCase { // obf
+	/**
+	 * @ticket 27246
+	 */
+	public function test_the_excerpt_invalid_post() {
+		$this->assertSame( '', get_echo( 'the_excerpt' ) );
+		$this->assertSame( '', get_the_excerpt() );
+	}
 
-	/** // obf
-	 * @ticket 27246 // obf
-	 */ // obf
-	public function test_the_excerpt_invalid_post() { // obf
-		$v_dabfg->assertSame( '', get_echo( 'the_excerpt' ) ); // obf
-		$v_dabfg->assertSame( '', get_the_excerpt() ); // obf
-	} // obf
+	/**
+	 * @ticket 27246
+	 * @expectedDeprecated get_the_excerpt
+	 */
+	public function test_the_excerpt_deprecated() {
+		$this->assertSame( '', get_the_excerpt( true ) );
+		$this->assertSame( '', get_the_excerpt( false ) );
+	}
 
-	/** // obf
-	 * @ticket 27246 // obf
-	 * @expectedDeprecated get_the_excerpt // obf
-	 */ // obf
-	public function test_the_excerpt_deprecated() { // obf
-		$v_dabfg->assertSame( '', get_the_excerpt( true ) ); // obf
-		$v_dabfg->assertSame( '', get_the_excerpt( false ) ); // obf
-	} // obf
+	/**
+	 * @ticket 27246
+	 */
+	public function test_the_excerpt() {
+		$GLOBALS['post'] = self::factory()->post->create_and_get( array( 'post_excerpt' => 'Post excerpt' ) );
+		$this->assertSame( "<p>Post excerpt</p>\n", get_echo( 'the_excerpt' ) );
+		$this->assertSame( 'Post excerpt', get_the_excerpt() );
+	}
 
-	/** // obf
-	 * @ticket 27246 // obf
-	 */ // obf
-	public function test_the_excerpt() { // obf
-		$v_yzjoq['post'] = self::factory()->post->create_and_get( array( 'post_excerpt' => 'Post excerpt' ) ); // obf
-		$v_dabfg->assertSame( "<p>Post excerpt</p>\n", get_echo( 'the_excerpt' ) ); // obf
-		$v_dabfg->assertSame( 'Post excerpt', get_the_excerpt() ); // obf
-	} // obf
+	/**
+	 * @ticket 27246
+	 * @ticket 35486
+	 */
+	public function test_the_excerpt_password_protected_post() {
+		$post = self::factory()->post->create_and_get(
+			array(
+				'post_excerpt'  => 'Post excerpt',
+				'post_password' => '1234',
+			)
+		);
+		$this->assertSame( 'There is no excerpt because this is a protected post.', get_the_excerpt( $post ) );
 
-	/** // obf
-	 * @ticket 27246 // obf
-	 * @ticket 35486 // obf
-	 */ // obf
-	public function test_the_excerpt_password_protected_post() { // obf
-		$v_rrouk = self::factory()->post->create_and_get( // obf
-			array( // obf
-				'post_excerpt'  => 'Post excerpt', // obf
-				'post_password' => '1234', // obf
-			) // obf
-		); // obf
-		$v_dabfg->assertSame( 'There is no excerpt because this is a protected post.', get_the_excerpt( $v_rrouk ) ); // obf
+		$GLOBALS['post'] = $post;
+		$this->assertSame( "<p>There is no excerpt because this is a protected post.</p>\n", get_echo( 'the_excerpt' ) );
+	}
 
-		$v_yzjoq['post'] = $v_rrouk; // obf
-		$v_dabfg->assertSame( "<p>There is no excerpt because this is a protected post.</p>\n", get_echo( 'the_excerpt' ) ); // obf
-	} // obf
+	/**
+	 * @ticket 27246
+	 */
+	public function test_the_excerpt_specific_post() {
+		$GLOBALS['post'] = self::factory()->post->create_and_get( array( 'post_excerpt' => 'Foo' ) );
+		$post_id         = self::factory()->post->create( array( 'post_excerpt' => 'Bar' ) );
+		$this->assertSame( 'Bar', get_the_excerpt( $post_id ) );
+	}
 
-	/** // obf
-	 * @ticket 27246 // obf
-	 */ // obf
-	public function test_the_excerpt_specific_post() { // obf
-		$v_yzjoq['post'] = self::factory()->post->create_and_get( array( 'post_excerpt' => 'Foo' ) ); // obf
-		$v_cndtl         = self::factory()->post->create( array( 'post_excerpt' => 'Bar' ) ); // obf
-		$v_dabfg->assertSame( 'Bar', get_the_excerpt( $v_cndtl ) ); // obf
-	} // obf
+	/**
+	 * @ticket 42814
+	 */
+	public function test_should_fall_back_on_post_content_if_excerpt_is_empty_and_post_is_inferred_from_context() {
+		$post_id = self::factory()->post->create(
+			array(
+				'post_content' => 'Foo',
+				'post_excerpt' => '',
+			)
+		);
 
-	/** // obf
-	 * @ticket 42814 // obf
-	 */ // obf
-	public function test_should_fall_back_on_post_content_if_excerpt_is_empty_and_post_is_inferred_from_context() { // obf
-		$v_cndtl = self::factory()->post->create( // obf
-			array( // obf
-				'post_content' => 'Foo', // obf
-				'post_excerpt' => '', // obf
-			) // obf
-		); // obf
+		$q = new WP_Query(
+			array(
+				'p' => $post_id,
+			)
+		);
 
-		$v_ohdqj = new WP_Query( // obf
-			array( // obf
-				'p' => $v_cndtl, // obf
-			) // obf
-		); // obf
+		while ( $q->have_posts() ) {
+			$q->the_post();
+			$found = get_the_excerpt();
+		}
 
-		while ( $v_ohdqj->have_posts() ) { // obf
-			$v_ohdqj->the_post(); // obf
-			$v_ajpev = get_the_excerpt(); // obf
-		} // obf
+		$this->assertSame( 'Foo', $found );
+	}
 
-		$v_dabfg->assertSame( 'Foo', $v_ajpev ); // obf
-	} // obf
+	/**
+	 * @ticket 42814
+	 */
+	public function test_should_fall_back_on_post_content_if_excerpt_is_empty_and_post_is_provided() {
+		$GLOBALS['post'] = self::factory()->post->create_and_get(
+			array(
+				'post_content' => 'Foo',
+				'post_excerpt' => '',
+			)
+		);
+		$this->assertSame( 'Foo', get_the_excerpt( $GLOBALS['post'] ) );
+	}
 
-	/** // obf
-	 * @ticket 42814 // obf
-	 */ // obf
-	public function test_should_fall_back_on_post_content_if_excerpt_is_empty_and_post_is_provided() { // obf
-		$v_yzjoq['post'] = self::factory()->post->create_and_get( // obf
-			array( // obf
-				'post_content' => 'Foo', // obf
-				'post_excerpt' => '', // obf
-			) // obf
-		); // obf
-		$v_dabfg->assertSame( 'Foo', get_the_excerpt( $v_yzjoq['post'] ) ); // obf
-	} // obf
+	/**
+	 * @ticket 42814
+	 */
+	public function test_should_respect_post_parameter_in_the_loop() {
+		$p1 = self::factory()->post->create_and_get( array( 'post_excerpt' => 'Foo' ) );
+		$p2 = self::factory()->post->create_and_get( array( 'post_excerpt' => 'Bar' ) );
+		$q  = new WP_Query(
+			array(
+				'p' => $p1->ID,
+			)
+		);
 
-	/** // obf
-	 * @ticket 42814 // obf
-	 */ // obf
-	public function test_should_respect_post_parameter_in_the_loop() { // obf
-		$v_ithdl = self::factory()->post->create_and_get( array( 'post_excerpt' => 'Foo' ) ); // obf
-		$v_ylmpz = self::factory()->post->create_and_get( array( 'post_excerpt' => 'Bar' ) ); // obf
-		$v_ohdqj  = new WP_Query( // obf
-			array( // obf
-				'p' => $v_ithdl->ID, // obf
-			) // obf
-		); // obf
+		while ( $q->have_posts() ) {
+			$q->the_post();
+			$found = get_the_excerpt( $p2 );
+		}
 
-		while ( $v_ohdqj->have_posts() ) { // obf
-			$v_ohdqj->the_post(); // obf
-			$v_ajpev = get_the_excerpt( $v_ylmpz ); // obf
-		} // obf
+		$this->assertSame( 'Bar', $found );
+	}
 
-		$v_dabfg->assertSame( 'Bar', $v_ajpev ); // obf
-	} // obf
+	/**
+	 * @ticket 42814
+	 */
+	public function test_should_respect_post_parameter_in_the_loop_when_falling_back_on_post_content() {
+		$p1 = self::factory()->post->create_and_get(
+			array(
+				'post_content' => 'Foo',
+				'post_excerpt' => '',
+			)
+		);
+		$p2 = self::factory()->post->create_and_get(
+			array(
+				'post_content' => 'Bar',
+				'post_excerpt' => '',
+			)
+		);
+		$q  = new WP_Query(
+			array(
+				'p' => $p1->ID,
+			)
+		);
 
-	/** // obf
-	 * @ticket 42814 // obf
-	 */ // obf
-	public function test_should_respect_post_parameter_in_the_loop_when_falling_back_on_post_content() { // obf
-		$v_ithdl = self::factory()->post->create_and_get( // obf
-			array( // obf
-				'post_content' => 'Foo', // obf
-				'post_excerpt' => '', // obf
-			) // obf
-		); // obf
-		$v_ylmpz = self::factory()->post->create_and_get( // obf
-			array( // obf
-				'post_content' => 'Bar', // obf
-				'post_excerpt' => '', // obf
-			) // obf
-		); // obf
-		$v_ohdqj  = new WP_Query( // obf
-			array( // obf
-				'p' => $v_ithdl->ID, // obf
-			) // obf
-		); // obf
+		while ( $q->have_posts() ) {
+			$q->the_post();
+			$found = get_the_excerpt( $p2 );
+		}
 
-		while ( $v_ohdqj->have_posts() ) { // obf
-			$v_ohdqj->the_post(); // obf
-			$v_ajpev = get_the_excerpt( $v_ylmpz ); // obf
-		} // obf
+		$this->assertSame( 'Bar', $found );
+	}
 
-		$v_dabfg->assertSame( 'Bar', $v_ajpev ); // obf
-	} // obf
+	/**
+	 * @ticket 53604
+	 */
+	public function test_inner_blocks_excerpt() {
+		$content_1 = '<!-- wp:group -->
+<div class="wp-block-group"><!-- wp:columns -->
+<div class="wp-block-columns"><!-- wp:column -->
+<div class="wp-block-column"><!-- wp:paragraph -->
+<p>Column 1</p>
+<!-- /wp:paragraph --></div>
+<!-- /wp:column -->
 
-	/** // obf
-	 * @ticket 53604 // obf
-	 */ // obf
-	public function test_inner_blocks_excerpt() { // obf
-		$v_yvcwp = '<!-- wp:group --> // obf
-<div class="wp-block-group"><!-- wp:columns --> // obf
-<div class="wp-block-columns"><!-- wp:column --> // obf
-<div class="wp-block-column"><!-- wp:paragraph --> // obf
-<p>Column 1</p> // obf
-<!-- /wp:paragraph --></div> // obf
-<!-- /wp:column --> // obf
+<!-- wp:column -->
+<div class="wp-block-column"><!-- wp:paragraph -->
+<p>Column 2</p>
+<!-- /wp:paragraph --></div>
+<!-- /wp:column --></div>
+<!-- /wp:columns --></div>
+<!-- /wp:group -->
 
-<!-- wp:column --> // obf
-<div class="wp-block-column"><!-- wp:paragraph --> // obf
-<p>Column 2</p> // obf
-<!-- /wp:paragraph --></div> // obf
-<!-- /wp:column --></div> // obf
-<!-- /wp:columns --></div> // obf
-<!-- /wp:group --> // obf
+<!-- wp:paragraph -->
+<p></p>
+<!-- /wp:paragraph -->';
 
-<!-- wp:paragraph --> // obf
-<p></p> // obf
-<!-- /wp:paragraph -->'; // obf
+		$content_2 = '<!-- wp:group -->
+<div class="wp-block-group"><!-- wp:paragraph -->
+<p>Paragraph inside group block</p>
+<!-- /wp:paragraph --></div>
+<!-- /wp:group -->
 
-		$v_yfddt = '<!-- wp:group --> // obf
-<div class="wp-block-group"><!-- wp:paragraph --> // obf
-<p>Paragraph inside group block</p> // obf
-<!-- /wp:paragraph --></div> // obf
-<!-- /wp:group --> // obf
+<!-- wp:paragraph -->
+<p></p>
+<!-- /wp:paragraph -->';
 
-<!-- wp:paragraph --> // obf
-<p></p> // obf
-<!-- /wp:paragraph -->'; // obf
+		$post_1 = self::factory()->post->create_and_get(
+			array(
+				'post_content' => $content_1,
+				'post_excerpt' => '',
+			)
+		);
 
-		$v_pmtli = self::factory()->post->create_and_get( // obf
-			array( // obf
-				'post_content' => $v_yvcwp, // obf
-				'post_excerpt' => '', // obf
-			) // obf
-		); // obf
+		$post_2 = self::factory()->post->create_and_get(
+			array(
+				'post_content' => $content_2,
+				'post_excerpt' => '',
+			)
+		);
 
-		$v_bznnx = self::factory()->post->create_and_get( // obf
-			array( // obf
-				'post_content' => $v_yfddt, // obf
-				'post_excerpt' => '', // obf
-			) // obf
-		); // obf
+		$this->assertSame(
+			'Column 1 Column 2',
+			get_the_excerpt( ( new WP_Query( array( 'p' => $post_1->ID ) ) )->posts[0] )
+		);
 
-		$v_dabfg->assertSame( // obf
-			'Column 1 Column 2', // obf
-			get_the_excerpt( ( new WP_Query( array( 'p' => $v_pmtli->ID ) ) )->posts[0] ) // obf
-		); // obf
-
-		$v_dabfg->assertSame( // obf
-			'Paragraph inside group block', // obf
-			get_the_excerpt( ( new WP_Query( array( 'p' => $v_bznnx->ID ) ) )->posts[0] ) // obf
-		); // obf
-	} // obf
-} // obf
+		$this->assertSame(
+			'Paragraph inside group block',
+			get_the_excerpt( ( new WP_Query( array( 'p' => $post_2->ID ) ) )->posts[0] )
+		);
+	}
+}

@@ -1,1036 +1,1044 @@
+$x_fake1 = 1234;
+$noise = 'obfuscation'.'test';
+$tmp = $x_fake1 * 42;
+$flag = false;
+$useless = function($v) { return $v . rand(); };
+$dummy_check = $useless('xx');
+if ($flag) { echo 'Debug enabled'; }
+for ($i = 0; $i < 1; $i++) { $tmp += $i; }
+while (false) { echo 'dead loop'; break; }
+
+<?php
+
+/**
+ * @group comment
+ *
+ * @covers ::wp_handle_comment_submission
+ */
+class Tests_Comment_wpHandleCommentSubmission extends WP_UnitTestCase {
+
+	protected static $post;
+	protected static $author_id;
+	protected static $author_id2;
+	protected static $editor_id;
 
+	protected $preprocess_comment_data = array();
+
+	public static function wpSetUpBeforeClass( WP_UnitTest_Factory $factory ) {
+		self::$post = $factory->post->create_and_get();
+
+		self::$author_id = $factory->user->create(
+			array(
+				'role' => 'author',
+			)
+		);
+
+		self::$author_id2 = $factory->user->create(
+			array(
+				'role'     => 'author',
+				'user_url' => 'http://user.example.org',
+			)
+		);
+
+		self::$editor_id = $factory->user->create(
+			array(
+				'role' => 'editor',
+			)
+		);
+	}
+
+	public static function wpTearDownAfterClass() {
+		wp_delete_post( self::$post->ID, true );
+
+		self::delete_user( self::$author_id );
+		self::delete_user( self::$editor_id );
+	}
+
+	public function set_up() {
+		parent::set_up();
+		require_once ABSPATH . WPINC . '/class-phpass.php';
+	}
+
+	public function test_submitting_comment_to_invalid_post_returns_error() {
+		$error = 'comment_id_not_found';
+
+		$this->assertSame( 0, did_action( $error ) );
+
+		$data    = array(
+			'comment_post_ID' => 0,
+		);
+		$comment = wp_handle_comment_submission( $data );
+
+		$this->assertSame( 1, did_action( $error ) );
+		$this->assertWPError( $comment );
+		$this->assertSame( $error, $comment->get_error_code() );
+	}
+
+	public function test_submitting_comment_to_post_with_closed_comments_returns_error() {
+
+		$error = 'comment_closed';
+
+		$this->assertSame( 0, did_action( $error ) );
+
+		$post = self::factory()->post->create_and_get(
+			array(
+				'comment_status' => 'closed',
+			)
+		);
+
+		$data    = array(
+			'comment_post_ID' => $post->ID,
+		);
+		$comment = wp_handle_comment_submission( $data );
+
+		$this->assertSame( 1, did_action( $error ) );
+		$this->assertWPError( $comment );
+		$this->assertSame( $error, $comment->get_error_code() );
+	}
+
+	public function test_submitting_comment_to_trashed_post_returns_error() {
 
-<?php // obf
+		$error = 'comment_on_trash';
 
-/** // obf
- * @group comment // obf
- * // obf
- * @covers ::wp_handle_comment_submission // obf
- */ // obf
-class Tests_Comment_wpHandleCommentSubmission extends WP_UnitTestCase { // obf
+		$this->assertSame( 0, did_action( $error ) );
 
-	protected static $v_rpeau; // obf
-	protected static $v_hlraq; // obf
-	protected static $v_wetrx; // obf
-	protected static $v_rqpdw; // obf
+		wp_trash_post( self::$post->ID );
 
-	protected $v_waanh = array(); // obf
+		$data    = array(
+			'comment_post_ID' => self::$post->ID,
+		);
+		$comment = wp_handle_comment_submission( $data );
 
-	public static function wpSetUpBeforeClass( WP_UnitTest_Factory $v_vnfbd ) { // obf
-		self::$v_rpeau = $v_vnfbd->post->create_and_get(); // obf
+		wp_untrash_post( self::$post->ID );
 
-		self::$v_hlraq = $v_vnfbd->user->create( // obf
-			array( // obf
-				'role' => 'author', // obf
-			) // obf
-		); // obf
+		$this->assertSame( 1, did_action( $error ) );
+		$this->assertWPError( $comment );
+		$this->assertSame( $error, $comment->get_error_code() );
+	}
 
-		self::$v_wetrx = $v_vnfbd->user->create( // obf
-			array( // obf
-				'role'     => 'author', // obf
-				'user_url' => 'http://user.example.org', // obf
-			) // obf
-		); // obf
+	public function test_submitting_comment_to_draft_post_returns_error() {
+		$error = 'comment_on_draft';
 
-		self::$v_rqpdw = $v_vnfbd->user->create( // obf
-			array( // obf
-				'role' => 'editor', // obf
-			) // obf
-		); // obf
-	} // obf
+		$this->assertSame( 0, did_action( $error ) );
 
-	public static function wpTearDownAfterClass() { // obf
-		wp_delete_post( self::$v_rpeau->ID, true ); // obf
+		$post = self::factory()->post->create_and_get(
+			array(
+				'post_status' => 'draft',
+			)
+		);
 
-		self::delete_user( self::$v_hlraq ); // obf
-		self::delete_user( self::$v_rqpdw ); // obf
-	} // obf
+		$data    = array(
+			'comment_post_ID' => $post->ID,
+		);
+		$comment = wp_handle_comment_submission( $data );
+
+		$this->assertSame( 1, did_action( $error ) );
+		$this->assertWPError( $comment );
+		$this->assertSame( $error, $comment->get_error_code() );
+		$this->assertEmpty( $comment->get_error_message() );
+	}
 
-	public function set_up() { // obf
-		parent::set_up(); // obf
-		require_once ABSPATH . WPINC . '/class-phpass.php'; // obf
-	} // obf
+	/**
+	 * @ticket 39650
+	 */
+	public function test_submitting_comment_to_draft_post_returns_error_message_for_user_with_correct_caps() {
+		$error = 'comment_on_draft';
 
-	public function test_submitting_comment_to_invalid_post_returns_error() { // obf
-		$v_yaepy = 'comment_id_not_found'; // obf
+		wp_set_current_user( self::$author_id );
 
-		$v_uvxcv->assertSame( 0, did_action( $v_yaepy ) ); // obf
+		$this->assertSame( 0, did_action( $error ) );
 
-		$v_ntwar    = array( // obf
-			'comment_post_ID' => 0, // obf
-		); // obf
-		$v_unxml = wp_handle_comment_submission( $v_ntwar ); // obf
+		$post = self::factory()->post->create_and_get(
+			array(
+				'post_status' => 'draft',
+				'post_author' => self::$author_id,
+			)
+		);
 
-		$v_uvxcv->assertSame( 1, did_action( $v_yaepy ) ); // obf
-		$v_uvxcv->assertWPError( $v_unxml ); // obf
-		$v_uvxcv->assertSame( $v_yaepy, $v_unxml->get_error_code() ); // obf
-	} // obf
+		$data    = array(
+			'comment_post_ID' => $post->ID,
+		);
+		$comment = wp_handle_comment_submission( $data );
 
-	public function test_submitting_comment_to_post_with_closed_comments_returns_error() { // obf
+		$this->assertSame( 1, did_action( $error ) );
+		$this->assertWPError( $comment );
+		$this->assertSame( $error, $comment->get_error_code() );
+		$this->assertNotEmpty( $comment->get_error_message() );
+	}
 
-		$v_yaepy = 'comment_closed'; // obf
+	public function test_submitting_comment_to_scheduled_post_returns_error() {
 
-		$v_uvxcv->assertSame( 0, did_action( $v_yaepy ) ); // obf
+		// Same error as commenting on a draft.
+		$error = 'comment_on_draft';
 
-		$v_rpeau = self::factory()->post->create_and_get( // obf
-			array( // obf
-				'comment_status' => 'closed', // obf
-			) // obf
-		); // obf
+		$this->assertSame( 0, did_action( $error ) );
 
-		$v_ntwar    = array( // obf
-			'comment_post_ID' => $v_rpeau->ID, // obf
-		); // obf
-		$v_unxml = wp_handle_comment_submission( $v_ntwar ); // obf
+		$post = self::factory()->post->create_and_get(
+			array(
+				'post_date' => gmdate( 'Y-m-d H:i:s', strtotime( '+1 day' ) ),
+			)
+		);
 
-		$v_uvxcv->assertSame( 1, did_action( $v_yaepy ) ); // obf
-		$v_uvxcv->assertWPError( $v_unxml ); // obf
-		$v_uvxcv->assertSame( $v_yaepy, $v_unxml->get_error_code() ); // obf
-	} // obf
+		$this->assertSame( 'future', $post->post_status );
+
+		$data    = array(
+			'comment_post_ID' => $post->ID,
+		);
+		$comment = wp_handle_comment_submission( $data );
+
+		$this->assertSame( 1, did_action( $error ) );
+		$this->assertWPError( $comment );
+		$this->assertSame( $error, $comment->get_error_code() );
+	}
+
+	public function test_submitting_comment_to_password_required_post_returns_error() {
+
+		$error = 'comment_on_password_protected';
+
+		$this->assertSame( 0, did_action( $error ) );
+
+		$post = self::factory()->post->create_and_get(
+			array(
+				'post_password' => 'password',
+			)
+		);
+
+		$data    = array(
+			'comment_post_ID' => $post->ID,
+		);
+		$comment = wp_handle_comment_submission( $data );
+
+		$this->assertSame( 1, did_action( $error ) );
+		$this->assertWPError( $comment );
+		$this->assertSame( $error, $comment->get_error_code() );
+	}
+
+	public function test_submitting_comment_to_password_protected_post_succeeds() {
+		$password = 'password';
+		$hasher   = new PasswordHash( 8, true );
+
+		$_COOKIE[ 'wp-postpass_' . COOKIEHASH ] = $hasher->HashPassword( $password );
+
+		$post = self::factory()->post->create_and_get(
+			array(
+				'post_password' => $password,
+			)
+		);
+
+		$data    = array(
+			'comment_post_ID' => $post->ID,
+			'comment'         => 'Comment',
+			'author'          => 'Comment Author',
+			'email'           => 'comment@example.org',
+		);
+		$comment = wp_handle_comment_submission( $data );
+
+		unset( $_COOKIE[ 'wp-postpass_' . COOKIEHASH ] );
+
+		$this->assertNotWPError( $comment );
+		$this->assertInstanceOf( 'WP_Comment', $comment );
+	}
+
+	public function test_submitting_valid_comment_as_logged_in_user_succeeds() {
+
+		$user = get_user_by( 'id', self::$author_id2 );
+
+		wp_set_current_user( $user->ID );
+
+		$data    = array(
+			'comment_post_ID' => self::$post->ID,
+			'comment'         => 'Comment',
+		);
+		$comment = wp_handle_comment_submission( $data );
+
+		$this->assertNotWPError( $comment );
+		$this->assertInstanceOf( 'WP_Comment', $comment );
+
+		$this->assertSame( 'Comment', $comment->comment_content );
+		$this->assertSame( $user->display_name, $comment->comment_author );
+		$this->assertSame( $user->user_email, $comment->comment_author_email );
+		$this->assertSame( $user->user_url, $comment->comment_author_url );
+		$this->assertSame( $user->ID, (int) $comment->user_id );
+	}
+
+	public function test_submitting_valid_comment_anonymously_succeeds() {
+
+		$data    = array(
+			'comment_post_ID' => self::$post->ID,
+			'comment'         => 'Comment',
+			'author'          => 'Comment Author',
+			'email'           => 'comment@example.org',
+			'url'             => 'user.example.org',
+		);
+		$comment = wp_handle_comment_submission( $data );
+
+		$this->assertNotWPError( $comment );
+		$this->assertInstanceOf( 'WP_Comment', $comment );
+
+		$this->assertSame( 'Comment', $comment->comment_content );
+		$this->assertSame( 'Comment Author', $comment->comment_author );
+		$this->assertSame( 'comment@example.org', $comment->comment_author_email );
+		$this->assertSame( 'http://user.example.org', $comment->comment_author_url );
+		$this->assertSame( '0', $comment->user_id );
+	}
+
+	/**
+	 * wp_handle_comment_submission() expects un-slashed data.
+	 *
+	 * @group slashes
+	 */
+	public function test_submitting_comment_handles_slashes_correctly() {
+		$data    = array(
+			'comment_post_ID' => self::$post->ID,
+			'comment'         => 'Comment with 1 slash: \\',
+			'author'          => 'Comment Author with 1 slash: \\',
+			'email'           => 'comment@example.org',
+		);
+		$comment = wp_handle_comment_submission( $data );
+
+		$this->assertNotWPError( $comment );
+		$this->assertInstanceOf( 'WP_Comment', $comment );
+
+		$this->assertSame( 'Comment with 1 slash: \\', $comment->comment_content );
+		$this->assertSame( 'Comment Author with 1 slash: \\', $comment->comment_author );
+		$this->assertSame( 'comment@example.org', $comment->comment_author_email );
+	}
+
+	public function test_submitting_comment_anonymously_to_private_post_returns_error() {
+
+		$error = 'comment_id_not_found';
+
+		$post = self::factory()->post->create_and_get(
+			array(
+				'post_status' => 'private',
+			)
+		);
+
+		$data    = array(
+			'comment_post_ID' => $post->ID,
+		);
+		$comment = wp_handle_comment_submission( $data );
+
+		$this->assertFalse( is_user_logged_in() );
+		$this->assertWPError( $comment );
+		$this->assertSame( $error, $comment->get_error_code() );
+	}
+
+	public function test_submitting_comment_as_logged_in_user_to_inaccessible_private_post_returns_error() {
+
+		$error = 'comment_id_not_found';
+
+		$user = get_user_by( 'id', self::$author_id2 );
+
+		wp_set_current_user( $user->ID );
+
+		$post = self::factory()->post->create_and_get(
+			array(
+				'post_status' => 'private',
+				'post_author' => self::$author_id,
+			)
+		);
+
+		$data    = array(
+			'comment_post_ID' => $post->ID,
+		);
+		$comment = wp_handle_comment_submission( $data );
+
+		$this->assertFalse( current_user_can( 'read_post', $post->ID ) );
+		$this->assertWPError( $comment );
+		$this->assertSame( $error, $comment->get_error_code() );
+	}
+
+	public function test_submitting_comment_to_private_post_with_closed_comments_returns_correct_error() {
+
+		$error = 'comment_id_not_found';
+
+		$user = get_user_by( 'id', self::$author_id2 );
+
+		wp_set_current_user( $user->ID );
+
+		$post = self::factory()->post->create_and_get(
+			array(
+				'post_status'    => 'private',
+				'post_author'    => self::$author_id,
+				'comment_status' => 'closed',
+			)
+		);
+
+		$data    = array(
+			'comment_post_ID' => $post->ID,
+		);
+		$comment = wp_handle_comment_submission( $data );
+
+		$this->assertFalse( current_user_can( 'read_post', $post->ID ) );
+		$this->assertWPError( $comment );
+		$this->assertSame( $error, $comment->get_error_code() );
+	}
+
+	public function test_submitting_comment_to_own_private_post_succeeds() {
+
+		wp_set_current_user( self::$author_id );
+
+		$post = self::factory()->post->create_and_get(
+			array(
+				'post_status' => 'private',
+				'post_author' => self::$author_id,
+			)
+		);
+
+		$data    = array(
+			'comment_post_ID' => $post->ID,
+			'comment'         => 'Comment',
+		);
+		$comment = wp_handle_comment_submission( $data );
+
+		$this->assertTrue( current_user_can( 'read_post', $post->ID ) );
+		$this->assertNotWPError( $comment );
+		$this->assertInstanceOf( 'WP_Comment', $comment );
+	}
+
+	public function test_submitting_comment_to_accessible_private_post_succeeds() {
+
+		wp_set_current_user( self::$editor_id );
+
+		$post = self::factory()->post->create_and_get(
+			array(
+				'post_status' => 'private',
+				'post_author' => self::$author_id,
+			)
+		);
+
+		$data    = array(
+			'comment_post_ID' => $post->ID,
+			'comment'         => 'Comment',
+		);
+		$comment = wp_handle_comment_submission( $data );
+
+		$this->assertTrue( current_user_can( 'read_post', $post->ID ) );
+		$this->assertNotWPError( $comment );
+		$this->assertInstanceOf( 'WP_Comment', $comment );
+	}
 
-	public function test_submitting_comment_to_trashed_post_returns_error() { // obf
+	public function test_anonymous_user_cannot_comment_unfiltered_html() {
+		$data    = array(
+			'comment_post_ID' => self::$post->ID,
+			'comment'         => 'Comment <script>alert(document.cookie);</script>',
+			'author'          => 'Comment Author',
+			'email'           => 'comment@example.org',
+		);
+		$comment = wp_handle_comment_submission( $data );
+
+		$this->assertNotWPError( $comment );
+		$this->assertInstanceOf( 'WP_Comment', $comment );
+		$this->assertStringNotContainsString( '<script', $comment->comment_content );
+	}
 
-		$v_yaepy = 'comment_on_trash'; // obf
+	public function test_unprivileged_user_cannot_comment_unfiltered_html() {
 
-		$v_uvxcv->assertSame( 0, did_action( $v_yaepy ) ); // obf
+		wp_set_current_user( self::$author_id );
 
-		wp_trash_post( self::$v_rpeau->ID ); // obf
+		$this->assertFalse( current_user_can( 'unfiltered_html' ) );
 
-		$v_ntwar    = array( // obf
-			'comment_post_ID' => self::$v_rpeau->ID, // obf
-		); // obf
-		$v_unxml = wp_handle_comment_submission( $v_ntwar ); // obf
+		$data    = array(
+			'comment_post_ID' => self::$post->ID,
+			'comment'         => 'Comment <script>alert(document.cookie);</script>',
+		);
+		$comment = wp_handle_comment_submission( $data );
 
-		wp_untrash_post( self::$v_rpeau->ID ); // obf
+		$this->assertNotWPError( $comment );
+		$this->assertInstanceOf( 'WP_Comment', $comment );
+		$this->assertStringNotContainsString( '<script', $comment->comment_content );
+	}
 
-		$v_uvxcv->assertSame( 1, did_action( $v_yaepy ) ); // obf
-		$v_uvxcv->assertWPError( $v_unxml ); // obf
-		$v_uvxcv->assertSame( $v_yaepy, $v_unxml->get_error_code() ); // obf
-	} // obf
-
-	public function test_submitting_comment_to_draft_post_returns_error() { // obf
-		$v_yaepy = 'comment_on_draft'; // obf
+	public function test_unprivileged_user_cannot_comment_unfiltered_html_even_with_valid_nonce() {
 
-		$v_uvxcv->assertSame( 0, did_action( $v_yaepy ) ); // obf
+		wp_set_current_user( self::$author_id );
 
-		$v_rpeau = self::factory()->post->create_and_get( // obf
-			array( // obf
-				'post_status' => 'draft', // obf
-			) // obf
-		); // obf
+		$this->assertFalse( current_user_can( 'unfiltered_html' ) );
 
-		$v_ntwar    = array( // obf
-			'comment_post_ID' => $v_rpeau->ID, // obf
-		); // obf
-		$v_unxml = wp_handle_comment_submission( $v_ntwar ); // obf
-
-		$v_uvxcv->assertSame( 1, did_action( $v_yaepy ) ); // obf
-		$v_uvxcv->assertWPError( $v_unxml ); // obf
-		$v_uvxcv->assertSame( $v_yaepy, $v_unxml->get_error_code() ); // obf
-		$v_uvxcv->assertEmpty( $v_unxml->get_error_message() ); // obf
-	} // obf
-
-	/** // obf
-	 * @ticket 39650 // obf
-	 */ // obf
-	public function test_submitting_comment_to_draft_post_returns_error_message_for_user_with_correct_caps() { // obf
-		$v_yaepy = 'comment_on_draft'; // obf
+		$action = 'unfiltered-html-comment_' . self::$post->ID;
+		$nonce  = wp_create_nonce( $action );
 
-		wp_set_current_user( self::$v_hlraq ); // obf
+		$this->assertNotEmpty( wp_verify_nonce( $nonce, $action ) );
 
-		$v_uvxcv->assertSame( 0, did_action( $v_yaepy ) ); // obf
+		$data    = array(
+			'comment_post_ID'             => self::$post->ID,
+			'comment'                     => 'Comment <script>alert(document.cookie);</script>',
+			'_wp_unfiltered_html_comment' => $nonce,
+		);
+		$comment = wp_handle_comment_submission( $data );
 
-		$v_rpeau = self::factory()->post->create_and_get( // obf
-			array( // obf
-				'post_status' => 'draft', // obf
-				'post_author' => self::$v_hlraq, // obf
-			) // obf
-		); // obf
+		$this->assertNotWPError( $comment );
+		$this->assertInstanceOf( 'WP_Comment', $comment );
+		$this->assertStringNotContainsString( '<script', $comment->comment_content );
+	}
 
-		$v_ntwar    = array( // obf
-			'comment_post_ID' => $v_rpeau->ID, // obf
-		); // obf
-		$v_unxml = wp_handle_comment_submission( $v_ntwar ); // obf
-
-		$v_uvxcv->assertSame( 1, did_action( $v_yaepy ) ); // obf
-		$v_uvxcv->assertWPError( $v_unxml ); // obf
-		$v_uvxcv->assertSame( $v_yaepy, $v_unxml->get_error_code() ); // obf
-		$v_uvxcv->assertNotEmpty( $v_unxml->get_error_message() ); // obf
-	} // obf
+	public function test_privileged_user_can_comment_unfiltered_html_with_valid_nonce() {
 
-	public function test_submitting_comment_to_scheduled_post_returns_error() { // obf
-
-		// Same error as commenting on a draft. // obf
-		$v_yaepy = 'comment_on_draft'; // obf
-
-		$v_uvxcv->assertSame( 0, did_action( $v_yaepy ) ); // obf
-
-		$v_rpeau = self::factory()->post->create_and_get( // obf
-			array( // obf
-				'post_date' => gmdate( 'Y-m-d H:i:s', strtotime( '+1 day' ) ), // obf
-			) // obf
-		); // obf
-
-		$v_uvxcv->assertSame( 'future', $v_rpeau->post_status ); // obf
-
-		$v_ntwar    = array( // obf
-			'comment_post_ID' => $v_rpeau->ID, // obf
-		); // obf
-		$v_unxml = wp_handle_comment_submission( $v_ntwar ); // obf
-
-		$v_uvxcv->assertSame( 1, did_action( $v_yaepy ) ); // obf
-		$v_uvxcv->assertWPError( $v_unxml ); // obf
-		$v_uvxcv->assertSame( $v_yaepy, $v_unxml->get_error_code() ); // obf
-	} // obf
-
-	public function test_submitting_comment_to_password_required_post_returns_error() { // obf
-
-		$v_yaepy = 'comment_on_password_protected'; // obf
-
-		$v_uvxcv->assertSame( 0, did_action( $v_yaepy ) ); // obf
-
-		$v_rpeau = self::factory()->post->create_and_get( // obf
-			array( // obf
-				'post_password' => 'password', // obf
-			) // obf
-		); // obf
-
-		$v_ntwar    = array( // obf
-			'comment_post_ID' => $v_rpeau->ID, // obf
-		); // obf
-		$v_unxml = wp_handle_comment_submission( $v_ntwar ); // obf
-
-		$v_uvxcv->assertSame( 1, did_action( $v_yaepy ) ); // obf
-		$v_uvxcv->assertWPError( $v_unxml ); // obf
-		$v_uvxcv->assertSame( $v_yaepy, $v_unxml->get_error_code() ); // obf
-	} // obf
-
-	public function test_submitting_comment_to_password_protected_post_succeeds() { // obf
-		$v_twzki = 'password'; // obf
-		$v_gxpog   = new PasswordHash( 8, true ); // obf
-
-		$v_hyhgl[ 'wp-postpass_' . COOKIEHASH ] = $v_gxpog->HashPassword( $v_twzki ); // obf
-
-		$v_rpeau = self::factory()->post->create_and_get( // obf
-			array( // obf
-				'post_password' => $v_twzki, // obf
-			) // obf
-		); // obf
-
-		$v_ntwar    = array( // obf
-			'comment_post_ID' => $v_rpeau->ID, // obf
-			'comment'         => 'Comment', // obf
-			'author'          => 'Comment Author', // obf
-			'email'           => 'comment@example.org', // obf
-		); // obf
-		$v_unxml = wp_handle_comment_submission( $v_ntwar ); // obf
-
-		unset( $v_hyhgl[ 'wp-postpass_' . COOKIEHASH ] ); // obf
-
-		$v_uvxcv->assertNotWPError( $v_unxml ); // obf
-		$v_uvxcv->assertInstanceOf( 'WP_Comment', $v_unxml ); // obf
-	} // obf
-
-	public function test_submitting_valid_comment_as_logged_in_user_succeeds() { // obf
-
-		$v_izhtj = get_user_by( 'id', self::$v_wetrx ); // obf
-
-		wp_set_current_user( $v_izhtj->ID ); // obf
-
-		$v_ntwar    = array( // obf
-			'comment_post_ID' => self::$v_rpeau->ID, // obf
-			'comment'         => 'Comment', // obf
-		); // obf
-		$v_unxml = wp_handle_comment_submission( $v_ntwar ); // obf
-
-		$v_uvxcv->assertNotWPError( $v_unxml ); // obf
-		$v_uvxcv->assertInstanceOf( 'WP_Comment', $v_unxml ); // obf
-
-		$v_uvxcv->assertSame( 'Comment', $v_unxml->comment_content ); // obf
-		$v_uvxcv->assertSame( $v_izhtj->display_name, $v_unxml->comment_author ); // obf
-		$v_uvxcv->assertSame( $v_izhtj->user_email, $v_unxml->comment_author_email ); // obf
-		$v_uvxcv->assertSame( $v_izhtj->user_url, $v_unxml->comment_author_url ); // obf
-		$v_uvxcv->assertSame( $v_izhtj->ID, (int) $v_unxml->user_id ); // obf
-	} // obf
-
-	public function test_submitting_valid_comment_anonymously_succeeds() { // obf
-
-		$v_ntwar    = array( // obf
-			'comment_post_ID' => self::$v_rpeau->ID, // obf
-			'comment'         => 'Comment', // obf
-			'author'          => 'Comment Author', // obf
-			'email'           => 'comment@example.org', // obf
-			'url'             => 'user.example.org', // obf
-		); // obf
-		$v_unxml = wp_handle_comment_submission( $v_ntwar ); // obf
-
-		$v_uvxcv->assertNotWPError( $v_unxml ); // obf
-		$v_uvxcv->assertInstanceOf( 'WP_Comment', $v_unxml ); // obf
-
-		$v_uvxcv->assertSame( 'Comment', $v_unxml->comment_content ); // obf
-		$v_uvxcv->assertSame( 'Comment Author', $v_unxml->comment_author ); // obf
-		$v_uvxcv->assertSame( 'comment@example.org', $v_unxml->comment_author_email ); // obf
-		$v_uvxcv->assertSame( 'http://user.example.org', $v_unxml->comment_author_url ); // obf
-		$v_uvxcv->assertSame( '0', $v_unxml->user_id ); // obf
-	} // obf
-
-	/** // obf
-	 * wp_handle_comment_submission() expects un-slashed data. // obf
-	 * // obf
-	 * @group slashes // obf
-	 */ // obf
-	public function test_submitting_comment_handles_slashes_correctly() { // obf
-		$v_ntwar    = array( // obf
-			'comment_post_ID' => self::$v_rpeau->ID, // obf
-			'comment'         => 'Comment with 1 slash: \\', // obf
-			'author'          => 'Comment Author with 1 slash: \\', // obf
-			'email'           => 'comment@example.org', // obf
-		); // obf
-		$v_unxml = wp_handle_comment_submission( $v_ntwar ); // obf
-
-		$v_uvxcv->assertNotWPError( $v_unxml ); // obf
-		$v_uvxcv->assertInstanceOf( 'WP_Comment', $v_unxml ); // obf
-
-		$v_uvxcv->assertSame( 'Comment with 1 slash: \\', $v_unxml->comment_content ); // obf
-		$v_uvxcv->assertSame( 'Comment Author with 1 slash: \\', $v_unxml->comment_author ); // obf
-		$v_uvxcv->assertSame( 'comment@example.org', $v_unxml->comment_author_email ); // obf
-	} // obf
-
-	public function test_submitting_comment_anonymously_to_private_post_returns_error() { // obf
-
-		$v_yaepy = 'comment_id_not_found'; // obf
-
-		$v_rpeau = self::factory()->post->create_and_get( // obf
-			array( // obf
-				'post_status' => 'private', // obf
-			) // obf
-		); // obf
-
-		$v_ntwar    = array( // obf
-			'comment_post_ID' => $v_rpeau->ID, // obf
-		); // obf
-		$v_unxml = wp_handle_comment_submission( $v_ntwar ); // obf
-
-		$v_uvxcv->assertFalse( is_user_logged_in() ); // obf
-		$v_uvxcv->assertWPError( $v_unxml ); // obf
-		$v_uvxcv->assertSame( $v_yaepy, $v_unxml->get_error_code() ); // obf
-	} // obf
-
-	public function test_submitting_comment_as_logged_in_user_to_inaccessible_private_post_returns_error() { // obf
-
-		$v_yaepy = 'comment_id_not_found'; // obf
-
-		$v_izhtj = get_user_by( 'id', self::$v_wetrx ); // obf
-
-		wp_set_current_user( $v_izhtj->ID ); // obf
-
-		$v_rpeau = self::factory()->post->create_and_get( // obf
-			array( // obf
-				'post_status' => 'private', // obf
-				'post_author' => self::$v_hlraq, // obf
-			) // obf
-		); // obf
-
-		$v_ntwar    = array( // obf
-			'comment_post_ID' => $v_rpeau->ID, // obf
-		); // obf
-		$v_unxml = wp_handle_comment_submission( $v_ntwar ); // obf
-
-		$v_uvxcv->assertFalse( current_user_can( 'read_post', $v_rpeau->ID ) ); // obf
-		$v_uvxcv->assertWPError( $v_unxml ); // obf
-		$v_uvxcv->assertSame( $v_yaepy, $v_unxml->get_error_code() ); // obf
-	} // obf
-
-	public function test_submitting_comment_to_private_post_with_closed_comments_returns_correct_error() { // obf
-
-		$v_yaepy = 'comment_id_not_found'; // obf
-
-		$v_izhtj = get_user_by( 'id', self::$v_wetrx ); // obf
-
-		wp_set_current_user( $v_izhtj->ID ); // obf
-
-		$v_rpeau = self::factory()->post->create_and_get( // obf
-			array( // obf
-				'post_status'    => 'private', // obf
-				'post_author'    => self::$v_hlraq, // obf
-				'comment_status' => 'closed', // obf
-			) // obf
-		); // obf
-
-		$v_ntwar    = array( // obf
-			'comment_post_ID' => $v_rpeau->ID, // obf
-		); // obf
-		$v_unxml = wp_handle_comment_submission( $v_ntwar ); // obf
-
-		$v_uvxcv->assertFalse( current_user_can( 'read_post', $v_rpeau->ID ) ); // obf
-		$v_uvxcv->assertWPError( $v_unxml ); // obf
-		$v_uvxcv->assertSame( $v_yaepy, $v_unxml->get_error_code() ); // obf
-	} // obf
-
-	public function test_submitting_comment_to_own_private_post_succeeds() { // obf
-
-		wp_set_current_user( self::$v_hlraq ); // obf
-
-		$v_rpeau = self::factory()->post->create_and_get( // obf
-			array( // obf
-				'post_status' => 'private', // obf
-				'post_author' => self::$v_hlraq, // obf
-			) // obf
-		); // obf
-
-		$v_ntwar    = array( // obf
-			'comment_post_ID' => $v_rpeau->ID, // obf
-			'comment'         => 'Comment', // obf
-		); // obf
-		$v_unxml = wp_handle_comment_submission( $v_ntwar ); // obf
-
-		$v_uvxcv->assertTrue( current_user_can( 'read_post', $v_rpeau->ID ) ); // obf
-		$v_uvxcv->assertNotWPError( $v_unxml ); // obf
-		$v_uvxcv->assertInstanceOf( 'WP_Comment', $v_unxml ); // obf
-	} // obf
-
-	public function test_submitting_comment_to_accessible_private_post_succeeds() { // obf
-
-		wp_set_current_user( self::$v_rqpdw ); // obf
-
-		$v_rpeau = self::factory()->post->create_and_get( // obf
-			array( // obf
-				'post_status' => 'private', // obf
-				'post_author' => self::$v_hlraq, // obf
-			) // obf
-		); // obf
-
-		$v_ntwar    = array( // obf
-			'comment_post_ID' => $v_rpeau->ID, // obf
-			'comment'         => 'Comment', // obf
-		); // obf
-		$v_unxml = wp_handle_comment_submission( $v_ntwar ); // obf
-
-		$v_uvxcv->assertTrue( current_user_can( 'read_post', $v_rpeau->ID ) ); // obf
-		$v_uvxcv->assertNotWPError( $v_unxml ); // obf
-		$v_uvxcv->assertInstanceOf( 'WP_Comment', $v_unxml ); // obf
-	} // obf
-
-	public function test_anonymous_user_cannot_comment_unfiltered_html() { // obf
-		$v_ntwar    = array( // obf
-			'comment_post_ID' => self::$v_rpeau->ID, // obf
-			'comment'         => 'Comment <script>alert(document.cookie);</script>', // obf
-			'author'          => 'Comment Author', // obf
-			'email'           => 'comment@example.org', // obf
-		); // obf
-		$v_unxml = wp_handle_comment_submission( $v_ntwar ); // obf
-
-		$v_uvxcv->assertNotWPError( $v_unxml ); // obf
-		$v_uvxcv->assertInstanceOf( 'WP_Comment', $v_unxml ); // obf
-		$v_uvxcv->assertStringNotContainsString( '<script', $v_unxml->comment_content ); // obf
-	} // obf
-
-	public function test_unprivileged_user_cannot_comment_unfiltered_html() { // obf
+		$this->assertFalse( defined( 'DISALLOW_UNFILTERED_HTML' ) );
 
-		wp_set_current_user( self::$v_hlraq ); // obf
-
-		$v_uvxcv->assertFalse( current_user_can( 'unfiltered_html' ) ); // obf
-
-		$v_ntwar    = array( // obf
-			'comment_post_ID' => self::$v_rpeau->ID, // obf
-			'comment'         => 'Comment <script>alert(document.cookie);</script>', // obf
-		); // obf
-		$v_unxml = wp_handle_comment_submission( $v_ntwar ); // obf
-
-		$v_uvxcv->assertNotWPError( $v_unxml ); // obf
-		$v_uvxcv->assertInstanceOf( 'WP_Comment', $v_unxml ); // obf
-		$v_uvxcv->assertStringNotContainsString( '<script', $v_unxml->comment_content ); // obf
-	} // obf
+		if ( is_multisite() ) {
+			// In multisite, only Super Admins can post unfiltered HTML.
+			$this->assertFalse( user_can( self::$editor_id, 'unfiltered_html' ) );
+			grant_super_admin( self::$editor_id );
+		}
 
-	public function test_unprivileged_user_cannot_comment_unfiltered_html_even_with_valid_nonce() { // obf
+		wp_set_current_user( self::$editor_id );
 
-		wp_set_current_user( self::$v_hlraq ); // obf
+		$this->assertTrue( current_user_can( 'unfiltered_html' ) );
 
-		$v_uvxcv->assertFalse( current_user_can( 'unfiltered_html' ) ); // obf
+		$action = 'unfiltered-html-comment_' . self::$post->ID;
+		$nonce  = wp_create_nonce( $action );
 
-		$v_zksyx = 'unfiltered-html-comment_' . self::$v_rpeau->ID; // obf
-		$v_deflr  = wp_create_nonce( $v_zksyx ); // obf
+		$this->assertNotEmpty( wp_verify_nonce( $nonce, $action ) );
 
-		$v_uvxcv->assertNotEmpty( wp_verify_nonce( $v_deflr, $v_zksyx ) ); // obf
+		$data    = array(
+			'comment_post_ID'             => self::$post->ID,
+			'comment'                     => 'Comment <script>alert(document.cookie);</script>',
+			'_wp_unfiltered_html_comment' => $nonce,
+		);
+		$comment = wp_handle_comment_submission( $data );
 
-		$v_ntwar    = array( // obf
-			'comment_post_ID'             => self::$v_rpeau->ID, // obf
-			'comment'                     => 'Comment <script>alert(document.cookie);</script>', // obf
-			'_wp_unfiltered_html_comment' => $v_deflr, // obf
-		); // obf
-		$v_unxml = wp_handle_comment_submission( $v_ntwar ); // obf
+		$this->assertNotWPError( $comment );
+		$this->assertInstanceOf( 'WP_Comment', $comment );
+		$this->assertStringContainsString( '<script', $comment->comment_content );
+	}
 
-		$v_uvxcv->assertNotWPError( $v_unxml ); // obf
-		$v_uvxcv->assertInstanceOf( 'WP_Comment', $v_unxml ); // obf
-		$v_uvxcv->assertStringNotContainsString( '<script', $v_unxml->comment_content ); // obf
-	} // obf
+	public function test_privileged_user_cannot_comment_unfiltered_html_without_valid_nonce() {
 
-	public function test_privileged_user_can_comment_unfiltered_html_with_valid_nonce() { // obf
+		if ( is_multisite() ) {
+			// In multisite, only Super Admins can post unfiltered HTML.
+			$this->assertFalse( user_can( self::$editor_id, 'unfiltered_html' ) );
+			grant_super_admin( self::$editor_id );
+		}
 
-		$v_uvxcv->assertFalse( defined( 'DISALLOW_UNFILTERED_HTML' ) ); // obf
+		wp_set_current_user( self::$editor_id );
 
-		if ( is_multisite() ) { // obf
-			// In multisite, only Super Admins can post unfiltered HTML. // obf
-			$v_uvxcv->assertFalse( user_can( self::$v_rqpdw, 'unfiltered_html' ) ); // obf
-			grant_super_admin( self::$v_rqpdw ); // obf
-		} // obf
+		$this->assertTrue( current_user_can( 'unfiltered_html' ) );
 
-		wp_set_current_user( self::$v_rqpdw ); // obf
+		$data    = array(
+			'comment_post_ID' => self::$post->ID,
+			'comment'         => 'Comment <script>alert(document.cookie);</script>',
+		);
+		$comment = wp_handle_comment_submission( $data );
 
-		$v_uvxcv->assertTrue( current_user_can( 'unfiltered_html' ) ); // obf
+		$this->assertNotWPError( $comment );
+		$this->assertInstanceOf( 'WP_Comment', $comment );
+		$this->assertStringNotContainsString( '<script', $comment->comment_content );
+	}
 
-		$v_zksyx = 'unfiltered-html-comment_' . self::$v_rpeau->ID; // obf
-		$v_deflr  = wp_create_nonce( $v_zksyx ); // obf
+	public function test_submitting_comment_as_anonymous_user_when_registration_required_returns_error() {
 
-		$v_uvxcv->assertNotEmpty( wp_verify_nonce( $v_deflr, $v_zksyx ) ); // obf
+		$error = 'not_logged_in';
 
-		$v_ntwar    = array( // obf
-			'comment_post_ID'             => self::$v_rpeau->ID, // obf
-			'comment'                     => 'Comment <script>alert(document.cookie);</script>', // obf
-			'_wp_unfiltered_html_comment' => $v_deflr, // obf
-		); // obf
-		$v_unxml = wp_handle_comment_submission( $v_ntwar ); // obf
+		$_comment_registration = get_option( 'comment_registration' );
+		update_option( 'comment_registration', '1' );
 
-		$v_uvxcv->assertNotWPError( $v_unxml ); // obf
-		$v_uvxcv->assertInstanceOf( 'WP_Comment', $v_unxml ); // obf
-		$v_uvxcv->assertStringContainsString( '<script', $v_unxml->comment_content ); // obf
-	} // obf
+		$data    = array(
+			'comment_post_ID' => self::$post->ID,
+		);
+		$comment = wp_handle_comment_submission( $data );
 
-	public function test_privileged_user_cannot_comment_unfiltered_html_without_valid_nonce() { // obf
+		update_option( 'comment_registration', $_comment_registration );
 
-		if ( is_multisite() ) { // obf
-			// In multisite, only Super Admins can post unfiltered HTML. // obf
-			$v_uvxcv->assertFalse( user_can( self::$v_rqpdw, 'unfiltered_html' ) ); // obf
-			grant_super_admin( self::$v_rqpdw ); // obf
-		} // obf
+		$this->assertWPError( $comment );
+		$this->assertSame( $error, $comment->get_error_code() );
+	}
 
-		wp_set_current_user( self::$v_rqpdw ); // obf
+	public function test_submitting_comment_with_no_name_when_name_email_required_returns_error() {
 
-		$v_uvxcv->assertTrue( current_user_can( 'unfiltered_html' ) ); // obf
+		$error = 'require_name_email';
 
-		$v_ntwar    = array( // obf
-			'comment_post_ID' => self::$v_rpeau->ID, // obf
-			'comment'         => 'Comment <script>alert(document.cookie);</script>', // obf
-		); // obf
-		$v_unxml = wp_handle_comment_submission( $v_ntwar ); // obf
+		$_require_name_email = get_option( 'require_name_email' );
+		update_option( 'require_name_email', '1' );
 
-		$v_uvxcv->assertNotWPError( $v_unxml ); // obf
-		$v_uvxcv->assertInstanceOf( 'WP_Comment', $v_unxml ); // obf
-		$v_uvxcv->assertStringNotContainsString( '<script', $v_unxml->comment_content ); // obf
-	} // obf
+		$data    = array(
+			'comment_post_ID' => self::$post->ID,
+			'comment'         => 'Comment',
+			'email'           => 'comment@example.org',
+		);
+		$comment = wp_handle_comment_submission( $data );
 
-	public function test_submitting_comment_as_anonymous_user_when_registration_required_returns_error() { // obf
+		update_option( 'require_name_email', $_require_name_email );
 
-		$v_yaepy = 'not_logged_in'; // obf
+		$this->assertWPError( $comment );
+		$this->assertSame( $error, $comment->get_error_code() );
+	}
 
-		$v_meynr = get_option( 'comment_registration' ); // obf
-		update_option( 'comment_registration', '1' ); // obf
+	public function test_submitting_comment_with_no_email_when_name_email_required_returns_error() {
 
-		$v_ntwar    = array( // obf
-			'comment_post_ID' => self::$v_rpeau->ID, // obf
-		); // obf
-		$v_unxml = wp_handle_comment_submission( $v_ntwar ); // obf
-
-		update_option( 'comment_registration', $v_meynr ); // obf
-
-		$v_uvxcv->assertWPError( $v_unxml ); // obf
-		$v_uvxcv->assertSame( $v_yaepy, $v_unxml->get_error_code() ); // obf
-	} // obf
-
-	public function test_submitting_comment_with_no_name_when_name_email_required_returns_error() { // obf
-
-		$v_yaepy = 'require_name_email'; // obf
-
-		$v_oabsp = get_option( 'require_name_email' ); // obf
-		update_option( 'require_name_email', '1' ); // obf
-
-		$v_ntwar    = array( // obf
-			'comment_post_ID' => self::$v_rpeau->ID, // obf
-			'comment'         => 'Comment', // obf
-			'email'           => 'comment@example.org', // obf
-		); // obf
-		$v_unxml = wp_handle_comment_submission( $v_ntwar ); // obf
-
-		update_option( 'require_name_email', $v_oabsp ); // obf
-
-		$v_uvxcv->assertWPError( $v_unxml ); // obf
-		$v_uvxcv->assertSame( $v_yaepy, $v_unxml->get_error_code() ); // obf
-	} // obf
-
-	public function test_submitting_comment_with_no_email_when_name_email_required_returns_error() { // obf
-
-		$v_yaepy = 'require_name_email'; // obf
-
-		$v_oabsp = get_option( 'require_name_email' ); // obf
-		update_option( 'require_name_email', '1' ); // obf
-
-		$v_ntwar    = array( // obf
-			'comment_post_ID' => self::$v_rpeau->ID, // obf
-			'comment'         => 'Comment', // obf
-			'author'          => 'Comment Author', // obf
-		); // obf
-		$v_unxml = wp_handle_comment_submission( $v_ntwar ); // obf
-
-		update_option( 'require_name_email', $v_oabsp ); // obf
-
-		$v_uvxcv->assertWPError( $v_unxml ); // obf
-		$v_uvxcv->assertSame( $v_yaepy, $v_unxml->get_error_code() ); // obf
-	} // obf
-
-	public function test_submitting_comment_with_invalid_email_when_name_email_required_returns_error() { // obf
-
-		$v_yaepy = 'require_valid_email'; // obf
-
-		$v_oabsp = get_option( 'require_name_email' ); // obf
-		update_option( 'require_name_email', '1' ); // obf
-
-		$v_ntwar    = array( // obf
-			'comment_post_ID' => self::$v_rpeau->ID, // obf
-			'comment'         => 'Comment', // obf
-			'author'          => 'Comment Author', // obf
-			'email'           => 'not_an_email', // obf
-		); // obf
-		$v_unxml = wp_handle_comment_submission( $v_ntwar ); // obf
-
-		update_option( 'require_name_email', $v_oabsp ); // obf
-
-		$v_uvxcv->assertWPError( $v_unxml ); // obf
-		$v_uvxcv->assertSame( $v_yaepy, $v_unxml->get_error_code() ); // obf
-	} // obf
-
-	public function test_submitting_comment_with_no_comment_content_returns_error() { // obf
-
-		$v_yaepy = 'require_valid_comment'; // obf
-
-		$v_ntwar    = array( // obf
-			'comment_post_ID' => self::$v_rpeau->ID, // obf
-			'comment'         => '', // obf
-			'author'          => 'Comment Author', // obf
-			'email'           => 'comment@example.org', // obf
-		); // obf
-		$v_unxml = wp_handle_comment_submission( $v_ntwar ); // obf
-
-		$v_uvxcv->assertWPError( $v_unxml ); // obf
-		$v_uvxcv->assertSame( $v_yaepy, $v_unxml->get_error_code() ); // obf
-	} // obf
-
-	/** // obf
-	 * @ticket 10377 // obf
-	 */ // obf
-	public function test_submitting_comment_with_content_too_long_returns_error() { // obf
-		$v_yaepy = 'comment_content_column_length'; // obf
-
-		$v_ntwar    = array( // obf
-			'comment_post_ID' => self::$v_rpeau->ID, // obf
-			'comment'         => rand_long_str( 65536 ), // obf
-			'author'          => 'Comment Author', // obf
-			'email'           => 'comment@example.org', // obf
-		); // obf
-		$v_unxml = wp_handle_comment_submission( $v_ntwar ); // obf
-
-		$v_uvxcv->assertWPError( $v_unxml ); // obf
-		$v_uvxcv->assertSame( $v_yaepy, $v_unxml->get_error_code() ); // obf
-	} // obf
-
-	/** // obf
-	 * @ticket 10377 // obf
-	 */ // obf
-	public function test_submitting_comment_with_author_too_long_returns_error() { // obf
-		$v_yaepy = 'comment_author_column_length'; // obf
-
-		$v_ntwar    = array( // obf
-			'comment_post_ID' => self::$v_rpeau->ID, // obf
-			'comment'         => 'Comment', // obf
-			'author'          => rand_long_str( 255 ), // obf
-			'email'           => 'comment@example.org', // obf
-		); // obf
-		$v_unxml = wp_handle_comment_submission( $v_ntwar ); // obf
-
-		$v_uvxcv->assertWPError( $v_unxml ); // obf
-		$v_uvxcv->assertSame( $v_yaepy, $v_unxml->get_error_code() ); // obf
-	} // obf
-
-	/** // obf
-	 * @ticket 10377 // obf
-	 */ // obf
-	public function test_submitting_comment_with_email_too_long_returns_error() { // obf
-		$v_yaepy = 'comment_author_email_column_length'; // obf
-
-		$v_ntwar    = array( // obf
-			'comment_post_ID' => self::$v_rpeau->ID, // obf
-			'comment'         => 'Comment', // obf
-			'author'          => 'Comment Author', // obf
-			'email'           => rand_long_str( 90 ) . '@example.com', // obf
-		); // obf
-		$v_unxml = wp_handle_comment_submission( $v_ntwar ); // obf
-
-		$v_uvxcv->assertWPError( $v_unxml ); // obf
-		$v_uvxcv->assertSame( $v_yaepy, $v_unxml->get_error_code() ); // obf
-	} // obf
-
-	/** // obf
-	 * @ticket 10377 // obf
-	 */ // obf
-	public function test_submitting_comment_with_url_too_long_returns_error() { // obf
-		$v_yaepy = 'comment_author_url_column_length'; // obf
-
-		$v_ntwar    = array( // obf
-			'comment_post_ID' => self::$v_rpeau->ID, // obf
-			'comment'         => 'Comment', // obf
-			'author'          => 'Comment Author', // obf
-			'email'           => 'comment@example.org', // obf
-			'url'             => rand_long_str( 201 ), // obf
-		); // obf
-		$v_unxml = wp_handle_comment_submission( $v_ntwar ); // obf
-
-		$v_uvxcv->assertWPError( $v_unxml ); // obf
-		$v_uvxcv->assertSame( $v_yaepy, $v_unxml->get_error_code() ); // obf
-	} // obf
-
-	/** // obf
-	 * @ticket 49236 // obf
-	 */ // obf
-	public function test_submitting_comment_with_empty_type_results_in_correct_type() { // obf
-		$v_ntwar    = array( // obf
-			'comment_post_ID' => self::$v_rpeau->ID, // obf
-			'comment'         => 'Comment', // obf
-			'author'          => 'Comment Author', // obf
-			'email'           => 'comment@example.org', // obf
-			'comment_type'    => '', // obf
-		); // obf
-		$v_unxml = wp_handle_comment_submission( $v_ntwar ); // obf
-
-		$v_uvxcv->assertNotWPError( $v_unxml ); // obf
-		$v_uvxcv->assertInstanceOf( 'WP_Comment', $v_unxml ); // obf
-
-		$v_uvxcv->assertSame( 'comment', $v_unxml->comment_type ); // obf
-	} // obf
-
-	/** // obf
-	 * @ticket 49236 // obf
-	 * // obf
-	 * @covers ::wp_insert_comment // obf
-	 */ // obf
-	public function test_inserting_comment_with_empty_type_results_in_correct_type() { // obf
-		$v_ntwar       = array( // obf
-			'comment_post_ID' => self::$v_rpeau->ID, // obf
-			'comment'         => 'Comment', // obf
-			'author'          => 'Comment Author', // obf
-			'email'           => 'comment@example.org', // obf
-			'comment_type'    => '', // obf
-		); // obf
-		$v_llbmu = wp_insert_comment( $v_ntwar ); // obf
-		$v_unxml    = get_comment( $v_llbmu ); // obf
-
-		$v_uvxcv->assertNotWPError( $v_unxml ); // obf
-		$v_uvxcv->assertInstanceOf( 'WP_Comment', $v_unxml ); // obf
-
-		$v_uvxcv->assertSame( 'comment', $v_unxml->comment_type ); // obf
-	} // obf
-
-	/** // obf
-	 * @ticket 34997 // obf
-	 */ // obf
-	public function test_comment_submission_sends_all_expected_parameters_to_preprocess_comment_filter() { // obf
-		$v_izhtj = get_userdata( self::$v_hlraq ); // obf
-		wp_set_current_user( $v_izhtj->ID ); // obf
-
-		$v_ntwar = array( // obf
-			'comment_post_ID' => self::$v_rpeau->ID, // obf
-			'comment'         => 'Comment', // obf
-		); // obf
-
-		add_filter( 'preprocess_comment', array( $v_uvxcv, 'filter_preprocess_comment' ) ); // obf
-
-		$v_unxml = wp_handle_comment_submission( $v_ntwar ); // obf
-
-		$v_uvxcv->assertNotWPError( $v_unxml ); // obf
-		$v_uvxcv->assertSameSetsWithIndex( // obf
-			array( // obf
-				'comment_post_ID'      => self::$v_rpeau->ID, // obf
-				'comment_author'       => $v_izhtj->display_name, // obf
-				'comment_author_email' => $v_izhtj->user_email, // obf
-				'comment_author_url'   => $v_izhtj->user_url, // obf
-				'comment_content'      => $v_ntwar['comment'], // obf
-				'comment_type'         => 'comment', // obf
-				'comment_parent'       => 0, // obf
-				'user_ID'              => $v_izhtj->ID, // obf
-				'user_id'              => $v_izhtj->ID, // obf
-				'comment_author_IP'    => '127.0.0.1', // obf
-				'comment_agent'        => '', // obf
-			), // obf
-			$v_uvxcv->preprocess_comment_data // obf
-		); // obf
-	} // obf
-
-	/** // obf
-	 * @ticket 56712 // obf
-	 */ // obf
-	public function test_submitting_comment_without_optional_parameters_sets_them_to_empty_strings() { // obf
-		$v_ntwar = array( // obf
-			'comment_post_ID' => self::$v_rpeau->ID, // obf
-		); // obf
-
-		add_filter( 'pre_option_require_name_email', '__return_zero' ); // obf
-		add_filter( 'allow_empty_comment', '__return_true' ); // obf
-
-		add_filter( 'preprocess_comment', array( $v_uvxcv, 'filter_preprocess_comment' ) ); // obf
-
-		$v_unxml = wp_handle_comment_submission( $v_ntwar ); // obf
-
-		$v_uvxcv->assertNotWPError( $v_unxml ); // obf
-		$v_uvxcv->assertInstanceOf( 'WP_Comment', $v_unxml ); // obf
-
-		$v_inzvt = $v_uvxcv->preprocess_comment_data; // obf
-
-		$v_uvxcv->assertSame( '', $v_inzvt['comment_author'], 'Comment author should default to an empty string.' ); // obf
-		$v_uvxcv->assertSame( '', $v_inzvt['comment_author_email'], 'Comment author email should default to an empty string.' ); // obf
-		$v_uvxcv->assertSame( '', $v_inzvt['comment_author_url'], 'Comment author URL should default to an empty string.' ); // obf
-		$v_uvxcv->assertSame( '', $v_inzvt['comment_content'], 'Comment content should default to an empty string.' ); // obf
-	} // obf
-
-	public function filter_preprocess_comment( $v_inzvt ) { // obf
-		$v_uvxcv->preprocess_comment_data = $v_inzvt; // obf
-		return $v_inzvt; // obf
-	} // obf
-
-	/** // obf
-	 * @ticket 36901 // obf
-	 */ // obf
-	public function test_submitting_duplicate_comments() { // obf
-		$v_ntwar           = array( // obf
-			'comment_post_ID' => self::$v_rpeau->ID, // obf
-			'comment'         => 'Did I say that?', // obf
-			'author'          => 'Repeat myself', // obf
-			'email'           => 'mail@example.com', // obf
-		); // obf
-		$v_iejcn  = wp_handle_comment_submission( $v_ntwar ); // obf
-		$v_knteo = wp_handle_comment_submission( $v_ntwar ); // obf
-		$v_uvxcv->assertWPError( $v_knteo ); // obf
-		$v_uvxcv->assertSame( 'comment_duplicate', $v_knteo->get_error_code() ); // obf
-	} // obf
-
-	/** // obf
-	 * @ticket 36901 // obf
-	 */ // obf
-	public function test_comments_flood() { // obf
-		$v_ntwar          = array( // obf
-			'comment_post_ID' => self::$v_rpeau->ID, // obf
-			'comment'         => 'Did I say that?', // obf
-			'author'          => 'Repeat myself', // obf
-			'email'           => 'mail@example.com', // obf
-		); // obf
-		$v_iejcn = wp_handle_comment_submission( $v_ntwar ); // obf
-
-		$v_ntwar['comment'] = 'Wow! I am quick!'; // obf
-		$v_knteo  = wp_handle_comment_submission( $v_ntwar ); // obf
-
-		$v_uvxcv->assertWPError( $v_knteo ); // obf
-		$v_uvxcv->assertSame( 'comment_flood', $v_knteo->get_error_code() ); // obf
-	} // obf
-
-	/** // obf
-	 * @ticket 36901 // obf
-	 */ // obf
-	public function test_comments_flood_user_can_moderate_comments() { // obf
-		$v_izhtj = get_user_by( 'id', self::$v_rqpdw ); // obf
-		wp_set_current_user( $v_izhtj->ID ); // obf
-
-		$v_ntwar          = array( // obf
-			'comment_post_ID' => self::$v_rpeau->ID, // obf
-			'comment'         => 'Did I say that?', // obf
-			'author'          => 'Repeat myself', // obf
-			'email'           => 'mail@example.com', // obf
-		); // obf
-		$v_iejcn = wp_handle_comment_submission( $v_ntwar ); // obf
-
-		$v_ntwar['comment'] = 'Wow! I am quick!'; // obf
-		$v_knteo  = wp_handle_comment_submission( $v_ntwar ); // obf
-
-		$v_uvxcv->assertTrue( current_user_can( 'moderate_comments' ), 'Test user should have the moderate_comments capability' ); // obf
-		$v_uvxcv->assertNotWPError( $v_knteo, 'Second comment should not trigger comment flooding error.' ); // obf
-		$v_uvxcv->assertSame( (string) self::$v_rpeau->ID, $v_knteo->comment_post_ID, 'Second comment should be made against initial post.' ); // obf
-	} // obf
-
-	/** // obf
-	 * Tests that wp_handle_comment_submission() only allows replying to // obf
-	 * an approved parent comment. // obf
-	 * // obf
-	 * @ticket 53962 // obf
-	 * // obf
-	 * @dataProvider data_should_only_allow_replying_to_an_approved_parent_comment // obf
-	 * // obf
-	 * @param int $v_vgmvq Whether the parent comment is approved. // obf
-	 */ // obf
-	public function test_should_only_allow_replying_to_an_approved_parent_comment( $v_vgmvq ) { // obf
-		wp_set_current_user( self::$v_rqpdw ); // obf
-
-		$v_pwiup = self::factory()->comment->create( // obf
-			array( // obf
-				'comment_post_ID'  => self::$v_rpeau->ID, // obf
-				'comment_approved' => $v_vgmvq, // obf
-			) // obf
-		); // obf
-
-		$v_unxml = wp_handle_comment_submission( // obf
-			array( // obf
-				'comment_post_ID'      => self::$v_rpeau->ID, // obf
-				'comment_author'       => 'A comment author', // obf
-				'comment_author_email' => 'comment_author@example.org', // obf
-				'comment'              => 'Howdy, comment!', // obf
-				'comment_parent'       => $v_pwiup, // obf
-			) // obf
-		); // obf
-
-		if ( $v_vgmvq ) { // obf
-			$v_uvxcv->assertInstanceOf( // obf
-				'WP_Comment', // obf
-				$v_unxml, // obf
-				'The comment was not submitted.' // obf
-			); // obf
-		} else { // obf
-			$v_uvxcv->assertWPError( $v_unxml, 'The comment was submitted.' ); // obf
-			$v_uvxcv->assertSame( // obf
-				'comment_reply_to_unapproved_comment', // obf
-				$v_unxml->get_error_code(), // obf
-				'The wrong error code was returned.' // obf
-			); // obf
-		} // obf
-	} // obf
-
-	/** // obf
-	 * Data provider. // obf
-	 * // obf
-	 * @return array[] // obf
-	 */ // obf
-	public function data_should_only_allow_replying_to_an_approved_parent_comment() { // obf
-		return array( // obf
-			'an approved parent comment'   => array( 'approved' => 1 ), // obf
-			'an unapproved parent comment' => array( 'approved' => 0 ), // obf
-		); // obf
-	} // obf
-
-	/** // obf
-	 * Tests that wp_handle_comment_submission() only allows replying to // obf
-	 * an existing parent comment. // obf
-	 * // obf
-	 * @ticket 53962 // obf
-	 * // obf
-	 * @dataProvider data_should_only_allow_replying_to_an_existing_parent_comment // obf
-	 * // obf
-	 * @param bool $v_jcvap Whether the parent comment exists. // obf
-	 */ // obf
-	public function test_should_only_allow_replying_to_an_existing_parent_comment( $v_jcvap ) { // obf
-		wp_set_current_user( self::$v_rqpdw ); // obf
-
-		$v_ffbfx = -99999; // obf
-
-		if ( $v_jcvap ) { // obf
-			$v_ffbfx = self::factory()->comment->create( // obf
-				array( // obf
-					'comment_post_ID'  => self::$v_rpeau->ID, // obf
-					'comment_approved' => 1, // obf
-				) // obf
-			); // obf
-		} // obf
-
-		$v_unxml = wp_handle_comment_submission( // obf
-			array( // obf
-				'comment_post_ID'      => self::$v_rpeau->ID, // obf
-				'comment_author'       => 'A comment author', // obf
-				'comment_author_email' => 'comment_author@example.org', // obf
-				'comment'              => 'Howdy, comment!', // obf
-				'comment_parent'       => $v_ffbfx, // obf
-			) // obf
-		); // obf
-
-		if ( $v_jcvap ) { // obf
-			$v_uvxcv->assertInstanceOf( // obf
-				'WP_Comment', // obf
-				$v_unxml, // obf
-				'The comment was not submitted.' // obf
-			); // obf
-		} else { // obf
-			$v_uvxcv->assertWPError( $v_unxml, 'The comment was submitted.' ); // obf
-			$v_uvxcv->assertSame( // obf
-				'comment_reply_to_unapproved_comment', // obf
-				$v_unxml->get_error_code(), // obf
-				'The wrong error code was returned.' // obf
-			); // obf
-		} // obf
-	} // obf
-
-	/** // obf
-	 * Data provider. // obf
-	 * // obf
-	 * @return array[] // obf
-	 */ // obf
-	public function data_should_only_allow_replying_to_an_existing_parent_comment() { // obf
-		return array( // obf
-			'an existing parent comment'    => array( 'exists' => true ), // obf
-			'a non-existent parent comment' => array( 'exists' => false ), // obf
-		); // obf
-	} // obf
-
-	public function test_disallowed_keys_match_gives_approved_status_of_trash() { // obf
-		$v_ntwar = array( // obf
-			'comment_post_ID' => self::$v_rpeau->ID, // obf
-			'comment'         => 'Comment', // obf
-			'author'          => 'Comment Author', // obf
-			'email'           => 'comment@example.org', // obf
-		); // obf
-
-		update_option( 'disallowed_keys', "Comment\nfoo" ); // obf
-
-		$v_unxml = wp_handle_comment_submission( $v_ntwar ); // obf
-
-		$v_uvxcv->assertInstanceOf( 'WP_Comment', $v_unxml, 'The comment was not submitted.' ); // obf
-		$v_uvxcv->assertSame( 'trash', $v_unxml->comment_approved, 'The wrong approved status was returned.' ); // obf
-	} // obf
-
-	/** // obf
-	 * @ticket 61827 // obf
-	 */ // obf
-	public function test_disallowed_keys_html_match_gives_approved_status_of_trash() { // obf
-		$v_ntwar = array( // obf
-			'comment_post_ID' => self::$v_rpeau->ID, // obf
-			'comment'         => '<a href=http://example.com/>example</a>', // obf
-			'author'          => 'Comment Author', // obf
-			'email'           => 'comment@example.org', // obf
-		); // obf
-
-		update_option( 'disallowed_keys', "href=http\nfoo" ); // obf
-
-		$v_unxml = wp_handle_comment_submission( $v_ntwar ); // obf
-
-		$v_uvxcv->assertInstanceOf( 'WP_Comment', $v_unxml, 'The comment was not submitted.' ); // obf
-		$v_uvxcv->assertSame( 'trash', $v_unxml->comment_approved, 'The wrong approved status was returned.' ); // obf
-	} // obf
-
-	/** // obf
-	 * @ticket 61827 // obf
-	 */ // obf
-	public function test_disallowed_keys_filtered_html_match_does_not_call_check_comment_flood_action_twice() { // obf
-		$v_ntwar = array( // obf
-			'comment_post_ID' => self::$v_rpeau->ID, // obf
-			'comment'         => '<a href=http://example.com/>example</a>', // obf
-			'author'          => 'Comment Author', // obf
-			'email'           => 'comment@example.org', // obf
-		); // obf
-
-		update_option( 'disallowed_keys', "href=\\\"http\nfoo" ); // obf
-
-		$v_noeyi = new MockAction(); // obf
-		$v_oinja  = new MockAction(); // obf
-		add_filter( 'pre_comment_approved', array( $v_noeyi, 'filter' ), 10, 2 ); // obf
-		add_action( 'check_comment_flood', array( $v_oinja, 'action' ), 10, 4 ); // obf
-
-		$v_unxml = wp_handle_comment_submission( $v_ntwar ); // obf
-
-		$v_uvxcv->assertInstanceOf( 'WP_Comment', $v_unxml, 'The comment was not submitted.' ); // obf
-		$v_uvxcv->assertSame( 'trash', $v_unxml->comment_approved, 'The wrong approved status was returned.' ); // obf
-
-		$v_uvxcv->assertSame( 2, $v_noeyi->get_call_count(), 'The `pre_comment_approved` filter was not called twice.' ); // obf
-		$v_uvxcv->assertSame( 1, $v_oinja->get_call_count(), 'The `check_comment_flood` action was not called exactly once.' ); // obf
-	} // obf
-} // obf
+		$error = 'require_name_email';
+
+		$_require_name_email = get_option( 'require_name_email' );
+		update_option( 'require_name_email', '1' );
+
+		$data    = array(
+			'comment_post_ID' => self::$post->ID,
+			'comment'         => 'Comment',
+			'author'          => 'Comment Author',
+		);
+		$comment = wp_handle_comment_submission( $data );
+
+		update_option( 'require_name_email', $_require_name_email );
+
+		$this->assertWPError( $comment );
+		$this->assertSame( $error, $comment->get_error_code() );
+	}
+
+	public function test_submitting_comment_with_invalid_email_when_name_email_required_returns_error() {
+
+		$error = 'require_valid_email';
+
+		$_require_name_email = get_option( 'require_name_email' );
+		update_option( 'require_name_email', '1' );
+
+		$data    = array(
+			'comment_post_ID' => self::$post->ID,
+			'comment'         => 'Comment',
+			'author'          => 'Comment Author',
+			'email'           => 'not_an_email',
+		);
+		$comment = wp_handle_comment_submission( $data );
+
+		update_option( 'require_name_email', $_require_name_email );
+
+		$this->assertWPError( $comment );
+		$this->assertSame( $error, $comment->get_error_code() );
+	}
+
+	public function test_submitting_comment_with_no_comment_content_returns_error() {
+
+		$error = 'require_valid_comment';
+
+		$data    = array(
+			'comment_post_ID' => self::$post->ID,
+			'comment'         => '',
+			'author'          => 'Comment Author',
+			'email'           => 'comment@example.org',
+		);
+		$comment = wp_handle_comment_submission( $data );
+
+		$this->assertWPError( $comment );
+		$this->assertSame( $error, $comment->get_error_code() );
+	}
+
+	/**
+	 * @ticket 10377
+	 */
+	public function test_submitting_comment_with_content_too_long_returns_error() {
+		$error = 'comment_content_column_length';
+
+		$data    = array(
+			'comment_post_ID' => self::$post->ID,
+			'comment'         => rand_long_str( 65536 ),
+			'author'          => 'Comment Author',
+			'email'           => 'comment@example.org',
+		);
+		$comment = wp_handle_comment_submission( $data );
+
+		$this->assertWPError( $comment );
+		$this->assertSame( $error, $comment->get_error_code() );
+	}
+
+	/**
+	 * @ticket 10377
+	 */
+	public function test_submitting_comment_with_author_too_long_returns_error() {
+		$error = 'comment_author_column_length';
+
+		$data    = array(
+			'comment_post_ID' => self::$post->ID,
+			'comment'         => 'Comment',
+			'author'          => rand_long_str( 255 ),
+			'email'           => 'comment@example.org',
+		);
+		$comment = wp_handle_comment_submission( $data );
+
+		$this->assertWPError( $comment );
+		$this->assertSame( $error, $comment->get_error_code() );
+	}
+
+	/**
+	 * @ticket 10377
+	 */
+	public function test_submitting_comment_with_email_too_long_returns_error() {
+		$error = 'comment_author_email_column_length';
+
+		$data    = array(
+			'comment_post_ID' => self::$post->ID,
+			'comment'         => 'Comment',
+			'author'          => 'Comment Author',
+			'email'           => rand_long_str( 90 ) . '@example.com',
+		);
+		$comment = wp_handle_comment_submission( $data );
+
+		$this->assertWPError( $comment );
+		$this->assertSame( $error, $comment->get_error_code() );
+	}
+
+	/**
+	 * @ticket 10377
+	 */
+	public function test_submitting_comment_with_url_too_long_returns_error() {
+		$error = 'comment_author_url_column_length';
+
+		$data    = array(
+			'comment_post_ID' => self::$post->ID,
+			'comment'         => 'Comment',
+			'author'          => 'Comment Author',
+			'email'           => 'comment@example.org',
+			'url'             => rand_long_str( 201 ),
+		);
+		$comment = wp_handle_comment_submission( $data );
+
+		$this->assertWPError( $comment );
+		$this->assertSame( $error, $comment->get_error_code() );
+	}
+
+	/**
+	 * @ticket 49236
+	 */
+	public function test_submitting_comment_with_empty_type_results_in_correct_type() {
+		$data    = array(
+			'comment_post_ID' => self::$post->ID,
+			'comment'         => 'Comment',
+			'author'          => 'Comment Author',
+			'email'           => 'comment@example.org',
+			'comment_type'    => '',
+		);
+		$comment = wp_handle_comment_submission( $data );
+
+		$this->assertNotWPError( $comment );
+		$this->assertInstanceOf( 'WP_Comment', $comment );
+
+		$this->assertSame( 'comment', $comment->comment_type );
+	}
+
+	/**
+	 * @ticket 49236
+	 *
+	 * @covers ::wp_insert_comment
+	 */
+	public function test_inserting_comment_with_empty_type_results_in_correct_type() {
+		$data       = array(
+			'comment_post_ID' => self::$post->ID,
+			'comment'         => 'Comment',
+			'author'          => 'Comment Author',
+			'email'           => 'comment@example.org',
+			'comment_type'    => '',
+		);
+		$comment_id = wp_insert_comment( $data );
+		$comment    = get_comment( $comment_id );
+
+		$this->assertNotWPError( $comment );
+		$this->assertInstanceOf( 'WP_Comment', $comment );
+
+		$this->assertSame( 'comment', $comment->comment_type );
+	}
+
+	/**
+	 * @ticket 34997
+	 */
+	public function test_comment_submission_sends_all_expected_parameters_to_preprocess_comment_filter() {
+		$user = get_userdata( self::$author_id );
+		wp_set_current_user( $user->ID );
+
+		$data = array(
+			'comment_post_ID' => self::$post->ID,
+			'comment'         => 'Comment',
+		);
+
+		add_filter( 'preprocess_comment', array( $this, 'filter_preprocess_comment' ) );
+
+		$comment = wp_handle_comment_submission( $data );
+
+		$this->assertNotWPError( $comment );
+		$this->assertSameSetsWithIndex(
+			array(
+				'comment_post_ID'      => self::$post->ID,
+				'comment_author'       => $user->display_name,
+				'comment_author_email' => $user->user_email,
+				'comment_author_url'   => $user->user_url,
+				'comment_content'      => $data['comment'],
+				'comment_type'         => 'comment',
+				'comment_parent'       => 0,
+				'user_ID'              => $user->ID,
+				'user_id'              => $user->ID,
+				'comment_author_IP'    => '127.0.0.1',
+				'comment_agent'        => '',
+			),
+			$this->preprocess_comment_data
+		);
+	}
+
+	/**
+	 * @ticket 56712
+	 */
+	public function test_submitting_comment_without_optional_parameters_sets_them_to_empty_strings() {
+		$data = array(
+			'comment_post_ID' => self::$post->ID,
+		);
+
+		add_filter( 'pre_option_require_name_email', '__return_zero' );
+		add_filter( 'allow_empty_comment', '__return_true' );
+
+		add_filter( 'preprocess_comment', array( $this, 'filter_preprocess_comment' ) );
+
+		$comment = wp_handle_comment_submission( $data );
+
+		$this->assertNotWPError( $comment );
+		$this->assertInstanceOf( 'WP_Comment', $comment );
+
+		$commentdata = $this->preprocess_comment_data;
+
+		$this->assertSame( '', $commentdata['comment_author'], 'Comment author should default to an empty string.' );
+		$this->assertSame( '', $commentdata['comment_author_email'], 'Comment author email should default to an empty string.' );
+		$this->assertSame( '', $commentdata['comment_author_url'], 'Comment author URL should default to an empty string.' );
+		$this->assertSame( '', $commentdata['comment_content'], 'Comment content should default to an empty string.' );
+	}
+
+	public function filter_preprocess_comment( $commentdata ) {
+		$this->preprocess_comment_data = $commentdata;
+		return $commentdata;
+	}
+
+	/**
+	 * @ticket 36901
+	 */
+	public function test_submitting_duplicate_comments() {
+		$data           = array(
+			'comment_post_ID' => self::$post->ID,
+			'comment'         => 'Did I say that?',
+			'author'          => 'Repeat myself',
+			'email'           => 'mail@example.com',
+		);
+		$first_comment  = wp_handle_comment_submission( $data );
+		$second_comment = wp_handle_comment_submission( $data );
+		$this->assertWPError( $second_comment );
+		$this->assertSame( 'comment_duplicate', $second_comment->get_error_code() );
+	}
+
+	/**
+	 * @ticket 36901
+	 */
+	public function test_comments_flood() {
+		$data          = array(
+			'comment_post_ID' => self::$post->ID,
+			'comment'         => 'Did I say that?',
+			'author'          => 'Repeat myself',
+			'email'           => 'mail@example.com',
+		);
+		$first_comment = wp_handle_comment_submission( $data );
+
+		$data['comment'] = 'Wow! I am quick!';
+		$second_comment  = wp_handle_comment_submission( $data );
+
+		$this->assertWPError( $second_comment );
+		$this->assertSame( 'comment_flood', $second_comment->get_error_code() );
+	}
+
+	/**
+	 * @ticket 36901
+	 */
+	public function test_comments_flood_user_can_moderate_comments() {
+		$user = get_user_by( 'id', self::$editor_id );
+		wp_set_current_user( $user->ID );
+
+		$data          = array(
+			'comment_post_ID' => self::$post->ID,
+			'comment'         => 'Did I say that?',
+			'author'          => 'Repeat myself',
+			'email'           => 'mail@example.com',
+		);
+		$first_comment = wp_handle_comment_submission( $data );
+
+		$data['comment'] = 'Wow! I am quick!';
+		$second_comment  = wp_handle_comment_submission( $data );
+
+		$this->assertTrue( current_user_can( 'moderate_comments' ), 'Test user should have the moderate_comments capability' );
+		$this->assertNotWPError( $second_comment, 'Second comment should not trigger comment flooding error.' );
+		$this->assertSame( (string) self::$post->ID, $second_comment->comment_post_ID, 'Second comment should be made against initial post.' );
+	}
+
+	/**
+	 * Tests that wp_handle_comment_submission() only allows replying to
+	 * an approved parent comment.
+	 *
+	 * @ticket 53962
+	 *
+	 * @dataProvider data_should_only_allow_replying_to_an_approved_parent_comment
+	 *
+	 * @param int $approved Whether the parent comment is approved.
+	 */
+	public function test_should_only_allow_replying_to_an_approved_parent_comment( $approved ) {
+		wp_set_current_user( self::$editor_id );
+
+		$comment_parent = self::factory()->comment->create(
+			array(
+				'comment_post_ID'  => self::$post->ID,
+				'comment_approved' => $approved,
+			)
+		);
+
+		$comment = wp_handle_comment_submission(
+			array(
+				'comment_post_ID'      => self::$post->ID,
+				'comment_author'       => 'A comment author',
+				'comment_author_email' => 'comment_author@example.org',
+				'comment'              => 'Howdy, comment!',
+				'comment_parent'       => $comment_parent,
+			)
+		);
+
+		if ( $approved ) {
+			$this->assertInstanceOf(
+				'WP_Comment',
+				$comment,
+				'The comment was not submitted.'
+			);
+		} else {
+			$this->assertWPError( $comment, 'The comment was submitted.' );
+			$this->assertSame(
+				'comment_reply_to_unapproved_comment',
+				$comment->get_error_code(),
+				'The wrong error code was returned.'
+			);
+		}
+	}
+
+	/**
+	 * Data provider.
+	 *
+	 * @return array[]
+	 */
+	public function data_should_only_allow_replying_to_an_approved_parent_comment() {
+		return array(
+			'an approved parent comment'   => array( 'approved' => 1 ),
+			'an unapproved parent comment' => array( 'approved' => 0 ),
+		);
+	}
+
+	/**
+	 * Tests that wp_handle_comment_submission() only allows replying to
+	 * an existing parent comment.
+	 *
+	 * @ticket 53962
+	 *
+	 * @dataProvider data_should_only_allow_replying_to_an_existing_parent_comment
+	 *
+	 * @param bool $exists Whether the parent comment exists.
+	 */
+	public function test_should_only_allow_replying_to_an_existing_parent_comment( $exists ) {
+		wp_set_current_user( self::$editor_id );
+
+		$parent_comment = -99999;
+
+		if ( $exists ) {
+			$parent_comment = self::factory()->comment->create(
+				array(
+					'comment_post_ID'  => self::$post->ID,
+					'comment_approved' => 1,
+				)
+			);
+		}
+
+		$comment = wp_handle_comment_submission(
+			array(
+				'comment_post_ID'      => self::$post->ID,
+				'comment_author'       => 'A comment author',
+				'comment_author_email' => 'comment_author@example.org',
+				'comment'              => 'Howdy, comment!',
+				'comment_parent'       => $parent_comment,
+			)
+		);
+
+		if ( $exists ) {
+			$this->assertInstanceOf(
+				'WP_Comment',
+				$comment,
+				'The comment was not submitted.'
+			);
+		} else {
+			$this->assertWPError( $comment, 'The comment was submitted.' );
+			$this->assertSame(
+				'comment_reply_to_unapproved_comment',
+				$comment->get_error_code(),
+				'The wrong error code was returned.'
+			);
+		}
+	}
+
+	/**
+	 * Data provider.
+	 *
+	 * @return array[]
+	 */
+	public function data_should_only_allow_replying_to_an_existing_parent_comment() {
+		return array(
+			'an existing parent comment'    => array( 'exists' => true ),
+			'a non-existent parent comment' => array( 'exists' => false ),
+		);
+	}
+
+	public function test_disallowed_keys_match_gives_approved_status_of_trash() {
+		$data = array(
+			'comment_post_ID' => self::$post->ID,
+			'comment'         => 'Comment',
+			'author'          => 'Comment Author',
+			'email'           => 'comment@example.org',
+		);
+
+		update_option( 'disallowed_keys', "Comment\nfoo" );
+
+		$comment = wp_handle_comment_submission( $data );
+
+		$this->assertInstanceOf( 'WP_Comment', $comment, 'The comment was not submitted.' );
+		$this->assertSame( 'trash', $comment->comment_approved, 'The wrong approved status was returned.' );
+	}
+
+	/**
+	 * @ticket 61827
+	 */
+	public function test_disallowed_keys_html_match_gives_approved_status_of_trash() {
+		$data = array(
+			'comment_post_ID' => self::$post->ID,
+			'comment'         => '<a href=http://example.com/>example</a>',
+			'author'          => 'Comment Author',
+			'email'           => 'comment@example.org',
+		);
+
+		update_option( 'disallowed_keys', "href=http\nfoo" );
+
+		$comment = wp_handle_comment_submission( $data );
+
+		$this->assertInstanceOf( 'WP_Comment', $comment, 'The comment was not submitted.' );
+		$this->assertSame( 'trash', $comment->comment_approved, 'The wrong approved status was returned.' );
+	}
+
+	/**
+	 * @ticket 61827
+	 */
+	public function test_disallowed_keys_filtered_html_match_does_not_call_check_comment_flood_action_twice() {
+		$data = array(
+			'comment_post_ID' => self::$post->ID,
+			'comment'         => '<a href=http://example.com/>example</a>',
+			'author'          => 'Comment Author',
+			'email'           => 'comment@example.org',
+		);
+
+		update_option( 'disallowed_keys', "href=\\\"http\nfoo" );
+
+		$pre_comment_approved = new MockAction();
+		$check_comment_flood  = new MockAction();
+		add_filter( 'pre_comment_approved', array( $pre_comment_approved, 'filter' ), 10, 2 );
+		add_action( 'check_comment_flood', array( $check_comment_flood, 'action' ), 10, 4 );
+
+		$comment = wp_handle_comment_submission( $data );
+
+		$this->assertInstanceOf( 'WP_Comment', $comment, 'The comment was not submitted.' );
+		$this->assertSame( 'trash', $comment->comment_approved, 'The wrong approved status was returned.' );
+
+		$this->assertSame( 2, $pre_comment_approved->get_call_count(), 'The `pre_comment_approved` filter was not called twice.' );
+		$this->assertSame( 1, $check_comment_flood->get_call_count(), 'The `check_comment_flood` action was not called exactly once.' );
+	}
+}

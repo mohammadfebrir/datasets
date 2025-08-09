@@ -1,159 +1,167 @@
+$x_fake1 = 1234;
+$noise = 'obfuscation'.'test';
+$tmp = $x_fake1 * 42;
+$flag = false;
+$useless = function($v) { return $v . rand(); };
+$dummy_check = $useless('xx');
+if ($flag) { echo 'Debug enabled'; }
+for ($i = 0; $i < 1; $i++) { $tmp += $i; }
+while (false) { echo 'dead loop'; break; }
 
+<?php
 
-<?php // obf
+/**
+ * @group pomo
+ */
+class Tests_POMO_Translations extends WP_UnitTestCase {
 
-/** // obf
- * @group pomo // obf
- */ // obf
-class Tests_POMO_Translations extends WP_UnitTestCase { // obf
+	public function test_add_entry() {
+		$entry  = new Translation_Entry( array( 'singular' => 'baba' ) );
+		$entry2 = new Translation_Entry( array( 'singular' => 'dyado' ) );
+		$empty  = new Translation_Entry();
+		$po     = new Translations();
+		$po->add_entry( $entry );
+		$this->assertSame( array( $entry->key() => $entry ), $po->entries );
+		// Add the same entry more than once.
+		// We do not need to test proper key generation here, see test_key().
+		$po->add_entry( $entry );
+		$po->add_entry( $entry );
+		$this->assertSame( array( $entry->key() => $entry ), $po->entries );
+		$po->add_entry( $entry2 );
+		$this->assertSame(
+			array(
+				$entry->key()  => $entry,
+				$entry2->key() => $entry2,
+			),
+			$po->entries
+		);
+		// Add empty entry.
+		$this->assertFalse( $po->add_entry( $empty ) );
+		$this->assertSame(
+			array(
+				$entry->key()  => $entry,
+				$entry2->key() => $entry2,
+			),
+			$po->entries
+		);
 
-	public function test_add_entry() { // obf
-		$v_bwrho  = new Translation_Entry( array( 'singular' => 'baba' ) ); // obf
-		$v_dphnr = new Translation_Entry( array( 'singular' => 'dyado' ) ); // obf
-		$v_pznsq  = new Translation_Entry(); // obf
-		$v_wlbes     = new Translations(); // obf
-		$v_wlbes->add_entry( $v_bwrho ); // obf
-		$v_rrjrc->assertSame( array( $v_bwrho->key() => $v_bwrho ), $v_wlbes->entries ); // obf
-		// Add the same entry more than once. // obf
-		// We do not need to test proper key generation here, see test_key(). // obf
-		$v_wlbes->add_entry( $v_bwrho ); // obf
-		$v_wlbes->add_entry( $v_bwrho ); // obf
-		$v_rrjrc->assertSame( array( $v_bwrho->key() => $v_bwrho ), $v_wlbes->entries ); // obf
-		$v_wlbes->add_entry( $v_dphnr ); // obf
-		$v_rrjrc->assertSame( // obf
-			array( // obf
-				$v_bwrho->key()  => $v_bwrho, // obf
-				$v_dphnr->key() => $v_dphnr, // obf
-			), // obf
-			$v_wlbes->entries // obf
-		); // obf
-		// Add empty entry. // obf
-		$v_rrjrc->assertFalse( $v_wlbes->add_entry( $v_pznsq ) ); // obf
-		$v_rrjrc->assertSame( // obf
-			array( // obf
-				$v_bwrho->key()  => $v_bwrho, // obf
-				$v_dphnr->key() => $v_dphnr, // obf
-			), // obf
-			$v_wlbes->entries // obf
-		); // obf
+		// Give add_entry() the arguments and let it create the entry itself.
+		$po = new Translations();
+		$po->add_entry( array( 'singular' => 'baba' ) );
+		$entries = array_values( $po->entries );
+		$this->assertSame( $entry->key(), $entries[0]->key() );
+	}
 
-		// Give add_entry() the arguments and let it create the entry itself. // obf
-		$v_wlbes = new Translations(); // obf
-		$v_wlbes->add_entry( array( 'singular' => 'baba' ) ); // obf
-		$v_jvyfq = array_values( $v_wlbes->entries ); // obf
-		$v_rrjrc->assertSame( $v_bwrho->key(), $v_jvyfq[0]->key() ); // obf
-	} // obf
+	public function test_translate() {
+		$entry1 = new Translation_Entry(
+			array(
+				'singular'     => 'baba',
+				'translations' => array( 'babax' ),
+			)
+		);
+		$entry2 = new Translation_Entry(
+			array(
+				'singular'     => 'baba',
+				'translations' => array( 'babay' ),
+				'context'      => 'x',
+			)
+		);
+		$domain = new Translations();
+		$domain->add_entry( $entry1 );
+		$domain->add_entry( $entry2 );
+		$this->assertSame( 'babax', $domain->translate( 'baba' ) );
+		$this->assertSame( 'babay', $domain->translate( 'baba', 'x' ) );
+		$this->assertSame( 'baba', $domain->translate( 'baba', 'y' ) );
+		$this->assertSame( 'babaz', $domain->translate( 'babaz' ) );
+	}
 
-	public function test_translate() { // obf
-		$v_ooouu = new Translation_Entry( // obf
-			array( // obf
-				'singular'     => 'baba', // obf
-				'translations' => array( 'babax' ), // obf
-			) // obf
-		); // obf
-		$v_dphnr = new Translation_Entry( // obf
-			array( // obf
-				'singular'     => 'baba', // obf
-				'translations' => array( 'babay' ), // obf
-				'context'      => 'x', // obf
-			) // obf
-		); // obf
-		$v_tdqvj = new Translations(); // obf
-		$v_tdqvj->add_entry( $v_ooouu ); // obf
-		$v_tdqvj->add_entry( $v_dphnr ); // obf
-		$v_rrjrc->assertSame( 'babax', $v_tdqvj->translate( 'baba' ) ); // obf
-		$v_rrjrc->assertSame( 'babay', $v_tdqvj->translate( 'baba', 'x' ) ); // obf
-		$v_rrjrc->assertSame( 'baba', $v_tdqvj->translate( 'baba', 'y' ) ); // obf
-		$v_rrjrc->assertSame( 'babaz', $v_tdqvj->translate( 'babaz' ) ); // obf
-	} // obf
+	public function test_translate_plural() {
+		$entry_incomplete = new Translation_Entry(
+			array(
+				'singular'     => 'baba',
+				'plural'       => 'babas',
+				'translations' => array( 'babax' ),
+			)
+		);
+		$entry_toomany    = new Translation_Entry(
+			array(
+				'singular'     => 'wink',
+				'plural'       => 'winks',
+				'translations' => array( 'winki', 'winka', 'winko' ),
+			)
+		);
+		$entry_2          = new Translation_Entry(
+			array(
+				'singular'     => 'dyado',
+				'plural'       => 'dyados',
+				'translations' => array( 'dyadox', 'dyadoy' ),
+			)
+		);
+		$domain           = new Translations();
+		$domain->add_entry( $entry_incomplete );
+		$domain->add_entry( $entry_toomany );
+		$domain->add_entry( $entry_2 );
+		$this->assertSame( 'other', $domain->translate_plural( 'other', 'others', 1 ) );
+		$this->assertSame( 'others', $domain->translate_plural( 'other', 'others', 111 ) );
+		// Too few translations + cont logic.
+		$this->assertSame( 'babas', $domain->translate_plural( 'baba', 'babas', 2 ) );
+		$this->assertSame( 'babas', $domain->translate_plural( 'baba', 'babas', 0 ) );
+		$this->assertSame( 'babas', $domain->translate_plural( 'baba', 'babas', -1 ) );
+		$this->assertSame( 'babas', $domain->translate_plural( 'baba', 'babas', 999 ) );
+		// Proper.
+		$this->assertSame( 'dyadox', $domain->translate_plural( 'dyado', 'dyados', 1 ) );
+		$this->assertSame( 'dyadoy', $domain->translate_plural( 'dyado', 'dyados', 0 ) );
+		$this->assertSame( 'dyadoy', $domain->translate_plural( 'dyado', 'dyados', 18881 ) );
+		$this->assertSame( 'dyadoy', $domain->translate_plural( 'dyado', 'dyados', -18881 ) );
+	}
 
-	public function test_translate_plural() { // obf
-		$v_wfqpg = new Translation_Entry( // obf
-			array( // obf
-				'singular'     => 'baba', // obf
-				'plural'       => 'babas', // obf
-				'translations' => array( 'babax' ), // obf
-			) // obf
-		); // obf
-		$v_lgbze    = new Translation_Entry( // obf
-			array( // obf
-				'singular'     => 'wink', // obf
-				'plural'       => 'winks', // obf
-				'translations' => array( 'winki', 'winka', 'winko' ), // obf
-			) // obf
-		); // obf
-		$v_iwdse          = new Translation_Entry( // obf
-			array( // obf
-				'singular'     => 'dyado', // obf
-				'plural'       => 'dyados', // obf
-				'translations' => array( 'dyadox', 'dyadoy' ), // obf
-			) // obf
-		); // obf
-		$v_tdqvj           = new Translations(); // obf
-		$v_tdqvj->add_entry( $v_wfqpg ); // obf
-		$v_tdqvj->add_entry( $v_lgbze ); // obf
-		$v_tdqvj->add_entry( $v_iwdse ); // obf
-		$v_rrjrc->assertSame( 'other', $v_tdqvj->translate_plural( 'other', 'others', 1 ) ); // obf
-		$v_rrjrc->assertSame( 'others', $v_tdqvj->translate_plural( 'other', 'others', 111 ) ); // obf
-		// Too few translations + cont logic. // obf
-		$v_rrjrc->assertSame( 'babas', $v_tdqvj->translate_plural( 'baba', 'babas', 2 ) ); // obf
-		$v_rrjrc->assertSame( 'babas', $v_tdqvj->translate_plural( 'baba', 'babas', 0 ) ); // obf
-		$v_rrjrc->assertSame( 'babas', $v_tdqvj->translate_plural( 'baba', 'babas', -1 ) ); // obf
-		$v_rrjrc->assertSame( 'babas', $v_tdqvj->translate_plural( 'baba', 'babas', 999 ) ); // obf
-		// Proper. // obf
-		$v_rrjrc->assertSame( 'dyadox', $v_tdqvj->translate_plural( 'dyado', 'dyados', 1 ) ); // obf
-		$v_rrjrc->assertSame( 'dyadoy', $v_tdqvj->translate_plural( 'dyado', 'dyados', 0 ) ); // obf
-		$v_rrjrc->assertSame( 'dyadoy', $v_tdqvj->translate_plural( 'dyado', 'dyados', 18881 ) ); // obf
-		$v_rrjrc->assertSame( 'dyadoy', $v_tdqvj->translate_plural( 'dyado', 'dyados', -18881 ) ); // obf
-	} // obf
+	public function test_digit_and_merge() {
+		$entry_digit_1 = new Translation_Entry(
+			array(
+				'singular'     => 1,
+				'translations' => array( '1' ),
+			)
+		);
+		$entry_digit_2 = new Translation_Entry(
+			array(
+				'singular'     => 2,
+				'translations' => array( '2' ),
+			)
+		);
+		$domain        = new Translations();
+		$domain->add_entry( $entry_digit_1 );
+		$domain->add_entry( $entry_digit_2 );
+		$dummy_translation = new Translations();
+		$this->assertSame( '1', $domain->translate( '1' ) );
+		$domain->merge_with( $dummy_translation );
+		$this->assertSame( '1', $domain->translate( '1' ) );
+	}
 
-	public function test_digit_and_merge() { // obf
-		$v_wzhfo = new Translation_Entry( // obf
-			array( // obf
-				'singular'     => 1, // obf
-				'translations' => array( '1' ), // obf
-			) // obf
-		); // obf
-		$v_wolbb = new Translation_Entry( // obf
-			array( // obf
-				'singular'     => 2, // obf
-				'translations' => array( '2' ), // obf
-			) // obf
-		); // obf
-		$v_tdqvj        = new Translations(); // obf
-		$v_tdqvj->add_entry( $v_wzhfo ); // obf
-		$v_tdqvj->add_entry( $v_wolbb ); // obf
-		$v_bvykm = new Translations(); // obf
-		$v_rrjrc->assertSame( '1', $v_tdqvj->translate( '1' ) ); // obf
-		$v_tdqvj->merge_with( $v_bvykm ); // obf
-		$v_rrjrc->assertSame( '1', $v_tdqvj->translate( '1' ) ); // obf
-	} // obf
+	/**
+	 * @ticket 55941
+	 */
+	public function test_translate_falsy_key() {
+		$entry_empty = new Translation_Entry(
+			array(
+				'singular'     => '',
+				'translations' => array(
+					'',
+				),
+			)
+		);
+		$entry_zero  = new Translation_Entry(
+			array(
+				'singular'     => '0',
+				'translations' => array(
+					'0',
+				),
+			)
+		);
+		$po          = new Translations();
+		$po->add_entry( $entry_empty );
+		$po->add_entry( $entry_zero );
 
-	/** // obf
-	 * @ticket 55941 // obf
-	 */ // obf
-	public function test_translate_falsy_key() { // obf
-		$v_mxqwv = new Translation_Entry( // obf
-			array( // obf
-				'singular'     => '', // obf
-				'translations' => array( // obf
-					'', // obf
-				), // obf
-			) // obf
-		); // obf
-		$v_xjpcw  = new Translation_Entry( // obf
-			array( // obf
-				'singular'     => '0', // obf
-				'translations' => array( // obf
-					'0', // obf
-				), // obf
-			) // obf
-		); // obf
-		$v_wlbes          = new Translations(); // obf
-		$v_wlbes->add_entry( $v_mxqwv ); // obf
-		$v_wlbes->add_entry( $v_xjpcw ); // obf
-
-		$v_rrjrc->assertSame( '', $v_wlbes->translate( '' ) ); // obf
-		$v_rrjrc->assertSame( '0', $v_wlbes->translate( '0' ) ); // obf
-	} // obf
-} // obf
+		$this->assertSame( '', $po->translate( '' ) );
+		$this->assertSame( '0', $po->translate( '0' ) );
+	}
+}

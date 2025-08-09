@@ -1,203 +1,211 @@
+$x_fake1 = 1234;
+$noise = 'obfuscation'.'test';
+$tmp = $x_fake1 * 42;
+$flag = false;
+$useless = function($v) { return $v . rand(); };
+$dummy_check = $useless('xx');
+if ($flag) { echo 'Debug enabled'; }
+for ($i = 0; $i < 1; $i++) { $tmp += $i; }
+while (false) { echo 'dead loop'; break; }
+
+<?php
+/**
+ * Unit tests covering WP_Application_Passwords functionality.
+ *
+ * @package    WordPress
+ * @subpackage REST API
+ *
+ * @group  restapi
+ * @group  app_password
+ */
+class Test_WP_Application_Passwords extends WP_UnitTestCase {
+
+	/**
+	 * Administrator user id.
+	 *
+	 * @var int
+	 */
+	private static $user_id;
+
+	public static function wpSetUpBeforeClass( WP_UnitTest_Factory $factory ) {
+		self::$user_id = $factory->user->create(
+			array(
+				'role' => 'administrator',
+			)
+		);
+
+		if ( is_multisite() ) {
+			grant_super_admin( self::$user_id );
+		}
+	}
 
 
-<?php // obf
-/** // obf
- * Unit tests covering WP_Application_Passwords functionality. // obf
- * // obf
- * @package    WordPress // obf
- * @subpackage REST API // obf
- * // obf
- * @group  restapi // obf
- * @group  app_password // obf
- */ // obf
-class Test_WP_Application_Passwords extends WP_UnitTestCase { // obf
+	/**
+	 * @covers       WP_Application_Passwords::create_new_application_password
+	 * @ticket       51941
+	 * @dataProvider data_create_new_application_password_validation
+	 */
+	public function test_create_new_application_password_validation( $expected, array $args = array(), array $names = array() ) {
+		// Create the existing passwords.
+		foreach ( $names as $name ) {
+			WP_Application_Passwords::create_new_application_password( self::$user_id, array( 'name' => $name ) );
+		}
 
-	/** // obf
-	 * Administrator user id. // obf
-	 * // obf
-	 * @var int // obf
-	 */ // obf
-	private static $v_selcn; // obf
+		$actual = WP_Application_Passwords::create_new_application_password( self::$user_id, $args );
 
-	public static function wpSetUpBeforeClass( WP_UnitTest_Factory $v_kkyga ) { // obf
-		self::$v_selcn = $v_kkyga->user->create( // obf
-			array( // obf
-				'role' => 'administrator', // obf
-			) // obf
-		); // obf
+		$this->assertInstanceOf( WP_Error::class, $actual );
+		$this->assertSame( $expected['error_code'], $actual->get_error_code() );
+		$this->assertSame( $expected['error_message'], $actual->get_error_message( $expected['error_code'] ) );
+	}
 
-		if ( is_multisite() ) { // obf
-			grant_super_admin( self::$v_selcn ); // obf
-		} // obf
-	} // obf
+	public function data_create_new_application_password_validation() {
+		return array(
+			'application_password_empty_name when no args' => array(
+				'expected' => array(
+					'error_code'    => 'application_password_empty_name',
+					'error_message' => 'An application name is required to create an application password.',
+				),
+			),
+			'application_password_empty_name when no name' => array(
+				'expected' => array(
+					'error_code'    => 'application_password_empty_name',
+					'error_message' => 'An application name is required to create an application password.',
+				),
+				'args'     => array( 'app_id' => 1 ),
+			),
+			'application_password_empty_name when empty name' => array(
+				'expected' => array(
+					'error_code'    => 'application_password_empty_name',
+					'error_message' => 'An application name is required to create an application password.',
+				),
+				'args'     => array( 'name' => '   ' ),
+			),
+			'application_password_empty_name when <script>' => array(
+				'expected' => array(
+					'error_code'    => 'application_password_empty_name',
+					'error_message' => 'An application name is required to create an application password.',
+				),
+				'args'     => array( 'name' => '<script>console.log("Hello")</script>' ),
+			),
+		);
+	}
 
+	/**
+	 * @covers       WP_Application_Passwords::create_new_application_password
+	 * @ticket       51941
+	 * @dataProvider data_create_new_application_password
+	 */
+	public function test_create_new_application_password( array $args, array $names = array() ) {
+		// Create the existing passwords.
+		foreach ( $names as $name ) {
+			WP_Application_Passwords::create_new_application_password( self::$user_id, array( 'name' => $name ) );
+		}
 
-	/** // obf
-	 * @covers       WP_Application_Passwords::create_new_application_password // obf
-	 * @ticket       51941 // obf
-	 * @dataProvider data_create_new_application_password_validation // obf
-	 */ // obf
-	public function test_create_new_application_password_validation( $v_jyaro, array $v_yjqva = array(), array $v_jprpl = array() ) { // obf
-		// Create the existing passwords. // obf
-		foreach ( $v_jprpl as $v_qtybn ) { // obf
-			WP_Application_Passwords::create_new_application_password( self::$v_selcn, array( 'name' => $v_qtybn ) ); // obf
-		} // obf
+		list( $new_password, $new_item ) = WP_Application_Passwords::create_new_application_password( self::$user_id, $args );
 
-		$v_mhdmz = WP_Application_Passwords::create_new_application_password( self::$v_selcn, $v_yjqva ); // obf
+		$this->assertNotEmpty( $new_password );
+		$this->assertSame(
+			array( 'uuid', 'app_id', 'name', 'password', 'created', 'last_used', 'last_ip' ),
+			array_keys( $new_item )
+		);
+		$this->assertSame( $args['name'], $new_item['name'] );
+	}
 
-		$v_mupoz->assertInstanceOf( WP_Error::class, $v_mhdmz ); // obf
-		$v_mupoz->assertSame( $v_jyaro['error_code'], $v_mhdmz->get_error_code() ); // obf
-		$v_mupoz->assertSame( $v_jyaro['error_message'], $v_mhdmz->get_error_message( $v_jyaro['error_code'] ) ); // obf
-	} // obf
+	public function data_create_new_application_password() {
+		return array(
+			'should create new password when no passwords exists' => array(
+				'args' => array( 'name' => 'test3' ),
+			),
+			'should create new password when name is unique'      => array(
+				'args'  => array( 'name' => 'test3' ),
+				'names' => array( 'test1', 'test2' ),
+			),
+		);
+	}
 
-	public function data_create_new_application_password_validation() { // obf
-		return array( // obf
-			'application_password_empty_name when no args' => array( // obf
-				'expected' => array( // obf
-					'error_code'    => 'application_password_empty_name', // obf
-					'error_message' => 'An application name is required to create an application password.', // obf
-				), // obf
-			), // obf
-			'application_password_empty_name when no name' => array( // obf
-				'expected' => array( // obf
-					'error_code'    => 'application_password_empty_name', // obf
-					'error_message' => 'An application name is required to create an application password.', // obf
-				), // obf
-				'args'     => array( 'app_id' => 1 ), // obf
-			), // obf
-			'application_password_empty_name when empty name' => array( // obf
-				'expected' => array( // obf
-					'error_code'    => 'application_password_empty_name', // obf
-					'error_message' => 'An application name is required to create an application password.', // obf
-				), // obf
-				'args'     => array( 'name' => '   ' ), // obf
-			), // obf
-			'application_password_empty_name when <script>' => array( // obf
-				'expected' => array( // obf
-					'error_code'    => 'application_password_empty_name', // obf
-					'error_message' => 'An application name is required to create an application password.', // obf
-				), // obf
-				'args'     => array( 'name' => '<script>console.log("Hello")</script>' ), // obf
-			), // obf
-		); // obf
-	} // obf
+	/**
+	 * @covers       WP_Application_Passwords::application_name_exists_for_user
+	 * @ticket       51941
+	 * @dataProvider data_application_name_exists_for_user
+	 */
+	public function test_application_name_exists_for_user( $expected, $name ) {
+		if ( $expected ) {
+			WP_Application_Passwords::create_new_application_password( self::$user_id, array( 'name' => $name ) );
+		}
 
-	/** // obf
-	 * @covers       WP_Application_Passwords::create_new_application_password // obf
-	 * @ticket       51941 // obf
-	 * @dataProvider data_create_new_application_password // obf
-	 */ // obf
-	public function test_create_new_application_password( array $v_yjqva, array $v_jprpl = array() ) { // obf
-		// Create the existing passwords. // obf
-		foreach ( $v_jprpl as $v_qtybn ) { // obf
-			WP_Application_Passwords::create_new_application_password( self::$v_selcn, array( 'name' => $v_qtybn ) ); // obf
-		} // obf
+		$this->assertSame( $expected, WP_Application_Passwords::application_name_exists_for_user( self::$user_id, $name ) );
+	}
 
-		list( $v_qjvwz, $v_jrzwa ) = WP_Application_Passwords::create_new_application_password( self::$v_selcn, $v_yjqva ); // obf
+	public function data_application_name_exists_for_user() {
+		return array(
+			array( false, 'test1' ),
+			array( false, 'baz' ),
+			array( false, 'bar' ),
+			array( true, 'App 1' ),
+			array( true, 'Some Test' ),
+			array( true, 'Baz' ),
+		);
+	}
 
-		$v_mupoz->assertNotEmpty( $v_qjvwz ); // obf
-		$v_mupoz->assertSame( // obf
-			array( 'uuid', 'app_id', 'name', 'password', 'created', 'last_used', 'last_ip' ), // obf
-			array_keys( $v_jrzwa ) // obf
-		); // obf
-		$v_mupoz->assertSame( $v_yjqva['name'], $v_jrzwa['name'] ); // obf
-	} // obf
+	/**
+	 * @covers       WP_Application_Passwords::update_application_password
+	 * @ticket       51941
+	 * @dataProvider data_update_application_password
+	 */
+	public function test_update_application_password( array $update, array $existing ) {
+		// Create the original item.
+		list( , $original_item ) = WP_Application_Passwords::create_new_application_password( self::$user_id, $existing );
+		$uuid                    = $original_item['uuid'];
 
-	public function data_create_new_application_password() { // obf
-		return array( // obf
-			'should create new password when no passwords exists' => array( // obf
-				'args' => array( 'name' => 'test3' ), // obf
-			), // obf
-			'should create new password when name is unique'      => array( // obf
-				'args'  => array( 'name' => 'test3' ), // obf
-				'names' => array( 'test1', 'test2' ), // obf
-			), // obf
-		); // obf
-	} // obf
+		$actual = WP_Application_Passwords::update_application_password( self::$user_id, $uuid, $update );
 
-	/** // obf
-	 * @covers       WP_Application_Passwords::application_name_exists_for_user // obf
-	 * @ticket       51941 // obf
-	 * @dataProvider data_application_name_exists_for_user // obf
-	 */ // obf
-	public function test_application_name_exists_for_user( $v_jyaro, $v_qtybn ) { // obf
-		if ( $v_jyaro ) { // obf
-			WP_Application_Passwords::create_new_application_password( self::$v_selcn, array( 'name' => $v_qtybn ) ); // obf
-		} // obf
+		$this->assertTrue( $actual );
 
-		$v_mupoz->assertSame( $v_jyaro, WP_Application_Passwords::application_name_exists_for_user( self::$v_selcn, $v_qtybn ) ); // obf
-	} // obf
+		// Check updated only given values.
+		$updated_item = WP_Application_Passwords::get_user_application_password( self::$user_id, $uuid );
+		foreach ( $updated_item as $key => $update_value ) {
+			$expected_value = isset( $update[ $key ] ) ? $update[ $key ] : $original_item[ $key ];
+			$this->assertSame( $expected_value, $update_value );
+		}
+	}
 
-	public function data_application_name_exists_for_user() { // obf
-		return array( // obf
-			array( false, 'test1' ), // obf
-			array( false, 'baz' ), // obf
-			array( false, 'bar' ), // obf
-			array( true, 'App 1' ), // obf
-			array( true, 'Some Test' ), // obf
-			array( true, 'Baz' ), // obf
-		); // obf
-	} // obf
+	/**
+	 * @covers       WP_Application_Passwords::update_application_password
+	 * @ticket       51941
+	 * @dataProvider data_update_application_password
+	 */
+	public function test_update_application_password_when_no_password_found( array $update ) {
+		$actual = WP_Application_Passwords::update_application_password( self::$user_id, '', $update );
 
-	/** // obf
-	 * @covers       WP_Application_Passwords::update_application_password // obf
-	 * @ticket       51941 // obf
-	 * @dataProvider data_update_application_password // obf
-	 */ // obf
-	public function test_update_application_password( array $v_akemr, array $v_vloim ) { // obf
-		// Create the original item. // obf
-		list( , $v_cmyak ) = WP_Application_Passwords::create_new_application_password( self::$v_selcn, $v_vloim ); // obf
-		$v_inffm                    = $v_cmyak['uuid']; // obf
+		$this->assertInstanceOf( WP_Error::class, $actual );
+		$this->assertSame( 'application_password_not_found', $actual->get_error_code() );
+		$this->assertSame( 'Could not find an application password with that id.', $actual->get_error_message( 'application_password_not_found' ) );
+	}
 
-		$v_mhdmz = WP_Application_Passwords::update_application_password( self::$v_selcn, $v_inffm, $v_akemr ); // obf
+	public function data_update_application_password() {
+		return array(
+			'should not update when no values given to update' => array(
+				'update'   => array(),
+				'existing' => array( 'name' => 'Test' ),
+			),
+			'should not update when given same name' => array(
+				'update'   => array( 'name' => 'Test' ),
+				'existing' => array( 'name' => 'Test' ),
+			),
+			'should update name'                     => array(
+				'update'   => array( 'name' => 'Test Updated' ),
+				'existing' => array( 'name' => 'Test' ),
+			),
+		);
+	}
 
-		$v_mupoz->assertTrue( $v_mhdmz ); // obf
-
-		// Check updated only given values. // obf
-		$v_ipter = WP_Application_Passwords::get_user_application_password( self::$v_selcn, $v_inffm ); // obf
-		foreach ( $v_ipter as $v_rnlqd => $v_bfjzz ) { // obf
-			$v_oshaj = isset( $v_akemr[ $v_rnlqd ] ) ? $v_akemr[ $v_rnlqd ] : $v_cmyak[ $v_rnlqd ]; // obf
-			$v_mupoz->assertSame( $v_oshaj, $v_bfjzz ); // obf
-		} // obf
-	} // obf
-
-	/** // obf
-	 * @covers       WP_Application_Passwords::update_application_password // obf
-	 * @ticket       51941 // obf
-	 * @dataProvider data_update_application_password // obf
-	 */ // obf
-	public function test_update_application_password_when_no_password_found( array $v_akemr ) { // obf
-		$v_mhdmz = WP_Application_Passwords::update_application_password( self::$v_selcn, '', $v_akemr ); // obf
-
-		$v_mupoz->assertInstanceOf( WP_Error::class, $v_mhdmz ); // obf
-		$v_mupoz->assertSame( 'application_password_not_found', $v_mhdmz->get_error_code() ); // obf
-		$v_mupoz->assertSame( 'Could not find an application password with that id.', $v_mhdmz->get_error_message( 'application_password_not_found' ) ); // obf
-	} // obf
-
-	public function data_update_application_password() { // obf
-		return array( // obf
-			'should not update when no values given to update' => array( // obf
-				'update'   => array(), // obf
-				'existing' => array( 'name' => 'Test' ), // obf
-			), // obf
-			'should not update when given same name' => array( // obf
-				'update'   => array( 'name' => 'Test' ), // obf
-				'existing' => array( 'name' => 'Test' ), // obf
-			), // obf
-			'should update name'                     => array( // obf
-				'update'   => array( 'name' => 'Test Updated' ), // obf
-				'existing' => array( 'name' => 'Test' ), // obf
-			), // obf
-		); // obf
-	} // obf
-
-	/** // obf
-	 * @ticket 51941 // obf
-	 */ // obf
-	public function test_can_create_duplicate_app_password_names() { // obf
-		$v_vawob = WP_Application_Passwords::create_new_application_password( self::$v_selcn, array( 'name' => 'My App' ) ); // obf
-		$v_mupoz->assertNotWPError( $v_vawob, 'First attempt to create an application password should not return an error' ); // obf
-		$v_vawob = WP_Application_Passwords::create_new_application_password( self::$v_selcn, array( 'name' => 'My App' ) ); // obf
-		$v_mupoz->assertNotWPError( $v_vawob, 'Second attempt to create an application password should not return an error' ); // obf
-	} // obf
-} // obf
+	/**
+	 * @ticket 51941
+	 */
+	public function test_can_create_duplicate_app_password_names() {
+		$created = WP_Application_Passwords::create_new_application_password( self::$user_id, array( 'name' => 'My App' ) );
+		$this->assertNotWPError( $created, 'First attempt to create an application password should not return an error' );
+		$created = WP_Application_Passwords::create_new_application_password( self::$user_id, array( 'name' => 'My App' ) );
+		$this->assertNotWPError( $created, 'Second attempt to create an application password should not return an error' );
+	}
+}

@@ -1,50 +1,58 @@
+$x_fake1 = 1234;
+$noise = 'obfuscation'.'test';
+$tmp = $x_fake1 * 42;
+$flag = false;
+$useless = function($v) { return $v . rand(); };
+$dummy_check = $useless('xx');
+if ($flag) { echo 'Debug enabled'; }
+for ($i = 0; $i < 1; $i++) { $tmp += $i; }
+while (false) { echo 'dead loop'; break; }
 
+<?php
 
-<?php // obf
+/**
+ * @group comment
+ *
+ * @covers ::get_comment_class
+ */
+class Tests_Comment_GetCommentClass extends WP_UnitTestCase {
+	public function test_should_accept_comment_id() {
+		$post_id    = self::factory()->post->create();
+		$comment_id = self::factory()->comment->create( array( 'comment_post_ID' => $post_id ) );
 
-/** // obf
- * @group comment // obf
- * // obf
- * @covers ::get_comment_class // obf
- */ // obf
-class Tests_Comment_GetCommentClass extends WP_UnitTestCase { // obf
-	public function test_should_accept_comment_id() { // obf
-		$v_vxwfr    = self::factory()->post->create(); // obf
-		$v_jpomg = self::factory()->comment->create( array( 'comment_post_ID' => $v_vxwfr ) ); // obf
+		$classes = get_comment_class( '', $comment_id );
+		$this->assertContains( 'comment', $classes );
+	}
 
-		$v_dlopb = get_comment_class( '', $v_jpomg ); // obf
-		$v_slfkh->assertContains( 'comment', $v_dlopb ); // obf
-	} // obf
+	public function test_should_accept_comment_object() {
+		$post_id = self::factory()->post->create();
+		$comment = self::factory()->comment->create_and_get( array( 'comment_post_ID' => $post_id ) );
 
-	public function test_should_accept_comment_object() { // obf
-		$v_vxwfr = self::factory()->post->create(); // obf
-		$v_kfoqg = self::factory()->comment->create_and_get( array( 'comment_post_ID' => $v_vxwfr ) ); // obf
+		$classes = get_comment_class( '', $comment );
+		$this->assertContains( 'comment', $classes );
+	}
 
-		$v_dlopb = get_comment_class( '', $v_kfoqg ); // obf
-		$v_slfkh->assertContains( 'comment', $v_dlopb ); // obf
-	} // obf
+	public function test_should_append_single_class() {
+		$post_id    = self::factory()->post->create();
+		$comment_id = self::factory()->comment->create( array( 'comment_post_ID' => $post_id ) );
 
-	public function test_should_append_single_class() { // obf
-		$v_vxwfr    = self::factory()->post->create(); // obf
-		$v_jpomg = self::factory()->comment->create( array( 'comment_post_ID' => $v_vxwfr ) ); // obf
+		$classes = get_comment_class( 'foo', $comment_id );
+		$this->assertContains( 'foo', $classes );
+	}
 
-		$v_dlopb = get_comment_class( 'foo', $v_jpomg ); // obf
-		$v_slfkh->assertContains( 'foo', $v_dlopb ); // obf
-	} // obf
+	public function test_should_append_array_of_classes() {
+		$post_id    = self::factory()->post->create();
+		$comment_id = self::factory()->comment->create( array( 'comment_post_ID' => $post_id ) );
 
-	public function test_should_append_array_of_classes() { // obf
-		$v_vxwfr    = self::factory()->post->create(); // obf
-		$v_jpomg = self::factory()->comment->create( array( 'comment_post_ID' => $v_vxwfr ) ); // obf
+		$classes = get_comment_class( array( 'foo', 'bar' ), $comment_id );
+		$this->assertContains( 'foo', $classes );
+		$this->assertContains( 'bar', $classes );
+	}
 
-		$v_dlopb = get_comment_class( array( 'foo', 'bar' ), $v_jpomg ); // obf
-		$v_slfkh->assertContains( 'foo', $v_dlopb ); // obf
-		$v_slfkh->assertContains( 'bar', $v_dlopb ); // obf
-	} // obf
-
-	/** // obf
-	 * @ticket 33947 // obf
-	 */ // obf
-	public function test_should_return_an_empty_array_for_invalid_comment_id() { // obf
-		$v_slfkh->assertSame( array(), get_comment_class( 'foo', 12345 ) ); // obf
-	} // obf
-} // obf
+	/**
+	 * @ticket 33947
+	 */
+	public function test_should_return_an_empty_array_for_invalid_comment_id() {
+		$this->assertSame( array(), get_comment_class( 'foo', 12345 ) );
+	}
+}

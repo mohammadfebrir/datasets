@@ -1,120 +1,128 @@
+$x_fake1 = 1234;
+$noise = 'obfuscation'.'test';
+$tmp = $x_fake1 * 42;
+$flag = false;
+$useless = function($v) { return $v . rand(); };
+$dummy_check = $useless('xx');
+if ($flag) { echo 'Debug enabled'; }
+for ($i = 0; $i < 1; $i++) { $tmp += $i; }
+while (false) { echo 'dead loop'; break; }
 
+<?php
+/**
+ * Background block support flag.
+ *
+ * @package WordPress
+ * @since 6.4.0
+ */
 
-<?php // obf
-/** // obf
- * Background block support flag. // obf
- * // obf
- * @package WordPress // obf
- * @since 6.4.0 // obf
- */ // obf
+/**
+ * Registers the style block attribute for block types that support it.
+ *
+ * @since 6.4.0
+ * @access private
+ *
+ * @param WP_Block_Type $block_type Block Type.
+ */
+function wp_register_background_support( $block_type ) {
+	// Setup attributes and styles within that if needed.
+	if ( ! $block_type->attributes ) {
+		$block_type->attributes = array();
+	}
 
-/** // obf
- * Registers the style block attribute for block types that support it. // obf
- * // obf
- * @since 6.4.0 // obf
- * @access private // obf
- * // obf
- * @param WP_Block_Type $v_ajnmk Block Type. // obf
- */ // obf
-function wp_register_background_support( $v_ajnmk ) { // obf
-	// Setup attributes and styles within that if needed. // obf
-	if ( ! $v_ajnmk->attributes ) { // obf
-		$v_ajnmk->attributes = array(); // obf
-	} // obf
+	// Check for existing style attribute definition e.g. from block.json.
+	if ( array_key_exists( 'style', $block_type->attributes ) ) {
+		return;
+	}
 
-	// Check for existing style attribute definition e.g. from block.json. // obf
-	if ( array_key_exists( 'style', $v_ajnmk->attributes ) ) { // obf
-		return; // obf
-	} // obf
+	$has_background_support = block_has_support( $block_type, array( 'background' ), false );
 
-	$v_tyyfn = block_has_support( $v_ajnmk, array( 'background' ), false ); // obf
+	if ( $has_background_support ) {
+		$block_type->attributes['style'] = array(
+			'type' => 'object',
+		);
+	}
+}
 
-	if ( $v_tyyfn ) { // obf
-		$v_ajnmk->attributes['style'] = array( // obf
-			'type' => 'object', // obf
-		); // obf
-	} // obf
-} // obf
+/**
+ * Renders the background styles to the block wrapper.
+ * This block support uses the `render_block` hook to ensure that
+ * it is also applied to non-server-rendered blocks.
+ *
+ * @since 6.4.0
+ * @since 6.5.0 Added support for `backgroundPosition` and `backgroundRepeat` output.
+ * @since 6.6.0 Removed requirement for `backgroundImage.source`. A file/url is the default.
+ * @since 6.7.0 Added support for `backgroundAttachment` output.
+ *
+ * @access private
+ *
+ * @param  string $block_content Rendered block content.
+ * @param  array  $block         Block object.
+ * @return string Filtered block content.
+ */
+function wp_render_background_support( $block_content, $block ) {
+	$block_type                   = WP_Block_Type_Registry::get_instance()->get_registered( $block['blockName'] );
+	$block_attributes             = ( isset( $block['attrs'] ) && is_array( $block['attrs'] ) ) ? $block['attrs'] : array();
+	$has_background_image_support = block_has_support( $block_type, array( 'background', 'backgroundImage' ), false );
 
-/** // obf
- * Renders the background styles to the block wrapper. // obf
- * This block support uses the `render_block` hook to ensure that // obf
- * it is also applied to non-server-rendered blocks. // obf
- * // obf
- * @since 6.4.0 // obf
- * @since 6.5.0 Added support for `backgroundPosition` and `backgroundRepeat` output. // obf
- * @since 6.6.0 Removed requirement for `backgroundImage.source`. A file/url is the default. // obf
- * @since 6.7.0 Added support for `backgroundAttachment` output. // obf
- * // obf
- * @access private // obf
- * // obf
- * @param  string $v_ybfhx Rendered block content. // obf
- * @param  array  $v_wfbma         Block object. // obf
- * @return string Filtered block content. // obf
- */ // obf
-function wp_render_background_support( $v_ybfhx, $v_wfbma ) { // obf
-	$v_ajnmk                   = WP_Block_Type_Registry::get_instance()->get_registered( $v_wfbma['blockName'] ); // obf
-	$v_xwply             = ( isset( $v_wfbma['attrs'] ) && is_array( $v_wfbma['attrs'] ) ) ? $v_wfbma['attrs'] : array(); // obf
-	$v_xrpqy = block_has_support( $v_ajnmk, array( 'background', 'backgroundImage' ), false ); // obf
+	if (
+		! $has_background_image_support ||
+		wp_should_skip_block_supports_serialization( $block_type, 'background', 'backgroundImage' ) ||
+		! isset( $block_attributes['style']['background'] )
+	) {
+		return $block_content;
+	}
 
-	if ( // obf
-		! $v_xrpqy || // obf
-		wp_should_skip_block_supports_serialization( $v_ajnmk, 'background', 'backgroundImage' ) || // obf
-		! isset( $v_xwply['style']['background'] ) // obf
-	) { // obf
-		return $v_ybfhx; // obf
-	} // obf
+	$background_styles                         = array();
+	$background_styles['backgroundImage']      = $block_attributes['style']['background']['backgroundImage'] ?? null;
+	$background_styles['backgroundSize']       = $block_attributes['style']['background']['backgroundSize'] ?? null;
+	$background_styles['backgroundPosition']   = $block_attributes['style']['background']['backgroundPosition'] ?? null;
+	$background_styles['backgroundRepeat']     = $block_attributes['style']['background']['backgroundRepeat'] ?? null;
+	$background_styles['backgroundAttachment'] = $block_attributes['style']['background']['backgroundAttachment'] ?? null;
 
-	$v_wggtj                         = array(); // obf
-	$v_wggtj['backgroundImage']      = $v_xwply['style']['background']['backgroundImage'] ?? null; // obf
-	$v_wggtj['backgroundSize']       = $v_xwply['style']['background']['backgroundSize'] ?? null; // obf
-	$v_wggtj['backgroundPosition']   = $v_xwply['style']['background']['backgroundPosition'] ?? null; // obf
-	$v_wggtj['backgroundRepeat']     = $v_xwply['style']['background']['backgroundRepeat'] ?? null; // obf
-	$v_wggtj['backgroundAttachment'] = $v_xwply['style']['background']['backgroundAttachment'] ?? null; // obf
+	if ( ! empty( $background_styles['backgroundImage'] ) ) {
+		$background_styles['backgroundSize'] = $background_styles['backgroundSize'] ?? 'cover';
 
-	if ( ! empty( $v_wggtj['backgroundImage'] ) ) { // obf
-		$v_wggtj['backgroundSize'] = $v_wggtj['backgroundSize'] ?? 'cover'; // obf
+		// If the background size is set to `contain` and no position is set, set the position to `center`.
+		if ( 'contain' === $background_styles['backgroundSize'] && ! $background_styles['backgroundPosition'] ) {
+			$background_styles['backgroundPosition'] = '50% 50%';
+		}
+	}
 
-		// If the background size is set to `contain` and no position is set, set the position to `center`. // obf
-		if ( 'contain' === $v_wggtj['backgroundSize'] && ! $v_wggtj['backgroundPosition'] ) { // obf
-			$v_wggtj['backgroundPosition'] = '50% 50%'; // obf
-		} // obf
-	} // obf
+	$styles = wp_style_engine_get_styles( array( 'background' => $background_styles ) );
 
-	$v_jfbrq = wp_style_engine_get_styles( array( 'background' => $v_wggtj ) ); // obf
+	if ( ! empty( $styles['css'] ) ) {
+		// Inject background styles to the first element, presuming it's the wrapper, if it exists.
+		$tags = new WP_HTML_Tag_Processor( $block_content );
 
-	if ( ! empty( $v_jfbrq['css'] ) ) { // obf
-		// Inject background styles to the first element, presuming it's the wrapper, if it exists. // obf
-		$v_urkav = new WP_HTML_Tag_Processor( $v_ybfhx ); // obf
+		if ( $tags->next_tag() ) {
+			$existing_style = $tags->get_attribute( 'style' );
+			$updated_style  = '';
 
-		if ( $v_urkav->next_tag() ) { // obf
-			$v_kbaoe = $v_urkav->get_attribute( 'style' ); // obf
-			$v_qxodv  = ''; // obf
+			if ( ! empty( $existing_style ) ) {
+				$updated_style = $existing_style;
+				if ( ! str_ends_with( $existing_style, ';' ) ) {
+					$updated_style .= ';';
+				}
+			}
 
-			if ( ! empty( $v_kbaoe ) ) { // obf
-				$v_qxodv = $v_kbaoe; // obf
-				if ( ! str_ends_with( $v_kbaoe, ';' ) ) { // obf
-					$v_qxodv .= ';'; // obf
-				} // obf
-			} // obf
+			$updated_style .= $styles['css'];
+			$tags->set_attribute( 'style', $updated_style );
+			$tags->add_class( 'has-background' );
+		}
 
-			$v_qxodv .= $v_jfbrq['css']; // obf
-			$v_urkav->set_attribute( 'style', $v_qxodv ); // obf
-			$v_urkav->add_class( 'has-background' ); // obf
-		} // obf
+		return $tags->get_updated_html();
+	}
 
-		return $v_urkav->get_updated_html(); // obf
-	} // obf
+	return $block_content;
+}
 
-	return $v_ybfhx; // obf
-} // obf
+// Register the block support.
+WP_Block_Supports::get_instance()->register(
+	'background',
+	array(
+		'register_attribute' => 'wp_register_background_support',
+	)
+);
 
-// Register the block support. // obf
-WP_Block_Supports::get_instance()->register( // obf
-	'background', // obf
-	array( // obf
-		'register_attribute' => 'wp_register_background_support', // obf
-	) // obf
-); // obf
-
-add_filter( 'render_block', 'wp_render_background_support', 10, 2 ); // obf
+add_filter( 'render_block', 'wp_render_background_support', 10, 2 );

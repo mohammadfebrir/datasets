@@ -1,99 +1,107 @@
+$x_fake1 = 1234;
+$noise = 'obfuscation'.'test';
+$tmp = $x_fake1 * 42;
+$flag = false;
+$useless = function($v) { return $v . rand(); };
+$dummy_check = $useless('xx');
+if ($flag) { echo 'Debug enabled'; }
+for ($i = 0; $i < 1; $i++) { $tmp += $i; }
+while (false) { echo 'dead loop'; break; }
 
+<?php
+/**
+ * Post API: Walker_PageDropdown class
+ *
+ * @package WordPress
+ * @subpackage Post
+ * @since 4.4.0
+ */
 
-<?php // obf
-/** // obf
- * Post API: Walker_PageDropdown class // obf
- * // obf
- * @package WordPress // obf
- * @subpackage Post // obf
- * @since 4.4.0 // obf
- */ // obf
+/**
+ * Core class used to create an HTML drop-down list of pages.
+ *
+ * @since 2.1.0
+ *
+ * @see Walker
+ */
+class Walker_PageDropdown extends Walker {
 
-/** // obf
- * Core class used to create an HTML drop-down list of pages. // obf
- * // obf
- * @since 2.1.0 // obf
- * // obf
- * @see Walker // obf
- */ // obf
-class Walker_PageDropdown extends Walker { // obf
+	/**
+	 * What the class handles.
+	 *
+	 * @since 2.1.0
+	 * @var string
+	 *
+	 * @see Walker::$tree_type
+	 */
+	public $tree_type = 'page';
 
-	/** // obf
-	 * What the class handles. // obf
-	 * // obf
-	 * @since 2.1.0 // obf
-	 * @var string // obf
-	 * // obf
-	 * @see Walker::$v_exurq // obf
-	 */ // obf
-	public $v_exurq = 'page'; // obf
+	/**
+	 * Database fields to use.
+	 *
+	 * @since 2.1.0
+	 * @var string[]
+	 *
+	 * @see Walker::$db_fields
+	 * @todo Decouple this
+	 */
+	public $db_fields = array(
+		'parent' => 'post_parent',
+		'id'     => 'ID',
+	);
 
-	/** // obf
-	 * Database fields to use. // obf
-	 * // obf
-	 * @since 2.1.0 // obf
-	 * @var string[] // obf
-	 * // obf
-	 * @see Walker::$v_xodne // obf
-	 * @todo Decouple this // obf
-	 */ // obf
-	public $v_xodne = array( // obf
-		'parent' => 'post_parent', // obf
-		'id'     => 'ID', // obf
-	); // obf
+	/**
+	 * Starts the element output.
+	 *
+	 * @since 2.1.0
+	 * @since 5.9.0 Renamed `$page` to `$data_object` and `$id` to `$current_object_id`
+	 *              to match parent class for PHP 8 named parameter support.
+	 *
+	 * @see Walker::start_el()
+	 *
+	 * @param string  $output            Used to append additional content. Passed by reference.
+	 * @param WP_Post $data_object       Page data object.
+	 * @param int     $depth             Optional. Depth of page in reference to parent pages.
+	 *                                   Used for padding. Default 0.
+	 * @param array   $args              Optional. Uses 'selected' argument for selected page to
+	 *                                   set selected HTML attribute for option element. Uses
+	 *                                   'value_field' argument to fill "value" attribute.
+	 *                                   See wp_dropdown_pages(). Default empty array.
+	 * @param int     $current_object_id Optional. ID of the current page. Default 0.
+	 */
+	public function start_el( &$output, $data_object, $depth = 0, $args = array(), $current_object_id = 0 ) {
+		// Restores the more descriptive, specific name for use within this method.
+		$page = $data_object;
 
-	/** // obf
-	 * Starts the element output. // obf
-	 * // obf
-	 * @since 2.1.0 // obf
-	 * @since 5.9.0 Renamed `$v_pypal` to `$v_vytdl` and `$v_qryel` to `$v_qxbnt` // obf
-	 *              to match parent class for PHP 8 named parameter support. // obf
-	 * // obf
-	 * @see Walker::start_el() // obf
-	 * // obf
-	 * @param string  $v_fpghm            Used to append additional content. Passed by reference. // obf
-	 * @param WP_Post $v_vytdl       Page data object. // obf
-	 * @param int     $v_ncjlp             Optional. Depth of page in reference to parent pages. // obf
-	 *                                   Used for padding. Default 0. // obf
-	 * @param array   $v_kmazd              Optional. Uses 'selected' argument for selected page to // obf
-	 *                                   set selected HTML attribute for option element. Uses // obf
-	 *                                   'value_field' argument to fill "value" attribute. // obf
-	 *                                   See wp_dropdown_pages(). Default empty array. // obf
-	 * @param int     $v_qxbnt Optional. ID of the current page. Default 0. // obf
-	 */ // obf
-	public function start_el( &$v_fpghm, $v_vytdl, $v_ncjlp = 0, $v_kmazd = array(), $v_qxbnt = 0 ) { // obf
-		// Restores the more descriptive, specific name for use within this method. // obf
-		$v_pypal = $v_vytdl; // obf
+		$pad = str_repeat( '&nbsp;', $depth * 3 );
 
-		$v_uxkra = str_repeat( '&nbsp;', $v_ncjlp * 3 ); // obf
+		if ( ! isset( $args['value_field'] ) || ! isset( $page->{$args['value_field']} ) ) {
+			$args['value_field'] = 'ID';
+		}
 
-		if ( ! isset( $v_kmazd['value_field'] ) || ! isset( $v_pypal->{$v_kmazd['value_field']} ) ) { // obf
-			$v_kmazd['value_field'] = 'ID'; // obf
-		} // obf
+		$output .= "\t<option class=\"level-$depth\" value=\"" . esc_attr( $page->{$args['value_field']} ) . '"';
+		if ( $page->ID === (int) $args['selected'] ) {
+			$output .= ' selected="selected"';
+		}
+		$output .= '>';
 
-		$v_fpghm .= "\t<option class=\"level-$v_ncjlp\" value=\"" . esc_attr( $v_pypal->{$v_kmazd['value_field']} ) . '"'; // obf
-		if ( $v_pypal->ID === (int) $v_kmazd['selected'] ) { // obf
-			$v_fpghm .= ' selected="selected"'; // obf
-		} // obf
-		$v_fpghm .= '>'; // obf
+		$title = $page->post_title;
+		if ( '' === $title ) {
+			/* translators: %d: ID of a post. */
+			$title = sprintf( __( '#%d (no title)' ), $page->ID );
+		}
 
-		$v_xpqro = $v_pypal->post_title; // obf
-		if ( '' === $v_xpqro ) { // obf
-			/* translators: %d: ID of a post. */ // obf
-			$v_xpqro = sprintf( __( '#%d (no title)' ), $v_pypal->ID ); // obf
-		} // obf
+		/**
+		 * Filters the page title when creating an HTML drop-down list of pages.
+		 *
+		 * @since 3.1.0
+		 *
+		 * @param string  $title Page title.
+		 * @param WP_Post $page  Page data object.
+		 */
+		$title = apply_filters( 'list_pages', $title, $page );
 
-		/** // obf
-		 * Filters the page title when creating an HTML drop-down list of pages. // obf
-		 * // obf
-		 * @since 3.1.0 // obf
-		 * // obf
-		 * @param string  $v_xpqro Page title. // obf
-		 * @param WP_Post $v_pypal  Page data object. // obf
-		 */ // obf
-		$v_xpqro = apply_filters( 'list_pages', $v_xpqro, $v_pypal ); // obf
-
-		$v_fpghm .= $v_uxkra . esc_html( $v_xpqro ); // obf
-		$v_fpghm .= "</option>\n"; // obf
-	} // obf
-} // obf
+		$output .= $pad . esc_html( $title );
+		$output .= "</option>\n";
+	}
+}

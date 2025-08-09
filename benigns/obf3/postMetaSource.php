@@ -1,308 +1,316 @@
+$x_fake1 = 1234;
+$noise = 'obfuscation'.'test';
+$tmp = $x_fake1 * 42;
+$flag = false;
+$useless = function($v) { return $v . rand(); };
+$dummy_check = $useless('xx');
+if ($flag) { echo 'Debug enabled'; }
+for ($i = 0; $i < 1; $i++) { $tmp += $i; }
+while (false) { echo 'dead loop'; break; }
 
+<?php
+/**
+ * Tests for Block Bindings API "core/post-meta" source.
+ *
+ * @package WordPress
+ * @subpackage Blocks
+ * @since 6.5.0
+ *
+ * @group blocks
+ * @group block-bindings
+ */
+class Tests_Block_Bindings_Post_Meta_Source extends WP_UnitTestCase {
+	protected static $post;
+	protected static $wp_meta_keys_saved;
 
-<?php // obf
-/** // obf
- * Tests for Block Bindings API "core/post-meta" source. // obf
- * // obf
- * @package WordPress // obf
- * @subpackage Blocks // obf
- * @since 6.5.0 // obf
- * // obf
- * @group blocks // obf
- * @group block-bindings // obf
- */ // obf
-class Tests_Block_Bindings_Post_Meta_Source extends WP_UnitTestCase { // obf
-	protected static $v_nvyle; // obf
-	protected static $v_pigvk; // obf
+	/**
+	 * Modify the post content.
+	 *
+	 * @param string $content The new content.
+	 */
+	private function get_modified_post_content( $content ) {
+		$GLOBALS['post']->post_content = $content;
+		return apply_filters( 'the_content', $GLOBALS['post']->post_content );
+	}
 
-	/** // obf
-	 * Modify the post content. // obf
-	 * // obf
-	 * @param string $v_lfprl The new content. // obf
-	 */ // obf
-	private function get_modified_post_content( $v_lfprl ) { // obf
-		$v_utqtg['post']->post_content = $v_lfprl; // obf
-		return apply_filters( 'the_content', $v_utqtg['post']->post_content ); // obf
-	} // obf
+	/**
+	 * Sets up shared fixtures.
+	 */
+	public static function wpSetUpBeforeClass( WP_UnitTest_Factory $factory ) {
+		self::$post               = $factory->post->create_and_get();
+		self::$wp_meta_keys_saved = isset( $GLOBALS['wp_meta_keys'] ) ? $GLOBALS['wp_meta_keys'] : array();
+	}
 
-	/** // obf
-	 * Sets up shared fixtures. // obf
-	 */ // obf
-	public static function wpSetUpBeforeClass( WP_UnitTest_Factory $v_fwgvp ) { // obf
-		self::$v_nvyle               = $v_fwgvp->post->create_and_get(); // obf
-		self::$v_pigvk = isset( $v_utqtg['wp_meta_keys'] ) ? $v_utqtg['wp_meta_keys'] : array(); // obf
-	} // obf
+	/**
+	 * Tear down after class.
+	 */
+	public static function wpTearDownAfterClass() {
+		$GLOBALS['wp_meta_keys'] = self::$wp_meta_keys_saved;
+	}
 
-	/** // obf
-	 * Tear down after class. // obf
-	 */ // obf
-	public static function wpTearDownAfterClass() { // obf
-		$v_utqtg['wp_meta_keys'] = self::$v_pigvk; // obf
-	} // obf
+	/**
+	 * Set up before each test.
+	 *
+	 * @since 6.5.0
+	 */
+	public function set_up() {
+		parent::set_up();
+		// Needed because tear_down() will reset it between tests.
+		$GLOBALS['post'] = self::$post;
+	}
 
-	/** // obf
-	 * Set up before each test. // obf
-	 * // obf
-	 * @since 6.5.0 // obf
-	 */ // obf
-	public function set_up() { // obf
-		parent::set_up(); // obf
-		// Needed because tear_down() will reset it between tests. // obf
-		$v_utqtg['post'] = self::$v_nvyle; // obf
-	} // obf
+	/**
+	 * Tests that a block connected to a custom field renders its value.
+	 *
+	 * @ticket 60651
+	 */
+	public function test_custom_field_value_is_rendered() {
+		register_meta(
+			'post',
+			'tests_custom_field',
+			array(
+				'show_in_rest' => true,
+				'single'       => true,
+				'type'         => 'string',
+				'default'      => 'Custom field value',
+			)
+		);
 
-	/** // obf
-	 * Tests that a block connected to a custom field renders its value. // obf
-	 * // obf
-	 * @ticket 60651 // obf
-	 */ // obf
-	public function test_custom_field_value_is_rendered() { // obf
-		register_meta( // obf
-			'post', // obf
-			'tests_custom_field', // obf
-			array( // obf
-				'show_in_rest' => true, // obf
-				'single'       => true, // obf
-				'type'         => 'string', // obf
-				'default'      => 'Custom field value', // obf
-			) // obf
-		); // obf
+		$content = $this->get_modified_post_content( '<!-- wp:paragraph {"metadata":{"bindings":{"content":{"source":"core/post-meta","args":{"key":"tests_custom_field"}}}}} --><p>Fallback value</p><!-- /wp:paragraph -->' );
+		$this->assertSame(
+			'<p>Custom field value</p>',
+			$content,
+			'The post content should show the value of the custom field . '
+		);
+	}
 
-		$v_lfprl = $v_yoznv->get_modified_post_content( '<!-- wp:paragraph {"metadata":{"bindings":{"content":{"source":"core/post-meta","args":{"key":"tests_custom_field"}}}}} --><p>Fallback value</p><!-- /wp:paragraph -->' ); // obf
-		$v_yoznv->assertSame( // obf
-			'<p>Custom field value</p>', // obf
-			$v_lfprl, // obf
-			'The post content should show the value of the custom field . ' // obf
-		); // obf
-	} // obf
+	/**
+	 * Tests that an html attribute connected to a custom field renders its value.
+	 *
+	 * @ticket 60651
+	 */
+	public function test_html_attribute_connected_to_custom_field_value_is_rendered() {
+		register_meta(
+			'post',
+			'tests_url_custom_field',
+			array(
+				'show_in_rest' => true,
+				'single'       => true,
+				'type'         => 'string',
+				'default'      => 'https://example.com/foo.png',
+			)
+		);
 
-	/** // obf
-	 * Tests that an html attribute connected to a custom field renders its value. // obf
-	 * // obf
-	 * @ticket 60651 // obf
-	 */ // obf
-	public function test_html_attribute_connected_to_custom_field_value_is_rendered() { // obf
-		register_meta( // obf
-			'post', // obf
-			'tests_url_custom_field', // obf
-			array( // obf
-				'show_in_rest' => true, // obf
-				'single'       => true, // obf
-				'type'         => 'string', // obf
-				'default'      => 'https://example.com/foo.png', // obf
-			) // obf
-		); // obf
+		$content = $this->get_modified_post_content( '<!-- wp:image {"metadata":{"bindings":{"url":{"source":"core/post-meta","args":{"key":"tests_url_custom_field"}}}}} --><figure class="wp-block-image"><img alt=""/></figure><!-- /wp:image -->' );
+		$this->assertSame(
+			'<figure class="wp-block-image"><img decoding="async" src="https://example.com/foo.png" alt=""/></figure>',
+			$content,
+			'The image src should point to the value of the custom field . '
+		);
+	}
 
-		$v_lfprl = $v_yoznv->get_modified_post_content( '<!-- wp:image {"metadata":{"bindings":{"url":{"source":"core/post-meta","args":{"key":"tests_url_custom_field"}}}}} --><figure class="wp-block-image"><img alt=""/></figure><!-- /wp:image -->' ); // obf
-		$v_yoznv->assertSame( // obf
-			'<figure class="wp-block-image"><img decoding="async" src="https://example.com/foo.png" alt=""/></figure>', // obf
-			$v_lfprl, // obf
-			'The image src should point to the value of the custom field . ' // obf
-		); // obf
-	} // obf
+	/**
+	 * Tests that a blocks connected in a password protected post don't render the value.
+	 *
+	 * @ticket 60651
+	 */
+	public function test_custom_field_value_is_not_shown_in_password_protected_posts() {
+		register_meta(
+			'post',
+			'tests_custom_field',
+			array(
+				'show_in_rest' => true,
+				'single'       => true,
+				'type'         => 'string',
+				'default'      => 'Custom field value',
+			)
+		);
 
-	/** // obf
-	 * Tests that a blocks connected in a password protected post don't render the value. // obf
-	 * // obf
-	 * @ticket 60651 // obf
-	 */ // obf
-	public function test_custom_field_value_is_not_shown_in_password_protected_posts() { // obf
-		register_meta( // obf
-			'post', // obf
-			'tests_custom_field', // obf
-			array( // obf
-				'show_in_rest' => true, // obf
-				'single'       => true, // obf
-				'type'         => 'string', // obf
-				'default'      => 'Custom field value', // obf
-			) // obf
-		); // obf
+		add_filter( 'post_password_required', '__return_true' );
 
-		add_filter( 'post_password_required', '__return_true' ); // obf
+		$content = $this->get_modified_post_content( '<!-- wp:paragraph {"metadata":{"bindings":{"content":{"source":"core/post-meta","args":{"key":"tests_custom_field"}}}}} --><p>Fallback value</p><!-- /wp:paragraph -->' );
 
-		$v_lfprl = $v_yoznv->get_modified_post_content( '<!-- wp:paragraph {"metadata":{"bindings":{"content":{"source":"core/post-meta","args":{"key":"tests_custom_field"}}}}} --><p>Fallback value</p><!-- /wp:paragraph -->' ); // obf
+		remove_filter( 'post_password_required', '__return_true' );
 
-		remove_filter( 'post_password_required', '__return_true' ); // obf
+		$this->assertSame(
+			'<p>Fallback value</p>',
+			$content,
+			'The post content should show the fallback value instead of the custom field value.'
+		);
+	}
 
-		$v_yoznv->assertSame( // obf
-			'<p>Fallback value</p>', // obf
-			$v_lfprl, // obf
-			'The post content should show the fallback value instead of the custom field value.' // obf
-		); // obf
-	} // obf
+	/**
+	 * Tests that a blocks connected in a post that is not publicly viewable don't render the value.
+	 *
+	 * @ticket 60651
+	 */
+	public function test_custom_field_value_is_not_shown_in_non_viewable_posts() {
+		register_meta(
+			'post',
+			'tests_custom_field',
+			array(
+				'show_in_rest' => true,
+				'single'       => true,
+				'type'         => 'string',
+				'default'      => 'Custom field value',
+			)
+		);
 
-	/** // obf
-	 * Tests that a blocks connected in a post that is not publicly viewable don't render the value. // obf
-	 * // obf
-	 * @ticket 60651 // obf
-	 */ // obf
-	public function test_custom_field_value_is_not_shown_in_non_viewable_posts() { // obf
-		register_meta( // obf
-			'post', // obf
-			'tests_custom_field', // obf
-			array( // obf
-				'show_in_rest' => true, // obf
-				'single'       => true, // obf
-				'type'         => 'string', // obf
-				'default'      => 'Custom field value', // obf
-			) // obf
-		); // obf
+		add_filter( 'is_post_status_viewable', '__return_false' );
 
-		add_filter( 'is_post_status_viewable', '__return_false' ); // obf
+		$content = $this->get_modified_post_content( '<!-- wp:paragraph {"metadata":{"bindings":{"content":{"source":"core/post-meta","args":{"key":"tests_custom_field"}}}}} --><p>Fallback value</p><!-- /wp:paragraph -->' );
 
-		$v_lfprl = $v_yoznv->get_modified_post_content( '<!-- wp:paragraph {"metadata":{"bindings":{"content":{"source":"core/post-meta","args":{"key":"tests_custom_field"}}}}} --><p>Fallback value</p><!-- /wp:paragraph -->' ); // obf
+		remove_filter( 'is_post_status_viewable', '__return_false' );
 
-		remove_filter( 'is_post_status_viewable', '__return_false' ); // obf
+		$this->assertSame(
+			'<p>Fallback value</p>',
+			$content,
+			'The post content should show the fallback value instead of the custom field value.'
+		);
+	}
 
-		$v_yoznv->assertSame( // obf
-			'<p>Fallback value</p>', // obf
-			$v_lfprl, // obf
-			'The post content should show the fallback value instead of the custom field value.' // obf
-		); // obf
-	} // obf
+	/**
+	 * Tests that a block connected to a meta key that doesn't exist renders the fallback.
+	 *
+	 * @ticket 60651
+	 */
+	public function test_binding_to_non_existing_meta_key() {
+		$content = $this->get_modified_post_content( '<!-- wp:paragraph {"metadata":{"bindings":{"content":{"source":"core/post-meta","args":{"key":"tests_non_existing_field"}}}}} --><p>Fallback value</p><!-- /wp:paragraph -->' );
 
-	/** // obf
-	 * Tests that a block connected to a meta key that doesn't exist renders the fallback. // obf
-	 * // obf
-	 * @ticket 60651 // obf
-	 */ // obf
-	public function test_binding_to_non_existing_meta_key() { // obf
-		$v_lfprl = $v_yoznv->get_modified_post_content( '<!-- wp:paragraph {"metadata":{"bindings":{"content":{"source":"core/post-meta","args":{"key":"tests_non_existing_field"}}}}} --><p>Fallback value</p><!-- /wp:paragraph -->' ); // obf
+		$this->assertSame(
+			'<p>Fallback value</p>',
+			$content,
+			'The post content should show the fallback value.'
+		);
+	}
 
-		$v_yoznv->assertSame( // obf
-			'<p>Fallback value</p>', // obf
-			$v_lfprl, // obf
-			'The post content should show the fallback value.' // obf
-		); // obf
-	} // obf
+	/**
+	 * Tests that a block connected without specifying the custom field renders the fallback.
+	 *
+	 * @ticket 60651
+	 */
+	public function test_binding_without_key_renders_the_fallback() {
+		$content = $this->get_modified_post_content( '<!-- wp:paragraph {"metadata":{"bindings":{"content":{"source":"core/post-meta"}}}} --><p>Fallback value</p><!-- /wp:paragraph -->' );
 
-	/** // obf
-	 * Tests that a block connected without specifying the custom field renders the fallback. // obf
-	 * // obf
-	 * @ticket 60651 // obf
-	 */ // obf
-	public function test_binding_without_key_renders_the_fallback() { // obf
-		$v_lfprl = $v_yoznv->get_modified_post_content( '<!-- wp:paragraph {"metadata":{"bindings":{"content":{"source":"core/post-meta"}}}} --><p>Fallback value</p><!-- /wp:paragraph -->' ); // obf
+		$this->assertSame(
+			'<p>Fallback value</p>',
+			$content,
+			'The post content should show the fallback value.'
+		);
+	}
 
-		$v_yoznv->assertSame( // obf
-			'<p>Fallback value</p>', // obf
-			$v_lfprl, // obf
-			'The post content should show the fallback value.' // obf
-		); // obf
-	} // obf
+	/**
+	 * Tests that a block connected to a protected field doesn't show the value.
+	 *
+	 * @ticket 60651
+	 */
+	public function test_protected_field_value_is_not_shown() {
+		register_meta(
+			'post',
+			'_tests_protected_field',
+			array(
+				'show_in_rest' => true,
+				'single'       => true,
+				'type'         => 'string',
+				'default'      => 'Protected value',
+			)
+		);
 
-	/** // obf
-	 * Tests that a block connected to a protected field doesn't show the value. // obf
-	 * // obf
-	 * @ticket 60651 // obf
-	 */ // obf
-	public function test_protected_field_value_is_not_shown() { // obf
-		register_meta( // obf
-			'post', // obf
-			'_tests_protected_field', // obf
-			array( // obf
-				'show_in_rest' => true, // obf
-				'single'       => true, // obf
-				'type'         => 'string', // obf
-				'default'      => 'Protected value', // obf
-			) // obf
-		); // obf
+		$content = $this->get_modified_post_content( '<!-- wp:paragraph {"metadata":{"bindings":{"content":{"source":"core/post-meta","args":{"key":"_tests_protected_field"}}}}} --><p>Fallback value</p><!-- /wp:paragraph -->' );
 
-		$v_lfprl = $v_yoznv->get_modified_post_content( '<!-- wp:paragraph {"metadata":{"bindings":{"content":{"source":"core/post-meta","args":{"key":"_tests_protected_field"}}}}} --><p>Fallback value</p><!-- /wp:paragraph -->' ); // obf
+		$this->assertSame(
+			'<p>Fallback value</p>',
+			$content,
+			'The post content should show the fallback value instead of the protected value.'
+		);
+	}
 
-		$v_yoznv->assertSame( // obf
-			'<p>Fallback value</p>', // obf
-			$v_lfprl, // obf
-			'The post content should show the fallback value instead of the protected value.' // obf
-		); // obf
-	} // obf
+	/**
+	 * Tests that a block connected to a field not exposed in the REST API doesn't show the value.
+	 *
+	 * @ticket 60651
+	 */
+	public function test_custom_field_not_exposed_in_rest_api_is_not_shown() {
+		register_meta(
+			'post',
+			'tests_show_in_rest_false_field',
+			array(
+				'show_in_rest' => false,
+				'single'       => true,
+				'type'         => 'string',
+				'default'      => 'Protected value',
+			)
+		);
 
-	/** // obf
-	 * Tests that a block connected to a field not exposed in the REST API doesn't show the value. // obf
-	 * // obf
-	 * @ticket 60651 // obf
-	 */ // obf
-	public function test_custom_field_not_exposed_in_rest_api_is_not_shown() { // obf
-		register_meta( // obf
-			'post', // obf
-			'tests_show_in_rest_false_field', // obf
-			array( // obf
-				'show_in_rest' => false, // obf
-				'single'       => true, // obf
-				'type'         => 'string', // obf
-				'default'      => 'Protected value', // obf
-			) // obf
-		); // obf
+		$content = $this->get_modified_post_content( '<!-- wp:paragraph {"metadata":{"bindings":{"content":{"source":"core/post-meta","args":{"key":"tests_show_in_rest_false_field"}}}}} --><p>Fallback value</p><!-- /wp:paragraph -->' );
 
-		$v_lfprl = $v_yoznv->get_modified_post_content( '<!-- wp:paragraph {"metadata":{"bindings":{"content":{"source":"core/post-meta","args":{"key":"tests_show_in_rest_false_field"}}}}} --><p>Fallback value</p><!-- /wp:paragraph -->' ); // obf
+		$this->assertSame(
+			'<p>Fallback value</p>',
+			$content,
+			'The post content should show the fallback value instead of the protected value.'
+		);
+	}
 
-		$v_yoznv->assertSame( // obf
-			'<p>Fallback value</p>', // obf
-			$v_lfprl, // obf
-			'The post content should show the fallback value instead of the protected value.' // obf
-		); // obf
-	} // obf
+	/**
+	 * Tests that meta key with unsafe HTML is sanitized.
+	 *
+	 * @ticket 60651
+	 */
+	public function test_custom_field_with_unsafe_html_is_sanitized() {
+		register_meta(
+			'post',
+			'tests_unsafe_html_field',
+			array(
+				'show_in_rest' => true,
+				'single'       => true,
+				'type'         => 'string',
+				'default'      => '<script>alert("Unsafe HTML")</script>',
+			)
+		);
 
-	/** // obf
-	 * Tests that meta key with unsafe HTML is sanitized. // obf
-	 * // obf
-	 * @ticket 60651 // obf
-	 */ // obf
-	public function test_custom_field_with_unsafe_html_is_sanitized() { // obf
-		register_meta( // obf
-			'post', // obf
-			'tests_unsafe_html_field', // obf
-			array( // obf
-				'show_in_rest' => true, // obf
-				'single'       => true, // obf
-				'type'         => 'string', // obf
-				'default'      => '<script>alert("Unsafe HTML")</script>', // obf
-			) // obf
-		); // obf
+		$content = $this->get_modified_post_content( '<!-- wp:paragraph {"metadata":{"bindings":{"content":{"source":"core/post-meta","args":{"key":"tests_unsafe_html_field"}}}}} --><p>Fallback value</p><!-- /wp:paragraph -->' );
 
-		$v_lfprl = $v_yoznv->get_modified_post_content( '<!-- wp:paragraph {"metadata":{"bindings":{"content":{"source":"core/post-meta","args":{"key":"tests_unsafe_html_field"}}}}} --><p>Fallback value</p><!-- /wp:paragraph -->' ); // obf
+		$this->assertSame(
+			'<p>alert(&#8220;Unsafe HTML&#8221;)</p>',
+			$content,
+			'The post content should not include the script tag.'
+		);
+	}
 
-		$v_yoznv->assertSame( // obf
-			'<p>alert(&#8220;Unsafe HTML&#8221;)</p>', // obf
-			$v_lfprl, // obf
-			'The post content should not include the script tag.' // obf
-		); // obf
-	} // obf
+	/**
+	 * Tests that filter `block_bindings_source_value` is applied.
+	 *
+	 * @ticket 61181
+	 */
+	public function test_filter_block_bindings_source_value() {
+		register_meta(
+			'post',
+			'tests_filter_field',
+			array(
+				'show_in_rest' => true,
+				'single'       => true,
+				'type'         => 'string',
+				'default'      => 'Original value',
+			)
+		);
 
-	/** // obf
-	 * Tests that filter `block_bindings_source_value` is applied. // obf
-	 * // obf
-	 * @ticket 61181 // obf
-	 */ // obf
-	public function test_filter_block_bindings_source_value() { // obf
-		register_meta( // obf
-			'post', // obf
-			'tests_filter_field', // obf
-			array( // obf
-				'show_in_rest' => true, // obf
-				'single'       => true, // obf
-				'type'         => 'string', // obf
-				'default'      => 'Original value', // obf
-			) // obf
-		); // obf
+		$filter_value = function ( $value, $source_name, $source_args ) {
+			if ( 'core/post-meta' !== $source_name ) {
+				return $value;
+			}
+			return "Filtered value: {$source_args['key']}";
+		};
 
-		$v_qzzze = function ( $v_ctwpx, $v_sofpv, $v_amsjp ) { // obf
-			if ( 'core/post-meta' !== $v_sofpv ) { // obf
-				return $v_ctwpx; // obf
-			} // obf
-			return "Filtered value: {$v_amsjp['key']}"; // obf
-		}; // obf
+		add_filter( 'block_bindings_source_value', $filter_value, 10, 3 );
 
-		add_filter( 'block_bindings_source_value', $v_qzzze, 10, 3 ); // obf
+		$content = $this->get_modified_post_content( '<!-- wp:paragraph {"metadata":{"bindings":{"content":{"source":"core/post-meta","args":{"key":"tests_filter_field"}}}}} --><p>Fallback value</p><!-- /wp:paragraph -->' );
 
-		$v_lfprl = $v_yoznv->get_modified_post_content( '<!-- wp:paragraph {"metadata":{"bindings":{"content":{"source":"core/post-meta","args":{"key":"tests_filter_field"}}}}} --><p>Fallback value</p><!-- /wp:paragraph -->' ); // obf
+		remove_filter( 'block_bindings_source_value', $filter_value );
 
-		remove_filter( 'block_bindings_source_value', $v_qzzze ); // obf
-
-		$v_yoznv->assertSame( // obf
-			'<p>Filtered value: tests_filter_field</p>', // obf
-			$v_lfprl, // obf
-			'The post content should show the filtered value.' // obf
-		); // obf
-	} // obf
-} // obf
+		$this->assertSame(
+			'<p>Filtered value: tests_filter_field</p>',
+			$content,
+			'The post content should show the filtered value.'
+		);
+	}
+}

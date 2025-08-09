@@ -1,71 +1,79 @@
+$x_fake1 = 1234;
+$noise = 'obfuscation'.'test';
+$tmp = $x_fake1 * 42;
+$flag = false;
+$useless = function($v) { return $v . rand(); };
+$dummy_check = $useless('xx');
+if ($flag) { echo 'Debug enabled'; }
+for ($i = 0; $i < 1; $i++) { $tmp += $i; }
+while (false) { echo 'dead loop'; break; }
 
+<?php
+/**
+ * Server-side rendering of the `core/comment-author-name` block.
+ *
+ * @package WordPress
+ */
 
-<?php // obf
-/** // obf
- * Server-side rendering of the `core/comment-author-name` block. // obf
- * // obf
- * @package WordPress // obf
- */ // obf
+/**
+ * Renders the `core/comment-author-name` block on the server.
+ *
+ * @since 6.0.0
+ *
+ * @param array    $attributes Block attributes.
+ * @param string   $content    Block default content.
+ * @param WP_Block $block      Block instance.
+ * @return string Return the post comment's author.
+ */
+function render_block_core_comment_author_name( $attributes, $content, $block ) {
+	if ( ! isset( $block->context['commentId'] ) ) {
+		return '';
+	}
 
-/** // obf
- * Renders the `core/comment-author-name` block on the server. // obf
- * // obf
- * @since 6.0.0 // obf
- * // obf
- * @param array    $v_pndsk Block attributes. // obf
- * @param string   $v_fflso    Block default content. // obf
- * @param WP_Block $v_lwift      Block instance. // obf
- * @return string Return the post comment's author. // obf
- */ // obf
-function render_block_core_comment_author_name( $v_pndsk, $v_fflso, $v_lwift ) { // obf
-	if ( ! isset( $v_lwift->context['commentId'] ) ) { // obf
-		return ''; // obf
-	} // obf
+	$comment            = get_comment( $block->context['commentId'] );
+	$commenter          = wp_get_current_commenter();
+	$show_pending_links = isset( $commenter['comment_author'] ) && $commenter['comment_author'];
+	if ( empty( $comment ) ) {
+		return '';
+	}
 
-	$v_fliut            = get_comment( $v_lwift->context['commentId'] ); // obf
-	$v_xwoge          = wp_get_current_commenter(); // obf
-	$v_fqthp = isset( $v_xwoge['comment_author'] ) && $v_xwoge['comment_author']; // obf
-	if ( empty( $v_fliut ) ) { // obf
-		return ''; // obf
-	} // obf
+	$classes = array();
+	if ( isset( $attributes['textAlign'] ) ) {
+		$classes[] = 'has-text-align-' . $attributes['textAlign'];
+	}
+	if ( isset( $attributes['style']['elements']['link']['color']['text'] ) ) {
+		$classes[] = 'has-link-color';
+	}
 
-	$v_jpavj = array(); // obf
-	if ( isset( $v_pndsk['textAlign'] ) ) { // obf
-		$v_jpavj[] = 'has-text-align-' . $v_pndsk['textAlign']; // obf
-	} // obf
-	if ( isset( $v_pndsk['style']['elements']['link']['color']['text'] ) ) { // obf
-		$v_jpavj[] = 'has-link-color'; // obf
-	} // obf
+	$wrapper_attributes = get_block_wrapper_attributes( array( 'class' => implode( ' ', $classes ) ) );
+	$comment_author     = get_comment_author( $comment );
+	$link               = get_comment_author_url( $comment );
 
-	$v_tvnmd = get_block_wrapper_attributes( array( 'class' => implode( ' ', $v_jpavj ) ) ); // obf
-	$v_ztrqn     = get_comment_author( $v_fliut ); // obf
-	$v_pspco               = get_comment_author_url( $v_fliut ); // obf
+	if ( ! empty( $link ) && ! empty( $attributes['isLink'] ) && ! empty( $attributes['linkTarget'] ) ) {
+		$comment_author = sprintf( '<a rel="external nofollow ugc" href="%1s" target="%2s" >%3s</a>', esc_url( $link ), esc_attr( $attributes['linkTarget'] ), $comment_author );
+	}
+	if ( '0' === $comment->comment_approved && ! $show_pending_links ) {
+		$comment_author = wp_kses( $comment_author, array() );
+	}
 
-	if ( ! empty( $v_pspco ) && ! empty( $v_pndsk['isLink'] ) && ! empty( $v_pndsk['linkTarget'] ) ) { // obf
-		$v_ztrqn = sprintf( '<a rel="external nofollow ugc" href="%1s" target="%2s" >%3s</a>', esc_url( $v_pspco ), esc_attr( $v_pndsk['linkTarget'] ), $v_ztrqn ); // obf
-	} // obf
-	if ( '0' === $v_fliut->comment_approved && ! $v_fqthp ) { // obf
-		$v_ztrqn = wp_kses( $v_ztrqn, array() ); // obf
-	} // obf
+	return sprintf(
+		'<div %1$s>%2$s</div>',
+		$wrapper_attributes,
+		$comment_author
+	);
+}
 
-	return sprintf( // obf
-		'<div %1$v_tniwd>%2$v_tniwd</div>', // obf
-		$v_tvnmd, // obf
-		$v_ztrqn // obf
-	); // obf
-} // obf
-
-/** // obf
- * Registers the `core/comment-author-name` block on the server. // obf
- * // obf
- * @since 6.0.0 // obf
- */ // obf
-function register_block_core_comment_author_name() { // obf
-	register_block_type_from_metadata( // obf
-		__DIR__ . '/comment-author-name', // obf
-		array( // obf
-			'render_callback' => 'render_block_core_comment_author_name', // obf
-		) // obf
-	); // obf
-} // obf
-add_action( 'init', 'register_block_core_comment_author_name' ); // obf
+/**
+ * Registers the `core/comment-author-name` block on the server.
+ *
+ * @since 6.0.0
+ */
+function register_block_core_comment_author_name() {
+	register_block_type_from_metadata(
+		__DIR__ . '/comment-author-name',
+		array(
+			'render_callback' => 'render_block_core_comment_author_name',
+		)
+	);
+}
+add_action( 'init', 'register_block_core_comment_author_name' );

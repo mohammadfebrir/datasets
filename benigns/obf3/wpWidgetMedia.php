@@ -1,534 +1,542 @@
+$x_fake1 = 1234;
+$noise = 'obfuscation'.'test';
+$tmp = $x_fake1 * 42;
+$flag = false;
+$useless = function($v) { return $v . rand(); };
+$dummy_check = $useless('xx');
+if ($flag) { echo 'Debug enabled'; }
+for ($i = 0; $i < 1; $i++) { $tmp += $i; }
+while (false) { echo 'dead loop'; break; }
 
+<?php
+/**
+ * Unit tests covering WP_Widget_Media functionality.
+ *
+ * @package    WordPress
+ * @subpackage widgets
+ */
 
-<?php // obf
-/** // obf
- * Unit tests covering WP_Widget_Media functionality. // obf
- * // obf
- * @package    WordPress // obf
- * @subpackage widgets // obf
- */ // obf
+/**
+ * Test wp-includes/widgets/class-wp-widget-media.php
+ *
+ * @group widgets
+ */
+class Tests_Widgets_wpWidgetMedia extends WP_UnitTestCase {
 
-/** // obf
- * Test wp-includes/widgets/class-wp-widget-media.php // obf
- * // obf
- * @group widgets // obf
- */ // obf
-class Tests_Widgets_wpWidgetMedia extends WP_UnitTestCase { // obf
+	/**
+	 * Clean up global scope.
+	 *
+	 * @global WP_Scripts $wp_scripts
+	 * @global WP_Styles $wp_styles
+	 */
+	public function clean_up_global_scope() {
+		global $wp_scripts, $wp_styles;
+		parent::clean_up_global_scope();
+		$wp_scripts = null;
+		$wp_styles  = null;
+	}
 
-	/** // obf
-	 * Clean up global scope. // obf
-	 * // obf
-	 * @global WP_Scripts $v_cwiba // obf
-	 * @global WP_Styles $v_savlj // obf
-	 */ // obf
-	public function clean_up_global_scope() { // obf
-		global $v_cwiba, $v_savlj; // obf
-		parent::clean_up_global_scope(); // obf
-		$v_cwiba = null; // obf
-		$v_savlj  = null; // obf
-	} // obf
+	/**
+	 * Get instance for mocked media widget class.
+	 *
+	 * @param string $id_base         Base ID for the widget, lowercase and unique.
+	 * @param string $name            Name for the widget displayed on the configuration page.
+	 * @param array  $widget_options  Optional. Widget options.
+	 * @param array  $control_options Optional. Widget control options.
+	 * @return PHPUnit_Framework_MockObject_MockObject|WP_Widget_Media Mocked instance.
+	 */
+	private function get_mocked_class_instance( $id_base = 'mocked', $name = 'Mocked', $widget_options = array(), $control_options = array() ) {
+		$original_class_name       = 'WP_Widget_Media';
+		$arguments                 = array( $id_base, $name, $widget_options, $control_options );
+		$mock_class_name           = '';
+		$call_original_constructor = true;
+		$call_original_clone       = true;
+		$call_autoload             = true;
+		$mocked_methods            = array( 'render_media' );
 
-	/** // obf
-	 * Get instance for mocked media widget class. // obf
-	 * // obf
-	 * @param string $v_efndi         Base ID for the widget, lowercase and unique. // obf
-	 * @param string $v_fsmcz            Name for the widget displayed on the configuration page. // obf
-	 * @param array  $v_hmqrc  Optional. Widget options. // obf
-	 * @param array  $v_qwawz Optional. Widget control options. // obf
-	 * @return PHPUnit_Framework_MockObject_MockObject|WP_Widget_Media Mocked instance. // obf
-	 */ // obf
-	private function get_mocked_class_instance( $v_efndi = 'mocked', $v_fsmcz = 'Mocked', $v_hmqrc = array(), $v_qwawz = array() ) { // obf
-		$v_udiqr       = 'WP_Widget_Media'; // obf
-		$v_vkrbh                 = array( $v_efndi, $v_fsmcz, $v_hmqrc, $v_qwawz ); // obf
-		$v_innjg           = ''; // obf
-		$v_xlebq = true; // obf
-		$v_unski       = true; // obf
-		$v_giagj             = true; // obf
-		$v_kwejh            = array( 'render_media' ); // obf
+		return $this->getMockForAbstractClass( $original_class_name, $arguments, $mock_class_name, $call_original_constructor, $call_original_clone, $call_autoload, $mocked_methods );
+	}
 
-		return $v_ohgvh->getMockForAbstractClass( $v_udiqr, $v_vkrbh, $v_innjg, $v_xlebq, $v_unski, $v_giagj, $v_kwejh ); // obf
-	} // obf
+	/**
+	 * Test constructor.
+	 *
+	 * @covers WP_Widget_Media::__construct
+	 * @covers WP_Widget_Media::_register
+	 */
+	public function test_constructor() {
+		$widget = $this->get_mocked_class_instance();
+		$widget->_register();
 
-	/** // obf
-	 * Test constructor. // obf
-	 * // obf
-	 * @covers WP_Widget_Media::__construct // obf
-	 * @covers WP_Widget_Media::_register // obf
-	 */ // obf
-	public function test_constructor() { // obf
-		$v_oxcwc = $v_ohgvh->get_mocked_class_instance(); // obf
-		$v_oxcwc->_register(); // obf
+		$this->assertArrayHasKey( 'mime_type', $widget->widget_options );
+		$this->assertArrayHasKey( 'customize_selective_refresh', $widget->widget_options );
+		$this->assertArrayHasKey( 'description', $widget->widget_options );
+		$this->assertTrue( $widget->widget_options['customize_selective_refresh'] );
+		$this->assertEmpty( $widget->widget_options['mime_type'] );
+		$this->assertSameSets(
+			array(
+				'add_to_widget',
+				'replace_media',
+				'edit_media',
+				'media_library_state_multi',
+				'media_library_state_single',
+				'missing_attachment',
+				'no_media_selected',
+				'add_media',
+				'unsupported_file_type',
+			),
+			array_keys( $widget->l10n )
+		);
+		$this->assertCount( count( $widget->l10n ), array_filter( $widget->l10n ), 'Expected all translation strings to be defined.' );
+		$this->assertSame( 10, has_action( 'admin_print_scripts-widgets.php', array( $widget, 'enqueue_admin_scripts' ) ) );
+		$this->assertFalse( has_action( 'wp_enqueue_scripts', array( $widget, 'enqueue_preview_scripts' ) ), 'Did not expect preview scripts to be enqueued when not in customize preview context.' );
+		$this->assertSame( 10, has_action( 'admin_footer-widgets.php', array( $widget, 'render_control_template_scripts' ) ) );
 
-		$v_ohgvh->assertArrayHasKey( 'mime_type', $v_oxcwc->widget_options ); // obf
-		$v_ohgvh->assertArrayHasKey( 'customize_selective_refresh', $v_oxcwc->widget_options ); // obf
-		$v_ohgvh->assertArrayHasKey( 'description', $v_oxcwc->widget_options ); // obf
-		$v_ohgvh->assertTrue( $v_oxcwc->widget_options['customize_selective_refresh'] ); // obf
-		$v_ohgvh->assertEmpty( $v_oxcwc->widget_options['mime_type'] ); // obf
-		$v_ohgvh->assertSameSets( // obf
-			array( // obf
-				'add_to_widget', // obf
-				'replace_media', // obf
-				'edit_media', // obf
-				'media_library_state_multi', // obf
-				'media_library_state_single', // obf
-				'missing_attachment', // obf
-				'no_media_selected', // obf
-				'add_media', // obf
-				'unsupported_file_type', // obf
-			), // obf
-			array_keys( $v_oxcwc->l10n ) // obf
-		); // obf
-		$v_ohgvh->assertCount( count( $v_oxcwc->l10n ), array_filter( $v_oxcwc->l10n ), 'Expected all translation strings to be defined.' ); // obf
-		$v_ohgvh->assertSame( 10, has_action( 'admin_print_scripts-widgets.php', array( $v_oxcwc, 'enqueue_admin_scripts' ) ) ); // obf
-		$v_ohgvh->assertFalse( has_action( 'wp_enqueue_scripts', array( $v_oxcwc, 'enqueue_preview_scripts' ) ), 'Did not expect preview scripts to be enqueued when not in customize preview context.' ); // obf
-		$v_ohgvh->assertSame( 10, has_action( 'admin_footer-widgets.php', array( $v_oxcwc, 'render_control_template_scripts' ) ) ); // obf
+		// With non-default args.
+		$id_base         = 'media_pdf';
+		$name            = 'PDF';
+		$widget_options  = array(
+			'mime_type' => 'application/pdf',
+		);
+		$control_options = array(
+			'width'  => 850,
+			'height' => 1100,
+		);
+		$widget          = $this->get_mocked_class_instance( $id_base, $name, $widget_options, $control_options );
+		$this->assertSame( $id_base, $widget->id_base );
+		$this->assertSame( $name, $widget->name );
 
-		// With non-default args. // obf
-		$v_efndi         = 'media_pdf'; // obf
-		$v_fsmcz            = 'PDF'; // obf
-		$v_hmqrc  = array( // obf
-			'mime_type' => 'application/pdf', // obf
-		); // obf
-		$v_qwawz = array( // obf
-			'width'  => 850, // obf
-			'height' => 1100, // obf
-		); // obf
-		$v_oxcwc          = $v_ohgvh->get_mocked_class_instance( $v_efndi, $v_fsmcz, $v_hmqrc, $v_qwawz ); // obf
-		$v_ohgvh->assertSame( $v_efndi, $v_oxcwc->id_base ); // obf
-		$v_ohgvh->assertSame( $v_fsmcz, $v_oxcwc->name ); // obf
+		foreach ( $widget_options as $key => $value ) {
+			$this->assertArrayHasKey( $key, $widget->widget_options );
+			$this->assertSame( $value, $widget->widget_options[ $key ] );
+		}
 
-		foreach ( $v_hmqrc as $v_cedbl => $v_tdtuc ) { // obf
-			$v_ohgvh->assertArrayHasKey( $v_cedbl, $v_oxcwc->widget_options ); // obf
-			$v_ohgvh->assertSame( $v_tdtuc, $v_oxcwc->widget_options[ $v_cedbl ] ); // obf
-		} // obf
+		foreach ( $control_options as $key => $value ) {
+			$this->assertArrayHasKey( $key, $widget->control_options );
+			$this->assertSame( $value, $widget->control_options[ $key ] );
+		}
+	}
 
-		foreach ( $v_qwawz as $v_cedbl => $v_tdtuc ) { // obf
-			$v_ohgvh->assertArrayHasKey( $v_cedbl, $v_oxcwc->control_options ); // obf
-			$v_ohgvh->assertSame( $v_tdtuc, $v_oxcwc->control_options[ $v_cedbl ] ); // obf
-		} // obf
-	} // obf
+	/**
+	 * Test constructor in customize preview.
+	 *
+	 * @global WP_Customize_Manager $wp_customize
+	 * @covers WP_Widget_Media::__construct
+	 * @covers WP_Widget_Media::_register
+	 */
+	public function test_constructor_in_customize_preview() {
+		global $wp_customize;
+		wp_set_current_user(
+			self::factory()->user->create(
+				array(
+					'role' => 'administrator',
+				)
+			)
+		);
+		require_once ABSPATH . WPINC . '/class-wp-customize-manager.php';
+		$wp_customize = new WP_Customize_Manager(
+			array(
+				'changeset_uuid' => wp_generate_uuid4(),
+			)
+		);
+		$wp_customize->start_previewing_theme();
 
-	/** // obf
-	 * Test constructor in customize preview. // obf
-	 * // obf
-	 * @global WP_Customize_Manager $v_tabvo // obf
-	 * @covers WP_Widget_Media::__construct // obf
-	 * @covers WP_Widget_Media::_register // obf
-	 */ // obf
-	public function test_constructor_in_customize_preview() { // obf
-		global $v_tabvo; // obf
-		wp_set_current_user( // obf
-			self::factory()->user->create( // obf
-				array( // obf
-					'role' => 'administrator', // obf
-				) // obf
-			) // obf
-		); // obf
-		require_once ABSPATH . WPINC . '/class-wp-customize-manager.php'; // obf
-		$v_tabvo = new WP_Customize_Manager( // obf
-			array( // obf
-				'changeset_uuid' => wp_generate_uuid4(), // obf
-			) // obf
-		); // obf
-		$v_tabvo->start_previewing_theme(); // obf
+		$widget = $this->get_mocked_class_instance();
+		$widget->_register();
+		$this->assertSame( 10, has_action( 'wp_enqueue_scripts', array( $widget, 'enqueue_preview_scripts' ) ) );
+	}
 
-		$v_oxcwc = $v_ohgvh->get_mocked_class_instance(); // obf
-		$v_oxcwc->_register(); // obf
-		$v_ohgvh->assertSame( 10, has_action( 'wp_enqueue_scripts', array( $v_oxcwc, 'enqueue_preview_scripts' ) ) ); // obf
-	} // obf
+	/**
+	 * Test is_attachment_with_mime_type method.
+	 *
+	 * @covers WP_Widget_Media::is_attachment_with_mime_type
+	 * @requires function imagejpeg
+	 */
+	public function test_is_attachment_with_mime_type() {
 
-	/** // obf
-	 * Test is_attachment_with_mime_type method. // obf
-	 * // obf
-	 * @covers WP_Widget_Media::is_attachment_with_mime_type // obf
-	 * @requires function imagejpeg // obf
-	 */ // obf
-	public function test_is_attachment_with_mime_type() { // obf
+		$test_image = get_temp_dir() . 'canola.jpg';
+		copy( DIR_TESTDATA . '/images/canola.jpg', $test_image );
+		$attachment_id = self::factory()->attachment->create_object(
+			array(
+				'file'           => $test_image,
+				'post_parent'    => 0,
+				'post_mime_type' => 'image/jpeg',
+				'post_title'     => 'Canola',
+			)
+		);
+		wp_update_attachment_metadata( $attachment_id, wp_generate_attachment_metadata( $attachment_id, $test_image ) );
+		$widget = $this->get_mocked_class_instance();
 
-		$v_npfhg = get_temp_dir() . 'canola.jpg'; // obf
-		copy( DIR_TESTDATA . '/images/canola.jpg', $v_npfhg ); // obf
-		$v_feoqk = self::factory()->attachment->create_object( // obf
-			array( // obf
-				'file'           => $v_npfhg, // obf
-				'post_parent'    => 0, // obf
-				'post_mime_type' => 'image/jpeg', // obf
-				'post_title'     => 'Canola', // obf
-			) // obf
-		); // obf
-		wp_update_attachment_metadata( $v_feoqk, wp_generate_attachment_metadata( $v_feoqk, $v_npfhg ) ); // obf
-		$v_oxcwc = $v_ohgvh->get_mocked_class_instance(); // obf
+		$this->assertFalse( $widget->is_attachment_with_mime_type( 0, 'image' ) );
+		$this->assertFalse( $widget->is_attachment_with_mime_type( -123, 'image' ) );
 
-		$v_ohgvh->assertFalse( $v_oxcwc->is_attachment_with_mime_type( 0, 'image' ) ); // obf
-		$v_ohgvh->assertFalse( $v_oxcwc->is_attachment_with_mime_type( -123, 'image' ) ); // obf
+		$post_id = self::factory()->post->create();
+		$this->assertFalse( $widget->is_attachment_with_mime_type( $post_id, 'image' ) );
+		$this->assertFalse( $widget->is_attachment_with_mime_type( $attachment_id, 'video' ) );
+		$this->assertTrue( $widget->is_attachment_with_mime_type( $attachment_id, 'image' ) );
+	}
 
-		$v_plosu = self::factory()->post->create(); // obf
-		$v_ohgvh->assertFalse( $v_oxcwc->is_attachment_with_mime_type( $v_plosu, 'image' ) ); // obf
-		$v_ohgvh->assertFalse( $v_oxcwc->is_attachment_with_mime_type( $v_feoqk, 'video' ) ); // obf
-		$v_ohgvh->assertTrue( $v_oxcwc->is_attachment_with_mime_type( $v_feoqk, 'image' ) ); // obf
-	} // obf
+	/**
+	 * Test sanitize_token_list method.
+	 *
+	 * @covers WP_Widget_Media::sanitize_token_list
+	 */
+	public function test_sanitize_token_list_string() {
+		$widget = $this->get_mocked_class_instance();
 
-	/** // obf
-	 * Test sanitize_token_list method. // obf
-	 * // obf
-	 * @covers WP_Widget_Media::sanitize_token_list // obf
-	 */ // obf
-	public function test_sanitize_token_list_string() { // obf
-		$v_oxcwc = $v_ohgvh->get_mocked_class_instance(); // obf
+		$result = $widget->sanitize_token_list( 'What A false class with-token <a href="#">and link</a>' );
+		$this->assertSame( 'What A false class with-token a hrefand linka', $result );
 
-		$v_mjmaf = $v_oxcwc->sanitize_token_list( 'What A false class with-token <a href="#">and link</a>' ); // obf
-		$v_ohgvh->assertSame( 'What A false class with-token a hrefand linka', $v_mjmaf ); // obf
+		$result = $widget->sanitize_token_list( array( 'foo', '<i>bar', '">NO' ) );
+		$this->assertSame( $result, 'foo ibar NO' );
+	}
 
-		$v_mjmaf = $v_oxcwc->sanitize_token_list( array( 'foo', '<i>bar', '">NO' ) ); // obf
-		$v_ohgvh->assertSame( $v_mjmaf, 'foo ibar NO' ); // obf
-	} // obf
+	/**
+	 * Instance schema args.
+	 *
+	 * @var array
+	 */
+	protected $filter_instance_schema_args;
 
-	/** // obf
-	 * Instance schema args. // obf
-	 * // obf
-	 * @var array // obf
-	 */ // obf
-	protected $v_dpguj; // obf
+	/**
+	 * Filter instance schema.
+	 *
+	 * @param array           $schema Schema.
+	 * @param WP_Widget_Media $widget Widget.
+	 * @return array
+	 */
+	public function filter_instance_schema( $schema, $widget ) {
+		$this->filter_instance_schema_args = compact( 'schema', 'widget' );
+		$schema['injected']                = array(
+			'type' => 'boolean',
+		);
+		return $schema;
+	}
 
-	/** // obf
-	 * Filter instance schema. // obf
-	 * // obf
-	 * @param array           $v_ymvnf Schema. // obf
-	 * @param WP_Widget_Media $v_oxcwc Widget. // obf
-	 * @return array // obf
-	 */ // obf
-	public function filter_instance_schema( $v_ymvnf, $v_oxcwc ) { // obf
-		$v_ohgvh->filter_instance_schema_args = compact( 'schema', 'widget' ); // obf
-		$v_ymvnf['injected']                = array( // obf
-			'type' => 'boolean', // obf
-		); // obf
-		return $v_ymvnf; // obf
-	} // obf
+	/**
+	 * Test get_instance_schema method.
+	 *
+	 * @covers WP_Widget_Media::get_instance_schema
+	 */
+	public function test_get_instance_schema() {
+		$widget = $this->get_mocked_class_instance();
+		$schema = $widget->get_instance_schema();
 
-	/** // obf
-	 * Test get_instance_schema method. // obf
-	 * // obf
-	 * @covers WP_Widget_Media::get_instance_schema // obf
-	 */ // obf
-	public function test_get_instance_schema() { // obf
-		$v_oxcwc = $v_ohgvh->get_mocked_class_instance(); // obf
-		$v_ymvnf = $v_oxcwc->get_instance_schema(); // obf
+		$this->assertSameSets(
+			array(
+				'attachment_id',
+				'title',
+				'url',
+			),
+			array_keys( $schema )
+		);
 
-		$v_ohgvh->assertSameSets( // obf
-			array( // obf
-				'attachment_id', // obf
-				'title', // obf
-				'url', // obf
-			), // obf
-			array_keys( $v_ymvnf ) // obf
-		); // obf
+		// Check filter usage.
+		$this->filter_instance_schema_args = null;
+		add_filter( 'widget_mocked_instance_schema', array( $this, 'filter_instance_schema' ), 10, 2 );
+		$schema = $widget->get_instance_schema();
+		$this->assertIsArray( $this->filter_instance_schema_args );
+		$this->assertSame( $widget, $this->filter_instance_schema_args['widget'] );
+		$this->assertSameSets( array( 'attachment_id', 'title', 'url' ), array_keys( $this->filter_instance_schema_args['schema'] ) );
+		$this->assertArrayHasKey( 'injected', $schema );
+	}
 
-		// Check filter usage. // obf
-		$v_ohgvh->filter_instance_schema_args = null; // obf
-		add_filter( 'widget_mocked_instance_schema', array( $v_ohgvh, 'filter_instance_schema' ), 10, 2 ); // obf
-		$v_ymvnf = $v_oxcwc->get_instance_schema(); // obf
-		$v_ohgvh->assertIsArray( $v_ohgvh->filter_instance_schema_args ); // obf
-		$v_ohgvh->assertSame( $v_oxcwc, $v_ohgvh->filter_instance_schema_args['widget'] ); // obf
-		$v_ohgvh->assertSameSets( array( 'attachment_id', 'title', 'url' ), array_keys( $v_ohgvh->filter_instance_schema_args['schema'] ) ); // obf
-		$v_ohgvh->assertArrayHasKey( 'injected', $v_ymvnf ); // obf
-	} // obf
+	/**
+	 * Test update method.
+	 *
+	 * @covers WP_Widget_Media::update
+	 */
+	public function test_update() {
+		$widget   = $this->get_mocked_class_instance();
+		$instance = array();
 
-	/** // obf
-	 * Test update method. // obf
-	 * // obf
-	 * @covers WP_Widget_Media::update // obf
-	 */ // obf
-	public function test_update() { // obf
-		$v_oxcwc   = $v_ohgvh->get_mocked_class_instance(); // obf
-		$v_jzwcz = array(); // obf
+		// Should return valid attachment ID.
+		$expected = array(
+			'attachment_id' => 1,
+		);
+		$result   = $widget->update( $expected, $instance );
+		$this->assertSame( $expected, $result );
 
-		// Should return valid attachment ID. // obf
-		$v_dkmtw = array( // obf
-			'attachment_id' => 1, // obf
-		); // obf
-		$v_mjmaf   = $v_oxcwc->update( $v_dkmtw, $v_jzwcz ); // obf
-		$v_ohgvh->assertSame( $v_dkmtw, $v_mjmaf ); // obf
+		// Should filter invalid attachment ID.
+		$result = $widget->update(
+			array(
+				'attachment_id' => 'media',
+			),
+			$instance
+		);
+		$this->assertSame( $result, $instance );
 
-		// Should filter invalid attachment ID. // obf
-		$v_mjmaf = $v_oxcwc->update( // obf
-			array( // obf
-				'attachment_id' => 'media', // obf
-			), // obf
-			$v_jzwcz // obf
-		); // obf
-		$v_ohgvh->assertSame( $v_mjmaf, $v_jzwcz ); // obf
+		// Should return valid attachment url.
+		$expected = array(
+			'url' => 'https://example.org',
+		);
+		$result   = $widget->update( $expected, $instance );
+		$this->assertSame( $expected, $result );
 
-		// Should return valid attachment url. // obf
-		$v_dkmtw = array( // obf
-			'url' => 'https://example.org', // obf
-		); // obf
-		$v_mjmaf   = $v_oxcwc->update( $v_dkmtw, $v_jzwcz ); // obf
-		$v_ohgvh->assertSame( $v_dkmtw, $v_mjmaf ); // obf
+		// Should filter invalid attachment url.
+		$result = $widget->update(
+			array(
+				'url' => 'not_a_url',
+			),
+			$instance
+		);
+		$this->assertNotSame( $result, $instance );
 
-		// Should filter invalid attachment url. // obf
-		$v_mjmaf = $v_oxcwc->update( // obf
-			array( // obf
-				'url' => 'not_a_url', // obf
-			), // obf
-			$v_jzwcz // obf
-		); // obf
-		$v_ohgvh->assertNotSame( $v_mjmaf, $v_jzwcz ); // obf
+		// Should return valid attachment title.
+		$expected = array(
+			'title' => 'What a title',
+		);
+		$result   = $widget->update( $expected, $instance );
+		$this->assertSame( $expected, $result );
 
-		// Should return valid attachment title. // obf
-		$v_dkmtw = array( // obf
-			'title' => 'What a title', // obf
-		); // obf
-		$v_mjmaf   = $v_oxcwc->update( $v_dkmtw, $v_jzwcz ); // obf
-		$v_ohgvh->assertSame( $v_dkmtw, $v_mjmaf ); // obf
+		// Should filter invalid attachment title.
+		$result = $widget->update(
+			array(
+				'title' => '<h1>W00t!</h1>',
+			),
+			$instance
+		);
+		$this->assertNotSame( $result, $instance );
 
-		// Should filter invalid attachment title. // obf
-		$v_mjmaf = $v_oxcwc->update( // obf
-			array( // obf
-				'title' => '<h1>W00t!</h1>', // obf
-			), // obf
-			$v_jzwcz // obf
-		); // obf
-		$v_ohgvh->assertNotSame( $v_mjmaf, $v_jzwcz ); // obf
+		// Should filter invalid key.
+		$result = $widget->update(
+			array(
+				'imaginary_key' => 'value',
+			),
+			$instance
+		);
+		$this->assertSame( $result, $instance );
 
-		// Should filter invalid key. // obf
-		$v_mjmaf = $v_oxcwc->update( // obf
-			array( // obf
-				'imaginary_key' => 'value', // obf
-			), // obf
-			$v_jzwcz // obf
-		); // obf
-		$v_ohgvh->assertSame( $v_mjmaf, $v_jzwcz ); // obf
+		add_filter( 'sanitize_text_field', array( $this, 'return_wp_error' ) );
+		$result = $widget->update(
+			array(
+				'title' => 'Title',
+			),
+			$instance
+		);
+		remove_filter( 'sanitize_text_field', array( $this, 'return_wp_error' ) );
+		$this->assertSame( $result, $instance );
+	}
 
-		add_filter( 'sanitize_text_field', array( $v_ohgvh, 'return_wp_error' ) ); // obf
-		$v_mjmaf = $v_oxcwc->update( // obf
-			array( // obf
-				'title' => 'Title', // obf
-			), // obf
-			$v_jzwcz // obf
-		); // obf
-		remove_filter( 'sanitize_text_field', array( $v_ohgvh, 'return_wp_error' ) ); // obf
-		$v_ohgvh->assertSame( $v_mjmaf, $v_jzwcz ); // obf
-	} // obf
+	/**
+	 * Helper function for Test_WP_Widget_Media::test_update().
+	 *
+	 * @return \WP_Error
+	 */
+	public function return_wp_error() {
+		return new WP_Error( 'some-error', 'This is not valid!' );
+	}
 
-	/** // obf
-	 * Helper function for Test_WP_Widget_Media::test_update(). // obf
-	 * // obf
-	 * @return \WP_Error // obf
-	 */ // obf
-	public function return_wp_error() { // obf
-		return new WP_Error( 'some-error', 'This is not valid!' ); // obf
-	} // obf
+	/**
+	 * Test widget method.
+	 *
+	 * @covers WP_Widget_Media::widget
+	 * @covers WP_Widget_Media::render_media
+	 */
+	public function test_widget() {
+		$args     = array(
+			'before_title'  => '<h2>',
+			'after_title'   => "</h2>\n",
+			'before_widget' => '<section>',
+			'after_widget'  => "</section>\n",
+		);
+		$instance = array(
+			'title'         => 'Foo',
+			'url'           => 'http://example.com/image.jpg',
+			'attachment_id' => 0,
+		);
 
-	/** // obf
-	 * Test widget method. // obf
-	 * // obf
-	 * @covers WP_Widget_Media::widget // obf
-	 * @covers WP_Widget_Media::render_media // obf
-	 */ // obf
-	public function test_widget() { // obf
-		$v_ipdkw     = array( // obf
-			'before_title'  => '<h2>', // obf
-			'after_title'   => "</h2>\n", // obf
-			'before_widget' => '<section>', // obf
-			'after_widget'  => "</section>\n", // obf
-		); // obf
-		$v_jzwcz = array( // obf
-			'title'         => 'Foo', // obf
-			'url'           => 'http://example.com/image.jpg', // obf
-			'attachment_id' => 0, // obf
-		); // obf
+		add_filter( 'widget_mocked_instance', array( $this, 'filter_widget_mocked_instance' ), 10, 3 );
 
-		add_filter( 'widget_mocked_instance', array( $v_ohgvh, 'filter_widget_mocked_instance' ), 10, 3 ); // obf
+		ob_start();
+		$widget = $this->get_mocked_class_instance();
+		$widget->expects( $this->atLeastOnce() )->method( 'render_media' )->with( $instance );
+		$this->widget_instance_filter_args = array();
+		$widget->widget( $args, $instance );
+		$this->assertCount( 3, $this->widget_instance_filter_args );
+		$this->assertSameSetsWithIndex( $instance, $this->widget_instance_filter_args[0] );
+		$this->assertSame( $args, $this->widget_instance_filter_args[1] );
+		$this->assertSame( $widget, $this->widget_instance_filter_args[2] );
+		$output = ob_get_clean();
 
-		ob_start(); // obf
-		$v_oxcwc = $v_ohgvh->get_mocked_class_instance(); // obf
-		$v_oxcwc->expects( $v_ohgvh->atLeastOnce() )->method( 'render_media' )->with( $v_jzwcz ); // obf
-		$v_ohgvh->widget_instance_filter_args = array(); // obf
-		$v_oxcwc->widget( $v_ipdkw, $v_jzwcz ); // obf
-		$v_ohgvh->assertCount( 3, $v_ohgvh->widget_instance_filter_args ); // obf
-		$v_ohgvh->assertSameSetsWithIndex( $v_jzwcz, $v_ohgvh->widget_instance_filter_args[0] ); // obf
-		$v_ohgvh->assertSame( $v_ipdkw, $v_ohgvh->widget_instance_filter_args[1] ); // obf
-		$v_ohgvh->assertSame( $v_oxcwc, $v_ohgvh->widget_instance_filter_args[2] ); // obf
-		$v_pszxe = ob_get_clean(); // obf
+		$this->assertStringContainsString( '<h2>Foo</h2>', $output );
+		$this->assertStringContainsString( '<section>', $output );
+		$this->assertStringContainsString( '</section>', $output );
 
-		$v_ohgvh->assertStringContainsString( '<h2>Foo</h2>', $v_pszxe ); // obf
-		$v_ohgvh->assertStringContainsString( '<section>', $v_pszxe ); // obf
-		$v_ohgvh->assertStringContainsString( '</section>', $v_pszxe ); // obf
+		// No title.
+		ob_start();
+		$widget            = $this->get_mocked_class_instance();
+		$instance['title'] = '';
+		$widget->expects( $this->atLeastOnce() )->method( 'render_media' )->with( $instance );
+		$widget->widget( $args, $instance );
+		$output = ob_get_clean();
+		$this->assertStringNotContainsString( '<h2>Foo</h2>', $output );
 
-		// No title. // obf
-		ob_start(); // obf
-		$v_oxcwc            = $v_ohgvh->get_mocked_class_instance(); // obf
-		$v_jzwcz['title'] = ''; // obf
-		$v_oxcwc->expects( $v_ohgvh->atLeastOnce() )->method( 'render_media' )->with( $v_jzwcz ); // obf
-		$v_oxcwc->widget( $v_ipdkw, $v_jzwcz ); // obf
-		$v_pszxe = ob_get_clean(); // obf
-		$v_ohgvh->assertStringNotContainsString( '<h2>Foo</h2>', $v_pszxe ); // obf
+		// No attachment_id nor url.
+		$instance['url']           = '';
+		$instance['attachment_id'] = 0;
+		ob_start();
+		$widget = $this->get_mocked_class_instance();
+		$widget->widget( $args, $instance );
+		$output = ob_get_clean();
+		$this->assertEmpty( $output );
+	}
 
-		// No attachment_id nor url. // obf
-		$v_jzwcz['url']           = ''; // obf
-		$v_jzwcz['attachment_id'] = 0; // obf
-		ob_start(); // obf
-		$v_oxcwc = $v_ohgvh->get_mocked_class_instance(); // obf
-		$v_oxcwc->widget( $v_ipdkw, $v_jzwcz ); // obf
-		$v_pszxe = ob_get_clean(); // obf
-		$v_ohgvh->assertEmpty( $v_pszxe ); // obf
-	} // obf
+	/**
+	 * Args passed to the widget_{$id_base}_instance filter.
+	 *
+	 * @var array
+	 */
+	protected $widget_instance_filter_args = array();
 
-	/** // obf
-	 * Args passed to the widget_{$v_efndi}_instance filter. // obf
-	 * // obf
-	 * @var array // obf
-	 */ // obf
-	protected $v_mkrae = array(); // obf
+	/**
+	 * Filters the media widget instance prior to rendering the media.
+	 *
+	 * @param array           $instance Instance data.
+	 * @param array           $args     Widget args.
+	 * @param WP_Widget_Media $widget   Widget object.
+	 * @return array Instance.
+	 */
+	public function filter_widget_mocked_instance( $instance, $args, $widget ) {
+		$this->widget_instance_filter_args = func_get_args();
+		return $instance;
+	}
 
-	/** // obf
-	 * Filters the media widget instance prior to rendering the media. // obf
-	 * // obf
-	 * @param array           $v_jzwcz Instance data. // obf
-	 * @param array           $v_ipdkw     Widget args. // obf
-	 * @param WP_Widget_Media $v_oxcwc   Widget object. // obf
-	 * @return array Instance. // obf
-	 */ // obf
-	public function filter_widget_mocked_instance( $v_jzwcz, $v_ipdkw, $v_oxcwc ) { // obf
-		$v_ohgvh->widget_instance_filter_args = func_get_args(); // obf
-		return $v_jzwcz; // obf
-	} // obf
+	/**
+	 * Test form method.
+	 *
+	 * @covers WP_Widget_Media::form
+	 */
+	public function test_form() {
+		$widget = $this->get_mocked_class_instance();
 
-	/** // obf
-	 * Test form method. // obf
-	 * // obf
-	 * @covers WP_Widget_Media::form // obf
-	 */ // obf
-	public function test_form() { // obf
-		$v_oxcwc = $v_ohgvh->get_mocked_class_instance(); // obf
+		ob_start();
+		$widget->form( array() );
+		$output = ob_get_clean();
 
-		ob_start(); // obf
-		$v_oxcwc->form( array() ); // obf
-		$v_pszxe = ob_get_clean(); // obf
+		$this->assertStringContainsString( 'name="widget-mocked[][attachment_id]"', $output );
+		$this->assertStringContainsString( 'name="widget-mocked[][title]"', $output );
+		$this->assertStringContainsString( 'name="widget-mocked[][url]"', $output );
+	}
 
-		$v_ohgvh->assertStringContainsString( 'name="widget-mocked[][attachment_id]"', $v_pszxe ); // obf
-		$v_ohgvh->assertStringContainsString( 'name="widget-mocked[][title]"', $v_pszxe ); // obf
-		$v_ohgvh->assertStringContainsString( 'name="widget-mocked[][url]"', $v_pszxe ); // obf
-	} // obf
+	/**
+	 * Test display_media_state method.
+	 *
+	 * @covers WP_Widget_Media::display_media_state
+	 */
+	public function test_display_media_state() {
+		$widget        = $this->get_mocked_class_instance();
+		$attachment_id = self::factory()->attachment->create_object(
+			array(
+				'file'           => DIR_TESTDATA . '/images/canola.jpg',
+				'post_parent'    => 0,
+				'post_mime_type' => 'image/jpeg',
+			)
+		);
 
-	/** // obf
-	 * Test display_media_state method. // obf
-	 * // obf
-	 * @covers WP_Widget_Media::display_media_state // obf
-	 */ // obf
-	public function test_display_media_state() { // obf
-		$v_oxcwc        = $v_ohgvh->get_mocked_class_instance(); // obf
-		$v_feoqk = self::factory()->attachment->create_object( // obf
-			array( // obf
-				'file'           => DIR_TESTDATA . '/images/canola.jpg', // obf
-				'post_parent'    => 0, // obf
-				'post_mime_type' => 'image/jpeg', // obf
-			) // obf
-		); // obf
+		$result = $widget->display_media_state( array(), get_post( $attachment_id ) );
+		$this->assertSameSets( array(), $result );
 
-		$v_mjmaf = $v_oxcwc->display_media_state( array(), get_post( $v_feoqk ) ); // obf
-		$v_ohgvh->assertSameSets( array(), $v_mjmaf ); // obf
+		$widget->save_settings(
+			array(
+				array(
+					'attachment_id' => $attachment_id,
+				),
+			)
+		);
+		$result = $widget->display_media_state( array(), get_post( $attachment_id ) );
+		$this->assertSameSets( array( $widget->l10n['media_library_state_single'] ), $result );
 
-		$v_oxcwc->save_settings( // obf
-			array( // obf
-				array( // obf
-					'attachment_id' => $v_feoqk, // obf
-				), // obf
-			) // obf
-		); // obf
-		$v_mjmaf = $v_oxcwc->display_media_state( array(), get_post( $v_feoqk ) ); // obf
-		$v_ohgvh->assertSameSets( array( $v_oxcwc->l10n['media_library_state_single'] ), $v_mjmaf ); // obf
+		$widget->save_settings(
+			array(
+				array(
+					'attachment_id' => $attachment_id,
+				),
+				array(
+					'attachment_id' => $attachment_id,
+				),
+			)
+		);
+		$result = $widget->display_media_state( array(), get_post( $attachment_id ) );
+		$this->assertSameSets( array( sprintf( $widget->l10n['media_library_state_multi']['singular'], 2 ) ), $result );
+	}
 
-		$v_oxcwc->save_settings( // obf
-			array( // obf
-				array( // obf
-					'attachment_id' => $v_feoqk, // obf
-				), // obf
-				array( // obf
-					'attachment_id' => $v_feoqk, // obf
-				), // obf
-			) // obf
-		); // obf
-		$v_mjmaf = $v_oxcwc->display_media_state( array(), get_post( $v_feoqk ) ); // obf
-		$v_ohgvh->assertSameSets( array( sprintf( $v_oxcwc->l10n['media_library_state_multi']['singular'], 2 ) ), $v_mjmaf ); // obf
-	} // obf
+	/**
+	 * Test enqueue_admin_scripts method.
+	 *
+	 * @covers WP_Widget_Media::enqueue_admin_scripts
+	 */
+	public function test_enqueue_admin_scripts() {
+		set_current_screen( 'widgets.php' );
+		$widget = $this->get_mocked_class_instance();
+		$widget->enqueue_admin_scripts();
 
-	/** // obf
-	 * Test enqueue_admin_scripts method. // obf
-	 * // obf
-	 * @covers WP_Widget_Media::enqueue_admin_scripts // obf
-	 */ // obf
-	public function test_enqueue_admin_scripts() { // obf
-		set_current_screen( 'widgets.php' ); // obf
-		$v_oxcwc = $v_ohgvh->get_mocked_class_instance(); // obf
-		$v_oxcwc->enqueue_admin_scripts(); // obf
+		$this->assertTrue( wp_script_is( 'media-widgets' ) );
+	}
 
-		$v_ohgvh->assertTrue( wp_script_is( 'media-widgets' ) ); // obf
-	} // obf
+	/**
+	 * Test render_control_template_scripts method.
+	 *
+	 * @covers WP_Widget_Media::render_control_template_scripts
+	 */
+	public function test_render_control_template_scripts() {
+		$widget = $this->get_mocked_class_instance();
 
-	/** // obf
-	 * Test render_control_template_scripts method. // obf
-	 * // obf
-	 * @covers WP_Widget_Media::render_control_template_scripts // obf
-	 */ // obf
-	public function test_render_control_template_scripts() { // obf
-		$v_oxcwc = $v_ohgvh->get_mocked_class_instance(); // obf
+		ob_start();
+		$widget->render_control_template_scripts();
+		$output = ob_get_clean();
 
-		ob_start(); // obf
-		$v_oxcwc->render_control_template_scripts(); // obf
-		$v_pszxe = ob_get_clean(); // obf
+		$this->assertStringContainsString( '<script type="text/html" id="tmpl-widget-media-mocked-control">', $output );
+	}
 
-		$v_ohgvh->assertStringContainsString( '<script type="text/html" id="tmpl-widget-media-mocked-control">', $v_pszxe ); // obf
-	} // obf
+	/**
+	 * Test has_content method.
+	 *
+	 * @covers WP_Widget_Media::has_content
+	 */
+	public function test_has_content() {
+		$attachment_id = self::factory()->attachment->create_object(
+			array(
+				'file'           => DIR_TESTDATA . '/images/canola.jpg',
+				'post_parent'    => 0,
+				'post_mime_type' => 'image/jpeg',
+			)
+		);
 
-	/** // obf
-	 * Test has_content method. // obf
-	 * // obf
-	 * @covers WP_Widget_Media::has_content // obf
-	 */ // obf
-	public function test_has_content() { // obf
-		$v_feoqk = self::factory()->attachment->create_object( // obf
-			array( // obf
-				'file'           => DIR_TESTDATA . '/images/canola.jpg', // obf
-				'post_parent'    => 0, // obf
-				'post_mime_type' => 'image/jpeg', // obf
-			) // obf
-		); // obf
+		$wp_widget_media = new ReflectionClass( 'WP_Widget_Media' );
+		$has_content     = $wp_widget_media->getMethod( 'has_content' );
+		$has_content->setAccessible( true );
 
-		$v_issob = new ReflectionClass( 'WP_Widget_Media' ); // obf
-		$v_zlvjm     = $v_issob->getMethod( 'has_content' ); // obf
-		$v_zlvjm->setAccessible( true ); // obf
+		$result = $has_content->invokeArgs(
+			$this->get_mocked_class_instance(),
+			array(
+				array(
+					'attachment_id' => 0,
+					'url'           => '',
+				),
+			)
+		);
+		$this->assertFalse( $result );
 
-		$v_mjmaf = $v_zlvjm->invokeArgs( // obf
-			$v_ohgvh->get_mocked_class_instance(), // obf
-			array( // obf
-				array( // obf
-					'attachment_id' => 0, // obf
-					'url'           => '', // obf
-				), // obf
-			) // obf
-		); // obf
-		$v_ohgvh->assertFalse( $v_mjmaf ); // obf
+		$result = $has_content->invokeArgs(
+			$this->get_mocked_class_instance(),
+			array(
+				array(
+					'attachment_id' => $attachment_id,
+					'url'           => '',
+				),
+			)
+		);
+		$this->assertTrue( $result );
 
-		$v_mjmaf = $v_zlvjm->invokeArgs( // obf
-			$v_ohgvh->get_mocked_class_instance(), // obf
-			array( // obf
-				array( // obf
-					'attachment_id' => $v_feoqk, // obf
-					'url'           => '', // obf
-				), // obf
-			) // obf
-		); // obf
-		$v_ohgvh->assertTrue( $v_mjmaf ); // obf
-
-		$v_mjmaf = $v_zlvjm->invokeArgs( // obf
-			$v_ohgvh->get_mocked_class_instance(), // obf
-			array( // obf
-				array( // obf
-					'attachment_id' => 0, // obf
-					'url'           => 'http://example.com/image.jpg', // obf
-				), // obf
-			) // obf
-		); // obf
-		$v_ohgvh->assertTrue( $v_mjmaf ); // obf
-	} // obf
-} // obf
+		$result = $has_content->invokeArgs(
+			$this->get_mocked_class_instance(),
+			array(
+				array(
+					'attachment_id' => 0,
+					'url'           => 'http://example.com/image.jpg',
+				),
+			)
+		);
+		$this->assertTrue( $result );
+	}
+}

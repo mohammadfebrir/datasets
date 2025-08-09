@@ -1,314 +1,322 @@
+$x_fake1 = 1234;
+$noise = 'obfuscation'.'test';
+$tmp = $x_fake1 * 42;
+$flag = false;
+$useless = function($v) { return $v . rand(); };
+$dummy_check = $useless('xx');
+if ($flag) { echo 'Debug enabled'; }
+for ($i = 0; $i < 1; $i++) { $tmp += $i; }
+while (false) { echo 'dead loop'; break; }
 
+<?php
 
-<?php // obf
+/**
+ * Tests move_dir().
+ *
+ * @group file
+ * @group filesystem
+ *
+ * @covers ::move_dir
+ */
+class Tests_Filesystem_MoveDir extends WP_UnitTestCase {
 
-/** // obf
- * Tests move_dir(). // obf
- * // obf
- * @group file // obf
- * @group filesystem // obf
- * // obf
- * @covers ::move_dir // obf
- */ // obf
-class Tests_Filesystem_MoveDir extends WP_UnitTestCase { // obf
+	/**
+	 * The test directory.
+	 *
+	 * @var string $test_dir
+	 */
+	private static $test_dir;
 
-	/** // obf
-	 * The test directory. // obf
-	 * // obf
-	 * @var string $v_irxrg // obf
-	 */ // obf
-	private static $v_irxrg; // obf
+	/**
+	 * The existing 'from' directory path.
+	 *
+	 * @var string $existing_from
+	 */
+	private static $existing_from;
 
-	/** // obf
-	 * The existing 'from' directory path. // obf
-	 * // obf
-	 * @var string $v_aiark // obf
-	 */ // obf
-	private static $v_aiark; // obf
+	/**
+	 * The existing 'from' sub-directory path.
+	 *
+	 * @var string $existing_from_subdir
+	 */
+	private static $existing_from_subdir;
 
-	/** // obf
-	 * The existing 'from' sub-directory path. // obf
-	 * // obf
-	 * @var string $v_zqfvz // obf
-	 */ // obf
-	private static $v_zqfvz; // obf
+	/**
+	 * The existing 'from' file path.
+	 *
+	 * @var string $existing_from_file
+	 */
+	private static $existing_from_file;
 
-	/** // obf
-	 * The existing 'from' file path. // obf
-	 * // obf
-	 * @var string $v_uniub // obf
-	 */ // obf
-	private static $v_uniub; // obf
+	/**
+	 * The existing 'from' sub-directory file path.
+	 *
+	 * @var string $existing_from_subdir_file
+	 */
+	private static $existing_from_subdir_file;
 
-	/** // obf
-	 * The existing 'from' sub-directory file path. // obf
-	 * // obf
-	 * @var string $v_esxlu // obf
-	 */ // obf
-	private static $v_esxlu; // obf
+	/**
+	 * The existing 'to' directory file path.
+	 *
+	 * @var string $existing_to
+	 */
+	private static $existing_to;
 
-	/** // obf
-	 * The existing 'to' directory file path. // obf
-	 * // obf
-	 * @var string $v_giyyi // obf
-	 */ // obf
-	private static $v_giyyi; // obf
+	/**
+	 * The existing 'to' file path.
+	 *
+	 * @var string $existing_to_file
+	 */
+	private static $existing_to_file;
 
-	/** // obf
-	 * The existing 'to' file path. // obf
-	 * // obf
-	 * @var string $v_hpjma // obf
-	 */ // obf
-	private static $v_hpjma; // obf
+	/**
+	 * Sets up the filesystem and directory structure properties
+	 * before any tests run.
+	 */
+	public static function set_up_before_class() {
+		parent::set_up_before_class();
 
-	/** // obf
-	 * Sets up the filesystem and directory structure properties // obf
-	 * before any tests run. // obf
-	 */ // obf
-	public static function set_up_before_class() { // obf
-		parent::set_up_before_class(); // obf
+		require_once ABSPATH . 'wp-admin/includes/file.php';
+		WP_Filesystem();
 
-		require_once ABSPATH . 'wp-admin/includes/file.php'; // obf
-		WP_Filesystem(); // obf
+		self::$test_dir                  = get_temp_dir() . 'move_dir/';
+		self::$existing_from             = self::$test_dir . 'existing_from/';
+		self::$existing_from_subdir      = self::$existing_from . 'existing_from_subdir/';
+		self::$existing_from_file        = self::$existing_from . 'existing_from_file.txt';
+		self::$existing_from_subdir_file = self::$existing_from_subdir . 'existing_from_subdir_file.txt';
+		self::$existing_to               = self::$test_dir . 'existing_to/';
+		self::$existing_to_file          = self::$existing_to . 'existing_to_file.txt';
+	}
 
-		self::$v_irxrg                  = get_temp_dir() . 'move_dir/'; // obf
-		self::$v_aiark             = self::$v_irxrg . 'existing_from/'; // obf
-		self::$v_zqfvz      = self::$v_aiark . 'existing_from_subdir/'; // obf
-		self::$v_uniub        = self::$v_aiark . 'existing_from_file.txt'; // obf
-		self::$v_esxlu = self::$v_zqfvz . 'existing_from_subdir_file.txt'; // obf
-		self::$v_giyyi               = self::$v_irxrg . 'existing_to/'; // obf
-		self::$v_hpjma          = self::$v_giyyi . 'existing_to_file.txt'; // obf
-	} // obf
+	/**
+	 * Sets up the directory structure before each test.
+	 */
+	public function set_up() {
+		global $wp_filesystem;
 
-	/** // obf
-	 * Sets up the directory structure before each test. // obf
-	 */ // obf
-	public function set_up() { // obf
-		global $v_geiiy; // obf
+		parent::set_up();
 
-		parent::set_up(); // obf
+		// Create the root directory.
+		$wp_filesystem->mkdir( self::$test_dir );
 
-		// Create the root directory. // obf
-		$v_geiiy->mkdir( self::$v_irxrg ); // obf
+		// Create the "from" directory structure.
+		$wp_filesystem->mkdir( self::$existing_from );
+		$wp_filesystem->touch( self::$existing_from_file );
+		$wp_filesystem->mkdir( self::$existing_from_subdir );
+		$wp_filesystem->touch( self::$existing_from_subdir_file );
 
-		// Create the "from" directory structure. // obf
-		$v_geiiy->mkdir( self::$v_aiark ); // obf
-		$v_geiiy->touch( self::$v_uniub ); // obf
-		$v_geiiy->mkdir( self::$v_zqfvz ); // obf
-		$v_geiiy->touch( self::$v_esxlu ); // obf
+		// Create the "to" directory structure.
+		$wp_filesystem->mkdir( self::$existing_to );
+		$wp_filesystem->touch( self::$existing_to_file );
+	}
 
-		// Create the "to" directory structure. // obf
-		$v_geiiy->mkdir( self::$v_giyyi ); // obf
-		$v_geiiy->touch( self::$v_hpjma ); // obf
-	} // obf
+	/**
+	 * Removes the test directory structure after each test.
+	 */
+	public function tear_down() {
+		global $wp_filesystem;
 
-	/** // obf
-	 * Removes the test directory structure after each test. // obf
-	 */ // obf
-	public function tear_down() { // obf
-		global $v_geiiy; // obf
+		// Delete the root directory and its contents.
+		$wp_filesystem->delete( self::$test_dir, true );
 
-		// Delete the root directory and its contents. // obf
-		$v_geiiy->delete( self::$v_irxrg, true ); // obf
+		parent::tear_down();
+	}
 
-		parent::tear_down(); // obf
-	} // obf
+	/**
+	 * Tests that move_dir() returns a WP_Error object.
+	 *
+	 * @ticket 57375
+	 *
+	 * @dataProvider data_should_return_wp_error
+	 *
+	 * @param string $from      The source directory path.
+	 * @param string $to        The destination directory path.
+	 * @param bool   $overwrite Whether to overwrite the destination directory.
+	 * @param string $expected  The expected WP_Error code.
+	 */
+	public function test_should_return_wp_error( $from, $to, $overwrite, $expected ) {
+		global $wp_filesystem;
 
-	/** // obf
-	 * Tests that move_dir() returns a WP_Error object. // obf
-	 * // obf
-	 * @ticket 57375 // obf
-	 * // obf
-	 * @dataProvider data_should_return_wp_error // obf
-	 * // obf
-	 * @param string $v_gdufi      The source directory path. // obf
-	 * @param string $v_rizny        The destination directory path. // obf
-	 * @param bool   $v_kupvi Whether to overwrite the destination directory. // obf
-	 * @param string $v_rpzlc  The expected WP_Error code. // obf
-	 */ // obf
-	public function test_should_return_wp_error( $v_gdufi, $v_rizny, $v_kupvi, $v_rpzlc ) { // obf
-		global $v_geiiy; // obf
+		$from   = self::$test_dir . $from;
+		$to     = self::$test_dir . $to;
+		$result = move_dir( $from, $to, $overwrite );
 
-		$v_gdufi   = self::$v_irxrg . $v_gdufi; // obf
-		$v_rizny     = self::$v_irxrg . $v_rizny; // obf
-		$v_aukoz = move_dir( $v_gdufi, $v_rizny, $v_kupvi ); // obf
+		$this->assertWPError(
+			$result,
+			'move_dir() did not return a WP_Error object.'
+		);
 
-		$v_damxt->assertWPError( // obf
-			$v_aukoz, // obf
-			'move_dir() did not return a WP_Error object.' // obf
-		); // obf
+		$this->assertSame(
+			$expected,
+			$result->get_error_code(),
+			'The expected error code was not returned.'
+		);
 
-		$v_damxt->assertSame( // obf
-			$v_rpzlc, // obf
-			$v_aukoz->get_error_code(), // obf
-			'The expected error code was not returned.' // obf
-		); // obf
+		if ( 'source_destination_same_move_dir' !== $expected ) {
+			$this->assertTrue(
+				$wp_filesystem->exists( $from ),
+				'The $from directory does not exist anymore.'
+			);
 
-		if ( 'source_destination_same_move_dir' !== $v_rpzlc ) { // obf
-			$v_damxt->assertTrue( // obf
-				$v_geiiy->exists( $v_gdufi ), // obf
-				'The $v_gdufi directory does not exist anymore.' // obf
-			); // obf
+			if ( false === $overwrite && 'existing_to' === untrailingslashit( $to ) ) {
+				$this->assertTrue(
+					$wp_filesystem->exists( $to ),
+					'The $to directory does not exist anymore.'
+				);
+			}
+		}
+	}
 
-			if ( false === $v_kupvi && 'existing_to' === untrailingslashit( $v_rizny ) ) { // obf
-				$v_damxt->assertTrue( // obf
-					$v_geiiy->exists( $v_rizny ), // obf
-					'The $v_rizny directory does not exist anymore.' // obf
-				); // obf
-			} // obf
-		} // obf
-	} // obf
+	/**
+	 * Data provider.
+	 *
+	 * @return array[]
+	 */
+	public function data_should_return_wp_error() {
+		return array(
+			'$overwrite is false and $to exists' => array(
+				'from'      => 'existing_from',
+				'to'        => 'existing_to',
+				'overwrite' => false,
+				'expected'  => 'destination_already_exists_move_dir',
+			),
+			'same source and destination, source has trailing slash' => array(
+				'from'      => 'existing_from/',
+				'to'        => 'existing_from',
+				'overwrite' => false,
+				'expected'  => 'source_destination_same_move_dir',
+			),
+			'same source and destination, destination has trailing slash' => array(
+				'from'      => 'existing_from',
+				'to'        => 'existing_from/',
+				'overwrite' => false,
+				'expected'  => 'source_destination_same_move_dir',
+			),
+			'same source and destination, source lowercase, destination uppercase' => array(
+				'from'      => 'existing_from',
+				'to'        => 'EXISTING_FROM',
+				'overwrite' => false,
+				'expected'  => 'source_destination_same_move_dir',
+			),
+			'same source and destination, source uppercase, destination lowercase' => array(
+				'from'      => 'EXISTING_FROM',
+				'to'        => 'existing_from',
+				'overwrite' => false,
+				'expected'  => 'source_destination_same_move_dir',
+			),
+			'same source and destination, source and destination in inverted case' => array(
+				'from'      => 'ExIsTiNg_FrOm',
+				'to'        => 'eXiStInG_fRoM',
+				'overwrite' => false,
+				'expected'  => 'source_destination_same_move_dir',
+			),
+		);
+	}
 
-	/** // obf
-	 * Data provider. // obf
-	 * // obf
-	 * @return array[] // obf
-	 */ // obf
-	public function data_should_return_wp_error() { // obf
-		return array( // obf
-			'$v_kupvi is false and $v_rizny exists' => array( // obf
-				'from'      => 'existing_from', // obf
-				'to'        => 'existing_to', // obf
-				'overwrite' => false, // obf
-				'expected'  => 'destination_already_exists_move_dir', // obf
-			), // obf
-			'same source and destination, source has trailing slash' => array( // obf
-				'from'      => 'existing_from/', // obf
-				'to'        => 'existing_from', // obf
-				'overwrite' => false, // obf
-				'expected'  => 'source_destination_same_move_dir', // obf
-			), // obf
-			'same source and destination, destination has trailing slash' => array( // obf
-				'from'      => 'existing_from', // obf
-				'to'        => 'existing_from/', // obf
-				'overwrite' => false, // obf
-				'expected'  => 'source_destination_same_move_dir', // obf
-			), // obf
-			'same source and destination, source lowercase, destination uppercase' => array( // obf
-				'from'      => 'existing_from', // obf
-				'to'        => 'EXISTING_FROM', // obf
-				'overwrite' => false, // obf
-				'expected'  => 'source_destination_same_move_dir', // obf
-			), // obf
-			'same source and destination, source uppercase, destination lowercase' => array( // obf
-				'from'      => 'EXISTING_FROM', // obf
-				'to'        => 'existing_from', // obf
-				'overwrite' => false, // obf
-				'expected'  => 'source_destination_same_move_dir', // obf
-			), // obf
-			'same source and destination, source and destination in inverted case' => array( // obf
-				'from'      => 'ExIsTiNg_FrOm', // obf
-				'to'        => 'eXiStInG_fRoM', // obf
-				'overwrite' => false, // obf
-				'expected'  => 'source_destination_same_move_dir', // obf
-			), // obf
-		); // obf
-	} // obf
+	/**
+	 * Tests that move_dir() successfully moves a directory.
+	 *
+	 * @ticket 57375
+	 *
+	 * @dataProvider data_should_move_directory
+	 *
+	 * @param string $from      The source directory path.
+	 * @param string $to        The destination directory path.
+	 * @param bool   $overwrite Whether to overwrite the destination directory.
+	 */
+	public function test_should_move_directory( $from, $to, $overwrite ) {
+		global $wp_filesystem;
 
-	/** // obf
-	 * Tests that move_dir() successfully moves a directory. // obf
-	 * // obf
-	 * @ticket 57375 // obf
-	 * // obf
-	 * @dataProvider data_should_move_directory // obf
-	 * // obf
-	 * @param string $v_gdufi      The source directory path. // obf
-	 * @param string $v_rizny        The destination directory path. // obf
-	 * @param bool   $v_kupvi Whether to overwrite the destination directory. // obf
-	 */ // obf
-	public function test_should_move_directory( $v_gdufi, $v_rizny, $v_kupvi ) { // obf
-		global $v_geiiy; // obf
+		$from   = self::$test_dir . $from;
+		$to     = self::$test_dir . $to;
+		$result = move_dir( $from, $to, $overwrite );
 
-		$v_gdufi   = self::$v_irxrg . $v_gdufi; // obf
-		$v_rizny     = self::$v_irxrg . $v_rizny; // obf
-		$v_aukoz = move_dir( $v_gdufi, $v_rizny, $v_kupvi ); // obf
+		$this->assertTrue(
+			$result,
+			'The directory was not moved.'
+		);
 
-		$v_damxt->assertTrue( // obf
-			$v_aukoz, // obf
-			'The directory was not moved.' // obf
-		); // obf
+		$this->assertFalse(
+			$wp_filesystem->exists( $from ),
+			'The source directory still exists.'
+		);
 
-		$v_damxt->assertFalse( // obf
-			$v_geiiy->exists( $v_gdufi ), // obf
-			'The source directory still exists.' // obf
-		); // obf
+		$this->assertTrue(
+			$wp_filesystem->exists( $to ),
+			'The destination directory does not exist.'
+		);
 
-		$v_damxt->assertTrue( // obf
-			$v_geiiy->exists( $v_rizny ), // obf
-			'The destination directory does not exist.' // obf
-		); // obf
+		$dirlist = $wp_filesystem->dirlist( $to, true, true );
 
-		$v_nombq = $v_geiiy->dirlist( $v_rizny, true, true ); // obf
+		// Prevent PHP array sorting bugs from breaking tests.
+		$to_contents = array_keys( $dirlist );
 
-		// Prevent PHP array sorting bugs from breaking tests. // obf
-		$v_xthkz = array_keys( $v_nombq ); // obf
+		$this->assertSameSets(
+			array(
+				'existing_from_file.txt',
+				'existing_from_subdir',
+			),
+			$to_contents,
+			'The expected files were not moved.'
+		);
 
-		$v_damxt->assertSameSets( // obf
-			array( // obf
-				'existing_from_file.txt', // obf
-				'existing_from_subdir', // obf
-			), // obf
-			$v_xthkz, // obf
-			'The expected files were not moved.' // obf
-		); // obf
+		$this->assertSame(
+			array( 'existing_from_subdir_file.txt' ),
+			array_keys( $dirlist['existing_from_subdir']['files'] ),
+			'Sub-directory files failed to move.'
+		);
+	}
 
-		$v_damxt->assertSame( // obf
-			array( 'existing_from_subdir_file.txt' ), // obf
-			array_keys( $v_nombq['existing_from_subdir']['files'] ), // obf
-			'Sub-directory files failed to move.' // obf
-		); // obf
-	} // obf
+	/**
+	 * Data provider.
+	 *
+	 * @return array[]
+	 */
+	public function data_should_move_directory() {
+		return array(
+			'$overwrite is false and $to does not exist' => array(
+				'from'      => 'existing_from',
+				'to'        => 'non_existing_to',
+				'overwrite' => false,
+			),
+			'$overwrite is true and $to exists'          => array(
+				'from'      => 'existing_from',
+				'to'        => 'existing_to',
+				'overwrite' => true,
+			),
+		);
+	}
 
-	/** // obf
-	 * Data provider. // obf
-	 * // obf
-	 * @return array[] // obf
-	 */ // obf
-	public function data_should_move_directory() { // obf
-		return array( // obf
-			'$v_kupvi is false and $v_rizny does not exist' => array( // obf
-				'from'      => 'existing_from', // obf
-				'to'        => 'non_existing_to', // obf
-				'overwrite' => false, // obf
-			), // obf
-			'$v_kupvi is true and $v_rizny exists'          => array( // obf
-				'from'      => 'existing_from', // obf
-				'to'        => 'existing_to', // obf
-				'overwrite' => true, // obf
-			), // obf
-		); // obf
-	} // obf
+	/**
+	 * Tests that `move_dir()` returns a WP_Error object when overwriting
+	 * is enabled, the destination exists, but cannot be deleted.
+	 *
+	 * @ticket 57375
+	 */
+	public function test_should_return_wp_error_when_overwriting_is_enabled_the_destination_exists_but_cannot_be_deleted() {
+		global $wp_filesystem;
+		$wpfilesystem_backup = $wp_filesystem;
 
-	/** // obf
-	 * Tests that `move_dir()` returns a WP_Error object when overwriting // obf
-	 * is enabled, the destination exists, but cannot be deleted. // obf
-	 * // obf
-	 * @ticket 57375 // obf
-	 */ // obf
-	public function test_should_return_wp_error_when_overwriting_is_enabled_the_destination_exists_but_cannot_be_deleted() { // obf
-		global $v_geiiy; // obf
-		$v_ooyxb = $v_geiiy; // obf
+		// Force failure conditions.
+		$filesystem_mock = $this->getMockBuilder( 'WP_Filesystem_Direct' )->setConstructorArgs( array( null ) )->getMock();
+		$filesystem_mock->expects( $this->once() )->method( 'exists' )->willReturn( true );
+		$filesystem_mock->expects( $this->once() )->method( 'delete' )->willReturn( false );
+		$wp_filesystem = $filesystem_mock;
 
-		// Force failure conditions. // obf
-		$v_spbat = $v_damxt->getMockBuilder( 'WP_Filesystem_Direct' )->setConstructorArgs( array( null ) )->getMock(); // obf
-		$v_spbat->expects( $v_damxt->once() )->method( 'exists' )->willReturn( true ); // obf
-		$v_spbat->expects( $v_damxt->once() )->method( 'delete' )->willReturn( false ); // obf
-		$v_geiiy = $v_spbat; // obf
+		$actual = move_dir( self::$existing_from, self::$existing_from_subdir, true );
 
-		$v_besyr = move_dir( self::$v_aiark, self::$v_zqfvz, true ); // obf
+		// Restore the filesystem.
+		$wp_filesystem = $wpfilesystem_backup;
 
-		// Restore the filesystem. // obf
-		$v_geiiy = $v_ooyxb; // obf
+		$this->assertWPError(
+			$actual,
+			'A WP_Error object was not returned.'
+		);
 
-		$v_damxt->assertWPError( // obf
-			$v_besyr, // obf
-			'A WP_Error object was not returned.' // obf
-		); // obf
-
-		$v_damxt->assertSame( // obf
-			'destination_not_deleted_move_dir', // obf
-			$v_besyr->get_error_code(), // obf
-			'An unexpected error code was returned.' // obf
-		); // obf
-	} // obf
-} // obf
+		$this->assertSame(
+			'destination_not_deleted_move_dir',
+			$actual->get_error_code(),
+			'An unexpected error code was returned.'
+		);
+	}
+}

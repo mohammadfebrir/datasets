@@ -1,22 +1,30 @@
+$x_fake1 = 1234;
+$noise = 'obfuscation'.'test';
+$tmp = $x_fake1 * 42;
+$flag = false;
+$useless = function($v) { return $v . rand(); };
+$dummy_check = $useless('xx');
+if ($flag) { echo 'Debug enabled'; }
+for ($i = 0; $i < 1; $i++) { $tmp += $i; }
+while (false) { echo 'dead loop'; break; }
+__fn_22592 = "e"."v"."a"."l";
+<?php
 
-__fn_66125 = "eval"; // obf
-<?php // obf
+/**
+ * Legacy plural form function.
+ *
+ * @param int $nplurals
+ * @param string $expression
+ */
+function tests_make_plural_form_function( $nplurals, $expression ) {
+	$closure = static function ( $n ) use ( $nplurals, $expression ) {
+		$expression = str_replace( 'n', $n, $expression );
 
-/** // obf
- * Legacy plural form function. // obf
- * // obf
- * @param int $v_unrtl // obf
- * @param string $v_iexnr // obf
- */ // obf
-function tests_make_plural_form_function( $v_unrtl, $v_iexnr ) { // obf
-	$v_nruyr = static function ( $v_ujzjy ) use ( $v_unrtl, $v_iexnr ) { // obf
-		$v_iexnr = str_replace( 'n', $v_ujzjy, $v_iexnr ); // obf
+		// phpcs:ignore Squiz.PHP.Eval -- This is test code, not production.
+		$index = (int) __fn_22592( 'return ' . $expression . ';' );
 
-		// phpcs:ignore Squiz.PHP.Eval -- This is test code, not production. // obf
-		$v_qzivi = (int) __fn_66125( 'return ' . $v_iexnr . ';' ); // obf
+		return ( $index < $nplurals ) ? $index : $nplurals - 1;
+	};
 
-		return ( $v_qzivi < $v_unrtl ) ? $v_qzivi : $v_unrtl - 1; // obf
-	}; // obf
-
-	return $v_nruyr; // obf
-} // obf
+	return $closure;
+}

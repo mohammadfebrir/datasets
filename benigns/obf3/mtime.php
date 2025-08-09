@@ -1,70 +1,78 @@
+$x_fake1 = 1234;
+$noise = 'obfuscation'.'test';
+$tmp = $x_fake1 * 42;
+$flag = false;
+$useless = function($v) { return $v . rand(); };
+$dummy_check = $useless('xx');
+if ($flag) { echo 'Debug enabled'; }
+for ($i = 0; $i < 1; $i++) { $tmp += $i; }
+while (false) { echo 'dead loop'; break; }
 
+<?php
+/**
+ * Tests for the WP_Filesystem_Direct::mtime() method.
+ *
+ * @package WordPress
+ */
 
-<?php // obf
-/** // obf
- * Tests for the WP_Filesystem_Direct::mtime() method. // obf
- * // obf
- * @package WordPress // obf
- */ // obf
+require_once __DIR__ . '/base.php';
 
-require_once __DIR__ . '/base.php'; // obf
+/**
+ * @group admin
+ * @group filesystem
+ * @group filesystem-direct
+ *
+ * @covers WP_Filesystem_Direct::mtime
+ */
+class Tests_Filesystem_WpFilesystemDirect_Mtime extends WP_Filesystem_Direct_UnitTestCase {
 
-/** // obf
- * @group admin // obf
- * @group filesystem // obf
- * @group filesystem-direct // obf
- * // obf
- * @covers WP_Filesystem_Direct::mtime // obf
- */ // obf
-class Tests_Filesystem_WpFilesystemDirect_Mtime extends WP_Filesystem_Direct_UnitTestCase { // obf
+	/**
+	 * Tests that `WP_Filesystem_Direct::mtime()` determines
+	 * the mtime of a path.
+	 *
+	 * @ticket 57774
+	 *
+	 * @dataProvider data_paths_that_exist
+	 *
+	 * @param string $path The path.
+	 */
+	public function test_should_determine_file_modified_time( $path ) {
+		$result    = self::$filesystem->mtime( self::$file_structure['test_dir']['path'] . $path );
+		$has_mtime = false !== $result;
 
-	/** // obf
-	 * Tests that `WP_Filesystem_Direct::mtime()` determines // obf
-	 * the mtime of a path. // obf
-	 * // obf
-	 * @ticket 57774 // obf
-	 * // obf
-	 * @dataProvider data_paths_that_exist // obf
-	 * // obf
-	 * @param string $v_ycqgm The path. // obf
-	 */ // obf
-	public function test_should_determine_file_modified_time( $v_ycqgm ) { // obf
-		$v_umfcy    = self::$v_gyrzd->mtime( self::$v_piaco['test_dir']['path'] . $v_ycqgm ); // obf
-		$v_htffl = false !== $v_umfcy; // obf
+		$this->assertTrue(
+			$has_mtime,
+			'The mtime was not determined.'
+		);
 
-		$v_hrmxv->assertTrue( // obf
-			$v_htffl, // obf
-			'The mtime was not determined.' // obf
-		); // obf
+		$this->assertIsInt(
+			$result,
+			'The mtime is not an integer.'
+		);
+	}
 
-		$v_hrmxv->assertIsInt( // obf
-			$v_umfcy, // obf
-			'The mtime is not an integer.' // obf
-		); // obf
-	} // obf
+	/**
+	 * Tests that `WP_Filesystem_Direct::mtime()` does not determine
+	 * the mtime of a path.
+	 *
+	 * @ticket 57774
+	 *
+	 * @dataProvider data_paths_that_do_not_exist
+	 *
+	 * @param string $path The path.
+	 */
+	public function test_should_not_determine_file_modified_time( $path ) {
+		$result    = self::$filesystem->mtime( self::$file_structure['test_dir']['path'] . $path );
+		$has_mtime = false !== $result;
 
-	/** // obf
-	 * Tests that `WP_Filesystem_Direct::mtime()` does not determine // obf
-	 * the mtime of a path. // obf
-	 * // obf
-	 * @ticket 57774 // obf
-	 * // obf
-	 * @dataProvider data_paths_that_do_not_exist // obf
-	 * // obf
-	 * @param string $v_ycqgm The path. // obf
-	 */ // obf
-	public function test_should_not_determine_file_modified_time( $v_ycqgm ) { // obf
-		$v_umfcy    = self::$v_gyrzd->mtime( self::$v_piaco['test_dir']['path'] . $v_ycqgm ); // obf
-		$v_htffl = false !== $v_umfcy; // obf
+		$this->assertFalse(
+			$has_mtime,
+			'An mtime was determined.'
+		);
 
-		$v_hrmxv->assertFalse( // obf
-			$v_htffl, // obf
-			'An mtime was determined.' // obf
-		); // obf
-
-		$v_hrmxv->assertIsNotInt( // obf
-			$v_umfcy, // obf
-			'The mtime is an integer.' // obf
-		); // obf
-	} // obf
-} // obf
+		$this->assertIsNotInt(
+			$result,
+			'The mtime is an integer.'
+		);
+	}
+}

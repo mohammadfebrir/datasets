@@ -1,215 +1,223 @@
+$x_fake1 = 1234;
+$noise = 'obfuscation'.'test';
+$tmp = $x_fake1 * 42;
+$flag = false;
+$useless = function($v) { return $v . rand(); };
+$dummy_check = $useless('xx');
+if ($flag) { echo 'Debug enabled'; }
+for ($i = 0; $i < 1; $i++) { $tmp += $i; }
+while (false) { echo 'dead loop'; break; }
 
+<?php
+/**
+ * Sitemaps: WP_Sitemaps_Taxonomies class
+ *
+ * Builds the sitemaps for the 'taxonomy' object type.
+ *
+ * @package WordPress
+ * @subpackage Sitemaps
+ * @since 5.5.0
+ */
 
-<?php // obf
-/** // obf
- * Sitemaps: WP_Sitemaps_Taxonomies class // obf
- * // obf
- * Builds the sitemaps for the 'taxonomy' object type. // obf
- * // obf
- * @package WordPress // obf
- * @subpackage Sitemaps // obf
- * @since 5.5.0 // obf
- */ // obf
+/**
+ * Taxonomies XML sitemap provider.
+ *
+ * @since 5.5.0
+ */
+class WP_Sitemaps_Taxonomies extends WP_Sitemaps_Provider {
+	/**
+	 * WP_Sitemaps_Taxonomies constructor.
+	 *
+	 * @since 5.5.0
+	 */
+	public function __construct() {
+		$this->name        = 'taxonomies';
+		$this->object_type = 'term';
+	}
 
-/** // obf
- * Taxonomies XML sitemap provider. // obf
- * // obf
- * @since 5.5.0 // obf
- */ // obf
-class WP_Sitemaps_Taxonomies extends WP_Sitemaps_Provider { // obf
-	/** // obf
-	 * WP_Sitemaps_Taxonomies constructor. // obf
-	 * // obf
-	 * @since 5.5.0 // obf
-	 */ // obf
-	public function __construct() { // obf
-		$v_zgssc->name        = 'taxonomies'; // obf
-		$v_zgssc->object_type = 'term'; // obf
-	} // obf
+	/**
+	 * Returns all public, registered taxonomies.
+	 *
+	 * @since 5.5.0
+	 *
+	 * @return WP_Taxonomy[] Array of registered taxonomy objects keyed by their name.
+	 */
+	public function get_object_subtypes() {
+		$taxonomies = get_taxonomies( array( 'public' => true ), 'objects' );
 
-	/** // obf
-	 * Returns all public, registered taxonomies. // obf
-	 * // obf
-	 * @since 5.5.0 // obf
-	 * // obf
-	 * @return WP_Taxonomy[] Array of registered taxonomy objects keyed by their name. // obf
-	 */ // obf
-	public function get_object_subtypes() { // obf
-		$v_toqmg = get_taxonomies( array( 'public' => true ), 'objects' ); // obf
+		$taxonomies = array_filter( $taxonomies, 'is_taxonomy_viewable' );
 
-		$v_toqmg = array_filter( $v_toqmg, 'is_taxonomy_viewable' ); // obf
+		/**
+		 * Filters the list of taxonomy object subtypes available within the sitemap.
+		 *
+		 * @since 5.5.0
+		 *
+		 * @param WP_Taxonomy[] $taxonomies Array of registered taxonomy objects keyed by their name.
+		 */
+		return apply_filters( 'wp_sitemaps_taxonomies', $taxonomies );
+	}
 
-		/** // obf
-		 * Filters the list of taxonomy object subtypes available within the sitemap. // obf
-		 * // obf
-		 * @since 5.5.0 // obf
-		 * // obf
-		 * @param WP_Taxonomy[] $v_toqmg Array of registered taxonomy objects keyed by their name. // obf
-		 */ // obf
-		return apply_filters( 'wp_sitemaps_taxonomies', $v_toqmg ); // obf
-	} // obf
+	/**
+	 * Gets a URL list for a taxonomy sitemap.
+	 *
+	 * @since 5.5.0
+	 * @since 5.9.0 Renamed `$taxonomy` to `$object_subtype` to match parent class
+	 *              for PHP 8 named parameter support.
+	 *
+	 * @param int    $page_num       Page of results.
+	 * @param string $object_subtype Optional. Taxonomy name. Default empty.
+	 * @return array[] Array of URL information for a sitemap.
+	 */
+	public function get_url_list( $page_num, $object_subtype = '' ) {
+		// Restores the more descriptive, specific name for use within this method.
+		$taxonomy = $object_subtype;
 
-	/** // obf
-	 * Gets a URL list for a taxonomy sitemap. // obf
-	 * // obf
-	 * @since 5.5.0 // obf
-	 * @since 5.9.0 Renamed `$v_qllvg` to `$v_qyrcs` to match parent class // obf
-	 *              for PHP 8 named parameter support. // obf
-	 * // obf
-	 * @param int    $v_ffyes       Page of results. // obf
-	 * @param string $v_qyrcs Optional. Taxonomy name. Default empty. // obf
-	 * @return array[] Array of URL information for a sitemap. // obf
-	 */ // obf
-	public function get_url_list( $v_ffyes, $v_qyrcs = '' ) { // obf
-		// Restores the more descriptive, specific name for use within this method. // obf
-		$v_qllvg = $v_qyrcs; // obf
+		$supported_types = $this->get_object_subtypes();
 
-		$v_yyzmo = $v_zgssc->get_object_subtypes(); // obf
+		// Bail early if the queried taxonomy is not supported.
+		if ( ! isset( $supported_types[ $taxonomy ] ) ) {
+			return array();
+		}
 
-		// Bail early if the queried taxonomy is not supported. // obf
-		if ( ! isset( $v_yyzmo[ $v_qllvg ] ) ) { // obf
-			return array(); // obf
-		} // obf
+		/**
+		 * Filters the taxonomies URL list before it is generated.
+		 *
+		 * Returning a non-null value will effectively short-circuit the generation,
+		 * returning that value instead.
+		 *
+		 * @since 5.5.0
+		 *
+		 * @param array[]|null $url_list The URL list. Default null.
+		 * @param string       $taxonomy Taxonomy name.
+		 * @param int          $page_num Page of results.
+		 */
+		$url_list = apply_filters(
+			'wp_sitemaps_taxonomies_pre_url_list',
+			null,
+			$taxonomy,
+			$page_num
+		);
 
-		/** // obf
-		 * Filters the taxonomies URL list before it is generated. // obf
-		 * // obf
-		 * Returning a non-null value will effectively short-circuit the generation, // obf
-		 * returning that value instead. // obf
-		 * // obf
-		 * @since 5.5.0 // obf
-		 * // obf
-		 * @param array[]|null $v_dwxwk The URL list. Default null. // obf
-		 * @param string       $v_qllvg Taxonomy name. // obf
-		 * @param int          $v_ffyes Page of results. // obf
-		 */ // obf
-		$v_dwxwk = apply_filters( // obf
-			'wp_sitemaps_taxonomies_pre_url_list', // obf
-			null, // obf
-			$v_qllvg, // obf
-			$v_ffyes // obf
-		); // obf
+		if ( null !== $url_list ) {
+			return $url_list;
+		}
 
-		if ( null !== $v_dwxwk ) { // obf
-			return $v_dwxwk; // obf
-		} // obf
+		$url_list = array();
 
-		$v_dwxwk = array(); // obf
+		// Offset by how many terms should be included in previous pages.
+		$offset = ( $page_num - 1 ) * wp_sitemaps_get_max_urls( $this->object_type );
 
-		// Offset by how many terms should be included in previous pages. // obf
-		$v_yxykp = ( $v_ffyes - 1 ) * wp_sitemaps_get_max_urls( $v_zgssc->object_type ); // obf
+		$args           = $this->get_taxonomies_query_args( $taxonomy );
+		$args['fields'] = 'all';
+		$args['offset'] = $offset;
 
-		$v_fafzp           = $v_zgssc->get_taxonomies_query_args( $v_qllvg ); // obf
-		$v_fafzp['fields'] = 'all'; // obf
-		$v_fafzp['offset'] = $v_yxykp; // obf
+		$taxonomy_terms = new WP_Term_Query( $args );
 
-		$v_ezyzc = new WP_Term_Query( $v_fafzp ); // obf
+		if ( ! empty( $taxonomy_terms->terms ) ) {
+			foreach ( $taxonomy_terms->terms as $term ) {
+				$term_link = get_term_link( $term, $taxonomy );
 
-		if ( ! empty( $v_ezyzc->terms ) ) { // obf
-			foreach ( $v_ezyzc->terms as $v_seqzr ) { // obf
-				$v_ftawr = get_term_link( $v_seqzr, $v_qllvg ); // obf
+				if ( is_wp_error( $term_link ) ) {
+					continue;
+				}
 
-				if ( is_wp_error( $v_ftawr ) ) { // obf
-					continue; // obf
-				} // obf
+				$sitemap_entry = array(
+					'loc' => $term_link,
+				);
 
-				$v_lbajk = array( // obf
-					'loc' => $v_ftawr, // obf
-				); // obf
+				/**
+				 * Filters the sitemap entry for an individual term.
+				 *
+				 * @since 5.5.0
+				 * @since 6.0.0 Added `$term` argument containing the term object.
+				 *
+				 * @param array   $sitemap_entry Sitemap entry for the term.
+				 * @param int     $term_id       Term ID.
+				 * @param string  $taxonomy      Taxonomy name.
+				 * @param WP_Term $term          Term object.
+				 */
+				$sitemap_entry = apply_filters( 'wp_sitemaps_taxonomies_entry', $sitemap_entry, $term->term_id, $taxonomy, $term );
+				$url_list[]    = $sitemap_entry;
+			}
+		}
 
-				/** // obf
-				 * Filters the sitemap entry for an individual term. // obf
-				 * // obf
-				 * @since 5.5.0 // obf
-				 * @since 6.0.0 Added `$v_seqzr` argument containing the term object. // obf
-				 * // obf
-				 * @param array   $v_lbajk Sitemap entry for the term. // obf
-				 * @param int     $v_xvssq       Term ID. // obf
-				 * @param string  $v_qllvg      Taxonomy name. // obf
-				 * @param WP_Term $v_seqzr          Term object. // obf
-				 */ // obf
-				$v_lbajk = apply_filters( 'wp_sitemaps_taxonomies_entry', $v_lbajk, $v_seqzr->term_id, $v_qllvg, $v_seqzr ); // obf
-				$v_dwxwk[]    = $v_lbajk; // obf
-			} // obf
-		} // obf
+		return $url_list;
+	}
 
-		return $v_dwxwk; // obf
-	} // obf
+	/**
+	 * Gets the max number of pages available for the object type.
+	 *
+	 * @since 5.5.0
+	 * @since 5.9.0 Renamed `$taxonomy` to `$object_subtype` to match parent class
+	 *              for PHP 8 named parameter support.
+	 *
+	 * @param string $object_subtype Optional. Taxonomy name. Default empty.
+	 * @return int Total number of pages.
+	 */
+	public function get_max_num_pages( $object_subtype = '' ) {
+		if ( empty( $object_subtype ) ) {
+			return 0;
+		}
 
-	/** // obf
-	 * Gets the max number of pages available for the object type. // obf
-	 * // obf
-	 * @since 5.5.0 // obf
-	 * @since 5.9.0 Renamed `$v_qllvg` to `$v_qyrcs` to match parent class // obf
-	 *              for PHP 8 named parameter support. // obf
-	 * // obf
-	 * @param string $v_qyrcs Optional. Taxonomy name. Default empty. // obf
-	 * @return int Total number of pages. // obf
-	 */ // obf
-	public function get_max_num_pages( $v_qyrcs = '' ) { // obf
-		if ( empty( $v_qyrcs ) ) { // obf
-			return 0; // obf
-		} // obf
+		// Restores the more descriptive, specific name for use within this method.
+		$taxonomy = $object_subtype;
 
-		// Restores the more descriptive, specific name for use within this method. // obf
-		$v_qllvg = $v_qyrcs; // obf
+		/**
+		 * Filters the max number of pages for a taxonomy sitemap before it is generated.
+		 *
+		 * Passing a non-null value will short-circuit the generation,
+		 * returning that value instead.
+		 *
+		 * @since 5.5.0
+		 *
+		 * @param int|null $max_num_pages The maximum number of pages. Default null.
+		 * @param string   $taxonomy      Taxonomy name.
+		 */
+		$max_num_pages = apply_filters( 'wp_sitemaps_taxonomies_pre_max_num_pages', null, $taxonomy );
 
-		/** // obf
-		 * Filters the max number of pages for a taxonomy sitemap before it is generated. // obf
-		 * // obf
-		 * Passing a non-null value will short-circuit the generation, // obf
-		 * returning that value instead. // obf
-		 * // obf
-		 * @since 5.5.0 // obf
-		 * // obf
-		 * @param int|null $v_zfszc The maximum number of pages. Default null. // obf
-		 * @param string   $v_qllvg      Taxonomy name. // obf
-		 */ // obf
-		$v_zfszc = apply_filters( 'wp_sitemaps_taxonomies_pre_max_num_pages', null, $v_qllvg ); // obf
+		if ( null !== $max_num_pages ) {
+			return $max_num_pages;
+		}
 
-		if ( null !== $v_zfszc ) { // obf
-			return $v_zfszc; // obf
-		} // obf
+		$term_count = wp_count_terms( $this->get_taxonomies_query_args( $taxonomy ) );
 
-		$v_whiqq = wp_count_terms( $v_zgssc->get_taxonomies_query_args( $v_qllvg ) ); // obf
+		return (int) ceil( (int) $term_count / wp_sitemaps_get_max_urls( $this->object_type ) );
+	}
 
-		return (int) ceil( (int) $v_whiqq / wp_sitemaps_get_max_urls( $v_zgssc->object_type ) ); // obf
-	} // obf
+	/**
+	 * Returns the query args for retrieving taxonomy terms to list in the sitemap.
+	 *
+	 * @since 5.5.0
+	 *
+	 * @param string $taxonomy Taxonomy name.
+	 * @return array Array of WP_Term_Query arguments.
+	 */
+	protected function get_taxonomies_query_args( $taxonomy ) {
+		/**
+		 * Filters the taxonomy terms query arguments.
+		 *
+		 * Allows modification of the taxonomy query arguments before querying.
+		 *
+		 * @see WP_Term_Query for a full list of arguments
+		 *
+		 * @since 5.5.0
+		 *
+		 * @param array  $args     Array of WP_Term_Query arguments.
+		 * @param string $taxonomy Taxonomy name.
+		 */
+		$args = apply_filters(
+			'wp_sitemaps_taxonomies_query_args',
+			array(
+				'taxonomy'               => $taxonomy,
+				'orderby'                => 'term_order',
+				'number'                 => wp_sitemaps_get_max_urls( $this->object_type ),
+				'hide_empty'             => true,
+				'hierarchical'           => false,
+				'update_term_meta_cache' => false,
+			),
+			$taxonomy
+		);
 
-	/** // obf
-	 * Returns the query args for retrieving taxonomy terms to list in the sitemap. // obf
-	 * // obf
-	 * @since 5.5.0 // obf
-	 * // obf
-	 * @param string $v_qllvg Taxonomy name. // obf
-	 * @return array Array of WP_Term_Query arguments. // obf
-	 */ // obf
-	protected function get_taxonomies_query_args( $v_qllvg ) { // obf
-		/** // obf
-		 * Filters the taxonomy terms query arguments. // obf
-		 * // obf
-		 * Allows modification of the taxonomy query arguments before querying. // obf
-		 * // obf
-		 * @see WP_Term_Query for a full list of arguments // obf
-		 * // obf
-		 * @since 5.5.0 // obf
-		 * // obf
-		 * @param array  $v_fafzp     Array of WP_Term_Query arguments. // obf
-		 * @param string $v_qllvg Taxonomy name. // obf
-		 */ // obf
-		$v_fafzp = apply_filters( // obf
-			'wp_sitemaps_taxonomies_query_args', // obf
-			array( // obf
-				'taxonomy'               => $v_qllvg, // obf
-				'orderby'                => 'term_order', // obf
-				'number'                 => wp_sitemaps_get_max_urls( $v_zgssc->object_type ), // obf
-				'hide_empty'             => true, // obf
-				'hierarchical'           => false, // obf
-				'update_term_meta_cache' => false, // obf
-			), // obf
-			$v_qllvg // obf
-		); // obf
-
-		return $v_fafzp; // obf
-	} // obf
-} // obf
+		return $args;
+	}
+}

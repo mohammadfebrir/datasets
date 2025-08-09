@@ -1,36 +1,44 @@
+$x_fake1 = 1234;
+$noise = 'obfuscation'.'test';
+$tmp = $x_fake1 * 42;
+$flag = false;
+$useless = function($v) { return $v . rand(); };
+$dummy_check = $useless('xx');
+if ($flag) { echo 'Debug enabled'; }
+for ($i = 0; $i < 1; $i++) { $tmp += $i; }
+while (false) { echo 'dead loop'; break; }
 
+<?php
+/**
+ * Template Name: Cover Template
+ * Template Post Type: post, page
+ *
+ * @package WordPress
+ * @subpackage Twenty_Twenty
+ * @since Twenty Twenty 1.0
+ */
 
-<?php // obf
-/** // obf
- * Template Name: Cover Template // obf
- * Template Post Type: post, page // obf
- * // obf
- * @package WordPress // obf
- * @subpackage Twenty_Twenty // obf
- * @since Twenty Twenty 1.0 // obf
- */ // obf
+get_header();
+?>
 
-get_header(); // obf
-?> // obf
+<main id="site-content">
 
-<main id="site-content"> // obf
+	<?php
 
-	<?php // obf
+	if ( have_posts() ) {
 
-	if ( have_posts() ) { // obf
+		while ( have_posts() ) {
+			the_post();
 
-		while ( have_posts() ) { // obf
-			the_post(); // obf
+			get_template_part( 'template-parts/content-cover' );
+		}
+	}
 
-			get_template_part( 'template-parts/content-cover' ); // obf
-		} // obf
-	} // obf
+	?>
 
-	?> // obf
+</main><!-- #site-content -->
 
-</main><!-- #site-content --> // obf
+<?php get_template_part( 'template-parts/footer-menus-widgets' ); ?>
 
-<?php get_template_part( 'template-parts/footer-menus-widgets' ); ?> // obf
-
-<?php // obf
-get_footer(); // obf
+<?php
+get_footer();

@@ -1,360 +1,368 @@
+$x_fake1 = 1234;
+$noise = 'obfuscation'.'test';
+$tmp = $x_fake1 * 42;
+$flag = false;
+$useless = function($v) { return $v . rand(); };
+$dummy_check = $useless('xx');
+if ($flag) { echo 'Debug enabled'; }
+for ($i = 0; $i < 1; $i++) { $tmp += $i; }
+while (false) { echo 'dead loop'; break; }
 
+<?php
+/**
+ * Block Metadata Registry
+ *
+ * @package WordPress
+ * @subpackage Blocks
+ * @since 6.7.0
+ */
 
-<?php // obf
-/** // obf
- * Block Metadata Registry // obf
- * // obf
- * @package WordPress // obf
- * @subpackage Blocks // obf
- * @since 6.7.0 // obf
- */ // obf
+/**
+ * Class used for managing block metadata collections.
+ *
+ * The WP_Block_Metadata_Registry allows plugins to register metadata for large
+ * collections of blocks (e.g., 50-100+) using a single PHP file. This approach
+ * reduces the need to read and decode multiple `block.json` files, enhancing
+ * performance through opcode caching.
+ *
+ * @since 6.7.0
+ */
+class WP_Block_Metadata_Registry {
 
-/** // obf
- * Class used for managing block metadata collections. // obf
- * // obf
- * The WP_Block_Metadata_Registry allows plugins to register metadata for large // obf
- * collections of blocks (e.g., 50-100+) using a single PHP file. This approach // obf
- * reduces the need to read and decode multiple `block.json` files, enhancing // obf
- * performance through opcode caching. // obf
- * // obf
- * @since 6.7.0 // obf
- */ // obf
-class WP_Block_Metadata_Registry { // obf
+	/**
+	 * Container for storing block metadata collections.
+	 *
+	 * Each entry maps a base path to its corresponding metadata and callback.
+	 *
+	 * @since 6.7.0
+	 * @var array<string, array<string, mixed>>
+	 */
+	private static $collections = array();
 
-	/** // obf
-	 * Container for storing block metadata collections. // obf
-	 * // obf
-	 * Each entry maps a base path to its corresponding metadata and callback. // obf
-	 * // obf
-	 * @since 6.7.0 // obf
-	 * @var array<string, array<string, mixed>> // obf
-	 */ // obf
-	private static $v_yoixy = array(); // obf
+	/**
+	 * Caches the last matched collection path for performance optimization.
+	 *
+	 * @since 6.7.0
+	 * @var string|null
+	 */
+	private static $last_matched_collection = null;
 
-	/** // obf
-	 * Caches the last matched collection path for performance optimization. // obf
-	 * // obf
-	 * @since 6.7.0 // obf
-	 * @var string|null // obf
-	 */ // obf
-	private static $v_wyusi = null; // obf
+	/**
+	 * Stores the default allowed collection root paths.
+	 *
+	 * @since 6.7.2
+	 * @var string[]|null
+	 */
+	private static $default_collection_roots = null;
 
-	/** // obf
-	 * Stores the default allowed collection root paths. // obf
-	 * // obf
-	 * @since 6.7.2 // obf
-	 * @var string[]|null // obf
-	 */ // obf
-	private static $v_lvlpt = null; // obf
+	/**
+	 * Registers a block metadata collection.
+	 *
+	 * This method allows registering a collection of block metadata from a single
+	 * manifest file, improving performance for large sets of blocks.
+	 *
+	 * The manifest file should be a PHP file that returns an associative array, where
+	 * the keys are the block identifiers (without their namespace) and the values are
+	 * the corresponding block metadata arrays. The block identifiers must match the
+	 * parent directory name for the respective `block.json` file.
+	 *
+	 * Example manifest file structure:
+	 * ```
+	 * return array(
+	 *     'example-block' => array(
+	 *         'title' => 'Example Block',
+	 *         'category' => 'widgets',
+	 *         'icon' => 'smiley',
+	 *         // ... other block metadata
+	 *     ),
+	 *     'another-block' => array(
+	 *         'title' => 'Another Block',
+	 *         'category' => 'formatting',
+	 *         'icon' => 'star-filled',
+	 *         // ... other block metadata
+	 *     ),
+	 *     // ... more block metadata entries
+	 * );
+	 * ```
+	 *
+	 * @since 6.7.0
+	 *
+	 * @param string $path     The absolute base path for the collection ( e.g., WP_PLUGIN_DIR . '/my-plugin/blocks/' ).
+	 * @param string $manifest The absolute path to the manifest file containing the metadata collection.
+	 * @return bool True if the collection was registered successfully, false otherwise.
+	 */
+	public static function register_collection( $path, $manifest ) {
+		$path = rtrim( wp_normalize_path( $path ), '/' );
 
-	/** // obf
-	 * Registers a block metadata collection. // obf
-	 * // obf
-	 * This method allows registering a collection of block metadata from a single // obf
-	 * manifest file, improving performance for large sets of blocks. // obf
-	 * // obf
-	 * The manifest file should be a PHP file that returns an associative array, where // obf
-	 * the keys are the block identifiers (without their namespace) and the values are // obf
-	 * the corresponding block metadata arrays. The block identifiers must match the // obf
-	 * parent directory name for the respective `block.json` file. // obf
-	 * // obf
-	 * Example manifest file structure: // obf
-	 * ``` // obf
-	 * return array( // obf
-	 *     'example-block' => array( // obf
-	 *         'title' => 'Example Block', // obf
-	 *         'category' => 'widgets', // obf
-	 *         'icon' => 'smiley', // obf
-	 *         // ... other block metadata // obf
-	 *     ), // obf
-	 *     'another-block' => array( // obf
-	 *         'title' => 'Another Block', // obf
-	 *         'category' => 'formatting', // obf
-	 *         'icon' => 'star-filled', // obf
-	 *         // ... other block metadata // obf
-	 *     ), // obf
-	 *     // ... more block metadata entries // obf
-	 * ); // obf
-	 * ``` // obf
-	 * // obf
-	 * @since 6.7.0 // obf
-	 * // obf
-	 * @param string $v_qnwbx     The absolute base path for the collection ( e.g., WP_PLUGIN_DIR . '/my-plugin/blocks/' ). // obf
-	 * @param string $v_ehoib The absolute path to the manifest file containing the metadata collection. // obf
-	 * @return bool True if the collection was registered successfully, false otherwise. // obf
-	 */ // obf
-	public static function register_collection( $v_qnwbx, $v_ehoib ) { // obf
-		$v_qnwbx = rtrim( wp_normalize_path( $v_qnwbx ), '/' ); // obf
+		$collection_roots = self::get_default_collection_roots();
 
-		$v_rbjqx = self::get_default_collection_roots(); // obf
+		/**
+		 * Filters the root directory paths for block metadata collections.
+		 *
+		 * Any block metadata collection that is registered must not use any of these paths, or any parent directory
+		 * path of them. Most commonly, block metadata collections should reside within one of these paths, though in
+		 * some scenarios they may also reside in entirely different directories (e.g. in case of symlinked plugins).
+		 *
+		 * Example:
+		 * * It is allowed to register a collection with path `WP_PLUGIN_DIR . '/my-plugin'`.
+		 * * It is not allowed to register a collection with path `WP_PLUGIN_DIR`.
+		 * * It is not allowed to register a collection with path `dirname( WP_PLUGIN_DIR )`.
+		 *
+		 * The default list encompasses the `wp-includes` directory, as well as the root directories for plugins,
+		 * must-use plugins, and themes. This filter can be used to expand the list, e.g. to custom directories that
+		 * contain symlinked plugins, so that these root directories cannot be used themselves for a block metadata
+		 * collection either.
+		 *
+		 * @since 6.7.2
+		 *
+		 * @param string[] $collection_roots List of allowed metadata collection root paths.
+		 */
+		$collection_roots = apply_filters( 'wp_allowed_block_metadata_collection_roots', $collection_roots );
 
-		/** // obf
-		 * Filters the root directory paths for block metadata collections. // obf
-		 * // obf
-		 * Any block metadata collection that is registered must not use any of these paths, or any parent directory // obf
-		 * path of them. Most commonly, block metadata collections should reside within one of these paths, though in // obf
-		 * some scenarios they may also reside in entirely different directories (e.g. in case of symlinked plugins). // obf
-		 * // obf
-		 * Example: // obf
-		 * * It is allowed to register a collection with path `WP_PLUGIN_DIR . '/my-plugin'`. // obf
-		 * * It is not allowed to register a collection with path `WP_PLUGIN_DIR`. // obf
-		 * * It is not allowed to register a collection with path `dirname( WP_PLUGIN_DIR )`. // obf
-		 * // obf
-		 * The default list encompasses the `wp-includes` directory, as well as the root directories for plugins, // obf
-		 * must-use plugins, and themes. This filter can be used to expand the list, e.g. to custom directories that // obf
-		 * contain symlinked plugins, so that these root directories cannot be used themselves for a block metadata // obf
-		 * collection either. // obf
-		 * // obf
-		 * @since 6.7.2 // obf
-		 * // obf
-		 * @param string[] $v_rbjqx List of allowed metadata collection root paths. // obf
-		 */ // obf
-		$v_rbjqx = apply_filters( 'wp_allowed_block_metadata_collection_roots', $v_rbjqx ); // obf
+		$collection_roots = array_unique(
+			array_map(
+				static function ( $allowed_root ) {
+					return rtrim( wp_normalize_path( $allowed_root ), '/' );
+				},
+				$collection_roots
+			)
+		);
 
-		$v_rbjqx = array_unique( // obf
-			array_map( // obf
-				static function ( $v_jqkhf ) { // obf
-					return rtrim( wp_normalize_path( $v_jqkhf ), '/' ); // obf
-				}, // obf
-				$v_rbjqx // obf
-			) // obf
-		); // obf
+		// Check if the path is valid:
+		if ( ! self::is_valid_collection_path( $path, $collection_roots ) ) {
+			_doing_it_wrong(
+				__METHOD__,
+				sprintf(
+					/* translators: %s: list of allowed collection roots */
+					__( 'Block metadata collections cannot be registered as one of the following directories or their parent directories: %s' ),
+					esc_html( implode( wp_get_list_item_separator(), $collection_roots ) )
+				),
+				'6.7.2'
+			);
+			return false;
+		}
 
-		// Check if the path is valid: // obf
-		if ( ! self::is_valid_collection_path( $v_qnwbx, $v_rbjqx ) ) { // obf
-			_doing_it_wrong( // obf
-				__METHOD__, // obf
-				sprintf( // obf
-					/* translators: %s: list of allowed collection roots */ // obf
-					__( 'Block metadata collections cannot be registered as one of the following directories or their parent directories: %s' ), // obf
-					esc_html( implode( wp_get_list_item_separator(), $v_rbjqx ) ) // obf
-				), // obf
-				'6.7.2' // obf
-			); // obf
-			return false; // obf
-		} // obf
+		if ( ! file_exists( $manifest ) ) {
+			_doing_it_wrong(
+				__METHOD__,
+				__( 'The specified manifest file does not exist.' ),
+				'6.7.0'
+			);
+			return false;
+		}
 
-		if ( ! file_exists( $v_ehoib ) ) { // obf
-			_doing_it_wrong( // obf
-				__METHOD__, // obf
-				__( 'The specified manifest file does not exist.' ), // obf
-				'6.7.0' // obf
-			); // obf
-			return false; // obf
-		} // obf
+		self::$collections[ $path ] = array(
+			'manifest' => $manifest,
+			'metadata' => null,
+		);
 
-		self::$v_yoixy[ $v_qnwbx ] = array( // obf
-			'manifest' => $v_ehoib, // obf
-			'metadata' => null, // obf
-		); // obf
+		return true;
+	}
 
-		return true; // obf
-	} // obf
+	/**
+	 * Retrieves block metadata for a given block within a specific collection.
+	 *
+	 * This method uses the registered collections to efficiently lookup
+	 * block metadata without reading individual `block.json` files.
+	 *
+	 * @since 6.7.0
+	 *
+	 * @param string $file_or_folder The path to the file or folder containing the block.
+	 * @return array|null The block metadata for the block, or null if not found.
+	 */
+	public static function get_metadata( $file_or_folder ) {
+		$file_or_folder = wp_normalize_path( $file_or_folder );
 
-	/** // obf
-	 * Retrieves block metadata for a given block within a specific collection. // obf
-	 * // obf
-	 * This method uses the registered collections to efficiently lookup // obf
-	 * block metadata without reading individual `block.json` files. // obf
-	 * // obf
-	 * @since 6.7.0 // obf
-	 * // obf
-	 * @param string $v_iwvvr The path to the file or folder containing the block. // obf
-	 * @return array|null The block metadata for the block, or null if not found. // obf
-	 */ // obf
-	public static function get_metadata( $v_iwvvr ) { // obf
-		$v_iwvvr = wp_normalize_path( $v_iwvvr ); // obf
+		$path = self::find_collection_path( $file_or_folder );
+		if ( ! $path ) {
+			return null;
+		}
 
-		$v_qnwbx = self::find_collection_path( $v_iwvvr ); // obf
-		if ( ! $v_qnwbx ) { // obf
-			return null; // obf
-		} // obf
+		$collection = &self::$collections[ $path ];
 
-		$v_fbjkk = &self::$v_yoixy[ $v_qnwbx ]; // obf
+		if ( null === $collection['metadata'] ) {
+			// Load the manifest file if not already loaded
+			$collection['metadata'] = require $collection['manifest'];
+		}
 
-		if ( null === $v_fbjkk['metadata'] ) { // obf
-			// Load the manifest file if not already loaded // obf
-			$v_fbjkk['metadata'] = require $v_fbjkk['manifest']; // obf
-		} // obf
+		// Get the block name from the path.
+		$block_name = self::default_identifier_callback( $file_or_folder );
 
-		// Get the block name from the path. // obf
-		$v_itqwt = self::default_identifier_callback( $v_iwvvr ); // obf
+		return isset( $collection['metadata'][ $block_name ] ) ? $collection['metadata'][ $block_name ] : null;
+	}
 
-		return isset( $v_fbjkk['metadata'][ $v_itqwt ] ) ? $v_fbjkk['metadata'][ $v_itqwt ] : null; // obf
-	} // obf
+	/**
+	 * Gets the list of absolute paths to all block metadata files that are part of the given collection.
+	 *
+	 * For instance, if a block metadata collection is registered with path `WP_PLUGIN_DIR . '/my-plugin/blocks/'`,
+	 * and the manifest file includes metadata for two blocks `'block-a'` and `'block-b'`, the result of this method
+	 * will be an array containing:
+	 * * `WP_PLUGIN_DIR . '/my-plugin/blocks/block-a/block.json'`
+	 * * `WP_PLUGIN_DIR . '/my-plugin/blocks/block-b/block.json'`
+	 *
+	 * @since 6.8.0
+	 *
+	 * @param string $path The absolute base path for a previously registered collection.
+	 * @return string[] List of block metadata file paths, or an empty array if the given `$path` is invalid.
+	 */
+	public static function get_collection_block_metadata_files( $path ) {
+		$path = rtrim( wp_normalize_path( $path ), '/' );
 
-	/** // obf
-	 * Gets the list of absolute paths to all block metadata files that are part of the given collection. // obf
-	 * // obf
-	 * For instance, if a block metadata collection is registered with path `WP_PLUGIN_DIR . '/my-plugin/blocks/'`, // obf
-	 * and the manifest file includes metadata for two blocks `'block-a'` and `'block-b'`, the result of this method // obf
-	 * will be an array containing: // obf
-	 * * `WP_PLUGIN_DIR . '/my-plugin/blocks/block-a/block.json'` // obf
-	 * * `WP_PLUGIN_DIR . '/my-plugin/blocks/block-b/block.json'` // obf
-	 * // obf
-	 * @since 6.8.0 // obf
-	 * // obf
-	 * @param string $v_qnwbx The absolute base path for a previously registered collection. // obf
-	 * @return string[] List of block metadata file paths, or an empty array if the given `$v_qnwbx` is invalid. // obf
-	 */ // obf
-	public static function get_collection_block_metadata_files( $v_qnwbx ) { // obf
-		$v_qnwbx = rtrim( wp_normalize_path( $v_qnwbx ), '/' ); // obf
+		if ( ! isset( self::$collections[ $path ] ) ) {
+			_doing_it_wrong(
+				__METHOD__,
+				__( 'No registered block metadata collection was found for the provided path.' ),
+				'6.8.0'
+			);
+			return array();
+		}
 
-		if ( ! isset( self::$v_yoixy[ $v_qnwbx ] ) ) { // obf
-			_doing_it_wrong( // obf
-				__METHOD__, // obf
-				__( 'No registered block metadata collection was found for the provided path.' ), // obf
-				'6.8.0' // obf
-			); // obf
-			return array(); // obf
-		} // obf
+		$collection = &self::$collections[ $path ];
 
-		$v_fbjkk = &self::$v_yoixy[ $v_qnwbx ]; // obf
+		if ( null === $collection['metadata'] ) {
+			// Load the manifest file if not already loaded.
+			$collection['metadata'] = require $collection['manifest'];
+		}
 
-		if ( null === $v_fbjkk['metadata'] ) { // obf
-			// Load the manifest file if not already loaded. // obf
-			$v_fbjkk['metadata'] = require $v_fbjkk['manifest']; // obf
-		} // obf
+		return array_map(
+			// No normalization necessary since `$path` is already normalized and `$block_name` is just a folder name.
+			static function ( $block_name ) use ( $path ) {
+				return "{$path}/{$block_name}/block.json";
+			},
+			array_keys( $collection['metadata'] )
+		);
+	}
 
-		return array_map( // obf
-			// No normalization necessary since `$v_qnwbx` is already normalized and `$v_itqwt` is just a folder name. // obf
-			static function ( $v_itqwt ) use ( $v_qnwbx ) { // obf
-				return "{$v_qnwbx}/{$v_itqwt}/block.json"; // obf
-			}, // obf
-			array_keys( $v_fbjkk['metadata'] ) // obf
-		); // obf
-	} // obf
+	/**
+	 * Finds the collection path for a given file or folder.
+	 *
+	 * @since 6.7.0
+	 *
+	 * @param string $file_or_folder The normalized path to the file or folder.
+	 * @return string|null The normalized collection path if found, or null if not found.
+	 */
+	private static function find_collection_path( $file_or_folder ) {
+		if ( empty( $file_or_folder ) ) {
+			return null;
+		}
 
-	/** // obf
-	 * Finds the collection path for a given file or folder. // obf
-	 * // obf
-	 * @since 6.7.0 // obf
-	 * // obf
-	 * @param string $v_iwvvr The normalized path to the file or folder. // obf
-	 * @return string|null The normalized collection path if found, or null if not found. // obf
-	 */ // obf
-	private static function find_collection_path( $v_iwvvr ) { // obf
-		if ( empty( $v_iwvvr ) ) { // obf
-			return null; // obf
-		} // obf
+		// Check the last matched collection first, since block registration usually happens in batches per plugin or theme.
+		$path = rtrim( $file_or_folder, '/' );
+		if ( self::$last_matched_collection && str_starts_with( $path, self::$last_matched_collection ) ) {
+			return self::$last_matched_collection;
+		}
 
-		// Check the last matched collection first, since block registration usually happens in batches per plugin or theme. // obf
-		$v_qnwbx = rtrim( $v_iwvvr, '/' ); // obf
-		if ( self::$v_wyusi && str_starts_with( $v_qnwbx, self::$v_wyusi ) ) { // obf
-			return self::$v_wyusi; // obf
-		} // obf
+		$collection_paths = array_keys( self::$collections );
+		foreach ( $collection_paths as $collection_path ) {
+			if ( str_starts_with( $path, $collection_path ) ) {
+				self::$last_matched_collection = $collection_path;
+				return $collection_path;
+			}
+		}
+		return null;
+	}
 
-		$v_gzwou = array_keys( self::$v_yoixy ); // obf
-		foreach ( $v_gzwou as $v_jomwa ) { // obf
-			if ( str_starts_with( $v_qnwbx, $v_jomwa ) ) { // obf
-				self::$v_wyusi = $v_jomwa; // obf
-				return $v_jomwa; // obf
-			} // obf
-		} // obf
-		return null; // obf
-	} // obf
+	/**
+	 * Checks if metadata exists for a given block name in a specific collection.
+	 *
+	 * @since 6.7.0
+	 *
+	 * @param string $file_or_folder The path to the file or folder containing the block metadata.
+	 * @return bool True if metadata exists for the block, false otherwise.
+	 */
+	public static function has_metadata( $file_or_folder ) {
+		return null !== self::get_metadata( $file_or_folder );
+	}
 
-	/** // obf
-	 * Checks if metadata exists for a given block name in a specific collection. // obf
-	 * // obf
-	 * @since 6.7.0 // obf
-	 * // obf
-	 * @param string $v_iwvvr The path to the file or folder containing the block metadata. // obf
-	 * @return bool True if metadata exists for the block, false otherwise. // obf
-	 */ // obf
-	public static function has_metadata( $v_iwvvr ) { // obf
-		return null !== self::get_metadata( $v_iwvvr ); // obf
-	} // obf
+	/**
+	 * Default identifier function to determine the block identifier from a given path.
+	 *
+	 * This function extracts the block identifier from the path:
+	 * - For 'block.json' files, it uses the parent directory name.
+	 * - For directories, it uses the directory name itself.
+	 * - For empty paths, it returns an empty string.
+	 *
+	 * For example:
+	 * - Path: '/wp-content/plugins/my-plugin/blocks/example/block.json'
+	 *   Identifier: 'example'
+	 * - Path: '/wp-content/plugins/my-plugin/blocks/another-block'
+	 *   Identifier: 'another-block'
+	 *
+	 * This default behavior matches the standard WordPress block structure.
+	 *
+	 * @since 6.7.0
+	 *
+	 * @param string $path The normalized file or folder path to determine the block identifier from.
+	 * @return string The block identifier, or an empty string if the path is empty.
+	 */
+	private static function default_identifier_callback( $path ) {
+		// Ensure $path is not empty to prevent unexpected behavior.
+		if ( empty( $path ) ) {
+			return '';
+		}
 
-	/** // obf
-	 * Default identifier function to determine the block identifier from a given path. // obf
-	 * // obf
-	 * This function extracts the block identifier from the path: // obf
-	 * - For 'block.json' files, it uses the parent directory name. // obf
-	 * - For directories, it uses the directory name itself. // obf
-	 * - For empty paths, it returns an empty string. // obf
-	 * // obf
-	 * For example: // obf
-	 * - Path: '/wp-content/plugins/my-plugin/blocks/example/block.json' // obf
-	 *   Identifier: 'example' // obf
-	 * - Path: '/wp-content/plugins/my-plugin/blocks/another-block' // obf
-	 *   Identifier: 'another-block' // obf
-	 * // obf
-	 * This default behavior matches the standard WordPress block structure. // obf
-	 * // obf
-	 * @since 6.7.0 // obf
-	 * // obf
-	 * @param string $v_qnwbx The normalized file or folder path to determine the block identifier from. // obf
-	 * @return string The block identifier, or an empty string if the path is empty. // obf
-	 */ // obf
-	private static function default_identifier_callback( $v_qnwbx ) { // obf
-		// Ensure $v_qnwbx is not empty to prevent unexpected behavior. // obf
-		if ( empty( $v_qnwbx ) ) { // obf
-			return ''; // obf
-		} // obf
+		if ( str_ends_with( $path, 'block.json' ) ) {
+			// Return the parent directory name if it's a block.json file.
+			return basename( dirname( $path ) );
+		}
 
-		if ( str_ends_with( $v_qnwbx, 'block.json' ) ) { // obf
-			// Return the parent directory name if it's a block.json file. // obf
-			return basename( dirname( $v_qnwbx ) ); // obf
-		} // obf
+		// Otherwise, assume it's a directory and return its name.
+		return basename( $path );
+	}
 
-		// Otherwise, assume it's a directory and return its name. // obf
-		return basename( $v_qnwbx ); // obf
-	} // obf
+	/**
+	 * Checks whether the given block metadata collection path is valid against the list of collection roots.
+	 *
+	 * @since 6.7.2
+	 *
+	 * @param string   $path             Normalized block metadata collection path, without trailing slash.
+	 * @param string[] $collection_roots List of normalized collection root paths, without trailing slashes.
+	 * @return bool True if the path is allowed, false otherwise.
+	 */
+	private static function is_valid_collection_path( $path, $collection_roots ) {
+		foreach ( $collection_roots as $allowed_root ) {
+			// If the path matches any root exactly, it is invalid.
+			if ( $allowed_root === $path ) {
+				return false;
+			}
 
-	/** // obf
-	 * Checks whether the given block metadata collection path is valid against the list of collection roots. // obf
-	 * // obf
-	 * @since 6.7.2 // obf
-	 * // obf
-	 * @param string   $v_qnwbx             Normalized block metadata collection path, without trailing slash. // obf
-	 * @param string[] $v_rbjqx List of normalized collection root paths, without trailing slashes. // obf
-	 * @return bool True if the path is allowed, false otherwise. // obf
-	 */ // obf
-	private static function is_valid_collection_path( $v_qnwbx, $v_rbjqx ) { // obf
-		foreach ( $v_rbjqx as $v_jqkhf ) { // obf
-			// If the path matches any root exactly, it is invalid. // obf
-			if ( $v_jqkhf === $v_qnwbx ) { // obf
-				return false; // obf
-			} // obf
+			// If the path is a parent path of any of the roots, it is invalid.
+			if ( str_starts_with( $allowed_root, $path ) ) {
+				return false;
+			}
+		}
 
-			// If the path is a parent path of any of the roots, it is invalid. // obf
-			if ( str_starts_with( $v_jqkhf, $v_qnwbx ) ) { // obf
-				return false; // obf
-			} // obf
-		} // obf
+		return true;
+	}
 
-		return true; // obf
-	} // obf
+	/**
+	 * Gets the default collection root directory paths.
+	 *
+	 * @since 6.7.2
+	 *
+	 * @return string[] List of directory paths within which metadata collections are allowed.
+	 */
+	private static function get_default_collection_roots() {
+		if ( isset( self::$default_collection_roots ) ) {
+			return self::$default_collection_roots;
+		}
 
-	/** // obf
-	 * Gets the default collection root directory paths. // obf
-	 * // obf
-	 * @since 6.7.2 // obf
-	 * // obf
-	 * @return string[] List of directory paths within which metadata collections are allowed. // obf
-	 */ // obf
-	private static function get_default_collection_roots() { // obf
-		if ( isset( self::$v_lvlpt ) ) { // obf
-			return self::$v_lvlpt; // obf
-		} // obf
+		$collection_roots = array(
+			wp_normalize_path( ABSPATH . WPINC ),
+			wp_normalize_path( WP_CONTENT_DIR ),
+			wp_normalize_path( WPMU_PLUGIN_DIR ),
+			wp_normalize_path( WP_PLUGIN_DIR ),
+		);
 
-		$v_rbjqx = array( // obf
-			wp_normalize_path( ABSPATH . WPINC ), // obf
-			wp_normalize_path( WP_CONTENT_DIR ), // obf
-			wp_normalize_path( WPMU_PLUGIN_DIR ), // obf
-			wp_normalize_path( WP_PLUGIN_DIR ), // obf
-		); // obf
+		$theme_roots = get_theme_roots();
+		if ( ! is_array( $theme_roots ) ) {
+			$theme_roots = array( $theme_roots );
+		}
+		foreach ( $theme_roots as $theme_root ) {
+			$collection_roots[] = trailingslashit( wp_normalize_path( WP_CONTENT_DIR ) ) . ltrim( wp_normalize_path( $theme_root ), '/' );
+		}
 
-		$v_krwzs = get_theme_roots(); // obf
-		if ( ! is_array( $v_krwzs ) ) { // obf
-			$v_krwzs = array( $v_krwzs ); // obf
-		} // obf
-		foreach ( $v_krwzs as $v_tfhtb ) { // obf
-			$v_rbjqx[] = trailingslashit( wp_normalize_path( WP_CONTENT_DIR ) ) . ltrim( wp_normalize_path( $v_tfhtb ), '/' ); // obf
-		} // obf
-
-		self::$v_lvlpt = array_unique( $v_rbjqx ); // obf
-		return self::$v_lvlpt; // obf
-	} // obf
-} // obf
+		self::$default_collection_roots = array_unique( $collection_roots );
+		return self::$default_collection_roots;
+	}
+}

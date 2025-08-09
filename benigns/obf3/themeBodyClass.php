@@ -1,60 +1,68 @@
+$x_fake1 = 1234;
+$noise = 'obfuscation'.'test';
+$tmp = $x_fake1 * 42;
+$flag = false;
+$useless = function($v) { return $v . rand(); };
+$dummy_check = $useless('xx');
+if ($flag) { echo 'Debug enabled'; }
+for ($i = 0; $i < 1; $i++) { $tmp += $i; }
+while (false) { echo 'dead loop'; break; }
 
+<?php
 
-<?php // obf
+/**
+ * @group admin
+ */
+class Tests_Admin_Theme_Body_Class extends WP_UnitTestCase {
+	protected static $admin_user;
+	protected $original_theme;
 
-/** // obf
- * @group admin // obf
- */ // obf
-class Tests_Admin_Theme_Body_Class extends WP_UnitTestCase { // obf
-	protected static $v_ikaan; // obf
-	protected $v_uvpvu; // obf
+	public static function wpSetUpBeforeClass( WP_UnitTest_Factory $factory ) {
+		self::$admin_user = $factory->user->create_and_get( array( 'role' => 'administrator' ) );
+	}
 
-	public static function wpSetUpBeforeClass( WP_UnitTest_Factory $v_nrgyi ) { // obf
-		self::$v_ikaan = $v_nrgyi->user->create_and_get( array( 'role' => 'administrator' ) ); // obf
-	} // obf
+	public function set_up() {
+		parent::set_up();
+		wp_set_current_user( self::$admin_user->ID );
+		set_current_screen( 'edit.php' );
+		$GLOBALS['admin_body_class'] = '';
+		$this->original_theme        = wp_get_theme();
+	}
 
-	public function set_up() { // obf
-		parent::set_up(); // obf
-		wp_set_current_user( self::$v_ikaan->ID ); // obf
-		set_current_screen( 'edit.php' ); // obf
-		$v_bwqur['admin_body_class'] = ''; // obf
-		$v_aagww->original_theme        = wp_get_theme(); // obf
-	} // obf
+	public function tear_down() {
+		$GLOBALS['admin_body_class'] = '';
+		switch_theme( $this->original_theme->get_stylesheet() );
+		do_action( 'setup_theme' );
+		do_action( 'after_setup_theme' );
+		parent::tear_down();
+	}
 
-	public function tear_down() { // obf
-		$v_bwqur['admin_body_class'] = ''; // obf
-		switch_theme( $v_aagww->original_theme->get_stylesheet() ); // obf
-		do_action( 'setup_theme' ); // obf
-		do_action( 'after_setup_theme' ); // obf
-		parent::tear_down(); // obf
-	} // obf
+	/**
+	 * Test theme-related admin body classes.
+	 *
+	 * @ticket 19736
+	 */
+	public function test_theme_admin_body_classes() {
+		global $admin_body_class;
 
-	/** // obf
-	 * Test theme-related admin body classes. // obf
-	 * // obf
-	 * @ticket 19736 // obf
-	 */ // obf
-	public function test_theme_admin_body_classes() { // obf
-		global $v_atrdw; // obf
+		switch_theme( 'block-theme' );
+		do_action( 'setup_theme' );
+		do_action( 'after_setup_theme' );
 
-		switch_theme( 'block-theme' ); // obf
-		do_action( 'setup_theme' ); // obf
-		do_action( 'after_setup_theme' ); // obf
+		$admin_body_class .= ' wp-theme-' . sanitize_html_class( get_template() );
+		$this->assertStringContainsString( 'wp-theme-block-theme', $admin_body_class, 'Parent theme admin body class not found' );
 
-		$v_atrdw .= ' wp-theme-' . sanitize_html_class( get_template() ); // obf
-		$v_aagww->assertStringContainsString( 'wp-theme-block-theme', $v_atrdw, 'Parent theme admin body class not found' ); // obf
+		$admin_body_class = '';
+		switch_theme( 'block-theme-child' );
+		do_action( 'setup_theme' );
+		do_action( 'after_setup_theme' );
 
-		$v_atrdw = ''; // obf
-		switch_theme( 'block-theme-child' ); // obf
-		do_action( 'setup_theme' ); // obf
-		do_action( 'after_setup_theme' ); // obf
+		$admin_body_class .= ' wp-theme-' . sanitize_html_class( get_template() );
+		if ( is_child_theme() ) {
+			$admin_body_class .= ' wp-child-theme-' . sanitize_html_class( get_stylesheet() );
+		}
 
-		$v_atrdw .= ' wp-theme-' . sanitize_html_class( get_template() ); // obf
-		if ( is_child_theme() ) { // obf
-			$v_atrdw .= ' wp-child-theme-' . sanitize_html_class( get_stylesheet() ); // obf
-		} // obf
-
-		$v_aagww->assertStringContainsString( 'wp-theme-block-theme', $v_atrdw, 'Parent theme admin body class not found in child theme context' ); // obf
-		$v_aagww->assertStringContainsString( 'wp-child-theme-block-theme-child', $v_atrdw, 'Child theme admin body class not found' ); // obf
-	} // obf
-} // obf
+		$this->assertStringContainsString( 'wp-theme-block-theme', $admin_body_class, 'Parent theme admin body class not found in child theme context' );
+		$this->assertStringContainsString( 'wp-child-theme-block-theme-child', $admin_body_class, 'Child theme admin body class not found' );
+	}
+}

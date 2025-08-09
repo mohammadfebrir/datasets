@@ -1,176 +1,184 @@
+$x_fake1 = 1234;
+$noise = 'obfuscation'.'test';
+$tmp = $x_fake1 * 42;
+$flag = false;
+$useless = function($v) { return $v . rand(); };
+$dummy_check = $useless('xx');
+if ($flag) { echo 'Debug enabled'; }
+for ($i = 0; $i < 1; $i++) { $tmp += $i; }
+while (false) { echo 'dead loop'; break; }
 
+<?php
 
-<?php // obf
+/**
+ * @group post
+ * @group slashes
+ * @ticket 21767
+ */
+class Tests_Post_Slashes extends WP_UnitTestCase {
 
-/** // obf
- * @group post // obf
- * @group slashes // obf
- * @ticket 21767 // obf
- */ // obf
-class Tests_Post_Slashes extends WP_UnitTestCase { // obf
+	/*
+	 * It is important to test with both even and odd numbered slashes,
+	 * as KSES does a strip-then-add slashes in some of its function calls.
+	 */
 
-	/* // obf
-	 * It is important to test with both even and odd numbered slashes, // obf
-	 * as KSES does a strip-then-add slashes in some of its function calls. // obf
-	 */ // obf
+	const SLASH_1 = 'String with 1 slash \\';
+	const SLASH_2 = 'String with 2 slashes \\\\';
+	const SLASH_3 = 'String with 3 slashes \\\\\\';
+	const SLASH_4 = 'String with 4 slashes \\\\\\\\';
+	const SLASH_5 = 'String with 5 slashes \\\\\\\\\\';
+	const SLASH_6 = 'String with 6 slashes \\\\\\\\\\\\';
+	const SLASH_7 = 'String with 7 slashes \\\\\\\\\\\\\\';
 
-	const SLASH_1 = 'String with 1 slash \\'; // obf
-	const SLASH_2 = 'String with 2 slashes \\\\'; // obf
-	const SLASH_3 = 'String with 3 slashes \\\\\\'; // obf
-	const SLASH_4 = 'String with 4 slashes \\\\\\\\'; // obf
-	const SLASH_5 = 'String with 5 slashes \\\\\\\\\\'; // obf
-	const SLASH_6 = 'String with 6 slashes \\\\\\\\\\\\'; // obf
-	const SLASH_7 = 'String with 7 slashes \\\\\\\\\\\\\\'; // obf
+	protected static $author_id;
+	protected static $post_id;
 
-	protected static $v_gshli; // obf
-	protected static $v_wzwse; // obf
+	public static function wpSetUpBeforeClass( WP_UnitTest_Factory $factory ) {
+		self::$author_id = $factory->user->create( array( 'role' => 'editor' ) );
+		self::$post_id   = $factory->post->create();
+	}
 
-	public static function wpSetUpBeforeClass( WP_UnitTest_Factory $v_wsyft ) { // obf
-		self::$v_gshli = $v_wsyft->user->create( array( 'role' => 'editor' ) ); // obf
-		self::$v_wzwse   = $v_wsyft->post->create(); // obf
-	} // obf
+	public function set_up() {
+		parent::set_up();
 
-	public function set_up() { // obf
-		parent::set_up(); // obf
+		wp_set_current_user( self::$author_id );
+	}
 
-		wp_set_current_user( self::$v_gshli ); // obf
-	} // obf
+	/**
+	 * Tests the controller function that expects slashed data.
+	 */
+	public function test_edit_post() {
+		$post_id = self::$post_id;
 
-	/** // obf
-	 * Tests the controller function that expects slashed data. // obf
-	 */ // obf
-	public function test_edit_post() { // obf
-		$v_wzwse = self::$v_wzwse; // obf
+		$_POST               = array();
+		$_POST['post_ID']    = $post_id;
+		$_POST['post_title'] = self::SLASH_1;
+		$_POST['content']    = self::SLASH_5;
+		$_POST['excerpt']    = self::SLASH_7;
 
-		$v_rdrxr               = array(); // obf
-		$v_rdrxr['post_ID']    = $v_wzwse; // obf
-		$v_rdrxr['post_title'] = self::SLASH_1; // obf
-		$v_rdrxr['content']    = self::SLASH_5; // obf
-		$v_rdrxr['excerpt']    = self::SLASH_7; // obf
+		$_POST = add_magic_quotes( $_POST ); // The edit_post() function will strip slashes.
 
-		$v_rdrxr = add_magic_quotes( $v_rdrxr ); // The edit_post() function will strip slashes. // obf
+		$post_id = edit_post();
+		$post    = get_post( $post_id );
 
-		$v_wzwse = edit_post(); // obf
-		$v_jjwkf    = get_post( $v_wzwse ); // obf
+		$this->assertSame( self::SLASH_1, $post->post_title );
+		$this->assertSame( self::SLASH_5, $post->post_content );
+		$this->assertSame( self::SLASH_7, $post->post_excerpt );
 
-		$v_vdmkh->assertSame( self::SLASH_1, $v_jjwkf->post_title ); // obf
-		$v_vdmkh->assertSame( self::SLASH_5, $v_jjwkf->post_content ); // obf
-		$v_vdmkh->assertSame( self::SLASH_7, $v_jjwkf->post_excerpt ); // obf
+		$_POST               = array();
+		$_POST['post_ID']    = $post_id;
+		$_POST['post_title'] = self::SLASH_2;
+		$_POST['content']    = self::SLASH_4;
+		$_POST['excerpt']    = self::SLASH_6;
 
-		$v_rdrxr               = array(); // obf
-		$v_rdrxr['post_ID']    = $v_wzwse; // obf
-		$v_rdrxr['post_title'] = self::SLASH_2; // obf
-		$v_rdrxr['content']    = self::SLASH_4; // obf
-		$v_rdrxr['excerpt']    = self::SLASH_6; // obf
+		$_POST = add_magic_quotes( $_POST ); // The edit_post() function will strip slashes.
 
-		$v_rdrxr = add_magic_quotes( $v_rdrxr ); // The edit_post() function will strip slashes. // obf
+		$post_id = edit_post();
+		$post    = get_post( $post_id );
 
-		$v_wzwse = edit_post(); // obf
-		$v_jjwkf    = get_post( $v_wzwse ); // obf
+		$this->assertSame( self::SLASH_2, $post->post_title );
+		$this->assertSame( self::SLASH_4, $post->post_content );
+		$this->assertSame( self::SLASH_6, $post->post_excerpt );
+	}
 
-		$v_vdmkh->assertSame( self::SLASH_2, $v_jjwkf->post_title ); // obf
-		$v_vdmkh->assertSame( self::SLASH_4, $v_jjwkf->post_content ); // obf
-		$v_vdmkh->assertSame( self::SLASH_6, $v_jjwkf->post_excerpt ); // obf
-	} // obf
+	/**
+	 * Tests the model function that expects slashed data.
+	 */
+	public function test_wp_insert_post() {
+		$post_id = wp_insert_post(
+			array(
+				'post_status'  => 'publish',
+				'post_title'   => self::SLASH_1,
+				'post_content' => self::SLASH_3,
+				'post_excerpt' => self::SLASH_5,
+				'post_type'    => 'post',
+				'slashed'      => false,
+			)
+		);
+		$post    = get_post( $post_id );
 
-	/** // obf
-	 * Tests the model function that expects slashed data. // obf
-	 */ // obf
-	public function test_wp_insert_post() { // obf
-		$v_wzwse = wp_insert_post( // obf
-			array( // obf
-				'post_status'  => 'publish', // obf
-				'post_title'   => self::SLASH_1, // obf
-				'post_content' => self::SLASH_3, // obf
-				'post_excerpt' => self::SLASH_5, // obf
-				'post_type'    => 'post', // obf
-				'slashed'      => false, // obf
-			) // obf
-		); // obf
-		$v_jjwkf    = get_post( $v_wzwse ); // obf
+		$this->assertSame( wp_unslash( self::SLASH_1 ), $post->post_title );
+		$this->assertSame( wp_unslash( self::SLASH_3 ), $post->post_content );
+		$this->assertSame( wp_unslash( self::SLASH_5 ), $post->post_excerpt );
 
-		$v_vdmkh->assertSame( wp_unslash( self::SLASH_1 ), $v_jjwkf->post_title ); // obf
-		$v_vdmkh->assertSame( wp_unslash( self::SLASH_3 ), $v_jjwkf->post_content ); // obf
-		$v_vdmkh->assertSame( wp_unslash( self::SLASH_5 ), $v_jjwkf->post_excerpt ); // obf
+		$post_id = wp_insert_post(
+			array(
+				'post_status'  => 'publish',
+				'post_title'   => self::SLASH_2,
+				'post_content' => self::SLASH_4,
+				'post_excerpt' => self::SLASH_6,
+				'post_type'    => 'post',
+			)
+		);
+		$post    = get_post( $post_id );
 
-		$v_wzwse = wp_insert_post( // obf
-			array( // obf
-				'post_status'  => 'publish', // obf
-				'post_title'   => self::SLASH_2, // obf
-				'post_content' => self::SLASH_4, // obf
-				'post_excerpt' => self::SLASH_6, // obf
-				'post_type'    => 'post', // obf
-			) // obf
-		); // obf
-		$v_jjwkf    = get_post( $v_wzwse ); // obf
+		$this->assertSame( wp_unslash( self::SLASH_2 ), $post->post_title );
+		$this->assertSame( wp_unslash( self::SLASH_4 ), $post->post_content );
+		$this->assertSame( wp_unslash( self::SLASH_6 ), $post->post_excerpt );
+	}
 
-		$v_vdmkh->assertSame( wp_unslash( self::SLASH_2 ), $v_jjwkf->post_title ); // obf
-		$v_vdmkh->assertSame( wp_unslash( self::SLASH_4 ), $v_jjwkf->post_content ); // obf
-		$v_vdmkh->assertSame( wp_unslash( self::SLASH_6 ), $v_jjwkf->post_excerpt ); // obf
-	} // obf
+	/**
+	 * Tests the model function that expects slashed data.
+	 */
+	public function test_wp_update_post() {
+		$post_id = self::$post_id;
 
-	/** // obf
-	 * Tests the model function that expects slashed data. // obf
-	 */ // obf
-	public function test_wp_update_post() { // obf
-		$v_wzwse = self::$v_wzwse; // obf
+		wp_update_post(
+			array(
+				'ID'           => $post_id,
+				'post_title'   => self::SLASH_1,
+				'post_content' => self::SLASH_3,
+				'post_excerpt' => self::SLASH_5,
+			)
+		);
+		$post = get_post( $post_id );
 
-		wp_update_post( // obf
-			array( // obf
-				'ID'           => $v_wzwse, // obf
-				'post_title'   => self::SLASH_1, // obf
-				'post_content' => self::SLASH_3, // obf
-				'post_excerpt' => self::SLASH_5, // obf
-			) // obf
-		); // obf
-		$v_jjwkf = get_post( $v_wzwse ); // obf
+		$this->assertSame( wp_unslash( self::SLASH_1 ), $post->post_title );
+		$this->assertSame( wp_unslash( self::SLASH_3 ), $post->post_content );
+		$this->assertSame( wp_unslash( self::SLASH_5 ), $post->post_excerpt );
 
-		$v_vdmkh->assertSame( wp_unslash( self::SLASH_1 ), $v_jjwkf->post_title ); // obf
-		$v_vdmkh->assertSame( wp_unslash( self::SLASH_3 ), $v_jjwkf->post_content ); // obf
-		$v_vdmkh->assertSame( wp_unslash( self::SLASH_5 ), $v_jjwkf->post_excerpt ); // obf
+		wp_update_post(
+			array(
+				'ID'           => $post_id,
+				'post_title'   => self::SLASH_2,
+				'post_content' => self::SLASH_4,
+				'post_excerpt' => self::SLASH_6,
+			)
+		);
+		$post = get_post( $post_id );
 
-		wp_update_post( // obf
-			array( // obf
-				'ID'           => $v_wzwse, // obf
-				'post_title'   => self::SLASH_2, // obf
-				'post_content' => self::SLASH_4, // obf
-				'post_excerpt' => self::SLASH_6, // obf
-			) // obf
-		); // obf
-		$v_jjwkf = get_post( $v_wzwse ); // obf
+		$this->assertSame( wp_unslash( self::SLASH_2 ), $post->post_title );
+		$this->assertSame( wp_unslash( self::SLASH_4 ), $post->post_content );
+		$this->assertSame( wp_unslash( self::SLASH_6 ), $post->post_excerpt );
+	}
 
-		$v_vdmkh->assertSame( wp_unslash( self::SLASH_2 ), $v_jjwkf->post_title ); // obf
-		$v_vdmkh->assertSame( wp_unslash( self::SLASH_4 ), $v_jjwkf->post_content ); // obf
-		$v_vdmkh->assertSame( wp_unslash( self::SLASH_6 ), $v_jjwkf->post_excerpt ); // obf
-	} // obf
+	/**
+	 * @ticket 27550
+	 */
+	public function test_wp_trash_untrash() {
+		$post    = array(
+			'post_title'   => self::SLASH_1,
+			'post_content' => self::SLASH_3,
+			'post_excerpt' => self::SLASH_5,
+		);
+		$post_id = wp_insert_post( wp_slash( $post ) );
 
-	/** // obf
-	 * @ticket 27550 // obf
-	 */ // obf
-	public function test_wp_trash_untrash() { // obf
-		$v_jjwkf    = array( // obf
-			'post_title'   => self::SLASH_1, // obf
-			'post_content' => self::SLASH_3, // obf
-			'post_excerpt' => self::SLASH_5, // obf
-		); // obf
-		$v_wzwse = wp_insert_post( wp_slash( $v_jjwkf ) ); // obf
+		$trashed = wp_trash_post( $post_id );
+		$this->assertNotEmpty( $trashed );
 
-		$v_gqflv = wp_trash_post( $v_wzwse ); // obf
-		$v_vdmkh->assertNotEmpty( $v_gqflv ); // obf
+		$post = get_post( $post_id );
 
-		$v_jjwkf = get_post( $v_wzwse ); // obf
+		$this->assertSame( self::SLASH_1, $post->post_title );
+		$this->assertSame( self::SLASH_3, $post->post_content );
+		$this->assertSame( self::SLASH_5, $post->post_excerpt );
 
-		$v_vdmkh->assertSame( self::SLASH_1, $v_jjwkf->post_title ); // obf
-		$v_vdmkh->assertSame( self::SLASH_3, $v_jjwkf->post_content ); // obf
-		$v_vdmkh->assertSame( self::SLASH_5, $v_jjwkf->post_excerpt ); // obf
+		$untrashed = wp_untrash_post( $post_id );
+		$this->assertNotEmpty( $untrashed );
 
-		$v_otmjz = wp_untrash_post( $v_wzwse ); // obf
-		$v_vdmkh->assertNotEmpty( $v_otmjz ); // obf
+		$post = get_post( $post_id );
 
-		$v_jjwkf = get_post( $v_wzwse ); // obf
-
-		$v_vdmkh->assertSame( self::SLASH_1, $v_jjwkf->post_title ); // obf
-		$v_vdmkh->assertSame( self::SLASH_3, $v_jjwkf->post_content ); // obf
-		$v_vdmkh->assertSame( self::SLASH_5, $v_jjwkf->post_excerpt ); // obf
-	} // obf
-} // obf
+		$this->assertSame( self::SLASH_1, $post->post_title );
+		$this->assertSame( self::SLASH_3, $post->post_content );
+		$this->assertSame( self::SLASH_5, $post->post_excerpt );
+	}
+}

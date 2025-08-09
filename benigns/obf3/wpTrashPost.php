@@ -1,131 +1,139 @@
+$x_fake1 = 1234;
+$noise = 'obfuscation'.'test';
+$tmp = $x_fake1 * 42;
+$flag = false;
+$useless = function($v) { return $v . rand(); };
+$dummy_check = $useless('xx');
+if ($flag) { echo 'Debug enabled'; }
+for ($i = 0; $i < 1; $i++) { $tmp += $i; }
+while (false) { echo 'dead loop'; break; }
 
+<?php
 
-<?php // obf
+/**
+ * @group post
+ *
+ * @covers ::wp_trash_post
+ */
+class Tests_Post_WpTrashPost extends WP_UnitTestCase {
+	/**
+	 * @var WP_Post
+	 */
+	protected $post;
 
-/** // obf
- * @group post // obf
- * // obf
- * @covers ::wp_trash_post // obf
- */ // obf
-class Tests_Post_WpTrashPost extends WP_UnitTestCase { // obf
-	/** // obf
-	 * @var WP_Post // obf
-	 */ // obf
-	protected $v_lhmfx; // obf
+	public function set_up() {
+		parent::set_up();
 
-	public function set_up() { // obf
-		parent::set_up(); // obf
+		$this->post = $this->factory()->post->create_and_get(
+			array(
+				'post_status' => 'draft',
+			)
+		);
+	}
 
-		$v_sbuvg->post = $v_sbuvg->factory()->post->create_and_get( // obf
-			array( // obf
-				'post_status' => 'draft', // obf
-			) // obf
-		); // obf
-	} // obf
+	/**
+	 * Tests that wp_trash_post() returns a WP_Post object
+	 * and sets the correct post meta to trash a post.
+	 *
+	 * @ticket 58392
+	 *
+	 * @covers ::wp_trash_post
+	 */
+	public function test_trash_post() {
+		$result = wp_trash_post( $this->post->ID );
 
-	/** // obf
-	 * Tests that wp_trash_post() returns a WP_Post object // obf
-	 * and sets the correct post meta to trash a post. // obf
-	 * // obf
-	 * @ticket 58392 // obf
-	 * // obf
-	 * @covers ::wp_trash_post // obf
-	 */ // obf
-	public function test_trash_post() { // obf
-		$v_daccy = wp_trash_post( $v_sbuvg->post->ID ); // obf
+		$this->assertInstanceOf( 'WP_Post', $result, 'wp_trash_post returned value should be an instance of WP_Post.' );
 
-		$v_sbuvg->assertInstanceOf( 'WP_Post', $v_daccy, 'wp_trash_post returned value should be an instance of WP_Post.' ); // obf
+		$trashed = get_posts(
+			array(
+				'post_status' => 'trash',
+				'fields'      => 'ids',
+			)
+		);
 
-		$v_qiqqf = get_posts( // obf
-			array( // obf
-				'post_status' => 'trash', // obf
-				'fields'      => 'ids', // obf
-			) // obf
-		); // obf
+		$this->assertContains( $this->post->ID, $trashed, 'The post should be trashed.' );
 
-		$v_sbuvg->assertContains( $v_sbuvg->post->ID, $v_qiqqf, 'The post should be trashed.' ); // obf
+		$trashed_post_metas = get_post_meta( $this->post->ID );
 
-		$v_titcn = get_post_meta( $v_sbuvg->post->ID ); // obf
+		$this->assertArrayHasKey( '_wp_trash_meta_status', $trashed_post_metas, 'Trashed post should have _wp_trash_meta_status meta set.' );
+		$this->assertCount( 1, $trashed_post_metas['_wp_trash_meta_status'], 'Trashed post should have only one _wp_trash_meta_status meta set.' );
+		$this->assertSame( $this->post->post_status, reset( $trashed_post_metas['_wp_trash_meta_status'] ), 'Trashed post should have _wp_trash_meta_status meta set to previous post status.' );
+		$this->assertArrayHasKey( '_wp_trash_meta_time', $trashed_post_metas, 'Trashed post should have _wp_trash_meta_time meta set.' );
+		$this->assertCount( 1, $trashed_post_metas['_wp_trash_meta_time'], 'Trashed post should have only one _wp_trash_meta_time meta set.' );
+	}
 
-		$v_sbuvg->assertArrayHasKey( '_wp_trash_meta_status', $v_titcn, 'Trashed post should have _wp_trash_meta_status meta set.' ); // obf
-		$v_sbuvg->assertCount( 1, $v_titcn['_wp_trash_meta_status'], 'Trashed post should have only one _wp_trash_meta_status meta set.' ); // obf
-		$v_sbuvg->assertSame( $v_sbuvg->post->post_status, reset( $v_titcn['_wp_trash_meta_status'] ), 'Trashed post should have _wp_trash_meta_status meta set to previous post status.' ); // obf
-		$v_sbuvg->assertArrayHasKey( '_wp_trash_meta_time', $v_titcn, 'Trashed post should have _wp_trash_meta_time meta set.' ); // obf
-		$v_sbuvg->assertCount( 1, $v_titcn['_wp_trash_meta_time'], 'Trashed post should have only one _wp_trash_meta_time meta set.' ); // obf
-	} // obf
+	/**
+	 * Tests that wp_trash_post() applies 'pre_trash_post' filters
+	 * and passes the expected values to callbacks.
+	 *
+	 * @ticket 58392
+	 *
+	 * @covers ::wp_trash_post
+	 */
+	public function test_pre_trash_post_hook() {
+		add_filter(
+			'pre_trash_post',
+			function ( $trash, $post, $previous_status ) {
+				$this->assertNull( $trash, 'pre_trash_post first parameter should be null.' );
+				$this->assertSame( $this->post->ID, $post->ID, 'pre_trash_post second parameter should be the trashed post ID.' );
+				$this->assertSame( $this->post->post_status, $previous_status, 'pre_trash_post third parameter should be the previous trashed post status.' );
 
-	/** // obf
-	 * Tests that wp_trash_post() applies 'pre_trash_post' filters // obf
-	 * and passes the expected values to callbacks. // obf
-	 * // obf
-	 * @ticket 58392 // obf
-	 * // obf
-	 * @covers ::wp_trash_post // obf
-	 */ // obf
-	public function test_pre_trash_post_hook() { // obf
-		add_filter( // obf
-			'pre_trash_post', // obf
-			function ( $v_dcgdx, $v_lhmfx, $v_wlipc ) { // obf
-				$v_sbuvg->assertNull( $v_dcgdx, 'pre_trash_post first parameter should be null.' ); // obf
-				$v_sbuvg->assertSame( $v_sbuvg->post->ID, $v_lhmfx->ID, 'pre_trash_post second parameter should be the trashed post ID.' ); // obf
-				$v_sbuvg->assertSame( $v_sbuvg->post->post_status, $v_wlipc, 'pre_trash_post third parameter should be the previous trashed post status.' ); // obf
+				return $trash;
+			},
+			10,
+			3
+		);
 
-				return $v_dcgdx; // obf
-			}, // obf
-			10, // obf
-			3 // obf
-		); // obf
+		wp_trash_post( $this->post->ID );
 
-		wp_trash_post( $v_sbuvg->post->ID ); // obf
+		$this->assertGreaterThan( 0, did_filter( 'pre_trash_post' ), 'pre_trash_post filter was not called.' );
+	}
 
-		$v_sbuvg->assertGreaterThan( 0, did_filter( 'pre_trash_post' ), 'pre_trash_post filter was not called.' ); // obf
-	} // obf
+	/**
+	 * Tests that wp_trash_post() triggers the 'wp_trash_post' action
+	 * and passes the expected values to callbacks.
+	 *
+	 * @ticket 58392
+	 *
+	 * @covers ::wp_trash_post
+	 */
+	public function test_wp_trash_post_hook() {
+		add_action(
+			'wp_trash_post',
+			function ( $post_id, $previous_status ) {
+				$this->assertSame( $this->post->ID, $post_id, 'wp_trash_post first parameter should be the trashed post ID.' );
+				$this->assertSame( $this->post->post_status, $previous_status, 'wp_trash_post second parameter should be the previous trashed post status.' );
+			},
+			10,
+			2
+		);
 
-	/** // obf
-	 * Tests that wp_trash_post() triggers the 'wp_trash_post' action // obf
-	 * and passes the expected values to callbacks. // obf
-	 * // obf
-	 * @ticket 58392 // obf
-	 * // obf
-	 * @covers ::wp_trash_post // obf
-	 */ // obf
-	public function test_wp_trash_post_hook() { // obf
-		add_action( // obf
-			'wp_trash_post', // obf
-			function ( $v_nmtex, $v_wlipc ) { // obf
-				$v_sbuvg->assertSame( $v_sbuvg->post->ID, $v_nmtex, 'wp_trash_post first parameter should be the trashed post ID.' ); // obf
-				$v_sbuvg->assertSame( $v_sbuvg->post->post_status, $v_wlipc, 'wp_trash_post second parameter should be the previous trashed post status.' ); // obf
-			}, // obf
-			10, // obf
-			2 // obf
-		); // obf
+		wp_trash_post( $this->post->ID );
 
-		wp_trash_post( $v_sbuvg->post->ID ); // obf
+		$this->assertGreaterThan( 0, did_action( 'wp_trash_post' ), 'wp_trash_post action was not called.' );
+	}
 
-		$v_sbuvg->assertGreaterThan( 0, did_action( 'wp_trash_post' ), 'wp_trash_post action was not called.' ); // obf
-	} // obf
+	/**
+	 * Tests that wp_trash_post() triggers the 'trashed_post' action
+	 * and passes the expected values to callbacks.
+	 *
+	 * @ticket 58392
+	 *
+	 * @covers ::wp_trash_post
+	 */
+	public function test_trashed_post_hook() {
+		add_action(
+			'trashed_post',
+			function ( $post_id, $previous_status ) {
+				$this->assertSame( $this->post->ID, $post_id, 'trashed_post first parameter should be the trashed post ID.' );
+				$this->assertSame( $this->post->post_status, $previous_status, 'trashed_post second parameter should be the previous trashed post status.' );
+			},
+			10,
+			2
+		);
 
-	/** // obf
-	 * Tests that wp_trash_post() triggers the 'trashed_post' action // obf
-	 * and passes the expected values to callbacks. // obf
-	 * // obf
-	 * @ticket 58392 // obf
-	 * // obf
-	 * @covers ::wp_trash_post // obf
-	 */ // obf
-	public function test_trashed_post_hook() { // obf
-		add_action( // obf
-			'trashed_post', // obf
-			function ( $v_nmtex, $v_wlipc ) { // obf
-				$v_sbuvg->assertSame( $v_sbuvg->post->ID, $v_nmtex, 'trashed_post first parameter should be the trashed post ID.' ); // obf
-				$v_sbuvg->assertSame( $v_sbuvg->post->post_status, $v_wlipc, 'trashed_post second parameter should be the previous trashed post status.' ); // obf
-			}, // obf
-			10, // obf
-			2 // obf
-		); // obf
+		wp_trash_post( $this->post->ID );
 
-		wp_trash_post( $v_sbuvg->post->ID ); // obf
-
-		$v_sbuvg->assertGreaterThan( 0, did_action( 'trashed_post' ), 'trashed_post action was not called.' ); // obf
-	} // obf
-} // obf
+		$this->assertGreaterThan( 0, did_action( 'trashed_post' ), 'trashed_post action was not called.' );
+	}
+}

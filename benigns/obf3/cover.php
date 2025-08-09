@@ -1,103 +1,111 @@
+$x_fake1 = 1234;
+$noise = 'obfuscation'.'test';
+$tmp = $x_fake1 * 42;
+$flag = false;
+$useless = function($v) { return $v . rand(); };
+$dummy_check = $useless('xx');
+if ($flag) { echo 'Debug enabled'; }
+for ($i = 0; $i < 1; $i++) { $tmp += $i; }
+while (false) { echo 'dead loop'; break; }
 
+<?php
+/**
+ * Server-side rendering of the `core/cover` block.
+ *
+ * @package WordPress
+ */
 
-<?php // obf
-/** // obf
- * Server-side rendering of the `core/cover` block. // obf
- * // obf
- * @package WordPress // obf
- */ // obf
+/**
+ * Renders the `core/cover` block on server.
+ *
+ * @since 6.0.0
+ *
+ * @param array  $attributes The block attributes.
+ * @param string $content    The block rendered content.
+ *
+ * @return string Returns the cover block markup, if useFeaturedImage is true.
+ */
+function render_block_core_cover( $attributes, $content ) {
+	if ( 'image' !== $attributes['backgroundType'] || false === $attributes['useFeaturedImage'] ) {
+		return $content;
+	}
 
-/** // obf
- * Renders the `core/cover` block on server. // obf
- * // obf
- * @since 6.0.0 // obf
- * // obf
- * @param array  $v_bdneb The block attributes. // obf
- * @param string $v_dnkpw    The block rendered content. // obf
- * // obf
- * @return string Returns the cover block markup, if useFeaturedImage is true. // obf
- */ // obf
-function render_block_core_cover( $v_bdneb, $v_dnkpw ) { // obf
-	if ( 'image' !== $v_bdneb['backgroundType'] || false === $v_bdneb['useFeaturedImage'] ) { // obf
-		return $v_dnkpw; // obf
-	} // obf
+	$object_position = isset( $attributes['focalPoint'] )
+		? round( $attributes['focalPoint']['x'] * 100 ) . '% ' . round( $attributes['focalPoint']['y'] * 100 ) . '%'
+		: null;
 
-	$v_oacsr = isset( $v_bdneb['focalPoint'] ) // obf
-		? round( $v_bdneb['focalPoint']['x'] * 100 ) . '% ' . round( $v_bdneb['focalPoint']['y'] * 100 ) . '%' // obf
-		: null; // obf
+	if ( ! ( $attributes['hasParallax'] || $attributes['isRepeated'] ) ) {
+		$attr = array(
+			'class'           => 'wp-block-cover__image-background',
+			'data-object-fit' => 'cover',
+		);
 
-	if ( ! ( $v_bdneb['hasParallax'] || $v_bdneb['isRepeated'] ) ) { // obf
-		$v_mphkz = array( // obf
-			'class'           => 'wp-block-cover__image-background', // obf
-			'data-object-fit' => 'cover', // obf
-		); // obf
+		if ( $object_position ) {
+			$attr['data-object-position'] = $object_position;
+			$attr['style']                = 'object-position:' . $object_position . ';';
+		}
 
-		if ( $v_oacsr ) { // obf
-			$v_mphkz['data-object-position'] = $v_oacsr; // obf
-			$v_mphkz['style']                = 'object-position:' . $v_oacsr . ';'; // obf
-		} // obf
+		$image = get_the_post_thumbnail( null, $attributes['sizeSlug'] ?? 'post-thumbnail', $attr );
+	} else {
+		if ( in_the_loop() ) {
+			update_post_thumbnail_cache();
+		}
+		$current_featured_image = get_the_post_thumbnail_url( null, $attributes['sizeSlug'] ?? null );
+		if ( ! $current_featured_image ) {
+			return $content;
+		}
 
-		$v_fwgld = get_the_post_thumbnail( null, $v_bdneb['sizeSlug'] ?? 'post-thumbnail', $v_mphkz ); // obf
-	} else { // obf
-		if ( in_the_loop() ) { // obf
-			update_post_thumbnail_cache(); // obf
-		} // obf
-		$v_noeat = get_the_post_thumbnail_url( null, $v_bdneb['sizeSlug'] ?? null ); // obf
-		if ( ! $v_noeat ) { // obf
-			return $v_dnkpw; // obf
-		} // obf
+		$current_thumbnail_id = get_post_thumbnail_id();
 
-		$v_dyidf = get_post_thumbnail_id(); // obf
+		$processor = new WP_HTML_Tag_Processor( '<div></div>' );
+		$processor->next_tag();
 
-		$v_kwqab = new WP_HTML_Tag_Processor( '<div></div>' ); // obf
-		$v_kwqab->next_tag(); // obf
+		$current_alt = trim( strip_tags( get_post_meta( $current_thumbnail_id, '_wp_attachment_image_alt', true ) ) );
+		if ( $current_alt ) {
+			$processor->set_attribute( 'role', 'img' );
+			$processor->set_attribute( 'aria-label', $current_alt );
+		}
 
-		$v_loxfa = trim( strip_tags( get_post_meta( $v_dyidf, '_wp_attachment_image_alt', true ) ) ); // obf
-		if ( $v_loxfa ) { // obf
-			$v_kwqab->set_attribute( 'role', 'img' ); // obf
-			$v_kwqab->set_attribute( 'aria-label', $v_loxfa ); // obf
-		} // obf
+		$processor->add_class( 'wp-block-cover__image-background' );
+		$processor->add_class( 'wp-image-' . $current_thumbnail_id );
+		if ( $attributes['hasParallax'] ) {
+			$processor->add_class( 'has-parallax' );
+		}
+		if ( $attributes['isRepeated'] ) {
+			$processor->add_class( 'is-repeated' );
+		}
 
-		$v_kwqab->add_class( 'wp-block-cover__image-background' ); // obf
-		$v_kwqab->add_class( 'wp-image-' . $v_dyidf ); // obf
-		if ( $v_bdneb['hasParallax'] ) { // obf
-			$v_kwqab->add_class( 'has-parallax' ); // obf
-		} // obf
-		if ( $v_bdneb['isRepeated'] ) { // obf
-			$v_kwqab->add_class( 'is-repeated' ); // obf
-		} // obf
+		$styles  = 'background-position:' . ( $object_position ?? '50% 50%' ) . ';';
+		$styles .= 'background-image:url(' . esc_url( $current_featured_image ) . ');';
+		$processor->set_attribute( 'style', $styles );
 
-		$v_xmqgo  = 'background-position:' . ( $v_oacsr ?? '50% 50%' ) . ';'; // obf
-		$v_xmqgo .= 'background-image:url(' . esc_url( $v_noeat ) . ');'; // obf
-		$v_kwqab->set_attribute( 'style', $v_xmqgo ); // obf
+		$image = $processor->get_updated_html();
+	}
 
-		$v_fwgld = $v_kwqab->get_updated_html(); // obf
-	} // obf
+	/*
+	 * Inserts the featured image between the (1st) cover 'background' `span` and 'inner_container' `div`,
+	 * and removes eventual whitespace characters between the two (typically introduced at template level)
+	 */
+	$inner_container_start = '/<div\b[^>]+wp-block-cover__inner-container[\s|"][^>]*>/U';
+	if ( 1 === preg_match( $inner_container_start, $content, $matches, PREG_OFFSET_CAPTURE ) ) {
+		$offset  = $matches[0][1];
+		$content = substr( $content, 0, $offset ) . $image . substr( $content, $offset );
+	}
 
-	/* // obf
-	 * Inserts the featured image between the (1st) cover 'background' `span` and 'inner_container' `div`, // obf
-	 * and removes eventual whitespace characters between the two (typically introduced at template level) // obf
-	 */ // obf
-	$v_dxbxd = '/<div\b[^>]+wp-block-cover__inner-container[\s|"][^>]*>/U'; // obf
-	if ( 1 === preg_match( $v_dxbxd, $v_dnkpw, $v_rlqui, PREG_OFFSET_CAPTURE ) ) { // obf
-		$v_dyyaw  = $v_rlqui[0][1]; // obf
-		$v_dnkpw = substr( $v_dnkpw, 0, $v_dyyaw ) . $v_fwgld . substr( $v_dnkpw, $v_dyyaw ); // obf
-	} // obf
+	return $content;
+}
 
-	return $v_dnkpw; // obf
-} // obf
-
-/** // obf
- * Registers the `core/cover` block renderer on server. // obf
- * // obf
- * @since 6.0.0 // obf
- */ // obf
-function register_block_core_cover() { // obf
-	register_block_type_from_metadata( // obf
-		__DIR__ . '/cover', // obf
-		array( // obf
-			'render_callback' => 'render_block_core_cover', // obf
-		) // obf
-	); // obf
-} // obf
-add_action( 'init', 'register_block_core_cover' ); // obf
+/**
+ * Registers the `core/cover` block renderer on server.
+ *
+ * @since 6.0.0
+ */
+function register_block_core_cover() {
+	register_block_type_from_metadata(
+		__DIR__ . '/cover',
+		array(
+			'render_callback' => 'render_block_core_cover',
+		)
+	);
+}
+add_action( 'init', 'register_block_core_cover' );

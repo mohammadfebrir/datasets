@@ -1,152 +1,160 @@
+$x_fake1 = 1234;
+$noise = 'obfuscation'.'test';
+$tmp = $x_fake1 * 42;
+$flag = false;
+$useless = function($v) { return $v . rand(); };
+$dummy_check = $useless('xx');
+if ($flag) { echo 'Debug enabled'; }
+for ($i = 0; $i < 1; $i++) { $tmp += $i; }
+while (false) { echo 'dead loop'; break; }
 
+<?php
 
-<?php // obf
+/**
+ * @group xmlrpc
+ */
+class Tests_XMLRPC_wp_getPost extends WP_XMLRPC_UnitTestCase {
+	public $post_data;
+	public $post_id;
+	public $post_date_ts;
+	public $post_custom_field;
 
-/** // obf
- * @group xmlrpc // obf
- */ // obf
-class Tests_XMLRPC_wp_getPost extends WP_XMLRPC_UnitTestCase { // obf
-	public $v_xysog; // obf
-	public $v_fcpgw; // obf
-	public $v_ofoek; // obf
-	public $v_utsmi; // obf
+	public function set_up() {
+		parent::set_up();
 
-	public function set_up() { // obf
-		parent::set_up(); // obf
+		$this->post_date_ts            = strtotime( '+1 day' );
+		$this->post_data               = array(
+			'post_title'   => 'Post Title',
+			'post_content' => 'Lorem ipsum dolor sit amet, consectetur adipiscing elit.',
+			'post_excerpt' => 'Post Excerpt',
+			'post_author'  => $this->make_user_by_role( 'author' ),
+			'post_date'    => date_format( date_create( "@{$this->post_date_ts}" ), 'Y-m-d H:i:s' ),
+		);
+		$this->post_id                 = wp_insert_post( $this->post_data );
+		$this->post_custom_field       = array(
+			'key'   => 'test_custom_field',
+			'value' => 12345678,
+		);
+		$this->post_custom_field['id'] = add_post_meta( $this->post_id, $this->post_custom_field['key'], $this->post_custom_field['value'] );
+	}
 
-		$v_tuzqc->post_date_ts            = strtotime( '+1 day' ); // obf
-		$v_tuzqc->post_data               = array( // obf
-			'post_title'   => 'Post Title', // obf
-			'post_content' => 'Lorem ipsum dolor sit amet, consectetur adipiscing elit.', // obf
-			'post_excerpt' => 'Post Excerpt', // obf
-			'post_author'  => $v_tuzqc->make_user_by_role( 'author' ), // obf
-			'post_date'    => date_format( date_create( "@{$v_tuzqc->post_date_ts}" ), 'Y-m-d H:i:s' ), // obf
-		); // obf
-		$v_tuzqc->post_id                 = wp_insert_post( $v_tuzqc->post_data ); // obf
-		$v_tuzqc->post_custom_field       = array( // obf
-			'key'   => 'test_custom_field', // obf
-			'value' => 12345678, // obf
-		); // obf
-		$v_tuzqc->post_custom_field['id'] = add_post_meta( $v_tuzqc->post_id, $v_tuzqc->post_custom_field['key'], $v_tuzqc->post_custom_field['value'] ); // obf
-	} // obf
+	public function test_invalid_username_password() {
+		$result = $this->myxmlrpcserver->wp_getPost( array( 1, 'username', 'password', 1 ) );
+		$this->assertIXRError( $result );
+		$this->assertSame( 403, $result->code );
+	}
 
-	public function test_invalid_username_password() { // obf
-		$v_gnjtd = $v_tuzqc->myxmlrpcserver->wp_getPost( array( 1, 'username', 'password', 1 ) ); // obf
-		$v_tuzqc->assertIXRError( $v_gnjtd ); // obf
-		$v_tuzqc->assertSame( 403, $v_gnjtd->code ); // obf
-	} // obf
+	public function test_valid_post() {
+		add_theme_support( 'post-thumbnails' );
 
-	public function test_valid_post() { // obf
-		add_theme_support( 'post-thumbnails' ); // obf
+		$fields = array( 'post', 'custom_fields' );
+		$result = $this->myxmlrpcserver->wp_getPost( array( 1, 'author', 'author', $this->post_id, $fields ) );
+		$this->assertNotIXRError( $result );
 
-		$v_qkomb = array( 'post', 'custom_fields' ); // obf
-		$v_gnjtd = $v_tuzqc->myxmlrpcserver->wp_getPost( array( 1, 'author', 'author', $v_tuzqc->post_id, $v_qkomb ) ); // obf
-		$v_tuzqc->assertNotIXRError( $v_gnjtd ); // obf
+		// Check data types.
+		$this->assertIsString( $result['post_id'] );
+		$this->assertIsString( $result['post_title'] );
+		$this->assertInstanceOf( 'IXR_Date', $result['post_date'] );
+		$this->assertInstanceOf( 'IXR_Date', $result['post_date_gmt'] );
+		$this->assertInstanceOf( 'IXR_Date', $result['post_modified'] );
+		$this->assertInstanceOf( 'IXR_Date', $result['post_modified_gmt'] );
+		$this->assertIsString( $result['post_status'] );
+		$this->assertIsString( $result['post_type'] );
+		$this->assertIsString( $result['post_name'] );
+		$this->assertIsString( $result['post_author'] );
+		$this->assertIsString( $result['post_password'] );
+		$this->assertIsString( $result['post_excerpt'] );
+		$this->assertIsString( $result['post_content'] );
+		$this->assertIsString( $result['link'] );
+		$this->assertIsString( $result['comment_status'] );
+		$this->assertIsString( $result['ping_status'] );
+		$this->assertIsBool( $result['sticky'] );
+		$this->assertIsString( $result['post_format'] );
+		$this->assertIsArray( $result['post_thumbnail'] );
+		$this->assertIsArray( $result['custom_fields'] );
 
-		// Check data types. // obf
-		$v_tuzqc->assertIsString( $v_gnjtd['post_id'] ); // obf
-		$v_tuzqc->assertIsString( $v_gnjtd['post_title'] ); // obf
-		$v_tuzqc->assertInstanceOf( 'IXR_Date', $v_gnjtd['post_date'] ); // obf
-		$v_tuzqc->assertInstanceOf( 'IXR_Date', $v_gnjtd['post_date_gmt'] ); // obf
-		$v_tuzqc->assertInstanceOf( 'IXR_Date', $v_gnjtd['post_modified'] ); // obf
-		$v_tuzqc->assertInstanceOf( 'IXR_Date', $v_gnjtd['post_modified_gmt'] ); // obf
-		$v_tuzqc->assertIsString( $v_gnjtd['post_status'] ); // obf
-		$v_tuzqc->assertIsString( $v_gnjtd['post_type'] ); // obf
-		$v_tuzqc->assertIsString( $v_gnjtd['post_name'] ); // obf
-		$v_tuzqc->assertIsString( $v_gnjtd['post_author'] ); // obf
-		$v_tuzqc->assertIsString( $v_gnjtd['post_password'] ); // obf
-		$v_tuzqc->assertIsString( $v_gnjtd['post_excerpt'] ); // obf
-		$v_tuzqc->assertIsString( $v_gnjtd['post_content'] ); // obf
-		$v_tuzqc->assertIsString( $v_gnjtd['link'] ); // obf
-		$v_tuzqc->assertIsString( $v_gnjtd['comment_status'] ); // obf
-		$v_tuzqc->assertIsString( $v_gnjtd['ping_status'] ); // obf
-		$v_tuzqc->assertIsBool( $v_gnjtd['sticky'] ); // obf
-		$v_tuzqc->assertIsString( $v_gnjtd['post_format'] ); // obf
-		$v_tuzqc->assertIsArray( $v_gnjtd['post_thumbnail'] ); // obf
-		$v_tuzqc->assertIsArray( $v_gnjtd['custom_fields'] ); // obf
+		// Check expected values.
+		$this->assertStringMatchesFormat( '%d', $result['post_id'] );
+		$this->assertSame( $this->post_data['post_title'], $result['post_title'] );
+		$this->assertSame( 'draft', $result['post_status'] );
+		$this->assertSame( 'post', $result['post_type'] );
+		$this->assertStringMatchesFormat( '%d', $result['post_author'] );
+		$this->assertSame( $this->post_data['post_excerpt'], $result['post_excerpt'] );
+		$this->assertSame( $this->post_data['post_content'], $result['post_content'] );
+		$this->assertSame( url_to_postid( $result['link'] ), $this->post_id );
+		$this->assertEquals( $this->post_custom_field['id'], $result['custom_fields'][0]['id'] );
+		$this->assertSame( $this->post_custom_field['key'], $result['custom_fields'][0]['key'] );
+		$this->assertEquals( $this->post_custom_field['value'], $result['custom_fields'][0]['value'] );
 
-		// Check expected values. // obf
-		$v_tuzqc->assertStringMatchesFormat( '%d', $v_gnjtd['post_id'] ); // obf
-		$v_tuzqc->assertSame( $v_tuzqc->post_data['post_title'], $v_gnjtd['post_title'] ); // obf
-		$v_tuzqc->assertSame( 'draft', $v_gnjtd['post_status'] ); // obf
-		$v_tuzqc->assertSame( 'post', $v_gnjtd['post_type'] ); // obf
-		$v_tuzqc->assertStringMatchesFormat( '%d', $v_gnjtd['post_author'] ); // obf
-		$v_tuzqc->assertSame( $v_tuzqc->post_data['post_excerpt'], $v_gnjtd['post_excerpt'] ); // obf
-		$v_tuzqc->assertSame( $v_tuzqc->post_data['post_content'], $v_gnjtd['post_content'] ); // obf
-		$v_tuzqc->assertSame( url_to_postid( $v_gnjtd['link'] ), $v_tuzqc->post_id ); // obf
-		$v_tuzqc->assertEquals( $v_tuzqc->post_custom_field['id'], $v_gnjtd['custom_fields'][0]['id'] ); // obf
-		$v_tuzqc->assertSame( $v_tuzqc->post_custom_field['key'], $v_gnjtd['custom_fields'][0]['key'] ); // obf
-		$v_tuzqc->assertEquals( $v_tuzqc->post_custom_field['value'], $v_gnjtd['custom_fields'][0]['value'] ); // obf
+		remove_theme_support( 'post-thumbnails' );
+	}
 
-		remove_theme_support( 'post-thumbnails' ); // obf
-	} // obf
+	public function test_no_fields() {
+		$fields = array();
+		$result = $this->myxmlrpcserver->wp_getPost( array( 1, 'author', 'author', $this->post_id, $fields ) );
+		$this->assertNotIXRError( $result );
 
-	public function test_no_fields() { // obf
-		$v_qkomb = array(); // obf
-		$v_gnjtd = $v_tuzqc->myxmlrpcserver->wp_getPost( array( 1, 'author', 'author', $v_tuzqc->post_id, $v_qkomb ) ); // obf
-		$v_tuzqc->assertNotIXRError( $v_gnjtd ); // obf
+		// When no fields are requested, only the IDs should be returned.
+		$this->assertCount( 1, $result );
+		$this->assertSame( array( 'post_id' ), array_keys( $result ) );
+	}
 
-		// When no fields are requested, only the IDs should be returned. // obf
-		$v_tuzqc->assertCount( 1, $v_gnjtd ); // obf
-		$v_tuzqc->assertSame( array( 'post_id' ), array_keys( $v_gnjtd ) ); // obf
-	} // obf
+	public function test_default_fields() {
+		$result = $this->myxmlrpcserver->wp_getPost( array( 1, 'author', 'author', $this->post_id ) );
+		$this->assertNotIXRError( $result );
 
-	public function test_default_fields() { // obf
-		$v_gnjtd = $v_tuzqc->myxmlrpcserver->wp_getPost( array( 1, 'author', 'author', $v_tuzqc->post_id ) ); // obf
-		$v_tuzqc->assertNotIXRError( $v_gnjtd ); // obf
+		$this->assertArrayHasKey( 'post_id', $result );
+		$this->assertArrayHasKey( 'link', $result ); // Random field from 'posts' group.
+		$this->assertArrayHasKey( 'terms', $result );
+		$this->assertArrayHasKey( 'custom_fields', $result );
+	}
 
-		$v_tuzqc->assertArrayHasKey( 'post_id', $v_gnjtd ); // obf
-		$v_tuzqc->assertArrayHasKey( 'link', $v_gnjtd ); // Random field from 'posts' group. // obf
-		$v_tuzqc->assertArrayHasKey( 'terms', $v_gnjtd ); // obf
-		$v_tuzqc->assertArrayHasKey( 'custom_fields', $v_gnjtd ); // obf
-	} // obf
+	public function test_date() {
+		$fields = array( 'post' );
+		$result = $this->myxmlrpcserver->wp_getPost( array( 1, 'author', 'author', $this->post_id, $fields ) );
+		$this->assertNotIXRError( $result );
 
-	public function test_date() { // obf
-		$v_qkomb = array( 'post' ); // obf
-		$v_gnjtd = $v_tuzqc->myxmlrpcserver->wp_getPost( array( 1, 'author', 'author', $v_tuzqc->post_id, $v_qkomb ) ); // obf
-		$v_tuzqc->assertNotIXRError( $v_gnjtd ); // obf
+		$this->assertInstanceOf( 'IXR_Date', $result['post_date'] );
+		$this->assertInstanceOf( 'IXR_Date', $result['post_date_gmt'] );
+		$this->assertInstanceOf( 'IXR_Date', $result['post_modified'] );
+		$this->assertInstanceOf( 'IXR_Date', $result['post_modified_gmt'] );
 
-		$v_tuzqc->assertInstanceOf( 'IXR_Date', $v_gnjtd['post_date'] ); // obf
-		$v_tuzqc->assertInstanceOf( 'IXR_Date', $v_gnjtd['post_date_gmt'] ); // obf
-		$v_tuzqc->assertInstanceOf( 'IXR_Date', $v_gnjtd['post_modified'] ); // obf
-		$v_tuzqc->assertInstanceOf( 'IXR_Date', $v_gnjtd['post_modified_gmt'] ); // obf
+		$this->assertSame( $this->post_date_ts, $result['post_date']->getTimestamp() );
+		$this->assertSame( $this->post_date_ts, $result['post_modified']->getTimestamp() );
 
-		$v_tuzqc->assertSame( $v_tuzqc->post_date_ts, $v_gnjtd['post_date']->getTimestamp() ); // obf
-		$v_tuzqc->assertSame( $v_tuzqc->post_date_ts, $v_gnjtd['post_modified']->getTimestamp() ); // obf
+		$post_date_gmt     = strtotime( get_gmt_from_date( mysql2date( 'Y-m-d H:i:s', $this->post_data['post_date'], false ), 'Ymd\TH:i:s' ) );
+		$post_modified_gmt = strtotime( get_gmt_from_date( mysql2date( 'Y-m-d H:i:s', $this->post_data['post_date'], false ), 'Ymd\TH:i:s' ) );
 
-		$v_dhnsj     = strtotime( get_gmt_from_date( mysql2date( 'Y-m-d H:i:s', $v_tuzqc->post_data['post_date'], false ), 'Ymd\TH:i:s' ) ); // obf
-		$v_tynei = strtotime( get_gmt_from_date( mysql2date( 'Y-m-d H:i:s', $v_tuzqc->post_data['post_date'], false ), 'Ymd\TH:i:s' ) ); // obf
+		$this->assertSame( $post_date_gmt, $result['post_date_gmt']->getTimestamp() );
+		$this->assertSame( $post_modified_gmt, $result['post_modified_gmt']->getTimestamp() );
+	}
 
-		$v_tuzqc->assertSame( $v_dhnsj, $v_gnjtd['post_date_gmt']->getTimestamp() ); // obf
-		$v_tuzqc->assertSame( $v_tynei, $v_gnjtd['post_modified_gmt']->getTimestamp() ); // obf
-	} // obf
+	/**
+	 * @ticket 21308
+	 */
+	public function test_valid_page() {
+		$this->make_user_by_role( 'editor' );
 
-	/** // obf
-	 * @ticket 21308 // obf
-	 */ // obf
-	public function test_valid_page() { // obf
-		$v_tuzqc->make_user_by_role( 'editor' ); // obf
+		$parent_page_id = self::factory()->post->create( array( 'post_type' => 'page' ) );
+		$child_page_id  = self::factory()->post->create(
+			array(
+				'post_type'   => 'page',
+				'post_parent' => $parent_page_id,
+				'menu_order'  => 2,
+			)
+		);
 
-		$v_qupdr = self::factory()->post->create( array( 'post_type' => 'page' ) ); // obf
-		$v_chokt  = self::factory()->post->create( // obf
-			array( // obf
-				'post_type'   => 'page', // obf
-				'post_parent' => $v_qupdr, // obf
-				'menu_order'  => 2, // obf
-			) // obf
-		); // obf
+		$result = $this->myxmlrpcserver->wp_getPost( array( 1, 'editor', 'editor', $child_page_id ) );
+		$this->assertNotIXRError( $result );
 
-		$v_gnjtd = $v_tuzqc->myxmlrpcserver->wp_getPost( array( 1, 'editor', 'editor', $v_chokt ) ); // obf
-		$v_tuzqc->assertNotIXRError( $v_gnjtd ); // obf
+		$this->assertIsString( $result['post_id'] );
+		$this->assertIsString( $result['post_parent'] );
+		$this->assertIsInt( $result['menu_order'] );
+		$this->assertIsString( $result['guid'] );
+		$this->assertIsString( $result['post_mime_type'] );
 
-		$v_tuzqc->assertIsString( $v_gnjtd['post_id'] ); // obf
-		$v_tuzqc->assertIsString( $v_gnjtd['post_parent'] ); // obf
-		$v_tuzqc->assertIsInt( $v_gnjtd['menu_order'] ); // obf
-		$v_tuzqc->assertIsString( $v_gnjtd['guid'] ); // obf
-		$v_tuzqc->assertIsString( $v_gnjtd['post_mime_type'] ); // obf
-
-		$v_tuzqc->assertSame( 'page', $v_gnjtd['post_type'] ); // obf
-		$v_tuzqc->assertEquals( $v_qupdr, $v_gnjtd['post_parent'] ); // obf
-		$v_tuzqc->assertSame( 2, $v_gnjtd['menu_order'] ); // obf
-	} // obf
-} // obf
+		$this->assertSame( 'page', $result['post_type'] );
+		$this->assertEquals( $parent_page_id, $result['post_parent'] );
+		$this->assertSame( 2, $result['menu_order'] );
+	}
+}

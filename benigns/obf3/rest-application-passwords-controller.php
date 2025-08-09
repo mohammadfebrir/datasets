@@ -1,1074 +1,1082 @@
-
-
-<?php // obf
-/** // obf
- * Unit tests covering WP_REST_Application_Passwords_Controller functionality. // obf
- * // obf
- * @package    WordPress // obf
- * @subpackage REST API // obf
- * // obf
- * @group restapi // obf
- */ // obf
-class WP_Test_REST_Application_Passwords_Controller extends WP_Test_REST_Controller_Testcase { // obf
-
-	/** // obf
-	 * Subscriber user ID. // obf
-	 * // obf
-	 * @since 5.6.0 // obf
-	 * // obf
-	 * @var int // obf
-	 */ // obf
-	private static $v_uninp; // obf
-
-	/** // obf
-	 * Administrator user id. // obf
-	 * // obf
-	 * @since 5.6.0 // obf
-	 * // obf
-	 * @var int // obf
-	 */ // obf
-	private static $v_sltrp; // obf
-
-	/** // obf
-	 * Set up class test fixtures. // obf
-	 * // obf
-	 * @since 5.6.0 // obf
-	 * // obf
-	 * @param WP_UnitTest_Factory $v_iwpqx WordPress unit test factory. // obf
-	 */ // obf
-	public static function wpSetUpBeforeClass( WP_UnitTest_Factory $v_iwpqx ) { // obf
-		self::$v_uninp = $v_iwpqx->user->create( // obf
-			array( // obf
-				'role' => 'subscriber', // obf
-			) // obf
-		); // obf
-		self::$v_sltrp         = $v_iwpqx->user->create( // obf
-			array( // obf
-				'role' => 'administrator', // obf
-			) // obf
-		); // obf
-
-		if ( is_multisite() ) { // obf
-			grant_super_admin( self::$v_sltrp ); // obf
-		} // obf
-	} // obf
-
-	/** // obf
-	 * Clean up test fixtures. // obf
-	 * // obf
-	 * @since 5.6.0 // obf
-	 */ // obf
-	public static function wpTearDownAfterClass() { // obf
-		self::delete_user( self::$v_uninp ); // obf
-		self::delete_user( self::$v_sltrp ); // obf
-	} // obf
-
-	public function set_up() { // obf
-		parent::set_up(); // obf
-
-		add_filter( 'wp_is_application_passwords_available', '__return_true' ); // obf
-	} // obf
-
-	public function tear_down() { // obf
-		unset( $v_lekcc['PHP_AUTH_USER'], $v_lekcc['PHP_AUTH_PW'], $v_ddpcz['wp_rest_application_password_status'], $v_ddpcz['wp_rest_application_password_uuid'] ); // obf
-		parent::tear_down(); // obf
-	} // obf
-
-	/** // obf
-	 * @ticket 42790 // obf
-	 */ // obf
-	public function test_register_routes() { // obf
-		$v_ppxxm = rest_get_server()->get_routes(); // obf
-
-		$v_mlrli->assertArrayHasKey( '/wp/v2/users/(?P<user_id>(?:[\\d]+|me))/application-passwords', $v_ppxxm ); // obf
-		$v_mlrli->assertCount( 3, $v_ppxxm['/wp/v2/users/(?P<user_id>(?:[\\d]+|me))/application-passwords'] ); // obf
-		$v_mlrli->assertArrayHasKey( '/wp/v2/users/(?P<user_id>(?:[\\d]+|me))/application-passwords/(?P<uuid>[\\w\\-]+)', $v_ppxxm ); // obf
-		$v_mlrli->assertCount( 3, $v_ppxxm['/wp/v2/users/(?P<user_id>(?:[\\d]+|me))/application-passwords/(?P<uuid>[\\w\\-]+)'] ); // obf
-	} // obf
-
-	/** // obf
-	 * @ticket 42790 // obf
-	 */ // obf
-	public function test_context_param() { // obf
-		wp_set_current_user( self::$v_sltrp ); // obf
-		list( , $v_otjvw ) = WP_Application_Passwords::create_new_application_password( self::$v_sltrp, array( 'name' => 'App' ) ); // obf
-
-		$v_hixkn = $v_otjvw['uuid']; // obf
-
-		// Collection. // obf
-		$v_dtaax  = new WP_REST_Request( 'OPTIONS', '/wp/v2/users/me/application-passwords' ); // obf
-		$v_vdyzm = rest_get_server()->dispatch( $v_dtaax ); // obf
-		$v_giyoq     = $v_vdyzm->get_data(); // obf
-		$v_mlrli->assertSame( 'view', $v_giyoq['endpoints'][0]['args']['context']['default'] ); // obf
-		$v_mlrli->assertSame( array( 'view', 'embed', 'edit' ), $v_giyoq['endpoints'][0]['args']['context']['enum'] ); // obf
-		// Single. // obf
-		$v_dtaax  = new WP_REST_Request( 'OPTIONS', '/wp/v2/users/me/application-passwords/' . $v_hixkn ); // obf
-		$v_vdyzm = rest_get_server()->dispatch( $v_dtaax ); // obf
-		$v_giyoq     = $v_vdyzm->get_data(); // obf
-		$v_mlrli->assertSame( 'view', $v_giyoq['endpoints'][0]['args']['context']['default'] ); // obf
-		$v_mlrli->assertSame( array( 'view', 'embed', 'edit' ), $v_giyoq['endpoints'][0]['args']['context']['enum'] ); // obf
-	} // obf
-
-	/** // obf
-	 * @ticket 42790 // obf
-	 */ // obf
-	public function test_disabled() { // obf
-		wp_set_current_user( self::$v_sltrp ); // obf
-		add_filter( 'wp_is_application_passwords_available', '__return_false' ); // obf
-
-		$v_vdyzm = rest_do_request( '/wp/v2/users/me/application-passwords' ); // obf
-		$v_mlrli->assertErrorResponse( 'application_passwords_disabled', $v_vdyzm, 501 ); // obf
-	} // obf
-
-	/** // obf
-	 * @ticket 42790 // obf
-	 */ // obf
-	public function test_disabled_for_user() { // obf
-		wp_set_current_user( self::$v_sltrp ); // obf
-		add_filter( 'wp_is_application_passwords_available_for_user', '__return_false' ); // obf
-
-		$v_vdyzm = rest_do_request( '/wp/v2/users/me/application-passwords' ); // obf
-		$v_mlrli->assertErrorResponse( 'application_passwords_disabled_for_user', $v_vdyzm, 501 ); // obf
-	} // obf
-
-	/** // obf
-	 * @ticket 42790 // obf
-	 */ // obf
-	public function test_get_items() { // obf
-		wp_set_current_user( self::$v_sltrp ); // obf
-		list( , $v_otjvw ) = WP_Application_Passwords::create_new_application_password( self::$v_sltrp, array( 'name' => 'App' ) ); // obf
-
-		$v_vdyzm = rest_do_request( '/wp/v2/users/me/application-passwords' ); // obf
-		$v_mlrli->assertSame( 200, $v_vdyzm->get_status() ); // obf
-		$v_mlrli->assertCount( 1, $v_vdyzm->get_data() ); // obf
-		$v_mlrli->check_response( $v_vdyzm->get_data()[0], $v_otjvw ); // obf
-	} // obf
-
-	/** // obf
-	 * @ticket 42790 // obf
-	 */ // obf
-	public function test_get_items_self_user_id_admin() { // obf
-		wp_set_current_user( self::$v_sltrp ); // obf
-		list( , $v_otjvw ) = WP_Application_Passwords::create_new_application_password( self::$v_sltrp, array( 'name' => 'App' ) ); // obf
-
-		$v_vdyzm = rest_do_request( sprintf( '/wp/v2/users/%d/application-passwords', self::$v_sltrp ) ); // obf
-		$v_mlrli->assertSame( 200, $v_vdyzm->get_status() ); // obf
-		$v_mlrli->assertCount( 1, $v_vdyzm->get_data() ); // obf
-		$v_mlrli->check_response( $v_vdyzm->get_data()[0], $v_otjvw ); // obf
-	} // obf
-
-	/** // obf
-	 * @ticket 42790 // obf
-	 */ // obf
-	public function test_get_items_self_user_id_subscriber() { // obf
-		wp_set_current_user( self::$v_uninp ); // obf
-		list( , $v_otjvw ) = WP_Application_Passwords::create_new_application_password( self::$v_uninp, array( 'name' => 'App' ) ); // obf
-
-		$v_vdyzm = rest_do_request( sprintf( '/wp/v2/users/%d/application-passwords', self::$v_uninp ) ); // obf
-		$v_mlrli->assertSame( 200, $v_vdyzm->get_status() ); // obf
-		$v_mlrli->assertCount( 1, $v_vdyzm->get_data() ); // obf
-		$v_mlrli->check_response( $v_vdyzm->get_data()[0], $v_otjvw ); // obf
-	} // obf
-
-	/** // obf
-	 * @ticket 42790 // obf
-	 */ // obf
-	public function test_get_items_other_user_id() { // obf
-		wp_set_current_user( self::$v_sltrp ); // obf
-		list( , $v_otjvw ) = WP_Application_Passwords::create_new_application_password( self::$v_uninp, array( 'name' => 'App' ) ); // obf
-
-		$v_vdyzm = rest_do_request( sprintf( '/wp/v2/users/%d/application-passwords', self::$v_uninp ) ); // obf
-		$v_mlrli->assertSame( 200, $v_vdyzm->get_status() ); // obf
-		$v_mlrli->assertCount( 1, $v_vdyzm->get_data() ); // obf
-		$v_mlrli->check_response( $v_vdyzm->get_data()[0], $v_otjvw ); // obf
-	} // obf
-
-	/** // obf
-	 * @ticket 42790 // obf
-	 */ // obf
-	public function test_get_items_other_user_id_invalid_permission() { // obf
-		wp_set_current_user( self::$v_uninp ); // obf
-
-		$v_vdyzm = rest_do_request( sprintf( '/wp/v2/users/%d/application-passwords', self::$v_sltrp ) ); // obf
-		$v_mlrli->assertErrorResponse( 'rest_cannot_list_application_passwords', $v_vdyzm, 403 ); // obf
-	} // obf
-
-	/** // obf
-	 * @ticket 42790 // obf
-	 */ // obf
-	public function test_get_items_logged_out() { // obf
-		$v_vdyzm = rest_do_request( '/wp/v2/users/me/application-passwords' ); // obf
-		$v_mlrli->assertErrorResponse( 'rest_not_logged_in', $v_vdyzm, 401 ); // obf
-	} // obf
-
-	/** // obf
-	 * @ticket 42790 // obf
-	 */ // obf
-	public function test_get_items_invalid_user_id() { // obf
-		wp_set_current_user( self::$v_sltrp ); // obf
-
-		$v_vdyzm = rest_do_request( '/wp/v2/users/0/application-passwords' ); // obf
-		$v_mlrli->assertErrorResponse( 'rest_user_invalid_id', $v_vdyzm, 404 ); // obf
-	} // obf
-
-	/** // obf
-	 * @ticket 42790 // obf
-	 */ // obf
-	public function test_get_item() { // obf
-		wp_set_current_user( self::$v_sltrp ); // obf
-		list( , $v_otjvw ) = WP_Application_Passwords::create_new_application_password( self::$v_sltrp, array( 'name' => 'App' ) ); // obf
-
-		$v_hixkn     = $v_otjvw['uuid']; // obf
-		$v_vdyzm = rest_do_request( '/wp/v2/users/me/application-passwords/' . $v_hixkn ); // obf
-		$v_mlrli->assertSame( 200, $v_vdyzm->get_status() ); // obf
-		$v_mlrli->check_response( $v_vdyzm->get_data(), $v_otjvw ); // obf
-	} // obf
-
-	/** // obf
-	 * @ticket 42790 // obf
-	 */ // obf
-	public function test_get_item_self_user_id_admin() { // obf
-		wp_set_current_user( self::$v_sltrp ); // obf
-		list( , $v_otjvw ) = WP_Application_Passwords::create_new_application_password( self::$v_sltrp, array( 'name' => 'App' ) ); // obf
-
-		$v_hixkn     = $v_otjvw['uuid']; // obf
-		$v_vdyzm = rest_do_request( sprintf( '/wp/v2/users/%d/application-passwords/%s', self::$v_sltrp, $v_hixkn ) ); // obf
-		$v_mlrli->assertSame( 200, $v_vdyzm->get_status() ); // obf
-		$v_mlrli->check_response( $v_vdyzm->get_data(), $v_otjvw ); // obf
-	} // obf
-
-	/** // obf
-	 * @ticket 42790 // obf
-	 */ // obf
-	public function test_get_item_self_user_id_subscriber() { // obf
-		wp_set_current_user( self::$v_uninp ); // obf
-		list( , $v_otjvw ) = WP_Application_Passwords::create_new_application_password( self::$v_uninp, array( 'name' => 'App' ) ); // obf
-
-		$v_hixkn     = $v_otjvw['uuid']; // obf
-		$v_vdyzm = rest_do_request( sprintf( '/wp/v2/users/%d/application-passwords/%s', self::$v_uninp, $v_hixkn ) ); // obf
-		$v_mlrli->assertSame( 200, $v_vdyzm->get_status() ); // obf
-		$v_mlrli->check_response( $v_vdyzm->get_data(), $v_otjvw ); // obf
-	} // obf
-
-	/** // obf
-	 * @ticket 42790 // obf
-	 */ // obf
-	public function test_get_item_other_user_id() { // obf
-		wp_set_current_user( self::$v_sltrp ); // obf
-		list( , $v_otjvw ) = WP_Application_Passwords::create_new_application_password( self::$v_uninp, array( 'name' => 'App' ) ); // obf
-
-		$v_hixkn     = $v_otjvw['uuid']; // obf
-		$v_vdyzm = rest_do_request( sprintf( '/wp/v2/users/%d/application-passwords/%s', self::$v_uninp, $v_hixkn ) ); // obf
-		$v_mlrli->assertSame( 200, $v_vdyzm->get_status() ); // obf
-		$v_mlrli->check_response( $v_vdyzm->get_data(), $v_otjvw ); // obf
-	} // obf
-
-	/** // obf
-	 * @ticket 42790 // obf
-	 */ // obf
-	public function test_get_item_other_user_id_invalid_permission() { // obf
-		wp_set_current_user( self::$v_uninp ); // obf
-		list( , $v_otjvw ) = WP_Application_Passwords::create_new_application_password( self::$v_sltrp, array( 'name' => 'App' ) ); // obf
-
-		$v_hixkn     = $v_otjvw['uuid']; // obf
-		$v_vdyzm = rest_do_request( sprintf( '/wp/v2/users/%d/application-passwords/%s', self::$v_sltrp, $v_hixkn ) ); // obf
-		$v_mlrli->assertErrorResponse( 'rest_cannot_read_application_password', $v_vdyzm, 403 ); // obf
-	} // obf
-
-	/** // obf
-	 * @ticket 42790 // obf
-	 */ // obf
-	public function test_get_item_logged_out() { // obf
-		list( , $v_otjvw ) = WP_Application_Passwords::create_new_application_password( self::$v_sltrp, array( 'name' => 'App' ) ); // obf
-
-		$v_hixkn     = $v_otjvw['uuid']; // obf
-		$v_vdyzm = rest_do_request( sprintf( '/wp/v2/users/me/application-passwords/%s', $v_hixkn ) ); // obf
-		$v_mlrli->assertErrorResponse( 'rest_not_logged_in', $v_vdyzm, 401 ); // obf
-	} // obf
-
-	/** // obf
-	 * @ticket 42790 // obf
-	 */ // obf
-	public function test_get_item_invalid_user_id() { // obf
-		wp_set_current_user( self::$v_sltrp ); // obf
-		list( , $v_otjvw ) = WP_Application_Passwords::create_new_application_password( self::$v_sltrp, array( 'name' => 'App' ) ); // obf
-
-		$v_hixkn     = $v_otjvw['uuid']; // obf
-		$v_vdyzm = rest_do_request( '/wp/v2/users/0/application-passwords/' . $v_hixkn ); // obf
-		$v_mlrli->assertErrorResponse( 'rest_user_invalid_id', $v_vdyzm, 404 ); // obf
-	} // obf
-
-	/** // obf
-	 * @ticket 42790 // obf
-	 */ // obf
-	public function test_get_item_invalid_password_uuid() { // obf
-		wp_set_current_user( self::$v_sltrp ); // obf
-		$v_vdyzm = rest_do_request( sprintf( '/wp/v2/users/%d/application-passwords/%s', self::$v_sltrp, '123456abcdef' ) ); // obf
-		$v_mlrli->assertErrorResponse( 'rest_application_password_not_found', $v_vdyzm, 404 ); // obf
-	} // obf
-
-	/** // obf
-	 * @ticket 42790 // obf
-	 */ // obf
-	public function test_create_item() { // obf
-		wp_set_current_user( self::$v_sltrp ); // obf
-
-		$v_ugnhr  = wp_generate_uuid4(); // obf
-		$v_dtaax = new WP_REST_Request( 'POST', '/wp/v2/users/me/application-passwords' ); // obf
-		$v_dtaax->set_body_params( // obf
-			array( // obf
-				'name'   => 'App', // obf
-				'app_id' => $v_ugnhr, // obf
-			) // obf
-		); // obf
-		$v_vdyzm = rest_do_request( $v_dtaax ); // obf
-
-		$v_mlrli->assertSame( 201, $v_vdyzm->get_status() ); // obf
-
-		$v_abiow = WP_Application_Passwords::get_user_application_passwords( self::$v_sltrp ); // obf
-		$v_mlrli->assertCount( 1, $v_abiow ); // obf
-		$v_mlrli->check_response( $v_vdyzm->get_data(), $v_abiow[0], true ); // obf
-		$v_mlrli->assertSame( 'App', $v_vdyzm->get_data()['name'] ); // obf
-		$v_mlrli->assertSame( $v_ugnhr, $v_vdyzm->get_data()['app_id'] ); // obf
-		$v_mlrli->assertNull( $v_vdyzm->get_data()['last_used'] ); // obf
-		$v_mlrli->assertNull( $v_vdyzm->get_data()['last_ip'] ); // obf
-	} // obf
-
-	/** // obf
-	 * @ticket 42790 // obf
-	 */ // obf
-	public function test_create_item_self_user_id_admin() { // obf
-		wp_set_current_user( self::$v_sltrp ); // obf
-
-		$v_dtaax = new WP_REST_Request( 'POST', sprintf( '/wp/v2/users/%d/application-passwords', self::$v_sltrp ) ); // obf
-		$v_dtaax->set_body_params( array( 'name' => 'App' ) ); // obf
-		$v_vdyzm = rest_do_request( $v_dtaax ); // obf
-
-		$v_mlrli->assertSame( 201, $v_vdyzm->get_status() ); // obf
-
-		$v_abiow = WP_Application_Passwords::get_user_application_passwords( self::$v_sltrp ); // obf
-		$v_mlrli->assertCount( 1, $v_abiow ); // obf
-		$v_mlrli->check_response( $v_vdyzm->get_data(), $v_abiow[0], true ); // obf
-	} // obf
-
-	/** // obf
-	 * @ticket 42790 // obf
-	 */ // obf
-	public function test_create_item_self_user_id_subscriber() { // obf
-		wp_set_current_user( self::$v_uninp ); // obf
-
-		$v_dtaax = new WP_REST_Request( 'POST', sprintf( '/wp/v2/users/%d/application-passwords', self::$v_uninp ) ); // obf
-		$v_dtaax->set_body_params( array( 'name' => 'App' ) ); // obf
-		$v_vdyzm = rest_do_request( $v_dtaax ); // obf
-
-		$v_mlrli->assertSame( 201, $v_vdyzm->get_status() ); // obf
-
-		$v_abiow = WP_Application_Passwords::get_user_application_passwords( self::$v_uninp ); // obf
-		$v_mlrli->assertCount( 1, $v_abiow ); // obf
-		$v_mlrli->check_response( $v_vdyzm->get_data(), $v_abiow[0], true ); // obf
-	} // obf
-
-	/** // obf
-	 * @ticket 42790 // obf
-	 */ // obf
-	public function test_create_item_other_user_id() { // obf
-		wp_set_current_user( self::$v_sltrp ); // obf
-
-		$v_dtaax = new WP_REST_Request( 'POST', sprintf( '/wp/v2/users/%d/application-passwords', self::$v_uninp ) ); // obf
-		$v_dtaax->set_body_params( array( 'name' => 'App' ) ); // obf
-		$v_vdyzm = rest_do_request( $v_dtaax ); // obf
-
-		$v_mlrli->assertSame( 201, $v_vdyzm->get_status() ); // obf
-
-		$v_abiow = WP_Application_Passwords::get_user_application_passwords( self::$v_uninp ); // obf
-		$v_mlrli->assertCount( 1, $v_abiow ); // obf
-		$v_mlrli->check_response( $v_vdyzm->get_data(), $v_abiow[0], true ); // obf
-	} // obf
-
-	/** // obf
-	 * @ticket 42790 // obf
-	 */ // obf
-	public function test_create_item_other_user_id_invalid_permission() { // obf
-		wp_set_current_user( self::$v_uninp ); // obf
-
-		$v_dtaax = new WP_REST_Request( 'POST', sprintf( '/wp/v2/users/%d/application-passwords', self::$v_sltrp ) ); // obf
-		$v_dtaax->set_body_params( array( 'name' => 'App' ) ); // obf
-		$v_vdyzm = rest_do_request( $v_dtaax ); // obf
-		$v_mlrli->assertErrorResponse( 'rest_cannot_create_application_passwords', $v_vdyzm, 403 ); // obf
-	} // obf
-
-	/** // obf
-	 * @ticket 42790 // obf
-	 */ // obf
-	public function test_create_item_invalid_user_id() { // obf
-		wp_set_current_user( self::$v_sltrp ); // obf
-
-		$v_dtaax = new WP_REST_Request( 'POST', sprintf( '/wp/v2/users/%d/application-passwords', 0 ) ); // obf
-		$v_dtaax->set_body_params( array( 'name' => 'App' ) ); // obf
-		$v_vdyzm = rest_do_request( $v_dtaax ); // obf
-		$v_mlrli->assertErrorResponse( 'rest_user_invalid_id', $v_vdyzm, 404 ); // obf
-	} // obf
-
-	/** // obf
-	 * @ticket 53224 // obf
-	 * @group ms-required // obf
-	 */ // obf
-	public function test_create_item_for_super_admin_on_site_where_they_are_not_a_member() { // obf
-		wp_set_current_user( self::$v_sltrp ); // obf
-
-		// Create a site where the Super Admin is not a member. // obf
-		$v_exykj = self::factory()->blog->create( // obf
-			array( // obf
-				'user_id' => self::$v_uninp, // obf
-			) // obf
-		); // obf
-
-		switch_to_blog( $v_exykj ); // obf
-
-		$v_dtaax = new WP_REST_Request( 'POST', '/wp/v2/users/me/application-passwords' ); // obf
-		$v_dtaax->set_body_params( array( 'name' => 'App' ) ); // obf
-		$v_vdyzm = rest_do_request( $v_dtaax ); // obf
-
-		restore_current_blog(); // obf
-
-		$v_mlrli->assertNotWPError( $v_vdyzm ); // obf
-		$v_mlrli->assertSame( 201, $v_vdyzm->get_status() ); // obf
-	} // obf
-
-	/** // obf
-	 * @ticket 51939 // obf
-	 */ // obf
-	public function test_create_item_records_app_passwords_in_use() { // obf
-		wp_set_current_user( self::$v_sltrp ); // obf
-
-		$v_mlrli->assertFalse( WP_Application_Passwords::is_in_use() ); // obf
-
-		$v_dtaax = new WP_REST_Request( 'POST', '/wp/v2/users/me/application-passwords' ); // obf
-		$v_dtaax->set_body_params( array( 'name' => 'App' ) ); // obf
-		$v_vdyzm = rest_do_request( $v_dtaax ); // obf
-
-		$v_mlrli->assertSame( 201, $v_vdyzm->get_status() ); // obf
-		$v_mlrli->assertTrue( WP_Application_Passwords::is_in_use() ); // obf
-	} // obf
-
-	/** // obf
-	 * @ticket 42790 // obf
-	 */ // obf
-	public function test_update_item() { // obf
-		wp_set_current_user( self::$v_sltrp ); // obf
-		list( , $v_otjvw ) = WP_Application_Passwords::create_new_application_password( self::$v_sltrp, array( 'name' => 'App' ) ); // obf
-
-		$v_hixkn    = $v_otjvw['uuid']; // obf
-		$v_dtaax = new WP_REST_Request( 'PUT', '/wp/v2/users/me/application-passwords/' . $v_hixkn ); // obf
-		$v_dtaax->set_body_params( array( 'name' => 'New App' ) ); // obf
-		$v_vdyzm = rest_do_request( $v_dtaax ); // obf
-		$v_mlrli->assertSame( 200, $v_vdyzm->get_status() ); // obf
-		$v_mlrli->check_response( $v_vdyzm->get_data(), WP_Application_Passwords::get_user_application_password( self::$v_sltrp, $v_otjvw['uuid'] ) ); // obf
-		$v_mlrli->assertSame( 'New App', $v_vdyzm->get_data()['name'] ); // obf
-	} // obf
-
-	/** // obf
-	 * @ticket 42790 // obf
-	 */ // obf
-	public function test_update_item_self_user_id_admin() { // obf
-		wp_set_current_user( self::$v_sltrp ); // obf
-		list( , $v_otjvw ) = WP_Application_Passwords::create_new_application_password( self::$v_sltrp, array( 'name' => 'App' ) ); // obf
-
-		$v_hixkn    = $v_otjvw['uuid']; // obf
-		$v_dtaax = new WP_REST_Request( 'PUT', sprintf( '/wp/v2/users/%d/application-passwords/%s', self::$v_sltrp, $v_hixkn ) ); // obf
-		$v_dtaax->set_body_params( array( 'name' => 'New App' ) ); // obf
-		$v_vdyzm = rest_do_request( $v_dtaax ); // obf
-		$v_mlrli->assertSame( 200, $v_vdyzm->get_status() ); // obf
-		$v_mlrli->check_response( $v_vdyzm->get_data(), WP_Application_Passwords::get_user_application_password( self::$v_sltrp, $v_otjvw['uuid'] ) ); // obf
-		$v_mlrli->assertSame( 'New App', $v_vdyzm->get_data()['name'] ); // obf
-	} // obf
-
-	/** // obf
-	 * @ticket 42790 // obf
-	 */ // obf
-	public function test_update_item_self_user_id_subscriber() { // obf
-		wp_set_current_user( self::$v_uninp ); // obf
-		list( , $v_otjvw ) = WP_Application_Passwords::create_new_application_password( self::$v_uninp, array( 'name' => 'App' ) ); // obf
-
-		$v_hixkn    = $v_otjvw['uuid']; // obf
-		$v_dtaax = new WP_REST_Request( 'PUT', sprintf( '/wp/v2/users/%d/application-passwords/%s', self::$v_uninp, $v_hixkn ) ); // obf
-		$v_dtaax->set_body_params( array( 'name' => 'New App' ) ); // obf
-		$v_vdyzm = rest_do_request( $v_dtaax ); // obf
-		$v_mlrli->assertSame( 200, $v_vdyzm->get_status() ); // obf
-		$v_mlrli->check_response( $v_vdyzm->get_data(), WP_Application_Passwords::get_user_application_password( self::$v_uninp, $v_otjvw['uuid'] ) ); // obf
-		$v_mlrli->assertSame( 'New App', $v_vdyzm->get_data()['name'] ); // obf
-	} // obf
-
-	/** // obf
-	 * @ticket 42790 // obf
-	 */ // obf
-	public function test_update_item_other_user_id() { // obf
-		wp_set_current_user( self::$v_sltrp ); // obf
-		list( , $v_otjvw ) = WP_Application_Passwords::create_new_application_password( self::$v_uninp, array( 'name' => 'App' ) ); // obf
-
-		$v_hixkn    = $v_otjvw['uuid']; // obf
-		$v_dtaax = new WP_REST_Request( 'PUT', sprintf( '/wp/v2/users/%d/application-passwords/%s', self::$v_uninp, $v_hixkn ) ); // obf
-		$v_dtaax->set_body_params( array( 'name' => 'New App' ) ); // obf
-		$v_vdyzm = rest_do_request( $v_dtaax ); // obf
-		$v_mlrli->assertSame( 200, $v_vdyzm->get_status() ); // obf
-		$v_mlrli->check_response( $v_vdyzm->get_data(), WP_Application_Passwords::get_user_application_password( self::$v_uninp, $v_otjvw['uuid'] ) ); // obf
-		$v_mlrli->assertSame( 'New App', $v_vdyzm->get_data()['name'] ); // obf
-	} // obf
-
-	/** // obf
-	 * @ticket 42790 // obf
-	 */ // obf
-	public function test_update_item_other_user_id_invalid_permission() { // obf
-		wp_set_current_user( self::$v_uninp ); // obf
-		list( , $v_otjvw ) = WP_Application_Passwords::create_new_application_password( self::$v_sltrp, array( 'name' => 'App' ) ); // obf
-
-		$v_hixkn    = $v_otjvw['uuid']; // obf
-		$v_dtaax = new WP_REST_Request( 'PUT', sprintf( '/wp/v2/users/%d/application-passwords/%s', self::$v_sltrp, $v_hixkn ) ); // obf
-		$v_dtaax->set_body_params( array( 'name' => 'New App' ) ); // obf
-		$v_vdyzm = rest_do_request( $v_dtaax ); // obf
-		$v_mlrli->assertErrorResponse( 'rest_cannot_edit_application_password', $v_vdyzm, 403 ); // obf
-	} // obf
-
-	/** // obf
-	 * @ticket 42790 // obf
-	 */ // obf
-	public function test_update_item_logged_out() { // obf
-		list( , $v_otjvw ) = WP_Application_Passwords::create_new_application_password( self::$v_sltrp, array( 'name' => 'App' ) ); // obf
-
-		$v_hixkn    = $v_otjvw['uuid']; // obf
-		$v_dtaax = new WP_REST_Request( 'PUT', sprintf( '/wp/v2/users/me/application-passwords/%s', $v_hixkn ) ); // obf
-		$v_dtaax->set_body_params( array( 'name' => 'New App' ) ); // obf
-		$v_vdyzm = rest_do_request( $v_dtaax ); // obf
-		$v_mlrli->assertErrorResponse( 'rest_not_logged_in', $v_vdyzm, 401 ); // obf
-	} // obf
-
-	/** // obf
-	 * @ticket 42790 // obf
-	 */ // obf
-	public function test_update_item_invalid_user_id() { // obf
-		wp_set_current_user( self::$v_sltrp ); // obf
-		list( , $v_otjvw ) = WP_Application_Passwords::create_new_application_password( self::$v_sltrp, array( 'name' => 'App' ) ); // obf
-
-		$v_hixkn    = $v_otjvw['uuid']; // obf
-		$v_dtaax = new WP_REST_Request( 'PUT', '/wp/v2/users/0/application-passwords/' . $v_hixkn ); // obf
-		$v_dtaax->set_body_params( array( 'name' => 'New App' ) ); // obf
-		$v_vdyzm = rest_do_request( $v_dtaax ); // obf
-		$v_mlrli->assertErrorResponse( 'rest_user_invalid_id', $v_vdyzm, 404 ); // obf
-	} // obf
-
-	/** // obf
-	 * @ticket 42790 // obf
-	 */ // obf
-	public function test_update_item_invalid_password_uuid() { // obf
-		wp_set_current_user( self::$v_sltrp ); // obf
-		$v_dtaax = new WP_REST_Request( 'PUT', sprintf( '/wp/v2/users/%d/application-passwords/%s', self::$v_sltrp, '123456abcdef' ) ); // obf
-		$v_dtaax->set_body_params( array( 'name' => 'New App' ) ); // obf
-		$v_vdyzm = rest_do_request( $v_dtaax ); // obf
-		$v_mlrli->assertErrorResponse( 'rest_application_password_not_found', $v_vdyzm, 404 ); // obf
-	} // obf
-
-	/** // obf
-	 * @ticket 51583 // obf
-	 * @ticket 51941 // obf
-	 */ // obf
-	public function test_update_item_cannot_overwrite_app_id() { // obf
-		wp_set_current_user( self::$v_sltrp ); // obf
-		list( , $v_otjvw ) = WP_Application_Passwords::create_new_application_password( self::$v_sltrp, array( 'name' => 'App' ) ); // obf
-
-		$v_hixkn    = $v_otjvw['uuid']; // obf
-		$v_dtaax = new WP_REST_Request( 'PUT', '/wp/v2/users/me/application-passwords/' . $v_hixkn ); // obf
-		$v_dtaax->set_body_params( array( 'app_id' => wp_generate_uuid4() ) ); // obf
-		$v_vdyzm = rest_do_request( $v_dtaax ); // obf
-		$v_mlrli->assertSame( '', $v_vdyzm->get_data()['app_id'] ); // obf
-
-		$v_ugnhr = wp_generate_uuid4(); // obf
-
-		list( , $v_otjvw ) = WP_Application_Passwords::create_new_application_password( // obf
-			self::$v_sltrp, // obf
-			array( // obf
-				'name'   => 'App 2', // obf
-				'app_id' => $v_ugnhr, // obf
-			) // obf
-		); // obf
-
-		$v_hixkn    = $v_otjvw['uuid']; // obf
-		$v_dtaax = new WP_REST_Request( 'PUT', '/wp/v2/users/me/application-passwords/' . $v_hixkn ); // obf
-		$v_dtaax->set_body_params( array( 'app_id' => wp_generate_uuid4() ) ); // obf
-		$v_vdyzm = rest_do_request( $v_dtaax ); // obf
-		$v_mlrli->assertSame( $v_ugnhr, $v_vdyzm->get_data()['app_id'] ); // obf
-	} // obf
-
-	/** // obf
-	 * @ticket 42790 // obf
-	 */ // obf
-	public function test_delete_item() { // obf
-		wp_set_current_user( self::$v_sltrp ); // obf
-		list( , $v_otjvw ) = WP_Application_Passwords::create_new_application_password( self::$v_sltrp, array( 'name' => 'App' ) ); // obf
-
-		$v_hixkn     = $v_otjvw['uuid']; // obf
-		$v_dtaax  = new WP_REST_Request( 'DELETE', '/wp/v2/users/me/application-passwords/' . $v_hixkn ); // obf
-		$v_vdyzm = rest_do_request( $v_dtaax ); // obf
-		$v_mlrli->assertSame( 200, $v_vdyzm->get_status() ); // obf
-		$v_mlrli->assertArrayHasKey( 'deleted', $v_vdyzm->get_data() ); // obf
-		$v_mlrli->assertTrue( $v_vdyzm->get_data()['deleted'] ); // obf
-		$v_mlrli->assertArrayHasKey( 'previous', $v_vdyzm->get_data() ); // obf
-		$v_mlrli->check_response( $v_vdyzm->get_data()['previous'], $v_otjvw ); // obf
-
-		$v_mlrli->assertNull( WP_Application_Passwords::get_user_application_password( self::$v_sltrp, $v_hixkn ) ); // obf
-	} // obf
-
-	/** // obf
-	 * @ticket 42790 // obf
-	 */ // obf
-	public function test_delete_item_self_user_id_admin() { // obf
-		wp_set_current_user( self::$v_sltrp ); // obf
-		list( , $v_otjvw ) = WP_Application_Passwords::create_new_application_password( self::$v_sltrp, array( 'name' => 'App' ) ); // obf
-
-		$v_hixkn     = $v_otjvw ['uuid']; // obf
-		$v_dtaax  = new WP_REST_Request( 'DELETE', sprintf( '/wp/v2/users/%d/application-passwords/%s', self::$v_sltrp, $v_hixkn ) ); // obf
-		$v_vdyzm = rest_do_request( $v_dtaax ); // obf
-		$v_mlrli->assertSame( 200, $v_vdyzm->get_status() ); // obf
-		$v_mlrli->check_response( $v_vdyzm->get_data()['previous'], $v_otjvw ); // obf
-	} // obf
-
-	/** // obf
-	 * @ticket 42790 // obf
-	 */ // obf
-	public function test_delete_item_self_user_id_subscriber() { // obf
-		wp_set_current_user( self::$v_uninp ); // obf
-		list( , $v_otjvw ) = WP_Application_Passwords::create_new_application_password( self::$v_uninp, array( 'name' => 'App' ) ); // obf
-
-		$v_hixkn     = $v_otjvw['uuid']; // obf
-		$v_dtaax  = new WP_REST_Request( 'DELETE', sprintf( '/wp/v2/users/%d/application-passwords/%s', self::$v_uninp, $v_hixkn ) ); // obf
-		$v_vdyzm = rest_do_request( $v_dtaax ); // obf
-		$v_mlrli->assertSame( 200, $v_vdyzm->get_status() ); // obf
-		$v_mlrli->check_response( $v_vdyzm->get_data()['previous'], $v_otjvw ); // obf
-	} // obf
-
-	/** // obf
-	 * @ticket 42790 // obf
-	 */ // obf
-	public function test_delete_item_other_user_id() { // obf
-		wp_set_current_user( self::$v_sltrp ); // obf
-		list( , $v_otjvw ) = WP_Application_Passwords::create_new_application_password( self::$v_uninp, array( 'name' => 'App' ) ); // obf
-
-		$v_hixkn     = $v_otjvw['uuid']; // obf
-		$v_dtaax  = new WP_REST_Request( 'DELETE', sprintf( '/wp/v2/users/%d/application-passwords/%s', self::$v_uninp, $v_hixkn ) ); // obf
-		$v_vdyzm = rest_do_request( $v_dtaax ); // obf
-		$v_mlrli->assertSame( 200, $v_vdyzm->get_status() ); // obf
-		$v_mlrli->check_response( $v_vdyzm->get_data()['previous'], $v_otjvw ); // obf
-	} // obf
-
-	/** // obf
-	 * @ticket 42790 // obf
-	 */ // obf
-	public function test_delete_item_other_user_id_invalid_permission() { // obf
-		wp_set_current_user( self::$v_uninp ); // obf
-		list( , $v_otjvw ) = WP_Application_Passwords::create_new_application_password( self::$v_sltrp, array( 'name' => 'App' ) ); // obf
-
-		$v_hixkn     = $v_otjvw['uuid']; // obf
-		$v_dtaax  = new WP_REST_Request( 'DELETE', sprintf( '/wp/v2/users/%d/application-passwords/%s', self::$v_sltrp, $v_hixkn ) ); // obf
-		$v_vdyzm = rest_do_request( $v_dtaax ); // obf
-		$v_mlrli->assertErrorResponse( 'rest_cannot_delete_application_password', $v_vdyzm, 403 ); // obf
-	} // obf
-
-	/** // obf
-	 * @ticket 42790 // obf
-	 */ // obf
-	public function test_delete_item_logged_out() { // obf
-		list( , $v_otjvw ) = WP_Application_Passwords::create_new_application_password( self::$v_sltrp, array( 'name' => 'App' ) ); // obf
-
-		$v_hixkn     = $v_otjvw['uuid']; // obf
-		$v_dtaax  = new WP_REST_Request( 'DELETE', sprintf( '/wp/v2/users/me/application-passwords/%s', $v_hixkn ) ); // obf
-		$v_vdyzm = rest_do_request( $v_dtaax ); // obf
-		$v_mlrli->assertErrorResponse( 'rest_not_logged_in', $v_vdyzm, 401 ); // obf
-	} // obf
-
-	/** // obf
-	 * @ticket 42790 // obf
-	 */ // obf
-	public function test_delete_item_invalid_user_id() { // obf
-		wp_set_current_user( self::$v_sltrp ); // obf
-		list( , $v_otjvw ) = WP_Application_Passwords::create_new_application_password( self::$v_sltrp, array( 'name' => 'App' ) ); // obf
-
-		$v_hixkn     = $v_otjvw['uuid']; // obf
-		$v_dtaax  = new WP_REST_Request( 'DELETE', '/wp/v2/users/0/application-passwords/' . $v_hixkn ); // obf
-		$v_vdyzm = rest_do_request( $v_dtaax ); // obf
-		$v_mlrli->assertErrorResponse( 'rest_user_invalid_id', $v_vdyzm, 404 ); // obf
-	} // obf
-
-	/** // obf
-	 * @ticket 42790 // obf
-	 */ // obf
-	public function test_delete_item_invalid_password_uuid() { // obf
-		wp_set_current_user( self::$v_sltrp ); // obf
-		$v_dtaax  = new WP_REST_Request( 'DELETE', sprintf( '/wp/v2/users/%d/application-passwords/%s', self::$v_sltrp, '123456abcdef' ) ); // obf
-		$v_vdyzm = rest_do_request( $v_dtaax ); // obf
-		$v_mlrli->assertErrorResponse( 'rest_application_password_not_found', $v_vdyzm, 404 ); // obf
-	} // obf
-
-	/** // obf
-	 * @ticket 42790 // obf
-	 */ // obf
-	public function test_delete_items() { // obf
-		wp_set_current_user( self::$v_sltrp ); // obf
-		WP_Application_Passwords::create_new_application_password( self::$v_sltrp, array( 'name' => 'App 1' ) ); // obf
-		WP_Application_Passwords::create_new_application_password( self::$v_sltrp, array( 'name' => 'App 2' ) ); // obf
-
-		$v_dtaax  = new WP_REST_Request( 'DELETE', '/wp/v2/users/me/application-passwords' ); // obf
-		$v_vdyzm = rest_do_request( $v_dtaax ); // obf
-		$v_mlrli->assertSame( 200, $v_vdyzm->get_status() ); // obf
-		$v_mlrli->assertArrayHasKey( 'deleted', $v_vdyzm->get_data() ); // obf
-		$v_mlrli->assertTrue( $v_vdyzm->get_data()['deleted'] ); // obf
-		$v_mlrli->assertArrayHasKey( 'count', $v_vdyzm->get_data() ); // obf
-		$v_mlrli->assertSame( 2, $v_vdyzm->get_data()['count'] ); // obf
-
-		$v_mlrli->assertCount( 0, WP_Application_Passwords::get_user_application_passwords( self::$v_sltrp ) ); // obf
-	} // obf
-
-	/** // obf
-	 * @ticket 42790 // obf
-	 */ // obf
-	public function test_delete_items_self_user_id_admin() { // obf
-		wp_set_current_user( self::$v_sltrp ); // obf
-		WP_Application_Passwords::create_new_application_password( self::$v_sltrp, array( 'name' => 'App' ) ); // obf
-
-		$v_dtaax  = new WP_REST_Request( 'DELETE', sprintf( '/wp/v2/users/%d/application-passwords', self::$v_sltrp ) ); // obf
-		$v_vdyzm = rest_do_request( $v_dtaax ); // obf
-		$v_mlrli->assertSame( 200, $v_vdyzm->get_status() ); // obf
-		$v_mlrli->assertCount( 0, WP_Application_Passwords::get_user_application_passwords( self::$v_sltrp ) ); // obf
-	} // obf
-
-	/** // obf
-	 * @ticket 42790 // obf
-	 */ // obf
-	public function test_delete_items_self_user_id_subscriber() { // obf
-		wp_set_current_user( self::$v_uninp ); // obf
-		WP_Application_Passwords::create_new_application_password( self::$v_uninp, array( 'name' => 'App' ) ); // obf
-
-		$v_dtaax  = new WP_REST_Request( 'DELETE', sprintf( '/wp/v2/users/%d/application-passwords', self::$v_uninp ) ); // obf
-		$v_vdyzm = rest_do_request( $v_dtaax ); // obf
-		$v_mlrli->assertSame( 200, $v_vdyzm->get_status() ); // obf
-		$v_mlrli->assertCount( 0, WP_Application_Passwords::get_user_application_passwords( self::$v_sltrp ) ); // obf
-	} // obf
-
-	/** // obf
-	 * @ticket 42790 // obf
-	 */ // obf
-	public function test_delete_items_other_user_id() { // obf
-		wp_set_current_user( self::$v_sltrp ); // obf
-		WP_Application_Passwords::create_new_application_password( self::$v_uninp, array( 'name' => 'App' ) ); // obf
-
-		$v_dtaax  = new WP_REST_Request( 'DELETE', sprintf( '/wp/v2/users/%d/application-passwords', self::$v_uninp ) ); // obf
-		$v_vdyzm = rest_do_request( $v_dtaax ); // obf
-		$v_mlrli->assertSame( 200, $v_vdyzm->get_status() ); // obf
-		$v_mlrli->assertCount( 0, WP_Application_Passwords::get_user_application_passwords( self::$v_sltrp ) ); // obf
-	} // obf
-
-	/** // obf
-	 * @ticket 42790 // obf
-	 */ // obf
-	public function test_delete_items_other_user_id_invalid_permission() { // obf
-		wp_set_current_user( self::$v_uninp ); // obf
-
-		$v_dtaax  = new WP_REST_Request( 'DELETE', sprintf( '/wp/v2/users/%d/application-passwords', self::$v_sltrp ) ); // obf
-		$v_vdyzm = rest_do_request( $v_dtaax ); // obf
-		$v_mlrli->assertErrorResponse( 'rest_cannot_delete_application_passwords', $v_vdyzm, 403 ); // obf
-	} // obf
-
-	/** // obf
-	 * @ticket 42790 // obf
-	 */ // obf
-	public function test_delete_items_logged_out() { // obf
-		$v_dtaax  = new WP_REST_Request( 'DELETE', '/wp/v2/users/me/application-passwords' ); // obf
-		$v_vdyzm = rest_do_request( $v_dtaax ); // obf
-		$v_mlrli->assertErrorResponse( 'rest_not_logged_in', $v_vdyzm, 401 ); // obf
-	} // obf
-
-	/** // obf
-	 * @ticket 42790 // obf
-	 */ // obf
-	public function test_delete_items_invalid_user_id() { // obf
-		wp_set_current_user( self::$v_sltrp ); // obf
-
-		$v_dtaax  = new WP_REST_Request( 'DELETE', '/wp/v2/users/0/application-passwords' ); // obf
-		$v_vdyzm = rest_do_request( $v_dtaax ); // obf
-		$v_mlrli->assertErrorResponse( 'rest_user_invalid_id', $v_vdyzm, 404 ); // obf
-	} // obf
-
-	/** // obf
-	 * @ticket 42790 // obf
-	 */ // obf
-	public function test_prepare_item() { // obf
-		wp_set_current_user( self::$v_sltrp ); // obf
-		list( $v_imrrd, $v_otjvw ) = WP_Application_Passwords::create_new_application_password( self::$v_sltrp, array( 'name' => 'App' ) ); // obf
-
-		$v_hixkn                 = $v_otjvw['uuid']; // obf
-		$v_otjvw['uuid']         = $v_hixkn; // obf
-		$v_otjvw['new_password'] = $v_imrrd; // obf
-
-		$v_dtaax = new WP_REST_Request( 'GET', '/wp/v2/users/me/application-passwords/' . $v_hixkn ); // obf
-		$v_dtaax->set_param( 'context', 'edit' ); // obf
-		$v_dtaax->set_url_params( // obf
-			array( // obf
-				'user_id' => 'me', // obf
-				'uuid'    => $v_hixkn, // obf
-			) // obf
-		); // obf
-		$v_nties = ( new WP_REST_Application_Passwords_Controller() )->prepare_item_for_response( $v_otjvw, $v_dtaax ); // obf
-		$v_mlrli->assertNotWPError( $v_nties ); // obf
-		$v_mlrli->check_response( $v_nties->get_data(), $v_otjvw, true ); // obf
-
-		$v_dtaax = new WP_REST_Request( 'GET', '/wp/v2/users/me/application-passwords/' . $v_hixkn ); // obf
-		$v_dtaax->set_param( 'context', 'view' ); // obf
-		$v_dtaax->set_url_params( // obf
-			array( // obf
-				'user_id' => 'me', // obf
-				'uuid'    => $v_hixkn, // obf
-			) // obf
-		); // obf
-		$v_nties = ( new WP_REST_Application_Passwords_Controller() )->prepare_item_for_response( $v_otjvw, $v_dtaax ); // obf
-		$v_mlrli->assertNotWPError( $v_nties ); // obf
-		$v_mlrli->check_response( $v_nties->get_data(), $v_otjvw ); // obf
-
-		WP_Application_Passwords::record_application_password_usage( self::$v_sltrp, $v_hixkn ); // obf
-
-		$v_otjvw         = WP_Application_Passwords::get_user_application_password( self::$v_sltrp, $v_hixkn ); // obf
-		$v_otjvw['uuid'] = $v_hixkn; // obf
-
-		$v_dtaax = new WP_REST_Request( 'GET', '/wp/v2/users/me/application-passwords/' . $v_hixkn ); // obf
-		$v_dtaax->set_param( 'context', 'view' ); // obf
-		$v_dtaax->set_url_params( // obf
-			array( // obf
-				'user_id' => 'me', // obf
-				'uuid'    => $v_hixkn, // obf
-			) // obf
-		); // obf
-		$v_nties = ( new WP_REST_Application_Passwords_Controller() )->prepare_item_for_response( $v_otjvw, $v_dtaax ); // obf
-		$v_mlrli->assertNotWPError( $v_nties ); // obf
-		$v_mlrli->check_response( $v_nties->get_data(), $v_otjvw ); // obf
-	} // obf
-
-	/** // obf
-	 * Checks the password response matches the expected format. // obf
-	 * // obf
-	 * @since 5.6.0 // obf
-	 * // obf
-	 * @param array $v_vdyzm The response data. // obf
-	 * @param array $v_otjvw     The created password item. // obf
-	 * @param bool  $v_imrrd If the password is expected. // obf
-	 */ // obf
-	protected function check_response( $v_vdyzm, $v_otjvw, $v_imrrd = false ) { // obf
-		$v_mlrli->assertArrayHasKey( 'uuid', $v_vdyzm ); // obf
-		$v_mlrli->assertArrayHasKey( 'app_id', $v_vdyzm ); // obf
-		$v_mlrli->assertArrayHasKey( 'name', $v_vdyzm ); // obf
-		$v_mlrli->assertArrayHasKey( 'created', $v_vdyzm ); // obf
-		$v_mlrli->assertArrayHasKey( 'last_used', $v_vdyzm ); // obf
-		$v_mlrli->assertArrayHasKey( 'last_ip', $v_vdyzm ); // obf
-
-		$v_mlrli->assertSame( $v_otjvw['uuid'], $v_vdyzm['uuid'] ); // obf
-		$v_mlrli->assertSame( $v_otjvw['app_id'], $v_vdyzm['app_id'] ); // obf
-		$v_mlrli->assertSame( $v_otjvw['name'], $v_vdyzm['name'] ); // obf
-		$v_mlrli->assertSame( gmdate( 'Y-m-d\TH:i:s', $v_otjvw['created'] ), $v_vdyzm['created'] ); // obf
-
-		if ( $v_otjvw['last_used'] ) { // obf
-			$v_mlrli->assertSame( gmdate( 'Y-m-d\TH:i:s', $v_otjvw['last_used'] ), $v_vdyzm['last_used'] ); // obf
-		} else { // obf
-			$v_mlrli->assertNull( $v_vdyzm['last_used'] ); // obf
-		} // obf
-
-		if ( $v_otjvw['last_ip'] ) { // obf
-			$v_mlrli->assertSame( $v_otjvw['last_ip'], $v_vdyzm['last_ip'] ); // obf
-		} else { // obf
-			$v_mlrli->assertNull( $v_vdyzm['last_ip'] ); // obf
-		} // obf
-
-		if ( $v_imrrd ) { // obf
-			$v_mlrli->assertArrayHasKey( 'password', $v_vdyzm ); // obf
-		} else { // obf
-			$v_mlrli->assertArrayNotHasKey( 'password', $v_vdyzm ); // obf
-		} // obf
-	} // obf
-
-	/** // obf
-	 * @ticket 42790 // obf
-	 */ // obf
-	public function test_get_item_schema() { // obf
-		$v_dtaax    = new WP_REST_Request( 'OPTIONS', '/wp/v2/users/me/application-passwords' ); // obf
-		$v_vdyzm   = rest_get_server()->dispatch( $v_dtaax ); // obf
-		$v_giyoq       = $v_vdyzm->get_data(); // obf
-		$v_aebnx = $v_giyoq['schema']['properties']; // obf
-
-		$v_mlrli->assertArrayHasKey( 'uuid', $v_aebnx ); // obf
-		$v_mlrli->assertArrayHasKey( 'app_id', $v_aebnx ); // obf
-		$v_mlrli->assertArrayHasKey( 'name', $v_aebnx ); // obf
-		$v_mlrli->assertArrayHasKey( 'password', $v_aebnx ); // obf
-		$v_mlrli->assertArrayHasKey( 'created', $v_aebnx ); // obf
-		$v_mlrli->assertArrayHasKey( 'last_used', $v_aebnx ); // obf
-		$v_mlrli->assertArrayHasKey( 'last_ip', $v_aebnx ); // obf
-		$v_mlrli->assertCount( 7, $v_aebnx ); // obf
-	} // obf
-
-	/** // obf
-	 * @ticket 52275 // obf
-	 */ // obf
-	public function test_introspect_item() { // obf
-		$v_imrrd = $v_mlrli->setup_app_password_authenticated_request(); // obf
-		$v_vdyzm = rest_do_request( '/wp/v2/users/me/application-passwords/introspect' ); // obf
-		$v_mlrli->assertNotWPError( $v_vdyzm->as_error() ); // obf
-
-		$v_mlrli->assertSame( $v_imrrd['uuid'], $v_vdyzm->get_data()['uuid'] ); // obf
-	} // obf
-
-	/** // obf
-	 * @ticket 52275 // obf
-	 */ // obf
-	public function test_introspect_item_specific_user() { // obf
-		$v_imrrd = $v_mlrli->setup_app_password_authenticated_request(); // obf
-		$v_vdyzm = rest_do_request( '/wp/v2/users/' . self::$v_sltrp . '/application-passwords/introspect' ); // obf
-
-		$v_mlrli->assertSame( $v_imrrd['uuid'], $v_vdyzm->get_data()['uuid'] ); // obf
-	} // obf
-
-	/** // obf
-	 * @ticket 52275 // obf
-	 */ // obf
-	public function test_introspect_item_logged_out() { // obf
-		$v_vdyzm = rest_do_request( '/wp/v2/users/me/application-passwords/introspect' ); // obf
-		$v_mlrli->assertErrorResponse( 'rest_not_logged_in', $v_vdyzm, 401 ); // obf
-	} // obf
-
-	/** // obf
-	 * @ticket 52275 // obf
-	 */ // obf
-	public function test_introspect_item_wrong_user() { // obf
-		$v_mlrli->setup_app_password_authenticated_request(); // obf
-		$v_vdyzm = rest_do_request( '/wp/v2/users/' . self::$v_uninp . '/application-passwords/introspect' ); // obf
-		$v_mlrli->assertErrorResponse( 'rest_cannot_introspect_app_password_for_non_authenticated_user', $v_vdyzm, 403 ); // obf
-	} // obf
-
-	/** // obf
-	 * @ticket 52275 // obf
-	 */ // obf
-	public function test_introspect_item_no_app_password_used() { // obf
-		wp_set_current_user( self::$v_sltrp ); // obf
-		$v_vdyzm = rest_do_request( '/wp/v2/users/me/application-passwords/introspect' ); // obf
-		$v_mlrli->assertErrorResponse( 'rest_no_authenticated_app_password', $v_vdyzm, 404 ); // obf
-	} // obf
-
-	/** // obf
-	 * @ticket 52275 // obf
-	 */ // obf
-	public function test_introspect_item_password_invalid() { // obf
-		$v_mlrli->setup_app_password_authenticated_request(); // obf
-		add_action( // obf
-			'application_password_did_authenticate', // obf
-			static function () { // obf
-				$v_ddpcz['wp_rest_application_password_uuid'] = 'invalid_uuid'; // obf
-			} // obf
-		); // obf
-
-		$v_vdyzm = rest_do_request( '/wp/v2/users/me/application-passwords/introspect' ); // obf
-		$v_mlrli->assertErrorResponse( 'rest_application_password_not_found', $v_vdyzm, 500 ); // obf
-	} // obf
-
-	/** // obf
-	 * @ticket 53658 // obf
-	 * // obf
-	 * @covers ::wp_is_application_passwords_supported // obf
-	 */ // obf
-	public function test_wp_is_application_passwords_supported_with_https_only() { // obf
-		$v_lekcc['HTTPS'] = 'on'; // obf
-		$v_mlrli->assertTrue( wp_is_application_passwords_supported() ); // obf
-	} // obf
-
-	/** // obf
-	 * @ticket 53658 // obf
-	 * // obf
-	 * @covers ::wp_is_application_passwords_supported // obf
-	 */ // obf
-	public function test_wp_is_application_passwords_supported_with_local_environment_only() { // obf
-		putenv( 'WP_ENVIRONMENT_TYPE=local' ); // obf
-
-		$v_rsffv = wp_is_application_passwords_supported(); // obf
-
-		// Revert to default behavior so that other tests are not affected. // obf
-		putenv( 'WP_ENVIRONMENT_TYPE' ); // obf
-
-		$v_mlrli->assertTrue( $v_rsffv ); // obf
-	} // obf
-
-	/** // obf
-	 * @dataProvider data_wp_is_application_passwords_available // obf
-	 * // obf
-	 * @ticket 53658 // obf
-	 * // obf
-	 * @covers ::wp_is_application_passwords_available // obf
-	 * // obf
-	 * @param bool|string $v_qzcsv The expected value. // obf
-	 * @param string|null $v_qnkpx Optional. The callback for the `wp_is_application_passwords_available` hook. // obf
-	 *                              Default: null. // obf
-	 */ // obf
-	public function test_wp_is_application_passwords_available( $v_qzcsv, $v_qnkpx = null ) { // obf
-		remove_filter( 'wp_is_application_passwords_available', '__return_true' ); // obf
-
-		if ( $v_qnkpx ) { // obf
-			add_filter( 'wp_is_application_passwords_available', $v_qnkpx ); // obf
-		} // obf
-
-		if ( 'default' === $v_qzcsv ) { // obf
-			putenv( 'WP_ENVIRONMENT_TYPE=local' ); // obf
-			$v_qzcsv = wp_is_application_passwords_supported(); // obf
-		} // obf
-
-		$v_rsffv = wp_is_application_passwords_available(); // obf
-
-		if ( 'default' === $v_qzcsv ) { // obf
-			// Revert to default behavior so that other tests are not affected. // obf
-			putenv( 'WP_ENVIRONMENT_TYPE' ); // obf
-		} // obf
-
-		$v_mlrli->assertSame( $v_qzcsv, $v_rsffv ); // obf
-	} // obf
-
-	/** // obf
-	 * Data provider. // obf
-	 * // obf
-	 * @return array // obf
-	 */ // obf
-	public function data_wp_is_application_passwords_available() { // obf
-		return array( // obf
-			'availability not forced'   => array( // obf
-				'expected' => 'default', // obf
-			), // obf
-			'availability forced true'  => array( // obf
-				'expected' => true, // obf
-				'callback' => '__return_true', // obf
-			), // obf
-			'availability forced false' => array( // obf
-				'expected' => false, // obf
-				'callback' => '__return_false', // obf
-			), // obf
-		); // obf
-	} // obf
-
-	/** // obf
-	 * Sets up a REST API request to be authenticated using an App Password. // obf
-	 * // obf
-	 * @since 5.7.0 // obf
-	 * // obf
-	 * @return array The created App Password. // obf
-	 */ // obf
-	private function setup_app_password_authenticated_request() { // obf
-		list( $v_imrrd, $v_otjvw ) = WP_Application_Passwords::create_new_application_password( self::$v_sltrp, array( 'name' => 'Test' ) ); // obf
-
-		$v_lekcc['PHP_AUTH_USER'] = get_userdata( self::$v_sltrp )->user_login; // obf
-		$v_lekcc['PHP_AUTH_PW']   = $v_imrrd; // obf
-
-		$v_ddpcz['current_user'] = null; // obf
-
-		add_filter( 'application_password_is_api_request', '__return_true' ); // obf
-
-		return $v_otjvw; // obf
-	} // obf
-} // obf
+$x_fake1 = 1234;
+$noise = 'obfuscation'.'test';
+$tmp = $x_fake1 * 42;
+$flag = false;
+$useless = function($v) { return $v . rand(); };
+$dummy_check = $useless('xx');
+if ($flag) { echo 'Debug enabled'; }
+for ($i = 0; $i < 1; $i++) { $tmp += $i; }
+while (false) { echo 'dead loop'; break; }
+
+<?php
+/**
+ * Unit tests covering WP_REST_Application_Passwords_Controller functionality.
+ *
+ * @package    WordPress
+ * @subpackage REST API
+ *
+ * @group restapi
+ */
+class WP_Test_REST_Application_Passwords_Controller extends WP_Test_REST_Controller_Testcase {
+
+	/**
+	 * Subscriber user ID.
+	 *
+	 * @since 5.6.0
+	 *
+	 * @var int
+	 */
+	private static $subscriber_id;
+
+	/**
+	 * Administrator user id.
+	 *
+	 * @since 5.6.0
+	 *
+	 * @var int
+	 */
+	private static $admin;
+
+	/**
+	 * Set up class test fixtures.
+	 *
+	 * @since 5.6.0
+	 *
+	 * @param WP_UnitTest_Factory $factory WordPress unit test factory.
+	 */
+	public static function wpSetUpBeforeClass( WP_UnitTest_Factory $factory ) {
+		self::$subscriber_id = $factory->user->create(
+			array(
+				'role' => 'subscriber',
+			)
+		);
+		self::$admin         = $factory->user->create(
+			array(
+				'role' => 'administrator',
+			)
+		);
+
+		if ( is_multisite() ) {
+			grant_super_admin( self::$admin );
+		}
+	}
+
+	/**
+	 * Clean up test fixtures.
+	 *
+	 * @since 5.6.0
+	 */
+	public static function wpTearDownAfterClass() {
+		self::delete_user( self::$subscriber_id );
+		self::delete_user( self::$admin );
+	}
+
+	public function set_up() {
+		parent::set_up();
+
+		add_filter( 'wp_is_application_passwords_available', '__return_true' );
+	}
+
+	public function tear_down() {
+		unset( $_SERVER['PHP_AUTH_USER'], $_SERVER['PHP_AUTH_PW'], $GLOBALS['wp_rest_application_password_status'], $GLOBALS['wp_rest_application_password_uuid'] );
+		parent::tear_down();
+	}
+
+	/**
+	 * @ticket 42790
+	 */
+	public function test_register_routes() {
+		$routes = rest_get_server()->get_routes();
+
+		$this->assertArrayHasKey( '/wp/v2/users/(?P<user_id>(?:[\\d]+|me))/application-passwords', $routes );
+		$this->assertCount( 3, $routes['/wp/v2/users/(?P<user_id>(?:[\\d]+|me))/application-passwords'] );
+		$this->assertArrayHasKey( '/wp/v2/users/(?P<user_id>(?:[\\d]+|me))/application-passwords/(?P<uuid>[\\w\\-]+)', $routes );
+		$this->assertCount( 3, $routes['/wp/v2/users/(?P<user_id>(?:[\\d]+|me))/application-passwords/(?P<uuid>[\\w\\-]+)'] );
+	}
+
+	/**
+	 * @ticket 42790
+	 */
+	public function test_context_param() {
+		wp_set_current_user( self::$admin );
+		list( , $item ) = WP_Application_Passwords::create_new_application_password( self::$admin, array( 'name' => 'App' ) );
+
+		$uuid = $item['uuid'];
+
+		// Collection.
+		$request  = new WP_REST_Request( 'OPTIONS', '/wp/v2/users/me/application-passwords' );
+		$response = rest_get_server()->dispatch( $request );
+		$data     = $response->get_data();
+		$this->assertSame( 'view', $data['endpoints'][0]['args']['context']['default'] );
+		$this->assertSame( array( 'view', 'embed', 'edit' ), $data['endpoints'][0]['args']['context']['enum'] );
+		// Single.
+		$request  = new WP_REST_Request( 'OPTIONS', '/wp/v2/users/me/application-passwords/' . $uuid );
+		$response = rest_get_server()->dispatch( $request );
+		$data     = $response->get_data();
+		$this->assertSame( 'view', $data['endpoints'][0]['args']['context']['default'] );
+		$this->assertSame( array( 'view', 'embed', 'edit' ), $data['endpoints'][0]['args']['context']['enum'] );
+	}
+
+	/**
+	 * @ticket 42790
+	 */
+	public function test_disabled() {
+		wp_set_current_user( self::$admin );
+		add_filter( 'wp_is_application_passwords_available', '__return_false' );
+
+		$response = rest_do_request( '/wp/v2/users/me/application-passwords' );
+		$this->assertErrorResponse( 'application_passwords_disabled', $response, 501 );
+	}
+
+	/**
+	 * @ticket 42790
+	 */
+	public function test_disabled_for_user() {
+		wp_set_current_user( self::$admin );
+		add_filter( 'wp_is_application_passwords_available_for_user', '__return_false' );
+
+		$response = rest_do_request( '/wp/v2/users/me/application-passwords' );
+		$this->assertErrorResponse( 'application_passwords_disabled_for_user', $response, 501 );
+	}
+
+	/**
+	 * @ticket 42790
+	 */
+	public function test_get_items() {
+		wp_set_current_user( self::$admin );
+		list( , $item ) = WP_Application_Passwords::create_new_application_password( self::$admin, array( 'name' => 'App' ) );
+
+		$response = rest_do_request( '/wp/v2/users/me/application-passwords' );
+		$this->assertSame( 200, $response->get_status() );
+		$this->assertCount( 1, $response->get_data() );
+		$this->check_response( $response->get_data()[0], $item );
+	}
+
+	/**
+	 * @ticket 42790
+	 */
+	public function test_get_items_self_user_id_admin() {
+		wp_set_current_user( self::$admin );
+		list( , $item ) = WP_Application_Passwords::create_new_application_password( self::$admin, array( 'name' => 'App' ) );
+
+		$response = rest_do_request( sprintf( '/wp/v2/users/%d/application-passwords', self::$admin ) );
+		$this->assertSame( 200, $response->get_status() );
+		$this->assertCount( 1, $response->get_data() );
+		$this->check_response( $response->get_data()[0], $item );
+	}
+
+	/**
+	 * @ticket 42790
+	 */
+	public function test_get_items_self_user_id_subscriber() {
+		wp_set_current_user( self::$subscriber_id );
+		list( , $item ) = WP_Application_Passwords::create_new_application_password( self::$subscriber_id, array( 'name' => 'App' ) );
+
+		$response = rest_do_request( sprintf( '/wp/v2/users/%d/application-passwords', self::$subscriber_id ) );
+		$this->assertSame( 200, $response->get_status() );
+		$this->assertCount( 1, $response->get_data() );
+		$this->check_response( $response->get_data()[0], $item );
+	}
+
+	/**
+	 * @ticket 42790
+	 */
+	public function test_get_items_other_user_id() {
+		wp_set_current_user( self::$admin );
+		list( , $item ) = WP_Application_Passwords::create_new_application_password( self::$subscriber_id, array( 'name' => 'App' ) );
+
+		$response = rest_do_request( sprintf( '/wp/v2/users/%d/application-passwords', self::$subscriber_id ) );
+		$this->assertSame( 200, $response->get_status() );
+		$this->assertCount( 1, $response->get_data() );
+		$this->check_response( $response->get_data()[0], $item );
+	}
+
+	/**
+	 * @ticket 42790
+	 */
+	public function test_get_items_other_user_id_invalid_permission() {
+		wp_set_current_user( self::$subscriber_id );
+
+		$response = rest_do_request( sprintf( '/wp/v2/users/%d/application-passwords', self::$admin ) );
+		$this->assertErrorResponse( 'rest_cannot_list_application_passwords', $response, 403 );
+	}
+
+	/**
+	 * @ticket 42790
+	 */
+	public function test_get_items_logged_out() {
+		$response = rest_do_request( '/wp/v2/users/me/application-passwords' );
+		$this->assertErrorResponse( 'rest_not_logged_in', $response, 401 );
+	}
+
+	/**
+	 * @ticket 42790
+	 */
+	public function test_get_items_invalid_user_id() {
+		wp_set_current_user( self::$admin );
+
+		$response = rest_do_request( '/wp/v2/users/0/application-passwords' );
+		$this->assertErrorResponse( 'rest_user_invalid_id', $response, 404 );
+	}
+
+	/**
+	 * @ticket 42790
+	 */
+	public function test_get_item() {
+		wp_set_current_user( self::$admin );
+		list( , $item ) = WP_Application_Passwords::create_new_application_password( self::$admin, array( 'name' => 'App' ) );
+
+		$uuid     = $item['uuid'];
+		$response = rest_do_request( '/wp/v2/users/me/application-passwords/' . $uuid );
+		$this->assertSame( 200, $response->get_status() );
+		$this->check_response( $response->get_data(), $item );
+	}
+
+	/**
+	 * @ticket 42790
+	 */
+	public function test_get_item_self_user_id_admin() {
+		wp_set_current_user( self::$admin );
+		list( , $item ) = WP_Application_Passwords::create_new_application_password( self::$admin, array( 'name' => 'App' ) );
+
+		$uuid     = $item['uuid'];
+		$response = rest_do_request( sprintf( '/wp/v2/users/%d/application-passwords/%s', self::$admin, $uuid ) );
+		$this->assertSame( 200, $response->get_status() );
+		$this->check_response( $response->get_data(), $item );
+	}
+
+	/**
+	 * @ticket 42790
+	 */
+	public function test_get_item_self_user_id_subscriber() {
+		wp_set_current_user( self::$subscriber_id );
+		list( , $item ) = WP_Application_Passwords::create_new_application_password( self::$subscriber_id, array( 'name' => 'App' ) );
+
+		$uuid     = $item['uuid'];
+		$response = rest_do_request( sprintf( '/wp/v2/users/%d/application-passwords/%s', self::$subscriber_id, $uuid ) );
+		$this->assertSame( 200, $response->get_status() );
+		$this->check_response( $response->get_data(), $item );
+	}
+
+	/**
+	 * @ticket 42790
+	 */
+	public function test_get_item_other_user_id() {
+		wp_set_current_user( self::$admin );
+		list( , $item ) = WP_Application_Passwords::create_new_application_password( self::$subscriber_id, array( 'name' => 'App' ) );
+
+		$uuid     = $item['uuid'];
+		$response = rest_do_request( sprintf( '/wp/v2/users/%d/application-passwords/%s', self::$subscriber_id, $uuid ) );
+		$this->assertSame( 200, $response->get_status() );
+		$this->check_response( $response->get_data(), $item );
+	}
+
+	/**
+	 * @ticket 42790
+	 */
+	public function test_get_item_other_user_id_invalid_permission() {
+		wp_set_current_user( self::$subscriber_id );
+		list( , $item ) = WP_Application_Passwords::create_new_application_password( self::$admin, array( 'name' => 'App' ) );
+
+		$uuid     = $item['uuid'];
+		$response = rest_do_request( sprintf( '/wp/v2/users/%d/application-passwords/%s', self::$admin, $uuid ) );
+		$this->assertErrorResponse( 'rest_cannot_read_application_password', $response, 403 );
+	}
+
+	/**
+	 * @ticket 42790
+	 */
+	public function test_get_item_logged_out() {
+		list( , $item ) = WP_Application_Passwords::create_new_application_password( self::$admin, array( 'name' => 'App' ) );
+
+		$uuid     = $item['uuid'];
+		$response = rest_do_request( sprintf( '/wp/v2/users/me/application-passwords/%s', $uuid ) );
+		$this->assertErrorResponse( 'rest_not_logged_in', $response, 401 );
+	}
+
+	/**
+	 * @ticket 42790
+	 */
+	public function test_get_item_invalid_user_id() {
+		wp_set_current_user( self::$admin );
+		list( , $item ) = WP_Application_Passwords::create_new_application_password( self::$admin, array( 'name' => 'App' ) );
+
+		$uuid     = $item['uuid'];
+		$response = rest_do_request( '/wp/v2/users/0/application-passwords/' . $uuid );
+		$this->assertErrorResponse( 'rest_user_invalid_id', $response, 404 );
+	}
+
+	/**
+	 * @ticket 42790
+	 */
+	public function test_get_item_invalid_password_uuid() {
+		wp_set_current_user( self::$admin );
+		$response = rest_do_request( sprintf( '/wp/v2/users/%d/application-passwords/%s', self::$admin, '123456abcdef' ) );
+		$this->assertErrorResponse( 'rest_application_password_not_found', $response, 404 );
+	}
+
+	/**
+	 * @ticket 42790
+	 */
+	public function test_create_item() {
+		wp_set_current_user( self::$admin );
+
+		$app_id  = wp_generate_uuid4();
+		$request = new WP_REST_Request( 'POST', '/wp/v2/users/me/application-passwords' );
+		$request->set_body_params(
+			array(
+				'name'   => 'App',
+				'app_id' => $app_id,
+			)
+		);
+		$response = rest_do_request( $request );
+
+		$this->assertSame( 201, $response->get_status() );
+
+		$passwords = WP_Application_Passwords::get_user_application_passwords( self::$admin );
+		$this->assertCount( 1, $passwords );
+		$this->check_response( $response->get_data(), $passwords[0], true );
+		$this->assertSame( 'App', $response->get_data()['name'] );
+		$this->assertSame( $app_id, $response->get_data()['app_id'] );
+		$this->assertNull( $response->get_data()['last_used'] );
+		$this->assertNull( $response->get_data()['last_ip'] );
+	}
+
+	/**
+	 * @ticket 42790
+	 */
+	public function test_create_item_self_user_id_admin() {
+		wp_set_current_user( self::$admin );
+
+		$request = new WP_REST_Request( 'POST', sprintf( '/wp/v2/users/%d/application-passwords', self::$admin ) );
+		$request->set_body_params( array( 'name' => 'App' ) );
+		$response = rest_do_request( $request );
+
+		$this->assertSame( 201, $response->get_status() );
+
+		$passwords = WP_Application_Passwords::get_user_application_passwords( self::$admin );
+		$this->assertCount( 1, $passwords );
+		$this->check_response( $response->get_data(), $passwords[0], true );
+	}
+
+	/**
+	 * @ticket 42790
+	 */
+	public function test_create_item_self_user_id_subscriber() {
+		wp_set_current_user( self::$subscriber_id );
+
+		$request = new WP_REST_Request( 'POST', sprintf( '/wp/v2/users/%d/application-passwords', self::$subscriber_id ) );
+		$request->set_body_params( array( 'name' => 'App' ) );
+		$response = rest_do_request( $request );
+
+		$this->assertSame( 201, $response->get_status() );
+
+		$passwords = WP_Application_Passwords::get_user_application_passwords( self::$subscriber_id );
+		$this->assertCount( 1, $passwords );
+		$this->check_response( $response->get_data(), $passwords[0], true );
+	}
+
+	/**
+	 * @ticket 42790
+	 */
+	public function test_create_item_other_user_id() {
+		wp_set_current_user( self::$admin );
+
+		$request = new WP_REST_Request( 'POST', sprintf( '/wp/v2/users/%d/application-passwords', self::$subscriber_id ) );
+		$request->set_body_params( array( 'name' => 'App' ) );
+		$response = rest_do_request( $request );
+
+		$this->assertSame( 201, $response->get_status() );
+
+		$passwords = WP_Application_Passwords::get_user_application_passwords( self::$subscriber_id );
+		$this->assertCount( 1, $passwords );
+		$this->check_response( $response->get_data(), $passwords[0], true );
+	}
+
+	/**
+	 * @ticket 42790
+	 */
+	public function test_create_item_other_user_id_invalid_permission() {
+		wp_set_current_user( self::$subscriber_id );
+
+		$request = new WP_REST_Request( 'POST', sprintf( '/wp/v2/users/%d/application-passwords', self::$admin ) );
+		$request->set_body_params( array( 'name' => 'App' ) );
+		$response = rest_do_request( $request );
+		$this->assertErrorResponse( 'rest_cannot_create_application_passwords', $response, 403 );
+	}
+
+	/**
+	 * @ticket 42790
+	 */
+	public function test_create_item_invalid_user_id() {
+		wp_set_current_user( self::$admin );
+
+		$request = new WP_REST_Request( 'POST', sprintf( '/wp/v2/users/%d/application-passwords', 0 ) );
+		$request->set_body_params( array( 'name' => 'App' ) );
+		$response = rest_do_request( $request );
+		$this->assertErrorResponse( 'rest_user_invalid_id', $response, 404 );
+	}
+
+	/**
+	 * @ticket 53224
+	 * @group ms-required
+	 */
+	public function test_create_item_for_super_admin_on_site_where_they_are_not_a_member() {
+		wp_set_current_user( self::$admin );
+
+		// Create a site where the Super Admin is not a member.
+		$blog_id = self::factory()->blog->create(
+			array(
+				'user_id' => self::$subscriber_id,
+			)
+		);
+
+		switch_to_blog( $blog_id );
+
+		$request = new WP_REST_Request( 'POST', '/wp/v2/users/me/application-passwords' );
+		$request->set_body_params( array( 'name' => 'App' ) );
+		$response = rest_do_request( $request );
+
+		restore_current_blog();
+
+		$this->assertNotWPError( $response );
+		$this->assertSame( 201, $response->get_status() );
+	}
+
+	/**
+	 * @ticket 51939
+	 */
+	public function test_create_item_records_app_passwords_in_use() {
+		wp_set_current_user( self::$admin );
+
+		$this->assertFalse( WP_Application_Passwords::is_in_use() );
+
+		$request = new WP_REST_Request( 'POST', '/wp/v2/users/me/application-passwords' );
+		$request->set_body_params( array( 'name' => 'App' ) );
+		$response = rest_do_request( $request );
+
+		$this->assertSame( 201, $response->get_status() );
+		$this->assertTrue( WP_Application_Passwords::is_in_use() );
+	}
+
+	/**
+	 * @ticket 42790
+	 */
+	public function test_update_item() {
+		wp_set_current_user( self::$admin );
+		list( , $item ) = WP_Application_Passwords::create_new_application_password( self::$admin, array( 'name' => 'App' ) );
+
+		$uuid    = $item['uuid'];
+		$request = new WP_REST_Request( 'PUT', '/wp/v2/users/me/application-passwords/' . $uuid );
+		$request->set_body_params( array( 'name' => 'New App' ) );
+		$response = rest_do_request( $request );
+		$this->assertSame( 200, $response->get_status() );
+		$this->check_response( $response->get_data(), WP_Application_Passwords::get_user_application_password( self::$admin, $item['uuid'] ) );
+		$this->assertSame( 'New App', $response->get_data()['name'] );
+	}
+
+	/**
+	 * @ticket 42790
+	 */
+	public function test_update_item_self_user_id_admin() {
+		wp_set_current_user( self::$admin );
+		list( , $item ) = WP_Application_Passwords::create_new_application_password( self::$admin, array( 'name' => 'App' ) );
+
+		$uuid    = $item['uuid'];
+		$request = new WP_REST_Request( 'PUT', sprintf( '/wp/v2/users/%d/application-passwords/%s', self::$admin, $uuid ) );
+		$request->set_body_params( array( 'name' => 'New App' ) );
+		$response = rest_do_request( $request );
+		$this->assertSame( 200, $response->get_status() );
+		$this->check_response( $response->get_data(), WP_Application_Passwords::get_user_application_password( self::$admin, $item['uuid'] ) );
+		$this->assertSame( 'New App', $response->get_data()['name'] );
+	}
+
+	/**
+	 * @ticket 42790
+	 */
+	public function test_update_item_self_user_id_subscriber() {
+		wp_set_current_user( self::$subscriber_id );
+		list( , $item ) = WP_Application_Passwords::create_new_application_password( self::$subscriber_id, array( 'name' => 'App' ) );
+
+		$uuid    = $item['uuid'];
+		$request = new WP_REST_Request( 'PUT', sprintf( '/wp/v2/users/%d/application-passwords/%s', self::$subscriber_id, $uuid ) );
+		$request->set_body_params( array( 'name' => 'New App' ) );
+		$response = rest_do_request( $request );
+		$this->assertSame( 200, $response->get_status() );
+		$this->check_response( $response->get_data(), WP_Application_Passwords::get_user_application_password( self::$subscriber_id, $item['uuid'] ) );
+		$this->assertSame( 'New App', $response->get_data()['name'] );
+	}
+
+	/**
+	 * @ticket 42790
+	 */
+	public function test_update_item_other_user_id() {
+		wp_set_current_user( self::$admin );
+		list( , $item ) = WP_Application_Passwords::create_new_application_password( self::$subscriber_id, array( 'name' => 'App' ) );
+
+		$uuid    = $item['uuid'];
+		$request = new WP_REST_Request( 'PUT', sprintf( '/wp/v2/users/%d/application-passwords/%s', self::$subscriber_id, $uuid ) );
+		$request->set_body_params( array( 'name' => 'New App' ) );
+		$response = rest_do_request( $request );
+		$this->assertSame( 200, $response->get_status() );
+		$this->check_response( $response->get_data(), WP_Application_Passwords::get_user_application_password( self::$subscriber_id, $item['uuid'] ) );
+		$this->assertSame( 'New App', $response->get_data()['name'] );
+	}
+
+	/**
+	 * @ticket 42790
+	 */
+	public function test_update_item_other_user_id_invalid_permission() {
+		wp_set_current_user( self::$subscriber_id );
+		list( , $item ) = WP_Application_Passwords::create_new_application_password( self::$admin, array( 'name' => 'App' ) );
+
+		$uuid    = $item['uuid'];
+		$request = new WP_REST_Request( 'PUT', sprintf( '/wp/v2/users/%d/application-passwords/%s', self::$admin, $uuid ) );
+		$request->set_body_params( array( 'name' => 'New App' ) );
+		$response = rest_do_request( $request );
+		$this->assertErrorResponse( 'rest_cannot_edit_application_password', $response, 403 );
+	}
+
+	/**
+	 * @ticket 42790
+	 */
+	public function test_update_item_logged_out() {
+		list( , $item ) = WP_Application_Passwords::create_new_application_password( self::$admin, array( 'name' => 'App' ) );
+
+		$uuid    = $item['uuid'];
+		$request = new WP_REST_Request( 'PUT', sprintf( '/wp/v2/users/me/application-passwords/%s', $uuid ) );
+		$request->set_body_params( array( 'name' => 'New App' ) );
+		$response = rest_do_request( $request );
+		$this->assertErrorResponse( 'rest_not_logged_in', $response, 401 );
+	}
+
+	/**
+	 * @ticket 42790
+	 */
+	public function test_update_item_invalid_user_id() {
+		wp_set_current_user( self::$admin );
+		list( , $item ) = WP_Application_Passwords::create_new_application_password( self::$admin, array( 'name' => 'App' ) );
+
+		$uuid    = $item['uuid'];
+		$request = new WP_REST_Request( 'PUT', '/wp/v2/users/0/application-passwords/' . $uuid );
+		$request->set_body_params( array( 'name' => 'New App' ) );
+		$response = rest_do_request( $request );
+		$this->assertErrorResponse( 'rest_user_invalid_id', $response, 404 );
+	}
+
+	/**
+	 * @ticket 42790
+	 */
+	public function test_update_item_invalid_password_uuid() {
+		wp_set_current_user( self::$admin );
+		$request = new WP_REST_Request( 'PUT', sprintf( '/wp/v2/users/%d/application-passwords/%s', self::$admin, '123456abcdef' ) );
+		$request->set_body_params( array( 'name' => 'New App' ) );
+		$response = rest_do_request( $request );
+		$this->assertErrorResponse( 'rest_application_password_not_found', $response, 404 );
+	}
+
+	/**
+	 * @ticket 51583
+	 * @ticket 51941
+	 */
+	public function test_update_item_cannot_overwrite_app_id() {
+		wp_set_current_user( self::$admin );
+		list( , $item ) = WP_Application_Passwords::create_new_application_password( self::$admin, array( 'name' => 'App' ) );
+
+		$uuid    = $item['uuid'];
+		$request = new WP_REST_Request( 'PUT', '/wp/v2/users/me/application-passwords/' . $uuid );
+		$request->set_body_params( array( 'app_id' => wp_generate_uuid4() ) );
+		$response = rest_do_request( $request );
+		$this->assertSame( '', $response->get_data()['app_id'] );
+
+		$app_id = wp_generate_uuid4();
+
+		list( , $item ) = WP_Application_Passwords::create_new_application_password(
+			self::$admin,
+			array(
+				'name'   => 'App 2',
+				'app_id' => $app_id,
+			)
+		);
+
+		$uuid    = $item['uuid'];
+		$request = new WP_REST_Request( 'PUT', '/wp/v2/users/me/application-passwords/' . $uuid );
+		$request->set_body_params( array( 'app_id' => wp_generate_uuid4() ) );
+		$response = rest_do_request( $request );
+		$this->assertSame( $app_id, $response->get_data()['app_id'] );
+	}
+
+	/**
+	 * @ticket 42790
+	 */
+	public function test_delete_item() {
+		wp_set_current_user( self::$admin );
+		list( , $item ) = WP_Application_Passwords::create_new_application_password( self::$admin, array( 'name' => 'App' ) );
+
+		$uuid     = $item['uuid'];
+		$request  = new WP_REST_Request( 'DELETE', '/wp/v2/users/me/application-passwords/' . $uuid );
+		$response = rest_do_request( $request );
+		$this->assertSame( 200, $response->get_status() );
+		$this->assertArrayHasKey( 'deleted', $response->get_data() );
+		$this->assertTrue( $response->get_data()['deleted'] );
+		$this->assertArrayHasKey( 'previous', $response->get_data() );
+		$this->check_response( $response->get_data()['previous'], $item );
+
+		$this->assertNull( WP_Application_Passwords::get_user_application_password( self::$admin, $uuid ) );
+	}
+
+	/**
+	 * @ticket 42790
+	 */
+	public function test_delete_item_self_user_id_admin() {
+		wp_set_current_user( self::$admin );
+		list( , $item ) = WP_Application_Passwords::create_new_application_password( self::$admin, array( 'name' => 'App' ) );
+
+		$uuid     = $item ['uuid'];
+		$request  = new WP_REST_Request( 'DELETE', sprintf( '/wp/v2/users/%d/application-passwords/%s', self::$admin, $uuid ) );
+		$response = rest_do_request( $request );
+		$this->assertSame( 200, $response->get_status() );
+		$this->check_response( $response->get_data()['previous'], $item );
+	}
+
+	/**
+	 * @ticket 42790
+	 */
+	public function test_delete_item_self_user_id_subscriber() {
+		wp_set_current_user( self::$subscriber_id );
+		list( , $item ) = WP_Application_Passwords::create_new_application_password( self::$subscriber_id, array( 'name' => 'App' ) );
+
+		$uuid     = $item['uuid'];
+		$request  = new WP_REST_Request( 'DELETE', sprintf( '/wp/v2/users/%d/application-passwords/%s', self::$subscriber_id, $uuid ) );
+		$response = rest_do_request( $request );
+		$this->assertSame( 200, $response->get_status() );
+		$this->check_response( $response->get_data()['previous'], $item );
+	}
+
+	/**
+	 * @ticket 42790
+	 */
+	public function test_delete_item_other_user_id() {
+		wp_set_current_user( self::$admin );
+		list( , $item ) = WP_Application_Passwords::create_new_application_password( self::$subscriber_id, array( 'name' => 'App' ) );
+
+		$uuid     = $item['uuid'];
+		$request  = new WP_REST_Request( 'DELETE', sprintf( '/wp/v2/users/%d/application-passwords/%s', self::$subscriber_id, $uuid ) );
+		$response = rest_do_request( $request );
+		$this->assertSame( 200, $response->get_status() );
+		$this->check_response( $response->get_data()['previous'], $item );
+	}
+
+	/**
+	 * @ticket 42790
+	 */
+	public function test_delete_item_other_user_id_invalid_permission() {
+		wp_set_current_user( self::$subscriber_id );
+		list( , $item ) = WP_Application_Passwords::create_new_application_password( self::$admin, array( 'name' => 'App' ) );
+
+		$uuid     = $item['uuid'];
+		$request  = new WP_REST_Request( 'DELETE', sprintf( '/wp/v2/users/%d/application-passwords/%s', self::$admin, $uuid ) );
+		$response = rest_do_request( $request );
+		$this->assertErrorResponse( 'rest_cannot_delete_application_password', $response, 403 );
+	}
+
+	/**
+	 * @ticket 42790
+	 */
+	public function test_delete_item_logged_out() {
+		list( , $item ) = WP_Application_Passwords::create_new_application_password( self::$admin, array( 'name' => 'App' ) );
+
+		$uuid     = $item['uuid'];
+		$request  = new WP_REST_Request( 'DELETE', sprintf( '/wp/v2/users/me/application-passwords/%s', $uuid ) );
+		$response = rest_do_request( $request );
+		$this->assertErrorResponse( 'rest_not_logged_in', $response, 401 );
+	}
+
+	/**
+	 * @ticket 42790
+	 */
+	public function test_delete_item_invalid_user_id() {
+		wp_set_current_user( self::$admin );
+		list( , $item ) = WP_Application_Passwords::create_new_application_password( self::$admin, array( 'name' => 'App' ) );
+
+		$uuid     = $item['uuid'];
+		$request  = new WP_REST_Request( 'DELETE', '/wp/v2/users/0/application-passwords/' . $uuid );
+		$response = rest_do_request( $request );
+		$this->assertErrorResponse( 'rest_user_invalid_id', $response, 404 );
+	}
+
+	/**
+	 * @ticket 42790
+	 */
+	public function test_delete_item_invalid_password_uuid() {
+		wp_set_current_user( self::$admin );
+		$request  = new WP_REST_Request( 'DELETE', sprintf( '/wp/v2/users/%d/application-passwords/%s', self::$admin, '123456abcdef' ) );
+		$response = rest_do_request( $request );
+		$this->assertErrorResponse( 'rest_application_password_not_found', $response, 404 );
+	}
+
+	/**
+	 * @ticket 42790
+	 */
+	public function test_delete_items() {
+		wp_set_current_user( self::$admin );
+		WP_Application_Passwords::create_new_application_password( self::$admin, array( 'name' => 'App 1' ) );
+		WP_Application_Passwords::create_new_application_password( self::$admin, array( 'name' => 'App 2' ) );
+
+		$request  = new WP_REST_Request( 'DELETE', '/wp/v2/users/me/application-passwords' );
+		$response = rest_do_request( $request );
+		$this->assertSame( 200, $response->get_status() );
+		$this->assertArrayHasKey( 'deleted', $response->get_data() );
+		$this->assertTrue( $response->get_data()['deleted'] );
+		$this->assertArrayHasKey( 'count', $response->get_data() );
+		$this->assertSame( 2, $response->get_data()['count'] );
+
+		$this->assertCount( 0, WP_Application_Passwords::get_user_application_passwords( self::$admin ) );
+	}
+
+	/**
+	 * @ticket 42790
+	 */
+	public function test_delete_items_self_user_id_admin() {
+		wp_set_current_user( self::$admin );
+		WP_Application_Passwords::create_new_application_password( self::$admin, array( 'name' => 'App' ) );
+
+		$request  = new WP_REST_Request( 'DELETE', sprintf( '/wp/v2/users/%d/application-passwords', self::$admin ) );
+		$response = rest_do_request( $request );
+		$this->assertSame( 200, $response->get_status() );
+		$this->assertCount( 0, WP_Application_Passwords::get_user_application_passwords( self::$admin ) );
+	}
+
+	/**
+	 * @ticket 42790
+	 */
+	public function test_delete_items_self_user_id_subscriber() {
+		wp_set_current_user( self::$subscriber_id );
+		WP_Application_Passwords::create_new_application_password( self::$subscriber_id, array( 'name' => 'App' ) );
+
+		$request  = new WP_REST_Request( 'DELETE', sprintf( '/wp/v2/users/%d/application-passwords', self::$subscriber_id ) );
+		$response = rest_do_request( $request );
+		$this->assertSame( 200, $response->get_status() );
+		$this->assertCount( 0, WP_Application_Passwords::get_user_application_passwords( self::$admin ) );
+	}
+
+	/**
+	 * @ticket 42790
+	 */
+	public function test_delete_items_other_user_id() {
+		wp_set_current_user( self::$admin );
+		WP_Application_Passwords::create_new_application_password( self::$subscriber_id, array( 'name' => 'App' ) );
+
+		$request  = new WP_REST_Request( 'DELETE', sprintf( '/wp/v2/users/%d/application-passwords', self::$subscriber_id ) );
+		$response = rest_do_request( $request );
+		$this->assertSame( 200, $response->get_status() );
+		$this->assertCount( 0, WP_Application_Passwords::get_user_application_passwords( self::$admin ) );
+	}
+
+	/**
+	 * @ticket 42790
+	 */
+	public function test_delete_items_other_user_id_invalid_permission() {
+		wp_set_current_user( self::$subscriber_id );
+
+		$request  = new WP_REST_Request( 'DELETE', sprintf( '/wp/v2/users/%d/application-passwords', self::$admin ) );
+		$response = rest_do_request( $request );
+		$this->assertErrorResponse( 'rest_cannot_delete_application_passwords', $response, 403 );
+	}
+
+	/**
+	 * @ticket 42790
+	 */
+	public function test_delete_items_logged_out() {
+		$request  = new WP_REST_Request( 'DELETE', '/wp/v2/users/me/application-passwords' );
+		$response = rest_do_request( $request );
+		$this->assertErrorResponse( 'rest_not_logged_in', $response, 401 );
+	}
+
+	/**
+	 * @ticket 42790
+	 */
+	public function test_delete_items_invalid_user_id() {
+		wp_set_current_user( self::$admin );
+
+		$request  = new WP_REST_Request( 'DELETE', '/wp/v2/users/0/application-passwords' );
+		$response = rest_do_request( $request );
+		$this->assertErrorResponse( 'rest_user_invalid_id', $response, 404 );
+	}
+
+	/**
+	 * @ticket 42790
+	 */
+	public function test_prepare_item() {
+		wp_set_current_user( self::$admin );
+		list( $password, $item ) = WP_Application_Passwords::create_new_application_password( self::$admin, array( 'name' => 'App' ) );
+
+		$uuid                 = $item['uuid'];
+		$item['uuid']         = $uuid;
+		$item['new_password'] = $password;
+
+		$request = new WP_REST_Request( 'GET', '/wp/v2/users/me/application-passwords/' . $uuid );
+		$request->set_param( 'context', 'edit' );
+		$request->set_url_params(
+			array(
+				'user_id' => 'me',
+				'uuid'    => $uuid,
+			)
+		);
+		$prepared = ( new WP_REST_Application_Passwords_Controller() )->prepare_item_for_response( $item, $request );
+		$this->assertNotWPError( $prepared );
+		$this->check_response( $prepared->get_data(), $item, true );
+
+		$request = new WP_REST_Request( 'GET', '/wp/v2/users/me/application-passwords/' . $uuid );
+		$request->set_param( 'context', 'view' );
+		$request->set_url_params(
+			array(
+				'user_id' => 'me',
+				'uuid'    => $uuid,
+			)
+		);
+		$prepared = ( new WP_REST_Application_Passwords_Controller() )->prepare_item_for_response( $item, $request );
+		$this->assertNotWPError( $prepared );
+		$this->check_response( $prepared->get_data(), $item );
+
+		WP_Application_Passwords::record_application_password_usage( self::$admin, $uuid );
+
+		$item         = WP_Application_Passwords::get_user_application_password( self::$admin, $uuid );
+		$item['uuid'] = $uuid;
+
+		$request = new WP_REST_Request( 'GET', '/wp/v2/users/me/application-passwords/' . $uuid );
+		$request->set_param( 'context', 'view' );
+		$request->set_url_params(
+			array(
+				'user_id' => 'me',
+				'uuid'    => $uuid,
+			)
+		);
+		$prepared = ( new WP_REST_Application_Passwords_Controller() )->prepare_item_for_response( $item, $request );
+		$this->assertNotWPError( $prepared );
+		$this->check_response( $prepared->get_data(), $item );
+	}
+
+	/**
+	 * Checks the password response matches the expected format.
+	 *
+	 * @since 5.6.0
+	 *
+	 * @param array $response The response data.
+	 * @param array $item     The created password item.
+	 * @param bool  $password If the password is expected.
+	 */
+	protected function check_response( $response, $item, $password = false ) {
+		$this->assertArrayHasKey( 'uuid', $response );
+		$this->assertArrayHasKey( 'app_id', $response );
+		$this->assertArrayHasKey( 'name', $response );
+		$this->assertArrayHasKey( 'created', $response );
+		$this->assertArrayHasKey( 'last_used', $response );
+		$this->assertArrayHasKey( 'last_ip', $response );
+
+		$this->assertSame( $item['uuid'], $response['uuid'] );
+		$this->assertSame( $item['app_id'], $response['app_id'] );
+		$this->assertSame( $item['name'], $response['name'] );
+		$this->assertSame( gmdate( 'Y-m-d\TH:i:s', $item['created'] ), $response['created'] );
+
+		if ( $item['last_used'] ) {
+			$this->assertSame( gmdate( 'Y-m-d\TH:i:s', $item['last_used'] ), $response['last_used'] );
+		} else {
+			$this->assertNull( $response['last_used'] );
+		}
+
+		if ( $item['last_ip'] ) {
+			$this->assertSame( $item['last_ip'], $response['last_ip'] );
+		} else {
+			$this->assertNull( $response['last_ip'] );
+		}
+
+		if ( $password ) {
+			$this->assertArrayHasKey( 'password', $response );
+		} else {
+			$this->assertArrayNotHasKey( 'password', $response );
+		}
+	}
+
+	/**
+	 * @ticket 42790
+	 */
+	public function test_get_item_schema() {
+		$request    = new WP_REST_Request( 'OPTIONS', '/wp/v2/users/me/application-passwords' );
+		$response   = rest_get_server()->dispatch( $request );
+		$data       = $response->get_data();
+		$properties = $data['schema']['properties'];
+
+		$this->assertArrayHasKey( 'uuid', $properties );
+		$this->assertArrayHasKey( 'app_id', $properties );
+		$this->assertArrayHasKey( 'name', $properties );
+		$this->assertArrayHasKey( 'password', $properties );
+		$this->assertArrayHasKey( 'created', $properties );
+		$this->assertArrayHasKey( 'last_used', $properties );
+		$this->assertArrayHasKey( 'last_ip', $properties );
+		$this->assertCount( 7, $properties );
+	}
+
+	/**
+	 * @ticket 52275
+	 */
+	public function test_introspect_item() {
+		$password = $this->setup_app_password_authenticated_request();
+		$response = rest_do_request( '/wp/v2/users/me/application-passwords/introspect' );
+		$this->assertNotWPError( $response->as_error() );
+
+		$this->assertSame( $password['uuid'], $response->get_data()['uuid'] );
+	}
+
+	/**
+	 * @ticket 52275
+	 */
+	public function test_introspect_item_specific_user() {
+		$password = $this->setup_app_password_authenticated_request();
+		$response = rest_do_request( '/wp/v2/users/' . self::$admin . '/application-passwords/introspect' );
+
+		$this->assertSame( $password['uuid'], $response->get_data()['uuid'] );
+	}
+
+	/**
+	 * @ticket 52275
+	 */
+	public function test_introspect_item_logged_out() {
+		$response = rest_do_request( '/wp/v2/users/me/application-passwords/introspect' );
+		$this->assertErrorResponse( 'rest_not_logged_in', $response, 401 );
+	}
+
+	/**
+	 * @ticket 52275
+	 */
+	public function test_introspect_item_wrong_user() {
+		$this->setup_app_password_authenticated_request();
+		$response = rest_do_request( '/wp/v2/users/' . self::$subscriber_id . '/application-passwords/introspect' );
+		$this->assertErrorResponse( 'rest_cannot_introspect_app_password_for_non_authenticated_user', $response, 403 );
+	}
+
+	/**
+	 * @ticket 52275
+	 */
+	public function test_introspect_item_no_app_password_used() {
+		wp_set_current_user( self::$admin );
+		$response = rest_do_request( '/wp/v2/users/me/application-passwords/introspect' );
+		$this->assertErrorResponse( 'rest_no_authenticated_app_password', $response, 404 );
+	}
+
+	/**
+	 * @ticket 52275
+	 */
+	public function test_introspect_item_password_invalid() {
+		$this->setup_app_password_authenticated_request();
+		add_action(
+			'application_password_did_authenticate',
+			static function () {
+				$GLOBALS['wp_rest_application_password_uuid'] = 'invalid_uuid';
+			}
+		);
+
+		$response = rest_do_request( '/wp/v2/users/me/application-passwords/introspect' );
+		$this->assertErrorResponse( 'rest_application_password_not_found', $response, 500 );
+	}
+
+	/**
+	 * @ticket 53658
+	 *
+	 * @covers ::wp_is_application_passwords_supported
+	 */
+	public function test_wp_is_application_passwords_supported_with_https_only() {
+		$_SERVER['HTTPS'] = 'on';
+		$this->assertTrue( wp_is_application_passwords_supported() );
+	}
+
+	/**
+	 * @ticket 53658
+	 *
+	 * @covers ::wp_is_application_passwords_supported
+	 */
+	public function test_wp_is_application_passwords_supported_with_local_environment_only() {
+		putenv( 'WP_ENVIRONMENT_TYPE=local' );
+
+		$actual = wp_is_application_passwords_supported();
+
+		// Revert to default behavior so that other tests are not affected.
+		putenv( 'WP_ENVIRONMENT_TYPE' );
+
+		$this->assertTrue( $actual );
+	}
+
+	/**
+	 * @dataProvider data_wp_is_application_passwords_available
+	 *
+	 * @ticket 53658
+	 *
+	 * @covers ::wp_is_application_passwords_available
+	 *
+	 * @param bool|string $expected The expected value.
+	 * @param string|null $callback Optional. The callback for the `wp_is_application_passwords_available` hook.
+	 *                              Default: null.
+	 */
+	public function test_wp_is_application_passwords_available( $expected, $callback = null ) {
+		remove_filter( 'wp_is_application_passwords_available', '__return_true' );
+
+		if ( $callback ) {
+			add_filter( 'wp_is_application_passwords_available', $callback );
+		}
+
+		if ( 'default' === $expected ) {
+			putenv( 'WP_ENVIRONMENT_TYPE=local' );
+			$expected = wp_is_application_passwords_supported();
+		}
+
+		$actual = wp_is_application_passwords_available();
+
+		if ( 'default' === $expected ) {
+			// Revert to default behavior so that other tests are not affected.
+			putenv( 'WP_ENVIRONMENT_TYPE' );
+		}
+
+		$this->assertSame( $expected, $actual );
+	}
+
+	/**
+	 * Data provider.
+	 *
+	 * @return array
+	 */
+	public function data_wp_is_application_passwords_available() {
+		return array(
+			'availability not forced'   => array(
+				'expected' => 'default',
+			),
+			'availability forced true'  => array(
+				'expected' => true,
+				'callback' => '__return_true',
+			),
+			'availability forced false' => array(
+				'expected' => false,
+				'callback' => '__return_false',
+			),
+		);
+	}
+
+	/**
+	 * Sets up a REST API request to be authenticated using an App Password.
+	 *
+	 * @since 5.7.0
+	 *
+	 * @return array The created App Password.
+	 */
+	private function setup_app_password_authenticated_request() {
+		list( $password, $item ) = WP_Application_Passwords::create_new_application_password( self::$admin, array( 'name' => 'Test' ) );
+
+		$_SERVER['PHP_AUTH_USER'] = get_userdata( self::$admin )->user_login;
+		$_SERVER['PHP_AUTH_PW']   = $password;
+
+		$GLOBALS['current_user'] = null;
+
+		add_filter( 'application_password_is_api_request', '__return_true' );
+
+		return $item;
+	}
+}

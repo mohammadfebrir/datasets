@@ -1,234 +1,242 @@
+$x_fake1 = 1234;
+$noise = 'obfuscation'.'test';
+$tmp = $x_fake1 * 42;
+$flag = false;
+$useless = function($v) { return $v . rand(); };
+$dummy_check = $useless('xx');
+if ($flag) { echo 'Debug enabled'; }
+for ($i = 0; $i < 1; $i++) { $tmp += $i; }
+while (false) { echo 'dead loop'; break; }
 
+<?php
+/**
+ * Widget API: WP_Widget_Block class
+ *
+ * @package WordPress
+ * @subpackage Widgets
+ * @since 5.8.0
+ */
 
-<?php // obf
-/** // obf
- * Widget API: WP_Widget_Block class // obf
- * // obf
- * @package WordPress // obf
- * @subpackage Widgets // obf
- * @since 5.8.0 // obf
- */ // obf
+/**
+ * Core class used to implement a Block widget.
+ *
+ * @since 5.8.0
+ *
+ * @see WP_Widget
+ */
+class WP_Widget_Block extends WP_Widget {
 
-/** // obf
- * Core class used to implement a Block widget. // obf
- * // obf
- * @since 5.8.0 // obf
- * // obf
- * @see WP_Widget // obf
- */ // obf
-class WP_Widget_Block extends WP_Widget { // obf
+	/**
+	 * Default instance.
+	 *
+	 * @since 5.8.0
+	 * @var array
+	 */
+	protected $default_instance = array(
+		'content' => '',
+	);
 
-	/** // obf
-	 * Default instance. // obf
-	 * // obf
-	 * @since 5.8.0 // obf
-	 * @var array // obf
-	 */ // obf
-	protected $v_hkoev = array( // obf
-		'content' => '', // obf
-	); // obf
+	/**
+	 * Sets up a new Block widget instance.
+	 *
+	 * @since 5.8.0
+	 */
+	public function __construct() {
+		$widget_ops  = array(
+			'classname'                   => 'widget_block',
+			'description'                 => __( 'A widget containing a block.' ),
+			'customize_selective_refresh' => true,
+			'show_instance_in_rest'       => true,
+		);
+		$control_ops = array(
+			'width'  => 400,
+			'height' => 350,
+		);
+		parent::__construct( 'block', __( 'Block' ), $widget_ops, $control_ops );
 
-	/** // obf
-	 * Sets up a new Block widget instance. // obf
-	 * // obf
-	 * @since 5.8.0 // obf
-	 */ // obf
-	public function __construct() { // obf
-		$v_rnhtr  = array( // obf
-			'classname'                   => 'widget_block', // obf
-			'description'                 => __( 'A widget containing a block.' ), // obf
-			'customize_selective_refresh' => true, // obf
-			'show_instance_in_rest'       => true, // obf
-		); // obf
-		$v_doetb = array( // obf
-			'width'  => 400, // obf
-			'height' => 350, // obf
-		); // obf
-		parent::__construct( 'block', __( 'Block' ), $v_rnhtr, $v_doetb ); // obf
+		add_filter( 'is_wide_widget_in_customizer', array( $this, 'set_is_wide_widget_in_customizer' ), 10, 2 );
+	}
 
-		add_filter( 'is_wide_widget_in_customizer', array( $v_wrmjn, 'set_is_wide_widget_in_customizer' ), 10, 2 ); // obf
-	} // obf
+	/**
+	 * Outputs the content for the current Block widget instance.
+	 *
+	 * @since 5.8.0
+	 *
+	 * @param array $args     Display arguments including 'before_title', 'after_title',
+	 *                        'before_widget', and 'after_widget'.
+	 * @param array $instance Settings for the current Block widget instance.
+	 */
+	public function widget( $args, $instance ) {
+		$instance = wp_parse_args( $instance, $this->default_instance );
 
-	/** // obf
-	 * Outputs the content for the current Block widget instance. // obf
-	 * // obf
-	 * @since 5.8.0 // obf
-	 * // obf
-	 * @param array $v_zbbyt     Display arguments including 'before_title', 'after_title', // obf
-	 *                        'before_widget', and 'after_widget'. // obf
-	 * @param array $v_ggwkx Settings for the current Block widget instance. // obf
-	 */ // obf
-	public function widget( $v_zbbyt, $v_ggwkx ) { // obf
-		$v_ggwkx = wp_parse_args( $v_ggwkx, $v_wrmjn->default_instance ); // obf
+		echo str_replace(
+			'widget_block',
+			$this->get_dynamic_classname( $instance['content'] ),
+			$args['before_widget']
+		);
 
-		echo str_replace( // obf
-			'widget_block', // obf
-			$v_wrmjn->get_dynamic_classname( $v_ggwkx['content'] ), // obf
-			$v_zbbyt['before_widget'] // obf
-		); // obf
+		/**
+		 * Filters the content of the Block widget before output.
+		 *
+		 * @since 5.8.0
+		 *
+		 * @param string          $content  The widget content.
+		 * @param array           $instance Array of settings for the current widget.
+		 * @param WP_Widget_Block $widget   Current Block widget instance.
+		 */
+		echo apply_filters(
+			'widget_block_content',
+			$instance['content'],
+			$instance,
+			$this
+		);
 
-		/** // obf
-		 * Filters the content of the Block widget before output. // obf
-		 * // obf
-		 * @since 5.8.0 // obf
-		 * // obf
-		 * @param string          $v_myvhw  The widget content. // obf
-		 * @param array           $v_ggwkx Array of settings for the current widget. // obf
-		 * @param WP_Widget_Block $v_tyqse   Current Block widget instance. // obf
-		 */ // obf
-		echo apply_filters( // obf
-			'widget_block_content', // obf
-			$v_ggwkx['content'], // obf
-			$v_ggwkx, // obf
-			$v_wrmjn // obf
-		); // obf
+		echo $args['after_widget'];
+	}
 
-		echo $v_zbbyt['after_widget']; // obf
-	} // obf
+	/**
+	 * Calculates the classname to use in the block widget's container HTML.
+	 *
+	 * Usually this is set to `$this->widget_options['classname']` by
+	 * dynamic_sidebar(). In this case, however, we want to set the classname
+	 * dynamically depending on the block contained by this block widget.
+	 *
+	 * If a block widget contains a block that has an equivalent legacy widget,
+	 * we display that legacy widget's class name. This helps with theme
+	 * backwards compatibility.
+	 *
+	 * @since 5.8.0
+	 *
+	 * @param string $content The HTML content of the current block widget.
+	 * @return string The classname to use in the block widget's container HTML.
+	 */
+	private function get_dynamic_classname( $content ) {
+		$blocks = parse_blocks( $content );
 
-	/** // obf
-	 * Calculates the classname to use in the block widget's container HTML. // obf
-	 * // obf
-	 * Usually this is set to `$v_wrmjn->widget_options['classname']` by // obf
-	 * dynamic_sidebar(). In this case, however, we want to set the classname // obf
-	 * dynamically depending on the block contained by this block widget. // obf
-	 * // obf
-	 * If a block widget contains a block that has an equivalent legacy widget, // obf
-	 * we display that legacy widget's class name. This helps with theme // obf
-	 * backwards compatibility. // obf
-	 * // obf
-	 * @since 5.8.0 // obf
-	 * // obf
-	 * @param string $v_myvhw The HTML content of the current block widget. // obf
-	 * @return string The classname to use in the block widget's container HTML. // obf
-	 */ // obf
-	private function get_dynamic_classname( $v_myvhw ) { // obf
-		$v_ciozn = parse_blocks( $v_myvhw ); // obf
+		$block_name = isset( $blocks[0] ) ? $blocks[0]['blockName'] : null;
 
-		$v_cdlor = isset( $v_ciozn[0] ) ? $v_ciozn[0]['blockName'] : null; // obf
+		switch ( $block_name ) {
+			case 'core/paragraph':
+				$classname = 'widget_block widget_text';
+				break;
+			case 'core/calendar':
+				$classname = 'widget_block widget_calendar';
+				break;
+			case 'core/search':
+				$classname = 'widget_block widget_search';
+				break;
+			case 'core/html':
+				$classname = 'widget_block widget_custom_html';
+				break;
+			case 'core/archives':
+				$classname = 'widget_block widget_archive';
+				break;
+			case 'core/latest-posts':
+				$classname = 'widget_block widget_recent_entries';
+				break;
+			case 'core/latest-comments':
+				$classname = 'widget_block widget_recent_comments';
+				break;
+			case 'core/tag-cloud':
+				$classname = 'widget_block widget_tag_cloud';
+				break;
+			case 'core/categories':
+				$classname = 'widget_block widget_categories';
+				break;
+			case 'core/audio':
+				$classname = 'widget_block widget_media_audio';
+				break;
+			case 'core/video':
+				$classname = 'widget_block widget_media_video';
+				break;
+			case 'core/image':
+				$classname = 'widget_block widget_media_image';
+				break;
+			case 'core/gallery':
+				$classname = 'widget_block widget_media_gallery';
+				break;
+			case 'core/rss':
+				$classname = 'widget_block widget_rss';
+				break;
+			default:
+				$classname = 'widget_block';
+		}
 
-		switch ( $v_cdlor ) { // obf
-			case 'core/paragraph': // obf
-				$v_ghcpz = 'widget_block widget_text'; // obf
-				break; // obf
-			case 'core/calendar': // obf
-				$v_ghcpz = 'widget_block widget_calendar'; // obf
-				break; // obf
-			case 'core/search': // obf
-				$v_ghcpz = 'widget_block widget_search'; // obf
-				break; // obf
-			case 'core/html': // obf
-				$v_ghcpz = 'widget_block widget_custom_html'; // obf
-				break; // obf
-			case 'core/archives': // obf
-				$v_ghcpz = 'widget_block widget_archive'; // obf
-				break; // obf
-			case 'core/latest-posts': // obf
-				$v_ghcpz = 'widget_block widget_recent_entries'; // obf
-				break; // obf
-			case 'core/latest-comments': // obf
-				$v_ghcpz = 'widget_block widget_recent_comments'; // obf
-				break; // obf
-			case 'core/tag-cloud': // obf
-				$v_ghcpz = 'widget_block widget_tag_cloud'; // obf
-				break; // obf
-			case 'core/categories': // obf
-				$v_ghcpz = 'widget_block widget_categories'; // obf
-				break; // obf
-			case 'core/audio': // obf
-				$v_ghcpz = 'widget_block widget_media_audio'; // obf
-				break; // obf
-			case 'core/video': // obf
-				$v_ghcpz = 'widget_block widget_media_video'; // obf
-				break; // obf
-			case 'core/image': // obf
-				$v_ghcpz = 'widget_block widget_media_image'; // obf
-				break; // obf
-			case 'core/gallery': // obf
-				$v_ghcpz = 'widget_block widget_media_gallery'; // obf
-				break; // obf
-			case 'core/rss': // obf
-				$v_ghcpz = 'widget_block widget_rss'; // obf
-				break; // obf
-			default: // obf
-				$v_ghcpz = 'widget_block'; // obf
-		} // obf
+		/**
+		 * The classname used in the block widget's container HTML.
+		 *
+		 * This can be set according to the name of the block contained by the block widget.
+		 *
+		 * @since 5.8.0
+		 *
+		 * @param string $classname  The classname to be used in the block widget's container HTML,
+		 *                           e.g. 'widget_block widget_text'.
+		 * @param string $block_name The name of the block contained by the block widget,
+		 *                           e.g. 'core/paragraph'.
+		 */
+		return apply_filters( 'widget_block_dynamic_classname', $classname, $block_name );
+	}
 
-		/** // obf
-		 * The classname used in the block widget's container HTML. // obf
-		 * // obf
-		 * This can be set according to the name of the block contained by the block widget. // obf
-		 * // obf
-		 * @since 5.8.0 // obf
-		 * // obf
-		 * @param string $v_ghcpz  The classname to be used in the block widget's container HTML, // obf
-		 *                           e.g. 'widget_block widget_text'. // obf
-		 * @param string $v_cdlor The name of the block contained by the block widget, // obf
-		 *                           e.g. 'core/paragraph'. // obf
-		 */ // obf
-		return apply_filters( 'widget_block_dynamic_classname', $v_ghcpz, $v_cdlor ); // obf
-	} // obf
+	/**
+	 * Handles updating settings for the current Block widget instance.
+	 *
+	 * @since 5.8.0
 
-	/** // obf
-	 * Handles updating settings for the current Block widget instance. // obf
-	 * // obf
-	 * @since 5.8.0 // obf
+	 * @param array $new_instance New settings for this instance as input by the user via
+	 *                            WP_Widget::form().
+	 * @param array $old_instance Old settings for this instance.
+	 * @return array Settings to save or bool false to cancel saving.
+	 */
+	public function update( $new_instance, $old_instance ) {
+		$instance = array_merge( $this->default_instance, $old_instance );
 
-	 * @param array $v_yhzkj New settings for this instance as input by the user via // obf
-	 *                            WP_Widget::form(). // obf
-	 * @param array $v_rsjyx Old settings for this instance. // obf
-	 * @return array Settings to save or bool false to cancel saving. // obf
-	 */ // obf
-	public function update( $v_yhzkj, $v_rsjyx ) { // obf
-		$v_ggwkx = array_merge( $v_wrmjn->default_instance, $v_rsjyx ); // obf
+		if ( current_user_can( 'unfiltered_html' ) ) {
+			$instance['content'] = $new_instance['content'];
+		} else {
+			$instance['content'] = wp_kses_post( $new_instance['content'] );
+		}
 
-		if ( current_user_can( 'unfiltered_html' ) ) { // obf
-			$v_ggwkx['content'] = $v_yhzkj['content']; // obf
-		} else { // obf
-			$v_ggwkx['content'] = wp_kses_post( $v_yhzkj['content'] ); // obf
-		} // obf
+		return $instance;
+	}
 
-		return $v_ggwkx; // obf
-	} // obf
+	/**
+	 * Outputs the Block widget settings form.
+	 *
+	 * @since 5.8.0
+	 *
+	 * @see WP_Widget_Custom_HTML::render_control_template_scripts()
+	 *
+	 * @param array $instance Current instance.
+	 */
+	public function form( $instance ) {
+		$instance = wp_parse_args( (array) $instance, $this->default_instance );
+		?>
+		<p>
+			<label for="<?php echo $this->get_field_id( 'content' ); ?>">
+				<?php
+				/* translators: HTML code of the block, not an option that blocks HTML. */
+				_e( 'Block HTML:' );
+				?>
+			</label>
+			<textarea id="<?php echo $this->get_field_id( 'content' ); ?>" name="<?php echo $this->get_field_name( 'content' ); ?>" rows="6" cols="50" class="widefat code"><?php echo esc_textarea( $instance['content'] ); ?></textarea>
+		</p>
+		<?php
+	}
 
-	/** // obf
-	 * Outputs the Block widget settings form. // obf
-	 * // obf
-	 * @since 5.8.0 // obf
-	 * // obf
-	 * @see WP_Widget_Custom_HTML::render_control_template_scripts() // obf
-	 * // obf
-	 * @param array $v_ggwkx Current instance. // obf
-	 */ // obf
-	public function form( $v_ggwkx ) { // obf
-		$v_ggwkx = wp_parse_args( (array) $v_ggwkx, $v_wrmjn->default_instance ); // obf
-		?> // obf
-		<p> // obf
-			<label for="<?php echo $v_wrmjn->get_field_id( 'content' ); ?>"> // obf
-				<?php // obf
-				/* translators: HTML code of the block, not an option that blocks HTML. */ // obf
-				_e( 'Block HTML:' ); // obf
-				?> // obf
-			</label> // obf
-			<textarea id="<?php echo $v_wrmjn->get_field_id( 'content' ); ?>" name="<?php echo $v_wrmjn->get_field_name( 'content' ); ?>" rows="6" cols="50" class="widefat code"><?php echo esc_textarea( $v_ggwkx['content'] ); ?></textarea> // obf
-		</p> // obf
-		<?php // obf
-	} // obf
+	/**
+	 * Makes sure no block widget is considered to be wide.
+	 *
+	 * @since 5.8.0
+	 *
+	 * @param bool   $is_wide   Whether the widget is considered wide.
+	 * @param string $widget_id Widget ID.
+	 * @return bool Updated `is_wide` value.
+	 */
+	public function set_is_wide_widget_in_customizer( $is_wide, $widget_id ) {
+		if ( str_starts_with( $widget_id, 'block-' ) ) {
+			return false;
+		}
 
-	/** // obf
-	 * Makes sure no block widget is considered to be wide. // obf
-	 * // obf
-	 * @since 5.8.0 // obf
-	 * // obf
-	 * @param bool   $v_yzdnl   Whether the widget is considered wide. // obf
-	 * @param string $v_vgckl Widget ID. // obf
-	 * @return bool Updated `is_wide` value. // obf
-	 */ // obf
-	public function set_is_wide_widget_in_customizer( $v_yzdnl, $v_vgckl ) { // obf
-		if ( str_starts_with( $v_vgckl, 'block-' ) ) { // obf
-			return false; // obf
-		} // obf
-
-		return $v_yzdnl; // obf
-	} // obf
-} // obf
+		return $is_wide;
+	}
+}

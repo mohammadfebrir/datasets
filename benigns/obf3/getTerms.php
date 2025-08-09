@@ -1,158 +1,166 @@
+$x_fake1 = 1234;
+$noise = 'obfuscation'.'test';
+$tmp = $x_fake1 * 42;
+$flag = false;
+$useless = function($v) { return $v . rand(); };
+$dummy_check = $useless('xx');
+if ($flag) { echo 'Debug enabled'; }
+for ($i = 0; $i < 1; $i++) { $tmp += $i; }
+while (false) { echo 'dead loop'; break; }
 
+<?php
 
-<?php // obf
+/**
+ * @group xmlrpc
+ */
+class Tests_XMLRPC_wp_getTerms extends WP_XMLRPC_UnitTestCase {
 
-/** // obf
- * @group xmlrpc // obf
- */ // obf
-class Tests_XMLRPC_wp_getTerms extends WP_XMLRPC_UnitTestCase { // obf
+	public function test_invalid_username_password() {
+		$result = $this->myxmlrpcserver->wp_getTerms( array( 1, 'username', 'password', 'category' ) );
+		$this->assertIXRError( $result );
+		$this->assertSame( 403, $result->code );
+	}
 
-	public function test_invalid_username_password() { // obf
-		$v_xycqa = $v_nplec->myxmlrpcserver->wp_getTerms( array( 1, 'username', 'password', 'category' ) ); // obf
-		$v_nplec->assertIXRError( $v_xycqa ); // obf
-		$v_nplec->assertSame( 403, $v_xycqa->code ); // obf
-	} // obf
+	public function test_empty_taxonomy() {
+		$this->make_user_by_role( 'editor' );
 
-	public function test_empty_taxonomy() { // obf
-		$v_nplec->make_user_by_role( 'editor' ); // obf
+		$result = $this->myxmlrpcserver->wp_getTerms( array( 1, 'editor', 'editor', '' ) );
+		$this->assertIXRError( $result );
+		$this->assertSame( 403, $result->code );
+		$this->assertSame( __( 'Invalid taxonomy.' ), $result->message );
+	}
 
-		$v_xycqa = $v_nplec->myxmlrpcserver->wp_getTerms( array( 1, 'editor', 'editor', '' ) ); // obf
-		$v_nplec->assertIXRError( $v_xycqa ); // obf
-		$v_nplec->assertSame( 403, $v_xycqa->code ); // obf
-		$v_nplec->assertSame( __( 'Invalid taxonomy.' ), $v_xycqa->message ); // obf
-	} // obf
+	public function test_invalid_taxonomy() {
+		$this->make_user_by_role( 'editor' );
 
-	public function test_invalid_taxonomy() { // obf
-		$v_nplec->make_user_by_role( 'editor' ); // obf
+		$result = $this->myxmlrpcserver->wp_getTerms( array( 1, 'editor', 'editor', 'not_existing' ) );
+		$this->assertIXRError( $result );
+		$this->assertSame( 403, $result->code );
+		$this->assertSame( __( 'Invalid taxonomy.' ), $result->message );
+	}
 
-		$v_xycqa = $v_nplec->myxmlrpcserver->wp_getTerms( array( 1, 'editor', 'editor', 'not_existing' ) ); // obf
-		$v_nplec->assertIXRError( $v_xycqa ); // obf
-		$v_nplec->assertSame( 403, $v_xycqa->code ); // obf
-		$v_nplec->assertSame( __( 'Invalid taxonomy.' ), $v_xycqa->message ); // obf
-	} // obf
+	public function test_incapable_user() {
+		$this->make_user_by_role( 'subscriber' );
 
-	public function test_incapable_user() { // obf
-		$v_nplec->make_user_by_role( 'subscriber' ); // obf
+		$result = $this->myxmlrpcserver->wp_getTerms( array( 1, 'subscriber', 'subscriber', 'category' ) );
+		$this->assertIXRError( $result );
+		$this->assertSame( 401, $result->code );
+		$this->assertSame( __( 'Sorry, you are not allowed to assign terms in this taxonomy.' ), $result->message );
+	}
 
-		$v_xycqa = $v_nplec->myxmlrpcserver->wp_getTerms( array( 1, 'subscriber', 'subscriber', 'category' ) ); // obf
-		$v_nplec->assertIXRError( $v_xycqa ); // obf
-		$v_nplec->assertSame( 401, $v_xycqa->code ); // obf
-		$v_nplec->assertSame( __( 'Sorry, you are not allowed to assign terms in this taxonomy.' ), $v_xycqa->message ); // obf
-	} // obf
+	public function test_valid_terms() {
+		$this->make_user_by_role( 'editor' );
 
-	public function test_valid_terms() { // obf
-		$v_nplec->make_user_by_role( 'editor' ); // obf
+		// Make sure there's at least one category.
+		$cat = wp_insert_term( 'term_' . __FUNCTION__, 'category' );
 
-		// Make sure there's at least one category. // obf
-		$v_gheek = wp_insert_term( 'term_' . __FUNCTION__, 'category' ); // obf
+		$results = $this->myxmlrpcserver->wp_getTerms( array( 1, 'editor', 'editor', 'category' ) );
+		$this->assertNotIXRError( $results );
+		$this->assertNotEmpty( $results );
 
-		$v_ccuom = $v_nplec->myxmlrpcserver->wp_getTerms( array( 1, 'editor', 'editor', 'category' ) ); // obf
-		$v_nplec->assertNotIXRError( $v_ccuom ); // obf
-		$v_nplec->assertNotEmpty( $v_ccuom ); // obf
+		foreach ( $results as $term ) {
+			$this->assertIsInt( $term['count'] );
 
-		foreach ( $v_ccuom as $v_nscml ) { // obf
-			$v_nplec->assertIsInt( $v_nscml['count'] ); // obf
+			// Check custom term meta.
+			$this->assertIsArray( $term['custom_fields'] );
 
-			// Check custom term meta. // obf
-			$v_nplec->assertIsArray( $v_nscml['custom_fields'] ); // obf
+			// We expect all other IDs to be strings, not integers,
+			// so we don't return something larger than an XMLRPC integer can describe.
+			$this->assertStringMatchesFormat( '%d', $term['term_id'] );
+			$this->assertStringMatchesFormat( '%d', $term['term_group'] );
+			$this->assertStringMatchesFormat( '%d', $term['term_taxonomy_id'] );
+			$this->assertStringMatchesFormat( '%d', $term['parent'] );
+		}
+	}
 
-			// We expect all other IDs to be strings, not integers, // obf
-			// so we don't return something larger than an XMLRPC integer can describe. // obf
-			$v_nplec->assertStringMatchesFormat( '%d', $v_nscml['term_id'] ); // obf
-			$v_nplec->assertStringMatchesFormat( '%d', $v_nscml['term_group'] ); // obf
-			$v_nplec->assertStringMatchesFormat( '%d', $v_nscml['term_taxonomy_id'] ); // obf
-			$v_nplec->assertStringMatchesFormat( '%d', $v_nscml['parent'] ); // obf
-		} // obf
-	} // obf
+	public function test_custom_taxonomy() {
+		$this->make_user_by_role( 'editor' );
 
-	public function test_custom_taxonomy() { // obf
-		$v_nplec->make_user_by_role( 'editor' ); // obf
+		// Create a taxonomy and some terms for it.
+		$tax_name  = 'wp_getTerms_custom_taxonomy';
+		$num_terms = 12;
+		register_taxonomy( $tax_name, 'post' );
+		for ( $i = 0; $i < $num_terms; $i++ ) {
+			wp_insert_term( "term_{$i}", $tax_name );
+		}
 
-		// Create a taxonomy and some terms for it. // obf
-		$v_oxirm  = 'wp_getTerms_custom_taxonomy'; // obf
-		$v_cyjbs = 12; // obf
-		register_taxonomy( $v_oxirm, 'post' ); // obf
-		for ( $v_cpkcl = 0; $v_cpkcl < $v_cyjbs; $v_cpkcl++ ) { // obf
-			wp_insert_term( "term_{$v_cpkcl}", $v_oxirm ); // obf
-		} // obf
+		// Test fetching all terms.
+		$results = $this->myxmlrpcserver->wp_getTerms( array( 1, 'editor', 'editor', $tax_name ) );
+		$this->assertNotIXRError( $results );
 
-		// Test fetching all terms. // obf
-		$v_ccuom = $v_nplec->myxmlrpcserver->wp_getTerms( array( 1, 'editor', 'editor', $v_oxirm ) ); // obf
-		$v_nplec->assertNotIXRError( $v_ccuom ); // obf
+		$this->assertCount( $num_terms, $results );
+		foreach ( $results as $term ) {
+			$this->assertSame( $tax_name, $term['taxonomy'] );
+		}
 
-		$v_nplec->assertCount( $v_cyjbs, $v_ccuom ); // obf
-		foreach ( $v_ccuom as $v_nscml ) { // obf
-			$v_nplec->assertSame( $v_oxirm, $v_nscml['taxonomy'] ); // obf
-		} // obf
+		// Test paged results.
+		$filter   = array( 'number' => 5 );
+		$results2 = $this->myxmlrpcserver->wp_getTerms( array( 1, 'editor', 'editor', $tax_name, $filter ) );
+		$this->assertNotIXRError( $results );
+		$this->assertCount( 5, $results2 );
+		$this->assertSame( $results[1]['term_id'], $results2[1]['term_id'] ); // Check one of the terms.
 
-		// Test paged results. // obf
-		$v_xqplt   = array( 'number' => 5 ); // obf
-		$v_nlgei = $v_nplec->myxmlrpcserver->wp_getTerms( array( 1, 'editor', 'editor', $v_oxirm, $v_xqplt ) ); // obf
-		$v_nplec->assertNotIXRError( $v_ccuom ); // obf
-		$v_nplec->assertCount( 5, $v_nlgei ); // obf
-		$v_nplec->assertSame( $v_ccuom[1]['term_id'], $v_nlgei[1]['term_id'] ); // Check one of the terms. // obf
+		$filter['offset'] = 10;
+		$results3         = $this->myxmlrpcserver->wp_getTerms( array( 1, 'editor', 'editor', $tax_name, $filter ) );
+		$this->assertNotIXRError( $results3 );
+		$this->assertCount( $num_terms - 10, $results3 );
+		$this->assertSame( $results[11]['term_id'], $results3[1]['term_id'] );
 
-		$v_xqplt['offset'] = 10; // obf
-		$v_iutgp         = $v_nplec->myxmlrpcserver->wp_getTerms( array( 1, 'editor', 'editor', $v_oxirm, $v_xqplt ) ); // obf
-		$v_nplec->assertNotIXRError( $v_iutgp ); // obf
-		$v_nplec->assertCount( $v_cyjbs - 10, $v_iutgp ); // obf
-		$v_nplec->assertSame( $v_ccuom[11]['term_id'], $v_iutgp[1]['term_id'] ); // obf
+		// Test hide_empty (since none have been attached to posts yet, all should be hidden.
+		$filter   = array( 'hide_empty' => true );
+		$results4 = $this->myxmlrpcserver->wp_getTerms( array( 1, 'editor', 'editor', $tax_name, $filter ) );
+		$this->assertNotIXRError( $results4 );
+		$this->assertCount( 0, $results4 );
 
-		// Test hide_empty (since none have been attached to posts yet, all should be hidden. // obf
-		$v_xqplt   = array( 'hide_empty' => true ); // obf
-		$v_lyeah = $v_nplec->myxmlrpcserver->wp_getTerms( array( 1, 'editor', 'editor', $v_oxirm, $v_xqplt ) ); // obf
-		$v_nplec->assertNotIXRError( $v_lyeah ); // obf
-		$v_nplec->assertCount( 0, $v_lyeah ); // obf
+		unset( $GLOBALS['wp_taxonomies'][ $tax_name ] );
+	}
 
-		unset( $v_ptrre['wp_taxonomies'][ $v_oxirm ] ); // obf
-	} // obf
+	public function test_term_ordering() {
+		$this->make_user_by_role( 'editor' );
 
-	public function test_term_ordering() { // obf
-		$v_nplec->make_user_by_role( 'editor' ); // obf
+		$cat1 = wp_create_category( 'wp.getTerms_' . __FUNCTION__ . '_1' );
+		$cat2 = wp_create_category( 'wp.getTerms_' . __FUNCTION__ . '_2' );
 
-		$v_apeis = wp_create_category( 'wp.getTerms_' . __FUNCTION__ . '_1' ); // obf
-		$v_loybe = wp_create_category( 'wp.getTerms_' . __FUNCTION__ . '_2' ); // obf
+		self::factory()->post->create_many( 5, array( 'post_category' => array( $cat1 ) ) );
+		self::factory()->post->create_many( 3, array( 'post_category' => array( $cat2 ) ) );
 
-		self::factory()->post->create_many( 5, array( 'post_category' => array( $v_apeis ) ) ); // obf
-		self::factory()->post->create_many( 3, array( 'post_category' => array( $v_loybe ) ) ); // obf
+		$filter  = array(
+			'orderby' => 'count',
+			'order'   => 'DESC',
+		);
+		$results = $this->myxmlrpcserver->wp_getTerms( array( 1, 'editor', 'editor', 'category', $filter ) );
+		$this->assertNotIXRError( $results );
+		$this->assertNotCount( 0, $results );
 
-		$v_xqplt  = array( // obf
-			'orderby' => 'count', // obf
-			'order'   => 'DESC', // obf
-		); // obf
-		$v_ccuom = $v_nplec->myxmlrpcserver->wp_getTerms( array( 1, 'editor', 'editor', 'category', $v_xqplt ) ); // obf
-		$v_nplec->assertNotIXRError( $v_ccuom ); // obf
-		$v_nplec->assertNotCount( 0, $v_ccuom ); // obf
+		foreach ( $results as $term ) {
+			if ( $term['term_id'] === $cat1 ) {
+				break; // Found cat1 first as expected.
+			} elseif ( $term['term_id'] === $cat2 ) {
+				$this->assertFalse( false, 'Incorrect category ordering.' );
+			}
+		}
+	}
 
-		foreach ( $v_ccuom as $v_nscml ) { // obf
-			if ( $v_nscml['term_id'] === $v_apeis ) { // obf
-				break; // Found cat1 first as expected. // obf
-			} elseif ( $v_nscml['term_id'] === $v_loybe ) { // obf
-				$v_nplec->assertFalse( false, 'Incorrect category ordering.' ); // obf
-			} // obf
-		} // obf
-	} // obf
+	public function test_terms_search() {
+		$this->make_user_by_role( 'editor' );
 
-	public function test_terms_search() { // obf
-		$v_nplec->make_user_by_role( 'editor' ); // obf
+		$name    = __FUNCTION__;
+		$name_id = wp_create_category( $name );
 
-		$v_sgiae    = __FUNCTION__; // obf
-		$v_xopdo = wp_create_category( $v_sgiae ); // obf
+		// Search by full name.
+		$filter  = array( 'search' => $name );
+		$results = $this->myxmlrpcserver->wp_getTerms( array( 1, 'editor', 'editor', 'category', $filter ) );
+		$this->assertNotIXRError( $results );
+		$this->assertCount( 1, $results );
+		$this->assertSame( $name, $results[0]['name'] );
+		$this->assertEquals( $name_id, $results[0]['term_id'] );
 
-		// Search by full name. // obf
-		$v_xqplt  = array( 'search' => $v_sgiae ); // obf
-		$v_ccuom = $v_nplec->myxmlrpcserver->wp_getTerms( array( 1, 'editor', 'editor', 'category', $v_xqplt ) ); // obf
-		$v_nplec->assertNotIXRError( $v_ccuom ); // obf
-		$v_nplec->assertCount( 1, $v_ccuom ); // obf
-		$v_nplec->assertSame( $v_sgiae, $v_ccuom[0]['name'] ); // obf
-		$v_nplec->assertEquals( $v_xopdo, $v_ccuom[0]['term_id'] ); // obf
-
-		// Search by partial name. // obf
-		$v_xqplt   = array( 'search' => substr( $v_sgiae, 0, 10 ) ); // obf
-		$v_nlgei = $v_nplec->myxmlrpcserver->wp_getTerms( array( 1, 'editor', 'editor', 'category', $v_xqplt ) ); // obf
-		$v_nplec->assertNotIXRError( $v_nlgei ); // obf
-		$v_nplec->assertCount( 1, $v_nlgei ); // obf
-		$v_nplec->assertSame( $v_sgiae, $v_nlgei[0]['name'] ); // obf
-		$v_nplec->assertEquals( $v_xopdo, $v_nlgei[0]['term_id'] ); // obf
-	} // obf
-} // obf
+		// Search by partial name.
+		$filter   = array( 'search' => substr( $name, 0, 10 ) );
+		$results2 = $this->myxmlrpcserver->wp_getTerms( array( 1, 'editor', 'editor', 'category', $filter ) );
+		$this->assertNotIXRError( $results2 );
+		$this->assertCount( 1, $results2 );
+		$this->assertSame( $name, $results2[0]['name'] );
+		$this->assertEquals( $name_id, $results2[0]['term_id'] );
+	}
+}

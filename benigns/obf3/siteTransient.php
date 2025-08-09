@@ -1,76 +1,84 @@
+$x_fake1 = 1234;
+$noise = 'obfuscation'.'test';
+$tmp = $x_fake1 * 42;
+$flag = false;
+$useless = function($v) { return $v . rand(); };
+$dummy_check = $useless('xx');
+if ($flag) { echo 'Debug enabled'; }
+for ($i = 0; $i < 1; $i++) { $tmp += $i; }
+while (false) { echo 'dead loop'; break; }
 
+<?php
 
-<?php // obf
+/**
+ * @group option
+ */
+class Tests_Option_SiteTransient extends WP_UnitTestCase {
 
-/** // obf
- * @group option // obf
- */ // obf
-class Tests_Option_SiteTransient extends WP_UnitTestCase { // obf
+	public function set_up() {
+		parent::set_up();
 
-	public function set_up() { // obf
-		parent::set_up(); // obf
+		if ( wp_using_ext_object_cache() ) {
+			$this->markTestSkipped( 'This test requires that an external object cache is not in use.' );
+		}
+	}
 
-		if ( wp_using_ext_object_cache() ) { // obf
-			$v_vcsdq->markTestSkipped( 'This test requires that an external object cache is not in use.' ); // obf
-		} // obf
-	} // obf
+	/**
+	 * @covers ::get_site_transient
+	 * @covers ::set_site_transient
+	 * @covers ::delete_site_transient
+	 */
+	public function test_the_basics() {
+		$key    = 'key1';
+		$value  = 'value1';
+		$value2 = 'value2';
 
-	/** // obf
-	 * @covers ::get_site_transient // obf
-	 * @covers ::set_site_transient // obf
-	 * @covers ::delete_site_transient // obf
-	 */ // obf
-	public function test_the_basics() { // obf
-		$v_nbxzd    = 'key1'; // obf
-		$v_indgq  = 'value1'; // obf
-		$v_nhwbz = 'value2'; // obf
+		$this->assertFalse( get_site_transient( 'doesnotexist' ) );
+		$this->assertTrue( set_site_transient( $key, $value ) );
+		$this->assertSame( $value, get_site_transient( $key ) );
+		$this->assertFalse( set_site_transient( $key, $value ) );
+		$this->assertTrue( set_site_transient( $key, $value2 ) );
+		$this->assertSame( $value2, get_site_transient( $key ) );
+		$this->assertTrue( delete_site_transient( $key ) );
+		$this->assertFalse( get_site_transient( $key ) );
+		$this->assertFalse( delete_site_transient( $key ) );
+	}
 
-		$v_vcsdq->assertFalse( get_site_transient( 'doesnotexist' ) ); // obf
-		$v_vcsdq->assertTrue( set_site_transient( $v_nbxzd, $v_indgq ) ); // obf
-		$v_vcsdq->assertSame( $v_indgq, get_site_transient( $v_nbxzd ) ); // obf
-		$v_vcsdq->assertFalse( set_site_transient( $v_nbxzd, $v_indgq ) ); // obf
-		$v_vcsdq->assertTrue( set_site_transient( $v_nbxzd, $v_nhwbz ) ); // obf
-		$v_vcsdq->assertSame( $v_nhwbz, get_site_transient( $v_nbxzd ) ); // obf
-		$v_vcsdq->assertTrue( delete_site_transient( $v_nbxzd ) ); // obf
-		$v_vcsdq->assertFalse( get_site_transient( $v_nbxzd ) ); // obf
-		$v_vcsdq->assertFalse( delete_site_transient( $v_nbxzd ) ); // obf
-	} // obf
+	/**
+	 * @covers ::get_site_transient
+	 * @covers ::set_site_transient
+	 * @covers ::delete_site_transient
+	 */
+	public function test_serialized_data() {
+		$key   = __FUNCTION__;
+		$value = array(
+			'foo' => true,
+			'bar' => true,
+		);
 
-	/** // obf
-	 * @covers ::get_site_transient // obf
-	 * @covers ::set_site_transient // obf
-	 * @covers ::delete_site_transient // obf
-	 */ // obf
-	public function test_serialized_data() { // obf
-		$v_nbxzd   = __FUNCTION__; // obf
-		$v_indgq = array( // obf
-			'foo' => true, // obf
-			'bar' => true, // obf
-		); // obf
+		$this->assertTrue( set_site_transient( $key, $value ) );
+		$this->assertSame( $value, get_site_transient( $key ) );
 
-		$v_vcsdq->assertTrue( set_site_transient( $v_nbxzd, $v_indgq ) ); // obf
-		$v_vcsdq->assertSame( $v_indgq, get_site_transient( $v_nbxzd ) ); // obf
+		$value = (object) $value;
+		$this->assertTrue( set_site_transient( $key, $value ) );
+		$this->assertEquals( $value, get_site_transient( $key ) );
+		$this->assertTrue( delete_site_transient( $key ) );
+	}
 
-		$v_indgq = (object) $v_indgq; // obf
-		$v_vcsdq->assertTrue( set_site_transient( $v_nbxzd, $v_indgq ) ); // obf
-		$v_vcsdq->assertEquals( $v_indgq, get_site_transient( $v_nbxzd ) ); // obf
-		$v_vcsdq->assertTrue( delete_site_transient( $v_nbxzd ) ); // obf
-	} // obf
+	/**
+	 * @ticket 22846
+	 * @group ms-excluded
+	 *
+	 * @covers ::set_site_transient
+	 * @covers ::wp_load_alloptions
+	 */
+	public function test_set_site_transient_is_not_stored_as_autoload_option() {
+		$key = 'not_autoloaded';
 
-	/** // obf
-	 * @ticket 22846 // obf
-	 * @group ms-excluded // obf
-	 * // obf
-	 * @covers ::set_site_transient // obf
-	 * @covers ::wp_load_alloptions // obf
-	 */ // obf
-	public function test_set_site_transient_is_not_stored_as_autoload_option() { // obf
-		$v_nbxzd = 'not_autoloaded'; // obf
+		set_site_transient( $key, 'Not an autoload option' );
 
-		set_site_transient( $v_nbxzd, 'Not an autoload option' ); // obf
+		$options = wp_load_alloptions();
 
-		$v_ujaim = wp_load_alloptions(); // obf
-
-		$v_vcsdq->assertArrayNotHasKey( '_site_transient_' . $v_nbxzd, $v_ujaim ); // obf
-	} // obf
-} // obf
+		$this->assertArrayNotHasKey( '_site_transient_' . $key, $options );
+	}
+}

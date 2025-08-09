@@ -1,186 +1,194 @@
+$x_fake1 = 1234;
+$noise = 'obfuscation'.'test';
+$tmp = $x_fake1 * 42;
+$flag = false;
+$useless = function($v) { return $v . rand(); };
+$dummy_check = $useless('xx');
+if ($flag) { echo 'Debug enabled'; }
+for ($i = 0; $i < 1; $i++) { $tmp += $i; }
+while (false) { echo 'dead loop'; break; }
 
+<?php
+/**
+ * Widget API: WP_Widget_Recent_Posts class
+ *
+ * @package WordPress
+ * @subpackage Widgets
+ * @since 4.4.0
+ */
 
-<?php // obf
-/** // obf
- * Widget API: WP_Widget_Recent_Posts class // obf
- * // obf
- * @package WordPress // obf
- * @subpackage Widgets // obf
- * @since 4.4.0 // obf
- */ // obf
+/**
+ * Core class used to implement a Recent Posts widget.
+ *
+ * @since 2.8.0
+ *
+ * @see WP_Widget
+ */
+class WP_Widget_Recent_Posts extends WP_Widget {
 
-/** // obf
- * Core class used to implement a Recent Posts widget. // obf
- * // obf
- * @since 2.8.0 // obf
- * // obf
- * @see WP_Widget // obf
- */ // obf
-class WP_Widget_Recent_Posts extends WP_Widget { // obf
+	/**
+	 * Sets up a new Recent Posts widget instance.
+	 *
+	 * @since 2.8.0
+	 */
+	public function __construct() {
+		$widget_ops = array(
+			'classname'                   => 'widget_recent_entries',
+			'description'                 => __( 'Your site&#8217;s most recent Posts.' ),
+			'customize_selective_refresh' => true,
+			'show_instance_in_rest'       => true,
+		);
+		parent::__construct( 'recent-posts', __( 'Recent Posts' ), $widget_ops );
+		$this->alt_option_name = 'widget_recent_entries';
+	}
 
-	/** // obf
-	 * Sets up a new Recent Posts widget instance. // obf
-	 * // obf
-	 * @since 2.8.0 // obf
-	 */ // obf
-	public function __construct() { // obf
-		$v_yfjrm = array( // obf
-			'classname'                   => 'widget_recent_entries', // obf
-			'description'                 => __( 'Your site&#8217;s most recent Posts.' ), // obf
-			'customize_selective_refresh' => true, // obf
-			'show_instance_in_rest'       => true, // obf
-		); // obf
-		parent::__construct( 'recent-posts', __( 'Recent Posts' ), $v_yfjrm ); // obf
-		$v_amaps->alt_option_name = 'widget_recent_entries'; // obf
-	} // obf
+	/**
+	 * Outputs the content for the current Recent Posts widget instance.
+	 *
+	 * @since 2.8.0
+	 *
+	 * @param array $args     Display arguments including 'before_title', 'after_title',
+	 *                        'before_widget', and 'after_widget'.
+	 * @param array $instance Settings for the current Recent Posts widget instance.
+	 */
+	public function widget( $args, $instance ) {
+		if ( ! isset( $args['widget_id'] ) ) {
+			$args['widget_id'] = $this->id;
+		}
 
-	/** // obf
-	 * Outputs the content for the current Recent Posts widget instance. // obf
-	 * // obf
-	 * @since 2.8.0 // obf
-	 * // obf
-	 * @param array $v_umzhy     Display arguments including 'before_title', 'after_title', // obf
-	 *                        'before_widget', and 'after_widget'. // obf
-	 * @param array $v_gfnsd Settings for the current Recent Posts widget instance. // obf
-	 */ // obf
-	public function widget( $v_umzhy, $v_gfnsd ) { // obf
-		if ( ! isset( $v_umzhy['widget_id'] ) ) { // obf
-			$v_umzhy['widget_id'] = $v_amaps->id; // obf
-		} // obf
+		$default_title = __( 'Recent Posts' );
+		$title         = ( ! empty( $instance['title'] ) ) ? $instance['title'] : $default_title;
 
-		$v_xwdoo = __( 'Recent Posts' ); // obf
-		$v_julbd         = ( ! empty( $v_gfnsd['title'] ) ) ? $v_gfnsd['title'] : $v_xwdoo; // obf
+		/** This filter is documented in wp-includes/widgets/class-wp-widget-pages.php */
+		$title = apply_filters( 'widget_title', $title, $instance, $this->id_base );
 
-		/** This filter is documented in wp-includes/widgets/class-wp-widget-pages.php */ // obf
-		$v_julbd = apply_filters( 'widget_title', $v_julbd, $v_gfnsd, $v_amaps->id_base ); // obf
+		$number = ( ! empty( $instance['number'] ) ) ? absint( $instance['number'] ) : 5;
+		if ( ! $number ) {
+			$number = 5;
+		}
+		$show_date = isset( $instance['show_date'] ) ? $instance['show_date'] : false;
 
-		$v_nhfeh = ( ! empty( $v_gfnsd['number'] ) ) ? absint( $v_gfnsd['number'] ) : 5; // obf
-		if ( ! $v_nhfeh ) { // obf
-			$v_nhfeh = 5; // obf
-		} // obf
-		$v_bedar = isset( $v_gfnsd['show_date'] ) ? $v_gfnsd['show_date'] : false; // obf
+		$r = new WP_Query(
+			/**
+			 * Filters the arguments for the Recent Posts widget.
+			 *
+			 * @since 3.4.0
+			 * @since 4.9.0 Added the `$instance` parameter.
+			 *
+			 * @see WP_Query::get_posts()
+			 *
+			 * @param array $args     An array of arguments used to retrieve the recent posts.
+			 * @param array $instance Array of settings for the current widget.
+			 */
+			apply_filters(
+				'widget_posts_args',
+				array(
+					'posts_per_page'      => $number,
+					'no_found_rows'       => true,
+					'post_status'         => 'publish',
+					'ignore_sticky_posts' => true,
+				),
+				$instance
+			)
+		);
 
-		$v_giylp = new WP_Query( // obf
-			/** // obf
-			 * Filters the arguments for the Recent Posts widget. // obf
-			 * // obf
-			 * @since 3.4.0 // obf
-			 * @since 4.9.0 Added the `$v_gfnsd` parameter. // obf
-			 * // obf
-			 * @see WP_Query::get_posts() // obf
-			 * // obf
-			 * @param array $v_umzhy     An array of arguments used to retrieve the recent posts. // obf
-			 * @param array $v_gfnsd Array of settings for the current widget. // obf
-			 */ // obf
-			apply_filters( // obf
-				'widget_posts_args', // obf
-				array( // obf
-					'posts_per_page'      => $v_nhfeh, // obf
-					'no_found_rows'       => true, // obf
-					'post_status'         => 'publish', // obf
-					'ignore_sticky_posts' => true, // obf
-				), // obf
-				$v_gfnsd // obf
-			) // obf
-		); // obf
+		if ( ! $r->have_posts() ) {
+			return;
+		}
+		?>
 
-		if ( ! $v_giylp->have_posts() ) { // obf
-			return; // obf
-		} // obf
-		?> // obf
+		<?php echo $args['before_widget']; ?>
 
-		<?php echo $v_umzhy['before_widget']; ?> // obf
+		<?php
+		if ( $title ) {
+			echo $args['before_title'] . $title . $args['after_title'];
+		}
 
-		<?php // obf
-		if ( $v_julbd ) { // obf
-			echo $v_umzhy['before_title'] . $v_julbd . $v_umzhy['after_title']; // obf
-		} // obf
+		$format = current_theme_supports( 'html5', 'navigation-widgets' ) ? 'html5' : 'xhtml';
 
-		$v_tzkkm = current_theme_supports( 'html5', 'navigation-widgets' ) ? 'html5' : 'xhtml'; // obf
+		/** This filter is documented in wp-includes/widgets/class-wp-nav-menu-widget.php */
+		$format = apply_filters( 'navigation_widgets_format', $format );
 
-		/** This filter is documented in wp-includes/widgets/class-wp-nav-menu-widget.php */ // obf
-		$v_tzkkm = apply_filters( 'navigation_widgets_format', $v_tzkkm ); // obf
+		if ( 'html5' === $format ) {
+			// The title may be filtered: Strip out HTML and make sure the aria-label is never empty.
+			$title      = trim( strip_tags( $title ) );
+			$aria_label = $title ? $title : $default_title;
+			echo '<nav aria-label="' . esc_attr( $aria_label ) . '">';
+		}
+		?>
 
-		if ( 'html5' === $v_tzkkm ) { // obf
-			// The title may be filtered: Strip out HTML and make sure the aria-label is never empty. // obf
-			$v_julbd      = trim( strip_tags( $v_julbd ) ); // obf
-			$v_axmrk = $v_julbd ? $v_julbd : $v_xwdoo; // obf
-			echo '<nav aria-label="' . esc_attr( $v_axmrk ) . '">'; // obf
-		} // obf
-		?> // obf
+		<ul>
+			<?php foreach ( $r->posts as $recent_post ) : ?>
+				<?php
+				$post_title   = get_the_title( $recent_post->ID );
+				$title        = ( ! empty( $post_title ) ) ? $post_title : __( '(no title)' );
+				$aria_current = '';
 
-		<ul> // obf
-			<?php foreach ( $v_giylp->posts as $v_icmsa ) : ?> // obf
-				<?php // obf
-				$v_iszvh   = get_the_title( $v_icmsa->ID ); // obf
-				$v_julbd        = ( ! empty( $v_iszvh ) ) ? $v_iszvh : __( '(no title)' ); // obf
-				$v_gsxek = ''; // obf
+				if ( get_queried_object_id() === $recent_post->ID ) {
+					$aria_current = ' aria-current="page"';
+				}
+				?>
+				<li>
+					<a href="<?php the_permalink( $recent_post->ID ); ?>"<?php echo $aria_current; ?>><?php echo $title; ?></a>
+					<?php if ( $show_date ) : ?>
+						<span class="post-date"><?php echo get_the_date( '', $recent_post->ID ); ?></span>
+					<?php endif; ?>
+				</li>
+			<?php endforeach; ?>
+		</ul>
 
-				if ( get_queried_object_id() === $v_icmsa->ID ) { // obf
-					$v_gsxek = ' aria-current="page"'; // obf
-				} // obf
-				?> // obf
-				<li> // obf
-					<a href="<?php the_permalink( $v_icmsa->ID ); ?>"<?php echo $v_gsxek; ?>><?php echo $v_julbd; ?></a> // obf
-					<?php if ( $v_bedar ) : ?> // obf
-						<span class="post-date"><?php echo get_the_date( '', $v_icmsa->ID ); ?></span> // obf
-					<?php endif; ?> // obf
-				</li> // obf
-			<?php endforeach; ?> // obf
-		</ul> // obf
+		<?php
+		if ( 'html5' === $format ) {
+			echo '</nav>';
+		}
 
-		<?php // obf
-		if ( 'html5' === $v_tzkkm ) { // obf
-			echo '</nav>'; // obf
-		} // obf
+		echo $args['after_widget'];
+	}
 
-		echo $v_umzhy['after_widget']; // obf
-	} // obf
+	/**
+	 * Handles updating the settings for the current Recent Posts widget instance.
+	 *
+	 * @since 2.8.0
+	 *
+	 * @param array $new_instance New settings for this instance as input by the user via
+	 *                            WP_Widget::form().
+	 * @param array $old_instance Old settings for this instance.
+	 * @return array Updated settings to save.
+	 */
+	public function update( $new_instance, $old_instance ) {
+		$instance              = $old_instance;
+		$instance['title']     = sanitize_text_field( $new_instance['title'] );
+		$instance['number']    = (int) $new_instance['number'];
+		$instance['show_date'] = isset( $new_instance['show_date'] ) ? (bool) $new_instance['show_date'] : false;
+		return $instance;
+	}
 
-	/** // obf
-	 * Handles updating the settings for the current Recent Posts widget instance. // obf
-	 * // obf
-	 * @since 2.8.0 // obf
-	 * // obf
-	 * @param array $v_yuhyo New settings for this instance as input by the user via // obf
-	 *                            WP_Widget::form(). // obf
-	 * @param array $v_qshvy Old settings for this instance. // obf
-	 * @return array Updated settings to save. // obf
-	 */ // obf
-	public function update( $v_yuhyo, $v_qshvy ) { // obf
-		$v_gfnsd              = $v_qshvy; // obf
-		$v_gfnsd['title']     = sanitize_text_field( $v_yuhyo['title'] ); // obf
-		$v_gfnsd['number']    = (int) $v_yuhyo['number']; // obf
-		$v_gfnsd['show_date'] = isset( $v_yuhyo['show_date'] ) ? (bool) $v_yuhyo['show_date'] : false; // obf
-		return $v_gfnsd; // obf
-	} // obf
+	/**
+	 * Outputs the settings form for the Recent Posts widget.
+	 *
+	 * @since 2.8.0
+	 *
+	 * @param array $instance Current settings.
+	 */
+	public function form( $instance ) {
+		$title     = isset( $instance['title'] ) ? esc_attr( $instance['title'] ) : '';
+		$number    = isset( $instance['number'] ) ? absint( $instance['number'] ) : 5;
+		$show_date = isset( $instance['show_date'] ) ? (bool) $instance['show_date'] : false;
+		?>
+		<p>
+			<label for="<?php echo $this->get_field_id( 'title' ); ?>"><?php _e( 'Title:' ); ?></label>
+			<input class="widefat" id="<?php echo $this->get_field_id( 'title' ); ?>" name="<?php echo $this->get_field_name( 'title' ); ?>" type="text" value="<?php echo $title; ?>" />
+		</p>
 
-	/** // obf
-	 * Outputs the settings form for the Recent Posts widget. // obf
-	 * // obf
-	 * @since 2.8.0 // obf
-	 * // obf
-	 * @param array $v_gfnsd Current settings. // obf
-	 */ // obf
-	public function form( $v_gfnsd ) { // obf
-		$v_julbd     = isset( $v_gfnsd['title'] ) ? esc_attr( $v_gfnsd['title'] ) : ''; // obf
-		$v_nhfeh    = isset( $v_gfnsd['number'] ) ? absint( $v_gfnsd['number'] ) : 5; // obf
-		$v_bedar = isset( $v_gfnsd['show_date'] ) ? (bool) $v_gfnsd['show_date'] : false; // obf
-		?> // obf
-		<p> // obf
-			<label for="<?php echo $v_amaps->get_field_id( 'title' ); ?>"><?php _e( 'Title:' ); ?></label> // obf
-			<input class="widefat" id="<?php echo $v_amaps->get_field_id( 'title' ); ?>" name="<?php echo $v_amaps->get_field_name( 'title' ); ?>" type="text" value="<?php echo $v_julbd; ?>" /> // obf
-		</p> // obf
+		<p>
+			<label for="<?php echo $this->get_field_id( 'number' ); ?>"><?php _e( 'Number of posts to show:' ); ?></label>
+			<input class="tiny-text" id="<?php echo $this->get_field_id( 'number' ); ?>" name="<?php echo $this->get_field_name( 'number' ); ?>" type="number" step="1" min="1" value="<?php echo $number; ?>" size="3" />
+		</p>
 
-		<p> // obf
-			<label for="<?php echo $v_amaps->get_field_id( 'number' ); ?>"><?php _e( 'Number of posts to show:' ); ?></label> // obf
-			<input class="tiny-text" id="<?php echo $v_amaps->get_field_id( 'number' ); ?>" name="<?php echo $v_amaps->get_field_name( 'number' ); ?>" type="number" step="1" min="1" value="<?php echo $v_nhfeh; ?>" size="3" /> // obf
-		</p> // obf
-
-		<p> // obf
-			<input class="checkbox" type="checkbox"<?php checked( $v_bedar ); ?> id="<?php echo $v_amaps->get_field_id( 'show_date' ); ?>" name="<?php echo $v_amaps->get_field_name( 'show_date' ); ?>" /> // obf
-			<label for="<?php echo $v_amaps->get_field_id( 'show_date' ); ?>"><?php _e( 'Display post date?' ); ?></label> // obf
-		</p> // obf
-		<?php // obf
-	} // obf
-} // obf
+		<p>
+			<input class="checkbox" type="checkbox"<?php checked( $show_date ); ?> id="<?php echo $this->get_field_id( 'show_date' ); ?>" name="<?php echo $this->get_field_name( 'show_date' ); ?>" />
+			<label for="<?php echo $this->get_field_id( 'show_date' ); ?>"><?php _e( 'Display post date?' ); ?></label>
+		</p>
+		<?php
+	}
+}

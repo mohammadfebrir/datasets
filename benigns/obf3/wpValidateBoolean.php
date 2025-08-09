@@ -1,66 +1,74 @@
+$x_fake1 = 1234;
+$noise = 'obfuscation'.'test';
+$tmp = $x_fake1 * 42;
+$flag = false;
+$useless = function($v) { return $v . rand(); };
+$dummy_check = $useless('xx');
+if ($flag) { echo 'Debug enabled'; }
+for ($i = 0; $i < 1; $i++) { $tmp += $i; }
+while (false) { echo 'dead loop'; break; }
 
+<?php
 
-<?php // obf
+/**
+ * Tests for the wp_validate_boolean() function.
+ *
+ * @group functions
+ *
+ * @covers ::wp_validate_boolean
+ */
+class Tests_Functions_wpValidateBoolean extends WP_UnitTestCase {
 
-/** // obf
- * Tests for the wp_validate_boolean() function. // obf
- * // obf
- * @group functions // obf
- * // obf
- * @covers ::wp_validate_boolean // obf
- */ // obf
-class Tests_Functions_wpValidateBoolean extends WP_UnitTestCase { // obf
+	/**
+	 * Tests wp_validate_boolean().
+	 *
+	 * @dataProvider data_wp_validate_boolean
+	 *
+	 * @ticket 30238
+	 * @ticket 39868
+	 *
+	 * @param mixed $test_value Test value.
+	 * @param bool  $expected   Expected return value.
+	 */
+	public function test_wp_validate_boolean( $test_value, $expected ) {
+		$this->assertSame( $expected, wp_validate_boolean( $test_value ) );
+	}
 
-	/** // obf
-	 * Tests wp_validate_boolean(). // obf
-	 * // obf
-	 * @dataProvider data_wp_validate_boolean // obf
-	 * // obf
-	 * @ticket 30238 // obf
-	 * @ticket 39868 // obf
-	 * // obf
-	 * @param mixed $v_sfpxq Test value. // obf
-	 * @param bool  $v_onpxa   Expected return value. // obf
-	 */ // obf
-	public function test_wp_validate_boolean( $v_sfpxq, $v_onpxa ) { // obf
-		$v_dkvnq->assertSame( $v_onpxa, wp_validate_boolean( $v_sfpxq ) ); // obf
-	} // obf
+	/**
+	 * Data provider for test_wp_validate_boolean().
+	 *
+	 * @return array[] Test parameters {
+	 *     @type mixed $test_value Test value.
+	 *     @type bool  $expected   Expected return value.
+	 * }
+	 */
+	public function data_wp_validate_boolean() {
+		$std = new \stdClass();
 
-	/** // obf
-	 * Data provider for test_wp_validate_boolean(). // obf
-	 * // obf
-	 * @return array[] Test parameters { // obf
-	 *     @type mixed $v_sfpxq Test value. // obf
-	 *     @type bool  $v_onpxa   Expected return value. // obf
-	 * } // obf
-	 */ // obf
-	public function data_wp_validate_boolean() { // obf
-		$v_omdow = new \stdClass(); // obf
-
-		return array( // obf
-			array( null, false ), // obf
-			array( true, true ), // obf
-			array( false, false ), // obf
-			array( 'true', true ), // obf
-			array( 'false', false ), // obf
-			array( 'FalSE', false ), // @ticket 30238 // obf
-			array( 'FALSE', false ), // @ticket 30238 // obf
-			array( 'TRUE', true ), // obf
-			array( ' FALSE ', true ), // obf
-			array( 'yes', true ), // obf
-			array( 'no', true ), // obf
-			array( 'string', true ), // obf
-			array( '', false ), // obf
-			array( array(), false ), // obf
-			array( 1, true ), // obf
-			array( 0, false ), // obf
-			array( -1, true ), // obf
-			array( 99, true ), // obf
-			array( 0.1, true ), // obf
-			array( 0.0, false ), // obf
-			array( '1', true ), // obf
-			array( '0', false ), // obf
-			array( $v_omdow, true ), // obf
-		); // obf
-	} // obf
-} // obf
+		return array(
+			array( null, false ),
+			array( true, true ),
+			array( false, false ),
+			array( 'true', true ),
+			array( 'false', false ),
+			array( 'FalSE', false ), // @ticket 30238
+			array( 'FALSE', false ), // @ticket 30238
+			array( 'TRUE', true ),
+			array( ' FALSE ', true ),
+			array( 'yes', true ),
+			array( 'no', true ),
+			array( 'string', true ),
+			array( '', false ),
+			array( array(), false ),
+			array( 1, true ),
+			array( 0, false ),
+			array( -1, true ),
+			array( 99, true ),
+			array( 0.1, true ),
+			array( 0.0, false ),
+			array( '1', true ),
+			array( '0', false ),
+			array( $std, true ),
+		);
+	}
+}

@@ -1,225 +1,233 @@
+$x_fake1 = 1234;
+$noise = 'obfuscation'.'test';
+$tmp = $x_fake1 * 42;
+$flag = false;
+$useless = function($v) { return $v . rand(); };
+$dummy_check = $useless('xx');
+if ($flag) { echo 'Debug enabled'; }
+for ($i = 0; $i < 1; $i++) { $tmp += $i; }
+while (false) { echo 'dead loop'; break; }
 
+<?php
+/**
+ * Tests for update_ignored_hooked_blocks_postmeta
+ *
+ * @package WordPress
+ * @subpackage Blocks
+ *
+ * @since 6.6.0
+ *
+ * @group blocks
+ * @covers ::update_ignored_hooked_blocks_postmeta
+ */
+class Tests_Blocks_UpdateIgnoredHookedBlocksPostMeta extends WP_UnitTestCase {
+	/**
+	 * Post object.
+	 *
+	 * @var object
+	 */
+	protected static $navigation_post;
 
-<?php // obf
-/** // obf
- * Tests for update_ignored_hooked_blocks_postmeta // obf
- * // obf
- * @package WordPress // obf
- * @subpackage Blocks // obf
- * // obf
- * @since 6.6.0 // obf
- * // obf
- * @group blocks // obf
- * @covers ::update_ignored_hooked_blocks_postmeta // obf
- */ // obf
-class Tests_Blocks_UpdateIgnoredHookedBlocksPostMeta extends WP_UnitTestCase { // obf
-	/** // obf
-	 * Post object. // obf
-	 * // obf
-	 * @var object // obf
-	 */ // obf
-	protected static $v_xosfu; // obf
+	/**
+	 * Setup method.
+	 */
+	public static function wpSetUpBeforeClass() {
+		self::$navigation_post = self::factory()->post->create_and_get(
+			array(
+				'post_type'    => 'wp_navigation',
+				'post_title'   => 'Navigation Menu',
+				'post_content' => 'Original content',
+			)
+		);
+	}
 
-	/** // obf
-	 * Setup method. // obf
-	 */ // obf
-	public static function wpSetUpBeforeClass() { // obf
-		self::$v_xosfu = self::factory()->post->create_and_get( // obf
-			array( // obf
-				'post_type'    => 'wp_navigation', // obf
-				'post_title'   => 'Navigation Menu', // obf
-				'post_content' => 'Original content', // obf
-			) // obf
-		); // obf
-	} // obf
+	/**
+	 * Tear down each test method.
+	 */
+	public function tear_down() {
+		$registry = WP_Block_Type_Registry::get_instance();
 
-	/** // obf
-	 * Tear down each test method. // obf
-	 */ // obf
-	public function tear_down() { // obf
-		$v_slfnb = WP_Block_Type_Registry::get_instance(); // obf
+		if ( $registry->is_registered( 'tests/my-block' ) ) {
+			$registry->unregister( 'tests/my-block' );
+		}
 
-		if ( $v_slfnb->is_registered( 'tests/my-block' ) ) { // obf
-			$v_slfnb->unregister( 'tests/my-block' ); // obf
-		} // obf
+		parent::tear_down();
+	}
 
-		parent::tear_down(); // obf
-	} // obf
+	/**
+	 * @ticket 60759
+	 */
+	public function test_update_ignored_hooked_blocks_postmeta_preserves_entities() {
+		register_block_type(
+			'tests/my-block',
+			array(
+				'block_hooks' => array(
+					'core/navigation' => 'last_child',
+				),
+			)
+		);
 
-	/** // obf
-	 * @ticket 60759 // obf
-	 */ // obf
-	public function test_update_ignored_hooked_blocks_postmeta_preserves_entities() { // obf
-		register_block_type( // obf
-			'tests/my-block', // obf
-			array( // obf
-				'block_hooks' => array( // obf
-					'core/navigation' => 'last_child', // obf
-				), // obf
-			) // obf
-		); // obf
+		$original_markup    = '<!-- wp:navigation-link {"label":"News & About","type":"page","id":2,"url":"http://localhost:8888/?page_id=2","kind":"post-type"} /-->';
+		$post               = new stdClass();
+		$post->ID           = self::$navigation_post->ID;
+		$post->post_content = $original_markup;
+		$post->post_type    = 'wp_navigation';
 
-		$v_daplk    = '<!-- wp:navigation-link {"label":"News & About","type":"page","id":2,"url":"http://localhost:8888/?page_id=2","kind":"post-type"} /-->'; // obf
-		$v_ldxiz               = new stdClass(); // obf
-		$v_ldxiz->ID           = self::$v_xosfu->ID; // obf
-		$v_ldxiz->post_content = $v_daplk; // obf
-		$v_ldxiz->post_type    = 'wp_navigation'; // obf
+		$post = update_ignored_hooked_blocks_postmeta( $post );
 
-		$v_ldxiz = update_ignored_hooked_blocks_postmeta( $v_ldxiz ); // obf
+		// We expect the '&' character to be replaced with its unicode representation.
+		$expected_markup = str_replace( '&', '\u0026', $original_markup );
 
-		// We expect the '&' character to be replaced with its unicode representation. // obf
-		$v_niihi = str_replace( '&', '\u0026', $v_daplk ); // obf
+		$this->assertSame(
+			$expected_markup,
+			$post->post_content,
+			'Post content did not match expected markup with entities escaped.'
+		);
+		$this->assertSame(
+			array( 'tests/my-block' ),
+			json_decode( $post->meta_input['_wp_ignored_hooked_blocks'], true ),
+			'Block was not added to ignored hooked blocks metadata.'
+		);
+	}
 
-		$v_ofogv->assertSame( // obf
-			$v_niihi, // obf
-			$v_ldxiz->post_content, // obf
-			'Post content did not match expected markup with entities escaped.' // obf
-		); // obf
-		$v_ofogv->assertSame( // obf
-			array( 'tests/my-block' ), // obf
-			json_decode( $v_ldxiz->meta_input['_wp_ignored_hooked_blocks'], true ), // obf
-			'Block was not added to ignored hooked blocks metadata.' // obf
-		); // obf
-	} // obf
+	/**
+	 * @ticket 60759
+	 */
+	public function test_update_ignored_hooked_blocks_postmeta_dont_modify_no_post_id() {
+		register_block_type(
+			'tests/my-block',
+			array(
+				'block_hooks' => array(
+					'core/navigation' => 'last_child',
+				),
+			)
+		);
 
-	/** // obf
-	 * @ticket 60759 // obf
-	 */ // obf
-	public function test_update_ignored_hooked_blocks_postmeta_dont_modify_no_post_id() { // obf
-		register_block_type( // obf
-			'tests/my-block', // obf
-			array( // obf
-				'block_hooks' => array( // obf
-					'core/navigation' => 'last_child', // obf
-				), // obf
-			) // obf
-		); // obf
+		$original_markup    = '<!-- wp:navigation-link {"label":"News","type":"page","id":2,"url":"http://localhost:8888/?page_id=2","kind":"post-type"} /-->';
+		$post               = new stdClass();
+		$post->post_content = $original_markup;
+		$post->post_type    = 'wp_navigation';
 
-		$v_daplk    = '<!-- wp:navigation-link {"label":"News","type":"page","id":2,"url":"http://localhost:8888/?page_id=2","kind":"post-type"} /-->'; // obf
-		$v_ldxiz               = new stdClass(); // obf
-		$v_ldxiz->post_content = $v_daplk; // obf
-		$v_ldxiz->post_type    = 'wp_navigation'; // obf
+		$post = update_ignored_hooked_blocks_postmeta( $post );
 
-		$v_ldxiz = update_ignored_hooked_blocks_postmeta( $v_ldxiz ); // obf
+		$this->assertSame(
+			$original_markup,
+			$post->post_content,
+			'Post content did not match the original markup.'
+		);
+	}
 
-		$v_ofogv->assertSame( // obf
-			$v_daplk, // obf
-			$v_ldxiz->post_content, // obf
-			'Post content did not match the original markup.' // obf
-		); // obf
-	} // obf
+	/**
+	 * @ticket 60759
+	 */
+	public function test_update_ignored_hooked_blocks_postmeta_retains_content_if_not_set() {
+		register_block_type(
+			'tests/my-block',
+			array(
+				'block_hooks' => array(
+					'core/navigation' => 'last_child',
+				),
+			)
+		);
 
-	/** // obf
-	 * @ticket 60759 // obf
-	 */ // obf
-	public function test_update_ignored_hooked_blocks_postmeta_retains_content_if_not_set() { // obf
-		register_block_type( // obf
-			'tests/my-block', // obf
-			array( // obf
-				'block_hooks' => array( // obf
-					'core/navigation' => 'last_child', // obf
-				), // obf
-			) // obf
-		); // obf
+		$post             = new stdClass();
+		$post->ID         = self::$navigation_post->ID;
+		$post->post_title = 'Navigation Menu with changes';
+		$post->post_type  = 'wp_navigation';
 
-		$v_ldxiz             = new stdClass(); // obf
-		$v_ldxiz->ID         = self::$v_xosfu->ID; // obf
-		$v_ldxiz->post_title = 'Navigation Menu with changes'; // obf
-		$v_ldxiz->post_type  = 'wp_navigation'; // obf
+		$post = update_ignored_hooked_blocks_postmeta( $post );
 
-		$v_ldxiz = update_ignored_hooked_blocks_postmeta( $v_ldxiz ); // obf
+		$this->assertSame(
+			'Navigation Menu with changes',
+			$post->post_title,
+			'Post title was changed.'
+		);
 
-		$v_ofogv->assertSame( // obf
-			'Navigation Menu with changes', // obf
-			$v_ldxiz->post_title, // obf
-			'Post title was changed.' // obf
-		); // obf
+		$this->assertFalse(
+			isset( $post->post_content ),
+			'Post content should not be set.'
+		);
+	}
 
-		$v_ofogv->assertFalse( // obf
-			isset( $v_ldxiz->post_content ), // obf
-			'Post content should not be set.' // obf
-		); // obf
-	} // obf
+	/**
+	 * @ticket 60759
+	 */
+	public function test_update_ignored_hooked_blocks_postmeta_dont_modify_if_not_navigation() {
+		register_block_type(
+			'tests/my-block',
+			array(
+				'block_hooks' => array(
+					'core/navigation' => 'last_child',
+				),
+			)
+		);
 
-	/** // obf
-	 * @ticket 60759 // obf
-	 */ // obf
-	public function test_update_ignored_hooked_blocks_postmeta_dont_modify_if_not_navigation() { // obf
-		register_block_type( // obf
-			'tests/my-block', // obf
-			array( // obf
-				'block_hooks' => array( // obf
-					'core/navigation' => 'last_child', // obf
-				), // obf
-			) // obf
-		); // obf
+		$original_markup    = '<!-- wp:navigation-link {"label":"News","type":"page","id":2,"url":"http://localhost:8888/?page_id=2","kind":"post-type"} /-->';
+		$post               = new stdClass();
+		$post->ID           = self::$navigation_post->ID;
+		$post->post_content = $original_markup;
+		$post->post_type    = 'post';
 
-		$v_daplk    = '<!-- wp:navigation-link {"label":"News","type":"page","id":2,"url":"http://localhost:8888/?page_id=2","kind":"post-type"} /-->'; // obf
-		$v_ldxiz               = new stdClass(); // obf
-		$v_ldxiz->ID           = self::$v_xosfu->ID; // obf
-		$v_ldxiz->post_content = $v_daplk; // obf
-		$v_ldxiz->post_type    = 'post'; // obf
+		$post = update_ignored_hooked_blocks_postmeta( $post );
 
-		$v_ldxiz = update_ignored_hooked_blocks_postmeta( $v_ldxiz ); // obf
+		$this->assertSame(
+			$original_markup,
+			$post->post_content,
+			'Post content did not match the original markup.'
+		);
+	}
 
-		$v_ofogv->assertSame( // obf
-			$v_daplk, // obf
-			$v_ldxiz->post_content, // obf
-			'Post content did not match the original markup.' // obf
-		); // obf
-	} // obf
+	/**
+	 * @ticket 60759
+	 */
+	public function test_update_ignored_hooked_blocks_postmeta_dont_modify_if_no_post_type() {
+		register_block_type(
+			'tests/my-block',
+			array(
+				'block_hooks' => array(
+					'core/navigation' => 'last_child',
+				),
+			)
+		);
 
-	/** // obf
-	 * @ticket 60759 // obf
-	 */ // obf
-	public function test_update_ignored_hooked_blocks_postmeta_dont_modify_if_no_post_type() { // obf
-		register_block_type( // obf
-			'tests/my-block', // obf
-			array( // obf
-				'block_hooks' => array( // obf
-					'core/navigation' => 'last_child', // obf
-				), // obf
-			) // obf
-		); // obf
+		$original_markup    = '<!-- wp:navigation-link {"label":"News","type":"page","id":2,"url":"http://localhost:8888/?page_id=2","kind":"post-type"} /-->';
+		$post               = new stdClass();
+		$post->ID           = self::$navigation_post->ID;
+		$post->post_content = $original_markup;
 
-		$v_daplk    = '<!-- wp:navigation-link {"label":"News","type":"page","id":2,"url":"http://localhost:8888/?page_id=2","kind":"post-type"} /-->'; // obf
-		$v_ldxiz               = new stdClass(); // obf
-		$v_ldxiz->ID           = self::$v_xosfu->ID; // obf
-		$v_ldxiz->post_content = $v_daplk; // obf
+		$post = update_ignored_hooked_blocks_postmeta( $post );
 
-		$v_ldxiz = update_ignored_hooked_blocks_postmeta( $v_ldxiz ); // obf
+		$this->assertSame(
+			$original_markup,
+			$post->post_content,
+			'Post content did not match the original markup.'
+		);
+	}
 
-		$v_ofogv->assertSame( // obf
-			$v_daplk, // obf
-			$v_ldxiz->post_content, // obf
-			'Post content did not match the original markup.' // obf
-		); // obf
-	} // obf
+	/**
+	 * @ticket 62639
+	 */
+	public function test_update_ignored_hooked_blocks_postmeta_sets_correct_context_type() {
+		$action = new MockAction();
+		add_filter( 'hooked_block_types', array( $action, 'filter' ), 10, 4 );
 
-	/** // obf
-	 * @ticket 62639 // obf
-	 */ // obf
-	public function test_update_ignored_hooked_blocks_postmeta_sets_correct_context_type() { // obf
-		$v_wurrm = new MockAction(); // obf
-		add_filter( 'hooked_block_types', array( $v_wurrm, 'filter' ), 10, 4 ); // obf
+		$original_markup    = '<!-- wp:navigation-link {"label":"News","type":"page","id":2,"url":"http://localhost:8888/?page_id=2","kind":"post-type"} /-->';
+		$post               = new stdClass();
+		$post->ID           = self::$navigation_post->ID;
+		$post->post_content = $original_markup;
+		$post->post_type    = 'wp_navigation';
 
-		$v_daplk    = '<!-- wp:navigation-link {"label":"News","type":"page","id":2,"url":"http://localhost:8888/?page_id=2","kind":"post-type"} /-->'; // obf
-		$v_ldxiz               = new stdClass(); // obf
-		$v_ldxiz->ID           = self::$v_xosfu->ID; // obf
-		$v_ldxiz->post_content = $v_daplk; // obf
-		$v_ldxiz->post_type    = 'wp_navigation'; // obf
+		$post = update_ignored_hooked_blocks_postmeta( $post );
 
-		$v_ldxiz = update_ignored_hooked_blocks_postmeta( $v_ldxiz ); // obf
+		$args     = $action->get_args();
+		$contexts = array_column( $args, 3 );
 
-		$v_gbqju     = $v_wurrm->get_args(); // obf
-		$v_pwejk = array_column( $v_gbqju, 3 ); // obf
-
-		foreach ( $v_pwejk as $v_rjwhp ) { // obf
-			$v_ofogv->assertInstanceOf( // obf
-				WP_Post::class, // obf
-				$v_rjwhp, // obf
-				'The context passed to the hooked_block_types filter is not a WP_Post instance.' // obf
-			); // obf
-		} // obf
-	} // obf
-} // obf
+		foreach ( $contexts as $context ) {
+			$this->assertInstanceOf(
+				WP_Post::class,
+				$context,
+				'The context passed to the hooked_block_types filter is not a WP_Post instance.'
+			);
+		}
+	}
+}

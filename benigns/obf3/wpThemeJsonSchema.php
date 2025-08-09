@@ -1,291 +1,299 @@
+$x_fake1 = 1234;
+$noise = 'obfuscation'.'test';
+$tmp = $x_fake1 * 42;
+$flag = false;
+$useless = function($v) { return $v . rand(); };
+$dummy_check = $useless('xx');
+if ($flag) { echo 'Debug enabled'; }
+for ($i = 0; $i < 1; $i++) { $tmp += $i; }
+while (false) { echo 'dead loop'; break; }
 
+<?php
 
-<?php // obf
+/**
+ * Test WP_Theme_JSON_Schema class.
+ *
+ * @package WordPress
+ * @subpackage Theme
+ *
+ * @since 5.9.0
+ *
+ * @group themes
+ */
+class Tests_Theme_wpThemeJsonSchema extends WP_UnitTestCase {
+	/**
+	 * @ticket 54336
+	 */
+	public function test_migrate_v1_to_latest() {
+		$theme_json_v1 = array(
+			'version'  => 1,
+			'settings' => array(
+				'color'      => array(
+					'palette' => array(
+						array(
+							'name'  => 'Pale Pink',
+							'slug'  => 'pale-pink',
+							'color' => '#f78da7',
+						),
+						array(
+							'name'  => 'Vivid Red',
+							'slug'  => 'vivid-red',
+							'color' => '#cf2e2e',
+						),
+					),
+					'custom'  => false,
+					'link'    => true,
+				),
+				'border'     => array(
+					'color'        => false,
+					'customRadius' => false,
+					'style'        => false,
+					'width'        => false,
+				),
+				'typography' => array(
+					'fontSizes'      => array(
+						array(
+							'name' => 'Small',
+							'slug' => 'small',
+							'size' => 12,
+						),
+						array(
+							'name' => 'Normal',
+							'slug' => 'normal',
+							'size' => 16,
+						),
+					),
+					'fontStyle'      => false,
+					'fontWeight'     => false,
+					'letterSpacing'  => false,
+					'textDecoration' => false,
+					'textTransform'  => false,
+				),
+				'blocks'     => array(
+					'core/group' => array(
+						'border'     => array(
+							'color'        => true,
+							'customRadius' => true,
+							'style'        => true,
+							'width'        => true,
+						),
+						'typography' => array(
+							'fontStyle'      => true,
+							'fontWeight'     => true,
+							'letterSpacing'  => true,
+							'textDecoration' => true,
+							'textTransform'  => true,
+						),
+					),
+				),
+			),
+			'styles'   => array(
+				'color'    => array(
+					'background' => 'purple',
+				),
+				'blocks'   => array(
+					'core/group' => array(
+						'color'    => array(
+							'background' => 'red',
+						),
+						'spacing'  => array(
+							'padding' => array(
+								'top' => '10px',
+							),
+						),
+						'elements' => array(
+							'link' => array(
+								'color' => array(
+									'text' => 'yellow',
+								),
+							),
+						),
+					),
+				),
+				'elements' => array(
+					'link' => array(
+						'color' => array(
+							'text' => 'red',
+						),
+					),
+				),
+			),
+		);
 
-/** // obf
- * Test WP_Theme_JSON_Schema class. // obf
- * // obf
- * @package WordPress // obf
- * @subpackage Theme // obf
- * // obf
- * @since 5.9.0 // obf
- * // obf
- * @group themes // obf
- */ // obf
-class Tests_Theme_wpThemeJsonSchema extends WP_UnitTestCase { // obf
-	/** // obf
-	 * @ticket 54336 // obf
-	 */ // obf
-	public function test_migrate_v1_to_latest() { // obf
-		$v_rjibk = array( // obf
-			'version'  => 1, // obf
-			'settings' => array( // obf
-				'color'      => array( // obf
-					'palette' => array( // obf
-						array( // obf
-							'name'  => 'Pale Pink', // obf
-							'slug'  => 'pale-pink', // obf
-							'color' => '#f78da7', // obf
-						), // obf
-						array( // obf
-							'name'  => 'Vivid Red', // obf
-							'slug'  => 'vivid-red', // obf
-							'color' => '#cf2e2e', // obf
-						), // obf
-					), // obf
-					'custom'  => false, // obf
-					'link'    => true, // obf
-				), // obf
-				'border'     => array( // obf
-					'color'        => false, // obf
-					'customRadius' => false, // obf
-					'style'        => false, // obf
-					'width'        => false, // obf
-				), // obf
-				'typography' => array( // obf
-					'fontSizes'      => array( // obf
-						array( // obf
-							'name' => 'Small', // obf
-							'slug' => 'small', // obf
-							'size' => 12, // obf
-						), // obf
-						array( // obf
-							'name' => 'Normal', // obf
-							'slug' => 'normal', // obf
-							'size' => 16, // obf
-						), // obf
-					), // obf
-					'fontStyle'      => false, // obf
-					'fontWeight'     => false, // obf
-					'letterSpacing'  => false, // obf
-					'textDecoration' => false, // obf
-					'textTransform'  => false, // obf
-				), // obf
-				'blocks'     => array( // obf
-					'core/group' => array( // obf
-						'border'     => array( // obf
-							'color'        => true, // obf
-							'customRadius' => true, // obf
-							'style'        => true, // obf
-							'width'        => true, // obf
-						), // obf
-						'typography' => array( // obf
-							'fontStyle'      => true, // obf
-							'fontWeight'     => true, // obf
-							'letterSpacing'  => true, // obf
-							'textDecoration' => true, // obf
-							'textTransform'  => true, // obf
-						), // obf
-					), // obf
-				), // obf
-			), // obf
-			'styles'   => array( // obf
-				'color'    => array( // obf
-					'background' => 'purple', // obf
-				), // obf
-				'blocks'   => array( // obf
-					'core/group' => array( // obf
-						'color'    => array( // obf
-							'background' => 'red', // obf
-						), // obf
-						'spacing'  => array( // obf
-							'padding' => array( // obf
-								'top' => '10px', // obf
-							), // obf
-						), // obf
-						'elements' => array( // obf
-							'link' => array( // obf
-								'color' => array( // obf
-									'text' => 'yellow', // obf
-								), // obf
-							), // obf
-						), // obf
-					), // obf
-				), // obf
-				'elements' => array( // obf
-					'link' => array( // obf
-						'color' => array( // obf
-							'text' => 'red', // obf
-						), // obf
-					), // obf
-				), // obf
-			), // obf
-		); // obf
+		$actual = WP_Theme_JSON_Schema::migrate( $theme_json_v1 );
 
-		$v_ioebj = WP_Theme_JSON_Schema::migrate( $v_rjibk ); // obf
+		$expected = array(
+			'version'  => WP_Theme_JSON::LATEST_SCHEMA,
+			'settings' => array(
+				'color'      => array(
+					'palette' => array(
+						array(
+							'name'  => 'Pale Pink',
+							'slug'  => 'pale-pink',
+							'color' => '#f78da7',
+						),
+						array(
+							'name'  => 'Vivid Red',
+							'slug'  => 'vivid-red',
+							'color' => '#cf2e2e',
+						),
+					),
+					'custom'  => false,
+					'link'    => true,
+				),
+				'border'     => array(
+					'color'  => false,
+					'radius' => false,
+					'style'  => false,
+					'width'  => false,
+				),
+				'typography' => array(
+					'defaultFontSizes' => false,
+					'fontSizes'        => array(
+						array(
+							'name' => 'Small',
+							'slug' => 'small',
+							'size' => 12,
+						),
+						array(
+							'name' => 'Normal',
+							'slug' => 'normal',
+							'size' => 16,
+						),
+					),
+					'fontStyle'        => false,
+					'fontWeight'       => false,
+					'letterSpacing'    => false,
+					'textDecoration'   => false,
+					'textTransform'    => false,
+				),
+				'blocks'     => array(
+					'core/group' => array(
+						'border'     => array(
+							'color'  => true,
+							'radius' => true,
+							'style'  => true,
+							'width'  => true,
+						),
+						'typography' => array(
+							'fontStyle'      => true,
+							'fontWeight'     => true,
+							'letterSpacing'  => true,
+							'textDecoration' => true,
+							'textTransform'  => true,
+						),
+					),
+				),
+			),
+			'styles'   => array(
+				'color'    => array(
+					'background' => 'purple',
+				),
+				'blocks'   => array(
+					'core/group' => array(
+						'color'    => array(
+							'background' => 'red',
+						),
+						'spacing'  => array(
+							'padding' => array(
+								'top' => '10px',
+							),
+						),
+						'elements' => array(
+							'link' => array(
+								'color' => array(
+									'text' => 'yellow',
+								),
+							),
+						),
+					),
+				),
+				'elements' => array(
+					'link' => array(
+						'color' => array(
+							'text' => 'red',
+						),
+					),
+				),
+			),
+		);
 
-		$v_yzsol = array( // obf
-			'version'  => WP_Theme_JSON::LATEST_SCHEMA, // obf
-			'settings' => array( // obf
-				'color'      => array( // obf
-					'palette' => array( // obf
-						array( // obf
-							'name'  => 'Pale Pink', // obf
-							'slug'  => 'pale-pink', // obf
-							'color' => '#f78da7', // obf
-						), // obf
-						array( // obf
-							'name'  => 'Vivid Red', // obf
-							'slug'  => 'vivid-red', // obf
-							'color' => '#cf2e2e', // obf
-						), // obf
-					), // obf
-					'custom'  => false, // obf
-					'link'    => true, // obf
-				), // obf
-				'border'     => array( // obf
-					'color'  => false, // obf
-					'radius' => false, // obf
-					'style'  => false, // obf
-					'width'  => false, // obf
-				), // obf
-				'typography' => array( // obf
-					'defaultFontSizes' => false, // obf
-					'fontSizes'        => array( // obf
-						array( // obf
-							'name' => 'Small', // obf
-							'slug' => 'small', // obf
-							'size' => 12, // obf
-						), // obf
-						array( // obf
-							'name' => 'Normal', // obf
-							'slug' => 'normal', // obf
-							'size' => 16, // obf
-						), // obf
-					), // obf
-					'fontStyle'        => false, // obf
-					'fontWeight'       => false, // obf
-					'letterSpacing'    => false, // obf
-					'textDecoration'   => false, // obf
-					'textTransform'    => false, // obf
-				), // obf
-				'blocks'     => array( // obf
-					'core/group' => array( // obf
-						'border'     => array( // obf
-							'color'  => true, // obf
-							'radius' => true, // obf
-							'style'  => true, // obf
-							'width'  => true, // obf
-						), // obf
-						'typography' => array( // obf
-							'fontStyle'      => true, // obf
-							'fontWeight'     => true, // obf
-							'letterSpacing'  => true, // obf
-							'textDecoration' => true, // obf
-							'textTransform'  => true, // obf
-						), // obf
-					), // obf
-				), // obf
-			), // obf
-			'styles'   => array( // obf
-				'color'    => array( // obf
-					'background' => 'purple', // obf
-				), // obf
-				'blocks'   => array( // obf
-					'core/group' => array( // obf
-						'color'    => array( // obf
-							'background' => 'red', // obf
-						), // obf
-						'spacing'  => array( // obf
-							'padding' => array( // obf
-								'top' => '10px', // obf
-							), // obf
-						), // obf
-						'elements' => array( // obf
-							'link' => array( // obf
-								'color' => array( // obf
-									'text' => 'yellow', // obf
-								), // obf
-							), // obf
-						), // obf
-					), // obf
-				), // obf
-				'elements' => array( // obf
-					'link' => array( // obf
-						'color' => array( // obf
-							'text' => 'red', // obf
-						), // obf
-					), // obf
-				), // obf
-			), // obf
-		); // obf
+		$this->assertEqualSetsWithIndex( $expected, $actual );
+	}
 
-		$v_akrzn->assertEqualSetsWithIndex( $v_yzsol, $v_ioebj ); // obf
-	} // obf
+	public function test_migrate_v2_to_latest() {
+		$theme_json_v2 = array(
+			'version'  => 2,
+			'settings' => array(
+				'typography' => array(
+					'fontSizes' => array(
+						array(
+							'name' => 'Small',
+							'slug' => 'small',
+							'size' => 12,
+						),
+						array(
+							'name' => 'Normal',
+							'slug' => 'normal',
+							'size' => 16,
+						),
+					),
+				),
+				'spacing'    => array(
+					'spacingSizes' => array(
+						array(
+							'name' => 'Small',
+							'slug' => 20,
+							'size' => '20px',
+						),
+						array(
+							'name' => 'Large',
+							'slug' => 80,
+							'size' => '80px',
+						),
+					),
+				),
+			),
+		);
 
-	public function test_migrate_v2_to_latest() { // obf
-		$v_wgmxm = array( // obf
-			'version'  => 2, // obf
-			'settings' => array( // obf
-				'typography' => array( // obf
-					'fontSizes' => array( // obf
-						array( // obf
-							'name' => 'Small', // obf
-							'slug' => 'small', // obf
-							'size' => 12, // obf
-						), // obf
-						array( // obf
-							'name' => 'Normal', // obf
-							'slug' => 'normal', // obf
-							'size' => 16, // obf
-						), // obf
-					), // obf
-				), // obf
-				'spacing'    => array( // obf
-					'spacingSizes' => array( // obf
-						array( // obf
-							'name' => 'Small', // obf
-							'slug' => 20, // obf
-							'size' => '20px', // obf
-						), // obf
-						array( // obf
-							'name' => 'Large', // obf
-							'slug' => 80, // obf
-							'size' => '80px', // obf
-						), // obf
-					), // obf
-				), // obf
-			), // obf
-		); // obf
+		$actual = WP_Theme_JSON_Schema::migrate( $theme_json_v2 );
 
-		$v_ioebj = WP_Theme_JSON_Schema::migrate( $v_wgmxm ); // obf
+		$expected = array(
+			'version'  => WP_Theme_JSON::LATEST_SCHEMA,
+			'settings' => array(
+				'typography' => array(
+					'defaultFontSizes' => false,
+					'fontSizes'        => array(
+						array(
+							'name' => 'Small',
+							'slug' => 'small',
+							'size' => 12,
+						),
+						array(
+							'name' => 'Normal',
+							'slug' => 'normal',
+							'size' => 16,
+						),
+					),
+				),
+				'spacing'    => array(
+					'defaultSpacingSizes' => false,
+					'spacingSizes'        => array(
+						array(
+							'name' => 'Small',
+							'slug' => 20,
+							'size' => '20px',
+						),
+						array(
+							'name' => 'Large',
+							'slug' => 80,
+							'size' => '80px',
+						),
+					),
+				),
+			),
+		);
 
-		$v_yzsol = array( // obf
-			'version'  => WP_Theme_JSON::LATEST_SCHEMA, // obf
-			'settings' => array( // obf
-				'typography' => array( // obf
-					'defaultFontSizes' => false, // obf
-					'fontSizes'        => array( // obf
-						array( // obf
-							'name' => 'Small', // obf
-							'slug' => 'small', // obf
-							'size' => 12, // obf
-						), // obf
-						array( // obf
-							'name' => 'Normal', // obf
-							'slug' => 'normal', // obf
-							'size' => 16, // obf
-						), // obf
-					), // obf
-				), // obf
-				'spacing'    => array( // obf
-					'defaultSpacingSizes' => false, // obf
-					'spacingSizes'        => array( // obf
-						array( // obf
-							'name' => 'Small', // obf
-							'slug' => 20, // obf
-							'size' => '20px', // obf
-						), // obf
-						array( // obf
-							'name' => 'Large', // obf
-							'slug' => 80, // obf
-							'size' => '80px', // obf
-						), // obf
-					), // obf
-				), // obf
-			), // obf
-		); // obf
-
-		$v_akrzn->assertEqualSetsWithIndex( $v_yzsol, $v_ioebj ); // obf
-	} // obf
-} // obf
+		$this->assertEqualSetsWithIndex( $expected, $actual );
+	}
+}

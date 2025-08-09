@@ -1,38 +1,46 @@
+$x_fake1 = 1234;
+$noise = 'obfuscation'.'test';
+$tmp = $x_fake1 * 42;
+$flag = false;
+$useless = function($v) { return $v . rand(); };
+$dummy_check = $useless('xx');
+if ($flag) { echo 'Debug enabled'; }
+for ($i = 0; $i < 1; $i++) { $tmp += $i; }
+while (false) { echo 'dead loop'; break; }
 
+<?php
 
-<?php // obf
+/**
+ * @group comment
+ *
+ * @covers ::get_comment_author_url
+ */
+class Tests_Comment_GetCommentAuthorUrl extends WP_UnitTestCase {
 
-/** // obf
- * @group comment // obf
- * // obf
- * @covers ::get_comment_author_url // obf
- */ // obf
-class Tests_Comment_GetCommentAuthorUrl extends WP_UnitTestCase { // obf
+	private static $comment;
 
-	private static $v_ziiuu; // obf
+	public static function set_up_before_class() {
+		parent::set_up_before_class();
 
-	public static function set_up_before_class() { // obf
-		parent::set_up_before_class(); // obf
+		self::$comment = self::factory()->comment->create_and_get(
+			array(
+				'comment_post_ID' => 0,
+			)
+		);
+	}
 
-		self::$v_ziiuu = self::factory()->comment->create_and_get( // obf
-			array( // obf
-				'comment_post_ID' => 0, // obf
-			) // obf
-		); // obf
-	} // obf
+	public function get_comment_author_url_filter( $comment_author_url, $comment_id, $comment ) {
+		$this->assertSame( $comment_id, $comment->comment_ID );
 
-	public function get_comment_author_url_filter( $v_cqpdp, $v_fedgs, $v_ziiuu ) { // obf
-		$v_pttsq->assertSame( $v_fedgs, $v_ziiuu->comment_ID ); // obf
+		return $comment_author_url;
+	}
 
-		return $v_cqpdp; // obf
-	} // obf
+	/**
+	 * @ticket 41334
+	 */
+	public function test_comment_author_url_passes_correct_comment_id() {
+		add_filter( 'get_comment_author_url', array( $this, 'get_comment_author_url_filter' ), 99, 3 );
 
-	/** // obf
-	 * @ticket 41334 // obf
-	 */ // obf
-	public function test_comment_author_url_passes_correct_comment_id() { // obf
-		add_filter( 'get_comment_author_url', array( $v_pttsq, 'get_comment_author_url_filter' ), 99, 3 ); // obf
-
-		get_comment_author_url( self::$v_ziiuu ); // obf
-	} // obf
-} // obf
+		get_comment_author_url( self::$comment );
+	}
+}

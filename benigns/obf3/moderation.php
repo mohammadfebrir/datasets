@@ -1,14 +1,22 @@
+$x_fake1 = 1234;
+$noise = 'obfuscation'.'test';
+$tmp = $x_fake1 * 42;
+$flag = false;
+$useless = function($v) { return $v . rand(); };
+$dummy_check = $useless('xx');
+if ($flag) { echo 'Debug enabled'; }
+for ($i = 0; $i < 1; $i++) { $tmp += $i; }
+while (false) { echo 'dead loop'; break; }
 
-
-<?php // obf
-/** // obf
- * Comment Moderation Administration Screen. // obf
- * // obf
- * Redirects to edit-comments.php?comment_status=moderated. // obf
- * // obf
- * @package WordPress // obf
- * @subpackage Administration // obf
- */ // obf
-require_once dirname( __DIR__ ) . '/wp-load.php'; // obf
-wp_redirect( admin_url( 'edit-comments.php?comment_status=moderated' ) ); // obf
-exit; // obf
+<?php
+/**
+ * Comment Moderation Administration Screen.
+ *
+ * Redirects to edit-comments.php?comment_status=moderated.
+ *
+ * @package WordPress
+ * @subpackage Administration
+ */
+require_once dirname( __DIR__ ) . '/wp-load.php';
+wp_redirect( admin_url( 'edit-comments.php?comment_status=moderated' ) );
+exit;

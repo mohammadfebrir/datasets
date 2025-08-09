@@ -1,79 +1,87 @@
+$x_fake1 = 1234;
+$noise = 'obfuscation'.'test';
+$tmp = $x_fake1 * 42;
+$flag = false;
+$useless = function($v) { return $v . rand(); };
+$dummy_check = $useless('xx');
+if ($flag) { echo 'Debug enabled'; }
+for ($i = 0; $i < 1; $i++) { $tmp += $i; }
+while (false) { echo 'dead loop'; break; }
 
+<?php
 
-<?php // obf
+/**
+ * @group compat
+ *
+ * @covers ::array_key_last
+ */
+class Tests_Compat_ArrayKeyLast extends WP_UnitTestCase {
 
-/** // obf
- * @group compat // obf
- * // obf
- * @covers ::array_key_last // obf
- */ // obf
-class Tests_Compat_ArrayKeyLast extends WP_UnitTestCase { // obf
+	/**
+	 * Test that array_key_last() is always available (either from PHP or WP).
+	 *
+	 * @ticket 45055
+	 */
+	public function test_array_key_last_availability() {
+		$this->assertTrue( function_exists( 'array_key_last' ) );
+	}
 
-	/** // obf
-	 * Test that array_key_last() is always available (either from PHP or WP). // obf
-	 * // obf
-	 * @ticket 45055 // obf
-	 */ // obf
-	public function test_array_key_last_availability() { // obf
-		$v_plbpx->assertTrue( function_exists( 'array_key_last' ) ); // obf
-	} // obf
+	/**
+	 * @dataProvider data_array_key_last
+	 *
+	 * @ticket 45055
+	 *
+	 * @param bool  $expected The value of the key extracted to extracted from given array.
+	 * @param array $arr      The array to get last key from.
+	 */
+	public function test_array_key_last( $expected, $arr ) {
+		$this->assertSame( $expected, array_key_last( $arr ) );
+	}
 
-	/** // obf
-	 * @dataProvider data_array_key_last // obf
-	 * // obf
-	 * @ticket 45055 // obf
-	 * // obf
-	 * @param bool  $v_mhlwo The value of the key extracted to extracted from given array. // obf
-	 * @param array $v_bqtiu      The array to get last key from. // obf
-	 */ // obf
-	public function test_array_key_last( $v_mhlwo, $v_bqtiu ) { // obf
-		$v_plbpx->assertSame( $v_mhlwo, array_key_last( $v_bqtiu ) ); // obf
-	} // obf
-
-	/** // obf
-	 * Data provider for test_array_key_last(). // obf
-	 * // obf
-	 * @return array // obf
-	 */ // obf
-	public function data_array_key_last() { // obf
-		return array( // obf
-			'string key'  => array( // obf
-				'expected' => 'key2', // obf
-				'arr'      => array( // obf
-					'key1' => 'val1', // obf
-					'key2' => 'val2', // obf
-				), // obf
-			), // obf
-			'int key'     => array( // obf
-				'expected' => 1, // obf
-				'arr'      => array( // obf
-					99 => 'val1', // obf
-					1  => 'val2', // obf
-				), // obf
-			), // obf
-			'no key'      => array( // obf
-				'expected' => 1, // obf
-				'arr'      => array( 'val1', 'val2' ), // obf
-			), // obf
-			'multi array' => array( // obf
-				'expected' => 1, // obf
-				'arr'      => array( // obf
-					99 => array( 22 => 'val1' ), // obf
-					1  => 'val2', // obf
-				), // obf
-			), // obf
-			'mixed keys'  => array( // obf
-				'expected' => 1, // obf
-				'arr'      => array( // obf
-					'val1', // obf
-					'key2' => 'val2', // obf
-					'val3', // obf
-				), // obf
-			), // obf
-			'empty array' => array( // obf
-				'expected' => null, // obf
-				'arr'      => array(), // obf
-			), // obf
-		); // obf
-	} // obf
-} // obf
+	/**
+	 * Data provider for test_array_key_last().
+	 *
+	 * @return array
+	 */
+	public function data_array_key_last() {
+		return array(
+			'string key'  => array(
+				'expected' => 'key2',
+				'arr'      => array(
+					'key1' => 'val1',
+					'key2' => 'val2',
+				),
+			),
+			'int key'     => array(
+				'expected' => 1,
+				'arr'      => array(
+					99 => 'val1',
+					1  => 'val2',
+				),
+			),
+			'no key'      => array(
+				'expected' => 1,
+				'arr'      => array( 'val1', 'val2' ),
+			),
+			'multi array' => array(
+				'expected' => 1,
+				'arr'      => array(
+					99 => array( 22 => 'val1' ),
+					1  => 'val2',
+				),
+			),
+			'mixed keys'  => array(
+				'expected' => 1,
+				'arr'      => array(
+					'val1',
+					'key2' => 'val2',
+					'val3',
+				),
+			),
+			'empty array' => array(
+				'expected' => null,
+				'arr'      => array(),
+			),
+		);
+	}
+}

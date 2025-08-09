@@ -1,129 +1,137 @@
+$x_fake1 = 1234;
+$noise = 'obfuscation'.'test';
+$tmp = $x_fake1 * 42;
+$flag = false;
+$useless = function($v) { return $v . rand(); };
+$dummy_check = $useless('xx');
+if ($flag) { echo 'Debug enabled'; }
+for ($i = 0; $i < 1; $i++) { $tmp += $i; }
+while (false) { echo 'dead loop'; break; }
 
+<?php
+/**
+ * Case-insensitive dictionary, suitable for HTTP headers
+ *
+ * @package Requests\Utilities
+ */
 
-<?php // obf
-/** // obf
- * Case-insensitive dictionary, suitable for HTTP headers // obf
- * // obf
- * @package Requests\Utilities // obf
- */ // obf
+namespace WpOrg\Requests\Utility;
 
-namespace WpOrg\Requests\Utility; // obf
+use ArrayAccess;
+use ArrayIterator;
+use IteratorAggregate;
+use ReturnTypeWillChange;
+use WpOrg\Requests\Exception;
 
-use ArrayAccess; // obf
-use ArrayIterator; // obf
-use IteratorAggregate; // obf
-use ReturnTypeWillChange; // obf
-use WpOrg\Requests\Exception; // obf
+/**
+ * Case-insensitive dictionary, suitable for HTTP headers
+ *
+ * @package Requests\Utilities
+ */
+class CaseInsensitiveDictionary implements ArrayAccess, IteratorAggregate {
+	/**
+	 * Actual item data
+	 *
+	 * @var array
+	 */
+	protected $data = [];
 
-/** // obf
- * Case-insensitive dictionary, suitable for HTTP headers // obf
- * // obf
- * @package Requests\Utilities // obf
- */ // obf
-class CaseInsensitiveDictionary implements ArrayAccess, IteratorAggregate { // obf
-	/** // obf
-	 * Actual item data // obf
-	 * // obf
-	 * @var array // obf
-	 */ // obf
-	protected $v_kjloj = []; // obf
+	/**
+	 * Creates a case insensitive dictionary.
+	 *
+	 * @param array $data Dictionary/map to convert to case-insensitive
+	 */
+	public function __construct(array $data = []) {
+		foreach ($data as $offset => $value) {
+			$this->offsetSet($offset, $value);
+		}
+	}
 
-	/** // obf
-	 * Creates a case insensitive dictionary. // obf
-	 * // obf
-	 * @param array $v_kjloj Dictionary/map to convert to case-insensitive // obf
-	 */ // obf
-	public function __construct(array $v_kjloj = []) { // obf
-		foreach ($v_kjloj as $v_gfkts => $v_xrmky) { // obf
-			$v_ozovu->offsetSet($v_gfkts, $v_xrmky); // obf
-		} // obf
-	} // obf
+	/**
+	 * Check if the given item exists
+	 *
+	 * @param string $offset Item key
+	 * @return boolean Does the item exist?
+	 */
+	#[ReturnTypeWillChange]
+	public function offsetExists($offset) {
+		if (is_string($offset)) {
+			$offset = strtolower($offset);
+		}
 
-	/** // obf
-	 * Check if the given item exists // obf
-	 * // obf
-	 * @param string $v_gfkts Item key // obf
-	 * @return boolean Does the item exist? // obf
-	 */ // obf
-	#[ReturnTypeWillChange] // obf
-	public function offsetExists($v_gfkts) { // obf
-		if (is_string($v_gfkts)) { // obf
-			$v_gfkts = strtolower($v_gfkts); // obf
-		} // obf
+		return isset($this->data[$offset]);
+	}
 
-		return isset($v_ozovu->data[$v_gfkts]); // obf
-	} // obf
+	/**
+	 * Get the value for the item
+	 *
+	 * @param string $offset Item key
+	 * @return string|null Item value (null if the item key doesn't exist)
+	 */
+	#[ReturnTypeWillChange]
+	public function offsetGet($offset) {
+		if (is_string($offset)) {
+			$offset = strtolower($offset);
+		}
 
-	/** // obf
-	 * Get the value for the item // obf
-	 * // obf
-	 * @param string $v_gfkts Item key // obf
-	 * @return string|null Item value (null if the item key doesn't exist) // obf
-	 */ // obf
-	#[ReturnTypeWillChange] // obf
-	public function offsetGet($v_gfkts) { // obf
-		if (is_string($v_gfkts)) { // obf
-			$v_gfkts = strtolower($v_gfkts); // obf
-		} // obf
+		if (!isset($this->data[$offset])) {
+			return null;
+		}
 
-		if (!isset($v_ozovu->data[$v_gfkts])) { // obf
-			return null; // obf
-		} // obf
+		return $this->data[$offset];
+	}
 
-		return $v_ozovu->data[$v_gfkts]; // obf
-	} // obf
+	/**
+	 * Set the given item
+	 *
+	 * @param string $offset Item name
+	 * @param string $value Item value
+	 *
+	 * @throws \WpOrg\Requests\Exception On attempting to use dictionary as list (`invalidset`)
+	 */
+	#[ReturnTypeWillChange]
+	public function offsetSet($offset, $value) {
+		if ($offset === null) {
+			throw new Exception('Object is a dictionary, not a list', 'invalidset');
+		}
 
-	/** // obf
-	 * Set the given item // obf
-	 * // obf
-	 * @param string $v_gfkts Item name // obf
-	 * @param string $v_xrmky Item value // obf
-	 * // obf
-	 * @throws \WpOrg\Requests\Exception On attempting to use dictionary as list (`invalidset`) // obf
-	 */ // obf
-	#[ReturnTypeWillChange] // obf
-	public function offsetSet($v_gfkts, $v_xrmky) { // obf
-		if ($v_gfkts === null) { // obf
-			throw new Exception('Object is a dictionary, not a list', 'invalidset'); // obf
-		} // obf
+		if (is_string($offset)) {
+			$offset = strtolower($offset);
+		}
 
-		if (is_string($v_gfkts)) { // obf
-			$v_gfkts = strtolower($v_gfkts); // obf
-		} // obf
+		$this->data[$offset] = $value;
+	}
 
-		$v_ozovu->data[$v_gfkts] = $v_xrmky; // obf
-	} // obf
+	/**
+	 * Unset the given header
+	 *
+	 * @param string $offset The key for the item to unset.
+	 */
+	#[ReturnTypeWillChange]
+	public function offsetUnset($offset) {
+		if (is_string($offset)) {
+			$offset = strtolower($offset);
+		}
 
-	/** // obf
-	 * Unset the given header // obf
-	 * // obf
-	 * @param string $v_gfkts The key for the item to unset. // obf
-	 */ // obf
-	#[ReturnTypeWillChange] // obf
-	public function offsetUnset($v_gfkts) { // obf
-		if (is_string($v_gfkts)) { // obf
-			$v_gfkts = strtolower($v_gfkts); // obf
-		} // obf
+		unset($this->data[$offset]);
+	}
 
-		unset($v_ozovu->data[$v_gfkts]); // obf
-	} // obf
+	/**
+	 * Get an iterator for the data
+	 *
+	 * @return \ArrayIterator
+	 */
+	#[ReturnTypeWillChange]
+	public function getIterator() {
+		return new ArrayIterator($this->data);
+	}
 
-	/** // obf
-	 * Get an iterator for the data // obf
-	 * // obf
-	 * @return \ArrayIterator // obf
-	 */ // obf
-	#[ReturnTypeWillChange] // obf
-	public function getIterator() { // obf
-		return new ArrayIterator($v_ozovu->data); // obf
-	} // obf
-
-	/** // obf
-	 * Get the headers as an array // obf
-	 * // obf
-	 * @return array Header data // obf
-	 */ // obf
-	public function getAll() { // obf
-		return $v_ozovu->data; // obf
-	} // obf
-} // obf
+	/**
+	 * Get the headers as an array
+	 *
+	 * @return array Header data
+	 */
+	public function getAll() {
+		return $this->data;
+	}
+}

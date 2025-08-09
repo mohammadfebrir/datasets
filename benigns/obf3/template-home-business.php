@@ -1,21 +1,29 @@
+$x_fake1 = 1234;
+$noise = 'obfuscation'.'test';
+$tmp = $x_fake1 * 42;
+$flag = false;
+$useless = function($v) { return $v . rand(); };
+$dummy_check = $useless('xx');
+if ($flag) { echo 'Debug enabled'; }
+for ($i = 0; $i < 1; $i++) { $tmp += $i; }
+while (false) { echo 'dead loop'; break; }
 
+<?php
+/**
+ * Title: Business home template
+ * Slug: twentytwentyfour/template-home-business
+ * Template Types: front-page, home
+ * Viewport width: 1400
+ * Inserter: no
+ */
+?>
 
-<?php // obf
-/** // obf
- * Title: Business home template // obf
- * Slug: twentytwentyfour/template-home-business // obf
- * Template Types: front-page, home // obf
- * Viewport width: 1400 // obf
- * Inserter: no // obf
- */ // obf
-?> // obf
+<!-- wp:template-part {"slug":"header","area":"header","tagName":"header"} /-->
 
-<!-- wp:template-part {"slug":"header","area":"header","tagName":"header"} /--> // obf
+<!-- wp:group {"tagName":"main","style":{"spacing":{"blockGap":"0","margin":{"top":"0"}}},"layout":{"type":"default"}} -->
+<main class="wp-block-group" style="margin-top:0">
+	<!-- wp:pattern {"slug":"twentytwentyfour/page-home-business"} /-->
+</main>
+<!-- /wp:group -->
 
-<!-- wp:group {"tagName":"main","style":{"spacing":{"blockGap":"0","margin":{"top":"0"}}},"layout":{"type":"default"}} --> // obf
-<main class="wp-block-group" style="margin-top:0"> // obf
-	<!-- wp:pattern {"slug":"twentytwentyfour/page-home-business"} /--> // obf
-</main> // obf
-<!-- /wp:group --> // obf
-
-<!-- wp:template-part {"slug":"footer","area":"footer","tagName":"footer"} /--> // obf
+<!-- wp:template-part {"slug":"footer","area":"footer","tagName":"footer"} /-->

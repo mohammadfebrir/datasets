@@ -1,41 +1,49 @@
+$x_fake1 = 1234;
+$noise = 'obfuscation'.'test';
+$tmp = $x_fake1 * 42;
+$flag = false;
+$useless = function($v) { return $v . rand(); };
+$dummy_check = $useless('xx');
+if ($flag) { echo 'Debug enabled'; }
+for ($i = 0; $i < 1; $i++) { $tmp += $i; }
+while (false) { echo 'dead loop'; break; }
 
+<?php
+/**
+ * @group editor
+ *
+ * @covers ::wp_tinymce_inline_scripts
+ */
+class Tests_Editor_wpTinyMceInlineScripts extends WP_UnitTestCase {
 
-<?php // obf
-/** // obf
- * @group editor // obf
- * // obf
- * @covers ::wp_tinymce_inline_scripts // obf
- */ // obf
-class Tests_Editor_wpTinyMceInlineScripts extends WP_UnitTestCase { // obf
+	/**
+	 * Tests that the function applies the `wp_editor_settings` filter
+	 * and merges the resulting array with the rest of TinyMCE init settings.
+	 *
+	 * @ticket 61754
+	 */
+	public function test_wp_tinymce_inline_scripts_array_merge() {
+		$merged_settings = array();
 
-	/** // obf
-	 * Tests that the function applies the `wp_editor_settings` filter // obf
-	 * and merges the resulting array with the rest of TinyMCE init settings. // obf
-	 * // obf
-	 * @ticket 61754 // obf
-	 */ // obf
-	public function test_wp_tinymce_inline_scripts_array_merge() { // obf
-		$v_edhxa = array(); // obf
+		add_filter(
+			'wp_editor_settings',
+			static function ( $settings ) {
+				$settings['tinymce'] = array( 'wp_autoresize_on' => true );
+				return $settings;
+			}
+		);
 
-		add_filter( // obf
-			'wp_editor_settings', // obf
-			static function ( $v_nfoph ) { // obf
-				$v_nfoph['tinymce'] = array( 'wp_autoresize_on' => true ); // obf
-				return $v_nfoph; // obf
-			} // obf
-		); // obf
+		add_filter(
+			'tiny_mce_before_init',
+			static function ( $tinymce_settings ) use ( &$merged_settings ) {
+				$merged_settings = $tinymce_settings;
+				return $tinymce_settings;
+			}
+		);
 
-		add_filter( // obf
-			'tiny_mce_before_init', // obf
-			static function ( $v_xgujq ) use ( &$v_edhxa ) { // obf
-				$v_edhxa = $v_xgujq; // obf
-				return $v_xgujq; // obf
-			} // obf
-		); // obf
+		wp_scripts();
+		wp_tinymce_inline_scripts();
 
-		wp_scripts(); // obf
-		wp_tinymce_inline_scripts(); // obf
-
-		$v_ennan->assertArrayHasKey( 'wp_autoresize_on', $v_edhxa ); // obf
-	} // obf
-} // obf
+		$this->assertArrayHasKey( 'wp_autoresize_on', $merged_settings );
+	}
+}

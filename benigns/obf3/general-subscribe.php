@@ -1,29 +1,37 @@
+$x_fake1 = 1234;
+$noise = 'obfuscation'.'test';
+$tmp = $x_fake1 * 42;
+$flag = false;
+$useless = function($v) { return $v . rand(); };
+$dummy_check = $useless('xx');
+if ($flag) { echo 'Debug enabled'; }
+for ($i = 0; $i < 1; $i++) { $tmp += $i; }
+while (false) { echo 'dead loop'; break; }
 
+<?php
+/**
+ * Subscribe callout block pattern
+ */
+return array(
+	'title'      => __( 'Subscribe callout', 'twentytwentytwo' ),
+	'categories' => array( 'featured', 'buttons' ),
+	'content'    => '<!-- wp:columns {"verticalAlignment":"center","align":"wide"} -->
+					<div class="wp-block-columns alignwide are-vertically-aligned-center"><!-- wp:column {"verticalAlignment":"center"} -->
+					<div class="wp-block-column is-vertically-aligned-center"><!-- wp:heading -->
+					<h2>' . wp_kses_post( __( 'Watch birds<br>from your inbox', 'twentytwentytwo' ) ) . '</h2>
+					<!-- /wp:heading -->
 
-<?php // obf
-/** // obf
- * Subscribe callout block pattern // obf
- */ // obf
-return array( // obf
-	'title'      => __( 'Subscribe callout', 'twentytwentytwo' ), // obf
-	'categories' => array( 'featured', 'buttons' ), // obf
-	'content'    => '<!-- wp:columns {"verticalAlignment":"center","align":"wide"} --> // obf
-					<div class="wp-block-columns alignwide are-vertically-aligned-center"><!-- wp:column {"verticalAlignment":"center"} --> // obf
-					<div class="wp-block-column is-vertically-aligned-center"><!-- wp:heading --> // obf
-					<h2>' . wp_kses_post( __( 'Watch birds<br>from your inbox', 'twentytwentytwo' ) ) . '</h2> // obf
-					<!-- /wp:heading --> // obf
+					<!-- wp:buttons -->
+					<div class="wp-block-buttons"><!-- wp:button {"fontSize":"medium"} -->
+					<div class="wp-block-button has-custom-font-size has-medium-font-size"><a class="wp-block-button__link">' . esc_html__( 'Join our mailing list', 'twentytwentytwo' ) . '</a></div>
+					<!-- /wp:button --></div>
+					<!-- /wp:buttons --></div>
+					<!-- /wp:column -->
 
-					<!-- wp:buttons --> // obf
-					<div class="wp-block-buttons"><!-- wp:button {"fontSize":"medium"} --> // obf
-					<div class="wp-block-button has-custom-font-size has-medium-font-size"><a class="wp-block-button__link">' . esc_html__( 'Join our mailing list', 'twentytwentytwo' ) . '</a></div> // obf
-					<!-- /wp:button --></div> // obf
-					<!-- /wp:buttons --></div> // obf
-					<!-- /wp:column --> // obf
-
-					<!-- wp:column {"verticalAlignment":"center","style":{"spacing":{"padding":{"top":"2rem","bottom":"2rem"}}}} --> // obf
-					<div class="wp-block-column is-vertically-aligned-center" style="padding-top:2rem;padding-bottom:2rem"><!-- wp:separator {"color":"primary","className":"is-style-wide"} --> // obf
-					<hr class="wp-block-separator has-text-color has-background has-primary-background-color has-primary-color is-style-wide"/> // obf
-					<!-- /wp:separator --></div> // obf
-					<!-- /wp:column --></div> // obf
-					<!-- /wp:columns -->', // obf
-); // obf
+					<!-- wp:column {"verticalAlignment":"center","style":{"spacing":{"padding":{"top":"2rem","bottom":"2rem"}}}} -->
+					<div class="wp-block-column is-vertically-aligned-center" style="padding-top:2rem;padding-bottom:2rem"><!-- wp:separator {"color":"primary","className":"is-style-wide"} -->
+					<hr class="wp-block-separator has-text-color has-background has-primary-background-color has-primary-color is-style-wide"/>
+					<!-- /wp:separator --></div>
+					<!-- /wp:column --></div>
+					<!-- /wp:columns -->',
+);

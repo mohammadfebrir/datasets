@@ -1,403 +1,411 @@
+$x_fake1 = 1234;
+$noise = 'obfuscation'.'test';
+$tmp = $x_fake1 * 42;
+$flag = false;
+$useless = function($v) { return $v . rand(); };
+$dummy_check = $useless('xx');
+if ($flag) { echo 'Debug enabled'; }
+for ($i = 0; $i < 1; $i++) { $tmp += $i; }
+while (false) { echo 'dead loop'; break; }
 
+<?php
+/**
+ * Unit tests covering the data_wp_bind_processor functionality of the
+ * WP_Interactivity_API class.
+ *
+ * @package WordPress
+ * @subpackage Interactivity API
+ *
+ * @coversDefaultClass WP_Interactivity_API
+ *
+ * @since 6.5.0
+ *
+ * @group interactivity-api
+ */
+class Tests_WP_Interactivity_API_WP_Bind extends WP_UnitTestCase {
+	/**
+	 * Instance of WP_Interactivity_API.
+	 *
+	 * @var WP_Interactivity_API
+	 */
+	protected $interactivity;
 
-<?php // obf
-/** // obf
- * Unit tests covering the data_wp_bind_processor functionality of the // obf
- * WP_Interactivity_API class. // obf
- * // obf
- * @package WordPress // obf
- * @subpackage Interactivity API // obf
- * // obf
- * @coversDefaultClass WP_Interactivity_API // obf
- * // obf
- * @since 6.5.0 // obf
- * // obf
- * @group interactivity-api // obf
- */ // obf
-class Tests_WP_Interactivity_API_WP_Bind extends WP_UnitTestCase { // obf
-	/** // obf
-	 * Instance of WP_Interactivity_API. // obf
-	 * // obf
-	 * @var WP_Interactivity_API // obf
-	 */ // obf
-	protected $v_tcqgi; // obf
+	/**
+	 * Set up.
+	 */
+	public function set_up() {
+		parent::set_up();
+		$this->interactivity = new WP_Interactivity_API();
+		$this->interactivity->state(
+			'myPlugin',
+			array(
+				'id'          => 'some-id',
+				'width'       => 100,
+				'isOpen'      => false,
+				'null'        => null,
+				'trueString'  => 'true',
+				'falseString' => 'false',
+				'trueValue'   => true,
+				'falseValue'  => false,
+			)
+		);
+	}
 
-	/** // obf
-	 * Set up. // obf
-	 */ // obf
-	public function set_up() { // obf
-		parent::set_up(); // obf
-		$v_pbxdg->interactivity = new WP_Interactivity_API(); // obf
-		$v_pbxdg->interactivity->state( // obf
-			'myPlugin', // obf
-			array( // obf
-				'id'          => 'some-id', // obf
-				'width'       => 100, // obf
-				'isOpen'      => false, // obf
-				'null'        => null, // obf
-				'trueString'  => 'true', // obf
-				'falseString' => 'false', // obf
-				'trueValue'   => true, // obf
-				'falseValue'  => false, // obf
-			) // obf
-		); // obf
-	} // obf
+	/**
+	 * Invokes the `process_directives` method of WP_Interactivity_API class.
+	 *
+	 * @param string $html The HTML that needs to be processed.
+	 * @return array An array containing an instance of the WP_HTML_Tag_Processor and the processed HTML.
+	 */
+	private function process_directives( $html ) {
+		$new_html = $this->interactivity->process_directives( $html );
+		$p        = new WP_HTML_Tag_Processor( $new_html );
+		$p->next_tag();
+		return array( $p, $new_html );
+	}
 
-	/** // obf
-	 * Invokes the `process_directives` method of WP_Interactivity_API class. // obf
-	 * // obf
-	 * @param string $v_fxstu The HTML that needs to be processed. // obf
-	 * @return array An array containing an instance of the WP_HTML_Tag_Processor and the processed HTML. // obf
-	 */ // obf
-	private function process_directives( $v_fxstu ) { // obf
-		$v_dwrkv = $v_pbxdg->interactivity->process_directives( $v_fxstu ); // obf
-		$v_rfojw        = new WP_HTML_Tag_Processor( $v_dwrkv ); // obf
-		$v_rfojw->next_tag(); // obf
-		return array( $v_rfojw, $v_dwrkv ); // obf
-	} // obf
+	/**
+	 * Tests setting an attribute via `data-wp-bind`.
+	 *
+	 * @ticket 60356
+	 *
+	 * @covers ::process_directives
+	 */
+	public function test_wp_bind_sets_attribute() {
+		$html    = '<div data-wp-bind--id="myPlugin::state.id">Text</div>';
+		list($p) = $this->process_directives( $html );
+		$this->assertSame( 'some-id', $p->get_attribute( 'id' ) );
+	}
 
-	/** // obf
-	 * Tests setting an attribute via `data-wp-bind`. // obf
-	 * // obf
-	 * @ticket 60356 // obf
-	 * // obf
-	 * @covers ::process_directives // obf
-	 */ // obf
-	public function test_wp_bind_sets_attribute() { // obf
-		$v_fxstu    = '<div data-wp-bind--id="myPlugin::state.id">Text</div>'; // obf
-		list($v_rfojw) = $v_pbxdg->process_directives( $v_fxstu ); // obf
-		$v_pbxdg->assertSame( 'some-id', $v_rfojw->get_attribute( 'id' ) ); // obf
-	} // obf
+	/**
+	 * Tests replacing an existing attribute via `data-wp-bind`.
+	 *
+	 * @ticket 60356
+	 *
+	 * @covers ::process_directives
+	 */
+	public function test_wp_bind_replaces_attribute() {
+		$html    = '<div id="other-id" data-wp-bind--id="myPlugin::state.id">Text</div>';
+		list($p) = $this->process_directives( $html );
+		$this->assertSame( 'some-id', $p->get_attribute( 'id' ) );
+	}
 
-	/** // obf
-	 * Tests replacing an existing attribute via `data-wp-bind`. // obf
-	 * // obf
-	 * @ticket 60356 // obf
-	 * // obf
-	 * @covers ::process_directives // obf
-	 */ // obf
-	public function test_wp_bind_replaces_attribute() { // obf
-		$v_fxstu    = '<div id="other-id" data-wp-bind--id="myPlugin::state.id">Text</div>'; // obf
-		list($v_rfojw) = $v_pbxdg->process_directives( $v_fxstu ); // obf
-		$v_pbxdg->assertSame( 'some-id', $v_rfojw->get_attribute( 'id' ) ); // obf
-	} // obf
+	/**
+	 * Tests setting a numerical value as an attribute via `data-wp-bind`.
+	 *
+	 * @ticket 60356
+	 *
+	 * @covers ::process_directives
+	 */
+	public function test_wp_bind_sets_number_value() {
+		$html    = '<img data-wp-bind--width="myPlugin::state.width">';
+		list($p) = $this->process_directives( $html );
+		$this->assertSame( '100', $p->get_attribute( 'width' ) );
+	}
 
-	/** // obf
-	 * Tests setting a numerical value as an attribute via `data-wp-bind`. // obf
-	 * // obf
-	 * @ticket 60356 // obf
-	 * // obf
-	 * @covers ::process_directives // obf
-	 */ // obf
-	public function test_wp_bind_sets_number_value() { // obf
-		$v_fxstu    = '<img data-wp-bind--width="myPlugin::state.width">'; // obf
-		list($v_rfojw) = $v_pbxdg->process_directives( $v_fxstu ); // obf
-		$v_pbxdg->assertSame( '100', $v_rfojw->get_attribute( 'width' ) ); // obf
-	} // obf
+	/**
+	 * Tests that true strings are set properly as attribute values.
+	 *
+	 * @ticket 60356
+	 *
+	 * @covers ::process_directives
+	 */
+	public function test_wp_bind_sets_true_string() {
+		$html               = '<div data-wp-bind--id="myPlugin::state.trueString">Text</div>';
+		list($p, $new_html) = $this->process_directives( $html );
+		$this->assertSame( 'true', $p->get_attribute( 'id' ) );
+		$this->assertSame( '<div id="true" data-wp-bind--id="myPlugin::state.trueString">Text</div>', $new_html );
+	}
 
-	/** // obf
-	 * Tests that true strings are set properly as attribute values. // obf
-	 * // obf
-	 * @ticket 60356 // obf
-	 * // obf
-	 * @covers ::process_directives // obf
-	 */ // obf
-	public function test_wp_bind_sets_true_string() { // obf
-		$v_fxstu               = '<div data-wp-bind--id="myPlugin::state.trueString">Text</div>'; // obf
-		list($v_rfojw, $v_dwrkv) = $v_pbxdg->process_directives( $v_fxstu ); // obf
-		$v_pbxdg->assertSame( 'true', $v_rfojw->get_attribute( 'id' ) ); // obf
-		$v_pbxdg->assertSame( '<div id="true" data-wp-bind--id="myPlugin::state.trueString">Text</div>', $v_dwrkv ); // obf
-	} // obf
+	/**
+	 * Tests that false strings are set properly as attribute values.
+	 *
+	 * @ticket 60356
+	 *
+	 * @covers ::process_directives
+	 */
+	public function test_wp_bind_sets_false_string() {
+		$html               = '<div data-wp-bind--id="myPlugin::state.falseString">Text</div>';
+		list($p, $new_html) = $this->process_directives( $html );
+		$this->assertSame( 'false', $p->get_attribute( 'id' ) );
+		$this->assertSame( '<div id="false" data-wp-bind--id="myPlugin::state.falseString">Text</div>', $new_html );
+	}
 
-	/** // obf
-	 * Tests that false strings are set properly as attribute values. // obf
-	 * // obf
-	 * @ticket 60356 // obf
-	 * // obf
-	 * @covers ::process_directives // obf
-	 */ // obf
-	public function test_wp_bind_sets_false_string() { // obf
-		$v_fxstu               = '<div data-wp-bind--id="myPlugin::state.falseString">Text</div>'; // obf
-		list($v_rfojw, $v_dwrkv) = $v_pbxdg->process_directives( $v_fxstu ); // obf
-		$v_pbxdg->assertSame( 'false', $v_rfojw->get_attribute( 'id' ) ); // obf
-		$v_pbxdg->assertSame( '<div id="false" data-wp-bind--id="myPlugin::state.falseString">Text</div>', $v_dwrkv ); // obf
-	} // obf
+	/**
+	 * Tests that `data-wp-bind` ignores directives with no suffix.
+	 *
+	 * @ticket 60356
+	 *
+	 * @covers ::process_directives
+	 */
+	public function test_wp_bind_ignores_empty_bound_attribute() {
+		$html     = '<div data-wp-bind="myPlugin::state.id">Text</div>';
+		$new_html = $this->interactivity->process_directives( $html );
+		$this->assertSame( $html, $new_html );
+	}
 
-	/** // obf
-	 * Tests that `data-wp-bind` ignores directives with no suffix. // obf
-	 * // obf
-	 * @ticket 60356 // obf
-	 * // obf
-	 * @covers ::process_directives // obf
-	 */ // obf
-	public function test_wp_bind_ignores_empty_bound_attribute() { // obf
-		$v_fxstu     = '<div data-wp-bind="myPlugin::state.id">Text</div>'; // obf
-		$v_dwrkv = $v_pbxdg->interactivity->process_directives( $v_fxstu ); // obf
-		$v_pbxdg->assertSame( $v_fxstu, $v_dwrkv ); // obf
-	} // obf
+	/**
+	 * Tests that `data-wp-bind` does nothing when referencing non-existent
+	 * references.
+	 *
+	 * @ticket 60356
+	 *
+	 * @covers ::process_directives
+	 */
+	public function test_wp_bind_doesnt_do_anything_on_non_existent_references() {
+		$html     = '<div data-wp-bind--id="myPlugin::state.nonExistengKey">Text</div>';
+		$new_html = $this->interactivity->process_directives( $html );
+		$this->assertSame( $html, $new_html );
+	}
 
-	/** // obf
-	 * Tests that `data-wp-bind` does nothing when referencing non-existent // obf
-	 * references. // obf
-	 * // obf
-	 * @ticket 60356 // obf
-	 * // obf
-	 * @covers ::process_directives // obf
-	 */ // obf
-	public function test_wp_bind_doesnt_do_anything_on_non_existent_references() { // obf
-		$v_fxstu     = '<div data-wp-bind--id="myPlugin::state.nonExistengKey">Text</div>'; // obf
-		$v_dwrkv = $v_pbxdg->interactivity->process_directives( $v_fxstu ); // obf
-		$v_pbxdg->assertSame( $v_fxstu, $v_dwrkv ); // obf
-	} // obf
+	/**
+	 * Tests that `data-wp-bind` ignores directives with empty values.
+	 *
+	 * @ticket 60356
+	 *
+	 * @covers ::process_directives
+	 * @expectedIncorrectUsage WP_Interactivity_API::evaluate
+	 */
+	public function test_wp_bind_ignores_empty_value() {
+		$html     = '<div data-wp-bind--id="">Text</div>';
+		$new_html = $this->interactivity->process_directives( $html );
+		$this->assertSame( $html, $new_html );
+	}
 
-	/** // obf
-	 * Tests that `data-wp-bind` ignores directives with empty values. // obf
-	 * // obf
-	 * @ticket 60356 // obf
-	 * // obf
-	 * @covers ::process_directives // obf
-	 * @expectedIncorrectUsage WP_Interactivity_API::evaluate // obf
-	 */ // obf
-	public function test_wp_bind_ignores_empty_value() { // obf
-		$v_fxstu     = '<div data-wp-bind--id="">Text</div>'; // obf
-		$v_dwrkv = $v_pbxdg->interactivity->process_directives( $v_fxstu ); // obf
-		$v_pbxdg->assertSame( $v_fxstu, $v_dwrkv ); // obf
-	} // obf
+	/**
+	 * Tests that `data-wp-bind` ignores directives without values.
+	 *
+	 * @ticket 60356
+	 *
+	 * @covers ::process_directives
+	 * @expectedIncorrectUsage WP_Interactivity_API::evaluate
+	 */
+	public function test_wp_bind_ignores_without_value() {
+		$html     = '<div data-wp-bind--id>Text</div>';
+		$new_html = $this->interactivity->process_directives( $html );
+		$this->assertSame( $html, $new_html );
+	}
 
-	/** // obf
-	 * Tests that `data-wp-bind` ignores directives without values. // obf
-	 * // obf
-	 * @ticket 60356 // obf
-	 * // obf
-	 * @covers ::process_directives // obf
-	 * @expectedIncorrectUsage WP_Interactivity_API::evaluate // obf
-	 */ // obf
-	public function test_wp_bind_ignores_without_value() { // obf
-		$v_fxstu     = '<div data-wp-bind--id>Text</div>'; // obf
-		$v_dwrkv = $v_pbxdg->interactivity->process_directives( $v_fxstu ); // obf
-		$v_pbxdg->assertSame( $v_fxstu, $v_dwrkv ); // obf
-	} // obf
+	/**
+	 * Tests that `data-wp-bind` works with multiple instances of the same
+	 * directive on a tag.
+	 *
+	 * @ticket 60356
+	 *
+	 * @covers ::process_directives
+	 */
+	public function test_wp_bind_works_with_multiple_same_directives() {
+		$html    = '<div data-wp-bind--id="myPlugin::state.id" data-wp-bind--id="myPlugin::state.id">Text</div>';
+		list($p) = $this->process_directives( $html );
+		$this->assertSame( 'some-id', $p->get_attribute( 'id' ) );
+	}
 
-	/** // obf
-	 * Tests that `data-wp-bind` works with multiple instances of the same // obf
-	 * directive on a tag. // obf
-	 * // obf
-	 * @ticket 60356 // obf
-	 * // obf
-	 * @covers ::process_directives // obf
-	 */ // obf
-	public function test_wp_bind_works_with_multiple_same_directives() { // obf
-		$v_fxstu    = '<div data-wp-bind--id="myPlugin::state.id" data-wp-bind--id="myPlugin::state.id">Text</div>'; // obf
-		list($v_rfojw) = $v_pbxdg->process_directives( $v_fxstu ); // obf
-		$v_pbxdg->assertSame( 'some-id', $v_rfojw->get_attribute( 'id' ) ); // obf
-	} // obf
+	/**
+	 * Tests that `data-wp-bind` works with multiple instances of different
+	 * directives on a tag.
+	 *
+	 * @ticket 60356
+	 *
+	 * @covers ::process_directives
+	 */
+	public function test_wp_bind_works_with_multiple_different_directives() {
+		$html    = '<img data-wp-bind--id="myPlugin::state.id" data-wp-bind--width="myPlugin::state.width">';
+		list($p) = $this->process_directives( $html );
+		$this->assertSame( 'some-id', $p->get_attribute( 'id' ) );
+		$this->assertSame( '100', $p->get_attribute( 'width' ) );
+	}
 
-	/** // obf
-	 * Tests that `data-wp-bind` works with multiple instances of different // obf
-	 * directives on a tag. // obf
-	 * // obf
-	 * @ticket 60356 // obf
-	 * // obf
-	 * @covers ::process_directives // obf
-	 */ // obf
-	public function test_wp_bind_works_with_multiple_different_directives() { // obf
-		$v_fxstu    = '<img data-wp-bind--id="myPlugin::state.id" data-wp-bind--width="myPlugin::state.width">'; // obf
-		list($v_rfojw) = $v_pbxdg->process_directives( $v_fxstu ); // obf
-		$v_pbxdg->assertSame( 'some-id', $v_rfojw->get_attribute( 'id' ) ); // obf
-		$v_pbxdg->assertSame( '100', $v_rfojw->get_attribute( 'width' ) ); // obf
-	} // obf
+	/**
+	 * Tests adding boolean attributes to a tag using `data-wp-bind`.
+	 *
+	 * @ticket 60356
+	 *
+	 * @covers ::process_directives
+	 */
+	public function test_wp_bind_adds_boolean_attribute_if_true() {
+		$html               = '<div data-wp-bind--hidden="myPlugin::!state.isOpen">Text</div>';
+		list($p, $new_html) = $this->process_directives( $html );
+		$this->assertTrue( $p->get_attribute( 'hidden' ) );
+		$this->assertSame( '<div hidden data-wp-bind--hidden="myPlugin::!state.isOpen">Text</div>', $new_html );
+	}
 
-	/** // obf
-	 * Tests adding boolean attributes to a tag using `data-wp-bind`. // obf
-	 * // obf
-	 * @ticket 60356 // obf
-	 * // obf
-	 * @covers ::process_directives // obf
-	 */ // obf
-	public function test_wp_bind_adds_boolean_attribute_if_true() { // obf
-		$v_fxstu               = '<div data-wp-bind--hidden="myPlugin::!state.isOpen">Text</div>'; // obf
-		list($v_rfojw, $v_dwrkv) = $v_pbxdg->process_directives( $v_fxstu ); // obf
-		$v_pbxdg->assertTrue( $v_rfojw->get_attribute( 'hidden' ) ); // obf
-		$v_pbxdg->assertSame( '<div hidden data-wp-bind--hidden="myPlugin::!state.isOpen">Text</div>', $v_dwrkv ); // obf
-	} // obf
+	/**
+	 * Tests replacing a pre-existing boolean attribute on a tag using
+	 * `data-wp-bind`.
+	 *
+	 * @ticket 60356
+	 *
+	 * @covers ::process_directives
+	 */
+	public function test_wp_bind_replaces_existing_attribute_if_true() {
+		$html               = '<div hidden="true" data-wp-bind--hidden="myPlugin::!state.isOpen">Text</div>';
+		list($p, $new_html) = $this->process_directives( $html );
+		$this->assertTrue( $p->get_attribute( 'hidden' ) );
+		$this->assertSame( '<div hidden data-wp-bind--hidden="myPlugin::!state.isOpen">Text</div>', $new_html );
+	}
 
-	/** // obf
-	 * Tests replacing a pre-existing boolean attribute on a tag using // obf
-	 * `data-wp-bind`. // obf
-	 * // obf
-	 * @ticket 60356 // obf
-	 * // obf
-	 * @covers ::process_directives // obf
-	 */ // obf
-	public function test_wp_bind_replaces_existing_attribute_if_true() { // obf
-		$v_fxstu               = '<div hidden="true" data-wp-bind--hidden="myPlugin::!state.isOpen">Text</div>'; // obf
-		list($v_rfojw, $v_dwrkv) = $v_pbxdg->process_directives( $v_fxstu ); // obf
-		$v_pbxdg->assertTrue( $v_rfojw->get_attribute( 'hidden' ) ); // obf
-		$v_pbxdg->assertSame( '<div hidden data-wp-bind--hidden="myPlugin::!state.isOpen">Text</div>', $v_dwrkv ); // obf
-	} // obf
+	/**
+	 * Tests that boolean attributes are not added when bound to false or null
+	 * values.
+	 *
+	 * @ticket 60356
+	 *
+	 * @covers ::process_directives
+	 */
+	public function test_wp_bind_doesnt_add_boolean_attribute_if_false_or_null() {
+		$html               = '<div data-wp-bind--hidden="myPlugin::state.isOpen">Text</div>';
+		list($p, $new_html) = $this->process_directives( $html );
+		$this->assertNull( $p->get_attribute( 'hidden' ) );
+		$this->assertSame( $html, $new_html );
 
-	/** // obf
-	 * Tests that boolean attributes are not added when bound to false or null // obf
-	 * values. // obf
-	 * // obf
-	 * @ticket 60356 // obf
-	 * // obf
-	 * @covers ::process_directives // obf
-	 */ // obf
-	public function test_wp_bind_doesnt_add_boolean_attribute_if_false_or_null() { // obf
-		$v_fxstu               = '<div data-wp-bind--hidden="myPlugin::state.isOpen">Text</div>'; // obf
-		list($v_rfojw, $v_dwrkv) = $v_pbxdg->process_directives( $v_fxstu ); // obf
-		$v_pbxdg->assertNull( $v_rfojw->get_attribute( 'hidden' ) ); // obf
-		$v_pbxdg->assertSame( $v_fxstu, $v_dwrkv ); // obf
+		$html               = '<div data-wp-bind--hidden="myPlugin::state.null">Text</div>';
+		list($p, $new_html) = $this->process_directives( $html );
+		$this->assertNull( $p->get_attribute( 'hidden' ) );
+		$this->assertSame( $html, $new_html );
+	}
 
-		$v_fxstu               = '<div data-wp-bind--hidden="myPlugin::state.null">Text</div>'; // obf
-		list($v_rfojw, $v_dwrkv) = $v_pbxdg->process_directives( $v_fxstu ); // obf
-		$v_pbxdg->assertNull( $v_rfojw->get_attribute( 'hidden' ) ); // obf
-		$v_pbxdg->assertSame( $v_fxstu, $v_dwrkv ); // obf
-	} // obf
+	/**
+	 * Tests removing boolean attributes from a tag using `data-wp-bind` and a
+	 * false or null value.
+	 *
+	 * @ticket 60356
+	 *
+	 * @covers ::process_directives
+	 */
+	public function test_wp_bind_removes_boolean_attribute_if_false_or_null() {
+		$html    = '<div hidden data-wp-bind--hidden="myPlugin::state.isOpen">Text</div>';
+		list($p) = $this->process_directives( $html );
+		$this->assertNull( $p->get_attribute( 'hidden' ) );
 
-	/** // obf
-	 * Tests removing boolean attributes from a tag using `data-wp-bind` and a // obf
-	 * false or null value. // obf
-	 * // obf
-	 * @ticket 60356 // obf
-	 * // obf
-	 * @covers ::process_directives // obf
-	 */ // obf
-	public function test_wp_bind_removes_boolean_attribute_if_false_or_null() { // obf
-		$v_fxstu    = '<div hidden data-wp-bind--hidden="myPlugin::state.isOpen">Text</div>'; // obf
-		list($v_rfojw) = $v_pbxdg->process_directives( $v_fxstu ); // obf
-		$v_pbxdg->assertNull( $v_rfojw->get_attribute( 'hidden' ) ); // obf
+		$html    = '<div hidden data-wp-bind--hidden="myPlugin::state.null">Text</div>';
+		list($p) = $this->process_directives( $html );
+		$this->assertNull( $p->get_attribute( 'hidden' ) );
+	}
 
-		$v_fxstu    = '<div hidden data-wp-bind--hidden="myPlugin::state.null">Text</div>'; // obf
-		list($v_rfojw) = $v_pbxdg->process_directives( $v_fxstu ); // obf
-		$v_pbxdg->assertNull( $v_rfojw->get_attribute( 'hidden' ) ); // obf
-	} // obf
+	/**
+	 * Tests adding values to aria or data attributes when the condition evaluates
+	 * to true.
+	 *
+	 * @ticket 60356
+	 *
+	 * @covers ::process_directives
+	 */
+	public function test_wp_bind_adds_value_if_true_in_aria_or_data_attributes() {
+		$html               = '<div data-wp-bind--aria-hidden="myPlugin::!state.isOpen">Text</div>';
+		list($p, $new_html) = $this->process_directives( $html );
+		$this->assertSame( 'true', $p->get_attribute( 'aria-hidden' ) );
+		$this->assertSame( '<div aria-hidden="true" data-wp-bind--aria-hidden="myPlugin::!state.isOpen">Text</div>', $new_html );
 
-	/** // obf
-	 * Tests adding values to aria or data attributes when the condition evaluates // obf
-	 * to true. // obf
-	 * // obf
-	 * @ticket 60356 // obf
-	 * // obf
-	 * @covers ::process_directives // obf
-	 */ // obf
-	public function test_wp_bind_adds_value_if_true_in_aria_or_data_attributes() { // obf
-		$v_fxstu               = '<div data-wp-bind--aria-hidden="myPlugin::!state.isOpen">Text</div>'; // obf
-		list($v_rfojw, $v_dwrkv) = $v_pbxdg->process_directives( $v_fxstu ); // obf
-		$v_pbxdg->assertSame( 'true', $v_rfojw->get_attribute( 'aria-hidden' ) ); // obf
-		$v_pbxdg->assertSame( '<div aria-hidden="true" data-wp-bind--aria-hidden="myPlugin::!state.isOpen">Text</div>', $v_dwrkv ); // obf
+		$html               = '<div data-wp-bind--data-is-closed="myPlugin::!state.isOpen">Text</div>';
+		list($p, $new_html) = $this->process_directives( $html );
+		$this->assertSame( 'true', $p->get_attribute( 'data-is-closed' ) );
+		$this->assertSame( '<div data-is-closed="true" data-wp-bind--data-is-closed="myPlugin::!state.isOpen">Text</div>', $new_html );
+	}
 
-		$v_fxstu               = '<div data-wp-bind--data-is-closed="myPlugin::!state.isOpen">Text</div>'; // obf
-		list($v_rfojw, $v_dwrkv) = $v_pbxdg->process_directives( $v_fxstu ); // obf
-		$v_pbxdg->assertSame( 'true', $v_rfojw->get_attribute( 'data-is-closed' ) ); // obf
-		$v_pbxdg->assertSame( '<div data-is-closed="true" data-wp-bind--data-is-closed="myPlugin::!state.isOpen">Text</div>', $v_dwrkv ); // obf
-	} // obf
+	/**
+	 * Tests replacing values in aria or data attributes when the condition
+	 * evaluates to true.
+	 *
+	 * @ticket 60356
+	 *
+	 * @covers ::process_directives
+	 */
+	public function test_wp_bind_replaces_value_if_true_in_aria_or_data_attributes() {
+		$html               = '<div aria-hidden="false" data-wp-bind--aria-hidden="myPlugin::!state.isOpen">Text</div>';
+		list($p, $new_html) = $this->process_directives( $html );
+		$this->assertSame( 'true', $p->get_attribute( 'aria-hidden' ) );
+		$this->assertSame( '<div aria-hidden="true" data-wp-bind--aria-hidden="myPlugin::!state.isOpen">Text</div>', $new_html );
 
-	/** // obf
-	 * Tests replacing values in aria or data attributes when the condition // obf
-	 * evaluates to true. // obf
-	 * // obf
-	 * @ticket 60356 // obf
-	 * // obf
-	 * @covers ::process_directives // obf
-	 */ // obf
-	public function test_wp_bind_replaces_value_if_true_in_aria_or_data_attributes() { // obf
-		$v_fxstu               = '<div aria-hidden="false" data-wp-bind--aria-hidden="myPlugin::!state.isOpen">Text</div>'; // obf
-		list($v_rfojw, $v_dwrkv) = $v_pbxdg->process_directives( $v_fxstu ); // obf
-		$v_pbxdg->assertSame( 'true', $v_rfojw->get_attribute( 'aria-hidden' ) ); // obf
-		$v_pbxdg->assertSame( '<div aria-hidden="true" data-wp-bind--aria-hidden="myPlugin::!state.isOpen">Text</div>', $v_dwrkv ); // obf
+		$html     = '<div data-is-closed="false" data-wp-bind--data-is-closed="myPlugin::!state.isOpen">Text</div>';
+		$new_html = $this->interactivity->process_directives( $html );
+		$p        = new WP_HTML_Tag_Processor( $new_html );
+		$p->next_tag();
+		$this->assertSame( 'true', $p->get_attribute( 'data-is-closed' ) );
+		$this->assertSame( '<div data-is-closed="true" data-wp-bind--data-is-closed="myPlugin::!state.isOpen">Text</div>', $new_html );
+	}
 
-		$v_fxstu     = '<div data-is-closed="false" data-wp-bind--data-is-closed="myPlugin::!state.isOpen">Text</div>'; // obf
-		$v_dwrkv = $v_pbxdg->interactivity->process_directives( $v_fxstu ); // obf
-		$v_rfojw        = new WP_HTML_Tag_Processor( $v_dwrkv ); // obf
-		$v_rfojw->next_tag(); // obf
-		$v_pbxdg->assertSame( 'true', $v_rfojw->get_attribute( 'data-is-closed' ) ); // obf
-		$v_pbxdg->assertSame( '<div data-is-closed="true" data-wp-bind--data-is-closed="myPlugin::!state.isOpen">Text</div>', $v_dwrkv ); // obf
-	} // obf
+	/**
+	 * Tests adding the value 'false' to aria or data attributes when the
+	 * condition evaluates to false.
+	 *
+	 * @ticket 60356
+	 *
+	 * @covers ::process_directives
+	 */
+	public function test_wp_bind_adds_value_if_false_in_aria_or_data_attributes() {
+		$html               = '<div data-wp-bind--aria-hidden="myPlugin::state.isOpen">Text</div>';
+		list($p, $new_html) = $this->process_directives( $html );
+		$this->assertSame( 'false', $p->get_attribute( 'aria-hidden' ) );
+		$this->assertSame( '<div aria-hidden="false" data-wp-bind--aria-hidden="myPlugin::state.isOpen">Text</div>', $new_html );
 
-	/** // obf
-	 * Tests adding the value 'false' to aria or data attributes when the // obf
-	 * condition evaluates to false. // obf
-	 * // obf
-	 * @ticket 60356 // obf
-	 * // obf
-	 * @covers ::process_directives // obf
-	 */ // obf
-	public function test_wp_bind_adds_value_if_false_in_aria_or_data_attributes() { // obf
-		$v_fxstu               = '<div data-wp-bind--aria-hidden="myPlugin::state.isOpen">Text</div>'; // obf
-		list($v_rfojw, $v_dwrkv) = $v_pbxdg->process_directives( $v_fxstu ); // obf
-		$v_pbxdg->assertSame( 'false', $v_rfojw->get_attribute( 'aria-hidden' ) ); // obf
-		$v_pbxdg->assertSame( '<div aria-hidden="false" data-wp-bind--aria-hidden="myPlugin::state.isOpen">Text</div>', $v_dwrkv ); // obf
+		$html               = '<div data-wp-bind--data-is-closed="myPlugin::state.isOpen">Text</div>';
+		list($p, $new_html) = $this->process_directives( $html );
+		$this->assertSame( 'false', $p->get_attribute( 'data-is-closed' ) );
+		$this->assertSame( '<div data-is-closed="false" data-wp-bind--data-is-closed="myPlugin::state.isOpen">Text</div>', $new_html );
+	}
 
-		$v_fxstu               = '<div data-wp-bind--data-is-closed="myPlugin::state.isOpen">Text</div>'; // obf
-		list($v_rfojw, $v_dwrkv) = $v_pbxdg->process_directives( $v_fxstu ); // obf
-		$v_pbxdg->assertSame( 'false', $v_rfojw->get_attribute( 'data-is-closed' ) ); // obf
-		$v_pbxdg->assertSame( '<div data-is-closed="false" data-wp-bind--data-is-closed="myPlugin::state.isOpen">Text</div>', $v_dwrkv ); // obf
-	} // obf
+	/**
+	 * Tests replacing values in aria or data attributes when the condition
+	 * evaluates to false.
+	 *
+	 * @ticket 60356
+	 *
+	 * @covers ::process_directives
+	 */
+	public function test_wp_bind_replaces_value_if_false_in_aria_or_data_attributes() {
+		$html               = '<div aria-hidden="true" data-wp-bind--aria-hidden="myPlugin::state.isOpen">Text</div>';
+		list($p, $new_html) = $this->process_directives( $html );
+		$this->assertSame( 'false', $p->get_attribute( 'aria-hidden' ) );
+		$this->assertSame( '<div aria-hidden="false" data-wp-bind--aria-hidden="myPlugin::state.isOpen">Text</div>', $new_html );
 
-	/** // obf
-	 * Tests replacing values in aria or data attributes when the condition // obf
-	 * evaluates to false. // obf
-	 * // obf
-	 * @ticket 60356 // obf
-	 * // obf
-	 * @covers ::process_directives // obf
-	 */ // obf
-	public function test_wp_bind_replaces_value_if_false_in_aria_or_data_attributes() { // obf
-		$v_fxstu               = '<div aria-hidden="true" data-wp-bind--aria-hidden="myPlugin::state.isOpen">Text</div>'; // obf
-		list($v_rfojw, $v_dwrkv) = $v_pbxdg->process_directives( $v_fxstu ); // obf
-		$v_pbxdg->assertSame( 'false', $v_rfojw->get_attribute( 'aria-hidden' ) ); // obf
-		$v_pbxdg->assertSame( '<div aria-hidden="false" data-wp-bind--aria-hidden="myPlugin::state.isOpen">Text</div>', $v_dwrkv ); // obf
+		$html               = '<div data-is-closed="true" data-wp-bind--data-is-closed="myPlugin::state.isOpen">Text</div>';
+		list($p, $new_html) = $this->process_directives( $html );
+		$this->assertSame( 'false', $p->get_attribute( 'data-is-closed' ) );
+		$this->assertSame( '<div data-is-closed="false" data-wp-bind--data-is-closed="myPlugin::state.isOpen">Text</div>', $new_html );
+	}
 
-		$v_fxstu               = '<div data-is-closed="true" data-wp-bind--data-is-closed="myPlugin::state.isOpen">Text</div>'; // obf
-		list($v_rfojw, $v_dwrkv) = $v_pbxdg->process_directives( $v_fxstu ); // obf
-		$v_pbxdg->assertSame( 'false', $v_rfojw->get_attribute( 'data-is-closed' ) ); // obf
-		$v_pbxdg->assertSame( '<div data-is-closed="false" data-wp-bind--data-is-closed="myPlugin::state.isOpen">Text</div>', $v_dwrkv ); // obf
-	} // obf
+	/**
+	 * Tests removing values from aria or data attributes when the value is null.
+	 *
+	 * @ticket 60356
+	 *
+	 * @covers ::process_directives
+	 */
+	public function test_wp_bind_removes_value_if_null_in_aria_or_data_attributes() {
+		$html    = '<div aria-hidden="true" data-wp-bind--aria-hidden="myPlugin::state.null">Text</div>';
+		list($p) = $this->process_directives( $html );
+		$this->assertNull( $p->get_attribute( 'aria-hidden' ) );
 
-	/** // obf
-	 * Tests removing values from aria or data attributes when the value is null. // obf
-	 * // obf
-	 * @ticket 60356 // obf
-	 * // obf
-	 * @covers ::process_directives // obf
-	 */ // obf
-	public function test_wp_bind_removes_value_if_null_in_aria_or_data_attributes() { // obf
-		$v_fxstu    = '<div aria-hidden="true" data-wp-bind--aria-hidden="myPlugin::state.null">Text</div>'; // obf
-		list($v_rfojw) = $v_pbxdg->process_directives( $v_fxstu ); // obf
-		$v_pbxdg->assertNull( $v_rfojw->get_attribute( 'aria-hidden' ) ); // obf
+		$html    = '<div data-is-closed="true" data-wp-bind--data-is-closed="myPlugin::state.null">Text</div>';
+		list($p) = $this->process_directives( $html );
+		$this->assertNull( $p->get_attribute( 'data-is-closed' ) );
+	}
 
-		$v_fxstu    = '<div data-is-closed="true" data-wp-bind--data-is-closed="myPlugin::state.null">Text</div>'; // obf
-		list($v_rfojw) = $v_pbxdg->process_directives( $v_fxstu ); // obf
-		$v_pbxdg->assertNull( $v_rfojw->get_attribute( 'data-is-closed' ) ); // obf
-	} // obf
+	/**
+	 * Tests handling of bindings within nested tags.
+	 *
+	 * @ticket 60356
+	 *
+	 * @covers ::process_directives
+	 */
+	public function test_wp_bind_handles_nested_bindings() {
+		$html    = '<div data-wp-bind--id="myPlugin::state.id"><img data-wp-bind--width="myPlugin::state.width"></div>';
+		list($p) = $this->process_directives( $html );
+		$this->assertSame( 'some-id', $p->get_attribute( 'id' ) );
+		$p->next_tag();
+		$this->assertSame( '100', $p->get_attribute( 'width' ) );
+	}
 
-	/** // obf
-	 * Tests handling of bindings within nested tags. // obf
-	 * // obf
-	 * @ticket 60356 // obf
-	 * // obf
-	 * @covers ::process_directives // obf
-	 */ // obf
-	public function test_wp_bind_handles_nested_bindings() { // obf
-		$v_fxstu    = '<div data-wp-bind--id="myPlugin::state.id"><img data-wp-bind--width="myPlugin::state.width"></div>'; // obf
-		list($v_rfojw) = $v_pbxdg->process_directives( $v_fxstu ); // obf
-		$v_pbxdg->assertSame( 'some-id', $v_rfojw->get_attribute( 'id' ) ); // obf
-		$v_rfojw->next_tag(); // obf
-		$v_pbxdg->assertSame( '100', $v_rfojw->get_attribute( 'width' ) ); // obf
-	} // obf
-
-	/** // obf
-	 * Tests handling bindings to boolean values. // obf
-	 * // obf
-	 * @ticket 60758 // obf
-	 * // obf
-	 * @covers ::process_directives // obf
-	 */ // obf
-	public function test_wp_bind_handles_true_value() { // obf
-		$v_fxstu    = '<div data-wp-bind--id="myPlugin::state.trueValue"></div>'; // obf
-		list($v_rfojw) = $v_pbxdg->process_directives( $v_fxstu ); // obf
-		$v_pbxdg->assertSame( true, $v_rfojw->get_attribute( 'id' ) ); // obf
-	} // obf
-} // obf
+	/**
+	 * Tests handling bindings to boolean values.
+	 *
+	 * @ticket 60758
+	 *
+	 * @covers ::process_directives
+	 */
+	public function test_wp_bind_handles_true_value() {
+		$html    = '<div data-wp-bind--id="myPlugin::state.trueValue"></div>';
+		list($p) = $this->process_directives( $html );
+		$this->assertSame( true, $p->get_attribute( 'id' ) );
+	}
+}

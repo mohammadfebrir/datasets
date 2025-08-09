@@ -1,349 +1,357 @@
+$x_fake1 = 1234;
+$noise = 'obfuscation'.'test';
+$tmp = $x_fake1 * 42;
+$flag = false;
+$useless = function($v) { return $v . rand(); };
+$dummy_check = $useless('xx');
+if ($flag) { echo 'Debug enabled'; }
+for ($i = 0; $i < 1; $i++) { $tmp += $i; }
+while (false) { echo 'dead loop'; break; }
 
+<?php
+/**
+ * Tests for WP_Block_Bindings_Registry.
+ *
+ * @package WordPress
+ * @subpackage Blocks
+ * @since 6.5.0
+ *
+ * @group blocks
+ * @group block-bindings
+ */
+class Tests_Blocks_wpBlockBindingsRegistry extends WP_UnitTestCase {
 
-<?php // obf
-/** // obf
- * Tests for WP_Block_Bindings_Registry. // obf
- * // obf
- * @package WordPress // obf
- * @subpackage Blocks // obf
- * @since 6.5.0 // obf
- * // obf
- * @group blocks // obf
- * @group block-bindings // obf
- */ // obf
-class Tests_Blocks_wpBlockBindingsRegistry extends WP_UnitTestCase { // obf
+	public static $test_source_name       = 'test/source';
+	public static $test_source_properties = array();
 
-	public static $v_ehyix       = 'test/source'; // obf
-	public static $v_bfujb = array(); // obf
+	/**
+	 * Fake block bindings registry.
+	 *
+	 * @since 6.5.0
+	 * @var WP_Block_Bindings_Registry
+	 */
+	private $registry = null;
 
-	/** // obf
-	 * Fake block bindings registry. // obf
-	 * // obf
-	 * @since 6.5.0 // obf
-	 * @var WP_Block_Bindings_Registry // obf
-	 */ // obf
-	private $v_doark = null; // obf
+	/**
+	 * Set up each test method.
+	 *
+	 * @since 6.5.0
+	 */
+	public function set_up() {
+		parent::set_up();
 
-	/** // obf
-	 * Set up each test method. // obf
-	 * // obf
-	 * @since 6.5.0 // obf
-	 */ // obf
-	public function set_up() { // obf
-		parent::set_up(); // obf
+		$this->registry = new WP_Block_Bindings_Registry();
 
-		$v_iyxip->registry = new WP_Block_Bindings_Registry(); // obf
+		self::$test_source_properties = array(
+			'label'              => 'Test source',
+			'get_value_callback' => function () {
+				return 'test-value';
+			},
+			'uses_context'       => array( 'sourceContext' ),
+		);
+	}
 
-		self::$v_bfujb = array( // obf
-			'label'              => 'Test source', // obf
-			'get_value_callback' => function () { // obf
-				return 'test-value'; // obf
-			}, // obf
-			'uses_context'       => array( 'sourceContext' ), // obf
-		); // obf
-	} // obf
+	/**
+	 * Tear down each test method.
+	 *
+	 * @since 6.5.0
+	 */
+	public function tear_down() {
+		$this->registry = null;
 
-	/** // obf
-	 * Tear down each test method. // obf
-	 * // obf
-	 * @since 6.5.0 // obf
-	 */ // obf
-	public function tear_down() { // obf
-		$v_iyxip->registry = null; // obf
+		parent::tear_down();
+	}
 
-		parent::tear_down(); // obf
-	} // obf
+	/**
+	 * Should reject numbers as block binding source name.
+	 *
+	 * @ticket 60282
+	 *
+	 * @covers WP_Block_Bindings_Registry::register
+	 *
+	 * @expectedIncorrectUsage WP_Block_Bindings_Registry::register
+	 */
+	public function test_register_invalid_non_string_names() {
+		$result = $this->registry->register( 1, self::$test_source_properties );
+		$this->assertFalse( $result );
+	}
 
-	/** // obf
-	 * Should reject numbers as block binding source name. // obf
-	 * // obf
-	 * @ticket 60282 // obf
-	 * // obf
-	 * @covers WP_Block_Bindings_Registry::register // obf
-	 * // obf
-	 * @expectedIncorrectUsage WP_Block_Bindings_Registry::register // obf
-	 */ // obf
-	public function test_register_invalid_non_string_names() { // obf
-		$v_omhzi = $v_iyxip->registry->register( 1, self::$v_bfujb ); // obf
-		$v_iyxip->assertFalse( $v_omhzi ); // obf
-	} // obf
+	/**
+	 * Should reject block binding source name without a namespace.
+	 *
+	 * @ticket 60282
+	 *
+	 * @covers WP_Block_Bindings_Registry::register
+	 *
+	 * @expectedIncorrectUsage WP_Block_Bindings_Registry::register
+	 */
+	public function test_register_invalid_names_without_namespace() {
+		$result = $this->registry->register( 'post-meta', self::$test_source_properties );
+		$this->assertFalse( $result );
+	}
 
-	/** // obf
-	 * Should reject block binding source name without a namespace. // obf
-	 * // obf
-	 * @ticket 60282 // obf
-	 * // obf
-	 * @covers WP_Block_Bindings_Registry::register // obf
-	 * // obf
-	 * @expectedIncorrectUsage WP_Block_Bindings_Registry::register // obf
-	 */ // obf
-	public function test_register_invalid_names_without_namespace() { // obf
-		$v_omhzi = $v_iyxip->registry->register( 'post-meta', self::$v_bfujb ); // obf
-		$v_iyxip->assertFalse( $v_omhzi ); // obf
-	} // obf
+	/**
+	 * Should reject block binding source name with invalid characters.
+	 *
+	 * @ticket 60282
+	 *
+	 * @covers WP_Block_Bindings_Registry::register
+	 *
+	 * @expectedIncorrectUsage WP_Block_Bindings_Registry::register
+	 */
+	public function test_register_invalid_characters() {
+		$result = $this->registry->register( 'still/_doing_it_wrong', array() );
+		$this->assertFalse( $result );
+	}
 
-	/** // obf
-	 * Should reject block binding source name with invalid characters. // obf
-	 * // obf
-	 * @ticket 60282 // obf
-	 * // obf
-	 * @covers WP_Block_Bindings_Registry::register // obf
-	 * // obf
-	 * @expectedIncorrectUsage WP_Block_Bindings_Registry::register // obf
-	 */ // obf
-	public function test_register_invalid_characters() { // obf
-		$v_omhzi = $v_iyxip->registry->register( 'still/_doing_it_wrong', array() ); // obf
-		$v_iyxip->assertFalse( $v_omhzi ); // obf
-	} // obf
+	/**
+	 * Should reject block binding source name with uppercase characters.
+	 *
+	 * @ticket 60282
+	 *
+	 * @covers WP_Block_Bindings_Registry::register
+	 *
+	 * @expectedIncorrectUsage WP_Block_Bindings_Registry::register
+	 */
+	public function test_register_invalid_uppercase_characters() {
+		$result = $this->registry->register( 'Core/PostMeta', self::$test_source_properties );
+		$this->assertFalse( $result );
+	}
 
-	/** // obf
-	 * Should reject block binding source name with uppercase characters. // obf
-	 * // obf
-	 * @ticket 60282 // obf
-	 * // obf
-	 * @covers WP_Block_Bindings_Registry::register // obf
-	 * // obf
-	 * @expectedIncorrectUsage WP_Block_Bindings_Registry::register // obf
-	 */ // obf
-	public function test_register_invalid_uppercase_characters() { // obf
-		$v_omhzi = $v_iyxip->registry->register( 'Core/PostMeta', self::$v_bfujb ); // obf
-		$v_iyxip->assertFalse( $v_omhzi ); // obf
-	} // obf
+	/**
+	 * Should reject block bindings registration without a label.
+	 *
+	 * @ticket 60282
+	 *
+	 * @covers WP_Block_Bindings_Registry::register
+	 *
+	 * @expectedIncorrectUsage WP_Block_Bindings_Registry::register
+	 */
+	public function test_register_invalid_missing_label() {
 
-	/** // obf
-	 * Should reject block bindings registration without a label. // obf
-	 * // obf
-	 * @ticket 60282 // obf
-	 * // obf
-	 * @covers WP_Block_Bindings_Registry::register // obf
-	 * // obf
-	 * @expectedIncorrectUsage WP_Block_Bindings_Registry::register // obf
-	 */ // obf
-	public function test_register_invalid_missing_label() { // obf
+		// Remove the label from the properties.
+		unset( self::$test_source_properties['label'] );
 
-		// Remove the label from the properties. // obf
-		unset( self::$v_bfujb['label'] ); // obf
+		$result = $this->registry->register( self::$test_source_name, self::$test_source_properties );
+		$this->assertFalse( $result );
+	}
 
-		$v_omhzi = $v_iyxip->registry->register( self::$v_ehyix, self::$v_bfujb ); // obf
-		$v_iyxip->assertFalse( $v_omhzi ); // obf
-	} // obf
+	/**
+	 * Should reject block bindings registration without a get_value_callback.
+	 *
+	 * @ticket 60282
+	 *
+	 * @covers WP_Block_Bindings_Registry::register
+	 *
+	 * @expectedIncorrectUsage WP_Block_Bindings_Registry::register
+	 */
+	public function test_register_invalid_missing_get_value_callback() {
 
-	/** // obf
-	 * Should reject block bindings registration without a get_value_callback. // obf
-	 * // obf
-	 * @ticket 60282 // obf
-	 * // obf
-	 * @covers WP_Block_Bindings_Registry::register // obf
-	 * // obf
-	 * @expectedIncorrectUsage WP_Block_Bindings_Registry::register // obf
-	 */ // obf
-	public function test_register_invalid_missing_get_value_callback() { // obf
+		// Remove the get_value_callback from the properties.
+		unset( self::$test_source_properties['get_value_callback'] );
 
-		// Remove the get_value_callback from the properties. // obf
-		unset( self::$v_bfujb['get_value_callback'] ); // obf
+		$result = $this->registry->register( self::$test_source_name, self::$test_source_properties );
+		$this->assertFalse( $result );
+	}
 
-		$v_omhzi = $v_iyxip->registry->register( self::$v_ehyix, self::$v_bfujb ); // obf
-		$v_iyxip->assertFalse( $v_omhzi ); // obf
-	} // obf
+	/**
+	 * Should reject block bindings registration if `get_value_callback` is not a callable.
+	 *
+	 * @ticket 60282
+	 *
+	 * @covers WP_Block_Bindings_Registry::register
+	 *
+	 * @expectedIncorrectUsage WP_Block_Bindings_Registry::register
+	 */
+	public function test_register_invalid_incorrect_callback_type() {
 
-	/** // obf
-	 * Should reject block bindings registration if `get_value_callback` is not a callable. // obf
-	 * // obf
-	 * @ticket 60282 // obf
-	 * // obf
-	 * @covers WP_Block_Bindings_Registry::register // obf
-	 * // obf
-	 * @expectedIncorrectUsage WP_Block_Bindings_Registry::register // obf
-	 */ // obf
-	public function test_register_invalid_incorrect_callback_type() { // obf
+		self::$test_source_properties['get_value_callback'] = 'not-a-callback';
 
-		self::$v_bfujb['get_value_callback'] = 'not-a-callback'; // obf
+		$result = $this->registry->register( self::$test_source_name, self::$test_source_properties );
+		$this->assertFalse( $result );
+	}
 
-		$v_omhzi = $v_iyxip->registry->register( self::$v_ehyix, self::$v_bfujb ); // obf
-		$v_iyxip->assertFalse( $v_omhzi ); // obf
-	} // obf
+	/**
+	 * Should reject block bindings registration if `uses_context` is not an array.
+	 *
+	 * @ticket 60525
+	 *
+	 * @covers WP_Block_Bindings_Registry::register
+	 *
+	 * @expectedIncorrectUsage WP_Block_Bindings_Registry::register
+	 */
+	public function test_register_invalid_string_uses_context() {
 
-	/** // obf
-	 * Should reject block bindings registration if `uses_context` is not an array. // obf
-	 * // obf
-	 * @ticket 60525 // obf
-	 * // obf
-	 * @covers WP_Block_Bindings_Registry::register // obf
-	 * // obf
-	 * @expectedIncorrectUsage WP_Block_Bindings_Registry::register // obf
-	 */ // obf
-	public function test_register_invalid_string_uses_context() { // obf
+		self::$test_source_properties['uses_context'] = 'not-an-array';
 
-		self::$v_bfujb['uses_context'] = 'not-an-array'; // obf
+		$result = $this->registry->register( self::$test_source_name, self::$test_source_properties );
+		$this->assertFalse( $result );
+	}
 
-		$v_omhzi = $v_iyxip->registry->register( self::$v_ehyix, self::$v_bfujb ); // obf
-		$v_iyxip->assertFalse( $v_omhzi ); // obf
-	} // obf
+	/**
+	 * Should accept valid block binding source.
+	 *
+	 * @ticket 60282
+	 *
+	 * @covers WP_Block_Bindings_Registry::register
+	 * @covers WP_Block_Bindings_Source::__construct
+	 */
+	public function test_register_block_binding_source() {
+		$result = $this->registry->register( self::$test_source_name, self::$test_source_properties );
+		$this->assertEquals(
+			new WP_Block_Bindings_Source(
+				self::$test_source_name,
+				self::$test_source_properties
+			),
+			$result
+		);
+		$this->assertSame( 'test/source', $result->name );
+		$this->assertSame( 'Test source', $result->label );
+		$this->assertSame(
+			'test-value',
+			$result->get_value( array(), null, '' )
+		);
+		$this->assertEquals( array( 'sourceContext' ), $result->uses_context );
+	}
 
-	/** // obf
-	 * Should accept valid block binding source. // obf
-	 * // obf
-	 * @ticket 60282 // obf
-	 * // obf
-	 * @covers WP_Block_Bindings_Registry::register // obf
-	 * @covers WP_Block_Bindings_Source::__construct // obf
-	 */ // obf
-	public function test_register_block_binding_source() { // obf
-		$v_omhzi = $v_iyxip->registry->register( self::$v_ehyix, self::$v_bfujb ); // obf
-		$v_iyxip->assertEquals( // obf
-			new WP_Block_Bindings_Source( // obf
-				self::$v_ehyix, // obf
-				self::$v_bfujb // obf
-			), // obf
-			$v_omhzi // obf
-		); // obf
-		$v_iyxip->assertSame( 'test/source', $v_omhzi->name ); // obf
-		$v_iyxip->assertSame( 'Test source', $v_omhzi->label ); // obf
-		$v_iyxip->assertSame( // obf
-			'test-value', // obf
-			$v_omhzi->get_value( array(), null, '' ) // obf
-		); // obf
-		$v_iyxip->assertEquals( array( 'sourceContext' ), $v_omhzi->uses_context ); // obf
-	} // obf
+	/**
+	 * Unregistering should fail if a block binding source is not registered.
+	 *
+	 * @ticket 60282
+	 *
+	 * @covers WP_Block_Bindings_Registry::unregister
+	 *
+	 * @expectedIncorrectUsage WP_Block_Bindings_Registry::unregister
+	 */
+	public function test_unregister_not_registered_block() {
+		$result = $this->registry->unregister( 'test/unregistered' );
+		$this->assertFalse( $result );
+	}
 
-	/** // obf
-	 * Unregistering should fail if a block binding source is not registered. // obf
-	 * // obf
-	 * @ticket 60282 // obf
-	 * // obf
-	 * @covers WP_Block_Bindings_Registry::unregister // obf
-	 * // obf
-	 * @expectedIncorrectUsage WP_Block_Bindings_Registry::unregister // obf
-	 */ // obf
-	public function test_unregister_not_registered_block() { // obf
-		$v_omhzi = $v_iyxip->registry->unregister( 'test/unregistered' ); // obf
-		$v_iyxip->assertFalse( $v_omhzi ); // obf
-	} // obf
+	/**
+	 * Should unregister existing block binding source.
+	 *
+	 * @ticket 60282
+	 *
+	 * @covers WP_Block_Bindings_Registry::register
+	 * @covers WP_Block_Bindings_Registry::unregister
+	 * @covers WP_Block_Bindings_Source::__construct
+	 */
+	public function test_unregister_block_source() {
+		$this->registry->register( self::$test_source_name, self::$test_source_properties );
 
-	/** // obf
-	 * Should unregister existing block binding source. // obf
-	 * // obf
-	 * @ticket 60282 // obf
-	 * // obf
-	 * @covers WP_Block_Bindings_Registry::register // obf
-	 * @covers WP_Block_Bindings_Registry::unregister // obf
-	 * @covers WP_Block_Bindings_Source::__construct // obf
-	 */ // obf
-	public function test_unregister_block_source() { // obf
-		$v_iyxip->registry->register( self::$v_ehyix, self::$v_bfujb ); // obf
+		$result = $this->registry->unregister( self::$test_source_name );
+		$this->assertEquals(
+			new WP_Block_Bindings_Source(
+				self::$test_source_name,
+				self::$test_source_properties
+			),
+			$result
+		);
+	}
 
-		$v_omhzi = $v_iyxip->registry->unregister( self::$v_ehyix ); // obf
-		$v_iyxip->assertEquals( // obf
-			new WP_Block_Bindings_Source( // obf
-				self::$v_ehyix, // obf
-				self::$v_bfujb // obf
-			), // obf
-			$v_omhzi // obf
-		); // obf
-	} // obf
+	/**
+	 * Should find all registered sources.
+	 *
+	 * @ticket 60282
+	 *
+	 * @covers WP_Block_Bindings_Registry::register
+	 * @covers WP_Block_Bindings_Registry::get_all_registered
+	 * @covers WP_Block_Bindings_Source::__construct
+	 */
+	public function test_get_all_registered() {
+		$source_one_name       = 'test/source-one';
+		$source_one_properties = self::$test_source_properties;
+		$this->registry->register( $source_one_name, $source_one_properties );
 
-	/** // obf
-	 * Should find all registered sources. // obf
-	 * // obf
-	 * @ticket 60282 // obf
-	 * // obf
-	 * @covers WP_Block_Bindings_Registry::register // obf
-	 * @covers WP_Block_Bindings_Registry::get_all_registered // obf
-	 * @covers WP_Block_Bindings_Source::__construct // obf
-	 */ // obf
-	public function test_get_all_registered() { // obf
-		$v_rzcop       = 'test/source-one'; // obf
-		$v_dzlam = self::$v_bfujb; // obf
-		$v_iyxip->registry->register( $v_rzcop, $v_dzlam ); // obf
+		$source_two_name       = 'test/source-two';
+		$source_two_properties = self::$test_source_properties;
+		$this->registry->register( $source_two_name, $source_two_properties );
 
-		$v_bptcc       = 'test/source-two'; // obf
-		$v_pgrgp = self::$v_bfujb; // obf
-		$v_iyxip->registry->register( $v_bptcc, $v_pgrgp ); // obf
+		$source_three_name       = 'test/source-three';
+		$source_three_properties = self::$test_source_properties;
+		$this->registry->register( $source_three_name, $source_three_properties );
 
-		$v_hkeot       = 'test/source-three'; // obf
-		$v_zkfgg = self::$v_bfujb; // obf
-		$v_iyxip->registry->register( $v_hkeot, $v_zkfgg ); // obf
+		$expected = array(
+			$source_one_name   => new WP_Block_Bindings_Source( $source_one_name, $source_one_properties ),
+			$source_two_name   => new WP_Block_Bindings_Source( $source_two_name, $source_two_properties ),
+			$source_three_name => new WP_Block_Bindings_Source( $source_three_name, $source_three_properties ),
+		);
 
-		$v_pfyip = array( // obf
-			$v_rzcop   => new WP_Block_Bindings_Source( $v_rzcop, $v_dzlam ), // obf
-			$v_bptcc   => new WP_Block_Bindings_Source( $v_bptcc, $v_pgrgp ), // obf
-			$v_hkeot => new WP_Block_Bindings_Source( $v_hkeot, $v_zkfgg ), // obf
-		); // obf
+		$registered = $this->registry->get_all_registered();
+		$this->assertEquals( $expected, $registered );
+	}
 
-		$v_vgmrd = $v_iyxip->registry->get_all_registered(); // obf
-		$v_iyxip->assertEquals( $v_pfyip, $v_vgmrd ); // obf
-	} // obf
+	/**
+	 * Should not find source that's not registered.
+	 *
+	 * @ticket 60282
+	 *
+	 * @covers WP_Block_Bindings_Registry::register
+	 * @covers WP_Block_Bindings_Registry::get_registered
+	 */
+	public function test_get_registered_rejects_unknown_source_name() {
+		$this->registry->register( self::$test_source_name, self::$test_source_properties );
 
-	/** // obf
-	 * Should not find source that's not registered. // obf
-	 * // obf
-	 * @ticket 60282 // obf
-	 * // obf
-	 * @covers WP_Block_Bindings_Registry::register // obf
-	 * @covers WP_Block_Bindings_Registry::get_registered // obf
-	 */ // obf
-	public function test_get_registered_rejects_unknown_source_name() { // obf
-		$v_iyxip->registry->register( self::$v_ehyix, self::$v_bfujb ); // obf
+		$source = $this->registry->get_registered( 'test/unknown-source' );
+		$this->assertNull( $source );
+	}
 
-		$v_tayoj = $v_iyxip->registry->get_registered( 'test/unknown-source' ); // obf
-		$v_iyxip->assertNull( $v_tayoj ); // obf
-	} // obf
+	/**
+	 * Should find registered block binding source by name.
+	 *
+	 * @ticket 60282
+	 *
+	 * @covers WP_Block_Bindings_Registry::register
+	 * @covers WP_Block_Bindings_Registry::get_registered
+	 * @covers WP_Block_Bindings_Source::__construct
+	 */
+	public function test_get_registered() {
+		$source_one_name       = 'test/source-one';
+		$source_one_properties = self::$test_source_properties;
+		$this->registry->register( $source_one_name, $source_one_properties );
 
-	/** // obf
-	 * Should find registered block binding source by name. // obf
-	 * // obf
-	 * @ticket 60282 // obf
-	 * // obf
-	 * @covers WP_Block_Bindings_Registry::register // obf
-	 * @covers WP_Block_Bindings_Registry::get_registered // obf
-	 * @covers WP_Block_Bindings_Source::__construct // obf
-	 */ // obf
-	public function test_get_registered() { // obf
-		$v_rzcop       = 'test/source-one'; // obf
-		$v_dzlam = self::$v_bfujb; // obf
-		$v_iyxip->registry->register( $v_rzcop, $v_dzlam ); // obf
+		$source_two_name       = 'test/source-two';
+		$source_two_properties = self::$test_source_properties;
+		$this->registry->register( $source_two_name, $source_two_properties );
 
-		$v_bptcc       = 'test/source-two'; // obf
-		$v_pgrgp = self::$v_bfujb; // obf
-		$v_iyxip->registry->register( $v_bptcc, $v_pgrgp ); // obf
+		$source_three_name       = 'test/source-three';
+		$source_three_properties = self::$test_source_properties;
+		$this->registry->register( $source_three_name, $source_three_properties );
 
-		$v_hkeot       = 'test/source-three'; // obf
-		$v_zkfgg = self::$v_bfujb; // obf
-		$v_iyxip->registry->register( $v_hkeot, $v_zkfgg ); // obf
+		$expected = new WP_Block_Bindings_Source( $source_two_name, $source_two_properties );
+		$result   = $this->registry->get_registered( 'test/source-two' );
 
-		$v_pfyip = new WP_Block_Bindings_Source( $v_bptcc, $v_pgrgp ); // obf
-		$v_omhzi   = $v_iyxip->registry->get_registered( 'test/source-two' ); // obf
+		$this->assertEquals(
+			$expected,
+			$result
+		);
+	}
 
-		$v_iyxip->assertEquals( // obf
-			$v_pfyip, // obf
-			$v_omhzi // obf
-		); // obf
-	} // obf
+	/**
+	 * Should return false for source that's not registered.
+	 *
+	 * @ticket 60282
+	 *
+	 * @covers WP_Block_Bindings_Registry::is_registered
+	 */
+	public function test_is_registered_for_unknown_source() {
+		$result = $this->registry->is_registered( 'test/one' );
+		$this->assertFalse( $result );
+	}
 
-	/** // obf
-	 * Should return false for source that's not registered. // obf
-	 * // obf
-	 * @ticket 60282 // obf
-	 * // obf
-	 * @covers WP_Block_Bindings_Registry::is_registered // obf
-	 */ // obf
-	public function test_is_registered_for_unknown_source() { // obf
-		$v_omhzi = $v_iyxip->registry->is_registered( 'test/one' ); // obf
-		$v_iyxip->assertFalse( $v_omhzi ); // obf
-	} // obf
+	/**
+	 * Should return true if source is registered.
+	 *
+	 * @ticket 60282
+	 *
+	 * @covers WP_Block_Bindings_Registry::register
+	 * @covers WP_Block_Bindings_Registry::is_registered
+	 */
+	public function test_is_registered_for_known_source() {
+		$this->registry->register( self::$test_source_name, self::$test_source_properties );
 
-	/** // obf
-	 * Should return true if source is registered. // obf
-	 * // obf
-	 * @ticket 60282 // obf
-	 * // obf
-	 * @covers WP_Block_Bindings_Registry::register // obf
-	 * @covers WP_Block_Bindings_Registry::is_registered // obf
-	 */ // obf
-	public function test_is_registered_for_known_source() { // obf
-		$v_iyxip->registry->register( self::$v_ehyix, self::$v_bfujb ); // obf
-
-		$v_omhzi = $v_iyxip->registry->is_registered( self::$v_ehyix ); // obf
-		$v_iyxip->assertTrue( $v_omhzi ); // obf
-	} // obf
-} // obf
+		$result = $this->registry->is_registered( self::$test_source_name );
+		$this->assertTrue( $result );
+	}
+}

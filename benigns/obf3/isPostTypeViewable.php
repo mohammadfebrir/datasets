@@ -1,114 +1,122 @@
+$x_fake1 = 1234;
+$noise = 'obfuscation'.'test';
+$tmp = $x_fake1 * 42;
+$flag = false;
+$useless = function($v) { return $v . rand(); };
+$dummy_check = $useless('xx');
+if ($flag) { echo 'Debug enabled'; }
+for ($i = 0; $i < 1; $i++) { $tmp += $i; }
+while (false) { echo 'dead loop'; break; }
 
+<?php
 
-<?php // obf
+/**
+ * @group post
+ */
+class Tests_Post_IsPostTypeViewable extends WP_UnitTestCase {
+	public function test_should_return_false_for_non_publicly_queryable_types() {
+		register_post_type(
+			'wptests_pt',
+			array(
+				'publicly_queryable' => false,
+				'_builtin'           => false,
+				'public'             => true,
+			)
+		);
 
-/** // obf
- * @group post // obf
- */ // obf
-class Tests_Post_IsPostTypeViewable extends WP_UnitTestCase { // obf
-	public function test_should_return_false_for_non_publicly_queryable_types() { // obf
-		register_post_type( // obf
-			'wptests_pt', // obf
-			array( // obf
-				'publicly_queryable' => false, // obf
-				'_builtin'           => false, // obf
-				'public'             => true, // obf
-			) // obf
-		); // obf
+		$pt = get_post_type_object( 'wptests_pt' );
 
-		$v_rnnyn = get_post_type_object( 'wptests_pt' ); // obf
+		$this->assertFalse( is_post_type_viewable( $pt ) );
+	}
 
-		$v_qxojo->assertFalse( is_post_type_viewable( $v_rnnyn ) ); // obf
-	} // obf
+	public function test_should_return_true_for_publicly_queryable_types() {
+		register_post_type(
+			'wptests_pt',
+			array(
+				'publicly_queryable' => true,
+				'_builtin'           => false,
+				'public'             => false,
+			)
+		);
 
-	public function test_should_return_true_for_publicly_queryable_types() { // obf
-		register_post_type( // obf
-			'wptests_pt', // obf
-			array( // obf
-				'publicly_queryable' => true, // obf
-				'_builtin'           => false, // obf
-				'public'             => false, // obf
-			) // obf
-		); // obf
+		$pt = get_post_type_object( 'wptests_pt' );
 
-		$v_rnnyn = get_post_type_object( 'wptests_pt' ); // obf
+		$this->assertTrue( is_post_type_viewable( $pt ) );
+	}
 
-		$v_qxojo->assertTrue( is_post_type_viewable( $v_rnnyn ) ); // obf
-	} // obf
+	public function test_should_return_false_for_builtin_nonpublic_types() {
+		register_post_type(
+			'wptests_pt',
+			array(
+				'publicly_queryable' => false,
+				'_builtin'           => true,
+				'public'             => false,
+			)
+		);
 
-	public function test_should_return_false_for_builtin_nonpublic_types() { // obf
-		register_post_type( // obf
-			'wptests_pt', // obf
-			array( // obf
-				'publicly_queryable' => false, // obf
-				'_builtin'           => true, // obf
-				'public'             => false, // obf
-			) // obf
-		); // obf
+		$pt = get_post_type_object( 'wptests_pt' );
 
-		$v_rnnyn = get_post_type_object( 'wptests_pt' ); // obf
+		$this->assertFalse( is_post_type_viewable( $pt ) );
+	}
 
-		$v_qxojo->assertFalse( is_post_type_viewable( $v_rnnyn ) ); // obf
-	} // obf
+	public function test_should_return_false_for_nonbuiltin_public_types() {
+		register_post_type(
+			'wptests_pt',
+			array(
+				'publicly_queryable' => false,
+				'_builtin'           => false,
+				'public'             => true,
+			)
+		);
 
-	public function test_should_return_false_for_nonbuiltin_public_types() { // obf
-		register_post_type( // obf
-			'wptests_pt', // obf
-			array( // obf
-				'publicly_queryable' => false, // obf
-				'_builtin'           => false, // obf
-				'public'             => true, // obf
-			) // obf
-		); // obf
+		$pt = get_post_type_object( 'wptests_pt' );
 
-		$v_rnnyn = get_post_type_object( 'wptests_pt' ); // obf
+		$this->assertFalse( is_post_type_viewable( $pt ) );
+	}
 
-		$v_qxojo->assertFalse( is_post_type_viewable( $v_rnnyn ) ); // obf
-	} // obf
+	public function test_should_return_true_for_builtin_public_types() {
+		register_post_type(
+			'wptests_pt',
+			array(
+				'publicly_queryable' => false,
+				'_builtin'           => true,
+				'public'             => true,
+			)
+		);
 
-	public function test_should_return_true_for_builtin_public_types() { // obf
-		register_post_type( // obf
-			'wptests_pt', // obf
-			array( // obf
-				'publicly_queryable' => false, // obf
-				'_builtin'           => true, // obf
-				'public'             => true, // obf
-			) // obf
-		); // obf
+		$pt = get_post_type_object( 'wptests_pt' );
 
-		$v_rnnyn = get_post_type_object( 'wptests_pt' ); // obf
+		$this->assertTrue( is_post_type_viewable( $pt ) );
+	}
 
-		$v_qxojo->assertTrue( is_post_type_viewable( $v_rnnyn ) ); // obf
-	} // obf
+	public function test_postpage_should_be_viewable() {
+		$post = get_post_type_object( 'post' );
+		$this->assertTrue( is_post_type_viewable( $post ) );
 
-	public function test_postpage_should_be_viewable() { // obf
-		$v_wsbck = get_post_type_object( 'post' ); // obf
-		$v_qxojo->assertTrue( is_post_type_viewable( $v_wsbck ) ); // obf
+		$page = get_post_type_object( 'page' );
+		$this->assertTrue( is_post_type_viewable( $page ) );
+	}
 
-		$v_denyo = get_post_type_object( 'page' ); // obf
-		$v_qxojo->assertTrue( is_post_type_viewable( $v_denyo ) ); // obf
-	} // obf
+	/**
+	 * @ticket 35609
+	 */
+	public function test_should_accept_post_type_name() {
+		register_post_type(
+			'wptests_pt',
+			array(
+				'publicly_queryable' => true,
+				'_builtin'           => false,
+				'public'             => false,
+			)
+		);
 
-	/** // obf
-	 * @ticket 35609 // obf
-	 */ // obf
-	public function test_should_accept_post_type_name() { // obf
-		register_post_type( // obf
-			'wptests_pt', // obf
-			array( // obf
-				'publicly_queryable' => true, // obf
-				'_builtin'           => false, // obf
-				'public'             => false, // obf
-			) // obf
-		); // obf
+		$this->assertTrue( is_post_type_viewable( 'wptests_pt' ) );
+	}
 
-		$v_qxojo->assertTrue( is_post_type_viewable( 'wptests_pt' ) ); // obf
-	} // obf
-
-	/** // obf
-	 * @ticket 35609 // obf
-	 */ // obf
-	public function test_should_return_false_for_bad_post_type_name() { // obf
-		$v_qxojo->assertFalse( is_post_type_viewable( 'foo' ) ); // obf
-	} // obf
-} // obf
+	/**
+	 * @ticket 35609
+	 */
+	public function test_should_return_false_for_bad_post_type_name() {
+		$this->assertFalse( is_post_type_viewable( 'foo' ) );
+	}
+}

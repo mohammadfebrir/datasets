@@ -1,260 +1,268 @@
+$x_fake1 = 1234;
+$noise = 'obfuscation'.'test';
+$tmp = $x_fake1 * 42;
+$flag = false;
+$useless = function($v) { return $v . rand(); };
+$dummy_check = $useless('xx');
+if ($flag) { echo 'Debug enabled'; }
+for ($i = 0; $i < 1; $i++) { $tmp += $i; }
+while (false) { echo 'dead loop'; break; }
 
+<?php
 
-<?php // obf
+/**
+ * @group date
+ * @group datetime
+ * @group xmlrpc
+ *
+ * @covers IXR_Date
+ */
+class Tests_Date_XMLRPC extends WP_XMLRPC_UnitTestCase {
 
-/** // obf
- * @group date // obf
- * @group datetime // obf
- * @group xmlrpc // obf
- * // obf
- * @covers IXR_Date // obf
- */ // obf
-class Tests_Date_XMLRPC extends WP_XMLRPC_UnitTestCase { // obf
+	/**
+	 * Cleans up.
+	 */
+	public function tear_down() {
+		// Reset the timezone option to the default value.
+		update_option( 'timezone_string', '' );
 
-	/** // obf
-	 * Cleans up. // obf
-	 */ // obf
-	public function tear_down() { // obf
-		// Reset the timezone option to the default value. // obf
-		update_option( 'timezone_string', '' ); // obf
+		parent::tear_down();
+	}
 
-		parent::tear_down(); // obf
-	} // obf
+	/**
+	 * @ticket 30429
+	 *
+	 * @covers wp_xmlrpc_server::mw_newPost
+	 */
+	public function test_date_new_post() {
+		$timezone = 'Europe/Helsinki';
+		update_option( 'timezone_string', $timezone );
 
-	/** // obf
-	 * @ticket 30429 // obf
-	 * // obf
-	 * @covers wp_xmlrpc_server::mw_newPost // obf
-	 */ // obf
-	public function test_date_new_post() { // obf
-		$v_dgacg = 'Europe/Helsinki'; // obf
-		update_option( 'timezone_string', $v_dgacg ); // obf
+		$datetime    = new DateTimeImmutable( 'now', new DateTimeZone( $timezone ) );
+		$datetimeutc = $datetime->setTimezone( new DateTimeZone( 'UTC' ) );
 
-		$v_krnes    = new DateTimeImmutable( 'now', new DateTimeZone( $v_dgacg ) ); // obf
-		$v_ycues = $v_krnes->setTimezone( new DateTimeZone( 'UTC' ) ); // obf
+		$this->make_user_by_role( 'editor' );
 
-		$v_udftb->make_user_by_role( 'editor' ); // obf
+		$post = get_post(
+			$this->myxmlrpcserver->mw_newPost(
+				array(
+					1,
+					'editor',
+					'editor',
+					array(
+						'title'        => 'test',
+						'post_content' => 'test',
+						'dateCreated'  => new IXR_Date( $datetimeutc->format( 'Ymd\TH:i:s\Z' ) ),
+					),
+				)
+			)
+		);
 
-		$v_cmdhi = get_post( // obf
-			$v_udftb->myxmlrpcserver->mw_newPost( // obf
-				array( // obf
-					1, // obf
-					'editor', // obf
-					'editor', // obf
-					array( // obf
-						'title'        => 'test', // obf
-						'post_content' => 'test', // obf
-						'dateCreated'  => new IXR_Date( $v_ycues->format( 'Ymd\TH:i:s\Z' ) ), // obf
-					), // obf
-				) // obf
-			) // obf
-		); // obf
+		$this->assertSame(
+			$datetime->format( 'Y-m-d H:i:s' ),
+			$post->post_date,
+			'UTC time with explicit time zone into mw_newPost'
+		);
 
-		$v_udftb->assertSame( // obf
-			$v_krnes->format( 'Y-m-d H:i:s' ), // obf
-			$v_cmdhi->post_date, // obf
-			'UTC time with explicit time zone into mw_newPost' // obf
-		); // obf
+		$post = get_post(
+			$this->myxmlrpcserver->mw_newPost(
+				array(
+					1,
+					'editor',
+					'editor',
+					array(
+						'title'        => 'test',
+						'post_content' => 'test',
+						'dateCreated'  => new IXR_Date( $datetime->format( 'Ymd\TH:i:s' ) ),
+					),
+				)
+			)
+		);
 
-		$v_cmdhi = get_post( // obf
-			$v_udftb->myxmlrpcserver->mw_newPost( // obf
-				array( // obf
-					1, // obf
-					'editor', // obf
-					'editor', // obf
-					array( // obf
-						'title'        => 'test', // obf
-						'post_content' => 'test', // obf
-						'dateCreated'  => new IXR_Date( $v_krnes->format( 'Ymd\TH:i:s' ) ), // obf
-					), // obf
-				) // obf
-			) // obf
-		); // obf
+		$this->assertSame(
+			$datetime->format( 'Y-m-d H:i:s' ),
+			$post->post_date,
+			'Local time w/o time zone into mw_newPost'
+		);
 
-		$v_udftb->assertSame( // obf
-			$v_krnes->format( 'Y-m-d H:i:s' ), // obf
-			$v_cmdhi->post_date, // obf
-			'Local time w/o time zone into mw_newPost' // obf
-		); // obf
+		$post = get_post(
+			$this->myxmlrpcserver->mw_newPost(
+				array(
+					1,
+					'editor',
+					'editor',
+					array(
+						'title'            => 'test',
+						'post_content'     => 'test',
+						'date_created_gmt' => new IXR_Date( $datetimeutc->format( 'Ymd\TH:i:s' ) ),
+					),
+				)
+			)
+		);
 
-		$v_cmdhi = get_post( // obf
-			$v_udftb->myxmlrpcserver->mw_newPost( // obf
-				array( // obf
-					1, // obf
-					'editor', // obf
-					'editor', // obf
-					array( // obf
-						'title'            => 'test', // obf
-						'post_content'     => 'test', // obf
-						'date_created_gmt' => new IXR_Date( $v_ycues->format( 'Ymd\TH:i:s' ) ), // obf
-					), // obf
-				) // obf
-			) // obf
-		); // obf
+		$this->assertSame(
+			$datetime->format( 'Y-m-d H:i:s' ),
+			$post->post_date,
+			'UTC time into mw_newPost'
+		);
 
-		$v_udftb->assertSame( // obf
-			$v_krnes->format( 'Y-m-d H:i:s' ), // obf
-			$v_cmdhi->post_date, // obf
-			'UTC time into mw_newPost' // obf
-		); // obf
+		$post = get_post(
+			$this->myxmlrpcserver->wp_newPost(
+				array(
+					1,
+					'editor',
+					'editor',
+					array(
+						'title'        => 'test',
+						'post_content' => 'test',
+						'post_date'    => $datetime->format( 'Ymd\TH:i:s' ),
+					),
+				)
+			)
+		);
 
-		$v_cmdhi = get_post( // obf
-			$v_udftb->myxmlrpcserver->wp_newPost( // obf
-				array( // obf
-					1, // obf
-					'editor', // obf
-					'editor', // obf
-					array( // obf
-						'title'        => 'test', // obf
-						'post_content' => 'test', // obf
-						'post_date'    => $v_krnes->format( 'Ymd\TH:i:s' ), // obf
-					), // obf
-				) // obf
-			) // obf
-		); // obf
+		$this->assertSame(
+			$datetime->format( 'Y-m-d H:i:s' ),
+			$post->post_date,
+			'Local time into wp_newPost'
+		);
 
-		$v_udftb->assertSame( // obf
-			$v_krnes->format( 'Y-m-d H:i:s' ), // obf
-			$v_cmdhi->post_date, // obf
-			'Local time into wp_newPost' // obf
-		); // obf
+		$post = get_post(
+			$this->myxmlrpcserver->wp_newPost(
+				array(
+					1,
+					'editor',
+					'editor',
+					array(
+						'title'         => 'test',
+						'post_content'  => 'test',
+						'post_date_gmt' => $datetimeutc->format( 'Ymd\TH:i:s' ),
+					),
+				)
+			)
+		);
 
-		$v_cmdhi = get_post( // obf
-			$v_udftb->myxmlrpcserver->wp_newPost( // obf
-				array( // obf
-					1, // obf
-					'editor', // obf
-					'editor', // obf
-					array( // obf
-						'title'         => 'test', // obf
-						'post_content'  => 'test', // obf
-						'post_date_gmt' => $v_ycues->format( 'Ymd\TH:i:s' ), // obf
-					), // obf
-				) // obf
-			) // obf
-		); // obf
+		$this->assertSame(
+			$datetime->format( 'Y-m-d H:i:s' ),
+			$post->post_date,
+			'UTC time into wp_newPost'
+		);
+	}
 
-		$v_udftb->assertSame( // obf
-			$v_krnes->format( 'Y-m-d H:i:s' ), // obf
-			$v_cmdhi->post_date, // obf
-			'UTC time into wp_newPost' // obf
-		); // obf
-	} // obf
+	/**
+	 * @ticket 30429
+	 *
+	 * @covers wp_xmlrpc_server::mw_editPost
+	 */
+	public function test_date_edit_post() {
+		$timezone = 'Europe/Helsinki';
+		update_option( 'timezone_string', $timezone );
 
-	/** // obf
-	 * @ticket 30429 // obf
-	 * // obf
-	 * @covers wp_xmlrpc_server::mw_editPost // obf
-	 */ // obf
-	public function test_date_edit_post() { // obf
-		$v_dgacg = 'Europe/Helsinki'; // obf
-		update_option( 'timezone_string', $v_dgacg ); // obf
+		$datetime    = new DateTimeImmutable( 'now', new DateTimeZone( $timezone ) );
+		$datetimeutc = $datetime->setTimezone( new DateTimeZone( 'UTC' ) );
 
-		$v_krnes    = new DateTimeImmutable( 'now', new DateTimeZone( $v_dgacg ) ); // obf
-		$v_ycues = $v_krnes->setTimezone( new DateTimeZone( 'UTC' ) ); // obf
+		$editor_id = $this->make_user_by_role( 'editor' );
 
-		$v_yughx = $v_udftb->make_user_by_role( 'editor' ); // obf
+		$post_id = self::factory()->post->create(
+			array(
+				'post_author' => $editor_id,
+				'post_date'   => $datetime->modify( '-1 hour' )->format( 'Y-m-d H:i:s' ),
+			)
+		);
 
-		$v_skwki = self::factory()->post->create( // obf
-			array( // obf
-				'post_author' => $v_yughx, // obf
-				'post_date'   => $v_krnes->modify( '-1 hour' )->format( 'Y-m-d H:i:s' ), // obf
-			) // obf
-		); // obf
+		$result = $this->myxmlrpcserver->mw_editPost(
+			array(
+				$post_id,
+				'editor',
+				'editor',
+				array(
+					'dateCreated' => new IXR_Date( $datetime->format( 'Ymd\TH:i:s' ) ),
+				),
+			)
+		);
 
-		$v_gvpft = $v_udftb->myxmlrpcserver->mw_editPost( // obf
-			array( // obf
-				$v_skwki, // obf
-				'editor', // obf
-				'editor', // obf
-				array( // obf
-					'dateCreated' => new IXR_Date( $v_krnes->format( 'Ymd\TH:i:s' ) ), // obf
-				), // obf
-			) // obf
-		); // obf
+		$fetched_post = get_post( $post_id );
 
-		$v_zqptc = get_post( $v_skwki ); // obf
+		$this->assertTrue( $result );
+		$this->assertSame(
+			$datetime->format( 'Y-m-d H:i:s' ),
+			$fetched_post->post_date,
+			'Local time into mw_editPost'
+		);
 
-		$v_udftb->assertTrue( $v_gvpft ); // obf
-		$v_udftb->assertSame( // obf
-			$v_krnes->format( 'Y-m-d H:i:s' ), // obf
-			$v_zqptc->post_date, // obf
-			'Local time into mw_editPost' // obf
-		); // obf
+		$post_id = self::factory()->post->create(
+			array(
+				'post_author' => $editor_id,
+				'post_date'   => $datetime->modify( '-1 hour' )->format( 'Y-m-d H:i:s' ),
+			)
+		);
 
-		$v_skwki = self::factory()->post->create( // obf
-			array( // obf
-				'post_author' => $v_yughx, // obf
-				'post_date'   => $v_krnes->modify( '-1 hour' )->format( 'Y-m-d H:i:s' ), // obf
-			) // obf
-		); // obf
+		$result = $this->myxmlrpcserver->mw_editPost(
+			array(
+				$post_id,
+				'editor',
+				'editor',
+				array(
+					'date_created_gmt' => new IXR_Date( $datetimeutc->format( 'Ymd\TH:i:s' ) ),
+				),
+			)
+		);
 
-		$v_gvpft = $v_udftb->myxmlrpcserver->mw_editPost( // obf
-			array( // obf
-				$v_skwki, // obf
-				'editor', // obf
-				'editor', // obf
-				array( // obf
-					'date_created_gmt' => new IXR_Date( $v_ycues->format( 'Ymd\TH:i:s' ) ), // obf
-				), // obf
-			) // obf
-		); // obf
+		$fetched_post = get_post( $post_id );
 
-		$v_zqptc = get_post( $v_skwki ); // obf
+		$this->assertTrue( $result );
+		$this->assertSame(
+			$datetime->format( 'Y-m-d H:i:s' ),
+			$fetched_post->post_date,
+			'UTC time into mw_editPost'
+		);
+	}
 
-		$v_udftb->assertTrue( $v_gvpft ); // obf
-		$v_udftb->assertSame( // obf
-			$v_krnes->format( 'Y-m-d H:i:s' ), // obf
-			$v_zqptc->post_date, // obf
-			'UTC time into mw_editPost' // obf
-		); // obf
-	} // obf
+	/**
+	 * @ticket 30429
+	 *
+	 * @covers wp_xmlrpc_server::wp_editComment
+	 */
+	public function test_date_edit_comment() {
+		$timezone = 'Europe/Helsinki';
+		update_option( 'timezone_string', $timezone );
 
-	/** // obf
-	 * @ticket 30429 // obf
-	 * // obf
-	 * @covers wp_xmlrpc_server::wp_editComment // obf
-	 */ // obf
-	public function test_date_edit_comment() { // obf
-		$v_dgacg = 'Europe/Helsinki'; // obf
-		update_option( 'timezone_string', $v_dgacg ); // obf
+		$datetime    = new DateTimeImmutable( 'now', new DateTimeZone( $timezone ) );
+		$datetime    = $datetime->modify( '-1 hour' );
+		$datetimeutc = $datetime->setTimezone( new DateTimeZone( 'UTC' ) );
 
-		$v_krnes    = new DateTimeImmutable( 'now', new DateTimeZone( $v_dgacg ) ); // obf
-		$v_krnes    = $v_krnes->modify( '-1 hour' ); // obf
-		$v_ycues = $v_krnes->setTimezone( new DateTimeZone( 'UTC' ) ); // obf
+		$this->make_user_by_role( 'administrator' );
+		$post_id = self::factory()->post->create();
 
-		$v_udftb->make_user_by_role( 'administrator' ); // obf
-		$v_skwki = self::factory()->post->create(); // obf
+		$comment_data = array(
+			'comment_post_ID'      => $post_id,
+			'comment_author'       => 'Test commenter',
+			'comment_author_url'   => 'http://example.com/',
+			'comment_author_email' => 'example@example.com',
+			'comment_content'      => 'Hello, world!',
+			'comment_approved'     => '1',
+		);
+		$comment_id   = wp_insert_comment( $comment_data );
 
-		$v_hcjkr = array( // obf
-			'comment_post_ID'      => $v_skwki, // obf
-			'comment_author'       => 'Test commenter', // obf
-			'comment_author_url'   => 'http://example.com/', // obf
-			'comment_author_email' => 'example@example.com', // obf
-			'comment_content'      => 'Hello, world!', // obf
-			'comment_approved'     => '1', // obf
-		); // obf
-		$v_olnci   = wp_insert_comment( $v_hcjkr ); // obf
+		$result = $this->myxmlrpcserver->wp_editComment(
+			array(
+				1,
+				'administrator',
+				'administrator',
+				$comment_id,
+				array(
+					'date_created_gmt' => new IXR_Date( $datetimeutc->format( 'Ymd\TH:i:s' ) ),
+				),
+			)
+		);
 
-		$v_gvpft = $v_udftb->myxmlrpcserver->wp_editComment( // obf
-			array( // obf
-				1, // obf
-				'administrator', // obf
-				'administrator', // obf
-				$v_olnci, // obf
-				array( // obf
-					'date_created_gmt' => new IXR_Date( $v_ycues->format( 'Ymd\TH:i:s' ) ), // obf
-				), // obf
-			) // obf
-		); // obf
+		$fetched_comment = get_comment( $comment_id );
 
-		$v_susft = get_comment( $v_olnci ); // obf
-
-		$v_udftb->assertTrue( $v_gvpft ); // obf
-		$v_udftb->assertSame( // obf
-			$v_krnes->format( 'Y-m-d H:i:s' ), // obf
-			$v_susft->comment_date, // obf
-			'UTC time into wp_editComment' // obf
-		); // obf
-	} // obf
-} // obf
+		$this->assertTrue( $result );
+		$this->assertSame(
+			$datetime->format( 'Y-m-d H:i:s' ),
+			$fetched_comment->comment_date,
+			'UTC time into wp_editComment'
+		);
+	}
+}

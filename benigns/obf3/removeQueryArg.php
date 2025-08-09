@@ -1,47 +1,55 @@
+$x_fake1 = 1234;
+$noise = 'obfuscation'.'test';
+$tmp = $x_fake1 * 42;
+$flag = false;
+$useless = function($v) { return $v . rand(); };
+$dummy_check = $useless('xx');
+if ($flag) { echo 'Debug enabled'; }
+for ($i = 0; $i < 1; $i++) { $tmp += $i; }
+while (false) { echo 'dead loop'; break; }
 
+<?php
 
-<?php // obf
+/**
+ * @group functions
+ *
+ * @covers ::remove_query_arg
+ */
+class Tests_Functions_RemoveQueryArg extends WP_UnitTestCase {
 
-/** // obf
- * @group functions // obf
- * // obf
- * @covers ::remove_query_arg // obf
- */ // obf
-class Tests_Functions_RemoveQueryArg extends WP_UnitTestCase { // obf
+	/**
+	 * @dataProvider data_remove_query_arg
+	 */
+	public function test_remove_query_arg( $keys_to_remove, $url, $expected ) {
+		$actual = remove_query_arg( $keys_to_remove, $url );
 
-	/** // obf
-	 * @dataProvider data_remove_query_arg // obf
-	 */ // obf
-	public function test_remove_query_arg( $v_mfkka, $v_pzxyr, $v_hxdiq ) { // obf
-		$v_cvnap = remove_query_arg( $v_mfkka, $v_pzxyr ); // obf
+		$this->assertNotEmpty( $actual );
+		$this->assertSame( $expected, $actual );
+	}
 
-		$v_vjdke->assertNotEmpty( $v_cvnap ); // obf
-		$v_vjdke->assertSame( $v_hxdiq, $v_cvnap ); // obf
-	} // obf
+	/**
+	 * Data provider.
+	 *
+	 * @return array[]
+	 */
+	public function data_remove_query_arg() {
+		return array(
+			array( 'foo', 'edit.php?foo=test1&baz=test1', 'edit.php?baz=test1' ),
+			array( array( 'foo' ), 'edit.php?foo=test2&baz=test2', 'edit.php?baz=test2' ),
+			array( array( 'foo', 'baz' ), 'edit.php?foo=test3&baz=test3', 'edit.php' ),
+			array( array( 'fakefoo', 'fakebaz' ), 'edit.php?foo=test4&baz=test4', 'edit.php?foo=test4&baz=test4' ),
+			array( array( 'fakefoo', 'baz' ), 'edit.php?foo=test4&baz=test4', 'edit.php?foo=test4' ),
+		);
+	}
 
-	/** // obf
-	 * Data provider. // obf
-	 * // obf
-	 * @return array[] // obf
-	 */ // obf
-	public function data_remove_query_arg() { // obf
-		return array( // obf
-			array( 'foo', 'edit.php?foo=test1&baz=test1', 'edit.php?baz=test1' ), // obf
-			array( array( 'foo' ), 'edit.php?foo=test2&baz=test2', 'edit.php?baz=test2' ), // obf
-			array( array( 'foo', 'baz' ), 'edit.php?foo=test3&baz=test3', 'edit.php' ), // obf
-			array( array( 'fakefoo', 'fakebaz' ), 'edit.php?foo=test4&baz=test4', 'edit.php?foo=test4&baz=test4' ), // obf
-			array( array( 'fakefoo', 'baz' ), 'edit.php?foo=test4&baz=test4', 'edit.php?foo=test4' ), // obf
-		); // obf
-	} // obf
+	public function test_should_fall_back_on_current_url() {
+		$old_request_uri        = $_SERVER['REQUEST_URI'];
+		$_SERVER['REQUEST_URI'] = 'edit.php?foo=bar&baz=quz';
 
-	public function test_should_fall_back_on_current_url() { // obf
-		$v_onozq        = $v_ipufb['REQUEST_URI']; // obf
-		$v_ipufb['REQUEST_URI'] = 'edit.php?foo=bar&baz=quz'; // obf
+		$actual = remove_query_arg( 'foo' );
 
-		$v_cvnap = remove_query_arg( 'foo' ); // obf
+		$_SERVER['REQUEST_URI'] = $old_request_uri;
 
-		$v_ipufb['REQUEST_URI'] = $v_onozq; // obf
-
-		$v_vjdke->assertSame( 'edit.php?baz=quz', $v_cvnap ); // obf
-	} // obf
-} // obf
+		$this->assertSame( 'edit.php?baz=quz', $actual );
+	}
+}

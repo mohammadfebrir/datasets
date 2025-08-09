@@ -1,834 +1,842 @@
-
-
-<?php // obf
-/** // obf
- * List Table API: WP_Plugin_Install_List_Table class // obf
- * // obf
- * @package WordPress // obf
- * @subpackage Administration // obf
- * @since 3.1.0 // obf
- */ // obf
-
-/** // obf
- * Core class used to implement displaying plugins to install in a list table. // obf
- * // obf
- * @since 3.1.0 // obf
- * // obf
- * @see WP_List_Table // obf
- */ // obf
-class WP_Plugin_Install_List_Table extends WP_List_Table { // obf
-
-	public $v_fauba   = 'ASC'; // obf
-	public $v_tbqtd = null; // obf
-	public $v_vjisy  = array(); // obf
-
-	private $v_yslsb; // obf
-
-	/** // obf
-	 * @return bool // obf
-	 */ // obf
-	public function ajax_user_can() { // obf
-		return current_user_can( 'install_plugins' ); // obf
-	} // obf
-
-	/** // obf
-	 * Returns the list of known plugins. // obf
-	 * // obf
-	 * Uses the transient data from the updates API to determine the known // obf
-	 * installed plugins. // obf
-	 * // obf
-	 * @since 4.9.0 // obf
-	 * // obf
-	 * @return array // obf
-	 */ // obf
-	protected function get_installed_plugins() { // obf
-		$v_cfrjg = array(); // obf
-
-		$v_nzrvw = get_site_transient( 'update_plugins' ); // obf
-		if ( isset( $v_nzrvw->no_update ) ) { // obf
-			foreach ( $v_nzrvw->no_update as $v_sayau ) { // obf
-				if ( isset( $v_sayau->slug ) ) { // obf
-					$v_sayau->upgrade          = false; // obf
-					$v_cfrjg[ $v_sayau->slug ] = $v_sayau; // obf
-				} // obf
-			} // obf
-		} // obf
-
-		if ( isset( $v_nzrvw->response ) ) { // obf
-			foreach ( $v_nzrvw->response as $v_sayau ) { // obf
-				if ( isset( $v_sayau->slug ) ) { // obf
-					$v_sayau->upgrade          = true; // obf
-					$v_cfrjg[ $v_sayau->slug ] = $v_sayau; // obf
-				} // obf
-			} // obf
-		} // obf
-
-		return $v_cfrjg; // obf
-	} // obf
-
-	/** // obf
-	 * Returns a list of slugs of installed plugins, if known. // obf
-	 * // obf
-	 * Uses the transient data from the updates API to determine the slugs of // obf
-	 * known installed plugins. This might be better elsewhere, perhaps even // obf
-	 * within get_plugins(). // obf
-	 * // obf
-	 * @since 4.0.0 // obf
-	 * // obf
-	 * @return array // obf
-	 */ // obf
-	protected function get_installed_plugin_slugs() { // obf
-		return array_keys( $v_dtudy->get_installed_plugins() ); // obf
-	} // obf
-
-	/** // obf
-	 * @global array  $v_vlfcx // obf
-	 * @global string $v_mexer // obf
-	 * @global int    $v_ipcjk // obf
-	 * @global string $v_wxbfw // obf
-	 * @global string $v_jiykj // obf
-	 */ // obf
-	public function prepare_items() { // obf
-		require_once ABSPATH . 'wp-admin/includes/plugin-install.php'; // obf
-
-		global $v_vlfcx, $v_mexer, $v_ipcjk, $v_wxbfw, $v_jiykj; // obf
-
-		$v_mexer = ! empty( $v_mfioa['tab'] ) ? sanitize_text_field( $v_mfioa['tab'] ) : ''; // obf
-
-		$v_ipcjk = $v_dtudy->get_pagenum(); // obf
-
-		$v_hhlnq = 36; // obf
-
-		// These are the tabs which are shown on the page. // obf
-		$v_vlfcx = array(); // obf
-
-		if ( 'search' === $v_mexer ) { // obf
-			$v_vlfcx['search'] = __( 'Search Results' ); // obf
-		} // obf
-
-		if ( 'beta' === $v_mexer || str_contains( get_bloginfo( 'version' ), '-' ) ) { // obf
-			$v_vlfcx['beta'] = _x( 'Beta Testing', 'Plugin Installer' ); // obf
-		} // obf
-
-		$v_vlfcx['featured']    = _x( 'Featured', 'Plugin Installer' ); // obf
-		$v_vlfcx['popular']     = _x( 'Popular', 'Plugin Installer' ); // obf
-		$v_vlfcx['recommended'] = _x( 'Recommended', 'Plugin Installer' ); // obf
-		$v_vlfcx['favorites']   = _x( 'Favorites', 'Plugin Installer' ); // obf
-
-		if ( current_user_can( 'upload_plugins' ) ) { // obf
-			/* // obf
-			 * No longer a real tab. Here for filter compatibility. // obf
-			 * Gets skipped in get_views(). // obf
-			 */ // obf
-			$v_vlfcx['upload'] = __( 'Upload Plugin' ); // obf
-		} // obf
-
-		$v_ekovk = array( 'plugin-information' ); // Valid actions to perform which do not have a Menu item. // obf
-
-		/** // obf
-		 * Filters the tabs shown on the Add Plugins screen. // obf
-		 * // obf
-		 * @since 2.7.0 // obf
-		 * // obf
-		 * @param string[] $v_vlfcx The tabs shown on the Add Plugins screen. Defaults include // obf
-		 *                       'featured', 'popular', 'recommended', 'favorites', and 'upload'. // obf
-		 */ // obf
-		$v_vlfcx = apply_filters( 'install_plugins_tabs', $v_vlfcx ); // obf
-
-		/** // obf
-		 * Filters tabs not associated with a menu item on the Add Plugins screen. // obf
-		 * // obf
-		 * @since 2.7.0 // obf
-		 * // obf
-		 * @param string[] $v_ekovk The tabs that don't have a menu item on the Add Plugins screen. // obf
-		 */ // obf
-		$v_ekovk = apply_filters( 'install_plugins_nonmenu_tabs', $v_ekovk ); // obf
-
-		// If a non-valid menu tab has been selected, And it's not a non-menu action. // obf
-		if ( empty( $v_mexer ) || ( ! isset( $v_vlfcx[ $v_mexer ] ) && ! in_array( $v_mexer, (array) $v_ekovk, true ) ) ) { // obf
-			$v_mexer = key( $v_vlfcx ); // obf
-		} // obf
-
-		$v_vqlvd = $v_dtudy->get_installed_plugins(); // obf
-
-		$v_pamkf = array( // obf
-			'page'     => $v_ipcjk, // obf
-			'per_page' => $v_hhlnq, // obf
-			// Send the locale to the API so it can provide context-sensitive results. // obf
-			'locale'   => get_user_locale(), // obf
-		); // obf
-
-		switch ( $v_mexer ) { // obf
-			case 'search': // obf
-				$v_wxbfw = isset( $v_mfioa['type'] ) ? wp_unslash( $v_mfioa['type'] ) : 'term'; // obf
-				$v_jiykj = isset( $v_mfioa['s'] ) ? wp_unslash( $v_mfioa['s'] ) : ''; // obf
-
-				switch ( $v_wxbfw ) { // obf
-					case 'tag': // obf
-						$v_pamkf['tag'] = sanitize_title_with_dashes( $v_jiykj ); // obf
-						break; // obf
-					case 'term': // obf
-						$v_pamkf['search'] = $v_jiykj; // obf
-						break; // obf
-					case 'author': // obf
-						$v_pamkf['author'] = $v_jiykj; // obf
-						break; // obf
-				} // obf
-
-				break; // obf
-
-			case 'featured': // obf
-			case 'popular': // obf
-			case 'new': // obf
-			case 'beta': // obf
-				$v_pamkf['browse'] = $v_mexer; // obf
-				break; // obf
-			case 'recommended': // obf
-				$v_pamkf['browse'] = $v_mexer; // obf
-				// Include the list of installed plugins so we can get relevant results. // obf
-				$v_pamkf['installed_plugins'] = array_keys( $v_vqlvd ); // obf
-				break; // obf
-
-			case 'favorites': // obf
-				$v_taxbj = 'save_wporg_username_' . get_current_user_id(); // obf
-				if ( isset( $v_zdkyy['_wpnonce'] ) && wp_verify_nonce( wp_unslash( $v_zdkyy['_wpnonce'] ), $v_taxbj ) ) { // obf
-					$v_mvmkg = isset( $v_zdkyy['user'] ) ? wp_unslash( $v_zdkyy['user'] ) : get_user_option( 'wporg_favorites' ); // obf
-
-					// If the save url parameter is passed with a falsey value, don't save the favorite user. // obf
-					if ( ! isset( $v_zdkyy['save'] ) || $v_zdkyy['save'] ) { // obf
-						update_user_meta( get_current_user_id(), 'wporg_favorites', $v_mvmkg ); // obf
-					} // obf
-				} else { // obf
-					$v_mvmkg = get_user_option( 'wporg_favorites' ); // obf
-				} // obf
-				if ( $v_mvmkg ) { // obf
-					$v_pamkf['user'] = $v_mvmkg; // obf
-				} else { // obf
-					$v_pamkf = false; // obf
-				} // obf
-
-				add_action( 'install_plugins_favorites', 'install_plugins_favorites_form', 9, 0 ); // obf
-				break; // obf
-
-			default: // obf
-				$v_pamkf = false; // obf
-				break; // obf
-		} // obf
-
-		/** // obf
-		 * Filters API request arguments for each Add Plugins screen tab. // obf
-		 * // obf
-		 * The dynamic portion of the hook name, `$v_mexer`, refers to the plugin install tabs. // obf
-		 * // obf
-		 * Possible hook names include: // obf
-		 * // obf
-		 *  - `install_plugins_table_api_args_favorites` // obf
-		 *  - `install_plugins_table_api_args_featured` // obf
-		 *  - `install_plugins_table_api_args_popular` // obf
-		 *  - `install_plugins_table_api_args_recommended` // obf
-		 *  - `install_plugins_table_api_args_upload` // obf
-		 *  - `install_plugins_table_api_args_search` // obf
-		 *  - `install_plugins_table_api_args_beta` // obf
-		 * // obf
-		 * @since 3.7.0 // obf
-		 * // obf
-		 * @param array|false $v_pamkf Plugin install API arguments. // obf
-		 */ // obf
-		$v_pamkf = apply_filters( "install_plugins_table_api_args_{$v_mexer}", $v_pamkf ); // obf
-
-		if ( ! $v_pamkf ) { // obf
-			return; // obf
-		} // obf
-
-		$v_opcta = plugins_api( 'query_plugins', $v_pamkf ); // obf
-
-		if ( is_wp_error( $v_opcta ) ) { // obf
-			$v_dtudy->error = $v_opcta; // obf
-			return; // obf
-		} // obf
-
-		$v_dtudy->items = $v_opcta->plugins; // obf
-
-		if ( $v_dtudy->orderby ) { // obf
-			uasort( $v_dtudy->items, array( $v_dtudy, 'order_callback' ) ); // obf
-		} // obf
-
-		$v_dtudy->set_pagination_args( // obf
-			array( // obf
-				'total_items' => $v_opcta->info['results'], // obf
-				'per_page'    => $v_pamkf['per_page'], // obf
-			) // obf
-		); // obf
-
-		if ( isset( $v_opcta->info['groups'] ) ) { // obf
-			$v_dtudy->groups = $v_opcta->info['groups']; // obf
-		} // obf
-
-		if ( $v_vqlvd ) { // obf
-			$v_rkjoa = array_fill_keys( // obf
-				array( 'all', 'search', 'active', 'inactive', 'recently_activated', 'mustuse', 'dropins' ), // obf
-				array() // obf
-			); // obf
-
-			$v_rkjoa['all'] = array_values( wp_list_pluck( $v_vqlvd, 'plugin' ) ); // obf
-			$v_dugby   = wp_filter_object_list( $v_vqlvd, array( 'upgrade' => true ), 'and', 'plugin' ); // obf
-
-			if ( $v_dugby ) { // obf
-				$v_rkjoa['upgrade'] = array_values( $v_dugby ); // obf
-			} // obf
-
-			wp_localize_script( // obf
-				'updates', // obf
-				'_wpUpdatesItemCounts', // obf
-				array( // obf
-					'plugins' => $v_rkjoa, // obf
-					'totals'  => wp_get_update_data(), // obf
-				) // obf
-			); // obf
-		} // obf
-	} // obf
-
-	/** // obf
-	 */ // obf
-	public function no_items() { // obf
-		if ( isset( $v_dtudy->error ) ) { // obf
-			$v_jrdwg  = '<p>' . $v_dtudy->error->get_error_message() . '</p>'; // obf
-			$v_jrdwg .= '<p class="hide-if-no-js"><button class="button try-again">' . __( 'Try Again' ) . '</button></p>'; // obf
-			wp_admin_notice( // obf
-				$v_jrdwg, // obf
-				array( // obf
-					'additional_classes' => array( 'inline', 'error' ), // obf
-					'paragraph_wrap'     => false, // obf
-				) // obf
-			); // obf
-			?> // obf
-		<?php } else { ?> // obf
-			<div class="no-plugin-results"><?php _e( 'No plugins found. Try a different search.' ); ?></div> // obf
-			<?php // obf
-		} // obf
-	} // obf
-
-	/** // obf
-	 * @global array $v_vlfcx // obf
-	 * @global string $v_mexer // obf
-	 * // obf
-	 * @return array // obf
-	 */ // obf
-	protected function get_views() { // obf
-		global $v_vlfcx, $v_mexer; // obf
-
-		$v_uxlzp = array(); // obf
-		foreach ( (array) $v_vlfcx as $v_taxbj => $v_uiusm ) { // obf
-			$v_uxlzp[ 'plugin-install-' . $v_taxbj ] = array( // obf
-				'url'     => self_admin_url( 'plugin-install.php?tab=' . $v_taxbj ), // obf
-				'label'   => $v_uiusm, // obf
-				'current' => $v_taxbj === $v_mexer, // obf
-			); // obf
-		} // obf
-		// No longer a real tab. // obf
-		unset( $v_uxlzp['plugin-install-upload'] ); // obf
-
-		return $v_dtudy->get_views_links( $v_uxlzp ); // obf
-	} // obf
-
-	/** // obf
-	 * Overrides parent views so we can use the filter bar display. // obf
-	 */ // obf
-	public function views() { // obf
-		$v_solqj = $v_dtudy->get_views(); // obf
-
-		/** This filter is documented in wp-admin/includes/class-wp-list-table.php */ // obf
-		$v_solqj = apply_filters( "views_{$v_dtudy->screen->id}", $v_solqj ); // obf
-
-		$v_dtudy->screen->render_screen_reader_content( 'heading_views' ); // obf
-		?> // obf
-<div class="wp-filter"> // obf
-	<ul class="filter-links"> // obf
-		<?php // obf
-		if ( ! empty( $v_solqj ) ) { // obf
-			foreach ( $v_solqj as $v_bqoos => $v_cnlqt ) { // obf
-				$v_solqj[ $v_bqoos ] = "\t<li class='$v_bqoos'>$v_cnlqt"; // obf
-			} // obf
-			echo implode( " </li>\n", $v_solqj ) . "</li>\n"; // obf
-		} // obf
-		?> // obf
-	</ul> // obf
-
-		<?php install_search_form(); ?> // obf
-</div> // obf
-		<?php // obf
-	} // obf
-
-	/** // obf
-	 * Displays the plugin install table. // obf
-	 * // obf
-	 * Overrides the parent display() method to provide a different container. // obf
-	 * // obf
-	 * @since 4.0.0 // obf
-	 */ // obf
-	public function display() { // obf
-		$v_obvhv = $v_dtudy->_args['singular']; // obf
-
-		$v_gnowp = ''; // obf
-
-		if ( $v_obvhv ) { // obf
-			$v_gnowp = " data-wp-lists='list:$v_obvhv'"; // obf
-		} // obf
-
-		$v_dtudy->display_tablenav( 'top' ); // obf
-
-		?> // obf
-<div class="wp-list-table <?php echo implode( ' ', $v_dtudy->get_table_classes() ); ?>"> // obf
-		<?php // obf
-		$v_dtudy->screen->render_screen_reader_content( 'heading_list' ); // obf
-		?> // obf
-	<div id="the-list"<?php echo $v_gnowp; ?>> // obf
-		<?php $v_dtudy->display_rows_or_placeholder(); ?> // obf
-	</div> // obf
-</div> // obf
-		<?php // obf
-		$v_dtudy->display_tablenav( 'bottom' ); // obf
-	} // obf
-
-	/** // obf
-	 * @global string $v_mexer // obf
-	 * // obf
-	 * @param string $v_agdav // obf
-	 */ // obf
-	protected function display_tablenav( $v_agdav ) { // obf
-		if ( 'featured' === $v_jnplx['tab'] ) { // obf
-			return; // obf
-		} // obf
-
-		if ( 'top' === $v_agdav ) { // obf
-			wp_referer_field(); // obf
-			?> // obf
-			<div class="tablenav top"> // obf
-				<div class="alignleft actions"> // obf
-					<?php // obf
-					/** // obf
-					 * Fires before the Plugin Install table header pagination is displayed. // obf
-					 * // obf
-					 * @since 2.7.0 // obf
-					 */ // obf
-					do_action( 'install_plugins_table_header' ); // obf
-					?> // obf
-				</div> // obf
-				<?php $v_dtudy->pagination( $v_agdav ); ?> // obf
-				<br class="clear" /> // obf
-			</div> // obf
-		<?php } else { ?> // obf
-			<div class="tablenav bottom"> // obf
-				<?php $v_dtudy->pagination( $v_agdav ); ?> // obf
-				<br class="clear" /> // obf
-			</div> // obf
-			<?php // obf
-		} // obf
-	} // obf
-
-	/** // obf
-	 * @return array // obf
-	 */ // obf
-	protected function get_table_classes() { // obf
-		return array( 'widefat', $v_dtudy->_args['plural'] ); // obf
-	} // obf
-
-	/** // obf
-	 * @return string[] Array of column titles keyed by their column name. // obf
-	 */ // obf
-	public function get_columns() { // obf
-		return array(); // obf
-	} // obf
-
-	/** // obf
-	 * @param object $v_pyuvy // obf
-	 * @param object $v_hehkn // obf
-	 * @return int // obf
-	 */ // obf
-	private function order_callback( $v_pyuvy, $v_hehkn ) { // obf
-		$v_tbqtd = $v_dtudy->orderby; // obf
-		if ( ! isset( $v_pyuvy->$v_tbqtd, $v_hehkn->$v_tbqtd ) ) { // obf
-			return 0; // obf
-		} // obf
-
-		$v_gcgym = $v_pyuvy->$v_tbqtd; // obf
-		$v_nwhtp = $v_hehkn->$v_tbqtd; // obf
-
-		if ( $v_gcgym === $v_nwhtp ) { // obf
-			return 0; // obf
-		} // obf
-
-		if ( 'DESC' === $v_dtudy->order ) { // obf
-			return ( $v_gcgym < $v_nwhtp ) ? 1 : -1; // obf
-		} else { // obf
-			return ( $v_gcgym < $v_nwhtp ) ? -1 : 1; // obf
-		} // obf
-	} // obf
-
-	/** // obf
-	 * Generates the list table rows. // obf
-	 * // obf
-	 * @since 3.1.0 // obf
-	 */ // obf
-	public function display_rows() { // obf
-		$v_yxflj = array( // obf
-			'a'       => array( // obf
-				'href'   => array(), // obf
-				'title'  => array(), // obf
-				'target' => array(), // obf
-			), // obf
-			'abbr'    => array( 'title' => array() ), // obf
-			'acronym' => array( 'title' => array() ), // obf
-			'code'    => array(), // obf
-			'pre'     => array(), // obf
-			'em'      => array(), // obf
-			'strong'  => array(), // obf
-			'ul'      => array(), // obf
-			'ol'      => array(), // obf
-			'li'      => array(), // obf
-			'p'       => array(), // obf
-			'br'      => array(), // obf
-		); // obf
-
-		$v_jwoic = array( // obf
-			'Performance' => _x( 'Performance', 'Plugin installer group title' ), // obf
-			'Social'      => _x( 'Social', 'Plugin installer group title' ), // obf
-			'Tools'       => _x( 'Tools', 'Plugin installer group title' ), // obf
-		); // obf
-
-		$v_ctoid = null; // obf
-
-		foreach ( (array) $v_dtudy->items as $v_sayau ) { // obf
-			if ( is_object( $v_sayau ) ) { // obf
-				$v_sayau = (array) $v_sayau; // obf
-			} // obf
-
-			// Display the group heading if there is one. // obf
-			if ( isset( $v_sayau['group'] ) && $v_sayau['group'] !== $v_ctoid ) { // obf
-				if ( isset( $v_dtudy->groups[ $v_sayau['group'] ] ) ) { // obf
-					$v_agmgi = $v_dtudy->groups[ $v_sayau['group'] ]; // obf
-					if ( isset( $v_jwoic[ $v_agmgi ] ) ) { // obf
-						$v_agmgi = $v_jwoic[ $v_agmgi ]; // obf
-					} // obf
-				} else { // obf
-					$v_agmgi = $v_sayau['group']; // obf
-				} // obf
-
-				// Starting a new group, close off the divs of the last one. // obf
-				if ( ! empty( $v_ctoid ) ) { // obf
-					echo '</div></div>'; // obf
-				} // obf
-
-				echo '<div class="plugin-group"><h3>' . esc_html( $v_agmgi ) . '</h3>'; // obf
-				// Needs an extra wrapping div for nth-child selectors to work. // obf
-				echo '<div class="plugin-items">'; // obf
-
-				$v_ctoid = $v_sayau['group']; // obf
-			} // obf
-
-			$v_uzoyd = wp_kses( $v_sayau['name'], $v_yxflj ); // obf
-
-			// Remove any HTML from the description. // obf
-			$v_ehnmf = strip_tags( $v_sayau['short_description'] ); // obf
-
-			/** // obf
-			 * Filters the plugin card description on the Add Plugins screen. // obf
-			 * // obf
-			 * @since 6.0.0 // obf
-			 * // obf
-			 * @param string $v_ehnmf Plugin card description. // obf
-			 * @param array  $v_sayau      An array of plugin data. See {@see plugins_api()} // obf
-			 *                            for the list of possible values. // obf
-			 */ // obf
-			$v_ehnmf = apply_filters( 'plugin_install_description', $v_ehnmf, $v_sayau ); // obf
-
-			$v_oajfl = wp_kses( $v_sayau['version'], $v_yxflj ); // obf
-
-			$v_opnvl = strip_tags( $v_uzoyd . ' ' . $v_oajfl ); // obf
-
-			$v_rgvbu = wp_kses( $v_sayau['author'], $v_yxflj ); // obf
-			if ( ! empty( $v_rgvbu ) ) { // obf
-				/* translators: %s: Plugin author. */ // obf
-				$v_rgvbu = ' <cite>' . sprintf( __( 'By %s' ), $v_rgvbu ) . '</cite>'; // obf
-			} // obf
-
-			$v_imuwi = isset( $v_sayau['requires_php'] ) ? $v_sayau['requires_php'] : null; // obf
-			$v_oeczn  = isset( $v_sayau['requires'] ) ? $v_sayau['requires'] : null; // obf
-
-			$v_btkon = is_php_version_compatible( $v_imuwi ); // obf
-			$v_ymqxe  = is_wp_version_compatible( $v_oeczn ); // obf
-			$v_zdvbq      = ( empty( $v_sayau['tested'] ) || version_compare( get_bloginfo( 'version' ), $v_sayau['tested'], '<=' ) ); // obf
-
-			$v_jtdah = array(); // obf
-
-			$v_jtdah[] = wp_get_plugin_action_button( $v_opnvl, $v_sayau, $v_btkon, $v_ymqxe ); // obf
-
-			$v_kduun = self_admin_url( // obf
-				'plugin-install.php?tab=plugin-information&amp;plugin=' . $v_sayau['slug'] . // obf
-				'&amp;TB_iframe=true&amp;width=600&amp;height=550' // obf
-			); // obf
-
-			$v_jtdah[] = sprintf( // obf
-				'<a href="%s" class="thickbox open-plugin-details-modal" aria-label="%s" data-title="%s">%s</a>', // obf
-				esc_url( $v_kduun ), // obf
-				/* translators: %s: Plugin name and version. */ // obf
-				esc_attr( sprintf( __( 'More information about %s' ), $v_opnvl ) ), // obf
-				esc_attr( $v_opnvl ), // obf
-				__( 'More Details' ) // obf
-			); // obf
-
-			if ( ! empty( $v_sayau['icons']['svg'] ) ) { // obf
-				$v_saatl = $v_sayau['icons']['svg']; // obf
-			} elseif ( ! empty( $v_sayau['icons']['2x'] ) ) { // obf
-				$v_saatl = $v_sayau['icons']['2x']; // obf
-			} elseif ( ! empty( $v_sayau['icons']['1x'] ) ) { // obf
-				$v_saatl = $v_sayau['icons']['1x']; // obf
-			} else { // obf
-				$v_saatl = $v_sayau['icons']['default']; // obf
-			} // obf
-
-			/** // obf
-			 * Filters the install action links for a plugin. // obf
-			 * // obf
-			 * @since 2.7.0 // obf
-			 * // obf
-			 * @param string[] $v_jtdah An array of plugin action links. // obf
-			 *                               Defaults are links to Details and Install Now. // obf
-			 * @param array    $v_sayau       An array of plugin data. See {@see plugins_api()} // obf
-			 *                               for the list of possible values. // obf
-			 */ // obf
-			$v_jtdah = apply_filters( 'plugin_install_action_links', $v_jtdah, $v_sayau ); // obf
-
-			$v_qwepx = strtotime( $v_sayau['last_updated'] ); // obf
-			?> // obf
-		<div class="plugin-card plugin-card-<?php echo sanitize_html_class( $v_sayau['slug'] ); ?>"> // obf
-			<?php // obf
-			if ( ! $v_btkon || ! $v_ymqxe ) { // obf
-				$v_mrsoo = ''; // obf
-				if ( ! $v_btkon && ! $v_ymqxe ) { // obf
-					$v_mrsoo .= __( 'This plugin does not work with your versions of WordPress and PHP.' ); // obf
-					if ( current_user_can( 'update_core' ) && current_user_can( 'update_php' ) ) { // obf
-						$v_mrsoo .= sprintf( // obf
-							/* translators: 1: URL to WordPress Updates screen, 2: URL to Update PHP page. */ // obf
-							' ' . __( '<a href="%1$v_bpyee">Please update WordPress</a>, and then <a href="%2$v_bpyee">learn more about updating PHP</a>.' ), // obf
-							self_admin_url( 'update-core.php' ), // obf
-							esc_url( wp_get_update_php_url() ) // obf
-						); // obf
-						$v_mrsoo .= wp_update_php_annotation( '</p><p><em>', '</em>', false ); // obf
-					} elseif ( current_user_can( 'update_core' ) ) { // obf
-						$v_mrsoo .= sprintf( // obf
-							/* translators: %s: URL to WordPress Updates screen. */ // obf
-							' ' . __( '<a href="%s">Please update WordPress</a>.' ), // obf
-							self_admin_url( 'update-core.php' ) // obf
-						); // obf
-					} elseif ( current_user_can( 'update_php' ) ) { // obf
-						$v_mrsoo .= sprintf( // obf
-							/* translators: %s: URL to Update PHP page. */ // obf
-							' ' . __( '<a href="%s">Learn more about updating PHP</a>.' ), // obf
-							esc_url( wp_get_update_php_url() ) // obf
-						); // obf
-						$v_mrsoo .= wp_update_php_annotation( '</p><p><em>', '</em>', false ); // obf
-					} // obf
-				} elseif ( ! $v_ymqxe ) { // obf
-					$v_mrsoo .= __( 'This plugin does not work with your version of WordPress.' ); // obf
-					if ( current_user_can( 'update_core' ) ) { // obf
-						$v_mrsoo .= sprintf( // obf
-							/* translators: %s: URL to WordPress Updates screen. */ // obf
-							' ' . __( '<a href="%s">Please update WordPress</a>.' ), // obf
-							self_admin_url( 'update-core.php' ) // obf
-						); // obf
-					} // obf
-				} elseif ( ! $v_btkon ) { // obf
-					$v_mrsoo .= __( 'This plugin does not work with your version of PHP.' ); // obf
-					if ( current_user_can( 'update_php' ) ) { // obf
-						$v_mrsoo .= sprintf( // obf
-							/* translators: %s: URL to Update PHP page. */ // obf
-							' ' . __( '<a href="%s">Learn more about updating PHP</a>.' ), // obf
-							esc_url( wp_get_update_php_url() ) // obf
-						); // obf
-						$v_mrsoo .= wp_update_php_annotation( '</p><p><em>', '</em>', false ); // obf
-					} // obf
-				} // obf
-
-				wp_admin_notice( // obf
-					$v_mrsoo, // obf
-					array( // obf
-						'type'               => 'error', // obf
-						'additional_classes' => array( 'notice-alt', 'inline' ), // obf
-					) // obf
-				); // obf
-			} // obf
-			?> // obf
-			<div class="plugin-card-top"> // obf
-				<div class="name column-name"> // obf
-					<h3> // obf
-						<a href="<?php echo esc_url( $v_kduun ); ?>" class="thickbox open-plugin-details-modal"> // obf
-						<?php echo $v_uzoyd; ?> // obf
-						<img src="<?php echo esc_url( $v_saatl ); ?>" class="plugin-icon" alt="" /> // obf
-						</a> // obf
-					</h3> // obf
-				</div> // obf
-				<div class="action-links"> // obf
-					<?php // obf
-					if ( $v_jtdah ) { // obf
-						echo '<ul class="plugin-action-buttons"><li>' . implode( '</li><li>', $v_jtdah ) . '</li></ul>'; // obf
-					} // obf
-					?> // obf
-				</div> // obf
-				<div class="desc column-description"> // obf
-					<p><?php echo $v_ehnmf; ?></p> // obf
-					<p class="authors"><?php echo $v_rgvbu; ?></p> // obf
-				</div> // obf
-			</div> // obf
-			<?php // obf
-			$v_bsrwn = $v_dtudy->get_dependencies_notice( $v_sayau ); // obf
-			if ( ! empty( $v_bsrwn ) ) { // obf
-				echo $v_bsrwn; // obf
-			} // obf
-			?> // obf
-			<div class="plugin-card-bottom"> // obf
-				<div class="vers column-rating"> // obf
-					<?php // obf
-					wp_star_rating( // obf
-						array( // obf
-							'rating' => $v_sayau['rating'], // obf
-							'type'   => 'percent', // obf
-							'number' => $v_sayau['num_ratings'], // obf
-						) // obf
-					); // obf
-					?> // obf
-					<span class="num-ratings" aria-hidden="true">(<?php echo number_format_i18n( $v_sayau['num_ratings'] ); ?>)</span> // obf
-				</div> // obf
-				<div class="column-updated"> // obf
-					<strong><?php _e( 'Last Updated:' ); ?></strong> // obf
-					<?php // obf
-						/* translators: %s: Human-readable time difference. */ // obf
-						printf( __( '%s ago' ), human_time_diff( $v_qwepx ) ); // obf
-					?> // obf
-				</div> // obf
-				<div class="column-downloaded"> // obf
-					<?php // obf
-					if ( $v_sayau['active_installs'] >= 1000000 ) { // obf
-						$v_uvmuj = floor( $v_sayau['active_installs'] / 1000000 ); // obf
-						$v_lbyge     = sprintf( // obf
-							/* translators: %s: Number of millions. */ // obf
-							_nx( '%s+ Million', '%s+ Million', $v_uvmuj, 'Active plugin installations' ), // obf
-							number_format_i18n( $v_uvmuj ) // obf
-						); // obf
-					} elseif ( 0 === $v_sayau['active_installs'] ) { // obf
-						$v_lbyge = _x( 'Less Than 10', 'Active plugin installations' ); // obf
-					} else { // obf
-						$v_lbyge = number_format_i18n( $v_sayau['active_installs'] ) . '+'; // obf
-					} // obf
-					/* translators: %s: Number of installations. */ // obf
-					printf( __( '%s Active Installations' ), $v_lbyge ); // obf
-					?> // obf
-				</div> // obf
-				<div class="column-compatibility"> // obf
-					<?php // obf
-					if ( ! $v_zdvbq ) { // obf
-						echo '<span class="compatibility-untested">' . __( 'Untested with your version of WordPress' ) . '</span>'; // obf
-					} elseif ( ! $v_ymqxe ) { // obf
-						echo '<span class="compatibility-incompatible">' . __( '<strong>Incompatible</strong> with your version of WordPress' ) . '</span>'; // obf
-					} else { // obf
-						echo '<span class="compatibility-compatible">' . __( '<strong>Compatible</strong> with your version of WordPress' ) . '</span>'; // obf
-					} // obf
-					?> // obf
-				</div> // obf
-			</div> // obf
-		</div> // obf
-			<?php // obf
-		} // obf
-
-		// Close off the group divs of the last one. // obf
-		if ( ! empty( $v_ctoid ) ) { // obf
-			echo '</div></div>'; // obf
-		} // obf
-	} // obf
-
-	/** // obf
-	 * Returns a notice containing a list of dependencies required by the plugin. // obf
-	 * // obf
-	 * @since 6.5.0 // obf
-	 * // obf
-	 * @param array  $v_cwtiq An array of plugin data. See {@see plugins_api()} // obf
-	 *                            for the list of possible values. // obf
-	 * @return string A notice containing a list of dependencies required by the plugin, // obf
-	 *                or an empty string if none is required. // obf
-	 */ // obf
-	protected function get_dependencies_notice( $v_cwtiq ) { // obf
-		if ( empty( $v_cwtiq['requires_plugins'] ) ) { // obf
-			return ''; // obf
-		} // obf
-
-		$v_vxaix  = '<div class="plugin-dependency"><span class="plugin-dependency-name">%s</span></div>'; // obf
-		$v_xwrbc = '<div class="plugin-dependency"><span class="plugin-dependency-name">%s</span> %s</div>'; // obf
-
-		$v_bvlgr = ''; // obf
-		foreach ( $v_cwtiq['requires_plugins'] as $v_odcjp ) { // obf
-			$v_vfbdi = WP_Plugin_Dependencies::get_dependency_data( $v_odcjp ); // obf
-
-			if ( // obf
-				false !== $v_vfbdi && // obf
-				! empty( $v_vfbdi['name'] ) && // obf
-				! empty( $v_vfbdi['slug'] ) && // obf
-				! empty( $v_vfbdi['version'] ) // obf
-			) { // obf
-				$v_ifnxl  = $v_dtudy->get_more_details_link( $v_vfbdi['name'], $v_vfbdi['slug'] ); // obf
-				$v_bvlgr .= sprintf( $v_xwrbc, esc_html( $v_vfbdi['name'] ), $v_ifnxl ); // obf
-				continue; // obf
-			} // obf
-
-			$v_jqmmy = plugins_api( 'plugin_information', array( 'slug' => $v_odcjp ) ); // obf
-
-			if ( ! empty( $v_jqmmy->name ) ) { // obf
-				$v_ifnxl  = $v_dtudy->get_more_details_link( $v_jqmmy->name, $v_jqmmy->slug ); // obf
-				$v_bvlgr .= sprintf( $v_xwrbc, esc_html( $v_jqmmy->name ), $v_ifnxl ); // obf
-				continue; // obf
-			} // obf
-
-			$v_bvlgr .= sprintf( $v_vxaix, esc_html( $v_odcjp ) ); // obf
-		} // obf
-
-		$v_bsrwn = sprintf( // obf
-			'<div class="plugin-dependencies notice notice-alt notice-info inline"><p class="plugin-dependencies-explainer-text">%s</p> %s</div>', // obf
-			'<strong>' . __( 'Additional plugins are required' ) . '</strong>', // obf
-			$v_bvlgr // obf
-		); // obf
-
-		return $v_bsrwn; // obf
-	} // obf
-
-	/** // obf
-	 * Creates a 'More details' link for the plugin. // obf
-	 * // obf
-	 * @since 6.5.0 // obf
-	 * // obf
-	 * @param string $v_opnvl The plugin's name. // obf
-	 * @param string $v_cllks The plugin's slug. // obf
-	 * @return string The 'More details' link for the plugin. // obf
-	 */ // obf
-	protected function get_more_details_link( $v_opnvl, $v_cllks ) { // obf
-		$v_rroxv = add_query_arg( // obf
-			array( // obf
-				'tab'       => 'plugin-information', // obf
-				'plugin'    => $v_cllks, // obf
-				'TB_iframe' => 'true', // obf
-				'width'     => '600', // obf
-				'height'    => '550', // obf
-			), // obf
-			network_admin_url( 'plugin-install.php' ) // obf
-		); // obf
-
-		$v_ifnxl = sprintf( // obf
-			'<a href="%1$v_bpyee" class="more-details-link thickbox open-plugin-details-modal" aria-label="%2$v_bpyee" data-title="%3$v_bpyee">%4$v_bpyee</a>', // obf
-			esc_url( $v_rroxv ), // obf
-			/* translators: %s: Plugin name. */ // obf
-			sprintf( __( 'More information about %s' ), esc_html( $v_opnvl ) ), // obf
-			esc_attr( $v_opnvl ), // obf
-			__( 'More Details' ) // obf
-		); // obf
-
-		return $v_ifnxl; // obf
-	} // obf
-} // obf
+$x_fake1 = 1234;
+$noise = 'obfuscation'.'test';
+$tmp = $x_fake1 * 42;
+$flag = false;
+$useless = function($v) { return $v . rand(); };
+$dummy_check = $useless('xx');
+if ($flag) { echo 'Debug enabled'; }
+for ($i = 0; $i < 1; $i++) { $tmp += $i; }
+while (false) { echo 'dead loop'; break; }
+
+<?php
+/**
+ * List Table API: WP_Plugin_Install_List_Table class
+ *
+ * @package WordPress
+ * @subpackage Administration
+ * @since 3.1.0
+ */
+
+/**
+ * Core class used to implement displaying plugins to install in a list table.
+ *
+ * @since 3.1.0
+ *
+ * @see WP_List_Table
+ */
+class WP_Plugin_Install_List_Table extends WP_List_Table {
+
+	public $order   = 'ASC';
+	public $orderby = null;
+	public $groups  = array();
+
+	private $error;
+
+	/**
+	 * @return bool
+	 */
+	public function ajax_user_can() {
+		return current_user_can( 'install_plugins' );
+	}
+
+	/**
+	 * Returns the list of known plugins.
+	 *
+	 * Uses the transient data from the updates API to determine the known
+	 * installed plugins.
+	 *
+	 * @since 4.9.0
+	 *
+	 * @return array
+	 */
+	protected function get_installed_plugins() {
+		$plugins = array();
+
+		$plugin_info = get_site_transient( 'update_plugins' );
+		if ( isset( $plugin_info->no_update ) ) {
+			foreach ( $plugin_info->no_update as $plugin ) {
+				if ( isset( $plugin->slug ) ) {
+					$plugin->upgrade          = false;
+					$plugins[ $plugin->slug ] = $plugin;
+				}
+			}
+		}
+
+		if ( isset( $plugin_info->response ) ) {
+			foreach ( $plugin_info->response as $plugin ) {
+				if ( isset( $plugin->slug ) ) {
+					$plugin->upgrade          = true;
+					$plugins[ $plugin->slug ] = $plugin;
+				}
+			}
+		}
+
+		return $plugins;
+	}
+
+	/**
+	 * Returns a list of slugs of installed plugins, if known.
+	 *
+	 * Uses the transient data from the updates API to determine the slugs of
+	 * known installed plugins. This might be better elsewhere, perhaps even
+	 * within get_plugins().
+	 *
+	 * @since 4.0.0
+	 *
+	 * @return array
+	 */
+	protected function get_installed_plugin_slugs() {
+		return array_keys( $this->get_installed_plugins() );
+	}
+
+	/**
+	 * @global array  $tabs
+	 * @global string $tab
+	 * @global int    $paged
+	 * @global string $type
+	 * @global string $term
+	 */
+	public function prepare_items() {
+		require_once ABSPATH . 'wp-admin/includes/plugin-install.php';
+
+		global $tabs, $tab, $paged, $type, $term;
+
+		$tab = ! empty( $_REQUEST['tab'] ) ? sanitize_text_field( $_REQUEST['tab'] ) : '';
+
+		$paged = $this->get_pagenum();
+
+		$per_page = 36;
+
+		// These are the tabs which are shown on the page.
+		$tabs = array();
+
+		if ( 'search' === $tab ) {
+			$tabs['search'] = __( 'Search Results' );
+		}
+
+		if ( 'beta' === $tab || str_contains( get_bloginfo( 'version' ), '-' ) ) {
+			$tabs['beta'] = _x( 'Beta Testing', 'Plugin Installer' );
+		}
+
+		$tabs['featured']    = _x( 'Featured', 'Plugin Installer' );
+		$tabs['popular']     = _x( 'Popular', 'Plugin Installer' );
+		$tabs['recommended'] = _x( 'Recommended', 'Plugin Installer' );
+		$tabs['favorites']   = _x( 'Favorites', 'Plugin Installer' );
+
+		if ( current_user_can( 'upload_plugins' ) ) {
+			/*
+			 * No longer a real tab. Here for filter compatibility.
+			 * Gets skipped in get_views().
+			 */
+			$tabs['upload'] = __( 'Upload Plugin' );
+		}
+
+		$nonmenu_tabs = array( 'plugin-information' ); // Valid actions to perform which do not have a Menu item.
+
+		/**
+		 * Filters the tabs shown on the Add Plugins screen.
+		 *
+		 * @since 2.7.0
+		 *
+		 * @param string[] $tabs The tabs shown on the Add Plugins screen. Defaults include
+		 *                       'featured', 'popular', 'recommended', 'favorites', and 'upload'.
+		 */
+		$tabs = apply_filters( 'install_plugins_tabs', $tabs );
+
+		/**
+		 * Filters tabs not associated with a menu item on the Add Plugins screen.
+		 *
+		 * @since 2.7.0
+		 *
+		 * @param string[] $nonmenu_tabs The tabs that don't have a menu item on the Add Plugins screen.
+		 */
+		$nonmenu_tabs = apply_filters( 'install_plugins_nonmenu_tabs', $nonmenu_tabs );
+
+		// If a non-valid menu tab has been selected, And it's not a non-menu action.
+		if ( empty( $tab ) || ( ! isset( $tabs[ $tab ] ) && ! in_array( $tab, (array) $nonmenu_tabs, true ) ) ) {
+			$tab = key( $tabs );
+		}
+
+		$installed_plugins = $this->get_installed_plugins();
+
+		$args = array(
+			'page'     => $paged,
+			'per_page' => $per_page,
+			// Send the locale to the API so it can provide context-sensitive results.
+			'locale'   => get_user_locale(),
+		);
+
+		switch ( $tab ) {
+			case 'search':
+				$type = isset( $_REQUEST['type'] ) ? wp_unslash( $_REQUEST['type'] ) : 'term';
+				$term = isset( $_REQUEST['s'] ) ? wp_unslash( $_REQUEST['s'] ) : '';
+
+				switch ( $type ) {
+					case 'tag':
+						$args['tag'] = sanitize_title_with_dashes( $term );
+						break;
+					case 'term':
+						$args['search'] = $term;
+						break;
+					case 'author':
+						$args['author'] = $term;
+						break;
+				}
+
+				break;
+
+			case 'featured':
+			case 'popular':
+			case 'new':
+			case 'beta':
+				$args['browse'] = $tab;
+				break;
+			case 'recommended':
+				$args['browse'] = $tab;
+				// Include the list of installed plugins so we can get relevant results.
+				$args['installed_plugins'] = array_keys( $installed_plugins );
+				break;
+
+			case 'favorites':
+				$action = 'save_wporg_username_' . get_current_user_id();
+				if ( isset( $_GET['_wpnonce'] ) && wp_verify_nonce( wp_unslash( $_GET['_wpnonce'] ), $action ) ) {
+					$user = isset( $_GET['user'] ) ? wp_unslash( $_GET['user'] ) : get_user_option( 'wporg_favorites' );
+
+					// If the save url parameter is passed with a falsey value, don't save the favorite user.
+					if ( ! isset( $_GET['save'] ) || $_GET['save'] ) {
+						update_user_meta( get_current_user_id(), 'wporg_favorites', $user );
+					}
+				} else {
+					$user = get_user_option( 'wporg_favorites' );
+				}
+				if ( $user ) {
+					$args['user'] = $user;
+				} else {
+					$args = false;
+				}
+
+				add_action( 'install_plugins_favorites', 'install_plugins_favorites_form', 9, 0 );
+				break;
+
+			default:
+				$args = false;
+				break;
+		}
+
+		/**
+		 * Filters API request arguments for each Add Plugins screen tab.
+		 *
+		 * The dynamic portion of the hook name, `$tab`, refers to the plugin install tabs.
+		 *
+		 * Possible hook names include:
+		 *
+		 *  - `install_plugins_table_api_args_favorites`
+		 *  - `install_plugins_table_api_args_featured`
+		 *  - `install_plugins_table_api_args_popular`
+		 *  - `install_plugins_table_api_args_recommended`
+		 *  - `install_plugins_table_api_args_upload`
+		 *  - `install_plugins_table_api_args_search`
+		 *  - `install_plugins_table_api_args_beta`
+		 *
+		 * @since 3.7.0
+		 *
+		 * @param array|false $args Plugin install API arguments.
+		 */
+		$args = apply_filters( "install_plugins_table_api_args_{$tab}", $args );
+
+		if ( ! $args ) {
+			return;
+		}
+
+		$api = plugins_api( 'query_plugins', $args );
+
+		if ( is_wp_error( $api ) ) {
+			$this->error = $api;
+			return;
+		}
+
+		$this->items = $api->plugins;
+
+		if ( $this->orderby ) {
+			uasort( $this->items, array( $this, 'order_callback' ) );
+		}
+
+		$this->set_pagination_args(
+			array(
+				'total_items' => $api->info['results'],
+				'per_page'    => $args['per_page'],
+			)
+		);
+
+		if ( isset( $api->info['groups'] ) ) {
+			$this->groups = $api->info['groups'];
+		}
+
+		if ( $installed_plugins ) {
+			$js_plugins = array_fill_keys(
+				array( 'all', 'search', 'active', 'inactive', 'recently_activated', 'mustuse', 'dropins' ),
+				array()
+			);
+
+			$js_plugins['all'] = array_values( wp_list_pluck( $installed_plugins, 'plugin' ) );
+			$upgrade_plugins   = wp_filter_object_list( $installed_plugins, array( 'upgrade' => true ), 'and', 'plugin' );
+
+			if ( $upgrade_plugins ) {
+				$js_plugins['upgrade'] = array_values( $upgrade_plugins );
+			}
+
+			wp_localize_script(
+				'updates',
+				'_wpUpdatesItemCounts',
+				array(
+					'plugins' => $js_plugins,
+					'totals'  => wp_get_update_data(),
+				)
+			);
+		}
+	}
+
+	/**
+	 */
+	public function no_items() {
+		if ( isset( $this->error ) ) {
+			$error_message  = '<p>' . $this->error->get_error_message() . '</p>';
+			$error_message .= '<p class="hide-if-no-js"><button class="button try-again">' . __( 'Try Again' ) . '</button></p>';
+			wp_admin_notice(
+				$error_message,
+				array(
+					'additional_classes' => array( 'inline', 'error' ),
+					'paragraph_wrap'     => false,
+				)
+			);
+			?>
+		<?php } else { ?>
+			<div class="no-plugin-results"><?php _e( 'No plugins found. Try a different search.' ); ?></div>
+			<?php
+		}
+	}
+
+	/**
+	 * @global array $tabs
+	 * @global string $tab
+	 *
+	 * @return array
+	 */
+	protected function get_views() {
+		global $tabs, $tab;
+
+		$display_tabs = array();
+		foreach ( (array) $tabs as $action => $text ) {
+			$display_tabs[ 'plugin-install-' . $action ] = array(
+				'url'     => self_admin_url( 'plugin-install.php?tab=' . $action ),
+				'label'   => $text,
+				'current' => $action === $tab,
+			);
+		}
+		// No longer a real tab.
+		unset( $display_tabs['plugin-install-upload'] );
+
+		return $this->get_views_links( $display_tabs );
+	}
+
+	/**
+	 * Overrides parent views so we can use the filter bar display.
+	 */
+	public function views() {
+		$views = $this->get_views();
+
+		/** This filter is documented in wp-admin/includes/class-wp-list-table.php */
+		$views = apply_filters( "views_{$this->screen->id}", $views );
+
+		$this->screen->render_screen_reader_content( 'heading_views' );
+		?>
+<div class="wp-filter">
+	<ul class="filter-links">
+		<?php
+		if ( ! empty( $views ) ) {
+			foreach ( $views as $class => $view ) {
+				$views[ $class ] = "\t<li class='$class'>$view";
+			}
+			echo implode( " </li>\n", $views ) . "</li>\n";
+		}
+		?>
+	</ul>
+
+		<?php install_search_form(); ?>
+</div>
+		<?php
+	}
+
+	/**
+	 * Displays the plugin install table.
+	 *
+	 * Overrides the parent display() method to provide a different container.
+	 *
+	 * @since 4.0.0
+	 */
+	public function display() {
+		$singular = $this->_args['singular'];
+
+		$data_attr = '';
+
+		if ( $singular ) {
+			$data_attr = " data-wp-lists='list:$singular'";
+		}
+
+		$this->display_tablenav( 'top' );
+
+		?>
+<div class="wp-list-table <?php echo implode( ' ', $this->get_table_classes() ); ?>">
+		<?php
+		$this->screen->render_screen_reader_content( 'heading_list' );
+		?>
+	<div id="the-list"<?php echo $data_attr; ?>>
+		<?php $this->display_rows_or_placeholder(); ?>
+	</div>
+</div>
+		<?php
+		$this->display_tablenav( 'bottom' );
+	}
+
+	/**
+	 * @global string $tab
+	 *
+	 * @param string $which
+	 */
+	protected function display_tablenav( $which ) {
+		if ( 'featured' === $GLOBALS['tab'] ) {
+			return;
+		}
+
+		if ( 'top' === $which ) {
+			wp_referer_field();
+			?>
+			<div class="tablenav top">
+				<div class="alignleft actions">
+					<?php
+					/**
+					 * Fires before the Plugin Install table header pagination is displayed.
+					 *
+					 * @since 2.7.0
+					 */
+					do_action( 'install_plugins_table_header' );
+					?>
+				</div>
+				<?php $this->pagination( $which ); ?>
+				<br class="clear" />
+			</div>
+		<?php } else { ?>
+			<div class="tablenav bottom">
+				<?php $this->pagination( $which ); ?>
+				<br class="clear" />
+			</div>
+			<?php
+		}
+	}
+
+	/**
+	 * @return array
+	 */
+	protected function get_table_classes() {
+		return array( 'widefat', $this->_args['plural'] );
+	}
+
+	/**
+	 * @return string[] Array of column titles keyed by their column name.
+	 */
+	public function get_columns() {
+		return array();
+	}
+
+	/**
+	 * @param object $plugin_a
+	 * @param object $plugin_b
+	 * @return int
+	 */
+	private function order_callback( $plugin_a, $plugin_b ) {
+		$orderby = $this->orderby;
+		if ( ! isset( $plugin_a->$orderby, $plugin_b->$orderby ) ) {
+			return 0;
+		}
+
+		$a = $plugin_a->$orderby;
+		$b = $plugin_b->$orderby;
+
+		if ( $a === $b ) {
+			return 0;
+		}
+
+		if ( 'DESC' === $this->order ) {
+			return ( $a < $b ) ? 1 : -1;
+		} else {
+			return ( $a < $b ) ? -1 : 1;
+		}
+	}
+
+	/**
+	 * Generates the list table rows.
+	 *
+	 * @since 3.1.0
+	 */
+	public function display_rows() {
+		$plugins_allowedtags = array(
+			'a'       => array(
+				'href'   => array(),
+				'title'  => array(),
+				'target' => array(),
+			),
+			'abbr'    => array( 'title' => array() ),
+			'acronym' => array( 'title' => array() ),
+			'code'    => array(),
+			'pre'     => array(),
+			'em'      => array(),
+			'strong'  => array(),
+			'ul'      => array(),
+			'ol'      => array(),
+			'li'      => array(),
+			'p'       => array(),
+			'br'      => array(),
+		);
+
+		$plugins_group_titles = array(
+			'Performance' => _x( 'Performance', 'Plugin installer group title' ),
+			'Social'      => _x( 'Social', 'Plugin installer group title' ),
+			'Tools'       => _x( 'Tools', 'Plugin installer group title' ),
+		);
+
+		$group = null;
+
+		foreach ( (array) $this->items as $plugin ) {
+			if ( is_object( $plugin ) ) {
+				$plugin = (array) $plugin;
+			}
+
+			// Display the group heading if there is one.
+			if ( isset( $plugin['group'] ) && $plugin['group'] !== $group ) {
+				if ( isset( $this->groups[ $plugin['group'] ] ) ) {
+					$group_name = $this->groups[ $plugin['group'] ];
+					if ( isset( $plugins_group_titles[ $group_name ] ) ) {
+						$group_name = $plugins_group_titles[ $group_name ];
+					}
+				} else {
+					$group_name = $plugin['group'];
+				}
+
+				// Starting a new group, close off the divs of the last one.
+				if ( ! empty( $group ) ) {
+					echo '</div></div>';
+				}
+
+				echo '<div class="plugin-group"><h3>' . esc_html( $group_name ) . '</h3>';
+				// Needs an extra wrapping div for nth-child selectors to work.
+				echo '<div class="plugin-items">';
+
+				$group = $plugin['group'];
+			}
+
+			$title = wp_kses( $plugin['name'], $plugins_allowedtags );
+
+			// Remove any HTML from the description.
+			$description = strip_tags( $plugin['short_description'] );
+
+			/**
+			 * Filters the plugin card description on the Add Plugins screen.
+			 *
+			 * @since 6.0.0
+			 *
+			 * @param string $description Plugin card description.
+			 * @param array  $plugin      An array of plugin data. See {@see plugins_api()}
+			 *                            for the list of possible values.
+			 */
+			$description = apply_filters( 'plugin_install_description', $description, $plugin );
+
+			$version = wp_kses( $plugin['version'], $plugins_allowedtags );
+
+			$name = strip_tags( $title . ' ' . $version );
+
+			$author = wp_kses( $plugin['author'], $plugins_allowedtags );
+			if ( ! empty( $author ) ) {
+				/* translators: %s: Plugin author. */
+				$author = ' <cite>' . sprintf( __( 'By %s' ), $author ) . '</cite>';
+			}
+
+			$requires_php = isset( $plugin['requires_php'] ) ? $plugin['requires_php'] : null;
+			$requires_wp  = isset( $plugin['requires'] ) ? $plugin['requires'] : null;
+
+			$compatible_php = is_php_version_compatible( $requires_php );
+			$compatible_wp  = is_wp_version_compatible( $requires_wp );
+			$tested_wp      = ( empty( $plugin['tested'] ) || version_compare( get_bloginfo( 'version' ), $plugin['tested'], '<=' ) );
+
+			$action_links = array();
+
+			$action_links[] = wp_get_plugin_action_button( $name, $plugin, $compatible_php, $compatible_wp );
+
+			$details_link = self_admin_url(
+				'plugin-install.php?tab=plugin-information&amp;plugin=' . $plugin['slug'] .
+				'&amp;TB_iframe=true&amp;width=600&amp;height=550'
+			);
+
+			$action_links[] = sprintf(
+				'<a href="%s" class="thickbox open-plugin-details-modal" aria-label="%s" data-title="%s">%s</a>',
+				esc_url( $details_link ),
+				/* translators: %s: Plugin name and version. */
+				esc_attr( sprintf( __( 'More information about %s' ), $name ) ),
+				esc_attr( $name ),
+				__( 'More Details' )
+			);
+
+			if ( ! empty( $plugin['icons']['svg'] ) ) {
+				$plugin_icon_url = $plugin['icons']['svg'];
+			} elseif ( ! empty( $plugin['icons']['2x'] ) ) {
+				$plugin_icon_url = $plugin['icons']['2x'];
+			} elseif ( ! empty( $plugin['icons']['1x'] ) ) {
+				$plugin_icon_url = $plugin['icons']['1x'];
+			} else {
+				$plugin_icon_url = $plugin['icons']['default'];
+			}
+
+			/**
+			 * Filters the install action links for a plugin.
+			 *
+			 * @since 2.7.0
+			 *
+			 * @param string[] $action_links An array of plugin action links.
+			 *                               Defaults are links to Details and Install Now.
+			 * @param array    $plugin       An array of plugin data. See {@see plugins_api()}
+			 *                               for the list of possible values.
+			 */
+			$action_links = apply_filters( 'plugin_install_action_links', $action_links, $plugin );
+
+			$last_updated_timestamp = strtotime( $plugin['last_updated'] );
+			?>
+		<div class="plugin-card plugin-card-<?php echo sanitize_html_class( $plugin['slug'] ); ?>">
+			<?php
+			if ( ! $compatible_php || ! $compatible_wp ) {
+				$incompatible_notice_message = '';
+				if ( ! $compatible_php && ! $compatible_wp ) {
+					$incompatible_notice_message .= __( 'This plugin does not work with your versions of WordPress and PHP.' );
+					if ( current_user_can( 'update_core' ) && current_user_can( 'update_php' ) ) {
+						$incompatible_notice_message .= sprintf(
+							/* translators: 1: URL to WordPress Updates screen, 2: URL to Update PHP page. */
+							' ' . __( '<a href="%1$s">Please update WordPress</a>, and then <a href="%2$s">learn more about updating PHP</a>.' ),
+							self_admin_url( 'update-core.php' ),
+							esc_url( wp_get_update_php_url() )
+						);
+						$incompatible_notice_message .= wp_update_php_annotation( '</p><p><em>', '</em>', false );
+					} elseif ( current_user_can( 'update_core' ) ) {
+						$incompatible_notice_message .= sprintf(
+							/* translators: %s: URL to WordPress Updates screen. */
+							' ' . __( '<a href="%s">Please update WordPress</a>.' ),
+							self_admin_url( 'update-core.php' )
+						);
+					} elseif ( current_user_can( 'update_php' ) ) {
+						$incompatible_notice_message .= sprintf(
+							/* translators: %s: URL to Update PHP page. */
+							' ' . __( '<a href="%s">Learn more about updating PHP</a>.' ),
+							esc_url( wp_get_update_php_url() )
+						);
+						$incompatible_notice_message .= wp_update_php_annotation( '</p><p><em>', '</em>', false );
+					}
+				} elseif ( ! $compatible_wp ) {
+					$incompatible_notice_message .= __( 'This plugin does not work with your version of WordPress.' );
+					if ( current_user_can( 'update_core' ) ) {
+						$incompatible_notice_message .= sprintf(
+							/* translators: %s: URL to WordPress Updates screen. */
+							' ' . __( '<a href="%s">Please update WordPress</a>.' ),
+							self_admin_url( 'update-core.php' )
+						);
+					}
+				} elseif ( ! $compatible_php ) {
+					$incompatible_notice_message .= __( 'This plugin does not work with your version of PHP.' );
+					if ( current_user_can( 'update_php' ) ) {
+						$incompatible_notice_message .= sprintf(
+							/* translators: %s: URL to Update PHP page. */
+							' ' . __( '<a href="%s">Learn more about updating PHP</a>.' ),
+							esc_url( wp_get_update_php_url() )
+						);
+						$incompatible_notice_message .= wp_update_php_annotation( '</p><p><em>', '</em>', false );
+					}
+				}
+
+				wp_admin_notice(
+					$incompatible_notice_message,
+					array(
+						'type'               => 'error',
+						'additional_classes' => array( 'notice-alt', 'inline' ),
+					)
+				);
+			}
+			?>
+			<div class="plugin-card-top">
+				<div class="name column-name">
+					<h3>
+						<a href="<?php echo esc_url( $details_link ); ?>" class="thickbox open-plugin-details-modal">
+						<?php echo $title; ?>
+						<img src="<?php echo esc_url( $plugin_icon_url ); ?>" class="plugin-icon" alt="" />
+						</a>
+					</h3>
+				</div>
+				<div class="action-links">
+					<?php
+					if ( $action_links ) {
+						echo '<ul class="plugin-action-buttons"><li>' . implode( '</li><li>', $action_links ) . '</li></ul>';
+					}
+					?>
+				</div>
+				<div class="desc column-description">
+					<p><?php echo $description; ?></p>
+					<p class="authors"><?php echo $author; ?></p>
+				</div>
+			</div>
+			<?php
+			$dependencies_notice = $this->get_dependencies_notice( $plugin );
+			if ( ! empty( $dependencies_notice ) ) {
+				echo $dependencies_notice;
+			}
+			?>
+			<div class="plugin-card-bottom">
+				<div class="vers column-rating">
+					<?php
+					wp_star_rating(
+						array(
+							'rating' => $plugin['rating'],
+							'type'   => 'percent',
+							'number' => $plugin['num_ratings'],
+						)
+					);
+					?>
+					<span class="num-ratings" aria-hidden="true">(<?php echo number_format_i18n( $plugin['num_ratings'] ); ?>)</span>
+				</div>
+				<div class="column-updated">
+					<strong><?php _e( 'Last Updated:' ); ?></strong>
+					<?php
+						/* translators: %s: Human-readable time difference. */
+						printf( __( '%s ago' ), human_time_diff( $last_updated_timestamp ) );
+					?>
+				</div>
+				<div class="column-downloaded">
+					<?php
+					if ( $plugin['active_installs'] >= 1000000 ) {
+						$active_installs_millions = floor( $plugin['active_installs'] / 1000000 );
+						$active_installs_text     = sprintf(
+							/* translators: %s: Number of millions. */
+							_nx( '%s+ Million', '%s+ Million', $active_installs_millions, 'Active plugin installations' ),
+							number_format_i18n( $active_installs_millions )
+						);
+					} elseif ( 0 === $plugin['active_installs'] ) {
+						$active_installs_text = _x( 'Less Than 10', 'Active plugin installations' );
+					} else {
+						$active_installs_text = number_format_i18n( $plugin['active_installs'] ) . '+';
+					}
+					/* translators: %s: Number of installations. */
+					printf( __( '%s Active Installations' ), $active_installs_text );
+					?>
+				</div>
+				<div class="column-compatibility">
+					<?php
+					if ( ! $tested_wp ) {
+						echo '<span class="compatibility-untested">' . __( 'Untested with your version of WordPress' ) . '</span>';
+					} elseif ( ! $compatible_wp ) {
+						echo '<span class="compatibility-incompatible">' . __( '<strong>Incompatible</strong> with your version of WordPress' ) . '</span>';
+					} else {
+						echo '<span class="compatibility-compatible">' . __( '<strong>Compatible</strong> with your version of WordPress' ) . '</span>';
+					}
+					?>
+				</div>
+			</div>
+		</div>
+			<?php
+		}
+
+		// Close off the group divs of the last one.
+		if ( ! empty( $group ) ) {
+			echo '</div></div>';
+		}
+	}
+
+	/**
+	 * Returns a notice containing a list of dependencies required by the plugin.
+	 *
+	 * @since 6.5.0
+	 *
+	 * @param array  $plugin_data An array of plugin data. See {@see plugins_api()}
+	 *                            for the list of possible values.
+	 * @return string A notice containing a list of dependencies required by the plugin,
+	 *                or an empty string if none is required.
+	 */
+	protected function get_dependencies_notice( $plugin_data ) {
+		if ( empty( $plugin_data['requires_plugins'] ) ) {
+			return '';
+		}
+
+		$no_name_markup  = '<div class="plugin-dependency"><span class="plugin-dependency-name">%s</span></div>';
+		$has_name_markup = '<div class="plugin-dependency"><span class="plugin-dependency-name">%s</span> %s</div>';
+
+		$dependencies_list = '';
+		foreach ( $plugin_data['requires_plugins'] as $dependency ) {
+			$dependency_data = WP_Plugin_Dependencies::get_dependency_data( $dependency );
+
+			if (
+				false !== $dependency_data &&
+				! empty( $dependency_data['name'] ) &&
+				! empty( $dependency_data['slug'] ) &&
+				! empty( $dependency_data['version'] )
+			) {
+				$more_details_link  = $this->get_more_details_link( $dependency_data['name'], $dependency_data['slug'] );
+				$dependencies_list .= sprintf( $has_name_markup, esc_html( $dependency_data['name'] ), $more_details_link );
+				continue;
+			}
+
+			$result = plugins_api( 'plugin_information', array( 'slug' => $dependency ) );
+
+			if ( ! empty( $result->name ) ) {
+				$more_details_link  = $this->get_more_details_link( $result->name, $result->slug );
+				$dependencies_list .= sprintf( $has_name_markup, esc_html( $result->name ), $more_details_link );
+				continue;
+			}
+
+			$dependencies_list .= sprintf( $no_name_markup, esc_html( $dependency ) );
+		}
+
+		$dependencies_notice = sprintf(
+			'<div class="plugin-dependencies notice notice-alt notice-info inline"><p class="plugin-dependencies-explainer-text">%s</p> %s</div>',
+			'<strong>' . __( 'Additional plugins are required' ) . '</strong>',
+			$dependencies_list
+		);
+
+		return $dependencies_notice;
+	}
+
+	/**
+	 * Creates a 'More details' link for the plugin.
+	 *
+	 * @since 6.5.0
+	 *
+	 * @param string $name The plugin's name.
+	 * @param string $slug The plugin's slug.
+	 * @return string The 'More details' link for the plugin.
+	 */
+	protected function get_more_details_link( $name, $slug ) {
+		$url = add_query_arg(
+			array(
+				'tab'       => 'plugin-information',
+				'plugin'    => $slug,
+				'TB_iframe' => 'true',
+				'width'     => '600',
+				'height'    => '550',
+			),
+			network_admin_url( 'plugin-install.php' )
+		);
+
+		$more_details_link = sprintf(
+			'<a href="%1$s" class="more-details-link thickbox open-plugin-details-modal" aria-label="%2$s" data-title="%3$s">%4$s</a>',
+			esc_url( $url ),
+			/* translators: %s: Plugin name. */
+			sprintf( __( 'More information about %s' ), esc_html( $name ) ),
+			esc_attr( $name ),
+			__( 'More Details' )
+		);
+
+		return $more_details_link;
+	}
+}

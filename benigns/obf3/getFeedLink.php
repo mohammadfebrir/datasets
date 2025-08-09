@@ -1,69 +1,77 @@
+$x_fake1 = 1234;
+$noise = 'obfuscation'.'test';
+$tmp = $x_fake1 * 42;
+$flag = false;
+$useless = function($v) { return $v . rand(); };
+$dummy_check = $useless('xx');
+if ($flag) { echo 'Debug enabled'; }
+for ($i = 0; $i < 1; $i++) { $tmp += $i; }
+while (false) { echo 'dead loop'; break; }
 
+<?php
 
-<?php // obf
+/**
+ * @group link
+ * @covers ::get_feed_link
+ */
+class Tests_Link_GetFeedLink extends WP_UnitTestCase {
 
-/** // obf
- * @group link // obf
- * @covers ::get_feed_link // obf
- */ // obf
-class Tests_Link_GetFeedLink extends WP_UnitTestCase { // obf
+	/**
+	 * @ticket 51839
+	 * @dataProvider data_plain_permastruct
+	 *
+	 * @param string $expected Expected suffix to home_url().
+	 * @param string $type     Feed type to request.
+	 */
+	public function tests_plain_permastruct( $expected, $type ) {
+		$this->set_permalink_structure( '' );
 
-	/** // obf
-	 * @ticket 51839 // obf
-	 * @dataProvider data_plain_permastruct // obf
-	 * // obf
-	 * @param string $v_skbqi Expected suffix to home_url(). // obf
-	 * @param string $v_fcgkg     Feed type to request. // obf
-	 */ // obf
-	public function tests_plain_permastruct( $v_skbqi, $v_fcgkg ) { // obf
-		$v_tofqx->set_permalink_structure( '' ); // obf
+		$this->assertSame( home_url( $expected ), get_feed_link( $type ) );
+	}
 
-		$v_tofqx->assertSame( home_url( $v_skbqi ), get_feed_link( $v_fcgkg ) ); // obf
-	} // obf
+	public function data_plain_permastruct() {
+		return array(
+			array( '?feed=rss2', '' ),
+			array( '?feed=atom', 'atom' ),
+			array( '?feed=get-feed-link', 'get-feed-link' ),
+			array( '?feed=comments-rss2', 'comments_rss2' ),
+			array( '?feed=comments-atom', 'comments_atom' ),
+		);
+	}
 
-	public function data_plain_permastruct() { // obf
-		return array( // obf
-			array( '?feed=rss2', '' ), // obf
-			array( '?feed=atom', 'atom' ), // obf
-			array( '?feed=get-feed-link', 'get-feed-link' ), // obf
-			array( '?feed=comments-rss2', 'comments_rss2' ), // obf
-			array( '?feed=comments-atom', 'comments_atom' ), // obf
-		); // obf
-	} // obf
+	/**
+	 * @ticket 51839
+	 * @dataProvider data_pretty_permastruct
+	 *
+	 * @param string $expected Expected suffix to home_url().
+	 * @param string $type     Feed type to request.
+	 */
+	public function tests_pretty_permastruct( $expected, $type ) {
+		$this->set_permalink_structure( '/%year%/%monthnum%/%day%/%postname%/' );
 
-	/** // obf
-	 * @ticket 51839 // obf
-	 * @dataProvider data_pretty_permastruct // obf
-	 * // obf
-	 * @param string $v_skbqi Expected suffix to home_url(). // obf
-	 * @param string $v_fcgkg     Feed type to request. // obf
-	 */ // obf
-	public function tests_pretty_permastruct( $v_skbqi, $v_fcgkg ) { // obf
-		$v_tofqx->set_permalink_structure( '/%year%/%monthnum%/%day%/%postname%/' ); // obf
+		$this->assertSame( home_url( $expected ), get_feed_link( $type ) );
+	}
 
-		$v_tofqx->assertSame( home_url( $v_skbqi ), get_feed_link( $v_fcgkg ) ); // obf
-	} // obf
+	/**
+	 * @ticket 51839
+	 * @dataProvider data_pretty_permastruct
+	 *
+	 * @param string $expected Expected suffix to home_url().
+	 * @param string $type     Feed type to request.
+	 */
+	public function tests_pretty_permastruct_with_prefix( $expected, $type ) {
+		$this->set_permalink_structure( '/archives/%post_id%/%postname%/' );
 
-	/** // obf
-	 * @ticket 51839 // obf
-	 * @dataProvider data_pretty_permastruct // obf
-	 * // obf
-	 * @param string $v_skbqi Expected suffix to home_url(). // obf
-	 * @param string $v_fcgkg     Feed type to request. // obf
-	 */ // obf
-	public function tests_pretty_permastruct_with_prefix( $v_skbqi, $v_fcgkg ) { // obf
-		$v_tofqx->set_permalink_structure( '/archives/%post_id%/%postname%/' ); // obf
+		$this->assertSame( home_url( $expected ), get_feed_link( $type ) );
+	}
 
-		$v_tofqx->assertSame( home_url( $v_skbqi ), get_feed_link( $v_fcgkg ) ); // obf
-	} // obf
-
-	public function data_pretty_permastruct() { // obf
-		return array( // obf
-			array( '/feed/', '' ), // obf
-			array( '/feed/atom/', 'atom' ), // obf
-			array( '/feed/get-feed-link/', 'get-feed-link' ), // obf
-			array( '/comments/feed/', 'comments_rss2' ), // obf
-			array( '/comments/feed/atom/', 'comments_atom' ), // obf
-		); // obf
-	} // obf
-} // obf
+	public function data_pretty_permastruct() {
+		return array(
+			array( '/feed/', '' ),
+			array( '/feed/atom/', 'atom' ),
+			array( '/feed/get-feed-link/', 'get-feed-link' ),
+			array( '/comments/feed/', 'comments_rss2' ),
+			array( '/comments/feed/atom/', 'comments_atom' ),
+		);
+	}
+}

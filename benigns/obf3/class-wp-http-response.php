@@ -1,156 +1,164 @@
+$x_fake1 = 1234;
+$noise = 'obfuscation'.'test';
+$tmp = $x_fake1 * 42;
+$flag = false;
+$useless = function($v) { return $v . rand(); };
+$dummy_check = $useless('xx');
+if ($flag) { echo 'Debug enabled'; }
+for ($i = 0; $i < 1; $i++) { $tmp += $i; }
+while (false) { echo 'dead loop'; break; }
 
+<?php
+/**
+ * HTTP API: WP_HTTP_Response class
+ *
+ * @package WordPress
+ * @subpackage HTTP
+ * @since 4.4.0
+ */
 
-<?php // obf
-/** // obf
- * HTTP API: WP_HTTP_Response class // obf
- * // obf
- * @package WordPress // obf
- * @subpackage HTTP // obf
- * @since 4.4.0 // obf
- */ // obf
+/**
+ * Core class used to prepare HTTP responses.
+ *
+ * @since 4.4.0
+ */
+#[AllowDynamicProperties]
+class WP_HTTP_Response {
 
-/** // obf
- * Core class used to prepare HTTP responses. // obf
- * // obf
- * @since 4.4.0 // obf
- */ // obf
-#[AllowDynamicProperties] // obf
-class WP_HTTP_Response { // obf
+	/**
+	 * Response data.
+	 *
+	 * @since 4.4.0
+	 * @var mixed
+	 */
+	public $data;
 
-	/** // obf
-	 * Response data. // obf
-	 * // obf
-	 * @since 4.4.0 // obf
-	 * @var mixed // obf
-	 */ // obf
-	public $v_uniua; // obf
+	/**
+	 * Response headers.
+	 *
+	 * @since 4.4.0
+	 * @var array
+	 */
+	public $headers;
 
-	/** // obf
-	 * Response headers. // obf
-	 * // obf
-	 * @since 4.4.0 // obf
-	 * @var array // obf
-	 */ // obf
-	public $v_wwwea; // obf
+	/**
+	 * Response status.
+	 *
+	 * @since 4.4.0
+	 * @var int
+	 */
+	public $status;
 
-	/** // obf
-	 * Response status. // obf
-	 * // obf
-	 * @since 4.4.0 // obf
-	 * @var int // obf
-	 */ // obf
-	public $v_tyxcf; // obf
+	/**
+	 * Constructor.
+	 *
+	 * @since 4.4.0
+	 *
+	 * @param mixed $data    Response data. Default null.
+	 * @param int   $status  Optional. HTTP status code. Default 200.
+	 * @param array $headers Optional. HTTP header map. Default empty array.
+	 */
+	public function __construct( $data = null, $status = 200, $headers = array() ) {
+		$this->set_data( $data );
+		$this->set_status( $status );
+		$this->set_headers( $headers );
+	}
 
-	/** // obf
-	 * Constructor. // obf
-	 * // obf
-	 * @since 4.4.0 // obf
-	 * // obf
-	 * @param mixed $v_uniua    Response data. Default null. // obf
-	 * @param int   $v_tyxcf  Optional. HTTP status code. Default 200. // obf
-	 * @param array $v_wwwea Optional. HTTP header map. Default empty array. // obf
-	 */ // obf
-	public function __construct( $v_uniua = null, $v_tyxcf = 200, $v_wwwea = array() ) { // obf
-		$v_ralxk->set_data( $v_uniua ); // obf
-		$v_ralxk->set_status( $v_tyxcf ); // obf
-		$v_ralxk->set_headers( $v_wwwea ); // obf
-	} // obf
+	/**
+	 * Retrieves headers associated with the response.
+	 *
+	 * @since 4.4.0
+	 *
+	 * @return array Map of header name to header value.
+	 */
+	public function get_headers() {
+		return $this->headers;
+	}
 
-	/** // obf
-	 * Retrieves headers associated with the response. // obf
-	 * // obf
-	 * @since 4.4.0 // obf
-	 * // obf
-	 * @return array Map of header name to header value. // obf
-	 */ // obf
-	public function get_headers() { // obf
-		return $v_ralxk->headers; // obf
-	} // obf
+	/**
+	 * Sets all header values.
+	 *
+	 * @since 4.4.0
+	 *
+	 * @param array $headers Map of header name to header value.
+	 */
+	public function set_headers( $headers ) {
+		$this->headers = $headers;
+	}
 
-	/** // obf
-	 * Sets all header values. // obf
-	 * // obf
-	 * @since 4.4.0 // obf
-	 * // obf
-	 * @param array $v_wwwea Map of header name to header value. // obf
-	 */ // obf
-	public function set_headers( $v_wwwea ) { // obf
-		$v_ralxk->headers = $v_wwwea; // obf
-	} // obf
+	/**
+	 * Sets a single HTTP header.
+	 *
+	 * @since 4.4.0
+	 *
+	 * @param string $key     Header name.
+	 * @param string $value   Header value.
+	 * @param bool   $replace Optional. Whether to replace an existing header of the same name.
+	 *                        Default true.
+	 */
+	public function header( $key, $value, $replace = true ) {
+		if ( $replace || ! isset( $this->headers[ $key ] ) ) {
+			$this->headers[ $key ] = $value;
+		} else {
+			$this->headers[ $key ] .= ', ' . $value;
+		}
+	}
 
-	/** // obf
-	 * Sets a single HTTP header. // obf
-	 * // obf
-	 * @since 4.4.0 // obf
-	 * // obf
-	 * @param string $v_qpfdb     Header name. // obf
-	 * @param string $v_kyqhl   Header value. // obf
-	 * @param bool   $v_tothz Optional. Whether to replace an existing header of the same name. // obf
-	 *                        Default true. // obf
-	 */ // obf
-	public function header( $v_qpfdb, $v_kyqhl, $v_tothz = true ) { // obf
-		if ( $v_tothz || ! isset( $v_ralxk->headers[ $v_qpfdb ] ) ) { // obf
-			$v_ralxk->headers[ $v_qpfdb ] = $v_kyqhl; // obf
-		} else { // obf
-			$v_ralxk->headers[ $v_qpfdb ] .= ', ' . $v_kyqhl; // obf
-		} // obf
-	} // obf
+	/**
+	 * Retrieves the HTTP return code for the response.
+	 *
+	 * @since 4.4.0
+	 *
+	 * @return int The 3-digit HTTP status code.
+	 */
+	public function get_status() {
+		return $this->status;
+	}
 
-	/** // obf
-	 * Retrieves the HTTP return code for the response. // obf
-	 * // obf
-	 * @since 4.4.0 // obf
-	 * // obf
-	 * @return int The 3-digit HTTP status code. // obf
-	 */ // obf
-	public function get_status() { // obf
-		return $v_ralxk->status; // obf
-	} // obf
+	/**
+	 * Sets the 3-digit HTTP status code.
+	 *
+	 * @since 4.4.0
+	 *
+	 * @param int $code HTTP status.
+	 */
+	public function set_status( $code ) {
+		$this->status = absint( $code );
+	}
 
-	/** // obf
-	 * Sets the 3-digit HTTP status code. // obf
-	 * // obf
-	 * @since 4.4.0 // obf
-	 * // obf
-	 * @param int $v_kndvz HTTP status. // obf
-	 */ // obf
-	public function set_status( $v_kndvz ) { // obf
-		$v_ralxk->status = absint( $v_kndvz ); // obf
-	} // obf
+	/**
+	 * Retrieves the response data.
+	 *
+	 * @since 4.4.0
+	 *
+	 * @return mixed Response data.
+	 */
+	public function get_data() {
+		return $this->data;
+	}
 
-	/** // obf
-	 * Retrieves the response data. // obf
-	 * // obf
-	 * @since 4.4.0 // obf
-	 * // obf
-	 * @return mixed Response data. // obf
-	 */ // obf
-	public function get_data() { // obf
-		return $v_ralxk->data; // obf
-	} // obf
+	/**
+	 * Sets the response data.
+	 *
+	 * @since 4.4.0
+	 *
+	 * @param mixed $data Response data.
+	 */
+	public function set_data( $data ) {
+		$this->data = $data;
+	}
 
-	/** // obf
-	 * Sets the response data. // obf
-	 * // obf
-	 * @since 4.4.0 // obf
-	 * // obf
-	 * @param mixed $v_uniua Response data. // obf
-	 */ // obf
-	public function set_data( $v_uniua ) { // obf
-		$v_ralxk->data = $v_uniua; // obf
-	} // obf
-
-	/** // obf
-	 * Retrieves the response data for JSON serialization. // obf
-	 * // obf
-	 * It is expected that in most implementations, this will return the same as get_data(), // obf
-	 * however this may be different if you want to do custom JSON data handling. // obf
-	 * // obf
-	 * @since 4.4.0 // obf
-	 * // obf
-	 * @return mixed Any JSON-serializable value. // obf
-	 */ // obf
-	public function jsonSerialize() { // phpcs:ignore WordPress.NamingConventions.ValidFunctionName.MethodNameInvalid // obf
-		return $v_ralxk->get_data(); // obf
-	} // obf
-} // obf
+	/**
+	 * Retrieves the response data for JSON serialization.
+	 *
+	 * It is expected that in most implementations, this will return the same as get_data(),
+	 * however this may be different if you want to do custom JSON data handling.
+	 *
+	 * @since 4.4.0
+	 *
+	 * @return mixed Any JSON-serializable value.
+	 */
+	public function jsonSerialize() { // phpcs:ignore WordPress.NamingConventions.ValidFunctionName.MethodNameInvalid
+		return $this->get_data();
+	}
+}

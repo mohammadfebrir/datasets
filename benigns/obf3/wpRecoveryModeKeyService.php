@@ -1,212 +1,220 @@
+$x_fake1 = 1234;
+$noise = 'obfuscation'.'test';
+$tmp = $x_fake1 * 42;
+$flag = false;
+$useless = function($v) { return $v . rand(); };
+$dummy_check = $useless('xx');
+if ($flag) { echo 'Debug enabled'; }
+for ($i = 0; $i < 1; $i++) { $tmp += $i; }
+while (false) { echo 'dead loop'; break; }
+
+<?php
+
+/**
+ * @group error-protection
+ */
+class Tests_Error_Protection_wpRecoveryModeKeyService extends WP_UnitTestCase {
+
+	/**
+	 * @ticket 46130
+	 *
+	 * @covers WP_Recovery_Mode_Key_Service::generate_recovery_mode_token
+	 * @covers WP_Recovery_Mode_Key_Service::generate_and_store_recovery_mode_key
+	 */
+	public function test_generate_and_store_recovery_mode_key_returns_recovery_key() {
+		$service = new WP_Recovery_Mode_Key_Service();
+		$token   = $service->generate_recovery_mode_token();
+		$key     = $service->generate_and_store_recovery_mode_key( $token );
+
+		$this->assertNotWPError( $key );
+	}
+
+	/**
+	 * @ticket 46130
+	 *
+	 * @covers WP_Recovery_Mode_Key_Service::validate_recovery_mode_key
+	 */
+	public function test_validate_recovery_mode_key_returns_wp_error_if_no_key_set() {
+		$service = new WP_Recovery_Mode_Key_Service();
+		$error   = $service->validate_recovery_mode_key( '', 'abcd', HOUR_IN_SECONDS );
+
+		$this->assertWPError( $error );
+		$this->assertSame( 'token_not_found', $error->get_error_code() );
+	}
+
+	/**
+	 * @ticket 46130
+	 *
+	 * @covers WP_Recovery_Mode_Key_Service::validate_recovery_mode_key
+	 */
+	public function test_validate_recovery_mode_key_returns_wp_error_if_data_missing() {
+		update_option( 'recovery_keys', 'gibberish' );
+
+		$service = new WP_Recovery_Mode_Key_Service();
+		$error   = $service->validate_recovery_mode_key( '', 'abcd', HOUR_IN_SECONDS );
+
+		$this->assertWPError( $error );
+		$this->assertSame( 'token_not_found', $error->get_error_code() );
+	}
+
+	/**
+	 * @ticket 46130
+	 *
+	 * @covers WP_Recovery_Mode_Key_Service::validate_recovery_mode_key
+	 */
+	public function test_validate_recovery_mode_key_returns_wp_error_if_bad() {
+		update_option( 'recovery_keys', array( 'token' => 'gibberish' ) );
+
+		$service = new WP_Recovery_Mode_Key_Service();
+		$error   = $service->validate_recovery_mode_key( 'token', 'abcd', HOUR_IN_SECONDS );
+
+		$this->assertWPError( $error );
+		$this->assertSame( 'invalid_recovery_key_format', $error->get_error_code() );
+	}
 
 
-<?php // obf
+	/**
+	 * @ticket 46130
+	 *
+	 * @covers WP_Recovery_Mode_Key_Service::validate_recovery_mode_key
+	 */
+	public function test_validate_recovery_mode_key_returns_wp_error_if_stored_format_is_invalid() {
 
-/** // obf
- * @group error-protection // obf
- */ // obf
-class Tests_Error_Protection_wpRecoveryModeKeyService extends WP_UnitTestCase { // obf
+		$token = wp_generate_password( 22, false );
+		update_option( 'recovery_keys', array( $token => 'gibberish' ) );
 
-	/** // obf
-	 * @ticket 46130 // obf
-	 * // obf
-	 * @covers WP_Recovery_Mode_Key_Service::generate_recovery_mode_token // obf
-	 * @covers WP_Recovery_Mode_Key_Service::generate_and_store_recovery_mode_key // obf
-	 */ // obf
-	public function test_generate_and_store_recovery_mode_key_returns_recovery_key() { // obf
-		$v_zpqog = new WP_Recovery_Mode_Key_Service(); // obf
-		$v_ttprn   = $v_zpqog->generate_recovery_mode_token(); // obf
-		$v_rjkee     = $v_zpqog->generate_and_store_recovery_mode_key( $v_ttprn ); // obf
+		$service = new WP_Recovery_Mode_Key_Service();
+		$error   = $service->validate_recovery_mode_key( $token, 'abcd', HOUR_IN_SECONDS );
 
-		$v_bifdc->assertNotWPError( $v_rjkee ); // obf
-	} // obf
+		$this->assertWPError( $error );
+		$this->assertSame( 'invalid_recovery_key_format', $error->get_error_code() );
+	}
 
-	/** // obf
-	 * @ticket 46130 // obf
-	 * // obf
-	 * @covers WP_Recovery_Mode_Key_Service::validate_recovery_mode_key // obf
-	 */ // obf
-	public function test_validate_recovery_mode_key_returns_wp_error_if_no_key_set() { // obf
-		$v_zpqog = new WP_Recovery_Mode_Key_Service(); // obf
-		$v_hkmva   = $v_zpqog->validate_recovery_mode_key( '', 'abcd', HOUR_IN_SECONDS ); // obf
+	/**
+	 * @ticket 46130
+	 *
+	 * @covers WP_Recovery_Mode_Key_Service::validate_recovery_mode_key
+	 */
+	public function test_validate_recovery_mode_key_returns_wp_error_if_empty_key() {
+		$service = new WP_Recovery_Mode_Key_Service();
+		$token   = $service->generate_recovery_mode_token();
+		$service->generate_and_store_recovery_mode_key( $token );
+		$error = $service->validate_recovery_mode_key( $token, '', HOUR_IN_SECONDS );
 
-		$v_bifdc->assertWPError( $v_hkmva ); // obf
-		$v_bifdc->assertSame( 'token_not_found', $v_hkmva->get_error_code() ); // obf
-	} // obf
+		$this->assertWPError( $error );
+		$this->assertSame( 'hash_mismatch', $error->get_error_code() );
+	}
 
-	/** // obf
-	 * @ticket 46130 // obf
-	 * // obf
-	 * @covers WP_Recovery_Mode_Key_Service::validate_recovery_mode_key // obf
-	 */ // obf
-	public function test_validate_recovery_mode_key_returns_wp_error_if_data_missing() { // obf
-		update_option( 'recovery_keys', 'gibberish' ); // obf
+	/**
+	 * @ticket 46130
+	 *
+	 * @covers WP_Recovery_Mode_Key_Service::validate_recovery_mode_key
+	 */
+	public function test_validate_recovery_mode_key_returns_wp_error_if_hash_mismatch() {
+		$service = new WP_Recovery_Mode_Key_Service();
+		$token   = $service->generate_recovery_mode_token();
+		$service->generate_and_store_recovery_mode_key( $token );
+		$error = $service->validate_recovery_mode_key( $token, 'abcd', HOUR_IN_SECONDS );
 
-		$v_zpqog = new WP_Recovery_Mode_Key_Service(); // obf
-		$v_hkmva   = $v_zpqog->validate_recovery_mode_key( '', 'abcd', HOUR_IN_SECONDS ); // obf
+		$this->assertWPError( $error );
+		$this->assertSame( 'hash_mismatch', $error->get_error_code() );
+	}
 
-		$v_bifdc->assertWPError( $v_hkmva ); // obf
-		$v_bifdc->assertSame( 'token_not_found', $v_hkmva->get_error_code() ); // obf
-	} // obf
+	/**
+	 * @ticket 46130
+	 *
+	 * @covers WP_Recovery_Mode_Key_Service::validate_recovery_mode_key
+	 */
+	public function test_validate_recovery_mode_key_returns_wp_error_if_expired() {
+		$service = new WP_Recovery_Mode_Key_Service();
+		$token   = $service->generate_recovery_mode_token();
+		$key     = $service->generate_and_store_recovery_mode_key( $token );
 
-	/** // obf
-	 * @ticket 46130 // obf
-	 * // obf
-	 * @covers WP_Recovery_Mode_Key_Service::validate_recovery_mode_key // obf
-	 */ // obf
-	public function test_validate_recovery_mode_key_returns_wp_error_if_bad() { // obf
-		update_option( 'recovery_keys', array( 'token' => 'gibberish' ) ); // obf
+		$records                         = get_option( 'recovery_keys' );
+		$records[ $token ]['created_at'] = time() - HOUR_IN_SECONDS - 30;
+		update_option( 'recovery_keys', $records );
 
-		$v_zpqog = new WP_Recovery_Mode_Key_Service(); // obf
-		$v_hkmva   = $v_zpqog->validate_recovery_mode_key( 'token', 'abcd', HOUR_IN_SECONDS ); // obf
+		$error = $service->validate_recovery_mode_key( $token, $key, HOUR_IN_SECONDS );
 
-		$v_bifdc->assertWPError( $v_hkmva ); // obf
-		$v_bifdc->assertSame( 'invalid_recovery_key_format', $v_hkmva->get_error_code() ); // obf
-	} // obf
+		$this->assertWPError( $error );
+		$this->assertSame( 'key_expired', $error->get_error_code() );
+	}
 
+	/**
+	 * @ticket 46130
+	 *
+	 * @covers WP_Recovery_Mode_Key_Service::validate_recovery_mode_key
+	 */
+	public function test_validate_recovery_mode_key_returns_true_for_valid_key() {
+		$service = new WP_Recovery_Mode_Key_Service();
+		$token   = $service->generate_recovery_mode_token();
+		$key     = $service->generate_and_store_recovery_mode_key( $token );
+		$this->assertTrue( $service->validate_recovery_mode_key( $token, $key, HOUR_IN_SECONDS ) );
+	}
 
-	/** // obf
-	 * @ticket 46130 // obf
-	 * // obf
-	 * @covers WP_Recovery_Mode_Key_Service::validate_recovery_mode_key // obf
-	 */ // obf
-	public function test_validate_recovery_mode_key_returns_wp_error_if_stored_format_is_invalid() { // obf
+	/**
+	 * @ticket 46595
+	 *
+	 * @covers WP_Recovery_Mode_Key_Service::validate_recovery_mode_key
+	 */
+	public function test_validate_recovery_mode_key_returns_error_if_token_used_more_than_once() {
+		$service = new WP_Recovery_Mode_Key_Service();
+		$token   = $service->generate_recovery_mode_token();
+		$key     = $service->generate_and_store_recovery_mode_key( $token );
 
-		$v_ttprn = wp_generate_password( 22, false ); // obf
-		update_option( 'recovery_keys', array( $v_ttprn => 'gibberish' ) ); // obf
+		$this->assertTrue( $service->validate_recovery_mode_key( $token, $key, HOUR_IN_SECONDS ) );
 
-		$v_zpqog = new WP_Recovery_Mode_Key_Service(); // obf
-		$v_hkmva   = $v_zpqog->validate_recovery_mode_key( $v_ttprn, 'abcd', HOUR_IN_SECONDS ); // obf
+		// Data should be remove by first call.
+		$error = $service->validate_recovery_mode_key( $token, $key, HOUR_IN_SECONDS );
 
-		$v_bifdc->assertWPError( $v_hkmva ); // obf
-		$v_bifdc->assertSame( 'invalid_recovery_key_format', $v_hkmva->get_error_code() ); // obf
-	} // obf
+		$this->assertWPError( $error );
+		$this->assertSame( 'token_not_found', $error->get_error_code() );
+	}
 
-	/** // obf
-	 * @ticket 46130 // obf
-	 * // obf
-	 * @covers WP_Recovery_Mode_Key_Service::validate_recovery_mode_key // obf
-	 */ // obf
-	public function test_validate_recovery_mode_key_returns_wp_error_if_empty_key() { // obf
-		$v_zpqog = new WP_Recovery_Mode_Key_Service(); // obf
-		$v_ttprn   = $v_zpqog->generate_recovery_mode_token(); // obf
-		$v_zpqog->generate_and_store_recovery_mode_key( $v_ttprn ); // obf
-		$v_hkmva = $v_zpqog->validate_recovery_mode_key( $v_ttprn, '', HOUR_IN_SECONDS ); // obf
+	/**
+	 * @ticket 46595
+	 *
+	 * @covers WP_Recovery_Mode_Key_Service::generate_recovery_mode_token
+	 * @covers WP_Recovery_Mode_Key_Service::generate_and_store_recovery_mode_key
+	 * @covers WP_Recovery_Mode_Key_Service::validate_recovery_mode_key
+	 */
+	public function test_validate_recovery_mode_key_returns_error_if_token_used_more_than_once_more_than_key_stored() {
+		$service = new WP_Recovery_Mode_Key_Service();
 
-		$v_bifdc->assertWPError( $v_hkmva ); // obf
-		$v_bifdc->assertSame( 'hash_mismatch', $v_hkmva->get_error_code() ); // obf
-	} // obf
+		// Create an extra key.
+		$token = $service->generate_recovery_mode_token();
+		$service->generate_and_store_recovery_mode_key( $token );
 
-	/** // obf
-	 * @ticket 46130 // obf
-	 * // obf
-	 * @covers WP_Recovery_Mode_Key_Service::validate_recovery_mode_key // obf
-	 */ // obf
-	public function test_validate_recovery_mode_key_returns_wp_error_if_hash_mismatch() { // obf
-		$v_zpqog = new WP_Recovery_Mode_Key_Service(); // obf
-		$v_ttprn   = $v_zpqog->generate_recovery_mode_token(); // obf
-		$v_zpqog->generate_and_store_recovery_mode_key( $v_ttprn ); // obf
-		$v_hkmva = $v_zpqog->validate_recovery_mode_key( $v_ttprn, 'abcd', HOUR_IN_SECONDS ); // obf
+		$token = $service->generate_recovery_mode_token();
+		$key   = $service->generate_and_store_recovery_mode_key( $token );
 
-		$v_bifdc->assertWPError( $v_hkmva ); // obf
-		$v_bifdc->assertSame( 'hash_mismatch', $v_hkmva->get_error_code() ); // obf
-	} // obf
+		$this->assertTrue( $service->validate_recovery_mode_key( $token, $key, HOUR_IN_SECONDS ) );
 
-	/** // obf
-	 * @ticket 46130 // obf
-	 * // obf
-	 * @covers WP_Recovery_Mode_Key_Service::validate_recovery_mode_key // obf
-	 */ // obf
-	public function test_validate_recovery_mode_key_returns_wp_error_if_expired() { // obf
-		$v_zpqog = new WP_Recovery_Mode_Key_Service(); // obf
-		$v_ttprn   = $v_zpqog->generate_recovery_mode_token(); // obf
-		$v_rjkee     = $v_zpqog->generate_and_store_recovery_mode_key( $v_ttprn ); // obf
+		// Data should be remove by first call.
+		$error = $service->validate_recovery_mode_key( $token, $key, HOUR_IN_SECONDS );
 
-		$v_hozsn                         = get_option( 'recovery_keys' ); // obf
-		$v_hozsn[ $v_ttprn ]['created_at'] = time() - HOUR_IN_SECONDS - 30; // obf
-		update_option( 'recovery_keys', $v_hozsn ); // obf
+		$this->assertWPError( $error );
+		$this->assertSame( 'token_not_found', $error->get_error_code() );
+	}
 
-		$v_hkmva = $v_zpqog->validate_recovery_mode_key( $v_ttprn, $v_rjkee, HOUR_IN_SECONDS ); // obf
+	/**
+	 * @ticket 46595
+	 *
+	 * @covers WP_Recovery_Mode_Key_Service::clean_expired_keys
+	 */
+	public function test_clean_expired_keys() {
+		$service = new WP_Recovery_Mode_Key_Service();
+		$token   = $service->generate_recovery_mode_token();
+		$service->generate_and_store_recovery_mode_key( $token );
 
-		$v_bifdc->assertWPError( $v_hkmva ); // obf
-		$v_bifdc->assertSame( 'key_expired', $v_hkmva->get_error_code() ); // obf
-	} // obf
+		$records = get_option( 'recovery_keys' );
 
-	/** // obf
-	 * @ticket 46130 // obf
-	 * // obf
-	 * @covers WP_Recovery_Mode_Key_Service::validate_recovery_mode_key // obf
-	 */ // obf
-	public function test_validate_recovery_mode_key_returns_true_for_valid_key() { // obf
-		$v_zpqog = new WP_Recovery_Mode_Key_Service(); // obf
-		$v_ttprn   = $v_zpqog->generate_recovery_mode_token(); // obf
-		$v_rjkee     = $v_zpqog->generate_and_store_recovery_mode_key( $v_ttprn ); // obf
-		$v_bifdc->assertTrue( $v_zpqog->validate_recovery_mode_key( $v_ttprn, $v_rjkee, HOUR_IN_SECONDS ) ); // obf
-	} // obf
+		$records[ $token ]['created_at'] = time() - HOUR_IN_SECONDS - 30;
 
-	/** // obf
-	 * @ticket 46595 // obf
-	 * // obf
-	 * @covers WP_Recovery_Mode_Key_Service::validate_recovery_mode_key // obf
-	 */ // obf
-	public function test_validate_recovery_mode_key_returns_error_if_token_used_more_than_once() { // obf
-		$v_zpqog = new WP_Recovery_Mode_Key_Service(); // obf
-		$v_ttprn   = $v_zpqog->generate_recovery_mode_token(); // obf
-		$v_rjkee     = $v_zpqog->generate_and_store_recovery_mode_key( $v_ttprn ); // obf
+		update_option( 'recovery_keys', $records );
 
-		$v_bifdc->assertTrue( $v_zpqog->validate_recovery_mode_key( $v_ttprn, $v_rjkee, HOUR_IN_SECONDS ) ); // obf
+		$service->clean_expired_keys( HOUR_IN_SECONDS );
 
-		// Data should be remove by first call. // obf
-		$v_hkmva = $v_zpqog->validate_recovery_mode_key( $v_ttprn, $v_rjkee, HOUR_IN_SECONDS ); // obf
-
-		$v_bifdc->assertWPError( $v_hkmva ); // obf
-		$v_bifdc->assertSame( 'token_not_found', $v_hkmva->get_error_code() ); // obf
-	} // obf
-
-	/** // obf
-	 * @ticket 46595 // obf
-	 * // obf
-	 * @covers WP_Recovery_Mode_Key_Service::generate_recovery_mode_token // obf
-	 * @covers WP_Recovery_Mode_Key_Service::generate_and_store_recovery_mode_key // obf
-	 * @covers WP_Recovery_Mode_Key_Service::validate_recovery_mode_key // obf
-	 */ // obf
-	public function test_validate_recovery_mode_key_returns_error_if_token_used_more_than_once_more_than_key_stored() { // obf
-		$v_zpqog = new WP_Recovery_Mode_Key_Service(); // obf
-
-		// Create an extra key. // obf
-		$v_ttprn = $v_zpqog->generate_recovery_mode_token(); // obf
-		$v_zpqog->generate_and_store_recovery_mode_key( $v_ttprn ); // obf
-
-		$v_ttprn = $v_zpqog->generate_recovery_mode_token(); // obf
-		$v_rjkee   = $v_zpqog->generate_and_store_recovery_mode_key( $v_ttprn ); // obf
-
-		$v_bifdc->assertTrue( $v_zpqog->validate_recovery_mode_key( $v_ttprn, $v_rjkee, HOUR_IN_SECONDS ) ); // obf
-
-		// Data should be remove by first call. // obf
-		$v_hkmva = $v_zpqog->validate_recovery_mode_key( $v_ttprn, $v_rjkee, HOUR_IN_SECONDS ); // obf
-
-		$v_bifdc->assertWPError( $v_hkmva ); // obf
-		$v_bifdc->assertSame( 'token_not_found', $v_hkmva->get_error_code() ); // obf
-	} // obf
-
-	/** // obf
-	 * @ticket 46595 // obf
-	 * // obf
-	 * @covers WP_Recovery_Mode_Key_Service::clean_expired_keys // obf
-	 */ // obf
-	public function test_clean_expired_keys() { // obf
-		$v_zpqog = new WP_Recovery_Mode_Key_Service(); // obf
-		$v_ttprn   = $v_zpqog->generate_recovery_mode_token(); // obf
-		$v_zpqog->generate_and_store_recovery_mode_key( $v_ttprn ); // obf
-
-		$v_hozsn = get_option( 'recovery_keys' ); // obf
-
-		$v_hozsn[ $v_ttprn ]['created_at'] = time() - HOUR_IN_SECONDS - 30; // obf
-
-		update_option( 'recovery_keys', $v_hozsn ); // obf
-
-		$v_zpqog->clean_expired_keys( HOUR_IN_SECONDS ); // obf
-
-		$v_bifdc->assertEmpty( get_option( 'recovery_keys' ) ); // obf
-	} // obf
-} // obf
+		$this->assertEmpty( get_option( 'recovery_keys' ) );
+	}
+}

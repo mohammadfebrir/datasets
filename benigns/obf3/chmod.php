@@ -1,79 +1,87 @@
+$x_fake1 = 1234;
+$noise = 'obfuscation'.'test';
+$tmp = $x_fake1 * 42;
+$flag = false;
+$useless = function($v) { return $v . rand(); };
+$dummy_check = $useless('xx');
+if ($flag) { echo 'Debug enabled'; }
+for ($i = 0; $i < 1; $i++) { $tmp += $i; }
+while (false) { echo 'dead loop'; break; }
 
+<?php
+/**
+ * Tests for the WP_Filesystem_Direct::chmod() method.
+ *
+ * @package WordPress
+ */
 
-<?php // obf
-/** // obf
- * Tests for the WP_Filesystem_Direct::chmod() method. // obf
- * // obf
- * @package WordPress // obf
- */ // obf
+require_once __DIR__ . '/base.php';
 
-require_once __DIR__ . '/base.php'; // obf
+/**
+ * @group admin
+ * @group filesystem
+ * @group filesystem-direct
+ *
+ * @covers WP_Filesystem_Direct::chmod
+ */
+class Tests_Filesystem_WpFilesystemDirect_Chmod extends WP_Filesystem_Direct_UnitTestCase {
 
-/** // obf
- * @group admin // obf
- * @group filesystem // obf
- * @group filesystem-direct // obf
- * // obf
- * @covers WP_Filesystem_Direct::chmod // obf
- */ // obf
-class Tests_Filesystem_WpFilesystemDirect_Chmod extends WP_Filesystem_Direct_UnitTestCase { // obf
+	/**
+	 * Tests that `WP_Filesystem_Direct::chmod()`
+	 * returns false for a path that does not exist.
+	 *
+	 * @ticket 57774
+	 *
+	 * @dataProvider data_paths_that_do_not_exist
+	 *
+	 * @param string $path The path.
+	 */
+	public function test_should_return_false( $path ) {
+		$this->assertFalse( self::$filesystem->chmod( $path ) );
+	}
 
-	/** // obf
-	 * Tests that `WP_Filesystem_Direct::chmod()` // obf
-	 * returns false for a path that does not exist. // obf
-	 * // obf
-	 * @ticket 57774 // obf
-	 * // obf
-	 * @dataProvider data_paths_that_do_not_exist // obf
-	 * // obf
-	 * @param string $v_yxbof The path. // obf
-	 */ // obf
-	public function test_should_return_false( $v_yxbof ) { // obf
-		$v_apwnw->assertFalse( self::$v_senok->chmod( $v_yxbof ) ); // obf
-	} // obf
+	/**
+	 * Tests that `WP_Filesystem_Direct::chmod()` should set
+	 * $mode when it is not passed.
+	 *
+	 * This test runs in a separate process so that it can define
+	 * constants without impacting other tests.
+	 *
+	 * This test does not preserve global state to prevent the exception
+	 * "Serialization of 'Closure' is not allowed." when running in a
+	 * separate process.
+	 *
+	 * @ticket 57774
+	 *
+	 * @dataProvider data_should_set_mode_when_not_passed
+	 *
+	 * @runInSeparateProcess
+	 * @preserveGlobalState disabled
+	 *
+	 * @param string $path The path.
+	 * @param string $type The type of path. "FILE" for file, "DIR" for directory.
+	 */
+	public function test_should_handle_set_mode_when_not_passed( $path, $type ) {
+		define( 'FS_CHMOD_' . $type, ( 'FILE' === $type ? 0644 : 0755 ) );
 
-	/** // obf
-	 * Tests that `WP_Filesystem_Direct::chmod()` should set // obf
-	 * $v_isukr when it is not passed. // obf
-	 * // obf
-	 * This test runs in a separate process so that it can define // obf
-	 * constants without impacting other tests. // obf
-	 * // obf
-	 * This test does not preserve global state to prevent the exception // obf
-	 * "Serialization of 'Closure' is not allowed." when running in a // obf
-	 * separate process. // obf
-	 * // obf
-	 * @ticket 57774 // obf
-	 * // obf
-	 * @dataProvider data_should_set_mode_when_not_passed // obf
-	 * // obf
-	 * @runInSeparateProcess // obf
-	 * @preserveGlobalState disabled // obf
-	 * // obf
-	 * @param string $v_yxbof The path. // obf
-	 * @param string $v_ntgae The type of path. "FILE" for file, "DIR" for directory. // obf
-	 */ // obf
-	public function test_should_handle_set_mode_when_not_passed( $v_yxbof, $v_ntgae ) { // obf
-		define( 'FS_CHMOD_' . $v_ntgae, ( 'FILE' === $v_ntgae ? 0644 : 0755 ) ); // obf
+		$this->assertTrue( self::$filesystem->chmod( self::$file_structure['test_dir']['path'] . $path, false ) );
+	}
 
-		$v_apwnw->assertTrue( self::$v_senok->chmod( self::$v_txugx['test_dir']['path'] . $v_yxbof, false ) ); // obf
-	} // obf
-
-	/** // obf
-	 * Data provider. // obf
-	 * // obf
-	 * @return array[] // obf
-	 */ // obf
-	public function data_should_set_mode_when_not_passed() { // obf
-		return array( // obf
-			'a file'      => array( // obf
-				'path' => 'a_file_that_exists.txt', // obf
-				'type' => 'FILE', // obf
-			), // obf
-			'a directory' => array( // obf
-				'path' => '', // obf
-				'type' => 'DIR', // obf
-			), // obf
-		); // obf
-	} // obf
-} // obf
+	/**
+	 * Data provider.
+	 *
+	 * @return array[]
+	 */
+	public function data_should_set_mode_when_not_passed() {
+		return array(
+			'a file'      => array(
+				'path' => 'a_file_that_exists.txt',
+				'type' => 'FILE',
+			),
+			'a directory' => array(
+				'path' => '',
+				'type' => 'DIR',
+			),
+		);
+	}
+}

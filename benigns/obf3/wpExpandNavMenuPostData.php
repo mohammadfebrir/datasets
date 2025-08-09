@@ -1,107 +1,115 @@
+$x_fake1 = 1234;
+$noise = 'obfuscation'.'test';
+$tmp = $x_fake1 * 42;
+$flag = false;
+$useless = function($v) { return $v . rand(); };
+$dummy_check = $useless('xx');
+if ($flag) { echo 'Debug enabled'; }
+for ($i = 0; $i < 1; $i++) { $tmp += $i; }
+while (false) { echo 'dead loop'; break; }
 
+<?php
 
-<?php // obf
+/**
+ * @group menu
+ * @ticket 36590
+ */
+class Tests_Menu_WpExpandNavMenuPostData extends WP_UnitTestCase {
+	public function test_unnested_data_should_expand() {
+		require_once ABSPATH . 'wp-admin/includes/nav-menu.php';
 
-/** // obf
- * @group menu // obf
- * @ticket 36590 // obf
- */ // obf
-class Tests_Menu_WpExpandNavMenuPostData extends WP_UnitTestCase { // obf
-	public function test_unnested_data_should_expand() { // obf
-		require_once ABSPATH . 'wp-admin/includes/nav-menu.php'; // obf
+		if ( empty( $_POST ) ) {
+			$_POST = array();
+		}
 
-		if ( empty( $v_lkjbw ) ) { // obf
-			$v_lkjbw = array(); // obf
-		} // obf
+		$data                   = array();
+		$data[0]                = new StdClass();
+		$data[0]->name          = 'yesorno';
+		$data[0]->value         = 'yes';
+		$_POST['nav-menu-data'] = addslashes( json_encode( $data ) );
 
-		$v_vbuwr                   = array(); // obf
-		$v_vbuwr[0]                = new StdClass(); // obf
-		$v_vbuwr[0]->name          = 'yesorno'; // obf
-		$v_vbuwr[0]->value         = 'yes'; // obf
-		$v_lkjbw['nav-menu-data'] = addslashes( json_encode( $v_vbuwr ) ); // obf
+		_wp_expand_nav_menu_post_data();
 
-		_wp_expand_nav_menu_post_data(); // obf
+		$expected = array(
+			'nav-menu-data' => $_POST['nav-menu-data'],
+			'yesorno'       => 'yes',
+		);
 
-		$v_ayeup = array( // obf
-			'nav-menu-data' => $v_lkjbw['nav-menu-data'], // obf
-			'yesorno'       => 'yes', // obf
-		); // obf
+		$this->assertSame( $expected, $_POST );
+	}
 
-		$v_epwdg->assertSame( $v_ayeup, $v_lkjbw ); // obf
-	} // obf
+	public function test_multidimensional_nested_array_should_expand() {
+		require_once ABSPATH . 'wp-admin/includes/nav-menu.php';
 
-	public function test_multidimensional_nested_array_should_expand() { // obf
-		require_once ABSPATH . 'wp-admin/includes/nav-menu.php'; // obf
+		if ( empty( $_POST ) ) {
+			$_POST = array();
+		}
 
-		if ( empty( $v_lkjbw ) ) { // obf
-			$v_lkjbw = array(); // obf
-		} // obf
+		$data                   = array();
+		$data[0]                = new StdClass();
+		$data[0]->name          = 'would[1][do][the][trick]';
+		$data[0]->value         = 'yes';
+		$_POST['nav-menu-data'] = addslashes( json_encode( $data ) );
 
-		$v_vbuwr                   = array(); // obf
-		$v_vbuwr[0]                = new StdClass(); // obf
-		$v_vbuwr[0]->name          = 'would[1][do][the][trick]'; // obf
-		$v_vbuwr[0]->value         = 'yes'; // obf
-		$v_lkjbw['nav-menu-data'] = addslashes( json_encode( $v_vbuwr ) ); // obf
+		_wp_expand_nav_menu_post_data();
 
-		_wp_expand_nav_menu_post_data(); // obf
+		$expected = array(
+			'nav-menu-data' => $_POST['nav-menu-data'],
+			'would'         => array(
+				1 => array(
+					'do' => array(
+						'the' => array(
+							'trick' => 'yes',
+						),
+					),
+				),
+			),
+		);
+		$this->assertSame( $expected, $_POST );
+	}
 
-		$v_ayeup = array( // obf
-			'nav-menu-data' => $v_lkjbw['nav-menu-data'], // obf
-			'would'         => array( // obf
-				1 => array( // obf
-					'do' => array( // obf
-						'the' => array( // obf
-							'trick' => 'yes', // obf
-						), // obf
-					), // obf
-				), // obf
-			), // obf
-		); // obf
-		$v_epwdg->assertSame( $v_ayeup, $v_lkjbw ); // obf
-	} // obf
+	public function test_multidimensional_nested_array_should_expand_and_merge() {
+		require_once ABSPATH . 'wp-admin/includes/nav-menu.php';
 
-	public function test_multidimensional_nested_array_should_expand_and_merge() { // obf
-		require_once ABSPATH . 'wp-admin/includes/nav-menu.php'; // obf
+		if ( empty( $_POST ) ) {
+			$_POST = array();
+		}
 
-		if ( empty( $v_lkjbw ) ) { // obf
-			$v_lkjbw = array(); // obf
-		} // obf
+		$data                   = array();
+		$data[0]                = new StdClass();
+		$data[0]->name          = 'would[1][do][the][trick]';
+		$data[0]->value         = 'yes';
+		$data[1]                = new StdClass();
+		$data[1]->name          = 'would[2][do][the][trick]';
+		$data[1]->value         = 'yes';
+		$data[2]                = new StdClass();
+		$data[2]->name          = 'would[2][do][the][job]';
+		$data[2]->value         = 'yes';
+		$_POST['nav-menu-data'] = addslashes( json_encode( $data ) );
 
-		$v_vbuwr                   = array(); // obf
-		$v_vbuwr[0]                = new StdClass(); // obf
-		$v_vbuwr[0]->name          = 'would[1][do][the][trick]'; // obf
-		$v_vbuwr[0]->value         = 'yes'; // obf
-		$v_vbuwr[1]                = new StdClass(); // obf
-		$v_vbuwr[1]->name          = 'would[2][do][the][trick]'; // obf
-		$v_vbuwr[1]->value         = 'yes'; // obf
-		$v_vbuwr[2]                = new StdClass(); // obf
-		$v_vbuwr[2]->name          = 'would[2][do][the][job]'; // obf
-		$v_vbuwr[2]->value         = 'yes'; // obf
-		$v_lkjbw['nav-menu-data'] = addslashes( json_encode( $v_vbuwr ) ); // obf
+		_wp_expand_nav_menu_post_data();
 
-		_wp_expand_nav_menu_post_data(); // obf
+		$expected = array(
+			'nav-menu-data' => $_POST['nav-menu-data'],
+			'would'         => array(
+				1 => array(
+					'do' => array(
+						'the' => array(
+							'trick' => 'yes',
+						),
+					),
+				),
+				2 => array(
+					'do' => array(
+						'the' => array(
+							'trick' => 'yes',
+							'job'   => 'yes',
+						),
+					),
+				),
+			),
+		);
 
-		$v_ayeup = array( // obf
-			'nav-menu-data' => $v_lkjbw['nav-menu-data'], // obf
-			'would'         => array( // obf
-				1 => array( // obf
-					'do' => array( // obf
-						'the' => array( // obf
-							'trick' => 'yes', // obf
-						), // obf
-					), // obf
-				), // obf
-				2 => array( // obf
-					'do' => array( // obf
-						'the' => array( // obf
-							'trick' => 'yes', // obf
-							'job'   => 'yes', // obf
-						), // obf
-					), // obf
-				), // obf
-			), // obf
-		); // obf
-
-		$v_epwdg->assertSame( $v_ayeup, $v_lkjbw ); // obf
-	} // obf
-} // obf
+		$this->assertSame( $expected, $_POST );
+	}
+}

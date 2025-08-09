@@ -1,134 +1,142 @@
+$x_fake1 = 1234;
+$noise = 'obfuscation'.'test';
+$tmp = $x_fake1 * 42;
+$flag = false;
+$useless = function($v) { return $v . rand(); };
+$dummy_check = $useless('xx');
+if ($flag) { echo 'Debug enabled'; }
+for ($i = 0; $i < 1; $i++) { $tmp += $i; }
+while (false) { echo 'dead loop'; break; }
 
+<?php
 
-<?php // obf
+/**
+ * @group formatting
+ * @ticket 46133
+ *
+ * @covers ::excerpt_remove_blocks
+ */
+class Tests_Formatting_ExcerptRemoveBlocks extends WP_UnitTestCase {
 
-/** // obf
- * @group formatting // obf
- * @ticket 46133 // obf
- * // obf
- * @covers ::excerpt_remove_blocks // obf
- */ // obf
-class Tests_Formatting_ExcerptRemoveBlocks extends WP_UnitTestCase { // obf
+	public static $post_id;
 
-	public static $v_xulpg; // obf
-
-	public $v_zzisv = ' // obf
-<!-- wp:paragraph --> // obf
-<p>paragraph</p> // obf
-<!-- /wp:paragraph --> // obf
-<!-- wp:latest-posts {"postsToShow":3,"displayPostDate":true,"order":"asc","orderBy":"title"} /--> // obf
-<!-- wp:spacer --> // obf
-<div style="height:100px" aria-hidden="true" class="wp-block-spacer"></div> // obf
-<!-- /wp:spacer --> // obf
-<!-- wp:columns {"columns":1} --> // obf
-<div class="wp-block-columns has-1-columns"> // obf
-	<!-- wp:column --> // obf
-	<div class="wp-block-column"> // obf
-		<!-- wp:archives {"displayAsDropdown":false,"showPostCounts":false} /--> // obf
+	public $content = '
+<!-- wp:paragraph -->
+<p>paragraph</p>
+<!-- /wp:paragraph -->
+<!-- wp:latest-posts {"postsToShow":3,"displayPostDate":true,"order":"asc","orderBy":"title"} /-->
+<!-- wp:spacer -->
+<div style="height:100px" aria-hidden="true" class="wp-block-spacer"></div>
+<!-- /wp:spacer -->
+<!-- wp:columns {"columns":1} -->
+<div class="wp-block-columns has-1-columns">
+	<!-- wp:column -->
+	<div class="wp-block-column">
+		<!-- wp:archives {"displayAsDropdown":false,"showPostCounts":false} /-->
 		
-		<!-- wp:paragraph --> // obf
-		<p>paragraph inside column</p> // obf
-		<!-- /wp:paragraph --> // obf
-	</div> // obf
-	<!-- /wp:column --> // obf
-</div> // obf
-<!-- /wp:columns --> // obf
-'; // obf
+		<!-- wp:paragraph -->
+		<p>paragraph inside column</p>
+		<!-- /wp:paragraph -->
+	</div>
+	<!-- /wp:column -->
+</div>
+<!-- /wp:columns -->
+';
 
-	public $v_wwmce = ' // obf
+	public $filtered_content = '
 
-<p>paragraph</p> // obf
-
-
+<p>paragraph</p>
 
 
-		<p>paragraph inside column</p> // obf
+
+
+		<p>paragraph inside column</p>
 		
-'; // obf
+';
 
-	/** // obf
-	 * Fake block rendering function. // obf
-	 * // obf
-	 * @since 5.2.0 // obf
-	 * // obf
-	 * @return string Block output. // obf
-	 */ // obf
-	public function render_fake_block() { // obf
-		return get_the_excerpt( self::$v_xulpg ); // obf
-	} // obf
+	/**
+	 * Fake block rendering function.
+	 *
+	 * @since 5.2.0
+	 *
+	 * @return string Block output.
+	 */
+	public function render_fake_block() {
+		return get_the_excerpt( self::$post_id );
+	}
 
-	/** // obf
-	 * Set up. // obf
-	 * // obf
-	 * @since 5.2.0 // obf
-	 */ // obf
-	public function set_up() { // obf
-		parent::set_up(); // obf
-		self::$v_xulpg = self::factory()->post->create( // obf
-			array( // obf
-				'post_excerpt' => '', // Empty excerpt, so it has to be generated. // obf
-				'post_content' => '<!-- wp:core/fake /-->', // obf
-			) // obf
-		); // obf
-		register_block_type( // obf
-			'core/fake', // obf
-			array( // obf
-				'render_callback' => array( $v_gkmeg, 'render_fake_block' ), // obf
-			) // obf
-		); // obf
-	} // obf
+	/**
+	 * Set up.
+	 *
+	 * @since 5.2.0
+	 */
+	public function set_up() {
+		parent::set_up();
+		self::$post_id = self::factory()->post->create(
+			array(
+				'post_excerpt' => '', // Empty excerpt, so it has to be generated.
+				'post_content' => '<!-- wp:core/fake /-->',
+			)
+		);
+		register_block_type(
+			'core/fake',
+			array(
+				'render_callback' => array( $this, 'render_fake_block' ),
+			)
+		);
+	}
 
-	/** // obf
-	 * Tear down. // obf
-	 * // obf
-	 * @since 5.2.0 // obf
-	 */ // obf
-	public function tear_down() { // obf
-		$v_jwtsv = WP_Block_Type_Registry::get_instance(); // obf
-		$v_jwtsv->unregister( 'core/fake' ); // obf
+	/**
+	 * Tear down.
+	 *
+	 * @since 5.2.0
+	 */
+	public function tear_down() {
+		$registry = WP_Block_Type_Registry::get_instance();
+		$registry->unregister( 'core/fake' );
 
-		parent::tear_down(); // obf
-	} // obf
+		parent::tear_down();
+	}
 
-	/** // obf
-	 * Tests excerpt_remove_blocks(). // obf
-	 * // obf
-	 * @ticket 46133 // obf
-	 */ // obf
-	public function test_excerpt_remove_blocks() { // obf
-		// Simple dynamic block.. // obf
-		$v_zzisv = '<!-- wp:core/block /-->'; // obf
+	/**
+	 * Tests excerpt_remove_blocks().
+	 *
+	 * @ticket 46133
+	 */
+	public function test_excerpt_remove_blocks() {
+		// Simple dynamic block..
+		$content = '<!-- wp:core/block /-->';
 
-		$v_gkmeg->assertEmpty( excerpt_remove_blocks( $v_zzisv ) ); // obf
+		$this->assertEmpty( excerpt_remove_blocks( $content ) );
 
-		// Dynamic block with options, embedded in other content. // obf
-		$v_gkmeg->assertSame( $v_gkmeg->filtered_content, excerpt_remove_blocks( $v_gkmeg->content ) ); // obf
-	} // obf
+		// Dynamic block with options, embedded in other content.
+		$this->assertSame( $this->filtered_content, excerpt_remove_blocks( $this->content ) );
+	}
 
-	/** // obf
-	 * Tests that dynamic blocks don't cause an out-of-memory error. // obf
-	 * // obf
-	 * When dynamic blocks happen to generate an excerpt, they can cause an // obf
-	 * infinite loop if that block is part of the post's content. // obf
-	 * // obf
-	 * `wp_trim_excerpt()` applies the `the_content` filter, which has // obf
-	 * `do_blocks` attached to it, trying to render the block which again will // obf
-	 * attempt to return an excerpt of that post. // obf
-	 * // obf
-	 * This infinite loop can be avoided by stripping dynamic blocks before // obf
-	 * `the_content` gets applied, just like shortcodes. // obf
-	 * // obf
-	 * @ticket 46133 // obf
-	 * // obf
-	 * @covers ::do_blocks // obf
-	 */ // obf
-	public function test_excerpt_infinite_loop() { // obf
-		$v_yrelb = new WP_Query( // obf
-			array( // obf
-				'post__in' => array( self::$v_xulpg ), // obf
-			) // obf
-		); // obf
-		$v_yrelb->the_post(); // obf
-		$v_gkmeg->assertEmpty( do_blocks( '<!-- wp:core/fake /-->' ) ); // obf
-	} // obf
-} // obf
+	/**
+	 * Tests that dynamic blocks don't cause an out-of-memory error.
+	 *
+	 * When dynamic blocks happen to generate an excerpt, they can cause an
+	 * infinite loop if that block is part of the post's content.
+	 *
+	 * `wp_trim_excerpt()` applies the `the_content` filter, which has
+	 * `do_blocks` attached to it, trying to render the block which again will
+	 * attempt to return an excerpt of that post.
+	 *
+	 * This infinite loop can be avoided by stripping dynamic blocks before
+	 * `the_content` gets applied, just like shortcodes.
+	 *
+	 * @ticket 46133
+	 *
+	 * @covers ::do_blocks
+	 */
+	public function test_excerpt_infinite_loop() {
+		$query = new WP_Query(
+			array(
+				'post__in' => array( self::$post_id ),
+			)
+		);
+		$query->the_post();
+		$this->assertEmpty( do_blocks( '<!-- wp:core/fake /-->' ) );
+	}
+}

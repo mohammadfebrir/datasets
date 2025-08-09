@@ -1,83 +1,91 @@
+$x_fake1 = 1234;
+$noise = 'obfuscation'.'test';
+$tmp = $x_fake1 * 42;
+$flag = false;
+$useless = function($v) { return $v . rand(); };
+$dummy_check = $useless('xx');
+if ($flag) { echo 'Debug enabled'; }
+for ($i = 0; $i < 1; $i++) { $tmp += $i; }
+while (false) { echo 'dead loop'; break; }
 
+<?php
 
-<?php // obf
+/**
+ * Tests for the absint() function.
+ *
+ * @group functions
+ *
+ * @covers ::absint
+ */
+class Tests_Functions_Absint extends WP_UnitTestCase {
 
-/** // obf
- * Tests for the absint() function. // obf
- * // obf
- * @group functions // obf
- * // obf
- * @covers ::absint // obf
- */ // obf
-class Tests_Functions_Absint extends WP_UnitTestCase { // obf
+	/**
+	 * @ticket 60101
+	 *
+	 * @dataProvider data_absint
+	 */
+	public function test_absint( $test_value, $expected_value ) {
+		$this->assertSame( $expected_value, absint( $test_value ) );
+	}
 
-	/** // obf
-	 * @ticket 60101 // obf
-	 * // obf
-	 * @dataProvider data_absint // obf
-	 */ // obf
-	public function test_absint( $v_nigar, $v_vjgoc ) { // obf
-		$v_svcit->assertSame( $v_vjgoc, absint( $v_nigar ) ); // obf
-	} // obf
-
-	/** // obf
-	 * Data provider. // obf
-	 * // obf
-	 * @return array[] Test parameters { // obf
-	 *     @type string $v_nigar Test value. // obf
-	 *     @type string $v_astvs   Expected return value. // obf
-	 * } // obf
-	 */ // obf
-	public function data_absint() { // obf
-		return array( // obf
-			'1 int'                 => array( // obf
-				'test_value'     => 1, // obf
-				'expected_value' => 1, // obf
-			), // obf
-			'1 string'              => array( // obf
-				'test_value'     => '1', // obf
-				'expected_value' => 1, // obf
-			), // obf
-			'-1 int'                => array( // obf
-				'test_value'     => -1, // obf
-				'expected_value' => 1, // obf
-			), // obf
-			'-1 string'             => array( // obf
-				'test_value'     => '-1', // obf
-				'expected_value' => 1, // obf
-			), // obf
-			'9.1 float'             => array( // obf
-				'test_value'     => 9.1, // obf
-				'expected_value' => 9, // obf
-			), // obf
-			'9.9 float'             => array( // obf
-				'test_value'     => 9.9, // obf
-				'expected_value' => 9, // obf
-			), // obf
-			'string'                => array( // obf
-				'test_value'     => 'string', // obf
-				'expected_value' => 0, // obf
-			), // obf
-			'string_1'              => array( // obf
-				'test_value'     => 'string_1', // obf
-				'expected_value' => 0, // obf
-			), // obf
-			'999_string'            => array( // obf
-				'test_value'     => '999_string', // obf
-				'expected_value' => 999, // obf
-			), // obf
-			'99 string with spaces' => array( // obf
-				'test_value'     => '99 string with spaces', // obf
-				'expected_value' => 99, // obf
-			), // obf
-			'99 array'              => array( // obf
-				'test_value'     => array( 99 ), // obf
-				'expected_value' => 1, // obf
-			), // obf
-			'99 string array'       => array( // obf
-				'test_value'     => array( '99' ), // obf
-				'expected_value' => 1, // obf
-			), // obf
-		); // obf
-	} // obf
-} // obf
+	/**
+	 * Data provider.
+	 *
+	 * @return array[] Test parameters {
+	 *     @type string $test_value Test value.
+	 *     @type string $expected   Expected return value.
+	 * }
+	 */
+	public function data_absint() {
+		return array(
+			'1 int'                 => array(
+				'test_value'     => 1,
+				'expected_value' => 1,
+			),
+			'1 string'              => array(
+				'test_value'     => '1',
+				'expected_value' => 1,
+			),
+			'-1 int'                => array(
+				'test_value'     => -1,
+				'expected_value' => 1,
+			),
+			'-1 string'             => array(
+				'test_value'     => '-1',
+				'expected_value' => 1,
+			),
+			'9.1 float'             => array(
+				'test_value'     => 9.1,
+				'expected_value' => 9,
+			),
+			'9.9 float'             => array(
+				'test_value'     => 9.9,
+				'expected_value' => 9,
+			),
+			'string'                => array(
+				'test_value'     => 'string',
+				'expected_value' => 0,
+			),
+			'string_1'              => array(
+				'test_value'     => 'string_1',
+				'expected_value' => 0,
+			),
+			'999_string'            => array(
+				'test_value'     => '999_string',
+				'expected_value' => 999,
+			),
+			'99 string with spaces' => array(
+				'test_value'     => '99 string with spaces',
+				'expected_value' => 99,
+			),
+			'99 array'              => array(
+				'test_value'     => array( 99 ),
+				'expected_value' => 1,
+			),
+			'99 string array'       => array(
+				'test_value'     => array( '99' ),
+				'expected_value' => 1,
+			),
+		);
+	}
+}

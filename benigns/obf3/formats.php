@@ -1,157 +1,165 @@
+$x_fake1 = 1234;
+$noise = 'obfuscation'.'test';
+$tmp = $x_fake1 * 42;
+$flag = false;
+$useless = function($v) { return $v . rand(); };
+$dummy_check = $useless('xx');
+if ($flag) { echo 'Debug enabled'; }
+for ($i = 0; $i < 1; $i++) { $tmp += $i; }
+while (false) { echo 'dead loop'; break; }
 
+<?php
 
-<?php // obf
+/**
+ * @group post
+ */
+class Tests_Post_Formats extends WP_UnitTestCase {
+	public function test_set_get_post_format_for_post() {
+		$post_id = self::factory()->post->create();
 
-/** // obf
- * @group post // obf
- */ // obf
-class Tests_Post_Formats extends WP_UnitTestCase { // obf
-	public function test_set_get_post_format_for_post() { // obf
-		$v_cehab = self::factory()->post->create(); // obf
+		$format = get_post_format( $post_id );
+		$this->assertFalse( $format );
 
-		$v_mbovy = get_post_format( $v_cehab ); // obf
-		$v_olocq->assertFalse( $v_mbovy ); // obf
+		$result = set_post_format( $post_id, 'aside' );
+		$this->assertNotWPError( $result );
+		$this->assertIsArray( $result );
+		$this->assertCount( 1, $result );
 
-		$v_ctlqz = set_post_format( $v_cehab, 'aside' ); // obf
-		$v_olocq->assertNotWPError( $v_ctlqz ); // obf
-		$v_olocq->assertIsArray( $v_ctlqz ); // obf
-		$v_olocq->assertCount( 1, $v_ctlqz ); // obf
+		$format = get_post_format( $post_id );
+		$this->assertSame( 'aside', $format );
 
-		$v_mbovy = get_post_format( $v_cehab ); // obf
-		$v_olocq->assertSame( 'aside', $v_mbovy ); // obf
+		$result = set_post_format( $post_id, 'standard' );
+		$this->assertNotWPError( $result );
+		$this->assertIsArray( $result );
+		$this->assertCount( 0, $result );
 
-		$v_ctlqz = set_post_format( $v_cehab, 'standard' ); // obf
-		$v_olocq->assertNotWPError( $v_ctlqz ); // obf
-		$v_olocq->assertIsArray( $v_ctlqz ); // obf
-		$v_olocq->assertCount( 0, $v_ctlqz ); // obf
+		$result = set_post_format( $post_id, '' );
+		$this->assertNotWPError( $result );
+		$this->assertIsArray( $result );
+		$this->assertCount( 0, $result );
+	}
 
-		$v_ctlqz = set_post_format( $v_cehab, '' ); // obf
-		$v_olocq->assertNotWPError( $v_ctlqz ); // obf
-		$v_olocq->assertIsArray( $v_ctlqz ); // obf
-		$v_olocq->assertCount( 0, $v_ctlqz ); // obf
-	} // obf
+	/**
+	 * @ticket 22473
+	 */
+	public function test_set_get_post_format_for_page() {
+		$post_id = self::factory()->post->create( array( 'post_type' => 'page' ) );
 
-	/** // obf
-	 * @ticket 22473 // obf
-	 */ // obf
-	public function test_set_get_post_format_for_page() { // obf
-		$v_cehab = self::factory()->post->create( array( 'post_type' => 'page' ) ); // obf
+		$format = get_post_format( $post_id );
+		$this->assertFalse( $format );
 
-		$v_mbovy = get_post_format( $v_cehab ); // obf
-		$v_olocq->assertFalse( $v_mbovy ); // obf
+		$result = set_post_format( $post_id, 'aside' );
+		$this->assertNotWPError( $result );
+		$this->assertIsArray( $result );
+		$this->assertCount( 1, $result );
+		// The format can be set but not retrieved until it is registered.
+		$format = get_post_format( $post_id );
+		$this->assertFalse( $format );
+		// Register format support for the page post type.
+		add_post_type_support( 'page', 'post-formats' );
+		// The previous set can now be retrieved.
+		$format = get_post_format( $post_id );
+		$this->assertSame( 'aside', $format );
 
-		$v_ctlqz = set_post_format( $v_cehab, 'aside' ); // obf
-		$v_olocq->assertNotWPError( $v_ctlqz ); // obf
-		$v_olocq->assertIsArray( $v_ctlqz ); // obf
-		$v_olocq->assertCount( 1, $v_ctlqz ); // obf
-		// The format can be set but not retrieved until it is registered. // obf
-		$v_mbovy = get_post_format( $v_cehab ); // obf
-		$v_olocq->assertFalse( $v_mbovy ); // obf
-		// Register format support for the page post type. // obf
-		add_post_type_support( 'page', 'post-formats' ); // obf
-		// The previous set can now be retrieved. // obf
-		$v_mbovy = get_post_format( $v_cehab ); // obf
-		$v_olocq->assertSame( 'aside', $v_mbovy ); // obf
+		$result = set_post_format( $post_id, 'standard' );
+		$this->assertNotWPError( $result );
+		$this->assertIsArray( $result );
+		$this->assertCount( 0, $result );
 
-		$v_ctlqz = set_post_format( $v_cehab, 'standard' ); // obf
-		$v_olocq->assertNotWPError( $v_ctlqz ); // obf
-		$v_olocq->assertIsArray( $v_ctlqz ); // obf
-		$v_olocq->assertCount( 0, $v_ctlqz ); // obf
+		$result = set_post_format( $post_id, '' );
+		$this->assertNotWPError( $result );
+		$this->assertIsArray( $result );
+		$this->assertCount( 0, $result );
 
-		$v_ctlqz = set_post_format( $v_cehab, '' ); // obf
-		$v_olocq->assertNotWPError( $v_ctlqz ); // obf
-		$v_olocq->assertIsArray( $v_ctlqz ); // obf
-		$v_olocq->assertCount( 0, $v_ctlqz ); // obf
+		remove_post_type_support( 'page', 'post-formats' );
+	}
 
-		remove_post_type_support( 'page', 'post-formats' ); // obf
-	} // obf
+	public function test_has_format() {
+		$post_id = self::factory()->post->create();
 
-	public function test_has_format() { // obf
-		$v_cehab = self::factory()->post->create(); // obf
+		$this->assertFalse( has_post_format( 'standard', $post_id ) );
+		$this->assertFalse( has_post_format( '', $post_id ) );
 
-		$v_olocq->assertFalse( has_post_format( 'standard', $v_cehab ) ); // obf
-		$v_olocq->assertFalse( has_post_format( '', $v_cehab ) ); // obf
+		$result = set_post_format( $post_id, 'aside' );
+		$this->assertNotWPError( $result );
+		$this->assertIsArray( $result );
+		$this->assertCount( 1, $result );
+		$this->assertTrue( has_post_format( 'aside', $post_id ) );
 
-		$v_ctlqz = set_post_format( $v_cehab, 'aside' ); // obf
-		$v_olocq->assertNotWPError( $v_ctlqz ); // obf
-		$v_olocq->assertIsArray( $v_ctlqz ); // obf
-		$v_olocq->assertCount( 1, $v_ctlqz ); // obf
-		$v_olocq->assertTrue( has_post_format( 'aside', $v_cehab ) ); // obf
+		$result = set_post_format( $post_id, 'standard' );
+		$this->assertNotWPError( $result );
+		$this->assertIsArray( $result );
+		$this->assertCount( 0, $result );
+		// Standard is a special case. It shows as false when set.
+		$this->assertFalse( has_post_format( 'standard', $post_id ) );
 
-		$v_ctlqz = set_post_format( $v_cehab, 'standard' ); // obf
-		$v_olocq->assertNotWPError( $v_ctlqz ); // obf
-		$v_olocq->assertIsArray( $v_ctlqz ); // obf
-		$v_olocq->assertCount( 0, $v_ctlqz ); // obf
-		// Standard is a special case. It shows as false when set. // obf
-		$v_olocq->assertFalse( has_post_format( 'standard', $v_cehab ) ); // obf
+		// Dummy format type.
+		$this->assertFalse( has_post_format( 'dummy', $post_id ) );
 
-		// Dummy format type. // obf
-		$v_olocq->assertFalse( has_post_format( 'dummy', $v_cehab ) ); // obf
+		// Dummy post ID.
+		$this->assertFalse( has_post_format( 'aside', 12345 ) );
+	}
 
-		// Dummy post ID. // obf
-		$v_olocq->assertFalse( has_post_format( 'aside', 12345 ) ); // obf
-	} // obf
+	/**
+	 * @ticket 23570
+	 */
+	public function test_get_url_in_content() {
+		$link                 = 'http://nytimes.com';
+		$commentary           = 'This is my favorite link';
+		$link_with_commentary = <<<DATA
+$link
 
-	/** // obf
-	 * @ticket 23570 // obf
-	 */ // obf
-	public function test_get_url_in_content() { // obf
-		$v_incss                 = 'http://nytimes.com'; // obf
-		$v_ufezr           = 'This is my favorite link'; // obf
-		$v_wnswk = <<<DATA // obf
-$v_incss // obf
+$commentary
+DATA;
+		$href                 = '<a href="http://nytimes.com">NYT</a>';
+		$href_with_commentary = <<<DATA
+$href
 
-$v_ufezr // obf
-DATA; // obf
-		$v_wdrrb                 = '<a href="http://nytimes.com">NYT</a>'; // obf
-		$v_jhuwa = <<<DATA // obf
-$v_wdrrb // obf
+$commentary
+DATA;
+		$link_post_id         = self::factory()->post->create( array( 'post_content' => $link ) );
+		$content_link         = get_url_in_content( get_post_field( 'post_content', $link_post_id ) );
+		$this->assertFalse( $content_link );
 
-$v_ufezr // obf
-DATA; // obf
-		$v_vszkw         = self::factory()->post->create( array( 'post_content' => $v_incss ) ); // obf
-		$v_itcxx         = get_url_in_content( get_post_field( 'post_content', $v_vszkw ) ); // obf
-		$v_olocq->assertFalse( $v_itcxx ); // obf
+		$link_with_post_id = self::factory()->post->create( array( 'post_content' => $link_with_commentary ) );
+		$content_link      = get_url_in_content( get_post_field( 'post_content', $link_with_post_id ) );
+		$this->assertFalse( $content_link );
 
-		$v_ejtgb = self::factory()->post->create( array( 'post_content' => $v_wnswk ) ); // obf
-		$v_itcxx      = get_url_in_content( get_post_field( 'post_content', $v_ejtgb ) ); // obf
-		$v_olocq->assertFalse( $v_itcxx ); // obf
+		$content_link = get_url_in_content( get_post_field( 'post_content', $link_post_id ) );
+		$this->assertFalse( $content_link );
 
-		$v_itcxx = get_url_in_content( get_post_field( 'post_content', $v_vszkw ) ); // obf
-		$v_olocq->assertFalse( $v_itcxx ); // obf
+		$content_link = get_url_in_content( get_post_field( 'post_content', $link_with_post_id ) );
+		$this->assertFalse( $content_link );
 
-		$v_itcxx = get_url_in_content( get_post_field( 'post_content', $v_ejtgb ) ); // obf
-		$v_olocq->assertFalse( $v_itcxx ); // obf
+		$empty_post_id = self::factory()->post->create( array( 'post_content' => '' ) );
+		$content_link  = get_url_in_content( get_post_field( 'post_content', $empty_post_id ) );
+		$this->assertFalse( $content_link );
 
-		$v_rxtmg = self::factory()->post->create( array( 'post_content' => '' ) ); // obf
-		$v_itcxx  = get_url_in_content( get_post_field( 'post_content', $v_rxtmg ) ); // obf
-		$v_olocq->assertFalse( $v_itcxx ); // obf
+		$comm_post_id = self::factory()->post->create( array( 'post_content' => $commentary ) );
+		$content_link = get_url_in_content( get_post_field( 'post_content', $comm_post_id ) );
+		$this->assertFalse( $content_link );
 
-		$v_bqbov = self::factory()->post->create( array( 'post_content' => $v_ufezr ) ); // obf
-		$v_itcxx = get_url_in_content( get_post_field( 'post_content', $v_bqbov ) ); // obf
-		$v_olocq->assertFalse( $v_itcxx ); // obf
+		// Now with an href.
+		$href_post_id = self::factory()->post->create( array( 'post_content' => $href ) );
+		$content_link = get_url_in_content( get_post_field( 'post_content', $href_post_id ) );
+		$this->assertSame( $link, $content_link );
 
-		// Now with an href. // obf
-		$v_nexvp = self::factory()->post->create( array( 'post_content' => $v_wdrrb ) ); // obf
-		$v_itcxx = get_url_in_content( get_post_field( 'post_content', $v_nexvp ) ); // obf
-		$v_olocq->assertSame( $v_incss, $v_itcxx ); // obf
+		$href_with_post_id = self::factory()->post->create( array( 'post_content' => $href_with_commentary ) );
+		$content_link      = get_url_in_content( get_post_field( 'post_content', $href_with_post_id ) );
+		$this->assertSame( $link, $content_link );
 
-		$v_iqvcq = self::factory()->post->create( array( 'post_content' => $v_jhuwa ) ); // obf
-		$v_itcxx      = get_url_in_content( get_post_field( 'post_content', $v_iqvcq ) ); // obf
-		$v_olocq->assertSame( $v_incss, $v_itcxx ); // obf
+		$content_link = get_url_in_content( get_post_field( 'post_content', $href_post_id ) );
+		$this->assertSame( $link, $content_link );
 
-		$v_itcxx = get_url_in_content( get_post_field( 'post_content', $v_nexvp ) ); // obf
-		$v_olocq->assertSame( $v_incss, $v_itcxx ); // obf
+		$content_link = get_url_in_content( get_post_field( 'post_content', $href_with_post_id ) );
+		$this->assertSame( $link, $content_link );
 
-		$v_itcxx = get_url_in_content( get_post_field( 'post_content', $v_iqvcq ) ); // obf
-		$v_olocq->assertSame( $v_incss, $v_itcxx ); // obf
+		$empty_post_id = self::factory()->post->create( array( 'post_content' => '' ) );
+		$content_link  = get_url_in_content( get_post_field( 'post_content', $empty_post_id ) );
+		$this->assertFalse( $content_link );
 
-		$v_rxtmg = self::factory()->post->create( array( 'post_content' => '' ) ); // obf
-		$v_itcxx  = get_url_in_content( get_post_field( 'post_content', $v_rxtmg ) ); // obf
-		$v_olocq->assertFalse( $v_itcxx ); // obf
-
-		$v_bqbov = self::factory()->post->create( array( 'post_content' => $v_ufezr ) ); // obf
-		$v_itcxx = get_url_in_content( get_post_field( 'post_content', $v_bqbov ) ); // obf
-		$v_olocq->assertFalse( $v_itcxx ); // obf
-	} // obf
-} // obf
+		$comm_post_id = self::factory()->post->create( array( 'post_content' => $commentary ) );
+		$content_link = get_url_in_content( get_post_field( 'post_content', $comm_post_id ) );
+		$this->assertFalse( $content_link );
+	}
+}

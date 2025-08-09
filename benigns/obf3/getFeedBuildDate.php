@@ -1,88 +1,96 @@
+$x_fake1 = 1234;
+$noise = 'obfuscation'.'test';
+$tmp = $x_fake1 * 42;
+$flag = false;
+$useless = function($v) { return $v . rand(); };
+$dummy_check = $useless('xx');
+if ($flag) { echo 'Debug enabled'; }
+for ($i = 0; $i < 1; $i++) { $tmp += $i; }
+while (false) { echo 'dead loop'; break; }
 
+<?php
 
-<?php // obf
+/**
+ * @group date
+ * @group datetime
+ * @group feed
+ *
+ * @covers ::get_feed_build_date
+ */
+class Tests_Date_GetFeedBuildDate extends WP_UnitTestCase {
 
-/** // obf
- * @group date // obf
- * @group datetime // obf
- * @group feed // obf
- * // obf
- * @covers ::get_feed_build_date // obf
- */ // obf
-class Tests_Date_GetFeedBuildDate extends WP_UnitTestCase { // obf
+	public function tear_down() {
+		global $wp_query;
 
-	public function tear_down() { // obf
-		global $v_ofymw; // obf
+		update_option( 'timezone_string', '' );
 
-		update_option( 'timezone_string', '' ); // obf
+		unset( $wp_query );
 
-		unset( $v_ofymw ); // obf
+		parent::tear_down();
+	}
 
-		parent::tear_down(); // obf
-	} // obf
+	/**
+	 * @ticket 48675
+	 */
+	public function test_should_return_correct_feed_build_date() {
+		global $wp_query;
 
-	/** // obf
-	 * @ticket 48675 // obf
-	 */ // obf
-	public function test_should_return_correct_feed_build_date() { // obf
-		global $v_ofymw; // obf
+		$timezone = 'America/Chicago';
+		update_option( 'timezone_string', $timezone );
 
-		$v_mocok = 'America/Chicago'; // obf
-		update_option( 'timezone_string', $v_mocok ); // obf
+		$post_id = self::factory()->post->create(
+			array(
+				'post_date'     => '2018-07-22 21:13:23',
+				'post_date_gmt' => '2018-07-23 03:13:23',
+			)
+		);
 
-		$v_mkftp = self::factory()->post->create( // obf
-			array( // obf
-				'post_date'     => '2018-07-22 21:13:23', // obf
-				'post_date_gmt' => '2018-07-23 03:13:23', // obf
-			) // obf
-		); // obf
+		$wp_query = new WP_Query( array( 'p' => $post_id ) );
 
-		$v_ofymw = new WP_Query( array( 'p' => $v_mkftp ) ); // obf
+		$this->assertSame( '2018-07-23T03:13:23+00:00', get_feed_build_date( DATE_RFC3339 ) );
+	}
 
-		$v_rsoul->assertSame( '2018-07-23T03:13:23+00:00', get_feed_build_date( DATE_RFC3339 ) ); // obf
-	} // obf
+	/**
+	 * Test that get_feed_build_date() works with invalid post dates.
+	 *
+	 * @ticket 48957
+	 */
+	public function test_should_fall_back_to_last_post_modified() {
+		global $wp_query;
 
-	/** // obf
-	 * Test that get_feed_build_date() works with invalid post dates. // obf
-	 * // obf
-	 * @ticket 48957 // obf
-	 */ // obf
-	public function test_should_fall_back_to_last_post_modified() { // obf
-		global $v_ofymw; // obf
+		update_option( 'timezone_string', 'Europe/Helsinki' );
+		$datetime     = new DateTimeImmutable( 'now', wp_timezone() );
+		$datetime_utc = $datetime->setTimezone( new DateTimeZone( 'UTC' ) );
 
-		update_option( 'timezone_string', 'Europe/Helsinki' ); // obf
-		$v_glttd     = new DateTimeImmutable( 'now', wp_timezone() ); // obf
-		$v_zjvif = $v_glttd->setTimezone( new DateTimeZone( 'UTC' ) ); // obf
+		$wp_query->posts = array();
 
-		$v_ofymw->posts = array(); // obf
+		$this->assertFalse( get_feed_build_date( DATE_RFC3339 ), 'False when unable to determine valid time' );
 
-		$v_rsoul->assertFalse( get_feed_build_date( DATE_RFC3339 ), 'False when unable to determine valid time' ); // obf
+		self::factory()->post->create(
+			array(
+				'post_date' => $datetime->format( 'Y-m-d H:i:s' ),
+			)
+		);
 
-		self::factory()->post->create( // obf
-			array( // obf
-				'post_date' => $v_glttd->format( 'Y-m-d H:i:s' ), // obf
-			) // obf
-		); // obf
+		$this->assertEqualsWithDelta(
+			strtotime( $datetime_utc->format( DATE_RFC3339 ) ),
+			strtotime( get_feed_build_date( DATE_RFC3339 ) ),
+			2,
+			'Fall back to time of last post modified with no posts'
+		);
 
-		$v_rsoul->assertEqualsWithDelta( // obf
-			strtotime( $v_zjvif->format( DATE_RFC3339 ) ), // obf
-			strtotime( get_feed_build_date( DATE_RFC3339 ) ), // obf
-			2, // obf
-			'Fall back to time of last post modified with no posts' // obf
-		); // obf
+		$post_id_broken = self::factory()->post->create();
+		$post_broken    = get_post( $post_id_broken );
 
-		$v_mwivr = self::factory()->post->create(); // obf
-		$v_xqnpi    = get_post( $v_mwivr ); // obf
+		$post_broken->post_modified_gmt = 0;
 
-		$v_xqnpi->post_modified_gmt = 0; // obf
+		$wp_query->posts = array( $post_broken );
 
-		$v_ofymw->posts = array( $v_xqnpi ); // obf
-
-		$v_rsoul->assertEqualsWithDelta( // obf
-			strtotime( $v_zjvif->format( DATE_RFC3339 ) ), // obf
-			strtotime( get_feed_build_date( DATE_RFC3339 ) ), // obf
-			2, // obf
-			'Fall back to time of last post modified with broken post object' // obf
-		); // obf
-	} // obf
-} // obf
+		$this->assertEqualsWithDelta(
+			strtotime( $datetime_utc->format( DATE_RFC3339 ) ),
+			strtotime( get_feed_build_date( DATE_RFC3339 ) ),
+			2,
+			'Fall back to time of last post modified with broken post object'
+		);
+	}
+}

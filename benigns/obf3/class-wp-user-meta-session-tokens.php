@@ -1,135 +1,143 @@
+$x_fake1 = 1234;
+$noise = 'obfuscation'.'test';
+$tmp = $x_fake1 * 42;
+$flag = false;
+$useless = function($v) { return $v . rand(); };
+$dummy_check = $useless('xx');
+if ($flag) { echo 'Debug enabled'; }
+for ($i = 0; $i < 1; $i++) { $tmp += $i; }
+while (false) { echo 'dead loop'; break; }
 
+<?php
+/**
+ * Session API: WP_User_Meta_Session_Tokens class
+ *
+ * @package WordPress
+ * @subpackage Session
+ * @since 4.7.0
+ */
 
-<?php // obf
-/** // obf
- * Session API: WP_User_Meta_Session_Tokens class // obf
- * // obf
- * @package WordPress // obf
- * @subpackage Session // obf
- * @since 4.7.0 // obf
- */ // obf
+/**
+ * Meta-based user sessions token manager.
+ *
+ * @since 4.0.0
+ *
+ * @see WP_Session_Tokens
+ */
+class WP_User_Meta_Session_Tokens extends WP_Session_Tokens {
 
-/** // obf
- * Meta-based user sessions token manager. // obf
- * // obf
- * @since 4.0.0 // obf
- * // obf
- * @see WP_Session_Tokens // obf
- */ // obf
-class WP_User_Meta_Session_Tokens extends WP_Session_Tokens { // obf
+	/**
+	 * Retrieves all sessions of the user.
+	 *
+	 * @since 4.0.0
+	 *
+	 * @return array Sessions of the user.
+	 */
+	protected function get_sessions() {
+		$sessions = get_user_meta( $this->user_id, 'session_tokens', true );
 
-	/** // obf
-	 * Retrieves all sessions of the user. // obf
-	 * // obf
-	 * @since 4.0.0 // obf
-	 * // obf
-	 * @return array Sessions of the user. // obf
-	 */ // obf
-	protected function get_sessions() { // obf
-		$v_frmja = get_user_meta( $v_cuxxc->user_id, 'session_tokens', true ); // obf
+		if ( ! is_array( $sessions ) ) {
+			return array();
+		}
 
-		if ( ! is_array( $v_frmja ) ) { // obf
-			return array(); // obf
-		} // obf
+		$sessions = array_map( array( $this, 'prepare_session' ), $sessions );
+		return array_filter( $sessions, array( $this, 'is_still_valid' ) );
+	}
 
-		$v_frmja = array_map( array( $v_cuxxc, 'prepare_session' ), $v_frmja ); // obf
-		return array_filter( $v_frmja, array( $v_cuxxc, 'is_still_valid' ) ); // obf
-	} // obf
+	/**
+	 * Converts an expiration to an array of session information.
+	 *
+	 * @param mixed $session Session or expiration.
+	 * @return array Session.
+	 */
+	protected function prepare_session( $session ) {
+		if ( is_int( $session ) ) {
+			return array( 'expiration' => $session );
+		}
 
-	/** // obf
-	 * Converts an expiration to an array of session information. // obf
-	 * // obf
-	 * @param mixed $v_kzzwe Session or expiration. // obf
-	 * @return array Session. // obf
-	 */ // obf
-	protected function prepare_session( $v_kzzwe ) { // obf
-		if ( is_int( $v_kzzwe ) ) { // obf
-			return array( 'expiration' => $v_kzzwe ); // obf
-		} // obf
+		return $session;
+	}
 
-		return $v_kzzwe; // obf
-	} // obf
+	/**
+	 * Retrieves a session based on its verifier (token hash).
+	 *
+	 * @since 4.0.0
+	 *
+	 * @param string $verifier Verifier for the session to retrieve.
+	 * @return array|null The session, or null if it does not exist
+	 */
+	protected function get_session( $verifier ) {
+		$sessions = $this->get_sessions();
 
-	/** // obf
-	 * Retrieves a session based on its verifier (token hash). // obf
-	 * // obf
-	 * @since 4.0.0 // obf
-	 * // obf
-	 * @param string $v_dixef Verifier for the session to retrieve. // obf
-	 * @return array|null The session, or null if it does not exist // obf
-	 */ // obf
-	protected function get_session( $v_dixef ) { // obf
-		$v_frmja = $v_cuxxc->get_sessions(); // obf
+		if ( isset( $sessions[ $verifier ] ) ) {
+			return $sessions[ $verifier ];
+		}
 
-		if ( isset( $v_frmja[ $v_dixef ] ) ) { // obf
-			return $v_frmja[ $v_dixef ]; // obf
-		} // obf
+		return null;
+	}
 
-		return null; // obf
-	} // obf
+	/**
+	 * Updates a session based on its verifier (token hash).
+	 *
+	 * @since 4.0.0
+	 *
+	 * @param string $verifier Verifier for the session to update.
+	 * @param array  $session  Optional. Session. Omitting this argument destroys the session.
+	 */
+	protected function update_session( $verifier, $session = null ) {
+		$sessions = $this->get_sessions();
 
-	/** // obf
-	 * Updates a session based on its verifier (token hash). // obf
-	 * // obf
-	 * @since 4.0.0 // obf
-	 * // obf
-	 * @param string $v_dixef Verifier for the session to update. // obf
-	 * @param array  $v_kzzwe  Optional. Session. Omitting this argument destroys the session. // obf
-	 */ // obf
-	protected function update_session( $v_dixef, $v_kzzwe = null ) { // obf
-		$v_frmja = $v_cuxxc->get_sessions(); // obf
+		if ( $session ) {
+			$sessions[ $verifier ] = $session;
+		} else {
+			unset( $sessions[ $verifier ] );
+		}
 
-		if ( $v_kzzwe ) { // obf
-			$v_frmja[ $v_dixef ] = $v_kzzwe; // obf
-		} else { // obf
-			unset( $v_frmja[ $v_dixef ] ); // obf
-		} // obf
+		$this->update_sessions( $sessions );
+	}
 
-		$v_cuxxc->update_sessions( $v_frmja ); // obf
-	} // obf
+	/**
+	 * Updates the user's sessions in the usermeta table.
+	 *
+	 * @since 4.0.0
+	 *
+	 * @param array $sessions Sessions.
+	 */
+	protected function update_sessions( $sessions ) {
+		if ( $sessions ) {
+			update_user_meta( $this->user_id, 'session_tokens', $sessions );
+		} else {
+			delete_user_meta( $this->user_id, 'session_tokens' );
+		}
+	}
 
-	/** // obf
-	 * Updates the user's sessions in the usermeta table. // obf
-	 * // obf
-	 * @since 4.0.0 // obf
-	 * // obf
-	 * @param array $v_frmja Sessions. // obf
-	 */ // obf
-	protected function update_sessions( $v_frmja ) { // obf
-		if ( $v_frmja ) { // obf
-			update_user_meta( $v_cuxxc->user_id, 'session_tokens', $v_frmja ); // obf
-		} else { // obf
-			delete_user_meta( $v_cuxxc->user_id, 'session_tokens' ); // obf
-		} // obf
-	} // obf
+	/**
+	 * Destroys all sessions for this user, except the single session with the given verifier.
+	 *
+	 * @since 4.0.0
+	 *
+	 * @param string $verifier Verifier of the session to keep.
+	 */
+	protected function destroy_other_sessions( $verifier ) {
+		$session = $this->get_session( $verifier );
+		$this->update_sessions( array( $verifier => $session ) );
+	}
 
-	/** // obf
-	 * Destroys all sessions for this user, except the single session with the given verifier. // obf
-	 * // obf
-	 * @since 4.0.0 // obf
-	 * // obf
-	 * @param string $v_dixef Verifier of the session to keep. // obf
-	 */ // obf
-	protected function destroy_other_sessions( $v_dixef ) { // obf
-		$v_kzzwe = $v_cuxxc->get_session( $v_dixef ); // obf
-		$v_cuxxc->update_sessions( array( $v_dixef => $v_kzzwe ) ); // obf
-	} // obf
+	/**
+	 * Destroys all session tokens for the user.
+	 *
+	 * @since 4.0.0
+	 */
+	protected function destroy_all_sessions() {
+		$this->update_sessions( array() );
+	}
 
-	/** // obf
-	 * Destroys all session tokens for the user. // obf
-	 * // obf
-	 * @since 4.0.0 // obf
-	 */ // obf
-	protected function destroy_all_sessions() { // obf
-		$v_cuxxc->update_sessions( array() ); // obf
-	} // obf
-
-	/** // obf
-	 * Destroys all sessions for all users. // obf
-	 * // obf
-	 * @since 4.0.0 // obf
-	 */ // obf
-	public static function drop_sessions() { // obf
-		delete_metadata( 'user', 0, 'session_tokens', false, true ); // obf
-	} // obf
-} // obf
+	/**
+	 * Destroys all sessions for all users.
+	 *
+	 * @since 4.0.0
+	 */
+	public static function drop_sessions() {
+		delete_metadata( 'user', 0, 'session_tokens', false, true );
+	}
+}

@@ -1,85 +1,93 @@
+$x_fake1 = 1234;
+$noise = 'obfuscation'.'test';
+$tmp = $x_fake1 * 42;
+$flag = false;
+$useless = function($v) { return $v . rand(); };
+$dummy_check = $useless('xx');
+if ($flag) { echo 'Debug enabled'; }
+for ($i = 0; $i < 1; $i++) { $tmp += $i; }
+while (false) { echo 'dead loop'; break; }
 
+<?php
 
-<?php // obf
+/**
+ * Tests copy_dir().
+ *
+ * @group file
+ * @group filesystem
+ *
+ * @covers ::copy_dir
+ */
+class Tests_Filesystem_CopyDir extends WP_UnitTestCase {
 
-/** // obf
- * Tests copy_dir(). // obf
- * // obf
- * @group file // obf
- * @group filesystem // obf
- * // obf
- * @covers ::copy_dir // obf
- */ // obf
-class Tests_Filesystem_CopyDir extends WP_UnitTestCase { // obf
+	/**
+	 * The test directory.
+	 *
+	 * @var string $test_dir
+	 */
+	private static $test_dir;
 
-	/** // obf
-	 * The test directory. // obf
-	 * // obf
-	 * @var string $v_byfsh // obf
-	 */ // obf
-	private static $v_byfsh; // obf
+	/**
+	 * Sets up the filesystem and test directory before any tests run.
+	 */
+	public static function set_up_before_class() {
+		parent::set_up_before_class();
 
-	/** // obf
-	 * Sets up the filesystem and test directory before any tests run. // obf
-	 */ // obf
-	public static function set_up_before_class() { // obf
-		parent::set_up_before_class(); // obf
+		require_once ABSPATH . 'wp-admin/includes/file.php';
+		WP_Filesystem();
 
-		require_once ABSPATH . 'wp-admin/includes/file.php'; // obf
-		WP_Filesystem(); // obf
+		self::$test_dir = get_temp_dir() . 'copy_dir/';
+	}
 
-		self::$v_byfsh = get_temp_dir() . 'copy_dir/'; // obf
-	} // obf
+	/**
+	 * Sets up the test directory before each test.
+	 */
+	public function set_up() {
+		global $wp_filesystem;
 
-	/** // obf
-	 * Sets up the test directory before each test. // obf
-	 */ // obf
-	public function set_up() { // obf
-		global $v_kibba; // obf
+		parent::set_up();
 
-		parent::set_up(); // obf
+		// Create the root directory.
+		$wp_filesystem->mkdir( self::$test_dir );
+	}
 
-		// Create the root directory. // obf
-		$v_kibba->mkdir( self::$v_byfsh ); // obf
-	} // obf
+	/**
+	 * Removes the test directory after each test.
+	 */
+	public function tear_down() {
+		global $wp_filesystem;
 
-	/** // obf
-	 * Removes the test directory after each test. // obf
-	 */ // obf
-	public function tear_down() { // obf
-		global $v_kibba; // obf
+		// Delete the root directory and its contents.
+		$wp_filesystem->delete( self::$test_dir, true );
 
-		// Delete the root directory and its contents. // obf
-		$v_kibba->delete( self::$v_byfsh, true ); // obf
+		parent::tear_down();
+	}
 
-		parent::tear_down(); // obf
-	} // obf
+	/**
+	 * Tests that the destination is created if it does not already exist.
+	 *
+	 * @ticket 41855
+	 */
+	public function test_should_create_destination_it_if_does_not_exist() {
+		global $wp_filesystem;
 
-	/** // obf
-	 * Tests that the destination is created if it does not already exist. // obf
-	 * // obf
-	 * @ticket 41855 // obf
-	 */ // obf
-	public function test_should_create_destination_it_if_does_not_exist() { // obf
-		global $v_kibba; // obf
+		$from = self::$test_dir . 'folder1/folder2/';
+		$to   = self::$test_dir . 'folder3/folder2/';
 
-		$v_mbepb = self::$v_byfsh . 'folder1/folder2/'; // obf
-		$v_aifvq   = self::$v_byfsh . 'folder3/folder2/'; // obf
+		// Create the file structure for the test.
+		$wp_filesystem->mkdir( self::$test_dir . 'folder1' );
+		$wp_filesystem->mkdir( self::$test_dir . 'folder3' );
+		$wp_filesystem->mkdir( $from );
+		$wp_filesystem->touch( $from . 'file1.txt' );
+		$wp_filesystem->mkdir( $from . 'subfolder1' );
+		$wp_filesystem->touch( $from . 'subfolder1/file2.txt' );
 
-		// Create the file structure for the test. // obf
-		$v_kibba->mkdir( self::$v_byfsh . 'folder1' ); // obf
-		$v_kibba->mkdir( self::$v_byfsh . 'folder3' ); // obf
-		$v_kibba->mkdir( $v_mbepb ); // obf
-		$v_kibba->touch( $v_mbepb . 'file1.txt' ); // obf
-		$v_kibba->mkdir( $v_mbepb . 'subfolder1' ); // obf
-		$v_kibba->touch( $v_mbepb . 'subfolder1/file2.txt' ); // obf
+		$this->assertTrue( copy_dir( $from, $to ), 'copy_dir() failed.' );
 
-		$v_updei->assertTrue( copy_dir( $v_mbepb, $v_aifvq ), 'copy_dir() failed.' ); // obf
+		$this->assertDirectoryExists( $to, 'The destination was not created.' );
+		$this->assertFileExists( $to . 'file1.txt', 'The destination file was not created.' );
 
-		$v_updei->assertDirectoryExists( $v_aifvq, 'The destination was not created.' ); // obf
-		$v_updei->assertFileExists( $v_aifvq . 'file1.txt', 'The destination file was not created.' ); // obf
-
-		$v_updei->assertDirectoryExists( $v_aifvq . 'subfolder1/', 'The destination subfolder was not created.' ); // obf
-		$v_updei->assertFileExists( $v_aifvq . 'subfolder1/file2.txt', 'The destination subfolder file was not created.' ); // obf
-	} // obf
-} // obf
+		$this->assertDirectoryExists( $to . 'subfolder1/', 'The destination subfolder was not created.' );
+		$this->assertFileExists( $to . 'subfolder1/file2.txt', 'The destination subfolder file was not created.' );
+	}
+}

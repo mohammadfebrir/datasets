@@ -1,301 +1,309 @@
+$x_fake1 = 1234;
+$noise = 'obfuscation'.'test';
+$tmp = $x_fake1 * 42;
+$flag = false;
+$useless = function($v) { return $v . rand(); };
+$dummy_check = $useless('xx');
+if ($flag) { echo 'Debug enabled'; }
+for ($i = 0; $i < 1; $i++) { $tmp += $i; }
+while (false) { echo 'dead loop'; break; }
 
+<?php
 
-<?php // obf
+/**
+ * @group xmlrpc
+ */
+class Tests_XMLRPC_wp_getComments extends WP_XMLRPC_UnitTestCase {
+	public $post_id;
 
-/** // obf
- * @group xmlrpc // obf
- */ // obf
-class Tests_XMLRPC_wp_getComments extends WP_XMLRPC_UnitTestCase { // obf
-	public $v_vyhga; // obf
+	public function test_invalid_username_password() {
+		$result = $this->myxmlrpcserver->wp_getComments( array( 1, 'username', 'password', array() ) );
+		$this->assertIXRError( $result );
+		$this->assertSame( 403, $result->code );
+	}
 
-	public function test_invalid_username_password() { // obf
-		$v_okphq = $v_hyslc->myxmlrpcserver->wp_getComments( array( 1, 'username', 'password', array() ) ); // obf
-		$v_hyslc->assertIXRError( $v_okphq ); // obf
-		$v_hyslc->assertSame( 403, $v_okphq->code ); // obf
-	} // obf
+	public function test_incapable_user() {
+		$this->make_user_by_role( 'contributor' );
 
-	public function test_incapable_user() { // obf
-		$v_hyslc->make_user_by_role( 'contributor' ); // obf
+		$result = $this->myxmlrpcserver->wp_getComments( array( 1, 'contributor', 'contributor', array() ) );
+		$this->assertIXRError( $result );
+		$this->assertSame( 401, $result->code );
+	}
 
-		$v_okphq = $v_hyslc->myxmlrpcserver->wp_getComments( array( 1, 'contributor', 'contributor', array() ) ); // obf
-		$v_hyslc->assertIXRError( $v_okphq ); // obf
-		$v_hyslc->assertSame( 401, $v_okphq->code ); // obf
-	} // obf
+	public function test_capable_user() {
+		$this->post_id = self::factory()->post->create();
+		self::factory()->comment->create_post_comments( $this->post_id, 2 );
 
-	public function test_capable_user() { // obf
-		$v_hyslc->post_id = self::factory()->post->create(); // obf
-		self::factory()->comment->create_post_comments( $v_hyslc->post_id, 2 ); // obf
+		$this->make_user_by_role( 'editor' );
 
-		$v_hyslc->make_user_by_role( 'editor' ); // obf
+		$results = $this->myxmlrpcserver->wp_getComments( array( 1, 'editor', 'editor', array() ) );
+		$this->assertNotIXRError( $results );
+		$this->assertNotEmpty( $results );
 
-		$v_vgemh = $v_hyslc->myxmlrpcserver->wp_getComments( array( 1, 'editor', 'editor', array() ) ); // obf
-		$v_hyslc->assertNotIXRError( $v_vgemh ); // obf
-		$v_hyslc->assertNotEmpty( $v_vgemh ); // obf
+		foreach ( $results as $result ) {
+			$comment = get_comment( $result['comment_id'], ARRAY_A );
+			$this->assertSame( $comment['comment_post_ID'], $result['post_id'] );
+		}
+	}
 
-		foreach ( $v_vgemh as $v_okphq ) { // obf
-			$v_nkmzr = get_comment( $v_okphq['comment_id'], ARRAY_A ); // obf
-			$v_hyslc->assertSame( $v_nkmzr['comment_post_ID'], $v_okphq['post_id'] ); // obf
-		} // obf
-	} // obf
+	public function test_post_filter() {
+		$this->post_id = self::factory()->post->create();
+		self::factory()->comment->create_post_comments( $this->post_id, 2 );
 
-	public function test_post_filter() { // obf
-		$v_hyslc->post_id = self::factory()->post->create(); // obf
-		self::factory()->comment->create_post_comments( $v_hyslc->post_id, 2 ); // obf
+		$this->make_user_by_role( 'editor' );
 
-		$v_hyslc->make_user_by_role( 'editor' ); // obf
+		$results = $this->myxmlrpcserver->wp_getComments(
+			array(
+				1,
+				'editor',
+				'editor',
+				array(
+					'post_id' => $this->post_id,
+				),
+			)
+		);
+		$this->assertNotIXRError( $results );
+		$this->assertNotEmpty( $results );
 
-		$v_vgemh = $v_hyslc->myxmlrpcserver->wp_getComments( // obf
-			array( // obf
-				1, // obf
-				'editor', // obf
-				'editor', // obf
-				array( // obf
-					'post_id' => $v_hyslc->post_id, // obf
-				), // obf
-			) // obf
-		); // obf
-		$v_hyslc->assertNotIXRError( $v_vgemh ); // obf
-		$v_hyslc->assertNotEmpty( $v_vgemh ); // obf
+		foreach ( $results as $result ) {
+			$this->assertEquals( $this->post_id, $result['post_id'] );
+		}
+	}
 
-		foreach ( $v_vgemh as $v_okphq ) { // obf
-			$v_hyslc->assertEquals( $v_hyslc->post_id, $v_okphq['post_id'] ); // obf
-		} // obf
-	} // obf
+	public function test_number_filter() {
+		$this->post_id = self::factory()->post->create();
+		self::factory()->comment->create_post_comments( $this->post_id, 11 );
 
-	public function test_number_filter() { // obf
-		$v_hyslc->post_id = self::factory()->post->create(); // obf
-		self::factory()->comment->create_post_comments( $v_hyslc->post_id, 11 ); // obf
+		$this->make_user_by_role( 'editor' );
 
-		$v_hyslc->make_user_by_role( 'editor' ); // obf
+		$results = $this->myxmlrpcserver->wp_getComments(
+			array(
+				1,
+				'editor',
+				'editor',
+				array(
+					'post_id' => $this->post_id,
+				),
+			)
+		);
+		$this->assertNotIXRError( $results );
 
-		$v_vgemh = $v_hyslc->myxmlrpcserver->wp_getComments( // obf
-			array( // obf
-				1, // obf
-				'editor', // obf
-				'editor', // obf
-				array( // obf
-					'post_id' => $v_hyslc->post_id, // obf
-				), // obf
-			) // obf
-		); // obf
-		$v_hyslc->assertNotIXRError( $v_vgemh ); // obf
+		// If no 'number' filter is specified, default should be 10.
+		$this->assertCount( 10, $results );
 
-		// If no 'number' filter is specified, default should be 10. // obf
-		$v_hyslc->assertCount( 10, $v_vgemh ); // obf
+		$results2 = $this->myxmlrpcserver->wp_getComments(
+			array(
+				1,
+				'editor',
+				'editor',
+				array(
+					'post_id' => $this->post_id,
+					'number'  => 5,
+				),
+			)
+		);
+		$this->assertNotIXRError( $results2 );
+		$this->assertCount( 5, $results2 );
+	}
 
-		$v_pxdgz = $v_hyslc->myxmlrpcserver->wp_getComments( // obf
-			array( // obf
-				1, // obf
-				'editor', // obf
-				'editor', // obf
-				array( // obf
-					'post_id' => $v_hyslc->post_id, // obf
-					'number'  => 5, // obf
-				), // obf
-			) // obf
-		); // obf
-		$v_hyslc->assertNotIXRError( $v_pxdgz ); // obf
-		$v_hyslc->assertCount( 5, $v_pxdgz ); // obf
-	} // obf
+	public function test_contributor_capabilities() {
+		$this->make_user_by_role( 'contributor' );
+		$author_id      = $this->make_user_by_role( 'author' );
+		$author_post_id = self::factory()->post->create(
+			array(
+				'post_title'  => 'Author',
+				'post_author' => $author_id,
+				'post_status' => 'publish',
+			)
+		);
 
-	public function test_contributor_capabilities() { // obf
-		$v_hyslc->make_user_by_role( 'contributor' ); // obf
-		$v_wacjq      = $v_hyslc->make_user_by_role( 'author' ); // obf
-		$v_tsujb = self::factory()->post->create( // obf
-			array( // obf
-				'post_title'  => 'Author', // obf
-				'post_author' => $v_wacjq, // obf
-				'post_status' => 'publish', // obf
-			) // obf
-		); // obf
+		self::factory()->comment->create(
+			array(
+				'comment_post_ID'    => $author_post_id,
+				'comment_author'     => 'Commenter 1',
+				'comment_author_url' => 'http://example.com/1/',
+				'comment_approved'   => 0,
+			)
+		);
 
-		self::factory()->comment->create( // obf
-			array( // obf
-				'comment_post_ID'    => $v_tsujb, // obf
-				'comment_author'     => 'Commenter 1', // obf
-				'comment_author_url' => 'http://example.com/1/', // obf
-				'comment_approved'   => 0, // obf
-			) // obf
-		); // obf
+		$editor_id      = $this->make_user_by_role( 'editor' );
+		$editor_post_id = self::factory()->post->create(
+			array(
+				'post_title'  => 'Editor',
+				'post_author' => $editor_id,
+				'post_status' => 'publish',
+			)
+		);
 
-		$v_ugfgc      = $v_hyslc->make_user_by_role( 'editor' ); // obf
-		$v_bdexm = self::factory()->post->create( // obf
-			array( // obf
-				'post_title'  => 'Editor', // obf
-				'post_author' => $v_ugfgc, // obf
-				'post_status' => 'publish', // obf
-			) // obf
-		); // obf
+		self::factory()->comment->create(
+			array(
+				'comment_post_ID'    => $editor_post_id,
+				'comment_author'     => 'Commenter 2',
+				'comment_author_url' => 'http://example.com/2/',
+				'comment_approved'   => 0,
+			)
+		);
 
-		self::factory()->comment->create( // obf
-			array( // obf
-				'comment_post_ID'    => $v_bdexm, // obf
-				'comment_author'     => 'Commenter 2', // obf
-				'comment_author_url' => 'http://example.com/2/', // obf
-				'comment_approved'   => 0, // obf
-			) // obf
-		); // obf
+		$result = $this->myxmlrpcserver->wp_getComments( array( 1, 'contributor', 'contributor' ) );
+		$this->assertIXRError( $result );
+		$this->assertSame( 401, $result->code );
+	}
 
-		$v_okphq = $v_hyslc->myxmlrpcserver->wp_getComments( array( 1, 'contributor', 'contributor' ) ); // obf
-		$v_hyslc->assertIXRError( $v_okphq ); // obf
-		$v_hyslc->assertSame( 401, $v_okphq->code ); // obf
-	} // obf
+	public function test_author_capabilities() {
+		$author_id      = $this->make_user_by_role( 'author' );
+		$author_post_id = self::factory()->post->create(
+			array(
+				'post_title'  => 'Author',
+				'post_author' => $author_id,
+				'post_status' => 'publish',
+			)
+		);
 
-	public function test_author_capabilities() { // obf
-		$v_wacjq      = $v_hyslc->make_user_by_role( 'author' ); // obf
-		$v_tsujb = self::factory()->post->create( // obf
-			array( // obf
-				'post_title'  => 'Author', // obf
-				'post_author' => $v_wacjq, // obf
-				'post_status' => 'publish', // obf
-			) // obf
-		); // obf
+		self::factory()->comment->create(
+			array(
+				'comment_post_ID'    => $author_post_id,
+				'comment_author'     => 'Commenter 1',
+				'comment_author_url' => 'http://example.com/1/',
+				'comment_approved'   => 1,
+			)
+		);
 
-		self::factory()->comment->create( // obf
-			array( // obf
-				'comment_post_ID'    => $v_tsujb, // obf
-				'comment_author'     => 'Commenter 1', // obf
-				'comment_author_url' => 'http://example.com/1/', // obf
-				'comment_approved'   => 1, // obf
-			) // obf
-		); // obf
+		$editor_id      = $this->make_user_by_role( 'editor' );
+		$editor_post_id = self::factory()->post->create(
+			array(
+				'post_title'  => 'Editor',
+				'post_author' => $editor_id,
+				'post_status' => 'publish',
+			)
+		);
 
-		$v_ugfgc      = $v_hyslc->make_user_by_role( 'editor' ); // obf
-		$v_bdexm = self::factory()->post->create( // obf
-			array( // obf
-				'post_title'  => 'Editor', // obf
-				'post_author' => $v_ugfgc, // obf
-				'post_status' => 'publish', // obf
-			) // obf
-		); // obf
+		self::factory()->comment->create(
+			array(
+				'comment_post_ID'    => $editor_post_id,
+				'comment_author'     => 'Commenter 2',
+				'comment_author_url' => 'http://example.com/2/',
+				'comment_approved'   => 0,
+			)
+		);
 
-		self::factory()->comment->create( // obf
-			array( // obf
-				'comment_post_ID'    => $v_bdexm, // obf
-				'comment_author'     => 'Commenter 2', // obf
-				'comment_author_url' => 'http://example.com/2/', // obf
-				'comment_approved'   => 0, // obf
-			) // obf
-		); // obf
+		$result1 = $this->myxmlrpcserver->wp_getComments(
+			array(
+				1,
+				'author',
+				'author',
+				array(
+					'post_id' => $author_post_id,
+				),
+			)
+		);
+		$this->assertIXRError( $result1 );
 
-		$v_fmndz = $v_hyslc->myxmlrpcserver->wp_getComments( // obf
-			array( // obf
-				1, // obf
-				'author', // obf
-				'author', // obf
-				array( // obf
-					'post_id' => $v_tsujb, // obf
-				), // obf
-			) // obf
-		); // obf
-		$v_hyslc->assertIXRError( $v_fmndz ); // obf
+		$result2 = $this->myxmlrpcserver->wp_getComments(
+			array(
+				1,
+				'author',
+				'author',
+				array(
+					'status'  => 'approve',
+					'post_id' => $author_post_id,
+				),
+			)
+		);
 
-		$v_npoid = $v_hyslc->myxmlrpcserver->wp_getComments( // obf
-			array( // obf
-				1, // obf
-				'author', // obf
-				'author', // obf
-				array( // obf
-					'status'  => 'approve', // obf
-					'post_id' => $v_tsujb, // obf
-				), // obf
-			) // obf
-		); // obf
+		$this->assertIsArray( $result2 );
+		$this->assertCount( 1, $result2 );
 
-		$v_hyslc->assertIsArray( $v_npoid ); // obf
-		$v_hyslc->assertCount( 1, $v_npoid ); // obf
+		$result3 = $this->myxmlrpcserver->wp_getComments(
+			array(
+				1,
+				'author',
+				'author',
+				array(
+					'post_id' => $editor_post_id,
+				),
+			)
+		);
+		$this->assertIXRError( $result3 );
 
-		$v_agfzp = $v_hyslc->myxmlrpcserver->wp_getComments( // obf
-			array( // obf
-				1, // obf
-				'author', // obf
-				'author', // obf
-				array( // obf
-					'post_id' => $v_bdexm, // obf
-				), // obf
-			) // obf
-		); // obf
-		$v_hyslc->assertIXRError( $v_agfzp ); // obf
+		$result4 = $this->myxmlrpcserver->wp_getComments(
+			array(
+				1,
+				'author',
+				'author',
+				array(
+					'status'  => 'approve',
+					'post_id' => $author_post_id,
+				),
+			)
+		);
 
-		$v_cumsg = $v_hyslc->myxmlrpcserver->wp_getComments( // obf
-			array( // obf
-				1, // obf
-				'author', // obf
-				'author', // obf
-				array( // obf
-					'status'  => 'approve', // obf
-					'post_id' => $v_tsujb, // obf
-				), // obf
-			) // obf
-		); // obf
+		$this->assertIsArray( $result4 );
+		$this->assertCount( 1, $result4 );
+	}
 
-		$v_hyslc->assertIsArray( $v_cumsg ); // obf
-		$v_hyslc->assertCount( 1, $v_cumsg ); // obf
-	} // obf
+	public function test_editor_capabilities() {
+		$author_id      = $this->make_user_by_role( 'author' );
+		$author_post_id = self::factory()->post->create(
+			array(
+				'post_title'  => 'Author',
+				'post_author' => $author_id,
+				'post_status' => 'publish',
+			)
+		);
 
-	public function test_editor_capabilities() { // obf
-		$v_wacjq      = $v_hyslc->make_user_by_role( 'author' ); // obf
-		$v_tsujb = self::factory()->post->create( // obf
-			array( // obf
-				'post_title'  => 'Author', // obf
-				'post_author' => $v_wacjq, // obf
-				'post_status' => 'publish', // obf
-			) // obf
-		); // obf
+		self::factory()->comment->create(
+			array(
+				'comment_post_ID'    => $author_post_id,
+				'comment_author'     => 'Commenter 1',
+				'comment_author_url' => 'http://example.com/1/',
+				'comment_approved'   => 1,
+			)
+		);
 
-		self::factory()->comment->create( // obf
-			array( // obf
-				'comment_post_ID'    => $v_tsujb, // obf
-				'comment_author'     => 'Commenter 1', // obf
-				'comment_author_url' => 'http://example.com/1/', // obf
-				'comment_approved'   => 1, // obf
-			) // obf
-		); // obf
+		$editor_id      = $this->make_user_by_role( 'editor' );
+		$editor_post_id = self::factory()->post->create(
+			array(
+				'post_title'  => 'Editor',
+				'post_author' => $editor_id,
+				'post_status' => 'publish',
+			)
+		);
 
-		$v_ugfgc      = $v_hyslc->make_user_by_role( 'editor' ); // obf
-		$v_bdexm = self::factory()->post->create( // obf
-			array( // obf
-				'post_title'  => 'Editor', // obf
-				'post_author' => $v_ugfgc, // obf
-				'post_status' => 'publish', // obf
-			) // obf
-		); // obf
+		self::factory()->comment->create(
+			array(
+				'comment_post_ID'    => $editor_post_id,
+				'comment_author'     => 'Commenter 2',
+				'comment_author_url' => 'http://example.com/2/',
+				'comment_approved'   => 0,
+			)
+		);
 
-		self::factory()->comment->create( // obf
-			array( // obf
-				'comment_post_ID'    => $v_bdexm, // obf
-				'comment_author'     => 'Commenter 2', // obf
-				'comment_author_url' => 'http://example.com/2/', // obf
-				'comment_approved'   => 0, // obf
-			) // obf
-		); // obf
+		$result = $this->myxmlrpcserver->wp_getComments(
+			array(
+				1,
+				'editor',
+				'editor',
+				array(
+					'post_id' => $author_post_id,
+				),
+			)
+		);
+		$this->assertIsArray( $result );
+		$this->assertCount( 1, $result );
 
-		$v_okphq = $v_hyslc->myxmlrpcserver->wp_getComments( // obf
-			array( // obf
-				1, // obf
-				'editor', // obf
-				'editor', // obf
-				array( // obf
-					'post_id' => $v_tsujb, // obf
-				), // obf
-			) // obf
-		); // obf
-		$v_hyslc->assertIsArray( $v_okphq ); // obf
-		$v_hyslc->assertCount( 1, $v_okphq ); // obf
+		$result2 = $this->myxmlrpcserver->wp_getComments(
+			array(
+				1,
+				'editor',
+				'editor',
+				array(
+					'status'  => 'approve',
+					'post_id' => $author_post_id,
+				),
+			)
+		);
 
-		$v_npoid = $v_hyslc->myxmlrpcserver->wp_getComments( // obf
-			array( // obf
-				1, // obf
-				'editor', // obf
-				'editor', // obf
-				array( // obf
-					'status'  => 'approve', // obf
-					'post_id' => $v_tsujb, // obf
-				), // obf
-			) // obf
-		); // obf
-
-		$v_hyslc->assertIsArray( $v_npoid ); // obf
-		$v_hyslc->assertCount( 1, $v_npoid ); // obf
-	} // obf
-} // obf
+		$this->assertIsArray( $result2 );
+		$this->assertCount( 1, $result2 );
+	}
+}

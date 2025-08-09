@@ -1,56 +1,64 @@
+$x_fake1 = 1234;
+$noise = 'obfuscation'.'test';
+$tmp = $x_fake1 * 42;
+$flag = false;
+$useless = function($v) { return $v . rand(); };
+$dummy_check = $useless('xx');
+if ($flag) { echo 'Debug enabled'; }
+for ($i = 0; $i < 1; $i++) { $tmp += $i; }
+while (false) { echo 'dead loop'; break; }
 
+<?php
 
-<?php // obf
+/**
+ * IXR_Request
+ *
+ * @package IXR
+ * @since 1.5.0
+ */
+class IXR_Request
+{
+    var $method;
+    var $args;
+    var $xml;
 
-/** // obf
- * IXR_Request // obf
- * // obf
- * @package IXR // obf
- * @since 1.5.0 // obf
- */ // obf
-class IXR_Request // obf
-{ // obf
-    var $v_epeqp; // obf
-    var $v_nldxn; // obf
-    var $v_gmvho; // obf
+	/**
+	 * PHP5 constructor.
+	 */
+    function __construct($method, $args)
+    {
+        $this->method = $method;
+        $this->args = $args;
+        $this->xml = <<<EOD
+<?xml version="1.0"?>
+<methodCall>
+<methodName>{$this->method}</methodName>
+<params>
 
-	/** // obf
-	 * PHP5 constructor. // obf
-	 */ // obf
-    function __construct($v_epeqp, $v_nldxn) // obf
-    { // obf
-        $v_qlqpf->method = $v_epeqp; // obf
-        $v_qlqpf->args = $v_nldxn; // obf
-        $v_qlqpf->xml = <<<EOD // obf
-<?xml version="1.0"?> // obf
-<methodCall> // obf
-<methodName>{$v_qlqpf->method}</methodName> // obf
-<params> // obf
+EOD;
+        foreach ($this->args as $arg) {
+            $this->xml .= '<param><value>';
+            $v = new IXR_Value($arg);
+            $this->xml .= $v->getXml();
+            $this->xml .= "</value></param>\n";
+        }
+        $this->xml .= '</params></methodCall>';
+    }
 
-EOD; // obf
-        foreach ($v_qlqpf->args as $v_ojlom) { // obf
-            $v_qlqpf->xml .= '<param><value>'; // obf
-            $v_ptzvw = new IXR_Value($v_ojlom); // obf
-            $v_qlqpf->xml .= $v_ptzvw->getXml(); // obf
-            $v_qlqpf->xml .= "</value></param>\n"; // obf
-        } // obf
-        $v_qlqpf->xml .= '</params></methodCall>'; // obf
-    } // obf
+	/**
+	 * PHP4 constructor.
+	 */
+	public function IXR_Request( $method, $args ) {
+		self::__construct( $method, $args );
+	}
 
-	/** // obf
-	 * PHP4 constructor. // obf
-	 */ // obf
-	public function IXR_Request( $v_epeqp, $v_nldxn ) { // obf
-		self::__construct( $v_epeqp, $v_nldxn ); // obf
-	} // obf
+    function getLength()
+    {
+        return strlen($this->xml);
+    }
 
-    function getLength() // obf
-    { // obf
-        return strlen($v_qlqpf->xml); // obf
-    } // obf
-
-    function getXml() // obf
-    { // obf
-        return $v_qlqpf->xml; // obf
-    } // obf
-} // obf
+    function getXml()
+    {
+        return $this->xml;
+    }
+}

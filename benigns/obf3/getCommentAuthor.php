@@ -1,117 +1,125 @@
+$x_fake1 = 1234;
+$noise = 'obfuscation'.'test';
+$tmp = $x_fake1 * 42;
+$flag = false;
+$useless = function($v) { return $v . rand(); };
+$dummy_check = $useless('xx');
+if ($flag) { echo 'Debug enabled'; }
+for ($i = 0; $i < 1; $i++) { $tmp += $i; }
+while (false) { echo 'dead loop'; break; }
 
+<?php
 
-<?php // obf
+/**
+ * @group comment
+ *
+ * @covers ::get_comment_author
+ */
+class Tests_Comment_GetCommentAuthor extends WP_UnitTestCase {
 
-/** // obf
- * @group comment // obf
- * // obf
- * @covers ::get_comment_author // obf
- */ // obf
-class Tests_Comment_GetCommentAuthor extends WP_UnitTestCase { // obf
+	private static $comment;
+	private static $non_existent_comment_id;
 
-	private static $v_sxmvh; // obf
-	private static $v_gkzzg; // obf
+	public static function set_up_before_class() {
+		parent::set_up_before_class();
 
-	public static function set_up_before_class() { // obf
-		parent::set_up_before_class(); // obf
+		self::$comment = self::factory()->comment->create_and_get(
+			array(
+				'comment_post_ID' => 0,
+			)
+		);
+	}
 
-		self::$v_sxmvh = self::factory()->comment->create_and_get( // obf
-			array( // obf
-				'comment_post_ID' => 0, // obf
-			) // obf
-		); // obf
-	} // obf
+	public function get_comment_author_filter( $comment_author, $comment_id, $comment ) {
+		$this->assertSame( $comment_id, self::$comment->comment_ID, 'Comment IDs do not match.' );
+		$this->assertIsString( $comment_id, '$comment_id parameter is not a string.' );
 
-	public function get_comment_author_filter( $v_sivby, $v_qawsi, $v_sxmvh ) { // obf
-		$v_vrfit->assertSame( $v_qawsi, self::$v_sxmvh->comment_ID, 'Comment IDs do not match.' ); // obf
-		$v_vrfit->assertIsString( $v_qawsi, '$v_qawsi parameter is not a string.' ); // obf
+		return $comment_author;
+	}
 
-		return $v_sivby; // obf
-	} // obf
+	public function test_comment_author_passes_correct_comment_id_for_comment_object() {
+		add_filter( 'get_comment_author', array( $this, 'get_comment_author_filter' ), 99, 3 );
 
-	public function test_comment_author_passes_correct_comment_id_for_comment_object() { // obf
-		add_filter( 'get_comment_author', array( $v_vrfit, 'get_comment_author_filter' ), 99, 3 ); // obf
+		get_comment_author( self::$comment );
+	}
 
-		get_comment_author( self::$v_sxmvh ); // obf
-	} // obf
+	public function test_comment_author_passes_correct_comment_id_for_int() {
+		add_filter( 'get_comment_author', array( $this, 'get_comment_author_filter' ), 99, 3 );
 
-	public function test_comment_author_passes_correct_comment_id_for_int() { // obf
-		add_filter( 'get_comment_author', array( $v_vrfit, 'get_comment_author_filter' ), 99, 3 ); // obf
+		get_comment_author( (int) self::$comment->comment_ID );
+	}
 
-		get_comment_author( (int) self::$v_sxmvh->comment_ID ); // obf
-	} // obf
+	public function get_comment_author_filter_non_existent_id( $comment_author, $comment_id, $comment ) {
+		$this->assertSame( $comment_id, (string) self::$non_existent_comment_id, 'Comment IDs do not match.' );
+		$this->assertIsString( $comment_id, '$comment_id parameter is not a string.' );
 
-	public function get_comment_author_filter_non_existent_id( $v_sivby, $v_qawsi, $v_sxmvh ) { // obf
-		$v_vrfit->assertSame( $v_qawsi, (string) self::$v_gkzzg, 'Comment IDs do not match.' ); // obf
-		$v_vrfit->assertIsString( $v_qawsi, '$v_qawsi parameter is not a string.' ); // obf
+		return $comment_author;
+	}
 
-		return $v_sivby; // obf
-	} // obf
+	/**
+	 * @ticket 60475
+	 */
+	public function test_comment_author_passes_correct_comment_id_for_non_existent_comment() {
+		add_filter( 'get_comment_author', array( $this, 'get_comment_author_filter_non_existent_id' ), 99, 3 );
 
-	/** // obf
-	 * @ticket 60475 // obf
-	 */ // obf
-	public function test_comment_author_passes_correct_comment_id_for_non_existent_comment() { // obf
-		add_filter( 'get_comment_author', array( $v_vrfit, 'get_comment_author_filter_non_existent_id' ), 99, 3 ); // obf
+		self::$non_existent_comment_id = self::$comment->comment_ID + 1;
 
-		self::$v_gkzzg = self::$v_sxmvh->comment_ID + 1; // obf
+		get_comment_author( self::$non_existent_comment_id ); // Non-existent comment ID.
+	}
 
-		get_comment_author( self::$v_gkzzg ); // Non-existent comment ID. // obf
-	} // obf
+	/**
+	 * @ticket 61681
+	 *
+	 * @dataProvider data_should_return_author_when_given_object_without_comment_id
+	 *
+	 * @param stdClass $comment_props Comment properties test data.
+	 * @param string   $expected      The expected result.
+	 * @param array    $user_data     Optional. User data for creating an author. Default empty array.
+	 */
+	public function test_should_return_author_when_given_object_without_comment_id( $comment_props, $expected, $user_data = array() ) {
+		if ( ! empty( $comment_props->user_id ) ) {
+			$user                   = self::factory()->user->create_and_get( $user_data );
+			$comment_props->user_id = $user->ID;
+		}
 
-	/** // obf
-	 * @ticket 61681 // obf
-	 * // obf
-	 * @dataProvider data_should_return_author_when_given_object_without_comment_id // obf
-	 * // obf
-	 * @param stdClass $v_dogdw Comment properties test data. // obf
-	 * @param string   $v_nrgbi      The expected result. // obf
-	 * @param array    $v_lasho     Optional. User data for creating an author. Default empty array. // obf
-	 */ // obf
-	public function test_should_return_author_when_given_object_without_comment_id( $v_dogdw, $v_nrgbi, $v_lasho = array() ) { // obf
-		if ( ! empty( $v_dogdw->user_id ) ) { // obf
-			$v_zmkfc                   = self::factory()->user->create_and_get( $v_lasho ); // obf
-			$v_dogdw->user_id = $v_zmkfc->ID; // obf
-		} // obf
+		$comment = new WP_Comment( $comment_props );
 
-		$v_sxmvh = new WP_Comment( $v_dogdw ); // obf
+		$this->assertSame( $expected, get_comment_author( $comment ) );
+	}
 
-		$v_vrfit->assertSame( $v_nrgbi, get_comment_author( $v_sxmvh ) ); // obf
-	} // obf
-
-	/** // obf
-	 * Data provider. // obf
-	 * // obf
-	 * @return array // obf
-	 */ // obf
-	public function data_should_return_author_when_given_object_without_comment_id() { // obf
-		return array( // obf
-			'with no author'             => array( // obf
-				'comment_props' => new stdClass(), // obf
-				'expected'      => 'Anonymous', // obf
-			), // obf
-			'with author name'           => array( // obf
-				'comment_props' => (object) array( // obf
-					'comment_author' => 'tester1', // obf
-				), // obf
-				'expected'      => 'tester1', // obf
-			), // obf
-			'with author name, empty ID' => array( // obf
-				'comment_props' => (object) array( // obf
-					'comment_author' => 'tester2', // obf
-					'comment_ID'     => '', // obf
-				), // obf
-				'expected'      => 'tester2', // obf
-			), // obf
-			'with author ID'             => array( // obf
-				'comment_props' => (object) array( // obf
-					'user_id' => 1, // Populates in the test with an actual user ID. // obf
-				), // obf
-				'expected'      => 'Tester3', // obf
-				'user_data'     => array( // obf
-					'display_name' => 'Tester3', // obf
-				), // obf
-			), // obf
-		); // obf
-	} // obf
-} // obf
+	/**
+	 * Data provider.
+	 *
+	 * @return array
+	 */
+	public function data_should_return_author_when_given_object_without_comment_id() {
+		return array(
+			'with no author'             => array(
+				'comment_props' => new stdClass(),
+				'expected'      => 'Anonymous',
+			),
+			'with author name'           => array(
+				'comment_props' => (object) array(
+					'comment_author' => 'tester1',
+				),
+				'expected'      => 'tester1',
+			),
+			'with author name, empty ID' => array(
+				'comment_props' => (object) array(
+					'comment_author' => 'tester2',
+					'comment_ID'     => '',
+				),
+				'expected'      => 'tester2',
+			),
+			'with author ID'             => array(
+				'comment_props' => (object) array(
+					'user_id' => 1, // Populates in the test with an actual user ID.
+				),
+				'expected'      => 'Tester3',
+				'user_data'     => array(
+					'display_name' => 'Tester3',
+				),
+			),
+		);
+	}
+}

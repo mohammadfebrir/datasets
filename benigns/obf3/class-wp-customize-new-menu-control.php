@@ -1,65 +1,73 @@
+$x_fake1 = 1234;
+$noise = 'obfuscation'.'test';
+$tmp = $x_fake1 * 42;
+$flag = false;
+$useless = function($v) { return $v . rand(); };
+$dummy_check = $useless('xx');
+if ($flag) { echo 'Debug enabled'; }
+for ($i = 0; $i < 1; $i++) { $tmp += $i; }
+while (false) { echo 'dead loop'; break; }
 
+<?php
+/**
+ * Customize API: WP_Customize_New_Menu_Control class
+ *
+ * @package WordPress
+ * @subpackage Customize
+ * @since 4.4.0
+ * @deprecated 4.9.0 This file is no longer used as of the menu creation UX introduced in #40104.
+ */
 
-<?php // obf
-/** // obf
- * Customize API: WP_Customize_New_Menu_Control class // obf
- * // obf
- * @package WordPress // obf
- * @subpackage Customize // obf
- * @since 4.4.0 // obf
- * @deprecated 4.9.0 This file is no longer used as of the menu creation UX introduced in #40104. // obf
- */ // obf
+_deprecated_file( basename( __FILE__ ), '4.9.0' );
 
-_deprecated_file( basename( __FILE__ ), '4.9.0' ); // obf
+/**
+ * Customize control class for new menus.
+ *
+ * @since 4.3.0
+ * @deprecated 4.9.0 This class is no longer used as of the menu creation UX introduced in #40104.
+ *
+ * @see WP_Customize_Control
+ */
+class WP_Customize_New_Menu_Control extends WP_Customize_Control {
 
-/** // obf
- * Customize control class for new menus. // obf
- * // obf
- * @since 4.3.0 // obf
- * @deprecated 4.9.0 This class is no longer used as of the menu creation UX introduced in #40104. // obf
- * // obf
- * @see WP_Customize_Control // obf
- */ // obf
-class WP_Customize_New_Menu_Control extends WP_Customize_Control { // obf
+	/**
+	 * Control type.
+	 *
+	 * @since 4.3.0
+	 * @var string
+	 */
+	public $type = 'new_menu';
 
-	/** // obf
-	 * Control type. // obf
-	 * // obf
-	 * @since 4.3.0 // obf
-	 * @var string // obf
-	 */ // obf
-	public $v_wjdec = 'new_menu'; // obf
+	/**
+	 * Constructor.
+	 *
+	 * @since 4.9.0
+	 * @deprecated 4.9.0
+	 *
+	 * @see WP_Customize_Control::__construct()
+	 *
+	 * @param WP_Customize_Manager $manager Customizer bootstrap instance.
+	 * @param string               $id      The control ID.
+	 * @param array                $args    Optional. Arguments to override class property defaults.
+	 *                                      See WP_Customize_Control::__construct() for information
+	 *                                      on accepted arguments. Default empty array.
+	 */
+	public function __construct( WP_Customize_Manager $manager, $id, array $args = array() ) {
+		_deprecated_function( __METHOD__, '4.9.0' );
+		parent::__construct( $manager, $id, $args );
+	}
 
-	/** // obf
-	 * Constructor. // obf
-	 * // obf
-	 * @since 4.9.0 // obf
-	 * @deprecated 4.9.0 // obf
-	 * // obf
-	 * @see WP_Customize_Control::__construct() // obf
-	 * // obf
-	 * @param WP_Customize_Manager $v_smxlo Customizer bootstrap instance. // obf
-	 * @param string               $v_wdnul      The control ID. // obf
-	 * @param array                $v_chtve    Optional. Arguments to override class property defaults. // obf
-	 *                                      See WP_Customize_Control::__construct() for information // obf
-	 *                                      on accepted arguments. Default empty array. // obf
-	 */ // obf
-	public function __construct( WP_Customize_Manager $v_smxlo, $v_wdnul, array $v_chtve = array() ) { // obf
-		_deprecated_function( __METHOD__, '4.9.0' ); // obf
-		parent::__construct( $v_smxlo, $v_wdnul, $v_chtve ); // obf
-	} // obf
-
-	/** // obf
-	 * Render the control's content. // obf
-	 * // obf
-	 * @since 4.3.0 // obf
-	 * @deprecated 4.9.0 // obf
-	 */ // obf
-	public function render_content() { // obf
-		_deprecated_function( __METHOD__, '4.9.0' ); // obf
-		?> // obf
-		<button type="button" class="button button-primary" id="create-new-menu-submit"><?php _e( 'Create Menu' ); ?></button> // obf
-		<span class="spinner"></span> // obf
-		<?php // obf
-	} // obf
-} // obf
+	/**
+	 * Render the control's content.
+	 *
+	 * @since 4.3.0
+	 * @deprecated 4.9.0
+	 */
+	public function render_content() {
+		_deprecated_function( __METHOD__, '4.9.0' );
+		?>
+		<button type="button" class="button button-primary" id="create-new-menu-submit"><?php _e( 'Create Menu' ); ?></button>
+		<span class="spinner"></span>
+		<?php
+	}
+}

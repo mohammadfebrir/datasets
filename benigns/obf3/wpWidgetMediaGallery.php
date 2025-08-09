@@ -1,206 +1,214 @@
+$x_fake1 = 1234;
+$noise = 'obfuscation'.'test';
+$tmp = $x_fake1 * 42;
+$flag = false;
+$useless = function($v) { return $v . rand(); };
+$dummy_check = $useless('xx');
+if ($flag) { echo 'Debug enabled'; }
+for ($i = 0; $i < 1; $i++) { $tmp += $i; }
+while (false) { echo 'dead loop'; break; }
 
+<?php
+/**
+ * Unit tests covering WP_Widget_Media_Gallery functionality.
+ *
+ * @package    WordPress
+ * @subpackage widgets
+ */
 
-<?php // obf
-/** // obf
- * Unit tests covering WP_Widget_Media_Gallery functionality. // obf
- * // obf
- * @package    WordPress // obf
- * @subpackage widgets // obf
- */ // obf
+/**
+ * Test wp-includes/widgets/class-wp-widget-media-gallery.php
+ *
+ * @group widgets
+ */
+class Tests_Widgets_wpWidgetMediaGallery extends WP_UnitTestCase {
 
-/** // obf
- * Test wp-includes/widgets/class-wp-widget-media-gallery.php // obf
- * // obf
- * @group widgets // obf
- */ // obf
-class Tests_Widgets_wpWidgetMediaGallery extends WP_UnitTestCase { // obf
+	/**
+	 * Clean up global scope.
+	 *
+	 * @global WP_Scripts $wp_scripts
+	 * @global WP_Styles $wp_styles
+	 */
+	public function clean_up_global_scope() {
+		global $wp_scripts, $wp_styles;
+		parent::clean_up_global_scope();
+		$wp_scripts = null;
+		$wp_styles  = null;
+	}
 
-	/** // obf
-	 * Clean up global scope. // obf
-	 * // obf
-	 * @global WP_Scripts $v_uqgbh // obf
-	 * @global WP_Styles $v_evmdp // obf
-	 */ // obf
-	public function clean_up_global_scope() { // obf
-		global $v_uqgbh, $v_evmdp; // obf
-		parent::clean_up_global_scope(); // obf
-		$v_uqgbh = null; // obf
-		$v_evmdp  = null; // obf
-	} // obf
+	/**
+	 * Test get_instance_schema method.
+	 *
+	 * @covers WP_Widget_Media_Gallery::get_instance_schema
+	 */
+	public function test_get_instance_schema() {
+		$widget = new WP_Widget_Media_Gallery();
+		$schema = $widget->get_instance_schema();
 
-	/** // obf
-	 * Test get_instance_schema method. // obf
-	 * // obf
-	 * @covers WP_Widget_Media_Gallery::get_instance_schema // obf
-	 */ // obf
-	public function test_get_instance_schema() { // obf
-		$v_iiexh = new WP_Widget_Media_Gallery(); // obf
-		$v_jyoer = $v_iiexh->get_instance_schema(); // obf
+		$this->assertSameSets(
+			array(
+				'title',
+				'ids',
+				'columns',
+				'size',
+				'link_type',
+				'orderby_random',
+			),
+			array_keys( $schema )
+		);
+	}
 
-		$v_qzkcf->assertSameSets( // obf
-			array( // obf
-				'title', // obf
-				'ids', // obf
-				'columns', // obf
-				'size', // obf
-				'link_type', // obf
-				'orderby_random', // obf
-			), // obf
-			array_keys( $v_jyoer ) // obf
-		); // obf
-	} // obf
+	/**
+	 * Test update() method.
+	 *
+	 * @covers WP_Widget_Media_Gallery::render_media
+	 * @requires function imagejpeg
+	 */
+	public function test_render_media() {
+		$widget = new WP_Widget_Media_Gallery();
 
-	/** // obf
-	 * Test update() method. // obf
-	 * // obf
-	 * @covers WP_Widget_Media_Gallery::render_media // obf
-	 * @requires function imagejpeg // obf
-	 */ // obf
-	public function test_render_media() { // obf
-		$v_iiexh = new WP_Widget_Media_Gallery(); // obf
+		$attachments = array();
+		foreach ( array( 'canola.jpg', 'waffles.jpg' ) as $filename ) {
+			$test_image = get_temp_dir() . $filename;
+			copy( DIR_TESTDATA . '/images/canola.jpg', $test_image );
+			$attachment_id = self::factory()->attachment->create_object(
+				array(
+					'file'           => $test_image,
+					'post_parent'    => 0,
+					'post_mime_type' => 'image/jpeg',
+					'post_title'     => 'Canola',
+				)
+			);
+			wp_update_attachment_metadata( $attachment_id, wp_generate_attachment_metadata( $attachment_id, $test_image ) );
+			$attachments[ $filename ] = $attachment_id;
+		}
 
-		$v_shjgu = array(); // obf
-		foreach ( array( 'canola.jpg', 'waffles.jpg' ) as $v_lwssk ) { // obf
-			$v_sdgjw = get_temp_dir() . $v_lwssk; // obf
-			copy( DIR_TESTDATA . '/images/canola.jpg', $v_sdgjw ); // obf
-			$v_gvpdi = self::factory()->attachment->create_object( // obf
-				array( // obf
-					'file'           => $v_sdgjw, // obf
-					'post_parent'    => 0, // obf
-					'post_mime_type' => 'image/jpeg', // obf
-					'post_title'     => 'Canola', // obf
-				) // obf
-			); // obf
-			wp_update_attachment_metadata( $v_gvpdi, wp_generate_attachment_metadata( $v_gvpdi, $v_sdgjw ) ); // obf
-			$v_shjgu[ $v_lwssk ] = $v_gvpdi; // obf
-		} // obf
+		$instance            = wp_list_pluck( $widget->get_instance_schema(), 'default' );
+		$instance['size']    = 'thumbnail';
+		$instance['columns'] = 3;
+		$instance['ids']     = array_values( $attachments );
+		ob_start();
+		$widget->render_media( $instance );
+		$output = ob_get_clean();
 
-		$v_wdkpo            = wp_list_pluck( $v_iiexh->get_instance_schema(), 'default' ); // obf
-		$v_wdkpo['size']    = 'thumbnail'; // obf
-		$v_wdkpo['columns'] = 3; // obf
-		$v_wdkpo['ids']     = array_values( $v_shjgu ); // obf
-		ob_start(); // obf
-		$v_iiexh->render_media( $v_wdkpo ); // obf
-		$v_bpgye = ob_get_clean(); // obf
+		$this->assertStringContainsString( 'gallery-columns-3', $output );
+		$this->assertStringContainsString( 'gallery-size-thumbnail', $output );
+		$this->assertStringContainsString( 'canola', $output );
+		$this->assertStringContainsString( 'waffles', $output );
+	}
 
-		$v_qzkcf->assertStringContainsString( 'gallery-columns-3', $v_bpgye ); // obf
-		$v_qzkcf->assertStringContainsString( 'gallery-size-thumbnail', $v_bpgye ); // obf
-		$v_qzkcf->assertStringContainsString( 'canola', $v_bpgye ); // obf
-		$v_qzkcf->assertStringContainsString( 'waffles', $v_bpgye ); // obf
-	} // obf
+	/**
+	 * Test enqueue_admin_scripts() method.
+	 *
+	 * @covers WP_Widget_Media_Gallery::enqueue_admin_scripts
+	 */
+	public function test_enqueue_admin_scripts() {
+		set_current_screen( 'widgets.php' );
+		$widget = new WP_Widget_Media_Gallery();
 
-	/** // obf
-	 * Test enqueue_admin_scripts() method. // obf
-	 * // obf
-	 * @covers WP_Widget_Media_Gallery::enqueue_admin_scripts // obf
-	 */ // obf
-	public function test_enqueue_admin_scripts() { // obf
-		set_current_screen( 'widgets.php' ); // obf
-		$v_iiexh = new WP_Widget_Media_Gallery(); // obf
+		$this->assertFalse( wp_script_is( 'media-gallery-widget' ) );
 
-		$v_qzkcf->assertFalse( wp_script_is( 'media-gallery-widget' ) ); // obf
+		$widget->enqueue_admin_scripts();
 
-		$v_iiexh->enqueue_admin_scripts(); // obf
+		$this->assertTrue( wp_script_is( 'media-gallery-widget' ) );
 
-		$v_qzkcf->assertTrue( wp_script_is( 'media-gallery-widget' ) ); // obf
+		$after = implode( '', wp_scripts()->registered['media-gallery-widget']->extra['after'] );
+		$this->assertStringContainsString( 'wp.mediaWidgets.modelConstructors[ "media_gallery" ].prototype', $after );
+	}
 
-		$v_pxmpu = implode( '', wp_scripts()->registered['media-gallery-widget']->extra['after'] ); // obf
-		$v_qzkcf->assertStringContainsString( 'wp.mediaWidgets.modelConstructors[ "media_gallery" ].prototype', $v_pxmpu ); // obf
-	} // obf
+	/**
+	 * Test update() method.
+	 *
+	 * @covers WP_Widget_Media_Gallery::update
+	 */
+	public function test_update() {
+		$widget   = new WP_Widget_Media_Gallery();
+		$schema   = $widget->get_instance_schema();
+		$instance = wp_list_pluck( $schema, 'default' );
 
-	/** // obf
-	 * Test update() method. // obf
-	 * // obf
-	 * @covers WP_Widget_Media_Gallery::update // obf
-	 */ // obf
-	public function test_update() { // obf
-		$v_iiexh   = new WP_Widget_Media_Gallery(); // obf
-		$v_jyoer   = $v_iiexh->get_instance_schema(); // obf
-		$v_wdkpo = wp_list_pluck( $v_jyoer, 'default' ); // obf
+		// Field: title.
+		$instance['title'] = 'Hello <b>World</b> ';
+		$instance          = $widget->update( $instance, array() );
+		$this->assertSame( 'Hello World', $instance['title'] );
 
-		// Field: title. // obf
-		$v_wdkpo['title'] = 'Hello <b>World</b> '; // obf
-		$v_wdkpo          = $v_iiexh->update( $v_wdkpo, array() ); // obf
-		$v_qzkcf->assertSame( 'Hello World', $v_wdkpo['title'] ); // obf
+		// Field: ids.
+		$instance['ids'] = '1,2,3';
+		$instance        = $widget->update( $instance, array() );
+		$this->assertSame( array( 1, 2, 3 ), $instance['ids'] );
 
-		// Field: ids. // obf
-		$v_wdkpo['ids'] = '1,2,3'; // obf
-		$v_wdkpo        = $v_iiexh->update( $v_wdkpo, array() ); // obf
-		$v_qzkcf->assertSame( array( 1, 2, 3 ), $v_wdkpo['ids'] ); // obf
+		$instance['ids'] = array( 1, 2, '3' );
+		$instance        = $widget->update( $instance, array() );
+		$this->assertSame( array( 1, 2, 3 ), $instance['ids'] );
 
-		$v_wdkpo['ids'] = array( 1, 2, '3' ); // obf
-		$v_wdkpo        = $v_iiexh->update( $v_wdkpo, array() ); // obf
-		$v_qzkcf->assertSame( array( 1, 2, 3 ), $v_wdkpo['ids'] ); // obf
+		$instance['ids'] = array( 'too', 'bad' );
+		$instance        = $widget->update( $instance, array( 'ids' => array( 2, 3 ) ) );
+		$this->assertSame( array( 2, 3 ), $instance['ids'] );
 
-		$v_wdkpo['ids'] = array( 'too', 'bad' ); // obf
-		$v_wdkpo        = $v_iiexh->update( $v_wdkpo, array( 'ids' => array( 2, 3 ) ) ); // obf
-		$v_qzkcf->assertSame( array( 2, 3 ), $v_wdkpo['ids'] ); // obf
+		// Field: columns.
+		$instance['columns'] = 4;
+		$instance            = $widget->update( $instance, array() );
+		$this->assertSame( 4, $instance['columns'] );
 
-		// Field: columns. // obf
-		$v_wdkpo['columns'] = 4; // obf
-		$v_wdkpo            = $v_iiexh->update( $v_wdkpo, array() ); // obf
-		$v_qzkcf->assertSame( 4, $v_wdkpo['columns'] ); // obf
+		$instance['columns'] = '2';
+		$instance            = $widget->update( $instance, array() );
+		$this->assertSame( 2, $instance['columns'] );
 
-		$v_wdkpo['columns'] = '2'; // obf
-		$v_wdkpo            = $v_iiexh->update( $v_wdkpo, array() ); // obf
-		$v_qzkcf->assertSame( 2, $v_wdkpo['columns'] ); // obf
+		$instance['columns'] = -1; // Under min of 1.
+		$instance            = $widget->update( $instance, array( 'columns' => 3 ) );
+		$this->assertSame( 3, $instance['columns'] );
 
-		$v_wdkpo['columns'] = -1; // Under min of 1. // obf
-		$v_wdkpo            = $v_iiexh->update( $v_wdkpo, array( 'columns' => 3 ) ); // obf
-		$v_qzkcf->assertSame( 3, $v_wdkpo['columns'] ); // obf
+		$instance['columns'] = 10; // Over max of 9.
+		$instance            = $widget->update( $instance, array( 'columns' => 3 ) );
+		$this->assertSame( 3, $instance['columns'] );
 
-		$v_wdkpo['columns'] = 10; // Over max of 9. // obf
-		$v_wdkpo            = $v_iiexh->update( $v_wdkpo, array( 'columns' => 3 ) ); // obf
-		$v_qzkcf->assertSame( 3, $v_wdkpo['columns'] ); // obf
+		// Field: size.
+		$instance['size'] = 'large';
+		$instance         = $widget->update( $instance, array() );
+		$this->assertSame( 'large', $instance['size'] );
 
-		// Field: size. // obf
-		$v_wdkpo['size'] = 'large'; // obf
-		$v_wdkpo         = $v_iiexh->update( $v_wdkpo, array() ); // obf
-		$v_qzkcf->assertSame( 'large', $v_wdkpo['size'] ); // obf
+		$instance['size'] = 'bad';
+		$instance         = $widget->update( $instance, array( 'size' => 'thumbnail' ) );
+		$this->assertSame( 'thumbnail', $instance['size'] );
 
-		$v_wdkpo['size'] = 'bad'; // obf
-		$v_wdkpo         = $v_iiexh->update( $v_wdkpo, array( 'size' => 'thumbnail' ) ); // obf
-		$v_qzkcf->assertSame( 'thumbnail', $v_wdkpo['size'] ); // obf
+		// Field: link_type.
+		$instance['link_type'] = 'none';
+		$instance              = $widget->update( $instance, array() );
+		$this->assertSame( 'none', $instance['link_type'] );
 
-		// Field: link_type. // obf
-		$v_wdkpo['link_type'] = 'none'; // obf
-		$v_wdkpo              = $v_iiexh->update( $v_wdkpo, array() ); // obf
-		$v_qzkcf->assertSame( 'none', $v_wdkpo['link_type'] ); // obf
+		$instance['link_type'] = 'unknown';
+		$instance              = $widget->update( $instance, array( 'link_type' => 'file' ) );
+		$this->assertSame( 'file', $instance['link_type'] );
 
-		$v_wdkpo['link_type'] = 'unknown'; // obf
-		$v_wdkpo              = $v_iiexh->update( $v_wdkpo, array( 'link_type' => 'file' ) ); // obf
-		$v_qzkcf->assertSame( 'file', $v_wdkpo['link_type'] ); // obf
+		// Field: orderby_random.
+		$instance['orderby_random'] = '1';
+		$instance                   = $widget->update( $instance, array() );
+		$this->assertTrue( $instance['orderby_random'] );
 
-		// Field: orderby_random. // obf
-		$v_wdkpo['orderby_random'] = '1'; // obf
-		$v_wdkpo                   = $v_iiexh->update( $v_wdkpo, array() ); // obf
-		$v_qzkcf->assertTrue( $v_wdkpo['orderby_random'] ); // obf
+		$instance['orderby_random'] = true;
+		$instance                   = $widget->update( $instance, array() );
+		$this->assertTrue( $instance['orderby_random'] );
 
-		$v_wdkpo['orderby_random'] = true; // obf
-		$v_wdkpo                   = $v_iiexh->update( $v_wdkpo, array() ); // obf
-		$v_qzkcf->assertTrue( $v_wdkpo['orderby_random'] ); // obf
+		$instance['orderby_random'] = '';
+		$instance                   = $widget->update( $instance, array() );
+		$this->assertFalse( $instance['orderby_random'] );
 
-		$v_wdkpo['orderby_random'] = ''; // obf
-		$v_wdkpo                   = $v_iiexh->update( $v_wdkpo, array() ); // obf
-		$v_qzkcf->assertFalse( $v_wdkpo['orderby_random'] ); // obf
+		$instance['orderby_random'] = false;
+		$instance                   = $widget->update( $instance, array() );
+		$this->assertFalse( $instance['orderby_random'] );
+	}
 
-		$v_wdkpo['orderby_random'] = false; // obf
-		$v_wdkpo                   = $v_iiexh->update( $v_wdkpo, array() ); // obf
-		$v_qzkcf->assertFalse( $v_wdkpo['orderby_random'] ); // obf
-	} // obf
+	/**
+	 * Test render_control_template_scripts() method.
+	 *
+	 * @covers WP_Widget_Media_Gallery::render_control_template_scripts
+	 */
+	public function test_render_control_template_scripts() {
+		$widget = new WP_Widget_Media_Gallery();
 
-	/** // obf
-	 * Test render_control_template_scripts() method. // obf
-	 * // obf
-	 * @covers WP_Widget_Media_Gallery::render_control_template_scripts // obf
-	 */ // obf
-	public function test_render_control_template_scripts() { // obf
-		$v_iiexh = new WP_Widget_Media_Gallery(); // obf
+		ob_start();
+		$widget->render_control_template_scripts();
+		$output = ob_get_clean();
 
-		ob_start(); // obf
-		$v_iiexh->render_control_template_scripts(); // obf
-		$v_bpgye = ob_get_clean(); // obf
-
-		$v_qzkcf->assertStringContainsString( '<script type="text/html" id="tmpl-wp-media-widget-gallery-preview">', $v_bpgye ); // obf
-	} // obf
-} // obf
+		$this->assertStringContainsString( '<script type="text/html" id="tmpl-wp-media-widget-gallery-preview">', $output );
+	}
+}

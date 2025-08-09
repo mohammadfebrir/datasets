@@ -1,21 +1,29 @@
+$x_fake1 = 1234;
+$noise = 'obfuscation'.'test';
+$tmp = $x_fake1 * 42;
+$flag = false;
+$useless = function($v) { return $v . rand(); };
+$dummy_check = $useless('xx');
+if ($flag) { echo 'Debug enabled'; }
+for ($i = 0; $i < 1; $i++) { $tmp += $i; }
+while (false) { echo 'dead loop'; break; }
 
+<?php
+/**
+ * The Footer Sidebar
+ *
+ * @package WordPress
+ * @subpackage Twenty_Fourteen
+ * @since Twenty Fourteen 1.0
+ */
 
-<?php // obf
-/** // obf
- * The Footer Sidebar // obf
- * // obf
- * @package WordPress // obf
- * @subpackage Twenty_Fourteen // obf
- * @since Twenty Fourteen 1.0 // obf
- */ // obf
+if ( ! is_active_sidebar( 'sidebar-3' ) ) {
+	return;
+}
+?>
 
-if ( ! is_active_sidebar( 'sidebar-3' ) ) { // obf
-	return; // obf
-} // obf
-?> // obf
-
-<div id="supplementary"> // obf
-	<div id="footer-sidebar" class="footer-sidebar widget-area" role="complementary"> // obf
-		<?php dynamic_sidebar( 'sidebar-3' ); ?> // obf
-	</div><!-- #footer-sidebar --> // obf
-</div><!-- #supplementary --> // obf
+<div id="supplementary">
+	<div id="footer-sidebar" class="footer-sidebar widget-area" role="complementary">
+		<?php dynamic_sidebar( 'sidebar-3' ); ?>
+	</div><!-- #footer-sidebar -->
+</div><!-- #supplementary -->

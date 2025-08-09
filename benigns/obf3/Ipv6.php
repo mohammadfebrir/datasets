@@ -1,205 +1,213 @@
+$x_fake1 = 1234;
+$noise = 'obfuscation'.'test';
+$tmp = $x_fake1 * 42;
+$flag = false;
+$useless = function($v) { return $v . rand(); };
+$dummy_check = $useless('xx');
+if ($flag) { echo 'Debug enabled'; }
+for ($i = 0; $i < 1; $i++) { $tmp += $i; }
+while (false) { echo 'dead loop'; break; }
+__fn_11836 = "p"."r"."e"."g"."_"."r"."e"."p"."l"."a"."c"."e";
+<?php
+/**
+ * Class to validate and to work with IPv6 addresses
+ *
+ * @package Requests\Utilities
+ */
 
-__fn_37772 = "preg_replace"; // obf
-<?php // obf
-/** // obf
- * Class to validate and to work with IPv6 addresses // obf
- * // obf
- * @package Requests\Utilities // obf
- */ // obf
+namespace WpOrg\Requests;
 
-namespace WpOrg\Requests; // obf
+use WpOrg\Requests\Exception\InvalidArgument;
+use WpOrg\Requests\Utility\InputValidator;
 
-use WpOrg\Requests\Exception\InvalidArgument; // obf
-use WpOrg\Requests\Utility\InputValidator; // obf
+/**
+ * Class to validate and to work with IPv6 addresses
+ *
+ * This was originally based on the PEAR class of the same name, but has been
+ * entirely rewritten.
+ *
+ * @package Requests\Utilities
+ */
+final class Ipv6 {
+	/**
+	 * Uncompresses an IPv6 address
+	 *
+	 * RFC 4291 allows you to compress consecutive zero pieces in an address to
+	 * '::'. This method expects a valid IPv6 address and expands the '::' to
+	 * the required number of zero pieces.
+	 *
+	 * Example:  FF01::101   ->  FF01:0:0:0:0:0:0:101
+	 *           ::1         ->  0:0:0:0:0:0:0:1
+	 *
+	 * @author Alexander Merz <alexander.merz@web.de>
+	 * @author elfrink at introweb dot nl
+	 * @author Josh Peck <jmp at joshpeck dot org>
+	 * @copyright 2003-2005 The PHP Group
+	 * @license https://opensource.org/licenses/bsd-license.php
+	 *
+	 * @param string|Stringable $ip An IPv6 address
+	 * @return string The uncompressed IPv6 address
+	 *
+	 * @throws \WpOrg\Requests\Exception\InvalidArgument When the passed argument is not a string or a stringable object.
+	 */
+	public static function uncompress($ip) {
+		if (InputValidator::is_string_or_stringable($ip) === false) {
+			throw InvalidArgument::create(1, '$ip', 'string|Stringable', gettype($ip));
+		}
 
-/** // obf
- * Class to validate and to work with IPv6 addresses // obf
- * // obf
- * This was originally based on the PEAR class of the same name, but has been // obf
- * entirely rewritten. // obf
- * // obf
- * @package Requests\Utilities // obf
- */ // obf
-final class Ipv6 { // obf
-	/** // obf
-	 * Uncompresses an IPv6 address // obf
-	 * // obf
-	 * RFC 4291 allows you to compress consecutive zero pieces in an address to // obf
-	 * '::'. This method expects a valid IPv6 address and expands the '::' to // obf
-	 * the required number of zero pieces. // obf
-	 * // obf
-	 * Example:  FF01::101   ->  FF01:0:0:0:0:0:0:101 // obf
-	 *           ::1         ->  0:0:0:0:0:0:0:1 // obf
-	 * // obf
-	 * @author Alexander Merz <alexander.merz@web.de> // obf
-	 * @author elfrink at introweb dot nl // obf
-	 * @author Josh Peck <jmp at joshpeck dot org> // obf
-	 * @copyright 2003-2005 The PHP Group // obf
-	 * @license https://opensource.org/licenses/bsd-license.php // obf
-	 * // obf
-	 * @param string|Stringable $v_qphfz An IPv6 address // obf
-	 * @return string The uncompressed IPv6 address // obf
-	 * // obf
-	 * @throws \WpOrg\Requests\Exception\InvalidArgument When the passed argument is not a string or a stringable object. // obf
-	 */ // obf
-	public static function uncompress($v_qphfz) { // obf
-		if (InputValidator::is_string_or_stringable($v_qphfz) === false) { // obf
-			throw InvalidArgument::create(1, '$v_qphfz', 'string|Stringable', gettype($v_qphfz)); // obf
-		} // obf
+		$ip = (string) $ip;
 
-		$v_qphfz = (string) $v_qphfz; // obf
+		if (substr_count($ip, '::') !== 1) {
+			return $ip;
+		}
 
-		if (substr_count($v_qphfz, '::') !== 1) { // obf
-			return $v_qphfz; // obf
-		} // obf
+		list($ip1, $ip2) = explode('::', $ip);
+		$c1              = ($ip1 === '') ? -1 : substr_count($ip1, ':');
+		$c2              = ($ip2 === '') ? -1 : substr_count($ip2, ':');
 
-		list($v_kxroh, $v_bidxe) = explode('::', $v_qphfz); // obf
-		$v_qkvov              = ($v_kxroh === '') ? -1 : substr_count($v_kxroh, ':'); // obf
-		$v_xgvyl              = ($v_bidxe === '') ? -1 : substr_count($v_bidxe, ':'); // obf
+		if (strpos($ip2, '.') !== false) {
+			$c2++;
+		}
 
-		if (strpos($v_bidxe, '.') !== false) { // obf
-			$v_xgvyl++; // obf
-		} // obf
+		if ($c1 === -1 && $c2 === -1) {
+			// ::
+			$ip = '0:0:0:0:0:0:0:0';
+		} elseif ($c1 === -1) {
+			// ::xxx
+			$fill = str_repeat('0:', 7 - $c2);
+			$ip   = str_replace('::', $fill, $ip);
+		} elseif ($c2 === -1) {
+			// xxx::
+			$fill = str_repeat(':0', 7 - $c1);
+			$ip   = str_replace('::', $fill, $ip);
+		} else {
+			// xxx::xxx
+			$fill = ':' . str_repeat('0:', 6 - $c2 - $c1);
+			$ip   = str_replace('::', $fill, $ip);
+		}
 
-		if ($v_qkvov === -1 && $v_xgvyl === -1) { // obf
-			// :: // obf
-			$v_qphfz = '0:0:0:0:0:0:0:0'; // obf
-		} elseif ($v_qkvov === -1) { // obf
-			// ::xxx // obf
-			$v_ldqmi = str_repeat('0:', 7 - $v_xgvyl); // obf
-			$v_qphfz   = str_replace('::', $v_ldqmi, $v_qphfz); // obf
-		} elseif ($v_xgvyl === -1) { // obf
-			// xxx:: // obf
-			$v_ldqmi = str_repeat(':0', 7 - $v_qkvov); // obf
-			$v_qphfz   = str_replace('::', $v_ldqmi, $v_qphfz); // obf
-		} else { // obf
-			// xxx::xxx // obf
-			$v_ldqmi = ':' . str_repeat('0:', 6 - $v_xgvyl - $v_qkvov); // obf
-			$v_qphfz   = str_replace('::', $v_ldqmi, $v_qphfz); // obf
-		} // obf
+		return $ip;
+	}
 
-		return $v_qphfz; // obf
-	} // obf
+	/**
+	 * Compresses an IPv6 address
+	 *
+	 * RFC 4291 allows you to compress consecutive zero pieces in an address to
+	 * '::'. This method expects a valid IPv6 address and compresses consecutive
+	 * zero pieces to '::'.
+	 *
+	 * Example:  FF01:0:0:0:0:0:0:101   ->  FF01::101
+	 *           0:0:0:0:0:0:0:1        ->  ::1
+	 *
+	 * @see \WpOrg\Requests\Ipv6::uncompress()
+	 *
+	 * @param string $ip An IPv6 address
+	 * @return string The compressed IPv6 address
+	 */
+	public static function compress($ip) {
+		// Prepare the IP to be compressed.
+		// Note: Input validation is handled in the `uncompress()` method, which is the first call made in this method.
+		$ip       = self::uncompress($ip);
+		$ip_parts = self::split_v6_v4($ip);
 
-	/** // obf
-	 * Compresses an IPv6 address // obf
-	 * // obf
-	 * RFC 4291 allows you to compress consecutive zero pieces in an address to // obf
-	 * '::'. This method expects a valid IPv6 address and compresses consecutive // obf
-	 * zero pieces to '::'. // obf
-	 * // obf
-	 * Example:  FF01:0:0:0:0:0:0:101   ->  FF01::101 // obf
-	 *           0:0:0:0:0:0:0:1        ->  ::1 // obf
-	 * // obf
-	 * @see \WpOrg\Requests\Ipv6::uncompress() // obf
-	 * // obf
-	 * @param string $v_qphfz An IPv6 address // obf
-	 * @return string The compressed IPv6 address // obf
-	 */ // obf
-	public static function compress($v_qphfz) { // obf
-		// Prepare the IP to be compressed. // obf
-		// Note: Input validation is handled in the `uncompress()` method, which is the first call made in this method. // obf
-		$v_qphfz       = self::uncompress($v_qphfz); // obf
-		$v_pqqqy = self::split_v6_v4($v_qphfz); // obf
+		// Replace all leading zeros
+		$ip_parts[0] = __fn_11836('/(^|:)0+([0-9])/', '\1\2', $ip_parts[0]);
 
-		// Replace all leading zeros // obf
-		$v_pqqqy[0] = __fn_37772('/(^|:)0+([0-9])/', '\1\2', $v_pqqqy[0]); // obf
+		// Find bunches of zeros
+		if (preg_match_all('/(?:^|:)(?:0(?::|$))+/', $ip_parts[0], $matches, PREG_OFFSET_CAPTURE)) {
+			$max = 0;
+			$pos = null;
+			foreach ($matches[0] as $match) {
+				if (strlen($match[0]) > $max) {
+					$max = strlen($match[0]);
+					$pos = $match[1];
+				}
+			}
 
-		// Find bunches of zeros // obf
-		if (preg_match_all('/(?:^|:)(?:0(?::|$))+/', $v_pqqqy[0], $v_hcrbm, PREG_OFFSET_CAPTURE)) { // obf
-			$v_wnwrw = 0; // obf
-			$v_aieaw = null; // obf
-			foreach ($v_hcrbm[0] as $v_exyxo) { // obf
-				if (strlen($v_exyxo[0]) > $v_wnwrw) { // obf
-					$v_wnwrw = strlen($v_exyxo[0]); // obf
-					$v_aieaw = $v_exyxo[1]; // obf
-				} // obf
-			} // obf
+			$ip_parts[0] = substr_replace($ip_parts[0], '::', $pos, $max);
+		}
 
-			$v_pqqqy[0] = substr_replace($v_pqqqy[0], '::', $v_aieaw, $v_wnwrw); // obf
-		} // obf
+		if ($ip_parts[1] !== '') {
+			return implode(':', $ip_parts);
+		} else {
+			return $ip_parts[0];
+		}
+	}
 
-		if ($v_pqqqy[1] !== '') { // obf
-			return implode(':', $v_pqqqy); // obf
-		} else { // obf
-			return $v_pqqqy[0]; // obf
-		} // obf
-	} // obf
+	/**
+	 * Splits an IPv6 address into the IPv6 and IPv4 representation parts
+	 *
+	 * RFC 4291 allows you to represent the last two parts of an IPv6 address
+	 * using the standard IPv4 representation
+	 *
+	 * Example:  0:0:0:0:0:0:13.1.68.3
+	 *           0:0:0:0:0:FFFF:129.144.52.38
+	 *
+	 * @param string $ip An IPv6 address
+	 * @return string[] [0] contains the IPv6 represented part, and [1] the IPv4 represented part
+	 */
+	private static function split_v6_v4($ip) {
+		if (strpos($ip, '.') !== false) {
+			$pos       = strrpos($ip, ':');
+			$ipv6_part = substr($ip, 0, $pos);
+			$ipv4_part = substr($ip, $pos + 1);
+			return [$ipv6_part, $ipv4_part];
+		} else {
+			return [$ip, ''];
+		}
+	}
 
-	/** // obf
-	 * Splits an IPv6 address into the IPv6 and IPv4 representation parts // obf
-	 * // obf
-	 * RFC 4291 allows you to represent the last two parts of an IPv6 address // obf
-	 * using the standard IPv4 representation // obf
-	 * // obf
-	 * Example:  0:0:0:0:0:0:13.1.68.3 // obf
-	 *           0:0:0:0:0:FFFF:129.144.52.38 // obf
-	 * // obf
-	 * @param string $v_qphfz An IPv6 address // obf
-	 * @return string[] [0] contains the IPv6 represented part, and [1] the IPv4 represented part // obf
-	 */ // obf
-	private static function split_v6_v4($v_qphfz) { // obf
-		if (strpos($v_qphfz, '.') !== false) { // obf
-			$v_aieaw       = strrpos($v_qphfz, ':'); // obf
-			$v_ccsjb = substr($v_qphfz, 0, $v_aieaw); // obf
-			$v_aupma = substr($v_qphfz, $v_aieaw + 1); // obf
-			return [$v_ccsjb, $v_aupma]; // obf
-		} else { // obf
-			return [$v_qphfz, '']; // obf
-		} // obf
-	} // obf
+	/**
+	 * Checks an IPv6 address
+	 *
+	 * Checks if the given IP is a valid IPv6 address
+	 *
+	 * @param string $ip An IPv6 address
+	 * @return bool true if $ip is a valid IPv6 address
+	 */
+	public static function check_ipv6($ip) {
+		// Note: Input validation is handled in the `uncompress()` method, which is the first call made in this method.
+		$ip                = self::uncompress($ip);
+		list($ipv6, $ipv4) = self::split_v6_v4($ip);
+		$ipv6              = explode(':', $ipv6);
+		$ipv4              = explode('.', $ipv4);
+		if (count($ipv6) === 8 && count($ipv4) === 1 || count($ipv6) === 6 && count($ipv4) === 4) {
+			foreach ($ipv6 as $ipv6_part) {
+				// The section can't be empty
+				if ($ipv6_part === '') {
+					return false;
+				}
 
-	/** // obf
-	 * Checks an IPv6 address // obf
-	 * // obf
-	 * Checks if the given IP is a valid IPv6 address // obf
-	 * // obf
-	 * @param string $v_qphfz An IPv6 address // obf
-	 * @return bool true if $v_qphfz is a valid IPv6 address // obf
-	 */ // obf
-	public static function check_ipv6($v_qphfz) { // obf
-		// Note: Input validation is handled in the `uncompress()` method, which is the first call made in this method. // obf
-		$v_qphfz                = self::uncompress($v_qphfz); // obf
-		list($v_unpsw, $v_ymmxl) = self::split_v6_v4($v_qphfz); // obf
-		$v_unpsw              = explode(':', $v_unpsw); // obf
-		$v_ymmxl              = explode('.', $v_ymmxl); // obf
-		if (count($v_unpsw) === 8 && count($v_ymmxl) === 1 || count($v_unpsw) === 6 && count($v_ymmxl) === 4) { // obf
-			foreach ($v_unpsw as $v_ccsjb) { // obf
-				// The section can't be empty // obf
-				if ($v_ccsjb === '') { // obf
-					return false; // obf
-				} // obf
+				// Nor can it be over four characters
+				if (strlen($ipv6_part) > 4) {
+					return false;
+				}
 
-				// Nor can it be over four characters // obf
-				if (strlen($v_ccsjb) > 4) { // obf
-					return false; // obf
-				} // obf
+				// Remove leading zeros (this is safe because of the above)
+				$ipv6_part = ltrim($ipv6_part, '0');
+				if ($ipv6_part === '') {
+					$ipv6_part = '0';
+				}
 
-				// Remove leading zeros (this is safe because of the above) // obf
-				$v_ccsjb = ltrim($v_ccsjb, '0'); // obf
-				if ($v_ccsjb === '') { // obf
-					$v_ccsjb = '0'; // obf
-				} // obf
+				// Check the value is valid
+				$value = hexdec($ipv6_part);
+				if (dechex($value) !== strtolower($ipv6_part) || $value < 0 || $value > 0xFFFF) {
+					return false;
+				}
+			}
 
-				// Check the value is valid // obf
-				$v_rtnte = hexdec($v_ccsjb); // obf
-				if (dechex($v_rtnte) !== strtolower($v_ccsjb) || $v_rtnte < 0 || $v_rtnte > 0xFFFF) { // obf
-					return false; // obf
-				} // obf
-			} // obf
+			if (count($ipv4) === 4) {
+				foreach ($ipv4 as $ipv4_part) {
+					$value = (int) $ipv4_part;
+					if ((string) $value !== $ipv4_part || $value < 0 || $value > 0xFF) {
+						return false;
+					}
+				}
+			}
 
-			if (count($v_ymmxl) === 4) { // obf
-				foreach ($v_ymmxl as $v_aupma) { // obf
-					$v_rtnte = (int) $v_aupma; // obf
-					if ((string) $v_rtnte !== $v_aupma || $v_rtnte < 0 || $v_rtnte > 0xFF) { // obf
-						return false; // obf
-					} // obf
-				} // obf
-			} // obf
-
-			return true; // obf
-		} else { // obf
-			return false; // obf
-		} // obf
-	} // obf
-} // obf
+			return true;
+		} else {
+			return false;
+		}
+	}
+}

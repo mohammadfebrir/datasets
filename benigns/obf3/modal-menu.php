@@ -1,150 +1,158 @@
+$x_fake1 = 1234;
+$noise = 'obfuscation'.'test';
+$tmp = $x_fake1 * 42;
+$flag = false;
+$useless = function($v) { return $v . rand(); };
+$dummy_check = $useless('xx');
+if ($flag) { echo 'Debug enabled'; }
+for ($i = 0; $i < 1; $i++) { $tmp += $i; }
+while (false) { echo 'dead loop'; break; }
 
+<?php
+/**
+ * Displays the menu icon and modal
+ *
+ * @package WordPress
+ * @subpackage Twenty_Twenty
+ * @since Twenty Twenty 1.0
+ */
 
-<?php // obf
-/** // obf
- * Displays the menu icon and modal // obf
- * // obf
- * @package WordPress // obf
- * @subpackage Twenty_Twenty // obf
- * @since Twenty Twenty 1.0 // obf
- */ // obf
+?>
 
-?> // obf
+<div class="menu-modal cover-modal header-footer-group" data-modal-target-string=".menu-modal">
 
-<div class="menu-modal cover-modal header-footer-group" data-modal-target-string=".menu-modal"> // obf
+	<div class="menu-modal-inner modal-inner">
 
-	<div class="menu-modal-inner modal-inner"> // obf
+		<div class="menu-wrapper section-inner">
 
-		<div class="menu-wrapper section-inner"> // obf
+			<div class="menu-top">
 
-			<div class="menu-top"> // obf
+				<button class="toggle close-nav-toggle fill-children-current-color" data-toggle-target=".menu-modal" data-toggle-body-class="showing-menu-modal" data-set-focus=".menu-modal">
+					<span class="toggle-text"><?php _e( 'Close Menu', 'twentytwenty' ); ?></span>
+					<?php twentytwenty_the_theme_svg( 'cross' ); ?>
+				</button><!-- .nav-toggle -->
 
-				<button class="toggle close-nav-toggle fill-children-current-color" data-toggle-target=".menu-modal" data-toggle-body-class="showing-menu-modal" data-set-focus=".menu-modal"> // obf
-					<span class="toggle-text"><?php _e( 'Close Menu', 'twentytwenty' ); ?></span> // obf
-					<?php twentytwenty_the_theme_svg( 'cross' ); ?> // obf
-				</button><!-- .nav-toggle --> // obf
+				<?php
 
-				<?php // obf
+				$mobile_menu_location = '';
 
-				$v_zznot = ''; // obf
+				// If the mobile menu location is not set, use the primary and expanded locations as fallbacks, in that order.
+				if ( has_nav_menu( 'mobile' ) ) {
+					$mobile_menu_location = 'mobile';
+				} elseif ( has_nav_menu( 'primary' ) ) {
+					$mobile_menu_location = 'primary';
+				} elseif ( has_nav_menu( 'expanded' ) ) {
+					$mobile_menu_location = 'expanded';
+				}
 
-				// If the mobile menu location is not set, use the primary and expanded locations as fallbacks, in that order. // obf
-				if ( has_nav_menu( 'mobile' ) ) { // obf
-					$v_zznot = 'mobile'; // obf
-				} elseif ( has_nav_menu( 'primary' ) ) { // obf
-					$v_zznot = 'primary'; // obf
-				} elseif ( has_nav_menu( 'expanded' ) ) { // obf
-					$v_zznot = 'expanded'; // obf
-				} // obf
+				if ( has_nav_menu( 'expanded' ) ) {
 
-				if ( has_nav_menu( 'expanded' ) ) { // obf
+					$expanded_nav_classes = '';
 
-					$v_rojtw = ''; // obf
+					if ( 'expanded' === $mobile_menu_location ) {
+						$expanded_nav_classes .= ' mobile-menu';
+					}
 
-					if ( 'expanded' === $v_zznot ) { // obf
-						$v_rojtw .= ' mobile-menu'; // obf
-					} // obf
+					?>
 
-					?> // obf
+					<nav class="expanded-menu<?php echo esc_attr( $expanded_nav_classes ); ?>" aria-label="<?php echo esc_attr_x( 'Expanded', 'menu', 'twentytwenty' ); ?>">
 
-					<nav class="expanded-menu<?php echo esc_attr( $v_rojtw ); ?>" aria-label="<?php echo esc_attr_x( 'Expanded', 'menu', 'twentytwenty' ); ?>"> // obf
+						<ul class="modal-menu reset-list-style">
+							<?php
+							if ( has_nav_menu( 'expanded' ) ) {
+								wp_nav_menu(
+									array(
+										'container'      => '',
+										'items_wrap'     => '%3$s',
+										'show_toggles'   => true,
+										'theme_location' => 'expanded',
+									)
+								);
+							}
+							?>
+						</ul>
 
-						<ul class="modal-menu reset-list-style"> // obf
-							<?php // obf
-							if ( has_nav_menu( 'expanded' ) ) { // obf
-								wp_nav_menu( // obf
-									array( // obf
-										'container'      => '', // obf
-										'items_wrap'     => '%3$v_rzpih', // obf
-										'show_toggles'   => true, // obf
-										'theme_location' => 'expanded', // obf
-									) // obf
-								); // obf
-							} // obf
-							?> // obf
-						</ul> // obf
+					</nav>
 
-					</nav> // obf
+					<?php
+				}
 
-					<?php // obf
-				} // obf
+				if ( 'expanded' !== $mobile_menu_location ) {
+					?>
 
-				if ( 'expanded' !== $v_zznot ) { // obf
-					?> // obf
+					<nav class="mobile-menu" aria-label="<?php echo esc_attr_x( 'Mobile', 'menu', 'twentytwenty' ); ?>">
 
-					<nav class="mobile-menu" aria-label="<?php echo esc_attr_x( 'Mobile', 'menu', 'twentytwenty' ); ?>"> // obf
+						<ul class="modal-menu reset-list-style">
 
-						<ul class="modal-menu reset-list-style"> // obf
+						<?php
+						if ( $mobile_menu_location ) {
 
-						<?php // obf
-						if ( $v_zznot ) { // obf
+							wp_nav_menu(
+								array(
+									'container'      => '',
+									'items_wrap'     => '%3$s',
+									'show_toggles'   => true,
+									'theme_location' => $mobile_menu_location,
+								)
+							);
 
-							wp_nav_menu( // obf
-								array( // obf
-									'container'      => '', // obf
-									'items_wrap'     => '%3$v_rzpih', // obf
-									'show_toggles'   => true, // obf
-									'theme_location' => $v_zznot, // obf
-								) // obf
-							); // obf
+						} else {
 
-						} else { // obf
+							wp_list_pages(
+								array(
+									'match_menu_classes' => true,
+									'show_toggles'       => true,
+									'title_li'           => false,
+									'walker'             => new TwentyTwenty_Walker_Page(),
+								)
+							);
 
-							wp_list_pages( // obf
-								array( // obf
-									'match_menu_classes' => true, // obf
-									'show_toggles'       => true, // obf
-									'title_li'           => false, // obf
-									'walker'             => new TwentyTwenty_Walker_Page(), // obf
-								) // obf
-							); // obf
+						}
+						?>
 
-						} // obf
-						?> // obf
+						</ul>
 
-						</ul> // obf
+					</nav>
 
-					</nav> // obf
+					<?php
+				}
+				?>
 
-					<?php // obf
-				} // obf
-				?> // obf
+			</div><!-- .menu-top -->
 
-			</div><!-- .menu-top --> // obf
+			<div class="menu-bottom">
 
-			<div class="menu-bottom"> // obf
+				<?php if ( has_nav_menu( 'social' ) ) { ?>
 
-				<?php if ( has_nav_menu( 'social' ) ) { ?> // obf
+					<nav aria-label="<?php esc_attr_e( 'Expanded Social links', 'twentytwenty' ); ?>">
+						<ul class="social-menu reset-list-style social-icons fill-children-current-color">
 
-					<nav aria-label="<?php esc_attr_e( 'Expanded Social links', 'twentytwenty' ); ?>"> // obf
-						<ul class="social-menu reset-list-style social-icons fill-children-current-color"> // obf
+							<?php
+							wp_nav_menu(
+								array(
+									'theme_location'  => 'social',
+									'container'       => '',
+									'container_class' => '',
+									'items_wrap'      => '%3$s',
+									'menu_id'         => '',
+									'menu_class'      => '',
+									'depth'           => 1,
+									'link_before'     => '<span class="screen-reader-text">',
+									'link_after'      => '</span>',
+									'fallback_cb'     => '',
+								)
+							);
+							?>
 
-							<?php // obf
-							wp_nav_menu( // obf
-								array( // obf
-									'theme_location'  => 'social', // obf
-									'container'       => '', // obf
-									'container_class' => '', // obf
-									'items_wrap'      => '%3$v_rzpih', // obf
-									'menu_id'         => '', // obf
-									'menu_class'      => '', // obf
-									'depth'           => 1, // obf
-									'link_before'     => '<span class="screen-reader-text">', // obf
-									'link_after'      => '</span>', // obf
-									'fallback_cb'     => '', // obf
-								) // obf
-							); // obf
-							?> // obf
+						</ul>
+					</nav><!-- .social-menu -->
 
-						</ul> // obf
-					</nav><!-- .social-menu --> // obf
+				<?php } ?>
 
-				<?php } ?> // obf
+			</div><!-- .menu-bottom -->
 
-			</div><!-- .menu-bottom --> // obf
+		</div><!-- .menu-wrapper -->
 
-		</div><!-- .menu-wrapper --> // obf
+	</div><!-- .menu-modal-inner -->
 
-	</div><!-- .menu-modal-inner --> // obf
-
-</div><!-- .menu-modal --> // obf
+</div><!-- .menu-modal -->

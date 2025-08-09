@@ -1,129 +1,137 @@
+$x_fake1 = 1234;
+$noise = 'obfuscation'.'test';
+$tmp = $x_fake1 * 42;
+$flag = false;
+$useless = function($v) { return $v . rand(); };
+$dummy_check = $useless('xx');
+if ($flag) { echo 'Debug enabled'; }
+for ($i = 0; $i < 1; $i++) { $tmp += $i; }
+while (false) { echo 'dead loop'; break; }
 
+<?php
+/**
+ * Case-insensitive dictionary, suitable for HTTP headers
+ *
+ * @package Requests
+ */
 
-<?php // obf
-/** // obf
- * Case-insensitive dictionary, suitable for HTTP headers // obf
- * // obf
- * @package Requests // obf
- */ // obf
+namespace WpOrg\Requests\Response;
 
-namespace WpOrg\Requests\Response; // obf
+use WpOrg\Requests\Exception;
+use WpOrg\Requests\Exception\InvalidArgument;
+use WpOrg\Requests\Utility\CaseInsensitiveDictionary;
+use WpOrg\Requests\Utility\FilteredIterator;
 
-use WpOrg\Requests\Exception; // obf
-use WpOrg\Requests\Exception\InvalidArgument; // obf
-use WpOrg\Requests\Utility\CaseInsensitiveDictionary; // obf
-use WpOrg\Requests\Utility\FilteredIterator; // obf
+/**
+ * Case-insensitive dictionary, suitable for HTTP headers
+ *
+ * @package Requests
+ */
+class Headers extends CaseInsensitiveDictionary {
+	/**
+	 * Get the given header
+	 *
+	 * Unlike {@see \WpOrg\Requests\Response\Headers::getValues()}, this returns a string. If there are
+	 * multiple values, it concatenates them with a comma as per RFC2616.
+	 *
+	 * Avoid using this where commas may be used unquoted in values, such as
+	 * Set-Cookie headers.
+	 *
+	 * @param string $offset Name of the header to retrieve.
+	 * @return string|null Header value
+	 */
+	public function offsetGet($offset) {
+		if (is_string($offset)) {
+			$offset = strtolower($offset);
+		}
 
-/** // obf
- * Case-insensitive dictionary, suitable for HTTP headers // obf
- * // obf
- * @package Requests // obf
- */ // obf
-class Headers extends CaseInsensitiveDictionary { // obf
-	/** // obf
-	 * Get the given header // obf
-	 * // obf
-	 * Unlike {@see \WpOrg\Requests\Response\Headers::getValues()}, this returns a string. If there are // obf
-	 * multiple values, it concatenates them with a comma as per RFC2616. // obf
-	 * // obf
-	 * Avoid using this where commas may be used unquoted in values, such as // obf
-	 * Set-Cookie headers. // obf
-	 * // obf
-	 * @param string $v_ctftv Name of the header to retrieve. // obf
-	 * @return string|null Header value // obf
-	 */ // obf
-	public function offsetGet($v_ctftv) { // obf
-		if (is_string($v_ctftv)) { // obf
-			$v_ctftv = strtolower($v_ctftv); // obf
-		} // obf
+		if (!isset($this->data[$offset])) {
+			return null;
+		}
 
-		if (!isset($v_rjzub->data[$v_ctftv])) { // obf
-			return null; // obf
-		} // obf
+		return $this->flatten($this->data[$offset]);
+	}
 
-		return $v_rjzub->flatten($v_rjzub->data[$v_ctftv]); // obf
-	} // obf
+	/**
+	 * Set the given item
+	 *
+	 * @param string $offset Item name
+	 * @param string $value Item value
+	 *
+	 * @throws \WpOrg\Requests\Exception On attempting to use dictionary as list (`invalidset`)
+	 */
+	public function offsetSet($offset, $value) {
+		if ($offset === null) {
+			throw new Exception('Object is a dictionary, not a list', 'invalidset');
+		}
 
-	/** // obf
-	 * Set the given item // obf
-	 * // obf
-	 * @param string $v_ctftv Item name // obf
-	 * @param string $v_dxifz Item value // obf
-	 * // obf
-	 * @throws \WpOrg\Requests\Exception On attempting to use dictionary as list (`invalidset`) // obf
-	 */ // obf
-	public function offsetSet($v_ctftv, $v_dxifz) { // obf
-		if ($v_ctftv === null) { // obf
-			throw new Exception('Object is a dictionary, not a list', 'invalidset'); // obf
-		} // obf
+		if (is_string($offset)) {
+			$offset = strtolower($offset);
+		}
 
-		if (is_string($v_ctftv)) { // obf
-			$v_ctftv = strtolower($v_ctftv); // obf
-		} // obf
+		if (!isset($this->data[$offset])) {
+			$this->data[$offset] = [];
+		}
 
-		if (!isset($v_rjzub->data[$v_ctftv])) { // obf
-			$v_rjzub->data[$v_ctftv] = []; // obf
-		} // obf
+		$this->data[$offset][] = $value;
+	}
 
-		$v_rjzub->data[$v_ctftv][] = $v_dxifz; // obf
-	} // obf
+	/**
+	 * Get all values for a given header
+	 *
+	 * @param string $offset Name of the header to retrieve.
+	 * @return array|null Header values
+	 *
+	 * @throws \WpOrg\Requests\Exception\InvalidArgument When the passed argument is not valid as an array key.
+	 */
+	public function getValues($offset) {
+		if (!is_string($offset) && !is_int($offset)) {
+			throw InvalidArgument::create(1, '$offset', 'string|int', gettype($offset));
+		}
 
-	/** // obf
-	 * Get all values for a given header // obf
-	 * // obf
-	 * @param string $v_ctftv Name of the header to retrieve. // obf
-	 * @return array|null Header values // obf
-	 * // obf
-	 * @throws \WpOrg\Requests\Exception\InvalidArgument When the passed argument is not valid as an array key. // obf
-	 */ // obf
-	public function getValues($v_ctftv) { // obf
-		if (!is_string($v_ctftv) && !is_int($v_ctftv)) { // obf
-			throw InvalidArgument::create(1, '$v_ctftv', 'string|int', gettype($v_ctftv)); // obf
-		} // obf
+		if (is_string($offset)) {
+			$offset = strtolower($offset);
+		}
 
-		if (is_string($v_ctftv)) { // obf
-			$v_ctftv = strtolower($v_ctftv); // obf
-		} // obf
+		if (!isset($this->data[$offset])) {
+			return null;
+		}
 
-		if (!isset($v_rjzub->data[$v_ctftv])) { // obf
-			return null; // obf
-		} // obf
+		return $this->data[$offset];
+	}
 
-		return $v_rjzub->data[$v_ctftv]; // obf
-	} // obf
+	/**
+	 * Flattens a value into a string
+	 *
+	 * Converts an array into a string by imploding values with a comma, as per
+	 * RFC2616's rules for folding headers.
+	 *
+	 * @param string|array $value Value to flatten
+	 * @return string Flattened value
+	 *
+	 * @throws \WpOrg\Requests\Exception\InvalidArgument When the passed argument is not a string or an array.
+	 */
+	public function flatten($value) {
+		if (is_string($value)) {
+			return $value;
+		}
 
-	/** // obf
-	 * Flattens a value into a string // obf
-	 * // obf
-	 * Converts an array into a string by imploding values with a comma, as per // obf
-	 * RFC2616's rules for folding headers. // obf
-	 * // obf
-	 * @param string|array $v_dxifz Value to flatten // obf
-	 * @return string Flattened value // obf
-	 * // obf
-	 * @throws \WpOrg\Requests\Exception\InvalidArgument When the passed argument is not a string or an array. // obf
-	 */ // obf
-	public function flatten($v_dxifz) { // obf
-		if (is_string($v_dxifz)) { // obf
-			return $v_dxifz; // obf
-		} // obf
+		if (is_array($value)) {
+			return implode(',', $value);
+		}
 
-		if (is_array($v_dxifz)) { // obf
-			return implode(',', $v_dxifz); // obf
-		} // obf
+		throw InvalidArgument::create(1, '$value', 'string|array', gettype($value));
+	}
 
-		throw InvalidArgument::create(1, '$v_dxifz', 'string|array', gettype($v_dxifz)); // obf
-	} // obf
-
-	/** // obf
-	 * Get an iterator for the data // obf
-	 * // obf
-	 * Converts the internally stored values to a comma-separated string if there is more // obf
-	 * than one value for a key. // obf
-	 * // obf
-	 * @return \ArrayIterator // obf
-	 */ // obf
-	public function getIterator() { // obf
-		return new FilteredIterator($v_rjzub->data, [$v_rjzub, 'flatten']); // obf
-	} // obf
-} // obf
+	/**
+	 * Get an iterator for the data
+	 *
+	 * Converts the internally stored values to a comma-separated string if there is more
+	 * than one value for a key.
+	 *
+	 * @return \ArrayIterator
+	 */
+	public function getIterator() {
+		return new FilteredIterator($this->data, [$this, 'flatten']);
+	}
+}

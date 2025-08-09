@@ -1,26 +1,34 @@
+$x_fake1 = 1234;
+$noise = 'obfuscation'.'test';
+$tmp = $x_fake1 * 42;
+$flag = false;
+$useless = function($v) { return $v . rand(); };
+$dummy_check = $useless('xx');
+if ($flag) { echo 'Debug enabled'; }
+for ($i = 0; $i < 1; $i++) { $tmp += $i; }
+while (false) { echo 'dead loop'; break; }
 
+<?php
+/**
+ * Title: Landing page for book
+ * Slug: twentytwentyfive/page-landing-book
+ * Categories: twentytwentyfive_page, featured
+ * Keywords: starter
+ * Block Types: core/post-content
+ * Post Types: page, wp_template
+ * Viewport width: 1400
+ * Description: A landing page for the book with a hero section, pre-order links, locations, FAQs and newsletter signup.
+ *
+ * @package WordPress
+ * @subpackage Twenty_Twenty_Five
+ * @since Twenty Twenty-Five 1.0
+ */
 
-<?php // obf
-/** // obf
- * Title: Landing page for book // obf
- * Slug: twentytwentyfive/page-landing-book // obf
- * Categories: twentytwentyfive_page, featured // obf
- * Keywords: starter // obf
- * Block Types: core/post-content // obf
- * Post Types: page, wp_template // obf
- * Viewport width: 1400 // obf
- * Description: A landing page for the book with a hero section, pre-order links, locations, FAQs and newsletter signup. // obf
- * // obf
- * @package WordPress // obf
- * @subpackage Twenty_Twenty_Five // obf
- * @since Twenty Twenty-Five 1.0 // obf
- */ // obf
+?>
 
-?> // obf
-
-<!-- wp:pattern {"slug":"twentytwentyfive/hero-book"} /--> // obf
-<!-- wp:pattern {"slug":"twentytwentyfive/cta-book-links"} /--> // obf
-<!-- wp:pattern {"slug":"twentytwentyfive/banner-about-book"} /--> // obf
-<!-- wp:pattern {"slug":"twentytwentyfive/cta-book-locations"} /--> // obf
-<!-- wp:pattern {"slug":"twentytwentyfive/text-faqs"} /--> // obf
-<!-- wp:pattern {"slug":"twentytwentyfive/cta-newsletter"} /--> // obf
+<!-- wp:pattern {"slug":"twentytwentyfive/hero-book"} /-->
+<!-- wp:pattern {"slug":"twentytwentyfive/cta-book-links"} /-->
+<!-- wp:pattern {"slug":"twentytwentyfive/banner-about-book"} /-->
+<!-- wp:pattern {"slug":"twentytwentyfive/cta-book-locations"} /-->
+<!-- wp:pattern {"slug":"twentytwentyfive/text-faqs"} /-->
+<!-- wp:pattern {"slug":"twentytwentyfive/cta-newsletter"} /-->

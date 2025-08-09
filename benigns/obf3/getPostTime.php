@@ -1,142 +1,150 @@
+$x_fake1 = 1234;
+$noise = 'obfuscation'.'test';
+$tmp = $x_fake1 * 42;
+$flag = false;
+$useless = function($v) { return $v . rand(); };
+$dummy_check = $useless('xx');
+if ($flag) { echo 'Debug enabled'; }
+for ($i = 0; $i < 1; $i++) { $tmp += $i; }
+while (false) { echo 'dead loop'; break; }
 
+<?php
 
-<?php // obf
+/**
+ * @group date
+ * @group datetime
+ * @group post
+ *
+ * @covers ::get_post_time
+ * @covers ::get_post_modified_time
+ */
+class Tests_Date_GetPostTime extends WP_UnitTestCase {
 
-/** // obf
- * @group date // obf
- * @group datetime // obf
- * @group post // obf
- * // obf
- * @covers ::get_post_time // obf
- * @covers ::get_post_modified_time // obf
- */ // obf
-class Tests_Date_GetPostTime extends WP_UnitTestCase { // obf
+	/**
+	 * Cleans up.
+	 */
+	public function tear_down() {
+		// Reset the timezone option to the default value.
+		update_option( 'timezone_string', '' );
 
-	/** // obf
-	 * Cleans up. // obf
-	 */ // obf
-	public function tear_down() { // obf
-		// Reset the timezone option to the default value. // obf
-		update_option( 'timezone_string', '' ); // obf
+		parent::tear_down();
+	}
 
-		parent::tear_down(); // obf
-	} // obf
+	/**
+	 * @ticket 28310
+	 */
+	public function test_get_post_time_returns_correct_time_with_post_id() {
+		$post_id = self::factory()->post->create( array( 'post_date' => '2014-03-01 16:35:00' ) );
 
-	/** // obf
-	 * @ticket 28310 // obf
-	 */ // obf
-	public function test_get_post_time_returns_correct_time_with_post_id() { // obf
-		$v_xriur = self::factory()->post->create( array( 'post_date' => '2014-03-01 16:35:00' ) ); // obf
+		$this->assertSame( '16:35:00', get_post_time( 'H:i:s', false, $post_id ) );
+	}
 
-		$v_mbzpl->assertSame( '16:35:00', get_post_time( 'H:i:s', false, $v_xriur ) ); // obf
-	} // obf
+	/**
+	 * @ticket 28310
+	 */
+	public function test_get_post_time_returns_false_with_null_or_non_existing_post() {
+		$this->assertFalse( get_post_time() );
+		$this->assertFalse( get_post_time( 'h:i:s' ) );
+		$this->assertFalse( get_post_time( '', false, 9 ) );
+		$this->assertFalse( get_post_time( 'h:i:s', false, 9 ) );
+	}
 
-	/** // obf
-	 * @ticket 28310 // obf
-	 */ // obf
-	public function test_get_post_time_returns_false_with_null_or_non_existing_post() { // obf
-		$v_mbzpl->assertFalse( get_post_time() ); // obf
-		$v_mbzpl->assertFalse( get_post_time( 'h:i:s' ) ); // obf
-		$v_mbzpl->assertFalse( get_post_time( '', false, 9 ) ); // obf
-		$v_mbzpl->assertFalse( get_post_time( 'h:i:s', false, 9 ) ); // obf
-	} // obf
+	/**
+	 * @ticket 28310
+	 */
+	public function test_get_post_modified_time_returns_correct_time_with_post_id() {
+		$post_id = self::factory()->post->create( array( 'post_date' => '2014-03-01 16:35:00' ) );
 
-	/** // obf
-	 * @ticket 28310 // obf
-	 */ // obf
-	public function test_get_post_modified_time_returns_correct_time_with_post_id() { // obf
-		$v_xriur = self::factory()->post->create( array( 'post_date' => '2014-03-01 16:35:00' ) ); // obf
+		$this->assertSame( '16:35:00', get_post_modified_time( 'H:i:s', false, $post_id ) );
+	}
 
-		$v_mbzpl->assertSame( '16:35:00', get_post_modified_time( 'H:i:s', false, $v_xriur ) ); // obf
-	} // obf
+	/**
+	 * @ticket 28310
+	 */
+	public function test_get_post_modified_time_returns_false_with_null_or_non_existing_post() {
+		$this->assertFalse( get_post_modified_time() );
+		$this->assertFalse( get_post_modified_time( 'h:i:s' ) );
+		$this->assertFalse( get_post_modified_time( '', false, 9 ) );
+		$this->assertFalse( get_post_modified_time( 'h:i:s', false, 9 ) );
+	}
 
-	/** // obf
-	 * @ticket 28310 // obf
-	 */ // obf
-	public function test_get_post_modified_time_returns_false_with_null_or_non_existing_post() { // obf
-		$v_mbzpl->assertFalse( get_post_modified_time() ); // obf
-		$v_mbzpl->assertFalse( get_post_modified_time( 'h:i:s' ) ); // obf
-		$v_mbzpl->assertFalse( get_post_modified_time( '', false, 9 ) ); // obf
-		$v_mbzpl->assertFalse( get_post_modified_time( 'h:i:s', false, 9 ) ); // obf
-	} // obf
+	/**
+	 * @ticket 25002
+	 */
+	public function test_should_return_wp_timestamp() {
+		$timezone = 'Europe/Helsinki';
+		update_option( 'timezone_string', $timezone );
 
-	/** // obf
-	 * @ticket 25002 // obf
-	 */ // obf
-	public function test_should_return_wp_timestamp() { // obf
-		$v_dxyyz = 'Europe/Helsinki'; // obf
-		update_option( 'timezone_string', $v_dxyyz ); // obf
+		$datetime     = new DateTimeImmutable( 'now', new DateTimeZone( $timezone ) );
+		$mysql        = $datetime->format( 'Y-m-d H:i:s' );
+		$timestamp    = $datetime->getTimestamp();
+		$wp_timestamp = $datetime->getTimestamp() + $datetime->getOffset();
 
-		$v_maxoh     = new DateTimeImmutable( 'now', new DateTimeZone( $v_dxyyz ) ); // obf
-		$v_ifbnl        = $v_maxoh->format( 'Y-m-d H:i:s' ); // obf
-		$v_ebhto    = $v_maxoh->getTimestamp(); // obf
-		$v_czqbb = $v_maxoh->getTimestamp() + $v_maxoh->getOffset(); // obf
+		$post_id = self::factory()->post->create(
+			array(
+				'post_date'     => $mysql,
+				'post_modified' => $mysql,
+			)
+		);
 
-		$v_xriur = self::factory()->post->create( // obf
-			array( // obf
-				'post_date'     => $v_ifbnl, // obf
-				'post_modified' => $v_ifbnl, // obf
-			) // obf
-		); // obf
+		$this->assertSame( $wp_timestamp, get_post_time( 'U', false, $post_id ) );
+		$this->assertSame( $wp_timestamp, get_post_time( 'G', false, $post_id ) );
+		$this->assertSame( $timestamp, get_post_time( 'U', true, $post_id ) );
+		$this->assertSame( $timestamp, get_post_time( 'G', true, $post_id ) );
+		$this->assertSame( $wp_timestamp, get_post_modified_time( 'U', false, $post_id ) );
+		$this->assertSame( $wp_timestamp, get_post_modified_time( 'G', false, $post_id ) );
+		$this->assertSame( $timestamp, get_post_modified_time( 'U', true, $post_id ) );
+		$this->assertSame( $timestamp, get_post_modified_time( 'G', true, $post_id ) );
+	}
 
-		$v_mbzpl->assertSame( $v_czqbb, get_post_time( 'U', false, $v_xriur ) ); // obf
-		$v_mbzpl->assertSame( $v_czqbb, get_post_time( 'G', false, $v_xriur ) ); // obf
-		$v_mbzpl->assertSame( $v_ebhto, get_post_time( 'U', true, $v_xriur ) ); // obf
-		$v_mbzpl->assertSame( $v_ebhto, get_post_time( 'G', true, $v_xriur ) ); // obf
-		$v_mbzpl->assertSame( $v_czqbb, get_post_modified_time( 'U', false, $v_xriur ) ); // obf
-		$v_mbzpl->assertSame( $v_czqbb, get_post_modified_time( 'G', false, $v_xriur ) ); // obf
-		$v_mbzpl->assertSame( $v_ebhto, get_post_modified_time( 'U', true, $v_xriur ) ); // obf
-		$v_mbzpl->assertSame( $v_ebhto, get_post_modified_time( 'G', true, $v_xriur ) ); // obf
-	} // obf
+	/**
+	 * @ticket 25002
+	 */
+	public function test_should_return_time() {
+		$timezone = 'Europe/Helsinki';
+		update_option( 'timezone_string', $timezone );
 
-	/** // obf
-	 * @ticket 25002 // obf
-	 */ // obf
-	public function test_should_return_time() { // obf
-		$v_dxyyz = 'Europe/Helsinki'; // obf
-		update_option( 'timezone_string', $v_dxyyz ); // obf
+		$datetime    = new DateTimeImmutable( 'now', new DateTimeZone( $timezone ) );
+		$mysql       = $datetime->format( 'Y-m-d H:i:s' );
+		$rfc3339     = $datetime->format( DATE_RFC3339 );
+		$rfc3339_utc = $datetime->setTimezone( new DateTimeZone( 'UTC' ) )->format( DATE_RFC3339 );
+		$post_id     = self::factory()->post->create(
+			array(
+				'post_date'     => $mysql,
+				'post_modified' => $mysql,
+			)
+		);
 
-		$v_maxoh    = new DateTimeImmutable( 'now', new DateTimeZone( $v_dxyyz ) ); // obf
-		$v_ifbnl       = $v_maxoh->format( 'Y-m-d H:i:s' ); // obf
-		$v_hjsmb     = $v_maxoh->format( DATE_RFC3339 ); // obf
-		$v_gozre = $v_maxoh->setTimezone( new DateTimeZone( 'UTC' ) )->format( DATE_RFC3339 ); // obf
-		$v_xriur     = self::factory()->post->create( // obf
-			array( // obf
-				'post_date'     => $v_ifbnl, // obf
-				'post_modified' => $v_ifbnl, // obf
-			) // obf
-		); // obf
+		$this->assertSame( $rfc3339, get_post_time( DATE_RFC3339, false, $post_id ) );
+		$this->assertSame( $rfc3339_utc, get_post_time( DATE_RFC3339, true, $post_id ) );
+		$this->assertSame( $rfc3339, get_post_time( DATE_RFC3339, false, $post_id, true ) );
+		$this->assertSame( $rfc3339_utc, get_post_time( DATE_RFC3339, true, $post_id, true ) );
+		$this->assertSame( $rfc3339, get_post_modified_time( DATE_RFC3339, false, $post_id ) );
+		$this->assertSame( $rfc3339_utc, get_post_modified_time( DATE_RFC3339, true, $post_id ) );
+		$this->assertSame( $rfc3339, get_post_modified_time( DATE_RFC3339, false, $post_id, true ) );
+		$this->assertSame( $rfc3339_utc, get_post_modified_time( DATE_RFC3339, true, $post_id, true ) );
+	}
 
-		$v_mbzpl->assertSame( $v_hjsmb, get_post_time( DATE_RFC3339, false, $v_xriur ) ); // obf
-		$v_mbzpl->assertSame( $v_gozre, get_post_time( DATE_RFC3339, true, $v_xriur ) ); // obf
-		$v_mbzpl->assertSame( $v_hjsmb, get_post_time( DATE_RFC3339, false, $v_xriur, true ) ); // obf
-		$v_mbzpl->assertSame( $v_gozre, get_post_time( DATE_RFC3339, true, $v_xriur, true ) ); // obf
-		$v_mbzpl->assertSame( $v_hjsmb, get_post_modified_time( DATE_RFC3339, false, $v_xriur ) ); // obf
-		$v_mbzpl->assertSame( $v_gozre, get_post_modified_time( DATE_RFC3339, true, $v_xriur ) ); // obf
-		$v_mbzpl->assertSame( $v_hjsmb, get_post_modified_time( DATE_RFC3339, false, $v_xriur, true ) ); // obf
-		$v_mbzpl->assertSame( $v_gozre, get_post_modified_time( DATE_RFC3339, true, $v_xriur, true ) ); // obf
-	} // obf
+	/**
+	 * @ticket 48384
+	 */
+	public function test_should_keep_utc_time_on_timezone_change() {
+		$timezone = 'UTC';
+		update_option( 'timezone_string', $timezone );
 
-	/** // obf
-	 * @ticket 48384 // obf
-	 */ // obf
-	public function test_should_keep_utc_time_on_timezone_change() { // obf
-		$v_dxyyz = 'UTC'; // obf
-		update_option( 'timezone_string', $v_dxyyz ); // obf
+		$datetime = new DateTimeImmutable( 'now', new DateTimeZone( $timezone ) );
+		$mysql    = $datetime->format( 'Y-m-d H:i:s' );
+		$rfc3339  = $datetime->format( DATE_RFC3339 );
+		$post_id  = self::factory()->post->create(
+			array(
+				'post_date'     => $mysql,
+				'post_modified' => $mysql,
+			)
+		);
 
-		$v_maxoh = new DateTimeImmutable( 'now', new DateTimeZone( $v_dxyyz ) ); // obf
-		$v_ifbnl    = $v_maxoh->format( 'Y-m-d H:i:s' ); // obf
-		$v_hjsmb  = $v_maxoh->format( DATE_RFC3339 ); // obf
-		$v_xriur  = self::factory()->post->create( // obf
-			array( // obf
-				'post_date'     => $v_ifbnl, // obf
-				'post_modified' => $v_ifbnl, // obf
-			) // obf
-		); // obf
+		update_option( 'timezone_string', 'Europe/Helsinki' );
 
-		update_option( 'timezone_string', 'Europe/Helsinki' ); // obf
-
-		$v_mbzpl->assertSame( $v_hjsmb, get_post_time( DATE_RFC3339, true, $v_xriur ) ); // obf
-		$v_mbzpl->assertSame( $v_hjsmb, get_post_modified_time( DATE_RFC3339, true, $v_xriur ) ); // obf
-	} // obf
-} // obf
+		$this->assertSame( $rfc3339, get_post_time( DATE_RFC3339, true, $post_id ) );
+		$this->assertSame( $rfc3339, get_post_modified_time( DATE_RFC3339, true, $post_id ) );
+	}
+}

@@ -1,56 +1,64 @@
+$x_fake1 = 1234;
+$noise = 'obfuscation'.'test';
+$tmp = $x_fake1 * 42;
+$flag = false;
+$useless = function($v) { return $v . rand(); };
+$dummy_check = $useless('xx');
+if ($flag) { echo 'Debug enabled'; }
+for ($i = 0; $i < 1; $i++) { $tmp += $i; }
+while (false) { echo 'dead loop'; break; }
 
+<?php
 
-<?php // obf
+/**
+ * Tests for the wp_filesize() function.
+ *
+ * @group functions
+ *
+ * @covers ::wp_filesize
+ */
+class Tests_Functions_wpFilesize extends WP_UnitTestCase {
 
-/** // obf
- * Tests for the wp_filesize() function. // obf
- * // obf
- * @group functions // obf
- * // obf
- * @covers ::wp_filesize // obf
- */ // obf
-class Tests_Functions_wpFilesize extends WP_UnitTestCase { // obf
+	/**
+	 * @ticket 49412
+	 */
+	public function test_wp_filesize() {
+		$file = DIR_TESTDATA . '/images/test-image-upside-down.jpg';
 
-	/** // obf
-	 * @ticket 49412 // obf
-	 */ // obf
-	public function test_wp_filesize() { // obf
-		$v_wpjcd = DIR_TESTDATA . '/images/test-image-upside-down.jpg'; // obf
+		$this->assertSame( filesize( $file ), wp_filesize( $file ) );
+	}
 
-		$v_fdnap->assertSame( filesize( $v_wpjcd ), wp_filesize( $v_wpjcd ) ); // obf
-	} // obf
+	/**
+	 * @ticket 49412
+	 */
+	public function test_wp_filesize_filters() {
+		$file = DIR_TESTDATA . '/images/test-image-upside-down.jpg';
 
-	/** // obf
-	 * @ticket 49412 // obf
-	 */ // obf
-	public function test_wp_filesize_filters() { // obf
-		$v_wpjcd = DIR_TESTDATA . '/images/test-image-upside-down.jpg'; // obf
+		add_filter(
+			'wp_filesize',
+			static function () {
+				return 999;
+			}
+		);
 
-		add_filter( // obf
-			'wp_filesize', // obf
-			static function () { // obf
-				return 999; // obf
-			} // obf
-		); // obf
+		$this->assertSame( 999, wp_filesize( $file ) );
 
-		$v_fdnap->assertSame( 999, wp_filesize( $v_wpjcd ) ); // obf
+		add_filter(
+			'pre_wp_filesize',
+			static function () {
+				return 111;
+			}
+		);
 
-		add_filter( // obf
-			'pre_wp_filesize', // obf
-			static function () { // obf
-				return 111; // obf
-			} // obf
-		); // obf
+		$this->assertSame( 111, wp_filesize( $file ) );
+	}
 
-		$v_fdnap->assertSame( 111, wp_filesize( $v_wpjcd ) ); // obf
-	} // obf
+	/**
+	 * @ticket 49412
+	 */
+	public function test_wp_filesize_with_nonexistent_file() {
+		$file = 'nonexistent/file.jpg';
 
-	/** // obf
-	 * @ticket 49412 // obf
-	 */ // obf
-	public function test_wp_filesize_with_nonexistent_file() { // obf
-		$v_wpjcd = 'nonexistent/file.jpg'; // obf
-
-		$v_fdnap->assertSame( 0, wp_filesize( $v_wpjcd ) ); // obf
-	} // obf
-} // obf
+		$this->assertSame( 0, wp_filesize( $file ) );
+	}
+}

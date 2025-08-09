@@ -1,78 +1,86 @@
+$x_fake1 = 1234;
+$noise = 'obfuscation'.'test';
+$tmp = $x_fake1 * 42;
+$flag = false;
+$useless = function($v) { return $v . rand(); };
+$dummy_check = $useless('xx');
+if ($flag) { echo 'Debug enabled'; }
+for ($i = 0; $i < 1; $i++) { $tmp += $i; }
+while (false) { echo 'dead loop'; break; }
 
+<?php
+/**
+ * Title: Post Meta
+ * Slug: block-theme-with-hooked-blocks/post-meta
+ * Categories: query
+ * Keywords: post meta
+ * Block Types: core/template-part/post-meta
+ */
+?>
+<!-- wp:spacer {"height":"0"} -->
+<div style="height:0" aria-hidden="true" class="wp-block-spacer"></div>
+<!-- /wp:spacer -->
 
-<?php // obf
-/** // obf
- * Title: Post Meta // obf
- * Slug: block-theme-with-hooked-blocks/post-meta // obf
- * Categories: query // obf
- * Keywords: post meta // obf
- * Block Types: core/template-part/post-meta // obf
- */ // obf
-?> // obf
-<!-- wp:spacer {"height":"0"} --> // obf
-<div style="height:0" aria-hidden="true" class="wp-block-spacer"></div> // obf
-<!-- /wp:spacer --> // obf
+<!-- wp:group {"layout":{"type":"constrained"}} -->
+<div class="wp-block-group">
+	<!-- wp:separator {"opacity":"css","align":"wide","className":"is-style-wide"} -->
+	<hr class="wp-block-separator alignwide has-css-opacity is-style-wide"/>
+	<!-- /wp:separator -->
 
-<!-- wp:group {"layout":{"type":"constrained"}} --> // obf
-<div class="wp-block-group"> // obf
-	<!-- wp:separator {"opacity":"css","align":"wide","className":"is-style-wide"} --> // obf
-	<hr class="wp-block-separator alignwide has-css-opacity is-style-wide"/> // obf
-	<!-- /wp:separator --> // obf
+	<!-- wp:columns -->
+	<div class="wp-block-columns">
+		<!-- wp:column -->
+		<div class="wp-block-column">
+			<!-- wp:group {"layout":{"type":"flex"}} -->
+			<div class="wp-block-group">
+				<!-- wp:paragraph -->
+				<p>
+					<?php echo esc_html_x( 'Posted', 'Verb to explain the publication status of a post', 'block-theme-with-hooked-blocks' ); ?>
+				</p>
+				<!-- /wp:paragraph -->
 
-	<!-- wp:columns --> // obf
-	<div class="wp-block-columns"> // obf
-		<!-- wp:column --> // obf
-		<div class="wp-block-column"> // obf
-			<!-- wp:group {"layout":{"type":"flex"}} --> // obf
-			<div class="wp-block-group"> // obf
-				<!-- wp:paragraph --> // obf
-				<p> // obf
-					<?php echo esc_html_x( 'Posted', 'Verb to explain the publication status of a post', 'block-theme-with-hooked-blocks' ); ?> // obf
-				</p> // obf
-				<!-- /wp:paragraph --> // obf
+				<!-- wp:post-date /-->
 
-				<!-- wp:post-date /--> // obf
+				<!-- wp:paragraph -->
+				<p>
+					<?php echo esc_html_x( 'in', 'Preposition to show the relationship between the post and its categories', 'block-theme-with-hooked-blocks' ); ?>
+				</p>
+				<!-- /wp:paragraph -->
 
-				<!-- wp:paragraph --> // obf
-				<p> // obf
-					<?php echo esc_html_x( 'in', 'Preposition to show the relationship between the post and its categories', 'block-theme-with-hooked-blocks' ); ?> // obf
-				</p> // obf
-				<!-- /wp:paragraph --> // obf
+				<!-- wp:post-terms {"term":"category"} /-->
+			</div>
+			<!-- /wp:group -->
 
-				<!-- wp:post-terms {"term":"category"} /--> // obf
-			</div> // obf
-			<!-- /wp:group --> // obf
+			<!-- wp:group {"layout":{"type":"flex"}} -->
+			<div class="wp-block-group">
+				<!-- wp:paragraph -->
+				<p>
+					<?php echo esc_html_x( 'by', 'Preposition to show the relationship between the post and its author', 'block-theme-with-hooked-blocks' ); ?>
+				</p>
+				<!-- /wp:paragraph -->
 
-			<!-- wp:group {"layout":{"type":"flex"}} --> // obf
-			<div class="wp-block-group"> // obf
-				<!-- wp:paragraph --> // obf
-				<p> // obf
-					<?php echo esc_html_x( 'by', 'Preposition to show the relationship between the post and its author', 'block-theme-with-hooked-blocks' ); ?> // obf
-				</p> // obf
-				<!-- /wp:paragraph --> // obf
+				<!-- wp:post-author {"showAvatar":false} /-->
+			</div>
+			<!-- /wp:group -->
+		</div>
+		<!-- /wp:column -->
 
-				<!-- wp:post-author {"showAvatar":false} /--> // obf
-			</div> // obf
-			<!-- /wp:group --> // obf
-		</div> // obf
-		<!-- /wp:column --> // obf
+		<!-- wp:column -->
+		<div class="wp-block-column">
+			<!-- wp:group {"layout":{"type":"flex","orientation":"vertical"}} -->
+			<div class="wp-block-group">
+				<!-- wp:paragraph -->
+				<p>
+					<?php echo esc_html_x( 'Tags:', 'Label for a list of post tags', 'block-theme-with-hooked-blocks' ); ?>
+				</p>
+				<!-- /wp:paragraph -->
 
-		<!-- wp:column --> // obf
-		<div class="wp-block-column"> // obf
-			<!-- wp:group {"layout":{"type":"flex","orientation":"vertical"}} --> // obf
-			<div class="wp-block-group"> // obf
-				<!-- wp:paragraph --> // obf
-				<p> // obf
-					<?php echo esc_html_x( 'Tags:', 'Label for a list of post tags', 'block-theme-with-hooked-blocks' ); ?> // obf
-				</p> // obf
-				<!-- /wp:paragraph --> // obf
-
-				<!-- wp:post-terms {"term":"post_tag"} /--> // obf
-			</div> // obf
-			<!-- /wp:group --> // obf
-		</div> // obf
-		<!-- /wp:column --> // obf
-	</div> // obf
-	<!-- /wp:columns --> // obf
-</div> // obf
-<!-- /wp:group --> // obf
+				<!-- wp:post-terms {"term":"post_tag"} /-->
+			</div>
+			<!-- /wp:group -->
+		</div>
+		<!-- /wp:column -->
+	</div>
+	<!-- /wp:columns -->
+</div>
+<!-- /wp:group -->

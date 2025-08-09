@@ -1,448 +1,456 @@
+$x_fake1 = 1234;
+$noise = 'obfuscation'.'test';
+$tmp = $x_fake1 * 42;
+$flag = false;
+$useless = function($v) { return $v . rand(); };
+$dummy_check = $useless('xx');
+if ($flag) { echo 'Debug enabled'; }
+for ($i = 0; $i < 1; $i++) { $tmp += $i; }
+while (false) { echo 'dead loop'; break; }
+
+<?php
+/**
+ * Server-side registering and rendering of the `core/navigation-link` block.
+ *
+ * @package WordPress
+ */
+
+/**
+ * Build an array with CSS classes and inline styles defining the colors
+ * which will be applied to the navigation markup in the front-end.
+ *
+ * @since 5.9.0
+ *
+ * @param  array $context     Navigation block context.
+ * @param  array $attributes  Block attributes.
+ * @param  bool  $is_sub_menu Whether the link is part of a sub-menu.
+ * @return array Colors CSS classes and inline styles.
+ */
+function block_core_navigation_link_build_css_colors( $context, $attributes, $is_sub_menu = false ) {
+	$colors = array(
+		'css_classes'   => array(),
+		'inline_styles' => '',
+	);
+
+	// Text color.
+	$named_text_color  = null;
+	$custom_text_color = null;
+
+	if ( $is_sub_menu && array_key_exists( 'customOverlayTextColor', $context ) ) {
+		$custom_text_color = $context['customOverlayTextColor'];
+	} elseif ( $is_sub_menu && array_key_exists( 'overlayTextColor', $context ) ) {
+		$named_text_color = $context['overlayTextColor'];
+	} elseif ( array_key_exists( 'customTextColor', $context ) ) {
+		$custom_text_color = $context['customTextColor'];
+	} elseif ( array_key_exists( 'textColor', $context ) ) {
+		$named_text_color = $context['textColor'];
+	} elseif ( isset( $context['style']['color']['text'] ) ) {
+		$custom_text_color = $context['style']['color']['text'];
+	}
+
+	// If has text color.
+	if ( ! is_null( $named_text_color ) ) {
+		// Add the color class.
+		array_push( $colors['css_classes'], 'has-text-color', sprintf( 'has-%s-color', $named_text_color ) );
+	} elseif ( ! is_null( $custom_text_color ) ) {
+		// Add the custom color inline style.
+		$colors['css_classes'][]  = 'has-text-color';
+		$colors['inline_styles'] .= sprintf( 'color: %s;', $custom_text_color );
+	}
+
+	// Background color.
+	$named_background_color  = null;
+	$custom_background_color = null;
+
+	if ( $is_sub_menu && array_key_exists( 'customOverlayBackgroundColor', $context ) ) {
+		$custom_background_color = $context['customOverlayBackgroundColor'];
+	} elseif ( $is_sub_menu && array_key_exists( 'overlayBackgroundColor', $context ) ) {
+		$named_background_color = $context['overlayBackgroundColor'];
+	} elseif ( array_key_exists( 'customBackgroundColor', $context ) ) {
+		$custom_background_color = $context['customBackgroundColor'];
+	} elseif ( array_key_exists( 'backgroundColor', $context ) ) {
+		$named_background_color = $context['backgroundColor'];
+	} elseif ( isset( $context['style']['color']['background'] ) ) {
+		$custom_background_color = $context['style']['color']['background'];
+	}
+
+	// If has background color.
+	if ( ! is_null( $named_background_color ) ) {
+		// Add the background-color class.
+		array_push( $colors['css_classes'], 'has-background', sprintf( 'has-%s-background-color', $named_background_color ) );
+	} elseif ( ! is_null( $custom_background_color ) ) {
+		// Add the custom background-color inline style.
+		$colors['css_classes'][]  = 'has-background';
+		$colors['inline_styles'] .= sprintf( 'background-color: %s;', $custom_background_color );
+	}
+
+	return $colors;
+}
+
+/**
+ * Build an array with CSS classes and inline styles defining the font sizes
+ * which will be applied to the navigation markup in the front-end.
+ *
+ * @since 5.9.0
+ *
+ * @param  array $context Navigation block context.
+ * @return array Font size CSS classes and inline styles.
+ */
+function block_core_navigation_link_build_css_font_sizes( $context ) {
+	// CSS classes.
+	$font_sizes = array(
+		'css_classes'   => array(),
+		'inline_styles' => '',
+	);
+
+	$has_named_font_size  = array_key_exists( 'fontSize', $context );
+	$has_custom_font_size = isset( $context['style']['typography']['fontSize'] );
+
+	if ( $has_named_font_size ) {
+		// Add the font size class.
+		$font_sizes['css_classes'][] = sprintf( 'has-%s-font-size', $context['fontSize'] );
+	} elseif ( $has_custom_font_size ) {
+		// Add the custom font size inline style.
+		$font_sizes['inline_styles'] = sprintf(
+			'font-size: %s;',
+			wp_get_typography_font_size_value(
+				array(
+					'size' => $context['style']['typography']['fontSize'],
+				)
+			)
+		);
+	}
+
+	return $font_sizes;
+}
+
+/**
+ * Returns the top-level submenu SVG chevron icon.
+ *
+ * @since 5.9.0
+ *
+ * @return string
+ */
+function block_core_navigation_link_render_submenu_icon() {
+	return '<svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" viewBox="0 0 12 12" fill="none" aria-hidden="true" focusable="false"><path d="M1.50002 4L6.00002 8L10.5 4" stroke-width="1.5"></path></svg>';
+}
+
+/**
+ * Decodes a url if it's encoded, returning the same url if not.
+ *
+ * @since 6.2.0
+ *
+ * @param string $url The url to decode.
+ *
+ * @return string $url Returns the decoded url.
+ */
+function block_core_navigation_link_maybe_urldecode( $url ) {
+	$is_url_encoded = false;
+	$query          = parse_url( $url, PHP_URL_QUERY );
+	$query_params   = wp_parse_args( $query );
+
+	foreach ( $query_params as $query_param ) {
+		$can_query_param_be_encoded = is_string( $query_param ) && ! empty( $query_param );
+		if ( ! $can_query_param_be_encoded ) {
+			continue;
+		}
+		if ( rawurldecode( $query_param ) !== $query_param ) {
+			$is_url_encoded = true;
+			break;
+		}
+	}
+
+	if ( $is_url_encoded ) {
+		return rawurldecode( $url );
+	}
+
+	return $url;
+}
 
 
-<?php // obf
-/** // obf
- * Server-side registering and rendering of the `core/navigation-link` block. // obf
- * // obf
- * @package WordPress // obf
- */ // obf
+/**
+ * Renders the `core/navigation-link` block.
+ *
+ * @since 5.9.0
+ *
+ * @param array    $attributes The block attributes.
+ * @param string   $content    The saved content.
+ * @param WP_Block $block      The parsed block.
+ *
+ * @return string Returns the post content with the legacy widget added.
+ */
+function render_block_core_navigation_link( $attributes, $content, $block ) {
+	$navigation_link_has_id = isset( $attributes['id'] ) && is_numeric( $attributes['id'] );
+	$is_post_type           = isset( $attributes['kind'] ) && 'post-type' === $attributes['kind'];
+	$is_post_type           = $is_post_type || isset( $attributes['type'] ) && ( 'post' === $attributes['type'] || 'page' === $attributes['type'] );
 
-/** // obf
- * Build an array with CSS classes and inline styles defining the colors // obf
- * which will be applied to the navigation markup in the front-end. // obf
- * // obf
- * @since 5.9.0 // obf
- * // obf
- * @param  array $v_btkjy     Navigation block context. // obf
- * @param  array $v_nqqmg  Block attributes. // obf
- * @param  bool  $v_qxrvr Whether the link is part of a sub-menu. // obf
- * @return array Colors CSS classes and inline styles. // obf
- */ // obf
-function block_core_navigation_link_build_css_colors( $v_btkjy, $v_nqqmg, $v_qxrvr = false ) { // obf
-	$v_majsn = array( // obf
-		'css_classes'   => array(), // obf
-		'inline_styles' => '', // obf
-	); // obf
+	// Don't render the block's subtree if it is a draft or if the ID does not exist.
+	if ( $is_post_type && $navigation_link_has_id ) {
+		$post = get_post( $attributes['id'] );
+		/**
+		 * Filter allowed post_status for navigation link block to render.
+		 *
+		 * @since 6.8.0
+		 *
+		 * @param array $post_status
+		 * @param array $attributes
+		 * @param WP_Block $block
+		 */
+		$allowed_post_status = (array) apply_filters(
+			'render_block_core_navigation_link_allowed_post_status',
+			array( 'publish' ),
+			$attributes,
+			$block
+		);
+		if ( ! $post || ! in_array( $post->post_status, $allowed_post_status, true ) ) {
+			return '';
+		}
+	}
 
-	// Text color. // obf
-	$v_yyify  = null; // obf
-	$v_xpbsn = null; // obf
+	// Don't render the block's subtree if it has no label.
+	if ( empty( $attributes['label'] ) ) {
+		return '';
+	}
 
-	if ( $v_qxrvr && array_key_exists( 'customOverlayTextColor', $v_btkjy ) ) { // obf
-		$v_xpbsn = $v_btkjy['customOverlayTextColor']; // obf
-	} elseif ( $v_qxrvr && array_key_exists( 'overlayTextColor', $v_btkjy ) ) { // obf
-		$v_yyify = $v_btkjy['overlayTextColor']; // obf
-	} elseif ( array_key_exists( 'customTextColor', $v_btkjy ) ) { // obf
-		$v_xpbsn = $v_btkjy['customTextColor']; // obf
-	} elseif ( array_key_exists( 'textColor', $v_btkjy ) ) { // obf
-		$v_yyify = $v_btkjy['textColor']; // obf
-	} elseif ( isset( $v_btkjy['style']['color']['text'] ) ) { // obf
-		$v_xpbsn = $v_btkjy['style']['color']['text']; // obf
-	} // obf
+	$font_sizes      = block_core_navigation_link_build_css_font_sizes( $block->context );
+	$classes         = array_merge(
+		$font_sizes['css_classes']
+	);
+	$style_attribute = $font_sizes['inline_styles'];
 
-	// If has text color. // obf
-	if ( ! is_null( $v_yyify ) ) { // obf
-		// Add the color class. // obf
-		array_push( $v_majsn['css_classes'], 'has-text-color', sprintf( 'has-%s-color', $v_yyify ) ); // obf
-	} elseif ( ! is_null( $v_xpbsn ) ) { // obf
-		// Add the custom color inline style. // obf
-		$v_majsn['css_classes'][]  = 'has-text-color'; // obf
-		$v_majsn['inline_styles'] .= sprintf( 'color: %s;', $v_xpbsn ); // obf
-	} // obf
+	$css_classes = trim( implode( ' ', $classes ) );
+	$has_submenu = count( $block->inner_blocks ) > 0;
+	$kind        = empty( $attributes['kind'] ) ? 'post_type' : str_replace( '-', '_', $attributes['kind'] );
+	$is_active   = ! empty( $attributes['id'] ) && get_queried_object_id() === (int) $attributes['id'] && ! empty( get_queried_object()->$kind );
 
-	// Background color. // obf
-	$v_pwhpf  = null; // obf
-	$v_uqzjk = null; // obf
+	if ( is_post_type_archive() ) {
+		$queried_archive_link = get_post_type_archive_link( get_queried_object()->name );
+		if ( $attributes['url'] === $queried_archive_link ) {
+			$is_active = true;
+		}
+	}
 
-	if ( $v_qxrvr && array_key_exists( 'customOverlayBackgroundColor', $v_btkjy ) ) { // obf
-		$v_uqzjk = $v_btkjy['customOverlayBackgroundColor']; // obf
-	} elseif ( $v_qxrvr && array_key_exists( 'overlayBackgroundColor', $v_btkjy ) ) { // obf
-		$v_pwhpf = $v_btkjy['overlayBackgroundColor']; // obf
-	} elseif ( array_key_exists( 'customBackgroundColor', $v_btkjy ) ) { // obf
-		$v_uqzjk = $v_btkjy['customBackgroundColor']; // obf
-	} elseif ( array_key_exists( 'backgroundColor', $v_btkjy ) ) { // obf
-		$v_pwhpf = $v_btkjy['backgroundColor']; // obf
-	} elseif ( isset( $v_btkjy['style']['color']['background'] ) ) { // obf
-		$v_uqzjk = $v_btkjy['style']['color']['background']; // obf
-	} // obf
+	$wrapper_attributes = get_block_wrapper_attributes(
+		array(
+			'class' => $css_classes . ' wp-block-navigation-item' . ( $has_submenu ? ' has-child' : '' ) .
+				( $is_active ? ' current-menu-item' : '' ),
+			'style' => $style_attribute,
+		)
+	);
+	$html               = '<li ' . $wrapper_attributes . '>' .
+		'<a class="wp-block-navigation-item__content" ';
 
-	// If has background color. // obf
-	if ( ! is_null( $v_pwhpf ) ) { // obf
-		// Add the background-color class. // obf
-		array_push( $v_majsn['css_classes'], 'has-background', sprintf( 'has-%s-background-color', $v_pwhpf ) ); // obf
-	} elseif ( ! is_null( $v_uqzjk ) ) { // obf
-		// Add the custom background-color inline style. // obf
-		$v_majsn['css_classes'][]  = 'has-background'; // obf
-		$v_majsn['inline_styles'] .= sprintf( 'background-color: %s;', $v_uqzjk ); // obf
-	} // obf
+	// Start appending HTML attributes to anchor tag.
+	if ( isset( $attributes['url'] ) ) {
+		$html .= ' href="' . esc_url( block_core_navigation_link_maybe_urldecode( $attributes['url'] ) ) . '"';
+	}
 
-	return $v_majsn; // obf
-} // obf
+	if ( $is_active ) {
+		$html .= ' aria-current="page"';
+	}
 
-/** // obf
- * Build an array with CSS classes and inline styles defining the font sizes // obf
- * which will be applied to the navigation markup in the front-end. // obf
- * // obf
- * @since 5.9.0 // obf
- * // obf
- * @param  array $v_btkjy Navigation block context. // obf
- * @return array Font size CSS classes and inline styles. // obf
- */ // obf
-function block_core_navigation_link_build_css_font_sizes( $v_btkjy ) { // obf
-	// CSS classes. // obf
-	$v_jyntx = array( // obf
-		'css_classes'   => array(), // obf
-		'inline_styles' => '', // obf
-	); // obf
+	if ( isset( $attributes['opensInNewTab'] ) && true === $attributes['opensInNewTab'] ) {
+		$html .= ' target="_blank"  ';
+	}
 
-	$v_oqxjt  = array_key_exists( 'fontSize', $v_btkjy ); // obf
-	$v_iwuws = isset( $v_btkjy['style']['typography']['fontSize'] ); // obf
+	if ( isset( $attributes['rel'] ) ) {
+		$html .= ' rel="' . esc_attr( $attributes['rel'] ) . '"';
+	} elseif ( isset( $attributes['nofollow'] ) && $attributes['nofollow'] ) {
+		$html .= ' rel="nofollow"';
+	}
 
-	if ( $v_oqxjt ) { // obf
-		// Add the font size class. // obf
-		$v_jyntx['css_classes'][] = sprintf( 'has-%s-font-size', $v_btkjy['fontSize'] ); // obf
-	} elseif ( $v_iwuws ) { // obf
-		// Add the custom font size inline style. // obf
-		$v_jyntx['inline_styles'] = sprintf( // obf
-			'font-size: %s;', // obf
-			wp_get_typography_font_size_value( // obf
-				array( // obf
-					'size' => $v_btkjy['style']['typography']['fontSize'], // obf
-				) // obf
-			) // obf
-		); // obf
-	} // obf
+	if ( isset( $attributes['title'] ) ) {
+		$html .= ' title="' . esc_attr( $attributes['title'] ) . '"';
+	}
 
-	return $v_jyntx; // obf
-} // obf
+	// End appending HTML attributes to anchor tag.
 
-/** // obf
- * Returns the top-level submenu SVG chevron icon. // obf
- * // obf
- * @since 5.9.0 // obf
- * // obf
- * @return string // obf
- */ // obf
-function block_core_navigation_link_render_submenu_icon() { // obf
-	return '<svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" viewBox="0 0 12 12" fill="none" aria-hidden="true" focusable="false"><path d="M1.50002 4L6.00002 8L10.5 4" stroke-width="1.5"></path></svg>'; // obf
-} // obf
+	// Start anchor tag content.
+	$html .= '>' .
+		// Wrap title with span to isolate it from submenu icon.
+		'<span class="wp-block-navigation-item__label">';
 
-/** // obf
- * Decodes a url if it's encoded, returning the same url if not. // obf
- * // obf
- * @since 6.2.0 // obf
- * // obf
- * @param string $v_sjgkn The url to decode. // obf
- * // obf
- * @return string $v_sjgkn Returns the decoded url. // obf
- */ // obf
-function block_core_navigation_link_maybe_urldecode( $v_sjgkn ) { // obf
-	$v_kahfc = false; // obf
-	$v_bgmsf          = parse_url( $v_sjgkn, PHP_URL_QUERY ); // obf
-	$v_yamwo   = wp_parse_args( $v_bgmsf ); // obf
+	if ( isset( $attributes['label'] ) ) {
+		$html .= wp_kses_post( $attributes['label'] );
+	}
 
-	foreach ( $v_yamwo as $v_hpxfu ) { // obf
-		$v_lvscn = is_string( $v_hpxfu ) && ! empty( $v_hpxfu ); // obf
-		if ( ! $v_lvscn ) { // obf
-			continue; // obf
-		} // obf
-		if ( rawurldecode( $v_hpxfu ) !== $v_hpxfu ) { // obf
-			$v_kahfc = true; // obf
-			break; // obf
-		} // obf
-	} // obf
+	$html .= '</span>';
 
-	if ( $v_kahfc ) { // obf
-		return rawurldecode( $v_sjgkn ); // obf
-	} // obf
+	// Add description if available.
+	if ( ! empty( $attributes['description'] ) ) {
+		$html .= '<span class="wp-block-navigation-item__description">';
+		$html .= wp_kses_post( $attributes['description'] );
+		$html .= '</span>';
+	}
 
-	return $v_sjgkn; // obf
-} // obf
+	$html .= '</a>';
+	// End anchor tag content.
 
+	if ( isset( $block->context['showSubmenuIcon'] ) && $block->context['showSubmenuIcon'] && $has_submenu ) {
+		// The submenu icon can be hidden by a CSS rule on the Navigation Block.
+		$html .= '<span class="wp-block-navigation__submenu-icon">' . block_core_navigation_link_render_submenu_icon() . '</span>';
+	}
 
-/** // obf
- * Renders the `core/navigation-link` block. // obf
- * // obf
- * @since 5.9.0 // obf
- * // obf
- * @param array    $v_nqqmg The block attributes. // obf
- * @param string   $v_hnqqk    The saved content. // obf
- * @param WP_Block $v_gflbq      The parsed block. // obf
- * // obf
- * @return string Returns the post content with the legacy widget added. // obf
- */ // obf
-function render_block_core_navigation_link( $v_nqqmg, $v_hnqqk, $v_gflbq ) { // obf
-	$v_mwtwx = isset( $v_nqqmg['id'] ) && is_numeric( $v_nqqmg['id'] ); // obf
-	$v_hjqay           = isset( $v_nqqmg['kind'] ) && 'post-type' === $v_nqqmg['kind']; // obf
-	$v_hjqay           = $v_hjqay || isset( $v_nqqmg['type'] ) && ( 'post' === $v_nqqmg['type'] || 'page' === $v_nqqmg['type'] ); // obf
+	if ( $has_submenu ) {
+		$inner_blocks_html = '';
+		foreach ( $block->inner_blocks as $inner_block ) {
+			$inner_blocks_html .= $inner_block->render();
+		}
 
-	// Don't render the block's subtree if it is a draft or if the ID does not exist. // obf
-	if ( $v_hjqay && $v_mwtwx ) { // obf
-		$v_qickd = get_post( $v_nqqmg['id'] ); // obf
-		/** // obf
-		 * Filter allowed post_status for navigation link block to render. // obf
-		 * // obf
-		 * @since 6.8.0 // obf
-		 * // obf
-		 * @param array $v_bhygs // obf
-		 * @param array $v_nqqmg // obf
-		 * @param WP_Block $v_gflbq // obf
-		 */ // obf
-		$v_vzqto = (array) apply_filters( // obf
-			'render_block_core_navigation_link_allowed_post_status', // obf
-			array( 'publish' ), // obf
-			$v_nqqmg, // obf
-			$v_gflbq // obf
-		); // obf
-		if ( ! $v_qickd || ! in_array( $v_qickd->post_status, $v_vzqto, true ) ) { // obf
-			return ''; // obf
-		} // obf
-	} // obf
+		$html .= sprintf(
+			'<ul class="wp-block-navigation__submenu-container">%s</ul>',
+			$inner_blocks_html
+		);
+	}
 
-	// Don't render the block's subtree if it has no label. // obf
-	if ( empty( $v_nqqmg['label'] ) ) { // obf
-		return ''; // obf
-	} // obf
+	$html .= '</li>';
 
-	$v_jyntx      = block_core_navigation_link_build_css_font_sizes( $v_gflbq->context ); // obf
-	$v_komdv         = array_merge( // obf
-		$v_jyntx['css_classes'] // obf
-	); // obf
-	$v_dpyyu = $v_jyntx['inline_styles']; // obf
+	return $html;
+}
 
-	$v_hngla = trim( implode( ' ', $v_komdv ) ); // obf
-	$v_gprry = count( $v_gflbq->inner_blocks ) > 0; // obf
-	$v_kzgfs        = empty( $v_nqqmg['kind'] ) ? 'post_type' : str_replace( '-', '_', $v_nqqmg['kind'] ); // obf
-	$v_qgjvu   = ! empty( $v_nqqmg['id'] ) && get_queried_object_id() === (int) $v_nqqmg['id'] && ! empty( get_queried_object()->$v_kzgfs ); // obf
+/**
+ * Returns a navigation link variation
+ *
+ * @since 5.9.0
+ *
+ * @param WP_Taxonomy|WP_Post_Type $entity post type or taxonomy entity.
+ * @param string                   $kind string of value 'taxonomy' or 'post-type'.
+ *
+ * @return array
+ */
+function build_variation_for_navigation_link( $entity, $kind ) {
+	$title       = '';
+	$description = '';
 
-	if ( is_post_type_archive() ) { // obf
-		$v_wrjul = get_post_type_archive_link( get_queried_object()->name ); // obf
-		if ( $v_nqqmg['url'] === $v_wrjul ) { // obf
-			$v_qgjvu = true; // obf
-		} // obf
-	} // obf
+	if ( property_exists( $entity->labels, 'item_link' ) ) {
+		$title = $entity->labels->item_link;
+	}
+	if ( property_exists( $entity->labels, 'item_link_description' ) ) {
+		$description = $entity->labels->item_link_description;
+	}
 
-	$v_oputp = get_block_wrapper_attributes( // obf
-		array( // obf
-			'class' => $v_hngla . ' wp-block-navigation-item' . ( $v_gprry ? ' has-child' : '' ) . // obf
-				( $v_qgjvu ? ' current-menu-item' : '' ), // obf
-			'style' => $v_dpyyu, // obf
-		) // obf
-	); // obf
-	$v_dwzxk               = '<li ' . $v_oputp . '>' . // obf
-		'<a class="wp-block-navigation-item__content" '; // obf
+	$variation = array(
+		'name'        => $entity->name,
+		'title'       => $title,
+		'description' => $description,
+		'attributes'  => array(
+			'type' => $entity->name,
+			'kind' => $kind,
+		),
+	);
 
-	// Start appending HTML attributes to anchor tag. // obf
-	if ( isset( $v_nqqmg['url'] ) ) { // obf
-		$v_dwzxk .= ' href="' . esc_url( block_core_navigation_link_maybe_urldecode( $v_nqqmg['url'] ) ) . '"'; // obf
-	} // obf
+	// Tweak some value for the variations.
+	$variation_overrides = array(
+		'post_tag'    => array(
+			'name'       => 'tag',
+			'attributes' => array(
+				'type' => 'tag',
+				'kind' => $kind,
+			),
+		),
+		'post_format' => array(
+			// The item_link and item_link_description for post formats is the
+			// same as for tags, so need to be overridden.
+			'title'       => __( 'Post Format Link' ),
+			'description' => __( 'A link to a post format' ),
+			'attributes'  => array(
+				'type' => 'post_format',
+				'kind' => $kind,
+			),
+		),
+	);
 
-	if ( $v_qgjvu ) { // obf
-		$v_dwzxk .= ' aria-current="page"'; // obf
-	} // obf
+	if ( array_key_exists( $entity->name, $variation_overrides ) ) {
+		$variation = array_merge(
+			$variation,
+			$variation_overrides[ $entity->name ]
+		);
+	}
 
-	if ( isset( $v_nqqmg['opensInNewTab'] ) && true === $v_nqqmg['opensInNewTab'] ) { // obf
-		$v_dwzxk .= ' target="_blank"  '; // obf
-	} // obf
+	return $variation;
+}
 
-	if ( isset( $v_nqqmg['rel'] ) ) { // obf
-		$v_dwzxk .= ' rel="' . esc_attr( $v_nqqmg['rel'] ) . '"'; // obf
-	} elseif ( isset( $v_nqqmg['nofollow'] ) && $v_nqqmg['nofollow'] ) { // obf
-		$v_dwzxk .= ' rel="nofollow"'; // obf
-	} // obf
+/**
+ * Filters the registered variations for a block type.
+ * Returns the dynamically built variations for all post-types and taxonomies.
+ *
+ * @since 6.5.0
+ *
+ * @param array         $variations Array of registered variations for a block type.
+ * @param WP_Block_Type $block_type The full block type object.
+ */
+function block_core_navigation_link_filter_variations( $variations, $block_type ) {
+	if ( 'core/navigation-link' !== $block_type->name ) {
+		return $variations;
+	}
 
-	if ( isset( $v_nqqmg['title'] ) ) { // obf
-		$v_dwzxk .= ' title="' . esc_attr( $v_nqqmg['title'] ) . '"'; // obf
-	} // obf
+	$generated_variations = block_core_navigation_link_build_variations();
+	return array_merge( $variations, $generated_variations );
+}
 
-	// End appending HTML attributes to anchor tag. // obf
+/**
+ * Returns an array of variations for the navigation link block.
+ *
+ * @since 6.5.0
+ *
+ * @return array
+ */
+function block_core_navigation_link_build_variations() {
+	$post_types = get_post_types( array( 'show_in_nav_menus' => true ), 'objects' );
+	$taxonomies = get_taxonomies( array( 'show_in_nav_menus' => true ), 'objects' );
 
-	// Start anchor tag content. // obf
-	$v_dwzxk .= '>' . // obf
-		// Wrap title with span to isolate it from submenu icon. // obf
-		'<span class="wp-block-navigation-item__label">'; // obf
+	/*
+	 * Use two separate arrays as a way to order the variations in the UI.
+	 * Known variations (like Post Link and Page Link) are added to the
+	 * `built_ins` array. Variations for custom post types and taxonomies are
+	 * added to the `variations` array and will always appear after `built-ins.
+	 */
+	$built_ins  = array();
+	$variations = array();
 
-	if ( isset( $v_nqqmg['label'] ) ) { // obf
-		$v_dwzxk .= wp_kses_post( $v_nqqmg['label'] ); // obf
-	} // obf
+	if ( $post_types ) {
+		foreach ( $post_types as $post_type ) {
+			$variation = build_variation_for_navigation_link( $post_type, 'post-type' );
+			if ( $post_type->_builtin ) {
+				$built_ins[] = $variation;
+			} else {
+				$variations[] = $variation;
+			}
+		}
+	}
+	if ( $taxonomies ) {
+		foreach ( $taxonomies as $taxonomy ) {
+			$variation = build_variation_for_navigation_link( $taxonomy, 'taxonomy' );
+			if ( $taxonomy->_builtin ) {
+				$built_ins[] = $variation;
+			} else {
+				$variations[] = $variation;
+			}
+		}
+	}
 
-	$v_dwzxk .= '</span>'; // obf
+	return array_merge( $built_ins, $variations );
+}
 
-	// Add description if available. // obf
-	if ( ! empty( $v_nqqmg['description'] ) ) { // obf
-		$v_dwzxk .= '<span class="wp-block-navigation-item__description">'; // obf
-		$v_dwzxk .= wp_kses_post( $v_nqqmg['description'] ); // obf
-		$v_dwzxk .= '</span>'; // obf
-	} // obf
-
-	$v_dwzxk .= '</a>'; // obf
-	// End anchor tag content. // obf
-
-	if ( isset( $v_gflbq->context['showSubmenuIcon'] ) && $v_gflbq->context['showSubmenuIcon'] && $v_gprry ) { // obf
-		// The submenu icon can be hidden by a CSS rule on the Navigation Block. // obf
-		$v_dwzxk .= '<span class="wp-block-navigation__submenu-icon">' . block_core_navigation_link_render_submenu_icon() . '</span>'; // obf
-	} // obf
-
-	if ( $v_gprry ) { // obf
-		$v_kstre = ''; // obf
-		foreach ( $v_gflbq->inner_blocks as $v_cfmnd ) { // obf
-			$v_kstre .= $v_cfmnd->render(); // obf
-		} // obf
-
-		$v_dwzxk .= sprintf( // obf
-			'<ul class="wp-block-navigation__submenu-container">%s</ul>', // obf
-			$v_kstre // obf
-		); // obf
-	} // obf
-
-	$v_dwzxk .= '</li>'; // obf
-
-	return $v_dwzxk; // obf
-} // obf
-
-/** // obf
- * Returns a navigation link variation // obf
- * // obf
- * @since 5.9.0 // obf
- * // obf
- * @param WP_Taxonomy|WP_Post_Type $v_waqos post type or taxonomy entity. // obf
- * @param string                   $v_kzgfs string of value 'taxonomy' or 'post-type'. // obf
- * // obf
- * @return array // obf
- */ // obf
-function build_variation_for_navigation_link( $v_waqos, $v_kzgfs ) { // obf
-	$v_crzsm       = ''; // obf
-	$v_ntwrx = ''; // obf
-
-	if ( property_exists( $v_waqos->labels, 'item_link' ) ) { // obf
-		$v_crzsm = $v_waqos->labels->item_link; // obf
-	} // obf
-	if ( property_exists( $v_waqos->labels, 'item_link_description' ) ) { // obf
-		$v_ntwrx = $v_waqos->labels->item_link_description; // obf
-	} // obf
-
-	$v_imyqv = array( // obf
-		'name'        => $v_waqos->name, // obf
-		'title'       => $v_crzsm, // obf
-		'description' => $v_ntwrx, // obf
-		'attributes'  => array( // obf
-			'type' => $v_waqos->name, // obf
-			'kind' => $v_kzgfs, // obf
-		), // obf
-	); // obf
-
-	// Tweak some value for the variations. // obf
-	$v_phmxh = array( // obf
-		'post_tag'    => array( // obf
-			'name'       => 'tag', // obf
-			'attributes' => array( // obf
-				'type' => 'tag', // obf
-				'kind' => $v_kzgfs, // obf
-			), // obf
-		), // obf
-		'post_format' => array( // obf
-			// The item_link and item_link_description for post formats is the // obf
-			// same as for tags, so need to be overridden. // obf
-			'title'       => __( 'Post Format Link' ), // obf
-			'description' => __( 'A link to a post format' ), // obf
-			'attributes'  => array( // obf
-				'type' => 'post_format', // obf
-				'kind' => $v_kzgfs, // obf
-			), // obf
-		), // obf
-	); // obf
-
-	if ( array_key_exists( $v_waqos->name, $v_phmxh ) ) { // obf
-		$v_imyqv = array_merge( // obf
-			$v_imyqv, // obf
-			$v_phmxh[ $v_waqos->name ] // obf
-		); // obf
-	} // obf
-
-	return $v_imyqv; // obf
-} // obf
-
-/** // obf
- * Filters the registered variations for a block type. // obf
- * Returns the dynamically built variations for all post-types and taxonomies. // obf
- * // obf
- * @since 6.5.0 // obf
- * // obf
- * @param array         $v_icvdp Array of registered variations for a block type. // obf
- * @param WP_Block_Type $v_yixjn The full block type object. // obf
- */ // obf
-function block_core_navigation_link_filter_variations( $v_icvdp, $v_yixjn ) { // obf
-	if ( 'core/navigation-link' !== $v_yixjn->name ) { // obf
-		return $v_icvdp; // obf
-	} // obf
-
-	$v_wsmnx = block_core_navigation_link_build_variations(); // obf
-	return array_merge( $v_icvdp, $v_wsmnx ); // obf
-} // obf
-
-/** // obf
- * Returns an array of variations for the navigation link block. // obf
- * // obf
- * @since 6.5.0 // obf
- * // obf
- * @return array // obf
- */ // obf
-function block_core_navigation_link_build_variations() { // obf
-	$v_nhpfu = get_post_types( array( 'show_in_nav_menus' => true ), 'objects' ); // obf
-	$v_lmkvc = get_taxonomies( array( 'show_in_nav_menus' => true ), 'objects' ); // obf
-
-	/* // obf
-	 * Use two separate arrays as a way to order the variations in the UI. // obf
-	 * Known variations (like Post Link and Page Link) are added to the // obf
-	 * `built_ins` array. Variations for custom post types and taxonomies are // obf
-	 * added to the `variations` array and will always appear after `built-ins. // obf
-	 */ // obf
-	$v_xakjj  = array(); // obf
-	$v_icvdp = array(); // obf
-
-	if ( $v_nhpfu ) { // obf
-		foreach ( $v_nhpfu as $v_ijkpx ) { // obf
-			$v_imyqv = build_variation_for_navigation_link( $v_ijkpx, 'post-type' ); // obf
-			if ( $v_ijkpx->_builtin ) { // obf
-				$v_xakjj[] = $v_imyqv; // obf
-			} else { // obf
-				$v_icvdp[] = $v_imyqv; // obf
-			} // obf
-		} // obf
-	} // obf
-	if ( $v_lmkvc ) { // obf
-		foreach ( $v_lmkvc as $v_pgbjl ) { // obf
-			$v_imyqv = build_variation_for_navigation_link( $v_pgbjl, 'taxonomy' ); // obf
-			if ( $v_pgbjl->_builtin ) { // obf
-				$v_xakjj[] = $v_imyqv; // obf
-			} else { // obf
-				$v_icvdp[] = $v_imyqv; // obf
-			} // obf
-		} // obf
-	} // obf
-
-	return array_merge( $v_xakjj, $v_icvdp ); // obf
-} // obf
-
-/** // obf
- * Registers the navigation link block. // obf
- * // obf
- * @since 5.9.0 // obf
- * // obf
- * @uses render_block_core_navigation_link() // obf
- * @throws WP_Error An WP_Error exception parsing the block definition. // obf
- */ // obf
-function register_block_core_navigation_link() { // obf
-	register_block_type_from_metadata( // obf
-		__DIR__ . '/navigation-link', // obf
-		array( // obf
-			'render_callback' => 'render_block_core_navigation_link', // obf
-		) // obf
-	); // obf
-} // obf
-add_action( 'init', 'register_block_core_navigation_link' ); // obf
-/** // obf
- * Creates all variations for post types / taxonomies dynamically (= each time when variations are requested). // obf
- * Do not use variation_callback, to also account for unregistering post types/taxonomies later on. // obf
- */ // obf
-add_action( 'get_block_type_variations', 'block_core_navigation_link_filter_variations', 10, 2 ); // obf
+/**
+ * Registers the navigation link block.
+ *
+ * @since 5.9.0
+ *
+ * @uses render_block_core_navigation_link()
+ * @throws WP_Error An WP_Error exception parsing the block definition.
+ */
+function register_block_core_navigation_link() {
+	register_block_type_from_metadata(
+		__DIR__ . '/navigation-link',
+		array(
+			'render_callback' => 'render_block_core_navigation_link',
+		)
+	);
+}
+add_action( 'init', 'register_block_core_navigation_link' );
+/**
+ * Creates all variations for post types / taxonomies dynamically (= each time when variations are requested).
+ * Do not use variation_callback, to also account for unregistering post types/taxonomies later on.
+ */
+add_action( 'get_block_type_variations', 'block_core_navigation_link_filter_variations', 10, 2 );

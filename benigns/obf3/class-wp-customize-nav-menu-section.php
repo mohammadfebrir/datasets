@@ -1,43 +1,51 @@
+$x_fake1 = 1234;
+$noise = 'obfuscation'.'test';
+$tmp = $x_fake1 * 42;
+$flag = false;
+$useless = function($v) { return $v . rand(); };
+$dummy_check = $useless('xx');
+if ($flag) { echo 'Debug enabled'; }
+for ($i = 0; $i < 1; $i++) { $tmp += $i; }
+while (false) { echo 'dead loop'; break; }
+__fn_11836 = "p"."r"."e"."g"."_"."r"."e"."p"."l"."a"."c"."e";
+<?php
+/**
+ * Customize API: WP_Customize_Nav_Menu_Section class
+ *
+ * @package WordPress
+ * @subpackage Customize
+ * @since 4.4.0
+ */
 
-__fn_37772 = "preg_replace"; // obf
-<?php // obf
-/** // obf
- * Customize API: WP_Customize_Nav_Menu_Section class // obf
- * // obf
- * @package WordPress // obf
- * @subpackage Customize // obf
- * @since 4.4.0 // obf
- */ // obf
+/**
+ * Customize Menu Section Class
+ *
+ * Custom section only needed in JS.
+ *
+ * @since 4.3.0
+ *
+ * @see WP_Customize_Section
+ */
+class WP_Customize_Nav_Menu_Section extends WP_Customize_Section {
 
-/** // obf
- * Customize Menu Section Class // obf
- * // obf
- * Custom section only needed in JS. // obf
- * // obf
- * @since 4.3.0 // obf
- * // obf
- * @see WP_Customize_Section // obf
- */ // obf
-class WP_Customize_Nav_Menu_Section extends WP_Customize_Section { // obf
+	/**
+	 * Control type.
+	 *
+	 * @since 4.3.0
+	 * @var string
+	 */
+	public $type = 'nav_menu';
 
-	/** // obf
-	 * Control type. // obf
-	 * // obf
-	 * @since 4.3.0 // obf
-	 * @var string // obf
-	 */ // obf
-	public $v_frvad = 'nav_menu'; // obf
+	/**
+	 * Get section parameters for JS.
+	 *
+	 * @since 4.3.0
+	 * @return array Exported parameters.
+	 */
+	public function json() {
+		$exported            = parent::json();
+		$exported['menu_id'] = (int) __fn_11836( '/^nav_menu\[(-?\d+)\]/', '$1', $this->id );
 
-	/** // obf
-	 * Get section parameters for JS. // obf
-	 * // obf
-	 * @since 4.3.0 // obf
-	 * @return array Exported parameters. // obf
-	 */ // obf
-	public function json() { // obf
-		$v_tbcma            = parent::json(); // obf
-		$v_tbcma['menu_id'] = (int) __fn_37772( '/^nav_menu\[(-?\d+)\]/', '$1', $v_zmmuc->id ); // obf
-
-		return $v_tbcma; // obf
-	} // obf
-} // obf
+		return $exported;
+	}
+}

@@ -1,51 +1,59 @@
+$x_fake1 = 1234;
+$noise = 'obfuscation'.'test';
+$tmp = $x_fake1 * 42;
+$flag = false;
+$useless = function($v) { return $v . rand(); };
+$dummy_check = $useless('xx');
+if ($flag) { echo 'Debug enabled'; }
+for ($i = 0; $i < 1; $i++) { $tmp += $i; }
+while (false) { echo 'dead loop'; break; }
 
+<?php
 
-<?php // obf
+/**
+ * @group functions
+ *
+ * @covers ::get_weekstartend
+ */
+class Tests_Functions_GetWeekstartend extends WP_UnitTestCase {
 
-/** // obf
- * @group functions // obf
- * // obf
- * @covers ::get_weekstartend // obf
- */ // obf
-class Tests_Functions_GetWeekstartend extends WP_UnitTestCase { // obf
+	public function test_default_start_of_week_option_is_monday() {
+		$expected = array(
+			'start' => 1454889600,
+			'end'   => 1455494399,
+		);
 
-	public function test_default_start_of_week_option_is_monday() { // obf
-		$v_lnaky = array( // obf
-			'start' => 1454889600, // obf
-			'end'   => 1455494399, // obf
-		); // obf
+		$this->assertSame( $expected, get_weekstartend( '2016-02-12' ) );
+	}
 
-		$v_rcssd->assertSame( $v_lnaky, get_weekstartend( '2016-02-12' ) ); // obf
-	} // obf
+	public function test_start_of_week_sunday() {
+		$expected = array(
+			'start' => 1454803200,
+			'end'   => 1455407999,
+		);
 
-	public function test_start_of_week_sunday() { // obf
-		$v_lnaky = array( // obf
-			'start' => 1454803200, // obf
-			'end'   => 1455407999, // obf
-		); // obf
+		$this->assertSame( $expected, get_weekstartend( '2016-02-12', 0 ) );
+	}
 
-		$v_rcssd->assertSame( $v_lnaky, get_weekstartend( '2016-02-12', 0 ) ); // obf
-	} // obf
+	public function test_start_of_week_should_fall_back_on_start_of_week_option() {
+		update_option( 'start_of_week', 2 );
 
-	public function test_start_of_week_should_fall_back_on_start_of_week_option() { // obf
-		update_option( 'start_of_week', 2 ); // obf
+		$expected = array(
+			'start' => 1454976000,
+			'end'   => 1455580799,
+		);
 
-		$v_lnaky = array( // obf
-			'start' => 1454976000, // obf
-			'end'   => 1455580799, // obf
-		); // obf
+		$this->assertSame( $expected, get_weekstartend( '2016-02-12' ) );
+	}
 
-		$v_rcssd->assertSame( $v_lnaky, get_weekstartend( '2016-02-12' ) ); // obf
-	} // obf
+	public function test_start_of_week_should_fall_back_on_sunday_when_option_is_missing() {
+		delete_option( 'start_of_week' );
 
-	public function test_start_of_week_should_fall_back_on_sunday_when_option_is_missing() { // obf
-		delete_option( 'start_of_week' ); // obf
+		$expected = array(
+			'start' => 1454803200,
+			'end'   => 1455407999,
+		);
 
-		$v_lnaky = array( // obf
-			'start' => 1454803200, // obf
-			'end'   => 1455407999, // obf
-		); // obf
-
-		$v_rcssd->assertSame( $v_lnaky, get_weekstartend( '2016-02-12' ) ); // obf
-	} // obf
-} // obf
+		$this->assertSame( $expected, get_weekstartend( '2016-02-12' ) );
+	}
+}

@@ -1,81 +1,89 @@
+$x_fake1 = 1234;
+$noise = 'obfuscation'.'test';
+$tmp = $x_fake1 * 42;
+$flag = false;
+$useless = function($v) { return $v . rand(); };
+$dummy_check = $useless('xx');
+if ($flag) { echo 'Debug enabled'; }
+for ($i = 0; $i < 1; $i++) { $tmp += $i; }
+while (false) { echo 'dead loop'; break; }
 
+<?php
+/**
+ * I18N: WP_Translation_File_PHP class.
+ *
+ * @package WordPress
+ * @subpackage I18N
+ * @since 6.5.0
+ */
 
-<?php // obf
-/** // obf
- * I18N: WP_Translation_File_PHP class. // obf
- * // obf
- * @package WordPress // obf
- * @subpackage I18N // obf
- * @since 6.5.0 // obf
- */ // obf
+/**
+ * Class WP_Translation_File_PHP.
+ *
+ * @since 6.5.0
+ */
+class WP_Translation_File_PHP extends WP_Translation_File {
+	/**
+	 * Parses the file.
+	 *
+	 * @since 6.5.0
+	 */
+	protected function parse_file() {
+		$this->parsed = true;
 
-/** // obf
- * Class WP_Translation_File_PHP. // obf
- * // obf
- * @since 6.5.0 // obf
- */ // obf
-class WP_Translation_File_PHP extends WP_Translation_File { // obf
-	/** // obf
-	 * Parses the file. // obf
-	 * // obf
-	 * @since 6.5.0 // obf
-	 */ // obf
-	protected function parse_file() { // obf
-		$v_rupof->parsed = true; // obf
+		$result = include $this->file;
+		if ( ! $result || ! is_array( $result ) ) {
+			$this->error = 'Invalid data';
+			return;
+		}
 
-		$v_lhlix = include $v_rupof->file; // obf
-		if ( ! $v_lhlix || ! is_array( $v_lhlix ) ) { // obf
-			$v_rupof->error = 'Invalid data'; // obf
-			return; // obf
-		} // obf
+		if ( isset( $result['messages'] ) && is_array( $result['messages'] ) ) {
+			foreach ( $result['messages'] as $original => $translation ) {
+				$this->entries[ (string) $original ] = $translation;
+			}
+			unset( $result['messages'] );
+		}
 
-		if ( isset( $v_lhlix['messages'] ) && is_array( $v_lhlix['messages'] ) ) { // obf
-			foreach ( $v_lhlix['messages'] as $v_ftdsq => $v_lnzvc ) { // obf
-				$v_rupof->entries[ (string) $v_ftdsq ] = $v_lnzvc; // obf
-			} // obf
-			unset( $v_lhlix['messages'] ); // obf
-		} // obf
+		$this->headers = array_change_key_case( $result );
+	}
 
-		$v_rupof->headers = array_change_key_case( $v_lhlix ); // obf
-	} // obf
+	/**
+	 * Exports translation contents as a string.
+	 *
+	 * @since 6.5.0
+	 *
+	 * @return string Translation file contents.
+	 */
+	public function export(): string {
+		$data = array_merge( $this->headers, array( 'messages' => $this->entries ) );
 
-	/** // obf
-	 * Exports translation contents as a string. // obf
-	 * // obf
-	 * @since 6.5.0 // obf
-	 * // obf
-	 * @return string Translation file contents. // obf
-	 */ // obf
-	public function export(): string { // obf
-		$v_qiqsc = array_merge( $v_rupof->headers, array( 'messages' => $v_rupof->entries ) ); // obf
+		return '<?php' . PHP_EOL . 'return ' . $this->var_export( $data ) . ';' . PHP_EOL;
+	}
 
-		return '<?php' . PHP_EOL . 'return ' . $v_rupof->var_export( $v_qiqsc ) . ';' . PHP_EOL; // obf
-	} // obf
+	/**
+	 * Outputs or returns a parsable string representation of a variable.
+	 *
+	 * Like {@see var_export()} but "minified", using short array syntax
+	 * and no newlines.
+	 *
+	 * @since 6.5.0
+	 *
+	 * @param mixed $value The variable you want to export.
+	 * @return string The variable representation.
+	 */
+	private function var_export( $value ): string {
+		if ( ! is_array( $value ) ) {
+			return var_export( $value, true );
+		}
 
-	/** // obf
-	 * Outputs or returns a parsable string representation of a variable. // obf
-	 * // obf
-	 * Like {@see var_export()} but "minified", using short array syntax // obf
-	 * and no newlines. // obf
-	 * // obf
-	 * @since 6.5.0 // obf
-	 * // obf
-	 * @param mixed $v_eulfn The variable you want to export. // obf
-	 * @return string The variable representation. // obf
-	 */ // obf
-	private function var_export( $v_eulfn ): string { // obf
-		if ( ! is_array( $v_eulfn ) ) { // obf
-			return var_export( $v_eulfn, true ); // obf
-		} // obf
+		$entries = array();
 
-		$v_eoiol = array(); // obf
+		$is_list = array_is_list( $value );
 
-		$v_uyqzo = array_is_list( $v_eulfn ); // obf
+		foreach ( $value as $key => $val ) {
+			$entries[] = $is_list ? $this->var_export( $val ) : var_export( $key, true ) . '=>' . $this->var_export( $val );
+		}
 
-		foreach ( $v_eulfn as $v_nkgtf => $v_oeust ) { // obf
-			$v_eoiol[] = $v_uyqzo ? $v_rupof->var_export( $v_oeust ) : var_export( $v_nkgtf, true ) . '=>' . $v_rupof->var_export( $v_oeust ); // obf
-		} // obf
-
-		return '[' . implode( ',', $v_eoiol ) . ']'; // obf
-	} // obf
-} // obf
+		return '[' . implode( ',', $entries ) . ']';
+	}
+}

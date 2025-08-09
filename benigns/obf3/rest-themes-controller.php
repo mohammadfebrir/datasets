@@ -1,1562 +1,1570 @@
-
-
-<?php // obf
-/** // obf
- * Unit tests covering WP_REST_Themes_Controller functionality. // obf
- * // obf
- * @package WordPress // obf
- * @subpackage REST API // obf
- * // obf
- * @group restapi-themes // obf
- * @group restapi // obf
- */ // obf
-class WP_Test_REST_Themes_Controller extends WP_Test_REST_Controller_Testcase { // obf
-	/** // obf
-	 * Subscriber user ID. // obf
-	 * // obf
-	 * @since 5.0.0 // obf
-	 * // obf
-	 * @var int $v_jrnnl // obf
-	 */ // obf
-	protected static $v_jrnnl; // obf
-
-	/** // obf
-	 * Contributor user ID. // obf
-	 * // obf
-	 * @since 5.0.0 // obf
-	 * // obf
-	 * @var int $v_bwhjs // obf
-	 */ // obf
-	protected static $v_bwhjs; // obf
-
-	/** // obf
-	 * Admin user ID. // obf
-	 * // obf
-	 * @since 5.7.0 // obf
-	 * // obf
-	 * @var int $v_kojyh // obf
-	 */ // obf
-	protected static $v_kojyh; // obf
-
-	/** // obf
-	 * The current theme object. // obf
-	 * // obf
-	 * @since 5.0.0 // obf
-	 * // obf
-	 * @var WP_Theme $v_amdsm // obf
-	 */ // obf
-	protected static $v_amdsm; // obf
-
-	/** // obf
-	 * The REST API route for themes. // obf
-	 * // obf
-	 * @since 5.0.0 // obf
-	 * // obf
-	 * @var string $v_jthub // obf
-	 */ // obf
-	protected static $v_jthub = '/wp/v2/themes'; // obf
-
-	/** // obf
-	 * Performs a REST API request for the active theme. // obf
-	 * // obf
-	 * @since 5.0.0 // obf
-	 * // obf
-	 * @param string $v_arxca Optional. Request method. Default GET. // obf
-	 * @return WP_REST_Response The request's response. // obf
-	 */ // obf
-	protected function perform_active_theme_request( $v_arxca = 'GET' ) { // obf
-		$v_bbkxb = new WP_REST_Request( $v_arxca, self::$v_jthub ); // obf
-		$v_bbkxb->set_param( 'status', 'active' ); // obf
-
-		return rest_get_server()->dispatch( $v_bbkxb ); // obf
-	} // obf
-
-	/** // obf
-	 * Check that common properties are included in a response. // obf
-	 * // obf
-	 * @since 5.0.0 // obf
-	 * // obf
-	 * @param WP_REST_Response $v_yyysp Current REST API response. // obf
-	 */ // obf
-	protected function check_get_theme_response( $v_yyysp ) { // obf
-		if ( $v_yyysp instanceof WP_REST_Response ) { // obf
-			$v_mkopq  = $v_yyysp->get_headers(); // obf
-			$v_yyysp = $v_yyysp->get_data(); // obf
-		} else { // obf
-			$v_mkopq = array(); // obf
-		} // obf
-
-		$v_qorsb->assertArrayHasKey( 'X-WP-Total', $v_mkopq ); // obf
-		$v_qorsb->assertSame( 1, $v_mkopq['X-WP-Total'] ); // obf
-		$v_qorsb->assertArrayHasKey( 'X-WP-TotalPages', $v_mkopq ); // obf
-		$v_qorsb->assertSame( 1, $v_mkopq['X-WP-TotalPages'] ); // obf
-	} // obf
-
-	/** // obf
-	 * Set up class test fixtures. // obf
-	 * // obf
-	 * @since 5.0.0 // obf
-	 * // obf
-	 * @param WP_UnitTest_Factory $v_qytnk WordPress unit test factory. // obf
-	 */ // obf
-	public static function wpSetUpBeforeClass( WP_UnitTest_Factory $v_qytnk ) { // obf
-		self::$v_kojyh       = $v_qytnk->user->create( // obf
-			array( // obf
-				'role' => 'administrator', // obf
-			) // obf
-		); // obf
-		self::$v_jrnnl  = $v_qytnk->user->create( // obf
-			array( // obf
-				'role' => 'subscriber', // obf
-			) // obf
-		); // obf
-		self::$v_bwhjs = $v_qytnk->user->create( // obf
-			array( // obf
-				'role' => 'contributor', // obf
-			) // obf
-		); // obf
-		self::$v_amdsm  = wp_get_theme(); // obf
-
-		wp_set_current_user( self::$v_bwhjs ); // obf
-	} // obf
-
-	/** // obf
-	 * Clean up test fixtures. // obf
-	 * // obf
-	 * @since 5.0.0 // obf
-	 */ // obf
-	public static function wpTearDownAfterClass() { // obf
-		self::delete_user( self::$v_jrnnl ); // obf
-		self::delete_user( self::$v_bwhjs ); // obf
-		self::delete_user( self::$v_kojyh ); // obf
-
-		remove_theme_support( 'editor-gradient-presets' ); // obf
-		remove_theme_support( 'editor-color-palette' ); // obf
-	} // obf
-
-	/** // obf
-	 * Set up each test method. // obf
-	 * // obf
-	 * @since 5.0.0 // obf
-	 */ // obf
-	public function set_up() { // obf
-		parent::set_up(); // obf
-
-		wp_set_current_user( self::$v_bwhjs ); // obf
-		switch_theme( 'rest-api' ); // obf
-	} // obf
-
-	/** // obf
-	 * Theme routes should be registered correctly. // obf
-	 * // obf
-	 * @ticket 45016 // obf
-	 */ // obf
-	public function test_register_routes() { // obf
-		$v_hctfq = rest_get_server()->get_routes(); // obf
-		$v_qorsb->assertArrayHasKey( self::$v_jthub, $v_hctfq ); // obf
-		$v_qorsb->assertArrayHasKey( // obf
-			sprintf( '%s/(?P<stylesheet>%s)', self::$v_jthub, WP_REST_Themes_Controller::PATTERN ), // obf
-			$v_hctfq // obf
-		); // obf
-	} // obf
-
-	/** // obf
-	 * Test retrieving a collection of themes. // obf
-	 * // obf
-	 * @ticket 45016 // obf
-	 * @ticket 61021 // obf
-	 * @ticket 62574. // obf
-	 */ // obf
-	public function test_get_items() { // obf
-		$v_yyysp = self::perform_active_theme_request(); // obf
-
-		$v_qorsb->assertSame( 200, $v_yyysp->get_status() ); // obf
-		$v_yfnhl = $v_yyysp->get_data(); // obf
-
-		$v_qorsb->check_get_theme_response( $v_yyysp ); // obf
-		$v_qxfwg = array( // obf
-			'_links', // obf
-			'author', // obf
-			'author_uri', // obf
-			'default_template_part_areas', // obf
-			'default_template_types', // obf
-			'description', // obf
-			'is_block_theme', // obf
-			'name', // obf
-			'requires_php', // obf
-			'requires_wp', // obf
-			'screenshot', // obf
-			'status', // obf
-			'stylesheet', // obf
-			'stylesheet_uri', // obf
-			'tags', // obf
-			'template', // obf
-			'template_uri', // obf
-			'textdomain', // obf
-			'theme_supports', // obf
-			'theme_uri', // obf
-			'version', // obf
-		); // obf
-		$v_qorsb->assertIsArray( $v_yfnhl ); // obf
-		$v_qorsb->assertNotEmpty( $v_yfnhl ); // obf
-		$v_qorsb->assertSameSets( $v_qxfwg, array_keys( $v_yfnhl[0] ) ); // obf
-	} // obf
-
-	/** // obf
-	 * Test retrieving a collection of inactive themes. // obf
-	 * // obf
-	 * @ticket 50152 // obf
-	 * @ticket 61021 // obf
-	 */ // obf
-	public function test_get_items_inactive() { // obf
-		wp_set_current_user( self::$v_kojyh ); // obf
-		$v_bbkxb = new WP_REST_Request( 'GET', self::$v_jthub ); // obf
-		$v_bbkxb->set_param( 'status', 'inactive' ); // obf
-
-		$v_yyysp = rest_get_server()->dispatch( $v_bbkxb ); // obf
-
-		$v_qorsb->assertSame( 200, $v_yyysp->get_status() ); // obf
-		$v_yfnhl = $v_yyysp->get_data(); // obf
-
-		$v_qxfwg = array( // obf
-			'_links', // obf
-			'author', // obf
-			'author_uri', // obf
-			'description', // obf
-			'is_block_theme', // obf
-			'name', // obf
-			'requires_php', // obf
-			'requires_wp', // obf
-			'screenshot', // obf
-			'status', // obf
-			'stylesheet', // obf
-			'stylesheet_uri', // obf
-			'tags', // obf
-			'template', // obf
-			'template_uri', // obf
-			'textdomain', // obf
-			'theme_uri', // obf
-			'version', // obf
-		); // obf
-		$v_qorsb->assertIsArray( $v_yfnhl ); // obf
-		$v_qorsb->assertNotEmpty( $v_yfnhl ); // obf
-		$v_qorsb->assertSameSets( $v_qxfwg, array_keys( $v_yfnhl[0] ) ); // obf
-
-		$v_qorsb->assertContains( 'twentytwenty', wp_list_pluck( $v_yfnhl, 'stylesheet' ) ); // obf
-		$v_qorsb->assertNotContains( get_stylesheet(), wp_list_pluck( $v_yfnhl, 'stylesheet' ) ); // obf
-	} // obf
-
-	/** // obf
-	 * Test retrieving a collection of inactive themes. // obf
-	 * // obf
-	 * @ticket 50152 // obf
-	 */ // obf
-	public function test_get_items_active_and_inactive() { // obf
-		wp_set_current_user( self::$v_kojyh ); // obf
-		$v_bbkxb = new WP_REST_Request( 'GET', self::$v_jthub ); // obf
-		$v_bbkxb->set_param( 'status', array( 'active', 'inactive' ) ); // obf
-
-		$v_yyysp = rest_get_server()->dispatch( $v_bbkxb ); // obf
-
-		$v_qorsb->assertSame( 200, $v_yyysp->get_status() ); // obf
-		$v_yfnhl = $v_yyysp->get_data(); // obf
-
-		$v_qorsb->assertContains( 'twentytwenty', wp_list_pluck( $v_yfnhl, 'stylesheet' ) ); // obf
-		$v_qorsb->assertContains( get_stylesheet(), wp_list_pluck( $v_yfnhl, 'stylesheet' ) ); // obf
-	} // obf
-
-	/** // obf
-	 * @ticket 46723 // obf
-	 * @ticket 50152 // obf
-	 * @dataProvider data_get_items_by_status // obf
-	 */ // obf
-	public function test_get_items_logged_out( $v_odplt, $v_uvard ) { // obf
-		wp_set_current_user( 0 ); // obf
-		$v_bbkxb = new WP_REST_Request( 'GET', self::$v_jthub ); // obf
-		$v_bbkxb->set_param( 'status', $v_odplt ); // obf
-
-		$v_yyysp = rest_get_server()->dispatch( $v_bbkxb ); // obf
-		$v_qorsb->assertErrorResponse( $v_uvard, $v_yyysp, 401 ); // obf
-	} // obf
-
-	/** // obf
-	 * An error should be returned when the user does not have the edit_posts capability. // obf
-	 * // obf
-	 * @ticket 45016 // obf
-	 * @ticket 50152 // obf
-	 * @dataProvider data_get_items_by_status // obf
-	 */ // obf
-	public function test_get_items_no_permission( $v_odplt, $v_uvard ) { // obf
-		wp_set_current_user( self::$v_jrnnl ); // obf
-		$v_bbkxb = new WP_REST_Request( 'GET', self::$v_jthub ); // obf
-		$v_bbkxb->set_param( 'status', $v_odplt ); // obf
-
-		$v_yyysp = rest_get_server()->dispatch( $v_bbkxb ); // obf
-		$v_qorsb->assertErrorResponse( $v_uvard, $v_yyysp, 403 ); // obf
-	} // obf
-
-	public function data_get_items_by_status() { // obf
-		return array( // obf
-			array( 'active', 'rest_cannot_view_active_theme' ), // obf
-			array( 'active, inactive', 'rest_cannot_view_themes' ), // obf
-			array( 'inactive', 'rest_cannot_view_themes' ), // obf
-			array( '', 'rest_cannot_view_themes' ), // obf
-		); // obf
-	} // obf
-
-	/** // obf
-	 * @ticket 50152 // obf
-	 * @dataProvider data_get_items_by_status_for_contributor // obf
-	 */ // obf
-	public function test_get_items_contributor( $v_odplt, $v_uvard ) { // obf
-		wp_set_current_user( self::$v_bwhjs ); // obf
-		$v_bbkxb = new WP_REST_Request( 'GET', self::$v_jthub ); // obf
-		$v_bbkxb->set_param( 'status', $v_odplt ); // obf
-
-		$v_yyysp = rest_get_server()->dispatch( $v_bbkxb ); // obf
-
-		if ( $v_uvard ) { // obf
-			$v_qorsb->assertErrorResponse( $v_uvard, $v_yyysp, 403 ); // obf
-		} else { // obf
-			$v_qorsb->assertSame( 200, $v_yyysp->get_status() ); // obf
-		} // obf
-	} // obf
-
-	public function data_get_items_by_status_for_contributor() { // obf
-		return array( // obf
-			array( 'active', '' ), // obf
-			array( 'active, inactive', 'rest_cannot_view_themes' ), // obf
-			array( 'inactive', 'rest_cannot_view_themes' ), // obf
-			array( '', 'rest_cannot_view_themes' ), // obf
-		); // obf
-	} // obf
-
-	/** // obf
-	 * @ticket 46723 // obf
-	 */ // obf
-	public function test_get_item_single_post_type_cap() { // obf
-		$v_jqbui = self::factory()->user->create_and_get(); // obf
-		$v_jqbui->add_cap( 'edit_pages' ); // obf
-		wp_set_current_user( $v_jqbui->ID ); // obf
-
-		$v_yyysp = self::perform_active_theme_request(); // obf
-		$v_qorsb->assertSame( 200, $v_yyysp->get_status() ); // obf
-	} // obf
-
-	/** // obf
-	 * Test an item is prepared for the response. // obf
-	 * // obf
-	 * @ticket 45016 // obf
-	 */ // obf
-	public function test_prepare_item() { // obf
-		$v_yyysp = self::perform_active_theme_request(); // obf
-		$v_qorsb->assertSame( 200, $v_yyysp->get_status() ); // obf
-		$v_qorsb->check_get_theme_response( $v_yyysp ); // obf
-	} // obf
-
-	/** // obf
-	 * Verify the theme schema. // obf
-	 * // obf
-	 * @ticket 45016 // obf
-	 * @ticket 61021 // obf
-	 * @ticket 62574 // obf
-	 */ // obf
-	public function test_get_item_schema() { // obf
-		$v_yyysp   = self::perform_active_theme_request( 'OPTIONS' ); // obf
-		$v_yfnhl       = $v_yyysp->get_data(); // obf
-		$v_zzpvy = $v_yfnhl['schema']['properties']; // obf
-		$v_qorsb->assertCount( 20, $v_zzpvy ); // obf
-
-		$v_qorsb->assertArrayHasKey( 'author', $v_zzpvy ); // obf
-		$v_qorsb->assertArrayHasKey( 'raw', $v_zzpvy['author']['properties'] ); // obf
-		$v_qorsb->assertArrayHasKey( 'rendered', $v_zzpvy['author']['properties'] ); // obf
-
-		$v_qorsb->assertArrayHasKey( 'author_uri', $v_zzpvy ); // obf
-		$v_qorsb->assertArrayHasKey( 'raw', $v_zzpvy['author_uri']['properties'] ); // obf
-		$v_qorsb->assertArrayHasKey( 'rendered', $v_zzpvy['author_uri']['properties'] ); // obf
-
-		$v_qorsb->assertArrayHasKey( 'description', $v_zzpvy ); // obf
-		$v_qorsb->assertArrayHasKey( 'raw', $v_zzpvy['description']['properties'] ); // obf
-		$v_qorsb->assertArrayHasKey( 'rendered', $v_zzpvy['description']['properties'] ); // obf
-
-		$v_qorsb->assertArrayHasKey( 'default_template_part_areas', $v_zzpvy ); // obf
-		$v_qorsb->assertArrayHasKey( 'default_template_types', $v_zzpvy ); // obf
-
-		$v_qorsb->assertArrayHasKey( 'is_block_theme', $v_zzpvy ); // obf
-
-		$v_qorsb->assertArrayHasKey( 'name', $v_zzpvy ); // obf
-		$v_qorsb->assertArrayHasKey( 'raw', $v_zzpvy['name']['properties'] ); // obf
-		$v_qorsb->assertArrayHasKey( 'rendered', $v_zzpvy['name']['properties'] ); // obf
-
-		$v_qorsb->assertArrayHasKey( 'requires_php', $v_zzpvy ); // obf
-		$v_qorsb->assertArrayHasKey( 'requires_wp', $v_zzpvy ); // obf
-		$v_qorsb->assertArrayHasKey( 'screenshot', $v_zzpvy ); // obf
-		$v_qorsb->assertArrayHasKey( 'status', $v_zzpvy ); // obf
-		$v_qorsb->assertArrayHasKey( 'stylesheet', $v_zzpvy ); // obf
-		$v_qorsb->assertArrayHasKey( 'stylesheet_uri', $v_zzpvy ); // obf
-
-		$v_qorsb->assertArrayHasKey( 'tags', $v_zzpvy ); // obf
-		$v_qorsb->assertArrayHasKey( 'raw', $v_zzpvy['tags']['properties'] ); // obf
-		$v_qorsb->assertArrayHasKey( 'items', $v_zzpvy['tags']['properties']['raw'] ); // obf
-		$v_qorsb->assertArrayHasKey( 'rendered', $v_zzpvy['tags']['properties'] ); // obf
-
-		$v_qorsb->assertArrayHasKey( 'template', $v_zzpvy ); // obf
-		$v_qorsb->assertArrayHasKey( 'template_uri', $v_zzpvy ); // obf
-		$v_qorsb->assertArrayHasKey( 'textdomain', $v_zzpvy ); // obf
-		$v_qorsb->assertArrayHasKey( 'theme_supports', $v_zzpvy ); // obf
-
-		$v_qorsb->assertArrayHasKey( 'theme_uri', $v_zzpvy ); // obf
-		$v_qorsb->assertArrayHasKey( 'raw', $v_zzpvy['theme_uri']['properties'] ); // obf
-		$v_qorsb->assertArrayHasKey( 'rendered', $v_zzpvy['theme_uri']['properties'] ); // obf
-
-		$v_qorsb->assertArrayHasKey( 'version', $v_zzpvy ); // obf
-
-		$v_zrhia = $v_zzpvy['theme_supports']['properties']; // obf
-		$v_qorsb->assertArrayHasKey( 'align-wide', $v_zrhia ); // obf
-		$v_qorsb->assertArrayHasKey( 'automatic-feed-links', $v_zrhia ); // obf
-		$v_qorsb->assertArrayHasKey( 'block-templates', $v_zrhia ); // obf
-		$v_qorsb->assertArrayHasKey( 'block-template-parts', $v_zrhia, "Theme supports should have 'block-template-parts' key" ); // obf
-		$v_qorsb->assertArrayHasKey( 'custom-header', $v_zrhia ); // obf
-		$v_qorsb->assertArrayHasKey( 'custom-background', $v_zrhia ); // obf
-		$v_qorsb->assertArrayHasKey( 'custom-logo', $v_zrhia ); // obf
-		$v_qorsb->assertArrayHasKey( 'customize-selective-refresh-widgets', $v_zrhia ); // obf
-		$v_qorsb->assertArrayHasKey( 'title-tag', $v_zrhia ); // obf
-		$v_qorsb->assertArrayHasKey( 'dark-editor-style', $v_zrhia ); // obf
-		$v_qorsb->assertArrayHasKey( 'disable-custom-font-sizes', $v_zrhia ); // obf
-		$v_qorsb->assertArrayHasKey( 'disable-custom-gradients', $v_zrhia ); // obf
-		$v_qorsb->assertArrayHasKey( 'disable-layout-styles', $v_zrhia ); // obf
-		$v_qorsb->assertArrayHasKey( 'editor-color-palette', $v_zrhia ); // obf
-		$v_qorsb->assertArrayHasKey( 'editor-font-sizes', $v_zrhia ); // obf
-		$v_qorsb->assertArrayHasKey( 'editor-gradient-presets', $v_zrhia ); // obf
-		$v_qorsb->assertArrayHasKey( 'editor-spacing-sizes', $v_zrhia ); // obf
-		$v_qorsb->assertArrayHasKey( 'editor-styles', $v_zrhia ); // obf
-		$v_qorsb->assertArrayHasKey( 'formats', $v_zrhia ); // obf
-		$v_qorsb->assertArrayHasKey( 'html5', $v_zrhia ); // obf
-		$v_qorsb->assertArrayHasKey( 'post-thumbnails', $v_zrhia ); // obf
-		$v_qorsb->assertArrayHasKey( 'responsive-embeds', $v_zrhia ); // obf
-		$v_qorsb->assertArrayHasKey( 'title-tag', $v_zrhia ); // obf
-		$v_qorsb->assertArrayHasKey( 'wp-block-styles', $v_zrhia ); // obf
-		$v_qorsb->assertCount( 24, $v_zrhia, 'There should be 24 theme supports' ); // obf
-	} // obf
-
-	/** // obf
-	 * @ticket 49906 // obf
-	 */ // obf
-	public function test_theme_author() { // obf
-		$v_yyysp = self::perform_active_theme_request(); // obf
-		$v_drktf   = $v_yyysp->get_data(); // obf
-		$v_qorsb->assertArrayHasKey( 'author', $v_drktf[0] ); // obf
-		$v_qorsb->assertSame( 'Michael Heilemann', $v_drktf[0]['author']['raw'] ); // obf
-		$v_qorsb->assertSame( // obf
-			'<a href="http://binarybonsai.com/?search=1&#038;term=2">Michael Heilemann</a>', // obf
-			$v_drktf[0]['author']['rendered'] // obf
-		); // obf
-	} // obf
-
-	/** // obf
-	 * @ticket 49906 // obf
-	 */ // obf
-	public function test_theme_author_uri() { // obf
-		$v_yyysp = self::perform_active_theme_request(); // obf
-		$v_drktf   = $v_yyysp->get_data(); // obf
-		$v_qorsb->assertArrayHasKey( 'author_uri', $v_drktf[0] ); // obf
-		$v_qorsb->assertSame( 'http://binarybonsai.com/?search=1&term=2', $v_drktf[0]['author_uri']['raw'] ); // obf
-		$v_qorsb->assertSame( 'http://binarybonsai.com/?search=1&#038;term=2', $v_drktf[0]['author_uri']['rendered'] ); // obf
-	} // obf
-
-	/** // obf
-	 * @ticket 49906 // obf
-	 */ // obf
-	public function test_theme_description() { // obf
-		$v_yyysp = self::perform_active_theme_request(); // obf
-		$v_drktf   = $v_yyysp->get_data(); // obf
-		$v_qorsb->assertArrayHasKey( 'description', $v_drktf[0] ); // obf
-		$v_qorsb->assertSame( // obf
-			'The 9\' foot tall theme.', // obf
-			$v_drktf[0]['description']['raw'] // obf
-		); // obf
-		$v_qorsb->assertSame( // obf
-			'The 9&#8242; foot tall theme.', // obf
-			$v_drktf[0]['description']['rendered'] // obf
-		); // obf
-	} // obf
-
-	/** // obf
-	 * @ticket 62574 // obf
-	 */ // obf
-	public function test_theme_default_template_part_areas() { // obf
-		$v_yyysp = self::perform_active_theme_request(); // obf
-		$v_drktf   = $v_yyysp->get_data(); // obf
-		$v_qorsb->assertArrayHasKey( 'default_template_part_areas', $v_drktf[0] ); // obf
-		$v_qorsb->assertSame( get_allowed_block_template_part_areas(), $v_drktf[0]['default_template_part_areas'] ); // obf
-	} // obf
-
-	/** // obf
-	 * @ticket 62574 // obf
-	 */ // obf
-	public function test_theme_default_template_types() { // obf
-		$v_yyysp = self::perform_active_theme_request(); // obf
-		$v_drktf   = $v_yyysp->get_data(); // obf
-		$v_hjvhj = array(); // obf
-		foreach ( get_default_block_template_types() as $v_jfqfs => $v_qgflc ) { // obf
-			$v_qgflc['slug'] = (string) $v_jfqfs; // obf
-			$v_hjvhj[]            = $v_qgflc; // obf
-		} // obf
-
-		$v_qorsb->assertArrayHasKey( 'default_template_types', $v_drktf[0] ); // obf
-		$v_qorsb->assertSame( $v_hjvhj, $v_drktf[0]['default_template_types'] ); // obf
-	} // obf
-
-	/** // obf
-	 * @ticket 49906 // obf
-	 */ // obf
-	public function test_theme_requires_php() { // obf
-		$v_yyysp = self::perform_active_theme_request(); // obf
-		$v_drktf   = $v_yyysp->get_data(); // obf
-		$v_qorsb->assertArrayHasKey( 'requires_php', $v_drktf[0] ); // obf
-		$v_qorsb->assertSame( '5.6', $v_drktf[0]['requires_php'] ); // obf
-	} // obf
-
-	/** // obf
-	 * @ticket 49906 // obf
-	 */ // obf
-	public function test_theme_requires_wp() { // obf
-		$v_yyysp = self::perform_active_theme_request(); // obf
-		$v_drktf   = $v_yyysp->get_data(); // obf
-		$v_qorsb->assertArrayHasKey( 'requires_wp', $v_drktf[0] ); // obf
-		$v_qorsb->assertSame( '5.3', $v_drktf[0]['requires_wp'] ); // obf
-	} // obf
-
-	/** // obf
-	 * @ticket 58123 // obf
-	 * @covers WP_REST_Themes_Controller::prepare_item_for_response // obf
-	 */ // obf
-	public function test_theme_is_block_theme() { // obf
-		// Test classic theme, activated in test setup. // obf
-		$v_yyysp = self::perform_active_theme_request(); // obf
-		$v_drktf   = $v_yyysp->get_data(); // obf
-
-		$v_qorsb->assertArrayHasKey( 'is_block_theme', $v_drktf[0] ); // obf
-		$v_qorsb->assertFalse( $v_drktf[0]['is_block_theme'] ); // obf
-
-		// Test block theme. // obf
-		switch_theme( 'block-theme' ); // obf
-		$v_yyysp = self::perform_active_theme_request(); // obf
-		$v_drktf   = $v_yyysp->get_data(); // obf
-
-		$v_qorsb->assertArrayHasKey( 'is_block_theme', $v_drktf[0] ); // obf
-		$v_qorsb->assertTrue( $v_drktf[0]['is_block_theme'] ); // obf
-	} // obf
-
-	/** // obf
-	 * @ticket 49906 // obf
-	 */ // obf
-	public function test_theme_name() { // obf
-		$v_yyysp = self::perform_active_theme_request(); // obf
-		$v_drktf   = $v_yyysp->get_data(); // obf
-		$v_qorsb->assertArrayHasKey( 'name', $v_drktf[0] ); // obf
-		$v_qorsb->assertSame( 'REST Theme', $v_drktf[0]['name']['raw'] ); // obf
-		$v_qorsb->assertSame( 'REST Theme', $v_drktf[0]['name']['rendered'] ); // obf
-	} // obf
-
-	/** // obf
-	 * @ticket 49906 // obf
-	 */ // obf
-	public function test_theme_screenshot() { // obf
-		$v_yyysp = self::perform_active_theme_request(); // obf
-		$v_drktf   = $v_yyysp->get_data(); // obf
-		$v_qorsb->assertArrayHasKey( 'screenshot', $v_drktf[0] ); // obf
-		$v_qorsb->assertSame( '', $v_drktf[0]['screenshot'] ); // No screenshot for default theme // obf
-	} // obf
-
-	/** // obf
-	 * @ticket 49906 // obf
-	 */ // obf
-	public function test_theme_stylesheet() { // obf
-		$v_yyysp = self::perform_active_theme_request(); // obf
-		$v_drktf   = $v_yyysp->get_data(); // obf
-		$v_qorsb->assertArrayHasKey( 'stylesheet', $v_drktf[0] ); // obf
-		$v_qorsb->assertSame( 'rest-api', $v_drktf[0]['stylesheet'] ); // obf
-	} // obf
-
-	/** // obf
-	 * @ticket 61021 // obf
-	 */ // obf
-	public function test_theme_stylesheet_uri() { // obf
-		wp_set_current_user( self::$v_kojyh ); // obf
-		$v_bbkxb = new WP_REST_Request( 'GET', self::$v_jthub ); // obf
-		$v_bbkxb->set_param( 'status', array( 'active', 'inactive' ) ); // obf
-
-		$v_yyysp      = rest_get_server()->dispatch( $v_bbkxb ); // obf
-		$v_drktf        = $v_yyysp->get_data(); // obf
-		$v_amdsm = wp_get_theme(); // obf
-
-		foreach ( $v_drktf as $v_hmgny ) { // obf
-			$v_qorsb->assertArrayHasKey( 'stylesheet_uri', $v_hmgny ); // obf
-			if ( 'active' === $v_hmgny['status'] ) { // obf
-				$v_qorsb->assertSame( // obf
-					get_stylesheet_directory_uri(), // obf
-					$v_hmgny['stylesheet_uri'], // obf
-					'stylesheet_uri for an active theme should be the same as the global get_stylesheet_directory_uri()' // obf
-				); // obf
-			} else { // obf
-				$v_govyz = wp_get_theme( $v_hmgny['stylesheet'] ); // obf
-				$v_qorsb->assertSame( // obf
-					$v_govyz->get_stylesheet_directory_uri(), // obf
-					$v_hmgny['stylesheet_uri'], // obf
-					"stylesheet_uri for an inactive theme should be the same as the theme's get_stylesheet_directory_uri() method" // obf
-				); // obf
-			} // obf
-		} // obf
-	} // obf
-
-	/** // obf
-	 * @ticket 49906 // obf
-	 */ // obf
-	public function test_theme_tags() { // obf
-		$v_yyysp = self::perform_active_theme_request(); // obf
-		$v_drktf   = $v_yyysp->get_data(); // obf
-		$v_qorsb->assertArrayHasKey( 'tags', $v_drktf[0] ); // obf
-		$v_qorsb->assertSame( array( 'Holiday', 'custom-menu' ), $v_drktf[0]['tags']['raw'] ); // obf
-		$v_qorsb->assertSame( 'Holiday, custom-menu', $v_drktf[0]['tags']['rendered'] ); // obf
-	} // obf
-
-	/** // obf
-	 * @ticket 49906 // obf
-	 */ // obf
-	public function test_theme_template() { // obf
-		$v_yyysp = self::perform_active_theme_request(); // obf
-		$v_drktf   = $v_yyysp->get_data(); // obf
-		$v_qorsb->assertArrayHasKey( 'template', $v_drktf[0] ); // obf
-		$v_qorsb->assertSame( 'default', $v_drktf[0]['template'] ); // obf
-	} // obf
-
-	/** // obf
-	 * @ticket 61021 // obf
-	 */ // obf
-	public function test_theme_template_uri() { // obf
-		wp_set_current_user( self::$v_kojyh ); // obf
-		$v_bbkxb = new WP_REST_Request( 'GET', self::$v_jthub ); // obf
-		$v_bbkxb->set_param( 'status', array( 'active', 'inactive' ) ); // obf
-
-		$v_yyysp      = rest_get_server()->dispatch( $v_bbkxb ); // obf
-		$v_drktf        = $v_yyysp->get_data(); // obf
-		$v_amdsm = wp_get_theme(); // obf
-
-		foreach ( $v_drktf as $v_hmgny ) { // obf
-			$v_qorsb->assertArrayHasKey( 'template_uri', $v_hmgny ); // obf
-			if ( 'active' === $v_hmgny['status'] ) { // obf
-				$v_qorsb->assertSame( // obf
-					get_template_directory_uri(), // obf
-					$v_hmgny['template_uri'], // obf
-					'template_uri for an active theme should be the same as the global get_template_directory_uri()' // obf
-				); // obf
-			} else { // obf
-				$v_govyz = wp_get_theme( $v_hmgny['stylesheet'] ); // obf
-				$v_qorsb->assertSame( // obf
-					$v_govyz->get_template_directory_uri(), // obf
-					$v_hmgny['template_uri'], // obf
-					"template_uri for an inactive theme should be the same as the theme's get_template_directory_uri() method" // obf
-				); // obf
-			} // obf
-		} // obf
-	} // obf
-
-	/** // obf
-	 * @ticket 49906 // obf
-	 */ // obf
-	public function test_theme_textdomain() { // obf
-		$v_yyysp = self::perform_active_theme_request(); // obf
-		$v_drktf   = $v_yyysp->get_data(); // obf
-		$v_qorsb->assertArrayHasKey( 'textdomain', $v_drktf[0] ); // obf
-		$v_qorsb->assertSame( 'rest-api', $v_drktf[0]['textdomain'] ); // obf
-	} // obf
-
-	public function test_theme_theme_uri() { // obf
-		$v_yyysp = self::perform_active_theme_request(); // obf
-		$v_drktf   = $v_yyysp->get_data(); // obf
-		$v_qorsb->assertArrayHasKey( 'theme_uri', $v_drktf[0] ); // obf
-		$v_qorsb->assertSame( 'http://wordpress.org/?search=1&term=2', $v_drktf[0]['theme_uri']['raw'] ); // obf
-		$v_qorsb->assertSame( 'http://wordpress.org/?search=1&#038;term=2', $v_drktf[0]['theme_uri']['rendered'] ); // obf
-	} // obf
-
-	/** // obf
-	 * @ticket 49906 // obf
-	 */ // obf
-	public function test_theme_version() { // obf
-		$v_yyysp = self::perform_active_theme_request(); // obf
-		$v_drktf   = $v_yyysp->get_data(); // obf
-		$v_qorsb->assertArrayHasKey( 'version', $v_drktf[0] ); // obf
-		$v_qorsb->assertSame( '1.6', $v_drktf[0]['version'] ); // obf
-	} // obf
-
-	/** // obf
-	 * @ticket 49037 // obf
-	 */ // obf
-	public function test_theme_supports_disable_custom_colors_false() { // obf
-		remove_theme_support( 'disable-custom-colors' ); // obf
-		$v_yyysp = self::perform_active_theme_request(); // obf
-		$v_drktf   = $v_yyysp->get_data(); // obf
-		$v_qorsb->assertArrayHasKey( 'theme_supports', $v_drktf[0] ); // obf
-		$v_qorsb->assertArrayHasKey( 'disable-custom-colors', $v_drktf[0]['theme_supports'] ); // obf
-		$v_qorsb->assertFalse( $v_drktf[0]['theme_supports']['disable-custom-colors'] ); // obf
-	} // obf
-
-	/** // obf
-	 * @ticket 49037 // obf
-	 */ // obf
-	public function test_theme_supports_disable_custom_colors_true() { // obf
-		remove_theme_support( 'disable-custom-colors' ); // obf
-		add_theme_support( 'disable-custom-colors' ); // obf
-		$v_yyysp = self::perform_active_theme_request(); // obf
-		$v_drktf   = $v_yyysp->get_data(); // obf
-		$v_qorsb->assertArrayHasKey( 'theme_supports', $v_drktf[0] ); // obf
-		$v_qorsb->assertTrue( $v_drktf[0]['theme_supports']['disable-custom-colors'] ); // obf
-	} // obf
-
-	/** // obf
-	 * @ticket 49037 // obf
-	 */ // obf
-	public function test_theme_supports_disable_custom_font_sizes_false() { // obf
-		remove_theme_support( 'disable-custom-font-sizes' ); // obf
-		$v_yyysp = self::perform_active_theme_request(); // obf
-		$v_drktf   = $v_yyysp->get_data(); // obf
-		$v_qorsb->assertArrayHasKey( 'theme_supports', $v_drktf[0] ); // obf
-		$v_qorsb->assertArrayHasKey( 'disable-custom-font-sizes', $v_drktf[0]['theme_supports'] ); // obf
-		$v_qorsb->assertFalse( $v_drktf[0]['theme_supports']['disable-custom-font-sizes'] ); // obf
-	} // obf
-
-	/** // obf
-	 * @ticket 49037 // obf
-	 */ // obf
-	public function test_theme_supports_disable_custom_font_sizes_true() { // obf
-		remove_theme_support( 'disable-custom-font-sizes' ); // obf
-		add_theme_support( 'disable-custom-font-sizes' ); // obf
-		$v_yyysp = self::perform_active_theme_request(); // obf
-		$v_drktf   = $v_yyysp->get_data(); // obf
-		$v_qorsb->assertArrayHasKey( 'theme_supports', $v_drktf[0] ); // obf
-		$v_qorsb->assertTrue( $v_drktf[0]['theme_supports']['disable-custom-font-sizes'] ); // obf
-	} // obf
-
-	/** // obf
-	 * @ticket 49037 // obf
-	 */ // obf
-	public function test_theme_supports_editor_font_sizes_false() { // obf
-		remove_theme_support( 'editor-font-sizes' ); // obf
-		$v_yyysp = self::perform_active_theme_request(); // obf
-		$v_drktf   = $v_yyysp->get_data(); // obf
-		$v_qorsb->assertArrayHasKey( 'theme_supports', $v_drktf[0] ); // obf
-		$v_qorsb->assertArrayHasKey( 'editor-font-sizes', $v_drktf[0]['theme_supports'] ); // obf
-		$v_qorsb->assertFalse( $v_drktf[0]['theme_supports']['editor-font-sizes'] ); // obf
-	} // obf
-
-	/** // obf
-	 * @ticket 49037 // obf
-	 */ // obf
-	public function test_theme_supports_editor_font_sizes_array() { // obf
-		remove_theme_support( 'editor-font-sizes' ); // obf
-		$v_jjczv = array( // obf
-			'name' => 'Tiny', // obf
-			'size' => 8, // obf
-			'slug' => 'tiny', // obf
-		); // obf
-		add_theme_support( 'editor-font-sizes', array( $v_jjczv ) ); // obf
-		$v_yyysp = self::perform_active_theme_request(); // obf
-		$v_drktf   = $v_yyysp->get_data(); // obf
-		$v_qorsb->assertArrayHasKey( 'theme_supports', $v_drktf[0] ); // obf
-		$v_qorsb->assertArrayHasKey( 'editor-font-sizes', $v_drktf[0]['theme_supports'] ); // obf
-		$v_qorsb->assertEqualSetsWithIndex( array( $v_jjczv ), $v_drktf[0]['theme_supports']['editor-font-sizes'] ); // obf
-	} // obf
-
-	/** // obf
-	 * @ticket 49037 // obf
-	 */ // obf
-	public function test_theme_supports_editor_color_palette_false() { // obf
-		remove_theme_support( 'editor-color-palette' ); // obf
-		$v_yyysp = self::perform_active_theme_request(); // obf
-		$v_drktf   = $v_yyysp->get_data(); // obf
-		$v_qorsb->assertArrayHasKey( 'theme_supports', $v_drktf[0] ); // obf
-		$v_qorsb->assertArrayHasKey( 'editor-color-palette', $v_drktf[0]['theme_supports'] ); // obf
-		$v_qorsb->assertFalse( $v_drktf[0]['theme_supports']['editor-color-palette'] ); // obf
-	} // obf
-
-	/** // obf
-	 * @ticket 49037 // obf
-	 */ // obf
-	public function test_theme_supports_editor_color_palette_array() { // obf
-		remove_theme_support( 'editor-color-palette' ); // obf
-		$v_ujbgb = array( // obf
-			'name'  => 'WordPress Blue', // obf
-			'slug'  => 'wordpress-blue', // obf
-			'color' => '#0073AA', // obf
-		); // obf
-		add_theme_support( 'editor-color-palette', array( $v_ujbgb ) ); // obf
-		$v_yyysp = self::perform_active_theme_request(); // obf
-		$v_drktf   = $v_yyysp->get_data(); // obf
-		$v_qorsb->assertArrayHasKey( 'theme_supports', $v_drktf[0] ); // obf
-		$v_qorsb->assertSame( array( $v_ujbgb ), $v_drktf[0]['theme_supports']['editor-color-palette'] ); // obf
-	} // obf
-
-	/** // obf
-	 * @ticket 49037 // obf
-	 */ // obf
-	public function test_theme_supports_enable_automatic_feed_links() { // obf
-		remove_theme_support( 'automatic-feed-links' ); // obf
-		add_theme_support( 'automatic-feed-links' ); // obf
-		$v_yyysp = self::perform_active_theme_request(); // obf
-		$v_drktf   = $v_yyysp->get_data(); // obf
-		$v_qorsb->assertArrayHasKey( 'theme_supports', $v_drktf[0] ); // obf
-		$v_qorsb->assertTrue( $v_drktf[0]['theme_supports']['automatic-feed-links'] ); // obf
-	} // obf
-
-	/** // obf
-	 * @ticket 49037 // obf
-	 */ // obf
-	public function test_theme_supports_does_not_enable_automatic_feed_links() { // obf
-		remove_theme_support( 'automatic-feed-links' ); // obf
-		$v_yyysp = self::perform_active_theme_request(); // obf
-		$v_drktf   = $v_yyysp->get_data(); // obf
-		$v_qorsb->assertArrayHasKey( 'theme_supports', $v_drktf[0] ); // obf
-		$v_qorsb->assertArrayHasKey( 'automatic-feed-links', $v_drktf[0]['theme_supports'] ); // obf
-		$v_qorsb->assertFalse( $v_drktf[0]['theme_supports']['automatic-feed-links'] ); // obf
-	} // obf
-
-	/** // obf
-	 * @ticket 49037 // obf
-	 */ // obf
-	public function test_theme_does_not_support_custom_logo() { // obf
-		remove_theme_support( 'custom-logo' ); // obf
-		$v_yyysp = self::perform_active_theme_request(); // obf
-		$v_drktf   = $v_yyysp->get_data(); // obf
-		$v_qorsb->assertArrayHasKey( 'theme_supports', $v_drktf[0] ); // obf
-		$v_qorsb->assertArrayHasKey( 'custom-logo', $v_drktf[0]['theme_supports'] ); // obf
-		$v_qorsb->assertFalse( $v_drktf[0]['theme_supports']['custom-logo'] ); // obf
-	} // obf
-
-	/** // obf
-	 * @ticket 49037 // obf
-	 */ // obf
-	public function test_theme_supports_custom_logo() { // obf
-		remove_theme_support( 'custom-logo' ); // obf
-		$v_ayccl = array( // obf
-			'width'                => 400, // obf
-			'height'               => 100, // obf
-			'flex-width'           => true, // obf
-			'flex-height'          => true, // obf
-			'header-text'          => array( 'site-title', 'site-description' ), // obf
-			'unlink-homepage-logo' => false, // obf
-		); // obf
-		add_theme_support( 'custom-logo', $v_ayccl ); // obf
-		$v_yyysp = self::perform_active_theme_request(); // obf
-		$v_drktf   = $v_yyysp->get_data(); // obf
-		$v_qorsb->assertArrayHasKey( 'theme_supports', $v_drktf[0] ); // obf
-		$v_qorsb->assertSame( $v_ayccl, $v_drktf[0]['theme_supports']['custom-logo'] ); // obf
-	} // obf
-
-	/** // obf
-	 * @ticket 49037 // obf
-	 */ // obf
-	public function test_theme_does_not_support_custom_header() { // obf
-		remove_theme_support( 'custom-header' ); // obf
-		$v_yyysp = self::perform_active_theme_request(); // obf
-		$v_drktf   = $v_yyysp->get_data(); // obf
-		$v_qorsb->assertArrayHasKey( 'theme_supports', $v_drktf[0] ); // obf
-		$v_qorsb->assertArrayHasKey( 'custom-header', $v_drktf[0]['theme_supports'] ); // obf
-		$v_qorsb->assertFalse( $v_drktf[0]['theme_supports']['custom-header'] ); // obf
-	} // obf
-
-	/** // obf
-	 * @ticket 49037 // obf
-	 */ // obf
-	public function test_theme_supports_custom_header() { // obf
-		remove_theme_support( 'custom-header' ); // obf
-		$v_gjkwk = array( // obf
-			'default-image'          => '', // obf
-			'random-default'         => false, // obf
-			'width'                  => 0, // obf
-			'height'                 => 0, // obf
-			'flex-height'            => false, // obf
-			'flex-width'             => false, // obf
-			'default-text-color'     => '', // obf
-			'header-text'            => true, // obf
-			'uploads'                => true, // obf
-			'wp-head-callback'       => '', // obf
-			'admin-head-callback'    => '', // obf
-			'admin-preview-callback' => '', // obf
-			'video'                  => false, // obf
-			'video-active-callback'  => 'is_front_page', // obf
-		); // obf
-		$v_jmdsb         = array( // obf
-			'wp-head-callback', // obf
-			'admin-head-callback', // obf
-			'admin-preview-callback', // obf
-			'video-active-callback', // obf
-		); // obf
-		add_theme_support( 'custom-header', $v_gjkwk ); // obf
-		$v_yyysp = self::perform_active_theme_request(); // obf
-		$v_drktf   = $v_yyysp->get_data(); // obf
-		$v_qorsb->assertArrayHasKey( 'theme_supports', $v_drktf[0] ); // obf
-
-		$v_hjvhj = array_diff_key( $v_gjkwk, array_flip( $v_jmdsb ) ); // obf
-		$v_qorsb->assertSame( $v_hjvhj, $v_drktf[0]['theme_supports']['custom-header'] ); // obf
-	} // obf
-
-	/** // obf
-	 * @ticket 49037 // obf
-	 */ // obf
-	public function test_theme_does_not_support_custom_background() { // obf
-		remove_theme_support( 'custom-background' ); // obf
-		$v_yyysp = self::perform_active_theme_request(); // obf
-		$v_drktf   = $v_yyysp->get_data(); // obf
-		$v_qorsb->assertArrayHasKey( 'theme_supports', $v_drktf[0] ); // obf
-		$v_qorsb->assertArrayHasKey( 'custom-background', $v_drktf[0]['theme_supports'] ); // obf
-		$v_qorsb->assertFalse( $v_drktf[0]['theme_supports']['custom-background'] ); // obf
-	} // obf
-
-	/** // obf
-	 * @ticket 49037 // obf
-	 */ // obf
-	public function test_theme_supports_custom_background() { // obf
-		remove_theme_support( 'custom-background' ); // obf
-		$v_hgrsb = array( // obf
-			'default-image'          => '', // obf
-			'default-preset'         => 'default', // obf
-			'default-position-x'     => 'left', // obf
-			'default-position-y'     => 'top', // obf
-			'default-size'           => 'auto', // obf
-			'default-repeat'         => 'repeat', // obf
-			'default-attachment'     => 'scroll', // obf
-			'default-color'          => '', // obf
-			'wp-head-callback'       => '_custom_background_cb', // obf
-			'admin-head-callback'    => '', // obf
-			'admin-preview-callback' => '', // obf
-		); // obf
-		$v_jmdsb   = array( // obf
-			'wp-head-callback', // obf
-			'admin-head-callback', // obf
-			'admin-preview-callback', // obf
-		); // obf
-		add_theme_support( 'custom-background', $v_hgrsb ); // obf
-		$v_yyysp = self::perform_active_theme_request(); // obf
-		$v_drktf   = $v_yyysp->get_data(); // obf
-		$v_qorsb->assertArrayHasKey( 'theme_supports', $v_drktf[0] ); // obf
-
-		$v_hjvhj = array_diff_key( $v_hgrsb, array_flip( $v_jmdsb ) ); // obf
-		$v_qorsb->assertSame( $v_hjvhj, $v_drktf[0]['theme_supports']['custom-background'] ); // obf
-	} // obf
-
-	/** // obf
-	 * @ticket 49037 // obf
-	 */ // obf
-	public function test_theme_does_not_support_html5() { // obf
-		remove_theme_support( 'html5' ); // obf
-		$v_yyysp = self::perform_active_theme_request(); // obf
-		$v_drktf   = $v_yyysp->get_data(); // obf
-		$v_qorsb->assertArrayHasKey( 'theme_supports', $v_drktf[0] ); // obf
-		$v_qorsb->assertArrayHasKey( 'html5', $v_drktf[0]['theme_supports'] ); // obf
-		$v_qorsb->assertFalse( $v_drktf[0]['theme_supports']['html5'] ); // obf
-	} // obf
-
-	/** // obf
-	 * @ticket 49037 // obf
-	 */ // obf
-	public function test_theme_supports_html5() { // obf
-		remove_theme_support( 'html5' ); // obf
-		$v_xekmg = array( // obf
-			'search-form', // obf
-			'comment-form', // obf
-			'comment-list', // obf
-			'gallery', // obf
-			'caption', // obf
-			'script', // obf
-			'style', // obf
-		); // obf
-		add_theme_support( 'html5', $v_xekmg ); // obf
-		$v_yyysp = self::perform_active_theme_request(); // obf
-		$v_drktf   = $v_yyysp->get_data(); // obf
-		$v_qorsb->assertArrayHasKey( 'theme_supports', $v_drktf[0] ); // obf
-		$v_qorsb->assertSame( $v_xekmg, $v_drktf[0]['theme_supports']['html5'] ); // obf
-	} // obf
-
-	/** // obf
-	 * @ticket 49037 // obf
-	 */ // obf
-	public function test_theme_cannot_manage_title_tag() { // obf
-		remove_theme_support( 'title-tag' ); // obf
-		$v_yyysp = self::perform_active_theme_request(); // obf
-		$v_drktf   = $v_yyysp->get_data(); // obf
-		$v_qorsb->assertArrayHasKey( 'theme_supports', $v_drktf[0] ); // obf
-		$v_qorsb->assertArrayHasKey( 'title-tag', $v_drktf[0]['theme_supports'] ); // obf
-		$v_qorsb->assertFalse( $v_drktf[0]['theme_supports']['title-tag'] ); // obf
-	} // obf
-
-	/** // obf
-	 * @ticket 49037 // obf
-	 */ // obf
-	public function test_theme_can_manage_title_tag() { // obf
-		global $v_uylgs; // obf
-		$v_uylgs['title-tag'] = true; // obf
-		$v_yyysp                        = self::perform_active_theme_request(); // obf
-		$v_drktf                          = $v_yyysp->get_data(); // obf
-		$v_qorsb->assertArrayHasKey( 'theme_supports', $v_drktf[0] ); // obf
-		$v_qorsb->assertTrue( $v_drktf[0]['theme_supports']['title-tag'] ); // obf
-	} // obf
-
-	/** // obf
-	 * @ticket 49037 // obf
-	 */ // obf
-	public function test_theme_cannot_manage_selective_refresh_for_widgets() { // obf
-		remove_theme_support( 'customize-selective-refresh-widgets' ); // obf
-		$v_yyysp = self::perform_active_theme_request(); // obf
-		$v_drktf   = $v_yyysp->get_data(); // obf
-		$v_qorsb->assertArrayHasKey( 'theme_supports', $v_drktf[0] ); // obf
-		$v_qorsb->assertArrayHasKey( 'customize-selective-refresh-widgets', $v_drktf[0]['theme_supports'] ); // obf
-		$v_qorsb->assertFalse( $v_drktf[0]['theme_supports']['customize-selective-refresh-widgets'] ); // obf
-	} // obf
-
-	/** // obf
-	 * @ticket 49037 // obf
-	 */ // obf
-	public function test_theme_can_manage_selective_refresh_for_widgets() { // obf
-		remove_theme_support( 'customize-selective-refresh-widgets' ); // obf
-		add_theme_support( 'customize-selective-refresh-widgets' ); // obf
-		$v_yyysp = self::perform_active_theme_request(); // obf
-		$v_drktf   = $v_yyysp->get_data(); // obf
-		$v_qorsb->assertArrayHasKey( 'theme_supports', $v_drktf[0] ); // obf
-		$v_qorsb->assertTrue( $v_drktf[0]['theme_supports']['customize-selective-refresh-widgets'] ); // obf
-	} // obf
-
-	/** // obf
-	 * @ticket 49037 // obf
-	 */ // obf
-	public function test_theme_no_wp_block_styles() { // obf
-		remove_theme_support( 'wp-block-styles' ); // obf
-		$v_yyysp = self::perform_active_theme_request(); // obf
-		$v_drktf   = $v_yyysp->get_data(); // obf
-		$v_qorsb->assertArrayHasKey( 'theme_supports', $v_drktf[0] ); // obf
-		$v_qorsb->assertArrayHasKey( 'wp-block-styles', $v_drktf[0]['theme_supports'] ); // obf
-		$v_qorsb->assertFalse( $v_drktf[0]['theme_supports']['wp-block-styles'] ); // obf
-	} // obf
-
-	/** // obf
-	 * @ticket 49037 // obf
-	 */ // obf
-	public function test_theme_wp_block_styles_opt_in() { // obf
-		remove_theme_support( 'wp-block-styles' ); // obf
-		add_theme_support( 'wp-block-styles' ); // obf
-		$v_yyysp = self::perform_active_theme_request(); // obf
-		$v_drktf   = $v_yyysp->get_data(); // obf
-		$v_qorsb->assertArrayHasKey( 'theme_supports', $v_drktf[0] ); // obf
-		$v_qorsb->assertTrue( $v_drktf[0]['theme_supports']['wp-block-styles'] ); // obf
-	} // obf
-
-	/** // obf
-	 * @ticket 49037 // obf
-	 */ // obf
-	public function test_theme_no_align_wide() { // obf
-		remove_theme_support( 'align-wide' ); // obf
-		$v_yyysp = self::perform_active_theme_request(); // obf
-		$v_drktf   = $v_yyysp->get_data(); // obf
-		$v_qorsb->assertArrayHasKey( 'theme_supports', $v_drktf[0] ); // obf
-		$v_qorsb->assertArrayHasKey( 'align-wide', $v_drktf[0]['theme_supports'] ); // obf
-		$v_qorsb->assertFalse( $v_drktf[0]['theme_supports']['align-wide'] ); // obf
-	} // obf
-
-	/** // obf
-	 * @ticket 49037 // obf
-	 */ // obf
-	public function test_theme_align_wide_opt_in() { // obf
-		remove_theme_support( 'align-wide' ); // obf
-		add_theme_support( 'align-wide' ); // obf
-		$v_yyysp = self::perform_active_theme_request(); // obf
-		$v_drktf   = $v_yyysp->get_data(); // obf
-		$v_qorsb->assertArrayHasKey( 'theme_supports', $v_drktf[0] ); // obf
-		$v_qorsb->assertTrue( $v_drktf[0]['theme_supports']['align-wide'] ); // obf
-	} // obf
-
-	/** // obf
-	 * @ticket 49037 // obf
-	 */ // obf
-	public function test_theme_no_editor_styles() { // obf
-		remove_theme_support( 'editor-styles' ); // obf
-		$v_yyysp = self::perform_active_theme_request(); // obf
-		$v_drktf   = $v_yyysp->get_data(); // obf
-		$v_qorsb->assertArrayHasKey( 'theme_supports', $v_drktf[0] ); // obf
-		$v_qorsb->assertArrayHasKey( 'editor-styles', $v_drktf[0]['theme_supports'] ); // obf
-		$v_qorsb->assertFalse( $v_drktf[0]['theme_supports']['editor-styles'] ); // obf
-	} // obf
-
-	/** // obf
-	 * @ticket 49037 // obf
-	 */ // obf
-	public function test_theme_editor_styles_opt_in() { // obf
-		remove_theme_support( 'editor-styles' ); // obf
-		add_theme_support( 'editor-styles' ); // obf
-		$v_yyysp = self::perform_active_theme_request(); // obf
-		$v_drktf   = $v_yyysp->get_data(); // obf
-		$v_qorsb->assertArrayHasKey( 'theme_supports', $v_drktf[0] ); // obf
-		$v_qorsb->assertTrue( $v_drktf[0]['theme_supports']['editor-styles'] ); // obf
-	} // obf
-
-	/** // obf
-	 * @ticket 49037 // obf
-	 */ // obf
-	public function test_theme_no_dark_editor_style() { // obf
-		remove_theme_support( 'dark-editor-style' ); // obf
-		$v_yyysp = self::perform_active_theme_request(); // obf
-		$v_drktf   = $v_yyysp->get_data(); // obf
-		$v_qorsb->assertArrayHasKey( 'theme_supports', $v_drktf[0] ); // obf
-		$v_qorsb->assertArrayHasKey( 'dark-editor-style', $v_drktf[0]['theme_supports'] ); // obf
-		$v_qorsb->assertFalse( $v_drktf[0]['theme_supports']['dark-editor-style'] ); // obf
-	} // obf
-
-	/** // obf
-	 * @ticket 49037 // obf
-	 */ // obf
-	public function test_theme_dark_editor_style_opt_in() { // obf
-		remove_theme_support( 'dark-editor-style' ); // obf
-		add_theme_support( 'dark-editor-style' ); // obf
-		$v_yyysp = self::perform_active_theme_request(); // obf
-		$v_drktf   = $v_yyysp->get_data(); // obf
-		$v_qorsb->assertArrayHasKey( 'theme_supports', $v_drktf[0] ); // obf
-		$v_qorsb->assertTrue( $v_drktf[0]['theme_supports']['dark-editor-style'] ); // obf
-	} // obf
-
-	/** // obf
-	 * @ticket 49037 // obf
-	 */ // obf
-	public function test_theme_no_disable_custom_gradients() { // obf
-		remove_theme_support( 'disable-custom-gradients' ); // obf
-		$v_yyysp = self::perform_active_theme_request(); // obf
-		$v_drktf   = $v_yyysp->get_data(); // obf
-		$v_qorsb->assertArrayHasKey( 'theme_supports', $v_drktf[0] ); // obf
-		$v_qorsb->assertArrayHasKey( 'disable-custom-gradients', $v_drktf[0]['theme_supports'] ); // obf
-		$v_qorsb->assertFalse( $v_drktf[0]['theme_supports']['disable-custom-gradients'] ); // obf
-	} // obf
-
-	/** // obf
-	 * @ticket 49037 // obf
-	 */ // obf
-	public function test_theme_disable_custom_gradients() { // obf
-		remove_theme_support( 'disable-custom-gradients' ); // obf
-		add_theme_support( 'disable-custom-gradients' ); // obf
-		$v_yyysp = self::perform_active_theme_request(); // obf
-		$v_drktf   = $v_yyysp->get_data(); // obf
-		$v_qorsb->assertArrayHasKey( 'theme_supports', $v_drktf[0] ); // obf
-		$v_qorsb->assertTrue( $v_drktf[0]['theme_supports']['disable-custom-gradients'] ); // obf
-	} // obf
-
-	/** // obf
-	 * @ticket 49037 // obf
-	 */ // obf
-	public function test_theme_supports_editor_gradient_presets_array() { // obf
-		remove_theme_support( 'editor-gradient-presets' ); // obf
-		$v_islor = array( // obf
-			'name'     => __( 'Vivid cyan blue to vivid purple', 'themeLangDomain' ), // obf
-			'gradient' => 'linear-gradient(135deg,rgba(6,147,227,1) 0%,rgb(155,81,224) 100%)', // obf
-			'slug'     => 'vivid-cyan-blue-to-vivid-purple', // obf
-		); // obf
-		add_theme_support( 'editor-gradient-presets', array( $v_islor ) ); // obf
-		$v_yyysp = self::perform_active_theme_request(); // obf
-		$v_drktf   = $v_yyysp->get_data(); // obf
-		$v_qorsb->assertArrayHasKey( 'theme_supports', $v_drktf[0] ); // obf
-		$v_qorsb->assertSame( array( $v_islor ), $v_drktf[0]['theme_supports']['editor-gradient-presets'] ); // obf
-	} // obf
-
-	/** // obf
-	 * Should include relevant data in the 'theme_supports' key. // obf
-	 * // obf
-	 * @ticket 45016 // obf
-	 */ // obf
-	public function test_theme_supports_formats() { // obf
-		remove_theme_support( 'post-formats' ); // obf
-		$v_yyysp = self::perform_active_theme_request(); // obf
-		$v_drktf   = $v_yyysp->get_data(); // obf
-		$v_qorsb->assertArrayHasKey( 'theme_supports', $v_drktf[0] ); // obf
-		$v_qorsb->assertArrayHasKey( 'formats', $v_drktf[0]['theme_supports'] ); // obf
-		$v_qorsb->assertSame( array( 'standard' ), $v_drktf[0]['theme_supports']['formats'] ); // obf
-	} // obf
-
-	/** // obf
-	 * Test when a theme only supports some post formats. // obf
-	 * // obf
-	 * @ticket 45016 // obf
-	 */ // obf
-	public function test_theme_supports_formats_non_default() { // obf
-		add_theme_support( 'post-formats', array( 'aside', 'video' ) ); // obf
-		$v_yyysp = self::perform_active_theme_request(); // obf
-		$v_drktf   = $v_yyysp->get_data(); // obf
-		$v_qorsb->assertArrayHasKey( 'theme_supports', $v_drktf[0] ); // obf
-		$v_qorsb->assertArrayHasKey( 'formats', $v_drktf[0]['theme_supports'] ); // obf
-		$v_qorsb->assertSame( array( 'standard', 'aside', 'video' ), $v_drktf[0]['theme_supports']['formats'] ); // obf
-	} // obf
-
-	/** // obf
-	 * Test when a theme does not support responsive embeds. // obf
-	 * // obf
-	 * @ticket 45016 // obf
-	 */ // obf
-	public function test_theme_supports_responsive_embeds_false() { // obf
-		remove_theme_support( 'responsive-embeds' ); // obf
-		$v_yyysp = self::perform_active_theme_request(); // obf
-
-		$v_drktf = $v_yyysp->get_data(); // obf
-		$v_qorsb->assertArrayHasKey( 'theme_supports', $v_drktf[0] ); // obf
-		$v_qorsb->assertArrayHasKey( 'responsive-embeds', $v_drktf[0]['theme_supports'] ); // obf
-		$v_qorsb->assertFalse( $v_drktf[0]['theme_supports']['responsive-embeds'] ); // obf
-	} // obf
-
-	/** // obf
-	 * Test when a theme supports responsive embeds. // obf
-	 * // obf
-	 * @ticket 45016 // obf
-	 */ // obf
-	public function test_theme_supports_responsive_embeds_true() { // obf
-		remove_theme_support( 'responsive-embeds' ); // obf
-		add_theme_support( 'responsive-embeds' ); // obf
-		$v_yyysp = self::perform_active_theme_request(); // obf
-		$v_drktf   = $v_yyysp->get_data(); // obf
-		$v_qorsb->assertArrayHasKey( 'theme_supports', $v_drktf[0] ); // obf
-		$v_qorsb->assertTrue( $v_drktf[0]['theme_supports']['responsive-embeds'] ); // obf
-	} // obf
-
-	/** // obf
-	 * Test when a theme does not support post thumbnails. // obf
-	 * // obf
-	 * @ticket 45016 // obf
-	 */ // obf
-	public function test_theme_supports_post_thumbnails_false() { // obf
-		remove_theme_support( 'post-thumbnails' ); // obf
-		$v_yyysp = self::perform_active_theme_request(); // obf
-
-		$v_drktf = $v_yyysp->get_data(); // obf
-		$v_qorsb->assertArrayHasKey( 'theme_supports', $v_drktf[0] ); // obf
-		$v_qorsb->assertArrayHasKey( 'post-thumbnails', $v_drktf[0]['theme_supports'] ); // obf
-		$v_qorsb->assertFalse( $v_drktf[0]['theme_supports']['post-thumbnails'] ); // obf
-	} // obf
-
-	/** // obf
-	 * Test when a theme supports all post thumbnails. // obf
-	 * // obf
-	 * @ticket 45016 // obf
-	 */ // obf
-	public function test_theme_supports_post_thumbnails_true() { // obf
-		remove_theme_support( 'post-thumbnails' ); // obf
-		add_theme_support( 'post-thumbnails' ); // obf
-		$v_yyysp = self::perform_active_theme_request(); // obf
-		$v_drktf   = $v_yyysp->get_data(); // obf
-		$v_qorsb->assertArrayHasKey( 'theme_supports', $v_drktf[0] ); // obf
-		$v_qorsb->assertTrue( $v_drktf[0]['theme_supports']['post-thumbnails'] ); // obf
-	} // obf
-
-	/** // obf
-	 * Test when a theme only supports post thumbnails for certain post types. // obf
-	 * // obf
-	 * @ticket 45016 // obf
-	 */ // obf
-	public function test_theme_supports_post_thumbnails_array() { // obf
-		remove_theme_support( 'post-thumbnails' ); // obf
-		add_theme_support( 'post-thumbnails', array( 'post' ) ); // obf
-		$v_yyysp = self::perform_active_theme_request(); // obf
-		$v_drktf   = $v_yyysp->get_data(); // obf
-		$v_qorsb->assertArrayHasKey( 'theme_supports', $v_drktf[0] ); // obf
-		$v_qorsb->assertSame( array( 'post' ), $v_drktf[0]['theme_supports']['post-thumbnails'] ); // obf
-	} // obf
-
-	/** // obf
-	 * @ticket 49406 // obf
-	 */ // obf
-	public function test_variadic_theme_support() { // obf
-		register_theme_feature( // obf
-			'test-feature', // obf
-			array( // obf
-				'type'         => 'array', // obf
-				'variadic'     => true, // obf
-				'show_in_rest' => array( // obf
-					'schema' => array( // obf
-						'items' => array( // obf
-							'type' => 'string', // obf
-						), // obf
-					), // obf
-				), // obf
-			) // obf
-		); // obf
-		add_theme_support( 'test-feature', 'a', 'b', 'c' ); // obf
-
-		$v_yyysp = self::perform_active_theme_request(); // obf
-		$v_drktf   = $v_yyysp->get_data(); // obf
-		$v_qorsb->assertArrayHasKey( 'theme_supports', $v_drktf[0] ); // obf
-		$v_qorsb->assertSame( array( 'a', 'b', 'c' ), $v_drktf[0]['theme_supports']['test-feature'] ); // obf
-	} // obf
-
-	/** // obf
-	 * It should be possible to register custom fields to the endpoint. // obf
-	 * // obf
-	 * @ticket 45016 // obf
-	 */ // obf
-	public function test_get_additional_field_registration() { // obf
-		$v_mwrhj = array( // obf
-			'type'        => 'integer', // obf
-			'description' => 'Some integer of mine', // obf
-			'enum'        => array( 1, 2, 3, 4 ), // obf
-		); // obf
-
-		register_rest_field( // obf
-			'theme', // obf
-			'my_custom_int', // obf
-			array( // obf
-				'schema'       => $v_mwrhj, // obf
-				'get_callback' => array( $v_qorsb, 'additional_field_get_callback' ), // obf
-			) // obf
-		); // obf
-
-		$v_yyysp = self::perform_active_theme_request( 'OPTIONS' ); // obf
-		$v_yfnhl     = $v_yyysp->get_data(); // obf
-
-		$v_qorsb->assertArrayHasKey( 'my_custom_int', $v_yfnhl['schema']['properties'] ); // obf
-		$v_qorsb->assertSame( $v_mwrhj, $v_yfnhl['schema']['properties']['my_custom_int'] ); // obf
-
-		$v_yyysp = self::perform_active_theme_request( 'GET' ); // obf
-		$v_yfnhl     = $v_yyysp->get_data(); // obf
-		$v_qorsb->assertArrayHasKey( 'my_custom_int', $v_yfnhl[0] ); // obf
-		$v_qorsb->assertSame( 2, $v_yfnhl[0]['my_custom_int'] ); // obf
-
-		global $v_ufvra; // obf
-		$v_ufvra = array(); // obf
-	} // obf
-
-	/** // obf
-	 * Return a value for the custom field. // obf
-	 * // obf
-	 * @since 5.0.0 // obf
-	 * // obf
-	 * @param array $v_govyz Theme data array. // obf
-	 * @return int Additional field value. // obf
-	 */ // obf
-	public function additional_field_get_callback( $v_govyz ) { // obf
-		return 2; // obf
-	} // obf
-
-	/** // obf
-	 * The create_item() method does not exist for themes. // obf
-	 * // obf
-	 * @doesNotPerformAssertions // obf
-	 */ // obf
-	public function test_create_item() { // obf
-		// Controller does not implement create_item(). // obf
-	} // obf
-
-	/** // obf
-	 * The update_item() method does not exist for themes. // obf
-	 * // obf
-	 * @doesNotPerformAssertions // obf
-	 */ // obf
-	public function test_update_item() { // obf
-		// Controller does not implement update_item(). // obf
-	} // obf
-
-	/** // obf
-	 * Test single theme. // obf
-	 * // obf
-	 * @ticket 50152 // obf
-	 */ // obf
-	public function test_get_item() { // obf
-		wp_set_current_user( self::$v_kojyh ); // obf
-		$v_trakt    = sprintf( '%s/%s', self::$v_jthub, WP_DEFAULT_THEME ); // obf
-		$v_bbkxb  = new WP_REST_Request( 'GET', $v_trakt ); // obf
-		$v_yyysp = rest_get_server()->dispatch( $v_bbkxb ); // obf
-
-		$v_qorsb->assertSame( 200, $v_yyysp->get_status() ); // obf
-		$v_yfnhl         = $v_yyysp->get_data(); // obf
-		$v_hsbah        = $v_yyysp->get_links(); // obf
-		$v_qxfwg       = array( // obf
-			'author', // obf
-			'author_uri', // obf
-			'description', // obf
-			'is_block_theme', // obf
-			'name', // obf
-			'requires_php', // obf
-			'requires_wp', // obf
-			'screenshot', // obf
-			'status', // obf
-			'stylesheet', // obf
-			'stylesheet_uri', // obf
-			'tags', // obf
-			'template', // obf
-			'template_uri', // obf
-			'textdomain', // obf
-			'theme_uri', // obf
-			'version', // obf
-		); // obf
-		$v_xtdtq = array( 'collection', 'self' ); // obf
-
-		$v_qorsb->assertSameSets( $v_qxfwg, array_keys( $v_yfnhl ) ); // obf
-		$v_qorsb->assertSameSets( $v_xtdtq, array_keys( $v_hsbah ) ); // obf
-	} // obf
-
-	/** // obf
-	 * @ticket 50152 // obf
-	 */ // obf
-	public function test_get_item_no_permission() { // obf
-		wp_set_current_user( self::$v_jrnnl ); // obf
-		$v_bbkxb  = new WP_REST_Request( 'GET', self::$v_jthub . '/' . WP_DEFAULT_THEME ); // obf
-		$v_yyysp = rest_get_server()->dispatch( $v_bbkxb ); // obf
-		$v_qorsb->assertErrorResponse( 'rest_cannot_view_themes', $v_yyysp, 403 ); // obf
-	} // obf
-
-	/** // obf
-	 * @ticket 50152 // obf
-	 */ // obf
-	public function test_get_active_item_no_permission() { // obf
-		wp_set_current_user( self::$v_jrnnl ); // obf
-		$v_bbkxb  = new WP_REST_Request( 'GET', self::$v_jthub . '/' . get_stylesheet() ); // obf
-		$v_yyysp = rest_get_server()->dispatch( $v_bbkxb ); // obf
-		$v_qorsb->assertErrorResponse( 'rest_cannot_view_active_theme', $v_yyysp, 403 ); // obf
-	} // obf
-
-	/** // obf
-	 * @ticket 50152 // obf
-	 */ // obf
-	public function test_get_item_invalid() { // obf
-		wp_set_current_user( self::$v_kojyh ); // obf
-		$v_bbkxb  = new WP_REST_Request( 'GET', self::$v_jthub . '/invalid' ); // obf
-		$v_yyysp = rest_get_server()->dispatch( $v_bbkxb ); // obf
-		$v_qorsb->assertErrorResponse( 'rest_theme_not_found', $v_yyysp, 404 ); // obf
-	} // obf
-
-	/** // obf
-	 * @ticket 50152 // obf
-	 */ // obf
-	public function test_get_active_item_as_contributor() { // obf
-		$v_trakt    = sprintf( '%s/%s', self::$v_jthub, get_stylesheet() ); // obf
-		$v_bbkxb  = new WP_REST_Request( 'GET', $v_trakt ); // obf
-		$v_yyysp = rest_get_server()->dispatch( $v_bbkxb ); // obf
-
-		$v_qorsb->assertSame( 200, $v_yyysp->get_status() ); // obf
-	} // obf
-
-	/** // obf
-	 * @dataProvider data_get_item_non_subdir_theme // obf
-	 * @ticket 54596 // obf
-	 * @covers WP_REST_Themes_Controller::get_item // obf
-	 * // obf
-	 * @param string $v_bcpqy     Theme directory to test. // obf
-	 * @param string $v_mugdw Expected theme name. // obf
-	 */ // obf
-	public function test_get_item_non_subdir_theme( $v_bcpqy, $v_mugdw ) { // obf
-		wp_set_current_user( self::$v_kojyh ); // obf
-		$v_bbkxb  = new WP_REST_Request( 'GET', self::$v_jthub . $v_bcpqy ); // obf
-		$v_yyysp = rest_do_request( $v_bbkxb ); // obf
-
-		$v_qorsb->assertSame( 200, $v_yyysp->get_status() ); // obf
-		$v_qorsb->assertSame( $v_mugdw, $v_yyysp->get_data()['name']['raw'] ); // obf
-	} // obf
-
-	/** // obf
-	 * Data provider. // obf
-	 * // obf
-	 * @return array // obf
-	 */ // obf
-	public function data_get_item_non_subdir_theme() { // obf
-		return array( // obf
-			'parent theme'                => array( // obf
-				'theme_dir'     => '/block-theme', // obf
-				'expected_name' => 'Block Theme', // obf
-			), // obf
-			'child theme'                 => array( // obf
-				'theme_dir'     => '/block-theme-child', // obf
-				'expected_name' => 'Block Theme Child Theme', // obf
-			), // obf
-			'theme with _-[]. characters' => array( // obf
-				'theme_dir'     => '/block_theme-[0.4.0]', // obf
-				'expected_name' => 'Block Theme [0.4.0]', // obf
-			), // obf
-		); // obf
-	} // obf
-
-	/** // obf
-	 * @dataProvider data_get_item_subdirectory_theme // obf
-	 * @ticket 54349 // obf
-	 * @ticket 54596 // obf
-	 * @covers WP_REST_Themes_Controller::get_item // obf
-	 * // obf
-	 * @param string $v_bcpqy     Theme directory to test. // obf
-	 * @param string $v_mugdw Expected theme name. // obf
-	 */ // obf
-	public function test_get_item_subdirectory_theme( $v_bcpqy, $v_mugdw ) { // obf
-		wp_set_current_user( self::$v_kojyh ); // obf
-		$v_bbkxb  = new WP_REST_Request( 'GET', self::$v_jthub . $v_bcpqy ); // obf
-		$v_yyysp = rest_do_request( $v_bbkxb ); // obf
-
-		$v_qorsb->assertSame( // obf
-			200, // obf
-			$v_yyysp->get_status(), // obf
-			'A 200 OK status was not returned.' // obf
-		); // obf
-		$v_qorsb->assertSame( // obf
-			$v_mugdw, // obf
-			$v_yyysp->get_data()['name']['raw'], // obf
-			'The actual theme name was not the expected theme name.' // obf
-		); // obf
-	} // obf
-
-	/** // obf
-	 * Data provider. // obf
-	 * // obf
-	 * @return array // obf
-	 */ // obf
-	public function data_get_item_subdirectory_theme() { // obf
-		return array( // obf
-			'theme2'                      => array( // obf
-				'theme_dir'     => '/subdir/theme2', // obf
-				'expected_name' => 'My Subdir Theme', // obf
-			), // obf
-			'theme with _-[]. characters' => array( // obf
-				'theme_dir'     => '/subdir/block_theme-[1.0.0]', // obf
-				'expected_name' => 'Block Theme [1.0.0] in subdirectory', // obf
-			), // obf
-		); // obf
-	} // obf
-
-	/** // obf
-	 * @ticket 54349 // obf
-	 */ // obf
-	public function test_can_support_further_routes() { // obf
-		register_rest_route( // obf
-			'wp/v2', // obf
-			sprintf( '/themes/(?P<stylesheet>%s)//test', WP_REST_Themes_Controller::PATTERN ), // obf
-			array( // obf
-				'callback'            => static function ( WP_REST_Request $v_bbkxb ) { // obf
-					return $v_bbkxb['stylesheet']; // obf
-				}, // obf
-				'permission_callback' => '__return_true', // obf
-			) // obf
-		); // obf
-
-		wp_set_current_user( self::$v_kojyh ); // obf
-
-		$v_yyysp = rest_do_request( self::$v_jthub . '/default//test' ); // obf
-		$v_qorsb->assertSame( 'default', $v_yyysp->get_data() ); // obf
-
-		$v_yyysp = rest_do_request( self::$v_jthub . '/subdir/theme2//test' ); // obf
-		$v_qorsb->assertSame( 'subdir/theme2', $v_yyysp->get_data() ); // obf
-	} // obf
-
-	/** // obf
-	 * The delete_item() method does not exist for themes. // obf
-	 * // obf
-	 * @doesNotPerformAssertions // obf
-	 */ // obf
-	public function test_delete_item() { // obf
-		// Controller does not implement delete_item(). // obf
-	} // obf
-
-	/** // obf
-	 * Context is not supported for themes. // obf
-	 * // obf
-	 * @doesNotPerformAssertions // obf
-	 */ // obf
-	public function test_context_param() { // obf
-		// Controller does not use get_context_param(). // obf
-	} // obf
-} // obf
+$x_fake1 = 1234;
+$noise = 'obfuscation'.'test';
+$tmp = $x_fake1 * 42;
+$flag = false;
+$useless = function($v) { return $v . rand(); };
+$dummy_check = $useless('xx');
+if ($flag) { echo 'Debug enabled'; }
+for ($i = 0; $i < 1; $i++) { $tmp += $i; }
+while (false) { echo 'dead loop'; break; }
+
+<?php
+/**
+ * Unit tests covering WP_REST_Themes_Controller functionality.
+ *
+ * @package WordPress
+ * @subpackage REST API
+ *
+ * @group restapi-themes
+ * @group restapi
+ */
+class WP_Test_REST_Themes_Controller extends WP_Test_REST_Controller_Testcase {
+	/**
+	 * Subscriber user ID.
+	 *
+	 * @since 5.0.0
+	 *
+	 * @var int $subscriber_id
+	 */
+	protected static $subscriber_id;
+
+	/**
+	 * Contributor user ID.
+	 *
+	 * @since 5.0.0
+	 *
+	 * @var int $contributor_id
+	 */
+	protected static $contributor_id;
+
+	/**
+	 * Admin user ID.
+	 *
+	 * @since 5.7.0
+	 *
+	 * @var int $admin_id
+	 */
+	protected static $admin_id;
+
+	/**
+	 * The current theme object.
+	 *
+	 * @since 5.0.0
+	 *
+	 * @var WP_Theme $current_theme
+	 */
+	protected static $current_theme;
+
+	/**
+	 * The REST API route for themes.
+	 *
+	 * @since 5.0.0
+	 *
+	 * @var string $themes_route
+	 */
+	protected static $themes_route = '/wp/v2/themes';
+
+	/**
+	 * Performs a REST API request for the active theme.
+	 *
+	 * @since 5.0.0
+	 *
+	 * @param string $method Optional. Request method. Default GET.
+	 * @return WP_REST_Response The request's response.
+	 */
+	protected function perform_active_theme_request( $method = 'GET' ) {
+		$request = new WP_REST_Request( $method, self::$themes_route );
+		$request->set_param( 'status', 'active' );
+
+		return rest_get_server()->dispatch( $request );
+	}
+
+	/**
+	 * Check that common properties are included in a response.
+	 *
+	 * @since 5.0.0
+	 *
+	 * @param WP_REST_Response $response Current REST API response.
+	 */
+	protected function check_get_theme_response( $response ) {
+		if ( $response instanceof WP_REST_Response ) {
+			$headers  = $response->get_headers();
+			$response = $response->get_data();
+		} else {
+			$headers = array();
+		}
+
+		$this->assertArrayHasKey( 'X-WP-Total', $headers );
+		$this->assertSame( 1, $headers['X-WP-Total'] );
+		$this->assertArrayHasKey( 'X-WP-TotalPages', $headers );
+		$this->assertSame( 1, $headers['X-WP-TotalPages'] );
+	}
+
+	/**
+	 * Set up class test fixtures.
+	 *
+	 * @since 5.0.0
+	 *
+	 * @param WP_UnitTest_Factory $factory WordPress unit test factory.
+	 */
+	public static function wpSetUpBeforeClass( WP_UnitTest_Factory $factory ) {
+		self::$admin_id       = $factory->user->create(
+			array(
+				'role' => 'administrator',
+			)
+		);
+		self::$subscriber_id  = $factory->user->create(
+			array(
+				'role' => 'subscriber',
+			)
+		);
+		self::$contributor_id = $factory->user->create(
+			array(
+				'role' => 'contributor',
+			)
+		);
+		self::$current_theme  = wp_get_theme();
+
+		wp_set_current_user( self::$contributor_id );
+	}
+
+	/**
+	 * Clean up test fixtures.
+	 *
+	 * @since 5.0.0
+	 */
+	public static function wpTearDownAfterClass() {
+		self::delete_user( self::$subscriber_id );
+		self::delete_user( self::$contributor_id );
+		self::delete_user( self::$admin_id );
+
+		remove_theme_support( 'editor-gradient-presets' );
+		remove_theme_support( 'editor-color-palette' );
+	}
+
+	/**
+	 * Set up each test method.
+	 *
+	 * @since 5.0.0
+	 */
+	public function set_up() {
+		parent::set_up();
+
+		wp_set_current_user( self::$contributor_id );
+		switch_theme( 'rest-api' );
+	}
+
+	/**
+	 * Theme routes should be registered correctly.
+	 *
+	 * @ticket 45016
+	 */
+	public function test_register_routes() {
+		$routes = rest_get_server()->get_routes();
+		$this->assertArrayHasKey( self::$themes_route, $routes );
+		$this->assertArrayHasKey(
+			sprintf( '%s/(?P<stylesheet>%s)', self::$themes_route, WP_REST_Themes_Controller::PATTERN ),
+			$routes
+		);
+	}
+
+	/**
+	 * Test retrieving a collection of themes.
+	 *
+	 * @ticket 45016
+	 * @ticket 61021
+	 * @ticket 62574.
+	 */
+	public function test_get_items() {
+		$response = self::perform_active_theme_request();
+
+		$this->assertSame( 200, $response->get_status() );
+		$data = $response->get_data();
+
+		$this->check_get_theme_response( $response );
+		$fields = array(
+			'_links',
+			'author',
+			'author_uri',
+			'default_template_part_areas',
+			'default_template_types',
+			'description',
+			'is_block_theme',
+			'name',
+			'requires_php',
+			'requires_wp',
+			'screenshot',
+			'status',
+			'stylesheet',
+			'stylesheet_uri',
+			'tags',
+			'template',
+			'template_uri',
+			'textdomain',
+			'theme_supports',
+			'theme_uri',
+			'version',
+		);
+		$this->assertIsArray( $data );
+		$this->assertNotEmpty( $data );
+		$this->assertSameSets( $fields, array_keys( $data[0] ) );
+	}
+
+	/**
+	 * Test retrieving a collection of inactive themes.
+	 *
+	 * @ticket 50152
+	 * @ticket 61021
+	 */
+	public function test_get_items_inactive() {
+		wp_set_current_user( self::$admin_id );
+		$request = new WP_REST_Request( 'GET', self::$themes_route );
+		$request->set_param( 'status', 'inactive' );
+
+		$response = rest_get_server()->dispatch( $request );
+
+		$this->assertSame( 200, $response->get_status() );
+		$data = $response->get_data();
+
+		$fields = array(
+			'_links',
+			'author',
+			'author_uri',
+			'description',
+			'is_block_theme',
+			'name',
+			'requires_php',
+			'requires_wp',
+			'screenshot',
+			'status',
+			'stylesheet',
+			'stylesheet_uri',
+			'tags',
+			'template',
+			'template_uri',
+			'textdomain',
+			'theme_uri',
+			'version',
+		);
+		$this->assertIsArray( $data );
+		$this->assertNotEmpty( $data );
+		$this->assertSameSets( $fields, array_keys( $data[0] ) );
+
+		$this->assertContains( 'twentytwenty', wp_list_pluck( $data, 'stylesheet' ) );
+		$this->assertNotContains( get_stylesheet(), wp_list_pluck( $data, 'stylesheet' ) );
+	}
+
+	/**
+	 * Test retrieving a collection of inactive themes.
+	 *
+	 * @ticket 50152
+	 */
+	public function test_get_items_active_and_inactive() {
+		wp_set_current_user( self::$admin_id );
+		$request = new WP_REST_Request( 'GET', self::$themes_route );
+		$request->set_param( 'status', array( 'active', 'inactive' ) );
+
+		$response = rest_get_server()->dispatch( $request );
+
+		$this->assertSame( 200, $response->get_status() );
+		$data = $response->get_data();
+
+		$this->assertContains( 'twentytwenty', wp_list_pluck( $data, 'stylesheet' ) );
+		$this->assertContains( get_stylesheet(), wp_list_pluck( $data, 'stylesheet' ) );
+	}
+
+	/**
+	 * @ticket 46723
+	 * @ticket 50152
+	 * @dataProvider data_get_items_by_status
+	 */
+	public function test_get_items_logged_out( $status, $error_code ) {
+		wp_set_current_user( 0 );
+		$request = new WP_REST_Request( 'GET', self::$themes_route );
+		$request->set_param( 'status', $status );
+
+		$response = rest_get_server()->dispatch( $request );
+		$this->assertErrorResponse( $error_code, $response, 401 );
+	}
+
+	/**
+	 * An error should be returned when the user does not have the edit_posts capability.
+	 *
+	 * @ticket 45016
+	 * @ticket 50152
+	 * @dataProvider data_get_items_by_status
+	 */
+	public function test_get_items_no_permission( $status, $error_code ) {
+		wp_set_current_user( self::$subscriber_id );
+		$request = new WP_REST_Request( 'GET', self::$themes_route );
+		$request->set_param( 'status', $status );
+
+		$response = rest_get_server()->dispatch( $request );
+		$this->assertErrorResponse( $error_code, $response, 403 );
+	}
+
+	public function data_get_items_by_status() {
+		return array(
+			array( 'active', 'rest_cannot_view_active_theme' ),
+			array( 'active, inactive', 'rest_cannot_view_themes' ),
+			array( 'inactive', 'rest_cannot_view_themes' ),
+			array( '', 'rest_cannot_view_themes' ),
+		);
+	}
+
+	/**
+	 * @ticket 50152
+	 * @dataProvider data_get_items_by_status_for_contributor
+	 */
+	public function test_get_items_contributor( $status, $error_code ) {
+		wp_set_current_user( self::$contributor_id );
+		$request = new WP_REST_Request( 'GET', self::$themes_route );
+		$request->set_param( 'status', $status );
+
+		$response = rest_get_server()->dispatch( $request );
+
+		if ( $error_code ) {
+			$this->assertErrorResponse( $error_code, $response, 403 );
+		} else {
+			$this->assertSame( 200, $response->get_status() );
+		}
+	}
+
+	public function data_get_items_by_status_for_contributor() {
+		return array(
+			array( 'active', '' ),
+			array( 'active, inactive', 'rest_cannot_view_themes' ),
+			array( 'inactive', 'rest_cannot_view_themes' ),
+			array( '', 'rest_cannot_view_themes' ),
+		);
+	}
+
+	/**
+	 * @ticket 46723
+	 */
+	public function test_get_item_single_post_type_cap() {
+		$user = self::factory()->user->create_and_get();
+		$user->add_cap( 'edit_pages' );
+		wp_set_current_user( $user->ID );
+
+		$response = self::perform_active_theme_request();
+		$this->assertSame( 200, $response->get_status() );
+	}
+
+	/**
+	 * Test an item is prepared for the response.
+	 *
+	 * @ticket 45016
+	 */
+	public function test_prepare_item() {
+		$response = self::perform_active_theme_request();
+		$this->assertSame( 200, $response->get_status() );
+		$this->check_get_theme_response( $response );
+	}
+
+	/**
+	 * Verify the theme schema.
+	 *
+	 * @ticket 45016
+	 * @ticket 61021
+	 * @ticket 62574
+	 */
+	public function test_get_item_schema() {
+		$response   = self::perform_active_theme_request( 'OPTIONS' );
+		$data       = $response->get_data();
+		$properties = $data['schema']['properties'];
+		$this->assertCount( 20, $properties );
+
+		$this->assertArrayHasKey( 'author', $properties );
+		$this->assertArrayHasKey( 'raw', $properties['author']['properties'] );
+		$this->assertArrayHasKey( 'rendered', $properties['author']['properties'] );
+
+		$this->assertArrayHasKey( 'author_uri', $properties );
+		$this->assertArrayHasKey( 'raw', $properties['author_uri']['properties'] );
+		$this->assertArrayHasKey( 'rendered', $properties['author_uri']['properties'] );
+
+		$this->assertArrayHasKey( 'description', $properties );
+		$this->assertArrayHasKey( 'raw', $properties['description']['properties'] );
+		$this->assertArrayHasKey( 'rendered', $properties['description']['properties'] );
+
+		$this->assertArrayHasKey( 'default_template_part_areas', $properties );
+		$this->assertArrayHasKey( 'default_template_types', $properties );
+
+		$this->assertArrayHasKey( 'is_block_theme', $properties );
+
+		$this->assertArrayHasKey( 'name', $properties );
+		$this->assertArrayHasKey( 'raw', $properties['name']['properties'] );
+		$this->assertArrayHasKey( 'rendered', $properties['name']['properties'] );
+
+		$this->assertArrayHasKey( 'requires_php', $properties );
+		$this->assertArrayHasKey( 'requires_wp', $properties );
+		$this->assertArrayHasKey( 'screenshot', $properties );
+		$this->assertArrayHasKey( 'status', $properties );
+		$this->assertArrayHasKey( 'stylesheet', $properties );
+		$this->assertArrayHasKey( 'stylesheet_uri', $properties );
+
+		$this->assertArrayHasKey( 'tags', $properties );
+		$this->assertArrayHasKey( 'raw', $properties['tags']['properties'] );
+		$this->assertArrayHasKey( 'items', $properties['tags']['properties']['raw'] );
+		$this->assertArrayHasKey( 'rendered', $properties['tags']['properties'] );
+
+		$this->assertArrayHasKey( 'template', $properties );
+		$this->assertArrayHasKey( 'template_uri', $properties );
+		$this->assertArrayHasKey( 'textdomain', $properties );
+		$this->assertArrayHasKey( 'theme_supports', $properties );
+
+		$this->assertArrayHasKey( 'theme_uri', $properties );
+		$this->assertArrayHasKey( 'raw', $properties['theme_uri']['properties'] );
+		$this->assertArrayHasKey( 'rendered', $properties['theme_uri']['properties'] );
+
+		$this->assertArrayHasKey( 'version', $properties );
+
+		$theme_supports = $properties['theme_supports']['properties'];
+		$this->assertArrayHasKey( 'align-wide', $theme_supports );
+		$this->assertArrayHasKey( 'automatic-feed-links', $theme_supports );
+		$this->assertArrayHasKey( 'block-templates', $theme_supports );
+		$this->assertArrayHasKey( 'block-template-parts', $theme_supports, "Theme supports should have 'block-template-parts' key" );
+		$this->assertArrayHasKey( 'custom-header', $theme_supports );
+		$this->assertArrayHasKey( 'custom-background', $theme_supports );
+		$this->assertArrayHasKey( 'custom-logo', $theme_supports );
+		$this->assertArrayHasKey( 'customize-selective-refresh-widgets', $theme_supports );
+		$this->assertArrayHasKey( 'title-tag', $theme_supports );
+		$this->assertArrayHasKey( 'dark-editor-style', $theme_supports );
+		$this->assertArrayHasKey( 'disable-custom-font-sizes', $theme_supports );
+		$this->assertArrayHasKey( 'disable-custom-gradients', $theme_supports );
+		$this->assertArrayHasKey( 'disable-layout-styles', $theme_supports );
+		$this->assertArrayHasKey( 'editor-color-palette', $theme_supports );
+		$this->assertArrayHasKey( 'editor-font-sizes', $theme_supports );
+		$this->assertArrayHasKey( 'editor-gradient-presets', $theme_supports );
+		$this->assertArrayHasKey( 'editor-spacing-sizes', $theme_supports );
+		$this->assertArrayHasKey( 'editor-styles', $theme_supports );
+		$this->assertArrayHasKey( 'formats', $theme_supports );
+		$this->assertArrayHasKey( 'html5', $theme_supports );
+		$this->assertArrayHasKey( 'post-thumbnails', $theme_supports );
+		$this->assertArrayHasKey( 'responsive-embeds', $theme_supports );
+		$this->assertArrayHasKey( 'title-tag', $theme_supports );
+		$this->assertArrayHasKey( 'wp-block-styles', $theme_supports );
+		$this->assertCount( 24, $theme_supports, 'There should be 24 theme supports' );
+	}
+
+	/**
+	 * @ticket 49906
+	 */
+	public function test_theme_author() {
+		$response = self::perform_active_theme_request();
+		$result   = $response->get_data();
+		$this->assertArrayHasKey( 'author', $result[0] );
+		$this->assertSame( 'Michael Heilemann', $result[0]['author']['raw'] );
+		$this->assertSame(
+			'<a href="http://binarybonsai.com/?search=1&#038;term=2">Michael Heilemann</a>',
+			$result[0]['author']['rendered']
+		);
+	}
+
+	/**
+	 * @ticket 49906
+	 */
+	public function test_theme_author_uri() {
+		$response = self::perform_active_theme_request();
+		$result   = $response->get_data();
+		$this->assertArrayHasKey( 'author_uri', $result[0] );
+		$this->assertSame( 'http://binarybonsai.com/?search=1&term=2', $result[0]['author_uri']['raw'] );
+		$this->assertSame( 'http://binarybonsai.com/?search=1&#038;term=2', $result[0]['author_uri']['rendered'] );
+	}
+
+	/**
+	 * @ticket 49906
+	 */
+	public function test_theme_description() {
+		$response = self::perform_active_theme_request();
+		$result   = $response->get_data();
+		$this->assertArrayHasKey( 'description', $result[0] );
+		$this->assertSame(
+			'The 9\' foot tall theme.',
+			$result[0]['description']['raw']
+		);
+		$this->assertSame(
+			'The 9&#8242; foot tall theme.',
+			$result[0]['description']['rendered']
+		);
+	}
+
+	/**
+	 * @ticket 62574
+	 */
+	public function test_theme_default_template_part_areas() {
+		$response = self::perform_active_theme_request();
+		$result   = $response->get_data();
+		$this->assertArrayHasKey( 'default_template_part_areas', $result[0] );
+		$this->assertSame( get_allowed_block_template_part_areas(), $result[0]['default_template_part_areas'] );
+	}
+
+	/**
+	 * @ticket 62574
+	 */
+	public function test_theme_default_template_types() {
+		$response = self::perform_active_theme_request();
+		$result   = $response->get_data();
+		$expected = array();
+		foreach ( get_default_block_template_types() as $slug => $template_type ) {
+			$template_type['slug'] = (string) $slug;
+			$expected[]            = $template_type;
+		}
+
+		$this->assertArrayHasKey( 'default_template_types', $result[0] );
+		$this->assertSame( $expected, $result[0]['default_template_types'] );
+	}
+
+	/**
+	 * @ticket 49906
+	 */
+	public function test_theme_requires_php() {
+		$response = self::perform_active_theme_request();
+		$result   = $response->get_data();
+		$this->assertArrayHasKey( 'requires_php', $result[0] );
+		$this->assertSame( '5.6', $result[0]['requires_php'] );
+	}
+
+	/**
+	 * @ticket 49906
+	 */
+	public function test_theme_requires_wp() {
+		$response = self::perform_active_theme_request();
+		$result   = $response->get_data();
+		$this->assertArrayHasKey( 'requires_wp', $result[0] );
+		$this->assertSame( '5.3', $result[0]['requires_wp'] );
+	}
+
+	/**
+	 * @ticket 58123
+	 * @covers WP_REST_Themes_Controller::prepare_item_for_response
+	 */
+	public function test_theme_is_block_theme() {
+		// Test classic theme, activated in test setup.
+		$response = self::perform_active_theme_request();
+		$result   = $response->get_data();
+
+		$this->assertArrayHasKey( 'is_block_theme', $result[0] );
+		$this->assertFalse( $result[0]['is_block_theme'] );
+
+		// Test block theme.
+		switch_theme( 'block-theme' );
+		$response = self::perform_active_theme_request();
+		$result   = $response->get_data();
+
+		$this->assertArrayHasKey( 'is_block_theme', $result[0] );
+		$this->assertTrue( $result[0]['is_block_theme'] );
+	}
+
+	/**
+	 * @ticket 49906
+	 */
+	public function test_theme_name() {
+		$response = self::perform_active_theme_request();
+		$result   = $response->get_data();
+		$this->assertArrayHasKey( 'name', $result[0] );
+		$this->assertSame( 'REST Theme', $result[0]['name']['raw'] );
+		$this->assertSame( 'REST Theme', $result[0]['name']['rendered'] );
+	}
+
+	/**
+	 * @ticket 49906
+	 */
+	public function test_theme_screenshot() {
+		$response = self::perform_active_theme_request();
+		$result   = $response->get_data();
+		$this->assertArrayHasKey( 'screenshot', $result[0] );
+		$this->assertSame( '', $result[0]['screenshot'] ); // No screenshot for default theme
+	}
+
+	/**
+	 * @ticket 49906
+	 */
+	public function test_theme_stylesheet() {
+		$response = self::perform_active_theme_request();
+		$result   = $response->get_data();
+		$this->assertArrayHasKey( 'stylesheet', $result[0] );
+		$this->assertSame( 'rest-api', $result[0]['stylesheet'] );
+	}
+
+	/**
+	 * @ticket 61021
+	 */
+	public function test_theme_stylesheet_uri() {
+		wp_set_current_user( self::$admin_id );
+		$request = new WP_REST_Request( 'GET', self::$themes_route );
+		$request->set_param( 'status', array( 'active', 'inactive' ) );
+
+		$response      = rest_get_server()->dispatch( $request );
+		$result        = $response->get_data();
+		$current_theme = wp_get_theme();
+
+		foreach ( $result as $theme_result ) {
+			$this->assertArrayHasKey( 'stylesheet_uri', $theme_result );
+			if ( 'active' === $theme_result['status'] ) {
+				$this->assertSame(
+					get_stylesheet_directory_uri(),
+					$theme_result['stylesheet_uri'],
+					'stylesheet_uri for an active theme should be the same as the global get_stylesheet_directory_uri()'
+				);
+			} else {
+				$theme = wp_get_theme( $theme_result['stylesheet'] );
+				$this->assertSame(
+					$theme->get_stylesheet_directory_uri(),
+					$theme_result['stylesheet_uri'],
+					"stylesheet_uri for an inactive theme should be the same as the theme's get_stylesheet_directory_uri() method"
+				);
+			}
+		}
+	}
+
+	/**
+	 * @ticket 49906
+	 */
+	public function test_theme_tags() {
+		$response = self::perform_active_theme_request();
+		$result   = $response->get_data();
+		$this->assertArrayHasKey( 'tags', $result[0] );
+		$this->assertSame( array( 'Holiday', 'custom-menu' ), $result[0]['tags']['raw'] );
+		$this->assertSame( 'Holiday, custom-menu', $result[0]['tags']['rendered'] );
+	}
+
+	/**
+	 * @ticket 49906
+	 */
+	public function test_theme_template() {
+		$response = self::perform_active_theme_request();
+		$result   = $response->get_data();
+		$this->assertArrayHasKey( 'template', $result[0] );
+		$this->assertSame( 'default', $result[0]['template'] );
+	}
+
+	/**
+	 * @ticket 61021
+	 */
+	public function test_theme_template_uri() {
+		wp_set_current_user( self::$admin_id );
+		$request = new WP_REST_Request( 'GET', self::$themes_route );
+		$request->set_param( 'status', array( 'active', 'inactive' ) );
+
+		$response      = rest_get_server()->dispatch( $request );
+		$result        = $response->get_data();
+		$current_theme = wp_get_theme();
+
+		foreach ( $result as $theme_result ) {
+			$this->assertArrayHasKey( 'template_uri', $theme_result );
+			if ( 'active' === $theme_result['status'] ) {
+				$this->assertSame(
+					get_template_directory_uri(),
+					$theme_result['template_uri'],
+					'template_uri for an active theme should be the same as the global get_template_directory_uri()'
+				);
+			} else {
+				$theme = wp_get_theme( $theme_result['stylesheet'] );
+				$this->assertSame(
+					$theme->get_template_directory_uri(),
+					$theme_result['template_uri'],
+					"template_uri for an inactive theme should be the same as the theme's get_template_directory_uri() method"
+				);
+			}
+		}
+	}
+
+	/**
+	 * @ticket 49906
+	 */
+	public function test_theme_textdomain() {
+		$response = self::perform_active_theme_request();
+		$result   = $response->get_data();
+		$this->assertArrayHasKey( 'textdomain', $result[0] );
+		$this->assertSame( 'rest-api', $result[0]['textdomain'] );
+	}
+
+	public function test_theme_theme_uri() {
+		$response = self::perform_active_theme_request();
+		$result   = $response->get_data();
+		$this->assertArrayHasKey( 'theme_uri', $result[0] );
+		$this->assertSame( 'http://wordpress.org/?search=1&term=2', $result[0]['theme_uri']['raw'] );
+		$this->assertSame( 'http://wordpress.org/?search=1&#038;term=2', $result[0]['theme_uri']['rendered'] );
+	}
+
+	/**
+	 * @ticket 49906
+	 */
+	public function test_theme_version() {
+		$response = self::perform_active_theme_request();
+		$result   = $response->get_data();
+		$this->assertArrayHasKey( 'version', $result[0] );
+		$this->assertSame( '1.6', $result[0]['version'] );
+	}
+
+	/**
+	 * @ticket 49037
+	 */
+	public function test_theme_supports_disable_custom_colors_false() {
+		remove_theme_support( 'disable-custom-colors' );
+		$response = self::perform_active_theme_request();
+		$result   = $response->get_data();
+		$this->assertArrayHasKey( 'theme_supports', $result[0] );
+		$this->assertArrayHasKey( 'disable-custom-colors', $result[0]['theme_supports'] );
+		$this->assertFalse( $result[0]['theme_supports']['disable-custom-colors'] );
+	}
+
+	/**
+	 * @ticket 49037
+	 */
+	public function test_theme_supports_disable_custom_colors_true() {
+		remove_theme_support( 'disable-custom-colors' );
+		add_theme_support( 'disable-custom-colors' );
+		$response = self::perform_active_theme_request();
+		$result   = $response->get_data();
+		$this->assertArrayHasKey( 'theme_supports', $result[0] );
+		$this->assertTrue( $result[0]['theme_supports']['disable-custom-colors'] );
+	}
+
+	/**
+	 * @ticket 49037
+	 */
+	public function test_theme_supports_disable_custom_font_sizes_false() {
+		remove_theme_support( 'disable-custom-font-sizes' );
+		$response = self::perform_active_theme_request();
+		$result   = $response->get_data();
+		$this->assertArrayHasKey( 'theme_supports', $result[0] );
+		$this->assertArrayHasKey( 'disable-custom-font-sizes', $result[0]['theme_supports'] );
+		$this->assertFalse( $result[0]['theme_supports']['disable-custom-font-sizes'] );
+	}
+
+	/**
+	 * @ticket 49037
+	 */
+	public function test_theme_supports_disable_custom_font_sizes_true() {
+		remove_theme_support( 'disable-custom-font-sizes' );
+		add_theme_support( 'disable-custom-font-sizes' );
+		$response = self::perform_active_theme_request();
+		$result   = $response->get_data();
+		$this->assertArrayHasKey( 'theme_supports', $result[0] );
+		$this->assertTrue( $result[0]['theme_supports']['disable-custom-font-sizes'] );
+	}
+
+	/**
+	 * @ticket 49037
+	 */
+	public function test_theme_supports_editor_font_sizes_false() {
+		remove_theme_support( 'editor-font-sizes' );
+		$response = self::perform_active_theme_request();
+		$result   = $response->get_data();
+		$this->assertArrayHasKey( 'theme_supports', $result[0] );
+		$this->assertArrayHasKey( 'editor-font-sizes', $result[0]['theme_supports'] );
+		$this->assertFalse( $result[0]['theme_supports']['editor-font-sizes'] );
+	}
+
+	/**
+	 * @ticket 49037
+	 */
+	public function test_theme_supports_editor_font_sizes_array() {
+		remove_theme_support( 'editor-font-sizes' );
+		$tiny = array(
+			'name' => 'Tiny',
+			'size' => 8,
+			'slug' => 'tiny',
+		);
+		add_theme_support( 'editor-font-sizes', array( $tiny ) );
+		$response = self::perform_active_theme_request();
+		$result   = $response->get_data();
+		$this->assertArrayHasKey( 'theme_supports', $result[0] );
+		$this->assertArrayHasKey( 'editor-font-sizes', $result[0]['theme_supports'] );
+		$this->assertEqualSetsWithIndex( array( $tiny ), $result[0]['theme_supports']['editor-font-sizes'] );
+	}
+
+	/**
+	 * @ticket 49037
+	 */
+	public function test_theme_supports_editor_color_palette_false() {
+		remove_theme_support( 'editor-color-palette' );
+		$response = self::perform_active_theme_request();
+		$result   = $response->get_data();
+		$this->assertArrayHasKey( 'theme_supports', $result[0] );
+		$this->assertArrayHasKey( 'editor-color-palette', $result[0]['theme_supports'] );
+		$this->assertFalse( $result[0]['theme_supports']['editor-color-palette'] );
+	}
+
+	/**
+	 * @ticket 49037
+	 */
+	public function test_theme_supports_editor_color_palette_array() {
+		remove_theme_support( 'editor-color-palette' );
+		$wordpress_blue = array(
+			'name'  => 'WordPress Blue',
+			'slug'  => 'wordpress-blue',
+			'color' => '#0073AA',
+		);
+		add_theme_support( 'editor-color-palette', array( $wordpress_blue ) );
+		$response = self::perform_active_theme_request();
+		$result   = $response->get_data();
+		$this->assertArrayHasKey( 'theme_supports', $result[0] );
+		$this->assertSame( array( $wordpress_blue ), $result[0]['theme_supports']['editor-color-palette'] );
+	}
+
+	/**
+	 * @ticket 49037
+	 */
+	public function test_theme_supports_enable_automatic_feed_links() {
+		remove_theme_support( 'automatic-feed-links' );
+		add_theme_support( 'automatic-feed-links' );
+		$response = self::perform_active_theme_request();
+		$result   = $response->get_data();
+		$this->assertArrayHasKey( 'theme_supports', $result[0] );
+		$this->assertTrue( $result[0]['theme_supports']['automatic-feed-links'] );
+	}
+
+	/**
+	 * @ticket 49037
+	 */
+	public function test_theme_supports_does_not_enable_automatic_feed_links() {
+		remove_theme_support( 'automatic-feed-links' );
+		$response = self::perform_active_theme_request();
+		$result   = $response->get_data();
+		$this->assertArrayHasKey( 'theme_supports', $result[0] );
+		$this->assertArrayHasKey( 'automatic-feed-links', $result[0]['theme_supports'] );
+		$this->assertFalse( $result[0]['theme_supports']['automatic-feed-links'] );
+	}
+
+	/**
+	 * @ticket 49037
+	 */
+	public function test_theme_does_not_support_custom_logo() {
+		remove_theme_support( 'custom-logo' );
+		$response = self::perform_active_theme_request();
+		$result   = $response->get_data();
+		$this->assertArrayHasKey( 'theme_supports', $result[0] );
+		$this->assertArrayHasKey( 'custom-logo', $result[0]['theme_supports'] );
+		$this->assertFalse( $result[0]['theme_supports']['custom-logo'] );
+	}
+
+	/**
+	 * @ticket 49037
+	 */
+	public function test_theme_supports_custom_logo() {
+		remove_theme_support( 'custom-logo' );
+		$wordpress_logo = array(
+			'width'                => 400,
+			'height'               => 100,
+			'flex-width'           => true,
+			'flex-height'          => true,
+			'header-text'          => array( 'site-title', 'site-description' ),
+			'unlink-homepage-logo' => false,
+		);
+		add_theme_support( 'custom-logo', $wordpress_logo );
+		$response = self::perform_active_theme_request();
+		$result   = $response->get_data();
+		$this->assertArrayHasKey( 'theme_supports', $result[0] );
+		$this->assertSame( $wordpress_logo, $result[0]['theme_supports']['custom-logo'] );
+	}
+
+	/**
+	 * @ticket 49037
+	 */
+	public function test_theme_does_not_support_custom_header() {
+		remove_theme_support( 'custom-header' );
+		$response = self::perform_active_theme_request();
+		$result   = $response->get_data();
+		$this->assertArrayHasKey( 'theme_supports', $result[0] );
+		$this->assertArrayHasKey( 'custom-header', $result[0]['theme_supports'] );
+		$this->assertFalse( $result[0]['theme_supports']['custom-header'] );
+	}
+
+	/**
+	 * @ticket 49037
+	 */
+	public function test_theme_supports_custom_header() {
+		remove_theme_support( 'custom-header' );
+		$wordpress_header = array(
+			'default-image'          => '',
+			'random-default'         => false,
+			'width'                  => 0,
+			'height'                 => 0,
+			'flex-height'            => false,
+			'flex-width'             => false,
+			'default-text-color'     => '',
+			'header-text'            => true,
+			'uploads'                => true,
+			'wp-head-callback'       => '',
+			'admin-head-callback'    => '',
+			'admin-preview-callback' => '',
+			'video'                  => false,
+			'video-active-callback'  => 'is_front_page',
+		);
+		$excluded         = array(
+			'wp-head-callback',
+			'admin-head-callback',
+			'admin-preview-callback',
+			'video-active-callback',
+		);
+		add_theme_support( 'custom-header', $wordpress_header );
+		$response = self::perform_active_theme_request();
+		$result   = $response->get_data();
+		$this->assertArrayHasKey( 'theme_supports', $result[0] );
+
+		$expected = array_diff_key( $wordpress_header, array_flip( $excluded ) );
+		$this->assertSame( $expected, $result[0]['theme_supports']['custom-header'] );
+	}
+
+	/**
+	 * @ticket 49037
+	 */
+	public function test_theme_does_not_support_custom_background() {
+		remove_theme_support( 'custom-background' );
+		$response = self::perform_active_theme_request();
+		$result   = $response->get_data();
+		$this->assertArrayHasKey( 'theme_supports', $result[0] );
+		$this->assertArrayHasKey( 'custom-background', $result[0]['theme_supports'] );
+		$this->assertFalse( $result[0]['theme_supports']['custom-background'] );
+	}
+
+	/**
+	 * @ticket 49037
+	 */
+	public function test_theme_supports_custom_background() {
+		remove_theme_support( 'custom-background' );
+		$background = array(
+			'default-image'          => '',
+			'default-preset'         => 'default',
+			'default-position-x'     => 'left',
+			'default-position-y'     => 'top',
+			'default-size'           => 'auto',
+			'default-repeat'         => 'repeat',
+			'default-attachment'     => 'scroll',
+			'default-color'          => '',
+			'wp-head-callback'       => '_custom_background_cb',
+			'admin-head-callback'    => '',
+			'admin-preview-callback' => '',
+		);
+		$excluded   = array(
+			'wp-head-callback',
+			'admin-head-callback',
+			'admin-preview-callback',
+		);
+		add_theme_support( 'custom-background', $background );
+		$response = self::perform_active_theme_request();
+		$result   = $response->get_data();
+		$this->assertArrayHasKey( 'theme_supports', $result[0] );
+
+		$expected = array_diff_key( $background, array_flip( $excluded ) );
+		$this->assertSame( $expected, $result[0]['theme_supports']['custom-background'] );
+	}
+
+	/**
+	 * @ticket 49037
+	 */
+	public function test_theme_does_not_support_html5() {
+		remove_theme_support( 'html5' );
+		$response = self::perform_active_theme_request();
+		$result   = $response->get_data();
+		$this->assertArrayHasKey( 'theme_supports', $result[0] );
+		$this->assertArrayHasKey( 'html5', $result[0]['theme_supports'] );
+		$this->assertFalse( $result[0]['theme_supports']['html5'] );
+	}
+
+	/**
+	 * @ticket 49037
+	 */
+	public function test_theme_supports_html5() {
+		remove_theme_support( 'html5' );
+		$html5 = array(
+			'search-form',
+			'comment-form',
+			'comment-list',
+			'gallery',
+			'caption',
+			'script',
+			'style',
+		);
+		add_theme_support( 'html5', $html5 );
+		$response = self::perform_active_theme_request();
+		$result   = $response->get_data();
+		$this->assertArrayHasKey( 'theme_supports', $result[0] );
+		$this->assertSame( $html5, $result[0]['theme_supports']['html5'] );
+	}
+
+	/**
+	 * @ticket 49037
+	 */
+	public function test_theme_cannot_manage_title_tag() {
+		remove_theme_support( 'title-tag' );
+		$response = self::perform_active_theme_request();
+		$result   = $response->get_data();
+		$this->assertArrayHasKey( 'theme_supports', $result[0] );
+		$this->assertArrayHasKey( 'title-tag', $result[0]['theme_supports'] );
+		$this->assertFalse( $result[0]['theme_supports']['title-tag'] );
+	}
+
+	/**
+	 * @ticket 49037
+	 */
+	public function test_theme_can_manage_title_tag() {
+		global $_wp_theme_features;
+		$_wp_theme_features['title-tag'] = true;
+		$response                        = self::perform_active_theme_request();
+		$result                          = $response->get_data();
+		$this->assertArrayHasKey( 'theme_supports', $result[0] );
+		$this->assertTrue( $result[0]['theme_supports']['title-tag'] );
+	}
+
+	/**
+	 * @ticket 49037
+	 */
+	public function test_theme_cannot_manage_selective_refresh_for_widgets() {
+		remove_theme_support( 'customize-selective-refresh-widgets' );
+		$response = self::perform_active_theme_request();
+		$result   = $response->get_data();
+		$this->assertArrayHasKey( 'theme_supports', $result[0] );
+		$this->assertArrayHasKey( 'customize-selective-refresh-widgets', $result[0]['theme_supports'] );
+		$this->assertFalse( $result[0]['theme_supports']['customize-selective-refresh-widgets'] );
+	}
+
+	/**
+	 * @ticket 49037
+	 */
+	public function test_theme_can_manage_selective_refresh_for_widgets() {
+		remove_theme_support( 'customize-selective-refresh-widgets' );
+		add_theme_support( 'customize-selective-refresh-widgets' );
+		$response = self::perform_active_theme_request();
+		$result   = $response->get_data();
+		$this->assertArrayHasKey( 'theme_supports', $result[0] );
+		$this->assertTrue( $result[0]['theme_supports']['customize-selective-refresh-widgets'] );
+	}
+
+	/**
+	 * @ticket 49037
+	 */
+	public function test_theme_no_wp_block_styles() {
+		remove_theme_support( 'wp-block-styles' );
+		$response = self::perform_active_theme_request();
+		$result   = $response->get_data();
+		$this->assertArrayHasKey( 'theme_supports', $result[0] );
+		$this->assertArrayHasKey( 'wp-block-styles', $result[0]['theme_supports'] );
+		$this->assertFalse( $result[0]['theme_supports']['wp-block-styles'] );
+	}
+
+	/**
+	 * @ticket 49037
+	 */
+	public function test_theme_wp_block_styles_opt_in() {
+		remove_theme_support( 'wp-block-styles' );
+		add_theme_support( 'wp-block-styles' );
+		$response = self::perform_active_theme_request();
+		$result   = $response->get_data();
+		$this->assertArrayHasKey( 'theme_supports', $result[0] );
+		$this->assertTrue( $result[0]['theme_supports']['wp-block-styles'] );
+	}
+
+	/**
+	 * @ticket 49037
+	 */
+	public function test_theme_no_align_wide() {
+		remove_theme_support( 'align-wide' );
+		$response = self::perform_active_theme_request();
+		$result   = $response->get_data();
+		$this->assertArrayHasKey( 'theme_supports', $result[0] );
+		$this->assertArrayHasKey( 'align-wide', $result[0]['theme_supports'] );
+		$this->assertFalse( $result[0]['theme_supports']['align-wide'] );
+	}
+
+	/**
+	 * @ticket 49037
+	 */
+	public function test_theme_align_wide_opt_in() {
+		remove_theme_support( 'align-wide' );
+		add_theme_support( 'align-wide' );
+		$response = self::perform_active_theme_request();
+		$result   = $response->get_data();
+		$this->assertArrayHasKey( 'theme_supports', $result[0] );
+		$this->assertTrue( $result[0]['theme_supports']['align-wide'] );
+	}
+
+	/**
+	 * @ticket 49037
+	 */
+	public function test_theme_no_editor_styles() {
+		remove_theme_support( 'editor-styles' );
+		$response = self::perform_active_theme_request();
+		$result   = $response->get_data();
+		$this->assertArrayHasKey( 'theme_supports', $result[0] );
+		$this->assertArrayHasKey( 'editor-styles', $result[0]['theme_supports'] );
+		$this->assertFalse( $result[0]['theme_supports']['editor-styles'] );
+	}
+
+	/**
+	 * @ticket 49037
+	 */
+	public function test_theme_editor_styles_opt_in() {
+		remove_theme_support( 'editor-styles' );
+		add_theme_support( 'editor-styles' );
+		$response = self::perform_active_theme_request();
+		$result   = $response->get_data();
+		$this->assertArrayHasKey( 'theme_supports', $result[0] );
+		$this->assertTrue( $result[0]['theme_supports']['editor-styles'] );
+	}
+
+	/**
+	 * @ticket 49037
+	 */
+	public function test_theme_no_dark_editor_style() {
+		remove_theme_support( 'dark-editor-style' );
+		$response = self::perform_active_theme_request();
+		$result   = $response->get_data();
+		$this->assertArrayHasKey( 'theme_supports', $result[0] );
+		$this->assertArrayHasKey( 'dark-editor-style', $result[0]['theme_supports'] );
+		$this->assertFalse( $result[0]['theme_supports']['dark-editor-style'] );
+	}
+
+	/**
+	 * @ticket 49037
+	 */
+	public function test_theme_dark_editor_style_opt_in() {
+		remove_theme_support( 'dark-editor-style' );
+		add_theme_support( 'dark-editor-style' );
+		$response = self::perform_active_theme_request();
+		$result   = $response->get_data();
+		$this->assertArrayHasKey( 'theme_supports', $result[0] );
+		$this->assertTrue( $result[0]['theme_supports']['dark-editor-style'] );
+	}
+
+	/**
+	 * @ticket 49037
+	 */
+	public function test_theme_no_disable_custom_gradients() {
+		remove_theme_support( 'disable-custom-gradients' );
+		$response = self::perform_active_theme_request();
+		$result   = $response->get_data();
+		$this->assertArrayHasKey( 'theme_supports', $result[0] );
+		$this->assertArrayHasKey( 'disable-custom-gradients', $result[0]['theme_supports'] );
+		$this->assertFalse( $result[0]['theme_supports']['disable-custom-gradients'] );
+	}
+
+	/**
+	 * @ticket 49037
+	 */
+	public function test_theme_disable_custom_gradients() {
+		remove_theme_support( 'disable-custom-gradients' );
+		add_theme_support( 'disable-custom-gradients' );
+		$response = self::perform_active_theme_request();
+		$result   = $response->get_data();
+		$this->assertArrayHasKey( 'theme_supports', $result[0] );
+		$this->assertTrue( $result[0]['theme_supports']['disable-custom-gradients'] );
+	}
+
+	/**
+	 * @ticket 49037
+	 */
+	public function test_theme_supports_editor_gradient_presets_array() {
+		remove_theme_support( 'editor-gradient-presets' );
+		$gradient = array(
+			'name'     => __( 'Vivid cyan blue to vivid purple', 'themeLangDomain' ),
+			'gradient' => 'linear-gradient(135deg,rgba(6,147,227,1) 0%,rgb(155,81,224) 100%)',
+			'slug'     => 'vivid-cyan-blue-to-vivid-purple',
+		);
+		add_theme_support( 'editor-gradient-presets', array( $gradient ) );
+		$response = self::perform_active_theme_request();
+		$result   = $response->get_data();
+		$this->assertArrayHasKey( 'theme_supports', $result[0] );
+		$this->assertSame( array( $gradient ), $result[0]['theme_supports']['editor-gradient-presets'] );
+	}
+
+	/**
+	 * Should include relevant data in the 'theme_supports' key.
+	 *
+	 * @ticket 45016
+	 */
+	public function test_theme_supports_formats() {
+		remove_theme_support( 'post-formats' );
+		$response = self::perform_active_theme_request();
+		$result   = $response->get_data();
+		$this->assertArrayHasKey( 'theme_supports', $result[0] );
+		$this->assertArrayHasKey( 'formats', $result[0]['theme_supports'] );
+		$this->assertSame( array( 'standard' ), $result[0]['theme_supports']['formats'] );
+	}
+
+	/**
+	 * Test when a theme only supports some post formats.
+	 *
+	 * @ticket 45016
+	 */
+	public function test_theme_supports_formats_non_default() {
+		add_theme_support( 'post-formats', array( 'aside', 'video' ) );
+		$response = self::perform_active_theme_request();
+		$result   = $response->get_data();
+		$this->assertArrayHasKey( 'theme_supports', $result[0] );
+		$this->assertArrayHasKey( 'formats', $result[0]['theme_supports'] );
+		$this->assertSame( array( 'standard', 'aside', 'video' ), $result[0]['theme_supports']['formats'] );
+	}
+
+	/**
+	 * Test when a theme does not support responsive embeds.
+	 *
+	 * @ticket 45016
+	 */
+	public function test_theme_supports_responsive_embeds_false() {
+		remove_theme_support( 'responsive-embeds' );
+		$response = self::perform_active_theme_request();
+
+		$result = $response->get_data();
+		$this->assertArrayHasKey( 'theme_supports', $result[0] );
+		$this->assertArrayHasKey( 'responsive-embeds', $result[0]['theme_supports'] );
+		$this->assertFalse( $result[0]['theme_supports']['responsive-embeds'] );
+	}
+
+	/**
+	 * Test when a theme supports responsive embeds.
+	 *
+	 * @ticket 45016
+	 */
+	public function test_theme_supports_responsive_embeds_true() {
+		remove_theme_support( 'responsive-embeds' );
+		add_theme_support( 'responsive-embeds' );
+		$response = self::perform_active_theme_request();
+		$result   = $response->get_data();
+		$this->assertArrayHasKey( 'theme_supports', $result[0] );
+		$this->assertTrue( $result[0]['theme_supports']['responsive-embeds'] );
+	}
+
+	/**
+	 * Test when a theme does not support post thumbnails.
+	 *
+	 * @ticket 45016
+	 */
+	public function test_theme_supports_post_thumbnails_false() {
+		remove_theme_support( 'post-thumbnails' );
+		$response = self::perform_active_theme_request();
+
+		$result = $response->get_data();
+		$this->assertArrayHasKey( 'theme_supports', $result[0] );
+		$this->assertArrayHasKey( 'post-thumbnails', $result[0]['theme_supports'] );
+		$this->assertFalse( $result[0]['theme_supports']['post-thumbnails'] );
+	}
+
+	/**
+	 * Test when a theme supports all post thumbnails.
+	 *
+	 * @ticket 45016
+	 */
+	public function test_theme_supports_post_thumbnails_true() {
+		remove_theme_support( 'post-thumbnails' );
+		add_theme_support( 'post-thumbnails' );
+		$response = self::perform_active_theme_request();
+		$result   = $response->get_data();
+		$this->assertArrayHasKey( 'theme_supports', $result[0] );
+		$this->assertTrue( $result[0]['theme_supports']['post-thumbnails'] );
+	}
+
+	/**
+	 * Test when a theme only supports post thumbnails for certain post types.
+	 *
+	 * @ticket 45016
+	 */
+	public function test_theme_supports_post_thumbnails_array() {
+		remove_theme_support( 'post-thumbnails' );
+		add_theme_support( 'post-thumbnails', array( 'post' ) );
+		$response = self::perform_active_theme_request();
+		$result   = $response->get_data();
+		$this->assertArrayHasKey( 'theme_supports', $result[0] );
+		$this->assertSame( array( 'post' ), $result[0]['theme_supports']['post-thumbnails'] );
+	}
+
+	/**
+	 * @ticket 49406
+	 */
+	public function test_variadic_theme_support() {
+		register_theme_feature(
+			'test-feature',
+			array(
+				'type'         => 'array',
+				'variadic'     => true,
+				'show_in_rest' => array(
+					'schema' => array(
+						'items' => array(
+							'type' => 'string',
+						),
+					),
+				),
+			)
+		);
+		add_theme_support( 'test-feature', 'a', 'b', 'c' );
+
+		$response = self::perform_active_theme_request();
+		$result   = $response->get_data();
+		$this->assertArrayHasKey( 'theme_supports', $result[0] );
+		$this->assertSame( array( 'a', 'b', 'c' ), $result[0]['theme_supports']['test-feature'] );
+	}
+
+	/**
+	 * It should be possible to register custom fields to the endpoint.
+	 *
+	 * @ticket 45016
+	 */
+	public function test_get_additional_field_registration() {
+		$schema = array(
+			'type'        => 'integer',
+			'description' => 'Some integer of mine',
+			'enum'        => array( 1, 2, 3, 4 ),
+		);
+
+		register_rest_field(
+			'theme',
+			'my_custom_int',
+			array(
+				'schema'       => $schema,
+				'get_callback' => array( $this, 'additional_field_get_callback' ),
+			)
+		);
+
+		$response = self::perform_active_theme_request( 'OPTIONS' );
+		$data     = $response->get_data();
+
+		$this->assertArrayHasKey( 'my_custom_int', $data['schema']['properties'] );
+		$this->assertSame( $schema, $data['schema']['properties']['my_custom_int'] );
+
+		$response = self::perform_active_theme_request( 'GET' );
+		$data     = $response->get_data();
+		$this->assertArrayHasKey( 'my_custom_int', $data[0] );
+		$this->assertSame( 2, $data[0]['my_custom_int'] );
+
+		global $wp_rest_additional_fields;
+		$wp_rest_additional_fields = array();
+	}
+
+	/**
+	 * Return a value for the custom field.
+	 *
+	 * @since 5.0.0
+	 *
+	 * @param array $theme Theme data array.
+	 * @return int Additional field value.
+	 */
+	public function additional_field_get_callback( $theme ) {
+		return 2;
+	}
+
+	/**
+	 * The create_item() method does not exist for themes.
+	 *
+	 * @doesNotPerformAssertions
+	 */
+	public function test_create_item() {
+		// Controller does not implement create_item().
+	}
+
+	/**
+	 * The update_item() method does not exist for themes.
+	 *
+	 * @doesNotPerformAssertions
+	 */
+	public function test_update_item() {
+		// Controller does not implement update_item().
+	}
+
+	/**
+	 * Test single theme.
+	 *
+	 * @ticket 50152
+	 */
+	public function test_get_item() {
+		wp_set_current_user( self::$admin_id );
+		$route    = sprintf( '%s/%s', self::$themes_route, WP_DEFAULT_THEME );
+		$request  = new WP_REST_Request( 'GET', $route );
+		$response = rest_get_server()->dispatch( $request );
+
+		$this->assertSame( 200, $response->get_status() );
+		$data         = $response->get_data();
+		$links        = $response->get_links();
+		$fields       = array(
+			'author',
+			'author_uri',
+			'description',
+			'is_block_theme',
+			'name',
+			'requires_php',
+			'requires_wp',
+			'screenshot',
+			'status',
+			'stylesheet',
+			'stylesheet_uri',
+			'tags',
+			'template',
+			'template_uri',
+			'textdomain',
+			'theme_uri',
+			'version',
+		);
+		$fields_links = array( 'collection', 'self' );
+
+		$this->assertSameSets( $fields, array_keys( $data ) );
+		$this->assertSameSets( $fields_links, array_keys( $links ) );
+	}
+
+	/**
+	 * @ticket 50152
+	 */
+	public function test_get_item_no_permission() {
+		wp_set_current_user( self::$subscriber_id );
+		$request  = new WP_REST_Request( 'GET', self::$themes_route . '/' . WP_DEFAULT_THEME );
+		$response = rest_get_server()->dispatch( $request );
+		$this->assertErrorResponse( 'rest_cannot_view_themes', $response, 403 );
+	}
+
+	/**
+	 * @ticket 50152
+	 */
+	public function test_get_active_item_no_permission() {
+		wp_set_current_user( self::$subscriber_id );
+		$request  = new WP_REST_Request( 'GET', self::$themes_route . '/' . get_stylesheet() );
+		$response = rest_get_server()->dispatch( $request );
+		$this->assertErrorResponse( 'rest_cannot_view_active_theme', $response, 403 );
+	}
+
+	/**
+	 * @ticket 50152
+	 */
+	public function test_get_item_invalid() {
+		wp_set_current_user( self::$admin_id );
+		$request  = new WP_REST_Request( 'GET', self::$themes_route . '/invalid' );
+		$response = rest_get_server()->dispatch( $request );
+		$this->assertErrorResponse( 'rest_theme_not_found', $response, 404 );
+	}
+
+	/**
+	 * @ticket 50152
+	 */
+	public function test_get_active_item_as_contributor() {
+		$route    = sprintf( '%s/%s', self::$themes_route, get_stylesheet() );
+		$request  = new WP_REST_Request( 'GET', $route );
+		$response = rest_get_server()->dispatch( $request );
+
+		$this->assertSame( 200, $response->get_status() );
+	}
+
+	/**
+	 * @dataProvider data_get_item_non_subdir_theme
+	 * @ticket 54596
+	 * @covers WP_REST_Themes_Controller::get_item
+	 *
+	 * @param string $theme_dir     Theme directory to test.
+	 * @param string $expected_name Expected theme name.
+	 */
+	public function test_get_item_non_subdir_theme( $theme_dir, $expected_name ) {
+		wp_set_current_user( self::$admin_id );
+		$request  = new WP_REST_Request( 'GET', self::$themes_route . $theme_dir );
+		$response = rest_do_request( $request );
+
+		$this->assertSame( 200, $response->get_status() );
+		$this->assertSame( $expected_name, $response->get_data()['name']['raw'] );
+	}
+
+	/**
+	 * Data provider.
+	 *
+	 * @return array
+	 */
+	public function data_get_item_non_subdir_theme() {
+		return array(
+			'parent theme'                => array(
+				'theme_dir'     => '/block-theme',
+				'expected_name' => 'Block Theme',
+			),
+			'child theme'                 => array(
+				'theme_dir'     => '/block-theme-child',
+				'expected_name' => 'Block Theme Child Theme',
+			),
+			'theme with _-[]. characters' => array(
+				'theme_dir'     => '/block_theme-[0.4.0]',
+				'expected_name' => 'Block Theme [0.4.0]',
+			),
+		);
+	}
+
+	/**
+	 * @dataProvider data_get_item_subdirectory_theme
+	 * @ticket 54349
+	 * @ticket 54596
+	 * @covers WP_REST_Themes_Controller::get_item
+	 *
+	 * @param string $theme_dir     Theme directory to test.
+	 * @param string $expected_name Expected theme name.
+	 */
+	public function test_get_item_subdirectory_theme( $theme_dir, $expected_name ) {
+		wp_set_current_user( self::$admin_id );
+		$request  = new WP_REST_Request( 'GET', self::$themes_route . $theme_dir );
+		$response = rest_do_request( $request );
+
+		$this->assertSame(
+			200,
+			$response->get_status(),
+			'A 200 OK status was not returned.'
+		);
+		$this->assertSame(
+			$expected_name,
+			$response->get_data()['name']['raw'],
+			'The actual theme name was not the expected theme name.'
+		);
+	}
+
+	/**
+	 * Data provider.
+	 *
+	 * @return array
+	 */
+	public function data_get_item_subdirectory_theme() {
+		return array(
+			'theme2'                      => array(
+				'theme_dir'     => '/subdir/theme2',
+				'expected_name' => 'My Subdir Theme',
+			),
+			'theme with _-[]. characters' => array(
+				'theme_dir'     => '/subdir/block_theme-[1.0.0]',
+				'expected_name' => 'Block Theme [1.0.0] in subdirectory',
+			),
+		);
+	}
+
+	/**
+	 * @ticket 54349
+	 */
+	public function test_can_support_further_routes() {
+		register_rest_route(
+			'wp/v2',
+			sprintf( '/themes/(?P<stylesheet>%s)//test', WP_REST_Themes_Controller::PATTERN ),
+			array(
+				'callback'            => static function ( WP_REST_Request $request ) {
+					return $request['stylesheet'];
+				},
+				'permission_callback' => '__return_true',
+			)
+		);
+
+		wp_set_current_user( self::$admin_id );
+
+		$response = rest_do_request( self::$themes_route . '/default//test' );
+		$this->assertSame( 'default', $response->get_data() );
+
+		$response = rest_do_request( self::$themes_route . '/subdir/theme2//test' );
+		$this->assertSame( 'subdir/theme2', $response->get_data() );
+	}
+
+	/**
+	 * The delete_item() method does not exist for themes.
+	 *
+	 * @doesNotPerformAssertions
+	 */
+	public function test_delete_item() {
+		// Controller does not implement delete_item().
+	}
+
+	/**
+	 * Context is not supported for themes.
+	 *
+	 * @doesNotPerformAssertions
+	 */
+	public function test_context_param() {
+		// Controller does not use get_context_param().
+	}
+}

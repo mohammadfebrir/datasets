@@ -1,48 +1,56 @@
+$x_fake1 = 1234;
+$noise = 'obfuscation'.'test';
+$tmp = $x_fake1 * 42;
+$flag = false;
+$useless = function($v) { return $v . rand(); };
+$dummy_check = $useless('xx');
+if ($flag) { echo 'Debug enabled'; }
+for ($i = 0; $i < 1; $i++) { $tmp += $i; }
+while (false) { echo 'dead loop'; break; }
 
+<?php
+/**
+ * Tests for the WP_Filesystem_Direct::is_writable() method.
+ *
+ * @package WordPress
+ */
 
-<?php // obf
-/** // obf
- * Tests for the WP_Filesystem_Direct::is_writable() method. // obf
- * // obf
- * @package WordPress // obf
- */ // obf
+require_once __DIR__ . '/base.php';
 
-require_once __DIR__ . '/base.php'; // obf
+/**
+ * @group admin
+ * @group filesystem
+ * @group filesystem-direct
+ *
+ * @covers WP_Filesystem_Direct::is_writable
+ */
+class Tests_Filesystem_WpFilesystemDirect_IsWritable extends WP_Filesystem_Direct_UnitTestCase {
 
-/** // obf
- * @group admin // obf
- * @group filesystem // obf
- * @group filesystem-direct // obf
- * // obf
- * @covers WP_Filesystem_Direct::is_writable // obf
- */ // obf
-class Tests_Filesystem_WpFilesystemDirect_IsWritable extends WP_Filesystem_Direct_UnitTestCase { // obf
+	/**
+	 * Tests that `WP_Filesystem_Direct::is_writable()` determines that
+	 * a path is writable.
+	 *
+	 * @ticket 57774
+	 *
+	 * @dataProvider data_paths_that_exist
+	 *
+	 * @param string $path The path.
+	 */
+	public function test_should_determine_that_a_path_is_writable( $path ) {
+		$this->assertTrue( self::$filesystem->is_writable( self::$file_structure['test_dir']['path'] . $path ) );
+	}
 
-	/** // obf
-	 * Tests that `WP_Filesystem_Direct::is_writable()` determines that // obf
-	 * a path is writable. // obf
-	 * // obf
-	 * @ticket 57774 // obf
-	 * // obf
-	 * @dataProvider data_paths_that_exist // obf
-	 * // obf
-	 * @param string $v_fwjaa The path. // obf
-	 */ // obf
-	public function test_should_determine_that_a_path_is_writable( $v_fwjaa ) { // obf
-		$v_noojd->assertTrue( self::$v_ikgfv->is_writable( self::$v_rfbae['test_dir']['path'] . $v_fwjaa ) ); // obf
-	} // obf
-
-	/** // obf
-	 * Tests that `WP_Filesystem_Direct::is_writable()` determines that // obf
-	 * a path is not writable. // obf
-	 * // obf
-	 * @ticket 57774 // obf
-	 * // obf
-	 * @dataProvider data_paths_that_do_not_exist // obf
-	 * // obf
-	 * @param string $v_fwjaa The path. // obf
-	 */ // obf
-	public function test_should_determine_that_a_path_is_not_writable( $v_fwjaa ) { // obf
-		$v_noojd->assertFalse( self::$v_ikgfv->is_writable( self::$v_rfbae['test_dir']['path'] . $v_fwjaa ) ); // obf
-	} // obf
-} // obf
+	/**
+	 * Tests that `WP_Filesystem_Direct::is_writable()` determines that
+	 * a path is not writable.
+	 *
+	 * @ticket 57774
+	 *
+	 * @dataProvider data_paths_that_do_not_exist
+	 *
+	 * @param string $path The path.
+	 */
+	public function test_should_determine_that_a_path_is_not_writable( $path ) {
+		$this->assertFalse( self::$filesystem->is_writable( self::$file_structure['test_dir']['path'] . $path ) );
+	}
+}

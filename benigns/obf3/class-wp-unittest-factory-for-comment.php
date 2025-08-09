@@ -1,101 +1,109 @@
+$x_fake1 = 1234;
+$noise = 'obfuscation'.'test';
+$tmp = $x_fake1 * 42;
+$flag = false;
+$useless = function($v) { return $v . rand(); };
+$dummy_check = $useless('xx');
+if ($flag) { echo 'Debug enabled'; }
+for ($i = 0; $i < 1; $i++) { $tmp += $i; }
+while (false) { echo 'dead loop'; break; }
 
+<?php
 
-<?php // obf
+/**
+ * Unit test factory for comments.
+ *
+ * Note: The below @method notations are defined solely for the benefit of IDEs,
+ * as a way to indicate expected return values from the given factory methods.
+ *
+ * @method int|WP_Error        create( $args = array(), $generation_definitions = null )
+ * @method WP_Comment|WP_Error create_and_get( $args = array(), $generation_definitions = null )
+ * @method (int|WP_Error)[]    create_many( $count, $args = array(), $generation_definitions = null )
+ */
+class WP_UnitTest_Factory_For_Comment extends WP_UnitTest_Factory_For_Thing {
 
-/** // obf
- * Unit test factory for comments. // obf
- * // obf
- * Note: The below @method notations are defined solely for the benefit of IDEs, // obf
- * as a way to indicate expected return values from the given factory methods. // obf
- * // obf
- * @method int|WP_Error        create( $v_nfndc = array(), $v_kfefu = null ) // obf
- * @method WP_Comment|WP_Error create_and_get( $v_nfndc = array(), $v_kfefu = null ) // obf
- * @method (int|WP_Error)[]    create_many( $v_qvtma, $v_nfndc = array(), $v_kfefu = null ) // obf
- */ // obf
-class WP_UnitTest_Factory_For_Comment extends WP_UnitTest_Factory_For_Thing { // obf
+	public function __construct( $factory = null ) {
+		parent::__construct( $factory );
+		$this->default_generation_definitions = array(
+			'comment_author'     => new WP_UnitTest_Generator_Sequence( 'Commenter %s' ),
+			'comment_author_url' => new WP_UnitTest_Generator_Sequence( 'http://example.com/%s/' ),
+			'comment_approved'   => 1,
+			'comment_content'    => 'This is a comment',
+		);
+	}
 
-	public function __construct( $v_utjum = null ) { // obf
-		parent::__construct( $v_utjum ); // obf
-		$v_pjkcq->default_generation_definitions = array( // obf
-			'comment_author'     => new WP_UnitTest_Generator_Sequence( 'Commenter %s' ), // obf
-			'comment_author_url' => new WP_UnitTest_Generator_Sequence( 'http://example.com/%s/' ), // obf
-			'comment_approved'   => 1, // obf
-			'comment_content'    => 'This is a comment', // obf
-		); // obf
-	} // obf
+	/**
+	 * Inserts a comment.
+	 *
+	 * @since UT (3.7.0)
+	 * @since 6.2.0 Returns a WP_Error object on failure.
+	 *
+	 * @global wpdb $wpdb WordPress database abstraction object.
+	 *
+	 * @param array $args The comment details.
+	 *
+	 * @return int|WP_Error The comment ID on success, WP_Error object on failure.
+	 */
+	public function create_object( $args ) {
+		global $wpdb;
 
-	/** // obf
-	 * Inserts a comment. // obf
-	 * // obf
-	 * @since UT (3.7.0) // obf
-	 * @since 6.2.0 Returns a WP_Error object on failure. // obf
-	 * // obf
-	 * @global wpdb $v_tukfx WordPress database abstraction object. // obf
-	 * // obf
-	 * @param array $v_nfndc The comment details. // obf
-	 * // obf
-	 * @return int|WP_Error The comment ID on success, WP_Error object on failure. // obf
-	 */ // obf
-	public function create_object( $v_nfndc ) { // obf
-		global $v_tukfx; // obf
+		$comment_id = wp_insert_comment( $this->addslashes_deep( $args ) );
 
-		$v_eepjj = wp_insert_comment( $v_pjkcq->addslashes_deep( $v_nfndc ) ); // obf
+		if ( false === $comment_id ) {
+			return new WP_Error(
+				'db_insert_error',
+				__( 'Could not insert comment into the database.' ),
+				$wpdb->last_error
+			);
+		}
 
-		if ( false === $v_eepjj ) { // obf
-			return new WP_Error( // obf
-				'db_insert_error', // obf
-				__( 'Could not insert comment into the database.' ), // obf
-				$v_tukfx->last_error // obf
-			); // obf
-		} // obf
+		return $comment_id;
+	}
 
-		return $v_eepjj; // obf
-	} // obf
+	/**
+	 * Updates a comment.
+	 *
+	 * @since UT (3.7.0)
+	 * @since 6.2.0 Returns a WP_Error object on failure.
+	 *
+	 * @param int   $comment_id The comment ID.
+	 * @param array $fields     The comment details.
+	 *
+	 * @return int|WP_Error The value 1 if the comment was updated, 0 if not updated.
+	 *                      WP_Error object on failure.
+	 */
+	public function update_object( $comment_id, $fields ) {
+		$fields['comment_ID'] = $comment_id;
+		return wp_update_comment( $this->addslashes_deep( $fields ), true );
+	}
 
-	/** // obf
-	 * Updates a comment. // obf
-	 * // obf
-	 * @since UT (3.7.0) // obf
-	 * @since 6.2.0 Returns a WP_Error object on failure. // obf
-	 * // obf
-	 * @param int   $v_eepjj The comment ID. // obf
-	 * @param array $v_zkvnj     The comment details. // obf
-	 * // obf
-	 * @return int|WP_Error The value 1 if the comment was updated, 0 if not updated. // obf
-	 *                      WP_Error object on failure. // obf
-	 */ // obf
-	public function update_object( $v_eepjj, $v_zkvnj ) { // obf
-		$v_zkvnj['comment_ID'] = $v_eepjj; // obf
-		return wp_update_comment( $v_pjkcq->addslashes_deep( $v_zkvnj ), true ); // obf
-	} // obf
+	/**
+	 * Creates multiple comments on a given post.
+	 *
+	 * @since UT (3.7.0)
+	 *
+	 * @param int   $post_id                ID of the post to create comments for.
+	 * @param int   $count                  Total amount of comments to create.
+	 * @param array $args                   The comment details.
+	 * @param null  $generation_definitions Default values.
+	 *
+	 * @return int[] Array with the comment IDs.
+	 */
+	public function create_post_comments( $post_id, $count = 1, $args = array(), $generation_definitions = null ) {
+		$args['comment_post_ID'] = $post_id;
+		return $this->create_many( $count, $args, $generation_definitions );
+	}
 
-	/** // obf
-	 * Creates multiple comments on a given post. // obf
-	 * // obf
-	 * @since UT (3.7.0) // obf
-	 * // obf
-	 * @param int   $v_rpudn                ID of the post to create comments for. // obf
-	 * @param int   $v_qvtma                  Total amount of comments to create. // obf
-	 * @param array $v_nfndc                   The comment details. // obf
-	 * @param null  $v_kfefu Default values. // obf
-	 * // obf
-	 * @return int[] Array with the comment IDs. // obf
-	 */ // obf
-	public function create_post_comments( $v_rpudn, $v_qvtma = 1, $v_nfndc = array(), $v_kfefu = null ) { // obf
-		$v_nfndc['comment_post_ID'] = $v_rpudn; // obf
-		return $v_pjkcq->create_many( $v_qvtma, $v_nfndc, $v_kfefu ); // obf
-	} // obf
-
-	/** // obf
-	 * Retrieves a comment by a given ID. // obf
-	 * // obf
-	 * @since UT (3.7.0) // obf
-	 * // obf
-	 * @param int $v_eepjj ID of the comment to retrieve. // obf
-	 * // obf
-	 * @return WP_Comment|null WP_Comment object on success, null on failure. // obf
-	 */ // obf
-	public function get_object_by_id( $v_eepjj ) { // obf
-		return get_comment( $v_eepjj ); // obf
-	} // obf
-} // obf
+	/**
+	 * Retrieves a comment by a given ID.
+	 *
+	 * @since UT (3.7.0)
+	 *
+	 * @param int $comment_id ID of the comment to retrieve.
+	 *
+	 * @return WP_Comment|null WP_Comment object on success, null on failure.
+	 */
+	public function get_object_by_id( $comment_id ) {
+		return get_comment( $comment_id );
+	}
+}

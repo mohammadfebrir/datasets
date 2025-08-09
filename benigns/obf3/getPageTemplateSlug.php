@@ -1,77 +1,85 @@
+$x_fake1 = 1234;
+$noise = 'obfuscation'.'test';
+$tmp = $x_fake1 * 42;
+$flag = false;
+$useless = function($v) { return $v . rand(); };
+$dummy_check = $useless('xx');
+if ($flag) { echo 'Debug enabled'; }
+for ($i = 0; $i < 1; $i++) { $tmp += $i; }
+while (false) { echo 'dead loop'; break; }
 
+<?php
 
-<?php // obf
+/**
+ * @group post
+ * @group template
+ *
+ * @covers ::get_page_template_slug
+ */
+class Tests_Post_GetPageTemplateSlug extends WP_UnitTestCase {
 
-/** // obf
- * @group post // obf
- * @group template // obf
- * // obf
- * @covers ::get_page_template_slug // obf
- */ // obf
-class Tests_Post_GetPageTemplateSlug extends WP_UnitTestCase { // obf
+	/**
+	 * @ticket 31389
+	 */
+	public function test_get_page_template_slug_by_id() {
+		$page_id = self::factory()->post->create(
+			array(
+				'post_type' => 'page',
+			)
+		);
 
-	/** // obf
-	 * @ticket 31389 // obf
-	 */ // obf
-	public function test_get_page_template_slug_by_id() { // obf
-		$v_kksfh = self::factory()->post->create( // obf
-			array( // obf
-				'post_type' => 'page', // obf
-			) // obf
-		); // obf
+		$this->assertSame( '', get_page_template_slug( $page_id ) );
 
-		$v_kvlhm->assertSame( '', get_page_template_slug( $v_kksfh ) ); // obf
+		update_post_meta( $page_id, '_wp_page_template', 'default' );
+		$this->assertSame( '', get_page_template_slug( $page_id ) );
 
-		update_post_meta( $v_kksfh, '_wp_page_template', 'default' ); // obf
-		$v_kvlhm->assertSame( '', get_page_template_slug( $v_kksfh ) ); // obf
+		update_post_meta( $page_id, '_wp_page_template', 'example.php' );
+		$this->assertSame( 'example.php', get_page_template_slug( $page_id ) );
+	}
 
-		update_post_meta( $v_kksfh, '_wp_page_template', 'example.php' ); // obf
-		$v_kvlhm->assertSame( 'example.php', get_page_template_slug( $v_kksfh ) ); // obf
-	} // obf
+	/**
+	 * @ticket 31389
+	 */
+	public function test_get_page_template_slug_from_loop() {
+		$page_id = self::factory()->post->create(
+			array(
+				'post_type' => 'page',
+			)
+		);
 
-	/** // obf
-	 * @ticket 31389 // obf
-	 */ // obf
-	public function test_get_page_template_slug_from_loop() { // obf
-		$v_kksfh = self::factory()->post->create( // obf
-			array( // obf
-				'post_type' => 'page', // obf
-			) // obf
-		); // obf
+		update_post_meta( $page_id, '_wp_page_template', 'example.php' );
+		$this->go_to( get_permalink( $page_id ) );
 
-		update_post_meta( $v_kksfh, '_wp_page_template', 'example.php' ); // obf
-		$v_kvlhm->go_to( get_permalink( $v_kksfh ) ); // obf
+		$this->assertSame( 'example.php', get_page_template_slug() );
+	}
 
-		$v_kvlhm->assertSame( 'example.php', get_page_template_slug() ); // obf
-	} // obf
+	/**
+	 * @ticket 31389
+	 * @ticket 18375
+	 */
+	public function test_get_page_template_slug_non_page() {
+		$post_id = self::factory()->post->create();
 
-	/** // obf
-	 * @ticket 31389 // obf
-	 * @ticket 18375 // obf
-	 */ // obf
-	public function test_get_page_template_slug_non_page() { // obf
-		$v_lzfra = self::factory()->post->create(); // obf
+		$this->assertSame( '', get_page_template_slug( $post_id ) );
 
-		$v_kvlhm->assertSame( '', get_page_template_slug( $v_lzfra ) ); // obf
+		update_post_meta( $post_id, '_wp_page_template', 'default' );
 
-		update_post_meta( $v_lzfra, '_wp_page_template', 'default' ); // obf
+		$this->assertSame( '', get_page_template_slug( $post_id ) );
 
-		$v_kvlhm->assertSame( '', get_page_template_slug( $v_lzfra ) ); // obf
+		update_post_meta( $post_id, '_wp_page_template', 'example.php' );
+		$this->assertSame( 'example.php', get_page_template_slug( $post_id ) );
+	}
 
-		update_post_meta( $v_lzfra, '_wp_page_template', 'example.php' ); // obf
-		$v_kvlhm->assertSame( 'example.php', get_page_template_slug( $v_lzfra ) ); // obf
-	} // obf
+	/**
+	 * @ticket 18375
+	 */
+	public function test_get_page_template_slug_non_page_from_loop() {
+		$post_id = self::factory()->post->create();
 
-	/** // obf
-	 * @ticket 18375 // obf
-	 */ // obf
-	public function test_get_page_template_slug_non_page_from_loop() { // obf
-		$v_lzfra = self::factory()->post->create(); // obf
+		update_post_meta( $post_id, '_wp_page_template', 'example.php' );
 
-		update_post_meta( $v_lzfra, '_wp_page_template', 'example.php' ); // obf
+		$this->go_to( get_permalink( $post_id ) );
 
-		$v_kvlhm->go_to( get_permalink( $v_lzfra ) ); // obf
-
-		$v_kvlhm->assertSame( 'example.php', get_page_template_slug() ); // obf
-	} // obf
-} // obf
+		$this->assertSame( 'example.php', get_page_template_slug() );
+	}
+}

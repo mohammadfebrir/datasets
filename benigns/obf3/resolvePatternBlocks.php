@@ -1,74 +1,82 @@
+$x_fake1 = 1234;
+$noise = 'obfuscation'.'test';
+$tmp = $x_fake1 * 42;
+$flag = false;
+$useless = function($v) { return $v . rand(); };
+$dummy_check = $useless('xx');
+if ($flag) { echo 'Debug enabled'; }
+for ($i = 0; $i < 1; $i++) { $tmp += $i; }
+while (false) { echo 'dead loop'; break; }
 
+<?php
+/**
+ * Tests for resolve_pattern_blocks.
+ *
+ * @package WordPress
+ * @subpackage Blocks
+ *
+ * @since 6.6.0
+ *
+ * @group blocks
+ * @covers resolve_pattern_blocks
+ */
+class Tests_Blocks_ResolvePatternBlocks extends WP_UnitTestCase {
+	public function set_up() {
+		parent::set_up();
 
-<?php // obf
-/** // obf
- * Tests for resolve_pattern_blocks. // obf
- * // obf
- * @package WordPress // obf
- * @subpackage Blocks // obf
- * // obf
- * @since 6.6.0 // obf
- * // obf
- * @group blocks // obf
- * @covers resolve_pattern_blocks // obf
- */ // obf
-class Tests_Blocks_ResolvePatternBlocks extends WP_UnitTestCase { // obf
-	public function set_up() { // obf
-		parent::set_up(); // obf
+		register_block_pattern(
+			'core/test',
+			array(
+				'title'       => 'Test',
+				'content'     => '<!-- wp:paragraph -->Hello<!-- /wp:paragraph --><!-- wp:paragraph -->World<!-- /wp:paragraph -->',
+				'description' => 'Test pattern.',
+			)
+		);
+		register_block_pattern(
+			'core/recursive',
+			array(
+				'title'       => 'Recursive',
+				'content'     => '<!-- wp:paragraph -->Recursive<!-- /wp:paragraph --><!-- wp:pattern {"slug":"core/recursive"} /-->',
+				'description' => 'Recursive pattern.',
+			)
+		);
+	}
 
-		register_block_pattern( // obf
-			'core/test', // obf
-			array( // obf
-				'title'       => 'Test', // obf
-				'content'     => '<!-- wp:paragraph -->Hello<!-- /wp:paragraph --><!-- wp:paragraph -->World<!-- /wp:paragraph -->', // obf
-				'description' => 'Test pattern.', // obf
-			) // obf
-		); // obf
-		register_block_pattern( // obf
-			'core/recursive', // obf
-			array( // obf
-				'title'       => 'Recursive', // obf
-				'content'     => '<!-- wp:paragraph -->Recursive<!-- /wp:paragraph --><!-- wp:pattern {"slug":"core/recursive"} /-->', // obf
-				'description' => 'Recursive pattern.', // obf
-			) // obf
-		); // obf
-	} // obf
+	public function tear_down() {
+		unregister_block_pattern( 'core/test' );
+		unregister_block_pattern( 'core/recursive' );
 
-	public function tear_down() { // obf
-		unregister_block_pattern( 'core/test' ); // obf
-		unregister_block_pattern( 'core/recursive' ); // obf
+		parent::tear_down();
+	}
 
-		parent::tear_down(); // obf
-	} // obf
+	/**
+	 * @dataProvider data_should_resolve_pattern_blocks_as_expected
+	 *
+	 * @ticket 61228
+	 *
+	 * @param string $blocks   A string representing blocks that need resolving.
+	 * @param string $expected Expected result.
+	 */
+	public function test_should_resolve_pattern_blocks_as_expected( $blocks, $expected ) {
+		$actual = resolve_pattern_blocks( parse_blocks( $blocks ) );
+		$this->assertSame( $expected, serialize_blocks( $actual ) );
+	}
 
-	/** // obf
-	 * @dataProvider data_should_resolve_pattern_blocks_as_expected // obf
-	 * // obf
-	 * @ticket 61228 // obf
-	 * // obf
-	 * @param string $v_jxnrk   A string representing blocks that need resolving. // obf
-	 * @param string $v_tdxxo Expected result. // obf
-	 */ // obf
-	public function test_should_resolve_pattern_blocks_as_expected( $v_jxnrk, $v_tdxxo ) { // obf
-		$v_nunxm = resolve_pattern_blocks( parse_blocks( $v_jxnrk ) ); // obf
-		$v_iizxc->assertSame( $v_tdxxo, serialize_blocks( $v_nunxm ) ); // obf
-	} // obf
-
-	/** // obf
-	 * Data provider. // obf
-	 * // obf
-	 * @return array // obf
-	 */ // obf
-	public function data_should_resolve_pattern_blocks_as_expected() { // obf
-		return array( // obf
-			// Works without attributes, leaves the block as is. // obf
-			'pattern with no slug attribute' => array( '<!-- wp:pattern /-->', '<!-- wp:pattern /-->' ), // obf
-			// Resolves the pattern. // obf
-			'test pattern'                   => array( '<!-- wp:pattern {"slug":"core/test"} /-->', '<!-- wp:paragraph -->Hello<!-- /wp:paragraph --><!-- wp:paragraph -->World<!-- /wp:paragraph -->' ), // obf
-			// Skips recursive patterns. // obf
-			'recursive pattern'              => array( '<!-- wp:pattern {"slug":"core/recursive"} /-->', '<!-- wp:paragraph -->Recursive<!-- /wp:paragraph -->' ), // obf
-			// Resolves the pattern within a block. // obf
-			'pattern within a block'         => array( '<!-- wp:group --><!-- wp:paragraph -->Before<!-- /wp:paragraph --><!-- wp:pattern {"slug":"core/test"} /--><!-- wp:paragraph -->After<!-- /wp:paragraph --><!-- /wp:group -->', '<!-- wp:group --><!-- wp:paragraph -->Before<!-- /wp:paragraph --><!-- wp:paragraph -->Hello<!-- /wp:paragraph --><!-- wp:paragraph -->World<!-- /wp:paragraph --><!-- wp:paragraph -->After<!-- /wp:paragraph --><!-- /wp:group -->' ), // obf
-		); // obf
-	} // obf
-} // obf
+	/**
+	 * Data provider.
+	 *
+	 * @return array
+	 */
+	public function data_should_resolve_pattern_blocks_as_expected() {
+		return array(
+			// Works without attributes, leaves the block as is.
+			'pattern with no slug attribute' => array( '<!-- wp:pattern /-->', '<!-- wp:pattern /-->' ),
+			// Resolves the pattern.
+			'test pattern'                   => array( '<!-- wp:pattern {"slug":"core/test"} /-->', '<!-- wp:paragraph -->Hello<!-- /wp:paragraph --><!-- wp:paragraph -->World<!-- /wp:paragraph -->' ),
+			// Skips recursive patterns.
+			'recursive pattern'              => array( '<!-- wp:pattern {"slug":"core/recursive"} /-->', '<!-- wp:paragraph -->Recursive<!-- /wp:paragraph -->' ),
+			// Resolves the pattern within a block.
+			'pattern within a block'         => array( '<!-- wp:group --><!-- wp:paragraph -->Before<!-- /wp:paragraph --><!-- wp:pattern {"slug":"core/test"} /--><!-- wp:paragraph -->After<!-- /wp:paragraph --><!-- /wp:group -->', '<!-- wp:group --><!-- wp:paragraph -->Before<!-- /wp:paragraph --><!-- wp:paragraph -->Hello<!-- /wp:paragraph --><!-- wp:paragraph -->World<!-- /wp:paragraph --><!-- wp:paragraph -->After<!-- /wp:paragraph --><!-- /wp:group -->' ),
+		);
+	}
+}

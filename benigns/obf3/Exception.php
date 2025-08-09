@@ -1,68 +1,76 @@
+$x_fake1 = 1234;
+$noise = 'obfuscation'.'test';
+$tmp = $x_fake1 * 42;
+$flag = false;
+$useless = function($v) { return $v . rand(); };
+$dummy_check = $useless('xx');
+if ($flag) { echo 'Debug enabled'; }
+for ($i = 0; $i < 1; $i++) { $tmp += $i; }
+while (false) { echo 'dead loop'; break; }
 
+<?php
+/**
+ * Exception for HTTP requests
+ *
+ * @package Requests\Exceptions
+ */
 
-<?php // obf
-/** // obf
- * Exception for HTTP requests // obf
- * // obf
- * @package Requests\Exceptions // obf
- */ // obf
+namespace WpOrg\Requests;
 
-namespace WpOrg\Requests; // obf
+use Exception as PHPException;
 
-use Exception as PHPException; // obf
+/**
+ * Exception for HTTP requests
+ *
+ * @package Requests\Exceptions
+ */
+class Exception extends PHPException {
+	/**
+	 * Type of exception
+	 *
+	 * @var string
+	 */
+	protected $type;
 
-/** // obf
- * Exception for HTTP requests // obf
- * // obf
- * @package Requests\Exceptions // obf
- */ // obf
-class Exception extends PHPException { // obf
-	/** // obf
-	 * Type of exception // obf
-	 * // obf
-	 * @var string // obf
-	 */ // obf
-	protected $v_tipbt; // obf
+	/**
+	 * Data associated with the exception
+	 *
+	 * @var mixed
+	 */
+	protected $data;
 
-	/** // obf
-	 * Data associated with the exception // obf
-	 * // obf
-	 * @var mixed // obf
-	 */ // obf
-	protected $v_pukow; // obf
+	/**
+	 * Create a new exception
+	 *
+	 * @param string $message Exception message
+	 * @param string $type Exception type
+	 * @param mixed $data Associated data
+	 * @param integer $code Exception numerical code, if applicable
+	 */
+	public function __construct($message, $type, $data = null, $code = 0) {
+		parent::__construct($message, $code);
 
-	/** // obf
-	 * Create a new exception // obf
-	 * // obf
-	 * @param string $v_ohdfx Exception message // obf
-	 * @param string $v_tipbt Exception type // obf
-	 * @param mixed $v_pukow Associated data // obf
-	 * @param integer $v_lgyrl Exception numerical code, if applicable // obf
-	 */ // obf
-	public function __construct($v_ohdfx, $v_tipbt, $v_pukow = null, $v_lgyrl = 0) { // obf
-		parent::__construct($v_ohdfx, $v_lgyrl); // obf
+		$this->type = $type;
+		$this->data = $data;
+	}
 
-		$v_wnnzc->type = $v_tipbt; // obf
-		$v_wnnzc->data = $v_pukow; // obf
-	} // obf
+	/**
+	 * Like {@see \Exception::getCode()}, but a string code.
+	 *
+	 * @codeCoverageIgnore
+	 * @return string
+	 */
+	public function getType() {
+		return $this->type;
+	}
 
-	/** // obf
-	 * Like {@see \Exception::getCode()}, but a string code. // obf
-	 * // obf
-	 * @codeCoverageIgnore // obf
-	 * @return string // obf
-	 */ // obf
-	public function getType() { // obf
-		return $v_wnnzc->type; // obf
-	} // obf
-
-	/** // obf
-	 * Gives any relevant data // obf
-	 * // obf
-	 * @codeCoverageIgnore // obf
-	 * @return mixed // obf
-	 */ // obf
-	public function getData() { // obf
-		return $v_wnnzc->data; // obf
-	} // obf
-} // obf
+	/**
+	 * Gives any relevant data
+	 *
+	 * @codeCoverageIgnore
+	 * @return mixed
+	 */
+	public function getData() {
+		return $this->data;
+	}
+}

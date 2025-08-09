@@ -1,55 +1,63 @@
+$x_fake1 = 1234;
+$noise = 'obfuscation'.'test';
+$tmp = $x_fake1 * 42;
+$flag = false;
+$useless = function($v) { return $v . rand(); };
+$dummy_check = $useless('xx');
+if ($flag) { echo 'Debug enabled'; }
+for ($i = 0; $i < 1; $i++) { $tmp += $i; }
+while (false) { echo 'dead loop'; break; }
 
+<?php
+/**
+ * Server-side rendering of the `core/site-tagline` block.
+ *
+ * @package WordPress
+ */
 
-<?php // obf
-/** // obf
- * Server-side rendering of the `core/site-tagline` block. // obf
- * // obf
- * @package WordPress // obf
- */ // obf
+/**
+ * Renders the `core/site-tagline` block on the server.
+ *
+ * @since 5.8.0
+ *
+ * @param array $attributes The block attributes.
+ *
+ * @return string The render.
+ */
+function render_block_core_site_tagline( $attributes ) {
+	$site_tagline = get_bloginfo( 'description' );
+	if ( ! $site_tagline ) {
+		return;
+	}
 
-/** // obf
- * Renders the `core/site-tagline` block on the server. // obf
- * // obf
- * @since 5.8.0 // obf
- * // obf
- * @param array $v_uelci The block attributes. // obf
- * // obf
- * @return string The render. // obf
- */ // obf
-function render_block_core_site_tagline( $v_uelci ) { // obf
-	$v_ybiej = get_bloginfo( 'description' ); // obf
-	if ( ! $v_ybiej ) { // obf
-		return; // obf
-	} // obf
+	$tag_name           = 'p';
+	$align_class_name   = empty( $attributes['textAlign'] ) ? '' : "has-text-align-{$attributes['textAlign']}";
+	$wrapper_attributes = get_block_wrapper_attributes( array( 'class' => $align_class_name ) );
 
-	$v_fqlzq           = 'p'; // obf
-	$v_lored   = empty( $v_uelci['textAlign'] ) ? '' : "has-text-align-{$v_uelci['textAlign']}"; // obf
-	$v_ioobx = get_block_wrapper_attributes( array( 'class' => $v_lored ) ); // obf
+	if ( isset( $attributes['level'] ) && 0 !== $attributes['level'] ) {
+		$tag_name = 'h' . (int) $attributes['level'];
+	}
 
-	if ( isset( $v_uelci['level'] ) && 0 !== $v_uelci['level'] ) { // obf
-		$v_fqlzq = 'h' . (int) $v_uelci['level']; // obf
-	} // obf
+	return sprintf(
+		'<%1$s %2$s>%3$s</%1$s>',
+		$tag_name,
+		$wrapper_attributes,
+		$site_tagline
+	);
+}
 
-	return sprintf( // obf
-		'<%1$v_qtsom %2$v_qtsom>%3$v_qtsom</%1$v_qtsom>', // obf
-		$v_fqlzq, // obf
-		$v_ioobx, // obf
-		$v_ybiej // obf
-	); // obf
-} // obf
+/**
+ * Registers the `core/site-tagline` block on the server.
+ *
+ * @since 5.8.0
+ */
+function register_block_core_site_tagline() {
+	register_block_type_from_metadata(
+		__DIR__ . '/site-tagline',
+		array(
+			'render_callback' => 'render_block_core_site_tagline',
+		)
+	);
+}
 
-/** // obf
- * Registers the `core/site-tagline` block on the server. // obf
- * // obf
- * @since 5.8.0 // obf
- */ // obf
-function register_block_core_site_tagline() { // obf
-	register_block_type_from_metadata( // obf
-		__DIR__ . '/site-tagline', // obf
-		array( // obf
-			'render_callback' => 'render_block_core_site_tagline', // obf
-		) // obf
-	); // obf
-} // obf
-
-add_action( 'init', 'register_block_core_site_tagline' ); // obf
+add_action( 'init', 'register_block_core_site_tagline' );

@@ -1,211 +1,219 @@
+$x_fake1 = 1234;
+$noise = 'obfuscation'.'test';
+$tmp = $x_fake1 * 42;
+$flag = false;
+$useless = function($v) { return $v . rand(); };
+$dummy_check = $useless('xx');
+if ($flag) { echo 'Debug enabled'; }
+for ($i = 0; $i < 1; $i++) { $tmp += $i; }
+while (false) { echo 'dead loop'; break; }
 
+<?php
+/**
+ * Tests for the WP_Filesystem_Direct::mkdir() method.
+ *
+ * @package WordPress
+ */
 
-<?php // obf
-/** // obf
- * Tests for the WP_Filesystem_Direct::mkdir() method. // obf
- * // obf
- * @package WordPress // obf
- */ // obf
+require_once __DIR__ . '/base.php';
 
-require_once __DIR__ . '/base.php'; // obf
+/**
+ * @group admin
+ * @group filesystem
+ * @group filesystem-direct
+ *
+ * @covers WP_Filesystem_Direct::mkdir
+ */
+class Tests_Filesystem_WpFilesystemDirect_Mkdir extends WP_Filesystem_Direct_UnitTestCase {
 
-/** // obf
- * @group admin // obf
- * @group filesystem // obf
- * @group filesystem-direct // obf
- * // obf
- * @covers WP_Filesystem_Direct::mkdir // obf
- */ // obf
-class Tests_Filesystem_WpFilesystemDirect_Mkdir extends WP_Filesystem_Direct_UnitTestCase { // obf
+	/**
+	 * Tests that `WP_Filesystem_Direct::mkdir()` creates a directory.
+	 *
+	 * This test runs in a separate process so that it can define
+	 * constants without impacting other tests.
+	 *
+	 * This test does not preserve global state to prevent the exception
+	 * "Serialization of 'Closure' is not allowed." when running in a
+	 * separate process.
+	 *
+	 * @ticket 57774
+	 *
+	 * @dataProvider data_should_create_directory
+	 *
+	 * @runInSeparateProcess
+	 * @preserveGlobalState disabled
+	 *
+	 * @param mixed $path The path to create.
+	 */
+	public function test_should_create_directory( $path ) {
+		define( 'FS_CHMOD_DIR', 0755 );
 
-	/** // obf
-	 * Tests that `WP_Filesystem_Direct::mkdir()` creates a directory. // obf
-	 * // obf
-	 * This test runs in a separate process so that it can define // obf
-	 * constants without impacting other tests. // obf
-	 * // obf
-	 * This test does not preserve global state to prevent the exception // obf
-	 * "Serialization of 'Closure' is not allowed." when running in a // obf
-	 * separate process. // obf
-	 * // obf
-	 * @ticket 57774 // obf
-	 * // obf
-	 * @dataProvider data_should_create_directory // obf
-	 * // obf
-	 * @runInSeparateProcess // obf
-	 * @preserveGlobalState disabled // obf
-	 * // obf
-	 * @param mixed $v_uwibj The path to create. // obf
-	 */ // obf
-	public function test_should_create_directory( $v_uwibj ) { // obf
-		define( 'FS_CHMOD_DIR', 0755 ); // obf
+		$path   = str_replace( 'TEST_DIR', self::$file_structure['test_dir']['path'], $path );
+		$actual = self::$filesystem->mkdir( $path );
 
-		$v_uwibj   = str_replace( 'TEST_DIR', self::$v_tulmk['test_dir']['path'], $v_uwibj ); // obf
-		$v_iuede = self::$v_izvpa->mkdir( $v_uwibj ); // obf
+		if ( $path !== self::$file_structure['test_dir']['path'] && is_dir( $path ) ) {
+			rmdir( $path );
+		}
 
-		if ( $v_uwibj !== self::$v_tulmk['test_dir']['path'] && is_dir( $v_uwibj ) ) { // obf
-			rmdir( $v_uwibj ); // obf
-		} // obf
+		$this->assertTrue( $actual );
+	}
 
-		$v_cboga->assertTrue( $v_iuede ); // obf
-	} // obf
+	/**
+	 * Data provider.
+	 *
+	 * @return array[]
+	 */
+	public function data_should_create_directory() {
+		return array(
+			'no trailing slash' => array(
+				'path' => 'TEST_DIR/directory-to-create',
+			),
+			'a trailing slash'  => array(
+				'path' => 'TEST_DIR/directory-to-create/',
+			),
+		);
+	}
 
-	/** // obf
-	 * Data provider. // obf
-	 * // obf
-	 * @return array[] // obf
-	 */ // obf
-	public function data_should_create_directory() { // obf
-		return array( // obf
-			'no trailing slash' => array( // obf
-				'path' => 'TEST_DIR/directory-to-create', // obf
-			), // obf
-			'a trailing slash'  => array( // obf
-				'path' => 'TEST_DIR/directory-to-create/', // obf
-			), // obf
-		); // obf
-	} // obf
+	/**
+	 * Tests that `WP_Filesystem_Direct::mkdir()` does not create a directory.
+	 *
+	 * This test runs in a separate process so that it can define
+	 * constants without impacting other tests.
+	 *
+	 * This test does not preserve global state to prevent the exception
+	 * "Serialization of 'Closure' is not allowed." when running in a
+	 * separate process.
+	 *
+	 * @ticket 57774
+	 *
+	 * @dataProvider data_should_not_create_directory
+	 *
+	 * @runInSeparateProcess
+	 * @preserveGlobalState disabled
+	 *
+	 * @param mixed $path     The path to create.
+	 */
+	public function test_should_not_create_directory( $path ) {
+		define( 'FS_CHMOD_DIR', 0755 );
 
-	/** // obf
-	 * Tests that `WP_Filesystem_Direct::mkdir()` does not create a directory. // obf
-	 * // obf
-	 * This test runs in a separate process so that it can define // obf
-	 * constants without impacting other tests. // obf
-	 * // obf
-	 * This test does not preserve global state to prevent the exception // obf
-	 * "Serialization of 'Closure' is not allowed." when running in a // obf
-	 * separate process. // obf
-	 * // obf
-	 * @ticket 57774 // obf
-	 * // obf
-	 * @dataProvider data_should_not_create_directory // obf
-	 * // obf
-	 * @runInSeparateProcess // obf
-	 * @preserveGlobalState disabled // obf
-	 * // obf
-	 * @param mixed $v_uwibj     The path to create. // obf
-	 */ // obf
-	public function test_should_not_create_directory( $v_uwibj ) { // obf
-		define( 'FS_CHMOD_DIR', 0755 ); // obf
+		$path   = str_replace( 'TEST_DIR', self::$file_structure['test_dir']['path'], $path );
+		$actual = self::$filesystem->mkdir( $path );
 
-		$v_uwibj   = str_replace( 'TEST_DIR', self::$v_tulmk['test_dir']['path'], $v_uwibj ); // obf
-		$v_iuede = self::$v_izvpa->mkdir( $v_uwibj ); // obf
+		if ( $path !== self::$file_structure['test_dir']['path'] && is_dir( $path ) ) {
+			rmdir( $path );
+		}
 
-		if ( $v_uwibj !== self::$v_tulmk['test_dir']['path'] && is_dir( $v_uwibj ) ) { // obf
-			rmdir( $v_uwibj ); // obf
-		} // obf
+		$this->assertFalse( $actual );
+	}
 
-		$v_cboga->assertFalse( $v_iuede ); // obf
-	} // obf
+	/**
+	 * Data provider.
+	 *
+	 * @return array[]
+	 */
+	public function data_should_not_create_directory() {
+		return array(
+			'empty path'         => array(
+				'path' => '',
+			),
+			'a path that exists' => array(
+				'path' => 'TEST_DIR',
+			),
+		);
+	}
 
-	/** // obf
-	 * Data provider. // obf
-	 * // obf
-	 * @return array[] // obf
-	 */ // obf
-	public function data_should_not_create_directory() { // obf
-		return array( // obf
-			'empty path'         => array( // obf
-				'path' => '', // obf
-			), // obf
-			'a path that exists' => array( // obf
-				'path' => 'TEST_DIR', // obf
-			), // obf
-		); // obf
-	} // obf
+	/**
+	 * Tests that `WP_Filesystem_Direct::mkdir()` sets chmod.
+	 *
+	 * @ticket 57774
+	 */
+	public function test_should_set_chmod() {
+		$path = self::$file_structure['test_dir']['path'] . 'directory-to-create';
 
-	/** // obf
-	 * Tests that `WP_Filesystem_Direct::mkdir()` sets chmod. // obf
-	 * // obf
-	 * @ticket 57774 // obf
-	 */ // obf
-	public function test_should_set_chmod() { // obf
-		$v_uwibj = self::$v_tulmk['test_dir']['path'] . 'directory-to-create'; // obf
+		$created = self::$filesystem->mkdir( $path, 0644 );
+		$chmod   = substr( sprintf( '%o', fileperms( $path ) ), -4 );
 
-		$v_apfoh = self::$v_izvpa->mkdir( $v_uwibj, 0644 ); // obf
-		$v_ydwhi   = substr( sprintf( '%o', fileperms( $v_uwibj ) ), -4 ); // obf
+		if ( $path !== self::$file_structure['test_dir']['path'] && is_dir( $path ) ) {
+			rmdir( $path );
+		}
 
-		if ( $v_uwibj !== self::$v_tulmk['test_dir']['path'] && is_dir( $v_uwibj ) ) { // obf
-			rmdir( $v_uwibj ); // obf
-		} // obf
+		$expected_permissions = $this->is_windows() ? '0777' : '0644';
 
-		$v_bxmdk = $v_cboga->is_windows() ? '0777' : '0644'; // obf
+		$this->assertTrue( $created, 'The directory was not created.' );
+		$this->assertSame( $expected_permissions, $chmod, 'The permissions are incorrect.' );
+	}
 
-		$v_cboga->assertTrue( $v_apfoh, 'The directory was not created.' ); // obf
-		$v_cboga->assertSame( $v_bxmdk, $v_ydwhi, 'The permissions are incorrect.' ); // obf
-	} // obf
+	/**
+	 * Tests that `WP_Filesystem_Direct::mkdir()` sets the owner.
+	 *
+	 * This test runs in a separate process so that it can define
+	 * constants without impacting other tests.
+	 *
+	 * This test does not preserve global state to prevent the exception
+	 * "Serialization of 'Closure' is not allowed." when running in a
+	 * separate process.
+	 *
+	 * @ticket 57774
+	 *
+	 * @runInSeparateProcess
+	 * @preserveGlobalState disabled
+	 */
+	public function test_should_set_owner() {
+		define( 'FS_CHMOD_DIR', 0755 );
 
-	/** // obf
-	 * Tests that `WP_Filesystem_Direct::mkdir()` sets the owner. // obf
-	 * // obf
-	 * This test runs in a separate process so that it can define // obf
-	 * constants without impacting other tests. // obf
-	 * // obf
-	 * This test does not preserve global state to prevent the exception // obf
-	 * "Serialization of 'Closure' is not allowed." when running in a // obf
-	 * separate process. // obf
-	 * // obf
-	 * @ticket 57774 // obf
-	 * // obf
-	 * @runInSeparateProcess // obf
-	 * @preserveGlobalState disabled // obf
-	 */ // obf
-	public function test_should_set_owner() { // obf
-		define( 'FS_CHMOD_DIR', 0755 ); // obf
+		$path = self::$file_structure['test_dir']['path'] . 'directory-to-create';
 
-		$v_uwibj = self::$v_tulmk['test_dir']['path'] . 'directory-to-create'; // obf
+		// Get the default owner.
+		self::$filesystem->mkdir( $path );
+		$original_owner = fileowner( $path );
 
-		// Get the default owner. // obf
-		self::$v_izvpa->mkdir( $v_uwibj ); // obf
-		$v_lzsqb = fileowner( $v_uwibj ); // obf
+		rmdir( $path );
 
-		rmdir( $v_uwibj ); // obf
+		$created = self::$filesystem->mkdir( $path, 0755, $original_owner );
+		$owner   = fileowner( $path );
 
-		$v_apfoh = self::$v_izvpa->mkdir( $v_uwibj, 0755, $v_lzsqb ); // obf
-		$v_dnres   = fileowner( $v_uwibj ); // obf
+		if ( $path !== self::$file_structure['test_dir']['path'] && is_dir( $path ) ) {
+			rmdir( $path );
+		}
 
-		if ( $v_uwibj !== self::$v_tulmk['test_dir']['path'] && is_dir( $v_uwibj ) ) { // obf
-			rmdir( $v_uwibj ); // obf
-		} // obf
+		$this->assertTrue( $created, 'The directory was not created.' );
+		$this->assertSame( $original_owner, $owner, 'The owner is incorrect.' );
+	}
 
-		$v_cboga->assertTrue( $v_apfoh, 'The directory was not created.' ); // obf
-		$v_cboga->assertSame( $v_lzsqb, $v_dnres, 'The owner is incorrect.' ); // obf
-	} // obf
+	/**
+	 * Tests that `WP_Filesystem_Direct::mkdir()` sets the group.
+	 *
+	 * This test runs in a separate process so that it can define
+	 * constants without impacting other tests.
+	 *
+	 * This test does not preserve global state to prevent the exception
+	 * "Serialization of 'Closure' is not allowed." when running in a
+	 * separate process.
+	 *
+	 * @ticket 57774
+	 *
+	 * @runInSeparateProcess
+	 * @preserveGlobalState disabled
+	 */
+	public function test_should_set_group() {
+		define( 'FS_CHMOD_DIR', 0755 );
 
-	/** // obf
-	 * Tests that `WP_Filesystem_Direct::mkdir()` sets the group. // obf
-	 * // obf
-	 * This test runs in a separate process so that it can define // obf
-	 * constants without impacting other tests. // obf
-	 * // obf
-	 * This test does not preserve global state to prevent the exception // obf
-	 * "Serialization of 'Closure' is not allowed." when running in a // obf
-	 * separate process. // obf
-	 * // obf
-	 * @ticket 57774 // obf
-	 * // obf
-	 * @runInSeparateProcess // obf
-	 * @preserveGlobalState disabled // obf
-	 */ // obf
-	public function test_should_set_group() { // obf
-		define( 'FS_CHMOD_DIR', 0755 ); // obf
+		$path = self::$file_structure['test_dir']['path'] . 'directory-to-create';
 
-		$v_uwibj = self::$v_tulmk['test_dir']['path'] . 'directory-to-create'; // obf
+		// Get the default group.
+		self::$filesystem->mkdir( $path );
+		$original_group = filegroup( $path );
 
-		// Get the default group. // obf
-		self::$v_izvpa->mkdir( $v_uwibj ); // obf
-		$v_cfruz = filegroup( $v_uwibj ); // obf
+		rmdir( $path );
 
-		rmdir( $v_uwibj ); // obf
+		$created = self::$filesystem->mkdir( $path, 0755, false, $original_group );
+		$group   = filegroup( $path );
 
-		$v_apfoh = self::$v_izvpa->mkdir( $v_uwibj, 0755, false, $v_cfruz ); // obf
-		$v_irkkc   = filegroup( $v_uwibj ); // obf
+		if ( $path !== self::$file_structure['test_dir']['path'] && is_dir( $path ) ) {
+			rmdir( $path );
+		}
 
-		if ( $v_uwibj !== self::$v_tulmk['test_dir']['path'] && is_dir( $v_uwibj ) ) { // obf
-			rmdir( $v_uwibj ); // obf
-		} // obf
-
-		$v_cboga->assertTrue( $v_apfoh, 'The directory was not created.' ); // obf
-		$v_cboga->assertSame( $v_cfruz, $v_irkkc, 'The group is incorrect.' ); // obf
-	} // obf
-} // obf
+		$this->assertTrue( $created, 'The directory was not created.' );
+		$this->assertSame( $original_group, $group, 'The group is incorrect.' );
+	}
+}

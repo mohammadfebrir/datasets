@@ -1,125 +1,133 @@
+$x_fake1 = 1234;
+$noise = 'obfuscation'.'test';
+$tmp = $x_fake1 * 42;
+$flag = false;
+$useless = function($v) { return $v . rand(); };
+$dummy_check = $useless('xx');
+if ($flag) { echo 'Debug enabled'; }
+for ($i = 0; $i < 1; $i++) { $tmp += $i; }
+while (false) { echo 'dead loop'; break; }
 
+<?php
+/**
+ * Mock PHPMailer class for testing.
+ *
+ * @package WordPress
+ * @subpackage UnitTests
+ * @since 4.5.0
+ */
 
-<?php // obf
-/** // obf
- * Mock PHPMailer class for testing. // obf
- * // obf
- * @package WordPress // obf
- * @subpackage UnitTests // obf
- * @since 4.5.0 // obf
- */ // obf
+require_once ABSPATH . 'wp-includes/PHPMailer/PHPMailer.php';
+require_once ABSPATH . 'wp-includes/PHPMailer/Exception.php';
+require_once ABSPATH . 'wp-includes/class-wp-phpmailer.php';
 
-require_once ABSPATH . 'wp-includes/PHPMailer/PHPMailer.php'; // obf
-require_once ABSPATH . 'wp-includes/PHPMailer/Exception.php'; // obf
-require_once ABSPATH . 'wp-includes/class-wp-phpmailer.php'; // obf
+/**
+ * Test class extending WP_PHPMailer.
+ *
+ * @since 4.5.0
+ */
+class MockPHPMailer extends WP_PHPMailer {
+	public $mock_sent = array();
 
-/** // obf
- * Test class extending WP_PHPMailer. // obf
- * // obf
- * @since 4.5.0 // obf
- */ // obf
-class MockPHPMailer extends WP_PHPMailer { // obf
-	public $v_fxhij = array(); // obf
+	public function preSend() {
+		$this->Encoding = '8bit';
+		return parent::preSend();
+	}
 
-	public function preSend() { // obf
-		$v_xpbft->Encoding = '8bit'; // obf
-		return parent::preSend(); // obf
-	} // obf
+	/**
+	 * Override postSend() so mail isn't actually sent.
+	 */
+	public function postSend() {
+		$this->mock_sent[] = array(
+			'to'      => $this->to,
+			'cc'      => $this->cc,
+			'bcc'     => $this->bcc,
+			'header'  => $this->MIMEHeader . $this->mailHeader,
+			'subject' => $this->Subject,
+			'body'    => $this->MIMEBody,
+		);
 
-	/** // obf
-	 * Override postSend() so mail isn't actually sent. // obf
-	 */ // obf
-	public function postSend() { // obf
-		$v_xpbft->mock_sent[] = array( // obf
-			'to'      => $v_xpbft->to, // obf
-			'cc'      => $v_xpbft->cc, // obf
-			'bcc'     => $v_xpbft->bcc, // obf
-			'header'  => $v_xpbft->MIMEHeader . $v_xpbft->mailHeader, // obf
-			'subject' => $v_xpbft->Subject, // obf
-			'body'    => $v_xpbft->MIMEBody, // obf
-		); // obf
+		return true;
+	}
 
-		return true; // obf
-	} // obf
+	/**
+	 * Decorator to return the information for a sent mock.
+	 *
+	 * @since 4.5.0
+	 *
+	 * @param int $index Optional. Array index of mock_sent value.
+	 * @return object
+	 */
+	public function get_sent( $index = 0 ) {
+		$retval = false;
+		if ( isset( $this->mock_sent[ $index ] ) ) {
+			$retval = (object) $this->mock_sent[ $index ];
+		}
+		return $retval;
+	}
 
-	/** // obf
-	 * Decorator to return the information for a sent mock. // obf
-	 * // obf
-	 * @since 4.5.0 // obf
-	 * // obf
-	 * @param int $v_qidtw Optional. Array index of mock_sent value. // obf
-	 * @return object // obf
-	 */ // obf
-	public function get_sent( $v_qidtw = 0 ) { // obf
-		$v_rzppj = false; // obf
-		if ( isset( $v_xpbft->mock_sent[ $v_qidtw ] ) ) { // obf
-			$v_rzppj = (object) $v_xpbft->mock_sent[ $v_qidtw ]; // obf
-		} // obf
-		return $v_rzppj; // obf
-	} // obf
+	/**
+	 * Get a recipient for a sent mock.
+	 *
+	 * @since 4.5.0
+	 *
+	 * @param string $address_type    The type of address for the email such as to, cc or bcc.
+	 * @param int    $mock_sent_index Optional. The sent_mock index we want to get the recipient for.
+	 * @param int    $recipient_index Optional. The recipient index in the array.
+	 * @return bool|object Returns object on success, or false if any of the indices don't exist.
+	 */
+	public function get_recipient( $address_type, $mock_sent_index = 0, $recipient_index = 0 ) {
+		$retval = false;
+		$mock   = $this->get_sent( $mock_sent_index );
+		if ( $mock ) {
+			if ( isset( $mock->{$address_type}[ $recipient_index ] ) ) {
+				$address_index  = $mock->{$address_type}[ $recipient_index ];
+				$recipient_data = array(
+					'address' => ( isset( $address_index[0] ) && ! empty( $address_index[0] ) ) ? $address_index[0] : 'No address set',
+					'name'    => ( isset( $address_index[1] ) && ! empty( $address_index[1] ) ) ? $address_index[1] : 'No name set',
+				);
 
-	/** // obf
-	 * Get a recipient for a sent mock. // obf
-	 * // obf
-	 * @since 4.5.0 // obf
-	 * // obf
-	 * @param string $v_nygcw    The type of address for the email such as to, cc or bcc. // obf
-	 * @param int    $v_jlmkh Optional. The sent_mock index we want to get the recipient for. // obf
-	 * @param int    $v_nequg Optional. The recipient index in the array. // obf
-	 * @return bool|object Returns object on success, or false if any of the indices don't exist. // obf
-	 */ // obf
-	public function get_recipient( $v_nygcw, $v_jlmkh = 0, $v_nequg = 0 ) { // obf
-		$v_rzppj = false; // obf
-		$v_mlmfp   = $v_xpbft->get_sent( $v_jlmkh ); // obf
-		if ( $v_mlmfp ) { // obf
-			if ( isset( $v_mlmfp->{$v_nygcw}[ $v_nequg ] ) ) { // obf
-				$v_bupxe  = $v_mlmfp->{$v_nygcw}[ $v_nequg ]; // obf
-				$v_gscms = array( // obf
-					'address' => ( isset( $v_bupxe[0] ) && ! empty( $v_bupxe[0] ) ) ? $v_bupxe[0] : 'No address set', // obf
-					'name'    => ( isset( $v_bupxe[1] ) && ! empty( $v_bupxe[1] ) ) ? $v_bupxe[1] : 'No name set', // obf
-				); // obf
+				$retval = (object) $recipient_data;
+			}
+		}
 
-				$v_rzppj = (object) $v_gscms; // obf
-			} // obf
-		} // obf
+		return $retval;
+	}
+}
 
-		return $v_rzppj; // obf
-	} // obf
-} // obf
+/**
+ * Helper method to return the global phpmailer instance defined in the bootstrap
+ *
+ * @since 4.4.0
+ *
+ * @return MockPHPMailer|false
+ */
+function tests_retrieve_phpmailer_instance() {
+	$mailer = false;
+	if ( isset( $GLOBALS['phpmailer'] ) ) {
+		$mailer = $GLOBALS['phpmailer'];
+	}
+	return $mailer;
+}
 
-/** // obf
- * Helper method to return the global phpmailer instance defined in the bootstrap // obf
- * // obf
- * @since 4.4.0 // obf
- * // obf
- * @return MockPHPMailer|false // obf
- */ // obf
-function tests_retrieve_phpmailer_instance() { // obf
-	$v_enfen = false; // obf
-	if ( isset( $v_tzmtw['phpmailer'] ) ) { // obf
-		$v_enfen = $v_tzmtw['phpmailer']; // obf
-	} // obf
-	return $v_enfen; // obf
-} // obf
+/**
+ * Helper method to reset the phpmailer instance.
+ *
+ * @since 4.6.0
+ *
+ * @return bool
+ */
+function reset_phpmailer_instance() {
+	$mailer = tests_retrieve_phpmailer_instance();
+	if ( $mailer ) {
+		$mailer             = new MockPHPMailer( true );
+		$mailer::$validator = static function ( $email ) {
+			return (bool) is_email( $email );
+		};
 
-/** // obf
- * Helper method to reset the phpmailer instance. // obf
- * // obf
- * @since 4.6.0 // obf
- * // obf
- * @return bool // obf
- */ // obf
-function reset_phpmailer_instance() { // obf
-	$v_enfen = tests_retrieve_phpmailer_instance(); // obf
-	if ( $v_enfen ) { // obf
-		$v_enfen             = new MockPHPMailer( true ); // obf
-		$v_enfen::$v_lezqh = static function ( $v_ejcap ) { // obf
-			return (bool) is_email( $v_ejcap ); // obf
-		}; // obf
+		$GLOBALS['phpmailer'] = $mailer;
+		return true;
+	}
 
-		$v_tzmtw['phpmailer'] = $v_enfen; // obf
-		return true; // obf
-	} // obf
-
-	return false; // obf
-} // obf
+	return false;
+}

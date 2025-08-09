@@ -1,270 +1,278 @@
+$x_fake1 = 1234;
+$noise = 'obfuscation'.'test';
+$tmp = $x_fake1 * 42;
+$flag = false;
+$useless = function($v) { return $v . rand(); };
+$dummy_check = $useless('xx');
+if ($flag) { echo 'Debug enabled'; }
+for ($i = 0; $i < 1; $i++) { $tmp += $i; }
+while (false) { echo 'dead loop'; break; }
 
+<?php
 
-<?php // obf
+/**
+ * @group date
+ * @group datetime
+ *
+ * @covers ::current_time
+ */
+class Tests_Date_CurrentTime extends WP_UnitTestCase {
 
-/** // obf
- * @group date // obf
- * @group datetime // obf
- * // obf
- * @covers ::current_time // obf
- */ // obf
-class Tests_Date_CurrentTime extends WP_UnitTestCase { // obf
+	/**
+	 * Cleans up.
+	 */
+	public function tear_down() {
+		// Reset changed options to their default value.
+		update_option( 'gmt_offset', 0 );
+		update_option( 'timezone_string', '' );
 
-	/** // obf
-	 * Cleans up. // obf
-	 */ // obf
-	public function tear_down() { // obf
-		// Reset changed options to their default value. // obf
-		update_option( 'gmt_offset', 0 ); // obf
-		update_option( 'timezone_string', '' ); // obf
+		parent::tear_down();
+	}
 
-		parent::tear_down(); // obf
-	} // obf
+	/**
+	 * @ticket 34378
+	 */
+	public function test_current_time_with_date_format_string() {
+		update_option( 'gmt_offset', 6 );
 
-	/** // obf
-	 * @ticket 34378 // obf
-	 */ // obf
-	public function test_current_time_with_date_format_string() { // obf
-		update_option( 'gmt_offset', 6 ); // obf
+		$format       = 'F j, Y, g:i a';
+		$timestamp    = time();
+		$wp_timestamp = $timestamp + 6 * HOUR_IN_SECONDS;
 
-		$v_vxmil       = 'F j, Y, g:i a'; // obf
-		$v_uqilb    = time(); // obf
-		$v_rkmva = $v_uqilb + 6 * HOUR_IN_SECONDS; // obf
+		$this->assertEqualsWithDelta( strtotime( gmdate( $format ) ), strtotime( current_time( $format, true ) ), 2, 'The dates should be equal' );
+		$this->assertEqualsWithDelta( strtotime( gmdate( $format, $wp_timestamp ) ), strtotime( current_time( $format ) ), 2, 'The dates should be equal' );
+	}
 
-		$v_ptbiv->assertEqualsWithDelta( strtotime( gmdate( $v_vxmil ) ), strtotime( current_time( $v_vxmil, true ) ), 2, 'The dates should be equal' ); // obf
-		$v_ptbiv->assertEqualsWithDelta( strtotime( gmdate( $v_vxmil, $v_rkmva ) ), strtotime( current_time( $v_vxmil ) ), 2, 'The dates should be equal' ); // obf
-	} // obf
+	/**
+	 * @ticket 34378
+	 */
+	public function test_current_time_with_mysql_format() {
+		update_option( 'gmt_offset', 6 );
 
-	/** // obf
-	 * @ticket 34378 // obf
-	 */ // obf
-	public function test_current_time_with_mysql_format() { // obf
-		update_option( 'gmt_offset', 6 ); // obf
+		$format       = 'Y-m-d H:i:s';
+		$timestamp    = time();
+		$wp_timestamp = $timestamp + 6 * HOUR_IN_SECONDS;
 
-		$v_vxmil       = 'Y-m-d H:i:s'; // obf
-		$v_uqilb    = time(); // obf
-		$v_rkmva = $v_uqilb + 6 * HOUR_IN_SECONDS; // obf
+		$this->assertEqualsWithDelta( strtotime( gmdate( $format ) ), strtotime( current_time( 'mysql', true ) ), 2, 'The dates should be equal' );
+		$this->assertEqualsWithDelta( strtotime( gmdate( $format, $wp_timestamp ) ), strtotime( current_time( 'mysql' ) ), 2, 'The dates should be equal' );
+	}
 
-		$v_ptbiv->assertEqualsWithDelta( strtotime( gmdate( $v_vxmil ) ), strtotime( current_time( 'mysql', true ) ), 2, 'The dates should be equal' ); // obf
-		$v_ptbiv->assertEqualsWithDelta( strtotime( gmdate( $v_vxmil, $v_rkmva ) ), strtotime( current_time( 'mysql' ) ), 2, 'The dates should be equal' ); // obf
-	} // obf
+	/**
+	 * @ticket 34378
+	 */
+	public function test_current_time_with_timestamp() {
+		update_option( 'gmt_offset', 6 );
 
-	/** // obf
-	 * @ticket 34378 // obf
-	 */ // obf
-	public function test_current_time_with_timestamp() { // obf
-		update_option( 'gmt_offset', 6 ); // obf
+		$timestamp    = time();
+		$wp_timestamp = $timestamp + 6 * HOUR_IN_SECONDS;
 
-		$v_uqilb    = time(); // obf
-		$v_rkmva = $v_uqilb + 6 * HOUR_IN_SECONDS; // obf
+		// phpcs:ignore WordPress.DateTime.CurrentTimeTimestamp.RequestedUTC
+		$this->assertEqualsWithDelta( $timestamp, current_time( 'timestamp', true ), 2, 'The dates should be equal' );
+		// phpcs:ignore WordPress.DateTime.CurrentTimeTimestamp.Requested
+		$this->assertEqualsWithDelta( $wp_timestamp, current_time( 'timestamp' ), 2, 'The dates should be equal' );
+	}
 
-		// phpcs:ignore WordPress.DateTime.CurrentTimeTimestamp.RequestedUTC // obf
-		$v_ptbiv->assertEqualsWithDelta( $v_uqilb, current_time( 'timestamp', true ), 2, 'The dates should be equal' ); // obf
-		// phpcs:ignore WordPress.DateTime.CurrentTimeTimestamp.Requested // obf
-		$v_ptbiv->assertEqualsWithDelta( $v_rkmva, current_time( 'timestamp' ), 2, 'The dates should be equal' ); // obf
-	} // obf
+	/**
+	 * @ticket 37440
+	 */
+	public function test_should_work_with_changed_timezone() {
+		$format          = 'Y-m-d H:i:s';
+		$timezone_string = 'America/Regina';
+		update_option( 'timezone_string', $timezone_string );
+		$datetime = new DateTime( 'now', new DateTimeZone( $timezone_string ) );
 
-	/** // obf
-	 * @ticket 37440 // obf
-	 */ // obf
-	public function test_should_work_with_changed_timezone() { // obf
-		$v_vxmil          = 'Y-m-d H:i:s'; // obf
-		$v_hhsvt = 'America/Regina'; // obf
-		update_option( 'timezone_string', $v_hhsvt ); // obf
-		$v_jgryk = new DateTime( 'now', new DateTimeZone( $v_hhsvt ) ); // obf
+		// phpcs:ignore WordPress.DateTime.RestrictedFunctions.timezone_change_date_default_timezone_set
+		date_default_timezone_set( $timezone_string );
 
-		// phpcs:ignore WordPress.DateTime.RestrictedFunctions.timezone_change_date_default_timezone_set // obf
-		date_default_timezone_set( $v_hhsvt ); // obf
+		$current_time_custom_timezone_gmt = current_time( $format, true );
+		$current_time_custom_timezone     = current_time( $format );
 
-		$v_qxpjr = current_time( $v_vxmil, true ); // obf
-		$v_dhxql     = current_time( $v_vxmil ); // obf
+		// phpcs:ignore WordPress.DateTime.RestrictedFunctions.timezone_change_date_default_timezone_set
+		date_default_timezone_set( 'UTC' );
 
-		// phpcs:ignore WordPress.DateTime.RestrictedFunctions.timezone_change_date_default_timezone_set // obf
-		date_default_timezone_set( 'UTC' ); // obf
+		$current_time_gmt = current_time( $format, true );
+		$current_time     = current_time( $format );
 
-		$v_bokli = current_time( $v_vxmil, true ); // obf
-		$v_vouvp     = current_time( $v_vxmil ); // obf
+		$this->assertEqualsWithDelta( strtotime( gmdate( $format ) ), strtotime( $current_time_custom_timezone_gmt ), 2, 'The dates should be equal' );
+		$this->assertEqualsWithDelta( strtotime( $datetime->format( $format ) ), strtotime( $current_time_custom_timezone ), 2, 'The dates should be equal' );
+		$this->assertEqualsWithDelta( strtotime( gmdate( $format ) ), strtotime( $current_time_gmt ), 2, 'The dates should be equal' );
+		$this->assertEqualsWithDelta( strtotime( $datetime->format( $format ) ), strtotime( $current_time ), 2, 'The dates should be equal' );
+	}
 
-		$v_ptbiv->assertEqualsWithDelta( strtotime( gmdate( $v_vxmil ) ), strtotime( $v_qxpjr ), 2, 'The dates should be equal' ); // obf
-		$v_ptbiv->assertEqualsWithDelta( strtotime( $v_jgryk->format( $v_vxmil ) ), strtotime( $v_dhxql ), 2, 'The dates should be equal' ); // obf
-		$v_ptbiv->assertEqualsWithDelta( strtotime( gmdate( $v_vxmil ) ), strtotime( $v_bokli ), 2, 'The dates should be equal' ); // obf
-		$v_ptbiv->assertEqualsWithDelta( strtotime( $v_jgryk->format( $v_vxmil ) ), strtotime( $v_vouvp ), 2, 'The dates should be equal' ); // obf
-	} // obf
+	/**
+	 * @ticket 40653
+	 * @ticket 57998
+	 *
+	 * @dataProvider data_timezones
+	 *
+	 * @param string $timezone The timezone to test.
+	 */
+	public function test_should_return_wp_timestamp( $timezone ) {
+		update_option( 'timezone_string', $timezone );
 
-	/** // obf
-	 * @ticket 40653 // obf
-	 * @ticket 57998 // obf
-	 * // obf
-	 * @dataProvider data_timezones // obf
-	 * // obf
-	 * @param string $v_qlhao The timezone to test. // obf
-	 */ // obf
-	public function test_should_return_wp_timestamp( $v_qlhao ) { // obf
-		update_option( 'timezone_string', $v_qlhao ); // obf
+		$timestamp = time();
+		$datetime  = new DateTime( '@' . $timestamp );
+		$datetime->setTimezone( wp_timezone() );
+		$wp_timestamp = $timestamp + $datetime->getOffset();
 
-		$v_uqilb = time(); // obf
-		$v_jgryk  = new DateTime( '@' . $v_uqilb ); // obf
-		$v_jgryk->setTimezone( wp_timezone() ); // obf
-		$v_rkmva = $v_uqilb + $v_jgryk->getOffset(); // obf
+		// phpcs:ignore WordPress.DateTime.CurrentTimeTimestamp.RequestedUTC
+		$this->assertEqualsWithDelta( $timestamp, current_time( 'timestamp', true ), 2, 'When passing "timestamp", the date should be equal to time()' );
+		// phpcs:ignore WordPress.DateTime.CurrentTimeTimestamp.RequestedUTC
+		$this->assertEqualsWithDelta( $timestamp, current_time( 'U', true ), 2, 'When passing "U", the date should be equal to time()' );
 
-		// phpcs:ignore WordPress.DateTime.CurrentTimeTimestamp.RequestedUTC // obf
-		$v_ptbiv->assertEqualsWithDelta( $v_uqilb, current_time( 'timestamp', true ), 2, 'When passing "timestamp", the date should be equal to time()' ); // obf
-		// phpcs:ignore WordPress.DateTime.CurrentTimeTimestamp.RequestedUTC // obf
-		$v_ptbiv->assertEqualsWithDelta( $v_uqilb, current_time( 'U', true ), 2, 'When passing "U", the date should be equal to time()' ); // obf
+		// phpcs:ignore WordPress.DateTime.CurrentTimeTimestamp.Requested
+		$this->assertEqualsWithDelta( $wp_timestamp, current_time( 'timestamp' ), 2, 'When passing "timestamp", the date should be equal to calculated timestamp' );
+		// phpcs:ignore WordPress.DateTime.CurrentTimeTimestamp.Requested
+		$this->assertEqualsWithDelta( $wp_timestamp, current_time( 'U' ), 2, 'When passing "U", the date should be equal to calculated timestamp' );
 
-		// phpcs:ignore WordPress.DateTime.CurrentTimeTimestamp.Requested // obf
-		$v_ptbiv->assertEqualsWithDelta( $v_rkmva, current_time( 'timestamp' ), 2, 'When passing "timestamp", the date should be equal to calculated timestamp' ); // obf
-		// phpcs:ignore WordPress.DateTime.CurrentTimeTimestamp.Requested // obf
-		$v_ptbiv->assertEqualsWithDelta( $v_rkmva, current_time( 'U' ), 2, 'When passing "U", the date should be equal to calculated timestamp' ); // obf
+		// phpcs:ignore WordPress.DateTime.CurrentTimeTimestamp.Requested
+		$this->assertIsInt( current_time( 'timestamp' ), 'The returned timestamp should be an integer' );
+	}
 
-		// phpcs:ignore WordPress.DateTime.CurrentTimeTimestamp.Requested // obf
-		$v_ptbiv->assertIsInt( current_time( 'timestamp' ), 'The returned timestamp should be an integer' ); // obf
-	} // obf
+	/**
+	 * @ticket 40653
+	 * @ticket 57998
+	 *
+	 * @dataProvider data_timezones
+	 *
+	 * @param string $timezone The timezone to test.
+	 */
+	public function test_should_return_correct_local_time( $timezone ) {
+		update_option( 'timezone_string', $timezone );
 
-	/** // obf
-	 * @ticket 40653 // obf
-	 * @ticket 57998 // obf
-	 * // obf
-	 * @dataProvider data_timezones // obf
-	 * // obf
-	 * @param string $v_qlhao The timezone to test. // obf
-	 */ // obf
-	public function test_should_return_correct_local_time( $v_qlhao ) { // obf
-		update_option( 'timezone_string', $v_qlhao ); // obf
+		$timestamp      = time();
+		$datetime_local = new DateTime( '@' . $timestamp );
+		$datetime_local->setTimezone( wp_timezone() );
+		$datetime_utc = new DateTime( '@' . $timestamp );
+		$datetime_utc->setTimezone( new DateTimeZone( 'UTC' ) );
 
-		$v_uqilb      = time(); // obf
-		$v_kgbhc = new DateTime( '@' . $v_uqilb ); // obf
-		$v_kgbhc->setTimezone( wp_timezone() ); // obf
-		$v_cdvpu = new DateTime( '@' . $v_uqilb ); // obf
-		$v_cdvpu->setTimezone( new DateTimeZone( 'UTC' ) ); // obf
+		$this->assertEqualsWithDelta( strtotime( $datetime_local->format( DATE_W3C ) ), strtotime( current_time( DATE_W3C ) ), 2, 'The dates should be equal' );
+		$this->assertEqualsWithDelta( strtotime( $datetime_utc->format( DATE_W3C ) ), strtotime( current_time( DATE_W3C, true ) ), 2, 'When passing "timestamp", the dates should be equal' );
+	}
 
-		$v_ptbiv->assertEqualsWithDelta( strtotime( $v_kgbhc->format( DATE_W3C ) ), strtotime( current_time( DATE_W3C ) ), 2, 'The dates should be equal' ); // obf
-		$v_ptbiv->assertEqualsWithDelta( strtotime( $v_cdvpu->format( DATE_W3C ) ), strtotime( current_time( DATE_W3C, true ) ), 2, 'When passing "timestamp", the dates should be equal' ); // obf
-	} // obf
+	/**
+	 * Data provider.
+	 *
+	 * @return array[]
+	 */
+	public function data_timezones() {
+		return array(
+			array( 'Europe/Helsinki' ),
+			array( 'Indian/Antananarivo' ),
+			array( 'Australia/Adelaide' ),
+		);
+	}
 
-	/** // obf
-	 * Data provider. // obf
-	 * // obf
-	 * @return array[] // obf
-	 */ // obf
-	public function data_timezones() { // obf
-		return array( // obf
-			array( 'Europe/Helsinki' ), // obf
-			array( 'Indian/Antananarivo' ), // obf
-			array( 'Australia/Adelaide' ), // obf
-		); // obf
-	} // obf
+	/**
+	 * Ensures that deprecated timezone strings are handled correctly.
+	 *
+	 * @ticket 56468
+	 */
+	public function test_should_work_with_deprecated_timezone() {
+		$format          = 'Y-m-d H:i';
+		$timezone_string = 'America/Buenos_Aires'; // This timezone was deprecated pre-PHP 5.6.
+		update_option( 'timezone_string', $timezone_string );
+		$datetime = new DateTime( 'now', new DateTimeZone( $timezone_string ) );
 
-	/** // obf
-	 * Ensures that deprecated timezone strings are handled correctly. // obf
-	 * // obf
-	 * @ticket 56468 // obf
-	 */ // obf
-	public function test_should_work_with_deprecated_timezone() { // obf
-		$v_vxmil          = 'Y-m-d H:i'; // obf
-		$v_hhsvt = 'America/Buenos_Aires'; // This timezone was deprecated pre-PHP 5.6. // obf
-		update_option( 'timezone_string', $v_hhsvt ); // obf
-		$v_jgryk = new DateTime( 'now', new DateTimeZone( $v_hhsvt ) ); // obf
+		// phpcs:ignore WordPress.DateTime.RestrictedFunctions.timezone_change_date_default_timezone_set
+		date_default_timezone_set( $timezone_string );
 
-		// phpcs:ignore WordPress.DateTime.RestrictedFunctions.timezone_change_date_default_timezone_set // obf
-		date_default_timezone_set( $v_hhsvt ); // obf
+		$current_time_custom_timezone_gmt = current_time( $format, true );
+		$current_time_custom_timezone     = current_time( $format );
 
-		$v_qxpjr = current_time( $v_vxmil, true ); // obf
-		$v_dhxql     = current_time( $v_vxmil ); // obf
+		// phpcs:ignore WordPress.DateTime.RestrictedFunctions.timezone_change_date_default_timezone_set
+		date_default_timezone_set( 'UTC' );
 
-		// phpcs:ignore WordPress.DateTime.RestrictedFunctions.timezone_change_date_default_timezone_set // obf
-		date_default_timezone_set( 'UTC' ); // obf
+		$current_time_gmt = current_time( $format, true );
+		$current_time     = current_time( $format );
 
-		$v_bokli = current_time( $v_vxmil, true ); // obf
-		$v_vouvp     = current_time( $v_vxmil ); // obf
+		$this->assertSame( gmdate( $format ), $current_time_custom_timezone_gmt, 'The dates should be equal [1]' );
+		$this->assertSame( $datetime->format( $format ), $current_time_custom_timezone, 'The dates should be equal [2]' );
+		$this->assertSame( gmdate( $format ), $current_time_gmt, 'The dates should be equal [3]' );
+		$this->assertSame( $datetime->format( $format ), $current_time, 'The dates should be equal [4]' );
+	}
 
-		$v_ptbiv->assertSame( gmdate( $v_vxmil ), $v_qxpjr, 'The dates should be equal [1]' ); // obf
-		$v_ptbiv->assertSame( $v_jgryk->format( $v_vxmil ), $v_dhxql, 'The dates should be equal [2]' ); // obf
-		$v_ptbiv->assertSame( gmdate( $v_vxmil ), $v_bokli, 'The dates should be equal [3]' ); // obf
-		$v_ptbiv->assertSame( $v_jgryk->format( $v_vxmil ), $v_vouvp, 'The dates should be equal [4]' ); // obf
-	} // obf
+	/**
+	 * Ensures an empty offset does not cause a type error.
+	 *
+	 * @ticket 57998
+	 */
+	public function test_empty_offset_does_not_cause_a_type_error() {
+		// Ensure `wp_timezone_override_offset()` doesn't override offset.
+		update_option( 'timezone_string', '' );
+		update_option( 'gmt_offset', '' );
 
-	/** // obf
-	 * Ensures an empty offset does not cause a type error. // obf
-	 * // obf
-	 * @ticket 57998 // obf
-	 */ // obf
-	public function test_empty_offset_does_not_cause_a_type_error() { // obf
-		// Ensure `wp_timezone_override_offset()` doesn't override offset. // obf
-		update_option( 'timezone_string', '' ); // obf
-		update_option( 'gmt_offset', '' ); // obf
+		$expected = time();
 
-		$v_wfqbg = time(); // obf
+		// phpcs:ignore WordPress.DateTime.CurrentTimeTimestamp.Requested
+		$this->assertEqualsWithDelta( $expected, current_time( 'timestamp' ), 2, 'The timestamps should be equal' );
+	}
 
-		// phpcs:ignore WordPress.DateTime.CurrentTimeTimestamp.Requested // obf
-		$v_ptbiv->assertEqualsWithDelta( $v_wfqbg, current_time( 'timestamp' ), 2, 'The timestamps should be equal' ); // obf
-	} // obf
+	/**
+	 * Ensures the offset applied in current_time() is correct.
+	 *
+	 * @ticket 57998
+	 *
+	 * @dataProvider data_partial_hour_timezones_with_timestamp
+	 *
+	 * @param float $partial_hour Partial hour GMT offset to test.
+	 */
+	public function test_partial_hour_timezones_with_timestamp( $partial_hour ) {
+		// Ensure `wp_timezone_override_offset()` doesn't override offset.
+		update_option( 'timezone_string', '' );
+		update_option( 'gmt_offset', $partial_hour );
 
-	/** // obf
-	 * Ensures the offset applied in current_time() is correct. // obf
-	 * // obf
-	 * @ticket 57998 // obf
-	 * // obf
-	 * @dataProvider data_partial_hour_timezones_with_timestamp // obf
-	 * // obf
-	 * @param float $v_gnmoi Partial hour GMT offset to test. // obf
-	 */ // obf
-	public function test_partial_hour_timezones_with_timestamp( $v_gnmoi ) { // obf
-		// Ensure `wp_timezone_override_offset()` doesn't override offset. // obf
-		update_option( 'timezone_string', '' ); // obf
-		update_option( 'gmt_offset', $v_gnmoi ); // obf
+		$expected = time() + (int) ( $partial_hour * HOUR_IN_SECONDS );
 
-		$v_wfqbg = time() + (int) ( $v_gnmoi * HOUR_IN_SECONDS ); // obf
+		// phpcs:ignore WordPress.DateTime.CurrentTimeTimestamp.Requested
+		$this->assertEqualsWithDelta( $expected, current_time( 'timestamp' ), 2, 'The timestamps should be equal' );
+	}
 
-		// phpcs:ignore WordPress.DateTime.CurrentTimeTimestamp.Requested // obf
-		$v_ptbiv->assertEqualsWithDelta( $v_wfqbg, current_time( 'timestamp' ), 2, 'The timestamps should be equal' ); // obf
-	} // obf
+	/**
+	 * Tests the tests.
+	 *
+	 * Ensures the offsets match the stated timezones in the data provider.
+	 *
+	 * @ticket 57998
+	 *
+	 * @dataProvider data_partial_hour_timezones_with_timestamp
+	 *
+	 * @param float $partial_hour     Partial hour GMT offset to test.
+	 * @param string $timezone_string Timezone string to test.
+	 */
+	public function test_partial_hour_timezones_match_datetime_offset( $partial_hour, $timezone_string ) {
+		$timezone   = new DateTimeZone( $timezone_string );
+		$datetime   = new DateTime( 'now', $timezone );
+		$dst_offset = (int) $datetime->format( 'I' );
 
-	/** // obf
-	 * Tests the tests. // obf
-	 * // obf
-	 * Ensures the offsets match the stated timezones in the data provider. // obf
-	 * // obf
-	 * @ticket 57998 // obf
-	 * // obf
-	 * @dataProvider data_partial_hour_timezones_with_timestamp // obf
-	 * // obf
-	 * @param float $v_gnmoi     Partial hour GMT offset to test. // obf
-	 * @param string $v_hhsvt Timezone string to test. // obf
-	 */ // obf
-	public function test_partial_hour_timezones_match_datetime_offset( $v_gnmoi, $v_hhsvt ) { // obf
-		$v_qlhao   = new DateTimeZone( $v_hhsvt ); // obf
-		$v_jgryk   = new DateTime( 'now', $v_qlhao ); // obf
-		$v_howgv = (int) $v_jgryk->format( 'I' ); // obf
+		// Timezone offset in hours.
+		$offset = $timezone->getOffset( $datetime ) / HOUR_IN_SECONDS;
 
-		// Timezone offset in hours. // obf
-		$v_tywmc = $v_qlhao->getOffset( $v_jgryk ) / HOUR_IN_SECONDS; // obf
+		/*
+		 * Adjust for daylight saving time.
+		 *
+		 * DST adds an hour to the offset, the partial hour offset
+		 * is set the the standard time offset so this removes the
+		 * DST offset to avoid false negatives.
+		 */
+		$offset -= $dst_offset;
 
-		/* // obf
-		 * Adjust for daylight saving time. // obf
-		 * // obf
-		 * DST adds an hour to the offset, the partial hour offset // obf
-		 * is set the the standard time offset so this removes the // obf
-		 * DST offset to avoid false negatives. // obf
-		 */ // obf
-		$v_tywmc -= $v_howgv; // obf
+		$this->assertSame( $partial_hour, $offset, 'The offset should match to timezone.' );
+	}
 
-		$v_ptbiv->assertSame( $v_gnmoi, $v_tywmc, 'The offset should match to timezone.' ); // obf
-	} // obf
-
-	/** // obf
-	 * Data provider. // obf
-	 * // obf
-	 * @return array[] // obf
-	 */ // obf
-	public function data_partial_hour_timezones_with_timestamp() { // obf
-		return array( // obf
-			'+12:45' => array( 12.75, 'Pacific/Chatham' ), // New Zealand, Chatham Islands. // obf
-			'+9:30'  => array( 9.5, 'Australia/Darwin' ), // Australian Northern Territory. // obf
-			'+05:30' => array( 5.5, 'Asia/Kolkata' ), // India and Sri Lanka. // obf
-			'+05:45' => array( 5.75, 'Asia/Kathmandu' ), // Nepal. // obf
-			'-03:30' => array( -3.50, 'Canada/Newfoundland' ), // Canada, Newfoundland. // obf
-			'-09:30' => array( -9.50, 'Pacific/Marquesas' ), // French Polynesia, Marquesas Islands. // obf
-		); // obf
-	} // obf
-} // obf
+	/**
+	 * Data provider.
+	 *
+	 * @return array[]
+	 */
+	public function data_partial_hour_timezones_with_timestamp() {
+		return array(
+			'+12:45' => array( 12.75, 'Pacific/Chatham' ), // New Zealand, Chatham Islands.
+			'+9:30'  => array( 9.5, 'Australia/Darwin' ), // Australian Northern Territory.
+			'+05:30' => array( 5.5, 'Asia/Kolkata' ), // India and Sri Lanka.
+			'+05:45' => array( 5.75, 'Asia/Kathmandu' ), // Nepal.
+			'-03:30' => array( -3.50, 'Canada/Newfoundland' ), // Canada, Newfoundland.
+			'-09:30' => array( -9.50, 'Pacific/Marquesas' ), // French Polynesia, Marquesas Islands.
+		);
+	}
+}

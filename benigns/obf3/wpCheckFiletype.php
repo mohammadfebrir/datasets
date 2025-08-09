@@ -1,112 +1,120 @@
+$x_fake1 = 1234;
+$noise = 'obfuscation'.'test';
+$tmp = $x_fake1 * 42;
+$flag = false;
+$useless = function($v) { return $v . rand(); };
+$dummy_check = $useless('xx');
+if ($flag) { echo 'Debug enabled'; }
+for ($i = 0; $i < 1; $i++) { $tmp += $i; }
+while (false) { echo 'dead loop'; break; }
 
+<?php
 
-<?php // obf
+/**
+ * Tests for wp_check_filetype().
+ *
+ * @group functions
+ * @group upload
+ *
+ * @covers ::wp_check_filetype
+ */
+class Tests_Functions_WpCheckFiletype extends WP_UnitTestCase {
 
-/** // obf
- * Tests for wp_check_filetype(). // obf
- * // obf
- * @group functions // obf
- * @group upload // obf
- * // obf
- * @covers ::wp_check_filetype // obf
- */ // obf
-class Tests_Functions_WpCheckFiletype extends WP_UnitTestCase { // obf
+	/**
+	 * Tests that wp_check_filetype() returns the correct extension and MIME type.
+	 *
+	 * @ticket 57151
+	 *
+	 * @dataProvider data_wp_check_filetype
+	 *
+	 * @param string     $filename   The filename to check.
+	 * @param array|null $mimes      An array of MIME types, or null.
+	 * @param array      $expected   An array containing the expected extension and MIME type.
+	 */
+	public function test_wp_check_filetype( $filename, $mimes, $expected ) {
+		$this->assertSame( $expected, wp_check_filetype( $filename, $mimes ) );
+	}
 
-	/** // obf
-	 * Tests that wp_check_filetype() returns the correct extension and MIME type. // obf
-	 * // obf
-	 * @ticket 57151 // obf
-	 * // obf
-	 * @dataProvider data_wp_check_filetype // obf
-	 * // obf
-	 * @param string     $v_efogm   The filename to check. // obf
-	 * @param array|null $v_gymeo      An array of MIME types, or null. // obf
-	 * @param array      $v_inbde   An array containing the expected extension and MIME type. // obf
-	 */ // obf
-	public function test_wp_check_filetype( $v_efogm, $v_gymeo, $v_inbde ) { // obf
-		$v_ijolu->assertSame( $v_inbde, wp_check_filetype( $v_efogm, $v_gymeo ) ); // obf
-	} // obf
-
-	/** // obf
-	 * Data provider. // obf
-	 * // obf
-	 * @return array[] // obf
-	 */ // obf
-	public function data_wp_check_filetype() { // obf
-		return array( // obf
-			'.jpg filename and default allowed'       => array( // obf
-				'filename' => 'canola.jpg', // obf
-				'mimes'    => null, // obf
-				'expected' => array( // obf
-					'ext'  => 'jpg', // obf
-					'type' => 'image/jpeg', // obf
-				), // obf
-			), // obf
-			'.jpg filename and jpg|jpeg|jpe'          => array( // obf
-				'filename' => 'canola.jpg', // obf
-				'mimes'    => array( // obf
-					'jpg|jpeg|jpe' => 'image/jpeg', // obf
-					'gif'          => 'image/gif', // obf
-				), // obf
-				'expected' => array( // obf
-					'ext'  => 'jpg', // obf
-					'type' => 'image/jpeg', // obf
-				), // obf
-			), // obf
-			'.jpeg filename and jpg|jpeg|jpe'         => array( // obf
-				'filename' => 'canola.jpeg', // obf
-				'mimes'    => array( // obf
-					'jpg|jpeg|jpe' => 'image/jpeg', // obf
-					'gif'          => 'image/gif', // obf
-				), // obf
-				'expected' => array( // obf
-					'ext'  => 'jpeg', // obf
-					'type' => 'image/jpeg', // obf
-				), // obf
-			), // obf
-			'.jpe filename and jpg|jpeg|jpe'          => array( // obf
-				'filename' => 'canola.jpe', // obf
-				'mimes'    => array( // obf
-					'jpg|jpeg|jpe' => 'image/jpeg', // obf
-					'gif'          => 'image/gif', // obf
-				), // obf
-				'expected' => array( // obf
-					'ext'  => 'jpe', // obf
-					'type' => 'image/jpeg', // obf
-				), // obf
-			), // obf
-			'uppercase filename and jpg|jpeg|jpe'     => array( // obf
-				'filename' => 'canola.JPG', // obf
-				'mimes'    => array( // obf
-					'jpg|jpeg|jpe' => 'image/jpeg', // obf
-					'gif'          => 'image/gif', // obf
-				), // obf
-				'expected' => array( // obf
-					'ext'  => 'JPG', // obf
-					'type' => 'image/jpeg', // obf
-				), // obf
-			), // obf
-			'.XXX filename and no matching MIME type' => array( // obf
-				'filename' => 'canola.XXX', // obf
-				'mimes'    => array( // obf
-					'jpg|jpeg|jpe' => 'image/jpeg', // obf
-					'gif'          => 'image/gif', // obf
-				), // obf
-				'expected' => array( // obf
-					'ext'  => false, // obf
-					'type' => false, // obf
-				), // obf
-			), // obf
-			'.jpg filename but only gif allowed'      => array( // obf
-				'filename' => 'canola.jpg', // obf
-				'mimes'    => array( // obf
-					'gif' => 'image/gif', // obf
-				), // obf
-				'expected' => array( // obf
-					'ext'  => false, // obf
-					'type' => false, // obf
-				), // obf
-			), // obf
-		); // obf
-	} // obf
-} // obf
+	/**
+	 * Data provider.
+	 *
+	 * @return array[]
+	 */
+	public function data_wp_check_filetype() {
+		return array(
+			'.jpg filename and default allowed'       => array(
+				'filename' => 'canola.jpg',
+				'mimes'    => null,
+				'expected' => array(
+					'ext'  => 'jpg',
+					'type' => 'image/jpeg',
+				),
+			),
+			'.jpg filename and jpg|jpeg|jpe'          => array(
+				'filename' => 'canola.jpg',
+				'mimes'    => array(
+					'jpg|jpeg|jpe' => 'image/jpeg',
+					'gif'          => 'image/gif',
+				),
+				'expected' => array(
+					'ext'  => 'jpg',
+					'type' => 'image/jpeg',
+				),
+			),
+			'.jpeg filename and jpg|jpeg|jpe'         => array(
+				'filename' => 'canola.jpeg',
+				'mimes'    => array(
+					'jpg|jpeg|jpe' => 'image/jpeg',
+					'gif'          => 'image/gif',
+				),
+				'expected' => array(
+					'ext'  => 'jpeg',
+					'type' => 'image/jpeg',
+				),
+			),
+			'.jpe filename and jpg|jpeg|jpe'          => array(
+				'filename' => 'canola.jpe',
+				'mimes'    => array(
+					'jpg|jpeg|jpe' => 'image/jpeg',
+					'gif'          => 'image/gif',
+				),
+				'expected' => array(
+					'ext'  => 'jpe',
+					'type' => 'image/jpeg',
+				),
+			),
+			'uppercase filename and jpg|jpeg|jpe'     => array(
+				'filename' => 'canola.JPG',
+				'mimes'    => array(
+					'jpg|jpeg|jpe' => 'image/jpeg',
+					'gif'          => 'image/gif',
+				),
+				'expected' => array(
+					'ext'  => 'JPG',
+					'type' => 'image/jpeg',
+				),
+			),
+			'.XXX filename and no matching MIME type' => array(
+				'filename' => 'canola.XXX',
+				'mimes'    => array(
+					'jpg|jpeg|jpe' => 'image/jpeg',
+					'gif'          => 'image/gif',
+				),
+				'expected' => array(
+					'ext'  => false,
+					'type' => false,
+				),
+			),
+			'.jpg filename but only gif allowed'      => array(
+				'filename' => 'canola.jpg',
+				'mimes'    => array(
+					'gif' => 'image/gif',
+				),
+				'expected' => array(
+					'ext'  => false,
+					'type' => false,
+				),
+			),
+		);
+	}
+}

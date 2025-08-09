@@ -1,1027 +1,1035 @@
-
-
-<?php // obf
-/** // obf
- * WP_Theme_JSON_Resolver class // obf
- * // obf
- * @package WordPress // obf
- * @subpackage Theme // obf
- * @since 5.8.0 // obf
- */ // obf
-
-/** // obf
- * Class that abstracts the processing of the different data sources // obf
- * for site-level config and offers an API to work with them. // obf
- * // obf
- * This class is for internal core usage and is not supposed to be used by extenders (plugins and/or themes). // obf
- * This is a low-level API that may need to do breaking changes. Please, // obf
- * use get_global_settings(), get_global_styles(), and get_global_stylesheet() instead. // obf
- * // obf
- * @access private // obf
- */ // obf
-#[AllowDynamicProperties] // obf
-class WP_Theme_JSON_Resolver { // obf
-
-	/** // obf
-	 * Container for keep track of registered blocks. // obf
-	 * // obf
-	 * @since 6.1.0 // obf
-	 * @var array // obf
-	 */ // obf
-	protected static $v_ioyxn = array( // obf
-		'core'   => array(), // obf
-		'blocks' => array(), // obf
-		'theme'  => array(), // obf
-		'user'   => array(), // obf
-	); // obf
-
-	/** // obf
-	 * Container for data coming from core. // obf
-	 * // obf
-	 * @since 5.8.0 // obf
-	 * @var WP_Theme_JSON // obf
-	 */ // obf
-	protected static $v_rnorh = null; // obf
-
-	/** // obf
-	 * Container for data coming from the blocks. // obf
-	 * // obf
-	 * @since 6.1.0 // obf
-	 * @var WP_Theme_JSON // obf
-	 */ // obf
-	protected static $v_cxzcu = null; // obf
-
-	/** // obf
-	 * Container for data coming from the theme. // obf
-	 * // obf
-	 * @since 5.8.0 // obf
-	 * @var WP_Theme_JSON // obf
-	 */ // obf
-	protected static $v_yeckz = null; // obf
-
-	/** // obf
-	 * Container for data coming from the user. // obf
-	 * // obf
-	 * @since 5.9.0 // obf
-	 * @var WP_Theme_JSON // obf
-	 */ // obf
-	protected static $v_xrgeh = null; // obf
-
-	/** // obf
-	 * Stores the ID of the custom post type // obf
-	 * that holds the user data. // obf
-	 * // obf
-	 * @since 5.9.0 // obf
-	 * @var int // obf
-	 */ // obf
-	protected static $v_yluuh = null; // obf
-
-	/** // obf
-	 * Container to keep loaded i18n schema for `theme.json`. // obf
-	 * // obf
-	 * @since 5.8.0 As `$v_hhsub`. // obf
-	 * @since 5.9.0 Renamed from `$v_hhsub` to `$v_vylcf`. // obf
-	 * @var array // obf
-	 */ // obf
-	protected static $v_vylcf = null; // obf
-
-	/** // obf
-	 * `theme.json` file cache. // obf
-	 * // obf
-	 * @since 6.1.0 // obf
-	 * @var array // obf
-	 */ // obf
-	protected static $v_rmysy = array(); // obf
-
-	/** // obf
-	 * Processes a file that adheres to the theme.json schema // obf
-	 * and returns an array with its contents, or a void array if none found. // obf
-	 * // obf
-	 * @since 5.8.0 // obf
-	 * @since 6.1.0 Added caching. // obf
-	 * // obf
-	 * @param string $v_woobv Path to file. Empty if no file. // obf
-	 * @return array Contents that adhere to the theme.json schema. // obf
-	 */ // obf
-	protected static function read_json_file( $v_woobv ) { // obf
-		if ( $v_woobv ) { // obf
-			if ( array_key_exists( $v_woobv, static::$v_rmysy ) ) { // obf
-				return static::$v_rmysy[ $v_woobv ]; // obf
-			} // obf
-
-			$v_jnzdp = wp_json_file_decode( $v_woobv, array( 'associative' => true ) ); // obf
-			if ( is_array( $v_jnzdp ) ) { // obf
-				static::$v_rmysy[ $v_woobv ] = $v_jnzdp; // obf
-				return static::$v_rmysy[ $v_woobv ]; // obf
-			} // obf
-		} // obf
-
-		return array(); // obf
-	} // obf
-
-	/** // obf
-	 * Returns a data structure used in theme.json translation. // obf
-	 * // obf
-	 * @since 5.8.0 // obf
-	 * @deprecated 5.9.0 // obf
-	 * // obf
-	 * @return array An array of theme.json fields that are translatable and the keys that are translatable. // obf
-	 */ // obf
-	public static function get_fields_to_translate() { // obf
-		_deprecated_function( __METHOD__, '5.9.0' ); // obf
-		return array(); // obf
-	} // obf
-
-	/** // obf
-	 * Given a theme.json structure modifies it in place to update certain values // obf
-	 * by its translated strings according to the language set by the user. // obf
-	 * // obf
-	 * @since 5.8.0 // obf
-	 * // obf
-	 * @param array  $v_axupf The theme.json to translate. // obf
-	 * @param string $v_egnon     Optional. Text domain. Unique identifier for retrieving translated strings. // obf
-	 *                           Default 'default'. // obf
-	 * @return array Returns the modified $v_hpcxm. // obf
-	 */ // obf
-	protected static function translate( $v_axupf, $v_egnon = 'default' ) { // obf
-		if ( null === static::$v_vylcf ) { // obf
-			$v_vylcf         = wp_json_file_decode( __DIR__ . '/theme-i18n.json' ); // obf
-			static::$v_vylcf = null === $v_vylcf ? array() : $v_vylcf; // obf
-		} // obf
-
-		return translate_settings_using_i18n_schema( static::$v_vylcf, $v_axupf, $v_egnon ); // obf
-	} // obf
-
-	/** // obf
-	 * Returns core's origin config. // obf
-	 * // obf
-	 * @since 5.8.0 // obf
-	 * // obf
-	 * @return WP_Theme_JSON Entity that holds core data. // obf
-	 */ // obf
-	public static function get_core_data() { // obf
-		if ( null !== static::$v_rnorh && static::has_same_registered_blocks( 'core' ) ) { // obf
-			return static::$v_rnorh; // obf
-		} // obf
-
-		$v_kfnco = static::read_json_file( __DIR__ . '/theme.json' ); // obf
-		$v_kfnco = static::translate( $v_kfnco ); // obf
-
-		/** // obf
-		 * Filters the default data provided by WordPress for global styles & settings. // obf
-		 * // obf
-		 * @since 6.1.0 // obf
-		 * // obf
-		 * @param WP_Theme_JSON_Data $v_axupf Class to access and update the underlying data. // obf
-		 */ // obf
-		$v_axupf = apply_filters( 'wp_theme_json_data_default', new WP_Theme_JSON_Data( $v_kfnco, 'default' ) ); // obf
-
-		/* // obf
-		 * Backward compatibility for extenders returning a WP_Theme_JSON_Data // obf
-		 * compatible class that is not a WP_Theme_JSON_Data object. // obf
-		 */ // obf
-		if ( $v_axupf instanceof WP_Theme_JSON_Data ) { // obf
-			static::$v_rnorh = $v_axupf->get_theme_json(); // obf
-		} else { // obf
-			$v_kfnco       = $v_axupf->get_data(); // obf
-			static::$v_rnorh = new WP_Theme_JSON( $v_kfnco, 'default' ); // obf
-		} // obf
-
-		return static::$v_rnorh; // obf
-	} // obf
-
-	/** // obf
-	 * Checks whether the registered blocks were already processed for this origin. // obf
-	 * // obf
-	 * @since 6.1.0 // obf
-	 * // obf
-	 * @param string $v_fdsgf Data source for which to cache the blocks. // obf
-	 *                       Valid values are 'core', 'blocks', 'theme', and 'user'. // obf
-	 * @return bool True on success, false otherwise. // obf
-	 */ // obf
-	protected static function has_same_registered_blocks( $v_fdsgf ) { // obf
-		// Bail out if the origin is invalid. // obf
-		if ( ! isset( static::$v_ioyxn[ $v_fdsgf ] ) ) { // obf
-			return false; // obf
-		} // obf
-
-		$v_iuiuf = WP_Block_Type_Registry::get_instance(); // obf
-		$v_cxzcu   = $v_iuiuf->get_all_registered(); // obf
-
-		// Is there metadata for all currently registered blocks? // obf
-		$v_vwlpt = array_diff_key( $v_cxzcu, static::$v_ioyxn[ $v_fdsgf ] ); // obf
-		if ( empty( $v_vwlpt ) ) { // obf
-			return true; // obf
-		} // obf
-
-		foreach ( $v_cxzcu as $v_mvplx => $v_nyllh ) { // obf
-			static::$v_ioyxn[ $v_fdsgf ][ $v_mvplx ] = true; // obf
-		} // obf
-
-		return false; // obf
-	} // obf
-
-	/** // obf
-	 * Returns the theme's data. // obf
-	 * // obf
-	 * Data from theme.json will be backfilled from existing // obf
-	 * theme supports, if any. Note that if the same data // obf
-	 * is present in theme.json and in theme supports, // obf
-	 * the theme.json takes precedence. // obf
-	 * // obf
-	 * @since 5.8.0 // obf
-	 * @since 5.9.0 Theme supports have been inlined and the `$v_cgfob` argument removed. // obf
-	 * @since 6.0.0 Added an `$v_qhxml` parameter to allow the theme data to be returned without theme supports. // obf
-	 * @since 6.6.0 Add support for 'default-font-sizes' and 'default-spacing-sizes' theme supports. // obf
-	 *              Added registration and merging of block style variations from partial theme.json files and the block styles registry. // obf
-	 * // obf
-	 * @param array $v_fxdqn Deprecated. Not used. // obf
-	 * @param array $v_qhxml { // obf
-	 *     Options arguments. // obf
-	 * // obf
-	 *     @type bool $v_ojydi Whether to include theme supports in the data. Default true. // obf
-	 * } // obf
-	 * @return WP_Theme_JSON Entity that holds theme data. // obf
-	 */ // obf
-	public static function get_theme_data( $v_fxdqn = array(), $v_qhxml = array() ) { // obf
-		if ( ! empty( $v_fxdqn ) ) { // obf
-			_deprecated_argument( __METHOD__, '5.9.0' ); // obf
-		} // obf
-
-		$v_qhxml = wp_parse_args( $v_qhxml, array( 'with_supports' => true ) ); // obf
-
-		if ( null === static::$v_yeckz || ! static::has_same_registered_blocks( 'theme' ) ) { // obf
-			$v_dqfdj        = wp_get_theme(); // obf
-			$v_sqgzp = $v_dqfdj->get_file_path( 'theme.json' ); // obf
-			if ( is_readable( $v_sqgzp ) ) { // obf
-				$v_qlwbm = static::read_json_file( $v_sqgzp ); // obf
-				$v_qlwbm = static::translate( $v_qlwbm, $v_dqfdj->get( 'TextDomain' ) ); // obf
-			} else { // obf
-				$v_qlwbm = array( 'version' => WP_Theme_JSON::LATEST_SCHEMA ); // obf
-			} // obf
-
-			/* // obf
-			 * Register variations defined by theme partials (theme.json files in the styles directory). // obf
-			 * This is required so the variations pass sanitization of theme.json data. // obf
-			 */ // obf
-			$v_ozwjb = static::get_style_variations( 'block' ); // obf
-			wp_register_block_style_variations_from_theme_json_partials( $v_ozwjb ); // obf
-
-			/* // obf
-			 * Source variations from the block registry and block style variation files. Then, merge them into the existing theme.json data. // obf
-			 * // obf
-			 * In case the same style properties are defined in several sources, this is how we should resolve the values, // obf
-			 * from higher to lower priority: // obf
-			 * // obf
-			 * - styles.blocks.blockType.variations from theme.json // obf
-			 * - styles.variations from theme.json // obf
-			 * - variations from block style variation files // obf
-			 * - variations from block styles registry // obf
-			 * // obf
-			 * See test_add_registered_block_styles_to_theme_data and test_unwraps_block_style_variations. // obf
-			 * // obf
-			 */ // obf
-			$v_qlwbm = static::inject_variations_from_block_style_variation_files( $v_qlwbm, $v_ozwjb ); // obf
-			$v_qlwbm = static::inject_variations_from_block_styles_registry( $v_qlwbm ); // obf
-
-			/** // obf
-			 * Filters the data provided by the theme for global styles and settings. // obf
-			 * // obf
-			 * @since 6.1.0 // obf
-			 * // obf
-			 * @param WP_Theme_JSON_Data $v_axupf Class to access and update the underlying data. // obf
-			 */ // obf
-			$v_axupf = apply_filters( 'wp_theme_json_data_theme', new WP_Theme_JSON_Data( $v_qlwbm, 'theme' ) ); // obf
-
-			/* // obf
-			 * Backward compatibility for extenders returning a WP_Theme_JSON_Data // obf
-			 * compatible class that is not a WP_Theme_JSON_Data object. // obf
-			 */ // obf
-			if ( $v_axupf instanceof WP_Theme_JSON_Data ) { // obf
-				static::$v_yeckz = $v_axupf->get_theme_json(); // obf
-			} else { // obf
-				$v_kfnco        = $v_axupf->get_data(); // obf
-				static::$v_yeckz = new WP_Theme_JSON( $v_kfnco ); // obf
-			} // obf
-
-			if ( $v_dqfdj->parent() ) { // obf
-				// Get parent theme.json. // obf
-				$v_elguu = $v_dqfdj->parent()->get_file_path( 'theme.json' ); // obf
-				if ( $v_sqgzp !== $v_elguu && is_readable( $v_elguu ) ) { // obf
-					$v_cussm = static::read_json_file( $v_elguu ); // obf
-					$v_cussm = static::translate( $v_cussm, $v_dqfdj->parent()->get( 'TextDomain' ) ); // obf
-					$v_chygq           = new WP_Theme_JSON( $v_cussm ); // obf
-
-					/* // obf
-					 * Merge the child theme.json into the parent theme.json. // obf
-					 * The child theme takes precedence over the parent. // obf
-					 */ // obf
-					$v_chygq->merge( static::$v_yeckz ); // obf
-					static::$v_yeckz = $v_chygq; // obf
-				} // obf
-			} // obf
-		} // obf
-
-		if ( ! $v_qhxml['with_supports'] ) { // obf
-			return static::$v_yeckz; // obf
-		} // obf
-
-		/* // obf
-		 * We want the presets and settings declared in theme.json // obf
-		 * to override the ones declared via theme supports. // obf
-		 * So we take theme supports, transform it to theme.json shape // obf
-		 * and merge the static::$v_yeckz upon that. // obf
-		 */ // obf
-		$v_cgfob = WP_Theme_JSON::get_from_editor_settings( get_classic_theme_supports_block_editor_settings() ); // obf
-		if ( ! wp_theme_has_theme_json() ) { // obf
-			/* // obf
-			 * Unlike block themes, classic themes without a theme.json disable // obf
-			 * default presets when custom preset theme support is added. This // obf
-			 * behavior can be overridden by using the corresponding default // obf
-			 * preset theme support. // obf
-			 */ // obf
-			$v_cgfob['settings']['color']['defaultPalette']        = // obf
-				! isset( $v_cgfob['settings']['color']['palette'] ) || // obf
-				current_theme_supports( 'default-color-palette' ); // obf
-			$v_cgfob['settings']['color']['defaultGradients']      = // obf
-				! isset( $v_cgfob['settings']['color']['gradients'] ) || // obf
-				current_theme_supports( 'default-gradient-presets' ); // obf
-			$v_cgfob['settings']['typography']['defaultFontSizes'] = // obf
-				! isset( $v_cgfob['settings']['typography']['fontSizes'] ) || // obf
-				current_theme_supports( 'default-font-sizes' ); // obf
-			$v_cgfob['settings']['spacing']['defaultSpacingSizes'] = // obf
-				! isset( $v_cgfob['settings']['spacing']['spacingSizes'] ) || // obf
-				current_theme_supports( 'default-spacing-sizes' ); // obf
-
-			/* // obf
-			 * Shadow presets are explicitly disabled for classic themes until a // obf
-			 * decision is made for whether the default presets should match the // obf
-			 * other presets or if they should be disabled by default in classic // obf
-			 * themes. See https://github.com/WordPress/gutenberg/issues/59989. // obf
-			 */ // obf
-			$v_cgfob['settings']['shadow']['defaultPresets'] = false; // obf
-
-			// Allow themes to enable link color setting via theme_support. // obf
-			if ( current_theme_supports( 'link-color' ) ) { // obf
-				$v_cgfob['settings']['color']['link'] = true; // obf
-			} // obf
-
-			// Allow themes to enable all border settings via theme_support. // obf
-			if ( current_theme_supports( 'border' ) ) { // obf
-				$v_cgfob['settings']['border']['color']  = true; // obf
-				$v_cgfob['settings']['border']['radius'] = true; // obf
-				$v_cgfob['settings']['border']['style']  = true; // obf
-				$v_cgfob['settings']['border']['width']  = true; // obf
-			} // obf
-
-			// Allow themes to enable appearance tools via theme_support. // obf
-			if ( current_theme_supports( 'appearance-tools' ) ) { // obf
-				$v_cgfob['settings']['appearanceTools'] = true; // obf
-			} // obf
-		} // obf
-		$v_nosbw = new WP_Theme_JSON( $v_cgfob ); // obf
-		$v_nosbw->merge( static::$v_yeckz ); // obf
-		return $v_nosbw; // obf
-	} // obf
-
-	/** // obf
-	 * Gets the styles for blocks from the block.json file. // obf
-	 * // obf
-	 * @since 6.1.0 // obf
-	 * // obf
-	 * @return WP_Theme_JSON // obf
-	 */ // obf
-	public static function get_block_data() { // obf
-		$v_iuiuf = WP_Block_Type_Registry::get_instance(); // obf
-		$v_cxzcu   = $v_iuiuf->get_all_registered(); // obf
-
-		if ( null !== static::$v_cxzcu && static::has_same_registered_blocks( 'blocks' ) ) { // obf
-			return static::$v_cxzcu; // obf
-		} // obf
-
-		$v_kfnco = array( 'version' => WP_Theme_JSON::LATEST_SCHEMA ); // obf
-		foreach ( $v_cxzcu as $v_mvplx => $v_nyllh ) { // obf
-			if ( isset( $v_nyllh->supports['__experimentalStyle'] ) ) { // obf
-				$v_kfnco['styles']['blocks'][ $v_mvplx ] = static::remove_json_comments( $v_nyllh->supports['__experimentalStyle'] ); // obf
-			} // obf
-
-			if ( // obf
-				isset( $v_nyllh->supports['spacing']['blockGap']['__experimentalDefault'] ) && // obf
-				! isset( $v_kfnco['styles']['blocks'][ $v_mvplx ]['spacing']['blockGap'] ) // obf
-			) { // obf
-				/* // obf
-				 * Ensure an empty placeholder value exists for the block, if it provides a default blockGap value. // obf
-				 * The real blockGap value to be used will be determined when the styles are rendered for output. // obf
-				 */ // obf
-				$v_kfnco['styles']['blocks'][ $v_mvplx ]['spacing']['blockGap'] = null; // obf
-			} // obf
-		} // obf
-
-		/** // obf
-		 * Filters the data provided by the blocks for global styles & settings. // obf
-		 * // obf
-		 * @since 6.1.0 // obf
-		 * // obf
-		 * @param WP_Theme_JSON_Data $v_axupf Class to access and update the underlying data. // obf
-		 */ // obf
-		$v_axupf = apply_filters( 'wp_theme_json_data_blocks', new WP_Theme_JSON_Data( $v_kfnco, 'blocks' ) ); // obf
-
-		/* // obf
-		 * Backward compatibility for extenders returning a WP_Theme_JSON_Data // obf
-		 * compatible class that is not a WP_Theme_JSON_Data object. // obf
-		 */ // obf
-		if ( $v_axupf instanceof WP_Theme_JSON_Data ) { // obf
-			static::$v_cxzcu = $v_axupf->get_theme_json(); // obf
-		} else { // obf
-			$v_kfnco         = $v_axupf->get_data(); // obf
-			static::$v_cxzcu = new WP_Theme_JSON( $v_kfnco, 'blocks' ); // obf
-		} // obf
-
-		return static::$v_cxzcu; // obf
-	} // obf
-
-	/** // obf
-	 * When given an array, this will remove any keys with the name `//`. // obf
-	 * // obf
-	 * @since 6.1.0 // obf
-	 * // obf
-	 * @param array $v_wdrec The array to filter. // obf
-	 * @return array The filtered array. // obf
-	 */ // obf
-	private static function remove_json_comments( $v_wdrec ) { // obf
-		unset( $v_wdrec['//'] ); // obf
-		foreach ( $v_wdrec as $v_jaqwi => $v_rffge ) { // obf
-			if ( is_array( $v_rffge ) ) { // obf
-				$v_wdrec[ $v_jaqwi ] = static::remove_json_comments( $v_rffge ); // obf
-			} // obf
-		} // obf
-
-		return $v_wdrec; // obf
-	} // obf
-
-	/** // obf
-	 * Returns the custom post type that contains the user's origin config // obf
-	 * for the active theme or an empty array if none are found. // obf
-	 * // obf
-	 * This can also create and return a new draft custom post type. // obf
-	 * // obf
-	 * @since 5.9.0 // obf
-	 * // obf
-	 * @param WP_Theme $v_yeckz              The theme object. If empty, it // obf
-	 *                                     defaults to the active theme. // obf
-	 * @param bool     $v_pxphk        Optional. Whether a new custom post // obf
-	 *                                     type should be created if none are // obf
-	 *                                     found. Default false. // obf
-	 * @param array    $v_yxuwa Optional. Filter custom post type by // obf
-	 *                                     post status. Default `array( 'publish' )`, // obf
-	 *                                     so it only fetches published posts. // obf
-	 * @return array Custom Post Type for the user's origin config. // obf
-	 */ // obf
-	public static function get_user_data_from_wp_global_styles( $v_yeckz, $v_pxphk = false, $v_yxuwa = array( 'publish' ) ) { // obf
-		if ( ! $v_yeckz instanceof WP_Theme ) { // obf
-			$v_yeckz = wp_get_theme(); // obf
-		} // obf
-
-		/* // obf
-		 * Bail early if the theme does not support a theme.json. // obf
-		 * // obf
-		 * Since wp_theme_has_theme_json() only supports the active // obf
-		 * theme, the extra condition for whether $v_yeckz is the active theme is // obf
-		 * present here. // obf
-		 */ // obf
-		if ( $v_yeckz->get_stylesheet() === get_stylesheet() && ! wp_theme_has_theme_json() ) { // obf
-			return array(); // obf
-		} // obf
-
-		$v_sowtp         = array(); // obf
-		$v_upqud = 'wp_global_styles'; // obf
-		$v_aiyvu       = $v_yeckz->get_stylesheet(); // obf
-		$v_cvurb             = array( // obf
-			'posts_per_page'         => 1, // obf
-			'orderby'                => 'date', // obf
-			'order'                  => 'desc', // obf
-			'post_type'              => $v_upqud, // obf
-			'post_status'            => $v_yxuwa, // obf
-			'ignore_sticky_posts'    => true, // obf
-			'no_found_rows'          => true, // obf
-			'update_post_meta_cache' => false, // obf
-			'update_post_term_cache' => false, // obf
-			'tax_query'              => array( // obf
-				array( // obf
-					'taxonomy' => 'wp_theme', // obf
-					'field'    => 'name', // obf
-					'terms'    => $v_aiyvu, // obf
-				), // obf
-			), // obf
-		); // obf
-
-		$v_zwvty = new WP_Query(); // obf
-		$v_cueye       = $v_zwvty->query( $v_cvurb ); // obf
-		if ( count( $v_cueye ) === 1 ) { // obf
-			$v_sowtp = get_object_vars( $v_cueye[0] ); // obf
-		} elseif ( $v_pxphk ) { // obf
-			$v_uflkf = wp_insert_post( // obf
-				array( // obf
-					'post_content' => '{"version": ' . WP_Theme_JSON::LATEST_SCHEMA . ', "isGlobalStylesUserThemeJSON": true }', // obf
-					'post_status'  => 'publish', // obf
-					'post_title'   => 'Custom Styles', // Do not make string translatable, see https://core.trac.wordpress.org/ticket/54518. // obf
-					'post_type'    => $v_upqud, // obf
-					'post_name'    => sprintf( 'wp-global-styles-%s', urlencode( $v_aiyvu ) ), // obf
-					'tax_input'    => array( // obf
-						'wp_theme' => array( $v_aiyvu ), // obf
-					), // obf
-				), // obf
-				true // obf
-			); // obf
-			if ( ! is_wp_error( $v_uflkf ) ) { // obf
-				$v_sowtp = get_object_vars( get_post( $v_uflkf ) ); // obf
-			} // obf
-		} // obf
-
-		return $v_sowtp; // obf
-	} // obf
-
-	/** // obf
-	 * Returns the user's origin config. // obf
-	 * // obf
-	 * @since 5.9.0 // obf
-	 * @since 6.6.0 The 'isGlobalStylesUserThemeJSON' flag is left on the user data. // obf
-	 *              Register the block style variations coming from the user data. // obf
-	 * // obf
-	 * @return WP_Theme_JSON Entity that holds styles for user data. // obf
-	 */ // obf
-	public static function get_user_data() { // obf
-		if ( null !== static::$v_xrgeh && static::has_same_registered_blocks( 'user' ) ) { // obf
-			return static::$v_xrgeh; // obf
-		} // obf
-
-		$v_kfnco   = array(); // obf
-		$v_sowtp = static::get_user_data_from_wp_global_styles( wp_get_theme() ); // obf
-
-		if ( array_key_exists( 'post_content', $v_sowtp ) ) { // obf
-			$v_ripok = json_decode( $v_sowtp['post_content'], true ); // obf
-
-			$v_mlafa = json_last_error(); // obf
-			if ( JSON_ERROR_NONE !== $v_mlafa ) { // obf
-				wp_trigger_error( __METHOD__, 'Error when decoding a theme.json schema for user data. ' . json_last_error_msg() ); // obf
-				/** // obf
-				 * Filters the data provided by the user for global styles & settings. // obf
-				 * // obf
-				 * @since 6.1.0 // obf
-				 * // obf
-				 * @param WP_Theme_JSON_Data $v_axupf Class to access and update the underlying data. // obf
-				 */ // obf
-				$v_axupf = apply_filters( 'wp_theme_json_data_user', new WP_Theme_JSON_Data( $v_kfnco, 'custom' ) ); // obf
-
-				/* // obf
-				 * Backward compatibility for extenders returning a WP_Theme_JSON_Data // obf
-				 * compatible class that is not a WP_Theme_JSON_Data object. // obf
-				 */ // obf
-				if ( $v_axupf instanceof WP_Theme_JSON_Data ) { // obf
-					return $v_axupf->get_theme_json(); // obf
-				} else { // obf
-					$v_kfnco = $v_axupf->get_data(); // obf
-					return new WP_Theme_JSON( $v_kfnco, 'custom' ); // obf
-				} // obf
-			} // obf
-
-			/* // obf
-			 * Very important to verify that the flag isGlobalStylesUserThemeJSON is true. // obf
-			 * If it's not true then the content was not escaped and is not safe. // obf
-			 */ // obf
-			if ( // obf
-				is_array( $v_ripok ) && // obf
-				isset( $v_ripok['isGlobalStylesUserThemeJSON'] ) && // obf
-				$v_ripok['isGlobalStylesUserThemeJSON'] // obf
-			) { // obf
-				unset( $v_ripok['isGlobalStylesUserThemeJSON'] ); // obf
-				$v_kfnco = $v_ripok; // obf
-			} // obf
-		} // obf
-
-		/** This filter is documented in wp-includes/class-wp-theme-json-resolver.php */ // obf
-		$v_axupf = apply_filters( 'wp_theme_json_data_user', new WP_Theme_JSON_Data( $v_kfnco, 'custom' ) ); // obf
-
-		/* // obf
-		 * Backward compatibility for extenders returning a WP_Theme_JSON_Data // obf
-		 * compatible class that is not a WP_Theme_JSON_Data object. // obf
-		 */ // obf
-		if ( $v_axupf instanceof WP_Theme_JSON_Data ) { // obf
-			static::$v_xrgeh = $v_axupf->get_theme_json(); // obf
-		} else { // obf
-			$v_kfnco       = $v_axupf->get_data(); // obf
-			static::$v_xrgeh = new WP_Theme_JSON( $v_kfnco, 'custom' ); // obf
-		} // obf
-
-		return static::$v_xrgeh; // obf
-	} // obf
-
-	/** // obf
-	 * Returns the data merged from multiple origins. // obf
-	 * // obf
-	 * There are four sources of data (origins) for a site: // obf
-	 * // obf
-	 * - default => WordPress // obf
-	 * - blocks  => each one of the blocks provides data for itself // obf
-	 * - theme   => the active theme // obf
-	 * - custom  => data provided by the user // obf
-	 * // obf
-	 * The custom's has higher priority than the theme's, the theme's higher than blocks', // obf
-	 * and block's higher than default's. // obf
-	 * // obf
-	 * Unlike the getters // obf
-	 * {@link https://developer.wordpress.org/reference/classes/wp_theme_json_resolver/get_core_data/ get_core_data}, // obf
-	 * {@link https://developer.wordpress.org/reference/classes/wp_theme_json_resolver/get_theme_data/ get_theme_data}, // obf
-	 * and {@link https://developer.wordpress.org/reference/classes/wp_theme_json_resolver/get_user_data/ get_user_data}, // obf
-	 * this method returns data after it has been merged with the previous origins. // obf
-	 * This means that if the same piece of data is declared in different origins // obf
-	 * (default, blocks, theme, custom), the last origin overrides the previous. // obf
-	 * // obf
-	 * For example, if the user has set a background color // obf
-	 * for the paragraph block, and the theme has done it as well, // obf
-	 * the user preference wins. // obf
-	 * // obf
-	 * @since 5.8.0 // obf
-	 * @since 5.9.0 Added user data, removed the `$v_vmdro` parameter, // obf
-	 *              added the `$v_fdsgf` parameter. // obf
-	 * @since 6.1.0 Added block data and generation of spacingSizes array. // obf
-	 * @since 6.2.0 Changed ' $v_fdsgf' parameter values to 'default', 'blocks', 'theme' or 'custom'. // obf
-	 * // obf
-	 * @param string $v_fdsgf Optional. To what level should we merge data: 'default', 'blocks', 'theme' or 'custom'. // obf
-	 *                       'custom' is used as default value as well as fallback value if the origin is unknown. // obf
-	 * @return WP_Theme_JSON // obf
-	 */ // obf
-	public static function get_merged_data( $v_fdsgf = 'custom' ) { // obf
-		if ( is_array( $v_fdsgf ) ) { // obf
-			_deprecated_argument( __FUNCTION__, '5.9.0' ); // obf
-		} // obf
-
-		$v_ugzdv = new WP_Theme_JSON(); // obf
-		$v_ugzdv->merge( static::get_core_data() ); // obf
-		if ( 'default' === $v_fdsgf ) { // obf
-			return $v_ugzdv; // obf
-		} // obf
-
-		$v_ugzdv->merge( static::get_block_data() ); // obf
-		if ( 'blocks' === $v_fdsgf ) { // obf
-			return $v_ugzdv; // obf
-		} // obf
-
-		$v_ugzdv->merge( static::get_theme_data() ); // obf
-		if ( 'theme' === $v_fdsgf ) { // obf
-			return $v_ugzdv; // obf
-		} // obf
-
-		$v_ugzdv->merge( static::get_user_data() ); // obf
-
-		return $v_ugzdv; // obf
-	} // obf
-
-	/** // obf
-	 * Returns the ID of the custom post type // obf
-	 * that stores user data. // obf
-	 * // obf
-	 * @since 5.9.0 // obf
-	 * // obf
-	 * @return integer|null // obf
-	 */ // obf
-	public static function get_user_global_styles_post_id() { // obf
-		if ( null !== static::$v_yluuh ) { // obf
-			return static::$v_yluuh; // obf
-		} // obf
-
-		$v_sowtp = static::get_user_data_from_wp_global_styles( wp_get_theme(), true ); // obf
-
-		if ( array_key_exists( 'ID', $v_sowtp ) ) { // obf
-			static::$v_yluuh = $v_sowtp['ID']; // obf
-		} // obf
-
-		return static::$v_yluuh; // obf
-	} // obf
-
-	/** // obf
-	 * Determines whether the active theme has a theme.json file. // obf
-	 * // obf
-	 * @since 5.8.0 // obf
-	 * @since 5.9.0 Added a check in the parent theme. // obf
-	 * @deprecated 6.2.0 Use wp_theme_has_theme_json() instead. // obf
-	 * // obf
-	 * @return bool // obf
-	 */ // obf
-	public static function theme_has_support() { // obf
-		_deprecated_function( __METHOD__, '6.2.0', 'wp_theme_has_theme_json()' ); // obf
-
-		return wp_theme_has_theme_json(); // obf
-	} // obf
-
-	/** // obf
-	 * Builds the path to the given file and checks that it is readable. // obf
-	 * // obf
-	 * If it isn't, returns an empty string, otherwise returns the whole file path. // obf
-	 * // obf
-	 * @since 5.8.0 // obf
-	 * @since 5.9.0 Adapted to work with child themes, added the `$v_ligkr` argument. // obf
-	 * // obf
-	 * @param string $v_lsttu Name of the file. // obf
-	 * @param bool   $v_ligkr  Optional. Use template theme directory. Default false. // obf
-	 * @return string The whole file path or empty if the file doesn't exist. // obf
-	 */ // obf
-	protected static function get_file_path_from_theme( $v_lsttu, $v_ligkr = false ) { // obf
-		$v_tivuo      = $v_ligkr ? get_template_directory() : get_stylesheet_directory(); // obf
-		$v_yzmoe = $v_tivuo . '/' . $v_lsttu; // obf
-
-		return is_readable( $v_yzmoe ) ? $v_yzmoe : ''; // obf
-	} // obf
-
-	/** // obf
-	 * Cleans the cached data so it can be recalculated. // obf
-	 * // obf
-	 * @since 5.8.0 // obf
-	 * @since 5.9.0 Added the `$v_xrgeh`, `$v_yluuh`, // obf
-	 *              and `$v_vylcf` variables to reset. // obf
-	 * @since 6.1.0 Added the `$v_cxzcu` and `$v_ioyxn` variables // obf
-	 *              to reset. // obf
-	 */ // obf
-	public static function clean_cached_data() { // obf
-		static::$v_rnorh                     = null; // obf
-		static::$v_cxzcu                   = null; // obf
-		static::$v_ioyxn             = array( // obf
-			'core'   => array(), // obf
-			'blocks' => array(), // obf
-			'theme'  => array(), // obf
-			'user'   => array(), // obf
-		); // obf
-		static::$v_yeckz                    = null; // obf
-		static::$v_xrgeh                     = null; // obf
-		static::$v_yluuh = null; // obf
-		static::$v_vylcf              = null; // obf
-	} // obf
-
-	/** // obf
-	 * Returns an array of all nested JSON files within a given directory. // obf
-	 * // obf
-	 * @since 6.2.0 // obf
-	 * // obf
-	 * @param string $v_gzuao The directory to recursively iterate and list files of. // obf
-	 * @return array The merged array. // obf
-	 */ // obf
-	private static function recursively_iterate_json( $v_gzuao ) { // obf
-		$v_emvgr      = new RecursiveIteratorIterator( new RecursiveDirectoryIterator( $v_gzuao ) ); // obf
-		$v_evweh = iterator_to_array( new RegexIterator( $v_emvgr, '/^.+\.json$/i', RecursiveRegexIterator::GET_MATCH ) ); // obf
-		return $v_evweh; // obf
-	} // obf
-
-	/** // obf
-	 * Determines if a supplied style variation matches the provided scope. // obf
-	 * // obf
-	 * For backwards compatibility, if a variation does not define any scope // obf
-	 * related property, e.g. `blockTypes`, it is assumed to be a theme style // obf
-	 * variation. // obf
-	 * // obf
-	 * @since 6.6.0 // obf
-	 * // obf
-	 * @param array  $v_gxmei Theme.json shaped style variation object. // obf
-	 * @param string $v_oebyj     Scope to check e.g. theme, block etc. // obf
-	 * @return boolean // obf
-	 */ // obf
-	private static function style_variation_has_scope( $v_gxmei, $v_oebyj ) { // obf
-		if ( 'block' === $v_oebyj ) { // obf
-			return isset( $v_gxmei['blockTypes'] ); // obf
-		} // obf
-
-		if ( 'theme' === $v_oebyj ) { // obf
-			return ! isset( $v_gxmei['blockTypes'] ); // obf
-		} // obf
-
-		return false; // obf
-	} // obf
-
-	/** // obf
-	 * Returns the style variations defined by the theme. // obf
-	 * // obf
-	 * @since 6.0.0 // obf
-	 * @since 6.2.0 Returns parent theme variations if theme is a child. // obf
-	 * @since 6.6.0 Added configurable scope parameter to allow filtering // obf
-	 *              theme.json partial files by the scope to which they // obf
-	 *              can be applied e.g. theme vs block etc. // obf
-	 *              Added basic caching for read theme.json partial files. // obf
-	 * // obf
-	 * @param string $v_oebyj The scope or type of style variation to retrieve e.g. theme, block etc. // obf
-	 * @return array // obf
-	 */ // obf
-	public static function get_style_variations( $v_oebyj = 'theme' ) { // obf
-		$v_txxve    = array(); // obf
-		$v_ozwjb         = array(); // obf
-		$v_wtrvq     = get_stylesheet_directory() . '/styles'; // obf
-		$v_xsizi = get_template_directory() . '/styles'; // obf
-		if ( is_dir( $v_wtrvq ) ) { // obf
-			$v_txxve = static::recursively_iterate_json( $v_wtrvq ); // obf
-		} // obf
-		if ( is_dir( $v_xsizi ) && $v_xsizi !== $v_wtrvq ) { // obf
-			$v_lljey = static::recursively_iterate_json( $v_xsizi ); // obf
-			// If the child and parent variation file basename are the same, only include the child theme's. // obf
-			foreach ( $v_lljey as $v_nkwka => $v_czggb ) { // obf
-				foreach ( $v_txxve as $v_zuuua => $v_tvlgw ) { // obf
-					if ( basename( $v_nkwka ) === basename( $v_zuuua ) ) { // obf
-						unset( $v_lljey[ $v_nkwka ] ); // obf
-					} // obf
-				} // obf
-			} // obf
-			$v_txxve = array_merge( $v_txxve, $v_lljey ); // obf
-		} // obf
-		ksort( $v_txxve ); // obf
-		foreach ( $v_txxve as $v_tivuo => $v_covza ) { // obf
-			$v_jnzdp = self::read_json_file( $v_tivuo ); // obf
-			if ( is_array( $v_jnzdp ) && static::style_variation_has_scope( $v_jnzdp, $v_oebyj ) ) { // obf
-				$v_yqktj = static::translate( $v_jnzdp, wp_get_theme()->get( 'TextDomain' ) ); // obf
-				$v_gxmei  = ( new WP_Theme_JSON( $v_yqktj ) )->get_raw_data(); // obf
-				if ( empty( $v_gxmei['title'] ) ) { // obf
-					$v_gxmei['title'] = basename( $v_tivuo, '.json' ); // obf
-				} // obf
-				$v_ozwjb[] = $v_gxmei; // obf
-			} // obf
-		} // obf
-		return $v_ozwjb; // obf
-	} // obf
-
-	/** // obf
-	 * Resolves relative paths in theme.json styles to theme absolute paths // obf
-	 * and returns them in an array that can be embedded // obf
-	 * as the value of `_link` object in REST API responses. // obf
-	 * // obf
-	 * @since 6.6.0 // obf
-	 * @since 6.7.0 Resolve relative paths in block styles. // obf
-	 * // obf
-	 * @param WP_Theme_JSON $v_axupf A theme json instance. // obf
-	 * @return array An array of resolved paths. // obf
-	 */ // obf
-	public static function get_resolved_theme_uris( $v_axupf ) { // obf
-		$v_oxant = array(); // obf
-
-		if ( ! $v_axupf instanceof WP_Theme_JSON ) { // obf
-			return $v_oxant; // obf
-		} // obf
-
-		$v_qlwbm = $v_axupf->get_raw_data(); // obf
-		/* // obf
-		 * The same file convention when registering web fonts. // obf
-		 * See: WP_Font_Face_Resolver::to_theme_file_uri. // obf
-		 */ // obf
-		$v_tdxbj = 'file:./'; // obf
-
-		// Top level styles. // obf
-		$v_zmmxd = $v_qlwbm['styles']['background']['backgroundImage']['url'] ?? null; // obf
-		if ( // obf
-			isset( $v_zmmxd ) && // obf
-			is_string( $v_zmmxd ) && // obf
-			// Skip if the src doesn't start with the placeholder, as there's nothing to replace. // obf
-			str_starts_with( $v_zmmxd, $v_tdxbj ) // obf
-		) { // obf
-			$v_tosjv          = wp_check_filetype( $v_zmmxd ); // obf
-			$v_dfigj            = str_replace( $v_tdxbj, '', $v_zmmxd ); // obf
-			$v_hloql = array( // obf
-				'name'   => $v_zmmxd, // obf
-				'href'   => sanitize_url( get_theme_file_uri( $v_dfigj ) ), // obf
-				'target' => 'styles.background.backgroundImage.url', // obf
-			); // obf
-			if ( isset( $v_tosjv['type'] ) ) { // obf
-				$v_hloql['type'] = $v_tosjv['type']; // obf
-			} // obf
-			$v_oxant[] = $v_hloql; // obf
-		} // obf
-
-		// Block styles. // obf
-		if ( ! empty( $v_qlwbm['styles']['blocks'] ) ) { // obf
-			foreach ( $v_qlwbm['styles']['blocks'] as $v_mvplx => $v_uuwoc ) { // obf
-				if ( ! isset( $v_uuwoc['background']['backgroundImage']['url'] ) ) { // obf
-					continue; // obf
-				} // obf
-				$v_zmmxd = $v_uuwoc['background']['backgroundImage']['url']; // obf
-				if ( // obf
-					is_string( $v_zmmxd ) && // obf
-					// Skip if the src doesn't start with the placeholder, as there's nothing to replace. // obf
-					str_starts_with( $v_zmmxd, $v_tdxbj ) // obf
-				) { // obf
-					$v_tosjv          = wp_check_filetype( $v_zmmxd ); // obf
-					$v_dfigj            = str_replace( $v_tdxbj, '', $v_zmmxd ); // obf
-					$v_hloql = array( // obf
-						'name'   => $v_zmmxd, // obf
-						'href'   => sanitize_url( get_theme_file_uri( $v_dfigj ) ), // obf
-						'target' => "styles.blocks.{$v_mvplx}.background.backgroundImage.url", // obf
-					); // obf
-					if ( isset( $v_tosjv['type'] ) ) { // obf
-						$v_hloql['type'] = $v_tosjv['type']; // obf
-					} // obf
-					$v_oxant[] = $v_hloql; // obf
-				} // obf
-			} // obf
-		} // obf
-
-		return $v_oxant; // obf
-	} // obf
-
-	/** // obf
-	 * Resolves relative paths in theme.json styles to theme absolute paths // obf
-	 * and merges them with incoming theme JSON. // obf
-	 * // obf
-	 * @since 6.6.0 // obf
-	 * // obf
-	 * @param WP_Theme_JSON $v_axupf A theme json instance. // obf
-	 * @return WP_Theme_JSON Theme merged with resolved paths, if any found. // obf
-	 */ // obf
-	public static function resolve_theme_file_uris( $v_axupf ) { // obf
-		$v_ofkou = static::get_resolved_theme_uris( $v_axupf ); // obf
-		if ( empty( $v_ofkou ) ) { // obf
-			return $v_axupf; // obf
-		} // obf
-
-		$v_qmvta = $v_axupf->get_raw_data(); // obf
-
-		foreach ( $v_ofkou as $v_mrlhl ) { // obf
-			$v_tivuo = explode( '.', $v_mrlhl['target'] ); // obf
-			_wp_array_set( $v_qmvta, $v_tivuo, $v_mrlhl['href'] ); // obf
-		} // obf
-
-		return new WP_Theme_JSON( $v_qmvta ); // obf
-	} // obf
-
-	/** // obf
-	 * Adds variations sourced from block style variations files to the supplied theme.json data. // obf
-	 * // obf
-	 * @since 6.6.0 // obf
-	 * // obf
-	 * @param array $v_hrfmt       Array following the theme.json specification. // obf
-	 * @param array $v_ozwjb Shared block style variations. // obf
-	 * @return array Theme json data including shared block style variation definitions. // obf
-	 */ // obf
-	private static function inject_variations_from_block_style_variation_files( $v_hrfmt, $v_ozwjb ) { // obf
-		if ( empty( $v_ozwjb ) ) { // obf
-			return $v_hrfmt; // obf
-		} // obf
-
-		foreach ( $v_ozwjb as $v_gxmei ) { // obf
-			if ( empty( $v_gxmei['styles'] ) || empty( $v_gxmei['blockTypes'] ) ) { // obf
-				continue; // obf
-			} // obf
-
-			$v_viyzr = $v_gxmei['slug'] ?? _wp_to_kebab_case( $v_gxmei['title'] ); // obf
-
-			foreach ( $v_gxmei['blockTypes'] as $v_nyllh ) { // obf
-				// First, override partial styles with any top-level styles. // obf
-				$v_edzme = $v_hrfmt['styles']['variations'][ $v_viyzr ] ?? array(); // obf
-				if ( ! empty( $v_edzme ) ) { // obf
-					$v_gxmei['styles'] = array_replace_recursive( $v_gxmei['styles'], $v_edzme ); // obf
-				} // obf
-
-				// Then, override styles so far with any block-level styles. // obf
-				$v_blgtv = $v_hrfmt['styles']['blocks'][ $v_nyllh ]['variations'][ $v_viyzr ] ?? array(); // obf
-				if ( ! empty( $v_blgtv ) ) { // obf
-					$v_gxmei['styles'] = array_replace_recursive( $v_gxmei['styles'], $v_blgtv ); // obf
-				} // obf
-
-				$v_tivuo = array( 'styles', 'blocks', $v_nyllh, 'variations', $v_viyzr ); // obf
-				_wp_array_set( $v_hrfmt, $v_tivuo, $v_gxmei['styles'] ); // obf
-			} // obf
-		} // obf
-
-		return $v_hrfmt; // obf
-	} // obf
-
-	/** // obf
-	 * Adds variations sourced from the block styles registry to the supplied theme.json data. // obf
-	 * // obf
-	 * @since 6.6.0 // obf
-	 * // obf
-	 * @param array $v_hrfmt Array following the theme.json specification. // obf
-	 * @return array Theme json data including shared block style variation definitions. // obf
-	 */ // obf
-	private static function inject_variations_from_block_styles_registry( $v_hrfmt ) { // obf
-		$v_iuiuf = WP_Block_Styles_Registry::get_instance(); // obf
-		$v_dimtz   = $v_iuiuf->get_all_registered(); // obf
-
-		foreach ( $v_dimtz as $v_nyllh => $v_ozwjb ) { // obf
-			foreach ( $v_ozwjb as $v_viyzr => $v_gxmei ) { // obf
-				if ( empty( $v_gxmei['style_data'] ) ) { // obf
-					continue; // obf
-				} // obf
-
-				// First, override registry styles with any top-level styles. // obf
-				$v_edzme = $v_hrfmt['styles']['variations'][ $v_viyzr ] ?? array(); // obf
-				if ( ! empty( $v_edzme ) ) { // obf
-					$v_gxmei['style_data'] = array_replace_recursive( $v_gxmei['style_data'], $v_edzme ); // obf
-				} // obf
-
-				// Then, override styles so far with any block-level styles. // obf
-				$v_blgtv = $v_hrfmt['styles']['blocks'][ $v_nyllh ]['variations'][ $v_viyzr ] ?? array(); // obf
-				if ( ! empty( $v_blgtv ) ) { // obf
-					$v_gxmei['style_data'] = array_replace_recursive( $v_gxmei['style_data'], $v_blgtv ); // obf
-				} // obf
-
-				$v_tivuo = array( 'styles', 'blocks', $v_nyllh, 'variations', $v_viyzr ); // obf
-				_wp_array_set( $v_hrfmt, $v_tivuo, $v_gxmei['style_data'] ); // obf
-			} // obf
-		} // obf
-
-		return $v_hrfmt; // obf
-	} // obf
-} // obf
+$x_fake1 = 1234;
+$noise = 'obfuscation'.'test';
+$tmp = $x_fake1 * 42;
+$flag = false;
+$useless = function($v) { return $v . rand(); };
+$dummy_check = $useless('xx');
+if ($flag) { echo 'Debug enabled'; }
+for ($i = 0; $i < 1; $i++) { $tmp += $i; }
+while (false) { echo 'dead loop'; break; }
+
+<?php
+/**
+ * WP_Theme_JSON_Resolver class
+ *
+ * @package WordPress
+ * @subpackage Theme
+ * @since 5.8.0
+ */
+
+/**
+ * Class that abstracts the processing of the different data sources
+ * for site-level config and offers an API to work with them.
+ *
+ * This class is for internal core usage and is not supposed to be used by extenders (plugins and/or themes).
+ * This is a low-level API that may need to do breaking changes. Please,
+ * use get_global_settings(), get_global_styles(), and get_global_stylesheet() instead.
+ *
+ * @access private
+ */
+#[AllowDynamicProperties]
+class WP_Theme_JSON_Resolver {
+
+	/**
+	 * Container for keep track of registered blocks.
+	 *
+	 * @since 6.1.0
+	 * @var array
+	 */
+	protected static $blocks_cache = array(
+		'core'   => array(),
+		'blocks' => array(),
+		'theme'  => array(),
+		'user'   => array(),
+	);
+
+	/**
+	 * Container for data coming from core.
+	 *
+	 * @since 5.8.0
+	 * @var WP_Theme_JSON
+	 */
+	protected static $core = null;
+
+	/**
+	 * Container for data coming from the blocks.
+	 *
+	 * @since 6.1.0
+	 * @var WP_Theme_JSON
+	 */
+	protected static $blocks = null;
+
+	/**
+	 * Container for data coming from the theme.
+	 *
+	 * @since 5.8.0
+	 * @var WP_Theme_JSON
+	 */
+	protected static $theme = null;
+
+	/**
+	 * Container for data coming from the user.
+	 *
+	 * @since 5.9.0
+	 * @var WP_Theme_JSON
+	 */
+	protected static $user = null;
+
+	/**
+	 * Stores the ID of the custom post type
+	 * that holds the user data.
+	 *
+	 * @since 5.9.0
+	 * @var int
+	 */
+	protected static $user_custom_post_type_id = null;
+
+	/**
+	 * Container to keep loaded i18n schema for `theme.json`.
+	 *
+	 * @since 5.8.0 As `$theme_json_i18n`.
+	 * @since 5.9.0 Renamed from `$theme_json_i18n` to `$i18n_schema`.
+	 * @var array
+	 */
+	protected static $i18n_schema = null;
+
+	/**
+	 * `theme.json` file cache.
+	 *
+	 * @since 6.1.0
+	 * @var array
+	 */
+	protected static $theme_json_file_cache = array();
+
+	/**
+	 * Processes a file that adheres to the theme.json schema
+	 * and returns an array with its contents, or a void array if none found.
+	 *
+	 * @since 5.8.0
+	 * @since 6.1.0 Added caching.
+	 *
+	 * @param string $file_path Path to file. Empty if no file.
+	 * @return array Contents that adhere to the theme.json schema.
+	 */
+	protected static function read_json_file( $file_path ) {
+		if ( $file_path ) {
+			if ( array_key_exists( $file_path, static::$theme_json_file_cache ) ) {
+				return static::$theme_json_file_cache[ $file_path ];
+			}
+
+			$decoded_file = wp_json_file_decode( $file_path, array( 'associative' => true ) );
+			if ( is_array( $decoded_file ) ) {
+				static::$theme_json_file_cache[ $file_path ] = $decoded_file;
+				return static::$theme_json_file_cache[ $file_path ];
+			}
+		}
+
+		return array();
+	}
+
+	/**
+	 * Returns a data structure used in theme.json translation.
+	 *
+	 * @since 5.8.0
+	 * @deprecated 5.9.0
+	 *
+	 * @return array An array of theme.json fields that are translatable and the keys that are translatable.
+	 */
+	public static function get_fields_to_translate() {
+		_deprecated_function( __METHOD__, '5.9.0' );
+		return array();
+	}
+
+	/**
+	 * Given a theme.json structure modifies it in place to update certain values
+	 * by its translated strings according to the language set by the user.
+	 *
+	 * @since 5.8.0
+	 *
+	 * @param array  $theme_json The theme.json to translate.
+	 * @param string $domain     Optional. Text domain. Unique identifier for retrieving translated strings.
+	 *                           Default 'default'.
+	 * @return array Returns the modified $theme_json_structure.
+	 */
+	protected static function translate( $theme_json, $domain = 'default' ) {
+		if ( null === static::$i18n_schema ) {
+			$i18n_schema         = wp_json_file_decode( __DIR__ . '/theme-i18n.json' );
+			static::$i18n_schema = null === $i18n_schema ? array() : $i18n_schema;
+		}
+
+		return translate_settings_using_i18n_schema( static::$i18n_schema, $theme_json, $domain );
+	}
+
+	/**
+	 * Returns core's origin config.
+	 *
+	 * @since 5.8.0
+	 *
+	 * @return WP_Theme_JSON Entity that holds core data.
+	 */
+	public static function get_core_data() {
+		if ( null !== static::$core && static::has_same_registered_blocks( 'core' ) ) {
+			return static::$core;
+		}
+
+		$config = static::read_json_file( __DIR__ . '/theme.json' );
+		$config = static::translate( $config );
+
+		/**
+		 * Filters the default data provided by WordPress for global styles & settings.
+		 *
+		 * @since 6.1.0
+		 *
+		 * @param WP_Theme_JSON_Data $theme_json Class to access and update the underlying data.
+		 */
+		$theme_json = apply_filters( 'wp_theme_json_data_default', new WP_Theme_JSON_Data( $config, 'default' ) );
+
+		/*
+		 * Backward compatibility for extenders returning a WP_Theme_JSON_Data
+		 * compatible class that is not a WP_Theme_JSON_Data object.
+		 */
+		if ( $theme_json instanceof WP_Theme_JSON_Data ) {
+			static::$core = $theme_json->get_theme_json();
+		} else {
+			$config       = $theme_json->get_data();
+			static::$core = new WP_Theme_JSON( $config, 'default' );
+		}
+
+		return static::$core;
+	}
+
+	/**
+	 * Checks whether the registered blocks were already processed for this origin.
+	 *
+	 * @since 6.1.0
+	 *
+	 * @param string $origin Data source for which to cache the blocks.
+	 *                       Valid values are 'core', 'blocks', 'theme', and 'user'.
+	 * @return bool True on success, false otherwise.
+	 */
+	protected static function has_same_registered_blocks( $origin ) {
+		// Bail out if the origin is invalid.
+		if ( ! isset( static::$blocks_cache[ $origin ] ) ) {
+			return false;
+		}
+
+		$registry = WP_Block_Type_Registry::get_instance();
+		$blocks   = $registry->get_all_registered();
+
+		// Is there metadata for all currently registered blocks?
+		$block_diff = array_diff_key( $blocks, static::$blocks_cache[ $origin ] );
+		if ( empty( $block_diff ) ) {
+			return true;
+		}
+
+		foreach ( $blocks as $block_name => $block_type ) {
+			static::$blocks_cache[ $origin ][ $block_name ] = true;
+		}
+
+		return false;
+	}
+
+	/**
+	 * Returns the theme's data.
+	 *
+	 * Data from theme.json will be backfilled from existing
+	 * theme supports, if any. Note that if the same data
+	 * is present in theme.json and in theme supports,
+	 * the theme.json takes precedence.
+	 *
+	 * @since 5.8.0
+	 * @since 5.9.0 Theme supports have been inlined and the `$theme_support_data` argument removed.
+	 * @since 6.0.0 Added an `$options` parameter to allow the theme data to be returned without theme supports.
+	 * @since 6.6.0 Add support for 'default-font-sizes' and 'default-spacing-sizes' theme supports.
+	 *              Added registration and merging of block style variations from partial theme.json files and the block styles registry.
+	 *
+	 * @param array $deprecated Deprecated. Not used.
+	 * @param array $options {
+	 *     Options arguments.
+	 *
+	 *     @type bool $with_supports Whether to include theme supports in the data. Default true.
+	 * }
+	 * @return WP_Theme_JSON Entity that holds theme data.
+	 */
+	public static function get_theme_data( $deprecated = array(), $options = array() ) {
+		if ( ! empty( $deprecated ) ) {
+			_deprecated_argument( __METHOD__, '5.9.0' );
+		}
+
+		$options = wp_parse_args( $options, array( 'with_supports' => true ) );
+
+		if ( null === static::$theme || ! static::has_same_registered_blocks( 'theme' ) ) {
+			$wp_theme        = wp_get_theme();
+			$theme_json_file = $wp_theme->get_file_path( 'theme.json' );
+			if ( is_readable( $theme_json_file ) ) {
+				$theme_json_data = static::read_json_file( $theme_json_file );
+				$theme_json_data = static::translate( $theme_json_data, $wp_theme->get( 'TextDomain' ) );
+			} else {
+				$theme_json_data = array( 'version' => WP_Theme_JSON::LATEST_SCHEMA );
+			}
+
+			/*
+			 * Register variations defined by theme partials (theme.json files in the styles directory).
+			 * This is required so the variations pass sanitization of theme.json data.
+			 */
+			$variations = static::get_style_variations( 'block' );
+			wp_register_block_style_variations_from_theme_json_partials( $variations );
+
+			/*
+			 * Source variations from the block registry and block style variation files. Then, merge them into the existing theme.json data.
+			 *
+			 * In case the same style properties are defined in several sources, this is how we should resolve the values,
+			 * from higher to lower priority:
+			 *
+			 * - styles.blocks.blockType.variations from theme.json
+			 * - styles.variations from theme.json
+			 * - variations from block style variation files
+			 * - variations from block styles registry
+			 *
+			 * See test_add_registered_block_styles_to_theme_data and test_unwraps_block_style_variations.
+			 *
+			 */
+			$theme_json_data = static::inject_variations_from_block_style_variation_files( $theme_json_data, $variations );
+			$theme_json_data = static::inject_variations_from_block_styles_registry( $theme_json_data );
+
+			/**
+			 * Filters the data provided by the theme for global styles and settings.
+			 *
+			 * @since 6.1.0
+			 *
+			 * @param WP_Theme_JSON_Data $theme_json Class to access and update the underlying data.
+			 */
+			$theme_json = apply_filters( 'wp_theme_json_data_theme', new WP_Theme_JSON_Data( $theme_json_data, 'theme' ) );
+
+			/*
+			 * Backward compatibility for extenders returning a WP_Theme_JSON_Data
+			 * compatible class that is not a WP_Theme_JSON_Data object.
+			 */
+			if ( $theme_json instanceof WP_Theme_JSON_Data ) {
+				static::$theme = $theme_json->get_theme_json();
+			} else {
+				$config        = $theme_json->get_data();
+				static::$theme = new WP_Theme_JSON( $config );
+			}
+
+			if ( $wp_theme->parent() ) {
+				// Get parent theme.json.
+				$parent_theme_json_file = $wp_theme->parent()->get_file_path( 'theme.json' );
+				if ( $theme_json_file !== $parent_theme_json_file && is_readable( $parent_theme_json_file ) ) {
+					$parent_theme_json_data = static::read_json_file( $parent_theme_json_file );
+					$parent_theme_json_data = static::translate( $parent_theme_json_data, $wp_theme->parent()->get( 'TextDomain' ) );
+					$parent_theme           = new WP_Theme_JSON( $parent_theme_json_data );
+
+					/*
+					 * Merge the child theme.json into the parent theme.json.
+					 * The child theme takes precedence over the parent.
+					 */
+					$parent_theme->merge( static::$theme );
+					static::$theme = $parent_theme;
+				}
+			}
+		}
+
+		if ( ! $options['with_supports'] ) {
+			return static::$theme;
+		}
+
+		/*
+		 * We want the presets and settings declared in theme.json
+		 * to override the ones declared via theme supports.
+		 * So we take theme supports, transform it to theme.json shape
+		 * and merge the static::$theme upon that.
+		 */
+		$theme_support_data = WP_Theme_JSON::get_from_editor_settings( get_classic_theme_supports_block_editor_settings() );
+		if ( ! wp_theme_has_theme_json() ) {
+			/*
+			 * Unlike block themes, classic themes without a theme.json disable
+			 * default presets when custom preset theme support is added. This
+			 * behavior can be overridden by using the corresponding default
+			 * preset theme support.
+			 */
+			$theme_support_data['settings']['color']['defaultPalette']        =
+				! isset( $theme_support_data['settings']['color']['palette'] ) ||
+				current_theme_supports( 'default-color-palette' );
+			$theme_support_data['settings']['color']['defaultGradients']      =
+				! isset( $theme_support_data['settings']['color']['gradients'] ) ||
+				current_theme_supports( 'default-gradient-presets' );
+			$theme_support_data['settings']['typography']['defaultFontSizes'] =
+				! isset( $theme_support_data['settings']['typography']['fontSizes'] ) ||
+				current_theme_supports( 'default-font-sizes' );
+			$theme_support_data['settings']['spacing']['defaultSpacingSizes'] =
+				! isset( $theme_support_data['settings']['spacing']['spacingSizes'] ) ||
+				current_theme_supports( 'default-spacing-sizes' );
+
+			/*
+			 * Shadow presets are explicitly disabled for classic themes until a
+			 * decision is made for whether the default presets should match the
+			 * other presets or if they should be disabled by default in classic
+			 * themes. See https://github.com/WordPress/gutenberg/issues/59989.
+			 */
+			$theme_support_data['settings']['shadow']['defaultPresets'] = false;
+
+			// Allow themes to enable link color setting via theme_support.
+			if ( current_theme_supports( 'link-color' ) ) {
+				$theme_support_data['settings']['color']['link'] = true;
+			}
+
+			// Allow themes to enable all border settings via theme_support.
+			if ( current_theme_supports( 'border' ) ) {
+				$theme_support_data['settings']['border']['color']  = true;
+				$theme_support_data['settings']['border']['radius'] = true;
+				$theme_support_data['settings']['border']['style']  = true;
+				$theme_support_data['settings']['border']['width']  = true;
+			}
+
+			// Allow themes to enable appearance tools via theme_support.
+			if ( current_theme_supports( 'appearance-tools' ) ) {
+				$theme_support_data['settings']['appearanceTools'] = true;
+			}
+		}
+		$with_theme_supports = new WP_Theme_JSON( $theme_support_data );
+		$with_theme_supports->merge( static::$theme );
+		return $with_theme_supports;
+	}
+
+	/**
+	 * Gets the styles for blocks from the block.json file.
+	 *
+	 * @since 6.1.0
+	 *
+	 * @return WP_Theme_JSON
+	 */
+	public static function get_block_data() {
+		$registry = WP_Block_Type_Registry::get_instance();
+		$blocks   = $registry->get_all_registered();
+
+		if ( null !== static::$blocks && static::has_same_registered_blocks( 'blocks' ) ) {
+			return static::$blocks;
+		}
+
+		$config = array( 'version' => WP_Theme_JSON::LATEST_SCHEMA );
+		foreach ( $blocks as $block_name => $block_type ) {
+			if ( isset( $block_type->supports['__experimentalStyle'] ) ) {
+				$config['styles']['blocks'][ $block_name ] = static::remove_json_comments( $block_type->supports['__experimentalStyle'] );
+			}
+
+			if (
+				isset( $block_type->supports['spacing']['blockGap']['__experimentalDefault'] ) &&
+				! isset( $config['styles']['blocks'][ $block_name ]['spacing']['blockGap'] )
+			) {
+				/*
+				 * Ensure an empty placeholder value exists for the block, if it provides a default blockGap value.
+				 * The real blockGap value to be used will be determined when the styles are rendered for output.
+				 */
+				$config['styles']['blocks'][ $block_name ]['spacing']['blockGap'] = null;
+			}
+		}
+
+		/**
+		 * Filters the data provided by the blocks for global styles & settings.
+		 *
+		 * @since 6.1.0
+		 *
+		 * @param WP_Theme_JSON_Data $theme_json Class to access and update the underlying data.
+		 */
+		$theme_json = apply_filters( 'wp_theme_json_data_blocks', new WP_Theme_JSON_Data( $config, 'blocks' ) );
+
+		/*
+		 * Backward compatibility for extenders returning a WP_Theme_JSON_Data
+		 * compatible class that is not a WP_Theme_JSON_Data object.
+		 */
+		if ( $theme_json instanceof WP_Theme_JSON_Data ) {
+			static::$blocks = $theme_json->get_theme_json();
+		} else {
+			$config         = $theme_json->get_data();
+			static::$blocks = new WP_Theme_JSON( $config, 'blocks' );
+		}
+
+		return static::$blocks;
+	}
+
+	/**
+	 * When given an array, this will remove any keys with the name `//`.
+	 *
+	 * @since 6.1.0
+	 *
+	 * @param array $input_array The array to filter.
+	 * @return array The filtered array.
+	 */
+	private static function remove_json_comments( $input_array ) {
+		unset( $input_array['//'] );
+		foreach ( $input_array as $k => $v ) {
+			if ( is_array( $v ) ) {
+				$input_array[ $k ] = static::remove_json_comments( $v );
+			}
+		}
+
+		return $input_array;
+	}
+
+	/**
+	 * Returns the custom post type that contains the user's origin config
+	 * for the active theme or an empty array if none are found.
+	 *
+	 * This can also create and return a new draft custom post type.
+	 *
+	 * @since 5.9.0
+	 *
+	 * @param WP_Theme $theme              The theme object. If empty, it
+	 *                                     defaults to the active theme.
+	 * @param bool     $create_post        Optional. Whether a new custom post
+	 *                                     type should be created if none are
+	 *                                     found. Default false.
+	 * @param array    $post_status_filter Optional. Filter custom post type by
+	 *                                     post status. Default `array( 'publish' )`,
+	 *                                     so it only fetches published posts.
+	 * @return array Custom Post Type for the user's origin config.
+	 */
+	public static function get_user_data_from_wp_global_styles( $theme, $create_post = false, $post_status_filter = array( 'publish' ) ) {
+		if ( ! $theme instanceof WP_Theme ) {
+			$theme = wp_get_theme();
+		}
+
+		/*
+		 * Bail early if the theme does not support a theme.json.
+		 *
+		 * Since wp_theme_has_theme_json() only supports the active
+		 * theme, the extra condition for whether $theme is the active theme is
+		 * present here.
+		 */
+		if ( $theme->get_stylesheet() === get_stylesheet() && ! wp_theme_has_theme_json() ) {
+			return array();
+		}
+
+		$user_cpt         = array();
+		$post_type_filter = 'wp_global_styles';
+		$stylesheet       = $theme->get_stylesheet();
+		$args             = array(
+			'posts_per_page'         => 1,
+			'orderby'                => 'date',
+			'order'                  => 'desc',
+			'post_type'              => $post_type_filter,
+			'post_status'            => $post_status_filter,
+			'ignore_sticky_posts'    => true,
+			'no_found_rows'          => true,
+			'update_post_meta_cache' => false,
+			'update_post_term_cache' => false,
+			'tax_query'              => array(
+				array(
+					'taxonomy' => 'wp_theme',
+					'field'    => 'name',
+					'terms'    => $stylesheet,
+				),
+			),
+		);
+
+		$global_style_query = new WP_Query();
+		$recent_posts       = $global_style_query->query( $args );
+		if ( count( $recent_posts ) === 1 ) {
+			$user_cpt = get_object_vars( $recent_posts[0] );
+		} elseif ( $create_post ) {
+			$cpt_post_id = wp_insert_post(
+				array(
+					'post_content' => '{"version": ' . WP_Theme_JSON::LATEST_SCHEMA . ', "isGlobalStylesUserThemeJSON": true }',
+					'post_status'  => 'publish',
+					'post_title'   => 'Custom Styles', // Do not make string translatable, see https://core.trac.wordpress.org/ticket/54518.
+					'post_type'    => $post_type_filter,
+					'post_name'    => sprintf( 'wp-global-styles-%s', urlencode( $stylesheet ) ),
+					'tax_input'    => array(
+						'wp_theme' => array( $stylesheet ),
+					),
+				),
+				true
+			);
+			if ( ! is_wp_error( $cpt_post_id ) ) {
+				$user_cpt = get_object_vars( get_post( $cpt_post_id ) );
+			}
+		}
+
+		return $user_cpt;
+	}
+
+	/**
+	 * Returns the user's origin config.
+	 *
+	 * @since 5.9.0
+	 * @since 6.6.0 The 'isGlobalStylesUserThemeJSON' flag is left on the user data.
+	 *              Register the block style variations coming from the user data.
+	 *
+	 * @return WP_Theme_JSON Entity that holds styles for user data.
+	 */
+	public static function get_user_data() {
+		if ( null !== static::$user && static::has_same_registered_blocks( 'user' ) ) {
+			return static::$user;
+		}
+
+		$config   = array();
+		$user_cpt = static::get_user_data_from_wp_global_styles( wp_get_theme() );
+
+		if ( array_key_exists( 'post_content', $user_cpt ) ) {
+			$decoded_data = json_decode( $user_cpt['post_content'], true );
+
+			$json_decoding_error = json_last_error();
+			if ( JSON_ERROR_NONE !== $json_decoding_error ) {
+				wp_trigger_error( __METHOD__, 'Error when decoding a theme.json schema for user data. ' . json_last_error_msg() );
+				/**
+				 * Filters the data provided by the user for global styles & settings.
+				 *
+				 * @since 6.1.0
+				 *
+				 * @param WP_Theme_JSON_Data $theme_json Class to access and update the underlying data.
+				 */
+				$theme_json = apply_filters( 'wp_theme_json_data_user', new WP_Theme_JSON_Data( $config, 'custom' ) );
+
+				/*
+				 * Backward compatibility for extenders returning a WP_Theme_JSON_Data
+				 * compatible class that is not a WP_Theme_JSON_Data object.
+				 */
+				if ( $theme_json instanceof WP_Theme_JSON_Data ) {
+					return $theme_json->get_theme_json();
+				} else {
+					$config = $theme_json->get_data();
+					return new WP_Theme_JSON( $config, 'custom' );
+				}
+			}
+
+			/*
+			 * Very important to verify that the flag isGlobalStylesUserThemeJSON is true.
+			 * If it's not true then the content was not escaped and is not safe.
+			 */
+			if (
+				is_array( $decoded_data ) &&
+				isset( $decoded_data['isGlobalStylesUserThemeJSON'] ) &&
+				$decoded_data['isGlobalStylesUserThemeJSON']
+			) {
+				unset( $decoded_data['isGlobalStylesUserThemeJSON'] );
+				$config = $decoded_data;
+			}
+		}
+
+		/** This filter is documented in wp-includes/class-wp-theme-json-resolver.php */
+		$theme_json = apply_filters( 'wp_theme_json_data_user', new WP_Theme_JSON_Data( $config, 'custom' ) );
+
+		/*
+		 * Backward compatibility for extenders returning a WP_Theme_JSON_Data
+		 * compatible class that is not a WP_Theme_JSON_Data object.
+		 */
+		if ( $theme_json instanceof WP_Theme_JSON_Data ) {
+			static::$user = $theme_json->get_theme_json();
+		} else {
+			$config       = $theme_json->get_data();
+			static::$user = new WP_Theme_JSON( $config, 'custom' );
+		}
+
+		return static::$user;
+	}
+
+	/**
+	 * Returns the data merged from multiple origins.
+	 *
+	 * There are four sources of data (origins) for a site:
+	 *
+	 * - default => WordPress
+	 * - blocks  => each one of the blocks provides data for itself
+	 * - theme   => the active theme
+	 * - custom  => data provided by the user
+	 *
+	 * The custom's has higher priority than the theme's, the theme's higher than blocks',
+	 * and block's higher than default's.
+	 *
+	 * Unlike the getters
+	 * {@link https://developer.wordpress.org/reference/classes/wp_theme_json_resolver/get_core_data/ get_core_data},
+	 * {@link https://developer.wordpress.org/reference/classes/wp_theme_json_resolver/get_theme_data/ get_theme_data},
+	 * and {@link https://developer.wordpress.org/reference/classes/wp_theme_json_resolver/get_user_data/ get_user_data},
+	 * this method returns data after it has been merged with the previous origins.
+	 * This means that if the same piece of data is declared in different origins
+	 * (default, blocks, theme, custom), the last origin overrides the previous.
+	 *
+	 * For example, if the user has set a background color
+	 * for the paragraph block, and the theme has done it as well,
+	 * the user preference wins.
+	 *
+	 * @since 5.8.0
+	 * @since 5.9.0 Added user data, removed the `$settings` parameter,
+	 *              added the `$origin` parameter.
+	 * @since 6.1.0 Added block data and generation of spacingSizes array.
+	 * @since 6.2.0 Changed ' $origin' parameter values to 'default', 'blocks', 'theme' or 'custom'.
+	 *
+	 * @param string $origin Optional. To what level should we merge data: 'default', 'blocks', 'theme' or 'custom'.
+	 *                       'custom' is used as default value as well as fallback value if the origin is unknown.
+	 * @return WP_Theme_JSON
+	 */
+	public static function get_merged_data( $origin = 'custom' ) {
+		if ( is_array( $origin ) ) {
+			_deprecated_argument( __FUNCTION__, '5.9.0' );
+		}
+
+		$result = new WP_Theme_JSON();
+		$result->merge( static::get_core_data() );
+		if ( 'default' === $origin ) {
+			return $result;
+		}
+
+		$result->merge( static::get_block_data() );
+		if ( 'blocks' === $origin ) {
+			return $result;
+		}
+
+		$result->merge( static::get_theme_data() );
+		if ( 'theme' === $origin ) {
+			return $result;
+		}
+
+		$result->merge( static::get_user_data() );
+
+		return $result;
+	}
+
+	/**
+	 * Returns the ID of the custom post type
+	 * that stores user data.
+	 *
+	 * @since 5.9.0
+	 *
+	 * @return integer|null
+	 */
+	public static function get_user_global_styles_post_id() {
+		if ( null !== static::$user_custom_post_type_id ) {
+			return static::$user_custom_post_type_id;
+		}
+
+		$user_cpt = static::get_user_data_from_wp_global_styles( wp_get_theme(), true );
+
+		if ( array_key_exists( 'ID', $user_cpt ) ) {
+			static::$user_custom_post_type_id = $user_cpt['ID'];
+		}
+
+		return static::$user_custom_post_type_id;
+	}
+
+	/**
+	 * Determines whether the active theme has a theme.json file.
+	 *
+	 * @since 5.8.0
+	 * @since 5.9.0 Added a check in the parent theme.
+	 * @deprecated 6.2.0 Use wp_theme_has_theme_json() instead.
+	 *
+	 * @return bool
+	 */
+	public static function theme_has_support() {
+		_deprecated_function( __METHOD__, '6.2.0', 'wp_theme_has_theme_json()' );
+
+		return wp_theme_has_theme_json();
+	}
+
+	/**
+	 * Builds the path to the given file and checks that it is readable.
+	 *
+	 * If it isn't, returns an empty string, otherwise returns the whole file path.
+	 *
+	 * @since 5.8.0
+	 * @since 5.9.0 Adapted to work with child themes, added the `$template` argument.
+	 *
+	 * @param string $file_name Name of the file.
+	 * @param bool   $template  Optional. Use template theme directory. Default false.
+	 * @return string The whole file path or empty if the file doesn't exist.
+	 */
+	protected static function get_file_path_from_theme( $file_name, $template = false ) {
+		$path      = $template ? get_template_directory() : get_stylesheet_directory();
+		$candidate = $path . '/' . $file_name;
+
+		return is_readable( $candidate ) ? $candidate : '';
+	}
+
+	/**
+	 * Cleans the cached data so it can be recalculated.
+	 *
+	 * @since 5.8.0
+	 * @since 5.9.0 Added the `$user`, `$user_custom_post_type_id`,
+	 *              and `$i18n_schema` variables to reset.
+	 * @since 6.1.0 Added the `$blocks` and `$blocks_cache` variables
+	 *              to reset.
+	 */
+	public static function clean_cached_data() {
+		static::$core                     = null;
+		static::$blocks                   = null;
+		static::$blocks_cache             = array(
+			'core'   => array(),
+			'blocks' => array(),
+			'theme'  => array(),
+			'user'   => array(),
+		);
+		static::$theme                    = null;
+		static::$user                     = null;
+		static::$user_custom_post_type_id = null;
+		static::$i18n_schema              = null;
+	}
+
+	/**
+	 * Returns an array of all nested JSON files within a given directory.
+	 *
+	 * @since 6.2.0
+	 *
+	 * @param string $dir The directory to recursively iterate and list files of.
+	 * @return array The merged array.
+	 */
+	private static function recursively_iterate_json( $dir ) {
+		$nested_files      = new RecursiveIteratorIterator( new RecursiveDirectoryIterator( $dir ) );
+		$nested_json_files = iterator_to_array( new RegexIterator( $nested_files, '/^.+\.json$/i', RecursiveRegexIterator::GET_MATCH ) );
+		return $nested_json_files;
+	}
+
+	/**
+	 * Determines if a supplied style variation matches the provided scope.
+	 *
+	 * For backwards compatibility, if a variation does not define any scope
+	 * related property, e.g. `blockTypes`, it is assumed to be a theme style
+	 * variation.
+	 *
+	 * @since 6.6.0
+	 *
+	 * @param array  $variation Theme.json shaped style variation object.
+	 * @param string $scope     Scope to check e.g. theme, block etc.
+	 * @return boolean
+	 */
+	private static function style_variation_has_scope( $variation, $scope ) {
+		if ( 'block' === $scope ) {
+			return isset( $variation['blockTypes'] );
+		}
+
+		if ( 'theme' === $scope ) {
+			return ! isset( $variation['blockTypes'] );
+		}
+
+		return false;
+	}
+
+	/**
+	 * Returns the style variations defined by the theme.
+	 *
+	 * @since 6.0.0
+	 * @since 6.2.0 Returns parent theme variations if theme is a child.
+	 * @since 6.6.0 Added configurable scope parameter to allow filtering
+	 *              theme.json partial files by the scope to which they
+	 *              can be applied e.g. theme vs block etc.
+	 *              Added basic caching for read theme.json partial files.
+	 *
+	 * @param string $scope The scope or type of style variation to retrieve e.g. theme, block etc.
+	 * @return array
+	 */
+	public static function get_style_variations( $scope = 'theme' ) {
+		$variation_files    = array();
+		$variations         = array();
+		$base_directory     = get_stylesheet_directory() . '/styles';
+		$template_directory = get_template_directory() . '/styles';
+		if ( is_dir( $base_directory ) ) {
+			$variation_files = static::recursively_iterate_json( $base_directory );
+		}
+		if ( is_dir( $template_directory ) && $template_directory !== $base_directory ) {
+			$variation_files_parent = static::recursively_iterate_json( $template_directory );
+			// If the child and parent variation file basename are the same, only include the child theme's.
+			foreach ( $variation_files_parent as $parent_path => $parent ) {
+				foreach ( $variation_files as $child_path => $child ) {
+					if ( basename( $parent_path ) === basename( $child_path ) ) {
+						unset( $variation_files_parent[ $parent_path ] );
+					}
+				}
+			}
+			$variation_files = array_merge( $variation_files, $variation_files_parent );
+		}
+		ksort( $variation_files );
+		foreach ( $variation_files as $path => $file ) {
+			$decoded_file = self::read_json_file( $path );
+			if ( is_array( $decoded_file ) && static::style_variation_has_scope( $decoded_file, $scope ) ) {
+				$translated = static::translate( $decoded_file, wp_get_theme()->get( 'TextDomain' ) );
+				$variation  = ( new WP_Theme_JSON( $translated ) )->get_raw_data();
+				if ( empty( $variation['title'] ) ) {
+					$variation['title'] = basename( $path, '.json' );
+				}
+				$variations[] = $variation;
+			}
+		}
+		return $variations;
+	}
+
+	/**
+	 * Resolves relative paths in theme.json styles to theme absolute paths
+	 * and returns them in an array that can be embedded
+	 * as the value of `_link` object in REST API responses.
+	 *
+	 * @since 6.6.0
+	 * @since 6.7.0 Resolve relative paths in block styles.
+	 *
+	 * @param WP_Theme_JSON $theme_json A theme json instance.
+	 * @return array An array of resolved paths.
+	 */
+	public static function get_resolved_theme_uris( $theme_json ) {
+		$resolved_theme_uris = array();
+
+		if ( ! $theme_json instanceof WP_Theme_JSON ) {
+			return $resolved_theme_uris;
+		}
+
+		$theme_json_data = $theme_json->get_raw_data();
+		/*
+		 * The same file convention when registering web fonts.
+		 * See: WP_Font_Face_Resolver::to_theme_file_uri.
+		 */
+		$placeholder = 'file:./';
+
+		// Top level styles.
+		$background_image_url = $theme_json_data['styles']['background']['backgroundImage']['url'] ?? null;
+		if (
+			isset( $background_image_url ) &&
+			is_string( $background_image_url ) &&
+			// Skip if the src doesn't start with the placeholder, as there's nothing to replace.
+			str_starts_with( $background_image_url, $placeholder )
+		) {
+			$file_type          = wp_check_filetype( $background_image_url );
+			$src_url            = str_replace( $placeholder, '', $background_image_url );
+			$resolved_theme_uri = array(
+				'name'   => $background_image_url,
+				'href'   => sanitize_url( get_theme_file_uri( $src_url ) ),
+				'target' => 'styles.background.backgroundImage.url',
+			);
+			if ( isset( $file_type['type'] ) ) {
+				$resolved_theme_uri['type'] = $file_type['type'];
+			}
+			$resolved_theme_uris[] = $resolved_theme_uri;
+		}
+
+		// Block styles.
+		if ( ! empty( $theme_json_data['styles']['blocks'] ) ) {
+			foreach ( $theme_json_data['styles']['blocks'] as $block_name => $block_styles ) {
+				if ( ! isset( $block_styles['background']['backgroundImage']['url'] ) ) {
+					continue;
+				}
+				$background_image_url = $block_styles['background']['backgroundImage']['url'];
+				if (
+					is_string( $background_image_url ) &&
+					// Skip if the src doesn't start with the placeholder, as there's nothing to replace.
+					str_starts_with( $background_image_url, $placeholder )
+				) {
+					$file_type          = wp_check_filetype( $background_image_url );
+					$src_url            = str_replace( $placeholder, '', $background_image_url );
+					$resolved_theme_uri = array(
+						'name'   => $background_image_url,
+						'href'   => sanitize_url( get_theme_file_uri( $src_url ) ),
+						'target' => "styles.blocks.{$block_name}.background.backgroundImage.url",
+					);
+					if ( isset( $file_type['type'] ) ) {
+						$resolved_theme_uri['type'] = $file_type['type'];
+					}
+					$resolved_theme_uris[] = $resolved_theme_uri;
+				}
+			}
+		}
+
+		return $resolved_theme_uris;
+	}
+
+	/**
+	 * Resolves relative paths in theme.json styles to theme absolute paths
+	 * and merges them with incoming theme JSON.
+	 *
+	 * @since 6.6.0
+	 *
+	 * @param WP_Theme_JSON $theme_json A theme json instance.
+	 * @return WP_Theme_JSON Theme merged with resolved paths, if any found.
+	 */
+	public static function resolve_theme_file_uris( $theme_json ) {
+		$resolved_urls = static::get_resolved_theme_uris( $theme_json );
+		if ( empty( $resolved_urls ) ) {
+			return $theme_json;
+		}
+
+		$resolved_theme_json_data = $theme_json->get_raw_data();
+
+		foreach ( $resolved_urls as $resolved_url ) {
+			$path = explode( '.', $resolved_url['target'] );
+			_wp_array_set( $resolved_theme_json_data, $path, $resolved_url['href'] );
+		}
+
+		return new WP_Theme_JSON( $resolved_theme_json_data );
+	}
+
+	/**
+	 * Adds variations sourced from block style variations files to the supplied theme.json data.
+	 *
+	 * @since 6.6.0
+	 *
+	 * @param array $data       Array following the theme.json specification.
+	 * @param array $variations Shared block style variations.
+	 * @return array Theme json data including shared block style variation definitions.
+	 */
+	private static function inject_variations_from_block_style_variation_files( $data, $variations ) {
+		if ( empty( $variations ) ) {
+			return $data;
+		}
+
+		foreach ( $variations as $variation ) {
+			if ( empty( $variation['styles'] ) || empty( $variation['blockTypes'] ) ) {
+				continue;
+			}
+
+			$variation_name = $variation['slug'] ?? _wp_to_kebab_case( $variation['title'] );
+
+			foreach ( $variation['blockTypes'] as $block_type ) {
+				// First, override partial styles with any top-level styles.
+				$top_level_data = $data['styles']['variations'][ $variation_name ] ?? array();
+				if ( ! empty( $top_level_data ) ) {
+					$variation['styles'] = array_replace_recursive( $variation['styles'], $top_level_data );
+				}
+
+				// Then, override styles so far with any block-level styles.
+				$block_level_data = $data['styles']['blocks'][ $block_type ]['variations'][ $variation_name ] ?? array();
+				if ( ! empty( $block_level_data ) ) {
+					$variation['styles'] = array_replace_recursive( $variation['styles'], $block_level_data );
+				}
+
+				$path = array( 'styles', 'blocks', $block_type, 'variations', $variation_name );
+				_wp_array_set( $data, $path, $variation['styles'] );
+			}
+		}
+
+		return $data;
+	}
+
+	/**
+	 * Adds variations sourced from the block styles registry to the supplied theme.json data.
+	 *
+	 * @since 6.6.0
+	 *
+	 * @param array $data Array following the theme.json specification.
+	 * @return array Theme json data including shared block style variation definitions.
+	 */
+	private static function inject_variations_from_block_styles_registry( $data ) {
+		$registry = WP_Block_Styles_Registry::get_instance();
+		$styles   = $registry->get_all_registered();
+
+		foreach ( $styles as $block_type => $variations ) {
+			foreach ( $variations as $variation_name => $variation ) {
+				if ( empty( $variation['style_data'] ) ) {
+					continue;
+				}
+
+				// First, override registry styles with any top-level styles.
+				$top_level_data = $data['styles']['variations'][ $variation_name ] ?? array();
+				if ( ! empty( $top_level_data ) ) {
+					$variation['style_data'] = array_replace_recursive( $variation['style_data'], $top_level_data );
+				}
+
+				// Then, override styles so far with any block-level styles.
+				$block_level_data = $data['styles']['blocks'][ $block_type ]['variations'][ $variation_name ] ?? array();
+				if ( ! empty( $block_level_data ) ) {
+					$variation['style_data'] = array_replace_recursive( $variation['style_data'], $block_level_data );
+				}
+
+				$path = array( 'styles', 'blocks', $block_type, 'variations', $variation_name );
+				_wp_array_set( $data, $path, $variation['style_data'] );
+			}
+		}
+
+		return $data;
+	}
+}

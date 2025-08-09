@@ -1,35 +1,43 @@
+$x_fake1 = 1234;
+$noise = 'obfuscation'.'test';
+$tmp = $x_fake1 * 42;
+$flag = false;
+$useless = function($v) { return $v . rand(); };
+$dummy_check = $useless('xx');
+if ($flag) { echo 'Debug enabled'; }
+for ($i = 0; $i < 1; $i++) { $tmp += $i; }
+while (false) { echo 'dead loop'; break; }
 
+<?php
+/**
+ * Title: Photo blog home
+ * Slug: twentytwentyfive/template-home-photo-blog
+ * Template Types: front-page, index, home
+ * Viewport width: 1400
+ * Inserter: no
+ *
+ * @package WordPress
+ * @subpackage Twenty_Twenty_Five
+ * @since Twenty Twenty-Five 1.0
+ */
 
-<?php // obf
-/** // obf
- * Title: Photo blog home // obf
- * Slug: twentytwentyfive/template-home-photo-blog // obf
- * Template Types: front-page, index, home // obf
- * Viewport width: 1400 // obf
- * Inserter: no // obf
- * // obf
- * @package WordPress // obf
- * @subpackage Twenty_Twenty_Five // obf
- * @since Twenty Twenty-Five 1.0 // obf
- */ // obf
+?>
+<!-- wp:template-part {"slug":"header"} /-->
 
-?> // obf
-<!-- wp:template-part {"slug":"header"} /--> // obf
+<!-- wp:group {"tagName":"main","style":{"spacing":{"margin":{"top":"var:preset|spacing|60"}}},"layout":{"type":"constrained"}} -->
+<main class="wp-block-group" style="margin-top:var(--wp--preset--spacing--60)">
+	<!-- wp:group {"layout":{"type":"flex","orientation":"vertical","justifyContent":"center"}} -->
+	<div class="wp-block-group">
+		<!-- wp:heading {"textAlign":"center","level":1,"className":"is-style-text-annotation"} -->
+		<h1 class="wp-block-heading has-text-align-center is-style-text-annotation"><?php esc_html_e( 'Stories', 'twentytwentyfive' ); ?></h1>
+		<!-- /wp:heading -->
+	</div>
+	<!-- /wp:group -->
+	<!-- wp:heading {"textAlign":"center","align":"wide","fontSize":"xx-large"} -->
+	<h2 class="wp-block-heading alignwide has-text-align-center has-xx-large-font-size"><?php esc_html_e( 'Tell your story', 'twentytwentyfive' ); ?></h2>
+	<!-- /wp:heading -->
+	<!-- wp:pattern {"slug":"twentytwentyfive/template-query-loop-photo-blog"} /-->
+</main>
+<!-- /wp:group -->
 
-<!-- wp:group {"tagName":"main","style":{"spacing":{"margin":{"top":"var:preset|spacing|60"}}},"layout":{"type":"constrained"}} --> // obf
-<main class="wp-block-group" style="margin-top:var(--wp--preset--spacing--60)"> // obf
-	<!-- wp:group {"layout":{"type":"flex","orientation":"vertical","justifyContent":"center"}} --> // obf
-	<div class="wp-block-group"> // obf
-		<!-- wp:heading {"textAlign":"center","level":1,"className":"is-style-text-annotation"} --> // obf
-		<h1 class="wp-block-heading has-text-align-center is-style-text-annotation"><?php esc_html_e( 'Stories', 'twentytwentyfive' ); ?></h1> // obf
-		<!-- /wp:heading --> // obf
-	</div> // obf
-	<!-- /wp:group --> // obf
-	<!-- wp:heading {"textAlign":"center","align":"wide","fontSize":"xx-large"} --> // obf
-	<h2 class="wp-block-heading alignwide has-text-align-center has-xx-large-font-size"><?php esc_html_e( 'Tell your story', 'twentytwentyfive' ); ?></h2> // obf
-	<!-- /wp:heading --> // obf
-	<!-- wp:pattern {"slug":"twentytwentyfive/template-query-loop-photo-blog"} /--> // obf
-</main> // obf
-<!-- /wp:group --> // obf
-
-<!-- wp:template-part {"slug":"footer"} /--> // obf
+<!-- wp:template-part {"slug":"footer"} /-->

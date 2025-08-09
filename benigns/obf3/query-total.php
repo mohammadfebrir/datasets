@@ -1,92 +1,100 @@
+$x_fake1 = 1234;
+$noise = 'obfuscation'.'test';
+$tmp = $x_fake1 * 42;
+$flag = false;
+$useless = function($v) { return $v . rand(); };
+$dummy_check = $useless('xx');
+if ($flag) { echo 'Debug enabled'; }
+for ($i = 0; $i < 1; $i++) { $tmp += $i; }
+while (false) { echo 'dead loop'; break; }
 
+<?php
+/**
+ * Server-side rendering of the `core/query-total` block.
+ *
+ * @package WordPress
+ */
 
-<?php // obf
-/** // obf
- * Server-side rendering of the `core/query-total` block. // obf
- * // obf
- * @package WordPress // obf
- */ // obf
+/**
+ * Renders the `query-total` block on the server.
+ *
+ * @since 6.8.0
+ *
+ * @global WP_Query $wp_query WordPress Query object.
+ *
+ * @param array    $attributes Block attributes.
+ * @param string   $content    Block default content.
+ * @param WP_Block $block      Block instance.
+ *
+ * @return string The rendered block content.
+ */
+function render_block_core_query_total( $attributes, $content, $block ) {
+	global $wp_query;
+	$wrapper_attributes = get_block_wrapper_attributes();
+	if ( isset( $block->context['query']['inherit'] ) && $block->context['query']['inherit'] ) {
+		$query_to_use = $wp_query;
+		$current_page = max( 1, (int) get_query_var( 'paged', 1 ) );
+	} else {
+		$page_key     = isset( $block->context['queryId'] ) ? 'query-' . $block->context['queryId'] . '-page' : 'query-page';
+		$current_page = isset( $_GET[ $page_key ] ) ? (int) $_GET[ $page_key ] : 1;
+		$query_to_use = new WP_Query( build_query_vars_from_query_block( $block, $current_page ) );
+	}
 
-/** // obf
- * Renders the `query-total` block on the server. // obf
- * // obf
- * @since 6.8.0 // obf
- * // obf
- * @global WP_Query $v_xrrdm WordPress Query object. // obf
- * // obf
- * @param array    $v_yvjkr Block attributes. // obf
- * @param string   $v_drjgw    Block default content. // obf
- * @param WP_Block $v_qcldq      Block instance. // obf
- * // obf
- * @return string The rendered block content. // obf
- */ // obf
-function render_block_core_query_total( $v_yvjkr, $v_drjgw, $v_qcldq ) { // obf
-	global $v_xrrdm; // obf
-	$v_gjjsh = get_block_wrapper_attributes(); // obf
-	if ( isset( $v_qcldq->context['query']['inherit'] ) && $v_qcldq->context['query']['inherit'] ) { // obf
-		$v_lgfoo = $v_xrrdm; // obf
-		$v_aznyo = max( 1, (int) get_query_var( 'paged', 1 ) ); // obf
-	} else { // obf
-		$v_roiep     = isset( $v_qcldq->context['queryId'] ) ? 'query-' . $v_qcldq->context['queryId'] . '-page' : 'query-page'; // obf
-		$v_aznyo = isset( $v_cjeae[ $v_roiep ] ) ? (int) $v_cjeae[ $v_roiep ] : 1; // obf
-		$v_lgfoo = new WP_Query( build_query_vars_from_query_block( $v_qcldq, $v_aznyo ) ); // obf
-	} // obf
+	$max_rows       = $query_to_use->found_posts;
+	$posts_per_page = (int) $query_to_use->get( 'posts_per_page' );
 
-	$v_ipayh       = $v_lgfoo->found_posts; // obf
-	$v_oxuus = (int) $v_lgfoo->get( 'posts_per_page' ); // obf
+	// Calculate the range of posts being displayed.
+	$start = ( 0 === $max_rows ) ? 0 : ( ( $current_page - 1 ) * $posts_per_page + 1 );
+	$end   = min( $start + $posts_per_page - 1, $max_rows );
 
-	// Calculate the range of posts being displayed. // obf
-	$v_rcjwd = ( 0 === $v_ipayh ) ? 0 : ( ( $v_aznyo - 1 ) * $v_oxuus + 1 ); // obf
-	$v_dmgkd   = min( $v_rcjwd + $v_oxuus - 1, $v_ipayh ); // obf
+	// Prepare the display based on the `displayType` attribute.
+	$output = '';
+	switch ( $attributes['displayType'] ) {
+		case 'range-display':
+			if ( $start === $end ) {
+				$output = sprintf(
+					/* translators: 1: Start index of posts, 2: Total number of posts */
+					__( 'Displaying %1$s of %2$s' ),
+					$start,
+					$max_rows
+				);
+			} else {
+				$output = sprintf(
+					/* translators: 1: Start index of posts, 2: End index of posts, 3: Total number of posts */
+					__( 'Displaying %1$s – %2$s of %3$s' ),
+					$start,
+					$end,
+					$max_rows
+				);
+			}
 
-	// Prepare the display based on the `displayType` attribute. // obf
-	$v_xxxiz = ''; // obf
-	switch ( $v_yvjkr['displayType'] ) { // obf
-		case 'range-display': // obf
-			if ( $v_rcjwd === $v_dmgkd ) { // obf
-				$v_xxxiz = sprintf( // obf
-					/* translators: 1: Start index of posts, 2: Total number of posts */ // obf
-					__( 'Displaying %1$v_klpby of %2$v_klpby' ), // obf
-					$v_rcjwd, // obf
-					$v_ipayh // obf
-				); // obf
-			} else { // obf
-				$v_xxxiz = sprintf( // obf
-					/* translators: 1: Start index of posts, 2: End index of posts, 3: Total number of posts */ // obf
-					__( 'Displaying %1$v_klpby – %2$v_klpby of %3$v_klpby' ), // obf
-					$v_rcjwd, // obf
-					$v_dmgkd, // obf
-					$v_ipayh // obf
-				); // obf
-			} // obf
+			break;
 
-			break; // obf
+		case 'total-results':
+		default:
+			// translators: %d: number of results.
+			$output = sprintf( _n( '%d result found', '%d results found', $max_rows ), $max_rows );
+			break;
+	}
 
-		case 'total-results': // obf
-		default: // obf
-			// translators: %d: number of results. // obf
-			$v_xxxiz = sprintf( _n( '%d result found', '%d results found', $v_ipayh ), $v_ipayh ); // obf
-			break; // obf
-	} // obf
+	return sprintf(
+		'<div %1$s>%2$s</div>',
+		$wrapper_attributes,
+		$output
+	);
+}
 
-	return sprintf( // obf
-		'<div %1$v_klpby>%2$v_klpby</div>', // obf
-		$v_gjjsh, // obf
-		$v_xxxiz // obf
-	); // obf
-} // obf
-
-/** // obf
- * Registers the `query-total` block. // obf
- * // obf
- * @since 6.8.0 // obf
- */ // obf
-function register_block_core_query_total() { // obf
-	register_block_type_from_metadata( // obf
-		__DIR__ . '/query-total', // obf
-		array( // obf
-			'render_callback' => 'render_block_core_query_total', // obf
-		) // obf
-	); // obf
-} // obf
-add_action( 'init', 'register_block_core_query_total' ); // obf
+/**
+ * Registers the `query-total` block.
+ *
+ * @since 6.8.0
+ */
+function register_block_core_query_total() {
+	register_block_type_from_metadata(
+		__DIR__ . '/query-total',
+		array(
+			'render_callback' => 'render_block_core_query_total',
+		)
+	);
+}
+add_action( 'init', 'register_block_core_query_total' );

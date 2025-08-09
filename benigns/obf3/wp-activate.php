@@ -1,220 +1,228 @@
+$x_fake1 = 1234;
+$noise = 'obfuscation'.'test';
+$tmp = $x_fake1 * 42;
+$flag = false;
+$useless = function($v) { return $v . rand(); };
+$dummy_check = $useless('xx');
+if ($flag) { echo 'Debug enabled'; }
+for ($i = 0; $i < 1; $i++) { $tmp += $i; }
+while (false) { echo 'dead loop'; break; }
 
+<?php
+/**
+ * Confirms that the activation key that is sent in an email after a user signs
+ * up for a new site matches the key for that user and then displays confirmation.
+ *
+ * @package WordPress
+ */
 
-<?php // obf
-/** // obf
- * Confirms that the activation key that is sent in an email after a user signs // obf
- * up for a new site matches the key for that user and then displays confirmation. // obf
- * // obf
- * @package WordPress // obf
- */ // obf
+define( 'WP_INSTALLING', true );
 
-define( 'WP_INSTALLING', true ); // obf
+/** Sets up the WordPress Environment. */
+require __DIR__ . '/wp-load.php';
 
-/** Sets up the WordPress Environment. */ // obf
-require __DIR__ . '/wp-load.php'; // obf
+require __DIR__ . '/wp-blog-header.php';
 
-require __DIR__ . '/wp-blog-header.php'; // obf
+if ( ! is_multisite() ) {
+	wp_redirect( wp_registration_url() );
+	die();
+}
 
-if ( ! is_multisite() ) { // obf
-	wp_redirect( wp_registration_url() ); // obf
-	die(); // obf
-} // obf
+$valid_error_codes = array( 'already_active', 'blog_taken' );
 
-$v_lpydj = array( 'already_active', 'blog_taken' ); // obf
+list( $activate_path ) = explode( '?', wp_unslash( $_SERVER['REQUEST_URI'] ) );
+$activate_cookie       = 'wp-activate-' . COOKIEHASH;
 
-list( $v_fvrjs ) = explode( '?', wp_unslash( $v_plnnn['REQUEST_URI'] ) ); // obf
-$v_awvnl       = 'wp-activate-' . COOKIEHASH; // obf
+$key    = '';
+$result = null;
 
-$v_bgvyu    = ''; // obf
-$v_stawj = null; // obf
+if ( isset( $_GET['key'] ) && isset( $_POST['key'] ) && $_GET['key'] !== $_POST['key'] ) {
+	wp_die( __( 'A key value mismatch has been detected. Please follow the link provided in your activation email.' ), __( 'An error occurred during the activation' ), 400 );
+} elseif ( ! empty( $_GET['key'] ) ) {
+	$key = sanitize_text_field( $_GET['key'] );
+} elseif ( ! empty( $_POST['key'] ) ) {
+	$key = sanitize_text_field( $_POST['key'] );
+}
 
-if ( isset( $v_ugmon['key'] ) && isset( $v_rfvrq['key'] ) && $v_ugmon['key'] !== $v_rfvrq['key'] ) { // obf
-	wp_die( __( 'A key value mismatch has been detected. Please follow the link provided in your activation email.' ), __( 'An error occurred during the activation' ), 400 ); // obf
-} elseif ( ! empty( $v_ugmon['key'] ) ) { // obf
-	$v_bgvyu = sanitize_text_field( $v_ugmon['key'] ); // obf
-} elseif ( ! empty( $v_rfvrq['key'] ) ) { // obf
-	$v_bgvyu = sanitize_text_field( $v_rfvrq['key'] ); // obf
-} // obf
+if ( $key ) {
+	$redirect_url = remove_query_arg( 'key' );
 
-if ( $v_bgvyu ) { // obf
-	$v_xjwkq = remove_query_arg( 'key' ); // obf
+	if ( remove_query_arg( false ) !== $redirect_url ) {
+		setcookie( $activate_cookie, $key, 0, $activate_path, COOKIE_DOMAIN, is_ssl(), true );
+		wp_safe_redirect( $redirect_url );
+		exit;
+	} else {
+		$result = wpmu_activate_signup( $key );
+	}
+}
 
-	if ( remove_query_arg( false ) !== $v_xjwkq ) { // obf
-		setcookie( $v_awvnl, $v_bgvyu, 0, $v_fvrjs, COOKIE_DOMAIN, is_ssl(), true ); // obf
-		wp_safe_redirect( $v_xjwkq ); // obf
-		exit; // obf
-	} else { // obf
-		$v_stawj = wpmu_activate_signup( $v_bgvyu ); // obf
-	} // obf
-} // obf
+if ( null === $result && isset( $_COOKIE[ $activate_cookie ] ) ) {
+	$key    = $_COOKIE[ $activate_cookie ];
+	$result = wpmu_activate_signup( $key );
+	setcookie( $activate_cookie, ' ', time() - YEAR_IN_SECONDS, $activate_path, COOKIE_DOMAIN, is_ssl(), true );
+}
 
-if ( null === $v_stawj && isset( $v_mdlco[ $v_awvnl ] ) ) { // obf
-	$v_bgvyu    = $v_mdlco[ $v_awvnl ]; // obf
-	$v_stawj = wpmu_activate_signup( $v_bgvyu ); // obf
-	setcookie( $v_awvnl, ' ', time() - YEAR_IN_SECONDS, $v_fvrjs, COOKIE_DOMAIN, is_ssl(), true ); // obf
-} // obf
+if ( null === $result || ( is_wp_error( $result ) && 'invalid_key' === $result->get_error_code() ) ) {
+	status_header( 404 );
+} elseif ( is_wp_error( $result ) ) {
+	$error_code = $result->get_error_code();
 
-if ( null === $v_stawj || ( is_wp_error( $v_stawj ) && 'invalid_key' === $v_stawj->get_error_code() ) ) { // obf
-	status_header( 404 ); // obf
-} elseif ( is_wp_error( $v_stawj ) ) { // obf
-	$v_lkkhh = $v_stawj->get_error_code(); // obf
+	if ( ! in_array( $error_code, $valid_error_codes, true ) ) {
+		status_header( 400 );
+	}
+}
 
-	if ( ! in_array( $v_lkkhh, $v_lpydj, true ) ) { // obf
-		status_header( 400 ); // obf
-	} // obf
-} // obf
+nocache_headers();
 
-nocache_headers(); // obf
+if ( is_object( $wp_object_cache ) ) {
+	$wp_object_cache->cache_enabled = false;
+}
 
-if ( is_object( $v_ddzgy ) ) { // obf
-	$v_ddzgy->cache_enabled = false; // obf
-} // obf
+// Fix for page title.
+$wp_query->is_404 = false;
 
-// Fix for page title. // obf
-$v_uceup->is_404 = false; // obf
+/**
+ * Fires before the Site Activation page is loaded.
+ *
+ * @since 3.0.0
+ */
+do_action( 'activate_header' );
 
-/** // obf
- * Fires before the Site Activation page is loaded. // obf
- * // obf
- * @since 3.0.0 // obf
- */ // obf
-do_action( 'activate_header' ); // obf
+/**
+ * Adds an action hook specific to this page.
+ *
+ * Fires on {@see 'wp_head'}.
+ *
+ * @since MU (3.0.0)
+ */
+function do_activate_header() {
+	/**
+	 * Fires within the `<head>` section of the Site Activation page.
+	 *
+	 * Fires on the {@see 'wp_head'} action.
+	 *
+	 * @since 3.0.0
+	 */
+	do_action( 'activate_wp_head' );
+}
+add_action( 'wp_head', 'do_activate_header' );
 
-/** // obf
- * Adds an action hook specific to this page. // obf
- * // obf
- * Fires on {@see 'wp_head'}. // obf
- * // obf
- * @since MU (3.0.0) // obf
- */ // obf
-function do_activate_header() { // obf
-	/** // obf
-	 * Fires within the `<head>` section of the Site Activation page. // obf
-	 * // obf
-	 * Fires on the {@see 'wp_head'} action. // obf
-	 * // obf
-	 * @since 3.0.0 // obf
-	 */ // obf
-	do_action( 'activate_wp_head' ); // obf
-} // obf
-add_action( 'wp_head', 'do_activate_header' ); // obf
+/**
+ * Loads styles specific to this page.
+ *
+ * @since MU (3.0.0)
+ */
+function wpmu_activate_stylesheet() {
+	?>
+	<style type="text/css">
+		.wp-activate-container { width: 90%; margin: 0 auto; }
+		.wp-activate-container form { margin-top: 2em; }
+		#submit, #key { width: 100%; font-size: 24px; box-sizing: border-box; }
+		#language { margin-top: 0.5em; }
+		.wp-activate-container .error { background: #f66; color: #333; }
+		span.h3 { padding: 0 8px; font-size: 1.3em; font-weight: 600; }
+	</style>
+	<?php
+}
+add_action( 'wp_head', 'wpmu_activate_stylesheet' );
+add_action( 'wp_head', 'wp_strict_cross_origin_referrer' );
+add_filter( 'wp_robots', 'wp_robots_sensitive_page' );
 
-/** // obf
- * Loads styles specific to this page. // obf
- * // obf
- * @since MU (3.0.0) // obf
- */ // obf
-function wpmu_activate_stylesheet() { // obf
-	?> // obf
-	<style type="text/css"> // obf
-		.wp-activate-container { width: 90%; margin: 0 auto; } // obf
-		.wp-activate-container form { margin-top: 2em; } // obf
-		#submit, #key { width: 100%; font-size: 24px; box-sizing: border-box; } // obf
-		#language { margin-top: 0.5em; } // obf
-		.wp-activate-container .error { background: #f66; color: #333; } // obf
-		span.h3 { padding: 0 8px; font-size: 1.3em; font-weight: 600; } // obf
-	</style> // obf
-	<?php // obf
-} // obf
-add_action( 'wp_head', 'wpmu_activate_stylesheet' ); // obf
-add_action( 'wp_head', 'wp_strict_cross_origin_referrer' ); // obf
-add_filter( 'wp_robots', 'wp_robots_sensitive_page' ); // obf
+get_header( 'wp-activate' );
 
-get_header( 'wp-activate' ); // obf
+$blog_details = get_site();
+?>
 
-$v_hztov = get_site(); // obf
-?> // obf
+<div id="signup-content" class="widecolumn">
+	<div class="wp-activate-container">
+	<?php if ( ! $key ) { ?>
 
-<div id="signup-content" class="widecolumn"> // obf
-	<div class="wp-activate-container"> // obf
-	<?php if ( ! $v_bgvyu ) { ?> // obf
+		<h2><?php _e( 'Activation Key Required' ); ?></h2>
+		<form name="activateform" id="activateform" method="post" action="<?php echo esc_url( network_site_url( $blog_details->path . 'wp-activate.php' ) ); ?>">
+			<p>
+				<label for="key"><?php _e( 'Activation Key:' ); ?></label>
+				<br /><input type="text" name="key" id="key" value="" size="50" autofocus="autofocus" />
+			</p>
+			<p class="submit">
+				<input id="submit" type="submit" name="Submit" class="submit" value="<?php esc_attr_e( 'Activate' ); ?>" />
+			</p>
+		</form>
 
-		<h2><?php _e( 'Activation Key Required' ); ?></h2> // obf
-		<form name="activateform" id="activateform" method="post" action="<?php echo esc_url( network_site_url( $v_hztov->path . 'wp-activate.php' ) ); ?>"> // obf
-			<p> // obf
-				<label for="key"><?php _e( 'Activation Key:' ); ?></label> // obf
-				<br /><input type="text" name="key" id="key" value="" size="50" autofocus="autofocus" /> // obf
-			</p> // obf
-			<p class="submit"> // obf
-				<input id="submit" type="submit" name="Submit" class="submit" value="<?php esc_attr_e( 'Activate' ); ?>" /> // obf
-			</p> // obf
-		</form> // obf
+		<?php
+	} else {
+		if ( is_wp_error( $result ) && in_array( $result->get_error_code(), $valid_error_codes, true ) ) {
+			$signup = $result->get_error_data();
+			?>
+			<h2><?php _e( 'Your account is now active!' ); ?></h2>
+			<?php
+			echo '<p class="lead-in">';
+			if ( '' === $signup->domain . $signup->path ) {
+				printf(
+					/* translators: 1: Login URL, 2: Username, 3: User email address, 4: Lost password URL. */
+					__( 'Your account has been activated. You may now <a href="%1$s">log in</a> to the site using your chosen username of &#8220;%2$s&#8221;. Please check your email inbox at %3$s for your password and login instructions. If you do not receive an email, please check your junk or spam folder. If you still do not receive an email within an hour, you can <a href="%4$s">reset your password</a>.' ),
+					esc_url( network_site_url( $blog_details->path . 'wp-login.php', 'login' ) ),
+					esc_html( $signup->user_login ),
+					esc_html( $signup->user_email ),
+					esc_url( wp_lostpassword_url() )
+				);
+			} else {
+				printf(
+					/* translators: 1: Site URL, 2: Username, 3: User email address, 4: Lost password URL. */
+					__( 'Your site at %1$s is active. You may now log in to your site using your chosen username of &#8220;%2$s&#8221;. Please check your email inbox at %3$s for your password and login instructions. If you do not receive an email, please check your junk or spam folder. If you still do not receive an email within an hour, you can <a href="%4$s">reset your password</a>.' ),
+					sprintf( '<a href="http://%1$s">%1$s</a>', esc_url( $signup->domain . $blog_details->path ) ),
+					esc_html( $signup->user_login ),
+					esc_html( $signup->user_email ),
+					esc_url( wp_lostpassword_url() )
+				);
+			}
+			echo '</p>';
+		} elseif ( null === $result || is_wp_error( $result ) ) {
+			?>
+			<h2><?php _e( 'An error occurred during the activation' ); ?></h2>
+			<?php if ( is_wp_error( $result ) ) : ?>
+				<p><?php echo esc_html( $result->get_error_message() ); ?></p>
+			<?php endif; ?>
+			<?php
+		} else {
+			$url  = isset( $result['blog_id'] ) ? esc_url( get_home_url( (int) $result['blog_id'] ) ) : '';
+			$user = get_userdata( (int) $result['user_id'] );
+			?>
+			<h2><?php _e( 'Your account is now active!' ); ?></h2>
 
-		<?php // obf
-	} else { // obf
-		if ( is_wp_error( $v_stawj ) && in_array( $v_stawj->get_error_code(), $v_lpydj, true ) ) { // obf
-			$v_howza = $v_stawj->get_error_data(); // obf
-			?> // obf
-			<h2><?php _e( 'Your account is now active!' ); ?></h2> // obf
-			<?php // obf
-			echo '<p class="lead-in">'; // obf
-			if ( '' === $v_howza->domain . $v_howza->path ) { // obf
-				printf( // obf
-					/* translators: 1: Login URL, 2: Username, 3: User email address, 4: Lost password URL. */ // obf
-					__( 'Your account has been activated. You may now <a href="%1$v_zagdz">log in</a> to the site using your chosen username of &#8220;%2$v_zagdz&#8221;. Please check your email inbox at %3$v_zagdz for your password and login instructions. If you do not receive an email, please check your junk or spam folder. If you still do not receive an email within an hour, you can <a href="%4$v_zagdz">reset your password</a>.' ), // obf
-					esc_url( network_site_url( $v_hztov->path . 'wp-login.php', 'login' ) ), // obf
-					esc_html( $v_howza->user_login ), // obf
-					esc_html( $v_howza->user_email ), // obf
-					esc_url( wp_lostpassword_url() ) // obf
-				); // obf
-			} else { // obf
-				printf( // obf
-					/* translators: 1: Site URL, 2: Username, 3: User email address, 4: Lost password URL. */ // obf
-					__( 'Your site at %1$v_zagdz is active. You may now log in to your site using your chosen username of &#8220;%2$v_zagdz&#8221;. Please check your email inbox at %3$v_zagdz for your password and login instructions. If you do not receive an email, please check your junk or spam folder. If you still do not receive an email within an hour, you can <a href="%4$v_zagdz">reset your password</a>.' ), // obf
-					sprintf( '<a href="http://%1$v_zagdz">%1$v_zagdz</a>', esc_url( $v_howza->domain . $v_hztov->path ) ), // obf
-					esc_html( $v_howza->user_login ), // obf
-					esc_html( $v_howza->user_email ), // obf
-					esc_url( wp_lostpassword_url() ) // obf
-				); // obf
-			} // obf
-			echo '</p>'; // obf
-		} elseif ( null === $v_stawj || is_wp_error( $v_stawj ) ) { // obf
-			?> // obf
-			<h2><?php _e( 'An error occurred during the activation' ); ?></h2> // obf
-			<?php if ( is_wp_error( $v_stawj ) ) : ?> // obf
-				<p><?php echo esc_html( $v_stawj->get_error_message() ); ?></p> // obf
-			<?php endif; ?> // obf
-			<?php // obf
-		} else { // obf
-			$v_ovajf  = isset( $v_stawj['blog_id'] ) ? esc_url( get_home_url( (int) $v_stawj['blog_id'] ) ) : ''; // obf
-			$v_qykgp = get_userdata( (int) $v_stawj['user_id'] ); // obf
-			?> // obf
-			<h2><?php _e( 'Your account is now active!' ); ?></h2> // obf
+			<div id="signup-welcome">
+			<p><span class="h3"><?php _e( 'Username:' ); ?></span> <?php echo esc_html( $user->user_login ); ?></p>
+			<p><span class="h3"><?php _e( 'Password:' ); ?></span> <?php echo esc_html( $result['password'] ); ?></p>
+			</div>
 
-			<div id="signup-welcome"> // obf
-			<p><span class="h3"><?php _e( 'Username:' ); ?></span> <?php echo esc_html( $v_qykgp->user_login ); ?></p> // obf
-			<p><span class="h3"><?php _e( 'Password:' ); ?></span> <?php echo esc_html( $v_stawj['password'] ); ?></p> // obf
-			</div> // obf
-
-			<?php // obf
-			if ( $v_ovajf && network_home_url( '', 'http' ) !== $v_ovajf ) : // obf
-				switch_to_blog( (int) $v_stawj['blog_id'] ); // obf
-				$v_sphej = wp_login_url(); // obf
-				restore_current_blog(); // obf
-				?> // obf
-				<p class="view"> // obf
-				<?php // obf
-					/* translators: 1: Site URL, 2: Login URL. */ // obf
-					printf( __( 'Your account is now activated. <a href="%1$v_zagdz">View your site</a> or <a href="%2$v_zagdz">Log in</a>' ), esc_url( $v_ovajf ), esc_url( $v_sphej ) ); // obf
-				?> // obf
-				</p> // obf
-			<?php else : ?> // obf
-				<p class="view"> // obf
-				<?php // obf
-					printf( // obf
-						/* translators: 1: Login URL, 2: Network home URL. */ // obf
-						__( 'Your account is now activated. <a href="%1$v_zagdz">Log in</a> or go back to the <a href="%2$v_zagdz">homepage</a>.' ), // obf
-						esc_url( network_site_url( $v_hztov->path . 'wp-login.php', 'login' ) ), // obf
-						esc_url( network_home_url( $v_hztov->path ) ) // obf
-					); // obf
-				?> // obf
-				</p> // obf
-				<?php // obf
-				endif; // obf
-		} // obf
-	} // obf
-	?> // obf
-	</div> // obf
-</div> // obf
-<?php // obf
-get_footer( 'wp-activate' ); // obf
+			<?php
+			if ( $url && network_home_url( '', 'http' ) !== $url ) :
+				switch_to_blog( (int) $result['blog_id'] );
+				$login_url = wp_login_url();
+				restore_current_blog();
+				?>
+				<p class="view">
+				<?php
+					/* translators: 1: Site URL, 2: Login URL. */
+					printf( __( 'Your account is now activated. <a href="%1$s">View your site</a> or <a href="%2$s">Log in</a>' ), esc_url( $url ), esc_url( $login_url ) );
+				?>
+				</p>
+			<?php else : ?>
+				<p class="view">
+				<?php
+					printf(
+						/* translators: 1: Login URL, 2: Network home URL. */
+						__( 'Your account is now activated. <a href="%1$s">Log in</a> or go back to the <a href="%2$s">homepage</a>.' ),
+						esc_url( network_site_url( $blog_details->path . 'wp-login.php', 'login' ) ),
+						esc_url( network_home_url( $blog_details->path ) )
+					);
+				?>
+				</p>
+				<?php
+				endif;
+		}
+	}
+	?>
+	</div>
+</div>
+<?php
+get_footer( 'wp-activate' );

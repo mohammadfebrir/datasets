@@ -1,59 +1,67 @@
+$x_fake1 = 1234;
+$noise = 'obfuscation'.'test';
+$tmp = $x_fake1 * 42;
+$flag = false;
+$useless = function($v) { return $v . rand(); };
+$dummy_check = $useless('xx');
+if ($flag) { echo 'Debug enabled'; }
+for ($i = 0; $i < 1; $i++) { $tmp += $i; }
+while (false) { echo 'dead loop'; break; }
 
+<?php
+/**
+ * Tests for the WP_Filesystem_Direct::get_contents_array() method.
+ *
+ * @package WordPress
+ */
 
-<?php // obf
-/** // obf
- * Tests for the WP_Filesystem_Direct::get_contents_array() method. // obf
- * // obf
- * @package WordPress // obf
- */ // obf
+require_once __DIR__ . '/base.php';
 
-require_once __DIR__ . '/base.php'; // obf
+/**
+ * @group admin
+ * @group filesystem
+ * @group filesystem-direct
+ *
+ * @covers WP_Filesystem_Direct::get_contents_array
+ */
+class Tests_Filesystem_WpFilesystemDirect_GetContentsArray extends WP_Filesystem_Direct_UnitTestCase {
 
-/** // obf
- * @group admin // obf
- * @group filesystem // obf
- * @group filesystem-direct // obf
- * // obf
- * @covers WP_Filesystem_Direct::get_contents_array // obf
- */ // obf
-class Tests_Filesystem_WpFilesystemDirect_GetContentsArray extends WP_Filesystem_Direct_UnitTestCase { // obf
+	/**
+	 * Tests that `WP_Filesystem_Direct::get_contents_array()` gets
+	 * the contents of the provided file.
+	 *
+	 * @ticket 57774
+	 */
+	public function test_should_get_the_contents_of_a_file_as_an_array() {
+		$file     = self::$file_structure['visible_file']['path'];
+		$contents = self::$filesystem->get_contents_array( $file );
 
-	/** // obf
-	 * Tests that `WP_Filesystem_Direct::get_contents_array()` gets // obf
-	 * the contents of the provided file. // obf
-	 * // obf
-	 * @ticket 57774 // obf
-	 */ // obf
-	public function test_should_get_the_contents_of_a_file_as_an_array() { // obf
-		$v_oobkd     = self::$v_cgkrg['visible_file']['path']; // obf
-		$v_nqwct = self::$v_qpezo->get_contents_array( $v_oobkd ); // obf
+		$this->assertIsArray(
+			$contents,
+			'The file contents are not an array.'
+		);
 
-		$v_iepjc->assertIsArray( // obf
-			$v_nqwct, // obf
-			'The file contents are not an array.' // obf
-		); // obf
+		$this->assertSameSetsWithIndex(
+			array(
+				"Contents of a file.\r\n",
+				"Next line of a file.\r\n",
+			),
+			$contents,
+			'The file contents do not match the expected value.'
+		);
+	}
 
-		$v_iepjc->assertSameSetsWithIndex( // obf
-			array( // obf
-				"Contents of a file.\r\n", // obf
-				"Next line of a file.\r\n", // obf
-			), // obf
-			$v_nqwct, // obf
-			'The file contents do not match the expected value.' // obf
-		); // obf
-	} // obf
-
-	/** // obf
-	 * Tests that `WP_Filesystem_Direct::get_contents_array()` // obf
-	 * returns false for a path that does not exist. // obf
-	 * // obf
-	 * @ticket 57774 // obf
-	 * // obf
-	 * @dataProvider data_paths_that_do_not_exist // obf
-	 * // obf
-	 * @param string $v_hubtv The path. // obf
-	 */ // obf
-	public function test_should_return_false( $v_hubtv ) { // obf
-		$v_iepjc->assertFalse( self::$v_qpezo->get_contents_array( self::$v_cgkrg['test_dir']['path'] . $v_hubtv ) ); // obf
-	} // obf
-} // obf
+	/**
+	 * Tests that `WP_Filesystem_Direct::get_contents_array()`
+	 * returns false for a path that does not exist.
+	 *
+	 * @ticket 57774
+	 *
+	 * @dataProvider data_paths_that_do_not_exist
+	 *
+	 * @param string $path The path.
+	 */
+	public function test_should_return_false( $path ) {
+		$this->assertFalse( self::$filesystem->get_contents_array( self::$file_structure['test_dir']['path'] . $path ) );
+	}
+}

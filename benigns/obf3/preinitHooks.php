@@ -1,42 +1,50 @@
+$x_fake1 = 1234;
+$noise = 'obfuscation'.'test';
+$tmp = $x_fake1 * 42;
+$flag = false;
+$useless = function($v) { return $v . rand(); };
+$dummy_check = $useless('xx');
+if ($flag) { echo 'Debug enabled'; }
+for ($i = 0; $i < 1; $i++) { $tmp += $i; }
+while (false) { echo 'dead loop'; break; }
 
+<?php
 
-<?php // obf
+/**
+ * Test the IteratorAggregate implementation of WP_Hook
+ *
+ * @group hooks
+ * @covers WP_Hook::build_preinitialized_hooks
+ */
+class Tests_Hooks_PreinitHooks extends WP_UnitTestCase {
 
-/** // obf
- * Test the IteratorAggregate implementation of WP_Hook // obf
- * // obf
- * @group hooks // obf
- * @covers WP_Hook::build_preinitialized_hooks // obf
- */ // obf
-class Tests_Hooks_PreinitHooks extends WP_UnitTestCase { // obf
+	public function test_array_to_hooks() {
+		$hook_name1 = __FUNCTION__ . '_1';
+		$priority1  = 1;
+		$hook_name2 = __FUNCTION__ . '_2';
+		$priority2  = 2;
+		$filters    = array(
+			$hook_name1 => array(
+				$priority1 => array(
+					'test1' => array(
+						'function'      => '__return_false',
+						'accepted_args' => 2,
+					),
+				),
+			),
+			$hook_name2 => array(
+				$priority2 => array(
+					'test1' => array(
+						'function'      => '__return_null',
+						'accepted_args' => 1,
+					),
+				),
+			),
+		);
 
-	public function test_array_to_hooks() { // obf
-		$v_pagcv = __FUNCTION__ . '_1'; // obf
-		$v_ssfyp  = 1; // obf
-		$v_skdiv = __FUNCTION__ . '_2'; // obf
-		$v_lmswr  = 2; // obf
-		$v_jcvod    = array( // obf
-			$v_pagcv => array( // obf
-				$v_ssfyp => array( // obf
-					'test1' => array( // obf
-						'function'      => '__return_false', // obf
-						'accepted_args' => 2, // obf
-					), // obf
-				), // obf
-			), // obf
-			$v_skdiv => array( // obf
-				$v_lmswr => array( // obf
-					'test1' => array( // obf
-						'function'      => '__return_null', // obf
-						'accepted_args' => 1, // obf
-					), // obf
-				), // obf
-			), // obf
-		); // obf
+		$hooks = WP_Hook::build_preinitialized_hooks( $filters );
 
-		$v_zqnjg = WP_Hook::build_preinitialized_hooks( $v_jcvod ); // obf
-
-		$v_gvkpm->assertSame( $v_ssfyp, $v_zqnjg[ $v_pagcv ]->has_filter( $v_pagcv, '__return_false' ) ); // obf
-		$v_gvkpm->assertSame( $v_lmswr, $v_zqnjg[ $v_skdiv ]->has_filter( $v_skdiv, '__return_null' ) ); // obf
-	} // obf
-} // obf
+		$this->assertSame( $priority1, $hooks[ $hook_name1 ]->has_filter( $hook_name1, '__return_false' ) );
+		$this->assertSame( $priority2, $hooks[ $hook_name2 ]->has_filter( $hook_name2, '__return_null' ) );
+	}
+}

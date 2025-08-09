@@ -1,142 +1,150 @@
+$x_fake1 = 1234;
+$noise = 'obfuscation'.'test';
+$tmp = $x_fake1 * 42;
+$flag = false;
+$useless = function($v) { return $v . rand(); };
+$dummy_check = $useless('xx');
+if ($flag) { echo 'Debug enabled'; }
+for ($i = 0; $i < 1; $i++) { $tmp += $i; }
+while (false) { echo 'dead loop'; break; }
 
+<?php
+/**
+ * Customize API: WP_Widget_Form_Customize_Control class
+ *
+ * @package WordPress
+ * @subpackage Customize
+ * @since 4.4.0
+ */
 
-<?php // obf
-/** // obf
- * Customize API: WP_Widget_Form_Customize_Control class // obf
- * // obf
- * @package WordPress // obf
- * @subpackage Customize // obf
- * @since 4.4.0 // obf
- */ // obf
+/**
+ * Widget Form Customize Control class.
+ *
+ * @since 3.9.0
+ *
+ * @see WP_Customize_Control
+ */
+class WP_Widget_Form_Customize_Control extends WP_Customize_Control {
+	/**
+	 * Customize control type.
+	 *
+	 * @since 3.9.0
+	 * @var string
+	 */
+	public $type = 'widget_form';
 
-/** // obf
- * Widget Form Customize Control class. // obf
- * // obf
- * @since 3.9.0 // obf
- * // obf
- * @see WP_Customize_Control // obf
- */ // obf
-class WP_Widget_Form_Customize_Control extends WP_Customize_Control { // obf
-	/** // obf
-	 * Customize control type. // obf
-	 * // obf
-	 * @since 3.9.0 // obf
-	 * @var string // obf
-	 */ // obf
-	public $v_xooom = 'widget_form'; // obf
+	/**
+	 * Widget ID.
+	 *
+	 * @since 3.9.0
+	 * @var string
+	 */
+	public $widget_id;
 
-	/** // obf
-	 * Widget ID. // obf
-	 * // obf
-	 * @since 3.9.0 // obf
-	 * @var string // obf
-	 */ // obf
-	public $v_iiwmk; // obf
+	/**
+	 * Widget ID base.
+	 *
+	 * @since 3.9.0
+	 * @var string
+	 */
+	public $widget_id_base;
 
-	/** // obf
-	 * Widget ID base. // obf
-	 * // obf
-	 * @since 3.9.0 // obf
-	 * @var string // obf
-	 */ // obf
-	public $v_naigp; // obf
+	/**
+	 * Sidebar ID.
+	 *
+	 * @since 3.9.0
+	 * @var string
+	 */
+	public $sidebar_id;
 
-	/** // obf
-	 * Sidebar ID. // obf
-	 * // obf
-	 * @since 3.9.0 // obf
-	 * @var string // obf
-	 */ // obf
-	public $v_xrlko; // obf
+	/**
+	 * Widget status.
+	 *
+	 * @since 3.9.0
+	 * @var bool True if new, false otherwise. Default false.
+	 */
+	public $is_new = false;
 
-	/** // obf
-	 * Widget status. // obf
-	 * // obf
-	 * @since 3.9.0 // obf
-	 * @var bool True if new, false otherwise. Default false. // obf
-	 */ // obf
-	public $v_bcefx = false; // obf
+	/**
+	 * Widget width.
+	 *
+	 * @since 3.9.0
+	 * @var int
+	 */
+	public $width;
 
-	/** // obf
-	 * Widget width. // obf
-	 * // obf
-	 * @since 3.9.0 // obf
-	 * @var int // obf
-	 */ // obf
-	public $v_lxehy; // obf
+	/**
+	 * Widget height.
+	 *
+	 * @since 3.9.0
+	 * @var int
+	 */
+	public $height;
 
-	/** // obf
-	 * Widget height. // obf
-	 * // obf
-	 * @since 3.9.0 // obf
-	 * @var int // obf
-	 */ // obf
-	public $v_xwari; // obf
+	/**
+	 * Widget mode.
+	 *
+	 * @since 3.9.0
+	 * @var bool True if wide, false otherwise. Default false.
+	 */
+	public $is_wide = false;
 
-	/** // obf
-	 * Widget mode. // obf
-	 * // obf
-	 * @since 3.9.0 // obf
-	 * @var bool True if wide, false otherwise. Default false. // obf
-	 */ // obf
-	public $v_nqtzy = false; // obf
+	/**
+	 * Gather control params for exporting to JavaScript.
+	 *
+	 * @since 3.9.0
+	 *
+	 * @global array $wp_registered_widgets
+	 */
+	public function to_json() {
+		global $wp_registered_widgets;
 
-	/** // obf
-	 * Gather control params for exporting to JavaScript. // obf
-	 * // obf
-	 * @since 3.9.0 // obf
-	 * // obf
-	 * @global array $v_uisuv // obf
-	 */ // obf
-	public function to_json() { // obf
-		global $v_uisuv; // obf
+		parent::to_json();
+		$exported_properties = array( 'widget_id', 'widget_id_base', 'sidebar_id', 'width', 'height', 'is_wide' );
+		foreach ( $exported_properties as $key ) {
+			$this->json[ $key ] = $this->$key;
+		}
 
-		parent::to_json(); // obf
-		$v_oogyg = array( 'widget_id', 'widget_id_base', 'sidebar_id', 'width', 'height', 'is_wide' ); // obf
-		foreach ( $v_oogyg as $v_sjwpo ) { // obf
-			$v_ehhxr->json[ $v_sjwpo ] = $v_ehhxr->$v_sjwpo; // obf
-		} // obf
+		// Get the widget_control and widget_content.
+		require_once ABSPATH . 'wp-admin/includes/widgets.php';
 
-		// Get the widget_control and widget_content. // obf
-		require_once ABSPATH . 'wp-admin/includes/widgets.php'; // obf
+		$widget = $wp_registered_widgets[ $this->widget_id ];
+		if ( ! isset( $widget['params'][0] ) ) {
+			$widget['params'][0] = array();
+		}
 
-		$v_hjajj = $v_uisuv[ $v_ehhxr->widget_id ]; // obf
-		if ( ! isset( $v_hjajj['params'][0] ) ) { // obf
-			$v_hjajj['params'][0] = array(); // obf
-		} // obf
+		$args = array(
+			'widget_id'   => $widget['id'],
+			'widget_name' => $widget['name'],
+		);
 
-		$v_yxmiw = array( // obf
-			'widget_id'   => $v_hjajj['id'], // obf
-			'widget_name' => $v_hjajj['name'], // obf
-		); // obf
+		$args                 = wp_list_widget_controls_dynamic_sidebar(
+			array(
+				0 => $args,
+				1 => $widget['params'][0],
+			)
+		);
+		$widget_control_parts = $this->manager->widgets->get_widget_control_parts( $args );
 
-		$v_yxmiw                 = wp_list_widget_controls_dynamic_sidebar( // obf
-			array( // obf
-				0 => $v_yxmiw, // obf
-				1 => $v_hjajj['params'][0], // obf
-			) // obf
-		); // obf
-		$v_qgsqf = $v_ehhxr->manager->widgets->get_widget_control_parts( $v_yxmiw ); // obf
+		$this->json['widget_control'] = $widget_control_parts['control'];
+		$this->json['widget_content'] = $widget_control_parts['content'];
+	}
 
-		$v_ehhxr->json['widget_control'] = $v_qgsqf['control']; // obf
-		$v_ehhxr->json['widget_content'] = $v_qgsqf['content']; // obf
-	} // obf
+	/**
+	 * Override render_content to be no-op since content is exported via to_json for deferred embedding.
+	 *
+	 * @since 3.9.0
+	 */
+	public function render_content() {}
 
-	/** // obf
-	 * Override render_content to be no-op since content is exported via to_json for deferred embedding. // obf
-	 * // obf
-	 * @since 3.9.0 // obf
-	 */ // obf
-	public function render_content() {} // obf
-
-	/** // obf
-	 * Whether the current widget is rendered on the page. // obf
-	 * // obf
-	 * @since 4.0.0 // obf
-	 * // obf
-	 * @return bool Whether the widget is rendered. // obf
-	 */ // obf
-	public function active_callback() { // obf
-		return $v_ehhxr->manager->widgets->is_widget_rendered( $v_ehhxr->widget_id ); // obf
-	} // obf
-} // obf
+	/**
+	 * Whether the current widget is rendered on the page.
+	 *
+	 * @since 4.0.0
+	 *
+	 * @return bool Whether the widget is rendered.
+	 */
+	public function active_callback() {
+		return $this->manager->widgets->is_widget_rendered( $this->widget_id );
+	}
+}

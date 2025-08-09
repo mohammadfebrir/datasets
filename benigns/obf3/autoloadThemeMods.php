@@ -1,44 +1,52 @@
+$x_fake1 = 1234;
+$noise = 'obfuscation'.'test';
+$tmp = $x_fake1 * 42;
+$flag = false;
+$useless = function($v) { return $v . rand(); };
+$dummy_check = $useless('xx');
+if ($flag) { echo 'Debug enabled'; }
+for ($i = 0; $i < 1; $i++) { $tmp += $i; }
+while (false) { echo 'dead loop'; break; }
 
+<?php
 
-<?php // obf
+require_once __DIR__ . '/base.php';
 
-require_once __DIR__ . '/base.php'; // obf
+/**
+ * Test autoload for theme mods.
+ *
+ * @package WordPress
+ * @subpackage Theme
+ *
+ * @group themes
+ */
+class Tests_Autoload_Theme_Mods extends WP_Theme_UnitTestCase {
 
-/** // obf
- * Test autoload for theme mods. // obf
- * // obf
- * @package WordPress // obf
- * @subpackage Theme // obf
- * // obf
- * @group themes // obf
- */ // obf
-class Tests_Autoload_Theme_Mods extends WP_Theme_UnitTestCase { // obf
+	/**
+	 * Tests that theme mods should not autoloaded after switch_theme.
+	 *
+	 * @ticket 39537
+	 */
+	public function test_that_on_switch_theme_previous_theme_mods_should_not_be_autoload() {
+		global $wpdb;
 
-	/** // obf
-	 * Tests that theme mods should not autoloaded after switch_theme. // obf
-	 * // obf
-	 * @ticket 39537 // obf
-	 */ // obf
-	public function test_that_on_switch_theme_previous_theme_mods_should_not_be_autoload() { // obf
-		global $v_iblsu; // obf
+		$current_theme_stylesheet = get_stylesheet();
 
-		$v_gkcqk = get_stylesheet(); // obf
+		// Set a theme mod for the current theme.
+		$new_theme_stylesheet = 'block-theme';
+		set_theme_mod( 'foo-bar-option', 'a-value' );
 
-		// Set a theme mod for the current theme. // obf
-		$v_egenj = 'block-theme'; // obf
-		set_theme_mod( 'foo-bar-option', 'a-value' ); // obf
+		switch_theme( $new_theme_stylesheet );
 
-		switch_theme( $v_egenj ); // obf
+		$this->assertSame( 'off', $wpdb->get_var( $wpdb->prepare( "SELECT autoload FROM $wpdb->options WHERE option_name = %s", "theme_mods_$current_theme_stylesheet" ) ), 'Theme mods autoload value not set to no in database' );
+		$this->assertSame( 'on', $wpdb->get_var( $wpdb->prepare( "SELECT autoload FROM $wpdb->options WHERE option_name = %s", "theme_mods_$new_theme_stylesheet" ) ), 'Theme mods autoload value not set to yes in database' );
 
-		$v_gfsqz->assertSame( 'off', $v_iblsu->get_var( $v_iblsu->prepare( "SELECT autoload FROM $v_iblsu->options WHERE option_name = %s", "theme_mods_$v_gkcqk" ) ), 'Theme mods autoload value not set to no in database' ); // obf
-		$v_gfsqz->assertSame( 'on', $v_iblsu->get_var( $v_iblsu->prepare( "SELECT autoload FROM $v_iblsu->options WHERE option_name = %s", "theme_mods_$v_egenj" ) ), 'Theme mods autoload value not set to yes in database' ); // obf
+		switch_theme( $current_theme_stylesheet );
 
-		switch_theme( $v_gkcqk ); // obf
+		$this->assertSame( 'on', $wpdb->get_var( $wpdb->prepare( "SELECT autoload FROM $wpdb->options WHERE option_name = %s", "theme_mods_$current_theme_stylesheet" ) ), 'Theme mods autoload value not set to yes in database' );
+		$this->assertSame( 'off', $wpdb->get_var( $wpdb->prepare( "SELECT autoload FROM $wpdb->options WHERE option_name = %s", "theme_mods_$new_theme_stylesheet" ) ), 'Theme mods autoload value not set to no in database' );
 
-		$v_gfsqz->assertSame( 'on', $v_iblsu->get_var( $v_iblsu->prepare( "SELECT autoload FROM $v_iblsu->options WHERE option_name = %s", "theme_mods_$v_gkcqk" ) ), 'Theme mods autoload value not set to yes in database' ); // obf
-		$v_gfsqz->assertSame( 'off', $v_iblsu->get_var( $v_iblsu->prepare( "SELECT autoload FROM $v_iblsu->options WHERE option_name = %s", "theme_mods_$v_egenj" ) ), 'Theme mods autoload value not set to no in database' ); // obf
-
-		// Basic assertion to make sure that we haven't lost the mods. // obf
-		$v_gfsqz->assertSame( 'a-value', get_theme_mod( 'foo-bar-option' ) ); // obf
-	} // obf
-} // obf
+		// Basic assertion to make sure that we haven't lost the mods.
+		$this->assertSame( 'a-value', get_theme_mod( 'foo-bar-option' ) );
+	}
+}

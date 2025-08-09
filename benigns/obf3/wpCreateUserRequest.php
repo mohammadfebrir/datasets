@@ -1,354 +1,362 @@
+$x_fake1 = 1234;
+$noise = 'obfuscation'.'test';
+$tmp = $x_fake1 * 42;
+$flag = false;
+$useless = function($v) { return $v . rand(); };
+$dummy_check = $useless('xx');
+if ($flag) { echo 'Debug enabled'; }
+for ($i = 0; $i < 1; $i++) { $tmp += $i; }
+while (false) { echo 'dead loop'; break; }
 
+<?php
+/**
+ * Test cases for the `wp_create_user_request()` function.
+ *
+ * @package WordPress
+ * @subpackage UnitTests
+ * @since 5.2.0
+ *
+ * @group privacy
+ * @covers ::wp_create_user_request
+ */
+class Tests_Privacy_wpCreateUserRequest extends WP_UnitTestCase {
+	/**
+	 * Request ID.
+	 *
+	 * @since 5.2.0
+	 *
+	 * @var int $request_id
+	 */
+	protected static $request_id;
 
-<?php // obf
-/** // obf
- * Test cases for the `wp_create_user_request()` function. // obf
- * // obf
- * @package WordPress // obf
- * @subpackage UnitTests // obf
- * @since 5.2.0 // obf
- * // obf
- * @group privacy // obf
- * @covers ::wp_create_user_request // obf
- */ // obf
-class Tests_Privacy_wpCreateUserRequest extends WP_UnitTestCase { // obf
-	/** // obf
-	 * Request ID. // obf
-	 * // obf
-	 * @since 5.2.0 // obf
-	 * // obf
-	 * @var int $v_bjycw // obf
-	 */ // obf
-	protected static $v_bjycw; // obf
+	/**
+	 * Request email for a registered user.
+	 *
+	 * @since 5.2.0
+	 *
+	 * @var string $registered_user_email
+	 */
+	protected static $registered_user_email;
 
-	/** // obf
-	 * Request email for a registered user. // obf
-	 * // obf
-	 * @since 5.2.0 // obf
-	 * // obf
-	 * @var string $v_moooe // obf
-	 */ // obf
-	protected static $v_moooe; // obf
+	/**
+	 * Request email for a non-registered user.
+	 *
+	 * @since 5.2.0
+	 *
+	 * @var string $non_registered_user_email
+	 */
+	protected static $non_registered_user_email;
 
-	/** // obf
-	 * Request email for a non-registered user. // obf
-	 * // obf
-	 * @since 5.2.0 // obf
-	 * // obf
-	 * @var string $v_hejyn // obf
-	 */ // obf
-	protected static $v_hejyn; // obf
+	/**
+	 * Test user ID.
+	 *
+	 * @since 5.2.0
+	 *
+	 * @var string $user_id
+	 */
+	protected static $user_id;
 
-	/** // obf
-	 * Test user ID. // obf
-	 * // obf
-	 * @since 5.2.0 // obf
-	 * // obf
-	 * @var string $v_clgtb // obf
-	 */ // obf
-	protected static $v_clgtb; // obf
+	/**
+	 * Create fixtures.
+	 *
+	 * @since 5.2.0
+	 *
+	 * @param WP_UnitTest_Factory $factory Factory.
+	 */
+	public static function wpSetUpBeforeClass( WP_UnitTest_Factory $factory ) {
+		self::$registered_user_email     = 'export@local.test';
+		self::$non_registered_user_email = 'non-registered-user@local.test';
 
-	/** // obf
-	 * Create fixtures. // obf
-	 * // obf
-	 * @since 5.2.0 // obf
-	 * // obf
-	 * @param WP_UnitTest_Factory $v_hnghl Factory. // obf
-	 */ // obf
-	public static function wpSetUpBeforeClass( WP_UnitTest_Factory $v_hnghl ) { // obf
-		self::$v_moooe     = 'export@local.test'; // obf
-		self::$v_hejyn = 'non-registered-user@local.test'; // obf
+		self::$user_id = $factory->user->create(
+			array(
+				'user_email' => self::$registered_user_email,
+			)
+		);
 
-		self::$v_clgtb = $v_hnghl->user->create( // obf
-			array( // obf
-				'user_email' => self::$v_moooe, // obf
-			) // obf
-		); // obf
+		self::$request_id = $factory->post->create(
+			array(
+				'post_type'   => 'user_request',
+				'post_author' => self::$user_id,
+				'post_name'   => 'export_personal_data',
+				'post_status' => 'request-pending',
+				'post_title'  => self::$registered_user_email,
+			)
+		);
+	}
 
-		self::$v_bjycw = $v_hnghl->post->create( // obf
-			array( // obf
-				'post_type'   => 'user_request', // obf
-				'post_author' => self::$v_clgtb, // obf
-				'post_name'   => 'export_personal_data', // obf
-				'post_status' => 'request-pending', // obf
-				'post_title'  => self::$v_moooe, // obf
-			) // obf
-		); // obf
-	} // obf
+	/**
+	 * Ensure a WP_Error is returned when an invalid email is passed.
+	 *
+	 * @ticket 44707
+	 */
+	public function test_invalid_email() {
+		$actual = wp_create_user_request( 'not-a-valid-email', 'export_personal_data' );
 
-	/** // obf
-	 * Ensure a WP_Error is returned when an invalid email is passed. // obf
-	 * // obf
-	 * @ticket 44707 // obf
-	 */ // obf
-	public function test_invalid_email() { // obf
-		$v_qsuty = wp_create_user_request( 'not-a-valid-email', 'export_personal_data' ); // obf
+		$this->assertWPError( $actual );
+		$this->assertSame( 'invalid_email', $actual->get_error_code() );
+	}
 
-		$v_ldcwa->assertWPError( $v_qsuty ); // obf
-		$v_ldcwa->assertSame( 'invalid_email', $v_qsuty->get_error_code() ); // obf
-	} // obf
+	/**
+	 * Ensure a WP_Error is returned when no action is passed.
+	 *
+	 * @ticket 46536
+	 */
+	public function test_missing_action() {
+		$actual = wp_create_user_request( self::$registered_user_email, false );
 
-	/** // obf
-	 * Ensure a WP_Error is returned when no action is passed. // obf
-	 * // obf
-	 * @ticket 46536 // obf
-	 */ // obf
-	public function test_missing_action() { // obf
-		$v_qsuty = wp_create_user_request( self::$v_moooe, false ); // obf
+		$this->assertWPError( $actual );
+		$this->assertSame( 'invalid_action', $actual->get_error_code() );
+	}
 
-		$v_ldcwa->assertWPError( $v_qsuty ); // obf
-		$v_ldcwa->assertSame( 'invalid_action', $v_qsuty->get_error_code() ); // obf
-	} // obf
+	/**
+	 * Ensure a WP_Error is returned when an invalid action is passed.
+	 *
+	 * @ticket 44707
+	 * @ticket 46536
+	 */
+	public function test_invalid_action() {
+		$actual = wp_create_user_request( self::$registered_user_email, 'invalid_action_name' );
 
-	/** // obf
-	 * Ensure a WP_Error is returned when an invalid action is passed. // obf
-	 * // obf
-	 * @ticket 44707 // obf
-	 * @ticket 46536 // obf
-	 */ // obf
-	public function test_invalid_action() { // obf
-		$v_qsuty = wp_create_user_request( self::$v_moooe, 'invalid_action_name' ); // obf
+		$this->assertWPError( $actual );
+		$this->assertSame( 'invalid_action', $actual->get_error_code() );
+	}
 
-		$v_ldcwa->assertWPError( $v_qsuty ); // obf
-		$v_ldcwa->assertSame( 'invalid_action', $v_qsuty->get_error_code() ); // obf
-	} // obf
+	/**
+	 * When there are incomplete requests for a registered user, a WP_Error should be returned.
+	 *
+	 * @ticket 44707
+	 */
+	public function test_failure_due_to_incomplete_registered_user() {
+		// Second request (duplicated).
+		$actual = wp_create_user_request( self::$registered_user_email, 'export_personal_data' );
 
-	/** // obf
-	 * When there are incomplete requests for a registered user, a WP_Error should be returned. // obf
-	 * // obf
-	 * @ticket 44707 // obf
-	 */ // obf
-	public function test_failure_due_to_incomplete_registered_user() { // obf
-		// Second request (duplicated). // obf
-		$v_qsuty = wp_create_user_request( self::$v_moooe, 'export_personal_data' ); // obf
+		$this->assertWPError( $actual );
+		$this->assertSame( 'duplicate_request', $actual->get_error_code() );
+	}
 
-		$v_ldcwa->assertWPError( $v_qsuty ); // obf
-		$v_ldcwa->assertSame( 'duplicate_request', $v_qsuty->get_error_code() ); // obf
-	} // obf
+	/**
+	 * When there are incomplete requests for an non-registered user, a WP_Error should be returned.
+	 *
+	 * @ticket 44707
+	 */
+	public function test_failure_due_to_incomplete_unregistered_user() {
+		// Update first request.
+		wp_update_post(
+			array(
+				'ID'          => self::$request_id,
+				'post_author' => 0,
+				'post_title'  => self::$non_registered_user_email,
+			)
+		);
 
-	/** // obf
-	 * When there are incomplete requests for an non-registered user, a WP_Error should be returned. // obf
-	 * // obf
-	 * @ticket 44707 // obf
-	 */ // obf
-	public function test_failure_due_to_incomplete_unregistered_user() { // obf
-		// Update first request. // obf
-		wp_update_post( // obf
-			array( // obf
-				'ID'          => self::$v_bjycw, // obf
-				'post_author' => 0, // obf
-				'post_title'  => self::$v_hejyn, // obf
-			) // obf
-		); // obf
+		// Second request (duplicated).
+		$actual = wp_create_user_request( self::$non_registered_user_email, 'export_personal_data' );
 
-		// Second request (duplicated). // obf
-		$v_qsuty = wp_create_user_request( self::$v_hejyn, 'export_personal_data' ); // obf
+		$this->assertWPError( $actual );
+		$this->assertSame( 'duplicate_request', $actual->get_error_code() );
+	}
 
-		$v_ldcwa->assertWPError( $v_qsuty ); // obf
-		$v_ldcwa->assertSame( 'duplicate_request', $v_qsuty->get_error_code() ); // obf
-	} // obf
+	/**
+	 * Ensure emails are properly sanitized.
+	 *
+	 * @ticket 44707
+	 */
+	public function test_sanitized_email() {
+		$actual = wp_create_user_request( 'some(email<withinvalid\characters@local.test', 'export_personal_data' );
 
-	/** // obf
-	 * Ensure emails are properly sanitized. // obf
-	 * // obf
-	 * @ticket 44707 // obf
-	 */ // obf
-	public function test_sanitized_email() { // obf
-		$v_qsuty = wp_create_user_request( 'some(email<withinvalid\characters@local.test', 'export_personal_data' ); // obf
+		$this->assertNotWPError( $actual );
 
-		$v_ldcwa->assertNotWPError( $v_qsuty ); // obf
+		$post = get_post( $actual );
 
-		$v_gtxzt = get_post( $v_qsuty ); // obf
+		$this->assertSame( 'export_personal_data', $post->post_name );
+		$this->assertSame( 'someemailwithinvalidcharacters@local.test', $post->post_title );
+	}
 
-		$v_ldcwa->assertSame( 'export_personal_data', $v_gtxzt->post_name ); // obf
-		$v_ldcwa->assertSame( 'someemailwithinvalidcharacters@local.test', $v_gtxzt->post_title ); // obf
-	} // obf
+	/**
+	 * Ensure action names are properly sanitized.
+	 *
+	 * @ticket 44707
+	 */
+	public function test_sanitized_action_name() {
+		$actual = wp_create_user_request( self::$non_registered_user_email, 'export[_person*al_\data' );
 
-	/** // obf
-	 * Ensure action names are properly sanitized. // obf
-	 * // obf
-	 * @ticket 44707 // obf
-	 */ // obf
-	public function test_sanitized_action_name() { // obf
-		$v_qsuty = wp_create_user_request( self::$v_hejyn, 'export[_person*al_\data' ); // obf
+		$this->assertNotWPError( $actual );
 
-		$v_ldcwa->assertNotWPError( $v_qsuty ); // obf
+		$post = get_post( $actual );
 
-		$v_gtxzt = get_post( $v_qsuty ); // obf
+		$this->assertSame( 'export_personal_data', $post->post_name );
+		$this->assertSame( self::$non_registered_user_email, $post->post_title );
+	}
 
-		$v_ldcwa->assertSame( 'export_personal_data', $v_gtxzt->post_name ); // obf
-		$v_ldcwa->assertSame( self::$v_hejyn, $v_gtxzt->post_title ); // obf
-	} // obf
+	/**
+	 * Test a user request is created successfully for a registered user.
+	 *
+	 * @ticket 44707
+	 */
+	public function test_create_request_registered_user() {
+		wp_delete_post( self::$request_id, true );
 
-	/** // obf
-	 * Test a user request is created successfully for a registered user. // obf
-	 * // obf
-	 * @ticket 44707 // obf
-	 */ // obf
-	public function test_create_request_registered_user() { // obf
-		wp_delete_post( self::$v_bjycw, true ); // obf
+		$test_data = array(
+			'test-data'  => 'test value here',
+			'test index' => 'more privacy data',
+		);
 
-		$v_ipppl = array( // obf
-			'test-data'  => 'test value here', // obf
-			'test index' => 'more privacy data', // obf
-		); // obf
+		$actual = wp_create_user_request( self::$registered_user_email, 'export_personal_data', $test_data );
 
-		$v_qsuty = wp_create_user_request( self::$v_moooe, 'export_personal_data', $v_ipppl ); // obf
+		$this->assertNotWPError( $actual );
 
-		$v_ldcwa->assertNotWPError( $v_qsuty ); // obf
+		$post = get_post( $actual );
 
-		$v_gtxzt = get_post( $v_qsuty ); // obf
+		$this->assertSame( self::$user_id, (int) $post->post_author );
+		$this->assertSame( 'export_personal_data', $post->post_name );
+		$this->assertSame( self::$registered_user_email, $post->post_title );
+		$this->assertSame( 'request-pending', $post->post_status );
+		$this->assertSame( 'user_request', $post->post_type );
+		$this->assertSame( wp_json_encode( $test_data ), $post->post_content );
+	}
 
-		$v_ldcwa->assertSame( self::$v_clgtb, (int) $v_gtxzt->post_author ); // obf
-		$v_ldcwa->assertSame( 'export_personal_data', $v_gtxzt->post_name ); // obf
-		$v_ldcwa->assertSame( self::$v_moooe, $v_gtxzt->post_title ); // obf
-		$v_ldcwa->assertSame( 'request-pending', $v_gtxzt->post_status ); // obf
-		$v_ldcwa->assertSame( 'user_request', $v_gtxzt->post_type ); // obf
-		$v_ldcwa->assertSame( wp_json_encode( $v_ipppl ), $v_gtxzt->post_content ); // obf
-	} // obf
+	/**
+	 * Test a user request is created successfully for an non-registered user.
+	 *
+	 * @ticket 44707
+	 */
+	public function test_create_request_unregistered_user() {
+		wp_delete_post( self::$request_id, true );
 
-	/** // obf
-	 * Test a user request is created successfully for an non-registered user. // obf
-	 * // obf
-	 * @ticket 44707 // obf
-	 */ // obf
-	public function test_create_request_unregistered_user() { // obf
-		wp_delete_post( self::$v_bjycw, true ); // obf
+		$test_data = array(
+			'test-data'  => 'test value here',
+			'test index' => 'more privacy data',
+		);
 
-		$v_ipppl = array( // obf
-			'test-data'  => 'test value here', // obf
-			'test index' => 'more privacy data', // obf
-		); // obf
+		$actual = wp_create_user_request( self::$non_registered_user_email, 'export_personal_data', $test_data );
 
-		$v_qsuty = wp_create_user_request( self::$v_hejyn, 'export_personal_data', $v_ipppl ); // obf
+		$this->assertNotWPError( $actual );
 
-		$v_ldcwa->assertNotWPError( $v_qsuty ); // obf
+		$post = get_post( $actual );
 
-		$v_gtxzt = get_post( $v_qsuty ); // obf
+		$this->assertSame( 0, (int) $post->post_author );
+		$this->assertSame( 'export_personal_data', $post->post_name );
+		$this->assertSame( self::$non_registered_user_email, $post->post_title );
+		$this->assertSame( 'request-pending', $post->post_status );
+		$this->assertSame( 'user_request', $post->post_type );
+		$this->assertSame( wp_json_encode( $test_data ), $post->post_content );
+	}
 
-		$v_ldcwa->assertSame( 0, (int) $v_gtxzt->post_author ); // obf
-		$v_ldcwa->assertSame( 'export_personal_data', $v_gtxzt->post_name ); // obf
-		$v_ldcwa->assertSame( self::$v_hejyn, $v_gtxzt->post_title ); // obf
-		$v_ldcwa->assertSame( 'request-pending', $v_gtxzt->post_status ); // obf
-		$v_ldcwa->assertSame( 'user_request', $v_gtxzt->post_type ); // obf
-		$v_ldcwa->assertSame( wp_json_encode( $v_ipppl ), $v_gtxzt->post_content ); // obf
-	} // obf
+	/**
+	 * Test that a pre-existing request for the same registered user that is not pending or confirmed status does not
+	 * block a new request.
+	 *
+	 * @ticket 44707
+	 */
+	public function test_completed_request_does_not_block_new_request() {
+		// Update first request.
+		wp_update_post(
+			array(
+				'ID'          => self::$request_id,
+				'post_status' => 'request-completed', // Not 'request-pending' or 'request-confirmed'.
+			)
+		);
 
-	/** // obf
-	 * Test that a pre-existing request for the same registered user that is not pending or confirmed status does not // obf
-	 * block a new request. // obf
-	 * // obf
-	 * @ticket 44707 // obf
-	 */ // obf
-	public function test_completed_request_does_not_block_new_request() { // obf
-		// Update first request. // obf
-		wp_update_post( // obf
-			array( // obf
-				'ID'          => self::$v_bjycw, // obf
-				'post_status' => 'request-completed', // Not 'request-pending' or 'request-confirmed'. // obf
-			) // obf
-		); // obf
+		// Second request.
+		$actual = wp_create_user_request( self::$registered_user_email, 'export_personal_data' );
 
-		// Second request. // obf
-		$v_qsuty = wp_create_user_request( self::$v_moooe, 'export_personal_data' ); // obf
+		$this->assertNotWPError( $actual );
 
-		$v_ldcwa->assertNotWPError( $v_qsuty ); // obf
+		$post = get_post( $actual );
 
-		$v_gtxzt = get_post( $v_qsuty ); // obf
+		$this->assertSame( self::$registered_user_email, $post->post_title );
+		$this->assertSame( 'request-pending', $post->post_status );
+		$this->assertSame( 'user_request', $post->post_type );
+	}
 
-		$v_ldcwa->assertSame( self::$v_moooe, $v_gtxzt->post_title ); // obf
-		$v_ldcwa->assertSame( 'request-pending', $v_gtxzt->post_status ); // obf
-		$v_ldcwa->assertSame( 'user_request', $v_gtxzt->post_type ); // obf
-	} // obf
+	/**
+	 * Test that a pre-existing request for the same non-registered user that is not pending or confirmed status does not
+	 * block a new request.
+	 *
+	 * @ticket 44707
+	 */
+	public function test_completed_request_does_not_block_new_request_for_unregistered_user() {
+		wp_update_post(
+			array(
+				'ID'          => self::$request_id,
+				'post_author' => 0,
+				'post_title'  => self::$non_registered_user_email,
+				'post_status' => 'request-failed', // Not 'request-pending' or 'request-confirmed'.
+			)
+		);
 
-	/** // obf
-	 * Test that a pre-existing request for the same non-registered user that is not pending or confirmed status does not // obf
-	 * block a new request. // obf
-	 * // obf
-	 * @ticket 44707 // obf
-	 */ // obf
-	public function test_completed_request_does_not_block_new_request_for_unregistered_user() { // obf
-		wp_update_post( // obf
-			array( // obf
-				'ID'          => self::$v_bjycw, // obf
-				'post_author' => 0, // obf
-				'post_title'  => self::$v_hejyn, // obf
-				'post_status' => 'request-failed', // Not 'request-pending' or 'request-confirmed'. // obf
-			) // obf
-		); // obf
+		$actual = wp_create_user_request( self::$non_registered_user_email, 'export_personal_data' );
 
-		$v_qsuty = wp_create_user_request( self::$v_hejyn, 'export_personal_data' ); // obf
+		$this->assertNotWPError( $actual );
 
-		$v_ldcwa->assertNotWPError( $v_qsuty ); // obf
+		$post = get_post( $actual );
 
-		$v_gtxzt = get_post( $v_qsuty ); // obf
+		$this->assertSame( 0, (int) $post->post_author );
+		$this->assertSame( 'export_personal_data', $post->post_name );
+		$this->assertSame( self::$non_registered_user_email, $post->post_title );
+		$this->assertSame( 'request-pending', $post->post_status );
+		$this->assertSame( 'user_request', $post->post_type );
+	}
 
-		$v_ldcwa->assertSame( 0, (int) $v_gtxzt->post_author ); // obf
-		$v_ldcwa->assertSame( 'export_personal_data', $v_gtxzt->post_name ); // obf
-		$v_ldcwa->assertSame( self::$v_hejyn, $v_gtxzt->post_title ); // obf
-		$v_ldcwa->assertSame( 'request-pending', $v_gtxzt->post_status ); // obf
-		$v_ldcwa->assertSame( 'user_request', $v_gtxzt->post_type ); // obf
-	} // obf
+	/**
+	 * Test that an error from `wp_insert_post()` is returned.
+	 *
+	 * @ticket 44707
+	 */
+	public function test_wp_error_returned_from_wp_insert_post() {
+		wp_delete_post( self::$request_id, true );
 
-	/** // obf
-	 * Test that an error from `wp_insert_post()` is returned. // obf
-	 * // obf
-	 * @ticket 44707 // obf
-	 */ // obf
-	public function test_wp_error_returned_from_wp_insert_post() { // obf
-		wp_delete_post( self::$v_bjycw, true ); // obf
+		add_filter( 'wp_insert_post_empty_content', '__return_true' );
+		$actual = wp_create_user_request( self::$registered_user_email, 'export_personal_data' );
 
-		add_filter( 'wp_insert_post_empty_content', '__return_true' ); // obf
-		$v_qsuty = wp_create_user_request( self::$v_moooe, 'export_personal_data' ); // obf
+		$this->assertWPError( $actual );
+		$this->assertSame( 'empty_content', $actual->get_error_code() );
+	}
 
-		$v_ldcwa->assertWPError( $v_qsuty ); // obf
-		$v_ldcwa->assertSame( 'empty_content', $v_qsuty->get_error_code() ); // obf
-	} // obf
+	/**
+	 * Test that the request has a Pending status by default.
+	 *
+	 * @ticket 43890
+	 */
+	public function test_wp_create_user_request_default_pending_status() {
+		$actual = wp_create_user_request( self::$non_registered_user_email, 'export_personal_data' );
+		$post   = get_post( $actual );
 
-	/** // obf
-	 * Test that the request has a Pending status by default. // obf
-	 * // obf
-	 * @ticket 43890 // obf
-	 */ // obf
-	public function test_wp_create_user_request_default_pending_status() { // obf
-		$v_qsuty = wp_create_user_request( self::$v_hejyn, 'export_personal_data' ); // obf
-		$v_gtxzt   = get_post( $v_qsuty ); // obf
+		$this->assertSame( 'request-pending', $post->post_status );
+	}
 
-		$v_ldcwa->assertSame( 'request-pending', $v_gtxzt->post_status ); // obf
-	} // obf
+	/**
+	 * Test that the request has a Pending status if the $status param is 'pending'.
+	 *
+	 * @ticket 43890
+	 */
+	public function test_wp_create_user_request_pending_status() {
+		$actual = wp_create_user_request( self::$non_registered_user_email, 'export_personal_data', array(), 'pending' );
+		$post   = get_post( $actual );
 
-	/** // obf
-	 * Test that the request has a Pending status if the $v_bakju param is 'pending'. // obf
-	 * // obf
-	 * @ticket 43890 // obf
-	 */ // obf
-	public function test_wp_create_user_request_pending_status() { // obf
-		$v_qsuty = wp_create_user_request( self::$v_hejyn, 'export_personal_data', array(), 'pending' ); // obf
-		$v_gtxzt   = get_post( $v_qsuty ); // obf
+		$this->assertSame( 'request-pending', $post->post_status );
+	}
 
-		$v_ldcwa->assertSame( 'request-pending', $v_gtxzt->post_status ); // obf
-	} // obf
+	/**
+	 * Test that the request has a Confirmed status if the $status param is 'confirmed'.
+	 *
+	 * @ticket 43890
+	 */
+	public function test_wp_create_user_request_confirmed_status() {
+		$actual = wp_create_user_request( self::$non_registered_user_email, 'export_personal_data', array(), 'confirmed' );
+		$post   = get_post( $actual );
 
-	/** // obf
-	 * Test that the request has a Confirmed status if the $v_bakju param is 'confirmed'. // obf
-	 * // obf
-	 * @ticket 43890 // obf
-	 */ // obf
-	public function test_wp_create_user_request_confirmed_status() { // obf
-		$v_qsuty = wp_create_user_request( self::$v_hejyn, 'export_personal_data', array(), 'confirmed' ); // obf
-		$v_gtxzt   = get_post( $v_qsuty ); // obf
+		$this->assertSame( 'request-confirmed', $post->post_status );
+	}
 
-		$v_ldcwa->assertSame( 'request-confirmed', $v_gtxzt->post_status ); // obf
-	} // obf
+	/**
+	 * Test that the request returns a WP_Error if $status isn't 'pending' or 'confirmed'.
+	 *
+	 * @ticket 43890
+	 */
+	public function test_wp_create_user_request_wp_error_status() {
+		$actual = wp_create_user_request( self::$non_registered_user_email, 'export_personal_data', array(), 'wrong-status' );
 
-	/** // obf
-	 * Test that the request returns a WP_Error if $v_bakju isn't 'pending' or 'confirmed'. // obf
-	 * // obf
-	 * @ticket 43890 // obf
-	 */ // obf
-	public function test_wp_create_user_request_wp_error_status() { // obf
-		$v_qsuty = wp_create_user_request( self::$v_hejyn, 'export_personal_data', array(), 'wrong-status' ); // obf
-
-		$v_ldcwa->assertWPError( $v_qsuty ); // obf
-	} // obf
-} // obf
+		$this->assertWPError( $actual );
+	}
+}

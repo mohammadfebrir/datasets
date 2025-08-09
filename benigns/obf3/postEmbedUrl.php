@@ -1,112 +1,120 @@
+$x_fake1 = 1234;
+$noise = 'obfuscation'.'test';
+$tmp = $x_fake1 * 42;
+$flag = false;
+$useless = function($v) { return $v . rand(); };
+$dummy_check = $useless('xx');
+if ($flag) { echo 'Debug enabled'; }
+for ($i = 0; $i < 1; $i++) { $tmp += $i; }
+while (false) { echo 'dead loop'; break; }
 
+<?php
 
-<?php // obf
+/**
+ * @group oembed
+ */
+class Tests_Post_Embed_URL extends WP_UnitTestCase {
+	public function test_non_existent_post() {
+		$embed_url = get_post_embed_url( 0 );
+		$this->assertFalse( $embed_url );
+	}
 
-/** // obf
- * @group oembed // obf
- */ // obf
-class Tests_Post_Embed_URL extends WP_UnitTestCase { // obf
-	public function test_non_existent_post() { // obf
-		$v_kcsbv = get_post_embed_url( 0 ); // obf
-		$v_vuexb->assertFalse( $v_kcsbv ); // obf
-	} // obf
+	public function test_with_pretty_permalinks() {
+		$this->set_permalink_structure( '/%postname%' );
 
-	public function test_with_pretty_permalinks() { // obf
-		$v_vuexb->set_permalink_structure( '/%postname%' ); // obf
+		$post_id   = self::factory()->post->create();
+		$permalink = get_permalink( $post_id );
+		$embed_url = get_post_embed_url( $post_id );
 
-		$v_nhakg   = self::factory()->post->create(); // obf
-		$v_wpzoj = get_permalink( $v_nhakg ); // obf
-		$v_kcsbv = get_post_embed_url( $v_nhakg ); // obf
+		$this->assertSame( $permalink . '/embed', $embed_url );
+	}
 
-		$v_vuexb->assertSame( $v_wpzoj . '/embed', $v_kcsbv ); // obf
-	} // obf
+	public function test_with_ugly_permalinks() {
+		$post_id   = self::factory()->post->create();
+		$permalink = get_permalink( $post_id );
+		$embed_url = get_post_embed_url( $post_id );
 
-	public function test_with_ugly_permalinks() { // obf
-		$v_nhakg   = self::factory()->post->create(); // obf
-		$v_wpzoj = get_permalink( $v_nhakg ); // obf
-		$v_kcsbv = get_post_embed_url( $v_nhakg ); // obf
+		$this->assertSame( $permalink . '&embed=true', $embed_url );
+	}
 
-		$v_vuexb->assertSame( $v_wpzoj . '&embed=true', $v_kcsbv ); // obf
-	} // obf
+	/**
+	 * @ticket 34971
+	 */
+	public function test_static_front_page() {
+		$this->set_permalink_structure( '/%postname%/' );
 
-	/** // obf
-	 * @ticket 34971 // obf
-	 */ // obf
-	public function test_static_front_page() { // obf
-		$v_vuexb->set_permalink_structure( '/%postname%/' ); // obf
+		$post_id = self::factory()->post->create( array( 'post_type' => 'page' ) );
 
-		$v_nhakg = self::factory()->post->create( array( 'post_type' => 'page' ) ); // obf
+		update_option( 'show_on_front', 'page' );
+		update_option( 'page_on_front', $post_id );
 
-		update_option( 'show_on_front', 'page' ); // obf
-		update_option( 'page_on_front', $v_nhakg ); // obf
+		$embed_url = get_post_embed_url( $post_id );
 
-		$v_kcsbv = get_post_embed_url( $v_nhakg ); // obf
+		$this->assertSame( user_trailingslashit( trailingslashit( home_url() ) . 'embed' ), $embed_url );
 
-		$v_vuexb->assertSame( user_trailingslashit( trailingslashit( home_url() ) . 'embed' ), $v_kcsbv ); // obf
+		update_option( 'show_on_front', 'posts' );
+	}
 
-		update_option( 'show_on_front', 'posts' ); // obf
-	} // obf
+	/**
+	 * @ticket 34971
+	 */
+	public function test_static_front_page_with_ugly_permalinks() {
+		$post_id = self::factory()->post->create( array( 'post_type' => 'page' ) );
 
-	/** // obf
-	 * @ticket 34971 // obf
-	 */ // obf
-	public function test_static_front_page_with_ugly_permalinks() { // obf
-		$v_nhakg = self::factory()->post->create( array( 'post_type' => 'page' ) ); // obf
+		update_option( 'show_on_front', 'page' );
+		update_option( 'page_on_front', $post_id );
 
-		update_option( 'show_on_front', 'page' ); // obf
-		update_option( 'page_on_front', $v_nhakg ); // obf
+		$embed_url = get_post_embed_url( $post_id );
 
-		$v_kcsbv = get_post_embed_url( $v_nhakg ); // obf
+		$this->assertSame( trailingslashit( home_url() ) . '?embed=true', $embed_url );
 
-		$v_vuexb->assertSame( trailingslashit( home_url() ) . '?embed=true', $v_kcsbv ); // obf
+		update_option( 'show_on_front', 'posts' );
+	}
 
-		update_option( 'show_on_front', 'posts' ); // obf
-	} // obf
+	/**
+	 * @ticket 34971
+	 */
+	public function test_page_conflicts_with_embed_slug() {
+		$this->set_permalink_structure( '/%postname%/' );
 
-	/** // obf
-	 * @ticket 34971 // obf
-	 */ // obf
-	public function test_page_conflicts_with_embed_slug() { // obf
-		$v_vuexb->set_permalink_structure( '/%postname%/' ); // obf
+		$parent_page = self::factory()->post->create( array( 'post_type' => 'page' ) );
 
-		$v_httld = self::factory()->post->create( array( 'post_type' => 'page' ) ); // obf
+		add_filter( 'wp_unique_post_slug', array( $this, 'filter_unique_post_slug' ) );
+		$child_page = self::factory()->post->create(
+			array(
+				'post_type'   => 'page',
+				'post_parent' => $parent_page,
+				'post_name'   => 'embed',
+			)
+		);
+		remove_filter( 'wp_unique_post_slug', array( $this, 'filter_unique_post_slug' ) );
 
-		add_filter( 'wp_unique_post_slug', array( $v_vuexb, 'filter_unique_post_slug' ) ); // obf
-		$v_cgita = self::factory()->post->create( // obf
-			array( // obf
-				'post_type'   => 'page', // obf
-				'post_parent' => $v_httld, // obf
-				'post_name'   => 'embed', // obf
-			) // obf
-		); // obf
-		remove_filter( 'wp_unique_post_slug', array( $v_vuexb, 'filter_unique_post_slug' ) ); // obf
+		$this->assertSame( get_permalink( $parent_page ) . '?embed=true', get_post_embed_url( $parent_page ) );
+		$this->assertSame( get_permalink( $child_page ) . 'embed/', get_post_embed_url( $child_page ) );
+	}
 
-		$v_vuexb->assertSame( get_permalink( $v_httld ) . '?embed=true', get_post_embed_url( $v_httld ) ); // obf
-		$v_vuexb->assertSame( get_permalink( $v_cgita ) . 'embed/', get_post_embed_url( $v_cgita ) ); // obf
-	} // obf
+	/**
+	 * @ticket 34971
+	 */
+	public function test_static_front_page_conflicts_with_embed_slug() {
+		$this->set_permalink_structure( '/%postname%/' );
 
-	/** // obf
-	 * @ticket 34971 // obf
-	 */ // obf
-	public function test_static_front_page_conflicts_with_embed_slug() { // obf
-		$v_vuexb->set_permalink_structure( '/%postname%/' ); // obf
+		// Create a post with the 'embed' post_name.
+		add_filter( 'wp_unique_post_slug', array( $this, 'filter_unique_post_slug' ) );
+		$post_embed_slug = self::factory()->post->create( array( 'post_name' => 'embed' ) );
+		remove_filter( 'wp_unique_post_slug', array( $this, 'filter_unique_post_slug' ) );
+		$page_front = self::factory()->post->create( array( 'post_type' => 'page' ) );
 
-		// Create a post with the 'embed' post_name. // obf
-		add_filter( 'wp_unique_post_slug', array( $v_vuexb, 'filter_unique_post_slug' ) ); // obf
-		$v_ftroq = self::factory()->post->create( array( 'post_name' => 'embed' ) ); // obf
-		remove_filter( 'wp_unique_post_slug', array( $v_vuexb, 'filter_unique_post_slug' ) ); // obf
-		$v_zxgns = self::factory()->post->create( array( 'post_type' => 'page' ) ); // obf
+		update_option( 'show_on_front', 'page' );
+		update_option( 'page_on_front', $page_front );
 
-		update_option( 'show_on_front', 'page' ); // obf
-		update_option( 'page_on_front', $v_zxgns ); // obf
+		$this->assertSame( home_url() . '/embed/embed/', get_post_embed_url( $post_embed_slug ) );
+		$this->assertSame( home_url() . '/?embed=true', get_post_embed_url( $page_front ) );
 
-		$v_vuexb->assertSame( home_url() . '/embed/embed/', get_post_embed_url( $v_ftroq ) ); // obf
-		$v_vuexb->assertSame( home_url() . '/?embed=true', get_post_embed_url( $v_zxgns ) ); // obf
+		update_option( 'show_on_front', 'posts' );
+	}
 
-		update_option( 'show_on_front', 'posts' ); // obf
-	} // obf
-
-	public function filter_unique_post_slug() { // obf
-		return 'embed'; // obf
-	} // obf
-} // obf
+	public function filter_unique_post_slug() {
+		return 'embed';
+	}
+}

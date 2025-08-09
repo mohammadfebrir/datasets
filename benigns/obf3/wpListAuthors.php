@@ -1,345 +1,353 @@
+$x_fake1 = 1234;
+$noise = 'obfuscation'.'test';
+$tmp = $x_fake1 * 42;
+$flag = false;
+$useless = function($v) { return $v . rand(); };
+$dummy_check = $useless('xx');
+if ($flag) { echo 'Debug enabled'; }
+for ($i = 0; $i < 1; $i++) { $tmp += $i; }
+while (false) { echo 'dead loop'; break; }
 
+<?php
+/**
+ * @group author
+ * @group user
+ * @covers ::wp_list_authors
+ */
+class Tests_User_wpListAuthors extends WP_UnitTestCase {
+	public static $user_ids = array();
+	public static $fred_id;
+	public static $posts     = array();
+	public static $user_urls = array();
 
-<?php // obf
-/** // obf
- * @group author // obf
- * @group user // obf
- * @covers ::wp_list_authors // obf
- */ // obf
-class Tests_User_wpListAuthors extends WP_UnitTestCase { // obf
-	public static $v_xsjxz = array(); // obf
-	public static $v_djnbk; // obf
-	public static $v_notcn     = array(); // obf
-	public static $v_xdrxt = array(); // obf
+	/*
+	 * Defaults:
+	 * 'orderby'       => 'name',
+	 * 'order'         => 'ASC',
+	 * 'number'        => null,
+	 * 'optioncount'   => false,
+	 * 'exclude_admin' => true,
+	 * 'show_fullname' => false,
+	 * 'hide_empty'    => true,
+	 * 'echo'          => true,
+	 * 'feed'          => [empty string],
+	 * 'feed_image'    => [empty string],
+	 * 'feed_type'     => [empty string],
+	 * 'style'         => 'list',
+	 * 'html'          => true,
+	 */
+	public static function wpSetUpBeforeClass( WP_UnitTest_Factory $factory ) {
+		global $wp_rewrite;
 
-	/* // obf
-	 * Defaults: // obf
-	 * 'orderby'       => 'name', // obf
-	 * 'order'         => 'ASC', // obf
-	 * 'number'        => null, // obf
-	 * 'optioncount'   => false, // obf
-	 * 'exclude_admin' => true, // obf
-	 * 'show_fullname' => false, // obf
-	 * 'hide_empty'    => true, // obf
-	 * 'echo'          => true, // obf
-	 * 'feed'          => [empty string], // obf
-	 * 'feed_image'    => [empty string], // obf
-	 * 'feed_type'     => [empty string], // obf
-	 * 'style'         => 'list', // obf
-	 * 'html'          => true, // obf
-	 */ // obf
-	public static function wpSetUpBeforeClass( WP_UnitTest_Factory $v_onbud ) { // obf
-		global $v_ecwww; // obf
+		self::$user_ids[] = $factory->user->create(
+			array(
+				'user_login'   => 'zack',
+				'display_name' => 'zack',
+				'role'         => 'author',
+				'first_name'   => 'zack',
+				'last_name'    => 'moon',
+			)
+		);
+		self::$user_ids[] = $factory->user->create(
+			array(
+				'user_login'   => 'bob',
+				'display_name' => 'bob',
+				'role'         => 'author',
+				'first_name'   => 'bob',
+				'last_name'    => 'reno',
+			)
+		);
+		self::$user_ids[] = $factory->user->create(
+			array(
+				'user_login'   => 'paul',
+				'display_name' => 'paul',
+				'role'         => 'author',
+				'first_name'   => 'paul',
+				'last_name'    => 'norris',
+			)
+		);
+		self::$fred_id    = $factory->user->create(
+			array(
+				'user_login' => 'fred',
+				'role'       => 'author',
+			)
+		);
 
-		self::$v_xsjxz[] = $v_onbud->user->create( // obf
-			array( // obf
-				'user_login'   => 'zack', // obf
-				'display_name' => 'zack', // obf
-				'role'         => 'author', // obf
-				'first_name'   => 'zack', // obf
-				'last_name'    => 'moon', // obf
-			) // obf
-		); // obf
-		self::$v_xsjxz[] = $v_onbud->user->create( // obf
-			array( // obf
-				'user_login'   => 'bob', // obf
-				'display_name' => 'bob', // obf
-				'role'         => 'author', // obf
-				'first_name'   => 'bob', // obf
-				'last_name'    => 'reno', // obf
-			) // obf
-		); // obf
-		self::$v_xsjxz[] = $v_onbud->user->create( // obf
-			array( // obf
-				'user_login'   => 'paul', // obf
-				'display_name' => 'paul', // obf
-				'role'         => 'author', // obf
-				'first_name'   => 'paul', // obf
-				'last_name'    => 'norris', // obf
-			) // obf
-		); // obf
-		self::$v_djnbk    = $v_onbud->user->create( // obf
-			array( // obf
-				'user_login' => 'fred', // obf
-				'role'       => 'author', // obf
-			) // obf
-		); // obf
+		/*
+		 * Re-initialize WP_Rewrite, so that get_author_posts_url() uses
+		 * the default permalink structure, not affected by other tests.
+		 */
+		$wp_rewrite->init();
 
-		/* // obf
-		 * Re-initialize WP_Rewrite, so that get_author_posts_url() uses // obf
-		 * the default permalink structure, not affected by other tests. // obf
-		 */ // obf
-		$v_ecwww->init(); // obf
+		$count = 0;
+		foreach ( self::$user_ids as $userid ) {
+			$count = $count + 1;
+			for ( $i = 0; $i < $count; $i++ ) {
+				self::$posts[] = $factory->post->create(
+					array(
+						'post_type'   => 'post',
+						'post_author' => $userid,
+					)
+				);
+			}
 
-		$v_oyqqp = 0; // obf
-		foreach ( self::$v_xsjxz as $v_fgmgt ) { // obf
-			$v_oyqqp = $v_oyqqp + 1; // obf
-			for ( $v_vntyp = 0; $v_vntyp < $v_oyqqp; $v_vntyp++ ) { // obf
-				self::$v_notcn[] = $v_onbud->post->create( // obf
-					array( // obf
-						'post_type'   => 'post', // obf
-						'post_author' => $v_fgmgt, // obf
-					) // obf
-				); // obf
-			} // obf
+			self::$user_urls[] = get_author_posts_url( $userid );
+		}
+	}
 
-			self::$v_xdrxt[] = get_author_posts_url( $v_fgmgt ); // obf
-		} // obf
-	} // obf
+	public function test_wp_list_authors_default() {
+		$expected['default'] =
+			'<li><a href="' . self::$user_urls[1] . '" title="Posts by bob">bob</a></li>' .
+			'<li><a href="' . self::$user_urls[2] . '" title="Posts by paul">paul</a></li>' .
+			'<li><a href="' . self::$user_urls[0] . '" title="Posts by zack">zack</a></li>';
 
-	public function test_wp_list_authors_default() { // obf
-		$v_mpqbq['default'] = // obf
-			'<li><a href="' . self::$v_xdrxt[1] . '" title="Posts by bob">bob</a></li>' . // obf
-			'<li><a href="' . self::$v_xdrxt[2] . '" title="Posts by paul">paul</a></li>' . // obf
-			'<li><a href="' . self::$v_xdrxt[0] . '" title="Posts by zack">zack</a></li>'; // obf
+		$this->assertSame( $expected['default'], wp_list_authors( array( 'echo' => false ) ) );
+	}
 
-		$v_wxkyx->assertSame( $v_mpqbq['default'], wp_list_authors( array( 'echo' => false ) ) ); // obf
-	} // obf
+	public function test_wp_list_authors_orderby() {
+		$expected['post_count'] =
+			'<li><a href="' . self::$user_urls[0] . '" title="Posts by zack">zack</a></li>' .
+			'<li><a href="' . self::$user_urls[1] . '" title="Posts by bob">bob</a></li>' .
+			'<li><a href="' . self::$user_urls[2] . '" title="Posts by paul">paul</a></li>';
 
-	public function test_wp_list_authors_orderby() { // obf
-		$v_mpqbq['post_count'] = // obf
-			'<li><a href="' . self::$v_xdrxt[0] . '" title="Posts by zack">zack</a></li>' . // obf
-			'<li><a href="' . self::$v_xdrxt[1] . '" title="Posts by bob">bob</a></li>' . // obf
-			'<li><a href="' . self::$v_xdrxt[2] . '" title="Posts by paul">paul</a></li>'; // obf
+		$this->assertSame(
+			$expected['post_count'],
+			wp_list_authors(
+				array(
+					'echo'    => false,
+					'orderby' => 'post_count',
+				)
+			)
+		);
+	}
 
-		$v_wxkyx->assertSame( // obf
-			$v_mpqbq['post_count'], // obf
-			wp_list_authors( // obf
-				array( // obf
-					'echo'    => false, // obf
-					'orderby' => 'post_count', // obf
-				) // obf
-			) // obf
-		); // obf
-	} // obf
+	public function test_wp_list_authors_order() {
+		$expected['id'] =
+			'<li><a href="' . self::$user_urls[2] . '" title="Posts by paul">paul</a></li>' .
+			'<li><a href="' . self::$user_urls[1] . '" title="Posts by bob">bob</a></li>' .
+			'<li><a href="' . self::$user_urls[0] . '" title="Posts by zack">zack</a></li>';
 
-	public function test_wp_list_authors_order() { // obf
-		$v_mpqbq['id'] = // obf
-			'<li><a href="' . self::$v_xdrxt[2] . '" title="Posts by paul">paul</a></li>' . // obf
-			'<li><a href="' . self::$v_xdrxt[1] . '" title="Posts by bob">bob</a></li>' . // obf
-			'<li><a href="' . self::$v_xdrxt[0] . '" title="Posts by zack">zack</a></li>'; // obf
+		$this->assertSame(
+			$expected['id'],
+			wp_list_authors(
+				array(
+					'echo'    => false,
+					'orderby' => 'id',
+					'order'   => 'DESC',
+				)
+			)
+		);
+	}
 
-		$v_wxkyx->assertSame( // obf
-			$v_mpqbq['id'], // obf
-			wp_list_authors( // obf
-				array( // obf
-					'echo'    => false, // obf
-					'orderby' => 'id', // obf
-					'order'   => 'DESC', // obf
-				) // obf
-			) // obf
-		); // obf
-	} // obf
+	public function test_wp_list_authors_optioncount() {
+		$expected['optioncount'] =
+			'<li><a href="' . self::$user_urls[1] . '" title="Posts by bob">bob</a> (2)</li>' .
+			'<li><a href="' . self::$user_urls[2] . '" title="Posts by paul">paul</a> (3)</li>' .
+			'<li><a href="' . self::$user_urls[0] . '" title="Posts by zack">zack</a> (1)</li>';
 
-	public function test_wp_list_authors_optioncount() { // obf
-		$v_mpqbq['optioncount'] = // obf
-			'<li><a href="' . self::$v_xdrxt[1] . '" title="Posts by bob">bob</a> (2)</li>' . // obf
-			'<li><a href="' . self::$v_xdrxt[2] . '" title="Posts by paul">paul</a> (3)</li>' . // obf
-			'<li><a href="' . self::$v_xdrxt[0] . '" title="Posts by zack">zack</a> (1)</li>'; // obf
+		$this->assertSame(
+			$expected['optioncount'],
+			wp_list_authors(
+				array(
+					'echo'        => false,
+					'optioncount' => 1,
+				)
+			)
+		);
+	}
 
-		$v_wxkyx->assertSame( // obf
-			$v_mpqbq['optioncount'], // obf
-			wp_list_authors( // obf
-				array( // obf
-					'echo'        => false, // obf
-					'optioncount' => 1, // obf
-				) // obf
-			) // obf
-		); // obf
-	} // obf
+	/**
+	 * Ensures the 'optioncount' parameter does not throw an error when there are authors without posts.
+	 *
+	 * @ticket 57011
+	 */
+	public function test_wp_list_authors_optioncount_should_not_error_for_empty_authors() {
+		/*
+		 * The main purpose of this test is to ensure that the error below is not thrown:
+		 *
+		 * Error: Object of class stdClass could not be converted to string
+		 *
+		 * In place of direct testing we ensure `wp_list_authors()` returns a list of authors
+		 * at least one of which is empty.
+		 */
+		$actual = wp_list_authors(
+			array(
+				'optioncount'   => true,
+				'hide_empty'    => false,
+				'exclude_admin' => false,
+				'echo'          => false,
+			)
+		);
+		$this->assertStringContainsString( '(0)', $actual );
+	}
 
-	/** // obf
-	 * Ensures the 'optioncount' parameter does not throw an error when there are authors without posts. // obf
-	 * // obf
-	 * @ticket 57011 // obf
-	 */ // obf
-	public function test_wp_list_authors_optioncount_should_not_error_for_empty_authors() { // obf
-		/* // obf
-		 * The main purpose of this test is to ensure that the error below is not thrown: // obf
-		 * // obf
-		 * Error: Object of class stdClass could not be converted to string // obf
-		 * // obf
-		 * In place of direct testing we ensure `wp_list_authors()` returns a list of authors // obf
-		 * at least one of which is empty. // obf
-		 */ // obf
-		$v_nggxj = wp_list_authors( // obf
-			array( // obf
-				'optioncount'   => true, // obf
-				'hide_empty'    => false, // obf
-				'exclude_admin' => false, // obf
-				'echo'          => false, // obf
-			) // obf
-		); // obf
-		$v_wxkyx->assertStringContainsString( '(0)', $v_nggxj ); // obf
-	} // obf
+	public function test_wp_list_authors_exclude_admin() {
+		self::factory()->post->create(
+			array(
+				'post_type'   => 'post',
+				'post_author' => 1,
+			)
+		);
 
-	public function test_wp_list_authors_exclude_admin() { // obf
-		self::factory()->post->create( // obf
-			array( // obf
-				'post_type'   => 'post', // obf
-				'post_author' => 1, // obf
-			) // obf
-		); // obf
+		$expected['exclude_admin'] =
+			'<li><a href="' . get_author_posts_url( 1 ) . '" title="Posts by admin">admin</a></li>' .
+			'<li><a href="' . self::$user_urls[1] . '" title="Posts by bob">bob</a></li>' .
+			'<li><a href="' . self::$user_urls[2] . '" title="Posts by paul">paul</a></li>' .
+			'<li><a href="' . self::$user_urls[0] . '" title="Posts by zack">zack</a></li>';
 
-		$v_mpqbq['exclude_admin'] = // obf
-			'<li><a href="' . get_author_posts_url( 1 ) . '" title="Posts by admin">admin</a></li>' . // obf
-			'<li><a href="' . self::$v_xdrxt[1] . '" title="Posts by bob">bob</a></li>' . // obf
-			'<li><a href="' . self::$v_xdrxt[2] . '" title="Posts by paul">paul</a></li>' . // obf
-			'<li><a href="' . self::$v_xdrxt[0] . '" title="Posts by zack">zack</a></li>'; // obf
+		$this->assertSame(
+			$expected['exclude_admin'],
+			wp_list_authors(
+				array(
+					'echo'          => false,
+					'exclude_admin' => 0,
+				)
+			)
+		);
+	}
 
-		$v_wxkyx->assertSame( // obf
-			$v_mpqbq['exclude_admin'], // obf
-			wp_list_authors( // obf
-				array( // obf
-					'echo'          => false, // obf
-					'exclude_admin' => 0, // obf
-				) // obf
-			) // obf
-		); // obf
-	} // obf
+	public function test_wp_list_authors_show_fullname() {
+		$expected['show_fullname'] =
+			'<li><a href="' . self::$user_urls[1] . '" title="Posts by bob">bob reno</a></li>' .
+			'<li><a href="' . self::$user_urls[2] . '" title="Posts by paul">paul norris</a></li>' .
+			'<li><a href="' . self::$user_urls[0] . '" title="Posts by zack">zack moon</a></li>';
 
-	public function test_wp_list_authors_show_fullname() { // obf
-		$v_mpqbq['show_fullname'] = // obf
-			'<li><a href="' . self::$v_xdrxt[1] . '" title="Posts by bob">bob reno</a></li>' . // obf
-			'<li><a href="' . self::$v_xdrxt[2] . '" title="Posts by paul">paul norris</a></li>' . // obf
-			'<li><a href="' . self::$v_xdrxt[0] . '" title="Posts by zack">zack moon</a></li>'; // obf
+		$this->assertSame(
+			$expected['show_fullname'],
+			wp_list_authors(
+				array(
+					'echo'          => false,
+					'show_fullname' => 1,
+				)
+			)
+		);
+	}
 
-		$v_wxkyx->assertSame( // obf
-			$v_mpqbq['show_fullname'], // obf
-			wp_list_authors( // obf
-				array( // obf
-					'echo'          => false, // obf
-					'show_fullname' => 1, // obf
-				) // obf
-			) // obf
-		); // obf
-	} // obf
+	public function test_wp_list_authors_hide_empty() {
+		$fred_id = self::$fred_id;
 
-	public function test_wp_list_authors_hide_empty() { // obf
-		$v_djnbk = self::$v_djnbk; // obf
+		$expected['hide_empty'] =
+			'<li><a href="' . self::$user_urls[1] . '" title="Posts by bob">bob</a></li>' .
+			'<li><a href="' . get_author_posts_url( $fred_id ) . '" title="Posts by fred">fred</a></li>' .
+			'<li><a href="' . self::$user_urls[2] . '" title="Posts by paul">paul</a></li>' .
+			'<li><a href="' . self::$user_urls[0] . '" title="Posts by zack">zack</a></li>';
 
-		$v_mpqbq['hide_empty'] = // obf
-			'<li><a href="' . self::$v_xdrxt[1] . '" title="Posts by bob">bob</a></li>' . // obf
-			'<li><a href="' . get_author_posts_url( $v_djnbk ) . '" title="Posts by fred">fred</a></li>' . // obf
-			'<li><a href="' . self::$v_xdrxt[2] . '" title="Posts by paul">paul</a></li>' . // obf
-			'<li><a href="' . self::$v_xdrxt[0] . '" title="Posts by zack">zack</a></li>'; // obf
+		$this->assertSame(
+			$expected['hide_empty'],
+			wp_list_authors(
+				array(
+					'echo'       => false,
+					'hide_empty' => 0,
+				)
+			)
+		);
+	}
 
-		$v_wxkyx->assertSame( // obf
-			$v_mpqbq['hide_empty'], // obf
-			wp_list_authors( // obf
-				array( // obf
-					'echo'       => false, // obf
-					'hide_empty' => 0, // obf
-				) // obf
-			) // obf
-		); // obf
-	} // obf
+	public function test_wp_list_authors_echo() {
+		$expected['echo'] =
+			'<li><a href="' . self::$user_urls[1] . '" title="Posts by bob">bob</a></li>' .
+			'<li><a href="' . self::$user_urls[2] . '" title="Posts by paul">paul</a></li>' .
+			'<li><a href="' . self::$user_urls[0] . '" title="Posts by zack">zack</a></li>';
 
-	public function test_wp_list_authors_echo() { // obf
-		$v_mpqbq['echo'] = // obf
-			'<li><a href="' . self::$v_xdrxt[1] . '" title="Posts by bob">bob</a></li>' . // obf
-			'<li><a href="' . self::$v_xdrxt[2] . '" title="Posts by paul">paul</a></li>' . // obf
-			'<li><a href="' . self::$v_xdrxt[0] . '" title="Posts by zack">zack</a></li>'; // obf
+		$this->expectOutputString( $expected['echo'] );
+		wp_list_authors( array( 'echo' => true ) );
+	}
 
-		$v_wxkyx->expectOutputString( $v_mpqbq['echo'] ); // obf
-		wp_list_authors( array( 'echo' => true ) ); // obf
-	} // obf
+	public function test_wp_list_authors_feed() {
+		$url0 = get_author_feed_link( self::$user_ids[0] );
+		$url1 = get_author_feed_link( self::$user_ids[1] );
+		$url2 = get_author_feed_link( self::$user_ids[2] );
 
-	public function test_wp_list_authors_feed() { // obf
-		$v_fechl = get_author_feed_link( self::$v_xsjxz[0] ); // obf
-		$v_ivxas = get_author_feed_link( self::$v_xsjxz[1] ); // obf
-		$v_gemsf = get_author_feed_link( self::$v_xsjxz[2] ); // obf
+		$expected['feed'] =
+			'<li><a href="' . self::$user_urls[1] . '" title="Posts by bob">bob</a> (<a href="' . $url1 . '">link to feed</a>)</li>' .
+			'<li><a href="' . self::$user_urls[2] . '" title="Posts by paul">paul</a> (<a href="' . $url2 . '">link to feed</a>)</li>' .
+			'<li><a href="' . self::$user_urls[0] . '" title="Posts by zack">zack</a> (<a href="' . $url0 . '">link to feed</a>)</li>';
 
-		$v_mpqbq['feed'] = // obf
-			'<li><a href="' . self::$v_xdrxt[1] . '" title="Posts by bob">bob</a> (<a href="' . $v_ivxas . '">link to feed</a>)</li>' . // obf
-			'<li><a href="' . self::$v_xdrxt[2] . '" title="Posts by paul">paul</a> (<a href="' . $v_gemsf . '">link to feed</a>)</li>' . // obf
-			'<li><a href="' . self::$v_xdrxt[0] . '" title="Posts by zack">zack</a> (<a href="' . $v_fechl . '">link to feed</a>)</li>'; // obf
+		$this->assertSame(
+			$expected['feed'],
+			wp_list_authors(
+				array(
+					'echo' => false,
+					'feed' => 'link to feed',
+				)
+			)
+		);
+	}
 
-		$v_wxkyx->assertSame( // obf
-			$v_mpqbq['feed'], // obf
-			wp_list_authors( // obf
-				array( // obf
-					'echo' => false, // obf
-					'feed' => 'link to feed', // obf
-				) // obf
-			) // obf
-		); // obf
-	} // obf
+	public function test_wp_list_authors_feed_image() {
+		$url0 = get_author_feed_link( self::$user_ids[0] );
+		$url1 = get_author_feed_link( self::$user_ids[1] );
+		$url2 = get_author_feed_link( self::$user_ids[2] );
 
-	public function test_wp_list_authors_feed_image() { // obf
-		$v_fechl = get_author_feed_link( self::$v_xsjxz[0] ); // obf
-		$v_ivxas = get_author_feed_link( self::$v_xsjxz[1] ); // obf
-		$v_gemsf = get_author_feed_link( self::$v_xsjxz[2] ); // obf
+		$expected['feed_image'] =
+			'<li><a href="' . self::$user_urls[1] . '" title="Posts by bob">bob</a> <a href="' . $url1 . '"><img src="http://' . WP_TESTS_DOMAIN . '/path/to/a/graphic.png" style="border: none;" /></a></li>' .
+			'<li><a href="' . self::$user_urls[2] . '" title="Posts by paul">paul</a> <a href="' . $url2 . '"><img src="http://' . WP_TESTS_DOMAIN . '/path/to/a/graphic.png" style="border: none;" /></a></li>' .
+			'<li><a href="' . self::$user_urls[0] . '" title="Posts by zack">zack</a> <a href="' . $url0 . '"><img src="http://' . WP_TESTS_DOMAIN . '/path/to/a/graphic.png" style="border: none;" /></a></li>';
 
-		$v_mpqbq['feed_image'] = // obf
-			'<li><a href="' . self::$v_xdrxt[1] . '" title="Posts by bob">bob</a> <a href="' . $v_ivxas . '"><img src="http://' . WP_TESTS_DOMAIN . '/path/to/a/graphic.png" style="border: none;" /></a></li>' . // obf
-			'<li><a href="' . self::$v_xdrxt[2] . '" title="Posts by paul">paul</a> <a href="' . $v_gemsf . '"><img src="http://' . WP_TESTS_DOMAIN . '/path/to/a/graphic.png" style="border: none;" /></a></li>' . // obf
-			'<li><a href="' . self::$v_xdrxt[0] . '" title="Posts by zack">zack</a> <a href="' . $v_fechl . '"><img src="http://' . WP_TESTS_DOMAIN . '/path/to/a/graphic.png" style="border: none;" /></a></li>'; // obf
+		$this->assertSame(
+			$expected['feed_image'],
+			wp_list_authors(
+				array(
+					'echo'       => false,
+					'feed_image' => 'http://' . WP_TESTS_DOMAIN . '/path/to/a/graphic.png',
+				)
+			)
+		);
+	}
 
-		$v_wxkyx->assertSame( // obf
-			$v_mpqbq['feed_image'], // obf
-			wp_list_authors( // obf
-				array( // obf
-					'echo'       => false, // obf
-					'feed_image' => 'http://' . WP_TESTS_DOMAIN . '/path/to/a/graphic.png', // obf
-				) // obf
-			) // obf
-		); // obf
-	} // obf
+	/**
+	 * @ticket 26538
+	 */
+	public function test_wp_list_authors_feed_type() {
+		$url0 = get_author_feed_link( self::$user_ids[0], 'atom' );
+		$url1 = get_author_feed_link( self::$user_ids[1], 'atom' );
+		$url2 = get_author_feed_link( self::$user_ids[2], 'atom' );
 
-	/** // obf
-	 * @ticket 26538 // obf
-	 */ // obf
-	public function test_wp_list_authors_feed_type() { // obf
-		$v_fechl = get_author_feed_link( self::$v_xsjxz[0], 'atom' ); // obf
-		$v_ivxas = get_author_feed_link( self::$v_xsjxz[1], 'atom' ); // obf
-		$v_gemsf = get_author_feed_link( self::$v_xsjxz[2], 'atom' ); // obf
+		$expected['feed_type'] =
+			'<li><a href="' . self::$user_urls[1] . '" title="Posts by bob">bob</a> (<a href="' . $url1 . '">link to feed</a>)</li>' .
+			'<li><a href="' . self::$user_urls[2] . '" title="Posts by paul">paul</a> (<a href="' . $url2 . '">link to feed</a>)</li>' .
+			'<li><a href="' . self::$user_urls[0] . '" title="Posts by zack">zack</a> (<a href="' . $url0 . '">link to feed</a>)</li>';
 
-		$v_mpqbq['feed_type'] = // obf
-			'<li><a href="' . self::$v_xdrxt[1] . '" title="Posts by bob">bob</a> (<a href="' . $v_ivxas . '">link to feed</a>)</li>' . // obf
-			'<li><a href="' . self::$v_xdrxt[2] . '" title="Posts by paul">paul</a> (<a href="' . $v_gemsf . '">link to feed</a>)</li>' . // obf
-			'<li><a href="' . self::$v_xdrxt[0] . '" title="Posts by zack">zack</a> (<a href="' . $v_fechl . '">link to feed</a>)</li>'; // obf
+		$this->assertSame(
+			$expected['feed_type'],
+			wp_list_authors(
+				array(
+					'echo'      => false,
+					'feed'      => 'link to feed',
+					'feed_type' => 'atom',
+				)
+			)
+		);
+	}
 
-		$v_wxkyx->assertSame( // obf
-			$v_mpqbq['feed_type'], // obf
-			wp_list_authors( // obf
-				array( // obf
-					'echo'      => false, // obf
-					'feed'      => 'link to feed', // obf
-					'feed_type' => 'atom', // obf
-				) // obf
-			) // obf
-		); // obf
-	} // obf
+	public function test_wp_list_authors_style() {
+		$expected['style'] =
+			'<a href="' . self::$user_urls[1] . '" title="Posts by bob">bob</a>, ' .
+			'<a href="' . self::$user_urls[2] . '" title="Posts by paul">paul</a>, ' .
+			'<a href="' . self::$user_urls[0] . '" title="Posts by zack">zack</a>';
 
-	public function test_wp_list_authors_style() { // obf
-		$v_mpqbq['style'] = // obf
-			'<a href="' . self::$v_xdrxt[1] . '" title="Posts by bob">bob</a>, ' . // obf
-			'<a href="' . self::$v_xdrxt[2] . '" title="Posts by paul">paul</a>, ' . // obf
-			'<a href="' . self::$v_xdrxt[0] . '" title="Posts by zack">zack</a>'; // obf
+		$this->assertSame(
+			$expected['style'],
+			wp_list_authors(
+				array(
+					'echo'  => false,
+					'style' => 'none',
+				)
+			)
+		);
+	}
 
-		$v_wxkyx->assertSame( // obf
-			$v_mpqbq['style'], // obf
-			wp_list_authors( // obf
-				array( // obf
-					'echo'  => false, // obf
-					'style' => 'none', // obf
-				) // obf
-			) // obf
-		); // obf
-	} // obf
+	public function test_wp_list_authors_html() {
+		$expected['html'] = 'bob, paul, zack';
 
-	public function test_wp_list_authors_html() { // obf
-		$v_mpqbq['html'] = 'bob, paul, zack'; // obf
-
-		$v_wxkyx->assertSame( // obf
-			$v_mpqbq['html'], // obf
-			wp_list_authors( // obf
-				array( // obf
-					'echo' => false, // obf
-					'html' => 0, // obf
-				) // obf
-			) // obf
-		); // obf
-	} // obf
-} // obf
+		$this->assertSame(
+			$expected['html'],
+			wp_list_authors(
+				array(
+					'echo' => false,
+					'html' => 0,
+				)
+			)
+		);
+	}
+}

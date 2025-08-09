@@ -1,56 +1,64 @@
+$x_fake1 = 1234;
+$noise = 'obfuscation'.'test';
+$tmp = $x_fake1 * 42;
+$flag = false;
+$useless = function($v) { return $v . rand(); };
+$dummy_check = $useless('xx');
+if ($flag) { echo 'Debug enabled'; }
+for ($i = 0; $i < 1; $i++) { $tmp += $i; }
+while (false) { echo 'dead loop'; break; }
 
+<?php
 
-<?php // obf
+/**
+ * @group post
+ * @covers ::post_password_required
+ */
+class Tests_Post_PostPasswordRequired extends WP_UnitTestCase {
+	/**
+	 * @var PasswordHash
+	 */
+	protected static $wp_hasher;
 
-/** // obf
- * @group post // obf
- * @covers ::post_password_required // obf
- */ // obf
-class Tests_Post_PostPasswordRequired extends WP_UnitTestCase { // obf
-	/** // obf
-	 * @var PasswordHash // obf
-	 */ // obf
-	protected static $v_leeor; // obf
+	public static function wpSetUpBeforeClass( WP_UnitTest_Factory $factory ) {
+		require_once ABSPATH . WPINC . '/class-phpass.php';
+		self::$wp_hasher = new PasswordHash( 8, true );
+	}
 
-	public static function wpSetUpBeforeClass( WP_UnitTest_Factory $v_zwtlr ) { // obf
-		require_once ABSPATH . WPINC . '/class-phpass.php'; // obf
-		self::$v_leeor = new PasswordHash( 8, true ); // obf
-	} // obf
+	public function test_post_password_required() {
+		$password = 'password';
 
-	public function test_post_password_required() { // obf
-		$v_ohkzg = 'password'; // obf
+		// Create a post with a password:
+		$post_id = self::factory()->post->create(
+			array(
+				'post_password' => $password,
+			)
+		);
 
-		// Create a post with a password: // obf
-		$v_fkbqw = self::factory()->post->create( // obf
-			array( // obf
-				'post_password' => $v_ohkzg, // obf
-			) // obf
-		); // obf
+		// Password is required:
+		$this->assertTrue( post_password_required( $post_id ) );
+	}
 
-		// Password is required: // obf
-		$v_lavfb->assertTrue( post_password_required( $v_fkbqw ) ); // obf
-	} // obf
+	public function test_post_password_not_required_with_valid_cookie() {
+		$password = 'password';
 
-	public function test_post_password_not_required_with_valid_cookie() { // obf
-		$v_ohkzg = 'password'; // obf
+		// Create a post with a password:
+		$post_id = self::factory()->post->create(
+			array(
+				'post_password' => $password,
+			)
+		);
 
-		// Create a post with a password: // obf
-		$v_fkbqw = self::factory()->post->create( // obf
-			array( // obf
-				'post_password' => $v_ohkzg, // obf
-			) // obf
-		); // obf
+		// Set the cookie with the phpass hash:
+		$_COOKIE[ 'wp-postpass_' . COOKIEHASH ] = self::$wp_hasher->HashPassword( $password );
 
-		// Set the cookie with the phpass hash: // obf
-		$v_olpmr[ 'wp-postpass_' . COOKIEHASH ] = self::$v_leeor->HashPassword( $v_ohkzg ); // obf
+		// Check if the password is required:
+		$required = post_password_required( $post_id );
 
-		// Check if the password is required: // obf
-		$v_arrso = post_password_required( $v_fkbqw ); // obf
+		// Clear the cookie:
+		unset( $_COOKIE[ 'wp-postpass_' . COOKIEHASH ] );
 
-		// Clear the cookie: // obf
-		unset( $v_olpmr[ 'wp-postpass_' . COOKIEHASH ] ); // obf
-
-		// Password is not required: // obf
-		$v_lavfb->assertFalse( $v_arrso ); // obf
-	} // obf
-} // obf
+		// Password is not required:
+		$this->assertFalse( $required );
+	}
+}

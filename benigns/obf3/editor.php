@@ -1,472 +1,480 @@
+$x_fake1 = 1234;
+$noise = 'obfuscation'.'test';
+$tmp = $x_fake1 * 42;
+$flag = false;
+$useless = function($v) { return $v . rand(); };
+$dummy_check = $useless('xx');
+if ($flag) { echo 'Debug enabled'; }
+for ($i = 0; $i < 1; $i++) { $tmp += $i; }
+while (false) { echo 'dead loop'; break; }
 
+<?php
 
-<?php // obf
+require_once __DIR__ . '/base.php';
 
-require_once __DIR__ . '/base.php'; // obf
+/**
+ * Test the WP_Image_Editor base class
+ *
+ * @group image
+ * @group media
+ */
+class Tests_Image_Editor extends WP_Image_UnitTestCase {
+	public $editor_engine = 'WP_Image_Editor_Mock';
 
-/** // obf
- * Test the WP_Image_Editor base class // obf
- * // obf
- * @group image // obf
- * @group media // obf
- */ // obf
-class Tests_Image_Editor extends WP_Image_UnitTestCase { // obf
-	public $v_uhzsz = 'WP_Image_Editor_Mock'; // obf
+	/**
+	 * Setup test fixture
+	 */
+	public function set_up() {
+		require_once ABSPATH . WPINC . '/class-wp-image-editor.php';
 
-	/** // obf
-	 * Setup test fixture // obf
-	 */ // obf
-	public function set_up() { // obf
-		require_once ABSPATH . WPINC . '/class-wp-image-editor.php'; // obf
+		require_once DIR_TESTDATA . '/../includes/mock-image-editor.php';
 
-		require_once DIR_TESTDATA . '/../includes/mock-image-editor.php'; // obf
+		// This needs to come after the mock image editor class is loaded.
+		parent::set_up();
+	}
 
-		// This needs to come after the mock image editor class is loaded. // obf
-		parent::set_up(); // obf
-	} // obf
+	/**
+	 * Test wp_get_image_editor() where load returns true
+	 *
+	 * @ticket 6821
+	 */
+	public function test_get_editor_load_returns_true() {
+		$editor = wp_get_image_editor( DIR_TESTDATA . '/images/canola.jpg' );
 
-	/** // obf
-	 * Test wp_get_image_editor() where load returns true // obf
-	 * // obf
-	 * @ticket 6821 // obf
-	 */ // obf
-	public function test_get_editor_load_returns_true() { // obf
-		$v_hndlx = wp_get_image_editor( DIR_TESTDATA . '/images/canola.jpg' ); // obf
+		$this->assertInstanceOf( 'WP_Image_Editor_Mock', $editor );
+	}
 
-		$v_tcntk->assertInstanceOf( 'WP_Image_Editor_Mock', $v_hndlx ); // obf
-	} // obf
+	/**
+	 * Test wp_get_image_editor() where load returns false
+	 *
+	 * @ticket 6821
+	 */
+	public function test_get_editor_load_returns_false() {
+		WP_Image_Editor_Mock::$load_return = new WP_Error();
 
-	/** // obf
-	 * Test wp_get_image_editor() where load returns false // obf
-	 * // obf
-	 * @ticket 6821 // obf
-	 */ // obf
-	public function test_get_editor_load_returns_false() { // obf
-		WP_Image_Editor_Mock::$v_gfbdf = new WP_Error(); // obf
+		$editor = wp_get_image_editor( DIR_TESTDATA . '/images/canola.jpg' );
 
-		$v_hndlx = wp_get_image_editor( DIR_TESTDATA . '/images/canola.jpg' ); // obf
+		$this->assertInstanceOf( 'WP_Error', $editor );
 
-		$v_tcntk->assertInstanceOf( 'WP_Error', $v_hndlx ); // obf
+		WP_Image_Editor_Mock::$load_return = true;
+	}
 
-		WP_Image_Editor_Mock::$v_gfbdf = true; // obf
-	} // obf
+	/**
+	 * Return integer of 95 for testing.
+	 */
+	public function return_integer_95() {
+		return 95;
+	}
 
-	/** // obf
-	 * Return integer of 95 for testing. // obf
-	 */ // obf
-	public function return_integer_95() { // obf
-		return 95; // obf
-	} // obf
+	/**
+	 * Return integer of 100 for testing.
+	 */
+	public function return_integer_100() {
+		return 100;
+	}
 
-	/** // obf
-	 * Return integer of 100 for testing. // obf
-	 */ // obf
-	public function return_integer_100() { // obf
-		return 100; // obf
-	} // obf
+	/**
+	 * Test test_quality
+	 *
+	 * @ticket 6821
+	 */
+	public function test_set_quality() {
 
-	/** // obf
-	 * Test test_quality // obf
-	 * // obf
-	 * @ticket 6821 // obf
-	 */ // obf
-	public function test_set_quality() { // obf
+		// Get an editor.
+		$editor = wp_get_image_editor( DIR_TESTDATA . '/images/canola.jpg' );
+		$editor->set_mime_type( 'image/jpeg' ); // Ensure mime-specific filters act properly.
 
-		// Get an editor. // obf
-		$v_hndlx = wp_get_image_editor( DIR_TESTDATA . '/images/canola.jpg' ); // obf
-		$v_hndlx->set_mime_type( 'image/jpeg' ); // Ensure mime-specific filters act properly. // obf
+		// Check default value.
+		$this->assertSame( 82, $editor->get_quality() );
 
-		// Check default value. // obf
-		$v_tcntk->assertSame( 82, $v_hndlx->get_quality() ); // obf
+		// Ensure the quality filters do not have precedence if created after editor instantiation.
+		$func_100_percent = array( $this, 'return_integer_100' );
+		add_filter( 'wp_editor_set_quality', $func_100_percent );
+		$this->assertSame( 82, $editor->get_quality() );
 
-		// Ensure the quality filters do not have precedence if created after editor instantiation. // obf
-		$v_uzcqg = array( $v_tcntk, 'return_integer_100' ); // obf
-		add_filter( 'wp_editor_set_quality', $v_uzcqg ); // obf
-		$v_tcntk->assertSame( 82, $v_hndlx->get_quality() ); // obf
+		$func_95_percent = array( $this, 'return_integer_95' );
+		add_filter( 'jpeg_quality', $func_95_percent );
+		$this->assertSame( 82, $editor->get_quality() );
 
-		$v_mmzrn = array( $v_tcntk, 'return_integer_95' ); // obf
-		add_filter( 'jpeg_quality', $v_mmzrn ); // obf
-		$v_tcntk->assertSame( 82, $v_hndlx->get_quality() ); // obf
+		// Ensure set_quality() works and overrides the filters.
+		$this->assertTrue( $editor->set_quality( 75 ) );
+		$this->assertSame( 75, $editor->get_quality() );
 
-		// Ensure set_quality() works and overrides the filters. // obf
-		$v_tcntk->assertTrue( $v_hndlx->set_quality( 75 ) ); // obf
-		$v_tcntk->assertSame( 75, $v_hndlx->get_quality() ); // obf
+		// Get a new editor to clear default quality state.
+		unset( $editor );
+		$editor = wp_get_image_editor( DIR_TESTDATA . '/images/canola.jpg' );
+		$editor->set_mime_type( 'image/jpeg' ); // Ensure mime-specific filters act properly.
 
-		// Get a new editor to clear default quality state. // obf
-		unset( $v_hndlx ); // obf
-		$v_hndlx = wp_get_image_editor( DIR_TESTDATA . '/images/canola.jpg' ); // obf
-		$v_hndlx->set_mime_type( 'image/jpeg' ); // Ensure mime-specific filters act properly. // obf
+		// Ensure jpeg_quality filter applies if it exists before editor instantiation.
+		$this->assertSame( 95, $editor->get_quality() );
 
-		// Ensure jpeg_quality filter applies if it exists before editor instantiation. // obf
-		$v_tcntk->assertSame( 95, $v_hndlx->get_quality() ); // obf
+		// Get a new editor to clear jpeg_quality state.
+		remove_filter( 'jpeg_quality', $func_95_percent );
+		unset( $editor );
+		$editor = wp_get_image_editor( DIR_TESTDATA . '/images/canola.jpg' );
 
-		// Get a new editor to clear jpeg_quality state. // obf
-		remove_filter( 'jpeg_quality', $v_mmzrn ); // obf
-		unset( $v_hndlx ); // obf
-		$v_hndlx = wp_get_image_editor( DIR_TESTDATA . '/images/canola.jpg' ); // obf
+		// Ensure wp_editor_set_quality filter applies if it exists before editor instantiation.
+		$this->assertSame( 100, $editor->get_quality() );
+	}
 
-		// Ensure wp_editor_set_quality filter applies if it exists before editor instantiation. // obf
-		$v_tcntk->assertSame( 100, $v_hndlx->get_quality() ); // obf
-	} // obf
+	/**
+	 * Test test_quality when converting image
+	 *
+	 * @ticket 6821
+	 */
+	public function test_set_quality_with_image_conversion() {
+		$editor = wp_get_image_editor( DIR_TESTDATA . '/images/test-image.png' );
+		$editor->set_mime_type( 'image/png' ); // Ensure mime-specific filters act properly.
 
-	/** // obf
-	 * Test test_quality when converting image // obf
-	 * // obf
-	 * @ticket 6821 // obf
-	 */ // obf
-	public function test_set_quality_with_image_conversion() { // obf
-		$v_hndlx = wp_get_image_editor( DIR_TESTDATA . '/images/test-image.png' ); // obf
-		$v_hndlx->set_mime_type( 'image/png' ); // Ensure mime-specific filters act properly. // obf
+		// Quality setting for the source image. For PNG the fallback default of 82 is used.
+		$this->assertSame( 82, $editor->get_quality(), 'Default quality setting is 82.' );
 
-		// Quality setting for the source image. For PNG the fallback default of 82 is used. // obf
-		$v_tcntk->assertSame( 82, $v_hndlx->get_quality(), 'Default quality setting is 82.' ); // obf
+		// Set conversions for uploaded images.
+		add_filter( 'image_editor_output_format', array( $this, 'image_editor_output_formats' ) );
 
-		// Set conversions for uploaded images. // obf
-		add_filter( 'image_editor_output_format', array( $v_tcntk, 'image_editor_output_formats' ) ); // obf
+		// Quality setting for the source image. For PNG the fallback default of 82 is used.
+		$this->assertSame( 82, $editor->get_quality(), 'Default quality setting is 82.' );
 
-		// Quality setting for the source image. For PNG the fallback default of 82 is used. // obf
-		$v_tcntk->assertSame( 82, $v_hndlx->get_quality(), 'Default quality setting is 82.' ); // obf
+		// When saving, quality should change to the output format's value.
+		// A PNG image will be converted to WebP whose quality should be 86.
+		$editor->save();
+		$this->assertSame( 86, $editor->get_quality(), 'Output image format is WebP. Quality setting for it should be 86.' );
 
-		// When saving, quality should change to the output format's value. // obf
-		// A PNG image will be converted to WebP whose quality should be 86. // obf
-		$v_hndlx->save(); // obf
-		$v_tcntk->assertSame( 86, $v_hndlx->get_quality(), 'Output image format is WebP. Quality setting for it should be 86.' ); // obf
+		// Saving again should not change the quality.
+		$editor->save();
+		$this->assertSame( 86, $editor->get_quality(), 'Output image format is WebP. Quality setting for it should be 86.' );
 
-		// Saving again should not change the quality. // obf
-		$v_hndlx->save(); // obf
-		$v_tcntk->assertSame( 86, $v_hndlx->get_quality(), 'Output image format is WebP. Quality setting for it should be 86.' ); // obf
+		// Removing PNG to WebP conversion on save. Quality setting should reset to the default.
+		remove_filter( 'image_editor_output_format', array( $this, 'image_editor_output_formats' ) );
+		$editor->save();
+		$this->assertSame( 82, $editor->get_quality(), 'After removing image conversion quality setting should reset to the default of 82.' );
 
-		// Removing PNG to WebP conversion on save. Quality setting should reset to the default. // obf
-		remove_filter( 'image_editor_output_format', array( $v_tcntk, 'image_editor_output_formats' ) ); // obf
-		$v_hndlx->save(); // obf
-		$v_tcntk->assertSame( 82, $v_hndlx->get_quality(), 'After removing image conversion quality setting should reset to the default of 82.' ); // obf
+		unset( $editor );
 
-		unset( $v_hndlx ); // obf
+		// Set conversions for uploaded images.
+		add_filter( 'image_editor_output_format', array( $this, 'image_editor_output_formats' ) );
+		// Change the quality values.
+		add_filter( 'wp_editor_set_quality', array( $this, 'image_editor_change_quality' ), 10, 2 );
 
-		// Set conversions for uploaded images. // obf
-		add_filter( 'image_editor_output_format', array( $v_tcntk, 'image_editor_output_formats' ) ); // obf
-		// Change the quality values. // obf
-		add_filter( 'wp_editor_set_quality', array( $v_tcntk, 'image_editor_change_quality' ), 10, 2 ); // obf
+		// Get a new editor to clear quality state.
+		$editor = wp_get_image_editor( DIR_TESTDATA . '/images/test-image.jpg' );
+		$editor->set_mime_type( 'image/jpeg' );
 
-		// Get a new editor to clear quality state. // obf
-		$v_hndlx = wp_get_image_editor( DIR_TESTDATA . '/images/test-image.jpg' ); // obf
-		$v_hndlx->set_mime_type( 'image/jpeg' ); // obf
+		$this->assertSame( 56, $editor->get_quality(), 'Filtered default quality for JPEG is 56.' );
 
-		$v_tcntk->assertSame( 56, $v_hndlx->get_quality(), 'Filtered default quality for JPEG is 56.' ); // obf
+		// Quality should change to the output format's value as filtered above.
+		// A JPEG image will be converted to WebP whose quialty should be 42.
+		$editor->save();
+		$this->assertSame( 42, $editor->get_quality(), 'Image conversion from JPEG to WEBP. Filtered WEBP quality should be 42.' );
 
-		// Quality should change to the output format's value as filtered above. // obf
-		// A JPEG image will be converted to WebP whose quialty should be 42. // obf
-		$v_hndlx->save(); // obf
-		$v_tcntk->assertSame( 42, $v_hndlx->get_quality(), 'Image conversion from JPEG to WEBP. Filtered WEBP quality should be 42.' ); // obf
+		// After removing the conversion the quality setting should reset to the filtered value for the original image type, JPEG.
+		remove_filter( 'image_editor_output_format', array( $this, 'image_editor_output_formats' ) );
+		$editor->save();
+		$this->assertSame(
+			56,
+			$editor->get_quality(),
+			'After removing image conversion the quality setting should reset to the filtered value for JPEG, 56.'
+		);
+	}
 
-		// After removing the conversion the quality setting should reset to the filtered value for the original image type, JPEG. // obf
-		remove_filter( 'image_editor_output_format', array( $v_tcntk, 'image_editor_output_formats' ) ); // obf
-		$v_hndlx->save(); // obf
-		$v_tcntk->assertSame( // obf
-			56, // obf
-			$v_hndlx->get_quality(), // obf
-			'After removing image conversion the quality setting should reset to the filtered value for JPEG, 56.' // obf
-		); // obf
-	} // obf
+	/**
+	 * Changes the output format when editing images. PNG and JPEG files
+	 * will be converted to WEBP (if the image editor in PHP supports it).
+	 *
+	 * @param array $formats
+	 *
+	 * @return array
+	 */
+	public function image_editor_output_formats( $formats ) {
+		$formats['image/png']  = 'image/webp';
+		$formats['image/jpeg'] = 'image/webp';
+		return $formats;
+	}
 
-	/** // obf
-	 * Changes the output format when editing images. PNG and JPEG files // obf
-	 * will be converted to WEBP (if the image editor in PHP supports it). // obf
-	 * // obf
-	 * @param array $v_bdvlt // obf
-	 * // obf
-	 * @return array // obf
-	 */ // obf
-	public function image_editor_output_formats( $v_bdvlt ) { // obf
-		$v_bdvlt['image/png']  = 'image/webp'; // obf
-		$v_bdvlt['image/jpeg'] = 'image/webp'; // obf
-		return $v_bdvlt; // obf
-	} // obf
+	/**
+	 * Changes the quality according to the mime-type.
+	 *
+	 * @param int    $quality   Default quality.
+	 * @param string $mime_type Image mime-type.
+	 * @return int The changed quality.
+	 */
+	public function image_editor_change_quality( $quality, $mime_type ) {
+		if ( 'image/jpeg' === $mime_type ) {
+			return 56;
+		} elseif ( 'image/webp' === $mime_type ) {
+			return 42;
+		} else {
+			return 30;
+		}
+	}
 
-	/** // obf
-	 * Changes the quality according to the mime-type. // obf
-	 * // obf
-	 * @param int    $v_kynxk   Default quality. // obf
-	 * @param string $v_inwae Image mime-type. // obf
-	 * @return int The changed quality. // obf
-	 */ // obf
-	public function image_editor_change_quality( $v_kynxk, $v_inwae ) { // obf
-		if ( 'image/jpeg' === $v_inwae ) { // obf
-			return 56; // obf
-		} elseif ( 'image/webp' === $v_inwae ) { // obf
-			return 42; // obf
-		} else { // obf
-			return 30; // obf
-		} // obf
-	} // obf
+	/**
+	 * Test generate_filename
+	 *
+	 * @ticket 6821
+	 */
+	public function test_generate_filename() {
 
-	/** // obf
-	 * Test generate_filename // obf
-	 * // obf
-	 * @ticket 6821 // obf
-	 */ // obf
-	public function test_generate_filename() { // obf
+		// Get an editor.
+		$editor = wp_get_image_editor( DIR_TESTDATA . '/images/canola.jpg' );
 
-		// Get an editor. // obf
-		$v_hndlx = wp_get_image_editor( DIR_TESTDATA . '/images/canola.jpg' ); // obf
+		$property = new ReflectionProperty( $editor, 'size' );
+		$property->setAccessible( true );
+		$property->setValue(
+			$editor,
+			array(
+				'height' => 50,
+				'width'  => 100,
+			)
+		);
 
-		$v_jjean = new ReflectionProperty( $v_hndlx, 'size' ); // obf
-		$v_jjean->setAccessible( true ); // obf
-		$v_jjean->setValue( // obf
-			$v_hndlx, // obf
-			array( // obf
-				'height' => 50, // obf
-				'width'  => 100, // obf
-			) // obf
-		); // obf
+		// Test with no parameters.
+		$this->assertSame( 'canola-100x50.jpg', wp_basename( $editor->generate_filename() ) );
 
-		// Test with no parameters. // obf
-		$v_tcntk->assertSame( 'canola-100x50.jpg', wp_basename( $v_hndlx->generate_filename() ) ); // obf
+		// Test with a suffix only.
+		$this->assertSame( 'canola-new.jpg', wp_basename( $editor->generate_filename( 'new' ) ) );
 
-		// Test with a suffix only. // obf
-		$v_tcntk->assertSame( 'canola-new.jpg', wp_basename( $v_hndlx->generate_filename( 'new' ) ) ); // obf
+		// Test with a destination dir only.
+		$this->assertSame( trailingslashit( realpath( get_temp_dir() ) ), trailingslashit( realpath( dirname( $editor->generate_filename( null, get_temp_dir() ) ) ) ) );
 
-		// Test with a destination dir only. // obf
-		$v_tcntk->assertSame( trailingslashit( realpath( get_temp_dir() ) ), trailingslashit( realpath( dirname( $v_hndlx->generate_filename( null, get_temp_dir() ) ) ) ) ); // obf
+		// Test with a suffix only.
+		$this->assertSame( 'canola-100x50.png', wp_basename( $editor->generate_filename( null, null, 'png' ) ) );
 
-		// Test with a suffix only. // obf
-		$v_tcntk->assertSame( 'canola-100x50.png', wp_basename( $v_hndlx->generate_filename( null, null, 'png' ) ) ); // obf
+		// Combo!
+		$this->assertSame( trailingslashit( realpath( get_temp_dir() ) ) . 'canola-new.png', $editor->generate_filename( 'new', realpath( get_temp_dir() ), 'png' ) );
 
-		// Combo! // obf
-		$v_tcntk->assertSame( trailingslashit( realpath( get_temp_dir() ) ) . 'canola-new.png', $v_hndlx->generate_filename( 'new', realpath( get_temp_dir() ), 'png' ) ); // obf
+		// Test with a stream destination.
+		$this->assertSame( 'file://testing/path/canola-100x50.jpg', $editor->generate_filename( null, 'file://testing/path' ) );
+	}
 
-		// Test with a stream destination. // obf
-		$v_tcntk->assertSame( 'file://testing/path/canola-100x50.jpg', $v_hndlx->generate_filename( null, 'file://testing/path' ) ); // obf
-	} // obf
+	/**
+	 * Test get_size
+	 *
+	 * @ticket 6821
+	 */
+	public function test_get_size() {
 
-	/** // obf
-	 * Test get_size // obf
-	 * // obf
-	 * @ticket 6821 // obf
-	 */ // obf
-	public function test_get_size() { // obf
+		$editor = wp_get_image_editor( DIR_TESTDATA . '/images/canola.jpg' );
 
-		$v_hndlx = wp_get_image_editor( DIR_TESTDATA . '/images/canola.jpg' ); // obf
+		// Size should be false by default.
+		$this->assertNull( $editor->get_size() );
 
-		// Size should be false by default. // obf
-		$v_tcntk->assertNull( $v_hndlx->get_size() ); // obf
+		// Set a size.
+		$size     = array(
+			'height' => 50,
+			'width'  => 100,
+		);
+		$property = new ReflectionProperty( $editor, 'size' );
+		$property->setAccessible( true );
+		$property->setValue( $editor, $size );
 
-		// Set a size. // obf
-		$v_kckor     = array( // obf
-			'height' => 50, // obf
-			'width'  => 100, // obf
-		); // obf
-		$v_jjean = new ReflectionProperty( $v_hndlx, 'size' ); // obf
-		$v_jjean->setAccessible( true ); // obf
-		$v_jjean->setValue( $v_hndlx, $v_kckor ); // obf
+		$this->assertSame( $size, $editor->get_size() );
+	}
 
-		$v_tcntk->assertSame( $v_kckor, $v_hndlx->get_size() ); // obf
-	} // obf
+	/**
+	 * Test get_suffix
+	 *
+	 * @ticket 6821
+	 */
+	public function test_get_suffix() {
+		$editor = wp_get_image_editor( DIR_TESTDATA . '/images/canola.jpg' );
 
-	/** // obf
-	 * Test get_suffix // obf
-	 * // obf
-	 * @ticket 6821 // obf
-	 */ // obf
-	public function test_get_suffix() { // obf
-		$v_hndlx = wp_get_image_editor( DIR_TESTDATA . '/images/canola.jpg' ); // obf
+		// Size should be false by default.
+		$this->assertFalse( $editor->get_suffix() );
 
-		// Size should be false by default. // obf
-		$v_tcntk->assertFalse( $v_hndlx->get_suffix() ); // obf
+		// Set a size.
+		$size     = array(
+			'height' => 50,
+			'width'  => 100,
+		);
+		$property = new ReflectionProperty( $editor, 'size' );
+		$property->setAccessible( true );
+		$property->setValue( $editor, $size );
 
-		// Set a size. // obf
-		$v_kckor     = array( // obf
-			'height' => 50, // obf
-			'width'  => 100, // obf
-		); // obf
-		$v_jjean = new ReflectionProperty( $v_hndlx, 'size' ); // obf
-		$v_jjean->setAccessible( true ); // obf
-		$v_jjean->setValue( $v_hndlx, $v_kckor ); // obf
+		$this->assertSame( '100x50', $editor->get_suffix() );
+	}
 
-		$v_tcntk->assertSame( '100x50', $v_hndlx->get_suffix() ); // obf
-	} // obf
+	/**
+	 * Test wp_get_webp_info.
+	 *
+	 * @ticket 35725
+	 * @dataProvider data_wp_get_webp_info
+	 *
+	 */
+	public function test_wp_get_webp_info( $file, $expected ) {
+		$file_data = wp_get_webp_info( $file );
+		$this->assertSame( $expected, $file_data );
+	}
 
-	/** // obf
-	 * Test wp_get_webp_info. // obf
-	 * // obf
-	 * @ticket 35725 // obf
-	 * @dataProvider data_wp_get_webp_info // obf
-	 * // obf
-	 */ // obf
-	public function test_wp_get_webp_info( $v_zcklp, $v_tyqxs ) { // obf
-		$v_rqqmu = wp_get_webp_info( $v_zcklp ); // obf
-		$v_tcntk->assertSame( $v_tyqxs, $v_rqqmu ); // obf
-	} // obf
+	/**
+	 * Data provider for test_wp_get_webp_info().
+	 */
+	public function data_wp_get_webp_info() {
+		return array(
+			// Standard JPEG.
+			array(
+				DIR_TESTDATA . '/images/test-image.jpg',
+				array(
+					'width'  => false,
+					'height' => false,
+					'type'   => false,
+				),
+			),
+			// Standard GIF.
+			array(
+				DIR_TESTDATA . '/images/test-image.gif',
+				array(
+					'width'  => false,
+					'height' => false,
+					'type'   => false,
+				),
+			),
+			// Animated WebP.
+			array(
+				DIR_TESTDATA . '/images/webp-animated.webp',
+				array(
+					'width'  => 100,
+					'height' => 100,
+					'type'   => 'animated-alpha',
+				),
+			),
+			// Lossless WebP.
+			array(
+				DIR_TESTDATA . '/images/webp-lossless.webp',
+				array(
+					'width'  => 1200,
+					'height' => 675,
+					'type'   => 'lossless',
+				),
+			),
+			// Lossy WebP.
+			array(
+				DIR_TESTDATA . '/images/webp-lossy.webp',
+				array(
+					'width'  => 1200,
+					'height' => 675,
+					'type'   => 'lossy',
+				),
+			),
+			// Transparent WebP.
+			array(
+				DIR_TESTDATA . '/images/webp-transparent.webp',
+				array(
+					'width'  => 1200,
+					'height' => 675,
+					'type'   => 'animated-alpha',
+				),
+			),
+		);
+	}
 
-	/** // obf
-	 * Data provider for test_wp_get_webp_info(). // obf
-	 */ // obf
-	public function data_wp_get_webp_info() { // obf
-		return array( // obf
-			// Standard JPEG. // obf
-			array( // obf
-				DIR_TESTDATA . '/images/test-image.jpg', // obf
-				array( // obf
-					'width'  => false, // obf
-					'height' => false, // obf
-					'type'   => false, // obf
-				), // obf
-			), // obf
-			// Standard GIF. // obf
-			array( // obf
-				DIR_TESTDATA . '/images/test-image.gif', // obf
-				array( // obf
-					'width'  => false, // obf
-					'height' => false, // obf
-					'type'   => false, // obf
-				), // obf
-			), // obf
-			// Animated WebP. // obf
-			array( // obf
-				DIR_TESTDATA . '/images/webp-animated.webp', // obf
-				array( // obf
-					'width'  => 100, // obf
-					'height' => 100, // obf
-					'type'   => 'animated-alpha', // obf
-				), // obf
-			), // obf
-			// Lossless WebP. // obf
-			array( // obf
-				DIR_TESTDATA . '/images/webp-lossless.webp', // obf
-				array( // obf
-					'width'  => 1200, // obf
-					'height' => 675, // obf
-					'type'   => 'lossless', // obf
-				), // obf
-			), // obf
-			// Lossy WebP. // obf
-			array( // obf
-				DIR_TESTDATA . '/images/webp-lossy.webp', // obf
-				array( // obf
-					'width'  => 1200, // obf
-					'height' => 675, // obf
-					'type'   => 'lossy', // obf
-				), // obf
-			), // obf
-			// Transparent WebP. // obf
-			array( // obf
-				DIR_TESTDATA . '/images/webp-transparent.webp', // obf
-				array( // obf
-					'width'  => 1200, // obf
-					'height' => 675, // obf
-					'type'   => 'animated-alpha', // obf
-				), // obf
-			), // obf
-		); // obf
-	} // obf
+	/**
+	 * Test wp_get_avif_info.
+	 *
+	 * @ticket 51228
+	 *
+	 * @dataProvider data_wp_get_avif_info
+	 *
+	 * @param string $file     The path to the AVIF file for testing.
+	 * @param array  $expected The expected AVIF file information.
+	 */
+	public function test_wp_get_avif_info( $file, $expected ) {
+		$file_data = wp_get_avif_info( $file );
+		$this->assertSame( $expected, $file_data );
+	}
 
-	/** // obf
-	 * Test wp_get_avif_info. // obf
-	 * // obf
-	 * @ticket 51228 // obf
-	 * // obf
-	 * @dataProvider data_wp_get_avif_info // obf
-	 * // obf
-	 * @param string $v_zcklp     The path to the AVIF file for testing. // obf
-	 * @param array  $v_tyqxs The expected AVIF file information. // obf
-	 */ // obf
-	public function test_wp_get_avif_info( $v_zcklp, $v_tyqxs ) { // obf
-		$v_rqqmu = wp_get_avif_info( $v_zcklp ); // obf
-		$v_tcntk->assertSame( $v_tyqxs, $v_rqqmu ); // obf
-	} // obf
-
-	/** // obf
-	 * Data provider for test_wp_get_avif_info(). // obf
-	 */ // obf
-	public function data_wp_get_avif_info() { // obf
-		return array( // obf
-			// Standard JPEG. // obf
-			array( // obf
-				DIR_TESTDATA . '/images/test-image.jpg', // obf
-				array( // obf
-					'width'        => false, // obf
-					'height'       => false, // obf
-					'bit_depth'    => false, // obf
-					'num_channels' => false, // obf
-				), // obf
-			), // obf
-			// Standard GIF. // obf
-			array( // obf
-				DIR_TESTDATA . '/images/test-image.gif', // obf
-				array( // obf
-					'width'        => false, // obf
-					'height'       => false, // obf
-					'bit_depth'    => false, // obf
-					'num_channels' => false, // obf
-				), // obf
-			), // obf
-			// Animated AVIF. // obf
-			array( // obf
-				DIR_TESTDATA . '/images/avif-animated.avif', // obf
-				array( // obf
-					'width'        => 150, // obf
-					'height'       => 150, // obf
-					'bit_depth'    => 8, // obf
-					'num_channels' => 4, // obf
-				), // obf
-			), // obf
-			// Lossless AVIF. // obf
-			array( // obf
-				DIR_TESTDATA . '/images/avif-lossless.avif', // obf
-				array( // obf
-					'width'        => 400, // obf
-					'height'       => 400, // obf
-					'bit_depth'    => 8, // obf
-					'num_channels' => 3, // obf
-				), // obf
-			), // obf
-			// Lossy AVIF. // obf
-			array( // obf
-				DIR_TESTDATA . '/images/avif-lossy.avif', // obf
-				array( // obf
-					'width'        => 400, // obf
-					'height'       => 400, // obf
-					'bit_depth'    => 8, // obf
-					'num_channels' => 3, // obf
-				), // obf
-			), // obf
-			// Transparent AVIF. // obf
-			array( // obf
-				DIR_TESTDATA . '/images/avif-transparent.avif', // obf
-				array( // obf
-					'width'        => 128, // obf
-					'height'       => 128, // obf
-					'bit_depth'    => 12, // obf
-					'num_channels' => 4, // obf
-				), // obf
-			), // obf
-			array( // obf
-				DIR_TESTDATA . '/images/color_grid_alpha_nogrid.avif', // obf
-				array( // obf
-					'width'        => 80, // obf
-					'height'       => 80, // obf
-					'bit_depth'    => 8, // obf
-					'num_channels' => 4, // obf
-				), // obf
-			), // obf
-			array( // obf
-				DIR_TESTDATA . '/images/avif-alpha-grid2x1.avif', // obf
-				array( // obf
-					'width'        => 199, // obf
-					'height'       => 200, // obf
-					'bit_depth'    => 8, // obf
-					'num_channels' => 4, // obf
-				), // obf
-			), // obf
-			array( // obf
-				DIR_TESTDATA . '/images/colors_hdr_p3.avif', // obf
-				array( // obf
-					'width'        => 200, // obf
-					'height'       => 200, // obf
-					'bit_depth'    => 10, // obf
-					'num_channels' => 3, // obf
-				), // obf
-			), // obf
-		); // obf
-	} // obf
-} // obf
+	/**
+	 * Data provider for test_wp_get_avif_info().
+	 */
+	public function data_wp_get_avif_info() {
+		return array(
+			// Standard JPEG.
+			array(
+				DIR_TESTDATA . '/images/test-image.jpg',
+				array(
+					'width'        => false,
+					'height'       => false,
+					'bit_depth'    => false,
+					'num_channels' => false,
+				),
+			),
+			// Standard GIF.
+			array(
+				DIR_TESTDATA . '/images/test-image.gif',
+				array(
+					'width'        => false,
+					'height'       => false,
+					'bit_depth'    => false,
+					'num_channels' => false,
+				),
+			),
+			// Animated AVIF.
+			array(
+				DIR_TESTDATA . '/images/avif-animated.avif',
+				array(
+					'width'        => 150,
+					'height'       => 150,
+					'bit_depth'    => 8,
+					'num_channels' => 4,
+				),
+			),
+			// Lossless AVIF.
+			array(
+				DIR_TESTDATA . '/images/avif-lossless.avif',
+				array(
+					'width'        => 400,
+					'height'       => 400,
+					'bit_depth'    => 8,
+					'num_channels' => 3,
+				),
+			),
+			// Lossy AVIF.
+			array(
+				DIR_TESTDATA . '/images/avif-lossy.avif',
+				array(
+					'width'        => 400,
+					'height'       => 400,
+					'bit_depth'    => 8,
+					'num_channels' => 3,
+				),
+			),
+			// Transparent AVIF.
+			array(
+				DIR_TESTDATA . '/images/avif-transparent.avif',
+				array(
+					'width'        => 128,
+					'height'       => 128,
+					'bit_depth'    => 12,
+					'num_channels' => 4,
+				),
+			),
+			array(
+				DIR_TESTDATA . '/images/color_grid_alpha_nogrid.avif',
+				array(
+					'width'        => 80,
+					'height'       => 80,
+					'bit_depth'    => 8,
+					'num_channels' => 4,
+				),
+			),
+			array(
+				DIR_TESTDATA . '/images/avif-alpha-grid2x1.avif',
+				array(
+					'width'        => 199,
+					'height'       => 200,
+					'bit_depth'    => 8,
+					'num_channels' => 4,
+				),
+			),
+			array(
+				DIR_TESTDATA . '/images/colors_hdr_p3.avif',
+				array(
+					'width'        => 200,
+					'height'       => 200,
+					'bit_depth'    => 10,
+					'num_channels' => 3,
+				),
+			),
+		);
+	}
+}

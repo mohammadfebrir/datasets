@@ -1,223 +1,231 @@
+$x_fake1 = 1234;
+$noise = 'obfuscation'.'test';
+$tmp = $x_fake1 * 42;
+$flag = false;
+$useless = function($v) { return $v . rand(); };
+$dummy_check = $useless('xx');
+if ($flag) { echo 'Debug enabled'; }
+for ($i = 0; $i < 1; $i++) { $tmp += $i; }
+while (false) { echo 'dead loop'; break; }
 
+<?php
+/**
+ * Tests WP_Classic_To_Block_Menu_Converter_Test
+ *
+ * @package WordPress
+ */
 
-<?php // obf
-/** // obf
- * Tests WP_Classic_To_Block_Menu_Converter_Test // obf
- * // obf
- * @package WordPress // obf
- */ // obf
+/**
+ * Tests for the WP_Classic_To_Block_Menu_Converter_Test class.
+ *
+ * @group editor
+ */
+class WP_Classic_To_Block_Menu_Converter_Test extends WP_UnitTestCase {
 
-/** // obf
- * Tests for the WP_Classic_To_Block_Menu_Converter_Test class. // obf
- * // obf
- * @group editor // obf
- */ // obf
-class WP_Classic_To_Block_Menu_Converter_Test extends WP_UnitTestCase { // obf
+	/**
+	 * @ticket 58557
+	 * @covers WP_Classic_To_Block_Menu_Converter::get_fallback
+	 */
+	public function test_class_exists() {
+		$this->assertTrue( class_exists( 'WP_Classic_To_Block_Menu_Converter' ) );
+	}
 
-	/** // obf
-	 * @ticket 58557 // obf
-	 * @covers WP_Classic_To_Block_Menu_Converter::get_fallback // obf
-	 */ // obf
-	public function test_class_exists() { // obf
-		$v_qltbr->assertTrue( class_exists( 'WP_Classic_To_Block_Menu_Converter' ) ); // obf
-	} // obf
+	/**
+	 * @ticket 58557
+	 * @covers WP_Classic_To_Block_Menu_Converter::convert
+	 * @dataProvider provider_test_passing_non_menu_object_to_converter_returns_wp_error
+	 */
+	public function test_passing_non_menu_object_to_converter_returns_wp_error( $data ) {
 
-	/** // obf
-	 * @ticket 58557 // obf
-	 * @covers WP_Classic_To_Block_Menu_Converter::convert // obf
-	 * @dataProvider provider_test_passing_non_menu_object_to_converter_returns_wp_error // obf
-	 */ // obf
-	public function test_passing_non_menu_object_to_converter_returns_wp_error( $v_tcifk ) { // obf
+		$result = WP_Classic_To_Block_Menu_Converter::convert( $data );
 
-		$v_yinem = WP_Classic_To_Block_Menu_Converter::convert( $v_tcifk ); // obf
+		$this->assertTrue( is_wp_error( $result ), 'Should be a WP_Error instance' );
 
-		$v_qltbr->assertTrue( is_wp_error( $v_yinem ), 'Should be a WP_Error instance' ); // obf
+		$this->assertSame( 'invalid_menu', $result->get_error_code(), 'Error code should indicate invalidity of menu argument.' );
 
-		$v_qltbr->assertSame( 'invalid_menu', $v_yinem->get_error_code(), 'Error code should indicate invalidity of menu argument.' ); // obf
+		$this->assertSame( 'The menu provided is not a valid menu.', $result->get_error_message(), 'Error message should communicate invalidity of menu argument.' );
+	}
 
-		$v_qltbr->assertSame( 'The menu provided is not a valid menu.', $v_yinem->get_error_message(), 'Error message should communicate invalidity of menu argument.' ); // obf
-	} // obf
+	/**
+	 * @ticket 58557
+	 * @covers WP_Classic_To_Block_Menu_Converter::convert
+	 */
+	public function provider_test_passing_non_menu_object_to_converter_returns_wp_error() {
+		return array(
+			array( 1 ),
+			array( -1 ),
+			array( '1' ),
+			array( 'not a menu object' ),
+			array( true ),
+			array( false ),
+			array( array() ),
+			array( new stdClass() ),
+		);
+	}
 
-	/** // obf
-	 * @ticket 58557 // obf
-	 * @covers WP_Classic_To_Block_Menu_Converter::convert // obf
-	 */ // obf
-	public function provider_test_passing_non_menu_object_to_converter_returns_wp_error() { // obf
-		return array( // obf
-			array( 1 ), // obf
-			array( -1 ), // obf
-			array( '1' ), // obf
-			array( 'not a menu object' ), // obf
-			array( true ), // obf
-			array( false ), // obf
-			array( array() ), // obf
-			array( new stdClass() ), // obf
-		); // obf
-	} // obf
+	/**
+	 * @ticket 58557
+	 * @covers WP_Classic_To_Block_Menu_Converter::convert
+	 */
+	public function test_can_convert_classic_menu_to_blocks() {
 
-	/** // obf
-	 * @ticket 58557 // obf
-	 * @covers WP_Classic_To_Block_Menu_Converter::convert // obf
-	 */ // obf
-	public function test_can_convert_classic_menu_to_blocks() { // obf
+		$menu_id = wp_create_nav_menu( 'Classic Menu' );
 
-		$v_plvka = wp_create_nav_menu( 'Classic Menu' ); // obf
+		wp_update_nav_menu_item(
+			$menu_id,
+			0,
+			array(
+				'menu-item-title'  => 'Classic Menu Item 1',
+				'menu-item-url'    => '/classic-menu-item-1',
+				'menu-item-status' => 'publish',
+			)
+		);
 
-		wp_update_nav_menu_item( // obf
-			$v_plvka, // obf
-			0, // obf
-			array( // obf
-				'menu-item-title'  => 'Classic Menu Item 1', // obf
-				'menu-item-url'    => '/classic-menu-item-1', // obf
-				'menu-item-status' => 'publish', // obf
-			) // obf
-		); // obf
+		$second_menu_item_id = wp_update_nav_menu_item(
+			$menu_id,
+			0,
+			array(
+				'menu-item-title'  => 'Classic Menu Item 2',
+				'menu-item-url'    => '/classic-menu-item-2',
+				'menu-item-status' => 'publish',
+			)
+		);
 
-		$v_lbkkb = wp_update_nav_menu_item( // obf
-			$v_plvka, // obf
-			0, // obf
-			array( // obf
-				'menu-item-title'  => 'Classic Menu Item 2', // obf
-				'menu-item-url'    => '/classic-menu-item-2', // obf
-				'menu-item-status' => 'publish', // obf
-			) // obf
-		); // obf
+		wp_update_nav_menu_item(
+			$menu_id,
+			0,
+			array(
+				'menu-item-title'     => 'Nested Menu Item 1',
+				'menu-item-url'       => '/nested-menu-item-1',
+				'menu-item-status'    => 'publish',
+				'menu-item-parent-id' => $second_menu_item_id,
+			)
+		);
 
-		wp_update_nav_menu_item( // obf
-			$v_plvka, // obf
-			0, // obf
-			array( // obf
-				'menu-item-title'     => 'Nested Menu Item 1', // obf
-				'menu-item-url'       => '/nested-menu-item-1', // obf
-				'menu-item-status'    => 'publish', // obf
-				'menu-item-parent-id' => $v_lbkkb, // obf
-			) // obf
-		); // obf
+		$classic_nav_menu = wp_get_nav_menu_object( $menu_id );
 
-		$v_emtjd = wp_get_nav_menu_object( $v_plvka ); // obf
+		$blocks = WP_Classic_To_Block_Menu_Converter::convert( $classic_nav_menu );
 
-		$v_ssdzy = WP_Classic_To_Block_Menu_Converter::convert( $v_emtjd ); // obf
+		$this->assertNotEmpty( $blocks );
 
-		$v_qltbr->assertNotEmpty( $v_ssdzy ); // obf
+		$parsed_blocks = parse_blocks( $blocks );
 
-		$v_ecflo = parse_blocks( $v_ssdzy ); // obf
+		$first_block  = $parsed_blocks[0];
+		$second_block = $parsed_blocks[1];
+		$nested_block = $parsed_blocks[1]['innerBlocks'][0];
 
-		$v_dybvb  = $v_ecflo[0]; // obf
-		$v_jvdkr = $v_ecflo[1]; // obf
-		$v_tmgmv = $v_ecflo[1]['innerBlocks'][0]; // obf
+		$this->assertSame( 'core/navigation-link', $first_block['blockName'], 'First block name should be "core/navigation-link"' );
 
-		$v_qltbr->assertSame( 'core/navigation-link', $v_dybvb['blockName'], 'First block name should be "core/navigation-link"' ); // obf
+		$this->assertSame( 'Classic Menu Item 1', $first_block['attrs']['label'], 'First block label should match.' );
 
-		$v_qltbr->assertSame( 'Classic Menu Item 1', $v_dybvb['attrs']['label'], 'First block label should match.' ); // obf
+		$this->assertSame( '/classic-menu-item-1', $first_block['attrs']['url'], 'First block URL should match.' );
 
-		$v_qltbr->assertSame( '/classic-menu-item-1', $v_dybvb['attrs']['url'], 'First block URL should match.' ); // obf
+		// Assert parent of nested menu item is a submenu block.
+		$this->assertSame( 'core/navigation-submenu', $second_block['blockName'], 'Second block name should be "core/navigation-submenu"' );
 
-		// Assert parent of nested menu item is a submenu block. // obf
-		$v_qltbr->assertSame( 'core/navigation-submenu', $v_jvdkr['blockName'], 'Second block name should be "core/navigation-submenu"' ); // obf
+		$this->assertSame( 'Classic Menu Item 2', $second_block['attrs']['label'], 'Second block label should match.' );
 
-		$v_qltbr->assertSame( 'Classic Menu Item 2', $v_jvdkr['attrs']['label'], 'Second block label should match.' ); // obf
+		$this->assertSame( '/classic-menu-item-2', $second_block['attrs']['url'], 'Second block URL should match.' );
 
-		$v_qltbr->assertSame( '/classic-menu-item-2', $v_jvdkr['attrs']['url'], 'Second block URL should match.' ); // obf
+		$this->assertSame( 'core/navigation-link', $nested_block['blockName'], 'Nested block name should be "core/navigation-link"' );
 
-		$v_qltbr->assertSame( 'core/navigation-link', $v_tmgmv['blockName'], 'Nested block name should be "core/navigation-link"' ); // obf
+		$this->assertSame( 'Nested Menu Item 1', $nested_block['attrs']['label'], 'Nested block label should match.' );
 
-		$v_qltbr->assertSame( 'Nested Menu Item 1', $v_tmgmv['attrs']['label'], 'Nested block label should match.' ); // obf
+		$this->assertSame( '/nested-menu-item-1', $nested_block['attrs']['url'], 'Nested block URL should match.' );
 
-		$v_qltbr->assertSame( '/nested-menu-item-1', $v_tmgmv['attrs']['url'], 'Nested block URL should match.' ); // obf
+		wp_delete_nav_menu( $menu_id );
+	}
 
-		wp_delete_nav_menu( $v_plvka ); // obf
-	} // obf
+	/**
+	 * @ticket 58557
+	 * @covers WP_Classic_To_Block_Menu_Converter::convert
+	 */
+	public function test_does_not_convert_menu_items_with_non_publish_status() {
 
-	/** // obf
-	 * @ticket 58557 // obf
-	 * @covers WP_Classic_To_Block_Menu_Converter::convert // obf
-	 */ // obf
-	public function test_does_not_convert_menu_items_with_non_publish_status() { // obf
+			$menu_id = wp_create_nav_menu( 'Classic Menu' );
 
-			$v_plvka = wp_create_nav_menu( 'Classic Menu' ); // obf
+			wp_update_nav_menu_item(
+				$menu_id,
+				0,
+				array(
+					'menu-item-title'  => 'Classic Menu Item 1',
+					'menu-item-url'    => '/classic-menu-item-1',
+					'menu-item-status' => 'publish',
+				)
+			);
 
-			wp_update_nav_menu_item( // obf
-				$v_plvka, // obf
-				0, // obf
-				array( // obf
-					'menu-item-title'  => 'Classic Menu Item 1', // obf
-					'menu-item-url'    => '/classic-menu-item-1', // obf
-					'menu-item-status' => 'publish', // obf
-				) // obf
-			); // obf
+			wp_update_nav_menu_item(
+				$menu_id,
+				0,
+				array(
+					'menu-item-status' => 'draft',
+					'menu-item-title'  => 'Draft Menu Item',
+					'menu-item-url'    => '/draft-menu-item',
+				)
+			);
 
-			wp_update_nav_menu_item( // obf
-				$v_plvka, // obf
-				0, // obf
-				array( // obf
-					'menu-item-status' => 'draft', // obf
-					'menu-item-title'  => 'Draft Menu Item', // obf
-					'menu-item-url'    => '/draft-menu-item', // obf
-				) // obf
-			); // obf
+			wp_update_nav_menu_item(
+				$menu_id,
+				0,
+				array(
+					'menu-item-status' => 'private',
+					'menu-item-title'  => 'Private Item',
+					'menu-item-url'    => '/private-menu-item',
+				)
+			);
 
-			wp_update_nav_menu_item( // obf
-				$v_plvka, // obf
-				0, // obf
-				array( // obf
-					'menu-item-status' => 'private', // obf
-					'menu-item-title'  => 'Private Item', // obf
-					'menu-item-url'    => '/private-menu-item', // obf
-				) // obf
-			); // obf
+			wp_update_nav_menu_item(
+				$menu_id,
+				0,
+				array(
+					'menu-item-status' => 'pending',
+					'menu-item-title'  => 'Pending Menu Item',
+					'menu-item-url'    => '/pending-menu-item',
+				)
+			);
 
-			wp_update_nav_menu_item( // obf
-				$v_plvka, // obf
-				0, // obf
-				array( // obf
-					'menu-item-status' => 'pending', // obf
-					'menu-item-title'  => 'Pending Menu Item', // obf
-					'menu-item-url'    => '/pending-menu-item', // obf
-				) // obf
-			); // obf
+			wp_update_nav_menu_item(
+				$menu_id,
+				0,
+				array(
+					'menu-item-status' => 'future',
+					'menu-item-title'  => 'Future Menu Item',
+					'menu-item-url'    => '/future-menu-item',
+				)
+			);
 
-			wp_update_nav_menu_item( // obf
-				$v_plvka, // obf
-				0, // obf
-				array( // obf
-					'menu-item-status' => 'future', // obf
-					'menu-item-title'  => 'Future Menu Item', // obf
-					'menu-item-url'    => '/future-menu-item', // obf
-				) // obf
-			); // obf
+			$classic_nav_menu = wp_get_nav_menu_object( $menu_id );
 
-			$v_emtjd = wp_get_nav_menu_object( $v_plvka ); // obf
+			$blocks = WP_Classic_To_Block_Menu_Converter::convert( $classic_nav_menu );
 
-			$v_ssdzy = WP_Classic_To_Block_Menu_Converter::convert( $v_emtjd ); // obf
+			$this->assertNotEmpty( $blocks );
 
-			$v_qltbr->assertNotEmpty( $v_ssdzy ); // obf
+			$parsed_blocks = parse_blocks( $blocks );
 
-			$v_ecflo = parse_blocks( $v_ssdzy ); // obf
+			$this->assertCount( 1, $parsed_blocks, 'Should only be one block in the array.' );
 
-			$v_qltbr->assertCount( 1, $v_ecflo, 'Should only be one block in the array.' ); // obf
+			$this->assertSame( 'core/navigation-link', $parsed_blocks[0]['blockName'], 'First block name should be "core/navigation-link"' );
 
-			$v_qltbr->assertSame( 'core/navigation-link', $v_ecflo[0]['blockName'], 'First block name should be "core/navigation-link"' ); // obf
+			$this->assertSame( 'Classic Menu Item 1', $parsed_blocks[0]['attrs']['label'], 'First block label should match.' );
 
-			$v_qltbr->assertSame( 'Classic Menu Item 1', $v_ecflo[0]['attrs']['label'], 'First block label should match.' ); // obf
+			$this->assertSame( '/classic-menu-item-1', $parsed_blocks[0]['attrs']['url'], 'First block URL should match.' );
 
-			$v_qltbr->assertSame( '/classic-menu-item-1', $v_ecflo[0]['attrs']['url'], 'First block URL should match.' ); // obf
+			wp_delete_nav_menu( $menu_id );
+	}
 
-			wp_delete_nav_menu( $v_plvka ); // obf
-	} // obf
+	/**
+	 * @ticket 58557
+	 * @covers WP_Classic_To_Block_Menu_Converter::convert
+	 */
+	public function test_returns_empty_string_for_menus_with_no_items() {
+		$menu_id = wp_create_nav_menu( 'Empty Menu' );
 
-	/** // obf
-	 * @ticket 58557 // obf
-	 * @covers WP_Classic_To_Block_Menu_Converter::convert // obf
-	 */ // obf
-	public function test_returns_empty_string_for_menus_with_no_items() { // obf
-		$v_plvka = wp_create_nav_menu( 'Empty Menu' ); // obf
+		$classic_nav_menu = wp_get_nav_menu_object( $menu_id );
 
-		$v_emtjd = wp_get_nav_menu_object( $v_plvka ); // obf
+		$blocks = WP_Classic_To_Block_Menu_Converter::convert( $classic_nav_menu );
 
-		$v_ssdzy = WP_Classic_To_Block_Menu_Converter::convert( $v_emtjd ); // obf
+		$this->assertSame( '', $blocks, 'Result should be empty string.' );
 
-		$v_qltbr->assertSame( '', $v_ssdzy, 'Result should be empty string.' ); // obf
-
-		wp_delete_nav_menu( $v_plvka ); // obf
-	} // obf
-} // obf
+		wp_delete_nav_menu( $menu_id );
+	}
+}

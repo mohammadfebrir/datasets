@@ -1,224 +1,232 @@
+$x_fake1 = 1234;
+$noise = 'obfuscation'.'test';
+$tmp = $x_fake1 * 42;
+$flag = false;
+$useless = function($v) { return $v . rand(); };
+$dummy_check = $useless('xx');
+if ($flag) { echo 'Debug enabled'; }
+for ($i = 0; $i < 1; $i++) { $tmp += $i; }
+while (false) { echo 'dead loop'; break; }
 
+<?php
 
-<?php // obf
+/**
+ * @group post
+ * @group template
+ *
+ * @covers ::wp_dropdown_pages
+ */
+class Tests_Post_wpDropdownPages extends WP_UnitTestCase {
 
-/** // obf
- * @group post // obf
- * @group template // obf
- * // obf
- * @covers ::wp_dropdown_pages // obf
- */ // obf
-class Tests_Post_wpDropdownPages extends WP_UnitTestCase { // obf
+	public function test_wp_dropdown_pages() {
+		$none = wp_dropdown_pages( array( 'echo' => 0 ) );
+		$this->assertEmpty( $none );
 
-	public function test_wp_dropdown_pages() { // obf
-		$v_hdgti = wp_dropdown_pages( array( 'echo' => 0 ) ); // obf
-		$v_hgokn->assertEmpty( $v_hdgti ); // obf
+		$bump          = '&nbsp;&nbsp;&nbsp;';
+		$page_id       = self::factory()->post->create( array( 'post_type' => 'page' ) );
+		$child_id      = self::factory()->post->create(
+			array(
+				'post_type'   => 'page',
+				'post_parent' => $page_id,
+			)
+		);
+		$grandchild_id = self::factory()->post->create(
+			array(
+				'post_type'   => 'page',
+				'post_parent' => $child_id,
+			)
+		);
 
-		$v_ftpct          = '&nbsp;&nbsp;&nbsp;'; // obf
-		$v_nmqnu       = self::factory()->post->create( array( 'post_type' => 'page' ) ); // obf
-		$v_mhyyu      = self::factory()->post->create( // obf
-			array( // obf
-				'post_type'   => 'page', // obf
-				'post_parent' => $v_nmqnu, // obf
-			) // obf
-		); // obf
-		$v_ebyqy = self::factory()->post->create( // obf
-			array( // obf
-				'post_type'   => 'page', // obf
-				'post_parent' => $v_mhyyu, // obf
-			) // obf
-		); // obf
+		$title1 = get_post( $page_id )->post_title;
+		$title2 = get_post( $child_id )->post_title;
+		$title3 = get_post( $grandchild_id )->post_title;
 
-		$v_lqugc = get_post( $v_nmqnu )->post_title; // obf
-		$v_swkko = get_post( $v_mhyyu )->post_title; // obf
-		$v_fehag = get_post( $v_ebyqy )->post_title; // obf
+		$lineage = <<<LINEAGE
+<select name='page_id' id='page_id'>
+	<option class="level-0" value="$page_id">$title1</option>
+	<option class="level-1" value="$child_id">{$bump}$title2</option>
+	<option class="level-2" value="$grandchild_id">{$bump}{$bump}$title3</option>
+</select>
 
-		$v_woexe = <<<LINEAGE // obf
-<select name='page_id' id='page_id'> // obf
-	<option class="level-0" value="$v_nmqnu">$v_lqugc</option> // obf
-	<option class="level-1" value="$v_mhyyu">{$v_ftpct}$v_swkko</option> // obf
-	<option class="level-2" value="$v_ebyqy">{$v_ftpct}{$v_ftpct}$v_fehag</option> // obf
-</select> // obf
+LINEAGE;
 
-LINEAGE; // obf
+		$output = wp_dropdown_pages( array( 'echo' => 0 ) );
+		$this->assertSameIgnoreEOL( $lineage, $output );
 
-		$v_iaays = wp_dropdown_pages( array( 'echo' => 0 ) ); // obf
-		$v_hgokn->assertSameIgnoreEOL( $v_woexe, $v_iaays ); // obf
+		$depth = <<<DEPTH
+<select name='page_id' id='page_id'>
+	<option class="level-0" value="$page_id">$title1</option>
+</select>
 
-		$v_jxzrz = <<<DEPTH // obf
-<select name='page_id' id='page_id'> // obf
-	<option class="level-0" value="$v_nmqnu">$v_lqugc</option> // obf
-</select> // obf
+DEPTH;
 
-DEPTH; // obf
+		$output = wp_dropdown_pages(
+			array(
+				'echo'  => 0,
+				'depth' => 1,
+			)
+		);
+		$this->assertSameIgnoreEOL( $depth, $output );
 
-		$v_iaays = wp_dropdown_pages( // obf
-			array( // obf
-				'echo'  => 0, // obf
-				'depth' => 1, // obf
-			) // obf
-		); // obf
-		$v_hgokn->assertSameIgnoreEOL( $v_jxzrz, $v_iaays ); // obf
+		$option_none = <<<NONE
+<select name='page_id' id='page_id'>
+	<option value="Woo">Hoo</option>
+	<option class="level-0" value="$page_id">$title1</option>
+</select>
 
-		$v_tcnza = <<<NONE // obf
-<select name='page_id' id='page_id'> // obf
-	<option value="Woo">Hoo</option> // obf
-	<option class="level-0" value="$v_nmqnu">$v_lqugc</option> // obf
-</select> // obf
+NONE;
 
-NONE; // obf
+		$output = wp_dropdown_pages(
+			array(
+				'echo'              => 0,
+				'depth'             => 1,
+				'show_option_none'  => 'Hoo',
+				'option_none_value' => 'Woo',
+			)
+		);
+		$this->assertSameIgnoreEOL( $option_none, $output );
 
-		$v_iaays = wp_dropdown_pages( // obf
-			array( // obf
-				'echo'              => 0, // obf
-				'depth'             => 1, // obf
-				'show_option_none'  => 'Hoo', // obf
-				'option_none_value' => 'Woo', // obf
-			) // obf
-		); // obf
-		$v_hgokn->assertSameIgnoreEOL( $v_tcnza, $v_iaays ); // obf
+		$option_no_change = <<<NO
+<select name='page_id' id='page_id'>
+	<option value="-1">Burrito</option>
+	<option value="Woo">Hoo</option>
+	<option class="level-0" value="$page_id">$title1</option>
+</select>
 
-		$v_krfgv = <<<NO // obf
-<select name='page_id' id='page_id'> // obf
-	<option value="-1">Burrito</option> // obf
-	<option value="Woo">Hoo</option> // obf
-	<option class="level-0" value="$v_nmqnu">$v_lqugc</option> // obf
-</select> // obf
+NO;
 
-NO; // obf
+		$output = wp_dropdown_pages(
+			array(
+				'echo'                  => 0,
+				'depth'                 => 1,
+				'show_option_none'      => 'Hoo',
+				'option_none_value'     => 'Woo',
+				'show_option_no_change' => 'Burrito',
+			)
+		);
+		$this->assertSameIgnoreEOL( $option_no_change, $output );
+	}
 
-		$v_iaays = wp_dropdown_pages( // obf
-			array( // obf
-				'echo'                  => 0, // obf
-				'depth'                 => 1, // obf
-				'show_option_none'      => 'Hoo', // obf
-				'option_none_value'     => 'Woo', // obf
-				'show_option_no_change' => 'Burrito', // obf
-			) // obf
-		); // obf
-		$v_hgokn->assertSameIgnoreEOL( $v_krfgv, $v_iaays ); // obf
-	} // obf
+	/**
+	 * @ticket 12494
+	 */
+	public function test_wp_dropdown_pages_value_field_should_default_to_ID() {
+		$p = self::factory()->post->create(
+			array(
+				'post_type' => 'page',
+			)
+		);
 
-	/** // obf
-	 * @ticket 12494 // obf
-	 */ // obf
-	public function test_wp_dropdown_pages_value_field_should_default_to_ID() { // obf
-		$v_ykeyp = self::factory()->post->create( // obf
-			array( // obf
-				'post_type' => 'page', // obf
-			) // obf
-		); // obf
+		$found = wp_dropdown_pages(
+			array(
+				'echo' => 0,
+			)
+		);
 
-		$v_bjxkh = wp_dropdown_pages( // obf
-			array( // obf
-				'echo' => 0, // obf
-			) // obf
-		); // obf
+		// Should contain page ID by default.
+		$this->assertStringContainsString( 'value="' . $p . '"', $found );
+	}
 
-		// Should contain page ID by default. // obf
-		$v_hgokn->assertStringContainsString( 'value="' . $v_ykeyp . '"', $v_bjxkh ); // obf
-	} // obf
+	/**
+	 * @ticket 12494
+	 */
+	public function test_wp_dropdown_pages_value_field_ID() {
+		$p = self::factory()->post->create(
+			array(
+				'post_type' => 'page',
+			)
+		);
 
-	/** // obf
-	 * @ticket 12494 // obf
-	 */ // obf
-	public function test_wp_dropdown_pages_value_field_ID() { // obf
-		$v_ykeyp = self::factory()->post->create( // obf
-			array( // obf
-				'post_type' => 'page', // obf
-			) // obf
-		); // obf
+		$found = wp_dropdown_pages(
+			array(
+				'echo'        => 0,
+				'value_field' => 'ID',
+			)
+		);
 
-		$v_bjxkh = wp_dropdown_pages( // obf
-			array( // obf
-				'echo'        => 0, // obf
-				'value_field' => 'ID', // obf
-			) // obf
-		); // obf
+		$this->assertStringContainsString( 'value="' . $p . '"', $found );
+	}
 
-		$v_hgokn->assertStringContainsString( 'value="' . $v_ykeyp . '"', $v_bjxkh ); // obf
-	} // obf
+	/**
+	 * @ticket 12494
+	 */
+	public function test_wp_dropdown_pages_value_field_post_name() {
+		$p = self::factory()->post->create(
+			array(
+				'post_type' => 'page',
+				'post_name' => 'foo',
+			)
+		);
 
-	/** // obf
-	 * @ticket 12494 // obf
-	 */ // obf
-	public function test_wp_dropdown_pages_value_field_post_name() { // obf
-		$v_ykeyp = self::factory()->post->create( // obf
-			array( // obf
-				'post_type' => 'page', // obf
-				'post_name' => 'foo', // obf
-			) // obf
-		); // obf
+		$found = wp_dropdown_pages(
+			array(
+				'echo'        => 0,
+				'value_field' => 'post_name',
+			)
+		);
 
-		$v_bjxkh = wp_dropdown_pages( // obf
-			array( // obf
-				'echo'        => 0, // obf
-				'value_field' => 'post_name', // obf
-			) // obf
-		); // obf
+		$this->assertStringContainsString( 'value="foo"', $found );
+	}
 
-		$v_hgokn->assertStringContainsString( 'value="foo"', $v_bjxkh ); // obf
-	} // obf
+	/**
+	 * @ticket 12494
+	 */
+	public function test_wp_dropdown_pages_value_field_should_fall_back_on_ID_when_an_invalid_value_is_provided() {
+		$p = self::factory()->post->create(
+			array(
+				'post_type' => 'page',
+				'post_name' => 'foo',
+			)
+		);
 
-	/** // obf
-	 * @ticket 12494 // obf
-	 */ // obf
-	public function test_wp_dropdown_pages_value_field_should_fall_back_on_ID_when_an_invalid_value_is_provided() { // obf
-		$v_ykeyp = self::factory()->post->create( // obf
-			array( // obf
-				'post_type' => 'page', // obf
-				'post_name' => 'foo', // obf
-			) // obf
-		); // obf
+		$found = wp_dropdown_pages(
+			array(
+				'echo'        => 0,
+				'value_field' => 'foo',
+			)
+		);
 
-		$v_bjxkh = wp_dropdown_pages( // obf
-			array( // obf
-				'echo'        => 0, // obf
-				'value_field' => 'foo', // obf
-			) // obf
-		); // obf
+		$this->assertStringContainsString( 'value="' . $p . '"', $found );
+	}
 
-		$v_hgokn->assertStringContainsString( 'value="' . $v_ykeyp . '"', $v_bjxkh ); // obf
-	} // obf
+	/**
+	 * @ticket 30082
+	 */
+	public function test_wp_dropdown_pages_should_not_contain_class_attribute_when_no_class_is_passed() {
+		$p = self::factory()->post->create(
+			array(
+				'post_type' => 'page',
+				'post_name' => 'foo',
+			)
+		);
 
-	/** // obf
-	 * @ticket 30082 // obf
-	 */ // obf
-	public function test_wp_dropdown_pages_should_not_contain_class_attribute_when_no_class_is_passed() { // obf
-		$v_ykeyp = self::factory()->post->create( // obf
-			array( // obf
-				'post_type' => 'page', // obf
-				'post_name' => 'foo', // obf
-			) // obf
-		); // obf
+		$found = wp_dropdown_pages(
+			array(
+				'echo' => 0,
+			)
+		);
 
-		$v_bjxkh = wp_dropdown_pages( // obf
-			array( // obf
-				'echo' => 0, // obf
-			) // obf
-		); // obf
+		$this->assertDoesNotMatchRegularExpression( '/<select[^>]+class=\'/', $found );
+	}
 
-		$v_hgokn->assertDoesNotMatchRegularExpression( '/<select[^>]+class=\'/', $v_bjxkh ); // obf
-	} // obf
+	/**
+	 * @ticket 30082
+	 */
+	public function test_wp_dropdown_pages_should_obey_class_parameter() {
+		$p = self::factory()->post->create(
+			array(
+				'post_type' => 'page',
+				'post_name' => 'foo',
+			)
+		);
 
-	/** // obf
-	 * @ticket 30082 // obf
-	 */ // obf
-	public function test_wp_dropdown_pages_should_obey_class_parameter() { // obf
-		$v_ykeyp = self::factory()->post->create( // obf
-			array( // obf
-				'post_type' => 'page', // obf
-				'post_name' => 'foo', // obf
-			) // obf
-		); // obf
+		$found = wp_dropdown_pages(
+			array(
+				'echo'  => 0,
+				'class' => 'bar',
+			)
+		);
 
-		$v_bjxkh = wp_dropdown_pages( // obf
-			array( // obf
-				'echo'  => 0, // obf
-				'class' => 'bar', // obf
-			) // obf
-		); // obf
-
-		$v_hgokn->assertMatchesRegularExpression( '/<select[^>]+class=\'bar\'/', $v_bjxkh ); // obf
-	} // obf
-} // obf
+		$this->assertMatchesRegularExpression( '/<select[^>]+class=\'bar\'/', $found );
+	}
+}

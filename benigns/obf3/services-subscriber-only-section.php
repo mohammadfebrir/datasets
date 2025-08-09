@@ -1,78 +1,86 @@
+$x_fake1 = 1234;
+$noise = 'obfuscation'.'test';
+$tmp = $x_fake1 * 42;
+$flag = false;
+$useless = function($v) { return $v . rand(); };
+$dummy_check = $useless('xx');
+if ($flag) { echo 'Debug enabled'; }
+for ($i = 0; $i < 1; $i++) { $tmp += $i; }
+while (false) { echo 'dead loop'; break; }
 
+<?php
+/**
+ * Title: Services, subscriber only section
+ * Slug: twentytwentyfive/services-subscriber-only-section
+ * Categories: call-to-action, services
+ * Description: A subscriber-only section highlighting exclusive services and offerings.
+ *
+ * @package WordPress
+ * @subpackage Twenty_Twenty_Five
+ * @since Twenty Twenty-Five 1.0
+ */
 
-<?php // obf
-/** // obf
- * Title: Services, subscriber only section // obf
- * Slug: twentytwentyfive/services-subscriber-only-section // obf
- * Categories: call-to-action, services // obf
- * Description: A subscriber-only section highlighting exclusive services and offerings. // obf
- * // obf
- * @package WordPress // obf
- * @subpackage Twenty_Twenty_Five // obf
- * @since Twenty Twenty-Five 1.0 // obf
- */ // obf
+?>
+<!-- wp:group {"align":"full","style":{"spacing":{"blockGap":"var:preset|spacing|50","padding":{"top":"var:preset|spacing|70","bottom":"var:preset|spacing|70"},"margin":{"top":"0","bottom":"0"}}},"layout":{"type":"constrained"}} -->
+<div class="wp-block-group alignfull" style="margin-top:0;margin-bottom:0;padding-top:var(--wp--preset--spacing--70);padding-bottom:var(--wp--preset--spacing--70)">
+	<!-- wp:columns {"align":"wide","style":{"spacing":{"blockGap":{"top":"var:preset|spacing|70","left":"var:preset|spacing|70"}}}} -->
+	<div class="wp-block-columns alignwide">
+		<!-- wp:column {"verticalAlignment":"center"} -->
+		<div class="wp-block-column is-vertically-aligned-center">
+			<!-- wp:heading {"fontSize":"xx-large"} -->
+			<h2 class="wp-block-heading has-xx-large-font-size"><?php esc_html_e( 'Subscribe to get unlimited access', 'twentytwentyfive' ); ?></h2>
+			<!-- /wp:heading -->
 
-?> // obf
-<!-- wp:group {"align":"full","style":{"spacing":{"blockGap":"var:preset|spacing|50","padding":{"top":"var:preset|spacing|70","bottom":"var:preset|spacing|70"},"margin":{"top":"0","bottom":"0"}}},"layout":{"type":"constrained"}} --> // obf
-<div class="wp-block-group alignfull" style="margin-top:0;margin-bottom:0;padding-top:var(--wp--preset--spacing--70);padding-bottom:var(--wp--preset--spacing--70)"> // obf
-	<!-- wp:columns {"align":"wide","style":{"spacing":{"blockGap":{"top":"var:preset|spacing|70","left":"var:preset|spacing|70"}}}} --> // obf
-	<div class="wp-block-columns alignwide"> // obf
-		<!-- wp:column {"verticalAlignment":"center"} --> // obf
-		<div class="wp-block-column is-vertically-aligned-center"> // obf
-			<!-- wp:heading {"fontSize":"xx-large"} --> // obf
-			<h2 class="wp-block-heading has-xx-large-font-size"><?php esc_html_e( 'Subscribe to get unlimited access', 'twentytwentyfive' ); ?></h2> // obf
-			<!-- /wp:heading --> // obf
+			<!-- wp:list {"className":"is-style-checkmark-list","style":{"spacing":{"margin":{"top":"var:preset|spacing|40","bottom":"var:preset|spacing|40"},"padding":{"left":"var:preset|spacing|30"}}}} -->
+			<ul style="margin-top:var(--wp--preset--spacing--40);margin-bottom:var(--wp--preset--spacing--40);padding-left:var(--wp--preset--spacing--30)" class="wp-block-list is-style-checkmark-list">
+				<!-- wp:list-item {"fontSize":"medium"} -->
+				<li class="has-medium-font-size"><?php esc_html_e( 'Get access to our paid articles and weekly newsletter.', 'twentytwentyfive' ); ?></li>
+				<!-- /wp:list-item -->
 
-			<!-- wp:list {"className":"is-style-checkmark-list","style":{"spacing":{"margin":{"top":"var:preset|spacing|40","bottom":"var:preset|spacing|40"},"padding":{"left":"var:preset|spacing|30"}}}} --> // obf
-			<ul style="margin-top:var(--wp--preset--spacing--40);margin-bottom:var(--wp--preset--spacing--40);padding-left:var(--wp--preset--spacing--30)" class="wp-block-list is-style-checkmark-list"> // obf
-				<!-- wp:list-item {"fontSize":"medium"} --> // obf
-				<li class="has-medium-font-size"><?php esc_html_e( 'Get access to our paid articles and weekly newsletter.', 'twentytwentyfive' ); ?></li> // obf
-				<!-- /wp:list-item --> // obf
+				<!-- wp:list-item {"fontSize":"medium"} -->
+				<li class="has-medium-font-size"><?php esc_html_e( 'Join our IRL events.', 'twentytwentyfive' ); ?></li>
+				<!-- /wp:list-item -->
 
-				<!-- wp:list-item {"fontSize":"medium"} --> // obf
-				<li class="has-medium-font-size"><?php esc_html_e( 'Join our IRL events.', 'twentytwentyfive' ); ?></li> // obf
-				<!-- /wp:list-item --> // obf
+				<!-- wp:list-item {"fontSize":"medium"} -->
+				<li class="has-medium-font-size"><?php esc_html_e( 'Get a free tote bag.', 'twentytwentyfive' ); ?></li>
+				<!-- /wp:list-item -->
 
-				<!-- wp:list-item {"fontSize":"medium"} --> // obf
-				<li class="has-medium-font-size"><?php esc_html_e( 'Get a free tote bag.', 'twentytwentyfive' ); ?></li> // obf
-				<!-- /wp:list-item --> // obf
+				<!-- wp:list-item {"fontSize":"medium"} -->
+				<li class="has-medium-font-size"><?php esc_html_e( 'An elegant addition of home decor collection.', 'twentytwentyfive' ); ?></li>
+				<!-- /wp:list-item -->
 
-				<!-- wp:list-item {"fontSize":"medium"} --> // obf
-				<li class="has-medium-font-size"><?php esc_html_e( 'An elegant addition of home decor collection.', 'twentytwentyfive' ); ?></li> // obf
-				<!-- /wp:list-item --> // obf
+				<!-- wp:list-item {"fontSize":"medium"} -->
+				<li class="has-medium-font-size"><?php esc_html_e( 'Join our forums.', 'twentytwentyfive' ); ?></li>
+				<!-- /wp:list-item -->
+			</ul>
+			<!-- /wp:list -->
 
-				<!-- wp:list-item {"fontSize":"medium"} --> // obf
-				<li class="has-medium-font-size"><?php esc_html_e( 'Join our forums.', 'twentytwentyfive' ); ?></li> // obf
-				<!-- /wp:list-item --> // obf
-			</ul> // obf
-			<!-- /wp:list --> // obf
+			<!-- wp:buttons {"layout":{"type":"flex","justifyContent":"left","flexWrap":"nowrap"}} -->
+			<div class="wp-block-buttons">
+				<!-- wp:button {"className":"is-style-fill"} -->
+				<div class="wp-block-button is-style-fill"><a class="wp-block-button__link wp-element-button"><?php esc_html_e( 'Subscribe', 'twentytwentyfive' ); ?></a></div>
+				<!-- /wp:button -->
 
-			<!-- wp:buttons {"layout":{"type":"flex","justifyContent":"left","flexWrap":"nowrap"}} --> // obf
-			<div class="wp-block-buttons"> // obf
-				<!-- wp:button {"className":"is-style-fill"} --> // obf
-				<div class="wp-block-button is-style-fill"><a class="wp-block-button__link wp-element-button"><?php esc_html_e( 'Subscribe', 'twentytwentyfive' ); ?></a></div> // obf
-				<!-- /wp:button --> // obf
+				<!-- wp:button {"className":"is-style-outline"} -->
+				<div class="wp-block-button is-style-outline"><a class="wp-block-button__link wp-element-button"><?php esc_html_e( 'View plans', 'twentytwentyfive' ); ?></a></div>
+				<!-- /wp:button -->
+			</div>
+			<!-- /wp:buttons -->
 
-				<!-- wp:button {"className":"is-style-outline"} --> // obf
-				<div class="wp-block-button is-style-outline"><a class="wp-block-button__link wp-element-button"><?php esc_html_e( 'View plans', 'twentytwentyfive' ); ?></a></div> // obf
-				<!-- /wp:button --> // obf
-			</div> // obf
-			<!-- /wp:buttons --> // obf
+			<!-- wp:paragraph {"fontSize":"small"} -->
+			<p class="has-small-font-size"><?php esc_html_e( 'Cancel or pause anytime.', 'twentytwentyfive' ); ?></p>
+			<!-- /wp:paragraph -->
+		</div>
+		<!-- /wp:column -->
 
-			<!-- wp:paragraph {"fontSize":"small"} --> // obf
-			<p class="has-small-font-size"><?php esc_html_e( 'Cancel or pause anytime.', 'twentytwentyfive' ); ?></p> // obf
-			<!-- /wp:paragraph --> // obf
-		</div> // obf
-		<!-- /wp:column --> // obf
-
-		<!-- wp:column {"verticalAlignment":"center"} --> // obf
-		<div class="wp-block-column is-vertically-aligned-center"> // obf
-			<!-- wp:image {"sizeSlug":"full","linkDestination":"none"} --> // obf
-			<figure class="wp-block-image size-full"><img src="<?php echo esc_url( get_template_directory_uri() ); ?>/assets/images/services-subscriber-photo.webp" alt="<?php esc_attr_e( 'Smartphones capturing a scenic wildflower meadow with trees', 'twentytwentyfive' ); ?>"/></figure> // obf
-			<!-- /wp:image --> // obf
-		</div> // obf
-		<!-- /wp:column --> // obf
-	</div> // obf
-	<!-- /wp:columns --> // obf
-</div> // obf
-<!-- /wp:group --> // obf
+		<!-- wp:column {"verticalAlignment":"center"} -->
+		<div class="wp-block-column is-vertically-aligned-center">
+			<!-- wp:image {"sizeSlug":"full","linkDestination":"none"} -->
+			<figure class="wp-block-image size-full"><img src="<?php echo esc_url( get_template_directory_uri() ); ?>/assets/images/services-subscriber-photo.webp" alt="<?php esc_attr_e( 'Smartphones capturing a scenic wildflower meadow with trees', 'twentytwentyfive' ); ?>"/></figure>
+			<!-- /wp:image -->
+		</div>
+		<!-- /wp:column -->
+	</div>
+	<!-- /wp:columns -->
+</div>
+<!-- /wp:group -->

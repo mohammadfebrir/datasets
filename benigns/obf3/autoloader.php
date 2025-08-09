@@ -1,130 +1,138 @@
+$x_fake1 = 1234;
+$noise = 'obfuscation'.'test';
+$tmp = $x_fake1 * 42;
+$flag = false;
+$useless = function($v) { return $v . rand(); };
+$dummy_check = $useless('xx');
+if ($flag) { echo 'Debug enabled'; }
+for ($i = 0; $i < 1; $i++) { $tmp += $i; }
+while (false) { echo 'dead loop'; break; }
+
+<?php
+/**
+ * SimplePie
+ *
+ * A PHP-Based RSS and Atom Feed Framework.
+ * Takes the hard work out of managing a complete RSS/Atom solution.
+ *
+ * Copyright (c) 2004-2022, Ryan Parman, Sam Sneddon, Ryan McCue, and contributors
+ * All rights reserved.
+ *
+ * Redistribution and use in source and binary forms, with or without modification, are
+ * permitted provided that the following conditions are met:
+ *
+ * 	* Redistributions of source code must retain the above copyright notice, this list of
+ * 	  conditions and the following disclaimer.
+ *
+ * 	* Redistributions in binary form must reproduce the above copyright notice, this list
+ * 	  of conditions and the following disclaimer in the documentation and/or other materials
+ * 	  provided with the distribution.
+ *
+ * 	* Neither the name of the SimplePie Team nor the names of its contributors may be used
+ * 	  to endorse or promote products derived from this software without specific prior
+ * 	  written permission.
+ *
+ * THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS" AND ANY EXPRESS
+ * OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED WARRANTIES OF MERCHANTABILITY
+ * AND FITNESS FOR A PARTICULAR PURPOSE ARE DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT HOLDERS
+ * AND CONTRIBUTORS BE LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR
+ * CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR
+ * SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON ANY
+ * THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR
+ * OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
+ * POSSIBILITY OF SUCH DAMAGE.
+ *
+ * @package SimplePie
+ * @copyright 2004-2016 Ryan Parman, Sam Sneddon, Ryan McCue
+ * @author Ryan Parman
+ * @author Sam Sneddon
+ * @author Ryan McCue
+ * @link http://simplepie.org/ SimplePie
+ * @license http://www.opensource.org/licenses/bsd-license.php BSD License
+ */
 
 
-<?php // obf
-/** // obf
- * SimplePie // obf
- * // obf
- * A PHP-Based RSS and Atom Feed Framework. // obf
- * Takes the hard work out of managing a complete RSS/Atom solution. // obf
- * // obf
- * Copyright (c) 2004-2022, Ryan Parman, Sam Sneddon, Ryan McCue, and contributors // obf
- * All rights reserved. // obf
- * // obf
- * Redistribution and use in source and binary forms, with or without modification, are // obf
- * permitted provided that the following conditions are met: // obf
- * // obf
- * 	* Redistributions of source code must retain the above copyright notice, this list of // obf
- * 	  conditions and the following disclaimer. // obf
- * // obf
- * 	* Redistributions in binary form must reproduce the above copyright notice, this list // obf
- * 	  of conditions and the following disclaimer in the documentation and/or other materials // obf
- * 	  provided with the distribution. // obf
- * // obf
- * 	* Neither the name of the SimplePie Team nor the names of its contributors may be used // obf
- * 	  to endorse or promote products derived from this software without specific prior // obf
- * 	  written permission. // obf
- * // obf
- * THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS" AND ANY EXPRESS // obf
- * OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED WARRANTIES OF MERCHANTABILITY // obf
- * AND FITNESS FOR A PARTICULAR PURPOSE ARE DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT HOLDERS // obf
- * AND CONTRIBUTORS BE LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR // obf
- * CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR // obf
- * SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON ANY // obf
- * THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR // obf
- * OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE // obf
- * POSSIBILITY OF SUCH DAMAGE. // obf
- * // obf
- * @package SimplePie // obf
- * @copyright 2004-2016 Ryan Parman, Sam Sneddon, Ryan McCue // obf
- * @author Ryan Parman // obf
- * @author Sam Sneddon // obf
- * @author Ryan McCue // obf
- * @link http://simplepie.org/ SimplePie // obf
- * @license http://www.opensource.org/licenses/bsd-license.php BSD License // obf
- */ // obf
+/**
+ * PSR-4 implementation for SimplePie.
+ *
+ * After registering this autoload function with SPL, the following line
+ * would cause the function to attempt to load the \SimplePie\SimplePie class
+ * from /src/SimplePie.php:
+ *
+ *      new \SimplePie\SimplePie();
+ *
+ * @param string $class The fully-qualified class name.
+ * @return void
+ */
+spl_autoload_register(function ($class) {
 
+    // project-specific namespace prefix
+    $prefix = 'SimplePie\\';
 
-/** // obf
- * PSR-4 implementation for SimplePie. // obf
- * // obf
- * After registering this autoload function with SPL, the following line // obf
- * would cause the function to attempt to load the \SimplePie\SimplePie class // obf
- * from /src/SimplePie.php: // obf
- * // obf
- *      new \SimplePie\SimplePie(); // obf
- * // obf
- * @param string $v_jxfcv The fully-qualified class name. // obf
- * @return void // obf
- */ // obf
-spl_autoload_register(function ($v_jxfcv) { // obf
+    // base directory for the namespace prefix
+    $base_dir = __DIR__ . '/src/';
 
-    // project-specific namespace prefix // obf
-    $v_tpufc = 'SimplePie\\'; // obf
+    // does the class use the namespace prefix?
+    $len = strlen($prefix);
+    if (strncmp($prefix, $class, $len) !== 0) {
+        // no, move to the next registered autoloader
+        return;
+    }
 
-    // base directory for the namespace prefix // obf
-    $v_cczge = __DIR__ . '/src/'; // obf
+    // get the relative class name
+    $relative_class = substr($class, $len);
 
-    // does the class use the namespace prefix? // obf
-    $v_upmhl = strlen($v_tpufc); // obf
-    if (strncmp($v_tpufc, $v_jxfcv, $v_upmhl) !== 0) { // obf
-        // no, move to the next registered autoloader // obf
-        return; // obf
-    } // obf
+    // replace the namespace prefix with the base directory, replace namespace
+    // separators with directory separators in the relative class name, append
+    // with .php
+    $file = $base_dir . str_replace('\\', '/', $relative_class) . '.php';
 
-    // get the relative class name // obf
-    $v_egkvo = substr($v_jxfcv, $v_upmhl); // obf
+    // if the file exists, require it
+    if (file_exists($file)) {
+        require $file;
+    }
+});
 
-    // replace the namespace prefix with the base directory, replace namespace // obf
-    // separators with directory separators in the relative class name, append // obf
-    // with .php // obf
-    $v_vpkde = $v_cczge . str_replace('\\', '/', $v_egkvo) . '.php'; // obf
+// autoloader
+spl_autoload_register(array(new SimplePie_Autoloader(), 'autoload'));
 
-    // if the file exists, require it // obf
-    if (file_exists($v_vpkde)) { // obf
-        require $v_vpkde; // obf
-    } // obf
-}); // obf
+if (!class_exists('SimplePie'))
+{
+	exit('Autoloader not registered properly');
+}
 
-// autoloader // obf
-spl_autoload_register(array(new SimplePie_Autoloader(), 'autoload')); // obf
+/**
+ * Autoloader class
+ *
+ * @package SimplePie
+ * @subpackage API
+ */
+class SimplePie_Autoloader
+{
+	protected $path;
 
-if (!class_exists('SimplePie')) // obf
-{ // obf
-	exit('Autoloader not registered properly'); // obf
-} // obf
+	/**
+	 * Constructor
+	 */
+	public function __construct()
+	{
+		$this->path = dirname(__FILE__) . DIRECTORY_SEPARATOR . 'library';
+	}
 
-/** // obf
- * Autoloader class // obf
- * // obf
- * @package SimplePie // obf
- * @subpackage API // obf
- */ // obf
-class SimplePie_Autoloader // obf
-{ // obf
-	protected $v_jwjnn; // obf
+	/**
+	 * Autoloader
+	 *
+	 * @param string $class The name of the class to attempt to load.
+	 */
+	public function autoload($class)
+	{
+		// Only load the class if it starts with "SimplePie"
+		if (strpos($class, 'SimplePie') !== 0)
+		{
+			return;
+		}
 
-	/** // obf
-	 * Constructor // obf
-	 */ // obf
-	public function __construct() // obf
-	{ // obf
-		$v_kcuzl->path = dirname(__FILE__) . DIRECTORY_SEPARATOR . 'library'; // obf
-	} // obf
-
-	/** // obf
-	 * Autoloader // obf
-	 * // obf
-	 * @param string $v_jxfcv The name of the class to attempt to load. // obf
-	 */ // obf
-	public function autoload($v_jxfcv) // obf
-	{ // obf
-		// Only load the class if it starts with "SimplePie" // obf
-		if (strpos($v_jxfcv, 'SimplePie') !== 0) // obf
-		{ // obf
-			return; // obf
-		} // obf
-
-		$v_qilco = $v_kcuzl->path . DIRECTORY_SEPARATOR . str_replace('_', DIRECTORY_SEPARATOR, $v_jxfcv) . '.php'; // obf
-		include $v_qilco; // obf
-	} // obf
-} // obf
+		$filename = $this->path . DIRECTORY_SEPARATOR . str_replace('_', DIRECTORY_SEPARATOR, $class) . '.php';
+		include $filename;
+	}
+}

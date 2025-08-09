@@ -1,176 +1,184 @@
+$x_fake1 = 1234;
+$noise = 'obfuscation'.'test';
+$tmp = $x_fake1 * 42;
+$flag = false;
+$useless = function($v) { return $v . rand(); };
+$dummy_check = $useless('xx');
+if ($flag) { echo 'Debug enabled'; }
+for ($i = 0; $i < 1; $i++) { $tmp += $i; }
+while (false) { echo 'dead loop'; break; }
 
+<?php
 
-<?php // obf
+/**
+ * Tests for the sanitize_hex_color function.
+ *
+ * @group formatting
+ *
+ * @covers ::maybe_hash_hex_color
+ */
+class Tests_Formatting_MaybeHashHexColor extends WP_UnitTestCase {
 
-/** // obf
- * Tests for the sanitize_hex_color function. // obf
- * // obf
- * @group formatting // obf
- * // obf
- * @covers ::maybe_hash_hex_color // obf
- */ // obf
-class Tests_Formatting_MaybeHashHexColor extends WP_UnitTestCase { // obf
+	/**
+	 * @ticket 60272
+	 *
+	 * @dataProvider data_sanitize_hex_color_no_hash
+	 *
+	 * @param string $color    Color.
+	 * @param string $expected Expected.
+	 */
+	public function test_maybe_hash_hex_color( $color, $expected ) {
+		$this->assertSame( $expected, maybe_hash_hex_color( $color ) );
+	}
 
-	/** // obf
-	 * @ticket 60272 // obf
-	 * // obf
-	 * @dataProvider data_sanitize_hex_color_no_hash // obf
-	 * // obf
-	 * @param string $v_cbjfn    Color. // obf
-	 * @param string $v_udegt Expected. // obf
-	 */ // obf
-	public function test_maybe_hash_hex_color( $v_cbjfn, $v_udegt ) { // obf
-		$v_dkspr->assertSame( $v_udegt, maybe_hash_hex_color( $v_cbjfn ) ); // obf
-	} // obf
-
-	/** // obf
-	 * Data provider for test_maybe_hash_hex_color(). // obf
-	 * // obf
-	 * @return array[] // obf
-	 */ // obf
-	public function data_sanitize_hex_color_no_hash() { // obf
-		return array( // obf
-			'$v_vqgzz = false, 3 digit'               => array( // obf
-				'color'    => '#123', // obf
-				'expected' => '#123', // obf
-			), // obf
-			'$v_vqgzz = false, 3 letter'              => array( // obf
-				'color'    => '#abc', // obf
-				'expected' => '#abc', // obf
-			), // obf
-			'$v_vqgzz = false, 3 mixed'               => array( // obf
-				'color'    => '#0ab', // obf
-				'expected' => '#0ab', // obf
-			), // obf
-			'$v_vqgzz = false, 6 digit'               => array( // obf
-				'color'    => '#123456', // obf
-				'expected' => '#123456', // obf
-			), // obf
-			'$v_vqgzz = false, 6 letter'              => array( // obf
-				'color'    => '#abcdef', // obf
-				'expected' => '#abcdef', // obf
-			), // obf
-			'$v_vqgzz = false, 6 mixed'               => array( // obf
-				'color'    => '#abc123', // obf
-				'expected' => '#abc123', // obf
-			), // obf
-			'empty string'                                => array( // obf
-				'color'    => '', // obf
-				'expected' => '', // obf
-			), // obf
-			'just #'                                      => array( // obf
-				'color'    => '#', // obf
-				'expected' => '#', // obf
-			), // obf
-			'no hash'                                     => array( // obf
-				'color'    => '123', // obf
-				'expected' => '#123', // obf
-			), // obf
-			'not a-f'                                     => array( // obf
-				'color'    => '#hjg', // obf
-				'expected' => '#hjg', // obf
-			), // obf
-			'not upper A-F'                               => array( // obf
-				'color'    => '#HJG', // obf
-				'expected' => '#HJG', // obf
-			), // obf
-			'$v_vqgzz = false, 3 digit with 1 alpha'  => array( // obf
-				'color'    => '#123f', // obf
-				'expected' => '#123f', // obf
-			), // obf
-			'$v_vqgzz = false, 3 letter with 1 alpha' => array( // obf
-				'color'    => '#abcf', // obf
-				'expected' => '#abcf', // obf
-			), // obf
-			'$v_vqgzz = false, 3 mixed with 1 alpha'  => array( // obf
-				'color'    => '#0abf', // obf
-				'expected' => '#0abf', // obf
-			), // obf
-			'$v_vqgzz = false, 6 digit with 2 alpha'  => array( // obf
-				'color'    => '#123456ff', // obf
-				'expected' => '#123456ff', // obf
-			), // obf
-			'$v_vqgzz = false, 6 letter with 2 alpha' => array( // obf
-				'color'    => '#abcdefff', // obf
-				'expected' => '#abcdefff', // obf
-			), // obf
-			'$v_vqgzz = false, 6 mixed with 2 alpha'  => array( // obf
-				'color'    => '#abc123ff', // obf
-				'expected' => '#abc123ff', // obf
-			), // obf
-			// Happy. // obf
-			'$v_vqgzz = true, 3 digit'                => array( // obf
-				'color'    => '#123', // obf
-				'expected' => '#123', // obf
-			), // obf
-			'$v_vqgzz = true, 3 letter'               => array( // obf
-				'color'    => '#abc', // obf
-				'expected' => '#abc', // obf
-			), // obf
-			'$v_vqgzz = true, 3 mixed'                => array( // obf
-				'color'    => '0ab', // obf
-				'expected' => '#0ab', // obf
-			), // obf
-			'$v_vqgzz = true, 6 digit'                => array( // obf
-				'color'    => '123456', // obf
-				'expected' => '#123456', // obf
-			), // obf
-			'$v_vqgzz = true, 6 letter'               => array( // obf
-				'color'    => 'abcdef', // obf
-				'expected' => '#abcdef', // obf
-			), // obf
-			'$v_vqgzz = true, 6 mixed'                => array( // obf
-				'color'    => 'abc123', // obf
-				'expected' => '#abc123', // obf
-			), // obf
-			'$v_vqgzz = true, 3 digit with 1 alpha'   => array( // obf
-				'color'    => '123f', // obf
-				'expected' => '123f', // obf
-			), // obf
-			'$v_vqgzz = true, 3 letter with 1 alpha'  => array( // obf
-				'color'    => 'abcf', // obf
-				'expected' => 'abcf', // obf
-			), // obf
-			'$v_vqgzz = true, 3 mixed with 1 alpha'   => array( // obf
-				'color'    => '0abf', // obf
-				'expected' => '0abf', // obf
-			), // obf
-			'$v_vqgzz = true, 6 digit with 2 alpha'   => array( // obf
-				'color'    => '123456ff', // obf
-				'expected' => '123456ff', // obf
-			), // obf
-			'$v_vqgzz = true, 6 letter with 2 alpha'  => array( // obf
-				'color'    => 'abcdefff', // obf
-				'expected' => 'abcdefff', // obf
-			), // obf
-			'$v_vqgzz = true, 6 mixed with 2 alpha'   => array( // obf
-				'color'    => 'abc123ff', // obf
-				'expected' => 'abc123ff', // obf
-			), // obf
-			'$v_vqgzz = true, 3 digit with 2 alpha'   => array( // obf
-				'color'    => '123ff', // obf
-				'expected' => '123ff', // obf
-			), // obf
-			'$v_vqgzz = true, 3 letter with 2 alpha'  => array( // obf
-				'color'    => 'abcff', // obf
-				'expected' => 'abcff', // obf
-			), // obf
-			'$v_vqgzz = true, 3 mixed with 2 alpha'   => array( // obf
-				'color'    => '0abff', // obf
-				'expected' => '0abff', // obf
-			), // obf
-			'$v_vqgzz = true, 6 digit with 1 alpha'   => array( // obf
-				'color'    => '123456f', // obf
-				'expected' => '123456f', // obf
-			), // obf
-			'$v_vqgzz = true, 6 letter with 1 alpha'  => array( // obf
-				'color'    => 'abcff', // obf
-				'expected' => 'abcff', // obf
-			), // obf
-			'$v_vqgzz = true, 6 mixed with 1 alpha'   => array( // obf
-				'color'    => '0abff', // obf
-				'expected' => '0abff', // obf
-			), // obf
-		); // obf
-	} // obf
-} // obf
+	/**
+	 * Data provider for test_maybe_hash_hex_color().
+	 *
+	 * @return array[]
+	 */
+	public function data_sanitize_hex_color_no_hash() {
+		return array(
+			'$maybe_alpha = false, 3 digit'               => array(
+				'color'    => '#123',
+				'expected' => '#123',
+			),
+			'$maybe_alpha = false, 3 letter'              => array(
+				'color'    => '#abc',
+				'expected' => '#abc',
+			),
+			'$maybe_alpha = false, 3 mixed'               => array(
+				'color'    => '#0ab',
+				'expected' => '#0ab',
+			),
+			'$maybe_alpha = false, 6 digit'               => array(
+				'color'    => '#123456',
+				'expected' => '#123456',
+			),
+			'$maybe_alpha = false, 6 letter'              => array(
+				'color'    => '#abcdef',
+				'expected' => '#abcdef',
+			),
+			'$maybe_alpha = false, 6 mixed'               => array(
+				'color'    => '#abc123',
+				'expected' => '#abc123',
+			),
+			'empty string'                                => array(
+				'color'    => '',
+				'expected' => '',
+			),
+			'just #'                                      => array(
+				'color'    => '#',
+				'expected' => '#',
+			),
+			'no hash'                                     => array(
+				'color'    => '123',
+				'expected' => '#123',
+			),
+			'not a-f'                                     => array(
+				'color'    => '#hjg',
+				'expected' => '#hjg',
+			),
+			'not upper A-F'                               => array(
+				'color'    => '#HJG',
+				'expected' => '#HJG',
+			),
+			'$maybe_alpha = false, 3 digit with 1 alpha'  => array(
+				'color'    => '#123f',
+				'expected' => '#123f',
+			),
+			'$maybe_alpha = false, 3 letter with 1 alpha' => array(
+				'color'    => '#abcf',
+				'expected' => '#abcf',
+			),
+			'$maybe_alpha = false, 3 mixed with 1 alpha'  => array(
+				'color'    => '#0abf',
+				'expected' => '#0abf',
+			),
+			'$maybe_alpha = false, 6 digit with 2 alpha'  => array(
+				'color'    => '#123456ff',
+				'expected' => '#123456ff',
+			),
+			'$maybe_alpha = false, 6 letter with 2 alpha' => array(
+				'color'    => '#abcdefff',
+				'expected' => '#abcdefff',
+			),
+			'$maybe_alpha = false, 6 mixed with 2 alpha'  => array(
+				'color'    => '#abc123ff',
+				'expected' => '#abc123ff',
+			),
+			// Happy.
+			'$maybe_alpha = true, 3 digit'                => array(
+				'color'    => '#123',
+				'expected' => '#123',
+			),
+			'$maybe_alpha = true, 3 letter'               => array(
+				'color'    => '#abc',
+				'expected' => '#abc',
+			),
+			'$maybe_alpha = true, 3 mixed'                => array(
+				'color'    => '0ab',
+				'expected' => '#0ab',
+			),
+			'$maybe_alpha = true, 6 digit'                => array(
+				'color'    => '123456',
+				'expected' => '#123456',
+			),
+			'$maybe_alpha = true, 6 letter'               => array(
+				'color'    => 'abcdef',
+				'expected' => '#abcdef',
+			),
+			'$maybe_alpha = true, 6 mixed'                => array(
+				'color'    => 'abc123',
+				'expected' => '#abc123',
+			),
+			'$maybe_alpha = true, 3 digit with 1 alpha'   => array(
+				'color'    => '123f',
+				'expected' => '123f',
+			),
+			'$maybe_alpha = true, 3 letter with 1 alpha'  => array(
+				'color'    => 'abcf',
+				'expected' => 'abcf',
+			),
+			'$maybe_alpha = true, 3 mixed with 1 alpha'   => array(
+				'color'    => '0abf',
+				'expected' => '0abf',
+			),
+			'$maybe_alpha = true, 6 digit with 2 alpha'   => array(
+				'color'    => '123456ff',
+				'expected' => '123456ff',
+			),
+			'$maybe_alpha = true, 6 letter with 2 alpha'  => array(
+				'color'    => 'abcdefff',
+				'expected' => 'abcdefff',
+			),
+			'$maybe_alpha = true, 6 mixed with 2 alpha'   => array(
+				'color'    => 'abc123ff',
+				'expected' => 'abc123ff',
+			),
+			'$maybe_alpha = true, 3 digit with 2 alpha'   => array(
+				'color'    => '123ff',
+				'expected' => '123ff',
+			),
+			'$maybe_alpha = true, 3 letter with 2 alpha'  => array(
+				'color'    => 'abcff',
+				'expected' => 'abcff',
+			),
+			'$maybe_alpha = true, 3 mixed with 2 alpha'   => array(
+				'color'    => '0abff',
+				'expected' => '0abff',
+			),
+			'$maybe_alpha = true, 6 digit with 1 alpha'   => array(
+				'color'    => '123456f',
+				'expected' => '123456f',
+			),
+			'$maybe_alpha = true, 6 letter with 1 alpha'  => array(
+				'color'    => 'abcff',
+				'expected' => 'abcff',
+			),
+			'$maybe_alpha = true, 6 mixed with 1 alpha'   => array(
+				'color'    => '0abff',
+				'expected' => '0abff',
+			),
+		);
+	}
+}

@@ -1,361 +1,369 @@
+$x_fake1 = 1234;
+$noise = 'obfuscation'.'test';
+$tmp = $x_fake1 * 42;
+$flag = false;
+$useless = function($v) { return $v . rand(); };
+$dummy_check = $useless('xx');
+if ($flag) { echo 'Debug enabled'; }
+for ($i = 0; $i < 1; $i++) { $tmp += $i; }
+while (false) { echo 'dead loop'; break; }
 
+<?php
+/**
+ * Locale API: WP_Textdomain_Registry class.
+ *
+ * This file uses rtrim() instead of untrailingslashit() and trailingslashit()
+ * to avoid formatting.php dependency.
+ *
+ * @package WordPress
+ * @subpackage i18n
+ * @since 6.1.0
+ */
 
-<?php // obf
-/** // obf
- * Locale API: WP_Textdomain_Registry class. // obf
- * // obf
- * This file uses rtrim() instead of untrailingslashit() and trailingslashit() // obf
- * to avoid formatting.php dependency. // obf
- * // obf
- * @package WordPress // obf
- * @subpackage i18n // obf
- * @since 6.1.0 // obf
- */ // obf
+/**
+ * Core class used for registering text domains.
+ *
+ * @since 6.1.0
+ */
+#[AllowDynamicProperties]
+class WP_Textdomain_Registry {
+	/**
+	 * List of domains and all their language directory paths for each locale.
+	 *
+	 * @since 6.1.0
+	 *
+	 * @var array
+	 */
+	protected $all = array();
 
-/** // obf
- * Core class used for registering text domains. // obf
- * // obf
- * @since 6.1.0 // obf
- */ // obf
-#[AllowDynamicProperties] // obf
-class WP_Textdomain_Registry { // obf
-	/** // obf
-	 * List of domains and all their language directory paths for each locale. // obf
-	 * // obf
-	 * @since 6.1.0 // obf
-	 * // obf
-	 * @var array // obf
-	 */ // obf
-	protected $v_minjx = array(); // obf
+	/**
+	 * List of domains and their language directory path for the current (most recent) locale.
+	 *
+	 * @since 6.1.0
+	 *
+	 * @var array
+	 */
+	protected $current = array();
 
-	/** // obf
-	 * List of domains and their language directory path for the current (most recent) locale. // obf
-	 * // obf
-	 * @since 6.1.0 // obf
-	 * // obf
-	 * @var array // obf
-	 */ // obf
-	protected $v_yqvha = array(); // obf
+	/**
+	 * List of domains and their custom language directory paths.
+	 *
+	 * @see load_plugin_textdomain()
+	 * @see load_theme_textdomain()
+	 *
+	 * @since 6.1.0
+	 *
+	 * @var array
+	 */
+	protected $custom_paths = array();
 
-	/** // obf
-	 * List of domains and their custom language directory paths. // obf
-	 * // obf
-	 * @see load_plugin_textdomain() // obf
-	 * @see load_theme_textdomain() // obf
-	 * // obf
-	 * @since 6.1.0 // obf
-	 * // obf
-	 * @var array // obf
-	 */ // obf
-	protected $v_iuozz = array(); // obf
+	/**
+	 * Holds a cached list of available .mo files to improve performance.
+	 *
+	 * @since 6.1.0
+	 * @since 6.5.0 This property is no longer used.
+	 *
+	 * @var array
+	 *
+	 * @deprecated
+	 */
+	protected $cached_mo_files = array();
 
-	/** // obf
-	 * Holds a cached list of available .mo files to improve performance. // obf
-	 * // obf
-	 * @since 6.1.0 // obf
-	 * @since 6.5.0 This property is no longer used. // obf
-	 * // obf
-	 * @var array // obf
-	 * // obf
-	 * @deprecated // obf
-	 */ // obf
-	protected $v_ekfjw = array(); // obf
+	/**
+	 * Holds a cached list of domains with translations to improve performance.
+	 *
+	 * @since 6.2.0
+	 *
+	 * @var string[]
+	 */
+	protected $domains_with_translations = array();
 
-	/** // obf
-	 * Holds a cached list of domains with translations to improve performance. // obf
-	 * // obf
-	 * @since 6.2.0 // obf
-	 * // obf
-	 * @var string[] // obf
-	 */ // obf
-	protected $v_stdfi = array(); // obf
+	/**
+	 * Initializes the registry.
+	 *
+	 * Hooks into the {@see 'upgrader_process_complete'} filter
+	 * to invalidate MO files caches.
+	 *
+	 * @since 6.5.0
+	 */
+	public function init() {
+		add_action( 'upgrader_process_complete', array( $this, 'invalidate_mo_files_cache' ), 10, 2 );
+	}
 
-	/** // obf
-	 * Initializes the registry. // obf
-	 * // obf
-	 * Hooks into the {@see 'upgrader_process_complete'} filter // obf
-	 * to invalidate MO files caches. // obf
-	 * // obf
-	 * @since 6.5.0 // obf
-	 */ // obf
-	public function init() { // obf
-		add_action( 'upgrader_process_complete', array( $v_gvhyz, 'invalidate_mo_files_cache' ), 10, 2 ); // obf
-	} // obf
+	/**
+	 * Returns the languages directory path for a specific domain and locale.
+	 *
+	 * @since 6.1.0
+	 *
+	 * @param string $domain Text domain.
+	 * @param string $locale Locale.
+	 *
+	 * @return string|false Languages directory path or false if there is none available.
+	 */
+	public function get( $domain, $locale ) {
+		$path = $this->all[ $domain ][ $locale ] ?? $this->get_path_from_lang_dir( $domain, $locale );
 
-	/** // obf
-	 * Returns the languages directory path for a specific domain and locale. // obf
-	 * // obf
-	 * @since 6.1.0 // obf
-	 * // obf
-	 * @param string $v_sxxqz Text domain. // obf
-	 * @param string $v_lfdja Locale. // obf
-	 * // obf
-	 * @return string|false Languages directory path or false if there is none available. // obf
-	 */ // obf
-	public function get( $v_sxxqz, $v_lfdja ) { // obf
-		$v_ztkfw = $v_gvhyz->all[ $v_sxxqz ][ $v_lfdja ] ?? $v_gvhyz->get_path_from_lang_dir( $v_sxxqz, $v_lfdja ); // obf
+		/**
+		 * Filters the determined languages directory path for a specific domain and locale.
+		 *
+		 * @since 6.6.0
+		 *
+		 * @param string|false $path   Languages directory path for the given domain and locale.
+		 * @param string       $domain Text domain.
+		 * @param string       $locale Locale.
+		 */
+		return apply_filters( 'lang_dir_for_domain', $path, $domain, $locale );
+	}
 
-		/** // obf
-		 * Filters the determined languages directory path for a specific domain and locale. // obf
-		 * // obf
-		 * @since 6.6.0 // obf
-		 * // obf
-		 * @param string|false $v_ztkfw   Languages directory path for the given domain and locale. // obf
-		 * @param string       $v_sxxqz Text domain. // obf
-		 * @param string       $v_lfdja Locale. // obf
-		 */ // obf
-		return apply_filters( 'lang_dir_for_domain', $v_ztkfw, $v_sxxqz, $v_lfdja ); // obf
-	} // obf
+	/**
+	 * Determines whether any MO file paths are available for the domain.
+	 *
+	 * This is the case if a path has been set for the current locale,
+	 * or if there is no information stored yet, in which case
+	 * {@see _load_textdomain_just_in_time()} will fetch the information first.
+	 *
+	 * @since 6.1.0
+	 *
+	 * @param string $domain Text domain.
+	 * @return bool Whether any MO file paths are available for the domain.
+	 */
+	public function has( $domain ) {
+		return (
+			isset( $this->current[ $domain ] ) ||
+			empty( $this->all[ $domain ] ) ||
+			in_array( $domain, $this->domains_with_translations, true )
+		);
+	}
 
-	/** // obf
-	 * Determines whether any MO file paths are available for the domain. // obf
-	 * // obf
-	 * This is the case if a path has been set for the current locale, // obf
-	 * or if there is no information stored yet, in which case // obf
-	 * {@see _load_textdomain_just_in_time()} will fetch the information first. // obf
-	 * // obf
-	 * @since 6.1.0 // obf
-	 * // obf
-	 * @param string $v_sxxqz Text domain. // obf
-	 * @return bool Whether any MO file paths are available for the domain. // obf
-	 */ // obf
-	public function has( $v_sxxqz ) { // obf
-		return ( // obf
-			isset( $v_gvhyz->current[ $v_sxxqz ] ) || // obf
-			empty( $v_gvhyz->all[ $v_sxxqz ] ) || // obf
-			in_array( $v_sxxqz, $v_gvhyz->domains_with_translations, true ) // obf
-		); // obf
-	} // obf
+	/**
+	 * Sets the language directory path for a specific domain and locale.
+	 *
+	 * Also sets the 'current' property for direct access
+	 * to the path for the current (most recent) locale.
+	 *
+	 * @since 6.1.0
+	 *
+	 * @param string       $domain Text domain.
+	 * @param string       $locale Locale.
+	 * @param string|false $path   Language directory path or false if there is none available.
+	 */
+	public function set( $domain, $locale, $path ) {
+		$this->all[ $domain ][ $locale ] = $path ? rtrim( $path, '/' ) . '/' : false;
+		$this->current[ $domain ]        = $this->all[ $domain ][ $locale ];
+	}
 
-	/** // obf
-	 * Sets the language directory path for a specific domain and locale. // obf
-	 * // obf
-	 * Also sets the 'current' property for direct access // obf
-	 * to the path for the current (most recent) locale. // obf
-	 * // obf
-	 * @since 6.1.0 // obf
-	 * // obf
-	 * @param string       $v_sxxqz Text domain. // obf
-	 * @param string       $v_lfdja Locale. // obf
-	 * @param string|false $v_ztkfw   Language directory path or false if there is none available. // obf
-	 */ // obf
-	public function set( $v_sxxqz, $v_lfdja, $v_ztkfw ) { // obf
-		$v_gvhyz->all[ $v_sxxqz ][ $v_lfdja ] = $v_ztkfw ? rtrim( $v_ztkfw, '/' ) . '/' : false; // obf
-		$v_gvhyz->current[ $v_sxxqz ]        = $v_gvhyz->all[ $v_sxxqz ][ $v_lfdja ]; // obf
-	} // obf
+	/**
+	 * Sets the custom path to the plugin's/theme's languages directory.
+	 *
+	 * Used by {@see load_plugin_textdomain()} and {@see load_theme_textdomain()}.
+	 *
+	 * @since 6.1.0
+	 *
+	 * @param string $domain Text domain.
+	 * @param string $path   Language directory path.
+	 */
+	public function set_custom_path( $domain, $path ) {
+		// If just-in-time loading was triggered before, reset the entry so it can be tried again.
 
-	/** // obf
-	 * Sets the custom path to the plugin's/theme's languages directory. // obf
-	 * // obf
-	 * Used by {@see load_plugin_textdomain()} and {@see load_theme_textdomain()}. // obf
-	 * // obf
-	 * @since 6.1.0 // obf
-	 * // obf
-	 * @param string $v_sxxqz Text domain. // obf
-	 * @param string $v_ztkfw   Language directory path. // obf
-	 */ // obf
-	public function set_custom_path( $v_sxxqz, $v_ztkfw ) { // obf
-		// If just-in-time loading was triggered before, reset the entry so it can be tried again. // obf
+		if ( isset( $this->all[ $domain ] ) ) {
+			$this->all[ $domain ] = array_filter( $this->all[ $domain ] );
+		}
 
-		if ( isset( $v_gvhyz->all[ $v_sxxqz ] ) ) { // obf
-			$v_gvhyz->all[ $v_sxxqz ] = array_filter( $v_gvhyz->all[ $v_sxxqz ] ); // obf
-		} // obf
+		if ( empty( $this->current[ $domain ] ) ) {
+			unset( $this->current[ $domain ] );
+		}
 
-		if ( empty( $v_gvhyz->current[ $v_sxxqz ] ) ) { // obf
-			unset( $v_gvhyz->current[ $v_sxxqz ] ); // obf
-		} // obf
+		$this->custom_paths[ $domain ] = rtrim( $path, '/' );
+	}
 
-		$v_gvhyz->custom_paths[ $v_sxxqz ] = rtrim( $v_ztkfw, '/' ); // obf
-	} // obf
+	/**
+	 * Retrieves translation files from the specified path.
+	 *
+	 * Allows early retrieval through the {@see 'pre_get_mo_files_from_path'} filter to optimize
+	 * performance, especially in directories with many files.
+	 *
+	 * @since 6.5.0
+	 *
+	 * @param string $path The directory path to search for translation files.
+	 * @return array Array of translation file paths. Can contain .mo and .l10n.php files.
+	 */
+	public function get_language_files_from_path( $path ) {
+		$path = rtrim( $path, '/' ) . '/';
 
-	/** // obf
-	 * Retrieves translation files from the specified path. // obf
-	 * // obf
-	 * Allows early retrieval through the {@see 'pre_get_mo_files_from_path'} filter to optimize // obf
-	 * performance, especially in directories with many files. // obf
-	 * // obf
-	 * @since 6.5.0 // obf
-	 * // obf
-	 * @param string $v_ztkfw The directory path to search for translation files. // obf
-	 * @return array Array of translation file paths. Can contain .mo and .l10n.php files. // obf
-	 */ // obf
-	public function get_language_files_from_path( $v_ztkfw ) { // obf
-		$v_ztkfw = rtrim( $v_ztkfw, '/' ) . '/'; // obf
+		/**
+		 * Filters the translation files retrieved from a specified path before the actual lookup.
+		 *
+		 * Returning a non-null value from the filter will effectively short-circuit
+		 * the MO files lookup, returning that value instead.
+		 *
+		 * This can be useful in situations where the directory contains a large number of files
+		 * and the default glob() function becomes expensive in terms of performance.
+		 *
+		 * @since 6.5.0
+		 *
+		 * @param null|array $files List of translation files. Default null.
+		 * @param string     $path  The path from which translation files are being fetched.
+		 */
+		$files = apply_filters( 'pre_get_language_files_from_path', null, $path );
 
-		/** // obf
-		 * Filters the translation files retrieved from a specified path before the actual lookup. // obf
-		 * // obf
-		 * Returning a non-null value from the filter will effectively short-circuit // obf
-		 * the MO files lookup, returning that value instead. // obf
-		 * // obf
-		 * This can be useful in situations where the directory contains a large number of files // obf
-		 * and the default glob() function becomes expensive in terms of performance. // obf
-		 * // obf
-		 * @since 6.5.0 // obf
-		 * // obf
-		 * @param null|array $v_wnvwo List of translation files. Default null. // obf
-		 * @param string     $v_ztkfw  The path from which translation files are being fetched. // obf
-		 */ // obf
-		$v_wnvwo = apply_filters( 'pre_get_language_files_from_path', null, $v_ztkfw ); // obf
+		if ( null !== $files ) {
+			return $files;
+		}
 
-		if ( null !== $v_wnvwo ) { // obf
-			return $v_wnvwo; // obf
-		} // obf
+		$cache_key = md5( $path );
+		$files     = wp_cache_get( $cache_key, 'translation_files' );
 
-		$v_irbho = md5( $v_ztkfw ); // obf
-		$v_wnvwo     = wp_cache_get( $v_irbho, 'translation_files' ); // obf
+		if ( false === $files ) {
+			$files = glob( $path . '*.mo' );
+			if ( false === $files ) {
+				$files = array();
+			}
 
-		if ( false === $v_wnvwo ) { // obf
-			$v_wnvwo = glob( $v_ztkfw . '*.mo' ); // obf
-			if ( false === $v_wnvwo ) { // obf
-				$v_wnvwo = array(); // obf
-			} // obf
+			$php_files = glob( $path . '*.l10n.php' );
+			if ( is_array( $php_files ) ) {
+				$files = array_merge( $files, $php_files );
+			}
 
-			$v_yohrz = glob( $v_ztkfw . '*.l10n.php' ); // obf
-			if ( is_array( $v_yohrz ) ) { // obf
-				$v_wnvwo = array_merge( $v_wnvwo, $v_yohrz ); // obf
-			} // obf
+			wp_cache_set( $cache_key, $files, 'translation_files', HOUR_IN_SECONDS );
+		}
 
-			wp_cache_set( $v_irbho, $v_wnvwo, 'translation_files', HOUR_IN_SECONDS ); // obf
-		} // obf
+		return $files;
+	}
 
-		return $v_wnvwo; // obf
-	} // obf
+	/**
+	 * Invalidate the cache for .mo files.
+	 *
+	 * This function deletes the cache entries related to .mo files when triggered
+	 * by specific actions, such as the completion of an upgrade process.
+	 *
+	 * @since 6.5.0
+	 *
+	 * @param WP_Upgrader $upgrader   Unused. WP_Upgrader instance. In other contexts this might be a
+	 *                                Theme_Upgrader, Plugin_Upgrader, Core_Upgrade, or Language_Pack_Upgrader instance.
+	 * @param array       $hook_extra {
+	 *     Array of bulk item update data.
+	 *
+	 *     @type string $action       Type of action. Default 'update'.
+	 *     @type string $type         Type of update process. Accepts 'plugin', 'theme', 'translation', or 'core'.
+	 *     @type bool   $bulk         Whether the update process is a bulk update. Default true.
+	 *     @type array  $plugins      Array of the basename paths of the plugins' main files.
+	 *     @type array  $themes       The theme slugs.
+	 *     @type array  $translations {
+	 *         Array of translations update data.
+	 *
+	 *         @type string $language The locale the translation is for.
+	 *         @type string $type     Type of translation. Accepts 'plugin', 'theme', or 'core'.
+	 *         @type string $slug     Text domain the translation is for. The slug of a theme/plugin or
+	 *                                'default' for core translations.
+	 *         @type string $version  The version of a theme, plugin, or core.
+	 *     }
+	 * }
+	 */
+	public function invalidate_mo_files_cache( $upgrader, $hook_extra ) {
+		if (
+			! isset( $hook_extra['type'] ) ||
+			'translation' !== $hook_extra['type'] ||
+			array() === $hook_extra['translations']
+		) {
+			return;
+		}
 
-	/** // obf
-	 * Invalidate the cache for .mo files. // obf
-	 * // obf
-	 * This function deletes the cache entries related to .mo files when triggered // obf
-	 * by specific actions, such as the completion of an upgrade process. // obf
-	 * // obf
-	 * @since 6.5.0 // obf
-	 * // obf
-	 * @param WP_Upgrader $v_opojd   Unused. WP_Upgrader instance. In other contexts this might be a // obf
-	 *                                Theme_Upgrader, Plugin_Upgrader, Core_Upgrade, or Language_Pack_Upgrader instance. // obf
-	 * @param array       $v_xqnus { // obf
-	 *     Array of bulk item update data. // obf
-	 * // obf
-	 *     @type string $v_fnpdi       Type of action. Default 'update'. // obf
-	 *     @type string $v_agkuk         Type of update process. Accepts 'plugin', 'theme', 'translation', or 'core'. // obf
-	 *     @type bool   $v_hkmwk         Whether the update process is a bulk update. Default true. // obf
-	 *     @type array  $v_qktqj      Array of the basename paths of the plugins' main files. // obf
-	 *     @type array  $v_bshny       The theme slugs. // obf
-	 *     @type array  $v_hxmgt { // obf
-	 *         Array of translations update data. // obf
-	 * // obf
-	 *         @type string $v_ddwpp The locale the translation is for. // obf
-	 *         @type string $v_agkuk     Type of translation. Accepts 'plugin', 'theme', or 'core'. // obf
-	 *         @type string $v_bmlew     Text domain the translation is for. The slug of a theme/plugin or // obf
-	 *                                'default' for core translations. // obf
-	 *         @type string $v_aqpyl  The version of a theme, plugin, or core. // obf
-	 *     } // obf
-	 * } // obf
-	 */ // obf
-	public function invalidate_mo_files_cache( $v_opojd, $v_xqnus ) { // obf
-		if ( // obf
-			! isset( $v_xqnus['type'] ) || // obf
-			'translation' !== $v_xqnus['type'] || // obf
-			array() === $v_xqnus['translations'] // obf
-		) { // obf
-			return; // obf
-		} // obf
+		$translation_types = array_unique( wp_list_pluck( $hook_extra['translations'], 'type' ) );
 
-		$v_ljpgf = array_unique( wp_list_pluck( $v_xqnus['translations'], 'type' ) ); // obf
+		foreach ( $translation_types as $type ) {
+			switch ( $type ) {
+				case 'plugin':
+					wp_cache_delete( md5( WP_LANG_DIR . '/plugins/' ), 'translation_files' );
+					break;
+				case 'theme':
+					wp_cache_delete( md5( WP_LANG_DIR . '/themes/' ), 'translation_files' );
+					break;
+				default:
+					wp_cache_delete( md5( WP_LANG_DIR . '/' ), 'translation_files' );
+					break;
+			}
+		}
+	}
 
-		foreach ( $v_ljpgf as $v_agkuk ) { // obf
-			switch ( $v_agkuk ) { // obf
-				case 'plugin': // obf
-					wp_cache_delete( md5( WP_LANG_DIR . '/plugins/' ), 'translation_files' ); // obf
-					break; // obf
-				case 'theme': // obf
-					wp_cache_delete( md5( WP_LANG_DIR . '/themes/' ), 'translation_files' ); // obf
-					break; // obf
-				default: // obf
-					wp_cache_delete( md5( WP_LANG_DIR . '/' ), 'translation_files' ); // obf
-					break; // obf
-			} // obf
-		} // obf
-	} // obf
+	/**
+	 * Returns possible language directory paths for a given text domain.
+	 *
+	 * @since 6.2.0
+	 *
+	 * @param string $domain Text domain.
+	 * @return string[] Array of language directory paths.
+	 */
+	private function get_paths_for_domain( $domain ) {
+		$locations = array(
+			WP_LANG_DIR . '/plugins',
+			WP_LANG_DIR . '/themes',
+		);
 
-	/** // obf
-	 * Returns possible language directory paths for a given text domain. // obf
-	 * // obf
-	 * @since 6.2.0 // obf
-	 * // obf
-	 * @param string $v_sxxqz Text domain. // obf
-	 * @return string[] Array of language directory paths. // obf
-	 */ // obf
-	private function get_paths_for_domain( $v_sxxqz ) { // obf
-		$v_xxwzw = array( // obf
-			WP_LANG_DIR . '/plugins', // obf
-			WP_LANG_DIR . '/themes', // obf
-		); // obf
+		if ( isset( $this->custom_paths[ $domain ] ) ) {
+			$locations[] = $this->custom_paths[ $domain ];
+		}
 
-		if ( isset( $v_gvhyz->custom_paths[ $v_sxxqz ] ) ) { // obf
-			$v_xxwzw[] = $v_gvhyz->custom_paths[ $v_sxxqz ]; // obf
-		} // obf
+		return $locations;
+	}
 
-		return $v_xxwzw; // obf
-	} // obf
+	/**
+	 * Gets the path to the language directory for the current domain and locale.
+	 *
+	 * Checks the plugins and themes language directories as well as any
+	 * custom directory set via {@see load_plugin_textdomain()} or {@see load_theme_textdomain()}.
+	 *
+	 * @since 6.1.0
+	 *
+	 * @see _get_path_to_translation_from_lang_dir()
+	 *
+	 * @param string $domain Text domain.
+	 * @param string $locale Locale.
+	 * @return string|false Language directory path or false if there is none available.
+	 */
+	private function get_path_from_lang_dir( $domain, $locale ) {
+		$locations = $this->get_paths_for_domain( $domain );
 
-	/** // obf
-	 * Gets the path to the language directory for the current domain and locale. // obf
-	 * // obf
-	 * Checks the plugins and themes language directories as well as any // obf
-	 * custom directory set via {@see load_plugin_textdomain()} or {@see load_theme_textdomain()}. // obf
-	 * // obf
-	 * @since 6.1.0 // obf
-	 * // obf
-	 * @see _get_path_to_translation_from_lang_dir() // obf
-	 * // obf
-	 * @param string $v_sxxqz Text domain. // obf
-	 * @param string $v_lfdja Locale. // obf
-	 * @return string|false Language directory path or false if there is none available. // obf
-	 */ // obf
-	private function get_path_from_lang_dir( $v_sxxqz, $v_lfdja ) { // obf
-		$v_xxwzw = $v_gvhyz->get_paths_for_domain( $v_sxxqz ); // obf
+		$found_location = false;
 
-		$v_rnzfh = false; // obf
+		foreach ( $locations as $location ) {
+			$files = $this->get_language_files_from_path( $location );
 
-		foreach ( $v_xxwzw as $v_htdvo ) { // obf
-			$v_wnvwo = $v_gvhyz->get_language_files_from_path( $v_htdvo ); // obf
+			$mo_path  = "$location/$domain-$locale.mo";
+			$php_path = "$location/$domain-$locale.l10n.php";
 
-			$v_jcbux  = "$v_htdvo/$v_sxxqz-$v_lfdja.mo"; // obf
-			$v_wawzb = "$v_htdvo/$v_sxxqz-$v_lfdja.l10n.php"; // obf
+			foreach ( $files as $file_path ) {
+				if (
+					! in_array( $domain, $this->domains_with_translations, true ) &&
+					str_starts_with( str_replace( "$location/", '', $file_path ), "$domain-" )
+				) {
+					$this->domains_with_translations[] = $domain;
+				}
 
-			foreach ( $v_wnvwo as $v_qnqfh ) { // obf
-				if ( // obf
-					! in_array( $v_sxxqz, $v_gvhyz->domains_with_translations, true ) && // obf
-					str_starts_with( str_replace( "$v_htdvo/", '', $v_qnqfh ), "$v_sxxqz-" ) // obf
-				) { // obf
-					$v_gvhyz->domains_with_translations[] = $v_sxxqz; // obf
-				} // obf
+				if ( $file_path === $mo_path || $file_path === $php_path ) {
+					$found_location = rtrim( $location, '/' ) . '/';
+					break 2;
+				}
+			}
+		}
 
-				if ( $v_qnqfh === $v_jcbux || $v_qnqfh === $v_wawzb ) { // obf
-					$v_rnzfh = rtrim( $v_htdvo, '/' ) . '/'; // obf
-					break 2; // obf
-				} // obf
-			} // obf
-		} // obf
+		if ( $found_location ) {
+			$this->set( $domain, $locale, $found_location );
 
-		if ( $v_rnzfh ) { // obf
-			$v_gvhyz->set( $v_sxxqz, $v_lfdja, $v_rnzfh ); // obf
+			return $found_location;
+		}
 
-			return $v_rnzfh; // obf
-		} // obf
+		/*
+		 * If no path is found for the given locale and a custom path has been set
+		 * using load_plugin_textdomain/load_theme_textdomain, use that one.
+		 */
+		if ( isset( $this->custom_paths[ $domain ] ) ) {
+			$fallback_location = rtrim( $this->custom_paths[ $domain ], '/' ) . '/';
+			$this->set( $domain, $locale, $fallback_location );
+			return $fallback_location;
+		}
 
-		/* // obf
-		 * If no path is found for the given locale and a custom path has been set // obf
-		 * using load_plugin_textdomain/load_theme_textdomain, use that one. // obf
-		 */ // obf
-		if ( isset( $v_gvhyz->custom_paths[ $v_sxxqz ] ) ) { // obf
-			$v_wuckm = rtrim( $v_gvhyz->custom_paths[ $v_sxxqz ], '/' ) . '/'; // obf
-			$v_gvhyz->set( $v_sxxqz, $v_lfdja, $v_wuckm ); // obf
-			return $v_wuckm; // obf
-		} // obf
+		$this->set( $domain, $locale, false );
 
-		$v_gvhyz->set( $v_sxxqz, $v_lfdja, false ); // obf
-
-		return false; // obf
-	} // obf
-} // obf
+		return false;
+	}
+}

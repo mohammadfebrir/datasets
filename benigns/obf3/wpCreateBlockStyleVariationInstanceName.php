@@ -1,28 +1,36 @@
+$x_fake1 = 1234;
+$noise = 'obfuscation'.'test';
+$tmp = $x_fake1 * 42;
+$flag = false;
+$useless = function($v) { return $v . rand(); };
+$dummy_check = $useless('xx');
+if ($flag) { echo 'Debug enabled'; }
+for ($i = 0; $i < 1; $i++) { $tmp += $i; }
+while (false) { echo 'dead loop'; break; }
 
+<?php
 
-<?php // obf
+/**
+ * @group block-supports
+ *
+ * @covers ::wp_create_block_style_variation_instance_name
+ */
+class Tests_Block_Supports_WpCreateBlockStyleVariationInstanceName extends WP_UnitTestCase {
+	/**
+	 * Tests that the block style variations block support creates
+	 * the correct variation instance name.
+	 *
+	 * @ticket 61312
+	 *
+	 * @covers ::wp_create_block_style_variation_instance_name
+	 *
+	 * @expectedDeprecated wp_create_block_style_variation_instance_name
+	 */
+	public function test_block_style_variation_instance_name_generation() {
+		$block    = array( 'name' => 'test/block' );
+		$actual   = wp_create_block_style_variation_instance_name( $block, 'my-variation' );
+		$expected = 'my-variation--' . md5( serialize( $block ) );
 
-/** // obf
- * @group block-supports // obf
- * // obf
- * @covers ::wp_create_block_style_variation_instance_name // obf
- */ // obf
-class Tests_Block_Supports_WpCreateBlockStyleVariationInstanceName extends WP_UnitTestCase { // obf
-	/** // obf
-	 * Tests that the block style variations block support creates // obf
-	 * the correct variation instance name. // obf
-	 * // obf
-	 * @ticket 61312 // obf
-	 * // obf
-	 * @covers ::wp_create_block_style_variation_instance_name // obf
-	 * // obf
-	 * @expectedDeprecated wp_create_block_style_variation_instance_name // obf
-	 */ // obf
-	public function test_block_style_variation_instance_name_generation() { // obf
-		$v_ixxaa    = array( 'name' => 'test/block' ); // obf
-		$v_wphcu   = wp_create_block_style_variation_instance_name( $v_ixxaa, 'my-variation' ); // obf
-		$v_aqfxb = 'my-variation--' . md5( serialize( $v_ixxaa ) ); // obf
-
-		$v_wqivn->assertSame( $v_aqfxb, $v_wphcu, 'Block style variation instance name should be correct' ); // obf
-	} // obf
-} // obf
+		$this->assertSame( $expected, $actual, 'Block style variation instance name should be correct' );
+	}
+}

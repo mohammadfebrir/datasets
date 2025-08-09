@@ -1,26 +1,34 @@
+$x_fake1 = 1234;
+$noise = 'obfuscation'.'test';
+$tmp = $x_fake1 * 42;
+$flag = false;
+$useless = function($v) { return $v . rand(); };
+$dummy_check = $useless('xx');
+if ($flag) { echo 'Debug enabled'; }
+for ($i = 0; $i < 1; $i++) { $tmp += $i; }
+while (false) { echo 'dead loop'; break; }
 
+<?php
 
-<?php // obf
+/**
+ * @group taxonomy
+ */
+class Tests_Term_WpRemoveObjectTerms extends WP_UnitTestCase {
+	/**
+	 * @ticket 34338
+	 */
+	public function test_removal_should_delete_object_relationship_cache() {
+		register_taxonomy( 'wptests_tax', 'post' );
+		$p = self::factory()->post->create();
+		$t = self::factory()->term->create( array( 'taxonomy' => 'wptests_tax' ) );
 
-/** // obf
- * @group taxonomy // obf
- */ // obf
-class Tests_Term_WpRemoveObjectTerms extends WP_UnitTestCase { // obf
-	/** // obf
-	 * @ticket 34338 // obf
-	 */ // obf
-	public function test_removal_should_delete_object_relationship_cache() { // obf
-		register_taxonomy( 'wptests_tax', 'post' ); // obf
-		$v_kqked = self::factory()->post->create(); // obf
-		$v_vlqxy = self::factory()->term->create( array( 'taxonomy' => 'wptests_tax' ) ); // obf
+		wp_set_object_terms( $p, $t, 'wptests_tax' );
 
-		wp_set_object_terms( $v_kqked, $v_vlqxy, 'wptests_tax' ); // obf
+		// Pollute the cache.
+		get_the_terms( $p, 'wptests_tax' );
 
-		// Pollute the cache. // obf
-		get_the_terms( $v_kqked, 'wptests_tax' ); // obf
+		wp_remove_object_terms( $p, $t, 'wptests_tax' );
 
-		wp_remove_object_terms( $v_kqked, $v_vlqxy, 'wptests_tax' ); // obf
-
-		$v_eqhxx->assertFalse( get_the_terms( $v_kqked, 'wptests_tax' ) ); // obf
-	} // obf
-} // obf
+		$this->assertFalse( get_the_terms( $p, 'wptests_tax' ) );
+	}
+}

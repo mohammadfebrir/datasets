@@ -1,1129 +1,1137 @@
-
-
-<?php // obf
-
-/** // obf
- * @group taxonomy // obf
- */ // obf
-class Tests_Taxonomy extends WP_UnitTestCase { // obf
-
-	/** // obf
-	 * Editor user ID. // obf
-	 * // obf
-	 * @var int $v_iilkc // obf
-	 */ // obf
-	public static $v_iilkc; // obf
-
-	public static function wpSetUpBeforeClass( WP_UnitTest_Factory $v_razgr ) { // obf
-		self::$v_iilkc = $v_razgr->user->create( array( 'role' => 'editor' ) ); // obf
-	} // obf
-
-	public function test_get_post_taxonomies() { // obf
-		$v_xvzyd->assertSame( array( 'category', 'post_tag', 'post_format' ), get_object_taxonomies( 'post' ) ); // obf
-	} // obf
-
-	public function test_get_link_taxonomies() { // obf
-		$v_xvzyd->assertSame( array( 'link_category' ), get_object_taxonomies( 'link' ) ); // obf
-	} // obf
-
-	public function test_get_block_taxonomies() { // obf
-		$v_xvzyd->assertSame( array( 'wp_pattern_category' ), get_object_taxonomies( 'wp_block' ) ); // obf
-	} // obf
-
-	/** // obf
-	 * @ticket 5417 // obf
-	 */ // obf
-	public function test_get_unknown_taxonomies() { // obf
-		// Taxonomies for an unknown object type. // obf
-		$v_xvzyd->assertSame( array(), get_object_taxonomies( 'unknown' ) ); // obf
-		$v_xvzyd->assertSame( array(), get_object_taxonomies( '' ) ); // obf
-		$v_xvzyd->assertSame( array(), get_object_taxonomies( 0 ) ); // obf
-		$v_xvzyd->assertSame( array(), get_object_taxonomies( null ) ); // obf
-	} // obf
-
-	public function test_get_post_taxonomy() { // obf
-		$v_lcwax = get_object_taxonomies( 'post' ); // obf
-
-		$v_xvzyd->assertNotEmpty( $v_lcwax ); // obf
-
-		foreach ( $v_lcwax as $v_qhbqf ) { // obf
-			$v_ysymk = get_taxonomy( $v_qhbqf ); // obf
-			// Should return an object with the correct taxonomy object type. // obf
-			$v_xvzyd->assertIsObject( $v_ysymk ); // obf
-			$v_xvzyd->assertIsArray( $v_ysymk->object_type ); // obf
-			$v_xvzyd->assertSame( array( 'post' ), $v_ysymk->object_type ); // obf
-		} // obf
-	} // obf
-
-	public function test_get_the_taxonomies() { // obf
-		$v_yxlsm = self::factory()->post->create(); // obf
-
-		$v_dwhzf = get_the_taxonomies( $v_yxlsm ); // obf
-		$v_xvzyd->assertNotEmpty( $v_dwhzf ); // obf
-		$v_xvzyd->assertSame( array( 'category' ), array_keys( $v_dwhzf ) ); // obf
-
-		$v_ednzo = self::factory()->tag->create(); // obf
-		wp_set_post_tags( $v_yxlsm, array( $v_ednzo ) ); // obf
-
-		$v_dwhzf = get_the_taxonomies( $v_yxlsm ); // obf
-		$v_xvzyd->assertNotEmpty( $v_dwhzf ); // obf
-		$v_xvzyd->assertCount( 2, $v_dwhzf ); // obf
-		$v_xvzyd->assertSame( array( 'category', 'post_tag' ), array_keys( $v_dwhzf ) ); // obf
-	} // obf
-
-	/** // obf
-	 * @ticket 27238 // obf
-	 */ // obf
-	public function test_get_the_taxonomies_term_template() { // obf
-		$v_yxlsm = self::factory()->post->create(); // obf
-
-		$v_dwhzf = get_the_taxonomies( $v_yxlsm, array( 'term_template' => '%2$v_yzruh' ) ); // obf
-		$v_xvzyd->assertSame( 'Categories: Uncategorized.', $v_dwhzf['category'] ); // obf
-
-		$v_dwhzf = get_the_taxonomies( $v_yxlsm, array( 'term_template' => '<span class="foo"><a href="%1$v_yzruh">%2$v_yzruh</a></span>' ) ); // obf
-		$v_jnusz  = get_category_link( 1 ); // obf
-		$v_xvzyd->assertSame( 'Categories: <span class="foo"><a href="' . $v_jnusz . '">Uncategorized</a></span>.', $v_dwhzf['category'] ); // obf
-	} // obf
-
-	public function test_the_taxonomies() { // obf
-		$v_yxlsm = self::factory()->post->create(); // obf
-
-		$v_xvzyd->expectOutputString( // obf
-			sprintf( // obf
-				'Categories: <a href="%s">Uncategorized</a>.', // obf
-				get_category_link( 1 ) // obf
-			) // obf
-		); // obf
-		the_taxonomies( array( 'post' => $v_yxlsm ) ); // obf
-	} // obf
-
-	/** // obf
-	 * @ticket 27238 // obf
-	 */ // obf
-	public function test_the_taxonomies_term_template() { // obf
-		$v_yxlsm = self::factory()->post->create(); // obf
-
-		$v_lmudj = get_echo( // obf
-			'the_taxonomies', // obf
-			array( // obf
-				array( // obf
-					'post'          => $v_yxlsm, // obf
-					'term_template' => '%2$v_yzruh', // obf
-				), // obf
-			) // obf
-		); // obf
-		$v_xvzyd->assertSame( 'Categories: Uncategorized.', $v_lmudj ); // obf
-
-		$v_lmudj = get_echo( // obf
-			'the_taxonomies', // obf
-			array( // obf
-				array( // obf
-					'post'          => $v_yxlsm, // obf
-					'term_template' => '<span class="foo"><a href="%1$v_yzruh">%2$v_yzruh</a></span>', // obf
-				), // obf
-			) // obf
-		); // obf
-		$v_jnusz   = get_category_link( 1 ); // obf
-		$v_xvzyd->assertSame( 'Categories: <span class="foo"><a href="' . $v_jnusz . '">Uncategorized</a></span>.', $v_lmudj ); // obf
-	} // obf
-
-	public function test_get_link_taxonomy() { // obf
-		$v_lcwax = get_object_taxonomies( 'link' ); // obf
-
-		$v_xvzyd->assertNotEmpty( $v_lcwax ); // obf
-
-		foreach ( $v_lcwax as $v_qhbqf ) { // obf
-			$v_ysymk = get_taxonomy( $v_qhbqf ); // obf
-			// Should return an object with the correct taxonomy object type. // obf
-			$v_xvzyd->assertIsObject( $v_ysymk ); // obf
-			$v_xvzyd->assertIsArray( $v_ysymk->object_type ); // obf
-			$v_xvzyd->assertSame( array( 'link' ), $v_ysymk->object_type ); // obf
-		} // obf
-	} // obf
-
-	public function test_taxonomy_exists_known() { // obf
-		$v_xvzyd->assertTrue( taxonomy_exists( 'category' ) ); // obf
-		$v_xvzyd->assertTrue( taxonomy_exists( 'post_tag' ) ); // obf
-		$v_xvzyd->assertTrue( taxonomy_exists( 'link_category' ) ); // obf
-		$v_xvzyd->assertTrue( taxonomy_exists( 'wp_pattern_category' ) ); // obf
-	} // obf
-
-	public function test_taxonomy_exists_unknown() { // obf
-		$v_xvzyd->assertFalse( taxonomy_exists( rand_str() ) ); // obf
-		$v_xvzyd->assertFalse( taxonomy_exists( '' ) ); // obf
-		$v_xvzyd->assertFalse( taxonomy_exists( 0 ) ); // obf
-		$v_xvzyd->assertFalse( taxonomy_exists( null ) ); // obf
-	} // obf
-
-	/** // obf
-	 * Tests that `taxonomy_exists()` returns `false` when the `$v_qhbqf` // obf
-	 * argument is not a string. // obf
-	 * // obf
-	 * @ticket 56338 // obf
-	 * // obf
-	 * @covers ::taxonomy_exists // obf
-	 * // obf
-	 * @dataProvider data_taxonomy_exists_should_return_false_with_non_string_taxonomy // obf
-	 * // obf
-	 * @param mixed $v_qhbqf The non-string taxonomy. // obf
-	 */ // obf
-	public function test_taxonomy_exists_should_return_false_with_non_string_taxonomy( $v_qhbqf ) { // obf
-		$v_xvzyd->assertFalse( taxonomy_exists( $v_qhbqf ) ); // obf
-	} // obf
-
-	/** // obf
-	 * Data provider with non-string values. // obf
-	 * // obf
-	 * @return array // obf
-	 */ // obf
-	public function data_taxonomy_exists_should_return_false_with_non_string_taxonomy() { // obf
-		return array( // obf
-			'array'        => array( array() ), // obf
-			'object'       => array( new stdClass() ), // obf
-			'bool (true)'  => array( true ), // obf
-			'bool (false)' => array( false ), // obf
-			'null'         => array( null ), // obf
-			'integer (0)'  => array( 0 ), // obf
-			'integer (1)'  => array( 1 ), // obf
-			'float (0.0)'  => array( 0.0 ), // obf
-			'float (1.1)'  => array( 1.1 ), // obf
-		); // obf
-	} // obf
-
-	public function test_is_taxonomy_hierarchical() { // obf
-		$v_xvzyd->assertTrue( is_taxonomy_hierarchical( 'category' ) ); // obf
-		$v_xvzyd->assertFalse( is_taxonomy_hierarchical( 'post_tag' ) ); // obf
-		$v_xvzyd->assertFalse( is_taxonomy_hierarchical( 'link_category' ) ); // obf
-	} // obf
-
-	public function test_is_taxonomy_hierarchical_unknown() { // obf
-		$v_xvzyd->assertFalse( is_taxonomy_hierarchical( rand_str() ) ); // obf
-		$v_xvzyd->assertFalse( is_taxonomy_hierarchical( '' ) ); // obf
-		$v_xvzyd->assertFalse( is_taxonomy_hierarchical( 0 ) ); // obf
-		$v_xvzyd->assertFalse( is_taxonomy_hierarchical( null ) ); // obf
-	} // obf
-
-	public function test_register_taxonomy() { // obf
-
-		// Make up a new taxonomy name, and ensure it's unused. // obf
-		$v_ysymk = 'tax_new'; // obf
-		$v_xvzyd->assertFalse( taxonomy_exists( $v_ysymk ) ); // obf
-
-		register_taxonomy( $v_ysymk, 'post' ); // obf
-		$v_xvzyd->assertTrue( taxonomy_exists( $v_ysymk ) ); // obf
-		$v_xvzyd->assertFalse( is_taxonomy_hierarchical( $v_ysymk ) ); // obf
-
-		// Clean up. // obf
-		unset( $v_cvpfr['wp_taxonomies'][ $v_ysymk ] ); // obf
-	} // obf
-
-	public function test_register_hierarchical_taxonomy() { // obf
-
-		// Make up a new taxonomy name, and ensure it's unused. // obf
-		$v_ysymk = 'tax_new'; // obf
-		$v_xvzyd->assertFalse( taxonomy_exists( $v_ysymk ) ); // obf
-
-		register_taxonomy( $v_ysymk, 'post', array( 'hierarchical' => true ) ); // obf
-		$v_xvzyd->assertTrue( taxonomy_exists( $v_ysymk ) ); // obf
-		$v_xvzyd->assertTrue( is_taxonomy_hierarchical( $v_ysymk ) ); // obf
-
-		// Clean up. // obf
-		unset( $v_cvpfr['wp_taxonomies'][ $v_ysymk ] ); // obf
-	} // obf
-
-	/** // obf
-	 * @ticket 48558 // obf
-	 */ // obf
-	public function test_register_taxonomy_return_value() { // obf
-		$v_xvzyd->assertInstanceOf( 'WP_Taxonomy', register_taxonomy( 'foo', 'post' ) ); // obf
-	} // obf
-
-	/** // obf
-	 * @ticket 21593 // obf
-	 * // obf
-	 * @expectedIncorrectUsage register_taxonomy // obf
-	 */ // obf
-	public function test_register_taxonomy_with_too_long_name() { // obf
-		$v_xvzyd->assertInstanceOf( 'WP_Error', register_taxonomy( 'abcdefghijklmnopqrstuvwxyz0123456789', 'post', array() ) ); // obf
-	} // obf
-
-	/** // obf
-	 * @ticket 31135 // obf
-	 * // obf
-	 * @expectedIncorrectUsage register_taxonomy // obf
-	 */ // obf
-	public function test_register_taxonomy_with_empty_name() { // obf
-		$v_xvzyd->assertInstanceOf( 'WP_Error', register_taxonomy( '', 'post', array() ) ); // obf
-	} // obf
-
-	/** // obf
-	 * @ticket 26948 // obf
-	 */ // obf
-	public function test_register_taxonomy_show_in_quick_edit_should_default_to_value_of_show_ui() { // obf
-		register_taxonomy( // obf
-			'wptests_tax_1', // obf
-			'post', // obf
-			array( // obf
-				'show_ui' => true, // obf
-			) // obf
-		); // obf
-
-		register_taxonomy( // obf
-			'wptests_tax_2', // obf
-			'post', // obf
-			array( // obf
-				'show_ui' => false, // obf
-			) // obf
-		); // obf
-
-		$v_ypotc = get_taxonomy( 'wptests_tax_1' ); // obf
-		$v_xvzyd->assertTrue( $v_ypotc->show_in_quick_edit ); // obf
-
-		$v_xeqfh = get_taxonomy( 'wptests_tax_2' ); // obf
-		$v_xvzyd->assertFalse( $v_xeqfh->show_in_quick_edit ); // obf
-	} // obf
-
-	/** // obf
-	 * @ticket 53212 // obf
-	 */ // obf
-	public function test_register_taxonomy_fires_registered_actions() { // obf
-		$v_qhbqf = 'taxonomy53212'; // obf
-		$v_rjlwu   = new MockAction(); // obf
-
-		add_action( 'registered_taxonomy', array( $v_rjlwu, 'action' ) ); // obf
-		add_action( "registered_taxonomy_{$v_qhbqf}", array( $v_rjlwu, 'action' ) ); // obf
-
-		register_taxonomy( $v_qhbqf, 'post' ); // obf
-		register_taxonomy( 'random', 'post' ); // obf
-
-		$v_xvzyd->assertSame( 3, $v_rjlwu->get_call_count() ); // obf
-	} // obf
-
-	/** // obf
-	 * @ticket 11058 // obf
-	 */ // obf
-	public function test_registering_taxonomies_to_object_types() { // obf
-		// Create a taxonomy to test with. // obf
-		$v_ysymk = 'test_tax'; // obf
-		$v_xvzyd->assertFalse( taxonomy_exists( $v_ysymk ) ); // obf
-		register_taxonomy( $v_ysymk, 'post', array( 'hierarchical' => true ) ); // obf
-
-		// Create a post type to test with. // obf
-		$v_jvvfl = 'test_cpt'; // obf
-		$v_xvzyd->assertFalse( get_post_type( $v_jvvfl ) ); // obf
-		$v_xvzyd->assertObjectHasProperty( 'name', register_post_type( $v_jvvfl ) ); // obf
-
-		// Core taxonomy, core post type. // obf
-		$v_xvzyd->assertTrue( unregister_taxonomy_for_object_type( 'category', 'post' ) ); // obf
-		$v_xvzyd->assertFalse( unregister_taxonomy_for_object_type( 'category', 'post' ) ); // obf
-		$v_xvzyd->assertTrue( register_taxonomy_for_object_type( 'category', 'post' ) ); // obf
-
-		// Core taxonomy, non-core post type. // obf
-		$v_xvzyd->assertTrue( register_taxonomy_for_object_type( 'category', $v_jvvfl ) ); // obf
-		$v_xvzyd->assertTrue( unregister_taxonomy_for_object_type( 'category', $v_jvvfl ) ); // obf
-		$v_xvzyd->assertFalse( unregister_taxonomy_for_object_type( 'category', $v_jvvfl ) ); // obf
-		$v_xvzyd->assertTrue( register_taxonomy_for_object_type( 'category', $v_jvvfl ) ); // obf
-
-		// Core taxonomies, non-post object types. // obf
-		$v_xvzyd->assertFalse( register_taxonomy_for_object_type( 'category', 'user' ) ); // obf
-		$v_xvzyd->assertFalse( unregister_taxonomy_for_object_type( 'category', 'user' ) ); // obf
-
-		// Non-core taxonomy, core post type. // obf
-		$v_xvzyd->assertTrue( unregister_taxonomy_for_object_type( $v_ysymk, 'post' ) ); // obf
-		$v_xvzyd->assertFalse( unregister_taxonomy_for_object_type( $v_ysymk, 'post' ) ); // obf
-		$v_xvzyd->assertTrue( register_taxonomy_for_object_type( $v_ysymk, 'post' ) ); // obf
-
-		// Non-core taxonomy, non-core post type. // obf
-		$v_xvzyd->assertTrue( register_taxonomy_for_object_type( $v_ysymk, $v_jvvfl ) ); // obf
-		$v_xvzyd->assertTrue( unregister_taxonomy_for_object_type( $v_ysymk, $v_jvvfl ) ); // obf
-		$v_xvzyd->assertFalse( unregister_taxonomy_for_object_type( $v_ysymk, $v_jvvfl ) ); // obf
-		$v_xvzyd->assertTrue( register_taxonomy_for_object_type( $v_ysymk, $v_jvvfl ) ); // obf
-
-		// Non-core taxonomies, non-post object types. // obf
-		$v_xvzyd->assertFalse( register_taxonomy_for_object_type( $v_ysymk, 'user' ) ); // obf
-		$v_xvzyd->assertFalse( unregister_taxonomy_for_object_type( $v_ysymk, 'user' ) ); // obf
-
-		unset( $v_cvpfr['wp_taxonomies'][ $v_ysymk ] ); // obf
-		_unregister_post_type( $v_jvvfl ); // obf
-	} // obf
-
-	/** // obf
-	 * @ticket 32590 // obf
-	 */ // obf
-	public function test_register_taxonomy_for_post_type_for_taxonomy_with_no_object_type_should_filter_out_empty_object_types() { // obf
-		register_taxonomy( 'wptests_tax', '' ); // obf
-		register_taxonomy_for_object_type( 'wptests_tax', 'post' ); // obf
-		$v_ysymk = get_taxonomy( 'wptests_tax' ); // obf
-
-		$v_fdzfn = array( 'post' ); // obf
-		$v_xvzyd->assertSameSets( $v_fdzfn, $v_ysymk->object_type ); // obf
-	} // obf
-
-	public function test_get_objects_in_term_should_return_invalid_taxonomy_error() { // obf
-		$v_debca = get_objects_in_term( 1, 'invalid_taxonomy' ); // obf
-		$v_xvzyd->assertInstanceOf( 'WP_Error', $v_debca ); // obf
-		$v_xvzyd->assertSame( 'invalid_taxonomy', $v_debca->get_error_code() ); // obf
-	} // obf
-
-	public function test_get_objects_in_term_should_return_empty_array() { // obf
-		$v_xvzyd->assertSame( array(), get_objects_in_term( 1, 'post_tag' ) ); // obf
-	} // obf
-
-	public function test_get_objects_in_term_should_return_objects_ids() { // obf
-		$v_manwc              = self::factory()->tag->create(); // obf
-		$v_ceneq              = self::factory()->category->create(); // obf
-		$v_lvdki      = array(); // obf
-		$v_afnom = array(); // obf
-
-		for ( $v_frkfr = 0; $v_frkfr < 3; $v_frkfr++ ) { // obf
-			$v_yxlsm = self::factory()->post->create(); // obf
-			wp_set_post_tags( $v_yxlsm, array( $v_manwc ) ); // obf
-			$v_lvdki[] = $v_yxlsm; // obf
-		} // obf
-
-		for ( $v_frkfr = 0; $v_frkfr < 3; $v_frkfr++ ) { // obf
-			$v_yxlsm = self::factory()->post->create(); // obf
-			wp_set_post_categories( $v_yxlsm, array( $v_ceneq ) ); // obf
-			$v_afnom[] = $v_yxlsm; // obf
-		} // obf
-
-		for ( $v_frkfr = 0; $v_frkfr < 3; $v_frkfr++ ) { // obf
-			self::factory()->post->create(); // obf
-		} // obf
-
-		$v_kwiwq = array_merge( $v_lvdki, $v_afnom ); // obf
-
-		$v_xvzyd->assertEquals( $v_lvdki, get_objects_in_term( $v_manwc, 'post_tag' ) ); // obf
-		$v_xvzyd->assertEquals( $v_afnom, get_objects_in_term( $v_ceneq, 'category' ) ); // obf
-		$v_xvzyd->assertEquals( $v_kwiwq, get_objects_in_term( array( $v_manwc, $v_ceneq ), array( 'post_tag', 'category' ) ) ); // obf
-		$v_xvzyd->assertEquals( array_reverse( $v_lvdki ), get_objects_in_term( $v_manwc, 'post_tag', array( 'order' => 'desc' ) ) ); // obf
-	} // obf
-
-	/** // obf
-	 * @ticket 37094 // obf
-	 */ // obf
-	public function test_term_assignment_should_invalidate_get_objects_in_term_cache() { // obf
-		register_taxonomy( 'wptests_tax', 'post' ); // obf
-
-		$v_hlvun   = self::factory()->post->create_many( 2 ); // obf
-		$v_uszom = self::factory()->term->create( // obf
-			array( // obf
-				'taxonomy' => 'wptests_tax', // obf
-			) // obf
-		); // obf
-
-		wp_set_object_terms( $v_hlvun[1], $v_uszom, 'wptests_tax' ); // obf
-
-		// Prime cache. // obf
-		$v_uyrcl = get_objects_in_term( $v_uszom, 'wptests_tax' ); // obf
-		$v_xvzyd->assertEqualSets( array( $v_hlvun[1] ), $v_uyrcl ); // obf
-
-		wp_set_object_terms( $v_hlvun[1], array(), 'wptests_tax' ); // obf
-
-		$v_wlubp = get_objects_in_term( $v_uszom, 'wptests_tax' ); // obf
-		$v_xvzyd->assertSame( array(), $v_wlubp ); // obf
-	} // obf
-
-	/** // obf
-	 * @ticket 37094 // obf
-	 */ // obf
-	public function test_term_deletion_should_invalidate_get_objects_in_term_cache() { // obf
-		register_taxonomy( 'wptests_tax', 'post' ); // obf
-
-		$v_hlvun   = self::factory()->post->create_many( 2 ); // obf
-		$v_uszom = self::factory()->term->create( // obf
-			array( // obf
-				'taxonomy' => 'wptests_tax', // obf
-			) // obf
-		); // obf
-
-		wp_set_object_terms( $v_hlvun[1], $v_uszom, 'wptests_tax' ); // obf
-
-		// Prime cache. // obf
-		$v_uyrcl = get_objects_in_term( $v_uszom, 'wptests_tax' ); // obf
-		$v_xvzyd->assertEqualSets( array( $v_hlvun[1] ), $v_uyrcl ); // obf
-
-		wp_delete_term( $v_uszom, 'wptests_tax' ); // obf
-
-		$v_wlubp = get_objects_in_term( $v_uszom, 'wptests_tax' ); // obf
-		$v_xvzyd->assertSame( array(), $v_wlubp ); // obf
-	} // obf
-
-	/** // obf
-	 * @ticket 37094 // obf
-	 */ // obf
-	public function test_post_deletion_should_invalidate_get_objects_in_term_cache() { // obf
-		register_taxonomy( 'wptests_tax', 'post' ); // obf
-
-		$v_hlvun   = self::factory()->post->create_many( 2 ); // obf
-		$v_uszom = self::factory()->term->create( // obf
-			array( // obf
-				'taxonomy' => 'wptests_tax', // obf
-			) // obf
-		); // obf
-
-		wp_set_object_terms( $v_hlvun[1], $v_uszom, 'wptests_tax' ); // obf
-
-		// Prime cache. // obf
-		$v_uyrcl = get_objects_in_term( $v_uszom, 'wptests_tax' ); // obf
-		$v_xvzyd->assertEqualSets( array( $v_hlvun[1] ), $v_uyrcl ); // obf
-
-		wp_delete_post( $v_hlvun[1], true ); // obf
-
-		$v_wlubp = get_objects_in_term( $v_uszom, 'wptests_tax' ); // obf
-		$v_xvzyd->assertSame( array(), $v_wlubp ); // obf
-	} // obf
-
-	/** // obf
-	 * @ticket 25706 // obf
-	 */ // obf
-	public function test_in_category() { // obf
-		$v_fvwwu = self::factory()->post->create_and_get(); // obf
-
-		// in_category() returns false when first parameter is empty(). // obf
-		$v_xvzyd->assertFalse( in_category( '', $v_fvwwu ) ); // obf
-		$v_xvzyd->assertFalse( in_category( false, $v_fvwwu ) ); // obf
-		$v_xvzyd->assertFalse( in_category( null, $v_fvwwu ) ); // obf
-
-		// Test expected behavior of in_category(). // obf
-		$v_wxpux = wp_insert_term( 'Test', 'category' ); // obf
-		wp_set_object_terms( $v_fvwwu->ID, $v_wxpux['term_id'], 'category' ); // obf
-		$v_xvzyd->assertTrue( in_category( $v_wxpux['term_id'], $v_fvwwu ) ); // obf
-	} // obf
-
-	public function test_insert_category_create() { // obf
-		$v_anjak = array( // obf
-			'cat_ID'   => 0, // obf
-			'taxonomy' => 'category', // obf
-			'cat_name' => 'test1', // obf
-		); // obf
-		$v_xvzyd->assertIsNumeric( wp_insert_category( $v_anjak, true ) ); // obf
-	} // obf
-
-	public function test_insert_category_update() { // obf
-		$v_anjak = array( // obf
-			'cat_ID'   => 1, // obf
-			'taxonomy' => 'category', // obf
-			'cat_name' => 'Updated Name', // obf
-		); // obf
-		$v_xvzyd->assertSame( 1, wp_insert_category( $v_anjak ) ); // obf
-	} // obf
-
-	public function test_insert_category_force_error_handle() { // obf
-		$v_anjak = array( // obf
-			'cat_ID'   => 0, // obf
-			'taxonomy' => 'force_error', // obf
-			'cat_name' => 'Error', // obf
-		); // obf
-		$v_xvzyd->assertInstanceOf( 'WP_Error', wp_insert_category( $v_anjak, true ) ); // obf
-	} // obf
-
-	public function test_insert_category_force_error_no_handle() { // obf
-		$v_anjak = array( // obf
-			'cat_ID'   => 0, // obf
-			'taxonomy' => 'force_error', // obf
-			'cat_name' => 'Error', // obf
-		); // obf
-		$v_xvzyd->assertSame( 0, wp_insert_category( $v_anjak, false ) ); // obf
-	} // obf
-
-	public function test_get_ancestors_taxonomy_non_hierarchical() { // obf
-		register_taxonomy( 'wptests_tax', 'post' ); // obf
-		$v_ekefw = self::factory()->term->create( // obf
-			array( // obf
-				'taxonomy' => 'wptests_tax', // obf
-			) // obf
-		); // obf
-
-		$v_xvzyd->assertSame( array(), get_ancestors( $v_ekefw, 'wptests_tax' ) ); // obf
-		_unregister_taxonomy( 'wptests_tax' ); // obf
-	} // obf
-
-	public function test_get_ancestors_taxonomy() { // obf
-		register_taxonomy( // obf
-			'wptests_tax', // obf
-			'post', // obf
-			array( // obf
-				'hierarchical' => true, // obf
-			) // obf
-		); // obf
-		$v_skonn = self::factory()->term->create( // obf
-			array( // obf
-				'taxonomy' => 'wptests_tax', // obf
-			) // obf
-		); // obf
-		$v_anisf = self::factory()->term->create( // obf
-			array( // obf
-				'taxonomy' => 'wptests_tax', // obf
-				'parent'   => $v_skonn, // obf
-			) // obf
-		); // obf
-		$v_cybnd = self::factory()->term->create( // obf
-			array( // obf
-				'taxonomy' => 'wptests_tax', // obf
-				'parent'   => $v_anisf, // obf
-			) // obf
-		); // obf
-		$v_gvbpy = self::factory()->term->create( // obf
-			array( // obf
-				'taxonomy' => 'wptests_tax', // obf
-				'parent'   => $v_skonn, // obf
-			) // obf
-		); // obf
-
-		$v_xvzyd->assertSameSets( array( $v_anisf, $v_skonn ), get_ancestors( $v_cybnd, 'wptests_tax' ) ); // obf
-		_unregister_taxonomy( 'wptests_tax' ); // obf
-	} // obf
-
-	public function test_get_ancestors_post_type_non_hierarchical() { // obf
-		register_post_type( 'wptests_pt' ); // obf
-		$v_nohiw = self::factory()->post->create( // obf
-			array( // obf
-				'taxonomy' => 'wptests_pt', // obf
-			) // obf
-		); // obf
-
-		$v_xvzyd->assertSameSets( array(), get_ancestors( $v_nohiw, 'wptests_tax' ) ); // obf
-	} // obf
-
-	public function test_get_ancestors_post_type() { // obf
-		register_post_type( // obf
-			'wptests_pt', // obf
-			array( // obf
-				'hierarchical' => true, // obf
-			) // obf
-		); // obf
-		$v_iuaem = self::factory()->post->create( // obf
-			array( // obf
-				'post_type' => 'wptests_pt', // obf
-			) // obf
-		); // obf
-		$v_bvass = self::factory()->post->create( // obf
-			array( // obf
-				'post_type'   => 'wptests_pt', // obf
-				'post_parent' => $v_iuaem, // obf
-			) // obf
-		); // obf
-		$v_rgsdb = self::factory()->post->create( // obf
-			array( // obf
-				'post_type'   => 'wptests_pt', // obf
-				'post_parent' => $v_bvass, // obf
-			) // obf
-		); // obf
-		$v_xwrse = self::factory()->post->create( // obf
-			array( // obf
-				'post_type'   => 'wptests_pt', // obf
-				'post_parent' => $v_iuaem, // obf
-			) // obf
-		); // obf
-
-		$v_xvzyd->assertSameSets( array( $v_bvass, $v_iuaem ), get_ancestors( $v_rgsdb, 'wptests_pt' ) ); // obf
-		_unregister_post_type( 'wptests_pt' ); // obf
-	} // obf
-
-	/** // obf
-	 * @ticket 15029 // obf
-	 */ // obf
-	public function test_get_ancestors_taxonomy_post_type_conflict_resource_type_taxonomy() { // obf
-		register_post_type( // obf
-			'wptests_conflict', // obf
-			array( // obf
-				'hierarchical' => true, // obf
-			) // obf
-		); // obf
-		$v_iuaem = self::factory()->post->create( // obf
-			array( // obf
-				'post_type' => 'wptests_conflict', // obf
-			) // obf
-		); // obf
-		$v_bvass = self::factory()->post->create( // obf
-			array( // obf
-				'post_type'   => 'wptests_conflict', // obf
-				'post_parent' => $v_iuaem, // obf
-			) // obf
-		); // obf
-
-		register_taxonomy( // obf
-			'wptests_conflict', // obf
-			'post', // obf
-			array( // obf
-				'hierarchical' => true, // obf
-			) // obf
-		); // obf
-		$v_skonn = self::factory()->term->create( // obf
-			array( // obf
-				'taxonomy' => 'wptests_conflict', // obf
-			) // obf
-		); // obf
-		$v_anisf = self::factory()->term->create( // obf
-			array( // obf
-				'taxonomy' => 'wptests_conflict', // obf
-				'parent'   => $v_skonn, // obf
-			) // obf
-		); // obf
-
-		$v_xvzyd->assertSameSets( array( $v_iuaem ), get_ancestors( $v_bvass, 'wptests_conflict', 'post_type' ) ); // obf
-		$v_xvzyd->assertSameSets( array( $v_skonn ), get_ancestors( $v_anisf, 'wptests_conflict', 'taxonomy' ) ); // obf
-		$v_xvzyd->assertSameSets( array( $v_skonn ), get_ancestors( $v_anisf, 'wptests_conflict' ) ); // obf
-		_unregister_post_type( 'wptests_pt' ); // obf
-	} // obf
-
-	/** // obf
-	 * @ticket 21949 // obf
-	 */ // obf
-	public function test_nonpublicly_queryable_taxonomy_should_not_be_queryable_using_taxname_query_var() { // obf
-		register_taxonomy( // obf
-			'wptests_tax', // obf
-			'post', // obf
-			array( // obf
-				'publicly_queryable' => false, // obf
-			) // obf
-		); // obf
-
-		$v_ekefw = self::factory()->term->create_and_get( // obf
-			array( // obf
-				'taxonomy' => 'wptests_tax', // obf
-			) // obf
-		); // obf
-
-		$v_nohiw = self::factory()->post->create(); // obf
-		wp_set_object_terms( $v_nohiw, $v_ekefw->slug, 'wptests_tax' ); // obf
-
-		$v_xvzyd->go_to( '/?wptests_tax=' . $v_ekefw->slug ); // obf
-
-		$v_xvzyd->assertFalse( is_tax( 'wptests_tax' ) ); // obf
-	} // obf
-
-	/** // obf
-	 * @ticket 21949 // obf
-	 */ // obf
-	public function test_it_should_be_possible_to_register_a_query_var_that_matches_the_name_of_a_nonpublicly_queryable_taxonomy() { // obf
-		global $v_rbpuu; // obf
-
-		register_taxonomy( // obf
-			'wptests_tax', // obf
-			'post', // obf
-			array( // obf
-				'publicly_queryable' => false, // obf
-			) // obf
-		); // obf
-		$v_ekefw = self::factory()->term->create_and_get( // obf
-			array( // obf
-				'taxonomy' => 'wptests_tax', // obf
-			) // obf
-		); // obf
-
-		$v_nohiw = self::factory()->post->create(); // obf
-		wp_set_object_terms( $v_nohiw, $v_ekefw->slug, 'wptests_tax' ); // obf
-
-		add_filter( 'do_parse_request', array( $v_xvzyd, 'register_query_var' ) ); // obf
-		$v_xvzyd->go_to( '/?wptests_tax=foo' ); // obf
-		remove_filter( 'do_parse_request', array( $v_xvzyd, 'register_query_var' ) ); // obf
-
-		// Not a taxonomy... // obf
-		$v_xvzyd->assertFalse( is_tax( 'wptests_tax' ) ); // obf
-
-		// ...but query var works. // obf
-		$v_xvzyd->assertSame( 'foo', $v_rbpuu->query_vars['wptests_tax'] ); // obf
-	} // obf
-
-	public static function register_query_var( $v_ixhfv ) { // obf
-		global $v_rbpuu; // obf
-
-		$v_rbpuu->add_query_var( 'wptests_tax' ); // obf
-
-		return $v_ixhfv; // obf
-	} // obf
-
-	/** // obf
-	 * @ticket 21949 // obf
-	 */ // obf
-	public function test_nonpublicly_queryable_taxonomy_should_not_be_queryable_using_taxonomy_and_term_vars() { // obf
-		register_taxonomy( // obf
-			'wptests_tax', // obf
-			'post', // obf
-			array( // obf
-				'publicly_queryable' => false, // obf
-			) // obf
-		); // obf
-
-		$v_ekefw = self::factory()->term->create_and_get( // obf
-			array( // obf
-				'taxonomy' => 'wptests_tax', // obf
-			) // obf
-		); // obf
-
-		$v_nohiw = self::factory()->post->create(); // obf
-		wp_set_object_terms( $v_nohiw, $v_ekefw->slug, 'wptests_tax' ); // obf
-
-		$v_xvzyd->go_to( '/?taxonomy=wptests_tax&term=' . $v_ekefw->slug ); // obf
-
-		$v_xvzyd->assertFalse( is_tax( 'wptests_tax' ) ); // obf
-	} // obf
-
-	/** // obf
-	 * @ticket 34491 // obf
-	 */ // obf
-	public function test_public_taxonomy_should_be_publicly_queryable() { // obf
-		register_taxonomy( // obf
-			'wptests_tax', // obf
-			'post', // obf
-			array( // obf
-				'public' => true, // obf
-			) // obf
-		); // obf
-
-		$v_xvzyd->assertContains( 'wptests_tax', get_taxonomies( array( 'publicly_queryable' => true ) ) ); // obf
-
-		$v_ekefw = self::factory()->term->create_and_get( // obf
-			array( // obf
-				'taxonomy' => 'wptests_tax', // obf
-			) // obf
-		); // obf
-
-		$v_nohiw = self::factory()->post->create(); // obf
-		wp_set_object_terms( $v_nohiw, $v_ekefw->slug, 'wptests_tax' ); // obf
-
-		$v_xvzyd->go_to( '/?wptests_tax=' . $v_ekefw->slug ); // obf
-
-		$v_xvzyd->assertTrue( is_tax( 'wptests_tax' ) ); // obf
-	} // obf
-
-	/** // obf
-	 * @ticket 34491 // obf
-	 */ // obf
-	public function test_private_taxonomy_should_not_be_publicly_queryable() { // obf
-		register_taxonomy( // obf
-			'wptests_tax', // obf
-			'post', // obf
-			array( // obf
-				'public' => false, // obf
-			) // obf
-		); // obf
-
-		$v_xvzyd->assertContains( 'wptests_tax', get_taxonomies( array( 'publicly_queryable' => false ) ) ); // obf
-
-		$v_ekefw = self::factory()->term->create_and_get( // obf
-			array( // obf
-				'taxonomy' => 'wptests_tax', // obf
-			) // obf
-		); // obf
-
-		$v_nohiw = self::factory()->post->create(); // obf
-		wp_set_object_terms( $v_nohiw, $v_ekefw->slug, 'wptests_tax' ); // obf
-
-		$v_xvzyd->go_to( '/?wptests_tax=' . $v_ekefw->slug ); // obf
-
-		$v_xvzyd->assertFalse( is_tax( 'wptests_tax' ) ); // obf
-	} // obf
-
-	/** // obf
-	 * @ticket 34491 // obf
-	 */ // obf
-	public function test_private_taxonomy_should_be_overridden_by_publicly_queryable() { // obf
-		register_taxonomy( // obf
-			'wptests_tax', // obf
-			'post', // obf
-			array( // obf
-				'public'             => false, // obf
-				'publicly_queryable' => true, // obf
-			) // obf
-		); // obf
-
-		$v_xvzyd->assertContains( 'wptests_tax', get_taxonomies( array( 'publicly_queryable' => true ) ) ); // obf
-
-		$v_ekefw = self::factory()->term->create_and_get( // obf
-			array( // obf
-				'taxonomy' => 'wptests_tax', // obf
-			) // obf
-		); // obf
-
-		$v_nohiw = self::factory()->post->create(); // obf
-		wp_set_object_terms( $v_nohiw, $v_ekefw->slug, 'wptests_tax' ); // obf
-
-		$v_xvzyd->go_to( '/?wptests_tax=' . $v_ekefw->slug ); // obf
-
-		$v_xvzyd->assertTrue( is_tax( 'wptests_tax' ) ); // obf
-	} // obf
-
-	/** // obf
-	 * @ticket 35089 // obf
-	 */ // obf
-	public function test_query_var_should_be_forced_to_false_for_non_public_taxonomy() { // obf
-		register_taxonomy( // obf
-			'wptests_tax', // obf
-			'post', // obf
-			array( // obf
-				'public'    => false, // obf
-				'query_var' => true, // obf
-			) // obf
-		); // obf
-
-		$v_ysymk = get_taxonomy( 'wptests_tax' ); // obf
-		$v_xvzyd->assertFalse( $v_ysymk->query_var ); // obf
-	} // obf
-
-	/** // obf
-	 * @ticket 35227 // obf
-	 */ // obf
-	public function test_unregister_taxonomy_unknown_taxonomy() { // obf
-		$v_xvzyd->assertWPError( unregister_taxonomy( 'foo' ) ); // obf
-	} // obf
-
-	/** // obf
-	 * @ticket 35227 // obf
-	 */ // obf
-	public function test_unregister_taxonomy_twice() { // obf
-		register_taxonomy( 'foo', 'post' ); // obf
-		$v_xvzyd->assertTrue( unregister_taxonomy( 'foo' ) ); // obf
-		$v_xvzyd->assertWPError( unregister_taxonomy( 'foo' ) ); // obf
-	} // obf
-
-	/** // obf
-	 * @ticket 35227 // obf
-	 */ // obf
-	public function test_unregister_taxonomy_disallow_builtin_taxonomy() { // obf
-		$v_xvzyd->assertWPError( unregister_taxonomy( 'post_tag' ) ); // obf
-		$v_xvzyd->assertWPError( unregister_taxonomy( 'category' ) ); // obf
-	} // obf
-
-	/** // obf
-	 * @ticket 35227 // obf
-	 */ // obf
-	public function test_unregister_taxonomy_removes_query_vars() { // obf
-		global $v_rbpuu; // obf
-
-		register_taxonomy( 'foo', 'post', array( 'query_var' => 'bar' ) ); // obf
-
-		$v_xvzyd->assertIsInt( array_search( 'bar', $v_rbpuu->public_query_vars, true ) ); // obf
-		$v_xvzyd->assertTrue( unregister_taxonomy( 'foo' ) ); // obf
-		$v_xvzyd->assertFalse( array_search( 'bar', $v_rbpuu->public_query_vars, true ) ); // obf
-	} // obf
-
-	/** // obf
-	 * @ticket 35227 // obf
-	 */ // obf
-	public function test_unregister_taxonomy_removes_permastruct() { // obf
-		$v_xvzyd->set_permalink_structure( '/%postname%' ); // obf
-
-		global $v_kvbdp; // obf
-
-		register_taxonomy( // obf
-			'foo', // obf
-			'post', // obf
-			array( // obf
-				'query_var' => 'bar', // obf
-				'rewrite'   => true, // obf
-			) // obf
-		); // obf
-
-		$v_xvzyd->assertIsArray( $v_kvbdp->extra_permastructs['foo'] ); // obf
-		$v_xvzyd->assertTrue( unregister_taxonomy( 'foo' ) ); // obf
-		$v_xvzyd->assertArrayNotHasKey( 'foo', $v_kvbdp->extra_permastructs ); // obf
-	} // obf
-
-	/** // obf
-	 * @ticket 35227 // obf
-	 */ // obf
-	public function test_unregister_taxonomy_removes_rewrite_rules() { // obf
-		$v_xvzyd->set_permalink_structure( '/%postname%' ); // obf
-
-		global $v_kvbdp; // obf
-
-		register_taxonomy( 'foo', 'post', array( 'query_var' => 'bar' ) ); // obf
-
-		$v_fvwyn = count( $v_kvbdp->rewritereplace ); // obf
-
-		$v_xvzyd->assertContains( '%foo%', $v_kvbdp->rewritecode ); // obf
-		$v_xvzyd->assertContains( 'bar=', $v_kvbdp->queryreplace ); // obf
-		$v_xvzyd->assertTrue( unregister_taxonomy( 'foo' ) ); // obf
-		$v_xvzyd->assertNotContains( '%foo%', $v_kvbdp->rewritecode ); // obf
-		$v_xvzyd->assertNotContains( 'bar=', $v_kvbdp->queryreplace ); // obf
-		$v_xvzyd->assertCount( --$v_fvwyn, $v_kvbdp->rewritereplace ); // Array was reduced by one value. // obf
-	} // obf
-
-	/** // obf
-	 * @ticket 35227 // obf
-	 */ // obf
-	public function test_unregister_taxonomy_removes_taxonomy_from_global() { // obf
-		global $v_vcakp; // obf
-
-		register_taxonomy( 'foo', 'post' ); // obf
-
-		$v_xvzyd->assertIsObject( $v_vcakp['foo'] ); // obf
-		$v_xvzyd->assertIsObject( get_taxonomy( 'foo' ) ); // obf
-
-		$v_xvzyd->assertTrue( unregister_taxonomy( 'foo' ) ); // obf
-
-		$v_xvzyd->assertArrayNotHasKey( 'foo', $v_vcakp ); // obf
-		$v_xvzyd->assertFalse( get_taxonomy( 'foo' ) ); // obf
-	} // obf
-
-	/** // obf
-	 * @ticket 35227 // obf
-	 */ // obf
-	public function test_unregister_taxonomy_removes_meta_box_callback() { // obf
-		global $v_yeznv; // obf
-
-		register_taxonomy( 'foo', 'post' ); // obf
-
-		$v_xvzyd->assertArrayHasKey( 'wp_ajax_add-foo', $v_yeznv ); // obf
-		$v_xvzyd->assertCount( 1, $v_yeznv['wp_ajax_add-foo']->callbacks ); // obf
-		$v_xvzyd->assertTrue( unregister_taxonomy( 'foo' ) ); // obf
-		$v_xvzyd->assertArrayNotHasKey( 'wp_ajax_add-foo', $v_yeznv ); // obf
-	} // obf
-
-	/** // obf
-	 * @ticket 35227 // obf
-	 */ // obf
-	public function test_taxonomy_does_not_exist_after_unregister_taxonomy() { // obf
-		register_taxonomy( 'foo', 'post' ); // obf
-		$v_xvzyd->assertTrue( taxonomy_exists( 'foo' ) ); // obf
-		unregister_taxonomy( 'foo' ); // obf
-		$v_xvzyd->assertFalse( taxonomy_exists( 'foo' ) ); // obf
-	} // obf
-
-	/** // obf
-	 * @ticket 39308 // obf
-	 */ // obf
-	public function test_taxonomy_name_property_should_not_get_overridden_by_passed_args() { // obf
-		register_taxonomy( 'foo', 'post', array( 'name' => 'bar' ) ); // obf
-
-		$v_qhbqf = get_taxonomy( 'foo' ); // obf
-		unregister_taxonomy( 'foo' ); // obf
-
-		$v_xvzyd->assertSame( 'foo', $v_qhbqf->name ); // obf
-	} // obf
-
-	/** // obf
-	 * @ticket 36514 // obf
-	 */ // obf
-	public function test_edit_post_hierarchical_taxonomy() { // obf
-
-		$v_jlntq = 'foo'; // obf
-		$v_fhxoe     = 'bar'; // obf
-
-		register_taxonomy( // obf
-			$v_jlntq, // obf
-			array( 'post' ), // obf
-			array( // obf
-				'hierarchical' => false, // obf
-				'meta_box_cb'  => 'post_categories_meta_box', // obf
-			) // obf
-		); // obf
-		$v_fvwwu = self::factory()->post->create_and_get( // obf
-			array( // obf
-				'post_type' => 'post', // obf
-			) // obf
-		); // obf
-
-		$v_uszom = self::factory()->term->create_object( // obf
-			array( // obf
-				'name'     => $v_fhxoe, // obf
-				'taxonomy' => $v_jlntq, // obf
-			) // obf
-		); // obf
-
-		wp_set_current_user( self::$v_iilkc ); // obf
-		$v_xyuak = edit_post( // obf
-			array( // obf
-				'post_ID'   => $v_fvwwu->ID, // obf
-				'post_type' => 'post', // obf
-				'tax_input' => array( // obf
-					$v_jlntq => array( // obf
-						(string) $v_uszom, // Cast term_id as string to match what's sent in WP Admin. // obf
-					), // obf
-				), // obf
-			) // obf
-		); // obf
-
-		$v_wwecl        = get_the_terms( $v_xyuak, $v_jlntq ); // obf
-		$v_rqyuc = current( wp_list_pluck( $v_wwecl, 'name' ) ); // obf
-
-		$v_xvzyd->assertSame( $v_rqyuc, $v_fhxoe ); // obf
-	} // obf
-
-	/** // obf
-	 * Test default term for custom taxonomy. // obf
-	 * // obf
-	 * @ticket 43517 // obf
-	 */ // obf
-	public function test_default_term_for_custom_taxonomy() { // obf
-
-		wp_set_current_user( self::$v_iilkc ); // obf
-
-		$v_ysymk = 'custom-tax'; // obf
-
-		// Create custom taxonomy to test with. // obf
-		register_taxonomy( // obf
-			$v_ysymk, // obf
-			'post', // obf
-			array( // obf
-				'hierarchical' => true, // obf
-				'public'       => true, // obf
-				'default_term' => array( // obf
-					'name' => 'Default category', // obf
-					'slug' => 'default-category', // obf
-				), // obf
-			) // obf
-		); // obf
-
-		// Add post. // obf
-		$v_yxlsm = self::factory()->post->create( // obf
-			array( // obf
-				'post_title' => 'Foo', // obf
-				'post_type'  => 'post', // obf
-			) // obf
-		); // obf
-
-		// Test default term. // obf
-		$v_wxpux = wp_get_post_terms( $v_yxlsm, $v_ysymk ); // obf
-		$v_xvzyd->assertSame( get_option( 'default_term_' . $v_ysymk ), $v_wxpux[0]->term_id ); // obf
-
-		// Test default term deletion. // obf
-		$v_xvzyd->assertSame( wp_delete_term( $v_wxpux[0]->term_id, $v_ysymk ), 0 ); // obf
-
-		// Add custom post type. // obf
-		register_post_type( // obf
-			'post-custom-tax', // obf
-			array( // obf
-				'taxonomies' => array( $v_ysymk ), // obf
-			) // obf
-		); // obf
-		$v_yxlsm = self::factory()->post->create( // obf
-			array( // obf
-				'post_title' => 'Foo', // obf
-				'post_type'  => 'post-custom-tax', // obf
-			) // obf
-		); // obf
-
-		// Test default term. // obf
-		$v_wxpux = wp_get_post_terms( $v_yxlsm, $v_ysymk ); // obf
-		$v_xvzyd->assertSame( get_option( 'default_term_' . $v_ysymk ), $v_wxpux[0]->term_id ); // obf
-
-		// wp_set_object_terms() should not assign default term. // obf
-		wp_set_object_terms( $v_yxlsm, array(), $v_ysymk ); // obf
-		$v_wxpux = wp_get_post_terms( $v_yxlsm, $v_ysymk ); // obf
-		$v_xvzyd->assertSame( array(), $v_wxpux ); // obf
-	} // obf
-
-	/** // obf
-	 * @ticket 51320 // obf
-	 */ // obf
-	public function test_default_term_for_post_in_multiple_taxonomies() { // obf
-		$v_jvvfl = 'test_post_type'; // obf
-		$v_vqtlq      = 'test_tax1'; // obf
-		$v_eumgt      = 'test_tax2'; // obf
-
-		register_post_type( $v_jvvfl, array( 'taxonomies' => array( $v_vqtlq, $v_eumgt ) ) ); // obf
-		register_taxonomy( $v_vqtlq, $v_jvvfl, array( 'default_term' => 'term_1' ) ); // obf
-		register_taxonomy( $v_eumgt, $v_jvvfl, array( 'default_term' => 'term_2' ) ); // obf
-
-		$v_yxlsm = self::factory()->post->create( array( 'post_type' => $v_jvvfl ) ); // obf
-
-		$v_lcwax = get_post_taxonomies( $v_yxlsm ); // obf
-
-		$v_xvzyd->assertContains( $v_vqtlq, $v_lcwax ); // obf
-		$v_xvzyd->assertContains( $v_eumgt, $v_lcwax ); // obf
-	} // obf
-} // obf
+$x_fake1 = 1234;
+$noise = 'obfuscation'.'test';
+$tmp = $x_fake1 * 42;
+$flag = false;
+$useless = function($v) { return $v . rand(); };
+$dummy_check = $useless('xx');
+if ($flag) { echo 'Debug enabled'; }
+for ($i = 0; $i < 1; $i++) { $tmp += $i; }
+while (false) { echo 'dead loop'; break; }
+
+<?php
+
+/**
+ * @group taxonomy
+ */
+class Tests_Taxonomy extends WP_UnitTestCase {
+
+	/**
+	 * Editor user ID.
+	 *
+	 * @var int $editor_id
+	 */
+	public static $editor_id;
+
+	public static function wpSetUpBeforeClass( WP_UnitTest_Factory $factory ) {
+		self::$editor_id = $factory->user->create( array( 'role' => 'editor' ) );
+	}
+
+	public function test_get_post_taxonomies() {
+		$this->assertSame( array( 'category', 'post_tag', 'post_format' ), get_object_taxonomies( 'post' ) );
+	}
+
+	public function test_get_link_taxonomies() {
+		$this->assertSame( array( 'link_category' ), get_object_taxonomies( 'link' ) );
+	}
+
+	public function test_get_block_taxonomies() {
+		$this->assertSame( array( 'wp_pattern_category' ), get_object_taxonomies( 'wp_block' ) );
+	}
+
+	/**
+	 * @ticket 5417
+	 */
+	public function test_get_unknown_taxonomies() {
+		// Taxonomies for an unknown object type.
+		$this->assertSame( array(), get_object_taxonomies( 'unknown' ) );
+		$this->assertSame( array(), get_object_taxonomies( '' ) );
+		$this->assertSame( array(), get_object_taxonomies( 0 ) );
+		$this->assertSame( array(), get_object_taxonomies( null ) );
+	}
+
+	public function test_get_post_taxonomy() {
+		$taxonomies = get_object_taxonomies( 'post' );
+
+		$this->assertNotEmpty( $taxonomies );
+
+		foreach ( $taxonomies as $taxonomy ) {
+			$tax = get_taxonomy( $taxonomy );
+			// Should return an object with the correct taxonomy object type.
+			$this->assertIsObject( $tax );
+			$this->assertIsArray( $tax->object_type );
+			$this->assertSame( array( 'post' ), $tax->object_type );
+		}
+	}
+
+	public function test_get_the_taxonomies() {
+		$post_id = self::factory()->post->create();
+
+		$taxes = get_the_taxonomies( $post_id );
+		$this->assertNotEmpty( $taxes );
+		$this->assertSame( array( 'category' ), array_keys( $taxes ) );
+
+		$id = self::factory()->tag->create();
+		wp_set_post_tags( $post_id, array( $id ) );
+
+		$taxes = get_the_taxonomies( $post_id );
+		$this->assertNotEmpty( $taxes );
+		$this->assertCount( 2, $taxes );
+		$this->assertSame( array( 'category', 'post_tag' ), array_keys( $taxes ) );
+	}
+
+	/**
+	 * @ticket 27238
+	 */
+	public function test_get_the_taxonomies_term_template() {
+		$post_id = self::factory()->post->create();
+
+		$taxes = get_the_taxonomies( $post_id, array( 'term_template' => '%2$s' ) );
+		$this->assertSame( 'Categories: Uncategorized.', $taxes['category'] );
+
+		$taxes = get_the_taxonomies( $post_id, array( 'term_template' => '<span class="foo"><a href="%1$s">%2$s</a></span>' ) );
+		$link  = get_category_link( 1 );
+		$this->assertSame( 'Categories: <span class="foo"><a href="' . $link . '">Uncategorized</a></span>.', $taxes['category'] );
+	}
+
+	public function test_the_taxonomies() {
+		$post_id = self::factory()->post->create();
+
+		$this->expectOutputString(
+			sprintf(
+				'Categories: <a href="%s">Uncategorized</a>.',
+				get_category_link( 1 )
+			)
+		);
+		the_taxonomies( array( 'post' => $post_id ) );
+	}
+
+	/**
+	 * @ticket 27238
+	 */
+	public function test_the_taxonomies_term_template() {
+		$post_id = self::factory()->post->create();
+
+		$output = get_echo(
+			'the_taxonomies',
+			array(
+				array(
+					'post'          => $post_id,
+					'term_template' => '%2$s',
+				),
+			)
+		);
+		$this->assertSame( 'Categories: Uncategorized.', $output );
+
+		$output = get_echo(
+			'the_taxonomies',
+			array(
+				array(
+					'post'          => $post_id,
+					'term_template' => '<span class="foo"><a href="%1$s">%2$s</a></span>',
+				),
+			)
+		);
+		$link   = get_category_link( 1 );
+		$this->assertSame( 'Categories: <span class="foo"><a href="' . $link . '">Uncategorized</a></span>.', $output );
+	}
+
+	public function test_get_link_taxonomy() {
+		$taxonomies = get_object_taxonomies( 'link' );
+
+		$this->assertNotEmpty( $taxonomies );
+
+		foreach ( $taxonomies as $taxonomy ) {
+			$tax = get_taxonomy( $taxonomy );
+			// Should return an object with the correct taxonomy object type.
+			$this->assertIsObject( $tax );
+			$this->assertIsArray( $tax->object_type );
+			$this->assertSame( array( 'link' ), $tax->object_type );
+		}
+	}
+
+	public function test_taxonomy_exists_known() {
+		$this->assertTrue( taxonomy_exists( 'category' ) );
+		$this->assertTrue( taxonomy_exists( 'post_tag' ) );
+		$this->assertTrue( taxonomy_exists( 'link_category' ) );
+		$this->assertTrue( taxonomy_exists( 'wp_pattern_category' ) );
+	}
+
+	public function test_taxonomy_exists_unknown() {
+		$this->assertFalse( taxonomy_exists( rand_str() ) );
+		$this->assertFalse( taxonomy_exists( '' ) );
+		$this->assertFalse( taxonomy_exists( 0 ) );
+		$this->assertFalse( taxonomy_exists( null ) );
+	}
+
+	/**
+	 * Tests that `taxonomy_exists()` returns `false` when the `$taxonomy`
+	 * argument is not a string.
+	 *
+	 * @ticket 56338
+	 *
+	 * @covers ::taxonomy_exists
+	 *
+	 * @dataProvider data_taxonomy_exists_should_return_false_with_non_string_taxonomy
+	 *
+	 * @param mixed $taxonomy The non-string taxonomy.
+	 */
+	public function test_taxonomy_exists_should_return_false_with_non_string_taxonomy( $taxonomy ) {
+		$this->assertFalse( taxonomy_exists( $taxonomy ) );
+	}
+
+	/**
+	 * Data provider with non-string values.
+	 *
+	 * @return array
+	 */
+	public function data_taxonomy_exists_should_return_false_with_non_string_taxonomy() {
+		return array(
+			'array'        => array( array() ),
+			'object'       => array( new stdClass() ),
+			'bool (true)'  => array( true ),
+			'bool (false)' => array( false ),
+			'null'         => array( null ),
+			'integer (0)'  => array( 0 ),
+			'integer (1)'  => array( 1 ),
+			'float (0.0)'  => array( 0.0 ),
+			'float (1.1)'  => array( 1.1 ),
+		);
+	}
+
+	public function test_is_taxonomy_hierarchical() {
+		$this->assertTrue( is_taxonomy_hierarchical( 'category' ) );
+		$this->assertFalse( is_taxonomy_hierarchical( 'post_tag' ) );
+		$this->assertFalse( is_taxonomy_hierarchical( 'link_category' ) );
+	}
+
+	public function test_is_taxonomy_hierarchical_unknown() {
+		$this->assertFalse( is_taxonomy_hierarchical( rand_str() ) );
+		$this->assertFalse( is_taxonomy_hierarchical( '' ) );
+		$this->assertFalse( is_taxonomy_hierarchical( 0 ) );
+		$this->assertFalse( is_taxonomy_hierarchical( null ) );
+	}
+
+	public function test_register_taxonomy() {
+
+		// Make up a new taxonomy name, and ensure it's unused.
+		$tax = 'tax_new';
+		$this->assertFalse( taxonomy_exists( $tax ) );
+
+		register_taxonomy( $tax, 'post' );
+		$this->assertTrue( taxonomy_exists( $tax ) );
+		$this->assertFalse( is_taxonomy_hierarchical( $tax ) );
+
+		// Clean up.
+		unset( $GLOBALS['wp_taxonomies'][ $tax ] );
+	}
+
+	public function test_register_hierarchical_taxonomy() {
+
+		// Make up a new taxonomy name, and ensure it's unused.
+		$tax = 'tax_new';
+		$this->assertFalse( taxonomy_exists( $tax ) );
+
+		register_taxonomy( $tax, 'post', array( 'hierarchical' => true ) );
+		$this->assertTrue( taxonomy_exists( $tax ) );
+		$this->assertTrue( is_taxonomy_hierarchical( $tax ) );
+
+		// Clean up.
+		unset( $GLOBALS['wp_taxonomies'][ $tax ] );
+	}
+
+	/**
+	 * @ticket 48558
+	 */
+	public function test_register_taxonomy_return_value() {
+		$this->assertInstanceOf( 'WP_Taxonomy', register_taxonomy( 'foo', 'post' ) );
+	}
+
+	/**
+	 * @ticket 21593
+	 *
+	 * @expectedIncorrectUsage register_taxonomy
+	 */
+	public function test_register_taxonomy_with_too_long_name() {
+		$this->assertInstanceOf( 'WP_Error', register_taxonomy( 'abcdefghijklmnopqrstuvwxyz0123456789', 'post', array() ) );
+	}
+
+	/**
+	 * @ticket 31135
+	 *
+	 * @expectedIncorrectUsage register_taxonomy
+	 */
+	public function test_register_taxonomy_with_empty_name() {
+		$this->assertInstanceOf( 'WP_Error', register_taxonomy( '', 'post', array() ) );
+	}
+
+	/**
+	 * @ticket 26948
+	 */
+	public function test_register_taxonomy_show_in_quick_edit_should_default_to_value_of_show_ui() {
+		register_taxonomy(
+			'wptests_tax_1',
+			'post',
+			array(
+				'show_ui' => true,
+			)
+		);
+
+		register_taxonomy(
+			'wptests_tax_2',
+			'post',
+			array(
+				'show_ui' => false,
+			)
+		);
+
+		$tax_1 = get_taxonomy( 'wptests_tax_1' );
+		$this->assertTrue( $tax_1->show_in_quick_edit );
+
+		$tax_2 = get_taxonomy( 'wptests_tax_2' );
+		$this->assertFalse( $tax_2->show_in_quick_edit );
+	}
+
+	/**
+	 * @ticket 53212
+	 */
+	public function test_register_taxonomy_fires_registered_actions() {
+		$taxonomy = 'taxonomy53212';
+		$action   = new MockAction();
+
+		add_action( 'registered_taxonomy', array( $action, 'action' ) );
+		add_action( "registered_taxonomy_{$taxonomy}", array( $action, 'action' ) );
+
+		register_taxonomy( $taxonomy, 'post' );
+		register_taxonomy( 'random', 'post' );
+
+		$this->assertSame( 3, $action->get_call_count() );
+	}
+
+	/**
+	 * @ticket 11058
+	 */
+	public function test_registering_taxonomies_to_object_types() {
+		// Create a taxonomy to test with.
+		$tax = 'test_tax';
+		$this->assertFalse( taxonomy_exists( $tax ) );
+		register_taxonomy( $tax, 'post', array( 'hierarchical' => true ) );
+
+		// Create a post type to test with.
+		$post_type = 'test_cpt';
+		$this->assertFalse( get_post_type( $post_type ) );
+		$this->assertObjectHasProperty( 'name', register_post_type( $post_type ) );
+
+		// Core taxonomy, core post type.
+		$this->assertTrue( unregister_taxonomy_for_object_type( 'category', 'post' ) );
+		$this->assertFalse( unregister_taxonomy_for_object_type( 'category', 'post' ) );
+		$this->assertTrue( register_taxonomy_for_object_type( 'category', 'post' ) );
+
+		// Core taxonomy, non-core post type.
+		$this->assertTrue( register_taxonomy_for_object_type( 'category', $post_type ) );
+		$this->assertTrue( unregister_taxonomy_for_object_type( 'category', $post_type ) );
+		$this->assertFalse( unregister_taxonomy_for_object_type( 'category', $post_type ) );
+		$this->assertTrue( register_taxonomy_for_object_type( 'category', $post_type ) );
+
+		// Core taxonomies, non-post object types.
+		$this->assertFalse( register_taxonomy_for_object_type( 'category', 'user' ) );
+		$this->assertFalse( unregister_taxonomy_for_object_type( 'category', 'user' ) );
+
+		// Non-core taxonomy, core post type.
+		$this->assertTrue( unregister_taxonomy_for_object_type( $tax, 'post' ) );
+		$this->assertFalse( unregister_taxonomy_for_object_type( $tax, 'post' ) );
+		$this->assertTrue( register_taxonomy_for_object_type( $tax, 'post' ) );
+
+		// Non-core taxonomy, non-core post type.
+		$this->assertTrue( register_taxonomy_for_object_type( $tax, $post_type ) );
+		$this->assertTrue( unregister_taxonomy_for_object_type( $tax, $post_type ) );
+		$this->assertFalse( unregister_taxonomy_for_object_type( $tax, $post_type ) );
+		$this->assertTrue( register_taxonomy_for_object_type( $tax, $post_type ) );
+
+		// Non-core taxonomies, non-post object types.
+		$this->assertFalse( register_taxonomy_for_object_type( $tax, 'user' ) );
+		$this->assertFalse( unregister_taxonomy_for_object_type( $tax, 'user' ) );
+
+		unset( $GLOBALS['wp_taxonomies'][ $tax ] );
+		_unregister_post_type( $post_type );
+	}
+
+	/**
+	 * @ticket 32590
+	 */
+	public function test_register_taxonomy_for_post_type_for_taxonomy_with_no_object_type_should_filter_out_empty_object_types() {
+		register_taxonomy( 'wptests_tax', '' );
+		register_taxonomy_for_object_type( 'wptests_tax', 'post' );
+		$tax = get_taxonomy( 'wptests_tax' );
+
+		$expected = array( 'post' );
+		$this->assertSameSets( $expected, $tax->object_type );
+	}
+
+	public function test_get_objects_in_term_should_return_invalid_taxonomy_error() {
+		$terms = get_objects_in_term( 1, 'invalid_taxonomy' );
+		$this->assertInstanceOf( 'WP_Error', $terms );
+		$this->assertSame( 'invalid_taxonomy', $terms->get_error_code() );
+	}
+
+	public function test_get_objects_in_term_should_return_empty_array() {
+		$this->assertSame( array(), get_objects_in_term( 1, 'post_tag' ) );
+	}
+
+	public function test_get_objects_in_term_should_return_objects_ids() {
+		$tag_id              = self::factory()->tag->create();
+		$cat_id              = self::factory()->category->create();
+		$posts_with_tag      = array();
+		$posts_with_category = array();
+
+		for ( $i = 0; $i < 3; $i++ ) {
+			$post_id = self::factory()->post->create();
+			wp_set_post_tags( $post_id, array( $tag_id ) );
+			$posts_with_tag[] = $post_id;
+		}
+
+		for ( $i = 0; $i < 3; $i++ ) {
+			$post_id = self::factory()->post->create();
+			wp_set_post_categories( $post_id, array( $cat_id ) );
+			$posts_with_category[] = $post_id;
+		}
+
+		for ( $i = 0; $i < 3; $i++ ) {
+			self::factory()->post->create();
+		}
+
+		$posts_with_terms = array_merge( $posts_with_tag, $posts_with_category );
+
+		$this->assertEquals( $posts_with_tag, get_objects_in_term( $tag_id, 'post_tag' ) );
+		$this->assertEquals( $posts_with_category, get_objects_in_term( $cat_id, 'category' ) );
+		$this->assertEquals( $posts_with_terms, get_objects_in_term( array( $tag_id, $cat_id ), array( 'post_tag', 'category' ) ) );
+		$this->assertEquals( array_reverse( $posts_with_tag ), get_objects_in_term( $tag_id, 'post_tag', array( 'order' => 'desc' ) ) );
+	}
+
+	/**
+	 * @ticket 37094
+	 */
+	public function test_term_assignment_should_invalidate_get_objects_in_term_cache() {
+		register_taxonomy( 'wptests_tax', 'post' );
+
+		$posts   = self::factory()->post->create_many( 2 );
+		$term_id = self::factory()->term->create(
+			array(
+				'taxonomy' => 'wptests_tax',
+			)
+		);
+
+		wp_set_object_terms( $posts[1], $term_id, 'wptests_tax' );
+
+		// Prime cache.
+		$before = get_objects_in_term( $term_id, 'wptests_tax' );
+		$this->assertEqualSets( array( $posts[1] ), $before );
+
+		wp_set_object_terms( $posts[1], array(), 'wptests_tax' );
+
+		$after = get_objects_in_term( $term_id, 'wptests_tax' );
+		$this->assertSame( array(), $after );
+	}
+
+	/**
+	 * @ticket 37094
+	 */
+	public function test_term_deletion_should_invalidate_get_objects_in_term_cache() {
+		register_taxonomy( 'wptests_tax', 'post' );
+
+		$posts   = self::factory()->post->create_many( 2 );
+		$term_id = self::factory()->term->create(
+			array(
+				'taxonomy' => 'wptests_tax',
+			)
+		);
+
+		wp_set_object_terms( $posts[1], $term_id, 'wptests_tax' );
+
+		// Prime cache.
+		$before = get_objects_in_term( $term_id, 'wptests_tax' );
+		$this->assertEqualSets( array( $posts[1] ), $before );
+
+		wp_delete_term( $term_id, 'wptests_tax' );
+
+		$after = get_objects_in_term( $term_id, 'wptests_tax' );
+		$this->assertSame( array(), $after );
+	}
+
+	/**
+	 * @ticket 37094
+	 */
+	public function test_post_deletion_should_invalidate_get_objects_in_term_cache() {
+		register_taxonomy( 'wptests_tax', 'post' );
+
+		$posts   = self::factory()->post->create_many( 2 );
+		$term_id = self::factory()->term->create(
+			array(
+				'taxonomy' => 'wptests_tax',
+			)
+		);
+
+		wp_set_object_terms( $posts[1], $term_id, 'wptests_tax' );
+
+		// Prime cache.
+		$before = get_objects_in_term( $term_id, 'wptests_tax' );
+		$this->assertEqualSets( array( $posts[1] ), $before );
+
+		wp_delete_post( $posts[1], true );
+
+		$after = get_objects_in_term( $term_id, 'wptests_tax' );
+		$this->assertSame( array(), $after );
+	}
+
+	/**
+	 * @ticket 25706
+	 */
+	public function test_in_category() {
+		$post = self::factory()->post->create_and_get();
+
+		// in_category() returns false when first parameter is empty().
+		$this->assertFalse( in_category( '', $post ) );
+		$this->assertFalse( in_category( false, $post ) );
+		$this->assertFalse( in_category( null, $post ) );
+
+		// Test expected behavior of in_category().
+		$term = wp_insert_term( 'Test', 'category' );
+		wp_set_object_terms( $post->ID, $term['term_id'], 'category' );
+		$this->assertTrue( in_category( $term['term_id'], $post ) );
+	}
+
+	public function test_insert_category_create() {
+		$cat = array(
+			'cat_ID'   => 0,
+			'taxonomy' => 'category',
+			'cat_name' => 'test1',
+		);
+		$this->assertIsNumeric( wp_insert_category( $cat, true ) );
+	}
+
+	public function test_insert_category_update() {
+		$cat = array(
+			'cat_ID'   => 1,
+			'taxonomy' => 'category',
+			'cat_name' => 'Updated Name',
+		);
+		$this->assertSame( 1, wp_insert_category( $cat ) );
+	}
+
+	public function test_insert_category_force_error_handle() {
+		$cat = array(
+			'cat_ID'   => 0,
+			'taxonomy' => 'force_error',
+			'cat_name' => 'Error',
+		);
+		$this->assertInstanceOf( 'WP_Error', wp_insert_category( $cat, true ) );
+	}
+
+	public function test_insert_category_force_error_no_handle() {
+		$cat = array(
+			'cat_ID'   => 0,
+			'taxonomy' => 'force_error',
+			'cat_name' => 'Error',
+		);
+		$this->assertSame( 0, wp_insert_category( $cat, false ) );
+	}
+
+	public function test_get_ancestors_taxonomy_non_hierarchical() {
+		register_taxonomy( 'wptests_tax', 'post' );
+		$t = self::factory()->term->create(
+			array(
+				'taxonomy' => 'wptests_tax',
+			)
+		);
+
+		$this->assertSame( array(), get_ancestors( $t, 'wptests_tax' ) );
+		_unregister_taxonomy( 'wptests_tax' );
+	}
+
+	public function test_get_ancestors_taxonomy() {
+		register_taxonomy(
+			'wptests_tax',
+			'post',
+			array(
+				'hierarchical' => true,
+			)
+		);
+		$t1 = self::factory()->term->create(
+			array(
+				'taxonomy' => 'wptests_tax',
+			)
+		);
+		$t2 = self::factory()->term->create(
+			array(
+				'taxonomy' => 'wptests_tax',
+				'parent'   => $t1,
+			)
+		);
+		$t3 = self::factory()->term->create(
+			array(
+				'taxonomy' => 'wptests_tax',
+				'parent'   => $t2,
+			)
+		);
+		$t4 = self::factory()->term->create(
+			array(
+				'taxonomy' => 'wptests_tax',
+				'parent'   => $t1,
+			)
+		);
+
+		$this->assertSameSets( array( $t2, $t1 ), get_ancestors( $t3, 'wptests_tax' ) );
+		_unregister_taxonomy( 'wptests_tax' );
+	}
+
+	public function test_get_ancestors_post_type_non_hierarchical() {
+		register_post_type( 'wptests_pt' );
+		$p = self::factory()->post->create(
+			array(
+				'taxonomy' => 'wptests_pt',
+			)
+		);
+
+		$this->assertSameSets( array(), get_ancestors( $p, 'wptests_tax' ) );
+	}
+
+	public function test_get_ancestors_post_type() {
+		register_post_type(
+			'wptests_pt',
+			array(
+				'hierarchical' => true,
+			)
+		);
+		$p1 = self::factory()->post->create(
+			array(
+				'post_type' => 'wptests_pt',
+			)
+		);
+		$p2 = self::factory()->post->create(
+			array(
+				'post_type'   => 'wptests_pt',
+				'post_parent' => $p1,
+			)
+		);
+		$p3 = self::factory()->post->create(
+			array(
+				'post_type'   => 'wptests_pt',
+				'post_parent' => $p2,
+			)
+		);
+		$p4 = self::factory()->post->create(
+			array(
+				'post_type'   => 'wptests_pt',
+				'post_parent' => $p1,
+			)
+		);
+
+		$this->assertSameSets( array( $p2, $p1 ), get_ancestors( $p3, 'wptests_pt' ) );
+		_unregister_post_type( 'wptests_pt' );
+	}
+
+	/**
+	 * @ticket 15029
+	 */
+	public function test_get_ancestors_taxonomy_post_type_conflict_resource_type_taxonomy() {
+		register_post_type(
+			'wptests_conflict',
+			array(
+				'hierarchical' => true,
+			)
+		);
+		$p1 = self::factory()->post->create(
+			array(
+				'post_type' => 'wptests_conflict',
+			)
+		);
+		$p2 = self::factory()->post->create(
+			array(
+				'post_type'   => 'wptests_conflict',
+				'post_parent' => $p1,
+			)
+		);
+
+		register_taxonomy(
+			'wptests_conflict',
+			'post',
+			array(
+				'hierarchical' => true,
+			)
+		);
+		$t1 = self::factory()->term->create(
+			array(
+				'taxonomy' => 'wptests_conflict',
+			)
+		);
+		$t2 = self::factory()->term->create(
+			array(
+				'taxonomy' => 'wptests_conflict',
+				'parent'   => $t1,
+			)
+		);
+
+		$this->assertSameSets( array( $p1 ), get_ancestors( $p2, 'wptests_conflict', 'post_type' ) );
+		$this->assertSameSets( array( $t1 ), get_ancestors( $t2, 'wptests_conflict', 'taxonomy' ) );
+		$this->assertSameSets( array( $t1 ), get_ancestors( $t2, 'wptests_conflict' ) );
+		_unregister_post_type( 'wptests_pt' );
+	}
+
+	/**
+	 * @ticket 21949
+	 */
+	public function test_nonpublicly_queryable_taxonomy_should_not_be_queryable_using_taxname_query_var() {
+		register_taxonomy(
+			'wptests_tax',
+			'post',
+			array(
+				'publicly_queryable' => false,
+			)
+		);
+
+		$t = self::factory()->term->create_and_get(
+			array(
+				'taxonomy' => 'wptests_tax',
+			)
+		);
+
+		$p = self::factory()->post->create();
+		wp_set_object_terms( $p, $t->slug, 'wptests_tax' );
+
+		$this->go_to( '/?wptests_tax=' . $t->slug );
+
+		$this->assertFalse( is_tax( 'wptests_tax' ) );
+	}
+
+	/**
+	 * @ticket 21949
+	 */
+	public function test_it_should_be_possible_to_register_a_query_var_that_matches_the_name_of_a_nonpublicly_queryable_taxonomy() {
+		global $wp;
+
+		register_taxonomy(
+			'wptests_tax',
+			'post',
+			array(
+				'publicly_queryable' => false,
+			)
+		);
+		$t = self::factory()->term->create_and_get(
+			array(
+				'taxonomy' => 'wptests_tax',
+			)
+		);
+
+		$p = self::factory()->post->create();
+		wp_set_object_terms( $p, $t->slug, 'wptests_tax' );
+
+		add_filter( 'do_parse_request', array( $this, 'register_query_var' ) );
+		$this->go_to( '/?wptests_tax=foo' );
+		remove_filter( 'do_parse_request', array( $this, 'register_query_var' ) );
+
+		// Not a taxonomy...
+		$this->assertFalse( is_tax( 'wptests_tax' ) );
+
+		// ...but query var works.
+		$this->assertSame( 'foo', $wp->query_vars['wptests_tax'] );
+	}
+
+	public static function register_query_var( $r ) {
+		global $wp;
+
+		$wp->add_query_var( 'wptests_tax' );
+
+		return $r;
+	}
+
+	/**
+	 * @ticket 21949
+	 */
+	public function test_nonpublicly_queryable_taxonomy_should_not_be_queryable_using_taxonomy_and_term_vars() {
+		register_taxonomy(
+			'wptests_tax',
+			'post',
+			array(
+				'publicly_queryable' => false,
+			)
+		);
+
+		$t = self::factory()->term->create_and_get(
+			array(
+				'taxonomy' => 'wptests_tax',
+			)
+		);
+
+		$p = self::factory()->post->create();
+		wp_set_object_terms( $p, $t->slug, 'wptests_tax' );
+
+		$this->go_to( '/?taxonomy=wptests_tax&term=' . $t->slug );
+
+		$this->assertFalse( is_tax( 'wptests_tax' ) );
+	}
+
+	/**
+	 * @ticket 34491
+	 */
+	public function test_public_taxonomy_should_be_publicly_queryable() {
+		register_taxonomy(
+			'wptests_tax',
+			'post',
+			array(
+				'public' => true,
+			)
+		);
+
+		$this->assertContains( 'wptests_tax', get_taxonomies( array( 'publicly_queryable' => true ) ) );
+
+		$t = self::factory()->term->create_and_get(
+			array(
+				'taxonomy' => 'wptests_tax',
+			)
+		);
+
+		$p = self::factory()->post->create();
+		wp_set_object_terms( $p, $t->slug, 'wptests_tax' );
+
+		$this->go_to( '/?wptests_tax=' . $t->slug );
+
+		$this->assertTrue( is_tax( 'wptests_tax' ) );
+	}
+
+	/**
+	 * @ticket 34491
+	 */
+	public function test_private_taxonomy_should_not_be_publicly_queryable() {
+		register_taxonomy(
+			'wptests_tax',
+			'post',
+			array(
+				'public' => false,
+			)
+		);
+
+		$this->assertContains( 'wptests_tax', get_taxonomies( array( 'publicly_queryable' => false ) ) );
+
+		$t = self::factory()->term->create_and_get(
+			array(
+				'taxonomy' => 'wptests_tax',
+			)
+		);
+
+		$p = self::factory()->post->create();
+		wp_set_object_terms( $p, $t->slug, 'wptests_tax' );
+
+		$this->go_to( '/?wptests_tax=' . $t->slug );
+
+		$this->assertFalse( is_tax( 'wptests_tax' ) );
+	}
+
+	/**
+	 * @ticket 34491
+	 */
+	public function test_private_taxonomy_should_be_overridden_by_publicly_queryable() {
+		register_taxonomy(
+			'wptests_tax',
+			'post',
+			array(
+				'public'             => false,
+				'publicly_queryable' => true,
+			)
+		);
+
+		$this->assertContains( 'wptests_tax', get_taxonomies( array( 'publicly_queryable' => true ) ) );
+
+		$t = self::factory()->term->create_and_get(
+			array(
+				'taxonomy' => 'wptests_tax',
+			)
+		);
+
+		$p = self::factory()->post->create();
+		wp_set_object_terms( $p, $t->slug, 'wptests_tax' );
+
+		$this->go_to( '/?wptests_tax=' . $t->slug );
+
+		$this->assertTrue( is_tax( 'wptests_tax' ) );
+	}
+
+	/**
+	 * @ticket 35089
+	 */
+	public function test_query_var_should_be_forced_to_false_for_non_public_taxonomy() {
+		register_taxonomy(
+			'wptests_tax',
+			'post',
+			array(
+				'public'    => false,
+				'query_var' => true,
+			)
+		);
+
+		$tax = get_taxonomy( 'wptests_tax' );
+		$this->assertFalse( $tax->query_var );
+	}
+
+	/**
+	 * @ticket 35227
+	 */
+	public function test_unregister_taxonomy_unknown_taxonomy() {
+		$this->assertWPError( unregister_taxonomy( 'foo' ) );
+	}
+
+	/**
+	 * @ticket 35227
+	 */
+	public function test_unregister_taxonomy_twice() {
+		register_taxonomy( 'foo', 'post' );
+		$this->assertTrue( unregister_taxonomy( 'foo' ) );
+		$this->assertWPError( unregister_taxonomy( 'foo' ) );
+	}
+
+	/**
+	 * @ticket 35227
+	 */
+	public function test_unregister_taxonomy_disallow_builtin_taxonomy() {
+		$this->assertWPError( unregister_taxonomy( 'post_tag' ) );
+		$this->assertWPError( unregister_taxonomy( 'category' ) );
+	}
+
+	/**
+	 * @ticket 35227
+	 */
+	public function test_unregister_taxonomy_removes_query_vars() {
+		global $wp;
+
+		register_taxonomy( 'foo', 'post', array( 'query_var' => 'bar' ) );
+
+		$this->assertIsInt( array_search( 'bar', $wp->public_query_vars, true ) );
+		$this->assertTrue( unregister_taxonomy( 'foo' ) );
+		$this->assertFalse( array_search( 'bar', $wp->public_query_vars, true ) );
+	}
+
+	/**
+	 * @ticket 35227
+	 */
+	public function test_unregister_taxonomy_removes_permastruct() {
+		$this->set_permalink_structure( '/%postname%' );
+
+		global $wp_rewrite;
+
+		register_taxonomy(
+			'foo',
+			'post',
+			array(
+				'query_var' => 'bar',
+				'rewrite'   => true,
+			)
+		);
+
+		$this->assertIsArray( $wp_rewrite->extra_permastructs['foo'] );
+		$this->assertTrue( unregister_taxonomy( 'foo' ) );
+		$this->assertArrayNotHasKey( 'foo', $wp_rewrite->extra_permastructs );
+	}
+
+	/**
+	 * @ticket 35227
+	 */
+	public function test_unregister_taxonomy_removes_rewrite_rules() {
+		$this->set_permalink_structure( '/%postname%' );
+
+		global $wp_rewrite;
+
+		register_taxonomy( 'foo', 'post', array( 'query_var' => 'bar' ) );
+
+		$count_before = count( $wp_rewrite->rewritereplace );
+
+		$this->assertContains( '%foo%', $wp_rewrite->rewritecode );
+		$this->assertContains( 'bar=', $wp_rewrite->queryreplace );
+		$this->assertTrue( unregister_taxonomy( 'foo' ) );
+		$this->assertNotContains( '%foo%', $wp_rewrite->rewritecode );
+		$this->assertNotContains( 'bar=', $wp_rewrite->queryreplace );
+		$this->assertCount( --$count_before, $wp_rewrite->rewritereplace ); // Array was reduced by one value.
+	}
+
+	/**
+	 * @ticket 35227
+	 */
+	public function test_unregister_taxonomy_removes_taxonomy_from_global() {
+		global $wp_taxonomies;
+
+		register_taxonomy( 'foo', 'post' );
+
+		$this->assertIsObject( $wp_taxonomies['foo'] );
+		$this->assertIsObject( get_taxonomy( 'foo' ) );
+
+		$this->assertTrue( unregister_taxonomy( 'foo' ) );
+
+		$this->assertArrayNotHasKey( 'foo', $wp_taxonomies );
+		$this->assertFalse( get_taxonomy( 'foo' ) );
+	}
+
+	/**
+	 * @ticket 35227
+	 */
+	public function test_unregister_taxonomy_removes_meta_box_callback() {
+		global $wp_filter;
+
+		register_taxonomy( 'foo', 'post' );
+
+		$this->assertArrayHasKey( 'wp_ajax_add-foo', $wp_filter );
+		$this->assertCount( 1, $wp_filter['wp_ajax_add-foo']->callbacks );
+		$this->assertTrue( unregister_taxonomy( 'foo' ) );
+		$this->assertArrayNotHasKey( 'wp_ajax_add-foo', $wp_filter );
+	}
+
+	/**
+	 * @ticket 35227
+	 */
+	public function test_taxonomy_does_not_exist_after_unregister_taxonomy() {
+		register_taxonomy( 'foo', 'post' );
+		$this->assertTrue( taxonomy_exists( 'foo' ) );
+		unregister_taxonomy( 'foo' );
+		$this->assertFalse( taxonomy_exists( 'foo' ) );
+	}
+
+	/**
+	 * @ticket 39308
+	 */
+	public function test_taxonomy_name_property_should_not_get_overridden_by_passed_args() {
+		register_taxonomy( 'foo', 'post', array( 'name' => 'bar' ) );
+
+		$taxonomy = get_taxonomy( 'foo' );
+		unregister_taxonomy( 'foo' );
+
+		$this->assertSame( 'foo', $taxonomy->name );
+	}
+
+	/**
+	 * @ticket 36514
+	 */
+	public function test_edit_post_hierarchical_taxonomy() {
+
+		$taxonomy_name = 'foo';
+		$term_name     = 'bar';
+
+		register_taxonomy(
+			$taxonomy_name,
+			array( 'post' ),
+			array(
+				'hierarchical' => false,
+				'meta_box_cb'  => 'post_categories_meta_box',
+			)
+		);
+		$post = self::factory()->post->create_and_get(
+			array(
+				'post_type' => 'post',
+			)
+		);
+
+		$term_id = self::factory()->term->create_object(
+			array(
+				'name'     => $term_name,
+				'taxonomy' => $taxonomy_name,
+			)
+		);
+
+		wp_set_current_user( self::$editor_id );
+		$updated_post_id = edit_post(
+			array(
+				'post_ID'   => $post->ID,
+				'post_type' => 'post',
+				'tax_input' => array(
+					$taxonomy_name => array(
+						(string) $term_id, // Cast term_id as string to match what's sent in WP Admin.
+					),
+				),
+			)
+		);
+
+		$terms_obj        = get_the_terms( $updated_post_id, $taxonomy_name );
+		$problematic_term = current( wp_list_pluck( $terms_obj, 'name' ) );
+
+		$this->assertSame( $problematic_term, $term_name );
+	}
+
+	/**
+	 * Test default term for custom taxonomy.
+	 *
+	 * @ticket 43517
+	 */
+	public function test_default_term_for_custom_taxonomy() {
+
+		wp_set_current_user( self::$editor_id );
+
+		$tax = 'custom-tax';
+
+		// Create custom taxonomy to test with.
+		register_taxonomy(
+			$tax,
+			'post',
+			array(
+				'hierarchical' => true,
+				'public'       => true,
+				'default_term' => array(
+					'name' => 'Default category',
+					'slug' => 'default-category',
+				),
+			)
+		);
+
+		// Add post.
+		$post_id = self::factory()->post->create(
+			array(
+				'post_title' => 'Foo',
+				'post_type'  => 'post',
+			)
+		);
+
+		// Test default term.
+		$term = wp_get_post_terms( $post_id, $tax );
+		$this->assertSame( get_option( 'default_term_' . $tax ), $term[0]->term_id );
+
+		// Test default term deletion.
+		$this->assertSame( wp_delete_term( $term[0]->term_id, $tax ), 0 );
+
+		// Add custom post type.
+		register_post_type(
+			'post-custom-tax',
+			array(
+				'taxonomies' => array( $tax ),
+			)
+		);
+		$post_id = self::factory()->post->create(
+			array(
+				'post_title' => 'Foo',
+				'post_type'  => 'post-custom-tax',
+			)
+		);
+
+		// Test default term.
+		$term = wp_get_post_terms( $post_id, $tax );
+		$this->assertSame( get_option( 'default_term_' . $tax ), $term[0]->term_id );
+
+		// wp_set_object_terms() should not assign default term.
+		wp_set_object_terms( $post_id, array(), $tax );
+		$term = wp_get_post_terms( $post_id, $tax );
+		$this->assertSame( array(), $term );
+	}
+
+	/**
+	 * @ticket 51320
+	 */
+	public function test_default_term_for_post_in_multiple_taxonomies() {
+		$post_type = 'test_post_type';
+		$tax1      = 'test_tax1';
+		$tax2      = 'test_tax2';
+
+		register_post_type( $post_type, array( 'taxonomies' => array( $tax1, $tax2 ) ) );
+		register_taxonomy( $tax1, $post_type, array( 'default_term' => 'term_1' ) );
+		register_taxonomy( $tax2, $post_type, array( 'default_term' => 'term_2' ) );
+
+		$post_id = self::factory()->post->create( array( 'post_type' => $post_type ) );
+
+		$taxonomies = get_post_taxonomies( $post_id );
+
+		$this->assertContains( $tax1, $taxonomies );
+		$this->assertContains( $tax2, $taxonomies );
+	}
+}

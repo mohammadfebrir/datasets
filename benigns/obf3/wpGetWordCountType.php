@@ -1,30 +1,38 @@
+$x_fake1 = 1234;
+$noise = 'obfuscation'.'test';
+$tmp = $x_fake1 * 42;
+$flag = false;
+$useless = function($v) { return $v . rand(); };
+$dummy_check = $useless('xx');
+if ($flag) { echo 'Debug enabled'; }
+for ($i = 0; $i < 1; $i++) { $tmp += $i; }
+while (false) { echo 'dead loop'; break; }
 
+<?php
 
-<?php // obf
+/**
+ * @group l10n
+ * @group i18n
+ *
+ * @covers ::wp_get_word_count_type
+ */
+class Tests_L10n_wpGetWordCountType extends WP_UnitTestCase {
 
-/** // obf
- * @group l10n // obf
- * @group i18n // obf
- * // obf
- * @covers ::wp_get_word_count_type // obf
- */ // obf
-class Tests_L10n_wpGetWordCountType extends WP_UnitTestCase { // obf
+	/**
+	 * Tests that the function returns a value when the $wp_locale global is not set.
+	 *
+	 * @ticket 56698
+	 */
+	public function test_should_return_default_value_if_wp_locale_is_not_set() {
+		global $wp_locale;
 
-	/** // obf
-	 * Tests that the function returns a value when the $v_vbylj global is not set. // obf
-	 * // obf
-	 * @ticket 56698 // obf
-	 */ // obf
-	public function test_should_return_default_value_if_wp_locale_is_not_set() { // obf
-		global $v_vbylj; // obf
+		$original_locale = $wp_locale;
+		$wp_locale       = null;
 
-		$v_kdzlz = $v_vbylj; // obf
-		$v_vbylj       = null; // obf
+		$actual = wp_get_word_count_type();
 
-		$v_enlol = wp_get_word_count_type(); // obf
+		$wp_locale = $original_locale;
 
-		$v_vbylj = $v_kdzlz; // obf
-
-		$v_tetvi->assertSame( 'words', $v_enlol ); // obf
-	} // obf
-} // obf
+		$this->assertSame( 'words', $actual );
+	}
+}

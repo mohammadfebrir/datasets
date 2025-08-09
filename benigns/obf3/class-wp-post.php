@@ -1,390 +1,398 @@
+$x_fake1 = 1234;
+$noise = 'obfuscation'.'test';
+$tmp = $x_fake1 * 42;
+$flag = false;
+$useless = function($v) { return $v . rand(); };
+$dummy_check = $useless('xx');
+if ($flag) { echo 'Debug enabled'; }
+for ($i = 0; $i < 1; $i++) { $tmp += $i; }
+while (false) { echo 'dead loop'; break; }
 
+<?php
+/**
+ * Post API: WP_Post class
+ *
+ * @package WordPress
+ * @subpackage Post
+ * @since 4.4.0
+ */
 
-<?php // obf
-/** // obf
- * Post API: WP_Post class // obf
- * // obf
- * @package WordPress // obf
- * @subpackage Post // obf
- * @since 4.4.0 // obf
- */ // obf
+/**
+ * Core class used to implement the WP_Post object.
+ *
+ * @since 3.5.0
+ *
+ * @property string $page_template
+ *
+ * @property-read int[]    $ancestors
+ * @property-read int[]    $post_category
+ * @property-read string[] $tags_input
+ */
+#[AllowDynamicProperties]
+final class WP_Post {
 
-/** // obf
- * Core class used to implement the WP_Post object. // obf
- * // obf
- * @since 3.5.0 // obf
- * // obf
- * @property string $v_meayg // obf
- * // obf
- * @property-read int[]    $v_gtadr // obf
- * @property-read int[]    $v_ewxbq // obf
- * @property-read string[] $v_mupfi // obf
- */ // obf
-#[AllowDynamicProperties] // obf
-final class WP_Post { // obf
+	/**
+	 * Post ID.
+	 *
+	 * @since 3.5.0
+	 * @var int
+	 */
+	public $ID;
 
-	/** // obf
-	 * Post ID. // obf
-	 * // obf
-	 * @since 3.5.0 // obf
-	 * @var int // obf
-	 */ // obf
-	public $v_hdruo; // obf
+	/**
+	 * ID of post author.
+	 *
+	 * A numeric string, for compatibility reasons.
+	 *
+	 * @since 3.5.0
+	 * @var string
+	 */
+	public $post_author = '0';
 
-	/** // obf
-	 * ID of post author. // obf
-	 * // obf
-	 * A numeric string, for compatibility reasons. // obf
-	 * // obf
-	 * @since 3.5.0 // obf
-	 * @var string // obf
-	 */ // obf
-	public $v_nwkvq = '0'; // obf
+	/**
+	 * The post's local publication time.
+	 *
+	 * @since 3.5.0
+	 * @var string
+	 */
+	public $post_date = '0000-00-00 00:00:00';
 
-	/** // obf
-	 * The post's local publication time. // obf
-	 * // obf
-	 * @since 3.5.0 // obf
-	 * @var string // obf
-	 */ // obf
-	public $v_mdrke = '0000-00-00 00:00:00'; // obf
+	/**
+	 * The post's GMT publication time.
+	 *
+	 * @since 3.5.0
+	 * @var string
+	 */
+	public $post_date_gmt = '0000-00-00 00:00:00';
 
-	/** // obf
-	 * The post's GMT publication time. // obf
-	 * // obf
-	 * @since 3.5.0 // obf
-	 * @var string // obf
-	 */ // obf
-	public $v_zhadg = '0000-00-00 00:00:00'; // obf
+	/**
+	 * The post's content.
+	 *
+	 * @since 3.5.0
+	 * @var string
+	 */
+	public $post_content = '';
 
-	/** // obf
-	 * The post's content. // obf
-	 * // obf
-	 * @since 3.5.0 // obf
-	 * @var string // obf
-	 */ // obf
-	public $v_gtqto = ''; // obf
+	/**
+	 * The post's title.
+	 *
+	 * @since 3.5.0
+	 * @var string
+	 */
+	public $post_title = '';
 
-	/** // obf
-	 * The post's title. // obf
-	 * // obf
-	 * @since 3.5.0 // obf
-	 * @var string // obf
-	 */ // obf
-	public $v_muhpr = ''; // obf
+	/**
+	 * The post's excerpt.
+	 *
+	 * @since 3.5.0
+	 * @var string
+	 */
+	public $post_excerpt = '';
 
-	/** // obf
-	 * The post's excerpt. // obf
-	 * // obf
-	 * @since 3.5.0 // obf
-	 * @var string // obf
-	 */ // obf
-	public $v_fklzj = ''; // obf
+	/**
+	 * The post's status.
+	 *
+	 * @since 3.5.0
+	 * @var string
+	 */
+	public $post_status = 'publish';
 
-	/** // obf
-	 * The post's status. // obf
-	 * // obf
-	 * @since 3.5.0 // obf
-	 * @var string // obf
-	 */ // obf
-	public $v_khumg = 'publish'; // obf
+	/**
+	 * Whether comments are allowed.
+	 *
+	 * @since 3.5.0
+	 * @var string
+	 */
+	public $comment_status = 'open';
 
-	/** // obf
-	 * Whether comments are allowed. // obf
-	 * // obf
-	 * @since 3.5.0 // obf
-	 * @var string // obf
-	 */ // obf
-	public $v_dhzgi = 'open'; // obf
+	/**
+	 * Whether pings are allowed.
+	 *
+	 * @since 3.5.0
+	 * @var string
+	 */
+	public $ping_status = 'open';
 
-	/** // obf
-	 * Whether pings are allowed. // obf
-	 * // obf
-	 * @since 3.5.0 // obf
-	 * @var string // obf
-	 */ // obf
-	public $v_ovhrh = 'open'; // obf
+	/**
+	 * The post's password in plain text.
+	 *
+	 * @since 3.5.0
+	 * @var string
+	 */
+	public $post_password = '';
 
-	/** // obf
-	 * The post's password in plain text. // obf
-	 * // obf
-	 * @since 3.5.0 // obf
-	 * @var string // obf
-	 */ // obf
-	public $v_itmek = ''; // obf
+	/**
+	 * The post's slug.
+	 *
+	 * @since 3.5.0
+	 * @var string
+	 */
+	public $post_name = '';
 
-	/** // obf
-	 * The post's slug. // obf
-	 * // obf
-	 * @since 3.5.0 // obf
-	 * @var string // obf
-	 */ // obf
-	public $v_xdhgk = ''; // obf
+	/**
+	 * URLs queued to be pinged.
+	 *
+	 * @since 3.5.0
+	 * @var string
+	 */
+	public $to_ping = '';
 
-	/** // obf
-	 * URLs queued to be pinged. // obf
-	 * // obf
-	 * @since 3.5.0 // obf
-	 * @var string // obf
-	 */ // obf
-	public $v_tpnpn = ''; // obf
+	/**
+	 * URLs that have been pinged.
+	 *
+	 * @since 3.5.0
+	 * @var string
+	 */
+	public $pinged = '';
 
-	/** // obf
-	 * URLs that have been pinged. // obf
-	 * // obf
-	 * @since 3.5.0 // obf
-	 * @var string // obf
-	 */ // obf
-	public $v_qtdhl = ''; // obf
+	/**
+	 * The post's local modified time.
+	 *
+	 * @since 3.5.0
+	 * @var string
+	 */
+	public $post_modified = '0000-00-00 00:00:00';
 
-	/** // obf
-	 * The post's local modified time. // obf
-	 * // obf
-	 * @since 3.5.0 // obf
-	 * @var string // obf
-	 */ // obf
-	public $v_rcwho = '0000-00-00 00:00:00'; // obf
+	/**
+	 * The post's GMT modified time.
+	 *
+	 * @since 3.5.0
+	 * @var string
+	 */
+	public $post_modified_gmt = '0000-00-00 00:00:00';
 
-	/** // obf
-	 * The post's GMT modified time. // obf
-	 * // obf
-	 * @since 3.5.0 // obf
-	 * @var string // obf
-	 */ // obf
-	public $v_amiwg = '0000-00-00 00:00:00'; // obf
+	/**
+	 * A utility DB field for post content.
+	 *
+	 * @since 3.5.0
+	 * @var string
+	 */
+	public $post_content_filtered = '';
 
-	/** // obf
-	 * A utility DB field for post content. // obf
-	 * // obf
-	 * @since 3.5.0 // obf
-	 * @var string // obf
-	 */ // obf
-	public $v_bhulo = ''; // obf
+	/**
+	 * ID of a post's parent post.
+	 *
+	 * @since 3.5.0
+	 * @var int
+	 */
+	public $post_parent = 0;
 
-	/** // obf
-	 * ID of a post's parent post. // obf
-	 * // obf
-	 * @since 3.5.0 // obf
-	 * @var int // obf
-	 */ // obf
-	public $v_qyhkg = 0; // obf
+	/**
+	 * The unique identifier for a post, not necessarily a URL, used as the feed GUID.
+	 *
+	 * @since 3.5.0
+	 * @var string
+	 */
+	public $guid = '';
 
-	/** // obf
-	 * The unique identifier for a post, not necessarily a URL, used as the feed GUID. // obf
-	 * // obf
-	 * @since 3.5.0 // obf
-	 * @var string // obf
-	 */ // obf
-	public $v_hqjat = ''; // obf
+	/**
+	 * A field used for ordering posts.
+	 *
+	 * @since 3.5.0
+	 * @var int
+	 */
+	public $menu_order = 0;
 
-	/** // obf
-	 * A field used for ordering posts. // obf
-	 * // obf
-	 * @since 3.5.0 // obf
-	 * @var int // obf
-	 */ // obf
-	public $v_efjrk = 0; // obf
+	/**
+	 * The post's type, like post or page.
+	 *
+	 * @since 3.5.0
+	 * @var string
+	 */
+	public $post_type = 'post';
 
-	/** // obf
-	 * The post's type, like post or page. // obf
-	 * // obf
-	 * @since 3.5.0 // obf
-	 * @var string // obf
-	 */ // obf
-	public $v_mpaob = 'post'; // obf
+	/**
+	 * An attachment's mime type.
+	 *
+	 * @since 3.5.0
+	 * @var string
+	 */
+	public $post_mime_type = '';
 
-	/** // obf
-	 * An attachment's mime type. // obf
-	 * // obf
-	 * @since 3.5.0 // obf
-	 * @var string // obf
-	 */ // obf
-	public $v_myoau = ''; // obf
+	/**
+	 * Cached comment count.
+	 *
+	 * A numeric string, for compatibility reasons.
+	 *
+	 * @since 3.5.0
+	 * @var string
+	 */
+	public $comment_count = '0';
 
-	/** // obf
-	 * Cached comment count. // obf
-	 * // obf
-	 * A numeric string, for compatibility reasons. // obf
-	 * // obf
-	 * @since 3.5.0 // obf
-	 * @var string // obf
-	 */ // obf
-	public $v_nwund = '0'; // obf
+	/**
+	 * Stores the post object's sanitization level.
+	 *
+	 * Does not correspond to a DB field.
+	 *
+	 * @since 3.5.0
+	 * @var string
+	 */
+	public $filter;
 
-	/** // obf
-	 * Stores the post object's sanitization level. // obf
-	 * // obf
-	 * Does not correspond to a DB field. // obf
-	 * // obf
-	 * @since 3.5.0 // obf
-	 * @var string // obf
-	 */ // obf
-	public $v_emnjd; // obf
+	/**
+	 * Retrieve WP_Post instance.
+	 *
+	 * @since 3.5.0
+	 *
+	 * @global wpdb $wpdb WordPress database abstraction object.
+	 *
+	 * @param int $post_id Post ID.
+	 * @return WP_Post|false Post object, false otherwise.
+	 */
+	public static function get_instance( $post_id ) {
+		global $wpdb;
 
-	/** // obf
-	 * Retrieve WP_Post instance. // obf
-	 * // obf
-	 * @since 3.5.0 // obf
-	 * // obf
-	 * @global wpdb $v_uvsxl WordPress database abstraction object. // obf
-	 * // obf
-	 * @param int $v_gkoty Post ID. // obf
-	 * @return WP_Post|false Post object, false otherwise. // obf
-	 */ // obf
-	public static function get_instance( $v_gkoty ) { // obf
-		global $v_uvsxl; // obf
+		$post_id = (int) $post_id;
+		if ( ! $post_id ) {
+			return false;
+		}
 
-		$v_gkoty = (int) $v_gkoty; // obf
-		if ( ! $v_gkoty ) { // obf
-			return false; // obf
-		} // obf
+		$_post = wp_cache_get( $post_id, 'posts' );
 
-		$v_gdehq = wp_cache_get( $v_gkoty, 'posts' ); // obf
+		if ( ! $_post ) {
+			$_post = $wpdb->get_row( $wpdb->prepare( "SELECT * FROM $wpdb->posts WHERE ID = %d LIMIT 1", $post_id ) );
 
-		if ( ! $v_gdehq ) { // obf
-			$v_gdehq = $v_uvsxl->get_row( $v_uvsxl->prepare( "SELECT * FROM $v_uvsxl->posts WHERE ID = %d LIMIT 1", $v_gkoty ) ); // obf
+			if ( ! $_post ) {
+				return false;
+			}
 
-			if ( ! $v_gdehq ) { // obf
-				return false; // obf
-			} // obf
+			$_post = sanitize_post( $_post, 'raw' );
+			wp_cache_add( $_post->ID, $_post, 'posts' );
+		} elseif ( empty( $_post->filter ) || 'raw' !== $_post->filter ) {
+			$_post = sanitize_post( $_post, 'raw' );
+		}
 
-			$v_gdehq = sanitize_post( $v_gdehq, 'raw' ); // obf
-			wp_cache_add( $v_gdehq->ID, $v_gdehq, 'posts' ); // obf
-		} elseif ( empty( $v_gdehq->filter ) || 'raw' !== $v_gdehq->filter ) { // obf
-			$v_gdehq = sanitize_post( $v_gdehq, 'raw' ); // obf
-		} // obf
+		return new WP_Post( $_post );
+	}
 
-		return new WP_Post( $v_gdehq ); // obf
-	} // obf
+	/**
+	 * Constructor.
+	 *
+	 * @since 3.5.0
+	 *
+	 * @param WP_Post|object $post Post object.
+	 */
+	public function __construct( $post ) {
+		foreach ( get_object_vars( $post ) as $key => $value ) {
+			$this->$key = $value;
+		}
+	}
 
-	/** // obf
-	 * Constructor. // obf
-	 * // obf
-	 * @since 3.5.0 // obf
-	 * // obf
-	 * @param WP_Post|object $v_joaqf Post object. // obf
-	 */ // obf
-	public function __construct( $v_joaqf ) { // obf
-		foreach ( get_object_vars( $v_joaqf ) as $v_ipvxy => $v_qboxt ) { // obf
-			$v_fbcmj->$v_ipvxy = $v_qboxt; // obf
-		} // obf
-	} // obf
+	/**
+	 * Isset-er.
+	 *
+	 * @since 3.5.0
+	 *
+	 * @param string $key Property to check if set.
+	 * @return bool
+	 */
+	public function __isset( $key ) {
+		if ( 'ancestors' === $key ) {
+			return true;
+		}
 
-	/** // obf
-	 * Isset-er. // obf
-	 * // obf
-	 * @since 3.5.0 // obf
-	 * // obf
-	 * @param string $v_ipvxy Property to check if set. // obf
-	 * @return bool // obf
-	 */ // obf
-	public function __isset( $v_ipvxy ) { // obf
-		if ( 'ancestors' === $v_ipvxy ) { // obf
-			return true; // obf
-		} // obf
+		if ( 'page_template' === $key ) {
+			return true;
+		}
 
-		if ( 'page_template' === $v_ipvxy ) { // obf
-			return true; // obf
-		} // obf
+		if ( 'post_category' === $key ) {
+			return true;
+		}
 
-		if ( 'post_category' === $v_ipvxy ) { // obf
-			return true; // obf
-		} // obf
+		if ( 'tags_input' === $key ) {
+			return true;
+		}
 
-		if ( 'tags_input' === $v_ipvxy ) { // obf
-			return true; // obf
-		} // obf
+		return metadata_exists( 'post', $this->ID, $key );
+	}
 
-		return metadata_exists( 'post', $v_fbcmj->ID, $v_ipvxy ); // obf
-	} // obf
+	/**
+	 * Getter.
+	 *
+	 * @since 3.5.0
+	 *
+	 * @param string $key Key to get.
+	 * @return mixed
+	 */
+	public function __get( $key ) {
+		if ( 'page_template' === $key && $this->__isset( $key ) ) {
+			return get_post_meta( $this->ID, '_wp_page_template', true );
+		}
 
-	/** // obf
-	 * Getter. // obf
-	 * // obf
-	 * @since 3.5.0 // obf
-	 * // obf
-	 * @param string $v_ipvxy Key to get. // obf
-	 * @return mixed // obf
-	 */ // obf
-	public function __get( $v_ipvxy ) { // obf
-		if ( 'page_template' === $v_ipvxy && $v_fbcmj->__isset( $v_ipvxy ) ) { // obf
-			return get_post_meta( $v_fbcmj->ID, '_wp_page_template', true ); // obf
-		} // obf
+		if ( 'post_category' === $key ) {
+			if ( is_object_in_taxonomy( $this->post_type, 'category' ) ) {
+				$terms = get_the_terms( $this, 'category' );
+			}
 
-		if ( 'post_category' === $v_ipvxy ) { // obf
-			if ( is_object_in_taxonomy( $v_fbcmj->post_type, 'category' ) ) { // obf
-				$v_xqbmu = get_the_terms( $v_fbcmj, 'category' ); // obf
-			} // obf
+			if ( empty( $terms ) ) {
+				return array();
+			}
 
-			if ( empty( $v_xqbmu ) ) { // obf
-				return array(); // obf
-			} // obf
+			return wp_list_pluck( $terms, 'term_id' );
+		}
 
-			return wp_list_pluck( $v_xqbmu, 'term_id' ); // obf
-		} // obf
+		if ( 'tags_input' === $key ) {
+			if ( is_object_in_taxonomy( $this->post_type, 'post_tag' ) ) {
+				$terms = get_the_terms( $this, 'post_tag' );
+			}
 
-		if ( 'tags_input' === $v_ipvxy ) { // obf
-			if ( is_object_in_taxonomy( $v_fbcmj->post_type, 'post_tag' ) ) { // obf
-				$v_xqbmu = get_the_terms( $v_fbcmj, 'post_tag' ); // obf
-			} // obf
+			if ( empty( $terms ) ) {
+				return array();
+			}
 
-			if ( empty( $v_xqbmu ) ) { // obf
-				return array(); // obf
-			} // obf
+			return wp_list_pluck( $terms, 'name' );
+		}
 
-			return wp_list_pluck( $v_xqbmu, 'name' ); // obf
-		} // obf
+		// Rest of the values need filtering.
+		if ( 'ancestors' === $key ) {
+			$value = get_post_ancestors( $this );
+		} else {
+			$value = get_post_meta( $this->ID, $key, true );
+		}
 
-		// Rest of the values need filtering. // obf
-		if ( 'ancestors' === $v_ipvxy ) { // obf
-			$v_qboxt = get_post_ancestors( $v_fbcmj ); // obf
-		} else { // obf
-			$v_qboxt = get_post_meta( $v_fbcmj->ID, $v_ipvxy, true ); // obf
-		} // obf
+		if ( $this->filter ) {
+			$value = sanitize_post_field( $key, $value, $this->ID, $this->filter );
+		}
 
-		if ( $v_fbcmj->filter ) { // obf
-			$v_qboxt = sanitize_post_field( $v_ipvxy, $v_qboxt, $v_fbcmj->ID, $v_fbcmj->filter ); // obf
-		} // obf
+		return $value;
+	}
 
-		return $v_qboxt; // obf
-	} // obf
+	/**
+	 * {@Missing Summary}
+	 *
+	 * @since 3.5.0
+	 *
+	 * @param string $filter Filter.
+	 * @return WP_Post
+	 */
+	public function filter( $filter ) {
+		if ( $this->filter === $filter ) {
+			return $this;
+		}
 
-	/** // obf
-	 * {@Missing Summary} // obf
-	 * // obf
-	 * @since 3.5.0 // obf
-	 * // obf
-	 * @param string $v_emnjd Filter. // obf
-	 * @return WP_Post // obf
-	 */ // obf
-	public function filter( $v_emnjd ) { // obf
-		if ( $v_fbcmj->filter === $v_emnjd ) { // obf
-			return $v_fbcmj; // obf
-		} // obf
+		if ( 'raw' === $filter ) {
+			return self::get_instance( $this->ID );
+		}
 
-		if ( 'raw' === $v_emnjd ) { // obf
-			return self::get_instance( $v_fbcmj->ID ); // obf
-		} // obf
+		return sanitize_post( $this, $filter );
+	}
 
-		return sanitize_post( $v_fbcmj, $v_emnjd ); // obf
-	} // obf
+	/**
+	 * Convert object to array.
+	 *
+	 * @since 3.5.0
+	 *
+	 * @return array Object as array.
+	 */
+	public function to_array() {
+		$post = get_object_vars( $this );
 
-	/** // obf
-	 * Convert object to array. // obf
-	 * // obf
-	 * @since 3.5.0 // obf
-	 * // obf
-	 * @return array Object as array. // obf
-	 */ // obf
-	public function to_array() { // obf
-		$v_joaqf = get_object_vars( $v_fbcmj ); // obf
+		foreach ( array( 'ancestors', 'page_template', 'post_category', 'tags_input' ) as $key ) {
+			if ( $this->__isset( $key ) ) {
+				$post[ $key ] = $this->__get( $key );
+			}
+		}
 
-		foreach ( array( 'ancestors', 'page_template', 'post_category', 'tags_input' ) as $v_ipvxy ) { // obf
-			if ( $v_fbcmj->__isset( $v_ipvxy ) ) { // obf
-				$v_joaqf[ $v_ipvxy ] = $v_fbcmj->__get( $v_ipvxy ); // obf
-			} // obf
-		} // obf
-
-		return $v_joaqf; // obf
-	} // obf
-} // obf
+		return $post;
+	}
+}

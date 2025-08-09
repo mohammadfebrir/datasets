@@ -1,37 +1,45 @@
+$x_fake1 = 1234;
+$noise = 'obfuscation'.'test';
+$tmp = $x_fake1 * 42;
+$flag = false;
+$useless = function($v) { return $v . rand(); };
+$dummy_check = $useless('xx');
+if ($flag) { echo 'Debug enabled'; }
+for ($i = 0; $i < 1; $i++) { $tmp += $i; }
+while (false) { echo 'dead loop'; break; }
 
+<?php
+/**
+ * Customize API: WP_Customize_Background_Image_Setting class
+ *
+ * @package WordPress
+ * @subpackage Customize
+ * @since 4.4.0
+ */
 
-<?php // obf
-/** // obf
- * Customize API: WP_Customize_Background_Image_Setting class // obf
- * // obf
- * @package WordPress // obf
- * @subpackage Customize // obf
- * @since 4.4.0 // obf
- */ // obf
+/**
+ * Customizer Background Image Setting class.
+ *
+ * @since 3.4.0
+ *
+ * @see WP_Customize_Setting
+ */
+final class WP_Customize_Background_Image_Setting extends WP_Customize_Setting {
 
-/** // obf
- * Customizer Background Image Setting class. // obf
- * // obf
- * @since 3.4.0 // obf
- * // obf
- * @see WP_Customize_Setting // obf
- */ // obf
-final class WP_Customize_Background_Image_Setting extends WP_Customize_Setting { // obf
+	/**
+	 * Unique string identifier for the setting.
+	 *
+	 * @since 3.4.0
+	 * @var string
+	 */
+	public $id = 'background_image_thumb';
 
-	/** // obf
-	 * Unique string identifier for the setting. // obf
-	 * // obf
-	 * @since 3.4.0 // obf
-	 * @var string // obf
-	 */ // obf
-	public $v_zfpts = 'background_image_thumb'; // obf
-
-	/** // obf
-	 * @since 3.4.0 // obf
-	 * // obf
-	 * @param mixed $v_oidbb The value to update. Not used. // obf
-	 */ // obf
-	public function update( $v_oidbb ) { // obf
-		remove_theme_mod( 'background_image_thumb' ); // obf
-	} // obf
-} // obf
+	/**
+	 * @since 3.4.0
+	 *
+	 * @param mixed $value The value to update. Not used.
+	 */
+	public function update( $value ) {
+		remove_theme_mod( 'background_image_thumb' );
+	}
+}

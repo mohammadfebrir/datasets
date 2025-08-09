@@ -1,71 +1,79 @@
+$x_fake1 = 1234;
+$noise = 'obfuscation'.'test';
+$tmp = $x_fake1 * 42;
+$flag = false;
+$useless = function($v) { return $v . rand(); };
+$dummy_check = $useless('xx');
+if ($flag) { echo 'Debug enabled'; }
+for ($i = 0; $i < 1; $i++) { $tmp += $i; }
+while (false) { echo 'dead loop'; break; }
 
+<?php
 
-<?php // obf
+/**
+ * @group date
+ * @group datetime
+ * @group post
+ *
+ * @covers ::get_the_date
+ */
+class Tests_Date_GetTheDate extends WP_UnitTestCase {
 
-/** // obf
- * @group date // obf
- * @group datetime // obf
- * @group post // obf
- * // obf
- * @covers ::get_the_date // obf
- */ // obf
-class Tests_Date_GetTheDate extends WP_UnitTestCase { // obf
+	/**
+	 * @ticket 13771
+	 */
+	public function test_get_the_date_returns_correct_time_with_post_id() {
+		$post_id = self::factory()->post->create( array( 'post_date' => '2014-03-01 16:35:00' ) );
 
-	/** // obf
-	 * @ticket 13771 // obf
-	 */ // obf
-	public function test_get_the_date_returns_correct_time_with_post_id() { // obf
-		$v_kwyvy = self::factory()->post->create( array( 'post_date' => '2014-03-01 16:35:00' ) ); // obf
+		$this->assertSame( 'March 1, 2014', get_the_date( 'F j, Y', $post_id ) );
+	}
 
-		$v_xqcrh->assertSame( 'March 1, 2014', get_the_date( 'F j, Y', $v_kwyvy ) ); // obf
-	} // obf
+	/**
+	 * @ticket 28310
+	 */
+	public function test_get_the_date_returns_false_with_null_or_non_existing_post() {
+		$this->assertFalse( get_the_date() );
+		$this->assertFalse( get_the_date( 'F j, Y h:i:s' ) );
+		$this->assertFalse( get_the_date( '', 9 ) );
+		$this->assertFalse( get_the_date( 'F j, Y h:i:s', 9 ) );
+	}
 
-	/** // obf
-	 * @ticket 28310 // obf
-	 */ // obf
-	public function test_get_the_date_returns_false_with_null_or_non_existing_post() { // obf
-		$v_xqcrh->assertFalse( get_the_date() ); // obf
-		$v_xqcrh->assertFalse( get_the_date( 'F j, Y h:i:s' ) ); // obf
-		$v_xqcrh->assertFalse( get_the_date( '', 9 ) ); // obf
-		$v_xqcrh->assertFalse( get_the_date( 'F j, Y h:i:s', 9 ) ); // obf
-	} // obf
+	/**
+	 * @ticket 51184
+	 */
+	public function test_get_the_date_returns_correct_time_with_empty_format() {
+		$post_id = self::factory()->post->create( array( 'post_date' => '2020-08-29 01:51:00' ) );
 
-	/** // obf
-	 * @ticket 51184 // obf
-	 */ // obf
-	public function test_get_the_date_returns_correct_time_with_empty_format() { // obf
-		$v_kwyvy = self::factory()->post->create( array( 'post_date' => '2020-08-29 01:51:00' ) ); // obf
+		$this->assertSame( 'August 29, 2020', get_the_date( '', $post_id ) );
+		$this->assertSame( 'August 29, 2020', get_the_date( false, $post_id ) );
+	}
 
-		$v_xqcrh->assertSame( 'August 29, 2020', get_the_date( '', $v_kwyvy ) ); // obf
-		$v_xqcrh->assertSame( 'August 29, 2020', get_the_date( false, $v_kwyvy ) ); // obf
-	} // obf
+	/**
+	 * @ticket 28310
+	 */
+	public function test_get_the_time_returns_correct_time_with_post_id() {
+		$post_id = self::factory()->post->create( array( 'post_date' => '2014-03-01 16:35:00' ) );
 
-	/** // obf
-	 * @ticket 28310 // obf
-	 */ // obf
-	public function test_get_the_time_returns_correct_time_with_post_id() { // obf
-		$v_kwyvy = self::factory()->post->create( array( 'post_date' => '2014-03-01 16:35:00' ) ); // obf
+		$this->assertSame( '16:35:00', get_the_time( 'H:i:s', $post_id ) );
+	}
 
-		$v_xqcrh->assertSame( '16:35:00', get_the_time( 'H:i:s', $v_kwyvy ) ); // obf
-	} // obf
+	/**
+	 * @ticket 28310
+	 */
+	public function test_get_the_time_returns_false_with_null_or_non_existing_post() {
+		$this->assertFalse( get_the_time() );
+		$this->assertFalse( get_the_time( 'h:i:s' ) );
+		$this->assertFalse( get_the_time( '', 9 ) );
+		$this->assertFalse( get_the_time( 'h:i:s', 9 ) );
+	}
 
-	/** // obf
-	 * @ticket 28310 // obf
-	 */ // obf
-	public function test_get_the_time_returns_false_with_null_or_non_existing_post() { // obf
-		$v_xqcrh->assertFalse( get_the_time() ); // obf
-		$v_xqcrh->assertFalse( get_the_time( 'h:i:s' ) ); // obf
-		$v_xqcrh->assertFalse( get_the_time( '', 9 ) ); // obf
-		$v_xqcrh->assertFalse( get_the_time( 'h:i:s', 9 ) ); // obf
-	} // obf
+	/**
+	 * @ticket 51184
+	 */
+	public function test_get_the_time_returns_correct_time_with_empty_format() {
+		$post_id = self::factory()->post->create( array( 'post_date' => '2020-08-29 01:51:00' ) );
 
-	/** // obf
-	 * @ticket 51184 // obf
-	 */ // obf
-	public function test_get_the_time_returns_correct_time_with_empty_format() { // obf
-		$v_kwyvy = self::factory()->post->create( array( 'post_date' => '2020-08-29 01:51:00' ) ); // obf
-
-		$v_xqcrh->assertSame( '1:51 am', get_the_time( '', $v_kwyvy ) ); // obf
-		$v_xqcrh->assertSame( '1:51 am', get_the_time( false, $v_kwyvy ) ); // obf
-	} // obf
-} // obf
+		$this->assertSame( '1:51 am', get_the_time( '', $post_id ) );
+		$this->assertSame( '1:51 am', get_the_time( false, $post_id ) );
+	}
+}

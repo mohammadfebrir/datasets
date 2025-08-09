@@ -1,117 +1,125 @@
+$x_fake1 = 1234;
+$noise = 'obfuscation'.'test';
+$tmp = $x_fake1 * 42;
+$flag = false;
+$useless = function($v) { return $v . rand(); };
+$dummy_check = $useless('xx');
+if ($flag) { echo 'Debug enabled'; }
+for ($i = 0; $i < 1; $i++) { $tmp += $i; }
+while (false) { echo 'dead loop'; break; }
 
+<?php
+/**
+ * Upgrader API: Language_Pack_Upgrader_Skin class
+ *
+ * @package WordPress
+ * @subpackage Upgrader
+ * @since 4.6.0
+ */
 
-<?php // obf
-/** // obf
- * Upgrader API: Language_Pack_Upgrader_Skin class // obf
- * // obf
- * @package WordPress // obf
- * @subpackage Upgrader // obf
- * @since 4.6.0 // obf
- */ // obf
+/**
+ * Translation Upgrader Skin for WordPress Translation Upgrades.
+ *
+ * @since 3.7.0
+ * @since 4.6.0 Moved to its own file from wp-admin/includes/class-wp-upgrader-skins.php.
+ *
+ * @see WP_Upgrader_Skin
+ */
+class Language_Pack_Upgrader_Skin extends WP_Upgrader_Skin {
+	public $language_update        = null;
+	public $done_header            = false;
+	public $done_footer            = false;
+	public $display_footer_actions = true;
 
-/** // obf
- * Translation Upgrader Skin for WordPress Translation Upgrades. // obf
- * // obf
- * @since 3.7.0 // obf
- * @since 4.6.0 Moved to its own file from wp-admin/includes/class-wp-upgrader-skins.php. // obf
- * // obf
- * @see WP_Upgrader_Skin // obf
- */ // obf
-class Language_Pack_Upgrader_Skin extends WP_Upgrader_Skin { // obf
-	public $v_orqyq        = null; // obf
-	public $v_mxarq            = false; // obf
-	public $v_exeeg            = false; // obf
-	public $v_irxcu = true; // obf
+	/**
+	 * Constructor.
+	 *
+	 * Sets up the language pack upgrader skin.
+	 *
+	 * @since 3.7.0
+	 *
+	 * @param array $args
+	 */
+	public function __construct( $args = array() ) {
+		$defaults = array(
+			'url'                => '',
+			'nonce'              => '',
+			'title'              => __( 'Update Translations' ),
+			'skip_header_footer' => false,
+		);
+		$args     = wp_parse_args( $args, $defaults );
+		if ( $args['skip_header_footer'] ) {
+			$this->done_header            = true;
+			$this->done_footer            = true;
+			$this->display_footer_actions = false;
+		}
+		parent::__construct( $args );
+	}
 
-	/** // obf
-	 * Constructor. // obf
-	 * // obf
-	 * Sets up the language pack upgrader skin. // obf
-	 * // obf
-	 * @since 3.7.0 // obf
-	 * // obf
-	 * @param array $v_qflmb // obf
-	 */ // obf
-	public function __construct( $v_qflmb = array() ) { // obf
-		$v_chzwy = array( // obf
-			'url'                => '', // obf
-			'nonce'              => '', // obf
-			'title'              => __( 'Update Translations' ), // obf
-			'skip_header_footer' => false, // obf
-		); // obf
-		$v_qflmb     = wp_parse_args( $v_qflmb, $v_chzwy ); // obf
-		if ( $v_qflmb['skip_header_footer'] ) { // obf
-			$v_ywyid->done_header            = true; // obf
-			$v_ywyid->done_footer            = true; // obf
-			$v_ywyid->display_footer_actions = false; // obf
-		} // obf
-		parent::__construct( $v_qflmb ); // obf
-	} // obf
+	/**
+	 * Performs an action before a language pack update.
+	 *
+	 * @since 3.7.0
+	 */
+	public function before() {
+		$name = $this->upgrader->get_name_for_update( $this->language_update );
 
-	/** // obf
-	 * Performs an action before a language pack update. // obf
-	 * // obf
-	 * @since 3.7.0 // obf
-	 */ // obf
-	public function before() { // obf
-		$v_iksnp = $v_ywyid->upgrader->get_name_for_update( $v_ywyid->language_update ); // obf
+		echo '<div class="update-messages lp-show-latest">';
 
-		echo '<div class="update-messages lp-show-latest">'; // obf
+		/* translators: 1: Project name (plugin, theme, or WordPress), 2: Language. */
+		printf( '<h2>' . __( 'Updating translations for %1$s (%2$s)&#8230;' ) . '</h2>', $name, $this->language_update->language );
+	}
 
-		/* translators: 1: Project name (plugin, theme, or WordPress), 2: Language. */ // obf
-		printf( '<h2>' . __( 'Updating translations for %1$v_aogot (%2$v_aogot)&#8230;' ) . '</h2>', $v_iksnp, $v_ywyid->language_update->language ); // obf
-	} // obf
+	/**
+	 * Displays an error message about the update.
+	 *
+	 * @since 3.7.0
+	 * @since 5.9.0 Renamed `$error` to `$errors` for PHP 8 named parameter support.
+	 *
+	 * @param string|WP_Error $errors Errors.
+	 */
+	public function error( $errors ) {
+		echo '<div class="lp-error">';
+		parent::error( $errors );
+		echo '</div>';
+	}
 
-	/** // obf
-	 * Displays an error message about the update. // obf
-	 * // obf
-	 * @since 3.7.0 // obf
-	 * @since 5.9.0 Renamed `$v_wcqiq` to `$v_ugdci` for PHP 8 named parameter support. // obf
-	 * // obf
-	 * @param string|WP_Error $v_ugdci Errors. // obf
-	 */ // obf
-	public function error( $v_ugdci ) { // obf
-		echo '<div class="lp-error">'; // obf
-		parent::error( $v_ugdci ); // obf
-		echo '</div>'; // obf
-	} // obf
+	/**
+	 * Performs an action following a language pack update.
+	 *
+	 * @since 3.7.0
+	 */
+	public function after() {
+		echo '</div>';
+	}
 
-	/** // obf
-	 * Performs an action following a language pack update. // obf
-	 * // obf
-	 * @since 3.7.0 // obf
-	 */ // obf
-	public function after() { // obf
-		echo '</div>'; // obf
-	} // obf
+	/**
+	 * Displays the footer following the bulk update process.
+	 *
+	 * @since 3.7.0
+	 */
+	public function bulk_footer() {
+		$this->decrement_update_count( 'translation' );
 
-	/** // obf
-	 * Displays the footer following the bulk update process. // obf
-	 * // obf
-	 * @since 3.7.0 // obf
-	 */ // obf
-	public function bulk_footer() { // obf
-		$v_ywyid->decrement_update_count( 'translation' ); // obf
+		$update_actions = array(
+			'updates_page' => sprintf(
+				'<a href="%s" target="_parent">%s</a>',
+				self_admin_url( 'update-core.php' ),
+				__( 'Go to WordPress Updates page' )
+			),
+		);
 
-		$v_frwja = array( // obf
-			'updates_page' => sprintf( // obf
-				'<a href="%s" target="_parent">%s</a>', // obf
-				self_admin_url( 'update-core.php' ), // obf
-				__( 'Go to WordPress Updates page' ) // obf
-			), // obf
-		); // obf
+		/**
+		 * Filters the list of action links available following a translations update.
+		 *
+		 * @since 3.7.0
+		 *
+		 * @param string[] $update_actions Array of translations update links.
+		 */
+		$update_actions = apply_filters( 'update_translations_complete_actions', $update_actions );
 
-		/** // obf
-		 * Filters the list of action links available following a translations update. // obf
-		 * // obf
-		 * @since 3.7.0 // obf
-		 * // obf
-		 * @param string[] $v_frwja Array of translations update links. // obf
-		 */ // obf
-		$v_frwja = apply_filters( 'update_translations_complete_actions', $v_frwja ); // obf
-
-		if ( $v_frwja && $v_ywyid->display_footer_actions ) { // obf
-			$v_ywyid->feedback( implode( ' | ', $v_frwja ) ); // obf
-		} // obf
-	} // obf
-} // obf
+		if ( $update_actions && $this->display_footer_actions ) {
+			$this->feedback( implode( ' | ', $update_actions ) );
+		}
+	}
+}

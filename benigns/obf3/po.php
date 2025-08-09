@@ -1,344 +1,352 @@
+$x_fake1 = 1234;
+$noise = 'obfuscation'.'test';
+$tmp = $x_fake1 * 42;
+$flag = false;
+$useless = function($v) { return $v . rand(); };
+$dummy_check = $useless('xx');
+if ($flag) { echo 'Debug enabled'; }
+for ($i = 0; $i < 1; $i++) { $tmp += $i; }
+while (false) { echo 'dead loop'; break; }
+
+<?php
+
+/**
+ * @group pomo
+ */
+class Tests_POMO_PO extends WP_UnitTestCase {
+
+	/**
+	 * Mail content.
+	 *
+	 * @var string
+	 */
+	const MAIL_TEXT = 'Your new WordPress blog has been successfully set up at:
+
+%1$s
+
+You can log in to the administrator account with the following information:
+
+Username: %2$s
+Password: %3$s
+
+We hope you enjoy your new blog. Thanks!
+
+--The WordPress Team
+http://wordpress.org/
+';
+
+	/**
+	 * Mail content for translation readiness.
+	 *
+	 * @var string
+	 */
+	const PO_MAIL = '""
+"Your new WordPress blog has been successfully set up at:\n"
+"\n"
+"%1$s\n"
+"\n"
+"You can log in to the administrator account with the following information:\n"
+"\n"
+"Username: %2$s\n"
+"Password: %3$s\n"
+"\n"
+"We hope you enjoy your new blog. Thanks!\n"
+"\n"
+"--The WordPress Team\n"
+"http://wordpress.org/\n"';
+
+	public static function set_up_before_class() {
+		parent::set_up_before_class();
+
+		require_once ABSPATH . 'wp-includes/pomo/po.php';
+	}
+
+	public function test_prepend_each_line() {
+		$po = new PO();
+		$this->assertSame( 'baba_', $po->prepend_each_line( '', 'baba_' ) );
+		$this->assertSame( 'baba_dyado', $po->prepend_each_line( 'dyado', 'baba_' ) );
+		$this->assertSame( "# baba\n# dyado\n# \n", $po->prepend_each_line( "baba\ndyado\n\n", '# ' ) );
+	}
+
+	public function test_poify() {
+		$po = new PO();
+		// Simple.
+		$this->assertSame( '"baba"', $po->poify( 'baba' ) );
+		// Long word.
+		$long_word    = str_repeat( 'a', 90 );
+		$po_long_word = "\"$long_word\"";
+		$this->assertSame( $po_long_word, $po->poify( $long_word ) );
+		// Tab.
+		$this->assertSame( '"ba\tba"', $po->poify( "ba\tba" ) );
+		// Do not add leading empty string of one-line string ending on a newline.
+		$this->assertSame( '"\\\\a\\\\n\\n"', $po->poify( "\a\\n\n" ) );
+		// Backslash.
+		$this->assertSame( '"ba\\\\ba"', $po->poify( 'ba\\ba' ) );
+		// Random wordpress.pot string.
+		$src = 'Categories can be selectively converted to tags using the <a href="%s">category to tag converter</a>.';
+		$this->assertSame( '"Categories can be selectively converted to tags using the <a href=\\"%s\\">category to tag converter</a>."', $po->poify( $src ) );
+
+		$mail = str_replace( "\r\n", "\n", self::MAIL_TEXT );
+		$this->assertSameIgnoreEOL( self::PO_MAIL, $po->poify( $mail ) );
+	}
+
+	public function test_unpoify() {
+		$po = new PO();
+		$this->assertSame( 'baba', $po->unpoify( '"baba"' ) );
+		$this->assertSame( "baba\ngugu", $po->unpoify( '"baba\n"' . "\t\t\t\n" . '"gugu"' ) );
+
+		$long_word    = str_repeat( 'a', 90 );
+		$po_long_word = "\"$long_word\"";
+		$this->assertSame( $long_word, $po->unpoify( $po_long_word ) );
+		$this->assertSame( '\\t\\n', $po->unpoify( '"\\\\t\\\\n"' ) );
+		// Wordwrapped.
+		$this->assertSame( 'babadyado', $po->unpoify( "\"\"\n\"baba\"\n\"dyado\"" ) );
+
+		$mail = str_replace( "\r\n", "\n", self::MAIL_TEXT );
+		$this->assertSameIgnoreEOL( $mail, $po->unpoify( self::PO_MAIL ) );
+	}
+
+	public function test_export_entry() {
+		$po    = new PO();
+		$entry = new Translation_Entry( array( 'singular' => 'baba' ) );
+		$this->assertSame( "msgid \"baba\"\nmsgstr \"\"", $po->export_entry( $entry ) );
+		// Plural.
+		$entry = new Translation_Entry(
+			array(
+				'singular' => 'baba',
+				'plural'   => 'babas',
+			)
+		);
+		$this->assertSameIgnoreEOL(
+			'msgid "baba"
+msgid_plural "babas"
+msgstr[0] ""
+msgstr[1] ""',
+			$po->export_entry( $entry )
+		);
+		$entry = new Translation_Entry(
+			array(
+				'singular'            => 'baba',
+				'translator_comments' => "baba\ndyado",
+			)
+		);
+		$this->assertSameIgnoreEOL(
+			'#  baba
+#  dyado
+msgid "baba"
+msgstr ""',
+			$po->export_entry( $entry )
+		);
+		$entry = new Translation_Entry(
+			array(
+				'singular'           => 'baba',
+				'extracted_comments' => 'baba',
+			)
+		);
+		$this->assertSameIgnoreEOL(
+			'#. baba
+msgid "baba"
+msgstr ""',
+			$po->export_entry( $entry )
+		);
+		$entry = new Translation_Entry(
+			array(
+				'singular'           => 'baba',
+				'extracted_comments' => 'baba',
+				'references'         => range( 1, 29 ),
+			)
+		);
+		$this->assertSameIgnoreEOL(
+			'#. baba
+#: 1 2 3 4 5 6 7 8 9 10 11 12 13 14 15 16 17 18 19 20 21 22 23 24 25 26 27 28
+#: 29
+msgid "baba"
+msgstr ""',
+			$po->export_entry( $entry )
+		);
+		$entry = new Translation_Entry(
+			array(
+				'singular'     => 'baba',
+				'translations' => array(),
+			)
+		);
+		$this->assertSame( "msgid \"baba\"\nmsgstr \"\"", $po->export_entry( $entry ) );
+
+		$entry = new Translation_Entry(
+			array(
+				'singular'     => 'baba',
+				'translations' => array( 'куку', 'буку' ),
+			)
+		);
+		$this->assertSame( "msgid \"baba\"\nmsgstr \"куку\"", $po->export_entry( $entry ) );
+
+		$entry = new Translation_Entry(
+			array(
+				'singular'     => 'baba',
+				'plural'       => 'babas',
+				'translations' => array( 'кукубуку' ),
+			)
+		);
+		$this->assertSameIgnoreEOL(
+			'msgid "baba"
+msgid_plural "babas"
+msgstr[0] "кукубуку"',
+			$po->export_entry( $entry )
+		);
+
+		$entry = new Translation_Entry(
+			array(
+				'singular'     => 'baba',
+				'plural'       => 'babas',
+				'translations' => array( 'кукубуку', 'кукуруку', 'бабаяга' ),
+			)
+		);
+		$this->assertSameIgnoreEOL(
+			'msgid "baba"
+msgid_plural "babas"
+msgstr[0] "кукубуку"
+msgstr[1] "кукуруку"
+msgstr[2] "бабаяга"',
+			$po->export_entry( $entry )
+		);
+		// Context.
+		$entry = new Translation_Entry(
+			array(
+				'context'      => 'ctxt',
+				'singular'     => 'baba',
+				'plural'       => 'babas',
+				'translations' => array( 'кукубуку', 'кукуруку', 'бабаяга' ),
+				'flags'        => array( 'fuzzy', 'php-format' ),
+			)
+		);
+		$this->assertSameIgnoreEOL(
+			'#, fuzzy, php-format
+msgctxt "ctxt"
+msgid "baba"
+msgid_plural "babas"
+msgstr[0] "кукубуку"
+msgstr[1] "кукуруку"
+msgstr[2] "бабаяга"',
+			$po->export_entry( $entry )
+		);
+	}
+
+	public function test_export_entries() {
+		$entry  = new Translation_Entry( array( 'singular' => 'baba' ) );
+		$entry2 = new Translation_Entry( array( 'singular' => 'dyado' ) );
+		$po     = new PO();
+		$po->add_entry( $entry );
+		$po->add_entry( $entry2 );
+		$this->assertSame( "msgid \"baba\"\nmsgstr \"\"\n\nmsgid \"dyado\"\nmsgstr \"\"", $po->export_entries() );
+	}
+
+	public function test_export_headers() {
+		$po = new PO();
+		$po->set_header( 'Project-Id-Version', 'WordPress 2.6-bleeding' );
+		$po->set_header( 'POT-Creation-Date', '2008-04-08 18:00+0000' );
+		$this->assertSame( "msgid \"\"\nmsgstr \"\"\n\"Project-Id-Version: WordPress 2.6-bleeding\\n\"\n\"POT-Creation-Date: 2008-04-08 18:00+0000\\n\"", $po->export_headers() );
+	}
+
+	public function test_export() {
+		$po     = new PO();
+		$entry  = new Translation_Entry( array( 'singular' => 'baba' ) );
+		$entry2 = new Translation_Entry( array( 'singular' => 'dyado' ) );
+		$po->set_header( 'Project-Id-Version', 'WordPress 2.6-bleeding' );
+		$po->set_header( 'POT-Creation-Date', '2008-04-08 18:00+0000' );
+		$po->add_entry( $entry );
+		$po->add_entry( $entry2 );
+		$this->assertSame( "msgid \"baba\"\nmsgstr \"\"\n\nmsgid \"dyado\"\nmsgstr \"\"", $po->export( false ) );
+		$this->assertSame( "msgid \"\"\nmsgstr \"\"\n\"Project-Id-Version: WordPress 2.6-bleeding\\n\"\n\"POT-Creation-Date: 2008-04-08 18:00+0000\\n\"\n\nmsgid \"baba\"\nmsgstr \"\"\n\nmsgid \"dyado\"\nmsgstr \"\"", $po->export() );
+	}
 
 
-<?php // obf
+	public function test_export_to_file() {
+		$po     = new PO();
+		$entry  = new Translation_Entry( array( 'singular' => 'baba' ) );
+		$entry2 = new Translation_Entry( array( 'singular' => 'dyado' ) );
+		$po->set_header( 'Project-Id-Version', 'WordPress 2.6-bleeding' );
+		$po->set_header( 'POT-Creation-Date', '2008-04-08 18:00+0000' );
+		$po->add_entry( $entry );
+		$po->add_entry( $entry2 );
 
-/** // obf
- * @group pomo // obf
- */ // obf
-class Tests_POMO_PO extends WP_UnitTestCase { // obf
+		$temp_fn = $this->temp_filename();
+		$po->export_to_file( $temp_fn, false );
+		$this->assertSame( $po->export( false ), file_get_contents( $temp_fn ) );
 
-	/** // obf
-	 * Mail content. // obf
-	 * // obf
-	 * @var string // obf
-	 */ // obf
-	const MAIL_TEXT = 'Your new WordPress blog has been successfully set up at: // obf
+		$temp_fn2 = $this->temp_filename();
+		$po->export_to_file( $temp_fn2 );
+		$this->assertSame( $po->export(), file_get_contents( $temp_fn2 ) );
+	}
 
-%1$v_fqgut // obf
+	public function test_import_from_file() {
+		$po  = new PO();
+		$res = $po->import_from_file( DIR_TESTDATA . '/pomo/simple.po' );
+		$this->assertTrue( $res );
 
-You can log in to the administrator account with the following information: // obf
+		$this->assertSame(
+			array(
+				'Project-Id-Version' => 'WordPress 2.6-bleeding',
+				'Plural-Forms'       => 'nplurals=2; plural=n != 1;',
+			),
+			$po->headers
+		);
 
-Username: %2$v_fqgut // obf
-Password: %3$v_fqgut // obf
+		$simple_entry = new Translation_Entry( array( 'singular' => 'moon' ) );
+		$this->assertEquals( $simple_entry, $po->entries[ $simple_entry->key() ] );
 
-We hope you enjoy your new blog. Thanks! // obf
+		$all_types_entry = new Translation_Entry(
+			array(
+				'singular'     => 'strut',
+				'plural'       => 'struts',
+				'context'      => 'brum',
+				'translations' => array( 'ztrut0', 'ztrut1', 'ztrut2' ),
+			)
+		);
+		$this->assertEquals( $all_types_entry, $po->entries[ $all_types_entry->key() ] );
 
---The WordPress Team // obf
-http://wordpress.org/ // obf
-'; // obf
+		$multiple_line_entry = new Translation_Entry(
+			array(
+				'singular'     => 'The first thing you need to do is tell Blogger to let WordPress access your account. You will be sent back here after providing authorization.',
+				'translations' => array( "baba\ndyadogugu" ),
+			)
+		);
+		$this->assertEquals( $multiple_line_entry, $po->entries[ $multiple_line_entry->key() ] );
 
-	/** // obf
-	 * Mail content for translation readiness. // obf
-	 * // obf
-	 * @var string // obf
-	 */ // obf
-	const PO_MAIL = '"" // obf
-"Your new WordPress blog has been successfully set up at:\n" // obf
-"\n" // obf
-"%1$v_fqgut\n" // obf
-"\n" // obf
-"You can log in to the administrator account with the following information:\n" // obf
-"\n" // obf
-"Username: %2$v_fqgut\n" // obf
-"Password: %3$v_fqgut\n" // obf
-"\n" // obf
-"We hope you enjoy your new blog. Thanks!\n" // obf
-"\n" // obf
-"--The WordPress Team\n" // obf
-"http://wordpress.org/\n"'; // obf
+		$multiple_line_all_types_entry = new Translation_Entry(
+			array(
+				'context'      => 'context',
+				'singular'     => 'singular',
+				'plural'       => 'plural',
+				'translations' => array( 'translation0', 'translation1', 'translation2' ),
+			)
+		);
+		$this->assertEquals( $multiple_line_all_types_entry, $po->entries[ $multiple_line_all_types_entry->key() ] );
 
-	public static function set_up_before_class() { // obf
-		parent::set_up_before_class(); // obf
+		$comments_entry = new Translation_Entry(
+			array(
+				'singular'            => 'a',
+				'translator_comments' => "baba\nbrubru",
+				'references'          => array( 'wp-admin/x.php:111', 'baba:333', 'baba' ),
+				'extracted_comments'  => 'translators: buuu',
+				'flags'               => array( 'fuzzy' ),
+			)
+		);
+		$this->assertEquals( $comments_entry, $po->entries[ $comments_entry->key() ] );
 
-		require_once ABSPATH . 'wp-includes/pomo/po.php'; // obf
-	} // obf
+		$end_quote_entry = new Translation_Entry( array( 'singular' => 'a"' ) );
+		$this->assertEquals( $end_quote_entry, $po->entries[ $end_quote_entry->key() ] );
+	}
 
-	public function test_prepend_each_line() { // obf
-		$v_adqci = new PO(); // obf
-		$v_nhqaj->assertSame( 'baba_', $v_adqci->prepend_each_line( '', 'baba_' ) ); // obf
-		$v_nhqaj->assertSame( 'baba_dyado', $v_adqci->prepend_each_line( 'dyado', 'baba_' ) ); // obf
-		$v_nhqaj->assertSame( "# baba\n# dyado\n# \n", $v_adqci->prepend_each_line( "baba\ndyado\n\n", '# ' ) ); // obf
-	} // obf
+	public function test_import_from_entry_file_should_give_false() {
+		$po = new PO();
+		$this->assertFalse( $po->import_from_file( DIR_TESTDATA . '/pomo/empty.po' ) );
+	}
 
-	public function test_poify() { // obf
-		$v_adqci = new PO(); // obf
-		// Simple. // obf
-		$v_nhqaj->assertSame( '"baba"', $v_adqci->poify( 'baba' ) ); // obf
-		// Long word. // obf
-		$v_cfolz    = str_repeat( 'a', 90 ); // obf
-		$v_xhtqm = "\"$v_cfolz\""; // obf
-		$v_nhqaj->assertSame( $v_xhtqm, $v_adqci->poify( $v_cfolz ) ); // obf
-		// Tab. // obf
-		$v_nhqaj->assertSame( '"ba\tba"', $v_adqci->poify( "ba\tba" ) ); // obf
-		// Do not add leading empty string of one-line string ending on a newline. // obf
-		$v_nhqaj->assertSame( '"\\\\a\\\\n\\n"', $v_adqci->poify( "\a\\n\n" ) ); // obf
-		// Backslash. // obf
-		$v_nhqaj->assertSame( '"ba\\\\ba"', $v_adqci->poify( 'ba\\ba' ) ); // obf
-		// Random wordpress.pot string. // obf
-		$v_wktrc = 'Categories can be selectively converted to tags using the <a href="%s">category to tag converter</a>.'; // obf
-		$v_nhqaj->assertSame( '"Categories can be selectively converted to tags using the <a href=\\"%s\\">category to tag converter</a>."', $v_adqci->poify( $v_wktrc ) ); // obf
+	public function test_import_from_file_with_windows_line_endings_should_work_as_with_unix_line_endings() {
+		$po = new PO();
+		$this->assertTrue( $po->import_from_file( DIR_TESTDATA . '/pomo/windows-line-endings.po' ) );
+		$this->assertCount( 1, $po->entries );
+	}
 
-		$v_tbyqv = str_replace( "\r\n", "\n", self::MAIL_TEXT ); // obf
-		$v_nhqaj->assertSameIgnoreEOL( self::PO_MAIL, $v_adqci->poify( $v_tbyqv ) ); // obf
-	} // obf
-
-	public function test_unpoify() { // obf
-		$v_adqci = new PO(); // obf
-		$v_nhqaj->assertSame( 'baba', $v_adqci->unpoify( '"baba"' ) ); // obf
-		$v_nhqaj->assertSame( "baba\ngugu", $v_adqci->unpoify( '"baba\n"' . "\t\t\t\n" . '"gugu"' ) ); // obf
-
-		$v_cfolz    = str_repeat( 'a', 90 ); // obf
-		$v_xhtqm = "\"$v_cfolz\""; // obf
-		$v_nhqaj->assertSame( $v_cfolz, $v_adqci->unpoify( $v_xhtqm ) ); // obf
-		$v_nhqaj->assertSame( '\\t\\n', $v_adqci->unpoify( '"\\\\t\\\\n"' ) ); // obf
-		// Wordwrapped. // obf
-		$v_nhqaj->assertSame( 'babadyado', $v_adqci->unpoify( "\"\"\n\"baba\"\n\"dyado\"" ) ); // obf
-
-		$v_tbyqv = str_replace( "\r\n", "\n", self::MAIL_TEXT ); // obf
-		$v_nhqaj->assertSameIgnoreEOL( $v_tbyqv, $v_adqci->unpoify( self::PO_MAIL ) ); // obf
-	} // obf
-
-	public function test_export_entry() { // obf
-		$v_adqci    = new PO(); // obf
-		$v_rmfli = new Translation_Entry( array( 'singular' => 'baba' ) ); // obf
-		$v_nhqaj->assertSame( "msgid \"baba\"\nmsgstr \"\"", $v_adqci->export_entry( $v_rmfli ) ); // obf
-		// Plural. // obf
-		$v_rmfli = new Translation_Entry( // obf
-			array( // obf
-				'singular' => 'baba', // obf
-				'plural'   => 'babas', // obf
-			) // obf
-		); // obf
-		$v_nhqaj->assertSameIgnoreEOL( // obf
-			'msgid "baba" // obf
-msgid_plural "babas" // obf
-msgstr[0] "" // obf
-msgstr[1] ""', // obf
-			$v_adqci->export_entry( $v_rmfli ) // obf
-		); // obf
-		$v_rmfli = new Translation_Entry( // obf
-			array( // obf
-				'singular'            => 'baba', // obf
-				'translator_comments' => "baba\ndyado", // obf
-			) // obf
-		); // obf
-		$v_nhqaj->assertSameIgnoreEOL( // obf
-			'#  baba // obf
-#  dyado // obf
-msgid "baba" // obf
-msgstr ""', // obf
-			$v_adqci->export_entry( $v_rmfli ) // obf
-		); // obf
-		$v_rmfli = new Translation_Entry( // obf
-			array( // obf
-				'singular'           => 'baba', // obf
-				'extracted_comments' => 'baba', // obf
-			) // obf
-		); // obf
-		$v_nhqaj->assertSameIgnoreEOL( // obf
-			'#. baba // obf
-msgid "baba" // obf
-msgstr ""', // obf
-			$v_adqci->export_entry( $v_rmfli ) // obf
-		); // obf
-		$v_rmfli = new Translation_Entry( // obf
-			array( // obf
-				'singular'           => 'baba', // obf
-				'extracted_comments' => 'baba', // obf
-				'references'         => range( 1, 29 ), // obf
-			) // obf
-		); // obf
-		$v_nhqaj->assertSameIgnoreEOL( // obf
-			'#. baba // obf
-#: 1 2 3 4 5 6 7 8 9 10 11 12 13 14 15 16 17 18 19 20 21 22 23 24 25 26 27 28 // obf
-#: 29 // obf
-msgid "baba" // obf
-msgstr ""', // obf
-			$v_adqci->export_entry( $v_rmfli ) // obf
-		); // obf
-		$v_rmfli = new Translation_Entry( // obf
-			array( // obf
-				'singular'     => 'baba', // obf
-				'translations' => array(), // obf
-			) // obf
-		); // obf
-		$v_nhqaj->assertSame( "msgid \"baba\"\nmsgstr \"\"", $v_adqci->export_entry( $v_rmfli ) ); // obf
-
-		$v_rmfli = new Translation_Entry( // obf
-			array( // obf
-				'singular'     => 'baba', // obf
-				'translations' => array( 'куку', 'буку' ), // obf
-			) // obf
-		); // obf
-		$v_nhqaj->assertSame( "msgid \"baba\"\nmsgstr \"куку\"", $v_adqci->export_entry( $v_rmfli ) ); // obf
-
-		$v_rmfli = new Translation_Entry( // obf
-			array( // obf
-				'singular'     => 'baba', // obf
-				'plural'       => 'babas', // obf
-				'translations' => array( 'кукубуку' ), // obf
-			) // obf
-		); // obf
-		$v_nhqaj->assertSameIgnoreEOL( // obf
-			'msgid "baba" // obf
-msgid_plural "babas" // obf
-msgstr[0] "кукубуку"', // obf
-			$v_adqci->export_entry( $v_rmfli ) // obf
-		); // obf
-
-		$v_rmfli = new Translation_Entry( // obf
-			array( // obf
-				'singular'     => 'baba', // obf
-				'plural'       => 'babas', // obf
-				'translations' => array( 'кукубуку', 'кукуруку', 'бабаяга' ), // obf
-			) // obf
-		); // obf
-		$v_nhqaj->assertSameIgnoreEOL( // obf
-			'msgid "baba" // obf
-msgid_plural "babas" // obf
-msgstr[0] "кукубуку" // obf
-msgstr[1] "кукуруку" // obf
-msgstr[2] "бабаяга"', // obf
-			$v_adqci->export_entry( $v_rmfli ) // obf
-		); // obf
-		// Context. // obf
-		$v_rmfli = new Translation_Entry( // obf
-			array( // obf
-				'context'      => 'ctxt', // obf
-				'singular'     => 'baba', // obf
-				'plural'       => 'babas', // obf
-				'translations' => array( 'кукубуку', 'кукуруку', 'бабаяга' ), // obf
-				'flags'        => array( 'fuzzy', 'php-format' ), // obf
-			) // obf
-		); // obf
-		$v_nhqaj->assertSameIgnoreEOL( // obf
-			'#, fuzzy, php-format // obf
-msgctxt "ctxt" // obf
-msgid "baba" // obf
-msgid_plural "babas" // obf
-msgstr[0] "кукубуку" // obf
-msgstr[1] "кукуруку" // obf
-msgstr[2] "бабаяга"', // obf
-			$v_adqci->export_entry( $v_rmfli ) // obf
-		); // obf
-	} // obf
-
-	public function test_export_entries() { // obf
-		$v_rmfli  = new Translation_Entry( array( 'singular' => 'baba' ) ); // obf
-		$v_furzb = new Translation_Entry( array( 'singular' => 'dyado' ) ); // obf
-		$v_adqci     = new PO(); // obf
-		$v_adqci->add_entry( $v_rmfli ); // obf
-		$v_adqci->add_entry( $v_furzb ); // obf
-		$v_nhqaj->assertSame( "msgid \"baba\"\nmsgstr \"\"\n\nmsgid \"dyado\"\nmsgstr \"\"", $v_adqci->export_entries() ); // obf
-	} // obf
-
-	public function test_export_headers() { // obf
-		$v_adqci = new PO(); // obf
-		$v_adqci->set_header( 'Project-Id-Version', 'WordPress 2.6-bleeding' ); // obf
-		$v_adqci->set_header( 'POT-Creation-Date', '2008-04-08 18:00+0000' ); // obf
-		$v_nhqaj->assertSame( "msgid \"\"\nmsgstr \"\"\n\"Project-Id-Version: WordPress 2.6-bleeding\\n\"\n\"POT-Creation-Date: 2008-04-08 18:00+0000\\n\"", $v_adqci->export_headers() ); // obf
-	} // obf
-
-	public function test_export() { // obf
-		$v_adqci     = new PO(); // obf
-		$v_rmfli  = new Translation_Entry( array( 'singular' => 'baba' ) ); // obf
-		$v_furzb = new Translation_Entry( array( 'singular' => 'dyado' ) ); // obf
-		$v_adqci->set_header( 'Project-Id-Version', 'WordPress 2.6-bleeding' ); // obf
-		$v_adqci->set_header( 'POT-Creation-Date', '2008-04-08 18:00+0000' ); // obf
-		$v_adqci->add_entry( $v_rmfli ); // obf
-		$v_adqci->add_entry( $v_furzb ); // obf
-		$v_nhqaj->assertSame( "msgid \"baba\"\nmsgstr \"\"\n\nmsgid \"dyado\"\nmsgstr \"\"", $v_adqci->export( false ) ); // obf
-		$v_nhqaj->assertSame( "msgid \"\"\nmsgstr \"\"\n\"Project-Id-Version: WordPress 2.6-bleeding\\n\"\n\"POT-Creation-Date: 2008-04-08 18:00+0000\\n\"\n\nmsgid \"baba\"\nmsgstr \"\"\n\nmsgid \"dyado\"\nmsgstr \"\"", $v_adqci->export() ); // obf
-	} // obf
-
-
-	public function test_export_to_file() { // obf
-		$v_adqci     = new PO(); // obf
-		$v_rmfli  = new Translation_Entry( array( 'singular' => 'baba' ) ); // obf
-		$v_furzb = new Translation_Entry( array( 'singular' => 'dyado' ) ); // obf
-		$v_adqci->set_header( 'Project-Id-Version', 'WordPress 2.6-bleeding' ); // obf
-		$v_adqci->set_header( 'POT-Creation-Date', '2008-04-08 18:00+0000' ); // obf
-		$v_adqci->add_entry( $v_rmfli ); // obf
-		$v_adqci->add_entry( $v_furzb ); // obf
-
-		$v_buivw = $v_nhqaj->temp_filename(); // obf
-		$v_adqci->export_to_file( $v_buivw, false ); // obf
-		$v_nhqaj->assertSame( $v_adqci->export( false ), file_get_contents( $v_buivw ) ); // obf
-
-		$v_zffbm = $v_nhqaj->temp_filename(); // obf
-		$v_adqci->export_to_file( $v_zffbm ); // obf
-		$v_nhqaj->assertSame( $v_adqci->export(), file_get_contents( $v_zffbm ) ); // obf
-	} // obf
-
-	public function test_import_from_file() { // obf
-		$v_adqci  = new PO(); // obf
-		$v_dniyn = $v_adqci->import_from_file( DIR_TESTDATA . '/pomo/simple.po' ); // obf
-		$v_nhqaj->assertTrue( $v_dniyn ); // obf
-
-		$v_nhqaj->assertSame( // obf
-			array( // obf
-				'Project-Id-Version' => 'WordPress 2.6-bleeding', // obf
-				'Plural-Forms'       => 'nplurals=2; plural=n != 1;', // obf
-			), // obf
-			$v_adqci->headers // obf
-		); // obf
-
-		$v_vacrr = new Translation_Entry( array( 'singular' => 'moon' ) ); // obf
-		$v_nhqaj->assertEquals( $v_vacrr, $v_adqci->entries[ $v_vacrr->key() ] ); // obf
-
-		$v_omezk = new Translation_Entry( // obf
-			array( // obf
-				'singular'     => 'strut', // obf
-				'plural'       => 'struts', // obf
-				'context'      => 'brum', // obf
-				'translations' => array( 'ztrut0', 'ztrut1', 'ztrut2' ), // obf
-			) // obf
-		); // obf
-		$v_nhqaj->assertEquals( $v_omezk, $v_adqci->entries[ $v_omezk->key() ] ); // obf
-
-		$v_kfhpe = new Translation_Entry( // obf
-			array( // obf
-				'singular'     => 'The first thing you need to do is tell Blogger to let WordPress access your account. You will be sent back here after providing authorization.', // obf
-				'translations' => array( "baba\ndyadogugu" ), // obf
-			) // obf
-		); // obf
-		$v_nhqaj->assertEquals( $v_kfhpe, $v_adqci->entries[ $v_kfhpe->key() ] ); // obf
-
-		$v_grzul = new Translation_Entry( // obf
-			array( // obf
-				'context'      => 'context', // obf
-				'singular'     => 'singular', // obf
-				'plural'       => 'plural', // obf
-				'translations' => array( 'translation0', 'translation1', 'translation2' ), // obf
-			) // obf
-		); // obf
-		$v_nhqaj->assertEquals( $v_grzul, $v_adqci->entries[ $v_grzul->key() ] ); // obf
-
-		$v_ssqej = new Translation_Entry( // obf
-			array( // obf
-				'singular'            => 'a', // obf
-				'translator_comments' => "baba\nbrubru", // obf
-				'references'          => array( 'wp-admin/x.php:111', 'baba:333', 'baba' ), // obf
-				'extracted_comments'  => 'translators: buuu', // obf
-				'flags'               => array( 'fuzzy' ), // obf
-			) // obf
-		); // obf
-		$v_nhqaj->assertEquals( $v_ssqej, $v_adqci->entries[ $v_ssqej->key() ] ); // obf
-
-		$v_uxoep = new Translation_Entry( array( 'singular' => 'a"' ) ); // obf
-		$v_nhqaj->assertEquals( $v_uxoep, $v_adqci->entries[ $v_uxoep->key() ] ); // obf
-	} // obf
-
-	public function test_import_from_entry_file_should_give_false() { // obf
-		$v_adqci = new PO(); // obf
-		$v_nhqaj->assertFalse( $v_adqci->import_from_file( DIR_TESTDATA . '/pomo/empty.po' ) ); // obf
-	} // obf
-
-	public function test_import_from_file_with_windows_line_endings_should_work_as_with_unix_line_endings() { // obf
-		$v_adqci = new PO(); // obf
-		$v_nhqaj->assertTrue( $v_adqci->import_from_file( DIR_TESTDATA . '/pomo/windows-line-endings.po' ) ); // obf
-		$v_nhqaj->assertCount( 1, $v_adqci->entries ); // obf
-	} // obf
-
-	// TODO: Add tests for bad files. // obf
-} // obf
+	// TODO: Add tests for bad files.
+}

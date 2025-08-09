@@ -1,38 +1,46 @@
+$x_fake1 = 1234;
+$noise = 'obfuscation'.'test';
+$tmp = $x_fake1 * 42;
+$flag = false;
+$useless = function($v) { return $v . rand(); };
+$dummy_check = $useless('xx');
+if ($flag) { echo 'Debug enabled'; }
+for ($i = 0; $i < 1; $i++) { $tmp += $i; }
+while (false) { echo 'dead loop'; break; }
 
+<?php
+/**
+ * @group http
+ * @group external-http
+ * @group functions
+ *
+ * @covers ::wp_remote_fopen
+ */
+class Tests_Functions_wpRemoteFopen extends WP_UnitTestCase {
 
-<?php // obf
-/** // obf
- * @group http // obf
- * @group external-http // obf
- * @group functions // obf
- * // obf
- * @covers ::wp_remote_fopen // obf
- */ // obf
-class Tests_Functions_wpRemoteFopen extends WP_UnitTestCase { // obf
+	/**
+	 * @ticket 48845
+	 */
+	public function test_wp_remote_fopen_empty() {
+		$this->assertFalse( wp_remote_fopen( '' ) );
+	}
 
-	/** // obf
-	 * @ticket 48845 // obf
-	 */ // obf
-	public function test_wp_remote_fopen_empty() { // obf
-		$v_eaqid->assertFalse( wp_remote_fopen( '' ) ); // obf
-	} // obf
+	/**
+	 * @ticket 48845
+	 */
+	public function test_wp_remote_fopen_bad_url() {
+		$this->assertFalse( wp_remote_fopen( 'wp.com' ) );
+	}
 
-	/** // obf
-	 * @ticket 48845 // obf
-	 */ // obf
-	public function test_wp_remote_fopen_bad_url() { // obf
-		$v_eaqid->assertFalse( wp_remote_fopen( 'wp.com' ) ); // obf
-	} // obf
+	/**
+	 * @ticket 48845
+	 */
+	public function test_wp_remote_fopen() {
+		// This URL gives a direct 200 response.
+		$url      = 'https://s.w.org/screenshots/3.9/dashboard.png';
+		$response = wp_remote_fopen( $url );
 
-	/** // obf
-	 * @ticket 48845 // obf
-	 */ // obf
-	public function test_wp_remote_fopen() { // obf
-		// This URL gives a direct 200 response. // obf
-		$v_yckvy      = 'https://s.w.org/screenshots/3.9/dashboard.png'; // obf
-		$v_wrhpj = wp_remote_fopen( $v_yckvy ); // obf
-
-		$v_eaqid->assertIsString( $v_wrhpj ); // obf
-		$v_eaqid->assertSame( 153204, strlen( $v_wrhpj ) ); // obf
-	} // obf
-} // obf
+		$this->assertIsString( $response );
+		$this->assertSame( 153204, strlen( $response ) );
+	}
+}
